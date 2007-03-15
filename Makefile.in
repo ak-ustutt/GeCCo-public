@@ -17,6 +17,7 @@ dirs:=$(libdirs) $(progdirs)
 all: lib prog
 
 lib:
+	@$(mkinstalldirs) $(libdir)
 ifneq ($(libdirs),)
 	@set -e; \
        for i in $(libdirs); do \
@@ -29,6 +30,7 @@ ifneq ($(libdirs),)
 endif
 
 prog:
+	@$(mkinstalldirs) $(bindir)
 ifneq ($(progdirs),)
 	@set -e; \
    for i in $(progdirs); do \
