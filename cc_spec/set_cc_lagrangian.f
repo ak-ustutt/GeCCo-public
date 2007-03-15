@@ -204,9 +204,6 @@
             call wrt_contr(lucclag,contr)
             nterms = nterms+1
             ncterm(1) = ncterm(1)+1
-c dbg
-            print *,'0-term found'
-c dbg
 
           else
 
@@ -380,7 +377,7 @@ c dbg
         end do h_loop
 
 c        write(luout,'(4x,i4,3x,iluout,x,5(x,i4))')
-c dbg:
+c dbg -- add "??" mark for grepping
         write(luout,'(2x,"??",i4,3x,i6,x,5(x,i4))')
      &       iloccls,sum(ncterm(1:5)),ncterm(1:5)
 

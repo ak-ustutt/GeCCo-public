@@ -252,50 +252,28 @@ c      end function
       ! start search at head of next sublevel
       if (associated(current%down_h)) then
         current => current%down_h
-c dbg
-c          print *,'descended , to ',trim(current%key)
-c dbg
       else
         ! rewind to first element in level
         do while(associated(current%prev))
-c dbg
-c          print *,'rewind <- to ',trim(current%prev%key)
-c dbg
           current => current%prev
         end do
       end if
 
       node_loop: do
 
-c dbg
-c      print *,'current key: "',trim(current%key)
-c dbg
         if (trim(current%key).eq.trim(key)) then
           ! matches key? return this node
-c dbg
-c          print *,'found'
-c dbg
           nxt_node => current
           exit node_loop
         end if
           
         ! find our way through tree (only same level and up)
         if (associated(current%next)) then
-c dbg
-c          print *,'current: "',trim(current%key),'"'
-c          print *,'moving -> to "',trim(current%next%key),'"'
-c dbg
           current => current%next
         else if (associated(current%up)) then
-c dbg
-c          print *,'moving ^ to "',trim(current%up%key),'"'
-c dbg
           current => current%up
           ! rewind to first element in level
           do while(associated(current%prev))
-c dbg
-c            print *,'rewind <- to ',trim(current%prev%key)
-c dbg
             current => current%prev
           end do
         else
@@ -633,15 +611,8 @@ c dbg
       current%val%type = arg_node%val%type
       type_arg = current%val%type
 
-c      call check_input_type()
-c dbg
-      print *,'have to parse and check: "',trim(str),'"',type_arg
-c dbg
       len_arg = check_array(str)
       current%val%len = len_arg
-c dbg
-      print *,'len = ',len_arg
-c dbg      
 
       ! allocate space for taking arguments
       if (iand(type_arg,vtyp_log).gt.0) then
@@ -1044,15 +1015,9 @@ c dbg
       ierr = 0
       file_loop: do
         read(luin,'(a)',end=100,err=200) line
-c dbg
-        print *,'current line: "',trim(line),'"'
-c dbg
 
 c        ipst = first_nonblank(line)
         call clean_line(line,delimiter,n_delim)
-c dbg
-        print *,'cleaned line: "',trim(line),'"'
-c dbg
 
         lenline = len_trim(line)
         ! empty line?
@@ -1060,9 +1025,6 @@ c dbg
         ipst = 1
 
         itest = next_delim(line(ipst:ipst))
-c dbg
-        print *,'itest = ',itest,'"',line(ipst:ipst),'"'
-c dbg
         
         if (itest.le.0) then
           ierr = ierr+1
@@ -1085,12 +1047,7 @@ c dbg
             call error_delim(line,ipnd)
           end if
           ipnd = ipnd-1
-c dbg
-          print *,'current key:"',line(ipst:ipnd),'"'
-c dbg          
           ! is it an argument key?
-c dbg
-c dbg
           call arg_node(curarg,curkey,line(ipst:ipnd))
 
           if (associated(curarg)) then
@@ -1114,9 +1071,6 @@ c dbg
                 
               else
 
-c dbg
-                print *,'checking: "',trim(line(ipst:)),'"'
-c dbg
                 allowed_delim(1:n_allowed_after_arg) =
      &               allowed_after_arg(1:n_allowed_after_arg)
                 n_allowed_delim = n_allowed_after_arg
@@ -1151,9 +1105,6 @@ c dbg
             else
               curkey => nxtkey
               call keyword_get_context(context,curkey)
-c dbg
-              print *,'current context: "',trim(context),'"'
-c dbg
               ! add node to keyword history
               call keyword_add_history(context)
 
@@ -1167,10 +1118,8 @@ c dbg
       
  100  continue
 
-c dbg
-      print *,'keyword history'
-      call keyword_list(luout,keyword_history,show_args=.true.)
-c dbg      
+      if (iprlvl.ge.10)
+     &    call keyword_list(luout,keyword_history,show_args=.true.)
 
       if (ierr.gt.0)
      &     call quit(0,'parse_input','input errors detected, see above')
@@ -1251,14 +1200,8 @@ c dbg
      &     ipos
       character ::
      &     fmtstr*80
-c dbg
-      print *,'err 1',ipos
-c dbg
       write(luout,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-c dbg
-      print *,fmtstr
-c dbg
       write(luout,fmtstr) 
       write(fmtstr,'("(x,a,",i3,"(a1,x))")') n_allowed_delim
       write(luout,fmtstr) 'INPUT ERROR: unexpected delimiter, '//
@@ -1280,9 +1223,6 @@ c dbg
       character ::
      &     fmtstr*80
 
-c dbg
-      print *,'err 2'
-c dbg
       write(luout,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
       write(luout,fmtstr) 
@@ -1302,9 +1242,6 @@ c dbg
       character ::
      &     fmtstr*80
 
-c dbg
-      print *,'err 3'
-c dbg
       write(luout,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
       write(luout,fmtstr) 
@@ -1324,9 +1261,6 @@ c dbg
       character ::
      &     fmtstr*80
 
-c dbg
-      print *,'err 4'
-c dbg
       write(luout,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
       write(luout,fmtstr) 
@@ -1348,9 +1282,6 @@ c dbg
       character ::
      &     fmtstr*80
 
-c dbg
-      print *,'err 5'
-c dbg
       write(luout,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
       write(luout,fmtstr) 

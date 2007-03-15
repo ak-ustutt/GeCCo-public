@@ -49,7 +49,9 @@
      &     ifree, ipass, irank, na, nc, ica, igas, igasl, idiff, imaxr,
      &     iocc, igastp, iprint
       integer ::
-     &     a_distr(ngastp), c_distr(ngastp), hpvxprint(ngastp)
+     &     a_distr(ngastp), c_distr(ngastp), 
+     &     a_distr_rv(ngastp), c_distr_rv(ngastp),
+     &     hpvxprint(ngastp)
 
 
       iprint = max(iprlvl,ntest)
@@ -107,17 +109,16 @@
             nc = na+ncadiff
             if (nc.lt.0) cycle rank
           end if
-c dbg
-c          print *,'rank = ',irank
-c dbg          
           init_c = .true.
-          c_part: do while(next_part_number(init_c,.false.,c_distr,
+          c_part: do while(next_part_number(init_c,.false.,c_distr_rv,
      &           nc,ngastp,0,nc))
 
-c dbg
-c            print *,'c_distr = ',c_distr
-c dbg          
             init_c = .false.
+
+            ! inverse sequence delivered by next_part_number:
+            do igastp = 1, ngastp
+              c_distr(igastp) = c_distr_rv(ngastp+1-igastp)
+            end do
 
             ! check wether distribution is allowed
             ok = .true.
@@ -125,35 +126,25 @@ c dbg
               ok = ok.and.hpvx_mnmx(1,igastp,1).le.c_distr(igastp)
      &               .and.hpvx_mnmx(2,igastp,1).ge.c_distr(igastp)
             end do
-c dbg
-c            print *,'ok = ',ok
-c dbg
             if (.not.ok) cycle c_part
 
             init_a = .true.
-            a_part: do while(next_part_number(init_a,.false.,a_distr,
+            a_part: do while(next_part_number(init_a,.false.,a_distr_rv,
      &           na,ngastp,0,na))
               init_a = .false.
 
-c dbg
-c              print *,'a_distr = ',a_distr
-c dbg          
+              ! inverse sequence delivered by next_part_number:
+              do igastp = 1, ngastp
+                a_distr(igastp) = a_distr_rv(ngastp+1-igastp)
+              end do
+
               ! check wether distribution is allowed
               ok = .true.
               do igastp = 1, ngastp
                 ok = ok.and.hpvx_mnmx(1,igastp,2).le.a_distr(igastp)
      &               .and.hpvx_mnmx(2,igastp,2).ge.a_distr(igastp)
               end do
-c dbg
-c              print *,'ok = ',ok
-c dbg
               if (.not.ok) cycle a_part
-
-c dbg
-c              print *,'a new operator is born, rank = ',irank
-c              print *,' ',c_distr
-c              print *,' ',a_distr
-c dbg
 
               op%n_occ_cls = op%n_occ_cls + 1
               if (ipass.eq.2) then
@@ -223,10 +214,6 @@ c dbg
             call wrt_occ(luout,op%ihpvca_occ(1,1,iocc))
             write(luout,'(/4x,6(2x,i2,x))') hpvxprint(1:ngas)
             call wrt_rstr(luout,op%igasca_restr(1,1,1,1,iocc),ngas)
-c            write(6,'(4x,6(x,2i2))')
-c     &           hop%igasca_restr(1:2,1:ngas,1,1,iocc)
-c            write(6,'(4x,6(x,2i2))')
-c     &           hop%igasca_restr(1:2,1:ngas,2,1,iocc)
           end do
         end if
 

@@ -28,9 +28,6 @@
             jpos = jpos+1
           end if
           ipos = ipos+1
-c dbg
-c          print *,'1'
-c dbg
         else
           ! a delimiter follows space?
           if (ispc.gt.0) then
@@ -48,15 +45,7 @@ c                jpos = max(1,jpos-1)
           if (ipos.gt.jpos) line(jpos:jpos) = line(ipos:ipos)
           ipos = ipos+1
           jpos = jpos+1
-c dbg
-c          print *,'2'
-c dbg
         end if
-
-c dbg
-c        print *,'"',line,'"'
-c        print *,'ipos,jpos,ispc:',ipos,jpos,ispc
-c dbg
 
       end do
 

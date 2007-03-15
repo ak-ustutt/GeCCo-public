@@ -314,29 +314,18 @@
      &       trim(mem_cursection%name)//'"')
       end if
 
-c dbg
-c      print *,'deallocating'
-c dbg
       ! point to last slice in section
       slice => cursection%tail
 
       if (present(name)) then
         ! search for node
         do
-c dbg
-c          print *,'s: present: ',trim(slice%name),' ',trim(name),
-c     &         trim(slice%name).eq.trim(name),associated(slice%prev),
-c     &         len_trim(slice%name),len_trim(name)
-c dbg
           if (trim(slice%name).eq.trim(name)) exit
           if (.not.associated(slice%prev))
      &         call quit(1,'memman_dealloc',
      &         'could not find a node named: "'//trim(name)//'"')
           slice => slice%prev
         end do
-c dbg
-c        print *,'node found'
-c dbg
       end if
 
       ! flag whether we are on last slice
@@ -387,26 +376,17 @@ c dbg
       end select
 
       mem_free = mem_free + mem_reg
-c dbg
-c        print *,'successfully deallocated'
-c dbg
 
       ! remove slice from list
       if (on_last_slice) then
         if (.not.associated(slice%prev)) then
           ! a) this was the last member of subsection
           !    subsection is empty now
-c dbg
-c          print *,'section a)'
-c dbg
           deallocate(cursection%head)
           if (in_last_section) nullify(mem_curslice)
           nullify(cursection%head)
           nullify(cursection%tail)
         else
-c dbg
-c          print *,'section b)'
-c dbg
           ! b) remove slice and move mem_curslice and tail pointers
           slice => slice%prev
           deallocate(slice%next)
@@ -416,18 +396,12 @@ c dbg
         end if
       else
         if (.not.associated(slice%prev)) then
-c dbg
-c          print *,'section c)'
-c dbg
           ! c) remove first slice in section
           slice_next => slice%next
           deallocate(cursection%head)
           cursection%head => slice_next
           nullify(cursection%head%prev)
         else
-c dbg
-c          print *,'section d)'
-c dbg
           ! d) remove a middle slice
           slice%prev%next => slice%next
           slice%next%prev => slice%prev
@@ -501,11 +475,6 @@ c dbg
       if (present(name)) then
         ! search for node
         do
-c dbg
-c          print *,'s: present: ',trim(section%name),' ',trim(name),
-c     &        trim(section%name).eq.trim(name),associated(section%prev),
-c     &         len_trim(section%name),len_trim(name)
-c dbg
           if (trim(section%name).eq.trim(name)) exit
           if (.not.associated(section%prev))
      &         call quit(1,'memman_remsection',

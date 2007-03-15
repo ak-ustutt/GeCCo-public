@@ -23,9 +23,6 @@
       integer ::
      &     ifree, nops, nform
 
-c dbg
-      print *,'calculating ....'
-c dbg
       ifree = mem_setmark('do_calc')
       
       ! set up orbital info

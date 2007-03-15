@@ -64,10 +64,8 @@
       ! save history pointer
       history_pointer => current
 
-c dbg
-      print *,'currently active:'
-      call keyword_list(luout,keyword_history)
-c dbg
+      if (iprlvl.ge.10)
+     &   call keyword_list(luout,keyword_history)
 
       ! check input -- start version
       icnt = is_keyword_set('method')
@@ -92,9 +90,6 @@ c dbg
         allocate(iscr(len))
         call get_argument_value('orb_space.shell','def',iarr=iscr)
  
-c dbg
-        print *,'len,iscr:',len,iscr(1:len)
-c dbg       
         call add_frozen_shell(iscr,len,orb_info)
 
       end if

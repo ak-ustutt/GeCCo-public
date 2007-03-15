@@ -39,8 +39,10 @@
       ! is last entry already in use?
       if (associated(list_pnt%op)) then
         allocate(list_pnt%next)
-        list_pnt%next%prev = list_pnt
+        list_pnt%next%prev => list_pnt
         list_pnt => op_list%next
+        nullify(list_pnt%next)
+c        nullify(list_pnt%op)
       end if
       allocate (list_pnt%op)
 
@@ -65,8 +67,10 @@
       ! new entry: the T operator
       nops = nops+1
       allocate(list_pnt%next)
-      list_pnt%next%prev = list_pnt
+      list_pnt%next%prev => list_pnt
       list_pnt => list_pnt%next
+      nullify(list_pnt%next)
+c      nullify(list_pnt%op)
       allocate (list_pnt%op)
 
       name = 'T'
@@ -76,12 +80,8 @@
       gamma = 1
       s2 = 0
       ms = 0
-      call get_argument_value('method.CC','mnexc',ival=min_rank)
-c      call get_argument_value('method.CC','mnexc',ival=iarr(1))
-c      min_rank = iarr(1)
-c      call get_argument_value('method.CC','mxexc',ival=iarr(1))      
-      call get_argument_value('method.CC','mxexc',ival=max_rank)
-c      max_rank = iarr(1)
+      call get_argument_value('method.CC','minexc',ival=min_rank)
+      call get_argument_value('method.CC','maxexc',ival=max_rank)
       ncadiff = 0
       call set_hpvx_and_restr_for_xop()
 
@@ -92,8 +92,10 @@ c      max_rank = iarr(1)
       ! new entry: the Tbar operator
       nops = nops+1
       allocate(list_pnt%next)
-      list_pnt%next%prev = list_pnt
+      list_pnt%next%prev => list_pnt
       list_pnt => list_pnt%next
+      nullify(list_pnt%next)
+c      nullify(list_pnt%op)
       allocate (list_pnt%op)
      
       name = 'TBAR'

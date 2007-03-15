@@ -107,10 +107,6 @@
       integer ::
      &     isumm1
 
-c dbg
-c      print *,'recursion, nsum = ',nsum
-c      print *,'ipart = ',ipart(1:nsum)
-c dbg
       if (nsum.eq.2) then
 
         ! n.eq.2 is easy:
@@ -143,9 +139,6 @@ c dbg
               if (.not.succ) exit
             end do
           end if
-c dbg
-c          if (succ) print *,'ipart(gen) = ',ipart(1:nsum)
-c dbg
         end if
 
       else

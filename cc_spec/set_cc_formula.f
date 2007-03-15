@@ -40,7 +40,7 @@
       ! is last entry already in use?
       if (associated(list_pnt%fhand)) then
         allocate(list_pnt%next)
-        list_pnt%next%prev = list_pnt
+        list_pnt%next%prev => list_pnt
         list_pnt => form_list%next
       end if
       allocate (list_pnt%fhand)

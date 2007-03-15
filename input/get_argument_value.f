@@ -51,6 +51,8 @@
       iargcount_target = 1
       if (present(argcount)) iargcount_target = argcount
 
+      succ = .false.
+
       ! try default instead
       if ((.not.associated(curkey).or..not.associated(curkey%arg_h))
      &     .and.iargcount_target.eq.1) then
