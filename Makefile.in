@@ -1,0 +1,107 @@
+#
+# Written by Jonas Juselius <jonas@iki.fi> Tue Dec  4 13:38:16 EET 2001
+#
+
+srcdir:=@srcdir@
+top_srcdir:=@top_srcdir@
+
+include $(top_srcdir)/make.config
+
+libdirs:= crout baserout memman fileutil input operators formula cc_spec
+progdirs:=gecco
+
+dirs:=$(libdirs) $(progdirs)
+
+.PHONY: all lib prog clean distclean 
+
+all: lib prog
+
+lib:
+ifneq ($(libdirs),)
+	@set -e; \
+       for i in $(libdirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i all || exit 1; \
+			  fi; \
+			fi; \
+       done; 
+endif
+
+prog:
+ifneq ($(progdirs),)
+	@set -e; \
+   for i in $(progdirs); do \
+		if [ -d $$i ]; then \
+		  if [ -f $$i/Makefile ]; then \
+			$(MAKE) -C $$i all || exit 1; \
+		  fi; \
+		fi; \
+   done;
+endif
+
+clean:
+ifneq ($(dirs),)
+	@set -e; \
+	 for i in $(dirs); do \
+		if [ -d $$i ]; then \
+		  if [ -f $$i/Makefile ]; then \
+			$(MAKE) -C $$i $@ || exit 1; \
+		  fi; \
+		fi; \
+	 done; 
+endif
+
+realclean:
+ifneq ($(dirs),)
+	@set -e; \
+	for i in $(dirs); do \
+		if [ -d $$i ]; then \
+		  if [ -f $$i/Makefile ]; then \
+			$(MAKE) -C $$i $@ || exit 1; \
+		  fi; \
+		fi; \
+	done; 
+endif
+
+distclean: realclean
+	-rm config.h config.log config.status Config.mk Makefile
+
+install:
+ifneq ($(dirs),)
+	@set -e; \
+		for i in $(dirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i $@ || exit 1; \
+			  fi; \
+			fi; \
+		done; 
+endif
+
+install_bin:
+	@$(mkinstalldirs) $(bindir)
+ifneq ($(dirs),)
+	@set -e; \
+		for i in $(dirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i $@ || exit 1; \
+			  fi; \
+			fi; \
+		done; 
+endif
+	
+install_lib:
+	@$(mkinstalldirs) $(libdir)
+ifneq ($(dirs),)
+	@set -e; \
+		for i in $(dirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i $@ || exit 1; \
+			  fi; \
+			fi; \
+		done; 
+endif
+

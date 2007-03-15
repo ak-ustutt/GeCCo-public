@@ -1,0 +1,266 @@
+*----------------------------------------------------------------------*
+*     subroutines to generate derivatives of the formula for CC,
+*     e.g. vector function, jacobi-transforms
+*     written by andreas, sept. 2006
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+      subroutine cc_gs_formula(ffccen,ffccvf,ffccvfopt,
+     &     ffcclag,uset1traf,
+     &     n_cc_ops,cc_ops,idxham,idxlag,idxtop,idxhht,idxomg,
+     &     cc_strinfo,ihpvgas,ngas,nsym)
+*----------------------------------------------------------------------*
+*     generate vector function as derivative of the lagrangian wrt
+*     lagrange multiplier (returned on file ffccvf)
+*     optimize formula in the following steps
+*      a) recognize T1-transformed H contributions (if uset1traf==.true.)
+*      b) get optimal factorization of contractions
+*     returned on ffccvfopt
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      integer, parameter ::
+     &     ntest = 100
+
+      include 'opdim.inc'
+      include 'stdunit.inc'
+      include 'def_filinf.inc'
+      include 'def_operator.inc'
+      include 'def_graph.inc'
+      include 'def_strinfo.inc'
+      include 'def_contraction.inc'
+      include 'ifc_ioccfunc.inc'
+
+      character*16, parameter ::
+     &     ffscr_name = 'formscr.fml'
+
+      logical, intent(in) ::
+     &     uset1traf
+      type(filinf), intent(in) ::
+     &     ffccen, ffcclag, ffccvf, ffccvfopt
+      integer, intent(in) ::
+     &     n_cc_ops,ngas,ihpvgas(ngas),nsym,
+     &     idxham,idxhht,idxlag,idxtop,idxomg
+      type(operator), intent(inout) ::
+     &     cc_ops(n_cc_ops)
+      type(strinfo), intent(in) ::
+     &     cc_strinfo
+
+      type(contraction) ::
+     &     contr, conder
+      type(contraction),allocatable ::
+     &     conbuf(:)
+
+      integer ::
+     &     lulag, luccen, luvf, luvfopt, luscr,
+     &     maxvtx, maxarc, maxfac,
+     &     idx_res, nterms, nder, idx
+
+      real(8) ::
+     &     cpu0, wall0, cpu, wall
+
+      logical, external ::
+     &     rd_contr
+      integer, external ::
+     &     iopen_nus
+
+cc dbg
+c      integer ::
+c     &     iperm(6), idx
+c      logical, external ::
+c     &     next_perm_rec,
+c     &     next_perm_iter
+c      
+c      real(8) ::
+c     &     cpu, wall, cpu0, wall0
+c
+c      write(6,*) 'testing next_perm'
+c      iperm(1:6) = (/1,2,3,4,5,6/)
+c
+c      call atim(cpu0,wall0)
+c      write(6,*) 'start: ',iperm(1:4)
+c      idx = 1
+c      do while(next_perm_rec(iperm,4))
+c        idx = idx+1
+c        if (idx.gt.1000) exit
+c        write(6,*) '>>> ',idx,' :  ',iperm(1:4)
+c      end do
+c      call atim(cpu,wall)
+c      call prtim(6,'recursive',cpu-cpu0,wall-wall0)
+c      
+c
+c      write(6,*) 'testing next_perm_iter'
+c      iperm(1:6) = (/1,2,3,4,5,6/)
+c
+c      call atim(cpu0,wall0)
+c      write(6,*) 'start: ',iperm(1:4)
+c      idx = 1
+c      do while(next_perm_iter(iperm,4))
+c        idx = idx+1
+c        if (idx.gt.1000) exit
+c        write(6,*) '>>> ',idx,' :  ',iperm(1:4)
+c      end do
+c      call atim(cpu,wall)
+c
+c      call prtim(6,'iterative',cpu-cpu0,wall-wall0)
+cc      iperm(1:5) = (/1,2,3,4,5/)
+c
+cc      write(6,*) 'start: ',iperm(1:5)
+cc      idx = 1
+cc      do while(next_perm(iperm,5))
+cc        idx = idx+1
+cc        if (idx.gt.1000) exit
+cc        write(6,*) '>>> ',idx,' :  ',iperm(1:5)
+cc      end do
+c      
+c      stop 'test 3'
+cc dbg
+
+      call atim(cpu0,wall0)
+
+      ! initiate omega-intermediate
+      cc_ops(idxomg) = cc_ops(idxlag) ! use Lagrange as template ...
+      cc_ops(idxomg)%dagger = .false. ! ... but not daggered
+      cc_ops(idxomg)%name = 'Omg     '
+
+      ! we can have at most 6 vertices
+      maxvtx = 6
+      ! we can have at most 8 contraction arcs between operators
+      maxarc = 8
+      ! and at most as many contraction steps
+      ! actually, I am quite sure that at most 5 steps could happen
+      ! (for the evaluation of the Lagrangian, which is never done
+      ! this way) and 4 in any real case
+      maxfac = 8
+      ! allocate space for expanded contractions:
+      ! maximum 1 derivative contraction arises, as we are linear in L      
+      allocate(contr%vertex(maxvtx),contr%arc(maxarc),
+     &         contr%inffac(4,maxfac),
+     &         conder%vertex(maxvtx),conder%arc(maxarc),
+     &         conder%inffac(4,maxfac))
+      do idx = 1, maxarc
+        allocate(contr%arc(idx)%occ_cnt(ngastp,2),
+     &           conder%arc(idx)%occ_cnt(ngastp,2))
+      end do
+
+      call file_open(ffcclag)
+      call file_open(ffccen)
+      call file_open(ffccvf)
+      lulag = ffcclag%unit
+      rewind lulag
+      luccen = ffccen%unit
+      rewind luccen
+      luvf = ffccvf%unit
+      rewind luvf
+
+      ! overread trailing records
+      read(lulag) ! name
+      read(lulag) ! result structure
+
+      ! header for vector function file
+      write(luvf) 'CC vector function'
+      write(luvf) idxomg,cc_ops(idxomg)%n_occ_cls,maxvtx,maxarc,maxfac
+
+      ! header for energy file
+      write(luccen) 'CC energy'
+      write(luccen) 0, 0,maxvtx,maxarc,maxfac
+
+      ! loop over fomula file and make derivative
+      idx_res = 0
+      nterms = 0 ! count terms
+      do while(rd_contr(lulag,contr,idx_res))
+        
+        call form_deriv(conder,nder,contr,cc_ops,idxlag,0,idxomg)
+        ! no derivative term -> save this term for CC-energy
+        if (nder.eq.0) then
+          if (ntest.ge.100) write(6,*) 'term written to CC-energy'
+          ! add factorization info
+          call form_fact(contr,cc_ops,cc_strinfo,ihpvgas,ngas,nsym)
+c dbg
+c          print *,'factorized contraction'
+c          call prt_contr(luout,contr,cc_ops)
+c dbg
+          call wrt_contr(luccen,contr)
+        else
+          if (nder.gt.1) stop 'unexpected'
+          nterms = nterms+1
+          call wrt_contr(luvf,conder)
+        end if
+
+      end do
+c dbg
+      rewind luccen
+      print *,'contents of energy file:'
+      read(luccen)
+      read(luccen)
+      do while(rd_contr(luccen,contr,idx_res))
+        call prt_contr(luout,contr,cc_ops)
+      end do
+c dbg
+
+      call file_close_keep(ffcclag)
+
+      ! loop over raw derivative file and identify Hhat
+      if (uset1traf) then
+        stop 'implement me'
+      else
+        luscr = luvf
+      end if
+
+      call file_open(ffccvfopt)
+      luvfopt = ffccvfopt%unit
+      rewind luvfopt
+
+      rewind luscr
+      ! read over header
+      read(luscr)
+      read(luscr)
+
+      ! write new header
+      write(luvfopt)
+     &     'CC vector function (optimized)'
+      write(luvfopt)
+     &     idxomg,cc_ops(idxomg)%n_occ_cls,maxvtx,maxarc,maxfac
+
+      idx_res = idxomg
+c dbg
+      print *,'rereading unit ',luscr
+c dbg
+      do while(rd_contr(luscr,contr,idx_res))
+
+c dbg
+        print *,'new record '
+c dbg
+c dbg -- skip to interesting case
+c        if (contr%nvtx.lt.4) cycle
+c dbg        
+c dbg
+c        print *,'factorizing:'
+c        call prt_contr(6,contr,cc_ops)
+c dbg
+        call form_fact(contr,cc_ops,cc_strinfo,ihpvgas,ngas,nsym)
+        call wrt_contr(luvfopt,contr)
+      
+      end do
+
+      do idx = 1, maxarc
+        deallocate(contr%arc(idx)%occ_cnt,conder%arc(idx)%occ_cnt)
+      end do
+      deallocate(contr%vertex,contr%arc,
+     &         contr%inffac,
+     &         conder%vertex,conder%arc,
+     &         conder%inffac)
+      
+      call file_close_keep(ffccvf)
+      call file_close_keep(ffccvfopt)
+      call file_close_keep(ffccen)
+
+      call atim(cpu,wall)
+
+      call prtim(6,'CC vector function',cpu-cpu0,wall-wall0)
+
+c dbg
+c      stop 'form_fact bug fixed?'
+c dbg
+      return
+      end

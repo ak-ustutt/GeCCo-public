@@ -1,0 +1,38 @@
+      interface
+        function iocc_xdn(ixdn,iocc)
+        include 'opdim.h'
+        integer ::
+     &     iocc_xdn(ngastp,2)
+        integer, intent(in) ::
+     &     ixdn,
+     &     iocc(ngastp,2)
+        end function iocc_xdn
+
+        function iocc_overlap(iocc,dagi,jocc,dagj)
+        include 'opdim.h'
+        integer ::
+     &       iocc_overlap(ngastp,2)
+        logical, intent(in) ::
+     &       dagi, dagj
+        integer, intent(in) ::
+     &       iocc(ngastp,2), jocc(ngastp,2)
+        end function iocc_overlap
+
+        function iocc_add(ifac,iocc,dagi,jfac,jocc,dagj)
+        include 'opdim.h'
+        integer :: iocc_add(ngastp,2)  
+        logical, intent(in) ::
+     &       dagi, dagj
+        integer, intent(in) ::
+     &       ifac, jfac,
+     &       iocc(ngastp,2), jocc(ngastp,2)
+        end function iocc_add
+
+        function iocc_dagger(iocc_in)
+        include 'opdim.h'
+        integer ::
+     &       iocc_dagger(ngastp,2)
+        integer, intent(in) ::
+     &       iocc_in(ngastp,2)
+        end function iocc_dagger
+      end interface

@@ -1,0 +1,43 @@
+      subroutine set_keywords()
+
+      use parse_input
+      implicit none
+
+      include 'stdunit.h'
+
+      integer, parameter ::
+     &     ntest = 100
+
+      integer ::
+     &     iprint
+
+      iprint = max(ntest,iprlvl)
+
+      call keyword_init()
+
+      call keyword_add('general')
+      call argument_add('title',context='general',type=vtyp_str,
+     &     len=256)
+      call argument_add('memmax',context='general',type=vtyp_int,
+     &     len=1,idef=(/50 000 000/))
+
+      call keyword_add('orb_space')
+      call keyword_add('shell',context='orb_space')
+      call argument_add('def','orb_space.shell',type=vtyp_int,len=8)
+      call argument_add('type','orb_space.shell',type=vtyp_str,len=8)
+
+      call keyword_add('method',required=.true.)
+      call keyword_add('CC',context='method')
+      call argument_add('mxexc','method.CC',type=vtyp_int,idef=(/2/))
+      call argument_add('mnexc','method.CC',type=vtyp_int,idef=(/1/))
+
+      call keyword_add('calculate')
+      call keyword_add('solve',context='calculate')
+      call argument_add('maxiter','calculate.solve',type=vtyp_int)
+      call argument_add('method','calculate.solve',type=vtyp_str,len=8)
+
+      if (iprint.ge.50)
+     &     call keyword_list(luout,keyword_root,show_args=.true.)
+
+      return
+      end
