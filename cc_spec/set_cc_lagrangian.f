@@ -92,9 +92,9 @@
       maxarc = 8
       ! for convenience, we allocate the maximum number here
       allocate(contr%vertex(maxvtx),contr%arc(maxarc))
-      do idx = 1, maxarc
-        allocate(contr%arc(idx)%occ_cnt(ngastp,2))
-      end do
+c      do idx = 1, maxarc
+c        allocate(contr%arc(idx)%occ_cnt(ngastp,2))
+c      end do
 
       ! get maximum excitation level of T-operators
       maxexc = maxxlvl_op(ops(idxtop))

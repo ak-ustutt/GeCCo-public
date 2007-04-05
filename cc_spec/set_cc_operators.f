@@ -95,13 +95,36 @@ c      nullify(list_pnt%op)
       list_pnt%next%prev => list_pnt
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
-c      nullify(list_pnt%op)
       allocate (list_pnt%op)
      
       name = 'TBAR'
       ! we define an excitation operator to ensure same
       ! storage sequence as for T
       dagger = .true.  ! but we consider the conjugate
+      absym = 0
+      casym = 0
+      gamma = 1
+      s2 = 0
+      ms = 0
+      ! min_rank and max_rank are still set
+      ncadiff = 0
+      call set_hpvx_and_restr_for_xop()
+
+      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      ! new entry: the CC residual OMG
+      nops = nops+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev => list_pnt
+      list_pnt => list_pnt%next
+      nullify(list_pnt%next)
+      allocate (list_pnt%op)
+     
+      name = 'OMG'
+      ! same as T
+      dagger = .false.
       absym = 0
       casym = 0
       gamma = 1

@@ -10,6 +10,8 @@
       include 'def_operator_list.h'
       include 'def_filinf.h'
       include 'def_file_list.h'
+      include 'def_action.h'
+      include 'def_action_list.h'
 
       type(orbinf), intent(inout) ::
      &     orb_info
@@ -18,10 +20,12 @@
      &     op_list
       type(file_list), pointer ::
      &     form_list
+      type(action_list), pointer ::
+     &     act_list
       type(operator), pointer ::
      &     ops(:)
       integer ::
-     &     ifree, nops, nform
+     &     ifree, nops, nform, nactions
 
       ifree = mem_setmark('do_calc')
       
@@ -45,8 +49,20 @@
       nullify(form_list%prev)
       nullify(form_list%next)
       nform = 0
-      ! set up formulae
+      ! set up (basic) formulae
       call set_formulae(form_list,nform,op_list,nops)
+      if (nform.eq.0)
+     &     call quit(0,'do_calc','no formulae/method defined?')
+
+      ifree = mem_setmark('action def')
+      allocate(act_list)
+      nullify(act_list%act)
+      nullify(act_list%prev)
+      nullify(act_list%next)
+      nactions = 0
+      ! set up actions
+      call set_actions(act_list,nactions,
+     &     form_list,nform,op_list,nops)
 
       ! set up graphs
 c      call set_graphs_for_ops()

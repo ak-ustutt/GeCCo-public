@@ -15,7 +15,9 @@
       include 'def_operator_list.h'
 
       character, parameter ::
-     &     name_lagrange*14 = 'cclagrange.fml'
+     &     name_lagrange*14 = 'cclagrange.fml',
+     &     name_ccenergy*12 = 'ccenergy.fml',
+     &     name_vectfunc*14 = 'ccvectfunc.fml'
 
       type(file_list), intent(inout), target ::
      &     form_list
@@ -30,7 +32,7 @@
      &     list_pnt
 
       integer ::
-     &     idxham, idxtop, idxlag
+     &     idxham, idxtop, idxlag, idxomg
 
       ! advance to end of operator list:
       list_pnt => form_list
@@ -49,11 +51,36 @@ c      idxham = idx_oplist()
       idxham = 1
       idxtop = 2
       idxlag = 3
+      idxomg = 4
 
       ! set up Lagrangian
+      nform = nform+1
       call file_init(list_pnt%fhand,name_lagrange,ftyp_sq_unf,0)
       call set_cc_lagrangian(list_pnt%fhand,nops,ops,
      &     idxham,idxlag,idxtop)
+
+      ! set up CC-energy 
+      ! (part of Lagragian that does not depend on TBAR)
+      nform = nform+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev => list_pnt
+      list_pnt => list_pnt%next
+      nullify(list_pnt%next)
+      allocate(list_pnt%fhand)
+      call file_init(list_pnt%fhand,name_ccenergy,ftyp_sq_unf,0)
+      call form_indep(list_pnt%fhand,list_pnt%prev%fhand,
+     &     idxlag,ops,nops)
+
+      ! set up CC-residual (=vector function)
+      nform = nform+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev => list_pnt
+      list_pnt => list_pnt%next
+      nullify(list_pnt%next)
+      allocate(list_pnt%fhand)
+      call file_init(list_pnt%fhand,name_vectfunc,ftyp_sq_unf,0)
+      call form_deriv(list_pnt%fhand,list_pnt%prev%prev%fhand,
+     &     idxlag,0,idxomg,ops,nops)
 
       return
       end

@@ -1,7 +1,11 @@
 *----------------------------------------------------------------------*
-      subroutine set_formulae(form_list,nform,op_list,nops)
+      subroutine set_actions(act_list,nactions,
+     &                       form_list,nform,op_list,nops)
 *----------------------------------------------------------------------*
-*     driver routine for setting up formula files
+*     according to the input requests, set up the necessary steps,
+*     e.g. import of integrals, solve ground state equations, solve
+*     further equations .... etc.
+*     
 *----------------------------------------------------------------------*
       implicit none
       include 'stdunit.h'
@@ -10,7 +14,13 @@
       include 'def_operator_list.h'
       include 'def_filinf.h'
       include 'def_file_list.h'
+      include 'def_action.h'
+      include 'def_action_list.h'
 
+      type(action_list), intent(inout) ::
+     &     act_list
+      integer, intent(out) ::
+     &     nactions
       type(file_list), intent(in) ::
      &     form_list
       integer, intent(inout) ::
@@ -22,17 +32,17 @@
 
       type(operator), pointer ::
      &     ops(:)
+      type(filinf), pointer ::
+     &     fform(:)
 
-      ! set up pointer array for operators, which is more
-      ! convenient than a chained list
+      ! set up pointer arrays for operators and formulae
       allocate(ops(nops))
       call op_list2arr(op_list,ops,nops)
-
-      if (is_keyword_set('method.CC').gt.0) then
-        call set_cc_formula(form_list,nform,ops,nops)
-      end if
-
+      allocate(fform(nops))
+      call file_list2arr(form_list,fform,nform)
+      
       deallocate(ops)
+      deallocate(fform)
 
       return
-      end
+      end 

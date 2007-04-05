@@ -1,9 +1,10 @@
+! need to include before: opdim.h      
       type cntr_arc
 
          integer ::
      &      link(2)   ! indices of operators in contraction list
-         integer, pointer ::
-     &      occ_cnt(:,:)
+         integer ::
+     &      occ_cnt(ngastp,2)
                       ! occupation describing the contraction
                       ! convention: V1(C)V2(C^+)
       end type cntr_arc
@@ -29,7 +30,10 @@
         integer ::
      &       nvtx,     ! number of vertices (=operators)
      &       narc,     ! number of arcs (=interaction lines/raw contractions)
-     &       nfac      ! number of factors (factorization info)
+     &       nfac,     ! number of factors (factorization info)
+     &       mxvtx,    ! current sizes of subarrays
+     &       mxarc,    ! current sizes of subarrays
+     &       mxfac     ! current sizes of subarrays
 
         type(cntr_vtx), pointer ::
      &       vertex(:) ! description of vertices
