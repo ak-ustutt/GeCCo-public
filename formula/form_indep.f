@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine form_indep(ffoutput,ffinput,
+      subroutine form_indep(ffoutput,ffinput,name_out,
      &                      idxop,
      &                      ops,nops)
 *----------------------------------------------------------------------*
@@ -21,6 +21,8 @@
       integer, parameter ::
      &     ntest = 100
 
+      character, intent(in) ::
+     &     name_out*(*)
       type(filinf), intent(in) ::
      &     ffinput, ffoutput
       integer, intent(in) ::
@@ -56,7 +58,7 @@
       read(luinput)
       read(luinput) idum,idxinp
 
-      write(luoutput)
+      write(luoutput) name_out
       write(luoutput) idum,idxinp
 
       ! signal, that still nothing is allocated

@@ -40,9 +40,20 @@
       call op_list2arr(op_list,ops,nops)
       allocate(fform(nops))
       call file_list2arr(form_list,fform,nform)
-      
+
+      if (is_keyword_set('method.CC').gt.0) then
+        call add_cc_default_actions(act_list,nactions,
+     &                              ops,nops,
+     &                              fform,nform)
+      end if
+
       deallocate(ops)
       deallocate(fform)
+
+c dbg
+      write(luout,*) 'at end of set_actions:'
+      call print_action_list(act_list)
+c dbg      
 
       return
       end 

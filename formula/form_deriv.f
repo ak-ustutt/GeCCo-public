@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine form_deriv(ffderiv,ffinput,
+      subroutine form_deriv(ffderiv,ffinput,name_deriv,
      &                      idxder,idxmlt,idxres,
      &                      ops,nops)
 *----------------------------------------------------------------------*
@@ -23,6 +23,8 @@
       include 'def_contraction.h'
       include 'def_contraction_list.h'
 
+      character, intent(in) ::
+     &     name_deriv*(*)
       type(filinf), intent(in) ::
      &     ffinput, ffderiv
       integer, intent(in) ::
@@ -39,7 +41,7 @@
 
       integer ::
      &     luinput, luderiv,
-     &     nterms, nder, idx, idum, idxinp
+     &     nterms, nder, idx, idum, idxinp, len
 
       logical, external ::
      &     rd_contr
@@ -53,6 +55,10 @@
 
       read(luinput)
       read(luinput) idum,idxinp
+
+      len = len_trim(name_deriv)
+      write(luderiv) len,name_deriv
+      write(luderiv) idum,idxinp
 
       ! signal, that still nothing is allocated
       contr%mxvtx = 0

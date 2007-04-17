@@ -71,4 +71,10 @@
      &       ipart(2,nsum)
         end function
 
+        logical function list_cmp(list1,list2,nel)
+        implicit none
+        integer, intent(in) ::
+     &     nel, list1(nel), list2(nel)        
+        end function
+
       end interface

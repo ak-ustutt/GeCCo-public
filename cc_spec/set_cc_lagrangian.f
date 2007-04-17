@@ -17,6 +17,8 @@
 
       integer, parameter ::
      &     ntest = 100
+      character, parameter ::
+     &     name_string*13='CC Lagrangian'
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -37,7 +39,7 @@
 
       ! local variables
       logical ::
-     &     init_pn, init_pc
+     &     init_pn, init_pc, len
 
       type(contraction) ::
      &     contr
@@ -106,7 +108,8 @@ c      end do
       rewind lucclag
 
       ! first record: a name
-      write(lucclag) 'CC Lagrangian'
+      len = len_trim(name_string)
+      write(lucclag) len,name_string
       ! second record: structure of result 
       !  -- number of occupation classes and ID of operator describing
       !   the structure of the result (0 if result is a scalar)

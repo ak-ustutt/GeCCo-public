@@ -15,7 +15,9 @@
      &       idxopdef_in(:), idxopdef_out(:),
      &       idxopfile_in(:,:), idxopfile_out(:,:)
         integer ::
-     &       idx_formula
+     &       nform
+        integer, allocatable ::
+     &       idx_formula(:)
         type(filinf) ::
      &       fform_opt
       end type action

@@ -18,6 +18,8 @@
      &     name_lagrange*14 = 'cclagrange.fml',
      &     name_ccenergy*12 = 'ccenergy.fml',
      &     name_vectfunc*14 = 'ccvectfunc.fml'
+     &     name_ccen*12 = 'CC energy',
+     &     name_resi*14 = 'CC residual'
 
       type(file_list), intent(inout), target ::
      &     form_list
@@ -68,7 +70,7 @@ c      idxham = idx_oplist()
       nullify(list_pnt%next)
       allocate(list_pnt%fhand)
       call file_init(list_pnt%fhand,name_ccenergy,ftyp_sq_unf,0)
-      call form_indep(list_pnt%fhand,list_pnt%prev%fhand,
+      call form_indep(list_pnt%fhand,list_pnt%prev%fhand,name_ccen,
      &     idxlag,ops,nops)
 
       ! set up CC-residual (=vector function)
@@ -79,7 +81,7 @@ c      idxham = idx_oplist()
       nullify(list_pnt%next)
       allocate(list_pnt%fhand)
       call file_init(list_pnt%fhand,name_vectfunc,ftyp_sq_unf,0)
-      call form_deriv(list_pnt%fhand,list_pnt%prev%prev%fhand,
+      call form_deriv(list_pnt%fhand,list_pnt%prev%prev%fhand,name_resi,
      &     idxlag,0,idxomg,ops,nops)
 
       return
