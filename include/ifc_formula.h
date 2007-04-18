@@ -1,29 +1,30 @@
       interface
 
-      subroutine add_action(act_list,nactions,
-     &     action_type,nop_in,nop_out,
-     &     idxopdef_in,idxopdef_out,
-     &     idxopfile_in,idxopfile_out,
-     &     nform,
-     &     idx_formula)
-      implicit none
-      include 'stdunit.h'
-      include 'def_filinf.h'
-      include 'def_action.h'
-      include 'def_action_list.h'
-      type(action_list), intent(inout), target ::
-     &     act_list
-      integer, intent(inout) ::
-     &     nactions
-      integer, intent(in) ::
-     &     action_type
-      integer, intent(in), optional ::
-     &     nop_in,nop_out,
-     &     idxopdef_in(*),idxopdef_out(*),
-     &     idxopfile_in(2,*),idxopfile_out(2,*),
-     &     nform,
-     &     idx_formula(*)
-      end subroutine
+c deactivated as currently problems with intel compiler occur
+c      subroutine add_action(act_list,nactions,
+c     &     action_type,nop_in,nop_out,
+c     &     idxopdef_in,idxopdef_out,
+c     &     idxopfile_in,idxopfile_out,
+c     &     nform,
+c     &     idx_formula)
+c      implicit none
+c      include 'stdunit.h'
+c      include 'def_filinf.h'
+c      include 'def_action.h'
+c      include 'def_action_list.h'
+c      type(action_list), intent(inout), target ::
+c     &     act_list
+c      integer, intent(inout) ::
+c     &     nactions
+c      integer, intent(in) ::
+c     &     action_type
+c      integer, intent(in), optional ::
+c     &     nop_in,nop_out,
+c     &     idxopdef_in(*),idxopdef_out(*),
+c     &     idxopfile_in(2,*),idxopfile_out(2,*),
+c     &     nform,
+c     &     idx_formula(*)
+c      end subroutine
 
 
       end interface
