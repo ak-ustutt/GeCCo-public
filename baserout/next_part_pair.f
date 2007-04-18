@@ -36,8 +36,8 @@
         write(6,*) '=========================='
         write(6,*) ' this is next_part_pair'
         write(6,*) '=========================='
-        write(6,*) '  inum = /',inum(1),'\'
-        write(6,*) '         \',inum(2),'/'
+        write(6,*) '  inum = /',inum(1),'\\'
+        write(6,*) '         \\',inum(2),'/'
         write(6,*) '  nsum,inummin,inummax: ',
      &                nsum,inummin,inummax
         if (init) then

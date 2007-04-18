@@ -2,7 +2,7 @@
       use memman
       implicit none
 
-      integer, pointer, intent(out) ::
+      integer, pointer ::
      &     iarr(:)
       integer, intent(in) ::
      &     nalloc

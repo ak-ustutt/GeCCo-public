@@ -169,9 +169,9 @@
       implicit none
       include 'stdunit.h'
 
-      integer, pointer, intent(out), optional ::
+      integer, pointer, optional ::
      &     ipnt(:)
-      real(8), pointer, intent(out), optional ::
+      real(8), pointer, optional ::
      &     xpnt(:)
       integer, intent(in) ::
      &     type, nalloc
@@ -289,7 +289,7 @@
 
       character, intent(in), optional ::
      &     name*(*)
-      type(mem_section), pointer, intent(in), optional ::
+      type(mem_section), pointer, optional ::
      &     section
 
       type(mem_slice), pointer ::

@@ -1,8 +1,13 @@
 #!/bin/sh
 # eine kleine TURBOMOLE-Leihgabe
 
+# probably very inelegant way to keep strings limited:
+echo $2 | split -C60
+optstr=`cat xaa`
+rm xa*
+
 cmp=$1
-opt1=$2
+opt1=$optstr
 opt2=""
 opt3=""
 host=`hostname`
