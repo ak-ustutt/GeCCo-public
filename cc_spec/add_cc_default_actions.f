@@ -10,7 +10,7 @@
 
       include 'stdunit.h'
       include 'ifc_input.h'
-      include 'ifc_formula.h'
+c      include 'ifc_formula.h'
       include 'def_operator.h'
       include 'def_filinf.h'
       include 'def_action.h'
@@ -28,7 +28,7 @@
      &     ops(nops)
 
       integer ::
-     &     idxham, idxtop, idxccen, idxccrs
+     &     idxham, idxtop, idxccen, idxccrs, idum
       
 
       ! preliminary:
@@ -40,20 +40,18 @@
       
       ! import Hamiltonian
       call add_action(act_list,nactions,
-     &     iaction_import,nop_out=1,
-     &     idxopdef_out=(/idxham/),
-     &     idxopfile_out=(/(/idxham,1/)/)
+     &     iaction_import,0,1,
+     &     idum,(/idxham/),
+     &     idum,(/(/idxham,1/)/),
+     &     0,idum
      &     )
 
       ! solve ground-state equations
       call add_action(act_list,nactions,
-     &     iaction_solve_nleq,nop_in=1,nop_out=1,
-     &     idxopdef_in=(/idxham/),
-     &     idxopfile_in=(/(/idxham,1/)/),
-     &     idxopdef_out=(/idxtop/),
-     &     idxopfile_out=(/(/idxtop,1/)/),
-     &     nform=2,
-     &     idx_formula=(/idxccen,idxccrs/)
+     &     iaction_solve_nleq,1,1,
+     &     (/idxham/),(/idxtop/),
+     &     (/(/idxham,1/)/),(/(/idxtop,1/)/),
+     &     2,(/idxccen,idxccrs/)
      &     )
 
       return

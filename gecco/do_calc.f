@@ -12,6 +12,8 @@
       include 'def_file_list.h'
       include 'def_action.h'
       include 'def_action_list.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
 
       type(orbinf), intent(inout) ::
      &     orb_info
@@ -26,6 +28,8 @@
      &     ops(:)
       integer ::
      &     ifree, nops, nform, nactions
+      type(strinf), pointer ::
+     &     str_info
 
       ifree = mem_setmark('do_calc')
       
@@ -65,16 +69,18 @@
      &     form_list,nform,op_list,nops)
 
       ! set up graphs
-c      call set_graphs_for_ops()
+      ifree = mem_setmark('graph def')
+      allocate(str_info)
+      call set_graphs_for_ops(str_info,op_list,nops,orb_info)
       
       ! set up operator dimensions
 
-      ! optimize the formulae
 
-      ! loop over requests from current calculate block
+      ! loop over requested actions
 
         ! initialize operator matrix elements
       
+        ! optimize the formulae
         ! call the appropriate solver
       
 
