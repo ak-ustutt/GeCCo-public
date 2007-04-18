@@ -2,7 +2,7 @@
       use memman
       implicit none
 
-      real(8), pointer, intent(out) ::
+      real(8), pointer ::
      &     xarr(:)
       integer, intent(in) ::
      &     nalloc

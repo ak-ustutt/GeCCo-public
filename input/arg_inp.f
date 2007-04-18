@@ -17,6 +17,9 @@
       character ::
      &     argstr*256
 
+      integer, external ::
+     &     iargc
+
       l_exit = .false.
       l_infile = .false.
 
