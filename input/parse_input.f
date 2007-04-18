@@ -528,11 +528,14 @@ c      end function
      &     idx_split
 
       idx_split = index(context,'.',back=.true.)
-      call find_node(keyword_history,current_up,context(1:idx_split-1),
-     &     latest=.true.)
-c dbg
-      print *,'idx_split: ',idx_split
-c dbg
+      if (idx_split.le.0) then
+        call find_node(keyword_history,current_up,'',
+     &       latest=.true.)
+      else
+        call find_node(keyword_history,current_up,
+     &       context(1:idx_split-1),
+     &       latest=.true.)
+      end if
       if (.not.associated(current_up))
      &      call quit(1,'keyword_add_history',
      &     'unknown context "'//trim(context)//'"')
@@ -1108,9 +1111,6 @@ c        ipst = first_nonblank(line)
             else
               curkey => nxtkey
               call keyword_get_context(context,curkey)
-c dbg
-              print *,'context: ',trim(context)
-c dbg
               ! add node to keyword history
               call keyword_add_history(context)
 

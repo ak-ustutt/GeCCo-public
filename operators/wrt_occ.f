@@ -12,8 +12,8 @@
      &     fmt*3
 
       write(fmt,'(i1,a)') ngastp,'i3'
-      write(luout,'(x,"/",'//fmt//',"\")') iocc(1:ngastp,1)
-      write(luout,'(x,"\",'//fmt//',"/")') iocc(1:ngastp,2)
+      write(luout,'(x,"/",'//fmt//',"\\")') iocc(1:ngastp,1)
+      write(luout,'(x,"\\",'//fmt//',"/")') iocc(1:ngastp,2)
 
       return
       end
