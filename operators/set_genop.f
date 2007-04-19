@@ -159,7 +159,7 @@
                     ! set a/c rank as upper bound
                     idiff = - irestr(1,igas,ica,1)+irestr(2,igas,ica,1)
                     imaxr = min(irestr(2,igas,ica,1),
-     &                       op%ica_occ(ica,op%n_occ_cls))
+     &                    op%ihpvca_occ(hpvxgas(igas),ica,op%n_occ_cls))
                     op%igasca_restr(1,igas,ica,1,op%n_occ_cls) =
      &                   max(0,imaxr - idiff)
                     op%igasca_restr(2,igas,ica,1,op%n_occ_cls) =

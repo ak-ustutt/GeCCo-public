@@ -36,7 +36,7 @@
       ! set up orbital info
       call set_orbinf(orb_info,.true.)
 
-      ifree = mem_setmark('operator def')
+      ifree = mem_setmark('operator_def')
       allocate(op_list)
       nullify(op_list%op)
       nullify(op_list%prev)
@@ -47,7 +47,7 @@
       if (nops.eq.0)
      &     call quit(0,'do_calc','no operators defined?')
 
-      ifree = mem_setmark('formula def')
+      ifree = mem_setmark('formula_def')
       allocate(form_list)
       nullify(form_list%fhand)
       nullify(form_list%prev)
@@ -58,7 +58,7 @@
       if (nform.eq.0)
      &     call quit(0,'do_calc','no formulae/method defined?')
 
-      ifree = mem_setmark('action def')
+      ifree = mem_setmark('action_def')
       allocate(act_list)
       nullify(act_list%act)
       nullify(act_list%prev)
@@ -69,12 +69,13 @@
      &     form_list,nform,op_list,nops)
 
       ! set up graphs
-      ifree = mem_setmark('graph def')
+      ifree = mem_setmark('graph_def')
       allocate(str_info)
       call set_graphs_for_ops(str_info,op_list,nops,orb_info)
       
       ! set up operator dimensions
-
+      ifree = mem_setmark('operator_dim')
+      call set_dim_for_ops(op_list,nops,str_info,orb_info)
 
       ! loop over requested actions
 
