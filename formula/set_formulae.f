@@ -24,7 +24,7 @@
      &     ops(:)
 
       ! set up pointer array for operators, which is more
-      ! convenient than a chained list
+      ! convenient than a linked list
       allocate(ops(nops))
       call op_list2arr(op_list,ops,nops)
 

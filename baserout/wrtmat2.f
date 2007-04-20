@@ -1,6 +1,7 @@
       SUBROUTINE WRTMAT2(A,NROW,NCOL,NMROW,NMCOL)
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      include 'stdunit.h'
       DIMENSION A(NMROW,NMCOL)
 C
       ICOLMX=4
@@ -11,7 +12,7 @@ C
         ICOLH = MIN(ICOLL-1+ICOLMX,NCOL)
         WRITE(6,1000) (J,J=ICOLL,ICOLH)
         DO I=1,NROW
-          WRITE(6,1010) I,(A(I,J),J=ICOLL,ICOLH)
+          WRITE(luout,1010) I,(A(I,J),J=ICOLL,ICOLH)
         END DO
       END DO
 

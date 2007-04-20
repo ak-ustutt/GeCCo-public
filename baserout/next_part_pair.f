@@ -1,4 +1,3 @@
-
 *----------------------------------------------------------------------*
       logical function next_part_pair(init,restrict,ipart,
      &     inum,nsum,inummin,inummax)
@@ -12,6 +11,8 @@
 *----------------------------------------------------------------------*
 
       implicit none
+
+      include 'stdunit.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -33,19 +34,19 @@
      &     next_part_number
 
       if (ntest.ge.100) then
-        write(6,*) '=========================='
-        write(6,*) ' this is next_part_pair'
-        write(6,*) '=========================='
-        write(6,*) '  inum = /',inum(1),'\\'
-        write(6,*) '         \\',inum(2),'/'
-        write(6,*) '  nsum,inummin,inummax: ',
+        write(luout,*) '=========================='
+        write(luout,*) ' this is next_part_pair'
+        write(luout,*) '=========================='
+        write(luout,*) '  inum = /',inum(1),char(92)
+        write(luout,*) '        ',char(92),inum(2),'/'
+        write(luout,*) '  nsum,inummin,inummax: ',
      &                nsum,inummin,inummax
         if (init) then
-          write(6,*) 'initiating ...'
+          write(luout,*) 'initiating ...'
         else
-          write(6,*) 'partitioning on entry: '
-          write(6,'(2x,">",10i4)') ipart(1,1:nsum)
-          write(6,'(2x,">",10i4)') ipart(2,1:nsum)
+          write(luout,*) 'partitioning on entry: '
+          write(luout,'(2x,">",10i4)') ipart(1,1:nsum)
+          write(luout,'(2x,">",10i4)') ipart(2,1:nsum)
         end if
       end if
 
@@ -84,11 +85,11 @@
 
       if (ntest.ge.100) then
         if (succ) then
-          write(6,*) '  created partitioning: '
-          write(6,'(2x,">",10i4)') ipart(1,1:nsum)
-          write(6,'(2x,">",10i4)') ipart(2,1:nsum)
+          write(luout,*) '  created partitioning: '
+          write(luout,'(2x,">",10i4)') ipart(1,1:nsum)
+          write(luout,'(2x,">",10i4)') ipart(2,1:nsum)
         else
-          write(6,*) ' no (further) partitioning possible'
+          write(luout,*) ' no (further) partitioning possible'
         end if
       end if
 

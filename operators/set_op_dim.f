@@ -32,13 +32,14 @@
 *
 *     reset_on_rank: reset counter when going to new operator rank
 *           needed for Hamiltonian, as we treat 1- and 2-particle
-*           operators separately
+*           operators separately (obsolete for gecco-version)
 *
 *     andreas, end of 2006
 *
 *----------------------------------------------------------------------*
       implicit none
 
+      include 'stdunit.h'
       include 'opdim.h'
       include 'def_operator.h'
       include 'def_graph.h'
@@ -46,7 +47,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       
       integer, intent(in) ::
      &     ipass, ngam
@@ -71,10 +72,6 @@
      &     did, iexc, igam
       integer ::
      &     msd(ngastp,2), igamd(ngastp,2)
-c dbg
-c      integer ::
-c     &     msd2(ngastp,2), igamd2(ngastp,2)
-c dbg
 
       logical, external ::
      &     next_msgamdist
@@ -82,10 +79,10 @@ c dbg
      &     msgmdid
       
       if (ntest.gt.5) then
-        write(6,*) '============'
-        write(6,*) ' set_op_dim'
-        write(6,*) '============'
-        write(6,*) ' ipass = ',ipass
+        write(luout,*) '============'
+        write(luout,*) ' set_op_dim'
+        write(luout,*) '============'
+        write(luout,*) ' ipass = ',ipass
       end if
 
       idxstr = 0
@@ -94,8 +91,8 @@ c dbg
       occ_cls: do iocc_cls = 1, op%n_occ_cls
 
         if (ntest.ge.150) then
-          write(6,*) 'class: ',iocc_cls
-          call wrt_occ(6,op%ihpvca_occ(1,1,iocc_cls))
+          write(luout,*) 'class: ',iocc_cls
+          call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
         end if
 
         msmax = min(op%ica_occ(1,iocc_cls),op%ica_occ(2,iocc_cls))
@@ -221,10 +218,10 @@ c dbg
               idxdis = idxdis+1
               
               if (ntest.ge.150) then
-                write(6,*) 'current MS and IRREP distr:'
-                call wrt_occ(6,msd)
-                call wrt_occ(6,igamd)
-                write(6,*) 'accepted => current idxdis = ',idxdis
+                write(luout,*) 'current MS and IRREP distr:'
+                call wrt_occ(luout,msd)
+                call wrt_occ(luout,igamd)
+                write(luout,*) 'accepted => current idxdis = ',idxdis
               end if
 
               ! save current offset
@@ -234,30 +231,10 @@ c dbg
                 ! get ID of current distr
                 did = msgmdid(op%ihpvca_occ(1,1,iocc_cls),
      &                        msd,igamd,ngam)
-c dbg
-c                print *,'distribs:'
-c                write(6,'(2x,"/",3i3,"\/",3i3,"\")')
-c     &               msd(1:ngastp,1), igamd(1:ngastp,1)
-c                write(6,'(2x,"\",3i3,"/\",3i3,"/")')
-c     &               msd(1:ngastp,2), igamd(1:ngastp,2)
-c                print *,'did = ',did, ' recalc:'
-c                call did2msgm(msd2,igamd2,did,
-c     &               op%ihpvca_occ(1,1,iocc_cls),ngam)
-c                write(6,'(2x,"/",3i3,"\/",3i3,"\")')
-c     &               msd2(1:ngastp,1), igamd2(1:ngastp,1)
-c                write(6,'(2x,"\",3i3,"/\",3i3,"/")')
-c     &               msd2(1:ngastp,2), igamd2(1:ngastp,2)
-c dbg
                 ! save ID of current distr
                 op%off_op_gmox(iocc_cls)%
      &               did(idxdis,igama,idxmsa) = did
-c dbg
-c                print *,'did:',idxdis,igama,idxmsa,' => ',did
-c dbg                
               end if 
-
-              ! ?? I have moved the incr. of idxdis from 
-              ! here to before the prev. if-block ??
 
               ! increment string element index
               idxstr = idxstr+lencp*lenap*
@@ -276,7 +253,7 @@ c dbg
               end if
 
               if (ntest.ge.150) then
-                write(6,*) 'current block: ',lencp,lenap,
+                write(luout,*) 'current block: ',lencp,lenap,
      &                        lench,lenah,
      &                        lencv,lenav,' => ',lencp*lenap*
      &                        lench*lenah*
@@ -307,51 +284,51 @@ c dbg
 
       if (ntest.ge.100) then
         if (ipass.eq.1) then
-          write(6,*) 'total number of operator elements: ',op%len_op
-          write(6,*) 'length per occupation class:'
+          write(luout,*) 'total number of operator elements: ',op%len_op
+          write(luout,*) 'length per occupation class:'
           call iwrtma(op%len_op_occ,op%n_occ_cls,1,op%n_occ_cls,1)
-          write(6,*) 'offsets per occupation class:'
+          write(luout,*) 'offsets per occupation class:'
           call iwrtma(op%off_op_occ,op%n_occ_cls,1,op%n_occ_cls,1)
-          write(6,*) 'info per occupation class, IRREP, MS:'
+          write(luout,*) 'info per occupation class, IRREP, MS:'
           do iocc_cls = 1, op%n_occ_cls
             nexc = min(op%ica_occ(1,iocc_cls),
      &                 op%ica_occ(2,iocc_cls))
-            write(6,*) 'occ-class: ',iocc_cls
-            write(6,*) 'lengths:'
+            write(luout,*) 'occ-class: ',iocc_cls
+            write(luout,*) 'lengths:'
             call iwrtma(op%len_op_gmo(iocc_cls)%gam_ms,
      &           ngam,nexc+1,ngam,nexc+1)
-            write(6,*) 'offsets:'
+            write(luout,*) 'offsets:'
             call iwrtma(op%off_op_gmo(iocc_cls)%gam_ms,
      &           ngam,nexc+1,ngam,nexc+1)
           end do
         else
-          write(6,*) 'info per occupation class, DISTR, IRREP, MS:'
-          write(6,*) 'offsets:'
+          write(luout,*) 'info per occupation class, DISTR, IRREP, MS:'
+          write(luout,*) 'offsets:'
           do iocc_cls = 1, op%n_occ_cls
             nexc = min(op%ica_occ(1,iocc_cls),
      &                 op%ica_occ(2,iocc_cls))
-            write(6,*) 'occ-class: ',iocc_cls
-            call wrt_occ(6,op%ihpvca_occ(1,1,iocc_cls))
+            write(luout,*) 'occ-class: ',iocc_cls
+            call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
             do iexc = 1, nexc+1
               do igam = 1, ngam
                 if (op%off_op_gmox(iocc_cls)%ndis(igam,iexc).eq.0) cycle
-                write(6,*) iexc,igam,' -> ',
+                write(luout,*) iexc,igam,' -> ',
      &               op%off_op_gmox(iocc_cls)%
      &               d_gam_ms(1:op%off_op_gmox(iocc_cls)%
      &               ndis(igam,iexc),igam,iexc)
               end do
             end do            
           end do
-          write(6,*) 'distribution IDs:'
+          write(luout,*) 'distribution IDs:'
           do iocc_cls = 1, op%n_occ_cls
             nexc = min(op%ica_occ(1,iocc_cls),
      &                 op%ica_occ(2,iocc_cls))
-            write(6,*) 'occ-class: ',iocc_cls
-            call wrt_occ(6,op%ihpvca_occ(1,1,iocc_cls))
+            write(luout,*) 'occ-class: ',iocc_cls
+            call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
             do iexc = 1, nexc+1
               do igam = 1, ngam
                 if (op%off_op_gmox(iocc_cls)%ndis(igam,iexc).eq.0) cycle
-                write(6,*) iexc,igam,' -> ',
+                write(luout,*) iexc,igam,' -> ',
      &               op%off_op_gmox(iocc_cls)%
      &               did(1:op%off_op_gmox(iocc_cls)%
      &               ndis(igam,iexc),igam,iexc)

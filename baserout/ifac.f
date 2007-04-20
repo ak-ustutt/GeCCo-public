@@ -1,18 +1,27 @@
-      FUNCTION IFAC(N)
-C
-C N !
-C
-      IF( N .LT. 0 ) THEN
-       IFAC = 0
-       WRITE(6,*) ' WARNING FACULTY OF NEGATIVE NUMBER SET TO ZERO '
-      ELSE
-C
-       IFACN = 1
-       DO 100 K = 2,N
-        IFACN = IFACN * K
-  100  CONTINUE
-       IFAC = IFACN
-      END IF
-C
-      RETURN
-      END
+      integer function ifac(n)
+c
+c n !
+c
+      implicit none
+
+      include 'stdunit.h'
+
+      integer, intent(in) ::
+     &     n
+      integer ::
+     &     k
+
+      if( n .lt. 0 ) then
+        ifac = 0
+        write(luout,*)
+     &       ' warning: faculty of negative number set to zero'
+      else
+c
+        ifac = 1
+        do k = 2,n
+          ifac = ifac * k
+        end do
+      end if
+c
+      return
+      end

@@ -31,7 +31,8 @@
      &     current
 
       integer ::
-     &     iprint, ipass, iop, nexc, nsym, ndis, iocc_cls
+     &     iprint, ipass, iop, nexc, nsym, ndis, iocc_cls,
+     &     len, i
 
       iprint = max(ntest,iprlvl)
 
@@ -61,7 +62,7 @@
         end do
         ! set up length info for operator
         ipass = 1
-        call set_op_dim(ipass,.true.,current%op,str_info,nsym)
+        call set_op_dim(ipass,.false.,current%op,str_info,nsym)
 
         do iocc_cls = 1, current%op%n_occ_cls
           nexc = min(current%op%ica_occ(1,iocc_cls),
@@ -78,8 +79,14 @@
 
         ! extended length info for operator
         ipass = 2
-        call set_op_dim(ipass,.true.,current%op,str_info,nsym)
+        call set_op_dim(ipass,.false.,current%op,str_info,nsym)
 
+        if (iprint.gt.3) then
+          len = len_trim(current%op%name)
+          write(luout,*) trim(current%op%name),(' ',i=1,len_opname-len),
+     &         ' -- total length: ',current%op%len_op
+        end if
+        
         if (iop.lt.nops.and..not.associated(current%next))
      &       call quit(0,'set_dim_for_ops','buggy operator list (b)')
         if (iop.lt.nops) current => current%next

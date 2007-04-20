@@ -1,4 +1,3 @@
-
 *----------------------------------------------------------------------*
       integer function ipermfac(ilist,len,ordered)
 *----------------------------------------------------------------------*
@@ -12,8 +11,10 @@
       
       implicit none
 
+      include 'stdunit.h'
+
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       logical, intent(in) ::
      &     ordered
@@ -61,13 +62,13 @@
       if (nn.gt.1) ipermfac = ipermfac*ifac(nn)
 
       if (ntest.ge.100) then
-        write(6,*) '-------------------'
-        write(6,*) ' ipermfac speaking'
-        write(6,*) '-------------------'
-        write(6,*) ' list:      ',ilist(1:len)
+        write(luout,*) '-------------------'
+        write(luout,*) ' ipermfac speaking'
+        write(luout,*) '-------------------'
+        write(luout,*) ' list:      ',ilist(1:len)
         if (.not.ordered) 
-     &       write(6,*) ' list(reo): ',iscr(1:len)
-        write(6,*) ' ipermfac = ',ipermfac
+     &       write(luout,*) ' list(reo): ',iscr(1:len)
+        write(luout,*) ' ipermfac = ',ipermfac
       end if 
 
       return

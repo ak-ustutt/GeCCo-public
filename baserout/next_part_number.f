@@ -1,4 +1,3 @@
-
 *----------------------------------------------------------------------*
       logical function next_part_number(init,restrict,ipart,
      &     inum,nsum,inummin,inummax)
@@ -9,6 +8,8 @@
 *     if init==.true. the first possible partitioning is created
 *----------------------------------------------------------------------*
       implicit none
+
+      include 'stdunit.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -31,16 +32,16 @@
      &     ifndmax
 
       if (ntest.ge.100) then
-        write(6,*) '=========================='
-        write(6,*) ' this is next_part_number'
-        write(6,*) '=========================='
-        write(6,*) '  inum,nsum,inummin,inummax: ',
+        write(luout,*) '=========================='
+        write(luout,*) ' this is next_part_number'
+        write(luout,*) '=========================='
+        write(luout,*) '  inum,nsum,inummin,inummax: ',
      &                inum,nsum,inummin,inummax
         if (init) then
-          write(6,*) 'initiating ...'
+          write(luout,*) 'initiating ...'
         else
-          write(6,*) 'partitioning on entry: '
-          write(6,'(2x,">",10i4)') ipart(1:nsum)
+          write(luout,*) 'partitioning on entry: '
+          write(luout,'(2x,">",10i4)') ipart(1:nsum)
         end if
       end if
 
@@ -74,10 +75,10 @@
 
       if (ntest.ge.100) then
         if (succ) then
-          write(6,*) '  created partitioning: '
-          write(6,'(2x,">",10i4)') ipart(1:nsum)
+          write(luout,*) '  created partitioning: '
+          write(luout,'(2x,">",10i4)') ipart(1:nsum)
         else
-          write(6,*) ' no (further) partitioning possible'
+          write(luout,*) ' no (further) partitioning possible'
         end if
       end if
 
@@ -142,7 +143,7 @@
         end if
 
       else
-        stop 'illegal value of nsum'
+        call quit(1,'next_part_number','illegal value of nsum')
       end if
 
       nxtptn_rc = succ

@@ -1,0 +1,265 @@
+*----------------------------------------------------------------------*
+      subroutine import_h2_dalton(ffham,
+     &       hop,str_info,orb_info)
+*----------------------------------------------------------------------*
+*     read through MOTWOINT file and sort integral into operator file
+*     ffham; if memory is insufficient to keep the complete content of
+*     ffham, we resort to a batch algorithm
+*
+*     andreas, january 2007
+*
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'opdim.h'
+      include 'stdunit.h'
+      include 'def_operator.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
+      include 'def_orbinf.h'
+      include 'def_filinf.h'
+      include 'ifc_memman.h'
+      include 'multd2h.h'
+      include 'par_dalton.h'
+
+      integer, parameter ::
+     &     ntest = 100
+
+      integer, parameter ::
+     &     imsk16 = 65535,
+     &     imsk08 =   255
+      
+      type(operator), intent(in) ::
+     &     hop
+      type(strinf), intent(in) ::
+     &     str_info
+      type(orbinf), intent(in), target ::
+     &     orb_info
+      type(filinf), intent(in) ::
+     &     ffham
+
+      integer, pointer ::
+     &     ibuf(:)
+      real(8), pointer ::
+     &     xbuf(:), buffer(:)
+
+      type(filinf) ::
+     &     ffmo2
+      logical ::
+     &     closeit
+c     &     first, first_str
+      integer ::
+     &     lumo2, lbuf, itrlevel,
+     &     ip, iq, ir, is, len, idxpq, idxrs, ii, nstr,
+     &     int_disk, int_nonr, int_ordr, ioff, istr,
+     &     idxst, idxnd, nblk, nblkmax, ifree, luerr, nbuff,
+     &     len_op, idum, ipass
+
+      integer ::
+     &     idxprqs(4),idss(4),igam(4),igtp(4), ihpvseq(ngastp),
+     &     lexlscr(4,3), idxstr(5)
+
+      integer, pointer ::
+     &     ireost(:), ihpvgas(:), igamorb(:), igasorb(:), idx_gas(:)
+
+      real(8) ::
+     &     cpu0, sys0, wall0, cpu, sys, wall
+
+      call atim(cpu0,sys0,wall0)
+
+      call file_init(ffmo2,motwoint,ftyp_sq_unf,0)
+      call file_open(ffmo2)
+
+      lumo2 = ffmo2%unit
+      rewind lumo2
+
+      read(lumo2)
+      read(lumo2) lbuf, itrlevel
+
+      ifree = mem_setmark('import_h2')
+
+      ifree = mem_alloc_real(xbuf,lbuf,'mo2 xbuff')
+      ifree = mem_alloc_int(ibuf,lbuf,'mo2 ibuff')
+
+      if (ffham%unit.le.0) then
+        call file_open(ffham)
+        closeit = .true.
+      else
+        closeit = .false.
+      end if
+      
+      nblkmax = ifree/ffham%reclen
+      if (nblkmax.le.0) then
+        write(luout,*) 'free memory (words):  ',ifree
+        write(luout,*) 'block length (words): ',ffham%reclen
+        call quit(1,'get_h2','not even 1 record fits into memory?')
+      end if
+
+      ! not completely elegant yet
+      ! we should not imply the knowledge that the first 4 blocks
+      ! are one-electron integrals
+      len_op = hop%len_op-hop%off_op_occ(5)
+      nblk = min((len_op-1)/ffham%reclen + 1,nblkmax)
+
+      nbuff = min(len_op,nblk*ffham%reclen)
+
+      write(luout,*) 'number of passes in geth2: ',nblk
+      write(luout,'(x,a,f9.2,a)') 'size of buffer in geth2:   ',
+     &     dble(nbuff)/128d0/1024d0, 'Mb'
+
+      ifree = mem_alloc_real(buffer,nbuff,'h2sort_buff')
+
+      int_disk = 0
+      int_nonr = 0
+      int_ordr = 0
+
+      ! dereference structure components for efficiency
+      ireost => orb_info%ireost
+      ihpvgas => orb_info%ihpvgas
+      igamorb => orb_info%igamorb
+      igasorb => orb_info%igasorb
+      idx_gas => orb_info%idx_gas
+
+      ! define H/P/V sequence
+      ihpvseq(1:3) = (/2,3,1/)
+      ! init integrals
+c      x2int(1:hop%len_op-hop%off_op_occ(5)) = 0d0 
+
+      ! loop over batches of final integral file
+      ipass = 0
+      idxst = hop%off_op_occ(5) + 1
+      do while(idxst.le.len_op)
+        ipass = ipass+1
+        idxnd = min(len_op,idxst-1+nbuff)
+        ioff = -idxst+1
+        buffer(1:nbuff) = 0d0
+        
+        rewind lumo2
+        luerr = luout
+        call mollab(motwolab,lumo2,luerr)
+        do
+          read(lumo2) xbuf(1:lbuf),ibuf(1:lbuf),len
+          int_disk = int_disk+len
+          if (len.eq.0) cycle
+          if (len.lt.0) exit
+          ! get index (pq|rs)
+          ! rs is always the same within record
+          idxrs = iand(ishft(ibuf(1),-16),imsk16)
+          ir = iand(ishft(idxrs,-8),imsk08)
+          is = iand(idxrs,imsk08)
+          idxprqs(2) = ireost(ir)
+          idxprqs(4) = ireost(is)
+          igam(2) = igamorb(idxprqs(2))
+          igam(4) = igamorb(idxprqs(4))
+          idss(2) = igasorb(idxprqs(2))
+          idss(4) = igasorb(idxprqs(4))
+          igtp(2) = ihpvgas(idss(2))
+          igtp(4) = ihpvgas(idss(4))
+          idss(2) = idss(2)-idx_gas(igtp(2))+1
+          idss(4) = idss(4)-idx_gas(igtp(4))+1
+          do ii = 1, len
+            idxpq = iand(ibuf(ii),imsk16)
+            if (idxrs.gt.idxpq) cycle
+            int_nonr = int_nonr+1
+            ip = iand(ishft(idxpq,-8),imsk08)
+            iq = iand(ibuf(ii),imsk08)
+
+            idxprqs(1) = ireost(ip)
+            idxprqs(3) = ireost(iq)
+            igam(1) = igamorb(idxprqs(1))
+            igam(3) = igamorb(idxprqs(3))
+            idss(1) = igasorb(idxprqs(1))
+            idss(3) = igasorb(idxprqs(3))
+            igtp(1) = ihpvgas(idss(1))
+            igtp(3) = ihpvgas(idss(3))
+            idss(1) = idss(1)-idx_gas(igtp(1))+1
+            idss(3) = idss(3)-idx_gas(igtp(3))+1
+
+            ! generate string addresses of integrals 
+            ! spin-orbital basis (w/o PH-symmetry) to which
+            ! current (pq|rs) = <pr|qs> contributes
+            call idx42str(nstr,idxstr,
+     &           idxprqs,igam,idss,igtp,
+     &           orb_info,str_info,hop,ihpvseq)
+
+            ! store integral in buffer
+            do istr = 1, nstr
+              if (abs(idxstr(istr)).lt.idxst.or.
+     &            abs(idxstr(istr)).gt.idxnd) cycle
+              if (idxstr(istr).gt.0)
+     &             buffer(ioff+idxstr(istr)) =
+     &             buffer(ioff+idxstr(istr))+xbuf(ii)
+              if (idxstr(istr).lt.0)
+     &             buffer(ioff-idxstr(istr)) =
+     &             buffer(ioff-idxstr(istr))-xbuf(ii)
+            end do
+
+            if (ip.eq.iq.or.ir.eq.is) cycle
+
+            idxprqs(1) = ireost(iq)
+            idxprqs(3) = ireost(ip)
+            igam(1) = igamorb(idxprqs(1))
+            igam(3) = igamorb(idxprqs(3))
+            idss(1) = igasorb(idxprqs(1))
+            idss(3) = igasorb(idxprqs(3))
+            igtp(1) = ihpvgas(idss(1))
+            igtp(3) = ihpvgas(idss(3))
+            idss(1) = idss(1)-idx_gas(igtp(1))+1
+            idss(3) = idss(3)-idx_gas(igtp(3))+1
+
+            ! generate string addresses of integrals 
+            ! spin-orbital basis (w/o PH-symmetry) to which
+            ! current (pq|rs) = <pr|qs> contributes
+            call idx42str(nstr,idxstr,
+     &           idxprqs,igam,idss,igtp,
+     &           orb_info,str_info,hop,ihpvseq)
+
+            ! store integrals in buffer
+            do istr = 1, nstr
+              if (abs(idxstr(istr)).lt.idxst.or.
+     &            abs(idxstr(istr)).gt.idxnd) cycle
+              if (idxstr(istr).gt.0)
+     &             buffer(ioff+idxstr(istr)) =
+     &             buffer(ioff+idxstr(istr))+xbuf(ii)
+              if (idxstr(istr).lt.0)
+     &             buffer(ioff-idxstr(istr)) =
+     &             buffer(ioff-idxstr(istr))-xbuf(ii)
+            end do
+          
+          end do ! integrals in xbuf
+          
+        end do ! pass over DALTON integral file
+
+        ! write reordered integral to disc
+        call put_vec(ffham,buffer,idxst,idxnd)
+        idxst = idxnd+1
+        
+      end do ! pass over reordered integral file
+
+      write(6,*) 'passes over integral file: ',ipass
+      write(6,*) 
+      write(6,*) '2-el. integrals on disk: ',int_disk
+      write(6,*) '   thereof nonredundant: ',int_nonr
+      write(6,*) '    integrals reordered: ',!int_ordr,
+     &     hop%len_op-hop%off_op_occ(5)
+
+c      if (ntest.ge.1000) then
+c        write(6,*) '2 electron integrals:'
+c        call wrt_op_det(6,x2int,hop,orb_info%nsym,5,13)
+c      end if
+
+      if (closeit)
+     &     call file_close_keep(ffham)
+      call file_close_keep(ffmo2)
+
+      ifree = mem_flushmark('import_h2')
+
+      call atim(cpu,sys,wall)
+
+      call prtim(luout,'time in 2int reorder',
+     &     cpu-cpu0,sys-sys0,wall-wall0)
+
+      return
+
+      end
+

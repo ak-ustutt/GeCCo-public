@@ -7,12 +7,10 @@
       include 'def_filinf.h'
       include 'def_orbinf.h'
       include 'ifc_baserout.h'
+      include 'par_dalton.h'
 
       integer, parameter ::
      &     ntest = 100
-
-      character, parameter ::
-     &     sirifc*6 = 'SIRIFC'
 
       type(orbinf) ::
      &     orb_info

@@ -1,4 +1,3 @@
-
 *----------------------------------------------------------------------*
       integer function ieqfac(itlist,icidxlist,nel)
 *----------------------------------------------------------------------*
@@ -8,6 +7,8 @@
 *     for equivalent operators
 *----------------------------------------------------------------------*
       implicit none
+
+      include 'stdunit.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -21,11 +22,11 @@
      &     ifac
 
       if (ntest.ge.100) then
-        write(6,*) '----------------'
-        write(6,*) ' ieqfac speaks:'
-        write(6,*) '----------------'
-        write(6,*) ' itlist    : ',itlist(1:nel)
-        write(6,*) ' icidxlist : ',icidxlist(1:nel)
+        write(luout,*) '----------------'
+        write(luout,*) ' ieqfac speaks:'
+        write(luout,*) '----------------'
+        write(luout,*) ' itlist    : ',itlist(1:nel)
+        write(luout,*) ' icidxlist : ',icidxlist(1:nel)
       end if
 
       itlast = itlist(1)
@@ -51,7 +52,7 @@
       end do
 
       if (ntest.ge.100) then
-        write(6,*) ' result: ',ieqfac
+        write(luout,*) ' result: ',ieqfac
       end if
 
       return

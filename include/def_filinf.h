@@ -2,6 +2,11 @@
 *	info about file
 *------------------------------------------------------------------------*
       integer, parameter ::
+     &     ftyp_da_unf = 1,
+     &     ftyp_sq_unf = 2,
+     &     ftyp_sq_frm = 3
+*------------------------------------------------------------------------*
+      integer, parameter ::
      &     maxfilnam = 512 
       type filinf
          character*(maxfilnam) ::

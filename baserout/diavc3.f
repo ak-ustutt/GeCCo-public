@@ -1,31 +1,50 @@
-      SUBROUTINE DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
+      subroutine diavc3(vecout,vecin,diag,shift,ndim,vdsv)
 *
-* VECOUT(I)=VECIN(I)/(DIAG(I)+SHIFT)
+* vecout(i)=vecin(i)/(diag(i)+shift)
 *
-* VDSV = SUM(I) VECIN(I) ** 2 /( DIAG(I) + SHIFT )
- 
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      DIMENSION VECOUT(1),VECIN(1),DIAG(1)
+* vdsv = sum(i) vecin(i) ** 2 /( diag(i) + shift )
 *
-      THRES=1.0D-10
-      VDSV = 0.0D0
-      DO 100 I=1,NDIM
+*     adapted from jeppen olsen's original
+* 
+      implicit none
+
+      include 'stdunit.h'
+
+      integer, intent(in) ::
+     &     ndim
+      real(8), intent(in) ::
+     &     vecin(ndim), diag(ndim), shift
+      real(8), intent(out) ::
+     &     vecout(ndim), vdsv
+
+      real(8), parameter ::
+     &     thres = 1d-10
+      integer, parameter ::
+     &     ntest = 00
+
+      real(8) ::
+     &     divide
+      integer ::
+     &     i
+
 *
-        DIVIDE=DIAG(I)+SHIFT
-        IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
+      vdsv = 0.0d0
+      do i=1,ndim
 *
-        VDSV = VDSV + VECIN(I) ** 2 /DIVIDE
-        VECOUT(I)=VECIN(I)/DIVIDE
+        divide=diag(i)+shift
+        if(abs(divide).le.thres) divide=thres
 *
-  100 CONTINUE
+        vdsv = vdsv + vecin(i)*vecin(i) /divide
+        vecout(i)=vecin(i)/divide
 *
-      NTEST =00
-      IF(NTEST.GE.100) THEN
-      WRITE(6,*) 'DIAVC3 : VECIN, DIAG,VECOUT '
-      DO I = 1, NDIM
-        WRITE(6,'(3E15.8)') VECIN(I),DIAG(I),VECOUT(I)
-      END DO
-      END IF
+      end do
 *
-      RETURN
-      END
+      if(ntest.ge.100) then
+        write(luout,*) 'diavc3 : vecin, diag,vecout '
+        do i = 1, ndim
+          write(luout,'(3e15.8)') vecin(i),diag(i),vecout(i)
+        end do
+      end if
+*
+      return
+      end

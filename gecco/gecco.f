@@ -28,6 +28,13 @@
       type(orbinf) ::
      &     orb_info
 
+      ! a few settings
+      luout = 6      ! output unit
+c      iprlvl = 1     ! print level
+      iprlvl = 10    ! print level
+      ivale = 3      ! V is 3
+      iextr = 4      ! X is 4
+
       ! give information about compilation date etc.
       call printversion()
 
@@ -35,13 +42,6 @@
       call init_time()
       call atim(cpu0,sys0,wall0)
       
-      ! a few settings
-      luout = 6      ! output unit
-c      iprlvl = 1
-      iprlvl = 10    ! print level
-      ivale = 3      ! V is 3
-      iextr = 4      ! X is 4
-
       call printheader()
 
       ! process arguments to GeCCo
@@ -78,7 +78,7 @@ c      iprlvl = 1
 
         if (.not.one_more) exit
 
-        call do_calc(orb_info)
+        call do_calc(orb_info,env_type)
 
       end do
 
