@@ -42,11 +42,21 @@
      &       prev, next
       end type mem_section
 
+      type section_stack
+        type(mem_section), pointer ::
+     &     section
+        type(section_stack), pointer ::
+     &     prev, next
+      end type section_stack
+
       type(mem_section), pointer ::
-     &     mem_root, mem_cursection
+     &     mem_root, mem_cursection, mem_tail
 
       type(mem_slice), pointer ::
      &     mem_curslice
+
+      type(section_stack), pointer ::
+     &     mem_stack_head, mem_stack_tail
 
       integer, parameter ::
      &     mtyp_int = 1,
@@ -95,7 +105,8 @@
 
       mem_free = mem_free_init
       mem_total = mem_free_init
-      mem_cursection => mem_root
+      mem_cursection => mem_root  ! pointer to current section
+      mem_tail => mem_root        ! pointer to last section
       nullify(mem_curslice)
 
       if (iprlvl.gt.0)
@@ -126,7 +137,7 @@
 
       ! free all sections
       do
-        if (associated(mem_cursection,mem_root)) exit
+        if (associated(mem_tail,mem_root)) exit
         ifree = memman_remsection()
       end do
 
@@ -270,7 +281,7 @@
       integer function memman_dealloc(name,section)
 *----------------------------------------------------------------------*
 *
-*     allocate a memory slice in current section, the latest one
+*     deallocate a memory slice in current section, the latest one
 *     with name 'name'
 *     if name is not given, the latest slice is freed
 *     if section is given, use section instead of current section
@@ -426,19 +437,21 @@
       integer ::
      &     len
 
-      if (.not.associated(mem_cursection))
+      if (.not.associated(mem_tail))
      &     call quit(1,'memman_addsection','memman not initialized?')
 
-      allocate(mem_cursection%next)
-      mem_cursection%next%prev => mem_cursection
-      nullify(mem_cursection%next%next)
-      mem_cursection => mem_cursection%next
+      allocate(mem_tail%next)
+      mem_tail%next%prev => mem_tail
+      nullify(mem_tail%next%next)
+      mem_tail => mem_tail%next
+      ! the new section is also the current section
+      mem_cursection => mem_tail
 
       len = len_trim(name)
       if (len.gt.mem_maxname)
      &     call quit(1,'memman_addsection',
      &     'identifier too long "'//trim(name)//'"')
-      mem_cursection%name = name
+      mem_tail%name = name
 
       nullify(mem_curslice)
 
@@ -463,16 +476,18 @@
      &     name*(*)
 
       type(mem_section), pointer ::
-     &     section
+     &     section, nextnext
       integer ::
      &     len, ifree
 
       if (.not.associated(mem_cursection))
      &     call quit(1,'memman_remsection','memman not initialized?')
 
-      ! start at last section
+      ! default: latest section
       section => mem_cursection
       if (present(name)) then
+        ! else: start at last section and look for name
+        section => mem_tail
         ! search for node
         do
           if (trim(section%name).eq.trim(name)) exit
@@ -493,16 +508,25 @@
         ifree = memman_dealloc(section=section)
       end do
 
-      ! last section to remove?
+      ! current section to remove
       if (associated(section,mem_cursection)) then
+        if (associated(section,mem_tail))
+     &       mem_tail => section%prev
+
+        nextnext => mem_cursection%next ! remember pointer to next el.
         mem_cursection => mem_cursection%prev
         deallocate(mem_cursection%next)
-        nullify(mem_cursection%next)
+        mem_cursection%next => nextnext
         if (associated(mem_cursection%tail)) then
           mem_curslice => mem_cursection%tail
         else
           nullify(mem_curslice)
         end if
+      ! last section to remove?
+      else if (associated(section,mem_tail)) then
+        mem_tail => mem_tail%prev
+        deallocate(mem_tail%next)
+        nullify(mem_tail%next)
       else
         ! middle section to remove
         section%prev%next => section%next
@@ -516,7 +540,103 @@
       end function
 
 *----------------------------------------------------------------------*
+      integer function memman_set_cursection(name)
+*----------------------------------------------------------------------*
+*     set mem_cursection pointer to the latest section with name <name>
+*     if name is not given, we set mem_cursetion to mem_tail
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      character, intent(in), optional ::
+     &     name*(*)
+
+      type(mem_section), pointer ::
+     &     section
+
+      if (.not.associated(mem_tail))
+     &     call quit(1,'memman_remsection','memman not initialized?')
+
+      mem_cursection =>  mem_tail
+      
+      if (present(name)) then
+        do
+          if (trim(mem_cursection%name).eq.trim(name)) exit
+          if (.not.associated(mem_cursection%prev))
+     &         call quit(1,'memman_remsection',
+     &         'could not find a node name: "'//trim(name)//'"')
+          mem_cursection => mem_cursection%prev
+        end do
+      end if
+
+      if (associated(mem_cursection%tail)) then
+        mem_curslice => mem_cursection%tail
+      else
+        nullify(mem_curslice)
+      end if
+
+      memman_set_cursection = mem_free
+
+      return
+      end function
+
+*----------------------------------------------------------------------*
+      subroutine memman_section_stack(push_pop)
+*----------------------------------------------------------------------*
+*     manage a stack with section pointers
+*     push:  save mem_cursection pointer on stack
+*     pop:   get mem_cursection pointer from stack
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      integer, intent(in) ::
+     &     push_pop
+
+      if (push_pop.gt.0) then
+        ! ---------------
+        !       push
+        ! ---------------
+        if (.not.associated(mem_stack_head)) then
+          allocate(mem_stack_head)
+          mem_stack_tail => mem_stack_head
+          nullify(mem_stack_head%prev)
+          nullify(mem_stack_head%next)
+        else
+          allocate(mem_stack_tail%next)
+          mem_stack_tail%next%prev = mem_stack_tail
+          mem_stack_tail => mem_stack_tail%next
+          nullify(mem_stack_tail%next)
+        end if
+        mem_stack_tail%section => mem_cursection
+      else
+        ! ---------------
+        !       pop
+        ! ---------------
+        if (.not.associated(mem_stack_tail))
+     &       call quit(1,'memman_section_stack','nothing to pop')
+        mem_cursection => mem_stack_tail%section
+        if (associated(mem_cursection%tail)) then
+          mem_curslice => mem_cursection%tail
+        else
+          nullify(mem_curslice)
+        end if
+        if (associated(mem_stack_tail,mem_stack_head)) then
+          deallocate(mem_stack_head)
+        else
+          mem_stack_tail => mem_stack_tail%prev
+          deallocate(mem_stack_tail%next)
+          nullify(mem_stack_tail%next)
+        end if
+
+      end if
+
+      return
+      end subroutine
+*----------------------------------------------------------------------*
       subroutine memman_map(luout,check)
+*----------------------------------------------------------------------*
+*     print a memory map
 *----------------------------------------------------------------------*
 
       implicit none

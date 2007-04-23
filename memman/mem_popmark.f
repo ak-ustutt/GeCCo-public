@@ -1,15 +1,12 @@
 *----------------------------------------------------------------------*
-      integer function mem_setmark(name)
+      subroutine mem_popmark()
 *----------------------------------------------------------------------*
-*     create a new section
+*     pop current memory section from internal stack
 *----------------------------------------------------------------------*
       use memman
       implicit none
       
-      character, intent(in) ::
-     &     name*(*)
-
-      mem_setmark = memman_addsection(name)
+      call memman_section_stack(-1)
 
       return
       end

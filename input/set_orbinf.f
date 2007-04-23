@@ -108,7 +108,7 @@
           orb_info%mostnd(1:2,isym,igasr) = (/idxst,idxnd/)
           if (idxst.le.idxnd) then
             orb_info%igamorb(idxst:idxnd) = isym 
-            orb_info%igasorb(idxst:idxnd) = igas
+            orb_info%igasorb(idxst:idxnd) = igasr
           end if
           idxst = idxnd+1
         end do

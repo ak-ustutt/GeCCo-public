@@ -101,10 +101,10 @@ AC_FC_WRAPPERS
 
 dnl ACX_GETKW([], AC_MSG_ERROR([libgetkw.a not found!]))
 
-#AC_LANG_PUSH([Fortran])
-#ACX_BLAS(,AC_MSG_ERROR([No working blas library found!]))
-#ACX_LAPACK(,AC_MSG_ERROR([No working lapack library found!]))
-#AC_LANG_POP([Fortran])
+AC_LANG_PUSH([Fortran])
+ACX_BLAS(,AC_MSG_ERROR([No working blas library found!]))
+ACX_LAPACK(,AC_MSG_ERROR([No working lapack library found!]))
+AC_LANG_POP([Fortran])
 
 AC_LANG_PUSH([Fortran])
 AC_FC_SRCEXT([f90])

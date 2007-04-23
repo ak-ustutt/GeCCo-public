@@ -29,12 +29,10 @@ c      call quit(1,'import_hamint_dalton','BAUSTELLE')
 
       ! read reference energy and fock matrix from SIRIFC
       ! and sort fock matrix into operator file
-      call import_fock_dalton(ffham,
-     &       hop,str_info,orb_info)
+      call import_fock_dalton(ffham,hop,str_info,orb_info)
 
       ! get 2-electron integrals and sort them as well
-      call import_h2_dalton(ffham,
-     &       hop,str_info,orb_info)
+      call import_h2_dalton(ffham,hop,str_info,orb_info)
 
       return
       end

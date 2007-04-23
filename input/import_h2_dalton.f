@@ -41,7 +41,7 @@
       integer, pointer ::
      &     ibuf(:)
       real(8), pointer ::
-     &     xbuf(:), buffer(:)
+     &     xbuf(:), h2scr(:)
 
       type(filinf) ::
      &     ffmo2
@@ -56,11 +56,12 @@ c     &     first, first_str
      &     len_op, idum, ipass
 
       integer ::
-     &     idxprqs(4),idss(4),igam(4),igtp(4), ihpvseq(ngastp),
-     &     lexlscr(4,3), idxstr(5)
+     &     idxprqs(4),idss(4),igam(4),igtp(4), 
+     &     lexlscr(4,3), idxstr(8)
 
       integer, pointer ::
-     &     ireost(:), ihpvgas(:), igamorb(:), igasorb(:), idx_gas(:)
+     &     ireost(:), ihpvgas(:), igamorb(:),
+     &     igasorb(:), idx_gas(:), iad_gas(:)
 
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
@@ -98,16 +99,16 @@ c     &     first, first_str
       ! not completely elegant yet
       ! we should not imply the knowledge that the first 4 blocks
       ! are one-electron integrals
-      len_op = hop%len_op-hop%off_op_occ(5)
-      nblk = min((len_op-1)/ffham%reclen + 1,nblkmax)
+      len_op = hop%len_op
+      nblk = min((len_op-hop%off_op_occ(6)-1)/ffham%reclen + 1,nblkmax)
 
-      nbuff = min(len_op,nblk*ffham%reclen)
+      nbuff = min(len_op-hop%off_op_occ(6),nblk*ffham%reclen)
 
-      write(luout,*) 'number of passes in geth2: ',nblk
+      write(luout,*) 'number of incore-blocks in geth2: ',nblk
       write(luout,'(x,a,f9.2,a)') 'size of buffer in geth2:   ',
      &     dble(nbuff)/128d0/1024d0, 'Mb'
 
-      ifree = mem_alloc_real(buffer,nbuff,'h2sort_buff')
+      ifree = mem_alloc_real(h2scr,nbuff,'h2sort_buff')
 
       int_disk = 0
       int_nonr = 0
@@ -119,20 +120,16 @@ c     &     first, first_str
       igamorb => orb_info%igamorb
       igasorb => orb_info%igasorb
       idx_gas => orb_info%idx_gas
-
-      ! define H/P/V sequence
-      ihpvseq(1:3) = (/2,3,1/)
-      ! init integrals
-c      x2int(1:hop%len_op-hop%off_op_occ(5)) = 0d0 
+      iad_gas => orb_info%iad_gas
 
       ! loop over batches of final integral file
       ipass = 0
-      idxst = hop%off_op_occ(5) + 1
+      idxst = hop%off_op_occ(6) + 1
       do while(idxst.le.len_op)
         ipass = ipass+1
         idxnd = min(len_op,idxst-1+nbuff)
         ioff = -idxst+1
-        buffer(1:nbuff) = 0d0
+        h2scr(1:nbuff) = 0d0
         
         rewind lumo2
         luerr = luout
@@ -155,6 +152,7 @@ c      x2int(1:hop%len_op-hop%off_op_occ(5)) = 0d0
           idss(4) = igasorb(idxprqs(4))
           igtp(2) = ihpvgas(idss(2))
           igtp(4) = ihpvgas(idss(4))
+          if (iad_gas(idss(2)).ne.2.or.iad_gas(idss(4)).ne.2) cycle
           idss(2) = idss(2)-idx_gas(igtp(2))+1
           idss(4) = idss(4)-idx_gas(igtp(4))+1
           do ii = 1, len
@@ -172,6 +170,7 @@ c      x2int(1:hop%len_op-hop%off_op_occ(5)) = 0d0
             idss(3) = igasorb(idxprqs(3))
             igtp(1) = ihpvgas(idss(1))
             igtp(3) = ihpvgas(idss(3))
+            if (iad_gas(idss(1)).ne.2.or.iad_gas(idss(3)).ne.2) cycle
             idss(1) = idss(1)-idx_gas(igtp(1))+1
             idss(3) = idss(3)-idx_gas(igtp(3))+1
 
@@ -182,16 +181,16 @@ c      x2int(1:hop%len_op-hop%off_op_occ(5)) = 0d0
      &           idxprqs,igam,idss,igtp,
      &           orb_info,str_info,hop,ihpvseq)
 
-            ! store integral in buffer
+            ! store integral in h2scr
             do istr = 1, nstr
               if (abs(idxstr(istr)).lt.idxst.or.
      &            abs(idxstr(istr)).gt.idxnd) cycle
               if (idxstr(istr).gt.0)
-     &             buffer(ioff+idxstr(istr)) =
-     &             buffer(ioff+idxstr(istr))+xbuf(ii)
+     &             h2scr(ioff+idxstr(istr)) =
+     &             h2scr(ioff+idxstr(istr))+xbuf(ii)
               if (idxstr(istr).lt.0)
-     &             buffer(ioff-idxstr(istr)) =
-     &             buffer(ioff-idxstr(istr))-xbuf(ii)
+     &             h2scr(ioff-idxstr(istr)) =
+     &             h2scr(ioff-idxstr(istr))-xbuf(ii)
             end do
 
             if (ip.eq.iq.or.ir.eq.is) cycle
@@ -214,16 +213,16 @@ c      x2int(1:hop%len_op-hop%off_op_occ(5)) = 0d0
      &           idxprqs,igam,idss,igtp,
      &           orb_info,str_info,hop,ihpvseq)
 
-            ! store integrals in buffer
+            ! store integrals in h2scr
             do istr = 1, nstr
               if (abs(idxstr(istr)).lt.idxst.or.
      &            abs(idxstr(istr)).gt.idxnd) cycle
               if (idxstr(istr).gt.0)
-     &             buffer(ioff+idxstr(istr)) =
-     &             buffer(ioff+idxstr(istr))+xbuf(ii)
+     &             h2scr(ioff+idxstr(istr)) =
+     &             h2scr(ioff+idxstr(istr))+xbuf(ii)
               if (idxstr(istr).lt.0)
-     &             buffer(ioff-idxstr(istr)) =
-     &             buffer(ioff-idxstr(istr))-xbuf(ii)
+     &             h2scr(ioff-idxstr(istr)) =
+     &             h2scr(ioff-idxstr(istr))-xbuf(ii)
             end do
           
           end do ! integrals in xbuf
@@ -231,21 +230,21 @@ c      x2int(1:hop%len_op-hop%off_op_occ(5)) = 0d0
         end do ! pass over DALTON integral file
 
         ! write reordered integral to disc
-        call put_vec(ffham,buffer,idxst,idxnd)
+        call put_vec(ffham,h2scr,idxst,idxnd)
         idxst = idxnd+1
         
       end do ! pass over reordered integral file
 
-      write(6,*) 'passes over integral file: ',ipass
-      write(6,*) 
-      write(6,*) '2-el. integrals on disk: ',int_disk
-      write(6,*) '   thereof nonredundant: ',int_nonr
-      write(6,*) '    integrals reordered: ',!int_ordr,
-     &     hop%len_op-hop%off_op_occ(5)
+      write(luout,*) 'passes over integral file: ',ipass
+      write(luout,*) 
+      write(luout,*) '2-el. integrals on disk: ',int_disk
+      write(luout,*) '   thereof nonredundant: ',int_nonr
+      write(luout,*) '    integrals reordered: ',!int_ordr,
+     &     hop%len_op-hop%off_op_occ(6)
 
 c      if (ntest.ge.1000) then
-c        write(6,*) '2 electron integrals:'
-c        call wrt_op_det(6,x2int,hop,orb_info%nsym,5,13)
+c        write(luout,*) '2 electron integrals:'
+c        call wrt_op_det(luout,x2int,hop,orb_info%nsym,5,13)
 c      end if
 
       if (closeit)
@@ -256,7 +255,7 @@ c      end if
 
       call atim(cpu,sys,wall)
 
-      call prtim(luout,'time in 2int reorder',
+      call prtim(luout,'time in 2int import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

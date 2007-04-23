@@ -1,15 +1,12 @@
 *----------------------------------------------------------------------*
-      integer function mem_setmark(name)
+      integer function mem_gotolastmark()
 *----------------------------------------------------------------------*
-*     create a new section
+*     go to last memory section
 *----------------------------------------------------------------------*
       use memman
       implicit none
       
-      character, intent(in) ::
-     &     name*(*)
-
-      mem_setmark = memman_addsection(name)
+      mem_gotolastmark = memman_set_cursection()
 
       return
       end

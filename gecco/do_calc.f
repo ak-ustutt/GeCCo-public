@@ -4,6 +4,7 @@
       
       implicit none
       include 'stdunit.h'
+      include 'par_globalmarks.h'
       include 'ifc_memman.h'
       include 'def_orbinf.h'
       include 'def_operator.h'
@@ -40,7 +41,7 @@
       ! set up orbital info
       call set_orbinf(orb_info,.true.)
 
-      ifree = mem_setmark('operator_def')
+      ifree = mem_setmark(operator_def)
       allocate(op_list)
       nullify(op_list%op)
       nullify(op_list%prev)
@@ -51,7 +52,7 @@
       if (nops.eq.0)
      &     call quit(0,'do_calc','no operators defined?')
 
-      ifree = mem_setmark('formula_def')
+      ifree = mem_setmark(formula_def)
       allocate(form_list)
       nullify(form_list%fhand)
       nullify(form_list%prev)
@@ -62,7 +63,7 @@
       if (nform.eq.0)
      &     call quit(0,'do_calc','no formulae/method defined?')
 
-      ifree = mem_setmark('action_def')
+      ifree = mem_setmark(action_def)
       allocate(act_list)
       nullify(act_list%act)
       nullify(act_list%prev)
@@ -80,8 +81,10 @@
       call set_graphs_for_ops(str_info,op_list,nops,orb_info)
       
       ! set up operator dimensions
-      ifree = mem_setmark('operator_dim')
+      call mem_pushmark() ! push current memory section
+      ifree = mem_gotomark(operator_def)
       call set_dim_for_ops(op_list,nops,str_info,orb_info)
+      call mem_popmark() ! pop current memory section
 
       ! turn linked lists into arrays
       allocate(ops(nops))
@@ -90,6 +93,7 @@
       call file_list2arr(form_list,ffform,nform)
 
       ! initialize files for operator elements
+      ifree = mem_setmark(op_files)
       allocate(ffops(nops))
       call init_op_files(ffops,ops,nops)
 
@@ -126,10 +130,9 @@
             call quit(1,'do_calc','unknown action')
         end select
 
-      
-        ! optimize the formulae
-        ! call the appropriate solver
-      
+        if (.not.associated(current_act%next)) exit
+        current_act => current_act%next
+
       end do
         
       ! free memory allocated for operators etc.

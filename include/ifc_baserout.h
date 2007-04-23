@@ -77,4 +77,10 @@
      &     nel, list1(nel), list2(nel)        
         end function
 
+        integer function idxlist(inum,ilist,nel,inc)
+        implicit none
+        integer, intent(in) ::
+     &     inum, nel, inc, ilist(nel)
+        end function
+
       end interface

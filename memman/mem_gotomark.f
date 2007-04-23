@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      integer function mem_setmark(name)
+      integer function mem_gotomark(name)
 *----------------------------------------------------------------------*
-*     create a new section
+*     go to a section with the name <name>
 *----------------------------------------------------------------------*
       use memman
       implicit none
@@ -9,7 +9,7 @@
       character, intent(in) ::
      &     name*(*)
 
-      mem_setmark = memman_addsection(name)
+      mem_gotomark = memman_set_cursection(name)
 
       return
       end

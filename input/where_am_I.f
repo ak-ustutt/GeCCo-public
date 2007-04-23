@@ -16,11 +16,11 @@
      &     l_exist, ok
 
       ! we start with DALTON
-      ! we need (at least): SIRIFC, AOONEINT, MOTWOINT
+      ! we need (at least): SIRIFC, MOTWOINT
       inquire(file='SIRIFC',exist=l_exist)
       ok = l_exist
-      if (ok) inquire(file='AOONEINT',exist=l_exist)
-      ok = ok.and.l_exist
+c      if (ok) inquire(file='AOONEINT',exist=l_exist)
+c      ok = ok.and.l_exist
       if (ok) inquire(file='MOTWOINT',exist=l_exist)
       ok = ok.and.l_exist
 
