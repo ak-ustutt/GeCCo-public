@@ -19,6 +19,7 @@
       include 'def_orbinf.h'
       include 'def_filinf.h'
       include 'ifc_memman.h'
+      include 'ifc_baserout.h'
       include 'multd2h.h'
       include 'par_dalton.h'
 
@@ -38,7 +39,8 @@
       type(filinf), intent(in) ::
      &     ffham
 
-      integer, pointer ::
+      ! dalton is i4:
+      integer(4), pointer ::
      &     ibuf(:)
       real(8), pointer ::
      &     xbuf(:), h2scr(:)
@@ -48,9 +50,12 @@
       logical ::
      &     closeit
 c     &     first, first_str
+      ! dalton is i4:
+      integer(4) ::
+     &     idxpq, idxrs, ip, iq, ir, is, lbuf, itrlevel
       integer ::
-     &     lumo2, lbuf, itrlevel,
-     &     ip, iq, ir, is, len, idxpq, idxrs, ii, nstr,
+     &     lumo2, irat,
+     &     len, ii, nstr,
      &     int_disk, int_nonr, int_ordr, ioff, istr,
      &     idxst, idxnd, nblk, nblkmax, ifree, luerr, nbuff,
      &     len_op, idum, ipass
@@ -66,6 +71,12 @@ c     &     first, first_str
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
 
+      if (orb_info%ntoob.gt.255) then
+        write(luout,*) 'number of orbitals: ',orb_info%ntoob
+        call quit(0,'import_h2_dalton',
+     &       'not yet prepared for >255 orbitals')
+      end if
+
       call atim(cpu0,sys0,wall0)
 
       call file_init(ffmo2,motwoint,ftyp_sq_unf,0)
@@ -76,11 +87,18 @@ c     &     first, first_str
 
       read(lumo2)
       read(lumo2) lbuf, itrlevel
-
+      if (itrlevel.lt.10)
+     &     call quit(0,'import_h2_dalton',
+     &     'you must set DALTON transformation level to 10!')
+      
       ifree = mem_setmark('import_h2')
 
-      ifree = mem_alloc_real(xbuf,lbuf,'mo2 xbuff')
-      ifree = mem_alloc_int(ibuf,lbuf,'mo2 ibuff')
+      ifree = mem_alloc_real(xbuf,lbuf,'mo2_xbuff')
+c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
+      ! i4 must be done by hand:
+      irat = zirat()
+      ifree = mem_register(lbuf/irat,'mo2_ibuff')
+      allocate(ibuf(lbuf))
 
       if (ffham%unit.le.0) then
         call file_open(ffham)
@@ -251,6 +269,10 @@ c      end if
      &     call file_close_keep(ffham)
       call file_close_keep(ffmo2)
 
+      ! deallocation by hand
+      deallocate(ibuf)
+      ifree = mem_dealloc('mo2_ibuff')
+      ! automatic deallocation of rest:
       ifree = mem_flushmark('import_h2')
 
       call atim(cpu,sys,wall)
