@@ -78,11 +78,11 @@
 
       call file_close_keep(ffsir)
 
-      have_frozen = ielsqsum(nfro,nsym).gt.0
-      have_act    = ielsqsum(nash,nsym).gt.0
-      have_as1    = ielsqsum(nas1,nsym).gt.0
-      have_as2    = ielsqsum(nas1,nsym).gt.0
-      have_as3    = ielsqsum(nas1,nsym).gt.0
+      have_frozen = i4elsqsum(nfro,nsym).gt.0
+      have_act    = i4elsqsum(nash,nsym).gt.0
+      have_as1    = i4elsqsum(nas1,nsym).gt.0
+      have_as2    = i4elsqsum(nas1,nsym).gt.0
+      have_as3    = i4elsqsum(nas1,nsym).gt.0
 
       ngas = 2
       if (have_frozen) ngas = ngas+1

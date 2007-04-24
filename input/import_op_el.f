@@ -9,7 +9,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 10
 
       include 'stdunit.h'
       include 'def_operator.h'

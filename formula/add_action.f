@@ -43,6 +43,7 @@
       ! loop over elements and compare 
       do while (associated(current%act))
       
+        equal = .false.
         if (action_type.eq.current%act%action_type) then
           equal = .true.
           if (nop_in.gt.0) then

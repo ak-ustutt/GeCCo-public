@@ -21,9 +21,9 @@
       do ica = 1,2
         do ihpv = 1, ngastp
           if (iocc(ihpv,ica).eq.0) cycle
-          gmd(ihpv,ica) = imod(ipatt,nsym)+1
+          gmd(ihpv,ica) = mod(ipatt,nsym)+1
           ipatt = ipatt/nsym
-          idxms = imod(ipatt,iocc(ihpv,ica)+1)+1
+          idxms = mod(ipatt,iocc(ihpv,ica)+1)+1
           msd(ihpv,ica) = iocc(ihpv,ica)-(idxms-1)*2
           ipatt = ipatt/(iocc(ihpv,ica)+1)
         end do

@@ -12,6 +12,7 @@
       implicit none
 
       include 'opdim.h'
+      include 'hpvxseq.h'
       include 'stdunit.h'
       include 'def_operator.h'
       include 'def_graph.h'
@@ -52,9 +53,9 @@
 c     &     first, first_str
       ! dalton is i4:
       integer(4) ::
-     &     idxpq, idxrs, ip, iq, ir, is, lbuf, itrlevel
+     &     idxpq, idxrs, ip, iq, ir, is, lbuf_, len_, itrlevel
       integer ::
-     &     lumo2, irat,
+     &     lumo2, irat, lbuf,
      &     len, ii, nstr,
      &     int_disk, int_nonr, int_ordr, ioff, istr,
      &     idxst, idxnd, nblk, nblkmax, ifree, luerr, nbuff,
@@ -86,13 +87,14 @@ c     &     first, first_str
       rewind lumo2
 
       read(lumo2)
-      read(lumo2) lbuf, itrlevel
+      read(lumo2) lbuf_, itrlevel
       if (itrlevel.lt.10)
      &     call quit(0,'import_h2_dalton',
      &     'you must set DALTON transformation level to 10!')
       
       ifree = mem_setmark('import_h2')
 
+      lbuf = lbuf_
       ifree = mem_alloc_real(xbuf,lbuf,'mo2_xbuff')
 c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
       ! i4 must be done by hand:
@@ -153,7 +155,8 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
         luerr = luout
         call mollab(motwolab,lumo2,luerr)
         do
-          read(lumo2) xbuf(1:lbuf),ibuf(1:lbuf),len
+          read(lumo2) xbuf(1:lbuf),ibuf(1:lbuf),len_
+          len = len_
           int_disk = int_disk+len
           if (len.eq.0) cycle
           if (len.lt.0) exit
@@ -197,7 +200,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             ! current (pq|rs) = <pr|qs> contributes
             call idx42str(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
-     &           orb_info,str_info,hop,ihpvseq)
+     &           orb_info,str_info,hop,hpvxseq)
 
             ! store integral in h2scr
             do istr = 1, nstr
@@ -229,7 +232,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             ! current (pq|rs) = <pr|qs> contributes
             call idx42str(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
-     &           orb_info,str_info,hop,ihpvseq)
+     &           orb_info,str_info,hop,hpvxseq)
 
             ! store integrals in h2scr
             do istr = 1, nstr

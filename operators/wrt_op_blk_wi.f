@@ -9,6 +9,7 @@
       implicit none
 
       include 'opdim.h'
+      include 'hpvxseq.h'
       include 'def_operator.h'
       include 'def_graph.h'
       include 'def_strinf.h'
@@ -32,14 +33,12 @@
      &     did, idxstr, iel, nelc, nela, ioff, msa, ihpv
       integer ::
      &     msdst(ngastp,2), igamdst(ngastp,2), lexlscr(nel,3),
-     &     ihpvseq(ngastp), idorb(nel), idspn(nel), idspc(nel)
+     &     idorb(nel), idspn(nel), idspc(nel)
       character ::
      &     spnstr*(nel+1),fmtstr*56
 
       logical, external ::
      &     next_tupel_ca
-
-      ihpvseq(1:3) = (/2,3,1/)
 
       nelc = op%ica_occ(1,iblk)
       nela = op%ica_occ(2,iblk)
@@ -89,7 +88,7 @@
      &     orb_info%mostnd,orb_info%igamorb,
      &     orb_info%nsym,orb_info%ngas,
      &     orb_info%ngas_hpv,orb_info%idx_gas,
-     &     ihpvseq,lexlscr))
+     &     hpvxseq,lexlscr))
         first = .false.
         idxstr = idxstr+1
       
