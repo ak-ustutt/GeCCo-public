@@ -1,4 +1,9 @@
+*----------------------------------------------------------------------*
       integer function mem_flushmark(name)
+*----------------------------------------------------------------------*
+*     flush last section, or section with name <name>
+*     all memory allocated in that section is freed
+*----------------------------------------------------------------------*
       use memman
       implicit none
       

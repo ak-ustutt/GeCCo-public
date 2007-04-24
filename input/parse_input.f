@@ -122,9 +122,9 @@ c      end function
       integer, parameter ::
      &     ntest = 00
 
-      type(keyword), pointer, intent(in) ::
+      type(keyword), pointer ::
      &     tree_root
-      type(keyword), pointer, intent(out) ::
+      type(keyword), pointer ::
      &     node
       character, intent(in) ::
      &     context*(*)
@@ -228,9 +228,9 @@ c      end function
       integer, parameter ::
      &     ntest = 00
 
-      type(keyword), pointer, intent(in) ::
+      type(keyword), pointer ::
      &     cur_node
-      type(keyword), pointer, intent(out) ::
+      type(keyword), pointer ::
      &     nxt_node
       character, intent(in) ::
      &     key*(*)
@@ -304,9 +304,9 @@ c      end function
       integer, parameter ::
      &     ntest = 00
 
-      type(keyword), pointer, intent(in) ::
+      type(keyword), pointer ::
      &     cur_key
-      type(argument), pointer, intent(out) ::
+      type(argument), pointer ::
      &     node
       character, intent(in) ::
      &     key*(*)
@@ -528,11 +528,17 @@ c      end function
      &     idx_split
 
       idx_split = index(context,'.',back=.true.)
-      call find_node(keyword_history,current_up,context(1:idx_split-1),
-     &     latest=.true.)
+      if (idx_split.le.0) then
+        call find_node(keyword_history,current_up,'',
+     &       latest=.true.)
+      else
+        call find_node(keyword_history,current_up,
+     &       context(1:idx_split-1),
+     &       latest=.true.)
+      end if
       if (.not.associated(current_up))
      &      call quit(1,'keyword_add_history',
-     &     'unknown context "'//context//'"')
+     &     'unknown context "'//trim(context)//'"')
 
       ! add new keyword at tail of list
       if (associated(current_up%down_t)) then
@@ -750,7 +756,7 @@ c      end function
 
       integer, intent(in) ::
      &     luout
-      type(keyword), pointer, intent(in) ::
+      type(keyword), pointer ::
      &     tree_root
       character, intent(in), optional ::
      &     context*(*)
@@ -785,9 +791,9 @@ c      end function
 
         ! show keyword
         if (current%status.gt.0) then
-          write(fmtstr,'("(""A"",",i3,"x,a)")') 2*level
+          write(fmtstr,'("(""A"",",i3,"x,a)")') 2*level+1
         else
-          write(fmtstr,'("(""I"",",i3,"x,a)")') 2*level
+          write(fmtstr,'("(""I"",",i3,"x,a)")') 2*level+1
         end if
         write(luout,fmtstr) trim(current%key)
 
@@ -855,7 +861,7 @@ c      end function
 
       character, intent(out) ::
      &     context*(*)
-      type(keyword), pointer, intent(in) ::
+      type(keyword), pointer ::
      &     cur_node
 
       integer, parameter ::
@@ -889,9 +895,9 @@ c      end function
 
       implicit none
 
-      type(keyword), pointer, intent(in) ::
+      type(keyword), pointer ::
      &     tree
-      type(keyword), pointer, intent(out) ::
+      type(keyword), pointer ::
      &     node
       character ::
      &     context*(*)

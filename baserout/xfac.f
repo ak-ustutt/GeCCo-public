@@ -1,19 +1,28 @@
-      FUNCTION XFAC(N)
+      real(8) function xfac(n)
 *
-* N !  as double precision real
+* n !  as double precision real
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-      IF( N .LT. 0 ) THEN
-       IFAC = 0
-       WRITE(6,*) ' WARNING FACULTY OF NEGATIVE NUMBER SET TO ZERO '
-      ELSE
-C
-       XFACN = 1.0D0
-       DO 100 K = 2,N
-        XFACN = XFACN * DFLOAT(K)
-  100  CONTINUE
-       XFAC = XFACN
-      END IF
-C
-      RETURN
-      END
+      implicit none
+
+      include 'stdunit.h'
+
+      integer, intent(in) ::
+     &     n
+
+      integer ::
+     &     k
+
+      if( n .lt. 0 ) then
+        xfac = 0d0
+        write(luout,*)
+     &       ' warning faculty of negative number set to zero '
+      else
+c
+        xfac = 1.0d0
+        do k = 2,n
+          xfac = xfac * dble(k)
+        end do
+      end if
+c
+      return
+      end

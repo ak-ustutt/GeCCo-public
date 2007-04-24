@@ -2,6 +2,11 @@
 *	info about file
 *------------------------------------------------------------------------*
       integer, parameter ::
+     &     ftyp_da_unf = 1,
+     &     ftyp_sq_unf = 2,
+     &     ftyp_sq_frm = 3
+*------------------------------------------------------------------------*
+      integer, parameter ::
      &     maxfilnam = 512 
       type filinf
          character*(maxfilnam) ::
@@ -14,7 +19,7 @@
      &     buffered
          integer, pointer ::
      &     idxrec(:)
-         logical, pointer ::
+         integer, pointer ::
      &     incore(:)
          real(8), pointer ::
      &     buffer(:)
@@ -36,7 +41,7 @@
 *------------------------------------------------------------------------*
 *	a note on buffering for "operators":
 *	incore(iocc_cls) holds info whether the occupation iocc_cls
-*	is held incore (in the buffer)
+*	is held incore (in the buffer) (if > 0)
 *	as the length increases with iocc_cls, we currently will hold 
 *       the first few occupations (say 1 to 4 for the Hamilton) incore, 
 *       so the addressing array on the operator structure can be used 

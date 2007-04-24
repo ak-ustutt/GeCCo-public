@@ -1,33 +1,47 @@
-      SUBROUTINE CMP2VC(VEC1,VEC2,NDIM,THRES)
-C
-C COMPARE TWO DOUBLE PRECISION  VECTORS VEC1,AND VEC2
-C
-C ONLY ELEMENTS THAT DIFFERS BY MORE THAN THRE ARE PRINTED
-C
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      DIMENSION VEC1(1),VEC2(1)
-C
-      XMXDIF = 0.0D0
-      IMXPLC = 0
-      WRITE(6,*) ' COMPARISON OF TWO VECTORS '
-      WRITE(6,*) '      VECTOR1      VECTOR2        DIFFERENCE '
-      DO 100 I = 1, NDIM
-        DIF = VEC1(I) - VEC2 ( I )
-        IF( ABS(DIF ) .GE. XMXDIF ) THEN
-          XMXDIF = ABS(DIF)
-          IMXPLC = I
-        END IF
-        IF( ABS ( DIF ) .GT. THRES ) THEN
-          WRITE(6,'(2X,I5,3E15.8)') I,VEC1(I),VEC2(I),DIF
-        END IF
-  100 CONTINUE
-C
-      IF( XMXDIF .EQ. 0.0D0 ) THEN
-        WRITE(6,*) ' THE TWO VECTORS ARE IDENTICAL '
-      ELSE
-        WRITE(6,*) ' SIZE AND LAST PLACE OF LARGEST DEVIATION ',
-     &  XMXDIF,IMXPLC
-      END IF
-C
-      RETURN
-      END
+      subroutine cmp2vc(vec1,vec2,ndim,thres)
+c
+c compare two double precision  vectors vec1,and vec2
+c
+c only elements that differs by more than thre are printed
+c
+c     adapated from jeppe olsen's original
+c
+      implicit none
+
+      include 'stdunit.h'
+
+      integer, intent(in) ::
+     &     ndim
+      real(8), intent(in) ::
+     &     thres,
+     &     vec1(ndim),vec2(ndim)
+c
+      real(8) ::
+     &     xmxdif, dif
+      integer ::
+     &     imxplc, i
+
+      xmxdif = 0.0d0
+      imxplc = 0
+      write(luout,*) ' comparison of two vectors '
+      write(luout,*) '      vector1      vector2        difference '
+      do i = 1, ndim
+        dif = vec1(i) - vec2 ( i )
+        if( abs(dif ) .ge. xmxdif ) then
+          xmxdif = abs(dif)
+          imxplc = i
+        end if
+        if( abs ( dif ) .gt. thres ) then
+          write(luout,'(2x,i5,3e15.8)') i,vec1(i),vec2(i),dif
+        end if
+      end do
+c
+      if( xmxdif .eq. 0.0d0 ) then
+        write(luout,*) ' the two vectors are identical '
+      else
+        write(luout,*) ' size and last place of largest deviation ',
+     &  xmxdif,imxplc
+      end if
+c
+      return
+      end

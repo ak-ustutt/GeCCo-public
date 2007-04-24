@@ -108,7 +108,7 @@
           orb_info%mostnd(1:2,isym,igasr) = (/idxst,idxnd/)
           if (idxst.le.idxnd) then
             orb_info%igamorb(idxst:idxnd) = isym 
-            orb_info%igasorb(idxst:idxnd) = igas
+            orb_info%igasorb(idxst:idxnd) = igasr
           end if
           idxst = idxnd+1
         end do
@@ -135,7 +135,7 @@
         call iwrtma(orb_info%igasorb,1,ntoob,1,ntoob)
         write(luout,*) 'mostnd:'
         do igas = 1, ngas
-          write(6,'(2x,i4,2x,8(x,2i4))')
+          write(luout,'(2x,i4,2x,8(x,2i4))')
      &         igas,orb_info%mostnd(1:2,1:nsym,igas)
         end do
       end if

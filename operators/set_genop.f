@@ -47,11 +47,13 @@
      &     init_c, init_a, ok
       integer ::
      &     ifree, ipass, irank, na, nc, ica, igas, igasl, idiff, imaxr,
-     &     iocc, igastp, iprint
+     &     iocc, igastp, iprint, nx, idx
       integer ::
      &     a_distr(ngastp), c_distr(ngastp), 
      &     a_distr_rv(ngastp), c_distr_rv(ngastp),
      &     hpvxprint(ngastp)
+      integer ::
+     &     n_occls_x012(0:2), idx_occls_x012(0:2)
 
 
       iprint = max(iprlvl,ntest)
@@ -72,6 +74,7 @@
       if (len_trim(name).gt.len_opname)
      &     call quit(1,'set_genop','name too long: "'//trim(name)//'"')
 
+      ! basic settings:
       op%name = '        '
       op%name = name
 
@@ -88,17 +91,30 @@
       op%s2 =   s2
       op%mst =  ms 
 
+      ! pass 1: count classes
+      ! pass 2: set up occupation information
       do ipass = 1, 2
-
+        
+        ! second round: allocate and setup offsets
         if (ipass.eq.2) then
           allocate(op%ihpvca_occ(ngastp,2,op%n_occ_cls),
      &             op%ica_occ(2,op%n_occ_cls),
      &             op%igasca_restr(2,ngas,2,2,op%n_occ_cls))
           ifree = mem_register((ngastp*2+2+8*ngas)*op%n_occ_cls,
-     &         trim(name)//' occ')
+     &         trim(name)//'_occ')
+          ! counters according to number of external indices (R12)
+          ! to sort operators in the way:
+          ! 1st: all operators with no X index (conventional)
+          ! 2nd: all operators with  1 X index (auxbasis)
+          ! 2nd: all operators with >1 X index (formal operators)
+          idx_occls_x012(0) = 0
+          idx_occls_x012(1) = n_occls_x012(0)
+          idx_occls_x012(2) = n_occls_x012(0)+n_occls_x012(1)
         end if
 
         op%n_occ_cls = 0
+        ! counter for: number of external indices (for R12 stuff)
+        n_occls_x012(0:2) = 0
         rank: do irank = min_rank, max_rank
           if (ncadiff.ge.0) then
             nc = irank
@@ -147,12 +163,21 @@
               if (.not.ok) cycle a_part
 
               op%n_occ_cls = op%n_occ_cls + 1
+              ! how many X indices?
+              if (iextr.gt.0) then ! iextr is set in opdim.h
+                nx = min(2,c_distr(iextr)+a_distr(iextr))
+              else
+                nx = 0
+              end if
+              n_occls_x012(nx) = n_occls_x012(nx)+1 
               if (ipass.eq.2) then
                 ! set occupation of current class
-                op%ihpvca_occ(1:ngastp,1,op%n_occ_cls) = c_distr
-                op%ihpvca_occ(1:ngastp,2,op%n_occ_cls) = a_distr
-                op%ica_occ(1,op%n_occ_cls) = sum(c_distr(1:ngastp))
-                op%ica_occ(2,op%n_occ_cls) = sum(a_distr(1:ngastp))
+                idx_occls_x012(nx) = idx_occls_x012(nx)+1
+                idx = idx_occls_x012(nx)
+                op%ihpvca_occ(1:ngastp,1,idx) = c_distr
+                op%ihpvca_occ(1:ngastp,2,idx) = a_distr
+                op%ica_occ(1,idx) = sum(c_distr(1:ngastp))
+                op%ica_occ(2,idx) = sum(a_distr(1:ngastp))
 
                 ! set restrictions
                 do ica = 1, 2
@@ -160,10 +185,10 @@
                     ! set a/c rank as upper bound
                     idiff = - irestr(1,igas,ica,1)+irestr(2,igas,ica,1)
                     imaxr = min(irestr(2,igas,ica,1),
-     &                       op%ica_occ(ica,op%n_occ_cls))
-                    op%igasca_restr(1,igas,ica,1,op%n_occ_cls) =
+     &                    op%ihpvca_occ(hpvxgas(igas),ica,idx))
+                    op%igasca_restr(1,igas,ica,1,idx) =
      &                   max(0,imaxr - idiff)
-                    op%igasca_restr(2,igas,ica,1,op%n_occ_cls) =
+                    op%igasca_restr(2,igas,ica,1,idx) =
      &                   imaxr                    
                   end do
                 end do
@@ -172,18 +197,18 @@
                   do igas = 1, ngas
                     if (iad_gas(igas).ne.2) then
                       if (igas.eq.1) then                        
-                        op%igasca_restr(1:2,igas,ica,1,op%n_occ_cls) = 0
+                        op%igasca_restr(1:2,igas,ica,1,idx) = 0
                       else
-                        op%igasca_restr(1,igas,ica,1,op%n_occ_cls) =
-     &                      op%igasca_restr(2,igas,ica,1,op%n_occ_cls) 
-                        op%igasca_restr(1,igas-1,ica,1,op%n_occ_cls) =
-     &                      op%igasca_restr(2,igas-1,ica,1,op%n_occ_cls) 
+                        op%igasca_restr(1,igas,ica,1,idx) =
+     &                      op%igasca_restr(2,igas,ica,1,idx) 
+                        op%igasca_restr(1,igas-1,ica,1,idx) =
+     &                      op%igasca_restr(2,igas-1,ica,1,idx) 
                       end if
                     end if
                   end do
                 end do
                 ! mask restriction currently unused
-                op%igasca_restr(1:2,1:ngas,1:2,2,op%n_occ_cls) = 0
+                op%igasca_restr(1:2,1:ngas,1:2,2,idx) = 0
               end if 
 
             end do a_part

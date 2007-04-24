@@ -15,6 +15,8 @@
 
       implicit none
 
+      include 'stdunit.h'
+
       integer, parameter :: ntest = 100, maxn = 100
 
       integer, intent(in) ::
@@ -53,28 +55,31 @@
         fac = 1d0/dble(n)
 
         ! Xscr = 1/N Xscr * X
-        call matml7(xscr1,xscr2,xmat,
-     &              ndim,ndim,
-     &              ndim,ndim,
-     &              ndim,ndim,0d0,fac,0)
+c        call matml7(xscr1,xscr2,xmat,
+c     &              ndim,ndim,
+c     &              ndim,ndim,
+c     &              ndim,ndim,0d0,fac,0)
+        call dgemm('n','n',ndim,ndim,ndim,
+     &             fac,xscr2,ndim,
+     &                 xmat,ndim,
+     &             0d0,xscr1,ndim)
+
 
         xnrm = sqrt(inprod(xscr1,xscr1,ndim2))
         if (xnrm.lt.thrsh) conv = .true.
 
         if (ntest.ge.10)
-     &       write(6,*) ' N = ',n,'  |1/N! X^N| = ',xnrm
+     &       write(luout,*) ' N = ',n,'  |1/N! X^N| = ',xnrm
 
         expx(1:ndim,1:ndim) = expx(1:ndim,1:ndim) + xscr1(1:ndim,1:ndim)
-c        call vecsum(expx,expx,xscr1,1d0,1d0,ndim2)
 
         xscr2(1:ndim,1:ndim) = xscr1(1:ndim,1:ndim)
-c        call copvec(xscr1,xscr2,ndim2)
 
       end do
 
       if (.not.conv) then
-        write(6,*) ' Taylor expansion of exp(X) did not converge!'
-        stop 'expgmat'
+        write(luout,*) ' Taylor expansion of exp(X) did not converge!'
+        call quit(1,'expgmat','no convergence')
       end if
 
       return

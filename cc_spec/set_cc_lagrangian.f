@@ -20,6 +20,8 @@
 
       integer, parameter ::
      &     ntest = 100
+      character, parameter ::
+     &     name_string*13='CC Lagrangian'
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -43,7 +45,7 @@
 
       ! local variables
       logical ::
-     &     init_pn, init_pc
+     &     init_pn, init_pc, len
 
       type(contraction) ::
      &     contr
@@ -105,10 +107,6 @@
       endif  
       ! For convenience, we allocate the maximum number here.
       allocate(contr%vertex(maxvtx),contr%arc(maxarc))
-      ! Allocate space in each contraction for each arc. 
-      do idx = 1, maxarc
-        allocate(contr%arc(idx)%occ_cnt(ngastp,2))
-      end do
 
       ! get maximum excitation level of T-operators
       maxexc = maxxlvl_op(ops(idxtop))
@@ -121,7 +119,8 @@
       rewind lucclag
 
       ! first record: a name
-      write(lucclag) 'CC Lagrangian'
+      len = len_trim(name_string)
+      write(lucclag) len,name_string
       ! second record: structure of result 
       !  -- number of occupation classes and ID of operator describing
       !   the structure of the result (0 if result is a scalar)

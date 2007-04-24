@@ -8,6 +8,8 @@
 
       implicit none
 
+      include 'stdunit.h'
+
       integer, parameter ::
      &     ntest = 100
 
@@ -34,8 +36,8 @@
 
         if (eigvi(ivec).ne.0d0) then
           if (ivec+1.gt.ndim) then
-            write(6,*) 'inconsistency in eigenvalue structure'
-            stop 'nrmvec'
+            write(luout,*) 'inconsistency in eigenvalue structure'
+            call quit(1,'nrmvec','inconsistent eigenvalues')
           end if
 
           xnrm = xnrm + inprod(eigvec(1,ivec+1),eigvec(1,ivec+1),ndim)

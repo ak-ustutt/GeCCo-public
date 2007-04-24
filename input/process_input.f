@@ -106,7 +106,7 @@
 
       implicit none
 
-      type(keyword), pointer, intent(in) ::
+      type(keyword), pointer ::
      &     keywd
       integer, intent(in) ::
      &     status

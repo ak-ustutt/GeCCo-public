@@ -10,6 +10,11 @@
      &       nelmnt,ivec(nelmnt)
         end function ielsqsum
 
+        integer(4) function i4elsqsum(ivec,nelmnt)
+        integer(4), intent(in) ::
+     &       nelmnt,ivec(nelmnt)
+        end function i4elsqsum
+
         integer function ielprd(ivec,nel)
         integer, intent(in) ::
      &       nel,ivec(nel)
@@ -69,6 +74,18 @@
      &       inum(2), nsum, inummin, inummax
         integer, intent(inout) ::
      &       ipart(2,nsum)
+        end function
+
+        logical function list_cmp(list1,list2,nel)
+        implicit none
+        integer, intent(in) ::
+     &     nel, list1(nel), list2(nel)        
+        end function
+
+        integer function idxlist(inum,ilist,nel,inc)
+        implicit none
+        integer, intent(in) ::
+     &     inum, nel, inc, ilist(nel)
         end function
 
       end interface

@@ -4,7 +4,7 @@
 *     a little auxiliary routine to init the hande fhand
 *     reclen: in real(8) words (system specific factors are handled
 *             automatically in the inner routines)
-*     type: see ioparam.h
+*     type: see def_filinf.h
 *----------------------------------------------------------------------*
       implicit none
 

@@ -1,4 +1,3 @@
-
 *----------------------------------------------------------------------*
       logical function rd_contr(lu,contr,idx_res)
 *----------------------------------------------------------------------*
@@ -28,12 +27,32 @@
       rd_contr = .true.
       
       read(lu,end=100) contr%fac,idx,buffer(1:idx)
+      ! if we make it up to here in this case:
+      if (idx.gt.lbuf)
+     &     call quit(0,'rd_contr','too long record')
 
       contr%idx_res = idx_res
       contr%iblk_res = buffer(1)
       contr%nvtx = buffer(2)
       contr%narc = buffer(3) 
       contr%nfac = buffer(4) 
+
+      ! (re)allocate the necessary space
+      if (contr%nvtx.gt.contr%mxvtx) then
+        if (contr%mxvtx.gt.0) deallocate(contr%vertex)
+        contr%mxvtx = contr%nvtx
+        allocate(contr%vertex(contr%mxvtx))
+      end if
+      if (contr%narc.gt.contr%mxarc) then
+        if (contr%mxarc.gt.0) deallocate(contr%arc)
+        contr%mxarc = contr%narc
+        allocate(contr%arc(contr%mxarc))
+      end if
+      if (contr%nfac.gt.contr%mxfac) then
+        if (contr%mxfac.gt.0) deallocate(contr%inffac)
+        contr%mxfac = contr%nfac
+        allocate(contr%inffac(4,contr%mxfac))
+      end if
 
       idx = 4
 
@@ -46,7 +65,6 @@
       do ii = 1, contr%narc
         contr%arc(ii)%link(1)      = buffer(idx+1)
         contr%arc(ii)%link(2)      = buffer(idx+2)
-c new
         idx = idx+2
         do ica = 1,2
           do igastp = 1, ngastp
@@ -54,14 +72,6 @@ c new
             contr%arc(ii)%occ_cnt(igastp,ica) = buffer(idx)
           end do
         end do
-c end new
-c        contr%arc(ii)%occ_cnt(1,1) = buffer(idx+3)
-c        contr%arc(ii)%occ_cnt(2,1) = buffer(idx+4)
-c        contr%arc(ii)%occ_cnt(3,1) = buffer(idx+5)
-c        contr%arc(ii)%occ_cnt(1,2) = buffer(idx+6)
-c        contr%arc(ii)%occ_cnt(2,2) = buffer(idx+7)
-c        contr%arc(ii)%occ_cnt(3,2) = buffer(idx+8)
-c        idx = idx+8
       end do
 
       do ii = 1, contr%nfac
