@@ -18,7 +18,6 @@
      &     nops
       type(orbinf) ::
      &     orb_info
-
       type(operator_list), pointer ::
      &     list_pnt
       logical ::
@@ -40,7 +39,7 @@
       if (associated(list_pnt%op)) then
         allocate(list_pnt%next)
         list_pnt%next%prev => list_pnt
-        list_pnt => op_list%next
+        list_pnt => list_pnt%next
         nullify(list_pnt%next)
 c        nullify(list_pnt%op)
       end if
@@ -58,6 +57,7 @@ c        nullify(list_pnt%op)
       min_rank = 0
       max_rank = 2
       ncadiff = 0
+
       call set_hpvx_and_restr_for_h()
 
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
@@ -70,7 +70,7 @@ c        nullify(list_pnt%op)
       list_pnt%next%prev => list_pnt
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
-c      nullify(list_pnt%op)
+      nullify(list_pnt%op)
       allocate (list_pnt%op)
 
       name = 'T'
@@ -130,6 +130,7 @@ c      nullify(list_pnt%op)
       integer ::
      &     ica, igastp, igas
 
+      orb_info%nactt_hpv(ngastp)=2
       do ica = 1, 2
         do igastp = 1, ngastp
           if (orb_info%nactt_hpv(igastp).gt.0) then

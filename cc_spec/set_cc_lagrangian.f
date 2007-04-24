@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine set_cc_lagrangian(ffcclag,
-     &     nops,ops,idxham,idxlag,idxtop)
+     &     nops,ops,idxham,idxlag,idxtop,idxr12,idxc12,idxrba,idxcba,
+     &     explicit)
 *----------------------------------------------------------------------*
 *
 *     set up sequence of operators, integrals and contractions that
@@ -11,6 +12,8 @@
 *     etc.) has been defined (see routines .... )
 *
 *     written by andreas, sept. 2006
+*
+*     Modified for R12 capability, GWR April 2007.
 *
 *----------------------------------------------------------------------*
       implicit none
@@ -30,10 +33,13 @@
 
       integer, intent(in) ::
      &     nops,
-     &     idxham,idxlag,idxtop
+     &     idxham,idxlag,idxtop,idxr12,idxc12,idxrba,idxcba
 
       type(operator), intent(in) ::
      &     ops(nops)
+
+      logical, intent(in) ::
+     &     explicit
 
       ! local variables
       logical ::
@@ -53,7 +59,8 @@
      &     iocc_l(ngastp,2), iocc_h(ngastp,2),
      &     iocc_hd(ngastp,2), iocc_hx(ngastp,2),
      &     iocc_hxovl(ngastp,2), iocc_ttot(ngastp,2),
-     &     iocc_ltc(ngastp,2), iocc_scr(ngastp,2)
+     &     iocc_ltc(ngastp,2), iocc_scr(ngastp,2),
+     &     i,j,k,l
       
       ! some small arrays
       integer, parameter ::
@@ -88,19 +95,27 @@
 
       ! L + H + 4times T gives maximum 6 vertices
       maxvtx = 6
-      ! we can have at most 8 contraction arcs between operators
-      maxarc = 8
-      ! for convenience, we allocate the maximum number here
+      ! A contraction arc is the contraction matrix between each 
+      ! operator.We can have at most 8 contraction arcs in CC, but
+      ! up to 11 in CC-R12. (Check this limit, it is at least 11).
+      if(explicit)then
+        maxarc=11
+      else  
+        maxarc = 8
+      endif  
+      ! For convenience, we allocate the maximum number here.
       allocate(contr%vertex(maxvtx),contr%arc(maxarc))
+      ! Allocate space in each contraction for each arc. 
       do idx = 1, maxarc
         allocate(contr%arc(idx)%occ_cnt(ngastp,2))
       end do
 
       ! get maximum excitation level of T-operators
       maxexc = maxxlvl_op(ops(idxtop))
+
       if (ntest.ge.100) write(luout,*) 'max. exc.level of T: ', maxexc
 
-      ! open file
+      ! open file where contraction information will be kept.
       call file_open(ffcclag)
       lucclag = ffcclag%unit
       rewind lucclag
@@ -124,16 +139,17 @@
       l_loop: do iloccls = 0, ops(idxlag)%n_occ_cls
 
         ncterm(1:5) = 0
-
         contr%nvtx=0
         contr%narc=0
 
         ! we start with zero --
         ! here, we dump how to obtain the CC-energy
         if (iloccls.eq.0) then
+
           iocc_l(1:ngastp,1:2)=0
           nlop = 0
         else
+        ! Copy L terms from operator list to local arrays.  
           if (ops(idxlag)%dagger) then
             ! daggered operator: interchange c<->a
             iocc_l(1:ngastp,2) =
@@ -143,7 +159,7 @@
           else
             iocc_l(1:ngastp,1:2) =
      &           ops(idxlag)%ihpvca_occ(1:ngastp,1:2,iloccls)
-          end if
+          end if   
           contr%vertex(1)%idx_op=idxlag
           contr%vertex(1)%iblk_op=iloccls
           contr%nvtx = 1
@@ -153,20 +169,25 @@
         ! current projection is zeroth order space? find out here ....
 
         ! loop over blocks of Hamiltonian
+
         h_loop: do ihoccls = 1, ops(idxham)%n_occ_cls
           
           contr%narc = 0
           contr%nvtx = nlop+1
+
           iocc_h(1:ngastp,1:2) =
      &         ops(idxham)%ihpvca_occ(1:ngastp,1:2,ihoccls)
+
           contr%vertex(contr%nvtx)%idx_op=idxham
           contr%vertex(contr%nvtx)%iblk_op=ihoccls
           idxh = contr%nvtx ! remember H vertex number
 
           ! get excitation part of H
           iocc_hx = iocc_xdn(1,iocc_h)
+
           ! get overlap with L+ ...
           iocc_hxovl = iocc_overlap(iocc_h,.false.,iocc_l,.true.)
+
           ! and test whether it is identical with excitation part of H
           ! (as we know that only T operators follow, so excitation part
           ! of H must fully contract with L)
@@ -191,6 +212,7 @@
           ! get number of T that can contract with H (=rank of commutator)
           ncommax = ielsum(iocc_hd,ngastp*2)
           if (ncommax.eq.0) then
+
             ! excitation part of H must be identical with L+
             if (.not.iocc_equal(iocc_hx,.false.,iocc_l,.true.))
      &           cycle h_loop
@@ -211,11 +233,14 @@
             ! [Ttotal] = [L^\dag] - [Hx] + [Hd^\dag]
             iocc_ttot = iocc_add(1,iocc_l,.true.,-1,iocc_hx,.false.)
             iocc_ttot = iocc_add(1,iocc_ttot,.false.,1,iocc_hd,.true.)
+
             !  check whether [Ttotal] looks the way we expect:
             iexc = iocc_ttot(ipart,1) ! keep excitation level in mind
+
             if (.not.(iocc_ttot(ihole,2).eq.iexc.and.
      &           iocc_ttot(ihole,1).eq.0.and.
-     &           iocc_ttot(ipart,2).eq.0) ) then
+     &           iocc_ttot(ipart,2).eq.0.)) then
+              if(explicit)cycle h_loop
               write(luout,*) 'fishy [Ttot]:'
               call wrt_occ(luout,iocc_ttot)
               call quit(1,'set_cc_lagrangian','fishy occupation')
@@ -227,7 +252,6 @@
      &           ncommin, ncommax
 
             do icomm = ncommin, ncommax
-
               if (icomm.eq.1) then
                 contr%fac = 1d0
                 contr%nvtx = nlop+2
@@ -268,12 +292,18 @@
 
               else
                 ! double and higher commutator term:
+                write(luout,'(/"T tot")')
+                write(luout,'(4i4)')iocc_ttot(1:ngastp,1)
+                write(luout,'(4i4)')iocc_ttot(1:ngastp,2)
 
                 ! loop over all n-fold partitionings of [Ttotal] 
                 init_pn = .true.
                 do while (next_part_number(init_pn,.true.,iexc_part,
      &               iexc,icomm,1,maxexc))
                   init_pn = .false.
+
+                  write(luout,'(/"Partition")')
+                  write(luout,*)iexc_part
                   ! max possible contraction length:
                   maxcnt = min(2,ifndmax(iexc_part,1,icomm,1))
 
@@ -281,7 +311,7 @@
                   ihd(1) = iocc_hd(ihole,1)
                   ! particles to contract:
                   ihd(2) = iocc_hd(ipart,2)
-                  
+
                   ! loop over all n-fold partitionings of [Hd]
                   !  (incl. non-equivalent) permutations
                   init_pc = .true.
@@ -294,7 +324,7 @@
                     do idx = 1, icomm
                       if (ihd_part(1,idx).gt.iexc_part(idx).or.
      &                    ihd_part(2,idx).gt.iexc_part(idx))
-     &                     cycle pc_loop
+     &                    cycle pc_loop
                     end do
                     
                     ! represent each p/h pair for contractions
@@ -308,7 +338,7 @@
                     ! with increasing order of ihd_part_idx
                     do idx = 2, icomm
                       if (iexc_part(idx-1).eq.iexc_part(idx).and.
-     &                     ihd_part_idx(idx-1).gt.ihd_part_idx(idx))
+     &                    ihd_part_idx(idx-1).gt.ihd_part_idx(idx))
      &                     cycle pc_loop
                     end do
 
@@ -326,13 +356,16 @@
                       iocc_scr(1:ngastp,1:2) = 0
                       iocc_scr(ihole,2) = iexc_part(iop)
                       iocc_scr(ipart,1) = iexc_part(iop)
+
                       idx = iblk_occ(iocc_scr,.false.,ops(idxtop))
+
                       if (idx.le.0) then
                         write(luout,*) 'occupation not found in list:'
                         write(luout,*) iocc_scr(1:ngastp,1)
                         write(luout,*) iocc_scr(1:ngastp,2)
                         stop 'occupation not found in list (2)'
                       end if
+
                       contr%vertex(ivtxoff+iop)%idx_op = idxtop
                       contr%vertex(ivtxoff+iop)%iblk_op = idx
                       idxarc = idxarc+1
@@ -343,10 +376,12 @@
      &                     = ihd_part(1,iop)
                       contr%arc(idxarc)%occ_cnt(2,2)
      &                     = ihd_part(2,iop)
+
                       ! contraction between L and T
                       iocc_ltc = iocc_add(-1,
      &                   contr%arc(idxarc)%occ_cnt,.false.,
      &                   +1,iocc_scr,.true.)
+
                       if (ielsum(iocc_ltc,ngastp*2).gt.0) then
                         idxarc = idxarc+1
                         contr%arc(idxarc)%link(1)=1

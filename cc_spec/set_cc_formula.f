@@ -30,7 +30,10 @@
      &     list_pnt
 
       integer ::
-     &     idxham, idxtop, idxlag
+     &     idxham, idxtop, idxlag, idxr12, idxc12, idxrba, idxcba
+
+      logical ::
+     &     explicit
 
       ! advance to end of operator list:
       list_pnt => form_list
@@ -49,11 +52,20 @@ c      idxham = idx_oplist()
       idxham = 1
       idxtop = 2
       idxlag = 3
+      idxr12 = 4
+      idxc12 = 5
+      idxrba = 6
+      idxcba = 7
+
+      explicit=.false.
+      if(is_keyword_set('method.R12'))then
+        explicit=.true.
+      endif
 
       ! set up Lagrangian
       call file_init(list_pnt%fhand,name_lagrange,ftyp_sq_unf,0)
       call set_cc_lagrangian(list_pnt%fhand,nops,ops,
-     &     idxham,idxlag,idxtop)
+     &     idxham,idxlag,idxtop,idxr12,idxc12,idxrba,idxcba,explicit)
 
       return
       end

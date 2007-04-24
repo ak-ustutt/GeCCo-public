@@ -115,12 +115,12 @@
 
             init_c = .false.
 
-            ! inverse sequence delivered by next_part_number:
+            ! invert sequence delivered by next_part_number:
             do igastp = 1, ngastp
               c_distr(igastp) = c_distr_rv(ngastp+1-igastp)
             end do
 
-            ! check wether distribution is allowed
+            ! check whether distribution is allowed
             ok = .true.
             do igastp = 1, ngastp
               ok = ok.and.hpvx_mnmx(1,igastp,1).le.c_distr(igastp)
@@ -133,12 +133,12 @@
      &           na,ngastp,0,na))
               init_a = .false.
 
-              ! inverse sequence delivered by next_part_number:
+              ! invert sequence delivered by next_part_number:
               do igastp = 1, ngastp
                 a_distr(igastp) = a_distr_rv(ngastp+1-igastp)
               end do
 
-              ! check wether distribution is allowed
+              ! check whether distribution is allowed
               ok = .true.
               do igastp = 1, ngastp
                 ok = ok.and.hpvx_mnmx(1,igastp,2).le.a_distr(igastp)
@@ -153,6 +153,7 @@
                 op%ihpvca_occ(1:ngastp,2,op%n_occ_cls) = a_distr
                 op%ica_occ(1,op%n_occ_cls) = sum(c_distr(1:ngastp))
                 op%ica_occ(2,op%n_occ_cls) = sum(a_distr(1:ngastp))
+
                 ! set restrictions
                 do ica = 1, 2
                   do igas = 1, ngas
@@ -216,7 +217,7 @@
             call wrt_rstr(luout,op%igasca_restr(1,1,1,1,iocc),ngas)
           end do
         end if
-
+  
       end do
 
       return

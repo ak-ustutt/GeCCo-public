@@ -30,6 +30,8 @@
       call keyword_add('CC',context='method')
       call argument_add('maxexc','method.CC',type=vtyp_int,idef=(/2/))
       call argument_add('minexc','method.CC',type=vtyp_int,idef=(/1/))
+      call keyword_add('R12',context='method')
+      call argument_add('ansatz','method.R12',type=vtyp_int,idef=(/1/))
 
       call keyword_add('calculate')
       call keyword_add('solve',context='calculate')

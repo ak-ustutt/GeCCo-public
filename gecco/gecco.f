@@ -39,8 +39,9 @@
       luout = 6      ! output unit
 c      iprlvl = 1
       iprlvl = 10    ! print level
-      ngastp = 3     ! H/P/V
+      ngastp = 4     ! H/P/V/X
       ivale = 3      ! V is 3
+      iextr=4        ! X is 4
 
       call printheader()
 
