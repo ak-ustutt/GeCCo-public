@@ -1,10 +1,10 @@
 *----------------------------------------------------------------------*
       subroutine form_indep(ffoutput,ffinput,name_out,
-     &                      idxop,
+     &                      ncmpnd,idxop,
      &                      ops,nops)
 *----------------------------------------------------------------------*
 *     collect those contractions on ffoutput that do not depend on
-*     operator idxop
+*     any operator on list idxop(1:ncmpnd)
 *
 *     andreas, april 2007
 *
@@ -26,7 +26,7 @@
       type(filinf), intent(in) ::
      &     ffinput, ffoutput
       integer, intent(in) ::
-     &     nops, idxop
+     &     ncmpnd, nops, idxop(ncmpnd)
       type(operator), intent(in) ::
      &     ops(nops)
       
@@ -37,7 +37,7 @@
      &     ok
       integer ::
      &     luinput, luoutput,
-     &     nterms, idum, idxinp, idx
+     &     nterms, idum, idxinp, idx, icmpnd
 
       logical, external ::
      &     rd_contr
@@ -70,12 +70,14 @@
       do while(rd_contr(luinput,contr,idxinp))
         
         ok = .true.
-        do idx = 1, contr%nvtx
-          if (contr%vertex(idx)%idx_op.eq.idxop) then
-            ok = .false.
-            exit
-          end if
-        end do
+        cmp_loop: do idx = 1, contr%nvtx
+          do icmpnd = 1, ncmpnd
+            if (contr%vertex(idx)%idx_op.eq.idxop(icmpnd)) then
+              ok = .false.
+              exit cmp_loop
+            end if
+          end do
+        end do cmp_loop
 
         if (ok) then
           nterms = nterms+1

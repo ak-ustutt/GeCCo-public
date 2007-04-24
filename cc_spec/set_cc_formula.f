@@ -71,7 +71,8 @@ c      idxham = idx_oplist()
       allocate(list_pnt%fhand)
       call file_init(list_pnt%fhand,name_ccenergy,ftyp_sq_unf,0)
       call form_indep(list_pnt%fhand,list_pnt%prev%fhand,name_ccen,
-     &     idxlag,ops,nops)
+     &     1,idxlag,
+     &     ops,nops)
 
       ! set up CC-residual (=vector function)
       nform = nform+1
@@ -82,7 +83,8 @@ c      idxham = idx_oplist()
       allocate(list_pnt%fhand)
       call file_init(list_pnt%fhand,name_vectfunc,ftyp_sq_unf,0)
       call form_deriv(list_pnt%fhand,list_pnt%prev%prev%fhand,name_resi,
-     &     idxlag,0,idxomg,ops,nops)
+     &     1,idxlag,0,idxomg,
+     &     ops,nops)
 
       return
       end

@@ -1,13 +1,15 @@
 *----------------------------------------------------------------------*
       subroutine form_deriv(ffderiv,ffinput,name_deriv,
-     &                      idxder,idxmlt,idxres,
+     &                      ncmpnd,idxder,idxmlt,idxres,
      &                      ops,nops)
 *----------------------------------------------------------------------*
 *     get the derivatives of all contraction on ffinput
 *
-*     idxder is the index of the operator with respect to which the
+*     ncmpnd: number of compounds in multi-compound operator -
+*       e.g. for R12 : 'T' and 'C' are a compound op. (ncmpnd=2) 
+*     idxder(1:ncmpnd) is the index of the operator with respect to which the
 *     derivative has to be taken
-*     idxmlt is the index of the operator which the derivative is 
+*     idxmlt(1:ncmpnd) is the index of the operator which the derivative is 
 *     multiplied with (0 if only the derivative is taken)
 *     idxres is the index of the resulting operator (0, if scalar)     
 *
@@ -28,7 +30,7 @@
       type(filinf), intent(in) ::
      &     ffinput, ffderiv
       integer, intent(in) ::
-     &     nops, idxder, idxmlt, idxres
+     &     nops, ncmpnd, idxder(ncmpnd), idxmlt(ncmpnd), idxres
       type(operator), intent(in) ::
      &     ops(nops)
       
@@ -41,7 +43,7 @@
 
       integer ::
      &     luinput, luderiv,
-     &     nterms, nder, idx, idum, idxinp, len
+     &     nterms, nder, idx, idum, idxinp, len, icmpnd
 
       logical, external ::
      &     rd_contr
@@ -68,13 +70,16 @@
       nterms = 0
       do while(rd_contr(luinput,contr,idxinp))
         
-        call contr_deriv(conder,nder,contr,ops,idxder,idxmlt,idxres)
+        do icmpnd = 1, ncmpnd
+          call contr_deriv(conder,nder,contr,ops,
+     &         idxder(icmpnd),idxmlt(icmpnd),idxres)
 
-        cur_conder => conder
-        do idx = 1, nder
-          nterms = nterms+1
-          call wrt_contr(luderiv,cur_conder%contr)
-          if (idx.lt.nder) cur_conder => cur_conder%next
+          cur_conder => conder
+          do idx = 1, nder
+            nterms = nterms+1
+            call wrt_contr(luderiv,cur_conder%contr)
+            if (idx.lt.nder) cur_conder => cur_conder%next
+          end do
         end do
 
       end do
