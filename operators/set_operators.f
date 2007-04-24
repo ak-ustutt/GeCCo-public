@@ -22,12 +22,14 @@
 
       explicit=.false.
       nops=0
+      
+      if(is_keyword_set('method.R12').gt.0) explicit=.true.
 
+      call set_h_operators(op_list,nops,orb_info,explicit)
       if (is_keyword_set('method.CC').gt.0) then
         call set_cc_operators(op_list,nops,orb_info)
       endif
-      if(is_keyword_set('method.R12').gt.0)then
-        explicit=.true.
+      if(explicit)then
         call set_r12_operators(op_list,nops,orb_info)
       end if
 

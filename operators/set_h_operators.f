@@ -1,8 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine set_cc_operators(op_list,nops,orb_info)
+      subroutine set_h_operators(op_list,nops,orb_info,explicit)
 *----------------------------------------------------------------------*
-*     hard-wired set-up of the basic operators needed for the
-*     coupled-cluster Lagrangian
+*     Hard-wired set-up of the Hamiltonian operator.
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -16,6 +15,8 @@
      &     op_list
       integer, intent(inout) ::
      &     nops
+      logical, intent(in) ::
+     &     explicit
       type(orbinf) ::
      &     orb_info
       type(operator_list), pointer ::
@@ -27,7 +28,7 @@
       integer ::
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
      &     gamma, iarr(1)
-      integer ::
+ 0    integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
       ! advance to end of operator list:
@@ -46,67 +47,19 @@ c        nullify(list_pnt%op)
       allocate (list_pnt%op)
 
       nops = nops+1
-      ! new entry: the T operator
-      name = 'T'
+      ! new entry: the Hamiltonian
+      name = 'H'
       dagger = .false.
       absym = 0
       casym = 0
       gamma = 1
       s2 = 0
       ms = 0
-      call get_argument_value('method.CC','minexc',ival=min_rank)
-      call get_argument_value('method.CC','maxexc',ival=max_rank)
+      min_rank = 0
+      max_rank = 2
       ncadiff = 0
-      call set_hpvx_and_restr_for_xop()
 
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
-
-      ! new entry: the Tbar operator
-      nops = nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev => list_pnt
-      list_pnt => list_pnt%next
-      nullify(list_pnt%next)
-      allocate (list_pnt%op)
-     
-      name = 'TBAR'
-      ! we define an excitation operator to ensure same
-      ! storage sequence as for T
-      dagger = .true.  ! but we consider the conjugate
-      absym = 0
-      casym = 0
-      gamma = 1
-      s2 = 0
-      ms = 0
-      ! min_rank and max_rank are still set
-      ncadiff = 0
-      call set_hpvx_and_restr_for_xop()
-
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
-
-      ! new entry: the CC residual OMG
-      nops = nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev => list_pnt
-      list_pnt => list_pnt%next
-      nullify(list_pnt%next)
-      allocate (list_pnt%op)
-     
-      name = 'OMG'
-      ! same as T
-      dagger = .false.
-      absym = 0
-      casym = 0
-      gamma = 1
-      s2 = 0
-      ms = 0
-      ! min_rank and max_rank are still set
-      ncadiff = 0
-      call set_hpvx_and_restr_for_xop()
+      call set_hpvx_and_restr_for_h()
 
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
@@ -119,7 +72,7 @@ c        nullify(list_pnt%op)
 *----------------------------------------------------------------------*
 *     some loops extracted for better overview:
 *----------------------------------------------------------------------*
-      subroutine set_hpvx_and_restr_for_xop()
+      subroutine set_hpvx_and_restr_for_h()
 *----------------------------------------------------------------------*
 
       implicit none
@@ -128,12 +81,9 @@ c        nullify(list_pnt%op)
      &     ica, igastp, igas
 
       do ica = 1, 2
-        do igastp = 1, ngastp
-          if (orb_info%nactt_hpv(igastp).gt.0.and.
-     &        ((ica.eq.1.and.(igastp.eq.ipart.or.igastp.eq.ivale)).or.
-     &         (ica.eq.2.and.(igastp.eq.ihole.or.igastp.eq.ivale)) ))
-     &           then
-            ihpv_mnmx(1,igastp,ica) = 0
+        do igastp = 1, ngastp-1
+          if (orb_info%nactt_hpv(igastp).gt.0) then
+            ihpv_mnmx(1,igastp,ica) = min_rank
             ihpv_mnmx(2,igastp,ica) = max_rank
           else
             ihpv_mnmx(1,igastp,ica) = 0
@@ -141,16 +91,22 @@ c        nullify(list_pnt%op)
           end if
         end do
       end do
+      if(explicit)then
+        ihpv_mnmx(1,ngastp,1:2)=min_rank
+        ihpv_mnmx(2,ngastp,1:2)=max_rank
+      else
+        ihpv_mnmx(1:2,ngastp,1:2)=0
+      endif  
+
       irestr(1:2,1:orb_info%ngas,1:2,1:2) = 0
       do ica = 1, 2
         do igas = 1, orb_info%ngas
-          irestr(1,igas,ica,1) = 0
+          irestr(1,igas,ica,1) = min_rank
           irestr(2,igas,ica,1) = max_rank
         end do
       end do
 
       return
-      end subroutine set_hpvx_and_restr_for_xop
-*----------------------------------------------------------------------*
+      end subroutine set_hpvx_and_restr_for_h
 
       end

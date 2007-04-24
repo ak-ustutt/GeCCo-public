@@ -291,9 +291,6 @@
 
               else
                 ! double and higher commutator term:
-                write(luout,'(/"T tot")')
-                write(luout,'(4i4)')iocc_ttot(1:ngastp,1)
-                write(luout,'(4i4)')iocc_ttot(1:ngastp,2)
 
                 ! loop over all n-fold partitionings of [Ttotal] 
                 init_pn = .true.
@@ -301,8 +298,6 @@
      &               iexc,icomm,1,maxexc))
                   init_pn = .false.
 
-                  write(luout,'(/"Partition")')
-                  write(luout,*)iexc_part
                   ! max possible contraction length:
                   maxcnt = min(2,ifndmax(iexc_part,1,icomm,1))
 
