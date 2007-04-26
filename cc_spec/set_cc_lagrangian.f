@@ -370,7 +370,7 @@ c            cycle h_loop
      &             ival=ansatze)
               if(iocc_ttot(iextr,1).ne.0.and.iocc_ttot(ihole,2).lt.2)
      &             cycle h_loop
-              if(iocc_ttot(iextr,1)
+c              if(iocc_ttot(iextr,1)
               if(ansatze.eq.1)then
                 if(mod(iocc_ttot(iextr,1),2).ne.0)cycle h_loop
               endif  

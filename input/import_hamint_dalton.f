@@ -25,8 +25,6 @@
       type(orbinf), intent(in) ::
      &     orb_info
 
-c      call quit(1,'import_hamint_dalton','BAUSTELLE')
-
       ! read reference energy and fock matrix from SIRIFC
       ! and sort fock matrix into operator file
       call import_fock_dalton(ffham,hop,str_info,orb_info)

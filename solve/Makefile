@@ -12,7 +12,7 @@ srcdir:=.
 include $(topdir)/make.config
 
 INST_PROGS:= 
-INST_LIBS:=libfileutil.a
+INST_LIBS:=libsolve.a
 INST_INCLUDES:=
 INST_DATA:=
 # module names are listed in smallcaps and wihtout any .mod
@@ -20,14 +20,15 @@ INST_MODULES:=
 
 include $(topdir)/make.rules
 
+#mod_objs:=$(addsuffix .o,$(basename $(INST_MODULES)))
 src:=$(wildcard *.f90 *.F *.f)
-objs:=$(addsuffix .o, $(basename $(src)))
+objs:=$(mod_objs) $(filter-out $(mod_objs),$(addsuffix .o, $(basename $(src))))
 
 libs:=
 
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)
 
-$(libdir)/libfileutil.a: $(objs)
+$(libdir)/libsolve.a: $(objs)
 	$(AR) rv $@ $?
 	$(RAN) $@
 

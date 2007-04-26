@@ -52,9 +52,6 @@
       nbetat = nalpht
       if (itms.gt.0) nalpht = nalpht+itms
       if (itms.lt.0) nbetat = nbetat-itms
-c dbg
-c      print *,'a/b: ',nalpht,nbetat
-c dbg
 
       ! scan size of subspaces --> maybe there is a min. number
       ! of pairs necessary to form an allowed string at all
@@ -74,12 +71,6 @@ c dbg
           npair = npair+npair4ss
         end if
       end do
-c dbg
-c      print *,'reserved:'
-c      do ispc = 1, nspc
-c        print *,' spc=',ispc,' res=',npair_res(ispc)
-c      end do
-c dbg
 
       if (succ) then
         ! loop over subspaces
@@ -89,9 +80,6 @@ c dbg
           inum = mostnd(1,1,ispc)
           ipos0 = ipos0-ioss(ispc)
           ipos = ipos0
-c dbg
-c          print *,' Space: ',ispc, ' ipos = ',ipos
-c dbg
           ! paired electrons ...
           npair = min(nalpht,nbetat)-npair_res(ispc)  ! possible pairs
           if (npair.lt.0) then
@@ -99,9 +87,6 @@ c dbg
             exit ispc_loop
           end if
           npair4ss = min(npair,ioss(ispc)/2) ! number of pairs in subspace
-c dbg
-c          print *,'npair, npair4ss: ',npair, npair4ss
-c dbg
 c        npair = npair-npair4ss
           nalpht = nalpht-npair4ss ! decrease counters
           nbetat = nbetat-npair4ss
@@ -121,14 +106,8 @@ c        npair = npair-npair4ss
             nalph4ss = nalph4ss-npair
             nbeta4ss = nalph4ss+npair
           end if
-c dbg
-c          print *,'nalph4ss, nbeta4ss: ', nalph4ss, nbeta4ss
-c dbg
           nalpht = nalpht-nalph4ss ! decrease counters
           nbetat = nbetat-nbeta4ss
-c dbg
-c          print *,' a/b after spc: ',nalpht,nbetat
-c dbg
           do ilone = 1, nbeta4ss
             idorb(ipos) = inum
             idspn(ipos) = -1

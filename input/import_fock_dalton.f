@@ -69,8 +69,24 @@
       ifree = mem_alloc_real(xfock,nfock,'fock_symblk')
       ! buffer for reordered elements
       if (ffham%buffered) then
-        ! dirty: we should check length of buffer
+        if (ffham%nbuffer.lt.nh1reo)
+     &       call quit(1,'import_fock_dalton',
+     &       'incore handling for H1 is inconsistent')
         xh1reo => ffham%buffer
+        ! check that indices on disc and in memory coincide
+        ! (currently assumed in h1_sym2str_reo)
+        do iocc_cls = 1, hop%n_occ_cls
+          ! ignore R12 stuff
+          if(iextr.gt.0.and.
+     &       hop%ihpvca_occ(iextr,1,iocc_cls)+
+     &       hop%ihpvca_occ(iextr,2,iocc_cls).gt.0 ) cycle
+
+          if (ffham%incore(iocc_cls).gt.0.and.
+     &        ffham%idxrec(iocc_cls).ne.hop%off_op_occ(iocc_cls)) then
+            call quit(1,'import_fock_dalton',
+     &           'non-contiguous buffering: not prepared for that')
+          end if
+        end do
       else
         ifree = mem_alloc_real(xh1reo,nh1reo,'fock_reo')
       end if

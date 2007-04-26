@@ -10,6 +10,7 @@
       include 'def_orbinf.h'
       include 'def_operator.h'
       include 'def_operator_list.h'
+      include 'par_opnames_gen.h'
 
       type(operator_list), intent(inout), target ::
      &     op_list
@@ -48,7 +49,7 @@ c        nullify(list_pnt%op)
 
       nops = nops+1
       ! new entry: the Hamiltonian
-      name = 'H'
+      name = op_ham
       dagger = .false.
       absym = 0
       casym = 0

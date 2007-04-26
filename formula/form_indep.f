@@ -19,7 +19,7 @@
       include 'def_contraction_list.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       character, intent(in) ::
      &     name_out*(*)

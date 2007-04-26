@@ -8,6 +8,7 @@
       implicit none
       include 'opdim.h'
       include 'ifc_input.h'
+      include 'par_opnames_gen.h'
       include 'stdunit.h'
       include 'def_orbinf.h'
       include 'def_operator.h'
@@ -74,7 +75,7 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
 
       nops=nops+1
       ! New entry: linear R12 operator.
-      name='R12'
+      name=op_r12
       dagger=.false.
       absym=0
       casym=0
@@ -99,7 +100,7 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       nullify(list_pnt%next)
       allocate(list_pnt%op)
       
-      name = 'C'
+      name = op_c12
       dagger=.false.
       absym=0
       casym=0
@@ -123,7 +124,7 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       nullify(list_pnt%next)
       allocate(list_pnt%op)
 
-      name = 'R12BAR'
+      name = op_rba
       ! Define an excitation operator to ensure the same storage
       ! sequence as for R, however, consider its adjoint.
       dagger=.true.
@@ -149,7 +150,7 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       nullify(list_pnt%next)
       allocate(list_pnt%op)
       
-      name = 'Cbar'
+      name = op_cba
       dagger=.true.
       absym=0
       casym=0

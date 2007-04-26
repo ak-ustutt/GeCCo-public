@@ -88,4 +88,10 @@
      &     inum, nel, inc, ilist(nel)
         end function
 
+        integer function imltlist(inum,ilist,nel,inc)
+        implicit none
+        integer, intent(in) ::
+     &       inum, nel, inc, ilist(nel)
+        end function
+        
       end interface

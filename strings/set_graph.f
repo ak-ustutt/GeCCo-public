@@ -73,10 +73,6 @@
         nexc = str_info%ispc_occ(igraph)
         most = mostnd(1,1,ioff_gas(ihpv))
 
-c dbg
-        print *,'call to weight gen',igraph
-        call flush(6)
-c dbg
         if (ipass.eq.1) then
           call weight_gen(ipass,
      &         leny(1,igraph),len_w4sg,leninf,len_wexit, ndis,

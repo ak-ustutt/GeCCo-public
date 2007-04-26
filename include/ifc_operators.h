@@ -35,4 +35,16 @@
         integer, intent(in) ::
      &       iocc_in(ngastp,2)
         end function iocc_dagger
+
+        integer function idx_oplist(opname,ops,nops)
+        implicit none
+        include 'def_operator.h'
+        character, intent(in) ::
+     &       opname*(*)
+        integer, intent(in) ::
+     &       nops
+        type(operator), intent(in) ::
+     &       ops(nops)
+        end function
+
       end interface

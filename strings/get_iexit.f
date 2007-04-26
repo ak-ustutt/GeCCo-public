@@ -21,10 +21,6 @@
         iwexit(-maxms:maxms,1:ngam,iel) =
      &     iw4sg(iel,-maxms:maxms,1:ngam,norb)
       end do
-c dbg
-c      print *,'extracted iwexit: norb=', norb
-c      call iwrtma(iwexit,maxms*2+1,nel+1,maxms*2+1,nel+1)
-c dbg
 
       return
       end
