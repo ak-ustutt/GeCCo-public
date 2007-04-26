@@ -35,6 +35,13 @@
       type(filinf), pointer ::
      &     fform(:)
 
+      integer, parameter ::
+     &     ntest = 100
+      integer ::
+     &     iprint
+
+      iprint = max(ntest,iprlvl)
+
       ! set up pointer arrays for operators and formulae
       allocate(ops(nops))
       call op_list2arr(op_list,ops,nops)
@@ -50,10 +57,10 @@
       deallocate(ops)
       deallocate(fform)
 
-c dbg
-      write(luout,*) 'at end of set_actions:'
-      call print_action_list(act_list)
-c dbg      
+      if (iprint.ge.10) then
+        write(luout,*) 'at end of set_actions:'
+        call print_action_list(act_list)
+      end if
 
       return
       end 

@@ -12,6 +12,8 @@
       include 'ifc_input.h'
 c      include 'ifc_formula.h'
       include 'def_operator.h'
+c      include 'ifc_operators.h'
+      include 'par_opnames_gen.h'
       include 'def_filinf.h'
       include 'def_action.h'
       include 'def_action_list.h'
@@ -28,13 +30,17 @@ c      include 'ifc_formula.h'
      &     ops(nops)
 
       integer ::
-     &     idxham, idxtop, idxccen, idxccrs, idum
-      
+     &     idxham, idxtop, idxdia, idxccen, idxccrs, idum
+  
+      ! explicit interface does not work with ifort
+      integer, external ::
+     &     idx_oplist
+
+      idxham = idx_oplist(op_ham,ops,nops)
+      idxtop = idx_oplist(op_top,ops,nops)
+      idxdia = idx_oplist(op_dia1,ops,nops)
 
       ! preliminary:
-      idxham = 1
-      idxtop = 2
-
       idxccen = 2
       idxccrs = 3
       
@@ -43,6 +49,14 @@ c      include 'ifc_formula.h'
      &     iaction_import,0,1,
      &     idum,(/idxham/),
      &     idum,(/(/idxham,1/)/),
+     &     0,idum
+     &     )
+
+      ! set up diagonal preconditioner
+      call add_action(act_list,nactions,
+     &     iaction_setup_prc,2,1,
+     &     (/idxtop,idxham/),(/idxdia/),
+     &     (/(/idxdia,1/)/),(/(/idxtop,1/),(/idxham,1/)/),
      &     0,idum
      &     )
 

@@ -7,6 +7,7 @@
       implicit none
 
       include 'stdunit.h'
+      include 'opdim.h'
       include 'par_globalmarks.h'
       include 'ifc_memman.h'
       include 'ioparam.h'
@@ -22,7 +23,7 @@
      &     ffops(nops)
 
       integer ::
-     &     iop, ifree, nbuff
+     &     iop, ifree, nbuff, iocc
 
       do iop = 1, nops
         ! basic initialization
@@ -41,9 +42,25 @@
 
           ifree = mem_alloc_int(ffops(iop)%incore,
      &         ops(iop)%n_occ_cls,trim(ops(iop)%name)//'_incore')
-          ffops(iop)%incore(1:5) = +1 ! dirty
-          ffops(iop)%incore(6:ops(iop)%n_occ_cls) = -1
-          nbuff = ops(iop)%off_op_occ(6) ! dirty
+          ifree = mem_alloc_int(ffops(iop)%idxrec,
+     &         ops(iop)%n_occ_cls,trim(ops(iop)%name)//'_idxrec')
+          nbuff = 0
+          do iocc = 1, ops(iop)%n_occ_cls
+            ! allocate buffer for 1-hamiltonian only
+            if (max(ops(iop)%ica_occ(1,iocc),
+     &              ops(iop)%ica_occ(2,iocc)).gt.1 .or.
+     &          iextr.gt.0.and. ! R12: ignore currently
+     &          ops(iop)%ihpvca_occ(iextr,1,iocc)+
+     &          ops(iop)%ihpvca_occ(iextr,2,iocc).gt.0 ) then
+              ffops(iop)%incore(iocc) = -1
+              ffops(iop)%idxrec(iocc) = -1
+            else
+              ffops(iop)%idxrec(iocc) = nbuff
+              ffops(iop)%incore(iocc) = ops(iop)%len_op_occ(iocc)
+              nbuff = nbuff + ops(iop)%len_op_occ(iocc)
+            end if
+          end do
+          ffops(iop)%nbuffer = nbuff
           ifree = mem_alloc_real(ffops(iop)%buffer,
      &         nbuff,trim(ops(iop)%name)//'_buffer')
 

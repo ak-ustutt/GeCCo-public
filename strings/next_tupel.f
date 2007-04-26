@@ -88,11 +88,6 @@
      &           ioss,idorb(idxst:idxnd),
      &           idspn(idxst:idxnd),
      &           mostnd(1,1,idx_gas(ihpv)),nsym,ngas_hpv(ihpv))
-c dbg
-c            print *,'after lexlstr: ',succ
-c            print *,' ?? ',idxst,idxnd
-c            print *,'idorb = ',idorb(idxst:idxnd)
-c dbg
 
             if (succ) then
               str_loop: do
@@ -126,9 +121,6 @@ c dbg
         lexlscr(1:nidx,1) = idorb(1:nidx)
         lexlscr(1:nidx,2) = idspn(1:nidx)
         lexlscr(1:nidx,3) = idss(1:nidx)
-c dbg
-c        print *,'succ: ',succ
-c dbg
         
         next_tupel = succ
 

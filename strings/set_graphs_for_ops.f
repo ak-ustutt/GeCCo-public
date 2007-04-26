@@ -17,6 +17,7 @@
       include 'def_strinf.h'
       include 'def_orbinf.h'
       include 'ifc_memman.h'
+      include 'par_globalmarks.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -69,17 +70,21 @@
       str_info%ngraph = 0
       current => op_list
       mxmx_igtyp = 0
+      ! allocate in operator section:
+      call mem_pushmark()
+      ifree = mem_gotomark(operator_def)
       do iop = 1, nops
         if (ntest.ge.100) write(luout,*) 'iop = ',iop
         ! allocate graph index
         allocate(current%op%idx_graph(ngastp,2,current%op%n_occ_cls))
         ifree = mem_register(maxgraph*(2+4*ngas),
-     &       trim(current%op%name)//' idxg')
+     &       trim(current%op%name)//'_idxg')
         call unique_graph(str_info,max_igtyp,current%op,
      &                    orb_info%ihpvgas,orb_info%ngas)
         mxmx_igtyp = max(mxmx_igtyp,max_igtyp)
         if (iop.lt.nops) current => current%next
       end do
+      call mem_popmark()
 
       if (mxmx_igtyp.le.0)
      &     call quit(1,'set_graphs_for_ops',

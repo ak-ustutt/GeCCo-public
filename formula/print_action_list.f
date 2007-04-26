@@ -33,6 +33,8 @@
             write(luout,*) 'Import'
           case (iaction_evaluate)
             write(luout,*) 'Evaluate'
+          case (iaction_setup_prc)
+            write(luout,*) 'Setup diagonal preconditioner'
           case (iaction_solve_leq)
             write(luout,*) 'Solve system of linear equations'
           case (iaction_solve_nleq)

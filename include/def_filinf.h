@@ -17,6 +17,8 @@
      &     type, reclen
          logical ::
      &     buffered
+         integer ::
+     &     nbuffer
          integer, pointer ::
      &     idxrec(:)
          integer, pointer ::
@@ -41,7 +43,10 @@
 *------------------------------------------------------------------------*
 *	a note on buffering for "operators":
 *	incore(iocc_cls) holds info whether the occupation iocc_cls
-*	is held incore (in the buffer) (if > 0)
+*	is held incore (in the buffer) (if > 0), the number is set
+*       equal the length of the occ. class
+*       idxrec will then contain the offset of the current block
+*       
 *	as the length increases with iocc_cls, we currently will hold 
 *       the first few occupations (say 1 to 4 for the Hamilton) incore, 
 *       so the addressing array on the operator structure can be used 

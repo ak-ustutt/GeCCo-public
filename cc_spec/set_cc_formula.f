@@ -7,6 +7,8 @@
       include 'opdim.h'
       include 'ioparam.h'
       include 'ifc_input.h'
+c      include 'ifc_operators.h'
+      include 'par_opnames_gen.h'
       include 'stdunit.h'
       include 'def_orbinf.h'
       include 'def_filinf.h'
@@ -36,6 +38,10 @@
       integer ::
      &     idxham, idxtop, idxlag, idxomg
 
+      ! explicit interface does not work with ifort
+      integer, external ::
+     &     idx_oplist
+
       ! advance to end of operator list:
       list_pnt => form_list
       do while (associated(list_pnt%next))
@@ -49,11 +55,22 @@
       end if
       allocate (list_pnt%fhand)
 
-c      idxham = idx_oplist()
-      idxham = 1
-      idxtop = 2
-      idxlag = 3
-      idxomg = 4
+      idxham = idx_oplist(op_ham,ops,nops)
+      if (idxham.le.0)
+     &     call quit(1,'set_cc_formula','operator not on list: '
+     &     //trim(op_ham))
+      idxtop = idx_oplist(op_top,ops,nops)
+      if (idxtop.le.0)
+     &     call quit(1,'set_cc_formula','operator not on list: '
+     &     //trim(op_top))
+      idxlag = idx_oplist(op_tbar,ops,nops)
+      if (idxlag.le.0)
+     &     call quit(1,'set_cc_formula','operator not on list: '
+     &     //trim(op_tbar))
+      idxomg = idx_oplist(op_omg,ops,nops)
+      if (idxomg.le.0)
+     &     call quit(1,'set_cc_formula','operator not on list: '
+     &     //trim(op_omg))
 
       ! set up Lagrangian
       nform = nform+1

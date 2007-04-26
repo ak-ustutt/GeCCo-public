@@ -16,7 +16,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character, parameter ::
      &     name_string*13='CC Lagrangian'
 

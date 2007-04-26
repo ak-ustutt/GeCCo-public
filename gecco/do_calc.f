@@ -113,12 +113,21 @@
           case (iaction_evaluate)
             ! evaluate a single formula expression
             call quit(1,'do_calc','action not implemented yet')
+          case (iaction_setup_prc)
+            call set_prc4op(current_act%act%idxopdef_out(1),
+     &                      current_act%act%idxopfile_out(1,1),
+     &                      current_act%act%idxopdef_in(1),
+     &                      current_act%act%idxopdef_in(2),
+     &                      current_act%act%idxopfile_in(1,1),
+     &                      current_act%act%idxopfile_in(2,1),
+     &                      ffops,ops,nops,
+     &                      str_info,orb_info)
           case (iaction_solve_leq)
             ! Solve system of linear equations
             call quit(1,'do_calc','action not implemented yet')
           case (iaction_solve_nleq)
             ! Solve system of non-linear equations
-            call quit(1,'do_calc','action not implemented yet')
+            write(luout,*) 'And here a dream will come true ...'
           case (iaction_solve_evp)
             ! Solve eigenvalue problem
             call quit(1,'do_calc','action not implemented yet')

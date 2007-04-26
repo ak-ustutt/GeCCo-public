@@ -31,10 +31,6 @@
      &      first_gamdist3(igam_dist(1,1),igam_c,nsym,iocc(1,1))
         next_msgamdist = next_msgamdist.and.        
      &      first_gamdist3(igam_dist(1,2),igam_a,nsym,iocc(1,2))
-c dbg
-c        print *,'0 igam_c,igam_a,ms_c,ms_a: ',igam_c,igam_a,ms_c,ms_a
-
-c dbg
       else          
         ! innermost index: increment IRREP distribution of C
         if (next_gamdist3(igam_dist(1,1),igam_c,nsym,iocc(1,1))) then
@@ -46,20 +42,12 @@ c dbg
           ! actually the result *must* be true (not checked)
           next_msgamdist =
      &         first_gamdist3(igam_dist(1,1),igam_c,nsym,iocc(1,1))
-c dbg
-          if (.not.next_msgamdist)
-     &         call quit(1,'next_msgamdist','unexpected .false. 1')
-c dbg
         ! increment IRREP distribution of A
         else if (next_gamdist3(igam_dist(1,2),igam_a,nsym,iocc(1,2)))
      &         then
           next_msgamdist = first_msdist3(ms_dist(1,1),ms_c,iocc(1,1))
           next_msgamdist = next_msgamdist.and.
      &         first_gamdist3(igam_dist(1,1),igam_c,nsym,iocc(1,1))
-c dbg
-          if (.not.next_msgamdist)
-     &         call quit(1,'next_msgamdist','unexpected .false. 2')
-c dbg
 
         ! increment Ms distribution of A
         else if (next_msdist3(ms_dist(1,2),ms_a,iocc(1,2))) then
@@ -69,20 +57,12 @@ c dbg
      &         first_msdist3(ms_dist(1,1),ms_c,iocc(1,1))
           next_msgamdist = next_msgamdist.and.
      &         first_gamdist3(igam_dist(1,1),igam_c,nsym,iocc(1,1))
-c dbg
-c          print *,'3 igam_c,igam_a,ms_c,ms_a: ',igam_c,igam_a,ms_c,ms_a
-c          if (.not.next_msgamdist)
-c    &         stop 'next_msgamdist: unexpected .false. 3'
-c dbg
 
         else
           next_msgamdist = .false.
         end if
 
       end if
-c dbg
-c        print *,'->',next_msgamdist
-c dbg
 
       return
       end

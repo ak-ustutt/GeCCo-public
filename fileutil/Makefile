@@ -27,7 +27,8 @@ libs:=
 
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)
 
-$(libdir)/libfileutil.a: $(libdir)/libfileutil.a($(objs))
+$(libdir)/libfileutil.a: $(objs)
+	$(AR) rv $@ $?
 	$(RAN) $@
 
 .PHONY: dep deps

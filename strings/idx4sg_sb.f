@@ -39,28 +39,13 @@
 
       idx = idx_in
       nn = 0
-c      nm = 0
-c      ig = 1
 
       i = 0
-c dbg
-c      print *,'### nel, nelmax: ',nel,nelmax
-c      print *,'### idx initial = ',idx
-cc      call flush(6)
-c      print *,'### idspn: ',idspn(1:nel)
-c      print *,'### idorb: ',idorb(1:nel)
-c      print *,'### idgam: ',idgam(1:nel)
-cc      call flush(6)
-c dbg 
       do while(i.lt.nel)
         i = i+1
         ispni = idspn(i)
         ia = ianum(ispni)
         idx = idx + iy4sg(ia,nn,nm,ig,idorb(i)-iorboff)
-c dbg
-c        print *,'###',iy4sg(ia,nn,nm,ig,idorb(i)-iorboff),
-c     &       ispni,nn,nm,ig
-c dbg
         nn = nn + (iabs(ispni))
         if ((iabs(ispni)).eq.1) nm = nm + ispni
         if ((iabs(ispni)).eq.1) ig = multd2h(ig,idgam(i))

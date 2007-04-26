@@ -32,43 +32,26 @@
 
       lenprev = 0
       do ispc = 1, nspc
-c dbg
-c        print *,'# ----------- ',ispc
-c dbg
         if (ispc.eq.1) then
           idx_sg = 1
         else
           ! index of relevant subspace graph
           idx_sg = idxssg(lenprev,idspc,iyssg,iwssg,nelmax,nspc)
         end if
-c dbg
-c        print *,'# ',idx_sg
-c dbg
         ! offset of relevant subspace graph
         ioff = iy_info(1,idx_sg)
         ! max. number of electrons considered in that subspace graph
         nelmax_sg = iy_info(2,idx_sg)
         ! max. ms considered in that subspace graph
         msmax_sg = iy_info(3,idx_sg)
-c dbg
-c        print *,'# ',ioff,nelmax_sg,msmax_sg
-c dbg
 
         ! length of current subspace string
         len = lensubspc(ispc,idspc(nn+1),nel-nn)
         iooff = mostnd(1,1,ispc)-1
-c dbg
-c        print *,'# iooff = ',iooff
-c        print *,'# len = ',len
-c        print *,'# ',nn,nm,ig
-c dbg
         ! increment index using chosen subspace graph
         idx = idx4sg_sb(len,idx,nm,ig,
      &       idorb(nn+1),idspn(nn+1),idgam(nn+1),iy4sg(ioff),
      &       iooff,nelmax_sg,msmax_sg,ngam)
-c dbg
-c        print *,'# current idx = ',idx
-c dbg
         nn = nn+len
         lenprev = len
         if (nn.eq.nel) exit

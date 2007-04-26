@@ -7,6 +7,7 @@
       implicit none
       include 'opdim.h'
       include 'ifc_input.h'
+      include 'par_opnames_gen.h'
       include 'stdunit.h'
       include 'def_orbinf.h'
       include 'def_operator.h'
@@ -48,7 +49,7 @@ c        nullify(list_pnt%op)
 
       nops = nops+1
       ! new entry: the Hamiltonian
-      name = 'H'
+      name = op_ham
       dagger = .false.
       absym = 0
       casym = 0
@@ -73,7 +74,7 @@ c        nullify(list_pnt%op)
 c      nullify(list_pnt%op)
       allocate (list_pnt%op)
 
-      name = 'T'
+      name = op_top
       dagger = .false.
       absym = 0
       casym = 0
@@ -97,7 +98,7 @@ c      nullify(list_pnt%op)
       nullify(list_pnt%next)
       allocate (list_pnt%op)
      
-      name = 'TBAR'
+      name = op_tbar
       ! we define an excitation operator to ensure same
       ! storage sequence as for T
       dagger = .true.  ! but we consider the conjugate
@@ -122,7 +123,31 @@ c      nullify(list_pnt%op)
       nullify(list_pnt%next)
       allocate (list_pnt%op)
      
-      name = 'OMG'
+      name = op_omg
+      ! same as T
+      dagger = .false.
+      absym = 0
+      casym = 0
+      gamma = 1
+      s2 = 0
+      ms = 0
+      ! min_rank and max_rank are still set
+      ncadiff = 0
+      call set_hpvx_and_restr_for_xop()
+
+      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      ! new entry: the DIAgonal
+      nops = nops+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev => list_pnt
+      list_pnt => list_pnt%next
+      nullify(list_pnt%next)
+      allocate (list_pnt%op)
+
+      name = op_dia1  ! symmetry 1
       ! same as T
       dagger = .false.
       absym = 0
