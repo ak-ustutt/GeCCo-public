@@ -227,6 +227,7 @@
                 ! collect contributions from formal outer loops 
                 ! (over more than two strings):
                 idxbuf = ioffbuf+1
+                xsum_outer = 0d0
                 do iouter = 1, nouter
                   idx = ioff_xsum(iouter) + idxbuf/nincr(iouter)+1
                   idxbuf = mod(idxbuf,nincr(iouter)) 
