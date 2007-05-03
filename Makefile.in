@@ -8,7 +8,7 @@ top_srcdir:=@top_srcdir@
 
 include $(top_srcdir)/make.config
 
-libdirs:= crout baserout memman fileutil input operators strings formula solve contract\
+libdirs:= crout math baserout memman fileutil input operators strings formula solve contract\
 	 cc_spec
 progdirs:=gecco
 

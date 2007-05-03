@@ -185,9 +185,15 @@
                     idiff = - irestr(1,igas,ica,1)+irestr(2,igas,ica,1)
                     imaxr = min(irestr(2,igas,ica,1),
      &                    op%ihpvca_occ(hpvxgas(igas),ica,idx))
-                    op%igasca_restr(1,igas,ica,1,idx) =
-     &                   max(0,imaxr - idiff)
-                    op%igasca_restr(2,igas,ica,1,idx) =
+                    ! not sure whether this will work in all cases:
+                    if (igas.lt.ngas) then
+                      op%igasca_restr(1,igas,ica,1,idx) =
+     &                     max(0,imaxr - idiff)
+                    else
+                      op%igasca_restr(1,igas,ica,1,idx) = imaxr
+                    end if
+c very quick fix:                    
+                    op%igasca_restr(1:2,igas,ica,1,idx) =
      &                   imaxr                    
                   end do
                 end do

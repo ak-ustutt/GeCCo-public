@@ -10,6 +10,7 @@
       include 'stdunit.h'
       include 'ifc_input.h'
       include 'def_orbinf.h'
+      include 'routes.h'
 
       logical, intent(out) ::
      &     one_more
@@ -91,8 +92,15 @@
         call get_argument_value('orb_space.shell','def',iarr=iscr)
  
         call add_frozen_shell(iscr,len,orb_info)
+        deallocate(iscr)
 
       end if
+
+      ! set routes for core routines
+      call get_argument_value('calculate.routes','schedule',
+     &     ival=irt_sched)
+      call get_argument_value('calculate.routes','contract',
+     &     ival=irt_contr)
 
       return
 

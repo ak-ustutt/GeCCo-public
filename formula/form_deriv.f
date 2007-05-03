@@ -27,7 +27,7 @@
 
       character, intent(in) ::
      &     name_deriv*(*)
-      type(filinf), intent(in) ::
+      type(filinf), intent(inout) ::
      &     ffinput, ffderiv
       integer, intent(in) ::
      &     nops, ncmpnd, idxder(ncmpnd), idxmlt(ncmpnd), idxres
@@ -60,12 +60,13 @@
 
       len = len_trim(name_deriv)
       write(luderiv) len,name_deriv
-      write(luderiv) idum,idxinp
+      write(luderiv) idum,idxres
 
       ! signal, that still nothing is allocated
       contr%mxvtx = 0
       contr%mxarc = 0
       contr%mxfac = 0
+      nullify(conder%contr)
 
       nterms = 0
       do while(rd_contr(luinput,contr,idxinp))

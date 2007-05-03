@@ -15,13 +15,7 @@ c      include 'ifc_operators.h'
       include 'def_file_list.h'
       include 'def_operator.h'
       include 'def_operator_list.h'
-
-      character, parameter ::
-     &     name_lagrange*14 = 'cclagrange.fml',
-     &     name_ccenergy*12 = 'ccenergy.fml',
-     &     name_vectfunc*14 = 'ccvectfunc.fml',
-     &     name_ccen*12 = 'CC energy',
-     &     name_resi*14 = 'CC residual'
+      include 'par_formnames_gen.h'
 
       type(file_list), intent(inout), target ::
      &     form_list
@@ -36,7 +30,7 @@ c      include 'ifc_operators.h'
      &     list_pnt
 
       integer ::
-     &     idxham, idxtop, idxlag, idxomg
+     &     idxham, idxtop, idxtba, idxomg, idxecc
 
       ! explicit interface does not work with ifort
       integer, external ::
@@ -59,12 +53,16 @@ c      include 'ifc_operators.h'
       if (idxham.le.0)
      &     call quit(1,'set_cc_formula','operator not on list: '
      &     //trim(op_ham))
+      idxecc = idx_oplist(op_ccen,ops,nops)
+      if (idxecc.le.0)
+     &     call quit(1,'set_cc_formula','operator not on list: '
+     &     //trim(op_ccen))
       idxtop = idx_oplist(op_top,ops,nops)
       if (idxtop.le.0)
      &     call quit(1,'set_cc_formula','operator not on list: '
      &     //trim(op_top))
-      idxlag = idx_oplist(op_tbar,ops,nops)
-      if (idxlag.le.0)
+      idxtba = idx_oplist(op_tbar,ops,nops)
+      if (idxtba.le.0)
      &     call quit(1,'set_cc_formula','operator not on list: '
      &     //trim(op_tbar))
       idxomg = idx_oplist(op_omg,ops,nops)
@@ -76,7 +74,7 @@ c      include 'ifc_operators.h'
       nform = nform+1
       call file_init(list_pnt%fhand,name_lagrange,ftyp_sq_unf,0)
       call set_cc_lagrangian(list_pnt%fhand,nops,ops,
-     &     idxham,idxlag,idxtop)
+     &     idxham,idxtba,idxtop,idxecc)
 
       ! set up CC-energy 
       ! (part of Lagragian that does not depend on TBAR)
@@ -87,8 +85,8 @@ c      include 'ifc_operators.h'
       nullify(list_pnt%next)
       allocate(list_pnt%fhand)
       call file_init(list_pnt%fhand,name_ccenergy,ftyp_sq_unf,0)
-      call form_indep(list_pnt%fhand,list_pnt%prev%fhand,name_ccen,
-     &     1,idxlag,
+      call form_indep(list_pnt%fhand,list_pnt%prev%fhand,title_ccen,
+     &     1,idxtba,
      &     ops,nops)
 
       ! set up CC-residual (=vector function)
@@ -99,8 +97,9 @@ c      include 'ifc_operators.h'
       nullify(list_pnt%next)
       allocate(list_pnt%fhand)
       call file_init(list_pnt%fhand,name_vectfunc,ftyp_sq_unf,0)
-      call form_deriv(list_pnt%fhand,list_pnt%prev%prev%fhand,name_resi,
-     &     1,idxlag,0,idxomg,
+      call form_deriv(list_pnt%fhand,list_pnt%prev%prev%fhand,
+     &                                                    title_resi,
+     &     1,idxtba,0,idxomg,
      &     ops,nops)
 
       return

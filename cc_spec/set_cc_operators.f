@@ -163,6 +163,31 @@ c      nullify(list_pnt%op)
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
+      ! new entry: the CC-Energy (scalar)
+      ! looks like overkill, but makes life easier
+      nops = nops+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev => list_pnt
+      list_pnt => list_pnt%next
+      nullify(list_pnt%next)
+      allocate (list_pnt%op)
+
+      name = op_ccen
+      dagger = .false.
+      absym = 0
+      casym = 0
+      gamma = 1
+      s2 = 0
+      ms = 0
+      min_rank=0
+      max_rank=0
+      ncadiff = 0
+      call set_hpvx_and_restr_for_xop()
+
+      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
       return
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*

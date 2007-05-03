@@ -27,7 +27,7 @@
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info
-      type(filinf), intent(in) ::
+      type(filinf), intent(inout) ::
      &     ffdia
 
       logical ::
@@ -262,7 +262,7 @@
 
       call atim(cpu,sys,wall)
 
-      if (iprlvl.gt.5)
+      if (iprlvl.ge.5)
      &     call prtim(luout,'time in dia4op ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 

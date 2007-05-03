@@ -30,7 +30,7 @@ c      include 'ifc_operators.h'
      &     ops(nops)
 
       integer ::
-     &     idxham, idxtop, idxdia, idxccen, idxccrs, idum
+     &     idxham, idxtop, idxdia, idxccen, idxccrs, idxomg, idum
   
       ! explicit interface does not work with ifort
       integer, external ::
@@ -38,6 +38,7 @@ c      include 'ifc_operators.h'
 
       idxham = idx_oplist(op_ham,ops,nops)
       idxtop = idx_oplist(op_top,ops,nops)
+      idxomg = idx_oplist(op_omg,ops,nops)
       idxdia = idx_oplist(op_dia1,ops,nops)
 
       ! preliminary:
@@ -56,15 +57,15 @@ c      include 'ifc_operators.h'
       call add_action(act_list,nactions,
      &     iaction_setup_prc,2,1,
      &     (/idxtop,idxham/),(/idxdia/),
-     &     (/(/idxdia,1/)/),(/(/idxtop,1/),(/idxham,1/)/),
+     &     (/(/idxtop,1/),(/idxham,1/)/),(/(/idxdia,1/)/),
      &     0,idum
      &     )
 
       ! solve ground-state equations
       call add_action(act_list,nactions,
-     &     iaction_solve_nleq,1,1,
-     &     (/idxham/),(/idxtop/),
-     &     (/(/idxham,1/)/),(/(/idxtop,1/)/),
+     &     iaction_solve_nleq,2,2,
+     &     (/idxdia,idxham/),(/idxtop,idxomg/),
+     &     (/(/idxdia,1/),(/idxham,1/)/),(/(/idxtop,1/),(/idxomg,1/)/),
      &     2,(/idxccen,idxccrs/)
      &     )
 

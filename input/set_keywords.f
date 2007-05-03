@@ -33,8 +33,24 @@
 
       call keyword_add('calculate')
       call keyword_add('solve',context='calculate')
-      call argument_add('maxiter','calculate.solve',type=vtyp_int)
-      call argument_add('method','calculate.solve',type=vtyp_str,len=8)
+      call argument_add('maxiter','calculate.solve',type=vtyp_int,
+     &     idef=(/30/))
+      call argument_add('maxmic','calculate.solve',type=vtyp_int,
+     &     idef=(/20/))
+      call argument_add('maxsub','calculate.solve',type=vtyp_int,
+     &     idef=(/8/))
+      call argument_add('conv','calculate.solve',type=vtyp_rl8,
+     &     xdef=(/1d-6/))
+      call argument_add('tr_ini','calculate.solve',type=vtyp_rl8,
+     &     xdef=(/1.0d0/))
+      call argument_add('method','calculate.solve',type=vtyp_str,len=8,
+     &     cdef=(/'d','i','i','s',' ',' ',' ',' '/))
+
+      call keyword_add('routes',context='calculate')
+      call argument_add('schedule','calculate.routes',type=vtyp_int,
+     &     idef=(/0/))
+      call argument_add('contract','calculate.routes',type=vtyp_int,
+     &     idef=(/0/))
 
       if (iprint.ge.50)
      &     call keyword_list(luout,keyword_root,show_args=.true.)

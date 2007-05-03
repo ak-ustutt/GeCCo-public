@@ -26,7 +26,7 @@
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info
-      type(filinf), intent(in) ::
+      type(filinf), intent(inout) ::
      &     ffham
 
       type(filinf) ::
@@ -132,7 +132,8 @@ c      call
 
       call atim(cpu,sys,wall)
 
-      call prtim(luout,'time in 1int import',
+      if (iprlvl.ge.5) 
+     &     call prtim(luout,'time in 1int import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

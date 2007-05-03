@@ -5,12 +5,16 @@
       implicit none
       include 'stdunit.h'
       include 'par_globalmarks.h'
+      include 'par_formnames_gen.h'
       include 'ifc_memman.h'
       include 'def_orbinf.h'
       include 'def_operator.h'
       include 'def_operator_list.h'
+      include 'def_operator_array.h'
       include 'def_filinf.h'
       include 'def_file_list.h'
+      include 'def_file_array.h'
+      include 'def_operator_info.h'
       include 'def_action.h'
       include 'def_action_list.h'
       include 'def_graph.h'
@@ -21,18 +25,26 @@
       character, intent(in) ::
      &     env_type*(*)
 
-      type(operator_list), pointer ::
-     &     op_list
+      type(operator_info) ::
+     &     op_info
+      
+
+c      type(operator_list), pointer ::
+c     &     op_list
       type(file_list), pointer ::
      &     form_list
       type(action_list), pointer ::
      &     act_list, current_act
-      type(operator), pointer ::
-     &     ops(:)
-      type(filinf), pointer ::
-     &     ffform(:), ffops(:)
+c      type(operator_array), pointer ::
+c     &     op_arr(:)
+      type(file_array), pointer ::
+     &     ffform(:)
+c      type(filinf), pointer ::
+c     &     , ffops(:)
+      type(filinf) ::
+     &     ffform_opt
       integer ::
-     &     ifree, nops, nform, nactions
+     &     ifree, nform, nactions
       type(strinf), pointer ::
      &     str_info
 
@@ -42,14 +54,11 @@
       call set_orbinf(orb_info,.true.)
 
       ifree = mem_setmark(operator_def)
-      allocate(op_list)
-      nullify(op_list%op)
-      nullify(op_list%prev)
-      nullify(op_list%next)
-      nops = 0
+      call init_operator_info(op_info)
       ! set up operators
-      call set_operators(op_list,nops,orb_info)
-      if (nops.eq.0)
+      op_info%nops = 0
+      call set_operators(op_info%op_list,op_info%nops,orb_info)
+      if (op_info%nops.eq.0)
      &     call quit(0,'do_calc','no operators defined?')
 
       ifree = mem_setmark(formula_def)
@@ -59,7 +68,7 @@
       nullify(form_list%next)
       nform = 0
       ! set up (basic) formulae
-      call set_formulae(form_list,nform,op_list,nops)
+      call set_formulae(form_list,nform,op_info%op_list,op_info%nops)
       if (nform.eq.0)
      &     call quit(0,'do_calc','no formulae/method defined?')
 
@@ -71,31 +80,31 @@
       nactions = 0
       ! set up actions
       call set_actions(act_list,nactions,
-     &     form_list,nform,op_list,nops)
+     &     form_list,nform,op_info%op_list,op_info%nops)
       if (nform.eq.0)
      &     call quit(0,'do_calc','no actions defined?')
 
       ! set up graphs
       ifree = mem_setmark('graph_def')
       allocate(str_info)
-      call set_graphs_for_ops(str_info,op_list,nops,orb_info)
+      call set_graphs_for_ops(str_info,
+     &     op_info%op_list,op_info%nops,orb_info)
       
       ! set up operator dimensions
       call mem_pushmark() ! push current memory section
       ifree = mem_gotomark(operator_def)
-      call set_dim_for_ops(op_list,nops,str_info,orb_info)
+      call set_dim_for_ops(op_info%op_list,op_info%nops,
+     &     str_info,orb_info)
       call mem_popmark() ! pop current memory section
 
       ! turn linked lists into arrays
-      allocate(ops(nops))
-      call op_list2arr(op_list,ops,nops)
-      allocate(ffform(nops))
-      call file_list2arr(form_list,ffform,nform)
+      call update_op_arr(op_info)
+      allocate(ffform(nform))
+      call file_list2arr2(form_list,ffform,nform)
 
       ! initialize files for operator elements
       ifree = mem_setmark(op_files)
-      allocate(ffops(nops))
-      call init_op_files(ffops,ops,nops)
+      call init_op_files(op_info)
 
       ! loop over requested actions
       current_act => act_list
@@ -108,7 +117,7 @@
             ! import operator matrix elements
             call import_op_el(current_act%act%idxopdef_out(1),
      &                        current_act%act%idxopfile_out(1,1),
-     &                        ffops,ops,nops,
+     &                        op_info,
      &                        env_type,str_info,orb_info)
           case (iaction_evaluate)
             ! evaluate a single formula expression
@@ -119,15 +128,30 @@
      &                      current_act%act%idxopdef_in(1),
      &                      current_act%act%idxopdef_in(2),
      &                      current_act%act%idxopfile_in(1,1),
-     &                      current_act%act%idxopfile_in(2,1),
-     &                      ffops,ops,nops,
+     &                      current_act%act%idxopfile_in(1,2),
+     &                      op_info,
      &                      str_info,orb_info)
           case (iaction_solve_leq)
             ! Solve system of linear equations
             call quit(1,'do_calc','action not implemented yet')
           case (iaction_solve_nleq)
+            ! get optimized formula file
+            call file_init(ffform_opt,name_cce_vfop,ftyp_sq_unf,0)
+            call form_opt(ffform_opt,
+     &           current_act%act%nform,current_act%act%idx_formula,
+     &           ffform,nform,
+     &           op_info,str_info,orb_info)
             ! Solve system of non-linear equations
-            write(luout,*) 'And here a dream will come true ...'
+            call solve_nleq(current_act%act%nop_out,
+     &                      current_act%act%idxopdef_out,
+     &                      current_act%act%idxopfile_out,
+     &                      current_act%act%nop_in,
+     &                      current_act%act%idxopdef_in,
+     &                      current_act%act%idxopfile_in,
+     &                      ffform_opt,
+     &                      op_info,str_info,orb_info
+     &                     )
+c            call file_delete(ffform_opt)
           case (iaction_solve_evp)
             ! Solve eigenvalue problem
             call quit(1,'do_calc','action not implemented yet')
@@ -145,7 +169,8 @@
       end do
         
       ! free memory allocated for operators etc.
-      deallocate(ops,ffform,ffops)
+      deallocate(ffform)
+      ! still a few deallocs missing .... !!
 
       ifree = mem_flushmark('do_calc')
 

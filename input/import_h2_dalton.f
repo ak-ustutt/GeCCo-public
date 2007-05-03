@@ -37,7 +37,7 @@
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info
-      type(filinf), intent(in) ::
+      type(filinf), intent(inout) ::
      &     ffham
 
       ! dalton is i4:
@@ -280,7 +280,8 @@ c      end if
 
       call atim(cpu,sys,wall)
 
-      call prtim(luout,'time in 2int import',
+      if (iprlvl.ge.5) 
+     &     call prtim(luout,'time in 2int import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

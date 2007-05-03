@@ -361,7 +361,7 @@ c      end function
       end subroutine
 
 *----------------------------------------------------------------------*
-      subroutine keyword_add(key,context,required)
+      subroutine keyword_add(key,context,required,status)
 *----------------------------------------------------------------------*
 *     add a new keyword to level below context (default: keyword_root)
 *     context is a string like "<key>.<key>.<key>"
@@ -376,6 +376,8 @@ c      end function
      &     context*(*)
       logical, intent(in), optional ::
      &     required
+      integer, intent(in), optional ::
+     &     status
 
       type(keyword), pointer ::
      &     current_up, current_prev, current
@@ -411,7 +413,11 @@ c      end function
       nullify(current%down_h)
       nullify(current%down_t)
       current%key = key
-      current%status = -1
+      if (present(status)) then
+        current%status = status
+      else
+        current%status = -1
+      end if
       nullify(current%arg_h)
       nullify(current%arg_t)
       if (present(required)) then

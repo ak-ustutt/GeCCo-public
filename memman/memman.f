@@ -208,6 +208,9 @@
       if (len.gt.mem_maxname)
      &     call quit(1,'memman_alloc',
      &     'identifier too long "'//trim(name)//'"')
+      if (nalloc.lt.0)
+     &     call quit(1,'memman_alloc',
+     &     'negative length in allocation ('//trim(name)//')')
       mem_curslice%name = name
       mem_curslice%type = type
       mem_curslice%len = nalloc
@@ -344,7 +347,8 @@
       in_last_section = associated(cursection,mem_cursection)
 
       nalloc = slice%len
-      if (nalloc.lt.1) then
+      if (nalloc.lt.0) then
+        call memman_map(luout,.true.)
         write(luout,*) 'nalloc = ',nalloc,' ?'
         call quit(1,'memman_dealloc','fishy length')
       end if
@@ -737,7 +741,7 @@
      &     ' real(8)-words (',dble(max_mem)/1024d0/128d0,' Mb)'
       write(luout,'(3x,a,i10,a,f8.2,a)')
      &     'Largest memory block:     ',max_blk,
-     &     ' real(8)-words (',dble(max_mem)/1024d0/128d0,' Mb)'
+     &     ' real(8)-words (',dble(max_blk)/1024d0/128d0,' Mb)'
       write(luout,'(3x,a,a)')
      &     'Name of largest block:    ',trim(name_max)
       write(luout,'(x,"+",76("-"),"+")')

@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_cc_lagrangian(ffcclag,
-     &     nops,ops,idxham,idxlag,idxtop)
+     &     nops,ops,idxham,idxlag,idxtop,idxecc)
 *----------------------------------------------------------------------*
 *
 *     set up sequence of operators, integrals and contractions that
@@ -27,12 +27,12 @@
       include 'def_filinf.h'
       include 'ifc_operators.h'
 
-      type(filinf), intent(in) ::
+      type(filinf), intent(inout) ::
      &     ffcclag
 
       integer, intent(in) ::
      &     nops,
-     &     idxham,idxlag,idxtop
+     &     idxham,idxlag,idxtop,idxecc
 
       type(operator), intent(in) ::
      &     ops(nops)
@@ -85,8 +85,8 @@
 
       call atim(cpu0,sys0,wall0)
 
-      contr%idx_res = 0
-      contr%iblk_res = 0
+      contr%idx_res = idxecc
+      contr%iblk_res = 1
 
       ! L + H + 4times T gives maximum 6 vertices
       maxvtx = 6
@@ -110,10 +110,8 @@ c      end do
       ! first record: a name
       len = len_trim(name_string)
       write(lucclag) len,name_string
-      ! second record: structure of result 
-      !  -- number of occupation classes and ID of operator describing
-      !   the structure of the result (0 if result is a scalar)
-      write(lucclag) 0,0
+      ! second record: define target 
+      write(lucclag) 0,idxecc
 
       ! next records -- how to obtain the result, written by wrt_contr
 

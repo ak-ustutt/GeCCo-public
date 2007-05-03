@@ -1,0 +1,48 @@
+*----------------------------------------------------------------------*
+      subroutine print_form_list(luout,form_head,op_info)
+*----------------------------------------------------------------------*
+*     print formula on linked list to unit luout
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'opdim.h'
+      include 'mdef_operator_info.h'
+      include 'def_contraction.h'
+      include 'def_formula.h'
+
+      integer, intent(in) ::
+     &     luout
+      type(formula), intent(in), target ::
+     &     form_head
+      type(operator_info), intent(in) ::
+     &     op_info
+
+      type(formula), pointer ::
+     &     form_ptr
+
+      form_ptr => form_head
+      do
+        select case(form_ptr%command)
+        case(command_end_of_formula)
+          write(luout,*) '[END]'
+        case(command_set_target_init)
+          write(luout,*) '[INIT TARGET]',form_ptr%target
+        case(command_set_target_update)
+          write(luout,*) '[SET TARGET]',form_ptr%target
+        case(command_new_intermediate)
+          write(luout,*) '[NEW INTERMEDIATE]',form_ptr%target
+        case(command_del_intermediate)
+          write(luout,*) '[DELETE INTERMEDIATE]',form_ptr%target
+        case(command_add_contribution)
+          write(luout,*) '[ADD]',form_ptr%target
+          call prt_contr2(luout,form_ptr%contr,op_info%op_arr)
+        end select
+
+        if (.not.associated(form_ptr%next)) exit
+        form_ptr => form_ptr%next
+
+      end do
+
+      return
+      end
+

@@ -66,7 +66,8 @@
         arg_loop: do 
 
           if (trim(curarg%key).eq.trim(argkey)) iargcount = iargcount+1
-          if (iargcount.eq.iargcount_target) then
+          if (trim(curarg%key).eq.trim(argkey).and.
+     &         iargcount.eq.iargcount_target) then
             dim = curarg%val%len
             type = curarg%val%type
             select case(type)
@@ -108,32 +109,33 @@
                 succ = .true.
               end if
             end select
+          end if
 
-            if (succ.or.try_default) exit arg_loop
-
+          if (succ) exit arg_loop
+  
+          if (associated(curarg%next)) then
+            ! go to next argument
+            curarg => curarg%next
+          else
+            if (try_default) exit arg_loop
             ! else try default (if applicable)
-            if (iargcount_target.gt.1.or.icount_target.gt.1)
-     &           exit arg_loop
-
             try_default = .true.
             call find_node(keyword_root,curkey,context)
 
             if (.not.associated(curkey).or.
-     &          .not.associated(curkey%arg_h)) exit arg_loop
+     &           .not.associated(curkey%arg_h)) exit arg_loop
 
             curarg => curkey%arg_h
-
-          end if
-
-          if (associated(curarg%next)) then
-            curarg => curarg%next
-          else
-            exit arg_loop
           end if        
           
         end do arg_loop
 
       end if
+
+      if (.not.succ)
+     &     call quit(1,'get_argument_value',
+     &     'Could not provide any value for '//trim(context)//
+     &     '.'//trim(argkey))
 
       return
       end

@@ -64,6 +64,13 @@ c      iprlvl = 1     ! print level
       ! read and parse input file
       call read_input(ffinput)
 
+      ! post-process input up to first "calculate" block
+      ! (data resides in module parse_input)
+      call process_input(one_more,orb_info)
+      ! one more is ignored, as we might have cases 
+      ! (export/import stuff) where no "calculate" block is
+      ! specified
+
       call get_argument_value('general','memmax',ival=memmax)
       call mem_init(memmax)
 
@@ -74,13 +81,13 @@ c      call test_memman()
       ! loop over calculations
       do
       
-        ! post-process input up to next "calculate" block
-        ! (data resides in module parse_input)
-        call process_input(one_more,orb_info)
-
         if (.not.one_more) exit
 
         call do_calc(orb_info,env_type)
+
+        ! post-process input up to next "calculate" block
+        ! (data resides in module parse_input)
+        call process_input(one_more,orb_info)
 
       end do
 

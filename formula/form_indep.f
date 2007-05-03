@@ -19,11 +19,11 @@
       include 'def_contraction_list.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       character, intent(in) ::
      &     name_out*(*)
-      type(filinf), intent(in) ::
+      type(filinf), intent(inout) ::
      &     ffinput, ffoutput
       integer, intent(in) ::
      &     ncmpnd, nops, idxop(ncmpnd)
@@ -93,6 +93,10 @@
       call file_close_keep(ffinput)
 
       call dealloc_contr(contr)
+
+      if (ntest.ge.10) then
+        write(luout,*) 'generated terms: ',nterms
+      end if
       
       return
       end
