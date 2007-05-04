@@ -21,7 +21,7 @@
 
       integer, intent(in) ::
      &     idxprc, idxffprc, idxop, idxffop, idxham, idxffham
-      type(operator_info), intent(in) ::
+      type(operator_info), intent(inout) ::
      &     op_info
       type(strinf), intent(in) ::
      &     str_info
