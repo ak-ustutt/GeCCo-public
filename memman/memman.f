@@ -387,6 +387,7 @@
       case(mtyp_reg)
         mem_reg = nalloc+2*npad
       case default
+        call memman_map(luout,.true.)
         call quit(1,'mem_dealloc','illegal type')
       end select
 
@@ -457,6 +458,8 @@
      &     'identifier too long "'//trim(name)//'"')
       mem_tail%name = name
 
+      nullify(mem_cursection%head)
+      nullify(mem_cursection%tail)
       nullify(mem_curslice)
 
       memman_addsection = mem_free
