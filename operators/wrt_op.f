@@ -19,7 +19,7 @@
 
       integer, intent(in) ::
      &     luout, level, iblkst, iblknd
-      real(8), intent(in), target ::
+      real(8), intent(in) ::
      &     bufop(*)
       type(operator), intent(in) ::
      &     op
@@ -123,7 +123,8 @@
      &     first, close_again, blk_buf, scalar
       integer ::
      &     idxoff, idxoff_blk, iblk, lenblk, lenprt, ifree, mmax,
-     &     msmax, idxms, ms, igam, idx_dis, ndis, nwarn, did, idum, nel
+     &     msmax, idxms, ms, igam, idx_dis, ndis, nwarn, did, idum, nel,
+     &     idxoff0
       integer ::
      &     msd(ngastp,2), igamd(ngastp,2)
       real(8) ::
@@ -159,6 +160,10 @@
           close_again = .true.
           call file_open(ffop)
         end if
+      else
+        ! incore: we assume that bufop starts with first block
+        !         to be displayed
+        idxoff0 = op%off_op_occ(iblkst)
       end if
 
       xnrm_tot = 0d0
@@ -203,7 +208,7 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
               ! currently: idxoff should be valid here, as well
               curblk => ffop%buffer(idxoff+1:idxoff+lenblk)
             else
-              curblk => bufop(idxoff+1:idxoff+lenblk)
+              curblk => bufop(idxoff-idxoff0+1:idxoff-idxoff0+lenblk)
             end if
 
             ! reset offset within current buffer

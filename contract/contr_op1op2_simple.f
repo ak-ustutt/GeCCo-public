@@ -24,6 +24,7 @@
       implicit none
 
       include 'routes.h'
+      include 'contr_times.h'
 
       include 'opdim.h'
       include 'stdunit.h'
@@ -37,7 +38,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       logical, intent(in) ::
      &     update
@@ -78,6 +79,8 @@
      &     isignsum
       real(8) ::
      &     xnrm, casign
+      real(8) ::
+     &     cpu, sys, cpu0, sys0, cpu00, sys00
 
       integer, pointer ::
      &     iocc_op1(:,:), iocc_op2(:,:), iocc_op1op2(:,:)
@@ -110,11 +113,6 @@
       real(8), external ::
      &     ddot
 
-c dbg
-      logical nonzero
-      real(8) xmerk
-c dbg
-
       if (ntest.gt.0) then
         write(luout,*) '============================='
         write(luout,*) ' contr_op1op2_simple at work'
@@ -139,9 +137,6 @@ c dbg
           write(luout,*) 'op1op2: scalar'
         end if
       end if
-c dbg
-      nonzero = .false.
-c dbg
       
       ! preliminary treatment of restrictions:
       call fit_restr(irst_ext1,iocc_ext1,
@@ -207,15 +202,8 @@ c dbg
           xop1op2 => xbf12
           if (update) then
             ! read from disc
-c dbg
-c            print *,'fetching: ',idxst_op1op2,
-c     &                                  idxst_op1op2-1+lenop1op2
-c dbg
             call get_vec(ffop1op2,xop1op2,idxst_op1op2,
      &                                  idxst_op1op2-1+lenop1op2)
-c dbg
-c            print *,'fetched: ',xop1op2(1:lenop1op2)
-c dbg
           else
             ! init with zero
             xop1op2(1:lenop1op2) = 0d0
@@ -244,7 +232,7 @@ c dbg
       end if
 
 c dbg
-      xmerk = xop1op2(1)
+c      xmerk = xop1op2(1)
 c dbg
 
       na_op1 = ielsum(iocc_op1(1,2),ngastp)
@@ -265,22 +253,12 @@ c dbg
 c      isignsum = nc_cnt*na_ext1+nc_cnt*nc_ext2+na_ext1*nc_ext2
 c      casign = 1d0
 c      if (mod(isignsum,2).eq.1) casign = -1d0
-c dbg
-c      print *,'isignsum = ',nc_cnt*na_ext1,'+',nc_cnt*nc_ext2,'+',
-c     &                      na_ext1*nc_ext2,'=',isignsum
-c      print *,'casign = ',casign
-c dbg
       isignsum = (na_ext1+nc_ext1+na_ext2+nc_ext2)*nc_cnt+
      &     na_ext1*nc_ext2
       casign = 1d0
       if (mod(isignsum,2).eq.1) casign = -1d0
 c dbg
-c      print *,'na_ext1,nc_ext1,na_ext2,nc_ext2,nc_cnt:'
-c      print *,na_ext1,nc_ext1,na_ext2,nc_ext2,nc_cnt
-c      print *,'isignsum = ',(na_ext1+nc_ext1+na_ext2+nc_ext2)*nc_cnt,
-c     &                      '+',
-c     &                      na_ext1*nc_ext2,'=',isignsum
-c      print *,'casign = ',casign
+c      print *,'casign after CA: ',casign
 c dbg
 
 
@@ -320,57 +298,32 @@ c dbg
         ms12i_c(2) = ms12i_a(2) + mstop2
         ms12i_c(3) = ms12i_a(3) + mstop1op2
         msc_ac = ms12i_a(1) + ms12i_a(2) - ms12i_a(3)
-c dbg
-c        print *,'ms12i_a = ',ms12i_a(1:3)
-c        print *,'ms12i_c = ',ms12i_c(1:3)
-c        print *,'msc_ac = ',msc_ac
-c        print *,'mscmx_a,mscmx_c: ',mscmx_a,mscmx_c
-c dbg
 
         if (mscmx_a+mscmx_c.lt.abs(msc_ac)) cycle ms_loop
           
         msc_loop: do msc_a = mscmx_a, -mscmx_a, -2
           msc_c = msc_ac - msc_a
           if (abs(msc_c).gt.mscmx_c) cycle
-c dbg
-c          print *,'msc_a, msc_c : ',msc_a,msc_c
-c dbg
           ! Ms of string after lifting restrictions:
           !  Op1(C1,A1) -> Op1(C10,A10;CC,AC)
           ms10_c = ms12i_c(1) - msc_c
-c dbg
-c          print *,'ms10_c, skip: ',ms10_c,
-c     &         abs(ms10_c).gt.ielsum(iocc_ext1,ngastp)
-c dbg
           if (abs(ms10_c).gt.ielsum(iocc_ext1,ngastp))
      &         cycle msc_loop
           ms10_a = ms12i_a(1) - msc_a
-c dbg
-c          print *,'ms10_a, skip: ',ms10_a,
-c     &         abs(ms10_a).gt.ielsum(iocc_ext1(1,2),ngastp)
-c dbg
           if (abs(ms10_a).gt.ielsum(iocc_ext1(1,2),ngastp))
      &         cycle msc_loop
           ms20_a = ms12i_a(2) - msc_c   ! other way 
           ms20_c = ms12i_c(2) - msc_a   ! round (!!)
-c dbg
-c          print *,'ms20_c, skip: ',ms20_c,
-c     &         abs(ms20_c).gt.ielsum(iocc_ext2(1,1),ngastp)
-c          print *,'ms20_a, skip: ',ms20_a,
-c     &         abs(ms20_a).gt.ielsum(iocc_ext2(1,2),ngastp)
-c dbg
           if (abs(ms20_c).gt.ielsum(iocc_ext2(1,1),ngastp))
      &         cycle msc_loop
           if (abs(ms20_a).gt.ielsum(iocc_ext2(1,2),ngastp))
      &         cycle msc_loop
-c dbg
           if (ntest.ge.100) then
             write(luout,*) 'Current spin case:'
             write(luout,*) ' OP1/OP2/INT (C) ->',ms12i_c(1:3)
             write(luout,*) ' OP1/OP2/INT (A) ->',ms12i_a(1:3)
             write(luout,*) ' CNT(C)/CNT(A)   ->',msc_c,msc_a
           end if
-c dbg
 
           ! loop IRREP cases of (Op1(A),Op2(A),Interm)
           first2 = .true.
@@ -383,9 +336,6 @@ c dbg
               ! next IRREP distribution
               if (.not.next_dist(igam12i_a,3,igambnd,+1)) exit
             end if
-c dbg
-c            print *,'igam12i_a: ',igam12i_a(1:3)
-c dbg
             ! set up start addresses
             ! need to be modified, if more than one distribution
             ! exists, see below
@@ -393,10 +343,6 @@ c dbg
             idxop1 = op1%off_op_gmo(iblkop1)%
      &                  gam_ms(igam12i_a(1),idxms) + 1
      &           - idxst_op1+1
-c dbg
-c            print *,'idxop1 from gm ',
-c     &           igam12i_a(1),idxms,'->',idxop1
-c dbg
             idxms = (na_op2-ms12i_a(2))/2 + 1
             idxop2 = op2%off_op_gmo(iblkop2)%
      &                  gam_ms(igam12i_a(2),idxms) + 1
@@ -424,81 +370,35 @@ c dbg
               igam20_a = multd2h(igam12i_a(2),igamc_c) !  !!
               igam20_c = multd2h(igam12i_c(2),igamc_a) !  !!
 
-c dbg
-c              print *,'current ms: '
-c              print *,'Op1:', ms10_c,ms10_a,'  Op2:', ms20_c,ms20_a
-c              print *,'Cnt:', msc_c,msc_a
-c              print *,'current gamma:'
-c              print *,'Op1:', igam10_c,igam10_a,
-c     &              '  Op2:', igam20_c,igam20_a
-c              print *,'Cnt:', igamc_c,igamc_a
-c dbg
+              call atim_cs(cpu00,sys00)
+
               ! loop over distributions of current Ms and IRREP 
               ! of A10 and C10 over ngastypes
               first3 = .true.
               ca10_loop: do
-c dbg
-c                print *,'mark ca10-top'
-c                call flush(6)
-c                print *,'>>',ms10_a,ms10_c,igam10_a,igam10_c
-c                call wrt_occ(luout,iocc_ext1(1,1))
-c
-c dbg              
                 if (.not.next_msgamdist(first3,
      &             ms10_a,ms10_c,igam10_a,igam10_c,iocc_ext1(1,1),nsym,
      &             ms10dist,igam10dist)) exit ca10_loop
                 first3 = .false.
-c dbg
-c                print *,'ms10dist:  ',ms10dist(1:ngastp,1)
-c                print *,'           ',ms10dist(1:ngastp,2)
-c                print *,'igam10dist:',igam10dist(1:ngastp,1)
-c                print *,'           ',igam10dist(1:ngastp,2)
-c dbg
 
-c dbg
-c                    print *,'ext1:'
-c                    call wrt_occ(luout,iocc_ext1)
-c                    call wrt_rstr(luout,irst_ext1,orb_info%ngas)
-c dbg
                 call get_lenblk_hpvca(lstrext1,igrphext1,
      &               iocc_ext1,irst_ext1,
      &               ms10dist,igam10dist,
      &               str_info,orb_info%ihpvgas,orb_info%ngas)
-c dbg
-c                    print *,'lstrext1,igrphext1:'
-c                    print *,'C: ',lstrext1(1:ngastp,1)
-c                    print *,'A: ',lstrext1(1:ngastp,2)
-c                    call wrt_occ(luout,igrphext1)
-c dbg
                 
                 ! test C and A separately to avoid overflow
                 if (ielprd(lstrext1(1,1),ngastp).eq.0.or.
      &              ielprd(lstrext1(1,2),ngastp).eq.0) cycle
-c dbg
-c                print *,'lenc1, lena1: ',lenc1, lena1
-c dbg
 
                 ! loop over distributions of current Ms and IRREP 
                 ! of A20 and C20 over ngastypes            
                 first4 = .true.
                 ca20_loop: do
-c dbg
-c                  print *,'mark ca20-top'
-c                  call flush(6)
-c                  print *,'>>',ms20_a,ms20_c,igam20_a,igam20_c
-c                  call wrt_occ(luout,iocc_ext2(1,1))
-c dbg              
                   if (.not.next_msgamdist(first4,
      &               ms20_a,ms20_c,igam20_a,igam20_c,iocc_ext2(1,1),
      &               nsym,
      &               ms20dist,igam20dist)) exit ca20_loop
                   first4 = .false.
-c dbg
-c                  print *,'ms20dist:  ',ms20dist(1:ngastp,1)
-c                  print *,'           ',ms20dist(1:ngastp,2)
-c                  print *,'igam20dist:',igam20dist(1:ngastp,1)
-c                  print *,'           ',igam20dist(1:ngastp,2)
-c dbg
 
                   call get_lenblk_hpvca(lstrext2,igrphext2,
      &                 iocc_ext2,irst_ext2,
@@ -539,12 +439,6 @@ c dbg
      &                 msc_a,msc_c,igamc_a,igamc_c,iocc_cnt,nsym,
      &                 msc_dist,igamc_dist)) exit cac_loop
                     first5 = .false.
-c dbg
-c                    print *,'msc_dist:  ',ms20dist(1:ngastp,1)
-c                    print *,'           ',ms20dist(1:ngastp,2)
-c                    print *,'igamc_dist:',igam20dist(1:ngastp,1)
-c                    print *,'           ',igam20dist(1:ngastp,2)
-c dbg
 
                     ! length of contraction
                     call get_lenblk_hpvca(lstrcnt,igrphcnt,
@@ -564,11 +458,6 @@ c dbg
      &                   iocc_op1,irst_op1,msop1_dist,igamop1_dist,
      &                   str_info,orb_info%ihpvgas,orb_info%ngas)
 
-c dbg
-c                    print *,'lstrop1,igrphop1:'
-c                    call wrt_occ(luout,lstrop1)
-c                    call wrt_occ(luout,igrphop1)
-c dbg
                   
                     ! get distribution index
                     idxms = (na_op1-ms12i_a(1))/2 + 1
@@ -580,19 +469,10 @@ c dbg
                       idxop1 = op1%off_op_gmox(iblkop1)%
      &                     d_gam_ms(idxdis,igam12i_a(1),idxms) + 1
      &                     - idxst_op1+1
-c dbg
-c                      print *,'idxop1 from dis ',
-c     &                     idxdis,igam12i_a(1),idxms,'->',idxop1
-c dbg
                     end if
 
                     xnrm = ddot(ielprd(lstrop1,2*ngastp),
      &                   xop1(idxop1),1,xop1(idxop1),1)
-c dbg
-c                    print *,'xnrm, off, len ',
-c     &                   xnrm,idxop1,ielprd(lstrop1,2*ngastp)
-c                    if (xnrm.lt.1d-28) print *,'cycling'
-c dbg                    
                     if (xnrm.lt.1d-28) cycle cac_loop
 
                     ! get Ms and IRREP distribution of op2
@@ -614,10 +494,6 @@ c dbg
                     idxms = (na_op2-ms12i_a(2))/2 + 1
                     if (op2%off_op_gmox(iblkop2)%
      &                   ndis(igam12i_a(2),idxms).gt.1) then
-c dbg
-c                      print *,'ndis = ',op2%off_op_gmox(iblkop2)%
-c     &                   ndis(igam12i_a(2),idxms),igam12i_a(2),idxms
-c dbg
                       idxdis =
      &                   idx_msgmdst(iblkop2,ms12i_a(2),igam12i_a(2),
      &                   msop2_dist,igamop2_dist,.false.,op2,nsym)
@@ -628,25 +504,15 @@ c dbg
 
                     xnrm = ddot(ielprd(lstrop2,2*ngastp),
      &                   xop2(idxop2),1,xop2(idxop2),1)
-c dbg
-c                    print *,'xnrm, off, len ',
-c     &                   xnrm,idxop2,ielprd(lstrop2,2*ngastp)
-c                    if (xnrm.lt.1d-28) print *,'cycling'
-c dbg                    
                     if (xnrm.lt.1d-28) cycle cac_loop
-c dbg
-                    nonzero = .true.
-c dbg
+
+                    call atim_cs(cpu0,sys0)
 
                     ! make the contraction for this block
-c dbg
-                    if (idxop1.le.0) stop 'range op1 a'
-                    if (idxop2.le.0) stop 'range op2 a'
-                    if (idxop1op2.le.0) stop 'range op1op2 a'
-c                    print *,'maxac = ',maxac
-c dbg
-                    if (ntest.ge.100)
-     &                   write(luout,*) 'calling blk1blk2',
+c dbg:
+c                    if (ntest.ge.100)
+c     &                   write(luout,*) 'calling blk1blk2',
+                        write(luout,*) 'calling blk1blk2',
      &                   lenop1,idxop1,
      &                   lenop2,idxop2,
      &                   lenop1op2,idxop1op2
@@ -666,34 +532,29 @@ c dbg
      &                   str_info,orb_info)
                     if (ntest.ge.100)
      &                   write(luout,*) 'after blk1blk2'
-c dbg
-c                    stop 'test exit i'
-c dbg
+
+                    call atim_cs(cpu,sys)
+                    cnt_kernel(1) = cnt_kernel(1)+cpu-cpu0
+                    cnt_kernel(2) = cnt_kernel(2)+sys-sys0
 
                   end do cac_loop
                 end do ca20_loop
               end do ca10_loop
+
+              call atim_cs(cpu,sys)
+              cnt_dloop(1) = cnt_dloop(1)+cpu-cpu00
+              cnt_dloop(2) = cnt_dloop(2)+sys-sys00
 
             end do gamc_loop
           end do gam_loop
 
         end do msc_loop
       end do ms_loop
-c dbg
-c                   stop 'test exit o'
-c dbg
 
       if (ntest.ge.1000) then
         if (iblkop1op2.gt.0
-c dbg
-c     &       .and.iblkop1op2.eq.2 .and. nonzero
-c dbg
      &       ) then
           write(luout,*) 'operator 12 on exit'
-c dbg
-c          write(luout,*) ' DDD first element ',
-c     &         xop1op2(1),xop1op2(1)-xmerk
-c dbg
           call wrt_op_buf(luout,5,xop1op2,op1op2,
      &         iblkop1op2,iblkop1op2,str_info,orb_info)
         end if
@@ -701,9 +562,6 @@ c dbg
 
       ! put result to disc
       if (.not.bufop1op2) then
-c dbg
-c            print *,'put to disc: ',xop1op2(1:lenop1op2)
-c dbg
         call put_vec(ffop1op2,xop1op2,idxst_op1op2,
      &                             idxst_op1op2-1+lenop1op2)
       end if
@@ -800,9 +658,6 @@ c dbg
       integer ::
      &     isgnra, isgnrc, isgnr, isgnop1a, isgnop1c,
      &     isgnop2a, isgnop2c, isgn0, idxop1, idxop2, idxr
-c dbg
-c     &     ,ispc
-c dbg
       real(8) ::
      &     sgn
 
@@ -1094,8 +949,10 @@ c                  if (idxop2.gt.ibop2) stop 'range 2e'
 c dbg
 c dbg
 c                  if (idxr.eq.1)
-c                  print *,'!!1',idxr,idxop1,idxop2,
+c                  print '(a,3i5,4g15.8)','!!1',idxr,idxop1,idxop2,
 c     &                 xop1op2(idxr),sgn,xop1(idxop1),xop2(idxop2)
+c                  print '(a,6i5)',' ',isgnra,isgnrc,isgnop1a,
+c     &                   isgnop1c,isgnop2a,isgnop2c
 cc                  if (na_ex1+na_cnt.eq.2.and.
 cc     &                na_ex2+nc_cnt.eq.2) then
 c                    call prt_str_resort(luout,'OP1   :',

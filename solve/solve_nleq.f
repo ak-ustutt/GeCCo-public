@@ -3,7 +3,7 @@
      &     nop_out,idxop_out,idxfil_out,
      &     nop_in,idxop_in,idxfil_in,
      &     ffform_opt,
-     &     op_info,str_info,orb_info)
+     &     op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
 *     solve non-linear equations
@@ -35,6 +35,7 @@
       include 'mdef_operator_info.h'
       include 'def_graph.h'
       include 'def_strinf.h'
+      include 'def_strmapinf.h'
       include 'def_orbinf.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
@@ -50,6 +51,8 @@
      &     op_info
       type(strinf) ::
      &     str_info
+      type(strmapinf) ::
+     &     strmap_info
       type(orbinf) ::
      &     orb_info
 
@@ -125,7 +128,7 @@
         ! 2 - get residual
         if (iand(task,1).eq.1.or.iand(task,2).eq.2) then
           call frm_sched(xret,ffform_opt,
-     &         op_info,str_info,orb_info)
+     &         op_info,str_info,strmap_info,orb_info)
           energy = -xret(1)
           xresnrm = xret(2)
         end if

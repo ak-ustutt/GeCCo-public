@@ -1,9 +1,9 @@
 *----------------------------------------------------------------------*
       logical function next_string(idorb,idspn,idss,
-     &     nidx,igrph,ms,igam,first,
+     &     nidx,ms,igam,first,
      &     igas_restr,
-     &     mostnd,igamorb,
-     &     nsym,ngas,ngas_hpv,idx_gas)
+     &     mostnd_cur,igamorb,
+     &     nsym,ngas_cur)
 *----------------------------------------------------------------------*
 *     generate next string with for current Ms, IRREP
 *----------------------------------------------------------------------*
@@ -16,10 +16,10 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nidx, igrph, ms, igam,
-     &     igas_restr(2,ngas,2,*),
-     &     nsym,ngas,ngas_hpv,idx_gas,
-     &     mostnd(2,nsym,ngas),igamorb(*)
+     &     nidx, ms, igam,
+     &     igas_restr(2,ngas_cur,2),
+     &     nsym,ngas_cur,
+     &     mostnd_cur(2,nsym),igamorb(*)
       integer, intent(inout) ::
      &     idorb(nidx), idspn(nidx), idss(nidx)
       logical, intent(in) ::
@@ -30,7 +30,7 @@
       integer ::
      &     idx, idxoff, idxnd, idxst
       integer ::
-     &     ioss(ngas)
+     &     ioss(ngas_cur)
 
       logical, external ::
      &     lexlstr, nextstr, next_ssd
@@ -58,14 +58,14 @@
         dss_loop: do
           ! lexically lowest string
           ! reform distribution to occupation
-          ioss(1:ngas_hpv) = 0
+          ioss(1:ngas_cur) = 0
           do idx = idxst, idxnd
             ioss(idss(idx)) = ioss(idss(idx))+1
           end do
 
           succ = lexlstr(nidx,ms,
      &           ioss,idorb,idspn,
-     &           mostnd(1,1,idx_gas),nsym,ngas_hpv)
+     &           mostnd_cur,nsym,ngas_cur)
 
           if (succ) then
             str_loop: do
@@ -76,7 +76,7 @@
               ! else: get next possible string
               succ = nextstr(nidx,ms,
      &               idss,idorb,idspn,
-     &               mostnd(1,1,idx_gas),nsym,ngas_hpv) 
+     &               mostnd_cur,nsym,ngas_cur) 
 
               if (.not.succ) exit str_loop
             end do str_loop
@@ -84,7 +84,7 @@
           ! if no appropriate string found: 
           !  get next subspace distr.
           succ = next_ssd(idss,nidx,nidx,
-     &             ngas_hpv,igas_restr(1,1,1,igrph))
+     &             ngas_cur,igas_restr)
           ! nothing: we have to give up
           if (.not.succ) exit dss_loop
         end do dss_loop
@@ -118,7 +118,7 @@
             ! try next string ...
             succ = nextstr(nidx,ms,
      &           idss,idorb,idspn,
-     &           mostnd(1,1,idx_gas),nsym,ngas_hpv) 
+     &           mostnd_cur,nsym,ngas_cur) 
 
             ! ... no further string ? ....
             if (.not.succ) exit str_loop2
@@ -134,7 +134,7 @@
           ! here we land, if we need to try the next
           ! subspace distribution
           succ = next_ssd(idss,nidx,nidx,
-     &             ngas_hpv,igas_restr(1,1,1,igrph))
+     &             ngas_cur,igas_restr)
           ! nothing: we have to give up
           if (.not.succ) exit dss_loop2
 
@@ -142,14 +142,14 @@
           ! for the new subspace distribution
 
           ! reform distribution to occupation
-          ioss(1:ngas_hpv) = 0
+          ioss(1:ngas_cur) = 0
           do idx = idxst, idxnd
             ioss(idss(idx)) = ioss(idss(idx))+1
           end do
 
           succ = lexlstr(nidx,ms,
      &             ioss,idorb,idspn,
-     &             mostnd(1,1,idx_gas),nsym,ngas_hpv)
+     &             mostnd_cur,nsym,ngas_cur)
 
           ! ... check symmetry ...
           if (succ)

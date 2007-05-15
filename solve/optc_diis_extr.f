@@ -12,7 +12,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     ndim

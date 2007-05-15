@@ -25,7 +25,7 @@
       include 'par_dalton.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, parameter ::
      &     imsk16 = 65535,
@@ -78,7 +78,7 @@ c     &     first, first_str
      &       'not yet prepared for >255 orbitals')
       end if
 
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
 
       call file_init(ffmo2,motwoint,ftyp_sq_unf,0)
       call file_open(ffmo2)
@@ -278,7 +278,7 @@ c      end if
       ! automatic deallocation of rest:
       ifree = mem_flushmark('import_h2')
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.5) 
      &     call prtim(luout,'time in 2int import',

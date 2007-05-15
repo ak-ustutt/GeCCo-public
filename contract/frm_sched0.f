@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine frm_sched0(xret,fffrm,
-     &         op_info,str_info,orb_info)
+     &         op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     schedule the evaluation of a formula file
 *     
@@ -12,15 +12,16 @@
       include 'opdim.h'
       include 'stdunit.h'
       include 'ioparam.h'
-      include 'def_graph.h'
-      include 'def_strinf.h'
       include 'def_orbinf.h'
       include 'mdef_operator_info.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
+      include 'def_strmapinf.h'
       include 'def_contraction.h'
       include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 0
 
       character, parameter ::
      &     name_scr0*6 = 'cntscr'
@@ -36,6 +37,8 @@
      &     op_info
       type(strinf) ::
      &     str_info
+      type(strmapinf) ::
+     &     strmap_info
       type(orbinf) ::
      &     orb_info
 
@@ -100,9 +103,6 @@
         write(luout,*) 'formula file: ',
      &       fffrm%name(1:len_trim(fffrm%name))
       end if
-
-c      call file_init(ffinterm,name_interm,1,lblk_da)
-c      call file_open(ffinterm)
 
       lufrm = fffrm%unit
       rewind lufrm
@@ -321,7 +321,7 @@ c        case(command_set_target_update)
      &                 irst_op1op2(1,1,1,1,ninter),
      &       mstop(1),mstop(2),mstop1op2(ninter),
      &       igamtop(1),igamtop(2),igamtop1op2(ninter),
-     &       str_info,orb_info)
+     &       str_info,strmap_info,orb_info)
           if (ntest.ge.100)
      &         write(luout,*) 'returned from contraction kernel'
 

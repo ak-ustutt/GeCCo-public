@@ -100,7 +100,7 @@
 
 
       iprint = max(ntest,iprlvl)
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
 
 * be verbose?
       if (iprint.ge.5) then
@@ -300,7 +300,7 @@ c          call optc_prepnext()
       ! release all temporary memory
       ifree = mem_flushmark('optc_temp')
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
       if (iprint.ge.5)
      &     call prtim(luout,'time in optimizer',
      &     cpu-cpu0,sys-sys0,wall-wall0)

@@ -40,7 +40,7 @@ c      iprlvl = 1     ! print level
 
       ! initialize timing routine
       call init_time()
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
       
       call printheader()
 
@@ -93,7 +93,7 @@ c      call test_memman()
 
       call mem_clean
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
       call prtim(luout,'total time in GeCCo run',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 

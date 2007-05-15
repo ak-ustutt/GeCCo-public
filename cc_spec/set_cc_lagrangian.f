@@ -83,7 +83,7 @@
         write(luout,*) '==============================='
       end if
 
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
 
       contr%idx_res = idxecc
       contr%iblk_res = 1
@@ -388,7 +388,7 @@ c dbg -- add "??" mark for grepping
       call file_close_keep(ffcclag)
       deallocate(contr%vertex,contr%arc)
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
       write(luout,*) 'Number of generated terms: ',nterms
       call prtim(luout,'CC Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 

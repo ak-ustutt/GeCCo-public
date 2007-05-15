@@ -41,7 +41,7 @@
       real(8), pointer ::
      &     x1dia(:)
 
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
 
       nops = op_info%nops
 
@@ -81,7 +81,7 @@
 
       ifree = mem_flushmark()
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
 
       call prtim(luout,'time for diagonal ',
      &                cpu-cpu0,sys-sys0,wall-wall0)

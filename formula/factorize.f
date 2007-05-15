@@ -28,7 +28,7 @@
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
 
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
 
       form_ptr => form_head
       do while(form_ptr%command.ne.command_end_of_formula)
@@ -41,7 +41,7 @@
         form_ptr => form_ptr%next
       end do
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
       if (iprlvl.ge.5) 
      &     call prtim(luout,'factorization',
      &     cpu-cpu0,sys-sys0,wall-wall0)

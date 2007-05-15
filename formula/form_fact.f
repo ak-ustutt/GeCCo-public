@@ -65,7 +65,7 @@
         write(luout,*) '===================='
       end if
 
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
 
       ngas = orb_info%ngas
       nsym = orb_info%nsym
@@ -151,7 +151,7 @@ c        call fact_cost_old(cost,iscale,ifact,nfact,
 
       deallocate(iconn,ifact,iperm,imult)
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
       if (iprlvl.ge.5)
      &    call prtim(luout,'time in form_fact',
      &     cpu-cpu0,sys-sys0,wall-wall0)

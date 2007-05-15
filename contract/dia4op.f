@@ -67,7 +67,7 @@
 
       ifree = mem_setmark('dia4op')
 
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
       
       igas_restr => str_info%igas_restr
       mostnd => orb_info%mostnd
@@ -189,11 +189,10 @@
                   igamstr = igamdst(ihpv,ica)
                   str_loop: do
                     if (.not.next_string(idxorb,idxspn,idxdss,
-     &                 nidx,igrph,
-     &                 ms_str,igamstr,first_str,
-     &                 igas_restr,
-     &                 mostnd,igamorb,
-     &                 nsym,ngas,ngas_hpv(ihpv),idx_gas(ihpv))
+     &                 nidx,ms_str,igamstr,first_str,
+     &                 igas_restr(1,1,1,igrph),
+     &                 mostnd(1,1,idx_gas(ihpv)),igamorb,
+     &                 nsym,ngas_hpv(ihpv))
      &                 ) exit str_loop
 
                     first_str = .false.
@@ -260,7 +259,7 @@
 
       ifree = mem_flushmark()
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.5)
      &     call prtim(luout,'time in dia4op ',

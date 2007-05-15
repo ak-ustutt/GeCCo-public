@@ -17,7 +17,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       real(8), intent(in) ::
      &     fac

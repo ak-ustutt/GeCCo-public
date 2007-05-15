@@ -19,6 +19,7 @@
       include 'def_action_list.h'
       include 'def_graph.h'
       include 'def_strinf.h'
+      include 'def_strmapinf.h'
 
       type(orbinf), intent(inout) ::
      &     orb_info
@@ -47,6 +48,8 @@ c     &     , ffops(:)
      &     ifree, nform, nactions
       type(strinf), pointer ::
      &     str_info
+      type(strmapinf), pointer ::
+     &     strmap_info
 
       ifree = mem_setmark('do_calc')
       
@@ -85,11 +88,14 @@ c     &     , ffops(:)
      &     call quit(0,'do_calc','no actions defined?')
 
       ! set up graphs
-      ifree = mem_setmark('graph_def')
+      ifree = mem_setmark(graph_def)
       allocate(str_info)
       call set_graphs_for_ops(str_info,
      &     op_info%op_list,op_info%nops,orb_info)
-      
+      ifree = mem_setmark(strmaps)
+      allocate(strmap_info)
+      call init_strmap(str_info,strmap_info)
+
       ! set up operator dimensions
       call mem_pushmark() ! push current memory section
       ifree = mem_gotomark(operator_def)
@@ -149,7 +155,7 @@ c     &     , ffops(:)
      &                      current_act%act%idxopdef_in,
      &                      current_act%act%idxopfile_in,
      &                      ffform_opt,
-     &                      op_info,str_info,orb_info
+     &                      op_info,str_info,strmap_info,orb_info
      &                     )
 c            call file_delete(ffform_opt)
           case (iaction_solve_evp)
@@ -170,7 +176,16 @@ c            call file_delete(ffform_opt)
         
       ! free memory allocated for operators etc.
       deallocate(ffform)
-      ! still a few deallocs missing .... !!
+      ! still a few deallocs missing .... !!      
+      deallocate(str_info)
+      ifree = mem_flushmark(op_files)
+      call clean_strmap(strmap_info)
+      deallocate(strmap_info)
+      ifree = mem_flushmark(strmaps)
+      ifree = mem_flushmark(graph_def)
+      ifree = mem_flushmark(action_def)
+      ifree = mem_flushmark(formula_def)
+      ifree = mem_flushmark(operator_def)
 
       ifree = mem_flushmark('do_calc')
 
