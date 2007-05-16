@@ -11,7 +11,7 @@
       include 'stdunit.h'
       include 'def_contraction.h'
       include 'def_operator.h'
-      include 'def_formula.h'
+      include 'def_formula_item.h'
 
       integer, parameter ::
      &     ntest = 00

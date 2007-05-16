@@ -1,11 +1,15 @@
       ! generic names and titles of formula files
       ! CC:
+c      character, parameter ::
+c     &     name_lagrange*14 = 'cclagrange.fml',
+c     &     name_ccenergy*12 = 'ccenergy.fml',
+c     &     name_vectfunc*14 = 'ccvectfunc.fml',
+c     &     name_cce_vfop*14 = 'cce_vf_opt.fml'
       character, parameter ::
-     &     name_lagrange*14 = 'cclagrange.fml',
-     &     name_ccenergy*12 = 'ccenergy.fml',
-     &     name_vectfunc*14 = 'ccvectfunc.fml',
-     &     name_cce_vfop*14 = 'cce_vf_opt.fml'
+     &     title_cclg0*26 = 'CC ground state Lagrangian',
+     &     title_ccen0*12 = 'CC energy',
+     &     title_ccrs0*14 = 'CC residual'
       character, parameter ::
-     &     title_ccen*12 = 'CC energy',
-     &     title_resi*14 = 'CC residual'
-
+     &     label_cclg0*5 = 'L0_CC',
+     &     label_ccen0*5 = 'E0_CC',
+     &     label_ccrs0*6 = 'OMG_CC'

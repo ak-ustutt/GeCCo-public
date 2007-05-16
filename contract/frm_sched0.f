@@ -18,7 +18,8 @@
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'def_contraction.h'
-      include 'def_formula.h'
+      include 'def_formula_item.h'
+      include 'ifc_memman.h'
 
       integer, parameter ::
      &     ntest = 0
@@ -42,15 +43,15 @@
       type(orbinf) ::
      &     orb_info
 
-      type(formula) ::
+      type(formula_item) ::
      &     cur_form
 
       logical ::
      &     update
       integer ::
-     &     lufrm, idxopres, idxres, nres,
-     &     n_occ_cls, maxvtx, maxarc, maxfac,
-     &     nfact, idxop1op2, iblkop1op2, iops, iblkres,
+     &     lufrm, idxopres, idxres, nres, type_xret, type_xret_cur,
+     &     n_occ_cls, maxvtx, maxarc, maxfac, nblk_res,
+     &     nfact, idxop1op2, iblkop1op2, iops, iblkres, ifree,
      &     ninter, idx, nsym, ngas, nexc, ndis, iprint, iterm, len
       real(8) ::
      &     fac, facc, xnrm
@@ -66,6 +67,10 @@
      &     irst_res(2,orb_info%ngas,2,2),
      &     mstop(2), igamtop(2), idxop(2), iblkop(2),
      &     iocc_ext(ngastp,2,2), iocc_cnt(ngastp,2)
+      real(8), pointer ::
+     &     xret_blk(:), xret_pnt(:)
+      real(8), target ::
+     &     xret_scr(1)
       integer, allocatable ::
      &     interm(:), iocc_op1op2(:,:,:), irst_op1op2(:,:,:,:,:),
      &     mstop1op2(:), igamtop1op2(:)
@@ -83,6 +88,8 @@
       real(8), external ::
      &     xnormop
 
+      ifree = mem_setmark('frm_sched0')
+      
       iprint = max(ntest,iprlvl)
       if (ntest.gt.0.or.iprint.ge.5) then
         write(luout,*) '============================='
@@ -126,7 +133,8 @@ c     &     idxopres,n_occ_cls,maxvtx,maxarc,maxfac
       nres  = 0
       idxres = 0
       iterm = 0
-      
+      nullify(xret_blk)
+
       ! loop over entries
       term_loop: do while(rd_formula(fffrm,cur_form))
 
@@ -136,13 +144,26 @@ c     &     idxopres,n_occ_cls,maxvtx,maxarc,maxfac
 
         select case(cur_form%command)
         case(command_end_of_formula)
-          exit term_loop
-        case(command_set_target_init)
-c quick hack:
-          if (idxres.gt.0) then
-            xret(idxres) = xnormop(ffres,ops(idxopres)%op)
+          ! get xret value for final target
+          if (type_xret.eq.1) then
+            xret(idxres) = sqrt(sum(xret_blk(1:nblk_res)))
+          else if (type_xret.eq.2) then
+            xret(idxres) = xret_blk(1)
           end if
-c
+
+          exit term_loop
+
+        case(command_set_target_init)
+
+          ! for previous target: assemble xret value
+          if (idxres.gt.0) then
+            if (type_xret.eq.1) then
+              xret(idxres) = sqrt(sum(xret_blk(1:nblk_res)))
+            else if (type_xret.eq.2) then
+              xret(idxres) = xret_blk(1)
+            end if
+          end if
+
           ! initialize result
           nres = nres+1
           idxres = nres
@@ -153,11 +174,23 @@ c
           if (idxopres.gt.0) then
             ffres => op_info%opfil_arr(idxopres)%fhand
             opres => op_info%op_arr(idxopres)%op
+            nblk_res = opres%n_occ_cls
+            type_xret = 2
+            if (opres%len_op.gt.1) type_xret = 1
             if (ffres%unit.le.0)
      &           call file_open(ffres)
             call zeroop(ffres,opres)
+          else
+            nblk_res = 1
+            type_xret = 2
           end if
-          xret(idxres) = 0d0
+ 
+          if (associated(xret_blk))
+     &           ifree = mem_dealloc('xret_blk')
+          ifree = mem_alloc_real(xret_blk,nblk_res,'xret_blk')
+          xret_blk(1:nblk_res) = 0d0
+ 
+c          xret(idxres) = 0d0
           cycle term_loop
 c        case(command_set_target_update)
         case(command_add_contribution)
@@ -258,6 +291,8 @@ c        case(command_set_target_update)
             iblkop1op2 = cur_form%contr%iblk_res
             ffop1op2 => ffres
             op1op2 => ops(idxop1op2)%op
+            xret_pnt => xret_blk(iblkop1op2:iblkop1op2)
+            type_xret_cur = type_xret
           else
             ! new intermediate
             update = .false.
@@ -307,13 +342,15 @@ c        case(command_set_target_update)
             call set_op_dim(2,.false.,opscr(ninter),
      &           str_info,nsym)
             op1op2 => opscr(ninter)
+            xret_pnt => xret_scr
+            type_xret_cur = 0
           end if
 
           if (ntest.ge.100)
      &         write(luout,*) 'calling contraction kernel'
           ! do the contraction
           call contr_op1op2(facc,ffop1,ffop2,
-     &       update,ffop1op2,xret(idxres),
+     &       update,ffop1op2,xret_pnt,type_xret_cur,
      &       op1,op2,op1op2,
      &       iblkop(1),iblkop(2),iblkop1op2,
      &       iocc_ext(1,1,1),iocc_ext(1,1,2),iocc_cnt,
@@ -362,16 +399,18 @@ c        case(command_set_target_update)
 
       call dealloc_contr(cur_form%contr)
       deallocate(cur_form%contr)
-
-      if (idxopres.gt.0) then
-        ! return norm of result
-        xret(idxres) = xnormop(ffres,ops(idxopres)%op)
-      end if
+ 
+c      if (idxopres.gt.0) then
+c        ! return norm of result
+c        xret(idxres) = xnormop(ffres,ops(idxopres)%op)
+c      end if
 c      do iops = 1, op_info%nops
 c        if (ffops(iops)%fhand%unit.gt.0)
 c     &       call file_close_keep(ffops(iops)%fhand)
 c      end do
       call file_close_keep(fffrm)
+
+      ifree = mem_flushmark()
 
       if (ntest.ge.100)
      &     write(luout,*) 'returning from frm_sched0'

@@ -50,6 +50,8 @@
       call argument_add('schedule','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
       call argument_add('contract','calculate.routes',type=vtyp_int,
+     &     idef=(/1/))
+      call argument_add('simtraf','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
 
       if (iprint.ge.50)

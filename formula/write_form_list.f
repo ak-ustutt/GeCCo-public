@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine write_form_list(ffform,form_head)
+      subroutine write_form_list(ffform,form_head,title)
 *----------------------------------------------------------------------*
 *     write formula on linked list to file ffform
 *----------------------------------------------------------------------*
@@ -10,14 +10,16 @@
       include 'def_contraction.h'
       include 'def_operator.h'
       include 'def_filinf.h'
-      include 'def_formula.h'
+      include 'def_formula_item.h'
 
+      character, intent(in) ::
+     &     title*(*)
       type(filinf), intent(inout) ::
      &     ffform
-      type(formula), intent(in), target ::
+      type(formula_item), intent(in), target ::
      &     form_head
 
-      type(formula), pointer ::
+      type(formula_item), pointer ::
      &     form_ptr
       logical ::
      &     closeit
@@ -28,7 +30,7 @@
       else
         closeit = .false.
       end if
-      write(ffform%unit) 10,'test title'
+      write(ffform%unit) len_trim(title),title
       form_ptr => form_head
       do
         call wr_formula(ffform,form_ptr)

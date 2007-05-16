@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine contr_op1op2_simple(xfac,ffop1,ffop2,
-     &     update,ffop1op2,xret,
+     &     update,ffop1op2,xret,type_xret,
      &     op1,op2,op1op2,
      &     iblkop1,iblkop2,iblkop1op2,
      &     iocc_ext1,iocc_ext2,iocc_cnt,
@@ -47,6 +47,7 @@
       real(8), intent(inout), target ::
      &     xret(1)
       integer, intent(in) ::
+     &     type_xret,
      &     iblkop1, iblkop2, iblkop1op2,
      &     iocc_ext1(ngastp,2), iocc_ext2(ngastp,2), iocc_cnt(ngastp,2),
      &     irst_op1(*), irst_op2(*), irst_op1op2(*),
@@ -124,7 +125,8 @@
         write(luout,*) 'ffop1op2:',
      &       ffop1op2%name(1:len_trim(ffop1op2%name))
         write(luout,*) 'xfac = ',xfac
-        write(luout,*) 'xret on entry = ',xret(1)
+        if (type_xret.ne.0)
+     &       write(luout,*) 'xret on entry = ',xret(1)
         write(luout,*) 'op1: ',op1%name(1:len_trim(op1%name)),
      &       ' block ',iblkop1
         write(luout,*) 'op2: ',op2%name(1:len_trim(op2%name)),
@@ -560,6 +562,12 @@ c     &                   write(luout,*) 'calling blk1blk2',
         end if
       end if
 
+      if (type_xret.eq.2) then
+        xret(1) = xop1op2(1)
+      else if (type_xret.eq.1) then
+        xret(1) = ddot(lenop1op2,xop1op2,1,xop1op2,1)
+      end if
+
       ! put result to disc
       if (.not.bufop1op2) then
         call put_vec(ffop1op2,xop1op2,idxst_op1op2,
@@ -570,7 +578,8 @@ c     &                   write(luout,*) 'calling blk1blk2',
       ifree = mem_flushmark()
 
       if (ntest.ge.100) then
-        write(luout,*) 'xret on exit = ',xret(1)
+        if (type_xret.ne.0)
+     &       write(luout,*) 'xret on exit = ',xret(1)
       end if
 
       return

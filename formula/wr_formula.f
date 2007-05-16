@@ -11,11 +11,11 @@
       include 'def_contraction.h'
       include 'def_operator.h'
       include 'def_filinf.h'
-      include 'def_formula.h'
+      include 'def_formula_item.h'
 
       type(filinf), intent(in) ::
      &     ffform
-      type(formula), intent(in) ::
+      type(formula_item), intent(in) ::
      &     form
       integer ::
      &     lu

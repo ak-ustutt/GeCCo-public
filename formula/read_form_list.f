@@ -10,14 +10,14 @@
       include 'def_contraction.h'
       include 'def_operator.h'
       include 'def_filinf.h'
-      include 'def_formula.h'
+      include 'def_formula_item.h'
 
       type(filinf), intent(inout) ::
      &     ffform
-      type(formula), intent(in), target ::
+      type(formula_item), intent(in), target ::
      &     form_head
 
-      type(formula), pointer ::
+      type(formula_item), pointer ::
      &     form_ptr
       logical ::
      &     closeit

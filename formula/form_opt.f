@@ -1,8 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine form_opt(ffform_opt,
      &     nfcat,idxform,
-     &     ffform,nform,
-     &     op_info,str_info,orb_info)
+     &     form_info,op_info,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     given a list of formulae, concatenate them into one formula
 *     file, find optimal factorization and intermediates
@@ -19,14 +18,15 @@
       include 'def_orbinf.h'
       include 'def_contraction.h'
       include 'mdef_operator_info.h'
-      include 'def_formula.h'
+      include 'mdef_formula_info.h'
+      include 'def_formula_item.h'
 
       integer, intent(in) ::
-     &     nfcat, nform, idxform(nfcat)
+     &     nfcat, idxform(nfcat)
       type(filinf), intent(inout) ::
      &     ffform_opt
-      type(file_array), intent(inout) ::
-     &     ffform(*)
+      type(formula_info), intent(inout) ::
+     &     form_info
       type(operator_info), intent(inout) ::
      &     op_info
       type(strinf), intent(in) ::
@@ -34,13 +34,16 @@
       type(orbinf), intent(in) ::
      &     orb_info
       
-      type(formula), pointer ::
+      type(formula_item), pointer ::
      &     form_head, form_tail, form_ptr
       type(filinf), pointer ::
      &     cur_ffile
 
       integer ::
-     &     icat, iprint
+     &     icat, iprint, lentitle
+
+      character ::
+     &     title*(form_maxlen_comment)
 
       logical, external ::
      &     rd_formula
@@ -55,12 +58,21 @@
       nullify(form_ptr%contr)
       nullify(form_ptr%interm)
 
+      lentitle = 0
       ! ----------------------
       ! read in formula files:
       ! ----------------------
       do icat = 1, nfcat
 
-        cur_ffile => ffform(idxform(icat))%fhand
+        cur_ffile => form_info%form_arr(idxform(icat))%form%fhand
+        if (lentitle.lt.form_maxlen_comment) then
+          if (icat.eq.1) then
+            title = form_info%form_arr(idxform(icat))%form%label
+          else
+            title = trim(title)//'/'//
+     &           form_info%form_arr(idxform(icat))%form%label
+          end if
+        end if
 
         call read_form_list(cur_ffile,form_ptr)
 
@@ -71,6 +83,8 @@
         end do
       end do
       form_tail => form_ptr
+
+      title = trim(title)//' -- optimized'
 
       ! ----------------------------------------
       ! find optimal factorization for each term
@@ -84,7 +98,7 @@ c      form_ptr => form_head
         call print_form_list(luout,form_head,op_info)
       end if
 
-      call write_form_list(ffform_opt,form_head)
+      call write_form_list(ffform_opt,form_head,title)
       
       return
       end

@@ -129,7 +129,7 @@
         if (iand(task,1).eq.1.or.iand(task,2).eq.2) then
           call frm_sched(xret,ffform_opt,
      &         op_info,str_info,strmap_info,orb_info)
-          energy = -xret(1)
+          energy =  xret(1)
           xresnrm = xret(2)
         end if
 

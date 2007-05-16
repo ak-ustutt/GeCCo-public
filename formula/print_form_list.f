@@ -8,16 +8,16 @@
       include 'opdim.h'
       include 'mdef_operator_info.h'
       include 'def_contraction.h'
-      include 'def_formula.h'
+      include 'def_formula_item.h'
 
       integer, intent(in) ::
      &     luout
-      type(formula), intent(in), target ::
+      type(formula_item), intent(in), target ::
      &     form_head
       type(operator_info), intent(in) ::
      &     op_info
 
-      type(formula), pointer ::
+      type(formula_item), pointer ::
      &     form_ptr
 
       form_ptr => form_head

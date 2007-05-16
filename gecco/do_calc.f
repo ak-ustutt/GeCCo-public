@@ -20,6 +20,7 @@
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_strmapinf.h'
+      include 'mdef_formula_info.h'
 
       type(orbinf), intent(inout) ::
      &     orb_info
@@ -28,18 +29,19 @@
 
       type(operator_info) ::
      &     op_info
-      
+      type(formula_info) ::
+     &     form_info
 
 c      type(operator_list), pointer ::
 c     &     op_list
-      type(file_list), pointer ::
-     &     form_list
+c      type(file_list), pointer ::
+c     &     form_list
       type(action_list), pointer ::
      &     act_list, current_act
 c      type(operator_array), pointer ::
 c     &     op_arr(:)
-      type(file_array), pointer ::
-     &     ffform(:)
+c      type(file_array), pointer ::
+c     &     ffform(:)
 c      type(filinf), pointer ::
 c     &     , ffops(:)
       type(filinf) ::
@@ -65,15 +67,17 @@ c     &     , ffops(:)
      &     call quit(0,'do_calc','no operators defined?')
 
       ifree = mem_setmark(formula_def)
-      allocate(form_list)
-      nullify(form_list%fhand)
-      nullify(form_list%prev)
-      nullify(form_list%next)
-      nform = 0
+c      allocate(form_list)
+c      nullify(form_list%fhand)
+c      nullify(form_list%prev)
+c      nullify(form_list%next)
+      call init_formula_info(form_info)
+      form_info%nform = 0
       ! set up (basic) formulae
-      call set_formulae(form_list,nform,op_info%op_list,op_info%nops)
+      call set_formulae(form_info,op_info%op_list,op_info%nops)
+      call update_form_arr(form_info)
       if (nform.eq.0)
-     &     call quit(0,'do_calc','no formulae/method defined?')
+     &     call quit(0,'do_calc','no formula/method defined?')
 
       ifree = mem_setmark(action_def)
       allocate(act_list)
@@ -83,7 +87,7 @@ c     &     , ffops(:)
       nactions = 0
       ! set up actions
       call set_actions(act_list,nactions,
-     &     form_list,nform,op_info%op_list,op_info%nops)
+     &     form_info,op_info%op_list,op_info%nops)
       if (nform.eq.0)
      &     call quit(0,'do_calc','no actions defined?')
 
@@ -105,8 +109,8 @@ c     &     , ffops(:)
 
       ! turn linked lists into arrays
       call update_op_arr(op_info)
-      allocate(ffform(nform))
-      call file_list2arr2(form_list,ffform,nform)
+c      allocate(ffform(nform))
+c      call file_list2arr2(form_list,ffform,nform)
 
       ! initialize files for operator elements
       ifree = mem_setmark(op_files)
@@ -145,8 +149,7 @@ c     &     , ffops(:)
             call file_init(ffform_opt,name_cce_vfop,ftyp_sq_unf,0)
             call form_opt(ffform_opt,
      &           current_act%act%nform,current_act%act%idx_formula,
-     &           ffform,nform,
-     &           op_info,str_info,orb_info)
+     &           form_info,op_info,str_info,orb_info)
             ! Solve system of non-linear equations
             call solve_nleq(current_act%act%nop_out,
      &                      current_act%act%idxopdef_out,
@@ -174,8 +177,8 @@ c            call file_delete(ffform_opt)
 
       end do
         
-      ! free memory allocated for operators etc.
-      deallocate(ffform)
+c      ! free memory allocated for operators etc.
+c      deallocate(ffform)
       ! still a few deallocs missing .... !!      
       deallocate(str_info)
       ifree = mem_flushmark(op_files)

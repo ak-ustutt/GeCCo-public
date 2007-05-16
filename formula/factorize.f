@@ -12,7 +12,7 @@
       include 'def_strinf.h'
       include 'def_orbinf.h'
       include 'def_contraction.h'
-      include 'def_formula.h'
+      include 'def_formula_item.h'
 
       type(operator_info), intent(inout) ::
      &     op_info
@@ -20,10 +20,10 @@
      &     str_info
       type(orbinf), intent(in) ::
      &     orb_info
-      type(formula), intent(in), target ::
+      type(formula_item), intent(in), target ::
      &     form_head
 
-      type(formula), pointer ::
+      type(formula_item), pointer ::
      &     form_ptr
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall

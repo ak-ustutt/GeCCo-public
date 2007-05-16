@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_cc_lagrangian(ffcclag,
+      subroutine set_cc_lagrangian(form_cclag,
      &     nops,ops,idxham,idxlag,idxtop,idxecc)
 *----------------------------------------------------------------------*
 *
@@ -17,8 +17,6 @@
 
       integer, parameter ::
      &     ntest = 00
-      character, parameter ::
-     &     name_string*13='CC Lagrangian'
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -26,9 +24,11 @@
       include 'def_contraction.h'
       include 'def_filinf.h'
       include 'ifc_operators.h'
+      include 'def_formula.h'
+      include 'par_formnames_gen.h'
 
-      type(filinf), intent(inout) ::
-     &     ffcclag
+      type(formula), intent(inout) ::
+     &     form_cclag
 
       integer, intent(in) ::
      &     nops,
@@ -63,6 +63,9 @@
       integer ::
      &     iexc_part(maxpart), ihd_part(2,maxpart),
      &     ihd_part_idx(maxpart), ihd(2)
+      character ::
+     &     name*(form_maxlen_label*2)
+
       ! for timings:
       real(8) ::
      &     cpu, wall, sys, cpu0, wall0, sys0
@@ -102,14 +105,22 @@ c      end do
       maxexc = maxxlvl_op(ops(idxtop))
       if (ntest.ge.100) write(luout,*) 'max. exc.level of T: ', maxexc
 
+      ! assign canonical name and comment
+      form_cclag%label = label_cclg0
+      form_cclag%comment = title_cclg0
+
+      ! init file
+      write(name,'(a,".fml")') label_cclg0
+      call file_init(form_cclag%fhand,name,ftyp_sq_unf,0)
+
       ! open file
-      call file_open(ffcclag)
-      lucclag = ffcclag%unit
+      call file_open(form_cclag%fhand)
+      lucclag = form_cclag%fhand%unit
       rewind lucclag
 
       ! first record: a name
-      len = len_trim(name_string)
-      write(lucclag) len,name_string
+      len = len_trim(title_cclg0)
+      write(lucclag) len,title_cclg0
       ! second record: define target 
       write(lucclag) 0,idxecc
 
@@ -385,7 +396,7 @@ c dbg -- add "??" mark for grepping
       end do l_loop
       write(luout,'(2x,42("-"))')
 
-      call file_close_keep(ffcclag)
+      call file_close_keep(form_cclag%fhand)
       deallocate(contr%vertex,contr%arc)
 
       call atim_csw(cpu,sys,wall)

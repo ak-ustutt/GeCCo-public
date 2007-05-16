@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine contr_op1op2(xfac,ffop1,ffop2,
-     &     update,ffop1op2,xret,
+     &     update,ffop1op2,xret,type_xret,
      &     op1,op2,op1op2,
      &     iblkop1,iblkop2,iblkop1op2,
      &     iocc_ext1,iocc_ext2,iocc_cnt,
@@ -33,6 +33,7 @@
       real(8), intent(inout) ::
      &     xret
       integer, intent(in) ::
+     &     type_xret,
      &     iblkop1, iblkop2, iblkop1op2,
      &     iocc_ext1(ngastp,2), iocc_ext2(ngastp,2), iocc_cnt(ngastp,2),
      &     irst_op1(*), irst_op2(*), irst_op1op2(*),
@@ -56,7 +57,7 @@
       select case (irt_contr)
       case(0)
         call contr_op1op2_simple(xfac,ffop1,ffop2,
-     &     update,ffop1op2,xret,
+     &     update,ffop1op2,xret,type_xret,
      &     op1,op2,op1op2,
      &     iblkop1,iblkop2,iblkop1op2,
      &     iocc_ext1,iocc_ext2,iocc_cnt,
@@ -66,7 +67,7 @@
      &     str_info,orb_info)
       case(1)
         call contr_op1op2_wmaps(xfac,ffop1,ffop2,
-     &     update,ffop1op2,xret,
+     &     update,ffop1op2,xret,type_xret,
      &     op1,op2,op1op2,
      &     iblkop1,iblkop2,iblkop1op2,
      &     iocc_ext1,iocc_ext2,iocc_cnt,

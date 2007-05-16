@@ -49,9 +49,8 @@
      &       lblk_da)
         ! incore options
         ! preliminary version:
-        if (trim(cur_op%name).eq.op_ham) then
-          ! we directly use the knowledge that blocks 1-5 should be
-          ! incore
+        if (trim(cur_op%name).eq.op_ham.or.cur_op%len_op.eq.1) then
+c        if (trim(cur_op%name).eq.op_ham) then
           cur_file%buffered = .true.
           ! make sure, we are in the appropriate memory section
           call mem_pushmark()

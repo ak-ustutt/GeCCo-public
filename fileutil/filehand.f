@@ -16,7 +16,9 @@
       ! set standard values for direct access
       nrecfc  = 8  ! can be compiler dependent --> improve that
 c      lblk_da = 1024*1024/nrecfc
-      lblk_da = 1024/nrecfc
+      ! currently 32K blocks
+      ! could be adapted to size of current calculation
+      lblk_da = 32*1024/nrecfc
 
       ifrunit(1:6)       = 3 ! reserved
       ifrunit(7:mxpunit) = 0

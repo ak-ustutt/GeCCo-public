@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_formulae(form_list,nform,op_list,nops)
+      subroutine set_formulae(form_info,op_list,nops)
 *----------------------------------------------------------------------*
 *     driver routine for setting up formula files
 *----------------------------------------------------------------------*
@@ -9,12 +9,10 @@
       include 'def_operator.h'
       include 'def_operator_list.h'
       include 'def_filinf.h'
-      include 'def_file_list.h'
+      include 'mdef_formula_info.h'
 
-      type(file_list), intent(in) ::
-     &     form_list
-      integer, intent(inout) ::
-     &     nform
+      type(formula_info), intent(inout) ::
+     &     form_info
       type(operator_list), intent(in) ::
      &     op_list
       integer, intent(in) ::
@@ -29,7 +27,7 @@
       call op_list2arr(op_list,ops,nops)
 
       if (is_keyword_set('method.CC').gt.0) then
-        call set_cc_formula(form_list,nform,ops,nops)
+        call set_cc_formula(form_info,ops,nops)
       end if
 
       deallocate(ops)

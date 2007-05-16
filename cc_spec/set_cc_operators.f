@@ -28,7 +28,7 @@
      &     name*(len_opname)
       integer ::
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
-     &     gamma, iarr(1)
+     &     gamma, iarr(1), isim
       integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
@@ -65,13 +65,41 @@ c        nullify(list_pnt%op)
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
+      ! use e^{-T1}He^{T1}?
+      call get_argument_value('calculate.routes','simtraf',ival=isim)
+      if (isim.gt.0) then
+        ! new entry: the Hhat operator
+        nops = nops+1
+        allocate(list_pnt%next)
+        list_pnt%next%prev => list_pnt
+        list_pnt => list_pnt%next
+        nullify(list_pnt%next)
+        allocate (list_pnt%op)
+
+        name = op_hhat
+        dagger = .false.
+        absym = 0
+        casym = 0
+        gamma = 1
+        s2 = 0
+        ms = 0
+        min_rank = 0
+        max_rank = 2
+        ncadiff = 0
+        call set_hpvx_and_restr_for_h()
+
+        call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &       min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &       orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      end if
+
       ! new entry: the T operator
       nops = nops+1
       allocate(list_pnt%next)
       list_pnt%next%prev => list_pnt
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
-c      nullify(list_pnt%op)
       allocate (list_pnt%op)
 
       name = op_top
