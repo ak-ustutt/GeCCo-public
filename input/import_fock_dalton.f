@@ -41,7 +41,7 @@
       real(8) ::
      &     cpu0,sys0,wall0,cpu,sys,wall
       integer ::
-     &     lusir, isym, ifree,
+     &     lusir, isym, ifree, irec,
      &     nfock, nh1reo, iocc_cls
 
       real(8), pointer ::
@@ -108,11 +108,10 @@
       call mollab('SIR IPH ',lusir,luout)
 
       read (lusir) potnuc,emy,eactiv,emcscf,istate,ispin,nactel,lsym
-      read (lusir) ! overread dimension information
-      read (lusir) ! overread CMO data
-      read (lusir) ! overread DV data
-      read (lusir) ! overread F data
-      read (lusir) ! overread PV data
+      ! overread a few records (depends on DALTON version)
+      do irec = 1, nskip_in_sirifc
+        read(lusir) 
+      end do
       ! and finally: the inactive fock matrix in symmetry-blocked
       ! upper triangular form
       read (lusir) xfock(1:nfock)

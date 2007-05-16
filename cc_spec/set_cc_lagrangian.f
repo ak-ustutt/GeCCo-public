@@ -46,7 +46,7 @@
 
       ! local variables
       logical ::
-     &     init_pn, init_pc, len
+     &     init_pn, init_pc, len, init
 
       type(contraction) ::
      &     contr
@@ -57,7 +57,7 @@
      &     iloccls, ihoccls, icomm,
      &     idx, idxh, nterms, ncterm(5),
      &     npart, iexc, ihdh, ihdp, nlop, nlhc, iop, idxarc, ivtxoff,
-     &     maxl, lagocc, rbaocc, narc, ansatze
+     &     maxl, lagocc, rbaocc, narc, ansatze, ians, nextern, modcom
       ! occupations:
       integer ::
      &     iocc_l(ngastp,2), iocc_h(ngastp,2),
@@ -79,12 +79,13 @@
       ! Allocatable arrays.
       integer, allocatable ::
      &     iocc_cba(:,:),iocc_rbcbov(:,:),iocc_hxovc(:,:),
-     &     iocc_temp(:,:),iocc_rcco(:,:)
+     &     iocc_temp(:,:),iocc_rcco(:,:),iocc_r12(:,:),iocc_c12(:,:),
+     &     iocc_r12c12(:,:), iocc_rtemp(:,:), itrip(:), itrip_part(:,:)
 
       ! external functions
       logical, external ::
      &     iocc_equal,
-     &     next_part_number, next_part_pair
+     &     next_part_number, next_part_pair, next_part_triple
       integer, external ::
      &     iopen_nus,
      &     ielsqsum, ielsum, iblk_occ, maxxlvl_op, ifndmin, ifndmax,
@@ -147,6 +148,10 @@
       if(explicit)then
         rbaocc=ops(idxrba)%n_occ_cls
         maxl=maxl+rbaocc
+        allocate(iocc_r12(ngastp,2),iocc_c12(ngastp,2),
+     &       iocc_r12c12(ngastp,2),iocc_hxovc(ngastp,2),
+     &       iocc_temp(ngastp,2),iocc_rcco(ngastp,2),
+     &       iocc_rtemp(ngastp,2),itrip(3),itrip_part(3,maxpart))
       endif  
       l_loop: do iloccls = 0, maxl
 
@@ -202,7 +207,7 @@
             iocc_cba(1:ngastp,1:2)=
      &           ops(idxcba)%ihpvca_occ(1:ngastp,1:2,1)
           else
-            call quit(1,'set_cc_lagrangian','One of C+ and R+ dagg.')
+            call quit(1,'set_cc_lagrangian','Only 1 of C+ and R+ dagg.')
           endif
           contr%vertex(1)%idx_op=idxrba
           contr%vertex(1)%iblk_op=iloccls-lagocc
@@ -222,13 +227,6 @@
           contr%arc(1)%link(2)=2
           contr%arc(1)%occ_cnt=iocc_rbcbov
         end if
-
-        ! Allocate some arrays needed in the following loops.
-        if(explicit.and.iloccls.eq.lagocc+1)then
-          allocate(iocc_hxovc(ngastp,2))
-          allocate(iocc_temp(ngastp,2))
-          allocate(iocc_rcco(ngastp,2))
-        endif 
 
         ! current projection is zeroth order space? find out here ....
 
@@ -364,63 +362,194 @@ c            cycle h_loop
               call wrt_occ(luout,iocc_ttot)
               call quit(1,'set_cc_lagrangian','fishy occupation')
             end if
-            ! Some extra conditions required for R12 calculations.
+            ! Some extra conditions required for R12 calculations.   
+            nextern=iocc_ttot(iextr,1)
             if(explicit)then
               call get_argument_value('method.R12','ansatz',
      &             ival=ansatze)
-              if(iocc_ttot(iextr,1).ne.0.and.iocc_ttot(ihole,2).lt.2)
-     &             cycle h_loop
-c              if(iocc_ttot(iextr,1)
-              if(ansatze.eq.1)then
-                if(mod(iocc_ttot(iextr,1),2).ne.0)cycle h_loop
+              if(nextern.ne.0)then
+                if(iocc_ttot(ihole,2).lt.2)
+     &               cycle h_loop
+                if(iocc_ttot(ipart,1).eq.0.and.
+     &               mod(nextern,2).ne.0) cycle h_loop
+                if(ansatze.eq.1)then
+                  if(mod(nextern,2).ne.0)cycle h_loop
+                endif
               endif  
             endif
 
-            if(iocc_ttot(iextr,1).gt.0)then
+            if(nextern.gt.0)then
               write(luout,'("T tot")')
               write(luout,'(4i4)') iocc_ttot(1:ngastp,1)
               write(luout,'(4i4)') iocc_ttot(1:ngastp,2)
-              cycle h_loop
             endif  
 
-            ! Modify for R12.
             ncommin = iocc_ttot(ipart,1)/(maxexc+1) + 1
+            ! Account for external orbitals if R12 requested.
+            if(explicit.and.iocc_ttot(iextr,1).gt.0)then
+              if(iocc_ttot(ipart,1).eq.0)then
+                ncommin=nextern/2
+              else
+                if(iocc_ttot(ipart,1).eq.1)then
+                  if(nextern.eq.1)then
+                    ncommin=1
+                  elseif(nextern.gt.1)then
+                    ncommin=1+iocc_ttot(iextr,1)/2
+                  endif
+                elseif(iocc_ttot(ipart,1).gt.1)then
+                  if(nextern.eq.1)then
+                    ncommin=2+(iocc_ttot(ipart,1)-1)/(maxexc+1)
+                  elseif(nextern.gt.1)then
+                    ncommin=ncommin+nextern/2+mod(nextern,2)
+                  endif  
+                endif  
+              endif 
+            endif  
 
             if (ntest.ge.100) write(luout,*) 'ncommin, ncommax: ',
      &           ncommin, ncommax
 
-            do icomm = ncommin, ncommax
+            ! Loop over possible commutators of T (and R if R12). 
+            ! Initially treat the single commutator terms, including
+            ! the R12 terms, then the multimple commutators of T, 
+            ! and finally the multiple commutators with R terms.
+            com_loop: do icomm = ncommin, ncommax
+
               if (icomm.eq.1) then
-                contr%fac = 1d0
-                contr%nvtx = nlop+2
-                contr%vertex(contr%nvtx)%idx_op = idxtop
-                idx = iblk_occ(iocc_ttot,.false.,ops(idxtop))
-                if (idx.le.0) then
-                  write(luout,*) 'occupation not found in list:'
-                  write(luout,*) iocc_ttot(1:ngastp,1)
-                  write(luout,*) iocc_ttot(1:ngastp,2)
-                  stop 'occupation not found in list (1)'
-                end if
-                contr%vertex(contr%nvtx)%iblk_op = idx
+                if(nextern.eq.0)then
+                  contr%fac = 1d0
+                  contr%nvtx = nlop+2
+                  contr%vertex(contr%nvtx)%idx_op = idxtop
+                  idx = iblk_occ(iocc_ttot,.false.,ops(idxtop))
+                  if (idx.le.0) then
+                    write(luout,*) 'T occupation not found in list:'
+                    write(luout,*) iocc_ttot(1:ngastp,1)
+                    write(luout,*) iocc_ttot(1:ngastp,2)
+                    stop 'occupation not found in list (1)'
+                  end if
+                  contr%vertex(contr%nvtx)%iblk_op = idx
 
-                ! [Hd] defines contraction between H and T
-                contr%narc = nlhc+1
-                contr%arc(contr%narc)%link(1)=idxh
-                contr%arc(contr%narc)%link(2)=contr%nvtx
-                contr%arc(contr%narc)%occ_cnt(1:ngastp,1:2)
-     &               =iocc_hd(1:ngastp,1:2)
-
-                ! [T^\dag]-[Hd] defines contraction between L and T
-                iocc_ltc = iocc_add(-1,iocc_hd,.false.,
-     &                              +1,iocc_ttot,.true.)
-                if (ielsum(iocc_ltc,ngastp*2).gt.0) then
+                  ! [Hd] defines contraction between H and T
                   contr%narc = contr%narc+1
-                  contr%arc(contr%narc)%link(1)=1
+                  contr%arc(contr%narc)%link(1)=idxh
                   contr%arc(contr%narc)%link(2)=contr%nvtx
-                  contr%arc(contr%narc)%occ_cnt(1:ngastp,1:2)=
-     &                 iocc_ltc(1:ngastp,1:2)
-                end if
+                  contr%arc(contr%narc)%occ_cnt(1:ngastp,1:2)
+     &                 =iocc_hd(1:ngastp,1:2)
 
+                  ! [T^\dag]-[Hd] defines contraction between L and T
+                  iocc_ltc = iocc_add(-1,iocc_hd,.false.,
+     &                 +1,iocc_ttot,.true.)
+                  if (ielsum(iocc_ltc,ngastp*2).gt.0) then
+                    if(iloccls.le.lagocc)then
+                      contr%narc=contr%narc+1
+                      contr%arc(contr%narc)%link(1)=1
+                      contr%arc(contr%narc)%link(2)=contr%nvtx
+                      contr%arc(contr%narc)%occ_cnt(1:ngastp,1:2)=
+     &                     iocc_ltc(1:ngastp,1:2)
+                    elseif(explicit.and.iloccls.gt.lagocc)then
+                      if(iocc_ltc(ipart,2).ne.0.or.
+     &                     iocc_ltc(iextr,2).ne.0)then
+                        contr%narc=contr%narc+1
+                        contr%arc(contr%narc)%link(1)=1
+                        contr%arc(contr%narc)%link(2)=contr%nvtx
+                        contr%arc(contr%narc)%occ_cnt(1:ngastp,1:2)=0
+                        contr%arc(contr%narc)%occ_cnt(ipart,2)=
+     &                       iocc_ltc(ipart,2)
+                        contr%arc(contr%narc)%occ_cnt(iextr,2)=
+     &                       iocc_ltc(iextr,2)
+                      endif
+                      if(iocc_ltc(ihole,1).ne.0)then
+                        contr%narc=contr%narc+1
+                        contr%arc(contr%narc)%link(1)=2
+                        contr%arc(contr%narc)%link(2)=contr%nvtx
+                        contr%arc(contr%narc)%occ_cnt(1:ngastp,1:2)=0
+                        contr%arc(contr%narc)%occ_cnt(ihole,1)=
+     &                       iocc_ltc(ihole,1)
+                      endif  
+                    endif
+                  end if
+
+                ! Add in contractions with R12 operators if needed.
+                else
+                  contr%fac=1d0
+                  contr%nvtx=nlop+3
+                  contr%vertex(contr%nvtx)%idx_op=idxr12
+                  idx=iblk_occ(iocc_ttot,.false.,ops(idxr12))
+                  contr%vertex(contr%nvtx+1)%idx_op=idxc12
+                  if(idx.le.0)then
+                    write(luout,*) 'R occupation not found in list:'
+                    write(luout,*) iocc_ttot(1:ngastp,1)
+                    write(luout,*) iocc_ttot(1:ngastp,2)
+                    stop 'occupation not found in list (1)'
+                  end if                    
+                  ! Must first contract R and C.
+                  iocc_r12(1:ngastp,1:2)=
+     &                 ops(idxr12)%ihpvca_occ(1:ngastp,1:2,idx)
+                  iocc_c12(1:ngastp,1:2)=
+     &                 ops(idxc12)%ihpvca_occ(1:ngastp,1:2,1)
+                  
+                  contr%vertex(nlop+2)%idx_op=idxr12
+                  contr%vertex(nlop+2)%iblk_op=idx
+                  contr%vertex(nlop+3)%idx_op=idxc12
+                  contr%vertex(nlop+3)%iblk_op=1
+
+                  iocc_r12c12=
+     &               iocc_overlap(iocc_r12,.false.,iocc_c12,.false.)
+                  iocc_r12=
+     &               iocc_add(1,iocc_r12,.false.,-1,iocc_r12c12,.false.)
+                  iocc_c12=
+     &               iocc_add(1,iocc_c12,.false.,-1,iocc_r12c12,.false.)
+                  contr%narc=contr%narc+1
+                  contr%arc(contr%narc)%link(1)=nlop+2
+                  contr%arc(contr%narc)%link(2)=nlop+3
+                  contr%arc(contr%narc)%occ_cnt=iocc_r12c12
+
+                  ! Now contract H with both new R and new C. Hole 
+                  ! lines of Hd define the contraction with C and 
+                  ! particle/external lines define that with R.
+                  if(iocc_hd(ipart,2).gt.0.or.iocc_hd(iextr,2).gt.0)then
+                    iocc_temp(1:ngastp,1:2)=0
+                    iocc_temp(ipart,2)=iocc_hd(ipart,2)
+                    iocc_temp(iextr,2)=iocc_hd(iextr,2)
+                    contr%narc=contr%narc+1
+                    contr%arc(contr%narc)%link(1)=nlop+1
+                    contr%arc(contr%narc)%link(2)=nlop+2
+                    contr%arc(contr%narc)%occ_cnt=iocc_temp
+                  endif
+                  if(iocc_hd(ihole,1).gt.0)then
+                    iocc_temp(1:ngastp,1:2)=0
+                    iocc_temp(ihole,1)=iocc_hd(ihole,1)                    
+                    contr%narc=contr%narc+1
+                    contr%arc(contr%narc)%link(1)=nlop+1
+                    contr%arc(contr%narc)%link(2)=nlop+3
+                    contr%arc(contr%narc)%occ_cnt=iocc_temp
+                  endif
+                  ! Finally, contract remaining lines with L+ (or R+/C+)
+                  ! [T^\dag]-[Hd] defines contraction between L and T
+                  iocc_ltc = iocc_add(-1,iocc_hd,.false.,
+     &                 +1,iocc_ttot,.true.)
+                  ! Hole part of [T+]-Hd defines contraction with Cbar
+                  ! and particle/external part of the same defines 
+                  ! the contraction with Rbar.
+                  if(iocc_ltc(ipart,2).gt.0.or.
+     &                 iocc_ltc(iextr,2).gt.0)then
+                    iocc_temp(1:ngastp,1:2)=0
+                    iocc_temp(ipart,2)=iocc_ltc(ipart,2)
+                    iocc_temp(iextr,2)=iocc_ltc(iextr,2)
+                    contr%narc=contr%narc+1
+                    contr%arc(contr%narc)%link(1)=1
+                    contr%arc(contr%narc)%link(2)=nlop+2
+                    contr%arc(contr%narc)%occ_cnt=iocc_temp
+                  endif  
+                  if(iocc_ltc(ihole,1).gt.0)then
+                    iocc_temp(1:ngastp,1:2)=0
+                    iocc_temp(ihole,1)=iocc_ltc(ihole,1)
+                    contr%narc=contr%narc+1
+                    contr%arc(contr%narc)%link(1)=nlop
+                    contr%arc(contr%narc)%link(2)=nlop+3
+                    contr%arc(contr%narc)%occ_cnt=iocc_temp
+                  endif   
+                endif  
                 if (ntest.ge.100) then
                   call prt_contr(luout,contr,ops)
                 end if
@@ -428,117 +557,243 @@ c              if(iocc_ttot(iextr,1)
                 nterms = nterms+1
                 ncterm(2) = ncterm(2)+1
 
-              else
-                ! double and higher commutator term:
-
-                ! loop over all n-fold partitionings of [Ttotal] 
-                init_pn = .true.
-                do while (next_part_number(init_pn,.true.,iexc_part,
-     &               iexc,icomm,1,maxexc))
-                  init_pn = .false.
-                  
-                  ! max possible contraction length:
-                  maxcnt = min(2,ifndmax(iexc_part,1,icomm,1))
-
-                  ! holes to contract:
-                  ihd(1) = iocc_hd(ihole,1)
-                  ! particles to contract:
-                  ihd(2) = iocc_hd(ipart,2)
-
-                  ! loop over all n-fold partitionings of [Hd]
-                  !  (incl. non-equivalent) permutations
-                  init_pc = .true.
-                  pc_loop: do while (
-     &                 next_part_pair(init_pc,.false.,ihd_part,
-     &                 ihd,icomm,1,maxcnt))
-                    init_pc = .false.
-
-                    ! check, whether all contractions are possible
-                    do idx = 1, icomm
-                      if (ihd_part(1,idx).gt.iexc_part(idx).or.
-     &                    ihd_part(2,idx).gt.iexc_part(idx))
-     &                    cycle pc_loop
-                    end do
+              elseif(icomm.gt.1.)then
+                if(nextern.eq.0)then
+                  ! double and higher commutator term:
+                  ! loop over all n-fold partitionings of [Ttotal] 
+                  init_pn = .true.
+                  do while (next_part_number(init_pn,.true.,iexc_part,
+     &                 iexc,icomm,1,maxexc))
+                    init_pn = .false.
                     
-                    ! represent each p/h pair for contractions
-                    ! by one integer (for ordering purposes)
-                    ihd_part_idx(1:icomm) = ihd_part(1,1:icomm)
-     &                                 + ihd_part(2,1:icomm)*(maxcnt+1)
+                    ! max possible contraction length:
+                    maxcnt = min(2,ifndmax(iexc_part,1,icomm,1))
 
-                    ! for equivalent T operators, only one of
-                    ! the possible permutations of contractions
-                    ! needs be generated: allow only the contr.
-                    ! with increasing order of ihd_part_idx
-                    do idx = 2, icomm
-                      if (iexc_part(idx-1).eq.iexc_part(idx).and.
-     &                    ihd_part_idx(idx-1).gt.ihd_part_idx(idx))
-     &                     cycle pc_loop
-                    end do
+                    ! holes to contract:
+                    ihd(1) = iocc_hd(ihole,1)
+                    ! particles to contract:
+                    ihd(2) = iocc_hd(ipart,2)
 
-                    ! set up contraction information
-                    ! get factor from equivalent contractions
-                    ! cf. my (andreas) notes on origin of factors
-                    contr%fac =
-     &                   1d0/dble(ieqfac(iexc_part,ihd_part_idx,icomm))
+                    ! loop over all n-fold partitionings of [Hd]
+                    !  (incl. non-equivalent) permutations
+                    init_pc = .true.
+                    pc_loop: do while (
+     &                   next_part_pair(init_pc,.false.,ihd_part,
+     &                   ihd,icomm,1,maxcnt))
+                      init_pc = .false.
+
+                      write(luout,'("Hd Partition")')
+                      write(luout,'(4i4)')ihd_part(1,1:icomm)
+                      write(luout,'(4i4)')ihd_part(2,1:icomm)
+
+                      ! check, whether all contractions are possible
+                      do idx = 1, icomm
+                        if (ihd_part(1,idx).gt.iexc_part(idx).or.
+     &                       ihd_part(2,idx).gt.iexc_part(idx))
+     &                       cycle pc_loop
+                      end do
                     
-                    contr%nvtx = nlop+1+icomm
-                    ivtxoff = nlop+1
-                    idxarc = nlhc
+                      ! represent each p/h pair for contractions
+                      ! by one integer (for ordering purposes)
+                      ihd_part_idx(1:icomm) = ihd_part(1,1:icomm)
+     &                     + ihd_part(2,1:icomm)*(maxcnt+1)
+
+                      ! for equivalent T operators, only one of
+                      ! the possible permutations of contractions
+                      ! needs be generated: allow only the contr.
+                      ! with increasing order of ihd_part_idx
+                      do idx = 2, icomm
+                        if (iexc_part(idx-1).eq.iexc_part(idx).and.
+     &                       ihd_part_idx(idx-1).gt.ihd_part_idx(idx))
+     &                       cycle pc_loop
+                      end do
+
+                      ! set up contraction information
+                      ! get factor from equivalent contractions
+                      ! cf. my (andreas) notes on origin of factors
+                      contr%fac =
+     &                    1d0/dble(ieqfac(iexc_part,ihd_part_idx,icomm))
+                    
+                      contr%nvtx = nlop+1+icomm
+                      ivtxoff = nlop+1
+                      idxarc = nlhc+1
                       
-                    do iop = 1, icomm
-                      iocc_scr(1:ngastp,1:2) = 0
-                      iocc_scr(ihole,2) = iexc_part(iop)
-                      iocc_scr(ipart,1) = iexc_part(iop)
+                      do iop = 1, icomm
+                        iocc_scr(1:ngastp,1:2) = 0
+                        iocc_scr(ihole,2) = iexc_part(iop)
+                        iocc_scr(ipart,1) = iexc_part(iop)
 
-                      idx = iblk_occ(iocc_scr,.false.,ops(idxtop))
+                        idx = iblk_occ(iocc_scr,.false.,ops(idxtop))
 
-                      if (idx.le.0) then
-                        write(luout,*) 'occupation not found in list:'
-                        write(luout,*) iocc_scr(1:ngastp,1)
-                        write(luout,*) iocc_scr(1:ngastp,2)
-                        stop 'occupation not found in list (2)'
-                      end if
+                        if (idx.le.0) then
+                          write(luout,*) 'occupation not found in list:'
+                          write(luout,*) iocc_scr(1:ngastp,1)
+                          write(luout,*) iocc_scr(1:ngastp,2)
+                          stop 'occupation not found in list (2)'
+                        end if
 
-                      contr%vertex(ivtxoff+iop)%idx_op = idxtop
-                      contr%vertex(ivtxoff+iop)%iblk_op = idx
-                      idxarc = idxarc+1
-                      contr%arc(idxarc)%link(1)=idxh
-                      contr%arc(idxarc)%link(2)=ivtxoff+iop
-                      contr%arc(idxarc)%occ_cnt(1:3,1:2) = 0
-                      contr%arc(idxarc)%occ_cnt(1,1)
-     &                     = ihd_part(1,iop)
-                      contr%arc(idxarc)%occ_cnt(2,2)
-     &                     = ihd_part(2,iop)
-
-                      ! contraction between L and T
-                      iocc_ltc = iocc_add(-1,
-     &                   contr%arc(idxarc)%occ_cnt,.false.,
-     &                   +1,iocc_scr,.true.)
-
-                      if (ielsum(iocc_ltc,ngastp*2).gt.0) then
+                        contr%vertex(ivtxoff+iop)%idx_op = idxtop
+                        contr%vertex(ivtxoff+iop)%iblk_op = idx
                         idxarc = idxarc+1
-                        contr%arc(idxarc)%link(1)=1
-                        contr%arc(idxarc)%link(2)=nlop+1+iop
-                        contr%arc(idxarc)%occ_cnt(1:ngastp,1:2)=
-     &                       iocc_ltc(1:ngastp,1:2)
+                        contr%arc(idxarc)%link(1)=idxh
+                        contr%arc(idxarc)%link(2)=ivtxoff+iop
+                        contr%arc(idxarc)%occ_cnt(1:ngastp,1:2) = 0
+                        contr%arc(idxarc)%occ_cnt(ihole,1)
+     &                       = ihd_part(1,iop)
+                        contr%arc(idxarc)%occ_cnt(ipart,2)
+     &                       = ihd_part(2,iop)
+                        
+                        ! contraction between L and T
+                        iocc_ltc = iocc_add(-1,
+     &                       contr%arc(idxarc)%occ_cnt,.false.,
+     &                       +1,iocc_scr,.true.)
+                        
+                        if (ielsum(iocc_ltc,ngastp*2).gt.0) then
+                          if(iloccls.le.lagocc)then
+                            idxarc = idxarc+1
+                            contr%arc(idxarc)%link(1)=1
+                            contr%arc(idxarc)%link(2)=nlop+1+iop
+                            contr%arc(idxarc)%occ_cnt(1:ngastp,1:2)=
+     &                           iocc_ltc(1:ngastp,1:2)
+                          elseif(explicit.and.iloccls.gt.lagocc)then
+                            if(iocc_ltc(ipart,2).gt.0)then
+                              idxarc=idxarc+1
+                              contr%arc(idxarc)%link(1)=1
+                              contr%arc(idxarc)%link(2)=nlop+1+iop
+                              contr%arc(idxarc)%occ_cnt(1:ngastp,1:2)=0
+                              contr%arc(idxarc)%occ_cnt(ipart,2)=
+     &                           iocc_ltc(ipart,2)
+                            endif
+                            if(iocc_ltc(ihole,1).gt.0)then
+                              idxarc=idxarc+1
+                              contr%arc(idxarc)%link(1)=2
+                              contr%arc(idxarc)%link(2)=nlop+1+iop
+                              contr%arc(idxarc)%occ_cnt(1:ngastp,1:2)=0
+                              contr%arc(idxarc)%occ_cnt(ihole,1)=
+     &                             iocc_ltc(ihole,1)
+                            endif  
+                          endif  
+                        end if
+                      end do
+                      contr%narc = idxarc
+
+                      if (ntest.ge.100) then
+                        call prt_contr(luout,contr,ops)
                       end if
-                    end do
-                    contr%narc = idxarc
+                      call wrt_contr(lucclag,contr)
+                      nterms = nterms+1
+                      ncterm(1+icomm) = ncterm(1+icomm)+1
 
-                    if (ntest.ge.100) then
-                      call prt_contr(luout,contr,ops)
-                    end if
-                    call wrt_contr(lucclag,contr)
-                    nterms = nterms+1
-                    ncterm(1+icomm) = ncterm(1+icomm)+1
+                    end do pc_loop ! [Hd] partitioning
 
-                  end do pc_loop ! [Hd] partitioning
+                  end do        ! [Ttotal] partitioning
 
-                end do ! [Ttotal] partitioning
+                ! Multiple commutators involving R12 operators.  
+                else
+                  if(.not.explicit) call quit(1,'set_cc_lagrangian',
+     &                 'External lines but R12 not requested.')
+                  ans_loop: do ians=1,ansatze
+                
+                  ! Ascertain the form of the commutator by checking the
+                  ! number of external lines present and the chosen 
+                  ! ansatz.
+                    iocc_rtemp(1:ngastp,1:2)=0
+                    if(nextern.eq.1)then
+                      iocc_rtemp(1:ngastp,1:2)=
+     &                     ops(idxr12)%ihpvca_occ(1:ngastp,1:2,1)
+                      iocc_temp=iocc_add(1,iocc_ttot,.false.,
+     &                     -1,iocc_rtemp,.false.)
+                      modcom=icomm-1
+                    elseif(nextern.eq.2)then  
+                      iocc_rtemp(1:ngastp,1:2)=
+     &                     ops(idxr12)%ihpvca_occ(1:ngastp,1:2,ians)
+                      iocc_temp=iocc_add(1,iocc_ttot,.false.,
+     &                     -1*(3-ians),iocc_rtemp,.false.)
+                      modcom=icomm-(3-iocc_rtemp(iextr,1))
+                      if(iocc_temp(ihole,2).lt.0)cycle ans_loop
+                    elseif(nextern.eq.3)then
+                      iocc_rtemp(1:ngastp,1:2)=
+     &                     ops(idxr12)%ihpvca_occ(1:ngastp,1:2,1)
+                      iocc_temp=iocc_add(1,iocc_ttot,.false.,
+     &                     -1,iocc_rtemp,.false.)
+                      modcom=0
+                    else
+                      iocc_rtemp(1:ngastp,1:2)=
+     &                     ops(idxr12)%ihpvca_occ(1:ngastp,1:2,2)
+                      iocc_temp=iocc_add(1,iocc_ttot,.false.,
+     &                     -2,iocc_rtemp,.false.)  
+                      modcom=0
+                    endif  
 
-              end if ! number of commutators switch
+c                    write(luout,'("T-R")')
+c                    write(luout,'(4i4)')iocc_temp(1:ngastp,1)
+c                    write(luout,'(4i4)')iocc_temp(1:ngastp,2)
+c                    cycle h_loop
 
-            end do ! loop over icomm
+                    ! Contract the first R operator with C.
+                    iocc_c12(1:ngastp,1:2)=
+     &                   ops(idxc12)%ihpvca_occ(1:ngastp,1:2,1)
+                    contr%nvtx=nlop+3
+                    idxarc=contr%narc
+                    ivtxoff=nlop+1
+
+                    idx=iblk_occ(iocc_rtemp,.false.,ops(idxr12))
+                    iocc_r12c12=
+     &                   iocc_overlap(iocc_rtemp,.false.,
+     &                   iocc_c12,.false.)
+                    idxarc=idxarc+1
+                    contr%vertex(ivtxoff+1)%idx_op=idxr12
+                    contr%vertex(ivtxoff+1)%iblk_op=idx
+                    contr%vertex(ivtxoff+2)%idx_op=idxc12
+                    contr%vertex(ivtxoff+2)%iblk_op=1
+                    contr%arc(idxarc)%link(1)=ivtxoff+1
+                    contr%arc(idxarc)%link(2)=ivtxoff+2
+                    contr%arc(idxarc)%occ_cnt=iocc_r12c12
+                    ivtxoff=ivtxoff+2
+
+                    ! If more than one R operator required, contract it
+                    ! with C here.
+                    if(nextern.eq.3)then
+                      iocc_rtemp(1:ngastp,1:2)=iocc_temp(1:ngastp,1:2)
+                    endif  
+                    if(modcom.eq.(icomm-2))then
+                      contr%nvtx=contr%nvtx+2
+                      idxarc=idxarc+1
+                      idx=iblk_occ(iocc_rtemp,.false.,ops(idxr12))
+                      iocc_r12c12=
+     &                     iocc_overlap(iocc_rtemp,.false.,
+     &                     iocc_c12,.false.)
+                      contr%vertex(ivtxoff+1)%idx_op=idxr12
+                      contr%vertex(ivtxoff+1)%iblk_op=idx
+                      contr%vertex(ivtxoff+2)%idx_op=idxc12
+                      contr%vertex(ivtxoff+2)%iblk_op=1                      
+                      contr%arc(idxarc)%link(1)=ivtxoff+1
+                      contr%arc(idxarc)%link(2)=ivtxoff+2
+                      contr%arc(idxarc)%occ_cnt=iocc_r12c12
+                      ivtxoff=ivtxoff+2
+                    endif  
+
+                    ! Partition the de-excitation part of H into up to
+                    ! 4 triplets (4 comms. of hole/part/extr).
+                    itrip(1)=iocc_hd(ihole,1)
+                    itrip(2)=iocc_hd(ipart,2)
+                    itrip(3)=iocc_hd(iextr,2)
+                    maxcnt = max(2,ifndmax(iexc_part,1,icomm,1))
+c                    write(luout,'(3i4)')itrip(1:3)
+                    
+                    init_pc=.true.
+                    do while (next_part_triple(init_pc,.false.,
+     &                   itrip_part,itrip,icomm,1,maxcnt))
+                      init_pc=.false.
+                     
+                    enddo  
+                    cycle ans_loop
+  
+                  enddo  ans_loop
+                endif  
+              end if          ! number of commutators switch
+                
+            end do com_loop   ! loop over icomm
 
           end if ! no-commutator-at-all exception
 
@@ -555,7 +810,8 @@ c dbg -- add "??" mark for grepping
       call file_close_keep(ffcclag)
       deallocate(contr%vertex,contr%arc)
       if(explicit)then
-        deallocate(iocc_cba,iocc_rbcbov,iocc_hxovc,iocc_temp,iocc_rcco)
+        deallocate(iocc_cba,iocc_rbcbov,iocc_hxovc,iocc_temp,iocc_rcco,
+     &       iocc_r12,iocc_c12,iocc_r12c12,iocc_rtemp,itrip,itrip_part)
       endif  
 
       call atim(cpu,sys,wall)

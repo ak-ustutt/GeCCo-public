@@ -49,7 +49,7 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       allocate(list_pnt%op)  
 
       call get_argument_value('method.R12','ansatz',ival=ansatze)
-      if(ansatze.gt.3.or.ansatze.lt.1)then
+      if(ansatze.gt.2.or.ansatze.lt.1)then
         write(luout,'("Error: Undefined R12 ansatz requested.")')
         stop
       endif
@@ -64,11 +64,11 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
         max_x_rank=2
         min_p_rank=0
         max_p_rank=1
-      elseif(ansatze.eq.3)then
-        min_x_rank=0
-        max_x_rank=2
-        min_p_rank=0
-        max_p_rank=2
+c      elseif(ansatze.eq.3)then
+c        min_x_rank=0
+c        max_x_rank=2
+c        min_p_rank=0
+c        max_p_rank=2
       endif  
       min_h_rank=2
       max_h_rank=2

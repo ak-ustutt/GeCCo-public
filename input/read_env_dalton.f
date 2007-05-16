@@ -74,6 +74,8 @@
         write(luout,'(x,a,8i4)') 'nas1   = ',nas1(1:8)
         write(luout,'(x,a,8i4)') 'nas2   = ',nas2(1:8)
         write(luout,'(x,a,8i4)') 'nas3   = ',nas3(1:8)
+
+        write(luout,'(x,a,2i4)') 'nnorbt,n2orbt: ',nnorbt,n2orbt
       end if
 
       call file_close_keep(ffsir)
