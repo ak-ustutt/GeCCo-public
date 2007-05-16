@@ -77,16 +77,16 @@ c        nullify(list_pnt%op)
         allocate (list_pnt%op)
 
         name = op_hhat
-        dagger = .false.
-        absym = 0
-        casym = 0
-        gamma = 1
-        s2 = 0
-        ms = 0
-        min_rank = 0
-        max_rank = 2
-        ncadiff = 0
-        call set_hpvx_and_restr_for_h()
+c        dagger = .false.
+c        absym = 0
+c        casym = 0
+c        gamma = 1
+c        s2 = 0
+c        ms = 0
+c        min_rank = 0
+c        max_rank = 2
+c        ncadiff = 0
+c        call set_hpvx_and_restr_for_h()
 
         call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
      &       min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,

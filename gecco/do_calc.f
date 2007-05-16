@@ -47,7 +47,7 @@ c     &     , ffops(:)
       type(filinf) ::
      &     ffform_opt
       integer ::
-     &     ifree, nform, nactions
+     &     ifree, nactions
       type(strinf), pointer ::
      &     str_info
       type(strmapinf), pointer ::
@@ -76,7 +76,7 @@ c      nullify(form_list%next)
       ! set up (basic) formulae
       call set_formulae(form_info,op_info%op_list,op_info%nops)
       call update_form_arr(form_info)
-      if (nform.eq.0)
+      if (form_info%nform.eq.0)
      &     call quit(0,'do_calc','no formula/method defined?')
 
       ifree = mem_setmark(action_def)
@@ -88,7 +88,7 @@ c      nullify(form_list%next)
       ! set up actions
       call set_actions(act_list,nactions,
      &     form_info,op_info%op_list,op_info%nops)
-      if (nform.eq.0)
+      if (nactions.eq.0)
      &     call quit(0,'do_calc','no actions defined?')
 
       ! set up graphs
@@ -109,8 +109,6 @@ c      nullify(form_list%next)
 
       ! turn linked lists into arrays
       call update_op_arr(op_info)
-c      allocate(ffform(nform))
-c      call file_list2arr2(form_list,ffform,nform)
 
       ! initialize files for operator elements
       ifree = mem_setmark(op_files)
@@ -146,7 +144,7 @@ c      call file_list2arr2(form_list,ffform,nform)
             call quit(1,'do_calc','action not implemented yet')
           case (iaction_solve_nleq)
             ! get optimized formula file
-            call file_init(ffform_opt,name_cce_vfop,ftyp_sq_unf,0)
+            call file_init(ffform_opt,name_form_opt,ftyp_sq_unf,0)
             call form_opt(ffform_opt,
      &           current_act%act%nform,current_act%act%idx_formula,
      &           form_info,op_info,str_info,orb_info)
