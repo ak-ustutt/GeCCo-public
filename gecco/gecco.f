@@ -40,7 +40,7 @@ c      iprlvl = 1     ! print level
 
       ! initialize timing routine
       call init_time()
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
       
       call printheader()
 
@@ -64,6 +64,13 @@ c      iprlvl = 1     ! print level
       ! read and parse input file
       call read_input(ffinput)
 
+      ! post-process input up to first "calculate" block
+      ! (data resides in module parse_input)
+      call process_input(one_more,orb_info)
+      ! one more is ignored, as we might have cases 
+      ! (export/import stuff) where no "calculate" block is
+      ! specified
+
       call get_argument_value('general','memmax',ival=memmax)
       call mem_init(memmax)
 
@@ -74,19 +81,19 @@ c      call test_memman()
       ! loop over calculations
       do
       
-        ! post-process input up to next "calculate" block
-        ! (data resides in module parse_input)
-        call process_input(one_more,orb_info)
-
         if (.not.one_more) exit
 
         call do_calc(orb_info,env_type)
+
+        ! post-process input up to next "calculate" block
+        ! (data resides in module parse_input)
+        call process_input(one_more,orb_info)
 
       end do
 
       call mem_clean
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
       call prtim(luout,'total time in GeCCo run',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 

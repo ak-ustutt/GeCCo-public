@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine form_indep(ffoutput,ffinput,name_out,
+      subroutine form_indep(form_output,form_input,
+     &                      label_out,title_out,
      &                      ncmpnd,idxop,
      &                      ops,nops)
 *----------------------------------------------------------------------*
@@ -17,14 +18,15 @@
       include 'def_operator.h'
       include 'def_contraction.h'
       include 'def_contraction_list.h'
+      include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       character, intent(in) ::
-     &     name_out*(*)
-      type(filinf), intent(in) ::
-     &     ffinput, ffoutput
+     &     label_out*(*), title_out*(*)
+      type(formula), intent(inout) ::
+     &     form_input, form_output
       integer, intent(in) ::
      &     ncmpnd, nops, idxop(ncmpnd)
       type(operator), intent(in) ::
@@ -36,8 +38,10 @@
       logical ::
      &     ok
       integer ::
-     &     luinput, luoutput,
+     &     luinput, luoutput, len,
      &     nterms, idum, idxinp, idx, icmpnd
+      character ::
+     &     name*(form_maxlen_label*2)
 
       logical, external ::
      &     rd_contr
@@ -46,19 +50,27 @@
         write(luout,*) '========================'
         write(luout,*) ' here speaks form_indep'
         write(luout,*) '========================'
+        write(luout,*) ' new label: "',trim(label_out),'"'
+        write(luout,*) ' new title: "',trim(title_out),'"'
       end if
 
-      call file_open(ffinput)
-      call file_open(ffoutput)
-      luinput = ffinput%unit
-      luoutput = ffoutput%unit
+      write(name,'(a,".fml")') label_out
+      call file_init(form_output%fhand,name,ftyp_sq_unf,0)      
+      form_output%label = label_out
+      form_output%comment = title_out
+
+      call file_open(form_input%fhand)
+      call file_open(form_output%fhand)
+      luinput = form_input%fhand%unit
+      luoutput = form_output%fhand%unit
       rewind luinput
       rewind luoutput
 
       read(luinput)
       read(luinput) idum,idxinp
 
-      write(luoutput) name_out
+      len = len_trim(title_out)
+      write(luoutput) len,title_out
       write(luoutput) idum,idxinp
 
       ! signal, that still nothing is allocated
@@ -89,10 +101,14 @@
 
       end do
 
-      call file_close_keep(ffoutput)
-      call file_close_keep(ffinput)
+      call file_close_keep(form_output%fhand)
+      call file_close_keep(form_input%fhand)
 
       call dealloc_contr(contr)
+
+      if (ntest.ge.10) then
+        write(luout,*) 'generated terms: ',nterms
+      end if
       
       return
       end

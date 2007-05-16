@@ -17,9 +17,21 @@
 
       implicit none
 
+      include 'def_filinf.h'
+*----------------------------------------------------------------------*
+*     parameters
+*----------------------------------------------------------------------*
       integer, parameter ::
      &     mem_maxname = 16
 
+      integer, parameter ::
+     &     membuffer_maxmax_slots = 1024,
+     &     membuffer_maxname = 8,
+     &     membuffer_stat_max = 500
+
+*----------------------------------------------------------------------*
+*     types
+*----------------------------------------------------------------------*
       type mem_slice
         character ::
      &       name*(mem_maxname)
@@ -49,6 +61,51 @@
      &     prev, next
       end type section_stack
 
+      type mem_slice_array
+        type(mem_slice), pointer ::
+     &     mem_slc
+      end type mem_slice_array
+
+c      type membuffer_slot
+c      
+c      integer ::
+c     &     id, length, n_usage
+c      integer, pointer ::
+c     &     ibuf(:)
+c      real(8), pointer ::
+c     &     xbuf(:)
+c
+c      end type membuffer_slot
+
+      type membuffer
+
+      character ::
+     &       name*(mem_maxname)
+      type(filinf), pointer ::
+     &     ffbuf
+      integer ::
+     &     id,                  ! a unique ID
+     &     max_buf_len,         ! maximum length of buffer (8byte words)
+     &     cur_buf_len,         ! current length
+     &     max_buf_slots,       ! maximum number of slots
+     &     cur_buf_slots
+
+      integer ::
+     &     idxlast,
+     &     last10(10)           ! the 10 last accesses
+      integer, pointer ::
+     &     idx4id(:)            ! an array for finding slots
+      integer, pointer ::
+     &     slot_info(:)         ! contains: [ID, status]
+
+      type(mem_slice_array), pointer ::
+     &     slot(:)
+
+      type(membuffer), pointer ::
+     &     prev, next
+
+      end type membuffer
+
       type(mem_section), pointer ::
      &     mem_root, mem_cursection, mem_tail
 
@@ -57,6 +114,9 @@
 
       type(section_stack), pointer ::
      &     mem_stack_head, mem_stack_tail
+
+      type(membuffer), pointer ::
+     &     mem_buf_head, mem_buf_tail, mem_buf_pnt
 
       integer, parameter ::
      &     mtyp_int = 1,
@@ -102,6 +162,8 @@
       nullify(mem_root%tail)
       nullify(mem_root%prev)
       nullify(mem_root%next)
+      nullify(mem_buf_head)
+      nullify(mem_buf_tail)
 
       mem_free = mem_free_init
       mem_total = mem_free_init
@@ -208,6 +270,9 @@
       if (len.gt.mem_maxname)
      &     call quit(1,'memman_alloc',
      &     'identifier too long "'//trim(name)//'"')
+      if (nalloc.lt.0)
+     &     call quit(1,'memman_alloc',
+     &     'negative length in allocation ('//trim(name)//')')
       mem_curslice%name = name
       mem_curslice%type = type
       mem_curslice%len = nalloc
@@ -341,10 +406,12 @@
 
       ! flag whether we are on last slice
       on_last_slice = associated(slice,cursection%tail)
-      in_last_section = associated(cursection,mem_cursection)
+c      in_last_section = associated(cursection,mem_cursection)
+      in_last_section = associated(cursection,mem_tail)
 
       nalloc = slice%len
-      if (nalloc.lt.1) then
+      if (nalloc.lt.0) then
+        call memman_map(luout,.true.)
         write(luout,*) 'nalloc = ',nalloc,' ?'
         call quit(1,'memman_dealloc','fishy length')
       end if
@@ -383,6 +450,7 @@
       case(mtyp_reg)
         mem_reg = nalloc+2*npad
       case default
+        call memman_map(luout,.true.)
         call quit(1,'mem_dealloc','illegal type')
       end select
 
@@ -453,6 +521,8 @@
      &     'identifier too long "'//trim(name)//'"')
       mem_tail%name = name
 
+      nullify(mem_cursection%head)
+      nullify(mem_cursection%tail)
       nullify(mem_curslice)
 
       memman_addsection = mem_free
@@ -724,6 +794,70 @@
 
       end subroutine
 
+*----------------------------------------------------------------------*
+      subroutine memman_check(luout,label)
+*----------------------------------------------------------------------*
+*     print a memory map
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'ifc_baserout.h'
+
+      integer, intent(in) ::
+     &     luout
+      character, intent(in) ::
+     &     label*(*)
+
+      type(mem_section), pointer ::
+     &     cursec
+      type(mem_slice), pointer ::
+     &     curslc
+
+      logical ::
+     &     patchk1, patchk2, ok
+      integer ::
+     &     nalloc
+
+      cursec => mem_root
+
+      main_loop: do       
+        if (associated(cursec%head)) then
+          curslc => cursec%head
+          do
+            nalloc = curslc%len
+            select case(curslc%type)
+            case (mtyp_int)
+              patchk1 = cmpiarr(ipad,curslc%imem(1-npad),npad)
+              patchk2 = cmpiarr(ipad,curslc%imem(nalloc+1),npad)
+              ok = patchk1.and.patchk2
+            case (mtyp_rl8)
+              patchk1 = cmpxarr(xpad,curslc%xmem(1-npad),npad)
+              patchk2 = cmpxarr(xpad,curslc%xmem(nalloc+1),npad)
+              ok = patchk1.and.patchk2
+            case default
+              ok = .true.
+            end select
+
+            if (.not.ok) exit main_loop
+
+            if (.not.associated(curslc%next)) exit
+            curslc => curslc%next
+
+          end do
+        end if
+
+        if (.not.associated(cursec%next)) exit
+        cursec => cursec%next
+
+      end do main_loop
+
+      if (.not.ok) then
+        write(luout,*) 'Errors detected at check-point: ',trim(label)
+        call memman_map(luout,.true.)
+      end if
+
+      end subroutine
+
       subroutine memman_stat(luout)
 
       implicit none
@@ -737,11 +871,815 @@
      &     ' real(8)-words (',dble(max_mem)/1024d0/128d0,' Mb)'
       write(luout,'(3x,a,i10,a,f8.2,a)')
      &     'Largest memory block:     ',max_blk,
-     &     ' real(8)-words (',dble(max_mem)/1024d0/128d0,' Mb)'
+     &     ' real(8)-words (',dble(max_blk)/1024d0/128d0,' Mb)'
       write(luout,'(3x,a,a)')
      &     'Name of largest block:    ',trim(name_max)
       write(luout,'(x,"+",76("-"),"+")')
 
+      end subroutine
+
+*----------------------------------------------------------------------*
+*     some routines for managing buffers with restricted sizes follow
+*----------------------------------------------------------------------*
+
+*----------------------------------------------------------------------*
+      subroutine memman_init_vbuffer(ffbuf,name,max_len,max_slots)
+*----------------------------------------------------------------------*
+*     initialize
+*----------------------------------------------------------------------*
+      implicit none
+      include 'stdunit.h'
+c      include 'def_filinf.h'
+
+      type(filinf), intent(inout), target ::
+     &     ffbuf
+      character, intent(in) ::
+     &     name*(*)
+      integer, intent(in) ::
+     &     max_len,max_slots
+
+      integer ::
+     &     len, ifree, idx, actual_len, mem_buf_id
+
+      len = len_trim(name)
+      if (len.gt.membuffer_maxname)
+     &     call quit(1,'memman_init_buffer',
+     &     'identifier too long "'//trim(name)//'"')
+      if (max_len.le.0.or.max_slots.le.0)
+     &     call quit(1,'memman_init_buffer',
+     &     'negative dimensions encountered')
+      if (max_len.gt.mem_free.or.max_slots.gt.membuffer_maxmax_slots)
+     &     call quit(1,'memman_init_buffer',
+     &     'too much memory or too many slots requested')
+      ! note: we need to implement a mechanism to reserve memory space
+
+      ifree = memman_addsection(name)
+
+      if (.not.associated(mem_buf_pnt)) then
+        allocate(mem_buf_head)
+        mem_buf_tail => mem_buf_head
+        mem_buf_pnt  => mem_buf_head
+        nullify(mem_buf_pnt%prev)
+        nullify(mem_buf_pnt%next)
+        mem_buf_id = 1
+      else
+        mem_buf_id = mem_buf_pnt%id
+        do while (associated(mem_buf_pnt%next))
+          mem_buf_pnt => mem_buf_pnt%next
+          mem_buf_id = mem_buf_pnt%id
+        end do
+        mem_buf_id = mem_buf_id+1
+        allocate(mem_buf_pnt%next)
+        mem_buf_pnt%next%prev => mem_buf_pnt
+        mem_buf_pnt => mem_buf_pnt%next
+        nullify(mem_buf_pnt%next)
+      end if
+
+      mem_buf_pnt%ffbuf => ffbuf
+      mem_buf_pnt%name = name
+      mem_buf_pnt%id = mem_buf_id
+      ffbuf%buf_id = mem_buf_id
+c      actual_len = (max_len-1)/irat+1
+      mem_buf_pnt%max_buf_len = max_len
+      mem_buf_pnt%cur_buf_len = 0
+      mem_buf_pnt%max_buf_slots = max_slots
+      mem_buf_pnt%cur_buf_slots = 0
+      mem_buf_pnt%idxlast = 0
+      mem_buf_pnt%last10(1:10) = 0
+      
+      allocate(mem_buf_pnt%slot(max_slots))
+      ifree = memman_alloc(mtyp_reg,max_slots*8,'slots')
+      ifree = memman_alloc(mtyp_int,max_slots*2,'slot_info',
+     &     ipnt=mem_buf_pnt%slot_info)
+      
+      do idx = 1, max_slots
+        mem_buf_pnt%slot_info(2*idx-1) =  0   ! ID
+        mem_buf_pnt%slot_info(2*idx  ) =  0   ! priority
+      end do
+
+      ifree = memman_alloc(mtyp_int,max_slots,'idx4id',
+     &     ipnt=mem_buf_pnt%idx4id)
+      mem_buf_pnt%idx4id(1:max_slots) = 0
+
+      return
+      end subroutine
+
+*----------------------------------------------------------------------*
+      subroutine memman_clean_vbuffer(name)
+*----------------------------------------------------------------------*
+*     clean up
+*     still missing: a sync mechanism for the file
+*----------------------------------------------------------------------*
+      implicit none
+      include 'stdunit.h'
+c      include 'def_membuffer.h'
+
+      character, intent(in) ::
+     &     name*(*)
+
+      integer ::
+     &     ifree
+      type(membuffer), pointer ::
+     &     mem_buf_rem
+
+      if (.not.associated(mem_buf_tail))
+     &     call quit(1,'memman_clean_buffer','buffer list seems empty')
+      mem_buf_pnt => mem_buf_tail
+      do while(trim(mem_buf_pnt%name).ne.trim(name))
+        if (.not.associated(mem_buf_pnt%prev))
+     &       call quit(1,'memman_clean_buffer',
+     &       'did not find: '//trim(name))
+        mem_buf_pnt => mem_buf_pnt%prev
+      end do
+
+      ifree = memman_remsection(mem_buf_pnt%name)
+      deallocate(mem_buf_pnt%slot)
+
+      nullify(mem_buf_rem)
+      ! remove current link from list
+      if (associated(mem_buf_pnt%prev)) then
+        mem_buf_pnt%prev%next => mem_buf_pnt%next
+        if (associated(mem_buf_pnt,mem_buf_tail))
+     &       mem_buf_head => mem_buf_pnt%prev
+        mem_buf_rem => mem_buf_pnt%prev
+      end if
+
+      if (associated(mem_buf_pnt%next)) then
+        mem_buf_pnt%next%prev => mem_buf_pnt%prev
+        if (associated(mem_buf_pnt,mem_buf_head))
+     &       mem_buf_head => mem_buf_pnt%next
+        if (.not.associated(mem_buf_rem))
+     &       mem_buf_rem => mem_buf_pnt%next
+      end if
+
+      deallocate(mem_buf_pnt)
+
+      mem_buf_pnt => mem_buf_rem
+      if (.not.associated(mem_buf_pnt)) then
+        nullify(mem_buf_head)
+        nullify(mem_buf_tail)
+      end if
+
+      return
+      end subroutine
+*----------------------------------------------------------------------*
+      subroutine memman_vbuffer_get_int(id_buf,idxst,idxnd,ibuf)
+*----------------------------------------------------------------------*
+      implicit none
+
+      integer, intent(in) ::
+     &     id_buf, idxst, idxnd
+      integer, intent(out) ::
+     &     ibuf(*)
+
+      integer ::
+     &     un, lenr, irecst, irecnd, ioffrec1, idxrecl, nread, irec,
+     &     ioffbf, idx, buf_id
+      integer, pointer ::
+     &     ibufpnt(:)
+*----------------------------------------------------------------------*
+
+      ! find correct buffer
+      if (mem_buf_pnt%id.ne.id_buf) then
+        mem_buf_pnt => mem_buf_tail
+        do while(mem_buf_pnt%id.ne.id_buf)
+          if (.not.associated(mem_buf_pnt%prev))
+     &         call quit(1,'memman_new_buffer','unknown buffer')
+          mem_buf_pnt => mem_buf_pnt%prev
+        end do
+      end if
+      
+      ! do not use structure elements directly
+      un = mem_buf_pnt%ffbuf%unit
+      lenr = mem_buf_pnt%ffbuf%reclen*irat
+      buf_id = mem_buf_pnt%ffbuf%buf_id
+
+      ! first and last record to read from
+      irecst = (idxst-1)/lenr+1
+      irecnd = (idxnd-1)/lenr+1
+      
+      ! offset in first record
+      ioffrec1 = idxst-1 - (irecst-1)*lenr
+      ! last index in last record
+      idxrecl = idxnd - (irecnd-1)*lenr
+
+      if (irecst.eq.irecnd) then
+        ! special case -- only one record to read:
+        nread = idxrecl-ioffrec1
+        call memman_idx_bufblk(buf_id,irecst,mtyp_int,ipnt=ibufpnt)
+        if (.not.associated(ibufpnt)) then
+          call memman_new_bufblk(buf_id,irecst,lenr,
+     &         mtyp_int,ipnt=ibufpnt)
+          read(un,rec=irecst) ibufpnt(1:lenr)
+        end if
+        ibuf(1:nread) = ibufpnt(ioffrec1+1:ioffrec1+nread)
+      else
+        ! first record
+        nread = lenr-ioffrec1
+        call memman_idx_bufblk(buf_id,irecst,mtyp_int,ipnt=ibufpnt)
+        if (.not.(associated(ibufpnt))) then
+          call memman_new_bufblk(buf_id,irecst,lenr,
+     &         mtyp_int,ipnt=ibufpnt)
+          read(un,rec=irecst) ibufpnt(1:lenr)
+        end if
+        ibuf(1:nread) = ibufpnt(ioffrec1+1:ioffrec1+nread)
+        ! 2nd to (last-1)st record
+        ioffbf = nread
+        do irec = irecst+1, irecnd-1
+          call memman_idx_bufblk(buf_id,irec,mtyp_int,ipnt=ibufpnt)
+          if (.not.(associated(ibufpnt))) then
+            call memman_new_bufblk(buf_id,irec,lenr,
+     &           mtyp_int,ipnt=ibufpnt)
+            read(un,rec=irec) ibufpnt(1:lenr)
+          end if
+          ibuf(ioffbf+1:ioffbf+lenr) = ibufpnt(1:lenr)
+          ioffbf = ioffbf+lenr
+        end do
+        ! last record
+        call memman_idx_bufblk(buf_id,irecnd,mtyp_int,ipnt=ibufpnt)
+        if (.not.(associated(ibufpnt))) then
+          call memman_new_bufblk(buf_id,irecnd,lenr,
+     &         mtyp_int,ipnt=ibufpnt)
+          read(un,rec=irecnd) ibufpnt(1:lenr)
+        end if
+        ibuf(ioffbf+1:ioffbf+idxrecl) = ibufpnt(1:idxrecl)
+      end if
+
+      return
+      end subroutine
+*----------------------------------------------------------------------*
+      subroutine memman_vbuffer_put_int(id_buf,idxst,idxnd,ibuf)
+*----------------------------------------------------------------------*
+      implicit none
+
+      integer, intent(in) ::
+     &     id_buf, idxst, idxnd
+      integer, intent(in) ::
+     &     ibuf(*)
+
+      integer ::
+     &     un, lenr, irecst, irecnd, ioffrec1, idxrecl, nwrite, irec,
+     &     ioffbf, idx, buf_id
+      integer, pointer ::
+     &     ibufpnt(:)
+*----------------------------------------------------------------------*
+
+      ! find correct buffer
+      if (mem_buf_pnt%id.ne.id_buf) then
+        mem_buf_pnt => mem_buf_tail
+        do while(mem_buf_pnt%id.ne.id_buf)
+          if (.not.associated(mem_buf_pnt%prev))
+     &         call quit(1,'memman_new_buffer','unknown buffer')
+          mem_buf_pnt => mem_buf_pnt%prev
+        end do
+      end if
+      
+      ! do not use structure elements directly
+      un = mem_buf_pnt%ffbuf%unit
+      lenr = mem_buf_pnt%ffbuf%reclen*irat
+      buf_id = mem_buf_pnt%ffbuf%buf_id
+
+      ! first and last record to read from
+      irecst = (idxst-1)/lenr+1
+      irecnd = (idxnd-1)/lenr+1
+      
+      ! offset in first record
+      ioffrec1 = idxst-1 - (irecst-1)*lenr
+      ! last index in last record
+      idxrecl = idxnd - (irecnd-1)*lenr
+
+      if (irecst.eq.irecnd) then
+        nwrite = idxrecl-ioffrec1
+        call memman_idx_bufblk(buf_id,irecst,mtyp_int,ipnt=ibufpnt,
+     &       modify=.true.)
+        if (.not.associated(ibufpnt)) then
+          call memman_new_bufblk(buf_id,irecst,lenr,
+     &         mtyp_int,ipnt=ibufpnt,modify=.true.)
+          if (idxrecl.ne.lenr.or.ioffrec1.ne.1)
+     &         read(un,rec=irecst,err=10) ibufpnt(1:lenr)
+          goto 20
+ 10       ibufpnt(1:ioffrec1) = 0
+          ibufpnt(idxrecl+1:lenr) = 0
+ 20       continue
+        end if
+        ibufpnt(ioffrec1+1:ioffrec1+nwrite) = ibuf(1:nwrite)
+      else
+        ! first record
+        nwrite = lenr-ioffrec1
+        call memman_idx_bufblk(buf_id,irecst,mtyp_int,ipnt=ibufpnt,
+     &       modify=.true.)
+        if (.not.(associated(ibufpnt))) then
+          call memman_new_bufblk(buf_id,irecst,lenr,
+     &         mtyp_int,ipnt=ibufpnt,modify=.true.)
+          if (ioffrec1.ne.1)
+     &         read(un,rec=irecst,err=11) ibufpnt(1:ioffrec1)
+          goto 21
+ 11       ibufpnt(1:ioffrec1) = 0
+ 21       continue
+        end if
+        ibufpnt(ioffrec1+1:ioffrec1+nwrite) = ibuf(1:nwrite)
+        ! 2nd to (last-1)st record
+        ioffbf = nwrite
+        do irec = irecst+1, irecnd-1
+          call memman_idx_bufblk(buf_id,irec,mtyp_int,ipnt=ibufpnt,
+     &         modify=.true.)
+          if (.not.(associated(ibufpnt))) then
+            call memman_new_bufblk(buf_id,irec,lenr,
+     &           mtyp_int,ipnt=ibufpnt,modify=.true.)
+          end if
+          ibufpnt(1:lenr) = ibuf(ioffbf+1:ioffbf+lenr)
+          ioffbf = ioffbf+lenr
+        end do
+        ! last record
+        call memman_idx_bufblk(buf_id,irecnd,mtyp_int,ipnt=ibufpnt,
+     &       modify=.true.)
+        if (.not.(associated(ibufpnt))) then
+          call memman_new_bufblk(buf_id,irecnd,lenr,
+     &         mtyp_int,ipnt=ibufpnt,modify=.true.)
+          if (idxrecl.ne.lenr)
+     &         read(un,rec=irecnd,err=12) ibufpnt(1:lenr)
+          goto 22
+ 12       ibufpnt(idxrecl+1:lenr) = 0
+ 22       continue
+        end if
+        ibufpnt(1:idxrecl) = ibuf(ioffbf+1:ioffbf+idxrecl)
+        
+      end if
+
+      return
+      end subroutine
+*----------------------------------------------------------------------*
+      subroutine memman_new_bufblk(id_buf,id_slot,length,type,ipnt,xpnt,
+     &     modify)
+*----------------------------------------------------------------------*
+*     allocate a new slot in the buffer (and flush other buffer(s),
+*     if not enough memory is left
+*----------------------------------------------------------------------*
+      implicit none
+      include 'stdunit.h'
+      include 'ifc_baserout.h'
+
+      integer, parameter ::
+     &     ntest = 00
+
+      integer, intent(in) ::
+     &     id_buf, id_slot, length, type
+      
+      integer, pointer, optional ::
+     &     ipnt(:)
+      real(8), pointer, optional ::
+     &     xpnt(:)
+
+      logical, optional ::
+     &     modify
+
+      logical ::
+     &     free_slc
+      integer ::
+     &     actual_len, n_usage_min, n_usage_max,
+     &     idx_slot, idx, i_usage, ifree, id_cur, istat
+      integer, pointer ::
+     &     slot_info(:), last10(:)
+      type(mem_slice), pointer ::
+     &     curslice
+
+      character ::
+     &     name_slot*8
+
+      if (ntest.ge.100) then
+        write(luout,*) '-----------------'
+        write(luout,*) 'memman_new_buffer'
+        write(luout,*) '-----------------'
+        write(luout,*) ' ID buffer = ',id_buf
+        write(luout,*) ' ID slot   = ',id_slot
+        write(luout,*) ' length = ',length
+      end if
+
+      ! find correct buffer
+      if (mem_buf_pnt%id.ne.id_buf) then
+        mem_buf_pnt => mem_buf_tail
+        do while(mem_buf_pnt%id.ne.id_buf)
+          if (.not.associated(mem_buf_pnt%prev))
+     &         call quit(1,'memman_new_buffer','unknown buffer')
+          mem_buf_pnt => mem_buf_pnt%prev
+        end do
+      end if
+
+      if (id_slot.gt.mem_buf_pnt%max_buf_slots)
+     &     call quit(1,'memman_new_buffer',
+     &     'requested slot is out of range')
+
+
+      select case(type)
+      case(mtyp_int) 
+        actual_len = (length-1)/irat+1
+      case(mtyp_rl8) 
+        actual_len = length
+      case default
+        call quit(1,'memman_new_buffer','illegal type encountered')
+      end select
+
+      if (ntest.ge.100) then
+        write(luout,*) ' length in 8b-words  = ',actual_len
+        write(luout,*) ' currently in use    = ',mem_buf_pnt%cur_buf_len
+        write(luout,*) ' currently available = ',
+     &       mem_buf_pnt%max_buf_len-mem_buf_pnt%cur_buf_len
+      end if
+
+      if (actual_len.gt.mem_buf_pnt%max_buf_len)
+     &     call quit(1,'memman_new_buffer',
+     &     'requested array is too large')
+
+c      if (memman_idx_mem_buf_pnt(mem_buf_pnt,id_buf).ge.0)
+c     &     call quit(1,'memman_new_mem_buf_pnt','ID is already in use!')
+
+      slot_info => mem_buf_pnt%slot_info
+      last10 => mem_buf_pnt%last10
+      if (mem_buf_pnt%cur_buf_len+actual_len.gt.
+     &    mem_buf_pnt%max_buf_len.or.
+     &    mem_buf_pnt%cur_buf_slots.eq.mem_buf_pnt%max_buf_slots) then
+        if (ntest.ge.100) then
+          write(luout,*) 'looking for some buffers to free:'
+          write(luout,*) ' last10 array: '
+          write(luout,'(x,10i5)') mem_buf_pnt%last10(1:10)
+        end if
+        ! 1) look for buffers, not accessed the last 10 times
+        n_usage_min = huge(n_usage_max)
+        n_usage_max = 0
+        do idx = 1, mem_buf_pnt%max_buf_slots
+          id_cur = slot_info(2*idx-1)
+          istat  = slot_info(2*idx)
+          if (id_cur.gt.0.and.abs(istat).lt.membuffer_stat_max) then
+            n_usage_min = min(n_usage_min,abs(istat))
+            n_usage_max = max(n_usage_max,abs(istat))
+            if (imltlist(idx,last10,10,1).eq.0) then
+              if (ntest.ge.100) then
+                write(luout,*) 'freeing slot: ',idx
+              end if
+              curslice => mem_buf_pnt%slot(idx)%mem_slc
+              free_slc = length.ne.curslice%len
+              if (istat.lt.0)
+     &             call memman_write_buffer_slot(id_buf,idx,id_cur)
+              call memman_release_buffer_slot(id_buf,idx,free_slc)
+              idx_slot = idx
+              if (mem_buf_pnt%cur_buf_len+actual_len.le.
+     &            mem_buf_pnt%max_buf_len)
+     &             exit
+            end if
+          end if
+        end do
+        if (ntest.ge.100) then
+          write(luout,*) 'free memory after 1st round: ',
+     &         mem_buf_pnt%max_buf_len-mem_buf_pnt%cur_buf_len
+        end if
+        ! 2) remove mem_buf_pnts according to number of accesses
+        if (mem_buf_pnt%cur_buf_len+actual_len.gt.
+     &      mem_buf_pnt%max_buf_len) then
+          if (n_usage_min.gt.n_usage_max)
+     &         call quit(1,'memman_new_mem_buf_pnt','inconsistency')
+          usage_loop: do i_usage = n_usage_min, n_usage_max
+            do idx = 1, mem_buf_pnt%max_buf_slots
+              id_cur = slot_info(2*idx-1)
+              istat  = slot_info(2*idx)
+              if (id_cur.gt.0.and.
+     &            abs(istat).eq.i_usage) then
+                if (ntest.ge.100) then
+                  write(luout,*) 'freeing slot: ',idx
+                end if
+                curslice => mem_buf_pnt%slot(idx)%mem_slc
+                free_slc = length.ne.curslice%len
+                if (istat.lt.0)
+     &               call memman_write_buffer_slot(id_buf,idx,id_cur)
+                call memman_release_buffer_slot(id_buf,idx,free_slc)
+                idx_slot = idx
+                if (mem_buf_pnt%cur_buf_len+actual_len.le.
+     &              mem_buf_pnt%max_buf_len)
+     &               exit usage_loop
+              end if
+            end do
+          end do usage_loop
+          if (ntest.ge.100) then
+            write(luout,*) 'free memory after 2nd round: ',
+     &           mem_buf_pnt%max_buf_len-mem_buf_pnt%cur_buf_len
+          end if
+        end if
+      else
+        ! signal that memory must be allocated
+        free_slc = .true.
+        ! look for gaps
+        do idx = 1, mem_buf_pnt%max_buf_slots
+          id_cur = slot_info(2*idx-1)
+          if (id_cur.eq.0) then
+            idx_slot = idx
+            exit
+          end if
+        end do
+      end if
+
+      if (ntest.ge.100) then
+        write(luout,*) 'next free slot: ',idx_slot
+        write(luout,*) 'current buffer length: ',mem_buf_pnt%cur_buf_len
+      end if
+
+      ! buffer usage:
+      mem_buf_pnt%cur_buf_slots = mem_buf_pnt%cur_buf_slots+1
+      mem_buf_pnt%cur_buf_len = mem_buf_pnt%cur_buf_len+actual_len
+
+      ! set up slot entries
+      mem_buf_pnt%slot_info(2*idx_slot-1) = id_slot
+      mem_buf_pnt%slot_info(2*idx_slot) = 1
+      if (present(modify)) then
+        if (modify) mem_buf_pnt%slot_info(2*idx_slot) = -1
+      end if
+      mem_buf_pnt%idxlast = mod(mem_buf_pnt%idxlast,10)+1
+      mem_buf_pnt%last10(mem_buf_pnt%idxlast) = idx_slot
+c      mem_buf_pnt%slot(idx_slot)%length = actual_len
+      if (free_slc) then
+        ! re-allocate memory for buffer slot
+        write(name_slot,'("slot",i4.4)') idx_slot
+        call memman_section_stack(+1) !push
+        ifree = memman_set_cursection(mem_buf_pnt%name)
+        if (type.eq.mtyp_int) then
+          ifree = memman_alloc(mtyp_int,length,name_slot,
+     &         ipnt=ipnt)
+        else
+          ifree = memman_alloc(mtyp_rl8,length,name_slot,
+     &         xpnt=xpnt)
+        end if
+        mem_buf_pnt%slot(idx_slot)%mem_slc => mem_curslice
+        call memman_section_stack(-1) !pop
+      else
+        ! re-use old memory
+        mem_buf_pnt%slot(idx_slot)%mem_slc => curslice
+        if (type.eq.mtyp_int) then
+          ipnt => curslice%imem
+        else
+          xpnt => curslice%xmem
+        end if
+      end if
+
+      if (ntest.ge.500) then
+        write(luout,*) 'current memory map'
+        call memman_map(luout,.true.)
+      end if
+      if (ntest.ge.100) then
+        write(luout,*) 'buffer length on exit: ',mem_buf_pnt%cur_buf_len
+      end if
+
+      mem_buf_pnt%idx4id(id_slot)=idx_slot
+
+      return
+      end subroutine
+*----------------------------------------------------------------------*
+      subroutine memman_write_buffer_slot(id_buf,idx_slot,idx_rec)
+*----------------------------------------------------------------------*
+*     internal routine: write a buffer slot to disc
+*----------------------------------------------------------------------*
+      implicit none
+      
+      integer, intent(in) ::
+     &     id_buf, idx_slot, idx_rec
+
+      integer ::
+     &     unit, type, length
+      type(mem_slice), pointer ::
+     &     curslice
+
+      if (mem_buf_pnt%id.ne.id_buf)
+     &     call quit(1,'memman_write_buffer_slot',
+     &     'mem_buf_pnt must point to the correct buffer on input')
+
+      mem_buf_pnt%slot_info(2*idx_slot) =
+     &     abs(mem_buf_pnt%slot_info(2*idx_slot))
+      curslice => mem_buf_pnt%slot(idx_slot)%mem_slc
+      unit = mem_buf_pnt%ffbuf%unit
+      if (unit.le.0)
+     &     call quit(1,'memman_write_buffer_slot',
+     &     'file not open: '//trim(mem_buf_pnt%ffbuf%name))
+      type = curslice%type
+      length = curslice%len
+      if (type.eq.mtyp_int) then  
+        write(unit,rec=idx_rec)
+     &       curslice%imem(1:length)
+      else if (type.eq.mtyp_rl8) then  
+        write(unit,rec=idx_rec)
+     &       curslice%xmem(1:length)
+      else
+        call quit(1,'memman_write_buffer_slot','illegal type')
+      end if
+
+      return
+      end subroutine
+*----------------------------------------------------------------------*
+      subroutine memman_release_buffer_slot(id_buf,idx_slot,free_slc,
+     &     modify)
+*----------------------------------------------------------------------*
+*     internal routine: remove a buffer slot
+*----------------------------------------------------------------------*
+      implicit none
+      
+      integer, intent(in) ::
+     &     id_buf, idx_slot
+      logical, intent(in) ::
+     &     free_slc
+      logical, optional ::
+     &     modify
+
+      integer ::
+     &     idx, ifree, lenbuf, id_slot, type
+      type(mem_slice), pointer ::
+     &     curslice
+
+      character ::
+     &     name_slot*8
+
+      if (mem_buf_pnt%id.ne.id_buf)
+     &     call quit(1,'memman_release_buffer_slot',
+     &     'mem_buf_pnt must point to the correct buffer on input')
+
+      curslice => mem_buf_pnt%slot(idx_slot)%mem_slc
+      ! save these two entries for post-processing (see below)
+      lenbuf=curslice%len
+      type = curslice%type
+      if (type.eq.mtyp_int)  lenbuf = (lenbuf-1)/irat+1 
+      id_slot = mem_buf_pnt%slot_info(2*idx_slot-1)
+      if (free_slc) then
+        ! remove allocated memory
+        write(name_slot,'("slot",i4.4)') idx_slot
+        ! switch to correct memory section and deallocate
+        call memman_section_stack(+1) !push
+        ifree = memman_set_cursection(mem_buf_pnt%name)
+        ifree = memman_dealloc(name_slot)
+        call memman_section_stack(-1) !pop
+      end if
+      ! update buffer usage
+      mem_buf_pnt%cur_buf_len = mem_buf_pnt%cur_buf_len-lenbuf
+      mem_buf_pnt%cur_buf_slots = mem_buf_pnt%cur_buf_slots-1
+      ! reset slot entries
+      mem_buf_pnt%slot_info(2*idx_slot-1) = 0
+      mem_buf_pnt%slot_info(2*idx_slot) = 0
+      nullify(mem_buf_pnt%slot(idx_slot)%mem_slc)
+
+      ! remove entry from array of last 10 accesses to buffer
+      do idx = 1, 10
+        if (mem_buf_pnt%last10(idx).eq.idx_slot)
+     &       mem_buf_pnt%last10(idx)=0
+      end do
+
+      ! remove entry from index array
+      mem_buf_pnt%idx4id(id_slot) = 0
+
+      return
+      end subroutine
+*----------------------------------------------------------------------*
+      subroutine memman_idx_bufblk(id_buf,id_slot,type,ipnt,xpnt,modify)
+*----------------------------------------------------------------------*
+*     return a pointer to the slot associated with ID id_buf
+*     NULL, if nothing found
+*----------------------------------------------------------------------*
+      implicit none
+      include 'stdunit.h'
+
+      integer, parameter ::
+     &     ntest = 00
+
+      integer, intent(in) ::
+     &     id_buf, id_slot, type
+
+      integer, pointer, optional ::
+     &     ipnt(:)
+      real(8), pointer, optional ::
+     &     xpnt(:)
+      logical, optional ::
+     &     modify
+
+      integer ::
+     &     idx_slot, idx, istat, isgn
+      integer, pointer ::
+     &     slot_info(:)
+      type(mem_slice), pointer ::
+     &     curslice
+
+      if (ntest.ge.100) then
+        write(luout,*) '-----------------'
+        write(luout,*) 'memman_idx_buffer'
+        write(luout,*) '-----------------'
+        write(luout,*) ' ID buffer: ',id_buf
+        write(luout,*) ' ID slot  : ',id_slot
+      end if
+
+      ! find correct buffer
+      if (mem_buf_pnt%id.ne.id_buf) then
+        mem_buf_pnt => mem_buf_tail
+        do while(mem_buf_pnt%id.ne.id_buf)
+          if (.not.associated(mem_buf_pnt%prev))
+     &         call quit(1,'memman_idx_buffer','unknown buffer')
+          mem_buf_pnt => mem_buf_pnt%prev
+        end do
+      end if
+
+      if (id_slot.gt.mem_buf_pnt%max_buf_slots)
+     &     call quit(1,'memman_idx_buffer',
+     &     'requested slot is out of range')
+
+      if (present(ipnt)) nullify(ipnt)
+      if (present(xpnt)) nullify(xpnt)
+      
+      idx_slot = mem_buf_pnt%idx4id(id_slot)
+      slot_info => mem_buf_pnt%slot_info
+      if (idx_slot.gt.0) then
+        istat = slot_info(2*idx_slot)
+        isgn = 1
+        if (istat.lt.0) isgn = -1
+        slot_info(2*idx_slot) =
+     &       isgn*(min(membuffer_stat_max,abs(istat)+1))
+        if (present(modify).and.isgn.eq.1) then
+          if (modify) slot_info(2*idx_slot) = -slot_info(2*idx_slot)
+        end if
+        mem_buf_pnt%idxlast = mod(mem_buf_pnt%idxlast,10)+1
+        mem_buf_pnt%last10(mem_buf_pnt%idxlast) = idx_slot
+        curslice => mem_buf_pnt%slot(idx_slot)%mem_slc
+        if (curslice%type.eq.mtyp_int) then
+          ipnt => curslice%imem
+        else
+          xpnt => curslice%xmem
+        end if
+      end if
+
+      if (ntest.ge.100) then
+        if (idx_slot.le.0) then          
+          write(luout,*) 'nothing found'
+        else
+          write(luout,*) 'idx_slot = ',idx_slot
+        end if
+        write(luout,*) 'current last10 array:'
+        write(luout,'(x,10i5)') mem_buf_pnt%last10(1:10)
+      end if
+
+      return
+      end subroutine
+
+      subroutine print_vbuffer_int(luout,id_buf)
+      implicit none
+
+      integer, intent(in) ::
+     &     luout, id_buf
+
+      integer ::
+     &     idx, irecmax, maxlen, length, unit 
+      integer, pointer ::
+     &     ibuf(:)
+
+      ! find correct buffer
+      if (mem_buf_pnt%id.ne.id_buf) then
+        mem_buf_pnt => mem_buf_tail
+        do while(mem_buf_pnt%id.ne.id_buf)
+          if (.not.associated(mem_buf_pnt%prev))
+     &         call quit(1,'memman_new_buffer','unknown buffer')
+          mem_buf_pnt => mem_buf_pnt%prev
+        end do
+      end if
+
+      write(luout,*) 'Info on buffer: ',trim(mem_buf_pnt%name)
+
+      write(luout,*) 'in-core length (current/max): ',
+     &     mem_buf_pnt%cur_buf_len,
+     &     mem_buf_pnt%max_buf_len
+
+      write(luout,*) 'last10 array: ',mem_buf_pnt%last10(1:10)
+      write(luout,*) 'idx4id array: ',
+     &     mem_buf_pnt%idx4id(1:mem_buf_pnt%max_buf_slots)
+
+      write(luout,*) 'contents in-core:'
+      irecmax = 1
+      maxlen = 1
+      do idx = 1, mem_buf_pnt%max_buf_slots
+        write(luout,*) 'slot #',idx
+        write(luout,*) 'ID, status: ',
+     &       mem_buf_pnt%slot_info(idx*2-1),
+     &       mem_buf_pnt%slot_info(idx*2)
+        irecmax = max(irecmax,mem_buf_pnt%slot_info(idx*2-1))
+        if (mem_buf_pnt%slot_info(idx*2-1).gt.0) then
+          length = mem_buf_pnt%slot(idx)%mem_slc%len
+          maxlen = max(maxlen,length)
+          call wrtimat2(mem_buf_pnt%slot(idx)%mem_slc%imem(1:length),
+     &         1,length,1,length)
+        end if
+      end do
+
+      write(luout,*) 'Contents on disc:'
+      unit = mem_buf_pnt%ffbuf%unit
+      allocate(ibuf(maxlen))
+      do idx = 1, irecmax
+        read(unit,rec=idx,err=10) ibuf(1:maxlen)
+        write(luout,*) idx,'->'
+        call wrtimat2(ibuf,1,maxlen,1,maxlen)
+        cycle
+ 10     write(luout,*) idx,'-> empty record'
+      end do
+      deallocate(ibuf)
+
+      return
       end subroutine
 
       end module

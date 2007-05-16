@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine set_cc_lagrangian(ffcclag,
-     &     nops,ops,idxham,idxlag,idxtop,idxr12,idxc12,idxrba,idxcba,
-     &     explicit)
+      subroutine set_cc_lagrangian(form_cclag,
+     &     nops,ops,idxecc,idxham,idxlag,idxtop,
+     &     idxr12,idxc12,idxrba,idxcba,explicit)
 *----------------------------------------------------------------------*
 *
 *     set up sequence of operators, integrals and contractions that
@@ -20,8 +20,6 @@
 
       integer, parameter ::
      &     ntest = 100
-      character, parameter ::
-     &     name_string*13='CC Lagrangian'
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -30,13 +28,15 @@
       include 'def_filinf.h'
       include 'ifc_operators.h'
       include 'ifc_input.h'
+      include 'def_formula.h'
+      include 'par_formnames_gen.h'
 
-      type(filinf), intent(in) ::
-     &     ffcclag
+      type(formula), intent(inout) ::
+     &     form_cclag
 
       integer, intent(in) ::
      &     nops,
-     &     idxham,idxlag,idxtop,idxr12,idxc12,idxrba,idxcba
+     &     idxham,idxlag,idxtop,idxr12,idxc12,idxrba,idxcba,idxecc
 
       type(operator), intent(in) ::
      &     ops(nops)
@@ -72,6 +72,9 @@
       integer ::
      &     iexc_part(maxpart), ihd_part(2,maxpart),
      &     ihd_part_idx(maxpart), ihd(2)
+      character ::
+     &     name*(form_maxlen_label*2)
+
       ! for timings:
       real(8) ::
      &     cpu, wall, sys, cpu0, wall0, sys0
@@ -96,12 +99,16 @@
         write(luout,*) '==============================='
         write(luout,*) ' output from set_cc_lagrangian'
         write(luout,*) '==============================='
+        write(luout,*) 'idxecc,idxham,idxlag,idxtop:'
+        write(luout,*) idxecc,idxham,idxlag,idxtop
+        write(luout,*) 'idxr12,idxc12,idxrba,idxcba,explicit:'
+        write(luout,*) idxr12,idxc12,idxrba,idxcba,explicit
       end if
 
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
 
-      contr%idx_res = 0
-      contr%iblk_res = 0
+      contr%idx_res = idxecc
+      contr%iblk_res = 1
 
       ! L + H + 4times T gives maximum 6 vertices
       maxvtx = 6
@@ -120,18 +127,30 @@
 
       if (ntest.ge.100) write(luout,*) 'max. exc.level of T: ', maxexc
 
-      ! open file where contraction information will be kept.
-      call file_open(ffcclag)
-      lucclag = ffcclag%unit
+      ! assign canonical name and comment
+      form_cclag%label = label_cclg0
+      form_cclag%comment = title_cclg0
+
+      ! init file
+      write(name,'(a,".fml")') label_cclg0
+      call file_init(form_cclag%fhand,name,ftyp_sq_unf,0)
+
+      ! open file
+      call file_open(form_cclag%fhand)
+      lucclag = form_cclag%fhand%unit
       rewind lucclag
 
+c dbg
+      write(luout,'("unit")')
+      print *,form_cclag%fhand%unit
+c dbg
+
+
       ! first record: a name
-      len = len_trim(name_string)
-      write(lucclag) len,name_string
-      ! second record: structure of result 
-      !  -- number of occupation classes and ID of operator describing
-      !   the structure of the result (0 if result is a scalar)
-      write(lucclag) 0,0
+      len = len_trim(title_cclg0)
+      write(lucclag) len,title_cclg0
+      ! second record: define target 
+      write(lucclag) 0,idxecc
 
       ! next records -- how to obtain the result, written by wrt_contr
 
@@ -154,6 +173,12 @@
      &       iocc_rtemp(ngastp,2),itrip(3),itrip_part(3,maxpart))
       endif  
       l_loop: do iloccls = 0, maxl
+
+c dbg
+            write(luout,'("unit top l")')
+            print *,form_cclag%fhand%unit
+c dbg
+
 
         ncterm(1:5) = 0
         contr%nvtx=0
@@ -233,6 +258,12 @@
         ! loop over blocks of Hamiltonian
 
         h_loop: do ihoccls = 1, ops(idxham)%n_occ_cls
+
+c dbg
+            write(luout,'("unit top h")')
+            print *,form_cclag%fhand%unit
+c dbg
+
           
           contr%narc = narc
           contr%nvtx = nlop+1
@@ -240,14 +271,34 @@
           iocc_h(1:ngastp,1:2) =
      &         ops(idxham)%ihpvca_occ(1:ngastp,1:2,ihoccls)
 
+c dbg
+            write(luout,'("unit top arcs 2")')
+            print *,form_cclag%fhand%unit
+c dbg
+
+            write(luout,*) 'idxham,ihoccls,contr%nvtx',
+     &           idxham,ihoccls,contr%nvtx
+
           contr%vertex(contr%nvtx)%idx_op=idxham
           contr%vertex(contr%nvtx)%iblk_op=ihoccls
           idxh = contr%nvtx ! remember H vertex number
+
+c dbg
+            write(luout,'("unit top arcs 3")')
+            print *,form_cclag%fhand%unit
+c dbg
+
 
           ! get excitation part of H
           iocc_hx = iocc_xdn(1,iocc_h)
 
           if(iloccls.le.lagocc)then
+
+c dbg
+            write(luout,'("unit top arcs")')
+            print *,form_cclag%fhand%unit
+c dbg
+
           ! get overlap with L+ ...
             iocc_hxovl = iocc_overlap(iocc_h,.false.,iocc_l,.true.)
 
@@ -268,6 +319,12 @@
             else
               nlhc = 0
             end if
+
+c dbg
+            write(luout,'("unit bottom 2")')
+            print *,form_cclag%fhand%unit
+c dbg
+
 
           elseif(explicit.and.iloccls.gt.lagocc)then
             ! Overlap Hx with R+ and C+.
@@ -307,6 +364,12 @@ c              cycle h_loop
 c            cycle h_loop
           endif  
 
+c dbg
+            write(luout,'("unit bottom arcs")')
+            print *,form_cclag%fhand%unit
+c dbg
+
+
           ! Rest of H is the de-excitation part.
           iocc_hd = iocc_add(1,iocc_h,.false.,-1,iocc_hx,.false.)
 
@@ -330,12 +393,24 @@ c            cycle h_loop
             ! set up contraction info (only factor is missing)
             contr%fac = 1d0
 
+c dbg
+            write(luout,'("unit top print")')
+            print *,form_cclag%fhand%unit
+c dbg
+
+
             if (ntest.ge.100) then
               call prt_contr(luout,contr,ops)
             end if
             call wrt_contr(lucclag,contr)
             nterms = nterms+1
             ncterm(1) = ncterm(1)+1
+
+c dbg
+            write(luout,'("unit bottom print")')
+            print *,form_cclag%fhand%unit
+c dbg
+
 
           else
 
@@ -414,6 +489,12 @@ c            cycle h_loop
             ! the R12 terms, then the multimple commutators of T, 
             ! and finally the multiple commutators with R terms.
             com_loop: do icomm = ncommin, ncommax
+
+c dbg
+            write(luout,'("unit top")')
+            print *,form_cclag%fhand%unit
+c dbg
+
 
               if (icomm.eq.1) then
                 if(nextern.eq.0)then
@@ -616,7 +697,7 @@ c            cycle h_loop
                     
                       contr%nvtx = nlop+1+icomm
                       ivtxoff = nlop+1
-                      idxarc = nlhc+1
+                      idxarc = nlhc
                       
                       do iop = 1, icomm
                         iocc_scr(1:ngastp,1:2) = 0
@@ -793,6 +874,12 @@ c                    write(luout,'(3i4)')itrip(1:3)
                 endif  
               end if          ! number of commutators switch
                 
+c dbg
+              write(luout,'("unit bottom")')
+              print *,form_cclag%fhand%unit
+c dbg
+
+
             end do com_loop   ! loop over icomm
 
           end if ! no-commutator-at-all exception
@@ -807,14 +894,17 @@ c dbg -- add "??" mark for grepping
       end do l_loop
       write(luout,'(2x,42("-"))')
 
-      call file_close_keep(ffcclag)
+c dbg
+      print *,form_cclag%fhand%unit
+c dbg
+      call file_close_keep(form_cclag%fhand)
       deallocate(contr%vertex,contr%arc)
       if(explicit)then
         deallocate(iocc_cba,iocc_rbcbov,iocc_hxovc,iocc_temp,iocc_rcco,
      &       iocc_r12,iocc_c12,iocc_r12c12,iocc_rtemp,itrip,itrip_part)
       endif  
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
       write(luout,*) 'Number of generated terms: ',nterms
       call prtim(luout,'CC Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 

@@ -47,6 +47,12 @@
      &     check
       end subroutine
 
+      subroutine mem_check(label)
+      implicit none
+      character, intent(in) ::
+     &     label*(*)
+      end subroutine
+
       integer function mem_register(nalloc,name)
       implicit none
       integer, intent(in) ::

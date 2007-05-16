@@ -93,5 +93,13 @@
         integer, intent(in) ::
      &       inum, nel, inc, ilist(nel)
         end function
-        
+
+        logical function next_dist(idist,nel,imnmx,inc)
+        implicit none
+        integer, intent(in) ::
+     &     inc, nel, imnmx(2,nel)
+        integer, intent(inout) ::
+     &     idist(nel)
+        end function
+
       end interface

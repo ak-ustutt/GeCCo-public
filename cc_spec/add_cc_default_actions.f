@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine add_cc_default_actions(act_list,nactions,
      &                                  ops,nops,
-     &                                  fform,nform)
+     &                                  form_info)
 *----------------------------------------------------------------------*
 *     set all actions to be taken if a CC calculation is intended
 *----------------------------------------------------------------------*
@@ -14,35 +14,38 @@ c      include 'ifc_formula.h'
       include 'def_operator.h'
 c      include 'ifc_operators.h'
       include 'par_opnames_gen.h'
+      include 'par_formnames_gen.h'
       include 'def_filinf.h'
       include 'def_action.h'
       include 'def_action_list.h'
+      include 'mdef_formula_info.h'
 
       type(action_list), intent(inout) ::
      &     act_list
       integer, intent(out) ::
      &     nactions
       integer, intent(in) ::
-     &     nform, nops
-      type(filinf), intent(in) ::
-     &     fform(nform)
+     &     nops
+      type(formula_info), intent(in) ::
+     &     form_info
       type(operator), intent(in) ::
      &     ops(nops)
 
       integer ::
-     &     idxham, idxtop, idxdia, idxccen, idxccrs, idum
+     &     idxham, idxtop, idxdia, idxccen, idxccrs, idxomg, idum
   
       ! explicit interface does not work with ifort
       integer, external ::
-     &     idx_oplist
+     &     idx_oplist, idx_formlist
 
       idxham = idx_oplist(op_ham,ops,nops)
       idxtop = idx_oplist(op_top,ops,nops)
+      idxomg = idx_oplist(op_omg,ops,nops)
       idxdia = idx_oplist(op_dia1,ops,nops)
 
       ! preliminary:
-      idxccen = 2
-      idxccrs = 3
+      idxccen = idx_formlist(label_ccen0,form_info)
+      idxccrs = idx_formlist(label_ccrs0,form_info)
       
       ! import Hamiltonian
       call add_action(act_list,nactions,
@@ -56,15 +59,15 @@ c      include 'ifc_operators.h'
       call add_action(act_list,nactions,
      &     iaction_setup_prc,2,1,
      &     (/idxtop,idxham/),(/idxdia/),
-     &     (/(/idxdia,1/)/),(/(/idxtop,1/),(/idxham,1/)/),
+     &     (/(/idxtop,1/),(/idxham,1/)/),(/(/idxdia,1/)/),
      &     0,idum
      &     )
 
       ! solve ground-state equations
       call add_action(act_list,nactions,
-     &     iaction_solve_nleq,1,1,
-     &     (/idxham/),(/idxtop/),
-     &     (/(/idxham,1/)/),(/(/idxtop,1/)/),
+     &     iaction_solve_nleq,2,2,
+     &     (/idxdia,idxham/),(/idxtop,idxomg/),
+     &     (/(/idxdia,1/),(/idxham,1/)/),(/(/idxtop,1/),(/idxomg,1/)/),
      &     2,(/idxccen,idxccrs/)
      &     )
 

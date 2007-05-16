@@ -27,7 +27,7 @@
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info
-      type(filinf), intent(in) ::
+      type(filinf), intent(inout) ::
      &     ffdia
 
       logical ::
@@ -67,7 +67,7 @@
 
       ifree = mem_setmark('dia4op')
 
-      call atim(cpu0,sys0,wall0)
+      call atim_csw(cpu0,sys0,wall0)
       
       igas_restr => str_info%igas_restr
       mostnd => orb_info%mostnd
@@ -189,11 +189,10 @@
                   igamstr = igamdst(ihpv,ica)
                   str_loop: do
                     if (.not.next_string(idxorb,idxspn,idxdss,
-     &                 nidx,igrph,
-     &                 ms_str,igamstr,first_str,
-     &                 igas_restr,
-     &                 mostnd,igamorb,
-     &                 nsym,ngas,ngas_hpv(ihpv),idx_gas(ihpv))
+     &                 nidx,ms_str,igamstr,first_str,
+     &                 igas_restr(1,1,1,igrph),
+     &                 mostnd(1,1,idx_gas(ihpv)),igamorb,
+     &                 nsym,ngas_hpv(ihpv))
      &                 ) exit str_loop
 
                     first_str = .false.
@@ -227,6 +226,7 @@
                 ! collect contributions from formal outer loops 
                 ! (over more than two strings):
                 idxbuf = ioffbuf+1
+                xsum_outer = 0d0
                 do iouter = 1, nouter
                   idx = ioff_xsum(iouter) + idxbuf/nincr(iouter)+1
                   idxbuf = mod(idxbuf,nincr(iouter)) 
@@ -259,9 +259,9 @@
 
       ifree = mem_flushmark()
 
-      call atim(cpu,sys,wall)
+      call atim_csw(cpu,sys,wall)
 
-      if (iprlvl.gt.5)
+      if (iprlvl.ge.5)
      &     call prtim(luout,'time in dia4op ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 

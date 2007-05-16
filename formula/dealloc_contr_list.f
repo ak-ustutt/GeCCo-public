@@ -23,8 +23,10 @@
      
       ! loop backward through list and deallocate
       do
-        call dealloc_contr(current%contr)
-        deallocate(current%contr)
+        if (associated(current%contr)) then
+          call dealloc_contr(current%contr)
+          deallocate(current%contr)
+        end if
         if (.not.associated(current%prev)) exit
         current => current%prev
         deallocate(current%next)

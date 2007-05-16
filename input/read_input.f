@@ -7,7 +7,7 @@
 c does not work, why?
 c      include 'ifc_fileutil.h'
  
-      type(filinf), intent(in) ::
+      type(filinf), intent(inout) ::
      &     ffinput
 
 c work around for problem with interface file

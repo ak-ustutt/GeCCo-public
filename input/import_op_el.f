@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine import_op_el(idxop,idxffop,
-     &     ffops,ops,nops,
+     &     op_info,
      &     env_type,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     import matrix elements for operator idxop from environment
@@ -9,21 +9,19 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 10
 
       include 'stdunit.h'
-      include 'def_operator.h'
-      include 'def_filinf.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
+      include 'par_opnames_gen.h'
+      include 'mdef_operator_info.h'
 
       integer, intent(in) ::
-     &     idxop, idxffop, nops
-      type(operator), intent(in) ::
-     &     ops(nops)
-      type(filinf), intent(in) ::
-     &     ffops(nops)
+     &     idxop, idxffop
+      type(operator_info), intent(in) ::
+     &     op_info
       character, intent(in) ::
      &     env_type*(*)
       type(strinf), intent(in) ::
@@ -33,17 +31,24 @@
 
       integer ::
      &     ipri
+      type(operator), pointer ::
+     &     op_target
+      type(filinf), pointer ::
+     &     opfil_target
+
+      op_target => op_info%op_arr(idxop)%op
+      opfil_target => op_info%opfil_arr(idxffop)%fhand
 
       select case(trim(env_type))
       case ('dalton','DALTON')
         ! what to import?
-        select case(trim(ops(idxop)%name))
-        case ('H')
-          call import_hamint_dalton(ops(idxop),ffops(idxffop),
+        select case(trim(op_target%name))
+        case (op_ham)
+          call import_hamint_dalton(op_target,opfil_target,
      &         str_info,orb_info)
         case default
           call quit(1,'import_op_el','DALTON: cannot handle operator '
-     &         //trim(ops(idxop)%name))
+     &         //trim(op_target%name))
         end select
       case ('intern','INTERN')
         call quit(1,'import_op_el','type INTERN not implemented')
@@ -62,8 +67,8 @@
         if (ntest.ge.100) ipri = 3
         if (ntest.ge.500) ipri = 4
         if (ntest.ge.1000) ipri = 5
-        call wrt_op_file(luout,ipri,ffops(idxffop),ops(idxop),
-     &       1,ops(idxop)%n_occ_cls,
+        call wrt_op_file(luout,ipri,opfil_target,op_target,
+     &       1,op_target%n_occ_cls,
      &       str_info,orb_info)
       end if
         

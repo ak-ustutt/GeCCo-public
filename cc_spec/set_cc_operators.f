@@ -27,7 +27,7 @@
      &     name*(len_opname)
       integer ::
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
-     &     gamma, iarr(1)
+     &     gamma, iarr(1), isim
       integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
@@ -46,9 +46,45 @@ c        nullify(list_pnt%op)
       end if
       allocate (list_pnt%op)
 
-      nops = nops+1
+c      nops = nops+1
+
+      ! use e^{-T1}He^{T1}?
+c      call get_argument_value('calculate.routes','simtraf',ival=isim)
+c      if (isim.gt.0) then
+c        ! new entry: the Hhat operator
+c        nops = nops+1
+c        allocate(list_pnt%next)
+c        list_pnt%next%prev => list_pnt
+c        list_pnt => list_pnt%next
+c        nullify(list_pnt%next)
+c        allocate (list_pnt%op)
+c
+c        name = op_hhat
+c        dagger = .false.
+c        absym = 0
+c        casym = 0
+c        gamma = 1
+c        s2 = 0
+c        ms = 0
+c        min_rank = 0
+c        max_rank = 2
+c        ncadiff = 0
+c        call set_hpvx_and_restr_for_h()
+
+c        call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+c     &       min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+c     &       orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+c      end if
 
       ! new entry: the T operator
+      nops = nops+1
+c      allocate(list_pnt%next)
+c      list_pnt%next%prev => list_pnt
+c      list_pnt => list_pnt%next
+c      nullify(list_pnt%next)
+c      allocate (list_pnt%op)
+
       name = op_top
       dagger = .false.
       absym = 0
@@ -131,6 +167,31 @@ c        nullify(list_pnt%op)
       s2 = 0
       ms = 0
       ! min_rank and max_rank are still set
+      ncadiff = 0
+      call set_hpvx_and_restr_for_xop()
+
+      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      ! new entry: the CC-Energy (scalar)
+      ! looks like overkill, but makes life easier
+      nops = nops+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev => list_pnt
+      list_pnt => list_pnt%next
+      nullify(list_pnt%next)
+      allocate (list_pnt%op)
+
+      name = op_ccen
+      dagger = .false.
+      absym = 0
+      casym = 0
+      gamma = 1
+      s2 = 0
+      ms = 0
+      min_rank=0
+      max_rank=0
       ncadiff = 0
       call set_hpvx_and_restr_for_xop()
 

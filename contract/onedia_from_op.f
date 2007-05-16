@@ -6,7 +6,11 @@
 
       implicit none
 
+      integer, parameter ::
+     &     ntest = 00
+
       include 'opdim.h'
+      include 'stdunit.h'
       include 'def_filinf.h'
       include 'def_operator.h'
       include 'def_orbinf.h'
@@ -117,6 +121,17 @@
       end do
       
       ifree = mem_flushmark()
+
+      if (ntest.ge.100) then
+        write(luout,*) 'extracted diagonal: '
+        idx = 0
+        do ms = 1, -1, -2
+          do imo = 1, orb_info%ntoob
+            idx = idx+1
+            write(luout,'(x,i2,"/2",i5,2x,g12.6)') ms, imo, x1dia(idx)
+          end do
+        end do
+      end if
 
       return
       end

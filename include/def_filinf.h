@@ -25,6 +25,10 @@
      &     incore(:)
          real(8), pointer ::
      &     buffer(:)
+         ! alternative buffering mechanism: we need an ID
+         ! cf. memman.f (mem_buffers)
+         integer ::
+     &     buf_id
       end type filinf
 *------------------------------------------------------------------------*
 *	name, unit: self-explaining, unit == -1 means not assigned

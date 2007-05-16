@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine form_deriv(ffderiv,ffinput,name_deriv,
+      subroutine form_deriv(f_deriv,f_input,
+     &                      label_deriv,title_deriv,
      &                      ncmpnd,idxder,idxmlt,idxres,
      &                      ops,nops)
 *----------------------------------------------------------------------*
@@ -24,11 +25,12 @@
       include 'def_operator.h'
       include 'def_contraction.h'
       include 'def_contraction_list.h'
+      include 'def_formula.h'
 
       character, intent(in) ::
-     &     name_deriv*(*)
-      type(filinf), intent(in) ::
-     &     ffinput, ffderiv
+     &     title_deriv*(*),label_deriv*(*)
+      type(formula), intent(inout) ::
+     &     f_input, f_deriv
       integer, intent(in) ::
      &     nops, ncmpnd, idxder(ncmpnd), idxmlt(ncmpnd), idxres
       type(operator), intent(in) ::
@@ -44,28 +46,36 @@
       integer ::
      &     luinput, luderiv,
      &     nterms, nder, idx, idum, idxinp, len, icmpnd
+      character ::
+     &     name*(form_maxlen_label*2)
 
       logical, external ::
      &     rd_contr
 
-      call file_open(ffinput)
-      call file_open(ffderiv)
-      luinput = ffinput%unit
-      luderiv = ffderiv%unit
+      write(name,'(a,".fml")') label_deriv
+      call file_init(f_deriv%fhand,name,ftyp_sq_unf,0)      
+      f_deriv%label = label_deriv
+      f_deriv%comment = title_deriv
+
+      call file_open(f_input%fhand)
+      call file_open(f_deriv%fhand)
+      luinput = f_input%fhand%unit
+      luderiv = f_deriv%fhand%unit
       rewind luinput
       rewind luderiv
 
       read(luinput)
       read(luinput) idum,idxinp
 
-      len = len_trim(name_deriv)
-      write(luderiv) len,name_deriv
-      write(luderiv) idum,idxinp
+      len = len_trim(title_deriv)
+      write(luderiv) len,title_deriv
+      write(luderiv) idum,idxres
 
       ! signal, that still nothing is allocated
       contr%mxvtx = 0
       contr%mxarc = 0
       contr%mxfac = 0
+      nullify(conder%contr)
 
       nterms = 0
       do while(rd_contr(luinput,contr,idxinp))
@@ -84,8 +94,8 @@
 
       end do
 
-      call file_close_keep(ffderiv)
-      call file_close_keep(ffinput)
+      call file_close_keep(f_deriv%fhand)
+      call file_close_keep(f_input%fhand)
 
       call dealloc_contr(contr)
       call dealloc_contr_list(conder)

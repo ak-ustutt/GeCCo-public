@@ -1,5 +1,9 @@
 /*---------------------------------------------------------------------------*
- *                  timer routine                                            *
+ *                       timer routines                                      *
+ *  atim_cs_ returns cpu and system time and is reasonably fast              *
+ *  atim_csw_ return in addition the real time (wall-clock time)             *
+ *  the call to gettimeofday is expensive, however, so do not call           *
+ *  this routine to often                                                    *
  *---------------------------------------------------------------------------*/
 
 #include <unistd.h>
@@ -9,7 +13,18 @@
 
 /*---------------------------------------------------------------------------*/
 
-void    atim_(double * cpu, double * syst, double * realt)
+void atim_cs_(double * cpu, double * syst)
+{
+  struct  tms  buf;
+
+  times(&buf);
+
+  *cpu  = buf.tms_utime / clocks_per_second;
+  *syst = buf.tms_stime / clocks_per_second;
+
+}
+
+void atim_csw_(double * cpu, double * syst, double * realt)
 {
   struct  tms  buf;
   struct  timeval  timv;
@@ -26,4 +41,3 @@ void    atim_(double * cpu, double * syst, double * realt)
   *syst = buf.tms_stime / clocks_per_second;
 
 }
-
