@@ -23,12 +23,22 @@
      &     idx, idxph
 
       write(luout,*) '+++ contraction info +++'
-      write(luout,*) ' index and block of result: ',
+      if (contr%idx_res.gt.0) then
+        write(luout,*) ' name (index) and block of result: ',
+     &     trim(ops(contr%idx_res)%op%name),
+     &       '(',contr%idx_res,')', contr%iblk_res
+      else
+        write(luout,*) ' index and block of result: ',
      &     contr%idx_res, contr%iblk_res
+      end if
       write(luout,*) ' factor: ',contr%fac
       write(luout,*) ' number of vertices/arcs: ',
      &     contr%nvtx,contr%narc
       do idx = 1, contr%nvtx
+        if (contr%vertex(idx)%idx_op.eq.0) then
+          write(luout,'(x,a)') ' v   0'
+          cycle
+        end if
         idxph = 1
         if (ops(contr%vertex(idx)%idx_op)%op%dagger) idxph=2
         write(luout,'(x,a,x,a,i4,2x,4i3)')

@@ -20,17 +20,19 @@
      &     iocc(ngastp,2)
 
       integer ::
-     &     ica, ihpv
+     &     ica, ihpv, iscr(ngastp,2)
 
-      iocc_xdn(1:ngastp,1:2) = 0
+      iscr(1:ngastp,1:2) = 0
       do ica = 1, 2
         if (ixdn.eq.1.and.ica.eq.1) ihpv = ipart
         if (ixdn.eq.1.and.ica.eq.2) ihpv = ihole
         if (ixdn.eq.2.and.ica.eq.1) ihpv = ihole
         if (ixdn.eq.2.and.ica.eq.2) ihpv = ipart
         if (ixdn.eq.3) ihpv = 3
-        iocc_xdn(ihpv,ica) = iocc(ihpv,ica)
+        iscr(ihpv,ica) = iocc(ihpv,ica)
       end do
+
+      iocc_xdn = iscr
 
       return
       end

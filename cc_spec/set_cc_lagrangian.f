@@ -72,7 +72,7 @@
 
       ! external functions
       logical, external ::
-     &     iocc_equal,
+c     &     iocc_equal,
      &     next_part_number, next_part_pair
       integer, external ::
      &     iopen_nus,
@@ -97,9 +97,6 @@
       maxarc = 8
       ! for convenience, we allocate the maximum number here
       allocate(contr%vertex(maxvtx),contr%arc(maxarc))
-c      do idx = 1, maxarc
-c        allocate(contr%arc(idx)%occ_cnt(ngastp,2))
-c      end do
 
       ! get maximum excitation level of T-operators
       maxexc = maxxlvl_op(ops(idxtop))
@@ -350,7 +347,7 @@ c      end do
                       idxarc = idxarc+1
                       contr%arc(idxarc)%link(1)=idxh
                       contr%arc(idxarc)%link(2)=ivtxoff+iop
-                      contr%arc(idxarc)%occ_cnt(1:3,1:2) = 0
+                      contr%arc(idxarc)%occ_cnt(1:ngastp,1:2) = 0
                       contr%arc(idxarc)%occ_cnt(1,1)
      &                     = ihd_part(1,iop)
                       contr%arc(idxarc)%occ_cnt(2,2)

@@ -20,6 +20,7 @@
       include 'mdef_operator_info.h'
       include 'mdef_formula_info.h'
       include 'def_formula_item.h'
+      include 'ifc_input.h'
 
       integer, intent(in) ::
      &     nfcat, idxform(nfcat)
@@ -40,7 +41,7 @@
      &     cur_ffile
 
       integer ::
-     &     icat, iprint, lentitle
+     &     icat, iprint, lentitle, isim
 
       character ::
      &     title*(form_maxlen_comment)
@@ -63,7 +64,11 @@
       ! read in formula files:
       ! ----------------------
       do icat = 1, nfcat
-
+c dbg
+        print *,'idxform(icat) = ',idxform(icat)
+        print *,'>',form_info%form_arr(idxform(icat))%form%label
+        print *,'>',form_info%form_arr(idxform(icat))%form%fhand%name
+c dbg
         cur_ffile => form_info%form_arr(idxform(icat))%form%fhand
         if (lentitle.lt.form_maxlen_comment) then
           if (icat.eq.1) then
@@ -85,6 +90,13 @@
       form_tail => form_ptr
 
       title = trim(title)//' -- optimized'
+
+      if (is_keyword_set('method.CC')) then
+        call get_argument_value('calculate.routes','simtraf',ival=isim)
+        if (isim.gt.0)
+     &       call cc_form_hhat_replace(form_head,
+     &                                 form_info,op_info)
+      end if
 
       ! ----------------------------------------
       ! find optimal factorization for each term

@@ -149,7 +149,8 @@ c      nullify(form_list%next)
      &           current_act%act%nform,current_act%act%idx_formula,
      &           form_info,op_info,str_info,orb_info)
             ! Solve system of non-linear equations
-            call solve_nleq(current_act%act%nop_out,
+            call solve_nleq(current_act%act%nop_opt,
+     &                      current_act%act%nop_out,
      &                      current_act%act%idxopdef_out,
      &                      current_act%act%idxopfile_out,
      &                      current_act%act%nop_in,

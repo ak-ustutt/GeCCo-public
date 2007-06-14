@@ -47,4 +47,20 @@
      &       ops(nops)
         end function
 
+        logical function iocc_equal(iocc,dagi,jocc,dagj)
+        implicit none
+        include 'opdim.h'
+        logical, intent(in) ::
+     &      dagi, dagj
+        integer, intent(in) ::
+     &     iocc(ngastp,2), jocc(ngastp,2)
+        end function
+
+        logical function iocc_nonzero(iocc)
+        implicit none
+        include 'opdim.h'
+        integer ::
+     &     iocc(ngastp,2)
+        end function
+
       end interface

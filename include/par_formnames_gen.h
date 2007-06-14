@@ -8,8 +8,10 @@ c     &     name_vectfunc*14 = 'ccvectfunc.fml',
       character, parameter ::
      &     title_cclg0*26 = 'CC ground state Lagrangian',
      &     title_ccen0*12 = 'CC energy',
-     &     title_ccrs0*14 = 'CC residual'
+     &     title_ccrs0*14 = 'CC residual',
+     &     title_cchhat*15 = 'e^{-T1}He^T1'
       character, parameter ::
      &     label_cclg0*5 = 'L0_CC',
      &     label_ccen0*5 = 'E0_CC',
-     &     label_ccrs0*6 = 'OMG_CC'
+     &     label_ccrs0*6 = 'OMG_CC',
+     &     label_cchhat*6 = 'HT1TRF'
