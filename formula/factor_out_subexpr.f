@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine identify_subexpr(fl_intm,fl_tgt,op_info)
+      subroutine factor_out_subexpr(fl_intm,fl_tgt,op_info)
 *----------------------------------------------------------------------*
 *     input: a definition of an intermediate on fl_intm
 *            a target formula on fl_tgt
@@ -45,19 +45,19 @@
 
       if (ntest.ge.100) then
         write(luout,*) '================================='
-        write(luout,*) ' identify_subexpr messing around'
+        write(luout,*) ' factor_out_subexpr messing around'
         write(luout,*) '================================='
       end if
 
       call init_contr(contr_rpl)
 
       if (fl_tgt%command.ne.command_set_target_init)
-     &       call quit(1,'identify_subexpr',
+     &       call quit(1,'factor_out_subexpr',
      &       'target formula definition must start with [INIT]')
 
       ! first item should define new operator target
       if (fl_intm%command.ne.command_set_target_init)
-     &     call quit(1,'identify_subexpr',
+     &     call quit(1,'factor_out_subexpr',
      &     'intermediate definition must start with [INIT]')
 
       fl_tgt_current => fl_tgt
@@ -68,7 +68,7 @@
         if (fl_tgt_current%command.eq.command_set_target_init) then
           idxop_tgt = fl_tgt_current%target
           if (.not.associated(fl_tgt_current%next))
-     &         call quit(1,'identify_subexpr',
+     &         call quit(1,'factor_out_subexpr',
      &         'unexpected end of list (target)')
           if (ntest.ge.100) then
             write(luout,'(70("="))')
