@@ -1,6 +1,8 @@
       type operator_info
         integer ::
-     &       nops
+     &       nops, id_cnt
+	integer, pointer ::
+     &       idx2id(:)
         type(operator_list), pointer ::
      &       op_list
         type(operator_array), pointer ::

@@ -17,7 +17,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 100
 
       type(contraction), intent(out) ::
      &     contr_abc
@@ -29,12 +29,15 @@
       type(operator_info), intent(in) ::
      &     op_info
  
+      logical ::
+     &     reo
       integer ::
      &     nvtx_abc, nvtx_ac, nvtx_a, nvtx_b, nvtx_c,
      &     narc_abc, narc_ac, narc_b, 
      &     idx, idx_abc, iarc,
      &     nconnect_a, nconnect_c,
-     &     nconnect_b_dx, nconnect_b_ex
+     &     nconnect_b_dx, nconnect_b_ex,
+     &     ieqvfac
       integer ::
      &     iocc(ngastp,2), jocc(ngastp,2),
      &     iocc_a_dx(ngastp,2), iocc_b_dx(ngastp,2),
@@ -42,7 +45,10 @@
      
       integer, pointer ::
      &     ivtx_a(:), ivtx_b_dx(:), ivtx_b_ex(:), ivtx_c(:),
-     &     ivtx_ac_reo(:), ivtx_b_reo(:)
+     &     ivtx_ac_reo(:), ivtx_b_reo(:), ivtx_reo(:),
+     &     occ_vtx(:,:,:)
+      logical, pointer ::
+     &     fix_vtx(:)
 
       type(cntr_arc), pointer ::
      &     arc(:)
@@ -375,7 +381,16 @@ c        end if
       end if
 
       ! enforce law and order
-      call canon_contr(contr_abc)
+      allocate(ivtx_reo(nvtx_abc),fix_vtx(nvtx_abc),
+     &     occ_vtx(ngastp,2,nvtx_abc+1))
+      fix_vtx = .true. ! "fix" all vertices -> ieqvfac will be 1
+      call occvtx4contr(occ_vtx,contr_abc,op_info)
+
+      call topo_contr(ieqvfac,reo,ivtx_reo,
+     &     contr_abc,occ_vtx,fix_vtx)
+      ! ieqvfac is ignored
+      call canon_contr(contr_abc,reo,ivtx_reo)
+      deallocate(ivtx_reo,fix_vtx,occ_vtx)
 
       if (ntest.ge.100) then
         write(luout,*) 'generated contraction:'

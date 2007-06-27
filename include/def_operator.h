@@ -1,4 +1,14 @@
 *----------------------------------------------------------------------*
+*     parameters
+*----------------------------------------------------------------------*
+      ! operator types as returned by op_type()
+      integer, parameter ::
+     &     optyp_scalar= 0,   ! scalar
+     &     optyp_ph    = 1,   ! P/H spaces only (incl. X)
+     &     optyp_ph_ex = 2,   !  typ 1, only excitations 
+     &     optyp_ph_dx = 3,   !  typ 1, only deexcitations 
+     &     optyp_val   = 4    ! V spaces as well
+*----------------------------------------------------------------------*
 *     auxiliary types
 *----------------------------------------------------------------------*
       type leninf
@@ -26,6 +36,8 @@
 *     operator definition
 *----------------------------------------------------------------------*
       type operator
+        integer ::
+     &     id
         character ::
      &     name*(len_opname)
 *----------------------------------------------------------------------*
@@ -43,6 +55,10 @@
 	logical ::
      &     dagger               ! daggered operator:
                                 ! C <-> A are to be interchanged
+        integer ::
+     &     type,                ! 1: operator, 2: density, 3: intermed.
+     &     nbay                 ! for intermed: # insertion places ("bays")
+                                ! for other operators
         integer ::
      &     absym,               ! symmetry on interchange of alpha/beta
      &                          ! (time reversal sym.) values: 0/+1/-1

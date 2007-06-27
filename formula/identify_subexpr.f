@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine identify_subexpr2(fl_intm,fl_tgt,op_info)
+      subroutine identify_subexpr(fl_intm,fl_tgt,op_info)
 *----------------------------------------------------------------------*
 *     input: a definition of an intermediate on fl_intm
 *            a target formula on fl_tgt
@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -121,6 +121,7 @@
             ! collect all contributions with same result block index
             ! in contraction list cl_intm_c2blk
             allocate(fpl_intm_c2blk)
+            call init_formula_plist(fpl_intm_c2blk)
             call collect_contr2block(fpl_intm_c2blk,nterms,
      &                                       fl_intm_pnt,op_info)
             allocate(fpa_intm_in_tgt(nterms))
@@ -148,6 +149,10 @@
               call copy_contr(contr_rpl,fpa_intm_in_tgt(1)%item%contr)
               do iterm = 2, nterms
                 call delete_fl_node(fpa_intm_in_tgt(iterm)%item)
+                if (associated(fpa_intm_in_tgt(iterm)%item%contr)) then
+                  call dealloc_contr(fpa_intm_in_tgt(iterm)%item%contr)
+                  deallocate(fpa_intm_in_tgt(iterm)%item%contr)
+                end if
                 deallocate(fpa_intm_in_tgt(iterm)%item)
               end do
               
@@ -179,9 +184,6 @@
       end do tgt_loop
         
       call dealloc_contr(contr_rpl)
-c dbg
-c        call quit(1,'test','exit 2')
-c dbg
 
       return
       end

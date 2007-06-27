@@ -34,6 +34,12 @@
 
 c      idx_op_hhat = idx_oplist2(op_hhat,op_info)
       idx_form_hhat = idx_formlist(label_cchhat,form_info)
+c dbg
+      print *,'idx_form_hhat = ',idx_form_hhat
+c dbg
+      if (idx_form_hhat.le.0)
+     &     call quit(1,'cc_form_hhat_replace',
+     &     'Hhat was not found on list')
 
       allocate(form_link)
 

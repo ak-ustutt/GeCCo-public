@@ -23,6 +23,9 @@
       nullify(op_info%opfil_list%next)
       ! initialize pointer array
       nullify(op_info%opfil_arr)
+      ! initialize ID-counter
+      op_info%id_cnt = 0
+      nullify(op_info%idx2id)
 
       return
       end

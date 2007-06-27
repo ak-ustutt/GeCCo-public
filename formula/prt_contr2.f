@@ -53,12 +53,19 @@
      &       ihpvca_occ(1:ngastp,idxph,contr%vertex(idx)%iblk_op)
       end do
       do idx = 1, contr%narc
-        write(luout,'(x,a,x,2i4,2x,4i3)')
+        if (contr%arc(idx)%occ_cnt(1,1).lt.0) then
+          ! prototype connection:
+          write(luout,'(x,a,x,2i4)')
+     &       ' cp ',contr%arc(idx)%link(1),
+     &       contr%arc(idx)%link(2)
+        else
+          write(luout,'(x,a,x,2i4,2x,4i3)')
      &       ' c  ',contr%arc(idx)%link(1),
      &       contr%arc(idx)%link(2),
      &       contr%arc(idx)%occ_cnt(1:ngastp,1)
-        write(luout,'(x,a,11x,4i3)')
+          write(luout,'(x,a,11x,4i3)')
      &       '    ',contr%arc(idx)%occ_cnt(1:ngastp,2)
+        end if
       end do
       do idx = 1, contr%nfac
         write(luout,'(x,i5,"*",i5,"->",i5,"(",i5,")")')

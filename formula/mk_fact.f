@@ -50,7 +50,7 @@
       icoscr(1:3,1:narc) = iconn(1:3,1:narc)
       narc_cur = narc
       do while (narc_cur.gt.0)
-        inum = icntsq(idx)  ! arc number form sequence list
+        inum = icntsq(idx)  ! arc number from sequence list
         idxl = idxlist(inum,iarceq(1,1),narc,2)
         inum = iarceq(2,idxl) ! convert to equivalent arc
         ! find arc on current list

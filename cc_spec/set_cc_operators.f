@@ -46,8 +46,11 @@
 c        nullify(list_pnt%op)
       end if
       allocate (list_pnt%op)
+c      op_info%id_cnt = op_info%id_cnt+1
+c      list_pnt%op%id = op_info%id_cnt
 
       nops = nops+1
+      list_pnt%op%id = nops
       ! new entry: the Hamiltonian
       name = op_ham
       dagger = .false.
@@ -75,6 +78,9 @@ c        nullify(list_pnt%op)
         list_pnt => list_pnt%next
         nullify(list_pnt%next)
         allocate (list_pnt%op)
+        list_pnt%op%id = nops
+c        op_info%id_cnt = op_info%id_cnt+1
+c        list_pnt%op%id = op_info%id_cnt
 
         name = op_hhat
 c        dagger = .false.
@@ -101,6 +107,9 @@ c        call set_hpvx_and_restr_for_h()
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate (list_pnt%op)
+      list_pnt%op%id = nops
+c      op_info%id_cnt = op_info%id_cnt+1
+c      list_pnt%op%id = op_info%id_cnt
 
       name = op_top
       dagger = .false.
@@ -125,7 +134,10 @@ c        call set_hpvx_and_restr_for_h()
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate (list_pnt%op)
-     
+      list_pnt%op%id = nops
+c      op_info%id_cnt = op_info%id_cnt+1
+c      list_pnt%op%id = op_info%id_cnt
+
       name = op_tbar
       ! we define an excitation operator to ensure same
       ! storage sequence as for T
@@ -150,6 +162,9 @@ c        call set_hpvx_and_restr_for_h()
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate (list_pnt%op)
+      list_pnt%op%id = nops
+c      op_info%id_cnt = op_info%id_cnt+1
+c      list_pnt%op%id = op_info%id_cnt
      
       name = op_omg
       ! same as T
@@ -174,6 +189,9 @@ c        call set_hpvx_and_restr_for_h()
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate (list_pnt%op)
+      list_pnt%op%id = nops
+c      op_info%id_cnt = op_info%id_cnt+1
+c      list_pnt%op%id = op_info%id_cnt
 
       name = op_dia1  ! symmetry 1
       ! same as T
@@ -199,6 +217,9 @@ c        call set_hpvx_and_restr_for_h()
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate (list_pnt%op)
+      list_pnt%op%id = nops
+c      op_info%id_cnt = op_info%id_cnt+1
+c      list_pnt%op%id = op_info%id_cnt
 
       name = op_ccen
       dagger = .false.

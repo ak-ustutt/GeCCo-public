@@ -24,7 +24,7 @@
       include 'def_formula_item_array.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       
       logical, intent(out) ::
      &     success
@@ -166,22 +166,36 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
           end select
 
           ! compare with generated target contractions
-          do iterm = 1, nterms
+          term_loop: do iterm = 1, nterms
             if (assigned(iterm)) cycle
             ! I should program contr_equal but the following should
             ! also work; if A part of B and B part of A the A==B
+c dbg
+            print *,'assigned: ',assigned(1:nterms)
+            print *,'comparing: fml, tgt(iterm = ',iterm,')'
+            call prt_contr2(luout,fl_tgt_pnt%contr,op_info%op_arr)
+            call prt_contr2(luout,contr_tgt(iterm),op_info%op_arr)
+            print *,'results = ',
+     &           contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)),
+     &           contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr),
+     &           fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac
+c dbg
             if (contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)).and.
      &          contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr).and.
      &          fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac) then
 c            if (contr_equal(fl_tgt_pnt%contr,contr_tgt(iterm))) then
+c dbg
+              print *,'hurra'
+c dbg
               assigned(iterm) = .true.
               nfound = nfound+1
               fpa_found(nfound)%item => fl_tgt_pnt
               ! all terms found? let's go
               success2 =  nfound.eq.nterms
               if (success2) exit tgt_loop
+              exit term_loop
             end if
-          end do
+          end do term_loop
 
         end do tgt_loop
 

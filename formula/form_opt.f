@@ -66,8 +66,9 @@
       do icat = 1, nfcat
 c dbg
         print *,'idxform(icat) = ',idxform(icat)
-        print *,'>',form_info%form_arr(idxform(icat))%form%label
-        print *,'>',form_info%form_arr(idxform(icat))%form%fhand%name
+        print *,'>',trim(form_info%form_arr(idxform(icat))%form%label)
+        print *,'>',
+     &       trim(form_info%form_arr(idxform(icat))%form%fhand%name)
 c dbg
         cur_ffile => form_info%form_arr(idxform(icat))%form%fhand
         if (lentitle.lt.form_maxlen_comment) then
@@ -111,6 +112,9 @@ c      form_ptr => form_head
       end if
 
       call write_form_list(ffform_opt,form_head,title)
+
+      call dealloc_formula_list(form_head)
+      deallocate(form_head)
       
       return
       end

@@ -44,6 +44,8 @@
       ! loop over all arcs and remove contractions
       arc => contr%arc
       do iarc = 1, contr%narc
+        ! for proto-contractions: ignore certain arcs
+        if (arc(iarc)%occ_cnt(1,1).lt.0) cycle
         if (arc(iarc)%link(1).eq.ivtx) then
           iocc = iocc - arc(iarc)%occ_cnt
         else if (arc(iarc)%link(2).eq.ivtx) then

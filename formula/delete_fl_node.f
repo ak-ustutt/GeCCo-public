@@ -16,8 +16,15 @@
       type(formula_item), intent(inout) ::
      &     node
 
-      ! only two lines:
       if (associated(node%prev)) node%prev%next => node%next
+      if (associated(node%contr)) then
+        call dealloc_contr(node%contr)
+        deallocate(node%contr)
+      end if
+      if (associated(node%interm)) then
+c        call dealloc_op()
+        deallocate(node%interm)
+      end if
       if (associated(node%next)) node%next%prev => node%prev
       
       return

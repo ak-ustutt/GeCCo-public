@@ -16,6 +16,9 @@
       contr%mxvtx = 0
       contr%mxarc = 0
       contr%mxfac = 0
+      contr%nvtx = 0
+      contr%narc = 0
+      contr%nfac = 0
       nullify(contr%vertex)
       nullify(contr%arc)
       nullify(contr%inffac)

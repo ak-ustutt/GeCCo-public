@@ -17,7 +17,7 @@
       include 'def_formula_item_list.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula_item), target, intent(in) ::
      &     fl_intm
@@ -47,7 +47,7 @@
      &     '[ADD] expected on first item')
 
       nterms = 1 ! at least the current item on fl_intm
-      nullify(fpl_intm_c2blk%prev)
+c      nullify(fpl_intm_c2blk%prev)
       nullify(fpl_intm_c2blk%next)
 
       fpl_intm_c2blk%item => fl_intm
@@ -68,9 +68,12 @@
         if (fl_pnt%command.ne.command_add_contribution)
      &       call quit(1,'collect_contr2block',
      &       'only [ADD],[INIT],[END] expected')
-        if (fl_pnt%contr%idx_res.ne.idxop_intm)
-     &       call quit(1,'collect_contr2block',
+        if (fl_pnt%contr%idx_res.ne.idxop_intm) then
+          write(luout,*) 'scanning for operator ',idxop_intm
+          call prt_contr2(luout,fl_pnt%contr,op_info%op_arr)
+          call quit(1,'collect_contr2block',
      &       'suspicious change of operator index')
+        end if
         if (fl_pnt%contr%iblk_res.eq.iblk_intm) then
           ! store pointer to this item on list
           nterms = nterms+1
