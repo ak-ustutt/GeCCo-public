@@ -61,7 +61,7 @@ c dbg
       fhhat_tail => form_ptr
 
       ! factor out the sub-expressions
-      call factor_out_subexpr(fhhat_head,form_link,op_info)
+      call factor_out_subexpr(form_link,fhhat_head,op_info)
 
       ! remove [END] from Hhat list (if any)
       if (fhhat_tail%command.eq.command_end_of_formula) then

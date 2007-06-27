@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine factor_out_subexpr(fl_intm,fl_tgt,op_info)
+      subroutine factor_out_subexpr(fl_tgt,fl_intm,op_info)
 *----------------------------------------------------------------------*
 *     input: a definition of an intermediate on fl_intm
 *            a target formula on fl_tgt
