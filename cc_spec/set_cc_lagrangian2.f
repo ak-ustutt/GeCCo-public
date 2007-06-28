@@ -78,10 +78,6 @@
       call expand_op_bch(form_pnt,4,idxecc,
      &     1d0,idxtbar,idxham,1d0,idxtop,1,-1,op_info)
 
-c dbg
-c      print *,'generated (1):'
-c      call print_form_list(luout,form_lag,op_info)
-c dbg      
 
       ! insert here procedure to produce approx. expansions      
 
