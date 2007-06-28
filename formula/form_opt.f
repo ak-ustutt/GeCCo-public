@@ -109,6 +109,10 @@ c      form_ptr => form_head
         write(luout,*) 'Optimized formula:'
         write(luout,*) '=================='
         call print_form_list(luout,form_head,op_info)
+c dbg
+        call tex_form_list(luout,form_head,op_info)
+        stop 'latex'
+c dbg
       end if
 
       call write_form_list(ffform_opt,form_head,title)

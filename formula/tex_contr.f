@@ -24,7 +24,7 @@
      &     op
       
       integer ::
-     &     ipos, nocc, ioff, ivtx, iarc, ifac
+     &     ipos, nocc, ioff, ivtx, iarc, ifac, p, q
       integer, pointer ::
      &     occ(:,:), occ_dst(:,:,:), idxset(:)
       character ::
@@ -39,6 +39,12 @@
         write(str(ipos:),'("+=")')
       else
         write(str,'("+")')
+      end if
+
+      if (abs(contr%fac-1d0).gt.1d-12) then
+        call real2rat(p,q,contr%fac)
+        ipos = len_trim(str)+1
+        write(str(ipos:),'("\frac{",i6,"}{",i6,"}")') p,q
       end if
 
       allocate(occ_dst(ngastp,2,contr%narc+1),idxset(contr%narc+1))
