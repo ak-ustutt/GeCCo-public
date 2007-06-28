@@ -10,10 +10,10 @@
       include 'par_opnames_gen.h'
 
       character, parameter ::
-     &     idxchar(6,4) = (/(/'J','I','L','K','N','M'/),
-     &                      (/'A','B','C','D','E','F'/),
-     &                      (/'U','V','W','X','Y','Z'/),
-     &                      (/'i','j','k','l','m','n'/)/)
+     &     idxchar(6*4) = (/'J','I','L','K','N','M',
+     &                      'A','B','C','D','E','F',
+     &                      'U','V','W','X','Y','Z',
+     &                      'i','j','k','l','m','n'/)
 
       character, intent(out) ::
      &     str*(*)
@@ -63,7 +63,7 @@ c          write(str,'("\bar{C}")')
               end if
               ipos = len_trim(str)+1
               write(str(ipos:),'(a)')
-     &             idxchar(nidx,hpvx)
+     &             idxchar(nidx+(hpvx-1)*6)
               if (nprm.gt.0)
      &             write(str(ipos+1:),'("^{")')
               ipos = len_trim(str)+1
