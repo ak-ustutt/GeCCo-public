@@ -59,7 +59,7 @@
      &                   opout%ihpvca_occ(1,1,iblkout),.false.)) then
         call wrt_occ(luout,opin%ihpvca_occ(1,1,iblkin))
         call wrt_occ(luout,opout%ihpvca_occ(1,1,iblkout))
-        call quit(1,'copy_opblk','occupations do not fit!')
+        call quit(1,'add_opblk','occupations do not fit!')
       end if
 
       if (.not.irestr_equal(opin%igasca_restr(1,1,1,1,iblkin),
@@ -67,20 +67,20 @@
      &                     orb_info%ngas)) then
         call wrt_rstr(luout,opin%igasca_restr(1,1,1,1,iblkin))
         call wrt_rstr(luout,opout%igasca_restr(1,1,1,1,iblkout))
-        call quit(1,'copy_opblk','occupations do not fit!')
+        call quit(1,'add_opblk','occupations do not fit!')
         ! note: we must be able to handle this case in the future
       end if
 
       len_op = opin%len_op_occ(iblkin)
       ! for the moment this must hold:
       if (len_op.ne.opout%len_op_occ(iblkout))
-     &     call quit(1,'copy_opblk','unexpected error')
+     &     call quit(1,'add_opblk','unexpected error')
 
       ! buffered data available?
       bufin = .false.
       bufout = .false.
       if (ffin%buffered) bufin = ffin%incore(iblkin).gt.0
-      if (ffout%buffered) bufout = ffin%incore(iblkout).gt.0
+      if (ffout%buffered) bufout = ffout%incore(iblkout).gt.0
 
       ifree = mem_setmark('add_opblk')
 
@@ -95,7 +95,7 @@
           write(luout,*) 'free memory (words):  ',ifree
           write(luout,*) 'block length (words): ',lblk,' * 2'
           call
-     &       quit(1,'copy_opblk','not even 1 record fits into memory?')
+     &       quit(1,'add_opblk','not even 1 record fits into memory?')
         end if
 
         nblk = min((len_op-1)/lblk+1,nblkmax)

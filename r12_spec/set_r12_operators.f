@@ -77,6 +77,7 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       max_h_rank=2
 
       nops=nops+1
+      list_pnt%op%id = nops
       ! New entry: linear R12 operator.
       name=op_r12
       dagger=.false.
@@ -103,6 +104,7 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       list_pnt=>list_pnt%next
       nullify(list_pnt%next)
       allocate(list_pnt%op)
+      list_pnt%op%id = nops
       
       name = op_c12
       dagger=.false.
@@ -132,6 +134,7 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       list_pnt=>list_pnt%next
       nullify(list_pnt%next)
       allocate(list_pnt%op)
+      list_pnt%op%id = nops
 
       name = op_rba
       ! Define an excitation operator to ensure the same storage
@@ -160,6 +163,7 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       list_pnt=>list_pnt%next
       nullify(list_pnt%next)
       allocate(list_pnt%op)
+      list_pnt%op%id = nops
       
       name = op_cba
       dagger=.true.

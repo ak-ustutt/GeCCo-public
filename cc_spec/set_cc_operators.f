@@ -46,44 +46,9 @@ c        nullify(list_pnt%op)
       end if
       allocate (list_pnt%op)
 
-c      nops = nops+1
-
-      ! use e^{-T1}He^{T1}?
-c      call get_argument_value('calculate.routes','simtraf',ival=isim)
-c      if (isim.gt.0) then
-c        ! new entry: the Hhat operator
-c        nops = nops+1
-c        allocate(list_pnt%next)
-c        list_pnt%next%prev => list_pnt
-c        list_pnt => list_pnt%next
-c        nullify(list_pnt%next)
-c        allocate (list_pnt%op)
-c
-c        name = op_hhat
-c        dagger = .false.
-c        absym = 0
-c        casym = 0
-c        gamma = 1
-c        s2 = 0
-c        ms = 0
-c        min_rank = 0
-c        max_rank = 2
-c        ncadiff = 0
-c        call set_hpvx_and_restr_for_h()
-
-c        call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-c     &       min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
-c     &       orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
-
-c      end if
-
       ! new entry: the T operator
       nops = nops+1
-c      allocate(list_pnt%next)
-c      list_pnt%next%prev => list_pnt
-c      list_pnt => list_pnt%next
-c      nullify(list_pnt%next)
-c      allocate (list_pnt%op)
+      list_pnt%op%id = nops
 
       name = op_top
       dagger = .false.
@@ -109,7 +74,10 @@ c      allocate (list_pnt%op)
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate (list_pnt%op)
-     
+      list_pnt%op%id = nops
+c      op_info%id_cnt = op_info%id_cnt+1
+c      list_pnt%op%id = op_info%id_cnt
+
       name = op_tbar
       ! we define an excitation operator to ensure same
       ! storage sequence as for T
@@ -135,6 +103,9 @@ c      allocate (list_pnt%op)
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate (list_pnt%op)
+      list_pnt%op%id = nops
+c      op_info%id_cnt = op_info%id_cnt+1
+c      list_pnt%op%id = op_info%id_cnt
      
       name = op_omg
       ! same as T
@@ -159,6 +130,9 @@ c      allocate (list_pnt%op)
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate (list_pnt%op)
+      list_pnt%op%id = nops
+c      op_info%id_cnt = op_info%id_cnt+1
+c      list_pnt%op%id = op_info%id_cnt
 
       name = op_dia1  ! symmetry 1
       ! same as T
@@ -184,6 +158,9 @@ c      allocate (list_pnt%op)
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate (list_pnt%op)
+      list_pnt%op%id = nops
+c      op_info%id_cnt = op_info%id_cnt+1
+c      list_pnt%op%id = op_info%id_cnt
 
       name = op_ccen
       dagger = .false.

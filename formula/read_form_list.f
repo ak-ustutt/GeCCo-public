@@ -37,6 +37,7 @@
       read(ffform%unit)
 
       form_ptr => form_head
+      nullify(form_ptr%prev)
       do while(rd_formula(ffform,form_ptr))
         if (form_ptr%command.eq.command_end_of_formula) exit
         allocate(form_ptr%next)

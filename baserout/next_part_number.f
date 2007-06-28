@@ -45,6 +45,17 @@
         end if
       end if
 
+      if (nsum.lt.1) then
+        call quit(1,'next_part_number','called with nsum < 1')
+      end if
+
+      ! special case: nsum = 1
+      if (nsum.eq.1) then
+        ipart(1) = inum
+        next_part_number = init
+        return
+      end if
+
       ! start out: nsum-1 times the minimum, rest in last entry
       if (init) then
         ipscr(1:nsum-1)=inummin

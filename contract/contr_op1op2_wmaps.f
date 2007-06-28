@@ -38,7 +38,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 0
 
       logical, intent(in) ::
      &     update

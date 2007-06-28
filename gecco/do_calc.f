@@ -75,6 +75,11 @@ c     &     , ffops(:)
       if (op_info%nops.eq.0)
      &     call quit(0,'do_calc','no operators defined?')
 
+      ! turn linked lists into arrays
+      call update_op_arr(op_info)
+      ! preliminary fix for generating unique operator IDs:
+      op_info%id_cnt = op_info%nops
+
       ifree = mem_setmark(formula_def)
 c      allocate(form_list)
 c      nullify(form_list%fhand)
@@ -83,7 +88,7 @@ c      nullify(form_list%next)
       call init_formula_info(form_info)
       form_info%nform = 0
       ! set up (basic) formulae
-      call set_formulae(form_info,op_info%op_list,op_info%nops)
+      call set_formulae(form_info,op_info,orb_info)
       call update_form_arr(form_info)
       if (form_info%nform.eq.0)
      &     call quit(0,'do_calc','no formula/method defined?')
@@ -158,7 +163,8 @@ c      nullify(form_list%next)
      &           current_act%act%nform,current_act%act%idx_formula,
      &           form_info,op_info,str_info,orb_info)
             ! Solve system of non-linear equations
-            call solve_nleq(current_act%act%nop_out,
+            call solve_nleq(current_act%act%nop_opt,
+     &                      current_act%act%nop_out,
      &                      current_act%act%idxopdef_out,
      &                      current_act%act%idxopfile_out,
      &                      current_act%act%nop_in,

@@ -102,4 +102,12 @@
      &     idist(nel)
         end function
 
+        logical function next_dist2(idist,nel,imn,imx,inc)
+        implicit none
+        integer, intent(in) ::
+     &     inc, nel, imn(nel), imx(nel)
+        integer, intent(inout) ::
+     &     idist(nel)
+        end function
+
       end interface

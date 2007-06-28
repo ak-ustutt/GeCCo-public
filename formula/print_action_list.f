@@ -37,12 +37,16 @@
             write(luout,*) 'Setup diagonal preconditioner'
           case (iaction_solve_leq)
             write(luout,*) 'Solve system of linear equations'
+            write(luout,*) ' # sets: ',current%act%nop_opt
           case (iaction_solve_nleq)
             write(luout,*) 'Solve system of non-linear equations'
+            write(luout,*) ' # sets: ',current%act%nop_opt
           case (iaction_solve_evp)
             write(luout,*) 'Solve eigenvalue problem'
+            write(luout,*) ' # sets: ',current%act%nop_opt
           case (iaction_solve_gevp)
             write(luout,*) 'Solve general eigenvalue problem'
+            write(luout,*) ' # sets: ',current%act%nop_opt
           case default
             write(luout,*) 'action = ',current%act%action_type
             call quit(0,'print_action_list','unknown action')

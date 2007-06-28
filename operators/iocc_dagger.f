@@ -14,8 +14,13 @@
 
       integer, intent(in) :: iocc_in(ngastp,2)
 
-      iocc_dagger(1:ngastp,1) = iocc_in(1:ngastp,2)
-      iocc_dagger(1:ngastp,2) = iocc_in(1:ngastp,1)
+      ! function result and argument may be the same:
+      integer :: iscr(ngastp,2)
+
+      iscr(1:ngastp,1) = iocc_in(1:ngastp,2)
+      iscr(1:ngastp,2) = iocc_in(1:ngastp,1)
+
+      iocc_dagger = iscr
 
       return
       end

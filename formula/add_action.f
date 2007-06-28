@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine add_action(act_list,nactions,
-     &     action_type,nop_in,nop_out,
+     &     action_type,nop_in,nop_out,nop_opt,
      &     idxopdef_in,idxopdef_out,
      &     idxopfile_in,idxopfile_out,
      &     nform,idx_formula)
@@ -26,7 +26,7 @@
       integer, intent(in) ::
      &     action_type
       integer, intent(in) ::
-     &     nop_in,nop_out,
+     &     nop_in,nop_out,nop_opt,
      &     idxopdef_in(*),idxopdef_out(*),
      &     idxopfile_in(2,*),idxopfile_out(2,*),
      &     nform,
@@ -65,6 +65,7 @@
           else
             equal = equal.and.current%act%nop_out.eq.0
           end if
+          equal = equal.and.current%act%nop_opt.eq.nop_opt
           if (nform.gt.0) then
             equal = equal.and.current%act%nform.eq.nform
             equal = equal.and.
@@ -118,8 +119,15 @@
      &                idxopfile_in(1:2,1:nop_in)
         end if
 
+        ! number of optimized operators must be subset of
+        ! all output operators:
+        ! 1 set of optimized ops + 1 set of residuals
+        if(2*nop_opt.gt.nop_out)
+     &       call quit(1,'add_action','2*nop_opt > nop_out ?')
+
         current%act%nop_out = 0
         if (nop_out.gt.0) then
+          current%act%nop_opt = nop_opt
           current%act%nop_out = nop_out
           current%act%idxopdef_out(1:nop_out) =
      &                idxopdef_out(1:nop_out)

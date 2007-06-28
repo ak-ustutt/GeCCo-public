@@ -114,6 +114,9 @@
       end do
       ! and finally: the inactive fock matrix in symmetry-blocked
       ! upper triangular form
+c dbg
+      write(luout,*) 'nfock = ',nfock
+c dbg
       read (lusir) xfock(1:nfock)
 
       call file_close_keep(ffsir)

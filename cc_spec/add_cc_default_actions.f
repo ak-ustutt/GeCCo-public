@@ -32,7 +32,8 @@ c      include 'ifc_operators.h'
      &     ops(nops)
 
       integer ::
-     &     idxham, idxtop, idxdia, idxccen, idxccrs, idxomg, idum
+     &     idxham, idxtop, idxdia, idxccen, idxccrs, idxomg, idxhhat,
+     &     idum, isim
   
       ! explicit interface does not work with ifort
       integer, external ::
@@ -49,7 +50,7 @@ c      include 'ifc_operators.h'
       
       ! import Hamiltonian
       call add_action(act_list,nactions,
-     &     iaction_import,0,1,
+     &     iaction_import,0,1,0,
      &     idum,(/idxham/),
      &     idum,(/(/idxham,1/)/),
      &     0,idum
@@ -57,19 +58,31 @@ c      include 'ifc_operators.h'
 
       ! set up diagonal preconditioner
       call add_action(act_list,nactions,
-     &     iaction_setup_prc,2,1,
+     &     iaction_setup_prc,2,1,0,
      &     (/idxtop,idxham/),(/idxdia/),
      &     (/(/idxtop,1/),(/idxham,1/)/),(/(/idxdia,1/)/),
      &     0,idum
      &     )
 
-      ! solve ground-state equations
-      call add_action(act_list,nactions,
-     &     iaction_solve_nleq,2,2,
+      call get_argument_value('calculate.routes','simtraf',ival=isim)
+
+      if (isim.eq.0) then
+        ! solve ground-state equations
+        call add_action(act_list,nactions,
+     &     iaction_solve_nleq,2,2,1,
      &     (/idxdia,idxham/),(/idxtop,idxomg/),
      &     (/(/idxdia,1/),(/idxham,1/)/),(/(/idxtop,1/),(/idxomg,1/)/),
      &     2,(/idxccen,idxccrs/)
      &     )
+      else
+        idxhhat = idx_oplist(op_hhat,ops,nops)
+        call add_action(act_list,nactions,
+     &     iaction_solve_nleq,2,3,1,
+     &     (/idxdia,idxham/),(/idxtop,idxomg,idxhhat/),
+     &     (/(/idxdia,1/),(/idxham,1/)/),(/(/idxtop,1/),(/idxomg,1/)/),
+     &     2,(/idxccen,idxccrs/)
+     &     )
+      end if
 
       return
       end

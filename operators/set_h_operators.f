@@ -28,7 +28,7 @@
      &     name*(len_opname)
       integer ::
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
-     &     gamma, iarr(1), iformal
+     &     gamma, iarr(1), iformal, isim
  0    integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
@@ -48,6 +48,7 @@ c        nullify(list_pnt%op)
       allocate (list_pnt%op)
 
       nops = nops+1
+      list_pnt%op%id = nops
       ! new entry: the Hamiltonian
       name = op_ham
       dagger = .false.
@@ -66,6 +67,27 @@ c        nullify(list_pnt%op)
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      call get_argument_value('calculate.routes','simtraf',ival=isim)
+      if (isim.gt.0) then
+        ! new entry: the Hhat operator
+        nops = nops+1
+        allocate(list_pnt%next)
+        list_pnt%next%prev => list_pnt
+        list_pnt => list_pnt%next
+        nullify(list_pnt%next)
+        allocate (list_pnt%op)
+        list_pnt%op%id = nops
+c        op_info%id_cnt = op_info%id_cnt+1
+c        list_pnt%op%id = op_info%id_cnt
+
+        name = op_hhat
+
+        call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &       min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
+     &       orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      endif  
  
       return
 *----------------------------------------------------------------------*

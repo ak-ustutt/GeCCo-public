@@ -39,6 +39,8 @@
       oper%n_occ_cls = 1
 
       oper%ihpvca_occ(1:ngastp,1:2,1) = iocc(1:ngastp,1:2)
+      oper%formal = .false.
+      oper%formal_blk(1) = .false.
 
       oper%ica_occ(1,1) = ielsum(iocc(1,1),ngastp)
       oper%ica_occ(2,1) = ielsum(iocc(1,2),ngastp)

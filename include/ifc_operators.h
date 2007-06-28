@@ -47,4 +47,39 @@
      &       ops(nops)
         end function
 
+        logical function iocc_equal(iocc,dagi,jocc,dagj)
+        implicit none
+        include 'opdim.h'
+        logical, intent(in) ::
+     &      dagi, dagj
+        integer, intent(in) ::
+     &     iocc(ngastp,2), jocc(ngastp,2)
+        end function
+
+        logical function iocc_nonzero(iocc)
+        implicit none
+        include 'opdim.h'
+        integer ::
+     &     iocc(ngastp,2)
+        end function
+
+        logical function iocc_bound(cbound,iocc,dagi,jocc,dagj)      
+        implicit none
+        include 'opdim.h'
+        character, intent(in) ::
+     &       cbound*(*)
+        logical, intent(in) ::
+     &       dagi, dagj
+        integer, intent(in) ::
+     &       iocc(ngastp,2), jocc(ngastp,2)
+        end function
+
+c        integer function op_type(op)
+c        implicit none
+c        include 'opdim.h'
+c        include 'def_operator.h'
+c        type(operator), intent(in) ::
+c     &       op
+c	end function
+
       end interface

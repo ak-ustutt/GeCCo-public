@@ -28,10 +28,12 @@ c      include 'ifc_operators.h'
 
       type(formula_list), pointer ::
      &     list_pnt
+      type(formula), pointer ::
+     &     cclg_pnt
 
       integer ::
      &     idxham, idxtop, idxtba, idxr12, idxc12, idxrba, idxcba, 
-     &     idxomg, idxecc
+     &     idxomg, idxecc, idxhhat
 
       ! explicit interface does not work with ifort
       integer, external ::
@@ -92,20 +94,21 @@ c      include 'ifc_operators.h'
   
       ! set up Lagrangian
       form_info%nform = form_info%nform+1
+      cclg_pnt => list_pnt%form
       call set_cc_lagrangian(list_pnt%form,nops,ops,
      &     idxecc,idxham,idxtba,idxtop,idxr12,idxc12,idxrba,idxcba)
       ! is Hhat operator on list?
-c      idxhhat = idx_oplist(op_hhat,ops,nops)
-c      if (idxhhat.gt.0) then
-c        form_info%nform = form_info%nform+1
-c        allocate(list_pnt%next)
-c        list_pnt%next%prev => list_pnt
-c        list_pnt => list_pnt%next
-c        nullify(list_pnt%next)
-c        allocate(list_pnt%form)
-c        call set_hhat(list_pnt%form,nops,ops,
-c     &       idxhhat,idxham,idxtop)
-c      end if
+      idxhhat = idx_oplist(op_hhat,ops,nops)
+      if (idxhhat.gt.0) then
+        form_info%nform = form_info%nform+1
+        allocate(list_pnt%next)
+        list_pnt%next%prev => list_pnt
+        list_pnt => list_pnt%next
+        nullify(list_pnt%next)
+        allocate(list_pnt%form)
+        call set_hhat(list_pnt%form,nops,ops,
+     &       idxhhat,idxham,idxtop)
+      end if
 
       ! set up CC-energy 
       ! (part of Lagragian that does not depend on TBAR)
@@ -116,7 +119,7 @@ c      end if
       nullify(list_pnt%next)
       allocate(list_pnt%form)
       call form_indep(list_pnt%form,
-     &     list_pnt%prev%form,
+     &     cclg_pnt,
      &     label_ccen0,title_ccen0,
      &     1,idxtba,
      &     ops,nops)
@@ -129,7 +132,7 @@ c      end if
       nullify(list_pnt%next)
       allocate(list_pnt%form)
 c      call file_init(list_pnt%form%fhand,name_vectfunc,ftyp_sq_unf,0)
-      call form_deriv(list_pnt%form,list_pnt%prev%prev%form,
+      call form_deriv(list_pnt%form,cclg_pnt,
      &     label_ccrs0,title_ccrs0,
      &     1,idxtba,0,idxomg,
      &     ops,nops)

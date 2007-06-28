@@ -19,6 +19,8 @@
       
       integer ::
      &     ica, ica_i, ica_j, ihpv
+      integer ::
+     &     iocc_scr(ngastp,2)
 
       do ica = 1,2
         ica_i = ica
@@ -26,10 +28,12 @@
         if (dagi) ica_i = 3-ica
         if (dagj) ica_j = 3-ica
         do ihpv = 1,ngastp
-          iocc_overlap(ihpv,ica) =
+          iocc_scr(ihpv,ica) =
      &         min(iocc(ihpv,ica_i),jocc(ihpv,ica_j))
         end do
       end do
+
+      iocc_overlap = iocc_scr
 
       return
       end

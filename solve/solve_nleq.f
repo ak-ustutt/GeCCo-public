@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine solve_nleq(
-     &     nop_out,idxop_out,idxfil_out,
+     &     nop_opt,nop_out,idxop_out,idxfil_out,
      &     nop_in,idxop_in,idxfil_in,
      &     ffform_opt,
      &     op_info,str_info,strmap_info,orb_info)
@@ -12,9 +12,11 @@
 *     energy and residual
 *
 *     nop_opt               number of operators to be optimized
-*     nop_out = 2*nop_opt               
+*     nop_out               total number of modified operators returned
 *     idxop_out(1..nop_opt) indices of those operators in ops(nops)
 *     idxop_out(nop_opt+1,..)   residuals
+*     idxop_out(2*nop_opt+1,...) other operators updated/modified
+*                           energy, intermediates for reuse
 *     idxfil_out(2,nop_out) indices and records
 *     
 *     nop_in                number of operators that need be set on input
@@ -42,7 +44,7 @@
       include 'ifc_memman.h'
 
       integer, intent(in) ::
-     &     nop_in, nop_out,
+     &     nop_in, nop_out, nop_opt,
      &     idxop_in(nop_in), idxfil_in(2,nop_in),
      &     idxop_out(nop_out), idxfil_out(2,nop_out)
       type(filinf), intent(inout) ::
@@ -59,9 +61,9 @@
       logical ::
      &     conv
       integer ::
-     &     imacit, imicit, imicit_tot, iprint, task, ifree, nop_opt, iop
+     &     imacit, imicit, imicit_tot, iprint, task, ifree, iop, nintm
       real(8) ::
-     &     energy, xresnrm, xret(2)
+     &     energy, xresnrm, xret(10)
       type(operator_array), pointer ::
      &     op_opt(:)
       type(file_array), pointer ::
@@ -74,7 +76,9 @@
 
       ifree = mem_setmark('solve_nleq')
 
-      nop_opt = nop_out/2      
+      ! number of permanent intermediates generated:
+      nintm = nop_out - nop_opt*2
+
       allocate(ffopt(nop_opt),ffdia(nop_opt),
      &     ffgrd(nop_opt),op_opt(nop_opt))
       do iop = 1, nop_opt
@@ -129,8 +133,9 @@
         if (iand(task,1).eq.1.or.iand(task,2).eq.2) then
           call frm_sched(xret,ffform_opt,
      &         op_info,str_info,strmap_info,orb_info)
-          energy =  xret(1)
-          xresnrm = xret(2)
+          ! intermediates should be generated first, so
+          energy =  xret(nintm+1)
+          xresnrm = xret(nintm+2)
         end if
 
         write(luout,'(">>>",i3,f24.12,x,g10.4)')imacit,energy,xresnrm

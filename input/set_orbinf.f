@@ -49,14 +49,14 @@
       caborb=orb_info%caborb 
 
       ! allocate some arrays on orb_info structure
-      allocate(orb_info%ireots(ntoob-caborb),
-     &     orb_info%ireost(ntoob-caborb),orb_info%igamorb(ntoob), 
-     &     orb_info%igasorb(ntoob),orb_info%mostnd(2,nsym,ngas),
+      allocate(orb_info%ireots(ntoob),
+     &     orb_info%ireost(ntoob),orb_info%igamorb(ntoob+caborb), 
+     &     orb_info%igasorb(ntoob+caborb),orb_info%mostnd(2,nsym,ngas),
      &     orb_info%ngas_hpv(ngastp),orb_info%nactt_hpv(ngastp),
      &     orb_info%idx_gas(ngastp),orb_info%ioff_gas(ngastp))
       if(explicit)then
-        allocate(orb_info%xreosym(ntoob),orb_info%xreotyp(ntoob),
-     &       koffs(1:nsym))
+        allocate(orb_info%xreosym(ntoob+caborb),
+     &       orb_info%xreotyp(ntoob+caborb),koffs(1:nsym))
       endif  
 
       ! set the info arrays:
@@ -222,11 +222,11 @@ c      endif
 
         ! generate reverse mapping
         if(iloop.eq.1)then
-          do idx = 1, orb_info%ntoob-caborb
+          do idx = 1, orb_info%ntoob
             orb_info%ireots(orb_info%ireost(idx)) = idx 
           end do
         else
-          do idx = 1, orb_info%ntoob
+          do idx = 1, orb_info%ntoob+caborb
             orb_info%xreotyp(orb_info%xreosym(idx)) = idx 
           end do
         endif  
@@ -234,14 +234,14 @@ c      endif
 
       if (iprint.ge.100) then
         write(luout,*) 'ireost:'
-        call iwrtma(orb_info%ireost,1,ntoob-caborb,1,ntoob-caborb)
+        call iwrtma(orb_info%ireost,1,ntoob,1,ntoob)
         write(luout,*) 'ireots:'
-        call iwrtma(orb_info%ireots,1,ntoob-caborb,1,ntoob-caborb)
+        call iwrtma(orb_info%ireots,1,ntoob,1,ntoob)
         if(explicit)then
           write(luout,*)'xreosym:'
-          call iwrtma(orb_info%xreosym,1,ntoob,1,ntoob)
+          call iwrtma(orb_info%xreosym,1,ntoob+caborb,1,ntoob+caborb)
           write(luout,*)'xreotyp:'
-          call iwrtma(orb_info%xreotyp,1,ntoob,1,ntoob)
+          call iwrtma(orb_info%xreotyp,1,ntoob+caborb,1,ntoob+caborb)
         endif  
       end if
 

@@ -91,7 +91,7 @@
 
       ! external functions
       logical, external ::
-     &     iocc_equal,
+c     &     iocc_equal,
      &     next_part_number, next_part_pair, next_part_triple
       integer, external ::
      &     iopen_nus,
@@ -660,16 +660,13 @@
                         iocc_scr(1:ngastp,1:2) = 0
                         iocc_scr(ihole,2) = iexc_part(iop)
                         iocc_scr(ipart,1) = iexc_part(iop)
-
                         idx = iblk_occ(iocc_scr,.false.,ops(idxtop))
-
                         if (idx.le.0) then
                           write(luout,*) 'occupation not found in list:'
                           write(luout,*) iocc_scr(1:ngastp,1)
                           write(luout,*) iocc_scr(1:ngastp,2)
                           stop 'occupation not found in list (2)'
                         end if
-
                         contr%vertex(ivtxoff+iop)%idx_op = idxtop
                         contr%vertex(ivtxoff+iop)%iblk_op = idx
                         idxarc = idxarc+1
@@ -679,8 +676,7 @@
                         contr%arc(idxarc)%occ_cnt(ihole,1)
      &                       = ihd_part(1,iop)
                         contr%arc(idxarc)%occ_cnt(ipart,2)
-     &                       = ihd_part(2,iop)
-                        
+     &                       = ihd_part(2,iop)                   
                         ! contraction between L and T
                         iocc_ltc = iocc_add(-1,
      &                       contr%arc(idxarc)%occ_cnt,.false.,

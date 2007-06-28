@@ -11,7 +11,7 @@
         integer ::
      &       action_type
         integer ::
-     &       nop_in, nop_out
+     &       nop_in, nop_out, nop_opt
         integer, allocatable ::
      &       idxopdef_in(:), idxopdef_out(:),
      &       idxopfile_in(:,:), idxopfile_out(:,:)

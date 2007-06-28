@@ -127,7 +127,7 @@
 
       orb_info%nsym = nsym
       orb_info%ngas = ngas
-      orb_info%ntoob = norbt+caborb
+      orb_info%ntoob = norbt
       orb_info%caborb = caborb
 
       ! use the data to initialize orb_info structure            
@@ -135,7 +135,7 @@
      &     orb_info%iad_gas(ngas),orb_info%ihpvgas(ngas))
       if(logaux)allocate(orb_info%cab_orb(nsym))
 
-      orb_info%ntoobs(1:nsym) = norb(1:nsym)+linind(1:nsym)
+      orb_info%ntoobs(1:nsym) = norb(1:nsym)
       if (have_frozen) then
         if(logaux)then
           orb_info%iad_gas(1:ngas) = (/1,2,2,2/)
