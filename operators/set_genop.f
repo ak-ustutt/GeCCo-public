@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_genop(op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
      &     iad_gas,hpvxgas,ngas)
 *----------------------------------------------------------------------*
 *     set up occupations for a general operator described by
@@ -14,6 +14,8 @@
 *     irestr:    restriction on subspaces 
 *                min, max. number of operators after completion of
 *                subspace within H/P/V/X, for C/A
+*     iformal:   blocks with this number or more external indices
+*                are considered to be to be purely formal.
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -35,7 +37,7 @@
      &     ngas
       integer, intent(in) ::
      &     absym, casym, gamma, s2, ms,
-     &     min_rank, max_rank, ncadiff
+     &     min_rank, max_rank, ncadiff, iformal
       integer, intent(in) ::
      &     hpvx_mnmx(2,ngastp,2), irestr(2,ngas,2,2),
      &     iad_gas(ngas), hpvxgas(ngas)
@@ -90,6 +92,7 @@
       op%gamt = gamma
       op%s2 =   s2
       op%mst =  ms 
+      op%formal=.true.
 
       ! pass 1: count classes
       ! pass 2: set up occupation information
@@ -99,7 +102,8 @@
         if (ipass.eq.2) then
           allocate(op%ihpvca_occ(ngastp,2,op%n_occ_cls),
      &             op%ica_occ(2,op%n_occ_cls),
-     &             op%igasca_restr(2,ngas,2,2,op%n_occ_cls))
+     &             op%igasca_restr(2,ngas,2,2,op%n_occ_cls),
+     &             op%formal_blk(op%n_occ_cls))
           ifree = mem_register((ngastp*2+2+8*ngas)*op%n_occ_cls,
      &         trim(name)//'_occ')
           ! counters according to number of external indices (R12)
@@ -170,10 +174,16 @@
                 nx = 0
               end if
               n_occls_x012(nx) = n_occls_x012(nx)+1 
+
               if (ipass.eq.2) then
                 ! set occupation of current class
                 idx_occls_x012(nx) = idx_occls_x012(nx)+1
                 idx = idx_occls_x012(nx)
+                ! declare whether this block is formal or not.
+                op%formal_blk(idx)=
+     &               ((c_distr(iextr)+a_distr(iextr)).ge.iformal)
+                op%formal=op%formal.and.op%formal_blk(idx)
+
                 op%ihpvca_occ(1:ngastp,1,idx) = c_distr
                 op%ihpvca_occ(1:ngastp,2,idx) = a_distr
                 op%ica_occ(1,idx) = sum(c_distr(1:ngastp))

@@ -12,7 +12,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest=100
+     &     ntest=00
       logical, intent(in) ::
      &     init,restrict
       integer, intent(in) ::
@@ -52,7 +52,6 @@
         init_loc=.false.
         succ=.true.
 
-
         isum1=0
         isum2=0
         isum3=0
@@ -68,8 +67,14 @@
           succ=succ.and.ipscr2(1,idx).le.inummax.and.
      &         ipscr2(2,idx).le.inummax.and.ipscr2(3,idx).le.inummax
         enddo  
-        if(isum1.ne.inum(1).or.isum2.ne.inum(2).or.isum3.ne.inum(3))
-     &       cycle pn_loop
+        if(isum1.ne.inum(1).or.isum2.ne.inum(2).or.isum3.ne.inum(3))then
+          if(ipscr(1).eq.(inumidx-nsum+1))then
+            succ=.false.
+            exit pn_loop
+          else  
+            cycle pn_loop
+          endif
+        endif
         if(succ)then
           ipart(1:3,1:nsum)=ipscr2(1:3,1:nsum)
           exit pn_loop
@@ -87,6 +92,7 @@
         end if
       end if
 
+c      succ=succ.and.(ipscr(1).ne.(inumidx-nsum+1))
       next_part_triple = succ
 
       return

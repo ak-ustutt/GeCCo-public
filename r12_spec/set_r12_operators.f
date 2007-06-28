@@ -13,6 +13,7 @@
       include 'def_orbinf.h'
       include 'def_operator.h'
       include 'def_operator_list.h'
+      include 'explicit.h'
 
       type(operator_list), intent(inout), target ::
      &     op_list
@@ -28,8 +29,8 @@
      &     name*(len_opname)
       integer ::
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
-     &     gamma, iarr(1), ansatze, min_h_rank, max_h_rank,
-     &     min_p_rank, max_p_rank, min_x_rank, max_x_rank
+     &     gamma, iarr(1),  min_h_rank, max_h_rank,
+     &     min_p_rank, max_p_rank, min_x_rank, max_x_rank, iformal
       integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
@@ -49,10 +50,12 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       allocate(list_pnt%op)  
 
       call get_argument_value('method.R12','ansatz',ival=ansatze)
-      if(ansatze.gt.2.or.ansatze.lt.1)then
+      if(ansatze.eq.2.or.ansatze.lt.1)then
         write(luout,'("Error: Undefined R12 ansatz requested.")')
         stop
       endif
+
+      call get_argument_value('method.R12','triples',ival=trir12)
 
       if(ansatze.eq.1)then
         min_x_rank=2
@@ -60,15 +63,15 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
         min_p_rank=0
         max_p_rank=0
       elseif(ansatze.eq.2)then
+        min_x_rank=0
+        max_x_rank=2
+        min_p_rank=0
+        max_p_rank=2
+      elseif(ansatze.eq.3)then
         min_x_rank=1
         max_x_rank=2
         min_p_rank=0
         max_p_rank=1
-c      elseif(ansatze.eq.3)then
-c        min_x_rank=0
-c        max_x_rank=2
-c        min_p_rank=0
-c        max_p_rank=2
       endif  
       min_h_rank=2
       max_h_rank=2
@@ -85,11 +88,12 @@ c        max_p_rank=2
       min_rank=2
       max_rank=2
       ncadiff=0
+      iformal=max_x_rank
   
       call set_hpvx_and_restr_for_r()
 
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)  
       
       ! New entry: variable coefficient operator associated with R12.
@@ -109,11 +113,16 @@ c        max_p_rank=2
       ms=0
       ncadiff=0
       min_rank=2
-      max_rank=2
+      if(trir12.eq.1)then
+        max_rank=3
+      else  
+        max_rank=2
+      endif
+      iformal=max_rank+1
       call set_hpvx_and_restr_for_c()
       
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       ! New entry: adjoint of linear R12 operator.
@@ -134,12 +143,14 @@ c        max_p_rank=2
       s2=0
       ms=0
       ncadiff=0
-      ! Min. and Max. ranks are still set for required ansatz.
+      min_rank=2
+      max_rank=2
+      iformal=max_x_rank
 
       call set_hpvx_and_restr_for_r()
 
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       ! New entry: variable coefficient operator associated with R12bar.
@@ -159,11 +170,17 @@ c        max_p_rank=2
       ms=0
       ncadiff=0
       min_rank=2
-      max_rank=2
+      if(trir12.eq.1)then
+        max_rank=3
+      else  
+        max_rank=2
+      endif
+      iformal=max_rank+1
+
       call set_hpvx_and_restr_for_c()
       
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       return
@@ -231,11 +248,18 @@ c     &           orbitals.'
 
       ihpv_mnmx(1:2,1:ngastp,1:2)=0
       ihpv_mnmx(1,ihole,1:2)=min_rank
-      ihpv_mnmx(2,ihole,1:2)=max_rank
+      ihpv_mnmx(2,ihole,1:2)=2
+      if(trir12.eq.1)then
+        ihpv_mnmx(2,ihole,2)=3
+        ihpv_mnmx(2,ipart,1)=1
+      endif        
 
       irestr(1:2,1:orb_info%ngas,1:2,1:2)=0
       irestr(1,ihole,1:2,1)=min_rank
       irestr(2,ihole,1:2,1)=max_rank
+      if(trir12.eq.1)then
+        irestr(2,ipart,1:2,1)=1
+      endif  
       
       return
       end subroutine set_hpvx_and_restr_for_c

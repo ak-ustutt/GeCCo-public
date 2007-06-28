@@ -46,6 +46,7 @@
 
       ! loop over occupation classes of op
       do iocc_cls = 1, op%n_occ_cls
+        if(op%formal_blk(iocc_cls))cycle
 
         ! do not forget to init
         op%idx_graph(1:ngastp,1:2,iocc_cls) = 0

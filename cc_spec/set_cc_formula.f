@@ -17,6 +17,7 @@ c      include 'ifc_operators.h'
       include 'def_operator_list.h'
       include 'mdef_formula_info.h'
       include 'par_formnames_gen.h'
+      include 'explicit.h'
 
       type(formula_info), intent(inout) ::
      &     form_info
@@ -31,8 +32,6 @@ c      include 'ifc_operators.h'
       integer ::
      &     idxham, idxtop, idxtba, idxr12, idxc12, idxrba, idxcba, 
      &     idxomg, idxecc
-      logical ::
-     &     explicit
 
       ! explicit interface does not work with ifort
       integer, external ::
@@ -50,11 +49,6 @@ c      include 'ifc_operators.h'
         list_pnt => list_pnt%next
       end if
       allocate (list_pnt%form)
-
-      explicit=.false.
-      if(is_keyword_set('method.R12'))then
-        explicit=.true.
-      endif
 
       idxham = idx_oplist(op_ham,ops,nops)
       if (idxham.le.0)
@@ -98,9 +92,8 @@ c      include 'ifc_operators.h'
   
       ! set up Lagrangian
       form_info%nform = form_info%nform+1
-      call set_cc_lagrangian(list_pnt%form%fhand,nops,ops,
-     &     idxecc,idxham,idxtba,idxtop,idxr12,idxc12,idxrba,idxcba,
-     &     explicit)
+      call set_cc_lagrangian(list_pnt%form,nops,ops,
+     &     idxecc,idxham,idxtba,idxtop,idxr12,idxc12,idxrba,idxcba)
       ! is Hhat operator on list?
 c      idxhhat = idx_oplist(op_hhat,ops,nops)
 c      if (idxhhat.gt.0) then

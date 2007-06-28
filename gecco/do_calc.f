@@ -21,6 +21,8 @@
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'mdef_formula_info.h'
+      include 'explicit.h'
+      include 'ifc_input.h'
 
       type(orbinf), intent(inout) ::
      &     orb_info
@@ -55,6 +57,12 @@ c     &     , ffops(:)
 
       ifree = mem_setmark('do_calc')
       
+      if(is_keyword_set('method.R12').gt.0)then
+        explicit=.true.
+      else
+        explicit=.false.
+      endif  
+
       ! set up orbital info
       call set_orbinf(orb_info,.true.)
 
@@ -63,6 +71,7 @@ c     &     , ffops(:)
       ! set up operators
       op_info%nops = 0
       call set_operators(op_info%op_list,op_info%nops,orb_info)
+
       if (op_info%nops.eq.0)
      &     call quit(0,'do_calc','no operators defined?')
 

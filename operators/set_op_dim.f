@@ -90,6 +90,8 @@
       msmax_last = 0
       occ_cls: do iocc_cls = 1, op%n_occ_cls
 
+        if(op%formal_blk(iocc_cls))cycle
+
         if (ntest.ge.150) then
           write(luout,*) 'class: ',iocc_cls
           call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
@@ -291,6 +293,7 @@
           call iwrtma(op%off_op_occ,op%n_occ_cls,1,op%n_occ_cls,1)
           write(luout,*) 'info per occupation class, IRREP, MS:'
           do iocc_cls = 1, op%n_occ_cls
+            if(op%formal_blk(iocc_cls))cycle
             nexc = min(op%ica_occ(1,iocc_cls),
      &                 op%ica_occ(2,iocc_cls))
             write(luout,*) 'occ-class: ',iocc_cls
@@ -305,6 +308,7 @@
           write(luout,*) 'info per occupation class, DISTR, IRREP, MS:'
           write(luout,*) 'offsets:'
           do iocc_cls = 1, op%n_occ_cls
+            if(op%formal_blk(iocc_cls))cycle
             nexc = min(op%ica_occ(1,iocc_cls),
      &                 op%ica_occ(2,iocc_cls))
             write(luout,*) 'occ-class: ',iocc_cls
@@ -321,6 +325,7 @@
           end do
           write(luout,*) 'distribution IDs:'
           do iocc_cls = 1, op%n_occ_cls
+            if(op%formal_blk(iocc_cls))cycle
             nexc = min(op%ica_occ(1,iocc_cls),
      &                 op%ica_occ(2,iocc_cls))
             write(luout,*) 'occ-class: ',iocc_cls

@@ -74,14 +74,16 @@
       call mem_pushmark()
       ifree = mem_gotomark(operator_def)
       do iop = 1, nops
-        if (ntest.ge.100) write(luout,*) 'iop = ',iop
-        ! allocate graph index
-        allocate(current%op%idx_graph(ngastp,2,current%op%n_occ_cls))
-        ifree = mem_register(maxgraph*(2+4*ngas),
-     &       trim(current%op%name)//'_idxg')
-        call unique_graph(str_info,max_igtyp,current%op,
-     &                    orb_info%ihpvgas,orb_info%ngas)
-        mxmx_igtyp = max(mxmx_igtyp,max_igtyp)
+        if(.not.current%op%formal)then
+          if (ntest.ge.100) write(luout,*) 'iop = ',iop
+          ! allocate graph index
+          allocate(current%op%idx_graph(ngastp,2,current%op%n_occ_cls))
+          ifree = mem_register(maxgraph*(2+4*ngas),
+     &         trim(current%op%name)//'_idxg')
+          call unique_graph(str_info,max_igtyp,current%op,
+     &         orb_info%ihpvgas,orb_info%ngas)
+          mxmx_igtyp = max(mxmx_igtyp,max_igtyp)
+        endif  
         if (iop.lt.nops) current => current%next
       end do
       call mem_popmark()
@@ -120,7 +122,7 @@
       call set_graph(ipass,
      &     str_info,leny,idum,lenwscr,
      &     orb_info%ngas_hpv,orb_info%nactt_hpv,
-     &     orb_info%igamorb,orb_info%mostnd,ngas,nsym)
+     &     orb_info%igamorb,orb_info%mostnd,orb_info%idx_gas,ngas,nsym)
 
       mem = 0
       do igraph = 1, str_info%ngraph
@@ -141,7 +143,7 @@
       call set_graph(ipass,
      &     str_info,leny,iwscr,lenwscr,
      &     orb_info%ngas_hpv,orb_info%nactt_hpv,
-     &     orb_info%igamorb,orb_info%mostnd,ngas,nsym)
+     &     orb_info%igamorb,orb_info%mostnd,orb_info%idx_gas,ngas,nsym)
 
       deallocate(leny,lenwscr,iwscr)      
 

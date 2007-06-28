@@ -182,7 +182,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             int_nonr = int_nonr+1
             ip = iand(ishft(idxpq,-8),imsk08)
             iq = iand(ibuf(ii),imsk08)
-
+            
             idxprqs(1) = ireost(ip)
             idxprqs(3) = ireost(iq)
             igam(1) = igamorb(idxprqs(1))

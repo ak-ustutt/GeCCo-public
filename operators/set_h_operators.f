@@ -28,7 +28,7 @@
      &     name*(len_opname)
       integer ::
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
-     &     gamma, iarr(1)
+     &     gamma, iarr(1), iformal
  0    integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
@@ -59,13 +59,14 @@ c        nullify(list_pnt%op)
       min_rank = 0
       max_rank = 2
       ncadiff = 0
+      iformal=2
 
       call set_hpvx_and_restr_for_h()
 
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
-
+ 
       return
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*

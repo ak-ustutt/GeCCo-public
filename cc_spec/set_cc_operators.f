@@ -27,7 +27,7 @@
      &     name*(len_opname)
       integer ::
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
-     &     gamma, iarr(1), isim
+     &     gamma, iarr(1), isim, iformal
       integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
@@ -95,10 +95,11 @@ c      allocate (list_pnt%op)
       call get_argument_value('method.CC','minexc',ival=min_rank)
       call get_argument_value('method.CC','maxexc',ival=max_rank)
       ncadiff = 0
+      iformal=max_rank+1
       call set_hpvx_and_restr_for_xop()
 
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       ! new entry: the Tbar operator
@@ -120,10 +121,11 @@ c      allocate (list_pnt%op)
       ms = 0
       ! min_rank and max_rank are still set
       ncadiff = 0
+      iformal=max_rank+1
       call set_hpvx_and_restr_for_xop()
 
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       ! new entry: the CC residual OMG
@@ -142,12 +144,12 @@ c      allocate (list_pnt%op)
       gamma = 1
       s2 = 0
       ms = 0
-      ! min_rank and max_rank are still set
+      ! min_rank, max_rank and iformal are still set
       ncadiff = 0
       call set_hpvx_and_restr_for_xop()
 
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       ! new entry: the DIAgonal
@@ -166,12 +168,12 @@ c      allocate (list_pnt%op)
       gamma = 1
       s2 = 0
       ms = 0
-      ! min_rank and max_rank are still set
+      ! min_rank, max_rank and iformal are still set
       ncadiff = 0
       call set_hpvx_and_restr_for_xop()
 
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       ! new entry: the CC-Energy (scalar)
@@ -193,10 +195,11 @@ c      allocate (list_pnt%op)
       min_rank=0
       max_rank=0
       ncadiff = 0
+      iformal=1
       call set_hpvx_and_restr_for_xop()
 
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       return

@@ -47,6 +47,10 @@
       do iop = 1, nops
         if (.not.associated(current%op))
      &       call quit(0,'set_dim_for_ops','buggy operator list (a)')
+        if (current%op%formal) then
+          if (iop.lt.nops) current => current%next
+          cycle
+        end if
 
         allocate(current%op%off_op_occ(current%op%n_occ_cls),
      &           current%op%len_op_occ(current%op%n_occ_cls),
