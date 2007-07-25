@@ -71,7 +71,7 @@ c     &     first, first_str
 
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
-
+      
       if (orb_info%ntoob.gt.255) then
         write(luout,*) 'number of orbitals: ',orb_info%ntoob
         call quit(0,'import_h2_dalton',
@@ -216,6 +216,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
 
             if (ip.eq.iq.or.ir.eq.is) cycle
 
+            ! ip <-> iq.
             idxprqs(1) = ireost(iq)
             idxprqs(3) = ireost(ip)
             igam(1) = igamorb(idxprqs(1))

@@ -6,3 +6,5 @@
      &     motwoint*8 = 'MOTWOINT'
       character, parameter ::
      &     motwolab*8 = 'MOLTWOEL'
+      character, parameter ::
+     &     mo_r*4 = 'MO_R'

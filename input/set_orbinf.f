@@ -178,9 +178,9 @@ c      endif
 
       if (iprint.ge.100) then
         write(luout,*) 'igamorb:'
-        call iwrtma(orb_info%igamorb,1,ntoob,1,ntoob)
+        call iwrtma(orb_info%igamorb,1,ntoob+caborb,1,ntoob+caborb)
         write(luout,*) 'igasorb:'
-        call iwrtma(orb_info%igasorb,1,ntoob,1,ntoob)
+        call iwrtma(orb_info%igasorb,1,ntoob+caborb,1,ntoob+caborb)
         write(luout,*) 'mostnd:'
         do igas = 1, ngas
           write(luout,'(2x,i4,2x,8(x,2i4))')

@@ -10,4 +10,10 @@
      &     op_rba*4   = 'RBAR',
      &     op_c12*1   = 'C',
      &     op_cba*4   = 'CBAR',
-     &     op_ccen*5  = 'E(CC)'
+     &     op_ccen*5  = 'E(CC)',
+     &     op_sop*1   = 'S',
+     &     op_sba*4   = 'SBAR',
+     &     op_omgr12*7= 'OMG-R12',
+     &     op_diar12*7= 'DIA-R12',
+     &     op_rint*7  = 'R12-INT',
+     &     op_rinba*7 = 'R12-IBA'   

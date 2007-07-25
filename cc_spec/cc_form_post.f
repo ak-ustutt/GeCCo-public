@@ -13,6 +13,7 @@
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'def_formula_item_list.h'
+      include 'explicit.h'
 
       type(formula_item), intent(inout), target ::
      &     form
@@ -76,7 +77,11 @@ c        if (fpl_pnt%item%command.eq.4) then
 c          call prt_contr2(luout,fpl_pnt%item%contr,op_info%op_arr)
 c        end if
 c dbg
-        call cc_count_terms(fpl_pnt,idxtop,n_commu)
+        if(explicit)then
+          call r12_count_terms(fpl_pnt,idxtop,n_commu,op_info%op_arr)
+        else  
+          call cc_count_terms(fpl_pnt,idxtop,n_commu)
+        endif  
 
         do while(associated(fpl_pnt%next))
           fpl_pnt => fpl_pnt%next

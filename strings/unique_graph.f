@@ -18,7 +18,7 @@
       include 'def_strinf.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(strinf), intent(inout) ::
      &     str_info
@@ -140,6 +140,7 @@
         end do
         write(luout,*) 'operator->graph assignments:'
         do iocc_cls = 1, op%n_occ_cls
+          if(op%formal_blk(iocc_cls))cycle
           write(luout,'(2x,i3,4x,4i3)') iocc_cls,
      &         op%idx_graph(1:ngastp,1,iocc_cls)
           write(luout,'(5x,4x,4i3)') 

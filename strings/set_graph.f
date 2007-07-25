@@ -59,11 +59,15 @@
         lenwscr(1:3) = 0
       end if
 
+      ! Loop over all graphs.
       do igraph = 1, str_info%ngraph
 
         ihpv = str_info%ispc_typ(igraph)
         nexc = str_info%ispc_occ(igraph)
         most = mostnd(1,1,idx_gas(ihpv))
+
+        ! Generate weights. First pass is used for dimensioning, the
+        ! second for setting the arrays.
 
         if (ipass.eq.1) then
           call weight_gen(ipass,
@@ -93,6 +97,7 @@
         end if
 
         if (ipass.eq.1) then
+          ! Set array sizes.
           leny(2,igraph) = 3*leninf
           leny(3,igraph) = ndis*ngam*(nexc+1)
           leny(4,igraph) = (nexc+1)
@@ -126,7 +131,7 @@
               end do lowest_dss
               
               ! loop over distributions, identify and mark the allowed ones
-              ! and sum up lengthes of allowed distr. to get offset arrays
+              ! and sum up lengths of allowed distr. to get offset arrays
               do idis = 1, ndis
                 if (allow_sbsp_dis(idss,nexc,ngas_hpv(ihpv),
      &                       str_info%igas_restr(1,1,2,igraph))) then

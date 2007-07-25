@@ -107,10 +107,13 @@
             
             ! get the lengthes of strings for current Ms, IRREP
             lena=str_info%g(iga)%lenstr_gm(isym,idxms)
-            if (lena.le.0) cycle gam_loop
-                            
             lenc=str_info%g(igc)%lenstr_gm(isym,idxms)
-            if (lenc.le.0) cycle gam_loop
+            if (lena.le.0.or.lenc.le.0) then
+              ! do not forget these statements:
+              isymoff = isymoff + ntoobs(isym)*(ntoobs(isym)+1)/2
+              imo_off = imo_off + ntoobs(isym)
+              cycle gam_loop
+            end if
                           
             ! loop over subspaces which belong to current type
             ! of A space (and which are active)

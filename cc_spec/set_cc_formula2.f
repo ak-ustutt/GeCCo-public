@@ -18,6 +18,7 @@ c      include 'def_operator_list.h'
       include 'mdef_formula_info.h'
       include 'ifc_input.h'
 c      include 'ifc_operators.h'
+      include 'explicit.h'
 
       type(formula_info), intent(inout) ::
      &     form_info
@@ -32,7 +33,8 @@ c      include 'ifc_operators.h'
      &     cclg_pnt
 
       integer ::
-     &     idxham, idxtop, idxtba, idxomg, idxecc, idxhhat
+     &     idxham, idxtop, idxtba, idxomg, idxecc, idxhhat, idxrba,
+     &     idxr12, idxcba, idxc12, idxsop, idxsba
 
       ! explicit interface does not work with ifort
       integer, external ::
@@ -72,6 +74,33 @@ c      include 'ifc_operators.h'
      &     call quit(1,'set_cc_formula','operator not on list: '
      &     //trim(op_omg))
 
+      if(explicit)then
+        idxr12=idx_oplist2(op_r12,op_info)
+        if(idxr12.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_r12))
+        idxrba=idx_oplist2(op_rba,op_info)
+        if(idxrba.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_rba))
+        idxc12=idx_oplist2(op_c12,op_info)
+        if(idxc12.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_c12))
+        idxcba=idx_oplist2(op_cba,op_info)
+        if(idxcba.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_cba))
+        idxsop=idx_oplist2(op_sop,op_info)
+        if(idxsop.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_sop))
+        idxsba=idx_oplist2(op_sba,op_info)
+        if(idxsba.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_sba))               
+      endif
+
       ! set up Lagrangian
       form_info%nform = form_info%nform+1
       cclg_pnt => list_pnt%form
@@ -79,8 +108,14 @@ c dbg
 c      call test_formgen2(op_info,orb_info)
 c dbg
 
-      call set_cc_lagrangian2(list_pnt%form,op_info,
-     &     idxham,idxtba,idxtop,idxecc)
+      if(explicit)then
+        call set_r12_lagrangian(list_pnt%form,op_info,
+     &       idxham,idxtba,idxrba,idxcba,idxtop,idxr12,idxc12,idxecc,
+     &       idxsop,idxsba)
+      else
+        call set_cc_lagrangian2(list_pnt%form,op_info,
+     &       idxham,idxtba,idxtop,idxecc)
+      endif  
 
       ! is Hhat operator on list?
       idxhhat = idx_oplist2(op_hhat,op_info)
@@ -91,23 +126,36 @@ c dbg
         list_pnt => list_pnt%next
         nullify(list_pnt%next)
         allocate(list_pnt%form)
-        call set_hhat2(list_pnt%form,op_info,
-     &       idxhhat,idxham,idxtop)
+        if(explicit)then
+          call set_hhat2(list_pnt%form,op_info,
+     &         idxhhat,idxham,idxsop)
+        else  
+          call set_hhat2(list_pnt%form,op_info,
+     &         idxhhat,idxham,idxtop)
+        endif  
       end if
 c
       ! set up CC-energy 
-      ! (part of Lagragian that does not depend on TBAR)
+      ! (part of Lagrangian that does not depend on TBAR)
       form_info%nform = form_info%nform+1
       allocate(list_pnt%next)
       list_pnt%next%prev => list_pnt
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate(list_pnt%form)
-      call form_indep2(list_pnt%form,
-     &     cclg_pnt,
-     &     label_ccen0,title_ccen0,
-     &     1,idxtba,
-     &     op_info)
+      if(explicit)then
+        call form_indep2(list_pnt%form,
+     &       cclg_pnt,
+     &       label_ccen0,title_ccen0,
+     &       1,idxsba,
+     &       op_info)
+      else
+        call form_indep2(list_pnt%form,
+     &       cclg_pnt,
+     &       label_ccen0,title_ccen0,
+     &       1,idxtba,
+     &       op_info)
+      endif  
 
       ! set up CC-residual (=vector function)
       form_info%nform = form_info%nform+1
@@ -116,10 +164,17 @@ c
       list_pnt => list_pnt%next
       nullify(list_pnt%next)
       allocate(list_pnt%form)
-      call form_deriv2(list_pnt%form,cclg_pnt,
-     &     label_ccrs0,title_ccrs0,
-     &     1,idxtba,0,idxomg,
-     &     op_info)
-
+      if(explicit)then
+        call form_deriv2(list_pnt%form,cclg_pnt,
+     &       label_ccrs0,title_ccrs0,
+     &       1,idxtba,0,idxomg,
+     &       op_info)
+      else
+        call form_deriv2(list_pnt%form,cclg_pnt,
+     &       label_ccrs0,title_ccrs0,
+     &       1,idxtba,0,idxomg,
+     &       op_info)
+      endif
+  
       return
       end

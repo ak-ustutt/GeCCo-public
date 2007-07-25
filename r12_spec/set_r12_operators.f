@@ -30,7 +30,8 @@
       integer ::
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
      &     gamma, iarr(1),  min_h_rank, max_h_rank,
-     &     min_p_rank, max_p_rank, min_x_rank, max_x_rank, iformal
+     &     min_p_rank, max_p_rank, min_x_rank, max_x_rank, iformal,
+     &     tkmax
       integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
@@ -50,7 +51,7 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       allocate(list_pnt%op)  
 
       call get_argument_value('method.R12','ansatz',ival=ansatze)
-      if(ansatze.eq.2.or.ansatze.lt.1)then
+      if(ansatze.gt.3.or.ansatze.lt.1)then
         write(luout,'("Error: Undefined R12 ansatz requested.")')
         stop
       endif
@@ -127,6 +128,33 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
+      ! New entry: compound operator S=T+CR
+      nops=nops+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev=>list_pnt
+      list_pnt=>list_pnt%next
+      nullify(list_pnt%next)
+      allocate(list_pnt%op)
+      list_pnt%op%id = nops
+
+      name=op_sop
+      dagger=.false.
+      absym=0
+      casym=0
+      gamma=1
+      s2=0
+      ms=0
+      ncadiff=0
+      call get_argument_value('method.CC','minexc',ival=min_rank)
+      call get_argument_value('method.CC','maxexc',ival=tkmax)
+      max_rank=max(2,tkmax)
+      call set_hpvx_and_restr_for_s()
+      iformal=2
+      
+      call set_sop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
+     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
       ! New entry: adjoint of linear R12 operator.
       nops=nops+1
       allocate(list_pnt%next)
@@ -183,6 +211,139 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
 
       call set_hpvx_and_restr_for_c()
       
+      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
+     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      ! New entry: adjoint of compound operator S=T+CR
+      nops=nops+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev=>list_pnt
+      list_pnt=>list_pnt%next
+      nullify(list_pnt%next)
+      allocate(list_pnt%op)
+      list_pnt%op%id = nops
+
+      name=op_sba
+      dagger=.true.
+      absym=0
+      casym=0
+      gamma=1
+      s2=0
+      ms=0
+      ncadiff=0
+      call get_argument_value('method.CC','minexc',ival=min_rank)
+      call get_argument_value('method.CC','maxexc',ival=tkmax)
+      max_rank=max(2,tkmax)
+      call set_hpvx_and_restr_for_s()
+      iformal=2
+      
+      call set_sop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
+     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      ! New entry: the CC-R12 residual. Same as S.
+      nops=nops+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev=>list_pnt
+      list_pnt=>list_pnt%next
+      nullify(list_pnt%next)
+      allocate(list_pnt%op)
+      list_pnt%op%id = nops
+
+      name=op_omgr12
+      dagger=.false.
+      absym=0
+      casym=0
+      gamma=1
+      s2=0
+      ms=0
+      ncadiff=0
+      call get_argument_value('method.CC','minexc',ival=min_rank)
+      call get_argument_value('method.CC','maxexc',ival=tkmax)
+      max_rank=max(2,tkmax)
+      call set_hpvx_and_restr_for_s()
+      iformal=2
+      
+      call set_sop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
+     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      ! New entry: the CC-R12 diagonal. Same as S.
+      nops=nops+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev=>list_pnt
+      list_pnt=>list_pnt%next
+      nullify(list_pnt%next)
+      allocate(list_pnt%op)
+      list_pnt%op%id = nops
+
+      name=op_diar12
+      dagger=.false.
+      absym=0
+      casym=0
+      gamma=1
+      s2=0
+      ms=0
+      ncadiff=0
+      call get_argument_value('method.CC','minexc',ival=min_rank)
+      call get_argument_value('method.CC','maxexc',ival=tkmax)
+      max_rank=max(2,tkmax)
+      call set_hpvx_and_restr_for_s()
+      iformal=2
+      
+      call set_sop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
+     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      ! New entry: the R12 integrals (<ab|r12|cd>)
+      nops=nops+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev=>list_pnt
+      list_pnt=>list_pnt%next
+      nullify(list_pnt%next)
+      allocate(list_pnt%op)
+      list_pnt%op%id = nops
+
+      name=op_rint
+      dagger=.false.
+      absym=0
+      casym=0
+      gamma=1
+      s2=0
+      ms=0
+      ncadiff=0
+      min_rank=2
+      max_rank=2
+      call set_hpvx_and_restr_for_int()
+      iformal=2
+
+      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
+     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      ! New entry: the R12 integrals' adjoint (<ab|r12|cd>)
+      nops=nops+1
+      allocate(list_pnt%next)
+      list_pnt%next%prev=>list_pnt
+      list_pnt=>list_pnt%next
+      nullify(list_pnt%next)
+      allocate(list_pnt%op)
+      list_pnt%op%id = nops
+
+      name=op_rinba
+      dagger=.true.
+      absym=0
+      casym=0
+      gamma=1
+      s2=0
+      ms=0
+      ncadiff=0
+      min_rank=2
+      max_rank=2
+      call set_hpvx_and_restr_for_int()
+      iformal=2
+
       call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
@@ -267,5 +428,73 @@ c     &           orbitals.'
       
       return
       end subroutine set_hpvx_and_restr_for_c
+
+c-----------------------------------------------------------------------
+      subroutine set_hpvx_and_restr_for_s()
+c-----------------------------------------------------------------------
+      implicit none
+
+      integer::
+     &     ica,igastp,igas
+
+      ! Constraints on the operator are made depending on which ansatz
+      ! is being used.
+      do ica = 1, 2
+        do igastp = 1, ngastp
+          if (orb_info%nactt_hpv(igastp).gt.0.and.
+     &        ((ica.eq.1.and.(igastp.eq.ipart.or.igastp.eq.ivale)).or.
+     &         (ica.eq.2.and.(igastp.eq.ihole.or.igastp.eq.ivale)) ))
+     &           then
+            ihpv_mnmx(1,igastp,ica) = 0
+            ihpv_mnmx(2,igastp,ica) = max_rank
+          else
+            ihpv_mnmx(1,igastp,ica) = 0
+            ihpv_mnmx(2,igastp,ica) = 0
+          end if
+        end do
+      end do
+      irestr(1:2,1:orb_info%ngas,1:2,1:2) = 0
+      do ica = 1, 2
+        do igas = 1, orb_info%ngas
+          irestr(1,igas,ica,1) = 0
+          irestr(2,igas,ica,1) = max_rank
+        end do
+      end do
+  
+      return
+      end subroutine set_hpvx_and_restr_for_s
+
+c-----------------------------------------------------------------------
+      subroutine set_hpvx_and_restr_for_int()
+c-----------------------------------------------------------------------
+      implicit none
+
+      integer::
+     &     igastp,igas
+
+      ihpv_mnmx(1:2,1:orb_info%ngas,1:2)=0
+      
+      ihpv_mnmx(1:2,ihole,2)=2
+      
+      do igastp=1,ngastp
+        if(igastp.ne.ivale)then
+          ihpv_mnmx(1,igastp,1)=0
+          ihpv_mnmx(2,igastp,1)=max_rank
+        endif  
+      enddo
+
+      irestr(1:2,1:orb_info%ngas,1:2,1:2)=0
+      
+      irestr(1:2,ihole,2,1)=max_rank
+      
+      do igas=1,orb_info%ngas
+        if(igastp.ne.ivale)then
+          irestr(1,igas,1,1)=0
+          irestr(2,igas,1,1)=max_rank
+        endif  
+      enddo
+
+      return
+      end subroutine set_hpvx_and_restr_for_int
 
       end

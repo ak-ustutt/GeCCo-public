@@ -36,6 +36,7 @@
       iwssg(0:nelmax,1:nspc) = 0
       iyssg(1:nelmax,1:nspc) = 0
 
+      ! Form vertex weights first.
       do ispc = 1, nspc
         do iel = 0, nelmax
 

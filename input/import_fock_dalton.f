@@ -62,6 +62,7 @@
       do iocc_cls = 1, hop%n_occ_cls
         if (max(hop%ica_occ(1,iocc_cls),hop%ica_occ(2,iocc_cls)).gt.1)
      &       cycle
+        if(hop%formal_blk(iocc_cls))cycle
         nh1reo = nh1reo + hop%len_op_occ(iocc_cls)
       end do
 

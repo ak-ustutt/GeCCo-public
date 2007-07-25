@@ -17,6 +17,7 @@
       include 'def_orbinf.h'
       include 'par_opnames_gen.h'
       include 'mdef_operator_info.h'
+      include 'explicit.h'
 
       integer, intent(in) ::
      &     idxop, idxffop
@@ -38,7 +39,7 @@
 
       op_target => op_info%op_arr(idxop)%op
       opfil_target => op_info%opfil_arr(idxffop)%fhand
-
+      
       select case(trim(env_type))
       case ('dalton','DALTON')
         ! what to import?
@@ -46,6 +47,15 @@
         case (op_ham)
           call import_hamint_dalton(op_target,opfil_target,
      &         str_info,orb_info)
+  
+        ! Get other integrals needed for R12 calculations.
+        case(op_rint)
+          if(.not.op_target%formal)then
+            call import_r12_dalton(op_target,opfil_target,
+     &           str_info,orb_info) 
+          else
+            write(luout,*)'R12 operator is purely formal.'
+          endif  
         case default
           call quit(1,'import_op_el','DALTON: cannot handle operator '
      &         //trim(op_target%name))
@@ -60,7 +70,7 @@
         call quit(1,'import_op_el','unknown type '//trim(env_type))
       end select
 
-      if (ntest.ge.10) then
+      if (ntest.ge.10.and.(.not.op_target%formal)) then
         write(luout,*) 'imported operator:'
         if (ntest.ge.10) ipri = 1
         if (ntest.ge.50) ipri = 2

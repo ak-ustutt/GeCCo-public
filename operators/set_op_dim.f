@@ -47,7 +47,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       
       integer, intent(in) ::
      &     ipass, ngam
@@ -83,6 +83,7 @@
         write(luout,*) ' set_op_dim'
         write(luout,*) '============'
         write(luout,*) ' ipass = ',ipass
+        write(luout,*) ' operator ',trim(op%name)
       end if
 
       idxstr = 0

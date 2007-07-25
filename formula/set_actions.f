@@ -17,6 +17,7 @@
       include 'def_action.h'
       include 'def_action_list.h'
       include 'mdef_formula_info.h'
+      include 'explicit.h'
 
       type(action_list), intent(inout) ::
      &     act_list
@@ -43,11 +44,21 @@
       allocate(ops(nops))
       call op_list2arr(op_list,ops,nops)
 
-      if (is_keyword_set('method.CC').gt.0) then
-        call add_cc_default_actions(act_list,nactions,
-     &                              ops,nops,
-     &                              form_info)
-      end if
+      ! Set the actions required to perform certain tasks.
+      if(.not.explicit)then
+        ! Normal CC GS energy calculations.
+        if (is_keyword_set('method.CC').gt.0) then
+          call add_cc_default_actions(act_list,nactions,
+     &         ops,nops,
+     &         form_info)
+          
+        end if
+      else
+        ! CC-R12 GS energy calculations
+        call add_r12_default_actions(act_list,nactions,
+     &       ops,nops,
+     &       form_info)
+      endif  
 
       deallocate(ops)
 
