@@ -63,6 +63,13 @@
      &     iocc(ngastp,2)
         end function
 
+        logical function iocc_zero(iocc)
+        implicit none
+        include 'opdim.h'
+        integer ::
+     &     iocc(ngastp,2)
+        end function
+
         logical function iocc_bound(cbound,iocc,dagi,jocc,dagj)      
         implicit none
         include 'opdim.h'

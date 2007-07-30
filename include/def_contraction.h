@@ -1,4 +1,7 @@
 ! need to include before: opdim.h      
+      integer, parameter ::
+     &      ld_inffac = 5
+
       type cntr_arc
 
          integer ::
@@ -13,7 +16,7 @@
  
         integer ::  ! type of operator defining vertex
      &     idx_op,  !  index
-     &     iblk_op  !  block
+     &     iblk_op  !  block (super vertices: compound vertex/block index)
 !     &     ncntr    ! number of contractions
 
       end type cntr_vtx
@@ -28,6 +31,7 @@
      &       fac       ! prefactor
 
         integer ::
+     &       nsupvtx,  ! number of super-vertices (joined vertices)
      &       nvtx,     ! number of vertices (=operators)
      &       narc,     ! number of arcs (=interaction lines/raw contractions)
      &       nfac,     ! number of factors (factorization info)
@@ -39,6 +43,9 @@
      &       vertex(:) ! description of vertices
         type(cntr_arc), pointer ::
      &       arc(:)    ! description of arcs
+        integer, pointer :: !  super-vertex info:
+     &       joined(:,:), !  vertices per supervertex (nvtx,nsupvtx)
+     &       svertex(:)   !  supervertex to which vertex belongs (nvtx)
         integer, pointer ::
      &       inffac(:,:) ! factorization info (4,nfac)
 *----------------------------------------------------------------------*

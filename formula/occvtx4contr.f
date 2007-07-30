@@ -39,7 +39,12 @@
           occ_vtx(1:ngastp,1:2,idx) = 0
         else
           op_occ => op_info%op_arr(idxop)%op%ihpvca_occ
-          occ_vtx(1:ngastp,1:2,idx) = op_occ(1:ngastp,1:2,iblkop)
+          if (.not.op_info%op_arr(idxop)%op%dagger) then
+            occ_vtx(1:ngastp,1:2,idx) = op_occ(1:ngastp,1:2,iblkop)
+          else
+            occ_vtx(1:ngastp,1,idx) = op_occ(1:ngastp,2,iblkop)
+            occ_vtx(1:ngastp,2,idx) = op_occ(1:ngastp,1,iblkop)
+          end if
         end if
       end do
 

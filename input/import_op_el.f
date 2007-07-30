@@ -4,6 +4,7 @@
      &     env_type,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     import matrix elements for operator idxop from environment
+*     note: idxffop is obsolete now
 *----------------------------------------------------------------------*
 
       implicit none
@@ -37,7 +38,14 @@
      &     opfil_target
 
       op_target => op_info%op_arr(idxop)%op
-      opfil_target => op_info%opfil_arr(idxffop)%fhand
+      ! init file for operator with standard name
+      !                opfil_target is dummy
+      call assign_file_to_op(idxop,.true.,opfil_target,
+     &                       1,1,1,
+     &                       1,op_info)
+
+      opfil_target => op_info%opfil_arr(idxop)%fhand
+cold      opfil_target => op_info%opfil_arr(idxffop)%fhand
 
       select case(trim(env_type))
       case ('dalton','DALTON')

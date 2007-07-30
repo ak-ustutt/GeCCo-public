@@ -20,7 +20,7 @@
      &     closeit
       integer ::
      &     ifree, len_op, nblk, nblkmax, nbuff, idxst, idxnd,
-     &     idum, iblk
+     &     idum, iblk, idisc_off
 
       real(8), pointer ::
      &     buffer(:)
@@ -41,6 +41,9 @@
         call quit(1,'zeroop','not even 1 record fits into memory?')
       end if
 
+      ! offset on file (if more than one instance of operator ex.)
+      idisc_off = ffop%length_of_record*(ffop%current_record-1)
+
       if (.not.ffop%buffered) then
 
         len_op = op%len_op
@@ -52,8 +55,8 @@
 
         buffer(1:nbuff) = 0d0
 
-        idxst = 1
-        do while(idxst.le.len_op)
+        idxst = idisc_off+1
+        do while(idxst.le.idisc_off+len_op)
           idxnd = min(len_op,idxst-1+nbuff)
           call put_vec(ffop,buffer,idxst,idxnd)  
           idxst = idxnd+1
@@ -82,7 +85,7 @@
           do iblk = 1, op%n_occ_cls
             if (ffop%incore(iblk).le.0) then
               len_op = op%len_op_occ(iblk)
-              idxst = op%off_op_occ(iblk)+1
+              idxst = idisc_off+op%off_op_occ(iblk)+1
               len_op = idxst-1+len_op
               do while(idxst.le.len_op)
                 idxnd = min(len_op,idxst-1+nbuff)

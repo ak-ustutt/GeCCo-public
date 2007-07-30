@@ -1,57 +1,45 @@
 *----------------------------------------------------------------------*
-      subroutine set_cc_operators(op_list,nops,orb_info)
+      subroutine set_cc_operators(op_info,orb_info)
 *----------------------------------------------------------------------*
 *     hard-wired set-up of the basic operators needed for the
 *     coupled-cluster Lagrangian
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
+      include 'cc_routes.h'
       include 'ifc_input.h'
       include 'par_opnames_gen.h'
       include 'stdunit.h'
       include 'def_orbinf.h'
-      include 'def_operator.h'
-      include 'def_operator_list.h'
+      include 'mdef_operator_info.h'
 
-      type(operator_list), intent(inout), target ::
-     &     op_list
-      integer, intent(inout) ::
-     &     nops
+      type(operator_info), intent(inout), target ::
+     &     op_info
       type(orbinf) ::
      &     orb_info
 
-      type(operator_list), pointer ::
-     &     list_pnt
+c      type(operator_list), pointer ::
+c     &     list_pnt
+      type(operator), pointer ::
+     &     op_pnt, top_pnt, tbar_pnt, ham_pnt, cclg_pnt
       logical ::
      &     dagger
       character ::
      &     name*(len_opname)
       integer ::
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
-     &     gamma, iarr(1), isim
+     &     gamma, iarr(1), isim, idx
       integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
-      ! advance to end of operator list:
-      list_pnt => op_list
-      do while (associated(list_pnt%next))
-        list_pnt => list_pnt%next
-      end do
-      ! is last entry already in use?
-      if (associated(list_pnt%op)) then
-        allocate(list_pnt%next)
-        list_pnt%next%prev => list_pnt
-        list_pnt => op_list%next
-        nullify(list_pnt%next)
-c        nullify(list_pnt%op)
-      end if
-      allocate (list_pnt%op)
-c      op_info%id_cnt = op_info%id_cnt+1
-c      list_pnt%op%id = op_info%id_cnt
+      integer, external ::
+     &     idx_oplist2
 
-      nops = nops+1
-      list_pnt%op%id = nops
       ! new entry: the Hamiltonian
+      call add_operator(op_ham,op_info)
+      idx = idx_oplist2(op_ham,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+
       name = op_ham
       dagger = .false.
       absym = 0
@@ -64,52 +52,27 @@ c      list_pnt%op%id = op_info%id_cnt
       ncadiff = 0
       call set_hpvx_and_restr_for_h()
 
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+      call set_genop(op_pnt,name,dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       ! use e^{-T1}He^{T1}?
       call get_argument_value('calculate.routes','simtraf',ival=isim)
       if (isim.gt.0) then
-        ! new entry: the Hhat operator
-        nops = nops+1
-        allocate(list_pnt%next)
-        list_pnt%next%prev => list_pnt
-        list_pnt => list_pnt%next
-        nullify(list_pnt%next)
-        allocate (list_pnt%op)
-        list_pnt%op%id = nops
-c        op_info%id_cnt = op_info%id_cnt+1
-c        list_pnt%op%id = op_info%id_cnt
-
-        name = op_hhat
-c        dagger = .false.
-c        absym = 0
-c        casym = 0
-c        gamma = 1
-c        s2 = 0
-c        ms = 0
-c        min_rank = 0
-c        max_rank = 2
-c        ncadiff = 0
-c        call set_hpvx_and_restr_for_h()
-
-        call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &       min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
-     &       orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+        call add_operator(op_hhat,op_info)
+        idx = idx_oplist2(op_hhat,op_info)
+        op_pnt => op_info%op_arr(idx)%op
+        idx = idx_oplist2(op_ham,op_info)
+        ham_pnt => op_info%op_arr(idx)%op
+        call clone_operator(op_pnt,ham_pnt,orb_info)
 
       end if
 
       ! new entry: the T operator
-      nops = nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev => list_pnt
-      list_pnt => list_pnt%next
-      nullify(list_pnt%next)
-      allocate (list_pnt%op)
-      list_pnt%op%id = nops
-c      op_info%id_cnt = op_info%id_cnt+1
-c      list_pnt%op%id = op_info%id_cnt
+      call add_operator(op_top,op_info)
+      idx = idx_oplist2(op_top,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      top_pnt => op_pnt
 
       name = op_top
       dagger = .false.
@@ -123,105 +86,41 @@ c      list_pnt%op%id = op_info%id_cnt
       ncadiff = 0
       call set_hpvx_and_restr_for_xop()
 
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+      call set_genop(op_pnt,name,dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       ! new entry: the Tbar operator
-      nops = nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev => list_pnt
-      list_pnt => list_pnt%next
-      nullify(list_pnt%next)
-      allocate (list_pnt%op)
-      list_pnt%op%id = nops
-c      op_info%id_cnt = op_info%id_cnt+1
-c      list_pnt%op%id = op_info%id_cnt
-
-      name = op_tbar
+      call add_operator(op_tbar,op_info)
+      idx = idx_oplist2(op_tbar,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,top_pnt,orb_info)
       ! we define an excitation operator to ensure same
       ! storage sequence as for T
-      dagger = .true.  ! but we consider the conjugate
-      absym = 0
-      casym = 0
-      gamma = 1
-      s2 = 0
-      ms = 0
-      ! min_rank and max_rank are still set
-      ncadiff = 0
-      call set_hpvx_and_restr_for_xop()
+      op_pnt%dagger = .true.  ! but we consider the conjugate
 
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
 
       ! new entry: the CC residual OMG
-      nops = nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev => list_pnt
-      list_pnt => list_pnt%next
-      nullify(list_pnt%next)
-      allocate (list_pnt%op)
-      list_pnt%op%id = nops
-c      op_info%id_cnt = op_info%id_cnt+1
-c      list_pnt%op%id = op_info%id_cnt
+      call add_operator(op_omg,op_info)
+      idx = idx_oplist2(op_omg,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,top_pnt,orb_info)
      
-      name = op_omg
-      ! same as T
-      dagger = .false.
-      absym = 0
-      casym = 0
-      gamma = 1
-      s2 = 0
-      ms = 0
-      ! min_rank and max_rank are still set
-      ncadiff = 0
-      call set_hpvx_and_restr_for_xop()
-
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
-
       ! new entry: the DIAgonal
-      nops = nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev => list_pnt
-      list_pnt => list_pnt%next
-      nullify(list_pnt%next)
-      allocate (list_pnt%op)
-      list_pnt%op%id = nops
-c      op_info%id_cnt = op_info%id_cnt+1
-c      list_pnt%op%id = op_info%id_cnt
+      call add_operator(op_dia1,op_info)
+      idx = idx_oplist2(op_dia1,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,top_pnt,orb_info)
 
-      name = op_dia1  ! symmetry 1
-      ! same as T
-      dagger = .false.
-      absym = 0
-      casym = 0
-      gamma = 1
-      s2 = 0
-      ms = 0
-      ! min_rank and max_rank are still set
-      ncadiff = 0
-      call set_hpvx_and_restr_for_xop()
 
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
-
-      ! new entry: the CC-Energy (scalar)
+      ! new entry: the CC-Lagrangian (scalar)
       ! looks like overkill, but makes life easier
-      nops = nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev => list_pnt
-      list_pnt => list_pnt%next
-      nullify(list_pnt%next)
-      allocate (list_pnt%op)
-      list_pnt%op%id = nops
-c      op_info%id_cnt = op_info%id_cnt+1
-c      list_pnt%op%id = op_info%id_cnt
+      call add_operator(op_cclg,op_info)
+      idx = idx_oplist2(op_cclg,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      cclg_pnt => op_pnt
 
-      name = op_ccen
+      name = op_cclg
       dagger = .false.
       absym = 0
       casym = 0
@@ -233,9 +132,34 @@ c      list_pnt%op%id = op_info%id_cnt
       ncadiff = 0
       call set_hpvx_and_restr_for_xop()
 
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+      call set_genop(op_pnt,name,dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
      &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+
+      ! ... and the CC energy
+      call add_operator(op_ccen,op_info)
+      idx = idx_oplist2(op_ccen,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,cclg_pnt,orb_info)
+
+      if (solve_tbar) then
+
+        ! new entry: the Tbar.A transform ...
+        call add_operator(op_tbar_a,op_info)
+        idx = idx_oplist2(op_tbar_a,op_info)
+        op_pnt => op_info%op_arr(idx)%op
+        ! same as tbar
+        idx = idx_oplist2(op_tbar,op_info)
+        tbar_pnt => op_info%op_arr(idx)%op
+        call clone_operator(op_pnt,tbar_pnt,orb_info)
+
+        ! ... and the RHS for the tbar-equations (eta)
+        call add_operator(op_eta,op_info)
+        idx = idx_oplist2(op_eta,op_info)
+        op_pnt => op_info%op_arr(idx)%op
+        call clone_operator(op_pnt,tbar_pnt,orb_info)
+
+      end if
 
       return
 *----------------------------------------------------------------------*

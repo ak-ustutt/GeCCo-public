@@ -86,9 +86,9 @@ c      include 'def_filinf.h'
 
       nterms = 0
       do while(rd_contr(luinput,contr,idxinp))
-        
+
         do icmpnd = 1, ncmpnd
-          call contr_deriv2(conder,nder,contr,op_info%op_arr,
+          call contr_deriv2(conder,nder,contr,op_info,
      &         idxder(icmpnd),idxmlt(icmpnd),idxres)
 
           cur_conder => conder

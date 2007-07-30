@@ -5,6 +5,8 @@
      &                      str_info,orb_info)
 *----------------------------------------------------------------------*
 *     driver routine for setting up a diagonal preconditioner
+*
+*     idxffprc and idxffop are obsolete
 *----------------------------------------------------------------------*
 
       implicit none
@@ -60,8 +62,17 @@
       opham => op_info%op_arr(idxham)%op
       opprc => op_info%op_arr(idxprc)%op
       opop  => op_info%op_arr(idxop)%op
-      ffopham => op_info%opfil_arr(idxffham)%fhand
-      ffopprc => op_info%opfil_arr(idxffprc)%fhand
+      ffopham => op_info%opfil_arr(idxham)%fhand
+
+      if (.not.associated(ffopham))
+     &     call quit(1,'set_prc4op','no file handle defined for '//
+     &                  trim(opham%name))
+
+      ! initialize file for preconditioner (standard name)
+      call assign_file_to_op(idxprc,.true.,ffopprc,
+     &                       1,1,1,
+     &                       0,op_info)
+      ffopprc => op_info%opfil_arr(idxprc)%fhand
 
       if (iprlvl.ge.1)
      &     write(luout,*) 'set up diagonal for ',trim(opop%name),

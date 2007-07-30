@@ -36,7 +36,12 @@
           ! get graph type
           igtyp = ngastp*(iocc(igastp,ica)-1) + igastp
           ! number of graphs with same type
-          ngr4typ = str_info%gtab(1,igtyp)
+          if (igtyp.le.str_info%max_igtyp) then
+            ngr4typ = str_info%gtab(1,igtyp)
+          else
+            ngr4typ = 0
+          end if
+          idxgraph = -1
           ! check restrictions
           gr4typ: do igr4typ = 1, ngr4typ
             ! actual index of graph

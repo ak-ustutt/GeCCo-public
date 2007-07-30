@@ -35,20 +35,15 @@
 
       if (nvtx.gt.0) then
         contr_tgt%vertex(1:nvtx) = contr_src%vertex(1:nvtx)
-      else
-        nullify(contr_tgt%vertex)
       end if
 
       if (narc.gt.0) then
         contr_tgt%arc(1:narc) = contr_src%arc(1:narc)
-      else
-        nullify(contr_tgt%arc)
       end if
 
       if (nfac.gt.0) then
-        contr_tgt%inffac(1:4,1:nfac) = contr_src%inffac(1:4,1:nfac)
-      else
-        nullify(contr_tgt%inffac)
+        contr_tgt%inffac(1:ld_inffac,1:nfac) =
+     &       contr_src%inffac(1:ld_inffac,1:nfac)
       end if
 
       return

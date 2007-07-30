@@ -1,27 +1,30 @@
 *----------------------------------------------------------------------*
-      subroutine prt_contr2(luout,contr,ops)
+      subroutine prt_contr2(luout,contr,op_info)
 *----------------------------------------------------------------------*
 *     write info on contraction onto unit luout
-*     new version with ops being a pointer list
+*     new version with op_info
 *----------------------------------------------------------------------*
 
       implicit none
 
       include 'opdim.h'
-      include 'def_operator.h'
-      include 'def_operator_array.h'
+      include 'mdef_operator_info.h'
       include 'def_contraction.h'
 
       integer, intent(in) ::
      &     luout
       type(contraction), intent(in) ::
      &     contr
-      type(operator_array), intent(in) ::
-     &     ops(*)
+      type(operator_info), intent(in) ::
+     &     op_info
+
+      type(operator_array), pointer ::
+     &     ops(:)
       
       integer ::
      &     idx, idxph
 
+      ops => op_info%op_arr
       write(luout,*) '+++ contraction info +++'
       if (contr%idx_res.gt.0) then
         write(luout,*) ' name (index) and block of result: ',

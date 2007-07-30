@@ -1,0 +1,256 @@
+*----------------------------------------------------------------------*
+      subroutine leqc_core(iter,
+     &       task,iroute,xrsnrm,
+     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
+     &       nincore,lenbuf,ffscr,
+     &       xbuf1,xbuf2,xbuf3,
+     &       opti_info,opti_stat)
+*----------------------------------------------------------------------*
+*     core driver for LEQ solver
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'stdunit.h'
+      include 'def_filinf.h'
+      include 'def_file_array.h'
+      include 'def_optimize_info.h'
+      include 'def_optimize_status.h'
+      include 'ifc_memman.h'
+
+      integer, parameter ::
+     &     ntest = 100
+
+      integer, intent(inout) ::
+     &     task
+      real(8), intent(inout) ::
+     &     xrsnrm(*)
+      integer, intent(inout) ::
+     &     iter
+      integer, intent(in) ::
+     &     iroute, nincore, lenbuf
+
+      type(file_array), intent(in) ::
+     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
+      type(filinf), intent(in) ::
+     &     ffscr
+
+      type(optimize_info), intent(in) ::
+     &     opti_info
+      type(optimize_status), intent(inout), target ::
+     &     opti_stat
+
+      real(8), intent(inout) ::
+     &     xbuf1(*), xbuf2(*), xbuf3(*)
+
+* local
+      logical ::
+     &     zero_vec(opti_stat%ndim_vsbsp)
+      integer ::
+     &     idx, iroot, irhs,  nred, nadd, nnew, irecscr,
+     &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
+     &     ndim_save, ndel, iopt, lenscr, ifree
+      real(8) ::
+     &     cond, xdum
+      real(8), pointer ::
+     &     gred(:), vred(:), mred(:),
+     &     xmat1(:), xmat2(:), xvec(:)
+      integer, pointer ::
+     &     ndim_rsbsp, ndim_vsbsp, iord_rsbsp(:), iord_vsbsp(:),
+     &     nwfpar(:),
+     &     ipiv(:), iconv(:)
+      type(filinf), pointer ::
+     &     ffrsbsp, ffvsbsp
+
+      integer, external ::
+     &     ioptc_get_sbsp_rec
+
+      if (ntest.ge.100)
+     &     call write_title(luout,wst_dbg_subr,'leqc_core entered')
+
+      nopt = opti_info%nopt
+      nroot = opti_info%nroot
+      mxsub = opti_stat%mxdim_sbsp
+      mred => opti_stat%sbspmat(1:)
+      gred => opti_stat%sbspmat(mxsub**2+1:)
+      vred => opti_stat%sbspmat(2*mxsub**2+1:)
+      ndim_rsbsp => opti_stat%ndim_rsbsp
+      ndim_vsbsp => opti_stat%ndim_vsbsp
+      iord_rsbsp => opti_stat%iord_rsbsp
+      iord_vsbsp => opti_stat%iord_vsbsp
+      ffrsbsp => opti_stat%ffrsbsp(1)%fhand
+      ffvsbsp => opti_stat%ffvsbsp(1)%fhand
+      nwfpar => opti_info%nwfpar
+
+      if (nopt.gt.1)
+     &     call quit(1,'leqc_core','not yet adapted for nopt>1')
+
+      ! check for previously converged roots
+      ifree = mem_alloc_int(iconv,nopt*nroot,'LEQ_conv')
+      idx = 0
+      do iopt = 1, nopt
+        do iroot = 1, nroot
+          idx = idx+1
+          iconv(idx) = 0
+          if (iter.gt.1.and.xrsnrm(idx).lt.opti_info%thrgrd(iopt))
+     &         iconv(idx) = 1
+        end do
+      end do
+
+      iopt = 1  ! preliminary
+      if (ndim_vsbsp.ne.ndim_rsbsp)
+     &     call quit(1,'leqc_core','subspace dimensions differ?')
+      nred = ndim_vsbsp
+      ! update reduced space:
+      ! ffvsbsp and ffrsbsp point to ff_trv(iopt)%fhand ...
+      call optc_update_redsp3
+     &       (mred,gred,nred,nroot,mxsub,
+     &       opti_stat%nadd,opti_stat%ndel,
+     &       iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,ffrhs(iopt)%fhand,
+     &       nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
+
+      ! first iteration: identify number of zero-vectors
+      if (iter.eq.1) then
+        do iroot = 1, nroot
+          zero_vec(iroot) = .true.
+          do irhs = 1, nroot
+            zero_vec(iroot) =
+     &           zero_vec(iroot).and.gred(iroot+(irhs-1)*nroot).eq.0d0
+          end do
+        end do
+      else
+        zero_vec(1:opti_stat%ndim_vsbsp) = .false.
+      end if
+
+      ! ------------------------
+      !    solve reduced LEQ
+      ! ------------------------ 
+      
+      ! allocate some scratch 
+      ! (automatically deallocated after leaving leq_control() )
+      lenmat = nred*nred
+      ifree = mem_alloc_real(xmat1,lenmat,'LEQ_mat')
+      ifree = mem_alloc_real(xvec,nred,'LEQ_vec')
+      ifree = mem_alloc_int (ipiv,nred,'LEQ_piv')
+
+      ! get a copy of the subspace matrix
+      xmat1(1:lenmat) = mred(1:lenmat)
+
+      ! condition number and pivot vector
+      call dgeco(xmat1,nred,nred,ipiv,cond,xvec)
+
+      if (ntest.ge.10) write(luout,*)'dimension ,condition number: ',
+     &         nred,cond
+
+      if (ntest.ge.50) then
+        write(luout,*) 'Factorized matrix from dgeco:'
+        call wrtmat2(xmat1,nred,nred,nred,nred)
+        write(luout,*) 'Pivot array:'
+        call iwrtma(ipiv,1,nred,1,nred)
+      end if
+
+      if (cond.lt.1d-20)
+     &     call quit(1,'leqc_core',
+     &     'bad condition number, something must be wrong!')
+
+      do iroot = 1, nroot
+        idx = (iroot-1)*mxsub+1
+        xvec(1:nred) = gred(idx:idx-1+nred)
+
+        job = 0
+        call dgesl(xmat1,nred,nred,ipiv,xvec,job)
+
+        if (ntest.ge.50) then
+          write(luout,*) 'subspace solution for root # ',iroot
+          call wrtmat2(xvec,nred,1,nred,1)
+        end if
+
+        vred(idx:idx-1+nred) = xvec(1:nred)
+      end do
+
+      irecscr = 1
+      do iroot = 1, nroot
+        ! assemble residual in full space
+        if (nincore.ge.2) then
+          call vec_from_da(ffrhs(iopt)%fhand,iroot,xbuf1,nwfpar)
+        else
+          call da_sccpvec(ffrhs(iopt)%fhand,iroot,
+     &                    ffscr,iroot,
+     &                    1d0,nwfpar,xbuf1,lenbuf)
+        end if
+
+        idx = (iroot-1)*mxsub + 1
+        call optc_expand_vec(vred(idx),ndim_rsbsp,xrsnrm(iroot),.true.,
+     &       ffscr,irecscr,1d0,ffrsbsp,iord_rsbsp,
+     &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+
+        ! not yet converged? increase record counter
+        if (xrsnrm(iroot).gt.opti_info%thrgrd(iopt)) irecscr = irecscr+1 
+
+      end do
+      
+      ! number of new directions
+      nnew = irecscr-1
+
+      if (nnew.gt.0) then
+
+        ! reduced space exhausted?
+        if (nred+nnew.gt.mxsub) then
+          call quit(1,'leqc_core','baustelle')
+          ! set ndel
+        end if
+
+        ! divide new directions by preconditioner
+        if (nincore.ge.2) then
+          call vec_from_da(ffdia(iopt)%fhand,1,xbuf2,nwfpar)
+          do iroot = 1, nnew
+            call vec_from_da(ffscr,iroot,xbuf1,nwfpar)
+            call diavc2(xbuf1,xbuf1,xbuf2,0d0,nwfpar)
+            call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
+          end do
+        else
+          do iroot = 1, nnew
+c            ! request (nroot-iroot+1)th-last root 
+c            irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
+c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
+            call da_diavec(ffscr,iroot,0d0,
+     &                     ffscr,iroot,1d0,
+     &                      ffdia,1,0d0,-1d0,
+     &                      nwfpar,xbuf1,xbuf2,lenbuf)
+          end do
+        end if
+
+        ! orthogonalize new directions to existing subspace
+        ! and add linear independent ones to subspace
+        call optc_orthvec(nadd,
+     &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,zero_vec,
+     &                  ffscr,nnew,
+     &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
+
+        ! set nadd
+        if (nadd.eq.0)
+     &       call quit(0,'leqc_core',
+     &       'solver in problems: only linear dependent '//
+     &       'new directions?')
+        opti_stat%nadd = nadd
+
+        ! |Mv> subspace organisation should be identical to |v> subsp.
+        ndim_rsbsp = ndim_vsbsp
+        iord_rsbsp = iord_vsbsp
+
+      else
+        ! if all converged: assemble vectors 
+
+        do iroot = 1, nroot
+
+          idx = (iroot-1)*mxsub + 1
+          call optc_expand_vec(vred(idx),ndim_vsbsp,xdum,.false.,
+     &         ffopt,iroot,1d0,ffvsbsp,iord_vsbsp,
+     &         nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+
+        end do
+
+      end if
+
+      return
+      end
+

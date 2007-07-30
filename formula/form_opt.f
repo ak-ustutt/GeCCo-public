@@ -51,6 +51,8 @@
 
       iprint = max(ntest,iprlvl)
 
+      call write_title(luout,wst_section,'Formula optimization')
+
       ! initialize list
       allocate(form_head)
       form_ptr => form_head
@@ -63,13 +65,19 @@
       ! ----------------------
       ! read in formula files:
       ! ----------------------
+      if (iprint.gt.0)
+     &     write(luout,'(x,a)') 'Reading in:'
+
       do icat = 1, nfcat
 c dbg
-        print *,'idxform(icat) = ',idxform(icat)
-        print *,'>',trim(form_info%form_arr(idxform(icat))%form%label)
-        print *,'>',
-     &       trim(form_info%form_arr(idxform(icat))%form%fhand%name)
+c        print *,'idxform(icat) = ',idxform(icat)
+c        print *,'>',trim(form_info%form_arr(idxform(icat))%form%label)
+c        print *,'>',
+c     &       trim(form_info%form_arr(idxform(icat))%form%fhand%name)
 c dbg
+      if (iprint.gt.0)
+     &     write(luout,'(2x,"--",x,a)')
+     &       trim(form_info%form_arr(idxform(icat))%form%label)
         cur_ffile => form_info%form_arr(idxform(icat))%form%fhand
         if (lentitle.lt.form_maxlen_comment) then
           if (icat.eq.1) then
@@ -94,6 +102,9 @@ c dbg
 
       if (is_keyword_set('method.CC')) then
         call get_argument_value('calculate.routes','simtraf',ival=isim)
+        if (iprlvl.gt.0)
+     &       write(luout,'(2x,a)')
+     &       'I will factor out the e^-T1 H e^T1 intermediate ...'
         if (isim.gt.0)
      &       call cc_form_hhat_replace(form_head,
      &                                 form_info,op_info)
@@ -103,11 +114,13 @@ c dbg
       ! find optimal factorization for each term
       ! ----------------------------------------
 c      form_ptr => form_head
+      if (iprint.gt.0)
+     &     write(luout,'(2x,a)')
+     &       'Now looking for the optimal factorization of terms ...'
       call factorize(form_head,op_info,str_info,orb_info)
 
       if (iprint.ge.10) then
-        write(luout,*) 'Optimized formula:'
-        write(luout,*) '=================='
+        call write_title(luout,wst_around_double,'Optimized formula:')
         call print_form_list(luout,form_head,op_info)
       end if
 

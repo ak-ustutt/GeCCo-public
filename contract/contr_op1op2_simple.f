@@ -3,6 +3,7 @@
      &     update,ffop1op2,xret,type_xret,
      &     op1,op2,op1op2,
      &     iblkop1,iblkop2,iblkop1op2,
+     &     idoffop1,idoffop2,idoffop1op2,
      &     iocc_ext1,iocc_ext2,iocc_cnt,
      &     irst_op1,irst_op2,irst_op1op2,
      &     mstop1,mstop2,mstop1op2,
@@ -36,7 +37,8 @@
       include 'def_orbinf.h'
       include 'def_filinf.h'
       include 'ifc_memman.h'
-
+      include 'ifc_operators.h'
+      
       integer, parameter ::
      &     ntest = 000
 
@@ -49,6 +51,7 @@
       integer, intent(in) ::
      &     type_xret,
      &     iblkop1, iblkop2, iblkop1op2,
+     &     idoffop1,idoffop2,idoffop1op2,
      &     iocc_ext1(ngastp,2), iocc_ext2(ngastp,2), iocc_cnt(ngastp,2),
      &     irst_op1(*), irst_op2(*), irst_op1op2(*),
      &     mstop1,mstop2,mstop1op2,
@@ -83,8 +86,9 @@
       real(8) ::
      &     cpu, sys, cpu0, sys0, cpu00, sys00
 
-      integer, pointer ::
-     &     iocc_op1(:,:), iocc_op2(:,:), iocc_op1op2(:,:)
+      integer ::
+     &     iocc_op1(ngastp,2), iocc_op2(ngastp,2), iocc_op1op2(ngastp,2)
+
       real(8), pointer ::
      &     xop1(:), xop2(:), xop1op2(:)
       real(8), pointer ::
@@ -120,10 +124,10 @@
         write(luout,*) '============================='
       end if
       if (ntest.ge.10) then
-        write(luout,*) 'ffop1:   ',ffop1%name(1:len_trim(ffop1%name))
-        write(luout,*) 'ffop2:   ',ffop2%name(1:len_trim(ffop2%name))
-        write(luout,*) 'ffop1op2:',
-     &       ffop1op2%name(1:len_trim(ffop1op2%name))
+        write(luout,*) 'ffop1:   ',trim(ffop1%name),' idoff: ',idoffop1
+        write(luout,*) 'ffop2:   ',trim(ffop2%name),' idoff: ',idoffop2
+        write(luout,*) 'ffop1op2:',trim(ffop1op2%name),
+     &                                           ' idoff: ',idoffop1op2
         write(luout,*) 'xfac = ',xfac
         if (type_xret.ne.0)
      &       write(luout,*) 'xret on entry = ',xret(1)
@@ -161,12 +165,24 @@
         lenop1op2 = 1
       end if
 
-      iocc_op1 => op1%ihpvca_occ(1:ngastp,1:2,iblkop1)
-      iocc_op2 => op2%ihpvca_occ(1:ngastp,1:2,iblkop2)
-      if (iblkop1op2.gt.0) then
-        iocc_op1op2 => op1op2%ihpvca_occ(1:ngastp,1:2,iblkop1op2)
+      if (.not.op1%dagger) then
+        iocc_op1 = op1%ihpvca_occ(1:ngastp,1:2,iblkop1)
       else
-        allocate(iocc_op1op2(ngastp,2))
+        iocc_op1 = iocc_dagger(op1%ihpvca_occ(1:ngastp,1:2,iblkop1))
+      end if
+      if (.not.op2%dagger) then
+        iocc_op2 = op2%ihpvca_occ(1:ngastp,1:2,iblkop2)
+      else
+        iocc_op2 = iocc_dagger(op2%ihpvca_occ(1:ngastp,1:2,iblkop2))
+      end if
+      if (iblkop1op2.gt.0) then
+        if (.not.op1op2%dagger) then
+          iocc_op1op2 = op1op2%ihpvca_occ(1:ngastp,1:2,iblkop1op2)
+        else
+          iocc_op1op2 = iocc_dagger(
+     &         op1op2%ihpvca_occ(1:ngastp,1:2,iblkop1op2))
+        end if
+      else
         iocc_op1op2(1:ngastp,1:2) = 0
       end if
 
@@ -179,7 +195,8 @@
         bufop1 = .false.
         ifree = mem_alloc_real(xbf1,lenop1,'xbf1')
         xop1 => xbf1
-        call get_vec(ffop1,xop1,idxst_op1,idxst_op1-1+lenop1)
+        call get_vec(ffop1,xop1,idoffop1+idxst_op1,
+     &                          idoffop1+idxst_op1-1+lenop1)
       end if
       if (ffop2%buffered.and.ffop2%incore(iblkop2).gt.0) then
         bufop2 = .true.
@@ -188,7 +205,8 @@
         bufop2 = .false.
         ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
         xop2 => xbf2
-        call get_vec(ffop2,xop2,idxst_op2,idxst_op2-1+lenop2)
+        call get_vec(ffop2,xop2,idoffop2+idxst_op2,
+     &                          idoffop2+idxst_op2-1+lenop2)
       end if
 
       if (ntest.ge.100) write(luout,*) ' bufop1/2: ',bufop1,bufop2
@@ -204,8 +222,8 @@
           xop1op2 => xbf12
           if (update) then
             ! read from disc
-            call get_vec(ffop1op2,xop1op2,idxst_op1op2,
-     &                                  idxst_op1op2-1+lenop1op2)
+            call get_vec(ffop1op2,xop1op2,idoffop1op2+idxst_op1op2,
+     &                        idoffop1op2+idxst_op1op2-1+lenop1op2)
           else
             ! init with zero
             xop1op2(1:lenop1op2) = 0d0
@@ -262,7 +280,6 @@ c      if (mod(isignsum,2).eq.1) casign = -1d0
 c dbg
 c      print *,'casign after CA: ',casign
 c dbg
-
 
       ! minimum Ms for ...
       msbnd(1,1) = -ielsum(iocc_op1,ngastp) ! operator 1
@@ -570,11 +587,10 @@ c     &                   write(luout,*) 'calling blk1blk2',
 
       ! put result to disc
       if (.not.bufop1op2) then
-        call put_vec(ffop1op2,xop1op2,idxst_op1op2,
-     &                             idxst_op1op2-1+lenop1op2)
+        call put_vec(ffop1op2,xop1op2,idoffop1op2+idxst_op1op2,
+     &                           idoffop1op2+idxst_op1op2-1+lenop1op2)
       end if
 
-      if (iblkop1op2.eq.0) deallocate(iocc_op1op2)
       ifree = mem_flushmark()
 
       if (ntest.ge.100) then

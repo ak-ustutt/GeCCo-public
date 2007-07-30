@@ -61,7 +61,7 @@
         iblk_tgt = fl_tgt_current%contr%iblk_res
         if (ntest.ge.100) then
           write(luout,*) 'current term:'
-          call prt_contr2(luout,fl_tgt_current%contr,op_info%op_arr)
+          call prt_contr2(luout,fl_tgt_current%contr,op_info)
         end if
 
         if (.not.associated(fl_tgt_current%next))
@@ -86,7 +86,7 @@
               if (ntest.ge.100) then
                 write(luout,*) 'found equal term:'
                 call prt_contr2(luout,fl_tgt_current%contr,
-     &               op_info%op_arr)
+     &               op_info)
                 write(luout,*) 'now summing and deleting'
               end if
               fl_tgt_current%contr%fac =

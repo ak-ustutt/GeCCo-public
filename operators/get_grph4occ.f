@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine get_grph4occ(idx_gr,iocc,irst,
-     &     str_info,ihpvgas,ngas)
+     &     str_info,ihpvgas,ngas,error_exit)
 *----------------------------------------------------------------------*
 *     get graphs for each HPV/CA from occupation + restriction
 *----------------------------------------------------------------------*
@@ -15,6 +15,8 @@
       integer, intent(in) ::
      &     ngas, ihpvgas(ngas),
      &     iocc(ngastp,2), irst(2,ngas,2,2)
+      logical, intent(in) ::
+     &     error_exit
 
       integer, intent(out) ::
      &     idx_gr(ngastp,2)
@@ -25,14 +27,19 @@
       logical, external ::
      &     restr_cmp
 
-      do ica = 1, 2
+      outer_loop: do ica = 1, 2
         do igastp = 1, ngastp
           idx_gr(igastp,ica) = 0
           if (iocc(igastp,ica).eq.0) cycle
           ! get graph type
           igtyp = 4*(iocc(igastp,ica)-1) + igastp
           ! number of graphs with same type
-          ngr4typ = str_info%gtab(1,igtyp)
+          if (igtyp.le.str_info%max_igtyp) then
+            ngr4typ = str_info%gtab(1,igtyp)
+          else
+            ngr4typ = 0
+          end if
+          idxgraph = -1
           ! check restrictions
           gr4typ: do igr4typ = 1, ngr4typ
             ! actual index of graph
@@ -43,16 +50,23 @@
                                  ! we wanted
           end do gr4typ
           if (idxgraph.le.0) then
-            write(luout,*) 'ERROR: string not in list'
-            write(luout,*) 'Operator was'
-            call wrt_occ(luout,iocc)
-            call wrt_rstr(luout,irst,ngas)
-            write(luout,*) 'C/A, GAS-TYP: ',ica,igastp
-            call quit(1,'get_grph4occ','string not in list')
+            if (error_exit) then
+              write(luout,*) 'ERROR: string not in list'
+              write(luout,*) 'Operator was'
+              call wrt_occ(luout,iocc)
+              call wrt_rstr(luout,irst,ngas)
+              write(luout,*) 'C/A, GAS-TYP: ',ica,igastp
+              call quit(1,'get_grph4occ','string not in list')
+            else
+              idx_gr(1:ngastp,1:2) = -1
+              exit outer_loop
+            end if
           end if
+            
 
           idx_gr(igastp,ica) = idxgraph
         end do
-      end do
+      end do outer_loop
+
       return
       end

@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine contr_deriv2
-     &     (conder,nder,contr,op_arr,idxder,idxmlt,idxres)
+     &     (conder,nder,contr,op_info,idxder,idxmlt,idxres)
 *----------------------------------------------------------------------*
 *     get derivative of contraction on contr
 *     idxder is the index of the operator with respect to which the
@@ -14,8 +14,7 @@
 
       include 'stdunit.h'
       include 'opdim.h'
-      include 'def_operator.h'
-      include 'def_operator_array.h'
+      include 'mdef_operator_info.h'
       include 'def_contraction.h'
       include 'def_contraction_list.h'
       include 'ifc_operators.h'
@@ -32,19 +31,23 @@
      &     contr
       integer, intent(in) ::
      &     idxder, idxmlt, idxres
-      type(operator_array), intent(in) ::
-     &     op_arr(*)
-
+      type(operator_info), intent(in) ::
+     &     op_info
 
       integer ::
-     &     iblk_last, idx, ider, ivtx, iarc, ivtxder, jvtx, jarc, il
+     &     nvtx, ntup, itup, ieqvfac,
+     &     iblk_last, idx, ider, ivtx, iarc, jvtx, jarc, il
       integer ::
      &     iocc(ngastp,2)
       type(contraction_list), pointer ::
      &     cur_conder
+      type(operator_array), pointer ::
+     &     op_arr(:)
 
-      integer, allocatable ::
-     &     nord(:), iblk(:)
+      integer, pointer ::
+     &     nord(:), iblk(:), ivtxder(:), occ_vtx(:,:,:),
+     &     topomap(:,:),eqv_map(:),
+     &     neqv(:),idx_eqv(:,:),neqv_tup(:),idx_tup(:)
       
       integer, external ::
      &     iblk_occ
@@ -54,41 +57,52 @@
         write(luout,*) ' contr_deriv at work'
         write(luout,*) '====================='
         write(luout,*) ' Contraction on input:'
-        call prt_contr2(luout,contr,op_arr)
+        call prt_contr2(luout,contr,op_info)
         write(luout,*) 'idxder = ',idxder
         write(luout,*) 'idxmlt = ',idxmlt
         write(luout,*) 'idxres = ',idxres
       end if
 
-      ! count appearence of operator in contraction
-      ! and appearence of different blocks of that op
-      ! we assume that only derivatives of standard-ordered
-      ! contractions are taken, so identical blocks come 
-      ! subsequently
-      iblk_last = -1
+      nvtx = contr%nvtx
+      allocate(topomap(nvtx,nvtx),eqv_map(nvtx),
+     &         neqv(nvtx),idx_eqv(nvtx,nvtx),
+     &         neqv_tup(nvtx),idx_tup(nvtx),
+     &         occ_vtx(ngastp,2,nvtx+1))
+
+      call occvtx4contr(occ_vtx,contr,op_info)
+
+      call topomap4contr(topomap,eqv_map,neqv,idx_eqv,contr,occ_vtx)
+
+      call eqvfac4contr(ieqvfac,neqv_tup,idx_tup,ntup,
+     &                  topomap,eqv_map,neqv,idx_eqv,contr)
       nder = 0
-      do idx = 1, contr%nvtx
+      do itup = 1, ntup
+        idx = idx_tup(itup)
         if (contr%vertex(idx)%idx_op.eq.idxder) then
-          if (contr%vertex(idx)%iblk_op.ne.iblk_last) nder = nder+1
-          iblk_last = contr%vertex(idx)%iblk_op
+          nder = nder+1
         end if
       end do
 
       ! order for each block
-      allocate(nord(nder),iblk(nder))
-      iblk_last = -1
-      nord(1:nder) = 0
+      if (nder.gt.0) allocate(nord(nder),iblk(nder),ivtxder(nder))
       ider = 0
-      do idx = 1, contr%nvtx
+      do itup = 1, ntup
+        idx = idx_tup(itup)
         if (contr%vertex(idx)%idx_op.eq.idxder) then
-          if (contr%vertex(idx)%iblk_op.ne.iblk_last) then
-            ider = ider+1
-            iblk(ider) = contr%vertex(idx)%iblk_op
-          end if
-          iblk_last = contr%vertex(idx)%iblk_op
-          nord(ider) = nord(ider)+1
+          ider = ider+1
+          iblk(ider) = contr%vertex(idx)%iblk_op
+          nord(ider) = neqv_tup(itup)
+          ivtxder(ider) = idx
         end if
       end do
+
+      deallocate(topomap)
+      deallocate(eqv_map)
+      deallocate(neqv)
+      deallocate(idx_eqv)
+      deallocate(neqv_tup)
+      deallocate(idx_tup)
+      deallocate(occ_vtx)
 
       cur_conder => conder
       nullify(cur_conder%prev)
@@ -110,6 +124,7 @@
         cur_conder%contr%mxfac=0
 
         ! resulting operator and block:
+        op_arr => op_info%op_arr
         cur_conder%contr%idx_res = idxres
         if (idxmlt.ne.0) then
           cur_conder%contr%iblk_res = contr%iblk_res
@@ -138,18 +153,17 @@
         end if
 
         ! new pre-factor
-        cur_conder%contr%fac = contr%fac/dble(nord(ider))
+        cur_conder%contr%fac = contr%fac*dble(nord(ider))
         
         ! copy and update vertex information
-        ivtxder = 0 
+c        ivtxder = 0 
         jvtx = 0
         do ivtx = 1, contr%nvtx
-          ! find first vertex of derivative target
-          if (ivtxder.eq.0.and.
+          ! vertex of derivative target ?
+          if (ivtx.eq.ivtxder(ider).and.
      &        contr%vertex(ivtx)%idx_op.eq.idxder.and.
      &        contr%vertex(ivtx)%iblk_op.eq.iblk(ider)) then
             ! remember that vertex and skip
-            ivtxder = ivtx
             if (idxmlt.ne.0) jvtx = jvtx+1
           else
             jvtx = jvtx + 1 ! counter for copy target
@@ -163,14 +177,15 @@
         ! add info on new operator to contract derivative with
         ! (if any)
         if (idxmlt.ne.0) then
-          cur_conder%contr%vertex(ivtxder)%idx_op = idxmlt
+          cur_conder%contr%vertex(ivtxder(ider))%idx_op = idxmlt
           ! get occupation of original operator at vertex
           ! and search for the corresponding block of new operator
           ! (usually it will be the same)
-          idx = iblk_occ(op_arr(contr%vertex(ivtxder)%idx_op)%op%
-     &         ihpvca_occ(1,1,contr%vertex(ivtxder)%iblk_op),.false.,
+          idx = iblk_occ(op_arr(contr%vertex(ivtxder(ider))%idx_op)%op%
+     &         ihpvca_occ(1,1,contr%vertex(ivtxder(ider))%iblk_op),
+     &         .false.,
      &         op_arr(idxder)%op)
-          cur_conder%contr%vertex(ivtxder)%iblk_op = idx
+          cur_conder%contr%vertex(ivtxder(ider))%iblk_op = idx
           cur_conder%contr%nvtx = contr%nvtx
         else
           cur_conder%contr%nvtx = contr%nvtx-1
@@ -181,13 +196,15 @@
         arc_loop: do iarc = 1, contr%narc
           ! skip, if only derivative is taken and 
           ! vertex ivtxder is involved:
-          if ((contr%arc(iarc)%link(1).eq.ivtxder.or.
-     &         contr%arc(iarc)%link(2).eq.ivtxder).and.idxmlt.eq.0)
+          if ((contr%arc(iarc)%link(1).eq.ivtxder(ider).or.
+     &         contr%arc(iarc)%link(2).eq.ivtxder(ider)).and.
+     &       idxmlt.eq.0)
      &         cycle arc_loop
           jarc = jarc+1
           ! change vertex numbers
           do il = 1, 2
-            if (contr%arc(iarc)%link(il).lt.ivtxder.or.idxmlt.gt.0) then
+            if (contr%arc(iarc)%link(il).lt.ivtxder(ider).or.
+     &           idxmlt.gt.0) then
               ! if vertex was replaced only or if
               ! vertices below ivtxder: unchanged
               cur_conder%contr%arc(jarc)%link(il) =
@@ -208,14 +225,14 @@
 
       end do ! ider
 
-      deallocate(nord,iblk)
+      if (nder.gt.0) deallocate(nord,iblk)
 
       if (ntest.ge.100) then
         write(luout,*) 'Generated derivative terms: ',nder
         cur_conder => conder
         do ider = 1, nder
           write(luout,*) 'term #',ider
-          call prt_contr2(luout,cur_conder%contr,op_arr)
+          call prt_contr2(luout,cur_conder%contr,op_info)
           if (ider.lt.nder) cur_conder => cur_conder%next
         end do
       end if

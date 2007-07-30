@@ -70,7 +70,7 @@ c      nullify(fpl_intm_c2blk%prev)
      &       'only [ADD],[INIT],[END] expected')
         if (fl_pnt%contr%idx_res.ne.idxop_intm) then
           write(luout,*) 'scanning for operator ',idxop_intm
-          call prt_contr2(luout,fl_pnt%contr,op_info%op_arr)
+          call prt_contr2(luout,fl_pnt%contr,op_info)
           call quit(1,'collect_contr2block',
      &       'suspicious change of operator index')
         end if
@@ -91,7 +91,7 @@ c      nullify(fpl_intm_c2blk%prev)
         iterm = 1
         do
           write(luout,*) 'term #',iterm
-          call prt_contr2(luout,fpl_c2blk_pnt%item%contr,op_info%op_arr)
+          call prt_contr2(luout,fpl_c2blk_pnt%item%contr,op_info)
           if (.not.associated(fpl_c2blk_pnt%next)) exit
           fpl_c2blk_pnt => fpl_c2blk_pnt%next
           iterm = iterm+1

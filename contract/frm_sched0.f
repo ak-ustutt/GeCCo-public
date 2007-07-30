@@ -22,7 +22,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 100
 
       character, parameter ::
      &     name_scr0*6 = 'cntscr'
@@ -52,7 +52,8 @@
      &     lufrm, idxopres, idxres, nres, type_xret, type_xret_cur,
      &     n_occ_cls, maxvtx, maxarc, maxfac, nblk_res,
      &     nfact, idxop1op2, iblkop1op2, iops, iblkres, ifree,
-     &     ninter, idx, nsym, ngas, nexc, ndis, iprint, iterm, len
+     &     ninter, idx, nsym, ngas, nexc, ndis, iprint, iterm, len,
+     &     idoffop1, idoffop2, idoffop1op2
       real(8) ::
      &     fac, facc, xnrm
       character ::
@@ -204,7 +205,7 @@ c        case(command_set_target_update)
      &     write(luout,*) '   term #',iterm
 
         if (ntest.ge.50)
-     &       call prt_contr2(luout,cur_form%contr,op_info%op_arr)
+     &       call prt_contr2(luout,cur_form%contr,op_info)
          
         ! process info
         fac = cur_form%contr%fac
@@ -346,6 +347,14 @@ c        case(command_set_target_update)
             type_xret_cur = 0
           end if
 
+          ! translate records to offset in file:
+          ! (makes life easier in case we once decide to use
+          ! one scratch file only: no changes to contr_op1op2 necessary)
+          idoffop1 = ffop1%length_of_record*(ffop1%current_record-1)
+          idoffop2 = ffop2%length_of_record*(ffop2%current_record-1)
+          idoffop1op2 = ffop1op2%length_of_record*
+     &                                   (ffop1op2%current_record-1)
+
           if (ntest.ge.100)
      &         write(luout,*) 'calling contraction kernel'
           ! do the contraction
@@ -353,6 +362,7 @@ c        case(command_set_target_update)
      &       update,ffop1op2,xret_pnt,type_xret_cur,
      &       op1,op2,op1op2,
      &       iblkop(1),iblkop(2),iblkop1op2,
+     &       idoffop1,idoffop2,idoffop1op2,
      &       iocc_ext(1,1,1),iocc_ext(1,1,2),iocc_cnt,
      &       irst_op(1,1,1,1,1),irst_op(1,1,1,1,2),
      &                 irst_op1op2(1,1,1,1,ninter),

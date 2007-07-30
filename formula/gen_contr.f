@@ -66,7 +66,7 @@ c     &     occ_ol_vtx(:,:,:)
         write(luout,*) '===================='
         write(luout,*) ' gen_contr speaking'
         write(luout,*) '===================='
-        call prt_contr2(luout,proto,op_info%op_arr)
+        call prt_contr2(luout,proto,op_info)
       end if
 
       if (abs(proto%fac).lt.1d-20) then
@@ -139,7 +139,7 @@ c     &     occ_ol_vtx(:,:,:)
      &     ivtx,proto,occ_vtx)
       if (ntest.ge.100) then
         write(luout,*) 'current proto-contraction:'
-        call prt_contr2(luout,proto,op_info%op_arr)
+        call prt_contr2(luout,proto,op_info)
         write(luout,*) 'occ_ol_vtx:'
         call wrt_occ_n(luout,occ_ol_vtx,nvtx)
         write(luout,*) 'occ_ol_prev,occ_ol_rem:'

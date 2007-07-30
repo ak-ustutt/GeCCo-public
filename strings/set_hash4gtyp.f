@@ -24,6 +24,7 @@
       integer ::
      &     igraph, nocc, ihpv, igtyp
 
+      str_info%max_igtyp = max_igtyp
       str_info%gtab(1:ld_gtab,1:max_igtyp) = 0
 
       ! loop over occupation classes of op

@@ -52,7 +52,7 @@
         if (contr%nfac.gt.contr%mxfac) then
           if (contr%mxfac.gt.0) deallocate(contr%inffac)
           contr%mxfac = contr%nfac
-          allocate(contr%inffac(4,contr%mxfac))
+          allocate(contr%inffac(ld_inffac,contr%mxfac))
         end if
 
         idx = 4
@@ -80,7 +80,8 @@
           contr%inffac(2,ii) = buffer(idx+2)
           contr%inffac(3,ii) = buffer(idx+3)
           contr%inffac(4,ii) = buffer(idx+4)
-          idx = idx+4
+          contr%inffac(5,ii) = buffer(idx+5)
+          idx = idx+5
         end do
 
         return
@@ -130,7 +131,8 @@
           buffer(idx+2) = contr%inffac(2,ii)
           buffer(idx+3) = contr%inffac(3,ii)
           buffer(idx+4) = contr%inffac(4,ii)
-          idx = idx+4
+          buffer(idx+5) = contr%inffac(5,ii)
+          idx = idx+5
         end do
         
         write(lu) contr%fac,idx,buffer(1:idx)

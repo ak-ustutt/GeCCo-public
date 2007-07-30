@@ -34,7 +34,8 @@
      &     bufin, bufout
       integer ::
      &     len_op, idum, ifree, lblk, nblkmax, nblk, nbuff,
-     &     ioffin, ioffout, idxst, idxnd
+     &     ioffin, ioffout, idxst, idxnd,
+     &     idoffin, idoffout
       
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:)
@@ -47,24 +48,30 @@
         write(luout,*) ' add_opblk messing around'
         write(luout,*) '=========================='
         write(luout,*) ' fac = ',fac
-        write(luout,*) ' ffin:  ',ffin%name(1:len_trim(ffin%name))
-        write(luout,*) ' ffout: ',ffout%name(1:len_trim(ffout%name))
+        write(luout,*) ' ffin:  ',trim(ffin%name),
+     &                   ' rec: ',ffin%current_record
+        write(luout,*) ' ffout: ',trim(ffout%name),
+     &                   ' rec: ',ffout%current_record
         write(luout,*) ' opin: ',opin%name(1:len_trim(opin%name)),
      &       '  block: ',iblkin
         write(luout,*) ' opout: ',opout%name(1:len_trim(opout%name)),
      &       '  block: ',iblkout
       end if
 
-      if (.not.iocc_equal(opin%ihpvca_occ(1,1,iblkin),.false.,
-     &                   opout%ihpvca_occ(1,1,iblkout),.false.)) then
+      if (.not.iocc_equal(opin%ihpvca_occ(1,1,iblkin),opin%dagger,
+     &                 opout%ihpvca_occ(1,1,iblkout),opout%dagger)) then
+        write(luout,*) 'dagger: ',opin%dagger,opout%dagger
         call wrt_occ(luout,opin%ihpvca_occ(1,1,iblkin))
         call wrt_occ(luout,opout%ihpvca_occ(1,1,iblkout))
         call quit(1,'add_opblk','occupations do not fit!')
       end if
 
       if (.not.irestr_equal(opin%igasca_restr(1,1,1,1,iblkin),
+     &                     opin%dagger,
      &                     opout%igasca_restr(1,1,1,1,iblkout),
+     &                     opout%dagger,
      &                     orb_info%ngas)) then
+        write(luout,*) 'dagger: ',opin%dagger,opout%dagger
         call wrt_rstr(luout,opin%igasca_restr(1,1,1,1,iblkin))
         call wrt_rstr(luout,opout%igasca_restr(1,1,1,1,iblkout))
         call quit(1,'add_opblk','occupations do not fit!')
@@ -110,29 +117,40 @@
         end if
       end if
 
-      ioffin = opin%off_op_occ(iblkin)
+      ioffin  = opin%off_op_occ(iblkin)
       ioffout = opout%off_op_occ(iblkout)
 
       if (.not.bufin.or..not.bufout) then
+
+        ! offset on file (if more than one instance of operator ex.)
+        idoffin  = ffin %length_of_record*(ffin %current_record-1)
+        idoffout = ffout%length_of_record*(ffout%current_record-1)
+
         idxst = 1
         do while(idxst.le.len_op)
           idxnd = min(len_op,idxst-1+nbuff)
           if (bufin) then
-            call get_vec(ffout,buffer_out,ioffout+idxst,ioffout+idxnd)
+            call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
+     &                                    idoffout+ioffout+idxnd)
             call daxpy(idxnd-idxst+1,fac,ffin%buffer(ioffin+idxst),1,
      &                                   buffer_out,1)
-            call put_vec(ffout,buffer_out,ioffout+idxst,ioffout+idxnd)
+            call put_vec(ffout,buffer_out,idoffout+ioffout+idxst,
+     &                                    idoffout+ioffout+idxnd)
           else if (bufout) then
-            call get_vec(ffin,buffer_in,ioffin+idxst,ioffin+idxnd)
+            call get_vec(ffin,buffer_in,idoffin+ioffin+idxst,
+     &                                  idoffin+ioffin+idxnd)
             call daxpy(idxnd-idxst+1,fac,buffer_in,1,
      &                               ffout%buffer(ioffout+idxst),1)
           else
-            call get_vec(ffin,buffer_in,ioffin+idxst,ioffin+idxnd)
-            call get_vec(ffout,buffer_out,ioffout+idxst,ioffout+idxnd)
+            call get_vec(ffin,buffer_in,idoffin+ioffin+idxst,
+     &                                  idoffin+ioffin+idxnd)
+            call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
+     &                                    idoffout+ioffout+idxnd)
             buffer_out(1:(idxnd-idxst+1))
      &         = fac*buffer_in(1:(idxnd-idxst+1))
      &              +buffer_out(1:(idxnd-idxst+1))
-            call put_vec(ffout,buffer_out,ioffout+idxst,ioffout+idxnd)
+            call put_vec(ffout,buffer_out,idoffout+ioffout+idxst,
+     &                                    idoffout+ioffout+idxnd)
           end if
           idxst = idxnd+1
         end do

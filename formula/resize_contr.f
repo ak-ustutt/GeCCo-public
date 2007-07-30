@@ -27,6 +27,12 @@
       integer ::
      &     nsave
 
+      if (contr%mxvtx.gt.0.and..not.associated(contr%vertex))
+     &     call quit(1,'resize_contr','vertex pointer inconsistent')
+      if (contr%mxarc.gt.0.and..not.associated(contr%arc))
+     &     call quit(1,'resize_contr','arc pointer inconsistent')
+      if (contr%mxfac.gt.0.and..not.associated(contr%inffac))
+     &     call quit(1,'resize_contr','inffac pointer inconsistent')
       if (contr%mxvtx.lt.nvtx) then
         allocate(vtx_new(nvtx))
         nsave = min(contr%mxvtx,contr%nvtx)
@@ -48,10 +54,11 @@
       end if
 
       if (contr%mxfac.lt.nfac) then
-        allocate(inf_new(4,nfac))
+        allocate(inf_new(ld_inffac,nfac))
         nsave = min(contr%mxfac,contr%nfac)
         if (nsave.gt.0)
-     &       inf_new(1:4,1:nsave) = contr%inffac(1:4,1:nsave)
+     &       inf_new(1:ld_inffac,1:nsave) =
+     &       contr%inffac(1:ld_inffac,1:nsave)
         if (contr%mxfac.gt.0) deallocate(contr%inffac)
         contr%inffac => inf_new
         contr%mxarc = nfac

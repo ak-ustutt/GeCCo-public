@@ -76,8 +76,6 @@ c      iprlvl = 1     ! print level
 
       ifree = mem_register(4000,'input')
       
-c      call test_memman()
-
       ! loop over calculations
       do
       

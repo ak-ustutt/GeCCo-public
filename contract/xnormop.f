@@ -20,7 +20,7 @@
      &     closeit
       integer ::
      &     ifree, len_op, nblk, nblkmax, nbuff, idxst, idxnd,
-     &     idum, iblk
+     &     idum, iblk, idisc_off
       real(8) ::
      &     xnrm2
 
@@ -62,7 +62,7 @@
       if (nblkmax.le.0) then
         write(luout,*) 'free memory (words):  ',ifree
         write(luout,*) 'block length (words): ',ffop%reclen
-        call quit(1,'zeroop','not even 1 record fits into memory?')
+        call quit(1,'xnormop','not even 1 record fits into memory?')
       end if
 
       len_op = op%len_op
@@ -72,8 +72,12 @@
 
       ifree = mem_alloc_real(buffer,nbuff,'buffer')
 
+      ! offset on file (if more than one instance of operator ex.)
+      idisc_off = ffop%length_of_record*(ffop%current_record-1)
+
       ! to be fixed: should synchronize with record boundaries
-      do while(idxst.le.len_op)
+      idxst = idxst + idisc_off
+      do while(idxst.le.len_op+idisc_off)
         idxnd = min(len_op,idxst-1+nbuff)
         call get_vec(ffop,buffer,idxst,idxnd)  
         xnrm2 = xnrm2 + ddot(idxnd-idxst+1,buffer,1,buffer,1)

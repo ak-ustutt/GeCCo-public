@@ -24,7 +24,7 @@
       include 'def_formula_item_array.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       
       logical, intent(out) ::
      &     success
@@ -104,11 +104,11 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
         call split_contr(contr_t0,contr_i,fl_tgt%contr)
         if (ntest.ge.100) then
           write(luout,*) 'considering contraction:'
-          call prt_contr2(luout,fl_tgt%contr,op_info%op_arr)
+          call prt_contr2(luout,fl_tgt%contr,op_info)
           write(luout,*) 'split into T0 '
-          call prt_contr2(luout,contr_t0,op_info%op_arr)
+          call prt_contr2(luout,contr_t0,op_info)
           write(luout,*) 'and I'
-          call prt_contr2(luout,contr_i,op_info%op_arr)
+          call prt_contr2(luout,contr_i,op_info)
         end if
       end if
 
@@ -128,7 +128,7 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
           iterm = iterm+1
           ! make target contractions that we need to find
           if (.not.assigned(iterm))
-     &         call join_contr(contr_tgt(iterm),
+     &         call join_contr2(contr_tgt(iterm),
      &                         contr_t0,fpl_intm_pnt%item%contr,
      &                         idxop_tgt,iblk_tgt,op_info)
           if (.not.associated(fpl_intm_pnt%next)) exit
@@ -171,21 +171,21 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
             ! I should program contr_equal but the following should
             ! also work; if A part of B and B part of A the A==B
 c dbg
-            print *,'assigned: ',assigned(1:nterms)
-            print *,'comparing: fml, tgt(iterm = ',iterm,')'
-            call prt_contr2(luout,fl_tgt_pnt%contr,op_info%op_arr)
-            call prt_contr2(luout,contr_tgt(iterm),op_info%op_arr)
-            print *,'results = ',
-     &           contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)),
-     &           contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr),
-     &           fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac
+c            print *,'assigned: ',assigned(1:nterms)
+c            print *,'comparing: fml, tgt(iterm = ',iterm,')'
+c            call prt_contr2(luout,fl_tgt_pnt%contr,op_info)
+c            call prt_contr2(luout,contr_tgt(iterm),op_info)
+c            print *,'results = ',
+c     &           contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)),
+c     &           contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr),
+c     &           fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac
 c dbg
             if (contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)).and.
      &          contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr).and.
      &          fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac) then
 c            if (contr_equal(fl_tgt_pnt%contr,contr_tgt(iterm))) then
 c dbg
-              print *,'hurra'
+c              print *,'hurra'
 c dbg
               assigned(iterm) = .true.
               nfound = nfound+1
@@ -225,7 +225,7 @@ c dbg
         contr_int%vertex(1)%iblk_op = fpl_intm%item%contr%iblk_res
 
         ! make new contraction
-        call join_contr(contr_rpl,
+        call join_contr2(contr_rpl,
      &                  contr_t0,contr_int,
      &                  idxop_tgt,iblk_tgt,op_info)
 
@@ -233,7 +233,7 @@ c dbg
 
         if (ntest.ge.100) then
           write(luout,*) 'generated term:'
-          call prt_contr2(luout,contr_rpl,op_info%op_arr)
+          call prt_contr2(luout,contr_rpl,op_info)
         end if
 
       end if

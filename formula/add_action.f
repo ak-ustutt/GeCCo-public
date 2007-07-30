@@ -8,6 +8,7 @@
 *     an 'action' is given by the parameters on the input list
 *     compare to elements on act_list, and if the particular action
 *     is not yet on the list, add it as last element
+*     note (17 juli 2007): idxopfile_in/out will become obsolete 
 *----------------------------------------------------------------------*
 
       implicit none

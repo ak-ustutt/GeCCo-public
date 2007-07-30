@@ -32,6 +32,7 @@
       call argument_add('minexc','method.CC',type=vtyp_int,idef=(/1/))
 
       call keyword_add('calculate')
+      ! general
       call keyword_add('solve',context='calculate')
       call argument_add('maxiter','calculate.solve',type=vtyp_int,
      &     idef=(/30/))
@@ -41,10 +42,54 @@
      &     idef=(/8/))
       call argument_add('conv','calculate.solve',type=vtyp_rl8,
      &     xdef=(/1d-6/))
-      call argument_add('tr_ini','calculate.solve',type=vtyp_rl8,
+
+      ! specials for: non-linear, linear, eigenvalue
+      call keyword_add('non_linear',context='calculate.solve')
+      call argument_add('maxiter','calculate.solve.non_linear',
+     &     type=vtyp_int,
+     &     idef=(/30/))
+      call argument_add('maxmic','calculate.solve.non_linear',
+     &     type=vtyp_int,
+     &     idef=(/20/))
+      call argument_add('maxsub','calculate.solve.non_linear',
+     &     type=vtyp_int,
+     &     idef=(/8/))
+      call argument_add('conv','calculate.solve.non_linear',
+     &     type=vtyp_rl8,
+     &     xdef=(/1d-6/))
+      call argument_add('tr_ini','calculate.solve.non_linear',
+     &     type=vtyp_rl8,
      &     xdef=(/1.0d0/))
-      call argument_add('method','calculate.solve',type=vtyp_str,len=8,
+      call argument_add('method','calculate.solve.non_linear',
+     &     type=vtyp_str,len=8,
      &     cdef=(/'d','i','i','s',' ',' ',' ',' '/))
+
+      call keyword_add('linear',context='calculate.solve')
+      call argument_add('maxiter','calculate.solve.linear',
+     &     type=vtyp_int,
+     &     idef=(/30/))
+      call argument_add('maxsub','calculate.solve.linear',
+     &     type=vtyp_int,
+     &     idef=(/8/))
+      call argument_add('conv','calculate.solve.linear',
+     &     type=vtyp_rl8,
+     &     xdef=(/1d-6/))
+      call argument_add('method','calculate.solve.linear',
+     &     type=vtyp_str,len=8,
+     &     cdef=(/'s','u','b','s','p','a','c','e'/))
+
+      call keyword_add('eigen',context='calculate.solve')
+      call argument_add('maxiter','calculate.solve.eigen',
+     &     type=vtyp_int,
+     &     idef=(/30/))
+      call argument_add('maxsub','calculate.solve.eigen',
+     &     type=vtyp_int,
+     &     idef=(/8/))
+      call argument_add('conv','calculate.solve.eigen',
+     &     type=vtyp_rl8,
+     &     xdef=(/1d-6/))
+
+      call keyword_add('CC_solve_tbar',context='calculate')
 
       call keyword_add('routes',context='calculate')
       call argument_add('schedule','calculate.routes',type=vtyp_int,

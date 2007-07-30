@@ -57,8 +57,8 @@
                                 ! C <-> A are to be interchanged
         integer ::
      &     type,                ! 1: operator, 2: density, 3: intermed.
-     &     nbay                 ! for intermed: # insertion places ("bays")
-                                ! for other operators
+     &     njoined              ! for intermediate only: number of joined 
+                                !      vertices
         integer ::
      &     absym,               ! symmetry on interchange of alpha/beta
      &                          ! (time reversal sym.) values: 0/+1/-1

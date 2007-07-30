@@ -55,17 +55,18 @@
       logical, external ::
      &     next_dist, next_msgamdist
 
-      if (ntest.ge.100) then
+      if (ntest.ge.10) then
         write(luout,*) '========================'
         write(luout,*) ' here comes dummy_contr'
         write(luout,*) '========================'
-        write(luout,*) 'OP 1'
+        write(luout,*) ' ngas, nsym : ',ngas,nsym
+        write(luout,*) 'OP 1 ',mstop(1),igamtop(1)
         call wrt_occ(luout,iocc_op(1,1,1))
-        write(luout,*) 'OP 2'
+        write(luout,*) 'OP 2 ',mstop(2),igamtop(2)
         call wrt_occ(luout,iocc_op(1,1,2))
         write(luout,*) 'CNT'
         call wrt_occ(luout,iocc_cnt)
-        write(luout,*) 'RES'
+        write(luout,*) 'RES ',mstint,igamtint
         call wrt_occ(luout,iocc_int)
       end if
 

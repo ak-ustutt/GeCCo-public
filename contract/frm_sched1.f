@@ -1,0 +1,417 @@
+*----------------------------------------------------------------------*
+      subroutine frm_sched1(xret,fffrm,
+     &         op_info,str_info,strmap_info,orb_info)
+*----------------------------------------------------------------------*
+*     schedule the evaluation of a formula file
+*     
+*     version 1 -- complete replacement of version 0
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'stdunit.h'
+      include 'ioparam.h'
+      include 'def_orbinf.h'
+      include 'mdef_operator_info.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
+      include 'def_strmapinf.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'ifc_memman.h'
+
+      integer, parameter ::
+     &     ntest = 100
+
+      character, parameter ::
+     &     name_scr0*6 = 'cntscr'
+
+      character ::
+     &     name_scr*13
+
+      real(8), intent(inout) ::
+     &     xret(*)
+      type(filinf), intent(inout) ::
+     &     fffrm
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf) ::
+     &     str_info
+      type(strmapinf) ::
+     &     strmap_info
+      type(orbinf) ::
+     &     orb_info
+
+      type(formula_item) ::
+     &     cur_form
+
+      logical ::
+     &     update
+      integer ::
+     &     lufrm, idxopres, idxres, nres, type_xret, type_xret_cur,
+     &     n_occ_cls, maxvtx, maxarc, maxfac, nblk_res,
+     &     nfact, idxop1op2, iblkop1op2, iops, iblkres, ifree,
+     &     ninter, idx, nsym, ngas, nexc, ndis, iprint, iterm, len,
+     &     idoffop1, idoffop2, idoffop1op2, ivtx_new, nvtx,
+     &     iarc, idum
+      real(8) ::
+     &     fac, facc, xnrm
+      character ::
+     &     title*256, opscrnam*8
+
+      type(file_array), pointer ::
+     &     ffops(:)
+      type(operator_array), pointer ::
+     &     ops(:)
+      integer ::
+     &     iocc_op(ngastp,2,2), irst_op(2,orb_info%ngas,2,2,2),
+     &     irst_res(2,orb_info%ngas,2,2),
+     &     mstop(2), igamtop(2), idxop(2), iblkop(2),
+     &     iocc_ext(ngastp,2,2), iocc_cnt(ngastp,2),
+     &     iocc_op1op2(ngastp,2), irst_op1op2(2,orb_info%ngas,2,2),
+     &     mstop1op2, igamtop1op2
+      real(8), pointer ::
+     &     xret_blk(:), xret_pnt(:)
+      real(8), target ::
+     &     xret_scr(1)
+      integer, allocatable ::
+     &     occ_vtx(:,:,:), irestr_vtx(:,:,:,:,:), info_vtx(:,:)
+      type(operator), pointer ::
+     &     opscr(:)
+      type(filinf), pointer ::
+     &     ffscr(:)
+      type(operator), pointer ::
+     &     op1, op2, op1op2, opres
+      type(filinf), pointer ::
+     &     ffop1, ffop2, ffop1op2, ffres
+
+      logical, external ::
+     &     rd_formula
+      real(8), external ::
+     &     xnormop
+
+      ifree = mem_setmark('frm_sched0')
+      
+      iprint = max(ntest,iprlvl)
+      if (ntest.gt.0.or.iprint.ge.5) then
+        write(luout,*) '============================='
+        write(luout,*) '= Entered formula scheduler ='
+        write(luout,*) '============================='
+      end if
+
+      nsym = orb_info%nsym
+      ngas = orb_info%ngas
+
+      ffops => op_info%opfil_arr
+      ops => op_info%op_arr
+
+      ! open files
+      call file_open(fffrm)
+
+      if (iprint.ge.10) then
+        write(luout,*) 'formula file: ',
+     &       fffrm%name(1:len_trim(fffrm%name))
+      end if
+
+      lufrm = fffrm%unit
+      rewind lufrm
+
+      read(lufrm) len,title(1:len)
+
+      if (iprint.ge.5)
+     &     write(luout,*) 'Evaluating:',title(1:len)
+
+      
+      allocate(cur_form%contr)
+      call init_contr(cur_form%contr)
+
+      nres  = 0
+      idxres = 0
+      iterm = 0
+      nullify(xret_blk)
+
+      ! loop over entries
+      term_loop: do while(rd_formula(fffrm,cur_form))
+
+        if (nres.eq.0 .and.
+     &      cur_form%command.ne.command_set_target_init)
+     &     call quit(1,'frm_sched','first command must define target')
+
+        select case(cur_form%command)
+        case(command_end_of_formula)
+          ! get xret value for final target
+          if (type_xret.eq.1) then
+            xret(idxres) = sqrt(sum(xret_blk(1:nblk_res)))
+          else if (type_xret.eq.2) then
+            xret(idxres) = xret_blk(1)
+          end if
+
+          exit term_loop
+
+        case(command_set_target_init)
+
+          ! for previous target: assemble xret value
+          if (idxres.gt.0) then
+            if (type_xret.eq.1) then
+              xret(idxres) = sqrt(sum(xret_blk(1:nblk_res)))
+            else if (type_xret.eq.2) then
+              xret(idxres) = xret_blk(1)
+            end if
+          end if
+
+          ! initialize result
+          nres = nres+1
+          idxres = nres
+          idxopres = cur_form%target
+          if (iprint.ge.10) then
+            write(luout,*) 'New target: ',idxopres
+          end if
+          if (idxopres.gt.0) then
+            ffres => op_info%opfil_arr(idxopres)%fhand
+            opres => op_info%op_arr(idxopres)%op
+            nblk_res = opres%n_occ_cls
+            type_xret = 2
+            if (opres%len_op.gt.1) type_xret = 1
+            if (ffres%unit.le.0)
+     &           call file_open(ffres)
+            call zeroop(ffres,opres)
+          else
+            nblk_res = 1
+            type_xret = 2
+          end if
+ 
+          if (associated(xret_blk))
+     &           ifree = mem_dealloc('xret_blk')
+          ifree = mem_alloc_real(xret_blk,nblk_res,'xret_blk')
+          xret_blk(1:nblk_res) = 0d0
+ 
+c          xret(idxres) = 0d0
+          cycle term_loop
+c        case(command_set_target_update)
+        case(command_add_contribution)
+        case default
+          write(luout,*) 'command = ',cur_form%command
+          call quit(1,'frm_sched','command not defined/implemented')
+        end select
+
+        iterm = iterm+1
+        if (iprint.ge.20)
+     &     write(luout,*) '   term #',iterm
+
+        if (ntest.ge.50)
+     &       call prt_contr2(luout,cur_form%contr,op_info)
+         
+        ! process info
+        fac = cur_form%contr%fac
+        nfact = cur_form%contr%nfac
+        
+        if (ntest.ge.100) write(luout,*) 'nfact, fac: ',nfact,fac
+
+        if (nfact.eq.0) then
+
+          iblkres = cur_form%contr%iblk_res
+          idxop(1) = cur_form%contr%vertex(1)%idx_op
+          iblkop(1) = cur_form%contr%vertex(1)%iblk_op
+
+          if (ffops(idxop(1))%fhand%unit.le.0)
+     &         call file_open(ffops(idxop(1))%fhand)
+
+          call add_opblk(fac,ffops(idxop(1))%fhand,ffres,
+     &         ops(idxop(1))%op,opres,
+     &         iblkop(1),iblkres,orb_info)
+
+          cycle term_loop
+        end if
+
+        ! preliminary fix to set irst_res (needed in get_bc_info)
+        call set_restr_prel(irst_res,
+     &       cur_form%contr,op_info,orb_info%ihpvgas,orb_info%ngas)
+        
+        nvtx = cur_form%contr%nvtx
+
+        ! allocate arrays for intermediates
+        allocate(
+     &       occ_vtx(ngastp,2,nvtx+1),
+     &       irestr_vtx(2,orb_info%ngas,2,2,nvtx+1),
+     &       info_vtx(2,nvtx+1))
+        if (nfact.gt.1)
+     &       allocate(opscr(nfact-1),ffscr(nfact-1))
+
+        ! reset intermediate counter
+        ninter = 0
+
+        call occvtx4contr(occ_vtx,cur_form%contr,op_info)
+        call vtxinf4contr(irestr_vtx,info_vtx,
+     &                            cur_form%contr,op_info,ngas)
+
+        fac = cur_form%contr%fac
+
+        ! add 0-contractions, if necessary
+        call check_disconnected(cur_form%contr)
+
+        ! loop over binary contractions
+        bin_loop: do idx = 1, nfact
+
+          ! use factor in last contraction
+          facc = 1d0
+          if (idx.eq.nfact) facc=fac
+
+          if (iprint.ge.20) write(luout,*) '    contr #',idx
+          iarc = cur_form%contr%inffac(5,idx)
+c dbg
+c          if (iterm.eq.7) then
+c            if (iarc.eq.2) then
+c              iarc = 1
+c            else
+c              iarc = 2
+c            end if
+c          end if
+c dbg
+
+          ninter = ninter + 1
+
+          ! set up info for binary contraction
+          call get_bc_info2(idxop,iblkop,
+     &         iocc_ext,iocc_cnt,
+     &         iocc_op,iocc_op1op2,
+     &         irst_op,irst_op1op2,
+     &         mstop,mstop1op2,
+     &         igamtop,igamtop1op2,
+     &         cur_form%contr,occ_vtx,irestr_vtx,info_vtx,iarc,
+     &         irst_res,orb_info%ihpvgas,ngas)
+
+          ! set up operator 1 and 2
+          do iops = 1, 2
+            if (idxop(iops).gt.0) then
+              ! primary operator or long-term intermediate
+              if (iops.eq.1) ffop1 => ffops(idxop(iops))%fhand
+              if (iops.eq.2) ffop2 => ffops(idxop(iops))%fhand
+              if (iops.eq.1) op1 => ops(idxop(iops))%op
+              if (iops.eq.2) op2 => ops(idxop(iops))%op
+            else
+              ! intermediate for current contraction only
+              if (iops.eq.1) ffop1 => ffscr(-idxop(iops))
+              if (iops.eq.2) ffop2 => ffscr(-idxop(iops))
+              if (iops.eq.1) op1 => opscr(-idxop(iops))
+              if (iops.eq.2) op2 => opscr(-idxop(iops))
+            end if
+          end do
+
+          if (ffop1%unit.le.0)
+     &             call file_open(ffop1)
+          if (ffop2%unit.le.0)
+     &             call file_open(ffop2)
+
+          ! set up result
+          if (idx.eq.nfact) then
+            ! last operation: store on result array
+            update = .true.
+            idxop1op2 = cur_form%contr%idx_res
+            iblkop1op2 = cur_form%contr%iblk_res
+            ffop1op2 => ffres
+            op1op2 => ops(idxop1op2)%op
+            xret_pnt => xret_blk(iblkop1op2:iblkop1op2)
+            type_xret_cur = type_xret
+          else
+            ! new intermediate
+            update = .false.
+            write(name_scr,'(a,i3.3,".da ")') name_scr0,ninter
+            call file_init(ffscr(ninter),name_scr,1,lblk_da)
+            call file_open(ffscr(ninter))
+            if (ntest.ge.100)
+     &           write(luout,*) 'new intermediate file: ',
+     &           ffscr(ninter)%name(1:len_trim(ffscr(ninter)%name))
+
+            ffop1op2 => ffscr(ninter)
+            iblkop1op2 = 1
+
+            ! allocate further stuff in operator structure
+            opscr(ninter)%n_occ_cls = 1
+            call init_operator(0,opscr(ninter),orb_info)
+            ! set up pseudo-operator for current intermediate
+            write(opscrnam,'("INT",i3.3)') ninter
+            call set_ps_op(opscr(ninter),opscrnam,
+     &           iocc_op1op2,irst_op1op2,
+     &           mstop1op2,igamtop1op2,
+     &           ngas,orb_info%ihpvgas,str_info)
+            ! allocate sub-arrays
+            call init_operator(1,opscr(ninter),orb_info)
+            ! set up dimensions (pass 1)
+            call set_op_dim(1,.false.,opscr(ninter),
+     &           str_info,nsym)
+            ! some more sub-arrays
+            call init_operator(2,opscr(ninter),orb_info)
+            ! set up dimensions (pass 2)
+            call set_op_dim(2,.false.,opscr(ninter),
+     &           str_info,nsym)
+            op1op2 => opscr(ninter)
+            xret_pnt => xret_scr
+            type_xret_cur = 0
+          end if
+
+          ! translate records to offset in file:
+          ! (makes life easier in case we once decide to use
+          ! one scratch file only: no changes to contr_op1op2 necessary)
+          idoffop1 = ffop1%length_of_record*(ffop1%current_record-1)
+          idoffop2 = ffop2%length_of_record*(ffop2%current_record-1)
+          idoffop1op2 = ffop1op2%length_of_record*
+     &                                   (ffop1op2%current_record-1)
+
+          if (ntest.ge.100)
+     &         write(luout,*) 'calling contraction kernel'
+          ! do the contraction
+          call contr_op1op2(facc,ffop1,ffop2,
+     &       update,ffop1op2,xret_pnt,type_xret_cur,
+     &       op1,op2,op1op2,
+     &       iblkop(1),iblkop(2),iblkop1op2,
+     &       idoffop1,idoffop2,idoffop1op2,
+     &       iocc_ext(1,1,1),iocc_ext(1,1,2),iocc_cnt,
+     &       irst_op(1,1,1,1,1),irst_op(1,1,1,1,2),irst_op1op2,
+     &       mstop(1),mstop(2),mstop1op2,
+     &       igamtop(1),igamtop(2),igamtop1op2,
+     &       str_info,strmap_info,orb_info)
+          if (ntest.ge.100)
+     &         write(luout,*) 'returned from contraction kernel'
+
+          ! set up reduced contraction after 
+          ! current binary contraction
+          if (idx.ne.nfact) then
+            ivtx_new = cur_form%contr%inffac(3,idx)
+            call reduce_vtx_info(irestr_vtx,info_vtx,
+     &           cur_form%contr,occ_vtx,iarc,
+     &           irst_res,orb_info)
+            call reduce_contr(cur_form%contr,occ_vtx,
+     &           iarc,-ninter,ivtx_new,
+     &           .false.,idum,idum)
+            ! add 0-contractions, if necessary
+            call check_disconnected(cur_form%contr)
+          end if
+
+        end do bin_loop
+
+        deallocate(
+     &       occ_vtx,irestr_vtx,info_vtx)
+        if (nfact.gt.1) then
+          ! get rid of intermediate definitions and files
+          do idx = 1, ninter-1
+            call file_close_delete(ffscr(idx))
+            call dealloc_operator(opscr(idx))
+          end do
+          deallocate(opscr,ffscr)
+        end if
+
+      end do term_loop
+
+      call dealloc_contr(cur_form%contr)
+      deallocate(cur_form%contr)
+ 
+      call file_close_keep(fffrm)
+
+      ifree = mem_flushmark()
+
+      if (ntest.ge.100)
+     &     write(luout,*) 'returning from frm_sched0'
+
+      return
+      end

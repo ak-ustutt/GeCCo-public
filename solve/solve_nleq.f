@@ -79,17 +79,30 @@
       ! number of permanent intermediates generated:
       nintm = nop_out - nop_opt*2
 
+      do iop = 1, nintm
+        call assign_file_to_op(idxop_out(nop_opt*2+iop),
+     &                                             .true.,ffopt(iop),
+     &                         1,1,1,
+     &                         0,op_info)
+      end do
+
       allocate(ffopt(nop_opt),ffdia(nop_opt),
      &     ffgrd(nop_opt),op_opt(nop_opt))
       do iop = 1, nop_opt
-        ffopt(iop)%fhand => op_info%opfil_arr(idxfil_out(1,iop))%fhand
+        call assign_file_to_op(idxop_out(iop),.true.,ffopt(iop),!<-dummy 
+     &                         1,1,1,
+     &                         0,op_info)
+        ffopt(iop)%fhand => op_info%opfil_arr(idxop_out(iop))%fhand
+        call assign_file_to_op(idxop_out(iop+nop_opt),.true.,ffgrd(iop),!<-dummy
+     &                         1,1,1,
+     &                         0,op_info)
         ffgrd(iop)%fhand =>
-     &              op_info%opfil_arr(idxfil_out(1,iop+nop_opt))%fhand
+     &              op_info%opfil_arr(idxop_out(iop+nop_opt))%fhand
         op_opt(iop)%op   => op_info%op_arr(idxop_out(iop))%op
-        ffdia(iop)%fhand => op_info%opfil_arr(idxfil_in(1,iop))%fhand
+        ffdia(iop)%fhand => op_info%opfil_arr(idxop_in(iop))%fhand
       end do
 
-      ! for savety:
+      ! for savety reasons, we allocate the two guys
       allocate(ff_trv(1),ff_h_trv(1))
 
       do iop = 1, nop_opt
@@ -112,7 +125,7 @@
         call zeroop(ffopt(iop)%fhand,op_opt(iop)%op)
       end do
 
-      call set_opti_info(opti_info,nop_opt,op_opt)
+      call set_opti_info(opti_info,1,nop_opt,1,op_opt)
 
       ! start optimization loop
       imacit = 0
@@ -133,9 +146,10 @@
         if (iand(task,1).eq.1.or.iand(task,2).eq.2) then
           call frm_sched(xret,ffform_opt,
      &         op_info,str_info,strmap_info,orb_info)
-          ! intermediates should be generated first, so
-          energy =  xret(nintm+1)
-          xresnrm = xret(nintm+2)
+          ! intermediates should be generated first, energy
+          ! is expected to be the last "intermediate"
+          energy =  xret(nintm)
+          xresnrm = xret(nintm+1)
         end if
 
         write(luout,'(">>>",i3,f24.12,x,g10.4)')imacit,energy,xresnrm

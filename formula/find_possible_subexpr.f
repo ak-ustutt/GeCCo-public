@@ -171,7 +171,7 @@
           idx = idx+1
           write(luout,*) 'possibility # ',idx
           call prt_contr2(luout,fpl_intm_start_pnt%item%contr,
-     &         op_info%op_arr)
+     &         op_info)
           if (.not.associated(fpl_intm_start_pnt%next)) exit
           fpl_intm_start_pnt => fpl_intm_start_pnt%next
         end do

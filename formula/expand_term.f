@@ -139,7 +139,7 @@
 
         if (ntest.ge.100) then
           write(luout,*) 'generated proto-contraction:'
-          call prt_contr2(luout,proto,op_info%op_arr)
+          call prt_contr2(luout,proto,op_info)
         end if
         
         ! a bit of bureaucracy ...

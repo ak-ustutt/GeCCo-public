@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine fact_cost(cost,iscale,ifact,nfact,
+      subroutine fact_cost(possible,cost,iscale,ifact,nfact,
+     &     cost_prev,
      &     contr,op_info,str_info,ihpvgas,ngas,nsym)
 *----------------------------------------------------------------------*
 *     calculate the computational cost of a given contraction
@@ -23,7 +24,7 @@
       include 'multd2h.h'
       
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 00
       
       integer, intent(in) ::
      &     ngas, ihpvgas(ngas), nsym, nfact, ifact(4,nfact)
@@ -33,10 +34,14 @@
      &     op_info
       type(strinf), intent(in) ::
      &     str_info
+      real(8), intent(in) ::
+     &     cost_prev(3)
       real(8), intent(out) ::
      &     cost(3)
       integer, intent(out) ::
      &     iscale(ngastp,2)
+      logical, intent(out) ::
+     &     possible
 
       integer ::
      &     idx, jdx, iops, ivtx, nvtx, narc,
@@ -47,7 +52,7 @@
      &     iocc(ngastp,2,2), iocc_cnt(ngastp,2), iocc_ext(ngastp,2,2),
      &     interm(nfact), iocc_int(ngastp,2,nfact),
      &     irestr_int(2,ngas,2,2,nfact),
-     &     irestr_res(2,ngas,2,2),
+     &     irestr_res(2,ngas,2,2), igr_int(ngastp,2),
      &     ivtx_expand(contr%nvtx,2), nexpand(2),
      &     irestr(2,ngas,2,2,2), iscr(contr%nvtx),
      &     mstop(2), mstint(nfact),
@@ -72,8 +77,14 @@
 
       ! preliminary version (valid for standard CC only):
       ! restriction on result:
+c dbg
+c      print *,'call to set_restr_prel'
+c dbg
       call set_restr_prel(irestr_res,contr,op_info,ihpvgas,ngas)
-      
+ 
+      ! let's assume the current factorization is allowed
+      possible = .true.
+     
       ! loop over operation sequence
       do idx = 1, nfact
         if (ntest.ge.50) then
@@ -129,6 +140,19 @@
           iscale(2,2) = np_int
         end if
 
+        ! check whether intermediate can be addressed by
+        ! the available graphs (preliminary fix)
+        call get_grph4occ(igr_int,iocc_int(1,1,ninter),
+     &       irestr_int(1,1,1,1,ninter),
+     &       str_info,ihpvgas,ngas,.false.)
+        ! if not: 
+        if (igr_int(1,1).lt.0) then
+          cost(1:3) = huge(cost(1))
+          ! do not allow this factorization
+          possible = .false.
+          exit
+        end if
+
         call dummy_contr(flops,xmemtot,xmemblk,
      &       iocc,iocc_ext,iocc_int(1,1,ninter),iocc_cnt,
      &       irestr,irestr_int(1,1,1,1,ninter),
@@ -138,6 +162,9 @@
         cost(1) = cost(1)+flops
         cost(2) = max(cost(2),xmemtot)
         cost(3) = max(cost(3),xmemblk)
+
+        ! if the cost is already higher than before: exit
+        if (cost(1).gt.cost_prev(1)) exit
 
       end do
 

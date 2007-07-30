@@ -20,7 +20,7 @@
       include 'par_globalmarks.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(strinf), intent(inout) ::
      &     str_info
@@ -44,7 +44,7 @@
       iprint = max(ntest,iprlvl)
 
       if (iprint.gt.3) then
-        write(luout,*) 'Setting up graphs'
+        call write_title(luout,wst_section,'Setting up graphs')
       end if
 
       ! we allocate more space than required, which doesn't matter

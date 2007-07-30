@@ -8,7 +8,6 @@
 *     a empty node (idx 0, block 0) is used to indicate the position
 *     of the part that has been "cut out"
 *
-*  ?? maybe not: ??
 *     in contrast to usual contractions, we also store external 
 *     contraction arcs for contr_rem, i.e. those which connected
 *     contr_rem with contr_spl
@@ -55,8 +54,6 @@
       call resize_contr(contr_rem,nvtx_rem,narc_rem,0)
       contr_rem%nvtx = nvtx_rem
       contr_rem%narc = narc_rem
-c
-c      allocate(contr_rem%vertex(nvtx_rem))
 
       allocate(ivtx4ivtx_t(2,nvtx_t))
 
@@ -101,7 +98,8 @@ c      allocate(contr_rem%vertex(nvtx_rem))
           if (ivtx4ivtx_t(1,idx1).eq.2) then
             ! look whether already one external line exists:
             do idx = 1, idx_rem
-              if (contr_rem%arc(idx)%link(1).eq.ivtx4ivtx_t(2,idx1))then
+              if (contr_rem%arc(idx)%link(1).eq.ivtx4ivtx_t(2,idx1)
+     &             .and.contr_rem%arc(idx)%link(2).eq.0 )then
                 contr_rem%arc(idx)%occ_cnt =
      &               contr_rem%arc(idx)%occ_cnt +
      &               contr%arc(idx_t)%occ_cnt
@@ -114,7 +112,8 @@ c      allocate(contr_rem%vertex(nvtx_rem))
             contr_rem%arc(idx_rem)%occ_cnt = contr%arc(idx_t)%occ_cnt
           else ! if (ivtx4ivtx_t(1,idx2).eq.2) then
             do idx = 1, idx_rem
-              if (contr_rem%arc(idx)%link(2).eq.ivtx4ivtx_t(2,idx2))then
+              if (contr_rem%arc(idx)%link(2).eq.ivtx4ivtx_t(2,idx2)
+     &             .and.contr_rem%arc(idx)%link(1).eq.0)then
                 contr_rem%arc(idx)%occ_cnt =
      &               contr_rem%arc(idx)%occ_cnt +
      &               contr%arc(idx_t)%occ_cnt
