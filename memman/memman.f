@@ -297,10 +297,15 @@ c      end type membuffer_slot
           write(luout,'(x,a,e8.1,a)') 'ERROR: memory exceeded by ',
      &         over*100d0,' %'
           ! print memory map here
+          write(luout,'(x,2a)') 'trying to allocate slice: ',
+     &         trim(mem_curslice%name)
+          call memman_map(luout,.true.)
           call quit(0,'memman','memory exceeded')
         else if (over.gt.over_warn) then
           write(luout,'(x,a,e8.1,a)') 'WARNING: memory exceeded by ',
      &         over*100d0,' %'
+          write(luout,'(x,2a)') 'trying to allocate slice: ',
+     &         trim(mem_curslice%name)
         end if
             
       end if

@@ -65,7 +65,7 @@
       real(8) ::
      &     energy, xresnrm, xret(10)
       type(operator_array), pointer ::
-     &     op_opt(:)
+     &     op_opt(:), op_grd(:)
       type(file_array), pointer ::
      &     ffopt(:), ffgrd(:), ffdia(:),
      &     ff_trv(:), ff_h_trv(:)   ! not yet needed
@@ -87,7 +87,7 @@
       end do
 
       allocate(ffopt(nop_opt),ffdia(nop_opt),
-     &     ffgrd(nop_opt),op_opt(nop_opt))
+     &     ffgrd(nop_opt),op_opt(nop_opt),op_grd(nop_opt))
       do iop = 1, nop_opt
         call assign_file_to_op(idxop_out(iop),.true.,ffopt(iop),!<-dummy 
      &                         1,1,1,
@@ -98,6 +98,7 @@
      &                         0,op_info)
         ffgrd(iop)%fhand =>
      &              op_info%opfil_arr(idxop_out(iop+nop_opt))%fhand
+        op_grd(iop)%op   => op_info%op_arr(idxop_out(iop+nop_opt))%op
         op_opt(iop)%op   => op_info%op_arr(idxop_out(iop))%op
         ffdia(iop)%fhand => op_info%opfil_arr(idxop_in(iop))%fhand
       end do
@@ -157,7 +158,7 @@
       end do opt_loop
 
       ifree = mem_flushmark()
-      deallocate(ffopt,ffdia,ffgrd,op_opt,ff_trv,ff_h_trv)
+      deallocate(ffopt,ffdia,ffgrd,op_opt,op_grd,ff_trv,ff_h_trv)
       return
       end
 

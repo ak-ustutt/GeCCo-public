@@ -22,7 +22,8 @@ c      include 'opdim.h'
       integer ::
      &     igas, ica1, ica2, imask
 
-      reverse = dagger1.eq..not.dagger2
+      reverse = dagger1.and..not.dagger2 .or.
+     &          .not.dagger1.and.dagger2
 
       same = .true.
       cmp_loop: do imask = 1, 2

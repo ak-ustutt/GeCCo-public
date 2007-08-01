@@ -76,9 +76,13 @@
      &             op%off_op_gmo(iblk)%gam_ms(nsym,nexc+1))
           ncount = ncount+2*nsym*(nexc+1)
         end do        
+c dbg
+        print *,'1: nblk, ncount: ',nblk,ncount
+c dbg
         ifree = mem_register(6*nblk+ncount,
      &       trim(op%name)//'-1')
       case(2)
+        nsym = orb_info%nsym
         ncount = 0
         do iblk = 1, nblk
           nexc = min(op%ica_occ(1,iblk),
@@ -93,6 +97,9 @@
      &             op%off_op_gmox(iblk)%ndis(nsym,nexc+1))
           ncount = ncount+ndis*nsym*(nexc+1)*3+nsym*(nexc+1)
         end do
+c dbg
+        print *,'2: nblk, ncount: ',nblk,ncount
+c dbg
         ifree = mem_register(ncount,trim(op%name)//'-2')
       case default
         write(luout,*) 'ipass = ',ipass

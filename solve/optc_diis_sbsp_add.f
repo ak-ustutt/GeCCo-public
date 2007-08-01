@@ -36,6 +36,8 @@
 
       integer, external ::
      &     ioptc_get_sbsp_rec
+      real(8), external ::
+     &     dnrm2
 
       ! get record-number for new vector in subspace
       irecr = ioptc_get_sbsp_rec(0,iord_rsbsp,ndim_rsbsp,mxdim_sbsp)
