@@ -22,6 +22,7 @@
       integer ::
      &     idx, idxph
 
+      call quit(1,'prt_contr','call to obsolete routine')
       write(luout,*) '+++ contraction info +++'
       if (contr%idx_res.gt.0) then
         write(luout,*) ' name (index) and block of result: ',

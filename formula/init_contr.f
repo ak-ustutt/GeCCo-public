@@ -21,6 +21,8 @@
       contr%nfac = 0
       nullify(contr%vertex)
       nullify(contr%arc)
+      nullify(contr%joined)
+      nullify(contr%svertex)
       nullify(contr%inffac)
       
       return

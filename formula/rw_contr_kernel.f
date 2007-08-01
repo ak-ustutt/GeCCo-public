@@ -35,33 +35,43 @@
 
         contr%iblk_res = buffer(1)
         contr%nvtx = buffer(2)
-        contr%narc = buffer(3) 
-        contr%nfac = buffer(4) 
+        contr%nsupvtx = buffer(3)
+        contr%narc = buffer(4) 
+        contr%nfac = buffer(5) 
 
         ! (re)allocate the necessary space
-        if (contr%nvtx.gt.contr%mxvtx) then
-          if (contr%mxvtx.gt.0) deallocate(contr%vertex)
-          contr%mxvtx = contr%nvtx
-          allocate(contr%vertex(contr%mxvtx))
-        end if
-        if (contr%narc.gt.contr%mxarc) then
-          if (contr%mxarc.gt.0) deallocate(contr%arc)
-          contr%mxarc = contr%narc
-          allocate(contr%arc(contr%mxarc))
-        end if
-        if (contr%nfac.gt.contr%mxfac) then
-          if (contr%mxfac.gt.0) deallocate(contr%inffac)
-          contr%mxfac = contr%nfac
-          allocate(contr%inffac(ld_inffac,contr%mxfac))
-        end if
+        call resize_contr(contr,contr%nvtx,contr%narc,contr%nfac)
+c        if (contr%nvtx.gt.contr%mxvtx) then
+c          if (contr%mxvtx.gt.0) deallocate(contr%vertex)
+c          contr%mxvtx = contr%nvtx
+c          allocate(contr%vertex(contr%mxvtx))
+c        end if
+c        if (contr%narc.gt.contr%mxarc) then
+c          if (contr%mxarc.gt.0) deallocate(contr%arc)
+c          contr%mxarc = contr%narc
+c          allocate(contr%arc(contr%mxarc))
+c        end if
+c        if (contr%nfac.gt.contr%mxfac) then
+c          if (contr%mxfac.gt.0) deallocate(contr%inffac)
+c          contr%mxfac = contr%nfac
+c          allocate(contr%inffac(ld_inffac,contr%mxfac))
+c        end if
 
-        idx = 4
+        idx = 5
 
         do ii = 1, contr%nvtx
           contr%vertex(ii)%idx_op  = buffer(idx+1)
           contr%vertex(ii)%iblk_op = buffer(idx+2)
           idx = idx+2
         end do
+
+        do ii = 1, contr%nsupvtx
+          contr%svertex(ii) = buffer(idx+1)
+          idx = idx+1
+        end do
+
+        ! set up "joined" array from this info
+        call update_svtx4contr(contr)
 
         do ii = 1, contr%narc
           contr%arc(ii)%link(1)      = buffer(idx+1)
@@ -92,14 +102,15 @@
         ierr = 0
         buffer(1) = contr%iblk_res
         buffer(2) = contr%nvtx
-        buffer(3) = contr%narc
-        buffer(4) = contr%nfac
+        buffer(3) = contr%nsupvtx
+        buffer(4) = contr%narc
+        buffer(5) = contr%nfac
         if (buffer(1).ne.contr%iblk_res) ierr = ierr+1
         if (buffer(2).ne.contr%nvtx) ierr = ierr+1
-        if (buffer(3).ne.contr%narc) ierr = ierr+1
-        if (buffer(4).ne.contr%nfac) ierr = ierr+1
-
-        idx = 4
+        if (buffer(3).ne.contr%nsupvtx)ierr = ierr+1
+        if (buffer(4).ne.contr%narc) ierr = ierr+1
+        if (buffer(5).ne.contr%nfac) ierr = ierr+1
+        idx = 5
         if (ierr.gt.0) goto 101
         if (idx+contr%nvtx*2.gt.lbuf) goto 103
         
@@ -112,6 +123,15 @@
         end do
         if (ierr.gt.0) goto 102
         
+        if (idx+contr%nsupvtx.gt.lbuf) goto 103
+
+        do ii = 1, contr%nsupvtx
+          buffer(idx+1) = contr%svertex(ii)
+          idx = idx+1
+        end do
+
+        ! the "joined" array needs not be saved (see above)
+
         if (idx+contr%narc*8.gt.lbuf) goto 103
         do ii = 1, contr%narc
           buffer(idx+1) = contr%arc(ii)%link(1)

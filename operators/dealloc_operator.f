@@ -8,12 +8,18 @@
       include 'stdunit.h'
       include 'opdim.h'
       include 'def_operator.h'
+      include 'ifc_memman.h'
+      include 'par_globalmarks.h'
 
       type(operator), intent(inout) ::
      &     op
 
       integer ::
-     &     nblk, iblk
+     &     nblk, iblk, ifree
+
+      call mem_pushmark()
+
+      ifree = mem_gotomark(operator_def)
 
       if (op%n_occ_cls.le.0.or.op%n_occ_cls.ge.1000) then
         write(luout,*) 'n_occ_cls = ',op%n_occ_cls
@@ -38,6 +44,10 @@
       if (associated(op%idx_graph)) then
         deallocate(op%idx_graph)
         op%idx_graph => null()
+        ! if noone has cheated, we should end up here when everything
+        ! from this section has been removed cleanly
+        ! could be made safer
+        ifree = mem_dealloc(trim(op%name)//'-0')
       end if
 
       if (associated(op%off_op_occ)) then
@@ -77,7 +87,13 @@
         end do
         deallocate(op%len_op_gmox)
         op%len_op_gmox => null()
+        ! if noone has cheated, we should end up here
+        ! could be made safer
+        ifree = mem_dealloc(trim(op%name)//'-1')
+        ifree = mem_dealloc(trim(op%name)//'-2')
       end if
+
+      call mem_popmark()
 
       return
       end

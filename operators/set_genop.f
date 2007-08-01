@@ -1,7 +1,8 @@
 *----------------------------------------------------------------------*
-      subroutine set_genop(op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,
-     &     iad_gas,hpvxgas,ngas)
+      subroutine set_genop(op,name,type,
+     &     dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,orb_info)
+c     &     iad_gas,hpvxgas,ngas)
 *----------------------------------------------------------------------*
 *     set up occupations for a general operator described by
 *     min_rank, 
@@ -18,12 +19,13 @@
       implicit none
       include 'opdim.h'
       include 'def_operator.h'
+      include 'def_orbinf.h'
       include 'stdunit.h'
       include 'ifc_baserout.h'
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(operator), intent(inout) ::
      &     op
@@ -31,14 +33,16 @@
      &     name*(*)
       logical, intent(in) ::
      &     dagger
+c      integer, intent(in) ::
+c     &     ngas
       integer, intent(in) ::
-     &     ngas
-      integer, intent(in) ::
-     &     absym, casym, gamma, s2, ms,
+     &     type, absym, casym, gamma, s2, ms,
      &     min_rank, max_rank, ncadiff
+      type(orbinf), intent(in), target ::
+     &     orb_info
       integer, intent(in) ::
-     &     hpvx_mnmx(2,ngastp,2), irestr(2,ngas,2,2),
-     &     iad_gas(ngas), hpvxgas(ngas)
+     &     hpvx_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2) !,
+c     &     iad_gas(ngas), hpvxgas(ngas)
 
       logical, parameter ::
      &     inv_hole = .true.
@@ -54,7 +58,8 @@
      &     hpvxprint(ngastp)
       integer ::
      &     n_occls_x012(0:2), idx_occls_x012(0:2)
-
+      integer, pointer ::
+     &     ngas, iad_gas(:), hpvxgas(:)
 
       iprint = max(iprlvl,ntest)
 
@@ -68,22 +73,39 @@
      &       ' hpvx_mnmx: ',hpvx_mnmx(1:2,1:ngastp,1)
         write(luout,'(x,a,4(i2,x,i2,2x))')
      &       '            ',hpvx_mnmx(1:2,1:ngastp,2)
-        call wrt_rstr(luout,irestr,ngas)
+        call wrt_rstr(luout,irestr,orb_info%ngas)
       end if
 
       if (len_trim(name).gt.len_opname)
      &     call quit(1,'set_genop','name too long: "'//trim(name)//'"')
 
+      if (type.ne.optyp_operator.and.type.ne.optyp_density) then
+        if (type.eq.optyp_intermediate) then
+          write(luout,*)
+     &         'use set_gen_intermediate to define intermediates'
+        else
+          write(luout,*) 'type: ',type,' ?'
+        end if
+        call quit(1,'set_genop','illegal type specification')
+      end if
+
+      ngas => orb_info%ngas
+      iad_gas => orb_info%iad_gas
+      hpvxgas => orb_info%ihpvgas
+
       ! basic settings:
       op%name = '        '
       op%name = name
+
+      op%type = type
+      op%njoined = 1  ! always for operators and densities
 
       op%dagger = dagger
       op%casym = casym
       op%absym = absym
 
-      if (absym.ne.0) stop 'adapt for absym.ne.0'
-      if (casym.ne.0) stop 'adapt for casym.ne.0'
+      if (absym.ne.0) call quit(1,'set_genop','adapt for absym.ne.0')
+      if (casym.ne.0) call quit(1,'set_genop','adapt for casym.ne.0')
 
       ! set info, some consistency checks would be appropriate as
       ! soon as we seriously use that info
@@ -97,11 +119,12 @@
         
         ! second round: allocate and setup offsets
         if (ipass.eq.2) then
-          allocate(op%ihpvca_occ(ngastp,2,op%n_occ_cls),
-     &             op%ica_occ(2,op%n_occ_cls),
-     &             op%igasca_restr(2,ngas,2,2,op%n_occ_cls))
-          ifree = mem_register((ngastp*2+2+8*ngas)*op%n_occ_cls,
-     &         trim(name)//'_occ')
+c          allocate(op%ihpvca_occ(ngastp,2,op%n_occ_cls),
+c     &             op%ica_occ(2,op%n_occ_cls),
+c     &             op%igasca_restr(2,ngas,2,2,op%n_occ_cls))
+c          ifree = mem_register((ngastp*2+2+8*ngas)*op%n_occ_cls,
+c     &         trim(name)//'_occ')
+          call init_operator(0,op,orb_info)
           ! counters according to number of external indices (R12)
           ! to sort operators in the way:
           ! 1st: all operators with no X index (conventional)

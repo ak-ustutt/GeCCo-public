@@ -1,10 +1,10 @@
 *----------------------------------------------------------------------*
-      subroutine set_xop(op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,orb_info)
+      subroutine set_uop(op,name,dagger,absym,casym,gamma,s2,ms,
+     &     occ_def,ndef,orb_info)
 *----------------------------------------------------------------------*
-*     wrapper for set_genop
-*     set up excitation operator (minrank to maxrank)
-*     hpvx_mnmx,irestr are chosen appropriately
+*     wrapper for set_user_op
+*     set up user-provided operator 
+*     irestr is chosen appropriately
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -22,46 +22,38 @@
      &     dagger
       integer, intent(in) ::
      &     absym, casym, gamma, s2, ms,
-     &     min_rank, max_rank, ncadiff
+     &     occ_def, ndef
 
       type(orbinf) ::
      &     orb_info
       integer ::
-     &     hpvx_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
+     &     ncadiff,
+     &     irestr(2,orb_info%ngas,2,2)
 
-      call set_hpvx_and_restr_for_xop()
+      ncadiff = 0
+      call set_restr_for_uop()
 
-      call set_genop(op,name,optyp_operator,
+      call set_user_op(op,name,optyp_operator,
      &     dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,orb_info)
+     &     occ_def,ndef,irestr,orb_info)
 
       return
       
       contains
 
 *----------------------------------------------------------------------*
-      subroutine set_hpvx_and_restr_for_xop()
+      subroutine set_restr_for_uop()
 *----------------------------------------------------------------------*
 
       implicit none
 
       integer ::
-     &     ica, igastp, igas
+     &     ica, igastp, igas, max_rank
 
-      do ica = 1, 2
-        do igastp = 1, ngastp
-          if (orb_info%nactt_hpv(igastp).gt.0.and.
-     &        ((ica.eq.1.and.(igastp.eq.ipart.or.igastp.eq.ivale)).or.
-     &         (ica.eq.2.and.(igastp.eq.ihole.or.igastp.eq.ivale)) ))
-     &           then
-            hpvx_mnmx(1,igastp,ica) = 0
-            hpvx_mnmx(2,igastp,ica) = max_rank
-          else
-            hpvx_mnmx(1,igastp,ica) = 0
-            hpvx_mnmx(2,igastp,ica) = 0
-          end if
-        end do
-      end do
+      integer, external ::
+     &     ifndmax
+
+      max_rank = ifndmax(occ_def,1,ngastp*2*ndef,1)
       irestr(1:2,1:orb_info%ngas,1:2,1:2) = 0
       do ica = 1, 2
         do igas = 1, orb_info%ngas
@@ -71,6 +63,6 @@
       end do
 
       return
-      end subroutine set_hpvx_and_restr_for_xop
+      end subroutine set_restr_for_uop
 
       end

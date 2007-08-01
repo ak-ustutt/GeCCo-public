@@ -145,7 +145,7 @@
         ! a bit of bureaucracy ...
         allocate(occ_vtx(ngastp,2,proto%nvtx+1),fix_vtx(proto%nvtx))
         fix_vtx = .true.     ! "fix" all vertices -> ieqvfac will be 1
-        call occvtx4contr(occ_vtx,proto,op_info)
+        call occvtx4contr(0,occ_vtx,proto,op_info)
 
         ! ... and go! get all possible connections
         call gen_contr(fl_expand_pnt,proto,fix_vtx,occ_vtx,op_info)

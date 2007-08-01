@@ -388,7 +388,7 @@ c dbg
 
                     ! make topological analysis
                     call topo_contr(ieqvfac,reo,ivtx_reo2,
-     &                   proto_new,occ_vtx,fix_vtx)
+     &                   proto_new,occ_vtx(1,1,2),fix_vtx)
 
                     ok = ieqvfac.gt.0
 c dbg

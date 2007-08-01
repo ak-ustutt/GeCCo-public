@@ -51,19 +51,19 @@
      &     form_pnt
 
       integer, external ::
-     &     op_type
+     &     vtx_type
 
       form_pnt => form_res
 
       ! check type of operator b
-      iop_typ_b = op_type(op_info%op_arr(idx_b)%op)
+      iop_typ_b = vtx_type(op_info%op_arr(idx_b)%op)
 
-      if (iop_typ_b.ne.optyp_ph_ex.and.iop_typ_b.ne.optyp_ph_dx)
+      if (iop_typ_b.ne.vtxtyp_ph_ex.and.iop_typ_b.ne.vtxtyp_ph_dx)
      &     call quit(1,'expand_op_bch',
      &     'currently, only pure EX/DX operators allowed')
 
-      pure_ex = iop_typ_b.eq.optyp_ph_ex
-      pure_dx = iop_typ_b.eq.optyp_ph_dx
+      pure_ex = iop_typ_b.eq.vtxtyp_ph_ex
+      pure_dx = iop_typ_b.eq.vtxtyp_ph_dx
 
       allocate(connect(2,max_n),idx_op(max_n+2),
      &     iblk_min(max_n+2),iblk_max(max_n+2))

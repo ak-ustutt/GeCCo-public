@@ -22,7 +22,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       character, parameter ::
      &     name_scr0*6 = 'cntscr'
@@ -241,7 +241,7 @@ c        case(command_set_target_update)
         ! reset intermediate counter
         ninter = 0
 
-        call occvtx4contr(occ_vtx,cur_form%contr,op_info)
+        call occvtx4contr(0,occ_vtx,cur_form%contr,op_info)
         call vtxinf4contr(irestr_vtx,info_vtx,
      &                            cur_form%contr,op_info,ngas)
 
@@ -327,14 +327,15 @@ c dbg
             iblkop1op2 = 1
 
             ! allocate further stuff in operator structure
-            opscr(ninter)%n_occ_cls = 1
-            call init_operator(0,opscr(ninter),orb_info)
+c            opscr(ninter)%n_occ_cls = 1
+c            opscr(ninter)%njoined = 1
+c            call init_operator(0,opscr(ninter),orb_info)
             ! set up pseudo-operator for current intermediate
             write(opscrnam,'("INT",i3.3)') ninter
             call set_ps_op(opscr(ninter),opscrnam,
-     &           iocc_op1op2,irst_op1op2,
+     &           iocc_op1op2,irst_op1op2,   1,
      &           mstop1op2,igamtop1op2,
-     &           ngas,orb_info%ihpvgas,str_info)
+     &           orb_info,str_info)
             ! allocate sub-arrays
             call init_operator(1,opscr(ninter),orb_info)
             ! set up dimensions (pass 1)

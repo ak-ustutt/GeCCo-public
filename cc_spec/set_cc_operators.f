@@ -52,9 +52,9 @@ c     &     list_pnt
       ncadiff = 0
       call set_hpvx_and_restr_for_h()
 
-      call set_genop(op_pnt,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+      call set_genop(op_pnt,name,optyp_operator,
+     &     dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,orb_info)
 
       ! use e^{-T1}He^{T1}?
       call get_argument_value('calculate.routes','simtraf',ival=isim)
@@ -86,9 +86,9 @@ c     &     list_pnt
       ncadiff = 0
       call set_hpvx_and_restr_for_xop()
 
-      call set_genop(op_pnt,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+      call set_genop(op_pnt,name,optyp_operator,
+     &     dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,orb_info)
 
       ! new entry: the Tbar operator
       call add_operator(op_tbar,op_info)
@@ -132,9 +132,9 @@ c     &     list_pnt
       ncadiff = 0
       call set_hpvx_and_restr_for_xop()
 
-      call set_genop(op_pnt,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+      call set_genop(op_pnt,name,optyp_operator,
+     &     dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,orb_info)
 
       ! ... and the CC energy
       call add_operator(op_ccen,op_info)

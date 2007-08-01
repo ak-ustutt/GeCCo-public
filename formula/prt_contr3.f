@@ -29,15 +29,16 @@
      &     contr%idx_res, contr%iblk_res
       end if
       write(luout,*) ' factor: ',contr%fac
-      write(luout,*) ' number of vertices/arcs: ',
-     &     contr%nvtx,contr%narc
+      write(luout,'(x,a,3i5)')
+     &     ' number of prim.vertices/sup.vertices/arcs: ',
+     &     contr%nvtx,contr%nsupvtx,contr%narc
       do idx = 1, contr%nvtx
         if (contr%vertex(idx)%idx_op.eq.0) then
-          write(luout,'(x,a)') ' v   0'
+          write(luout,'(2x,"v",i2.2,x,"0")') contr%svertex(idx)
           cycle
         end if
-        write(luout,'(x,a,x,i5,x,i4,2x,4i3)')
-     &       ' v  ',contr%vertex(idx)%idx_op,
+        write(luout,'(x,"v",i2.2,x,i5,x,i4,2x,4i3)')
+     &       contr%svertex(idx),contr%vertex(idx)%idx_op,
      &       contr%vertex(idx)%iblk_op,
      &       occ_vtx(1:ngastp,1,idx+1)
         write(luout,'(x,a,13x,4i3)')

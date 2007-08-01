@@ -33,9 +33,7 @@
       if (associated(list_pnt%prev)) list_pnt%prev%next => list_pnt%next
       if (associated(list_pnt%next)) list_pnt%next%prev => list_pnt%prev
       op => list_pnt%op
-      if (associated(op%ihpvca_occ)) deallocate(op%ihpvca_occ)
-      if (associated(op%ica_occ)) deallocate(op%ica_occ)
-      if (associated(op%igasca_restr)) deallocate(op%igasca_restr)
+      call dealloc_operator(op)
 
       ! decrement counter
       op_info%nops = op_info%nops-1

@@ -30,6 +30,10 @@
         if (ixdn.eq.2.and.ica.eq.2) ihpv = ipart
         if (ixdn.eq.3) ihpv = 3
         iscr(ihpv,ica) = iocc(ihpv,ica)
+        if (ixdn.eq.3) cycle
+        if (ixdn.eq.1.and.ica.eq.1) ihpv = iextr
+        if (ixdn.eq.2.and.ica.eq.2) ihpv = iextr
+        iscr(ihpv,ica) = iocc(ihpv,ica)
       end do
 
       iocc_xdn = iscr

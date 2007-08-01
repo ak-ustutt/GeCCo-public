@@ -1,9 +1,9 @@
 *----------------------------------------------------------------------*
-      subroutine set_xop(op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,orb_info)
+      subroutine set_hop(op,name,dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_genop
-*     set up excitation operator (minrank to maxrank)
+*     set up hamiltonian-like operator (minrank to maxrank)
 *     hpvx_mnmx,irestr are chosen appropriately
 *----------------------------------------------------------------------*
       implicit none
@@ -22,14 +22,16 @@
      &     dagger
       integer, intent(in) ::
      &     absym, casym, gamma, s2, ms,
-     &     min_rank, max_rank, ncadiff
+     &     min_rank, max_rank
 
       type(orbinf) ::
      &     orb_info
       integer ::
+     &     ncadiff,
      &     hpvx_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
-      call set_hpvx_and_restr_for_xop()
+      ncadiff = 0
+      call set_hpvx_and_restr_for_hop()
 
       call set_genop(op,name,optyp_operator,
      &     dagger,absym,casym,gamma,s2,ms,
@@ -40,7 +42,7 @@
       contains
 
 *----------------------------------------------------------------------*
-      subroutine set_hpvx_and_restr_for_xop()
+      subroutine set_hpvx_and_restr_for_hop()
 *----------------------------------------------------------------------*
 
       implicit none
@@ -50,10 +52,7 @@
 
       do ica = 1, 2
         do igastp = 1, ngastp
-          if (orb_info%nactt_hpv(igastp).gt.0.and.
-     &        ((ica.eq.1.and.(igastp.eq.ipart.or.igastp.eq.ivale)).or.
-     &         (ica.eq.2.and.(igastp.eq.ihole.or.igastp.eq.ivale)) ))
-     &           then
+          if (orb_info%nactt_hpv(igastp).gt.0) then
             hpvx_mnmx(1,igastp,ica) = 0
             hpvx_mnmx(2,igastp,ica) = max_rank
           else
@@ -71,6 +70,6 @@
       end do
 
       return
-      end subroutine set_hpvx_and_restr_for_xop
+      end subroutine set_hpvx_and_restr_for_hop
 
       end

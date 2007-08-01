@@ -1,8 +1,11 @@
 *----------------------------------------------------------------------*
-      subroutine topomap4contr(topomap,eqv_map,neqv,idx_eqv,
+      subroutine topomap4contr(mode,
+     &                         topomap,eqv_map,neqv,idx_eqv,
      &                         contr,occ_vtx)
 *----------------------------------------------------------------------*
 *     generate a few maps needed for topology analysis
+*
+*     mode==1: topomap only   mode==2: all quantities
 *
 *     topomap(nvtx,nvtx) :  who is connected to who?
 *                           the index is a packed occupation, which
@@ -33,10 +36,12 @@
       integer, parameter ::
      &     ntest = 00
 
+      integer, intent(in) ::
+     &     mode
       type(contraction), intent(in) ::
      &     contr
       integer, intent(in) ::
-     &     occ_vtx(ngastp,2,contr%nvtx+1)
+     &     occ_vtx(ngastp,2,contr%nvtx)
       integer, intent(out) ::
      &     topomap(contr%nvtx,contr%nvtx),eqv_map(contr%nvtx),
      &     neqv(contr%nvtx),idx_eqv(contr%nvtx,contr%nvtx)
@@ -56,6 +61,9 @@
         call write_title(luout,wst_dbg_subr,'this is topomap4contr')
       end if
       
+      if (mode.ne.1.and.mode.ne.2)
+     &     call quit(1,'topomap4contr','illegal mode parameter')
+
       nvtx = contr%nvtx
       narc = contr%narc
 
@@ -75,13 +83,15 @@
             exit
           end if
         end do
-        ibase = ifndmax(occ_vtx(1,1,jvtx+1),0,ngastp*2,1)+1
+        ibase = ifndmax(occ_vtx(1,1,jvtx),1,ngastp*2,1)+1
         icpack = int_pack(contr%arc(idx)%occ_cnt,ngastp*2,ibase)
         topomap(ivtx,jvtx) = icpack
-        ibase = ifndmax(occ_vtx(1,1,ivtx+1),0,ngastp*2,1)+1
+        ibase = ifndmax(occ_vtx(1,1,ivtx),1,ngastp*2,1)+1
         icpack = int_pack(contr%arc(idx)%occ_cnt,ngastp*2,ibase)
         topomap(jvtx,ivtx) = icpack
       end do
+
+      if (mode.eq.1) return
 
       neqv(1:nvtx) = 1
       do ivtx = 1, nvtx

@@ -1,11 +1,10 @@
 *----------------------------------------------------------------------*
-      subroutine form_deriv2(f_deriv,f_input,
-     &                      label_deriv,title_deriv,
+      subroutine form_deriv3(fl_deriv,fl_input,
      &                      ncmpnd,idxder,idxmlt,idxres,
      &                      op_info)
 *----------------------------------------------------------------------*
-*     get the derivatives of all contraction on ffinput
-*
+*     get the derivatives of all contractions on fl_input
+
 *     ncmpnd: number of compounds in multi-compound operator -
 *       e.g. for R12 : 'T' and 'C' are a compound op. (ncmpnd=2) 
 *     idxder(1:ncmpnd) is the index of the operator with respect to which the
@@ -21,16 +20,13 @@
 
       include 'stdunit.h'
       include 'opdim.h'
-c      include 'def_filinf.h'
       include 'mdef_operator_info.h'
       include 'def_contraction.h'
       include 'def_contraction_list.h'
-      include 'def_formula.h'
+      include 'def_formula_item.h'
 
-      character, intent(in) ::
-     &     title_deriv*(*),label_deriv*(*)
-      type(formula), intent(inout) ::
-     &     f_input, f_deriv
+      type(formula_item), intent(inout), target ::
+     &     fl_input, fl_deriv
       integer, intent(in) ::
      &     ncmpnd, idxder(ncmpnd), idxmlt(ncmpnd), idxres
       type(operator_info) ::
@@ -46,49 +42,38 @@ c      include 'def_filinf.h'
       logical ::
      &     reo
       integer ::
-     &     luinput, luderiv, nvtx,
+     &     nvtx,
      &     nterms, nder, idx, idum, idxinp, len, icmpnd, ieqvfac
-      character ::
-     &     name*(form_maxlen_label*2)
 
       integer, pointer ::
      &     ivtx_reo(:),occ_vtx(:,:,:)
       logical, pointer ::
      &     fix_vtx(:)
+      type(formula_item), pointer ::
+     &     fl_input_pnt, fl_deriv_pnt
 
-      logical, external ::
-     &     rd_contr
+      if (fl_input%command.ne.command_set_target_init)
+     &       call quit(1,'form_deriv',
+     &       'input formula definition must start with [INIT]')
+      
+      call init_formula(fl_deriv)
+      call new_formula_item(fl_deriv,command_set_target_init,idxres)
+      fl_deriv_pnt => fl_deriv%next
 
-      write(name,'(a,".fml")') label_deriv
-      call file_init(f_deriv%fhand,name,ftyp_sq_unf,0)      
-      f_deriv%label = label_deriv
-      f_deriv%comment = title_deriv
+      fl_input_pnt => fl_input%next
 
-      call file_open(f_input%fhand)
-      call file_open(f_deriv%fhand)
-      luinput = f_input%fhand%unit
-      luderiv = f_deriv%fhand%unit
-      rewind luinput
-      rewind luderiv
-
-      read(luinput)
-      read(luinput) idum,idxinp
-
-      len = len_trim(title_deriv)
-      write(luderiv) len,title_deriv
-      write(luderiv) idum,idxres
-
-      ! signal, that still nothing is allocated
-      contr%mxvtx = 0
-      contr%mxarc = 0
-      contr%mxfac = 0
       nullify(conder%contr)
-
+      
+      ! loop over input formula list
       nterms = 0
-      do while(rd_contr(luinput,contr,idxinp))
+      input_loop: do
 
+        if (fl_input_pnt%command.ne.command_add_contribution)
+     &     exit input_loop
+
+        ! obtain derivatives for all components:
         do icmpnd = 1, ncmpnd
-          call contr_deriv2(conder,nder,contr,op_info,
+          call contr_deriv2(conder,nder,fl_input_pnt%contr,op_info,
      &         idxder(icmpnd),idxmlt(icmpnd),idxres)
 
           cur_conder => conder
@@ -108,17 +93,23 @@ c      include 'def_filinf.h'
             call canon_contr(cur_conder%contr,reo,ivtx_reo)
             deallocate(ivtx_reo,fix_vtx,occ_vtx)
 
-            call wrt_contr(luderiv,cur_conder%contr)
+            ! put result to derivative formula list
+            call new_formula_item(fl_deriv_pnt,
+     &           command_add_contribution,idxres)
+            call copy_contr(cur_conder%contr,fl_deriv_pnt%contr)
+            fl_deriv_pnt => fl_deriv_pnt%next
             if (idx.lt.nder) cur_conder => cur_conder%next
           end do
 
           call dealloc_contr_list(conder)
         end do
 
-      end do
+        if (.not.associated(fl_input_pnt%next))
+     &       call quit(1,'form_deriv',
+     &       'unexpected end of list (input)')
+        fl_input_pnt => fl_input_pnt%next
 
-      call file_close_keep(f_deriv%fhand)
-      call file_close_keep(f_input%fhand)
+      end do input_loop
 
       call dealloc_contr(contr)
       

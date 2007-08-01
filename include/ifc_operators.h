@@ -89,4 +89,14 @@ c        type(operator), intent(in) ::
 c     &       op
 c	end function
 
+      function irest_xdn(ixdn,irest,hpvxgas,ngas)
+      implicit none
+      include 'opdim.h'
+      integer ::
+     &     irest_xdn(2,ngas,2,2)
+      integer, intent(in) ::
+     &     ixdn, ngas, hpvxgas(ngas),
+     &     irest(2,ngas,2,2)
+      end function
+
       end interface

@@ -58,10 +58,40 @@
       nvtx = contr%nvtx
       narc = contr%narc
 
+      ! super vertex? find further primitive vertices ...
+      ! and further contractions between the supervertices
+
+      ! complain, if iarc_red was not the first of these
+
+      ! loop over primitive contractions
+
       ! first round: generate new vertices
+      ! contraction info
       ivtx1 = contr%arc(iarc_red)%link(1)
       ivtx2 = contr%arc(iarc_red)%link(2)
       occ_cnt =>  contr%arc(iarc_red)%occ_cnt
+
+      ! check whether vertices can be joined
+      ! we may join vertices if neither of them connects to an
+      ! operator vertex located between them
+      ! unless the we have neighbouring vertices ...
+c      if (ivtx2-ivtx1.eq.1) then
+c        join = .true.
+c      else
+c        ! ... we must have a look at the topology
+c        allocate(topomap(nvtx,nvtx))
+c
+c        call topomap4contr(1,topomap,idum,idum,idum,contr,occ_vtx(1,1,nj+1))
+c
+c        join = .true.
+c        do ivtx = ivtx1+1, ivtx2-1
+c          join = join.and.topomap(ivtx,ivtx2).eq.0
+c        end do
+c
+c        deallocate(topomap)
+c
+c      end if
+
       ! generate occupation of new vertex 
       !  (+1 as first entry on occ_vtx is result vertex)
       occ_vtx(1:ngastp,1:2,ivtx1+1) =

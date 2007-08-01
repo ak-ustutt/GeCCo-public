@@ -117,7 +117,7 @@ c      if (narc_full.le.0) then
       call set_restr_prel(irestr_res,contr,op_info,
      &     ihpvgas,ngas)
 
-      call occvtx4contr(occ_vtx,contr,op_info)
+      call occvtx4contr(0,occ_vtx,contr,op_info)
 
       call vtxinf4contr(irestr_vtx,info_vtx,contr,op_info,ngas)
 

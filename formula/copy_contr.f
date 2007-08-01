@@ -30,11 +30,14 @@
       contr_tgt%iblk_res = contr_src%iblk_res
       contr_tgt%fac = contr_src%fac
       contr_tgt%nvtx = contr_src%nvtx
+      contr_tgt%nsupvtx = contr_src%nsupvtx
       contr_tgt%narc = contr_src%narc
       contr_tgt%nfac = contr_src%nfac
 
       if (nvtx.gt.0) then
         contr_tgt%vertex(1:nvtx) = contr_src%vertex(1:nvtx)
+        contr_tgt%svertex(1:nvtx) = contr_src%svertex(1:nvtx)
+        contr_tgt%joined(0:nvtx,1:nvtx) =contr_src%joined(0:nvtx,1:nvtx)
       end if
 
       if (narc.gt.0) then

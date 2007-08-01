@@ -37,26 +37,30 @@ c      include 'def_operator.h'
       integer ::
      &     nvtx_abc, nvtx_ac, nvtx_a, nvtx_b, nvtx_c,
      &     narc_abc, narc_abc0, narc_ac, narc_b, 
-     &     idx, idx_abc, iarc, ivtx, jvtx
-c     &     nconnect_a, nconnect_c,
-c     &     nconnect_b_dx, nconnect_b_ex,
-c     &     ieqvfac
+     &     idx, ivtx_abc, iarc, ivtx, jvtx, jvtx_last,
+     &     nproto_ac, nproto_b,
+     &     nsuper, njoined, isuper
       type(formula_item) ::
      &     wrap
+      type(operator), pointer ::
+     &     opres
 c      integer ::
 c     &     iocc(ngastp,2), jocc(ngastp,2),
 c     &     iocc_a_dx(ngastp,2), iocc_b_dx(ngastp,2),
 c     &     iocc_b_ex(ngastp,2), iocc_c_ex(ngastp,2)
      
       integer, pointer ::
-     &     ivtx_a(:), ivtx_b_dx(:), ivtx_b_ex(:), ivtx_c(:),
-     &     ivtx_ac_reo(:), ivtx_b_reo(:), ivtx_reo(:),
-     &     occ_vtx(:,:,:)
+c     &     ivtx_a(:), ivtx_b_dx(:), ivtx_b_ex(:), ivtx_c(:),
+     &     ivtx_ac_reo(:), ivtx_b_reo(:),   ! ivtx_reo(:),
+     &     occ_vtx(:,:,:), svmap(:), ivtx_old(:)
       logical, pointer ::
      &     fix_vtx(:)
 
       type(cntr_arc), pointer ::
      &     arc(:)
+
+      integer, external ::
+     &     ifndmax
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'This is join_contr')
@@ -67,32 +71,94 @@ c     &     iocc_b_ex(ngastp,2), iocc_c_ex(ngastp,2)
 
       nvtx_ac = contr_ac%nvtx
       narc_ac = contr_ac%narc
-      ! count all vertices up to first "0" entry
-      nvtx_a = 0
-      do idx = 1, nvtx_ac
-        if (contr_ac%vertex(idx)%idx_op.ne.0) then
-          nvtx_a = nvtx_a+1
-c          vtxlist(idx) = idx
-        else
-          exit
-        end if
+
+      ! count proto-vertices in AC:
+      nproto_ac = 0
+      do ivtx = 1, nvtx_ac
+        if (contr_ac%vertex(ivtx)%idx_op.eq.0)
+     &       nproto_ac = nproto_ac+1
       end do
-
-      nvtx_c = nvtx_ac-nvtx_a-1
-
-      if (contr_b%nvtx.le.0)
-     &     call quit(1,'join_contr',
-     &     'inserted contraction fragment must be non-empty')
 
       nvtx_b = contr_b%nvtx
       narc_b = contr_b%narc
 
-      nvtx_abc = nvtx_a+nvtx_b+nvtx_c
-      narc_abc = narc_ac+narc_b+nvtx_a*(nvtx_b-1)+nvtx_c*(nvtx_b-1)
-     &           +nvtx_a*nvtx_c
+      ! count proto-vertices in B (there should be none):
+      nproto_b = 0
+      do ivtx = 1, nvtx_b
+        if (contr_b%vertex(ivtx)%idx_op.eq.0)
+     &       nproto_b = nproto_b+1
+      end do
+
+      if (nvtx_b.le.0.or.nproto_b.ne.0)
+     &     call quit(1,'join_contr',
+     &     'inserted contraction fragment must be non-empty and '//
+     &     'must not contain proto-vertices!')
+
+      ! get the super-vertex map for B
+      allocate(svmap(nvtx_b))
+      opres => op_info%op_arr(contr_b%idx_res)%op
+      njoined = opres%njoined
+      if (njoined.eq.1) then
+        svmap(1:nvtx_b) = 1
+      else
+        allocate(occ_vtx(ngastp,2,nvtx_b+njoined))
+        call occvtx4contr(0,occ_vtx,contr_b,op_info)
+        call svmap4contr(svmap,contr_b,occ_vtx,njoined)
+        deallocate(occ_vtx)
+      end if
+      ! largest index = number of super vertices
+      nsuper = ifndmax(svmap,1,nvtx_b,1)
+c dbg
+c      print *,'nsuper, nproto_ac: ', nsuper, nproto_ac
+c dbg
+
+      if (nsuper.ne.nproto_ac)
+     &     call quit(1,'join_contr','incompatible contractions!')
+      
+      nvtx_abc = nvtx_ac-nproto_ac+nvtx_b
+
+      ! generate a map: which vertex goes where
+      allocate(ivtx_old(nvtx_abc))
+
+      ivtx_abc = 0
+      isuper = 1
+      jvtx_last = 1
+      do ivtx = 1, nvtx_ac
+        if (contr_ac%vertex(ivtx)%idx_op.gt.0) then
+          ! here goes a AC vertex
+          ivtx_abc = ivtx_abc+1
+          ivtx_old(ivtx_abc) = ivtx
+        else
+          ! here we insert parts of B 
+          ! (current super-vertex + unassociated elements)
+          do jvtx = jvtx_last, nvtx_b
+            if (svmap(jvtx).le.isuper) then
+              ivtx_abc = ivtx_abc+1
+              ivtx_old(ivtx_abc) = -jvtx
+            else
+              jvtx_last = jvtx
+              isuper = isuper+1
+              exit
+            end if
+          end do
+        end if
+      end do
+
+      deallocate(svmap)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'nvtx_a, nvtx_b, nvtx_c: ',nvtx_a,nvtx_b,nvtx_c
+        write(luout,'(3x,a,10i5)') 'ivtx_old: ',ivtx_old(1:nvtx_abc)
+      end if
+
+      ! make some assumptions about the number of arcs in the 
+      ! proto contraction
+      narc_abc = min(
+     &     narc_ac+narc_b+nvtx_ac*(nvtx_ac-1)+nvtx_b*(nvtx_b-1),
+     &     nvtx_abc*(nvtx_abc-1))
+
+      if (ntest.ge.1000) then
+        write(luout,*) 'nvtx_ac, nvtx_b, nvtx_abc: ',
+     &       nvtx_ac, nvtx_b, nvtx_abc
         write(luout,*) 'narc_ac, narc_b, narc_abc: ',
      &       narc_ac, narc_b, narc_abc
       end if
@@ -111,24 +177,22 @@ c          vtxlist(idx) = idx
       contr_abc%iblk_res = iblk_abc
 
       ! set vertices and reordering arrays
-      ! collect vertices from A
-      do idx = 1, nvtx_a
-        contr_abc%vertex(idx) = contr_ac%vertex(idx)
-        ivtx_ac_reo(idx) = idx
+      do ivtx = 1, nvtx_abc
+        if (ivtx_old(ivtx).gt.0) then
+          contr_abc%vertex(ivtx) = contr_ac%vertex(ivtx_old(ivtx))
+          contr_abc%svertex(ivtx) = contr_ac%svertex(ivtx_old(ivtx))
+          ivtx_ac_reo(ivtx_old(ivtx)) = ivtx
+        else
+          contr_abc%vertex(ivtx) = contr_b%vertex(-ivtx_old(ivtx))
+          contr_abc%svertex(ivtx) =
+     &         contr_ac%nsupvtx + contr_b%svertex(-ivtx_old(ivtx))
+          ivtx_b_reo(-ivtx_old(ivtx)) = ivtx
+        end if
       end do
-      ! collect vertices from B
-      idx_abc = nvtx_a
-      do idx = 1, nvtx_b
-        idx_abc = idx_abc+1
-        contr_abc%vertex(idx_abc) = contr_b%vertex(idx)
-        ivtx_b_reo(idx) = idx_abc        
-      end do
-      ! collect vertices from C
-      do idx = nvtx_a+2,nvtx_ac
-        idx_abc = idx_abc+1
-        contr_abc%vertex(idx_abc) = contr_ac%vertex(idx)
-        ivtx_ac_reo(idx) = idx_abc
-      end do
+
+      ! set up correct super-vertex info
+      contr_abc%nvtx = nvtx_abc
+      call update_svtx4contr(contr_abc)
 c dbg
 c      print *,'ivtx_b_reo: ',ivtx_b_reo
 c      print *,'ivtx_ac_reo: ',ivtx_ac_reo
@@ -159,9 +223,7 @@ c        write(luout,*) 'generated proto-contraction (-2):'
 c        call prt_contr2(luout,contr_abc,op_info)
 c dbg
       ! add all arcs from B
-c      idx_abc = narc_abc !narc_ac
       do idx = 1, narc_b
-c        idx_abc = idx_abc+1
         narc_abc = narc_abc + 1
         contr_abc%arc(narc_abc)%link(1) =
      &       ivtx_b_reo(contr_b%arc(idx)%link(1))
@@ -217,7 +279,7 @@ c dbg
           contr_abc%arc(narc_abc)%occ_cnt = 0
         end do jloop
       end do
-
+ 
       contr_abc%nvtx = nvtx_abc
       ! preliminary setting
       contr_abc%narc = narc_abc
@@ -234,7 +296,7 @@ c dbg
       ! set fix_vtx and occ_vtx arrays
       allocate(fix_vtx(nvtx_abc),occ_vtx(ngastp,2,nvtx_abc+1))
       fix_vtx = .true. ! "fix" all vertices -> ieqvfac will be 1
-      call occvtx4contr(occ_vtx,contr_abc,op_info)
+      call occvtx4contr(0,occ_vtx,contr_abc,op_info)
 
       ! generate all possible contractions (hopefully only 1)
       call gen_contr2(wrap,contr_abc,fix_vtx,occ_vtx,op_info)
@@ -260,7 +322,9 @@ c dbg
       ! copy the "wrapped" final contraction to output place
       call copy_contr(wrap%contr,contr_abc)
 
-      deallocate(fix_vtx,occ_vtx)
+      if (nvtx_ac.gt.0) deallocate(ivtx_ac_reo)
+      if (nvtx_b.gt.0)  deallocate(ivtx_b_reo)
+      deallocate(fix_vtx,occ_vtx,ivtx_old)
       call dealloc_formula_list(wrap)
 
       if (ntest.ge.100) then

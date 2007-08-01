@@ -397,9 +397,11 @@ c      end type membuffer_slot
         ! search for node
         do
           if (trim(slice%name).eq.trim(name)) exit
-          if (.not.associated(slice%prev))
-     &         call quit(1,'memman_dealloc',
+          if (.not.associated(slice%prev)) then
+            call memman_map(luout,.true.)
+            call quit(1,'memman_dealloc',
      &         'could not find a node named: "'//trim(name)//'"')
+          end if
           slice => slice%prev
         end do
       end if
@@ -674,7 +676,7 @@ c      in_last_section = associated(cursection,mem_cursection)
           nullify(mem_stack_head%next)
         else
           allocate(mem_stack_tail%next)
-          mem_stack_tail%next%prev = mem_stack_tail
+          mem_stack_tail%next%prev => mem_stack_tail
           mem_stack_tail => mem_stack_tail%next
           nullify(mem_stack_tail%next)
         end if

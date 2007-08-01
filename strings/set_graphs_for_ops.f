@@ -70,21 +70,22 @@
       str_info%ngraph = 0
       current => op_list
       mxmx_igtyp = 0
-      ! allocate in operator section:
-      call mem_pushmark()
-      ifree = mem_gotomark(operator_def)
+c      ! allocate in operator section:
+c      call mem_pushmark()
+c      ifree = mem_gotomark(operator_def)
       do iop = 1, nops
         if (ntest.ge.100) write(luout,*) 'iop = ',iop
-        ! allocate graph index
-        allocate(current%op%idx_graph(ngastp,2,current%op%n_occ_cls))
-        ifree = mem_register(maxgraph*(2+4*ngas),
-     &       trim(current%op%name)//'_idxg')
+c already allocated in pass 0
+c        ! allocate graph index
+c        allocate(current%op%idx_graph(ngastp,2,current%op%n_occ_cls))
+c        ifree = mem_register(maxgraph*(2+4*ngas),
+c     &       trim(current%op%name)//'_idxg')
         call unique_graph(str_info,max_igtyp,current%op,
      &                    orb_info%ihpvgas,orb_info%ngas)
         mxmx_igtyp = max(mxmx_igtyp,max_igtyp)
         if (iop.lt.nops) current => current%next
       end do
-      call mem_popmark()
+c      call mem_popmark()
 
       if (mxmx_igtyp.le.0)
      &     call quit(1,'set_graphs_for_ops',

@@ -53,6 +53,8 @@
       type(cntr_arc), pointer ::
      &     arc(:)
 
+      call quit(1,'join_contr','call to obsolete version')
+
       if (ntest.ge.100) then
         write(luout,*) '====================' 
         write(luout,*) ' This is join_contr'

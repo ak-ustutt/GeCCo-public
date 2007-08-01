@@ -68,6 +68,8 @@ c     &     list_pnt
      &     call quit(1,'set_cc_formula','operator not on list: '
      &     //trim(op_omg))
 
+c      call test_formgen3(op_info,orb_info)
+
       ! set up Lagrangian
       ! new entry
       call add_formula(form_info,label_cclg0)
