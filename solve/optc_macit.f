@@ -46,6 +46,8 @@
      &     irecr, irecv, klsmat,
      &     imet, idamp,
      &     ndim_save, ndel, iopt, lenscr, ifree
+      real(8) ::
+     &     xdum
       real(8), pointer ::
      &     xscr(:), xscr2(:), vec(:)
       integer, pointer ::
@@ -161,8 +163,8 @@
 
         do iopt = 1, opti_info%nopt
           ! handling of iord_vsbsp for nopt>1 ??
-          call optc_expand_vec(vec,opti_stat%ndim_vsbsp,
-     &         ffopt(iopt)%fhand,0d0,
+          call optc_expand_vec(vec,opti_stat%ndim_vsbsp,xdum,.false.,
+     &         ffopt(iopt)%fhand,1,0d0,
      &         opti_stat%ffvsbsp(iopt)%fhand,opti_stat%iord_vsbsp,
      &         nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2)
         end do
@@ -194,8 +196,8 @@
           if (nincore.ge.2)
      &         call vec_from_da(ffopt(1)%fhand,1,
      &                          xbuf1,opti_info%nwfpar(1))
-          call optc_expand_vec(vec,opti_stat%ndim_vsbsp,
-     &         ffopt(1)%fhand,1d0,
+          call optc_expand_vec(vec,opti_stat%ndim_vsbsp,xdum,.false.,
+     &         ffopt(1)%fhand,1,1d0,
      &       opti_stat%ffvsbsp(1)%fhand,opti_stat%iord_vsbsp,
      &       nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
         end if
@@ -206,8 +208,8 @@
           if (nincore.ge.2)
      &         call vec_from_da(ffgrd(1)%fhand,1,
      &                          xbuf1,opti_info%nwfpar(1))
-          call optc_expand_vec(vec,opti_stat%ndim_rsbsp,
-     &         ffgrd(1)%fhand,1d0,
+          call optc_expand_vec(vec,opti_stat%ndim_rsbsp,xdum,.false.,
+     &         ffgrd(1)%fhand,1,1d0,
      &       opti_stat%ffrsbsp(1)%fhand,opti_stat%iord_rsbsp,
      &       nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
         end if

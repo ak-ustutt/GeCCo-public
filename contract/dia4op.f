@@ -62,6 +62,8 @@
       real(8), pointer ::
      &     buffer(:), xsum(:)
 
+      real(8), external ::
+     &     dnrm2
       logical, external ::
      &     next_msgamdist, next_string
 

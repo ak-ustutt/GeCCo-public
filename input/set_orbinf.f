@@ -198,7 +198,7 @@ c      endif
         jdx = 0
         do isym = 1, nsym
           do igas = 1, ngas
-            if(iloop.eq.1.and.igas.eq.ngas)cycle
+            if(explicit.and.iloop.eq.1.and.igas.eq.ngas)cycle
             if (orb_info%ihpvgas(igas).eq.ihole.and.hole_rv) then
               igasr = orb_info%ngas_hpv(ihole)-igas+1
               ist = orb_info%mostnd(2,isym,igasr)

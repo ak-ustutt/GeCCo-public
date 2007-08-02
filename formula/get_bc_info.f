@@ -24,7 +24,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     ifact(4)
@@ -89,10 +89,21 @@
           idxop(iops) = contr%vertex(ivtx)%idx_op
           iblkop(iops) = contr%vertex(ivtx)%iblk_op
           cur_op => op_info%op_arr(idxop(iops))%op
-          iocc(1:ngastp,1:2,iops) =
+          if (.not.cur_op%dagger) then
+            iocc(1:ngastp,1:2,iops) =
      &          cur_op%ihpvca_occ(1:ngastp,1:2,iblkop(iops))
-          irestr(1:2,1:ngas,1:2,1:2,iops) =
+            irestr(1:2,1:ngas,1:2,1:2,iops) =
      &         cur_op%igasca_restr(1:2,1:ngas,1:2,1:2,iblkop(iops))
+          else
+            iocc(1:ngastp,1,iops) = 
+     &          cur_op%ihpvca_occ(1:ngastp,2,iblkop(iops))
+            iocc(1:ngastp,2,iops) = 
+     &          cur_op%ihpvca_occ(1:ngastp,1,iblkop(iops))
+            irestr(1:2,1:ngas,1,1:2,iops) = 
+     &         cur_op%igasca_restr(1:2,1:ngas,2,1:2,iblkop(iops))
+            irestr(1:2,1:ngas,2,1:2,iops) = 
+     &         cur_op%igasca_restr(1:2,1:ngas,1,1:2,iblkop(iops))
+          end if
           mstop(iops) = cur_op%mst
           igamtop(iops) = cur_op%gamt
         end if
@@ -154,6 +165,13 @@ c dbg
       iocc_ext(1:ngastp,1:2,2) = iocc_add(1,iocc(1,1,2),.false.,
      &                                -1,iocc_cnt,.true.)
 
+c dbg
+      print *,'iocc_ext:'
+      call wrt_occ(luout,iocc_ext(1,1,1))
+      call wrt_occ(luout,iocc_ext(1,1,2))
+      print *,'iocc_cnt:'
+      call wrt_occ(luout,iocc_cnt)
+c dbg
       ! set name of intermediate:
       iscr(1:nexpand(1)) = ivtx_expand(1:nexpand(1),1)
       iscr(nexpand(1)+1:nexpand(1)+nexpand(2)) =
@@ -171,9 +189,14 @@ c dbg
       ! restriction on intermediate
       ! preliminary version:
       ! defined by restriction on result
+c dbg
+c      print *,'call to fit_restr from get_bc_info'
+c dbg
       call fit_restr(irestr_int(1,1,1,1,ninter),iocc_int(1,1,ninter),
      &     irestr_res,ihpvgas,ngas)
       if (ntest.ge.100) then
+          write(luout,*) 'occupation of intermediate:'
+          call wrt_occ(luout,iocc_int(1,1,ninter))
         write(luout,*) 'restriction on intermediate:'
         call wrt_rstr(luout,irestr_int,ngas)
       end if

@@ -74,7 +74,7 @@ c        print *,'iblk = ',iblk
 c        print *,'first collected term:'
 c        print *,' command = ',fpl_pnt%item%command
 c        if (fpl_pnt%item%command.eq.4) then
-c          call prt_contr2(luout,fpl_pnt%item%contr,op_info%op_arr)
+c          call prt_contr2(luout,fpl_pnt%item%contr,op_info)
 c        end if
 c dbg
         if(explicit)then
@@ -97,6 +97,9 @@ c dbg
         nterms = nterms + sum(n_commu(0:4))
 
       end do
+
+      if (iprlvl.gt.0)
+     &     write(luout,'(2x,42("-"))')
 
       call relink_formula_list(form,fpl_reo)
 

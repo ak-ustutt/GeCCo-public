@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_cc_lagrangian2(form_cclag,op_info,
-     &     idxham,idxtbar,idxtop,idxecc)
+     &     idxham,idxtbar,idxtop,idxlcc)
 *----------------------------------------------------------------------*
 *
 *     set up sequence of operators, integrals and contractions that
@@ -28,7 +28,7 @@
      &     form_cclag
 
       integer, intent(in) ::
-     &     idxham,idxtbar,idxtop,idxecc
+     &     idxham,idxtbar,idxtop,idxlcc
 
       type(operator_info), intent(in) ::
      &     op_info
@@ -51,9 +51,12 @@
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.eq.100) then
-        write(luout,*) '==============================='
-        write(luout,*) ' output from set_cc_lagrangian'
-        write(luout,*) '==============================='
+        call write_title(luout,wst_dbg_subr,
+     &     'Setting up CC-Lagrangian')
+        write(luout,*) ' idxham  = ',idxham
+        write(luout,*) ' idxtbar = ',idxtbar
+        write(luout,*) ' idxtop  = ',idxtop
+        write(luout,*) ' idxlcc  = ',idxlcc
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -62,12 +65,12 @@
       call init_formula(form_lag)
       form_pnt => form_lag
       ! put [INIT] at the beginning
-      call new_formula_item(form_pnt,command_set_target_init,idxecc)
+      call new_formula_item(form_pnt,command_set_target_init,idxlcc)
       form_pnt => form_pnt%next
 
       ! expand <0|(1+Tbar) e^{-T} H e^T|0> =
       ! <0| e^{-T} H e^T|0> +
-      call expand_op_bch(form_pnt,2,idxecc,
+      call expand_op_bch(form_pnt,2,idxlcc,
      &     1d0,-1,idxham,1d0,idxtop,1,2,op_info)
 
       ! advance pointer
@@ -75,7 +78,7 @@
         form_pnt => form_pnt%next
       end do
       ! <0|Tbar e^{-T} H e^T|0>
-      call expand_op_bch(form_pnt,4,idxecc,
+      call expand_op_bch(form_pnt,4,idxlcc,
      &     1d0,idxtbar,idxham,1d0,idxtop,1,-1,op_info)
 
       ! insert here procedure to produce approx. expansions      
@@ -87,7 +90,7 @@
       form_cclag%label = label_cclg0
       form_cclag%comment = title_cclg0
       ! write to disc
-      write(name,'(a,".fml")') label_cclg0
+      write(name,'(a,".fml")') trim(label_cclg0)
       call file_init(form_cclag%fhand,name,ftyp_sq_unf,0)
       call write_form_list(form_cclag%fhand,form_lag,title_cclg0)
 

@@ -63,6 +63,13 @@
      &     iocc(ngastp,2)
         end function
 
+        logical function iocc_zero(iocc)
+        implicit none
+        include 'opdim.h'
+        integer ::
+     &     iocc(ngastp,2)
+        end function
+
         logical function iocc_bound(cbound,iocc,dagi,jocc,dagj)      
         implicit none
         include 'opdim.h'
@@ -81,5 +88,15 @@ c        include 'def_operator.h'
 c        type(operator), intent(in) ::
 c     &       op
 c	end function
+
+      function irest_xdn(ixdn,irest,hpvxgas,ngas)
+      implicit none
+      include 'opdim.h'
+      integer ::
+     &     irest_xdn(2,ngas,2,2)
+      integer, intent(in) ::
+     &     ixdn, ngas, hpvxgas(ngas),
+     &     irest(2,ngas,2,2)
+      end function
 
       end interface

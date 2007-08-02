@@ -27,13 +27,17 @@
       type(formula_item), pointer ::
      &     fl_a_dc_pnt, fl_bhb_pnt
 
+      type(operator_array), pointer ::
+     &     defop(:)
+
       integer, external ::
      &     idx_oplist2
+
 
       write(luout,*) '-------------------'
       write(luout,*) ' adding A operator'
       write(luout,*) '-------------------'
-      call add_operator(op_info)
+      call add_operator('A',op_info)
 
       iformal=3
       idxopa = op_info%nops
@@ -44,7 +48,7 @@
       write(luout,*) '-------------------'
       write(luout,*) ' adding B operator'
       write(luout,*) '-------------------'
-      call add_operator(op_info)
+      call add_operator('B',op_info)
 
       idxopb = op_info%nops
       op => op_info%op_arr(idxopb)%op
@@ -54,7 +58,7 @@
       write(luout,*) '-------------------'
       write(luout,*) ' adding C operator'
       write(luout,*) '-------------------'
-      call add_operator(op_info)
+      call add_operator('C',op_info)
 
       idxopc = op_info%nops
       op => op_info%op_arr(idxopc)%op
@@ -64,7 +68,7 @@
       write(luout,*) '-------------------'
       write(luout,*) ' adding R operator'
       write(luout,*) '-------------------'
-      call add_operator(op_info)
+      call add_operator('R',op_info)
 
       idxopr = op_info%nops
       op => op_info%op_arr(idxopr)%op
@@ -74,7 +78,7 @@
       write(luout,*) '-------------------'
       write(luout,*) ' adding D operator'
       write(luout,*) '-------------------'
-      call add_operator(op_info)
+      call add_operator('D',op_info)
 
       idxopd = op_info%nops
       op => op_info%op_arr(idxopd)%op

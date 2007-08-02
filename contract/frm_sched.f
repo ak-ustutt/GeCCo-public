@@ -40,7 +40,7 @@
 
       select case (irt_sched)
       case (0)
-        call frm_sched0(xret,fffrm,
+        call frm_sched1(xret,fffrm,
      &         op_info,str_info,strmap_info,orb_info)
       case default
         call quit(1,'frm_sched','illegal route')

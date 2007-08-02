@@ -6,6 +6,7 @@
         integer ::
      &       nopt,            ! sets of operators descr. variables
      &                        ! to be optimized
+     &       nroot,           ! number of roots to be solved for
      &       norder,          ! order of optimization
      &       mode_leq,
      &       mode_nleq,

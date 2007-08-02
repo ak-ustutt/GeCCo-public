@@ -29,6 +29,16 @@
          ! cf. memman.f (mem_buffers)
          integer ::
      &     buf_id
+         ! logical "records" for repeated data-structures,
+	 ! see assign_file_to_op() for an example
+	 integer ::
+     &       active_records(2),
+     &       current_record,
+     &       length_of_record  ! length of that log. record in r8-words
+	 ! offset in a "superfile", if several file_handle are
+	 ! assigned the same unit (not yet used)
+	 integer ::
+     &       recoff_superfile     
       end type filinf
 *------------------------------------------------------------------------*
 *	name, unit: self-explaining, unit == -1 means not assigned

@@ -52,34 +52,36 @@
           cycle
         end if
 
-        allocate(current%op%off_op_occ(current%op%n_occ_cls),
-     &           current%op%len_op_occ(current%op%n_occ_cls),
-     &           current%op%off_op_gmo(current%op%n_occ_cls),
-     &           current%op%len_op_gmo(current%op%n_occ_cls),
-     &           current%op%off_op_gmox(current%op%n_occ_cls),
-     &           current%op%len_op_gmox(current%op%n_occ_cls))
-        do iocc_cls = 1, current%op%n_occ_cls
-          nexc = min(current%op%ica_occ(1,iocc_cls),
-     &               current%op%ica_occ(2,iocc_cls))
-          allocate(current%op%len_op_gmo(iocc_cls)%gam_ms(nsym,nexc+1),
-     &             current%op%off_op_gmo(iocc_cls)%gam_ms(nsym,nexc+1))
-        end do
+        call init_operator(1,current%op,orb_info)
+c        allocate(current%op%off_op_occ(current%op%n_occ_cls),
+c     &           current%op%len_op_occ(current%op%n_occ_cls),
+c     &           current%op%off_op_gmo(current%op%n_occ_cls),
+c     &           current%op%len_op_gmo(current%op%n_occ_cls),
+c     &           current%op%off_op_gmox(current%op%n_occ_cls),
+c     &           current%op%len_op_gmox(current%op%n_occ_cls))
+c        do iocc_cls = 1, current%op%n_occ_cls
+c          nexc = min(current%op%ica_occ(1,iocc_cls),
+c     &               current%op%ica_occ(2,iocc_cls))
+c          allocate(current%op%len_op_gmo(iocc_cls)%gam_ms(nsym,nexc+1),
+c     &             current%op%off_op_gmo(iocc_cls)%gam_ms(nsym,nexc+1))
+c        end do
         ! set up length info for operator
         ipass = 1
         call set_op_dim(ipass,.false.,current%op,str_info,nsym)
 
-        do iocc_cls = 1, current%op%n_occ_cls
-          nexc = min(current%op%ica_occ(1,iocc_cls),
-     &               current%op%ica_occ(2,iocc_cls))
-          ndis = current%op%off_op_gmox(iocc_cls)%maxd
-          allocate(current%op%len_op_gmox(iocc_cls)%
-     &                        d_gam_ms(ndis,nsym,nexc+1),
-     &             current%op%off_op_gmox(iocc_cls)%
-     &                        d_gam_ms(ndis,nsym,nexc+1),
-     &             current%op%off_op_gmox(iocc_cls)%
-     &                        did(ndis,nsym,nexc+1),
-     &             current%op%off_op_gmox(iocc_cls)%ndis(nsym,nexc+1))
-        end do
+        call init_operator(2,current%op,orb_info)
+c        do iocc_cls = 1, current%op%n_occ_cls
+c          nexc = min(current%op%ica_occ(1,iocc_cls),
+c     &               current%op%ica_occ(2,iocc_cls))
+c          ndis = current%op%off_op_gmox(iocc_cls)%maxd
+c          allocate(current%op%len_op_gmox(iocc_cls)%
+c     &                        d_gam_ms(ndis,nsym,nexc+1),
+c     &             current%op%off_op_gmox(iocc_cls)%
+c     &                        d_gam_ms(ndis,nsym,nexc+1),
+c     &             current%op%off_op_gmox(iocc_cls)%
+c     &                        did(ndis,nsym,nexc+1),
+c     &             current%op%off_op_gmox(iocc_cls)%ndis(nsym,nexc+1))
+c        end do
 
         ! extended length info for operator
         ipass = 2

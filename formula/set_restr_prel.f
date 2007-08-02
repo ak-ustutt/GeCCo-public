@@ -37,7 +37,9 @@
       idxop = contr%idx_res
       iblkop = contr%iblk_res
 c quick fix:
+c dbg
 c      print *,'idxop,iblkop',idxop,iblkop
+c dbg
       if (idxop.eq.0) then
         maxex = 98
         irestr_res(1,1:ngas,1:2,1) = maxex
@@ -45,8 +47,21 @@ c      print *,'idxop,iblkop',idxop,iblkop
         irestr_res(1:2,1:ngas,1:2,2) = 0
       else
         cur_op => op_info%op_arr(idxop)%op
-        maxex = maxxlvl_op(cur_op)
-        irestr_res = cur_op%igasca_restr(1:2,1:ngas,1:2,1:2,iblkop)
+        if (.not.cur_op%dagger) then
+          maxex = maxxlvl_op(cur_op)
+          irestr_res = cur_op%igasca_restr(1:2,1:ngas,1:2,1:2,iblkop)
+        else
+          maxex = -maxxlvl_op(cur_op)
+          irestr_res(1:2,1:ngas,1,1:2) =
+     &         cur_op%igasca_restr(1:2,1:ngas,2,1:2,iblkop)
+          irestr_res(1:2,1:ngas,2,1:2) =
+     &         cur_op%igasca_restr(1:2,1:ngas,1,1:2,iblkop)
+        end if
+c dbg
+c        print *,'maxex = ',maxex
+c        print *,'raw restr: '
+c        call wrt_rstr(luout,irestr_res,ngas)
+c dbg
 
       do ica = 1, 2
         do igas = 1, ngas

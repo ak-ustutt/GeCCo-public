@@ -28,7 +28,8 @@
      &     list_cmp
 
       cmp_contr = contr1%nvtx.eq.contr2%nvtx .and.
-     &            contr1%narc.eq.contr2%narc
+     &            contr1%narc.eq.contr2%narc .and.
+     &            contr1%nsupvtx.eq.contr2%nsupvtx
       cmp_contr = cmp_contr.and.
      &            contr1%idx_res.eq.contr2%idx_res .and.
      &            contr1%iblk_res.eq.contr2%iblk_res
@@ -37,6 +38,13 @@
 
       if (.not.ignore_fac)
      &     cmp_contr = abs(contr1%fac-contr2%fac).lt.1d-12
+
+      if (.not.cmp_contr) return
+      
+      do ivtx = 1, contr1%nsupvtx
+        cmp_contr = cmp_contr.and.
+     &       contr1%svertex(ivtx).eq.contr2%svertex(ivtx)
+      end do
 
       if (.not.cmp_contr) return
       

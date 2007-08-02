@@ -1,13 +1,19 @@
 *----------------------------------------------------------------------*
 *     parameters
 *----------------------------------------------------------------------*
-      ! operator types as returned by op_type()
+      ! operator types
       integer, parameter ::
-     &     optyp_scalar= 0,   ! scalar
-     &     optyp_ph    = 1,   ! P/H spaces only (incl. X)
-     &     optyp_ph_ex = 2,   !  typ 1, only excitations 
-     &     optyp_ph_dx = 3,   !  typ 1, only deexcitations 
-     &     optyp_val   = 4    ! V spaces as well
+     &     optyp_operator = 1,      ! single vertex operator
+     &     optyp_density  = 2,      ! DX/EX 2-vertex operator
+     &     optyp_intermediate = 3   ! general n-vertex operator
+
+      ! vertex types as returned by vtx_type()
+      integer, parameter ::
+     &     vtxtyp_scalar= 0,   ! scalar
+     &     vtxtyp_ph    = 1,   ! P/H spaces only (incl. X)
+     &     vtxtyp_ph_ex = 2,   !  typ 1, only excitations 
+     &     vtxtyp_ph_dx = 3,   !  typ 1, only deexcitations 
+     &     vtxtyp_val   = 4    ! V spaces as well
 *----------------------------------------------------------------------*
 *     auxiliary types
 *----------------------------------------------------------------------*
@@ -57,8 +63,8 @@
                                 ! C <-> A are to be interchanged
         integer ::
      &     type,                ! 1: operator, 2: density, 3: intermed.
-     &     nbay                 ! for intermed: # insertion places ("bays")
-                                ! for other operators
+     &     njoined              ! for intermediate only: number of joined 
+                                !      vertices
         integer ::
      &     absym,               ! symmetry on interchange of alpha/beta
      &                          ! (time reversal sym.) values: 0/+1/-1

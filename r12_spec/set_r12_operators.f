@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_r12_operators(op_list,nops,orb_info)
+      subroutine set_r12_operators(op_info,orb_info)
 *----------------------------------------------------------------------*
 *     hard-wired set-up of the basic operators needed for the
 *     r12 excitation operators
@@ -11,18 +11,15 @@
       include 'par_opnames_gen.h'
       include 'stdunit.h'
       include 'def_orbinf.h'
-      include 'def_operator.h'
-      include 'def_operator_list.h'
+      include 'mdef_operator_info.h'
       include 'explicit.h'
 
-      type(operator_list), intent(inout), target ::
-     &     op_list
-      integer, intent(inout) ::
-     &     nops
+      type(operator_info), intent(inout), target ::
+     &     op_info
       type(orbinf) ::
      &     orb_info
-      type(operator_list), pointer ::
-     &     list_pnt
+      type(operator), pointer ::
+     &     op_pnt, r12_pnt, c12_pnt, rint_pnt
       logical ::
      &     dagger
       character ::
@@ -31,32 +28,22 @@
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
      &     gamma, iarr(1),  min_h_rank, max_h_rank,
      &     min_p_rank, max_p_rank, min_x_rank, max_x_rank, iformal,
-     &     tkmax
+     &     tkmax, idx
       integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
+      integer, external ::
+     &     idx_oplist2
+
 c      write(luout,'(/"R12 operator definition subroutine.")')
 
-      list_pnt=>op_list
-      do while(associated(list_pnt%next))
-        list_pnt=>list_pnt%next
-      enddo
-      ! The above loop gets us to the end of the list. 
-      if (associated(list_pnt%op))then
-        allocate(list_pnt%next)
-        list_pnt%next%prev=>list_pnt
-        list_pnt=>list_pnt%next
-        nullify(list_pnt%next)
-      endif
-      allocate(list_pnt%op)  
-
-      call get_argument_value('method.R12','ansatz',ival=ansatze)
-      if(ansatze.gt.3.or.ansatze.lt.1)then
-        write(luout,'("Error: Undefined R12 ansatz requested.")')
-        stop
-      endif
-
-      call get_argument_value('method.R12','triples',ival=trir12)
+c      call get_argument_value('method.R12','ansatz',ival=ansatze)
+c      if(ansatze.gt.3.or.ansatze.lt.1)then
+c        write(luout,'("Error: Undefined R12 ansatz requested.")')
+c        stop
+c      endif
+c
+c      call get_argument_value('method.R12','triples',ival=trir12)
 
       if(ansatze.eq.1)then
         min_x_rank=2
@@ -77,8 +64,11 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       min_h_rank=2
       max_h_rank=2
 
-      nops=nops+1
-      list_pnt%op%id = nops
+      call add_operator(op_r12,op_info)
+      idx = idx_oplist2(op_r12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      r12_pnt => op_pnt
+
       ! New entry: linear R12 operator.
       name=op_r12
       dagger=.false.
@@ -90,22 +80,20 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       min_rank=2
       max_rank=2
       ncadiff=0
-      iformal=max_x_rank
+      iformal=0
   
       call set_hpvx_and_restr_for_r()
 
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+      call set_genop(op_pnt,name,optyp_operator,
+     &     dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)  
+     &     orb_info)  
       
       ! New entry: variable coefficient operator associated with R12.
-      nops=nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev=>list_pnt
-      list_pnt=>list_pnt%next
-      nullify(list_pnt%next)
-      allocate(list_pnt%op)
-      list_pnt%op%id = nops
+      call add_operator(op_c12,op_info)
+      idx = idx_oplist2(op_c12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      c12_pnt => op_pnt
       
       name = op_c12
       dagger=.false.
@@ -124,186 +112,46 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       iformal=max_rank+1
       call set_hpvx_and_restr_for_c()
       
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+      call set_genop(op_pnt,name,optyp_operator,
+     &     dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
-
-      ! New entry: compound operator S=T+CR
-      nops=nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev=>list_pnt
-      list_pnt=>list_pnt%next
-      nullify(list_pnt%next)
-      allocate(list_pnt%op)
-      list_pnt%op%id = nops
-
-      name=op_sop
-      dagger=.false.
-      absym=0
-      casym=0
-      gamma=1
-      s2=0
-      ms=0
-      ncadiff=0
-      call get_argument_value('method.CC','minexc',ival=min_rank)
-      call get_argument_value('method.CC','maxexc',ival=tkmax)
-      max_rank=max(2,tkmax)
-      call set_hpvx_and_restr_for_s()
-      iformal=2
-      
-      call set_sop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+     &     orb_info)
 
       ! New entry: adjoint of linear R12 operator.
-      nops=nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev=>list_pnt
-      list_pnt=>list_pnt%next
-      nullify(list_pnt%next)
-      allocate(list_pnt%op)
-      list_pnt%op%id = nops
-
-      name = op_rba
-      ! Define an excitation operator to ensure the same storage
-      ! sequence as for R, however, consider its adjoint.
-      dagger=.true.
-      absym=0
-      casym=0
-      gamma=1
-      s2=0
-      ms=0
-      ncadiff=0
-      min_rank=2
-      max_rank=2
-      iformal=max_x_rank
-
-      call set_hpvx_and_restr_for_r()
-
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+      call add_operator(op_rba,op_info)
+      idx = idx_oplist2(op_rba,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,r12_pnt,orb_info)
+      ! we define an excitation operator to ensure same
+      ! storage sequence as for T
+      op_pnt%dagger = .true.  ! but we consider the conjugate
 
       ! New entry: variable coefficient operator associated with R12bar.
-      nops=nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev=>list_pnt
-      list_pnt=>list_pnt%next
-      nullify(list_pnt%next)
-      allocate(list_pnt%op)
-      list_pnt%op%id = nops
-      
-      name = op_cba
-      dagger=.true.
-      absym=0
-      casym=0
-      gamma=1
-      s2=0
-      ms=0
-      ncadiff=0
-      min_rank=2
-      if(trir12.eq.1)then
-        max_rank=3
-      else  
-        max_rank=2
-      endif
-      iformal=max_rank+1
+      call add_operator(op_cba,op_info)
+      idx = idx_oplist2(op_cba,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,c12_pnt,orb_info)
+      ! we define an excitation operator to ensure same
+      ! storage sequence as for T
+      op_pnt%dagger = .true.  ! but we consider the conjugate
 
-      call set_hpvx_and_restr_for_c()
-      
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
-
-      ! New entry: adjoint of compound operator S=T+CR
-      nops=nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev=>list_pnt
-      list_pnt=>list_pnt%next
-      nullify(list_pnt%next)
-      allocate(list_pnt%op)
-      list_pnt%op%id = nops
-
-      name=op_sba
-      dagger=.true.
-      absym=0
-      casym=0
-      gamma=1
-      s2=0
-      ms=0
-      ncadiff=0
-      call get_argument_value('method.CC','minexc',ival=min_rank)
-      call get_argument_value('method.CC','maxexc',ival=tkmax)
-      max_rank=max(2,tkmax)
-      call set_hpvx_and_restr_for_s()
-      iformal=2
-      
-      call set_sop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
-
-      ! New entry: the CC-R12 residual. Same as S.
-      nops=nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev=>list_pnt
-      list_pnt=>list_pnt%next
-      nullify(list_pnt%next)
-      allocate(list_pnt%op)
-      list_pnt%op%id = nops
-
-      name=op_omgr12
-      dagger=.false.
-      absym=0
-      casym=0
-      gamma=1
-      s2=0
-      ms=0
-      ncadiff=0
-      call get_argument_value('method.CC','minexc',ival=min_rank)
-      call get_argument_value('method.CC','maxexc',ival=tkmax)
-      max_rank=max(2,tkmax)
-      call set_hpvx_and_restr_for_s()
-      iformal=2
-      
-      call set_sop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+      ! New entry: the CC-R12 residual. Same as C.
+      call add_operator(op_omgr12,op_info)
+      idx = idx_oplist2(op_omgr12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,c12_pnt,orb_info)
 
       ! New entry: the CC-R12 diagonal. Same as S.
-      nops=nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev=>list_pnt
-      list_pnt=>list_pnt%next
-      nullify(list_pnt%next)
-      allocate(list_pnt%op)
-      list_pnt%op%id = nops
-
-      name=op_diar12
-      dagger=.false.
-      absym=0
-      casym=0
-      gamma=1
-      s2=0
-      ms=0
-      ncadiff=0
-      call get_argument_value('method.CC','minexc',ival=min_rank)
-      call get_argument_value('method.CC','maxexc',ival=tkmax)
-      max_rank=max(2,tkmax)
-      call set_hpvx_and_restr_for_s()
-      iformal=2
-      
-      call set_sop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+      call add_operator(op_diar12,op_info)
+      idx = idx_oplist2(op_diar12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,c12_pnt,orb_info)
 
       ! New entry: the R12 integrals (<ab|r12|cd>)
-      nops=nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev=>list_pnt
-      list_pnt=>list_pnt%next
-      nullify(list_pnt%next)
-      allocate(list_pnt%op)
-      list_pnt%op%id = nops
+      call add_operator(op_rint,op_info)
+      idx = idx_oplist2(op_rint,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      rint_pnt => op_pnt
 
       name=op_rint
       dagger=.false.
@@ -318,35 +166,17 @@ c      write(luout,'(/"R12 operator definition subroutine.")')
       call set_hpvx_and_restr_for_int()
       iformal=2
 
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+      call set_genop(op_pnt,name,optyp_operator,
+     &     dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+     &     orb_info)
 
       ! New entry: the R12 integrals' adjoint (<ab|r12|cd>)
-      nops=nops+1
-      allocate(list_pnt%next)
-      list_pnt%next%prev=>list_pnt
-      list_pnt=>list_pnt%next
-      nullify(list_pnt%next)
-      allocate(list_pnt%op)
-      list_pnt%op%id = nops
-
-      name=op_rinba
-      dagger=.true.
-      absym=0
-      casym=0
-      gamma=1
-      s2=0
-      ms=0
-      ncadiff=0
-      min_rank=2
-      max_rank=2
-      call set_hpvx_and_restr_for_int()
-      iformal=2
-
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+      call add_operator(op_rinba,op_info)
+      idx = idx_oplist2(op_rinba,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,rint_pnt,orb_info)
+      op_pnt%dagger = .true.
 
       return
 

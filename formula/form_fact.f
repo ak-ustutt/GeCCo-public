@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine form_fact(contr,
-     &     op_info,str_info,orb_info)
+     &     op_info,str_info,orb_info,iscale_stat)
 *----------------------------------------------------------------------*
 *     find optimum factorization of a given contraction
 *----------------------------------------------------------------------*
@@ -15,7 +15,7 @@
       include 'mdef_operator_info.h'
       
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 100
 
       type(contraction), intent(inout) ::
      &     contr
@@ -26,9 +26,11 @@
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info
+      integer, intent(inout) ::
+     &     iscale_stat(ngastp,2)
 
       integer ::
-     &     ngas, nsym,
+     &     ngas, nsym, maxidx,
      &     idx, idxmin, narc, nvtx, nfact
       integer, pointer ::
      &     ihpvgas(:)
@@ -51,18 +53,23 @@
       integer ::
      &     iscale(ngastp,3), iscalemin(ngastp,3)
 
+      logical ::
+     &     possible, found
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
 
       logical, external ::
      &     next_fact
       integer, external ::
-     &     int_pack
+     &     int_pack, ifac
      
+
+      call quit(1,'form_fact(old)','call to obsolete routine')
       if (ntest.ge.100) then
         write(luout,*) '===================='
         write(luout,*) ' form_fact at work!'
         write(luout,*) '===================='
+        call prt_contr2(luout,contr,op_info)
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -105,36 +112,54 @@
         imult(idx) = 1
       end do
 
+      maxidx = ifac(narc)
       idx = 1
       costmin = huge(costmin)
+      found = .false.
       do 
-c        write(luout,'(x,i3,a,20i4)') idx,' next iperm = ',iperm(1:narc)
+        if (idx.gt.maxidx) then
+          call prt_contr2(luout,contr,op_info)
+          write(luout,*) iperm(1:narc)
+          call quit(1,'form_fact','Permutation generator buggy?')
+        end if
+
+        write(luout,'(x,2i4,a,20i4)') idx,maxidx,
+     &       ' next iperm = ',iperm(1:narc)
+
         ! get next possible factorization
         call mk_fact(ifact,nfact,iperm,iconn,narc,nvtx)
 
         ! get computational cost of factorization
 c        call fact_cost_old(cost,iscale,ifact,nfact,
-        call fact_cost(cost,iscale,ifact,nfact,
+        call fact_cost(possible,cost,iscale,ifact,nfact,
+     &       costmin,
      &       contr,op_info,str_info,ihpvgas,ngas,nsym)
 
-        ! evaluate cost
-        ! preliminary: only cost(1)==time counts
-        if (cost(1).lt.costmin(1)) then
-          idxmin = idx
-          costmin = cost
-          iscalemin = iscale
-          ! save factorization info
-          if (contr%mxfac.gt.0) deallocate(contr%inffac)
-          contr%nfac = nfact
-          contr%mxfac = nfact
-          allocate(contr%inffac(4,nfact))
-          contr%inffac(1:4,1:nfact) = ifact(1:4,1:nfact)
-
+        if (possible) then
+          found = .true.
+          ! evaluate cost
+          ! preliminary: only cost(1)==time counts
+          if (cost(1).lt.costmin(1)) then
+            idxmin = idx
+            costmin = cost
+            iscalemin = iscale
+            ! save factorization info
+            if (contr%mxfac.gt.0) deallocate(contr%inffac)
+            contr%nfac = nfact
+            contr%mxfac = nfact
+            allocate(contr%inffac(4,nfact))
+            contr%inffac(1:4,1:nfact) = ifact(1:4,1:nfact)
+          end if
         end if
 
         if (.not.next_fact(iperm,imult,narc,narc,iconn)) exit
         idx = idx+1
       end do
+
+      if (.not.found) then
+        call prt_contr2(luout,contr,op_info)
+        call quit(1,'form_fact','Did not find any factorization!')
+      end if
 
       if (ntest.ge.100) then
         write(luout,*) 'optimal factorization: permutation ',idxmin
@@ -147,6 +172,19 @@ c        call fact_cost_old(cost,iscale,ifact,nfact,
      &       'contraction scaling:  ',iscalemin(1:3,1)
         write(luout,'(x,a,"H^",i2," P^",i2,"V^",i2)')
      &       'intermediate scaling: ',iscalemin(1:3,2)
+      end if
+
+      ! statistics
+      if ( sum(iscalemin(1:3,1)).gt.sum(iscale_stat(1:3,1)).or.
+     &    (sum(iscalemin(1:3,1)).eq.sum(iscale_stat(1:3,1)).and.
+     &     iscalemin(2,1).gt.iscale_stat(2,1)) ) then
+        iscale_stat(1:3,1) = iscalemin(1:3,1)
+      end if
+
+      if ( sum(iscalemin(1:3,2)).gt.sum(iscale_stat(1:3,2)).or.
+     &    (sum(iscalemin(1:3,2)).eq.sum(iscale_stat(1:3,2)).and.
+     &     iscalemin(2,2).gt.iscale_stat(2,2)) ) then
+        iscale_stat(1:3,2) = iscalemin(1:3,2)
       end if
 
       deallocate(iconn,ifact,iperm,imult)

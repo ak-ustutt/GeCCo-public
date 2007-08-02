@@ -24,6 +24,7 @@
      &     ica, ihpv, iscr(ngastp,2)
 
       iscr(1:ngastp,1:2) = 0
+
       if(ixdn.eq.1)then
         iscr(ihole,2)=iocc(ihole,2)
         iscr(ipart,1)=iocc(ipart,1)
@@ -35,7 +36,7 @@
       elseif(ixdn.eq.3)then
         iscr(ivale,1:2)=iocc(ivale,1:2)
       else
-        call quit(1,'iscr','undefined part of matrix')
+        call quit(1,'iocc_xdn','undefined value of ixdn')
       endif
 
       iocc_xdn = iscr

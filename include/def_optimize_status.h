@@ -2,7 +2,7 @@
         type(file_array), pointer ::
      &       ffrsbsp(:), ffvsbsp(:)
         integer ::
-     &       ndim_rsbsp, ndim_vsbsp, mxdim_sbsp
+     &       ndim_rsbsp, ndim_vsbsp, mxdim_sbsp, nadd, ndel
         real(8) ::
      &       energy_last, xngrd_last, crate_last, trrad
         real(8), pointer ::

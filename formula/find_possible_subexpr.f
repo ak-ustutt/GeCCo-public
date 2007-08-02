@@ -96,7 +96,8 @@
         end if
 
         ! is intermediate contained in current term?
-        if (contr_in_contr(fl_intm_pnt%contr,fl_tgt%contr)) then
+        if (contr_in_contr(fl_intm_pnt%contr,
+     &                     fl_tgt%contr,     op_info)) then
           nposs = nposs+1
           if (nposs.gt.maxposs)
      &         call quit(1,'find_possible_subexpr',
@@ -171,7 +172,7 @@
           idx = idx+1
           write(luout,*) 'possibility # ',idx
           call prt_contr2(luout,fpl_intm_start_pnt%item%contr,
-     &         op_info%op_arr)
+     &         op_info)
           if (.not.associated(fpl_intm_start_pnt%next)) exit
           fpl_intm_start_pnt => fpl_intm_start_pnt%next
         end do

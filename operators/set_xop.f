@@ -31,9 +31,10 @@
 
       call set_hpvx_and_restr_for_xop()
 
-      call set_genop(op,name,dagger,absym,casym,gamma,s2,ms,
+      call set_genop(op,name,optyp_operator,
+     &     dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+     &     orb_info)
 
       return
       

@@ -22,18 +22,39 @@
       type(cntr_arc), pointer ::
      &     arc_new(:)
       integer, pointer ::
-     &     inf_new(:,:)
+     &     inf_new(:,:), joined_new(:,:), svertex_new(:)
 
       integer ::
      &     nsave
 
+      if (contr%mxvtx.gt.0.and..not.associated(contr%vertex))
+     &     call quit(1,'resize_contr','vertex pointer inconsistent')
+      if (contr%mxvtx.gt.0.and..not.associated(contr%joined))
+     &     call quit(1,'resize_contr','joined pointer inconsistent')
+      if (contr%mxvtx.gt.0.and..not.associated(contr%svertex))
+     &     call quit(1,'resize_contr','svertex pointer inconsistent')
+      if (contr%mxarc.gt.0.and..not.associated(contr%arc))
+     &     call quit(1,'resize_contr','arc pointer inconsistent')
+      if (contr%mxfac.gt.0.and..not.associated(contr%inffac))
+     &     call quit(1,'resize_contr','inffac pointer inconsistent')
       if (contr%mxvtx.lt.nvtx) then
-        allocate(vtx_new(nvtx))
+        allocate(vtx_new(nvtx),
+     &       joined_new(0:nvtx,nvtx),svertex_new(nvtx))
         nsave = min(contr%mxvtx,contr%nvtx)
-        if (nsave.gt.0)
-     &       vtx_new(1:nsave) = contr%vertex(1:nsave)
-        if (contr%mxvtx.gt.0) deallocate(contr%vertex)
+        if (nsave.gt.0) then
+          vtx_new(1:nsave) = contr%vertex(1:nsave)
+          svertex_new(1:nsave) = contr%svertex(1:nsave)
+          joined_new(0:nsave,1:nsave) = contr%joined(0:nsave,1:nsave)
+          joined_new(nsave+1:nvtx,1:nsave) = 0
+        end if
+        if (contr%mxvtx.gt.0) then
+          deallocate(contr%vertex)
+          deallocate(contr%joined)
+          deallocate(contr%svertex)
+        end if
         contr%vertex => vtx_new
+        contr%joined => joined_new
+        contr%svertex => svertex_new
         contr%mxvtx = nvtx
       end if
       
@@ -48,10 +69,11 @@
       end if
 
       if (contr%mxfac.lt.nfac) then
-        allocate(inf_new(4,nfac))
+        allocate(inf_new(ld_inffac,nfac))
         nsave = min(contr%mxfac,contr%nfac)
         if (nsave.gt.0)
-     &       inf_new(1:4,1:nsave) = contr%inffac(1:4,1:nsave)
+     &       inf_new(1:ld_inffac,1:nsave) =
+     &       contr%inffac(1:ld_inffac,1:nsave)
         if (contr%mxfac.gt.0) deallocate(contr%inffac)
         contr%inffac => inf_new
         contr%mxarc = nfac

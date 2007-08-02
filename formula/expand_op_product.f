@@ -62,7 +62,7 @@
      &     occ_vtx(:,:,:), neqv(:), idx_eqv(:,:), iop_typ(:)
 
       integer, external ::
-     &     op_type
+     &     vtx_type
 
       if (ntest.ge.100) then
         write(luout,*) '============================='
@@ -82,6 +82,8 @@
       narc = nconnect
       call resize_contr(proto,nvtx,narc,0)
       proto%nvtx = nvtx
+      ! currently, we expand primitive operators only
+      call set_primitive_contr(proto)
       proto%narc = narc
       proto%fac  = fac
       proto%idx_res = idx_res
@@ -108,7 +110,7 @@
       end do
 
       do iop = 1, nops
-        iop_typ(iop) = op_type(op_info%op_arr(idx_op(iop))%op)
+        iop_typ(iop) = vtx_type(op_info%op_arr(idx_op(iop))%op)
       end do
 
       ! look for equivalent commuting operators and set info on proto-contr.
@@ -126,8 +128,8 @@
           if (neqv(jop).lt.0) cycle
           if (idx_op(iop).eq.idx_op(jop) .and.
      &        iop_typ(iop).eq.iop_typ(jop) .and.
-     &       (iop_typ(iop).eq.optyp_ph_ex .or.
-     &        iop_typ(iop).eq.optyp_ph_dx) ) then
+     &       (iop_typ(iop).eq.vtxtyp_ph_ex .or.
+     &        iop_typ(iop).eq.vtxtyp_ph_dx) ) then
             neqv(jop) = neqv(jop)+1
             neqv(iop) = -1
             idx_eqv(neqv(jop),jop) = iop
@@ -224,7 +226,7 @@
             end do
 
             ! generate contractions
-            call gen_contr(form_pnt,proto,fix_vtx,occ_vtx,op_info)
+            call gen_contr2(form_pnt,proto,fix_vtx,occ_vtx,op_info)
 
             ! advance pointer
             do while(form_pnt%command.ne.command_end_of_formula)

@@ -7,8 +7,8 @@
      &       op_list
         type(operator_array), pointer ::
      &       op_arr(:)
-        type(file_list), pointer ::
-     &       opfil_list
+        type(file_list), pointer ::  ! obsolete
+     &       opfil_list              ! obsolete
         type(file_array), pointer ::
      &       opfil_arr(:)
       end type operator_info

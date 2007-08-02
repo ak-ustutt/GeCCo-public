@@ -17,7 +17,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 1000
 
       type(contraction), intent(out) ::
      &     contr_abc
@@ -53,13 +53,15 @@
       type(cntr_arc), pointer ::
      &     arc(:)
 
+      call quit(1,'join_contr','call to obsolete version')
+
       if (ntest.ge.100) then
         write(luout,*) '====================' 
         write(luout,*) ' This is join_contr'
         write(luout,*) '====================' 
         write(luout,*) 'joining: AC, B'
-        call prt_contr2(luout,contr_ac,op_info%op_arr)
-        call prt_contr2(luout,contr_b,op_info%op_arr)
+        call prt_contr2(luout,contr_ac,op_info)
+        call prt_contr2(luout,contr_b,op_info)
       end if
 
       nvtx_ac = contr_ac%nvtx
@@ -377,7 +379,7 @@ c        end if
 
       if (ntest.ge.1000) then
         write(luout,*) 'generated contraction (bef. reorder):'
-        call prt_contr2(luout,contr_abc,op_info%op_arr)
+        call prt_contr2(luout,contr_abc,op_info)
       end if
 
       ! enforce law and order
@@ -394,7 +396,7 @@ c        end if
 
       if (ntest.ge.100) then
         write(luout,*) 'generated contraction:'
-        call prt_contr2(luout,contr_abc,op_info%op_arr)
+        call prt_contr2(luout,contr_abc,op_info)
       end if
       
       return

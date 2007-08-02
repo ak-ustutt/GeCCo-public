@@ -284,19 +284,25 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
      &             ' Ms-Dst     Gamma-Dst   len = ',lenblk,
      &             '  norm = ',xnrm
                 if (ngastp.eq.2) then
-                  write(luout,'(2x,"/",2i3,"\/",2i3,"\")')
+                  write(luout,
+     &           '(2x,"/",2i3,"'//char(92)//'/",2i3,"'//char(92)//'")')
      &                 msd(1:ngastp,1), igamd(1:ngastp,1)
-                  write(luout,'(2x,"\",2i3,"/\",2i3,"/")')
+                  write(luout,
+     &           '(2x,"'//char(92)//'"2i3,"/'//char(92)//'",2i3,"/")')
      &                 msd(1:ngastp,2), igamd(1:ngastp,2)
                 else if (ngastp.eq.3) then
-                  write(luout,'(2x,"/",3i3,"\/",3i3,"\")')
+                  write(luout,
+     &           '(2x,"/",3i3,"'//char(92)//'/",3i3,"'//char(92)//'")')
      &                 msd(1:ngastp,1), igamd(1:ngastp,1)
-                  write(luout,'(2x,"\",3i3,"/\",3i3,"/")')
+                  write(luout,
+     &           '(2x,"'//char(92)//'"3i3,"/'//char(92)//'",3i3,"/")')
      &                 msd(1:ngastp,2), igamd(1:ngastp,2)
                 else if (ngastp.eq.4) then
-                  write(luout,'(2x,"/",4i3,"\/",4i3,"\")')
+                  write(luout,
+     &           '(2x,"/",4i3,"'//char(92)//'/",4i3,"'//char(92)//'")')
      &                 msd(1:ngastp,1), igamd(1:ngastp,1)
-                  write(luout,'(2x,"\",4i3,"/\",4i3,"/")')
+                  write(luout,
+     &           '(2x,"'//char(92)//'"4i3,"/'//char(92)//'",4i3,"/")')
      &                 msd(1:ngastp,2), igamd(1:ngastp,2)
                 end if
                 if (level.ge.3) then

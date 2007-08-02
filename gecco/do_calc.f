@@ -34,22 +34,12 @@
       type(formula_info) ::
      &     form_info
 
-c      type(operator_list), pointer ::
-c     &     op_list
-c      type(file_list), pointer ::
-c     &     form_list
       type(action_list), pointer ::
      &     act_list, current_act
-c      type(operator_array), pointer ::
-c     &     op_arr(:)
-c      type(file_array), pointer ::
-c     &     ffform(:)
-c      type(filinf), pointer ::
-c     &     , ffops(:)
       type(filinf) ::
      &     ffform_opt
       integer ::
-     &     ifree, nactions
+     &     ifree, nactions, nroots
       type(strinf), pointer ::
      &     str_info
       type(strmapinf), pointer ::
@@ -58,7 +48,14 @@ c     &     , ffops(:)
       ifree = mem_setmark('do_calc')
       
       if(is_keyword_set('method.R12').gt.0)then
+        ! setting the common /explicit/
         explicit=.true.
+        call get_argument_value('method.R12','ansatz',ival=ansatze)
+        if(ansatze.gt.3.or.ansatze.lt.1)then
+          call quit(1,'do_calc',
+     &         'Undefined R12 ansatz requested.')
+        endif
+        call get_argument_value('method.R12','triples',ival=trir12)
       else
         explicit=.false.
       endif  
@@ -70,8 +67,7 @@ c     &     , ffops(:)
       call init_operator_info(op_info)
       ! set up operators
       op_info%nops = 0
-      call set_operators(op_info%op_list,op_info%nops,orb_info)
-
+      call set_operators(op_info,orb_info)
       if (op_info%nops.eq.0)
      &     call quit(0,'do_calc','no operators defined?')
 
@@ -81,10 +77,6 @@ c     &     , ffops(:)
       op_info%id_cnt = op_info%nops
 
       ifree = mem_setmark(formula_def)
-c      allocate(form_list)
-c      nullify(form_list%fhand)
-c      nullify(form_list%prev)
-c      nullify(form_list%next)
       call init_formula_info(form_info)
       form_info%nform = 0
       ! set up (basic) formulae
@@ -101,7 +93,7 @@ c      nullify(form_list%next)
       nactions = 0
       ! set up actions
       call set_actions(act_list,nactions,
-     &     form_info,op_info%op_list,op_info%nops)
+     &     form_info,op_info)
       if (nactions.eq.0)
      &     call quit(0,'do_calc','no actions defined?')
 
@@ -126,7 +118,8 @@ c      nullify(form_list%next)
 
       ! initialize files for operator elements
       ifree = mem_setmark(op_files)
-      call init_op_files(op_info)
+      ! new behaviour: set only mark here and assign files when needed
+c      call init_op_files(op_info)
 
       ! loop over requested actions
       current_act => act_list
@@ -143,9 +136,19 @@ c      nullify(form_list%next)
      &                        env_type,str_info,orb_info)
           case (iaction_evaluate)
             ! evaluate a single formula expression
-            call quit(1,'do_calc','action not implemented yet')
+            call file_init(ffform_opt,name_form_opt,ftyp_sq_unf,0)
+            call form_opt(ffform_opt,
+     &           current_act%act%nform,current_act%act%idx_formula,
+     &           form_info,op_info,str_info,orb_info)
+            call solve_leq(current_act%act%nop_out,
+     &                     current_act%act%idxopdef_out,
+     &                     current_act%act%nop_in,
+     &                     current_act%act%idxopdef_in,
+     &                     ffform_opt,
+     &                     op_info,str_info,strmap_info,orb_info
+     &                    )
+            call file_delete(ffform_opt)
           case (iaction_setup_prc)
-            stop
             call set_prc4op(current_act%act%idxopdef_out(1),
      &                      current_act%act%idxopfile_out(1,1),
      &                      current_act%act%idxopdef_in(1),
@@ -156,7 +159,22 @@ c      nullify(form_list%next)
      &                      str_info,orb_info)
           case (iaction_solve_leq)
             ! Solve system of linear equations
-            call quit(1,'do_calc','action not implemented yet')
+            call file_init(ffform_opt,name_form_opt,ftyp_sq_unf,0)
+            call form_opt(ffform_opt,
+     &           current_act%act%nform,current_act%act%idx_formula,
+     &           form_info,op_info,str_info,orb_info)
+            nroots = 1 ! preliminary fix
+            call solve_leq(current_act%act%nop_opt,nroots,
+     &                      current_act%act%nop_out,
+     &                      current_act%act%idxopdef_out,
+     &                      current_act%act%idxopfile_out,
+     &                      current_act%act%nop_in,
+     &                      current_act%act%idxopdef_in,
+     &                      current_act%act%idxopfile_in,
+     &                      ffform_opt,
+     &                      op_info,str_info,strmap_info,orb_info
+     &                     )
+            call file_delete(ffform_opt)
           case (iaction_solve_nleq)
             ! get optimized formula file
             call file_init(ffform_opt,name_form_opt,ftyp_sq_unf,0)
@@ -174,7 +192,7 @@ c      nullify(form_list%next)
      &                      ffform_opt,
      &                      op_info,str_info,strmap_info,orb_info
      &                     )
-c            call file_delete(ffform_opt)
+            call file_delete(ffform_opt)
           case (iaction_solve_evp)
             ! Solve eigenvalue problem
             call quit(1,'do_calc','action not implemented yet')

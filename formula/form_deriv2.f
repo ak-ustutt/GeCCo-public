@@ -86,9 +86,9 @@ c      include 'def_filinf.h'
 
       nterms = 0
       do while(rd_contr(luinput,contr,idxinp))
-        
+
         do icmpnd = 1, ncmpnd
-          call contr_deriv2(conder,nder,contr,op_info%op_arr,
+          call contr_deriv2(conder,nder,contr,op_info,
      &         idxder(icmpnd),idxmlt(icmpnd),idxres)
 
           cur_conder => conder
@@ -98,9 +98,9 @@ c      include 'def_filinf.h'
             ! enforce law and order
             nvtx = cur_conder%contr%nvtx
             allocate(ivtx_reo(nvtx),fix_vtx(nvtx),
-     &           occ_vtx(ngastp,2,nvtx+1))
+     &           occ_vtx(ngastp,2,nvtx))
             fix_vtx = .true.    ! "fix" all vertices -> ieqvfac will be 1
-            call occvtx4contr(occ_vtx,cur_conder%contr,op_info)
+            call occvtx4contr(1,occ_vtx,cur_conder%contr,op_info)
 
             call topo_contr(ieqvfac,reo,ivtx_reo,
      &           cur_conder%contr,occ_vtx,fix_vtx)
@@ -111,6 +111,8 @@ c      include 'def_filinf.h'
             call wrt_contr(luderiv,cur_conder%contr)
             if (idx.lt.nder) cur_conder => cur_conder%next
           end do
+
+          call dealloc_contr_list(conder)
         end do
 
       end do
@@ -119,7 +121,6 @@ c      include 'def_filinf.h'
       call file_close_keep(f_input%fhand)
 
       call dealloc_contr(contr)
-      call dealloc_contr_list(conder)
       
       return
       end

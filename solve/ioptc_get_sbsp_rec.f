@@ -63,7 +63,8 @@
           write(luout,*) 'invalid ivec passed to ioptc_get_sbsp_rec: '
           write(luout,*) ' ndim, maxdim: ',ndim,maxdim
           write(luout,*) ' ivec:         ',ivec
-          stop 'invalid ivec passed to ioptc_get_sbsp_rec'
+          call quit(1,'ioptc_get_sbsp_rec',
+     &         'invalid ivec passed to function')
         end if
 
         do irec = 1, ndim

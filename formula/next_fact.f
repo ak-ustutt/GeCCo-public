@@ -3,7 +3,7 @@
      &     iconn)
 *----------------------------------------------------------------------*
 *     generate next contraction sequence (factorization)
-*     commen on algorithm: "nicht schoen aber selten ...."
+*     comment on algorithm: "nicht schoen aber selten ...."
 *     to get the basic idea, cf. recursive algorithm in permute.f
 *     here, the possible permutations are cut by considering the
 *     number of arcs eliminated from a graph when one contraction

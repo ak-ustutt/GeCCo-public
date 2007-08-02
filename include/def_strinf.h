@@ -2,7 +2,8 @@
      &     ld_gtab = 10
       type strinf
         integer ::
-     &     ngraph               ! number of graphs
+     &     ngraph,              ! number of graphs
+     &     max_igtyp
         integer, pointer ::
      &     gtab(:,:)      ! little "hash"-table for finding
      &                    ! graphs if ispc_occ, and ispc_typ are given

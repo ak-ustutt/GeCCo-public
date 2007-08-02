@@ -1,54 +1,43 @@
 *----------------------------------------------------------------------*
-      subroutine set_h_operators(op_list,nops,orb_info,explicit)
+      subroutine set_h_operators(op_info,orb_info,explicit)
 *----------------------------------------------------------------------*
 *     Hard-wired set-up of the Hamiltonian operator.
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
+      include 'cc_routes.h'
       include 'ifc_input.h'
       include 'stdunit.h'
       include 'def_orbinf.h'
-      include 'def_operator.h'
-      include 'def_operator_list.h'
       include 'par_opnames_gen.h'
+      include 'mdef_operator_info.h'
 
-      type(operator_list), intent(inout), target ::
-     &     op_list
-      integer, intent(inout) ::
-     &     nops
+      type(operator_info), intent(inout), target ::
+     &     op_info
       logical, intent(in) ::
      &     explicit
       type(orbinf) ::
      &     orb_info
-      type(operator_list), pointer ::
-     &     list_pnt
+      type(operator), pointer ::
+     &     op_pnt, ham_pnt
       logical ::
      &     dagger
       character ::
      &     name*(len_opname)
       integer ::
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
-     &     gamma, iarr(1), iformal, isim
- 0    integer ::
+     &     gamma, iarr(1), iformal, isim, idx
+      integer ::
      &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
-      ! advance to end of operator list:
-      list_pnt => op_list
-      do while (associated(list_pnt%next))
-        list_pnt => list_pnt%next
-      end do
-      ! is last entry already in use?
-      if (associated(list_pnt%op)) then
-        allocate(list_pnt%next)
-        list_pnt%next%prev => list_pnt
-        list_pnt => list_pnt%next
-        nullify(list_pnt%next)
-c        nullify(list_pnt%op)
-      end if
-      allocate (list_pnt%op)
+      integer, external ::
+     &     idx_oplist2
 
-      nops = nops+1
-      list_pnt%op%id = nops
+      ! new entry: the Hamiltonian
+      call add_operator(op_ham,op_info)
+      idx = idx_oplist2(op_ham,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+
       ! new entry: the Hamiltonian
       name = op_ham
       dagger = .false.
@@ -64,30 +53,21 @@ c        nullify(list_pnt%op)
 
       call set_hpvx_and_restr_for_h()
 
-      call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
+      call set_genop(op_pnt,name,optyp_operator,
+     $     dagger,absym,casym,gamma,s2,ms,
      &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &     orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
+     &     orb_info)
 
       call get_argument_value('calculate.routes','simtraf',ival=isim)
       if (isim.gt.0) then
-        ! new entry: the Hhat operator
-        nops = nops+1
-        allocate(list_pnt%next)
-        list_pnt%next%prev => list_pnt
-        list_pnt => list_pnt%next
-        nullify(list_pnt%next)
-        allocate (list_pnt%op)
-        list_pnt%op%id = nops
-c        op_info%id_cnt = op_info%id_cnt+1
-c        list_pnt%op%id = op_info%id_cnt
+        call add_operator(op_hhat,op_info)
+        idx = idx_oplist2(op_hhat,op_info)
+        op_pnt => op_info%op_arr(idx)%op
+        idx = idx_oplist2(op_ham,op_info)
+        ham_pnt => op_info%op_arr(idx)%op
+        call clone_operator(op_pnt,ham_pnt,orb_info)
 
-        name = op_hhat
-
-        call set_genop(list_pnt%op,name,dagger,absym,casym,gamma,s2,ms,
-     &       min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
-     &       orb_info%iad_gas,orb_info%ihpvgas,orb_info%ngas)
-
-      endif  
+      end if
  
       return
 *----------------------------------------------------------------------*

@@ -77,7 +77,7 @@
         iblk_tgt = fl_tgt_current%contr%iblk_res
         if (ntest.ge.100) then
           write(luout,*) 'current term:'
-          call prt_contr2(luout,fl_tgt_current%contr,op_info%op_arr)
+          call prt_contr2(luout,fl_tgt_current%contr,op_info)
         end if
 
         ! is intermediate vertex contained in terms?

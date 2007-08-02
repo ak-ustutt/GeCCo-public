@@ -7,7 +7,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -65,8 +65,8 @@
       ! reorder
       call reorder_formula(form_hhat,op_info)
 c dbg
-      print *,'generated (1):'
-      call print_form_list(luout,form_hhat,op_info)
+c      print *,'generated (1):'
+c      call print_form_list(luout,form_hhat,op_info)
 c dbg      
       ! write to disc
       formula_hhat%label = label_cchhat

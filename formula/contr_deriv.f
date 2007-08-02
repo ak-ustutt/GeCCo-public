@@ -47,6 +47,8 @@
       integer, external ::
      &     iblk_occ
 
+
+      call quit(1,'contr_deriv','call to obsolete routine')
       if (ntest.ge.100) then
         write(luout,*) '====================='
         write(luout,*) ' contr_deriv at work'

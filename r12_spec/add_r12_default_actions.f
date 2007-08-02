@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine add_r12_default_actions(act_list,nactions,
-     &                                  ops,nops,
+     &                                  op_info,
      &                                  form_info)
 *----------------------------------------------------------------------*
 *     set all actions to be taken if a CC-R12 calculation is intended
@@ -10,27 +10,21 @@
 
       include 'stdunit.h'
       include 'ifc_input.h'
-c      include 'ifc_formula.h'
-      include 'def_operator.h'
-c      include 'ifc_operators.h'
       include 'par_opnames_gen.h'
       include 'par_formnames_gen.h'
-      include 'def_filinf.h'
+      include 'mdef_operator_info.h'
+      include 'mdef_formula_info.h'
       include 'def_action.h'
       include 'def_action_list.h'
-      include 'mdef_formula_info.h'
-      include 'explicit.h'
 
       type(action_list), intent(inout) ::
      &     act_list
       integer, intent(out) ::
      &     nactions
-      integer, intent(in) ::
-     &     nops
       type(formula_info), intent(in) ::
      &     form_info
-      type(operator), intent(in) ::
-     &     ops(nops)
+      type(operator_info), intent(in) ::
+     &     op_info
 
       integer ::
      &     idxham, idxsop, idxdia, idxccen, idxccrs, idxomg, idxhhat,
@@ -38,13 +32,13 @@ c      include 'ifc_operators.h'
   
       ! explicit interface does not work with ifort
       integer, external ::
-     &     idx_oplist, idx_formlist
+     &     idx_oplist2, idx_formlist
 
-      idxham = idx_oplist(op_ham,ops,nops)
-      idxsop = idx_oplist(op_sop,ops,nops)
-      idxomg = idx_oplist(op_omgr12,ops,nops)
-      idxdia = idx_oplist(op_diar12,ops,nops)
-      idxr12 = idx_oplist(op_rint,ops,nops)
+      idxham = idx_oplist2(op_ham,op_info)
+      idxsop = idx_oplist2(op_sop,op_info)
+      idxomg = idx_oplist2(op_omgr12,op_info)
+      idxdia = idx_oplist2(op_diar12,op_info)
+      idxr12 = idx_oplist2(op_rint,op_info)
 
       ! preliminary:
       idxccen = idx_formlist(label_ccen0,form_info)
@@ -85,7 +79,7 @@ c      include 'ifc_operators.h'
      &     2,(/idxccen,idxccrs/)
      &     )
       else
-        idxhhat = idx_oplist(op_hhat,ops,nops)
+        idxhhat = idx_oplist2(op_hhat,op_info)
         call add_action(act_list,nactions,
      &     iaction_solve_nleq,2,3,1,
      &     (/idxdia,idxham/),(/idxsop,idxomg,idxhhat/),

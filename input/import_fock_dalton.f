@@ -47,6 +47,9 @@
       real(8), pointer ::
      &     xfock(:), xh1reo(:)
 
+      real(8), external ::
+     &     dnrm2
+
       call atim_csw(cpu0,sys0,wall0)
 
       ifree = mem_setmark('import_h1')
@@ -113,17 +116,22 @@
 
       read (lusir) potnuc,emy,eactiv,emcscf,istate,ispin,nactel,lsym
       ! overread a few records (depends on DALTON version)
-      do irec = 1, nskip_in_sirifc
+      do irec = 1, nskip_in_sirifc-1
         read(lusir) 
       end do
       ! and finally: the inactive fock matrix in symmetry-blocked
       ! upper triangular form
-c dbg
-      write(luout,*) 'nfock = ',nfock
-c dbg
-      read (lusir) xfock(1:nfock)
+      read (lusir,err=16) xfock(1:nfock)
+      goto 1
+      ! on error try next record
+ 16   write(luout,*) 'Trying new DALTON format ...'
+      read (lusir) xfock(1:nfock) 
 
-      call file_close_keep(ffsir)
+  1   call file_close_keep(ffsir)
+
+      if (dnrm2(nfock,xfock,1).lt.1d-12)
+     &   call quit(0,'import_fock_dalton',
+     &               'No sensible fock matrix found!')
 
       ! and reorder
       call h1_sym2str_reo(emcscf,xfock,xh1reo,hop,str_info,orb_info)

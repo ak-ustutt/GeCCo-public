@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine form_indep2(form_output,form_input,
-     &                      label_out,title_out,
+     &                      label_out,title_out,idxout,
      &                      ncmpnd,idxop,
      &                      op_info)
 *----------------------------------------------------------------------*
@@ -21,14 +21,14 @@ c      include 'def_filinf.h'
       include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       character, intent(in) ::
      &     label_out*(*), title_out*(*)
       type(formula), intent(inout) ::
      &     form_input, form_output
       integer, intent(in) ::
-     &     ncmpnd, idxop(ncmpnd)
+     &     ncmpnd, idxop(ncmpnd), idxout
       type(operator_info) ::
      &     op_info
       
@@ -71,7 +71,7 @@ c      include 'def_filinf.h'
 
       len = len_trim(title_out)
       write(luoutput) len,title_out
-      write(luoutput) idum,idxinp
+      write(luoutput) idum,idxout
 
       ! signal, that still nothing is allocated
       contr%mxvtx = 0
@@ -79,7 +79,7 @@ c      include 'def_filinf.h'
       contr%mxfac = 0
 
       nterms = 0
-      do while(rd_contr(luinput,contr,idxinp))
+      do while(rd_contr(luinput,contr,idxout))
         
         ok = .true.
         cmp_loop: do idx = 1, contr%nvtx
@@ -95,7 +95,7 @@ c      include 'def_filinf.h'
           nterms = nterms+1
           call wrt_contr(luoutput,contr)
           if (ntest.ge.100) then
-            call prt_contr2(luout,contr,op_info%op_arr)
+            call prt_contr2(luout,contr,op_info)
           end if
         end if
 

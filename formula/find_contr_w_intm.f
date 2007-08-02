@@ -24,7 +24,7 @@
       include 'def_formula_item_array.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       
       logical, intent(out) ::
      &     success
@@ -43,7 +43,7 @@
 
       integer ::
      &     len_i_max, idxop_tgt, iblk_tgt, iterm, nfound,
-     &     idxop_current, iblk_current
+     &     idxop_current, iblk_current, njoined, idx
       type(formula_item_list), pointer ::
      &     fpl_intm_pnt
       logical ::
@@ -56,7 +56,7 @@
      &     fl_tgt_pnt
 
       logical, external ::
-     &     contr_in_contr
+     &     contr_in_contr, cmp_contr
 
       if (ntest.ge.100) then
         write(luout,*) '==========================='
@@ -81,7 +81,8 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
       iterm = 0
       do
         iterm = iterm+1
-        if (contr_in_contr(fpl_intm_pnt%item%contr,fl_tgt%contr)) then
+        if (contr_in_contr(fpl_intm_pnt%item%contr,
+     &                     fl_tgt%contr,           op_info)) then
           ! take I_i with longest contraction
           if (fpl_intm_pnt%item%contr%nvtx.gt.len_i_max) then
             len_i_max = fpl_intm_pnt%item%contr%nvtx
@@ -101,14 +102,14 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
 
       if (success1) then
         ! get factor, vertices and arcs associated with T_0
-        call split_contr(contr_t0,contr_i,fl_tgt%contr)
+        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
         if (ntest.ge.100) then
           write(luout,*) 'considering contraction:'
-          call prt_contr2(luout,fl_tgt%contr,op_info%op_arr)
+          call prt_contr2(luout,fl_tgt%contr,op_info)
           write(luout,*) 'split into T0 '
-          call prt_contr2(luout,contr_t0,op_info%op_arr)
+          call prt_contr2(luout,contr_t0,op_info)
           write(luout,*) 'and I'
-          call prt_contr2(luout,contr_i,op_info%op_arr)
+          call prt_contr2(luout,contr_i,op_info)
         end if
       end if
 
@@ -128,7 +129,7 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
           iterm = iterm+1
           ! make target contractions that we need to find
           if (.not.assigned(iterm))
-     &         call join_contr(contr_tgt(iterm),
+     &         call join_contr2(contr_tgt(iterm),
      &                         contr_t0,fpl_intm_pnt%item%contr,
      &                         idxop_tgt,iblk_tgt,op_info)
           if (.not.associated(fpl_intm_pnt%next)) exit
@@ -171,21 +172,22 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
             ! I should program contr_equal but the following should
             ! also work; if A part of B and B part of A the A==B
 c dbg
-            print *,'assigned: ',assigned(1:nterms)
-            print *,'comparing: fml, tgt(iterm = ',iterm,')'
-            call prt_contr2(luout,fl_tgt_pnt%contr,op_info%op_arr)
-            call prt_contr2(luout,contr_tgt(iterm),op_info%op_arr)
-            print *,'results = ',
-     &           contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)),
-     &           contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr),
-     &           fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac
+c            print *,'assigned: ',assigned(1:nterms)
+c            print *,'comparing: fml, tgt(iterm = ',iterm,')'
+c            call prt_contr2(luout,fl_tgt_pnt%contr,op_info)
+c            call prt_contr2(luout,contr_tgt(iterm),op_info)
+c            print *,'results = ',
+c     &           contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)),
+c     &           contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr),
+c     &           fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac
 c dbg
-            if (contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)).and.
-     &          contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr).and.
-     &          fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac) then
-c            if (contr_equal(fl_tgt_pnt%contr,contr_tgt(iterm))) then
+c            if (contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)).and.
+c     &          contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr).and.
+c     &          fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac) then
+            if (cmp_contr(fl_tgt_pnt%contr,
+     &                    contr_tgt(iterm),.false.)) then
 c dbg
-              print *,'hurra'
+c              print *,'hurra'
 c dbg
               assigned(iterm) = .true.
               nfound = nfound+1
@@ -214,18 +216,28 @@ c dbg
       ! provide contraction with intermediate
       if (success) then
         ! contr_t0 is still in memory
-        ! set up contr_i, only one vertex
+        ! set up contr_i, only one super-vertex
         call init_contr(contr_int)
-        call resize_contr(contr_int,1,0,0)
-        contr_int%nvtx = 1
+        ! result is operator itself
+        contr_int%idx_res = fpl_intm%item%contr%idx_res
+        contr_int%iblk_res = fpl_intm%item%contr%iblk_res
+        njoined = op_info%op_arr(contr_int%idx_res)%op%njoined
+        call resize_contr(contr_int,njoined,0,0)
+        contr_int%nvtx = njoined
+        contr_int%nsupvtx = 1
+        contr_int%svertex(1:njoined) = 1
+        call update_svtx4contr(contr_int)
         contr_int%narc = 0
         contr_int%nfac = 0
         contr_int%fac = 1d0
-        contr_int%vertex(1)%idx_op = fpl_intm%item%contr%idx_res
-        contr_int%vertex(1)%iblk_op = fpl_intm%item%contr%iblk_res
+        contr_int%vertex(1:njoined)%idx_op = contr_int%idx_res
+        do idx = 1, njoined
+          contr_int%vertex(idx)%iblk_op =
+     &         (contr_int%iblk_res-1)*njoined+idx
+        end do
 
         ! make new contraction
-        call join_contr(contr_rpl,
+        call join_contr2(contr_rpl,
      &                  contr_t0,contr_int,
      &                  idxop_tgt,iblk_tgt,op_info)
 
@@ -233,7 +245,7 @@ c dbg
 
         if (ntest.ge.100) then
           write(luout,*) 'generated term:'
-          call prt_contr2(luout,contr_rpl,op_info%op_arr)
+          call prt_contr2(luout,contr_rpl,op_info)
         end if
 
       end if

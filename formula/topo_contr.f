@@ -49,17 +49,18 @@ c     &     idxlt, i, j
 
       integer, external ::
      &     ifac, maxblk_in_contr, ifndmax, int_pack
-      logical, external ::
-     &     ielsqsum
+c      logical, external ::
+c     &     ielsqsum
 
 c      idxlt(i,j) = j*(j-2)/2+i
 c dbg
 c      print *,'on entry'
-c      call wrt_occ_n(luout,occ_vtx,nvtx+1)
+c      call wrt_occ_n(luout,occ_vtx,nvtx)
 c dbg
 
       nvtx = contr%nvtx
       narc = contr%narc
+      
       allocate(topomap(nvtx,nvtx),eqv_map(nvtx),scr(nvtx),
      &     neqv(nvtx),idx_eqv(nvtx,nvtx))
       topomap = 0
@@ -82,10 +83,10 @@ c dbg
             exit
           end if
         end do
-        ibase = ifndmax(occ_vtx(1,1,jvtx+1),0,ngastp*2,1)+1
+        ibase = ifndmax(occ_vtx(1,1,jvtx),1,ngastp*2,1)+1
         icpack = int_pack(contr%arc(idx)%occ_cnt,ngastp*2,ibase)
         topomap(ivtx,jvtx) = icpack
-        ibase = ifndmax(occ_vtx(1,1,ivtx+1),0,ngastp*2,1)+1
+        ibase = ifndmax(occ_vtx(1,1,ivtx),1,ngastp*2,1)+1
         icpack = int_pack(contr%arc(idx)%occ_cnt,ngastp*2,ibase)
         topomap(jvtx,ivtx) = icpack
       end do
@@ -144,7 +145,7 @@ c      maxop  = maxop_in_contr(contr)
         do jvtx = 2, neqv(ivtx)
           lvtx = idx_eqv(jvtx,ivtx)
           itopo = topo_cmp2(topomap(1:nvtx,kvtx),topomap(1:nvtx,lvtx),
-     &         eqv_map,contr%arc,nvtx)
+     &         eqv_map,nvtx)
           kvtx = lvtx
 c dbg
 c          print *,'comparing'
@@ -212,7 +213,7 @@ c      end if
      &        (eqv_map(ivtx).gt.eqv_map(ivtx+1).or.
      &         eqv_map(ivtx).eq.eqv_map(ivtx+1).and.
      &         topo_cmp2(topomap(1:nvtx,ivtx),topomap(1:nvtx,ivtx+1),
-     &         eqv_map,contr%arc,nvtx).gt.0)) then
+     &         eqv_map,nvtx).gt.0)) then
             ok = .false.
             resort = .true.
             ! interchange the two indices
@@ -250,14 +251,14 @@ c      end if
 
       contains
 
-      logical function topo_cmp2(top1,top2,eqv,arc,nel)
+      logical function topo_cmp2(top1,top2,eqv,nel)
 
       implicit none
 
       integer, intent(in) ::
      &     nel, top1(nel), top2(nel), eqv(nel)
-      type(cntr_arc), intent(in) ::
-     &     arc(*)
+c      type(cntr_arc), intent(in) ::
+c     &     arc(*)
 
       integer ::
      &     iel, jel, ieqv, npick, nconn1, nconn2

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      integer function op_type(op)
+      integer function vtx_type(op)
 *----------------------------------------------------------------------*
 *     analyze blocks of operator and return type as defined in 
 *     def_operator.h
@@ -33,11 +33,11 @@
         vl = vl.or.iocc_nonzero(iocc_xdn(3,hpvx_occ(1:ngastp,1:2,iblk)))
       end do
       
-      if (.not.ex.and..not.dx.and..not.vl) op_type = optyp_scalar
-      if (ex.and..not.dx.and..not.vl) op_type = optyp_ph_ex
-      if (dx.and..not.ex.and..not.vl) op_type = optyp_ph_dx
-      if (dx.and.ex.and..not.vl) op_type = optyp_ph
-      if (vl) op_type = optyp_val
+      if (.not.ex.and..not.dx.and..not.vl) vtx_type = vtxtyp_scalar
+      if (ex.and..not.dx.and..not.vl) vtx_type = vtxtyp_ph_ex
+      if (dx.and..not.ex.and..not.vl) vtx_type = vtxtyp_ph_dx
+      if (dx.and.ex.and..not.vl) vtx_type = vtxtyp_ph
+      if (vl) vtx_type = vtxtyp_val
 
       return
       end

@@ -1,9 +1,13 @@
 *----------------------------------------------------------------------*
-      subroutine occvtx4contr(occ_vtx,contr,op_info)
+      subroutine occvtx4contr(mode,occ_vtx,contr,op_info)
 *----------------------------------------------------------------------*
 *     set occupations of operator blocks corresponding to result
 *     and vertices of contraction contr
-*     first occupation is result, 2..nvtx+1 are the vertices
+*     mode = 0:
+*     first njoined occupations are result, njoined+1..njoined+nvtx 
+*     are the vertices (njoined > 1, if result is a super-vertex)
+*     mode = 1:
+*     skip info for result vertices
 *----------------------------------------------------------------------*
       implicit none
 
@@ -15,31 +19,48 @@
      &     contr
       type(operator_info), intent(in) ::
      &     op_info
+      integer, intent(in) ::
+     &     mode
       integer, intent(out) ::
      &     occ_vtx(ngastp,2,contr%nvtx+1)
 
       integer ::
-     &     nvtx, idx, idxop, iblkop
+     &     nvtx, idx, idxop, iblkop, njoined
       type(cntr_vtx), pointer ::
      &     vertex(:)
       integer, pointer ::
      &     op_occ(:,:,:)
 
+      if (mode.ne.0.and.mode.ne.1)
+     &     call quit(1,'occvtx4contr','unknown mode')
+
+      if (mode.eq.0) then
+        idxop = contr%idx_res
+        njoined = op_info%op_arr(idxop)%op%njoined
+      else
+        njoined = 0
+      end if
       nvtx = contr%nvtx
       vertex => contr%vertex
-      do idx = 1, nvtx+1
-        if (idx.eq.1) then
+      do idx = 1, nvtx+njoined
+        if (idx.le.njoined) then
           idxop = contr%idx_res 
-          iblkop = contr%iblk_res 
+          iblkop = (contr%iblk_res-1)*njoined+idx
         else
-          idxop = vertex(idx-1)%idx_op
-          iblkop = vertex(idx-1)%iblk_op
+          idxop = vertex(idx-njoined)%idx_op
+          ! is already set to compound index in case of super-vertices:
+          iblkop = vertex(idx-njoined)%iblk_op 
         end if
         if (idxop.eq.0) then
           occ_vtx(1:ngastp,1:2,idx) = 0
         else
           op_occ => op_info%op_arr(idxop)%op%ihpvca_occ
-          occ_vtx(1:ngastp,1:2,idx) = op_occ(1:ngastp,1:2,iblkop)
+          if (.not.op_info%op_arr(idxop)%op%dagger) then
+            occ_vtx(1:ngastp,1:2,idx) = op_occ(1:ngastp,1:2,iblkop)
+          else
+            occ_vtx(1:ngastp,1,idx) = op_occ(1:ngastp,2,iblkop)
+            occ_vtx(1:ngastp,2,idx) = op_occ(1:ngastp,1,iblkop)
+          end if
         end if
       end do
 

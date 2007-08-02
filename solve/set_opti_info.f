@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_opti_info(opti_info,nopt,op_opt)
+      subroutine set_opti_info(opti_info,mode,nopt,nroot,op_opt)
 *----------------------------------------------------------------------*
       implicit none
       
@@ -12,7 +12,7 @@
       type(optimize_info), intent(inout) ::
      &     opti_info
       integer, intent(in) ::
-     &     nopt
+     &     nopt, mode, nroot
       type(operator_array), intent(in) ::
      &     op_opt(nopt)
 
@@ -22,33 +22,15 @@
      &     ifree, iopt
 
       opti_info%variational = .false.
-      opti_info%linear      = .false.
+      if (mode.eq.1) opti_info%linear = .false.
+      if (mode.eq.2) opti_info%linear = .true.
 
+      ! get global values
       call get_argument_value('calculate.solve','maxiter',
      &     ival=opti_info%maxmacit)
-      call get_argument_value('calculate.solve','maxmic',
-     &     ival=opti_info%micifac)
-      opti_info%maxmicit = opti_info%maxmacit*opti_info%micifac
       call get_argument_value('calculate.solve','maxsub',
      &     ival=opti_info%maxsbsp)
 
-      call get_argument_value('calculate.solve','method',
-     &     str=str)
-      call uppcas(str)
-      select case(trim(str(1:4)))
-      case('PERT') 
-        opti_info%mode_nleq = mode_nleq_pert
-        opti_info%norder = 1
-      case('DIIS') 
-        opti_info%mode_nleq = mode_nleq_diis
-        opti_info%norder = 1
-      case('ASSJ','RLE ') 
-        opti_info%mode_nleq = mode_nleq_assj
-        opti_info%norder = 1
-      case default
-        call quit(0,'set_opti','invalid method: '//trim(str))
-      end select
-      
       ifree = mem_alloc_int (opti_info%nwfpar,nopt,'nwfpar')
       ifree = mem_alloc_real(opti_info%thrgrd,nopt,'thrgrd')
 
@@ -57,13 +39,98 @@
       if (nopt.gt.1)
      &     opti_info%thrgrd(2:nopt) = opti_info%thrgrd(1)
 
-      call get_argument_value('calculate.solve','tr_ini',
-     &     xval=opti_info%trini)
-
       opti_info%nopt = nopt
       do iopt = 1, nopt
         opti_info%nwfpar(iopt) = op_opt(iopt)%op%len_op
       end do
+
+      opti_info%nroot = nroot
+
+      ! specials:
+      if (mode.eq.1) then
+
+        if (nroot.gt.1)
+     &       call quit(1,'set_opti_info',
+     &       'nroot>1 not yet considered for non-linear equations!')
+
+        if (is_argument_set('calculate.solve.non_linear','maxiter'))
+     &       call get_argument_value('calculate.solve.non_linear',
+     &       'maxiter',
+     &       ival=opti_info%maxmacit)
+        if (is_argument_set('calculate.solve.non_linear','maxsub'))
+     &       call get_argument_value('calculate.solve.non_linear',
+     &       'maxsub',
+     &       ival=opti_info%maxsbsp)
+
+        call get_argument_value('calculate.solve.non_linear','maxmic',
+     &       ival=opti_info%micifac)
+        opti_info%maxmicit = opti_info%maxmacit*opti_info%micifac
+
+        if (is_argument_set('calculate.solve.non_linear','conv')) then
+          call get_argument_value('calculate.solve.non_linear','conv',
+     &         xval=opti_info%thrgrd(1))
+          if (nopt.gt.1)
+     &         opti_info%thrgrd(2:nopt) = opti_info%thrgrd(1)
+        end if
+
+        call get_argument_value('calculate.solve.non_linear','method',
+     &       str=str)
+        call uppcas(str)
+        select case(trim(str(1:4)))
+        case('PERT') 
+          opti_info%mode_nleq = mode_nleq_pert
+          opti_info%norder = 1
+        case('DIIS') 
+          opti_info%mode_nleq = mode_nleq_diis
+          opti_info%norder = 1
+        case('ASSJ','RLE ') 
+          opti_info%mode_nleq = mode_nleq_assj
+          opti_info%norder = 1
+        case default
+          call quit(0,'set_opti','invalid method: '//trim(str))
+        end select
+      
+        call get_argument_value('calculate.solve.non_linear','tr_ini',
+     &       xval=opti_info%trini)
+
+      else if (mode.eq.2) then
+
+        if (is_argument_set('calculate.solve.linear','maxiter'))
+     &       call get_argument_value('calculate.solve.linear',
+     &       'maxiter',
+     &       ival=opti_info%maxmacit)
+        if (is_argument_set('calculate.solve.linear','maxsub'))
+     &       call get_argument_value('calculate.solve.linear',
+     &       'maxsub',
+     &       ival=opti_info%maxsbsp)
+
+        ! here the interpretation is: maxsbsp = sbsp per root, so:
+        opti_info%maxsbsp = opti_info%maxsbsp*nroot
+
+        if (is_argument_set('calculate.solve.linear','conv')) then
+          call get_argument_value('calculate.solve.linear','conv',
+     &         xval=opti_info%thrgrd(1))
+          if (nopt.gt.1)
+     &         opti_info%thrgrd(2:nopt) = opti_info%thrgrd(1)
+        end if
+
+        call get_argument_value('calculate.solve.linear','method',
+     &       str=str)
+        call uppcas(str)
+        select case(trim(str(1:8)))
+        case('CONJGRAD') 
+          opti_info%mode_leq = mode_leq_conjg
+          opti_info%norder = 1
+        case('SUBSPACE') 
+          opti_info%mode_leq = mode_leq_subsp
+          opti_info%norder = 1
+        case default
+          call quit(0,'set_opti','invalid method: '//trim(str))
+        end select
+      
+      else
+        call quit(1,'set_opti_info','illegal value of mode')
+      end if
 
       return
       end
