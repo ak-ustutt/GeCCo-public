@@ -148,7 +148,7 @@
         call occvtx4contr(0,occ_vtx,proto,op_info)
 
         ! ... and go! get all possible connections
-        call gen_contr(fl_expand_pnt,proto,fix_vtx,occ_vtx,op_info)
+        call gen_contr2(fl_expand_pnt,proto,fix_vtx,occ_vtx,op_info)
         do
           if (fl_expand_pnt%command.eq.command_end_of_formula) exit
           nterms = nterms+1

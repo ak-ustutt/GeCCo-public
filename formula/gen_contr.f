@@ -62,6 +62,8 @@ c      include 'def_operator.h'
 c      integer, allocatable ::
 c     &     occ_ol_vtx(:,:,:)
 
+      call quit(1,'gen_contr','deactivated, use gen_contr2')
+
       if (ntest.ge.100) then
         write(luout,*) '===================='
         write(luout,*) ' gen_contr speaking'

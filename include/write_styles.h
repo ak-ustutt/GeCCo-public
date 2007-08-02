@@ -18,4 +18,5 @@
      &     wst_dbg_subr = wst_lines_single+wst_left,
      &     wst_dbg_func = wst_lines_double+wst_left,
      &     wst_section  = wst_center_wide+wst_around_double,
-     &     wst_subsection = wst_center+wst_uline_single
+     &     wst_subsection = wst_center+wst_uline_single,
+     &     wst_title = wst_left+wst_uline_single

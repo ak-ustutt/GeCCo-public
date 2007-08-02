@@ -226,7 +226,7 @@
             end do
 
             ! generate contractions
-            call gen_contr(form_pnt,proto,fix_vtx,occ_vtx,op_info)
+            call gen_contr2(form_pnt,proto,fix_vtx,occ_vtx,op_info)
 
             ! advance pointer
             do while(form_pnt%command.ne.command_end_of_formula)

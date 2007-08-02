@@ -121,7 +121,18 @@ c      call init_op_files(op_info)
      &                        env_type,str_info,orb_info)
           case (iaction_evaluate)
             ! evaluate a single formula expression
-            call quit(1,'do_calc','action not implemented yet')
+            call file_init(ffform_opt,name_form_opt,ftyp_sq_unf,0)
+            call form_opt(ffform_opt,
+     &           current_act%act%nform,current_act%act%idx_formula,
+     &           form_info,op_info,str_info,orb_info)
+            call solve_leq(current_act%act%nop_out,
+     &                     current_act%act%idxopdef_out,
+     &                     current_act%act%nop_in,
+     &                     current_act%act%idxopdef_in,
+     &                     ffform_opt,
+     &                     op_info,str_info,strmap_info,orb_info
+     &                    )
+            call file_delete(ffform_opt)
           case (iaction_setup_prc)
             call set_prc4op(current_act%act%idxopdef_out(1),
      &                      current_act%act%idxopfile_out(1,1),
