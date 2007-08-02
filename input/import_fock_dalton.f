@@ -63,6 +63,9 @@
         if (max(hop%ica_occ(1,iocc_cls),hop%ica_occ(2,iocc_cls)).gt.1)
      &       cycle
         if(hop%formal_blk(iocc_cls))cycle
+        ! Quick fix to ignore Fock operators with an external index.
+        if(hop%ihpvca_occ(iextr,1,iocc_cls).gt.0.or.
+     &       hop%ihpvca_occ(iextr,2,iocc_cls).gt.0)cycle
         nh1reo = nh1reo + hop%len_op_occ(iocc_cls)
       end do
 

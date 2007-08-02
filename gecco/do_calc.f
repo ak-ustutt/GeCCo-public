@@ -141,16 +141,11 @@ c      nullify(form_list%next)
      &                        current_act%act%idxopfile_out(1,1),
      &                        op_info,
      &                        env_type,str_info,orb_info)
-
-c            if(explicit)then
-c              call import_op_el(7,
-c     &             7,op_info,
-c     &             env_type,str_info,orb_info)
-c            endif  
           case (iaction_evaluate)
             ! evaluate a single formula expression
             call quit(1,'do_calc','action not implemented yet')
           case (iaction_setup_prc)
+            stop
             call set_prc4op(current_act%act%idxopdef_out(1),
      &                      current_act%act%idxopfile_out(1,1),
      &                      current_act%act%idxopdef_in(1),

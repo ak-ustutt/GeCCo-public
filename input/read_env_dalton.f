@@ -64,7 +64,7 @@
      &       access='sequential')
         rewind(999)
         read(999,*)
-        do i=1,mxsym
+        do i=1,nsym
           read(999,'(5x,3i5)')nbas(i),linind(i),totbas(i)
           auxbas(i)=totbas(i)-nbas(i)
           loop=linind(i)*(2+totbas(i)/4)

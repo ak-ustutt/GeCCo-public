@@ -47,7 +47,6 @@
         case (op_ham)
           call import_hamint_dalton(op_target,opfil_target,
      &         str_info,orb_info)
-  
         ! Get other integrals needed for R12 calculations.
         case(op_rint)
           if(.not.op_target%formal)then
@@ -71,7 +70,8 @@
       end select
 
       if (ntest.ge.10.and.(.not.op_target%formal)) then
-        write(luout,*) 'imported operator:'
+        write(luout,*)
+        write(luout,*) 'imported operator: ',trim(op_target%name)
         if (ntest.ge.10) ipri = 1
         if (ntest.ge.50) ipri = 2
         if (ntest.ge.100) ipri = 3
@@ -81,6 +81,6 @@
      &       1,op_target%n_occ_cls,
      &       str_info,orb_info)
       end if
-        
+
       return
       end

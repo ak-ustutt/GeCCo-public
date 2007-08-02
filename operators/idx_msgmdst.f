@@ -50,7 +50,7 @@
 
       idx_msgmdst = -1
 c dbg
-      print *,'-->',iocc_cls,igamt,idxms
+c      print *,'-->',iocc_cls,igamt,idxms
 c dbg
       do idx = 1, op%off_op_gmox(iocc_cls)%ndis(igamt,idxms)
         if (didarr(idx,igamt,idxms).eq.mgdid) then
