@@ -18,7 +18,7 @@
       include 'def_strinf.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(strinf), intent(inout) ::
      &     str_info
@@ -32,8 +32,8 @@
       logical ::
      &     unique, same
       integer ::
-     &     iocc_cls, ihpv, ica, igas, jgas, idx, len(3),
-     &     nocc
+     &     iocc_cls, ihpv, ica, igas, jgas, idx, idxgr, len(ngastp),
+     &     nocc, njoined, ijoin
 
       if (ntest.ge.100) then
         write(luout,*) '--------------------'
@@ -44,17 +44,26 @@
 
       max_igtyp = 0
 
+      njoined = op%njoined
+
       ! loop over occupation classes of op
       do iocc_cls = 1, op%n_occ_cls
 
-        ! do not forget to init
-        op%idx_graph(1:ngastp,1:2,iocc_cls) = 0
+       ioff = (iocc_cls-1)*njoined
+       do ijoin = 1, njoined
+        idx = ioff+ijoin
+c dbg
+        print *,'idx = ',idx
+c dbg
 
-        ! loop over h/p/v and c/a
+        ! do not forget to init
+        op%idx_graph(1:ngastp,1:2,idx) = 0
+
+        ! loop over h/p/v/x and c/a
         do ihpv = 1,ngastp
           ica_loop: do ica = 1,2
 
-            nocc = op%ihpvca_occ(ihpv,ica,iocc_cls)
+            nocc = op%ihpvca_occ(ihpv,ica,idx)
             if (nocc.eq.0) cycle ica_loop
 
             unique = .true.
@@ -71,13 +80,13 @@
                 cmp_loop: do igas = 1, ngas
                   if (ihpvgas(igas).ne.ihpv) cycle cmp_loop
                   same = same.and.
-     &                 (op%igasca_restr(1,igas,ica,1,iocc_cls).eq.
+     &                 (op%igasca_restr(1,igas,ica,1,idx).eq.
      &                  str_info%igas_restr(1,jgas,1,igraph)).and.
-     &                 (op%igasca_restr(2,igas,ica,1,iocc_cls).eq.
+     &                 (op%igasca_restr(2,igas,ica,1,idx).eq.
      &                  str_info%igas_restr(2,jgas,1,igraph)) .and.
-     &                 (op%igasca_restr(1,igas,ica,2,iocc_cls).eq.
+     &                 (op%igasca_restr(1,igas,ica,2,idx).eq.
      &                  str_info%igas_restr(1,jgas,2,igraph)).and.
-     &                 (op%igasca_restr(2,igas,ica,2,iocc_cls).eq.
+     &                 (op%igasca_restr(2,igas,ica,2,idx).eq.
      &                  str_info%igas_restr(2,jgas,2,igraph))
                   if (.not.same) exit cmp_loop
                   jgas = jgas+1
@@ -89,7 +98,7 @@
               
               ! .not.unique == we have this graph already
               ! let op%idx_graph point to this graph ...
-              if (.not.unique) op%idx_graph(ihpv,ica,iocc_cls) = igraph
+              if (.not.unique) op%idx_graph(ihpv,ica,idx) = igraph
               ! ... and go to next space
               if (.not.unique) cycle ica_loop
 
@@ -99,11 +108,11 @@
             str_info%ngraph = str_info%ngraph + 1
 
             ! set pointer to that graph
-            idx = str_info%ngraph
-            op%idx_graph(ihpv,ica,iocc_cls) = idx
+            idxgr = str_info%ngraph
+            op%idx_graph(ihpv,ica,idx) = idxgr
 
-            str_info%ispc_typ(idx) = ihpv
-            str_info%ispc_occ(idx) = nocc
+            str_info%ispc_typ(idxgr) = ihpv
+            str_info%ispc_occ(idxgr) = nocc
 
             ! dimension needed for hash table
             max_igtyp = max(max_igtyp,ngastp*(nocc-1) + ihpv)
@@ -111,15 +120,16 @@
             jgas = 1
             igas_loop: do igas = 1, ngas
               if (ihpvgas(igas).ne.ihpv) cycle igas_loop
-              str_info%igas_restr(1:2,jgas,1:2,idx)
-     &             = op%igasca_restr(1:2,igas,ica,1:2,iocc_cls)
+              str_info%igas_restr(1:2,jgas,1:2,idxgr)
+     &             = op%igasca_restr(1:2,igas,ica,1:2,idx)
               jgas = jgas+1
             end do igas_loop
 
           end do ica_loop
         end do
 
-      end do
+       end do ! ijoin
+      end do ! iocc_cls
 
       if (ntest.eq.100) then
         write(luout,*) 'unique graphs on output: ', str_info%ngraph
@@ -139,10 +149,11 @@
         end do
         write(luout,*) 'operator->graph assignments:'
         do iocc_cls = 1, op%n_occ_cls
-          write(luout,'(2x,i3,4x,4i3)') iocc_cls,
-     &         op%idx_graph(1:ngastp,1,iocc_cls)
-          write(luout,'(5x,4x,4i3)') 
-     &         op%idx_graph(1:ngastp,2,iocc_cls)
+          ioff = (iocc_cls-1)*njoined
+          write(luout,'(2x,i3,4x,5(4i3,2x))') iocc_cls,
+     &         op%idx_graph(1:ngastp,1,ioff+1:ioff+njoined)
+          write(luout,'(5x,4x,5(4i3))') 
+     &         op%idx_graph(1:ngastp,2,ioff+1:ioff+njoined)
         end do
       end if
 

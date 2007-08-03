@@ -63,7 +63,8 @@ c     &             current%op%off_op_gmo(iocc_cls)%gam_ms(nsym,nexc+1))
 c        end do
         ! set up length info for operator
         ipass = 1
-        call set_op_dim(ipass,.false.,current%op,str_info,nsym)
+c        call set_op_dim(ipass,.false.,current%op,str_info,nsym)
+        call set_op_dim2(ipass,current%op,str_info,nsym)
 
         call init_operator(2,current%op,orb_info)
 c        do iocc_cls = 1, current%op%n_occ_cls
@@ -81,7 +82,8 @@ c        end do
 
         ! extended length info for operator
         ipass = 2
-        call set_op_dim(ipass,.false.,current%op,str_info,nsym)
+c        call set_op_dim(ipass,.false.,current%op,str_info,nsym)
+        call set_op_dim2(ipass,current%op,str_info,nsym)
 
         if (iprint.gt.3) then
           len = len_trim(current%op%name)

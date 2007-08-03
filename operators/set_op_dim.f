@@ -47,7 +47,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 1000
       
       integer, intent(in) ::
      &     ipass, ngam

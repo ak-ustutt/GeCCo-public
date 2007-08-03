@@ -6,17 +6,19 @@
       implicit none
 
       include 'opdim.h'
+      include 'hpvxseq.h'
 
       integer, intent(in) ::
      &     iocc(ngastp,2), msd(ngastp,2), gmd(ngastp,2), nsym
 
       integer ::
-     &     ipatt, ibase, ica, ihpv
+     &     ipatt, ibase, ica, ihpvdx, ihpv
 
       ipatt = 0
       ibase = 1
       do ica = 1,2
-        do ihpv = 1, ngastp
+        do ihpvdx = 1, ngastp
+          ihpv = hpvxseq(ihpvdx)
           if (iocc(ihpv,ica).eq.0) cycle
           ipatt = ipatt +
      &        (((iocc(ihpv,ica)-msd(ihpv,ica))/2)*nsym+
