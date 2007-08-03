@@ -66,17 +66,6 @@
      &     mem_slc
       end type mem_slice_array
 
-c      type membuffer_slot
-c      
-c      integer ::
-c     &     id, length, n_usage
-c      integer, pointer ::
-c     &     ibuf(:)
-c      real(8), pointer ::
-c     &     xbuf(:)
-c
-c      end type membuffer_slot
-
       type membuffer
 
       character ::
@@ -478,7 +467,7 @@ c      in_last_section = associated(cursection,mem_cursection)
           deallocate(slice%next)
           nullify(slice%next)
           cursection%tail => slice
-          if (in_last_section) mem_curslice => slice
+          if (on_last_slice) mem_curslice => slice
         end if
       else
         if (.not.associated(slice%prev)) then

@@ -11,6 +11,8 @@
       include 'stdunit.h'
       include 'def_operator.h'
       include 'def_orbinf.h'
+      include 'ifc_memman.h'
+      include 'par_globalmarks.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -24,12 +26,14 @@
 
       integer ::
      &     njoined, nblk, nblk_old, ioffblk2, ioffblk,
-     &     iblk, iblk2, idxblk, nadd, ngas, ijoin
+     &     iblk, iblk2, idxblk, nadd, ngas, ijoin, ifree
       integer, pointer ::
      &     ihpvca_occ_new(:,:,:),
      &     ica_occ_new(:,:),
      &     igasca_restr_new(:,:,:,:,:),
      &     idx_graph_new(:,:,:)
+      logical, pointer ::
+     &     formal_blk_new(:)
       
       integer, external ::
      &     iblk_occ
@@ -67,7 +71,8 @@
         allocate(ihpvca_occ_new(ngastp,2,nblk*njoined),
      &           igasca_restr_new(2,orb_info%ngas,2,2,nblk*njoined),
      &           ica_occ_new(2,nblk),
-     &           idx_graph_new(ngastp,2,nblk*njoined))
+     &           idx_graph_new(ngastp,2,nblk*njoined),
+     &           formal_blk_new(nblk))
 
         ! save old info
         ihpvca_occ_new(1:ngastp,1:2,1:nblk_old*njoined) =
@@ -78,6 +83,8 @@
      &       op1%ica_occ(1:2,1:nblk_old)
         idx_graph_new(1:ngastp,1:2,1:nblk_old*njoined) =
      &       op1%idx_graph(1:ngastp,1:2,1:nblk_old*njoined)
+        formal_blk_new(1:nblk_old) =
+     &       op1%formal_blk(1:nblk_old)
 
         ! add new blocks
         iblk = nblk_old
@@ -99,6 +106,7 @@
      &           op2%ica_occ(1:2,iblk2)
             idx_graph_new(1:ngastp,1:2,ioffblk+1:ioffblk+njoined) =
      &           op2%idx_graph(1:ngastp,1:2,ioffblk2+1:ioffblk2+njoined)
+            formal_blk_new(iblk) = op2%formal_blk(iblk2)
           end if
         end do
 
@@ -111,6 +119,20 @@
         op1%igasca_restr => igasca_restr_new
         op1%ica_occ => ica_occ_new
         op1%idx_graph => idx_graph_new
+
+        call mem_pushmark()
+        ifree = mem_gotomark(operator_def)
+
+        ifree = mem_dealloc(trim(op1%name)//'-0')
+        ifree = mem_register(2*ngastp*nblk*njoined
+     &                      +2*nblk
+     &                      +8*orb_info%ngas*nblk*njoined
+     &                      +nblk
+     &                      +2*ngastp*nblk*njoined
+     &                      +nblk,
+     &       trim(op1%name)//'-0')
+
+        call mem_popmark()
 
       end if
 

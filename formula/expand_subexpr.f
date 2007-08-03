@@ -30,11 +30,14 @@
       logical ::
      &     success, advance
       integer ::
-     &     idxop_tgt, iblk_tgt, idxop_intm, iblk_intm, ivtx, nterms
+     &     idxop_tgt, iblk_tgt, idxop_intm, iblk_intm, ivtx, nterms,
+     &     njoined
       type(formula_item), pointer ::
      &     fl_tgt_current, fl_intm_pnt, fl_expand
       type(formula_item_list), pointer ::
      &     fpl_intm_c2blk
+      type(operator), pointer ::
+     &     op_intm
 
       integer, external ::
      &     vtx_in_contr
@@ -55,6 +58,8 @@
      &     'intermediate definition must start with [INIT]')
 
       idxop_intm = fl_intm%target 
+      op_intm => op_info%op_arr(idxop_intm)%op
+      njoined = op_intm%njoined
 
       fl_tgt_current => fl_tgt
       ! loop over target items
@@ -91,6 +96,8 @@
 
         if (ivtx.gt.0) then
           iblk_intm = fl_tgt_current%contr%vertex(ivtx)%iblk_op
+          if (njoined.gt.1)
+     &         iblk_intm = (iblk_intm-1)/njoined+1
 
           ! if yes, look for first block in intermediate ...
           fl_intm_pnt => fl_intm
@@ -123,8 +130,8 @@ c dbg
           ! generate new terms
           allocate(fl_expand)
           call init_formula(fl_expand)
-          call expand_term
-     &         (fl_expand,nterms,fl_tgt_current,fpl_intm_c2blk,op_info)
+          call expand_term(fl_expand,nterms,
+     &         njoined,fl_tgt_current,fpl_intm_c2blk,op_info)
           
           if (nterms.gt.0) then
             if (ntest.ge.100) then

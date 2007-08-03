@@ -76,7 +76,7 @@
 
       else if (n_tgt.eq.2) then
 
-        call quit(1,'check_occ_partition','case n_tgt.eq.2 not tested')
+c        call quit(1,'check_occ_partition','case n_tgt.eq.2 not tested')
 
         ! maximum partition grade
         maxpart = min(sum(p_tgt(1:ngastp,1:2,1:2)),n_chk)

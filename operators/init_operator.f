@@ -45,7 +45,8 @@
      &                      +2*nblk
      &                      +8*orb_info%ngas*nblkt
      &                      +nblk
-     &                      +2*ngastp*nblkt,
+     &                      +2*ngastp*nblkt
+     &                      +nblk,
      &       trim(op%name)//'-0')
         allocate(op%ihpvca_occ(ngastp,2,nblkt),
      &           op%ica_occ(2,nblk),

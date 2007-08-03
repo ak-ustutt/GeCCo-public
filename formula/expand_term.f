@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine expand_term(fl_expand,nterms,f_term,fpl_intm,op_info)
+      subroutine expand_term(fl_expand,nterms,
+     &                       njoined,f_term,fpl_intm,op_info)
 *----------------------------------------------------------------------*
 *     expand O1.O2...Int...On (on f_term as formula list) to
 *            O1.O2...I1aI1b...On + O1.O2...I2...On + ...
@@ -34,20 +35,24 @@
      &     proto
       integer ::
      &     nvtx, narc, narc0, ivtx, jvtx, kvtx, iarc,
-     &     iop_intm, iblk_intm, iadd
+     &     iop_intm, iblk_intm, iblk, iadd, njoined
       type(contraction), pointer ::
      &     term, intm
       type(formula_item_list), pointer ::
      &     fpl_intm_pnt
       type(formula_item), pointer ::
      &     fl_expand_pnt
+      type(operator), pointer ::
+     &     op_intm
       integer, pointer ::
-     &     ivtx_reo(:), occ_vtx(:,:,:)
+     &     ivtx_term_reo(:), ivtx_intm_reo(:),
+     &     occ_vtx(:,:,:), svmap(:), vtxmap(:),
+     &     ipos_vtx(:)
       logical, pointer ::
      &     fix_vtx(:)
 
       integer, external ::
-     &     vtx_in_contr, ifac
+     &     vtx_in_contr, ifac, idxlist
 
       if (ntest.ge.100) then
         write(luout,*) '========================='
@@ -57,11 +62,19 @@
 
       iop_intm  = fpl_intm%item%contr%idx_res
       iblk_intm = fpl_intm%item%contr%iblk_res
+      op_intm => op_info%op_arr(iop_intm)%op
+      njoined = op_intm%njoined
+
+      allocate(ipos_vtx(njoined))
 
       term => f_term%contr
-      ivtx = vtx_in_contr(iop_intm,term)
+      call get_vtx_in_contr(ipos_vtx,iop_intm,njoined,term)
 
-      if (term%vertex(ivtx)%iblk_op.ne.iblk_intm)
+      iblk = term%vertex(ipos_vtx(1))%iblk_op
+      if (njoined.gt.1)
+     &     iblk = (iblk-1)/njoined + 1
+
+      if (iblk.ne.iblk_intm)
      &     call quit(1,'expand_term','inconsistency')
 
       call init_contr(proto)
@@ -74,10 +87,39 @@
 
         intm => fpl_intm_pnt%item%contr
 
+        ! estimate new number of vertices and arcs:
+        nvtx = term%nvtx-njoined + intm%nvtx
+        narc = max(term%narc,(term%nvtx-njoined)*(term%nvtx-njoined-1))
+     &       + intm%narc
+
+        ! make a map: which vertex goes where ...
+
+        ! get supter-vertex map for intermediate
+        allocate(svmap(intm%nvtx))
+        if (njoined.eq.1) then
+          svmap(1:intm%nvtx) = 1
+        else
+          allocate(occ_vtx(ngastp,2,intm%nvtx+njoined))
+          call occvtx4contr(0,occ_vtx,intm,op_info)
+          call svmap4contr(svmap,intm,occ_vtx,njoined)
+          deallocate(occ_vtx)
+        end if
+
+        allocate(vtxmap(nvtx))
+
+        call joinmap4contr(vtxmap,term,
+     &                     -1,ipos_vtx,
+     &                     svmap,intm%nvtx,njoined)
+
+        deallocate(svmap)
+
         ! assemble proto contraction
-        nvtx = term%nvtx-1 + intm%nvtx
-        narc = max(term%narc,ifac(term%nvtx-1)) + intm%narc
         call resize_contr(proto,nvtx,narc,0)
+
+        if (term%nvtx.gt.0) allocate(ivtx_term_reo(term%nvtx))
+        if (intm%nvtx.gt.0)  allocate(ivtx_intm_reo(intm%nvtx))
+        if (term%nvtx.gt.0) ivtx_term_reo(1:term%nvtx) = 0
+        if (intm%nvtx.gt.0)  ivtx_intm_reo(1:intm%nvtx) = 0
 
         ! copy general info
         proto%idx_res = term%idx_res
@@ -85,45 +127,48 @@
         proto%fac = term%fac*intm%fac
         proto%nvtx = nvtx
         proto%nfac = 0
-        ! copy vertices
-        do jvtx = 1, ivtx-1
-          proto%vertex(jvtx) = term%vertex(jvtx)
+
+        ! set vertices and reordering arrays
+        do ivtx = 1, nvtx
+          if (vtxmap(ivtx).gt.0) then
+            proto%vertex(ivtx) = term%vertex(vtxmap(ivtx))
+            proto%svertex(ivtx) = term%svertex(vtxmap(ivtx))
+            ivtx_term_reo(vtxmap(ivtx)) = ivtx
+          else
+            proto%vertex(ivtx) = intm%vertex(-vtxmap(ivtx))
+            proto%svertex(ivtx) =
+     &           term%nsupvtx + intm%svertex(-vtxmap(ivtx))
+            ivtx_intm_reo(-vtxmap(ivtx)) = ivtx
+          end if
         end do
-        kvtx = 0
-        do jvtx = ivtx, ivtx-1+intm%nvtx
-          kvtx = kvtx+1
-          proto%vertex(jvtx) = intm%vertex(kvtx)
-        end do
-        kvtx = ivtx
-        do jvtx = ivtx+intm%nvtx, nvtx
-          kvtx = kvtx+1
-          proto%vertex(jvtx) = term%vertex(kvtx)
-        end do
+
+        ! set up correct super-vertex info
+        call update_svtx4contr(proto)
+
         ! copy arcs
         narc = 0
         do iarc = 1, term%narc
-          if (term%arc(iarc)%link(1).eq.ivtx .or.
-     &        term%arc(iarc)%link(2).eq.ivtx) cycle
+          if (idxlist(term%arc(iarc)%link(1),ipos_vtx,njoined,1).gt.0
+     &    .or.idxlist(term%arc(iarc)%link(2),ipos_vtx,njoined,1).gt.0)
+     &         cycle
           narc = narc+1
-          iadd = 0
-          if (term%arc(iarc)%link(1).gt.ivtx) iadd = intm%nvtx-1
-          proto%arc(narc)%link(1) = term%arc(iarc)%link(1)+iadd
-          iadd = 0
-          if (term%arc(iarc)%link(2).gt.ivtx) iadd = intm%nvtx-1
-          proto%arc(narc)%link(2) = term%arc(iarc)%link(2)+iadd
+          proto%arc(narc)%link(1)=ivtx_term_reo(term%arc(iarc)%link(1))
+          proto%arc(narc)%link(2)=ivtx_term_reo(term%arc(iarc)%link(2))
           proto%arc(narc)%occ_cnt = term%arc(iarc)%occ_cnt
         end do
         narc0 = narc
         do iarc = 1, intm%narc
           narc = narc+1
-          proto%arc(narc)%link(1) = intm%arc(iarc)%link(1)+ivtx-1
-          proto%arc(narc)%link(2) = intm%arc(iarc)%link(2)+ivtx-1
+          proto%arc(narc)%link(1)=ivtx_intm_reo(intm%arc(iarc)%link(1))
+          proto%arc(narc)%link(2)=ivtx_intm_reo(intm%arc(iarc)%link(2))
           proto%arc(narc)%occ_cnt = intm%arc(iarc)%occ_cnt
         end do
         ! all new connections must be between term and intm; 
         ! we have to add 0-contractions to avoid intra-term connections:
-        do jvtx = 1, ivtx-1
-          kloop: do kvtx = ivtx+intm%nvtx, nvtx
+        do jvtx = 1, nvtx
+          if (vtxmap(jvtx).lt.0) cycle
+          kloop: do kvtx = jvtx+1, nvtx
+            if (vtxmap(kvtx).lt.0) cycle kloop
             do iarc = 1, narc0
               if (proto%arc(iarc)%link(1).eq.jvtx.and.
      &            proto%arc(iarc)%link(2).eq.kvtx) cycle kloop
@@ -159,11 +204,17 @@
         end if
         deallocate(occ_vtx,fix_vtx)
 
+        deallocate(vtxmap)
+        if (term%nvtx.gt.0) deallocate(ivtx_term_reo)
+        if (intm%nvtx.gt.0)  deallocate(ivtx_intm_reo)
+
         if (.not.associated(fpl_intm_pnt%next)) exit
         fpl_intm_pnt => fpl_intm_pnt%next
       end do
 
       call dealloc_contr(proto)
+
+      deallocate(ipos_vtx)
 
       return
       end

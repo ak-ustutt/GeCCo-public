@@ -14,7 +14,6 @@
       include 'opdim.h'
       include 'stdunit.h'
       include 'def_contraction.h'
-c      include 'def_operator.h'
       include 'def_formula_item.h'
       include 'mdef_operator_info.h'
       include 'ifc_operators.h'
@@ -44,14 +43,9 @@ c      include 'def_operator.h'
      &     wrap
       type(operator), pointer ::
      &     opres
-c      integer ::
-c     &     iocc(ngastp,2), jocc(ngastp,2),
-c     &     iocc_a_dx(ngastp,2), iocc_b_dx(ngastp,2),
-c     &     iocc_b_ex(ngastp,2), iocc_c_ex(ngastp,2)
      
       integer, pointer ::
-c     &     ivtx_a(:), ivtx_b_dx(:), ivtx_b_ex(:), ivtx_c(:),
-     &     ivtx_ac_reo(:), ivtx_b_reo(:),   ! ivtx_reo(:),
+     &     ivtx_ac_reo(:), ivtx_b_reo(:),
      &     occ_vtx(:,:,:), svmap(:), ivtx_old(:)
       logical, pointer ::
      &     fix_vtx(:)
@@ -108,9 +102,6 @@ c     &     ivtx_a(:), ivtx_b_dx(:), ivtx_b_ex(:), ivtx_c(:),
       end if
       ! largest index = number of super vertices
       nsuper = ifndmax(svmap,1,nvtx_b,1)
-c dbg
-c      print *,'nsuper, nproto_ac: ', nsuper, nproto_ac
-c dbg
 
       if (nsuper.ne.nproto_ac)
      &     call quit(1,'join_contr','incompatible contractions!')
@@ -120,29 +111,9 @@ c dbg
       ! generate a map: which vertex goes where
       allocate(ivtx_old(nvtx_abc))
 
-      ivtx_abc = 0
-      isuper = 1
-      jvtx_last = 1
-      do ivtx = 1, nvtx_ac
-        if (contr_ac%vertex(ivtx)%idx_op.gt.0) then
-          ! here goes a AC vertex
-          ivtx_abc = ivtx_abc+1
-          ivtx_old(ivtx_abc) = ivtx
-        else
-          ! here we insert parts of B 
-          ! (current super-vertex + unassociated elements)
-          do jvtx = jvtx_last, nvtx_b
-            if (svmap(jvtx).le.isuper) then
-              ivtx_abc = ivtx_abc+1
-              ivtx_old(ivtx_abc) = -jvtx
-            else
-              jvtx_last = jvtx
-              isuper = isuper+1
-              exit
-            end if
-          end do
-        end if
-      end do
+      call joinmap4contr(ivtx_old,contr_ac,
+     &                   0,-1,
+     &                   svmap,nvtx_b,njoined)
 
       deallocate(svmap)
 
@@ -193,10 +164,6 @@ c dbg
       ! set up correct super-vertex info
       contr_abc%nvtx = nvtx_abc
       call update_svtx4contr(contr_abc)
-c dbg
-c      print *,'ivtx_b_reo: ',ivtx_b_reo
-c      print *,'ivtx_ac_reo: ',ivtx_ac_reo
-c dbg
 
       narc_abc = 0
       ! add all arcs from A and C, except the external ones
@@ -208,20 +175,9 @@ c dbg
      &       ivtx_ac_reo(contr_ac%arc(idx)%link(1))
         contr_abc%arc(narc_abc)%link(2) =
      &       ivtx_ac_reo(contr_ac%arc(idx)%link(2))
-c dbg
-c        print *,' ori: ',contr_ac%arc(idx)%link(1),
-c     &                   contr_ac%arc(idx)%link(2)
-c        print *,' reo: ',ivtx_ac_reo(contr_ac%arc(idx)%link(1)),
-c     &                   ivtx_ac_reo(contr_ac%arc(idx)%link(2))
-c dbg
         contr_abc%arc(narc_abc)%occ_cnt =
      &       contr_ac%arc(idx)%occ_cnt
       end do
-c dbg
-c      contr_abc%narc = narc_abc
-c        write(luout,*) 'generated proto-contraction (-2):'
-c        call prt_contr2(luout,contr_abc,op_info)
-c dbg
       ! add all arcs from B
       do idx = 1, narc_b
         narc_abc = narc_abc + 1
@@ -232,11 +188,6 @@ c dbg
         contr_abc%arc(narc_abc)%occ_cnt =
      &       contr_b%arc(idx)%occ_cnt
       end do
-c dbg
-c      contr_abc%narc = narc_abc
-c        write(luout,*) 'generated proto-contraction (-1):'
-c        call prt_contr2(luout,contr_abc,op_info)
-c dbg
       ! add the external arcs from A and C
       ! which make gen_contr consider only special connections
       do idx = 1, narc_ac
@@ -261,14 +212,11 @@ c dbg
       end do
       ! add [0] connections for any other intra-AC connection
       ! as these must not be generated
-c dbg
-c      contr_abc%narc = narc_abc
-c        write(luout,*) 'generated proto-contraction (0):'
-c        call prt_contr2(luout,contr_abc,op_info)
-c dbg
       narc_abc0 = narc_abc
-      do ivtx = 1, nvtx_a
-        jloop: do jvtx = nvtx_a+nvtx_b+1, nvtx_abc
+      do ivtx = 1, nvtx_abc
+        if (ivtx_old(ivtx).lt.0) cycle
+        jloop: do jvtx = ivtx+1, nvtx_abc
+          if (ivtx_old(jvtx).lt.0) cycle jloop
           do iarc = 1, narc_abc0
             if (contr_abc%arc(iarc)%link(1).eq.ivtx.and.
      &          contr_abc%arc(iarc)%link(2).eq.jvtx) cycle jloop

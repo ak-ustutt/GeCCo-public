@@ -48,8 +48,8 @@
       ntoob = orb_info%ntoob
       caborb=orb_info%caborb 
 
-      if (explicit.and.caborb.le.0)
-     &     call quit(1,'set_orbinf','R12 without CABS intended?')
+c      if (explicit.and.caborb.le.0)
+c     &     call quit(1,'set_orbinf','R12 without CABS intended?')
 
       ! allocate some arrays on orb_info structure
       allocate(orb_info%ireots(ntoob),
@@ -201,7 +201,7 @@ c      endif
         jdx = 0
         do isym = 1, nsym
           do igas = 1, ngas
-            if(explicit.and.iloop.eq.1.and.igas.eq.ngas)cycle
+            if(caborb.gt.0.and.iloop.eq.1.and.igas.eq.ngas)cycle
             if (orb_info%ihpvgas(igas).eq.ihole.and.hole_rv) then
               igasr = orb_info%ngas_hpv(ihole)-igas+1
               ist = orb_info%mostnd(2,isym,igasr)

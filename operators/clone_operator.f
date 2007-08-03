@@ -40,27 +40,24 @@
       ! the template: THIS IS HIGHLY DANGEROUS
       ! so: let's get our own space for the arrays and copy these
 
+      call init_operator(0,op_clone,orb_info)
+
       n_occ_cls = op_template%n_occ_cls
       ngas = orb_info%ngas
       if (associated(op_template%ihpvca_occ)) then
-        allocate(op_clone%ihpvca_occ(ngastp,2,n_occ_cls))
         op_clone%ihpvca_occ = op_template%ihpvca_occ
-      else
-        op_clone%ihpvca_occ => null()
       end if
 
       if (associated(op_template%ica_occ)) then
-        allocate(op_clone%ica_occ(2,n_occ_cls))
         op_clone%ica_occ = op_template%ica_occ
-      else
-        op_clone%ica_occ => null()
       end if
 
       if (associated(op_template%igasca_restr)) then
-        allocate(op_clone%igasca_restr(2,ngas,2,2,n_occ_cls))
         op_clone%igasca_restr = op_template%igasca_restr
-      else
-        op_clone%igasca_restr => null()
+      end if
+
+      if (associated(op_template%formal_blk)) then
+        op_clone%formal_blk = op_template%formal_blk
       end if
 
       if (associated(op_template%len_op_occ))
