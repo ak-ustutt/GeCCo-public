@@ -1,0 +1,330 @@
+*----------------------------------------------------------------------*
+      subroutine set_r12_operators(op_info,orb_info)
+*----------------------------------------------------------------------*
+*     hard-wired set-up of the basic operators needed for the
+*     r12 excitation operators
+*     Modified version of set_cc_operators. (GWR March 2007)
+*----------------------------------------------------------------------*
+      implicit none
+      include 'opdim.h'
+      include 'ifc_input.h'
+      include 'par_opnames_gen.h'
+      include 'stdunit.h'
+      include 'def_orbinf.h'
+      include 'mdef_operator_info.h'
+      include 'explicit.h'
+
+      type(operator_info), intent(inout), target ::
+     &     op_info
+      type(orbinf) ::
+     &     orb_info
+      type(operator), pointer ::
+     &     op_pnt, r12_pnt, c12_pnt, rint_pnt
+      logical ::
+     &     dagger
+      character ::
+     &     name*(len_opname)
+      integer ::
+     &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
+     &     gamma, iarr(1),  min_h_rank, max_h_rank,
+     &     min_p_rank, max_p_rank, min_x_rank, max_x_rank, iformal,
+     &     tkmax, idx
+      integer ::
+     &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
+
+      integer, external ::
+     &     idx_oplist2
+
+c      write(luout,'(/"R12 operator definition subroutine.")')
+
+c      call get_argument_value('method.R12','ansatz',ival=ansatze)
+c      if(ansatze.gt.3.or.ansatze.lt.1)then
+c        write(luout,'("Error: Undefined R12 ansatz requested.")')
+c        stop
+c      endif
+c
+c      call get_argument_value('method.R12','triples',ival=trir12)
+
+      if(ansatze.eq.1)then
+        min_x_rank=2
+        max_x_rank=2
+        min_p_rank=0
+        max_p_rank=0
+      elseif(ansatze.eq.2)then
+        min_x_rank=0
+        max_x_rank=2
+        min_p_rank=0
+        max_p_rank=2
+      elseif(ansatze.eq.3)then
+        min_x_rank=1
+        max_x_rank=2
+        min_p_rank=0
+        max_p_rank=1
+      endif  
+      min_h_rank=2
+      max_h_rank=2
+
+      call add_operator(op_r12,op_info)
+      idx = idx_oplist2(op_r12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      r12_pnt => op_pnt
+
+      ! New entry: linear R12 operator.
+      name=op_r12
+      dagger=.false.
+      absym=0
+      casym=0
+      gamma=1
+      s2=0
+      ms=0
+      min_rank=2
+      max_rank=2
+      ncadiff=0
+      iformal=0
+  
+      call set_hpvx_and_restr_for_r()
+
+      call set_genop(op_pnt,name,optyp_operator,
+     &     dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
+     &     orb_info)  
+      
+      ! New entry: variable coefficient operator associated with R12.
+      call add_operator(op_c12,op_info)
+      idx = idx_oplist2(op_c12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      c12_pnt => op_pnt
+      
+      name = op_c12
+      dagger=.false.
+      absym=0
+      casym=0
+      gamma=1
+      s2=0
+      ms=0
+      ncadiff=0
+      min_rank=2
+      if(trir12.eq.1)then
+        max_rank=3
+      else  
+        max_rank=2
+      endif
+      iformal=max_rank+1
+      call set_hpvx_and_restr_for_c()
+      
+      call set_genop(op_pnt,name,optyp_operator,
+     &     dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
+     &     orb_info)
+
+      ! New entry: adjoint of linear R12 operator.
+      call add_operator(op_rba,op_info)
+      idx = idx_oplist2(op_rba,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,r12_pnt,orb_info)
+      ! we define an excitation operator to ensure same
+      ! storage sequence as for T
+      op_pnt%dagger = .true.  ! but we consider the conjugate
+
+      ! New entry: variable coefficient operator associated with R12bar.
+      call add_operator(op_cba,op_info)
+      idx = idx_oplist2(op_cba,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,c12_pnt,orb_info)
+      ! we define an excitation operator to ensure same
+      ! storage sequence as for T
+      op_pnt%dagger = .true.  ! but we consider the conjugate
+
+      ! New entry: the CC-R12 residual. Same as C.
+      call add_operator(op_omgr12,op_info)
+      idx = idx_oplist2(op_omgr12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,c12_pnt,orb_info)
+
+      ! New entry: the CC-R12 diagonal. Same as S.
+      call add_operator(op_diar12,op_info)
+      idx = idx_oplist2(op_diar12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,c12_pnt,orb_info)
+
+      ! New entry: the R12 integrals (<ab|r12|cd>)
+      call add_operator(op_rint,op_info)
+      idx = idx_oplist2(op_rint,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      rint_pnt => op_pnt
+
+      name=op_rint
+      dagger=.false.
+      absym=0
+      casym=0
+      gamma=1
+      s2=0
+      ms=0
+      ncadiff=0
+      min_rank=2
+      max_rank=2
+      call set_hpvx_and_restr_for_int()
+      iformal=2
+
+      call set_genop(op_pnt,name,optyp_operator,
+     &     dagger,absym,casym,gamma,s2,ms,
+     &     min_rank,max_rank,ncadiff,ihpv_mnmx,irestr,iformal,
+     &     orb_info)
+
+      ! New entry: the R12 integrals' adjoint (<ab|r12|cd>)
+      call add_operator(op_rinba,op_info)
+      idx = idx_oplist2(op_rinba,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,rint_pnt,orb_info)
+      op_pnt%dagger = .true.
+
+      return
+
+      contains
+c-----------------------------------------------------------------------
+      subroutine set_hpvx_and_restr_for_r()
+c-----------------------------------------------------------------------
+      implicit none
+
+      integer::
+     &     ica,igastp,igas
+
+c      if(.not.(orb_info%nactt_hpv(iextr).gt.0))
+c     &     stop 'Stop: Attempt to perform R12 calc. with no external
+c     &           orbitals.'
+
+
+      ! Constraints on the operator are made depending on which ansatz
+      ! is being used.
+      orb_info%nactt_hpv(ngastp)=2
+      ihpv_mnmx(1:2,1:ngastp,1:2)=0
+      do ica=1,2
+        do igastp=1,ngastp
+          if(orb_info%nactt_hpv(igastp).gt.0)then
+            if(ica.eq.2.and.igastp.eq.ihole)then
+              ihpv_mnmx(1,igastp,ica)=min_h_rank
+              ihpv_mnmx(2,igastp,ica)=max_h_rank
+            elseif(ica.eq.1)then
+              if(igastp.eq.ipart)then
+                ihpv_mnmx(1,igastp,ica)=min_p_rank
+                ihpv_mnmx(2,igastp,ica)=max_p_rank
+              elseif(igastp.eq.iextr)then
+                ihpv_mnmx(1,igastp,ica)=min_x_rank
+                ihpv_mnmx(2,igastp,ica)=max_x_rank 
+              endif
+            endif  
+          else
+            ihpv_mnmx(1,igastp,ica)=0
+            ihpv_mnmx(2,igastp,ica)=0
+          endif
+        enddo
+      enddo  
+
+      irestr(1:2,1:orb_info%ngas,1:2,1:2)=0
+      do ica=1,2
+        do igas=1,orb_info%ngas
+          irestr(1,igas,ica,1)=min_rank
+          irestr(2,igas,ica,1)=max_rank
+        enddo
+      enddo  
+  
+      return
+      end subroutine set_hpvx_and_restr_for_r
+
+*----------------------------------------------------------------------*
+*     Subroutine to set the restrictions for the coefficient operator of
+*     the R12 operators.
+*----------------------------------------------------------------------*
+      subroutine set_hpvx_and_restr_for_c()
+      
+      implicit none 
+
+      orb_info%nactt_hpv(ngastp)=2
+
+      ihpv_mnmx(1:2,1:ngastp,1:2)=0
+      ihpv_mnmx(1,ihole,1:2)=min_rank
+      ihpv_mnmx(2,ihole,1:2)=2
+      if(trir12.eq.1)then
+        ihpv_mnmx(2,ihole,2)=3
+        ihpv_mnmx(2,ipart,1)=1
+      endif        
+
+      irestr(1:2,1:orb_info%ngas,1:2,1:2)=0
+      irestr(1,ihole,1:2,1)=min_rank
+      irestr(2,ihole,1:2,1)=max_rank
+      if(trir12.eq.1)then
+        irestr(2,ipart,1:2,1)=1
+      endif  
+      
+      return
+      end subroutine set_hpvx_and_restr_for_c
+
+c-----------------------------------------------------------------------
+      subroutine set_hpvx_and_restr_for_s()
+c-----------------------------------------------------------------------
+      implicit none
+
+      integer::
+     &     ica,igastp,igas
+
+      ! Constraints on the operator are made depending on which ansatz
+      ! is being used.
+      do ica = 1, 2
+        do igastp = 1, ngastp
+          if (orb_info%nactt_hpv(igastp).gt.0.and.
+     &        ((ica.eq.1.and.(igastp.eq.ipart.or.igastp.eq.ivale)).or.
+     &         (ica.eq.2.and.(igastp.eq.ihole.or.igastp.eq.ivale)) ))
+     &           then
+            ihpv_mnmx(1,igastp,ica) = 0
+            ihpv_mnmx(2,igastp,ica) = max_rank
+          else
+            ihpv_mnmx(1,igastp,ica) = 0
+            ihpv_mnmx(2,igastp,ica) = 0
+          end if
+        end do
+      end do
+      irestr(1:2,1:orb_info%ngas,1:2,1:2) = 0
+      do ica = 1, 2
+        do igas = 1, orb_info%ngas
+          irestr(1,igas,ica,1) = 0
+          irestr(2,igas,ica,1) = max_rank
+        end do
+      end do
+  
+      return
+      end subroutine set_hpvx_and_restr_for_s
+
+c-----------------------------------------------------------------------
+      subroutine set_hpvx_and_restr_for_int()
+c-----------------------------------------------------------------------
+      implicit none
+
+      integer::
+     &     igastp,igas
+
+      ihpv_mnmx(1:2,1:orb_info%ngas,1:2)=0
+      
+      ihpv_mnmx(1:2,ihole,2)=2
+      
+      do igastp=1,ngastp
+        if(igastp.ne.ivale)then
+          ihpv_mnmx(1,igastp,1)=0
+          ihpv_mnmx(2,igastp,1)=max_rank
+        endif  
+      enddo
+
+      irestr(1:2,1:orb_info%ngas,1:2,1:2)=0
+      
+      irestr(1:2,ihole,2,1)=max_rank
+      
+      do igas=1,orb_info%ngas
+        if(igastp.ne.ivale)then
+          irestr(1,igas,1,1)=0
+          irestr(2,igas,1,1)=max_rank
+        endif  
+      enddo
+
+      return
+      end subroutine set_hpvx_and_restr_for_int
+
+      end

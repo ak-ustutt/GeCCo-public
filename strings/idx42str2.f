@@ -1,7 +1,8 @@
 *----------------------------------------------------------------------*
-      subroutine idx42str(nstr,idxstr,
+      subroutine idx42str2(nstr,idxstr,
+     $         mode,
      &         idxprqs,igam,idss,igtp,
-     &         orb_info,str_info,hop,ihpvseq)
+     &         orb_info,str_info,hop,ihpvseq,ierr)
 *----------------------------------------------------------------------*
 *     a 4-tuple of indices (for a 2-electron integral, in type ordering) 
 *     is given: (pq|rs), along with
@@ -31,13 +32,14 @@
       include 'def_operator.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
+      include 'ifc_operators.h'
 
       integer, parameter ::
      &     ntest = 00
 
       integer, intent(in) ::
      &     idxprqs(4), igam(4), idss(4), igtp(4),
-     &     ihpvseq(ngastp)
+     &     ihpvseq(ngastp), mode
       type(orbinf), intent(in) ::
      &     orb_info
       type(strinf), intent(in) ::
@@ -46,14 +48,16 @@
      &     hop
       integer, intent(out) ::
      &     nstr, idxstr(*)
+      logical, intent(out)::
+     &     ierr
 
       logical ::
-     &     reo12, reo34, eqv12, eqv34
+     &     reo12, reo34, eqv12, eqv34, r12int, take_ca, take_ac
       integer ::
      &     igamt, mst, iblk_ca, iblk_ac, ihpvdx, ihpv, ica,
      &     jdx, idxcnt, idstr_ca, idstr_ac, nel, msstr, lenlast,
      &     nmsd, imsd, igraph, idx1, idx2, idx3, idx4, ndup,
-     &     idxms
+     &     idxms, inc
 
       integer ::
      &     iocc(ngastp,2), igmd(ngastp,2), !igmdreo(ngastp,2),
@@ -74,7 +78,11 @@
         write(luout,*) '----------------------'
         write(luout,*) ' output from idx42str'
         write(luout,*) '----------------------'
+        write(luout,*) 'mode = ',mode
       end if
+
+      ! See whether we are trying to read in the R12 integrals.
+      r12int=trim(hop%name).eq.'R12-INT'
 
       ! Checks whether integral indices are the same, or if they need 
       ! to be reordered (want p.le.q and r.le.s)
@@ -123,12 +131,30 @@
       ! Which block of the operator does the passed integral represent?
       ! could be improved:
       iblk_ca = iblk_occ(iocc,.false.,hop)
+      take_ca = iblk_ca.gt.0
       iblk_ac = iblk_occ(iocc,.true.,hop)
-      if (iblk_ca.le.0.or.iblk_ac.lt.0) then
-        write(luout,*) iblk_ca, iblk_ac
-        call quit(1,'idx42str','something''s buggy!')
+      take_ac = iblk_ac.gt.0
+      if (mode.eq.0) then
+        if (.not.take_ca.or..not.take_ac) then
+          write(luout,*) ' iocc: ',trim(hop%name)
+          call wrt_occ(luout,iocc)
+          write(luout,*) iblk_ca, iblk_ac
+          call quit(1,'idx42str','something''s buggy!')
+        end if 
       end if
 
+      ierr=.false.
+      if (.not.take_ca.and..not.take_ac) then
+c        if(r12int)then
+          ierr=.true.
+          return
+c        endif  
+      end if
+
+      if(hop%formal_blk(iblk_ca))then
+        ierr=.true.
+        return
+      endif  
 
       if (ntest.ge.50) then
         write(luout,*) 'input <pr|qs>: ',idxprqs(1:4)
@@ -150,6 +176,8 @@
       end if
 
       nstr = 0
+      inc = 1
+      if (take_ca.and.take_ac) inc = 2
       cnt_loop: do idxcnt = 1, 4
         ! If the spatial orbitals are equivalent for either electron 
         ! one or two and if the spins are the same (idxcnt=1 or 4) then
@@ -193,10 +221,10 @@
         if (idxcnt.eq.3.and.(eqv12.and.eqv34)) cycle cnt_loop
 
         ! Increment total number of strings, normal and adjoint.
-        nstr = nstr+2
+        nstr = nstr+inc
 
         ! make msd from idspn
-        msd(1:3,1:2) = 0
+        msd(1:ngastp,1:2) = 0
         msd(igtp(idx1),1) = idspn(1)
         msd(igtp(idx2),1) = msd(igtp(idx2),1)+idspn(2)
         msd(igtp(idx3),2) = idspn(3)
@@ -220,28 +248,50 @@
 
         ! Identify the index of the string in question and also its 
         ! adjoint.
-        idstr_ca = idx_msgmdst(iblk_ca,mst,igamt,
+        if (take_ca) then
+          idstr_ca = idx_msgmdst(iblk_ca,mst,igamt,
      &         msd,igmd,.false.,hop,orb_info%nsym)
-        idstr_ac = idx_msgmdst(iblk_ac,mst,igamt,
+          if (idstr_ca.lt.0)
+     &         call quit(1,'idx42str','error for idstr_ca')
+        else if (take_ac) then
+          idstr_ac = idx_msgmdst(iblk_ac,mst,igamt,
      &         msd,igmd,.true.,hop,orb_info%nsym)
+          if (idstr_ac.lt.0)
+     &         call quit(1,'idx42str','error for idstr_ac')
+        end if
 
         if (ntest.ge.100) then
+          call wrt_occ(luout,iocc)
+          call wrt_occ(luout,msd)
+          call wrt_occ(luout,igmd)
           write(luout,*) 'idstr_ca = ',idstr_ca
           write(luout,*) 'idstr_ac = ',idstr_ac
-          if (idstr_ca.lt.0.or.idstr_ac.lt.0)
-     &         stop 'halt!'
         end if
 
         ! Locate offsets which were calculated earlier and store them
         ! in idxstr.
-        idxstr(nstr-1) =
+        if (take_ca.and.take_ac) then
+          idxstr(nstr-1) =
      &         hop%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
-        idxstr(nstr)   =
+          idxstr(nstr)   =
      &         hop%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
-
-        if (ntest.ge.100) then
-          write(luout,*) 'idxstr(offsets) = ',idxstr(nstr-1:nstr)
+          if (ntest.ge.100) then
+            write(luout,*) 'idxstr(offsets) = ',idxstr(nstr-1:nstr)
+          end if
+        else if (take_ca) then
+          idxstr(nstr) =
+     &         hop%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
+          if (ntest.ge.100) then
+            write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
+          end if
+        else if (take_ac) then
+          idxstr(nstr) =
+     &         hop%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
+          if (ntest.ge.100) then
+            write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
+          end if
         end if
+
 
         lenlast = 1
         ihpv_loop: do ihpvdx = 1, ngastp
@@ -254,14 +304,18 @@
             ipos = ioff(ihpv,ica)
 
             ! point to graph needed for current string
-            igraph = hop%idx_graph(ihpv,ica,iblk_ca)
+            if (take_ca) then
+              igraph = hop%idx_graph(ihpv,ica,iblk_ca)
+            else
+              igraph = hop%idx_graph(ihpv,3-ica,iblk_ac)
+            end if
             curgraph => str_info%g(igraph)
 
             ! check for restrictions
             if (.not.allow_sbsp_dis(idspc(ipos),nel,
      &             orb_info%ngas_hpv(ihpv),
      &             str_info%igas_restr(1,1,1,igraph))) then
-              nstr = nstr-2
+              nstr = nstr-inc
               exit cnt_loop
             end if
 
@@ -281,33 +335,65 @@
       
           end do ica_loop
           ! string number is actual index - 1
-          idxstr(nstr-1) = idxstr(nstr-1) +
+          if (inc.eq.2) then
+            idxstr(nstr-1) = idxstr(nstr-1) +
      &           ((idx(2))*len(1) + idx(1))*lenlast
-          idxstr(nstr)   = idxstr(nstr) +
+            idxstr(nstr)   = idxstr(nstr) +
      &           ((idx(1))*len(2) + idx(2))*lenlast
+          else if (take_ca) then
+            idxstr(nstr) = idxstr(nstr) +
+     &           ((idx(2))*len(1) + idx(1))*lenlast
+          else if (take_ac) then
+            idxstr(nstr) = idxstr(nstr) +
+     &           ((idx(1))*len(2) + idx(2))*lenlast
+c dbg
+c            print *,'ihpv: ',ihpv
+c            print *,'idx: ',idx(1:2),'  lenlast:', lenlast
+c dbg
+          end if
           lenlast = lenlast*len(1)*len(2)
         end do ihpv_loop
 
-        idxstr(nstr-1:nstr) = idxstr(nstr-1:nstr)+1
+        if (inc.eq.2) then
+          idxstr(nstr-1:nstr) = idxstr(nstr-1:nstr)+1
 
-        ! Change sign if necessary.
-        if (idxcnt.eq.3.and.(eqv12.or.eqv34))
+          ! Change sign if necessary.
+          if (idxcnt.eq.3.and.(eqv12.or.eqv34))
      &         idxstr(nstr-1:nstr) = -idxstr(nstr-1:nstr)
+          if (ntest.ge.100) then
+            write(luout,*) 'idxstr(final) = ',idxstr(nstr-1:nstr)
+          end if
 
-        if (ntest.ge.100) then
-          write(luout,*) 'idxstr(final) = ',idxstr(nstr-1:nstr)
+          ! prelim: check, whether actually the same address resulted
+          ndup = 0
+          check1: do jdx = 1, nstr-2
+            if (idxstr(nstr-1).eq.idxstr(jdx)) ndup = ndup+1
+            if (idxstr(nstr).eq.idxstr(jdx)) ndup = ndup+1
+            if (ndup.eq.2) exit check1
+          end do check1
+          nstr = nstr-ndup
+          if (idxstr(nstr-1).eq.idxstr(nstr)) nstr = nstr-1          
+          
+        else
+          idxstr(nstr) = idxstr(nstr)+1
+
+          ! Change sign if necessary.
+          if (idxcnt.eq.3.and.(eqv12.or.eqv34))
+     &         idxstr(nstr) = -idxstr(nstr)
+          if (ntest.ge.100) then
+            write(luout,*) 'idxstr(final) = ',idxstr(nstr)
+          end if
+
+          ! prelim: check, whether actually the same address resulted
+          ndup = 0
+          check2: do jdx = 1, nstr-1
+            if (idxstr(nstr).eq.idxstr(jdx)) ndup = ndup+1
+            if (ndup.eq.1) exit check2
+          end do check2
+          nstr = nstr-ndup
+
         end if
 
-        ! prelim: check, whether actually the same address resulted
-        ndup = 0
-        check1: do jdx = 1, nstr-2
-          if (idxstr(nstr-1).eq.idxstr(jdx)) ndup = ndup+1
-          if (idxstr(nstr).eq.idxstr(jdx)) ndup = ndup+1
-          if (ndup.eq.2) exit check1
-        end do check1
-        nstr = nstr-ndup
-        if (idxstr(nstr-1).eq.idxstr(nstr)) nstr = nstr-1          
-                    
       end do cnt_loop
 
       if ((reo12.and..not.reo34).or.(reo34.and..not.reo12))

@@ -27,7 +27,6 @@ c      if (.not.associated(op_list))
 c     &     call quit(1,'op_list2arr','operator list not initialized')
 
       current => op_list
-
       do iop = 1, nops
         if (.not.associated(current%op))
      &       call quit(1,'op_list2arr','unallocated operator on list')

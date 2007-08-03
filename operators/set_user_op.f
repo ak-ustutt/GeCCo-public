@@ -26,8 +26,6 @@
      &     name*(*)
       logical, intent(in) ::
      &     dagger
-c      integer, intent(in) ::
-c     &     ngas
       integer, intent(in) ::
      &     type, absym, casym, gamma, s2, ms,
      &     nblk
@@ -82,6 +80,7 @@ c     &     ngas
       op%dagger = dagger
       op%casym = casym
       op%absym = absym
+      op%formal=.true.
 
       if (absym.ne.0) call quit(1,'set_user_op','adapt for absym.ne.0')
       if (casym.ne.0) call quit(1,'set_user_op','adapt for casym.ne.0')
@@ -95,6 +94,8 @@ c     &     ngas
       op%n_occ_cls = nblk
 
       call init_operator(0,op,orb_info)
+
+      op%formal_blk(1:nblk) = .true.
 
       ! this is basically all:
       op%ihpvca_occ = occ_def

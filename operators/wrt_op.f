@@ -91,6 +91,7 @@
 *       4 - all elements 
 *       5 - all elements + indices )
 *     simple version -- load complete symmetry block into memory
+*     Modified to cater for formal operators. GWR July 2007
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -143,6 +144,7 @@
         
         mmax = 0
         do iblk = iblkst, iblknd
+          if(op%formal_blk(iblk))cycle
           msmax = op%ica_occ(2,iblk)
           idxms = 0
           do ms = msmax, -msmax, -2
@@ -152,7 +154,6 @@
             end do
           end do
         end do
-
         ifree = mem_alloc_real(buffer,mmax,'buffer')
 
         close_again = .false.
@@ -168,6 +169,7 @@
 
       xnrm_tot = 0d0
       do iblk = iblkst, iblknd
+        if(op%formal_blk(iblk))cycle
         
         if (.not.incore) then
           blk_buf = ffop%buffered

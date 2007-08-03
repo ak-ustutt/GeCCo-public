@@ -6,8 +6,17 @@
      &     op_tbar*4  = 'TBAR',
      &     op_omg*3   = 'OMG',
      &     op_dia1*4  = 'DIA1',
+     &     op_r12*1   = 'R',
+     &     op_rba*4   = 'RBAR',
+     &     op_c12*1   = 'C',
+     &     op_cba*4   = 'CBAR',
+     &     op_sop*1   = 'S',
+     &     op_sba*4   = 'SBAR',
+     &     op_omgr12*7= 'OMG-R12',
+     &     op_diar12*7= 'DIA-R12',
+     &     op_rint*7  = 'R12-INT',
+     &     op_rinba*7 = 'R12-IBA',
      &     op_cclg*5  = 'L(CC)',
      &     op_ccen*5  = 'E(CC)',
      &     op_tbar_a*6  = 'TBAR.A',
      &     op_eta*3   = 'ETA'
- 

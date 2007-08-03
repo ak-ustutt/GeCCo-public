@@ -15,7 +15,7 @@
       include 'def_orbinf.h'
       include 'def_filinf.h'
       include 'def_operator.h'
-
+      
       type(operator), intent(in) ::
      &     hop
       type(filinf), intent(inout) ::

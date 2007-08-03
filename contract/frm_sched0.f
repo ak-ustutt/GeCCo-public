@@ -309,6 +309,7 @@ c        case(command_set_target_update)
 
             ! allocate further stuff in operator structure
             allocate(opscr(ninter)%ihpvca_occ(ngastp,2,1),
+     &               opscr(ninter)%formal_blk(1),
      &               opscr(ninter)%ica_occ(2,1),
      &               opscr(ninter)%igasca_restr(2,ngas,2,2,1),
      &               opscr(ninter)%len_op_occ(1),
@@ -397,6 +398,7 @@ c        case(command_set_target_update)
      &          opscr(idx)%len_op_gmox)
             deallocate(
      &          opscr(idx)%ihpvca_occ,
+     &          opscr(idx)%formal_blk,
      &          opscr(idx)%ica_occ,
      &          opscr(idx)%igasca_restr,
      &          opscr(idx)%len_op_occ,

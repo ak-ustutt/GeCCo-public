@@ -124,7 +124,7 @@
       call set_uop(op,'F',.false.,0,0,1,0,0,
      &     occ_def,3,orb_info)
 c      call set_hop(op,'F',.false.,0,0,1,0,0,
-c     &     1,1,orb_info)
+c     &     1,1,iformal,orb_info)
 
       write(luout,*) '-------------------'
       write(luout,*) ' adding B operator'

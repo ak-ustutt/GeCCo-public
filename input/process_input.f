@@ -102,12 +102,12 @@
       call get_argument_value('calculate.routes','contract',
      &     ival=irt_contr)
 
-      ! set method specific route switches
-      icnt = is_keyword_set('method.CC')
-      
-      if (icnt.gt.0)
-     &     call cc_input()
+      ! set method specific switches
+      ! CC options
+      call cc_input()
 
+      ! R12 options
+      call r12_input()
 
       return
 

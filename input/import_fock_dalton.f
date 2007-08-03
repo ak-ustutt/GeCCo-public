@@ -41,7 +41,7 @@
       real(8) ::
      &     cpu0,sys0,wall0,cpu,sys,wall
       integer ::
-     &     lusir, isym, ifree,
+     &     lusir, isym, ifree, irec,
      &     nfock, nh1reo, iocc_cls
 
       real(8), pointer ::
@@ -65,6 +65,10 @@
       do iocc_cls = 1, hop%n_occ_cls
         if (max(hop%ica_occ(1,iocc_cls),hop%ica_occ(2,iocc_cls)).gt.1)
      &       cycle
+        if(hop%formal_blk(iocc_cls))cycle
+        ! Quick fix to ignore Fock operators with an external index.
+        if(hop%ihpvca_occ(iextr,1,iocc_cls).gt.0.or.
+     &       hop%ihpvca_occ(iextr,2,iocc_cls).gt.0)cycle
         nh1reo = nh1reo + hop%len_op_occ(iocc_cls)
       end do
 
@@ -111,11 +115,10 @@
       call mollab('SIR IPH ',lusir,luout)
 
       read (lusir) potnuc,emy,eactiv,emcscf,istate,ispin,nactel,lsym
-      read (lusir) ! overread dimension information
-      read (lusir) ! overread CMO data
-      read (lusir) ! overread DV data
-      read (lusir) ! overread F data
-      read (lusir) ! overread PV data
+      ! overread a few records (depends on DALTON version)
+      do irec = 1, nskip_in_sirifc-1
+        read(lusir) 
+      end do
       ! and finally: the inactive fock matrix in symmetry-blocked
       ! upper triangular form
       read (lusir,err=16) xfock(1:nfock)

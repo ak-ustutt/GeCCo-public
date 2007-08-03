@@ -75,6 +75,11 @@
      &       gamt,                    ! total symmetry
      &       s2,mst,                  ! total spin and ms
      &       n_occ_cls                ! number of occupation classes
+
+        logical ::
+     &       formal                   ! formal operator only?
+        logical, pointer ::
+     &       formal_blk(:)            ! is this block formal only?
         integer, pointer ::
      &       ihpvca_occ(:,:,:)        ! actual hole/particle/valence (HPV)
                                       ! occupations per creation/annihilation

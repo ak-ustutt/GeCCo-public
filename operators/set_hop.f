@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_hop(op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,orb_info)
+     &     min_rank,max_rank,iformal,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_genop
 *     set up hamiltonian-like operator (minrank to maxrank)
@@ -22,7 +22,7 @@
      &     dagger
       integer, intent(in) ::
      &     absym, casym, gamma, s2, ms,
-     &     min_rank, max_rank
+     &     min_rank, max_rank, iformal
 
       type(orbinf) ::
      &     orb_info
@@ -35,7 +35,7 @@
 
       call set_genop(op,name,optyp_operator,
      &     dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,orb_info)
+     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,orb_info)
 
       return
       

@@ -19,6 +19,7 @@ c      include 'def_operator_list.h'
       include 'mdef_formula_info.h'
       include 'ifc_input.h'
 c      include 'ifc_operators.h'
+      include 'explicit.h'
 
       type(formula_info), intent(inout) ::
      &     form_info
@@ -33,7 +34,8 @@ c     &     list_pnt
      &     cclg_pnt, form_pnt, form_eta
 
       integer ::
-     &     idxham, idxtop, idxtba, idxomg, idxecc, idxhhat, idx,
+     &     idxham, idxtop, idxtba, idxomg, idxecc, idxhhat, idxrba,
+     &     idxr12, idxcba, idxc12, idx,
      &     idxtbtrf, idxlcc, idxeta
 
       ! explicit interface does not work with ifort
@@ -68,12 +70,30 @@ c     &     list_pnt
      &     call quit(1,'set_cc_formula','operator not on list: '
      &     //trim(op_omg))
 
+      if(explicit)then
+        idxr12=idx_oplist2(op_r12,op_info)
+        if(idxr12.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_r12))
+        idxrba=idx_oplist2(op_rba,op_info)
+        if(idxrba.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_rba))
+        idxc12=idx_oplist2(op_c12,op_info)
+        if(idxc12.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_c12))
+        idxcba=idx_oplist2(op_cba,op_info)
+        if(idxcba.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_cba))
+      endif
+
 c      call test_formgen3(op_info,orb_info)
 
       ! set up Lagrangian
       ! new entry
       call add_formula(form_info,label_cclg0)
-
       ! get index of formula and point there (needed below)
       idx = idx_formlist(label_cclg0,form_info)
       cclg_pnt => form_info%form_arr(idx)%form
@@ -81,8 +101,14 @@ c      call test_formgen3(op_info,orb_info)
       if (iprlvl.gt.0)
      &     write(luout,'(2x,"* ",a)')
      &     'Setting ground state Lagrangian'
-      call set_cc_lagrangian2(cclg_pnt,op_info,
-     &     idxham,idxtba,idxtop,idxlcc)
+
+      if(explicit)then
+        call set_r12_lagrangian(cclg_pnt,op_info,orb_info,
+     &       idxham,idxtba,idxrba,idxcba,idxtop,idxr12,idxc12,idxlcc)
+      else
+        call set_cc_lagrangian2(cclg_pnt,op_info,
+     &       idxham,idxtba,idxtop,idxlcc)
+      endif  
 
       ! is Hhat operator on list?
       idxhhat = idx_oplist2(op_hhat,op_info)
@@ -106,23 +132,39 @@ c
       if (iprlvl.gt.0)
      &     write(luout,'(2x,"* ",a)')
      &     'Setting ground state energy and residual'
-      call form_indep2(form_pnt,
-     &     cclg_pnt,
-     &     label_ccen0,title_ccen0,idxecc,
-     &     1,idxtba,
-     &     op_info)
+      if(explicit)then
+        call form_indep2(form_pnt,
+     &       cclg_pnt,
+     &       label_ccen0,title_ccen0,idxecc,
+     &       2,(/idxtba,idxcba/),
+     &       op_info)
+      else
+        call form_indep2(form_pnt,
+     &       cclg_pnt,
+     &       label_ccen0,title_ccen0,idxecc,
+     &       1,idxtba,
+     &       op_info)
+      endif
 
       ! set up CC-residual (=vector function)
       call add_formula(form_info,label_ccrs0)
       idx = idx_formlist(label_ccrs0,form_info)
       form_pnt => form_info%form_arr(idx)%form
 
-      call form_deriv2(form_pnt,cclg_pnt,
-     &     label_ccrs0,title_ccrs0,
-     &     1,idxtba,0,idxomg,
-     &     op_info)
+      if(explicit)then
+        call form_deriv2(form_pnt,cclg_pnt,
+     &       label_ccrs0,title_ccrs0,
+     &       2,(/idxtba,idxcba/),0,idxomg,
+     &       op_info)
+      else
+        call form_deriv2(form_pnt,cclg_pnt,
+     &       label_ccrs0,title_ccrs0,
+     &       1,idxtba,0,idxomg,
+     &       op_info)
+      end if 
 
       if (solve_tbar) then
+        if (explicit) call quit(1,'set_cc_formula','do not enter!')
         if (iprlvl.gt.0)
      &     write(luout,'(2x,"* ",a)')
      &     'Setting ground state left-hand equations'

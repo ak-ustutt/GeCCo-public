@@ -23,14 +23,15 @@ include $(topdir)/make.rules
 src:=$(filter-out printversion.f,$(wildcard *.f90 *.F *.f))
 objs:=$(addsuffix .o, $(basename $(src)))
 
-libs:=-lsolve -lcontract -lformula -lcc_spec -loperators -linput -lstrings -lfileutil -lmemman -lbaserout -lmath -lcrout
+libs:=-lsolve -lcontract -lformula -lr12_spec -lcc_spec -lformula -loperators -linput -lstrings -lfileutil -lmemman -lbaserout -lmath -lcrout
+
 
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)
 
 $(bindir)/gecco.x: $(objs) $(libs)
 	$(MAKE) printversion.o
 	$(FC) $(FLDFLAGS) -o $@ $+ $(libs) printversion.o $(BLAS_LIBS) 
-	
+
 date.h:
 	./date.sh "$(FC)" "$(FCFLAGS)"
 

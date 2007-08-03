@@ -61,31 +61,27 @@
       end do
       if (iprint.gt.50) write(luout,*) 'maxgraph = ',maxgraph
       ngas = orb_info%ngas
+      ! Allocate space for information on subspace type, occupancy, 
+      ! and restrictions.
       allocate(str_info%ispc_typ(maxgraph),
      &         str_info%ispc_occ(maxgraph),
      &         str_info%igas_restr(2,ngas,2,maxgraph))
       ifree = mem_register(maxgraph*(2+4*ngas),'strinfo_base')
 
-      ! identify unique graphs
+      ! identify unique graphs by checking occupancies of each space.
       str_info%ngraph = 0
       current => op_list
       mxmx_igtyp = 0
-c      ! allocate in operator section:
-c      call mem_pushmark()
-c      ifree = mem_gotomark(operator_def)
+
       do iop = 1, nops
-        if (ntest.ge.100) write(luout,*) 'iop = ',iop
-c already allocated in pass 0
-c        ! allocate graph index
-c        allocate(current%op%idx_graph(ngastp,2,current%op%n_occ_cls))
-c        ifree = mem_register(maxgraph*(2+4*ngas),
-c     &       trim(current%op%name)//'_idxg')
-        call unique_graph(str_info,max_igtyp,current%op,
-     &                    orb_info%ihpvgas,orb_info%ngas)
-        mxmx_igtyp = max(mxmx_igtyp,max_igtyp)
+        if(.not.current%op%formal)then
+          if (ntest.ge.100) write(luout,*) 'iop = ',iop
+          call unique_graph(str_info,max_igtyp,current%op,
+     &         orb_info%ihpvgas,orb_info%ngas)
+          mxmx_igtyp = max(mxmx_igtyp,max_igtyp)
+        endif  
         if (iop.lt.nops) current => current%next
       end do
-c      call mem_popmark()
 
       if (mxmx_igtyp.le.0)
      &     call quit(1,'set_graphs_for_ops',
@@ -108,6 +104,7 @@ c      call mem_popmark()
         ihpv = str_info%ispc_typ(igraph)
         nocc = str_info%ispc_occ(igraph)
         nspc = orb_info%ngas_hpv(ihpv)
+        ! Allocate space for arc and vertex weights respectively.
         allocate(str_info%g(igraph)%yssg(nocc*nspc),
      &           str_info%g(igraph)%wssg((nocc+1)*nspc))
         mem = mem+nocc*nspc+(nocc+1)*nspc
@@ -121,7 +118,7 @@ c      call mem_popmark()
       call set_graph(ipass,
      &     str_info,leny,idum,lenwscr,
      &     orb_info%ngas_hpv,orb_info%nactt_hpv,
-     &     orb_info%igamorb,orb_info%mostnd,ngas,nsym)
+     &     orb_info%igamorb,orb_info%mostnd,orb_info%idx_gas,ngas,nsym)
 
       mem = 0
       do igraph = 1, str_info%ngraph
@@ -142,7 +139,7 @@ c      call mem_popmark()
       call set_graph(ipass,
      &     str_info,leny,iwscr,lenwscr,
      &     orb_info%ngas_hpv,orb_info%nactt_hpv,
-     &     orb_info%igamorb,orb_info%mostnd,ngas,nsym)
+     &     orb_info%igamorb,orb_info%mostnd,orb_info%idx_gas,ngas,nsym)
 
       deallocate(leny,lenwscr,iwscr)      
 

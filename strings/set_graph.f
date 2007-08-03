@@ -2,7 +2,7 @@
       subroutine set_graph(ipass,
      &     str_info,leny,iwscr,lenwscr,
      &     ngas_hpv,nactt_hpv,
-     &     igamorb,mostnd,ngas,ngam)
+     &     igamorb,mostnd,idx_gas,ngas,ngam)
 *----------------------------------------------------------------------*
 *
 *     set up weight arrays using the present info on str_info
@@ -23,7 +23,7 @@
       integer, intent(in) ::
      &     ipass, ngas, ngam,
      &     ngas_hpv(ngastp), nactt_hpv(ngastp), igamorb(*),
-     &     mostnd(2,ngam,ngas)
+     &     mostnd(2,ngam,ngas), idx_gas(ngastp)
       type(strinf), intent(inout) ::
      &     str_info
       integer, intent(inout) ::
@@ -33,7 +33,7 @@
      &     iprint, igraph, ihpv, nexc, most, 
      &     len_w4sg, leninf, len_wexit, ndis,
      &     idx_dgm, ims, igam, idis, isum, isum_tot,
-     &     ioff_gas(3), ndis_a, idum
+     &     ndis_a, idum
       integer, allocatable ::
      &     idss(:), idmin(:), idmax(:)
 
@@ -48,14 +48,6 @@
       end if
 
       iprint = max(ntest,iprlvl)
-      ! assuming: contiguous sequence of space of one type
-      !           hole info reversed, so we start with 1 as non-frozen space
-      ioff_gas(ihole) = 1
-      ioff_gas(ipart) = ngas_hpv(1)+1
-      ! set up this offset irrespective of ivale
-      ioff_gas(3) = ngas_hpv(1)+ngas_hpv(2)+1
-      ! external spaces will never be treated explicitly, so we
-      ! do not need to consider them
       
       if (iprint.ge.5.and.ipass.eq.2) then
         write(luout,*) 'Number of strings'
@@ -67,11 +59,15 @@
         lenwscr(1:3) = 0
       end if
 
+      ! Loop over all graphs.
       do igraph = 1, str_info%ngraph
 
         ihpv = str_info%ispc_typ(igraph)
         nexc = str_info%ispc_occ(igraph)
-        most = mostnd(1,1,ioff_gas(ihpv))
+        most = mostnd(1,1,idx_gas(ihpv))
+
+        ! Generate weights. First pass is used for dimensioning, the
+        ! second for setting the arrays.
 
         if (ipass.eq.1) then
           call weight_gen(ipass,
@@ -81,7 +77,7 @@
      &         str_info%g(igraph)%wssg,
      &         idum,
      &         nactt_hpv(ihpv),igamorb,
-     &         mostnd(1,1,ioff_gas(ihpv)),
+     &         mostnd(1,1,idx_gas(ihpv)),
      &         str_info%igas_restr(1,1,1,igraph),
      &         nexc,ngam,ngas_hpv(ihpv),
      &         iwscr,iwscr(lenwscr(1)+1),iwscr(lenwscr(1)+lenwscr(2)+1))
@@ -94,13 +90,14 @@
      &         str_info%g(igraph)%wssg,
      &         str_info%g(igraph)%lenstr_dgm,
      &         nactt_hpv(ihpv),igamorb,
-     &         mostnd(1,1,ioff_gas(ihpv)),
+     &         mostnd(1,1,idx_gas(ihpv)),
      &         str_info%igas_restr(1,1,1,igraph),
      &         nexc,ngam,ngas_hpv(ihpv),
      &         iwscr,iwscr(lenwscr(1)+1),iwscr(lenwscr(1)+lenwscr(2)+1))
         end if
 
         if (ipass.eq.1) then
+          ! Set array sizes.
           leny(2,igraph) = 3*leninf
           leny(3,igraph) = ndis*ngam*(nexc+1)
           leny(4,igraph) = (nexc+1)
@@ -134,7 +131,7 @@
               end do lowest_dss
               
               ! loop over distributions, identify and mark the allowed ones
-              ! and sum up lengthes of allowed distr. to get offset arrays
+              ! and sum up lengths of allowed distr. to get offset arrays
               do idis = 1, ndis
                 if (allow_sbsp_dis(idss,nexc,ngas_hpv(ihpv),
      &                       str_info%igas_restr(1,1,2,igraph))) then

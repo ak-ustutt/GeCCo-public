@@ -105,6 +105,8 @@
       ! loop over operator elements
       occ_cls: do iocc_cls = 1, op%n_occ_cls
 
+        if(op%formal_blk(iocc_cls))cycle
+
         ! buffer: start from new
         idxbuf = 0
 

@@ -106,6 +106,8 @@
       ! loop over occupations (= blocks)
       occ_cls: do iblk = 1, nblk
 
+        if (op%formal_blk(iblk)) cycle
+
         iblkoff = (iblk-1)*njoined
         if (ntest.ge.150) then
           write(luout,*) 'class: ',iblk
@@ -238,9 +240,6 @@
                 ! get ID of current distr
                 did = msgmdid2(occ_csub,idxmsdis_c,gamdis_c,ncsub,
      &                         occ_asub,idxmsdis_a,gamdis_a,nasub,ngam)
-c dbg
-                print *,'DID new: ',did
-c dbg
                 ! save ID of current distr
                 op%off_op_gmox(iblk)%
      &               did(idxdis,igama,idxmsa) = did
@@ -298,6 +297,7 @@ c dbg
           call iwrtma(op%off_op_occ,nblk,1,nblk,1)
           write(luout,*) 'info per occupation class, IRREP, MS:'
           do iblk = 1, nblk
+            if (op%formal_blk(iblk)) cycle
             nexc = min(ca_occ(1,iblk),
      &                 ca_occ(2,iblk))
             write(luout,*) 'occ-class: ',iblk
@@ -312,6 +312,7 @@ c dbg
           write(luout,*) 'info per occupation class, DISTR, IRREP, MS:'
           write(luout,*) 'offsets:'
           do iblk = 1, nblk
+            if (op%formal_blk(iblk)) cycle
             nexc = min(ca_occ(1,iblk),
      &                 ca_occ(2,iblk))
             write(luout,*) 'occ-class: ',iblk
@@ -328,6 +329,7 @@ c dbg
           end do
           write(luout,*) 'distribution IDs:'
           do iblk = 1, nblk
+            if (op%formal_blk(iblk)) cycle
             nexc = min(ca_occ(1,iblk),
      &                 ca_occ(2,iblk))
             write(luout,*) 'occ-class: ',iblk

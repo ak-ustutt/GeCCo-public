@@ -51,7 +51,8 @@
      &           op%ica_occ(2,nblk),
      &           op%igasca_restr(2,orb_info%ngas,2,2,nblkt),
      &           op%len_op_occ(nblk),
-     &           op%idx_graph(ngastp,2,nblkt))        
+     &           op%idx_graph(ngastp,2,nblkt),
+     &           op%formal_blk(nblk))        
         
         op%off_op_occ => null()
         op%len_op_occ => null()
@@ -76,9 +77,6 @@
      &             op%off_op_gmo(iblk)%gam_ms(nsym,nexc+1))
           ncount = ncount+2*nsym*(nexc+1)
         end do        
-c dbg
-        print *,'1: nblk, ncount: ',nblk,ncount
-c dbg
         ifree = mem_register(6*nblk+ncount,
      &       trim(op%name)//'-1')
       case(2)
@@ -97,9 +95,6 @@ c dbg
      &             op%off_op_gmox(iblk)%ndis(nsym,nexc+1))
           ncount = ncount+ndis*nsym*(nexc+1)*3+nsym*(nexc+1)
         end do
-c dbg
-        print *,'2: nblk, ncount: ',nblk,ncount
-c dbg
         ifree = mem_register(ncount,trim(op%name)//'-2')
       case default
         write(luout,*) 'ipass = ',ipass

@@ -24,7 +24,7 @@
       logical ::
      &     succ
       integer ::
-     &     ipscr(nsum), idx, isum
+     &     ipscr(nsum), idx, isum 
       
       logical, external ::
      &     nxtptn_rc

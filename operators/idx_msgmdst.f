@@ -49,6 +49,9 @@
       idxms = (ielsum(iocc,ngastp)-mst)/2+1
 
       idx_msgmdst = -1
+c dbg
+c      print *,'-->',iocc_cls,igamt,idxms
+c dbg
       do idx = 1, op%off_op_gmox(iocc_cls)%ndis(igamt,idxms)
         if (didarr(idx,igamt,idxms).eq.mgdid) then
           idx_msgmdst = idx

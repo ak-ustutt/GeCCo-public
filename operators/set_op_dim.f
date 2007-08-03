@@ -47,7 +47,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 00
       
       integer, intent(in) ::
      &     ipass, ngam
@@ -64,11 +64,12 @@
      &     idxstr, idxstr_tot, idxdis, iocc_cls, nexc,
      &     msmax, msmax_last,
      &     msa, msc, msah, msap, msav, msch, mscp, mscv,
-     &     idxmsa, idxms, msahmax, msapmax, msavmax,
-     &     mschmax, mscpmax, mscvmax,
-     &     igch, igcp, igcv, igah, igap, igav,
-     &     lench, lencp, lencv, lenah, lenap, lenav,
-     &     igamah, igamap, igamav, igamch, igamcp, igamcv, igama, igamc,
+     &     idxmsa, idxms,
+     $     msahmax, msapmax, msavmax, msaxmax,
+     &     mschmax, mscpmax, mscvmax, mscxmax,
+     &     igch, igcp, igcv, igcx, igah, igap, igav, igax,
+     &     lench, lencp, lencv, lencx, lenah, lenap, lenav, lenax,
+     &     igama, igamc,
      &     did, iexc, igam
       integer ::
      &     msd(ngastp,2), igamd(ngastp,2)
@@ -83,12 +84,18 @@
         write(luout,*) ' set_op_dim'
         write(luout,*) '============'
         write(luout,*) ' ipass = ',ipass
+        write(luout,*) ' operator ',trim(op%name)
       end if
 
       idxstr = 0
       idxstr_tot = 0
       msmax_last = 0
+      op%len_op_occ(1:op%n_occ_cls)=0
+      op%off_op_occ(1:op%n_occ_cls)=0
+
       occ_cls: do iocc_cls = 1, op%n_occ_cls
+
+        if(op%formal_blk(iocc_cls))cycle
 
         if (ntest.ge.150) then
           write(luout,*) 'class: ',iocc_cls
@@ -145,10 +152,14 @@
             igcp = op%idx_graph(ipart,1,iocc_cls)            
             igcv = 0
             if (ivale.gt.0) igcv = op%idx_graph(ivale,1,iocc_cls)
+            igcx = 0
+            if (iextr.gt.0) igcx = op%idx_graph(iextr,1,iocc_cls)
             igah = op%idx_graph(ihole,2,iocc_cls)
             igap = op%idx_graph(ipart,2,iocc_cls)
             igav = 0
             if (ivale.gt.0) igav = op%idx_graph(ivale,2,iocc_cls)
+            igax = 0
+            if (iextr.gt.0) igax = op%idx_graph(iextr,2,iocc_cls)
             
             ! MS(A)/IRREP(A)/MS(C)/IRREP(C) distributions:
             msahmax = op%ihpvca_occ(ihole,2,iocc_cls)
@@ -156,11 +167,17 @@
             msavmax = 0
             if (ivale.gt.0)
      &           msavmax = op%ihpvca_occ(ivale,2,iocc_cls)
+            msaxmax = 0
+            if (iextr.gt.0)
+     &           msaxmax = op%ihpvca_occ(iextr,2,iocc_cls)
             mschmax = op%ihpvca_occ(ihole,1,iocc_cls)
             mscpmax = op%ihpvca_occ(ipart,1,iocc_cls)
             mscvmax = 0
             if (ivale.gt.0)
      &           mscvmax = op%ihpvca_occ(ivale,1,iocc_cls)
+            mscxmax = 0
+            if (iextr.gt.0)
+     &           mscxmax = op%ihpvca_occ(iextr,1,iocc_cls)
 
             first = .true.
             distr_loop: do
@@ -191,6 +208,13 @@
                 lenav = str_info%g(igav)%lenstr_gm(igamd(3,2),idxms)
                 if (lenav.eq.0) cycle distr_loop
               end if
+              if (igax.eq.0) then
+                lenax = 1
+              else
+                idxms = (msaxmax-msd(4,2))/2+1
+                lenax = str_info%g(igax)%lenstr_gm(igamd(4,2),idxms)
+                if (lenax.eq.0) cycle distr_loop
+              end if
               
               if (igch.eq.0) then
                 lench = 1
@@ -212,6 +236,13 @@
                 idxms = (mscvmax-msd(3,1))/2+1
                 lencv = str_info%g(igcv)%lenstr_gm(igamd(3,1),idxms)
                 if (lencv.eq.0) cycle distr_loop
+              end if
+              if (igcx.eq.0) then
+                lencx = 1
+              else
+                idxms = (mscxmax-msd(4,1))/2+1
+                lencx = str_info%g(igcx)%lenstr_gm(igamd(4,1),idxms)
+                if (lencx.eq.0) cycle distr_loop
               end if
               
               ! increment distribution index
@@ -239,17 +270,20 @@
               ! increment string element index
               idxstr = idxstr+lencp*lenap*
      &                        lench*lenah*
-     &                        lencv*lenav
+     &                        lencv*lenav*
+     &                        lencx*lenax
               idxstr_tot = idxstr_tot+lencp*lenap*
      &                            lench*lenah*
-     &                            lencv*lenav
+     &                            lencv*lenav*
+     &                            lencx*lenax
 
               if (ipass.eq.2) then
                 op%len_op_gmox(iocc_cls)%
      &               d_gam_ms(idxdis,igama,idxmsa) =
      &                 lencp*lenap*
      &                 lench*lenah*
-     &                 lencv*lenav
+     &                 lencv*lenav*
+     &                 lencx*lenax
               end if
 
               if (ntest.ge.150) then
@@ -257,7 +291,8 @@
      &                        lench,lenah,
      &                        lencv,lenav,' => ',lencp*lenap*
      &                        lench*lenah*
-     &                        lencv*lenav
+     &                        lencv*lenav*
+     &                        lencx*lenax
               end if
               
             end do distr_loop
@@ -291,6 +326,7 @@
           call iwrtma(op%off_op_occ,op%n_occ_cls,1,op%n_occ_cls,1)
           write(luout,*) 'info per occupation class, IRREP, MS:'
           do iocc_cls = 1, op%n_occ_cls
+            if(op%formal_blk(iocc_cls))cycle
             nexc = min(op%ica_occ(1,iocc_cls),
      &                 op%ica_occ(2,iocc_cls))
             write(luout,*) 'occ-class: ',iocc_cls
@@ -305,6 +341,7 @@
           write(luout,*) 'info per occupation class, DISTR, IRREP, MS:'
           write(luout,*) 'offsets:'
           do iocc_cls = 1, op%n_occ_cls
+            if(op%formal_blk(iocc_cls))cycle
             nexc = min(op%ica_occ(1,iocc_cls),
      &                 op%ica_occ(2,iocc_cls))
             write(luout,*) 'occ-class: ',iocc_cls
@@ -321,6 +358,7 @@
           end do
           write(luout,*) 'distribution IDs:'
           do iocc_cls = 1, op%n_occ_cls
+            if(op%formal_blk(iocc_cls))cycle
             nexc = min(op%ica_occ(1,iocc_cls),
      &                 op%ica_occ(2,iocc_cls))
             write(luout,*) 'occ-class: ',iocc_cls

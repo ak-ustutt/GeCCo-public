@@ -4,7 +4,7 @@
 *     allocate new entry for linked list
 *     on entry, form_pnt should point to last entry (containing [END])
 *     on exit, form_pnt is ready to take the information coming
-*       along with command "command" (i.e. contr or interm is alloc.d)
+*     along with command "command" (i.e. contr or interm is alloc.d)
 *----------------------------------------------------------------------*
 
       implicit none

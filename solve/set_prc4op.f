@@ -49,7 +49,8 @@
 
       ifree = mem_setmark('prc4op')
       ! this assumption is probably not too bad:
-      ifree = mem_alloc_real(x1dia,2*orb_info%ntoob,'x1dia')
+      ifree = mem_alloc_real(x1dia,2*(orb_info%ntoob+orb_info%caborb)
+     &     ,'x1dia')
 
       if (idxham.lt.0.or.idxham.gt.nops .or.
      &    idxprc.lt.0.or.idxprc.gt.nops .or.

@@ -54,6 +54,8 @@
 
       oper%ihpvca_occ(1:ngastp,1:2,1:njoined) =
      &           iocc(1:ngastp,1:2,1:njoined)
+      oper%formal = .false.
+      oper%formal_blk(1) = .false.
 
       oper%ica_occ(1:2,1) = 0
       do ijoin = 1, njoined

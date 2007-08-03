@@ -8,8 +8,7 @@ top_srcdir:=@top_srcdir@
 
 include $(top_srcdir)/make.config
 
-libdirs:= crout math baserout memman fileutil input operators strings formula solve contract\
-	 cc_spec
+libdirs:= crout math baserout memman fileutil input operators strings formula solve contract r12_spec cc_spec
 progdirs:=gecco
 
 dirs:=$(libdirs) $(progdirs)
@@ -95,7 +94,7 @@ ifneq ($(dirs),)
 			fi; \
 		done; 
 endif
-	
+
 install_lib:
 	@$(mkinstalldirs) $(libdir)
 ifneq ($(dirs),)

@@ -1,3 +1,4 @@
+*----------------------------------------------------------------------*
       subroutine unique_graph(str_info,max_igtyp,op,ihpvgas,ngas)
 *----------------------------------------------------------------------*
 *
@@ -48,13 +49,11 @@
 
       ! loop over occupation classes of op
       do iocc_cls = 1, op%n_occ_cls
+       if(op%formal_blk(iocc_cls))cycle
 
        ioff = (iocc_cls-1)*njoined
        do ijoin = 1, njoined
         idx = ioff+ijoin
-c dbg
-        print *,'idx = ',idx
-c dbg
 
         ! do not forget to init
         op%idx_graph(1:ngastp,1:2,idx) = 0
@@ -149,6 +148,7 @@ c dbg
         end do
         write(luout,*) 'operator->graph assignments:'
         do iocc_cls = 1, op%n_occ_cls
+          if(op%formal_blk(iocc_cls))cycle
           ioff = (iocc_cls-1)*njoined
           write(luout,'(2x,i3,4x,5(4i3,2x))') iocc_cls,
      &         op%idx_graph(1:ngastp,1,ioff+1:ioff+njoined)

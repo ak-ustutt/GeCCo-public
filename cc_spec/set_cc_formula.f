@@ -17,6 +17,7 @@ c      include 'ifc_operators.h'
       include 'def_operator_list.h'
       include 'mdef_formula_info.h'
       include 'par_formnames_gen.h'
+      include 'explicit.h'
 
       type(formula_info), intent(inout) ::
      &     form_info
@@ -31,7 +32,8 @@ c      include 'ifc_operators.h'
      &     cclg_pnt
 
       integer ::
-     &     idxham, idxtop, idxtba, idxomg, idxecc, idxhhat
+     &     idxham, idxtop, idxtba, idxr12, idxc12, idxrba, idxcba, 
+     &     idxomg, idxecc, idxhhat
 
       ! explicit interface does not work with ifort
       integer, external ::
@@ -71,12 +73,30 @@ c      include 'ifc_operators.h'
      &     call quit(1,'set_cc_formula','operator not on list: '
      &     //trim(op_omg))
 
+      if(explicit)then
+        idxr12=idx_oplist(op_r12,ops,nops)
+        if(idxr12.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_r12))
+        idxrba=idx_oplist(op_rba,ops,nops)
+        if(idxrba.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_rba))
+        idxc12=idx_oplist(op_c12,ops,nops)
+        if(idxc12.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_c12))
+        idxcba=idx_oplist(op_cba,ops,nops)
+        if(idxcba.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_cba))
+      endif
+  
       ! set up Lagrangian
       form_info%nform = form_info%nform+1
       cclg_pnt => list_pnt%form
       call set_cc_lagrangian(list_pnt%form,nops,ops,
-     &     idxham,idxtba,idxtop,idxecc)
-
+     &     idxecc,idxham,idxtba,idxtop,idxr12,idxc12,idxrba,idxcba)
       ! is Hhat operator on list?
       idxhhat = idx_oplist(op_hhat,ops,nops)
       if (idxhhat.gt.0) then

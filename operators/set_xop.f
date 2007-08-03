@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_xop(op,name,dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,orb_info)
+     &     min_rank,max_rank,ncadiff,iformal,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_genop
 *     set up excitation operator (minrank to maxrank)
@@ -22,7 +22,7 @@
      &     dagger
       integer, intent(in) ::
      &     absym, casym, gamma, s2, ms,
-     &     min_rank, max_rank, ncadiff
+     &     min_rank, max_rank, ncadiff,iformal
 
       type(orbinf) ::
      &     orb_info
@@ -33,7 +33,8 @@
 
       call set_genop(op,name,optyp_operator,
      &     dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,orb_info)
+     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
+     &     orb_info)
 
       return
       

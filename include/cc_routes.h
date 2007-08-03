@@ -1,6 +1,6 @@
       logical ::
-     &     solve_tbar
+     &     do_cc, solve_tbar
       integer ::
      &     densities, ccsimtrf
       common /cc_routes/
-     &     solve_tbar, densities, ccsimtrf
+     &     do_cc, solve_tbar, densities, ccsimtrf

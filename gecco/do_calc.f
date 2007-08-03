@@ -21,6 +21,8 @@
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'mdef_formula_info.h'
+      include 'explicit.h'
+      include 'ifc_input.h'
 
       type(orbinf), intent(inout) ::
      &     orb_info
@@ -45,6 +47,19 @@
 
       ifree = mem_setmark('do_calc')
       
+      if(is_keyword_set('method.R12').gt.0)then
+        ! setting the common /explicit/
+        explicit=.true.
+        call get_argument_value('method.R12','ansatz',ival=ansatze)
+        if(ansatze.gt.3.or.ansatze.lt.1)then
+          call quit(1,'do_calc',
+     &         'Undefined R12 ansatz requested.')
+        endif
+        call get_argument_value('method.R12','triples',ival=trir12)
+      else
+        explicit=.false.
+      endif  
+
       ! set up orbital info
       call set_orbinf(orb_info,.true.)
 
@@ -125,7 +140,7 @@ c      call init_op_files(op_info)
             call form_opt(ffform_opt,
      &           current_act%act%nform,current_act%act%idx_formula,
      &           form_info,op_info,str_info,orb_info)
-            call solve_leq(current_act%act%nop_out,
+            call evaluate(current_act%act%nop_out,
      &                     current_act%act%idxopdef_out,
      &                     current_act%act%nop_in,
      &                     current_act%act%idxopdef_in,

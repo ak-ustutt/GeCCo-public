@@ -7,6 +7,7 @@
 *     include interface file ifc_ioccfunc.inc in calling routines!
 *     actually, treatment of active spaces/non-excitation is a bit
 *     unclear, still .... should be rewritten anyway ....
+*     Modified to cope with external, virtual  orbitals. (GWR Apr.07)
 *----------------------------------------------------------------------*
 
       implicit none
@@ -23,18 +24,20 @@
      &     ica, ihpv, iscr(ngastp,2)
 
       iscr(1:ngastp,1:2) = 0
-      do ica = 1, 2
-        if (ixdn.eq.1.and.ica.eq.1) ihpv = ipart
-        if (ixdn.eq.1.and.ica.eq.2) ihpv = ihole
-        if (ixdn.eq.2.and.ica.eq.1) ihpv = ihole
-        if (ixdn.eq.2.and.ica.eq.2) ihpv = ipart
-        if (ixdn.eq.3) ihpv = 3
-        iscr(ihpv,ica) = iocc(ihpv,ica)
-        if (ixdn.eq.3) cycle
-        if (ixdn.eq.1.and.ica.eq.1) ihpv = iextr
-        if (ixdn.eq.2.and.ica.eq.2) ihpv = iextr
-        iscr(ihpv,ica) = iocc(ihpv,ica)
-      end do
+
+      if(ixdn.eq.1)then
+        iscr(ihole,2)=iocc(ihole,2)
+        iscr(ipart,1)=iocc(ipart,1)
+        iscr(iextr,1)=iocc(iextr,1)
+      elseif(ixdn.eq.2)then
+        iscr(ihole,1)=iocc(ihole,1)
+        iscr(ipart,2)=iocc(ipart,2)
+        iscr(iextr,2)=iocc(iextr,2)
+      elseif(ixdn.eq.3)then
+        iscr(ivale,1:2)=iocc(ivale,1:2)
+      else
+        call quit(1,'iocc_xdn','undefined value of ixdn')
+      endif
 
       iocc_xdn = iscr
 

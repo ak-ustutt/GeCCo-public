@@ -81,7 +81,6 @@
       call expand_op_bch(form_pnt,4,idxlcc,
      &     1d0,idxtbar,idxham,1d0,idxtop,1,-1,op_info)
 
-
       ! insert here procedure to produce approx. expansions      
 
       ! post_processing and term counting:

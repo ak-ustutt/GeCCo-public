@@ -41,6 +41,10 @@
         deallocate(op%igasca_restr)
         op%igasca_restr => null()
       end if
+      if (associated(op%formal_blk)) then
+        deallocate(op%formal_blk)
+        op%formal_blk => null()
+      end if
       if (associated(op%idx_graph)) then
         deallocate(op%idx_graph)
         op%idx_graph => null()

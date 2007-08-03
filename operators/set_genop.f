@@ -1,8 +1,8 @@
 *----------------------------------------------------------------------*
       subroutine set_genop(op,name,type,
      &     dagger,absym,casym,gamma,s2,ms,
-     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,orb_info)
-c     &     iad_gas,hpvxgas,ngas)
+     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
+     &     orb_info)
 *----------------------------------------------------------------------*
 *     set up occupations for a general operator described by
 *     min_rank, 
@@ -15,6 +15,8 @@ c     &     iad_gas,hpvxgas,ngas)
 *     irestr:    restriction on subspaces 
 *                min, max. number of operators after completion of
 *                subspace within H/P/V/X, for C/A
+*     iformal:   blocks with this number or more external indices
+*                are considered to be to be purely formal.
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -33,16 +35,13 @@ c     &     iad_gas,hpvxgas,ngas)
      &     name*(*)
       logical, intent(in) ::
      &     dagger
-c      integer, intent(in) ::
-c     &     ngas
       integer, intent(in) ::
      &     type, absym, casym, gamma, s2, ms,
-     &     min_rank, max_rank, ncadiff
+     &     min_rank, max_rank, ncadiff, iformal
       type(orbinf), intent(in), target ::
      &     orb_info
       integer, intent(in) ::
      &     hpvx_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2) !,
-c     &     iad_gas(ngas), hpvxgas(ngas)
 
       logical, parameter ::
      &     inv_hole = .true.
@@ -112,6 +111,7 @@ c     &     iad_gas(ngas), hpvxgas(ngas)
       op%gamt = gamma
       op%s2 =   s2
       op%mst =  ms 
+      op%formal=.true.
 
       ! pass 1: count classes
       ! pass 2: set up occupation information
@@ -119,11 +119,6 @@ c     &     iad_gas(ngas), hpvxgas(ngas)
         
         ! second round: allocate and setup offsets
         if (ipass.eq.2) then
-c          allocate(op%ihpvca_occ(ngastp,2,op%n_occ_cls),
-c     &             op%ica_occ(2,op%n_occ_cls),
-c     &             op%igasca_restr(2,ngas,2,2,op%n_occ_cls))
-c          ifree = mem_register((ngastp*2+2+8*ngas)*op%n_occ_cls,
-c     &         trim(name)//'_occ')
           call init_operator(0,op,orb_info)
           ! counters according to number of external indices (R12)
           ! to sort operators in the way:
@@ -154,12 +149,12 @@ c     &         trim(name)//'_occ')
 
             init_c = .false.
 
-            ! inverse sequence delivered by next_part_number:
+            ! invert sequence delivered by next_part_number:
             do igastp = 1, ngastp
               c_distr(igastp) = c_distr_rv(ngastp+1-igastp)
             end do
 
-            ! check wether distribution is allowed
+            ! check whether distribution is allowed
             ok = .true.
             do igastp = 1, ngastp
               ok = ok.and.hpvx_mnmx(1,igastp,1).le.c_distr(igastp)
@@ -172,12 +167,12 @@ c     &         trim(name)//'_occ')
      &           na,ngastp,0,na))
               init_a = .false.
 
-              ! inverse sequence delivered by next_part_number:
+              ! invert sequence delivered by next_part_number:
               do igastp = 1, ngastp
                 a_distr(igastp) = a_distr_rv(ngastp+1-igastp)
               end do
 
-              ! check wether distribution is allowed
+              ! check whether distribution is allowed
               ok = .true.
               do igastp = 1, ngastp
                 ok = ok.and.hpvx_mnmx(1,igastp,2).le.a_distr(igastp)
@@ -193,14 +188,21 @@ c     &         trim(name)//'_occ')
                 nx = 0
               end if
               n_occls_x012(nx) = n_occls_x012(nx)+1 
+
               if (ipass.eq.2) then
                 ! set occupation of current class
                 idx_occls_x012(nx) = idx_occls_x012(nx)+1
                 idx = idx_occls_x012(nx)
+                ! declare whether this block is formal or not.
+                op%formal_blk(idx)=
+     &               ((c_distr(iextr)+a_distr(iextr)).ge.iformal)
+                op%formal=op%formal.and.op%formal_blk(idx)
+
                 op%ihpvca_occ(1:ngastp,1,idx) = c_distr
                 op%ihpvca_occ(1:ngastp,2,idx) = a_distr
                 op%ica_occ(1,idx) = sum(c_distr(1:ngastp))
                 op%ica_occ(2,idx) = sum(a_distr(1:ngastp))
+
                 ! set restrictions
                 do ica = 1, 2
                   do igas = 1, ngas
@@ -270,7 +272,7 @@ c very quick fix:
             call wrt_rstr(luout,op%igasca_restr(1,1,1,1,iocc),ngas)
           end do
         end if
-
+  
       end do
 
       return
