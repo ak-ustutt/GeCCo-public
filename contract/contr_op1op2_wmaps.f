@@ -341,17 +341,17 @@ c dbg
 
       ! get graph indices
       call get_grph4occ(igrphext1,iocc_ext1,irst_ext1,
-     &     str_info,orb_info%ihpvgas,orb_info%ngas,.true.)
+     &     str_info,orb_info%ihpvgas,orb_info%ngas,1,.true.)
       call get_grph4occ(igrphext2,iocc_ext2,irst_ext2,
-     &     str_info,orb_info%ihpvgas,orb_info%ngas,.true.)
+     &     str_info,orb_info%ihpvgas,orb_info%ngas,1,.true.)
       call get_grph4occ(igrphcnt,iocc_cnt,irst_cnt,
-     &     str_info,orb_info%ihpvgas,orb_info%ngas,.true.)
+     &     str_info,orb_info%ihpvgas,orb_info%ngas,1,.true.)
       call get_grph4occ(igrphop1,iocc_op1,irst_op1,
-     &     str_info,orb_info%ihpvgas,orb_info%ngas,.true.)
+     &     str_info,orb_info%ihpvgas,orb_info%ngas,1,.true.)
       call get_grph4occ(igrphop2,iocc_op2,irst_op2,
-     &     str_info,orb_info%ihpvgas,orb_info%ngas,.true.)
+     &     str_info,orb_info%ihpvgas,orb_info%ngas,1,.true.)
       call get_grph4occ(igrphop1op2,iocc_op1op2,irst_op1op2,
-     &     str_info,orb_info%ihpvgas,orb_info%ngas,.true.)
+     &     str_info,orb_info%ihpvgas,orb_info%ngas,1,.true.)
       ! set up maps (if necessary)
       call strmap_man(
      &     igrphext1,.false.,

@@ -40,10 +40,10 @@
         write(luout,'(x,"v",i2.2,x,i5,x,i4,2x,4i3)')
      &       contr%svertex(idx),contr%vertex(idx)%idx_op,
      &       contr%vertex(idx)%iblk_op,
-     &       occ_vtx(1:ngastp,1,idx+1)
-        write(luout,'(x,a,13x,4i3)')
+     &       occ_vtx(1:ngastp,1,idx)
+        write(luout,'(x,a,12x,4i3)')
      &       '    ',
-     &       occ_vtx(1:ngastp,2,idx+1)
+     &       occ_vtx(1:ngastp,2,idx)
       end do
       do idx = 1, contr%narc
         if (contr%arc(idx)%occ_cnt(1,1).lt.0) then

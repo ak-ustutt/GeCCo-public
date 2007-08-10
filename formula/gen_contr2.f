@@ -72,7 +72,7 @@ c     &     occ_ol_vtx(:,:,:)
         write(luout,*) ' gen_contr speaking'
         write(luout,*) '===================='
         call prt_contr2(luout,proto_main,op_info)
-        call prt_contr3(luout,proto_main,occ_vtx)
+        call prt_contr3(luout,proto_main,occ_vtx(1,1,2))
       end if
 
       if (abs(proto_main%fac).lt.1d-20) then
@@ -83,6 +83,10 @@ c     &     occ_ol_vtx(:,:,:)
       form_pnt => form_list
 
       nvtx = proto_main%nvtx
+
+      if (op_info%op_arr(proto_main%idx_res)%op%type.ne.optyp_operator)
+     &     call quit(1,'gen_contr',
+     &     'allows only pure operators as target!')
 
       ! excitation and deexcitation part of target (first entry on occ_vtx)
       occ_tgt_ex = iocc_xdn(1,occ_vtx)

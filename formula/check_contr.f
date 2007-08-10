@@ -141,7 +141,8 @@ c dbg
             nproto = 1
             do jparc = iparc+1, nparc
               if (visited(jparc)) cycle
-              if (parc(jparc)%link(idx1).eq.ivtx1) then
+              if (parc(jparc)%link(idx1).eq.ivtx1.and.
+     &             iocc_nonzero(parc(jparc)%occ_cnt)) then
                 nproto = nproto + 1
                 if (nproto.gt.mxfound)
      &             call quit(1,'check_contr','increase mxfound')
@@ -151,7 +152,8 @@ c dbg
             ! find all arcs in actual contraction with ivtx1
             ncontr = 0
             do iarc = 1, narc
-              if (arc(iarc)%link(idx1).eq.ivtx1) then
+              if (arc(iarc)%link(idx1).eq.ivtx1.and.
+     &             iocc_nonzero(arc(iarc)%occ_cnt)) then
                 ncontr = ncontr+1
                 if (ncontr.gt.mxfound)
      &             call quit(1,'check_contr','increase mxfound')

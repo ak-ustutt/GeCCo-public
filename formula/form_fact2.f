@@ -16,7 +16,7 @@
       
       integer, parameter ::
      &     maxcount = 1000,  ! at most 1000 iterations
-     &     ndisconn = 3,     ! at most 3 extral levels for disconnected
+     &     ndisconn = 3,     ! at most 3 extra levels for disconnected
      &     ntest = 000                                   ! vertices
 
       type(contraction), intent(inout) ::
@@ -32,10 +32,8 @@
      &     iscale_stat(ngastp,2)
 
       integer ::
-     &     ngas, nsym, maxidx, iarc, ivtx, icount,
+     &     ngas, nsym, maxidx, iarc, ivtx, icount, njoined,
      &     idx, narc_full, nvtx_full, nlevel, nlevel_best
-c      integer, pointer ::
-c     &     ihpvgas(:)
       integer, pointer ::
      &     ihpvgas(:),
      &     ifact(:,:), ifact_best(:,:), occ_vtx(:,:,:),
@@ -55,6 +53,8 @@ c     &     ihpvgas(:)
       integer ::
      &     iscale(ngastp,2), iscalemin(ngastp,2),
      &     irestr_res(2,orb_info%ngas,2,2)
+      type(operator), pointer ::
+     &     op_res
 
       logical ::
      &     possible, found
@@ -80,8 +80,7 @@ c     &     ihpvgas(:)
       narc_full = contr%narc
       nvtx_full = contr%nvtx
 
-      ! if no or only 1 arc is present, we need not bother too much
-c      if (narc_full.le.0) then
+      ! if only 1 vertex is present, we need not bother too much
       if (nvtx_full.eq.1) then
         ! save factorization info
         if (contr%mxfac.gt.0) deallocate(contr%inffac)
@@ -99,11 +98,14 @@ c      if (narc_full.le.0) then
         return
       end if
 
+      op_res => op_info%op_arr(contr%idx_res)%op
+      njoined = op_res%njoined
+
       allocate(ifact(ld_inffac,narc_full+ndisconn),
      &     ifact_best(ld_inffac,narc_full+ndisconn),
-     &     occ_vtx(ngastp,2,nvtx_full+1),
-     &     irestr_vtx(2,orb_info%ngas,2,2,nvtx_full+1),
-     &     info_vtx(2,nvtx_full+1),
+     &     occ_vtx(ngastp,2,nvtx_full+njoined),
+     &     irestr_vtx(2,orb_info%ngas,2,2,nvtx_full+njoined),
+     &     info_vtx(2,nvtx_full+njoined),
      &     iarc_ori(narc_full+ndisconn),ivtx_ori(nvtx_full))
 
       do iarc = 1, narc_full+ndisconn
@@ -114,12 +116,17 @@ c      if (narc_full.le.0) then
         ivtx_ori(ivtx) = ivtx
       end do
 
-      call set_restr_prel(irestr_res,contr,op_info,
-     &     ihpvgas,ngas)
 
       call occvtx4contr(0,occ_vtx,contr,op_info)
 
       call vtxinf4contr(irestr_vtx,info_vtx,contr,op_info,ngas)
+
+      if (njoined.eq.1) then
+        call set_restr_prel(irestr_res,contr,op_info,
+     &       ihpvgas,ngas)
+      else
+        call dummy_restr(irestr_res,occ_vtx,njoined,ihpvgas,ngas)
+      end if
 
       ! add 0-contractions, if necessary
       call check_disconnected(contr)
@@ -200,32 +207,32 @@ c dbg
       integer, intent(in) ::
      &     iscale_in(ngastp,2), nlevel,
      &     ivtx_ori(contr%nvtx), iarc_ori(contr%nvtx),
-     &     occ_vtx(ngastp,2,contr%nvtx+1),
-     &     irestr_vtx(2,ngas,2,2,contr%nvtx+1),
-     &     info_vtx(2,contr%nvtx+1)
+     &     occ_vtx(ngastp,2,contr%nvtx+njoined),
+     &     irestr_vtx(2,ngas,2,2,contr%nvtx+njoined),
+     &     info_vtx(2,contr%nvtx+njoined)
       real(8), intent(in) ::
      &     cost_in(3)
 
       logical ::
      &     possible
       integer ::
-     &     narc, ivtx_new, iarc, idx_op_new,
+     &     narc, ivtx_new, iarc, idx_op_new, ilist, len_list,
      &     iscale(ngastp,2)
       real(8) ::
      &     cost(3)
       type(contraction) ::
      &     contr_red
       integer ::
-     &     occ_vtx_red(ngastp,2,contr%nvtx+1),
-     &     irestr_vtx_red(2,ngas,2,2,contr%nvtx+1),
-     &     info_vtx_red(2,contr%nvtx+1),
+     &     occ_vtx_red(ngastp,2,contr%nvtx+njoined),
+     &     irestr_vtx_red(2,ngas,2,2,contr%nvtx+njoined),
+     &     info_vtx_red(2,contr%nvtx+njoined),
      &     ivtx_ori_red(contr%nvtx),
-     &     iarc_ori_red(contr%narc)
+     &     iarc_ori_red(contr%narc), arc_list(contr%narc)
 
       integer, external ::
      &     joint_idx
 c dbg
-     &    , idxlist
+c     &    , idxlist
 c dbg      
       
       if (ntest.ge.1000) then
@@ -238,8 +245,9 @@ c dbg
           write(luout,'(x,i5,"*",i5,"->",i5,"(",i5,")")')
      &         ifact(1:4,1:nlevel-1)
         end if
+        write(luout,*) 'ivtx_ori: ',ivtx_ori(1:contr%nvtx)
         write(luout,*) 'current (reduced) contraction:'
-        call prt_contr3(luout,contr,occ_vtx)
+        call prt_contr3(luout,contr,occ_vtx(1,1,njoined+1))
       end if
 
       narc = contr%narc
@@ -247,7 +255,13 @@ c dbg
       if (nlevel.gt.narc_full+ndisconn)
      &     call quit(1,'form_fact_rec','emergency exit')
 
-      do iarc = 1, narc
+      ! get list of (non-redundant) arcs, ordered according to
+      ! contractraction strength (descending)
+      call get_arc_list(arc_list,len_list,contr,orb_info)
+
+      do ilist = 1, len_list
+
+        iarc = arc_list(ilist)
 
         icount = icount+1
         if (ntest.ge.1000) then
@@ -263,7 +277,7 @@ c dbg
 
         ! evaluate cost of present binary contraction
         call fact_cost2(possible,cost,iscale,
-     &       contr,occ_vtx,irestr_vtx,info_vtx,iarc,
+     &       contr,njoined,occ_vtx,irestr_vtx,info_vtx,iarc,
      &       op_info,str_info,ihpvgas,ngas,nsym)
 
         if (ntest.ge.1000) then
@@ -272,6 +286,8 @@ c dbg
           if (possible) then
             write(luout,'(x,a,3f20.2)') 'cost:    ',cost
             write(luout,'(x,a,3f20.2)') 'costmin: ',costmin
+            if (cost(1).ge.costmin(1))
+     &           write(luout,*) 'too expensive !'
           end if
         end if
 
@@ -318,10 +334,15 @@ c dbg
         idx_op_new = op_info%nops+nlevel
 c        call add_interm_info(irestr_interm,info_interm,
 c     &       idx_op_new,irestr_res,contr,occ_vtx)
+
+        irestr_vtx_red = irestr_vtx
+        info_vtx_red = info_vtx
         
         call reduce_contr(contr_red,occ_vtx_red,
      &       iarc,idx_op_new,ivtx_new,
-     &       .true.,ivtx_ori_red,iarc_ori_red)
+     &       njoined,
+     &       .true.,ivtx_ori_red,iarc_ori_red,
+     &       .true.,irestr_vtx_red,info_vtx_red,irestr_res,orb_info)
 
         ! add 0-contractions, if necessary
         call check_disconnected(contr_red)
@@ -329,13 +350,6 @@ c     &       idx_op_new,irestr_res,contr,occ_vtx)
         ! any contraction left?
         if (contr_red%narc.gt.0) then
           
-          irestr_vtx_red = irestr_vtx
-          info_vtx_red = info_vtx
-
-          call reduce_vtx_info(irestr_vtx_red,info_vtx_red,
-     &                         contr,occ_vtx,iarc, ! pass the old contr!
-     &                         irestr_res,orb_info)
-
           call form_fact_rec(nlevel+1,ifact,
      &         cost,iscale,contr_red,occ_vtx_red,
      &                              irestr_vtx_red,info_vtx_red,

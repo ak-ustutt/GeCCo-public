@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine reduce_vtx_info(irestr_vtx,info_vtx,
      &                           contr,occ_vtx,iarc_red,
+c     &                           njoined_red,
      &                           irestr_res,orb_info)
 *----------------------------------------------------------------------*
 *     analogon to reduce_contr() for updating info on intermediates
@@ -24,43 +25,54 @@
       type(orbinf), intent(in) ::
      &     orb_info
       integer, intent(in) ::
-     &     iarc_red,
-     &     occ_vtx(ngastp,2,contr%nvtx+1),
+     &     iarc_red, 
+     &     occ_vtx(ngastp,2,*),
      &     irestr_res(2,orb_info%ngas,2,2)
       integer, intent(inout) ::
-     &     irestr_vtx(2,orb_info%ngas,2,2,contr%nvtx+1),
-     &     info_vtx(2,contr%nvtx+1)
+     &     irestr_vtx(2,orb_info%ngas,2,2,*),
+     &     info_vtx(2,*)
 
       integer ::
-     &     ivtx1, ivtx2, ivtx, nvtx, ngas,
-     &     occ_new(ngastp,2)
+     &     ivtx1, ivtx2, ivtx, nvtx, ngas, njoined_res,
+     &     occ_new(ngastp,2), arc_list(contr%narc), len_list,
+     &     iarc_prm
 
+      call quit(1,'reduce_vtx_info','should be obsolete now')
+
+      njoined_res = 1
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'reduce_vtx_info')
         write(luout,*) 'on entry:'
         write(luout,*) 'info_vtx:'
-        write(luout,'(3x,2(i2,x,i2,2x))') info_vtx
+        write(luout,'(3x,2(i2,x,i2,2x))')
+     &       info_vtx(1:2,1:contr%nvtx+njoined_res)
         write(luout,*) 'irestr_vtx'
-        do ivtx = 1, contr%nvtx+1
+        do ivtx = 1, contr%nvtx+njoined_res
           call wrt_rstr(luout,irestr_vtx(1,1,1,1,ivtx),orb_info%ngas)
         end do
       end if
 
-      ngas = orb_info%ngas
+c      ! get further arcs
+c      call get_associated_arcs(arc_list,len_list,iarc_red,contr)
 
+      ngas = orb_info%ngas
       nvtx = contr%nvtx
-      ivtx1 = contr%arc(iarc_red)%link(1)
-      ivtx2 = contr%arc(iarc_red)%link(2)
+
+c      do ilist = 1, len_list        
+      iarc_prm =  iarc_red      !arc_list(ilist)
+
+      ivtx1 = contr%arc(iarc_prm)%link(1)
+      ivtx2 = contr%arc(iarc_prm)%link(2)
 
       info_vtx(1,ivtx1+1) = info_vtx(1,ivtx1+1)+info_vtx(1,ivtx2+1)
       info_vtx(2,ivtx1+1) = multd2h(info_vtx(2,ivtx1+1),
-     &                              info_vtx(2,ivtx2+1))
+     &                                info_vtx(2,ivtx2+1))
       
       do ivtx = ivtx2, nvtx-1
         info_vtx(1:2,ivtx+1) = info_vtx(1:2,ivtx+2)
       end do
 
-      occ_new = -contr%arc(iarc_red)%occ_cnt
+      occ_new = -contr%arc(iarc_prm)%occ_cnt
       occ_new = occ_new + iocc_dagger(occ_new)
       occ_new = occ_new +
      &     occ_vtx(1:ngastp,1:2,ivtx1+1) + occ_vtx(1:ngastp,1:2,ivtx2+1)
@@ -77,7 +89,8 @@
       if (ntest.ge.100) then
         write(luout,*) 'on exit:'
         write(luout,*) 'info_vtx:'
-        write(luout,'(3x,2(i2,x,i2,2x))') info_vtx
+        write(luout,'(3x,2(i2,x,i2,2x))')
+     &       info_vtx(1:2,1:contr%nvtx+njoined_res)
         write(luout,*) 'irestr_vtx'
         do ivtx = 1, contr%nvtx+1
           call wrt_rstr(luout,irestr_vtx(1,1,1,1,ivtx),orb_info%ngas)

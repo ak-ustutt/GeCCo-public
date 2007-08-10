@@ -38,15 +38,8 @@
       form_ptr => form_head
       do while(form_ptr%command.ne.command_end_of_formula)
         if (form_ptr%command.eq.command_add_contribution) then
-c dbg
-c          if (form_ptr%contr%narc.eq.4) then
-c dbg
           call form_fact2(form_ptr%contr,
      &         op_info,str_info,orb_info,iscale_stat)
-c dbg
-c          stop 'FACT TEST'
-c          end if
-c dbg
         end if
         if (.not.associated(form_ptr%next))
      &       call quit(1,'form_opt','buggy formula list')
@@ -66,6 +59,10 @@ c dbg
      &     call prtim(luout,'factorization',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
+c dbg
+c          stop 'FACT TEST'
+c          end if
+c dbg
 
       return
       end

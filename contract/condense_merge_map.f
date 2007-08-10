@@ -1,0 +1,84 @@
+*----------------------------------------------------------------------*
+      subroutine condense_merge_map(mmap_out,mmap_in,ld_mmap,nvtx_tgt)
+*----------------------------------------------------------------------*
+*     on input: merge map in long form as
+*
+*          map(1:n(i),i,target_vertex) = vertices(i)
+*
+*     on output: merge map in short form as
+*
+*          map(:) = 
+*            (...,n(i),vertex(1),vertex(2),...,vertex(n(i)),n(i+1),..)
+*
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'stdunit.h'
+
+      integer, parameter ::
+     &     ntest = 00
+
+      integer, intent(in) ::
+     &     ld_mmap, nvtx_tgt,
+     &     mmap_in(ld_mmap,2,nvtx_tgt)
+      integer, intent(out) ::
+     &     mmap_out(*)
+
+      integer ::
+     &     ivtx_tgt, ii, jj, ivtx, idx
+
+      if (ntest.ge.100) then
+        call write_title(luout,wst_dbg_subr,'condense_merge_map')
+        write(luout,*) 'nvtx_tgt, ld_mmap: ',nvtx_tgt, ld_mmap
+        if (nvtx_tgt.gt.1000 .or. ld_mmap.gt.1000) stop 'hilfe'
+        write(luout,*) 'input map'
+        do ivtx_tgt = 1, nvtx_tgt
+          write(luout,'(x,i3,": ",10i4)')
+     &         ivtx_tgt, mmap_in(1:ld_mmap,1,ivtx_tgt)
+          write(luout,'(6x,10i4)')
+     &                   mmap_in(1:ld_mmap,2,ivtx_tgt)
+        end do
+      end if
+
+      idx = 1
+      do ivtx_tgt = 1, nvtx_tgt
+        do ii = 1, 2
+          mmap_out(idx) = 0
+          do jj = 1, ld_mmap
+            ivtx = mmap_in(jj,ii,ivtx_tgt)
+            if (ivtx.eq.0) exit
+            mmap_out(idx) = mmap_out(idx) + 1
+            mmap_out(idx+jj) = ivtx
+          end do
+          idx = idx+mmap_out(idx)+1
+        end do
+      end do
+
+      if (ntest.ge.100) then
+        write(luout,*) 'output map:'
+        idx = 1
+        do ivtx_tgt = 1, nvtx_tgt
+          ivtx = mmap_out(idx)
+          if (ivtx.gt.0) then
+            write(luout,'(3x,i3,"->",i3,": ",10i3)')
+     &                        ivtx_tgt, ivtx,
+     &                        mmap_out(idx+1:idx+ivtx)
+          else
+            write(luout,'(4x,"nischt")')
+          end if
+          idx = idx + ivtx + 1
+          ivtx = mmap_out(idx)
+          if (ivtx.gt.0) then
+            write(luout,'(3x,i3,"->",i3,": ",10i3)')
+     &                        ivtx_tgt, ivtx,
+     &                        mmap_out(idx+1:idx+ivtx)
+          else
+            write(luout,'(4x,"nischt")')
+          end if
+          idx = idx + ivtx + 1
+        end do
+        
+      end if
+
+      return
+      end

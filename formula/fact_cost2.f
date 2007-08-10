@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine fact_cost2(possible,cost,iscale,
-     &     contr,occ_vtx,irestr_vtx,info_vtx,iarc,
+     &     contr,njoined_res,occ_vtx,irestr_vtx,info_vtx,iarc,
      &     op_info,str_info,ihpvgas,ngas,nsym)
 *----------------------------------------------------------------------*
 *     calculate the computational cost of a given contraction
@@ -27,7 +27,7 @@
      &     ntest = 00
       
       integer, intent(in) ::
-     &     ngas, ihpvgas(ngas), nsym, iarc
+     &     ngas, ihpvgas(ngas), nsym, iarc, njoined_res
       type(contraction), intent(in) ::
      &     contr
       integer, intent(in) ::
@@ -45,18 +45,45 @@
       logical, intent(out) ::
      &     possible
 
+      logical, parameter ::
+     &     new_route = .true.
       integer ::
      &     nvtx, narc,
-     &     np_int, nh_int, nx_int, np_cnt, nh_cnt, nx_cnt
+     &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt
       integer ::
-     &     iocc_cnt(ngastp,2), iocc_ext(ngastp,2,2),
-     &     irestr_res(2,ngas,2,2),
-     &     iocc_op(ngastp,2,2), iocc_int(ngastp,2),
-     &     irestr_int(2,ngas,2,2), igr_int(ngastp,2),
-     &     irestr_op(2,ngas,2,2,2), 
-     &     mst_op(2), mst_int,
-     &     igamt_op(2), igamt_int,
-     &     idar1(2), idar2(2)
+     &     iocc_cnt(ngastp,2,contr%nvtx),
+     &     iocc_ex1(ngastp,2,contr%nvtx),
+     &     iocc_ex2(ngastp,2,contr%nvtx),
+     &     irst_res(2,ngas,2,2,contr%nvtx),
+     &     iocc_op1(ngastp,2,contr%nvtx),
+     &     iocc_op2(ngastp,2,contr%nvtx),
+     &     iocc_op1op2(ngastp,2,contr%nvtx),
+     &     irst_op1op2(2,ngas,2,2,contr%nvtx),
+     &     igr_op1op2(ngastp,2,contr%nvtx),
+     &     irst_op1(2,ngas,2,2,contr%nvtx),
+     &     irst_op2(2,ngas,2,2,contr%nvtx), 
+     &     mst_op(2), mst_op1op2,
+     &     igamt_op(2), igamt_op1op2,
+     &     njoined_op(2), njoined_op1op2, njoined_cnt,
+     &     idar1(2), idar2(2),
+     &     merge_op1(contr%nvtx*contr%nvtx), ! a bit too large, I guess ...
+     &     merge_op2(contr%nvtx*contr%nvtx),
+     &     merge_op1op2(contr%nvtx*contr%nvtx),
+     &     nca_blk(2,6)
+      integer, pointer ::
+     &     cinfo_op1c(:,:),cinfo_op1a(:,:),
+     &     cinfo_op2c(:,:),cinfo_op2a(:,:),
+     &     cinfo_op1op2c(:,:),
+     &     cinfo_op1op2a(:,:),
+     &     cinfo_ex1c(:,:),cinfo_ex1a(:,:),
+     &     cinfo_ex2c(:,:),cinfo_ex2a(:,:),
+     &     cinfo_cntc(:,:),cinfo_cnta(:,:),
+     &     map_info1c(:),
+     &     map_info1a(:),
+     &     map_info2c(:),
+     &     map_info2a(:),
+     &     map_info12c(:),
+     &     map_info12a(:)
       real(8) ::
      &     flops, xmemtot, xmemblk
 
@@ -75,100 +102,182 @@
 c dbg
 c      print *,'call to set_restr_prel'
 c dbg
-      call set_restr_prel(irestr_res,contr,op_info,ihpvgas,ngas)
+      call set_restr_prel(irst_res,contr,op_info,ihpvgas,ngas)
  
       call get_bc_info2(idar1,idar2,
-     &     iocc_ext,iocc_cnt,
-     &     iocc_op,iocc_int,
-     &     irestr_op,irestr_int,
-     &     mst_op,mst_int,
-     &     igamt_op,igamt_int,
-     &     contr,occ_vtx,irestr_vtx,info_vtx,iarc,
-     &     irestr_res,ihpvgas,ngas)
+     &     iocc_ex1,iocc_ex2,iocc_cnt,
+     &     iocc_op1,iocc_op2,iocc_op1op2,
+     &     irst_op1,irst_op2,irst_op1op2,
+     &     mst_op,mst_op1op2,
+     &     igamt_op,igamt_op1op2,
+     &     njoined_op, njoined_op1op2, njoined_cnt,
+     &     merge_op1,merge_op2,merge_op1op2,
+     &     contr,njoined_res,occ_vtx,irestr_vtx,info_vtx,iarc,
+     &     irst_res,ihpvgas,ngas)
 
       ! count particle, hole, (active) spaces involved:
       ! in intermediate
-      nh_int = iocc_ext(ihole,1,1)+iocc_ext(ihole,2,1)+
-     &         iocc_ext(ihole,1,2)+iocc_ext(ihole,2,2)
-      np_int = iocc_ext(ipart,1,1)+iocc_ext(ipart,2,1)+
-     &         iocc_ext(ipart,1,2)+iocc_ext(ipart,2,2)
-      nx_int = iocc_ext(iextr,1,1)+iocc_ext(iextr,2,1)+
-     &         iocc_ext(iextr,1,2)+iocc_ext(iextr,2,2)
+      nh_op1op2 = sum(iocc_ex1(ihole,1:2,1:njoined_op(1)))
+     &          + sum(iocc_ex2(ihole,1:2,1:njoined_op(2)))
+      np_op1op2 = sum(iocc_ex1(ipart,1:2,1:njoined_op(1)))
+     &          + sum(iocc_ex2(ipart,1:2,1:njoined_op(2)))
+      nx_op1op2 = sum(iocc_ex1(iextr,1:2,1:njoined_op(1)))
+     &          + sum(iocc_ex2(iextr,1:2,1:njoined_op(2)))
       ! in contraction length
-      nh_cnt = iocc_cnt(ihole,1)+iocc_cnt(ihole,2)
-      np_cnt = iocc_cnt(ipart,1)+iocc_cnt(ipart,2)
-      nx_cnt = iocc_cnt(iextr,1)+iocc_cnt(iextr,2)
+      nh_cnt = sum(iocc_cnt(ihole,1:2,1:njoined_cnt))
+      np_cnt = sum(iocc_cnt(ipart,1:2,1:njoined_cnt))
+      nx_cnt = sum(iocc_cnt(iextr,1:2,1:njoined_cnt))
 
       if (ntest.ge.100) then
         write(luout,*) 'op 1:'
-        call wrt_occ(luout,iocc_op(1,1,1))
-c dbg
-c        call wrt_rstr(luout,irestr_op,ngas)
-c dbg
+        call wrt_occ_n(luout,iocc_op1,njoined_op(1))
         write(luout,*) 'op 2:'
-        call wrt_occ(luout,iocc_op(1,1,2))
+        call wrt_occ_n(luout,iocc_op2,njoined_op(2))
         write(luout,*) 'externals 1:'
-        call wrt_occ(luout,iocc_ext(1,1,1))
+        call wrt_occ_n(luout,iocc_ex1,njoined_op(1))
         write(luout,*) 'externals 2:'
-        call wrt_occ(luout,iocc_ext(1,1,2))
+        call wrt_occ_n(luout,iocc_ex2,njoined_op(2))
         write(luout,*) 'contraction:'
-        call wrt_occ(luout,iocc_cnt)
+        call wrt_occ_n(luout,iocc_cnt,njoined_cnt)
         write(luout,*) 'intermediate/result:'
-        call wrt_occ(luout,iocc_int)
+        call wrt_occ_n(luout,iocc_op1op2,njoined_op1op2)
       end if
 
       if (ntest.ge.50) then
         write(luout,'(x,a,i2,a,i2,a)')
-     &         'Contraction scales as  H^{',nh_int+nh_cnt,
-     &                                   '}P^{',np_int+np_cnt,'}'
+     &         'Contraction scales as  H^{',nh_op1op2+nh_cnt,
+     &                                   '}P^{',np_op1op2+np_cnt,'}'
         write(luout,'(x,a,i2,a,i2,a)')
-     &             'Intermediate scales as H^{',nh_int,
-     &                                   '}P^{',np_int,'}'
+     &             'Intermediate scales as H^{',nh_op1op2,
+     &                                   '}P^{',np_op1op2,'}'
       end if
 
       ! set iscale
       ! maximum is taken over total scaling, so H^2 .gt. P^1 
-      if ( nh_int+np_int+nx_int+nh_cnt+np_cnt+nx_cnt.gt.
+      if ( nh_op1op2+np_op1op2+nx_op1op2+nh_cnt+np_cnt+nx_cnt.gt.
      &           iscale(ihole,1)+iscale(ipart,1)+iscale(iextr,1) .or.
-     &    (nh_int+np_int+nx_int+nh_cnt+np_cnt+nx_cnt.eq.
+     &    (nh_op1op2+np_op1op2+nx_op1op2+nh_cnt+np_cnt+nx_cnt.eq.
      &           iscale(ihole,1)+iscale(ipart,1)+iscale(iextr,1).and.
-     &     np_int+np_cnt.gt.iscale(ipart,1) ) ) then
-        iscale(ihole,1) = nh_int+nh_cnt
-        iscale(ipart,1) = np_int+np_cnt
-        iscale(iextr,1) = nx_int+nx_cnt
+     &     np_op1op2+np_cnt.gt.iscale(ipart,1) ) ) then
+        iscale(ihole,1) = nh_op1op2+nh_cnt
+        iscale(ipart,1) = np_op1op2+np_cnt
+        iscale(iextr,1) = nx_op1op2+nx_cnt
       end if
-      if ( nh_int+np_int+nx_int.gt.
+      if ( nh_op1op2+np_op1op2+nx_op1op2.gt.
      &     iscale(ihole,2)+iscale(ipart,2)+iscale(iextr,2) .or.
-     &    (nh_int+np_int+nx_int.eq.
+     &    (nh_op1op2+np_op1op2+nx_op1op2.eq.
      &     iscale(ihole,2)+iscale(ipart,2)+iscale(iextr,2).and.
-     &     np_int.gt.iscale(ipart,2) ) ) then
-        iscale(ihole,2) = nh_int
-        iscale(ipart,2) = np_int
-        iscale(iextr,2) = nx_int
+     &     np_op1op2.gt.iscale(ipart,2) ) ) then
+        iscale(ihole,2) = nh_op1op2
+        iscale(ipart,2) = np_op1op2
+        iscale(iextr,2) = nx_op1op2
       end if
 
       possible = .true.     
       ! check whether intermediate can be addressed by
       ! the available graphs (preliminary fix)
-      call get_grph4occ(igr_int,iocc_int,irestr_int,
-     &       str_info,ihpvgas,ngas,.false.)
+      call get_grph4occ(igr_op1op2,iocc_op1op2,irst_op1op2,
+     &       str_info,ihpvgas,ngas,njoined_op1op2,.false.)
       if (ntest.ge.100) then
-        write(luout,*) 'igr_int:'
-        call wrt_occ(luout,igr_int)
+        write(luout,*) 'igr_op1op2:'
+        call wrt_occ_n(luout,igr_op1op2,njoined_op1op2)
       end if
       ! if not: 
-      if (igr_int(1,1).lt.0) then
+      if (igr_op1op2(1,1,1).lt.0) then
         cost(1:3) = huge(cost(1))
         ! do not allow this factorization
         possible = .false.
       end if
 
       if (possible) then
-        call dummy_contr(flops,xmemtot,xmemblk,
-     &       iocc_op,iocc_ext,iocc_int,iocc_cnt,
-     &       irestr_op,irestr_int,
-     &       mst_op,mst_int,igamt_op,igamt_int,
+        if (new_route) then
+          call get_num_subblk(nca_blk(1,1),nca_blk(2,1),
+     &                        iocc_op1,njoined_op(1))
+          call get_num_subblk(nca_blk(1,2),nca_blk(2,2),
+     &                        iocc_op2,njoined_op(2))
+          call get_num_subblk(nca_blk(1,3),nca_blk(2,3),iocc_op1op2,
+     &                                                  njoined_op1op2)
+          call get_num_subblk(nca_blk(1,4),nca_blk(2,4),
+     &                        iocc_ex1,njoined_op(1))
+          call get_num_subblk(nca_blk(1,5),nca_blk(2,5),
+     &                        iocc_ex2,njoined_op(2))
+          call get_num_subblk(nca_blk(1,6),nca_blk(2,6),
+     &                        iocc_cnt,njoined_cnt)
+          allocate(
+     &         cinfo_op1c(nca_blk(1,1),3),cinfo_op1a(nca_blk(2,1),3),
+     &         cinfo_op2c(nca_blk(1,2),3),cinfo_op2a(nca_blk(2,2),3),
+     &         cinfo_op1op2c(nca_blk(1,3),3),
+     &                                    cinfo_op1op2a(nca_blk(2,3),3),
+     &         cinfo_ex1c(nca_blk(1,4),3),cinfo_ex1a(nca_blk(2,4),3),
+     &         cinfo_ex2c(nca_blk(1,5),3),cinfo_ex2a(nca_blk(2,5),3),
+     &         cinfo_cntc(nca_blk(1,6),3),cinfo_cnta(nca_blk(2,6),3))
+          allocate(
+     &         map_info1c(max(1,nca_blk(1,1)*2*
+     &                                 (njoined_op(1)+njoined_cnt))),
+     &         map_info1a(max(1,nca_blk(2,1)*2*
+     &                                 (njoined_op(1)+njoined_cnt))),
+     &         map_info2c(max(1,nca_blk(1,2)*2*
+     &                                 (njoined_op(2)+njoined_cnt))),
+     &         map_info2a(max(1,nca_blk(2,2)*2*
+     &                                 (njoined_op(2)+njoined_cnt))),
+     &         map_info12c(max(1,nca_blk(1,3)*2*
+     &                               (njoined_op(1)+njoined_op(2)))),
+     &         map_info12a(max(1,nca_blk(2,3)*2*
+     &                               (njoined_op(1)+njoined_op(2)))))
+          call condense_bc_info(
+     &         cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
+     &         cinfo_op1op2c, cinfo_op1op2a,
+     &         cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
+     &         cinfo_cntc, cinfo_cnta,
+     &         map_info1c, map_info1a,
+     &         map_info2c, map_info2a,
+     &         map_info12c, map_info12a,
+     &         nca_blk,
+     &         iocc_op1, iocc_op2, iocc_op1op2,
+     &         iocc_ex1,iocc_ex2,iocc_cnt,
+     &         irst_op1, irst_op2, irst_op1op2,
+     &         merge_op1, merge_op2, merge_op1op2,
+     &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
+     &         str_info,ihpvgas,ngas)
+          call dummy_contr2(flops,xmemtot,xmemblk,
+     &         nca_blk,
+     &         cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
+     &         cinfo_op1op2c, cinfo_op1op2a,
+     &         cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
+     &         cinfo_cntc, cinfo_cnta,
+     &         map_info1c, map_info1a,
+     &         map_info2c, map_info2a,
+     &         map_info12c, map_info12a,
+     &         mst_op(1),mst_op(2),mst_op1op2,
+     &         igamt_op(1),igamt_op(2),igamt_op1op2,
+     &         str_info,ngas,ihpvgas,nsym)          
+          deallocate(
+     &         cinfo_op1c,cinfo_op1a,
+     &         cinfo_op2c,cinfo_op2a,
+     &         cinfo_op1op2c,cinfo_op1op2a,
+     &         cinfo_ex1c,cinfo_ex1a,
+     &         cinfo_ex2c,cinfo_ex2a,
+     &         cinfo_cntc,cinfo_cnta)
+          deallocate(
+     &         map_info1c)
+          deallocate(
+     &         map_info1a)
+          deallocate(
+     &         map_info2c)
+          deallocate(
+     &         map_info2a)
+          deallocate(
+     &         map_info12c)
+          deallocate(
+     &         map_info12a)
+        else
+          call dummy_contr(flops,xmemtot,xmemblk,
+     &       iocc_op1,iocc_op2,iocc_ex1,iocc_ex2,
+     &       iocc_op1op2,iocc_cnt,
+     &       irst_op1,irst_op2,irst_op1op2,
+     &       mst_op,mst_op1op2,igamt_op,igamt_op1op2,
      &       str_info,ngas,ihpvgas,nsym)
+        end if
 
         cost(1) = cost(1)+flops
         cost(2) = max(cost(2),xmemtot)

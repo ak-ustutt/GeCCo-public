@@ -97,7 +97,7 @@
      &           occ_res(1:ngastp,1:2,isuper)-occ_vtx(1:ngastp,1:2,ivtx)
           else
             write(luout,*) 'current contraction:'
-            call prt_contr3(contr,occ_vtx)
+            call prt_contr3(contr,occ_vtx(1,1,1+njoined_in))
             write(luout,*) 'result, vertices, vertices reduced:'
             call wrt_occ_n(luout,occ_vtx_in,njoined)
             call wrt_occ_n(luout,occ_vtx_in(1,1,njoined+1),nvtx)

@@ -23,7 +23,7 @@
      &     info_vtx(2,contr%nvtx+1)
 
       integer ::
-     &     nvtx, idx, idxop, iblkop
+     &     nvtx, idx, idxop, iblkop, njoined
       type(cntr_vtx), pointer ::
      &     vertex(:)
       integer, pointer ::
@@ -31,15 +31,19 @@
       type(operator), pointer ::
      &     op
       
+      idxop = contr%idx_res
+      njoined = op_info%op_arr(idxop)%op%njoined
+
       nvtx = contr%nvtx
       vertex => contr%vertex
-      do idx = 1, nvtx+1
-        if (idx.eq.1) then
+      do idx = 1, nvtx+njoined
+        if (idx.le.njoined) then
           idxop = contr%idx_res 
-          iblkop = contr%iblk_res 
+          iblkop = (contr%iblk_res-1)*njoined+idx
         else
-          idxop = vertex(idx-1)%idx_op
-          iblkop = vertex(idx-1)%iblk_op
+          idxop = vertex(idx-njoined)%idx_op
+          ! is already set to compound index in case of super-vertices:
+          iblkop = vertex(idx-njoined)%iblk_op
         end if
         if (idxop.eq.0) then
           irestr_vtx(1:2,1:ngas,1:2,1:2,idx) = 0

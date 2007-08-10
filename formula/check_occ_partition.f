@@ -26,14 +26,26 @@
       logical, external ::
      &     next_part_connection
 
+c dbg
+c      print *,'in check_occ_partition: ',n_chk, n_tgt
+c dbg
       ! quick answer
       check_occ_partition = .false.
       if (n_chk.lt.n_tgt) return
 
       ! zero occupation
       zocc = 0
+c dbg
+c      print *,'p_tgt = '
+c      call wrt_occ_n(6,p_tgt,n_tgt)
+c      print *,'p_chk = '
+c      call wrt_occ_n(6,p_chk,n_chk)
+c dbg
 
       if (n_tgt.eq.1) then
+c dbg
+c        print *,'N==1 part entered'
+c dbg
         
         ! maximum partition grade
         maxpart = min(sum(p_tgt(1:ngastp,1:2,1)),n_chk)
@@ -75,6 +87,9 @@
         deallocate(occ)
 
       else if (n_tgt.eq.2) then
+c dbg
+c        print *,'N==2 part entered'
+c dbg
 
 c        call quit(1,'check_occ_partition','case n_tgt.eq.2 not tested')
 
@@ -134,5 +149,9 @@ c        call quit(1,'check_occ_partition','case n_tgt.eq.2 not tested')
      &     'only implemented for max. two targets')
       end if
       
+c dbg
+c      print *,'at the end: ',check_occ_partition
+c dbg
+
       return
       end

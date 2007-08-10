@@ -65,18 +65,23 @@
       type(operator_array), pointer ::
      &     ops(:)
       integer ::
-     &     iocc_op(ngastp,2,2), irst_op(2,orb_info%ngas,2,2,2),
+     &     iocc_op1(ngastp,2), iocc_op2(ngastp,2),
+     &     irst_op1(2,orb_info%ngas,2,2),
+     &     irst_op2(2,orb_info%ngas,2,2),
      &     irst_res(2,orb_info%ngas,2,2),
      &     mstop(2), igamtop(2), idxop(2), iblkop(2),
-     &     iocc_ext(ngastp,2,2), iocc_cnt(ngastp,2),
-     &     iocc_op1op2(ngastp,2), irst_op1op2(2,orb_info%ngas,2,2),
-     &     mstop1op2, igamtop1op2
+     &     iocc_ext1(ngastp,2), iocc_ext2(ngastp,2), iocc_cnt(ngastp,2),
+     &     iocc_op1op2(ngastp,2,  2   ),  ! <- fix
+     &     irst_op1op2(2,orb_info%ngas,2,2),
+     &     mstop1op2, igamtop1op2,
+     &     njoined_op(2), njoined_op1op2, njoined_cnt
       real(8), pointer ::
      &     xret_blk(:), xret_pnt(:)
       real(8), target ::
      &     xret_scr(1)
       integer, allocatable ::
-     &     occ_vtx(:,:,:), irestr_vtx(:,:,:,:,:), info_vtx(:,:)
+     &     occ_vtx(:,:,:), irestr_vtx(:,:,:,:,:), info_vtx(:,:),
+     &     merge_op1(:), merge_op2(:), merge_op1op2(:)
       type(operator), pointer ::
      &     opscr(:)
       type(filinf), pointer ::
@@ -234,7 +239,10 @@ c        case(command_set_target_update)
         allocate(
      &       occ_vtx(ngastp,2,nvtx+1),
      &       irestr_vtx(2,orb_info%ngas,2,2,nvtx+1),
-     &       info_vtx(2,nvtx+1))
+     &       info_vtx(2,nvtx+1),
+     &       merge_op1(nvtx*nvtx+1), ! a bit too large, I guess ...
+     &       merge_op2(nvtx*nvtx+1),
+     &       merge_op1op2(nvtx*nvtx+1))
         if (nfact.gt.1)
      &       allocate(opscr(nfact-1),ffscr(nfact-1))
 
@@ -273,12 +281,14 @@ c dbg
 
           ! set up info for binary contraction
           call get_bc_info2(idxop,iblkop,
-     &         iocc_ext,iocc_cnt,
-     &         iocc_op,iocc_op1op2,
-     &         irst_op,irst_op1op2,
+     &         iocc_ext1,iocc_ext2,iocc_cnt,
+     &         iocc_op1,iocc_op2,iocc_op1op2,
+     &         irst_op1,irst_op2,irst_op1op2,
      &         mstop,mstop1op2,
      &         igamtop,igamtop1op2,
-     &         cur_form%contr,occ_vtx,irestr_vtx,info_vtx,iarc,
+     &         njoined_op, njoined_op1op2, njoined_cnt,
+     &         merge_op1,merge_op2,merge_op1op2,
+     &         cur_form%contr,  1,  occ_vtx,irestr_vtx,info_vtx,iarc,
      &         irst_res,orb_info%ihpvgas,ngas)
 
           ! set up operator 1 and 2
@@ -367,8 +377,8 @@ c            call init_operator(0,opscr(ninter),orb_info)
      &       op1,op2,op1op2,
      &       iblkop(1),iblkop(2),iblkop1op2,
      &       idoffop1,idoffop2,idoffop1op2,
-     &       iocc_ext(1,1,1),iocc_ext(1,1,2),iocc_cnt,
-     &       irst_op(1,1,1,1,1),irst_op(1,1,1,1,2),irst_op1op2,
+     &       iocc_ext1,iocc_ext2,iocc_cnt,
+     &       irst_op1,irst_op2,irst_op1op2,
      &       mstop(1),mstop(2),mstop1op2,
      &       igamtop(1),igamtop(2),igamtop1op2,
      &       str_info,strmap_info,orb_info)
@@ -379,12 +389,14 @@ c            call init_operator(0,opscr(ninter),orb_info)
           ! current binary contraction
           if (idx.ne.nfact) then
             ivtx_new = cur_form%contr%inffac(3,idx)
-            call reduce_vtx_info(irestr_vtx,info_vtx,
-     &           cur_form%contr,occ_vtx,iarc,
-     &           irst_res,orb_info)
+c            call reduce_vtx_info(irestr_vtx,info_vtx,
+c     &           cur_form%contr,occ_vtx,iarc,
+c     &           irst_res,orb_info)
             call reduce_contr(cur_form%contr,occ_vtx,
      &           iarc,-ninter,ivtx_new,
-     &           .false.,idum,idum)
+     &           1,  !<- njoined_res
+     &           .false.,idum,idum,
+     &           .true.,irestr_vtx,info_vtx,irst_res,orb_info)
             ! add 0-contractions, if necessary
             call check_disconnected(cur_form%contr)
           end if
@@ -392,7 +404,8 @@ c            call init_operator(0,opscr(ninter),orb_info)
         end do bin_loop
 
         deallocate(
-     &       occ_vtx,irestr_vtx,info_vtx)
+     &       occ_vtx,irestr_vtx,info_vtx,
+     &       merge_op1,merge_op2,merge_op1op2)
         if (nfact.gt.1) then
           ! get rid of intermediate definitions and files
           do idx = 1, ninter-1

@@ -1,7 +1,8 @@
 *----------------------------------------------------------------------*
       subroutine dummy_contr(flops,xmemtot,xmemblk,
-     &                       iocc_op,iocc_ext,iocc_int,iocc_cnt,
-     &                       irst_op,irst_int,
+     &                       iocc_op1,iocc_op2,iocc_ext1,iocc_ext2,
+     &                       iocc_int,iocc_cnt,
+     &                       irst_op1,irst_op2,irst_int,
      &                       mstop,mstint,igamtop,igamtint,
      &                       str_info,ngas,ihpvgas,nsym)
 *----------------------------------------------------------------------*
@@ -24,9 +25,11 @@
       real(8), intent(out) ::
      &     flops, xmemtot, xmemblk
       integer, intent(in) ::
-     &     iocc_op(ngastp,2,2), iocc_ext(ngastp,2,2),
+     &     iocc_op1(ngastp,2), iocc_op2(ngastp,2),
+     &     iocc_ext1(ngastp,2), iocc_ext2(ngastp,2),
      &     iocc_int(ngastp,2), iocc_cnt(ngastp,2),
-     &     irst_op(2,ngas,2,2,2),irst_int(2,ngas,2,2), 
+     &     irst_op1(2,ngas,2,2),irst_op2(2,ngas,2,2),
+     &     irst_int(2,ngas,2,2), 
      &     mstop(2),mstint,igamtop(2),igamtint
       integer, intent(in) ::
      &     ngas, nsym, ihpvgas(ngas)
@@ -61,9 +64,9 @@
         write(luout,*) '========================'
         write(luout,*) ' ngas, nsym : ',ngas,nsym
         write(luout,*) 'OP 1 ',mstop(1),igamtop(1)
-        call wrt_occ(luout,iocc_op(1,1,1))
+        call wrt_occ(luout,iocc_op1)
         write(luout,*) 'OP 2 ',mstop(2),igamtop(2)
-        call wrt_occ(luout,iocc_op(1,1,2))
+        call wrt_occ(luout,iocc_op2)
         write(luout,*) 'CNT'
         call wrt_occ(luout,iocc_cnt)
         write(luout,*) 'RES ',mstint,igamtint
@@ -76,17 +79,17 @@
       xmemblk = 0d0
 
       ! preliminary treatment of restrictions:
-      call fit_restr(irst_ext(1,1,1,1,1),iocc_ext(1,1,1),
-     &     irst_op(1,1,1,1,1),ihpvgas,ngas)
-      call fit_restr(irst_ext(1,1,1,1,2),iocc_ext(1,1,2),
-     &     irst_op(1,1,1,1,2),ihpvgas,ngas)
+      call fit_restr(irst_ext(1,1,1,1,1),iocc_ext1,
+     &     irst_op1(1,1,1,1),ihpvgas,ngas)
+      call fit_restr(irst_ext(1,1,1,1,2),iocc_ext2,
+     &     irst_op2(1,1,1,1),ihpvgas,ngas)
       call fit_restr(irst_cnt,iocc_cnt,
-     &     irst_op(1,1,1,1,1),ihpvgas,ngas)
+     &     irst_op1(1,1,1,1),ihpvgas,ngas)
       ! end of preliminary code
 
       ! minimum Ms for ...
-      msbnd(1,1) = -ielsum(iocc_op(1,1,1),ngastp) ! operator 1
-      msbnd(1,2) = -ielsum(iocc_op(1,1,2),ngastp) ! operator 2        
+      msbnd(1,1) = -ielsum(iocc_op1,ngastp) ! operator 1
+      msbnd(1,2) = -ielsum(iocc_op2,ngastp) ! operator 2        
       msbnd(1,3) = -ielsum(iocc_int,ngastp) ! intermediate
       ! maximum Ms for ...
       msbnd(2,1) = -msbnd(1,1)
@@ -128,16 +131,16 @@
           ! Ms of string after lifting restrictions:
           !  Op1(C1,A1) -> Op1(C10,A10;CC,AC)
           ms10_c = ms12i_c(1) - msc_c
-          if (abs(ms10_c).gt.ielsum(iocc_ext(1,1,1),ngastp))
+          if (abs(ms10_c).gt.ielsum(iocc_ext1(1,1),ngastp))
      &         cycle msc_loop
           ms10_a = ms12i_a(1) - msc_a
-          if (abs(ms10_a).gt.ielsum(iocc_ext(1,2,1),ngastp))
+          if (abs(ms10_a).gt.ielsum(iocc_ext1(1,2),ngastp))
      &         cycle msc_loop
           ms20_a = ms12i_a(2) - msc_c   ! other way 
           ms20_c = ms12i_c(2) - msc_a   ! round (!!)
-          if (abs(ms20_c).gt.ielsum(iocc_ext(1,1,2),ngastp))
+          if (abs(ms20_c).gt.ielsum(iocc_ext2(1,1),ngastp))
      &         cycle msc_loop
-          if (abs(ms20_a).gt.ielsum(iocc_ext(1,2,2),ngastp))
+          if (abs(ms20_a).gt.ielsum(iocc_ext2(1,2),ngastp))
      &         cycle msc_loop
           if (ntest.ge.100) then
             write(luout,*) 'Current spin case:'
@@ -179,12 +182,12 @@
               first3 = .true.
               ca10_loop: do
                 if (.not.next_msgamdist(first3,
-     &             ms10_a,ms10_c,igam10_a,igam10_c,iocc_ext(1,1,1),nsym,
+     &             ms10_a,ms10_c,igam10_a,igam10_c,iocc_ext1(1,1),nsym,
      &             ms10dist,igam10dist)) exit ca10_loop
                 first3 = .false.
 
                 call get_lenblk(lenc1,lena1,
-     &               iocc_ext(1,1,1),irst_ext(1,1,1,1,1),
+     &               iocc_ext1(1,1),irst_ext(1,1,1,1,1),
      &               ms10dist,igam10dist,
      &               str_info,ihpvgas,ngas)
 
@@ -195,13 +198,13 @@
                 first4 = .true.
                 ca20_loop: do
                   if (.not.next_msgamdist(first4,
-     &               ms20_a,ms20_c,igam20_a,igam20_c,iocc_ext(1,1,2),
+     &               ms20_a,ms20_c,igam20_a,igam20_c,iocc_ext2(1,1),
      &               nsym,
      &               ms20dist,igam20dist)) exit ca20_loop
                   first4 = .false.
 
                   call get_lenblk(lenc2,lena2,
-     &                 iocc_ext(1,1,2),irst_ext(1,1,1,1,2),
+     &                 iocc_ext2(1,1),irst_ext(1,1,1,1,2),
      &                 ms20dist,igam20dist,
      &                 str_info,ihpvgas,ngas)
 
@@ -229,6 +232,15 @@
      &                   dble(lenc1)*dble(lena1)*
      &                   dble(lenc2)*dble(lena2)*
      &                   dble(lencc)*dble(lenac)
+c dbg
+c                    print *,'xlen10 = ',dble(lenc1)*dble(lena1)
+c                    print *,'xlen20 = ',dble(lenc2)*dble(lena2)
+c                    print *,'xlencnt = ',dble(lencc)*dble(lenac)
+c                    print *,'current blk:',
+c     &                   dble(lenc1)*dble(lena1)*
+c     &                   dble(lenc2)*dble(lena2)*
+c     &                   dble(lencc)*dble(lenac)
+c dbg
 
                     ! get Ms and IRREP distribution of intermediate
                     msi_dist(1:ngastp,1:2) =
@@ -241,6 +253,9 @@
      &                   str_info,ihpvgas,ngas)
                     
                     xmemblk = max(xmemblk,dble(lenci)*dble(lenai))
+c dbg
+c                    print *,'xlenop1op2 ',dble(lenci)*dble(lenai)
+c dbg
 
                     xmemtot = xmemtot+dble(lenci)*dble(lenai)
 

@@ -40,13 +40,21 @@
       contr%nsupvtx = idx
 
       contr%svertex(1:contr%nvtx) = svertex_new(1:contr%nvtx)
+c dbg
+c      print *,'updated svertex: ',contr%svertex(1:contr%nvtx)
+c dbg
 
-      contr%joined(0,1:contr%nsupvtx) = 0
+      contr%joined(0:contr%nvtx,1:contr%nsupvtx) = 0
       do ivtx = 1, contr%nvtx
         npvtx = contr%joined(0,contr%svertex(ivtx))
         npvtx = npvtx+1
         contr%joined(0,contr%svertex(ivtx)) = npvtx
         contr%joined(npvtx,contr%svertex(ivtx)) = ivtx
+c dbg
+c        print *,'after ',ivtx,'/',contr%nvtx
+c        call iwrtma(contr%joined,contr%nvtx+1,contr%nsupvtx,
+c     &                           contr%nvtx+1,contr%nsupvtx)
+c dbg
       end do
 
       return
