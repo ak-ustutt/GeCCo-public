@@ -123,11 +123,12 @@
       logical ::
      &     first, close_again, blk_buf, scalar
       integer ::
-     &     idxoff, idxoff_blk, iblk, lenblk, lenprt, ifree, mmax,
+     &     idoff, idxoff, idxoff_blk, iblk, lenblk, lenprt, ifree, mmax,
      &     msmax, idxms, ms, igam, idx_dis, ndis, nwarn, did, idum, nel,
-     &     idxoff0
+     &     idxoff0, njoined, idx_occ
       integer ::
-     &     msd(ngastp,2), igamd(ngastp,2)
+     &     msd(ngastp,2,op%njoined), igamd(ngastp,2,op%njoined),
+     &     scr(ngastp,2,2*op%njoined)
       real(8) ::
      &     xnrm, xnrm_tot
       real(8), pointer ::
@@ -167,7 +168,10 @@
         idxoff0 = op%off_op_occ(iblkst)
       end if
 
+      njoined = op%njoined
+
       xnrm_tot = 0d0
+      idx_occ = (iblkst-1)*njoined+1
       do iblk = iblkst, iblknd
         if(op%formal_blk(iblk))cycle
         
@@ -180,7 +184,8 @@
           if (level.ge.2) write(luout,'("+",77("="),"+")')
           write(luout,'(2x,a,i4,a,i12)') 'block no. ',iblk,' len = ',
      &         op%len_op_occ(iblk)
-          if (level.ge.2) call wrt_occ(luout,op%ihpvca_occ(1,1,iblk))
+          if (level.ge.2)
+     &         call wrt_occ_n(luout,op%ihpvca_occ(1,1,idx_occ),njoined)
           if (level.ge.2) write(luout,'("+",77("="),"+")')
         end if
 
@@ -203,7 +208,9 @@
 
             ! get current block
             if (.not.incore.and..not.blk_buf) then
-              call get_vec(ffop,buffer,idxoff+1,idxoff+lenblk)
+              idoff = ffop%length_of_record*(ffop%current_record-1)
+              call get_vec(ffop,buffer,
+     &             idoff+idxoff+1,idoff+idxoff+lenblk)
               curblk => buffer(1:lenblk)
             else if (.not.incore) then
 c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
@@ -269,7 +276,11 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
                 did = op%off_op_gmox(iblk)%did(idx_dis,igam,idxms)
 
                 call did2msgm(msd,igamd,did,
-     &               op%ihpvca_occ(1,1,iblk),orb_info%nsym)
+     &               op%ihpvca_occ(1,1,idx_occ),orb_info%nsym,njoined)
+                scr(1:ngastp,1:2,1:njoined) =
+     &               msd(1:ngastp,1:2,1:njoined)
+                scr(1:ngastp,1:2,njoined+1:2*njoined) =
+     &               igamd(1:ngastp,1:2,1:njoined)
 
                 lenblk =
      &               op%len_op_gmox(iblk)%d_gam_ms(idx_dis,igam,idxms)
@@ -283,28 +294,8 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
                 write(luout,'(2x,a,i12,a,g12.6)'),
      &             ' Ms-Dst     Gamma-Dst   len = ',lenblk,
      &             '  norm = ',xnrm
-                if (ngastp.eq.2) then
-                  write(luout,
-     &           '(2x,"/",2i3,"'//char(92)//'/",2i3,"'//char(92)//'")')
-     &                 msd(1:ngastp,1), igamd(1:ngastp,1)
-                  write(luout,
-     &           '(2x,"'//char(92)//'"2i3,"/'//char(92)//'",2i3,"/")')
-     &                 msd(1:ngastp,2), igamd(1:ngastp,2)
-                else if (ngastp.eq.3) then
-                  write(luout,
-     &           '(2x,"/",3i3,"'//char(92)//'/",3i3,"'//char(92)//'")')
-     &                 msd(1:ngastp,1), igamd(1:ngastp,1)
-                  write(luout,
-     &           '(2x,"'//char(92)//'"3i3,"/'//char(92)//'",3i3,"/")')
-     &                 msd(1:ngastp,2), igamd(1:ngastp,2)
-                else if (ngastp.eq.4) then
-                  write(luout,
-     &           '(2x,"/",4i3,"'//char(92)//'/",4i3,"'//char(92)//'")')
-     &                 msd(1:ngastp,1), igamd(1:ngastp,1)
-                  write(luout,
-     &           '(2x,"'//char(92)//'"4i3,"/'//char(92)//'",4i3,"/")')
-     &                 msd(1:ngastp,2), igamd(1:ngastp,2)
-                end if
+                call wrt_occ_n(luout,scr,2*njoined)
+
                 if (level.ge.3) then
                   if (level.ge.5)
      &                 write(luout,*) 'index of first element:',idxoff+1
@@ -326,6 +317,7 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
             if (level.ge.2) write(luout,'("+",77("-"),"+")')
           end do
         end do
+        idx_occ = idx_occ+njoined
       end do
 
       write(luout,*) 'total norm = ',sqrt(xnrm_tot)

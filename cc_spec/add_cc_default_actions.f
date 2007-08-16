@@ -91,6 +91,13 @@ c      call get_argument_value('calculate.routes','simtraf',ival=isim)
         idxeta =  idx_oplist2(op_eta,op_info)
         idxlhtr = idx_formlist(label_cctbar_a,form_info)
         idxrhs = idx_formlist(label_cceta,form_info)
+c        call add_action(act_list,nactions,
+c     &       iaction_evaluate,4,3,1,
+c     &       (/idxdia,idxham,idxtop,idxomg/),
+c     &                                   (/idxtbar,idxtbara,idxeta/),
+c     &       (/(/idxdia,1/),(/idxham,1/),(/idxtop,1/),(/idxomg,1/)/),
+c     &       (/(/idxtbar,1/)/),
+c     &       1,(/idxrhs,idxlhtr/))
         call add_action(act_list,nactions,
      &       iaction_solve_leq,4,3,1,
      &       (/idxdia,idxham,idxtop,idxomg/),
@@ -105,6 +112,14 @@ c      call get_argument_value('calculate.routes','simtraf',ival=isim)
         idxeta =  idx_oplist2(op_eta,op_info)
         idxlhtr = idx_formlist(label_cctbar_a,form_info)
         idxrhs = idx_formlist(label_cceta,form_info)
+c        call add_action(act_list,nactions,
+c     &       iaction_evaluate,5,3,1,
+c     &       (/idxdia,idxham,idxhhat,idxtop,idxomg/),
+c     &                               (/idxtbar,idxtbara,idxeta/),
+c     &       (/(/idxdia,1/),(/idxham,1/),(/idxhhat,1/),
+c     &                      (/idxtop,1/),(/idxomg,1/)/),
+c     &       (/(/idxtbar,1/)/),
+c     &       2,(/idxrhs,idxlhtr/))
         call add_action(act_list,nactions,
      &       iaction_solve_leq,5,3,1,
      &       (/idxdia,idxham,idxhhat,idxtop,idxomg/),

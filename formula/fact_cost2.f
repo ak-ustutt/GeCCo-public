@@ -69,6 +69,7 @@
      &     merge_op1(contr%nvtx*contr%nvtx), ! a bit too large, I guess ...
      &     merge_op2(contr%nvtx*contr%nvtx),
      &     merge_op1op2(contr%nvtx*contr%nvtx),
+     &     merge_op2op1(contr%nvtx*contr%nvtx),
      &     nca_blk(2,6)
       integer, pointer ::
      &     cinfo_op1c(:,:),cinfo_op1a(:,:),
@@ -85,7 +86,7 @@
      &     map_info12c(:),
      &     map_info12a(:)
       real(8) ::
-     &     flops, xmemtot, xmemblk
+     &     flops, xmemtot, xmemblk, bc_sign
 
       integer, external ::
      &     idxlist, int_expand, int_pack, maxxlvl_op
@@ -104,14 +105,15 @@ c      print *,'call to set_restr_prel'
 c dbg
       call set_restr_prel(irst_res,contr,op_info,ihpvgas,ngas)
  
-      call get_bc_info2(idar1,idar2,
+      call get_bc_info2(bc_sign,
+     &     idar1,idar2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,
      &     irst_op1,irst_op2,irst_op1op2,
      &     mst_op,mst_op1op2,
      &     igamt_op,igamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,
-     &     merge_op1,merge_op2,merge_op1op2,
+     &     merge_op1,merge_op2,merge_op1op2,merge_op2op1,
      &     contr,njoined_res,occ_vtx,irestr_vtx,info_vtx,iarc,
      &     irst_res,ihpvgas,ngas)
 
@@ -188,6 +190,9 @@ c dbg
         ! do not allow this factorization
         possible = .false.
       end if
+c dbg -- try only those contractions:
+c      if (njoined_op1op2.gt.1) possible = .false.
+c dbg
 
       if (possible) then
         if (new_route) then
@@ -203,14 +208,23 @@ c dbg
      &                        iocc_ex2,njoined_op(2))
           call get_num_subblk(nca_blk(1,6),nca_blk(2,6),
      &                        iocc_cnt,njoined_cnt)
+C WE STILL HAVE A LEAK AROUND HERE:
           allocate(
-     &         cinfo_op1c(nca_blk(1,1),3),cinfo_op1a(nca_blk(2,1),3),
-     &         cinfo_op2c(nca_blk(1,2),3),cinfo_op2a(nca_blk(2,2),3),
-     &         cinfo_op1op2c(nca_blk(1,3),3),
-     &                                    cinfo_op1op2a(nca_blk(2,3),3),
-     &         cinfo_ex1c(nca_blk(1,4),3),cinfo_ex1a(nca_blk(2,4),3),
-     &         cinfo_ex2c(nca_blk(1,5),3),cinfo_ex2a(nca_blk(2,5),3),
-     &         cinfo_cntc(nca_blk(1,6),3),cinfo_cnta(nca_blk(2,6),3))
+     &         cinfo_op1c(nca_blk(1,1),10),cinfo_op1a(nca_blk(2,1),10),
+     &         cinfo_op2c(nca_blk(1,2),10),cinfo_op2a(nca_blk(2,2),10),
+     &         cinfo_op1op2c(nca_blk(1,3),10),
+     &                                   cinfo_op1op2a(nca_blk(2,3),10),
+     &         cinfo_ex1c(nca_blk(1,4),10),cinfo_ex1a(nca_blk(2,4),10),
+     &         cinfo_ex2c(nca_blk(1,5),10),cinfo_ex2a(nca_blk(2,5),10),
+     &         cinfo_cntc(nca_blk(1,6),10),cinfo_cnta(nca_blk(2,6),10))
+c          allocate(
+c     &         cinfo_op1c(nca_blk(1,1),3),cinfo_op1a(nca_blk(2,1),3),
+c     &         cinfo_op2c(nca_blk(1,2),3),cinfo_op2a(nca_blk(2,2),3),
+c     &         cinfo_op1op2c(nca_blk(1,3),3),
+c     &                                    cinfo_op1op2a(nca_blk(2,3),3),
+c     &         cinfo_ex1c(nca_blk(1,4),3),cinfo_ex1a(nca_blk(2,4),3),
+c     &         cinfo_ex2c(nca_blk(1,5),3),cinfo_ex2a(nca_blk(2,5),3),
+c     &         cinfo_cntc(nca_blk(1,6),3),cinfo_cnta(nca_blk(2,6),3))
           allocate(
      &         map_info1c(max(1,nca_blk(1,1)*2*
      &                                 (njoined_op(1)+njoined_cnt))),
@@ -236,7 +250,7 @@ c dbg
      &         iocc_op1, iocc_op2, iocc_op1op2,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
      &         irst_op1, irst_op2, irst_op1op2,
-     &         merge_op1, merge_op2, merge_op1op2,
+     &         merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &         str_info,ihpvgas,ngas)
           call dummy_contr2(flops,xmemtot,xmemblk,
@@ -252,11 +266,19 @@ c dbg
      &         igamt_op(1),igamt_op(2),igamt_op1op2,
      &         str_info,ngas,ihpvgas,nsym)          
           deallocate(
-     &         cinfo_op1c,cinfo_op1a,
-     &         cinfo_op2c,cinfo_op2a,
-     &         cinfo_op1op2c,cinfo_op1op2a,
-     &         cinfo_ex1c,cinfo_ex1a,
-     &         cinfo_ex2c,cinfo_ex2a,
+     &         cinfo_op1c,cinfo_op1a)
+          deallocate(
+     &         cinfo_op2c,cinfo_op2a)
+          deallocate(
+     &         cinfo_op1op2c)
+C HERE WE GET A CLIB ERROR:
+          deallocate(
+     &         cinfo_op1op2a)
+          deallocate(
+     &         cinfo_ex1c,cinfo_ex1a)
+          deallocate(
+     &         cinfo_ex2c,cinfo_ex2a)
+          deallocate(
      &         cinfo_cntc,cinfo_cnta)
           deallocate(
      &         map_info1c)

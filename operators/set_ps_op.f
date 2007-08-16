@@ -82,7 +82,8 @@
             gr4typ: do igr4typ = 1, ngr4typ
               ! actual index of graph
               idxgraph = str_info%gtab(1+igr4typ,igtyp)
-              if (restr_cmp(irst,str_info%igas_restr(1,1,1,idxgraph),
+              if (restr_cmp(irst(1,1,1,1,ijoin),
+     &                       str_info%igas_restr(1,1,1,idxgraph),
      &                       ica,ihpv,ihpvgas,ngas))
      &           exit gr4typ
               idxgraph = -idxgraph ! indicate that this was not what
@@ -93,7 +94,7 @@
               write(luout,*) 'Operator was'
               call wrt_occ_n(luout,iocc,njoined)
               do idx = 1, njoined
-                call wrt_rstr(luout,irst(1,1,1,1,ijoin),ngas)
+                call wrt_rstr(luout,irst(1,1,1,1,idx),ngas)
               end do
               write(luout,*) 'C/A, GAS-TYP, vtx: ',ica,ihpv,ijoin
               call quit(1,'set_ps_op','string not in list')

@@ -57,7 +57,7 @@
 
         idxst = idisc_off+1
         do while(idxst.le.idisc_off+len_op)
-          idxnd = min(len_op,idxst-1+nbuff)
+          idxnd = min(idisc_off+len_op,idxst-1+nbuff)
           call put_vec(ffop,buffer,idxst,idxnd)  
           idxst = idxnd+1
         end do

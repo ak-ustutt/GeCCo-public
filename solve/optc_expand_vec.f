@@ -16,7 +16,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(filinf), intent(in) ::
      &     ffamp, ff_sbsp
@@ -61,6 +61,10 @@
           xscr = sqrt(ddot(nwfpar,xbuf1,1,xbuf1,1))
           write(luout,*) ' |initial| = ',xscr
         end if
+c dbg
+        write(luout,*) ' xvec (2): ', xvec(1:ndim)
+
+c dbg
 
         do irec = 1, ndim
           ii = iord(irec)

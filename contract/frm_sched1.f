@@ -56,7 +56,7 @@
      &     idoffop1, idoffop2, idoffop1op2, ivtx_new, nvtx,
      &     iarc, idum
       real(8) ::
-     &     fac, facc, xnrm
+     &     fac, facc, xnrm, bc_sign
       character ::
      &     title*256, opscrnam*8
 
@@ -65,23 +65,23 @@
       type(operator_array), pointer ::
      &     ops(:)
       integer ::
-     &     iocc_op1(ngastp,2), iocc_op2(ngastp,2),
-     &     irst_op1(2,orb_info%ngas,2,2),
-     &     irst_op2(2,orb_info%ngas,2,2),
-     &     irst_res(2,orb_info%ngas,2,2),
      &     mstop(2), igamtop(2), idxop(2), iblkop(2),
-     &     iocc_ext1(ngastp,2), iocc_ext2(ngastp,2), iocc_cnt(ngastp,2),
-     &     iocc_op1op2(ngastp,2,  2   ),  ! <- fix
-     &     irst_op1op2(2,orb_info%ngas,2,2),
      &     mstop1op2, igamtop1op2,
      &     njoined_op(2), njoined_op1op2, njoined_cnt
       real(8), pointer ::
      &     xret_blk(:), xret_pnt(:)
       real(8), target ::
      &     xret_scr(1)
-      integer, allocatable ::
+      integer, pointer ::
      &     occ_vtx(:,:,:), irestr_vtx(:,:,:,:,:), info_vtx(:,:),
-     &     merge_op1(:), merge_op2(:), merge_op1op2(:)
+     &     merge_op1(:), merge_op2(:), merge_op1op2(:), merge_op2op1(:),
+     &     iocc_op1(:,:,:), iocc_op2(:,:,:),
+     &     irst_op1(:,:,:,:,:),
+     &     irst_op2(:,:,:,:,:),
+     &     irst_res(:,:,:,:,:),
+     &     iocc_ex1(:,:,:), iocc_ex2(:,:,:), iocc_cnt(:,:,:),
+     &     iocc_op1op2(:,:,:),
+     &     irst_op1op2(:,:,:,:,:)
       type(operator), pointer ::
      &     opscr(:)
       type(filinf), pointer ::
@@ -203,6 +203,16 @@ c        case(command_set_target_update)
         iterm = iterm+1
         if (iprint.ge.20)
      &     write(luout,*) '   term #',iterm
+c dbg
+C FOR CHECKING MY FAVOURITE TERM
+c        if (iterm.eq.10.and.opres%name(1:4).eq.'TBAR') then
+c          write(luout,*) 'RESETTING RESULT OPERATOR '
+c          write(luout,*) 'RESETTING RESULT OPERATOR '
+c          write(luout,*) 'RESETTING RESULT OPERATOR '
+c          write(luout,*) 'RESETTING RESULT OPERATOR '
+c          call zeroop(ffres,opres)
+c        end if
+c dbg
 
         if (ntest.ge.50)
      &       call prt_contr2(luout,cur_form%contr,op_info)
@@ -229,12 +239,23 @@ c        case(command_set_target_update)
           cycle term_loop
         end if
 
+        nvtx = cur_form%contr%nvtx
+
+        ! allocate arrays for occupations and restrictions
+        allocate(
+     &       iocc_op1(ngastp,2,nvtx), iocc_op2(ngastp,2,nvtx),
+     &       irst_op1(2,ngas,2,2,nvtx),
+     &       irst_op2(2,ngas,2,2,nvtx),
+     &       irst_res(2,ngas,2,2,nvtx),
+     &       iocc_ex1(ngastp,2,nvtx),
+     &       iocc_ex2(ngastp,2,nvtx), iocc_cnt(ngastp,2,nvtx),
+     &       iocc_op1op2(ngastp,2,nvtx),
+     &       irst_op1op2(2,orb_info%ngas,2,2,nvtx))        
+
         ! preliminary fix to set irst_res (needed in get_bc_info)
         call set_restr_prel(irst_res,
      &       cur_form%contr,op_info,orb_info%ihpvgas,orb_info%ngas)
         
-        nvtx = cur_form%contr%nvtx
-
         ! allocate arrays for intermediates
         allocate(
      &       occ_vtx(ngastp,2,nvtx+1),
@@ -242,7 +263,8 @@ c        case(command_set_target_update)
      &       info_vtx(2,nvtx+1),
      &       merge_op1(nvtx*nvtx+1), ! a bit too large, I guess ...
      &       merge_op2(nvtx*nvtx+1),
-     &       merge_op1op2(nvtx*nvtx+1))
+     &       merge_op1op2(nvtx*nvtx+1),
+     &       merge_op2op1(nvtx*nvtx+1))
         if (nfact.gt.1)
      &       allocate(opscr(nfact-1),ffscr(nfact-1))
 
@@ -267,27 +289,19 @@ c        case(command_set_target_update)
 
           if (iprint.ge.20) write(luout,*) '    contr #',idx
           iarc = cur_form%contr%inffac(5,idx)
-c dbg
-c          if (iterm.eq.7) then
-c            if (iarc.eq.2) then
-c              iarc = 1
-c            else
-c              iarc = 2
-c            end if
-c          end if
-c dbg
 
           ninter = ninter + 1
 
           ! set up info for binary contraction
-          call get_bc_info2(idxop,iblkop,
-     &         iocc_ext1,iocc_ext2,iocc_cnt,
+          call get_bc_info2(bc_sign,
+     &         idxop,iblkop,
+     &         iocc_ex1,iocc_ex2,iocc_cnt,
      &         iocc_op1,iocc_op2,iocc_op1op2,
      &         irst_op1,irst_op2,irst_op1op2,
      &         mstop,mstop1op2,
      &         igamtop,igamtop1op2,
      &         njoined_op, njoined_op1op2, njoined_cnt,
-     &         merge_op1,merge_op2,merge_op1op2,
+     &         merge_op1,merge_op2,merge_op1op2, merge_op2op1,
      &         cur_form%contr,  1,  occ_vtx,irestr_vtx,info_vtx,iarc,
      &         irst_res,orb_info%ihpvgas,ngas)
 
@@ -343,19 +357,17 @@ c            call init_operator(0,opscr(ninter),orb_info)
             ! set up pseudo-operator for current intermediate
             write(opscrnam,'("INT",i3.3)') ninter
             call set_ps_op(opscr(ninter),opscrnam,
-     &           iocc_op1op2,irst_op1op2,   1,
+     &           iocc_op1op2,irst_op1op2,njoined_op1op2,
      &           mstop1op2,igamtop1op2,
      &           orb_info,str_info)
             ! allocate sub-arrays
             call init_operator(1,opscr(ninter),orb_info)
             ! set up dimensions (pass 1)
-            call set_op_dim(1,.false.,opscr(ninter),
-     &           str_info,nsym)
+            call set_op_dim2(1,opscr(ninter),str_info,nsym)
             ! some more sub-arrays
             call init_operator(2,opscr(ninter),orb_info)
             ! set up dimensions (pass 2)
-            call set_op_dim(2,.false.,opscr(ninter),
-     &           str_info,nsym)
+            call set_op_dim2(2,opscr(ninter),str_info,nsym)
             op1op2 => opscr(ninter)
             xret_pnt => xret_scr
             type_xret_cur = 0
@@ -372,13 +384,16 @@ c            call init_operator(0,opscr(ninter),orb_info)
           if (ntest.ge.100)
      &         write(luout,*) 'calling contraction kernel'
           ! do the contraction
-          call contr_op1op2(facc,ffop1,ffop2,
+          call contr_op1op2(facc,bc_sign,ffop1,ffop2,
      &       update,ffop1op2,xret_pnt,type_xret_cur,
      &       op1,op2,op1op2,
      &       iblkop(1),iblkop(2),iblkop1op2,
      &       idoffop1,idoffop2,idoffop1op2,
-     &       iocc_ext1,iocc_ext2,iocc_cnt,
+     &       iocc_ex1,iocc_ex2,iocc_cnt,
+     &       iocc_op1, iocc_op2, iocc_op1op2,
      &       irst_op1,irst_op2,irst_op1op2,
+     &       merge_op1, merge_op2, merge_op1op2, merge_op2op1,
+     &       njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &       mstop(1),mstop(2),mstop1op2,
      &       igamtop(1),igamtop(2),igamtop1op2,
      &       str_info,strmap_info,orb_info)
@@ -405,7 +420,14 @@ c     &           irst_res,orb_info)
 
         deallocate(
      &       occ_vtx,irestr_vtx,info_vtx,
-     &       merge_op1,merge_op2,merge_op1op2)
+     &       merge_op1,merge_op2,merge_op1op2,merge_op2op1)
+        deallocate(
+     &       iocc_op1, iocc_op2,
+     &       irst_op1, irst_op2,
+     &       irst_res,
+     &       iocc_ex1,iocc_ex2, iocc_cnt,
+     &       iocc_op1op2,irst_op1op2)        
+
         if (nfact.gt.1) then
           ! get rid of intermediate definitions and files
           do idx = 1, ninter-1

@@ -40,7 +40,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       logical, intent(in) ::
      &     update
@@ -757,6 +757,12 @@ c      ngastp_op2a    = ngastp - imltlist(0,iocc_op2(1,2),ngastp,1)
      &                     iocc_cnt(1,2),iocc_ext2(1,1),
      &                     lstrcnt(1,2),lstrext2(1,1))
                     end if
+c dbg
+c                    print *,'on call:'
+c                    print *,'xop1: ',xop1(idxop1)
+c                    print *,'xop2: ',xop2(idxop2)
+c                    print *,'xop1op2: ',xop1op2(idxop1op2)
+c dbg
                     call cntr_blk1blk2_wmaps(xfac*casign,
      &                   xop1op2(idxop1op2),
      &                                 xop1(idxop1),xop2(idxop2),
@@ -773,6 +779,9 @@ c      ngastp_op2a    = ngastp - imltlist(0,iocc_op2(1,2),ngastp,1)
      &                   )                     
                     if (ntest.ge.100)
      &                   write(luout,*) 'after blk1blk2'
+c dbg
+c                    print *,'xop1op2: ',xop1op2(idxop1op2)                    
+c dbg
 
                     call atim_cs(cpu,sys)
                     cnt_kernel(1) = cnt_kernel(1)+cpu-cpu0
@@ -927,6 +936,15 @@ c     &     idxop1c(ngastp), idxop2c(ngastp),
       nstr_cntc_tot = ielprd(lstr_cntc,ngastp)
       nstr_cnta_tot = ielprd(lstr_cnta,ngastp)
 
+c dbg
+c      print *,'nstr_ex1c_tot',nstr_ex1c_tot
+c      print *,'nstr_ex1a_tot',nstr_ex1a_tot
+c      print *,'nstr_ex2c_tot',nstr_ex2c_tot
+c      print *,'nstr_ex2a_tot',nstr_ex2a_tot
+c      print *,'nstr_cntc_tot',nstr_cntc_tot
+c      print *,'nstr_cnta_tot',nstr_cnta_tot
+c dbg
+
       ! C: ex1,ex2
       call set_strmapdim(nstr_ex1ex2c,nstr_ex1c12,nstr_ex2c12,
      &                   ngastp_op1op2c,
@@ -953,6 +971,11 @@ c     &     idxop1c(ngastp), idxop2c(ngastp),
      &                   ngastp_op2a,
      &                   iocc_op2(1,2),
      &                   lstr_cntc,lstr_ex2a)
+c dbg
+c      print *,'ngastp_op1:',ngastp_op1c,ngastp_op1a
+c      print *,'ngastp_op2:',ngastp_op2c,ngastp_op2a
+c      print *,'ngastp_op1op2:',ngastp_op1op2c,ngastp_op1op2a
+c dbg
 
       call set_op_ldim(ldim_op1c,ldim_op1a,
      &                 iocc_op1,iocc_op1(1,2),lstrop1c,lstrop1a)
@@ -961,6 +984,14 @@ c     &     idxop1c(ngastp), idxop2c(ngastp),
       call set_op_ldim(ldim_op1op2c,ldim_op1op2a,
      &                 iocc_op1op2,iocc_op1op2(1,2),
      &                 lstrop1op2c,lstrop1op2a)
+c dbg
+c      print *,'ldim_op1c:',ldim_op1c(1:ngastp_op1c)
+c      print *,'ldim_op1a:',ldim_op1a(1:ngastp_op1a)
+c      print *,'ldim_op2c:',ldim_op2c(1:ngastp_op2c)
+c      print *,'ldim_op2a:',ldim_op2a(1:ngastp_op2a)
+c      print *,'ldim_op1op2c:',ldim_op1op2c(1:ngastp_op1op2c)
+c      print *,'ldim_op1op2a:',ldim_op1op2a(1:ngastp_op1op2a)
+c dbg
 
       if (ntest.ge.100) then
         write(luout,*) '============================'

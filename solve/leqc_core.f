@@ -46,7 +46,7 @@
       logical ::
      &     zero_vec(opti_stat%ndim_vsbsp)
       integer ::
-     &     idx, iroot, irhs,  nred, nadd, nnew, irecscr,
+     &     idx, jdx, kdx, iroot, irhs,  nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
      &     ndim_save, ndel, iopt, lenscr, ifree
       real(8) ::
@@ -63,6 +63,8 @@
 
       integer, external ::
      &     ioptc_get_sbsp_rec
+      real(8), external ::
+     &     dnrm2
 
       if (ntest.ge.100)
      &     call write_title(luout,wst_dbg_subr,'leqc_core entered')
@@ -96,6 +98,8 @@
         end do
       end do
 
+c      if (iter.eq.1) goto 1000
+
       iopt = 1  ! preliminary
       if (ndim_vsbsp.ne.ndim_rsbsp)
      &     call quit(1,'leqc_core','subspace dimensions differ?')
@@ -121,6 +125,8 @@
         zero_vec(1:opti_stat%ndim_vsbsp) = .false.
       end if
 
+      if (iter.eq.1) goto 1111
+
       ! ------------------------
       !    solve reduced LEQ
       ! ------------------------ 
@@ -133,7 +139,13 @@
       ifree = mem_alloc_int (ipiv,nred,'LEQ_piv')
 
       ! get a copy of the subspace matrix
-      xmat1(1:lenmat) = mred(1:lenmat)
+      kdx = 0
+      do idx = 1, nred
+        do jdx = 1, nred
+          kdx = kdx+1
+          xmat1(kdx) = mred((idx-1)*mxsub+jdx)
+        end do
+      end do
 
       ! condition number and pivot vector
       call dgeco(xmat1,nred,nred,ipiv,cond,xvec)
@@ -154,7 +166,7 @@
 
       do iroot = 1, nroot
         idx = (iroot-1)*mxsub+1
-        xvec(1:nred) = gred(idx:idx-1+nred)
+        xvec(1:nred) = -gred(idx:idx-1+nred)
 
         job = 0
         call dgesl(xmat1,nred,nred,ipiv,xvec,job)
@@ -191,6 +203,20 @@
       ! number of new directions
       nnew = irecscr-1
 
+ 1111 if (iter.eq.1) then
+        print *,'iter 1 patch active'
+        nnew = nroot
+        do iroot = 1, nroot
+          call vec_from_da(ffrhs(iopt)%fhand,iroot,xbuf1,nwfpar)
+c          xbuf1(1:nwfpar(1)) = -1d0*xbuf1(1:nwfpar(1))
+          xrsnrm(iroot) = dnrm2(nwfpar,xbuf1,1)
+c dbg
+c          print *,'rhs norm = ',xrsnrm(iroot)
+c dbg
+          call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
+        end do
+      end if
+
       if (nnew.gt.0) then
 
         ! reduced space exhausted?
@@ -206,6 +232,9 @@
             call vec_from_da(ffscr,iroot,xbuf1,nwfpar)
             call diavc2(xbuf1,xbuf1,xbuf2,0d0,nwfpar)
             call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
+c dbg
+            print *,'norm after precond:',dnrm2(nwfpar,xbuf1,1)
+c dbg
           end do
         else
           do iroot = 1, nnew
@@ -222,7 +251,7 @@ c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
         call optc_orthvec(nadd,
-     &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,zero_vec,
+     &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  ffscr,nnew,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 

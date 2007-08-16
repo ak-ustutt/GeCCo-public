@@ -13,7 +13,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(out) ::
      &     nadd
@@ -24,7 +24,7 @@
       type(filinf), intent(in) ::
      &     ff_sbsp, ffnew
       real(8), intent(inout) ::
-     &     xbuf1, xbuf2, xbuf3
+     &     xbuf1(*), xbuf2(*), xbuf3(*)
       logical ::
      &     zero_vec(ndim_sbsp)
 
@@ -44,6 +44,11 @@
      &     ioptc_get_sbsp_rec
       real(8), external ::
      &     ddot, da_ddot
+
+      if (ntest.ge.100) then
+        call write_title(luout,wst_dbg_subr,'optc_orthvec')
+        write(luout,*) 'ndim, nnew: ',ndim_sbsp, nnew
+      end if
 
       ! look for zero-vectors (in initial iteration); they should
       ! reside at the end of the initial subspace
@@ -69,17 +74,19 @@
      &     xmat(nold+nnew,nold+nnew),
      &     scr(nold+nnew))
 
+      if (ntest.ge.100)
+     &     write(luout,*) 'nold, nnew: ',nold, nnew
+
       smat(1:nold+nnew,1:nold+nnew) = 0d0
       do iold = 1, nold
         smat(iold,iold) = 1d0
       end do
 
       ! a) <new|old>
-      if (nold.gt.1.and.nold.gt.nnew) then
-
+      if (nold.gt.0.and.nold.ge.nnew) then
         do inew = 1, nnew
           
-          ii = inew
+          ii = inew+nold
           if (nincore.ge.2) then
             call vec_from_da(ffnew,inew,xbuf1,nwfpar)
           end if
@@ -101,7 +108,7 @@
 
         end do
 
-      else if (nold.gt.1.and.nnew.gt.nold) then
+      else if (nold.gt.0.and.nnew.gt.nold) then
 
         do iold = 1, nold
           
@@ -112,7 +119,7 @@
 
           do inew = 1, nnew
             
-            jj = inew
+            jj = inew+nold
             if (nincore.ge.2) then
               call vec_from_da(ffnew,inew,xbuf2,nwfpar)
               smat(jj,ii) = ddot(nwfpar,xbuf1,1,xbuf2,1)
@@ -132,21 +139,21 @@
       do inew = 1, nnew
         if (nincore.ge.2) then
           call vec_from_da(ffnew,inew,xbuf1,nwfpar)
-          smat(inew,inew) = ddot(nwfpar,xbuf1,1,xbuf1,1)
+          smat(nold+inew,nold+inew) = ddot(nwfpar,xbuf1,1,xbuf1,1)
         else
-          smat(inew,inew) = da_ddot(ffnew,inew,ffnew,inew,
+          smat(nold+inew,nold+inew) = da_ddot(ffnew,inew,ffnew,inew,
      &           nwfpar,xbuf1,xbuf2,lenbuf)
         end if
 
         do jnew = inew+1, nnew
           if (nincore.ge.2) then
             call vec_from_da(ffnew,jnew,xbuf2,nwfpar)
-            smat(inew,jnew) = ddot(nwfpar,xbuf1,1,xbuf2,1)
-            smat(jnew,inew) = smat(inew,jnew)
+            smat(nold+inew,nold+jnew) = ddot(nwfpar,xbuf1,1,xbuf2,1)
+            smat(nold+jnew,nold+inew) = smat(inew,jnew)
           else
-            smat(inew,jnew) = da_ddot(ffnew,inew,ffnew,jnew,
+            smat(nold+inew,nold+jnew) = da_ddot(ffnew,inew,ffnew,jnew,
      &           nwfpar,xbuf1,xbuf2,lenbuf)
-            smat(jnew,inew) = smat(inew,jnew)
+            smat(nold+jnew,nold+inew) = smat(nold+inew,nold+jnew)
           end if
         end do
 
@@ -196,7 +203,7 @@
 
       end do
 
-      nadd = idx
+      nadd = idx-nold
 
       deallocate(smat,xmat,scr)
 

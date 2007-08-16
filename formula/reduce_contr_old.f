@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine reduce_contr(contr,occ_vtx,
+      subroutine reduce_contr_old(contr,occ_vtx,
      &     iarc_red,idxop_new,ivtx_new,
      &     njoined_res,
      &     update_ori,ivtx_ori,iarc_ori,
@@ -26,7 +26,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(contraction), intent(inout) ::
      &     contr
@@ -54,10 +54,9 @@
       integer ::
      &     arc_list(contr%narc), svmap(contr%nvtx),
      &     topomap(contr%nvtx,contr%nvtx), ireo(contr%nvtx),
-     &     imvleft(contr%nvtx), svertex_ori(contr%nvtx)
+     &     imvleft(contr%nvtx), icyc(contr%nvtx,2)
       integer, pointer ::
-c     &     svertex_ori(:),
-     &     occ_vtx_ori(:,:,:),
+     &     svertex_ori(:), occ_vtx_ori(:,:,:),
      &     ivtx_ori_ori(:), info_vtx_ori(:,:),
      &     irestr_vtx_ori(:,:,:,:,:)
       type(cntr_vtx), pointer ::
@@ -71,8 +70,8 @@ c     &     svertex_ori(:),
 
       integer, external ::
      &     idx_merge_vtx1vtx2
-      logical, external ::
-     &     merge_check
+c      logical, external ::
+c     &     merge_vtx1vtx2
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
@@ -98,9 +97,6 @@ c     &     svertex_ori(:),
       vertex => contr%vertex
       svertex => contr%svertex
       joined => contr%joined
-
-      ! we need the original for merge decisions ...
-      svertex_ori = svertex
 
       ! super vertex? find further primitive vertices ...
       ! and further contractions between the supervertices
@@ -128,160 +124,142 @@ c     &     svertex_ori(:),
         ireo(ivtx) = ivtx
       end do
 
-      ! get super-vertex index
-      ivtx1 = arc(iarc_red)%link(1)
-      ivtx2 = arc(iarc_red)%link(2)
-      isupvtx1 = svertex(ivtx1)
-      isupvtx2 = svertex(ivtx2)
+      isupvtx1 = contr%svertex(contr%arc(iarc_red)%link(1))
+      isupvtx2 = contr%svertex(contr%arc(iarc_red)%link(2))
 
-      ! the new Ms and symmetry
-      ms_new = info_vtx(1,ivtx1+njoined_res)+
-     &         info_vtx(1,ivtx2+njoined_res)
-      gm_new = multd2h(info_vtx(2,ivtx1+njoined_res),
-     &                 info_vtx(2,ivtx2+njoined_res))
-
-      ! first round: rename all involved vertices
-      do ivtx = 1, nvtx
-        if (svertex(ivtx).ne.isupvtx1.and.
-     &      svertex(ivtx).ne.isupvtx2) cycle
-
-        vertex(ivtx)%idx_op = idxop_new
-        vertex(ivtx)%iblk_op = 1
-        svertex(ivtx) = nsupvtx+1
-
-        if (update_info) then
-          info_vtx(1,ivtx+njoined_res) = ms_new
-          info_vtx(2,ivtx+njoined_res) = gm_new
-        end if
-
-        if (update_ori)
-     &       ivtx_ori(ivtx) = ivtx_new
-
-      end do
-c dbg
-c      print *,'after first round (rename):'
-c      call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
-c dbg
-
-
-      ! second round: loop over primitive contractions
-      !    and remove contracted indices
+      ! loop over primitive contractions
       do ilist = 1, len_list
         iarc_prm = arc_list(ilist)
+c dbg
+        print *,'current primitive arc: ',iarc_prm
+        print *,'ilist, len: ',ilist,len_list
+        print *,'current contr:'
+        call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
+c dbg
 
+        ! first round: generate new vertices
         ! contraction info
         ivtx1 = contr%arc(iarc_prm)%link(1)
         ivtx2 = contr%arc(iarc_prm)%link(2)
         occ_cnt =>  contr%arc(iarc_prm)%occ_cnt
+
+c        merge = merge_vtx1vtx2(ivtx1,ivtx2,svertex,svmap,topomap,nvtx)
+        idx_merge = idx_merge_vtx1vtx2(ivtx1,ivtx2,isupvtx1,isupvtx2,
+     &       nmvleft,imvleft,svertex,svmap,topomap,nvtx)
+        merge = idx_merge.gt.0
+c dbg
+        print *,'<<<< idx_merge: ',idx_merge
+        print *,'imvleft:   ',imvleft(1:nmvleft)
+c dbg
+
+        if (update_info) then
+          ms_new = info_vtx(1,ivtx1+njoined_res)+
+     &             info_vtx(1,ivtx2+njoined_res)
+          gm_new = multd2h(info_vtx(2,ivtx1+njoined_res),
+     &                     info_vtx(2,ivtx2+njoined_res))
+        end if
+
+        if (merge) then
+          ! generate occupation of new vertex 
+          !  (+njoined as first entry on occ_vtx is result vertex)
+          occ_vtx(1:ngastp,1:2,ivtx1+njoined_res) =
+     &         occ_vtx(1:ngastp,1:2,ivtx1+njoined_res) +
+     &         occ_vtx(1:ngastp,1:2,ivtx2+njoined_res)
+     &         - occ_cnt - iocc_dagger(occ_cnt)
+          vertex(ivtx1)%idx_op = idxop_new
+          vertex(ivtx1)%iblk_op = 1
+          svertex(ivtx1) = nsupvtx+1
+          ! modify arcs
+          do jarc = 1, narc
+            jvtx1 = contr%arc(jarc)%link(1)
+            jvtx2 = contr%arc(jarc)%link(2)
+            if (jvtx1.eq.ivtx2)
+     &           contr%arc(jarc)%link(1) = ivtx1
+            if (jvtx2.eq.ivtx2)
+     &           contr%arc(jarc)%link(2) = ivtx1
+          end do
+          ! mark for deletion
+          vertex(ivtx2)%idx_op = 0
+          if (update_ori)
+     &         ivtx_ori(ivtx1) = ivtx_new
+          if (update_info) then
+            info_vtx(1,ivtx1+njoined_res) = ms_new
+            info_vtx(2,ivtx1+njoined_res) = gm_new
+            ! the preliminary solution:
+            ! to be fixed for super-vertices
+            !  find out to which result vertex the current vertex
+            !  actually contributes
+            if (njoined_res.eq.1) then
+              call fit_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
+     &                     occ_vtx(1,1,ivtx1+njoined_res),irestr_res,
+     &                     orb_info%ihpvgas,ngas)
+            else
+              call dummy_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
+     &           occ_vtx(1,1,ivtx1+njoined_res),1,orb_info%ihpvgas,ngas)
+            end if
+          end if
+          ! update reodering array
+          call update_reo(ireo,nvtx,ivtx1,ivtx2,
+     &                    idx_merge,imvleft,nmvleft)
+
+        else
+          occ_vtx(1:ngastp,1:2,ivtx1+njoined_res) =
+     &         occ_vtx(1:ngastp,1:2,ivtx1+njoined_res) +
+     &         - occ_cnt
+          occ_vtx(1:ngastp,1:2,ivtx2+njoined_res) =
+     &         occ_vtx(1:ngastp,1:2,ivtx2+njoined_res)
+     &         - iocc_dagger(occ_cnt)
+          vertex(ivtx1)%idx_op = idxop_new
+          vertex(ivtx1)%iblk_op = 1
+          vertex(ivtx2)%idx_op = idxop_new
+          vertex(ivtx2)%iblk_op = 1
+          svertex(ivtx1) = nsupvtx+1
+          svertex(ivtx2) = nsupvtx+1
+
+          if (update_ori) then
+            ivtx_ori(ivtx1) = ivtx_new
+            ivtx_ori(ivtx2) = ivtx_new
+          end if
+
+          if (update_info) then
+            info_vtx(1,ivtx1+njoined_res) = ms_new
+            info_vtx(2,ivtx1+njoined_res) = gm_new
+            info_vtx(1,ivtx2+njoined_res) = ms_new
+            info_vtx(2,ivtx2+njoined_res) = gm_new
+            ! the preliminary solution (2x):
+            if (njoined_res.eq.1) then
+              call fit_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
+     &                     occ_vtx(1,1,ivtx1+njoined_res),irestr_res,
+     &                     orb_info%ihpvgas,ngas)
+              call fit_restr(irestr_vtx(1,1,1,1,ivtx2+njoined_res),
+     &                     occ_vtx(1,1,ivtx2+njoined_res),irestr_res,
+     &                     orb_info%ihpvgas,ngas)
+            else
+              call dummy_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
+     &                     occ_vtx(1,1,ivtx1+njoined_res),1,
+     &                     orb_info%ihpvgas,ngas)
+              call dummy_restr(irestr_vtx(1,1,1,1,ivtx2+njoined_res),
+     &                     occ_vtx(1,1,ivtx2+njoined_res),1,
+     &                     orb_info%ihpvgas,ngas)
+            end if
+          end if
+        end if
+        
+        ! mark arc for deletion
+        contr%arc(iarc_prm)%link(1) = 0
+
         if (ivtx2.le.ivtx1) then
           write(luout,*) 'ivtx1, ivtx2: ',ivtx1,ivtx2
           call quit(1,'reduce_contr','did not expect ivtx2.le.ivtx1 !')
         end if
 
-        occ_vtx(1:ngastp,1:2,ivtx1+njoined_res) =
-     &         occ_vtx(1:ngastp,1:2,ivtx1+njoined_res) +
-     &         - occ_cnt
-        occ_vtx(1:ngastp,1:2,ivtx2+njoined_res) =
-     &         occ_vtx(1:ngastp,1:2,ivtx2+njoined_res)
-     &         - iocc_dagger(occ_cnt)
+      end do ! ilist
 
-        ! update restrictions, if necessary
-        if (update_info) then
-          if (njoined_res.eq.1) then
-            call fit_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
-     &                     occ_vtx(1,1,ivtx1+njoined_res),irestr_res,
-     &                     orb_info%ihpvgas,ngas)
-            call fit_restr(irestr_vtx(1,1,1,1,ivtx2+njoined_res),
-     &                     occ_vtx(1,1,ivtx2+njoined_res),irestr_res,
-     &                     orb_info%ihpvgas,ngas)
-          else
-            call dummy_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
-     &                     occ_vtx(1,1,ivtx1+njoined_res),1,
-     &                     orb_info%ihpvgas,ngas)
-            call dummy_restr(irestr_vtx(1,1,1,1,ivtx2+njoined_res),
-     &                     occ_vtx(1,1,ivtx2+njoined_res),1,
-     &                     orb_info%ihpvgas,ngas)
-          end if
-        end if
-
-        ! mark arc for deletion
-        contr%arc(iarc_prm)%link(1:2) = 0
-
-      end do
-c dbg
-c      print *,'after second round (removed indices):'
-c      call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
-c dbg
-
-      ! round 3: now, we decide which vertices may merge:
-      do ivtx1 = 1, nvtx
-        if (svertex(ivtx1).ne.nsupvtx+1) cycle
-        do ivtx2 = ivtx1+1, nvtx
-          if (svertex(ivtx2).ne.nsupvtx+1) cycle
-
-c        merge = merge_vtx1vtx2(ivtx1,ivtx2,svertex,svmap,topomap,nvtx)
-          idx_merge = idx_merge_vtx1vtx2(ivtx1,ivtx2,isupvtx1,isupvtx2,
-     &         nmvleft,imvleft,svertex_ori,svmap,topomap,nvtx)
-          merge = idx_merge.gt.0.and.merge_check(contr,
-     &         isupvtx1,isupvtx2,
-     &         ivtx1,ivtx2,occ_vtx(1,1,njoined_res+ivtx1),
-     &                     occ_vtx(1,1,njoined_res+ivtx2),topomap)
-c dbg
-c          print *,'<<<< idx_merge: ',idx_merge
-c          print *,'imvleft:   ',imvleft(1:nmvleft)
-c dbg
-          if (merge) then
-            ! generate occupation of new vertex 
-            !  (+njoined as first entry on occ_vtx is result vertex)
-            occ_vtx(1:ngastp,1:2,ivtx1+njoined_res) =
-     &           occ_vtx(1:ngastp,1:2,ivtx1+njoined_res) +
-     &           occ_vtx(1:ngastp,1:2,ivtx2+njoined_res)
-            ! modify arcs
-            do jarc = 1, narc
-              jvtx1 = arc(jarc)%link(1)
-              jvtx2 = arc(jarc)%link(2)
-              if (jvtx1.eq.ivtx2)
-     &             contr%arc(jarc)%link(1) = ivtx1
-              if (jvtx2.eq.ivtx2)
-     &             contr%arc(jarc)%link(2) = ivtx1
-            end do
-            ! mark for deletion
-            vertex(ivtx2)%idx_op = 0
-            ! do not consider this vertex in next loops
-            svertex(ivtx2) = 0 
-            ! update restrictions, if necessary
-            if (update_info) then
-              ! the preliminary solution:
-              ! to be fixed for super-vertices
-              !  find out to which result vertex the current vertex
-              !  actually contributes
-              if (njoined_res.eq.1) then
-                call fit_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
-     &                     occ_vtx(1,1,ivtx1+njoined_res),irestr_res,
-     &                     orb_info%ihpvgas,ngas)
-              else
-                call dummy_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
-     &           occ_vtx(1,1,ivtx1+njoined_res),1,orb_info%ihpvgas,ngas)
-              end if
-            end if
-            ! update reodering array
-            call update_reo(ireo,nvtx,ivtx1,ivtx2,
-     &                      idx_merge,imvleft,nmvleft)
-          end if
-        end do
-      end do
-
-c dbg
-c      print *,'after third round (merged vertices):'
-c      call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
-c      print *,'ireo: ',ireo(1:nvtx)
-c dbg
-
-      ! forth round: delete old vertices and arcs
+      ! second round: delete old vertices and arcs
       ! 1) reoder vertices
 
-      allocate(vertex_ori(nvtx), occ_vtx_ori(ngastp,2,nvtx))
-c     &         svertex_ori(nvtx))
+      allocate(vertex_ori(nvtx), occ_vtx_ori(ngastp,2,nvtx),
+     &         svertex_ori(nvtx))
       vertex_ori = vertex
       occ_vtx_ori(1:ngastp,1:2,1:nvtx) = occ_vtx(1:ngastp,1:2,
      &     njoined_res+1:njoined_res+nvtx)
@@ -299,32 +277,38 @@ c     &         svertex_ori(nvtx))
      &                          1:2,1:2,njoined_res+1:njoined_res+nvtx)
       end if
 
+c dbg
+      print *,'ireo: ',ireo(1:nvtx)
+c dbg
       jvtx = 0
+c      ireo(1:nvtx) = 0
       do ivtx = 1, nvtx   ! loop over old vertices
         if (vertex(ivtx)%idx_op.eq.0) cycle
         jvtx = jvtx+1
+c        ireo(ivtx) = jvtx
+c        if (jvtx.lt.ivtx) then 
         vertex(ireo(ivtx)) = vertex_ori(ivtx)
-        occ_vtx(1:ngastp,1:2,ireo(ivtx)+njoined_res) =
+          occ_vtx(1:ngastp,1:2,ireo(ivtx)+njoined_res) =
      &         occ_vtx_ori(1:ngastp,1:2,ivtx)
-        svertex(ireo(ivtx)) = svertex_ori(ivtx)
-        if (update_ori)
-     &       ivtx_ori(ireo(ivtx)) = ivtx_ori_ori(ivtx)
-        if (update_info)
-     &       info_vtx(1:2,ireo(ivtx)+njoined_res) =
-     &       info_vtx_ori(1:2,ivtx)
-        if (update_info)
-     &       irestr_vtx(1:2,1:ngas,1:2,1:2,ireo(ivtx)+njoined_res)=
-     &       irestr_vtx_ori(1:2,1:ngas,1:2,1:2,ivtx)
+          svertex(ireo(ivtx)) = svertex_ori(ivtx)
+          if (update_ori)
+     &         ivtx_ori(ireo(ivtx)) = ivtx_ori_ori(ivtx)
+          if (update_info)
+     &         info_vtx(1:2,ireo(ivtx)+njoined_res) =
+     &         info_vtx_ori(1:2,ivtx)
+          if (update_info)
+     &         irestr_vtx(1:2,1:ngas,1:2,1:2,ireo(ivtx)+njoined_res)=
+     &         irestr_vtx_ori(1:2,1:ngas,1:2,1:2,ivtx)
+c        end if
       end do
       contr%nvtx = jvtx
 
-      deallocate(vertex_ori,occ_vtx_ori)
-c      deallocate(vertex_ori,svertex_ori,occ_vtx_ori)
+      deallocate(vertex_ori,svertex_ori,occ_vtx_ori)
       if (update_ori) deallocate(ivtx_ori_ori)
       if (update_info) deallocate(info_vtx_ori,irestr_vtx_ori)
 c dbg
-c      print *,'after reo of vertices'
-c      call prt_contr3(luout,contr,occ_vtx(1,1,2))
+      print *,'after reo of vertices'
+        call prt_contr3(luout,contr,occ_vtx(1,1,2))
 c dbg
 
       ! update vertex numbers on arcs:
@@ -336,8 +320,8 @@ c dbg
         contr%arc(iarc)%link(2) = ireo(jvtx2) !   numbering
       end do
 c dbg
-c      print *,'after rename of vertices in arcs'
-c        call prt_contr3(luout,contr,occ_vtx(1,1,2))
+      print *,'after rename of vertices in arcs'
+        call prt_contr3(luout,contr,occ_vtx(1,1,2))
 c dbg
       
       ! remove and join arcs:
@@ -365,6 +349,9 @@ c dbg
             call quit(1,'reduce_contr','this should not happen (2)')
           end if            
         end do
+
+c        contr%arc(iarc)%link(1) = ireo(jvtx1) ! convert to new
+c        contr%arc(iarc)%link(2) = ireo(jvtx2) !   numbering
 
         if (iarc.gt.narc_new) then ! copy if necessary
           contr%arc(narc_new) = contr%arc(iarc)

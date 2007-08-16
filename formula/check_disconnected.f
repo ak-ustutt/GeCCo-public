@@ -23,6 +23,9 @@
       type(cntr_arc), pointer ::
      &     arc(:)
 
+c dbg
+      print *,'in check_disconnected'
+c dbg
       nvtx = contr%nvtx
       narc = contr%narc
 
@@ -36,6 +39,19 @@
         connected(arc(iarc)%link(2)) = .true.
       end do
 
+      ! do not consider vertices that are part of a supervertex
+      do ivtx = 1, nvtx
+        if (.not.connected(ivtx)) cycle
+        do jvtx = 1,nvtx
+          if (connected(jvtx)) cycle
+          if (contr%svertex(ivtx).eq.contr%svertex(jvtx))
+     &         connected(jvtx) = .true.
+        end do
+      end do
+c dbg
+      print *,'connected: ',connected(1:nvtx)
+c dbg
+
       nvtx_nc = 0
       narc_new = 0
       do ivtx = 1, nvtx
@@ -44,6 +60,9 @@
           narc_new = narc_new + nvtx-nvtx_nc
         end if
       end do
+c dbg
+      print *,'adding arcs:: ',narc_new
+c dbg
 
       if (narc_new.eq.0) return
 

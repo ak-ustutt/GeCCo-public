@@ -38,6 +38,10 @@
      &     call quit(1,'switch_opfile_record',
      &     'switching and buffering: did you take care of that?')
 
+c dbg
+      print *,'file: ',trim(ffop%name)
+      print *,'switching to rec. ',rec
+c dbg
       ffop%current_record = rec
 
       return

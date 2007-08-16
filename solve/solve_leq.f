@@ -173,6 +173,15 @@ c dbg
           call switch_opfile_record(idxop_out(iop),iroot,op_info)
           call zeroop(ff_trv(iop)%fhand,op_opt(iop)%op)
 
+c          do iop = 1, nop_opt
+c            call switch_opfile_record(idxop_out(iop        ),
+c     &           iroot,op_info)
+c            call switch_opfile_record(idxop_out(iop+nop_opt),
+c     &           iroot,op_info)
+c          end do
+c          call frm_sched(xret,ffform_opt,
+c     &         op_info,str_info,strmap_info,orb_info)
+
         end do
       end do
 
@@ -195,6 +204,9 @@ c dbg
         if (iand(task,4).eq.4) then
           ! preliminary solution: 
           !   outside loop over requested Mv-products
+c dbg
+c          print *,'nrequest = ',nrequest
+c dbg
           do irequest = 1, nrequest
             do iop = 1, nop_opt
               call switch_opfile_record(idxop_out(iop        ),
@@ -202,8 +214,31 @@ c dbg
               call switch_opfile_record(idxop_out(iop+nop_opt),
      &             irecmvp(irequest),op_info)
             end do
+c dbg
+c            call write_title(luout,wst_dbg_subr,'INPUT VECTOR:')
+c            call wrt_op_file(luout,4,ff_trv(1)%fhand,
+c     &             op_info%op_arr(idxop_out(1))%op,
+c     &          1,op_info%op_arr(idxop_out(1))%op%n_occ_cls,
+c     &             str_info,orb_info)
+c
+c dbg
             call frm_sched(xret,ffform_opt,
      &           op_info,str_info,strmap_info,orb_info)
+c dbg
+c            if (iter.eq.1) then
+c              call write_title(luout,wst_dbg_subr,'RHS:')
+c              call wrt_op_file(luout,4,ff_rhs(1)%fhand,
+c     &             op_info%op_arr(idxop_out(1+2*nop_opt))%op,
+c     &          1,op_info%op_arr(idxop_out(1+2*nop_opt))%op%n_occ_cls,
+c     &             str_info,orb_info)
+c            else
+c              call write_title(luout,wst_dbg_subr,'MVP:')
+c              call wrt_op_file(luout,4,ff_mvp(1)%fhand,
+c     &             op_info%op_arr(idxop_out(1+nop_opt))%op,
+c     &          1,op_info%op_arr(idxop_out(1+nop_opt))%op%n_occ_cls,
+c     &             str_info,orb_info)
+c            end if
+c dbg
           end do
         end if
 

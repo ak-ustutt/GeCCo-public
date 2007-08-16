@@ -16,7 +16,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     ndim
@@ -53,7 +53,6 @@
         call dgemv('n',ndim,ndim,1d0,smat,ndim,xmat(1,ii),1,
      &                 0d0,xscr,1)
         xnorm = ddot(ndim,xmat(1,ii),1,xscr,1)
-        
         if (xnorm.lt.epsilon(1d-6)) then
           xmat(1:ndim,ii) = 0d0
           cycle
@@ -66,8 +65,10 @@
         ! subtract xmat(1:ndim,ii) from all remaining vectors
         do jj = ii+1, ndim
           xsx = ddot(ndim,xscr,1,xmat(1,jj),1)
-          xmat(1:ndim,jj) = xmat(1:ndim,jj) - xsx*xscr(1:ndim)
+          xmat(1:ndim,jj) = xmat(1:ndim,jj) - xsx*xmat(1:ndim,ii)
         end do
+        write(luout,*) 'updated X-matrix:'
+        call wrtmat2(xmat,ndim,ndim,ndim,ndim)
 
       end do
 

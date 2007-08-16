@@ -131,10 +131,10 @@
         ifree = mem_setmark('leqc_temp')
         call leqc_mem(nincore,lenbuf,
      &       ifree,opti_info%nwfpar,opti_info%nopt)
-        if (nincore.le.1) then
+c        if (nincore.le.1) then
           call file_init(ffscr,'leqscr.da',ftyp_da_unf,lblk_da)
           call file_open(ffscr)
-        end if
+c        end if
       end if
 
       ! still, we assume this:
@@ -155,7 +155,7 @@
         ! request slaves to put first few trial vectors and
         ! corresponding Mv-product to first nroot records on the
         ! respective files:
-        opti_stat%nadd = opti_info%nroot
+        opti_stat%nadd = 0 !opti_info%nroot
         opti_stat%ndel = 0
         nrequest = opti_info%nroot
         do irequest = 1, nrequest
@@ -245,6 +245,9 @@
         if (nsub.ne.opti_stat%ndim_vsbsp)
      &       call quit(1,'leq_control','different subspace dimensions?')
         nrequest = opti_stat%nadd
+c dbg
+        print *,'set nrequest to : ',nrequest
+c dbg
         do irequest = 1, nrequest
           irectrv(irequest) =
      &         opti_stat%iord_vsbsp(nsub-nrequest+irequest)
@@ -412,8 +415,7 @@ c      end do
 
         ! space for Mred, and for each root: xred, RHSred
         lenord = opti_info%maxsbsp ! includes nopt-factor
-        lenmat = lenord**2 +
-     &            2*opti_info%nopt*lenord
+        lenmat = 3*lenord**2
       else
         lenmat = 0
         lenord = 0
@@ -430,12 +432,12 @@ c      end do
       end if
 
 * initialize variables - we start with nroot user-provided guess vectors:
-      opti_stat%ndim_rsbsp = opti_info%nroot
-      opti_stat%ndim_vsbsp = opti_info%nroot
-      do idx = 1, opti_info%nroot
-        opti_stat%iord_rsbsp(idx) = idx
-        opti_stat%iord_vsbsp(idx) = idx
-      end do
+      opti_stat%ndim_rsbsp = 0 !opti_info%nroot
+      opti_stat%ndim_vsbsp = 0 !opti_info%nroot
+c      do idx = 1, opti_info%nroot
+c        opti_stat%iord_rsbsp(idx) = idx
+c        opti_stat%iord_vsbsp(idx) = idx
+c      end do
 
       return
       end subroutine

@@ -99,7 +99,7 @@
       call argument_add('schedule','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
       call argument_add('contract','calculate.routes',type=vtyp_int,
-     &     idef=(/1/))
+     &     idef=(/2/))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
 

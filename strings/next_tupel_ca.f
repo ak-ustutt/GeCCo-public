@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       logical function next_tupel_ca(idorb,idspn,idss,
-     &     nidx,iocc,igrph,msdst,igamdst,first,
+     &     nidx,njoined,iocc,igrph,msdst,igamdst,first,
      &     igas_restr,
      &     mostnd,igamorb,
      &     nsym,ngas,ngas_hpv,ioff_gas,
@@ -18,9 +18,9 @@
       include 'opdim.h'
 
       integer, intent(in) ::
-     &     nidx,
-     &     iocc(ngastp,2), igrph(ngastp,2),
-     &     msdst(ngastp,2), igamdst(ngastp,2),
+     &     nidx,njoined,
+     &     iocc(ngastp,2,njoined), igrph(ngastp,2,njoined),
+     &     msdst(ngastp,2,njoined), igamdst(ngastp,2,njoined),
      &     igas_restr(2,ngas,2,*),
      &     nsym,ngas,ngas_hpv(*),ioff_gas(*),
      &     mostnd(2,nsym,ngas),igamorb(*),
@@ -34,10 +34,10 @@
       logical ::
      &     succ
       integer ::
-     &     ihpvdx, ihpv, ica, idx, idxoff(ngastp,2), idxnd, idxst,
-     &     nel, ms, igam, igr
+     &     ihpvdx, ihpv, ica, idx,  idxnd, idxst,
+     &     nel, ms, igam, igr, ijoin
       integer ::
-     &     ioss(ngas)
+     &     ioss(ngas), idxoff(ngastp,2,njoined)
 
       logical, external ::
      &     lexlstr, nextstr, next_ssd
@@ -47,10 +47,12 @@
 
       ! set offset array
       idx = 0
-      do ica = 1, 2
-        do ihpv = 1, ngastp
-          idxoff(ihpv,ica)=idx
-          idx = idx+iocc(ihpv,ica)
+      do ijoin = 1, njoined
+        do ica = 1, 2
+          do ihpv = 1, ngastp
+            idxoff(ihpv,ica,ijoin)=idx
+            idx = idx+iocc(ihpv,ica,ijoin)
+          end do
         end do
       end do
 
@@ -63,14 +65,15 @@
           ! retrieve actual index to be incremented next
           ihpv = ihpvseq(ihpvdx)
           ica_loop: do ica = 1, 2
-            nel = iocc(ihpv,ica)
+           ijn_loop: do ijoin = 1, njoined
+            nel = iocc(ihpv,ica,ijoin)
             if (nel.le.0) cycle
             ! index range within tupel
-            idxst = idxoff(ihpv,ica)+1
-            idxnd = idxoff(ihpv,ica)+nel
-            igr = igrph(ihpv,ica)    ! number of graph
-            ms  = msdst(ihpv,ica)    ! ms of string
-            igam = igamdst(ihpv,ica) ! IRREP of string
+            idxst = idxoff(ihpv,ica,ijoin)+1
+            idxnd = idxoff(ihpv,ica,ijoin)+nel
+            igr = igrph(ihpv,ica,ijoin)    ! number of graph
+            ms  = msdst(ihpv,ica,ijoin)    ! ms of string
+            igam = igamdst(ihpv,ica,ijoin) ! IRREP of string
             ! first subspace distribution
             idss(idxst:idxnd) = 1
             dss_loop: do
@@ -112,7 +115,8 @@
             ! no success for current ica,ihpv => give up
             if (.not.succ) exit ihpv_loop
 
-          end do ica_loop
+          end do ijn_loop
+         end do ica_loop
         end do ihpv_loop
 
         ! remember for next passes
@@ -132,14 +136,15 @@
           ! retrieve actual index to be incremented next
           ihpv = ihpvseq(ihpvdx)
           ica_loop2: do ica = 1, 2
-            nel = iocc(ihpv,ica)
+           ijn_loop2: do ijoin = 1, njoined
+            nel = iocc(ihpv,ica,ijoin)
             if (nel.le.0) cycle
             ! index range within tupel
-            idxst = idxoff(ihpv,ica)+1
-            idxnd = idxoff(ihpv,ica)+nel
-            igr = igrph(ihpv,ica)    ! number of graph
-            ms  = msdst(ihpv,ica)    ! ms of string
-            igam = igamdst(ihpv,ica) ! IRREP of string
+            idxst = idxoff(ihpv,ica,ijoin)+1
+            idxnd = idxoff(ihpv,ica,ijoin)+nel
+            igr = igrph(ihpv,ica,ijoin)    ! number of graph
+            ms  = msdst(ihpv,ica,ijoin)    ! ms of string
+            igam = igamdst(ihpv,ica,ijoin) ! IRREP of string
 
             dss_loop2: do
               str_loop2: do
@@ -202,7 +207,8 @@
             idspn(idxst:idxnd) = lexlscr(idxst:idxnd,2)
             idss(idxst:idxnd)  = lexlscr(idxst:idxnd,3)
 
-          end do ica_loop2
+          end do ijn_loop2
+         end do ica_loop2
         end do ihpv_loop2
         
         next_tupel_ca = succ

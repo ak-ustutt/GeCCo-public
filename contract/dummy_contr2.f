@@ -56,7 +56,6 @@
      &     ms10_a, ms10_c, ms20_a, ms20_c,
      &     igamc_ac, igamc_a, igamc_c,
      &     igam10_a, igam10_c, igam20_a, igam20_c,
-c     &     lenc1, lena1, lenc2, lena2, lencc, lenac, lenci, lenai,
      &     icmp
       integer ::
      &     irst_ext(2,ngas,2,2,2),irst_cnt(2,ngas,2,2),
@@ -228,7 +227,7 @@ c     &     ielsum
      &                                 gm10dis_c,cinfo_10c(1,3),
      &                  cinfo_10a(1,2),idxms10dis_a,
      &                                 gm10dis_a,cinfo_10a(1,3),
-     &                  hpvxseq)
+     &                  hpvxseq,.true.)
 c dbg
 c                print *,'nca_blk: ',nca_blk(1,4),nca_blk(2,4)
 c                print *,'len10:   ',len10(1:nca_blk(1,4)+nca_blk(2,4))
@@ -267,7 +266,7 @@ c     &               zero_ivec(len10,nca_blk(1,4)+nca_blk(2,4))) cycle
      &                                gm20dis_c,cinfo_20c(1,3),
      &                 cinfo_20a(2,2),idxms20dis_a,
      &                                gm20dis_a,cinfo_20a(1,3),
-     &                 hpvxseq)
+     &                 hpvxseq,.true.)
 
 c dbg
 c                  print *,'nca_blk: ',nca_blk(1,5),nca_blk(2,5)
@@ -308,7 +307,7 @@ c     &                 zero_ivec(len20,nca_blk(1,5)+nca_blk(2,5))) cycle
      &                                  gmc_dis_c,cinfo_cntc(1,3),
      &                  cinfo_cnta(1,2),idxmsc_dis_a,
      &                                  gmc_dis_a,cinfo_cnta(1,3),
-     &                  hpvxseq)
+     &                  hpvxseq,.true.)
 
 c dbg
 c                    print *,'nca_blk: ',nca_blk(1,6),nca_blk(2,6)
@@ -343,9 +342,14 @@ c dbg
      &                                 map_info_12c)
                     call merge_msgmdis(msi_dis_a,gmi_dis_a,
      &                                 nca_blk(2,3),
-     &                                 ms10dis_a,gm10dis_a,
      &                                 ms20dis_a,gm20dis_a,
+     &                                 ms10dis_a,gm10dis_a,
      &                                 map_info_12a)
+c dbg
+c                    print *,'gmi_dis_a: ',gmi_dis_a
+c                    print *,'gm10_dis_a:',gm10dis_a
+c                    print *,'gm20_dis_a:',gm20dis_a
+c dbg
 
                     call ms2idxms(idxmsi_dis_c,msi_dis_c,
      &                   cinfo_op1op2c,nca_blk(1,3))
@@ -360,7 +364,7 @@ c dbg
      &                                    gmi_dis_c,cinfo_op1op2c(1,3),
      &                   cinfo_op1op2a(1,2),idxmsi_dis_a,
      &                                    gmi_dis_a,cinfo_op1op2a(1,3),
-     &                   hpvxseq)
+     &                   hpvxseq,.true.)
 
                     xlenop1op2 = 1d0
                     do icmp = 1, nca_blk(1,3)+nca_blk(2,3)
@@ -385,22 +389,5 @@ c dbg
       end do ms_loop
 
       return
-
-      contains
-
-      subroutine sum_occ(n,occr,nblk)
-      
-      implicit none
-
-      integer, intent(out) ::
-     &     n
-      integer, intent(in) ::
-     &     nblk, occr(nblk)
-
-      n = 0
-      if (nblk.eq.0) return
-      n = sum(occr(1:nblk))
-      return
-      end subroutine
 
       end

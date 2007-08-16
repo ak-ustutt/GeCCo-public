@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine condense_merge_map(mmap_out,mmap_in,ld_mmap,nvtx_tgt)
+      subroutine condense_merge_map(mmap_out,
+     &     mmap_in,ld_mmap,nvtx_tgt,reverse)
 *----------------------------------------------------------------------*
 *     on input: merge map in long form as
 *
@@ -23,9 +24,11 @@
      &     mmap_in(ld_mmap,2,nvtx_tgt)
       integer, intent(out) ::
      &     mmap_out(*)
+      logical, intent(in) ::
+     &     reverse
 
       integer ::
-     &     ivtx_tgt, ii, jj, ivtx, idx
+     &     ivtx_tgt, ii, jj, ivtx, idx, iist, iind, iinc
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'condense_merge_map')
@@ -38,11 +41,22 @@
           write(luout,'(6x,10i4)')
      &                   mmap_in(1:ld_mmap,2,ivtx_tgt)
         end do
+        if (reverse) write(luout,*) 'reverting Op1 and Op2'
+      end if
+
+      if (.not.reverse) then
+        iist  = 1
+        iind = 2
+        iinc  = 1
+      else
+        iist  = 2
+        iind = 1
+        iinc  = -1
       end if
 
       idx = 1
       do ivtx_tgt = 1, nvtx_tgt
-        do ii = 1, 2
+        do ii = iist, iind, iinc
           mmap_out(idx) = 0
           do jj = 1, ld_mmap
             ivtx = mmap_in(jj,ii,ivtx_tgt)

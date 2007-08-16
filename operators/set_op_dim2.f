@@ -199,7 +199,7 @@
      &                         graphs,
      &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
      &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
-     &                         hpvxseq)
+     &                         hpvxseq,.false.)
 
               len_blk = 1
               do icmp = 1, ncsub+nasub

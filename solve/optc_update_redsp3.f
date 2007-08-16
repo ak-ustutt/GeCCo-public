@@ -132,7 +132,7 @@
               call vec_from_da(ff_rhs,rhsrec,xbuf2,nwfpar)
               xvec(ii,rhsrec) = ddot(nwfpar,xbuf1,1,xbuf2,1)
             else
-              xmat(ii,rhsrec) = da_ddot(ff_vsbsp,irec,ff_rhs,rhsrec,
+              xvec(ii,rhsrec) = da_ddot(ff_vsbsp,irec,ff_rhs,rhsrec,
      &             nwfpar,xbuf1,xbuf2,lenbuf)
             end if
           end do
@@ -145,7 +145,7 @@
         call wrtmat2(xmat,ndim,ndim,mxdim,mxdim)
         if (nrhs.gt.0) then
           write(luout,*) 'updated subspace rhs:'
-          call wrtmat2(xmat,ndim,nrhs,mxdim,nrhs)
+          call wrtmat2(xvec,ndim,nrhs,mxdim,nrhs)
         end if
       end if
 
