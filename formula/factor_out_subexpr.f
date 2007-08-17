@@ -3,9 +3,9 @@
 *----------------------------------------------------------------------*
 *     input: a definition of an intermediate on fl_intm
 *            a target formula on fl_tgt
-*     find all occurences of the intermediat in fl_tgt and
+*     find all occurences of the intermediate in fl_tgt and
 *     modify fl_tgt accordingly
-*     on output: an reduced formula on fl_tgt
+*     on output: a reduced formula on fl_tgt
 *----------------------------------------------------------------------*
       implicit none
 

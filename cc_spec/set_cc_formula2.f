@@ -36,7 +36,7 @@ c     &     list_pnt
       integer ::
      &     idxham, idxtop, idxtba, idxomg, idxecc, idxhhat, idxrba,
      &     idxr12, idxcba, idxc12, idx,
-     &     idxtbtrf, idxlcc, idxeta
+     &     idxtbtrf, idxlcc, idxeta, idxomg_tot
 
       ! explicit interface does not work with ifort
       integer, external ::
@@ -87,10 +87,14 @@ c     &     list_pnt
         if(idxcba.le.0)
      &       call quit(1,'set_cc_formula','operator not on list: '
      &       //trim(op_cba))
+        idxomg_tot=idx_oplist2(op_omg_candt,op_info)
+        if(idxomg_tot.le.0)
+     &       call quit(1,'set_cc_formula','operator not on list: '
+     &       //trim(op_omg_candt))
       endif
 
 c      call test_formgen3(op_info,orb_info)
-
+      
       ! set up Lagrangian
       ! new entry
       call add_formula(form_info,label_cclg0)
@@ -154,7 +158,7 @@ c
       if(explicit)then
         call form_deriv2(form_pnt,cclg_pnt,
      &       label_ccrs0,title_ccrs0,
-     &       2,(/idxtba,idxcba/),0,idxomg,
+     &       2,(/idxtba,idxcba/),(/0,0/),idxomg_tot,
      &       op_info)
       else
         call form_deriv2(form_pnt,cclg_pnt,

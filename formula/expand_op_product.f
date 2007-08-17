@@ -2,7 +2,7 @@
       subroutine expand_op_product(form_list,idx_res,
      &                             fac,nops,idx_op,
      &                             iblk_min_in, iblk_max_in,
-     &                             connect,nconnect,
+     &                             connect,nconnect,force,
      &                             op_info)
 *----------------------------------------------------------------------*
 *     given a list of operator indices and a result operator generate 
@@ -15,6 +15,9 @@
 *     connect(2,nconnect): list of operator pairs that must be connected
 *                          e.g. (1,3) if first and third operator should
 *                          be connected
+*     force is set true if we want the connection of the first and last 
+*     vertices in a non-standard way. If this is so then the first 
+*     element connect should be (1,nconnect).
 *
 *     andreas, june 2007
 *
@@ -42,6 +45,8 @@
      &     connect(2,nconnect)
       type(operator_info), intent(in) ::
      &     op_info
+      logical, intent(in)::
+     &     force
 
       type(formula_item), pointer ::
      &     form_pnt
@@ -57,7 +62,7 @@
      &     nvtx, narc, iarc, iblk_res, iop, jop
       integer ::
      &     iblk_min(nops), iblk_max(nops), iblk_op(nops),
-     &     occ_test(ngastp,2)
+     &     occ_test(ngastp,2), occ_temp(ngastp,2)
       integer, pointer ::
      &     occ_vtx(:,:,:), neqv(:), idx_eqv(:,:), iop_typ(:)
 
@@ -191,7 +196,7 @@
           if (ok)  then
 
             ! check whether contraction is possible:
-            ! [EX_res]-[DX_res] = sum_i [EX_op(i)] - [DX_op(i)]
+            ! [EX_res]-[DX_res]^dag = sum_i [EX_op(i)] - [DX_op(i)]^dag
             occ_test = -iocc_xdn(1,occ_vtx(1:ngastp,1:2,1))
      &         + iocc_dagger(iocc_xdn(2,occ_vtx(1:ngastp,1:2,1)))
             do iop = 1, nops
@@ -228,6 +233,19 @@
             ! generate contractions
             call gen_contr2(form_pnt,proto,fix_vtx,occ_vtx,op_info)
 
+            write(luout,*)'FORM_PNT'
+            if(force)then
+              occ_temp(1:ngastp,1:2)=iocc_xdn(1,occ_vtx(1:ngastp,1:2,2))
+              if(ielsqsum(occ_temp,ngastp*2).ne.0.and.
+     &             form_pnt%command.eq.4)then
+                write(luout,*)form_pnt%command           
+                form_pnt%contr%arc(1)%occ_cnt =
+     &               form_pnt%contr%arc(1)%occ_cnt+occ_temp
+              endif  
+            endif  
+            
+c            call print_form_list(luout,form_pnt,op_info)
+            
             ! advance pointer
             do while(form_pnt%command.ne.command_end_of_formula)
               form_pnt => form_pnt%next

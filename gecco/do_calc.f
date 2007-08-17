@@ -145,10 +145,13 @@ c      call init_op_files(op_info)
      &                     current_act%act%nop_in,
      &                     current_act%act%idxopdef_in,
      &                     ffform_opt,
-     &                     op_info,str_info,strmap_info,orb_info
-     &                    )
+     &                     op_info,str_info,strmap_info,orb_info)
             call file_delete(ffform_opt)
           case (iaction_setup_prc)
+            if(explicit)then
+              write(luout,*)'Temporary stop in do_calc: evaluations.'
+              stop
+            endif  
             call set_prc4op(current_act%act%idxopdef_out(1),
      &                      current_act%act%idxopfile_out(1,1),
      &                      current_act%act%idxopdef_in(1),
@@ -172,8 +175,7 @@ c      call init_op_files(op_info)
      &                      current_act%act%idxopdef_in,
      &                      current_act%act%idxopfile_in,
      &                      ffform_opt,
-     &                      op_info,str_info,strmap_info,orb_info
-     &                     )
+     &                      op_info,str_info,strmap_info,orb_info)
             call file_delete(ffform_opt)
           case (iaction_solve_nleq)
             ! get optimized formula file
@@ -190,8 +192,7 @@ c      call init_op_files(op_info)
      &                      current_act%act%idxopdef_in,
      &                      current_act%act%idxopfile_in,
      &                      ffform_opt,
-     &                      op_info,str_info,strmap_info,orb_info
-     &                     )
+     &                      op_info,str_info,strmap_info,orb_info)
             call file_delete(ffform_opt)
           case (iaction_solve_evp)
             ! Solve eigenvalue problem

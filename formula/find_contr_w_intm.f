@@ -128,10 +128,11 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
         do
           iterm = iterm+1
           ! make target contractions that we need to find
-          if (.not.assigned(iterm))
-     &         call join_contr2(contr_tgt(iterm),
-     &                         contr_t0,fpl_intm_pnt%item%contr,
-     &                         idxop_tgt,iblk_tgt,op_info)
+          if (.not.assigned(iterm))then
+            call join_contr2(contr_tgt(iterm),
+     &           contr_t0,fpl_intm_pnt%item%contr,
+     &           idxop_tgt,iblk_tgt,op_info)
+          endif    
           if (.not.associated(fpl_intm_pnt%next)) exit
           fpl_intm_pnt => fpl_intm_pnt%next
         end do

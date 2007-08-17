@@ -27,15 +27,15 @@
      &     op_info
 
       integer ::
-     &     idxham, idxsop, idxdia, idxccen, idxccrs, idxomg, idxhhat,
-     &     idum, isim, idxr12
+     &     idxham, idxc12, idxdia, idxccen, idxccrs, idxomg, idxhhat,
+     &     idum, isim, idxr12, idxsop
   
       ! explicit interface does not work with ifort
       integer, external ::
      &     idx_oplist2, idx_formlist
 
       idxham = idx_oplist2(op_ham,op_info)
-      idxsop = idx_oplist2(op_sop,op_info)
+      idxc12 = idx_oplist2(op_c12,op_info)
       idxomg = idx_oplist2(op_omgr12,op_info)
       idxdia = idx_oplist2(op_diar12,op_info)
       idxr12 = idx_oplist2(op_rint,op_info)
@@ -63,8 +63,8 @@
       ! set up diagonal preconditioner
       call add_action(act_list,nactions,
      &     iaction_setup_prc,2,1,0,
-     &     (/idxsop,idxham/),(/idxdia/),
-     &     (/(/idxsop,1/),(/idxham,1/)/),(/(/idxdia,1/)/),
+     &     (/idxc12,idxham/),(/idxdia/),
+     &     (/(/idxc12,1/),(/idxham,1/)/),(/(/idxdia,1/)/),
      &     0,idum
      &     )
 

@@ -8,11 +8,12 @@
 *     the first operator defines the external lines above and below
 *     the intermediate
 *     the remaining operators define (top to bottom in a diagram,
-*     left to right in an operator string) the insertion places for
-*     other operators;
+*     left to right in an operator string) the operators which will be
+*     inserted into the intermediate;
 *     one may think of the intermediate originating from an expression
 *     ---originally yielding operator one as result---after derivatives
-*     with respect to operators 2 to ndefop
+*     with respect to operators 2 to ndefop (e.g. operator 1 may be the
+*     energy and the remaining operators the CC or R12 coefficients).
 *----------------------------------------------------------------------*
 
       implicit none

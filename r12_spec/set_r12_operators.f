@@ -19,7 +19,10 @@
       type(orbinf) ::
      &     orb_info
       type(operator), pointer ::
-     &     op_pnt, r12_pnt, c12_pnt, rint_pnt
+     &     op_pnt, r12_pnt, c12_pnt, cba_pnt, rint_pnt, ecc_pnt,
+     &     v_pnt, b_pnt
+      type(operator_array),pointer ::
+     &     ops_array(:)
       logical ::
      &     dagger
       character ::
@@ -28,9 +31,10 @@
      &     absym, casym, s2, ms, min_rank, max_rank, ncadiff,
      &     gamma, iarr(1),  min_h_rank, max_h_rank,
      &     min_p_rank, max_p_rank, min_x_rank, max_x_rank, iformal,
-     &     tkmax, idx
+     &     tkmax, idx, idx_top, idx_c12, idx_ecc
       integer ::
-     &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
+     &     ihpv_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2),
+     &     occ_def(ngastp,2,1)
 
       integer, external ::
      &     idx_oplist2
@@ -91,8 +95,8 @@ c      call get_argument_value('method.R12','triples',ival=trir12)
       
       ! New entry: variable coefficient operator associated with R12.
       call add_operator(op_c12,op_info)
-      idx = idx_oplist2(op_c12,op_info)
-      op_pnt => op_info%op_arr(idx)%op
+      idx_c12 = idx_oplist2(op_c12,op_info)
+      op_pnt => op_info%op_arr(idx_c12)%op
       c12_pnt => op_pnt
       
       name = op_c12
@@ -130,6 +134,7 @@ c      call get_argument_value('method.R12','triples',ival=trir12)
       call add_operator(op_cba,op_info)
       idx = idx_oplist2(op_cba,op_info)
       op_pnt => op_info%op_arr(idx)%op
+      cba_pnt=>op_pnt
       call clone_operator(op_pnt,c12_pnt,orb_info)
       ! we define an excitation operator to ensure same
       ! storage sequence as for T
@@ -141,7 +146,16 @@ c      call get_argument_value('method.R12','triples',ival=trir12)
       op_pnt => op_info%op_arr(idx)%op
       call clone_operator(op_pnt,c12_pnt,orb_info)
 
-      ! New entry: the CC-R12 diagonal. Same as S.
+      ! Form the total residual for the CC-R12 function: OMG=C+T
+      call add_operator(op_omg_candt,op_info)
+      idx = idx_oplist2(op_omg_candt,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+
+      idx_top=idx_oplist2(op_top,op_info)
+      call clone_operator(op_pnt,op_info%op_arr(idx_top)%op,orb_info)
+      call join_operator(op_pnt,op_info%op_arr(idx_c12)%op,orb_info)
+
+      ! New entry: the CC-R12 diagonal. Same as C.
       call add_operator(op_diar12,op_info)
       idx = idx_oplist2(op_diar12,op_info)
       op_pnt => op_info%op_arr(idx)%op
@@ -177,6 +191,80 @@ c      call get_argument_value('method.R12','triples',ival=trir12)
       op_pnt => op_info%op_arr(idx)%op
       call clone_operator(op_pnt,rint_pnt,orb_info)
       op_pnt%dagger = .true.
+
+      ! New entries: the commutator integrals.
+      ! <ab|[T1,r12]|cd>
+      call add_operator(op_t1r12,op_info)
+      idx=idx_oplist2(op_t1r12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,rint_pnt,orb_info)
+
+      ! <ab|[T1,r12]|cd>+
+      call add_operator(op_t1r_bar,op_info)
+      idx=idx_oplist2(op_t1r_bar,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,rint_pnt,orb_info)
+      op_pnt%dagger = .true.
+
+      ! <ab|[T2,r12]|cd>
+      call add_operator(op_t2r12,op_info)
+      idx=idx_oplist2(op_t2r12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,rint_pnt,orb_info)
+
+      ! <ab|[T2,r12]|cd>+
+      call add_operator(op_t2r_bar,op_info)
+      idx=idx_oplist2(op_t2r_bar,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,rint_pnt,orb_info)
+      op_pnt%dagger = .true.
+
+      ! Definition of intermediates (operators where there are 
+      ! uncontracted arcs between constituent operator lines).
+      ! Get indices of required operators.
+      idx_ecc=idx_oplist2(op_ccen,op_info)
+      ecc_pnt => op_info%op_arr(idx_ecc)%op
+
+      ! Anti-symmetric V^{ij}_{kl}.
+      call add_operator(op_v_inter,op_info)
+      idx=idx_oplist2(op_v_inter,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      v_pnt => op_pnt
+      allocate(ops_array(2))
+      ops_array(1)%op=>ecc_pnt
+      ops_array(2)%op=>c12_pnt
+      call set_gen_intermediate(op_pnt,op_v_inter,
+     &     ops_array,2,orb_info)
+      deallocate(ops_array)
+
+      ! Adjoint of V.
+      call add_operator(op_vbar_inter,op_info)
+      idx=idx_oplist2(op_vbar_inter,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,v_pnt,orb_info)
+      ! This operator should be daggered, but this causes inconsistencies
+      ! later on. Need to rectify this at some point. GWR 14/08/2007
+c      op_pnt%dagger=.true.
+
+      ! Anti-symmetric B^{ij}_{kl}.
+      call add_operator(op_b_inter,op_info)
+      idx=idx_oplist2(op_b_inter,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      b_pnt => op_pnt
+      allocate(ops_array(2))
+      ops_array(1)%op=>ecc_pnt
+      ops_array(2)%op=>cba_pnt
+c      ops_array(3)%op=>c12_pnt
+      call set_gen_intermediate(op_pnt,op_b_inter,
+     &     ops_array,2,orb_info)
+      deallocate(ops_array)
+
+c      ! Adjoint of B.
+c      call add_operator(op_bbar_inter,op_info)
+c      idx=idx_oplist2(op_bbar_inter,op_info)
+c      op_pnt => op_info%op_arr(idx)%op
+c      call clone_operator(op_pnt,b_pnt,orb_info)
+c      op_pnt%dagger=.true.
 
       return
 

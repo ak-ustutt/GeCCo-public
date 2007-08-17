@@ -14,7 +14,7 @@
 *                         vertices do not enter via a BCH-expansion, or
 *                         if they are grouped to other operators in the
 *                         BCH-expansion (like the R12 amplitude coeff.)
-*                         note: that these vertices stiall are sorted to
+*                         note: that these vertices still are sorted to
 *                         their canonical place in the resulting contr.
 *               occ_vtx - for convenience: occupations of all vertices
 *                         on index 1: occ of result
@@ -98,7 +98,7 @@ c     &     occ_ol_vtx(:,:,:)
       call strip_contr(proto,1) ! remove the (x 0 [C]) type arcs
 c dbg
 c      print *,'the stripped proto:'
-c      call prt_contr2(luout,proto,op_info)
+c      call prt_contr2(luout,proto_main,op_info)
 c dbg
 
       ! call recursive kernel
@@ -109,7 +109,7 @@ c dbg
       call dealloc_contr(proto)
 
       return
-
+*---------------------------------------------------------------------*
       contains
 
       recursive subroutine gen_contr_rec(ivtx,proto_in)
@@ -410,8 +410,8 @@ c                    call prt_contr2(luout,proto_new,op_info)
 c                    call prt_contr2(luout,proto_main,op_info)
 c                    print *,'+----+'
 c dbg
+                    
                     ok = check_contr(proto_new,proto_main)
-
                   end if
 
                   if (ok) then
@@ -463,6 +463,7 @@ c dbg
       return
       end subroutine
 
+*----------------------------------------------------------------------*
       subroutine gen_contr_unconn(occ_ol_prev,occ_ol_rem,occ_ol_vtx,
      &     ivtx,proto,occ_vtx)
 

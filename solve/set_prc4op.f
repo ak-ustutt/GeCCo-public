@@ -55,7 +55,7 @@
       if (idxham.lt.0.or.idxham.gt.nops .or.
      &    idxprc.lt.0.or.idxprc.gt.nops .or.
      &    idxop.lt.0 .or.idxop.gt.nops) then
-        write(luout,*) idxham, idxop, idxprc
+        write(luout,*) 'idxham,idxop,idxprc',idxham, idxop, idxprc
         write(luout,*) 'allowed: 1, ... ,',nops
         call quit(1,'set_prc4op','buggy operator indices')
       end if

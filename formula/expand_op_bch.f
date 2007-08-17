@@ -109,7 +109,7 @@ c dbg
         call expand_op_product(form_pnt,idx_res,
      &       fac_t,n_proj+n+1,idx_op,
      &       iblk_min,iblk_max,
-     &       connect,n,
+     &       connect,n,.false.,
      &       op_info)
 
         ! check whether any term was created

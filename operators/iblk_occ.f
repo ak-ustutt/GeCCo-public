@@ -32,6 +32,7 @@
         iblkoff = (idx-1)*njoined
         if (iocc_equal(iocc,dag,oper%ihpvca_occ(1,1,iblkoff+1),dago))
      &                                                              then
+
           do ijoin = 2, njoined
             if (.not.iocc_equal(iocc(1,1,ijoin),dag,
      &                         oper%ihpvca_occ(1,1,iblkoff+ijoin),dago))

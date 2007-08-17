@@ -11,6 +11,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'ifc_operators.h'
+      include 'stdunit.h'
 
       integer, parameter ::
      &     mxfound = 10
