@@ -28,6 +28,16 @@ c     &     iocc_res(ngastp,2,njoined),
       type(cntr_arc), pointer ::
      &     arc(:)
 
+c dbg
+c      print *,'super: ',ivtxsuper1,ivtxsuper2
+c      print *,'primi: ',ivtx1,ivtx2
+c      call wrt_occ(6,iocc_ex1)
+c      call wrt_occ(6,iocc_ex2)
+c      do ica = 1,contr%nvtx
+c        print *,topomap(1:contr%nvtx,ica)
+c      end do
+c dbg
+
       nvtx = contr%nvtx
       narc = contr%narc
       arc => contr%arc

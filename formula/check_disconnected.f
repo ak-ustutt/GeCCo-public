@@ -24,7 +24,7 @@
      &     arc(:)
 
 c dbg
-      print *,'in check_disconnected'
+c      print *,'in check_disconnected'
 c dbg
       nvtx = contr%nvtx
       narc = contr%narc
@@ -49,7 +49,7 @@ c dbg
         end do
       end do
 c dbg
-      print *,'connected: ',connected(1:nvtx)
+c      print *,'connected: ',connected(1:nvtx)
 c dbg
 
       nvtx_nc = 0
@@ -61,7 +61,7 @@ c dbg
         end if
       end do
 c dbg
-      print *,'adding arcs:: ',narc_new
+c      print *,'adding arcs:: ',narc_new
 c dbg
 
       if (narc_new.eq.0) return
@@ -82,7 +82,7 @@ c dbg
             if (jvtx.lt.ivtx.and..not.connected(jvtx)) cycle
             iarc = iarc+1
 c dbg
-            if (iarc.gt.narc+narc_new) stop 'oha!'
+            if (iarc.gt.narc+narc_new) stop 'cd: oha!'
 c dbg
             arc(iarc)%link(1) = min(ivtx,jvtx)
             arc(iarc)%link(2) = max(ivtx,jvtx)

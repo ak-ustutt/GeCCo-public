@@ -98,14 +98,10 @@
      &     igamc_ac, igamc_a, igamc_c,
      &     igamex1_a, igamex1_c, igamex2_a, igamex2_c,
      &     idxms, idxdis, lenmap
-c     &     isignsum, , hpvx, hpvx2, ica
       real(8) ::
      &     xnrm
       real(8) ::
      &     cpu, sys, cpu0, sys0, cpu00, sys00
-
-c      integer ::
-c     &     iocc_op1(ngastp,2), iocc_op2(ngastp,2), iocc_op1op2(ngastp,2)
 
       real(8), pointer ::
      &     xop1(:), xop2(:), xop1op2(:)
@@ -113,8 +109,6 @@ c     &     iocc_op1(ngastp,2), iocc_op2(ngastp,2), iocc_op1op2(ngastp,2)
      &     xbf1(:), xbf2(:), xbf12(:)
 
       integer ::
-c     &     irst_ext1(8*orb_info%ngas),irst_ext2(8*orb_info%ngas),
-c     &     irst_cnt(8*orb_info%ngas),
      &     msbnd(2,3), igambnd(2,3),
      &     ms12i_a(3), ms12i_c(3), igam12i_a(3), igam12i_c(3),
      &     gmop1dis_c(nca_blk(1,1)), gmop1dis_a(nca_blk(2,1)),
@@ -258,14 +252,14 @@ c     &     irst_cnt(8*orb_info%ngas),
       end if
 
       if (ntest.ge.1000) then
-        write(luout,*) 'operator 1'
+        write(luout,*) 'operator 1 (',trim(op1%name),')'
         call wrt_op_buf(luout,5,xop1,op1,iblkop1,iblkop1,
      &                  str_info,orb_info)
-        write(luout,*) 'operator 2'
+        write(luout,*) 'operator 2 (',trim(op2%name),')'
         call wrt_op_buf(luout,5,xop2,op2,iblkop2,iblkop2,
      &                  str_info,orb_info)
         if (iblkop1op2.gt.0) then
-          write(luout,*) 'operator 12 on entry'
+          write(luout,*) 'operator 12 on entry (',trim(op1op2%name),')'
           call wrt_op_buf(luout,5,xop1op2,op1op2,
      &                    iblkop1op2,iblkop1op2,
      &                    str_info,orb_info)
@@ -297,10 +291,6 @@ c     &     irst_cnt(8*orb_info%ngas),
       call sum_occ(nc_cnt,cinfo_cntc,nca_blk(1,6))
       call sum_occ(na_cnt,cinfo_cnta,nca_blk(2,6))
 
-c dbg
-c      print *,'casign = ',casign
-c dbg
-
       ! set up maps (if necessary)
       call strmap_man_c(
      &     cinfo_ex1c(1,2),nca_blk(1,4),
@@ -312,8 +302,6 @@ c dbg
      &     cinfo_ex1a(1,2),nca_blk(2,4),
      &     cinfo_op1op2a(1,2),nca_blk(2,3),map_info_12a,
      &     str_info,strmap_info,orb_info)
-      ! get ex2,ex1 sequence, as well ???
-      ! ...
       call strmap_man_c(
      &     cinfo_cntc(1,2),nca_blk(1,6),
      &     cinfo_ex1c(1,2),nca_blk(1,4),
@@ -658,6 +646,9 @@ c dbg
      &                     - idxst_op1+1
                     end if
 
+c dbg
+c                    print *,'call ddot(1)'
+c dbg
                     xnrm = ddot(ielprd(lstrop1,
      &                   nca_blk(1,1)+nca_blk(2,1)),
      &                   xop1(idxop1),1,xop1(idxop1),1)
@@ -708,11 +699,20 @@ c dbg
      &                     cinfo_op2a,idxmsop2dis_a,
      &                              gmop2dis_a,nca_blk(2,2),
      &                     .false.,op2,nsym)
+c dbg
+c                      print *,'idxst_op2:',idxst_op2,
+c     &                     idxdis,igam12i_a(2),idxms,
+c     &                     d_gam_ms_op2(idxdis,igam12i_a(2),idxms)
+c dbg
                       idxop2 = 
      &                     d_gam_ms_op2(idxdis,igam12i_a(2),idxms) + 1
      &                     - idxst_op2+1
                     end if
 
+c dbg
+c                    print *,'call ddot(2)',idxop2,
+c     &                   lstrop2(1:nca_blk(1,2)+nca_blk(2,2))
+c dbg
                     xnrm = ddot(ielprd(lstrop2,
      &                   nca_blk(1,2)+nca_blk(2,2)),
      &                   xop2(idxop2),1,xop2(idxop2),1)
@@ -878,7 +878,7 @@ c dbg
       if (ntest.ge.1000) then
         if (iblkop1op2.gt.0
      &       ) then
-          write(luout,*) 'operator 12 on exit'
+          write(luout,*) 'operator 12 on exit (',trim(op1op2%name),')'
           call wrt_op_buf(luout,5,xop1op2,op1op2,
      &         iblkop1op2,iblkop1op2,str_info,orb_info)
         end if
@@ -892,6 +892,9 @@ c dbg
       if (type_xret.eq.2) then
         xret(1) = xop1op2(1)
       else if (type_xret.eq.1) then
+c dbg
+c        print *,'call ddot (3)'
+c dbg
         xret(1) = ddot(lenop1op2,xop1op2,1,xop1op2,1)
       end if
 
@@ -1004,11 +1007,11 @@ c dbg
       integer, external ::
      &     idx_str_blk3, ielprd
 c dbg
-      integer lenop1, lenop2, lenop12
-
-      lenop1  = ielprd(lstrop1,nca_blk(1,1)+nca_blk(2,1))
-      lenop2  = ielprd(lstrop2,nca_blk(1,2)+nca_blk(2,2))
-      lenop12 = ielprd(lstrop1op2,nca_blk(1,3)+nca_blk(2,3))
+c      integer lenop1, lenop2, lenop12
+c
+c      lenop1  = ielprd(lstrop1,nca_blk(1,1)+nca_blk(2,1))
+c      lenop2  = ielprd(lstrop2,nca_blk(1,2)+nca_blk(2,2))
+c      lenop12 = ielprd(lstrop1op2,nca_blk(1,3)+nca_blk(2,3))
 c dbg
 
       nstr_ex1c_tot = ielprd(lstr_ex1,nca_blk(1,4))
@@ -1050,24 +1053,12 @@ c dbg
      &                   ngastp_op1a,
      &                   lstr_cnt(nca_blk(1,6)+1),
      &                     lstr_ex1(nca_blk(1,4)+1),map_info_1a)
-c dbg
-c      print *,'jetzt kommt''s:'
-c dbg
       call set_strmapdim_c(nstr_ex2cntc,nstr_cnta2,nstr_ex2c2,
      &                   ngastp_op2c,
      &                   lstr_cnt(nca_blk(1,6)+1),lstr_ex2,map_info_2c)
       call set_strmapdim_c(nstr_ex2cnta,nstr_cntc2,nstr_ex2a2,
      &                   ngastp_op2a,
      &                   lstr_cnt,lstr_ex2(nca_blk(1,5)+1),map_info_2a)
-c dbg
-c      print *,'nstr_cntc2: ',nstr_cntc2
-c      print *,'nstr_cnta2: ',nstr_cnta2
-c dbg
-c dbg
-c      print *,'ngastp_op1:',ngastp_op1c,ngastp_op1a
-c      print *,'ngastp_op2:',ngastp_op2c,ngastp_op2a
-c      print *,'ngastp_op1op2:',ngastp_op1op2c,ngastp_op1op2a
-c dbg
 
       call set_op_ldim_c(ldim_op1c,ldim_op1a,
      &                   hpvxop1c,hpvxop1a,
@@ -1233,12 +1224,12 @@ c dbg
 
                   ! xfac contained in sgn
 c dbg
-                  if (idxop1.lt.1) stop 'range1'
-                  if (idxop2.lt.1) stop 'range2'
-                  if (idxop1op2.lt.1) stop 'range12'
-                  if (idxop1.gt.lenop1) stop 'range1'
-                  if (idxop2.gt.lenop2) stop 'range2'
-                  if (idxop1op2.gt.lenop12) stop 'range12'
+c                  if (idxop1.lt.1) stop 'range1'
+c                  if (idxop2.lt.1) stop 'range2'
+c                  if (idxop1op2.lt.1) stop 'range12'
+c                  if (idxop1.gt.lenop1) stop 'range1'
+c                  if (idxop2.gt.lenop2) stop 'range2'
+c                  if (idxop1op2.gt.lenop12) stop 'range12'
 c dbg
                   xop1op2(idxop1op2) = xop1op2(idxop1op2)
      &                          + sgn * xop1(idxop1)

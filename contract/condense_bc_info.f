@@ -175,7 +175,7 @@ c dbg
      &                  str_info,ihpvgas,
      &                  ngas,njoined_op1op2,.true.)
 c dbg
-      print *,'setting info for OP1OP2: ',nca_blk(1:2,3)
+c      print *,'setting info for OP1OP2: ',nca_blk(1:2,3)
 c dbg
       call condense_occ(cinfo_op1op2c, cinfo_op1op2a,
      &                  cinfo_op1op2c(1,3), cinfo_op1op2a(1,3),

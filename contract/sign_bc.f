@@ -34,6 +34,7 @@
 
       integer ::
      &     iop1op2, ivtx1, ivtx2, idx, ivtx, ica, hpvx, hpvx2,
+     &     ivtx1m, ivtx2m, icamod,
      &     ivtx1raw, ivtx2raw, idx12,
      &     ncntc, ncnta, nex1a, nex2c, nex2a, nencl, nrem,
      &     icasign, ihpvxsign, icnt
@@ -112,11 +113,19 @@ c dbg
         end do
         if (ntest.ge.100) write(luout,*) 'CNT #',icnt,': ',ivtx1,ivtx2
 c dbg
-        if (ivtx1*ivtx2.eq.0) stop 'oha!'
+        if (ivtx1*ivtx2.eq.0) stop 'sbc: oha!'
 c dbg
-
-        ncntc = sum(iocc_cnt(1:ngastp,1,icnt))
-        ncnta = sum(iocc_cnt(1:ngastp,2,icnt))
+        ! CNT and sequence of vertices refers to sequence of super-vertices
+        ! the sign rules, however, refer to the original sequence of
+        ! vertices; so, if ivtx1>ivtx2, we have to switch things around:
+        if (ivtx1.gt.ivtx2) then
+          ncntc = sum(iocc_cnt(1:ngastp,2,icnt))
+          ncnta = sum(iocc_cnt(1:ngastp,1,icnt))
+        else
+          ! usual behaviour:
+          ncntc = sum(iocc_cnt(1:ngastp,1,icnt))
+          ncnta = sum(iocc_cnt(1:ngastp,2,icnt))
+        end if
 
         ! remove CNT from vertices
         iocc_prim(1:ngastp,1:2,ivtx1) =
@@ -126,9 +135,13 @@ c dbg
         iocc_prim(1:ngastp,2,ivtx2) =
      &       iocc_prim(1:ngastp,2,ivtx2) - iocc_cnt(1:ngastp,1,icnt)
 
+        ! ensure increasing sequence: see above
+        ivtx1m = min(ivtx1,ivtx2)
+        ivtx2m = max(ivtx1,ivtx2)
+
         ! number of indices on enclosed operators
         nencl = 0
-        do ivtx = ivtx1+1, ivtx2-1
+        do ivtx = ivtx1m+1, ivtx2m-1
           nencl = nencl + sum(iocc_prim(1:ngastp,1:2,ivtx))
         end do
 
@@ -136,8 +149,8 @@ c dbg
         icasign = mod(icasign + ncnta*nencl,2)
 
         ! enclosed + remaining on contracted vertices
-        nrem = sum(iocc_prim(1:ngastp,1:2,ivtx1))+
-     &         sum(iocc_prim(1:ngastp,1:2,ivtx2))
+        nrem = sum(iocc_prim(1:ngastp,1:2,ivtx1m))+
+     &         sum(iocc_prim(1:ngastp,1:2,ivtx2m))
         ! n(CNT(C)) * [ n(enclosed) + n(vertices remaining)]
         icasign = mod(icasign + ncntc*(nencl+nrem),2)
 
@@ -148,12 +161,16 @@ c dbg
         end if
 
         do ica = 1, 2
+          icamod = ica
+          ! see above
+          if (ivtx1.gt.ivtx2) icamod = 3-ica
           do hpvx = 2, ngastp
             if (iocc_cnt(hpvx,ica,icnt).gt.0) then
               do hpvx2 = 1, hpvx-1
                 ihpvxsign = mod(ihpvxsign 
-     &         + iocc_cnt(hpvx,ica,icnt)*iocc_prim(hpvx2,ica,ivtx1)
-     &         + iocc_cnt(hpvx,ica,icnt)*iocc_prim(hpvx2,3-ica,ivtx2),2)
+     &         +iocc_cnt(hpvx,icamod,icnt)*iocc_prim(hpvx2,ica,ivtx1m)
+     &         +iocc_cnt(hpvx,icamod,icnt)*iocc_prim(hpvx2,3-ica,ivtx2m)
+     &                          , 2)
               end do
             end if
           end do
@@ -196,19 +213,27 @@ c        ivtx1 = idx_ex1ex2(1,ivtx1raw)
 c            if (ivtx1.eq.ivtx2) cycle
 
             if (ntest.ge.100) write(luout,*) 'merging: ',ivtx1,ivtx2
+            
+            ! same story as above: in case of supervertices,
+            ! ivtx1>ivtx2 may happen so we do the following
+            ! fix: we want to merge on ivtx1, but for the sign
+            !      we need ivtx1 < ivtx2, so:
+            ivtx1m = min(ivtx1,ivtx2)
+            ivtx2m = max(ivtx1,ivtx2)
 
             ! get n(EX1(A)), n(EX2(C)), n(EX2(A))
-            nex1a = sum(iocc_prim(1:ngastp,2,ivtx1))
-            nex2c = sum(iocc_prim(1:ngastp,1,ivtx2))
-            nex2a = sum(iocc_prim(1:ngastp,2,ivtx2))
+            nex1a = sum(iocc_prim(1:ngastp,2,ivtx1m))
+            nex2c = sum(iocc_prim(1:ngastp,1,ivtx2m))
+            nex2a = sum(iocc_prim(1:ngastp,2,ivtx2m))
             ! add to ivtx1 and remove from ivtx2
+            ! here we need the ivtx1, ivtx2 in their original sequence:
             iocc_prim(1:ngastp,1:2,ivtx1) =
      &           iocc_prim(1:ngastp,1:2,ivtx1) +
      &           iocc_prim(1:ngastp,1:2,ivtx2)
             iocc_prim(1:ngastp,1:2,ivtx2) = 0
             ! count number of enclosed indices
             nencl = 0
-            do ivtx = ivtx1+1, ivtx2-1
+            do ivtx = ivtx1m+1, ivtx2m-1
               nencl = nencl + sum(iocc_prim(1:ngastp,1:2,ivtx))
             end do          
             ! n(EX2(C))*(n(EX1(A)+nenclosed) + n(EX2(A))*nenclosed
@@ -223,16 +248,16 @@ c            if (ivtx1.eq.ivtx2) cycle
             ! hpvx transpositions:
             do hpvx = 2, ngastp
              ! ordering: ex1c,ex2c, but ex2a,ex1a
-              if (iocc_prim(hpvx,1,ivtx1).gt.0) then
+              if (iocc_prim(hpvx,1,ivtx1m).gt.0) then
                 do hpvx2 = 1, hpvx-1
                   ihpvxsign = mod(ihpvxsign 
-     &            + iocc_prim(hpvx,1,ivtx1)*iocc_prim(hpvx2,1,ivtx2),2)
+     &            +iocc_prim(hpvx,1,ivtx1m)*iocc_prim(hpvx2,1,ivtx2m),2)
                 end do
               end if
-              if (iocc_prim(hpvx,2,ivtx2).gt.0) then
+              if (iocc_prim(hpvx,2,ivtx2m).gt.0) then
                 do hpvx2 = 1, hpvx-1
                   ihpvxsign = mod(ihpvxsign 
-     &             + iocc_prim(hpvx,2,ivtx2)*iocc_prim(hpvx2,2,ivtx1),2)
+     &            +iocc_prim(hpvx,2,ivtx2m)*iocc_prim(hpvx2,2,ivtx1m),2)
                 end do
               end if
             end do

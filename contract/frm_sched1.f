@@ -203,16 +203,6 @@ c        case(command_set_target_update)
         iterm = iterm+1
         if (iprint.ge.20)
      &     write(luout,*) '   term #',iterm
-c dbg
-C FOR CHECKING MY FAVOURITE TERM
-c        if (iterm.eq.10.and.opres%name(1:4).eq.'TBAR') then
-c          write(luout,*) 'RESETTING RESULT OPERATOR '
-c          write(luout,*) 'RESETTING RESULT OPERATOR '
-c          write(luout,*) 'RESETTING RESULT OPERATOR '
-c          write(luout,*) 'RESETTING RESULT OPERATOR '
-c          call zeroop(ffres,opres)
-c        end if
-c dbg
 
         if (ntest.ge.50)
      &       call prt_contr2(luout,cur_form%contr,op_info)

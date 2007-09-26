@@ -11,6 +11,7 @@
 
       include 'opdim.h'
       include 'def_operator.h'
+      include 'stdunit.h'
 
       integer, intent(in) ::
      &     iblk, idxmsa_blk, gama_blk,
@@ -56,6 +57,20 @@ c dbg
           exit
         end if
       end do
+
+      if (idx_msgmdst2.eq.-1) then
+        write(luout,*) 'occ_c:   ',occ_c(1:nc)
+        write(luout,*) 'idxms_c: ',idxms_c(1:nc)
+        write(luout,*) 'gam_c:   ',gam_c(1:nc)
+        write(luout,*) 'occ_a:   ',occ_a(1:na)
+        write(luout,*) 'idxms_a: ',idxms_a(1:na)
+        write(luout,*) 'gam_a:   ',gam_a(1:na)
+        write(luout,*) 'mgdid: ',mgdid
+        write(luout,*) 'didarr:',
+     &       didarr(1:idx_end,gama_blk,idxmsa_blk)
+        write(luout,*) gama_blk, idxmsa_blk, trim(op%name)
+        call quit(1,'idx_msgmdst2','distribution not found')
+      end if
 
       return
       end

@@ -13,7 +13,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     nel, idx1, idx2, idx_merge, nmvleft,
@@ -56,6 +56,8 @@ c      end do
       end if
 
       ! apply to ireo
+c      call perm_mult(ireo,ireo,ireo2,nel)
+      ! I assume this is better:
       call perm_mult(ireo,ireo,ireo2,nel)
 
       if (ntest.ge.100) then

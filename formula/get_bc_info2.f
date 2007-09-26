@@ -63,8 +63,8 @@
 
       ! set up operator info
 c dbg
-      print *,'current contraction ',iarc_red
-      call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
+c      print *,'current contraction ',iarc_red
+c      call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
 c dbg
       ! set up operator 1 and 2
       ivtx1 = contr%arc(iarc_red)%link(1)
