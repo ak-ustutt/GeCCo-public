@@ -100,13 +100,13 @@
       fl_a_dc_pnt => fl_a_dc_pnt%next
       call expand_op_product(fl_a_dc_pnt,idxopb,
      &     1d0,1,idxopa,-1,-1,
-     &     0,0,op_info)
+     &     0,0,.false.,op_info)
       do while(associated(fl_a_dc_pnt%next))
         fl_a_dc_pnt => fl_a_dc_pnt%next
       end do
       call expand_op_product(fl_a_dc_pnt,idxopb,
      &     1d0,2,(/idxopd,idxopc/),-1,-1,
-     &     (/1,2/),1,op_info)
+     &     (/1,2/),1,.false.,op_info)
 
       call print_form_list(luout,form_a_dc,op_info)
 
@@ -130,7 +130,7 @@
       write(luout,*) ' insert B: R = e^{-A-DC} H e^{B+DC}'
       write(luout,*) '------------------------------------'
 
-      call expand_subexpr(form_bhb,form_a_dc,op_info)
+      call expand_subexpr(form_bhb,form_a_dc,.false.,op_info)
 
       call print_form_list(luout,form_bhb,op_info)
 

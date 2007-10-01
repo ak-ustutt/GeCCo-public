@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine expand_term(fl_expand,nterms,
-     &                       njoined,f_term,fpl_intm,op_info)
+     &                       njoined,f_term,fpl_intm,force,op_info)
 *----------------------------------------------------------------------*
 *     expand O1.O2...Int...On (on f_term as formula list) to
 *            O1.O2...I1aI1b...On + O1.O2...I2...On + ...
@@ -30,12 +30,16 @@
      &     fpl_intm
       type(operator_info) ::
      &     op_info
+      logical, intent(in)::
+     &     force
 
       type(contraction) ::
      &     proto
       integer ::
      &     nvtx, narc, narc0, ivtx, jvtx, kvtx, iarc,
      &     iop_intm, iblk_intm, iblk, iadd, njoined
+      integer ::
+     &     occ_temp(ngastp,2)
       type(contraction), pointer ::
      &     term, intm
       type(formula_item_list), pointer ::
@@ -52,7 +56,7 @@
      &     fix_vtx(:)
 
       integer, external ::
-     &     vtx_in_contr, ifac, idxlist
+     &     vtx_in_contr, ifac, idxlist, ielsqsum
 
       if (ntest.ge.100) then
         write(luout,*) '========================='
@@ -117,9 +121,9 @@
         call resize_contr(proto,nvtx,narc,0)
 
         if (term%nvtx.gt.0) allocate(ivtx_term_reo(term%nvtx))
-        if (intm%nvtx.gt.0)  allocate(ivtx_intm_reo(intm%nvtx))
+        if (intm%nvtx.gt.0) allocate(ivtx_intm_reo(intm%nvtx))
         if (term%nvtx.gt.0) ivtx_term_reo(1:term%nvtx) = 0
-        if (intm%nvtx.gt.0)  ivtx_intm_reo(1:intm%nvtx) = 0
+        if (intm%nvtx.gt.0) ivtx_intm_reo(1:intm%nvtx) = 0
 
         ! copy general info
         proto%idx_res = term%idx_res
@@ -149,8 +153,8 @@
         narc = 0
         do iarc = 1, term%narc
           if (idxlist(term%arc(iarc)%link(1),ipos_vtx,njoined,1).gt.0
-     &    .or.idxlist(term%arc(iarc)%link(2),ipos_vtx,njoined,1).gt.0)
-     &         cycle
+     &      .or.idxlist(term%arc(iarc)%link(2),ipos_vtx,njoined,1).gt.0)
+     &      cycle  
           narc = narc+1
           proto%arc(narc)%link(1)=ivtx_term_reo(term%arc(iarc)%link(1))
           proto%arc(narc)%link(2)=ivtx_term_reo(term%arc(iarc)%link(2))
@@ -191,6 +195,19 @@
         allocate(occ_vtx(ngastp,2,proto%nvtx+1),fix_vtx(proto%nvtx))
         fix_vtx = .true.     ! "fix" all vertices -> ieqvfac will be 1
         call occvtx4contr(0,occ_vtx,proto,op_info)
+
+        if(force)then
+          occ_temp(1:ngastp,1)=0
+          occ_temp(1:ngastp,2)=occ_vtx(1:ngastp,2,2)
+          if(ielsqsum(occ_temp,ngastp*2).ne.0)then
+            narc=narc+1
+            proto%arc(narc)%link(1)=1
+            proto%arc(narc)%link(2)=nvtx
+            proto%arc(narc)%occ_cnt=occ_temp
+            proto%narc=narc
+            call prt_contr2(luout,proto,op_info)
+          endif
+        endif
 
         ! ... and go! get all possible connections
         call gen_contr2(fl_expand_pnt,proto,fix_vtx,occ_vtx,op_info)

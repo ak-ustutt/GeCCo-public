@@ -15,6 +15,7 @@
       include 'def_orbinf.h'
       include 'def_filinf.h'
       include 'def_operator.h'
+      include 'explicit.h'
       
       type(operator), intent(in) ::
      &     hop
@@ -30,7 +31,9 @@
       call import_fock_dalton(ffham,hop,str_info,orb_info)
 
       ! get 2-electron integrals and sort them as well
-      call import_h2_dalton(ffham,hop,str_info,orb_info)
+      if(.not.explicit)then
+        call import_h2_dalton(ffham,hop,str_info,orb_info)
+      endif
 
       return
       end

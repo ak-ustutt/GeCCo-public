@@ -26,7 +26,7 @@
         list_pnt => list_pnt%next
       end do
       if (list_pnt%op%id.ne.id_op) then
-        write(luout,*) 'ID = ',id_op
+        write(luout,*) 'ID = ',id_op,list_pnt%op%id
         call quit(1,'del_operator','unknown ID')
       end if
 
@@ -37,6 +37,7 @@
 
       ! decrement counter
       op_info%nops = op_info%nops-1
+      op_info%id_cnt = op_info%id_cnt-1
 
       ! update operator array
       call update_op_arr(op_info)

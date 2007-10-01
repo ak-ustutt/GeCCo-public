@@ -28,7 +28,7 @@
 
       integer ::
      &     idxham, idxc12, idxdia, idxccen, idxccrs, idxomg, idxhhat,
-     &     idum, isim, idxr12, idxsop
+     &     idum, isim, idxr12, idxsop, idxdel
   
       ! explicit interface does not work with ifort
       integer, external ::
@@ -39,6 +39,7 @@
       idxomg = idx_oplist2(op_omgr12,op_info)
       idxdia = idx_oplist2(op_diar12,op_info)
       idxr12 = idx_oplist2(op_rint,op_info)
+      idxdel = idx_oplist2(op_del_inter,op_info)
 
       ! preliminary:
       idxccen = idx_formlist(label_ccen0,form_info)
@@ -58,6 +59,14 @@
      &     idum,(/idxr12/),
      &     idum,(/(/idxr12,1/)/),
      &     0,idum
+     &     )
+
+      ! import Delta integrals used for V-intermediate.
+      call add_action(act_list,nactions,
+     &     iaction_import,0,1,0,
+     &     idum,(/idxdel/),
+     &     idum,(/(/idxdel,1/)/),
+     &     0,idum,
      &     )
 
       ! set up diagonal preconditioner

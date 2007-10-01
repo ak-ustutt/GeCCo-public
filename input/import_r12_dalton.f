@@ -1,4 +1,5 @@
-      subroutine import_r12_dalton(hop,ffr12,str_info,orb_info)
+      subroutine import_r12_dalton(hop,ffr12,ffinp,
+     &     mode,str_info,orb_info)
 *-----------------------------------------------------------------------
 *     Routine to read in and reorder 2-electron integrals required for 
 *     R12 calculations. Integrals are reordered to be in type order.
@@ -28,6 +29,10 @@
      &     hop
       type(filinf),intent(inout) ::
      &     ffr12
+      character*256, intent(in) ::
+     &     ffinp
+      integer, intent(in) ::
+     &     mode
 
       integer ::
      &     idx,jdx,kdx,igas,isym,i,j,nsym,ngas,ntoob,caborb,lu2in,
@@ -48,11 +53,6 @@
      &     tosym(:),totyp(:),koffs(:),reord(:)
       real*8,pointer ::
      &     r12scr(:)
-
-      if(hop%formal)then
-        write(luout,*)'R-operator is formal, no integrals read.'
-        return
-      endif  
 
       ifree=mem_setmark('import_r12')
 
@@ -86,7 +86,7 @@
       enddo  
 
       ! Open the required MO-integral file.
-      inquire(file='MO_R',exist=fexist)
+      inquire(file=ffinp,exist=fexist)
       if(.not.fexist)
      &     call quit(1,'import_r12_dalton','No MO integral file.')
 
@@ -95,7 +95,7 @@ c      lu2in=ffmor%unit
 c      call file_open(ffmor)
 c      write(luout,*)lu2in
       lu2in=99
-      open(unit=lu2in,file='MO_R',status='old',form='formatted',
+      open(unit=lu2in,file=ffinp,status='old',form='formatted',
      &     access='sequential')
       rewind(lu2in)
       read(lu2in,*)
@@ -155,7 +155,7 @@ c            index(3)=reord(ip)
 c            index(4)=reord(ir)
           endif  
 c dbg
-c          if (ip.eq.6.and.iq.eq.7.and.ir.eq.9.and.is.eq.5)
+c          if (ip.eq.9.and.iq.eq.4.and.ir.eq.8.and.is.eq.2)
 c     $         print *,'1 da isset ',int
 c          if ((ip.eq.9.and.iq.eq.7.and.ir.eq.6.and.is.eq.5).or.
 c     &         (ip.eq.7.and.iq.eq.6.and.ir.eq.9.and.is.eq.5).or.
@@ -185,10 +185,16 @@ c dbg
   
           ! Generate the string addresses of the current integral by 
           ! reference to the spin-orbital basis.
-          call idx42str2(nstr,idxstr,  1,
-     &         index,igam,idss,igtp,
-     &         orb_info,str_info,hop,hpvxseq,ierr)
-
+          if(mode.eq.0)then
+            call idx42str(nstr,idxstr,
+     &           index,igam,idss,igtp,
+     &           orb_info,str_info,hop,hpvxseq,ierr)
+          else
+            call idx42str2(nstr,idxstr,mode,
+     &           index,igam,idss,igtp,
+     &           orb_info,str_info,hop,hpvxseq,ierr)
+          endif
+  
           ! Store integral in r12scr.
           do istr=1,nstr
 c dbg

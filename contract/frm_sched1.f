@@ -447,7 +447,7 @@ c     &           irst_res,orb_info)
       ifree = mem_flushmark()
 
       if (ntest.ge.100)
-     &     write(luout,*) 'returning from frm_sched0'
+     &     write(luout,*) 'returning from frm_sched1'
 
       return
       end

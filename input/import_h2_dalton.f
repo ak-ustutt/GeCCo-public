@@ -49,7 +49,7 @@
       type(filinf) ::
      &     ffmo2
       logical ::
-     &     closeit
+     &     closeit, ierr
 c     &     first, first_str
       ! dalton is i4:
       integer(4) ::
@@ -71,6 +71,12 @@ c     &     first, first_str
 
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
+
+dbg
+c      open(unit=99,file='MO_G_DAL',status='unknown',form='formatted',
+c     &     access='sequential')
+c      rewind(99)
+dbg      
       
       if (orb_info%ntoob.gt.255) then
         write(luout,*) 'number of orbitals: ',orb_info%ntoob
@@ -200,7 +206,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             ! current (pq|rs) = <pr|qs> contributes
             call idx42str(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
-     &           orb_info,str_info,hop,hpvxseq)
+     &           orb_info,str_info,hop,hpvxseq,ierr)
 
             ! store integral in h2scr
             do istr = 1, nstr
@@ -213,6 +219,10 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
      &             h2scr(ioff-idxstr(istr)) =
      &             h2scr(ioff-idxstr(istr))-xbuf(ii)
             end do
+
+dbg
+c            write(99,'(4i5,e25.15)')ip,iq,ir,is,xbuf(ii)
+dbg
 
             if (ip.eq.iq.or.ir.eq.is) cycle
 
@@ -233,7 +243,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             ! current (pq|rs) = <pr|qs> contributes
             call idx42str(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
-     &           orb_info,str_info,hop,hpvxseq)
+     &           orb_info,str_info,hop,hpvxseq,ierr)
 
             ! store integrals in h2scr
             do istr = 1, nstr
@@ -272,6 +282,10 @@ c      end if
       if (closeit)
      &     call file_close_keep(ffham)
       call file_close_keep(ffmo2)
+
+dbg
+c      close(unit=99,status='keep')
+dbg
 
       ! deallocation by hand
       deallocate(ibuf)

@@ -29,6 +29,7 @@
      &     op_vbar_inter*4 = 'VBAR',
      &     op_b_inter*1    = 'B',
      &     op_bbar_inter*4 = 'BBAR',
+     &     op_del_inter*5  = 'DELTA',
      &     op_c_temp*6     = 'C-TEMP',
      &     op_f_temp*6     = 'F-TEMP',
      &     op_v_temp*6     = 'V-TEMP',

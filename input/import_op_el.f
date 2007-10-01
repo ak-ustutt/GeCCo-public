@@ -32,7 +32,7 @@
      &     orb_info
 
       integer ::
-     &     ipri
+     &     ipri,mode
       type(operator), pointer ::
      &     op_target
       type(filinf), pointer ::
@@ -54,14 +54,27 @@
         case (op_ham)
           call import_hamint_dalton(op_target,opfil_target,
      &         str_info,orb_info)
+          if(explicit)then
+            mode=0
+            call import_r12_dalton(op_target,opfil_target,'MO_G',
+     &           mode,str_info,orb_info)
+          endif
+
         ! Get other integrals needed for R12 calculations.
         case(op_rint)
           if(.not.op_target%formal)then
-            call import_r12_dalton(op_target,opfil_target,
-     &           str_info,orb_info) 
+            mode=1
+            call import_r12_dalton(op_target,opfil_target,'MO_R',
+     &           mode,str_info,orb_info) 
           else
             write(luout,*)'R12 operator is purely formal.'
-          endif  
+          endif
+
+        case(op_del_inter)
+          mode=1
+          call import_r12_dalton(op_target,opfil_target,'DELTA',
+     &         mode,str_info,orb_info)
+
         case default
           call quit(1,'import_op_el','DALTON: cannot handle operator '
      &         //trim(op_target%name))

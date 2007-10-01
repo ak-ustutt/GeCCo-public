@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine idx42str(nstr,idxstr,
      &         idxprqs,igam,idss,igtp,
-     &         orb_info,str_info,hop,ihpvseq)
+     &         orb_info,str_info,hop,ihpvseq,ierr)
 *----------------------------------------------------------------------*
 *     a 4-tuple of indices (for a 2-electron integral, in type ordering) 
 *     is given: (pq|rs), along with
@@ -46,6 +46,8 @@
      &     hop
       integer, intent(out) ::
      &     nstr, idxstr(*)
+      logical, intent(out) ::
+     &     ierr
 
       logical ::
      &     reo12, reo34, eqv12, eqv34
@@ -129,6 +131,11 @@
         call quit(1,'idx42str','something''s buggy!')
       end if
 
+      ierr=.false.
+      if(hop%formal_blk(iblk_ca))then
+        ierr=.true.
+        return
+      endif
 
       if (ntest.ge.50) then
         write(luout,*) 'input <pr|qs>: ',idxprqs(1:4)
@@ -196,7 +203,7 @@
         nstr = nstr+2
 
         ! make msd from idspn
-        msd(1:3,1:2) = 0
+        msd(1:ngastp,1:2) = 0
         msd(igtp(idx1),1) = idspn(1)
         msd(igtp(idx2),1) = msd(igtp(idx2),1)+idspn(2)
         msd(igtp(idx3),2) = idspn(3)

@@ -14,10 +14,10 @@
 *     idx_op(nops): operators to be contracted
 *     connect(2,nconnect): list of operator pairs that must be connected
 *                          e.g. (1,3) if first and third operator should
-*                          be connected
+*                          be connected.
 *     force is set true if we want the connection of the first and last 
 *     vertices in a non-standard way. If this is so then the first 
-*     element connect should be (1,nconnect).
+*     element of connect should be (1,nconnect).
 *
 *     andreas, june 2007
 *
@@ -230,20 +230,20 @@
               proto%vertex(iop)%iblk_op = iblk_op(iop)
             end do
 
-            ! generate contractions
-            call gen_contr2(form_pnt,proto,fix_vtx,occ_vtx,op_info)
-
-            write(luout,*)'FORM_PNT'
+c            write(luout,*)'FORM_PNT'
             if(force)then
-              occ_temp(1:ngastp,1:2)=iocc_xdn(1,occ_vtx(1:ngastp,1:2,2))
-              if(ielsqsum(occ_temp,ngastp*2).ne.0.and.
-     &             form_pnt%command.eq.4)then
-                write(luout,*)form_pnt%command           
-                form_pnt%contr%arc(1)%occ_cnt =
-     &               form_pnt%contr%arc(1)%occ_cnt+occ_temp
+              occ_temp(1:ngastp,1)=0
+              occ_temp(1:ngastp,2)=occ_vtx(1:ngastp,2,2)
+              if(ielsqsum(occ_temp,ngastp*2).ne.0)then
+c                write(luout,*)form_pnt%command           
+                proto%arc(1)%occ_cnt =occ_temp
+c     &               form_pnt%contr%arc(1)%occ_cnt+occ_temp  
               endif  
             endif  
             
+            ! generate contractions
+            call gen_contr2(form_pnt,proto,fix_vtx,occ_vtx,op_info)
+
 c            call print_form_list(luout,form_pnt,op_info)
             
             ! advance pointer

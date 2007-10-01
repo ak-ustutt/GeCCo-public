@@ -127,12 +127,12 @@ c      dagtotal = op%dagger
         do idef = 2, ndefop
           op%ihpvca_occ(1:ngastp,1:2,ioffblk+idef-1) =
      &         op%ihpvca_occ(1:ngastp,1:2,ioffblk+idef-1) +
-     &         iocc_xdn(2,defop(idef)%op%
-     &                    ihpvca_occ(1:ngastp,1:2,iblk_dis(idef)))
+     &         iocc_dagger(iocc_xdn(1,defop(idef)%op%
+     &                    ihpvca_occ(1:ngastp,1:2,iblk_dis(idef))))
           op%ihpvca_occ(1:ngastp,1:2,ioffblk+idef) =
      &         op%ihpvca_occ(1:ngastp,1:2,ioffblk+idef) +
-     &         iocc_xdn(1,defop(idef)%op%
-     &                    ihpvca_occ(1:ngastp,1:2,iblk_dis(idef)))
+     &         iocc_dagger(iocc_xdn(2,defop(idef)%op%
+     &                    ihpvca_occ(1:ngastp,1:2,iblk_dis(idef))))
         end do
 
         op%ica_occ(1:2,iblk) = 0
@@ -158,16 +158,16 @@ c      dagtotal = op%dagger
      &                  igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(1)),
      &                 hpvxgas,ngas)
         do idef = 2, ndefop
-          op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+idef-1) =
-     &       op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+idef-1) +
-     &       irest_xdn(2,defop(idef)%op%
-     &                  igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(idef)),
+          op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef-1) =
+     &       op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef-1) +
+     &       irest_xdn(1,defop(idef)%op%
+     &                 igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(idef)),
      &                 hpvxgas,ngas)
 
-          op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+idef) =
-     &       op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+idef) +
-     &       irest_xdn(1,defop(idef)%op%
-     &                  igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(idef)),
+          op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef) =
+     &       op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef) +
+     &       irest_xdn(2,defop(idef)%op%
+     &                 igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(idef)),
      &                 hpvxgas,ngas)
         end do
 

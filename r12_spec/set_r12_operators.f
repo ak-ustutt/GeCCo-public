@@ -246,6 +246,12 @@ c      call get_argument_value('method.R12','triples',ival=trir12)
       ! later on. Need to rectify this at some point. GWR 14/08/2007
 c      op_pnt%dagger=.true.
 
+      ! Delta integrals.
+      call add_operator(op_del_inter,op_info)
+      idx=idx_oplist2(op_del_inter,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,v_pnt,orb_info)
+
       ! Anti-symmetric B^{ij}_{kl}.
       call add_operator(op_b_inter,op_info)
       idx=idx_oplist2(op_b_inter,op_info)

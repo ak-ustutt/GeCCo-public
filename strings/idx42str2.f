@@ -278,20 +278,21 @@ c        endif
           if (ntest.ge.100) then
             write(luout,*) 'idxstr(offsets) = ',idxstr(nstr-1:nstr)
           end if
-        else if (take_ca) then
-          idxstr(nstr) =
-     &         hop%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
-          if (ntest.ge.100) then
-            write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
-          end if
-        else if (take_ac) then
-          idxstr(nstr) =
-     &         hop%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
-          if (ntest.ge.100) then
-            write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
-          end if
+        else 
+          if (take_ca) then
+            idxstr(nstr) =
+     &           hop%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
+            if (ntest.ge.100) then
+              write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
+            end if
+          else if (take_ac) then
+            idxstr(nstr) =
+     &           hop%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
+            if (ntest.ge.100) then
+              write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
+            end if
+          endif  
         end if
-
 
         lenlast = 1
         ihpv_loop: do ihpvdx = 1, ngastp
@@ -340,12 +341,14 @@ c        endif
      &           ((idx(2))*len(1) + idx(1))*lenlast
             idxstr(nstr)   = idxstr(nstr) +
      &           ((idx(1))*len(2) + idx(2))*lenlast
-          else if (take_ca) then
-            idxstr(nstr) = idxstr(nstr) +
-     &           ((idx(2))*len(1) + idx(1))*lenlast
-          else if (take_ac) then
-            idxstr(nstr) = idxstr(nstr) +
-     &           ((idx(1))*len(2) + idx(2))*lenlast
+          else 
+            if (take_ca) then
+              idxstr(nstr) = idxstr(nstr) +
+     &             ((idx(2))*len(1) + idx(1))*lenlast
+            else if (take_ac) then
+              idxstr(nstr) = idxstr(nstr) +
+     &             ((idx(1))*len(2) + idx(2))*lenlast
+            endif  
 c dbg
 c            print *,'ihpv: ',ihpv
 c            print *,'idx: ',idx(1:2),'  lenlast:', lenlast
