@@ -98,19 +98,23 @@ c          if (iarc.le.0) cycle
           idx2 = imltlist(ivtxsuper1,contr%svertex,ivtx2,1)
      &         + imltlist(ivtxsuper2,contr%svertex,ivtx2,1)
 
+          ! check whether we may merge the vertices
           idx_merge = idx_merge_vtx1vtx2(
      &         ivtx1,ivtx2,ivtxsuper1,ivtxsuper2,
      &         nmvleft,imvleft,contr%svertex,svmap,topomap,contr%nvtx)
           
           if (idx_merge.gt.0) then
+            ! check whether a full merge introduces an unwanted
+            ! symmetrization
             if (.not.merge_check(contr,ivtxsuper1,ivtxsuper2,
      &           ivtx1,ivtx2,iocc_op1op2(1,1,idx1),
-     &                       iocc_op1op2(1,1,idx2),topomap))
-c     &           ivtx1,ivtx2,occ_vtx(1,1,njoined_res+ivtx1),
-c     &                       occ_vtx(1,1,njoined_res+ivtx2),topomap))
-     &           idx_merge = 0
+     &                       iocc_op1op2(1,1,idx2),topomap)) then
+              idx_merge = 0
+            end if
           end if
-            
+          
+          ! check for partial symmetrization (additional reforming
+          ! step after contraction)
 
 c          if (idx_merge.le.0) cycle
 

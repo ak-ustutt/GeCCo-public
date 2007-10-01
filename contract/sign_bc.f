@@ -36,7 +36,7 @@
      &     iop1op2, ivtx1, ivtx2, idx, ivtx, ica, hpvx, hpvx2,
      &     ivtx1m, ivtx2m, icamod,
      &     ivtx1raw, ivtx2raw, idx12,
-     &     ncntc, ncnta, nex1a, nex2c, nex2a, nencl, nrem,
+     &     ncntc, ncnta, nex1c, nex1a, nex2c, nex2a, nencl, nrem,
      &     icasign, ihpvxsign, icnt
       integer ::
      &     iocc_prim(ngastp,2,njoined_op1+njoined_op2),
@@ -165,7 +165,7 @@ c dbg
           ! see above
           if (ivtx1.gt.ivtx2) icamod = 3-ica
           do hpvx = 2, ngastp
-            if (iocc_cnt(hpvx,ica,icnt).gt.0) then
+            if (iocc_cnt(hpvx,icamod,icnt).gt.0) then
               do hpvx2 = 1, hpvx-1
                 ihpvxsign = mod(ihpvxsign 
      &         +iocc_cnt(hpvx,icamod,icnt)*iocc_prim(hpvx2,ica,ivtx1m)
@@ -222,6 +222,7 @@ c            if (ivtx1.eq.ivtx2) cycle
             ivtx2m = max(ivtx1,ivtx2)
 
             ! get n(EX1(A)), n(EX2(C)), n(EX2(A))
+            nex1c = sum(iocc_prim(1:ngastp,1,ivtx1m))
             nex1a = sum(iocc_prim(1:ngastp,2,ivtx1m))
             nex2c = sum(iocc_prim(1:ngastp,1,ivtx2m))
             nex2a = sum(iocc_prim(1:ngastp,2,ivtx2m))
@@ -235,10 +236,18 @@ c            if (ivtx1.eq.ivtx2) cycle
             nencl = 0
             do ivtx = ivtx1m+1, ivtx2m-1
               nencl = nencl + sum(iocc_prim(1:ngastp,1:2,ivtx))
-            end do          
-            ! n(EX2(C))*(n(EX1(A)+nenclosed) + n(EX2(A))*nenclosed
-            icasign = mod(icasign+nex2c*(nex1a+nencl)+nex2a*nencl,2)
-            
+            end do
+            if (ivtx1.lt.ivtx2) then
+              ! 1 2 sequence
+              ! n(EX2(C))*(n(EX1(A))+nenclosed) + n(EX2(A))*nenclosed
+              icasign = mod(icasign+nex2c*(nex1a+nencl)+nex2a*nencl,2)
+            else
+              ! 2 1 sequence
+              ! n(EX1(C))*(n(EX2(C))+nenclosed) 
+              ! + n(EX1(A))*(n(EX2(C))+n(EX2(A))+nenclosed)
+              icasign = mod(icasign+nex1c*(nex2c+nencl)+
+     &                             +nex1a*(nex2c+nex2a+nencl), 2)
+            end if
             if (ntest.ge.100) then
               write(luout,*) 'nencl,nex1a,nex2a,nex2c: ',
      &             nencl,nex1a,nex2a,nex2c

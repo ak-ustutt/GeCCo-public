@@ -90,8 +90,10 @@
 
       integer, external ::
      &     idxlist, int_expand, int_pack, maxxlvl_op
+      logical, external ::
+     &     check_grph4occ
 c dbg
-      integer idx1, idx2
+c      integer idx1, idx2
 c dbg
 
       if (ntest.gt.0) then
@@ -181,18 +183,19 @@ c dbg
       possible = .true.     
       ! check whether intermediate can be addressed by
       ! the available graphs (preliminary fix)
-      call get_grph4occ(igr_op1op2,iocc_op1op2,irst_op1op2,
-     &       str_info,ihpvgas,ngas,njoined_op1op2,.false.)
-      if (ntest.ge.100) then
-        write(luout,*) 'igr_op1op2:'
-        call wrt_occ_n(luout,igr_op1op2,njoined_op1op2)
-      end if
-      ! if not: 
-      if (igr_op1op2(1,1,1).lt.0) then
-        cost(1:3) = huge(cost(1))
-        ! do not allow this factorization
-        possible = .false.
-      end if
+      possible = possible.and.
+     &     check_grph4occ(iocc_op1op2,irst_op1op2,
+     &     str_info,ihpvgas,ngas,njoined_op1op2)
+      possible = possible.and.
+     &     check_grph4occ(iocc_op1,irst_op1,
+     &     str_info,ihpvgas,ngas,njoined_op(1))
+      possible = possible.and.
+     &     check_grph4occ(iocc_op2,irst_op2,
+     &     str_info,ihpvgas,ngas,njoined_op(2))
+
+      ! if not: do not allow this factorization
+      if (.not.possible)
+     &     cost(1:3) = huge(cost(1))
 
       if (possible) then
         if (new_route) then
@@ -208,14 +211,6 @@ c dbg
      &                        iocc_ex2,njoined_op(2))
           call get_num_subblk(nca_blk(1,6),nca_blk(2,6),
      &                        iocc_cnt,njoined_cnt)
-c          allocate(
-c     &         cinfo_op1c(nca_blk(1,1),10),cinfo_op1a(nca_blk(2,1),10),
-c     &         cinfo_op2c(nca_blk(1,2),10),cinfo_op2a(nca_blk(2,2),10),
-c     &         cinfo_op1op2c(nca_blk(1,3),10),
-c     &                                   cinfo_op1op2a(nca_blk(2,3),10),
-c     &         cinfo_ex1c(nca_blk(1,4),10),cinfo_ex1a(nca_blk(2,4),10),
-c     &         cinfo_ex2c(nca_blk(1,5),10),cinfo_ex2a(nca_blk(2,5),10),
-c     &         cinfo_cntc(nca_blk(1,6),10),cinfo_cnta(nca_blk(2,6),10))
           allocate(
      &         cinfo_op1c(nca_blk(1,1),3),cinfo_op1a(nca_blk(2,1),3),
      &         cinfo_op2c(nca_blk(1,2),3),cinfo_op2a(nca_blk(2,2),3),

@@ -394,9 +394,6 @@ c            call init_operator(0,opscr(ninter),orb_info)
           ! current binary contraction
           if (idx.ne.nfact) then
             ivtx_new = cur_form%contr%inffac(3,idx)
-c            call reduce_vtx_info(irestr_vtx,info_vtx,
-c     &           cur_form%contr,occ_vtx,iarc,
-c     &           irst_res,orb_info)
             call reduce_contr(cur_form%contr,occ_vtx,
      &           iarc,-ninter,ivtx_new,
      &           1,  !<- njoined_res

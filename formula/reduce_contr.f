@@ -228,51 +228,6 @@ c        merge = merge_vtx1vtx2(ivtx1,ivtx2,svertex,svmap,topomap,nvtx)
      &         isupvtx1,isupvtx2,
      &         ivtx1,ivtx2,occ_vtx(1,1,njoined_res+ivtx1),
      &                     occ_vtx(1,1,njoined_res+ivtx2),topomap)
-c alternative version (better????)
-c          if (merge) then
-c            ! generate occupation of new vertex 
-c            !  (+njoined as first entry on occ_vtx is result vertex)
-c            occ_vtx(1:ngastp,1:2,idx_merge+njoined_res) =
-c     &           occ_vtx(1:ngastp,1:2,ivtx1+njoined_res) +
-c     &           occ_vtx(1:ngastp,1:2,ivtx2+njoined_res)
-c            ! modify arcs
-c            do jarc = 1, narc
-c              jvtx1 = arc(jarc)%link(1)
-c              jvtx2 = arc(jarc)%link(2)
-c              if (jvtx1.eq.ivtx1.or.jvtx1.eq.ivtx2)
-c     &             contr%arc(jarc)%link(1) = idx_merge
-c              if (jvtx2.eq.ivtx1.or.jvtx2.eq.ivtx2)
-c     &             contr%arc(jarc)%link(2) = idx_merge
-c            end do
-c            ! mark for deletion
-c            if (ivtx1.ne.idx_merge) vertex(ivtx1)%idx_op = 0
-c            if (ivtx2.ne.idx_merge) vertex(ivtx2)%idx_op = 0
-c            ! do not consider this vertex in next loops
-c            if (ivtx1.ne.idx_merge) svertex(ivtx1) = 0 
-c            if (ivtx2.ne.idx_merge) svertex(ivtx2) = 0 
-c            ! update restrictions, if necessary
-c            if (update_info) then
-c              ! the preliminary solution:
-c              ! to be fixed for super-vertices
-c              !  find out to which result vertex the current vertex
-c              !  actually contributes
-c              if (njoined_res.eq.1) then
-c                call fit_restr(
-c     &                    irestr_vtx(1,1,1,1,idx_merge+njoined_res),
-c     &                    occ_vtx(1,1,idx_merge+njoined_res),irestr_res,
-c     &                    orb_info%ihpvgas,ngas)
-c              else
-c                call dummy_restr(
-c     &               irestr_vtx(1,1,1,1,idx_merge+njoined_res),
-c     &               occ_vtx(1,1,idx_merge+njoined_res),
-c     &                                          1,orb_info%ihpvgas,ngas)
-c              end if
-c            end if
-c            ! update reodering array
-c            call update_reo(ireo,nvtx,ivtx1,ivtx2,
-c     &                      idx_merge,imvleft,nmvleft)
-c          end if
-c previous version
           if (merge) then
             ! generate occupation of new vertex 
             !  (+njoined as first entry on occ_vtx is result vertex)
@@ -426,9 +381,34 @@ c dbg
 
       call update_svtx4contr(contr)
 
+      ! a last additional step: reorder supervertices if necessary
+      if (.false..and.contr%nsupvtx.lt.contr%nvtx) then
+        call reorder_supvtx(
+     &     .true.,.false.,
+     &     contr,occ_vtx(1,1,njoined_res+1))
+        if (update_info) then
+c dbg
+c        print *,'fixing restrictions:'
+c dbg
+c          if (njoined_res.eq.1) then
+c            do ivtx = 1, contr%nvtx
+c              call fit_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
+c     &                     occ_vtx(1,1,ivtx+njoined_res),irestr_res,
+c     &                     orb_info%ihpvgas,ngas)
+c            end do
+c          else
+            do ivtx = 1, contr%nvtx
+              call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
+     &                     occ_vtx(1,1,ivtx+njoined_res),1,
+     &                     orb_info%ihpvgas,ngas)
+            end do
+c          end if
+        end if
+      end if
+
       if (ntest.ge.100) then
         write(luout,*) 'contr on exit:'
-        call prt_contr3(luout,contr,occ_vtx(1,1,2))
+        call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
         if (update_ori) then
           write(luout,*) 'ivtx_ori:'
           write(luout,'(3x,5i14)') ivtx_ori(1:contr%nvtx)
