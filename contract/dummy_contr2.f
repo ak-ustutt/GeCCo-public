@@ -82,10 +82,8 @@
       real(8) ::
      &     xlen10, xlen20, xlencnt, xlenop1op2
 
-c      integer, external ::
-c     &     ielsum
       logical, external ::
-     &     next_dist, next_msgamdist2, imltlist
+     &     next_dist, next_msgamdist2, idxlist
       logical, external ::
      &     zero_ivec
 
@@ -234,9 +232,8 @@ c                print *,'len10:   ',len10(1:nca_blk(1,4)+nca_blk(2,4))
 c dbg
 
                 if ( nca_blk(1,4)+nca_blk(2,4).gt.0 .and.
-     &               imltlist(0,len10,nca_blk(1,4)+nca_blk(2,4),1).gt.0)
+     &               idxlist(0,len10,nca_blk(1,4)+nca_blk(2,4),1).gt.0)
      &               cycle
-c     &               zero_ivec(len10,nca_blk(1,4)+nca_blk(2,4))) cycle
 
                 xlen10 = 1d0
                 do icmp = 1, nca_blk(1,4)+nca_blk(2,4)
@@ -264,7 +261,7 @@ c     &               zero_ivec(len10,nca_blk(1,4)+nca_blk(2,4))) cycle
      &                 graphs,
      &                 cinfo_20c(1,2),idxms20dis_c,
      &                                gm20dis_c,cinfo_20c(1,3),
-     &                 cinfo_20a(2,2),idxms20dis_a,
+     &                 cinfo_20a(1,2),idxms20dis_a,
      &                                gm20dis_a,cinfo_20a(1,3),
      &                 hpvxseq,.true.)
 
@@ -273,15 +270,58 @@ c                  print *,'nca_blk: ',nca_blk(1,5),nca_blk(2,5)
 c                  print *,'len20:   ',len20(1:nca_blk(1,5)+nca_blk(2,5))
 c dbg
                   if ( nca_blk(1,5)+nca_blk(2,5).gt.0.and.
-     &                 imltlist(0,len20,
+     &                 idxlist(0,len20,
      &                 nca_blk(1,5)+nca_blk(2,5),1).gt.0)
      &                 cycle
-c     &                 zero_ivec(len20,nca_blk(1,5)+nca_blk(2,5))) cycle
 
                   xlen20 = 1d0
                   do icmp = 1, nca_blk(1,5)+nca_blk(2,5)
                     xlen20 = xlen20*dble(len20(icmp))
                   end do
+
+                  ! get Ms and IRREP distribution of intermediate
+                  call merge_msgmdis(msi_dis_c,gmi_dis_c,
+     &                                 nca_blk(1,3),
+     &                                 ms10dis_c,gm10dis_c,
+     &                                 ms20dis_c,gm20dis_c,
+     &                                 map_info_12c)
+                  call merge_msgmdis(msi_dis_a,gmi_dis_a,
+     &                                 nca_blk(2,3),
+     &                                 ms20dis_a,gm20dis_a,
+     &                                 ms10dis_a,gm10dis_a,
+     &                                 map_info_12a)
+c dbg
+c                    print *,'gmi_dis_a: ',gmi_dis_a
+c                    print *,'gm10_dis_a:',gm10dis_a
+c                    print *,'gm20_dis_a:',gm20dis_a
+c dbg
+
+                  call ms2idxms(idxmsi_dis_c,msi_dis_c,
+     &                   cinfo_op1op2c,nca_blk(1,3))
+                  call ms2idxms(idxmsi_dis_a,msi_dis_a,
+     &                   cinfo_op1op2a,nca_blk(2,3))
+
+                  ! length of intermediate
+                  call set_len_str(
+     &                   lenop1op2,nca_blk(1,3),nca_blk(2,3),
+     &                   graphs,
+     &                   cinfo_op1op2c(1,2),idxmsi_dis_c,
+     &                                    gmi_dis_c,cinfo_op1op2c(1,3),
+     &                   cinfo_op1op2a(1,2),idxmsi_dis_a,
+     &                                    gmi_dis_a,cinfo_op1op2a(1,3),
+     &                   hpvxseq,.true.)
+
+                  xlenop1op2 = 1d0
+                  do icmp = 1, nca_blk(1,3)+nca_blk(2,3)
+                    xlenop1op2 = xlenop1op2*dble(lenop1op2(icmp))
+                  end do
+c dbg
+c                 print *,'xlenop1op2 ',xlenop1op2
+c dbg
+                    
+                  xmemblk = max(xmemblk,xlenop1op2)
+
+                  xmemtot = xmemtot+xlenop1op2
 
                   ! loop over distributions of current Ms and IRREP 
                   ! of AC and CC over ngastypes            
@@ -315,7 +355,7 @@ c                    print *,'lencnt:   ',
 c     &                   lencnt(1:nca_blk(1,6)+nca_blk(2,6))
 c dbg
                     if ( nca_blk(1,6)+nca_blk(2,6).gt.0 .and.
-     &                   imltlist(0,lencnt,
+     &                   idxlist(0,lencnt,
      &                   nca_blk(1,6)+nca_blk(2,6),1).gt.0)
      &                   cycle
 
@@ -333,50 +373,6 @@ c                    print *,'xlen20 = ',xlen20
 c                    print *,'xlencnt = ',xlencnt
 c                    print *,'current blk:',xlen10*xlen20*xlencnt
 c dbg
-
-                    ! get Ms and IRREP distribution of intermediate
-                    call merge_msgmdis(msi_dis_c,gmi_dis_c,
-     &                                 nca_blk(1,3),
-     &                                 ms10dis_c,gm10dis_c,
-     &                                 ms20dis_c,gm20dis_c,
-     &                                 map_info_12c)
-                    call merge_msgmdis(msi_dis_a,gmi_dis_a,
-     &                                 nca_blk(2,3),
-     &                                 ms20dis_a,gm20dis_a,
-     &                                 ms10dis_a,gm10dis_a,
-     &                                 map_info_12a)
-c dbg
-c                    print *,'gmi_dis_a: ',gmi_dis_a
-c                    print *,'gm10_dis_a:',gm10dis_a
-c                    print *,'gm20_dis_a:',gm20dis_a
-c dbg
-
-                    call ms2idxms(idxmsi_dis_c,msi_dis_c,
-     &                   cinfo_op1op2c,nca_blk(1,3))
-                    call ms2idxms(idxmsi_dis_a,msi_dis_a,
-     &                   cinfo_op1op2a,nca_blk(2,3))
-
-                    ! length of contraction
-                    call set_len_str(
-     &                   lenop1op2,nca_blk(1,3),nca_blk(2,3),
-     &                   graphs,
-     &                   cinfo_op1op2c(1,2),idxmsi_dis_c,
-     &                                    gmi_dis_c,cinfo_op1op2c(1,3),
-     &                   cinfo_op1op2a(1,2),idxmsi_dis_a,
-     &                                    gmi_dis_a,cinfo_op1op2a(1,3),
-     &                   hpvxseq,.true.)
-
-                    xlenop1op2 = 1d0
-                    do icmp = 1, nca_blk(1,3)+nca_blk(2,3)
-                      xlenop1op2 = xlenop1op2*dble(lenop1op2(icmp))
-                    end do
-c dbg
-c                    print *,'xlenop1op2 ',xlenop1op2
-c dbg
-                    
-                    xmemblk = max(xmemblk,xlenop1op2)
-
-                    xmemtot = xmemtot+xlenop1op2
 
                   end do cac_loop
                 end do ca20_loop

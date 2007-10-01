@@ -100,9 +100,6 @@
       allocate(op_opt(nop_opt))
       do iop = 1, nop_opt
         ! pointer array for operators:
-c dbg
-        print *,'idxop_out(iop): ',idxop_out(iop)
-c dbg
         op_opt(iop)%op   => op_info%op_arr(idxop_out(iop))%op
       end do
 
@@ -173,15 +170,6 @@ c dbg
           call switch_opfile_record(idxop_out(iop),iroot,op_info)
           call zeroop(ff_trv(iop)%fhand,op_opt(iop)%op)
 
-c          do iop = 1, nop_opt
-c            call switch_opfile_record(idxop_out(iop        ),
-c     &           iroot,op_info)
-c            call switch_opfile_record(idxop_out(iop+nop_opt),
-c     &           iroot,op_info)
-c          end do
-c          call frm_sched(xret,ffform_opt,
-c     &         op_info,str_info,strmap_info,orb_info)
-
         end do
       end do
 
@@ -204,9 +192,6 @@ c     &         op_info,str_info,strmap_info,orb_info)
         if (iand(task,4).eq.4) then
           ! preliminary solution: 
           !   outside loop over requested Mv-products
-c dbg
-c          print *,'nrequest = ',nrequest
-c dbg
           do irequest = 1, nrequest
             do iop = 1, nop_opt
               call switch_opfile_record(idxop_out(iop        ),

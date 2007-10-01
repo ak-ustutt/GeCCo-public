@@ -63,8 +63,8 @@
 
       ! set up operator info
 c dbg
-      print *,'current contraction ',iarc_red
-      call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
+c      print *,'current contraction ',iarc_red
+c      call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
 c dbg
       ! set up operator 1 and 2
       ivtx1 = contr%arc(iarc_red)%link(1)
@@ -84,7 +84,8 @@ c dbg
         iblk_op(2) = (contr%vertex(ivtx2)%iblk_op-1)/njoined_op(2) + 1
       end if
 
-      if (ivtxsuper1.eq.ivtxsuper2) stop 'was is das'
+      if (ivtxsuper1.eq.ivtxsuper2)
+     &     call quit(1,'get_bc_info','I am confused ....')
 
       mst_op(1) = info_vtx(1,ivtx1+njoined_res)
       mst_op(2) = info_vtx(1,ivtx2+njoined_res)
@@ -134,6 +135,11 @@ c dbg
      &               2,iocc_op2,njoined_op(2),ivtxsuper2,
      &               contr,arc_list,len_list)
 
+      call condense_merge_map(merge_op1,
+     &                   merge_map_op1,ld_mmap1,njoined_op(1),.false.)
+      call condense_merge_map(merge_op2,
+     &                   merge_map_op2,ld_mmap2,njoined_op(2),.false.)
+
       ! set up EX1/EX2 in correct order
       call occ_ex1ex2(iocc_ex1ex2,inum_ori,
      &                iocc_ex1,iocc_ex2,
@@ -155,36 +161,22 @@ c dbg
       mst_op1op2 = mst_op(1) + mst_op(2)
       igamt_op1op2 = multd2h(igamt_op(1),igamt_op(2))
 
-c dbg
-c        print *,'call to cmm for ex1ex2'
-c dbg
-        call condense_merge_map(merge_op1op2,
+      call condense_merge_map(merge_op1op2,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.false.)
         ! the same for EX2/EX1 sequence
-c dbg
-c        print *,'call to cmm for ex2ex1'
-c dbg
-        call condense_merge_map(merge_op2op1,
+      call condense_merge_map(merge_op2op1,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.true.)
  
-      ! check that we arrived at the correct result:
+      ! check that we arrived at the correct result 
+      ! (after last contraction):
       if (contr%narc.eq.len_list) then
         if (njoined_op1op2.ne.njoined_res)
      &       call quit(1,'get_bc_info2','trap 1')
-c        iocc_op1op2(1:ngastp,1:2,1:njoined_res) =
-c     &       occ_vtx(1:ngastp,1:2,1:njoined_res)
-c        irestr_op1op2(1:2,1:ngas,1:2,1:2,1:njoined_res) =
-c     &       irestr_vtx(1:2,1:ngas,1:2,1:2,1:njoined_res)
         if (mst_op1op2.ne.info_vtx(1,1))
      &       call quit(1,'get_bc_info2','trap 2')
         if (igamt_op1op2.ne.info_vtx(2,1))
      &       call quit(1,'get_bc_info2','trap 3')
       end if
-
-      call condense_merge_map(merge_op1,
-     &                   merge_map_op1,ld_mmap1,njoined_op(1),.false.)
-      call condense_merge_map(merge_op2,
-     &                   merge_map_op2,ld_mmap2,njoined_op(2),.false.)
 
       ! calculate sign
       call sign_bc(bc_sign,

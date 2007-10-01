@@ -62,7 +62,7 @@
               write(luout,*) 'C/A, GAS-TYP, VTX: ',ica,igastp,ijoin
               call quit(1,'get_grph4occ','string not in list')
             else
-              idx_gr(1:ngastp,1:2,ijoin) = -1
+              idx_gr(1:ngastp,1:2,1:njoined) = -1
               exit outer_loop
             end if
           end if

@@ -346,8 +346,8 @@ c     &       idx_op_new,irestr_res,contr,occ_vtx)
 
         ! add 0-contractions, if necessary
 c dbg
-        print *,'calling check disc for'
-        call prt_contr3(luout,contr_red,occ_vtx_red(1,1,njoined+1))
+c        print *,'calling check disc for'
+c        call prt_contr3(luout,contr_red,occ_vtx_red(1,1,njoined+1))
 c dbg
         call check_disconnected(contr_red)
       

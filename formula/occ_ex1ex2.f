@@ -53,13 +53,13 @@
         end if
       end do
 c dbg
-      print *,'OCCEX1EX2: idx12 = ',idx12
-      print *,'svertex ',svertex(1:nvtx)
-      print *,'ivtxsuper1,ivtxsuper2:',ivtxsuper1,ivtxsuper2
-      print *,'inum_ori 1>',inum_ori(1,1:idx12)
-      print *,'inum_ori 2>',inum_ori(2,1:idx12)
-      call wrt_occ_n(6,iocc_ex1ex2,idx12)
-      if (idx12.ne.njoined1+njoined2) stop 'aha'
+c      print *,'OCCEX1EX2: idx12 = ',idx12
+c      print *,'svertex ',svertex(1:nvtx)
+c      print *,'ivtxsuper1,ivtxsuper2:',ivtxsuper1,ivtxsuper2
+c      print *,'inum_ori 1>',inum_ori(1,1:idx12)
+c      print *,'inum_ori 2>',inum_ori(2,1:idx12)
+c      call wrt_occ_n(6,iocc_ex1ex2,idx12)
+c      if (idx12.ne.njoined1+njoined2) stop 'aha'
 c dbg
 
       end

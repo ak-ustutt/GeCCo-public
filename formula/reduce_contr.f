@@ -53,7 +53,8 @@
      &     iarc_prm, isupvtx1, isupvtx2, idum, ms_new, gm_new
       integer ::
      &     arc_list(contr%narc), svmap(contr%nvtx),
-     &     topomap(contr%nvtx,contr%nvtx), ireo(contr%nvtx),
+     &     topomap(contr%nvtx,contr%nvtx),
+     &     ireo(contr%nvtx), iloweq(contr%nvtx),
      &     imvleft(contr%nvtx), svertex_ori(contr%nvtx)
       integer, pointer ::
 c     &     svertex_ori(:),
@@ -126,6 +127,7 @@ c     &     svertex_ori(:),
       ! init reordering array
       do ivtx = 1, nvtx
         ireo(ivtx) = ivtx
+        iloweq(ivtx) = ivtx
       end do
 
       ! get super-vertex index
@@ -226,10 +228,6 @@ c        merge = merge_vtx1vtx2(ivtx1,ivtx2,svertex,svmap,topomap,nvtx)
      &         isupvtx1,isupvtx2,
      &         ivtx1,ivtx2,occ_vtx(1,1,njoined_res+ivtx1),
      &                     occ_vtx(1,1,njoined_res+ivtx2),topomap)
-c dbg
-c          print *,'<<<< idx_merge: ',idx_merge
-c          print *,'imvleft:   ',imvleft(1:nmvleft)
-c dbg
           if (merge) then
             ! generate occupation of new vertex 
             !  (+njoined as first entry on occ_vtx is result vertex)
@@ -265,8 +263,8 @@ c dbg
               end if
             end if
             ! update reodering array
-            call update_reo(ireo,nvtx,ivtx1,ivtx2,
-     &                      idx_merge,imvleft,nmvleft)
+            call update_reo2(ireo,iloweq,nvtx,ivtx1,ivtx2,
+     &                       idx_merge,imvleft,nmvleft)
           end if
         end do
       end do
@@ -280,9 +278,14 @@ c dbg
       ! forth round: delete old vertices and arcs
       ! 1) reoder vertices
 
+c dbg
+c      print *,'nvtx, ngastp = ',nvtx,ngastp
+c      print *,'ireo: ',ireo(1:nvtx)
+c      print *,'vertex(:)%idx_op:',vertex(1:nvtx)%idx_op
+c dbg
       allocate(vertex_ori(nvtx), occ_vtx_ori(ngastp,2,nvtx))
 c     &         svertex_ori(nvtx))
-      vertex_ori = vertex
+      vertex_ori(1:nvtx) = vertex(1:nvtx)
       occ_vtx_ori(1:ngastp,1:2,1:nvtx) = occ_vtx(1:ngastp,1:2,
      &     njoined_res+1:njoined_res+nvtx)
       svertex_ori(1:nvtx) = svertex(1:nvtx)
@@ -303,6 +306,7 @@ c     &         svertex_ori(nvtx))
       do ivtx = 1, nvtx   ! loop over old vertices
         if (vertex(ivtx)%idx_op.eq.0) cycle
         jvtx = jvtx+1
+        if (ireo(ivtx).le.0) call quit(1,'reduce_contr','wrong ireo')
         vertex(ireo(ivtx)) = vertex_ori(ivtx)
         occ_vtx(1:ngastp,1:2,ireo(ivtx)+njoined_res) =
      &         occ_vtx_ori(1:ngastp,1:2,ivtx)
@@ -318,7 +322,8 @@ c     &         svertex_ori(nvtx))
       end do
       contr%nvtx = jvtx
 
-      deallocate(vertex_ori,occ_vtx_ori)
+      deallocate(occ_vtx_ori)
+      deallocate(vertex_ori)
 c      deallocate(vertex_ori,svertex_ori,occ_vtx_ori)
       if (update_ori) deallocate(ivtx_ori_ori)
       if (update_info) deallocate(info_vtx_ori,irestr_vtx_ori)
@@ -376,9 +381,34 @@ c dbg
 
       call update_svtx4contr(contr)
 
+      ! a last additional step: reorder supervertices if necessary
+      if (.false..and.contr%nsupvtx.lt.contr%nvtx) then
+        call reorder_supvtx(
+     &     .true.,.false.,
+     &     contr,occ_vtx(1,1,njoined_res+1))
+        if (update_info) then
+c dbg
+c        print *,'fixing restrictions:'
+c dbg
+c          if (njoined_res.eq.1) then
+c            do ivtx = 1, contr%nvtx
+c              call fit_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
+c     &                     occ_vtx(1,1,ivtx+njoined_res),irestr_res,
+c     &                     orb_info%ihpvgas,ngas)
+c            end do
+c          else
+            do ivtx = 1, contr%nvtx
+              call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
+     &                     occ_vtx(1,1,ivtx+njoined_res),1,
+     &                     orb_info%ihpvgas,ngas)
+            end do
+c          end if
+        end if
+      end if
+
       if (ntest.ge.100) then
         write(luout,*) 'contr on exit:'
-        call prt_contr3(luout,contr,occ_vtx(1,1,2))
+        call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
         if (update_ori) then
           write(luout,*) 'ivtx_ori:'
           write(luout,'(3x,5i14)') ivtx_ori(1:contr%nvtx)

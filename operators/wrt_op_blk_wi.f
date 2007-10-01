@@ -16,6 +16,11 @@
       include 'def_orbinf.h'
       include 'multd2h.h'
 
+      ! for debugging it is sometimes convenient to have at most:
+      integer, parameter ::
+     &     maxlines = -1
+      ! set to -1 if you want the full output
+
       integer, intent(in) ::
      &     luout, iblk, igam, idxms, idxdis, nel
       type(operator), intent(in) ::
@@ -131,7 +136,8 @@ c     &     nelc,nela,nelc,nela
      &     hpvxseq,lexlscr))
         first = .false.
         idxstr = idxstr+1
-      
+        if (maxlines.gt.0.and.idxstr.gt.maxlines) exit
+
         idxnd = 0
         iadd = 0
         do ijoin = 1, njoined
