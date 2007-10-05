@@ -1,13 +1,13 @@
 *----------------------------------------------------------------------*
       subroutine contr_op1op2_wmaps_c(xfac,casign,ffop1,ffop2,
      &     update,ffop1op2,xret,type_xret,
-     &     op1,op2,op1op2,!op1op2tmp,
-     &     iblkop1,iblkop2,iblkop1op2,
+     &     op1,op2,op1op2,op1op2tmp,
+     &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &       nca_blk,
      &       cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
      &       cinfo_op1op2c, cinfo_op1op2a,
-!     &       cinfo_op12tmpc, cinfo_op12tmpa,
+     &       cinfo_op1op2tmpc, cinfo_op1op2tmpa,
      &       cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
      &       cinfo_cntc, cinfo_cnta,
      &       map_info_1c, map_info_1a,
@@ -15,6 +15,7 @@
      &       map_info_12c, map_info_12a,
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
+     &     reo_info,
      &     str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     slightly improved version:
@@ -43,6 +44,7 @@
       include 'def_strinf.h'
       include 'def_filinf.h'
       include 'def_strmapinf.h'
+      include 'def_reorder_info.h'
       include 'ifc_memman.h'
       include 'ifc_operators.h'
       include 'hpvxseq.h'
@@ -58,13 +60,14 @@
      &     xret(1)
       integer, intent(in) ::
      &     type_xret,
-     &     iblkop1, iblkop2, iblkop1op2,
+     &     iblkop1, iblkop2, iblkop1op2, iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &     nca_blk(2,6),
      &     cinfo_op1c(nca_blk(1,1),3), cinfo_op1a(nca_blk(2,1),3),
      &     cinfo_op2c(nca_blk(1,2),3), cinfo_op2a(nca_blk(2,2),3),
      &     cinfo_op1op2c(nca_blk(1,3),3), cinfo_op1op2a(nca_blk(2,3),3),
-! op12tmp -->
+     &     cinfo_op1op2tmpc(nca_blk(1,3),3),
+     &                                 cinfo_op1op2tmpa(nca_blk(2,3),3),
      &     cinfo_ex1c(nca_blk(1,4),3), cinfo_ex1a(nca_blk(2,4),3),
      &     cinfo_ex2c(nca_blk(1,5),3), cinfo_ex2a(nca_blk(2,5),3),
      &     cinfo_cntc(nca_blk(1,6),3), cinfo_cnta(nca_blk(2,6),3),
@@ -76,21 +79,26 @@
       type(filinf), intent(inout) ::
      &     ffop1,ffop2,ffop1op2
       type(operator), intent(in) ::
-     &     op1, op2, op1op2
+     &     op1, op2, op1op2, op1op2tmp
       type(strinf), intent(in) ::
      &     str_info
       type(strmapinf), intent(inout) ::
      &     strmap_info
       type(orbinf), intent(in) ::
      &     orb_info
+      type(reorder_info), intent(in), target ::
+     &     reo_info
 
       logical ::
      &     bufop1, bufop2, bufop1op2,
-     &     first1, first2, first3, first4, first5
+     &     first1, first2, first3, first4, first5,
+     &     reo_op1op2
       integer ::
      &     nc_op1, na_op1, nc_op2, na_op2,
      &     nc_ex1, na_ex1, nc_ex2, na_ex2, 
-     &     nc_op1op2, na_op1op2, nc_cnt, na_cnt,
+     &     nc_op1op2, na_op1op2,
+     &     nc_op1op2tmp, na_op1op2tmp,
+     &     nc_cnt, na_cnt,
      &     nsym, ifree,
      &     idxst_op1, idxst_op2, idxst_op1op2,
      &     idxop1, idxop2, idxop1op2,
@@ -146,7 +154,16 @@
       integer, pointer ::
      &     ndis_op1(:,:), d_gam_ms_op1(:,:,:), gam_ms_op1(:,:),
      &     ndis_op2(:,:), d_gam_ms_op2(:,:,:), gam_ms_op2(:,:),
-     &     ndis_op1op2(:,:), d_gam_ms_op1op2(:,:,:), gam_ms_op1op2(:,:)
+     &     ndis_op1op2(:,:), d_gam_ms_op1op2(:,:,:), gam_ms_op1op2(:,:),
+     &     len_gam_ms_op1op2(:,:), len_d_gam_ms_op1op2(:,:,:)
+
+      integer, pointer ::
+     &     cinfo_reo12c(:,:), cinfo_reo12a(:,:),
+     &     cinfo_op1op2_0c(:,:), cinfo_op1op2_0a(:,:),
+     &     map_info_reo1c(:), map_info_reo1a(:),
+     &     map_info_reo2c(:), map_info_reo2a(:),
+     &     ncblk_op1op2_0, nablk_op1op2_0,
+     &     ncblk_reo12,    nablk_reo12
 
       type(graph), pointer ::
      &     graphs(:)
@@ -183,6 +200,12 @@
           write(luout,*) 'op1op2: scalar'
         end if
       end if
+
+      reo_op1op2 = reo_info%n_op_reo.gt.0
+      if (reo_op1op2.and..not.associated(reo_info%map_reo1c))
+     &     call quit(1,'contr_op1op2_wmaps_c',
+     &     'reo_info is not consistent')
+      if (ntest.ge.10) write(luout,*) 'reo_op1op2: ',reo_op1op2
 
       idxst_op1 = op1%off_op_occ(iblkop1) + 1
       lenop1    = op1%len_op_occ(iblkop1)
@@ -280,9 +303,9 @@
       d_gam_ms_op2 => op2%off_op_gmox(iblkop2)%d_gam_ms
       ndis_op1op2 => op1op2%off_op_gmox(iblkop1op2)%ndis
       gam_ms_op1op2 => op1op2%off_op_gmo(iblkop1op2)%gam_ms
-!      len_gam_ms_op1op2 => op1op2%len_op_gmo(iblkop1op2)%gam_ms
+      len_gam_ms_op1op2 => op1op2%len_op_gmo(iblkop1op2)%gam_ms
       d_gam_ms_op1op2 => op1op2%off_op_gmox(iblkop1op2)%d_gam_ms
-!      len_d_gam_ms_op1op2 => op1op2%len_op_gmox(iblkop1op2)%d_gam_ms
+      len_d_gam_ms_op1op2 => op1op2%len_op_gmox(iblkop1op2)%d_gam_ms
 
       call sum_occ(nc_op1,cinfo_op1c,nca_blk(1,1))
       call sum_occ(na_op1,cinfo_op1a,nca_blk(2,1))
@@ -290,6 +313,8 @@
       call sum_occ(na_op2,cinfo_op2a,nca_blk(2,2))
       call sum_occ(nc_op1op2,cinfo_op1op2c,nca_blk(1,3))
       call sum_occ(na_op1op2,cinfo_op1op2a,nca_blk(2,3))
+      call sum_occ(nc_op1op2tmp,cinfo_op1op2tmpc,nca_blk(1,3))
+      call sum_occ(na_op1op2tmp,cinfo_op1op2tmpa,nca_blk(2,3))
       call sum_occ(nc_ex1,cinfo_ex1c,nca_blk(1,4))
       call sum_occ(na_ex1,cinfo_ex1a,nca_blk(2,4))
       call sum_occ(nc_ex2,cinfo_ex2c,nca_blk(1,5))
@@ -329,18 +354,40 @@
      &     cinfo_op2a(1,2),nca_blk(2,2),map_info_2a,
      &     str_info,strmap_info,orb_info)
 
-!      if (reo_res) then
-!        call strmap_man_c(
-!     &     cinfo_op12_0c(1,2),nca_blk(1,4),
-!     &     cinfo_op12shc(1,2),nca_blk(1,5),
-!     &     cinfo_op12tmpc(1,2),nca_blk(1,3),map_info_12reo1c,
-!     &     str_info,strmap_info,orb_info)
-!        call strmap_man_c(
-!     &     cinfo_op12_0c(1,2),nca_blk(1,4),
-!     &     cinfo_op12shc(1,2),nca_blk(1,5),
-!     &     cinfo_op1op2c(1,2),nca_blk(1,3),map_info_12reo2c,
-!     &     str_info,strmap_info,orb_info)
-!      end if
+      if (reo_op1op2) then
+        cinfo_reo12c => reo_info%cinfo_reo_c
+        cinfo_reo12a => reo_info%cinfo_reo_a
+        cinfo_op1op2_0c => reo_info%cinfo_opreo0c
+        cinfo_op1op2_0a => reo_info%cinfo_opreo0a
+        map_info_reo1c  => reo_info%map_reo1c
+        map_info_reo1a  => reo_info%map_reo1a
+        map_info_reo2c  => reo_info%map_reo2c
+        map_info_reo2a  => reo_info%map_reo2a
+        ncblk_op1op2_0  => reo_info%ncblk_reo0
+        nablk_op1op2_0  => reo_info%nablk_reo0
+        ncblk_reo12  => reo_info%ncblk_reo
+        nablk_reo12  => reo_info%nablk_reo
+        call strmap_man_c(
+     &     cinfo_op1op2_0c(1,2),ncblk_op1op2_0,
+     &     cinfo_reo12c(1,2),ncblk_reo12,
+     &     cinfo_op1op2tmpc(1,2),nca_blk(1,3),map_info_reo1c,
+     &     str_info,strmap_info,orb_info)
+        call strmap_man_c(
+     &     cinfo_reo12a(1,2),nablk_reo12,
+     &     cinfo_op1op2_0a(1,2),nablk_op1op2_0,
+     &     cinfo_op1op2tmpa(1,2),nca_blk(1,3),map_info_reo1a,
+     &     str_info,strmap_info,orb_info)
+        call strmap_man_c(
+     &     cinfo_op1op2_0c(1,2),ncblk_op1op2_0,
+     &     cinfo_reo12c(1,2),ncblk_reo12,
+     &     cinfo_op1op2c(1,2),nca_blk(1,3),map_info_reo2c,
+     &     str_info,strmap_info,orb_info)
+        call strmap_man_c(
+     &     cinfo_reo12a(1,2),nablk_reo12,
+     &     cinfo_op1op2_0a(1,2),nablk_op1op2_0,
+     &     cinfo_op1op2a(1,2),nca_blk(1,3),map_info_reo2a,
+     &     str_info,strmap_info,orb_info)
+      end if
 
       ! minimum Ms for ...
       msbnd(1,1) = -nc_op1 ! operator 1

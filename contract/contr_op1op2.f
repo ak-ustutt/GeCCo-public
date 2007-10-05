@@ -1,16 +1,17 @@
 *----------------------------------------------------------------------*
       subroutine contr_op1op2(xfac,bc_sign,ffop1,ffop2,
      &     update,ffop1op2,xret,type_xret,
-     &     op1,op2,op1op2,
-     &     iblkop1,iblkop2,iblkop1op2,
+     &     op1,op2,op1op2,op1op2tmp,
+     &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
-     &     iocc_op1, iocc_op2, iocc_op1op2,
-     &     irst_op1,irst_op2,irst_op1op2,
+     &     iocc_op1, iocc_op2, iocc_op1op2,iocc_op1op2tmp,
+     &     irst_op1,irst_op2,irst_op1op2,irst_op1op2tmp,
      &     merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &     njoined_op1, njoined_op2,njoined_op1op2, njoined_cnt,
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
+     &     reo_info,
      &     str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for contraction routines
@@ -29,6 +30,7 @@
       include 'def_orbinf.h'
       include 'def_filinf.h'
       include 'def_strmapinf.h'
+      include 'def_reorder_info.h'
 
       logical, intent(in) ::
      &     update
@@ -38,7 +40,7 @@
      &     xret
       integer, intent(in) ::
      &     type_xret,
-     &     iblkop1, iblkop2, iblkop1op2,
+     &     iblkop1, iblkop2, iblkop1op2, iblkop1op2tmp,
      &     idoffop1, idoffop2, idoffop1op2,
      &     njoined_op1, njoined_op2, njoined_op1op2, njoined_cnt,
      &     iocc_ex1(ngastp,2,njoined_op1),
@@ -47,20 +49,23 @@
      &     iocc_op1(ngastp,2,njoined_op1),
      &     iocc_op2(ngastp,2,njoined_op2),
      &     iocc_op1op2(ngastp,2,njoined_op1op2),
+     &     iocc_op1op2tmp(ngastp,2,njoined_op1op2),
      &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*),
-     &     irst_op1(*), irst_op2(*), irst_op1op2(*),
+     &     irst_op1(*), irst_op2(*), irst_op1op2(*), irst_op1op2tmp(*),
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2
       type(filinf), intent(in) ::
      &     ffop1,ffop2,ffop1op2
       type(operator), intent(in) ::
-     &     op1, op2, op1op2
+     &     op1, op2, op1op2, op1op2tmp
       type(strinf), intent(in) ::
      &     str_info
       type(strmapinf), intent(in) ::
      &     strmap_info
       type(orbinf), intent(in) ::
      &     orb_info
+      type(reorder_info), intent(in) ::
+     &     reo_info
 
       integer ::
      &     nca_blk(2,6)
@@ -69,6 +74,8 @@
      &     cinfo_op2c(:,:),cinfo_op2a(:,:),
      &     cinfo_op1op2c(:,:),
      &     cinfo_op1op2a(:,:),
+     &     cinfo_op1op2tmpc(:,:),
+     &     cinfo_op1op2tmpa(:,:),
      &     cinfo_ex1c(:,:),cinfo_ex1a(:,:),
      &     cinfo_ex2c(:,:),cinfo_ex2a(:,:),
      &     cinfo_cntc(:,:),cinfo_cnta(:,:),
@@ -125,6 +132,8 @@
      &       cinfo_op2c(nca_blk(1,2),3),cinfo_op2a(nca_blk(2,2),3),
      &       cinfo_op1op2c(nca_blk(1,3),3),
      &       cinfo_op1op2a(nca_blk(2,3),3),
+     &       cinfo_op1op2tmpc(nca_blk(1,3),3),
+     &       cinfo_op1op2tmpa(nca_blk(2,3),3),
      &       cinfo_ex1c(nca_blk(1,4),3),cinfo_ex1a(nca_blk(2,4),3),
      &       cinfo_ex2c(nca_blk(1,5),3),cinfo_ex2a(nca_blk(2,5),3),
      &       cinfo_cntc(nca_blk(1,6),3),cinfo_cnta(nca_blk(2,6),3))
@@ -144,26 +153,28 @@
         call condense_bc_info(
      &       cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
      &       cinfo_op1op2c, cinfo_op1op2a,
+     &       cinfo_op1op2tmpc, cinfo_op1op2tmpa,
      &       cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
      &       cinfo_cntc, cinfo_cnta,
      &       map_info1c, map_info1a,
      &       map_info2c, map_info2a,
      &       map_info12c, map_info12a,
      &       nca_blk,
-     &       iocc_op1, iocc_op2, iocc_op1op2,
+     &       iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
      &       iocc_ex1,iocc_ex2,iocc_cnt,
-     &       irst_op1, irst_op2, irst_op1op2,
+     &       irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
      &       merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &       njoined_op1, njoined_op2,njoined_op1op2, njoined_cnt,
      &       str_info,orb_info%ihpvgas,orb_info%ngas)
         call contr_op1op2_wmaps_c(xfac,bc_sign,ffop1,ffop2,
      &     update,ffop1op2,xret,type_xret,
-     &     op1,op2,op1op2,
-     &     iblkop1,iblkop2,iblkop1op2,
+     &     op1,op2,op1op2,op1op2tmp,
+     &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &       nca_blk,
      &       cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
      &       cinfo_op1op2c, cinfo_op1op2a,
+     &       cinfo_op1op2tmpc, cinfo_op1op2tmpa,
      &       cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
      &       cinfo_cntc, cinfo_cnta,
      &       map_info1c, map_info1a,
@@ -171,6 +182,7 @@
      &       map_info12c, map_info12a,
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
+     &     reo_info,
      &     str_info,strmap_info,orb_info)
         deallocate(
      &       cinfo_op1c,cinfo_op1a,

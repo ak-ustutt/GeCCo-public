@@ -53,11 +53,11 @@
         write(luout,*) 'merge_map:'
         idx_base = 1
         do ijoin12 = 1, njoined12
-          write(luout,'(i3,"->",i3,": ",10i3)')
+          write(luout,'(i3,"<- op1 #vtx:",i3," - ",10i3)')
      &                        ijoin12, merge_map(idx_base),
      &              merge_map(idx_base+1:idx_base+merge_map(idx_base))
           idx_base = idx_base + merge_map(idx_base) + 1
-          write(luout,'(3x,"->",i3,": ",10i3)')
+          write(luout,'(3x,"<- op2 #vtx:",i3," - ",10i3)')
      &                             merge_map(idx_base),
      &              merge_map(idx_base+1:idx_base+merge_map(idx_base))
           idx_base = idx_base + merge_map(idx_base) + 1

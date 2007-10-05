@@ -187,6 +187,9 @@
 
         if (iter.gt.1)
      &       write(luout,'(">>>",i3,24x,x,g10.4)')iter-1,xresnrm
+c dbg
+        print *,'>>> resnorm = ',xresnrm
+c dbg
 
         ! 4 - get residual
         if (iand(task,4).eq.4) then

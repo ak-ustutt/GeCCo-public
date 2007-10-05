@@ -3,7 +3,8 @@
      &     iarc_red,idxop_new,ivtx_new,
      &     njoined_res,
      &     update_ori,ivtx_ori,iarc_ori,
-     &     update_info,irestr_vtx,info_vtx,irestr_res,orb_info)
+     &     update_info,irestr_vtx,info_vtx,irestr_res,
+     &     set_reo,reo_info,orb_info)
 *----------------------------------------------------------------------*
 *     successor of reduce_graph:
 *     generate reduced multiple contraction after contracting vertices
@@ -22,6 +23,7 @@
       include 'stdunit.h'
       include 'def_contraction.h'
       include 'def_orbinf.h'
+      include 'def_reorder_info.h'
       include 'ifc_operators.h'
       include 'multd2h.h'
 
@@ -35,7 +37,7 @@
       integer, intent(inout) ::
      &     occ_vtx(ngastp,2,*)
       logical, intent(in) ::
-     &     update_ori, update_info
+     &     update_ori, update_info, set_reo
       integer, intent(inout) ::
      &     ivtx_ori(*), iarc_ori(*),
      &     irestr_vtx(2,orb_info%ngas,2,2,contr%nvtx+njoined_res),
@@ -43,6 +45,8 @@
       integer, intent(in) ::
      &     iarc_red, idxop_new, ivtx_new, njoined_res, 
      &     irestr_res(2,orb_info%ngas,2,2,njoined_res)
+      type(reorder_info) ::
+     &     reo_info
 
       logical ::
      &     merge
@@ -262,7 +266,7 @@ c        merge = merge_vtx1vtx2(ivtx1,ivtx2,svertex,svmap,topomap,nvtx)
      &           occ_vtx(1,1,ivtx1+njoined_res),1,orb_info%ihpvgas,ngas)
               end if
             end if
-            ! update reodering array
+            ! update reordering array
             call update_reo2(ireo,iloweq,nvtx,ivtx1,ivtx2,
      &                       idx_merge,imvleft,nmvleft)
           end if
@@ -276,7 +280,7 @@ c      print *,'ireo: ',ireo(1:nvtx)
 c dbg
 
       ! forth round: delete old vertices and arcs
-      ! 1) reoder vertices
+      ! 1) reorder vertices
 
 c dbg
 c      print *,'nvtx, ngastp = ',nvtx,ngastp
@@ -382,10 +386,10 @@ c dbg
       call update_svtx4contr(contr)
 
       ! a last additional step: reorder supervertices if necessary
-      if (.false..and.contr%nsupvtx.lt.contr%nvtx) then
+      if (contr%nsupvtx.lt.contr%nvtx) then
         call reorder_supvtx(
-     &     .true.,.false.,
-     &     contr,occ_vtx(1,1,njoined_res+1))
+     &     .true.,set_reo,reo_info,
+     &     contr,occ_vtx(1,1,njoined_res+1),idxop_new)
         if (update_info) then
 c dbg
 c        print *,'fixing restrictions:'

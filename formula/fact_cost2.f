@@ -235,15 +235,16 @@ c dbg
           call condense_bc_info(
      &         cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
      &         cinfo_op1op2c, cinfo_op1op2a,
+     &         cinfo_op1op2c, cinfo_op1op2a,
      &         cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
      &         cinfo_cntc, cinfo_cnta,
      &         map_info1c, map_info1a,
      &         map_info2c, map_info2a,
      &         map_info12c, map_info12a,
      &         nca_blk,
-     &         iocc_op1, iocc_op2, iocc_op1op2,
+     &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
-     &         irst_op1, irst_op2, irst_op1op2,
+     &         irst_op1, irst_op2, irst_op1op2, irst_op1op2,
      &         merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &         str_info,ihpvgas,ngas)
