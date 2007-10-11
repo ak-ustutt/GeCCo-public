@@ -50,8 +50,8 @@ c      include 'def_orbinf.h'
      &     cinfo_op1c(nca_blk(1,1),3), cinfo_op1a(nca_blk(2,1),3),
      &     cinfo_op2c(nca_blk(1,2),3), cinfo_op2a(nca_blk(2,2),3),
      &     cinfo_op1op2c(nca_blk(1,3),3), cinfo_op1op2a(nca_blk(2,3),3),
-     &     cinfo_op1op2tmpc(nca_blk(1,3),3),
-     &                                 cinfo_op1op2tmpa(nca_blk(2,3),3),
+     &     cinfo_op1op2tmpc(nca_blk(1,7),3),
+     &                                 cinfo_op1op2tmpa(nca_blk(2,7),3),
      &     cinfo_ex1c(nca_blk(1,4),3), cinfo_ex1a(nca_blk(2,4),3),
      &     cinfo_ex2c(nca_blk(1,5),3), cinfo_ex2a(nca_blk(2,5),3),
      &     cinfo_cntc(nca_blk(1,6),3), cinfo_cnta(nca_blk(2,6),3),
@@ -111,6 +111,14 @@ c     &     irst_op1,ihpvgas,ngas)
       call condense_occ(cinfo_op1c(1,2), cinfo_op1a(1,2),
      &                  cinfo_op1c(1,3), cinfo_op1a(1,3),
      &                  igrph,njoined_op1,hpvxblkseq)
+c dbg
+c      print *,'OP1:'
+c      call wrt_occ_n(6,iocc_op1,njoined_op1)
+c      print *,' C: ',cinfo_op1c(1:nca_blk(1,1),1)
+c      print *,'    ',cinfo_op1c(1:nca_blk(1,1),3)
+c      print *,' A: ',cinfo_op1a(1:nca_blk(2,1),1)
+c      print *,'    ',cinfo_op1a(1:nca_blk(2,1),3)
+c dbg
 
       ! EX1
       call get_grph4occ(igrph,iocc_ex1,irst_ex1,

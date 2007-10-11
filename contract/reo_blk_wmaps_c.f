@@ -1,0 +1,523 @@
+*----------------------------------------------------------------------*
+      subroutine reo_blk_wmaps_c(xop_reo,xop_ori,
+     &     sign_reo,
+     &     ms_op_c,ms_op_a,gm_op_c,gm_op_a,
+     &     ms_i_dis_c,ms_i_dis_a,gm_i_dis_c,gm_i_dis_a,
+     &     ncblk_opori,nablk_opori,
+     &     cinfo_opori_c,cinfo_opori_a,
+     &     lstr_opori,
+     &     opreo, iblk_opreo,
+     &     ncblk_opreo,nablk_opreo,
+     &     cinfo_opreo_c,cinfo_opreo_a,
+     &     ncblk_k,nablk_k,
+     &     cinfo_k_c,cinfo_k_a,
+     &     ncblk_i0,nablk_i0,
+     &     cinfo_i0_c,cinfo_i0_a,
+     &     map_info_to_ori_c, map_info_to_ori_a,
+     &     map_info_to_reo_c, map_info_to_reo_a,
+     &     nsym,str_info,strmap_info)
+*----------------------------------------------------------------------*
+*
+*     reorder  OP([I1][I2]...) -> OP([I1'][I2']...)
+*
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'opdim.h'
+      include 'stdunit.h'
+      include 'ioparam.h'
+      include 'multd2h.h'
+      include 'hpvxseq.h'
+      include 'def_filinf.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
+      include 'def_strmapinf.h'
+      include 'def_operator.h'
+      include 'ifc_memman.h'
+
+      integer, parameter ::
+     &     ntest = 00
+
+      ! buffer with originally ordered elements
+      ! (single distribution, see below)
+      real(8), intent(in) ::
+     &     xop_ori(*)
+      ! buffer with ALL distributions of current MS, IRREP
+      real(8), intent(inout) ::
+     &     xop_reo(*)
+      ! global sign factor
+      integer, intent(in) ::
+     &     sign_reo
+
+      ! info about operator block in original order
+      integer, intent(in) ::
+     &     ncblk_opori, nablk_opori,
+     &     ms_op_c, ms_op_a, gm_op_c, gm_op_a,
+     &     ms_i_dis_c(ncblk_opori), ms_i_dis_a(nablk_opori), ! dis(MS)
+     &     gm_i_dis_c(ncblk_opori), gm_i_dis_a(nablk_opori), ! dis(IRREP)
+     &     cinfo_opori_c(ncblk_opori,3), cinfo_opori_a(nablk_opori,3),
+     &     lstr_opori(ncblk_opori+nablk_opori)
+
+      ! info about reordered operator block
+      ! ms_opreo_c == ms_op_c etc.
+      ! but we must loop over different distributions
+      integer, intent(in) ::
+     &     ncblk_opreo, nablk_opreo,
+     &     cinfo_opreo_c(ncblk_opori,3), cinfo_opreo_a(nablk_opori,3)
+
+      ! info about strings with resolved occupations [I0], [K]
+      type(operator), intent(in) ::
+     &     opreo
+      integer, intent(in) ::
+     &     iblk_opreo,
+     &     ncblk_k, nablk_k, ncblk_i0, nablk_i0,
+     &     cinfo_k_c(ncblk_k,3), cinfo_k_a(nablk_k,3),
+     &     cinfo_i0_c(ncblk_i0,3), cinfo_i0_a(nablk_i0,3)
+      ! reorder mappings for (condensed) occupations:
+      integer, intent(in) ::
+     &     map_info_to_ori_c(*), map_info_to_ori_a(*),
+     &     map_info_to_reo_c(*), map_info_to_reo_a(*)
+
+      integer, intent(in) ::
+     &     nsym
+      type(strinf), intent(in) ::
+     &     str_info
+      type(strmapinf), intent(inout) ::
+     &     strmap_info
+
+      logical ::
+     &     first
+      integer ::
+     &     ms_k_c_max, ms_k_a_max, ms_i0_c_max, ms_i0_a_max,
+     &     ms_k_c,     ms_k_a,     ms_i0_c,     ms_i0_a,
+     &     gm_k_c,     gm_k_a,     gm_i0_c,     gm_i0_a
+      integer ::
+     &     ngraph, lenmap, ifree
+      integer ::
+     &     istr_k_a, istr_k_c, istr_i0_a, istr_i0_c,
+     &     nstr_k_c_tot, nstr_k_a_tot,
+     &     nstr_i0_c_tot, nstr_i0_a_tot,
+     &     idxms_op_a, idxdis,
+     &     idx00opreo, idxst_opreo,
+     &     idx0opreo, idx_opreo, ioff, istr1, istr2, isgnt, isgna,
+     &     idx0opori, idx_opori, icmp, ielmap, idx, idx1, idx2
+
+      integer ::
+     &     ms_k_dis_c(ncblk_k), ms_k_dis_a(nablk_k),
+     &     idxms_k_dis_c(ncblk_k), idxms_k_dis_a(nablk_k),
+     &     gm_k_dis_c(ncblk_k), gm_k_dis_a(nablk_k),
+     &     ms_i0_dis_c(ncblk_i0), ms_i0_dis_a(nablk_i0),
+     &     idxms_i0_dis_c(ncblk_i0), idxms_i0_dis_a(nablk_i0),
+     &     gm_i0_dis_c(ncblk_i0), gm_i0_dis_a(nablk_i0),
+     &     idxms_ip_dis_c(ncblk_opreo), idxms_ip_dis_a(nablk_opreo),
+     &     ms_ip_dis_c(ncblk_opreo), ms_ip_dis_a(nablk_opreo),
+     &     gm_ip_dis_c(ncblk_opreo), gm_ip_dis_a(nablk_opreo),
+     &     lstr_k(ncblk_k+nablk_k), lstr_i0(ncblk_i0+nablk_i0),
+     &     lstr_opreo(ncblk_opreo+nablk_opreo),
+     &     nstr_opreo_c(ncblk_opreo), nstr_opreo_a(nablk_opreo),
+     &     nstr_opori_c(ncblk_opori), nstr_opori_a(nablk_opori),
+     &     ldim_opreo_c(ncblk_opreo), ldim_opreo_a(nablk_opreo),
+     &     ldim_opori_c(ncblk_opori), ldim_opori_a(nablk_opori),
+     &     nstr_i0c1(ncblk_opori), nstr_i0a1(nablk_opori),
+     &     nstr_i0c2(ncblk_opreo), nstr_i0a2(nablk_opreo),
+     &     nstr_k_c1(ncblk_opori), nstr_k_a1(nablk_opori),
+     &     nstr_k_c2(ncblk_opreo), nstr_k_a2(nablk_opreo)
+
+      integer, pointer ::
+     &     map_to_ori_c(:), map_to_ori_a(:),
+     &     map_to_reo_c(:), map_to_reo_a(:)
+
+      integer, pointer ::
+     &     ndis_opreo(:,:), d_gam_ms_opreo(:,:,:)
+
+      type(graph), pointer ::
+     &     graphs(:)
+
+
+      logical, external ::
+     &     next_msgamdist2, check_ms
+      integer, external ::
+     &     get_lenmap, ielprd, idx_msgmdst2, idxlist
+
+
+      graphs => str_info%g
+      ngraph =  str_info%ngraph
+
+      idxst_opreo = opreo%off_op_occ(iblk_opreo)
+      ndis_opreo  => opreo%off_op_gmox(iblk_opreo)%ndis
+      d_gam_ms_opreo  => opreo%off_op_gmox(iblk_opreo)%d_gam_ms
+
+      call sum_occ(ms_k_c_max,cinfo_k_c,ncblk_k)
+      call sum_occ(ms_k_a_max,cinfo_k_a,nablk_k)
+      call sum_occ(ms_i0_c_max,cinfo_i0_c,ncblk_i0)
+      call sum_occ(ms_i0_a_max,cinfo_i0_a,nablk_i0)
+
+      idxms_op_a = (ms_k_a_max+ms_i0_a_max - ms_op_a)/2 + 1
+
+      do ms_k_a = ms_k_a_max, -ms_k_a_max, -2
+        ms_i0_a = ms_op_a - ms_k_a
+        if (abs(ms_i0_a).gt.ms_i0_a_max) cycle
+
+        do ms_k_c = ms_k_c_max, -ms_k_c_max, -2
+          ms_i0_c = ms_op_c - ms_k_c
+          if (abs(ms_i0_c).gt.ms_i0_c_max) cycle
+
+          do gm_k_a = 1, nsym
+            gm_i0_a = multd2h(gm_k_a,gm_op_a)
+            do gm_k_c = 1, nsym
+              gm_i0_c = multd2h(gm_k_c,gm_op_c)
+
+               ! loop over symmetry and ms-distributions of shift string K
+              first = .true.
+              dis_loop: do
+                if (.not.next_msgamdist2(first,
+     &             ms_k_dis_c,ms_k_dis_a,gm_k_dis_c,gm_k_dis_a,
+     &             ncblk_k,nablk_k,
+     &             cinfo_k_c,cinfo_k_a,
+     &             ms_k_c,ms_k_a,gm_k_c,gm_k_a,nsym)) exit dis_loop
+
+                first = .false.
+
+                ! get symmetry and ms-distr. of I0
+                call split_msgmdis(ms_i0_dis_c,gm_i0_dis_c,
+     &                             ms_k_dis_c,gm_k_dis_c,
+     &                             ms_i_dis_c,gm_i_dis_c,
+     &                             ncblk_opori,
+     &                             map_info_to_ori_c,.false.)
+                call split_msgmdis(ms_i0_dis_a,gm_i0_dis_a,
+     &                             ms_k_dis_a,gm_k_dis_a,
+     &                             ms_i_dis_a,gm_i_dis_a,
+     &                             nablk_opori,
+     &                             map_info_to_ori_a,.true.)
+                
+                if (ntest.ge.100) then
+                  write(luout,*) '               I  MS',ms_op_c,ms_op_a
+                  write(luout,*) '               MSD C',
+     &                 ms_i_dis_c(1:ncblk_i0)
+                  write(luout,*) '               MSD A',
+     &                 ms_i_dis_a(1:nablk_i0)
+                  write(luout,*) 'current block: I0 MS',ms_i0_c,ms_i0_a
+                  write(luout,*) '               IRREP',gm_i0_c,gm_i0_a
+                  write(luout,*) '               MSD C',
+     &                 ms_i0_dis_c(1:ncblk_i0)
+                  write(luout,*) '               MSD A',
+     &                 ms_i0_dis_a(1:nablk_i0)
+                  write(luout,*) '               GMD C',
+     &                 gm_i0_dis_c(1:ncblk_i0)
+                  write(luout,*) '               GMD A',
+     &                 gm_i0_dis_a(1:nablk_i0)
+                  write(luout,*) '               K MS ',ms_k_c,ms_k_a
+                  write(luout,*) '               IRREP',gm_k_c,gm_k_a
+                  write(luout,*) '               MSD C',
+     &                 ms_k_dis_c(1:ncblk_k)
+                  write(luout,*) '               MSD A',
+     &                 ms_k_dis_a(1:nablk_k)
+                  write(luout,*) '               GMD C',
+     &                 gm_k_dis_c(1:ncblk_k)
+                  write(luout,*) '               GMD A',
+     &                 gm_k_dis_a(1:nablk_k)
+                end if
+
+                if (.not.check_ms(ms_i0_dis_c,cinfo_i0_c,ncblk_i0))
+     &               cycle dis_loop
+                if (.not.check_ms(ms_i0_dis_a,cinfo_i0_a,nablk_i0))
+     &               cycle dis_loop
+c dbg
+c                print *,'ACCEPTED'
+c dbg                
+  
+                ! get symmetry and ms-dist. of reordered operator I'
+                call merge_msgmdis(ms_ip_dis_c,gm_ip_dis_c,
+     &                             ncblk_opreo,
+     &                             ms_i0_dis_c,gm_i0_dis_c,
+     &                             ms_k_dis_c,gm_k_dis_c,
+     &                             map_info_to_reo_c)
+                call merge_msgmdis(ms_ip_dis_a,gm_ip_dis_a,
+     &                             nablk_opreo,
+     &                             ms_k_dis_a,gm_k_dis_a,
+     &                             ms_i0_dis_a,gm_i0_dis_a,
+     &                             map_info_to_reo_a)
+
+                ! reform MS-(times two)-values to idxms
+                call ms2idxms(idxms_k_dis_c,ms_k_dis_c,
+     &               cinfo_k_c,ncblk_k)
+                call ms2idxms(idxms_k_dis_a,ms_k_dis_a,
+     &               cinfo_k_a,nablk_k)
+
+                call ms2idxms(idxms_i0_dis_c,ms_i0_dis_c,
+     &               cinfo_i0_c,ncblk_i0)
+                call ms2idxms(idxms_i0_dis_a,ms_i0_dis_a,
+     &               cinfo_i0_a,nablk_i0)
+
+                call ms2idxms(idxms_ip_dis_c,ms_ip_dis_c,
+     &               cinfo_opreo_c,ncblk_opreo)
+                call ms2idxms(idxms_ip_dis_a,ms_ip_dis_a,
+     &               cinfo_opreo_a,nablk_opreo)
+
+                call set_len_str(lstr_k,ncblk_k,nablk_k,
+     &               graphs,
+     &               cinfo_k_c(1,2),idxms_k_dis_c,
+     &                               gm_k_dis_c,cinfo_k_c(1,3),
+     &               cinfo_k_a(1,2),idxms_k_dis_a,
+     &                               gm_k_dis_a,cinfo_k_a(1,3),
+     &               hpvxseq,.false.)
+
+                if (ncblk_k+nablk_k.gt.0 .and.
+     &              idxlist(0,lstr_k,ncblk_k+nablk_k,1).gt.0) cycle
+
+                call set_len_str(lstr_i0,ncblk_i0,nablk_i0,
+     &               graphs,
+     &               cinfo_i0_c(1,2),idxms_i0_dis_c,
+     &                               gm_i0_dis_c,cinfo_i0_c(1,3),
+     &               cinfo_i0_a(1,2),idxms_i0_dis_a,
+     &                               gm_i0_dis_a,cinfo_i0_a(1,3),
+     &               hpvxseq,.false.)
+
+                if (ncblk_i0+nablk_i0.gt.0 .and.
+     &              idxlist(0,lstr_i0,ncblk_i0+nablk_i0,1).gt.0) cycle
+c dbg
+c                print *,'cinfo_i0_c: ',cinfo_i0_c(1:ncblk_i0,1)
+c                print *,'cinfo_i0_a: ',cinfo_i0_a(1:nablk_i0,1)
+c                print *,'cinfo_i0_c: ',cinfo_i0_c(1:ncblk_i0,2)
+c                print *,'cinfo_i0_a: ',cinfo_i0_a(1:nablk_i0,2)
+c                print *,'cinfo_i0_c: ',cinfo_i0_c(1:ncblk_i0,3)
+c                print *,'cinfo_i0_a: ',cinfo_i0_a(1:nablk_i0,3)
+c                print *,'lstr_i0:',lstr_i0
+c                print *,'lstr_k:',lstr_k
+c dbg
+
+                call set_len_str(lstr_opreo,ncblk_opreo,nablk_opreo,
+     &               graphs,
+     &               cinfo_opreo_c(1,2),idxms_ip_dis_c,
+     &                               gm_ip_dis_c,cinfo_opreo_c(1,3),
+     &               cinfo_opreo_a(1,2),idxms_ip_dis_a,
+     &                               gm_ip_dis_a,cinfo_opreo_a(1,3),
+     &               hpvxseq,.false.)
+
+                if (ncblk_opreo+nablk_opreo.gt.0 .and.
+     &              idxlist(0,lstr_opreo,
+     &                        ncblk_opreo+nablk_opreo,1).gt.0) cycle
+
+                call set_strmapdim_c(
+     &                 nstr_opori_c,nstr_i0c1,nstr_k_c1,
+     &                 ncblk_opori,
+     &                 lstr_i0,lstr_k,map_info_to_ori_c)
+                call set_strmapdim_c(
+     &                 nstr_opori_a,nstr_k_a1,nstr_i0a1,
+     &                 nablk_opori,
+     &                 lstr_k(ncblk_k+1),
+     &                       lstr_i0(ncblk_i0+1),map_info_to_ori_a)
+
+                call set_strmapdim_c(
+     &                 nstr_opreo_c,nstr_i0c2,nstr_k_c2,
+     &                 ncblk_opreo,
+     &                 lstr_i0,lstr_k,map_info_to_reo_c)
+                call set_strmapdim_c(
+     &                 nstr_opreo_a,nstr_k_a2,nstr_i0a2,
+     &                 nablk_opreo,
+     &                 lstr_k(ncblk_k+1),
+     &                       lstr_i0(ncblk_i0+1),map_info_to_reo_a)
+
+                nstr_k_c_tot  = ielprd(lstr_k,ncblk_k)
+                nstr_k_a_tot  = ielprd(lstr_k(ncblk_k+1),nablk_k)
+                nstr_i0_c_tot = ielprd(lstr_i0,ncblk_i0)
+                nstr_i0_a_tot = ielprd(lstr_i0(ncblk_i0+1),nablk_i0)
+c dbg
+c                print *,'nstr_k_c_tot:  ',nstr_k_c_tot
+c                print *,'nstr_k_a_tot:  ',nstr_k_a_tot
+c                print *,'nstr_i0_c_tot: ',nstr_i0_c_tot
+c                print *,'nstr_i0_a_tot: ',nstr_i0_a_tot
+c dbg
+
+                call set_op_ldim_c(ldim_opori_c,ldim_opori_a,
+     &                 cinfo_opori_c(1,3),cinfo_opori_a(1,3),
+     &                 lstr_opori,ncblk_opori,nablk_opori)
+                call set_op_ldim_c(ldim_opreo_c,ldim_opreo_a,
+     &                 cinfo_opreo_c(1,3),cinfo_opreo_a(1,3),
+     &                 lstr_opreo,ncblk_opreo,nablk_opreo)
+
+                ifree = mem_setmark('reostr')
+                lenmap = get_lenmap(lstr_i0,lstr_k,
+     &               map_info_to_ori_c,ncblk_opori)
+                ifree = mem_alloc_int(map_to_ori_c,lenmap,'orimap_c')
+                lenmap = get_lenmap(
+     &               lstr_k(ncblk_k+1),lstr_i0(ncblk_i0+1),
+     &               map_info_to_ori_a,nablk_opori)
+                ifree = mem_alloc_int(map_to_ori_a,lenmap,'orimap_a')
+                lenmap = get_lenmap(lstr_i0,lstr_k,
+     &               map_info_to_reo_c,ncblk_opreo)
+                ifree = mem_alloc_int(map_to_reo_c,lenmap,'reomap_c')
+                lenmap = get_lenmap(
+     &               lstr_k(ncblk_k+1),lstr_i0(ncblk_i0+1),
+     &               map_info_to_reo_a,nablk_opreo)
+                ifree = mem_alloc_int(map_to_reo_a,lenmap,'reomap_a')
+
+                call get_strmap_blk_c(map_to_ori_c,
+     &                 ncblk_i0,ncblk_k,ncblk_opori,
+     &                 cinfo_i0_c,cinfo_k_c,lstr_i0,lstr_k,
+     &                 cinfo_i0_c(1,2),cinfo_k_c(1,2),
+     &                 idxms_i0_dis_c,idxms_k_dis_c,
+     &                 gm_i0_dis_c,gm_k_dis_c,map_info_to_ori_c,
+     &                 strmap_info,nsym,ngraph)
+                call get_strmap_blk_c(map_to_ori_a,
+     &                 nablk_k,nablk_i0,nablk_opori,
+     &                 cinfo_k_a,cinfo_i0_a,
+     &                    lstr_k(ncblk_k+1),lstr_i0(ncblk_i0+1),
+     &                 cinfo_k_a(1,2),cinfo_i0_a(1,2),
+     &                 idxms_k_dis_a,idxms_i0_dis_a,
+     &                 gm_k_dis_a,gm_i0_dis_a,map_info_to_ori_a,
+     &                 strmap_info,nsym,ngraph)
+
+                call get_strmap_blk_c(map_to_reo_c,
+     &                 ncblk_i0,ncblk_k,ncblk_opreo,
+     &                 cinfo_i0_c,cinfo_k_c,lstr_i0,lstr_k,
+     &                 cinfo_i0_c(1,2),cinfo_k_c(1,2),
+     &                 idxms_i0_dis_c,idxms_k_dis_c,
+     &                 gm_i0_dis_c,gm_k_dis_c,map_info_to_reo_c,
+     &                 strmap_info,nsym,ngraph)
+                call get_strmap_blk_c(map_to_reo_a,
+     &                 nablk_k,nablk_i0,nablk_opreo,
+     &                 cinfo_k_a,cinfo_i0_a,
+     &                   lstr_k(ncblk_k+1),lstr_i0(ncblk_i0+1),
+     &                 cinfo_k_a(1,2),cinfo_i0_a(1,2),
+     &                 idxms_k_dis_a,idxms_i0_dis_a,
+     &                 gm_k_dis_a,gm_i0_dis_a,map_info_to_reo_a,
+     &                 strmap_info,nsym,ngraph)
+
+                ! --> offset in xop_reo
+                if (ndis_opreo(gm_op_a,idxms_op_a).gt.1) then
+                  idxdis =
+     &                 idx_msgmdst2(
+     &                 iblk_opreo,idxms_op_a,gm_op_a,
+     &                 cinfo_opreo_c,idxms_ip_dis_c,
+     &                               gm_ip_dis_c,ncblk_opreo,
+     &                 cinfo_opreo_a,idxms_ip_dis_a,
+     &                               gm_ip_dis_a,nablk_opreo,
+     &                 .false.,opreo,nsym)
+c dbg
+c                  print *,'current target distr: ',idxdis
+c dbg
+                  idx00opreo =
+     &                 d_gam_ms_opreo(idxdis,gm_op_a,idxms_op_a) + 1
+     &                                           - idxst_opreo
+c dbg
+c                  print *,'idx00opreo:',idx00opreo
+c dbg
+                end if
+
+                ! loop over A strings
+                k_a: do istr_k_a = 1, nstr_k_a_tot
+                  i0_a: do istr_i0_a = 1, nstr_i0_a_tot
+
+                    ! map K,I0 -> I
+                    idx0opori = 1
+                    ioff = 0
+                    isgna = sign_reo
+                    istr1 = istr_i0_a-1
+                    istr2 = istr_k_a-1
+                    do icmp = 1, nablk_opori
+                      idx1 = mod(istr1,nstr_i0a1(icmp))+1
+                      idx2 = mod(istr2,nstr_k_a1(icmp))+1
+                      idx  = (idx1-1)*nstr_k_a1(icmp)+idx2
+                      ielmap = map_to_ori_a(ioff+idx)
+                      if (ielmap.eq.0) cycle i0_a
+                      isgna = isgna*sign(1,ielmap)
+                      idx0opori = idx0opori
+     &                     + (abs(ielmap)-1)*ldim_opori_a(icmp)
+                      ioff = ioff + nstr_opori_a(icmp)
+                      istr1 = istr1/nstr_i0a1(icmp)
+                      istr2 = istr2/nstr_k_a1(icmp)
+                    end do
+                    
+                    ! map K,I0 -> I'
+                    idx0opreo = idx00opreo
+                    ioff = 0
+                    istr1 = istr_i0_a-1
+                    istr2 = istr_k_a-1
+                    do icmp = 1, nablk_opreo
+                      idx1 = mod(istr1,nstr_i0a2(icmp))+1
+                      idx2 = mod(istr2,nstr_k_a2(icmp))+1
+                      idx  = (idx1-1)*nstr_k_a2(icmp)+idx2
+                      ielmap = map_to_reo_a(ioff+idx)
+                      if (ielmap.eq.0) cycle i0_a
+                      isgna = isgna*sign(1,ielmap)
+                      idx0opreo = idx0opreo
+     &                     + (abs(ielmap)-1)*ldim_opreo_a(icmp)
+                      ioff = ioff + nstr_opreo_a(icmp)
+                      istr1 = istr1/nstr_i0a2(icmp)
+                      istr2 = istr2/nstr_k_a2(icmp)
+                    end do
+c dbg
+c                    print *,'idx0opreo: ',idx0opreo
+c                    print *,'idx0opori: ',idx0opori
+c dbg
+                     
+                    ! loop over C strings
+                    k_c: do istr_k_c = 1, nstr_k_c_tot
+                      i0_c: do istr_i0_c = 1, nstr_i0_c_tot
+
+                        ! map K,I0 -> I
+                        idx_opori = idx0opori
+                        ioff = 0
+                        isgnt = isgna
+                        istr1 = istr_k_c-1
+                        istr2 = istr_i0_c-1
+                        do icmp = 1, ncblk_opori
+                          idx1 = mod(istr1,nstr_k_c1(icmp))+1
+                          idx2 = mod(istr2,nstr_i0c1(icmp))+1
+                          idx  = (idx1-1)*nstr_i0c1(icmp)+idx2
+                          ielmap = map_to_ori_c(ioff+idx)
+                          if (ielmap.eq.0) cycle i0_c
+                          isgnt = isgnt*sign(1,ielmap)
+                          idx_opori = idx_opori +
+     &                         (abs(ielmap)-1)*ldim_opori_c(icmp)
+                          ioff = ioff + nstr_opori_c(icmp)
+                          istr1 = istr1/nstr_k_c1(icmp)
+                          istr2 = istr2/nstr_i0c1(icmp)
+                        end do
+                        ! map K,I0 -> I'
+                        idx_opreo = idx0opreo
+                        ioff = 0
+                        istr1 = istr_k_c-1
+                        istr2 = istr_i0_c-1
+                        do icmp = 1, ncblk_opreo
+                          idx1 = mod(istr1,nstr_k_c2(icmp))+1
+                          idx2 = mod(istr2,nstr_i0c2(icmp))+1
+                          idx  = (idx1-1)*nstr_i0c2(icmp)+idx2
+                          ielmap = map_to_reo_c(ioff+idx)
+                          if (ielmap.eq.0) cycle i0_c
+                          isgnt = isgnt*sign(1,ielmap)
+                          idx_opreo = idx_opreo +
+     &                         (abs(ielmap)-1)*ldim_opreo_c(icmp)
+                          ioff = ioff + nstr_opreo_c(icmp)
+                          istr1 = istr1/nstr_k_c2(icmp)
+                          istr2 = istr2/nstr_i0c2(icmp)
+                        end do
+c dbg
+c                        print *,'idx0opreo: ',idx0opreo
+c                        print *,'idx0opori: ',idx0opori
+c                        print *,'idx_opreo: ',idx_opreo
+c                        print *,'idx_opori: ',idx_opori
+c dbg
+
+                        xop_reo(idx_opreo) = xop_reo(idx_opreo)
+     &                       + dble(isgnt)*xop_ori(idx_opori)
+
+                      end do i0_c
+                    end do k_c
+
+                  end do i0_a
+                end do k_a
+
+                ifree = mem_flushmark('reostr')
+
+              end do dis_loop
+              
+            end do
+          end do
+
+        end do
+      end do
+
+      return
+      end

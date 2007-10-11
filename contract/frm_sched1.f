@@ -434,9 +434,6 @@ c            call init_operator(0,opscr(ninter),orb_info)
           idoffop1op2 = ffop1op2%length_of_record*
      &                                   (ffop1op2%current_record-1)
 
-          if (reo_op1op2)
-     &         call quit(1,'bau-exit','before contraction')
-
           if (ntest.ge.100)
      &         write(luout,*) 'calling contraction kernel'
           ! do the contraction

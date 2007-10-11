@@ -107,10 +107,6 @@
             idx_merge_map = idx_merge_map+nvtx2+1
 
             if (iocc12(hpvx,ica,ijoin12).eq.0) cycle
-c dbg
-c            print *,'hpvx,ica,ijoin12,occ12:',hpvx,ica,ijoin12,
-c     &           iocc12(hpvx,ica,ijoin12)
-c dbg
             ! set counters for contributions to zero
             if (ica.eq.1) map_info_c(idx_base) = 0
             if (ica.eq.2) map_info_a(idx_base) = 0

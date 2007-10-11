@@ -68,7 +68,7 @@
      &     reo_info
 
       integer ::
-     &     nca_blk(2,6)
+     &     nca_blk(2,7)
       integer, pointer ::
      &     cinfo_op1c(:,:),cinfo_op1a(:,:),
      &     cinfo_op2c(:,:),cinfo_op2a(:,:),
@@ -121,6 +121,8 @@
      &       iocc_op2,njoined_op2)
         call get_num_subblk(nca_blk(1,3),nca_blk(2,3),iocc_op1op2,
      &       njoined_op1op2)
+        call get_num_subblk(nca_blk(1,7),nca_blk(2,7),iocc_op1op2tmp,
+     &       njoined_op1op2)
         call get_num_subblk(nca_blk(1,4),nca_blk(2,4),
      &       iocc_ex1,njoined_op1)
         call get_num_subblk(nca_blk(1,5),nca_blk(2,5),
@@ -132,8 +134,8 @@
      &       cinfo_op2c(nca_blk(1,2),3),cinfo_op2a(nca_blk(2,2),3),
      &       cinfo_op1op2c(nca_blk(1,3),3),
      &       cinfo_op1op2a(nca_blk(2,3),3),
-     &       cinfo_op1op2tmpc(nca_blk(1,3),3),
-     &       cinfo_op1op2tmpa(nca_blk(2,3),3),
+     &       cinfo_op1op2tmpc(nca_blk(1,7),3),
+     &       cinfo_op1op2tmpa(nca_blk(2,7),3),
      &       cinfo_ex1c(nca_blk(1,4),3),cinfo_ex1a(nca_blk(2,4),3),
      &       cinfo_ex2c(nca_blk(1,5),3),cinfo_ex2a(nca_blk(2,5),3),
      &       cinfo_cntc(nca_blk(1,6),3),cinfo_cnta(nca_blk(2,6),3))
@@ -146,9 +148,9 @@
      &       (njoined_op2+njoined_cnt))),
      &       map_info2a(max(1,nca_blk(2,2)*2*
      &       (njoined_op2+njoined_cnt))),
-     &         map_info12c(max(1,nca_blk(1,3)*2*
+     &         map_info12c(max(1,nca_blk(1,7)*2*
      &       (njoined_op1+njoined_op2))),
-     &       map_info12a(max(1,nca_blk(2,3)*2*
+     &       map_info12a(max(1,nca_blk(2,7)*2*
      &       (njoined_op1+njoined_op2))))
         call condense_bc_info(
      &       cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,

@@ -25,7 +25,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       logical, intent(in) ::
      &     modify_contr, set_reord_list
@@ -50,7 +50,7 @@
      &     cnt_shr(ngastp,2), cnt_shl(ngastp,2)
       integer ::
      &     narc, iarc, jarc, ivtx0, ivtx1, ivtx2, iprim, isuper,
-     &     ivtx_to, ivtx_from, iarc_shift, iarc_sum, narc_new,
+     &     iarc_shift, iarc_sum, narc_new,
      &     maxreo, idx, idxsuper, ica, ica_vtx, hpvx
 
       integer, external ::
@@ -131,7 +131,7 @@
                 if (arc(iarc)%occ_cnt(hpvx,ica).eq.
      &                        occ_vtx(hpvx,ica_vtx,ivtx1)) then
 c dbg
-                  print *,'left case'
+c                  print *,'left case'
 c dbg
 
                   cnt_shl(hpvx,ica) = arc(jarc)%occ_cnt(hpvx,ica)
@@ -140,7 +140,7 @@ c dbg
                 else if (arc(jarc)%occ_cnt(hpvx,ica).eq.
      &                        occ_vtx(hpvx,ica_vtx,ivtx2)) then
 c dbg
-                  print *,'right case'
+c                  print *,'right case'
 c dbg
 
                   cnt_shr(hpvx,ica) = arc(iarc)%occ_cnt(hpvx,ica)
@@ -148,7 +148,7 @@ c dbg
 
                 else if (contr%nsupvtx.eq.2) then
 c dbg
-                  print *,'special case'
+c                  print *,'special case'
 c dbg
                   
                   cnt_shl(hpvx,ica) = arc(jarc)%occ_cnt(hpvx,ica)
@@ -167,14 +167,14 @@ c dbg
             end do
           end do
 c dbg
-          print *,'CNT SHL:'
-          call wrt_occ(luout,cnt_shl)
-          print *,'CNT SHR:'
-          call wrt_occ(luout,cnt_shr)
-          print *,'OCC SHL:'
-          call wrt_occ(luout,occ_shl)
-          print *,'OCC SHR:'
-          call wrt_occ(luout,occ_shr)
+c          print *,'CNT SHL:'
+c          call wrt_occ(luout,cnt_shl)
+c          print *,'CNT SHR:'
+c          call wrt_occ(luout,cnt_shr)
+c          print *,'OCC SHL:'
+c          call wrt_occ(luout,occ_shl)
+c          print *,'OCC SHR:'
+c          call wrt_occ(luout,occ_shr)
 c dbg
 
           ! update contractions
@@ -201,12 +201,12 @@ c dbg
               reo_info%reo(idx)%idxsuper = idxsuper
               ! flag whether this is the result vertex of prev. binary contr.
               reo_info%reo(idx)%is_bc_result =
-     &             idxop12.eq.vertex(ivtx_to)%idx_op
+     &             idxop12.eq.vertex(ivtx1)%idx_op
               ! which components of super-vertex
               reo_info%reo(idx)%to =
-     &             imltlist(idxsuper,svertex,ivtx1,1)
-              reo_info%reo(idx)%from =
      &             imltlist(idxsuper,svertex,ivtx2,1)
+              reo_info%reo(idx)%from =
+     &             imltlist(idxsuper,svertex,ivtx1,1)
               ! shifted occupation
               reo_info%reo(idx)%occ_shift = occ_shr
             end if
@@ -216,14 +216,15 @@ c dbg
               if (idx.gt.maxreo)
      &             call quit(1,'reorder_supvtx','unexpected event')
               idxsuper = svertex(ivtx1)
+              reo_info%reo(idx)%idxsuper = idxsuper
               ! flag whether this is the result vertex of prev. binary contr.
               reo_info%reo(idx)%is_bc_result =
-     &             idxop12.eq.vertex(ivtx_to)%idx_op
+     &             idxop12.eq.vertex(ivtx1)%idx_op
               ! which components of super-vertex
               reo_info%reo(idx)%to =
-     &             imltlist(idxsuper,svertex,ivtx2,1)
-              reo_info%reo(idx)%from =
      &             imltlist(idxsuper,svertex,ivtx1,1)
+              reo_info%reo(idx)%from =
+     &             imltlist(idxsuper,svertex,ivtx2,1)
               ! shifted occupation
               reo_info%reo(idx)%occ_shift = occ_shl
             end if

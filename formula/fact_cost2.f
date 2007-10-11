@@ -70,7 +70,7 @@
      &     merge_op2(contr%nvtx*contr%nvtx),
      &     merge_op1op2(contr%nvtx*contr%nvtx),
      &     merge_op2op1(contr%nvtx*contr%nvtx),
-     &     nca_blk(2,6)
+     &     nca_blk(2,7)
       integer, pointer ::
      &     cinfo_op1c(:,:),cinfo_op1a(:,:),
      &     cinfo_op2c(:,:),cinfo_op2a(:,:),
@@ -95,6 +95,31 @@
 c dbg
 c      integer idx1, idx2
 c dbg
+c dbg
+c check whether
+c      include 'par_opnames_gen.h'
+c      integer idxtbar, ivtx
+c      integer, external :: idx_oplist2
+c      logical tbarda
+c
+c      idxtbar = idx_oplist2(op_tbar,op_info)
+c      tbarda = .false.
+c      do ivtx = 1, contr%nvtx
+c        tbarda = tbarda.or.contr%vertex(ivtx)%idx_op.eq.idxtbar
+c      end do
+c      if (tbarda.and.contr%nsupvtx.gt.2) then
+c        if (contr%vertex(contr%arc(iarc)%link(1))%idx_op.eq.idxtbar .or.
+c     &      contr%vertex(contr%arc(iarc)%link(2))%idx_op.eq.idxtbar)then
+c          
+c          print *,'avoiding early Tbar contr ... arc = ',iarc
+c          possible = .false.
+c          return
+c
+c        end if
+c      end if
+c      if (tbarda) print *,'allowing arc = ',iarc
+c dbg
+
 
       if (ntest.gt.0) then
         call write_title(luout,wst_dbg_subr,'this is fact_cost')
@@ -186,12 +211,24 @@ c dbg
       possible = possible.and.
      &     check_grph4occ(iocc_op1op2,irst_op1op2,
      &     str_info,ihpvgas,ngas,njoined_op1op2)
+c dbg
+      print *,'op1op2: ',possible
+      call wrt_occ_n(6,iocc_op1op2,njoined_op1op2)
+c dbg
       possible = possible.and.
      &     check_grph4occ(iocc_op1,irst_op1,
      &     str_info,ihpvgas,ngas,njoined_op(1))
+c dbg
+      print *,'op1: ',possible
+      call wrt_occ_n(6,iocc_op1,njoined_op(1))
+c dbg
       possible = possible.and.
      &     check_grph4occ(iocc_op2,irst_op2,
      &     str_info,ihpvgas,ngas,njoined_op(2))
+c dbg
+      print *,'op2: ',possible
+      call wrt_occ_n(6,iocc_op2,njoined_op(2))
+c dbg
 
       ! if not: do not allow this factorization
       if (.not.possible)
@@ -211,6 +248,8 @@ c dbg
      &                        iocc_ex2,njoined_op(2))
           call get_num_subblk(nca_blk(1,6),nca_blk(2,6),
      &                        iocc_cnt,njoined_cnt)
+          ! dummy setting for op1op2tmp (see contr_op1op2)
+          nca_blk(1:2,7) = nca_blk(1:2,3)
           allocate(
      &         cinfo_op1c(nca_blk(1,1),3),cinfo_op1a(nca_blk(2,1),3),
      &         cinfo_op2c(nca_blk(1,2),3),cinfo_op2a(nca_blk(2,2),3),

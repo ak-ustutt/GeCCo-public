@@ -130,7 +130,7 @@
      &     msd(ngastp,2,op%njoined), igamd(ngastp,2,op%njoined),
      &     scr(ngastp,2,2*op%njoined)
       real(8) ::
-     &     xnrm, xnrm_tot
+     &     xnrm, xnrm_tot, xnrm_ms
       real(8), pointer ::
      &     buffer(:), curblk(:)
 
@@ -198,6 +198,7 @@
         idxoff = 0
         idxoff_blk = 0
         do ms = msmax, -msmax, -2
+          xnrm_ms = 0d0
           idxms = idxms+1
           do igam = 1, orb_info%nsym
 
@@ -225,6 +226,7 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
         
             xnrm = sqrt(ddot(lenblk,curblk,1,curblk,1))
             xnrm_tot = xnrm_tot + xnrm*xnrm
+            xnrm_ms  = xnrm_ms + xnrm*xnrm
 
             if (level.gt.0) then
               lenprt = lenblk
@@ -315,8 +317,9 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
               end do distr_loop
             end if
             if (level.ge.2) write(luout,'("+",77("-"),"+")')
-          end do
-        end do
+          end do ! gam
+          write(luout,*) 'norm (MS-Block) = ',sqrt(xnrm_ms)
+        end do ! ms
         idx_occ = idx_occ+njoined
       end do
 

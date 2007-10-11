@@ -21,6 +21,8 @@
       ! processed info
       integer ::
      &     n_op_reo
+      integer ::
+     &     sign_reo
       integer, pointer ::
      &     merge_stp1(:),
      &     merge_stp2(:),

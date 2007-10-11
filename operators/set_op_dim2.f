@@ -219,13 +219,13 @@
      &                    msdis_c,msdis_a,
      &                    hpvx_csub,hpvx_asub,
      &                    njoined)
-                call wrt_occ(luout,msd)
+                call wrt_occ_n(luout,msd,njoined)
                 call expand_occ(igamd,idx_graph(1,1,iblkoff+1),
      &                    ncsub,nasub,
      &                    gamdis_c,gamdis_a,
      &                    hpvx_csub,hpvx_asub,
      &                    njoined)
-                call wrt_occ(luout,igamd)
+                call wrt_occ_n(luout,igamd,njoined)
                 if (njoined.eq.1) then
                   did = msgmdid(hpvx_occ(1,1,iblkoff+1),
      &                        msd,igamd,ngam)
@@ -244,6 +244,13 @@
                 ! save ID of current distr
                 op%off_op_gmox(iblk)%
      &               did(idxdis,igama,idxmsa) = did
+                if (ntest.ge.150) then
+                  write(luout,*) 'current did = ',did
+                  write(luout,*) idxmsdis_c(1:ncsub)
+                  write(luout,*) gamdis_c(1:ncsub)
+                  write(luout,*) idxmsdis_a(1:nasub)
+                  write(luout,*) gamdis_a(1:nasub)
+                end if
               end if 
 
               ! increment string element index
@@ -317,7 +324,8 @@
             nexc = min(ca_occ(1,iblk),
      &                 ca_occ(2,iblk))
             write(luout,*) 'occ-class: ',iblk
-            call wrt_occ(luout,op%ihpvca_occ(1,1,iblk))
+            iblkoff = (iblk-1)*njoined
+            call wrt_occ_n(luout,op%ihpvca_occ(1,1,iblkoff+1),njoined)
             do iexc = 1, nexc+1
               do igam = 1, ngam
                 if (op%off_op_gmox(iblk)%ndis(igam,iexc).eq.0) cycle

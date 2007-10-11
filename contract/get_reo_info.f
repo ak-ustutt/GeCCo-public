@@ -31,7 +31,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(contraction), intent(in) ::
      &     contr
@@ -52,15 +52,18 @@
      &     irst_op1op2tmp(2,orb_info%ngas,2,2,njoined_op1op2)
       
       integer ::
-     &     nreo, ireo, idx, nreo_op1op2, nmap, len_map
+     &     nreo, ireo, idx, nreo_op1op2, ireo_op1op2, nmap, len_map,
+     &     sign_reo
       type(reorder_list), pointer ::
      &     reo(:)
       integer, pointer ::
      &     merge_map_stp1(:,:,:), merge_map_stp2(:,:,:),
+     &     merge_stp1(:), merge_stp1inv(:),
+     &     merge_stp2(:), merge_stp2inv(:),
      &     igrph(:,:,:), irst(:,:,:,:,:)
 
       integer, external ::
-     &     imltlist
+     &     imltlist, sign_shift, sign_hpvx
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'get_reo_info')
@@ -120,15 +123,45 @@
         end do
 
         nreo_op1op2 = 0
+        sign_reo = 1
         do ireo = 1, nreo
           if (.not.reo(ireo)%is_bc_result) cycle
           nreo_op1op2 = nreo_op1op2+1
+          ! get sign for shift
+          sign_reo = sign_reo*sign_shift(reo(ireo)%occ_shift,
+     &         reo(ireo)%from,reo(ireo)%to,
+     &         iocc_op1op2,njoined_op1op2)
+c dbg
+c          print *,'sign_reo (I): ',sign_reo
+c dbg
+
+          ! update op1op2, part I: remove shift occupation
           iocc_op1op2(1:ngastp,1:2,reo(ireo)%from) 
      &         = iocc_op1op2(1:ngastp,1:2,reo(ireo)%from)
      &         - reo(ireo)%occ_shift
+
+          ! get hpvx-transposition signs
+          ! ... for source ...
+          sign_reo = sign_reo*sign_hpvx(2,
+     &         iocc_op1op2(1:ngastp,1:2,reo(ireo)%from),.false.,
+     &         reo(ireo)%occ_shift,.false.)
+c dbg
+c          print *,'sign_reo (IIa): ',sign_reo
+c dbg
+          ! ... and target
+          sign_reo = sign_reo*sign_hpvx(2,
+     &         iocc_op1op2(1:ngastp,1:2,reo(ireo)%to),.false.,
+     &         reo(ireo)%occ_shift,.false.)
+c dbg
+c          print *,'sign_reo (IIb): ',sign_reo
+c dbg
+
+          ! update op1op2, part II: add shift occupation
           iocc_op1op2(1:ngastp,1:2,reo(ireo)%to) 
      &         = iocc_op1op2(1:ngastp,1:2,reo(ireo)%to)
      &         + reo(ireo)%occ_shift
+
+          ! update mapping info
           nmap = njoined_op1op2
      &         - imltlist(0,merge_map_stp1(1,2,reo(ireo)%from),
      &                    njoined_op1op2,1)+1
@@ -138,6 +171,10 @@
      &                    njoined_op1op2,1)+1
           merge_map_stp2(nmap,2,reo(ireo)%to) = nreo_op1op2
         end do
+c dbg
+c        print *,'sign_reo (final): ',sign_reo
+c dbg
+        reo_info%sign_reo = sign_reo
 
         ! store shift occupations in iocc_reo array
         allocate(reo_info%iocc_reo(ngastp,2,nreo_op1op2))
@@ -146,9 +183,11 @@
 
         reo_info%iocc_opreo0 = iocc_op1op2tmp
 
+        ireo_op1op2 = 0
         do ireo = 1, nreo
           if (.not.reo(ireo)%is_bc_result) cycle
-          reo_info%iocc_reo(1:ngastp,1:2,nreo_op1op2) =
+          ireo_op1op2 = ireo_op1op2+1
+          reo_info%iocc_reo(1:ngastp,1:2,ireo_op1op2) =
      &       reo(ireo)%occ_shift
           reo_info%iocc_opreo0(1:ngastp,1:2,reo(ireo)%from) =
      &         reo_info%iocc_opreo0(1:ngastp,1:2,reo(ireo)%from) -
@@ -175,25 +214,23 @@
         ! transform merge-map to condensed representation
         ! length of map: 1 entry for each target vertex
         !  + number of non-zero entries in merge_map_xxxx
-        len_map = njoined_op1op2 + 
+        len_map = njoined_op1op2*2 + 
      &       njoined_op1op2*njoined_op1op2*2-imltlist(0,merge_map_stp1,
      &                   njoined_op1op2*njoined_op1op2*2,1)
-c dbg
-        print *,'len_map = ',len_map
-c dbg
-        allocate(reo_info%merge_stp1(len_map))
-        len_map = njoined_op1op2 + 
+        allocate(merge_stp1(len_map),merge_stp1inv(len_map))
+        len_map = njoined_op1op2*2 + 
      &       njoined_op1op2*njoined_op1op2*2-imltlist(0,merge_map_stp2,
      &       njoined_op1op2*njoined_op1op2*2,1)
-c dbg
-        print *,'len_map = ',len_map
-c dbg
-        allocate(reo_info%merge_stp2(len_map))
+        allocate(merge_stp2(len_map),merge_stp2inv(len_map))
 
-        call condense_merge_map(reo_info%merge_stp1,
+        call condense_merge_map(merge_stp1,
      &       merge_map_stp1,njoined_op1op2,njoined_op1op2,.false.)
-        call condense_merge_map(reo_info%merge_stp2,
+        call condense_merge_map(merge_stp1inv,
+     &       merge_map_stp1,njoined_op1op2,njoined_op1op2,.true.)
+        call condense_merge_map(merge_stp2,
      &       merge_map_stp2,njoined_op1op2,njoined_op1op2,.false.)
+        call condense_merge_map(merge_stp2inv,
+     &       merge_map_stp2,njoined_op1op2,njoined_op1op2,.true.)
 
         deallocate(merge_map_stp1,merge_map_stp2)
 
@@ -204,36 +241,44 @@ c dbg
         call get_num_subblk(reo_info%ncblk_reo0,reo_info%nablk_reo0,
      &       reo_info%iocc_opreo0,njoined_op1op2)
 
-        allocate(reo_info%cinfo_reo_c(reo_info%ncblk_reo,3),
-     &           reo_info%cinfo_reo_a(reo_info%nablk_reo,3),
-     &           reo_info%cinfo_opreo0c(reo_info%ncblk_reo0,3),
-     &           reo_info%cinfo_opreo0a(reo_info%nablk_reo0,3))
-        len_map = 2*njoined_op1op2*nreo_op1op2
-        allocate(reo_info%map_reo1c(max(1,reo_info%ncblk_reo*len_map)),
-     &           reo_info%map_reo1a(max(1,reo_info%nablk_reo*len_map)),
-     &           reo_info%map_reo2c(max(1,reo_info%ncblk_reo*len_map)),
-     &           reo_info%map_reo2a(max(1,reo_info%nablk_reo*len_map)))
+        allocate(reo_info%cinfo_reo_c(max(1,reo_info%ncblk_reo),3),
+     &           reo_info%cinfo_reo_a(max(1,reo_info%nablk_reo),3),
+     &           reo_info%cinfo_opreo0c(max(1,reo_info%ncblk_reo0),3),
+     &           reo_info%cinfo_opreo0a(max(1,reo_info%nablk_reo0),3))
+        len_map = max(1,
+     &       max(reo_info%ncblk_reo+reo_info%ncblk_reo0,
+     &           reo_info%nablk_reo+reo_info%nablk_reo0)*
+     &           2*(njoined_op1op2+nreo_op1op2))
+c dbg
+c        print *,'??',njoined_op1op2,nreo_op1op2
+c        print *,'len_map (2) = ',len_map,
+c     &       reo_info%ncblk_reo,reo_info%nablk_reo
+c dbg
+        allocate(reo_info%map_reo1c(len_map),
+     &           reo_info%map_reo1a(len_map),
+     &           reo_info%map_reo2c(len_map),
+     &           reo_info%map_reo2a(len_map))
 
         call set_mapping_info(reo_info%map_reo1c,reo_info%map_reo1a,
      &       1,
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,
      &       reo_info%iocc_reo,nreo_op1op2,.false.,
-     &       iocc_op1op2,reo_info%merge_stp1,njoined_op1op2,hpvxblkseq)
+     &       iocc_op1op2,merge_stp1,njoined_op1op2,hpvxblkseq)
         call set_mapping_info(reo_info%map_reo1c,reo_info%map_reo1a,
      &       2,
      &       reo_info%iocc_reo,nreo_op1op2,.false.,
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,
-     &       iocc_op1op2,reo_info%merge_stp1,njoined_op1op2,hpvxblkseq)
+     &       iocc_op1op2,merge_stp1inv,njoined_op1op2,hpvxblkseq)
         call set_mapping_info(reo_info%map_reo2c,reo_info%map_reo2a,
      &       1,
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,
      &       reo_info%iocc_reo,nreo_op1op2,.false.,
-     &       iocc_op1op2,reo_info%merge_stp2,njoined_op1op2,hpvxblkseq)
+     &       iocc_op1op2,merge_stp2,njoined_op1op2,hpvxblkseq)
         call set_mapping_info(reo_info%map_reo2c,reo_info%map_reo2a,
      &       2,
      &       reo_info%iocc_reo,nreo_op1op2,.false.,
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,
-     &       iocc_op1op2,reo_info%merge_stp2,njoined_op1op2,hpvxblkseq)
+     &       iocc_op1op2,merge_stp2inv,njoined_op1op2,hpvxblkseq)
 
         allocate(
      &       igrph(ngastp,2,max(njoined_op1op2,nreo_op1op2)),
@@ -246,6 +291,11 @@ c dbg
      &       reo_info%iocc_opreo0,irst,
      &       str_info,orb_info%ihpvgas,
      &       orb_info%ngas,njoined_op1op2,.true.)
+c dbg
+c        print *,'FOCUS:'
+c        call wrt_occ_n(luout,reo_info%iocc_opreo0,njoined_op1op2)
+c        call wrt_occ_n(luout,igrph,njoined_op1op2)
+c dbg
         call condense_occ(reo_info%cinfo_opreo0c,reo_info%cinfo_opreo0a,
      &       reo_info%cinfo_opreo0c(1,3),reo_info%cinfo_opreo0a(1,3),
      &       reo_info%iocc_opreo0,njoined_op1op2,hpvxblkseq)
@@ -266,9 +316,10 @@ c dbg
         call condense_occ(reo_info%cinfo_reo_c(1,2),
      &                                       reo_info%cinfo_reo_a(1,2),
      &       reo_info%cinfo_reo_c(1,3),reo_info%cinfo_reo_a(1,3),
-     &       reo_info%iocc_reo,nreo_op1op2,hpvxblkseq)
+     &       igrph,nreo_op1op2,hpvxblkseq)
 
-        deallocate(igrph,irst)
+        deallocate(igrph,irst,merge_stp1,merge_stp1inv,
+     &                        merge_stp2,merge_stp2inv)
 
       end if
 
