@@ -97,7 +97,7 @@
       call init_formula(form_v_tot)
       form_v_tot_pnt => form_v_tot
       call new_formula_item(form_v_tot_pnt,command_set_target_init,
-     &     idxlcc)
+     &     idxopv)
       form_v_tot_pnt => form_v_tot_pnt%next
 
 

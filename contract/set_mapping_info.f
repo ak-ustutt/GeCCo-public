@@ -18,7 +18,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       logical, intent(in) ::
      &     dagger1, dagger2
@@ -146,6 +146,9 @@ c dbg
             do idx = 1, nvtx2
               ivtx = merge_map(ioff2_merge_map+idx)
               ! nonzero?
+c dbg
+              write(luout,*)hpvx,ica2,ivtx
+c dbg
               if (iocc2(hpvx,ica2,ivtx).eq.0) cycle
               ! increment counters
               icount = icount+1

@@ -19,6 +19,7 @@
       include 'def_strmapinf.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
+      include 'par_opnames_gen.h'
       include 'ifc_memman.h'
 
       integer, parameter ::
@@ -218,13 +219,27 @@ c        case(command_set_target_update)
           iblkres = cur_form%contr%iblk_res
           idxop(1) = cur_form%contr%vertex(1)%idx_op
           iblkop(1) = cur_form%contr%vertex(1)%iblk_op
+c dbg
+          print *,'mark 1'
+c dbg
 
-          if (ffops(idxop(1))%fhand%unit.le.0)
+          ! special: unit operator
+          if (ops(idxop(1))%op%name.eq.op_unity) then
+c dbg
+          print *,'mark 2a'
+c dbg
+            call add_unity(fac,ffres,opres,iblkres,orb_info)
+          else
+c dbg
+          print *,'mark 2b'
+c dbg
+            if (ffops(idxop(1))%fhand%unit.le.0)
      &         call file_open(ffops(idxop(1))%fhand)
 
-          call add_opblk(fac,ffops(idxop(1))%fhand,ffres,
+            call add_opblk(fac,ffops(idxop(1))%fhand,ffres,
      &         ops(idxop(1))%op,opres,
      &         iblkop(1),iblkres,orb_info)
+          end if
 
           cycle term_loop
         end if

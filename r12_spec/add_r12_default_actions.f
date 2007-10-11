@@ -3,7 +3,7 @@
      &                                  op_info,
      &                                  form_info)
 *----------------------------------------------------------------------*
-*     set all actions to be taken if a CC-R12 calculation is intended
+*     Set all actions to be taken if a CC-R12 calculation is intended.
 *----------------------------------------------------------------------*
 
       implicit none
@@ -28,7 +28,7 @@
 
       integer ::
      &     idxham, idxc12, idxdia, idxccen, idxccrs, idxomg, idxhhat,
-     &     idum, isim, idxr12, idxsop, idxdel
+     &     idum, isim, idxr12, idxsop, idxdel, idxvint, idxvform
   
       ! explicit interface does not work with ifort
       integer, external ::
@@ -39,7 +39,7 @@
       idxomg = idx_oplist2(op_omgr12,op_info)
       idxdia = idx_oplist2(op_diar12,op_info)
       idxr12 = idx_oplist2(op_rint,op_info)
-      idxdel = idx_oplist2(op_del_inter,op_info)
+c      idxdel = idx_oplist2(op_del_inter,op_info)
 
       ! preliminary:
       idxccen = idx_formlist(label_ccen0,form_info)
@@ -61,13 +61,22 @@
      &     0,idum
      &     )
 
-      ! import Delta integrals used for V-intermediate.
+      idxvint = idx_oplist2(op_v_inter,op_info)
+      idxvform = idx_formlist(label_r12_vint,form_info)
       call add_action(act_list,nactions,
-     &     iaction_import,0,1,0,
-     &     idum,(/idxdel/),
-     &     idum,(/(/idxdel,1/)/),
-     &     0,idum,
+     &     iaction_evaluate,0,1,0,
+     &     idum,(/idxvint/),
+     &     idum,(/(/idxvint,1/)/),
+     &     1,(/idxvform/)
      &     )
+
+c      ! import Delta integrals used for V-intermediate.
+c      call add_action(act_list,nactions,
+c     &     iaction_import,0,1,0,
+c     &     idum,(/idxdel/),
+c     &     idum,(/(/idxdel,1/)/),
+c     &     0,idum,
+c     &     )
 
       ! set up diagonal preconditioner
       call add_action(act_list,nactions,

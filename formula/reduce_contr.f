@@ -382,29 +382,29 @@ c dbg
       call update_svtx4contr(contr)
 
       ! a last additional step: reorder supervertices if necessary
-      if (.false..and.contr%nsupvtx.lt.contr%nvtx) then
-        call reorder_supvtx(
-     &     .true.,.false.,
-     &     contr,occ_vtx(1,1,njoined_res+1))
-        if (update_info) then
-c dbg
-c        print *,'fixing restrictions:'
-c dbg
-c          if (njoined_res.eq.1) then
+c      if (.false..and.contr%nsupvtx.lt.contr%nvtx) then
+c        call reorder_supvtx(
+c     &     .true.,.false.,
+c     &     contr,occ_vtx(1,1,njoined_res+1))
+c        if (update_info) then
+cc dbg
+cc        print *,'fixing restrictions:'
+cc dbg
+cc          if (njoined_res.eq.1) then
+cc            do ivtx = 1, contr%nvtx
+cc              call fit_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
+cc     &                     occ_vtx(1,1,ivtx+njoined_res),irestr_res,
+cc     &                     orb_info%ihpvgas,ngas)
+cc            end do
+cc          else
 c            do ivtx = 1, contr%nvtx
-c              call fit_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
-c     &                     occ_vtx(1,1,ivtx+njoined_res),irestr_res,
+c              call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
+c     &                     occ_vtx(1,1,ivtx+njoined_res),1,
 c     &                     orb_info%ihpvgas,ngas)
 c            end do
-c          else
-            do ivtx = 1, contr%nvtx
-              call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
-     &                     occ_vtx(1,1,ivtx+njoined_res),1,
-     &                     orb_info%ihpvgas,ngas)
-            end do
-c          end if
-        end if
-      end if
+cc          end if
+c        end if
+c      end if
 
       if (ntest.ge.100) then
         write(luout,*) 'contr on exit:'

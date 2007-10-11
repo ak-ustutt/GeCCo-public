@@ -70,10 +70,10 @@
             write(luout,*)'R12 operator is purely formal.'
           endif
 
-        case(op_del_inter)
-          mode=1
-          call import_r12_dalton(op_target,opfil_target,'DELTA',
-     &         mode,str_info,orb_info)
+c        case(op_del_inter)
+c          mode=1
+c          call import_r12_dalton(op_target,opfil_target,'DELTA',
+c     &         mode,str_info,orb_info)
 
         case default
           call quit(1,'import_op_el','DALTON: cannot handle operator '

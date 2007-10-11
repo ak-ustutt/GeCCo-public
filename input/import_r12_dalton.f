@@ -19,7 +19,7 @@
       include 'ifc_memman.h'
 
       integer, parameter::
-     &     ntest=00
+     &     ntest= 000
 
       type(orbinf),intent(in),target ::
      &     orb_info
@@ -90,10 +90,6 @@
       if(.not.fexist)
      &     call quit(1,'import_r12_dalton','No MO integral file.')
 
-c      call file_init(ffmor,mo_r,ftyp_sq_frm,0)
-c      lu2in=ffmor%unit
-c      call file_open(ffmor)
-c      write(luout,*)lu2in
       lu2in=99
       open(unit=lu2in,file=ffinp,status='old',form='formatted',
      &     access='sequential')
@@ -139,32 +135,7 @@ c      write(luout,*)lu2in
             index(2)=reord(is)
             index(3)=reord(iq)
             index(4)=reord(ir)
-c          elseif(i.eq.3)then
-c            if(ip.gt.ntoob.or.iq.gt.ntoob)cycle
-c            if(ip.eq.iq.or.ir.eq.is)cycle
-c            index(1)=reord(iq)
-c            index(2)=reord(ir)
-c            index(3)=reord(ip)
-c            index(4)=reord(is)
-c          else
-c            if(ip.gt.ntoob.or.iq.gt.ntoob)cycle
-c            if(ip.eq.iq.or.ir.eq.is)cycle
-c            index(1)=reord(iq)
-c            index(2)=reord(is)
-c            index(3)=reord(ip)
-c            index(4)=reord(ir)
           endif  
-c dbg
-c          if (ip.eq.9.and.iq.eq.4.and.ir.eq.8.and.is.eq.2)
-c     $         print *,'1 da isset ',int
-c          if ((ip.eq.9.and.iq.eq.7.and.ir.eq.6.and.is.eq.5).or.
-c     &         (ip.eq.7.and.iq.eq.6.and.ir.eq.9.and.is.eq.5).or.
-c     &         (ip.eq.9.and.iq.eq.6.and.ir.eq.7.and.is.eq.5))then
-c            print *,'2 da isset ',int
-c            write(luout,'(a,4i5)')'raw indices = ',ip,iq,ir,is
-c            write(luout,'(a,4i5)')'reo indices = ',index(1:4)
-c          endif
-c dbg            
 
           ! Place into arrays the irrep. and active space indices of the 
           ! orbitals in the integral under consideration.
@@ -185,24 +156,12 @@ c dbg
   
           ! Generate the string addresses of the current integral by 
           ! reference to the spin-orbital basis.
-          if(mode.eq.0)then
-            call idx42str(nstr,idxstr,
-     &           index,igam,idss,igtp,
-     &           orb_info,str_info,hop,hpvxseq,ierr)
-          else
             call idx42str2(nstr,idxstr,mode,
      &           index,igam,idss,igtp,
      &           orb_info,str_info,hop,hpvxseq,ierr)
-          endif
-  
+
           ! Store integral in r12scr.
           do istr=1,nstr
-c dbg
-c            if (abs(idxstr(istr)).lt.1.or.abs(idxstr(istr)).gt.lbuf)then
-c              write(luout,*) idxstr(istr),lbuf,nstr
-c              stop 'range'
-c            end if
-c dbg
 
             ! Add the integrals to the string array.
             if(.not.ierr)then
@@ -225,7 +184,7 @@ c dbg
 
       if(closeit)
      &     call file_close_keep(ffr12)
-c      call file_close_keep(ffmor)
+
       close(unit=lu2in,status='keep')
       deallocate(tosym,totyp,koffs,reord)
 

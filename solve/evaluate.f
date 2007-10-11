@@ -81,6 +81,13 @@
       call frm_sched(xret,ffform_opt,
      &               op_info,str_info,strmap_info,orb_info)
 
+c dbg
+      call wrt_op_file(luout,5,op_info%opfil_arr(idxop_out(1))%fhand,
+     &             op_info%op_arr(idxop_out(1))%op,
+     &          1,op_info%op_arr(idxop_out(1))%op%n_occ_cls,
+     &             str_info,orb_info)
+c dbg
+
       if (iprlvl.ge.5) then
         call write_title(luout,wst_title,'norms of output operators')
         do iop = 1, nop_out

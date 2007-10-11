@@ -16,6 +16,7 @@
       type(orbinf) ::
      &     orb_info
 
+      call set_unit_operator(op_info)
       call set_h_operators(op_info,orb_info,explicit)
       if (is_keyword_set('method.CC').gt.0) then
         call set_cc_operators(op_info,orb_info)

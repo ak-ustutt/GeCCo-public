@@ -141,11 +141,11 @@ c      call init_op_files(op_info)
      &           current_act%act%nform,current_act%act%idx_formula,
      &           form_info,op_info,str_info,orb_info)
             call evaluate(current_act%act%nop_out,
-     &                     current_act%act%idxopdef_out,
-     &                     current_act%act%nop_in,
-     &                     current_act%act%idxopdef_in,
-     &                     ffform_opt,
-     &                     op_info,str_info,strmap_info,orb_info)
+     &                    current_act%act%idxopdef_out,
+     &                    current_act%act%nop_in,
+     &                    current_act%act%idxopdef_in,
+     &                    ffform_opt,
+     &                    op_info,str_info,strmap_info,orb_info)
             call file_delete(ffform_opt)
           case (iaction_setup_prc)
             if(explicit)then

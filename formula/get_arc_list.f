@@ -13,7 +13,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(out) ::
      &     len_list, arc_list(*)
@@ -76,7 +76,7 @@
           arc_list(idx) = iarc
         end if
         do ica = 1, 2
-          do hpvx = 1, 2
+          do hpvx = 1, ngastp
             cnt_strength(idx) = cnt_strength(idx) +
      &           arc(iarc)%occ_cnt(hpvx,ica)*weight(hpvx)
           end do

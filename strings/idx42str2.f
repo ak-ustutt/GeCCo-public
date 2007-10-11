@@ -1,6 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine idx42str2(nstr,idxstr,
-     $         mode,
+      subroutine idx42str2(nstr,idxstr,mode,
      &         idxprqs,igam,idss,igtp,
      &         orb_info,str_info,hop,ihpvseq,ierr)
 *----------------------------------------------------------------------*
@@ -52,7 +51,7 @@
      &     ierr
 
       logical ::
-     &     reo12, reo34, eqv12, eqv34, r12int, take_ca, take_ac
+     &     reo12, reo34, eqv12, eqv34, take_ca, take_ac
       integer ::
      &     igamt, mst, iblk_ca, iblk_ac, ihpvdx, ihpv, ica,
      &     jdx, idxcnt, idstr_ca, idstr_ac, nel, msstr, lenlast,
@@ -80,9 +79,6 @@
         write(luout,*) '----------------------'
         write(luout,*) 'mode = ',mode
       end if
-
-      ! See whether we are trying to read in the R12 integrals.
-      r12int=trim(hop%name).eq.'R12-INT'
 
       ! Checks whether integral indices are the same, or if they need 
       ! to be reordered (want p.le.q and r.le.s)
@@ -145,10 +141,8 @@
 
       ierr=.false.
       if (.not.take_ca.and..not.take_ac) then
-c        if(r12int)then
           ierr=.true.
           return
-c        endif  
       end if
 
       if(hop%formal_blk(iblk_ca))then
@@ -178,6 +172,7 @@ c        endif
       nstr = 0
       inc = 1
       if (take_ca.and.take_ac) inc = 2
+        
       cnt_loop: do idxcnt = 1, 4
         ! If the spatial orbitals are equivalent for either electron 
         ! one or two and if the spins are the same (idxcnt=1 or 4) then
@@ -253,7 +248,8 @@ c        endif
      &         msd,igmd,.false.,hop,orb_info%nsym)
           if (idstr_ca.lt.0)
      &         call quit(1,'idx42str','error for idstr_ca')
-        else if (take_ac) then
+        endif
+        if (take_ac) then
           idstr_ac = idx_msgmdst(iblk_ac,mst,igamt,
      &         msd,igmd,.true.,hop,orb_info%nsym)
           if (idstr_ac.lt.0)
@@ -387,7 +383,7 @@ c dbg
             write(luout,*) 'idxstr(final) = ',idxstr(nstr)
           end if
 
-          ! prelim: check, whether actually the same address resulted
+          ! prelim: check, whether the same address actually resulted
           ndup = 0
           check2: do jdx = 1, nstr-1
             if (idxstr(nstr).eq.idxstr(jdx)) ndup = ndup+1
@@ -412,4 +408,3 @@ c dbg
 
       return
       end
-

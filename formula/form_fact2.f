@@ -17,7 +17,7 @@
       integer, parameter ::
      &     maxcount = 1000,  ! at most 1000 iterations
      &     ndisconn = 3,     ! at most 3 extra levels for disconnected
-     &     ntest = 000                                   ! vertices
+     &     ntest = 1000                                   ! vertices
 
       type(contraction), intent(inout) ::
      &     contr
@@ -38,7 +38,9 @@
      &     ihpvgas(:),
      &     ifact(:,:), ifact_best(:,:), occ_vtx(:,:,:),
      &     irestr_vtx(:,:,:,:,:), info_vtx(:,:),
-     &     iarc_ori(:), ivtx_ori(:)
+     &     iarc_ori(:), ivtx_ori(:),
+     &     irestr_res(:,:,:,:,:)
+
 *----------------------------------------------------------------------*
 *     ifact(4,*): describes factorization by giving
 *            ( vertex-number 1, vertex-number 2, 
@@ -51,8 +53,7 @@
       real(8) ::
      &     cost(3), costmin(3)
       integer ::
-     &     iscale(ngastp,2), iscalemin(ngastp,2),
-     &     irestr_res(2,orb_info%ngas,2,2)
+     &     iscale(ngastp,2), iscalemin(ngastp,2)
       type(operator), pointer ::
      &     op_res
 
@@ -105,6 +106,7 @@
      &     ifact_best(ld_inffac,narc_full+ndisconn),
      &     occ_vtx(ngastp,2,nvtx_full+njoined),
      &     irestr_vtx(2,orb_info%ngas,2,2,nvtx_full+njoined),
+     &     irestr_res(2,orb_info%ngas,2,2,njoined),
      &     info_vtx(2,nvtx_full+njoined),
      &     iarc_ori(narc_full+ndisconn),ivtx_ori(nvtx_full))
 
@@ -118,14 +120,26 @@
 
 
       call occvtx4contr(0,occ_vtx,contr,op_info)
+c dbg
+      call wrt_occ_n(luout,occ_vtx,njoined+contr%nvtx)
+c dbg
 
+c dbg
+      print *,'1: njoined = ',njoined
+c dbg
       call vtxinf4contr(irestr_vtx,info_vtx,contr,op_info,ngas)
+c dbg
+      print *,'2: njoined = ',njoined
+c dbg
 
       if (njoined.eq.1) then
         call set_restr_prel(irestr_res,contr,op_info,
      &       ihpvgas,ngas)
       else
         call dummy_restr(irestr_res,occ_vtx,njoined,ihpvgas,ngas)
+c dbg
+      print *,'3: njoined = ',njoined
+c dbg
       end if
 
       ! add 0-contractions, if necessary
@@ -136,7 +150,7 @@
       nlevel = 1
       icount = 0
 c dbg
-c      print *,'now diving into the recursions'
+      print *,'now diving into the recursions, njoined = ',njoined
 c dbg
       call form_fact_rec(nlevel,ifact,
      &     cost,iscale,
@@ -246,6 +260,8 @@ c dbg
      &         ifact(1:4,1:nlevel-1)
         end if
         write(luout,*) 'ivtx_ori: ',ivtx_ori(1:contr%nvtx)
+        write(luout,*) 'result: njoined = ',njoined
+        call wrt_occ_n(luout,occ_vtx,njoined)
         write(luout,*) 'current (reduced) contraction:'
         call prt_contr3(luout,contr,occ_vtx(1,1,njoined+1))
       end if

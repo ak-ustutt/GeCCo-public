@@ -1,5 +1,6 @@
       ! generic operator names:
       character, parameter ::
+     &     op_unity*1      = 'I',
      &     op_ham*1        = 'H',
      &     op_hhat*4       = 'Hhat',
      &     op_top*1        = 'T',

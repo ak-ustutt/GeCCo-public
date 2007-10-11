@@ -126,6 +126,15 @@ c      call test_formgen3(op_info,orb_info)
         call set_hhat2(form_pnt,op_info,
      &       idxhhat,idxham,idxtop)
       end if
+
+      if (explicit) then
+
+        call add_formula(form_info,label_r12_vint)
+        idx = idx_formlist(label_r12_vint,form_info)
+        form_pnt => form_info%form_arr(idx)%form
+        call set_r12_intermediates(form_pnt,op_info,orb_info)
+
+      end if
 c
       ! set up CC-energy 
       ! (part of Lagragian that does not depend on TBAR)

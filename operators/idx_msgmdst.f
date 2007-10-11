@@ -33,6 +33,13 @@
       ! get occupation
       iocc(1:ngastp,1:2) = op%ihpvca_occ(1:ngastp,1:2,iocc_cls) 
 
+c bodge
+      if(op%njoined.gt.1)then
+        iocc(1:ngastp,1:2)=iocc(1:ngastp,1:2)+
+     &       op%ihpvca_occ(1:ngastp,1:2,2)
+      endif
+c bodge
+
       if (.not.dagger) then
         ! calculate integer-valued ID of (ms,Gamma) distribution
         mgdid = msgmdid(iocc,msd,gmd,nsym)
