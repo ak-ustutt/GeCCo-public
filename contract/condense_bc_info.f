@@ -2,15 +2,16 @@
       subroutine condense_bc_info(
      &     cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
      &     cinfo_op1op2c, cinfo_op1op2a,
+     &     cinfo_op1op2tmpc, cinfo_op1op2tmpa,
      &     cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
      &     cinfo_cntc, cinfo_cnta,
      &     map_info_1c, map_info_1a,
      &     map_info_2c, map_info_2a,
      &     map_info_12c, map_info_12a,
      &     nca_blk,
-     &     iocc_op1, iocc_op2, iocc_op1op2,
+     &     iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
-     &     irst_op1, irst_op2, irst_op1op2,
+     &     irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
      &     merge_map1, merge_map2, merge_map12, merge_map21,
      &     njoined_op1, njoined_op2, njoined_op1op2, njoined_cnt,
      &     str_info,ihpvgas,ngas)
@@ -49,6 +50,8 @@ c      include 'def_orbinf.h'
      &     cinfo_op1c(nca_blk(1,1),3), cinfo_op1a(nca_blk(2,1),3),
      &     cinfo_op2c(nca_blk(1,2),3), cinfo_op2a(nca_blk(2,2),3),
      &     cinfo_op1op2c(nca_blk(1,3),3), cinfo_op1op2a(nca_blk(2,3),3),
+     &     cinfo_op1op2tmpc(nca_blk(1,7),3),
+     &                                 cinfo_op1op2tmpa(nca_blk(2,7),3),
      &     cinfo_ex1c(nca_blk(1,4),3), cinfo_ex1a(nca_blk(2,4),3),
      &     cinfo_ex2c(nca_blk(1,5),3), cinfo_ex2a(nca_blk(2,5),3),
      &     cinfo_cntc(nca_blk(1,6),3), cinfo_cnta(nca_blk(2,6),3),
@@ -60,12 +63,14 @@ c      include 'def_orbinf.h'
      &     iocc_op1(ngastp,2,njoined_op1),
      &     iocc_op2(ngastp,2,njoined_op2),
      &     iocc_op1op2(ngastp,2,njoined_op1op2),
+     &     iocc_op1op2tmp(ngastp,2,njoined_op1op2),
      &     iocc_ex1(ngastp,2,njoined_op1),
      &     iocc_ex2(ngastp,2,njoined_op2),
      &     iocc_cnt(ngastp,2,njoined_cnt),
      &     irst_op1(2,ngas,2,2,njoined_op1),
      &     irst_op2(2,ngas,2,2,njoined_op2),
      &     irst_op1op2(2,ngas,2,2,njoined_op1op2),
+     &     irst_op1op2tmp(2,ngas,2,2,njoined_op1op2),
      &     merge_map1(*), merge_map2(*), merge_map12(*), merge_map21(*)
 
       integer ::
@@ -106,6 +111,14 @@ c     &     irst_op1,ihpvgas,ngas)
       call condense_occ(cinfo_op1c(1,2), cinfo_op1a(1,2),
      &                  cinfo_op1c(1,3), cinfo_op1a(1,3),
      &                  igrph,njoined_op1,hpvxblkseq)
+c dbg
+c      print *,'OP1:'
+c      call wrt_occ_n(6,iocc_op1,njoined_op1)
+c      print *,' C: ',cinfo_op1c(1:nca_blk(1,1),1)
+c      print *,'    ',cinfo_op1c(1:nca_blk(1,1),3)
+c      print *,' A: ',cinfo_op1a(1:nca_blk(2,1),1)
+c      print *,'    ',cinfo_op1a(1:nca_blk(2,1),3)
+c dbg
 
       ! EX1
       call get_grph4occ(igrph,iocc_ex1,irst_ex1,
@@ -150,33 +163,11 @@ c     &     irst_op1,ihpvgas,ngas)
       call condense_occ(cinfo_cntc(1,2), cinfo_cnta(1,2),
      &                  cinfo_cntc(1,3), cinfo_cnta(1,3),
      &                  igrph,njoined_cnt,hpvxblkseq)
-c dbg
-c      print *,'CNT was'
-c      call wrt_occ_n(6,iocc_cnt,njoined_cnt)
-c      print *,'cinfo:'
-c      print *,'1c: ',cinfo_cntc(1:nca_blk(1,6),1)
-c      print *,'1a: ',cinfo_cnta(1:nca_blk(2,6),1)
-c      print *,'2c: ',cinfo_cntc(1:nca_blk(1,6),2)
-c      print *,'2a: ',cinfo_cnta(1:nca_blk(2,6),2)
-c      print *,'3c: ',cinfo_cntc(1:nca_blk(1,6),3)
-c      print *,'3a: ',cinfo_cnta(1:nca_blk(2,6),3)
-c dbg
 
       ! OP1OP2
-c dbg
-c      print *,'now setting graphs for OP1OP2:'
-c dbg
-c          do ijoin = 1, njoined_op1op2
-c            call wrt_rstr(6,irst_op1op2(1,1,1,1,ijoin),ngas)
-c          end do
-c dbg
-c dbg
       call get_grph4occ(igrph,iocc_op1op2,irst_op1op2,
      &                  str_info,ihpvgas,
      &                  ngas,njoined_op1op2,.true.)
-c dbg
-c      print *,'setting info for OP1OP2: ',nca_blk(1:2,3)
-c dbg
       call condense_occ(cinfo_op1op2c, cinfo_op1op2a,
      &                  cinfo_op1op2c(1,3), cinfo_op1op2a(1,3),
      &                  iocc_op1op2,njoined_op1op2,hpvxblkseq)
@@ -184,46 +175,48 @@ c dbg
      &                  cinfo_op1op2c(1,3), cinfo_op1op2a(1,3),
      &                  igrph,njoined_op1op2,hpvxblkseq)
 
+      call get_grph4occ(igrph,iocc_op1op2tmp,irst_op1op2tmp,
+     &                  str_info,ihpvgas,
+     &                  ngas,njoined_op1op2,.true.)
+      call condense_occ(cinfo_op1op2tmpc, cinfo_op1op2tmpa,
+     &                  cinfo_op1op2tmpc(1,3), cinfo_op1op2tmpa(1,3),
+     &                  iocc_op1op2tmp,njoined_op1op2,hpvxblkseq)
+      call condense_occ(cinfo_op1op2tmpc(1,2), cinfo_op1op2tmpa(1,2),
+     &                  cinfo_op1op2tmpc(1,3), cinfo_op1op2tmpa(1,3),
+     &                  igrph,njoined_op1op2,hpvxblkseq)
+
       deallocate(igrph)
 
       ! OP1 -> CNT/EX1 map
-c dbg
-c      print *,'calling set_mapping_info for CNT/EX1 CA'
-c dbg
       call set_mapping_info(map_info_1c,map_info_1a,
      &                  0,
      &                  iocc_cnt,njoined_cnt,.false.,
      &                  iocc_ex1,njoined_op1,.false.,
      &                  iocc_op1,merge_map1,njoined_op1,hpvxblkseq)
       ! OP2 -> CNT^+/EX2 map
-c dbg
-c      print *,'calling set_mapping_info for CNT^+/EX2 CA'
-c dbg
       call set_mapping_info(map_info_2c,map_info_2a,
      &                  0,
      &                  iocc_cnt,njoined_cnt,.true.,
      &                  iocc_ex2,njoined_op2,.false.,
      &                  iocc_op2,merge_map2,njoined_op2,hpvxblkseq)
+
       ! OP1OP2 -> EX1/EX2 map
+      ! note: map goes to OP1OP2tmp, actually
+      !  if OP1OP2 differs, this is taken care of by the additional
+      !  reordering step
       ! EX1/EX2 for C
-c dbg
-c      print *,'calling set_mapping_info for EX1/EX2 C'
-c dbg
       call set_mapping_info(map_info_12c,map_info_12a,
      &                  1,
      &                  iocc_ex1,njoined_op1,.false.,
      &                  iocc_ex2,njoined_op2,.false.,
-     &                  iocc_op1op2,merge_map12,
+     &                  iocc_op1op2tmp,merge_map12,
      &                                  njoined_op1op2,hpvxblkseq)
       ! EX2/EX1 for A
-c dbg
-c      print *,'calling set_mapping_info for EX2/EX1 A'
-c dbg
       call set_mapping_info(map_info_12c,map_info_12a,
      &                  2,
      &                  iocc_ex2,njoined_op2,.false.,
      &                  iocc_ex1,njoined_op1,.false.,
-     &                  iocc_op1op2,merge_map21,
+     &                  iocc_op1op2tmp,merge_map21,
      &                                  njoined_op1op2,hpvxblkseq)
 
       return

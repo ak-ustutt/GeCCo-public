@@ -12,6 +12,7 @@
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
+      include 'def_reorder_info.h'
       include 'mdef_operator_info.h'
       
       integer, parameter ::
@@ -56,6 +57,8 @@
      &     iscale(ngastp,2), iscalemin(ngastp,2)
       type(operator), pointer ::
      &     op_res
+      type(reorder_info) ::
+     &     reo_dummy
 
       logical ::
      &     possible, found
@@ -358,7 +361,8 @@ c     &       idx_op_new,irestr_res,contr,occ_vtx)
      &       iarc,idx_op_new,ivtx_new,
      &       njoined,
      &       .true.,ivtx_ori_red,iarc_ori_red,
-     &       .true.,irestr_vtx_red,info_vtx_red,irestr_res,orb_info)
+     &       .true.,irestr_vtx_red,info_vtx_red,irestr_res,
+     &       .false.,reo_dummy,orb_info)
 
         ! add 0-contractions, if necessary
 c dbg

@@ -5,6 +5,9 @@
      &                         msdis_2,gamdis_2,
      &                         map_inf)
 *----------------------------------------------------------------------*
+*     input: Ms and IRREP distributions msdis_1, msdis_2 
+*            gamdis_1, gamdis_2 (all in condensed form)
+*     get the merged msdis_r, gmdis_r (using the map map_inf)
 *----------------------------------------------------------------------*
       implicit none
 

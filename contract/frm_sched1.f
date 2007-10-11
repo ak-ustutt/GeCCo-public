@@ -20,6 +20,7 @@
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'par_opnames_gen.h'
+      include 'def_reorder_info.h'
       include 'ifc_memman.h'
 
       integer, parameter ::
@@ -48,19 +49,21 @@
      &     cur_form
 
       logical ::
-     &     update
+     &     update, reo_op1op2, reo_other
       integer ::
      &     lufrm, idxopres, idxres, nres, type_xret, type_xret_cur,
      &     n_occ_cls, maxvtx, maxarc, maxfac, nblk_res,
      &     nfact, idxop1op2, iblkop1op2, iops, iblkres, ifree,
      &     ninter, idx, nsym, ngas, nexc, ndis, iprint, iterm, len,
      &     idoffop1, idoffop2, idoffop1op2, ivtx_new, nvtx,
-     &     iarc, idum
+     &     iarc, idum, idxop_intm
       real(8) ::
      &     fac, facc, xnrm, bc_sign
       character ::
      &     title*256, opscrnam*8
 
+      type(reorder_info) ::
+     &     reo_info
       type(file_array), pointer ::
      &     ffops(:)
       type(operator_array), pointer ::
@@ -68,7 +71,8 @@
       integer ::
      &     mstop(2), igamtop(2), idxop(2), iblkop(2),
      &     mstop1op2, igamtop1op2,
-     &     njoined_op(2), njoined_op1op2, njoined_cnt
+     &     njoined_op(2), njoined_op1op2,
+     &     njoined_cnt, njoined_res
       real(8), pointer ::
      &     xret_blk(:), xret_pnt(:)
       real(8), target ::
@@ -82,16 +86,18 @@
      &     irst_res(:,:,:,:,:),
      &     iocc_ex1(:,:,:), iocc_ex2(:,:,:), iocc_cnt(:,:,:),
      &     iocc_op1op2(:,:,:),
-     &     irst_op1op2(:,:,:,:,:)
+     &     irst_op1op2(:,:,:,:,:),
+     &     iocc_op1op2tmp(:,:,:),
+     &     irst_op1op2tmp(:,:,:,:,:)
       type(operator), pointer ::
-     &     opscr(:)
+     &     opscr(:), optmp
       type(filinf), pointer ::
      &     ffscr(:)
       type(operator), pointer ::
-     &     op1, op2, op1op2, opres
+     &     op1, op2, op1op2, opres, op1op2tmp
       type(filinf), pointer ::
      &     ffop1, ffop2, ffop1op2, ffres
-
+      
       logical, external ::
      &     rd_formula
       real(8), external ::
@@ -212,6 +218,9 @@ c        case(command_set_target_update)
         fac = cur_form%contr%fac
         nfact = cur_form%contr%nfac
         
+        idxopres = cur_form%contr%idx_res 
+        njoined_res = ops(idxopres)%op%njoined
+
         if (ntest.ge.100) write(luout,*) 'nfact, fac: ',nfact,fac
 
         if (nfact.eq.0) then
@@ -255,7 +264,9 @@ c dbg
      &       iocc_ex1(ngastp,2,nvtx),
      &       iocc_ex2(ngastp,2,nvtx), iocc_cnt(ngastp,2,nvtx),
      &       iocc_op1op2(ngastp,2,nvtx),
-     &       irst_op1op2(2,orb_info%ngas,2,2,nvtx))        
+     &       irst_op1op2(2,orb_info%ngas,2,2,nvtx),
+     &       iocc_op1op2tmp(ngastp,2,nvtx),
+     &       irst_op1op2tmp(2,orb_info%ngas,2,2,nvtx))        
 
         ! preliminary fix to set irst_res (needed in get_bc_info)
         call set_restr_prel(irst_res,
@@ -263,7 +274,7 @@ c dbg
         
         ! allocate arrays for intermediates
         allocate(
-     &       occ_vtx(ngastp,2,nvtx+1),
+     &       occ_vtx(ngastp,2,nvtx+njoined_res),
      &       irestr_vtx(2,orb_info%ngas,2,2,nvtx+1),
      &       info_vtx(2,nvtx+1),
      &       merge_op1(nvtx*nvtx+1), ! a bit too large, I guess ...
@@ -271,7 +282,7 @@ c dbg
      &       merge_op1op2(nvtx*nvtx+1),
      &       merge_op2op1(nvtx*nvtx+1))
         if (nfact.gt.1)
-     &       allocate(opscr(nfact-1),ffscr(nfact-1))
+     &       allocate(opscr(nfact-1),optmp,ffscr(nfact-1))
 
         ! reset intermediate counter
         ninter = 0
@@ -307,8 +318,39 @@ c dbg
      &         igamtop,igamtop1op2,
      &         njoined_op, njoined_op1op2, njoined_cnt,
      &         merge_op1,merge_op2,merge_op1op2, merge_op2op1,
-     &         cur_form%contr,  1,  occ_vtx,irestr_vtx,info_vtx,iarc,
+     &         cur_form%contr,njoined_res,
+     &                        occ_vtx,irestr_vtx,info_vtx,iarc,
      &         irst_res,orb_info%ihpvgas,ngas)
+
+          ! set up reduced contraction after 
+          ! current binary contraction
+          if (idx.ne.nfact) then
+            ivtx_new = cur_form%contr%inffac(3,idx)
+            idxop_intm = -ninter
+
+            ! reset reo_info
+            call init_reo_info(reo_info)
+            
+            call reduce_contr(cur_form%contr,occ_vtx,
+     &           iarc,idxop_intm,ivtx_new,
+     &           njoined_res,
+     &           .false.,idum,idum,
+     &           .true.,irestr_vtx,info_vtx,irst_res,
+     &           .true.,reo_info,orb_info)
+            ! add 0-contractions, if necessary
+            call check_disconnected(cur_form%contr)
+            ! process reordering info
+            call get_reo_info(reo_op1op2,reo_other,
+     &           iocc_op1op2,iocc_op1op2tmp,
+     &           irst_op1op2,irst_op1op2tmp,
+     &           njoined_op1op2,
+     &           cur_form%contr,reo_info,str_info,orb_info)
+          else
+            reo_op1op2 = .false.
+            reo_other = .false.
+            iocc_op1op2tmp = iocc_op1op2
+            irst_op1op2tmp = irst_op1op2
+          end if
 
           ! set up operator 1 and 2
           do iops = 1, 2
@@ -360,6 +402,7 @@ c            opscr(ninter)%n_occ_cls = 1
 c            opscr(ninter)%njoined = 1
 c            call init_operator(0,opscr(ninter),orb_info)
             ! set up pseudo-operator for current intermediate
+            ! refers to reordered operator (if this matters)
             write(opscrnam,'("INT",i3.3)') ninter
             call set_ps_op(opscr(ninter),opscrnam,
      &           iocc_op1op2,irst_op1op2,njoined_op1op2,
@@ -376,6 +419,26 @@ c            call init_operator(0,opscr(ninter),orb_info)
             op1op2 => opscr(ninter)
             xret_pnt => xret_scr
             type_xret_cur = 0
+
+          end if
+
+          ! if the result is reordered as a final step of the
+          ! contraction, we need a pseudo-operator for the
+          ! raw contraction result:
+          if (reo_op1op2) then
+            write(opscrnam,'("INT",i3.3,"RW")') ninter
+            call set_ps_op(optmp,opscrnam,
+     &           iocc_op1op2tmp,irst_op1op2tmp,njoined_op1op2,
+     &           mstop1op2,igamtop1op2,
+     &           orb_info,str_info)
+            ! and the allocation sequence
+            call init_operator(1,optmp,orb_info)
+            call set_op_dim2(1,optmp,str_info,nsym)
+            call init_operator(2,optmp,orb_info)
+            call set_op_dim2(2,optmp,str_info,nsym)
+            op1op2tmp => optmp
+          else
+            op1op2tmp => op1op2
           end if
 
           ! translate records to offset in file:
@@ -391,31 +454,24 @@ c            call init_operator(0,opscr(ninter),orb_info)
           ! do the contraction
           call contr_op1op2(facc,bc_sign,ffop1,ffop2,
      &       update,ffop1op2,xret_pnt,type_xret_cur,
-     &       op1,op2,op1op2,
-     &       iblkop(1),iblkop(2),iblkop1op2,
+     &       op1,op2,op1op2, op1op2tmp,
+     &       iblkop(1),iblkop(2),iblkop1op2,iblkop1op2,
      &       idoffop1,idoffop2,idoffop1op2,
      &       iocc_ex1,iocc_ex2,iocc_cnt,
-     &       iocc_op1, iocc_op2, iocc_op1op2,
-     &       irst_op1,irst_op2,irst_op1op2,
+     &       iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
+     &       irst_op1,irst_op2,irst_op1op2, irst_op1op2tmp,
      &       merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &       njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &       mstop(1),mstop(2),mstop1op2,
      &       igamtop(1),igamtop(2),igamtop1op2,
+     &       reo_info,
      &       str_info,strmap_info,orb_info)
           if (ntest.ge.100)
      &         write(luout,*) 'returned from contraction kernel'
 
-          ! set up reduced contraction after 
-          ! current binary contraction
-          if (idx.ne.nfact) then
-            ivtx_new = cur_form%contr%inffac(3,idx)
-            call reduce_contr(cur_form%contr,occ_vtx,
-     &           iarc,-ninter,ivtx_new,
-     &           1,  !<- njoined_res
-     &           .false.,idum,idum,
-     &           .true.,irestr_vtx,info_vtx,irst_res,orb_info)
-            ! add 0-contractions, if necessary
-            call check_disconnected(cur_form%contr)
+          if (reo_op1op2) then
+            call dealloc_operator(optmp)
+            call dealloc_reo_info(reo_info)
           end if
 
         end do bin_loop
@@ -436,7 +492,7 @@ c            call init_operator(0,opscr(ninter),orb_info)
             call file_close_delete(ffscr(idx))
             call dealloc_operator(opscr(idx))
           end do
-          deallocate(opscr,ffscr)
+          deallocate(opscr,optmp,ffscr)
         end if
 
       end do term_loop

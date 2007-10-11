@@ -4,7 +4,7 @@
 *----------------------------------------------------------------------*
 *     on input: merge map in long form as
 *
-*          map(1:n(i),i,target_vertex) = vertices(i)
+*          map(1:n(i),1:2,target_vertex) = vertices(i)
 *
 *     on output: merge map in short form as
 *
@@ -36,9 +36,9 @@
         if (nvtx_tgt.gt.1000 .or. ld_mmap.gt.1000) stop 'hilfe'
         write(luout,*) 'input map'
         do ivtx_tgt = 1, nvtx_tgt
-          write(luout,'(x,i3,": ",10i4)')
+          write(luout,'(x,i3,"<- op1 vtx ",10i4)')
      &         ivtx_tgt, mmap_in(1:ld_mmap,1,ivtx_tgt)
-          write(luout,'(6x,10i4)')
+          write(luout,'(6x," op2 vtx ",10i4)')
      &                   mmap_in(1:ld_mmap,2,ivtx_tgt)
         end do
         if (reverse) write(luout,*) 'reverting Op1 and Op2'
@@ -74,20 +74,20 @@
         do ivtx_tgt = 1, nvtx_tgt
           ivtx = mmap_out(idx)
           if (ivtx.gt.0) then
-            write(luout,'(3x,i3,"->",i3,": ",10i3)')
+            write(luout,'(3x,i3,"<-",i3," from op1: ",10i3)')
      &                        ivtx_tgt, ivtx,
      &                        mmap_out(idx+1:idx+ivtx)
           else
-            write(luout,'(4x,"nischt")')
+            write(luout,'(3x,i3,"<-  0 from op1")') ivtx_tgt
           end if
           idx = idx + ivtx + 1
           ivtx = mmap_out(idx)
           if (ivtx.gt.0) then
-            write(luout,'(3x,i3,"->",i3,": ",10i3)')
+            write(luout,'(3x,i3,"<-",i3," from op2: ",10i3)')
      &                        ivtx_tgt, ivtx,
      &                        mmap_out(idx+1:idx+ivtx)
           else
-            write(luout,'(4x,"nischt")')
+            write(luout,'(3x,i3,"<-  0 from op2")') ivtx_tgt
           end if
           idx = idx + ivtx + 1
         end do

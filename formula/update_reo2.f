@@ -26,7 +26,8 @@
      &     ireo(nel), iloweq(nel)
 
       integer ::
-     &     idx, ireo2(nel), idx1m, idx2m, idxmm
+     &     idx, ireo2(nel), idx1m, idx2m, idxmm,
+     &     idxmv, imv
       integer, external ::
      &     idxlist
 
@@ -37,9 +38,15 @@
         write(luout,*) 'idx1, idx2: ', idx1, idx2
         write(luout,*) 'idx_merge:  ',idx_merge
         write(luout,*) 'imvleft:    ',imvleft(1:nmvleft)
+
+        call perm_inv(ireo2,ireo,nel)
+        write(luout,*) 'ireo reorders'
+        write(luout,'(x,a,10i5)') 'this: ',(idx,idx=1,nel)
+        write(luout,'(x,a,10i5)') 'to  : ',ireo2(1:nel)
+        
       end if
 
-      if (nmvleft.gt.0) call quit(1,'update_reo','mvleft needed?')
+c      if (nmvleft.gt.0) call quit(1,'update_reo','mvleft needed?')
 
       if (idx2.le.idx1 .or. idx_merge.lt.idx1 .or. idx_merge.gt.idx2)
      &     call quit(1,'update_reo','error 1')
@@ -90,10 +97,6 @@ c dbg
       ! actually, we need the inverse, so:
       call perm_inv(ireo2,ireo2,nel)
 
-      ! update iloweq
-      iloweq(idx1) = min(iloweq(idx1),idx1,idx2)
-      iloweq(idx2) = min(iloweq(idx2),idx1,idx2)
-
       if (ntest.ge.100) then
         write(luout,*) 'ireo2(inv): ',ireo2(1:nel)
       end if
@@ -104,13 +107,49 @@ c dbg
 c     not this
 c      call perm_mult(ireo,ireo,ireo2,nel)
 
-c      if (ntest.ge.100) then
-c        write(luout,*) 'new ireo: ',ireo(1:nel)
-c      end if
+      if (nmvleft.gt.0) then
+        if (ntest.ge.100) then
+          write(luout,*) 'ireo before mvleft: ',ireo(1:nel)
+        end if
+
+        do idx = 1, nel
+          ireo2(idx) = idx
+        end do        
+
+        ! an set up permutation for imvleft
+        !idx_off = idxmm !idx_merge
+        do imv = 1, nmvleft        
+          idxmv = ireo(iloweq(imvleft(imv)))
+c dbg
+c          print *,'imv, idxmv, idxmm: ',imv, idxmv, idxmm
+c dbg
+          do idx = idxmm+imv, idxmv
+            ireo2(idx) = ireo2(idx-1)
+          end do
+          ireo2(idxmm+imv-1) = idxmv
+        end do
+
+        if (ntest.ge.100) then
+          write(luout,*) 'ireo2: ',ireo2(1:nel)
+        end if
+
+        call perm_mult(ireo,ireo2,ireo,nel)
+
+      end if
+
+      ! update iloweq
+      iloweq(idx1) = min(iloweq(idx1),idx1,idx2)
+      iloweq(idx2) = min(iloweq(idx2),idx1,idx2)
 
       if (ntest.ge.100) then
         write(luout,*) 'final ireo: ',ireo(1:nel)
         write(luout,*) 'final iloweq: ',iloweq(1:nel)
+
+        call perm_inv(ireo2,ireo,nel)
+        write(luout,*) 'ireo reorders'
+        write(luout,'(x,a,10i5)') 'this: ',(idx,idx=1,nel)
+        write(luout,'(x,a,10i5)') 'to  : ',ireo2(1:nel)
+
       end if
 
       return

@@ -3,7 +3,8 @@
      &     iarc_red,idxop_new,ivtx_new,
      &     njoined_res,
      &     update_ori,ivtx_ori,iarc_ori,
-     &     update_info,irestr_vtx,info_vtx,irestr_res,orb_info)
+     &     update_info,irestr_vtx,info_vtx,irestr_res,
+     &     set_reo,reo_info,orb_info)
 *----------------------------------------------------------------------*
 *     successor of reduce_graph:
 *     generate reduced multiple contraction after contracting vertices
@@ -22,6 +23,7 @@
       include 'stdunit.h'
       include 'def_contraction.h'
       include 'def_orbinf.h'
+      include 'def_reorder_info.h'
       include 'ifc_operators.h'
       include 'multd2h.h'
 
@@ -35,7 +37,7 @@
       integer, intent(inout) ::
      &     occ_vtx(ngastp,2,*)
       logical, intent(in) ::
-     &     update_ori, update_info
+     &     update_ori, update_info, set_reo
       integer, intent(inout) ::
      &     ivtx_ori(*), iarc_ori(*),
      &     irestr_vtx(2,orb_info%ngas,2,2,contr%nvtx+njoined_res),
@@ -43,9 +45,14 @@
       integer, intent(in) ::
      &     iarc_red, idxop_new, ivtx_new, njoined_res, 
      &     irestr_res(2,orb_info%ngas,2,2,njoined_res)
+      type(reorder_info) ::
+     &     reo_info
 
       logical ::
      &     merge
+c dbg
+c     &     , stop_at_end
+c dbg
       integer ::
      &     nvtx, narc, narc_new, nsupvtx, ngas,
      &     ivtx, jvtx, ivtx1, ivtx2, jvtx1, jvtx2, kvtx1, kvtx2,
@@ -75,6 +82,9 @@ c     &     svertex_ori(:),
       logical, external ::
      &     merge_check
 
+c dbg
+c      stop_at_end = .false.
+c dbg
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
      &       'reduce_contr at your service')
@@ -189,21 +199,21 @@ c dbg
 
         ! update restrictions, if necessary
         if (update_info) then
-          if (njoined_res.eq.1) then
-            call fit_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
-     &                     occ_vtx(1,1,ivtx1+njoined_res),irestr_res,
-     &                     orb_info%ihpvgas,ngas)
-            call fit_restr(irestr_vtx(1,1,1,1,ivtx2+njoined_res),
-     &                     occ_vtx(1,1,ivtx2+njoined_res),irestr_res,
-     &                     orb_info%ihpvgas,ngas)
-          else
+c          if (njoined_res.eq.1) then
+c            call fit_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
+c     &                     occ_vtx(1,1,ivtx1+njoined_res),irestr_res,
+c     &                     orb_info%ihpvgas,ngas)
+c            call fit_restr(irestr_vtx(1,1,1,1,ivtx2+njoined_res),
+c     &                     occ_vtx(1,1,ivtx2+njoined_res),irestr_res,
+c     &                     orb_info%ihpvgas,ngas)
+c          else
             call dummy_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
      &                     occ_vtx(1,1,ivtx1+njoined_res),1,
      &                     orb_info%ihpvgas,ngas)
             call dummy_restr(irestr_vtx(1,1,1,1,ivtx2+njoined_res),
      &                     occ_vtx(1,1,ivtx2+njoined_res),1,
      &                     orb_info%ihpvgas,ngas)
-          end if
+c          end if
         end if
 
         ! mark arc for deletion
@@ -253,18 +263,21 @@ c        merge = merge_vtx1vtx2(ivtx1,ivtx2,svertex,svmap,topomap,nvtx)
               ! to be fixed for super-vertices
               !  find out to which result vertex the current vertex
               !  actually contributes
-              if (njoined_res.eq.1) then
-                call fit_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
-     &                     occ_vtx(1,1,ivtx1+njoined_res),irestr_res,
-     &                     orb_info%ihpvgas,ngas)
-              else
+c              if (njoined_res.eq.1) then
+c                call fit_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
+c     &                     occ_vtx(1,1,ivtx1+njoined_res),irestr_res,
+c     &                     orb_info%ihpvgas,ngas)
+c              else
                 call dummy_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
      &           occ_vtx(1,1,ivtx1+njoined_res),1,orb_info%ihpvgas,ngas)
-              end if
+c              end if
             end if
-            ! update reodering array
+            ! update reordering array
             call update_reo2(ireo,iloweq,nvtx,ivtx1,ivtx2,
      &                       idx_merge,imvleft,nmvleft)
+c dbg
+c            if (nmvleft.gt.0) stop_at_end = .true.
+c dbg
           end if
         end do
       end do
@@ -276,7 +289,7 @@ c      print *,'ireo: ',ireo(1:nvtx)
 c dbg
 
       ! forth round: delete old vertices and arcs
-      ! 1) reoder vertices
+      ! 1) reorder vertices
 
 c dbg
 c      print *,'nvtx, ngastp = ',nvtx,ngastp
@@ -304,7 +317,7 @@ c     &         svertex_ori(nvtx))
 
       jvtx = 0
       do ivtx = 1, nvtx   ! loop over old vertices
-        if (vertex(ivtx)%idx_op.eq.0) cycle
+        if (vertex_ori(ivtx)%idx_op.eq.0) cycle
         jvtx = jvtx+1
         if (ireo(ivtx).le.0) call quit(1,'reduce_contr','wrong ireo')
         vertex(ireo(ivtx)) = vertex_ori(ivtx)
@@ -382,29 +395,23 @@ c dbg
       call update_svtx4contr(contr)
 
       ! a last additional step: reorder supervertices if necessary
-c      if (.false..and.contr%nsupvtx.lt.contr%nvtx) then
-c        call reorder_supvtx(
-c     &     .true.,.false.,
-c     &     contr,occ_vtx(1,1,njoined_res+1))
-c        if (update_info) then
-cc dbg
-cc        print *,'fixing restrictions:'
-cc dbg
-cc          if (njoined_res.eq.1) then
-cc            do ivtx = 1, contr%nvtx
-cc              call fit_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
-cc     &                     occ_vtx(1,1,ivtx+njoined_res),irestr_res,
-cc     &                     orb_info%ihpvgas,ngas)
-cc            end do
-cc          else
-c            do ivtx = 1, contr%nvtx
-c              call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
-c     &                     occ_vtx(1,1,ivtx+njoined_res),1,
-c     &                     orb_info%ihpvgas,ngas)
-c            end do
-cc          end if
-c        end if
-c      end if
+      if (contr%nsupvtx.lt.contr%nvtx) then
+        call reorder_supvtx(
+     &     .true.,set_reo,reo_info,
+     &     contr,occ_vtx(1,1,njoined_res+1),idxop_new)
+        if (update_info) then
+c dbg
+c        print *,'fixing restrictions:'
+c dbg
+c          if (njoined_res.eq.1) then
+            do ivtx = 1, contr%nvtx
+              call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
+     &                     occ_vtx(1,1,ivtx+njoined_res),1,
+     &                     orb_info%ihpvgas,ngas)
+            end do
+c          end if
+        end if
+      end if
 
       if (ntest.ge.100) then
         write(luout,*) 'contr on exit:'
@@ -416,6 +423,10 @@ c      end if
           write(luout,'(3x,5i14)') iarc_ori(1:contr%narc)
         end if
       end if
+
+c dbg
+c      if (stop_at_end) call quit(1,'reduce_contr','requested stop')
+c dbg
       
       return
       end

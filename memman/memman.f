@@ -288,6 +288,7 @@
           ! print memory map here
           write(luout,'(x,2a)') 'trying to allocate slice: ',
      &         trim(mem_curslice%name)
+          write(luout,'(x,a,i25)') 'size of requested slice:  ',mem_reg
           call memman_map(luout,.true.)
           call quit(0,'memman','memory exceeded')
         else if (over.gt.over_warn) then

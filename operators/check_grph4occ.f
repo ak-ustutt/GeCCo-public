@@ -13,7 +13,7 @@
       include 'def_strinf.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(strinf), intent(in) ::
      &     str_info
@@ -22,11 +22,15 @@
      &     iocc(ngastp,2,njoined), irst(2,ngas,2,2,njoined)
 
       integer ::
+     &     ijoin,
      &     idx_gr(ngastp,2,njoined)
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_func,'check_grph4occ')
         call wrt_occ_n(luout,iocc,njoined)
+        do ijoin = 1, njoined
+          call wrt_rstr(luout,irst(1,1,1,1,ijoin),ngas)
+        end do
       end if
 
       call get_grph4occ(idx_gr,iocc,irst,

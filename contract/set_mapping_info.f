@@ -53,11 +53,11 @@
         write(luout,*) 'merge_map:'
         idx_base = 1
         do ijoin12 = 1, njoined12
-          write(luout,'(i3,"->",i3,": ",10i3)')
+          write(luout,'(i3,"<- op1 #vtx:",i3," - ",10i3)')
      &                        ijoin12, merge_map(idx_base),
      &              merge_map(idx_base+1:idx_base+merge_map(idx_base))
           idx_base = idx_base + merge_map(idx_base) + 1
-          write(luout,'(3x,"->",i3,": ",10i3)')
+          write(luout,'(3x,"<- op2 #vtx:",i3," - ",10i3)')
      &                             merge_map(idx_base),
      &              merge_map(idx_base+1:idx_base+merge_map(idx_base))
           idx_base = idx_base + merge_map(idx_base) + 1
@@ -107,10 +107,6 @@
             idx_merge_map = idx_merge_map+nvtx2+1
 
             if (iocc12(hpvx,ica,ijoin12).eq.0) cycle
-c dbg
-c            print *,'hpvx,ica,ijoin12,occ12:',hpvx,ica,ijoin12,
-c     &           iocc12(hpvx,ica,ijoin12)
-c dbg
             ! set counters for contributions to zero
             if (ica.eq.1) map_info_c(idx_base) = 0
             if (ica.eq.2) map_info_a(idx_base) = 0

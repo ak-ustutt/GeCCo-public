@@ -59,6 +59,9 @@ c dbg
       end do
 
       if (idx_msgmdst2.eq.-1) then
+c dbg
+        print *,'nsym = ',nsym
+c dbg
         write(luout,*) 'occ_c:   ',occ_c(1:nc)
         write(luout,*) 'idxms_c: ',idxms_c(1:nc)
         write(luout,*) 'gam_c:   ',gam_c(1:nc)

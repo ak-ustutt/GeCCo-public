@@ -124,8 +124,6 @@ c dbg
      &         merge_map_op2(ld_mmap2,2,njoined_op(2)))
 
       njoined_cnt = len_list
-      ! subroutine: set_occ_ex(iocc_ex1, merging info
-      !     iocc_op1,contr,arc_list)
       call occ_op2ex(iocc_ex1,iocc_cnt,merge_map_op1,
      &               .true.,.true.,ld_mmap1,
      &               1,iocc_op1,njoined_op(1),ivtxsuper1,

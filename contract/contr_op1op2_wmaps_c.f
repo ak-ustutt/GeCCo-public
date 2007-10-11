@@ -1,13 +1,13 @@
 *----------------------------------------------------------------------*
       subroutine contr_op1op2_wmaps_c(xfac,casign,ffop1,ffop2,
      &     update,ffop1op2,xret,type_xret,
-     &     op1,op2,op1op2,!op1op2tmp,
-     &     iblkop1,iblkop2,iblkop1op2,
+     &     op1,op2,op1op2,op1op2tmp,
+     &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &       nca_blk,
      &       cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
      &       cinfo_op1op2c, cinfo_op1op2a,
-!     &       cinfo_op12tmpc, cinfo_op12tmpa,
+     &       cinfo_op1op2tmpc, cinfo_op1op2tmpa,
      &       cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
      &       cinfo_cntc, cinfo_cnta,
      &       map_info_1c, map_info_1a,
@@ -15,6 +15,7 @@
      &       map_info_12c, map_info_12a,
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
+     &     reo_info,
      &     str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     slightly improved version:
@@ -43,6 +44,7 @@
       include 'def_strinf.h'
       include 'def_filinf.h'
       include 'def_strmapinf.h'
+      include 'def_reorder_info.h'
       include 'ifc_memman.h'
       include 'ifc_operators.h'
       include 'hpvxseq.h'
@@ -58,13 +60,14 @@
      &     xret(1)
       integer, intent(in) ::
      &     type_xret,
-     &     iblkop1, iblkop2, iblkop1op2,
+     &     iblkop1, iblkop2, iblkop1op2, iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &     nca_blk(2,6),
      &     cinfo_op1c(nca_blk(1,1),3), cinfo_op1a(nca_blk(2,1),3),
      &     cinfo_op2c(nca_blk(1,2),3), cinfo_op2a(nca_blk(2,2),3),
      &     cinfo_op1op2c(nca_blk(1,3),3), cinfo_op1op2a(nca_blk(2,3),3),
-! op12tmp -->
+     &     cinfo_op1op2tmpc(nca_blk(1,3),3),
+     &                                 cinfo_op1op2tmpa(nca_blk(2,3),3),
      &     cinfo_ex1c(nca_blk(1,4),3), cinfo_ex1a(nca_blk(2,4),3),
      &     cinfo_ex2c(nca_blk(1,5),3), cinfo_ex2a(nca_blk(2,5),3),
      &     cinfo_cntc(nca_blk(1,6),3), cinfo_cnta(nca_blk(2,6),3),
@@ -76,21 +79,26 @@
       type(filinf), intent(inout) ::
      &     ffop1,ffop2,ffop1op2
       type(operator), intent(in) ::
-     &     op1, op2, op1op2
+     &     op1, op2, op1op2, op1op2tmp
       type(strinf), intent(in) ::
      &     str_info
       type(strmapinf), intent(inout) ::
      &     strmap_info
       type(orbinf), intent(in) ::
      &     orb_info
+      type(reorder_info), intent(in), target ::
+     &     reo_info
 
       logical ::
      &     bufop1, bufop2, bufop1op2,
-     &     first1, first2, first3, first4, first5
+     &     first1, first2, first3, first4, first5,
+     &     reo_op1op2, nonzero
       integer ::
      &     nc_op1, na_op1, nc_op2, na_op2,
      &     nc_ex1, na_ex1, nc_ex2, na_ex2, 
-     &     nc_op1op2, na_op1op2, nc_cnt, na_cnt,
+     &     nc_op1op2, na_op1op2,
+     &     nc_op1op2tmp, na_op1op2tmp,
+     &     nc_cnt, na_cnt,
      &     nsym, ifree,
      &     idxst_op1, idxst_op2, idxst_op1op2,
      &     idxop1, idxop2, idxop1op2,
@@ -99,7 +107,8 @@
      &     msex1_a, msex1_c, msex2_a, msex2_c,
      &     igamc_ac, igamc_a, igamc_c,
      &     igamex1_a, igamex1_c, igamex2_a, igamex2_c,
-     &     idxms, idxdis, lenmap
+     &     idxms, idxdis, lenmap, lblk_op1op2tmp,
+     &     idxdis_op1op2
       real(8) ::
      &     xnrm
       real(8) ::
@@ -108,7 +117,7 @@
       real(8), pointer ::
      &     xop1(:), xop2(:), xop1op2(:)
       real(8), pointer ::
-     &     xbf1(:), xbf2(:), xbf12(:)
+     &     xbf1(:), xbf2(:), xbf12(:), xbf12tmp(:), xop1op2blk(:)
 
       integer ::
      &     msbnd(2,3), igambnd(2,3),
@@ -136,7 +145,7 @@
      &     lstrcnt(nca_blk(1,6)+nca_blk(2,6)),
      &     lstrop1(nca_blk(1,1)+nca_blk(2,1)),
      &     lstrop2(nca_blk(1,2)+nca_blk(2,2)),
-     &     lstrop1op2(nca_blk(1,3)+nca_blk(2,3))
+     &     lstrop1op2tmp(nca_blk(1,7)+nca_blk(2,7))
 
       integer, pointer ::
      &     map_ex1ex2a(:), map_ex1ex2c(:),
@@ -146,13 +155,24 @@
       integer, pointer ::
      &     ndis_op1(:,:), d_gam_ms_op1(:,:,:), gam_ms_op1(:,:),
      &     ndis_op2(:,:), d_gam_ms_op2(:,:,:), gam_ms_op2(:,:),
-     &     ndis_op1op2(:,:), d_gam_ms_op1op2(:,:,:), gam_ms_op1op2(:,:)
+     &     ndis_op1op2tmp(:,:), d_gam_ms_op1op2(:,:,:),
+     &     gam_ms_op1op2(:,:),
+     &     len_gam_ms_op1op2tmp(:,:), len_d_gam_ms_op1op2tmp(:,:,:)
+
+      integer, pointer ::
+     &     cinfo_reo12c(:,:), cinfo_reo12a(:,:),
+     &     cinfo_op1op2_0c(:,:), cinfo_op1op2_0a(:,:),
+     &     map_info_reo1c(:), map_info_reo1a(:),
+     &     map_info_reo2c(:), map_info_reo2a(:),
+     &     ncblk_op1op2_0, nablk_op1op2_0,
+     &     ncblk_reo12,    nablk_reo12
 
       type(graph), pointer ::
      &     graphs(:)
 
       integer, external ::
-     &     ielsum, ielprd, idx_msgmdst2, get_lenmap, idxlist
+     &     ielsum, ielprd, idx_msgmdst2, get_lenmap, idxlist,
+     &     max_dis_blk
       logical, external ::
      &     next_dist, next_msgamdist2
       real(8), external ::
@@ -171,17 +191,29 @@
         write(luout,*) 'casign = ',casign
         if (type_xret.ne.0)
      &       write(luout,*) 'xret on entry = ',xret(1)
-        write(luout,*) 'op1: ',op1%name(1:len_trim(op1%name)),
+        write(luout,*) 'op1: ',trim(op1%name),
      &       ' block ',iblkop1
-        write(luout,*) 'op2: ',op2%name(1:len_trim(op2%name)),
+        write(luout,*) 'op2: ',trim(op2%name),
      &       ' block ',iblkop2
         if (iblkop1op2.gt.0) then
-          write(luout,*) 'op1op2: ',
-     &         op1op2%name(1:len_trim(op1op2%name)),
+          write(luout,*) 'op1op2: ',trim(op1op2%name),
      &       ' block ',iblkop1op2
         else
           write(luout,*) 'op1op2: scalar'
         end if
+      end if
+
+      ! flag whether non-zero contribution to op1op2 occurred
+      nonzero = .false.
+
+      reo_op1op2 = reo_info%n_op_reo.gt.0
+      if (reo_op1op2.and..not.associated(reo_info%map_reo1c))
+     &     call quit(1,'contr_op1op2_wmaps_c',
+     &     'reo_info is not consistent')
+      if (ntest.ge.10) write(luout,*) 'reo_op1op2: ',reo_op1op2
+      if (ntest.ge.10 .and. reo_op1op2) then
+        write(luout,*) 'op1op2tmp: ',trim(op1op2tmp%name),
+     &       ' block ',iblkop1op2tmp
       end if
 
       idxst_op1 = op1%off_op_occ(iblkop1) + 1
@@ -270,6 +302,11 @@
         end if
       end if
 
+      if (reo_op1op2) then
+        lblk_op1op2tmp = max_dis_blk(0,op1op2tmp,iblkop1op2tmp,orb_info)
+        ifree = mem_alloc_real(xbf12tmp,lblk_op1op2tmp,'xbf12tmp')
+      end if
+
       graphs => str_info%g
 
       ndis_op1 => op1%off_op_gmox(iblkop1)%ndis
@@ -278,11 +315,12 @@
       ndis_op2 => op2%off_op_gmox(iblkop2)%ndis
       gam_ms_op2 => op2%off_op_gmo(iblkop2)%gam_ms
       d_gam_ms_op2 => op2%off_op_gmox(iblkop2)%d_gam_ms
-      ndis_op1op2 => op1op2%off_op_gmox(iblkop1op2)%ndis
+      ndis_op1op2tmp => op1op2tmp%off_op_gmox(iblkop1op2)%ndis
       gam_ms_op1op2 => op1op2%off_op_gmo(iblkop1op2)%gam_ms
-!      len_gam_ms_op1op2 => op1op2%len_op_gmo(iblkop1op2)%gam_ms
+      len_gam_ms_op1op2tmp => op1op2tmp%len_op_gmo(iblkop1op2)%gam_ms
       d_gam_ms_op1op2 => op1op2%off_op_gmox(iblkop1op2)%d_gam_ms
-!      len_d_gam_ms_op1op2 => op1op2%len_op_gmox(iblkop1op2)%d_gam_ms
+      len_d_gam_ms_op1op2tmp =>
+     &                   op1op2tmp%len_op_gmox(iblkop1op2)%d_gam_ms
 
       call sum_occ(nc_op1,cinfo_op1c,nca_blk(1,1))
       call sum_occ(na_op1,cinfo_op1a,nca_blk(2,1))
@@ -290,6 +328,14 @@
       call sum_occ(na_op2,cinfo_op2a,nca_blk(2,2))
       call sum_occ(nc_op1op2,cinfo_op1op2c,nca_blk(1,3))
       call sum_occ(na_op1op2,cinfo_op1op2a,nca_blk(2,3))
+      call sum_occ(nc_op1op2tmp,cinfo_op1op2tmpc,nca_blk(1,7))
+      call sum_occ(na_op1op2tmp,cinfo_op1op2tmpa,nca_blk(2,7))
+c dbg
+      if (na_op1op2.ne.na_op1op2tmp)
+     &     call quit(1,'contr_op1op2_wmaps_c','unexpected 1a')
+      if (nc_op1op2.ne.nc_op1op2tmp)
+     &     call quit(1,'contr_op1op2_wmaps_c','unexpected 1b')
+c dbg
       call sum_occ(nc_ex1,cinfo_ex1c,nca_blk(1,4))
       call sum_occ(na_ex1,cinfo_ex1a,nca_blk(2,4))
       call sum_occ(nc_ex2,cinfo_ex2c,nca_blk(1,5))
@@ -301,12 +347,12 @@
       call strmap_man_c(
      &     cinfo_ex1c(1,2),nca_blk(1,4),
      &     cinfo_ex2c(1,2),nca_blk(1,5),
-     &     cinfo_op1op2c(1,2),nca_blk(1,3),map_info_12c,
+     &     cinfo_op1op2tmpc(1,2),nca_blk(1,7),map_info_12c,
      &     str_info,strmap_info,orb_info)
       call strmap_man_c(
      &     cinfo_ex2a(1,2),nca_blk(2,5),
      &     cinfo_ex1a(1,2),nca_blk(2,4),
-     &     cinfo_op1op2a(1,2),nca_blk(2,3),map_info_12a,
+     &     cinfo_op1op2tmpa(1,2),nca_blk(2,7),map_info_12a,
      &     str_info,strmap_info,orb_info)
       call strmap_man_c(
      &     cinfo_cntc(1,2),nca_blk(1,6),
@@ -329,18 +375,40 @@
      &     cinfo_op2a(1,2),nca_blk(2,2),map_info_2a,
      &     str_info,strmap_info,orb_info)
 
-!      if (reo_res) then
-!        call strmap_man_c(
-!     &     cinfo_op12_0c(1,2),nca_blk(1,4),
-!     &     cinfo_op12shc(1,2),nca_blk(1,5),
-!     &     cinfo_op12tmpc(1,2),nca_blk(1,3),map_info_12reo1c,
-!     &     str_info,strmap_info,orb_info)
-!        call strmap_man_c(
-!     &     cinfo_op12_0c(1,2),nca_blk(1,4),
-!     &     cinfo_op12shc(1,2),nca_blk(1,5),
-!     &     cinfo_op1op2c(1,2),nca_blk(1,3),map_info_12reo2c,
-!     &     str_info,strmap_info,orb_info)
-!      end if
+      if (reo_op1op2) then
+        cinfo_reo12c => reo_info%cinfo_reo_c
+        cinfo_reo12a => reo_info%cinfo_reo_a
+        cinfo_op1op2_0c => reo_info%cinfo_opreo0c
+        cinfo_op1op2_0a => reo_info%cinfo_opreo0a
+        map_info_reo1c  => reo_info%map_reo1c
+        map_info_reo1a  => reo_info%map_reo1a
+        map_info_reo2c  => reo_info%map_reo2c
+        map_info_reo2a  => reo_info%map_reo2a
+        ncblk_op1op2_0  => reo_info%ncblk_reo0
+        nablk_op1op2_0  => reo_info%nablk_reo0
+        ncblk_reo12  => reo_info%ncblk_reo
+        nablk_reo12  => reo_info%nablk_reo
+        call strmap_man_c(
+     &     cinfo_op1op2_0c(1,2),ncblk_op1op2_0,
+     &     cinfo_reo12c(1,2),ncblk_reo12,
+     &     cinfo_op1op2tmpc(1,2),nca_blk(1,7),map_info_reo1c,
+     &     str_info,strmap_info,orb_info)
+        call strmap_man_c(
+     &     cinfo_reo12a(1,2),nablk_reo12,
+     &     cinfo_op1op2_0a(1,2),nablk_op1op2_0,
+     &     cinfo_op1op2tmpa(1,2),nca_blk(2,7),map_info_reo1a,
+     &     str_info,strmap_info,orb_info)
+        call strmap_man_c(
+     &     cinfo_op1op2_0c(1,2),ncblk_op1op2_0,
+     &     cinfo_reo12c(1,2),ncblk_reo12,
+     &     cinfo_op1op2c(1,2),nca_blk(1,3),map_info_reo2c,
+     &     str_info,strmap_info,orb_info)
+        call strmap_man_c(
+     &     cinfo_reo12a(1,2),nablk_reo12,
+     &     cinfo_op1op2_0a(1,2),nablk_op1op2_0,
+     &     cinfo_op1op2a(1,2),nca_blk(2,3),map_info_reo2a,
+     &     str_info,strmap_info,orb_info)
+      end if
 
       ! minimum Ms for ...
       msbnd(1,1) = -nc_op1 ! operator 1
@@ -427,11 +495,12 @@
      &             - idxst_op2+1
             idxms = (na_op1op2-ms12i_a(3))/2 + 1
             ! relevant for case where no reordering necessary
+            ! then we have: op1op2tmp == op1op2
             if (iblkop1op2.gt.0)
      &           idxop1op2 = gam_ms_op1op2(igam12i_a(3),idxms) + 1
      &                - idxst_op1op2+1
-!            if (reo_res)
-!     &           lenop1op2blk = len_gam_ms_op1op2(igam12i_a(3),idxms)
+            if (reo_op1op2)
+     &           lblk_op1op2tmp=len_gam_ms_op1op2tmp(igam12i_a(3),idxms)
             if (iblkop1op2.eq.0) idxop1op2 = 1
 
             igam12i_c(1) = multd2h(igam12i_a(1),igamtop1)
@@ -526,19 +595,24 @@
      &                                 map_info_12a)
 
                   call ms2idxms(idxmsi_dis_c,msi_dis_c,
-     &                   cinfo_op1op2c,nca_blk(1,3)) !<-op12tmp
+     &                   cinfo_op1op2tmpc,nca_blk(1,7))
                   call ms2idxms(idxmsi_dis_a,msi_dis_a,
-     &                   cinfo_op1op2a,nca_blk(2,3))
+     &                   cinfo_op1op2tmpa,nca_blk(2,7))
 
                   call set_len_str(
-     &                   lstrop1op2,nca_blk(1,3),nca_blk(2,3),
+     &                   lstrop1op2tmp,nca_blk(1,7),nca_blk(2,7),
      &                   graphs,
-     &                   cinfo_op1op2c(1,2),idxmsi_dis_c,
-     &                                    gmi_dis_c,cinfo_op1op2c(1,3),
-     &                   cinfo_op1op2a(1,2),idxmsi_dis_a,
-     &                                    gmi_dis_a,cinfo_op1op2a(1,3),
+     &                   cinfo_op1op2tmpc(1,2),idxmsi_dis_c,
+     &                                  gmi_dis_c,cinfo_op1op2tmpc(1,3),
+     &                   cinfo_op1op2tmpa(1,2),idxmsi_dis_a,
+     &                                  gmi_dis_a,cinfo_op1op2tmpa(1,3),
      &                   hpvxseq,.false.)
                   
+                  if ( nca_blk(1,7)+nca_blk(2,7).gt.0 .and.
+     &                 idxlist(0,lstrop1op2tmp,
+     &                           nca_blk(1,7)+nca_blk(2,7),1).gt.0)
+     &                 cycle caex2_loop
+
                   ! get igrphext1,igrphext2->igrphop1op2 map
                   ! for given ms and irreps
                   ifree = mem_setmark('ex_str')
@@ -577,34 +651,40 @@ c dbg
      &                 strmap_info,nsym,str_info%ngraph)
 
                   ! get distribution index
-                  ! relevant for case w/o reordering
                   idxms = (na_op1op2-ms12i_a(3))/2 + 1
-                  if (iblkop1op2.gt.0.and.
-     &                 ndis_op1op2(igam12i_a(3),idxms).gt.1) then
+                  idxdis_op1op2 = 1
+                  if (iblkop1op2tmp.gt.0.and.
+     &                 ndis_op1op2tmp(igam12i_a(3),idxms).gt.1) then
                     idxdis =
      &                  idx_msgmdst2(
-     &                   iblkop1op2,idxms,igam12i_a(3),
-     &                   cinfo_op1op2c,idxmsi_dis_c,
-     &                              gmi_dis_c,nca_blk(1,3),
-     &                   cinfo_op1op2a,idxmsi_dis_a,
-     &                              gmi_dis_a,nca_blk(2,3),
-     &                   .false.,op1op2,nsym)
-                         
+     &                   iblkop1op2tmp,idxms,igam12i_a(3),
+     &                   cinfo_op1op2tmpc,idxmsi_dis_c,
+     &                              gmi_dis_c,nca_blk(1,7),
+     &                   cinfo_op1op2tmpa,idxmsi_dis_a,
+     &                              gmi_dis_a,nca_blk(2,7),
+     &                   .false.,op1op2tmp,nsym)
+                    idxdis_op1op2 = idxdis
+
+                    ! relevant for case w/o reordering
+                    ! then we have op1op2tmp == op1op2
                     idxop1op2 = 
-     &                   d_gam_ms_op1op2(idxdis,igam12i_a(3),idxms) + 1
+     &                   d_gam_ms_op1op2(idxdis,igam12i_a(3),idxms)+1
      &                   - idxst_op1op2+1
 
-!                    if (reo_res)
-!     &                   lenop1op2blk =
-!     &                   len_d_gam_ms_op1op2(idxdis,igam12i_a(3),idxms)
+                    if (reo_op1op2)
+     &                 lblk_op1op2tmp =
+     &                 len_d_gam_ms_op1op2tmp(idxdis,igam12i_a(3),idxms)
 
                   end if
 
-!                  if (.not.reo_res) then
-!                    xop1op2blk => xop1op2(idxop1op2)
-!                  else
-!                    alloc or resize: xop1op2blk 
-!                  end do
+                  if (.not.reo_op1op2) then
+                    ! direct update of result block
+                    xop1op2blk => xop1op2(idxop1op2:)
+                  else
+                    ! put result to intermediate buffer
+                    xop1op2blk => xbf12tmp
+                    xbf12tmp(1:lblk_op1op2tmp) = 0d0
+                  end if
 
                   ! loop over distributions of current Ms and IRREP 
                   ! of AC and CC over ngastypes            
@@ -664,6 +744,11 @@ c dbg
      &                                    gmop1dis_a,cinfo_op1a(1,3),
      &                   hpvxseq,.false.)
 
+                    if ( nca_blk(1,1)+nca_blk(2,1).gt.0 .and.
+     &                   idxlist(0,lstrop1,
+     &                             nca_blk(1,1)+nca_blk(2,1),1).gt.0)
+     &                   cycle cac_loop
+
                     ! get distribution index
                     idxms = (na_op1-ms12i_a(1))/2 + 1
                     if (ndis_op1(igam12i_a(1),idxms).gt.1) then
@@ -722,6 +807,11 @@ c dbg
      &                                    gmop2dis_a,cinfo_op2a(1,3),
      &                   hpvxseq,.false.)
 
+                    if ( nca_blk(1,2)+nca_blk(2,2).gt.0 .and.
+     &                   idxlist(0,lstrop2,
+     &                             nca_blk(1,2)+nca_blk(2,2),1).gt.0)
+     &                   cycle cac_loop
+
                     ! get distribution index
                     idxms = (na_op2-ms12i_a(2))/2 + 1
                     if (ndis_op2(igam12i_a(2),idxms).gt.1) then
@@ -751,6 +841,9 @@ c dbg
      &                   nca_blk(1,2)+nca_blk(2,2)),
      &                   xop2(idxop2),1,xop2(idxop2),1)
                     if (xnrm.lt.1d-28) cycle cac_loop
+
+                    ! if we get here, op1op2 will change:
+                    nonzero = .true.
 
                     ! get igrphcnt,igrphext1->igrphop1 map
                     ! for given ms and irreps
@@ -865,14 +958,14 @@ c                    print *,'xop2: ',xop2(idxop2)
 c                    print *,'xop1op2: ',xop1op2(idxop1op2)
 c dbg
                     call cntr_blk1blk2_wmaps_c(xfac*casign,
-!                        xop1op2blk,
-     &                   xop1op2(idxop1op2),
+     &                   xop1op2blk,
+c     &                   xop1op2(idxop1op2),
      &                                 xop1(idxop1),xop2(idxop2),
      &                   nca_blk,
      &                   cinfo_op1c(1,3),cinfo_op1a(1,3),
      &                   cinfo_op2c(1,3),cinfo_op2a(1,3),
-     &                   cinfo_op1op2c(1,3),cinfo_op1op2a(1,3),
-     &                   lstrop1,lstrop2,lstrop1op2,
+     &                   cinfo_op1op2tmpc(1,3),cinfo_op1op2tmpa(1,3),
+     &                   lstrop1,lstrop2,lstrop1op2tmp,
      &                   lstrex1,lstrex2,lstrcnt,
      &                   map_info_12c, map_info_12a,
      &                   map_info_1c, map_info_1a,
@@ -883,10 +976,6 @@ c dbg
      &                   )                     
                     if (ntest.ge.100)
      &                   write(luout,*) 'after blk1blk2'
-c dbg
-c                    if (lenop1op2.eq.22)
-c     &                   print *,'xop1op2: ',xop1op2(1:11)
-c dbg
 
                     call atim_cs(cpu,sys)
                     cnt_kernel(1) = cnt_kernel(1)+cpu-cpu0
@@ -899,9 +988,40 @@ c dbg
                   ifree = mem_flushmark('ex_str')
 
                   ! if necessary, reorder op1op2 block:
-!                  if (reo_res) then
-!                    call reo_blk_wmaps_c(xblkop1op2,xop1op2)
-!                  end if
+                  if (reo_op1op2.and.nonzero) then
+c dbg
+c                    print *,'block to reorder '
+c                    idxms = (na_op1op2-ms12i_a(3))/2 + 1
+c                    call wrt_op_blk_wi(luout,xop1op2blk,
+c     &                   op1op2tmp,iblkop1op2,
+c     &                   igam12i_a(3),idxms,idxdis_op1op2,
+c     &                   nc_op1op2+na_op1op2,str_info,orb_info)
+c dbg
+                    call reo_blk_wmaps_c(xop1op2,xop1op2blk,
+     &                   reo_info%sign_reo,
+     &                   ms12i_c(3),ms12i_a(3),
+     &                                   igam12i_c(3),igam12i_a(3),
+     &                   msi_dis_c,msi_dis_a,gmi_dis_c,gmi_dis_a,
+     &                   nca_blk(1,7),nca_blk(2,7),
+     &                   cinfo_op1op2tmpc,cinfo_op1op2tmpa,
+     &                   lstrop1op2tmp,
+     &                   op1op2,iblkop1op2,
+     &                   nca_blk(1,3),nca_blk(2,3),
+     &                   cinfo_op1op2c,cinfo_op1op2a,
+     &                   reo_info%ncblk_reo,reo_info%nablk_reo,
+     &                   reo_info%cinfo_reo_c,reo_info%cinfo_reo_a,
+     &                   reo_info%ncblk_reo0,reo_info%nablk_reo0,
+     &                   reo_info%cinfo_opreo0c,reo_info%cinfo_opreo0a,
+     &                   reo_info%map_reo1c,reo_info%map_reo1a,
+     &                   reo_info%map_reo2c,reo_info%map_reo2a,
+     &                   nsym,str_info,strmap_info)
+c dbg
+c                    print *,'result vector after reo:'
+c                    call wrt_op_buf(luout,5,xop1op2,op1op2,
+c     &                   iblkop1op2,iblkop1op2,str_info,orb_info)
+c                    stop 'TEST TEST'
+c dbg
+                  end if
 
                 end do caex2_loop
               end do caex1_loop
@@ -998,7 +1118,7 @@ c dbg
       ! map_ex1ex2a/c  mapping ex1*ex2->op1op2
       ! etc. for ex1cnt ex2cnt
       integer, intent(in) ::
-     &     nca_blk(2,6),
+     &     nca_blk(2,7),
      &     lstrop1(*), lstrop2(*), lstrop1op2(*),
      &     hpvxop1a(*), hpvxop2a(*), hpvxop1op2a(*),
      &     hpvxop1c(*), hpvxop2c(*), hpvxop1op2c(*),
@@ -1016,19 +1136,19 @@ c dbg
 
       integer ::
      &     ielmap, ielmap2,
-     &     idxop1op2a(nca_blk(2,3)), idxop1op2c(nca_blk(1,3)),
-     &     nstr_ex1a1(nca_blk(2,1)), nstr_ex1c1(nca_blk(1,1)),
-     &     nstr_ex1a12(nca_blk(2,3)), nstr_ex1c12(nca_blk(1,3)),
-     &     nstr_ex2a2(nca_blk(2,2)), nstr_ex2c2(nca_blk(1,2)),
-     &     nstr_ex2a12(nca_blk(2,3)), nstr_ex2c12(nca_blk(1,3)),
-     &     nstr_cnta1(nca_blk(2,1)), nstr_cntc1(nca_blk(1,1)),
-     &     nstr_cnta2(nca_blk(1,2)), nstr_cntc2(nca_blk(2,2)),
-     &     nstr_ex1ex2a(nca_blk(2,3)), nstr_ex1ex2c(nca_blk(1,3)),
+     &     idxop1op2a(nca_blk(2,7)), idxop1op2c(nca_blk(1,7)),
+     &     nstr_ex1a1(nca_blk(2,1)),   nstr_ex1c1(nca_blk(1,1)),
+     &     nstr_ex1a12(nca_blk(2,7)),  nstr_ex1c12(nca_blk(1,7)),
+     &     nstr_ex2a2(nca_blk(2,2)),   nstr_ex2c2(nca_blk(1,2)),
+     &     nstr_ex2a12(nca_blk(2,7)),  nstr_ex2c12(nca_blk(1,7)),
+     &     nstr_cnta1(nca_blk(2,1)),   nstr_cntc1(nca_blk(1,1)),
+     &     nstr_cnta2(nca_blk(1,2)),   nstr_cntc2(nca_blk(2,2)),
+     &     nstr_ex1ex2a(nca_blk(2,7)), nstr_ex1ex2c(nca_blk(1,7)),
      &     nstr_ex1cnta(nca_blk(2,1)), nstr_ex1cntc(nca_blk(1,1)),
      &     nstr_ex2cnta(nca_blk(2,2)), nstr_ex2cntc(nca_blk(1,2)),
      &     ldim_op1a(nca_blk(2,1)), ldim_op1c(nca_blk(1,1)),
      &     ldim_op2a(nca_blk(2,2)), ldim_op2c(nca_blk(1,2)),
-     &     ldim_op1op2a(nca_blk(2,3)), ldim_op1op2c(nca_blk(1,3))
+     &     ldim_op1op2a(nca_blk(2,7)), ldim_op1op2c(nca_blk(1,7))
       integer ::
      &     ioff, istr1, istr2, idx1, idx2, idx,
      &     ngastp_op1op2a, ngastp_op1op2c,
@@ -1075,8 +1195,8 @@ c dbg
       ngastp_op1a = nca_blk(2,1)
       ngastp_op2c = nca_blk(1,2)
       ngastp_op2a = nca_blk(2,2)
-      ngastp_op1op2c = nca_blk(1,3)
-      ngastp_op1op2a = nca_blk(2,3)
+      ngastp_op1op2c = nca_blk(1,7)
+      ngastp_op1op2a = nca_blk(2,7)
 
       ! C: ex1,ex2
       call set_strmapdim_c(nstr_ex1ex2c,nstr_ex1c12,nstr_ex2c12,
@@ -1109,7 +1229,7 @@ c dbg
      &                   lstrop2,nca_blk(1,2),nca_blk(2,2))
       call set_op_ldim_c(ldim_op1op2c,ldim_op1op2a,
      &                   hpvxop1op2c,hpvxop1op2a,
-     &                   lstrop1op2,nca_blk(1,3),nca_blk(2,3))
+     &                   lstrop1op2,nca_blk(1,7),nca_blk(2,7))
 c dbg
 c      print *,'ldim_op1c:',ldim_op1c(1:ngastp_op1c)
 c      print *,'ldim_op1a:',ldim_op1a(1:ngastp_op1a)
