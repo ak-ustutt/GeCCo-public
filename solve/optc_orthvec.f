@@ -140,6 +140,9 @@
         if (nincore.ge.2) then
           call vec_from_da(ffnew,inew,xbuf1,nwfpar)
           smat(nold+inew,nold+inew) = ddot(nwfpar,xbuf1,1,xbuf1,1)
+c dbg
+          print *,'|new|: ',sqrt(smat(nold+inew,nold+inew))
+c dbg
         else
           smat(nold+inew,nold+inew) = da_ddot(ffnew,inew,ffnew,inew,
      &           nwfpar,xbuf1,xbuf2,lenbuf)

@@ -30,12 +30,13 @@ c      include 'ifc_operators.h'
 
 c      type(formula_list), pointer ::
 c     &     list_pnt
+      logical ::
+     &     split
       type(formula), pointer ::
      &     cclg_pnt, form_pnt, form_eta
-
       integer ::
      &     idxham, idxtop, idxtba, idxomg, idxecc, idxhhat, idxrba,
-     &     idxr12, idxcba, idxc12, idx,
+     &     idxr12, idxcba, idxc12, idxdens, idx,
      &     idxtbtrf, idxlcc, idxeta
 
       ! explicit interface does not work with ifort
@@ -178,16 +179,42 @@ c
      &       1,idxtop,0,idxtbtrf,
      &       op_info)
 
-        ! split into tbar A and eta contribution
-        call add_formula(form_info,label_cceta)
-        idx = idx_formlist(label_cceta,form_info)
-        form_eta => form_info%form_arr(idx)%form
-        idxeta = idx_oplist2(op_eta,op_info)
+        ! if we (for test purposes) solve T and Tbar
+        ! simultaneously, do not split into RHS and trafo
+        ! we need one residual then ...
+        split = .not.solve_sim
+
+        if (split) then
+          ! split into tbar A and eta contribution
+          call add_formula(form_info,label_cceta)
+          idx = idx_formlist(label_cceta,form_info)
+          form_eta => form_info%form_arr(idx)%form
+          idxeta = idx_oplist2(op_eta,op_info)
+        else
+          idxeta = -1
+        end if
 
         call leq_post(form_pnt,form_eta,form_pnt,
+     &                split,
      &                idxtbtrf,idxeta,idxtba,
      &                title_cctbar_a,title_cceta,
      &                op_info)
+      end if
+
+      if (densities.gt.0) then
+        if (explicit) call quit(1,'set_cc_formula','do not enter!')
+        if (iprlvl.gt.0)
+     &     write(luout,'(2x,"* ",a,i1)')
+     &     'Setting densities up to rank: ',densities
+        call add_formula(form_info,label_ccdens)
+        idx = idx_formlist(label_ccdens,form_info)
+        form_pnt => form_info%form_arr(idx)%form
+        idxdens = idx_oplist2(op_ccdens,op_info)
+        ! d L / d H
+        call form_deriv2(form_pnt,cclg_pnt,
+     &       label_ccdens,title_ccdens,
+     &       1,idxham,0,idxdens,
+     &       op_info)
       end if
 
       return

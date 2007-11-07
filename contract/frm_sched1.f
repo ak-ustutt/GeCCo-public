@@ -48,7 +48,7 @@
      &     cur_form
 
       logical ::
-     &     update, reo_op1op2, reo_other
+     &     update, reo_op1op2, reo_other, possible
       integer ::
      &     lufrm, idxopres, idxres, nres, type_xret, type_xret_cur,
      &     n_occ_cls, maxvtx, maxarc, maxfac, nblk_res,
@@ -260,12 +260,12 @@ c        case(command_set_target_update)
         ! allocate arrays for intermediates
         allocate(
      &       occ_vtx(ngastp,2,nvtx+njoined_res),
-     &       irestr_vtx(2,orb_info%ngas,2,2,nvtx+1),
-     &       info_vtx(2,nvtx+1),
-     &       merge_op1(nvtx*nvtx+1), ! a bit too large, I guess ...
-     &       merge_op2(nvtx*nvtx+1),
-     &       merge_op1op2(nvtx*nvtx+1),
-     &       merge_op2op1(nvtx*nvtx+1))
+     &       irestr_vtx(2,orb_info%ngas,2,2,nvtx+njoined_res),
+     &       info_vtx(2,nvtx+njoined_res),
+     &       merge_op1(2*nvtx*nvtx), ! a bit too large, I guess ...
+     &       merge_op2(2*nvtx*nvtx),
+     &       merge_op1op2(2*nvtx*nvtx),
+     &       merge_op2op1(2*nvtx*nvtx))
         if (nfact.gt.1)
      &       allocate(opscr(nfact-1),optmp,ffscr(nfact-1))
 
@@ -317,11 +317,16 @@ c        case(command_set_target_update)
             call init_reo_info(reo_info)
             
             call reduce_contr(cur_form%contr,occ_vtx,
+     &           possible,
      &           iarc,idxop_intm,ivtx_new,
      &           njoined_res,
      &           .false.,idum,idum,
      &           .true.,irestr_vtx,info_vtx,irst_res,
      &           .true.,reo_info,orb_info)
+            if (.not.possible)
+     &           call quit(1,'frm_sched1',
+     &           'inconsistency: reduce_contr is in difficulties')
+
             ! add 0-contractions, if necessary
             call check_disconnected(cur_form%contr)
             ! process reordering info

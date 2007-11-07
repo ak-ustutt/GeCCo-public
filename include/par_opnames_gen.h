@@ -19,4 +19,5 @@
      &     op_cclg*5  = 'L(CC)',
      &     op_ccen*5  = 'E(CC)',
      &     op_tbar_a*6  = 'TBAR.A',
-     &     op_eta*3   = 'ETA'
+     &     op_eta*3   = 'ETA',
+     &     op_ccdens*6 = 'DEN-CC'

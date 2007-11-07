@@ -959,7 +959,6 @@ c                    print *,'xop1op2: ',xop1op2(idxop1op2)
 c dbg
                     call cntr_blk1blk2_wmaps_c(xfac*casign,
      &                   xop1op2blk,
-c     &                   xop1op2(idxop1op2),
      &                                 xop1(idxop1),xop2(idxop2),
      &                   nca_blk,
      &                   cinfo_op1c(1,3),cinfo_op1a(1,3),
@@ -989,14 +988,6 @@ c     &                   xop1op2(idxop1op2),
 
                   ! if necessary, reorder op1op2 block:
                   if (reo_op1op2.and.nonzero) then
-c dbg
-c                    print *,'block to reorder '
-c                    idxms = (na_op1op2-ms12i_a(3))/2 + 1
-c                    call wrt_op_blk_wi(luout,xop1op2blk,
-c     &                   op1op2tmp,iblkop1op2,
-c     &                   igam12i_a(3),idxms,idxdis_op1op2,
-c     &                   nc_op1op2+na_op1op2,str_info,orb_info)
-c dbg
                     call reo_blk_wmaps_c(xop1op2,xop1op2blk,
      &                   reo_info%sign_reo,
      &                   ms12i_c(3),ms12i_a(3),
@@ -1015,12 +1006,6 @@ c dbg
      &                   reo_info%map_reo1c,reo_info%map_reo1a,
      &                   reo_info%map_reo2c,reo_info%map_reo2a,
      &                   nsym,str_info,strmap_info)
-c dbg
-c                    print *,'result vector after reo:'
-c                    call wrt_op_buf(luout,5,xop1op2,op1op2,
-c     &                   iblkop1op2,iblkop1op2,str_info,orb_info)
-c                    stop 'TEST TEST'
-c dbg
                   end if
 
                 end do caex2_loop
@@ -1044,18 +1029,10 @@ c dbg
      &         iblkop1op2,iblkop1op2,str_info,orb_info)
         end if
       end if
-c dbg
-c          write(luout,*) 'operator 12 on exit'
-c          call wrt_op_buf(luout,2,xop1op2,op1op2,
-c     &         iblkop1op2,iblkop1op2,str_info,orb_info)
-c dbg
 
       if (type_xret.eq.2) then
         xret(1) = xop1op2(1)
       else if (type_xret.eq.1) then
-c dbg
-c        print *,'call ddot (3)'
-c dbg
         xret(1) = ddot(lenop1op2,xop1op2,1,xop1op2,1)
       end if
 

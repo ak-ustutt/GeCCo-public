@@ -48,7 +48,6 @@
       call add_action(act_list,nactions,
      &     iaction_import,0,1,0,
      &     idum,(/idxham/),
-     &     idum,(/(/idxham,1/)/),
      &     0,idum
      &     )
 
@@ -56,7 +55,6 @@
       call add_action(act_list,nactions,
      &     iaction_import,0,1,0,
      &     idum,(/idxr12/),
-     &     idum,(/(/idxr12,1/)/),
      &     0,idum
      &     )
 
@@ -64,7 +62,6 @@
       call add_action(act_list,nactions,
      &     iaction_setup_prc,2,1,0,
      &     (/idxsop,idxham/),(/idxdia/),
-     &     (/(/idxsop,1/),(/idxham,1/)/),(/(/idxdia,1/)/),
      &     0,idum
      &     )
 
@@ -75,7 +72,6 @@
         call add_action(act_list,nactions,
      &     iaction_solve_nleq,2,2,1,
      &     (/idxdia,idxham/),(/idxsop,idxomg/),
-     &     (/(/idxdia,1/),(/idxham,1/)/),(/(/idxsop,1/),(/idxomg,1/)/),
      &     2,(/idxccen,idxccrs/)
      &     )
       else
@@ -83,7 +79,6 @@
         call add_action(act_list,nactions,
      &     iaction_solve_nleq,2,3,1,
      &     (/idxdia,idxham/),(/idxsop,idxomg,idxhhat/),
-     &     (/(/idxdia,1/),(/idxham,1/)/),(/(/idxsop,1/),(/idxomg,1/)/),
      &     2,(/idxccen,idxccrs/)
      &     )
       end if

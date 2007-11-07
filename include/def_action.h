@@ -5,7 +5,8 @@
      &     iaction_solve_nleq = 4,
      &     iaction_solve_evp  = 5,
      &     iaction_solve_gevp = 6,
-     &     iaction_setup_prc  = 7  
+     &     iaction_setup_prc  = 7,
+     &     iaction_prop_eval  = 8
 
       type action
         integer ::
@@ -13,8 +14,7 @@
         integer ::
      &       nop_in, nop_out, nop_opt
         integer, allocatable ::
-     &       idxopdef_in(:), idxopdef_out(:),
-     &       idxopfile_in(:,:), idxopfile_out(:,:)
+     &       idxopdef_in(:), idxopdef_out(:)
         integer ::
      &       nform
         integer, allocatable ::

@@ -56,7 +56,8 @@ c     &     call quit(1,'set_orbinf','R12 without CABS intended?')
      &     orb_info%ireost(ntoob),orb_info%igamorb(ntoob+caborb), 
      &     orb_info%igasorb(ntoob+caborb),orb_info%mostnd(2,nsym,ngas),
      &     orb_info%ngas_hpv(ngastp),orb_info%nactt_hpv(ngastp),
-     &     orb_info%idx_gas(ngastp),orb_info%ioff_gas(ngastp))
+     &     orb_info%idx_gas(ngastp),orb_info%ioff_gas(ngastp),
+     &     orb_info%gas_reo(ngas))
       if(explicit)then
         allocate(orb_info%xreosym(ntoob+caborb),
      &       orb_info%xreotyp(ntoob+caborb),koffs(1:nsym))
@@ -136,6 +137,17 @@ c          orb_info%xreotyp(idx)=j+ntoob-caborb
 c        enddo          
 c      endif  
 
+      do igas = 1, ngas
+        orb_info%gas_reo(igas) = igas
+      end do
+      if (hole_rv) then
+        igasr = 0
+        do igas = orb_info%ngas_hpv(ihole), 1, -1          
+          igasr = igasr + 1
+          orb_info%gas_reo(igas) = igasr
+        end do
+      end if
+
       ! set up igamorb (IRREP per orbital in type ordering) and
       ! set up igasorb (shell per orbital in type ordering)      
       ! set up mostnd (start and end indices)      
@@ -180,6 +192,7 @@ c      endif
       end do
 
       if (iprint.ge.100) then
+        write(luout,*) 'gas_reo:',orb_info%gas_reo(1:ngas)
         write(luout,*) 'igamorb:'
         call iwrtma(orb_info%igamorb,1,ntoob+caborb,1,ntoob+caborb)
         write(luout,*) 'igasorb:'

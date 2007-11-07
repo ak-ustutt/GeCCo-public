@@ -48,16 +48,16 @@
       integer ::
      &     idx, jdx, kdx, iroot, irhs,  nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
-     &     ndim_save, ndel, iopt, lenscr, ifree
+     &     ndim_save, ndel, iopt, lenscr, ifree, restart_mode
       real(8) ::
-     &     cond, xdum
+     &     cond, xdum, xnrm
       real(8), pointer ::
      &     gred(:), vred(:), mred(:),
      &     xmat1(:), xmat2(:), xvec(:)
       integer, pointer ::
      &     ndim_rsbsp, ndim_vsbsp, iord_rsbsp(:), iord_vsbsp(:),
      &     nwfpar(:),
-     &     ipiv(:), iconv(:)
+     &     ipiv(:), iconv(:), idxroot(:)
       type(filinf), pointer ::
      &     ffrsbsp, ffvsbsp
 
@@ -97,6 +97,8 @@
      &         iconv(idx) = 1
         end do
       end do
+
+      ifree = mem_alloc_int(idxroot,nopt*nroot,'LEQ_idxroot')
 
 c      if (iter.eq.1) goto 1000
 
@@ -196,12 +198,18 @@ c      if (iter.eq.1) goto 1000
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
         ! not yet converged? increase record counter
-        if (xrsnrm(iroot).gt.opti_info%thrgrd(iopt)) irecscr = irecscr+1 
+        if (xrsnrm(iroot).gt.opti_info%thrgrd(iopt)) then
+          idxroot(irecscr) = iroot
+          irecscr = irecscr+1 
+        end if
 
       end do
       
       ! number of new directions
       nnew = irecscr-1
+c dbg
+      print *,'nnew = ',nnew
+c dbg
 
  1111 if (iter.eq.1) then
         print *,'iter 1 patch active'
@@ -210,6 +218,7 @@ c      if (iter.eq.1) goto 1000
           call vec_from_da(ffrhs(iopt)%fhand,iroot,xbuf1,nwfpar)
 c          xbuf1(1:nwfpar(1)) = -1d0*xbuf1(1:nwfpar(1))
           xrsnrm(iroot) = dnrm2(nwfpar,xbuf1,1)
+          idxroot(iroot) = iroot
 c dbg
 c          print *,'rhs norm = ',xrsnrm(iroot)
 c dbg
@@ -221,8 +230,22 @@ c dbg
 
         ! reduced space exhausted?
         if (nred+nnew.gt.mxsub) then
-          call quit(1,'leqc_core','baustelle')
-          ! set ndel
+          restart_mode = 0
+          if (restart_mode.eq.0) then
+            ! complete internal restart
+            ! assemble orth. subspace exactly spanning the nroot 
+            ! currently best solution vectors
+            call optc_minspace(
+     &           iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,
+     &           vred,gred,mred,nred,nroot,
+     &           ffscr,nnew,
+     &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
+            ndim_vsbsp = nred
+            ndim_rsbsp = nred
+          else
+            call quit(1,'leqc_core','baustelle')
+          end if
+
         end if
 
         ! divide new directions by preconditioner
@@ -230,19 +253,20 @@ c dbg
           call vec_from_da(ffdia(iopt)%fhand,1,xbuf2,nwfpar)
           do iroot = 1, nnew
             call vec_from_da(ffscr,iroot,xbuf1,nwfpar)
-            call diavc2(xbuf1,xbuf1,xbuf2,0d0,nwfpar)
+            ! scale residual for numerical stability:
+c            xnrm = dnrm2(nwfpar,xbuf1,1)
+            xnrm = xrsnrm(idxroot(iroot))
+            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,0d0,nwfpar)
             call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
-c dbg
-            print *,'norm after precond:',dnrm2(nwfpar,xbuf1,1)
-c dbg
           end do
         else
           do iroot = 1, nnew
 c            ! request (nroot-iroot+1)th-last root 
 c            irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
 c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
+            xnrm = xrsnrm(idxroot(iroot))
             call da_diavec(ffscr,iroot,0d0,
-     &                     ffscr,iroot,1d0,
+     &                     ffscr,iroot,1d0/xnrm,
      &                      ffdia,1,0d0,-1d0,
      &                      nwfpar,xbuf1,xbuf2,lenbuf)
           end do
@@ -273,7 +297,7 @@ c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
 
           idx = (iroot-1)*mxsub + 1
           call optc_expand_vec(vred(idx),ndim_vsbsp,xdum,.false.,
-     &         ffopt,iroot,1d0,ffvsbsp,iord_vsbsp,
+     &         ffopt(1)%fhand,iroot,1d0,ffvsbsp,iord_vsbsp,
      &         nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
         end do

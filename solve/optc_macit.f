@@ -41,7 +41,7 @@
 
 * local
       logical ::
-     &     accept, shift
+     &     accept, shift, init
       integer ::
      &     irecr, irecv, klsmat,
      &     imet, idamp,
@@ -69,24 +69,34 @@
           ! (for DIIS, damping is allowed)
           if (iroute.eq.1) then
 
+            ndim_save = opti_stat%ndim_rsbsp
+            
+            do iopt = 1, opti_info%nopt
+
+              init = iopt.eq.1
+
+              call optc_diis_sbsp_add(opti_stat%ndim_rsbsp,
+     &             opti_stat%ndim_vsbsp,opti_stat%mxdim_sbsp,
+     &             init,
+     &             opti_stat%iord_vsbsp, opti_stat%iord_rsbsp,
+     &             ffopt(iopt)%fhand,ffgrd(iopt)%fhand,
+     &                                      ffdia(iopt)%fhand,
+     &             opti_stat%ffrsbsp(iopt)%fhand,
+     &             opti_stat%ffvsbsp(iopt)%fhand,
+     &             nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
+
+              shift = ndim_save.eq.opti_stat%ndim_rsbsp.and.iopt.eq.1
+              call optc_update_redsp1(opti_stat%sbspmat,
+     &             opti_stat%ndim_rsbsp,opti_stat%mxdim_sbsp,
+     &             shift,init,
+     &             opti_stat%iord_rsbsp,opti_stat%ffrsbsp(iopt)%fhand,
+     &             nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2)
+
+            end do
+
+          else
             if (opti_info%nopt.gt.1)
      &           call quit(1,'optc_macit','adapt for nopt.gt.1')
-            ndim_save = opti_stat%ndim_rsbsp
-            call optc_diis_sbsp_add(opti_stat%ndim_rsbsp,
-     &           opti_stat%ndim_vsbsp,opti_stat%mxdim_sbsp,
-     &           opti_stat%iord_vsbsp, opti_stat%iord_rsbsp,
-     &           ffopt(1)%fhand,ffgrd(1)%fhand,ffdia(1)%fhand,
-     &           opti_stat%ffrsbsp(1)%fhand,
-     &           opti_stat%ffvsbsp(1)%fhand,
-     &           nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
-
-            shift = ndim_save.eq.opti_stat%ndim_rsbsp
-            call optc_update_redsp1(opti_stat%sbspmat,
-     &           opti_stat%ndim_rsbsp,opti_stat%mxdim_sbsp,shift,
-     &           opti_stat%iord_rsbsp,opti_stat%ffrsbsp(1)%fhand,
-     &           nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
-            
-          else
             ! add |vec(n)> , on xbuf1 if incore, xbuf2 unused
             ndim_save = opti_stat%ndim_vsbsp
             call optc_sbsp_add(opti_stat%ndim_vsbsp,
@@ -100,7 +110,7 @@
             shift = ndim_save.eq.opti_stat%ndim_vsbsp
             call optc_update_redsp1(opti_stat%sbspmat(klsmat),
      &           opti_stat%ndim_vsbsp,
-     &           opti_stat%mxdim_sbsp,shift,
+     &           opti_stat%mxdim_sbsp,shift,.true.,
      &           opti_stat%iord_vsbsp,opti_stat%ffvsbsp(1)%fhand,
      &           nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
 
@@ -162,7 +172,6 @@
      &       xscr,ivec)
 
         do iopt = 1, opti_info%nopt
-          ! handling of iord_vsbsp for nopt>1 ??
           call optc_expand_vec(vec,opti_stat%ndim_vsbsp,xdum,.false.,
      &         ffopt(iopt)%fhand,1,0d0,
      &         opti_stat%ffvsbsp(iopt)%fhand,opti_stat%iord_vsbsp,

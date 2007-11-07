@@ -1,4 +1,3 @@
-
 *----------------------------------------------------------------------*
       subroutine optc_expand_vec(xvec,ndim,xnrm,getnrm,
      &     ffamp,irecamp,xfac,ff_sbsp,iord,
@@ -16,7 +15,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(filinf), intent(in) ::
      &     ffamp, ff_sbsp
@@ -62,8 +61,7 @@
           write(luout,*) ' |initial| = ',xscr
         end if
 c dbg
-        write(luout,*) ' xvec (2): ', xvec(1:ndim)
-
+c        write(luout,*) ' xvec (2): ', xvec(1:ndim)
 c dbg
 
         do irec = 1, ndim

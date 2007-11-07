@@ -56,6 +56,16 @@
      &     iocc(ngastp,2), jocc(ngastp,2)
         end function
 
+        logical function iocc_equal_n(iocc,dagi,jocc,dagj,njoined)
+        implicit none
+        include 'opdim.h'
+        logical, intent(in) ::
+     &      dagi, dagj
+        integer, intent(in) ::
+     &     njoined,
+     &     iocc(ngastp,2,njoined), jocc(ngastp,2,njoined)
+        end function
+
         logical function iocc_nonzero(iocc)
         implicit none
         include 'opdim.h'

@@ -92,6 +92,8 @@
         call write_title(luout,wst_dbg_subr,'set_op_dim')
         write(luout,*) ' ipass = ',ipass
         write(luout,*) ' operator = ',trim(op%name)
+        write(luout,*) ' IRREP    = ',op%gamt
+        write(luout,*) ' Ms       = ',op%mst
       end if
 
       idxstr = 0
@@ -212,7 +214,7 @@
               ! increment distribution index
               idxdis = idxdis+1
               
-              if (ntest.ge.150) then
+              if (njoined.eq.1.and.ntest.ge.150) then
                 write(luout,*) 'current MS and IRREP distr:'
                 call expand_occ(msd,idx_graph(1,1,iblkoff+1),
      &                    ncsub,nasub,
@@ -263,7 +265,7 @@
               end if
 
               if (ntest.ge.150) then
-                write(luout,*) 'current block: ',len_blk
+                write(luout,*) 'current block length: ',len_blk
               end if
               
             end do distr_loop

@@ -41,6 +41,11 @@
         reo_info%iocc_opreo0 => null()
       end if
 
+      if (associated(reo_info%from_to)) then
+        deallocate(reo_info%from_to)
+        reo_info%from_to => null()
+      end if
+
       if (associated(reo_info%map_reo1c)) then
         deallocate(reo_info%map_reo1c)
         reo_info%map_reo1c => null()

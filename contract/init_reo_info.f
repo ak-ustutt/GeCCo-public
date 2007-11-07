@@ -22,6 +22,7 @@
       reo_info%merge_stp2 => null()
       reo_info%iocc_reo  => null()
       reo_info%iocc_opreo0 => null()
+      reo_info%from_to => null()
 
       reo_info%map_reo1c => null()
       reo_info%map_reo1a => null()

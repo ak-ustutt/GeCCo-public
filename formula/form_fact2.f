@@ -18,7 +18,7 @@
       integer, parameter ::
      &     maxcount = 1000,  ! at most 1000 iterations
      &     ndisconn = 3,     ! at most 3 extra levels for disconnected
-     &     ntest = 000                                   ! vertices
+     &     ntest = 1000                                   ! vertices
 
       type(contraction), intent(inout) ::
      &     contr
@@ -39,7 +39,9 @@
      &     ihpvgas(:),
      &     ifact(:,:), ifact_best(:,:), occ_vtx(:,:,:),
      &     irestr_vtx(:,:,:,:,:), info_vtx(:,:),
-     &     iarc_ori(:), ivtx_ori(:)
+     &     iarc_ori(:), ivtx_ori(:),
+     &     irestr_res(:,:,:,:,:)
+
 *----------------------------------------------------------------------*
 *     ifact(4,*): describes factorization by giving
 *            ( vertex-number 1, vertex-number 2, 
@@ -52,8 +54,7 @@
       real(8) ::
      &     cost(3), costmin(3)
       integer ::
-     &     iscale(ngastp,2), iscalemin(ngastp,2),
-     &     irestr_res(2,orb_info%ngas,2,2)
+     &     iscale(ngastp,2), iscalemin(ngastp,2)
       type(operator), pointer ::
      &     op_res
       type(reorder_info) ::
@@ -75,6 +76,9 @@
       end if
 
       call atim_csw(cpu0,sys0,wall0)
+
+      if (orb_info%ngas.eq.0) call quit(1,'form_fact2','buggy ngas!')
+      if (orb_info%nsym.eq.0) call quit(1,'form_fact2','buggy nsym!')
 
       ngas = orb_info%ngas
       nsym = orb_info%nsym
@@ -109,7 +113,8 @@
      &     occ_vtx(ngastp,2,nvtx_full+njoined),
      &     irestr_vtx(2,orb_info%ngas,2,2,nvtx_full+njoined),
      &     info_vtx(2,nvtx_full+njoined),
-     &     iarc_ori(narc_full+ndisconn),ivtx_ori(nvtx_full))
+     &     iarc_ori(narc_full+ndisconn),ivtx_ori(nvtx_full),
+     &     irestr_res(2,orb_info%ngas,2,2,njoined))
 
       do iarc = 1, narc_full+ndisconn
         iarc_ori(iarc) = iarc
@@ -118,7 +123,6 @@
       do ivtx = 1, nvtx_full
         ivtx_ori(ivtx) = ivtx
       end do
-
 
       call occvtx4contr(0,occ_vtx,contr,op_info)
 
@@ -182,7 +186,8 @@ c dbg
         iscale_stat(1:3,2) = iscalemin(1:3,2)
       end if
 
-      deallocate(ifact,ifact_best)
+      deallocate(ifact,ifact_best,
+     &     occ_vtx,irestr_vtx,info_vtx,iarc_ori,ivtx_ori,irestr_res)
 
       call atim_csw(cpu,sys,wall)
       if (iprlvl.ge.5)
@@ -238,6 +243,7 @@ c dbg
 c     &    , idxlist
 c dbg      
       
+      if (orb_info%nsym.eq.0) call quit(1,'form_fact2_r1','buggy nsym!')
       if (ntest.ge.1000) then
         call write_title(luout,wst_dbg_subr,
      &       'form_fact_rec(ursively) at work')
@@ -260,6 +266,7 @@ c dbg
 
       ! get list of (non-redundant) arcs, ordered according to
       ! contractraction strength (descending)
+      if (orb_info%nsym.eq.0) call quit(1,'form_fact2_rc','buggy nsym!')
       call get_arc_list(arc_list,len_list,contr,orb_info)
 
       do ilist = 1, len_list
@@ -342,21 +349,24 @@ c     &       idx_op_new,irestr_res,contr,occ_vtx)
         info_vtx_red = info_vtx
         
         call reduce_contr(contr_red,occ_vtx_red,
+     &       possible,
      &       iarc,idx_op_new,ivtx_new,
      &       njoined,
      &       .true.,ivtx_ori_red,iarc_ori_red,
      &       .true.,irestr_vtx_red,info_vtx_red,irestr_res,
      &       .false.,reo_dummy,orb_info)
 
+        if (.not.possible) cycle
+
         ! add 0-contractions, if necessary
 c dbg
 c        print *,'calling check disc for'
 c        call prt_contr3(luout,contr_red,occ_vtx_red(1,1,njoined+1))
 c dbg
-        call check_disconnected(contr_red)
-      
         ! any contraction left?
         if (contr_red%narc.gt.0) then
+
+          call check_disconnected(contr_red)
           
           call form_fact_rec(nlevel+1,ifact,
      &         cost,iscale,contr_red,occ_vtx_red,

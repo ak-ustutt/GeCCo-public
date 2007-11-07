@@ -20,7 +20,9 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
+      logical, parameter ::
+     &     strict = .false.
 
       type(contraction_list), intent(out), target ::
      &     conder
@@ -36,7 +38,8 @@
 
       integer ::
      &     nvtx, ntup, itup, ieqvfac, njoined_ori, njoined,
-     &     iblk_last, idx, ider, ivtx, iarc, jvtx, jarc, il
+     &     iblk_last, idx, ider, ivtx, iarc, jvtx, jarc, il, ierr,
+     &     nder_actually
       integer, pointer ::
      &     iocc(:,:,:)
       type(contraction_list), pointer ::
@@ -111,12 +114,15 @@
       deallocate(neqv_tup)
       deallocate(idx_tup)
 
+      ierr = 0
+      nder_actually = 0
+
       cur_conder => conder
       nullify(cur_conder%prev)
       nullify(cur_conder%next)
       ! assemble derivative contractions:
       do ider = 1, nder
-        if (ider.gt.1) then
+        if (ider.gt.1.and.ierr.eq.0) then
           allocate(cur_conder%next)
           cur_conder%next%prev => cur_conder
           cur_conder => cur_conder%next
@@ -125,46 +131,14 @@
         allocate(cur_conder%contr)
         call init_contr(cur_conder%contr)
         call resize_contr(cur_conder%contr,contr%nvtx,contr%narc,0)
-c        allocate(cur_conder%contr%vertex(contr%nvtx))
-c        allocate(cur_conder%contr%arc(contr%narc))
-c        ! needed for deallocation routine:
-c        cur_conder%contr%mxvtx=contr%nvtx
-c        cur_conder%contr%mxarc=contr%narc
-c        cur_conder%contr%mxfac=0
 
         ! resulting operator (block: see below)
         cur_conder%contr%idx_res = idxres
-c        if (idxmlt.ne.0) then
-c          cur_conder%contr%iblk_res = contr%iblk_res
-c        else
-c          if (contr%idx_res.ne.0) then
-c            iocc = iocc_add(1,op_arr(contr%idx_res)%op%
-c     &                        ihpvca_occ(1,1,contr%iblk_res),.false.,
-c     &                  1,op_arr(idxder)%op%ihpvca_occ(1,1,iblk(ider)),
-c     &                  .not.op_arr(idxder)%op%dagger)
-c          else
-c            if (.not.op_arr(idxder)%op%dagger) then
-c              iocc = iocc_dagger(op_arr(idxder)%op%
-c     &             ihpvca_occ(1,1,iblk(ider)))
-c            else
-c              iocc(1:ngastp,1:2) =
-c     &             op_arr(idxder)%op%ihpvca_occ(1:ngastp,1:2,iblk(ider))
-c            end if
-c          end if
-c          idx = iblk_occ(iocc,.false.,op_arr(idxres)%op)
-c          if (idx.le.0) then
-c            write(luout,*) 'occupation not found for operator ',idxres
-c            call wrt_occ(luout,iocc)
-c            call quit(0,'contr_deriv','occupation not found') 
-c          end if
-c          cur_conder%contr%iblk_res = idx
-c        end if
 
         ! new pre-factor
         cur_conder%contr%fac = contr%fac*dble(nord(ider))
         
         ! copy and update vertex information
-c        ivtxder = 0 
         jvtx = 0
         do ivtx = 1, contr%nvtx
           ! vertex of derivative target ?
@@ -243,18 +217,43 @@ c        ivtxder = 0
 
         ! get occupation of target ...
         call occvtx4contr(1,occ_vtx,cur_conder%contr,op_info)
-        call occ_contr(iocc,cur_conder%contr,occ_vtx,njoined)
+        call occ_contr(iocc,ierr,cur_conder%contr,occ_vtx,njoined)
 
-        ! ... and the corresponding block in the target operator
-        cur_conder%contr%iblk_res = iblk_occ(iocc,.false.,
+        if (ierr.ne.0) then
+          if (strict) then
+            write(luout,*) 'derivative gives njoined = ',-ierr-1
+            write(luout,*) 'expected:                  ',njoined
+            call quit(1,'contr_deriv2','incompatible result operator')
+          end if
+        else        
+          ! ... and the corresponding block in the target operator
+          cur_conder%contr%iblk_res = iblk_occ(iocc,.false.,
      &                                          op_arr(idxres)%op)
-
-        if (cur_conder%contr%iblk_res.le.0) then
-          write(luout,*) 'resulting occupation:'
+c dbg
+          print *,'idx, occ: ',cur_conder%contr%iblk_res
           call wrt_occ_n(luout,iocc,njoined)
-          call quit(1,'contr_deriv',
-     &         'result occupation not defined for operator '//
-     &         trim(op_arr(idxres)%op%name))
+c dbg          
+
+          if (cur_conder%contr%iblk_res.le.0) then
+            if (strict) then
+              write(luout,*) 'resulting occupation:'
+              call wrt_occ_n(luout,iocc,njoined)
+              call quit(1,'contr_deriv',
+     &           'result occupation not defined for operator '//
+     &           trim(op_arr(idxres)%op%name))
+            end if
+            ierr = +1
+          end if
+        end if
+        
+        if (ierr.ne.0) then
+          call dealloc_contr(cur_conder%contr)
+          deallocate(cur_conder%contr)
+c dbg
+          print *,'skipping with ierr = ',ierr
+c dbg
+        else
+          nder_actually = nder_actually + 1
         end if
 
       end do ! ider
@@ -262,6 +261,8 @@ c        ivtxder = 0
       if (nder.gt.0) deallocate(nord,iblk)
 
       deallocate(iocc,occ_vtx)
+
+      nder = nder_actually
 
       if (ntest.ge.100) then
         write(luout,*) 'Generated derivative terms: ',nder
