@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine solve_nleq(
-     &     nop_opt,nop_out,idxop_out,idxfil_out,
-     &     nop_in,idxop_in,idxfil_in,
+     &     nop_opt,nop_out,idxop_out,
+     &     nop_in,idxop_in,
      &     ffform_opt,
      &     op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
@@ -17,13 +17,11 @@
 *     idxop_out(nop_opt+1,..)   residuals
 *     idxop_out(2*nop_opt+1,...) other operators updated/modified
 *                           energy, intermediates for reuse
-*     idxfil_out(2,nop_out) indices and records
 *     
 *     nop_in                number of operators that need be set on input
 *     idxop_in(nop_in)      indices of those operators in ops(nops)
 *                           the first nop_out entries define the
 *                           preconditioners
-*     idxfil_in(2,nop_in)   indices and records
 *
 *     op_info:  operator definitions and files
 *     str_info: string information (to be passed to subroutines)
@@ -45,8 +43,8 @@
 
       integer, intent(in) ::
      &     nop_in, nop_out, nop_opt,
-     &     idxop_in(nop_in), idxfil_in(2,nop_in),
-     &     idxop_out(nop_out), idxfil_out(2,nop_out)
+     &     idxop_in(nop_in), 
+     &     idxop_out(nop_out)
       type(filinf), intent(inout) ::
      &     ffform_opt
       type(operator_info) ::
@@ -63,7 +61,7 @@
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iop, nintm
       real(8) ::
-     &     energy, xresnrm, xret(10)
+     &     energy, xresnrm(nop_opt), xret(10)
       type(operator_array), pointer ::
      &     op_opt(:), op_grd(:)
       type(file_array), pointer ::
@@ -115,11 +113,6 @@
         if (ffdia(iop)%fhand%unit.le.0)
      &       call file_open(ffdia(iop)%fhand)
       end do
-
-      ! further input operators
-      do iop = nop_opt+1,nop_in
-        call file_open(op_info%opfil_arr(idxfil_in(1,iop))%fhand)
-      end do
       
       ! get initial amplitudes
       do iop = 1, nop_opt
@@ -150,10 +143,16 @@
           ! intermediates should be generated first, energy
           ! is expected to be the last "intermediate"
           energy =  xret(nintm)
-          xresnrm = xret(nintm+1)
+          xresnrm(1:nop_opt) = xret(nintm+1:nintm+nop_opt)
+c          if (nopt.eq.2) xres2nrm = xret(nintm+2)
         end if
 
-        write(luout,'(">>>",i3,f24.12,x,g10.4)')imacit,energy,xresnrm
+        if (nop_opt.eq.1)
+     &       write(luout,'(">>>",i3,f24.12,x,g10.4)')
+     &       imacit,energy,xresnrm(1)
+        if (nop_opt.eq.2)
+     &       write(luout,'(">>>",i3,f24.12,2(x,g10.4))')
+     &       imacit,energy,xresnrm(1:2)
 
       end do opt_loop
 

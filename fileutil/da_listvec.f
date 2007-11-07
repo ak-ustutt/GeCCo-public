@@ -103,7 +103,7 @@ c        idxnd = idxst-1 + len
         xnrm = sqrt(ddot(len,vec(idxst),1,vec(idxst),1))
         write(luout,'(x,"rec=",i10,2x,"norm=",g20.10)') irec,xnrm
         if (imod.gt.0) then
-          call wrtmat(vec(idxst),1,len,1,len)
+          call wrtmat2(vec(idxst),1,len,1,len)
         end if
 
         idxst = idxst + len

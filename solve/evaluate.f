@@ -57,7 +57,7 @@
       integer ::
      &     ifree, iop
       real(8) ::
-     &     energy, xresnrm, xret(nop_out)
+     &     energy, xresnrm, xret(10*nop_out)
       type(filinf) ::
      &     ffdum
 
@@ -93,6 +93,13 @@ c dbg
         do iop = 1, nop_out
           write(luout,'(4x,i4," - ",g12.6)') iop, xret(iop)
         end do
+c dbg
+        call wrt_op_file(luout,4,
+     &       op_info%opfil_arr(idxop_out(1))%fhand,
+     &       op_info%op_arr(idxop_out(1))%op,
+     &       1,op_info%op_arr(idxop_out(1))%op%n_occ_cls,
+     &       str_info,orb_info)
+c dbg
       end if
 
       ifree = mem_flushmark()

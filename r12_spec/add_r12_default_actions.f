@@ -43,6 +43,7 @@
       idxr12 = idx_oplist2(op_rint,op_info)
       idxrba = idx_oplist2(op_rinba,op_info)
       idxttr = idx_oplist2(op_ttr,op_info)
+      idxsop = idx_oplist2(op_sop,op_info)
 c      idxdel = idx_oplist2(op_del_inter,op_info)
 
       ! preliminary:
@@ -53,7 +54,6 @@ c      idxdel = idx_oplist2(op_del_inter,op_info)
       call add_action(act_list,nactions,
      &     iaction_import,0,1,0,
      &     idum,(/idxham/),
-     &     idum,(/(/idxham,1/)/),
      &     0,idum
      &     )
 
@@ -61,7 +61,6 @@ c      idxdel = idx_oplist2(op_del_inter,op_info)
       call add_action(act_list,nactions,
      &     iaction_import,0,1,0,
      &     idum,(/idxr12/),
-     &     idum,(/(/idxr12,1/)/),
      &     0,idum
      &     )
 
@@ -114,8 +113,8 @@ c      idxdel = idx_oplist2(op_del_inter,op_info)
       ! set up diagonal preconditioner
       call add_action(act_list,nactions,
      &     iaction_setup_prc,2,1,0,
-     &     (/idxc12,idxham/),(/idxdia/),
-     &     (/(/idxc12,1/),(/idxham,1/)/),(/(/idxdia,1/)/),
+     &     (/idxsop,idxham/),(/idxdia/),
+     &     (/(/idxsop,1/),(/idxham,1/)/),(/(/idxdia,1/)/),
      &     0,idum
      &     )
 
@@ -126,7 +125,6 @@ c      idxdel = idx_oplist2(op_del_inter,op_info)
         call add_action(act_list,nactions,
      &     iaction_solve_nleq,2,2,1,
      &     (/idxdia,idxham/),(/idxsop,idxomg/),
-     &     (/(/idxdia,1/),(/idxham,1/)/),(/(/idxsop,1/),(/idxomg,1/)/),
      &     2,(/idxccen,idxccrs/)
      &     )
       else
@@ -134,7 +132,6 @@ c      idxdel = idx_oplist2(op_del_inter,op_info)
         call add_action(act_list,nactions,
      &     iaction_solve_nleq,2,3,1,
      &     (/idxdia,idxham/),(/idxsop,idxomg,idxhhat/),
-     &     (/(/idxdia,1/),(/idxham,1/)/),(/(/idxsop,1/),(/idxomg,1/)/),
      &     2,(/idxccen,idxccrs/)
      &     )
       end if

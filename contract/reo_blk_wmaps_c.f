@@ -20,6 +20,9 @@
 *
 *     reorder  OP([I1][I2]...) -> OP([I1'][I2']...)
 *
+*     initial version
+*     andreas, oct 2007
+*
 *----------------------------------------------------------------------*
       implicit none
 
@@ -99,7 +102,8 @@
      &     nstr_i0_c_tot, nstr_i0_a_tot,
      &     idxms_op_a, idxdis,
      &     idx00opreo, idxst_opreo,
-     &     idx0opreo, idx_opreo, ioff, istr1, istr2, isgnt, isgna,
+     &     idx0opreo, idx_opreo, ioff, istr1, istr2, idiv1, idiv2,
+     &     isgnt, isgna,
      &     idx0opori, idx_opori, icmp, ielmap, idx, idx1, idx2
 
       integer ::
@@ -132,7 +136,10 @@
 
       type(graph), pointer ::
      &     graphs(:)
-
+c dbg
+c      logical ::
+c     &     first_element
+c dbg
 
       logical, external ::
      &     next_msgamdist2, check_ms
@@ -189,13 +196,21 @@
      &                             ms_i_dis_a,gm_i_dis_a,
      &                             nablk_opori,
      &                             map_info_to_ori_a,.true.)
-                
+
+c dbg                
+c                  write(luout,*) '            I   MSD A',
+c     &                 ms_i_dis_a(1:nablk_opori)
+c                  write(luout,*) '            K   MSD A',
+c     &                 ms_k_dis_a(1:nablk_k)
+c                  write(luout,*) '            I0  MSD A',
+c     &                 ms_i0_dis_a(1:nablk_i0)
+c dbg
                 if (ntest.ge.100) then
                   write(luout,*) '               I  MS',ms_op_c,ms_op_a
                   write(luout,*) '               MSD C',
-     &                 ms_i_dis_c(1:ncblk_i0)
+     &                 ms_i_dis_c(1:ncblk_opori)
                   write(luout,*) '               MSD A',
-     &                 ms_i_dis_a(1:nablk_i0)
+     &                 ms_i_dis_a(1:nablk_opori)
                   write(luout,*) 'current block: I0 MS',ms_i0_c,ms_i0_a
                   write(luout,*) '               IRREP',gm_i0_c,gm_i0_a
                   write(luout,*) '               MSD C',
@@ -224,6 +239,7 @@
      &               cycle dis_loop
 c dbg
 c                print *,'ACCEPTED'
+c                first_element = .true.
 c dbg                
   
                 ! get symmetry and ms-dist. of reordered operator I'
@@ -237,6 +253,11 @@ c dbg
      &                             ms_k_dis_a,gm_k_dis_a,
      &                             ms_i0_dis_a,gm_i0_dis_a,
      &                             map_info_to_reo_a)
+c dbg
+c                write(luout,*) '            I''  MSD A',
+c     &                 ms_ip_dis_a(1:nablk_opreo)
+c
+c dbg
 
                 ! reform MS-(times two)-values to idxms
                 call ms2idxms(idxms_k_dis_c,ms_k_dis_c,
@@ -415,6 +436,9 @@ c dbg
                     isgna = sign_reo
                     istr1 = istr_i0_a-1
                     istr2 = istr_k_a-1
+c dbg
+c                    print *,'+-------------ORI------------------+'
+c dbg
                     do icmp = 1, nablk_opori
                       idx1 = mod(istr1,nstr_i0a1(icmp))+1
                       idx2 = mod(istr2,nstr_k_a1(icmp))+1
@@ -424,29 +448,63 @@ c dbg
                       isgna = isgna*sign(1,ielmap)
                       idx0opori = idx0opori
      &                     + (abs(ielmap)-1)*ldim_opori_a(icmp)
+c dbg
+c                      print *,'icmp, idx_i0a, idx_k_a: ',icmp,idx1,idx2
+c                      print *,'    ->idx_i_a: ',ielmap                      
+c dbg
                       ioff = ioff + nstr_opori_a(icmp)
                       istr1 = istr1/nstr_i0a1(icmp)
                       istr2 = istr2/nstr_k_a1(icmp)
                     end do
+c dbg
+c                    if (idx0opori.eq.1.or.idx0opori.eq.779)
+c     &                   print *,'HIER HIER HIER: idx0opori = ',
+c     &                   idx0opori
+c dbg
                     
                     ! map K,I0 -> I'
                     idx0opreo = idx00opreo
                     ioff = 0
                     istr1 = istr_i0_a-1
                     istr2 = istr_k_a-1
+                    idiv2 = nstr_k_a_tot
+c                    do icmp = 1, nablk_opreo
+c                      idiv2 = idiv2*nstr_k_a2(icmp)
+c                    end do
+
+c dbg
+c                    print *,'+-------------REO------------------+'
+c dbg
                     do icmp = 1, nablk_opreo
+                      idiv2 = idiv2/nstr_k_a2(icmp)
                       idx1 = mod(istr1,nstr_i0a2(icmp))+1
-                      idx2 = mod(istr2,nstr_k_a2(icmp))+1
+c                      idx2 = mod(istr2,nstr_k_a2(icmp))+1
+                      idx2 = (istr2)/idiv2+1
                       idx  = (idx1-1)*nstr_k_a2(icmp)+idx2
+c dbg
+c                      print *,'istr2,idiv2,idx2:',istr2,idiv2,idx2
+c                      print *,'idx1,idx2,idx,ioff:',idx1,idx2,idx,ioff
+c dbg
                       ielmap = map_to_reo_a(ioff+idx)
                       if (ielmap.eq.0) cycle i0_a
                       isgna = isgna*sign(1,ielmap)
                       idx0opreo = idx0opreo
      &                     + (abs(ielmap)-1)*ldim_opreo_a(icmp)
+c dbg
+c                      print *,'icmp, idx_i0a, idx_k_a: ',icmp,idx1,idx2
+c                      print *,'    ->idx_ipa: ',ielmap                      
+c dbg
                       ioff = ioff + nstr_opreo_a(icmp)
                       istr1 = istr1/nstr_i0a2(icmp)
-                      istr2 = istr2/nstr_k_a2(icmp)
+                      istr2 = mod(istr2,idiv2)
                     end do
+c dbg
+c                    print *,'+----------------------------------+'
+c
+c                    if (idx0opreo.eq.1.or.idx0opreo.eq.779)
+c     &                   print *,'HIER HIER HIER: idx0opreo = ',
+c     &                   idx0opreo
+c dbg
 c dbg
 c                    print *,'idx0opreo: ',idx0opreo
 c                    print *,'idx0opori: ',idx0opori
@@ -480,8 +538,11 @@ c dbg
                         ioff = 0
                         istr1 = istr_k_c-1
                         istr2 = istr_i0_c-1
+                        idiv1 = nstr_k_c_tot
                         do icmp = 1, ncblk_opreo
-                          idx1 = mod(istr1,nstr_k_c2(icmp))+1
+                          idiv1 = idiv1/nstr_k_c2(icmp)
+                          idx1 = (istr1)/idiv1+1
+c                          idx1 = mod(istr1,nstr_k_c2(icmp))+1
                           idx2 = mod(istr2,nstr_i0c2(icmp))+1
                           idx  = (idx1-1)*nstr_i0c2(icmp)+idx2
                           ielmap = map_to_reo_c(ioff+idx)
@@ -490,14 +551,18 @@ c dbg
                           idx_opreo = idx_opreo +
      &                         (abs(ielmap)-1)*ldim_opreo_c(icmp)
                           ioff = ioff + nstr_opreo_c(icmp)
-                          istr1 = istr1/nstr_k_c2(icmp)
+                          istr1 = mod(istr1,idiv1)
                           istr2 = istr2/nstr_i0c2(icmp)
                         end do
 c dbg
-c                        print *,'idx0opreo: ',idx0opreo
-c                        print *,'idx0opori: ',idx0opori
-c                        print *,'idx_opreo: ',idx_opreo
-c                        print *,'idx_opori: ',idx_opori
+c                        if (first_element.or.
+c     &                       idx_opreo.eq.1.or.
+c     &                       idx_opreo.eq.779) then
+c                          print *,'ori, reo, +/-, val: ',
+c     &                         idx_opori,idx_opreo,
+c     &                         isgnt,xop_ori(idx_opori)
+c                          first_element = .false.
+c                        end if
 c dbg
 
                         xop_reo(idx_opreo) = xop_reo(idx_opreo)

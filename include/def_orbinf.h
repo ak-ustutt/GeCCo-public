@@ -2,13 +2,13 @@
         integer ::
      &     nsym, ngas
         integer ::
-     &     ntoob,caborb
+     &      ntoob,caborb,nbast
         integer, allocatable ::
      &     igassh(:,:),
-     &     ntoobs(:), ireots(:), ireost(:),
+     &     nbas(:), ntoobs(:), ireots(:), ireost(:),
      &     igamorb(:), igasorb(:),
      &     mostnd(:,:,:),
-     &     iad_gas(:),
+     &     iad_gas(:), gas_reo(:),
      &     ihpvgas(:), ngas_hpv(:), nactt_hpv(:),
      &     idx_gas(:), ioff_gas(:), cab_orb(:),
      &     xreosym(:), xreotyp(:)

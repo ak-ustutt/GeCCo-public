@@ -141,6 +141,14 @@ c dbg
       call condense_occ(cinfo_op2c(1,2), cinfo_op2a(1,2),
      &                  cinfo_op2c(1,3), cinfo_op2a(1,3),
      &                  igrph,njoined_op2,hpvxblkseq)
+c dbg
+c      print *,'OP2:'
+c      call wrt_occ_n(6,iocc_op2,njoined_op2)
+c      print *,' C: ',cinfo_op2c(1:nca_blk(1,2),1)
+c      print *,'    ',cinfo_op2c(1:nca_blk(1,2),3)
+c      print *,' A: ',cinfo_op2a(1:nca_blk(2,2),1)
+c      print *,'    ',cinfo_op2a(1:nca_blk(2,2),3)
+c dbg
 
       ! EX2
       call get_grph4occ(igrph,iocc_ex2,irst_ex2,

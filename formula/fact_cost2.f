@@ -113,7 +113,7 @@ c     &      contr%vertex(contr%arc(iarc)%link(2))%idx_op.eq.idxtbar)then
 c          
 c          print *,'avoiding early Tbar contr ... arc = ',iarc
 c          possible = .false.
-c          return
+c         return
 c
 c        end if
 c      end if

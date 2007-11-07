@@ -22,11 +22,17 @@
         do_cc = .true.
 
         ! defaults
+        solve_sim  = .false.
         solve_tbar = .false.
         densities = 0
 
+        ! for testing:
         icnt = is_keyword_set('calculate.CC_solve_tbar')
         solve_tbar = solve_tbar.or.icnt.gt.0
+        icnt = is_keyword_set('calculate.CC_solve_sim')
+        solve_tbar = solve_tbar.or.icnt.gt.0
+        solve_sim  = solve_sim .or.icnt.gt.0
+
         icnt = is_keyword_set('calculate.properties')
         solve_tbar = solve_tbar.or.icnt.gt.0
         if (icnt.gt.0) densities = 1

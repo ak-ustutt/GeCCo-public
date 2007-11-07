@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine solve_leq(
-     &     nop_opt,nroots,nop_out,idxop_out,idxfil_out,
-     &     nop_in,idxop_in,idxfil_in,
+     &     nop_opt,nroots,nop_out,idxop_out,
+     &     nop_in,idxop_in,
      &     ffform_opt,
      &     op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
@@ -19,13 +19,11 @@
 *     idxop_out(nop_opt+1,..)   residuals
 *     idxop_out(2*nop_opt+1,...) other operators updated/modified
 *                           energy, intermediates for reuse
-*     idxfil_out(2,nop_out) indices and records
 *     
 *     nop_in                number of operators that need be set on input
 *     idxop_in(nop_in)      indices of those operators in ops(nops)
 *                           the first nop_out entries define the
 *                           preconditioners
-*     idxfil_in(2,nop_in)   indices and records
 *
 *     op_info:  operator definitions and files
 *     str_info: string information (to be passed to subroutines)
@@ -51,8 +49,8 @@
 
       integer, intent(in) ::
      &     nop_in, nop_out, nop_opt, nroots,
-     &     idxop_in(nop_in), idxfil_in(2,nop_in),
-     &     idxop_out(nop_out), idxfil_out(2,nop_out)
+     &     idxop_in(nop_in), 
+     &     idxop_out(nop_out)
       type(filinf), intent(inout) ::
      &     ffform_opt
       type(operator_info) ::
@@ -109,12 +107,17 @@
       nintm = nop_out - nop_opt*3
 
       allocate(ff_trv(nop_opt),ff_mvp(nop_opt),ffdia(nop_opt),
-     &     ff_rhs(nop_opt))
+     &     ff_rhs(nop_opt),ffopt(nop_opt))
 
       nvectors = opti_info%maxsbsp
 
       do iop = 1, nop_opt
-        ! assing trial-vectors to result operator
+        ! file for result vectors
+        allocate(ffopt(iop)%fhand)
+c        write(fname,'("res_",i3.3,".da")') iop
+        fname = 'op_'//trim(op_opt(iop)%op%name)//'_elements.da'
+        call file_init(ffopt(iop)%fhand,fname,ftyp_da_unf,lblk_da)
+        ! assign trial-vectors to result operator
         allocate(ff_trv(iop)%fhand)
         write(fname,'("trv_",i3.3,".da")') iop
         call file_init(ff_trv(iop)%fhand,fname,ftyp_da_unf,lblk_da)
@@ -149,6 +152,7 @@
       do iop = 1, nop_opt
         ! open result vector file(s)
         call file_open(ff_trv(iop)%fhand)
+        call file_open(ffopt(iop)%fhand)
         ! open corresponding matrix vector products ...
         call file_open(ff_mvp(iop)%fhand)
         ! right hand sides ...
@@ -158,11 +162,6 @@
      &       call file_open(ffdia(iop)%fhand)
       end do
 
-      ! further input operators
-      do iop = nop_opt+1,nop_in
-        call file_open(op_info%opfil_arr(idxfil_in(1,iop))%fhand)
-      end do
-      
       ! get initial amplitudes
       do iop = 1, nop_opt
         do iroot = 1, nroots
@@ -203,29 +202,29 @@ c dbg
      &             irecmvp(irequest),op_info)
             end do
 c dbg
-            call write_title(luout,wst_dbg_subr,'INPUT VECTOR:')
-            call wrt_op_file(luout,4,ff_trv(1)%fhand,
-     &             op_info%op_arr(idxop_out(1))%op,
-     &          1,op_info%op_arr(idxop_out(1))%op%n_occ_cls,
-     &             str_info,orb_info)
-
+c            call write_title(luout,wst_dbg_subr,'INPUT VECTOR:')
+c            call wrt_op_file(luout,4,ff_trv(1)%fhand,
+c     &             op_info%op_arr(idxop_out(1))%op,
+c     &          1,op_info%op_arr(idxop_out(1))%op%n_occ_cls,
+c     &             str_info,orb_info)
+c
 c dbg
             call frm_sched(xret,ffform_opt,
      &           op_info,str_info,strmap_info,orb_info)
 c dbg
-            if (iter.eq.1) then
-              call write_title(luout,wst_dbg_subr,'RHS:')
-              call wrt_op_file(luout,4,ff_rhs(1)%fhand,
-     &             op_info%op_arr(idxop_out(1+2*nop_opt))%op,
-     &          1,op_info%op_arr(idxop_out(1+2*nop_opt))%op%n_occ_cls,
-     &             str_info,orb_info)
-            else
-              call write_title(luout,wst_dbg_subr,'MVP:')
-              call wrt_op_file(luout,4,ff_mvp(1)%fhand,
-     &             op_info%op_arr(idxop_out(1+nop_opt))%op,
-     &          1,op_info%op_arr(idxop_out(1+nop_opt))%op%n_occ_cls,
-     &             str_info,orb_info)
-            end if
+c            if (iter.eq.1) then
+c              call write_title(luout,wst_dbg_subr,'RHS:')
+c              call wrt_op_file(luout,4,ff_rhs(1)%fhand,
+c     &             op_info%op_arr(idxop_out(1+2*nop_opt))%op,
+c     &          1,op_info%op_arr(idxop_out(1+2*nop_opt))%op%n_occ_cls,
+c     &             str_info,orb_info)
+c            else
+c              call write_title(luout,wst_dbg_subr,'MVP:')
+c              call wrt_op_file(luout,4,ff_mvp(1)%fhand,
+c     &             op_info%op_arr(idxop_out(1+nop_opt))%op,
+c     &          1,op_info%op_arr(idxop_out(1+nop_opt))%op%n_occ_cls,
+c     &             str_info,orb_info)
+c            end if
 c dbg
           end do
         end if
@@ -233,15 +232,25 @@ c dbg
       end do opt_loop
 
       do iop = 1, nop_opt
-        call file_close_delete(ff_trv(iop))
-        call file_close_delete(ff_mvp(iop))
+        ! un-assign files
+        call detach_file_from_op(idxop_out(iop),.false.,op_info)
+        call detach_file_from_op(idxop_out(iop+nop_opt),.false.,op_info)
+        call file_close_delete(ff_trv(iop)%fhand)
+        call file_close_delete(ff_mvp(iop)%fhand)
         deallocate(ff_trv(iop)%fhand)
         deallocate(ff_mvp(iop)%fhand)
+        ! re-assign result
+        call assign_file_to_op(idxop_out(iop),.false.,ffopt(iop)%fhand,
+     &                         1,1,nvectors,
+     &                         0,op_info)
       end do
-      deallocate(ff_trv,ff_rhs,ffdia,ff_mvp,op_opt)
+      ! note that only the pointer array ffopt (but not the entries)
+      ! is deallocated:
+      deallocate(ff_trv,ff_rhs,ffdia,ff_mvp,ffopt,op_opt)
 
       ifree = mem_flushmark()
 
       return
       end
+
 

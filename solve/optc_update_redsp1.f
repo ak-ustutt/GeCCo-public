@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine optc_update_redsp1(xmat,ndim,mxdim,shift,
+      subroutine optc_update_redsp1(xmat,ndim,mxdim,shift,init,
      &     iord,ff_sbsp,
      &     nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 *----------------------------------------------------------------------*
@@ -11,6 +11,7 @@
 *                         (remains unchanged)
 *
 *     shift==.true.  xmat(i,j) := xmat(i+1,j+1), xmat(1,j) is discarded
+*     init==.true.   init new row/col to 0d0
 *
 *----------------------------------------------------------------------*
       implicit none
@@ -24,7 +25,7 @@
       type(filinf), intent(in) ::
      &     ff_sbsp
       logical, intent(in) ::
-     &     shift
+     &     shift, init
       integer, intent(in) ::
      &     ndim, mxdim, nincore, nwfpar, lenbuf,
      &     iord(*)
@@ -69,6 +70,13 @@
       ! update last column
       iioff = ndim*(ndim-1)/2
 
+      ! init to zero, if requested:
+      if (init) then
+        do ii = 1, ndim
+          xmat(iioff+ii) = 0d0
+        end do
+      end if
+
       if (ndim.eq.0)
      &     call quit(1,'optc_update_redsp1','ndim.eq.0')
       jrec = ioptc_get_sbsp_rec(ndim,iord,ndim,mxdim)
@@ -78,10 +86,10 @@
 
         if (nincore.ge.2) then
           if (irec.eq.jrec) then
-            xmat(iioff+ii) = ddot(nwfpar,xbuf1,1,xbuf1,1)
+            xmat(iioff+ii) = xmat(iioff+ii)+ddot(nwfpar,xbuf1,1,xbuf1,1)
           else
             call vec_from_da(ff_sbsp,irec,xbuf2,nwfpar)
-            xmat(iioff+ii) = ddot(nwfpar,xbuf1,1,xbuf2,1)
+            xmat(iioff+ii) = xmat(iioff+ii)+ddot(nwfpar,xbuf1,1,xbuf2,1)
           end if
 
         !else if (nincore.eq.1) then
@@ -90,7 +98,7 @@
           ! and vector on disc
 
         else 
-          xmat(iioff+ii) =
+          xmat(iioff+ii) = xmat(iioff+ii) +
      &         da_ddot(ff_sbsp,jrec,ff_sbsp,irec,
      &         nwfpar,xbuf1,xbuf2,lenbuf)
 

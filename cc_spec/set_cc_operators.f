@@ -128,6 +128,17 @@
 
       end if
 
+      if (densities.gt.0) then
+        call add_operator(op_ccdens,op_info)
+        idx = idx_oplist2(op_ccdens,op_info)
+        op_pnt => op_info%op_arr(idx)%op
+
+        iformal = 1
+        call set_dens(op_pnt,op_ccdens,.false.,0,0,1,1,0,
+     &       1,densities,iformal,orb_info)
+
+      end if
+
       return
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*

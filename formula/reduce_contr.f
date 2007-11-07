@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine reduce_contr(contr,occ_vtx,
+     &     possible,
      &     iarc_red,idxop_new,ivtx_new,
      &     njoined_res,
      &     update_ori,ivtx_ori,iarc_ori,
@@ -36,6 +37,8 @@
      &     orb_info
       integer, intent(inout) ::
      &     occ_vtx(ngastp,2,*)
+      logical, intent(out) ::
+     &     possible
       logical, intent(in) ::
      &     update_ori, update_info, set_reo
       integer, intent(inout) ::
@@ -394,9 +397,10 @@ c dbg
 
       call update_svtx4contr(contr)
 
+      possible = .true.
       ! a last additional step: reorder supervertices if necessary
       if (contr%nsupvtx.lt.contr%nvtx) then
-        call reorder_supvtx(
+        call reorder_supvtx(possible,
      &     .true.,set_reo,reo_info,
      &     contr,occ_vtx(1,1,njoined_res+1),idxop_new)
         if (update_info) then

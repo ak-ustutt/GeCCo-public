@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine occ_contr(occ,contr,occ_vtx_in,njoined)
+      subroutine occ_contr(occ,ierr,contr,occ_vtx_in,njoined)
 *----------------------------------------------------------------------*
 *     get resulting occupation of contr
 *     occ_vtx is obtained from occvtx4contr with mode==1
@@ -19,10 +19,11 @@
       integer, intent(in) ::
      &     occ_vtx_in(ngastp,2,contr%nvtx), njoined
       integer, intent(out) ::
+     &     ierr,
      &     occ(ngastp,2,njoined)
 
       integer ::
-     &     nvtx, narc, idx1, idx2, iarc, type, type_last
+     &     nvtx, narc, nins, idx1, idx2, iarc, type, type_last
       type(cntr_arc), pointer ::
      &     arc(:)
       integer, pointer ::
@@ -37,6 +38,8 @@
         write(luout,*) 'occupations on input:'
         call wrt_occ_n(luout,occ_vtx_in,nvtx)
       end if
+
+      ierr = 0
 
       ! get a copy of occ_vtx
       allocate(occ_vtx(ngastp,2,nvtx))
@@ -110,13 +113,36 @@
         end if
         occ(1:ngastp,1:2,1) = occ_vtx(1:ngastp,1:2,1) +
      &                    occ_vtx(1:ngastp,1:2,2)
-      else if (idx2.ne.njoined) then
-        write(luout,*) 'expected super-vertices: ',njoined
-        write(luout,*) 'but found the following final occupation:'
-        call wrt_occ_n(luout,occ_vtx,idx2)
-        call quit(1,'occ_contr',
-     &         'resulting supervertex is incompatible with expected
-     &       number of joined vertices')
+      else if (idx2.gt.njoined) then
+        ierr = -1-idx2
+c        write(luout,*) 'expected super-vertices: ',njoined
+c        write(luout,*) 'but found the following final occupation:'
+c        call wrt_occ_n(luout,occ_vtx,idx2)
+c        call quit(1,'occ_contr',
+c     &         'resulting supervertex is incompatible with expected
+c     &       number of joined vertices')
+      else if (idx2.lt.njoined) then
+        ! try to fix: insert 0-occ after DX, before EX
+c dbg
+        print *,'fixing 0-occ'
+c dbg
+        nvtx = idx2
+        nins = njoined-nvtx
+        idx1 = 1
+        do idx2 = 1, nvtx
+          ! no de-excitation follows?
+          if (iocc_zero(iocc_xdn(2,occ_vtx(1:ngastp,1:2,idx2)))) then
+            occ(1:ngastp,1:2,idx1:idx1-1+nins) = 0
+            occ(1:ngastp,1:2,idx1+nins) = occ_vtx(1:ngastp,1:2,idx2)
+            idx1 = idx1+nins+1
+          else
+            occ(1:ngastp,1:2,idx1) = occ_vtx(1:ngastp,1:2,idx2)
+            idx1 = idx1+1
+          end if
+        end do
+        if (idx1.le.njoined) then
+          occ(1:ngastp,1:2,idx1:njoined) = 0
+        end if
       else
         occ(1:ngastp,1:2,1:njoined) = occ_vtx(1:ngastp,1:2,1:njoined)
       end if

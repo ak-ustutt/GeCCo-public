@@ -33,6 +33,8 @@
             write(luout,*) 'Import'
           case (iaction_evaluate)
             write(luout,*) 'Evaluate'
+          case (iaction_prop_eval)
+            write(luout,*) 'Evaluate properties'
           case (iaction_setup_prc)
             write(luout,*) 'Setup diagonal preconditioner'
           case (iaction_solve_leq)
@@ -59,17 +61,11 @@
           write(luout,'(x,a,6(i4,x),/,10x,6(i4,x))')
      &         'Input operators (def.):      ',
      &         current%act%idxopdef_in(1:current%act%nop_in)
-          write(luout,'(x,a,6(i4,i4,x),/,10x,6(i4,i4,x))')
-     &         'Input operators (file rec.): ',
-     &         current%act%idxopfile_in(1:2,1:current%act%nop_in)
         end if
         if (current%act%nop_out.gt.0) then
           write(luout,'(x,a,6(i4,x),/,10x,6(i4,x))')
      &         'Output operators (def.):     ',
      &         current%act%idxopdef_out(1:current%act%nop_out)
-          write(luout,'(x,a,6(i4,i4,x),/,10x,6(i4,i4,x))')
-     &         'Output operators (file rec.):',
-     &         current%act%idxopfile_out(1:2,1:current%act%nop_out)
         end if
         if (current%act%nform.gt.0) then
           write(luout,'(x,a,6i4)') 'Formula files: ',

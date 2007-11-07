@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine optc_diis_sbsp_add(ndim_rsbsp,ndim_vsbsp,mxdim_sbsp,
+     &     get_new_rec,
      &     iord_vsbsp,iord_rsbsp,
      &     ffamp,ffgrd,ffdia,ff_rsbsp,ff_vsbsp,
      &     nincore,nwfpar,lenbuf,xbuf1,xbuf2)
@@ -21,6 +22,8 @@
       integer, parameter ::
      &     ntest = 00
 
+      logical, intent(in) ::
+     &     get_new_rec
       type(filinf), intent(in) ::
      &     ffamp,ffgrd,ffdia,ff_rsbsp,ff_vsbsp
       integer, intent(inout) ::
@@ -32,7 +35,7 @@
      &     xbuf1(*), xbuf2(*)
 
       integer ::
-     &     irecr, irecv
+     &     irecr, irecv, inum
 
       integer, external ::
      &     ioptc_get_sbsp_rec
@@ -40,8 +43,16 @@
      &     dnrm2
 
       ! get record-number for new vector in subspace
-      irecr = ioptc_get_sbsp_rec(0,iord_rsbsp,ndim_rsbsp,mxdim_sbsp)
-      irecv = ioptc_get_sbsp_rec(0,iord_vsbsp,ndim_vsbsp,mxdim_sbsp)
+      inum = ndim_rsbsp   ! get last entry
+      if (get_new_rec) inum = 0 ! request new entry
+      irecr = ioptc_get_sbsp_rec(inum,iord_rsbsp,ndim_rsbsp,mxdim_sbsp)
+      inum = ndim_vsbsp   ! get last entry
+      if (get_new_rec) inum = 0 ! request new entry
+      irecv = ioptc_get_sbsp_rec(inum,iord_vsbsp,ndim_vsbsp,mxdim_sbsp)
+
+      if (ntest.ge.100) then
+        write(luout,*) 'added records: ',irecv, irecr
+      end if
 
       if (nincore.ge.2) then
 

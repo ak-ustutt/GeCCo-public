@@ -131,7 +131,6 @@ c      call init_op_files(op_info)
           case (iaction_import)
             ! import operator matrix elements
             call import_op_el(current_act%act%idxopdef_out(1),
-     &                        current_act%act%idxopfile_out(1,1),
      &                        op_info,
      &                        env_type,str_info,orb_info)
           case (iaction_evaluate)
@@ -153,11 +152,8 @@ c      call init_op_files(op_info)
               stop
             endif  
             call set_prc4op(current_act%act%idxopdef_out(1),
-     &                      current_act%act%idxopfile_out(1,1),
      &                      current_act%act%idxopdef_in(1),
      &                      current_act%act%idxopdef_in(2),
-     &                      current_act%act%idxopfile_in(1,1),
-     &                      current_act%act%idxopfile_in(1,2),
      &                      op_info,
      &                      str_info,orb_info)
           case (iaction_solve_leq)
@@ -170,10 +166,8 @@ c      call init_op_files(op_info)
             call solve_leq(current_act%act%nop_opt,nroots,
      &                      current_act%act%nop_out,
      &                      current_act%act%idxopdef_out,
-     &                      current_act%act%idxopfile_out,
      &                      current_act%act%nop_in,
      &                      current_act%act%idxopdef_in,
-     &                      current_act%act%idxopfile_in,
      &                      ffform_opt,
      &                      op_info,str_info,strmap_info,orb_info)
             call file_delete(ffform_opt)
@@ -187,10 +181,8 @@ c      call init_op_files(op_info)
             call solve_nleq(current_act%act%nop_opt,
      &                      current_act%act%nop_out,
      &                      current_act%act%idxopdef_out,
-     &                      current_act%act%idxopfile_out,
      &                      current_act%act%nop_in,
      &                      current_act%act%idxopdef_in,
-     &                      current_act%act%idxopfile_in,
      &                      ffform_opt,
      &                      op_info,str_info,strmap_info,orb_info)
             call file_delete(ffform_opt)
@@ -200,6 +192,11 @@ c      call init_op_files(op_info)
           case (iaction_solve_gevp)
             ! Solve general eigenvalue problem
             call quit(1,'do_calc','action not implemented yet')
+          case (iaction_prop_eval)
+            ! evaluate properties for given density list
+            call prop_evaluate(current_act%act%nop_in,1,
+     &           current_act%act%idxopdef_in,
+     &           env_type,op_info,str_info,orb_info)
           case (iaction_symmetrise)
             ! Symmetrise a particular operator matrix.
             call symm_op(current_act%act%idxopdef_in(1),

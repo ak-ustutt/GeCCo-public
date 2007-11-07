@@ -3,6 +3,7 @@
 *----------------------------------------------------------------------*
 *     get longest distribution block of operator
 *     if iblk>0, restrict to block iblk
+*     mode=-1:  msa block
 *     mode=0 :  msa,gma block
 *     mode=1 :  dis,msa,gma block
 *----------------------------------------------------------------------*
@@ -20,7 +21,7 @@
      &     iblkop, mode
 
       integer ::
-     &     iblk, iblk_min, iblk_max, lenblk, ndis, idis,
+     &     iblk, iblk_min, iblk_max, lenblk, lenmsblk, ndis, idis,
      &     idxmsa, igama, msamax, ngam
 
       if (iblkop.ge.0) then
@@ -41,10 +42,14 @@
         
         do idxmsa = 1, msamax+1
 
+          lenmsblk = 0
           do igama = 1, ngam
           
             lenblk = op%len_op_gmo(iblk)%gam_ms(igama,idxmsa)
             if (lenblk.eq.0) cycle
+            lenmsblk = lenmsblk + lenblk
+
+            if (mode.eq.-1) cycle
 
             ndis = op%off_op_gmox(iblk)%ndis(igama,idxmsa)
 
@@ -59,6 +64,9 @@
             end do
 
           end do
+
+          if (mode.eq.-1)
+     &         max_dis_blk = max(max_dis_blk,lenmsblk)
 
         end do
           

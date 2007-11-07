@@ -43,4 +43,5 @@
      &     op_g_temp*6     = 'G-TEMP',
      &     op_r_temp*6     = 'R-TEMP',
      &     op_rbar_temp*8  = 'RBA_TEMP',
-     &     op_ttr_temp*8   = 'TTR_TEMP'
+     &     op_ttr_temp*8   = 'TTR_TEMP',
+     &     op_ccdens*6     = 'DEN-CC'

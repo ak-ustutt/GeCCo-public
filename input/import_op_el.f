@@ -1,10 +1,9 @@
 *----------------------------------------------------------------------*
-      subroutine import_op_el(idxop,idxffop,
+      subroutine import_op_el(idxop,
      &     op_info,
      &     env_type,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     import matrix elements for operator idxop from environment
-*     note: idxffop is obsolete now
 *----------------------------------------------------------------------*
 
       implicit none
@@ -21,7 +20,7 @@
       include 'explicit.h'
 
       integer, intent(in) ::
-     &     idxop, idxffop
+     &     idxop
       type(operator_info), intent(in) ::
      &     op_info
       character, intent(in) ::

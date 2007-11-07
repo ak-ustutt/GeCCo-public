@@ -2,13 +2,11 @@
       subroutine add_action(act_list,nactions,
      &     action_type,nop_in,nop_out,nop_opt,
      &     idxopdef_in,idxopdef_out,
-     &     idxopfile_in,idxopfile_out,
      &     nform,idx_formula)
 *----------------------------------------------------------------------*
 *     an 'action' is given by the parameters on the input list
 *     compare to elements on act_list, and if the particular action
 *     is not yet on the list, add it as last element
-*     note (17 juli 2007): idxopfile_in/out will become obsolete 
 *----------------------------------------------------------------------*
 
       implicit none
@@ -29,7 +27,6 @@
       integer, intent(in) ::
      &     nop_in,nop_out,nop_opt,
      &     idxopdef_in(*),idxopdef_out(*),
-     &     idxopfile_in(2,*),idxopfile_out(2,*),
      &     nform,
      &     idx_formula(*)
 
@@ -51,8 +48,6 @@
             equal = equal.and.current%act%nop_in.eq.nop_in
             equal = equal.and.
      &          list_cmp(current%act%idxopdef_in,idxopdef_in,nop_in)
-            equal = equal.and.
-     &          list_cmp(current%act%idxopfile_in,idxopfile_in,2*nop_in)
           else
             equal = equal.and.current%act%nop_in.eq.0
           end if
@@ -60,9 +55,6 @@
             equal = equal.and.current%act%nop_out.eq.nop_out
             equal = equal.and.
      &          list_cmp(current%act%idxopdef_out,idxopdef_out,nop_out)
-            equal = equal.and.
-     &          list_cmp(current%act%idxopfile_out,
-     &                                         idxopfile_out,2*nop_out)
           else
             equal = equal.and.current%act%nop_out.eq.0
           end if
@@ -101,11 +93,9 @@
 
         allocate(current%act)
         if (nop_in.gt.0)
-     &       allocate(current%act%idxopdef_in(nop_in),
-     &                current%act%idxopfile_in(2,nop_in))
+     &       allocate(current%act%idxopdef_in(nop_in))
         if (nop_out.gt.0)
-     &       allocate(current%act%idxopdef_out(nop_out),
-     &                current%act%idxopfile_out(2,nop_out))
+     &       allocate(current%act%idxopdef_out(nop_out))
         if (nform.gt.0)
      &       allocate(current%act%idx_formula(nform))
 
@@ -116,8 +106,6 @@
           current%act%nop_in = nop_in
           current%act%idxopdef_in(1:nop_in) =
      &                idxopdef_in(1:nop_in)
-          current%act%idxopfile_in(1:2,1:nop_in) =
-     &                idxopfile_in(1:2,1:nop_in)
         end if
 
         ! number of optimized operators must be subset of
@@ -132,8 +120,6 @@
           current%act%nop_out = nop_out
           current%act%idxopdef_out(1:nop_out) =
      &                idxopdef_out(1:nop_out)
-          current%act%idxopfile_out(1:2,1:nop_out) =
-     &                idxopfile_out(1:2,1:nop_out)
         end if
 
         current%act%nform = 0
@@ -153,7 +139,6 @@
       subroutine add_action_with_optional_arguments(act_list,nactions,
      &     action_type,nop_in,nop_out,
      &     idxopdef_in,idxopdef_out,
-     &     idxopfile_in,idxopfile_out,
      &     nform,
      &     idx_formula)
 *----------------------------------------------------------------------*
@@ -180,7 +165,6 @@
       integer, intent(in), optional ::
      &     nop_in,nop_out,
      &     idxopdef_in(*),idxopdef_out(*),
-     &     idxopfile_in(2,*),idxopfile_out(2,*),
      &     nform,
      &     idx_formula(*)
 
@@ -191,16 +175,13 @@
 
       ! consistency checks
       if (present(nop_in) .and.
-     &    (.not.present(idxopdef_in) .or.
-     &     .not.present(idxopfile_in))) then
-        write(luout,*) 'in:',present(idxopdef_in),present(idxopfile_in) 
+     &    (.not.present(idxopdef_in) )) then
+        write(luout,*) 'in:',present(idxopdef_in) 
         call quit(0,'add_action','inconsisten call list (nop_in)')
       end if
       if (present(nop_out) .and.
-     &    (.not.present(idxopdef_out) .or.
-     &     .not.present(idxopfile_out))) then
-        write(luout,*) 'out:',present(idxopdef_out),
-     &                        present(idxopfile_out) 
+     &    (.not.present(idxopdef_out) )) then
+        write(luout,*) 'out:',present(idxopdef_out)
         call quit(0,'add_action','inconsisten call list (nop_out)')
       end if
       if (present(nform) .and.
@@ -221,8 +202,6 @@
             equal = equal.and.current%act%nop_in.eq.nop_in
             equal = equal.and.
      &          list_cmp(current%act%idxopdef_in,idxopdef_in,nop_in)
-            equal = equal.and.
-     &          list_cmp(current%act%idxopfile_in,idxopfile_in,2*nop_in)
           else
             equal = equal.and.current%act%nop_in.eq.0
           end if
@@ -230,9 +209,6 @@
             equal = equal.and.current%act%nop_out.eq.nop_out
             equal = equal.and.
      &          list_cmp(current%act%idxopdef_out,idxopdef_out,nop_out)
-            equal = equal.and.
-     &          list_cmp(current%act%idxopfile_out,
-     &                                         idxopfile_out,2*nop_out)
           else
             equal = equal.and.current%act%nop_out.eq.0
           end if
@@ -270,11 +246,9 @@
 
         allocate(current%act)
         if (present(nop_in))
-     &       allocate(current%act%idxopdef_in(nop_in),
-     &                current%act%idxopfile_in(2,nop_in))
+     &       allocate(current%act%idxopdef_in(nop_in))
         if (present(nop_out))
-     &       allocate(current%act%idxopdef_out(nop_out),
-     &                current%act%idxopfile_out(2,nop_out))
+     &       allocate(current%act%idxopdef_out(nop_out))
         if (present(nform))
      &       allocate(current%act%idx_formula(nform))
 
@@ -285,8 +259,6 @@
           current%act%nop_in = nop_in
           current%act%idxopdef_in(1:nop_in) =
      &                idxopdef_in(1:nop_in)
-          current%act%idxopfile_in(1:2,1:nop_in) =
-     &                idxopfile_in(1:2,1:nop_in)
         end if
 
         current%act%nop_out = 0
@@ -294,8 +266,6 @@
           current%act%nop_out = nop_out
           current%act%idxopdef_out(1:nop_out) =
      &                idxopdef_out(1:nop_out)
-          current%act%idxopfile_out(1:2,1:nop_out) =
-     &                idxopfile_out(1:2,1:nop_out)
         end if
 
         current%act%nform = 0

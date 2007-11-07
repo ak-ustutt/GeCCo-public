@@ -14,6 +14,7 @@
       include 'def_filinf.h'
       include 'def_operator.h'
       include 'def_orbinf.h'
+      include 'opdim.h'
       include 'ifc_memman.h'
 
       integer, parameter ::
@@ -31,17 +32,22 @@
      &     iblkin, iblkout
 
       logical ::
-     &     bufin, bufout
+     &     ok, bufin, bufout
       integer ::
      &     len_op, idum, ifree, lblk, nblkmax, nblk, nbuff,
      &     ioffin, ioffout, idxst, idxnd,
-     &     idoffin, idoffout
-      
+     &     idoffin, idoffout,
+     &     njoined_in, njoined_out, ijoin,
+     &     idx_in, idx_out
+
+      integer, pointer ::
+     &     occ_try(:,:,:)
+
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:)
 
       logical, external ::
-     &     iocc_equal, irestr_equal
+     &     iocc_equal_n, irestr_equal
 
       if (ntest.ge.100) then
         write(luout,*) '=========================='
@@ -58,25 +64,55 @@
      &       '  block: ',iblkout
       end if
 
-      if (.not.iocc_equal(opin%ihpvca_occ(1,1,iblkin),opin%dagger,
-     &                 opout%ihpvca_occ(1,1,iblkout),opout%dagger)) then
+      njoined_in  = opin%njoined
+      njoined_out = opout%njoined
+      idx_in  = (iblkin-1)*njoined_in+1
+      idx_out = (iblkout-1)*njoined_out+1
+
+      if (njoined_in.eq.njoined_out) then
+        ok = iocc_equal_n(opin%ihpvca_occ(1,1,idx_in),opin%dagger,
+     &                   opout%ihpvca_occ(1,1,idx_out),opout%dagger,
+     &                   njoined_in)
+      else if (njoined_out-njoined_in.eq.1) then
+        ! density exception: insert a zero-occupation
+        allocate(occ_try(ngastp,2,njoined_out))
+        do ijoin = 1, njoined_out
+          if(ijoin.gt.1)
+     &         occ_try(1:ngastp,1:2,1:ijoin-1) =
+     &         opin%ihpvca_occ(1:ngastp,1:2,idx_in:idx_in-1+ijoin-1)
+          occ_try(1:ngastp,1:2,ijoin) = 0
+          if (ijoin.lt.njoined_out)
+     &         occ_try(1:ngastp,1:2,ijoin+1:njoined_out) =
+     &         opin%ihpvca_occ(1:ngastp,1:2,idx_in-1+ijoin:
+     &                             idx_in-1+njoined_out-1)
+          ok = iocc_equal_n(occ_try,opin%dagger,
+     &                   opout%ihpvca_occ(1,1,idx_out),opout%dagger,
+     &                   njoined_out)
+          if (ok) exit
+        end do
+        deallocate(occ_try)
+      else
+        ok = .false.
+      end if
+
+      if (.not.ok) then
         write(luout,*) 'dagger: ',opin%dagger,opout%dagger
-        call wrt_occ(luout,opin%ihpvca_occ(1,1,iblkin))
-        call wrt_occ(luout,opout%ihpvca_occ(1,1,iblkout))
+        call wrt_occ_n(luout,opin%ihpvca_occ(1,1,idx_in),njoined_in)
+        call wrt_occ_n(luout,opout%ihpvca_occ(1,1,idx_out),njoined_out)
         call quit(1,'add_opblk','occupations do not fit!')
       end if
 
-      if (.not.irestr_equal(opin%igasca_restr(1,1,1,1,iblkin),
-     &                     opin%dagger,
-     &                     opout%igasca_restr(1,1,1,1,iblkout),
-     &                     opout%dagger,
-     &                     orb_info%ngas)) then
-        write(luout,*) 'dagger: ',opin%dagger,opout%dagger
-        call wrt_rstr(luout,opin%igasca_restr(1,1,1,1,iblkin))
-        call wrt_rstr(luout,opout%igasca_restr(1,1,1,1,iblkout))
-        call quit(1,'add_opblk','occupations do not fit!')
-        ! note: we must be able to handle this case in the future
-      end if
+c      if (.not.irestr_equal(opin%igasca_restr(1,1,1,1,iblkin),
+c     &                     opin%dagger,
+c     &                     opout%igasca_restr(1,1,1,1,iblkout),
+c     &                     opout%dagger,
+c     &                     orb_info%ngas)) then
+c        write(luout,*) 'dagger: ',opin%dagger,opout%dagger
+c        call wrt_rstr(luout,opin%igasca_restr(1,1,1,1,iblkin))
+c        call wrt_rstr(luout,opout%igasca_restr(1,1,1,1,iblkout))
+c        call quit(1,'add_opblk','occupations do not fit!')
+c        ! note: we must be able to handle this case in the future
+c      end if
 
       len_op = opin%len_op_occ(iblkin)
       ! for the moment this must hold:

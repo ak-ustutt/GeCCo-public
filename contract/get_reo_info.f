@@ -52,8 +52,7 @@
      &     irst_op1op2tmp(2,orb_info%ngas,2,2,njoined_op1op2)
       
       integer ::
-     &     nreo, ireo, idx, nreo_op1op2, ireo_op1op2, nmap, len_map,
-     &     sign_reo
+     &     nreo, ireo, idx, nreo_op1op2, ireo_op1op2, nmap, len_map
       type(reorder_list), pointer ::
      &     reo(:)
       integer, pointer ::
@@ -63,7 +62,7 @@
      &     igrph(:,:,:), irst(:,:,:,:,:)
 
       integer, external ::
-     &     imltlist, sign_shift, sign_hpvx
+     &     imltlist, sign_reo
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'get_reo_info')
@@ -123,38 +122,14 @@
         end do
 
         nreo_op1op2 = 0
-        sign_reo = 1
         do ireo = 1, nreo
           if (.not.reo(ireo)%is_bc_result) cycle
           nreo_op1op2 = nreo_op1op2+1
-          ! get sign for shift
-          sign_reo = sign_reo*sign_shift(reo(ireo)%occ_shift,
-     &         reo(ireo)%from,reo(ireo)%to,
-     &         iocc_op1op2,njoined_op1op2)
-c dbg
-c          print *,'sign_reo (I): ',sign_reo
-c dbg
 
           ! update op1op2, part I: remove shift occupation
           iocc_op1op2(1:ngastp,1:2,reo(ireo)%from) 
      &         = iocc_op1op2(1:ngastp,1:2,reo(ireo)%from)
      &         - reo(ireo)%occ_shift
-
-          ! get hpvx-transposition signs
-          ! ... for source ...
-          sign_reo = sign_reo*sign_hpvx(2,
-     &         iocc_op1op2(1:ngastp,1:2,reo(ireo)%from),.false.,
-     &         reo(ireo)%occ_shift,.false.)
-c dbg
-c          print *,'sign_reo (IIa): ',sign_reo
-c dbg
-          ! ... and target
-          sign_reo = sign_reo*sign_hpvx(2,
-     &         iocc_op1op2(1:ngastp,1:2,reo(ireo)%to),.false.,
-     &         reo(ireo)%occ_shift,.false.)
-c dbg
-c          print *,'sign_reo (IIb): ',sign_reo
-c dbg
 
           ! update op1op2, part II: add shift occupation
           iocc_op1op2(1:ngastp,1:2,reo(ireo)%to) 
@@ -171,13 +146,10 @@ c dbg
      &                    njoined_op1op2,1)+1
           merge_map_stp2(nmap,2,reo(ireo)%to) = nreo_op1op2
         end do
-c dbg
-c        print *,'sign_reo (final): ',sign_reo
-c dbg
-        reo_info%sign_reo = sign_reo
 
         ! store shift occupations in iocc_reo array
         allocate(reo_info%iocc_reo(ngastp,2,nreo_op1op2))
+        allocate(reo_info%from_to(2,nreo_op1op2))
         ! ... and the remainder of the operator during reo:
         allocate(reo_info%iocc_opreo0(ngastp,2,njoined_op1op2))
 
@@ -189,6 +161,8 @@ c dbg
           ireo_op1op2 = ireo_op1op2+1
           reo_info%iocc_reo(1:ngastp,1:2,ireo_op1op2) =
      &       reo(ireo)%occ_shift
+          reo_info%from_to(1,ireo_op1op2) = reo(ireo)%from
+          reo_info%from_to(2,ireo_op1op2) = reo(ireo)%to
           reo_info%iocc_opreo0(1:ngastp,1:2,reo(ireo)%from) =
      &         reo_info%iocc_opreo0(1:ngastp,1:2,reo(ireo)%from) -
      &         reo(ireo)%occ_shift
@@ -204,6 +178,11 @@ c dbg
           write(luout,*) 'OPREO_0:'
           call wrt_occ_n(luout,reo_info%iocc_opreo0,njoined_op1op2)
         end if
+
+        reo_info%sign_reo = sign_reo(
+     &       iocc_op1op2tmp,reo_info%iocc_opreo0,
+     &       njoined_op1op2,reo_info%iocc_reo,
+     &       reo_info%from_to,nreo_op1op2)
 
         call dummy_restr(irst_op1op2,
      &       iocc_op1op2,njoined_op1op2,orb_info%ihpvgas,orb_info%ngas)

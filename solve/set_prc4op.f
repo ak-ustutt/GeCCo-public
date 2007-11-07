@@ -1,12 +1,11 @@
 *----------------------------------------------------------------------*
-      subroutine set_prc4op(idxprc,idxffprc,
-     &                      idxop,idxham,idxffop,idxffham,
+      subroutine set_prc4op(idxprc,
+     &                      idxop,idxham,
      &                      op_info,
      &                      str_info,orb_info)
 *----------------------------------------------------------------------*
 *     driver routine for setting up a diagonal preconditioner
 *
-*     idxffprc and idxffop are obsolete
 *----------------------------------------------------------------------*
 
       implicit none
@@ -22,7 +21,7 @@
       include 'ifc_memman.h'
 
       integer, intent(in) ::
-     &     idxprc, idxffprc, idxop, idxffop, idxham, idxffham
+     &     idxprc, idxop, idxham
       type(operator_info), intent(inout) ::
      &     op_info
       type(strinf), intent(in) ::

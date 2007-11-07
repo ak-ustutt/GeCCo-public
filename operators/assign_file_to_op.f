@@ -43,6 +43,10 @@
 
       op => op_info%op_arr(idxop)%op
 
+      if (associated(op_info%opfil_arr(idxop)%fhand))
+     &     call quit(1,'assign_file_to_op',
+     &     'operator is already assigned')
+
       if (standard) then
         allocate(op_info%opfil_arr(idxop)%fhand)
         ffop => op_info%opfil_arr(idxop)%fhand

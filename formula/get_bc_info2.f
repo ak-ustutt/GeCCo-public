@@ -46,7 +46,7 @@
      &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*)
 
       logical ::
-     &     merge
+     &     merge, last_cntr
       integer ::
      &     ivtx1, ivtx2, ivtx, ivtxsuper1, ivtxsuper2,
      &     len_list, ilist, idum, ijoin,
@@ -146,10 +146,11 @@ c dbg
      &                contr%svertex,contr%nvtx)
 
       allocate(merge_map_op1op2(ld_mmap12,2,contr%nvtx))
+      last_cntr = contr%narc.eq.len_list
       ! merge EX1/E2 + set up merging info
       call merge_ex1ex2(iocc_op1op2,njoined_op1op2,merge_map_op1op2,
      &                ld_mmap12,
-     &                ivtxsuper1,ivtxsuper2,
+     &                ivtxsuper1,ivtxsuper2,last_cntr,
      &                iocc_ex1ex2,inum_ori,njoined_op(1)+njoined_op(2),
      &                arc_list,len_list,
      &                contr,occ_vtx,njoined_res)

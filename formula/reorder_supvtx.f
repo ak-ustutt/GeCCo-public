@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine reorder_supvtx(
+      subroutine reorder_supvtx(possible,
      &     modify_contr,set_reord_list,reo_info,
      &     contr,occ_vtx,idxop12)
 *----------------------------------------------------------------------*
@@ -27,6 +27,8 @@
       integer, parameter ::
      &     ntest = 00
 
+      logical, intent(out) ::
+     &     possible
       logical, intent(in) ::
      &     modify_contr, set_reord_list
       integer, intent(in) ::
@@ -65,6 +67,8 @@
         call prt_contr3(luout,contr,occ_vtx)
       end if
 
+      possible = .true.
+
       if (set_reord_list) then
         maxreo = 2*(contr%nvtx - contr%nsupvtx)
         reo_info%nreo = 0
@@ -90,11 +94,19 @@
         do jarc = 1, narc
           ! deleted arc? or the arc itself?
           if (arc(iarc)%link(1).le.0.or.iarc.eq.jarc) cycle
+c dbg
+c          print *,'iarc, jarc: ',iarc,jarc
+c dbg
           
           ! primitive vertex
           if (iarc.gt.jarc) iprim = 1
           if (iarc.lt.jarc) iprim = 2
           ! primitive vertex is the same?
+c dbg
+c          print *,'iprim = ',iprim
+c          print *,'arc(iarc)%link(iprim),arc(jarc)%link(iprim):',
+c     &         arc(iarc)%link(iprim),arc(jarc)%link(iprim)
+c dbg
           if (arc(iarc)%link(iprim).ne.arc(jarc)%link(iprim)) cycle
 
           ! assumed super vertex
@@ -105,17 +117,27 @@
           ivtx1 = arc(iarc)%link(isuper)
           ivtx2 = arc(jarc)%link(isuper)
 
+c dbg
+c          print *,'iprim,isuper:',iprim,isuper
+c          print *,'ivtx0,1,2: ',ivtx0,ivtx1,ivtx2
+c dbg
           ! ensure ivtx0 < ivtx1 and ivtx0 < ivtx2 
           !     or ivtx0 > ivtx1 and ivtx0 > ivtx2
           if (.not. ( (ivtx0.lt.ivtx1.and.ivtx0.lt.ivtx2) .or.
      &                (ivtx0.gt.ivtx1.and.ivtx0.gt.ivtx2) ) ) cycle
+c dbg
+c          print *,'survived a)'
+c dbg
 
           ! same super vertex?
           if (svertex(ivtx1).ne.svertex(ivtx2)) cycle
+c dbg
+c          print *,'survived b)'
+c dbg
 
           ! do contractions have non-vanishing overlap?
-          if (iocc_zero(iocc_overlap(arc(iarc)%occ_cnt,.false.,
-     &                               arc(jarc)%occ_cnt,.false.))) cycle
+c          if (iocc_zero(iocc_overlap(arc(iarc)%occ_cnt,.false.,
+c     &                               arc(jarc)%occ_cnt,.false.))) cycle
 
           occ_shr = 0
           occ_shl = 0
@@ -130,8 +152,10 @@
      &            arc(jarc)%occ_cnt(hpvx,ica).gt.0) then
                 if (arc(iarc)%occ_cnt(hpvx,ica).eq.
      &                        occ_vtx(hpvx,ica_vtx,ivtx1)) then
+                  ! iarc fully contracted to ivtx1
+                  ! -> move jarc here
 c dbg
-c                  print *,'left case'
+                  print *,'left case'
 c dbg
 
                   cnt_shl(hpvx,ica) = arc(jarc)%occ_cnt(hpvx,ica)
@@ -139,8 +163,10 @@ c dbg
 
                 else if (arc(jarc)%occ_cnt(hpvx,ica).eq.
      &                        occ_vtx(hpvx,ica_vtx,ivtx2)) then
+                  ! jarc fully contracted to ivtx2
+                  ! -> move iarc here
 c dbg
-c                  print *,'right case'
+                  print *,'right case'
 c dbg
 
                   cnt_shr(hpvx,ica) = arc(iarc)%occ_cnt(hpvx,ica)
@@ -148,7 +174,7 @@ c dbg
 
                 else if (contr%nsupvtx.eq.2) then
 c dbg
-c                  print *,'special case'
+                  print *,'special case'
 c dbg
                   
                   cnt_shl(hpvx,ica) = arc(jarc)%occ_cnt(hpvx,ica)
@@ -158,8 +184,12 @@ c dbg
      &                 - arc(iarc)%occ_cnt(hpvx,ica)
 
                 else
-
-                  call quit(1,'reorder_supvtx','not yet')
+c dbg
+                  print *,'skipping difficult reo'
+c dbg
+                  possible = .false.
+                  return
+c                  call quit(1,'reorder_supvtx','not yet')
                   
                 end if
               end if

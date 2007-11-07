@@ -28,7 +28,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(operator), intent(inout) ::
      &     op
@@ -138,9 +138,9 @@ c      dagtotal = op%dagger
         op%ica_occ(1:2,iblk) = 0
 
         do ijoin = 1, njoined
-          op%ica_occ(1,1) = op%ica_occ(1,1)+
+          op%ica_occ(1,iblk) = op%ica_occ(1,iblk)+
      &         ielsum(op%ihpvca_occ(1:ngastp,1,ioffblk+ijoin),ngastp)
-          op%ica_occ(2,1) = op%ica_occ(2,1)+
+          op%ica_occ(2,iblk) = op%ica_occ(2,iblk)+
      &         ielsum(op%ihpvca_occ(1:ngastp,2,ioffblk+ijoin),ngastp)
         end do
 

@@ -49,7 +49,7 @@
      &     cur_form
 
       logical ::
-     &     update, reo_op1op2, reo_other
+     &     update, reo_op1op2, reo_other, possible
       integer ::
      &     lufrm, idxopres, idxres, nres, type_xret, type_xret_cur,
      &     n_occ_cls, maxvtx, maxarc, maxfac, nblk_res,
@@ -323,11 +323,16 @@ c        case(command_set_target_update)
             call init_reo_info(reo_info)
             
             call reduce_contr(cur_form%contr,occ_vtx,
+     &           possible,
      &           iarc,idxop_intm,ivtx_new,
      &           njoined_res,
      &           .false.,idum,idum,
      &           .true.,irestr_vtx,info_vtx,irst_res,
      &           .true.,reo_info,orb_info)
+            if (.not.possible)
+     &           call quit(1,'frm_sched1',
+     &           'inconsistency: reduce_contr is in difficulties')
+
             ! add 0-contractions, if necessary
             call check_disconnected(cur_form%contr)
             ! process reordering info

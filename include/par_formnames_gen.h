@@ -12,7 +12,8 @@
      &     title_cceta*26    = 'Tbar right hand side (eta)',
      &     title_r12_vint*18 = 'R12 V-intermediate',
      &     title_r12_bint*18 = 'R12 B-intermediate',
-     &     title_r12_bsymm*24  = 'Symm. R12 B-intermediate'
+     &     title_r12_bsymm*24  = 'Symm. R12 B-intermediate',
+     &     title_ccdens*10   = 'CC density'
       character, parameter ::
      &     label_cclg0*5 = 'L0_CC',
      &     label_ccen0*5 = 'E0_CC',
@@ -22,4 +23,5 @@
      &     label_cceta*6 = 'ETA_CC',
      &     label_r12_vint*8 = 'VINT_R12',
      &     label_r12_bint*8 = 'BINT_R12',
-     &     label_r12_bsymm*9  = 'BSYMM_R12'
+     &     label_r12_bsymm*9  = 'BSYMM_R12',
+     &     label_ccdens*6 = 'DEN_CC'

@@ -7,6 +7,7 @@
 *     input:  smat(ndim,ndim) - overlap matrix of vectors <v_i|v_j>
 *     output: xmat(ndim,ndim) - orthogonalization matrix:
 *                               |w_i> = |v_j> x(j,i)
+*     scratch: xscr(ndim)
 *
 *     zero column vectors may be returned in case of linear dependency
 *

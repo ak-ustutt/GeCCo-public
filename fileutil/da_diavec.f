@@ -11,7 +11,7 @@
 *     files/start-records may be identical
 *
 *     special handling for xpot = -2,-1,0,1,2
-*     caution: be sure to passe double-precision numbers as it else
+*     caution: be sure to pass double-precision numbers as it else
 *     may happen that 1.0 != 1.0d0
 *
 *----------------------------------------------------------------------*

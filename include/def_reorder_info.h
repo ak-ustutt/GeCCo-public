@@ -27,7 +27,8 @@
      &     merge_stp1(:),
      &     merge_stp2(:),
      &     iocc_reo(:,:,:),
-     &     iocc_opreo0(:,:,:)
+     &     iocc_opreo0(:,:,:),
+     &     from_to(:,:)
       integer ::
      &     ncblk_reo0, nablk_reo0, ncblk_reo, nablk_reo
       integer, pointer ::

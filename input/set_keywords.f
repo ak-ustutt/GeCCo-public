@@ -94,6 +94,8 @@
      &     xdef=(/1d-6/))
 
       call keyword_add('CC_solve_tbar',context='calculate')
+      call keyword_add('CC_solve_sim',context='calculate')
+      call keyword_add('properties',context='calculate')
 
       call keyword_add('routes',context='calculate')
       call argument_add('schedule','calculate.routes',type=vtyp_int,
