@@ -28,6 +28,10 @@
       un = fhand%unit
       lenr = fhand%reclen
 
+c dbg
+      write(luout,*)'put_vec unit',un
+c dbg
+
       ! first and last record to read from
       irecst = (idxst-1)/lenr+1
       irecnd = (idxnd-1)/lenr+1

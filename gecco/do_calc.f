@@ -37,7 +37,7 @@
       type(action_list), pointer ::
      &     act_list, current_act
       type(filinf) ::
-     &     ffform_opt
+     &     ffform_opt, ffform_sym
       integer ::
      &     ifree, nactions, nroots
       type(strinf), pointer ::
@@ -200,6 +200,11 @@ c      call init_op_files(op_info)
           case (iaction_solve_gevp)
             ! Solve general eigenvalue problem
             call quit(1,'do_calc','action not implemented yet')
+          case (iaction_symmetrise)
+            ! Symmetrise a particular operator matrix.
+            call symm_op(current_act%act%idxopdef_in(1),
+     &                   current_act%act%idxopdef_out(1),
+     &                   op_info,orb_info,str_info)
           case default
             write(luout,*) 'action = ',current_act%act%action_type
             call quit(1,'do_calc','unknown action')

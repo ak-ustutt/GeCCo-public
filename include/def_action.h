@@ -5,7 +5,8 @@
      &     iaction_solve_nleq = 4,
      &     iaction_solve_evp  = 5,
      &     iaction_solve_gevp = 6,
-     &     iaction_setup_prc  = 7  
+     &     iaction_setup_prc  = 7,
+     &     iaction_symmetrise  = 8
 
       type action
         integer ::

@@ -84,7 +84,7 @@
 c dbg
       call wrt_op_file(luout,5,op_info%opfil_arr(idxop_out(1))%fhand,
      &             op_info%op_arr(idxop_out(1))%op,
-     &          1,op_info%op_arr(idxop_out(1))%op%n_occ_cls,
+     &             1,op_info%op_arr(idxop_out(1))%op%n_occ_cls,
      &             str_info,orb_info)
 c dbg
 

@@ -36,13 +36,13 @@
 
       integer ::
      &     idx,jdx,kdx,igas,isym,i,j,nsym,ngas,ntoob,caborb,lu2in,
-     &     ip,iq,ir,is,nstr,istr,ifree,lbuf
+     &     ip,iq,ir,is,nstr,istr,ifree,lbuf,asym_el
       integer ::
      &     index(4),igam(4),idss(4),igtp(4),idxstr(8)
       real(8) ::
      &     int
       logical ::
-     &     fexist,closeit,ierr
+     &     fexist,closeit,ierr,antisym
       type(filinf) ::
      &     ffmor
 
@@ -67,6 +67,20 @@
       ngas=orb_info%ngas
       ntoob=orb_info%ntoob
       caborb=orb_info%caborb
+
+c      ! Define some flags for different integral types.
+c      ! Mode 3 and 4 deal with (pq|[Ti,r12]|rs) type integrals whilst
+c      ! the other modes deal with 'normal' 2-electron integrals. 
+c      if(mode.eq.3)then
+c        antisym = .true.
+c        asym_el = 2
+c      elseif(mode.eq.4)then
+c        antisym=.true.
+c        asym_el = 1
+c      else
+c        antisym = .false.
+c        asym_el = 0
+c      endif  
 
       allocate(tosym(ntoob+caborb),totyp(ntoob+caborb),koffs(nsym),
      &     reord(ntoob+caborb))
@@ -113,13 +127,22 @@
       endif  
 
       ! Loop over the written integrals.
-      do 
+      int_loop: do 
         ! Read in the integral and its indices. Replace the indices with 
         ! those due to the type ordering array.
         read(unit=lu2in,fmt=1000,end=999,err=998)ip,iq,ir,is,int
-        if((ip.lt.iq.and.iq.le.ntoob).or.ir.lt.is)then
-          cycle
+        if(mode.ne.2)then
+          if((ip.lt.iq.and.iq.le.ntoob).or.ir.lt.is)cycle int_loop    
         endif  
+
+c dbg
+c        if(mode.eq.1)then
+c          if(ip.eq.3.and.iq.eq.1.and.ir.eq.2.and.is.eq.1)then
+c            write(luout,*)'testing'
+c            write(luout,*)int
+c          endif
+c        endif
+c dbg
 
         ! Do two loops as we must "manually" permute p <=> q.
         do i=1,2
@@ -129,8 +152,9 @@
             index(3)=reord(iq)
             index(4)=reord(is)
           elseif(i.eq.2)then
-            if(ir.gt.ntoob)cycle
-            if(ip.eq.iq.or.ir.eq.is)cycle
+            if(mode.eq.2)cycle int_loop
+            if(ir.gt.ntoob)cycle int_loop
+            if(ip.eq.iq.or.ir.eq.is)cycle int_loop
             index(1)=reord(ip)
             index(2)=reord(is)
             index(3)=reord(iq)
@@ -153,12 +177,31 @@
           do j=1,4
             idss(j)=idss(j)-idx_gas(igtp(j))+1
           enddo
-  
+
+c dbg
+c          if(mode.eq.1)then
+c            if(ip.eq.3.and.iq.eq.1.and.ir.eq.2.and.is.eq.1)then
+c              write(luout,*)'testing 2'
+c              write(luout,*)index(1:4)
+c              write(luout,*)int
+c            endif
+c          endif
+c dbg
+
           ! Generate the string addresses of the current integral by 
           ! reference to the spin-orbital basis.
-            call idx42str2(nstr,idxstr,mode,
-     &           index,igam,idss,igtp,
-     &           orb_info,str_info,hop,hpvxseq,ierr)
+          call idx42str2(nstr,idxstr,mode,
+     &         index,igam,idss,igtp,
+     &         orb_info,str_info,hop,hpvxseq,ierr)
+
+c dbg
+c          if(mode.eq.1)then
+c            if(index(1).eq.8.and.index(2).eq.2.and.index(3).eq.2
+c     &           .and.index(4).eq.2)then
+c              write(luout,*)'nstr = ',nstr,ierr
+c            endif
+c          endif
+c dbg
 
           ! Store integral in r12scr.
           do istr=1,nstr
@@ -172,10 +215,11 @@
      &             r12scr(-idxstr(istr))=
      &             r12scr(-idxstr(istr))-int
             endif  
+
           enddo  
         enddo
-  
-      enddo  
+
+      enddo int_loop 
 
  998  call quit(1,'import_r12_dalton','Error reading integrals.')
  999  continue

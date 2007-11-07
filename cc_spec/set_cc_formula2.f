@@ -30,8 +30,10 @@ c      include 'ifc_operators.h'
 
 c      type(formula_list), pointer ::
 c     &     list_pnt
-      type(formula), pointer ::
-     &     cclg_pnt, form_pnt, form_eta
+c      type(formula_item), pointer ::
+c     &     form_pnt, cclg_pnt, form_eta
+      type(formula), pointer::
+     &     form_pnt,cclg_pnt, form_eta
 
       integer ::
      &     idxham, idxtop, idxtba, idxomg, idxecc, idxhhat, idxrba,
@@ -129,11 +131,12 @@ c      call test_formgen3(op_info,orb_info)
 
       if (explicit) then
 
-        call add_formula(form_info,label_r12_vint)
-        idx = idx_formlist(label_r12_vint,form_info)
-        form_pnt => form_info%form_arr(idx)%form
-        call set_r12_intermediates(form_pnt,op_info,orb_info)
-
+c        call add_formula(form_info,label_r12_vint)
+c        idx = idx_formlist(label_r12_vint,form_info)
+c        form_pnt => form_info%form_arr(idx)%form
+c        call set_r12_intermediates(form_pnt,op_info,orb_info)
+        call set_r12_intermediates(form_info,op_info,orb_info)
+        
       end if
 c
       ! set up CC-energy 

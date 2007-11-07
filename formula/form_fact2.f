@@ -18,7 +18,7 @@
       integer, parameter ::
      &     maxcount = 1000,  ! at most 1000 iterations
      &     ndisconn = 3,     ! at most 3 extra levels for disconnected
-     &     ntest = 1000                                   ! vertices
+     &     ntest = 000                                   ! vertices
 
       type(contraction), intent(inout) ::
      &     contr
@@ -369,11 +369,12 @@ c dbg
 c        print *,'calling check disc for'
 c        call prt_contr3(luout,contr_red,occ_vtx_red(1,1,njoined+1))
 c dbg
-        call check_disconnected(contr_red)
       
         ! any contraction left?
         if (contr_red%narc.gt.0) then
           
+          call check_disconnected(contr_red)
+        
           call form_fact_rec(nlevel+1,ifact,
      &         cost,iscale,contr_red,occ_vtx_red,
      &                              irestr_vtx_red,info_vtx_red,

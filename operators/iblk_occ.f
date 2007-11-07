@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       integer function iblk_occ(iocc,dag,oper)
 *----------------------------------------------------------------------*
-*     return block of operator oper that correspondents to the
+*     return block of operator oper that corresponds to the
 *     hpv-occupation iocc
 *----------------------------------------------------------------------*
       implicit none

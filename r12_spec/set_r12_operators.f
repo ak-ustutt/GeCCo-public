@@ -193,28 +193,41 @@ c      call get_argument_value('method.R12','triples',ival=trir12)
       op_pnt%dagger = .true.
 
       ! New entries: the commutator integrals.
-      ! <ab|[T1,r12]|cd>
-      call add_operator(op_t1r12,op_info)
-      idx=idx_oplist2(op_t1r12,op_info)
-      op_pnt => op_info%op_arr(idx)%op
-      call clone_operator(op_pnt,rint_pnt,orb_info)
+c      ! <ab|[T1,r12]|cd>
+c      call add_operator(op_t1r12,op_info)
+c      idx=idx_oplist2(op_t1r12,op_info)
+c      op_pnt => op_info%op_arr(idx)%op
+c      call clone_operator(op_pnt,rint_pnt,orb_info)
 
       ! <ab|[T1,r12]|cd>+
-      call add_operator(op_t1r_bar,op_info)
-      idx=idx_oplist2(op_t1r_bar,op_info)
-      op_pnt => op_info%op_arr(idx)%op
-      call clone_operator(op_pnt,rint_pnt,orb_info)
-      op_pnt%dagger = .true.
+c      call add_operator(op_t1r_bar,op_info)
+c      idx=idx_oplist2(op_t1r_bar,op_info)
+c      op_pnt => op_info%op_arr(idx)%op
+c      call clone_operator(op_pnt,rint_pnt,orb_info)
+c      op_pnt%dagger = .true.
 
       ! <ab|[T2,r12]|cd>
-      call add_operator(op_t2r12,op_info)
-      idx=idx_oplist2(op_t2r12,op_info)
+c      call add_operator(op_t2r12,op_info)
+c      idx=idx_oplist2(op_t2r12,op_info)
+c      op_pnt => op_info%op_arr(idx)%op
+c      call clone_operator(op_pnt,rint_pnt,orb_info)
+
+      ! <ab|[T2,r12]|cd>+
+c      call add_operator(op_t2r_bar,op_info)
+c      idx=idx_oplist2(op_t2r_bar,op_info)
+c      op_pnt => op_info%op_arr(idx)%op
+c      call clone_operator(op_pnt,rint_pnt,orb_info)
+c      op_pnt%dagger = .true.
+
+      ! <ab|[T1+T2,r12]|cd>
+      call add_operator(op_ttr,op_info)
+      idx=idx_oplist2(op_ttr,op_info)
       op_pnt => op_info%op_arr(idx)%op
       call clone_operator(op_pnt,rint_pnt,orb_info)
 
-      ! <ab|[T2,r12]|cd>+
-      call add_operator(op_t2r_bar,op_info)
-      idx=idx_oplist2(op_t2r_bar,op_info)
+      ! <ab|[T1+T2,r12]|cd>+
+      call add_operator(op_ttr_bar,op_info)
+      idx=idx_oplist2(op_ttr_bar,op_info)
       op_pnt => op_info%op_arr(idx)%op
       call clone_operator(op_pnt,rint_pnt,orb_info)
       op_pnt%dagger = .true.
@@ -264,6 +277,13 @@ c      ops_array(3)%op=>c12_pnt
       call set_gen_intermediate(op_pnt,op_b_inter,
      &     ops_array,2,orb_info)
       deallocate(ops_array)
+
+
+      ! Symmetrised B (for MP2 approx 1A).
+      call add_operator(op_b_symm,op_info)
+      idx=idx_oplist2(op_b_symm,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,b_pnt,orb_info)
 
 c      ! Adjoint of B.
 c      call add_operator(op_bbar_inter,op_info)

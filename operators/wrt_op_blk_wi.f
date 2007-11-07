@@ -18,7 +18,7 @@
 
       ! for debugging it is sometimes convenient to have at most:
       integer, parameter ::
-     &     maxlines = 5
+     &     maxlines = -1
       ! set to -1 if you want the full output
 
       integer, intent(in) ::

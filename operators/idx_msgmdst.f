@@ -25,7 +25,10 @@
      &     iocc(ngastp,2), msdd(ngastp,2), gmdd(ngastp,2)
 
       integer, pointer ::
-     &     didarr(:,:,:)      
+     &     didarr(:,:,:)   
+
+      logical ::
+     &     dag_temp
 
       integer, external ::
      &     msgmdid, ielsum
@@ -38,9 +41,12 @@ c bodge
         iocc(1:ngastp,1:2)=iocc(1:ngastp,1:2)+
      &       op%ihpvca_occ(1:ngastp,1:2,2)
       endif
+      dag_temp = dagger
+      if(op%dagger) dag_temp = .not.dag_temp
 c bodge
 
-      if (.not.dagger) then
+c      if (.not.dagger) then
+      if (.not.dag_temp) then
         ! calculate integer-valued ID of (ms,Gamma) distribution
         mgdid = msgmdid(iocc,msd,gmd,nsym)
       else

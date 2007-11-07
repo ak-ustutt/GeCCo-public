@@ -24,7 +24,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       character, parameter ::
      &     name_scr0*6 = 'cntscr'
@@ -228,20 +228,11 @@ c        case(command_set_target_update)
           iblkres = cur_form%contr%iblk_res
           idxop(1) = cur_form%contr%vertex(1)%idx_op
           iblkop(1) = cur_form%contr%vertex(1)%iblk_op
-c dbg
-          print *,'mark 1'
-c dbg
 
           ! special: unit operator
           if (ops(idxop(1))%op%name.eq.op_unity) then
-c dbg
-          print *,'mark 2a'
-c dbg
             call add_unity(fac,ffres,opres,iblkres,orb_info)
           else
-c dbg
-          print *,'mark 2b'
-c dbg
             if (ffops(idxop(1))%fhand%unit.le.0)
      &         call file_open(ffops(idxop(1))%fhand)
 
@@ -275,12 +266,12 @@ c dbg
         ! allocate arrays for intermediates
         allocate(
      &       occ_vtx(ngastp,2,nvtx+njoined_res),
-     &       irestr_vtx(2,orb_info%ngas,2,2,nvtx+1),
-     &       info_vtx(2,nvtx+1),
-     &       merge_op1(nvtx*nvtx+1), ! a bit too large, I guess ...
-     &       merge_op2(nvtx*nvtx+1),
-     &       merge_op1op2(nvtx*nvtx+1),
-     &       merge_op2op1(nvtx*nvtx+1))
+     &       irestr_vtx(2,orb_info%ngas,2,2,nvtx+njoined_res),
+     &       info_vtx(2,nvtx+njoined_res),
+     &       merge_op1(nvtx*nvtx*10), ! a bit too large, I guess ...
+     &       merge_op2(nvtx*nvtx*10),
+     &       merge_op1op2(nvtx*nvtx*10),
+     &       merge_op2op1(nvtx*nvtx*10))
         if (nfact.gt.1)
      &       allocate(opscr(nfact-1),optmp,ffscr(nfact-1))
 

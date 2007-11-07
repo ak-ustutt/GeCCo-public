@@ -47,6 +47,9 @@
           case (iaction_solve_gevp)
             write(luout,*) 'Solve general eigenvalue problem'
             write(luout,*) ' # sets: ',current%act%nop_opt
+          case (iaction_symmetrise)
+            write(luout,*) 'Symmetrise an operator'
+            write(luout,*) ' # sets: ',current%act%nop_out
           case default
             write(luout,*) 'action = ',current%act%action_type
             call quit(0,'print_action_list','unknown action')

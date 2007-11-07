@@ -22,6 +22,8 @@
      &     op_t1r_bar*8    = 'T1R-CBAR',
      &     op_t2r12*7      = 'T2R-COM',
      &     op_t2r_bar*8    = 'T2R-CBAR',
+     &     op_ttr*7        = 'TTR_COM',
+     &     op_ttr_bar*8    = 'TTR_CBAR',
      &     op_cclg*5       = 'L(CC)',
      &     op_ccen*5       = 'E(CC)',
      &     op_tbar_a*6     = 'TBAR.A',
@@ -30,6 +32,7 @@
      &     op_vbar_inter*4 = 'VBAR',
      &     op_b_inter*1    = 'B',
      &     op_bbar_inter*4 = 'BBAR',
+     &     op_b_symm*6     = 'B_SYMM',
      &     op_del_inter*5  = 'DELTA',
      &     op_c_temp*6     = 'C-TEMP',
      &     op_f_temp*6     = 'F-TEMP',
@@ -38,4 +41,6 @@
      &     op_v_temp2*7    = 'V2-TEMP',
      &     op_v_temp3*7    = 'V3-TEMP',
      &     op_g_temp*6     = 'G-TEMP',
-     &     op_r_temp*6     = 'R-TEMP'
+     &     op_r_temp*6     = 'R-TEMP',
+     &     op_rbar_temp*8  = 'RBA_TEMP',
+     &     op_ttr_temp*8   = 'TTR_TEMP'

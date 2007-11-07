@@ -13,7 +13,7 @@
       include 'def_strinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(strinf), intent(in) ::
      &     str_info

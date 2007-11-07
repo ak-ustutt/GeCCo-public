@@ -141,14 +141,41 @@
 
       ierr=.false.
       if (.not.take_ca.and..not.take_ac) then
-          ierr=.true.
-          return
-      end if
-
-      if(hop%formal_blk(iblk_ca))then
         ierr=.true.
         return
-      endif  
+      end if
+
+c      if(mode.ne.2)then
+c        if(.not.hop%dagger)then
+c          if(hop%formal_blk(iblk_ca))then
+c            ierr=.true.
+c            return
+c          endif  
+c        else
+c          if(hop%formal_blk(iblk_ac))then
+c            ierr=.true.
+c            return
+c          endif  
+c        endif
+c      else
+c        if(hop%formal_blk(iblk_ca).and.hop%formal_blk(iblk_ac))then
+c          ierr=.true.
+c          return
+c        endif  
+c      endif        
+
+      if(take_ca)then
+        if(hop%formal_blk(iblk_ca))then
+          ierr = .true.
+          return
+        endif
+      endif
+      if(take_ac)then
+        if(hop%formal_blk(iblk_ac))then
+          ierr = .true.
+          return
+        endif
+      endif
 
       if (ntest.ge.50) then
         write(luout,*) 'input <pr|qs>: ',idxprqs(1:4)
@@ -168,6 +195,15 @@
         write(luout,*) ' ioff:'
         call wrt_occ(luout,ioff)
       end if
+
+c dbg
+      if(mode.eq.1.and.idxprqs(1).eq.8.and.idxprqs(2).eq.1.and.
+     &     idxprqs(3).eq.2.and.idxprqs(4).eq.2)then
+        write(luout,*)'testing 3'
+        write(luout,*)'take_ca, iblk_ca',take_ca, iblk_ca
+        write(luout,*)'take_ac, iblk_ac',take_ac, iblk_ac
+      endif
+c dbg      
 
       nstr = 0
       inc = 1
@@ -253,8 +289,17 @@
           idstr_ac = idx_msgmdst(iblk_ac,mst,igamt,
      &         msd,igmd,.true.,hop,orb_info%nsym)
           if (idstr_ac.lt.0)
-     &         call quit(1,'idx42str','error for idstr_ac')
+     &         call quit(1,'idx42str','error for idstr_ac') 
         end if
+
+c dbg
+c        if(mode.eq.1.and.idxprqs(1).eq.8.and.idxprqs(2).eq.1.and.
+c     &       idxprqs(3).eq.2.and.idxprqs(4).eq.2)then
+c          write(luout,*)'testing 4'
+c          write(luout,*)'take_ca, idstr_ca',take_ca, idstr_ca
+c          write(luout,*)'take_ac, idstr_ac',take_ac, idstr_ac
+c        endif
+c dbg      
 
         if (ntest.ge.100) then
           call wrt_occ(luout,iocc)
@@ -301,12 +346,29 @@
             ipos = ioff(ihpv,ica)
 
             ! point to graph needed for current string
-            if (take_ca) then
-              igraph = hop%idx_graph(ihpv,ica,iblk_ca)
+            if(.not.hop%dagger)then
+              if (take_ca) then
+                igraph = hop%idx_graph(ihpv,ica,iblk_ca)
+              else
+                igraph = hop%idx_graph(ihpv,3-ica,iblk_ac)
+              end if
             else
-              igraph = hop%idx_graph(ihpv,3-ica,iblk_ac)
-            end if
+              if (take_ca) then
+                igraph = hop%idx_graph(ihpv,3-ica,iblk_ca)
+              else
+                igraph = hop%idx_graph(ihpv,ica,iblk_ac)
+              end if
+            endif
             curgraph => str_info%g(igraph)
+
+c dbg
+c            if(mode.eq.1.and.idxprqs(1).eq.8.and.idxprqs(2).eq.1.and.
+c     &           idxprqs(3).eq.2.and.idxprqs(4).eq.2)then
+c              write(luout,*)'testing 6'
+c              write(luout,*)'take_ca, igraph',take_ca, igraph
+c              write(luout,*)'take_ac, igraph',take_ac, igraph
+c            endif
+c dbg      
 
             ! check for restrictions
             if (.not.allow_sbsp_dis(idspc(ipos),nel,
@@ -372,6 +434,11 @@ c dbg
           end do check1
           nstr = nstr-ndup
           if (idxstr(nstr-1).eq.idxstr(nstr)) nstr = nstr-1          
+
+          ! Special treatment for [T1+T2,r12] integrals.
+          if(mode.eq.2.and.take_ac)then
+            idxstr(nstr) = -idxstr(nstr)
+          endif  
           
         else
           idxstr(nstr) = idxstr(nstr)+1
@@ -391,6 +458,11 @@ c dbg
           end do check2
           nstr = nstr-ndup
 
+          ! Special treatment for [T1+T2,r12] integrals.
+          if(mode.eq.2.and.take_ac)then
+            idxstr(nstr) = -idxstr(nstr)
+          endif  
+          
         end if
 
       end do cnt_loop

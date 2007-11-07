@@ -31,9 +31,9 @@
       type(contraction), intent(in) ::
      &     contr
       integer, intent(in) ::
-     &     occ_vtx(ngastp,2,contr%nvtx),
-     &     irestr_vtx(2,ngas,2,2,contr%nvtx),
-     &     info_vtx(2,contr%nvtx)
+     &     occ_vtx(ngastp,2,contr%nvtx+njoined_res),
+     &     irestr_vtx(2,ngas,2,2,contr%nvtx+njoined_res),
+     &     info_vtx(2,contr%nvtx+njoined_res)
       type(operator_info), intent(in) ::
      &     op_info
       type(strinf), intent(in) ::
@@ -66,10 +66,10 @@
      &     igamt_op(2), igamt_op1op2,
      &     njoined_op(2), njoined_op1op2, njoined_cnt,
      &     idar1(2), idar2(2),
-     &     merge_op1(contr%nvtx*contr%nvtx), ! a bit too large, I guess ...
-     &     merge_op2(contr%nvtx*contr%nvtx),
-     &     merge_op1op2(contr%nvtx*contr%nvtx),
-     &     merge_op2op1(contr%nvtx*contr%nvtx),
+     &     merge_op1(contr%nvtx*contr%nvtx*10), ! a bit too large, I guess ...
+     &     merge_op2(contr%nvtx*contr%nvtx*10),
+     &     merge_op1op2(contr%nvtx*contr%nvtx*10),
+     &     merge_op2op1(contr%nvtx*contr%nvtx*10),
      &     nca_blk(2,7)
       integer, pointer ::
      &     cinfo_op1c(:,:),cinfo_op1a(:,:),
