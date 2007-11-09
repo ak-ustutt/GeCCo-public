@@ -243,6 +243,13 @@ c dbg
         call assign_file_to_op(idxop_out(iop),.false.,ffopt(iop)%fhand,
      &                         1,1,nvectors,
      &                         0,op_info)
+c dbg
+c              call write_title(luout,wst_dbg_subr,'final:')
+c              call wrt_op_file(luout,4,ffopt(iop)%fhand,
+c     &             op_info%op_arr(idxop_out(iop))%op,
+c     &          1,op_info%op_arr(idxop_out(iop))%op%n_occ_cls,
+c     &             str_info,orb_info)
+c dbg
       end do
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:

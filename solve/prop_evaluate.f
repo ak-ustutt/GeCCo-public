@@ -50,7 +50,7 @@
         call quit(1,'prop_evaluate','only rank==1 supported')
       end if
 
-      call file_close_delete(ffcmo)
+      call file_delete(ffcmo)
 
       ! calculate trace with one-electron integrals
       ! provided by environment

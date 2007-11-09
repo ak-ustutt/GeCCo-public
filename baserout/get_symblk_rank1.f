@@ -26,7 +26,7 @@
       integer ::
      &     irsym, icsym, isym, nrow, ncol,
      &     irow, icol, ibrow, ibcol, ioff,
-     &     icabs, irabs, icrmin, icrmax
+     &     icabs, irabs, icrmin, icrmax, form
       real(8) ::
      &     fac
 
@@ -78,7 +78,9 @@ c dbg
 
       if (ntest.ge.100) then
         write(luout,*) 'output matrix:'
-        call wr_blkmat(xblk,ndim,ndim,nsym,sym)
+        form = sym
+        if (sym.eq.1) form=0
+        call wr_blkmat(xblk,ndim,ndim,nsym,form)
       end if
 
       return
