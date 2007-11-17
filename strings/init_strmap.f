@@ -28,6 +28,7 @@
       strmap_info%idx_strmap(1:ngraph*ngraph) = -1
       strmap_info%idx_last = 0
       allocate(strmap_info%offsets(ngraph*ngraph))
+      allocate(strmap_info%maxlen_blk(ngraph*ngraph))
       do idx = 1, ngraph*ngraph
         nullify(strmap_info%offsets(idx)%msms)
         nullify(strmap_info%offsets(idx)%msmsgmgm)

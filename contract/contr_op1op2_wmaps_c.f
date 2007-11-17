@@ -4,18 +4,7 @@
      &     op1,op2,op1op2,op1op2tmp,
      &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
-     &       nca_blk,
-     &       cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
-     &       cinfo_op1op2c, cinfo_op1op2a,
-     &       cinfo_op1op2tmpc, cinfo_op1op2tmpa,
-     &       cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
-     &       cinfo_cntc, cinfo_cnta,
-     &       map_info_1c, map_info_1a,
-     &       map_info_2c, map_info_2a,
-     &       map_info_12c, map_info_12a,
-     &     mstop1,mstop2,mstop1op2,
-     &     igamtop1,igamtop2,igamtop1op2,
-     &     reo_info,
+     &     cnt_info,reo_info,
      &     str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     slightly improved version:
@@ -45,6 +34,7 @@
       include 'def_filinf.h'
       include 'def_strmapinf.h'
       include 'def_reorder_info.h'
+      include 'def_contraction_info.h'
       include 'ifc_memman.h'
       include 'ifc_operators.h'
       include 'hpvxseq.h'
@@ -58,24 +48,12 @@
      &     xfac, casign
       real(8), intent(inout), target ::
      &     xret(1)
+      type(contraction_info), target ::
+     &     cnt_info
       integer, intent(in) ::
      &     type_xret,
      &     iblkop1, iblkop2, iblkop1op2, iblkop1op2tmp,
-     &     idoffop1,idoffop2,idoffop1op2,
-     &     nca_blk(2,6),
-     &     cinfo_op1c(nca_blk(1,1),3), cinfo_op1a(nca_blk(2,1),3),
-     &     cinfo_op2c(nca_blk(1,2),3), cinfo_op2a(nca_blk(2,2),3),
-     &     cinfo_op1op2c(nca_blk(1,3),3), cinfo_op1op2a(nca_blk(2,3),3),
-     &     cinfo_op1op2tmpc(nca_blk(1,3),3),
-     &                                 cinfo_op1op2tmpa(nca_blk(2,3),3),
-     &     cinfo_ex1c(nca_blk(1,4),3), cinfo_ex1a(nca_blk(2,4),3),
-     &     cinfo_ex2c(nca_blk(1,5),3), cinfo_ex2a(nca_blk(2,5),3),
-     &     cinfo_cntc(nca_blk(1,6),3), cinfo_cnta(nca_blk(2,6),3),
-     &     map_info_1c(*), map_info_1a(*),
-     &     map_info_2c(*), map_info_2a(*),
-     &     map_info_12c(*), map_info_12a(*),
-     &     mstop1,mstop2,mstop1op2,
-     &     igamtop1,igamtop2,igamtop1op2
+     &     idoffop1,idoffop2,idoffop1op2
       type(filinf), intent(inout) ::
      &     ffop1,ffop2,ffop1op2
       type(operator), intent(in) ::
@@ -94,12 +72,14 @@
      &     first1, first2, first3, first4, first5,
      &     reo_op1op2, nonzero
       integer ::
+     &     mstop1,mstop2,mstop1op2,
+     &     igamtop1,igamtop2,igamtop1op2,
      &     nc_op1, na_op1, nc_op2, na_op2,
      &     nc_ex1, na_ex1, nc_ex2, na_ex2, 
      &     nc_op1op2, na_op1op2,
      &     nc_op1op2tmp, na_op1op2tmp,
      &     nc_cnt, na_cnt,
-     &     nsym, ifree,
+     &     nsym, ifree, lenscr, lenblock,
      &     idxst_op1, idxst_op2, idxst_op1op2,
      &     idxop1, idxop2, idxop1op2,
      &     lenop1, lenop2, lenop1op2,
@@ -109,43 +89,65 @@
      &     igamex1_a, igamex1_c, igamex2_a, igamex2_c,
      &     idxms, idxdis, lenmap, lblk_op1op2tmp,
      &     idxdis_op1op2
+      integer ::
+     &     ncblk_op1, nablk_op1, ncblk_ex1, nablk_ex1, 
+     &     ncblk_op2, nablk_op2, ncblk_ex2, nablk_ex2, 
+     &     ncblk_op1op2, nablk_op1op2, ncblk_op1op2tmp, nablk_op1op2tmp, 
+     &     ncblk_cnt, nablk_cnt,
+     &     ncblk_op1op2_0, nablk_op1op2_0,
+     &     ncblk_reo12,    nablk_reo12
+      integer, pointer ::
+     &     cinfo_op1c(:,:),cinfo_op1a(:,:),
+     &     cinfo_op2c(:,:),cinfo_op2a(:,:),
+     &     cinfo_op1op2c(:,:),
+     &     cinfo_op1op2a(:,:),
+     &     cinfo_op1op2tmpc(:,:),
+     &     cinfo_op1op2tmpa(:,:),
+     &     cinfo_ex1c(:,:),cinfo_ex1a(:,:),
+     &     cinfo_ex2c(:,:),cinfo_ex2a(:,:),
+     &     cinfo_cntc(:,:),cinfo_cnta(:,:),
+     &     map_info_1c(:),
+     &     map_info_1a(:),
+     &     map_info_2c(:),
+     &     map_info_2a(:),
+     &     map_info_12c(:),
+     &     map_info_12a(:)
+
       real(8) ::
      &     xnrm
       real(8) ::
      &     cpu, sys, cpu0, sys0, cpu00, sys00
 
       real(8), pointer ::
-     &     xop1(:), xop2(:), xop1op2(:)
+     &     xop1(:), xop2(:), xop1op2(:), xscr(:)
       real(8), pointer ::
      &     xbf1(:), xbf2(:), xbf12(:), xbf12tmp(:), xop1op2blk(:)
 
       integer ::
      &     msbnd(2,3), igambnd(2,3),
-     &     ms12i_a(3), ms12i_c(3), igam12i_a(3), igam12i_c(3),
-     &     gmop1dis_c(nca_blk(1,1)), gmop1dis_a(nca_blk(2,1)),
-     &     gmop2dis_c(nca_blk(1,2)), gmop2dis_a(nca_blk(2,2)),
-     &     gmex1dis_c(nca_blk(1,4)), gmex1dis_a(nca_blk(2,4)),
-     &     gmex2dis_c(nca_blk(1,5)), gmex2dis_a(nca_blk(2,5)),
-     &     gmc_dis_c(nca_blk(1,6)), gmc_dis_a(nca_blk(2,6)),
-     &     gmi_dis_c(nca_blk(1,3)), gmi_dis_a(nca_blk(2,3)),
-     &     msop1dis_c(nca_blk(1,1)), msop1dis_a(nca_blk(2,1)),
-     &     msop2dis_c(nca_blk(1,2)), msop2dis_a(nca_blk(2,2)),
-     &     msex1dis_c(nca_blk(1,4)), msex1dis_a(nca_blk(2,4)),
-     &     msex2dis_c(nca_blk(1,5)), msex2dis_a(nca_blk(2,5)),
-     &     msc_dis_c(nca_blk(1,6)), msc_dis_a(nca_blk(2,6)),
-     &     msi_dis_c(nca_blk(1,3)), msi_dis_a(nca_blk(2,3)),
-     &     idxmsop1dis_c(nca_blk(1,1)), idxmsop1dis_a(nca_blk(2,1)),
-     &     idxmsop2dis_c(nca_blk(1,2)), idxmsop2dis_a(nca_blk(2,2)),
-     &     idxmsex1dis_c(nca_blk(1,4)), idxmsex1dis_a(nca_blk(2,4)),
-     &     idxmsex2dis_c(nca_blk(1,5)), idxmsex2dis_a(nca_blk(2,5)),
-     &     idxmsc_dis_c(nca_blk(1,6)), idxmsc_dis_a(nca_blk(2,6)),
-     &     idxmsi_dis_c(nca_blk(1,3)), idxmsi_dis_a(nca_blk(2,3)),
-     &     lstrex1(nca_blk(1,4)+nca_blk(2,4)),
-     &     lstrex2(nca_blk(1,5)+nca_blk(2,5)),
-     &     lstrcnt(nca_blk(1,6)+nca_blk(2,6)),
-     &     lstrop1(nca_blk(1,1)+nca_blk(2,1)),
-     &     lstrop2(nca_blk(1,2)+nca_blk(2,2)),
-     &     lstrop1op2tmp(nca_blk(1,7)+nca_blk(2,7))
+     &     ms12i_a(3), ms12i_c(3), igam12i_a(3), igam12i_c(3)
+
+      integer, pointer ::
+     &     gmop1dis_c(:), gmop1dis_a(:),
+     &     gmop2dis_c(:), gmop2dis_a(:),
+     &     gmex1dis_c(:), gmex1dis_a(:),
+     &     gmex2dis_c(:), gmex2dis_a(:),
+     &     gmc_dis_c (:), gmc_dis_a (:),
+     &     gmi_dis_c (:), gmi_dis_a (:),
+     &     msop1dis_c(:), msop1dis_a(:),
+     &     msop2dis_c(:), msop2dis_a(:),
+     &     msex1dis_c(:), msex1dis_a(:),
+     &     msex2dis_c(:), msex2dis_a(:),
+     &     msc_dis_c (:), msc_dis_a (:),
+     &     msi_dis_c (:), msi_dis_a (:),
+     &     idxmsop1dis_c(:), idxmsop1dis_a(:),
+     &     idxmsop2dis_c(:), idxmsop2dis_a(:),
+     &     idxmsex1dis_c(:), idxmsex1dis_a(:),
+     &     idxmsex2dis_c(:), idxmsex2dis_a(:),
+     &     idxmsc_dis_c (:), idxmsc_dis_a (:),
+     &     idxmsi_dis_c (:), idxmsi_dis_a (:),
+     &     lstrex1(:),lstrex2(:),lstrcnt(:),
+     &     lstrop1(:),lstrop2(:),lstrop1op2tmp(:)
 
       integer, pointer ::
      &     map_ex1ex2a(:), map_ex1ex2c(:),
@@ -163,9 +165,7 @@
      &     cinfo_reo12c(:,:), cinfo_reo12a(:,:),
      &     cinfo_op1op2_0c(:,:), cinfo_op1op2_0a(:,:),
      &     map_info_reo1c(:), map_info_reo1a(:),
-     &     map_info_reo2c(:), map_info_reo2a(:),
-     &     ncblk_op1op2_0, nablk_op1op2_0,
-     &     ncblk_reo12,    nablk_reo12
+     &     map_info_reo2c(:), map_info_reo2a(:)
 
       type(graph), pointer ::
      &     graphs(:)
@@ -216,6 +216,73 @@
      &       ' block ',iblkop1op2tmp
       end if
 
+      ! set pointers to cnt_info entries
+      ncblk_op1 = cnt_info%ncblk_op1 ! 1,1
+      nablk_op1 = cnt_info%nablk_op1 ! 2,1
+      ncblk_ex1 = cnt_info%ncblk_ex1 ! 1,4
+      nablk_ex1 = cnt_info%nablk_ex1 ! 2,4
+      ncblk_op2 = cnt_info%ncblk_op2 ! 1,2 
+      nablk_op2 = cnt_info%nablk_op2 ! 2,2
+      ncblk_ex2 = cnt_info%ncblk_ex2 ! 1,5
+      nablk_ex2 = cnt_info%nablk_ex2 ! 2,5
+      ncblk_cnt = cnt_info%ncblk_cnt ! 1,6
+      nablk_cnt = cnt_info%nablk_cnt ! 2,6
+      ncblk_op1op2 = cnt_info%ncblk_op1op2 ! 1,3
+      nablk_op1op2 = cnt_info%nablk_op1op2 ! 2,3
+      ncblk_op1op2tmp = cnt_info%ncblk_op1op2tmp ! 1,7
+      nablk_op1op2tmp = cnt_info%nablk_op1op2tmp ! 2,7
+
+      cinfo_op1c => cnt_info%cinfo_op1c
+      cinfo_op1a => cnt_info%cinfo_op1a
+      cinfo_ex1c => cnt_info%cinfo_ex1c
+      cinfo_ex1a => cnt_info%cinfo_ex1a
+      cinfo_op2c => cnt_info%cinfo_op2c
+      cinfo_op2a => cnt_info%cinfo_op2a
+      cinfo_ex2c => cnt_info%cinfo_ex2c
+      cinfo_ex2a => cnt_info%cinfo_ex2a
+      cinfo_op1op2c => cnt_info%cinfo_op1op2c
+      cinfo_op1op2a => cnt_info%cinfo_op1op2a
+      cinfo_op1op2tmpc => cnt_info%cinfo_op1op2tmpc
+      cinfo_op1op2tmpa => cnt_info%cinfo_op1op2tmpa
+      cinfo_cntc => cnt_info%cinfo_cntc
+      cinfo_cnta => cnt_info%cinfo_cnta
+
+      map_info_1c => cnt_info%map_info_1c
+      map_info_1a => cnt_info%map_info_1a
+      map_info_2c => cnt_info%map_info_2c
+      map_info_2a => cnt_info%map_info_2a
+      map_info_12c => cnt_info%map_info_12c
+      map_info_12a => cnt_info%map_info_12a
+
+      allocate(
+     &       gmop1dis_c(ncblk_op1), gmop1dis_a(nablk_op1),
+     &       gmop2dis_c(ncblk_op2), gmop2dis_a(nablk_op2),
+     &       gmex1dis_c(ncblk_ex1), gmex1dis_a(nablk_ex1),
+     &       gmex2dis_c(ncblk_ex2), gmex2dis_a(nablk_ex2),
+     &       gmc_dis_c(ncblk_cnt), gmc_dis_a(nablk_cnt),
+     &       gmi_dis_c(ncblk_op1op2tmp), gmi_dis_a(nablk_op1op2tmp),
+     &       msop1dis_c(ncblk_op1), msop1dis_a(nablk_op1),
+     &       msop2dis_c(ncblk_op2), msop2dis_a(nablk_op2),
+     &       msex1dis_c(ncblk_ex1), msex1dis_a(nablk_ex1),
+     &       msex2dis_c(ncblk_ex2), msex2dis_a(nablk_ex2),
+     &       msc_dis_c(ncblk_cnt), msc_dis_a(nablk_cnt),
+     &       msi_dis_c(ncblk_op1op2tmp), msi_dis_a(nablk_op1op2tmp),
+     &       idxmsop1dis_c(ncblk_op1), idxmsop1dis_a(nablk_op1),
+     &       idxmsop2dis_c(ncblk_op2), idxmsop2dis_a(nablk_op2),
+     &       idxmsex1dis_c(ncblk_ex1), idxmsex1dis_a(nablk_ex1),
+     &       idxmsex2dis_c(ncblk_ex2), idxmsex2dis_a(nablk_ex2),
+     &       idxmsc_dis_c(ncblk_cnt), idxmsc_dis_a(nablk_cnt),
+     &       idxmsi_dis_c(ncblk_op1op2tmp),
+     &       idxmsi_dis_a(nablk_op1op2tmp),
+     &       lstrex1(ncblk_ex1+nablk_ex1),
+     &       lstrex2(ncblk_ex2+nablk_ex2),
+     &       lstrcnt(ncblk_cnt+nablk_cnt),
+     &       lstrop1(ncblk_op1+nablk_op1),
+     &       lstrop2(ncblk_op2+nablk_op2),
+     &       lstrop1op2tmp(ncblk_op1op2tmp+nablk_op1op2tmp)
+     &       )
+      
+
       idxst_op1 = op1%off_op_occ(iblkop1) + 1
       lenop1    = op1%len_op_occ(iblkop1)
       idxst_op2 = op2%off_op_occ(iblkop2) + 1
@@ -228,6 +295,13 @@
         idxst_op1op2 = 1
         lenop1op2 = 1
       end if
+
+      mstop1 = op1%mst
+      mstop2 = op2%mst
+      mstop1op2 = op1op2%mst
+      igamtop1 = op1%gamt
+      igamtop2 = op2%gamt
+      igamtop1op2 = op1op2%gamt
 
       if (lenop1.le.0.or.lenop2.le.0.or.lenop1op2.le.0) then
         write(luout,*) 'lenop1, lenop2, lenop1op2: ',
@@ -243,6 +317,11 @@
         xop1 => ffop1%buffer(idxst_op1:)
       else
         bufop1 = .false.
+        ! LOWER incore requirements:
+        ! check for length of operator
+        ! if length < 2 * blocks * da_reclen, try to alloc
+        !   full block
+        ! else get largest symmetry block
         ifree = mem_alloc_real(xbf1,lenop1,'xbf1')
         xop1 => xbf1
         call get_vec(ffop1,xop1,idoffop1+idxst_op1,
@@ -253,6 +332,8 @@
         xop2 => ffop2%buffer(idxst_op2:)
       else
         bufop2 = .false.
+        ! LOWER incore requirements:
+        ! see above
         ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
         xop2 => xbf2
         call get_vec(ffop2,xop2,idoffop2+idxst_op2,
@@ -269,6 +350,8 @@
           xop1op2 => ffop1op2%buffer(idxst_op1op2:)
         else
           bufop1op2 = .false.
+          ! LOWER incore requirements:
+          ! see above
           ifree = mem_alloc_real(xbf12,lenop1op2,'xbf12')
           xop1op2 => xbf12
           if (update) then
@@ -288,6 +371,7 @@
       end if
 
       if (ntest.ge.1000) then
+        ! this will work if all blocks incore, only:
         write(luout,*) 'operator 1 (',trim(op1%name),')'
         call wrt_op_buf(luout,5,xop1,op1,iblkop1,iblkop1,
      &                  str_info,orb_info)
@@ -307,6 +391,16 @@
         ifree = mem_alloc_real(xbf12tmp,lblk_op1op2tmp,'xbf12tmp')
       end if
 
+      if (irt_contr.gt.2) then
+        ! preliminary: a wild guess
+        lenblock = len_str_block 
+        lenscr = max(3*lenblock*lenblock,
+     &        (max_dis_blk(0,op1op2tmp,iblkop1op2tmp,orb_info)
+     &         + max_dis_blk(0,op1,iblkop1,orb_info)
+     &         + max_dis_blk(0,op2,iblkop2,orb_info))*lenblock)
+        ifree = mem_alloc_real(xscr,lenscr,'contr_scr')
+      end if
+
       graphs => str_info%g
 
       ndis_op1 => op1%off_op_gmox(iblkop1)%ndis
@@ -322,58 +416,64 @@
       len_d_gam_ms_op1op2tmp =>
      &                   op1op2tmp%len_op_gmox(iblkop1op2)%d_gam_ms
 
-      call sum_occ(nc_op1,cinfo_op1c,nca_blk(1,1))
-      call sum_occ(na_op1,cinfo_op1a,nca_blk(2,1))
-      call sum_occ(nc_op2,cinfo_op2c,nca_blk(1,2))
-      call sum_occ(na_op2,cinfo_op2a,nca_blk(2,2))
-      call sum_occ(nc_op1op2,cinfo_op1op2c,nca_blk(1,3))
-      call sum_occ(na_op1op2,cinfo_op1op2a,nca_blk(2,3))
-      call sum_occ(nc_op1op2tmp,cinfo_op1op2tmpc,nca_blk(1,7))
-      call sum_occ(na_op1op2tmp,cinfo_op1op2tmpa,nca_blk(2,7))
+      call sum_occ(nc_op1,cinfo_op1c,ncblk_op1)
+      call sum_occ(na_op1,cinfo_op1a,nablk_op1)
+      call sum_occ(nc_op2,cinfo_op2c,ncblk_op2)
+      call sum_occ(na_op2,cinfo_op2a,nablk_op2)
+      call sum_occ(nc_op1op2,cinfo_op1op2c,ncblk_op1op2)
+      call sum_occ(na_op1op2,cinfo_op1op2a,nablk_op1op2)
+      call sum_occ(nc_op1op2tmp,cinfo_op1op2tmpc,ncblk_op1op2tmp)
+      call sum_occ(na_op1op2tmp,cinfo_op1op2tmpa,nablk_op1op2tmp)
 c dbg
       if (na_op1op2.ne.na_op1op2tmp)
      &     call quit(1,'contr_op1op2_wmaps_c','unexpected 1a')
       if (nc_op1op2.ne.nc_op1op2tmp)
      &     call quit(1,'contr_op1op2_wmaps_c','unexpected 1b')
 c dbg
-      call sum_occ(nc_ex1,cinfo_ex1c,nca_blk(1,4))
-      call sum_occ(na_ex1,cinfo_ex1a,nca_blk(2,4))
-      call sum_occ(nc_ex2,cinfo_ex2c,nca_blk(1,5))
-      call sum_occ(na_ex2,cinfo_ex2a,nca_blk(2,5))
-      call sum_occ(nc_cnt,cinfo_cntc,nca_blk(1,6))
-      call sum_occ(na_cnt,cinfo_cnta,nca_blk(2,6))
+      call sum_occ(nc_ex1,cinfo_ex1c,ncblk_ex1)
+      call sum_occ(na_ex1,cinfo_ex1a,nablk_ex1)
+      call sum_occ(nc_ex2,cinfo_ex2c,ncblk_ex2)
+      call sum_occ(na_ex2,cinfo_ex2a,nablk_ex2)
+      call sum_occ(nc_cnt,cinfo_cntc,ncblk_cnt)
+      call sum_occ(na_cnt,cinfo_cnta,nablk_cnt)
 
       ! set up maps (if necessary)
-      call strmap_man_c(
-     &     cinfo_ex1c(1,2),nca_blk(1,4),
-     &     cinfo_ex2c(1,2),nca_blk(1,5),
-     &     cinfo_op1op2tmpc(1,2),nca_blk(1,7),map_info_12c,
+      call strmap_man_c(lenmap,
+     &     cinfo_ex1c(1,2),ncblk_ex1,
+     &     cinfo_ex2c(1,2),ncblk_ex2,
+     &     cinfo_op1op2tmpc(1,2),ncblk_op1op2tmp,map_info_12c,
      &     str_info,strmap_info,orb_info)
-      call strmap_man_c(
-     &     cinfo_ex2a(1,2),nca_blk(2,5),
-     &     cinfo_ex1a(1,2),nca_blk(2,4),
-     &     cinfo_op1op2tmpa(1,2),nca_blk(2,7),map_info_12a,
+      ifree = mem_alloc_int(map_ex1ex2c,lenmap,'exmap_c')
+      call strmap_man_c(lenmap,
+     &     cinfo_ex2a(1,2),nablk_ex2,
+     &     cinfo_ex1a(1,2),nablk_ex1,
+     &     cinfo_op1op2tmpa(1,2),nablk_op1op2tmp,map_info_12a,
      &     str_info,strmap_info,orb_info)
-      call strmap_man_c(
-     &     cinfo_cntc(1,2),nca_blk(1,6),
-     &     cinfo_ex1c(1,2),nca_blk(1,4),
-     &     cinfo_op1c(1,2),nca_blk(1,1),map_info_1c,
+      ifree = mem_alloc_int(map_ex1ex2a,lenmap,'exmap_a')
+      call strmap_man_c(lenmap,
+     &     cinfo_cntc(1,2),ncblk_cnt,
+     &     cinfo_ex1c(1,2),ncblk_ex1,
+     &     cinfo_op1c(1,2),ncblk_op1,map_info_1c,
      &     str_info,strmap_info,orb_info)
-      call strmap_man_c(
-     &     cinfo_cnta(1,2),nca_blk(2,6),
-     &     cinfo_ex1a(1,2),nca_blk(2,4),
-     &     cinfo_op1a(1,2),nca_blk(2,1),map_info_1a,
+      ifree = mem_alloc_int(map_ex1cntc,lenmap,'op1map_c')
+      call strmap_man_c(lenmap,
+     &     cinfo_cnta(1,2),nablk_cnt,
+     &     cinfo_ex1a(1,2),nablk_ex1,
+     &     cinfo_op1a(1,2),nablk_op1,map_info_1a,
      &     str_info,strmap_info,orb_info)
-      call strmap_man_c(
-     &     cinfo_cnta(1,2),nca_blk(2,6),
-     &     cinfo_ex2c(1,2),nca_blk(1,5),
-     &     cinfo_op2c(1,2),nca_blk(1,2),map_info_2c,
+      ifree = mem_alloc_int(map_ex1cnta,lenmap,'op1map_a')
+      call strmap_man_c(lenmap,
+     &     cinfo_cnta(1,2),nablk_cnt,
+     &     cinfo_ex2c(1,2),ncblk_ex2,
+     &     cinfo_op2c(1,2),ncblk_op2,map_info_2c,
      &     str_info,strmap_info,orb_info)
-      call strmap_man_c(
-     &     cinfo_cntc(1,2),nca_blk(1,6),
-     &     cinfo_ex2a(1,2),nca_blk(2,5),
-     &     cinfo_op2a(1,2),nca_blk(2,2),map_info_2a,
+      ifree = mem_alloc_int(map_ex2cntc,lenmap,'op2map_c')
+      call strmap_man_c(lenmap,
+     &     cinfo_cntc(1,2),ncblk_cnt,
+     &     cinfo_ex2a(1,2),nablk_ex2,
+     &     cinfo_op2a(1,2),nablk_op2,map_info_2a,
      &     str_info,strmap_info,orb_info)
+      ifree = mem_alloc_int(map_ex2cnta,lenmap,'op2map_a')
 
       if (reo_op1op2) then
         cinfo_reo12c => reo_info%cinfo_reo_c
@@ -384,29 +484,29 @@ c dbg
         map_info_reo1a  => reo_info%map_reo1a
         map_info_reo2c  => reo_info%map_reo2c
         map_info_reo2a  => reo_info%map_reo2a
-        ncblk_op1op2_0  => reo_info%ncblk_reo0
-        nablk_op1op2_0  => reo_info%nablk_reo0
-        ncblk_reo12  => reo_info%ncblk_reo
-        nablk_reo12  => reo_info%nablk_reo
-        call strmap_man_c(
+        ncblk_op1op2_0  = reo_info%ncblk_reo0
+        nablk_op1op2_0  = reo_info%nablk_reo0
+        ncblk_reo12  = reo_info%ncblk_reo
+        nablk_reo12  = reo_info%nablk_reo
+        call strmap_man_c(lenmap,
      &     cinfo_op1op2_0c(1,2),ncblk_op1op2_0,
      &     cinfo_reo12c(1,2),ncblk_reo12,
-     &     cinfo_op1op2tmpc(1,2),nca_blk(1,7),map_info_reo1c,
+     &     cinfo_op1op2tmpc(1,2),ncblk_op1op2tmp,map_info_reo1c,
      &     str_info,strmap_info,orb_info)
-        call strmap_man_c(
+        call strmap_man_c(lenmap,
      &     cinfo_reo12a(1,2),nablk_reo12,
      &     cinfo_op1op2_0a(1,2),nablk_op1op2_0,
-     &     cinfo_op1op2tmpa(1,2),nca_blk(2,7),map_info_reo1a,
+     &     cinfo_op1op2tmpa(1,2),nablk_op1op2tmp,map_info_reo1a,
      &     str_info,strmap_info,orb_info)
-        call strmap_man_c(
+        call strmap_man_c(lenmap,
      &     cinfo_op1op2_0c(1,2),ncblk_op1op2_0,
      &     cinfo_reo12c(1,2),ncblk_reo12,
-     &     cinfo_op1op2c(1,2),nca_blk(1,3),map_info_reo2c,
+     &     cinfo_op1op2c(1,2),ncblk_op1op2,map_info_reo2c,
      &     str_info,strmap_info,orb_info)
-        call strmap_man_c(
+        call strmap_man_c(lenmap,
      &     cinfo_reo12a(1,2),nablk_reo12,
      &     cinfo_op1op2_0a(1,2),nablk_op1op2_0,
-     &     cinfo_op1op2a(1,2),nca_blk(2,3),map_info_reo2a,
+     &     cinfo_op1op2a(1,2),nablk_op1op2,map_info_reo2a,
      &     str_info,strmap_info,orb_info)
       end if
 
@@ -510,6 +610,9 @@ c dbg
             igamc_ac = multd2h(igam12i_a(1),igam12i_a(2))
             igamc_ac = multd2h(igamc_ac,igam12i_a(3))
 
+            ! LOWER incore requirements:
+            !  load here Op1, Op2, Op1Op2 block
+
             gamc_loop: do igamc_a = 1, nsym
               igamc_c = multd2h(igamc_a,igamc_ac)
 
@@ -527,18 +630,18 @@ c dbg
               caex1_loop: do
                 if (.not.next_msgamdist2(first3,
      &             msex1dis_c,msex1dis_a,gmex1dis_c,gmex1dis_a,
-     &             nca_blk(1,4), nca_blk(2,4),
+     &             ncblk_ex1, nablk_ex1,
      &             cinfo_ex1c,cinfo_ex1a,
      &             msex1_c,msex1_a,igamex1_c,igamex1_a,nsym))
      &             exit caex1_loop
                 first3 = .false.
 
                 call ms2idxms(idxmsex1dis_c,msex1dis_c,
-     &               cinfo_ex1c,nca_blk(1,4))
+     &               cinfo_ex1c,ncblk_ex1)
                 call ms2idxms(idxmsex1dis_a,msex1dis_a,
-     &               cinfo_ex1a,nca_blk(2,4))
+     &               cinfo_ex1a,nablk_ex1)
 
-                call set_len_str(lstrex1,nca_blk(1,4),nca_blk(2,4),
+                call set_len_str(lstrex1,ncblk_ex1,nablk_ex1,
      &                  graphs,
      &                  cinfo_ex1c(1,2),idxmsex1dis_c,
      &                                 gmex1dis_c,cinfo_ex1c(1,3),
@@ -547,9 +650,9 @@ c dbg
      &                  hpvxseq,.false.)
                 
                 ! test C and A separately to avoid overflow
-                if ( nca_blk(1,4)+nca_blk(2,4).gt.0 .and.
+                if ( ncblk_ex1+nablk_ex1.gt.0 .and.
      &               idxlist(0,lstrex1,
-     &                          nca_blk(1,4)+nca_blk(2,4),1).gt.0)
+     &                          ncblk_ex1+nablk_ex1,1).gt.0)
      &               cycle
 
                 ! loop over distributions of current Ms and IRREP 
@@ -558,18 +661,18 @@ c dbg
                 caex2_loop: do
                   if (.not.next_msgamdist2(first4,
      &               msex2dis_c,msex2dis_a,gmex2dis_c,gmex2dis_a,
-     &               nca_blk(1,5), nca_blk(2,5),
+     &               ncblk_ex2, nablk_ex2,
      &               cinfo_ex2c,cinfo_ex2a,
      &               msex2_c,msex2_a,igamex2_c,igamex2_a,nsym))
      &               exit caex2_loop
                   first4 = .false.
 
                   call ms2idxms(idxmsex2dis_c,msex2dis_c,
-     &                 cinfo_ex2c,nca_blk(1,5))
+     &                 cinfo_ex2c,ncblk_ex2)
                   call ms2idxms(idxmsex2dis_a,msex2dis_a,
-     &                 cinfo_ex2a,nca_blk(2,5))
+     &                 cinfo_ex2a,nablk_ex2)
 
-                  call set_len_str(lstrex2,nca_blk(1,5),nca_blk(2,5),
+                  call set_len_str(lstrex2,ncblk_ex2,nablk_ex2,
      &                 graphs,
      &                 cinfo_ex2c(1,2),idxmsex2dis_c,
      &                                gmex2dis_c,cinfo_ex2c(1,3),
@@ -577,30 +680,30 @@ c dbg
      &                                gmex2dis_a,cinfo_ex2a(1,3),
      &                 hpvxseq,.false.)
 
-                  if ( nca_blk(1,5)+nca_blk(2,5).gt.0.and.
+                  if ( ncblk_ex2+nablk_ex2.gt.0.and.
      &                 idxlist(0,lstrex2,
-     &                 nca_blk(1,5)+nca_blk(2,5),1).gt.0)
+     &                 ncblk_ex2+nablk_ex2,1).gt.0)
      &                 cycle
 
                   ! get Ms and IRREP distribution of intermediate
                   call merge_msgmdis(msi_dis_c,gmi_dis_c,
-     &                                 nca_blk(1,3),
+     &                                 ncblk_op1op2tmp,
      &                                 msex1dis_c,gmex1dis_c,
      &                                 msex2dis_c,gmex2dis_c,
      &                                 map_info_12c)
                   call merge_msgmdis(msi_dis_a,gmi_dis_a,
-     &                                 nca_blk(2,3),
+     &                                 nablk_op1op2tmp,
      &                                 msex2dis_a,gmex2dis_a,
      &                                 msex1dis_a,gmex1dis_a,
      &                                 map_info_12a)
 
                   call ms2idxms(idxmsi_dis_c,msi_dis_c,
-     &                   cinfo_op1op2tmpc,nca_blk(1,7))
+     &                   cinfo_op1op2tmpc,ncblk_op1op2tmp)
                   call ms2idxms(idxmsi_dis_a,msi_dis_a,
-     &                   cinfo_op1op2tmpa,nca_blk(2,7))
+     &                   cinfo_op1op2tmpa,nablk_op1op2tmp)
 
                   call set_len_str(
-     &                   lstrop1op2tmp,nca_blk(1,7),nca_blk(2,7),
+     &                   lstrop1op2tmp,ncblk_op1op2tmp,nablk_op1op2tmp,
      &                   graphs,
      &                   cinfo_op1op2tmpc(1,2),idxmsi_dis_c,
      &                                  gmi_dis_c,cinfo_op1op2tmpc(1,3),
@@ -608,43 +711,43 @@ c dbg
      &                                  gmi_dis_a,cinfo_op1op2tmpa(1,3),
      &                   hpvxseq,.false.)
                   
-                  if ( nca_blk(1,7)+nca_blk(2,7).gt.0 .and.
+                  if ( ncblk_op1op2tmp+nablk_op1op2tmp.gt.0 .and.
      &                 idxlist(0,lstrop1op2tmp,
-     &                           nca_blk(1,7)+nca_blk(2,7),1).gt.0)
+     &                          ncblk_op1op2tmp+nablk_op1op2tmp,1).gt.0)
      &                 cycle caex2_loop
 
                   ! get igrphext1,igrphext2->igrphop1op2 map
                   ! for given ms and irreps
-                  ifree = mem_setmark('ex_str')
+c                  ifree = mem_setmark('ex_str')
                   ! special product with map_info ...
                   lenmap = get_lenmap(lstrex1,lstrex2,
-     &                   map_info_12c,nca_blk(1,3))
+     &                   map_info_12c,ncblk_op1op2tmp)
 c dbg
 c                  print *,'lenmap C: ',lenmap
 c dbg
                   
-                  ifree = mem_alloc_int(map_ex1ex2c,lenmap,'strmap_c')
+c                  ifree = mem_alloc_int(map_ex1ex2c,lenmap,'strmap_c')
                   ! for C: ex1,ex2 sequence !
                   call get_strmap_blk_c(map_ex1ex2c,
-     &                 nca_blk(1,4),nca_blk(1,5),nca_blk(1,3),
+     &                 ncblk_ex1,ncblk_ex2,ncblk_op1op2tmp,
      &                 cinfo_ex1c,cinfo_ex2c,lstrex1,lstrex2,
      &                 cinfo_ex1c(1,2),cinfo_ex2c(1,2),
      &                 idxmsex1dis_c,idxmsex2dis_c,
      &                 gmex1dis_c,gmex2dis_c,map_info_12c,
      &                 strmap_info,nsym,str_info%ngraph)
 
-                  lenmap = get_lenmap(lstrex2(nca_blk(1,5)+1),
-     &                                lstrex1(nca_blk(1,4)+1),
-     &                   map_info_12a,nca_blk(2,3))
+                  lenmap = get_lenmap(lstrex2(ncblk_ex2+1),
+     &                                lstrex1(ncblk_ex1+1),
+     &                   map_info_12a,nablk_op1op2tmp)
 c dbg
 c                  print *,'lenmap A: ',lenmap
 c dbg
-                  ifree = mem_alloc_int(map_ex1ex2a,lenmap,'strmap_a')
+c                  ifree = mem_alloc_int(map_ex1ex2a,lenmap,'strmap_a')
                   ! for A: ex2,ex1 sequence !
                   call get_strmap_blk_c(map_ex1ex2a,
-     &                 nca_blk(2,5),nca_blk(2,4),nca_blk(2,3),
+     &                 nablk_ex2,nablk_ex1,nablk_op1op2tmp,
      &                 cinfo_ex2a,cinfo_ex1a,
-     &                  lstrex2(nca_blk(1,5)+1),lstrex1(nca_blk(1,4)+1),
+     &                  lstrex2(ncblk_ex2+1),lstrex1(ncblk_ex1+1),
      &                 cinfo_ex2a(1,2),cinfo_ex1a(1,2),
      &                 idxmsex2dis_a,idxmsex1dis_a,
      &                 gmex2dis_a,gmex1dis_a,map_info_12a,
@@ -659,9 +762,9 @@ c dbg
      &                  idx_msgmdst2(
      &                   iblkop1op2tmp,idxms,igam12i_a(3),
      &                   cinfo_op1op2tmpc,idxmsi_dis_c,
-     &                              gmi_dis_c,nca_blk(1,7),
+     &                              gmi_dis_c,ncblk_op1op2tmp,
      &                   cinfo_op1op2tmpa,idxmsi_dis_a,
-     &                              gmi_dis_a,nca_blk(2,7),
+     &                              gmi_dis_a,nablk_op1op2tmp,
      &                   .false.,op1op2tmp,nsym)
                     idxdis_op1op2 = idxdis
 
@@ -692,7 +795,7 @@ c dbg
                   cac_loop: do
                     if (.not.next_msgamdist2(first5,
      &                 msc_dis_c,msc_dis_a,gmc_dis_c,gmc_dis_a,
-     &                 nca_blk(1,6), nca_blk(2,6),
+     &                 ncblk_cnt, nablk_cnt,
      &                 cinfo_cntc,cinfo_cnta,
      &                 msc_c,msc_a,igamc_c,igamc_a,nsym))
      &                 exit cac_loop
@@ -700,12 +803,12 @@ c dbg
 
                     ! length of contraction
                     call ms2idxms(idxmsc_dis_c,msc_dis_c,
-     &                   cinfo_cntc,nca_blk(1,6))
+     &                   cinfo_cntc,ncblk_cnt)
                     call ms2idxms(idxmsc_dis_a,msc_dis_a,
-     &                   cinfo_cnta,nca_blk(2,6))
+     &                   cinfo_cnta,nablk_cnt)
 
                     ! length of contraction
-                    call set_len_str(lstrcnt,nca_blk(1,6),nca_blk(2,6),
+                    call set_len_str(lstrcnt,ncblk_cnt,nablk_cnt,
      &                  graphs,
      &                  cinfo_cntc(1,2),idxmsc_dis_c,
      &                                  gmc_dis_c,cinfo_cntc(1,3),
@@ -713,30 +816,30 @@ c dbg
      &                                  gmc_dis_a,cinfo_cnta(1,3),
      &                  hpvxseq,.false.)
 
-                    if ( nca_blk(1,6)+nca_blk(2,6).gt.0 .and.
+                    if ( ncblk_cnt+nablk_cnt.gt.0 .and.
      &                   idxlist(0,lstrcnt,
-     &                   nca_blk(1,6)+nca_blk(2,6),1).gt.0)
+     &                   ncblk_cnt+nablk_cnt,1).gt.0)
      &                   cycle cac_loop
 
                     ! get Ms and IRREP distribution of op1
                     call merge_msgmdis(msop1dis_c,gmop1dis_c,
-     &                                 nca_blk(1,1),
+     &                                 ncblk_op1,
      &                                 msc_dis_c,gmc_dis_c,
      &                                 msex1dis_c,gmex1dis_c,
      &                                 map_info_1c)
                     call merge_msgmdis(msop1dis_a,gmop1dis_a,
-     &                                 nca_blk(2,1),
+     &                                 nablk_op1,
      &                                 msc_dis_a,gmc_dis_a,
      &                                 msex1dis_a,gmex1dis_a,
      &                                 map_info_1a)
 
                     call ms2idxms(idxmsop1dis_c,msop1dis_c,
-     &                   cinfo_op1c,nca_blk(1,1))
+     &                   cinfo_op1c,ncblk_op1)
                     call ms2idxms(idxmsop1dis_a,msop1dis_a,
-     &                   cinfo_op1a,nca_blk(2,1))
+     &                   cinfo_op1a,nablk_op1)
                     
                     call set_len_str(
-     &                   lstrop1,nca_blk(1,1),nca_blk(2,1),
+     &                   lstrop1,ncblk_op1,nablk_op1,
      &                   graphs,
      &                   cinfo_op1c(1,2),idxmsop1dis_c,
      &                                    gmop1dis_c,cinfo_op1c(1,3),
@@ -744,9 +847,9 @@ c dbg
      &                                    gmop1dis_a,cinfo_op1a(1,3),
      &                   hpvxseq,.false.)
 
-                    if ( nca_blk(1,1)+nca_blk(2,1).gt.0 .and.
+                    if ( ncblk_op1+nablk_op1.gt.0 .and.
      &                   idxlist(0,lstrop1,
-     &                             nca_blk(1,1)+nca_blk(2,1),1).gt.0)
+     &                             ncblk_op1+nablk_op1,1).gt.0)
      &                   cycle cac_loop
 
                     ! get distribution index
@@ -756,9 +859,9 @@ c dbg
      &                   idx_msgmdst2(
      &                     iblkop1,idxms,igam12i_a(1),
      &                     cinfo_op1c,idxmsop1dis_c,
-     &                              gmop1dis_c,nca_blk(1,1),
+     &                              gmop1dis_c,ncblk_op1,
      &                     cinfo_op1a,idxmsop1dis_a,
-     &                              gmop1dis_a,nca_blk(2,1),
+     &                              gmop1dis_a,nablk_op1,
      &                     .false.,op1,nsym)
                       idxop1 = 
      &                     d_gam_ms_op1(idxdis,igam12i_a(1),idxms) + 1
@@ -769,7 +872,7 @@ c dbg
 c                    print *,'call ddot(1)'
 c dbg
                     xnrm = ddot(ielprd(lstrop1,
-     &                   nca_blk(1,1)+nca_blk(2,1)),
+     &                   ncblk_op1+nablk_op1),
      &                   xop1(idxop1),1,xop1(idxop1),1)
                     if (xnrm.lt.1d-28) cycle cac_loop
 
@@ -780,12 +883,12 @@ c                    print *,'msc_dis_a:  ',msc_dis_a
 c                    print *,'msex2dis_c: ',msex2dis_c
 c dbg
                     call merge_msgmdis(msop2dis_c,gmop2dis_c,
-     &                                 nca_blk(1,2),
+     &                                 ncblk_op2,
      &                                 msc_dis_a,gmc_dis_a,
      &                                 msex2dis_c,gmex2dis_c,
      &                                 map_info_2c)
                     call merge_msgmdis(msop2dis_a,gmop2dis_a,
-     &                                 nca_blk(2,2),
+     &                                 nablk_op2,
      &                                 msc_dis_c,gmc_dis_c,
      &                                 msex2dis_a,gmex2dis_a,
      &                                 map_info_2a)
@@ -794,12 +897,12 @@ c                    print *,'msop2dis_c: ',msex2dis_c
 c dbg
 
                     call ms2idxms(idxmsop2dis_c,msop2dis_c,
-     &                   cinfo_op2c,nca_blk(1,2))
+     &                   cinfo_op2c,ncblk_op2)
                     call ms2idxms(idxmsop2dis_a,msop2dis_a,
-     &                   cinfo_op2a,nca_blk(2,2))
+     &                   cinfo_op2a,nablk_op2)
 
                     call set_len_str(
-     &                   lstrop2,nca_blk(1,2),nca_blk(2,2),
+     &                   lstrop2,ncblk_op2,nablk_op2,
      &                   graphs,
      &                   cinfo_op2c(1,2),idxmsop2dis_c,
      &                                    gmop2dis_c,cinfo_op2c(1,3),
@@ -807,9 +910,9 @@ c dbg
      &                                    gmop2dis_a,cinfo_op2a(1,3),
      &                   hpvxseq,.false.)
 
-                    if ( nca_blk(1,2)+nca_blk(2,2).gt.0 .and.
+                    if ( ncblk_op2+nablk_op2.gt.0 .and.
      &                   idxlist(0,lstrop2,
-     &                             nca_blk(1,2)+nca_blk(2,2),1).gt.0)
+     &                             ncblk_op2+nablk_op2,1).gt.0)
      &                   cycle cac_loop
 
                     ! get distribution index
@@ -819,9 +922,9 @@ c dbg
      &                   idx_msgmdst2(
      &                     iblkop2,idxms,igam12i_a(2),
      &                     cinfo_op2c,idxmsop2dis_c,
-     &                              gmop2dis_c,nca_blk(1,2),
+     &                              gmop2dis_c,ncblk_op2,
      &                     cinfo_op2a,idxmsop2dis_a,
-     &                              gmop2dis_a,nca_blk(2,2),
+     &                              gmop2dis_a,nablk_op2,
      &                     .false.,op2,nsym)
 c dbg
 c                      print *,'idxst_op2:',idxst_op2,
@@ -835,10 +938,10 @@ c dbg
 
 c dbg
 c                    print *,'call ddot(2)',idxop2,
-c     &                   lstrop2(1:nca_blk(1,2)+nca_blk(2,2))
+c     &                   lstrop2(1:ncblk_op2+nablk_op2)
 c dbg
                     xnrm = ddot(ielprd(lstrop2,
-     &                   nca_blk(1,2)+nca_blk(2,2)),
+     &                   ncblk_op2+nablk_op2),
      &                   xop2(idxop2),1,xop2(idxop2),1)
                     if (xnrm.lt.1d-28) cycle cac_loop
 
@@ -847,36 +950,36 @@ c dbg
 
                     ! get igrphcnt,igrphext1->igrphop1 map
                     ! for given ms and irreps
-                    ifree = mem_setmark('cntstr')
+c                    ifree = mem_setmark('cntstr')
                     lenmap = get_lenmap(lstrcnt,lstrex1,
-     &                   map_info_1c,nca_blk(1,1))
-                    ifree = mem_alloc_int(map_ex1cntc,lenmap,'strmap_c')
+     &                   map_info_1c,ncblk_op1)
+c                    ifree = mem_alloc_int(map_ex1cntc,lenmap,'strmap_c')
                     call get_strmap_blk_c(map_ex1cntc,
-     &                   nca_blk(1,6),nca_blk(1,4),nca_blk(1,1),
+     &                   ncblk_cnt,ncblk_ex1,ncblk_op1,
      &                   cinfo_cntc,cinfo_ex1c,lstrcnt,lstrex1,
      &                   cinfo_cntc(1,2),cinfo_ex1c(1,2),
      &                   idxmsc_dis_c,idxmsex1dis_c,
      &                   gmc_dis_c,gmex1dis_c,map_info_1c,
      &                   strmap_info,nsym,str_info%ngraph)
 
-                    lenmap = get_lenmap(lstrcnt(nca_blk(1,6)+1),
-     &                                  lstrex1(nca_blk(1,4)+1),
-     &                                  map_info_1a,nca_blk(2,1))
+                    lenmap = get_lenmap(lstrcnt(ncblk_cnt+1),
+     &                                  lstrex1(ncblk_ex1+1),
+     &                                  map_info_1a,nablk_op1)
 c dbg
-c                    print *,'lstrcnt(A)',nca_blk(2,6),
-c     &                 lstrcnt(nca_blk(1,6)+1:nca_blk(1,6)+nca_blk(2,6))
-c                    print *,'lstrex1(A)',nca_blk(2,4),
-c     &                 lstrex1(nca_blk(1,4)+1:nca_blk(1,4)+nca_blk(2,4))
+c                    print *,'lstrcnt(A)',nablk_op1op2,
+c     &                 lstrcnt(ncblk_cnt+1:ncblk_cnt+nablk_op1op2)
+c                    print *,'lstrex1(A)',nablk_ex1,
+c     &                 lstrex1(ncblk_ex1+1:ncblk_ex1+nablk_ex1)
 c                    print *,'lenmap for map_ex1cnta: ',lenmap
-c                    print *,'lstrop1(A)',nca_blk(2,1),
-c     &                 lstrop1(nca_blk(1,1)+1:nca_blk(1,1)+nca_blk(2,1))
+c                    print *,'lstrop1(A)',nablk_op1,
+c     &                 lstrop1(ncblk_op1+1:ncblk_op1+nablk_op1)
 c dbg
-                    ifree = mem_alloc_int(map_ex1cnta,lenmap,'strmap_a')
+c                    ifree = mem_alloc_int(map_ex1cnta,lenmap,'strmap_a')
                     call get_strmap_blk_c(map_ex1cnta,
-     &                   nca_blk(2,6),nca_blk(2,4),nca_blk(2,1),
+     &                   nablk_op1op2,nablk_ex1,nablk_op1,
      &                   cinfo_cnta,cinfo_ex1a,
-     &                     lstrcnt(nca_blk(1,6)+1),
-     &                             lstrex1(nca_blk(1,4)+1),
+     &                     lstrcnt(ncblk_cnt+1),
+     &                             lstrex1(ncblk_ex1+1),
      &                   cinfo_cnta(1,2),cinfo_ex1a(1,2),
      &                   idxmsc_dis_a,idxmsex1dis_a,
      &                   gmc_dis_a,gmex1dis_a,map_info_1a,
@@ -887,28 +990,28 @@ c dbg
 
                     ! get igrphcnt,igrphext2->igrphop2 map
                     ! for given ms and irreps
-                    lenmap = get_lenmap(lstrcnt(nca_blk(1,6)+1),lstrex2,
-     &                   map_info_2c,nca_blk(1,2))
-                    ifree = mem_alloc_int(map_ex2cntc,lenmap,'strmap_c')
+                    lenmap = get_lenmap(lstrcnt(ncblk_cnt+1),lstrex2,
+     &                   map_info_2c,ncblk_op2)
+c                    ifree = mem_alloc_int(map_ex2cntc,lenmap,'strmap_c')
 c dbg
 c                  print *,'getting map_ex2cntc:'
 c dbg
                     call get_strmap_blk_c(map_ex2cntc,
-     &                   nca_blk(2,6),nca_blk(1,5),nca_blk(1,2),
+     &                   nablk_op1op2,ncblk_ex2,ncblk_op2,
      &                   cinfo_cnta,cinfo_ex2c,
-     &                     lstrcnt(nca_blk(1,6)+1),lstrex2,
+     &                     lstrcnt(ncblk_cnt+1),lstrex2,
      &                   cinfo_cnta(1,2),cinfo_ex2c(1,2),
      &                   idxmsc_dis_a,idxmsex2dis_c,
      &                   gmc_dis_a,gmex2dis_c,map_info_2c,
      &                   strmap_info,nsym,str_info%ngraph)
 
-                    lenmap = get_lenmap(lstrcnt,lstrex2(nca_blk(1,5)+1),
-     &                   map_info_2a,nca_blk(2,2))
-                    ifree = mem_alloc_int(map_ex2cnta,lenmap,'strmap_a')
+                    lenmap = get_lenmap(lstrcnt,lstrex2(ncblk_ex2+1),
+     &                   map_info_2a,nablk_op2)
+c                    ifree = mem_alloc_int(map_ex2cnta,lenmap,'strmap_a')
                     call get_strmap_blk_c(map_ex2cnta,
-     &                   nca_blk(1,6),nca_blk(2,5),nca_blk(2,2),
+     &                   ncblk_cnt,nablk_ex2,nablk_op2,
      &                   cinfo_cntc,cinfo_ex2a,
-     &                       lstrcnt,lstrex2(nca_blk(1,5)+1),
+     &                       lstrcnt,lstrex2(ncblk_ex2+1),
      &                   cinfo_cntc(1,2),cinfo_ex2a(1,2),
      &                   idxmsc_dis_c,idxmsex2dis_a,
      &                   gmc_dis_c,gmex2dis_a,map_info_2a,
@@ -929,7 +1032,7 @@ c                      call prt_strmap_c(map_ex1ex2a,
 c     &                     cinfo_ex2,cinfo_ex2,
 c     &                     cinfo_ex2(1,3),cinfo_ex2(1,3),
 c     &                     lstrex2(1,2),lstrex1(1,2),
-c     &                     nca_blk(2,5),nca_blk(2,4))
+c     &                     nablk_ex2,nablk_ex1)
 c                      write(luout,*) ' X1X2(C): '
 c                      call prt_strmap(map_ex1ex2c,
 c     &                     iocc_ext1(1,1),iocc_ext2(1,1),
@@ -957,10 +1060,14 @@ c                    print *,'xop1: ',xop1(idxop1)
 c                    print *,'xop2: ',xop2(idxop2)
 c                    print *,'xop1op2: ',xop1op2(idxop1op2)
 c dbg
-                    call cntr_blk1blk2_wmaps_c(xfac*casign,
+                    if (irt_contr.eq.2) then
+                      call contr_blk1blk2_wmaps_c(xfac*casign,
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
-     &                   nca_blk,
+     &                   ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
+     &                   ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
+     &                   ncblk_cnt,nablk_cnt,
+     &                           ncblk_op1op2tmp,nablk_op1op2tmp,
      &                   cinfo_op1c(1,3),cinfo_op1a(1,3),
      &                   cinfo_op2c(1,3),cinfo_op2a(1,3),
      &                   cinfo_op1op2tmpc(1,3),cinfo_op1op2tmpa(1,3),
@@ -973,6 +1080,28 @@ c dbg
      &                   map_ex1cntc, map_ex1cnta,
      &                   map_ex2cntc, map_ex2cnta
      &                   )                     
+                    else
+                      call contr_blk1blk2_blocked_mm(xfac*casign,
+     &                   xop1op2blk,
+     &                                 xop1(idxop1),xop2(idxop2),
+     &                   xscr,lenscr,len_str_block,
+     &                   ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
+     &                   ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
+     &                   ncblk_cnt,nablk_cnt,
+     &                           ncblk_op1op2tmp,nablk_op1op2tmp,
+     &                   cinfo_op1c(1,3),cinfo_op1a(1,3),
+     &                   cinfo_op2c(1,3),cinfo_op2a(1,3),
+     &                   cinfo_op1op2tmpc(1,3),cinfo_op1op2tmpa(1,3),
+     &                   lstrop1,lstrop2,lstrop1op2tmp,
+     &                   lstrex1,lstrex2,lstrcnt,
+     &                   map_info_12c, map_info_12a,
+     &                   map_info_1c, map_info_1a,
+     &                   map_info_2c, map_info_2a,
+     &                   map_ex1ex2c, map_ex1ex2a,
+     &                   map_ex1cntc, map_ex1cnta,
+     &                   map_ex2cntc, map_ex2cnta
+     &                   )                     
+                    end if
                     if (ntest.ge.100)
      &                   write(luout,*) 'after blk1blk2'
 
@@ -980,11 +1109,11 @@ c dbg
                     cnt_kernel(1) = cnt_kernel(1)+cpu-cpu0
                     cnt_kernel(2) = cnt_kernel(2)+sys-sys0
 
-                    ifree = mem_flushmark('cntstr')
+c                    ifree = mem_flushmark('cntstr')
 
                   end do cac_loop
                   
-                  ifree = mem_flushmark('ex_str')
+c                  ifree = mem_flushmark('ex_str')
 
                   ! if necessary, reorder op1op2 block:
                   if (reo_op1op2.and.nonzero) then
@@ -993,11 +1122,11 @@ c dbg
      &                   ms12i_c(3),ms12i_a(3),
      &                                   igam12i_c(3),igam12i_a(3),
      &                   msi_dis_c,msi_dis_a,gmi_dis_c,gmi_dis_a,
-     &                   nca_blk(1,7),nca_blk(2,7),
+     &                   ncblk_op1op2tmp,nablk_op1op2tmp,
      &                   cinfo_op1op2tmpc,cinfo_op1op2tmpa,
      &                   lstrop1op2tmp,
      &                   op1op2,iblkop1op2,
-     &                   nca_blk(1,3),nca_blk(2,3),
+     &                   ncblk_cnt,nablk_cnt,
      &                   cinfo_op1op2c,cinfo_op1op2a,
      &                   reo_info%ncblk_reo,reo_info%nablk_reo,
      &                   reo_info%cinfo_reo_c,reo_info%cinfo_reo_a,
@@ -1042,6 +1171,29 @@ c dbg
      &                    idoffop1op2+idxst_op1op2-1+lenop1op2)
       end if
 
+      deallocate(
+     &     gmop1dis_c, gmop1dis_a,
+     &     gmop2dis_c, gmop2dis_a,
+     &     gmex1dis_c, gmex1dis_a,
+     &     gmex2dis_c, gmex2dis_a,
+     &     gmc_dis_c , gmc_dis_a ,
+     &     gmi_dis_c , gmi_dis_a ,
+     &     msop1dis_c, msop1dis_a,
+     &     msop2dis_c, msop2dis_a,
+     &     msex1dis_c, msex1dis_a,
+     &     msex2dis_c, msex2dis_a,
+     &     msc_dis_c , msc_dis_a ,
+     &     msi_dis_c , msi_dis_a ,
+     &     idxmsop1dis_c, idxmsop1dis_a,
+     &     idxmsop2dis_c, idxmsop2dis_a,
+     &     idxmsex1dis_c, idxmsex1dis_a,
+     &     idxmsex2dis_c, idxmsex2dis_a,
+     &     idxmsc_dis_c , idxmsc_dis_a ,
+     &     idxmsi_dis_c , idxmsi_dis_a ,
+     &     lstrex1,lstrex2,lstrcnt,
+     &     lstrop1,lstrop2,lstrop1op2tmp
+     &     )
+
       ifree = mem_flushmark()
 
       if (ntest.ge.100) then
@@ -1051,463 +1203,5 @@ c dbg
 
       return
       end
-*----------------------------------------------------------------------*
-      subroutine cntr_blk1blk2_wmaps_c(xfac,            !prefactor   
-     &     xop1op2,xop1,xop2,                     !buffers: res,op1,op2
-     &     nca_blk,
-     &     hpvxop1c, hpvxop1a,
-     &     hpvxop2c, hpvxop2a,
-     &     hpvxop1op2c, hpvxop1op2a,
-     &     lstrop1, lstrop2, lstrop1op2,
-     &     lstr_ex1, lstr_ex2, lstr_cnt,
-     &     map_info_12c, map_info_12a,
-     &     map_info_1c, map_info_1a,
-     &     map_info_2c, map_info_2a,
-     &     map_ex1ex2c, map_ex1ex2a,
-     &     map_ex1cntc, map_ex1cnta,
-     &     map_ex2cntc, map_ex2cnta
-     &     )                     
-*----------------------------------------------------------------------*
-*     inner contraction routine, generation 2
-*     - testing maps
-*     - version c: interfaced to more general intermediates
-*                  ("ngastp" can be larger than 4)
-*----------------------------------------------------------------------*
 
-      implicit none
 
-      include 'opdim.h'
-      include 'stdunit.h'
-      include 'def_orbinf.h'
-      include 'def_graph.h'
-      include 'def_strinf.h'
-      include 'hpvxseq.h'
-
-      integer, parameter ::
-     &     ntest = 00
-
-      ! ngastp_op1op2a: number of non-zero entries in A occ of Op1Op2
-      ! etc. for op1, op2
-      ! lstrop1op2a(ngastp_op1op2a): # of strings
-      ! etc.
-      ! iocc_op1op2: occupation
-      ! nstr_ex1/ex2/cnt,a/c: # strings
-      ! map_ex1ex2a/c  mapping ex1*ex2->op1op2
-      ! etc. for ex1cnt ex2cnt
-      integer, intent(in) ::
-     &     nca_blk(2,7),
-     &     lstrop1(*), lstrop2(*), lstrop1op2(*),
-     &     hpvxop1a(*), hpvxop2a(*), hpvxop1op2a(*),
-     &     hpvxop1c(*), hpvxop2c(*), hpvxop1op2c(*),
-     &     lstr_ex1(*), lstr_ex2(*), lstr_cnt(*),
-     &     map_info_12c(*), map_info_12a(*),
-     &     map_info_1c(*), map_info_1a(*),
-     &     map_info_2c(*), map_info_2a(*),
-     &     map_ex1ex2a(*), map_ex1ex2c(*),
-     &     map_ex1cnta(*), map_ex1cntc(*),
-     &     map_ex2cnta(*), map_ex2cntc(*)
-      real(8), intent(in) ::
-     &     xop1(*), xop2(*), xfac
-      real(8), intent(inout) ::
-     &     xop1op2(*)
-
-      integer ::
-     &     ielmap, ielmap2,
-     &     idxop1op2a(nca_blk(2,7)), idxop1op2c(nca_blk(1,7)),
-     &     nstr_ex1a1(nca_blk(2,1)),   nstr_ex1c1(nca_blk(1,1)),
-     &     nstr_ex1a12(nca_blk(2,7)),  nstr_ex1c12(nca_blk(1,7)),
-     &     nstr_ex2a2(nca_blk(2,2)),   nstr_ex2c2(nca_blk(1,2)),
-     &     nstr_ex2a12(nca_blk(2,7)),  nstr_ex2c12(nca_blk(1,7)),
-     &     nstr_cnta1(nca_blk(2,1)),   nstr_cntc1(nca_blk(1,1)),
-     &     nstr_cnta2(nca_blk(1,2)),   nstr_cntc2(nca_blk(2,2)),
-     &     nstr_ex1ex2a(nca_blk(2,7)), nstr_ex1ex2c(nca_blk(1,7)),
-     &     nstr_ex1cnta(nca_blk(2,1)), nstr_ex1cntc(nca_blk(1,1)),
-     &     nstr_ex2cnta(nca_blk(2,2)), nstr_ex2cntc(nca_blk(1,2)),
-     &     ldim_op1a(nca_blk(2,1)), ldim_op1c(nca_blk(1,1)),
-     &     ldim_op2a(nca_blk(2,2)), ldim_op2c(nca_blk(1,2)),
-     &     ldim_op1op2a(nca_blk(2,7)), ldim_op1op2c(nca_blk(1,7))
-      integer ::
-     &     ioff, istr1, istr2, idx1, idx2, idx,
-     &     ngastp_op1op2a, ngastp_op1op2c,
-     &     ngastp_op1a,    ngastp_op1c,
-     &     ngastp_op2a,    ngastp_op2c,
-     &     nstr_ex1a_tot, nstr_ex1c_tot,
-     &     nstr_ex2a_tot, nstr_ex2c_tot,
-     &     nstr_cnta_tot, nstr_cntc_tot,
-     &     isgnra, isgnrc, isgnr, isgnop1a, isgnop1c,
-     &     isgnop2a, isgnop2c, isgn0, idxop1, idxop2, idxop1op2,
-     &     idx0op1,idx0op2,
-     &     istr_ex1a, istr_ex1c, istr_ex2a, istr_ex2c,
-     &     istr_cnta, istr_cntc, icmp
-      real(8) ::
-     &     sgn
-
-      integer, external ::
-     &     idx_str_blk3, ielprd
-c dbg
-c      integer lenop1, lenop2, lenop12
-c
-c      lenop1  = ielprd(lstrop1,nca_blk(1,1)+nca_blk(2,1))
-c      lenop2  = ielprd(lstrop2,nca_blk(1,2)+nca_blk(2,2))
-c      lenop12 = ielprd(lstrop1op2,nca_blk(1,3)+nca_blk(2,3))
-c dbg
-
-      nstr_ex1c_tot = ielprd(lstr_ex1,nca_blk(1,4))
-      nstr_ex1a_tot = ielprd(lstr_ex1(nca_blk(1,4)+1),nca_blk(2,4))
-      nstr_ex2c_tot = ielprd(lstr_ex2,nca_blk(1,5))
-      nstr_ex2a_tot = ielprd(lstr_ex2(nca_blk(1,5)+1),nca_blk(2,5))
-      nstr_cntc_tot = ielprd(lstr_cnt,nca_blk(1,6))
-      nstr_cnta_tot = ielprd(lstr_cnt(nca_blk(1,6)+1),nca_blk(2,6))
-
-c dbg
-c      print *,'nstr_ex1c_tot',nstr_ex1c_tot
-c      print *,'nstr_ex1a_tot',nstr_ex1a_tot
-c      print *,'nstr_ex2c_tot',nstr_ex2c_tot
-c      print *,'nstr_ex2a_tot',nstr_ex2a_tot
-c      print *,'nstr_cntc_tot',nstr_cntc_tot
-c      print *,'nstr_cnta_tot',nstr_cnta_tot
-c dbg
-
-      ngastp_op1c = nca_blk(1,1)
-      ngastp_op1a = nca_blk(2,1)
-      ngastp_op2c = nca_blk(1,2)
-      ngastp_op2a = nca_blk(2,2)
-      ngastp_op1op2c = nca_blk(1,7)
-      ngastp_op1op2a = nca_blk(2,7)
-
-      ! C: ex1,ex2
-      call set_strmapdim_c(nstr_ex1ex2c,nstr_ex1c12,nstr_ex2c12,
-     &                   ngastp_op1op2c,
-     &                   lstr_ex1,lstr_ex2,map_info_12c)
-      ! A: ex2,ex1
-      call set_strmapdim_c(nstr_ex1ex2a,nstr_ex2a12,nstr_ex1a12,
-     &                   ngastp_op1op2a,
-     &                   lstr_ex2(nca_blk(1,5)+1),
-     &                    lstr_ex1(nca_blk(1,4)+1),map_info_12a)
-      call set_strmapdim_c(nstr_ex1cntc,nstr_cntc1,nstr_ex1c1,
-     &                   ngastp_op1c,
-     &                   lstr_cnt,lstr_ex1,map_info_1c)
-      call set_strmapdim_c(nstr_ex1cnta,nstr_cnta1,nstr_ex1a1,
-     &                   ngastp_op1a,
-     &                   lstr_cnt(nca_blk(1,6)+1),
-     &                     lstr_ex1(nca_blk(1,4)+1),map_info_1a)
-      call set_strmapdim_c(nstr_ex2cntc,nstr_cnta2,nstr_ex2c2,
-     &                   ngastp_op2c,
-     &                   lstr_cnt(nca_blk(1,6)+1),lstr_ex2,map_info_2c)
-      call set_strmapdim_c(nstr_ex2cnta,nstr_cntc2,nstr_ex2a2,
-     &                   ngastp_op2a,
-     &                   lstr_cnt,lstr_ex2(nca_blk(1,5)+1),map_info_2a)
-
-      call set_op_ldim_c(ldim_op1c,ldim_op1a,
-     &                   hpvxop1c,hpvxop1a,
-     &                   lstrop1,nca_blk(1,1),nca_blk(2,1))
-      call set_op_ldim_c(ldim_op2c,ldim_op2a,
-     &                   hpvxop2c,hpvxop2a,
-     &                   lstrop2,nca_blk(1,2),nca_blk(2,2))
-      call set_op_ldim_c(ldim_op1op2c,ldim_op1op2a,
-     &                   hpvxop1op2c,hpvxop1op2a,
-     &                   lstrop1op2,nca_blk(1,7),nca_blk(2,7))
-c dbg
-c      print *,'ldim_op1c:',ldim_op1c(1:ngastp_op1c)
-c      print *,'ldim_op1a:',ldim_op1a(1:ngastp_op1a)
-c      print *,'ldim_op2c:',ldim_op2c(1:ngastp_op2c)
-c      print *,'ldim_op2a:',ldim_op2a(1:ngastp_op2a)
-c      print *,'ldim_op1op2c:',ldim_op1op2c(1:ngastp_op1op2c)
-c      print *,'ldim_op1op2a:',ldim_op1op2a(1:ngastp_op1op2a)
-c dbg
-
-      if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
-     &       'News from contr_op1op2_wmaps_c')
-      end if
-
-      ! loop over external A strings of operator 1
-      ex1a: do istr_ex1a = 1, nstr_ex1a_tot
-
-        ! loop over external A strings of operator 2
-        ex2a: do istr_ex2a = 1, nstr_ex2a_tot
-
-          ioff = 0
-          isgnra = 1
-          istr1 = istr_ex1a-1
-          istr2 = istr_ex2a-1
-          ! get sign and idxop1op2a
-          do icmp = 1, ngastp_op1op2a
-            idx1 = mod(istr1,nstr_ex1a12(icmp))+1
-            idx2 = mod(istr2,nstr_ex2a12(icmp))+1
-            idx  = (idx1-1)*nstr_ex2a12(icmp)+idx2
-            ielmap = map_ex1ex2a(ioff+idx)
-            if (ielmap.eq.0) cycle ex2a
-            isgnra = isgnra*sign(1,ielmap)
-            idxop1op2a(icmp) = abs(ielmap)-1
-            ioff = ioff + nstr_ex1ex2a(icmp)
-            istr1 = istr1/nstr_ex1a12(icmp)
-            istr2 = istr2/nstr_ex2a12(icmp)
-          end do
-
-          ! loop over external C strings of operator 1
-          ex1c: do istr_ex1c = 1, nstr_ex1c_tot
-
-            ! loop over external C strings of operator 2
-            ex2c: do istr_ex2c = 1, nstr_ex2c_tot
-            
-              ioff = 0
-              isgnrc = 1
-              istr1 = istr_ex2c-1
-              istr2 = istr_ex1c-1
-              ! get sign and idxop1op2c
-              do icmp = 1, ngastp_op1op2c
-                idx1 = mod(istr1,nstr_ex2c12(icmp))+1
-                idx2 = mod(istr2,nstr_ex1c12(icmp))+1
-                idx  = (idx1-1)*nstr_ex1c12(icmp)+idx2
-                ielmap = map_ex1ex2c(ioff+idx)
-                if (ielmap.eq.0) cycle ex2c
-                isgnrc = isgnrc*sign(1,ielmap)
-                idxop1op2c(icmp) = abs(ielmap)-1
-                ioff = ioff + nstr_ex1ex2c(icmp)
-                istr1 = istr1/nstr_ex2c12(icmp)
-                istr2 = istr2/nstr_ex1c12(icmp)
-              end do
-
-              isgnr = isgnrc*isgnra
-
-              idxop1op2 = idx_str_blk3(idxop1op2c,idxop1op2a,
-     &                                 ldim_op1op2c,ldim_op1op2a,
-     &                                 ngastp_op1op2c,ngastp_op1op2a)
-
-              ! loop over contraction A string
-              cnta: do istr_cnta = 1, nstr_cnta_tot
-                ioff = 0
-                isgnop1a = 1
-                istr1 = istr_ex1a-1
-                istr2 = istr_cnta-1
-                idx0op1 = 1
-                ! get sign and idxop1a
-                do icmp = 1, ngastp_op1a
-                  idx1 = mod(istr1,nstr_ex1a1(icmp))+1
-                  idx2 = mod(istr2,nstr_cnta1(icmp))+1
-                  idx  = (idx1-1)*nstr_cnta1(icmp)+idx2
-                  ielmap = map_ex1cnta(ioff+idx)
-                  if (ielmap.eq.0) cycle cnta
-                  isgnop1a = isgnop1a*sign(1,ielmap)
-                  idx0op1 = idx0op1+(abs(ielmap)-1)*ldim_op1a(icmp)
-                  ioff = ioff + nstr_ex1cnta(icmp)
-                  istr1 = istr1/nstr_ex1a1(icmp)
-                  istr2 = istr2/nstr_cnta1(icmp)
-                end do
-
-                ioff = 0
-                isgnop2c = 1
-                istr1 = istr_ex2c-1
-                istr2 = istr_cnta-1
-                idx0op2 = 1
-                ! get sign and idxop2c
-                do icmp = 1, ngastp_op2c
-                  idx1 = mod(istr1,nstr_ex2c2(icmp))+1
-                  idx2 = mod(istr2,nstr_cnta2(icmp))+1
-                  idx  = (idx1-1)*nstr_cnta2(icmp)+idx2
-                  ielmap = map_ex2cntc(ioff+idx)
-                  if (ielmap.eq.0) cycle cnta
-                  isgnop2c = isgnop2c*sign(1,ielmap)
-                  idx0op2 = idx0op2+(abs(ielmap)-1)*ldim_op2c(icmp)
-                  ioff = ioff + nstr_ex2cntc(icmp)
-                  istr1 = istr1/nstr_ex2c2(icmp)
-                  istr2 = istr2/nstr_cnta2(icmp)
-                end do
-
-                isgn0 = isgnr*isgnop1a*isgnop2c
-
-                ! loop over contraction C string
-                cntc: do istr_cntc = 1, nstr_cntc_tot
-
-                  ioff = 0
-                  isgnop1c = 1
-                  istr1 = istr_ex1c-1
-                  istr2 = istr_cntc-1
-                  idxop1 = idx0op1
-                  ! get sign and idxop1c
-                  do icmp = 1, ngastp_op1c
-                    idx1 = mod(istr1,nstr_ex1c1(icmp))+1
-                    idx2 = mod(istr2,nstr_cntc1(icmp))+1
-                    idx  = (idx1-1)*nstr_cntc1(icmp)+idx2
-                    ielmap = map_ex1cntc(ioff+idx)
-                    if (ielmap.eq.0) cycle cntc
-                    isgnop1c = isgnop1c*sign(1,ielmap)
-                    idxop1 = idxop1+(abs(ielmap)-1)*ldim_op1c(icmp)
-                    ioff = ioff + nstr_ex1cntc(icmp)
-                    istr1 = istr1/nstr_ex1c1(icmp)
-                    istr2 = istr2/nstr_cntc1(icmp)
-                  end do
-
-                  ioff = 0
-                  isgnop2a = 1
-                  istr1 = istr_ex2a-1
-                  istr2 = istr_cntc-1
-                  idxop2 = idx0op2
-                  ! get sign and idxop2a
-                  do icmp = 1, ngastp_op2a
-                    idx1 = mod(istr1,nstr_ex2a2(icmp))+1
-                    idx2 = mod(istr2,nstr_cntc2(icmp))+1
-                    idx  = (idx1-1)*nstr_cntc2(icmp)+idx2
-                    ielmap = map_ex2cnta(ioff+idx)
-                    if (ielmap.eq.0) cycle cntc
-                    isgnop2a = isgnop2a*sign(1,ielmap)
-                    idxop2 = idxop2+(abs(ielmap)-1)*ldim_op2a(icmp)
-                    ioff = ioff + nstr_ex2cnta(icmp)
-                    istr1 = istr1/nstr_ex2a2(icmp)
-                    istr2 = istr2/nstr_cntc2(icmp)
-                  end do
-
-                  sgn = xfac*dble(isgn0*isgnop1c*isgnop2a)
-
-                  ! xfac contained in sgn
-c dbg
-c                  if (idxop1.lt.1) stop 'range1'
-c                  if (idxop2.lt.1) stop 'range2'
-c                  if (idxop1op2.lt.1) stop 'range12'
-c                  if (idxop1.gt.lenop1) stop 'range1'
-c                  if (idxop2.gt.lenop2) stop 'range2'
-c                  if (idxop1op2.gt.lenop12) stop 'range12'
-c dbg
-                  xop1op2(idxop1op2) = xop1op2(idxop1op2)
-     &                          + sgn * xop1(idxop1)
-     &                                * xop2(idxop2)
-
-                end do cntc           
-              end do cnta
-
-            end do ex2c
-          end do ex1c
-
-        end do ex2a
-      end do ex1a
-        
-      return
-      end
-
-      
-*----------------------------------------------------------------------*
-      pure integer function idx_str_blk3(idxc,idxa,ldimc,ldima,
-     &                                   ngastp_c,ngastp_a)
-*----------------------------------------------------------------------*
-*
-*     version for compressed lists on idxc/a, lenc/a
-*      
-*----------------------------------------------------------------------*
-
-      implicit none
-
-      include 'opdim.h'
-
-      integer, intent(in) ::
-     &     ngastp_c, ngastp_a,
-     &     idxc(*), idxa(*), 
-     &     ldimc(*), ldima(*)
-
-      integer ::
-     &     idx
-
-      ! we have to add a one to get the index
-      idx_str_blk3 = 1
-
-      if ((ngastp_c*ngastp_a).eq.0) return
-
-      idx_str_blk3 = idxc(1)*ldimc(1)+idxa(1)*ldima(1) + 1
-      if ((ngastp_c*ngastp_a).eq.1) return
-
-      do idx = 2, ngastp_c
-        idx_str_blk3 = idx_str_blk3+idxc(idx)*ldimc(idx)
-      end do
-      do idx = 2, ngastp_a
-        idx_str_blk3 = idx_str_blk3+idxa(idx)*ldima(idx)
-      end do
-
-      return
-      end
-
-      subroutine set_strmapdim_c(nstr1str2,nstr1,nstr2,
-     &                         nblk12,
-     &                         nstr1r,nstr2r,map12)
-
-      implicit none
-
-      include 'opdim.h'
-      include 'hpvxseq.h'
-
-      integer, intent(out) ::
-     &     nstr1str2(*), nstr1(*), nstr2(*)
-      integer, intent(in) ::
-     &     nblk12,
-     &     nstr1r(*), nstr2r(*), map12(*)
-            
-      integer ::
-     &     idxmap, iblk12, iblk, len1, len2, nblk
-
-      idxmap = 0
-      do iblk12 = 1, nblk12
-c dbg
-c        print *,'iblk12: ',iblk12
-c        print *,'map12: ',map12(idxmap+1:idxmap+4)
-c dbg
-        idxmap = idxmap+1
-        nblk = map12(idxmap) ! already adapted for arbitrary nblk>1
-                             ! (not sure whether this works ...)
-        len1 = 1
-        do iblk = 1, nblk
-          idxmap = idxmap+1
-          len1 = len1*nstr1r(map12(idxmap))
-        end do
-        idxmap = idxmap+1
-        len2 = 1
-        nblk = map12(idxmap)
-        do iblk = 1, nblk
-          idxmap = idxmap+1
-          len2 = len2*nstr2r(map12(idxmap))
-        end do
-        nstr1str2(iblk12) = len1*len2
-        nstr1(iblk12) = len1
-        nstr2(iblk12) = len2
-c dbg
-c        print *,'len1, len2: ',len1,len2
-c dbg
-      end do
-
-      return
-      end
-
-      subroutine set_op_ldim_c(ldimc,ldima,hpvxc,hpvxa,nstr,nc,na)
-      implicit none
-      
-      include 'opdim.h'
-      include 'hpvxseq.h'
-
-      integer, intent(out) ::
-     &     ldimc(nc), ldima(na)
-      integer, intent(in) ::
-     &     hpvxc(nc), hpvxa(na),
-     &     nc, na, nstr(nc+na)
-
-      integer ::
-     &     idx, ldim, ioff, idx_hpvx, hpvx
-
-      ldim = 1
-      do idx_hpvx = 1, ngastp
-        hpvx = hpvxseq(idx_hpvx)
-
-        do idx = 1, nc
-          if (hpvxc(idx).ne.hpvx) cycle
-          ldimc(idx) = ldim
-          ldim = ldim * nstr(idx)
-        end do
-
-        ioff = nc
-        do idx = 1, na
-          if (hpvxa(idx).ne.hpvx) cycle
-          ldima(idx) = ldim
-          ldim = ldim * nstr(ioff+idx)
-        end do
-      end do
-
-      return
-      end
-      

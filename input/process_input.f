@@ -101,6 +101,8 @@
      &     ival=irt_sched)
       call get_argument_value('calculate.routes','contract',
      &     ival=irt_contr)
+      call get_argument_value('calculate.routes','str_block',
+     &     ival=len_str_block)
 
       ! set method specific switches
       ! CC options

@@ -21,6 +21,7 @@
       include 'def_strinf.h'
       include 'mdef_operator_info.h'
       include 'ifc_operators.h'
+      include 'def_contraction_info.h'
       include 'multd2h.h'
       
       integer, parameter ::
@@ -69,22 +70,12 @@
      &     merge_op1(2*contr%nvtx*contr%nvtx), ! a bit too large, I guess ...
      &     merge_op2(2*contr%nvtx*contr%nvtx),
      &     merge_op1op2(2*contr%nvtx*contr%nvtx),
-     &     merge_op2op1(2*contr%nvtx*contr%nvtx),
-     &     nca_blk(2,7)
-      integer, pointer ::
-     &     cinfo_op1c(:,:),cinfo_op1a(:,:),
-     &     cinfo_op2c(:,:),cinfo_op2a(:,:),
-     &     cinfo_op1op2c(:,:),
-     &     cinfo_op1op2a(:,:),
-     &     cinfo_ex1c(:,:),cinfo_ex1a(:,:),
-     &     cinfo_ex2c(:,:),cinfo_ex2a(:,:),
-     &     cinfo_cntc(:,:),cinfo_cnta(:,:),
-     &     map_info1c(:),
-     &     map_info1a(:),
-     &     map_info2c(:),
-     &     map_info2a(:),
-     &     map_info12c(:),
-     &     map_info12a(:)
+     &     merge_op2op1(2*contr%nvtx*contr%nvtx)
+c     &     nca_blk(2,7)
+
+      type(contraction_info) ::
+     &     cnt_info
+
       real(8) ::
      &     flops, xmemtot, xmemblk, bc_sign
 
@@ -219,15 +210,15 @@ c dbg
      &     check_grph4occ(iocc_op1,irst_op1,
      &     str_info,ihpvgas,ngas,njoined_op(1))
 c dbg
-      print *,'op1: ',possible
-      call wrt_occ_n(6,iocc_op1,njoined_op(1))
+c      print *,'op1: ',possible
+c      call wrt_occ_n(6,iocc_op1,njoined_op(1))
 c dbg
       possible = possible.and.
      &     check_grph4occ(iocc_op2,irst_op2,
      &     str_info,ihpvgas,ngas,njoined_op(2))
 c dbg
-      print *,'op2: ',possible
-      call wrt_occ_n(6,iocc_op2,njoined_op(2))
+c      print *,'op2: ',possible
+c      call wrt_occ_n(6,iocc_op2,njoined_op(2))
 c dbg
 
       ! if not: do not allow this factorization
@@ -236,51 +227,14 @@ c dbg
 
       if (possible) then
         if (new_route) then
-          call get_num_subblk(nca_blk(1,1),nca_blk(2,1),
-     &                        iocc_op1,njoined_op(1))
-          call get_num_subblk(nca_blk(1,2),nca_blk(2,2),
-     &                        iocc_op2,njoined_op(2))
-          call get_num_subblk(nca_blk(1,3),nca_blk(2,3),iocc_op1op2,
-     &                                                  njoined_op1op2)
-          call get_num_subblk(nca_blk(1,4),nca_blk(2,4),
-     &                        iocc_ex1,njoined_op(1))
-          call get_num_subblk(nca_blk(1,5),nca_blk(2,5),
-     &                        iocc_ex2,njoined_op(2))
-          call get_num_subblk(nca_blk(1,6),nca_blk(2,6),
-     &                        iocc_cnt,njoined_cnt)
-          ! dummy setting for op1op2tmp (see contr_op1op2)
-          nca_blk(1:2,7) = nca_blk(1:2,3)
-          allocate(
-     &         cinfo_op1c(nca_blk(1,1),3),cinfo_op1a(nca_blk(2,1),3),
-     &         cinfo_op2c(nca_blk(1,2),3),cinfo_op2a(nca_blk(2,2),3),
-     &         cinfo_op1op2c(nca_blk(1,3),3),
-     &                                    cinfo_op1op2a(nca_blk(2,3),3),
-     &         cinfo_ex1c(nca_blk(1,4),3),cinfo_ex1a(nca_blk(2,4),3),
-     &         cinfo_ex2c(nca_blk(1,5),3),cinfo_ex2a(nca_blk(2,5),3),
-     &         cinfo_cntc(nca_blk(1,6),3),cinfo_cnta(nca_blk(2,6),3))
-          allocate(
-     &         map_info1c(max(1,nca_blk(1,1)*2*
-     &                                 (njoined_op(1)+njoined_cnt))),
-     &         map_info1a(max(1,nca_blk(2,1)*2*
-     &                                 (njoined_op(1)+njoined_cnt))),
-     &         map_info2c(max(1,nca_blk(1,2)*2*
-     &                                 (njoined_op(2)+njoined_cnt))),
-     &         map_info2a(max(1,nca_blk(2,2)*2*
-     &                                 (njoined_op(2)+njoined_cnt))),
-     &         map_info12c(max(1,nca_blk(1,3)*2*
-     &                               (njoined_op(1)+njoined_op(2)))),
-     &         map_info12a(max(1,nca_blk(2,3)*2*
-     &                               (njoined_op(1)+njoined_op(2)))))
+          call init_cnt_info(cnt_info,
+     &         iocc_op1,iocc_ex1,njoined_op(1),
+     &            iocc_op2,iocc_ex2,njoined_op(2),
+     &         iocc_cnt,njoined_cnt,
+     &         iocc_op1op2,njoined_op1op2,iocc_op1op2,njoined_op1op2)
+
           call condense_bc_info(
-     &         cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
-     &         cinfo_op1op2c, cinfo_op1op2a,
-     &         cinfo_op1op2c, cinfo_op1op2a,
-     &         cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
-     &         cinfo_cntc, cinfo_cnta,
-     &         map_info1c, map_info1a,
-     &         map_info2c, map_info2a,
-     &         map_info12c, map_info12a,
-     &         nca_blk,
+     &         cnt_info,
      &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
      &         irst_op1, irst_op2, irst_op1op2, irst_op1op2,
@@ -288,43 +242,12 @@ c dbg
      &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &         str_info,ihpvgas,ngas)
           call dummy_contr2(flops,xmemtot,xmemblk,
-     &         nca_blk,
-     &         cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
-     &         cinfo_op1op2c, cinfo_op1op2a,
-     &         cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
-     &         cinfo_cntc, cinfo_cnta,
-     &         map_info1c, map_info1a,
-     &         map_info2c, map_info2a,
-     &         map_info12c, map_info12a,
+     &         cnt_info,
      &         mst_op(1),mst_op(2),mst_op1op2,
      &         igamt_op(1),igamt_op(2),igamt_op1op2,
      &         str_info,ngas,ihpvgas,nsym)          
-          deallocate(
-     &         cinfo_op1c,cinfo_op1a)
-          deallocate(
-     &         cinfo_op2c,cinfo_op2a)
-          deallocate(
-     &         cinfo_op1op2c)
-          deallocate(
-     &         cinfo_op1op2a)
-          deallocate(
-     &         cinfo_ex1c,cinfo_ex1a)
-          deallocate(
-     &         cinfo_ex2c,cinfo_ex2a)
-          deallocate(
-     &         cinfo_cntc,cinfo_cnta)
-          deallocate(
-     &         map_info1c)
-          deallocate(
-     &         map_info1a)
-          deallocate(
-     &         map_info2c)
-          deallocate(
-     &         map_info2a)
-          deallocate(
-     &         map_info12c)
-          deallocate(
-     &         map_info12a)
+
+          call dealloc_cnt_info(cnt_info)
         else
           call dummy_contr(flops,xmemtot,xmemblk,
      &       iocc_op1,iocc_op2,iocc_ex1,iocc_ex2,
