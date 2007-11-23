@@ -20,7 +20,7 @@
       include 'explicit.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(orbinf), intent(inout) ::
      &     orb_info
@@ -276,9 +276,6 @@ c      endif
         write(luout,*) 'iad_gas:'
         call iwrtma(orb_info%iad_gas,ngas,1,ngas,1)
       end if
-
-c      write(luout,*)'End of set_orbinf'
-c      stop
 
       return
       end
