@@ -83,34 +83,6 @@ c     &     nca_blk(2,7)
      &     idxlist, int_expand, int_pack, maxxlvl_op
       logical, external ::
      &     check_grph4occ
-c dbg
-c      integer idx1, idx2
-c dbg
-c dbg
-c check whether
-c      include 'par_opnames_gen.h'
-c      integer idxtbar, ivtx
-c      integer, external :: idx_oplist2
-c      logical tbarda
-c
-c      idxtbar = idx_oplist2(op_tbar,op_info)
-c      tbarda = .false.
-c      do ivtx = 1, contr%nvtx
-c        tbarda = tbarda.or.contr%vertex(ivtx)%idx_op.eq.idxtbar
-c      end do
-c      if (tbarda.and.contr%nsupvtx.gt.2) then
-c        if (contr%vertex(contr%arc(iarc)%link(1))%idx_op.eq.idxtbar .or.
-c     &      contr%vertex(contr%arc(iarc)%link(2))%idx_op.eq.idxtbar)then
-c          
-c          print *,'avoiding early Tbar contr ... arc = ',iarc
-c          possible = .false.
-c         return
-c
-c        end if
-c      end if
-c      if (tbarda) print *,'allowing arc = ',iarc
-c dbg
-
 
       if (ntest.gt.0) then
         call write_title(luout,wst_dbg_subr,'this is fact_cost')
@@ -121,9 +93,6 @@ c dbg
 
       ! preliminary version (valid for standard CC only):
       ! restriction on result:
-c dbg
-c      print *,'call to set_restr_prel'
-c dbg
       call set_restr_prel(irst_res,contr,op_info,ihpvgas,ngas)
  
       call get_bc_info2(bc_sign,
@@ -202,24 +171,12 @@ c dbg
       possible = possible.and.
      &     check_grph4occ(iocc_op1op2,irst_op1op2,
      &     str_info,ihpvgas,ngas,njoined_op1op2)
-c dbg
-      print *,'op1op2: ',possible
-      call wrt_occ_n(6,iocc_op1op2,njoined_op1op2)
-c dbg
       possible = possible.and.
      &     check_grph4occ(iocc_op1,irst_op1,
      &     str_info,ihpvgas,ngas,njoined_op(1))
-c dbg
-c      print *,'op1: ',possible
-c      call wrt_occ_n(6,iocc_op1,njoined_op(1))
-c dbg
       possible = possible.and.
      &     check_grph4occ(iocc_op2,irst_op2,
      &     str_info,ihpvgas,ngas,njoined_op(2))
-c dbg
-c      print *,'op2: ',possible
-c      call wrt_occ_n(6,iocc_op2,njoined_op(2))
-c dbg
 
       ! if not: do not allow this factorization
       if (.not.possible)
