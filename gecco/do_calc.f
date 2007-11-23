@@ -15,8 +15,7 @@
       include 'def_file_list.h'
       include 'def_file_array.h'
       include 'def_operator_info.h'
-      include 'def_action.h'
-      include 'def_action_list.h'
+      include 'mdef_target_info.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_strmapinf.h'
@@ -29,17 +28,18 @@
       character, intent(in) ::
      &     env_type*(*)
 
+      type(target_info) ::
+     &     tgt_info
+
       type(operator_info) ::
      &     op_info
       type(formula_info) ::
      &     form_info
 
-      type(action_list), pointer ::
-     &     act_list, current_act
-      type(filinf) ::
-     &     ffform_opt
       integer ::
-     &     ifree, nactions, nroots
+     &     ifree
+      type(target), pointer ::
+     &     tgt
       type(strinf), pointer ::
      &     str_info
       type(strmapinf), pointer ::
@@ -47,162 +47,51 @@
 
       ifree = mem_setmark('do_calc')
       
-      if(is_keyword_set('method.R12').gt.0)then
-        ! setting the common /explicit/
-        explicit=.true.
-        call get_argument_value('method.R12','ansatz',ival=ansatze)
-        if(ansatze.gt.3.or.ansatze.lt.1)then
-          call quit(1,'do_calc',
-     &         'Undefined R12 ansatz requested.')
-        endif
-        call get_argument_value('method.R12','triples',ival=trir12)
-      else
-        explicit=.false.
-      endif  
-
       ! set up orbital info
       call set_orbinf(orb_info,.true.)
 
+      ! initialize target list
+      call init_target_info(tgt_info)
+      call set_target_list(tgt_info)
+
+      ! initialize basis info blocks and set memory blocks:
+      !  operators:
       ifree = mem_setmark(operator_def)
       call init_operator_info(op_info)
-      ! set up operators
-      op_info%nops = 0
-      call set_operators(op_info,orb_info)
-      if (op_info%nops.eq.0)
-     &     call quit(0,'do_calc','no operators defined?')
 
-      ! turn linked lists into arrays
-      call update_op_arr(op_info)
-      ! preliminary fix for generating unique operator IDs:
-      op_info%id_cnt = op_info%nops
-
+      !  formulae:
       ifree = mem_setmark(formula_def)
       call init_formula_info(form_info)
       form_info%nform = 0
-      ! set up (basic) formulae
-      call set_formulae(form_info,op_info,orb_info)
-      call update_form_arr(form_info)
-      if (form_info%nform.eq.0)
-     &     call quit(0,'do_calc','no formula/method defined?')
+c dbg
+      stop 'BAUSTELLE'
+c dbg
 
-      ifree = mem_setmark(action_def)
-      allocate(act_list)
-      nullify(act_list%act)
-      nullify(act_list%prev)
-      nullify(act_list%next)
-      nactions = 0
-      ! set up actions
-      call set_actions(act_list,nactions,
-     &     form_info,op_info)
-      if (nactions.eq.0)
-     &     call quit(0,'do_calc','no actions defined?')
-
-      ! set up graphs
+      ! graphs:
       ifree = mem_setmark(graph_def)
-      allocate(str_info)
-      call set_graphs_for_ops(str_info,
-     &     op_info%op_list,op_info%nops,orb_info)
       ifree = mem_setmark(strmaps)
-      allocate(strmap_info)
-      call init_strmap(str_info,strmap_info)
-
-      ! set up operator dimensions
-      call mem_pushmark() ! push current memory section
-      ifree = mem_gotomark(operator_def)
-      call set_dim_for_ops(op_info%op_list,op_info%nops,
-     &     str_info,orb_info)
-      call mem_popmark() ! pop current memory section
-
-      ! turn linked lists into arrays
-      call update_op_arr(op_info)
 
       ! initialize files for operator elements
       ifree = mem_setmark(op_files)
-      ! new behaviour: set only mark here and assign files when needed
-c      call init_op_files(op_info)
 
-      ! loop over requested actions
-      current_act => act_list
+      ! loop until all dependencies are fulfilled
       do
-        if (.not.associated(current_act%act))
-     &       call quit(1,'do_calc','action list is buggy')
+        ! get next target to process
+c        idx = get_next_target(tgt_info)
+c        tgt => tgt_info%array(idx)%tgt
 
-        select case (current_act%act%action_type)
-          case (iaction_import)
-            ! import operator matrix elements
-            call import_op_el(current_act%act%idxopdef_out(1),
-     &                        op_info,
-     &                        env_type,str_info,orb_info)
-          case (iaction_evaluate)
-            ! evaluate a single formula expression
-            call file_init(ffform_opt,name_form_opt,ftyp_sq_unf,0)
-            call form_opt(ffform_opt,
-     &           current_act%act%nform,current_act%act%idx_formula,
-     &           form_info,op_info,str_info,orb_info)
-            call evaluate(current_act%act%nop_out,
-     &                     current_act%act%idxopdef_out,
-     &                     current_act%act%nop_in,
-     &                     current_act%act%idxopdef_in,
-     &                     ffform_opt,
-     &                     op_info,str_info,strmap_info,orb_info
-     &                    )
-            call file_delete(ffform_opt)
-          case (iaction_setup_prc)
-            call set_prc4op(current_act%act%idxopdef_out(1),
-     &                      current_act%act%idxopdef_in(1),
-     &                      current_act%act%idxopdef_in(2),
-     &                      op_info,
-     &                      str_info,orb_info)
-          case (iaction_solve_leq)
-            ! Solve system of linear equations
-            call file_init(ffform_opt,name_form_opt,ftyp_sq_unf,0)
-            call form_opt(ffform_opt,
-     &           current_act%act%nform,current_act%act%idx_formula,
-     &           form_info,op_info,str_info,orb_info)
-            nroots = 1 ! preliminary fix
-            call solve_leq(current_act%act%nop_opt,nroots,
-     &                      current_act%act%nop_out,
-     &                      current_act%act%idxopdef_out,
-     &                      current_act%act%nop_in,
-     &                      current_act%act%idxopdef_in,
-     &                      ffform_opt,
-     &                      op_info,str_info,strmap_info,orb_info
-     &                     )
-            call file_delete(ffform_opt)
-          case (iaction_solve_nleq)
-            ! get optimized formula file
-            call file_init(ffform_opt,name_form_opt,ftyp_sq_unf,0)
-            call form_opt(ffform_opt,
-     &           current_act%act%nform,current_act%act%idx_formula,
-     &           form_info,op_info,str_info,orb_info)
-            ! Solve system of non-linear equations
-            call solve_nleq(current_act%act%nop_opt,
-     &                      current_act%act%nop_out,
-     &                      current_act%act%idxopdef_out,
-     &                      current_act%act%nop_in,
-     &                      current_act%act%idxopdef_in,
-     &                      ffform_opt,
-     &                      op_info,str_info,strmap_info,orb_info
-     &                     )
-            call file_delete(ffform_opt)
-          case (iaction_solve_evp)
-            ! Solve eigenvalue problem
-            call quit(1,'do_calc','action not implemented yet')
-          case (iaction_solve_gevp)
-            ! Solve general eigenvalue problem
-            call quit(1,'do_calc','action not implemented yet')
-          case (iaction_prop_eval)
-            ! evaluate properties for given density list
-            call prop_evaluate(current_act%act%nop_in,1,
-     &           current_act%act%idxopdef_in,
-     &           env_type,op_info,str_info,orb_info)
-          case default
-            write(luout,*) 'action = ',current_act%act%action_type
-            call quit(1,'do_calc','unknown action')
+        ! which type of target ?
+        select case (tgt%type)
+        case(ttype_op)
+          ! set up operator definitions
+c          call do_opdef
+        case(ttype_frm,ttype_frmopt)
+          ! set up formulat definitions
+c          call do_form
+        case(ttype_opme)
+          ! import operators/evaluate formulae
+c          call do_eval
         end select
-
-        if (.not.associated(current_act%next)) exit
-        current_act => current_act%next
 
       end do
         
@@ -211,11 +100,10 @@ c      deallocate(ffform)
       ! still a few deallocs missing .... !!      
       deallocate(str_info)
       ifree = mem_flushmark(op_files)
-      call clean_strmap(strmap_info)
-      deallocate(strmap_info)
+c      call clean_strmap(strmap_info)
+c      deallocate(strmap_info)
       ifree = mem_flushmark(strmaps)
       ifree = mem_flushmark(graph_def)
-      ifree = mem_flushmark(action_def)
       ifree = mem_flushmark(formula_def)
       ifree = mem_flushmark(operator_def)
 
