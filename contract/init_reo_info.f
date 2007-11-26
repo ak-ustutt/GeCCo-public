@@ -1,9 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine init_reo_info(reo_info)
 *----------------------------------------------------------------------*
-*     initialize all pointers and set all mxvtx, mxarc, mxfac variables
-*     to zero (describing the current size of allocated space for 
-*     vertices, arcs, and factorization info)
+*     initialize all pointers 
 *----------------------------------------------------------------------*
       implicit none
 

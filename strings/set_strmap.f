@@ -33,7 +33,8 @@
       integer ::
      &     nsym, ifree, ipass,
      &     lenbuf, idxbuf, idxms1, idxms2, ioff_symtab,
-     &     idxmap, igam2, igam1, nstr2, nstr1
+     &     idxmap, igam2, igam1, nstr2, nstr1,
+     &     maxlen_blk
       integer, pointer ::
      &     mostnd(:,:,:), idx_gas(:), ngas_hpv(:), igamorb(:)
 
@@ -64,6 +65,7 @@
         call quit(1,'set_strmap','incompatible graph occupations')
       end if
 
+      maxlen_blk = 0
       do ipass = 1, 2
 
         if (ipass.eq.2) then
@@ -72,6 +74,7 @@
             write(luout,*) 'allocating ',lenbuf,' integer words'
           end if
           ifree = mem_alloc_int(buffer,lenbuf,'buffer')
+          strmap_info%maxlen_blk(idxgrgr) = maxlen_blk
           strmap_info%offsets(idxgrgr)%msms(1:(iocc1+1)*(iocc2+1)) = -1
         end if
 
@@ -89,6 +92,7 @@
               nstr2 = graph2%lenstr_gm(igam2,idxms2)
               do igam1 = 1, nsym
                 nstr1 = graph1%lenstr_gm(igam1,idxms1)
+                maxlen_blk = max(maxlen_blk,nstr1*nstr2)
                 if (ipass.eq.2) then
                   strmap_info%offsets(idxgrgr)%
      &                 msmsgmgm(((idxms2-1)*(iocc1+1)+idxms1-1)

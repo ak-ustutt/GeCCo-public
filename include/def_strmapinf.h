@@ -12,6 +12,8 @@
      &     idx_last
         type(filinf) ::
      &     ffstrmap
+        integer, pointer ::
+     &     maxlen_blk(:)
         type(strmap_offsets), pointer ::
      &       offsets(:)
       end type strmapinf

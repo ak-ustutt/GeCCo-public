@@ -124,7 +124,7 @@ c     &       number of joined vertices')
       else if (idx2.lt.njoined) then
         ! try to fix: insert 0-occ after DX, before EX
 c dbg
-        print *,'fixing 0-occ'
+c        print *,'fixing 0-occ'
 c dbg
         nvtx = idx2
         nins = njoined-nvtx

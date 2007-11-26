@@ -21,12 +21,12 @@
      &     str_scr(len+1:len+mxlen-len) = ' '
       if (wall.ne.-1d0) then
         write(luout,
-     &     '(x,"@ ",a,"  cpu/sys/wall: ",f11.2,"/",f11.2,"/",'//
-     &     'f11.2" s")') 
+     &     '(x,"@ ",a,"  cpu/sys/wall: ",f9.2," /",f9.2," /",'//
+     &     'f9.2" s")') 
      &     str_scr,cpu,sys,wall
       else
         write(luout,
-     &     '(x,"@ ",a,"  cpu/sys:      ",f11.2,"/",f11.2" s")') 
+     &     '(x,"@ ",a,"  cpu/sys:      ",f9.2," /",f9.2," s")') 
      &     str_scr,cpu,sys
       end if
 

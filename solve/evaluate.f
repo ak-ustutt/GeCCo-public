@@ -37,7 +37,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     nop_in, nop_out,
@@ -93,13 +93,18 @@ c dbg
         do iop = 1, nop_out
           write(luout,'(4x,i4," - ",g12.6)') iop, xret(iop)
         end do
-c dbg
-        call wrt_op_file(luout,4,
-     &       op_info%opfil_arr(idxop_out(1))%fhand,
-     &       op_info%op_arr(idxop_out(1))%op,
-     &       1,op_info%op_arr(idxop_out(1))%op%n_occ_cls,
+      end if
+
+      if (ntest.ge.1000) then
+        do iop = 1, nop_out
+          write(luout,*) 'dump of result for ',
+     &         trim(op_info%op_arr(idxop_out(iop))%op%name)
+          call wrt_op_file(luout,5,
+     &       op_info%opfil_arr(idxop_out(iop))%fhand,
+     &       op_info%op_arr(idxop_out(iop))%op,
+     &       1,op_info%op_arr(idxop_out(iop))%op%n_occ_cls,
      &       str_info,orb_info)
-c dbg
+        end do
       end if
 
       ifree = mem_flushmark()

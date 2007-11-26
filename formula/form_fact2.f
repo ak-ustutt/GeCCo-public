@@ -18,7 +18,7 @@
       integer, parameter ::
      &     maxcount = 1000,  ! at most 1000 iterations
      &     ndisconn = 3,     ! at most 3 extra levels for disconnected
-     &     ntest = 1000                                   ! vertices
+     &     ntest = 000                                   ! vertices
 
       type(contraction), intent(inout) ::
      &     contr
@@ -252,9 +252,6 @@ c dbg
 
       integer, external ::
      &     joint_idx
-c dbg
-c     &    , idxlist
-c dbg      
       
       if (orb_info%nsym.eq.0) call quit(1,'form_fact2_r1','buggy nsym!')
       if (ntest.ge.1000) then
@@ -333,21 +330,6 @@ c dbg
         ifact(4,nlevel) = iarc_ori(iarc)
         ifact(5,nlevel) = iarc
 
-c dbg
-c        if (nlevel.gt.1.and.
-c     &      (ifact(1,nlevel).gt.nvtx_full.and.
-c     &       idxlist(ifact(1,nlevel),ifact,4*(nlevel-1),1).le.0 .or.
-c     &       ifact(2,nlevel).gt.nvtx_full.and.
-c     &       idxlist(ifact(2,nlevel),ifact,4*(nlevel-1),1).le.0) ) then
-c          write(luout,*) 'something is wrong:'
-c          write(luout,'(x,i5,"*",i5,"->",i5,"(",i5,")")')
-c     &           ifact(1:4,1:nlevel)
-c          write(luout,*) 'ivtx_ori = ',ivtx_ori(contr%nvtx)
-c          write(luout,*) 'iarc_ori = ',iarc_ori(contr%narc)
-c          stop 'WRONG'
-c        end if
-c dbg        
-
         ! ... and find out what the
         ! contr structure looks like after this operation
         call init_contr(contr_red)
@@ -382,6 +364,7 @@ c dbg
         ! any contraction left?
         if (contr_red%narc.gt.0) then
 
+          ! add 0-contractions, if necessary
           call check_disconnected(contr_red)
           
           call form_fact_rec(nlevel+1,ifact,

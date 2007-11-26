@@ -30,6 +30,7 @@
       include 'def_orbinf.h'
       include 'def_filinf.h'
       include 'def_strmapinf.h'
+      include 'def_contraction_info.h'
       include 'def_reorder_info.h'
 
       logical, intent(in) ::
@@ -67,24 +68,26 @@
       type(reorder_info), intent(in) ::
      &     reo_info
 
-      integer ::
-     &     nca_blk(2,7)
-      integer, pointer ::
-     &     cinfo_op1c(:,:),cinfo_op1a(:,:),
-     &     cinfo_op2c(:,:),cinfo_op2a(:,:),
-     &     cinfo_op1op2c(:,:),
-     &     cinfo_op1op2a(:,:),
-     &     cinfo_op1op2tmpc(:,:),
-     &     cinfo_op1op2tmpa(:,:),
-     &     cinfo_ex1c(:,:),cinfo_ex1a(:,:),
-     &     cinfo_ex2c(:,:),cinfo_ex2a(:,:),
-     &     cinfo_cntc(:,:),cinfo_cnta(:,:),
-     &     map_info1c(:),
-     &     map_info1a(:),
-     &     map_info2c(:),
-     &     map_info2a(:),
-     &     map_info12c(:),
-     &     map_info12a(:)
+      type(contraction_info) ::
+     &     cnt_info
+c      integer ::
+c     &     nca_blk(2,7)
+c      integer, pointer ::
+c     &     cinfo_op1c(:,:),cinfo_op1a(:,:),
+c     &     cinfo_op2c(:,:),cinfo_op2a(:,:),
+c     &     cinfo_op1op2c(:,:),
+c     &     cinfo_op1op2a(:,:),
+c     &     cinfo_op1op2tmpc(:,:),
+c     &     cinfo_op1op2tmpa(:,:),
+c     &     cinfo_ex1c(:,:),cinfo_ex1a(:,:),
+c     &     cinfo_ex2c(:,:),cinfo_ex2a(:,:),
+c     &     cinfo_cntc(:,:),cinfo_cnta(:,:),
+c     &     map_info1c(:),
+c     &     map_info1a(:),
+c     &     map_info2c(:),
+c     &     map_info2a(:),
+c     &     map_info12c(:),
+c     &     map_info12a(:)
       
       real(8) ::
      &     cpu, sys, cpu0, sys0
@@ -113,55 +116,15 @@
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
      &     str_info,strmap_info,orb_info)
-      case(2)
+      case(2,3)
         ! reform to "condensed" description of contraction
-        call get_num_subblk(nca_blk(1,1),nca_blk(2,1),
-     &       iocc_op1,njoined_op1)
-        call get_num_subblk(nca_blk(1,2),nca_blk(2,2),
-     &       iocc_op2,njoined_op2)
-        call get_num_subblk(nca_blk(1,3),nca_blk(2,3),iocc_op1op2,
-     &       njoined_op1op2)
-        call get_num_subblk(nca_blk(1,7),nca_blk(2,7),iocc_op1op2tmp,
-     &       njoined_op1op2)
-        call get_num_subblk(nca_blk(1,4),nca_blk(2,4),
-     &       iocc_ex1,njoined_op1)
-        call get_num_subblk(nca_blk(1,5),nca_blk(2,5),
-     &       iocc_ex2,njoined_op2)
-        call get_num_subblk(nca_blk(1,6),nca_blk(2,6),
-     &       iocc_cnt,njoined_cnt)
-        allocate(
-     &       cinfo_op1c(nca_blk(1,1),3),cinfo_op1a(nca_blk(2,1),3),
-     &       cinfo_op2c(nca_blk(1,2),3),cinfo_op2a(nca_blk(2,2),3),
-     &       cinfo_op1op2c(nca_blk(1,3),3),
-     &       cinfo_op1op2a(nca_blk(2,3),3),
-     &       cinfo_op1op2tmpc(nca_blk(1,7),3),
-     &       cinfo_op1op2tmpa(nca_blk(2,7),3),
-     &       cinfo_ex1c(nca_blk(1,4),3),cinfo_ex1a(nca_blk(2,4),3),
-     &       cinfo_ex2c(nca_blk(1,5),3),cinfo_ex2a(nca_blk(2,5),3),
-     &       cinfo_cntc(nca_blk(1,6),3),cinfo_cnta(nca_blk(2,6),3))
-        allocate(
-     &       map_info1c(max(1,nca_blk(1,1)*2*
-     &       (njoined_op1+njoined_cnt))),
-     &       map_info1a(max(1,nca_blk(2,1)*2*
-     &       (njoined_op1+njoined_cnt))),
-     &       map_info2c(max(1,nca_blk(1,2)*2*
-     &       (njoined_op2+njoined_cnt))),
-     &       map_info2a(max(1,nca_blk(2,2)*2*
-     &       (njoined_op2+njoined_cnt))),
-     &         map_info12c(max(1,nca_blk(1,7)*2*
-     &       (njoined_op1+njoined_op2))),
-     &       map_info12a(max(1,nca_blk(2,7)*2*
-     &       (njoined_op1+njoined_op2))))
+        call init_cnt_info(cnt_info,
+     &     iocc_op1,iocc_ex1,njoined_op1,iocc_op2,iocc_ex2,njoined_op2,
+     &     iocc_cnt,njoined_cnt,
+     &     iocc_op1op2,njoined_op1op2,iocc_op1op2tmp,njoined_op1op2)
+
         call condense_bc_info(
-     &       cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
-     &       cinfo_op1op2c, cinfo_op1op2a,
-     &       cinfo_op1op2tmpc, cinfo_op1op2tmpa,
-     &       cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
-     &       cinfo_cntc, cinfo_cnta,
-     &       map_info1c, map_info1a,
-     &       map_info2c, map_info2a,
-     &       map_info12c, map_info12a,
-     &       nca_blk,
+     &       cnt_info,
      &       iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
      &       iocc_ex1,iocc_ex2,iocc_cnt,
      &       irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
@@ -169,37 +132,14 @@
      &       njoined_op1, njoined_op2,njoined_op1op2, njoined_cnt,
      &       str_info,orb_info%ihpvgas,orb_info%ngas)
         call contr_op1op2_wmaps_c(xfac,bc_sign,ffop1,ffop2,
-     &     update,ffop1op2,xret,type_xret,
-     &     op1,op2,op1op2,op1op2tmp,
-     &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
-     &     idoffop1,idoffop2,idoffop1op2,
-     &       nca_blk,
-     &       cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
-     &       cinfo_op1op2c, cinfo_op1op2a,
-     &       cinfo_op1op2tmpc, cinfo_op1op2tmpa,
-     &       cinfo_ex1c, cinfo_ex1a, cinfo_ex2c, cinfo_ex2a,
-     &       cinfo_cntc, cinfo_cnta,
-     &       map_info1c, map_info1a,
-     &       map_info2c, map_info2a,
-     &       map_info12c, map_info12a,
-     &     mstop1,mstop2,mstop1op2,
-     &     igamtop1,igamtop2,igamtop1op2,
-     &     reo_info,
-     &     str_info,strmap_info,orb_info)
-        deallocate(
-     &       cinfo_op1c,cinfo_op1a,
-     &       cinfo_op2c,cinfo_op2a,
-     &       cinfo_op1op2c,cinfo_op1op2a,
-     &       cinfo_ex1c,cinfo_ex1a,
-     &       cinfo_ex2c,cinfo_ex2a,
-     &       cinfo_cntc,cinfo_cnta)
-        deallocate(
-     &       map_info1c,
-     &       map_info1a,
-     &       map_info2c,
-     &       map_info2a,
-     &       map_info12c,
-     &       map_info12a)
+     &       update,ffop1op2,xret,type_xret,
+     &       op1,op2,op1op2,op1op2tmp,
+     &       iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
+     &       idoffop1,idoffop2,idoffop1op2,
+     &       cnt_info,reo_info,
+     &       str_info,strmap_info,orb_info)
+
+        call dealloc_cnt_info(cnt_info)
 
       case default
         write(luout,*) 'contr_op1op2: route = ',irt_contr

@@ -247,7 +247,8 @@
       call occvtx4contr(0,occ_vtx,contr_abc,op_info)
 
       ! generate all possible contractions (hopefully only 1)
-      call gen_contr2(wrap,contr_abc,fix_vtx,occ_vtx,op_info)
+c      call gen_contr2(wrap,contr_abc,fix_vtx,occ_vtx,op_info)
+      call gen_contr3(wrap,contr_abc,fix_vtx,occ_vtx,njoined,op_info)
 
       ! none at all?
       if (wrap%command.eq.command_end_of_formula) then

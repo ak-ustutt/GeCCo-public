@@ -11,7 +11,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(filinf), intent(inout) ::
      &     ffao, ffcmo, ffmo
@@ -155,9 +155,6 @@
             xop => ffmo%buffer(idxst:)
           else
             call get_vec(ffmo,xmo,idxst,idxnd)
-c dbg
-            print *,'idxst,idxnd: ',idxst,idxnd,idxnd-idxst+1
-c dbg
             xop => xmo
           end if
 

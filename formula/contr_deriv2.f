@@ -230,8 +230,8 @@
           cur_conder%contr%iblk_res = iblk_occ(iocc,.false.,
      &                                          op_arr(idxres)%op)
 c dbg
-          print *,'idx, occ: ',cur_conder%contr%iblk_res
-          call wrt_occ_n(luout,iocc,njoined)
+c          print *,'idx, occ: ',cur_conder%contr%iblk_res
+c          call wrt_occ_n(luout,iocc,njoined)
 c dbg          
 
           if (cur_conder%contr%iblk_res.le.0) then
@@ -250,7 +250,7 @@ c dbg
           call dealloc_contr(cur_conder%contr)
           deallocate(cur_conder%contr)
 c dbg
-          print *,'skipping with ierr = ',ierr
+c          print *,'skipping with ierr = ',ierr
 c dbg
         else
           nder_actually = nder_actually + 1
