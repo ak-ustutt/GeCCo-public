@@ -47,18 +47,19 @@
 
       ifree = mem_setmark('do_calc')
       
-      if(is_keyword_set('method.R12').gt.0)then
-        ! setting the common /explicit/
-        explicit=.true.
-        call get_argument_value('method.R12','ansatz',ival=ansatze)
-        if(ansatze.gt.3.or.ansatze.lt.1)then
-          call quit(1,'do_calc',
-     &         'Undefined R12 ansatz requested.')
-        endif
-        call get_argument_value('method.R12','triples',ival=trir12)
-      else
-        explicit=.false.
-      endif  
+c      if(is_keyword_set('method.R12').gt.0)then
+c        ! setting the common /explicit/
+c        explicit=.true.
+c        call get_argument_value('method.R12','ansatz',ival=ansatze)
+c        if(ansatze.gt.3.or.ansatze.lt.1)then
+c          call quit(1,'do_calc',
+c     &         'Undefined R12 ansatz requested.')
+c        endif
+c        call get_argument_value('method.R12','triples',ival=trir12)
+c        call get_argument_value('method.R12','mp2',lval=mp2)
+c      else
+c        explicit=.false.
+c      endif  
 
       ! set up orbital info
       call set_orbinf(orb_info,.true.)
@@ -147,10 +148,7 @@ c      call init_op_files(op_info)
      &                    op_info,str_info,strmap_info,orb_info)
             call file_delete(ffform_opt)
           case (iaction_setup_prc)
-            if(explicit)then
-              write(luout,*)'Temporary stop in do_calc: evaluations.'
-              stop
-            endif  
+            ! Set pre-conditioners prior to solving equations.
             call set_prc4op(current_act%act%idxopdef_out(1),
      &                      current_act%act%idxopdef_in(1),
      &                      current_act%act%idxopdef_in(2),
@@ -202,6 +200,12 @@ c      call init_op_files(op_info)
             call symm_op(current_act%act%idxopdef_in(1),
      &                   current_act%act%idxopdef_out(1),
      &                   op_info,orb_info,str_info)
+          case(iaction_diagonal)
+            ! Extract diagonal of operator.
+            call extract_diag_op(current_act%act%idxopdef_in(1),
+     &                           current_act%act%idxopdef_out(1),
+     &                           .true.,op_info,orb_info,str_info)
+
           case default
             write(luout,*) 'action = ',current_act%act%action_type
             call quit(1,'do_calc','unknown action')

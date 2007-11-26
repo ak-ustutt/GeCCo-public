@@ -196,15 +196,6 @@ c      endif
         call wrt_occ(luout,ioff)
       end if
 
-c dbg
-      if(mode.eq.1.and.idxprqs(1).eq.8.and.idxprqs(2).eq.1.and.
-     &     idxprqs(3).eq.2.and.idxprqs(4).eq.2)then
-        write(luout,*)'testing 3'
-        write(luout,*)'take_ca, iblk_ca',take_ca, iblk_ca
-        write(luout,*)'take_ac, iblk_ac',take_ac, iblk_ac
-      endif
-c dbg      
-
       nstr = 0
       inc = 1
       if (take_ca.and.take_ac) inc = 2
@@ -292,15 +283,6 @@ c dbg
      &         call quit(1,'idx42str','error for idstr_ac') 
         end if
 
-c dbg
-c        if(mode.eq.1.and.idxprqs(1).eq.8.and.idxprqs(2).eq.1.and.
-c     &       idxprqs(3).eq.2.and.idxprqs(4).eq.2)then
-c          write(luout,*)'testing 4'
-c          write(luout,*)'take_ca, idstr_ca',take_ca, idstr_ca
-c          write(luout,*)'take_ac, idstr_ac',take_ac, idstr_ac
-c        endif
-c dbg      
-
         if (ntest.ge.100) then
           call wrt_occ(luout,iocc)
           call wrt_occ(luout,msd)
@@ -360,15 +342,6 @@ c dbg
               end if
             endif
             curgraph => str_info%g(igraph)
-
-c dbg
-c            if(mode.eq.1.and.idxprqs(1).eq.8.and.idxprqs(2).eq.1.and.
-c     &           idxprqs(3).eq.2.and.idxprqs(4).eq.2)then
-c              write(luout,*)'testing 6'
-c              write(luout,*)'take_ca, igraph',take_ca, igraph
-c              write(luout,*)'take_ac, igraph',take_ac, igraph
-c            endif
-c dbg      
 
             ! check for restrictions
             if (.not.allow_sbsp_dis(idspc(ipos),nel,

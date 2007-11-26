@@ -20,7 +20,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       logical, parameter ::
      &     strict = .false.
 

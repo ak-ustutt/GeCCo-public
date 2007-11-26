@@ -19,6 +19,8 @@
       include 'def_strinf.h'
       include 'def_orbinf.h'
       include 'ifc_memman.h'
+      include 'par_opnames_gen.h'
+      include 'explicit.h'
 
       integer, intent(in) ::
      &     idxprc, idxop, idxham
@@ -40,16 +42,13 @@
      &     ffopham, ffopprc
 
       real(8), pointer ::
-     &     x1dia(:)
+     &     x1dia(:), x2dia(:)
 
       call atim_csw(cpu0,sys0,wall0)
 
       nops = op_info%nops
 
       ifree = mem_setmark('prc4op')
-      ! this assumption is probably not too bad:
-      ifree = mem_alloc_real(x1dia,2*(orb_info%ntoob+orb_info%caborb)
-     &     ,'x1dia')
 
       if (idxham.lt.0.or.idxham.gt.nops .or.
      &    idxprc.lt.0.or.idxprc.gt.nops .or.
@@ -63,6 +62,15 @@
       opprc => op_info%op_arr(idxprc)%op
       opop  => op_info%op_arr(idxop)%op
       ffopham => op_info%opfil_arr(idxham)%fhand
+
+      ! this assumption is probably not too bad:
+      if(opham%name.eq.op_ham)then
+c        ifree = mem_alloc_real(x1dia,2*(orb_info%ntoob+orb_info%caborb)
+c     &       ,'x1dia')
+        ifree = mem_alloc_real(x1dia,2*orb_info%ntoob,'x1dia')
+      elseif(opham%name.eq.op_b_inter)then
+        ifree = mem_alloc_real(x2dia,4*orb_info%ntoob**2,'x2dia')
+      endif
 
       if (.not.associated(ffopham))
      &     call quit(1,'set_prc4op','no file handle defined for '//
@@ -78,12 +86,26 @@
      &     write(luout,*) 'set up diagonal for ',trim(opop%name),
      &     ' from rank 1 part of ',trim(opham%name)
 
-      ! extract the fock-matrix diagonal
-      call onedia_from_op(x1dia,ffopham,opham,
-     &     orb_info)
+      ! Select which type of preconditioner is required. 
+      if(opham%name.eq.op_ham)then
+        ! extract the fock-matrix diagonal for normal CC-part
+        call onedia_from_op(x1dia,ffopham,opham,
+     &       orb_info)
 
-      ! set up preconditioner
-      call dia4op(ffopprc,x1dia,opop,str_info,orb_info)      
+        ! set up preconditioner
+        call dia4op(ffopprc,x1dia,opop,str_info,orb_info)
+
+      elseif(opham%name.eq.op_b_inter)then
+        if(.not.explicit)
+     &       call quit(1,'set_prc4op','Non-R12 use of B-matrix?')
+        ! Extract the diagonal elements of the B-matrix for R12.
+        call twodia_from_op(x2dia,ffopham,opham,
+     &       orb_info)
+
+        ! Set up preconditioner.
+        call diag_fill(ffopprc,x2dia,opham,str_info,orb_info)
+
+      endif
 
       if (ntest.ge.1000) then
         call wrt_op_file(luout,5,ffopprc,opprc,1,

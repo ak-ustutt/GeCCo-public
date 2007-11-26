@@ -7,8 +7,10 @@
      &     iaction_solve_gevp = 6,
      &     iaction_setup_prc  = 7,
      &     iaction_prop_eval  = 8,
-     &     iaction_symmetrise = 9
-
+     &     iaction_symmetrise = 9,
+c dbg
+     &     iaction_diagonal   = 10
+c dbg
       type action
         integer ::
      &       action_type

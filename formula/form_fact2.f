@@ -149,7 +149,7 @@ c dbg
       end if
 
       ! add 0-contractions, if necessary
-      call check_disconnected(contr)
+      if (nvtx_full.ne.njoined) call check_disconnected(contr)
       
       found = .false.
       costmin = huge(costmin)
@@ -384,8 +384,6 @@ c dbg
 
           call check_disconnected(contr_red)
           
-          call check_disconnected(contr_red)
-        
           call form_fact_rec(nlevel+1,ifact,
      &         cost,iscale,contr_red,occ_vtx_red,
      &                              irestr_vtx_red,info_vtx_red,

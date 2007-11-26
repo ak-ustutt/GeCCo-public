@@ -9,7 +9,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -89,6 +89,10 @@ c dbg
         end if
 
         call read_form_list(cur_ffile,form_ptr)
+c dbg
+        print *,'raw formula'
+        call print_form_list(luout,form_ptr,op_info)
+c dbg
 
         ! advance form_ptr to end of list
         ! (not possible via call list due to ifort problems)

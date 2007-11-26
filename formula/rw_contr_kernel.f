@@ -65,7 +65,7 @@ c        end if
           idx = idx+2
         end do
 
-        do ii = 1, contr%nsupvtx
+        do ii = 1, contr%nvtx
           contr%svertex(ii) = buffer(idx+1)
           idx = idx+1
         end do
@@ -123,9 +123,9 @@ c        end if
         end do
         if (ierr.gt.0) goto 102
         
-        if (idx+contr%nsupvtx.gt.lbuf) goto 103
+        if (idx+contr%nvtx.gt.lbuf) goto 103
 
-        do ii = 1, contr%nsupvtx
+        do ii = 1, contr%nvtx
           buffer(idx+1) = contr%svertex(ii)
           idx = idx+1
         end do

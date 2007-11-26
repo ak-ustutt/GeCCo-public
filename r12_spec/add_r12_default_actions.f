@@ -16,6 +16,7 @@
       include 'mdef_formula_info.h'
       include 'def_action.h'
       include 'def_action_list.h'
+      include 'explicit.h'
 
       type(action_list), intent(inout) ::
      &     act_list
@@ -28,27 +29,33 @@
 
       integer ::
      &     idxham, idxc12, idxdia, idxccen, idxccrs, idxomg, idxhhat,
-     &     idum, isim, idxr12, idxrba, idxsop, idxdel, idxttr,
-     &     idxvint, idx_v_form, idxbint, idx_b_form, idx_b_symm,
-     &     idx_b_symm_form
-  
+     &     idum, isim, idxtop, idxr12, idxrba, idxttr,
+     &     idxvint, idx_v_form, idxvbint, idx_vb_form, idxbint,
+     &     idx_b_form, idx_b_symm, idx_b_symm_form, idxr12dia,
+     &     idx_b_inv, idx_b_inv_form, idxecc, idxomg12, idxccrs12,
+     &     idxr12sq
+
       ! explicit interface does not work with ifort
       integer, external ::
      &     idx_oplist2, idx_formlist
 
       idxham = idx_oplist2(op_ham,op_info)
       idxc12 = idx_oplist2(op_c12,op_info)
-      idxomg = idx_oplist2(op_omgr12,op_info)
-      idxdia = idx_oplist2(op_diar12,op_info)
+      idxomg = idx_oplist2(op_omg,op_info)
+      idxomg12 = idx_oplist2(op_omgr12,op_info)
+      idxdia = idx_oplist2(op_dia1,op_info)
+      idxr12dia = idx_oplist2(op_diar12,op_info)
+      idxtop = idx_oplist2(op_top,op_info)
       idxr12 = idx_oplist2(op_rint,op_info)
       idxrba = idx_oplist2(op_rinba,op_info)
+      idxr12sq = idx_oplist2(op_f2,op_info)
       idxttr = idx_oplist2(op_ttr,op_info)
-      idxsop = idx_oplist2(op_sop,op_info)
-c      idxdel = idx_oplist2(op_del_inter,op_info)
+      idxecc = idx_oplist2(op_ccen,op_info)
 
       ! preliminary:
       idxccen = idx_formlist(label_ccen0,form_info)
       idxccrs = idx_formlist(label_ccrs0,form_info)
+      idxccrs12 = idx_formlist(label_ccrs12,form_info)
       
       ! import Hamiltonian
       call add_action(act_list,nactions,
@@ -68,15 +75,22 @@ c      idxdel = idx_oplist2(op_del_inter,op_info)
       call add_action(act_list,nactions,
      &     iaction_import,0,1,0,
      &     idum,(/idxrba/),
-     &     idum,(/(/idxrba,1/)/),
      &     0,idum
      &     )
+
+      if(trim(r12_apprx).ne.'A')then
+        ! Import the R12**2 operator integrals.
+        call add_action(act_list,nactions,
+     &       iaction_import,0,1,0,
+     &       idum,(/idxr12sq/),
+     &       0,idum
+     &       )
+      endif
 
       ! Import commutator integrals, (pq|[T1+T2,r12]|rs).
       call add_action(act_list,nactions,
      &     iaction_import,0,1,0,
      &     idum,(/idxttr/),
-     &     idum,(/(/idxttr,1/)/),
      &     0,idum
      &     )
       
@@ -86,8 +100,16 @@ c      idxdel = idx_oplist2(op_del_inter,op_info)
       call add_action(act_list,nactions,
      &     iaction_evaluate,0,1,0,
      &     idum,(/idxvint/),
-     &     idum,(/(/idxvint,1/)/),
      &     1,(/idx_v_form/)
+     &     )
+
+      ! Evaluate the V+-intermediate.
+      idxvbint = idx_oplist2(op_vbar_inter,op_info)
+      idx_vb_form = idx_formlist(label_r12_vbint,form_info)
+      call add_action(act_list,nactions,
+     &     iaction_evaluate,0,1,0,
+     &     idum,(/idxvbint/),
+     &     1,(/idx_vb_form/)
      &     )
 
       ! Evaluate the B-intermediate.
@@ -96,7 +118,6 @@ c      idxdel = idx_oplist2(op_del_inter,op_info)
       call add_action(act_list,nactions,
      &     iaction_evaluate,0,1,0,
      &     idum,(/idxbint/),
-     &     idum,(/(/idxbint,1/)/),
      &     1,(/idx_b_form/)
      &     )
 
@@ -106,35 +127,67 @@ c      idxdel = idx_oplist2(op_del_inter,op_info)
       call add_action(act_list,nactions,
      &     iaction_symmetrise,1,1,0,
      &     (/idxbint/),(/idx_b_symm/),
-     &     (/(/idxbint,1/)/),(/(/idx_b_symm,1/)/),
      &     1,(/idx_b_symm_form/)
      &     )
 
-      ! set up diagonal preconditioner
+c dbg
+c      ! Invert the diagonal part of B-symm.
+c      idx_b_inv = idx_oplist2(op_b_inv,op_info)
+c      idx_b_inv_form = idx_formlist(label_r12_binv,form_info)
+c      call add_action(act_list,nactions,
+c     &     iaction_diagonal,1,1,0,
+c     &     (/idx_b_symm/),(/idx_b_inv/),
+c     &     1,(/idx_b_inv_form/)
+c     &     )
+c dbg
+
+c dbg
+c      ! Evaluate the energy of the 1st iteration of the MP2-R12 equations.
+c      call add_action(act_list,nactions,
+c     &     iaction_evaluate,0,1,0,
+c     &     idum,(/idxecc/),
+c     &     1,(/idxccen/),
+c     &     )
+c dbg
+
+      ! set up standard diagonal preconditioner
       call add_action(act_list,nactions,
      &     iaction_setup_prc,2,1,0,
-     &     (/idxsop,idxham/),(/idxdia/),
-     &     (/(/idxsop,1/),(/idxham,1/)/),(/(/idxdia,1/)/),
+     &     (/idxtop,idxham/),(/idxdia/),
      &     0,idum
      &     )
 
-      call get_argument_value('calculate.routes','simtraf',ival=isim)
+      ! Set up the R12 preconditioner (DIagonal of B).
+      call add_action(act_list,nactions,
+     &     iaction_setup_prc,2,1,0,
+     &     (/idxbint,idxbint/),(/idxr12dia/),
+     &     0,idum
+     &     )
 
-      if (isim.eq.0) then
-        ! solve ground-state equations
+c      call get_argument_value('calculate.routes','simtraf',ival=isim)
+
         call add_action(act_list,nactions,
-     &     iaction_solve_nleq,2,2,1,
-     &     (/idxdia,idxham/),(/idxsop,idxomg/),
-     &     2,(/idxccen,idxccrs/)
+     &     iaction_solve_nleq,3,5,2,
+     &     (/idxdia,idxr12dia,idxham/),
+     &     (/idxtop,idxc12,idxomg,idxomg12,idxecc/),
+     &     3,(/idxccen,idxccrs,idxccrs12/)
      &     )
-      else
-        idxhhat = idx_oplist2(op_hhat,op_info)
-        call add_action(act_list,nactions,
-     &     iaction_solve_nleq,2,3,1,
-     &     (/idxdia,idxham/),(/idxsop,idxomg,idxhhat/),
-     &     2,(/idxccen,idxccrs/)
-     &     )
-      end if
+
+c      if (isim.eq.0) then
+c        ! solve ground-state equations
+c        call add_action(act_list,nactions,
+c     &     iaction_solve_nleq,2,2,1,
+c     &     (/idxdia,idxham/),(/idxsop,idxomg/),
+c     &     2,(/idxccen,idxccrs/)
+c     &     )
+c      else
+c        idxhhat = idx_oplist2(op_hhat,op_info)
+c        call add_action(act_list,nactions,
+c     &     iaction_solve_nleq,2,3,1,
+c     &     (/idxdia,idxham/),(/idxsop,idxomg,idxhhat/),
+c     &     2,(/idxccen,idxccrs/)
+c     &     )
+c      end if
 
       return
       end

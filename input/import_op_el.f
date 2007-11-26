@@ -9,7 +9,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 10
 
       include 'stdunit.h'
       include 'def_graph.h'
@@ -77,6 +77,11 @@
           else
             write(luout,*)'R12-DAG operator is purely formal.'
           endif
+
+        case(op_f2)
+          mode=0
+          call import_r12_dalton(op_target,opfil_target,'MO_R2',
+     &         mode,str_info,orb_info)
 
         case(op_ttr)
           mode=2

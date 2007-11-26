@@ -26,6 +26,7 @@
      &         'Undefined R12 ansatz requested.')
         endif
         call get_argument_value('method.R12','triples',ival=trir12)
+        call get_argument_value('method.R12','approx',str=r12_apprx)
       end if
 
       return

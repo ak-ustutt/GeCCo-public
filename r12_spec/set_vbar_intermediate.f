@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine set_v_intermediate(formula_vint,op_info,orb_info)
+      subroutine set_vbar_intermediate(formula_vbint,op_info,orb_info)
 *----------------------------------------------------------------------*
-*     Generate the formula for the V-intermediate.
+*     Generate the formula for the V+-intermediate.
 *     GWR November 2007.
 *----------------------------------------------------------------------*
       implicit none
@@ -21,7 +21,7 @@
       include 'par_formnames_gen.h'
 
       type(formula), intent(inout), target ::
-     &     formula_vint
+     &     formula_vbint
 
       type(operator_info), intent(inout) ::
      &     op_info
@@ -33,7 +33,7 @@
      &     name*(form_maxlen_label*2)
 
       type(formula_item), target ::
-     &     form_vint
+     &     form_vbint
       type(formula_item), pointer ::
      &     form_pnt
 
@@ -41,13 +41,13 @@
      &     g_temp_pnt, r_temp_pnt
 
       type(formula_item), target ::
-     &     form_h, form_r, form_gr_temp, form_gr, form_v_tot
+     &     form_h, form_r, form_gr_temp, form_gr, form_vb_tot
       type(formula_item), pointer ::
      &     form_h_pnt, form_r_pnt, form_gr_temp_pnt, form_gr_pnt,
-     &     form_v_tot_pnt
+     &     form_vb_tot_pnt
 
       integer ::
-     &     nterms, idx_vint, idxunity, idx_gtemp, idx_rtemp, ndef,
+     &     nterms, idx_vbint, idxunity, idx_gtemp, idx_rtemp, ndef,
      &     idxham, idxlcc, idx_rint, idxc12
 
       integer, allocatable ::
@@ -62,7 +62,7 @@
 
       if (ntest.eq.100) then
         write(luout,*) '==================================='
-        write(luout,*) ' output from set_v_intermediate'
+        write(luout,*) ' output from set_vbar_intermediate '
         write(luout,*) '==================================='
       end if
 
@@ -70,35 +70,14 @@
 
       idxham = idx_oplist2(op_ham,op_info)
       idxlcc = idx_oplist2(op_cclg,op_info)
-      idx_rint = idx_oplist2(op_rint,op_info)
+      idx_rint = idx_oplist2(op_rinba,op_info)
       idxc12 = idx_oplist2(op_c12,op_info)
 
-
       ! initialize formula
-      call init_formula(form_vint)
-      form_pnt => form_vint
+      call init_formula(form_vbint)
+      form_pnt => form_vbint
 
-      idx_vint = idx_oplist2(op_v_inter,op_info)
-      ! put [INIT] at the beginning
-c      call new_formula_item(form_pnt,command_set_target_init,idx_vint)
-c      form_pnt => form_pnt%next
-
-c      idxunity = idx_oplist2(op_unity,op_info)
-c      ! nvtx = 1
-c      call new_formula_item(form_pnt,command_add_contribution,idx_vint)
-c      call resize_contr(form_pnt%contr,1,0,0)
-c      form_pnt%contr%fac = 1d0
-c      form_pnt%contr%nvtx = 1
-c      form_pnt%contr%nsupvtx = 1
-c      form_pnt%contr%idx_res = idx_vint
-c      form_pnt%contr%iblk_res = 1
-c      form_pnt%contr%vertex(1)%idx_op = idxunity
-c      form_pnt%contr%vertex(1)%iblk_op = 1
-c      call update_svtx4contr(form_pnt%contr)
-
-c      call expand_op_product(form_pnt,idx_vint,
-c     &     1d0,1,idxunity,-1,-1,
-c     &     0,0,.false.,op_info)
+      idx_vbint = idx_oplist2(op_vbar_inter,op_info)
 
       ! Form the first set of contracted integrals. 
       call init_formula(form_gr_temp)
@@ -114,14 +93,13 @@ c     &     0,0,.false.,op_info)
 
       ndef=2
       allocate(occ_def(ngastp,2,2))
-      occ_def(1:ngastp,1,1) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,1) = (/0,1,0,1/)
-      occ_def(1:ngastp,1,2) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,2) = (/1,0,0,1/)
+      occ_def(1:ngastp,1,1) = (/0,1,0,1/)
+      occ_def(1:ngastp,2,1) = (/2,0,0,0/)
+      occ_def(1:ngastp,1,2) = (/1,0,0,1/)
+      occ_def(1:ngastp,2,2) = (/2,0,0,0/)
       call set_uop(g_temp_pnt,op_g_temp,.false.,0,0,1,1,0,
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
-c      call mem_map(.true.)
 
       ! Substitute with actual H integrals.
       call init_formula(form_h)
@@ -133,21 +111,21 @@ c      call mem_map(.true.)
      &     1d0,1,idxham,-1,-1,
      &     0,0,.false.,op_info)
 
-      ! Set up a temporary operator to represent R.
+      ! Set up a temporary operator to represent R+.
       call add_operator(op_r_temp,op_info)
       idx_rtemp=idx_oplist2(op_r_temp,op_info)
       r_temp_pnt => op_info%op_arr(idx_rtemp)%op
       ndef=2
       allocate(occ_def(ngastp,2,2))
-      occ_def(1:ngastp,1,1) = (/0,1,0,1/)
-      occ_def(1:ngastp,2,1) = (/2,0,0,0/)
-      occ_def(1:ngastp,1,2) = (/1,0,0,1/)
-      occ_def(1:ngastp,2,2) = (/2,0,0,0/)
+      occ_def(1:ngastp,1,1) = (/2,0,0,0/)
+      occ_def(1:ngastp,2,1) = (/0,1,0,1/)
+      occ_def(1:ngastp,1,2) = (/2,0,0,0/)
+      occ_def(1:ngastp,2,2) = (/1,0,0,1/)
       call set_uop(r_temp_pnt,op_r_temp,.false.,0,0,1,1,0,
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
 
-      ! Substitute with actual R12 integrals.
+      ! Substitute with actual R12+ integrals.
       call init_formula(form_r)
       form_r_pnt => form_r
       call new_formula_item(form_r_pnt,command_set_target_init,
@@ -157,16 +135,12 @@ c      call mem_map(.true.)
      &     1d0,1,idx_rint,-1,-1,
      &     0,0,.false.,op_info)
 
-c      form_gr_temp_pnt => form_gr_temp
-c      do while(associated(form_gr_temp_pnt%next))
-c        form_gr_temp_pnt => form_gr_temp_pnt%next
-c      enddo  
       ! Call routine which expands the intermediate in terms of available 
       ! integrals. It also forms 'dodgy' contractions, i.e. those where
       ! the arcs form between non-matching faces of the operators. These 
       ! are needed to properly evaluate the intermediates.
       call expand_op_product(form_gr_temp_pnt,idxlcc,
-     &     -1d0,3,(/idx_gtemp,idxc12,idx_rtemp/),
+     &     -1d0,3,(/idx_rtemp,idxc12,idx_gtemp/),
      &     (/-1,-1,-1/),(/-1,-1,-1/),
      &     (/1,3,1,2,2,3/),3,.true.,op_info)
 
@@ -179,7 +153,6 @@ c      enddo
       call dealloc_formula_list(form_r)
 
 
-
       ! Temporary operator 2.
       call add_operator(op_g_temp,op_info)
       idx_gtemp=idx_oplist2(op_g_temp,op_info)
@@ -188,13 +161,14 @@ c      enddo
       allocate(occ_def(ngastp,2,3))
       occ_def(1:ngastp,1,1) = (/2,0,0,0/)
       occ_def(1:ngastp,2,1) = (/2,0,0,0/)
-      occ_def(1:ngastp,1,2) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,2) = (/1,1,0,0/)
-      occ_def(1:ngastp,1,3) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,3) = (/0,2,0,0/)
+      occ_def(1:ngastp,1,2) = (/1,1,0,0/)
+      occ_def(1:ngastp,2,2) = (/2,0,0,0/)
+      occ_def(1:ngastp,1,3) = (/0,2,0,0/)
+      occ_def(1:ngastp,2,3) = (/2,0,0,0/)
       call set_uop(g_temp_pnt,op_g_temp,.false.,0,0,1,1,0,
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
+
       ! Substitute with actual H integrals.
       call init_formula(form_h)
       form_h_pnt => form_h
@@ -212,14 +186,15 @@ c      enddo
       allocate(occ_def(ngastp,2,3))
       occ_def(1:ngastp,1,1) = (/2,0,0,0/)
       occ_def(1:ngastp,2,1) = (/2,0,0,0/)
-      occ_def(1:ngastp,1,2) = (/1,1,0,0/)
-      occ_def(1:ngastp,2,2) = (/2,0,0,0/)
-      occ_def(1:ngastp,1,3) = (/0,2,0,0/)
-      occ_def(1:ngastp,2,3) = (/2,0,0,0/)
+      occ_def(1:ngastp,1,2) = (/2,0,0,0/)
+      occ_def(1:ngastp,2,2) = (/1,1,0,0/)
+      occ_def(1:ngastp,1,3) = (/2,0,0,0/)
+      occ_def(1:ngastp,2,3) = (/0,2,0,0/)
       call set_uop(r_temp_pnt,op_r_temp,.false.,0,0,1,1,0,
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
-      ! Substitute with actual R12 integrals.
+
+      ! Substitute with actual R12+ integrals.
       call init_formula(form_r)
       form_r_pnt => form_r
       call new_formula_item(form_r_pnt,command_set_target_init,
@@ -238,7 +213,7 @@ c      enddo
       ! the arcs form between non-matching faces of the operators. These 
       ! are needed to properly evaluate the intermediates.
       call expand_op_product(form_gr_temp_pnt,idxlcc,
-     &     -1d0,3,(/idx_gtemp,idxc12,idx_rtemp/),
+     &     -1d0,3,(/idx_rtemp,idxc12,idx_gtemp/),
      &     (/-1,-1,-1/),(/-1,-1,-1/),
      &     (/1,3,1,2,2,3/),3,.true.,op_info)
 
@@ -247,7 +222,7 @@ c      enddo
       call expand_subexpr(form_gr_temp,form_r,.true.,op_info)      
 
       call form_deriv3(form_pnt,form_gr_temp,
-     &     1,idxc12,0,idx_vint,op_info)
+     &     1,idxc12,0,idx_vbint,op_info)
 
       call del_operator(idx_rtemp,op_info)
       call del_operator(idx_gtemp,op_info)
@@ -261,12 +236,12 @@ c      enddo
 
       idxunity = idx_oplist2(op_unity,op_info)
       ! nvtx = 1
-      call new_formula_item(form_pnt,command_add_contribution,idx_vint)
+      call new_formula_item(form_pnt,command_add_contribution,idx_vbint)
       call resize_contr(form_pnt%contr,1,0,0)
       form_pnt%contr%fac = 1d0
       form_pnt%contr%nvtx = 1
       form_pnt%contr%nsupvtx = 1
-      form_pnt%contr%idx_res = idx_vint
+      form_pnt%contr%idx_res = idx_vbint
       form_pnt%contr%iblk_res = 1
       form_pnt%contr%vertex(1)%idx_op = idxunity
       form_pnt%contr%vertex(1)%iblk_op = 1
@@ -274,20 +249,21 @@ c      enddo
 
       if(ntest.ge.100)then
         write(luout,*) 'V-integrals'
-        call print_form_list(luout,form_vint,op_info)
+        call print_form_list(luout,form_vbint,op_info)
       endif
 
       ! write to disc
-      formula_vint%label = label_r12_vint
-      formula_vint%comment = title_r12_vint
-      write(name,'(a,".fml")') label_r12_vint
-      call file_init(formula_vint%fhand,name,ftyp_sq_unf,0)
-      call write_form_list(formula_vint%fhand,form_vint,title_r12_vint)
+      formula_vbint%label = label_r12_vbint
+      formula_vbint%comment = title_r12_vbint
+      write(name,'(a,".fml")') label_r12_vbint
+      call file_init(formula_vbint%fhand,name,ftyp_sq_unf,0)
+      call write_form_list(formula_vbint%fhand,
+     &     form_vbint,title_r12_vbint)
 
-      call dealloc_formula_list(form_vint)
+      call dealloc_formula_list(form_vbint)
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'V-interm.',cpu-cpu0,sys-sys0,wall-wall0)
+      call prtim(luout,'V+-interm.',cpu-cpu0,sys-sys0,wall-wall0)
 
       return
       end

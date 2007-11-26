@@ -29,6 +29,8 @@
      &     arc_sv
       type(cntr_vtx), pointer ::
      &     vtx_new(:)
+      integer, pointer ::
+     &     svertex_new(:)
 
       integer, external ::
      &     int_pack
@@ -44,6 +46,13 @@
         end do
         deallocate(contr%vertex)
         contr%vertex => vtx_new
+        ! update svertex array
+        allocate(svertex_new(contr%mxvtx))
+        do ivtx = 1, nvtx
+          svertex_new(ivtx) = contr%svertex(vtx_reo(ivtx))
+        end do
+        deallocate(contr%svertex)
+        contr%svertex => svertex_new
         ! update vertex references in arcs:
         ! revert reordering info to old->new        
         allocate(vtx_oer(nvtx))
@@ -91,6 +100,9 @@
         end do
         arc(jdx+1) = arc_sv
       end do
+
+      ! update svertex info
+      call update_svtx4contr(contr)
 
       return
       end

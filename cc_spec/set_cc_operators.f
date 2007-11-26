@@ -46,8 +46,14 @@
       gamma = 1
       s2 = 0
       ms = 0
-      call get_argument_value('method.CC','minexc',ival=min_rank)
-      call get_argument_value('method.CC','maxexc',ival=max_rank)
+      if (.not.do_mp) then
+        call get_argument_value('method.CC','minexc',ival=min_rank)
+        call get_argument_value('method.CC','maxexc',ival=max_rank)
+      else
+        call get_argument_value('method.MP','level',ival=max_rank)
+        min_rank = 2
+        if (max_rank.gt.2) min_rank = 1
+      end if
       ncadiff = 0
       iformal=max_rank+1
       call set_hpvx_and_restr_for_xop()

@@ -62,7 +62,8 @@ c     &         cycle
         ifree = mem_alloc_real(buffer,nbuff,'buffer')
       end if
 
-      x1dia(1:2*(orb_info%ntoob+orb_info%caborb)) = 0d0
+c      x1dia(1:2*(orb_info%ntoob+orb_info%caborb)) = 0d0
+      x1dia(1:2*(orb_info%ntoob)) = 0d0
 
       mostnd => orb_info%mostnd
       ihpvgas => orb_info%ihpvgas
@@ -105,7 +106,8 @@ c     &       cycle
         do ms = 1, -1, -2
           idxms =1
           if (ms.eq.-1) idxms = 2
-          imo_off = (idxms-1)*(orb_info%ntoob+orb_info%caborb)
+c          imo_off = (idxms-1)*(orb_info%ntoob+orb_info%caborb)
+          imo_off = (idxms-1)*orb_info%ntoob
 
           do isym = 1, orb_info%nsym
 
@@ -140,7 +142,7 @@ c     &       cycle
         write(luout,*) 'extracted diagonal: '
         idx = 0
         do ms = 1, -1, -2
-          do imo = 1, orb_info%ntoob+orb_info%caborb
+          do imo = 1, orb_info%ntoob
             idx = idx+1
             write(luout,'(x,i2,"/2",i5,2x,g12.6)') ms, imo, x1dia(idx)
           end do

@@ -1,9 +1,9 @@
-      subroutine symmetrise(fac,ffin,op_in,iblkin,ffout,op_out,iblkout,
-     &     op_info,orb_info)
+      subroutine diagonal(fac,invert,ffin,op_in,iblkin,ffout,op_out,
+     &     iblkout,op_info,orb_info)
 *----------------------------------------------------------------------*
 *
-*     Routine to symmetrise an operator matrix. 
-*     Currently only works for operators with a single occupancy block.
+*     Routine to extract the diagonal of an operator matrix with a 
+*     switch to form the inverse of this if required. 
 *     GWR November 2007
 *
 *----------------------------------------------------------------------*
@@ -40,6 +40,8 @@
      &     iblkin, iblkout
       real(8), intent(in) ::
      &     fac
+      logical, intent(in) ::
+     &     invert
 
       logical ::
      &     bufin, bufout
@@ -47,7 +49,7 @@
      &     len_str, idum, ifree, lblk, nblkmax,
      &     nblk, nbuff, ioffin, ioffout, idxst, idxnd, njoined,
      &     idoffin, idoffout, idxmsa,
-     &     msmax, msa, msc, igama, igamc, idx, jdx, ngam,
+     &     msmax, msa, msc, igama, igamc, idx, ngam,
      &     len_gam_ms, ioff, len_blk_in, ioff_blk_in, len_blk_out,
      &     ioff_blk_out
       
@@ -57,6 +59,7 @@
       integer, external ::
      &     idx_oplist2
 
+      call file_open(ffin)
       call file_open(ffout)
 
       ! Check whether files are buffered.
@@ -111,20 +114,23 @@
         igama_loop: do igama =1, ngam
           igamc = multd2h(igama,op_out%gamt)
 
-          len_gam_ms = int(sqrt(dble(op_out%
+          len_gam_ms=int(sqrt(dble(op_out%
      &         len_op_gmo(iblkout)%gam_ms(igama,idxmsa))))
 
-          ioff = op_out%off_op_gmo(iblkout)%gam_ms(igama,idxmsa)-
+          ioff=op_out%off_op_gmo(iblkout)%gam_ms(igama,idxmsa)-
      &         ioff_blk_out
 
           idx_loop: do idx = 1,len_gam_ms
-            jdx_loop: do jdx = 1,len_gam_ms
             
-              buffer_out((idx-1)*len_gam_ms+jdx+ioff) = 
-     &           fac * (buffer_in((idx-1)*len_gam_ms+jdx+ioff) +
-     &           buffer_in((jdx-1)*len_gam_ms+idx+ioff))
-            
-            enddo jdx_loop  
+            if(.not.invert)then
+              buffer_out((idx-1)*len_gam_ms+idx+ioff) = 
+     &             fac * buffer_in((idx-1)*len_gam_ms+idx+ioff)
+            else
+              if(buffer_in((idx-1)*len_gam_ms+idx+ioff).ge.1d-10)then
+                buffer_out((idx-1)*len_gam_ms+idx+ioff) = 
+     &               fac / buffer_in((idx-1)*len_gam_ms+idx+ioff)
+              endif  
+            endif            
           enddo idx_loop
           
         enddo igama_loop
@@ -136,6 +142,7 @@
      &       ioff_blk_out+len_blk_out)
       endif  
 
+      call file_close_keep(ffin)
       call file_close_keep(ffout)
 
       ifree = mem_flushmark('symmetrise')

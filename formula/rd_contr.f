@@ -39,5 +39,4 @@
       ! EOF encountered:
  100  rd_contr = .false.
       return
-
       end

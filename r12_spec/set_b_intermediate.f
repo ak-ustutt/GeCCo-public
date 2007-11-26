@@ -3,6 +3,7 @@
 *----------------------------------------------------------------------*
 *     Generate the formula for the B-intermediate (suitable for 
 *     MP2-R12 variant 1A).
+*     GWR November 2007
 *----------------------------------------------------------------------*
       implicit none
 
@@ -253,11 +254,6 @@
       if(ntest.ge.100)then
         call print_form_list(luout,form_bint,op_info)
       endif
-
-      
-      ! Add the transpose of B to itself and multiply by 1/2 to get an
-      ! expression equivalent to that produced by Dalton.
-
 
       ! write to disc
       formula_bint%label = label_r12_bint

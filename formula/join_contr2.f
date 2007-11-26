@@ -19,7 +19,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       type(contraction), intent(out) ::
      &     contr_abc

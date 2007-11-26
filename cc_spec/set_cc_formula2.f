@@ -33,11 +33,11 @@ c     &     list_pnt
       logical ::
      &     split
       type(formula), pointer ::
-     &     cclg_pnt, form_pnt, form_eta
+     &     cclg_pnt, form_pnt, form_eta, e0_pnt, omg_pnt, omg12_pnt
       integer ::
      &     idxham, idxtop, idxtba, idxomg, idxecc, idxhhat, idxrba,
      &     idxr12, idxcba, idxc12, idxdens, idx,
-     &     idxtbtrf, idxlcc, idxeta, idxomg_tot
+     &     idxtbtrf, idxlcc, idxeta, idxomg12
 
       ! explicit interface does not work with ifort
       integer, external ::
@@ -88,10 +88,10 @@ c     &     list_pnt
         if(idxcba.le.0)
      &       call quit(1,'set_cc_formula','operator not on list: '
      &       //trim(op_cba))
-        idxomg_tot=idx_oplist2(op_omg_candt,op_info)
-        if(idxomg_tot.le.0)
+        idxomg12=idx_oplist2(op_omgr12,op_info)
+        if(idxomg12.le.0)
      &       call quit(1,'set_cc_formula','operator not on list: '
-     &       //trim(op_omg_candt))
+     &       //trim(op_omgr12))
       endif
 
 c      call test_formgen3(op_info,orb_info)
@@ -108,9 +108,15 @@ c      call test_formgen3(op_info,orb_info)
      &     'Setting ground state Lagrangian'
 
       if(explicit)then
-        call set_r12_lagrangian(cclg_pnt,op_info,orb_info,
-     &       idxham,idxtba,idxrba,idxcba,idxtop,idxr12,idxc12,idxlcc)
+        if(do_mp)then
+          call set_mp2_r12_lagrangian(cclg_pnt,op_info,orb_info,
+     &         idxham,idxtba,idxrba,idxcba,idxtop,idxr12,idxc12,idxlcc)
+        else
+          call set_r12_lagrangian(cclg_pnt,op_info,orb_info,
+     &         idxham,idxtba,idxrba,idxcba,idxtop,idxr12,idxc12,idxlcc)
+        endif
       else
+        if (do_mp) call quit(1,'set_cc_formula2','no MP yet')
         call set_cc_lagrangian2(cclg_pnt,op_info,
      &       idxham,idxtba,idxtop,idxlcc)
       endif  
@@ -128,16 +134,6 @@ c      call test_formgen3(op_info,orb_info)
      &       idxhhat,idxham,idxtop)
       end if
 
-      if (explicit) then
-
-c        call add_formula(form_info,label_r12_vint)
-c        idx = idx_formlist(label_r12_vint,form_info)
-c        form_pnt => form_info%form_arr(idx)%form
-c        call set_r12_intermediates(form_pnt,op_info,orb_info)
-        call set_r12_intermediates(form_info,op_info,orb_info)
-        
-      end if
-c
       ! set up CC-energy 
       ! (part of Lagragian that does not depend on TBAR)
       call add_formula(form_info,label_ccen0)
@@ -153,6 +149,7 @@ c
      &       label_ccen0,title_ccen0,idxecc,
      &       2,(/idxtba,idxcba/),
      &       op_info)
+        e0_pnt => form_info%form_arr(idx)%form
       else
         call form_indep2(form_pnt,
      &       cclg_pnt,
@@ -169,8 +166,19 @@ c
       if(explicit)then
         call form_deriv2(form_pnt,cclg_pnt,
      &       label_ccrs0,title_ccrs0,
-     &       2,(/idxtba,idxcba/),(/0,0/),idxomg_tot,
+     &       1,idxtba,0,idxomg,
      &       op_info)
+        omg_pnt => form_info%form_arr(idx)%form
+
+        call add_formula(form_info,label_ccrs12)
+        idx = idx_formlist(label_ccrs12,form_info)
+        form_pnt => form_info%form_arr(idx)%form
+
+        call form_deriv2(form_pnt,cclg_pnt,
+     &       label_ccrs12,title_ccrs12,
+     &       1,idxcba,0,idxomg12,
+     &       op_info)
+        omg12_pnt => form_info%form_arr(idx)%form
       else
         call form_deriv2(form_pnt,cclg_pnt,
      &       label_ccrs0,title_ccrs0,
@@ -229,6 +237,20 @@ c
      &       label_ccdens,title_ccdens,
      &       1,idxham,0,idxdens,
      &       op_info)
+      end if
+
+      if (explicit) then
+        ! Set up intermediate terms needed for R12 calculations and
+        ! factor those terms from both the energy and amplitude 
+        ! formulae.
+        call set_r12_intermediates(form_info,op_info,orb_info)
+c dbg
+        call fac_r12_inter(cclg_pnt,form_info,op_info,orb_info)
+        stop
+c dbg
+        call fac_r12_inter(e0_pnt,form_info,op_info,orb_info)
+        call fac_r12_inter(omg_pnt,form_info,op_info,orb_info)
+        call fac_r12_inter(omg12_pnt,form_info,op_info,orb_info)
       end if
 
       return

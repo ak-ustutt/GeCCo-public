@@ -140,26 +140,14 @@ c      call get_argument_value('method.R12','triples',ival=trir12)
       ! storage sequence as for T
       op_pnt%dagger = .true.  ! but we consider the conjugate
 
-      ! New entry: the CC-R12 residual. Same as C.
-      call add_operator(op_omgr12,op_info)
-      idx = idx_oplist2(op_omgr12,op_info)
-      op_pnt => op_info%op_arr(idx)%op
-      call clone_operator(op_pnt,c12_pnt,orb_info)
-
-      ! Form the total residual for the CC-R12 function: OMG=C+T
-      call add_operator(op_omg_candt,op_info)
-      idx = idx_oplist2(op_omg_candt,op_info)
-      op_pnt => op_info%op_arr(idx)%op
+c      ! Form the total residual for the CC-R12 function: OMG=C+T
+c      call add_operator(op_omg_candt,op_info)
+c      idx = idx_oplist2(op_omg_candt,op_info)
+c      op_pnt => op_info%op_arr(idx)%op
 
       idx_top=idx_oplist2(op_top,op_info)
       call clone_operator(op_pnt,op_info%op_arr(idx_top)%op,orb_info)
       call join_operator(op_pnt,op_info%op_arr(idx_c12)%op,orb_info)
-
-      ! New entry: the CC-R12 diagonal. Same as C.
-      call add_operator(op_diar12,op_info)
-      idx = idx_oplist2(op_diar12,op_info)
-      op_pnt => op_info%op_arr(idx)%op
-      call clone_operator(op_pnt,c12_pnt,orb_info)
 
       ! New entry: the R12 integrals (<ab|r12|cd>)
       call add_operator(op_rint,op_info)
@@ -192,34 +180,7 @@ c      call get_argument_value('method.R12','triples',ival=trir12)
       call clone_operator(op_pnt,rint_pnt,orb_info)
       op_pnt%dagger = .true.
 
-      ! New entries: the commutator integrals.
-c      ! <ab|[T1,r12]|cd>
-c      call add_operator(op_t1r12,op_info)
-c      idx=idx_oplist2(op_t1r12,op_info)
-c      op_pnt => op_info%op_arr(idx)%op
-c      call clone_operator(op_pnt,rint_pnt,orb_info)
-
-      ! <ab|[T1,r12]|cd>+
-c      call add_operator(op_t1r_bar,op_info)
-c      idx=idx_oplist2(op_t1r_bar,op_info)
-c      op_pnt => op_info%op_arr(idx)%op
-c      call clone_operator(op_pnt,rint_pnt,orb_info)
-c      op_pnt%dagger = .true.
-
-      ! <ab|[T2,r12]|cd>
-c      call add_operator(op_t2r12,op_info)
-c      idx=idx_oplist2(op_t2r12,op_info)
-c      op_pnt => op_info%op_arr(idx)%op
-c      call clone_operator(op_pnt,rint_pnt,orb_info)
-
-      ! <ab|[T2,r12]|cd>+
-c      call add_operator(op_t2r_bar,op_info)
-c      idx=idx_oplist2(op_t2r_bar,op_info)
-c      op_pnt => op_info%op_arr(idx)%op
-c      call clone_operator(op_pnt,rint_pnt,orb_info)
-c      op_pnt%dagger = .true.
-
-      ! <ab|[T1+T2,r12]|cd>
+      ! New entry: commutator integrals <ab|[T1+T2,r12]|cd>
       call add_operator(op_ttr,op_info)
       idx=idx_oplist2(op_ttr,op_info)
       op_pnt => op_info%op_arr(idx)%op
@@ -259,6 +220,12 @@ c      op_pnt%dagger = .true.
       ! later on. Need to rectify this at some point. GWR 14/08/2007
 c      op_pnt%dagger=.true.
 
+      ! New entry: the CC-R12 residual. Same as V.
+      call add_operator(op_omgr12,op_info)
+      idx = idx_oplist2(op_omgr12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,v_pnt,orb_info)
+
       ! Delta integrals.
       call add_operator(op_del_inter,op_info)
       idx=idx_oplist2(op_del_inter,op_info)
@@ -278,10 +245,21 @@ c      ops_array(3)%op=>c12_pnt
      &     ops_array,2,orb_info)
       deallocate(ops_array)
 
-
       ! Symmetrised B (for MP2 approx 1A).
       call add_operator(op_b_symm,op_info)
       idx=idx_oplist2(op_b_symm,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,b_pnt,orb_info)
+
+      ! Inverse of the diagonal of B for MP2-R12 approx 1A.
+      call add_operator(op_b_inv,op_info)
+      idx=idx_oplist2(op_b_inv,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,b_pnt,orb_info)
+
+      ! New entry: the CC-R12 diagonal. Same as B (at least for approx A).
+      call add_operator(op_diar12,op_info)
+      idx = idx_oplist2(op_diar12,op_info)
       op_pnt => op_info%op_arr(idx)%op
       call clone_operator(op_pnt,b_pnt,orb_info)
 

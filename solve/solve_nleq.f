@@ -116,6 +116,10 @@
       
       ! get initial amplitudes
       do iop = 1, nop_opt
+c dbg
+        print *,'zeroing: ',trim(op_opt(iop)%op%name),
+     &       ' file: ',trim(ffopt(iop)%fhand%name)
+c dbg
         call zeroop(ffopt(iop)%fhand,op_opt(iop)%op)
       end do
 

@@ -44,26 +44,19 @@
      &     name*(form_maxlen_label*2)
 
       type(formula_item), target ::
-     &     form_lag, form_t_cr, form_tbar_cbarr, form_v, form_gr,
-     &     form_b, form_b_temp,form_rfr, form_h, form_v_bar,
-     &     form_gr_bar, form_gr_temp_2, form_gr_temp_3, form_r,
-     &     form_v1, form_v2, form_v3
+     &     form_lag, form_t_cr, form_tbar_cbarr
       type(formula_item), pointer ::
-     &     form_pnt, fl_t_cr_pnt, form_gr_pnt, form_rfr_pnt, form_h_pnt,
-     &     form_gr_bar_pnt, form_gr_temp_pnt, form_r_pnt
+     &     form_pnt, fl_t_cr_pnt
 
       integer ::
-     &     nterms, idx_sop, idx_sbar, idx_r12, idx_top, ndef, idxrint,
-     &     idxopv, idxopb, idx_ctemp, idx_ftemp, idxopvba, idx_v,
-     &     idx_v1, idx_v2, idx_v3, idx_gtemp, idx_rtemp
+     &     nterms, idx_sop, idx_sbar, ndef, idxrint
       integer, allocatable ::
      &     occ_def(:,:,:)
       type(operator_array), pointer ::
      &     ops_array(:)
 
       type(operator), pointer::
-     &     sop_pnt, sbar_pnt, ctemp_pnt, ftemp_pnt, v_pnt, v1_pnt,
-     &     v2_pnt, v3_pnt, g_temp_pnt, r_temp_pnt
+     &     sop_pnt, sbar_pnt
 
       integer, external::
      &     idx_oplist2
@@ -86,9 +79,8 @@
       sop_pnt => op_info%op_arr(idx_sop)%op
 
       ! set CR part:
-      idx_r12 = idx_oplist2(op_r12,op_info)
       if (trir12.eq.0) then
-        call clone_operator(sop_pnt,op_info%op_arr(idx_r12)%op,orb_info)
+        call clone_operator(sop_pnt,op_info%op_arr(idxr12)%op,orb_info)
       else
         ndef = 1
         allocate (occ_def(ngastp,2,2))
@@ -101,13 +93,12 @@
         end if
         call set_uop(sop_pnt,op_sop,.false.,0,0,1,1,0,
      &       occ_def,ndef,orb_info)
-        call join_operator(sop_pnt,op_info%op_arr(idx_r12)%op,orb_info)
+        call join_operator(sop_pnt,op_info%op_arr(idxr12)%op,orb_info)
         deallocate(occ_def)
       end if
 
       ! join with T
-      idx_top = idx_oplist2(op_top,op_info)
-      call join_operator(sop_pnt,op_info%op_arr(idx_top)%op,orb_info)
+      call join_operator(sop_pnt,op_info%op_arr(idxtop)%op,orb_info)
 
       ! define Sbar for the projection
       call add_operator(op_sba,op_info)
@@ -200,21 +191,21 @@
       ! Intermediates...
 
       ! Locate indices of the R12-method's operators.
-      idxrint=idx_oplist2(op_rint,op_info)
-      if(idxrint.le.0)
-     &     call quit(1,'set_r12_lagrangian','No R12 integrals.')
+c      idxrint=idx_oplist2(op_rint,op_info)
+c      if(idxrint.le.0)
+c     &     call quit(1,'set_r12_lagrangian','No R12 integrals.')
 
 
       ! define X, B, ... in terms of R12 
       ! The form of these operators, in terms of the coefficients to
       ! which they must couple, has been setup in the operator 
       ! definition routine.
-      if(ntest.ge.100)then
-        write(luout,*)'Formation of R12 Intermediates.'
-      endif  
+c      if(ntest.ge.100)then
+c        write(luout,*)'Formation of R12 Intermediates.'
+c      endif  
 
-      call form_inter_v(form_lag,idxham,idxc12,idxr12,idxlcc,idxrint,
-     &     op_info,orb_info)
+c      call form_inter_v(form_lag,idxham,idxc12,idxr12,idxlcc,idxrint,
+c     &     op_info,orb_info)
 
 
       ! use factor_out_subexpr to express Lagrangian through X, B
@@ -223,7 +214,7 @@ c      call factor_out_subexpr(form_lag,form_v,op_info)
 c      call factor_out_subexpr(form_lag,form_v_bar,op_info)
 c      call factor_out_subexpr(form_lag,form_b,op_info)
 
-      call dealloc_formula_list(form_h)
+c      call dealloc_formula_list(form_h)
 
       if(ntest.ge.100)then
         call write_title(luout,wst_title,'Factored R12 Lagrangian')
@@ -241,7 +232,6 @@ c      call factor_out_subexpr(form_lag,form_b,op_info)
 
       call dealloc_formula_list(form_lag)
 
-      call mem_map(.true.)
       ! remove the formal operators
       call del_operator(idx_sbar,op_info)
       call del_operator(idx_sop,op_info)

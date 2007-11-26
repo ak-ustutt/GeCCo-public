@@ -44,9 +44,9 @@
      &     success
 
       if (ntest.ge.100) then
-        write(luout,*) '================================='
+        write(luout,*) '==================================='
         write(luout,*) ' factor_out_subexpr messing around'
-        write(luout,*) '================================='
+        write(luout,*) '==================================='
       end if
 
       call init_contr(contr_rpl)
