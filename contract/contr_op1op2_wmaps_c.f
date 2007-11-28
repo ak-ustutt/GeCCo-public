@@ -40,7 +40,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       logical, intent(in) ::
      &     update
@@ -1061,6 +1061,12 @@ c                    print *,'xop2: ',xop2(idxop2)
 c                    print *,'xop1op2: ',xop1op2(idxop1op2)
 c dbg
                     if (irt_contr.eq.2) then
+c dbg
+c                      if (lenop1op2.eq.1) then
+c                        print *,'xop1op2blk before: ',xop1op2blk(1),
+c     &                       xop1op2(1)
+c                      end if
+c dbg
                       call contr_blk1blk2_wmaps_c(xfac*casign,
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
@@ -1080,6 +1086,12 @@ c dbg
      &                   map_ex1cntc, map_ex1cnta,
      &                   map_ex2cntc, map_ex2cnta
      &                   )                     
+c dbg
+c                      if (lenop1op2.eq.1) then
+c                        print *,'xop1op2blk after: ',xop1op2blk(1),
+c     &                       xop1op2(1)
+c                      end if
+c dbg
                     else
                       call contr_blk1blk2_blocked_mm(xfac*casign,
      &                   xop1op2blk,
@@ -1159,6 +1171,9 @@ c                  ifree = mem_flushmark('ex_str')
         end if
       end if
 
+c dbg
+c      print *,'type_xret ',type_xret
+c dbg
       if (type_xret.eq.2) then
         xret(1) = xop1op2(1)
       else if (type_xret.eq.1) then

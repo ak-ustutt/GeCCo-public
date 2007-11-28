@@ -52,17 +52,27 @@
 
       if (ntest.ge.100) then
         write(luout,*) 'added records: ',irecv, irecr
+        write(luout,*) 'nwfpar: ',nwfpar
       end if
 
       if (nincore.ge.2) then
 
         call vec_from_da(ffgrd,1,xbuf1,nwfpar)
         call vec_from_da(ffdia,1,xbuf2,nwfpar)
+c dbg
+c        print *,'g,d:',dnrm2(nwfpar,xbuf1,1),dnrm2(nwfpar,xbuf2,1)
+c dbg
 
         ! prelim. w/o damping
         xbuf1(1:nwfpar) = xbuf1(1:nwfpar)/xbuf2(1:nwfpar)
+c dbg
+c        print *,'g/d:',dnrm2(nwfpar,xbuf1,1)
+c dbg
 
         call vec_from_da(ffamp,1,xbuf2,nwfpar)
+c dbg
+c        print *,'t:',dnrm2(nwfpar,xbuf2,1)
+c dbg
 
         xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)
 

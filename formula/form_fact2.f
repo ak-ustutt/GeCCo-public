@@ -88,7 +88,7 @@
       nvtx_full = contr%nvtx
 
       ! if only 1 vertex is present, we need not bother too much
-      if (nvtx_full.eq.1) then
+      if (contr%nsupvtx.eq.1) then
         ! save factorization info
         if (contr%mxfac.gt.0) deallocate(contr%inffac)
         contr%nfac = narc_full

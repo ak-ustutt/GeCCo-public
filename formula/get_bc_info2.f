@@ -148,6 +148,9 @@ c dbg
       allocate(merge_map_op1op2(ld_mmap12,2,contr%nvtx))
       last_cntr = contr%narc.eq.len_list
       ! merge EX1/E2 + set up merging info
+c dbg
+c      call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
+c dbg
       call merge_ex1ex2(iocc_op1op2,njoined_op1op2,merge_map_op1op2,
      &                ld_mmap12,
      &                ivtxsuper1,ivtxsuper2,last_cntr,
@@ -187,6 +190,9 @@ c dbg
 
       deallocate(merge_map_op1op2)
       deallocate(merge_map_op1,merge_map_op2)
+c dbg
+c      print *,'end of get_bc'
+c dbg
 
       return
       end

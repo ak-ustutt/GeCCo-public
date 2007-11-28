@@ -51,6 +51,9 @@
         call write_title(luout,wst_dbg_subr,'merge_ex1ex2')
         write(luout,*) 'EX1EX2 on entry:'
         call wrt_occ_n(luout,iocc_ex1ex2,njoined12)
+c dbg
+        call prt_contr3(6,contr,occ_vtx(1,1,1+njoined_res))
+c dbg
       end if
 
       ! set up some help arrays for merge-or-not routine

@@ -86,6 +86,9 @@ c     &     nca_blk(2,7)
 
       if (ntest.gt.0) then
         call write_title(luout,wst_dbg_subr,'this is fact_cost')
+c dbg
+c        call prt_contr2(luout,contr,op_info)
+c dbg
       end if
 
       nvtx = contr%nvtx

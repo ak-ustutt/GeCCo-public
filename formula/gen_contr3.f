@@ -68,6 +68,7 @@ c     &     occ_ol_vtx(:,:,:)
         write(luout,*) '===================='
         write(luout,*) ' gen_contr speaking'
         write(luout,*) '===================='
+        write(luout,*) 'nj_tgt = ',nj_tgt
         call prt_contr2(luout,proto_main,op_info)
         call prt_contr3(luout,proto_main,occ_vtx(1,1,nj_tgt+1))
       end if
@@ -393,6 +394,9 @@ c dbg
                   ! extra test for nj_tgt.gt.1:
                   if (ok.and.nj_tgt.gt.1) then
                     ! not 100%, but sufficient for current purposes
+c dbg
+                    print *,'entered new part: ',nj_tgt
+c dbg
                     call occ_contr(occ_test,ierr,proto_new,
      &                             occ_vtx(1,1,1+nj_tgt),nj_tgt)
                     ok = ierr.eq.0.and.

@@ -68,10 +68,12 @@
         opout_temp(1:ngastp,1:2) = opout_temp(1:ngastp,1:2)+
      &       opout%ihpvca_occ(1:ngastp,1:2,join_off+idx)
       enddo
-  
-      if (.not.iocc_equal(iocc,.false.,opout_temp,opout%dagger)) then
-        call quit(1,'add_unity','output incompatible')
-      endif  
+
+c dbg  
+c      if (.not.iocc_equal(iocc,.false.,opout_temp,opout%dagger)) then
+c        call quit(1,'add_unity','output incompatible')
+c      endif  
+c dbg
 
       bufout = .false.
       if(ffout%buffered) bufout = ffout%incore(iblkout).gt.0

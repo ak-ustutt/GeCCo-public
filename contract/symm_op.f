@@ -21,6 +21,7 @@
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'ifc_memman.h'
+      include 'par_opnames_gen.h'
 
       integer, parameter ::
      &     ntest = 1000
@@ -35,9 +36,9 @@
      &     idx_opin, idx_opout
 
       type(filinf), pointer ::
-     &     ffin, ffout
+     &     ffin, ffout,ffv
       type(operator), pointer ::
-     &     op_in, op_out
+     &     op_in, op_out, opv
       
       logical ::
      &     bufin, bufout
@@ -47,7 +48,7 @@
      &     join_off_in, join_off_out, idoffin, idoffout, idxmsa,
      &     msmax, msa, msc, igama, igamc, idx, jdx, ngam,
      &     len_gam_ms, ioff, len_blk_in, ioff_blk_in, len_blk_out,
-     &     ioff_blk_out
+     &     ioff_blk_out,idxv
       integer ::
      &     opin_temp(ngastp,2), opout_temp(ngastp,2)
       
@@ -125,15 +126,47 @@
       call symmetrise(fac,ffin,op_in,iblkin,ffout,op_out,iblkout,
      &     op_info,orb_info)
 
-      if(ntest.ge.1000)then
-        call wrt_op_file(luout,5,ffout,op_out,1,
-     &       op_out%n_occ_cls,str_info,orb_info)
-      endif
+c dbg
+c      if(ntest.ge.1000)then
+c        call wrt_op_file(luout,5,ffout,op_out,1,
+c     &       op_out%n_occ_cls,str_info,orb_info)
+c      endif
+c dbg
 
       call atim_csw(cpu,sys,wall)
 
       call prtim(luout,'time for symmetrisation',
      &     cpu-cpu0,sys-sys0,wall-wall0)
+
+c dbg
+      ! Evaluate the inverse of B and multiply it by V+. Used to trick the
+      ! preconditioner of MP2-R12 1A.
+      call invert(fac,ffout,op_out,iblkout,ffout,op_out,iblkout,
+     &     op_info,orb_info)
+
+      if(ntest.ge.1000)then
+        call wrt_op_file(luout,5,ffout,op_out,1,
+     &       op_out%n_occ_cls,str_info,orb_info)
+      endif
+      
+      idxv = idx_oplist2(op_vbar_inter,op_info)
+      opv => op_info%op_arr(idxv)%op
+      ffv => op_info%opfil_arr(idxv)%fhand
+      if(.not.associated(ffv))
+     &     call quit(1,'symm_op','no file handle for'//
+     &     trim(opv%name))
+
+      call op_mult(-1d0,ffout,op_out,iblkout,ffv,opv,1,
+     &     orb_info)
+
+      if(ntest.ge.1000)then
+        write(luout,*)'Modified V+'
+        call wrt_op_file(luout,5,ffv,opv,1,
+     &       opv%n_occ_cls,str_info,orb_info)
+      endif
+      
+c      stop
+c dbg
 
       return
       end

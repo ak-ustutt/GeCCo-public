@@ -83,7 +83,7 @@
      &                                      ffdia(iopt)%fhand,
      &             opti_stat%ffrsbsp(iopt)%fhand,
      &             opti_stat%ffvsbsp(iopt)%fhand,
-     &             nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
+     &             nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2)
 
               shift = ndim_save.eq.opti_stat%ndim_rsbsp.and.iopt.eq.1
               call optc_update_redsp1(opti_stat%sbspmat,

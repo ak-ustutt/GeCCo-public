@@ -78,14 +78,14 @@
      &     0,idum
      &     )
 
-      if(trim(r12_apprx).ne.'A')then
-        ! Import the R12**2 operator integrals.
-        call add_action(act_list,nactions,
-     &       iaction_import,0,1,0,
-     &       idum,(/idxr12sq/),
-     &       0,idum
-     &       )
-      endif
+c      if(trim(r12_apprx).ne.'A')then
+c        ! Import the R12**2 operator integrals.
+c        call add_action(act_list,nactions,
+c     &       iaction_import,0,1,0,
+c     &       idum,(/idxr12sq/),
+c     &       0,idum
+c     &       )
+c      endif
 
       ! Import commutator integrals, (pq|[T1+T2,r12]|rs).
       call add_action(act_list,nactions,
@@ -157,7 +157,7 @@ c dbg
      &     0,idum
      &     )
 
-      ! Set up the R12 preconditioner (DIagonal of B).
+      ! Set up the R12 preconditioner (Diagonal of B).
       call add_action(act_list,nactions,
      &     iaction_setup_prc,2,1,0,
      &     (/idxbint,idxbint/),(/idxr12dia/),

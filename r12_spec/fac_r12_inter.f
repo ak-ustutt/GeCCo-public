@@ -70,10 +70,13 @@
 
       ! Delete the nodes in the formula which have not been factorised
       ! with the preceding intermediates.
-      nops = 2
+
+c dbg ! Deleting of B.
+      nops = 3
       allocate(ops(nops))
       ops(1) = op_r12
       ops(2) = op_rba
+      ops(3) = op_b_inter
       call delete_non_fact(ops,nops,form_lag,op_info)
       deallocate(ops)
 

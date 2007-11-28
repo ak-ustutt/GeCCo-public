@@ -14,7 +14,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(inout) ::
      &     nred, iord_vsbsp(*), iord_rsbsp(*)

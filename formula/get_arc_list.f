@@ -13,7 +13,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(out) ::
      &     len_list, arc_list(*)

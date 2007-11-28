@@ -114,9 +114,20 @@
             do idx = 1, len_gam_ms
 
               do jdx = 1, len_gam_ms
-                buffer(ioff_out+(jdx-1)*len_gam_ms+idx) =
-     &               xdia(ioff_dia+idx)
+                ! Copy diagonal elements to all elements of the row.
+c                buffer(ioff_out+(jdx-1)*len_gam_ms+idx) =
+c     &               xdia(ioff_dia+idx)
+c dbg
+c                ! Column?
+c                buffer(ioff_out+(idx-1)*len_gam_ms+jdx) =
+c     &               xdia(ioff_dia+idx)
+                buffer(ioff_out+(idx-1)*len_gam_ms+jdx) = 1d0
+c dbg
               enddo
+c dbg
+c              ! Unit operator?
+c              buffer(ioff_out+(idx-1)*len_gam_ms+idx) = 1d0
+c dbg
             enddo
 
             ioff_dia = ioff_dia + len_gam_ms

@@ -44,6 +44,7 @@
         write(luout,*) '==============================='
         write(luout,*) ' welcome to optc_update_redsp1'
         write(luout,*) '==============================='
+        write(luout,*) 'nwfpar = ',nwfpar
       end if
 
       if (ntest.ge.20) then

@@ -101,7 +101,7 @@
         ffdia(iop)%fhand => op_info%opfil_arr(idxop_in(iop))%fhand
       end do
 
-      ! for savety reasons, we allocate the two guys
+      ! for safety reasons, we allocate the two guys
       allocate(ff_trv(1),ff_h_trv(1))
 
       do iop = 1, nop_opt

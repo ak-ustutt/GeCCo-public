@@ -145,9 +145,9 @@ c      call add_operator(op_omg_candt,op_info)
 c      idx = idx_oplist2(op_omg_candt,op_info)
 c      op_pnt => op_info%op_arr(idx)%op
 
-      idx_top=idx_oplist2(op_top,op_info)
-      call clone_operator(op_pnt,op_info%op_arr(idx_top)%op,orb_info)
-      call join_operator(op_pnt,op_info%op_arr(idx_c12)%op,orb_info)
+c      idx_top=idx_oplist2(op_top,op_info)
+c      call clone_operator(op_pnt,op_info%op_arr(idx_top)%op,orb_info)
+c      call join_operator(op_pnt,op_info%op_arr(idx_c12)%op,orb_info)
 
       ! New entry: the R12 integrals (<ab|r12|cd>)
       call add_operator(op_rint,op_info)
