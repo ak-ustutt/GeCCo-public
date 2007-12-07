@@ -52,8 +52,11 @@
           case (iaction_symmetrise)
             write(luout,*) 'Symmetrise an operator'
             write(luout,*) ' # sets: ',current%act%nop_out
-          case(iaction_diagonal)
-            write(luout,*) 'Diagonal of an operator.'
+          case(iaction_invert)
+            write(luout,*) 'Inverse of an operator.'
+            write(luout,*) ' # sets: ',current%act%nop_out
+          case(iaction_multiply)
+            write(luout,*) 'Multiply two operators.'
             write(luout,*) ' # sets: ',current%act%nop_out
           case default
             write(luout,*) 'action = ',current%act%action_type

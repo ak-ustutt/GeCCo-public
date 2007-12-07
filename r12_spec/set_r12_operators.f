@@ -211,6 +211,18 @@ c      call join_operator(op_pnt,op_info%op_arr(idx_c12)%op,orb_info)
      &     ops_array,2,orb_info)
       deallocate(ops_array)
 
+      ! Delta integrals.
+      call add_operator(op_del_inter,op_info)
+      idx=idx_oplist2(op_del_inter,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,v_pnt,orb_info)
+
+      ! R12^{2} integrals.
+      call add_operator(op_f2,op_info)
+      idx=idx_oplist2(op_f2,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,v_pnt,orb_info)
+
       ! Adjoint of V.
       call add_operator(op_vbar_inter,op_info)
       idx=idx_oplist2(op_vbar_inter,op_info)
@@ -219,18 +231,6 @@ c      call join_operator(op_pnt,op_info%op_arr(idx_c12)%op,orb_info)
       ! This operator should be daggered, but this causes inconsistencies
       ! later on. Need to rectify this at some point. GWR 14/08/2007
 c      op_pnt%dagger=.true.
-
-      ! New entry: the CC-R12 residual. Same as V.
-      call add_operator(op_omgr12,op_info)
-      idx = idx_oplist2(op_omgr12,op_info)
-      op_pnt => op_info%op_arr(idx)%op
-      call clone_operator(op_pnt,v_pnt,orb_info)
-
-      ! Delta integrals.
-      call add_operator(op_del_inter,op_info)
-      idx=idx_oplist2(op_del_inter,op_info)
-      op_pnt => op_info%op_arr(idx)%op
-      call clone_operator(op_pnt,v_pnt,orb_info)
 
       ! Anti-symmetric B^{ij}_{kl}.
       call add_operator(op_b_inter,op_info)
@@ -245,13 +245,21 @@ c      ops_array(3)%op=>c12_pnt
      &     ops_array,2,orb_info)
       deallocate(ops_array)
 
+      ! X-intermediate, if required.
+      if(trim(r12_apprx).ne.'A')then
+        call add_operator(op_x_inter,op_info)
+        idx=idx_oplist2(op_x_inter,op_info)
+        op_pnt => op_info%op_arr(idx)%op
+        call clone_operator(op_pnt,b_pnt,orb_info)
+      endif
+
       ! Symmetrised B (for MP2 approx 1A).
       call add_operator(op_b_symm,op_info)
       idx=idx_oplist2(op_b_symm,op_info)
       op_pnt => op_info%op_arr(idx)%op
       call clone_operator(op_pnt,b_pnt,orb_info)
 
-      ! Inverse of the diagonal of B for MP2-R12 approx 1A.
+      ! Inverse of B for MP2-R12.
       call add_operator(op_b_inv,op_info)
       idx=idx_oplist2(op_b_inv,op_info)
       op_pnt => op_info%op_arr(idx)%op
@@ -262,6 +270,12 @@ c      ops_array(3)%op=>c12_pnt
       idx = idx_oplist2(op_diar12,op_info)
       op_pnt => op_info%op_arr(idx)%op
       call clone_operator(op_pnt,b_pnt,orb_info)
+
+      ! New entry: the CC-R12 residual. Same as V.
+      call add_operator(op_omgr12,op_info)
+      idx = idx_oplist2(op_omgr12,op_info)
+      op_pnt => op_info%op_arr(idx)%op
+      call clone_operator(op_pnt,v_pnt,orb_info)
 
 c      ! Adjoint of B.
 c      call add_operator(op_bbar_inter,op_info)

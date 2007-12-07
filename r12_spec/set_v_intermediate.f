@@ -2,12 +2,13 @@
       subroutine set_v_intermediate(formula_vint,op_info,orb_info)
 *----------------------------------------------------------------------*
 *     Generate the formula for the V-intermediate.
+*     Valid for any ansatz.
 *     GWR November 2007.
 *----------------------------------------------------------------------*
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -19,6 +20,7 @@
       include 'def_formula_item.h'
       include 'def_formula.h'
       include 'par_formnames_gen.h'
+      include 'explicit.h'
 
       type(formula), intent(inout), target ::
      &     formula_vint
@@ -112,12 +114,26 @@ c     &     0,0,.false.,op_info)
       idx_gtemp=idx_oplist2(op_g_temp,op_info)
       g_temp_pnt => op_info%op_arr(idx_gtemp)%op
 
-      ndef=2
-      allocate(occ_def(ngastp,2,2))
-      occ_def(1:ngastp,1,1) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,1) = (/0,1,0,1/)
-      occ_def(1:ngastp,1,2) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,2) = (/1,0,0,1/)
+      ! Set dummies depending on ansatz.
+      if(ansatze.eq.1)then
+        ndef=2
+        allocate(occ_def(ngastp,2,ndef))
+        occ_def(1:ngastp,1,1) = (/2,0,0,0/)
+        occ_def(1:ngastp,2,1) = (/0,1,0,1/)
+        occ_def(1:ngastp,1,2) = (/2,0,0,0/)
+        occ_def(1:ngastp,2,2) = (/1,0,0,1/)
+      elseif(ansatze.eq.2)then
+        ndef = 2
+        allocate(occ_def(ngastp,2,ndef))
+        occ_def(1:ngastp,1,1) = (/2,0,0,0/)
+        occ_def(1:ngastp,2,1) = (/1,0,0,1/)
+        occ_def(1:ngastp,1,2) = (/2,0,0,0/)
+        occ_def(1:ngastp,2,2) = (/1,1,0,0/)
+      else
+        call quit(1,'Set V','Not valid for ansatz 3. Yet.')
+      endif
+
+      ! Set the actual operator.
       call set_uop(g_temp_pnt,op_g_temp,.false.,0,0,1,1,0,
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
@@ -137,12 +153,27 @@ c      call mem_map(.true.)
       call add_operator(op_r_temp,op_info)
       idx_rtemp=idx_oplist2(op_r_temp,op_info)
       r_temp_pnt => op_info%op_arr(idx_rtemp)%op
-      ndef=2
-      allocate(occ_def(ngastp,2,2))
-      occ_def(1:ngastp,1,1) = (/0,1,0,1/)
-      occ_def(1:ngastp,2,1) = (/2,0,0,0/)
-      occ_def(1:ngastp,1,2) = (/1,0,0,1/)
-      occ_def(1:ngastp,2,2) = (/2,0,0,0/)
+
+      ! Set dummies depending on ansatz.
+      if(ansatze.eq.1)then
+        ndef=2
+        allocate(occ_def(ngastp,2,ndef))
+        occ_def(1:ngastp,1,1) = (/0,1,0,1/)
+        occ_def(1:ngastp,2,1) = (/2,0,0,0/)
+        occ_def(1:ngastp,1,2) = (/1,0,0,1/)
+        occ_def(1:ngastp,2,2) = (/2,0,0,0/)
+      elseif(ansatze.eq.2)then
+        ndef=2
+        allocate(occ_def(ngastp,2,ndef))
+        occ_def(1:ngastp,1,1) = (/1,0,0,1/)
+        occ_def(1:ngastp,2,1) = (/2,0,0,0/)
+        occ_def(1:ngastp,1,2) = (/1,1,0,0/)
+        occ_def(1:ngastp,2,2) = (/2,0,0,0/)
+      else
+        call quit(1,'Set V','Not valid for ansatz 3. Yet.')
+      endif
+
+      ! Set the actual operator.
       call set_uop(r_temp_pnt,op_r_temp,.false.,0,0,1,1,0,
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
@@ -184,14 +215,27 @@ c      enddo
       call add_operator(op_g_temp,op_info)
       idx_gtemp=idx_oplist2(op_g_temp,op_info)
       g_temp_pnt => op_info%op_arr(idx_gtemp)%op
-      ndef=3
-      allocate(occ_def(ngastp,2,3))
-      occ_def(1:ngastp,1,1) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,1) = (/2,0,0,0/)
-      occ_def(1:ngastp,1,2) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,2) = (/1,1,0,0/)
-      occ_def(1:ngastp,1,3) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,3) = (/0,2,0,0/)
+
+      ! Set dummies depending on ansatz.
+      if(ansatze.eq.1)then
+        ndef=3
+        allocate(occ_def(ngastp,2,ndef))
+        occ_def(1:ngastp,1,1) = (/2,0,0,0/)
+        occ_def(1:ngastp,2,1) = (/2,0,0,0/)
+        occ_def(1:ngastp,1,2) = (/2,0,0,0/)
+        occ_def(1:ngastp,2,2) = (/1,1,0,0/)
+        occ_def(1:ngastp,1,3) = (/2,0,0,0/)
+        occ_def(1:ngastp,2,3) = (/0,2,0,0/)
+      elseif(ansatze.eq.2)then
+        ndef=1
+        allocate(occ_def(ngastp,2,ndef))
+        occ_def(1:ngastp,1,1) = (/2,0,0,0/)
+        occ_def(1:ngastp,2,1) = (/2,0,0,0/)
+      else
+        call quit(1,'Set V','Not valid for ansatz 3. Yet.')
+      endif
+
+      ! Set the actual operator.
       call set_uop(g_temp_pnt,op_g_temp,.false.,0,0,1,1,0,
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
@@ -208,14 +252,26 @@ c      enddo
       call add_operator(op_r_temp,op_info)
       idx_rtemp=idx_oplist2(op_r_temp,op_info)
       r_temp_pnt => op_info%op_arr(idx_rtemp)%op
-      ndef=3
-      allocate(occ_def(ngastp,2,3))
-      occ_def(1:ngastp,1,1) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,1) = (/2,0,0,0/)
-      occ_def(1:ngastp,1,2) = (/1,1,0,0/)
-      occ_def(1:ngastp,2,2) = (/2,0,0,0/)
-      occ_def(1:ngastp,1,3) = (/0,2,0,0/)
-      occ_def(1:ngastp,2,3) = (/2,0,0,0/)
+
+      ! Set the dummies depending on ansatz.
+      if(ansatze.eq.1)then
+        ndef=3
+        allocate(occ_def(ngastp,2,ndef))
+        occ_def(1:ngastp,1,1) = (/2,0,0,0/)
+        occ_def(1:ngastp,2,1) = (/2,0,0,0/)
+        occ_def(1:ngastp,1,2) = (/1,1,0,0/)
+        occ_def(1:ngastp,2,2) = (/2,0,0,0/)
+        occ_def(1:ngastp,1,3) = (/0,2,0,0/)
+        occ_def(1:ngastp,2,3) = (/2,0,0,0/)
+      elseif(ansatze.eq.2)then
+        ndef=1
+        allocate(occ_def(ngastp,2,ndef))
+        occ_def(1:ngastp,1,1) = (/2,0,0,0/)
+        occ_def(1:ngastp,2,1) = (/2,0,0,0/)
+      else
+        call quit(1,'Set V','Not valid for ansatz 3. Yet.')
+      endif
+
       call set_uop(r_temp_pnt,op_r_temp,.false.,0,0,1,1,0,
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
@@ -288,6 +344,10 @@ c      enddo
 
       call atim_csw(cpu,sys,wall)
       call prtim(luout,'V-interm.',cpu-cpu0,sys-sys0,wall-wall0)
+
+c dbg
+c      stop
+c dbg
 
       return
       end

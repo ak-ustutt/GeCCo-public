@@ -8,9 +8,10 @@
      &     iaction_setup_prc  = 7,
      &     iaction_prop_eval  = 8,
      &     iaction_symmetrise = 9,
-c dbg
-     &     iaction_diagonal   = 10
-c dbg
+     &     iaction_invert     = 10,
+     &     iaction_multiply   = 11
+	  
+
       type action
         integer ::
      &       action_type

@@ -200,11 +200,18 @@ c      call init_op_files(op_info)
             call symm_op(current_act%act%idxopdef_in(1),
      &                   current_act%act%idxopdef_out(1),
      &                   op_info,orb_info,str_info)
-          case(iaction_diagonal)
-            ! Extract diagonal of operator.
-            call extract_diag_op(current_act%act%idxopdef_in(1),
-     &                           current_act%act%idxopdef_out(1),
-     &                           .true.,op_info,orb_info,str_info)
+          case(iaction_invert)
+            ! Invert the matrix representation of an operator.
+            call inv_op(current_act%act%idxopdef_in(1),
+     &                  current_act%act%idxopdef_out(1),
+     &                  op_info,orb_info,str_info)
+          case(iaction_multiply)
+            ! Multiply the matrix representations of two or more 
+            ! operators.
+            call mult_op(current_act%act%nop_in,
+     &                   current_act%act%idxopdef_in,
+     &                   current_act%act%idxopdef_out,
+     &                   op_info,orb_info,str_info)
 
           case default
             write(luout,*) 'action = ',current_act%act%action_type

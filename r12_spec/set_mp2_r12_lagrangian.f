@@ -71,7 +71,7 @@
       idx_h_temp = idx_oplist2(op_h_temp,op_info)
       h_temp_pnt => op_info%op_arr(idx_h_temp)%op
 
-      ndef =7
+      ndef =9
       allocate(occ_def(ngastp,2,ndef))
       occ_def(1:ngastp,1,1) = (/1,0,0,0/)
       occ_def(1:ngastp,2,1) = (/1,0,0,0/)
@@ -81,12 +81,16 @@
       occ_def(1:ngastp,2,3) = (/0,0,0,1/)
       occ_def(1:ngastp,1,4) = (/0,2,0,0/)
       occ_def(1:ngastp,2,4) = (/2,0,0,0/)
-      occ_def(1:ngastp,1,5) = (/0,0,0,2/)
+      occ_def(1:ngastp,1,5) = (/0,1,0,1/)
       occ_def(1:ngastp,2,5) = (/2,0,0,0/)
-      occ_def(1:ngastp,1,6) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,6) = (/0,2,0,0/)
+      occ_def(1:ngastp,1,6) = (/0,0,0,2/)
+      occ_def(1:ngastp,2,6) = (/2,0,0,0/)
       occ_def(1:ngastp,1,7) = (/2,0,0,0/)
-      occ_def(1:ngastp,2,7) = (/0,0,0,2/)
+      occ_def(1:ngastp,2,7) = (/0,2,0,0/)
+      occ_def(1:ngastp,1,8) = (/2,0,0,0/)
+      occ_def(1:ngastp,2,8) = (/0,1,0,1/)
+      occ_def(1:ngastp,1,9) = (/2,0,0,0/)
+      occ_def(1:ngastp,2,9) = (/0,0,0,2/)
       call set_uop(h_temp_pnt,op_h_temp,.false.,0,0,1,1,0,
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
@@ -204,13 +208,13 @@
       ! Replace the formal elements of H, S and Sbar with actual
       ! Hamiltonian, T and CR terms.
       call expand_subexpr(form_lag,form_h,.false.,op_info)
-      if(ntest.ge.100)then
+      if(ntest.ge.1000)then
         call write_title(luout,wst_title,'After H replacement.')
         call print_form_list(luout,form_lag,op_info)
       endif
 
       call expand_subexpr(form_lag,form_t_cr,.false.,op_info)
-      if(ntest.ge.100)then
+      if(ntest.ge.1000)then
         call write_title(luout,wst_title,'After S replacement.')
         call print_form_list(luout,form_lag,op_info)
       endif

@@ -1,16 +1,15 @@
-      subroutine factor_v(form,op_info,orb_info)
+      subroutine factor_x(form,op_info,orb_info)
 *-----------------------------------------------------------------------
 *     Routine which generates a formal expression for the R12 
-*     V-intermediate and then searches for terms in the R12-Lagrangian
+*     X-intermediate and then searches for terms in the R12-Lagrangian
 *     which may be factorised into a product of that expression and a
 *     remainder. 
-*     Valid for any ansatz.
-*     GWR November 2007.
+*     GWR December 2007.
 *-----------------------------------------------------------------------
       implicit none
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -35,15 +34,19 @@
       type(contraction) ::
      &     contr
       type(formula_item), target ::
-     &     form_gr, form_v
+     &     form_rr, form_x
       type(formula_item), pointer ::
-     &     form_pnt, form_gr_pnt
+     &     form_pnt, form_rr_pnt
       type(operator), pointer ::
-     &     v_pnt
+     &     x_pnt
       type(operator_array), pointer ::
      &     ops_array(:)
       integer ::
-     &     idxopv, idxham, idxc12, idxr12, idxlcc
+     &     luinput, idxopx, idxc12, idxr12, idxrba, idxlcc
+      logical ::
+     &     reo
+      logical, pointer ::
+     &     fix_vtx(:)
       character*256 ::
      &     opin, opout
 
@@ -55,23 +58,23 @@
 
       if(ntest.ge.100)then
         write(luout,*)'=============================='
-        write(luout,*)' V-intermediate factorisation '
+        write(luout,*)' X-intermediate factorisation '
         write(luout,*)'=============================='
       endif
 
-      idxham = idx_oplist2(op_ham,op_info)
       idxc12 = idx_oplist2(op_c12,op_info)
+      idxrba = idx_oplist2(op_rba,op_info)
       idxr12 = idx_oplist2(op_r12,op_info)
       idxlcc = idx_oplist2(op_cclg,op_info)
 
-      ! Form the formal V-operator.
-      call add_operator(op_v_formal,op_info)
-      idxopv = idx_oplist2(op_v_formal,op_info)
-      v_pnt => op_info%op_arr(idxopv)%op
+      ! Form the formal X-operator.
+      call add_operator(op_x_formal,op_info)
+      idxopx = idx_oplist2(op_x_formal,op_info)
+      x_pnt => op_info%op_arr(idxopx)%op
       allocate(ops_array(2))
       ops_array(1)%op => op_info%op_arr(idxlcc)%op
       ops_array(2)%op => op_info%op_arr(idxc12)%op
-      call set_gen_intermediate(v_pnt,op_v_formal,
+      call set_gen_intermediate(x_pnt,op_x_formal,
      &     ops_array,2,orb_info)
       deallocate(ops_array)
 
@@ -79,44 +82,39 @@
       form_pnt => form
 
       ! Initialise a temporary formula.
-      call init_formula(form_gr)
-      form_gr_pnt => form_gr
-      call new_formula_item(form_gr_pnt,command_set_target_init,idxlcc)
-      form_gr_pnt => form_gr_pnt%next
+      call init_formula(form_rr)
+      form_rr_pnt => form_rr
+      call new_formula_item(form_rr_pnt,command_set_target_init,idxlcc)
+      form_rr_pnt => form_rr_pnt%next
 
-      call expand_op_product(form_gr_pnt,idxlcc,
-     &     1d0,3,(/idxham,idxc12,idxr12/),-1,-1,
+      call expand_op_product(form_rr_pnt,idxlcc,
+     &     1d0,3,(/idxrba,idxc12,idxr12/),-1,-1,
      &     (/1,2,1,3,2,3/),3,.false.,op_info)
 
       ! Take the derivative wrt C. 
-      ! NB form_v is initialised in form_deriv.
-      call form_deriv3(form_v,form_gr,
-     &     1,idxc12,0,idxopv,op_info)
+      ! NB form_x is initialised in form_deriv.
+      call form_deriv3(form_x,form_rr,
+     &     1,idxc12,0,idxopx,op_info)
 
       if(ntest.ge.100)then
-        call write_title(luout,wst_title,'Formal V')
-        call print_form_list(luout,form_v,op_info)
+        call write_title(luout,wst_title,'Formal X')
+        call print_form_list(luout,form_x,op_info)
       endif
 
       ! Factor the V-terms out of the input formula.
-      call factor_out_subexpr(form,form_v,op_info)
-
-      if(ntest.ge.1000)then
-        call write_title(luout,wst_title,'V-factored Formal')
-        call print_form_list(luout,form,op_info)
-      endif
+      call factor_out_subexpr(form,form_x,op_info)
 
       ! Replace the formal V-terms with the actual integrals.
-      opin = op_v_formal
-      opout = op_v_inter
+      opin = op_x_formal
+      opout = op_x_inter
       call form_op_replace(opin,opout,form,op_info)
 
       if(ntest.ge.100)then
-        call write_title(luout,wst_title,'V-factored Actual')
+        call write_title(luout,wst_title,'X-factored R12 Lagrangian')
         call print_form_list(luout,form,op_info)
       endif
 
-      call del_operator(idxopv,op_info)
+      call del_operator(idxopx,op_info)
 
       return
       end

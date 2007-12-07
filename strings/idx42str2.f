@@ -56,7 +56,7 @@
      &     igamt, mst, iblk_ca, iblk_ac, ihpvdx, ihpv, ica,
      &     jdx, idxcnt, idstr_ca, idstr_ac, nel, msstr, lenlast,
      &     nmsd, imsd, igraph, idx1, idx2, idx3, idx4, ndup,
-     &     idxms, inc
+     &     idxms, inc, njoined, igraph_temp
 
       integer ::
      &     iocc(ngastp,2), igmd(ngastp,2), !igmdreo(ngastp,2),
@@ -68,14 +68,14 @@
      &     curgraph
 
       integer, external ::
-     &     iblk_occ, idx_msgmdst, idx4sg
+     &     iblk_occ, iblk_occ_inter, idx_msgmdst, idx4sg
       logical, external ::
      &     allow_sbsp_dis
 
 
       if (ntest.ge.10) then
         write(luout,*) '----------------------'
-        write(luout,*) ' output from idx42str'
+        write(luout,*) ' output from idx42str '
         write(luout,*) '----------------------'
         write(luout,*) 'mode = ',mode
       end if
@@ -126,10 +126,16 @@
 
       ! Which block of the operator does the passed integral represent?
       ! could be improved:
-      iblk_ca = iblk_occ(iocc,.false.,hop)
+      if(hop%njoined.eq.1)then
+        iblk_ca = iblk_occ(iocc,.false.,hop)
+        iblk_ac = iblk_occ(iocc,.true.,hop)
+      elseif(hop%njoined.gt.1)then
+        iblk_ca = iblk_occ_inter(iocc,.false.,hop)
+        iblk_ac = iblk_occ_inter(iocc,.true.,hop)
+      endif
       take_ca = iblk_ca.gt.0
-      iblk_ac = iblk_occ(iocc,.true.,hop)
       take_ac = iblk_ac.gt.0
+
       if (mode.eq.0) then
         if (.not.take_ca.or..not.take_ac) then
           write(luout,*) ' iocc: ',trim(hop%name)
@@ -328,20 +334,51 @@ c      endif
             ipos = ioff(ihpv,ica)
 
             ! point to graph needed for current string
-            if(.not.hop%dagger)then
-              if (take_ca) then
-                igraph = hop%idx_graph(ihpv,ica,iblk_ca)
+c            if(.not.hop%dagger)then
+c              if (take_ca) then
+c                igraph = hop%idx_graph(ihpv,ica,iblk_ca)
+c              else
+c                igraph = hop%idx_graph(ihpv,3-ica,iblk_ac)
+c              end if
+c            else
+c              if (take_ca) then
+c                igraph = hop%idx_graph(ihpv,3-ica,iblk_ca)
+c              else
+c                igraph = hop%idx_graph(ihpv,ica,iblk_ac)
+c              end if
+c            endif
+c            curgraph => str_info%g(igraph)
+
+            ! Loop to deal with intermediate type operators.
+            ! Not perfect, but functions for operators where c/a 
+            ! occupancies are all in the same space.
+            igraph = 0
+            igraph_temp = 0
+            njoined = hop%njoined
+            do jdx = 1,njoined
+              if(.not.hop%dagger)then
+                if (take_ca) then
+                  igraph = igraph +
+     &                 hop%idx_graph(ihpv,ica,(iblk_ca-1)*njoined+jdx)
+                else
+                  igraph = igraph +
+     &                 hop%idx_graph(ihpv,3-ica,(iblk_ac-1)*njoined+jdx)
+                end if
               else
-                igraph = hop%idx_graph(ihpv,3-ica,iblk_ac)
-              end if
-            else
-              if (take_ca) then
-                igraph = hop%idx_graph(ihpv,3-ica,iblk_ca)
-              else
-                igraph = hop%idx_graph(ihpv,ica,iblk_ac)
-              end if
-            endif
-            curgraph => str_info%g(igraph)
+                if (take_ca) then
+                  igraph = igraph +
+     &                 hop%idx_graph(ihpv,3-ica,(iblk_ca-1)*njoined+jdx)
+                else
+                  igraph = igraph +
+     &                 hop%idx_graph(ihpv,ica,(iblk_ac-1)*njoined+jdx)
+                end if
+              endif
+              if(igraph.ne.igraph_temp.and.igraph_temp.ne.0)
+     &             call quit(1,'idx42str2',
+     &             'igraph add only valid when only one contribution')
+              igraph_temp = igraph
+              curgraph => str_info%g(igraph)
+            enddo
 
             ! check for restrictions
             if (.not.allow_sbsp_dis(idspc(ipos),nel,

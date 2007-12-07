@@ -79,7 +79,7 @@
           endif
 
         case(op_f2)
-          mode=0
+          mode=1
           call import_r12_dalton(op_target,opfil_target,'MO_R2',
      &         mode,str_info,orb_info)
 

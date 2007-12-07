@@ -88,6 +88,12 @@
 
       ! Initialise the array in which the diagonal elements will be held.
       ! This is the maximum length needed if no externals (I hope).
+      ! Special treatment for MP2 (use of unit operator).
+      if(mp2)then
+        x2dia(1:4*orb_info%ntoob**2) = 1d0
+        goto 999
+      endif
+
       x2dia(1:4*orb_info%ntoob**2) = 0d0
       x2_off = 0
 
@@ -97,6 +103,7 @@
 
       do iocc_cls = 1,op%n_occ_cls
         ! Two-electron operators of the appropriate type only.
+        ! Formal blocks are ignored.
         if(loop(iocc_cls))cycle
 
         ioff_blk = op%off_op_occ(iocc_cls)
@@ -153,7 +160,7 @@ c          imo_off = (idxms-1)*orb_info%ntoob**2
 
       enddo
 
-      ifree = mem_flushmark()
+ 999  ifree = mem_flushmark()
 
       return
       end

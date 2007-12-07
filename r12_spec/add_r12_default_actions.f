@@ -33,7 +33,7 @@
      &     idxvint, idx_v_form, idxvbint, idx_vb_form, idxbint,
      &     idx_b_form, idx_b_symm, idx_b_symm_form, idxr12dia,
      &     idx_b_inv, idx_b_inv_form, idxecc, idxomg12, idxccrs12,
-     &     idxr12sq
+     &     idxr12sq, idx_xint, idx_x_form
 
       ! explicit interface does not work with ifort
       integer, external ::
@@ -78,14 +78,14 @@
      &     0,idum
      &     )
 
-c      if(trim(r12_apprx).ne.'A')then
-c        ! Import the R12**2 operator integrals.
-c        call add_action(act_list,nactions,
-c     &       iaction_import,0,1,0,
-c     &       idum,(/idxr12sq/),
-c     &       0,idum
-c     &       )
-c      endif
+      if(trim(r12_apprx).ne.'A')then
+        ! Import the R12**2 operator integrals.
+        call add_action(act_list,nactions,
+     &       iaction_import,0,1,0,
+     &       idum,(/idxr12sq/),
+     &       0,idum
+     &       )
+      endif
 
       ! Import commutator integrals, (pq|[T1+T2,r12]|rs).
       call add_action(act_list,nactions,
@@ -112,6 +112,17 @@ c      endif
      &     1,(/idx_vb_form/)
      &     )
 
+      ! Evaluate the X-intermediate, if necessary.
+      if(trim(r12_apprx).ne.'A')then
+        idx_xint = idx_oplist2(op_x_inter,op_info)
+        idx_x_form = idx_formlist(label_r12_xint,form_info)
+        call add_action(act_list,nactions,
+     &       iaction_evaluate,0,1,0,
+     &       idum,(/idx_xint/),
+     &       1,(/idx_x_form/)
+     &       )
+      endif
+
       ! Evaluate the B-intermediate.
       idxbint = idx_oplist2(op_b_inter,op_info)
       idx_b_form = idx_formlist(label_r12_bint,form_info)
@@ -130,16 +141,33 @@ c      endif
      &     1,(/idx_b_symm_form/)
      &     )
 
-c dbg
-c      ! Invert the diagonal part of B-symm.
-c      idx_b_inv = idx_oplist2(op_b_inv,op_info)
-c      idx_b_inv_form = idx_formlist(label_r12_binv,form_info)
-c      call add_action(act_list,nactions,
-c     &     iaction_diagonal,1,1,0,
-c     &     (/idx_b_symm/),(/idx_b_inv/),
-c     &     1,(/idx_b_inv_form/)
-c     &     )
-c dbg
+      if(mp2)then
+        ! Invert the B-matrix.
+        idx_b_inv = idx_oplist2(op_b_inv,op_info)
+        idx_b_inv_form = idx_formlist(label_r12_binv,form_info)
+        call add_action(act_list,nactions,
+     &       iaction_invert,1,1,0,
+     &       (/idx_b_symm/),(/idx_b_inv/),
+     &       1,(/idx_b_inv_form/)
+     &       )
+
+        ! Multiply the necessary intermediates by the inverse of B.
+        call add_action(act_list,nactions,
+     &       iaction_multiply,2,1,0,
+     &       (/idx_b_inv,idxvbint/),(/idxvbint/),
+     &       1,(/idx_vb_form/)
+     &       )
+
+        if(trim(r12_apprx).ne.'A')then
+          call add_action(act_list,nactions,
+     &         iaction_multiply,2,1,0,
+     &         (/idx_b_inv,idx_xint/),(/idx_xint/),
+     &         1,(/idx_x_form/)
+     &         )
+
+        endif
+
+      endif
 
 c dbg
 c      ! Evaluate the energy of the 1st iteration of the MP2-R12 equations.

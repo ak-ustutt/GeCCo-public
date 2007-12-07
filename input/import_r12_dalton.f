@@ -19,7 +19,7 @@
       include 'ifc_memman.h'
 
       integer, parameter::
-     &     ntest= 000
+     &     ntest= 100
 
       type(orbinf),intent(in),target ::
      &     orb_info
@@ -55,6 +55,13 @@
      &     r12scr(:)
 
       ifree=mem_setmark('import_r12')
+
+      if(ntest.ge.100)then
+        write(luout,*)'=================='
+        write(luout,*)'Import-r12-dalton '
+        write(luout,*)'=================='
+        write(luout,*)'Operator: ',trim(hop%name)
+      endif
 
       lbuf=hop%len_op
       if(lbuf.gt.ifree)

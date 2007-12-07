@@ -39,7 +39,7 @@
      &     form_pnt
 
       type(operator), pointer ::
-     &     ttr_temp_pnt, rbar_temp_pnt, ctemp_pnt
+     &     ttr_temp_pnt, rbar_temp_pnt
 
       type(formula_item), target ::
      &     form_ttr, form_rbar, form_rttr_temp, form_rttr, form_b_tot
@@ -61,9 +61,9 @@
       real(8) ::
      &     cpu, wall, sys, cpu0, wall0, sys0
 
-      if (ntest.eq.100) then
+      if (ntest.ge.100) then
         write(luout,*) '==================================='
-        write(luout,*) ' output from set_b_intermediate'
+        write(luout,*) ' output from set_b_intermediate    '
         write(luout,*) '==================================='
       end if
 
@@ -127,7 +127,7 @@
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
 
-      ! Substitute with actual R-BAR integrals.
+      ! Substitute with actual T commutator integrals.
       call init_formula(form_ttr)
       form_ttr_pnt => form_ttr
       call new_formula_item(form_ttr_pnt,command_set_target_init,
@@ -261,6 +261,7 @@ c dbg
       call update_svtx4contr(form_pnt%contr)
 
       if(ntest.ge.100)then
+        write(luout,*) 'B-intermediate: '
         call print_form_list(luout,form_bint,op_info)
       endif
 

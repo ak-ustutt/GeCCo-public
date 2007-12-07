@@ -15,7 +15,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 100
       
       include 'opdim.h'
       include 'stdunit.h'
@@ -28,6 +28,7 @@
       include 'ifc_baserout.h'
       include 'hpvxseq.h'
       include 'multd2h.h'
+      include 'explicit.h'
 
       real(8), intent(in) ::
      &     xdia(*)
@@ -80,10 +81,8 @@
         do iocc_cls = 1, nocc_cls
           if(op%formal_blk(iocc_cls))then
             loop(iocc_cls)=.true.
-            cycle
-          else
-            nbuff = nbuff + op%len_op_occ(iocc_cls)
           endif
+          nbuff = nbuff + op%len_op_occ(iocc_cls)
         enddo
         if(nbuff.gt.ifree)
      &       call quit(1,'diag_fill','Inadequate memory')
@@ -96,7 +95,7 @@
       ioff_dia = 0
       ! Loop over the occupation classes of the operator.
       occ_loop: do iocc_cls = 1, nocc_cls
-        if(loop(iocc_cls)) cycle occ_loop
+c        if(loop(iocc_cls)) cycle occ_loop
 
         ! Loop over Ms values.
         idxms = 0
@@ -114,20 +113,23 @@
             do idx = 1, len_gam_ms
 
               do jdx = 1, len_gam_ms
-                ! Copy diagonal elements to all elements of the row.
-c                buffer(ioff_out+(jdx-1)*len_gam_ms+idx) =
-c     &               xdia(ioff_dia+idx)
+                if(.not.loop(iocc_cls))then
+
+c                  if(.not.mp2)then
+                    ! Copy diagonal elements to all elements of the row.
+                    buffer(ioff_out+(jdx-1)*len_gam_ms+idx) =
+     &                   xdia(ioff_dia+idx)
+c                  else
 c dbg
-c                ! Column?
-c                buffer(ioff_out+(idx-1)*len_gam_ms+jdx) =
-c     &               xdia(ioff_dia+idx)
-                buffer(ioff_out+(idx-1)*len_gam_ms+jdx) = 1d0
+c                    ! Setting preconditioner to 1 for MP2-R12.
+c                    buffer(ioff_out+(idx-1)*len_gam_ms+jdx) = 1d0
+c                  endif
 c dbg
+                else
+                  ! Set formal blocks to 0. 
+                  buffer(ioff_out+(idx-1)*len_gam_ms+jdx) = 0d0
+                endif
               enddo
-c dbg
-c              ! Unit operator?
-c              buffer(ioff_out+(idx-1)*len_gam_ms+idx) = 1d0
-c dbg
             enddo
 
             ioff_dia = ioff_dia + len_gam_ms

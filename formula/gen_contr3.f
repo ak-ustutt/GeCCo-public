@@ -395,10 +395,15 @@ c dbg
                   if (ok.and.nj_tgt.gt.1) then
                     ! not 100%, but sufficient for current purposes
 c dbg
-                    print *,'entered new part: ',nj_tgt
+c                    print *,'entered new part: ',nj_tgt
 c dbg
                     call occ_contr(occ_test,ierr,proto_new,
      &                             occ_vtx(1,1,1+nj_tgt),nj_tgt)
+c dbg
+c                    print *,'occ_test, occ_target'
+c                    call wrt_occ_n(luout,occ_test,nj_tgt)
+c                    call wrt_occ_n(luout,occ_vtx,nj_tgt)
+c dbg
                     ok = ierr.eq.0.and.
      &                   iocc_equal_n(occ_test,.false.,
      &                                occ_vtx, .false.,nj_tgt)
@@ -429,6 +434,9 @@ c dbg
                     ok = check_contr(proto_new,proto_main)
 
                   end if
+c dbg
+c                  print *,'final: ',ok
+c dbg
 
                   if (ok) then
 

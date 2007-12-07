@@ -37,6 +37,8 @@
      &     op_b_formal*6   = 'B_FORM',
      &     op_b_symm*6     = 'B_SYMM',
      &     op_b_inv*5      = 'B_INV',
+     &     op_x_inter*1    = 'X',
+     &     op_x_formal*6   = 'X_FORM',
      &     op_del_inter*5  = 'DELTA',
      &     op_c_temp*6     = 'C-TEMP',
      &     op_f_temp*6     = 'F-TEMP',

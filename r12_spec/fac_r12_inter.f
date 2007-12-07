@@ -8,7 +8,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -20,6 +20,7 @@
       include 'mdef_formula_info.h'
       include 'def_formula_item.h'
       include 'par_formnames_gen.h'
+      include 'explicit.h'
 
       type(formula), intent(inout) ::
      &     fform
@@ -65,13 +66,18 @@
       ! Factor out the V+-intermediate.
       call factor_vbar(form_lag,op_info,orb_info)
 
+      ! Factor out the X-intermediate, if necessary.
+      if(trim(r12_apprx).ne.'A')then
+        call factor_x(form_lag,op_info,orb_info)
+      endif
+
       ! Factor out B-intermediate.
       call factor_b(form_lag,op_info,orb_info)
 
       ! Delete the nodes in the formula which have not been factorised
       ! with the preceding intermediates.
 
-c dbg ! Deleting of B.
+c dbg ! Deletion of B.
       nops = 3
       allocate(ops(nops))
       ops(1) = op_r12
@@ -85,6 +91,11 @@ c dbg ! Deleting of B.
       write(name,'(a,".fml")') trim(fform%label)
       call file_init(fform%fhand,name,ftyp_sq_unf,0)
       call write_form_list(fform%fhand,form_lag,fform%comment)
+
+      if(ntest.ge.100)then
+        write(luout,*) 'Factored expression: '
+        call print_form_list(luout,form_lag,op_info)
+      endif
 
       call atim_csw(cpu,sys,wall)
       write(luout,'(/a)')trim(fform%label)

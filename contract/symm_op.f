@@ -36,19 +36,19 @@
      &     idx_opin, idx_opout
 
       type(filinf), pointer ::
-     &     ffin, ffout,ffv
+     &     ffin, ffout, ffv
       type(operator), pointer ::
      &     op_in, op_out, opv
       
       logical ::
      &     bufin, bufout
       integer ::
-     &     iblkin, iblkout, len_str, idum, ifree, lblk, nblkmax,
+     &     len_str, idum, ifree, lblk, nblkmax,
      &     nblk, nbuff, ioffin, ioffout, idxst, idxnd, njoined,
-     &     join_off_in, join_off_out, idoffin, idoffout, idxmsa,
+     &     join_off, idoffin, idoffout, idxmsa,
      &     msmax, msa, msc, igama, igamc, idx, jdx, ngam,
      &     len_gam_ms, ioff, len_blk_in, ioff_blk_in, len_blk_out,
-     &     ioff_blk_out,idxv
+     &     ioff_blk_out,idxv, nocc_cls, iocc_cls
       integer ::
      &     opin_temp(ngastp,2), opout_temp(ngastp,2)
       
@@ -79,11 +79,11 @@
      &                       0,op_info)
       ffout => op_info%opfil_arr(idx_opout)%fhand
 
-      ! Assumptions for the B-matrix in MP2-R12(1A) (may need to 
-      ! change later):
+      ! Assumptions for the B-matrix in MP2-R12:
       fac = 0.5d0
-      iblkin = 1
-      iblkout = 1
+      nocc_cls = op_in%n_occ_cls
+      if(nocc_cls.ne.op_out%n_occ_cls)
+     &     call quit(1,'symm_op','no. of occupation classes unequal')
 
       if (ntest.ge.100) then
         write(luout,*) '=========================='
@@ -94,44 +94,48 @@
      &                   ' rec: ',ffin%current_record
         write(luout,*) ' ffout: ',trim(ffout%name),
      &                   ' rec: ',ffout%current_record
-        write(luout,*) ' opin: ',op_in%name(1:len_trim(op_in%name)),
-     &       '  block: ',iblkin
-        write(luout,*) ' opout: ',op_out%name(1:len_trim(op_out%name)),
-     &       '  block: ',iblkout
+        write(luout,*) ' opinp: ',op_in%name(1:len_trim(op_in%name))
+        write(luout,*) ' opinv: ',op_out%name(1:len_trim(op_out%name))
       end if
 
       njoined = op_in%njoined
       if(njoined.ne.op_out%njoined)
      &     call quit(1,'symm_op','in and out incompatible: njoined')
-      join_off_in = (iblkin-1)*njoined
-      join_off_out = (iblkout-1)*njoined
 
+      ! Check to see whether the two operators have the same shapes in
+      ! each block. Assumes that the equivalent blocks are ordered the 
+      ! same in each operator.
       opin_temp(1:ngastp,1:2)=0
       opout_temp(1:ngastp,1:2)=0
-      do idx=1,njoined
 
-        opin_temp(1:ngastp,1:2) =
-     &       op_in%ihpvca_occ(1:ngastp,1:2,join_off_in+idx)
-        opout_temp(1:ngastp,1:2) = 
-     &       op_out%ihpvca_occ(1:ngastp,1:2,join_off_out+idx)
+      do iocc_cls = 1, nocc_cls
+        join_off = (iocc_cls-1)*njoined
 
-        if (.not.iocc_equal(opin_temp,op_in%dagger,
-     &       opout_temp,op_out%dagger)) then
-          call quit(1,'symm_op','in and out incompatible: occs.')
-        endif  
+        do idx=1,njoined
 
+          opin_temp(1:ngastp,1:2) =
+     &         op_in%ihpvca_occ(1:ngastp,1:2,join_off+idx)
+          opout_temp(1:ngastp,1:2) = 
+     &         op_out%ihpvca_occ(1:ngastp,1:2,join_off+idx)
+
+          if (.not.iocc_equal(opin_temp,op_in%dagger,
+     &         opout_temp,op_out%dagger)) then
+            call quit(1,'symm_op','in and out incompatible: occs.')
+          endif  
+        
+        enddo
       enddo
 
       ! Call the routine which actually does the symmetrisation.
-      call symmetrise(fac,ffin,op_in,iblkin,ffout,op_out,iblkout,
+      call symmetrise(fac,ffin,op_in,ffout,op_out,nocc_cls,
      &     op_info,orb_info)
 
-c dbg
-c      if(ntest.ge.1000)then
-c        call wrt_op_file(luout,5,ffout,op_out,1,
-c     &       op_out%n_occ_cls,str_info,orb_info)
-c      endif
-c dbg
+
+      if(ntest.ge.1000)then
+        write(luout,*)'Symmetrised operator: ',trim(op_out%name)
+        call wrt_op_file(luout,5,ffout,op_out,1,
+     &       op_out%n_occ_cls,str_info,orb_info)
+      endif
 
       call atim_csw(cpu,sys,wall)
 
@@ -139,31 +143,37 @@ c dbg
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
 c dbg
-      ! Evaluate the inverse of B and multiply it by V+. Used to trick the
-      ! preconditioner of MP2-R12 1A.
-      call invert(fac,ffout,op_out,iblkout,ffout,op_out,iblkout,
-     &     op_info,orb_info)
+c      ! Evaluate the inverse of B and multiply it by V+. Used to trick the
+c      ! preconditioner of MP2-R12 1A.
+c      call file_open(ffout)
+c      call invert(ffout,op_out,ffout,op_out,1,
+c     &     op_info,orb_info)
 
-      if(ntest.ge.1000)then
-        call wrt_op_file(luout,5,ffout,op_out,1,
-     &       op_out%n_occ_cls,str_info,orb_info)
-      endif
+c      if(ntest.ge.1000)then
+c        write(luout,*)'Inverted matrix: '
+c        call wrt_op_file(luout,5,ffout,op_out,1,
+c     &       op_out%n_occ_cls,str_info,orb_info)
+c      endif
       
-      idxv = idx_oplist2(op_vbar_inter,op_info)
-      opv => op_info%op_arr(idxv)%op
-      ffv => op_info%opfil_arr(idxv)%fhand
-      if(.not.associated(ffv))
-     &     call quit(1,'symm_op','no file handle for'//
-     &     trim(opv%name))
+c      idxv = idx_oplist2(op_vbar_inter,op_info)
+c      opv => op_info%op_arr(idxv)%op
+c      ffv => op_info%opfil_arr(idxv)%fhand
+c      if(.not.associated(ffv))
+c     &     call quit(1,'symm_op','no file handle for'//
+c     &     trim(opv%name))
 
-      call op_mult(-1d0,ffout,op_out,iblkout,ffv,opv,1,
-     &     orb_info)
+c      call op_mult(-1d0,ffout,op_out,1,ffv,opv,1,
+c     &     orb_info)
 
-      if(ntest.ge.1000)then
-        write(luout,*)'Modified V+'
-        call wrt_op_file(luout,5,ffv,opv,1,
-     &       opv%n_occ_cls,str_info,orb_info)
+      if(ffout%unit.gt.0)then
+        call file_close_keep(ffout)
       endif
+
+c      if(ntest.ge.1000)then
+c        write(luout,*)'Modified V+'
+c        call wrt_op_file(luout,5,ffv,opv,1,
+c     &       opv%n_occ_cls,str_info,orb_info)
+c      endif
       
 c      stop
 c dbg

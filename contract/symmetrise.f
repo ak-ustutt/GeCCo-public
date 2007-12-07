@@ -1,9 +1,14 @@
-      subroutine symmetrise(fac,ffin,op_in,iblkin,ffout,op_out,iblkout,
+      subroutine symmetrise(fac,ffin,op_in,ffout,op_out,nocc_cls,
      &     op_info,orb_info)
 *----------------------------------------------------------------------*
 *
-*     Routine to symmetrise an operator matrix. 
-*     Currently only works for operators with a single occupancy block.
+*     Routine to symmetrise an operator matrix:
+*
+*     O^{symm}_{ij} = fac*(O_{ij}+O_{ji}) = O^{symm}_{ji}
+*
+*     ffin and op_in are the input, asymmetric matrices
+*     ffout and op_out represent the output, symmetric matrices.
+*     It is assumed that the two operators have the same shape.
 *     GWR November 2007
 *
 *----------------------------------------------------------------------*
@@ -21,7 +26,6 @@
       include 'def_file_array.h'
       include 'def_operator_info.h'
       include 'ifc_memman.h'
-      include 'multd2h.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -37,19 +41,18 @@
       type(filinf), intent(inout) ::
      &     ffout
       integer, intent(in) ::
-     &     iblkin, iblkout
+     &     nocc_cls
       real(8), intent(in) ::
      &     fac
 
       logical ::
      &     bufin, bufout
       integer ::
-     &     len_str, idum, ifree, lblk, nblkmax,
-     &     nblk, nbuff, ioffin, ioffout, idxst, idxnd, njoined,
-     &     idoffin, idoffout, idxmsa,
-     &     msmax, msa, msc, igama, igamc, idx, jdx, ngam,
-     &     len_gam_ms, ioff, len_blk_in, ioff_blk_in, len_blk_out,
-     &     ioff_blk_out
+     &     ifree, nblk, nbuff, iocc_cls, idxmsa,
+     &     msmax, msa, igama, idx, jdx, ngam, len_gam_ms, ioff
+
+      logical ::
+     &     loop(nocc_cls)
       
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:)
@@ -61,79 +64,84 @@
 
       ! Check whether files are buffered.
       bufin = .false.
-      if(ffin%buffered) bufin = ffin%incore(iblkin).gt.0
+      if(ffin%buffered) bufin = .true. 
       bufout = .false.
-      if(ffout%buffered) bufout = ffout%incore(iblkout).gt.0
+      if(ffout%buffered) bufout = .true.
 
       ifree = mem_setmark('symmetrise')
 
       ! Number of irreps in symmetry group.
       ngam = orb_info%nsym
 
-      ! Find total block length.
-      ioff_blk_in = op_in%off_op_occ(iblkin)
-      len_blk_in  = op_in%len_op_occ(iblkin)
-      ioff_blk_out = op_out%off_op_occ(iblkout)
-      len_blk_out  = op_out%len_op_occ(iblkout)
+      ! Loop array.
+      loop(1:nocc_cls) = .false.
 
       ! Allocations made to maximum block length to save time.
       if(.not.bufin)then
-        nbuff = len_blk_in
+        nbuff = 0
+        do iocc_cls = 1, nocc_cls 
+          if(op_in%formal_blk(iocc_cls))
+     &         loop(iocc_cls) = .true.
+
+          nbuff = nbuff + op_in%len_op_occ(iocc_cls)
+        enddo
         ifree = mem_alloc_real(buffer_in,nbuff,'buffer_in')
-        call get_vec(ffin,buffer_in,ioff_blk_in+1,
-     &       ioff_blk_in+len_blk_in)
+        call get_vec(ffin,buffer_in,1,nbuff)
+
       else
         if(ntest.ge.100)
      &       write(luout,*)'Symmetrise: input not incore'
-        buffer_in => ffin%buffer(ioff_blk_in+1:)
+        buffer_in => ffin%buffer(1:)
       endif
 
       if(.not.bufout)then
-        nbuff=len_blk_out
+        nbuff=0
+        do iocc_cls = 1, nocc_cls 
+          nbuff = nbuff + op_out%len_op_occ(iocc_cls)
+        enddo
         ifree= mem_alloc_real(buffer_out,nbuff,'buffer_out')
         buffer_out(1:nbuff) = 0d0
       else
         if(ntest.ge.100)
      &       write(luout,*)'Symmetrise: output not incore'
-        buffer_out => ffout%buffer(ioff_blk_out+1:)
+        buffer_out => ffout%buffer(1:)
       endif
 
-      ! Loop over Ms of annihilator string.
-      idxmsa = 0
-      msmax = 2
-      msa_loop : do msa = msmax, -msmax, -2
+      ! Loop over occupation class.
+      iocc_loop: do iocc_cls = 1, nocc_cls 
 
-        idxmsa = idxmsa+1
-        msc = msa + op_out%mst
-        ! Usually have mst=0 operators => Ms(c)=Ms(a)
+        ! Loop over Ms of annihilator string.
+        idxmsa = 0
+        msmax = 2
+        msa_loop : do msa = msmax, -msmax, -2
+
+          idxmsa = idxmsa+1
       
-        ! Loop over Irrep of annihilator string.
-        igama_loop: do igama =1, ngam
-          igamc = multd2h(igama,op_out%gamt)
+          ! Loop over Irrep of annihilator string.
+          igama_loop: do igama =1, ngam
 
-          len_gam_ms = int(sqrt(dble(op_out%
-     &         len_op_gmo(iblkout)%gam_ms(igama,idxmsa))))
+            len_gam_ms = int(sqrt(dble(op_out%
+     &           len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa))))
 
-          ioff = op_out%off_op_gmo(iblkout)%gam_ms(igama,idxmsa)-
-     &         ioff_blk_out
+            ioff = op_out%off_op_gmo(iocc_cls)%gam_ms(igama,idxmsa)
 
-          idx_loop: do idx = 1,len_gam_ms
-            jdx_loop: do jdx = 1,len_gam_ms
+            idx_loop: do idx = 1,len_gam_ms
+              jdx_loop: do jdx = 1,len_gam_ms
             
-              buffer_out((idx-1)*len_gam_ms+jdx+ioff) = 
-     &           fac * (buffer_in((idx-1)*len_gam_ms+jdx+ioff) +
-     &           buffer_in((jdx-1)*len_gam_ms+idx+ioff))
+                buffer_out((idx-1)*len_gam_ms+jdx+ioff) = 
+     &             fac * (buffer_in((idx-1)*len_gam_ms+jdx+ioff) +
+     &             buffer_in((jdx-1)*len_gam_ms+idx+ioff))
             
-            enddo jdx_loop  
-          enddo idx_loop
+              enddo jdx_loop  
+            enddo idx_loop
           
-        enddo igama_loop
+          enddo igama_loop
           
-      enddo msa_loop
+        enddo msa_loop
+      enddo iocc_loop
 
       if(.not.bufout)then
-        call put_vec(ffout,buffer_out,ioff_blk_out+1,
-     &       ioff_blk_out+len_blk_out)
+        call put_vec(ffout,buffer_out,1,nbuff)
       endif  
 
       call file_close_keep(ffout)

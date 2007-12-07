@@ -21,6 +21,7 @@
       include 'mdef_formula_info.h'
       include 'def_formula_item.h'
       include 'par_formnames_gen.h'
+      include 'explicit.h'
 
       type(formula_info), intent(inout) ::
      &     form_info
@@ -67,6 +68,14 @@
       idx = idx_formlist(label_r12_bint,form_info)
       form_pnt => form_info%form_arr(idx)%form
       call set_b_intermediate(form_pnt,op_info,orb_info)
+
+      ! Add the X-intermediate, if required.
+      if(trim(r12_apprx).ne.'A')then
+        call add_formula(form_info,label_r12_xint)
+        idx = idx_formlist(label_r12_xint,form_info)
+        form_pnt => form_info%form_arr(idx)%form
+        call set_x_intermediate(form_pnt,op_info,orb_info)
+      endif
 
       call atim_csw(cpu,sys,wall)
       call prtim(luout,'Total R12 interm.',cpu-cpu0,sys-sys0,wall-wall0)
