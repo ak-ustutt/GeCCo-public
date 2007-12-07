@@ -222,7 +222,7 @@ c dbg
         contr_int%idx_res = fpl_intm%item%contr%idx_res
         contr_int%iblk_res = fpl_intm%item%contr%iblk_res
         njoined = op_info%op_arr(contr_int%idx_res)%op%njoined
-        call resize_contr(contr_int,njoined,0,0)
+        call resize_contr(contr_int,njoined,0,0,0)
         contr_int%nvtx = njoined
         contr_int%nsupvtx = 1
         contr_int%svertex(1:njoined) = 1

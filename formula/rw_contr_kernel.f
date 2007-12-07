@@ -20,7 +20,7 @@
      &     contr
 
       integer, parameter ::
-     &     lbuf = 1024
+     &     lbuf = 2048
       integer(2) ::
      &     buffer(lbuf)
       integer ::
@@ -37,27 +37,14 @@
         contr%nvtx = buffer(2)
         contr%nsupvtx = buffer(3)
         contr%narc = buffer(4) 
-        contr%nfac = buffer(5) 
+        contr%nxarc = buffer(5) 
+        contr%nfac = buffer(6) 
 
         ! (re)allocate the necessary space
-        call resize_contr(contr,contr%nvtx,contr%narc,contr%nfac)
-c        if (contr%nvtx.gt.contr%mxvtx) then
-c          if (contr%mxvtx.gt.0) deallocate(contr%vertex)
-c          contr%mxvtx = contr%nvtx
-c          allocate(contr%vertex(contr%mxvtx))
-c        end if
-c        if (contr%narc.gt.contr%mxarc) then
-c          if (contr%mxarc.gt.0) deallocate(contr%arc)
-c          contr%mxarc = contr%narc
-c          allocate(contr%arc(contr%mxarc))
-c        end if
-c        if (contr%nfac.gt.contr%mxfac) then
-c          if (contr%mxfac.gt.0) deallocate(contr%inffac)
-c          contr%mxfac = contr%nfac
-c          allocate(contr%inffac(ld_inffac,contr%mxfac))
-c        end if
+        call resize_contr(contr,contr%nvtx,contr%narc,
+     &                          contr%nxarc,contr%nfac)
 
-        idx = 5
+        idx = 6
 
         do ii = 1, contr%nvtx
           contr%vertex(ii)%idx_op  = buffer(idx+1)
@@ -85,6 +72,18 @@ c        end if
           end do
         end do
 
+        do ii = 1, contr%nxarc
+          contr%xarc(ii)%link(1)      = buffer(idx+1)
+          contr%xarc(ii)%link(2)      = buffer(idx+2)
+          idx = idx+2
+          do ica = 1,2
+            do igastp = 1, ngastp
+              idx = idx+1
+              contr%xarc(ii)%occ_cnt(igastp,ica) = buffer(idx)
+            end do
+          end do
+        end do
+
         do ii = 1, contr%nfac
           contr%inffac(1,ii) = buffer(idx+1)
           contr%inffac(2,ii) = buffer(idx+2)
@@ -104,13 +103,15 @@ c        end if
         buffer(2) = contr%nvtx
         buffer(3) = contr%nsupvtx
         buffer(4) = contr%narc
-        buffer(5) = contr%nfac
+        buffer(5) = contr%nxarc
+        buffer(6) = contr%nfac
         if (buffer(1).ne.contr%iblk_res) ierr = ierr+1
         if (buffer(2).ne.contr%nvtx) ierr = ierr+1
         if (buffer(3).ne.contr%nsupvtx)ierr = ierr+1
         if (buffer(4).ne.contr%narc) ierr = ierr+1
-        if (buffer(5).ne.contr%nfac) ierr = ierr+1
-        idx = 5
+        if (buffer(5).ne.contr%nxarc) ierr = ierr+1
+        if (buffer(6).ne.contr%nfac) ierr = ierr+1
+        idx = 6
         if (ierr.gt.0) goto 101
         if (idx+contr%nvtx*2.gt.lbuf) goto 103
         
@@ -145,6 +146,19 @@ c        end if
           end do
         end do
         
+        if (idx+contr%nxarc*8.gt.lbuf) goto 103
+        do ii = 1, contr%nxarc
+          buffer(idx+1) = contr%xarc(ii)%link(1)
+          buffer(idx+2) = contr%xarc(ii)%link(2)
+          idx = idx+2
+          do ica = 1, 2
+            do igastp = 1, ngastp
+              idx = idx+1
+              buffer(idx) = contr%xarc(ii)%occ_cnt(igastp,ica)
+            end do
+          end do
+        end do
+        
         if (idx+contr%nfac*3.gt.lbuf) goto 103
         do ii = 1, contr%nfac
           buffer(idx+1) = contr%inffac(1,ii)
@@ -171,7 +185,7 @@ c        end if
      &     'unexpected EOF while reading formula file')
 
       ! write errors:
- 101  write(luout,*) 'too large nvtx, narc'
+ 101  write(luout,*) 'too large nvtx, narc, nxarc'
       goto 200
  102  write(luout,*)
      &     'too large numbers in vertex description'

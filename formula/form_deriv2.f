@@ -79,9 +79,7 @@ c      include 'def_filinf.h'
       write(luderiv) idum,idxres
 
       ! signal, that still nothing is allocated
-      contr%mxvtx = 0
-      contr%mxarc = 0
-      contr%mxfac = 0
+      call init_contr(contr)
       nullify(conder%contr)
 
       nterms = 0

@@ -72,7 +72,7 @@ c      stop 'test test'
       case(1)
       nvtx=3
       narc=1
-      call resize_contr(proto_contr,nvtx,narc,0)
+      call resize_contr(proto_contr,nvtx,narc,0,0)
       ! ------------------------------
       ! set up a prototype-contraction
       ! ------------------------------
@@ -103,7 +103,7 @@ c      stop 'test test'
       case(2)
       nvtx=5
       narc=3
-      call resize_contr(proto_contr,nvtx,narc,0)
+      call resize_contr(proto_contr,nvtx,narc,0,0)
       proto_contr%idx_res = 0
       proto_contr%iblk_res = 0
       proto_contr%fac = 1d0
@@ -132,7 +132,7 @@ c      stop 'test test'
       nvtx=5
       narc=2
       fix_vtx(1:6) = .false.
-      call resize_contr(proto_contr,nvtx,narc,0)
+      call resize_contr(proto_contr,nvtx,narc,0,0)
       proto_contr%idx_res = 0
       proto_contr%iblk_res = 0
       proto_contr%fac = 1d0
@@ -158,7 +158,7 @@ c      stop 'test test'
       case(4)
       nvtx=6
       narc=4
-      call resize_contr(proto_contr,nvtx,narc,0)
+      call resize_contr(proto_contr,nvtx,narc,0,0)
       proto_contr%idx_res = 0
       proto_contr%iblk_res = 0
       proto_contr%fac = 1d0

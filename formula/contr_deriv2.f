@@ -37,9 +37,11 @@
      &     op_info
 
       integer ::
-     &     nvtx, ntup, itup, ieqvfac, njoined_ori, njoined,
+     &     nvtx, ntup, itup, ieqvfac,
+     &     njoined_ori, njoined, njoined_der, njoined_mlt,
      &     iblk_last, idx, ider, ivtx, iarc, jvtx, jarc, il, ierr,
-     &     nder_actually
+     &     ixarc, jxarc, nxarc_raw,
+     &     nder_actually, nder_arcs
       integer, pointer ::
      &     iocc(:,:,:)
       type(contraction_list), pointer ::
@@ -51,9 +53,11 @@
      &     nord(:), iblk(:), ivtxder(:), occ_vtx(:,:,:),
      &     topomap(:,:),eqv_map(:),
      &     neqv(:),idx_eqv(:,:),neqv_tup(:),idx_tup(:)
+      type(cntr_arc), pointer ::
+     &     xarcs_raw(:)
       
       integer, external ::
-     &     iblk_occ
+     &     iblk_occ, narc_w_vtx
 
       if (ntest.ge.100) then
         write(luout,*) '====================='
@@ -69,6 +73,17 @@
       op_arr => op_info%op_arr
 
       nvtx = contr%nvtx
+      njoined_der = op_arr(idxder)%op%njoined
+      if (idxmlt.gt.0) then
+        njoined_mlt = op_arr(idxmlt)%op%njoined
+        if (njoined_der.ne.njoined_mlt)
+     &     call quit(1,'contr_deriv','inconsistent operator types')
+      end if
+
+      if (njoined_der.ne.1)
+     &     call quit(1,'contr_deriv',
+     &     'derivatives wrt multi-vertex operators not yet implemented')
+
       njoined_ori = op_arr(contr%idx_res)%op%njoined
       njoined = op_arr(idxres)%op%njoined
       allocate(topomap(nvtx,nvtx),eqv_map(nvtx),
@@ -128,9 +143,16 @@
           cur_conder => cur_conder%next
           nullify(cur_conder%next)
         end if
+
+        if (idxmlt.eq.0) then
+          nder_arcs = narc_w_vtx(ivtxder(ider),1,contr)
+          allocate(xarcs_raw(nder_arcs*2))
+        end if
+
         allocate(cur_conder%contr)
         call init_contr(cur_conder%contr)
-        call resize_contr(cur_conder%contr,contr%nvtx,contr%narc,0)
+        call resize_contr(cur_conder%contr,contr%nvtx,contr%narc,
+     &                    contr%nxarc,0)
 
         ! resulting operator (block: see below)
         cur_conder%contr%idx_res = idxres
@@ -185,13 +207,18 @@
 
         ! copy and update arc information
         jarc = 0
+        jxarc = 0
         arc_loop: do iarc = 1, contr%narc
-          ! skip, if only derivative is taken and 
+          ! if only derivative is taken and 
           ! vertex ivtxder is involved:
           if ((contr%arc(iarc)%link(1).eq.ivtxder(ider).or.
      &         contr%arc(iarc)%link(2).eq.ivtxder(ider)).and.
-     &       idxmlt.eq.0)
-     &         cycle arc_loop
+     &       idxmlt.eq.0) then
+            ! add to raw external arcs:
+            call store_xarcs(xarcs_raw,jxarc,ivtxder(ider),
+     &                       nder_arcs*2,contr%arc(iarc))
+            cycle arc_loop
+          end if
           jarc = jarc+1
           ! change vertex numbers
           do il = 1, 2
@@ -211,13 +238,47 @@
      &         contr%arc(iarc)%occ_cnt(1:ngastp,1:2)
         end do arc_loop 
         cur_conder%contr%narc = jarc
+        nxarc_raw = jxarc
+
+        ! copy and update xarc information
+        jxarc = 0
+        xarc_loop: do ixarc = 1, contr%nxarc
+          ! if only derivative is taken and 
+          ! vertex ivtxder is involved:
+          if ((contr%xarc(iarc)%link(1).eq.ivtxder(ider)).and.
+     &       idxmlt.eq.0) then
+            cycle xarc_loop
+          end if
+          jxarc = jxarc+1
+          ! change vertex numbers
+          if (contr%arc(ixarc)%link(1).lt.ivtxder(ider).or.
+     &           idxmlt.gt.0) then
+            ! if vertex was replaced only or if
+            ! vertices below ivtxder: unchanged
+            cur_conder%contr%xarc(jxarc)%link =
+     &           contr%xarc(ixarc)%link
+          else
+            ! all vertices above ivtxder: shift by -1
+            cur_conder%contr%xarc(jxarc)%link(1) =
+     &           contr%xarc(ixarc)%link(1)-1
+            cur_conder%contr%xarc(jxarc)%link(2) =
+     &           contr%xarc(ixarc)%link(2)
+          end if
+          cur_conder%contr%arc(jarc)%occ_cnt(1:ngastp,1:2) =
+     &         contr%arc(iarc)%occ_cnt(1:ngastp,1:2)
+        end do xarc_loop 
+        cur_conder%contr%nxarc = jxarc
+
+        ! update xarc info
+        if (nxarc_raw.gt.0)
+     &       call update_xarc(cur_conder%contr,
+     &                        xarcs_raw,nxarc_raw,ivtxder(ider),njoined)
 
         ! still, no factorization info
         cur_conder%contr%nfac = 0
 
         ! get occupation of target ...
-        call occvtx4contr(1,occ_vtx,cur_conder%contr,op_info)
-        call occ_contr(iocc,ierr,cur_conder%contr,occ_vtx,njoined)
+        call occ_contr2(iocc,ierr,cur_conder%contr,njoined)
 
         if (ierr.ne.0) then
           if (strict) then
@@ -254,6 +315,10 @@ c          print *,'skipping with ierr = ',ierr
 c dbg
         else
           nder_actually = nder_actually + 1
+        end if
+
+        if (idxmlt.eq.0) then
+          deallocate(xarcs_raw)
         end if
 
       end do ! ider

@@ -76,7 +76,7 @@
       narc_spl = contr_spl%narc
       narc_rem = narc_t - narc_spl
 
-      call resize_contr(contr_rem,nvtx_rem,narc_rem,0)
+      call resize_contr(contr_rem,nvtx_rem,narc_rem,0,0)
       contr_rem%nvtx = nvtx_rem
       contr_rem%nsupvtx = nsvtx_rem
       contr_rem%narc = narc_rem

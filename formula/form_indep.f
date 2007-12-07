@@ -21,7 +21,7 @@
       include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       character, intent(in) ::
      &     label_out*(*), title_out*(*)

@@ -14,7 +14,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     sym, nsym, ndim(nsym), ndimt
@@ -64,8 +64,8 @@
             if (irabs.lt.icabs) fac = psign
             
 c dbg
-            print *,'->',ioff + (icol-1)*nrow+irow,
-     &           icrmax*(icrmax-1)/2+icrmin
+c            print *,'->',ioff + (icol-1)*nrow+irow,
+c     &           icrmax*(icrmax-1)/2+icrmin
 c dbg
             xblk(ioff + (icol-1)*nrow+irow) =
      &           fac*xfull(icrmax*(icrmax-1)/2+icrmin)

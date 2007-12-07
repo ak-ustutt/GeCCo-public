@@ -15,7 +15,7 @@
       include 'def_formula_item.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(operator_info), intent(inout) ::
      &     op_info

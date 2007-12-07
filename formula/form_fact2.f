@@ -152,7 +152,7 @@
         call quit(1,'form_fact','Did not find any factorization!')
       end if
 
-      call resize_contr(contr,contr%nvtx,contr%narc,nlevel_best)
+      call resize_contr(contr,contr%nvtx,contr%narc,0,nlevel_best)
       contr%nfac = nlevel_best
       contr%inffac(1:ld_inffac,1:nlevel_best) =
      &     ifact_best(1:ld_inffac,1:nlevel_best)

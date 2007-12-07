@@ -80,7 +80,7 @@
       call init_contr(proto)
       nvtx = nops
       narc = nconnect
-      call resize_contr(proto,nvtx,narc,0)
+      call resize_contr(proto,nvtx,narc,0,0)
       proto%nvtx = nvtx
       ! currently, we expand primitive operators only
       call set_primitive_contr(proto)
