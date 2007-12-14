@@ -1173,6 +1173,7 @@ c                  ifree = mem_flushmark('ex_str')
 
 c dbg
 c      print *,'type_xret ',type_xret
+c      print *,'xret' ,xret
 c dbg
       if (type_xret.eq.2) then
         xret(1) = xop1op2(1)

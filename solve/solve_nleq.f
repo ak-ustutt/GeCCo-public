@@ -117,8 +117,8 @@
       ! get initial amplitudes
       do iop = 1, nop_opt
 c dbg
-        print *,'zeroing: ',trim(op_opt(iop)%op%name),
-     &       ' file: ',trim(ffopt(iop)%fhand%name)
+c        print *,'zeroing: ',trim(op_opt(iop)%op%name),
+c     &       ' file: ',trim(ffopt(iop)%fhand%name)
 c dbg
         call zeroop(ffopt(iop)%fhand,op_opt(iop)%op)
       end do
@@ -138,7 +138,8 @@ c dbg
      &       energy,xresnrm,
      &       ffopt,ffgrd,ffdia,
      &       ff_trv,ff_h_trv,
-     &       opti_info,opti_stat)
+     &       opti_info,opti_stat,
+     &       op_info,orb_info)
         ! 1 - get energy
         ! 2 - get residual
         if (iand(task,1).eq.1.or.iand(task,2).eq.2) then

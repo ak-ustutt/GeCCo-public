@@ -141,6 +141,9 @@
       ! are needed to properly evaluate the intermediates.
       call expand_op_product(form_gr_temp_pnt,idxlcc,
      &     -1d0,3,(/idx_rtemp,idxc12,idx_gtemp/),
+c dbg
+c     &     1d0,3,(/idx_rtemp,idxc12,idx_gtemp/),
+c dbg
      &     (/-1,-1,-1/),(/-1,-1,-1/),
      &     (/1,3,1,2,2,3/),3,.true.,op_info)
 
@@ -214,6 +217,9 @@
       ! are needed to properly evaluate the intermediates.
       call expand_op_product(form_gr_temp_pnt,idxlcc,
      &     -1d0,3,(/idx_rtemp,idxc12,idx_gtemp/),
+c dbg
+c     &     1d0,3,(/idx_rtemp,idxc12,idx_gtemp/),
+c dbg
      &     (/-1,-1,-1/),(/-1,-1,-1/),
      &     (/1,3,1,2,2,3/),3,.true.,op_info)
 
@@ -237,8 +243,11 @@
       idxunity = idx_oplist2(op_unity,op_info)
       ! nvtx = 1
       call new_formula_item(form_pnt,command_add_contribution,idx_vbint)
-      call resize_contr(form_pnt%contr,1,0,0)
+      call resize_contr(form_pnt%contr,1,0,0,0)
       form_pnt%contr%fac = 1d0
+c dbg
+c      form_pnt%contr%fac = -1d0
+c dbg
       form_pnt%contr%nvtx = 1
       form_pnt%contr%nsupvtx = 1
       form_pnt%contr%idx_res = idx_vbint

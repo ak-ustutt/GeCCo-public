@@ -73,7 +73,7 @@
       call init_contr(proto)
       nvtx=2*nops-1
       narc=2*(nops-1)
-      call resize_contr(proto,nvtx,narc,0)
+      call resize_contr(proto,nvtx,narc,0,0)
       proto%nvtx=nvtx
       proto%narc=narc
       proto%fac=fac

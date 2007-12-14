@@ -3,7 +3,8 @@
      &     get_new_rec,
      &     iord_vsbsp,iord_rsbsp,
      &     ffamp,ffgrd,ffdia,ff_rsbsp,ff_vsbsp,
-     &     nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+     &     nincore,nwfpar,lenbuf,xbuf1,xbuf2,
+     &     op_info,orb_info)
 *----------------------------------------------------------------------*
 *
 *     add (preconditioned) gradient and sum of current vector and
@@ -17,7 +18,10 @@
       implicit none
 
       include 'stdunit.h'
-      include 'def_filinf.h'
+c      include 'def_filinf.h'
+      include 'par_opnames_gen.h'
+      include 'mdef_operator_info.h'
+      include 'def_orbinf.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -26,6 +30,10 @@
      &     get_new_rec
       type(filinf), intent(in) ::
      &     ffamp,ffgrd,ffdia,ff_rsbsp,ff_vsbsp
+      type(operator_info), intent(in) ::
+     &     op_info
+      type(orbinf), intent(in) ::
+     &     orb_info
       integer, intent(inout) ::
      &     ndim_rsbsp,ndim_vsbsp,iord_vsbsp,iord_rsbsp
       integer, intent(in) ::
@@ -34,11 +42,13 @@
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*)
 
+      type(operator), pointer ::
+     &     op
       integer ::
-     &     irecr, irecv, inum
+     &     irecr, irecv, inum, idx_inv
 
       integer, external ::
-     &     ioptc_get_sbsp_rec
+     &     ioptc_get_sbsp_rec, idx_oplist2
       real(8), external ::
      &     dnrm2
 
@@ -58,23 +68,58 @@
       if (nincore.ge.2) then
 
         call vec_from_da(ffgrd,1,xbuf1,nwfpar)
-        call vec_from_da(ffdia,1,xbuf2,nwfpar)
+
+        if(trim(ffdia%name).ne.'op_B_INV_elements.da')then
+          call vec_from_da(ffdia,1,xbuf2,nwfpar)
 c dbg
-c        print *,'g,d:',dnrm2(nwfpar,xbuf1,1),dnrm2(nwfpar,xbuf2,1)
+c          print *,'prc name: ',trim(ffdia%name)
+c          print *,'g,d:',dnrm2(nwfpar,xbuf1,1),dnrm2(nwfpar,xbuf2,1)
 c dbg
 
-        ! prelim. w/o damping
-        xbuf1(1:nwfpar) = xbuf1(1:nwfpar)/xbuf2(1:nwfpar)
+          ! prelim. w/o damping
+          xbuf1(1:nwfpar) = xbuf1(1:nwfpar)/xbuf2(1:nwfpar)
 c dbg
-c        print *,'g/d:',dnrm2(nwfpar,xbuf1,1)
+c          print *,'g/d:',dnrm2(nwfpar,xbuf1,1)
+c dbg
+          call vec_from_da(ffamp,1,xbuf2,nwfpar)
+c dbg
+c          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
+c          print *,'t: ', xbuf2(1:nwfpar)
+c dbg
+          xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)
+
+        else
+c dbg
+          print *,'prc name: ',trim(ffdia%name)
+          print *,'g,d norm:',
+     &         dnrm2(nwfpar,xbuf1,1),dnrm2(nwfpar,xbuf2,1)
 c dbg
 
-        call vec_from_da(ffamp,1,xbuf2,nwfpar)
+          idx_inv = idx_oplist2(op_b_inv,op_info)
+          op => op_info%op_arr(idx_inv)%op
 c dbg
-c        print *,'t:',dnrm2(nwfpar,xbuf2,1)
+          print *,'g norm:',dnrm2(nwfpar,xbuf1,1)
+          print *,'g: ',xbuf1(1:nwfpar)
+c          print *,'g: ',xbuf1(1:20)
+c          print *,'g: ',xbuf1(72:92)          
 c dbg
+          call op_vec_mult(1d0,ffdia,op,xbuf1,nwfpar,
+     &         op_info,orb_info)
+c dbg
+          print *,'g/d norm:',dnrm2(nwfpar,xbuf1,1)
+          print *,'g/d: ',xbuf1(1:nwfpar)
+c          print *,'g/d: ',xbuf1(1:20)
+c          print *,'g/d: ',xbuf1(72:92)
+c dbg
+          call vec_from_da(ffamp,1,xbuf2,nwfpar)
+c dbg
+          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
+          print *,'t: ',xbuf2(1:nwfpar)
+c          print *,'t: ',xbuf2(72:92)
+c dbg
+          xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)
 
-        xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)
+        endif
 
         call vec_to_da(ff_rsbsp,irecr,xbuf1,nwfpar)
         call vec_to_da(ff_vsbsp,irecv,xbuf2,nwfpar)

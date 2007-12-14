@@ -31,7 +31,7 @@
      &     form_pnt
       integer ::
      &     idxin, idxout, idx, idx_form_op, idx_form_blk, idx_blk_out,
-     &     ieqvfac, nvtx, narc, nfac, njoined, idx_join
+     &     ieqvfac, nvtx, narc, nxarc, nfac, njoined, idx_join
       integer, allocatable ::
      &     occ_temp(:,:,:), vtx_chng_idx(:)
       integer, pointer ::
@@ -112,11 +112,12 @@ c          write(luout,*) '[ADD]'
      &             (idx_blk_out-1)*njoined+idx
             enddo
           endif
-          
+
           ! Ensure everything is properly set up.
           narc = form_pnt%contr%narc
           nfac = form_pnt%contr%nfac
-          call resize_contr(form_pnt%contr,nvtx,narc,nfac)
+          nxarc = form_pnt%contr%nxarc
+          call resize_contr(form_pnt%contr,nvtx,narc,nxarc,nfac)
 
           call update_svtx4contr(form_pnt%contr)
           
@@ -131,6 +132,7 @@ c          write(luout,*) '[ADD]'
           call canon_contr(form_pnt%contr,reo,ivtx_reo)
           deallocate(ivtx_reo,fix_vtx,occ_vtx)
           
+
           if(ntest.ge.100.and.change)then
             write(luout,*) 'Operator-replaced contraction'
             call prt_contr2(luout,form_pnt%contr,op_info)

@@ -40,7 +40,7 @@
         call new_formula_item(form_pnt,command_add_contribution,idx_op)
         
         ! set "contraction"
-        call resize_contr(form_pnt%contr,1,0,0)
+        call resize_contr(form_pnt%contr,1,0,0,0)
         form_pnt%contr%idx_res = idx_op
         form_pnt%contr%iblk_res = iblk_op
         form_pnt%contr%nvtx = 1

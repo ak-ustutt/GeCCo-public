@@ -20,6 +20,7 @@
       include 'def_formula_item.h'
       include 'def_formula.h'
       include 'par_formnames_gen.h'
+      include 'explicit.h'
 
       type(formula), intent(inout), target ::
      &     formula_bint
@@ -39,17 +40,19 @@
      &     form_pnt
 
       type(operator), pointer ::
-     &     ttr_temp_pnt, rbar_temp_pnt
+     &     ttr_temp_pnt, rbar_temp_pnt, h_temp_pnt
 
       type(formula_item), target ::
-     &     form_ttr, form_rbar, form_rttr_temp, form_rttr, form_b_tot
+     &     form_ttr, form_rbar, form_rttr_temp, form_rttr, form_b_tot,
+     &     form_h
       type(formula_item), pointer ::
      &     form_ttr_pnt, form_rbar_pnt, form_rttr_temp_pnt,
-     &     form_rttr_pnt, form_b_tot_pnt
+     &     form_rttr_pnt, form_b_tot_pnt, form_h_pnt
 
       integer ::
      &     nterms, idx_bint, idxunity, ndef, idx_lcc, idx_ttr,
-     &     idx_rbar, idx_c12, idx_ctemp, idx_rbar_temp, idx_ttr_temp
+     &     idx_rbar, idx_c12, idx_ctemp, idx_rbar_temp, idx_ttr_temp,
+     &     idx_h_temp, idxham, idxr12, idxrba_f
 
       integer, allocatable ::
      &     occ_def(:,:,:)
@@ -140,9 +143,9 @@
       ! Combine the necessary integrals into the term required for the
       ! intermediate.
       call expand_op_product(form_rttr_temp_pnt,idx_lcc,
-c     &     -1d0,3,(/idx_rbar_temp,idx_c12,idx_ttr_temp/),
+     &     -1d0,3,(/idx_rbar_temp,idx_c12,idx_ttr_temp/),
 c dbg
-     &     1d0,3,(/idx_rbar_temp,idx_c12,idx_ttr_temp/),
+c     &     1d0,3,(/idx_rbar_temp,idx_c12,idx_ttr_temp/),
 c dbg
      &     (/-1,-1,-1/),(/-1,-1,-1/),
      &     (/1,3,1,2,2,3/),3,.true.,op_info)
@@ -219,9 +222,9 @@ c dbg
         form_rttr_temp_pnt => form_rttr_temp_pnt%next
       enddo
       call expand_op_product(form_rttr_temp_pnt,idx_lcc,
-c     &     -1d0,3,(/idx_rbar_temp,idx_c12,idx_ttr_temp/),
+     &     -1d0,3,(/idx_rbar_temp,idx_c12,idx_ttr_temp/),
 c dbg
-     &     1d0,3,(/idx_rbar_temp,idx_c12,idx_ttr_temp/),
+c     &     1d0,3,(/idx_rbar_temp,idx_c12,idx_ttr_temp/),
 c dbg
      &     (/-1,-1,-1/),(/-1,-1,-1/),
      &     (/1,3,1,2,2,3/),3,.true.,op_info)
@@ -229,17 +232,80 @@ c dbg
       call expand_subexpr(form_rttr_temp,form_rbar,.true.,op_info)
       call expand_subexpr(form_rttr_temp,form_ttr,.true.,op_info)
 
-      ! Form the derivative of the first two terms wrt C12.
-      call form_deriv3(form_pnt,form_rttr_temp,
-     &     1,idx_c12,0,idx_bint,op_info)
+c      ! Form the derivative of the first two terms wrt C12.
+c      call form_deriv3(form_pnt,form_rttr_temp,
+c     &     1,idx_c12,0,idx_bint,op_info)
 
       call del_operator(idx_ttr_temp,op_info)
       call del_operator(idx_rbar_temp,op_info)
       call dealloc_formula_list(form_rbar)
       call dealloc_formula_list(form_ttr)
 
+c      ! Add X-dependent terms when dealing with approximations beyond A.
+c      ! NB The symmetrisation of B is unaffected.
+c      if(trim(r12_apprx).ne.'A')then
+c
+c        ! Temporary Hamiltonian element.
+c        call add_operator(op_h_temp,op_info)
+c        idx_h_temp = idx_oplist2(op_h_temp,op_info)
+c        h_temp_pnt => op_info%op_arr(idx_h_temp)%op
+c
+c        ndef = 1
+c        allocate(occ_def(ngastp,2,ndef))
+c        occ_def(1:ngastp,1,1) = (/1,0,0,0/)
+c        occ_def(1:ngastp,2,1) = (/1,0,0,0/)
+c        call set_uop(h_temp_pnt,op_h_temp,.false.,0,0,1,1,0,
+c     &       occ_def,ndef,orb_info)
+c        deallocate(occ_def)
+c        
+c       ! Replace the formal terms with elements of H.
+c        idxham = idx_oplist2(op_ham,op_info)
+c        idxr12 = idx_oplist2(op_r12,op_info)
+c        idxrba_f = idx_oplist2(op_rba,op_info)
+c        call init_formula(form_h)
+c        form_h_pnt => form_h
+c        call new_formula_item(form_h_pnt,
+c     &       command_set_target_init,idx_h_temp)
+c        form_h_pnt => form_h_pnt%next
+c        call expand_op_product(form_h_pnt,idx_h_temp,
+c     &       1d0,1,idxham,-1,-1,
+c     &       0,0,.false.,op_info)
+c
+c        form_rttr_temp_pnt = > form_rttr_temp
+c        do while(associated(form_rttr_temp_pnt%next))
+c          form_rttr_temp_pnt => form_rttr_temp_pnt%next
+c        enddo
+c
+c        call expand_op_product(form_rttr_temp_pnt,idx_lcc,
+c     &       -0.5d0,4,(/idxrba_f,idx_h_temp,idx_c12,idxr12/),-1,-1,
+cc     &       0.5d0,4,(/idxrba_f,idx_h_temp,idx_c12,idxr12/),-1,-1,
+c     &       (/1,2,2,3,1,3,1,4,3,4/),5,.false.,op_info)
+c
+c        do while(associated(form_rttr_temp_pnt%next))
+c          form_rttr_temp_pnt => form_rttr_temp_pnt%next
+c        enddo
+c
+c        call expand_op_product(form_rttr_temp_pnt,idx_lcc,
+c     &       -0.5d0,4,(/idxrba_f,idx_c12,idx_h_temp,idxr12/),-1,-1,
+cc     &       0.5d0,4,(/idxrba_f,idx_c12,idx_h_temp,idxr12/),-1,-1,
+c     &       (/1,2,2,3,1,4,2,4,3,4/),5,.false.,op_info)
+c
+c        call factor_x(form_rttr_temp,op_info,orb_info)
+c
+c        call expand_subexpr(form_rttr_temp,form_h,.true.,op_info)
+c
+c        ! Delete temporary elements
+c        call del_operator(idx_h_temp,op_info)
+c        call dealloc_formula_list(form_h)
+c
+c      endif
+
+      ! Form the derivative of the first two terms wrt C12.
+      call form_deriv3(form_pnt,form_rttr_temp,
+     &     1,idx_c12,0,idx_bint,op_info)
 
       ! Add the formal delta operator.
+      form_pnt => form_bint
       do while (associated(form_pnt%next))
         form_pnt => form_pnt%next
       enddo  
@@ -247,10 +313,10 @@ c dbg
       idxunity = idx_oplist2(op_unity,op_info)
       ! nvtx = 1
       call new_formula_item(form_pnt,command_add_contribution,idx_bint)
-      call resize_contr(form_pnt%contr,1,0,0)
-c      form_pnt%contr%fac = 1d0
+      call resize_contr(form_pnt%contr,1,0,0,0)
+      form_pnt%contr%fac = 1d0
 c dbg
-      form_pnt%contr%fac = -1d0
+c      form_pnt%contr%fac = -1d0
 c dbg
       form_pnt%contr%nvtx = 1
       form_pnt%contr%nsupvtx = 1

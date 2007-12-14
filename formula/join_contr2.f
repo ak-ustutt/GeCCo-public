@@ -134,7 +134,7 @@
      &       narc_ac, narc_b, narc_abc
       end if
 
-      call resize_contr(contr_abc,nvtx_abc,narc_abc,0)
+      call resize_contr(contr_abc,nvtx_abc,narc_abc,0,0)
 
       if (nvtx_ac.gt.0) allocate(ivtx_ac_reo(nvtx_ac))
       if (nvtx_b.gt.0)  allocate(ivtx_b_reo(nvtx_b))

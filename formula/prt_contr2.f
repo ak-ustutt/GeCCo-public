@@ -72,6 +72,21 @@
      &       '    ',contr%arc(idx)%occ_cnt(1:ngastp,2)
         end if
       end do
+      do idx = 1, contr%nxarc
+        if (contr%xarc(idx)%occ_cnt(1,1).lt.0) then
+          ! prototype connection:
+          write(luout,'(x,a,x,2i4)')
+     &       ' xp ',contr%xarc(idx)%link(1),
+     &       contr%xarc(idx)%link(2)
+        else
+          write(luout,'(x,a,x,2i4,2x,4i3)')
+     &       ' x  ',contr%xarc(idx)%link(1),
+     &       contr%xarc(idx)%link(2),
+     &       contr%xarc(idx)%occ_cnt(1:ngastp,1)
+          write(luout,'(x,a,11x,4i3)')
+     &       '    ',contr%xarc(idx)%occ_cnt(1:ngastp,2)
+        end if
+      end do
       do idx = 1, contr%nfac
         write(luout,'(x,i5,"*",i5,"->",i5,"(",i5,")")')
      &       contr%inffac(1:4,idx)

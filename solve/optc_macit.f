@@ -5,17 +5,20 @@
      &       ff_trv,ff_h_trv,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
-     &       opti_info,opti_stat)
+     &       opti_info,opti_stat,
+     &       op_info,orb_info)
 *----------------------------------------------------------------------*
 *     driver for macro-iterations
 *----------------------------------------------------------------------*
       implicit none
 
       include 'stdunit.h'
-      include 'def_filinf.h'
-      include 'def_file_array.h'
+      include 'mdef_operator_info.h'
+c      include 'def_filinf.h'
+c      include 'def_file_array.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
+      include 'def_orbinf.h'
       include 'ifc_memman.h'
 
       integer, intent(inout) ::
@@ -35,6 +38,11 @@
      &     opti_info
       type(optimize_status), intent(inout) ::
      &     opti_stat
+
+      type(operator_info), intent(in) ::
+     &     op_info
+      type(orbinf), intent(in) ::
+     &     orb_info
 
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
@@ -83,7 +91,8 @@
      &                                      ffdia(iopt)%fhand,
      &             opti_stat%ffrsbsp(iopt)%fhand,
      &             opti_stat%ffvsbsp(iopt)%fhand,
-     &             nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2)
+     &             nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2,
+     &             op_info,orb_info)
 
               shift = ndim_save.eq.opti_stat%ndim_rsbsp.and.iopt.eq.1
               call optc_update_redsp1(opti_stat%sbspmat,

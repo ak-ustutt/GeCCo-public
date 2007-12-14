@@ -244,10 +244,10 @@ c      call test_formgen3(op_info,orb_info)
         ! factor those terms from both the energy and amplitude 
         ! formulae.
         call set_r12_intermediates(form_info,op_info,orb_info)
-c        call fac_r12_inter(cclg_pnt,form_info,op_info,orb_info)
-c        call fac_r12_inter(e0_pnt,form_info,op_info,orb_info)
-c        call fac_r12_inter(omg_pnt,form_info,op_info,orb_info)
-c        call fac_r12_inter(omg12_pnt,form_info,op_info,orb_info)
+        call fac_r12_inter(cclg_pnt,form_info,op_info,orb_info)
+        call fac_r12_inter(e0_pnt,form_info,op_info,orb_info)
+        call fac_r12_inter(omg_pnt,form_info,op_info,orb_info)
+        call fac_r12_inter(omg12_pnt,form_info,op_info,orb_info)
       end if
 
       return

@@ -15,12 +15,13 @@
      &     contr_tgt
 
       integer ::
-     &     nvtx, narc, nfac
+     &     nvtx, narc, nxarc, nfac
 
       nvtx = contr_src%nvtx
       narc = contr_src%narc
+      nxarc = contr_src%nxarc
       nfac = contr_src%nfac
-      call resize_contr(contr_tgt,nvtx,narc,nfac)
+      call resize_contr(contr_tgt,nvtx,narc,nxarc,nfac)
 
       ! copy all elements
       ! contr_tgt = contr_src does not do the proper work:
@@ -32,6 +33,7 @@
       contr_tgt%nvtx = contr_src%nvtx
       contr_tgt%nsupvtx = contr_src%nsupvtx
       contr_tgt%narc = contr_src%narc
+      contr_tgt%nxarc = contr_src%nxarc
       contr_tgt%nfac = contr_src%nfac
 
       if (nvtx.gt.0) then
@@ -42,6 +44,10 @@
 
       if (narc.gt.0) then
         contr_tgt%arc(1:narc) = contr_src%arc(1:narc)
+      end if
+
+      if (nxarc.gt.0) then
+        contr_tgt%xarc(1:nxarc) = contr_src%xarc(1:nxarc)
       end if
 
       if (nfac.gt.0) then

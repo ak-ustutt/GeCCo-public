@@ -8,7 +8,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -97,7 +97,7 @@
       call form_deriv3(form_vbar,form_rg,
      &     1,idxc12,0,idxopv,op_info)
 
-      if(ntest.ge.100)then
+      if(ntest.ge.1000)then
         call write_title(luout,wst_title,'Formal V+')
         call print_form_list(luout,form_vbar,op_info)
       endif

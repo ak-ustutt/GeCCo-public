@@ -41,18 +41,15 @@
      &     idx_op, iblk_op, jdx_op, jblk_op, maxblk, ibase, icpack,
      &     itopo
      &     ,ieqvfac2
-c     &     idxlt, i, j
       
       integer, pointer ::
-     &     topomap(:,:), eqv_map(:), occ_cnt(:,:), scr(:),
+     &     topomap(:,:), eqv_map(:), occ_cnt(:,:), scr(:), svmap(:),
      &     neqv(:), idx_eqv(:,:)
 
       integer, external ::
      &     ifac, maxblk_in_contr, ifndmax, int_pack
-c      logical, external ::
-c     &     ielsqsum
 
-c      idxlt(i,j) = j*(j-2)/2+i
+
 c dbg
 c      print *,'on entry'
 c      call wrt_occ_n(luout,occ_vtx,nvtx)
@@ -62,7 +59,10 @@ c dbg
       narc = contr%narc
       
       allocate(topomap(nvtx,nvtx),eqv_map(nvtx),scr(nvtx),
-     &     neqv(nvtx),idx_eqv(nvtx,nvtx))
+     &     neqv(nvtx),idx_eqv(nvtx,nvtx),svmap(nvtx))
+
+      call svmap4contr2(svmap,contr)
+
       topomap = 0
       do iarc = 1, narc
         ivtx = contr%arc(iarc)%link(1)
@@ -213,7 +213,9 @@ c      end if
      &        (eqv_map(ivtx).gt.eqv_map(ivtx+1).or.
      &         eqv_map(ivtx).eq.eqv_map(ivtx+1).and.
      &         topo_cmp2(topomap(1:nvtx,ivtx),topomap(1:nvtx,ivtx+1),
-     &         eqv_map,nvtx).gt.0)) then
+     &         eqv_map,nvtx).gt.0) .and.
+     &        (svmap(ivtx).eq.0.or.svmap(ivtx+1).eq.0.or.
+     &         svmap(ivtx).eq.svmap(ivtx+1))) then
             ok = .false.
             resort = .true.
             ! interchange the two indices
@@ -232,6 +234,10 @@ c      end if
             scr(1) = vtx_reo(ivtx)
             vtx_reo(ivtx) = vtx_reo(ivtx+1)
             vtx_reo(ivtx+1) = scr(1)
+            ! (d) in svmap
+            scr(1) = svmap(ivtx)
+            svmap(ivtx) = svmap(ivtx+1)
+            svmap(ivtx+1) = scr(1)
           end if
         end do
         if (ok) exit

@@ -118,7 +118,7 @@
         deallocate(svmap)
 
         ! assemble proto contraction
-        call resize_contr(proto,nvtx,narc,0)
+        call resize_contr(proto,nvtx,narc,0,0)
 
         if (term%nvtx.gt.0) allocate(ivtx_term_reo(term%nvtx))
         if (intm%nvtx.gt.0) allocate(ivtx_intm_reo(intm%nvtx))

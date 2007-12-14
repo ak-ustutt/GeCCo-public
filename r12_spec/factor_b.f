@@ -8,7 +8,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -128,7 +128,7 @@
       call form_deriv3(form_b,form_rfr,
      &     1,idxc12,0,idxopb,op_info)
 
-      if(ntest.ge.100)then
+      if(ntest.ge.1000)then
         call write_title(luout,wst_title,'Formal B')
         call print_form_list(luout,form_b,op_info)
       endif
@@ -136,13 +136,15 @@
       ! Factor the B-terms out of the input formula.
       call factor_out_subexpr(form,form_b,op_info)
 
-      ! Replace the formal V-terms with the actual integrals.
+      ! Replace the formal B-terms with the actual integrals 
+      ! (symmetrised).
       opin = op_b_formal
-      opout = op_b_inter
+c      opout = op_b_inter
+      opout = op_b_symm
       call form_op_replace(opin,opout,form,op_info)
 
       if(ntest.ge.100)then
-        call write_title(luout,wst_title,'B-factored R12 Lagrangian')
+        call write_title(luout,wst_title,'B-factored R12 Formula')
         call print_form_list(luout,form,op_info)
       endif
 

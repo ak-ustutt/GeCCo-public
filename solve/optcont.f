@@ -4,7 +4,8 @@
      &                   energy,xngrd,
      &                   ffopt,ffgrd,ffdia,
      &                   ff_trv,ff_h_trv,
-     &                   opti_info,opti_stat)
+     &                   opti_info,opti_stat,
+     &                   op_info,orb_info)
 *----------------------------------------------------------------------*
 *
 * General optimization control routine for non-linear optimization.
@@ -50,10 +51,12 @@
 
       include 'stdunit.h'
       include 'ioparam.h'
-      include 'def_filinf.h'
-      include 'def_file_array.h'
+      include 'mdef_operator_info.h'
+c      include 'def_filinf.h'
+c      include 'def_file_array.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
+      include 'def_orbinf.h'
       include 'ifc_memman.h'
       
 * parameters
@@ -82,7 +85,11 @@
      &     opti_info
       type(optimize_status), intent(inout) ::
      &     opti_stat
-
+      
+      type(operator_info), intent(in) ::
+     &     op_info
+      type(orbinf), intent(in) ::
+     &     orb_info
 *     buffers for incore/out-of-core work:
       integer ::
      &     nincore, nbuf, lenbuf
@@ -183,7 +190,8 @@
      &       ff_trv,ff_h_trv,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
-     &       opti_info,opti_stat)
+     &       opti_info,opti_stat,
+     &       op_info,orb_info)
 
         de = opti_stat%energy_last - energy
 

@@ -63,12 +63,6 @@
       form_pnt => form_info%form_arr(idx)%form
       call set_vbar_intermediate(form_pnt,op_info,orb_info)
 
-      ! Add the B-intermediate.
-      call add_formula(form_info,label_r12_bint)
-      idx = idx_formlist(label_r12_bint,form_info)
-      form_pnt => form_info%form_arr(idx)%form
-      call set_b_intermediate(form_pnt,op_info,orb_info)
-
       ! Add the X-intermediate, if required.
       if(trim(r12_apprx).ne.'A')then
         call add_formula(form_info,label_r12_xint)
@@ -76,6 +70,12 @@
         form_pnt => form_info%form_arr(idx)%form
         call set_x_intermediate(form_pnt,op_info,orb_info)
       endif
+
+      ! Add the B-intermediate.
+      call add_formula(form_info,label_r12_bint)
+      idx = idx_formlist(label_r12_bint,form_info)
+      form_pnt => form_info%form_arr(idx)%form
+      call set_b_intermediate(form_pnt,op_info,orb_info)
 
       call atim_csw(cpu,sys,wall)
       call prtim(luout,'Total R12 interm.',cpu-cpu0,sys-sys0,wall-wall0)

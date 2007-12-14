@@ -78,11 +78,11 @@
       ! with the preceding intermediates.
 
 c dbg ! Deletion of B.
-      nops = 3
+      nops = 2
       allocate(ops(nops))
       ops(1) = op_r12
       ops(2) = op_rba
-      ops(3) = op_b_inter
+c      ops(3) = op_b_inter
       call delete_non_fact(ops,nops,form_lag,op_info)
       deallocate(ops)
 

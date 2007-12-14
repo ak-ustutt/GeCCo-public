@@ -66,7 +66,7 @@ c dbg
 
       if (narc_new.eq.0) return
 
-      call resize_contr(contr,nvtx,narc+narc_new,contr%nfac)
+      call resize_contr(contr,nvtx,narc+narc_new,0,contr%nfac)
 
       ! set link again !!
       arc => contr%arc

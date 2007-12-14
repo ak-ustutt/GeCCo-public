@@ -15,12 +15,15 @@
 
       contr%mxvtx = 0
       contr%mxarc = 0
+      contr%mxxarc = 0
       contr%mxfac = 0
       contr%nvtx = 0
       contr%narc = 0
+      contr%nxarc = 0
       contr%nfac = 0
       nullify(contr%vertex)
       nullify(contr%arc)
+      nullify(contr%xarc)
       nullify(contr%joined)
       nullify(contr%svertex)
       nullify(contr%inffac)

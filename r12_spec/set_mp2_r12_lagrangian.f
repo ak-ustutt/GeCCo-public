@@ -187,6 +187,11 @@
      &     1d0,2,(/idx_h_temp,idx_sop/),-1,-1,
      &     (/1,2/),1,.false.,op_info)
 
+      if(ntest.ge.100)then
+        call write_title(luout,wst_title,'raw formula 1')
+        call print_form_list(luout,form_lag,op_info)
+      endif
+
       ! Advance.
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -200,10 +205,6 @@
         call write_title(luout,wst_title,'raw formula')
         call print_form_list(luout,form_lag,op_info)
       endif
-
-      call sum_terms(form_lag,op_info)
-      call cc_form_post(form_lag,nterms,
-     &     idx_sbar,idx_h_temp,idx_sop,op_info)
 
       ! Replace the formal elements of H, S and Sbar with actual
       ! Hamiltonian, T and CR terms.
@@ -220,8 +221,59 @@
       endif
 
       call expand_subexpr(form_lag,form_tbar_cbarr,.false.,op_info)
+      if(ntest.ge.1000)then
+        call write_title(luout,wst_title,'After S+ replacement.')
+        call print_form_list(luout,form_lag,op_info)
+      endif
+
+      ! Add extra, artificial terms for approximations beyond A.
+      if(trim(r12_apprx).ne.'A')then
+
+        call del_operator(idx_h_temp,op_info)
+        call add_operator(op_h_temp,op_info)
+        idx_h_temp = idx_oplist2(op_h_temp,op_info)
+        h_temp_pnt => op_info%op_arr(idx_h_temp)%op
+
+        ndef = 1
+        allocate(occ_def(ngastp,2,ndef))
+        occ_def(1:ngastp,1,1) = (/1,0,0,0/)
+        occ_def(1:ngastp,2,1) = (/1,0,0,0/)
+        call set_uop(h_temp_pnt,op_h_temp,.false.,0,0,1,1,0,
+     &       occ_def,ndef,orb_info)
+        deallocate(occ_def)
+        
+       ! Replace the formal terms with elements of H.
+        call dealloc_formula_list(form_h)
+        call init_formula(form_h)
+        form_h_pnt => form_h
+        call new_formula_item(form_h_pnt,
+     &       command_set_target_init,idx_h_temp)
+        form_h_pnt => form_h_pnt%next
+        call expand_op_product(form_h_pnt,idx_h_temp,
+     &       1d0,1,idxham,-1,-1,
+     &       0,0,.false.,op_info)
+
+        do while(associated(form_pnt%next))
+          form_pnt => form_pnt%next
+        enddo
+
+        call expand_op_product(form_pnt,idxlcc,
+     &       -0.5d0,5,(/idxrba,idx_h_temp,idxcba,idxc12,idxr12/),-1,-1,
+     &       (/1,2,2,3,1,3,1,5,3,4,4,5/),6,.false.,op_info)
+
+        do while(associated(form_pnt%next))
+          form_pnt => form_pnt%next
+        enddo
+
+        call expand_op_product(form_pnt,idxlcc,
+     &       -0.5d0,5,(/idxrba,idxcba,idxc12,idx_h_temp,idxr12/),-1,-1,
+     &       (/1,2,2,3,1,5,3,4,3,5,4,5/),6,.false.,op_info)
+
+        call expand_subexpr(form_lag,form_h,.false.,op_info)
+      endif
+
       if(ntest.ge.100)then
-        call write_title(luout,wst_title,'Final formula.')
+        call write_title(luout,wst_title,'Final formula')
         call print_form_list(luout,form_lag,op_info)
       endif
 

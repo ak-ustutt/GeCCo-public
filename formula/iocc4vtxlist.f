@@ -21,7 +21,7 @@
       include 'ifc_baserout.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(out) ::
      &     iocc(ngastp,2), icnt(ngastp,2)

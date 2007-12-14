@@ -151,21 +151,26 @@
      &       1,(/idx_b_inv_form/)
      &       )
 
-        ! Multiply the necessary intermediates by the inverse of B.
-        call add_action(act_list,nactions,
-     &       iaction_multiply,2,1,0,
-     &       (/idx_b_inv,idxvbint/),(/idxvbint/),
-     &       1,(/idx_vb_form/)
-     &       )
+c        ! Multiply the necessary intermediates by the inverse of B.
+c        call add_action(act_list,nactions,
+c     &       iaction_multiply,2,1,0,
+c     &       (/idx_b_inv,idxvbint/),(/idxvbint/),
+c     &       1,(/idx_vb_form/)
+c     &       )
 
-        if(trim(r12_apprx).ne.'A')then
-          call add_action(act_list,nactions,
-     &         iaction_multiply,2,1,0,
-     &         (/idx_b_inv,idx_xint/),(/idx_xint/),
-     &         1,(/idx_x_form/)
-     &         )
+c        call add_action(act_list,nactions,
+c     &       iaction_multiply,2,1,0,
+c     &       (/idx_b_inv,idx_b_symm/),(/idx_b_symm/),
+c     &       1,(/idx_b_symm_form/)
+c     &       )
 
-        endif
+c        if(trim(r12_apprx).ne.'A')then
+c          call add_action(act_list,nactions,
+c     &         iaction_multiply,2,1,0,
+c     &         (/idx_b_inv,idx_xint/),(/idx_xint/),
+c     &         1,(/idx_x_form/)
+c     &         )
+c        endif
 
       endif
 
@@ -185,21 +190,30 @@ c dbg
      &     0,idum
      &     )
 
-      ! Set up the R12 preconditioner (Diagonal of B).
-      call add_action(act_list,nactions,
-     &     iaction_setup_prc,2,1,0,
-     &     (/idxbint,idxbint/),(/idxr12dia/),
-     &     0,idum
-     &     )
+c      ! Set up the R12 preconditioner (Diagonal of B).
+c      call add_action(act_list,nactions,
+c     &     iaction_setup_prc,2,1,0,
+c     &     (/idxbint,idxbint/),(/idxr12dia/),
+c     &     0,idum
+c     &     )
 
 c      call get_argument_value('calculate.routes','simtraf',ival=isim)
 
+c        call add_action(act_list,nactions,
+c     &     iaction_solve_nleq,3,5,2,
+c     &     (/idxdia,idxr12dia,idxham/),
+c     &     (/idxtop,idxc12,idxomg,idxomg12,idxecc/),
+c     &     3,(/idxccen,idxccrs,idxccrs12/)
+c     &     )
+
+c dbg
         call add_action(act_list,nactions,
      &     iaction_solve_nleq,3,5,2,
-     &     (/idxdia,idxr12dia,idxham/),
+     &     (/idxdia,idx_b_inv,idxham/),
      &     (/idxtop,idxc12,idxomg,idxomg12,idxecc/),
      &     3,(/idxccen,idxccrs,idxccrs12/)
      &     )
+c dbg
 
 c      if (isim.eq.0) then
 c        ! solve ground-state equations

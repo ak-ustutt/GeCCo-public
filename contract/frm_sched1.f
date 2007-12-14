@@ -245,7 +245,6 @@ c        case(command_set_target_update)
         end if
 
         nvtx = cur_form%contr%nvtx
-
         ! allocate arrays for occupations and restrictions
         allocate(
      &       iocc_op1(ngastp,2,nvtx), iocc_op2(ngastp,2,nvtx),
@@ -464,6 +463,12 @@ c            call init_operator(0,opscr(ninter),orb_info)
      &       str_info,strmap_info,orb_info)
           if (ntest.ge.100)
      &         write(luout,*) 'returned from contraction kernel'
+
+c dbg
+c          if(idxopres.eq.8)then
+c            write(luout,*)'xret', xret_pnt(1)
+c          endif
+c dbg
 
           if (reo_op1op2) then
             call dealloc_operator(optmp)
