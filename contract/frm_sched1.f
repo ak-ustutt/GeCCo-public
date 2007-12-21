@@ -274,7 +274,7 @@ c        case(command_set_target_update)
 
         if (ntest.ge.100) write(luout,*) 'nfact, fac: ',nfact,fac
 
-        idxmel = op2list(idxop1op2)
+        idxmel = op2list(cur_contr%idx_res)
         me_op1op2 => mel_arr(idxmel)%mel
         if (me_op1op2%len_op_occ(cur_contr%iblk_res).eq.0)
      &       cycle term_loop

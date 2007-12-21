@@ -20,7 +20,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       logical, parameter ::
      &     strict = .false.
 
@@ -37,7 +37,8 @@
      &     op_info
 
       integer ::
-     &     nvtx, ntup, itup, ieqvfac, njoined_ori, njoined,
+     &     nvtx, ntup, itup, ieqvfac,
+     &     njoined_0, njoined_res, njoined_mlt, njoined_der,
      &     iblk_last, idx, ider, ivtx, iarc, jvtx, jarc, il, ierr,
      &     nder_actually, idx_0, ipcr_0, ipcr_res, ipcr_mlt, ipcr_der
       integer, pointer ::
@@ -54,7 +55,7 @@
      &     neqv(:),idx_eqv(:,:),neqv_tup(:),idx_tup(:)
       
       integer, external ::
-     &     iblk_occ, ielsum
+     &     iblk_occ, ielsum, rank_occ
 
       if (ntest.ge.100) then
         write(luout,*) '====================='
@@ -69,22 +70,26 @@
 
       op_arr => op_info%op_arr
 
+      njoined_0 = op_arr(contr%idx_res)%op%njoined
+      njoined_res = op_arr(idxres)%op%njoined
+      njoined_der = op_arr(idxder)%op%njoined
+      if (idxmlt.gt.0) njoined_mlt = op_arr(idxmlt)%op%njoined
+
       ! check for particle creation rank
       ! we assume that operators have a defined rank, so we
       ! check the first occupation only
       ! o  lala :::> njoined is needed as well
-      print *,'njoined ignored!'
       idx_0    = contr%idx_res
-      ipcr_0   = ielsum(op_arr(idx_0 )%op%ihpvca_occ(1,1,1),ngastp)-
-     &           ielsum(op_arr(idx_0 )%op%ihpvca_occ(1,2,1),ngastp)
-      ipcr_der = ielsum(op_arr(idxder)%op%ihpvca_occ(1,1,1),ngastp)-
-     &           ielsum(op_arr(idxder)%op%ihpvca_occ(1,2,1),ngastp)
-      ipcr_res = ielsum(op_arr(idxres)%op%ihpvca_occ(1,1,1),ngastp)-
-     &           ielsum(op_arr(idxres)%op%ihpvca_occ(1,2,1),ngastp)
+      ipcr_0   = rank_occ('C-A',
+     &     op_arr(idx_0 )%op%ihpvca_occ(1,1,1),njoined_0)
+      ipcr_der   = rank_occ('C-A',
+     &     op_arr(idxder)%op%ihpvca_occ(1,1,1),njoined_der)
+      ipcr_res   = rank_occ('C-A',
+     &     op_arr(idxres)%op%ihpvca_occ(1,1,1),njoined_res)
       ipcr_mlt = 0
       if (idxmlt.gt.0) then
-        ipcr_mlt = ielsum(op_arr(idxmlt)%op%ihpvca_occ(1,1,1),ngastp)-
-     &             ielsum(op_arr(idxmlt)%op%ihpvca_occ(1,2,1),ngastp)
+        ipcr_mlt   = rank_occ('C-A',
+     &       op_arr(idxmlt)%op%ihpvca_occ(1,1,1),njoined_mlt)
       end if
       if (ipcr_0-ipcr_der+ipcr_mlt.ne.ipcr_res) then
         write(luout,*) ipcr_0,' - ',ipcr_der,' + ',ipcr_mlt,
@@ -94,14 +99,12 @@
       end if
       
       nvtx = contr%nvtx
-      njoined_ori = op_arr(contr%idx_res)%op%njoined
-      njoined = op_arr(idxres)%op%njoined
       allocate(topomap(nvtx,nvtx),eqv_map(nvtx),
      &         neqv(nvtx),idx_eqv(nvtx,nvtx),
      &         neqv_tup(nvtx),idx_tup(nvtx),
-     &         occ_vtx(ngastp,2,nvtx+max(njoined_ori,njoined)),
-     &         iocc(ngastp,2,njoined),
-     &         iocc2(ngastp,2,njoined))
+     &         occ_vtx(ngastp,2,nvtx+max(njoined_0,njoined_res)),
+     &         iocc(ngastp,2,njoined_res),
+     &         iocc2(ngastp,2,njoined_res))
 
       call occvtx4contr(1,occ_vtx,contr,op_info)
 
@@ -257,7 +260,7 @@ c            call wrt_occ_n(luout,iocc,1)
 
         ! get occupation of target ...
         call occvtx4contr(1,occ_vtx,cur_conder%contr,op_info)
-        call occ_contr(iocc,ierr,cur_conder%contr,occ_vtx,njoined)
+        call occ_contr(iocc,ierr,cur_conder%contr,occ_vtx,njoined_res)
 
 c dbg-QUICK FIX2:::
         if (ierr.eq.0.and.ipcr_mlt.eq.-1.and.ipcr_der.eq.0) then
@@ -273,7 +276,7 @@ c          call wrt_occ_n(luout,iocc2,1)
         if (ierr.ne.0) then
           if (strict) then
             write(luout,*) 'derivative gives njoined = ',-ierr-1
-            write(luout,*) 'expected:                  ',njoined
+            write(luout,*) 'expected:                  ',njoined_res
             call quit(1,'contr_deriv2','incompatible result operator')
           end if
         else        
@@ -282,13 +285,13 @@ c          call wrt_occ_n(luout,iocc2,1)
      &                                          op_arr(idxres)%op)
 c dbg
           print *,'idx, occ: ',cur_conder%contr%iblk_res
-          call wrt_occ_n(luout,iocc,njoined)
+          call wrt_occ_n(luout,iocc,njoined_res)
 c dbg          
 
           if (cur_conder%contr%iblk_res.le.0) then
             if (strict) then
               write(luout,*) 'resulting occupation:'
-              call wrt_occ_n(luout,iocc,njoined)
+              call wrt_occ_n(luout,iocc,njoined_res)
               call quit(1,'contr_deriv',
      &           'result occupation not defined for operator '//
      &           trim(op_arr(idxres)%op%name))
