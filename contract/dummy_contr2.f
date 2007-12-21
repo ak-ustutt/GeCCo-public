@@ -1,14 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine dummy_contr2(flops,xmemtot,xmemblk,
      &     cnt_info,
-c     &     nca_blk,
-c     &     cinfo_op1c, cinfo_op1a, cinfo_op2c, cinfo_op2a,
-c     &     cinfo_op1op2c, cinfo_op1op2a,
-c     &     cinfo_10c, cinfo_10a, cinfo_20c, cinfo_20a,
-c     &     cinfo_cntc, cinfo_cnta,
-c     &     map_info_1c, map_info_1a,
-c     &     map_info_2c, map_info_2a,
-c     &     map_info_12c, map_info_12a,
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
      &     str_info,ngas,ihpvgas,nsym)
@@ -36,16 +28,6 @@ c     &     map_info_12c, map_info_12a,
       type(contraction_info), target ::
      &     cnt_info
       integer, intent(in) ::
-c     &     nca_blk(2,6),
-c     &     cinfo_op1c(nca(1,1),3), cinfo_op1a(nca_blk(2,1),3),
-c     &     cinfo_op2c(nca_blk(1,2),3), cinfo_op2a(nca_blk(2,2),3),
-c     &     cinfo_op1op2c(nca_blk(1,3),3), cinfo_op1op2a(nca_blk(2,3),3),
-c     &     cinfo_ex1c(nca_blk(1,4),3), cinfo_ex1a(nca_blk(2,4),3),
-c     &     cinfo_ex2c(nca_blk(1,5),3), cinfo_ex2a(nca_blk(2,5),3),
-c     &     cinfo_cntc(nca_blk(1,6),3), cinfo_cnta(nca_blk(2,6),3),
-c     &     map_info_1c(*), map_info_1a(*),
-c     &     map_info_2c(*), map_info_2a(*),
-c     &     map_info_12c(*), map_info_12a(*),
      &     mstop1,mstop2,mstop1op2,igamtop1,igamtop2,igamtop1op2
       integer, intent(in) ::
      &     ngas, nsym, ihpvgas(ngas)
@@ -178,7 +160,7 @@ c     &     map_info_12c(*), map_info_12a(*),
      &     gmex1dis_c(ncblk_ex1), gmex1dis_a(nablk_ex1),
      &     gmex2dis_c(ncblk_ex2), gmex2dis_a(nablk_ex2),
      &     gmc_dis_c(ncblk_cnt), gmc_dis_a(nablk_cnt),
-     &     gmi_dis_c(ncblk_op1op2), gmi_dis_a(ncblk_op1op2),
+     &     gmi_dis_c(ncblk_op1op2), gmi_dis_a(nablk_op1op2),
      &     msex1dis_c(ncblk_ex1), msex1dis_a(nablk_ex1),
      &     msex2dis_c(ncblk_ex2), msex2dis_a(nablk_ex2),
      &     msc_dis_c(ncblk_cnt), msc_dis_a(nablk_cnt),
@@ -193,11 +175,11 @@ c     &     map_info_12c(*), map_info_12a(*),
      &     lenop1op2(ncblk_op1op2+nablk_op1op2)
      &     )
 
-      ! minimum Ms for ...
-      msbnd(1,1) = -nca(1,1) ! operator 1
-      msbnd(1,2) = -nca(1,2) ! operator 2        
-      msbnd(1,3) = -nca(1,3) ! intermediate
-      ! maximum Ms for ...
+      ! minimum Ms(A) for ...
+      msbnd(1,1) = -nca(2,1) ! operator 1
+      msbnd(1,2) = -nca(2,2) ! operator 2        
+      msbnd(1,3) = -nca(2,3) ! intermediate
+      ! maximum Ms(A) for ...
       msbnd(2,1) = -msbnd(1,1)
       msbnd(2,2) = -msbnd(1,2)
       msbnd(2,3) = -msbnd(1,3)
@@ -227,6 +209,10 @@ c     &     map_info_12c(*), map_info_12a(*),
         ms12i_c(1) = ms12i_a(1) + mstop1
         ms12i_c(2) = ms12i_a(2) + mstop2
         ms12i_c(3) = ms12i_a(3) + mstop1op2
+        if (abs(ms12i_c(1)).gt.nca(1,1)) cycle ms_loop
+        if (abs(ms12i_c(2)).gt.nca(1,2)) cycle ms_loop
+        if (abs(ms12i_c(3)).gt.nca(1,3)) cycle ms_loop
+
         msc_ac = ms12i_a(1) + ms12i_a(2) - ms12i_a(3)
 
         if (mscmx_a+mscmx_c.lt.abs(msc_ac)) cycle ms_loop

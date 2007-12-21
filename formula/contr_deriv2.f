@@ -20,7 +20,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       logical, parameter ::
      &     strict = .false.
 
@@ -39,9 +39,10 @@
       integer ::
      &     nvtx, ntup, itup, ieqvfac, njoined_ori, njoined,
      &     iblk_last, idx, ider, ivtx, iarc, jvtx, jarc, il, ierr,
-     &     nder_actually
+     &     nder_actually, idx_0, ipcr_0, ipcr_res, ipcr_mlt, ipcr_der
       integer, pointer ::
-     &     iocc(:,:,:)
+     &     iocc(:,:,:),
+     &     iocc2(:,:,:)
       type(contraction_list), pointer ::
      &     cur_conder
       type(operator_array), pointer ::
@@ -53,7 +54,7 @@
      &     neqv(:),idx_eqv(:,:),neqv_tup(:),idx_tup(:)
       
       integer, external ::
-     &     iblk_occ
+     &     iblk_occ, ielsum
 
       if (ntest.ge.100) then
         write(luout,*) '====================='
@@ -68,6 +69,30 @@
 
       op_arr => op_info%op_arr
 
+      ! check for particle creation rank
+      ! we assume that operators have a defined rank, so we
+      ! check the first occupation only
+      ! o  lala :::> njoined is needed as well
+      print *,'njoined ignored!'
+      idx_0    = contr%idx_res
+      ipcr_0   = ielsum(op_arr(idx_0 )%op%ihpvca_occ(1,1,1),ngastp)-
+     &           ielsum(op_arr(idx_0 )%op%ihpvca_occ(1,2,1),ngastp)
+      ipcr_der = ielsum(op_arr(idxder)%op%ihpvca_occ(1,1,1),ngastp)-
+     &           ielsum(op_arr(idxder)%op%ihpvca_occ(1,2,1),ngastp)
+      ipcr_res = ielsum(op_arr(idxres)%op%ihpvca_occ(1,1,1),ngastp)-
+     &           ielsum(op_arr(idxres)%op%ihpvca_occ(1,2,1),ngastp)
+      ipcr_mlt = 0
+      if (idxmlt.gt.0) then
+        ipcr_mlt = ielsum(op_arr(idxmlt)%op%ihpvca_occ(1,1,1),ngastp)-
+     &             ielsum(op_arr(idxmlt)%op%ihpvca_occ(1,2,1),ngastp)
+      end if
+      if (ipcr_0-ipcr_der+ipcr_mlt.ne.ipcr_res) then
+        write(luout,*) ipcr_0,' - ',ipcr_der,' + ',ipcr_mlt,
+     &       ' != ',ipcr_res
+        call quit(1,'contr_deriv2',
+     &     'particle creation ranks do not match')
+      end if
+      
       nvtx = contr%nvtx
       njoined_ori = op_arr(contr%idx_res)%op%njoined
       njoined = op_arr(idxres)%op%njoined
@@ -75,7 +100,8 @@
      &         neqv(nvtx),idx_eqv(nvtx,nvtx),
      &         neqv_tup(nvtx),idx_tup(nvtx),
      &         occ_vtx(ngastp,2,nvtx+max(njoined_ori,njoined)),
-     &         iocc(ngastp,2,njoined))
+     &         iocc(ngastp,2,njoined),
+     &         iocc2(ngastp,2,njoined))
 
       call occvtx4contr(1,occ_vtx,contr,op_info)
 
@@ -168,10 +194,24 @@
           ! get occupation of original operator at vertex
           ! and search for the corresponding block of new operator
           ! (usually it will be the same)
-          idx = iblk_occ(op_arr(contr%vertex(ivtxder(ider))%idx_op)%op%
-     &         ihpvca_occ(1,1,contr%vertex(ivtxder(ider))%iblk_op),
-     &         .false.,
-     &         op_arr(idxder)%op)
+          iocc(1:ngastp,1:2,1) =
+     &         op_arr(contr%vertex(ivtxder(ider))%idx_op)%op%
+     &         ihpvca_occ(1:ngastp,1:2,
+     &                    contr%vertex(ivtxder(ider))%iblk_op)
+          ! exception for rank change (QUICK FIX):
+c dbg-QUICK FIX:::
+          if (ipcr_mlt.eq.-1.and.ipcr_der.eq.0) then
+            iocc(2,1,1) = iocc(2,1,1)-1
+            ! print a nasty mark to remind us of this bad line:
+            print *,'QUICK FIX active'
+c            call wrt_occ_n(luout,iocc,1)
+          else if (ipcr_mlt.ne.0.or.ipcr_der.ne.0) then
+            call quit(1,'contr_deriv',
+     &           'QUICK FIX is not prepared for this')
+          end if
+          idx = iblk_occ(iocc,.false.,op_arr(idxmlt)%op)
+          if (idx.lt.0)
+     &         call quit(1,'contr_dervi2','idx<0??')
           cur_conder%contr%vertex(ivtxder(ider))%iblk_op = idx
           cur_conder%contr%nvtx = contr%nvtx
           cur_conder%contr%nsupvtx = contr%nsupvtx
@@ -219,6 +259,17 @@
         call occvtx4contr(1,occ_vtx,cur_conder%contr,op_info)
         call occ_contr(iocc,ierr,cur_conder%contr,occ_vtx,njoined)
 
+c dbg-QUICK FIX2:::
+        if (ierr.eq.0.and.ipcr_mlt.eq.-1.and.ipcr_der.eq.0) then
+          print *,'QUICK FIX2 active:'
+          call get_unconnected4vertex(iocc2,ivtxder(ider),
+     &         cur_conder%contr,op_info)
+c          call wrt_occ_n(luout,iocc2,1)
+          if (.not.iocc_bound('>=',iocc2,.false.,
+     &                             (/0,0,0,0,0,0,0,0/),.false.)) ierr=66
+          if (ierr.ne.0) print *,'skipping a contribution'
+        end if
+
         if (ierr.ne.0) then
           if (strict) then
             write(luout,*) 'derivative gives njoined = ',-ierr-1
@@ -230,8 +281,8 @@
           cur_conder%contr%iblk_res = iblk_occ(iocc,.false.,
      &                                          op_arr(idxres)%op)
 c dbg
-c          print *,'idx, occ: ',cur_conder%contr%iblk_res
-c          call wrt_occ_n(luout,iocc,njoined)
+          print *,'idx, occ: ',cur_conder%contr%iblk_res
+          call wrt_occ_n(luout,iocc,njoined)
 c dbg          
 
           if (cur_conder%contr%iblk_res.le.0) then
@@ -249,9 +300,6 @@ c dbg
         if (ierr.ne.0) then
           call dealloc_contr(cur_conder%contr)
           deallocate(cur_conder%contr)
-c dbg
-c          print *,'skipping with ierr = ',ierr
-c dbg
         else
           nder_actually = nder_actually + 1
         end if
@@ -260,7 +308,7 @@ c dbg
 
       if (nder.gt.0) deallocate(nord,iblk)
 
-      deallocate(iocc,occ_vtx)
+      deallocate(iocc2,iocc,occ_vtx)
 
       nder = nder_actually
 

@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine del_operator(id_op,op_info)
+      subroutine del_operator(name,op_info)
 *----------------------------------------------------------------------*
-*     delete info for operator with ID id_op
+*     delete info for operator with label "name"
 *----------------------------------------------------------------------*
 
       implicit none
@@ -12,8 +12,8 @@
 
       type(operator_info), intent(inout), target ::
      &     op_info
-      integer, intent(in) ::
-     &     id_op
+      character(*), intent(in) ::
+     &     name
 
       type(operator_list), pointer ::
      &     list_pnt
@@ -22,12 +22,12 @@
 
       list_pnt => op_info%op_list
       ! advance to respective entry on operator list:
-      do while (list_pnt%op%id.ne.id_op.and.associated(list_pnt%next))
+      do while (trim(list_pnt%op%name).ne.trim(name)
+     &     .and.associated(list_pnt%next))
         list_pnt => list_pnt%next
       end do
-      if (list_pnt%op%id.ne.id_op) then
-        write(luout,*) 'ID = ',id_op
-        call quit(1,'del_operator','unknown ID')
+      if (trim(list_pnt%op%name).ne.trim(name)) then
+        call quit(1,'del_operator','unknown label: "'//trim(name)//'"')
       end if
 
       if (associated(list_pnt%prev)) list_pnt%prev%next => list_pnt%next

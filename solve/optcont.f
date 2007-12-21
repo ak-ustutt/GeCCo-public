@@ -113,6 +113,11 @@
         write(luout,*) ' imacit, imicit, imicit_tot: ',
      &         imacit, imicit, imicit_tot
       end if
+c dbg
+      print *,'ffopt:',trim(ffopt(1)%fhand%name)
+      print *,'ffgrd:',trim(ffgrd(1)%fhand%name)
+      print *,'ffdia:',trim(ffdia(1)%fhand%name)
+c dbg
 
 * set iroute:
 * 0 simple perturbation (for testing, not recommended)

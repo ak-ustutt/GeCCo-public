@@ -96,11 +96,12 @@
       integer, external ::
      &     idx_str_blk3, ielprd
 c dbg
-c      integer lenop1, lenop2, lenop12
+      integer lenop1, lenop2, lenop12
 c
 c      lenop1  = ielprd(lstrop1,ncblk_op1+nablk_op1)
 c      lenop2  = ielprd(lstrop2,ncblk_op2+nablk_op2)
-c      lenop12 = ielprd(lstrop1op2,ncblk_op1op2+nablk_op1op2)
+      lenop12 = ielprd(lstrop1op2,ncblk_op1op2+nablk_op1op2)
+c      print *,'lenop12: ',lenop12
 c dbg
 
       nstr_ex1c_tot = ielprd(lstr_ex1,ncblk_ex1)
@@ -208,6 +209,19 @@ c dbg
               idxop1op2 = idx_str_blk3(idxop1op2c,idxop1op2a,
      &                                 ldim_op1op2c,ldim_op1op2a,
      &                                 ngastp_op1op2c,ngastp_op1op2a)
+c dbg
+c                  if (idxop1op2.lt.1) stop 'range12-l'
+c                  if (idxop1op2.gt.lenop12) then
+                  if (lenop12.eq.2) then
+                    print *,'-->',idxop1op2
+                    print *,'ngastp:',ngastp_op1op2c,ngastp_op1op2a
+                    print *,idxop1op2a
+                    print *,ldim_op1op2a
+                    print *,idxop1op2c
+                    print *,ldim_op1op2c
+c                    stop 'range12-h'
+                  end if
+c dbg
 
               ! loop over contraction A string
               cnta: do istr_cnta = 1, nstr_cnta_tot
@@ -298,19 +312,19 @@ c dbg
 c dbg
 c                  if (idxop1.lt.1) stop 'range1'
 c                  if (idxop2.lt.1) stop 'range2'
-c                  if (idxop1op2.lt.1) stop 'range12'
 c                  if (idxop1.gt.lenop1) stop 'range1'
 c                  if (idxop2.gt.lenop2) stop 'range2'
-c                  if (idxop1op2.gt.lenop12) stop 'range12'
 c dbg
                   xop1op2(idxop1op2) = xop1op2(idxop1op2)
      &                          + sgn * xop1(idxop1)
      &                                * xop2(idxop2)
 c dbg
-c                  print *,' sng ',isgnop1c,isgnop1a,
-c     &                 isgnop2c,isgnop2a,isgnr
-c                  print *,' +++ ',sgn,xop1(idxop1),xop2(idxop2),
-c     &                                ' -> ',idxop1op2
+                  if (lenop12.eq.2) then
+                  print *,' sng ',isgnop1c,isgnop1a,
+     &                 isgnop2c,isgnop2a,isgnr
+                  print *,' +++ ',sgn,xop1(idxop1),xop2(idxop2),
+     &                                ' -> ',idxop1op2
+                  end if
 c dbg
 
                 end do cntc           
@@ -353,10 +367,11 @@ c dbg
       ! we have to add a one to get the index
       idx_str_blk3 = 1
 
-      if ((ngastp_c*ngastp_a).eq.0) return
+      if (ngastp_c.gt.0) idx_str_blk3 = idx_str_blk3 + idxc(1)*ldimc(1)
+      if (ngastp_a.gt.0) idx_str_blk3 = idx_str_blk3 + idxa(1)*ldima(1)
 
-      idx_str_blk3 = idxc(1)*ldimc(1)+idxa(1)*ldima(1) + 1
-      if ((ngastp_c*ngastp_a).eq.1) return
+c      idx_str_blk3 = idxc(1)*ldimc(1)+idxa(1)*ldima(1) + 1
+      if ((ngastp_c*ngastp_a).le.1) return
 
       do idx = 2, ngastp_c
         idx_str_blk3 = idx_str_blk3+idxc(idx)*ldimc(idx)

@@ -24,7 +24,6 @@
       include 'ifc_baserout.h'
       include 'ifc_operators.h'
       include 'ifc_memman.h'
-      include 'multd2h.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -78,29 +77,14 @@ c      dagtotal = op%dagger
      &     call quit(1,'set_gen_intermediate',
      &     'not yet decided how to handle adjungate operators')
 
-      op%casym = defop(1)%op%casym
-      op%absym = defop(1)%op%absym
-      do idef = 2, ndefop
-        if (defop(idef)%op%casym.ne.op%casym.or.
-     &      defop(idef)%op%absym.ne.op%absym) then
-          call quit(1,'set_gen_intermediate',
-     &         'casym/absym must be compatible for defining operators')
-        end if
-      end do
-
-      op%s2 = defop(1)%op%s2
-      op%gamt = defop(1)%op%gamt
-      op%mst  = defop(1)%op%mst
       op%n_occ_cls = defop(1)%op%n_occ_cls
       iblk_max(1)  = defop(1)%op%n_occ_cls
       do idef = 2, ndefop
-        op%gamt = multd2h(op%gamt,defop(idef)%op%gamt)
-        op%mst  = op%mst + defop(idef)%op%mst
         op%n_occ_cls = op%n_occ_cls*defop(idef)%op%n_occ_cls
         iblk_max(idef) = defop(idef)%op%n_occ_cls
       end do
 
-      call init_operator(0,op,orb_info)
+      call init_operator(op,orb_info)
 
       iblk_min(1:ndefop) = 1
       
@@ -111,6 +95,8 @@ c      dagtotal = op%dagger
         iblk = iblk+1
         if (iblk.gt.op%n_occ_cls)
      &       call quit(1,'set_gen_intermediate','something is weird')
+
+        op%formal_blk(iblk) = .false.
 
         ioffblk = (iblk-1)*njoined
         

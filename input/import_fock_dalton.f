@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine import_fock_dalton(ffham,hop,str_info,orb_info)
+      subroutine import_fock_dalton(hlist,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     read fock operator from SIRIFC (sirius interface file)
 *----------------------------------------------------------------------*
@@ -13,6 +13,7 @@
       include 'def_strinf.h'
       include 'def_orbinf.h'
       include 'def_filinf.h'
+      include 'def_me_list.h'
       include 'ifc_memman.h'
       include 'multd2h.h'
       include 'par_dalton.h'
@@ -20,14 +21,12 @@
       integer, parameter ::
      &     ntest = 00
 
-      type(operator), intent(in) ::
-     &     hop
+      type(me_list), intent(in) ::
+     &     hlist
       type(strinf), intent(in) ::
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info
-      type(filinf), intent(inout) ::
-     &     ffham
 
       type(filinf) ::
      &     ffsir
@@ -44,6 +43,11 @@
      &     lusir, isym, ifree, irec,
      &     nfock, nh1reo, iocc_cls
 
+      type(operator), pointer ::
+     &     hop
+      type(filinf), pointer ::
+     &     ffham
+
       real(8), pointer ::
      &     xfock(:), xh1reo(:)
 
@@ -51,6 +55,9 @@
      &     dnrm2
 
       call atim_csw(cpu0,sys0,wall0)
+
+      ffham => hlist%fhand
+      hop   => hlist%op
 
       ifree = mem_setmark('import_h1')
 
@@ -69,7 +76,7 @@
         ! Quick fix to ignore Fock operators with an external index.
         if(hop%ihpvca_occ(iextr,1,iocc_cls).gt.0.or.
      &       hop%ihpvca_occ(iextr,2,iocc_cls).gt.0)cycle
-        nh1reo = nh1reo + hop%len_op_occ(iocc_cls)
+        nh1reo = nh1reo + hlist%len_op_occ(iocc_cls)
       end do
 
       ! buffer for fock-matrix as read from SIRIFC
@@ -89,7 +96,7 @@
      &       hop%ihpvca_occ(iextr,2,iocc_cls).gt.0 ) cycle
 
           if (ffham%incore(iocc_cls).gt.0.and.
-     &        ffham%idxrec(iocc_cls).ne.hop%off_op_occ(iocc_cls)) then
+     &        ffham%idxrec(iocc_cls).ne.hlist%off_op_occ(iocc_cls)) then
             call quit(1,'import_fock_dalton',
      &           'non-contiguous buffering: not prepared for that')
           end if
@@ -134,11 +141,10 @@
      &               'No sensible fock matrix found!')
 
       ! and reorder
-      call h1_sym2str_reo(emcscf,xfock,xh1reo,hop,str_info,orb_info)
+      call h1_sym2str_reo(emcscf,xfock,xh1reo,hlist,str_info,orb_info)
 
       call put_vec(ffham,xh1reo,1,nh1reo)
 
-c      call
       if (closeit)
      &     call file_close_keep(ffham)
 

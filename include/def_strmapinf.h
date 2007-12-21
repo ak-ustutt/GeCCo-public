@@ -4,6 +4,8 @@
       end type strmap_offsets
 
       type strmapinf
+        integer ::
+     &     mxgraph
         integer, pointer ::
      &     idx_strmap(:)        ! for each pair of graphs def'd above:
                                 ! start index of strmap on file

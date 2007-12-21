@@ -152,7 +152,7 @@ c dbg
           if (nincore.ge.2) then
             call vec_from_da(ffnew,jnew,xbuf2,nwfpar)
             smat(nold+inew,nold+jnew) = ddot(nwfpar,xbuf1,1,xbuf2,1)
-            smat(nold+jnew,nold+inew) = smat(inew,jnew)
+            smat(nold+jnew,nold+inew) = smat(nold+inew,nold+jnew)
           else
             smat(nold+inew,nold+jnew) = da_ddot(ffnew,inew,ffnew,jnew,
      &           nwfpar,xbuf1,xbuf2,lenbuf)
@@ -180,10 +180,17 @@ c dbg
       idx = nold
       do inew = 1, nnew
         ! check whether vector is nonzero
+c dbg
+        print *,'test = ',ddot(nold+nnew,xmat(1,nold+inew),1,
+     &                     xmat(1,nold+inew),1),nold,nnew,inew
+c dbg
         if (ddot(nold+nnew,xmat(1,nold+inew),1,
      &                     xmat(1,nold+inew),1).lt.1d-10)
      &       cycle
         idx = idx+1
+c dbg
+        print *,'idx = ',idx
+c dbg
         if (idx.lt.ndim_sbsp) then
           ! overwrite previous (zero) record
           irec = ioptc_get_sbsp_rec(idx,iord_sbsp,ndim_sbsp,mxsbsp)

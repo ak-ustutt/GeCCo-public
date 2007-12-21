@@ -35,9 +35,13 @@
       integer ::
      &     ioffmap, hpvx_idx, hpvx, idx, idxmap, idx_minf, idxbuf,
      &     idxgrgr, idxmsms, idxgmgm, ioff, ilen, idx1, idx2, idx12,
-     &     nsplit
+     &     nsplit, mxgraph
 
 
+      mxgraph = strmap_info%mxgraph
+      if (mxgraph.lt.ngraph)
+     &     call quit(1,'get_strmap_blk_c',
+     &     'you forgot to update the maps after adding a graph')
       offsets => strmap_info%offsets
 c dbg
 c      print *,'n1, n2, n12: ',n1, n2, n12
@@ -71,7 +75,7 @@ c dbg
 
         if (idx1.gt.0.and.idx2.gt.0) then
           ! get map from file
-          idxgrgr = (igrph2(idx2)-1)*ngraph+igrph1(idx1)
+          idxgrgr = (igrph2(idx2)-1)*mxgraph+igrph1(idx1)
           idxmsms = (idxms2(idx2)-1)*(iocc1(idx1)+1)+idxms1(idx1)
           idxgmgm = (idxmsms-1)*nsym*nsym+(igam2(idx2)-1)*nsym
      &                                                 +igam1(idx1)

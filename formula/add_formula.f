@@ -13,6 +13,9 @@
       character ::
      &     label*(*)
 
+      character(form_maxlen_label*2) ::
+     &     name
+
       type(formula_list), pointer ::
      &     list_pnt
 
@@ -35,6 +38,9 @@
       
       ! assign label such that we can search for it
       list_pnt%form%label = trim(label)
+c      list_pnt%form%fhand => null()
+      write(name,'(a,".fml")') trim(list_pnt%form%label)
+      call file_init(list_pnt%form%fhand,name,ftyp_sq_unf,0)
 
       form_info%nform = form_info%nform+1
 

@@ -9,4 +9,3 @@
         type(filinf) ::
      &     fhand
       end type formula
-

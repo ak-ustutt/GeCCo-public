@@ -38,7 +38,10 @@
 	 ! offset in a "superfile", if several file_handle are
 	 ! assigned the same unit (not yet used)
 	 integer ::
-     &       recoff_superfile     
+     &       recoff_superfile
+         ! modification time
+	 integer(8), pointer ::
+     &        last_mod(:)
       end type filinf
 *------------------------------------------------------------------------*
 *	name, unit: self-explaining, unit == -1 means not assigned

@@ -9,6 +9,7 @@
       implicit none
 
       include 'opdim.h'
+      include 'stdunit.h'
       include 'def_contraction.h'
       include 'mdef_operator_info.h'
       
@@ -23,13 +24,15 @@
      &     info_vtx(2,contr%nvtx+1)
 
       integer ::
-     &     nvtx, idx, idxop, iblkop, njoined
+     &     nvtx, idx, idxmel, idxop, iblkop, njoined
       type(cntr_vtx), pointer ::
      &     vertex(:)
       integer, pointer ::
      &     irestr_occ(:,:,:,:,:)
       type(operator), pointer ::
      &     op
+      type(me_list), pointer ::
+     &     mel
       
       idxop = contr%idx_res
       njoined = op_info%op_arr(idxop)%op%njoined
@@ -45,25 +48,38 @@
           ! is already set to compound index in case of super-vertices:
           iblkop = vertex(idx-njoined)%iblk_op
         end if
+
+        if (idxop.gt.0) then
+          idxmel = op_info%op2list(idxop)
+          if (idxmel.le.0) then
+            call prt_contr2(luout,contr,op_info)
+            write(luout,*) op_info%op2list(1:op_info%nops)
+            call quit(1,'vtxinf4contr',
+     &         'No list associated with operator '//
+     &         trim(op_info%op_arr(idxop)%op%name))
+          end if
+        end if
+
         if (idxop.eq.0) then
           irestr_vtx(1:2,1:ngas,1:2,1:2,idx) = 0
           info_vtx(1,idx) = 0
           info_vtx(2,idx) = 1
         else
           op => op_info%op_arr(idxop)%op
+          mel => op_info%mel_arr(idxmel)%mel
           irestr_occ => op%igasca_restr
           if (.not.op%dagger) then
             irestr_vtx(1:2,1:ngas,1:2,1:2,idx) =
      &           irestr_occ(1:2,1:ngas,1:2,1:2,iblkop)
-            info_vtx(1,idx) = op%mst
-            info_vtx(2,idx) = op%gamt
+            info_vtx(1,idx) = mel%mst
+            info_vtx(2,idx) = mel%gamt
           else
             irestr_vtx(1:2,1:ngas,1,1:2,idx) =
      &           irestr_occ(1:2,1:ngas,2,1:2,iblkop)
             irestr_vtx(1:2,1:ngas,2,1:2,idx) =
      &           irestr_occ(1:2,1:ngas,1,1:2,iblkop)
-            info_vtx(1,idx) = -op%mst
-            info_vtx(2,idx) = op%gamt
+            info_vtx(1,idx) = -mel%mst
+            info_vtx(2,idx) = mel%gamt
           end if
         end if
       end do

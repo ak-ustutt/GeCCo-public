@@ -17,7 +17,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     ndim
@@ -50,7 +50,9 @@
 
       ! loop over vectors
       do ii = 1, ndim
-        
+c dbg
+c        print *,'ii = ',ii
+c dbg        
         call dgemv('n',ndim,ndim,1d0,smat,ndim,xmat(1,ii),1,
      &                 0d0,xscr,1)
         xnorm = ddot(ndim,xmat(1,ii),1,xscr,1)
@@ -68,8 +70,10 @@
           xsx = ddot(ndim,xscr,1,xmat(1,jj),1)
           xmat(1:ndim,jj) = xmat(1:ndim,jj) - xsx*xmat(1:ndim,ii)
         end do
-        write(luout,*) 'updated X-matrix:'
-        call wrtmat2(xmat,ndim,ndim,ndim,ndim)
+c dbg
+c        write(luout,*) 'updated X-matrix:'
+c        call wrtmat2(xmat,ndim,ndim,ndim,ndim)
+c dbg
 
       end do
 

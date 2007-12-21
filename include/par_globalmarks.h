@@ -1,4 +1,5 @@
       character, parameter ::
+     &     me_list_def*11  = 'me_list_def',
      &     operator_def*12 = 'operator_def',
      &     formula_def*11  = 'formula_def',
      &     action_def*10   = 'action_def',

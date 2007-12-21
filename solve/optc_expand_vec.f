@@ -15,7 +15,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(filinf), intent(in) ::
      &     ffamp, ff_sbsp
@@ -44,6 +44,7 @@
         write(luout,*) ' info from optc_expand_vec' 
         write(luout,*) '==========================='
         write(luout,*) ' ndim : ', ndim
+        write(luout,*) ' ndim : ', nwfpar
         write(luout,*) ' xvec : ', xvec(1:ndim)
         write(luout,*) ' xfac : ', xfac
       end if
@@ -60,9 +61,6 @@
           xscr = sqrt(ddot(nwfpar,xbuf1,1,xbuf1,1))
           write(luout,*) ' |initial| = ',xscr
         end if
-c dbg
-c        write(luout,*) ' xvec (2): ', xvec(1:ndim)
-c dbg
 
         do irec = 1, ndim
           ii = iord(irec)

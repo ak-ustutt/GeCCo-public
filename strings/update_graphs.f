@@ -1,49 +1,59 @@
 *----------------------------------------------------------------------*
-      subroutine unique_graph(str_info,max_igtyp,op,ihpvgas,ngas)
+      subroutine update_graphs(str_info,mel,orb_info)
 *----------------------------------------------------------------------*
 *
-*     scan through occupation classes of operator op and find the
-*     unique graphs (i.e. occupation class for H/P/V alone) and
-*     set up the list on string info structure str_info
+*     successor of unique_graph:
+*
+*     scan through occupation classes of operator mel%op assiciated
+*     with ME-list mel and look for new graphs (i.e. occupation class 
+*     for H/P/V alone); set up the list on string info structure str_info
 *     
-*     the idx_graph array of op is set accordingly
+*     the idx_graph array of mel%op is set up accordingly
 *
 *     andreas, autumn 2006
+*              december 2007
 *
 *----------------------------------------------------------------------*
 
       include 'stdunit.h'
       include 'opdim.h'
+      include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_graph.h'
       include 'def_strinf.h'
+      include 'def_orbinf.h'
 
       integer, parameter ::
      &     ntest = 00
 
       type(strinf), intent(inout) ::
      &     str_info
-      type(operator), intent(in) ::
-     &     op
-      integer, intent(out) ::
-     &     max_igtyp
-      integer, intent(in) ::
-     &     ngas, ihpvgas(ngas)
+      type(orbinf), intent(in), target ::
+     &     orb_info
+      type(me_list), intent(in) ::
+     &     mel
 
+      type(operator), pointer ::
+     &     op
       logical ::
      &     unique, same
       integer ::
+     &     ngas,
      &     iocc_cls, ihpv, ica, igas, jgas, idx, idxgr, len(ngastp),
      &     nocc, njoined, ijoin
+      integer, pointer ::
+     &     ihpvgas(:)
 
       if (ntest.ge.100) then
-        write(luout,*) '--------------------'
-        write(luout,*) 'this is unique_graph'
-        write(luout,*) '--------------------'
+        call write_title(luout,wst_dbg_subr,'update_graphs')
         write(luout,*) ' unique graphs on input: ',str_info%ngraph
       end if
 
-      max_igtyp = 0
+      ngas = orb_info%ngas
+      ihpvgas => orb_info%ihpvgas
+
+      op => mel%op
 
       njoined = op%njoined
 
@@ -56,7 +66,7 @@
         idx = ioff+ijoin
 
         ! do not forget to init
-        op%idx_graph(1:ngastp,1:2,idx) = 0
+        mel%idx_graph(1:ngastp,1:2,idx) = 0
 
         ! loop over h/p/v/x and c/a
         do ihpv = 1,ngastp
@@ -97,32 +107,20 @@
               
               ! .not.unique == we have this graph already
               ! let op%idx_graph point to this graph ...
-              if (.not.unique) op%idx_graph(ihpv,ica,idx) = igraph
+              if (.not.unique) mel%idx_graph(ihpv,ica,idx) = igraph
               ! ... and go to next space
               if (.not.unique) cycle ica_loop
 
             end do igraph_loop
 
             ! a new unique graph was found:
-            str_info%ngraph = str_info%ngraph + 1
+            call add_graph(ihpv,nocc,ica,
+     &           op%igasca_restr(1,1,1,1,idx),
+     &           str_info,orb_info)
 
-            ! set pointer to that graph
+            ! set idxgr to that graph
             idxgr = str_info%ngraph
-            op%idx_graph(ihpv,ica,idx) = idxgr
-
-            str_info%ispc_typ(idxgr) = ihpv
-            str_info%ispc_occ(idxgr) = nocc
-
-            ! dimension needed for hash table
-            max_igtyp = max(max_igtyp,ngastp*(nocc-1) + ihpv)
-            
-            jgas = 1
-            igas_loop: do igas = 1, ngas
-              if (ihpvgas(igas).ne.ihpv) cycle igas_loop
-              str_info%igas_restr(1:2,jgas,1:2,idxgr)
-     &             = op%igasca_restr(1:2,igas,ica,1:2,idx)
-              jgas = jgas+1
-            end do igas_loop
+            mel%idx_graph(ihpv,ica,idx) = idxgr
 
           end do ica_loop
         end do
@@ -151,9 +149,9 @@
           if(op%formal_blk(iocc_cls))cycle
           ioff = (iocc_cls-1)*njoined
           write(luout,'(2x,i3,4x,5(4i3,2x))') iocc_cls,
-     &         op%idx_graph(1:ngastp,1,ioff+1:ioff+njoined)
+     &         mel%idx_graph(1:ngastp,1,ioff+1:ioff+njoined)
           write(luout,'(5x,4x,5(4i3))') 
-     &         op%idx_graph(1:ngastp,2,ioff+1:ioff+njoined)
+     &         mel%idx_graph(1:ngastp,2,ioff+1:ioff+njoined)
         end do
       end if
 

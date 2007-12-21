@@ -1,20 +1,22 @@
 *----------------------------------------------------------------------*
       integer function idx_msgmdst(iocc_cls,mst,igamt,
-     &     msd,gmd,dagger,op,nsym)
+     &     msd,gmd,dagger,mel,nsym)
 *----------------------------------------------------------------------*
 *     note that mst, igamt are the ms_a and igam_a of the current
-*     operator block
+*     ME-list block
 *----------------------------------------------------------------------*
       implicit none
 
       include 'opdim.h'
       include 'def_operator.h'
+      include 'def_filinf.h'
+      include 'def_me_list.h'
 
       integer, intent(in) ::
      &     iocc_cls, mst, igamt, nsym, msd(ngastp,2), gmd(ngastp,2)
       
-      type(operator), intent(in) ::
-     &     op
+      type(me_list), intent(in) ::
+     &     mel
 
       logical, intent(in) ::
      &     dagger
@@ -24,11 +26,17 @@
       integer ::
      &     iocc(ngastp,2), msdd(ngastp,2), gmdd(ngastp,2)
 
+      type(operator), pointer ::
+     &     op
+
       integer, pointer ::
-     &     didarr(:,:,:)      
+     &     didarr(:,:,:) 
 
       integer, external ::
      &     msgmdid, ielsum
+
+
+      op => mel%op
 
       ! get occupation
       iocc(1:ngastp,1:2) = op%ihpvca_occ(1:ngastp,1:2,iocc_cls) 
@@ -44,7 +52,7 @@
         mgdid = msgmdid(iocc,msdd,gmdd,nsym)
       end if
 
-      didarr => op%off_op_gmox(iocc_cls)%did
+      didarr => mel%off_op_gmox(iocc_cls)%did
 
       idxms = (ielsum(iocc,ngastp)-mst)/2+1
 
@@ -52,7 +60,7 @@
 c dbg
 c      print *,'-->',iocc_cls,igamt,idxms
 c dbg
-      do idx = 1, op%off_op_gmox(iocc_cls)%ndis(igamt,idxms)
+      do idx = 1, mel%off_op_gmox(iocc_cls)%ndis(igamt,idxms)
         if (didarr(idx,igamt,idxms).eq.mgdid) then
           idx_msgmdst = idx
           exit

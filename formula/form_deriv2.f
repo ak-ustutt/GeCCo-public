@@ -1,7 +1,8 @@
 *----------------------------------------------------------------------*
       subroutine form_deriv2(f_deriv,f_input,
-     &                      label_deriv,title_deriv,
-     &                      ncmpnd,idxder,idxmlt,idxres,
+     &                      title,
+     &                      ncmpnd,
+     &                      label_opres,label_opder,label_opmlt,
      &                      op_info)
 *----------------------------------------------------------------------*
 *     get the derivatives of all contraction on ffinput
@@ -27,12 +28,16 @@ c      include 'def_filinf.h'
       include 'def_contraction_list.h'
       include 'def_formula.h'
 
-      character, intent(in) ::
-     &     title_deriv*(*),label_deriv*(*)
+      integer, parameter ::
+     &     ntest = 100
+
+      integer, intent(in) ::
+     &     ncmpnd
+      character(*), intent(in) ::
+     &     title,
+     &     label_opder(ncmpnd),label_opmlt(ncmpnd),label_opres
       type(formula), intent(inout) ::
      &     f_input, f_deriv
-      integer, intent(in) ::
-     &     ncmpnd, idxder(ncmpnd), idxmlt(ncmpnd), idxres
       type(operator_info) ::
      &     op_info
 
@@ -46,6 +51,7 @@ c      include 'def_filinf.h'
       logical ::
      &     reo
       integer ::
+     &     idxder(ncmpnd), idxmlt(ncmpnd), idxres,
      &     luinput, luderiv, nvtx,
      &     nterms, nder, idx, idum, idxinp, len, icmpnd, ieqvfac
       character ::
@@ -56,13 +62,51 @@ c      include 'def_filinf.h'
       logical, pointer ::
      &     fix_vtx(:)
 
+      integer, external ::
+     &     idx_oplist2
       logical, external ::
      &     rd_contr
 
-      write(name,'(a,".fml")') label_deriv
+      if (ntest.ge.100) then
+        call write_title(luout,wst_dbg_subr,
+     &     'form_deriv2 at work')
+        write(luout,*) ' f_input = ',trim(f_input%label)
+        write(luout,*) ' f_deriv = ',trim(f_deriv%label)
+        write(luout,*) ' op_res  = ',trim(label_opres)
+        do icmpnd = 1, ncmpnd
+          write(luout,*) 'compound # ',icmpnd
+          write(luout,*) ' op_der  = ',trim(label_opder(icmpnd))
+          write(luout,*) ' op_mlt  = ',trim(label_opmlt(icmpnd))
+        end do
+      end if
+
+      ! get indices
+      idxres = idx_oplist2(label_opres,op_info)
+      do icmpnd = 1, ncmpnd
+        idxder(icmpnd) = idx_oplist2(label_opder(icmpnd),op_info)
+      end do
+      if (len_trim(label_opmlt(1)).eq.0) then
+        if (ncmpnd.gt.1)
+     &       call quit(1,'form_deriv',
+     &       'no multi-compound derivative without multiplication')
+        idxmlt(1) = 0
+      else
+        do icmpnd = 1, ncmpnd
+          idxmlt(icmpnd) = idx_oplist2(label_opmlt(icmpnd),op_info)          
+        end do
+      end if
+      if (idxder(1).lt.0.or.idxres.lt.0.or.idxmlt(1).lt.0) then
+        write(luout,*) 'idxder:', idxder
+        write(luout,*) 'idxmlt:', idxmlt
+        write(luout,*) 'idxres:', idxres
+        call print_op_info(luout,'ops',op_info)
+        call quit(1,'form_deriv2',
+     &     'required operators are not yet defined')
+      end if
+
+      write(name,'(a,".fml")') trim(f_deriv%label)
       call file_init(f_deriv%fhand,name,ftyp_sq_unf,0)      
-      f_deriv%label = label_deriv
-      f_deriv%comment = title_deriv
+      f_deriv%comment = trim(title)
 
       call file_open(f_input%fhand)
       call file_open(f_deriv%fhand)
@@ -74,8 +118,8 @@ c      include 'def_filinf.h'
       read(luinput)
       read(luinput) idum,idxinp
 
-      len = len_trim(title_deriv)
-      write(luderiv) len,title_deriv
+      len = len_trim(title)
+      write(luderiv) len,trim(title)
       write(luderiv) idum,idxres
 
       ! signal, that still nothing is allocated
@@ -116,6 +160,9 @@ c      include 'def_filinf.h'
         end do
 
       end do
+c dbg
+      print *,'nterms = ',nterms
+c dbg
 
       call file_close_keep(f_deriv%fhand)
       call file_close_keep(f_input%fhand)

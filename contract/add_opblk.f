@@ -1,9 +1,9 @@
 *----------------------------------------------------------------------*
-      subroutine add_opblk(fac,ffin,ffout,
-     &     opin,opout,iblkin,iblkout,orb_info)
+      subroutine add_opblk(fac,mel_in,mel_out,
+     &     iblkin,iblkout,orb_info)
 *----------------------------------------------------------------------*
 *
-*     add block from file ffin to file ffout
+*     add block from list mel_in to list mel_out
 *     occupation of blocks must be identical
 *
 *----------------------------------------------------------------------*
@@ -13,6 +13,7 @@
       include 'stdunit.h'
       include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_orbinf.h'
       include 'opdim.h'
       include 'ifc_memman.h'
@@ -22,10 +23,8 @@
 
       real(8), intent(in) ::
      &     fac
-      type(filinf), intent(inout) ::
-     &     ffin, ffout
-      type(operator), intent(in) ::
-     &     opin, opout
+      type(me_list), intent(in) ::
+     &     mel_in, mel_out
       type(orbinf), intent(in) ::
      &     orb_info
       integer, intent(in) ::
@@ -42,6 +41,10 @@
 
       integer, pointer ::
      &     occ_try(:,:,:)
+      type(filinf), pointer ::
+     &     ffin, ffout
+      type(operator), pointer ::
+     &     opin, opout
 
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:)
@@ -49,18 +52,25 @@
       logical, external ::
      &     iocc_equal_n, irestr_equal
 
+      ffin  => mel_in%fhand
+      ffout => mel_out%fhand
+      opin  => mel_in%op
+      opout => mel_out%op
+
       if (ntest.ge.100) then
         write(luout,*) '=========================='
         write(luout,*) ' add_opblk messing around'
         write(luout,*) '=========================='
         write(luout,*) ' fac = ',fac
+        write(luout,*) ' mel_in: ',trim(mel_in%label)
+        write(luout,*) ' opout: ',trim(mel_out%label)
         write(luout,*) ' ffin:  ',trim(ffin%name),
      &                   ' rec: ',ffin%current_record
         write(luout,*) ' ffout: ',trim(ffout%name),
      &                   ' rec: ',ffout%current_record
-        write(luout,*) ' opin: ',opin%name(1:len_trim(opin%name)),
+        write(luout,*) ' opin: ',trim(opin%name),
      &       '  block: ',iblkin
-        write(luout,*) ' opout: ',opout%name(1:len_trim(opout%name)),
+        write(luout,*) ' opout: ',trim(opout%name),
      &       '  block: ',iblkout
       end if
 
@@ -114,9 +124,9 @@ c        call quit(1,'add_opblk','occupations do not fit!')
 c        ! note: we must be able to handle this case in the future
 c      end if
 
-      len_op = opin%len_op_occ(iblkin)
+      len_op = mel_in%len_op_occ(iblkin)
       ! for the moment this must hold:
-      if (len_op.ne.opout%len_op_occ(iblkout))
+      if (len_op.ne.mel_out%len_op_occ(iblkout))
      &     call quit(1,'add_opblk','unexpected error')
 
       ! buffered data available?
@@ -153,8 +163,8 @@ c      end if
         end if
       end if
 
-      ioffin  = opin%off_op_occ(iblkin)
-      ioffout = opout%off_op_occ(iblkout)
+      ioffin  = mel_in%off_op_occ(iblkin)
+      ioffout = mel_out%off_op_occ(iblkout)
 
       if (.not.bufin.or..not.bufout) then
 

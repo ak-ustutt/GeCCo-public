@@ -6,7 +6,7 @@
      &     ncblk_opori,nablk_opori,
      &     cinfo_opori_c,cinfo_opori_a,
      &     lstr_opori,
-     &     opreo, iblk_opreo,
+     &     me_opreo, iblk_opreo,
      &     ncblk_opreo,nablk_opreo,
      &     cinfo_opreo_c,cinfo_opreo_a,
      &     ncblk_k,nablk_k,
@@ -36,6 +36,7 @@
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'ifc_memman.h'
 
       integer, parameter ::
@@ -69,8 +70,8 @@
      &     cinfo_opreo_c(ncblk_opori,3), cinfo_opreo_a(nablk_opori,3)
 
       ! info about strings with resolved occupations [I0], [K]
-      type(operator), intent(in) ::
-     &     opreo
+      type(me_list), intent(in) ::
+     &     me_opreo
       integer, intent(in) ::
      &     iblk_opreo,
      &     ncblk_k, nablk_k, ncblk_i0, nablk_i0,
@@ -136,6 +137,9 @@
 
       type(graph), pointer ::
      &     graphs(:)
+
+      type(operator), pointer ::
+     &     opreo
 c dbg
 c      logical ::
 c     &     first_element
@@ -149,10 +153,11 @@ c dbg
 
       graphs => str_info%g
       ngraph =  str_info%ngraph
+      opreo => me_opreo%op
 
-      idxst_opreo = opreo%off_op_occ(iblk_opreo)
-      ndis_opreo  => opreo%off_op_gmox(iblk_opreo)%ndis
-      d_gam_ms_opreo  => opreo%off_op_gmox(iblk_opreo)%d_gam_ms
+      idxst_opreo = me_opreo%off_op_occ(iblk_opreo)
+      ndis_opreo  => me_opreo%off_op_gmox(iblk_opreo)%ndis
+      d_gam_ms_opreo  => me_opreo%off_op_gmox(iblk_opreo)%d_gam_ms
 
       call sum_occ(ms_k_c_max,cinfo_k_c,ncblk_k)
       call sum_occ(ms_k_a_max,cinfo_k_a,nablk_k)
@@ -414,7 +419,7 @@ c dbg
      &                               gm_ip_dis_c,ncblk_opreo,
      &                 cinfo_opreo_a,idxms_ip_dis_a,
      &                               gm_ip_dis_a,nablk_opreo,
-     &                 .false.,opreo,nsym)
+     &                 .false.,me_opreo,nsym)
 c dbg
 c                  print *,'current target distr: ',idxdis
 c dbg

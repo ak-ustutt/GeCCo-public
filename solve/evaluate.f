@@ -1,21 +1,10 @@
 *----------------------------------------------------------------------*
       subroutine evaluate(
-     &     nop_out,idxop_out,
-     &     nop_in,idxop_in,
-     &     ffform_opt,
-     &     op_info,str_info,strmap_info,orb_info)
+     &     label_form,
+     &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
-*     just evaluate given formula
-*
-*     the formula file ffform_opt describes how to calculate 
-*     the matrix trial-vector products and the r.h.s.
-*
-*     nop_out               total number of updated operators returned
-*     idxop_out(1..nop_opt) indices of operators
-*     
-*     nop_in                number of operators that need be set on input
-*     idxop_in(nop_in)      indices of operators
+*     just evaluate given formula (must be factorized)
 *
 *     op_info:  operator definitions and files
 *     str_info: string information (to be passed to subroutines)
@@ -34,17 +23,19 @@
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'def_orbinf.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'mdef_formula_info.h'
+      include 'def_dependency_info.h'
       include 'ifc_memman.h'
 
       integer, parameter ::
      &     ntest = 00
 
-      integer, intent(in) ::
-     &     nop_in, nop_out,
-     &     idxop_in(nop_in),
-     &     idxop_out(nop_out)
-      type(filinf), intent(inout) ::
-     &     ffform_opt
+      character(*) ::
+     &     label_form
+      type(formula_info) ::
+     &     form_info
       type(operator_info) ::
      &     op_info
       type(strinf) ::
@@ -55,11 +46,20 @@
      &     orb_info
 
       integer ::
-     &     ifree, iop
-      real(8) ::
-     &     energy, xresnrm, xret(10*nop_out)
-      type(filinf) ::
-     &     ffdum
+     &     ifree, nout, iout, idx
+
+      type(formula), pointer ::
+     &     f_eval
+      type(formula_item) ::
+     &     fl_eval
+      type(dependency_info) ::
+     &     depend
+
+      real(8), pointer ::
+     &     xret(:)
+
+      integer, external ::
+     &     idx_formlist
 
       ifree = mem_setmark('evaluate')
 
@@ -67,38 +67,45 @@
         call write_title(luout,wst_dbg_subr,'entered evaluate')
       end if
 
-      ! assign files to output operators
-      do iop = 1, nop_out
+      idx = idx_formlist(label_form,form_info)
+      if (idx.le.0)
+     &     call quit(1,'evaluate',
+     &     'did not find formula '//trim(label_form))
+      f_eval => form_info%form_arr(idx)%form
 
-        ! standard names (ffdum is a dummy)
-        call assign_file_to_op(idxop_out(iop),.true.,ffdum,
-     &                         1,1,1,
-     &                         0,op_info)
+      ! read formula
+      call read_form_list(f_eval%fhand,fl_eval)
 
-      end do
+      ! set dependency info for submitted formula list
+      call set_formula_dependencies(depend,fl_eval,op_info)
+
+      nout = depend%ntargets
+      allocate(xret(nout))
 
       ! call the scheduler
-      call frm_sched(xret,ffform_opt,
+      call frm_sched(xret,fl_eval,depend,
      &               op_info,str_info,strmap_info,orb_info)
 
       if (iprlvl.ge.5) then
         call write_title(luout,wst_title,'norms of output operators')
-        do iop = 1, nop_out
-          write(luout,'(4x,i4," - ",g12.6)') iop, xret(iop)
+        do iout = 1, nout
+          write(luout,'(4x,i4," - ",g12.6)') iout, xret(iout)
         end do
       end if
 
       if (ntest.ge.1000) then
-        do iop = 1, nop_out
+        do iout = 1, nout
+          idx = depend%idxlist(iout)
           write(luout,*) 'dump of result for ',
-     &         trim(op_info%op_arr(idxop_out(iop))%op%name)
-          call wrt_op_file(luout,5,
-     &       op_info%opfil_arr(idxop_out(iop))%fhand,
-     &       op_info%op_arr(idxop_out(iop))%op,
-     &       1,op_info%op_arr(idxop_out(iop))%op%n_occ_cls,
+     &         trim(op_info%mel_arr(idx)%mel%label)
+          call wrt_mel_file(luout,5,
+     &       op_info%mel_arr(idx)%mel,
+     &       1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
      &       str_info,orb_info)
         end do
       end if
+
+      call clean_formula_dependencies(depend)
 
       ifree = mem_flushmark()
 

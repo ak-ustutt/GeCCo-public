@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine contr_op1op2(xfac,bc_sign,ffop1,ffop2,
-     &     update,ffop1op2,xret,type_xret,
-     &     op1,op2,op1op2,op1op2tmp,
+      subroutine contr_op1op2(xfac,bc_sign,
+     &     update,xret,type_xret,
+     &     me_op1,me_op2,me_op1op2,me_op1op2tmp,
      &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
@@ -25,6 +25,7 @@
       include 'stdunit.h'
       include 'ioparam.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
@@ -55,10 +56,8 @@
      &     irst_op1(*), irst_op2(*), irst_op1op2(*), irst_op1op2tmp(*),
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2
-      type(filinf), intent(in) ::
-     &     ffop1,ffop2,ffop1op2
-      type(operator), intent(in) ::
-     &     op1, op2, op1op2, op1op2tmp
+      type(me_list), intent(in) ::
+     &     me_op1, me_op2, me_op1op2, me_op1op2tmp
       type(strinf), intent(in) ::
      &     str_info
       type(strmapinf), intent(in) ::
@@ -70,24 +69,6 @@
 
       type(contraction_info) ::
      &     cnt_info
-c      integer ::
-c     &     nca_blk(2,7)
-c      integer, pointer ::
-c     &     cinfo_op1c(:,:),cinfo_op1a(:,:),
-c     &     cinfo_op2c(:,:),cinfo_op2a(:,:),
-c     &     cinfo_op1op2c(:,:),
-c     &     cinfo_op1op2a(:,:),
-c     &     cinfo_op1op2tmpc(:,:),
-c     &     cinfo_op1op2tmpa(:,:),
-c     &     cinfo_ex1c(:,:),cinfo_ex1a(:,:),
-c     &     cinfo_ex2c(:,:),cinfo_ex2a(:,:),
-c     &     cinfo_cntc(:,:),cinfo_cnta(:,:),
-c     &     map_info1c(:),
-c     &     map_info1a(:),
-c     &     map_info2c(:),
-c     &     map_info2a(:),
-c     &     map_info12c(:),
-c     &     map_info12a(:)
       
       real(8) ::
      &     cpu, sys, cpu0, sys0
@@ -95,27 +76,19 @@ c     &     map_info12a(:)
       call atim_cs(cpu0,sys0)
       select case (irt_contr)
       case(0)
-        call contr_op1op2_simple(xfac,ffop1,ffop2,
-     &     update,ffop1op2,xret,type_xret,
-     &     op1,op2,op1op2,
-     &     iblkop1,iblkop2,iblkop1op2,
-     &     idoffop1,idoffop2,idoffop1op2,
-     &     iocc_ex1,iocc_ex2,iocc_cnt,
-     &     irst_op1,irst_op2,irst_op1op2,
-     &     mstop1,mstop2,mstop1op2,
-     &     igamtop1,igamtop2,igamtop1op2,
-     &     str_info,orb_info)
+        call quit(1,'contr_op1op2','route 0 is obsolete')
       case(1)
-        call contr_op1op2_wmaps(xfac,ffop1,ffop2,
-     &     update,ffop1op2,xret,type_xret,
-     &     op1,op2,op1op2,
-     &     iblkop1,iblkop2,iblkop1op2,
-     &     idoffop1,idoffop2,idoffop1op2,
-     &     iocc_ex1,iocc_ex2,iocc_cnt,
-     &     irst_op1,irst_op2,irst_op1op2,
-     &     mstop1,mstop2,mstop1op2,
-     &     igamtop1,igamtop2,igamtop1op2,
-     &     str_info,strmap_info,orb_info)
+        call quit(1,'contr_op1op2','route 1 is obsolete')
+c        call contr_op1op2_wmaps(xfac,ffop1,ffop2,
+c     &     update,ffop1op2,xret,type_xret,
+c     &     op1,op2,op1op2,
+c     &     iblkop1,iblkop2,iblkop1op2,
+c     &     idoffop1,idoffop2,idoffop1op2,
+c     &     iocc_ex1,iocc_ex2,iocc_cnt,
+c     &     irst_op1,irst_op2,irst_op1op2,
+c     &     mstop1,mstop2,mstop1op2,
+c     &     igamtop1,igamtop2,igamtop1op2,
+c     &     str_info,strmap_info,orb_info)
       case(2,3)
         ! reform to "condensed" description of contraction
         call init_cnt_info(cnt_info,
@@ -123,6 +96,12 @@ c     &     map_info12a(:)
      &     iocc_cnt,njoined_cnt,
      &     iocc_op1op2,njoined_op1op2,iocc_op1op2tmp,njoined_op1op2)
 
+c dbg
+c        print *,'bef. call to condens'
+c        print *,'iblkop1op2,iblkop1op2tmp: ',iblkop1op2,iblkop1op2tmp
+c        print *,'iocc_op1op2:'
+c        call wrt_occ_n(6,iocc_op1op2,njoined_op1)
+c dbg
         call condense_bc_info(
      &       cnt_info,
      &       iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
@@ -131,9 +110,15 @@ c     &     map_info12a(:)
      &       merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &       njoined_op1, njoined_op2,njoined_op1op2, njoined_cnt,
      &       str_info,orb_info%ihpvgas,orb_info%ngas)
-        call contr_op1op2_wmaps_c(xfac,bc_sign,ffop1,ffop2,
-     &       update,ffop1op2,xret,type_xret,
-     &       op1,op2,op1op2,op1op2tmp,
+c dbg
+c        print *,'bef. call to contr'
+c        print *,'iblkop1op2,iblkop1op2tmp: ',iblkop1op2,iblkop1op2tmp
+c        print *,'iocc_op1op2:'
+c        call wrt_occ(6,iocc_op1op2)
+c dbg
+        call contr_op1op2_wmaps_c(xfac,bc_sign,
+     &       update,xret,type_xret,
+     &       me_op1,me_op2,me_op1op2,me_op1op2tmp,
      &       iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &       idoffop1,idoffop2,idoffop1op2,
      &       cnt_info,reo_info,

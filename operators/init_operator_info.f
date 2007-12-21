@@ -9,6 +9,8 @@
 
       ! no operators yet
       op_info%nops = 0
+      ! no ME-lists yet
+      op_info%nmels = 0
       ! initialize operator list
       allocate(op_info%op_list)
       nullify(op_info%op_list%op)
@@ -16,16 +18,15 @@
       nullify(op_info%op_list%next)
       ! initialize pointer array
       nullify(op_info%op_arr)
-      ! initialize operator file list
-      allocate(op_info%opfil_list)
-      nullify(op_info%opfil_list%fhand)
-      nullify(op_info%opfil_list%prev)
-      nullify(op_info%opfil_list%next)
+      ! initialize ME-list
+      allocate(op_info%mel_list)
+      nullify(op_info%mel_list%mel)
+      nullify(op_info%mel_list%prev)
+      nullify(op_info%mel_list%next)
       ! initialize pointer array
-      nullify(op_info%opfil_arr)
-      ! initialize ID-counter
-      op_info%id_cnt = 0
-      nullify(op_info%idx2id)
+      nullify(op_info%mel_arr)
+      ! initialize op -> list lookup table
+      nullify(op_info%op2list)
 
       return
       end

@@ -58,7 +58,10 @@
 
       maxbuffer = 0
 
-      ngraph = str_info%ngraph
+      ngraph = strmap_info%mxgraph
+      if (ngraph.lt.str_info%ngraph)
+     &     call quit(1,'strmap_man_c',
+     &     'you forgot to update the maps after adding a new graph')
       idx_strmap => strmap_info%idx_strmap
 
       if (strmap_info%ffstrmap%unit.le.0)

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_hop(op,name,dagger,absym,casym,gamma,s2,ms,
+      subroutine set_hop(op,name,dagger,
      &     min_rank,max_rank,iformal,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_genop
@@ -21,7 +21,6 @@
       logical, intent(in) ::
      &     dagger
       integer, intent(in) ::
-     &     absym, casym, gamma, s2, ms,
      &     min_rank, max_rank, iformal
 
       type(orbinf) ::
@@ -34,7 +33,7 @@
       call set_hpvx_and_restr_for_hop()
 
       call set_genop(op,name,optyp_operator,
-     &     dagger,absym,casym,gamma,s2,ms,
+     &     dagger,
      &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,orb_info)
 
       return

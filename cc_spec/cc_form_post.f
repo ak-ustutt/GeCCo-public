@@ -77,11 +77,11 @@ c        if (fpl_pnt%item%command.eq.4) then
 c          call prt_contr2(luout,fpl_pnt%item%contr,op_info)
 c        end if
 c dbg
-        if(explicit)then
-          call r12_count_terms(fpl_pnt,idxtop,n_commu,op_info%op_arr)
-        else  
+c        if(explicit)then
+c          call r12_count_terms(fpl_pnt,idxtop,n_commu,op_info%op_arr)
+c        else  
           call cc_count_terms(fpl_pnt,idxtop,n_commu)
-        endif  
+c        endif  
 
         do while(associated(fpl_pnt%next))
           fpl_pnt => fpl_pnt%next

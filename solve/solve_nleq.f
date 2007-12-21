@@ -1,28 +1,21 @@
 *----------------------------------------------------------------------*
       subroutine solve_nleq(
-     &     nop_opt,nop_out,idxop_out,
-     &     nop_in,idxop_in,
-     &     ffform_opt,
-     &     op_info,str_info,strmap_info,orb_info)
+     &     nopt,label_opt,label_res,label_prc,label_en,
+     &     label_form,
+     &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
 *     solve non-linear equations
 *
-*     the formula file ffform_opt describes how to calculate 
+*     the formula with label "label_form" describes how to calculate 
 *     energy and residual
 *
-*     nop_opt               number of operators to be optimized
-*     nop_out               total number of modified operators returned
-*     idxop_out(1..nop_opt) indices of those operators in ops(nops)
-*     idxop_out(nop_opt+1,..)   residuals
-*     idxop_out(2*nop_opt+1,...) other operators updated/modified
-*                           energy, intermediates for reuse
+*     nopt               number of operators to be simultaneously optimized
+*     label_opt(1..nop_opt) labels of those operators
+*     label_opt(1..nop_opt) labels of preconditioners
+*     label_res(nop_opt+1,..)   residuals
+*     label_en                  energy
 *     
-*     nop_in                number of operators that need be set on input
-*     idxop_in(nop_in)      indices of those operators in ops(nops)
-*                           the first nop_out entries define the
-*                           preconditioners
-*
 *     op_info:  operator definitions and files
 *     str_info: string information (to be passed to subroutines)
 *     orb_info: orbital space information (to be passed)
@@ -39,14 +32,23 @@
       include 'def_orbinf.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'def_file_array.h'
+      include 'mdef_formula_info.h'
+      include 'def_dependency_info.h'
       include 'ifc_memman.h'
 
       integer, intent(in) ::
-     &     nop_in, nop_out, nop_opt,
-     &     idxop_in(nop_in), 
-     &     idxop_out(nop_out)
-      type(filinf), intent(inout) ::
-     &     ffform_opt
+     &     nopt
+      character(*), intent(in) ::
+     &     label_opt(nopt),
+     &     label_res(nopt),
+     &     label_prc(nopt),
+     &     label_en,
+     &     label_form
+      type(formula_info) ::
+     &     form_info
       type(operator_info) ::
      &     op_info
       type(strinf) ::
@@ -58,12 +60,19 @@
 
       logical ::
      &     conv
+      character(len_opname) ::
+     &     label
       integer ::
-     &     imacit, imicit, imicit_tot, iprint, task, ifree, iop, nintm
+     &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
+     &     idx, idxmel, ierr, nout, idx_en_xret, idx_res_xret(nopt)
       real(8) ::
-     &     energy, xresnrm(nop_opt), xret(10)
-      type(operator_array), pointer ::
-     &     op_opt(:), op_grd(:)
+     &     energy, xresnrm(nopt)
+      real(8), pointer ::
+     &     xret(:)
+      type(dependency_info) ::
+     &     depend
+      type(me_list_array), pointer ::
+     &     me_opt(:)
       type(file_array), pointer ::
      &     ffopt(:), ffgrd(:), ffdia(:),
      &     ff_trv(:), ff_h_trv(:)   ! not yet needed
@@ -71,55 +80,122 @@
      &     opti_info
       type(optimize_status) ::
      &     opti_stat
+      type(formula), pointer ::
+     &     form_en_res
+      type(formula_item) ::
+     &     fl_en_res
+
+      integer, external ::
+     &     idx_formlist, idx_mel_list, idx_xret
 
       ifree = mem_setmark('solve_nleq')
 
-      ! number of permanent intermediates generated:
-      nintm = nop_out - nop_opt*2
+      if (iprlvl.ge.5) then
+        write(luout,*) 'formula: ',trim(label_form)
+        if (nopt.gt.1)
+     &       write(luout,*) 'solving for ',nopt,
+     &       ' operators simultaneously'
+        write(luout,*)   'solving for: ',trim(label_opt(1))
+        do iopt = 2, nopt
+          write(luout,*) '             ',trim(label_opt(iopt))
+        end do
+c dbg
+        print *,'preconditioner: ',trim(label_prc(1))
+c dbg
+c dbg
+      call print_op_info(luout,'op',op_info)
+      call print_op_info(luout,'mel',op_info)
+c dbg
+      end if
 
-      do iop = 1, nintm
-        call assign_file_to_op(idxop_out(nop_opt*2+iop),
-     &                                             .true.,ffopt(iop),
-     &                         1,1,1,
-     &                         0,op_info)
+      idx = idx_formlist(label_form,form_info)
+      if (idx.le.0)
+     &     call quit(1,'solve_nleq',
+     &     'did not find formula '//trim(label_form))
+      form_en_res => form_info%form_arr(idx)%form
+
+      allocate(ffopt(nopt),ffdia(nopt),ffgrd(nopt),me_opt(nopt))
+      do iopt = 1, nopt
+        jopt = iopt
+        idxmel = idx_mel_list(label_opt(iopt),op_info)
+        ierr = 1
+        if (idxmel.le.0) exit
+        me_opt(iopt)%mel =>  op_info%mel_arr(idxmel)%mel
+        ffopt(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+        ierr = 2
+        if (.not.associated(ffopt(iopt)%fhand)) exit
+        idxmel = idx_mel_list(label_res(iopt),op_info)
+        ierr = 3
+        if (idxmel.le.0) exit
+        ffgrd(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+        ierr = 4
+        if (.not.associated(ffgrd(iopt)%fhand)) exit
+        idxmel = idx_mel_list(label_prc(iopt),op_info)
+        ierr = 5
+        if (idxmel.le.0) exit
+        ffdia(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+c dbg
+        print *,'ffdia is still: ',trim(ffdia(iopt)%fhand%name)
+c dbg
+        ierr = 6
+        if (.not.associated(ffdia(iopt)%fhand)) exit
+        ierr = 0
       end do
 
-      allocate(ffopt(nop_opt),ffdia(nop_opt),
-     &     ffgrd(nop_opt),op_opt(nop_opt),op_grd(nop_opt))
-      do iop = 1, nop_opt
-        call assign_file_to_op(idxop_out(iop),.true.,ffopt(iop),!<-dummy 
-     &                         1,1,1,
-     &                         0,op_info)
-        ffopt(iop)%fhand => op_info%opfil_arr(idxop_out(iop))%fhand
-        call assign_file_to_op(idxop_out(iop+nop_opt),.true.,ffgrd(iop),!<-dummy
-     &                         1,1,1,
-     &                         0,op_info)
-        ffgrd(iop)%fhand =>
-     &              op_info%opfil_arr(idxop_out(iop+nop_opt))%fhand
-        op_grd(iop)%op   => op_info%op_arr(idxop_out(iop+nop_opt))%op
-        op_opt(iop)%op   => op_info%op_arr(idxop_out(iop))%op
-        ffdia(iop)%fhand => op_info%opfil_arr(idxop_in(iop))%fhand
-      end do
+      ! error handling
+      if (ierr.gt.0) then
+        if (ierr.eq.1.or.ierr.eq.2) label = label_opt(jopt)
+        if (ierr.eq.3.or.ierr.eq.4) label = label_res(jopt)
+        if (ierr.eq.5.or.ierr.eq.6) label = label_prc(jopt)
+        if (mod(ierr,2).eq.1)
+     &       call quit(1,'solve_nleq',
+     &       'did not find list '//trim(label))
+        if (mod(ierr,2).eq.0)
+     &       call quit(1,'solve_nleq',
+     &       'no file associated to list '//trim(label))
+      end if
 
       ! for savety reasons, we allocate the two guys
       allocate(ff_trv(1),ff_h_trv(1))
 
-      do iop = 1, nop_opt
+      do iopt = 1, nopt
         ! open result vector file(s)
-        call file_open(ffopt(iop)%fhand)
+        call file_open(ffopt(iopt)%fhand)
         ! open corresponding residuals ...
-        call file_open(ffgrd(iop)%fhand)
+        call file_open(ffgrd(iopt)%fhand)
         ! ... and corresponding preconditioner(s)
-        if (ffdia(iop)%fhand%unit.le.0)
-     &       call file_open(ffdia(iop)%fhand)
+        if (ffdia(iopt)%fhand%unit.le.0)
+     &       call file_open(ffdia(iopt)%fhand)
       end do
       
       ! get initial amplitudes
-      do iop = 1, nop_opt
-        call zeroop(ffopt(iop)%fhand,op_opt(iop)%op)
+      do iopt = 1, nopt
+        call zeroop(me_opt(iopt)%mel)
       end do
 
-      call set_opti_info(opti_info,1,nop_opt,1,op_opt)
+      call set_opti_info(opti_info,1,nopt,1,me_opt)
+
+      ! read formula
+      call read_form_list(form_en_res%fhand,fl_en_res)
+
+      ! set dependency info for submitted formula list
+      call set_formula_dependencies(depend,fl_en_res,op_info)
+
+      ! number of info values returned on xret
+      nout = depend%ntargets
+      allocate(xret(nout))
+
+      ! find out, which entries of xret are the ones that we need
+      idx_en_xret = idx_xret(label_en,op_info,depend)
+      if (idx_en_xret.le.0)
+     &     call quit(1,'solve_nleq',
+     &     'formula does not provide an update for the energy')
+      do iopt = 1, nopt
+        idx_res_xret(iopt) = idx_xret(label_res(iopt),op_info,depend)
+        if (idx_res_xret(iopt).le.0)
+     &       call quit(1,'solve_nleq',
+     &       'formula does not provide an update for all residuals')
+      end do
 
       ! start optimization loop
       imacit = 0
@@ -128,6 +204,9 @@
       task = 0
       opt_loop: do while(task.lt.8)
 
+c dbg
+      print *,'bef. optc: ',trim(ffdia(1)%fhand%name)
+c dbg
         call optcont
      &       (imacit,imicit,imicit_tot,
      &       task,conv,
@@ -135,29 +214,46 @@
      &       ffopt,ffgrd,ffdia,
      &       ff_trv,ff_h_trv,
      &       opti_info,opti_stat)
+
+        ! here?
+        do iopt = 1, nopt
+          call touch_file_rec(ffopt(iopt)%fhand)
+        end do
+
         ! 1 - get energy
         ! 2 - get residual
         if (iand(task,1).eq.1.or.iand(task,2).eq.2) then
-          call frm_sched(xret,ffform_opt,
+          call frm_sched(xret,fl_en_res,depend,
      &         op_info,str_info,strmap_info,orb_info)
           ! intermediates should be generated first, energy
           ! is expected to be the last "intermediate"
-          energy =  xret(nintm)
-          xresnrm(1:nop_opt) = xret(nintm+1:nintm+nop_opt)
-c          if (nopt.eq.2) xres2nrm = xret(nintm+2)
+          energy =  xret(idx_en_xret)
+          do iopt = 1, nopt
+            xresnrm(iopt) = xret(idx_res_xret(iopt))
+          end do
         end if
 
-        if (nop_opt.eq.1)
+        if (.not.conv.and.task.lt.8) then
+          if (nopt.eq.1)
      &       write(luout,'(">>>",i3,f24.12,x,g10.4)')
      &       imacit,energy,xresnrm(1)
-        if (nop_opt.eq.2)
+          if (nopt.eq.2)
      &       write(luout,'(">>>",i3,f24.12,2(x,g10.4))')
      &       imacit,energy,xresnrm(1:2)
+        else if (.not.conv) then
+          write(luout,'(">>> NOT CONVERGED! <<<")')
+        else
+          write(luout,'(">>> final energy:",f24.12," <<<")')
+     &       energy
+        end if
 
       end do opt_loop
 
+      call clean_formula_dependencies(depend)
+
+      deallocate(ffopt,ffdia,ffgrd,me_opt,ff_trv,ff_h_trv,xret)
       ifree = mem_flushmark()
-      deallocate(ffopt,ffdia,ffgrd,op_opt,op_grd,ff_trv,ff_h_trv)
+
       return
       end
 

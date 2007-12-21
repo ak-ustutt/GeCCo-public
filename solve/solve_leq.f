@@ -1,32 +1,30 @@
 *----------------------------------------------------------------------*
       subroutine solve_leq(
-     &     nop_opt,nroots,nop_out,idxop_out,
-     &     nop_in,idxop_in,
-     &     ffform_opt,
-     &     op_info,str_info,strmap_info,orb_info)
+     &     nopt,nroots,label_opt,label_prc,label_op_mvp,label_op_rhs,
+     &     label_form,
+     &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
 *     solve linear equations  Mx = -g
 *
-*     the formula file ffform_opt describes how to calculate 
+*     the formula with label "label_form" describes how to calculate 
 *     the matrix trial-vector products and the r.h.s.
 *
-*     nop_opt               number of x operators to be solved for
+*     nopt                  number of x operators to be solved for
 *                           in case of coupled equations
 *     nroots                number of roots per x operator
-*     nop_out               total number of updated operators returned
-*     idxop_out(1..nop_opt) indices of those operators in ops(nops)
-*     idxop_out(nop_opt+1,..)   residuals
-*     idxop_out(2*nop_opt+1,...) other operators updated/modified
-*                           energy, intermediates for reuse
-*     
-*     nop_in                number of operators that need be set on input
-*     idxop_in(nop_in)      indices of those operators in ops(nops)
-*                           the first nop_out entries define the
-*                           preconditioners
 *
-*     op_info:  operator definitions and files
+*     label_opt(nopt)       label of solution vectors
+*     label_prc(nopt)       label of preconditioners
+*     label_op_mvp(nopt)    label operators describing Mx-products
+*     label_op_rhs(nopt)    label of r.h.s. operators (g)
+*
+*     the latter two are used to initilize temporary ME-lists
+*
+*     op_info:   operator/ME-list definitions
+*     form_info: formula definitions
 *     str_info: string information (to be passed to subroutines)
+*     strmap_info: string mappings (to be passed to subroutines)
 *     orb_info: orbital space information (to be passed)
 *
 *----------------------------------------------------------------------*
@@ -42,17 +40,26 @@
       include 'def_orbinf.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'def_file_array.h'
+      include 'mdef_formula_info.h'
+      include 'def_dependency_info.h'
       include 'ifc_memman.h'
 
       integer, parameter ::
      &     ntest = 100
 
       integer, intent(in) ::
-     &     nop_in, nop_out, nop_opt, nroots,
-     &     idxop_in(nop_in), 
-     &     idxop_out(nop_out)
-      type(filinf), intent(inout) ::
-     &     ffform_opt
+     &     nopt, nroots
+      character(*), intent(in) ::
+     &     label_opt(nopt),
+     &     label_prc(nopt),
+     &     label_op_mvp(nopt),
+     &     label_op_rhs(nopt),
+     &     label_form
+      type(formula_info) ::
+     &     form_info
       type(operator_info) ::
      &     op_info
       type(strinf) ::
@@ -64,110 +71,170 @@
 
       logical ::
      &     conv
+      character(len_opname) ::
+     &     label
       integer ::
-     &     iter, iprint, task, ifree, iop, nintm, irequest,
-     &     nrequest, nvectors, iroot
+     &     iter, iprint, task, ifree, iopt, jopt, nintm, irequest,
+     &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout
       real(8) ::
-     &     energy, xresnrm, xret(10)
-      type(operator_array), pointer ::
-     &     op_opt(:)
+     &     energy, xresnrm
+      type(me_list_array), pointer ::
+     &     me_opt(:), me_trv(:), me_mvp(:), me_rhs(:)
       type(file_array), pointer ::
      &     ffdia(:), ff_rhs(:), ff_trv(:),
      &     ffopt(:), ff_mvp(:)
+      type(dependency_info) ::
+     &     depend
       type(optimize_info) ::
      &     opti_info
       type(optimize_status) ::
      &     opti_stat
+      type(formula), pointer ::
+     &     form_rhs_mvp
+      type(formula_item) ::
+     &     fl_rhs_mvp
+
+      integer, external ::
+     &     idx_formlist, idx_mel_list, idx_xret
+
       integer, pointer ::
      &     irecmvp(:), irectrv(:)
+      real(8), pointer ::
+     &      xret(:)
 
       character ::
      &     fname*256
 
-      ifree = mem_setmark('solve_nleq')
+      ifree = mem_setmark('solve_leq')
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'entered solve_leq')
-        write(luout,*) 'nop_opt = ',nop_opt
-        write(luout,*) 'nroots  = ',nroots
+        write(luout,*) 'nopt   = ',nopt
+        write(luout,*) 'nroots = ',nroots
       end if
 
-      if (nop_opt.gt.1)
+      if (nopt.gt.1)
      &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
 
-      allocate(op_opt(nop_opt))
-      do iop = 1, nop_opt
+      idx = idx_formlist(label_form,form_info)
+      if (idx.le.0)
+     &     call quit(1,'solve_leq',
+     &     'did not find formula '//trim(label_form))
+      form_rhs_mvp => form_info%form_arr(idx)%form
+
+
+      allocate(me_opt(nopt),me_rhs(nopt),me_trv(nopt),me_mvp(nopt))
+      allocate(ffopt(nopt),ffdia(nopt),
+     &     ff_trv(nopt),ff_mvp(nopt),ff_rhs(nopt))
+      do iopt = 1, nopt
         ! pointer array for operators:
-        op_opt(iop)%op   => op_info%op_arr(idxop_out(iop))%op
+        ierr = 1
+        jopt = iopt
+        idxmel = idx_mel_list(label_opt(iopt),op_info)
+        if (idxmel.le.0) exit
+        ierr = 2
+        me_opt(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+        ffopt(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+        if (.not.associated(ffopt(iopt)%fhand)) exit
+        ierr = 3
+        jopt = iopt
+        idxmel = idx_mel_list(label_prc(iopt),op_info)
+        if (idxmel.le.0) exit
+        ierr = 4
+        ffdia(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+        if (.not.associated(ffdia(iopt)%fhand)) exit
+        ierr = 0
       end do
 
-      call set_opti_info(opti_info,2,nop_opt,nroots,op_opt)
+      ! error handling
+      if (ierr.gt.0) then
+        if (ierr.eq.1.or.ierr.eq.2) label = label_opt(jopt)
+        if (ierr.eq.3.or.ierr.eq.4) label = label_prc(jopt)
+        if (mod(ierr,2).eq.1)
+     &       call quit(1,'solve_leq',
+     &       'did not find list '//trim(label))
+        if (mod(ierr,2).eq.0)
+     &       call quit(1,'solve_leq',
+     &       'no file associated to list '//trim(label))
+      end if
 
-      ! number of permanent intermediates generated:
-      nintm = nop_out - nop_opt*3
-
-      allocate(ff_trv(nop_opt),ff_mvp(nop_opt),ffdia(nop_opt),
-     &     ff_rhs(nop_opt),ffopt(nop_opt))
+      call set_opti_info(opti_info,2,nopt,nroots,me_opt)
 
       nvectors = opti_info%maxsbsp
 
-      do iop = 1, nop_opt
-        ! file for result vectors
-        allocate(ffopt(iop)%fhand)
-c        write(fname,'("res_",i3.3,".da")') iop
-        fname = 'op_'//trim(op_opt(iop)%op%name)//'_elements.da'
-        call file_init(ffopt(iop)%fhand,fname,ftyp_da_unf,lblk_da)
-        ! assign trial-vectors to result operator
-        allocate(ff_trv(iop)%fhand)
-        write(fname,'("trv_",i3.3,".da")') iop
-        call file_init(ff_trv(iop)%fhand,fname,ftyp_da_unf,lblk_da)
-        call assign_file_to_op(idxop_out(iop),.false.,ff_trv(iop)%fhand,
-     &                         1,1,nvectors,
-     &                         0,op_info)
-        ! assign matrix-vector products to transformation
-        allocate(ff_mvp(iop)%fhand)
-        write(fname,'("mvp_",i3.3,".da")') iop
-        call file_init(ff_mvp(iop)%fhand,fname,ftyp_da_unf,lblk_da)
-        call assign_file_to_op(idxop_out(nop_opt+iop),
-     &                                        .false.,ff_mvp(iop)%fhand,
-     &                         1,1,nvectors,
-     &                         0,op_info)
+      do iopt = 1, nopt
+        ! get a ME-list for trial-vectors
+        write(fname,'("trv_",i3.3)') iopt
+        call define_me_list(fname,me_opt(iopt)%mel%op%name,
+     &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
+     &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
+     &       me_opt(iopt)%mel%mst,
+     &       1,nvectors,
+     &       op_info,orb_info,str_info,strmap_info)
+        idxmel = idx_mel_list(fname,op_info)
+        me_trv(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+        ff_trv(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
 
-        ! standard name for r.h.s.
-        call assign_file_to_op(idxop_out(iop+2*nop_opt),.true.,
-     &                                                  ff_rhs(iop),
-     &                         1,1,nroots,
-     &                         0,op_info)
-        ff_rhs(iop)%fhand =>
-     &              op_info%opfil_arr(idxop_out(iop+2*nop_opt))%fhand
-        ! diagonal exists already
-        ffdia(iop)%fhand => op_info%opfil_arr(idxop_in(iop))%fhand
+        ! get a ME list for matrix-vector products
+        ! (have same symmtry properties as result!)
+        write(fname,'("mvp_",i3.3)') iopt
+        call define_me_list(fname,label_op_mvp,
+     &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
+     &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
+     &       me_opt(iopt)%mel%mst,
+     &       1,nvectors,
+     &       op_info,orb_info,str_info,strmap_info)
+        idxmel = idx_mel_list(fname,op_info)
+        me_mvp(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+        ff_mvp(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+
+        ! get a ME list for RHS
+        write(fname,'("rhs_",i3.3)') iopt
+        call define_me_list(fname,label_op_rhs,
+     &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
+     &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
+     &       me_opt(iopt)%mel%mst,
+     &       1,nvectors,
+     &       op_info,orb_info,str_info,strmap_info)
+        idxmel = idx_mel_list(fname,op_info)
+        me_rhs(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+        ff_rhs(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
 
       end do
 
-      ! records with trial vectors and Mv-products, requested by leq_control:
+      ! read formula
+      call read_form_list(form_rhs_mvp%fhand,fl_rhs_mvp)
+
+      ! set dependency info for submitted formula list
+      call set_formula_dependencies(depend,fl_rhs_mvp,op_info)
+
+      ! number of info values returned on xret
+      nout = depend%ntargets
+      allocate(xret(nout))
+
+      ! records with trial vectors and Mv-products, needed in leq_control:
       ifree = mem_alloc_int(irectrv,nroots,'rectrv')
       ifree = mem_alloc_int(irecmvp,nroots,'recmvp')
 
-      do iop = 1, nop_opt
+      do iopt = 1, nopt
         ! open result vector file(s)
-        call file_open(ff_trv(iop)%fhand)
-        call file_open(ffopt(iop)%fhand)
+        call file_open(ffopt(iopt)%fhand)
+        call file_open(ff_trv(iopt)%fhand)
         ! open corresponding matrix vector products ...
-        call file_open(ff_mvp(iop)%fhand)
+        call file_open(ff_mvp(iopt)%fhand)
         ! right hand sides ...
-        call file_open(ff_rhs(iop)%fhand)
+        call file_open(ff_rhs(iopt)%fhand)
         ! ... and corresponding preconditioner(s)
-        if (ffdia(iop)%fhand%unit.le.0)
-     &       call file_open(ffdia(iop)%fhand)
+        if (ffdia(iopt)%fhand%unit.le.0)
+     &       call file_open(ffdia(iopt)%fhand)
       end do
 
       ! get initial amplitudes
-      do iop = 1, nop_opt
+      do iopt = 1, nopt
         do iroot = 1, nroots
           
-          call switch_opfile_record(idxop_out(iop),iroot,op_info)
-          call zeroop(ff_trv(iop)%fhand,op_opt(iop)%op)
+          call switch_mel_record(me_trv(iopt)%mel,iroot)
+          call zeroop(me_trv(iopt)%mel)
 
         end do
       end do
@@ -187,7 +254,7 @@ c        write(fname,'("res_",i3.3,".da")') iop
         if (iter.gt.1)
      &       write(luout,'(">>>",i3,24x,x,g10.4)')iter-1,xresnrm
 c dbg
-        print *,'>>> resnorm = ',xresnrm
+        if(iter.gt.1)print *,'>>> resnorm = ',xresnrm
 c dbg
 
         ! 4 - get residual
@@ -195,65 +262,40 @@ c dbg
           ! preliminary solution: 
           !   outside loop over requested Mv-products
           do irequest = 1, nrequest
-            do iop = 1, nop_opt
-              call switch_opfile_record(idxop_out(iop        ),
-     &             irectrv(irequest),op_info)
-              call switch_opfile_record(idxop_out(iop+nop_opt),
-     &             irecmvp(irequest),op_info)
+            do iopt = 1, nopt
+              call switch_mel_record(me_trv(iopt)%mel,irectrv(irequest))
+              call switch_mel_record(me_mvp(iopt)%mel,irecmvp(irequest))
+              ! here?
+              call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
-c dbg
-c            call write_title(luout,wst_dbg_subr,'INPUT VECTOR:')
-c            call wrt_op_file(luout,4,ff_trv(1)%fhand,
-c     &             op_info%op_arr(idxop_out(1))%op,
-c     &          1,op_info%op_arr(idxop_out(1))%op%n_occ_cls,
-c     &             str_info,orb_info)
-c
-c dbg
-            call frm_sched(xret,ffform_opt,
+
+            call frm_sched(xret,fl_rhs_mvp,depend,
      &           op_info,str_info,strmap_info,orb_info)
-c dbg
-c            if (iter.eq.1) then
-c              call write_title(luout,wst_dbg_subr,'RHS:')
-c              call wrt_op_file(luout,4,ff_rhs(1)%fhand,
-c     &             op_info%op_arr(idxop_out(1+2*nop_opt))%op,
-c     &          1,op_info%op_arr(idxop_out(1+2*nop_opt))%op%n_occ_cls,
-c     &             str_info,orb_info)
-c            else
-c              call write_title(luout,wst_dbg_subr,'MVP:')
-c              call wrt_op_file(luout,4,ff_mvp(1)%fhand,
-c     &             op_info%op_arr(idxop_out(1+nop_opt))%op,
-c     &          1,op_info%op_arr(idxop_out(1+nop_opt))%op%n_occ_cls,
-c     &             str_info,orb_info)
-c            end if
-c dbg
+
           end do
         end if
 
       end do opt_loop
 
-      do iop = 1, nop_opt
-        ! un-assign files
-        call detach_file_from_op(idxop_out(iop),.false.,op_info)
-        call detach_file_from_op(idxop_out(iop+nop_opt),.false.,op_info)
-        call file_close_delete(ff_trv(iop)%fhand)
-        call file_close_delete(ff_mvp(iop)%fhand)
-        deallocate(ff_trv(iop)%fhand)
-        deallocate(ff_mvp(iop)%fhand)
-        ! re-assign result
-        call assign_file_to_op(idxop_out(iop),.false.,ffopt(iop)%fhand,
-     &                         1,1,nvectors,
-     &                         0,op_info)
-c dbg
-c              call write_title(luout,wst_dbg_subr,'final:')
-c              call wrt_op_file(luout,4,ffopt(iop)%fhand,
-c     &             op_info%op_arr(idxop_out(iop))%op,
-c     &          1,op_info%op_arr(idxop_out(iop))%op%n_occ_cls,
-c     &             str_info,orb_info)
-c dbg
+      do iopt = 1, nopt
+
+        ! remove the temporary lists
+        call del_me_list(me_trv(iopt)%mel%label,op_info)
+        call del_me_list(me_mvp(iopt)%mel%label,op_info)
+        call del_me_list(me_rhs(iopt)%mel%label,op_info)
+
+        ! make sure that the operator is now associated with
+        ! the list containing the solution vector
+        call assign_me_list(label_opt(iopt),
+     &                      me_opt(iopt)%mel%op%name,op_info)
+
       end do
+
+
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
-      deallocate(ff_trv,ff_rhs,ffdia,ff_mvp,ffopt,op_opt)
+      deallocate(me_opt,me_trv,me_rhs,me_mvp)
+      deallocate(ff_trv,ff_rhs,ff_mvp,ffdia,ffopt,xret)
 
       ifree = mem_flushmark()
 

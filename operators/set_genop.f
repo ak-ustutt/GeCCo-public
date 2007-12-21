@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_genop(op,name,type,
-     &     dagger,absym,casym,gamma,s2,ms,
+     &     dagger,
      &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
      &     orb_info)
 *----------------------------------------------------------------------*
@@ -36,7 +36,7 @@
       logical, intent(in) ::
      &     dagger
       integer, intent(in) ::
-     &     type, absym, casym, gamma, s2, ms,
+     &     type, 
      &     min_rank, max_rank, ncadiff, iformal
       type(orbinf), intent(in), target ::
      &     orb_info
@@ -100,17 +100,7 @@
       op%njoined = 1  ! always for operators and densities
 
       op%dagger = dagger
-      op%casym = casym
-      op%absym = absym
 
-      if (absym.ne.0) call quit(1,'set_genop','adapt for absym.ne.0')
-      if (casym.ne.0) call quit(1,'set_genop','adapt for casym.ne.0')
-
-      ! set info, some consistency checks would be appropriate as
-      ! soon as we seriously use that info
-      op%gamt = gamma
-      op%s2 =   s2
-      op%mst =  ms 
       op%formal=.true.
 
       ! pass 1: count classes
@@ -119,7 +109,7 @@
         
         ! second round: allocate and setup offsets
         if (ipass.eq.2) then
-          call init_operator(0,op,orb_info)
+          call init_operator(op,orb_info)
           ! counters according to number of external indices (R12)
           ! to sort operators in the way:
           ! 1st: all operators with no X index (conventional)
@@ -265,11 +255,17 @@ c very quick fix:
               end if
             end do
           end if
+c dbg
+          print *,'formal:',op%formal_blk(1:op%n_occ_cls)
+c dbg          
           do iocc = 1, op%n_occ_cls
-            write(luout,'(/x,a,i4)') 'Occupation Nr. ',iocc
-            call wrt_occ(luout,op%ihpvca_occ(1,1,iocc))
-            write(luout,'(/4x,6(2x,i2,x))') hpvxprint(1:ngas)
-            call wrt_rstr(luout,op%igasca_restr(1,1,1,1,iocc),ngas)
+            call wrt_occ_rstr(luout,iocc,
+     &           op%ihpvca_occ(1,1,iocc),
+     &           op%igasca_restr(1,1,1,1,iocc),ngas)
+c            write(luout,'(/x,a,i4)') 'Occupation Nr. ',iocc
+c            call wrt_occ(luout,op%ihpvca_occ(1,1,iocc))
+c            write(luout,'(/4x,6(2x,i2,x))') hpvxprint(1:ngas)
+c            call wrt_rstr(luout,op%igasca_restr(1,1,1,1,iocc),ngas)
           end do
         end if
   

@@ -14,8 +14,8 @@
       integer, parameter ::
      &     ntest = 00
 
-      character, intent(in) ::
-     &     formname*(*)
+      character(*), intent(in) ::
+     &     formname
       type(formula_info), intent(in) ::
      &     form_info
 

@@ -1,20 +1,19 @@
 *------------------------------------------------------------------------*
-      real(8) function xnormop(ffop,op)
+      real(8) function xnormop(mel)
 *------------------------------------------------------------------------*
-*     get norm of operator
+*     get norm of ME-list
 *------------------------------------------------------------------------*
       implicit none
 
       include 'opdim.h'
       include 'stdunit.h'
-      include 'def_operator.h'
       include 'def_filinf.h'
+      include 'def_operator.h'
+      include 'def_me_list.h'
       include 'ifc_memman.h'
 
-      type(operator), intent(in) ::
-     &     op
-      type(filinf), intent(inout) ::
-     &     ffop
+      type(me_list), intent(in) ::
+     &     mel
 
       logical ::
      &     closeit
@@ -24,11 +23,18 @@
       real(8) ::
      &     xnrm2
 
+      type(operator), pointer ::
+     &     op
+      type(filinf), pointer ::
+     &     ffop
       real(8), pointer ::
      &     buffer(:)
 
       real(8), external ::
      &     ddot
+
+      op => mel%op
+      ffop => mel%fhand
 
       ifree = mem_setmark('xnormop')
 
@@ -47,12 +53,12 @@
         do iblk = 1, op%n_occ_cls
           if (ffop%incore(iblk)) then
             xnrm2 = xnrm2 +
-     &           ddot(op%len_op_occ(iblk),
-     &           ffop%buffer(op%off_op_occ(iblk)+1),1,
-     &           ffop%buffer(op%off_op_occ(iblk)+1),1)
+     &           ddot(mel%len_op_occ(iblk),
+     &           ffop%buffer(mel%off_op_occ(iblk)+1),1,
+     &           ffop%buffer(mel%off_op_occ(iblk)+1),1)
           else
             ! start reading file from here
-            idxst = op%off_op_occ(iblk)+1
+            idxst = mel%off_op_occ(iblk)+1
             exit
           end if
         end do
@@ -65,7 +71,7 @@
         call quit(1,'xnormop','not even 1 record fits into memory?')
       end if
 
-      len_op = op%len_op
+      len_op = mel%len_op
       nblk = min((len_op-1)/ffop%reclen + 1,nblkmax)
 
       nbuff = min(len_op,nblk*ffop%reclen)

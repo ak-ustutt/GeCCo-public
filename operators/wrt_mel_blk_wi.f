@@ -1,8 +1,8 @@
 *----------------------------------------------------------------------*      
-      subroutine wrt_op_blk_wi(luout,buffer,
-     &     op,iblk,igam,idxms,idxdis,nel,str_info,orb_info)
+      subroutine wrt_mel_blk_wi(luout,buffer,
+     &     mel,iblk,igam,idxms,idxdis,nel,str_info,orb_info)
 *----------------------------------------------------------------------*      
-*     write opertator block to unit luout with complete index for
+*     write ME-list block to unit luout with complete index for
 *     each element
 *----------------------------------------------------------------------*      
 
@@ -10,7 +10,9 @@
 
       include 'opdim.h'
       include 'hpvxseq.h'
+      include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
@@ -23,8 +25,8 @@
 
       integer, intent(in) ::
      &     luout, iblk, igam, idxms, idxdis, nel
-      type(operator), intent(in) ::
-     &     op
+      type(me_list), intent(in) ::
+     &     mel
       real(8), intent(in) ::
      &     buffer(*)
       type(strinf), intent(in) ::
@@ -38,17 +40,22 @@
      &     did, idxstr, iel, ioff, msa, ihpv,
      &     idx_occ, njoined, idxst, idxnd, iadd, ijoin
       integer ::
-     &     msdst(ngastp,2,op%njoined), igamdst(ngastp,2,op%njoined),
+     &     msdst(ngastp,2,mel%op%njoined),
+     &     igamdst(ngastp,2,mel%op%njoined),
      &     lexlscr(nel,3),idorb(nel), idspn(nel), idspc(nel),
-     &     nelc(op%njoined), nela(op%njoined)
+     &     nelc(mel%op%njoined), nela(mel%op%njoined)
       character ::
-     &     spnstr*(nel+1+op%njoined),fmtstr*256
+     &     spnstr*(nel+1+mel%op%njoined),fmtstr*256
+
+      type(operator), pointer ::
+     &     op
 
       logical, external ::
      &     next_tupel_ca
 
-      njoined = op%njoined
+      njoined = mel%op%njoined
       idx_occ = (iblk-1)*njoined+1
+      op => mel%op
 
       do ijoin = 1, njoined
         nelc(ijoin) = sum(op%ihpvca_occ(1:ngastp,1,idx_occ-1+ijoin))
@@ -74,10 +81,10 @@ c            igamdst(ihpv,2) = igam
 c          end if
 c        end do
 c      else
-        ioff = op%off_op_gmox(iblk)%d_gam_ms(idxdis,igam,idxms)
+        ioff = mel%off_op_gmox(iblk)%d_gam_ms(idxdis,igam,idxms)
         ! get Ms and IRREP distribution info from
         ! distribution ID
-        did = op%off_op_gmox(iblk)%did(idxdis,igam,idxms)
+        did = mel%off_op_gmox(iblk)%did(idxdis,igam,idxms)
         call did2msgm(msdst,igamdst,did,
      &               op%ihpvca_occ(1,1,idx_occ),orb_info%nsym,njoined)
 c      end if
@@ -127,7 +134,7 @@ c     &     nelc,nela,nelc,nela
       idxstr = 0
       do while(next_tupel_ca(idorb,idspn,idspc,
      &     nel,njoined,op%ihpvca_occ(1,1,idx_occ),
-     &     op%idx_graph(1,1,idx_occ),
+     &     mel%idx_graph(1,1,idx_occ),
      &     msdst,igamdst,first,
      &     str_info%igas_restr,
      &     orb_info%mostnd,orb_info%igamorb,

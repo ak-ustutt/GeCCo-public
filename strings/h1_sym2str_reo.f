@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine h1_sym2str_reo(eref,h1sym,h1str,hop,
+      subroutine h1_sym2str_reo(eref,h1sym,h1str,hlist,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
 *     reorder 1-electron part 
@@ -13,7 +13,9 @@
       include 'stdunit.h'
       include 'def_graph.h'
       include 'def_strinf.h'
+      include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_orbinf.h'
       include 'ifc_baserout.h'
 
@@ -21,8 +23,8 @@
      &     eref, h1sym(*)
       real(8), intent(out) ::
      &     h1str(*)
-      type(operator), intent(in) ::
-     &     hop
+      type(me_list), intent(in) ::
+     &     hlist
       type(strinf), intent(in) ::
      &     str_info
       type(orbinf), intent(in), target ::
@@ -37,7 +39,11 @@
       integer, pointer ::
      &     mostnd(:,:,:), ntoobs(:), ihpvgas(:), iad_gas(:), ireots(:)
 
+      type(operator), pointer ::
+     &     hop
+
       ! for easy typing (+ efficiency)
+      hop => hlist%op
       mostnd => orb_info%mostnd
       ntoobs => orb_info%ntoobs
       ihpvgas => orb_info%ihpvgas
@@ -62,7 +68,7 @@
         ! reference energy
         if (max(hop%ica_occ(1,iocc_cls),
      &          hop%ica_occ(2,iocc_cls)).eq.0) then
-          idxstr = hop%off_op_occ(iocc_cls)+1
+          idxstr = hlist%off_op_occ(iocc_cls)+1
           h1str(idxstr) = eref
           cycle
         end if
@@ -77,15 +83,15 @@
      &       cycle
 
         ! offset for reordered operator
-        idxstr = hop%off_op_occ(iocc_cls)
+        idxstr = hlist%off_op_occ(iocc_cls)
 
         ! get type of space for C/A
         ihpv_c = idxlist(1,hop%ihpvca_occ(1,1,iocc_cls),ngastp,1)
         ihpv_a = idxlist(1,hop%ihpvca_occ(1,2,iocc_cls),ngastp,1)
 
         ! get indices of graphs
-        igc = hop%idx_graph(ihpv_c,1,iocc_cls)
-        iga = hop%idx_graph(ihpv_a,2,iocc_cls)
+        igc = hlist%idx_graph(ihpv_c,1,iocc_cls)
+        iga = hlist%idx_graph(ihpv_a,2,iocc_cls)
         if (min(iga,igc).le.0)
      &       call quit(1,'h1_sym2str_reo','corrupted idx_graph array')
         
@@ -158,7 +164,7 @@
       if (ntest.ge.100) then
         write(luout,*) 'reordered operator:'
         ! caution: blocks 1-5 will not always work
-        call wrt_op_buf(luout,5,h1str,hop,1,5,
+        call wrt_mel_buf(luout,5,h1str,hlist,1,5,
      &       str_info,orb_info)
       end if
 

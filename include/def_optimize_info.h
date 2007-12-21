@@ -8,6 +8,7 @@
      &                        ! to be optimized
      &       nroot,           ! number of roots to be solved for
      &       norder,          ! order of optimization
+     &       mode_evp,
      &       mode_leq,
      &       mode_nleq,
      &       maxmacit, maxmicit, micifac,

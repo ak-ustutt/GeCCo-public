@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine contr_op1op2_wmaps_c(xfac,casign,ffop1,ffop2,
-     &     update,ffop1op2,xret,type_xret,
-     &     op1,op2,op1op2,op1op2tmp,
+      subroutine contr_op1op2_wmaps_c(xfac,casign,
+     &     update,xret,type_xret,
+     &     me_op1,me_op2,me_op1op2,me_op1op2tmp,
      &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &     cnt_info,reo_info,
@@ -28,6 +28,7 @@
       include 'ioparam.h'
       include 'multd2h.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_orbinf.h'
       include 'def_graph.h'
       include 'def_strinf.h'
@@ -54,10 +55,8 @@
      &     type_xret,
      &     iblkop1, iblkop2, iblkop1op2, iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2
-      type(filinf), intent(inout) ::
-     &     ffop1,ffop2,ffop1op2
-      type(operator), intent(in) ::
-     &     op1, op2, op1op2, op1op2tmp
+      type(me_list), intent(in) ::
+     &     me_op1, me_op2, me_op1op2, me_op1op2tmp
       type(strinf), intent(in) ::
      &     str_info
       type(strmapinf), intent(inout) ::
@@ -96,6 +95,10 @@
      &     ncblk_cnt, nablk_cnt,
      &     ncblk_op1op2_0, nablk_op1op2_0,
      &     ncblk_reo12,    nablk_reo12
+      type(filinf), pointer ::
+     &     ffop1,ffop2,ffop1op2
+      type(operator), pointer ::
+     &     op1, op2, op1op2, op1op2tmp
       integer, pointer ::
      &     cinfo_op1c(:,:),cinfo_op1a(:,:),
      &     cinfo_op2c(:,:),cinfo_op2a(:,:),
@@ -174,7 +177,7 @@
      &     ielsum, ielprd, idx_msgmdst2, get_lenmap, idxlist,
      &     max_dis_blk
       logical, external ::
-     &     next_dist, next_msgamdist2
+     &     next_dist, next_msgamdist2, msa2idxms4op
       real(8), external ::
      &     ddot
 
@@ -182,7 +185,20 @@
         call write_title(luout,wst_dbg_subr,
      &       'contr_op1op2_wmaps_c at work')
       end if
+
+      op1 => me_op1%op
+      op2 => me_op2%op
+      op1op2 => me_op1op2%op
+      op1op2tmp => me_op1op2tmp%op
+
+      ffop1 => me_op1%fhand
+      ffop2 => me_op2%fhand
+      ffop1op2 => me_op1op2%fhand
+
       if (ntest.ge.10) then
+        write(luout,*) 'list1:   ',trim(me_op1%label)
+        write(luout,*) 'list2:   ',trim(me_op2%label)
+        write(luout,*) 'list12:  ',trim(me_op1op2%label)
         write(luout,*) 'ffop1:   ',ffop1%name(1:len_trim(ffop1%name))
         write(luout,*) 'ffop2:   ',ffop2%name(1:len_trim(ffop2%name))
         write(luout,*) 'ffop1op2:',
@@ -283,25 +299,28 @@
      &       )
       
 
-      idxst_op1 = op1%off_op_occ(iblkop1) + 1
-      lenop1    = op1%len_op_occ(iblkop1)
-      idxst_op2 = op2%off_op_occ(iblkop2) + 1
-      lenop2    = op2%len_op_occ(iblkop2)
+      idxst_op1 = me_op1%off_op_occ(iblkop1) + 1
+      lenop1    = me_op1%len_op_occ(iblkop1)
+      idxst_op2 = me_op2%off_op_occ(iblkop2) + 1
+      lenop2    = me_op2%len_op_occ(iblkop2)
       if (iblkop1op2.gt.0) then
         ! refers to reordered op1op2 (if that makes a difference)
-        idxst_op1op2 = op1op2%off_op_occ(iblkop1op2) + 1
-        lenop1op2    = op1op2%len_op_occ(iblkop1op2)
+        idxst_op1op2 = me_op1op2%off_op_occ(iblkop1op2) + 1
+        lenop1op2    = me_op1op2%len_op_occ(iblkop1op2)
       else
         idxst_op1op2 = 1
         lenop1op2 = 1
       end if
 
-      mstop1 = op1%mst
-      mstop2 = op2%mst
-      mstop1op2 = op1op2%mst
-      igamtop1 = op1%gamt
-      igamtop2 = op2%gamt
-      igamtop1op2 = op1op2%gamt
+      mstop1 = me_op1%mst
+      mstop2 = me_op2%mst
+      mstop1op2 = me_op1op2%mst
+      igamtop1 = me_op1%gamt
+      igamtop2 = me_op2%gamt
+      igamtop1op2 = me_op1op2%gamt
+
+      if (multd2h(igamtop1,igamtop2).ne.igamtop1op2)
+     &     call quit(1,'contr_op1op2_wmaps_c','inconsistent symmetries')
 
       if (lenop1.le.0.or.lenop2.le.0.or.lenop1op2.le.0) then
         write(luout,*) 'lenop1, lenop2, lenop1op2: ',
@@ -372,22 +391,27 @@
 
       if (ntest.ge.1000) then
         ! this will work if all blocks incore, only:
-        write(luout,*) 'operator 1 (',trim(op1%name),')'
-        call wrt_op_buf(luout,5,xop1,op1,iblkop1,iblkop1,
+        write(luout,*) 'operator 1 (',trim(op1%name),
+     &                    ',list=',trim(me_op1%label),')'
+        call wrt_mel_buf(luout,5,xop1,me_op1,iblkop1,iblkop1,
      &                  str_info,orb_info)
-        write(luout,*) 'operator 2 (',trim(op2%name),')'
-        call wrt_op_buf(luout,5,xop2,op2,iblkop2,iblkop2,
+        write(luout,*) 'operator 2 (',trim(op2%name),
+     &                    ',list=',trim(me_op2%label),')'
+        call wrt_mel_buf(luout,5,xop2,me_op2,iblkop2,iblkop2,
      &                  str_info,orb_info)
         if (iblkop1op2.gt.0) then
-          write(luout,*) 'operator 12 on entry (',trim(op1op2%name),')'
-          call wrt_op_buf(luout,5,xop1op2,op1op2,
+          write(luout,*) 'operator 12 on entry (',trim(op1op2%name),
+     &                                ',list=',trim(me_op1op2%label),')'
+
+          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
      &                    iblkop1op2,iblkop1op2,
      &                    str_info,orb_info)
         end if
       end if
 
       if (reo_op1op2) then
-        lblk_op1op2tmp = max_dis_blk(0,op1op2tmp,iblkop1op2tmp,orb_info)
+        lblk_op1op2tmp =
+     &       max_dis_blk(0,me_op1op2tmp,iblkop1op2tmp,orb_info)
         ifree = mem_alloc_real(xbf12tmp,lblk_op1op2tmp,'xbf12tmp')
       end if
 
@@ -395,26 +419,27 @@
         ! preliminary: a wild guess
         lenblock = len_str_block 
         lenscr = max(3*lenblock*lenblock,
-     &        (max_dis_blk(0,op1op2tmp,iblkop1op2tmp,orb_info)
-     &         + max_dis_blk(0,op1,iblkop1,orb_info)
-     &         + max_dis_blk(0,op2,iblkop2,orb_info))*lenblock)
+     &        (max_dis_blk(0,me_op1op2tmp,iblkop1op2tmp,orb_info)
+     &         + max_dis_blk(0,me_op1,iblkop1,orb_info)
+     &         + max_dis_blk(0,me_op2,iblkop2,orb_info))*lenblock)
         ifree = mem_alloc_real(xscr,lenscr,'contr_scr')
       end if
 
       graphs => str_info%g
 
-      ndis_op1 => op1%off_op_gmox(iblkop1)%ndis
-      gam_ms_op1 => op1%off_op_gmo(iblkop1)%gam_ms
-      d_gam_ms_op1 => op1%off_op_gmox(iblkop1)%d_gam_ms
-      ndis_op2 => op2%off_op_gmox(iblkop2)%ndis
-      gam_ms_op2 => op2%off_op_gmo(iblkop2)%gam_ms
-      d_gam_ms_op2 => op2%off_op_gmox(iblkop2)%d_gam_ms
-      ndis_op1op2tmp => op1op2tmp%off_op_gmox(iblkop1op2)%ndis
-      gam_ms_op1op2 => op1op2%off_op_gmo(iblkop1op2)%gam_ms
-      len_gam_ms_op1op2tmp => op1op2tmp%len_op_gmo(iblkop1op2)%gam_ms
-      d_gam_ms_op1op2 => op1op2%off_op_gmox(iblkop1op2)%d_gam_ms
+      ndis_op1 => me_op1%off_op_gmox(iblkop1)%ndis
+      gam_ms_op1 => me_op1%off_op_gmo(iblkop1)%gam_ms
+      d_gam_ms_op1 => me_op1%off_op_gmox(iblkop1)%d_gam_ms
+      ndis_op2 => me_op2%off_op_gmox(iblkop2)%ndis
+      gam_ms_op2 => me_op2%off_op_gmo(iblkop2)%gam_ms
+      d_gam_ms_op2 => me_op2%off_op_gmox(iblkop2)%d_gam_ms
+      ndis_op1op2tmp => me_op1op2tmp%off_op_gmox(iblkop1op2tmp)%ndis
+      gam_ms_op1op2 => me_op1op2%off_op_gmo(iblkop1op2)%gam_ms
+      len_gam_ms_op1op2tmp =>
+     &                   me_op1op2tmp%len_op_gmo(iblkop1op2tmp)%gam_ms
+      d_gam_ms_op1op2 => me_op1op2%off_op_gmox(iblkop1op2)%d_gam_ms
       len_d_gam_ms_op1op2tmp =>
-     &                   op1op2tmp%len_op_gmox(iblkop1op2)%d_gam_ms
+     &                  me_op1op2tmp%len_op_gmox(iblkop1op2tmp)%d_gam_ms
 
       call sum_occ(nc_op1,cinfo_op1c,ncblk_op1)
       call sum_occ(na_op1,cinfo_op1a,nablk_op1)
@@ -510,11 +535,11 @@ c dbg
      &     str_info,strmap_info,orb_info)
       end if
 
-      ! minimum Ms for ...
-      msbnd(1,1) = -nc_op1 ! operator 1
-      msbnd(1,2) = -nc_op2 ! operator 2        
-      msbnd(1,3) = -nc_op1op2 ! product
-      ! maximum Ms for ...
+      ! minimum Ms(A) for ...
+      msbnd(1,1) = -na_op1 ! operator 1
+      msbnd(1,2) = -na_op2 ! operator 2        
+      msbnd(1,3) = -na_op1op2 ! product
+      ! maximum Ms(A) for ...
       msbnd(2,1) = -msbnd(1,1)
       msbnd(2,2) = -msbnd(1,2)
       msbnd(2,3) = -msbnd(1,3)
@@ -545,6 +570,10 @@ c dbg
         ms12i_c(1) = ms12i_a(1) + mstop1
         ms12i_c(2) = ms12i_a(2) + mstop2
         ms12i_c(3) = ms12i_a(3) + mstop1op2
+        if (abs(ms12i_c(1)).gt.nc_op1) cycle ms_loop
+        if (abs(ms12i_c(2)).gt.nc_op2) cycle ms_loop
+        if (abs(ms12i_c(3)).gt.nc_op1op2) cycle ms_loop
+
         msc_ac = ms12i_a(1) + ms12i_a(2) - ms12i_a(3)
 
         if (mscmx_a+mscmx_c.lt.abs(msc_ac)) cycle ms_loop
@@ -587,13 +616,17 @@ c dbg
             ! set up start addresses
             ! need to be modified, if more than one distribution
             ! exists, see below
-            idxms = (na_op1-ms12i_a(1))/2 + 1
+            idxms = msa2idxms4op(ms12i_a(1),mstop1,na_op1,nc_op1)
+c            idxms = (na_op1-ms12i_a(1))/2 + 1
             idxop1 = gam_ms_op1(igam12i_a(1),idxms) + 1
      &             - idxst_op1+1
-            idxms = (na_op2-ms12i_a(2))/2 + 1
+            idxms = msa2idxms4op(ms12i_a(2),mstop2,na_op2,nc_op2)
+c            idxms = (na_op2-ms12i_a(2))/2 + 1
             idxop2 = gam_ms_op2(igam12i_a(2),idxms) + 1
      &             - idxst_op2+1
-            idxms = (na_op1op2-ms12i_a(3))/2 + 1
+            idxms =
+     &           msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
+c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
             ! relevant for case where no reordering necessary
             ! then we have: op1op2tmp == op1op2
             if (iblkop1op2.gt.0)
@@ -704,7 +737,7 @@ c dbg
 
                   call set_len_str(
      &                   lstrop1op2tmp,ncblk_op1op2tmp,nablk_op1op2tmp,
-     &                   graphs,
+     &                 graphs,
      &                   cinfo_op1op2tmpc(1,2),idxmsi_dis_c,
      &                                  gmi_dis_c,cinfo_op1op2tmpc(1,3),
      &                   cinfo_op1op2tmpa(1,2),idxmsi_dis_a,
@@ -753,9 +786,16 @@ c                  ifree = mem_alloc_int(map_ex1ex2a,lenmap,'strmap_a')
      &                 gmex2dis_a,gmex1dis_a,map_info_12a,
      &                 strmap_info,nsym,str_info%ngraph)
 
-                  ! get distribution index
-                  idxms = (na_op1op2-ms12i_a(3))/2 + 1
+                  ! get distribution index                  
+                  idxms = msa2idxms4op(ms12i_a(3),mstop1op2,
+     &                                 na_op1op2,nc_op1op2)
+c                  idxms = (na_op1op2-ms12i_a(3))/2 + 1
                   idxdis_op1op2 = 1
+c dbg
+c                  print *,'igam12i_a(3),idxms: ',igam12i_a(3),idxms
+c                  print *,'ndis_op1op2tmp(igam12i_a(3),idxms):',
+c     &                 ndis_op1op2tmp(igam12i_a(3),idxms)
+c dbg
                   if (iblkop1op2tmp.gt.0.and.
      &                 ndis_op1op2tmp(igam12i_a(3),idxms).gt.1) then
                     idxdis =
@@ -765,7 +805,7 @@ c                  ifree = mem_alloc_int(map_ex1ex2a,lenmap,'strmap_a')
      &                              gmi_dis_c,ncblk_op1op2tmp,
      &                   cinfo_op1op2tmpa,idxmsi_dis_a,
      &                              gmi_dis_a,nablk_op1op2tmp,
-     &                   .false.,op1op2tmp,nsym)
+     &                   .false.,me_op1op2tmp,nsym)
                     idxdis_op1op2 = idxdis
 
                     ! relevant for case w/o reordering
@@ -853,7 +893,9 @@ c                  ifree = mem_alloc_int(map_ex1ex2a,lenmap,'strmap_a')
      &                   cycle cac_loop
 
                     ! get distribution index
-                    idxms = (na_op1-ms12i_a(1))/2 + 1
+                    idxms =
+     &                   msa2idxms4op(ms12i_a(1),mstop1,na_op1,nc_op1)
+c                    idxms = (na_op1-ms12i_a(1))/2 + 1
                     if (ndis_op1(igam12i_a(1),idxms).gt.1) then
                       idxdis =
      &                   idx_msgmdst2(
@@ -862,7 +904,7 @@ c                  ifree = mem_alloc_int(map_ex1ex2a,lenmap,'strmap_a')
      &                              gmop1dis_c,ncblk_op1,
      &                     cinfo_op1a,idxmsop1dis_a,
      &                              gmop1dis_a,nablk_op1,
-     &                     .false.,op1,nsym)
+     &                     .false.,me_op1,nsym)
                       idxop1 = 
      &                     d_gam_ms_op1(idxdis,igam12i_a(1),idxms) + 1
      &                     - idxst_op1+1
@@ -916,7 +958,9 @@ c dbg
      &                   cycle cac_loop
 
                     ! get distribution index
-                    idxms = (na_op2-ms12i_a(2))/2 + 1
+                    idxms =
+     &                   msa2idxms4op(ms12i_a(2),mstop2,na_op2,nc_op2)
+c                    idxms = (na_op2-ms12i_a(2))/2 + 1
                     if (ndis_op2(igam12i_a(2),idxms).gt.1) then
                       idxdis =
      &                   idx_msgmdst2(
@@ -925,12 +969,7 @@ c dbg
      &                              gmop2dis_c,ncblk_op2,
      &                     cinfo_op2a,idxmsop2dis_a,
      &                              gmop2dis_a,nablk_op2,
-     &                     .false.,op2,nsym)
-c dbg
-c                      print *,'idxst_op2:',idxst_op2,
-c     &                     idxdis,igam12i_a(2),idxms,
-c     &                     d_gam_ms_op2(idxdis,igam12i_a(2),idxms)
-c dbg
+     &                     .false.,me_op2,nsym)
                       idxop2 = 
      &                     d_gam_ms_op2(idxdis,igam12i_a(2),idxms) + 1
      &                     - idxst_op2+1
@@ -965,16 +1004,6 @@ c                    ifree = mem_alloc_int(map_ex1cntc,lenmap,'strmap_c')
                     lenmap = get_lenmap(lstrcnt(ncblk_cnt+1),
      &                                  lstrex1(ncblk_ex1+1),
      &                                  map_info_1a,nablk_op1)
-c dbg
-c                    print *,'lstrcnt(A)',nablk_op1op2,
-c     &                 lstrcnt(ncblk_cnt+1:ncblk_cnt+nablk_op1op2)
-c                    print *,'lstrex1(A)',nablk_ex1,
-c     &                 lstrex1(ncblk_ex1+1:ncblk_ex1+nablk_ex1)
-c                    print *,'lenmap for map_ex1cnta: ',lenmap
-c                    print *,'lstrop1(A)',nablk_op1,
-c     &                 lstrop1(ncblk_op1+1:ncblk_op1+nablk_op1)
-c dbg
-c                    ifree = mem_alloc_int(map_ex1cnta,lenmap,'strmap_a')
                     call get_strmap_blk_c(map_ex1cnta,
      &                   nablk_op1op2,nablk_ex1,nablk_op1,
      &                   cinfo_cnta,cinfo_ex1a,
@@ -984,9 +1013,6 @@ c                    ifree = mem_alloc_int(map_ex1cnta,lenmap,'strmap_a')
      &                   idxmsc_dis_a,idxmsex1dis_a,
      &                   gmc_dis_a,gmex1dis_a,map_info_1a,
      &                   strmap_info,nsym,str_info%ngraph)
-c dbg
-c                    print *,'map_ex1cnta(1): ',map_ex1cnta(1)
-c dbg
 
                     ! get igrphcnt,igrphext2->igrphop2 map
                     ! for given ms and irreps
@@ -1060,6 +1086,15 @@ c                    print *,'xop1: ',xop1(idxop1)
 c                    print *,'xop2: ',xop2(idxop2)
 c                    print *,'xop1op2: ',xop1op2(idxop1op2)
 c dbg
+c dbg
+c                    if (lenop1op2.eq.20) then
+c                      print *,' ::',idxop1op2,lenop1op2
+c                      print *,gmi_dis_c
+c                      print *,gmi_dis_a
+c                      print *,lstrop1op2tmp
+c                    end if
+c                    call mem_check('before kernel')
+c dbg
                     if (irt_contr.eq.2) then
                       call contr_blk1blk2_wmaps_c(xfac*casign,
      &                   xop1op2blk,
@@ -1104,17 +1139,16 @@ c dbg
                     end if
                     if (ntest.ge.100)
      &                   write(luout,*) 'after blk1blk2'
+c dbg
+c                    call mem_check('after kernel')
+c dbg
 
                     call atim_cs(cpu,sys)
                     cnt_kernel(1) = cnt_kernel(1)+cpu-cpu0
                     cnt_kernel(2) = cnt_kernel(2)+sys-sys0
 
-c                    ifree = mem_flushmark('cntstr')
-
                   end do cac_loop
                   
-c                  ifree = mem_flushmark('ex_str')
-
                   ! if necessary, reorder op1op2 block:
                   if (reo_op1op2.and.nonzero) then
                     call reo_blk_wmaps_c(xop1op2,xop1op2blk,
@@ -1125,7 +1159,7 @@ c                  ifree = mem_flushmark('ex_str')
      &                   ncblk_op1op2tmp,nablk_op1op2tmp,
      &                   cinfo_op1op2tmpc,cinfo_op1op2tmpa,
      &                   lstrop1op2tmp,
-     &                   op1op2,iblkop1op2,
+     &                   me_op1op2,iblkop1op2,
      &                   ncblk_cnt,nablk_cnt,
      &                   cinfo_op1op2c,cinfo_op1op2a,
      &                   reo_info%ncblk_reo,reo_info%nablk_reo,
@@ -1154,7 +1188,7 @@ c                  ifree = mem_flushmark('ex_str')
         if (iblkop1op2.gt.0
      &       ) then
           write(luout,*) 'operator 12 on exit (',trim(op1op2%name),')'
-          call wrt_op_buf(luout,5,xop1op2,op1op2,
+          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
      &         iblkop1op2,iblkop1op2,str_info,orb_info)
         end if
       end if

@@ -73,8 +73,8 @@
       call clone_operator(op_pnt,top_pnt,orb_info)
      
       ! new entry: the DIAgonal
-      call add_operator(op_dia1,op_info)
-      idx = idx_oplist2(op_dia1,op_info)
+      call add_operator(op_dia,op_info)
+      idx = idx_oplist2(op_dia,op_info)
       op_pnt => op_info%op_arr(idx)%op
       call clone_operator(op_pnt,top_pnt,orb_info)
 
@@ -129,12 +129,12 @@
       end if
 
       if (densities.gt.0) then
-        call add_operator(op_ccdens,op_info)
-        idx = idx_oplist2(op_ccdens,op_info)
+        call add_operator(op_1dens,op_info)
+        idx = idx_oplist2(op_1dens,op_info)
         op_pnt => op_info%op_arr(idx)%op
 
         iformal = 1
-        call set_dens(op_pnt,op_ccdens,.false.,0,0,1,1,0,
+        call set_dens(op_pnt,op_1dens,.false.,0,0,1,1,0,
      &       1,densities,iformal,orb_info)
 
       end if

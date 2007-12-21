@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine frm_sched(xret,fffrm,
+      subroutine frm_sched(xret,flist,depend_info,
      &         op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for actual scheduler routines
@@ -16,11 +16,14 @@
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'def_orbinf.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'def_dependency_info.h'
 
       real(8), intent(out) ::
      &     xret(*)
-      type(filinf), intent(inout) ::
-     &     fffrm
+      type(formula_item), intent(inout) ::
+     &     flist
       type(operator_info) ::
      &     op_info
       type(strinf) ::
@@ -29,6 +32,8 @@
      &     strmap_info
       type(orbinf) ::
      &     orb_info
+      type(dependency_info) ::
+     &     depend_info
 
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
@@ -40,7 +45,7 @@
 
       select case (irt_sched)
       case (0)
-        call frm_sched1(xret,fffrm,
+        call frm_sched1(xret,flist,depend_info,
      &         op_info,str_info,strmap_info,orb_info)
       case default
         call quit(1,'frm_sched','illegal route')

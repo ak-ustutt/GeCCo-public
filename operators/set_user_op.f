@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_user_op(op,name,type,
-     &     dagger,absym,casym,gamma,s2,ms,
+     &     dagger,
      &     occ_def,nblk,irestr,orb_info)
 *----------------------------------------------------------------------*
 *     set up occupations for a general operator described by
@@ -18,7 +18,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(operator), intent(inout) ::
      &     op
@@ -27,8 +27,7 @@
       logical, intent(in) ::
      &     dagger
       integer, intent(in) ::
-     &     type, absym, casym, gamma, s2, ms,
-     &     nblk
+     &     type, nblk
       type(orbinf), intent(in), target ::
      &     orb_info
       integer, intent(in) ::
@@ -78,22 +77,11 @@
       op%njoined = 1  ! always for operators and densities
 
       op%dagger = dagger
-      op%casym = casym
-      op%absym = absym
       op%formal=.true.
-
-      if (absym.ne.0) call quit(1,'set_user_op','adapt for absym.ne.0')
-      if (casym.ne.0) call quit(1,'set_user_op','adapt for casym.ne.0')
-
-      ! set info, some consistency checks would be appropriate as
-      ! soon as we seriously use that info
-      op%gamt = gamma
-      op%s2 =   s2
-      op%mst =  ms 
 
       op%n_occ_cls = nblk
 
-      call init_operator(0,op,orb_info)
+      call init_operator(op,orb_info)
 
       op%formal_blk(1:nblk) = .true.
 

@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine set_hhat2(formula_hhat,op_info,
-     &     idxhhat,idxham,idxtop)
+      subroutine set_hhat2(formula_hhat,
+     &     title,name_hhat,name_h,name_t,
+     &     op_info)
 *----------------------------------------------------------------------*
 *     generate the formula for Hhat = e^{-T1}He^{T1}
 *----------------------------------------------------------------------*
@@ -16,13 +17,13 @@
       include 'ifc_operators.h'
       include 'def_formula_item.h'
       include 'def_formula.h'
-      include 'par_formnames_gen.h'
+c      include 'par_formnames_gen.h'
 
       type(formula), intent(inout), target ::
      &     formula_hhat
 
-      integer, intent(in) ::
-     &     idxhhat,idxham,idxtop
+      character*(*), intent(in) ::
+     &     name_hhat, name_t, name_h, title
 
       type(operator_info), intent(in) ::
      &     op_info
@@ -37,7 +38,11 @@
      &     form_pnt
 
       integer ::
-     &     nterms 
+     &     nterms,
+     &     idxhhat,idxham,idxtop
+
+      integer, external ::
+     &     idx_oplist2
 
       ! for timings:
       real(8) ::
@@ -50,6 +55,13 @@
       end if
 
       call atim_csw(cpu0,sys0,wall0)
+
+      idxhhat = idx_oplist2(name_hhat,op_info)
+      idxham  = idx_oplist2(name_h,op_info)
+      idxtop  = idx_oplist2(name_t,op_info)
+      if (idxham.lt.0.or.idxhhat.lt.0.or.idxtop.lt.0)
+     &     call quit(1,'set_hhat2',
+     &     'required operators are not yet defined')
 
       ! initialize formula
       call init_formula(form_hhat)
@@ -69,11 +81,11 @@ c      print *,'generated (1):'
 c      call print_form_list(luout,form_hhat,op_info)
 c dbg      
       ! write to disc
-      formula_hhat%label = label_cchhat
-      formula_hhat%comment = title_cchhat
-      write(name,'(a,".fml")') label_cchhat
+c      formula_hhat%label = label_cchhat
+      formula_hhat%comment = title
+      write(name,'(a,".fml")') trim(formula_hhat%label)
       call file_init(formula_hhat%fhand,name,ftyp_sq_unf,0)
-      call write_form_list(formula_hhat%fhand,form_hhat,title_cchhat)
+      call write_form_list(formula_hhat%fhand,form_hhat,title)
 
       call dealloc_formula_list(form_hhat)
 

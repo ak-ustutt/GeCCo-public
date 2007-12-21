@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine form_opt(ffform_opt,
-     &     nfcat,idxform,
+      subroutine form_opt(f_opt,
+     &     nfcat,flabels,ninterm,finlabels,
      &     form_info,op_info,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     given a list of formulae, concatenate them into one formula
@@ -23,9 +23,11 @@
       include 'ifc_input.h'
 
       integer, intent(in) ::
-     &     nfcat, idxform(nfcat)
-      type(filinf), intent(inout) ::
-     &     ffform_opt
+     &     nfcat, ninterm
+      character(*), intent(in) ::
+     &     flabels(nfcat), finlabels(ninterm)
+      type(formula), intent(inout) ::
+     &     f_opt
       type(formula_info), intent(inout) ::
      &     form_info
       type(operator_info), intent(inout) ::
@@ -41,18 +43,22 @@
      &     cur_ffile
 
       integer ::
-     &     icat, iprint, lentitle, isim
+     &     icat, iint, iprint, lentitle, idxform
 
       character ::
-     &     title*(form_maxlen_comment)
+     &     title*(form_maxlen_comment), name*(form_maxlen_label*2)
 
-      logical, external ::
-     &     rd_formula
+      integer, external ::
+     &     idx_formlist
 
       iprint = max(ntest,iprlvl)
 
       call write_title(luout,wst_section,'Formula optimization')
 
+c dbg
+      call print_op_info(luout,'op',op_info)
+      call print_op_info(luout,'mel',op_info)
+c dbg
       ! initialize list
       allocate(form_head)
       form_ptr => form_head
@@ -75,16 +81,28 @@ c        print *,'>',trim(form_info%form_arr(idxform(icat))%form%label)
 c        print *,'>',
 c     &       trim(form_info%form_arr(idxform(icat))%form%fhand%name)
 c dbg
-      if (iprint.gt.0)
+        idxform = idx_formlist(flabels(icat),form_info)
+
+        if (idxform.le.0)
+     &       call quit(1,'form_opt','formula label not on list: '//
+     &       trim(flabels(icat)))
+
+        if (iprint.gt.0)
      &     write(luout,'(2x,"--",x,a)')
-     &       trim(form_info%form_arr(idxform(icat))%form%label)
-        cur_ffile => form_info%form_arr(idxform(icat))%form%fhand
+     &       trim(form_info%form_arr(idxform)%form%label)
+
+        cur_ffile => form_info%form_arr(idxform)%form%fhand
+        if (.not.associated(cur_ffile))
+     &       call quit(1,'form_opt',
+     &       'formula file does not exist for '//
+     &       trim(form_info%form_arr(idxform)%form%label))
+
         if (lentitle.lt.form_maxlen_comment) then
           if (icat.eq.1) then
-            title = form_info%form_arr(idxform(icat))%form%label
+            title = form_info%form_arr(idxform)%form%label
           else
             title = trim(title)//'/'//
-     &           form_info%form_arr(idxform(icat))%form%label
+     &           form_info%form_arr(idxform)%form%label
           end if
         end if
 
@@ -100,31 +118,46 @@ c dbg
 
       title = trim(title)//' -- optimized'
 
-      if (is_keyword_set('method.CC')) then
-        call get_argument_value('calculate.routes','simtraf',ival=isim)
+
+      ! -----------------------------------------------------------
+      ! round one: loop over suggested intermediates and
+      ! factor them out; the intermediate definition will be
+      ! prepended the present list
+      ! in effect, the intermediates may successively be factored
+      ! as well
+      ! -----------------------------------------------------------
+      do iint = 1, ninterm
         if (iprlvl.gt.0)
      &       write(luout,'(2x,a)')
-     &       'I will factor out the e^-T1 H e^T1 intermediate ...'
-        if (isim.gt.0)
-     &       call cc_form_hhat_replace(form_head,
-     &                                 form_info,op_info)
-      end if
+     &       'I will factor out the intermediate: '//
+     &       trim(finlabels(iint))//' ...'
+        call factor_out(form_head,finlabels(iint),
+     &       form_info,op_info)
+      end do
 
       ! ----------------------------------------
+      ! round two:
       ! find optimal factorization for each term
       ! ----------------------------------------
-c      form_ptr => form_head
       if (iprint.gt.0)
      &     write(luout,'(2x,a)')
      &       'Now looking for the optimal factorization of terms ...'
       call factorize(form_head,op_info,str_info,orb_info)
+
+      ! ----------------------------------------
+      ! round three:
+      ! automatic intermediates (to come ...)
+      ! ----------------------------------------
 
       if (iprint.ge.10) then
         call write_title(luout,wst_around_double,'Optimized formula:')
         call print_form_list(luout,form_head,op_info)
       end if
 
-      call write_form_list(ffform_opt,form_head,title)
+      write(name,'(a,".fml")') trim(f_opt%label)
+      call file_init(f_opt%fhand,name,ftyp_sq_unf,0)      
+      f_opt%comment = trim(title)
+      call write_form_list(f_opt%fhand,form_head,title)
 
       call dealloc_formula_list(form_head)
       deallocate(form_head)

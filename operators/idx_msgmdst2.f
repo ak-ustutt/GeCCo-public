@@ -3,14 +3,16 @@
      &     iblk,idxmsa_blk,gama_blk,
      &     occ_c,idxms_c,gam_c,nc,
      &     occ_a,idxms_a,gam_a,na,
-     &     dagger,op,nsym)
+     &     dagger,mel,nsym)
 *----------------------------------------------------------------------*
 *     version for condensed representation
 *----------------------------------------------------------------------*
       implicit none
 
       include 'opdim.h'
+      include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'stdunit.h'
 
       integer, intent(in) ::
@@ -19,8 +21,8 @@
      &     occ_c(nc), idxms_c(nc), gam_c(nc),
      &     occ_a(na), idxms_a(na), gam_a(na)
       
-      type(operator), intent(in) ::
-     &     op
+      type(me_list), intent(in) ::
+     &     mel
 
       logical, intent(in) ::
      &     dagger
@@ -43,11 +45,11 @@
      &                   occ_c,idxms_c,gam_c,nc,nsym)
       end if
 
-      didarr => op%off_op_gmox(iblk)%did
+      didarr => mel%off_op_gmox(iblk)%did
 
       idx_msgmdst2 = -1
 
-      idx_end = op%off_op_gmox(iblk)%ndis(gama_blk,idxmsa_blk)
+      idx_end = mel%off_op_gmox(iblk)%ndis(gama_blk,idxmsa_blk)
 c dbg
 c      print *,'-->',iocc_cls,igamt,idxms
 c dbg
@@ -60,8 +62,11 @@ c dbg
 
       if (idx_msgmdst2.eq.-1) then
 c dbg
-        print *,'nsym = ',nsym
+c        print *,'nsym = ',nsym
 c dbg
+        write(luout,*) 'list: ',trim(mel%label)
+        write(luout,*) 'op:   ',trim(mel%op%name)
+        write(luout,*) 'gamma(A),idxms(A):',gama_blk,idxmsa_blk
         write(luout,*) 'occ_c:   ',occ_c(1:nc)
         write(luout,*) 'idxms_c: ',idxms_c(1:nc)
         write(luout,*) 'gam_c:   ',gam_c(1:nc)
@@ -71,7 +76,6 @@ c dbg
         write(luout,*) 'mgdid: ',mgdid
         write(luout,*) 'didarr:',
      &       didarr(1:idx_end,gama_blk,idxmsa_blk)
-        write(luout,*) gama_blk, idxmsa_blk, trim(op%name)
         call quit(1,'idx_msgmdst2','distribution not found')
       end if
 

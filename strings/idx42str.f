@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine idx42str(nstr,idxstr,
      &         idxprqs,igam,idss,igtp,
-     &         orb_info,str_info,hop,ihpvseq)
+     &         orb_info,str_info,hlist,ihpvseq)
 *----------------------------------------------------------------------*
 *     a 4-tuple of indices (for a 2-electron integral, in type ordering) 
 *     is given: (pq|rs), along with
@@ -28,7 +28,9 @@
       include 'opdim.h'
       include 'multd2h.h'
       include 'def_graph.h'
+      include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
 
@@ -42,8 +44,8 @@
      &     orb_info
       type(strinf), intent(in) ::
      &     str_info
-      type(operator), intent(in) ::
-     &     hop
+      type(me_list), intent(in) ::
+     &     hlist
       integer, intent(out) ::
      &     nstr, idxstr(*)
 
@@ -63,6 +65,8 @@
 
       type(graph), pointer ::
      &     curgraph
+      type(operator), pointer ::
+     &     hop
 
       integer, external ::
      &     iblk_occ, idx_msgmdst, idx4sg
@@ -75,6 +79,8 @@
         write(luout,*) ' output from idx42str'
         write(luout,*) '----------------------'
       end if
+
+      hop => hlist%op
 
       ! Checks whether integral indices are the same, or if they need 
       ! to be reordered (want p.le.q and r.le.s)
@@ -221,9 +227,9 @@
         ! Identify the index of the string in question and also its 
         ! adjoint.
         idstr_ca = idx_msgmdst(iblk_ca,mst,igamt,
-     &         msd,igmd,.false.,hop,orb_info%nsym)
+     &         msd,igmd,.false.,hlist,orb_info%nsym)
         idstr_ac = idx_msgmdst(iblk_ac,mst,igamt,
-     &         msd,igmd,.true.,hop,orb_info%nsym)
+     &         msd,igmd,.true.,hlist,orb_info%nsym)
 
         if (ntest.ge.100) then
           write(luout,*) 'idstr_ca = ',idstr_ca
@@ -235,9 +241,9 @@
         ! Locate offsets which were calculated earlier and store them
         ! in idxstr.
         idxstr(nstr-1) =
-     &         hop%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
+     &         hlist%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
         idxstr(nstr)   =
-     &         hop%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
+     &         hlist%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
 
         if (ntest.ge.100) then
           write(luout,*) 'idxstr(offsets) = ',idxstr(nstr-1:nstr)
@@ -254,7 +260,7 @@
             ipos = ioff(ihpv,ica)
 
             ! point to graph needed for current string
-            igraph = hop%idx_graph(ihpv,ica,iblk_ca)
+            igraph = hlist%idx_graph(ihpv,ica,iblk_ca)
             curgraph => str_info%g(igraph)
 
             ! check for restrictions

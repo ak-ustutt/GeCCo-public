@@ -1,0 +1,128 @@
+*----------------------------------------------------------------------*
+      subroutine process_formulae(rule,
+     &                            form_info,op_info,str_info,orb_info)
+*----------------------------------------------------------------------*
+*     process formula rules
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'stdunit.h'
+      include 'def_target.h'
+      include 'mdef_operator_info.h'
+      include 'mdef_formula_info.h'
+      include 'def_orbinf.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
+      include 'par_actions.h'
+
+      type(action), intent(in) ::
+     &     rule
+      type(formula_info), intent(inout) ::
+     &     form_info
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      type(orbinf), intent(in) ::
+     &     orb_info
+
+      integer ::
+     &     idx, jdx, ioff, ncat, nint
+      type(formula), pointer ::
+     &     form_pnt, form0_pnt
+      character(len_command_par) ::
+     &     title
+
+      integer ::
+     &     idx_formlist
+
+      if (rule%type.ne.ttype_frm)
+     &     call quit(1,'process_formulae',
+     &     'called for wrong target type')
+      if (rule%n_labels.lt.1)
+     &     call quit(1,'process_formulae','at least one label expected')
+
+      ! allocate a new entry, if necessary
+      do idx = 1, rule%n_update
+        jdx = idx_formlist(trim(rule%labels(idx)),form_info)
+        if (jdx.gt.0) cycle
+        call add_formula(form_info,trim(rule%labels(idx)))
+      end do
+
+      ! point to formula referenced by first label:
+      idx = idx_formlist(trim(rule%labels(1)),form_info)
+      form_pnt => form_info%form_arr(idx)%form
+
+      select case(trim(rule%command))
+      case(DEF_CC_LAGRANGIAN)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title)
+        ioff = rule%n_update
+        call set_cc_lagrangian2(form_pnt,
+     &       title,rule%labels(ioff+1),rule%labels(ioff+2),
+     &             rule%labels(ioff+3),rule%labels(ioff+4),
+     &       op_info)
+
+      case(DEF_HHAT)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title)
+        ioff = rule%n_update
+        call set_hhat2(form_pnt,
+     &       title,rule%labels(ioff+1),
+     &             rule%labels(ioff+2),rule%labels(ioff+3),
+     &       op_info)
+      case(DEF_CCR12_LAGRANGIAN)
+      case(INVARIANT)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title)
+        ioff = rule%n_update
+        
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_invariant(form_pnt,form0_pnt,
+     &       title,rule%labels(ioff+2),
+     &       1,rule%labels(ioff+3),
+     &       op_info
+     &       )
+      case(DERIVATIVE)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title)
+        ioff = rule%n_update
+        
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_deriv2(form_pnt,form0_pnt,
+     &       title,1,
+     &             rule%labels(ioff+2),
+     &             rule%labels(ioff+3),
+     &             rule%labels(ioff+4),
+     &       op_info)
+      case(LEQ_SPLIT)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title)
+        call leq_post(rule%labels(1),rule%labels(2),rule%labels(3),
+     &       rule%labels(4),
+     &       rule%labels(5),
+     &       rule%labels(6),
+     &       title,title,
+     &       op_info,form_info)
+      case(OPTIMIZE)
+        ioff = 1
+        call opt_parameters(+1,
+     &       rule%parameters,ncat,nint)
+        call form_opt(form_pnt,
+     &       ncat,rule%labels(ioff+1),
+     &       nint,rule%labels(ioff+ncat+1),
+     &       form_info,op_info,str_info,orb_info)
+      case default
+        call quit(1,'process_formulae','unknown command: '//
+     &       trim(rule%command))
+      end select
+
+      return
+      end

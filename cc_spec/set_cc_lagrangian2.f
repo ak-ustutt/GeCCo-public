@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine set_cc_lagrangian2(form_cclag,op_info,
-     &     idxham,idxtbar,idxtop,idxlcc)
+      subroutine set_cc_lagrangian2(form_cclag,
+     &     title,label_oplcc,label_opham,label_optbar,label_opt,
+     &     op_info)
 *----------------------------------------------------------------------*
 *
 *     set up sequence of operators, integrals and contractions that
@@ -22,13 +23,14 @@
       include 'ifc_operators.h'
       include 'def_formula_item.h'
       include 'def_formula.h'
-      include 'par_formnames_gen.h'
+c      include 'par_formnames_gen.h'
 
       type(formula), intent(inout), target ::
      &     form_cclag
 
-      integer, intent(in) ::
-     &     idxham,idxtbar,idxtop,idxlcc
+      character*(*), intent(in) ::
+     &     title,
+     &     label_opham,label_optbar,label_opt,label_oplcc
 
       type(operator_info), intent(in) ::
      &     op_info
@@ -39,62 +41,75 @@
      &     name*(form_maxlen_label*2)
 
       type(formula_item), target ::
-     &     form_lag
+     &     flist_lag
       type(formula_item), pointer ::
-     &     form_pnt
+     &     flist_pnt
 
       integer ::
-     &     nterms 
+     &     nterms,
+     &     idxham,idxtbar,idxtop,idxlcc
+
+      integer, external ::
+     &     idx_oplist2
 
       ! for timings:
       real(8) ::
      &     cpu, wall, sys, cpu0, wall0, sys0
 
-      if (ntest.eq.100) then
+      if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
      &     'Setting up CC-Lagrangian')
-        write(luout,*) ' idxham  = ',idxham
-        write(luout,*) ' idxtbar = ',idxtbar
-        write(luout,*) ' idxtop  = ',idxtop
-        write(luout,*) ' idxlcc  = ',idxlcc
+        write(luout,*) ' op_ham  = ',trim(label_opham)
+        write(luout,*) ' op_tbar = ',trim(label_optbar)
+        write(luout,*) ' op_t    = ',trim(label_opt)
+        write(luout,*) ' op_lcc  = ',trim(label_oplcc)
       end if
 
       call atim_csw(cpu0,sys0,wall0)
 
+      ! get indices
+      idxlcc  = idx_oplist2(label_oplcc,op_info)
+      idxham  = idx_oplist2(label_opham,op_info)
+      idxtbar = idx_oplist2(label_optbar,op_info)
+      idxtop  = idx_oplist2(label_opt,op_info)
+      if (idxlcc.lt.0.or.idxham.lt.0.or.idxtbar.lt.0.or.idxtop.lt.0)
+     &     call quit(1,'set_cc_lagrangian2',
+     &     'required operators are not yet defined')
+
       ! initialize formula
-      call init_formula(form_lag)
-      form_pnt => form_lag
+      call init_formula(flist_lag)
+      flist_pnt => flist_lag
       ! put [INIT] at the beginning
-      call new_formula_item(form_pnt,command_set_target_init,idxlcc)
-      form_pnt => form_pnt%next
+      call new_formula_item(flist_pnt,command_set_target_init,idxlcc)
+      flist_pnt => flist_pnt%next
 
       ! expand <0|(1+Tbar) e^{-T} H e^T|0> =
       ! <0| e^{-T} H e^T|0> +
-      call expand_op_bch(form_pnt,2,idxlcc,
+      call expand_op_bch(flist_pnt,2,idxlcc,
      &     1d0,-1,idxham,1d0,idxtop,1,2,op_info)
 
       ! advance pointer
-      do while(associated(form_pnt%next))
-        form_pnt => form_pnt%next
+      do while(associated(flist_pnt%next))
+        flist_pnt => flist_pnt%next
       end do
       ! <0|Tbar e^{-T} H e^T|0>
-      call expand_op_bch(form_pnt,4,idxlcc,
+      call expand_op_bch(flist_pnt,4,idxlcc,
      &     1d0,idxtbar,idxham,1d0,idxtop,1,-1,op_info)
 
       ! insert here procedure to produce approx. expansions      
 
       ! post_processing and term counting:
-      call cc_form_post(form_lag,nterms,idxtbar,idxham,idxtop,op_info)
+      call cc_form_post(flist_lag,nterms,idxtbar,idxham,idxtop,op_info)
 
-      ! assign canonical name and comment
-      form_cclag%label = label_cclg0
-      form_cclag%comment = title_cclg0
+      ! assign comment
+      form_cclag%comment = trim(title)
       ! write to disc
-      write(name,'(a,".fml")') trim(label_cclg0)
+      write(name,'(a,".fml")') trim(form_cclag%label)
       call file_init(form_cclag%fhand,name,ftyp_sq_unf,0)
-      call write_form_list(form_cclag%fhand,form_lag,title_cclg0)
+      call write_form_list(form_cclag%fhand,flist_lag,
+     &     form_cclag%comment)
 
-      call dealloc_formula_list(form_lag)
+      call dealloc_formula_list(flist_lag)
 
       call atim_csw(cpu,sys,wall)
       write(luout,*) 'Number of generated terms: ',nterms

@@ -1,6 +1,8 @@
 *----------------------------------------------------------------------*
       subroutine get_grph4occ(idx_gr,iocc,irst,
      &     str_info,ihpvgas,ngas,njoined,error_exit)
+! pass orb_info instead
+! error_exit -> error_handling
 *----------------------------------------------------------------------*
 *     get graphs for each HPV/CA from occupation + restriction
 *----------------------------------------------------------------------*
@@ -65,6 +67,9 @@
               idx_gr(1:ngastp,1:2,1:njoined) = -1
               exit outer_loop
             end if
+c           call add_graph(iocc(igastp,ica,ijoin),igastp,ica,
+c     irst(1,1,1,1,ii),str_info,orb_info)
+c
           end if
             
           idx_gr(igastp,ica,ijoin) = idxgraph

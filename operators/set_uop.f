@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_uop(op,name,dagger,absym,casym,gamma,s2,ms,
+      subroutine set_uop(op,name,dagger,
      &     occ_def,ndef,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_user_op
@@ -12,7 +12,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(operator), intent(inout) ::
      &     op
@@ -21,7 +21,6 @@
       logical, intent(in) ::
      &     dagger
       integer, intent(in) ::
-     &     absym, casym, gamma, s2, ms,
      &     occ_def, ndef
 
       type(orbinf) ::
@@ -34,7 +33,7 @@
       call set_restr_for_uop()
 
       call set_user_op(op,name,optyp_operator,
-     &     dagger,absym,casym,gamma,s2,ms,
+     &     dagger,
      &     occ_def,ndef,irestr,orb_info)
 
       return

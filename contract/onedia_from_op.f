@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine onedia_from_op(x1dia,ffop,op,orb_info)
+      subroutine onedia_from_op(x1dia,mel,orb_info)
 *----------------------------------------------------------------------*
-*     extract the diagonal of the rank-one part of operator op
+*     extract the diagonal of the rank-one part of ME-list mel
 *----------------------------------------------------------------------*
 
       implicit none
@@ -13,6 +13,7 @@
       include 'stdunit.h'
       include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_orbinf.h'
       include 'ifc_memman.h'
       include 'ifc_baserout.h'
@@ -20,12 +21,10 @@
 
       real(8), intent(out) ::
      &     x1dia(*)
-      type(operator), intent(in) ::
-     &     op
-      type(filinf), intent(in) ::
-     &     ffop
       type(orbinf), intent(in), target ::
      &     orb_info
+      type(me_list), intent(in) ::
+     &     mel
 
       integer ::
      &     ifree, iocc_cls, nbuff, ioff_blk, ilen_blk, idx, idxcur, 
@@ -37,10 +36,21 @@
 
       real(8), pointer ::
      &     buffer(:), curblk(:)
+      type(operator), pointer ::
+     &     op
+      type(filinf), pointer ::
+     &     ffop
 
       ifree = mem_setmark('onedia')
 
+      op => mel%op
+      ffop => mel%fhand
+
+      if (mel%mst.ne.0)
+     &     call quit(1,'onedia_from_op','MS !=0 ???')
+
       if (.not.ffop%buffered) then
+        nbuff = 0
         do iocc_cls = 1, op%n_occ_cls
           ! see below for explanations
           if (max(op%ica_occ(1,iocc_cls),op%ica_occ(2,iocc_cls)).ne.1)
@@ -56,7 +66,7 @@ c     &         cycle
           endif
           if (list_cmp(op%ihpvca_occ(1,1,iocc_cls),
      &                 op%ihpvca_occ(1,2,iocc_cls),ngastp)) then
-            nbuff = nbuff + op%len_op_occ(iocc_cls)
+            nbuff = nbuff + mel%len_op_occ(iocc_cls)
           end if
         end do
         ifree = mem_alloc_real(buffer,nbuff,'buffer')
@@ -88,8 +98,8 @@ c     &       cycle
         if (.not.list_cmp(op%ihpvca_occ(1,1,iocc_cls),
      &                    op%ihpvca_occ(1,2,iocc_cls),ngastp)) cycle
 
-        ioff_blk = op%off_op_occ(iocc_cls)
-        ilen_blk = op%len_op_occ(iocc_cls)
+        ioff_blk = mel%off_op_occ(iocc_cls)
+        ilen_blk = mel%len_op_occ(iocc_cls)
         if (ffop%buffered) then
           idxbuf = ffop%idxrec(iocc_cls)+1
           if (idxbuf.le.0)
@@ -109,7 +119,7 @@ c     &       cycle
 
           do isym = 1, orb_info%nsym
 
-            idxcur = op%off_op_gmo(iocc_cls)%gam_ms(isym,idxms)
+            idxcur = mel%off_op_gmo(iocc_cls)%gam_ms(isym,idxms)
      &               -ioff_blk+1
             curblk => buffer(idxcur:)
             idx = 0

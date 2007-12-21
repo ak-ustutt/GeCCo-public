@@ -39,6 +39,8 @@
       call write_title(luout,wst_subsection,
      &     'Formula factorization')
 
+      iscale_stat = 0
+
       form_ptr => form_head
       iterm = 0
       do while(form_ptr%command.ne.command_end_of_formula)

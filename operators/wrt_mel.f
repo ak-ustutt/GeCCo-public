@@ -1,14 +1,15 @@
 *----------------------------------------------------------------------*
-      subroutine wrt_op_buf(luout,level,bufop,op,iblkst,iblknd,
+      subroutine wrt_mel_buf(luout,level,bufmel,mel,iblkst,iblknd,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
-*     wrapper for wrt_op: operator elements on incore buffer
+*     wrapper for wrt_mel: operator elements on incore buffer
 *     see below for further info
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
       include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
@@ -20,9 +21,9 @@
       integer, intent(in) ::
      &     luout, level, iblkst, iblknd
       real(8), intent(in) ::
-     &     bufop(*)
-      type(operator), intent(in) ::
-     &     op
+     &     bufmel(*)
+      type(me_list), intent(in) ::
+     &     mel
       type(strinf), intent(in) ::
      &     str_info
       type(orbinf), intent(in) ::
@@ -31,23 +32,24 @@
       type(filinf) ::
      &     ffdum
 
-      call wrt_op(luout,level,.true.,bufop,ffdum,op,iblkst,iblknd,
+      call wrt_mel(luout,level,.true.,bufmel,mel,iblkst,iblknd,
      &     str_info,orb_info)
 
       return
       end
 
 *----------------------------------------------------------------------*
-      subroutine wrt_op_file(luout,level,ffop,op,iblkst,iblknd,
+      subroutine wrt_mel_file(luout,level,mel,iblkst,iblknd,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
-*     wrapper for wrt_op: operator elements on file
+*     wrapper for wrt_mel: matrix-elements on file
 *     see below for further info
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
       include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
@@ -58,10 +60,8 @@
 
       integer, intent(in) ::
      &     luout, level, iblkst, iblknd
-      type(filinf), intent(in) ::
-     &     ffop
-      type(operator), intent(in) ::
-     &     op
+      type(me_list), intent(in) ::
+     &     mel
       type(strinf), intent(in) ::
      &     str_info
       type(orbinf), intent(in) ::
@@ -70,14 +70,14 @@
       real(8) ::
      &     xdum
 
-      call wrt_op(luout,level,.false.,xdum,ffop,op,iblkst,iblknd,
+      call wrt_mel(luout,level,.false.,xdum,mel,iblkst,iblknd,
      &     str_info,orb_info)
 
       return
       end
 
 *----------------------------------------------------------------------*
-      subroutine wrt_op(luout,level,incore,bufop,ffop,op,iblkst,iblknd,
+      subroutine wrt_mel(luout,level,incore,bufmel,mel,iblkst,iblknd,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
 *     given: an operator definition (op) and a file handle
@@ -97,6 +97,7 @@
       include 'opdim.h'
       include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
@@ -110,11 +111,9 @@
       logical, intent(in) ::
      &     incore
       real(8), intent(in), target ::
-     &     bufop(*)
-      type(filinf), intent(in) ::
-     &     ffop
-      type(operator), intent(in) ::
-     &     op
+     &     bufmel(*)
+      type(me_list), intent(in) ::
+     &     mel
       type(strinf), intent(in) ::
      &     str_info
       type(orbinf), intent(in) ::
@@ -124,16 +123,21 @@
      &     first, close_again, blk_buf, scalar
       integer ::
      &     idoff, idxoff, idxoff_blk, iblk, lenblk, lenprt, ifree, mmax,
-     &     msmax, idxms, ms, igam, idx_dis, ndis, nwarn, did, idum, nel,
+     &     msamax, mscmax, idxms, ms, igam, idx_dis, ndis, nwarn, did,
+     &     idum, nel, mst,
      &     idxoff0, njoined, idx_occ
       integer ::
-     &     msd(ngastp,2,op%njoined), igamd(ngastp,2,op%njoined),
-     &     scr(ngastp,2,2*op%njoined)
+     &     msd(ngastp,2,mel%op%njoined), igamd(ngastp,2,mel%op%njoined),
+     &     scr(ngastp,2,2*mel%op%njoined)
       real(8) ::
      &     xnrm, xnrm_tot, xnrm_ms
       real(8), pointer ::
      &     buffer(:), curblk(:)
 
+      type(operator), pointer ::
+     &     op
+      type(filinf), pointer ::
+     &     ffop
       logical, external ::
      &     next_msgamdist
       real(8), external ::
@@ -141,17 +145,23 @@
 
       ifree = mem_setmark('wrt_op')
 
+      op => mel%op
+      ffop => mel%fhand
+      mst = mel%mst
+
       if (.not.incore) then
         
         mmax = 0
         do iblk = iblkst, iblknd
           if(op%formal_blk(iblk))cycle
-          msmax = op%ica_occ(2,iblk)
+          mscmax = op%ica_occ(1,iblk)
+          msamax = op%ica_occ(2,iblk)
           idxms = 0
-          do ms = msmax, -msmax, -2
+          do ms = msamax, -msamax, -2
+            if (abs(mst+ms).gt.mscmax) cycle
             idxms = idxms+1
             do igam = 1, orb_info%nsym
-              mmax = max(mmax,op%len_op_gmo(iblk)%gam_ms(igam,idxms))
+              mmax = max(mmax,mel%len_op_gmo(iblk)%gam_ms(igam,idxms))
             end do
           end do
         end do
@@ -163,12 +173,12 @@
           call file_open(ffop)
         end if
       else
-        ! incore: we assume that bufop starts with first block
+        ! incore: we assume that bufmel starts with first block
         !         to be displayed
-        idxoff0 = op%off_op_occ(iblkst)
+        idxoff0 = mel%off_op_occ(iblkst)
       end if
 
-      njoined = op%njoined
+      njoined = mel%op%njoined
 
       xnrm_tot = 0d0
       idx_occ = (iblkst-1)*njoined+1
@@ -183,28 +193,30 @@
         if (level.ge.1) then
           if (level.ge.2) write(luout,'("+",77("="),"+")')
           write(luout,'(2x,a,i4,a,i12)') 'block no. ',iblk,' len = ',
-     &         op%len_op_occ(iblk)
+     &         mel%len_op_occ(iblk)
           if (level.ge.2)
      &         call wrt_occ_n(luout,op%ihpvca_occ(1,1,idx_occ),njoined)
           if (level.ge.2) write(luout,'("+",77("="),"+")')
         end if
 
-        scalar = min(op%ica_occ(1,iblk),op%ica_occ(2,iblk)).eq.0
+        scalar = max(op%ica_occ(1,iblk),op%ica_occ(2,iblk)).eq.0
 
         nwarn = 0
-        msmax = op%ica_occ(2,iblk)
-        nel = msmax+op%ica_occ(1,iblk)
+        mscmax = op%ica_occ(1,iblk)
+        msamax = op%ica_occ(2,iblk)
+        nel = msamax+op%ica_occ(1,iblk)
         idxms = 0
         idxoff = 0
         idxoff_blk = 0
-        do ms = msmax, -msmax, -2
+        do ms = msamax, -msamax, -2
+          if (abs(ms+mst).gt.mscmax) cycle
           xnrm_ms = 0d0
           idxms = idxms+1
           do igam = 1, orb_info%nsym
 
             ! block offest and length:
-            idxoff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
-            lenblk = op%len_op_gmo(iblk)%gam_ms(igam,idxms)
+            idxoff = mel%off_op_gmo(iblk)%gam_ms(igam,idxms)
+            lenblk = mel%len_op_gmo(iblk)%gam_ms(igam,idxms)
             if (lenblk.eq.0) cycle
 
             ! get current block
@@ -218,7 +230,7 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
               ! currently: idxoff should be valid here, as well
               curblk => ffop%buffer(idxoff+1:idxoff+lenblk)
             else
-              curblk => bufop(idxoff-idxoff0+1:idxoff-idxoff0+lenblk)
+              curblk => bufmel(idxoff-idxoff0+1:idxoff-idxoff0+lenblk)
             end if
 
             ! reset offset within current buffer
@@ -239,7 +251,7 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
             if (level.ge.2) then
               ! print out distributions
               first = .true.
-              ndis = op%off_op_gmox(iblk)%ndis(igam,idxms)
+              ndis = mel%off_op_gmox(iblk)%ndis(igam,idxms)
               if (ndis.eq.0) then
                 write(luout,*) 'WARNING:'
                 write(luout,*)
@@ -260,8 +272,8 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
                       write(luout,'(2x,6f12.7)')
      &                   curblk(idxoff_blk+1)
                     else
-                      call wrt_op_blk_wi(luout,curblk(idxoff_blk+1),
-     &                   op,iblk,igam,idxms,1,
+                      call wrt_mel_blk_wi(luout,curblk(idxoff_blk+1),
+     &                   mel,iblk,igam,idxms,1,
      &                   nel,str_info,orb_info)
                     end if
                   else
@@ -275,7 +287,7 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
               end if
               distr_loop: do idx_dis = 1, ndis
                   
-                did = op%off_op_gmox(iblk)%did(idx_dis,igam,idxms)
+                did = mel%off_op_gmox(iblk)%did(idx_dis,igam,idxms)
 
                 call did2msgm(msd,igamd,did,
      &               op%ihpvca_occ(1,1,idx_occ),orb_info%nsym,njoined)
@@ -285,7 +297,7 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
      &               igamd(1:ngastp,1:2,1:njoined)
 
                 lenblk =
-     &               op%len_op_gmox(iblk)%d_gam_ms(idx_dis,igam,idxms)
+     &               mel%len_op_gmox(iblk)%d_gam_ms(idx_dis,igam,idxms)
                 if (lenblk.eq.0) cycle
                 xnrm =
      &               sqrt(ddot(lenblk,curblk(idxoff_blk+1),1,
@@ -303,8 +315,8 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
      &                 write(luout,*) 'index of first element:',idxoff+1
                   write(luout,'("+",77("."),"+")')
                   if (level.ge.5) then
-                    call wrt_op_blk_wi(luout,curblk(idxoff_blk+1),
-     &                   op,iblk,igam,idxms,idx_dis,
+                    call wrt_mel_blk_wi(luout,curblk(idxoff_blk+1),
+     &                   mel,iblk,igam,idxms,idx_dis,
      &                   nel,str_info,orb_info)
                   else
                     write(luout,'(2x,6f12.7)')

@@ -43,6 +43,8 @@ c     &     list_pnt
       integer, external ::
      &     idx_oplist2, idx_formlist
 
+      call quit(1,'set_cc_formula2','obsolete -- use define_formula')
+
         call write_title(luout,wst_section,
      &     'Setting up formulae for coupled-cluster calculations')      
 
@@ -206,13 +208,13 @@ c
         if (iprlvl.gt.0)
      &     write(luout,'(2x,"* ",a,i1)')
      &     'Setting densities up to rank: ',densities
-        call add_formula(form_info,label_ccdens)
-        idx = idx_formlist(label_ccdens,form_info)
+        call add_formula(form_info,label_cc1dens)
+        idx = idx_formlist(label_cc1dens,form_info)
         form_pnt => form_info%form_arr(idx)%form
-        idxdens = idx_oplist2(op_ccdens,op_info)
+        idxdens = idx_oplist2(op_1dens,op_info)
         ! d L / d H
         call form_deriv2(form_pnt,cclg_pnt,
-     &       label_ccdens,title_ccdens,
+     &       label_cc1dens,title_cc1dens,
      &       1,idxham,0,idxdens,
      &       op_info)
       end if

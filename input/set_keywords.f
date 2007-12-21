@@ -92,10 +92,23 @@
       call argument_add('conv','calculate.solve.eigen',
      &     type=vtyp_rl8,
      &     xdef=(/1d-6/))
+      call argument_add('method','calculate.solve.eigen',
+     &     type=vtyp_str,len=8,
+     &     cdef=(/'d','a','v','i','d','s','o','n'/))
 
       call keyword_add('CC_solve_tbar',context='calculate')
       call keyword_add('CC_solve_sim',context='calculate')
       call keyword_add('properties',context='calculate')
+
+      call keyword_add('excitation',context='calculate')
+      call argument_add('sym','calculate.excitation',
+     &     type=vtyp_int,len=8,
+     &     idef=(/1,0,0,0,0,0,0,0/))
+
+      call keyword_add('ionization',context='calculate')
+      call argument_add('sym','calculate.ionization',
+     &     type=vtyp_int,len=8,
+     &     idef=(/1,0,0,0,0,0,0,0/))
 
       call keyword_add('routes',context='calculate')
       call argument_add('schedule','calculate.routes',type=vtyp_int,

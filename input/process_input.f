@@ -108,8 +108,8 @@
       ! CC options
       call cc_input()
 
-      ! R12 options
-      call r12_input()
+c      ! R12 options
+c      call r12_input()
 
       return
 

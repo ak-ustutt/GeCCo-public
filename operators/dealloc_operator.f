@@ -44,57 +44,10 @@
       if (associated(op%formal_blk)) then
         deallocate(op%formal_blk)
         op%formal_blk => null()
-      end if
-      if (associated(op%idx_graph)) then
-        deallocate(op%idx_graph)
-        op%idx_graph => null()
-        ! if noone has cheated, we should end up here when everything
+        ! if no-one has cheated, we should end up here when everything
         ! from this section has been removed cleanly
         ! could be made safer
-        ifree = mem_dealloc(trim(op%name)//'-0')
-      end if
-
-      if (associated(op%off_op_occ)) then
-        deallocate(op%off_op_occ)
-        op%off_op_occ => null()
-      end if
-      if (associated(op%len_op_occ)) then
-        deallocate(op%len_op_occ)
-        op%len_op_occ => null()
-      end if
-      if (associated(op%off_op_gmo)) then
-        do iblk = 1, nblk
-          deallocate(op%off_op_gmo(iblk)%gam_ms)
-        end do
-        deallocate(op%off_op_gmo)
-        op%off_op_gmo => null()
-      end if
-      if (associated(op%len_op_gmo)) then
-        do iblk = 1, nblk
-          deallocate(op%len_op_gmo(iblk)%gam_ms)
-        end do
-        deallocate(op%len_op_gmo)
-        op%len_op_gmo => null()
-      end if
-      if (associated(op%off_op_gmox)) then
-        do iblk = 1, nblk
-          deallocate(op%off_op_gmox(iblk)%d_gam_ms)
-          deallocate(op%off_op_gmox(iblk)%did)
-          deallocate(op%off_op_gmox(iblk)%ndis)
-        end do
-        deallocate(op%off_op_gmox)
-        op%off_op_gmox => null()
-      end if
-      if (associated(op%len_op_gmox)) then
-        do iblk = 1, nblk
-          deallocate(op%len_op_gmox(iblk)%d_gam_ms)
-        end do
-        deallocate(op%len_op_gmox)
-        op%len_op_gmox => null()
-        ! if noone has cheated, we should end up here
-        ! could be made safer
-        ifree = mem_dealloc(trim(op%name)//'-1')
-        ifree = mem_dealloc(trim(op%name)//'-2')
+        ifree = mem_dealloc(trim(op%name))
       end if
 
       call mem_popmark()

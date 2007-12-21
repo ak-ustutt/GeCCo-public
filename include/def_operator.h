@@ -14,27 +14,6 @@
      &     vtxtyp_ph_ex = 2,   !  typ 1, only excitations 
      &     vtxtyp_ph_dx = 3,   !  typ 1, only deexcitations 
      &     vtxtyp_val   = 4    ! V spaces as well
-*----------------------------------------------------------------------*
-*     auxiliary types
-*----------------------------------------------------------------------*
-      type leninf
-        integer, pointer ::
-     &     gam_ms(:,:)
-      end type leninf
-      type leninfx
-        integer ::
-     &     maxd
-        integer, pointer ::
-     &     ndis(:,:)
-        integer, pointer ::
-     &     did(:,:,:)
-        integer, pointer ::
-     &     d_gam_ms(:,:,:)
-      end type leninfx
-      type leninfx2
-        integer, pointer ::
-     &     d_gam_ms(:,:,:)
-      end type leninfx2
 
       integer, parameter ::
      &     len_opname = 8
@@ -43,38 +22,27 @@
 *----------------------------------------------------------------------*
       type operator
         integer ::
-     &     id
-        character ::
-     &     name*(len_opname)
+     &     id   ! might be obsolete
+        character(len_opname) ::
+     &     name
+        character(2*len_opname) ::  
+     &     assoc_list     ! name of the currently associated ME-list
 *----------------------------------------------------------------------*
-*     basic definitions:
 *
 *       dagger == true: Operator defined as adjungate, 
 *                       in particular: operator elements
 *                       are saved in same sequence as 
 *                       in the non-daggered case
 *                       
-*       absym, casym imply that only triangles are saved
-*       convention: MS >= 0, index(alpha) >= index(beta)
-*                   index(A) >= index(C)
 *----------------------------------------------------------------------*
 	logical ::
      &     dagger               ! daggered operator:
                                 ! C <-> A are to be interchanged
         integer ::
      &     type,                ! 1: operator, 2: density, 3: intermed.
-     &     njoined              ! for intermediate only: number of joined 
-                                !      vertices
-        integer ::
-     &     absym,               ! symmetry on interchange of alpha/beta
-     &                          ! (time reversal sym.) values: 0/+1/-1
-     &     casym                ! symmetry on interchange C<->A
-                                ! (adjungation) values: 0/+1/-1
-        
-        integer ::
-     &       gamt,                    ! total symmetry
-     &       s2,mst,                  ! total spin and ms
-     &       n_occ_cls                ! number of occupation classes
+     &     njoined,             ! for intermediate only: number of joined 
+     &                          !      vertices
+     &     n_occ_cls            ! number of occupation classes
 
         logical ::
      &       formal                   ! formal operator only?
@@ -95,21 +63,4 @@
            !                     occupations to be skipped
 	                      ! hpv occupation + subspace restriction =
 			      ! occupation class
-	! dimension info for operators
-	integer :: 
-     &       len_op	      ! total length
-	integer, pointer ::
-     &       off_op_occ(:),   ! offset for occupation class
-     &       len_op_occ(:)    ! length per occupation class
-        type(leninf), pointer ::
-     &       off_op_gmo(:),    ! offset for IRREP, MS and occupation class
-     &       len_op_gmo(:)     ! length per IRREP, MS and occupation class
-        type(leninfx), pointer ::
-     &       off_op_gmox(:)    ! offset per IRREP, MS and occupation class,
-                               ! and IRREP and MS distr. over HPV per C/A
-        type(leninfx2), pointer ::
-     &       len_op_gmox(:)    ! length per IRREP, MS and occupation class,
-        integer, pointer ::
-     &       idx_graph(:,:,:)     ! graph needed for addressing of
-                              ! the corresp. PHV/CA part
       end type operator	      

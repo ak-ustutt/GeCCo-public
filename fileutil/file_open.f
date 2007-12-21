@@ -16,6 +16,10 @@
       type(filinf), intent(inout) ::
      &     fhand
 
+      if (fhand%unit.gt.0)
+     &     call quit(1,'file_open',
+     &     'file is already open: '//trim(fhand%name))
+
       if (fhand%type.eq.ftyp_da_unf) then
         fhand%unit = iopen_nud(fhand%name,fhand%reclen)
       else if (fhand%type.eq.ftyp_sq_unf) then

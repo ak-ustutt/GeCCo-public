@@ -40,7 +40,7 @@
       ! the template: THIS IS HIGHLY DANGEROUS
       ! so: let's get our own space for the arrays and copy these
 
-      call init_operator(0,op_clone,orb_info)
+      call init_operator(op_clone,orb_info)
 
       n_occ_cls = op_template%n_occ_cls
       ngas = orb_info%ngas
@@ -60,8 +60,5 @@
         op_clone%formal_blk = op_template%formal_blk
       end if
 
-      if (associated(op_template%len_op_occ))
-     &     call quit(1,'clone_operator',
-     &     'not yet prepared for cloning length info')
-
+      return
       end

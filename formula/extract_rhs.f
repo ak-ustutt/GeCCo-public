@@ -49,7 +49,7 @@
 
       do while(fl_raw_pnt%command.ne.command_end_of_formula)
         if (fl_raw_pnt%command.ne.command_add_contribution)
-     &       call quit(1,'extrac_rhs',
+     &       call quit(1,'extract_rhs',
      &       'raw formula must not contain other commands than [ADD]')
         
         if (vtx_in_contr(idx_x,fl_raw_pnt%contr).gt.0) then

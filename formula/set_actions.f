@@ -32,6 +32,8 @@ c      include 'def_file_list.h'
       integer ::
      &     iprint
 
+      call quit(1,'add_actions','obsolete')
+
       iprint = max(ntest,iprlvl)
 
       ! Set the actions required to perform certain tasks.

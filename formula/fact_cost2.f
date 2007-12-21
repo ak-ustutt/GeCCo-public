@@ -183,7 +183,7 @@ c     &     nca_blk(2,7)
      &     cost(1:3) = huge(cost(1))
 
       if (possible) then
-        if (new_route) then
+c        if (new_route) then
           call init_cnt_info(cnt_info,
      &         iocc_op1,iocc_ex1,njoined_op(1),
      &            iocc_op2,iocc_ex2,njoined_op(2),
@@ -205,14 +205,14 @@ c     &     nca_blk(2,7)
      &         str_info,ngas,ihpvgas,nsym)          
 
           call dealloc_cnt_info(cnt_info)
-        else
-          call dummy_contr(flops,xmemtot,xmemblk,
-     &       iocc_op1,iocc_op2,iocc_ex1,iocc_ex2,
-     &       iocc_op1op2,iocc_cnt,
-     &       irst_op1,irst_op2,irst_op1op2,
-     &       mst_op,mst_op1op2,igamt_op,igamt_op1op2,
-     &       str_info,ngas,ihpvgas,nsym)
-        end if
+c        else
+c          call dummy_contr(flops,xmemtot,xmemblk,
+c     &       iocc_op1,iocc_op2,iocc_ex1,iocc_ex2,
+c     &       iocc_op1op2,iocc_cnt,
+c     &       irst_op1,irst_op2,irst_op1op2,
+c     &       mst_op,mst_op1op2,igamt_op,igamt_op1op2,
+c     &       str_info,ngas,ihpvgas,nsym)
+c        end if
 
         cost(1) = cost(1)+flops
         cost(2) = max(cost(2),xmemtot)

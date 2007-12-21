@@ -1,20 +1,22 @@
 *----------------------------------------------------------------------*
-      subroutine set_opti_info(opti_info,mode,nopt,nroot,op_opt)
+      subroutine set_opti_info(opti_info,mode,nopt,nroot,mel_opt)
 *----------------------------------------------------------------------*
       implicit none
       
       include 'def_optimize_info.h'
       include 'ifc_input.h'
       include 'ifc_memman.h'
+      include 'def_filinf.h'
       include 'def_operator.h'
-      include 'def_operator_array.h'
+      include 'def_me_list.h'
+      include 'def_me_list_array.h'
 
       type(optimize_info), intent(inout) ::
      &     opti_info
       integer, intent(in) ::
      &     nopt, mode, nroot
-      type(operator_array), intent(in) ::
-     &     op_opt(nopt)
+      type(me_list_array), intent(in) ::
+     &     mel_opt(nopt)
 
       character ::
      &     str*16
@@ -24,6 +26,7 @@
       opti_info%variational = .false.
       if (mode.eq.1) opti_info%linear = .false.
       if (mode.eq.2) opti_info%linear = .true.
+      if (mode.eq.3) opti_info%linear = .true.
 
       ! get global values
       call get_argument_value('calculate.solve','maxiter',
@@ -41,7 +44,7 @@
 
       opti_info%nopt = nopt
       do iopt = 1, nopt
-        opti_info%nwfpar(iopt) = op_opt(iopt)%op%len_op
+        opti_info%nwfpar(iopt) = mel_opt(iopt)%mel%len_op
       end do
 
       opti_info%nroot = nroot
@@ -123,6 +126,38 @@
           opti_info%norder = 1
         case('SUBSPACE') 
           opti_info%mode_leq = mode_leq_subsp
+          opti_info%norder = 1
+        case default
+          call quit(0,'set_opti','invalid method: '//trim(str))
+        end select
+      
+      else if (mode.eq.3) then
+
+        if (is_argument_set('calculate.solve.eigen','maxiter'))
+     &       call get_argument_value('calculate.solve.eigen',
+     &       'maxiter',
+     &       ival=opti_info%maxmacit)
+        if (is_argument_set('calculate.solve.eigen','maxsub'))
+     &       call get_argument_value('calculate.solve.eigen',
+     &       'maxsub',
+     &       ival=opti_info%maxsbsp)
+
+        ! here the interpretation is: maxsbsp = sbsp per root, so:
+        opti_info%maxsbsp = opti_info%maxsbsp*nroot
+
+        if (is_argument_set('calculate.solve.eigen','conv')) then
+          call get_argument_value('calculate.solve.eigen','conv',
+     &         xval=opti_info%thrgrd(1))
+          if (nopt.gt.1)
+     &         opti_info%thrgrd(2:nopt) = opti_info%thrgrd(1)
+        end if
+
+        call get_argument_value('calculate.solve.eigen','method',
+     &       str=str)
+        call uppcas(str)
+        select case(trim(str(1:8)))
+        case('DAVIDSON') 
+          opti_info%mode_evp = mode_leq_subsp
           opti_info%norder = 1
         case default
           call quit(0,'set_opti','invalid method: '//trim(str))

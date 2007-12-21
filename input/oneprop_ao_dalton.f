@@ -11,13 +11,14 @@
       include 'par_dalton.h'
       include 'def_operator.h'
       include 'def_filinf.h'
+      include 'def_me_list.h'
       include 'def_orbinf.h'
       include 'ifc_memman.h'
       include 'multd2h.h'
 
       type(filinf), intent(inout) ::
      &     ffdao
-      type(operator), intent(in) ::
+      type(me_list), intent(in) ::
      &     dens
       type(orbinf), intent(in) ::
      &     orb_info

@@ -237,7 +237,7 @@ c dbg
             ! currently best solution vectors
             call optc_minspace(
      &           iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,
-     &           vred,gred,mred,nred,nroot,
+     &           vred,gred,mred,nred,nroot,nroot,mxsub,
      &           ffscr,nnew,
      &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
             ndim_vsbsp = nred

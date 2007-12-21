@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_dens(op,name,dagger,absym,casym,gamma,s2,ms,
+      subroutine set_dens(op,name,dagger,
      &     min_rank,max_rank,iformal,orb_info)
 *----------------------------------------------------------------------*
 *     set up density-like operator (minrank to maxrank)
@@ -22,12 +22,13 @@
       logical, intent(in) ::
      &     dagger
       integer, intent(in) ::
-     &     absym, casym, gamma, s2, ms,
      &     min_rank, max_rank, iformal
 
       type(orbinf), intent(inout) ::
      &     orb_info
 
+      integer ::
+     &     idx
       integer ::
      &     occ0(ngastp,2)
       type(operator_array), pointer ::
@@ -39,17 +40,22 @@
 
       ! density has no external lines, so:
       occ0 = 0
-      call set_uop(opscr(1)%op,'scr1',.false.,0,0,1,1,0,
+      call set_uop(opscr(1)%op,'scr1',.false.,
      &     occ0,1,orb_info)
 
       ! the internal lines are defined by a Hamiltonian-like
       ! operator, so we use ...
-      call set_hop(opscr(2)%op,'scr2',dagger,absym,casym,gamma,s2,ms,
+      call set_hop(opscr(2)%op,'scr2',dagger,
      &     min_rank,max_rank,iformal,orb_info)
 
       ! ... and define the density:
       call set_gen_intermediate(op,name,
      &     opscr,2,orb_info)
+
+      op%formal = .true.
+      do idx = 1, op%n_occ_cls
+        op%formal = op%formal.and.op%formal_blk(idx)
+      end do
 
       call dealloc_operator(opscr(1)%op)
       call dealloc_operator(opscr(2)%op)

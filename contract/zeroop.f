@@ -1,20 +1,19 @@
 *------------------------------------------------------------------------*
-      subroutine zeroop(ffop,op)
+      subroutine zeroop(mel)
 *------------------------------------------------------------------------*
-*     set operator to zero, initialize with zero
+*     set ME-list to zero, initialize with zero
 *------------------------------------------------------------------------*
       implicit none
 
       include 'opdim.h'
       include 'stdunit.h'
-      include 'def_operator.h'
       include 'def_filinf.h'
+      include 'def_operator.h'
+      include 'def_me_list.h'
       include 'ifc_memman.h'
 
-      type(operator), intent(in) ::
-     &     op
-      type(filinf), intent(inout) ::
-     &     ffop
+      type(me_list), intent(inout) ::
+     &     mel
 
       logical ::
      &     closeit
@@ -22,10 +21,21 @@
      &     ifree, len_op, nblk, nblkmax, nbuff, idxst, idxnd,
      &     idum, iblk, idisc_off
 
+      type(operator), pointer ::
+     &     op
+      type(filinf), pointer ::
+     &     ffop
       real(8), pointer ::
      &     buffer(:)
 
       ifree = mem_setmark('zeroop')
+
+      ffop => mel%fhand
+      op => mel%op
+
+      if (.not.associated(ffop))
+     &     call quit(1,'zeroop','No file assigned to list: '//
+     &     trim(mel%label))
 
       if (ffop%unit.le.0) then
         call file_open(ffop)
@@ -46,7 +56,7 @@
 
       if (.not.ffop%buffered) then
 
-        len_op = op%len_op
+        len_op = mel%len_op
         nblk = min((len_op-1)/ffop%reclen + 1,nblkmax)
 
         nbuff = min(len_op,nblk*ffop%reclen)
@@ -71,7 +81,7 @@
         len_op = 0 ! look for largest block
         do iblk = 1, op%n_occ_cls
           if (ffop%incore(iblk).le.0) 
-     &         len_op = max(len_op,op%len_op_occ(iblk))
+     &         len_op = max(len_op,mel%len_op_occ(iblk))
         end do
 
         if (len_op.gt.0) then
@@ -84,8 +94,8 @@
 
           do iblk = 1, op%n_occ_cls
             if (ffop%incore(iblk).le.0) then
-              len_op = op%len_op_occ(iblk)
-              idxst = idisc_off+op%off_op_occ(iblk)+1
+              len_op = mel%len_op_occ(iblk)
+              idxst = idisc_off+mel%off_op_occ(iblk)+1
               len_op = idxst-1+len_op
               do while(idxst.le.len_op)
                 idxnd = min(len_op,idxst-1+nbuff)

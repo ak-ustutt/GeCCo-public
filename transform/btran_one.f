@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine btran_one(ffao,ffcmo,add_dref,ffmo,opdef,orb_info)
+      subroutine btran_one(ffao,ffcmo,add_dref,me_dens,orb_info)
 *----------------------------------------------------------------------*
       implicit none
 
@@ -7,6 +7,7 @@
       include 'opdim.h'
       include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_orbinf.h'
       include 'ifc_memman.h'
 
@@ -14,13 +15,14 @@
      &     ntest = 00
 
       type(filinf), intent(inout) ::
-     &     ffao, ffcmo, ffmo
-      type(operator), intent(in), target ::
-     &     opdef
+     &     ffao, ffcmo
+      type(me_list), intent(inout) ::
+     &     me_dens
       type(orbinf), intent(in), target ::
      &     orb_info
       logical, intent(in) ::
      &     add_dref
+
 
       logical ::
      &     closeit, close_ffmo
@@ -33,22 +35,28 @@
      &     nbas(:), ntoobs(:), mostnd(:,:,:),
      &     ica_occ(:,:), hpvx_occ(:,:,:),
      &     iad_gas(:), hpvx_gas(:), idxcmo(:,:)
-
       real(8), pointer ::
      &     cmo(:), xao(:), xmo(:), xop(:), xhlf(:)
+      type(filinf), pointer ::
+     &     ffmo
+      type(operator), pointer ::
+     &     opdef
 
       integer, external ::
      &     max_dis_blk, idxlist
 
       ifree = mem_setmark('btran_one')
 
+      opdef => me_dens%op
+      ffmo  => me_dens%fhand
+
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'btran_one')
         write(luout,*) 'backtransform one-particle part of: ',
-     &       trim(opdef%name)
+     &       trim(me_dens%label)
       end if
 
-      if (opdef%gamt.ne.1)
+      if (me_dens%gamt.ne.1)
      &     call quit(1,'btran_one',
      &                 'adapt for non-totally symmetric density')
 
@@ -88,7 +96,7 @@
         ! only one-particle part is of interest:
         if (ica_occ(1,iblk).ne.1 .or.
      &      ica_occ(2,iblk).ne.1) cycle
-        nmo = max(nmo,max_dis_blk(-1,opdef,iblk,orb_info))
+        nmo = max(nmo,max_dis_blk(-1,me_dens,iblk,orb_info))
       end do
 
       ifree = mem_alloc_real(cmo,ncmo,'CMO')
@@ -146,10 +154,10 @@
         do idxms = 1, 2
         
           ! load density, or reassign buffer pointer
-          idxst = opdef%off_op_gmo(iblk)%gam_ms(1,idxms) + 1
+          idxst = me_dens%off_op_gmo(iblk)%gam_ms(1,idxms) + 1
           idxnd = idxst-1 
           do isym = 1, nsym
-            idxnd = idxnd + opdef%len_op_gmo(iblk)%gam_ms(isym,idxms)
+            idxnd = idxnd + me_dens%len_op_gmo(iblk)%gam_ms(isym,idxms)
           end do
           if (ffmo%buffered.and.ffmo%incore(iblk).gt.0) then
             xop => ffmo%buffer(idxst:)
@@ -159,7 +167,7 @@
           end if
 
           call btran_one_blk(xao,xop,cmo,xhlf,
-     &         opdef%gamt,idxcmo,hpvx_c,hpvx_a,
+     &         me_dens%gamt,idxcmo,hpvx_c,hpvx_a,
      &         nbas,mostnd,iad_gas,hpvx_gas,ngas,nsym)
 
           if (ntest.ge.100) then

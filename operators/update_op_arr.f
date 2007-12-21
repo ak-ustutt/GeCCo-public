@@ -11,7 +11,10 @@
       type(operator_info) ::
      &     op_info
       integer ::
-     &     iop
+     &     iop, idx
+      
+      integer, external ::
+     &     idx_mel_list
 
       if (associated(op_info%op_arr)) deallocate(op_info%op_arr)
 
@@ -20,13 +23,14 @@
         call op_list2arr2(op_info%op_list,op_info%op_arr,op_info%nops)
       end if
 
-      ! update index -> ID lookup table
-      if (associated(op_info%idx2id)) deallocate(op_info%idx2id)
-      allocate(op_info%idx2id(op_info%nops))
+      ! update op-index -> list-index lookup table
+      if (associated(op_info%op2list)) deallocate(op_info%op2list)
+      allocate(op_info%op2list(op_info%nops))
       do iop = 1, op_info%nops
-        op_info%idx2id(iop) = op_info%op_arr(iop)%op%id
+        idx =
+     &     idx_mel_list(trim(op_info%op_arr(iop)%op%assoc_list),op_info)
+        op_info%op2list(iop) = idx
       end do
-
 
       return
       end

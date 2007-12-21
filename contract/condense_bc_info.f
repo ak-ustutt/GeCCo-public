@@ -168,6 +168,9 @@ c dbg
      &                  igrph,njoined_cnt,hpvxblkseq)
 
       ! OP1OP2
+c dbg
+c      print *,'call for OP1OP2'
+c dbg
       call get_grph4occ(igrph,iocc_op1op2,irst_op1op2,
      &                  str_info,ihpvgas,
      &                  ngas,njoined_op1op2,.true.)
@@ -215,6 +218,9 @@ c dbg
       !  if OP1OP2 differs, this is taken care of by the additional
       !  reordering step
       ! EX1/EX2 for C
+c dbg
+c      print *,'call for ex1ex2'
+c dbg
       call set_mapping_info(cnt_info%map_info_12c,cnt_info%map_info_12a,
      &                  1,
      &                  iocc_ex1,njoined_op1,.false.,
@@ -222,6 +228,9 @@ c dbg
      &                  iocc_op1op2tmp,merge_map12,
      &                                  njoined_op1op2,hpvxblkseq)
       ! EX2/EX1 for A
+c dbg
+c      print *,'call for ex2ex1'
+c dbg
       call set_mapping_info(cnt_info%map_info_12c,cnt_info%map_info_12a,
      &                  2,
      &                  iocc_ex2,njoined_op2,.false.,

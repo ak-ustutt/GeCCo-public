@@ -1,12 +1,12 @@
 *----------------------------------------------------------------------*
-      subroutine set_op_dim2(ipass,op,str_info,ngam)
+      subroutine set_op_dim2(ipass,mel,str_info,ngam)
 *----------------------------------------------------------------------*
 *
-*     set up the dimension arrays for operator op
+*     set up the dimension arrays for ME-list mel operator mel%op
 *
 *     new version: general intermediates added
 *
-*     the operator has a total Ms and IRREP, as given in "op".
+*     the operator has a total Ms and IRREP, as given in "mel".
 *     it is stored as
 *
 *          Op(Cx,Ax,Cp,Ap,Ch,Ah,Cv,Av)
@@ -42,27 +42,29 @@
       include 'stdunit.h'
       include 'opdim.h'
       include 'hpvxseq.h'
+      include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
       
       integer, intent(in) ::
      &     ipass, ngam
       type(strinf), intent(in) ::
      &     str_info
-      type(operator), intent(inout) ::
-     &     op
+      type(me_list), intent(inout) ::
+     &     mel
 
       logical ::
      &     first
       integer ::
      &     idxstr, idxstr_tot, idxdis, iblk, iblkoff, nexc,
-     &     msmax, msmax_last, njoined, nblk,
-     &     msa, msc, idxmsa, idxmsc, igama, igamc,
+     &     msa_max, msc_max, njoined, nblk,
+     &     msa, msc, idxmsa, idxmsa2, igama, igamc,
      &     nasub, ncsub, icmp,
      &     did, iexc, igam, len_blk
 
@@ -79,6 +81,8 @@
      &     ca_occ(:,:)
       type(graph), pointer ::
      &     graphs(:)
+      type(operator), pointer ::
+     &     op
 
       integer ::
      &     msd(ngastp,2), igamd(ngastp,2)
@@ -86,23 +90,25 @@
       logical, external ::
      &     next_msgamdist2
       integer, external ::
-     &     msgmdid2, msgmdid
+     &     msgmdid2, msgmdid, msa2idxms4op
       
+      op => mel%op
+
       if (ntest.gt.5) then
         call write_title(luout,wst_dbg_subr,'set_op_dim')
         write(luout,*) ' ipass = ',ipass
+        write(luout,*) ' ME-list  = ',trim(mel%label)
         write(luout,*) ' operator = ',trim(op%name)
-        write(luout,*) ' IRREP    = ',op%gamt
-        write(luout,*) ' Ms       = ',op%mst
+        write(luout,*) ' IRREP    = ',mel%gamt
+        write(luout,*) ' Ms       = ',mel%mst
       end if
 
       idxstr = 0
       idxstr_tot = 0
-      msmax_last = 0
       njoined = op%njoined
       nblk = op%n_occ_cls
       hpvx_occ => op%ihpvca_occ
-      idx_graph => op%idx_graph
+      idx_graph => mel%idx_graph
       ca_occ => op%ica_occ
       graphs => str_info%g
 
@@ -130,8 +136,8 @@
      &           gamdis_c(ncsub), gamdis_a(nasub),
      &           len_str(ncsub+nasub))
 
-        msmax = min(ca_occ(1,iblk),ca_occ(2,iblk))
-        msmax_last = msmax
+        msc_max = ca_occ(1,iblk)
+        msa_max = ca_occ(2,iblk)
 
         ! set HPVX and OCC info
         call condense_occ(occ_csub, occ_asub,
@@ -143,37 +149,47 @@
      &                    idx_graph(1,1,iblkoff+1),njoined,hpvxblkseq)
 
         ! set offsets
-        op%off_op_occ(iblk) = idxstr
+        mel%off_op_occ(iblk) = idxstr
 
         if (ipass.eq.1) then
-          op%off_op_gmox(iblk)%maxd = 0
+          mel%off_op_gmox(iblk)%maxd = 0
         else
-          op%off_op_gmox(iblk)%
-     &       d_gam_ms(1:op%off_op_gmox(iblk)%maxd,1:ngam,1:msmax)=-1
-          op%off_op_gmox(iblk)%
-     &       did(1:op%off_op_gmox(iblk)%maxd,1:ngam,1:msmax) = 0
-          op%off_op_gmox(iblk)%
-     &       ndis(1:ngam,1:msmax) = 0
+          mel%off_op_gmox(iblk)%
+     &       d_gam_ms(1:mel%off_op_gmox(iblk)%maxd,1:ngam,1:msa_max)=-1
+          mel%off_op_gmox(iblk)%
+     &       did(1:mel%off_op_gmox(iblk)%maxd,1:ngam,1:msa_max) = 0
+          mel%off_op_gmox(iblk)%
+     &       ndis(1:ngam,1:msa_max) = 0
         end if
 
         ! loop over Ms of A-string (fixes Ms of C-string)
         idxmsa = 0
-        msa_loop: do msa = msmax, -msmax, -2
-
-          idxmsa = idxmsa+1
+        msa_loop: do msa = msa_max, -msa_max, -2
 
           ! C <-> A  means alpha <-> beta !!
-          msc = msa + op%mst
+          msc = msa + mel%mst
           ! to make this point clear:
           ! usually, we have mst=0 operators, which implies
           ! Ms(C) == Ms(A)
 
+          if (abs(msc).gt.msc_max) cycle msa_loop
+          idxmsa = idxmsa+1
+
+          ! test indexing routine
+          idxmsa2 = msa2idxms4op(msa,mel%mst,msa_max,msc_max)
+
+          if (idxmsa.ne.idxmsa2)
+     &         call quit(1,'set_op_dim2','bug in msa2idxms4op!')
+c dbg
+c          print *,'msa, msc: ',msa,msc
+c dbg
+
           ! loop over IRREP of A-string (fixes IRREP of C-string)
           igama_loop: do igama = 1, ngam
-            igamc = multd2h(igama,op%gamt)
+            igamc = multd2h(igama,mel%gamt)
             
             ! store the current position in offset array
-            op%off_op_gmo(iblk)%gam_ms(igama,idxmsa) = idxstr
+            mel%off_op_gmo(iblk)%gam_ms(igama,idxmsa) = idxstr
 
             ! now, to be general, we have to loop over all
             ! possible MS and IRREP distributions over X/H/P/V spaces
@@ -190,7 +206,7 @@
      &            msdis_c,msdis_a,gamdis_c,gamdis_a,
      &            ncsub, nasub,
      &            occ_csub,occ_asub,
-     &            msc,msa,igama,igamc,ngam))
+     &            msc,msa,igamc,igama,ngam))
      &           exit distr_loop
 
               first = .false.
@@ -238,13 +254,13 @@
 
               ! save current offset
               if (ipass.eq.2) then
-                op%off_op_gmox(iblk)%
+                mel%off_op_gmox(iblk)%
      &               d_gam_ms(idxdis,igama,idxmsa)=idxstr
                 ! get ID of current distr
                 did = msgmdid2(occ_csub,idxmsdis_c,gamdis_c,ncsub,
      &                         occ_asub,idxmsdis_a,gamdis_a,nasub,ngam)
                 ! save ID of current distr
-                op%off_op_gmox(iblk)%
+                mel%off_op_gmox(iblk)%
      &               did(idxdis,igama,idxmsa) = did
                 if (ntest.ge.150) then
                   write(luout,*) 'current did = ',did
@@ -260,7 +276,7 @@
               idxstr_tot = idxstr_tot+len_blk
 
               if (ipass.eq.2) then
-                op%len_op_gmox(iblk)%
+                mel%len_op_gmox(iblk)%
      &               d_gam_ms(idxdis,igama,idxmsa) = len_blk
               end if
 
@@ -270,21 +286,21 @@
               
             end do distr_loop
 
-            op%len_op_gmo(iblk)%gam_ms(igama,idxmsa) = idxstr -
-     &           op%off_op_gmo(iblk)%gam_ms(igama,idxmsa)
+            mel%len_op_gmo(iblk)%gam_ms(igama,idxmsa) = idxstr -
+     &           mel%off_op_gmo(iblk)%gam_ms(igama,idxmsa)
 
-            op%off_op_gmox(iblk)%maxd =
-     &           max(op%off_op_gmox(iblk)%maxd,idxdis)
+            mel%off_op_gmox(iblk)%maxd =
+     &           max(mel%off_op_gmox(iblk)%maxd,idxdis)
 
             if (ipass.eq.2) then
-              op%off_op_gmox(iblk)%ndis(igama,idxmsa) = idxdis
+              mel%off_op_gmox(iblk)%ndis(igama,idxmsa) = idxdis
             end if
 
           end do igama_loop
 
         end do msa_loop
 
-        op%len_op_occ(iblk) = idxstr - op%off_op_occ(iblk)
+        mel%len_op_occ(iblk) = idxstr - mel%off_op_occ(iblk)
 
         deallocate(hpvx_csub,hpvx_asub,
      &           occ_csub, occ_asub,
@@ -296,15 +312,16 @@
 
       end do occ_cls
 
-      op%len_op = idxstr_tot
+      mel%len_op = idxstr_tot
 
       if (ntest.ge.100) then
         if (ipass.eq.1) then
-          write(luout,*) 'total number of operator elements: ',op%len_op
+          write(luout,*) 'total number of operator elements: ',
+     &         mel%len_op
           write(luout,*) 'length per occupation class:'
-          call iwrtma(op%len_op_occ,nblk,1,nblk,1)
+          call iwrtma(mel%len_op_occ,nblk,1,nblk,1)
           write(luout,*) 'offsets per occupation class:'
-          call iwrtma(op%off_op_occ,nblk,1,nblk,1)
+          call iwrtma(mel%off_op_occ,nblk,1,nblk,1)
           write(luout,*) 'info per occupation class, IRREP, MS:'
           do iblk = 1, nblk
             if (op%formal_blk(iblk)) cycle
@@ -312,10 +329,10 @@
      &                 ca_occ(2,iblk))
             write(luout,*) 'occ-class: ',iblk
             write(luout,*) 'lengths:'
-            call iwrtma(op%len_op_gmo(iblk)%gam_ms,
+            call iwrtma(mel%len_op_gmo(iblk)%gam_ms,
      &           ngam,nexc+1,ngam,nexc+1)
             write(luout,*) 'offsets:'
-            call iwrtma(op%off_op_gmo(iblk)%gam_ms,
+            call iwrtma(mel%off_op_gmo(iblk)%gam_ms,
      &           ngam,nexc+1,ngam,nexc+1)
           end do
         else
@@ -330,10 +347,10 @@
             call wrt_occ_n(luout,op%ihpvca_occ(1,1,iblkoff+1),njoined)
             do iexc = 1, nexc+1
               do igam = 1, ngam
-                if (op%off_op_gmox(iblk)%ndis(igam,iexc).eq.0) cycle
+                if (mel%off_op_gmox(iblk)%ndis(igam,iexc).eq.0) cycle
                 write(luout,*) iexc,igam,' -> ',
-     &               op%off_op_gmox(iblk)%
-     &               d_gam_ms(1:op%off_op_gmox(iblk)%
+     &               mel%off_op_gmox(iblk)%
+     &               d_gam_ms(1:mel%off_op_gmox(iblk)%
      &               ndis(igam,iexc),igam,iexc)
               end do
             end do            
@@ -347,10 +364,10 @@
             call wrt_occ(luout,op%ihpvca_occ(1,1,iblk))
             do iexc = 1, nexc+1
               do igam = 1, ngam
-                if (op%off_op_gmox(iblk)%ndis(igam,iexc).eq.0) cycle
+                if (mel%off_op_gmox(iblk)%ndis(igam,iexc).eq.0) cycle
                 write(luout,*) iexc,igam,' -> ',
-     &               op%off_op_gmox(iblk)%
-     &               did(1:op%off_op_gmox(iblk)%
+     &               mel%off_op_gmox(iblk)%
+     &               did(1:mel%off_op_gmox(iblk)%
      &               ndis(igam,iexc),igam,iexc)
               end do
             end do

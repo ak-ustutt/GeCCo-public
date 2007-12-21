@@ -23,7 +23,8 @@ include $(topdir)/make.rules
 src:=$(filter-out printversion.f,$(wildcard *.f90 *.F *.f))
 objs:=$(addsuffix .o, $(basename $(src)))
 
-libs:=-lsolve -lcontract -lformula -lr12_spec -lcc_spec -lformula -loperators -ltargets -linput -ltransform -lstrings -lfileutil -lmemman -lbaserout -lmath -lcrout
+#libs:=-lsolve -lcontract -lformula -lr12_spec -lcc_spec -lformula -loperators -ltargets -linput -ltransform -lstrings -lfileutil -lmemman -lbaserout -lmath -lcrout
+libs:=-lsolve -lcontract -lformula  -lcc_spec -lformula -loperators -ltargets -linput -ltransform -lstrings -lfileutil -lmemman -lbaserout -lmath -lcrout
 
 
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)

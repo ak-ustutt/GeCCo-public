@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine optc_minspace(
      &     iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,
-     &     vred,gred,mred,nred,nroot,
+     &     vred,gred,mred,nred,nroot,nrhs,mxdim,
      &     ffscr,ioffscr,
      &     nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
 *----------------------------------------------------------------------*
@@ -17,13 +17,13 @@
      &     ntest = 100
 
       integer, intent(inout) ::
-     &     nred, iord_vsbsp(*), iord_rsbsp(*)
+     &     nred, nrhs, mxdim, iord_vsbsp(*), iord_rsbsp(*)
       type(filinf), intent(inout) ::
      &     ffvsbsp, ffrsbsp, ffscr
       integer, intent(in) ::
      &     nroot, nincore, nwfpar, lenbuf, ioffscr
       real(8), intent(inout) ::
-     &     vred(nred*nroot), gred(nred*nroot), mred(nred*nred)
+     &     vred(mxdim,nroot), gred(mxdim,nrhs), mred(mxdim,nred)
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
 
@@ -32,7 +32,7 @@
       real(8) ::
      &     xnrm
       real(8) ::
-     &     smat(nroot*nroot), mscr(nred*nroot), vorth(nred*nroot),
+     &     smat(nroot,nroot), mscr(nred*nroot), vorth(nred*nroot),
      &     vscr(nroot)
 
       real(8), external ::
@@ -42,11 +42,13 @@
         call write_title(luout,wst_dbg_subr,'optc_minspace')
         write(luout,*) 'nred, nroot: ',nred,nroot
         write(luout,*) 'vred on entry:'
-        call wrtmat2(vred,nred,nroot,nred,nroot)
-        write(luout,*) 'gred on entry:'
-        call wrtmat2(gred,nred,nroot,nred,nroot)
+        call wrtmat2(vred,nred,nroot,mxdim,nroot)
+        if (nrhs.gt.0) then
+          write(luout,*) 'gred on entry:'
+          call wrtmat2(gred,nred,nroot,mxdim,nroot)
+        end if
         write(luout,*) 'mred on entry:'
-        call wrtmat2(mred,nred,nred,nred,nred)
+        call wrtmat2(mred,nred,nred,mxdim,nred)
       end if
 
       if (nroot.gt.nred)
@@ -54,8 +56,8 @@
 
       ! get overlap matrix of vectors S_ij = <v_i|v_j>
       call dgemm('T','N',nroot,nroot,nred,
-     &           1d0,vred,nred,
-     &               vred,nred,
+     &           1d0,vred,mxdim,
+     &               vred,mxdim,
      &           0d0,smat,nroot)
 
       if (ntest.ge.100) then
@@ -69,7 +71,7 @@
       ! obtain trafo: reduced space sol. ->  orth reduced space sol.
       ! |v_i^{orth}> = |v_j> t(j,i)
       call dgemm('N','N',nred,nroot,nroot,
-     &           1d0,vred,nred,
+     &           1d0,vred,mxdim,
      &               mscr,nroot,
      &           0d0,vorth,nred)
 
@@ -97,37 +99,45 @@ c dbg
       ! update solution vectors ...
       call dgemm('T','N',nroot,nroot,nred,
      &           1d0,vorth,nred,
-     &               vred,nred,
+     &               vred,mxdim,
      &           0d0,smat,nroot) ! use smat as scratch
-      vred(1:nroot*nroot) = smat(1:nroot*nroot)
+      do iroot = 1, nroot
+        vred(1:nroot,iroot) = smat(1:nroot,iroot)
+      end do
 
-      ! ... update RHS vectors ...
-      call dgemm('T','N',nroot,nroot,nred,
-     &           1d0,vorth,nred,
-     &               gred,nred,
-     &           0d0,smat,nroot) ! use smat as scratch
-      gred(1:nroot*nroot) = smat(1:nroot*nroot)
+      if (nrhs.gt.0) then
+        ! ... update RHS vectors ...
+        call dgemm('T','N',nroot,nrhs,nred,
+     &             1d0,vorth,nred,
+     &                 gred,mxdim,
+     &             0d0,smat,nroot) ! use smat as scratch
+        do iroot = 1, nrhs
+          gred(1:nroot,iroot) = smat(1:nroot,iroot)
+        end do
+      end if
 
       if (ntest.ge.100) then
         write(luout,*) 'new vred: '
-        call wrtmat2(vred,nroot,nroot,nroot,nroot)
-        write(luout,*) 'new gred: '
-        call wrtmat2(gred,nroot,nroot,nroot,nroot)
+        call wrtmat2(vred,nroot,nroot,mxdim,nroot)
+        if (nrhs.gt.0) then
+          write(luout,*) 'new gred: '
+          call wrtmat2(gred,nroot,nroot,mxdim,nroot)
+        end if
       end if
 
       ! ... and subspace matrix in reduced space ...
       call dgemm('T','N',nroot,nred,nred,
      &           1d0,vorth,nred,
-     &               mred,nred,
+     &               mred,mxdim,
      &           0d0,mscr,nroot)
       call dgemm('N','N',nroot,nroot,nred,
      &           1d0,mscr,nroot,
      &               vorth,nred,
-     &           0d0,mred,nroot)
+     &           0d0,mred,mxdim)
 
       if (ntest.ge.100) then
         write(luout,*) 'new mred: '
-        call wrtmat2(mred,nroot,nroot,nroot,nroot)
+        call wrtmat2(mred,nroot,nroot,mxdim,nroot)
       end if
 
       ! update trial vectors and MV-products in full space

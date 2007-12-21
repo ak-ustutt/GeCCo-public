@@ -12,6 +12,7 @@
       include 'def_filinf.h'
       include 'def_orbinf.h'
       include 'opdim.h'
+      include 'event_counter.h'
       include 'ifc_memman.h'
       include 'ifc_input.h'
 
@@ -38,6 +39,8 @@ c      iprlvl = 1     ! print level
       ! give information about compilation date etc.
       call printversion()
 
+      ! set internal counter to 0
+      event_time = 0
       ! initialize timing routine
       call init_time()
       call atim_csw(cpu0,sys0,wall0)

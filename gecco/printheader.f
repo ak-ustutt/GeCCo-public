@@ -4,11 +4,18 @@
 
       include "stdunit.h"
 
-      write(luout,'(6(8x,a,/))')
+      write(luout,'(13(8x,a,/))')
      &'*-----------------------------------------------------------*',
      &'|                                                           |',
      &'|                         G e C C o                         |',
      &'|          a string-based general contraction code          |',
+     &'|                                                           |',
+     &'|                                                           |',
+     &'|   principal author:                                       |',
+     &'|       andreas koehn (university of mainz, germany)        |',
+     &'|   contributing authors:                                   |',
+     &'|       jeppe olsen (university of aarhus, denmark)         |',
+     &'|       gareth richings (university of mainz, germany)      |',
      &'|                                                           |',
      &'*-----------------------------------------------------------*' 
 

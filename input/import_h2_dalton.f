@@ -1,10 +1,9 @@
 *----------------------------------------------------------------------*
-      subroutine import_h2_dalton(ffham,
-     &       hop,str_info,orb_info)
+      subroutine import_h2_dalton(hlist,str_info,orb_info)
 *----------------------------------------------------------------------*
-*     read through MOTWOINT file and sort integral into operator file
-*     ffham; if memory is insufficient to keep the complete content of
-*     ffham, we resort to a batch algorithm
+*     read through MOTWOINT file and sort integral into list hlist;
+*     if memory is insufficient to keep the complete list,
+*     we resort to a batch algorithm
 *
 *     andreas, january 2007
 *
@@ -14,11 +13,12 @@
       include 'opdim.h'
       include 'hpvxseq.h'
       include 'stdunit.h'
+      include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
-      include 'def_filinf.h'
       include 'ifc_memman.h'
       include 'ifc_baserout.h'
       include 'multd2h.h'
@@ -31,14 +31,12 @@
      &     imsk16 = 65535,
      &     imsk08 =   255
       
-      type(operator), intent(in) ::
-     &     hop
+      type(me_list), intent(in) ::
+     &     hlist
       type(strinf), intent(in) ::
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info
-      type(filinf), intent(inout) ::
-     &     ffham
 
       ! dalton is i4:
       integer(4), pointer ::
@@ -65,6 +63,12 @@ c     &     first, first_str
      &     idxprqs(4),idss(4),igam(4),igtp(4), 
      &     lexlscr(4,3), idxstr(8)
 
+      type(filinf), pointer ::
+     &     ffham
+
+c      type(operator), pointer ::
+c     &     hop
+
       integer, pointer ::
      &     ireost(:), ihpvgas(:), igamorb(:),
      &     igasorb(:), idx_gas(:), iad_gas(:)
@@ -72,6 +76,9 @@ c     &     first, first_str
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
       
+c      hop => hlist%op
+      ffham => hlist%fhand
+
       if (orb_info%ntoob.gt.255) then
         write(luout,*) 'number of orbitals: ',orb_info%ntoob
         call quit(0,'import_h2_dalton',
@@ -119,10 +126,10 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
       ! not completely elegant yet
       ! we should not imply the knowledge that the first 4 blocks
       ! are one-electron integrals
-      len_op = hop%len_op
-      nblk = min((len_op-hop%off_op_occ(6)-1)/ffham%reclen + 1,nblkmax)
+      len_op = hlist%len_op
+      nblk = min((len_op-hlist%off_op_occ(6)-1)/ffham%reclen+1,nblkmax)
 
-      nbuff = min(len_op-hop%off_op_occ(6),nblk*ffham%reclen)
+      nbuff = min(len_op-hlist%off_op_occ(6),nblk*ffham%reclen)
 
       write(luout,*) 'number of incore-blocks in geth2: ',nblk
       write(luout,'(x,a,f9.2,a)') 'size of buffer in geth2:   ',
@@ -144,7 +151,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
 
       ! loop over batches of final integral file
       ipass = 0
-      idxst = hop%off_op_occ(6) + 1
+      idxst = hlist%off_op_occ(6) + 1
       do while(idxst.le.len_op)
         ipass = ipass+1
         idxnd = min(len_op,idxst-1+nbuff)
@@ -200,7 +207,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             ! current (pq|rs) = <pr|qs> contributes
             call idx42str(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
-     &           orb_info,str_info,hop,hpvxseq)
+     &           orb_info,str_info,hlist,hpvxseq)
 
             ! store integral in h2scr
             do istr = 1, nstr
@@ -233,7 +240,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             ! current (pq|rs) = <pr|qs> contributes
             call idx42str(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
-     &           orb_info,str_info,hop,hpvxseq)
+     &           orb_info,str_info,hlist,hpvxseq)
 
             ! store integrals in h2scr
             do istr = 1, nstr
@@ -262,12 +269,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
       write(luout,*) '2-el. integrals on disk: ',int_disk
       write(luout,*) '   thereof nonredundant: ',int_nonr
       write(luout,*) '    integrals reordered: ',!int_ordr,
-     &     hop%len_op-hop%off_op_occ(6)
-
-c      if (ntest.ge.1000) then
-c        write(luout,*) '2 electron integrals:'
-c        call wrt_op_det(luout,x2int,hop,orb_info%nsym,5,13)
-c      end if
+     &     hlist%len_op-hlist%off_op_occ(6)
 
       if (closeit)
      &     call file_close_keep(ffham)

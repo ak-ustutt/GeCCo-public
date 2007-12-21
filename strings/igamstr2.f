@@ -15,6 +15,11 @@
 
       itgam = 1
       do iel = 1, nel
+c dbg
+c        print *,'.  ',iel
+c        print *,'.. ',idorb(iel)
+c        print *,'...',igamorb(idorb(iel))
+c dbg
         itgam = multd2h(itgam,igamorb(idorb(iel)))
       end do
 

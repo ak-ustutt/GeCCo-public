@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine import_hamint_dalton(hop,ffham,str_info,orb_info)
+      subroutine import_hamint_dalton(hlist,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     import one- and two-electron densities from DALTON
 *     environment
@@ -15,11 +15,10 @@
       include 'def_orbinf.h'
       include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       
-      type(operator), intent(in) ::
-     &     hop
-      type(filinf), intent(inout) ::
-     &     ffham
+      type(me_list), intent(inout) ::
+     &     hlist
       type(strinf), intent(in) ::
      &     str_info
       type(orbinf), intent(in) ::
@@ -27,10 +26,10 @@
 
       ! read reference energy and fock matrix from SIRIFC
       ! and sort fock matrix into operator file
-      call import_fock_dalton(ffham,hop,str_info,orb_info)
+      call import_fock_dalton(hlist,str_info,orb_info)
 
       ! get 2-electron integrals and sort them as well
-      call import_h2_dalton(ffham,hop,str_info,orb_info)
+      call import_h2_dalton(hlist,str_info,orb_info)
 
       return
       end

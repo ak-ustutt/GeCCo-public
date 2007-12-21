@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine init_strmap(str_info,strmap_info)
 *----------------------------------------------------------------------*
-*     deallocate string mapping info and associated file
+*     allocate string mapping info and associated file
 *----------------------------------------------------------------------*
 
       implicit none
@@ -13,6 +13,9 @@
       include 'def_strmapinf.h'
       include 'ifc_memman.h'
 
+      integer, parameter ::
+     &     initial_ngraph = 10
+
       type(strinf), intent(in) ::
      &     str_info
       type(strmapinf), intent(inout) ::
@@ -21,9 +24,9 @@
       integer ::
      &     ngraph, ifree, idx
 
-      ngraph = str_info%ngraph
-      ifree = mem_alloc_int(strmap_info%idx_strmap,
-     &     ngraph*ngraph,'idx_strmap')
+      ngraph = max(initial_ngraph,str_info%ngraph)
+      strmap_info%mxgraph = ngraph
+      allocate(strmap_info%idx_strmap(ngraph*ngraph))
 
       strmap_info%idx_strmap(1:ngraph*ngraph) = -1
       strmap_info%idx_last = 0

@@ -70,6 +70,9 @@
           if (succ) then
             str_loop: do
               ! check symmetry
+c dbg
+c            print *,'nidx,idorb: ',nidx,idorb(1:nidx)
+c dbg
               succ = igamstr2(nidx,idorb,igamorb).eq.igam
               ! exit if successful
               if (succ) exit dss_loop
