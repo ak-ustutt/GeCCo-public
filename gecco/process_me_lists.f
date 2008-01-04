@@ -97,14 +97,8 @@
 
       case(EVALPROP)
 
-c dbg
-        print *,'lebenszeichen ',trim(rule%parameters(1))
-c dbg
         call evalprop_parameters(+1,rule%parameters,ndens,rank,env_type)
 
-c dbg
-        print *,':>',ndens,rank,trim(env_type)
-c dbg
         call prop_evaluate(ndens,rank,rule%labels,
      &       env_type,op_info,str_info,orb_info)
 

@@ -15,7 +15,7 @@
       include 'def_formula_item.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(operator_info), intent(inout) ::
      &     op_info
@@ -59,10 +59,10 @@
       call write_title(luout,wst_subsection,
      &     'Summary')
       
-      write(luout,'(x,a,"H^",i2," P^",i2,"V^",i2,"X^",i2)')
+      write(luout,'(x,a,"H^",i2," P^",i2," V^",i2," X^",i2)')
      &       'Most expensive contraction:  ',iscale_stat(1:4,1)
-      write(luout,'(x,a,"H^",i2," P^",i2,"V^",i2,"X^",i2)')
-     &       'Largest intermediate      : ',iscale_stat(1:4,2)
+      write(luout,'(x,a,"H^",i2," P^",i2," V^",i2," X^",i2)')
+     &       'Largest intermediate      :  ',iscale_stat(1:4,2)
 
       call atim_csw(cpu,sys,wall)
       if (iprlvl.ge.5) 

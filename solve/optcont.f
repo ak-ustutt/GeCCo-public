@@ -58,7 +58,7 @@
       
 * parameters
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character, parameter ::
      &     name_alg*10(0:3) =
      &     (/"Pert. Upd.","      DIIS","  ASSJ/RLE"," 2ND ORDER"/)
@@ -114,9 +114,9 @@
      &         imacit, imicit, imicit_tot
       end if
 c dbg
-      print *,'ffopt:',trim(ffopt(1)%fhand%name)
-      print *,'ffgrd:',trim(ffgrd(1)%fhand%name)
-      print *,'ffdia:',trim(ffdia(1)%fhand%name)
+c      print *,'ffopt:',trim(ffopt(1)%fhand%name)
+c      print *,'ffgrd:',trim(ffgrd(1)%fhand%name)
+c      print *,'ffdia:',trim(ffdia(1)%fhand%name)
 c dbg
 
 * set iroute:
@@ -231,19 +231,19 @@ c dbg
      &                           '   converged:  ',
      &                    xngrd(iopt).lt.opti_info%thrgrd(iopt)
           end do
+        end if
 
-          if (lconv.and.opti_info%norder.eq.1)
+        if (lconv.and.opti_info%norder.eq.1)
      &         write(luout,'(x,a,i5,a)')
      &         'CONVERGED IN ',imacit,' ITERATIONS'
-          if (lconv.and.opti_info%norder.eq.2) then
-            imicit_tot = imicit_tot-1
-            write(luout,'(x,a,i5,a,i6,a)')
+        if (lconv.and.opti_info%norder.eq.2) then
+          imicit_tot = imicit_tot-1
+          write(luout,'(x,a,i5,a,i6,a)')
      &         'CONVERGED IN ',imacit,' MACRO-ITERATIONS (',imicit_tot,
      &         ' MICRO-ITERATIONS)'
-          end if
-          if (lconv) conv = .true.
-          if (lconv) imicit = 0
         end if
+        if (lconv) conv = .true.
+        if (lconv) imicit = 0
 
         if (.not.lconv) imacit = imacit + 1
 

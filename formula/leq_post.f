@@ -23,7 +23,7 @@
       include 'mdef_formula_info.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       character(*), intent(in) ::
      &     label_f_raw, label_f_traf, label_f_rhs,

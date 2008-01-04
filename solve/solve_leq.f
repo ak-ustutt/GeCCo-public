@@ -254,7 +254,7 @@
         if (iter.gt.1)
      &       write(luout,'(">>>",i3,24x,x,g10.4)')iter-1,xresnrm
 c dbg
-        if(iter.gt.1)print *,'>>> resnorm = ',xresnrm
+c        if(iter.gt.1)print *,'>>> resnorm = ',xresnrm
 c dbg
 
         ! 4 - get residual

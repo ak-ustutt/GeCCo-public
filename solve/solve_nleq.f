@@ -99,13 +99,6 @@
         do iopt = 2, nopt
           write(luout,*) '             ',trim(label_opt(iopt))
         end do
-c dbg
-        print *,'preconditioner: ',trim(label_prc(1))
-c dbg
-c dbg
-      call print_op_info(luout,'op',op_info)
-      call print_op_info(luout,'mel',op_info)
-c dbg
       end if
 
       idx = idx_formlist(label_form,form_info)
@@ -134,9 +127,6 @@ c dbg
         ierr = 5
         if (idxmel.le.0) exit
         ffdia(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
-c dbg
-        print *,'ffdia is still: ',trim(ffdia(iopt)%fhand%name)
-c dbg
         ierr = 6
         if (.not.associated(ffdia(iopt)%fhand)) exit
         ierr = 0
@@ -204,9 +194,6 @@ c dbg
       task = 0
       opt_loop: do while(task.lt.8)
 
-c dbg
-      print *,'bef. optc: ',trim(ffdia(1)%fhand%name)
-c dbg
         call optcont
      &       (imacit,imicit,imicit_tot,
      &       task,conv,

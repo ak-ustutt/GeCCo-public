@@ -13,7 +13,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(operator), intent(inout) ::
      &     op

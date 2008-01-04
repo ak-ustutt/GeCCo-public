@@ -1,0 +1,44 @@
+title
+  CH2/DZ; DALTON enviroment: CCSDT dipole moment
+molecule
+  CH2-DZ-DALTON
+input
+  CC-prop-I.inp
+check
+  label Number of terms in Lagrangian
+  find DEF_CC_LAGRANGIAN
+  find Number of generated terms
+  compare int 5
+check
+  label H1TRF factored out?
+  find I will factor out the intermediate:
+  compare str 7
+check
+  label Factorization of right equations
+  find Most expensive contraction:
+  compare int 5
+  compare int 7
+check
+  find CONVERGED IN .* ITERATIONS
+  label Final energy
+  find final energy: [ ]*
+  compare real 4 1e-12
+check
+  label Factorization of left equations
+  find Most expensive contraction:
+  compare int 5
+  compare int 7
+check
+  label Number of iterations in LHS equations
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+check
+  label Residual of LHS equations
+  find ^>>> [0-9]* [ ]* [0-9]*\.[0-9][0-9]*E-[0-9][0-9]*
+  compare real 3 1e-12
+check
+  label Dipole moment
+  find ZDIPLEN [ ]*:
+  compare real 4 1e-9
+end
+

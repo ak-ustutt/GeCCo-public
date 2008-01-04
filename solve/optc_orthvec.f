@@ -13,7 +13,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(out) ::
      &     nadd
@@ -141,7 +141,7 @@
           call vec_from_da(ffnew,inew,xbuf1,nwfpar)
           smat(nold+inew,nold+inew) = ddot(nwfpar,xbuf1,1,xbuf1,1)
 c dbg
-          print *,'|new|: ',sqrt(smat(nold+inew,nold+inew))
+c          print *,'|new|: ',sqrt(smat(nold+inew,nold+inew))
 c dbg
         else
           smat(nold+inew,nold+inew) = da_ddot(ffnew,inew,ffnew,inew,
@@ -181,15 +181,15 @@ c dbg
       do inew = 1, nnew
         ! check whether vector is nonzero
 c dbg
-        print *,'test = ',ddot(nold+nnew,xmat(1,nold+inew),1,
-     &                     xmat(1,nold+inew),1),nold,nnew,inew
+c        print *,'test = ',ddot(nold+nnew,xmat(1,nold+inew),1,
+c     &                     xmat(1,nold+inew),1),nold,nnew,inew
 c dbg
         if (ddot(nold+nnew,xmat(1,nold+inew),1,
      &                     xmat(1,nold+inew),1).lt.1d-10)
      &       cycle
         idx = idx+1
 c dbg
-        print *,'idx = ',idx
+c        print *,'idx = ',idx
 c dbg
         if (idx.lt.ndim_sbsp) then
           ! overwrite previous (zero) record

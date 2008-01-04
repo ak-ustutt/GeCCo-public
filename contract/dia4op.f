@@ -21,7 +21,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       real(8), intent(in) ::
      &     xdia(*)
@@ -266,11 +266,11 @@ c dbg
                 end do
               end do
 c dbg
-              do idx = 1, nloop
-                print *,'idx, off, len: ',idx, ioff_xsum(idx), nstr(idx)
-                print *,'xsum = ',xsum(ioff_xsum(idx)+1:
-     &                                 ioff_xsum(idx)+nstr(idx))
-              end do
+c              do idx = 1, nloop
+c                print *,'idx, off, len: ',idx, ioff_xsum(idx), nstr(idx)
+c                print *,'xsum = ',xsum(ioff_xsum(idx)+1:
+c     &                                 ioff_xsum(idx)+nstr(idx))
+c              end do
 c dbg
               ! no contribution at all?
               if (nloop.eq.0) cycle
@@ -329,7 +329,7 @@ c dbg
         end do msa_loop
 
 c dbg
-        print *,'final buffer: ',buffer(1:me_dia%len_op_occ(iocc_cls))
+c        print *,'final buffer: ',buffer(1:me_dia%len_op_occ(iocc_cls))
 c dbg
         ! put buffer to disc
         call put_vec(ffdia,buffer,me_dia%off_op_occ(iocc_cls)+1,

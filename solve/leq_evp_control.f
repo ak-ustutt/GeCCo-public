@@ -50,7 +50,7 @@
       
 * parameters
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character, parameter ::
      &     name_alg_leq*10(0:1) =
      &     (/"  CONJGRAD","  SUBSPACE"/),
@@ -247,20 +247,20 @@ c        end if
      &                   xrsnrm(idx).lt.opti_info%thrgrd(iopt)
           end do
         end do
+      end if
 
-        if (lconv)
+      if (lconv)
      &       write(luout,'(x,a,i5,a)')
      &         'CONVERGED IN ',iter,' ITERATIONS'
-        if (lconv) conv = .true.
+      if (lconv) conv = .true.
 
-        if (.not.lconv) iter = iter + 1
+      if (.not.lconv) iter = iter + 1
 
-        if (.not.lconv.and.
+      if (.not.lconv.and.
      &       (iter.gt.opti_info%maxmacit)) then
-          write(luout,*) 'NO CONVERGENCE OBTAINED'
-          iter = iter - 1
-          lexit = .true.
-        end if
+        write(luout,*) 'NO CONVERGENCE OBTAINED'
+        iter = iter - 1
+        lexit = .true.
       end if
 
       if (.not.(lconv.or.lexit)) then

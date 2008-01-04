@@ -284,8 +284,8 @@ c          call wrt_occ_n(luout,iocc2,1)
           cur_conder%contr%iblk_res = iblk_occ(iocc,.false.,
      &                                          op_arr(idxres)%op)
 c dbg
-          print *,'idx, occ: ',cur_conder%contr%iblk_res
-          call wrt_occ_n(luout,iocc,njoined_res)
+c          print *,'idx, occ: ',cur_conder%contr%iblk_res
+c          call wrt_occ_n(luout,iocc,njoined_res)
 c dbg          
 
           if (cur_conder%contr%iblk_res.le.0) then

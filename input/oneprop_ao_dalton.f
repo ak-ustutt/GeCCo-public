@@ -49,7 +49,7 @@
       end do
 
 c dbg
-      print *,'integrals:'
+c      print *,'integrals:'
 c dbg      
 
       ifree = mem_alloc_real(dao,nblkd,'dao')
@@ -75,7 +75,7 @@ c dbg
         call next_mollab(label,ffprop%unit,ierr)
         if (label.eq.eof_lab.or.ierr.lt.0) exit
 c dbg
-        print *,'LABEL: ',trim(label)
+c        print *,'LABEL: ',trim(label)
 c dbg
         read(ffprop%unit) xint_raw(1:nfull)
         call get_symblk_rank1(xint_blk,xint_raw,dens%gamt,1d0,
@@ -87,7 +87,7 @@ c dbg
 
         xtrace = ddot(nblkd,xint_blk,1,dao,1)
 
-        write(luout,'(2x,">>>",a,": ",g20.10)') trim(label),xtrace
+        write(luout,'(2x,">>> ",a," : ",g20.10)') trim(label),xtrace
 
       end do
 

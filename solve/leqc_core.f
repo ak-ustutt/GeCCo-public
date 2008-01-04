@@ -18,7 +18,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(inout) ::
      &     task
@@ -208,7 +208,7 @@ c      if (iter.eq.1) goto 1000
       ! number of new directions
       nnew = irecscr-1
 c dbg
-      print *,'nnew = ',nnew
+c      print *,'nnew = ',nnew
 c dbg
 
  1111 if (iter.eq.1) then

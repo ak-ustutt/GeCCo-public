@@ -14,7 +14,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(inout) ::
      &     nred, nrhs, mxdim, iord_vsbsp(*), iord_rsbsp(*)
@@ -84,7 +84,7 @@
       do iroot = 1, nroot
         xnrm = dnrm2(nred,vorth,1)
 c dbg
-        print *,'iroot, norm: ',iroot,xnrm
+c        print *,'iroot, norm: ',iroot,xnrm
 c dbg
         if (xnrm.lt.1d-4) then
           write(luout,*) 'root, norm: ',iroot, xnrm
@@ -181,8 +181,8 @@ c dbg
      &                  1d0,nwfpar,xbuf1,lenbuf)
       end do
 c dbg
-      print *,'contents on new ffrsbsp file:'
-      call da_listvec(ffrsbsp,1,nwfpar,0,xbuf1,lenbuf)
+c      print *,'contents on new ffrsbsp file:'
+c      call da_listvec(ffrsbsp,1,nwfpar,0,xbuf1,lenbuf)
 c dbg
       
       ! reset nred:
