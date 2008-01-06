@@ -19,9 +19,10 @@
       type(orbinf), intent(in) ::
      &     orb_info
 
-      call set_cc_operator_targets(tgt_info)
-      call set_cc_formula_targets(tgt_info)
-      call set_cc_me_list_targets(tgt_info,orb_info)
+      call set_cc_general_targets(tgt_info,orb_info)
+      call set_cc_gsrsp_targets(tgt_info,orb_info)
+      call set_cc_exst_targets(tgt_info,orb_info)
+      call set_cc_ipst_targets(tgt_info,orb_info)
 
       return
       end

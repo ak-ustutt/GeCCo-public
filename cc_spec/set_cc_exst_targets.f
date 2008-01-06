@@ -1,0 +1,210 @@
+*----------------------------------------------------------------------*
+      subroutine set_cc_exst_targets(tgt_info,orb_info)
+*----------------------------------------------------------------------*
+*     set targets needed in CC excited state calculations
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'stdunit.h'
+      include 'mdef_target_info.h'
+      include 'def_orbinf.h'
+
+      include 'ifc_input.h'
+
+      include 'par_opnames_gen.h'
+      include 'par_formnames_gen.h'
+      include 'par_gen_targets.h'
+      include 'par_actions.h'
+
+      type(target_info), intent(inout) ::
+     &     tgt_info
+      type(orbinf), intent(in) ::
+     &     orb_info
+
+      integer ::
+     &     min_rank, max_rank,
+     &     isim, ncat, nint, icnt,
+     &     isym, ms, msc, sym_arr(8)
+      logical ::
+     &     needed
+      character(len_target_name) ::
+     &     me_label, medef_label, dia_label, mel_dia1,
+     &     labels(10)
+      character(len_command_par) ::
+     &     parameters
+
+
+      ! skip this section if not requested
+      icnt = is_keyword_set('calculate.excitation')
+      if (icnt.eq.0) return
+
+      if (iprlvl.gt.0)
+     &     write(luout,*) 'setting targets for CC excited states ...'
+
+*----------------------------------------------------------------------*
+*     Operators:
+*----------------------------------------------------------------------*
+
+      ! particle conserving response
+      ! right-response vector
+      call add_target(op_r,ttype_op,.false.,tgt_info)
+      call set_dependency(op_r,op_top,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_top,.false.)
+      call set_rule(op_r,ttype_op,CLONE_OP,
+     &              op_r,1,1,
+     &              parameters,1,tgt_info)
+      
+      ! right-response vector times Jacobian
+      call add_target(op_a_r,ttype_op,.false.,tgt_info)
+      call set_dependency(op_a_r,op_top,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_top,.false.)
+      call set_rule(op_a_r,ttype_op,CLONE_OP,
+     &              op_a_r,1,1,
+     &              parameters,1,tgt_info)
+
+      ! left-response vector
+      call add_target(op_l,ttype_op,.false.,tgt_info)
+      call set_dependency(op_l,op_tbar,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_tbar,.false.)
+      call set_rule(op_l,ttype_op,CLONE_OP,
+     &              op_l,1,1,
+     &              parameters,1,tgt_info)
+
+      ! left-response vector times Jacobian
+      call add_target(op_l_a,ttype_op,.false.,tgt_info)
+      call set_dependency(op_l_a,op_tbar,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_tbar,.false.)
+      call set_rule(op_l_a,ttype_op,CLONE_OP,
+     &              op_l_a,1,1,
+     &              parameters,1,tgt_info)
+
+
+
+*----------------------------------------------------------------------*
+*     Formulae:
+*----------------------------------------------------------------------*
+
+      ! right Jacobian transform
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = label_cc_a_r
+      labels(2) = label_ccrs0
+      labels(3) = op_a_r
+      labels(4) = op_top
+      labels(5) = op_r
+      call add_target(label_cc_a_r,ttype_frm,.false.,tgt_info)
+      call set_dependency(label_cc_a_r,label_ccrs0,tgt_info)
+      call set_dependency(label_cc_a_r,op_a_r,tgt_info)
+      call set_dependency(label_cc_a_r,op_r,tgt_info)
+      call set_rule(label_cc_a_r,ttype_frm,DERIVATIVE,
+     &              labels,5,1,
+     &              title_cc_a_r,1,tgt_info)
+
+      ! left Jacobian transform
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = label_cc_l_a
+      labels(2) = label_cctbar_a
+      labels(3) = op_l_a
+      labels(4) = op_tbar
+      labels(5) = op_l
+      call add_target(label_cc_l_a,ttype_frm,.false.,tgt_info)
+      call set_dependency(label_cc_l_a,label_cctbar_a,tgt_info)
+      call set_dependency(label_cc_l_a,op_l_a,tgt_info)
+      call set_dependency(label_cc_l_a,op_l,tgt_info)
+      call set_rule(label_cc_l_a,ttype_frm,DERIVATIVE,
+     &              labels,5,1,
+     &              title_cc_l_a,1,tgt_info)
+
+
+*----------------------------------------------------------------------*
+*     Optimized Formulae:
+*----------------------------------------------------------------------*
+      call get_argument_value('calculate.routes','simtraf',ival=isim)
+
+      ! CC right-hand Jacobian transform
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = label_cc_a_r_opt
+      labels(2) = label_cc_a_r
+      ncat = 1
+      nint = 0
+      call add_target(label_cc_a_r_opt,ttype_frm,.false.,tgt_info)
+      call set_dependency(label_cc_a_r_opt,label_cc_a_r,tgt_info)
+      call set_dependency(label_cc_a_r_opt,meldef_a_rex,tgt_info)
+      call set_dependency(label_cc_a_r_opt,meldef_rex,tgt_info)
+      call set_dependency(label_cc_a_r_opt,mel_topdef,tgt_info)
+      call set_dependency(label_cc_a_r_opt,mel_ham,tgt_info)
+      if (isim.eq.1) then
+        nint = 1
+        call set_dependency(label_cc_a_r_opt,label_cchhat,tgt_info)
+        call set_dependency(label_cc_a_r_opt,mel_hhatdef,tgt_info)
+        labels(3) = label_cchhat
+      end if
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(label_cc_a_r_opt,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+*----------------------------------------------------------------------*
+*     ME-lists:
+*----------------------------------------------------------------------*
+      call get_argument_value('calculate.excitation','sym',
+     &       iarr=sym_arr)
+      call add_target(meldef_rex,ttype_opme,.false.,tgt_info)
+      call add_target(meldef_a_rex,ttype_opme,.false.,tgt_info)
+      do isym = 1, orb_info%nsym
+        if (sym_arr(isym).eq.0) cycle
+        ! RE0
+        call me_list_label(me_label,mel_rex,isym,0,0,0,.false.)
+        call set_dependency(meldef_rex,op_r,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = me_label
+        labels(2) = op_r
+        call me_list_parameters(-1,parameters,
+     &         0,0,isym,0,0)
+        call set_rule(meldef_rex,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+        ! A.RE0
+        call me_list_label(me_label,mel_a_rex,isym,0,0,0,.false.)
+        call set_dependency(meldef_a_rex,op_a_r,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = me_label
+        labels(2) = op_a_r
+        call me_list_parameters(-1,parameters,
+     &       0,0,isym,0,0)
+        call set_rule(meldef_a_rex,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+      end do
+
+*----------------------------------------------------------------------*
+*     "phony" targets
+*----------------------------------------------------------------------*
+
+      call add_target(solve_cc_rhex,ttype_gen,.true.,tgt_info)
+      call set_dependency(solve_cc_rhex,solve_cc_gs,tgt_info)
+      call set_dependency(solve_cc_rhex,label_cc_a_r_opt,tgt_info)
+      call set_dependency(solve_cc_rhex,meldef_rex,tgt_info)
+      call set_dependency(solve_cc_rhex,meldef_a_rex,tgt_info)
+      do isym = 1, orb_info%nsym
+        if (sym_arr(isym).eq.0) cycle          
+        call me_list_label(me_label,mel_rex,isym,0,0,0,.false.)
+        call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
+        call set_dependency(solve_cc_rhex,dia_label,tgt_info)
+        call solve_parameters(-1,parameters,1,sym_arr(isym))
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = me_label
+        labels(2) = dia_label
+        labels(3) = op_a_r
+        labels(4) = label_cc_a_r_opt
+        call set_rule(solve_cc_rhex,ttype_opme,SOLVEEVP,
+     &       labels,4,1,
+     &       parameters,1,tgt_info)
+      end do
+      
+
+      return
+      end

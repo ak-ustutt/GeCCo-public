@@ -28,7 +28,7 @@ else
 endif
 CHECKFLAGS:=-c
 
-include $(topdir)/make.rules
+#include $(topdir)/make.rules
 
 essential_tests:=$(wildcard *.e.chk)
 extended_tests:=$(wildcard *.x.chk)

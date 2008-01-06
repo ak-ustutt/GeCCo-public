@@ -47,7 +47,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     nopt, nroots
@@ -272,20 +272,20 @@
             end do
 
 c dbg
-            write(luout,*) 'input for request: ',irequest
-            call wrt_mel_file(luout,5,me_trv(1)%mel,
-     &           1,me_trv(1)%mel%op%n_occ_cls,
-     &           str_info,orb_info)
+c            write(luout,*) 'input for request: ',irequest
+c            call wrt_mel_file(luout,5,me_trv(1)%mel,
+c     &           1,me_trv(1)%mel%op%n_occ_cls,
+c     &           str_info,orb_info)
 c dbg
 
             call frm_sched(xret,fl_mvp,depend,
      &           op_info,str_info,strmap_info,orb_info)
 
 c dbg
-            write(luout,*) 'output for request: ',irequest
-            call wrt_mel_file(luout,5,me_mvp(1)%mel,
-     &           1,me_mvp(1)%mel%op%n_occ_cls,
-     &           str_info,orb_info)
+c            write(luout,*) 'output for request: ',irequest
+c            call wrt_mel_file(luout,5,me_mvp(1)%mel,
+c     &           1,me_mvp(1)%mel%op%n_occ_cls,
+c     &           str_info,orb_info)
 c dbg
 
           end do

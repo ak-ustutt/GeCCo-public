@@ -18,7 +18,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(inout) ::
      &     task
