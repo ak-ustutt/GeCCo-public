@@ -30,9 +30,7 @@
       case(command_add_contribution)
         if (.not.associated(form%contr)) then
           allocate(form%contr)
-          form%contr%mxvtx = 0
-          form%contr%mxarc = 0
-          form%contr%mxfac = 0
+          call init_contr(form%contr)
         end if
         form%contr%idx_res = form%target
         call rw_contr_kernel(+1,lu,form%contr)

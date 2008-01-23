@@ -12,7 +12,7 @@
 *     idxder(1:ncmpnd) is the index of the operator with respect to which the
 *     derivative has to be taken
 *     idxmlt(1:ncmpnd) is the index of the operator which the derivative is 
-*     multiplied with (0 if only the derivative is taken)
+*     multiplied with (array of 0s if only the derivative is taken)
 *     idxres is the index of the resulting operator (0, if scalar)     
 *
 *     andreas, end of 2006, put to gecco april 2007
@@ -123,9 +123,7 @@ c      include 'def_filinf.h'
       write(luderiv) idum,idxres
 
       ! signal, that still nothing is allocated
-      contr%mxvtx = 0
-      contr%mxarc = 0
-      contr%mxfac = 0
+      call init_contr(contr)
       nullify(conder%contr)
 
       nterms = 0

@@ -100,8 +100,6 @@
 
       ifree = mem_alloc_int(idxroot,nopt*nroot,'LEQ_idxroot')
 
-c      if (iter.eq.1) goto 1000
-
       iopt = 1  ! preliminary
       if (ndim_vsbsp.ne.ndim_rsbsp)
      &     call quit(1,'leqc_core','subspace dimensions differ?')
@@ -114,20 +112,7 @@ c      if (iter.eq.1) goto 1000
      &       iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,ffrhs(iopt)%fhand,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
 
-      ! first iteration: identify number of zero-vectors
-      if (iter.eq.1) then
-        do iroot = 1, nroot
-          zero_vec(iroot) = .true.
-          do irhs = 1, nroot
-            zero_vec(iroot) =
-     &           zero_vec(iroot).and.gred(iroot+(irhs-1)*nroot).eq.0d0
-          end do
-        end do
-      else
-        zero_vec(1:opti_stat%ndim_vsbsp) = .false.
-      end if
-
-      if (iter.eq.1) goto 1111
+      zero_vec(1:opti_stat%ndim_vsbsp) = .false.
 
       ! ------------------------
       !    solve reduced LEQ
@@ -210,21 +195,6 @@ c      if (iter.eq.1) goto 1000
 c dbg
 c      print *,'nnew = ',nnew
 c dbg
-
- 1111 if (iter.eq.1) then
-        print *,'iter 1 patch active'
-        nnew = nroot
-        do iroot = 1, nroot
-          call vec_from_da(ffrhs(iopt)%fhand,iroot,xbuf1,nwfpar)
-c          xbuf1(1:nwfpar(1)) = -1d0*xbuf1(1:nwfpar(1))
-          xrsnrm(iroot) = dnrm2(nwfpar,xbuf1,1)
-          idxroot(iroot) = iroot
-c dbg
-c          print *,'rhs norm = ',xrsnrm(iroot)
-c dbg
-          call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
-        end do
-      end if
 
       if (nnew.gt.0) then
 

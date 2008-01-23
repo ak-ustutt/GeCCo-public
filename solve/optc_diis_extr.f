@@ -86,14 +86,14 @@
 
 * analyze solution and request deletion of vectors, if necessary
         xcorsum = 0d0
-        do ii = 1, ncdim-1
-          xcorsum = xcorsum + abs(xvec(ii))
-        end do
-        if (xcorsum/abs(xvec(ncdim)).gt.1.2d0) then
-          ncdim = ncdim -1
-        else
+c        do ii = 1, ncdim-1
+c          xcorsum = xcorsum + abs(xvec(ii))
+c        end do
+c        if (xcorsum/abs(xvec(ncdim)).gt.1.2d0) then
+c          ncdim = ncdim -1
+c        else
           again = .false.
-        end if
+c        end if
 
       end do
 

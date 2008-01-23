@@ -1,0 +1,80 @@
+*----------------------------------------------------------------------*
+      subroutine set_r12i(op,name,dagger,
+     &     min_rank,max_rank,ncadiff,iformal,orb_info)
+*----------------------------------------------------------------------*
+*     wrapper for set_genop
+*     set up integrals for R12
+*     hpvx_mnmx,irestr are chosen appropriately
+*----------------------------------------------------------------------*
+      implicit none
+      include 'opdim.h'
+      include 'def_operator.h'
+      include 'def_orbinf.h'
+
+      integer, parameter ::
+     &     ntest = 000
+
+      type(operator), intent(inout) ::
+     &     op
+      character, intent(in) ::
+     &     name*(*)
+      logical, intent(in) ::
+     &     dagger
+      integer, intent(in) ::
+     &     min_rank, max_rank, ncadiff,iformal
+
+      type(orbinf) ::
+     &     orb_info
+      integer ::
+     &     hpvx_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
+
+      call set_hpvx_and_restr_for_int()
+
+      call set_genop(op,name,optyp_operator,
+     &     dagger,
+     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
+     &     orb_info)
+
+      return
+      
+      contains
+
+c-----------------------------------------------------------------------
+      subroutine set_hpvx_and_restr_for_int()
+c-----------------------------------------------------------------------
+      implicit none
+
+      integer::
+     &     igastp,igas
+
+      hpvx_mnmx(1:2,1:ngastp,1:2)=0
+      
+      hpvx_mnmx(1:2,IHOLE,2)=2
+      
+      do igastp=1,ngastp
+        if(igastp.eq.IEXTR)then
+          hpvx_mnmx(1,igastp,1)=0
+          if (orb_info%caborb.gt.0) hpvx_mnmx(2,igastp,1)=1 
+        elseif(igastp.ne.IVALE)then
+          hpvx_mnmx(1,igastp,1)=0
+          hpvx_mnmx(2,igastp,1)=max_rank
+        endif  
+      enddo
+
+      irestr(1,1:orb_info%ngas,1:2,1:2)=0
+      irestr(2,1:orb_info%ngas,1:2,1:2)=max_rank
+      
+c      do igas=1,orb_info%ngas
+c        
+c        irestr(1:2,ihole,2,1)=max_rank
+c      
+c        if(igastp.ne.ivale)then
+c          irestr(1,igas,1,1)=0
+c          irestr(2,igas,1,1)=max_rank
+c        endif  
+c      enddo
+
+      return
+      end subroutine set_hpvx_and_restr_for_int
+
+      end

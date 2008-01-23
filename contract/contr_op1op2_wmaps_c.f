@@ -67,7 +67,7 @@
      &     reo_info
 
       logical ::
-     &     bufop1, bufop2, bufop1op2,
+     &     bufop1, bufop2, bufop1op2, tra_op1, tra_op2, tra_op1op2,
      &     first1, first2, first3, first4, first5,
      &     reo_op1op2, nonzero
       integer ::
@@ -195,6 +195,11 @@
       ffop2 => me_op2%fhand
       ffop1op2 => me_op1op2%fhand
 
+      ! any CA transposition necessary?
+      tra_op1 = op1%dagger
+      tra_op2 = op2%dagger
+      tra_op1op2 = op1op2%dagger
+
       if (ntest.ge.10) then
         write(luout,*) 'list1:   ',trim(me_op1%label)
         write(luout,*) 'list2:   ',trim(me_op2%label)
@@ -298,7 +303,6 @@
      &       lstrop1op2tmp(ncblk_op1op2tmp+nablk_op1op2tmp)
      &       )
       
-
       idxst_op1 = me_op1%off_op_occ(iblkop1) + 1
       lenop1    = me_op1%len_op_occ(iblkop1)
       idxst_op2 = me_op2%off_op_occ(iblkop2) + 1
@@ -1096,9 +1100,16 @@ c                    end if
 c                    call mem_check('before kernel')
 c dbg
                     if (irt_contr.eq.2) then
+c dbg
+c                      if (lenop1op2.eq.1) then
+c                        print *,'xop1op2blk before: ',xop1op2blk(1),
+c     &                       xop1op2(1)
+c                      end if
+c dbg
                       call contr_blk1blk2_wmaps_c(xfac*casign,
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
+     &                   tra_op1, tra_op2, tra_op1op2,
      &                   ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &                   ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
      &                   ncblk_cnt,nablk_cnt,
@@ -1115,10 +1126,17 @@ c dbg
      &                   map_ex1cntc, map_ex1cnta,
      &                   map_ex2cntc, map_ex2cnta
      &                   )                     
+c dbg
+c                      if (lenop1op2.eq.1) then
+c                        print *,'xop1op2blk after: ',xop1op2blk(1),
+c     &                       xop1op2(1)
+c                      end if
+c dbg
                     else
                       call contr_blk1blk2_blocked_mm(xfac*casign,
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
+     &                   tra_op1, tra_op2, tra_op1op2,
      &                   xscr,lenscr,len_str_block,
      &                   ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &                   ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
@@ -1152,6 +1170,7 @@ c dbg
                   ! if necessary, reorder op1op2 block:
                   if (reo_op1op2.and.nonzero) then
                     call reo_blk_wmaps_c(xop1op2,xop1op2blk,
+     &                   tra_op1op2,
      &                   reo_info%sign_reo,
      &                   ms12i_c(3),ms12i_a(3),
      &                                   igam12i_c(3),igam12i_a(3),
@@ -1193,6 +1212,10 @@ c dbg
         end if
       end if
 
+c dbg
+c      print *,'type_xret ',type_xret
+c      print *,'xret' ,xret
+c dbg
       if (type_xret.eq.2) then
         xret(1) = xop1op2(1)
       else if (type_xret.eq.1) then

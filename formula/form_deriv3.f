@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine form_deriv3(fl_deriv,fl_input,
+      subroutine form_deriv3(fl_deriv,fl_input,init,
      &                      ncmpnd,idxder,idxmlt,idxres,
      &                      op_info)
 *----------------------------------------------------------------------*
@@ -27,6 +27,8 @@
 
       type(formula_item), intent(inout), target ::
      &     fl_input, fl_deriv
+      logical, intent(in) ::
+     &     init
       integer, intent(in) ::
      &     ncmpnd, idxder(ncmpnd), idxmlt(ncmpnd), idxres
       type(operator_info) ::
@@ -56,9 +58,17 @@
      &       call quit(1,'form_deriv',
      &       'input formula definition must start with [INIT]')
       
-      call init_formula(fl_deriv)
-      call new_formula_item(fl_deriv,command_set_target_init,idxres)
-      fl_deriv_pnt => fl_deriv%next
+      if (init) then
+        call init_formula(fl_deriv)
+        call new_formula_item(fl_deriv,command_set_target_init,idxres)
+        fl_deriv_pnt => fl_deriv%next
+      else
+        if (fl_deriv%command.ne.command_end_of_formula)
+     &      call quit(1,'form_deriv3',
+     &       'init==.false., but output formula is not properly '//
+     &       'initialized')
+        fl_deriv_pnt => fl_deriv
+      end if
 
       fl_input_pnt => fl_input%next
 

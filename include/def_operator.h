@@ -42,7 +42,8 @@
      &     type,                ! 1: operator, 2: density, 3: intermed.
      &     njoined,             ! for intermediate only: number of joined 
      &                          !      vertices
-     &     n_occ_cls            ! number of occupation classes
+     &     n_occ_cls,           ! number of occupation classes
+     &     ngas                 ! info from orb_info<-for convenience 
 
         logical ::
      &       formal                   ! formal operator only?
@@ -56,8 +57,8 @@
      &       ica_occ(:,:)             ! occupations summed up for CA
         integer, pointer :: 
      &       igasca_restr(:,:,:,:,:)    ! associated subspace restrictions
-           ! igasca_restr(2,     ngas,2  ,2               ,n_occ_cls)
-           !              min/max spc C/A restr/mask-restr occ.class
+           ! igasca_restr(2,      ngas, 2  , 2               , n_occ_cls)
+           !              min/max, spc, C/A, restr/mask-restr, occ.class
            !              restr: defining allowed subspace occupations
            !              mask-restr: set of restrictions defining subspc.
            !                     occupations to be skipped

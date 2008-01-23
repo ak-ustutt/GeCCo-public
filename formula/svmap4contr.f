@@ -8,6 +8,9 @@
 *     (i.e. the first njoined entries describe the result occupation)
 *     if njoined.eq.-1, interpret the result occupation as density
 *     storage, i.e. divide into EX and DX part
+*
+*     TO BE WORKED OVER: does probably not work in the general case
+*
 *----------------------------------------------------------------------*
       implicit none
 
@@ -82,28 +85,29 @@
       end if
 
       ! loop over remainder an try to assign to components of super-vertex
-      isuper = 1
       do ivtx = 1, nvtx
         if (iocc_zero(occ_vtx(1:ngastp,1:2,ivtx))) then
           svmap(ivtx) = 0
         else
-          if (iocc_zero(occ_res(1:ngastp,1:2,isuper))) then
-            isuper = isuper + 1
-          end if
-          svmap(ivtx) = isuper
-          if (iocc_bound('<=',occ_vtx(1:ngastp,1:2,ivtx),.false.,
-     &                        occ_res(1:ngastp,1:2,isuper),.false.))then
-            occ_res(1:ngastp,1:2,isuper) =
-     &           occ_res(1:ngastp,1:2,isuper)-occ_vtx(1:ngastp,1:2,ivtx)
-          else
-            write(luout,*) 'current contraction:'
-            call prt_contr3(contr,occ_vtx(1,1,1+njoined_in))
-            write(luout,*) 'result, vertices, vertices reduced:'
-            call wrt_occ_n(luout,occ_vtx_in,njoined)
-            call wrt_occ_n(luout,occ_vtx_in(1,1,njoined+1),nvtx)
-            call wrt_occ_n(luout,occ_vtx,nvtx)
-            call quit(1,'svmap4contr','something is strange')
-          end if
+          do isuper = 1, njoined+1
+            ! a small trap:
+            if (isuper.eq.njoined+1) then
+              write(luout,*) 'current contraction:'
+              call prt_contr3(luout,contr,occ_vtx_in(1,1,1+njoined_in))
+              write(luout,*) 'result, vertices, vertices reduced:'
+              call wrt_occ_n(luout,occ_vtx_in,njoined)
+              call wrt_occ_n(luout,occ_vtx_in(1,1,njoined+1),nvtx)
+              call wrt_occ_n(luout,occ_vtx,nvtx)
+              call quit(1,'svmap4contr','something is strange')
+            end if
+            if (iocc_zero(occ_res(1:ngastp,1:2,isuper))) cycle
+            if (iocc_bound('<=',occ_vtx(1:ngastp,1:2,ivtx),.false.,
+     &           occ_res(1:ngastp,1:2,isuper),.false.))then
+              svmap(ivtx) = isuper
+              exit
+            end if
+          end do
+
         end if
 
       end do

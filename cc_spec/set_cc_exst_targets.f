@@ -31,7 +31,7 @@
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(10)
       character(len_command_par) ::
-     &     parameters
+     &     parameters(2)
 
 
       ! skip this section if not requested
@@ -90,31 +90,31 @@
 
       ! right Jacobian transform
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cc_a_r
-      labels(2) = label_ccrs0
+      labels(1) = form_cc_a_r
+      labels(2) = form_ccrs0
       labels(3) = op_a_r
       labels(4) = op_top
       labels(5) = op_r
-      call add_target(label_cc_a_r,ttype_frm,.false.,tgt_info)
-      call set_dependency(label_cc_a_r,label_ccrs0,tgt_info)
-      call set_dependency(label_cc_a_r,op_a_r,tgt_info)
-      call set_dependency(label_cc_a_r,op_r,tgt_info)
-      call set_rule(label_cc_a_r,ttype_frm,DERIVATIVE,
+      call add_target(form_cc_a_r,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_cc_a_r,form_ccrs0,tgt_info)
+      call set_dependency(form_cc_a_r,op_a_r,tgt_info)
+      call set_dependency(form_cc_a_r,op_r,tgt_info)
+      call set_rule(form_cc_a_r,ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              title_cc_a_r,1,tgt_info)
 
       ! left Jacobian transform
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cc_l_a
-      labels(2) = label_cctbar_a
+      labels(1) = form_cc_l_a
+      labels(2) = form_cctbar_a
       labels(3) = op_l_a
       labels(4) = op_tbar
       labels(5) = op_l
-      call add_target(label_cc_l_a,ttype_frm,.false.,tgt_info)
-      call set_dependency(label_cc_l_a,label_cctbar_a,tgt_info)
-      call set_dependency(label_cc_l_a,op_l_a,tgt_info)
-      call set_dependency(label_cc_l_a,op_l,tgt_info)
-      call set_rule(label_cc_l_a,ttype_frm,DERIVATIVE,
+      call add_target(form_cc_l_a,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_cc_l_a,form_cctbar_a,tgt_info)
+      call set_dependency(form_cc_l_a,op_l_a,tgt_info)
+      call set_dependency(form_cc_l_a,op_l,tgt_info)
+      call set_rule(form_cc_l_a,ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              title_cc_l_a,1,tgt_info)
 
@@ -126,24 +126,24 @@
 
       ! CC right-hand Jacobian transform
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cc_a_r_opt
-      labels(2) = label_cc_a_r
+      labels(1) = fopt_cc_a_r
+      labels(2) = form_cc_a_r
       ncat = 1
       nint = 0
-      call add_target(label_cc_a_r_opt,ttype_frm,.false.,tgt_info)
-      call set_dependency(label_cc_a_r_opt,label_cc_a_r,tgt_info)
-      call set_dependency(label_cc_a_r_opt,meldef_a_rex,tgt_info)
-      call set_dependency(label_cc_a_r_opt,meldef_rex,tgt_info)
-      call set_dependency(label_cc_a_r_opt,mel_topdef,tgt_info)
-      call set_dependency(label_cc_a_r_opt,mel_ham,tgt_info)
+      call add_target(fopt_cc_a_r,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_cc_a_r,form_cc_a_r,tgt_info)
+      call set_dependency(fopt_cc_a_r,meldef_a_rex,tgt_info)
+      call set_dependency(fopt_cc_a_r,meldef_rex,tgt_info)
+      call set_dependency(fopt_cc_a_r,mel_topdef,tgt_info)
+      call set_dependency(fopt_cc_a_r,mel_ham,tgt_info)
       if (isim.eq.1) then
         nint = 1
-        call set_dependency(label_cc_a_r_opt,label_cchhat,tgt_info)
-        call set_dependency(label_cc_a_r_opt,mel_hhatdef,tgt_info)
-        labels(3) = label_cchhat
+        call set_dependency(fopt_cc_a_r,form_cchhat,tgt_info)
+        call set_dependency(fopt_cc_a_r,mel_hhatdef,tgt_info)
+        labels(3) = form_cchhat
       end if
       call opt_parameters(-1,parameters,ncat,nint)
-      call set_rule(label_cc_a_r_opt,ttype_frm,OPTIMIZE,
+      call set_rule(fopt_cc_a_r,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
@@ -186,7 +186,7 @@
 
       call add_target(solve_cc_rhex,ttype_gen,.true.,tgt_info)
       call set_dependency(solve_cc_rhex,solve_cc_gs,tgt_info)
-      call set_dependency(solve_cc_rhex,label_cc_a_r_opt,tgt_info)
+      call set_dependency(solve_cc_rhex,fopt_cc_a_r,tgt_info)
       call set_dependency(solve_cc_rhex,meldef_rex,tgt_info)
       call set_dependency(solve_cc_rhex,meldef_a_rex,tgt_info)
       do isym = 1, orb_info%nsym
@@ -194,15 +194,15 @@
         call me_list_label(me_label,mel_rex,isym,0,0,0,.false.)
         call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
         call set_dependency(solve_cc_rhex,dia_label,tgt_info)
-        call solve_parameters(-1,parameters,1,sym_arr(isym))
+        call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
         labels(1:10)(1:len_target_name) = ' '
         labels(1) = me_label
         labels(2) = dia_label
         labels(3) = op_a_r
-        labels(4) = label_cc_a_r_opt
+        labels(4) = fopt_cc_a_r
         call set_rule(solve_cc_rhex,ttype_opme,SOLVEEVP,
      &       labels,4,1,
-     &       parameters,1,tgt_info)
+     &       parameters,2,tgt_info)
       end do
       
 

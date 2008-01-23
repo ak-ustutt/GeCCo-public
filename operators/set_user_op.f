@@ -71,7 +71,7 @@
 
       ! basic settings:
       op%name = '        '
-      op%name = name
+      op%name = trim(name)
 
       op%type = type
       op%njoined = 1  ! always for operators and densities

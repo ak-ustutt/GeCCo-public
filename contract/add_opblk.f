@@ -124,6 +124,10 @@ c        call quit(1,'add_opblk','occupations do not fit!')
 c        ! note: we must be able to handle this case in the future
 c      end if
 
+      if (opin%dagger.and..not.opout%dagger .or.
+     &    .not.opin%dagger.and.opout%dagger)
+     &     call quit(1,'add_opblk','cannot (yet) transpose on-the-fly!')
+
       len_op = mel_in%len_op_occ(iblkin)
       ! for the moment this must hold:
       if (len_op.ne.mel_out%len_op_occ(iblkout))

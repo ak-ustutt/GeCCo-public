@@ -27,11 +27,11 @@
      &     orb_info
 
       integer ::
-     &     idx, jdx, ioff, ncat, nint
+     &     idx, jdx, ioff, ncat, nint, ansatz, ipos, idum, level
       type(formula), pointer ::
      &     form_pnt, form0_pnt
       character(len_command_par) ::
-     &     title
+     &     title, strdum, approx, typ_str
 
       integer ::
      &     idx_formlist
@@ -57,7 +57,7 @@
       case(DEF_CC_LAGRANGIAN)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title)
+     &       title,idum,strdum)
         ioff = rule%n_update
         call set_cc_lagrangian2(form_pnt,
      &       title,rule%labels(ioff+1),rule%labels(ioff+2),
@@ -67,30 +67,83 @@
       case(DEF_HHAT)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title)
+     &       title,idum,strdum)
         ioff = rule%n_update
         call set_hhat2(form_pnt,
      &       title,rule%labels(ioff+1),
      &             rule%labels(ioff+2),rule%labels(ioff+3),
      &       op_info)
+      case(DEF_R12INTM_FORMAL)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,idum,typ_str)
+        ioff = rule%n_update
+        call set_r12intm_formal(form_pnt,
+     &       title,rule%labels(ioff+1),rule%labels(ioff+2),
+     &       rule%n_labels-ioff-1,typ_str,
+     &       op_info,orb_info)
+
+      case(DEF_R12INTM_CABS)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,ansatz,approx)
+        ioff = rule%n_update
+        call set_r12intm_cabs(form_pnt,
+     &       title,rule%labels(ioff+1),rule%n_labels-ioff,
+     &       approx(1:2),ansatz,approx(3:),
+     &       op_info,orb_info)
+
+      case(DEF_MPR12_LAGRANGIAN)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,level,strdum)
+c prelim        
+        if (level.ne.2) call quit(1,'process_formulae',
+     &       'MP: only level==2 implemented')
+        ioff = rule%n_update
+        call set_mp2_r12_lagrangian(form_pnt,
+     &       title,rule%labels(ioff+1),rule%n_labels-ioff,
+     &       op_info,orb_info)
+c prelim
       case(DEF_CCR12_LAGRANGIAN)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,ansatz,strdum)
+        ioff = rule%n_update
+        call set_r12_lagrangian(form_pnt,
+     &       title,rule%labels(ioff+1),rule%n_labels-ioff,ansatz,
+     &       op_info,orb_info)
+      case(FACTOR_OUT)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,nint,strdum)
+        ioff = rule%n_update
+        
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_factor_out(form_pnt,form0_pnt,
+     &       title,
+     &       nint,rule%labels(ioff+2),
+     &       op_info,form_info
+     &       )
+
       case(INVARIANT)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title)
+     &       title,idum,strdum)
         ioff = rule%n_update
         
         jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
         form0_pnt => form_info%form_arr(jdx)%form
         call form_invariant(form_pnt,form0_pnt,
      &       title,rule%labels(ioff+2),
-     &       1,rule%labels(ioff+3),
+     &       rule%n_labels-ioff-2,rule%labels(ioff+3),
      &       op_info
      &       )
       case(DERIVATIVE)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title)
+     &       title,idum,strdum)
         ioff = rule%n_update
         
         jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
@@ -104,11 +157,11 @@
       case(LEQ_SPLIT)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title)
+     &       title,idum,strdum)
         call leq_post(rule%labels(1),rule%labels(2),rule%labels(3),
      &       rule%labels(4),
      &       rule%labels(5),
-     &       rule%labels(6),
+     &       rule%labels(6),1,
      &       title,title,
      &       op_info,form_info)
       case(OPTIMIZE)

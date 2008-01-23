@@ -1,8 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine idx42str2(nstr,idxstr,
-     $         mode,
+      subroutine idx42str2(nstr,idxstr,mode,
      &         idxprqs,igam,idss,igtp,
-     &         orb_info,str_info,hop,ihpvseq,ierr)
+     &         orb_info,str_info,oplist,ihpvseq,error)
 *----------------------------------------------------------------------*
 *     a 4-tuple of indices (for a 2-electron integral, in type ordering) 
 *     is given: (pq|rs), along with
@@ -29,7 +28,9 @@
       include 'opdim.h'
       include 'multd2h.h'
       include 'def_graph.h'
+      include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
       include 'ifc_operators.h'
@@ -44,20 +45,20 @@
      &     orb_info
       type(strinf), intent(in) ::
      &     str_info
-      type(operator), intent(in) ::
-     &     hop
+      type(me_list), intent(in) ::
+     &     oplist
       integer, intent(out) ::
      &     nstr, idxstr(*)
       logical, intent(out)::
-     &     ierr
+     &     error
 
       logical ::
-     &     reo12, reo34, eqv12, eqv34, r12int, take_ca, take_ac
+     &     reo12, reo34, eqv12, eqv34, take_ca, take_ac
       integer ::
-     &     igamt, mst, iblk_ca, iblk_ac, ihpvdx, ihpv, ica,
+     &     igamt, mst, iblk_ca, iblk_ac, ihpvdx, ihpv, ica, ica2,
      &     jdx, idxcnt, idstr_ca, idstr_ac, nel, msstr, lenlast,
      &     nmsd, imsd, igraph, idx1, idx2, idx3, idx4, ndup,
-     &     idxms, inc
+     &     idxms, inc, njoined, igraph_temp, igam_total
 
       integer ::
      &     iocc(ngastp,2), igmd(ngastp,2), !igmdreo(ngastp,2),
@@ -67,22 +68,27 @@
 
       type(graph), pointer ::
      &     curgraph
+      type(operator), pointer ::
+     &     op
 
       integer, external ::
-     &     iblk_occ, idx_msgmdst, idx4sg
+     &     iblk_occ, iblk_occ_inter, idx_msgmdst, idx4sg
       logical, external ::
      &     allow_sbsp_dis
 
 
       if (ntest.ge.10) then
         write(luout,*) '----------------------'
-        write(luout,*) ' output from idx42str'
+        write(luout,*) ' output from idx42str '
         write(luout,*) '----------------------'
         write(luout,*) 'mode = ',mode
       end if
 
-      ! See whether we are trying to read in the R12 integrals.
-      r12int=trim(hop%name).eq.'R12-INT'
+      op => oplist%op
+
+      if (oplist%gamt.ne.1)
+     &     call quit(1,'idx42str2',
+     &     'I can do totally symmetric integrals only!')
 
       ! Checks whether integral indices are the same, or if they need 
       ! to be reordered (want p.le.q and r.le.s)
@@ -121,6 +127,20 @@
       igamt = igam(1)
       igamt = multd2h(igamt,igam(2))
 
+      igam_total = multd2h(igamt,igam(3))
+      igam_total = multd2h(igam_total,igam(4))
+
+      if (igam_total.ne.1) then
+c dbg
+        write(luout,*) 'input <pr|qs>: ',idxprqs(1:4)
+        write(luout,*) '        Gamma  ',igam(1:4)
+        write(luout,*) '        Subsp  ',idss(1:4)
+        write(luout,*) '        Types  ',igtp(1:4)
+c dbg
+        error = .true.
+        return
+      end if
+
       ! Symmetries of each side of the integral.
       igmd(1:ngastp,1:2) = 1
       igmd(igtp(idx1),1) = igam(idx1)
@@ -130,31 +150,62 @@
 
       ! Which block of the operator does the passed integral represent?
       ! could be improved:
-      iblk_ca = iblk_occ(iocc,.false.,hop)
+      if(op%njoined.eq.1)then
+        iblk_ca = iblk_occ(iocc,.false.,op)
+        iblk_ac = iblk_occ(iocc,.true.,op)
+      elseif(op%njoined.gt.1)then
+        iblk_ca = iblk_occ_inter(iocc,.false.,op)
+        iblk_ac = iblk_occ_inter(iocc,.true.,op)
+      endif
       take_ca = iblk_ca.gt.0
-      iblk_ac = iblk_occ(iocc,.true.,hop)
       take_ac = iblk_ac.gt.0
+
       if (mode.eq.0) then
         if (.not.take_ca.or..not.take_ac) then
-          write(luout,*) ' iocc: ',trim(hop%name)
+          write(luout,*) ' iocc: ',trim(op%name)
           call wrt_occ(luout,iocc)
           write(luout,*) iblk_ca, iblk_ac
           call quit(1,'idx42str','something''s buggy!')
         end if 
       end if
 
-      ierr=.false.
+      error=.false.
       if (.not.take_ca.and..not.take_ac) then
-c        if(r12int)then
-          ierr=.true.
-          return
-c        endif  
+        error=.true.
+        return
       end if
 
-      if(hop%formal_blk(iblk_ca))then
-        ierr=.true.
-        return
-      endif  
+c      if(mode.ne.2)then
+c        if(.not.op%dagger)then
+c          if(op%formal_blk(iblk_ca))then
+c            error=.true.
+c            return
+c          endif  
+c        else
+c          if(op%formal_blk(iblk_ac))then
+c            error=.true.
+c            return
+c          endif  
+c        endif
+c      else
+c        if(op%formal_blk(iblk_ca).and.op%formal_blk(iblk_ac))then
+c          error=.true.
+c          return
+c        endif  
+c      endif        
+
+      if(take_ca)then
+        if(op%formal_blk(iblk_ca))then
+          error = .true.
+          return
+        endif
+      endif
+      if(take_ac)then
+        if(op%formal_blk(iblk_ac))then
+          error = .true.
+          return
+        endif
+      endif
 
       if (ntest.ge.50) then
         write(luout,*) 'input <pr|qs>: ',idxprqs(1:4)
@@ -178,6 +229,7 @@ c        endif
       nstr = 0
       inc = 1
       if (take_ca.and.take_ac) inc = 2
+        
       cnt_loop: do idxcnt = 1, 4
         ! If the spatial orbitals are equivalent for either electron 
         ! one or two and if the spins are the same (idxcnt=1 or 4) then
@@ -250,14 +302,15 @@ c        endif
         ! adjoint.
         if (take_ca) then
           idstr_ca = idx_msgmdst(iblk_ca,mst,igamt,
-     &         msd,igmd,.false.,hop,orb_info%nsym)
+     &         msd,igmd,.false.,oplist,orb_info%nsym)
           if (idstr_ca.lt.0)
      &         call quit(1,'idx42str','error for idstr_ca')
-        else if (take_ac) then
+        endif
+        if (take_ac) then
           idstr_ac = idx_msgmdst(iblk_ac,mst,igamt,
-     &         msd,igmd,.true.,hop,orb_info%nsym)
+     &         msd,igmd,.true.,oplist,orb_info%nsym)
           if (idstr_ac.lt.0)
-     &         call quit(1,'idx42str','error for idstr_ac')
+     &         call quit(1,'idx42str','error for idstr_ac') 
         end if
 
         if (ntest.ge.100) then
@@ -272,26 +325,27 @@ c        endif
         ! in idxstr.
         if (take_ca.and.take_ac) then
           idxstr(nstr-1) =
-     &         hop%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
+     &        oplist%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
           idxstr(nstr)   =
-     &         hop%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
+     &        oplist%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
           if (ntest.ge.100) then
             write(luout,*) 'idxstr(offsets) = ',idxstr(nstr-1:nstr)
           end if
-        else if (take_ca) then
-          idxstr(nstr) =
-     &         hop%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
-          if (ntest.ge.100) then
-            write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
-          end if
-        else if (take_ac) then
-          idxstr(nstr) =
-     &         hop%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
-          if (ntest.ge.100) then
-            write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
-          end if
+        else 
+          if (take_ca) then
+            idxstr(nstr) =
+     &        oplist%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
+            if (ntest.ge.100) then
+              write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
+            end if
+          else if (take_ac) then
+            idxstr(nstr) =
+     &        oplist%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
+            if (ntest.ge.100) then
+              write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
+            end if
+          endif  
         end if
-
 
         lenlast = 1
         ihpv_loop: do ihpvdx = 1, ngastp
@@ -304,12 +358,51 @@ c        endif
             ipos = ioff(ihpv,ica)
 
             ! point to graph needed for current string
-            if (take_ca) then
-              igraph = hop%idx_graph(ihpv,ica,iblk_ca)
-            else
-              igraph = hop%idx_graph(ihpv,3-ica,iblk_ac)
-            end if
-            curgraph => str_info%g(igraph)
+c            if(.not.op%dagger)then
+c              if (take_ca) then
+c                igraph = oplist%idx_graph(ihpv,ica,iblk_ca)
+c              else
+c                igraph = oplist%idx_graph(ihpv,3-ica,iblk_ac)
+c              end if
+c            else
+c              if (take_ca) then
+c                igraph = oplist%idx_graph(ihpv,3-ica,iblk_ca)
+c              else
+c                igraph = oplist%idx_graph(ihpv,ica,iblk_ac)
+c              end if
+c            endif
+c            curgraph => str_info%g(igraph)
+
+            ! Loop to deal with intermediate type operators.
+            ! Not perfect, but functions for operators where c/a 
+            ! occupancies are all in the same space.
+            igraph = 0
+            igraph_temp = 0
+            njoined = op%njoined
+            do jdx = 1,njoined
+              if(.not.op%dagger)then
+                if (take_ca) then
+                  igraph = igraph +
+     &                oplist%idx_graph(ihpv,ica,(iblk_ca-1)*njoined+jdx)
+                else
+                  igraph = igraph +
+     &              oplist%idx_graph(ihpv,3-ica,(iblk_ac-1)*njoined+jdx)
+                end if
+              else
+                if (take_ca) then
+                  igraph = igraph +
+     &              oplist%idx_graph(ihpv,3-ica,(iblk_ca-1)*njoined+jdx)
+                else
+                  igraph = igraph +
+     &              oplist%idx_graph(ihpv,ica,(iblk_ac-1)*njoined+jdx)
+                end if
+              endif
+              if(igraph.ne.igraph_temp.and.igraph_temp.ne.0)
+     &             call quit(1,'idx42str2',
+     &             'igraph add only valid when only one contribution')
+              igraph_temp = igraph
+              curgraph => str_info%g(igraph)
+            enddo
 
             ! check for restrictions
             if (.not.allow_sbsp_dis(idspc(ipos),nel,
@@ -319,8 +412,14 @@ c        endif
               exit cnt_loop
             end if
 
+            ! Well, if the operator list is store in transposed form
+            ! as implied by op%dagger, we have to interchange
+            ! C and A dimensions. Buff!
+            ica2 = ica
+            if (op%dagger) ica2 = 3-ica
+
             ! get string index
-            idx(ica) = idx4sg(nel,idspc(ipos),idorb(ipos),
+            idx(ica2) = idx4sg(nel,idspc(ipos),idorb(ipos),
      &             idspn(ipos),idgam(ipos),
      &             curgraph%y4sg,curgraph%yinf,
      &             curgraph%yssg,curgraph%wssg,
@@ -330,7 +429,7 @@ c        endif
 
             ! get total length within block
             msstr = (msd(ihpv,ica)+iocc(ihpv,ica))/2+1
-            len(ica) =
+            len(ica2) =
      &             curgraph%lenstr_gm(igmd(ihpv,ica),msstr)
       
           end do ica_loop
@@ -340,12 +439,14 @@ c        endif
      &           ((idx(2))*len(1) + idx(1))*lenlast
             idxstr(nstr)   = idxstr(nstr) +
      &           ((idx(1))*len(2) + idx(2))*lenlast
-          else if (take_ca) then
-            idxstr(nstr) = idxstr(nstr) +
-     &           ((idx(2))*len(1) + idx(1))*lenlast
-          else if (take_ac) then
-            idxstr(nstr) = idxstr(nstr) +
-     &           ((idx(1))*len(2) + idx(2))*lenlast
+          else 
+            if (take_ca) then
+              idxstr(nstr) = idxstr(nstr) +
+     &             ((idx(2))*len(1) + idx(1))*lenlast
+            else if (take_ac) then
+              idxstr(nstr) = idxstr(nstr) +
+     &             ((idx(1))*len(2) + idx(2))*lenlast
+            endif  
 c dbg
 c            print *,'ihpv: ',ihpv
 c            print *,'idx: ',idx(1:2),'  lenlast:', lenlast
@@ -373,6 +474,11 @@ c dbg
           end do check1
           nstr = nstr-ndup
           if (idxstr(nstr-1).eq.idxstr(nstr)) nstr = nstr-1          
+
+          ! Special treatment for [T1+T2,r12] integrals.
+          if(mode.eq.2.and.take_ac)then
+            idxstr(nstr) = -idxstr(nstr)
+          endif  
           
         else
           idxstr(nstr) = idxstr(nstr)+1
@@ -384,7 +490,7 @@ c dbg
             write(luout,*) 'idxstr(final) = ',idxstr(nstr)
           end if
 
-          ! prelim: check, whether actually the same address resulted
+          ! prelim: check, whether the same address actually resulted
           ndup = 0
           check2: do jdx = 1, nstr-1
             if (idxstr(nstr).eq.idxstr(jdx)) ndup = ndup+1
@@ -392,6 +498,11 @@ c dbg
           end do check2
           nstr = nstr-ndup
 
+          ! Special treatment for [T1+T2,r12] integrals.
+          if(mode.eq.2.and.take_ac)then
+            idxstr(nstr) = -idxstr(nstr)
+          endif  
+          
         end if
 
       end do cnt_loop
@@ -409,4 +520,3 @@ c dbg
 
       return
       end
-

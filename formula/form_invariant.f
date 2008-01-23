@@ -14,14 +14,14 @@
 
       include 'stdunit.h'
       include 'opdim.h'
-c      include 'def_filinf.h'
       include 'mdef_operator_info.h'
       include 'def_contraction.h'
-      include 'def_contraction_list.h'
+c      include 'def_contraction_list.h'
+      include 'def_formula_item.h'
       include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     ncmpnd
@@ -33,21 +33,22 @@ c      include 'def_filinf.h'
       type(operator_info) ::
      &     op_info
       
-      type(contraction) ::
-     &     contr
-
       logical ::
-     &     ok
+     &     ok, same
       integer ::
-     &     luinput, luoutput, len,
      &     nterms, idum, idxinp, idx, icmpnd, idxres, idxop(ncmpnd)
       character ::
      &     name*(form_maxlen_label*2)
 
+      type(formula_item), target ::
+     &     flist
+      type(formula_item), pointer ::
+     &     fl_pnt, fl_pnt_next
+      type(contraction), pointer ::
+     &     contr
+
       integer, external ::
      &     idx_oplist2
-      logical, external ::
-     &     rd_contr
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'here speaks form_indep')
@@ -59,6 +60,8 @@ c      include 'def_filinf.h'
           write(luout,*) ' op  = ',trim(label_op(icmpnd))
         end do
       end if
+
+      same = trim(f_input%label).eq.trim(f_output%label)
 
       ! get indices
       idxres = idx_oplist2(label_opres,op_info)
@@ -73,57 +76,69 @@ c dbg
      &     call quit(1,'form_invariant',
      &     'required operators are not yet defined')
 
-      write(name,'(a,".fml")') trim(f_output%label)
-      call file_init(f_output%fhand,name,ftyp_sq_unf,0)      
-      f_output%comment = trim(title)
+      ! read in input formula
+      call init_formula(flist)
+      call read_form_list(f_input%fhand,flist)
 
-      call file_open(f_input%fhand)
-      call file_open(f_output%fhand)
-      luinput = f_input%fhand%unit
-      luoutput = f_output%fhand%unit
-      rewind luinput
-      rewind luoutput
+      fl_pnt => flist
 
-      read(luinput)
-      read(luinput) idum,idxinp
-
-      len = len_trim(title)
-      write(luoutput) len,trim(title)
-      write(luoutput) idum,idxres
-
-      ! signal, that still nothing is allocated
-      contr%mxvtx = 0
-      contr%mxarc = 0
-      contr%mxfac = 0
+      if (.not.associated(fl_pnt))
+     &     call quit(1,'form_invariant',
+     &     'empty formula list? something is buggy')
 
       nterms = 0
-      do while(rd_contr(luinput,contr,idxres))
-        
-        ok = .true.
-        cmp_loop: do idx = 1, contr%nvtx
-          do icmpnd = 1, ncmpnd
-            if (contr%vertex(idx)%idx_op.eq.idxop(icmpnd)) then
-              ok = .false.
-              exit cmp_loop
-            end if
-          end do
-        end do cmp_loop
+      fl_loop: do
 
-        if (ok) then
-          nterms = nterms+1
-          contr%idx_res = idxres ! not completely OK
-          call wrt_contr(luoutput,contr)
-          if (ntest.ge.100) then
-            call prt_contr2(luout,contr,op_info)
+        fl_pnt_next => fl_pnt%next
+        if (fl_pnt%command.eq.command_end_of_formula)
+     &       exit fl_loop
+
+        fl_pnt%target = idxres
+
+        if (fl_pnt%command.eq.command_add_contribution) then
+
+          ok = .true.
+          contr => fl_pnt%contr
+          cmp_loop: do idx = 1, contr%nvtx
+            do icmpnd = 1, ncmpnd
+              if (contr%vertex(idx)%idx_op.eq.idxop(icmpnd)) then
+                ok = .false.
+                exit cmp_loop
+              end if
+            end do
+          end do cmp_loop
+
+          if (ok) then
+            nterms = nterms+1
+            contr%idx_res = idxres ! not completely OK
+            if (ntest.ge.100) then
+              call prt_contr2(luout,contr,op_info)
+            end if
+          else
+            ! deallocate contents and re-link the list
+            call delete_fl_node(fl_pnt)
+            ! deallocate the node itself
+            deallocate(fl_pnt)
           end if
+        else 
         end if
 
-      end do
+        fl_pnt => fl_pnt_next
+        if (.not.associated(fl_pnt))
+     &       call quit(1,'form_invariant',
+     &       'unexpected end of formula list')
 
-      call file_close_keep(f_output%fhand)
-      call file_close_keep(f_input%fhand)
+      end do fl_loop
 
-      call dealloc_contr(contr)
+      ! write result
+      if (.not.same) then
+        write(name,'(a,".fml")') trim(f_output%label)
+        call file_init(f_output%fhand,name,ftyp_sq_unf,0)      
+      end if
+      f_output%comment = trim(title)
+      call write_form_list(f_output%fhand,flist,title)
+
+      call dealloc_formula_list(flist)
 
       if (ntest.ge.10) then
         write(luout,*) 'generated terms: ',nterms

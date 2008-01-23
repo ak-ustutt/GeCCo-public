@@ -19,7 +19,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       type(contraction), intent(out) ::
      &     contr_abc
@@ -38,7 +38,7 @@
      &     narc_abc, narc_abc0, narc_ac, narc_b, 
      &     idx, ivtx_abc, iarc, ivtx, jvtx, jvtx_last,
      &     nproto_ac, nproto_b,
-     &     nsuper, njoined, isuper
+     &     nsuper, njoined, isuper, njoined_abc
       type(formula_item) ::
      &     wrap
       type(operator), pointer ::
@@ -134,7 +134,7 @@
      &       narc_ac, narc_b, narc_abc
       end if
 
-      call resize_contr(contr_abc,nvtx_abc,narc_abc,0)
+      call resize_contr(contr_abc,nvtx_abc,narc_abc,0,0)
 
       if (nvtx_ac.gt.0) allocate(ivtx_ac_reo(nvtx_ac))
       if (nvtx_b.gt.0)  allocate(ivtx_b_reo(nvtx_b))
@@ -146,6 +146,7 @@
       ! set result
       contr_abc%idx_res = idxop_abc
       contr_abc%iblk_res = iblk_abc
+      njoined_abc = op_info%op_arr(idxop_abc)%op%njoined
 
       ! set vertices and reordering arrays
       do ivtx = 1, nvtx_abc
@@ -242,13 +243,14 @@
       call init_formula(wrap)
 
       ! set fix_vtx and occ_vtx arrays
-      allocate(fix_vtx(nvtx_abc),occ_vtx(ngastp,2,nvtx_abc+1))
+      allocate(fix_vtx(nvtx_abc),occ_vtx(ngastp,2,nvtx_abc+njoined_abc))
       fix_vtx = .true. ! "fix" all vertices -> ieqvfac will be 1
       call occvtx4contr(0,occ_vtx,contr_abc,op_info)
 
       ! generate all possible contractions (hopefully only 1)
 c      call gen_contr2(wrap,contr_abc,fix_vtx,occ_vtx,op_info)
-      call gen_contr3(wrap,contr_abc,fix_vtx,occ_vtx,njoined,op_info)
+      call gen_contr3(wrap,contr_abc,fix_vtx,
+     &                occ_vtx,njoined_abc,op_info)
 
       ! none at all?
       if (wrap%command.eq.command_end_of_formula) then

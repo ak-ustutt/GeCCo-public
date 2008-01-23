@@ -1,8 +1,8 @@
 *----------------------------------------------------------------------*
-      subroutine resize_contr(contr,nvtx,narc,nfac)
+      subroutine resize_contr(contr,nvtx,narc,nxarc,nfac)
 *----------------------------------------------------------------------*
-*     check max dimensions of contr (mxvtx,mxarc,mxfac) and resize
-*     if necessary
+*     check max dimensions of contr (mxvtx,mxarc,mxxarc,mxfac) and 
+*     resize if necessary
 *     data-save version:
 *     we first allocate new memory, deallocate the old one, and
 *     finally redirect the pointer to the new array
@@ -15,12 +15,13 @@
       type(contraction), intent(inout) ::
      &     contr
       integer, intent(in) ::
-     &     nvtx, narc, nfac
+     &     nvtx, narc, nxarc, nfac
 
       type(cntr_vtx), pointer ::
      &     vtx_new(:)
       type(cntr_arc), pointer ::
-     &     arc_new(:)
+     &     arc_new(:),
+     &     xarc_new(:)
       integer, pointer ::
      &     inf_new(:,:), joined_new(:,:), svertex_new(:)
 
@@ -35,6 +36,8 @@
      &     call quit(1,'resize_contr','svertex pointer inconsistent')
       if (contr%mxarc.gt.0.and..not.associated(contr%arc))
      &     call quit(1,'resize_contr','arc pointer inconsistent')
+      if (contr%mxxarc.gt.0.and..not.associated(contr%xarc))
+     &     call quit(1,'resize_contr','xarc pointer inconsistent')
       if (contr%mxfac.gt.0.and..not.associated(contr%inffac))
      &     call quit(1,'resize_contr','inffac pointer inconsistent')
       if (contr%mxvtx.lt.nvtx) then
@@ -66,6 +69,16 @@
         if (contr%mxarc.gt.0) deallocate(contr%arc)
         contr%arc => arc_new
         contr%mxarc = narc
+      end if
+
+      if (contr%mxxarc.lt.nxarc) then
+        allocate(xarc_new(nxarc))
+        nsave = min(contr%mxxarc,contr%nxarc)
+        if (nsave.gt.0)
+     &       xarc_new(1:nsave) = contr%xarc(1:nsave)
+        if (contr%mxxarc.gt.0) deallocate(contr%xarc)
+        contr%xarc => xarc_new
+        contr%mxxarc = nxarc
       end if
 
       if (contr%mxfac.lt.nfac) then

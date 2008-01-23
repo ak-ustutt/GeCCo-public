@@ -1,8 +1,9 @@
 *----------------------------------------------------------------------*
-      subroutine expand_subexpr(fl_tgt,fl_intm,op_info)
+      subroutine expand_subexpr(fl_tgt,fl_intm,force,op_info)
 *----------------------------------------------------------------------*
 *     input: a definition of an intermediate on fl_intm
 *            a target formula on fl_tgt
+*            whether to enforce all contractions, force.
 *     find all occurences of the intermediate vertex in fl_tgt and
 *     expand them by the definition given in fl_intm
 *     on output: an expanded formula on fl_tgt
@@ -24,6 +25,8 @@
      &     fl_intm
       type(formula_item), target, intent(inout) ::
      &     fl_tgt
+      logical, intent(in)::
+     &     force
       ! only for debug output:
       type(operator_info), intent(in) ::
      &     op_info
@@ -131,7 +134,7 @@ c dbg
           allocate(fl_expand)
           call init_formula(fl_expand)
           call expand_term(fl_expand,nterms,
-     &         njoined,fl_tgt_current,fpl_intm_c2blk,op_info)
+     &         njoined,fl_tgt_current,fpl_intm_c2blk,force,op_info)
           
           if (nterms.gt.0) then
             if (ntest.ge.100) then
@@ -157,7 +160,7 @@ c dbg
             ! we re-visit the generated terms (for multiple expansions)
             advance = .false.
           else
-            call quit(1,'expand_subexpr','strange event')
+            call quit(1,'expand_subexpr','strange event: no terms')
           end if
 
           call dealloc_formula_plist(fpl_intm_c2blk)

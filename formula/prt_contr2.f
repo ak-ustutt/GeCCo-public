@@ -47,13 +47,13 @@
         if (ops(contr%vertex(idx)%idx_op)%op%dagger) idxph=2
         write(luout,'(x,"v",i2.2,x,a,i4,2x,4i3)')
      &       contr%svertex(idx),
-     &       ops(contr%vertex(idx)%idx_op)%op%name(1:5),
+     &       ops(contr%vertex(idx)%idx_op)%op%name(1:8),
      &       contr%vertex(idx)%iblk_op,
      &       ops(contr%vertex(idx)%idx_op)%op%
      &       ihpvca_occ(1:ngastp,idxph,contr%vertex(idx)%iblk_op)
         idxph = 2
         if (ops(contr%vertex(idx)%idx_op)%op%dagger) idxph=1
-        write(luout,'(x,a,11x,4i3)')
+        write(luout,'(x,a,14x,4i3)')
      &       '    ',ops(contr%vertex(idx)%idx_op)%op%
      &       ihpvca_occ(1:ngastp,idxph,contr%vertex(idx)%iblk_op)
       end do
@@ -64,12 +64,27 @@
      &       ' cp ',contr%arc(idx)%link(1),
      &       contr%arc(idx)%link(2)
         else
-          write(luout,'(x,a,x,2i4,2x,4i3)')
+          write(luout,'(x,a,x,2i4,5x,4i3)')
      &       ' c  ',contr%arc(idx)%link(1),
      &       contr%arc(idx)%link(2),
      &       contr%arc(idx)%occ_cnt(1:ngastp,1)
-          write(luout,'(x,a,11x,4i3)')
+          write(luout,'(x,a,14x,4i3)')
      &       '    ',contr%arc(idx)%occ_cnt(1:ngastp,2)
+        end if
+      end do
+      do idx = 1, contr%nxarc
+        if (contr%xarc(idx)%occ_cnt(1,1).lt.0) then
+          ! prototype connection:
+          write(luout,'(x,a,x,2i4)')
+     &       ' xp ',contr%xarc(idx)%link(1),
+     &       contr%xarc(idx)%link(2)
+        else
+          write(luout,'(x,a,x,2i4,5x,4i3)')
+     &       ' x  ',contr%xarc(idx)%link(1),
+     &       contr%xarc(idx)%link(2),
+     &       contr%xarc(idx)%occ_cnt(1:ngastp,1)
+          write(luout,'(x,a,14x,4i3)')
+     &       '    ',contr%xarc(idx)%occ_cnt(1:ngastp,2)
         end if
       end do
       do idx = 1, contr%nfac

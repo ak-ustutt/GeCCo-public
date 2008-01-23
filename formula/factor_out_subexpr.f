@@ -3,9 +3,9 @@
 *----------------------------------------------------------------------*
 *     input: a definition of an intermediate on fl_intm
 *            a target formula on fl_tgt
-*     find all occurences of the intermediat in fl_tgt and
+*     find all occurences of the intermediate in fl_tgt and
 *     modify fl_tgt accordingly
-*     on output: an reduced formula on fl_tgt
+*     on output: a reduced formula on fl_tgt
 *----------------------------------------------------------------------*
       implicit none
 
@@ -44,9 +44,9 @@
      &     success
 
       if (ntest.ge.100) then
-        write(luout,*) '================================='
+        write(luout,*) '==================================='
         write(luout,*) ' factor_out_subexpr messing around'
-        write(luout,*) '================================='
+        write(luout,*) '==================================='
       end if
 
       call init_contr(contr_rpl)
@@ -77,6 +77,9 @@
           end if
           fl_tgt_current => fl_tgt_current%next
         end if
+
+        if (.not.associated(fl_tgt_current%contr))
+     &       call quit(1,'factor_out_subexpr','I''m confused ...')
 
         iblk_tgt = fl_tgt_current%contr%iblk_res
         if (ntest.ge.100) then

@@ -8,11 +8,12 @@
 *     the first operator defines the external lines above and below
 *     the intermediate
 *     the remaining operators define (top to bottom in a diagram,
-*     left to right in an operator string) the insertion places for
-*     other operators;
+*     left to right in an operator string) the operators which will be
+*     inserted into the intermediate;
 *     one may think of the intermediate originating from an expression
 *     ---originally yielding operator one as result---after derivatives
-*     with respect to operators 2 to ndefop
+*     with respect to operators 2 to ndefop (e.g. operator 1 may be the
+*     energy and the remaining operators the CC or R12 coefficients).
 *----------------------------------------------------------------------*
 
       implicit none
@@ -23,10 +24,9 @@
       include 'stdunit.h'
       include 'ifc_baserout.h'
       include 'ifc_operators.h'
-      include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(operator), intent(inout) ::
      &     op
@@ -112,12 +112,12 @@ c      dagtotal = op%dagger
         do idef = 2, ndefop
           op%ihpvca_occ(1:ngastp,1:2,ioffblk+idef-1) =
      &         op%ihpvca_occ(1:ngastp,1:2,ioffblk+idef-1) +
-     &         iocc_xdn(2,defop(idef)%op%
-     &                    ihpvca_occ(1:ngastp,1:2,iblk_dis(idef)))
+     &         iocc_dagger(iocc_xdn(1,defop(idef)%op%
+     &                    ihpvca_occ(1:ngastp,1:2,iblk_dis(idef))))
           op%ihpvca_occ(1:ngastp,1:2,ioffblk+idef) =
      &         op%ihpvca_occ(1:ngastp,1:2,ioffblk+idef) +
-     &         iocc_xdn(1,defop(idef)%op%
-     &                    ihpvca_occ(1:ngastp,1:2,iblk_dis(idef)))
+     &         iocc_dagger(iocc_xdn(2,defop(idef)%op%
+     &                    ihpvca_occ(1:ngastp,1:2,iblk_dis(idef))))
         end do
 
         op%ica_occ(1:2,iblk) = 0
@@ -143,16 +143,16 @@ c      dagtotal = op%dagger
      &                  igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(1)),
      &                 hpvxgas,ngas)
         do idef = 2, ndefop
-          op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+idef-1) =
-     &       op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+idef-1) +
-     &       irest_xdn(2,defop(idef)%op%
-     &                  igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(idef)),
+          op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef-1) =
+     &       op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef-1) +
+     &       irest_xdn(1,defop(idef)%op%
+     &                 igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(idef)),
      &                 hpvxgas,ngas)
 
-          op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+idef) =
-     &       op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+idef) +
-     &       irest_xdn(1,defop(idef)%op%
-     &                  igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(idef)),
+          op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef) =
+     &       op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef) +
+     &       irest_xdn(2,defop(idef)%op%
+     &                 igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(idef)),
      &                 hpvxgas,ngas)
         end do
 

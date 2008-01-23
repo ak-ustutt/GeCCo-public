@@ -1,7 +1,8 @@
 *----------------------------------------------------------------------*
       subroutine optc_update_redsp1(xmat,ndim,mxdim,shift,init,
      &     iord,ff_sbsp,
-     &     nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+     &     nincore,nwfpar,
+     &     lenbuf,xbuf1,xbuf2,xbuf3)
 *----------------------------------------------------------------------*
 *
 *     update reduced-space matrix xmat(i,j) = <v(i)|v(j)>, where
@@ -29,11 +30,11 @@
       integer, intent(in) ::
      &     ndim, mxdim, nincore, nwfpar, lenbuf,
      &     iord(*)
-      real(8), intent(inout) ::
-     &     xmat(*), xbuf1(*), xbuf2(*)
+      real(8), intent(inout), target ::
+     &     xmat(*), xbuf1(*), xbuf2(*), xbuf3(*)
       
       integer ::
-     &     iioff, iioff2, ii, jj, irec, jrec
+     &     iioff, iioff2, ii, jj, irec, jrec, idx, iblk, len
 
       integer, external ::
      &     ioptc_get_sbsp_rec
@@ -44,6 +45,7 @@
         write(luout,*) '==============================='
         write(luout,*) ' welcome to optc_update_redsp1'
         write(luout,*) '==============================='
+        write(luout,*) 'nwfpar = ',nwfpar
       end if
 
       if (ntest.ge.20) then
@@ -86,10 +88,12 @@
 
         if (nincore.ge.2) then
           if (irec.eq.jrec) then
-            xmat(iioff+ii) = xmat(iioff+ii)+ddot(nwfpar,xbuf1,1,xbuf1,1)
+            xmat(iioff+ii) = xmat(iioff+ii)
+     &           +ddot(nwfpar,xbuf1,1,xbuf1,1)
           else
             call vec_from_da(ff_sbsp,irec,xbuf2,nwfpar)
-            xmat(iioff+ii) = xmat(iioff+ii)+ddot(nwfpar,xbuf1,1,xbuf2,1)
+            xmat(iioff+ii) = xmat(iioff+ii)
+     &           +ddot(nwfpar,xbuf1,1,xbuf2,1)
           end if
 
         !else if (nincore.eq.1) then
@@ -97,7 +101,7 @@
           ! routine needed that makes inner product betw. vector in core
           ! and vector on disc
 
-        else 
+        else
           xmat(iioff+ii) = xmat(iioff+ii) +
      &         da_ddot(ff_sbsp,jrec,ff_sbsp,irec,
      &         nwfpar,xbuf1,xbuf2,lenbuf)

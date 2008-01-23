@@ -66,7 +66,7 @@
      &     msa_max, msc_max, njoined, nblk,
      &     msa, msc, idxmsa, idxmsa2, igama, igamc,
      &     nasub, ncsub, icmp,
-     &     did, iexc, igam, len_blk
+     &     did, iexc, igam, len_blk, ld_blk
 
       integer, pointer ::
      &     hpvx_csub(:), hpvx_asub(:),
@@ -220,8 +220,12 @@ c dbg
      &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
      &                         hpvxseq,.false.)
 
-              len_blk = 1
-              do icmp = 1, ncsub+nasub
+              ld_blk = 1
+              do icmp = 1, ncsub
+                ld_blk = ld_blk*len_str(icmp)
+              end do
+              len_blk = ld_blk
+              do icmp = ncsub+1, ncsub+nasub
                 len_blk = len_blk*len_str(icmp)
               end do
 
@@ -278,6 +282,8 @@ c dbg
               if (ipass.eq.2) then
                 mel%len_op_gmox(iblk)%
      &               d_gam_ms(idxdis,igama,idxmsa) = len_blk
+                mel%ld_op_gmox(iblk)%
+     &               d_gam_ms(idxdis,igama,idxmsa) = ld_blk
               end if
 
               if (ntest.ge.150) then

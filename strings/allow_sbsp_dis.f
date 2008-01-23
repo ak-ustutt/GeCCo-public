@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       logical function allow_sbsp_dis(idistr,nel,nsbsp,mnmxsbsp)
 *----------------------------------------------------------------------*
-*     check wether distribution of subspaces conforms with minimum
+*     check whether distribution of subspaces conforms with minimum
 *     and maximum accumulated occupations given on mnmxsbsp
 *
 *       mnmxsbsp(1,ispc) :   minimum number of orbitals to be

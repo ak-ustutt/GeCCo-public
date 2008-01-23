@@ -23,6 +23,9 @@
       if (contr%mxarc.gt.0) deallocate(contr%arc)
       contr%arc => null()
       contr%mxarc = 0
+      if (contr%mxxarc.gt.0) deallocate(contr%xarc)
+      contr%xarc => null()
+      contr%mxxarc = 0
       if (contr%mxfac.gt.0) deallocate(contr%inffac)
       contr%inffac => null()
       contr%mxfac = 0

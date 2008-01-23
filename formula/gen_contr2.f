@@ -14,7 +14,7 @@
 *                         vertices do not enter via a BCH-expansion, or
 *                         if they are grouped to other operators in the
 *                         BCH-expansion (like the R12 amplitude coeff.)
-*                         note: that these vertices stiall are sorted to
+*                         note: that these vertices still are sorted to
 *                         their canonical place in the resulting contr.
 *               occ_vtx - for convenience: occupations of all vertices
 *                         on index 1: occ of result
@@ -59,7 +59,8 @@ c      include 'def_operator.h'
       integer ::
      &     nvtx, ivtx
       integer ::
-     &     occ_tgt_ex(ngastp,2), occ_tgt_dx(ngastp,2)
+     &     occ_tgt_ex(ngastp,2), occ_tgt_dx(ngastp,2),
+     &     svmap(proto_main%nvtx)
 
       type(contraction) ::
      &     proto
@@ -85,7 +86,7 @@ c     &     occ_ol_vtx(:,:,:)
       nvtx = proto_main%nvtx
 
       if (op_info%op_arr(proto_main%idx_res)%op%type.ne.optyp_operator)
-     &     call quit(1,'gen_contr',
+     &     call quit(1,'gen_contr2',
      &     'allows only pure operators as target!')
 
       ! excitation and deexcitation part of target (first entry on occ_vtx)
@@ -98,7 +99,7 @@ c     &     occ_ol_vtx(:,:,:)
       call strip_contr(proto,1) ! remove the (x 0 [C]) type arcs
 c dbg
 c      print *,'the stripped proto:'
-c      call prt_contr2(luout,proto,op_info)
+c      call prt_contr2(luout,proto_main,op_info)
 c dbg
 
       ! call recursive kernel
@@ -109,7 +110,7 @@ c dbg
       call dealloc_contr(proto)
 
       return
-
+*---------------------------------------------------------------------*
       contains
 
       recursive subroutine gen_contr_rec(ivtx,proto_in)
@@ -129,6 +130,7 @@ c dbg
      &     ivtx_reo(nvtx), ivtx_reo2(nvtx),
      &     occ_ol_prev(ngastp,2), occ_ol_rem(ngastp,2),
      &     occ_ol_vtx(ngastp,2,nvtx),
+     &     occ_ol_scr(ngastp,2,nvtx),
      &     occ_ex(ngastp,2), occ_dx(ngastp,2),
      &     occ_cnt2prev(ngastp,2),
      &     occ_cnt2prev_min(ngastp,2),
@@ -341,7 +343,7 @@ c dbg
                   if (.not.ok.and.
      &                 iocc_nonzero(occ_conn(1:ngastp,1:2,jvtx))) then
                     call resize_contr(proto_new,nvtx,
-     &                   proto_new%narc + 1,0)
+     &                   proto_new%narc + 1,0,0)
                     proto_new%narc = proto_new%narc + 1
                     iarc = proto_new%narc
 c dbg
@@ -390,6 +392,13 @@ c dbg
                   
                   if (ok) then
 
+                    ! set xarc info
+                    svmap(1:nvtx) = 1
+                    call gen_contr_unconn(occ_ol_prev,occ_ol_rem,! dummies
+     &                   occ_ol_scr,-1,  ! -1 -> set occ_ol_scr only
+     &                   proto_new,occ_vtx)
+                    call occ_ol2xarc(proto_new,occ_ol_scr,svmap)
+
                     ! make topological analysis
                     call topo_contr(ieqvfac,reo,ivtx_reo2,
      &                   proto_new,occ_vtx(1,1,2),fix_vtx)
@@ -410,8 +419,8 @@ c                    call prt_contr2(luout,proto_new,op_info)
 c                    call prt_contr2(luout,proto_main,op_info)
 c                    print *,'+----+'
 c dbg
+                    
                     ok = check_contr(proto_new,proto_main)
-
                   end if
 
                   if (ok) then
@@ -463,6 +472,7 @@ c dbg
       return
       end subroutine
 
+*----------------------------------------------------------------------*
       subroutine gen_contr_unconn(occ_ol_prev,occ_ol_rem,occ_ol_vtx,
      &     ivtx,proto,occ_vtx)
 
@@ -505,6 +515,8 @@ c      include 'def_contraction.h'
         occ_ol_vtx(1:ngastp,1:2,idx2) = occ_ol_vtx(1:ngastp,1:2,idx2)
      &       - iocc_dagger(arc(iarc)%occ_cnt)
       end do
+
+      if (ivtx.le.0) return
 
       ! accumulate all vertices up to ivtx-1:
       occ_ol_prev = 0

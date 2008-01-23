@@ -1,38 +1,47 @@
 *----------------------------------------------------------------------*
-      subroutine r12_count_terms(fpl_terms,idxtop,n_commu,ops)
+      subroutine r12_count_terms(fpl_terms,idxtop,idxc12,
+     &                           n_per_class,op_info)
 *----------------------------------------------------------------------*
 *     count number of commutators for terms pointed to by fpl_terms
+*
+*     1  T  TT  TTT  TTTT
+*        C  TC  TTC  TTTC
+*           CC  TCC  TTCC
+*               CCC  TCCC
+*                    CCCC   -> 15 classes
+*
+*     adr = n(T+C)*(n(T+C)+1)/2 + n(C)+1
+*
 *----------------------------------------------------------------------*
       implicit none
 
       include 'stdunit.h'
       include 'opdim.h'
-      include 'def_operator.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'def_formula_item_list.h'
-      include 'def_operator_array.h'
+      include 'mdef_operator_info.h'
 
       integer, parameter ::
      &     ntest = 00
 
       integer, intent(in) ::
-     &     idxtop
+     &     idxtop, idxc12
       type(formula_item_list), target, intent(inout) ::
      &     fpl_terms
       integer, intent(out) ::
-     &     n_commu(0:4)
+     &     n_per_class(15)
 
-      type(operator_array), intent(in) ::
-     &     ops(*)
+      type(operator_info), intent(in) ::
+     &     op_info
       type(formula_item_list), pointer ::
      &     fpl_pnt
       integer ::
-     &     nfound_top, nvtx, ivtx
+     &     nfound_top, nfound_c12, icls, nvtx, ivtx
       type(contraction), pointer ::
      &     cur_contr
 
-      n_commu(0:4) = 0
+      n_per_class(1:15) = 0
 
       fpl_pnt => fpl_terms
 
@@ -42,17 +51,24 @@
         cur_contr => fpl_pnt%item%contr
         nvtx = cur_contr%nvtx
         nfound_top = 0
+        nfound_c12 = 0
         if(ntest.gt.0)then
-          call prt_contr2(luout,cur_contr,ops)
+          call prt_contr2(luout,cur_contr,op_info)
         endif  
         
         do ivtx = 1, nvtx
           if (cur_contr%vertex(ivtx)%idx_op.eq.idxtop)
      &         nfound_top = nfound_top+1
         end do
-        if (nfound_top.gt.4)
+        do ivtx = 1, nvtx
+          if (cur_contr%vertex(ivtx)%idx_op.eq.idxc12)
+     &         nfound_c12 = nfound_c12+1
+        end do
+        if (nfound_top.gt.4.or.nfound_c12.gt.4)
      &       call quit(1,'cc_count_terms','> 4-fold commutator?')
-        n_commu(nfound_top) = n_commu(nfound_top)+1 
+        icls = (nfound_top+nfound_c12)*(nfound_top+nfound_c12+1)/2
+     &         + nfound_c12 + 1
+        n_per_class(icls) = n_per_class(icls)+1 
         
         if (.not.associated(fpl_pnt%next)) exit
         fpl_pnt => fpl_pnt%next

@@ -23,7 +23,6 @@
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'mdef_formula_info.h'
-      include 'explicit.h'
       include 'ifc_input.h'
 
       type(orbinf), intent(inout) ::
@@ -61,7 +60,7 @@
 
       ! initialize target list
       call init_target_info(tgt_info)
-      call set_target_list(tgt_info,orb_info)
+      call set_target_list(tgt_info,orb_info,env_type)
 
       ! initialize basis info blocks and set memory blocks:
       !  operators:

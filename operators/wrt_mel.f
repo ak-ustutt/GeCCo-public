@@ -101,6 +101,7 @@
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
+      include 'ifc_operators.h'
       include 'ifc_memman.h'
 
       integer, parameter ::
@@ -120,7 +121,7 @@
      &     orb_info
       
       logical ::
-     &     first, close_again, blk_buf, scalar
+     &     first, close_again, blk_buf, scalar, dagger
       integer ::
      &     idoff, idxoff, idxoff_blk, iblk, lenblk, lenprt, ifree, mmax,
      &     msamax, mscmax, idxms, ms, igam, idx_dis, ndis, nwarn, did,
@@ -128,7 +129,7 @@
      &     idxoff0, njoined, idx_occ
       integer ::
      &     msd(ngastp,2,mel%op%njoined), igamd(ngastp,2,mel%op%njoined),
-     &     scr(ngastp,2,2*mel%op%njoined)
+     &     scr(ngastp,2,2*mel%op%njoined), occ(ngastp,2,mel%op%njoined)
       real(8) ::
      &     xnrm, xnrm_tot, xnrm_ms
       real(8), pointer ::
@@ -148,6 +149,7 @@
       op => mel%op
       ffop => mel%fhand
       mst = mel%mst
+      dagger = mel%op%dagger
 
       if (.not.incore) then
         
@@ -184,7 +186,10 @@
       idx_occ = (iblkst-1)*njoined+1
       do iblk = iblkst, iblknd
         if(op%formal_blk(iblk))cycle
-        
+
+        occ = op%ihpvca_occ(1:ngastp,1:2,idx_occ:idx_occ+njoined-1)
+        if (dagger) occ = iocc_dagger_n(occ,njoined)
+
         if (.not.incore) then
           blk_buf = ffop%buffered
           if (blk_buf) blk_buf = blk_buf.and.ffop%incore(iblk).gt.0
@@ -195,7 +200,9 @@
           write(luout,'(2x,a,i4,a,i12)') 'block no. ',iblk,' len = ',
      &         mel%len_op_occ(iblk)
           if (level.ge.2)
-     &         call wrt_occ_n(luout,op%ihpvca_occ(1,1,idx_occ),njoined)
+     &         call wrt_occ_n(luout,occ,njoined)
+          if (level.ge.2.and.dagger)
+     &         write(luout,'("* stored in transposed form *")')
           if (level.ge.2) write(luout,'("+",77("="),"+")')
         end if
 
@@ -291,10 +298,17 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
 
                 call did2msgm(msd,igamd,did,
      &               op%ihpvca_occ(1,1,idx_occ),orb_info%nsym,njoined)
-                scr(1:ngastp,1:2,1:njoined) =
-     &               msd(1:ngastp,1:2,1:njoined)
-                scr(1:ngastp,1:2,njoined+1:2*njoined) =
-     &               igamd(1:ngastp,1:2,1:njoined)
+                if (.not.dagger) then
+                  scr(1:ngastp,1:2,1:njoined) =
+     &                 msd(1:ngastp,1:2,1:njoined)
+                  scr(1:ngastp,1:2,njoined+1:2*njoined) =
+     &                 igamd(1:ngastp,1:2,1:njoined)
+                else
+                  scr(1:ngastp,1:2,1:njoined) =
+     &                 iocc_dagger_n(msd,njoined)
+                  scr(1:ngastp,1:2,njoined+1:2*njoined) =
+     &                 iocc_dagger_n(igamd,njoined)
+                end if
 
                 lenblk =
      &               mel%len_op_gmox(iblk)%d_gam_ms(idx_dis,igam,idxms)

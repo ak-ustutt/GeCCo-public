@@ -6,7 +6,11 @@
      &     iaction_solve_evp  = 5,
      &     iaction_solve_gevp = 6,
      &     iaction_setup_prc  = 7,
-     &     iaction_prop_eval  = 8
+     &     iaction_prop_eval  = 8,
+     &     iaction_symmetrise = 9,
+     &     iaction_invert     = 10,
+     &     iaction_multiply   = 11
+	  
 
       type action
         integer ::

@@ -1,7 +1,10 @@
       real*8 function fndmnx(vector,ndim,minmax)
 c
 c     find smallest(minmax=1) or largest(minmax=2)
-c     absolute value of elements in vector
+c     *absolute* value of elements in vector
+*     or
+c     find smallest(minmax=-1) or largest(minmax=-2)
+c     value of elements in vector
 c
 c     adapted from Jeppe Olsen's version
 c

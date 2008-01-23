@@ -12,8 +12,8 @@
       
       integer ::
      &     lentitle, nxspace
-      character ::
-     &     fmttit*128, fmtline*128
+      character(256) ::
+     &     fmttit, fmtline
 
       lentitle = len_trim(title)
       select case(mod(style,10))

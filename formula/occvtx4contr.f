@@ -24,6 +24,8 @@
       integer, intent(out) ::
      &     occ_vtx(ngastp,2,contr%nvtx+1)
 
+      logical ::
+     &     dagger
       integer ::
      &     nvtx, idx, idxop, iblkop, njoined
       type(cntr_vtx), pointer ::
@@ -45,17 +47,29 @@
       do idx = 1, nvtx+njoined
         if (idx.le.njoined) then
           idxop = contr%idx_res 
-          iblkop = (contr%iblk_res-1)*njoined+idx
         else
           idxop = vertex(idx-njoined)%idx_op
-          ! is already set to compound index in case of super-vertices:
+        end if
+        if (idxop.eq.0) then
+          occ_vtx(1:ngastp,1:2,idx) = 0
+          dagger = .false.
+        else
+          op_occ => op_info%op_arr(idxop)%op%ihpvca_occ
+          dagger = op_info%op_arr(idxop)%op%dagger
+        end if
+        if (idx.le.njoined) then
+          if (.not.dagger) then
+            iblkop = (contr%iblk_res-1)*njoined+idx         
+          else
+            iblkop = (contr%iblk_res)*njoined-idx+1         
+          end if
+        else
           iblkop = vertex(idx-njoined)%iblk_op 
         end if
         if (idxop.eq.0) then
           occ_vtx(1:ngastp,1:2,idx) = 0
         else
-          op_occ => op_info%op_arr(idxop)%op%ihpvca_occ
-          if (.not.op_info%op_arr(idxop)%op%dagger) then
+          if (.not.dagger) then
             occ_vtx(1:ngastp,1:2,idx) = op_occ(1:ngastp,1:2,iblkop)
           else
             occ_vtx(1:ngastp,1,idx) = op_occ(1:ngastp,2,iblkop)

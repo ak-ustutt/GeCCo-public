@@ -1,8 +1,11 @@
 *----------------------------------------------------------------------*
       subroutine optc_macit(imacit,imicit,imicit_tot,
-     &       task,iroute,
-     &       ffopt,ffgrd,ffdia,
-     &       ff_trv,ff_h_trv,
+     &       task,iroute,nopt,
+     &       me_opt,me_grd,me_dia,
+     &       me_trv,me_h_trv,
+     &       me_special,nspecial,
+c     &       ffopt,ffgrd,ffdia,ffmet,
+c     &       ff_trv,ff_h_trv,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
      &       opti_info,opti_stat)
@@ -12,7 +15,8 @@
       implicit none
 
       include 'stdunit.h'
-      include 'def_filinf.h'
+c      include 'def_filinf.h'
+      include 'mdef_me_list.h'
       include 'def_file_array.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
@@ -23,11 +27,12 @@
       integer, intent(inout) ::
      &     imacit, imicit, imicit_tot
       integer, intent(in) ::
-     &     iroute, nincore, lenbuf
+     &     iroute, nincore, lenbuf, nopt, nspecial
 
-      type(file_array), intent(in) ::
-     &     ffopt(*), ffgrd(*), ffdia(*),
-     &     ff_trv(*), ff_h_trv(*)
+      type(me_list_array), intent(in) ::
+     &     me_opt(nopt), me_grd(nopt), me_dia(nopt),
+     &     me_trv(nopt), me_h_trv(nopt),
+     &     me_special(nspecial)
       type(filinf), intent(in) ::
      &     ffscr
 
@@ -40,6 +45,8 @@
      &     xbuf1(*), xbuf2(*), xbuf3(*)
 
 * local
+      type(file_array), pointer ::
+     &     ffopt(:), ffgrd(:), ffdia(:)
       logical ::
      &     accept, shift, init
       integer ::
@@ -52,6 +59,14 @@
      &     xscr(:), xscr2(:), vec(:)
       integer, pointer ::
      &     ivec(:)
+
+      ! set file arrays for calls to "old" routines
+      allocate(ffopt(nopt),ffgrd(nopt),ffdia(nopt))
+      do iopt = 1, nopt
+        ffopt(iopt)%fhand => me_opt(iopt)%mel%fhand
+        ffgrd(iopt)%fhand => me_grd(iopt)%mel%fhand
+        ffdia(iopt)%fhand => me_dia(iopt)%mel%fhand
+      end do
 
 * check last step
 
@@ -79,18 +94,22 @@
      &             opti_stat%ndim_vsbsp,opti_stat%mxdim_sbsp,
      &             init,
      &             opti_stat%iord_vsbsp, opti_stat%iord_rsbsp,
-     &             ffopt(iopt)%fhand,ffgrd(iopt)%fhand,
-     &                                      ffdia(iopt)%fhand,
+     &             me_opt(iopt)%mel,me_grd(iopt)%mel,me_dia(iopt)%mel,
+     &             me_special,nspecial,
      &             opti_stat%ffrsbsp(iopt)%fhand,
      &             opti_stat%ffvsbsp(iopt)%fhand,
-     &             nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
+     &             opti_info%typ_prc(iopt),
+     &             nincore,opti_info%nwfpar(iopt),
+     &             lenbuf,xbuf1,xbuf2,xbuf3)
 
               shift = ndim_save.eq.opti_stat%ndim_rsbsp.and.iopt.eq.1
               call optc_update_redsp1(opti_stat%sbspmat,
      &             opti_stat%ndim_rsbsp,opti_stat%mxdim_sbsp,
      &             shift,init,
      &             opti_stat%iord_rsbsp,opti_stat%ffrsbsp(iopt)%fhand,
-     &             nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2)
+     &             nincore,opti_info%nwfpar(iopt),
+     &             lenbuf,xbuf1,xbuf2,xbuf3)
+
 
             end do
 
@@ -112,7 +131,8 @@
      &           opti_stat%ndim_vsbsp,
      &           opti_stat%mxdim_sbsp,shift,.true.,
      &           opti_stat%iord_vsbsp,opti_stat%ffvsbsp(1)%fhand,
-     &           nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
+     &           nincore,opti_info%nwfpar(1),
+     &           lenbuf,xbuf1,xbuf2,xbuf3)
 
             ! add |gradient(n)>, on xbuf2 if incore, xbuf1 unused
             ndim_save = opti_stat%ndim_rsbsp
@@ -229,6 +249,8 @@
      &       nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2,xbuf3,ffscr)
 
       end if
+
+      deallocate(ffopt,ffdia,ffgrd)
 
       return
       end

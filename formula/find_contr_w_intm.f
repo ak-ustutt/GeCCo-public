@@ -47,7 +47,7 @@
       type(formula_item_list), pointer ::
      &     fpl_intm_pnt
       logical ::
-     &     assigned(nterms), success1, success2
+     &     assigned(nterms), success1, success2, dagger
       type(contraction) ::
      &     contr_t0, contr_int
       type(contraction), pointer ::
@@ -128,10 +128,11 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
         do
           iterm = iterm+1
           ! make target contractions that we need to find
-          if (.not.assigned(iterm))
-     &         call join_contr2(contr_tgt(iterm),
-     &                         contr_t0,fpl_intm_pnt%item%contr,
-     &                         idxop_tgt,iblk_tgt,op_info)
+          if (.not.assigned(iterm))then
+            call join_contr2(contr_tgt(iterm),
+     &           contr_t0,fpl_intm_pnt%item%contr,
+     &           idxop_tgt,iblk_tgt,op_info)
+          endif    
           if (.not.associated(fpl_intm_pnt%next)) exit
           fpl_intm_pnt => fpl_intm_pnt%next
         end do
@@ -222,7 +223,8 @@ c dbg
         contr_int%idx_res = fpl_intm%item%contr%idx_res
         contr_int%iblk_res = fpl_intm%item%contr%iblk_res
         njoined = op_info%op_arr(contr_int%idx_res)%op%njoined
-        call resize_contr(contr_int,njoined,0,0)
+        dagger  = op_info%op_arr(contr_int%idx_res)%op%dagger
+        call resize_contr(contr_int,njoined,0,0,0)
         contr_int%nvtx = njoined
         contr_int%nsupvtx = 1
         contr_int%svertex(1:njoined) = 1
@@ -231,10 +233,17 @@ c dbg
         contr_int%nfac = 0
         contr_int%fac = 1d0
         contr_int%vertex(1:njoined)%idx_op = contr_int%idx_res
-        do idx = 1, njoined
-          contr_int%vertex(idx)%iblk_op =
-     &         (contr_int%iblk_res-1)*njoined+idx
-        end do
+        if (.not.dagger) then
+          do idx = 1, njoined
+            contr_int%vertex(idx)%iblk_op =
+     &           (contr_int%iblk_res-1)*njoined+idx
+          end do
+        else
+          do idx = 1, njoined
+            contr_int%vertex(idx)%iblk_op =
+     &           (contr_int%iblk_res)*njoined+1-idx
+          end do
+        end if
 
         ! make new contraction
         call join_contr2(contr_rpl,

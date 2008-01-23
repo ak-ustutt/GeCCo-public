@@ -47,7 +47,7 @@
       type(filinf) ::
      &     ffmo2
       logical ::
-     &     closeit
+     &     closeit, error
 c     &     first, first_str
       ! dalton is i4:
       integer(4) ::
@@ -75,8 +75,7 @@ c     &     hop
 
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
-      
-c      hop => hlist%op
+
       ffham => hlist%fhand
 
       if (orb_info%ntoob.gt.255) then
@@ -207,7 +206,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             ! current (pq|rs) = <pr|qs> contributes
             call idx42str(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
-     &           orb_info,str_info,hlist,hpvxseq)
+     &           orb_info,str_info,hlist,hpvxseq,error)
 
             ! store integral in h2scr
             do istr = 1, nstr
@@ -240,7 +239,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             ! current (pq|rs) = <pr|qs> contributes
             call idx42str(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
-     &           orb_info,str_info,hlist,hpvxseq)
+     &           orb_info,str_info,hlist,hpvxseq,error)
 
             ! store integrals in h2scr
             do istr = 1, nstr

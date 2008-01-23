@@ -30,7 +30,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       character(*) ::
      &     label_form
@@ -83,7 +83,7 @@
       allocate(xret(nout))
 
       ! call the scheduler
-      call frm_sched(xret,fl_eval,depend,
+      call frm_sched(xret,fl_eval,depend,0,0,
      &               op_info,str_info,strmap_info,orb_info)
 
       if (iprlvl.ge.5) then

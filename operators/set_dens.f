@@ -46,7 +46,7 @@
       ! the internal lines are defined by a Hamiltonian-like
       ! operator, so we use ...
       call set_hop(opscr(2)%op,'scr2',dagger,
-     &     min_rank,max_rank,iformal,orb_info)
+     &     min_rank,max_rank,iformal,.false.,orb_info)
 
       ! ... and define the density:
       call set_gen_intermediate(op,name,

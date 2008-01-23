@@ -20,7 +20,7 @@
       include 'explicit.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(orbinf), intent(inout) ::
      &     orb_info

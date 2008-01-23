@@ -88,7 +88,7 @@
       nvtx_full = contr%nvtx
 
       ! if only 1 vertex is present, we need not bother too much
-      if (nvtx_full.eq.1) then
+      if (contr%nsupvtx.eq.1) then
         ! save factorization info
         if (contr%mxfac.gt.0) deallocate(contr%inffac)
         contr%nfac = narc_full
@@ -112,6 +112,7 @@
      &     ifact_best(ld_inffac,narc_full+ndisconn),
      &     occ_vtx(ngastp,2,nvtx_full+njoined),
      &     irestr_vtx(2,orb_info%ngas,2,2,nvtx_full+njoined),
+     &     irestr_res(2,orb_info%ngas,2,2,njoined),
      &     info_vtx(2,nvtx_full+njoined),
      &     iarc_ori(narc_full+ndisconn),ivtx_ori(nvtx_full),
      &     irestr_res(2,orb_info%ngas,2,2,njoined))
@@ -136,12 +137,15 @@
       end if
 
       ! add 0-contractions, if necessary
-      call check_disconnected(contr)
+      if (nvtx_full.ne.njoined) call check_disconnected(contr)
       
       found = .false.
       costmin = huge(costmin)
       nlevel = 1
       icount = 0
+c dbg
+c      print *,'now diving into the recursions, njoined = ',njoined
+c dbg
       call form_fact_rec(nlevel,ifact,
      &     cost,iscale,
      &     contr,occ_vtx,irestr_vtx,info_vtx,
@@ -152,7 +156,7 @@
         call quit(1,'form_fact','Did not find any factorization!')
       end if
 
-      call resize_contr(contr,contr%nvtx,contr%narc,nlevel_best)
+      call resize_contr(contr,contr%nvtx,contr%narc,0,nlevel_best)
       contr%nfac = nlevel_best
       contr%inffac(1:ld_inffac,1:nlevel_best) =
      &     ifact_best(1:ld_inffac,1:nlevel_best)
@@ -249,6 +253,8 @@
      &         ifact(1:4,1:nlevel-1)
         end if
         write(luout,*) 'ivtx_ori: ',ivtx_ori(1:contr%nvtx)
+        write(luout,*) 'result: njoined = ',njoined
+        call wrt_occ_n(luout,occ_vtx,njoined)
         write(luout,*) 'current (reduced) contraction:'
         call prt_contr3(luout,contr,occ_vtx(1,1,njoined+1))
       end if
@@ -336,6 +342,12 @@ c     &       idx_op_new,irestr_res,contr,occ_vtx)
      &       .false.,reo_dummy,orb_info)
 
         if (.not.possible) cycle
+
+        ! add 0-contractions, if necessary
+c dbg
+c        print *,'calling check disc for'
+c        call prt_contr3(luout,contr_red,occ_vtx_red(1,1,njoined+1))
+c dbg
 
         ! any contraction left?
         if (contr_red%narc.gt.0) then

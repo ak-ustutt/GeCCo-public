@@ -22,6 +22,20 @@
             rank_occ = occ(igastp,1,ijoin) - occ(igastp,2,ijoin)
           end do
         end do
+      case ('C')
+        rank_occ = 0
+        do ijoin = 1, njoined
+          do igastp = 1, ngastp
+            rank_occ = occ(igastp,1,ijoin)
+          end do
+        end do
+      case ('A')
+        rank_occ = 0
+        do ijoin = 1, njoined
+          do igastp = 1, ngastp
+            rank_occ = occ(igastp,2,ijoin)
+          end do
+        end do
       case default
         call quit(1,'rank_occ','unknown modestr: ',trim(modestr))
       end select

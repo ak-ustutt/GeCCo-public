@@ -32,16 +32,33 @@
       integer, pointer ::
      &     didarr(:,:,:) 
 
+      logical ::
+     &     dag_temp
+
       integer, external ::
      &     msgmdid, ielsum
-
 
       op => mel%op
 
       ! get occupation
       iocc(1:ngastp,1:2) = op%ihpvca_occ(1:ngastp,1:2,iocc_cls) 
 
-      if (.not.dagger) then
+c bodge
+      if(op%njoined.gt.1)then
+        iocc(1:ngastp,1:2)=iocc(1:ngastp,1:2)+
+     &       op%ihpvca_occ(1:ngastp,1:2,2)
+        ! allow this only for call from idx42str2 (else we have idx_msgmdst2())
+        ! check this way:
+        if (op%njoined.gt.2.or.ielsum(iocc,ngastp*2).ne.4)
+     &       call quit(1,'idx_msgmdst','you are definitely abusing me!')
+
+      endif
+      dag_temp = dagger
+      if(op%dagger) dag_temp = .not.dag_temp
+c bodge
+
+c      if (.not.dagger) then
+      if (.not.dag_temp) then
         ! calculate integer-valued ID of (ms,Gamma) distribution
         mgdid = msgmdid(iocc,msd,gmd,nsym)
       else
@@ -58,7 +75,12 @@
 
       idx_msgmdst = -1
 c dbg
+c      print *,'dagger = ',dag_temp
 c      print *,'-->',iocc_cls,igamt,idxms
+c      print *,'   ',mgdid,mgdid2
+c      print *,'   ',
+c     &     didarr(1:mel%off_op_gmox(iocc_cls)%ndis(igamt,idxms),
+c     &     igamt,idxms)
 c dbg
       do idx = 1, mel%off_op_gmox(iocc_cls)%ndis(igamt,idxms)
         if (didarr(idx,igamt,idxms).eq.mgdid) then

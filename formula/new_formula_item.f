@@ -22,7 +22,8 @@
       select case(command)
       case(command_set_target_init,
      &     command_set_target_update,
-     &     command_del_intermediate)
+     &     command_del_intermediate,
+     &     command_symmetrise)
       ! nothing to do
       case(command_add_contribution)
         allocate(form_pnt%contr)

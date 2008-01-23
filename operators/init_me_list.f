@@ -47,6 +47,7 @@
         ! some arrays run over 1..njoined as second index
         nblkt = nblk * mel%op%njoined
         nsym = orb_info%nsym
+        mel%nsym = nsym    !  remember dimension
         allocate(mel%len_op_occ(nblk),
      &           mel%idx_graph(ngastp,2,nblkt),
      &           mel%off_op_occ(nblk),
@@ -54,7 +55,8 @@
      &           mel%off_op_gmo(nblk),
      &           mel%len_op_gmo(nblk),
      &           mel%off_op_gmox(nblk),
-     &           mel%len_op_gmox(nblk))
+     &           mel%len_op_gmox(nblk),
+     &           mel%ld_op_gmox(nblk))
         ncount = nblk+2*ngastp*nblkt
         do iblk = 1, nblk
           nexc = min(mel%op%ica_occ(1,iblk),
@@ -67,12 +69,18 @@
      &       trim(mel%label)//'-1')
       case(2)
         nsym = orb_info%nsym
+        if (nsym.ne.mel%nsym)
+     &       call quit(1,'init_me_list',
+     &       'setting orb_info%nsym does not conform with '//
+     &       'nsym associated with current list')
         ncount = 0
         do iblk = 1, nblk
           nexc = min(mel%op%ica_occ(1,iblk),
      &               mel%op%ica_occ(2,iblk))
           ndis = mel%off_op_gmox(iblk)%maxd
           allocate(mel%len_op_gmox(iblk)%
+     &                d_gam_ms(ndis,nsym,nexc+1),
+     &             mel%ld_op_gmox(iblk)%
      &                d_gam_ms(ndis,nsym,nexc+1),
      &             mel%off_op_gmox(iblk)%
      &                d_gam_ms(ndis,nsym,nexc+1),

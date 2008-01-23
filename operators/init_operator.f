@@ -32,6 +32,7 @@
       end if
 
       nblk = op%n_occ_cls
+      op%ngas = orb_info%ngas  ! remember dimension
 
         ! some arrays run over 1..njoined as second index
       nblkt = nblk * op%njoined

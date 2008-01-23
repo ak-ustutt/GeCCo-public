@@ -31,7 +31,7 @@
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(10)
       character(len_command_par) ::
-     &     parameters
+     &     parameters(2)
 
       ! skip this section if no IP calculation requested
       icnt = is_keyword_set('calculate.ionization')
@@ -80,16 +80,16 @@
 
       ! right Jacobian transform with IP operator
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cc_a_rip
-      labels(2) = label_ccrs0
+      labels(1) = form_cc_a_rip
+      labels(2) = form_ccrs0
       labels(3) = op_a_rip
       labels(4) = op_top
       labels(5) = op_rip
-      call add_target(label_cc_a_rip,ttype_frm,.false.,tgt_info)
-      call set_dependency(label_cc_a_rip,label_ccrs0,tgt_info)
-      call set_dependency(label_cc_a_rip,op_a_rip,tgt_info)
-      call set_dependency(label_cc_a_rip,op_rip,tgt_info)
-      call set_rule(label_cc_a_rip,ttype_frm,DERIVATIVE,
+      call add_target(form_cc_a_rip,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_cc_a_rip,form_ccrs0,tgt_info)
+      call set_dependency(form_cc_a_rip,op_a_rip,tgt_info)
+      call set_dependency(form_cc_a_rip,op_rip,tgt_info)
+      call set_rule(form_cc_a_rip,ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              title_cc_a_rip,1,tgt_info)
 
@@ -100,24 +100,24 @@
 
       ! CC right-hand Jacobian transform with IP operator
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cc_a_rip_opt
-      labels(2) = label_cc_a_rip
+      labels(1) = fopt_cc_a_rip
+      labels(2) = form_cc_a_rip
       ncat = 1
       nint = 0
-      call add_target(label_cc_a_rip_opt,ttype_frm,.false.,tgt_info)
-      call set_dependency(label_cc_a_rip_opt,label_cc_a_rip,tgt_info)
-      call set_dependency(label_cc_a_rip_opt,meldef_a_rip,tgt_info)
-      call set_dependency(label_cc_a_rip_opt,meldef_rip,tgt_info)
-      call set_dependency(label_cc_a_rip_opt,mel_topdef,tgt_info)
-      call set_dependency(label_cc_a_rip_opt,mel_ham,tgt_info)
+      call add_target(fopt_cc_a_rip,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_cc_a_rip,form_cc_a_rip,tgt_info)
+      call set_dependency(fopt_cc_a_rip,meldef_a_rip,tgt_info)
+      call set_dependency(fopt_cc_a_rip,meldef_rip,tgt_info)
+      call set_dependency(fopt_cc_a_rip,mel_topdef,tgt_info)
+      call set_dependency(fopt_cc_a_rip,mel_ham,tgt_info)
       if (isim.eq.1) then
         nint = 1
-        call set_dependency(label_cc_a_rip_opt,label_cchhat,tgt_info)
-        call set_dependency(label_cc_a_rip_opt,mel_hhatdef,tgt_info)
-        labels(3) = label_cchhat
+        call set_dependency(fopt_cc_a_rip,form_cchhat,tgt_info)
+        call set_dependency(fopt_cc_a_rip,mel_hhatdef,tgt_info)
+        labels(3) = form_cchhat
       end if
       call opt_parameters(-1,parameters,ncat,nint)
-      call set_rule(label_cc_a_rip_opt,ttype_frm,OPTIMIZE,
+      call set_rule(fopt_cc_a_rip,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
@@ -163,7 +163,7 @@
       ! solve the eigenvalue equations
       call add_target(solve_cc_rhip,ttype_gen,.true.,tgt_info)
       call set_dependency(solve_cc_rhip,solve_cc_gs,tgt_info)
-      call set_dependency(solve_cc_rhip,label_cc_a_rip_opt,tgt_info)
+      call set_dependency(solve_cc_rhip,fopt_cc_a_rip,tgt_info)
       call set_dependency(solve_cc_rhip,op_dia_ip,tgt_info)
       call set_dependency(solve_cc_rhip,meldef_rip,tgt_info)
       call set_dependency(solve_cc_rhip,meldef_a_rip,tgt_info)
@@ -189,15 +189,15 @@
      &       labels,2,1,
      &       parameters,0,tgt_info)
         ! b) solve the eigenvalue equation
-        call solve_parameters(-1,parameters,1,sym_arr(isym))
+        call solve_parameters(-1,parameters,2, 1,sym_arr(isym),'DIA')
         labels(1:10)(1:len_target_name) = ' '
         labels(1) = me_label
         labels(2) = dia_label
         labels(3) = op_a_rip
-        labels(4) = label_cc_a_rip_opt
+        labels(4) = fopt_cc_a_rip
         call set_rule(solve_cc_rhip,ttype_opme,SOLVEEVP,
      &       labels,4,1,
-     &       parameters,1,tgt_info)
+     &       parameters,2,tgt_info)
         ! c) remove the diagonal list
         labels(1) = dia_label
         call set_rule(solve_cc_rhip,ttype_opme,DELETE_ME_LIST,

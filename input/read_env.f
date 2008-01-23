@@ -16,7 +16,7 @@
      &     trim(env_type)
 
       select case(trim(env_type))
-      case ('dalton','DALTON')
+      case ('dalton','DALTON','dalton_special','DALTON_SPECIAL')
         call read_env_dalton(orb_info)
       case ('intern','INTERN')
         call quit(1,'read_env','type INTERN not implemented')

@@ -34,15 +34,20 @@
      &       nsupvtx,  ! number of super-vertices (joined vertices)
      &       nvtx,     ! number of vertices (=operators)
      &       narc,     ! number of arcs (=interaction lines/raw contractions)
+     &       nxarc,    ! number of ext. arcs (=open lines[*])
      &       nfac,     ! number of factors (factorization info)
      &       mxvtx,    ! current sizes of subarrays
      &       mxarc,    ! current sizes of subarrays
+     &       mxxarc,   ! current sizes of subarrays
      &       mxfac     ! current sizes of subarrays
+        ! [*] only needed for multi-vertex results
 
         type(cntr_vtx), pointer ::
      &       vertex(:) ! description of vertices
         type(cntr_arc), pointer ::
      &       arc(:)    ! description of arcs
+        type(cntr_arc), pointer ::
+     &       xarc(:)   ! description of external arcs (optional [*])
         integer, pointer :: !  super-vertex info:
      &       joined(:,:), !  vertices per supervertex (nvtx,nsupvtx)
      &       svertex(:)   !  supervertex to which vertex belongs (nvtx)

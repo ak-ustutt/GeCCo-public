@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine contr_blk1blk2_blocked_mm(xfac,         !prefactor   
      &     xop1op2,xop1,xop2,                     !buffers: res,op1,op2
+     &     tra_op1,tra_op2,tra_op1op2,
      &     xscr,lenscr,lenblock,                   ! scratch
      &     ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &     ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
@@ -45,6 +46,8 @@ c     &     lenblock = 200
       ! nstr_ex1/ex2/cnt,a/c: # strings
       ! map_ex1ex2a/c  mapping ex1*ex2->op1op2
       ! etc. for ex1cnt ex2cnt
+      logical, intent(in) ::
+     &     tra_op1, tra_op2, tra_op1op2
       integer, intent(in) ::
      &     lenblock,
      &     ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
@@ -137,13 +140,14 @@ c     &     lenblock = 200
 
       call set_op_ldim_c(ldim_op1c,ldim_op1a,
      &                   hpvxop1c,hpvxop1a,
-     &                   lstrop1,ncblk_op1,nablk_op1)
+     &                   lstrop1,ncblk_op1,nablk_op1,tra_op1)
       call set_op_ldim_c(ldim_op2c,ldim_op2a,
      &                   hpvxop2c,hpvxop2a,
-     &                   lstrop2,ncblk_op2,nablk_op2)
+     &                   lstrop2,ncblk_op2,nablk_op2,tra_op2)
       call set_op_ldim_c(ldim_op1op2c,ldim_op1op2a,
      &                   hpvxop1op2c,hpvxop1op2a,
-     &                   lstrop1op2,ncblk_op1op2,nablk_op1op2)
+     &                   lstrop1op2,ncblk_op1op2,nablk_op1op2,
+     &                                               tra_op1op2)
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,

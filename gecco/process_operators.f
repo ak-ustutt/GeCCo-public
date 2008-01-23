@@ -6,6 +6,7 @@
       implicit none
 
       include 'stdunit.h'
+      include 'opdim.h'
       include 'def_target.h'
       include 'mdef_operator_info.h'
       include 'def_orbinf.h'
@@ -22,11 +23,13 @@
      &     op_pnt
       integer ::
      &     idx, idx_t,
-     &     ncadiff, min_rank, max_rank, iformal
+     &     ncadiff, min_rank, max_rank, iformal, ansatz,
+     &     ndim1, ndim2,
+     &     hpvx_constr(2,ngastp,2), gas_constr(2,orb_info%ngas,2,2)
       character*(len_opname) ::
      &     name_template
       logical ::
-     &     dagger
+     &     dagger, explicit
 
       integer, external ::
      &     idx_oplist2
@@ -44,19 +47,25 @@
 
       select case(trim(rule%command))
       case(DEF_GENERAL_OPERATOR)
-        call quit(1,'process_operators',
-     &       'not yet ready: '//DEF_GENERAL_OPERATOR)
+        call genop_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       dagger,min_rank,max_rank,ncadiff,iformal,explicit,
+     &       hpvx_constr,ndim1,gas_constr,ndim2)
+        call set_genop(op_pnt,trim(rule%labels(1)),optyp_operator,
+     &       dagger,
+     &       min_rank,max_rank,ncadiff,hpvx_constr,gas_constr,
+     &       iformal,orb_info)
       case(DEF_SCALAR)
         call set_hop(op_pnt,trim(rule%labels(1)),.false.,
-     &       0,0,1,orb_info)
+     &       0,0,1,.false.,orb_info)
       case(DEF_HAMILTONIAN)
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operatorss',
      &       'no parameters provided for '//DEF_HAMILTONIAN)
         call hop_parameters(+1,rule%parameters,
-     &                      min_rank,max_rank,iformal)
+     &                      min_rank,max_rank,iformal,explicit)
         call set_hop(op_pnt,trim(rule%labels(1)),.false.,
-     &       min_rank,max_rank,iformal,orb_info)
+     &       min_rank,max_rank,iformal,explicit,orb_info)
       case(DEF_EXCITATION)
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',
@@ -73,6 +82,39 @@
      &                      min_rank,max_rank,iformal)
         call set_dens(op_pnt,trim(rule%labels(1)),.false.,
      &       min_rank,max_rank,iformal,orb_info)
+      case(DEF_R12GEMINAL)
+        if (rule%n_parameter_strings.lt.1)
+     &       call quit(1,'process_operators',
+     &       'no parameters provided for '//DEF_R12GEMINAL)
+        call r12gem_parameters(+1,rule%parameters,
+     &                      dagger,min_rank,ansatz)
+        max_rank = 2
+        call set_r12gem(op_pnt,trim(rule%labels(1)),dagger,
+     &       min_rank,max_rank,ansatz,orb_info)        
+      case(DEF_R12COEFF)
+        if (rule%n_parameter_strings.lt.1)
+     &       call quit(1,'process_operators',
+     &       'no parameters provided for '//DEF_R12COEFF)
+        call xop_parameters(+1,rule%parameters,
+     &                      dagger,min_rank,max_rank,ncadiff,iformal)
+        call set_r12c(op_pnt,trim(rule%labels(1)),dagger,
+     &       min_rank,max_rank,ncadiff,iformal,orb_info)        
+      case(DEF_R12INT)
+        if (rule%n_parameter_strings.lt.1)
+     &       call quit(1,'process_operators',
+     &       'no parameters provided for '//DEF_R12INT)
+        call xop_parameters(+1,rule%parameters,
+     &                      dagger,min_rank,max_rank,ncadiff,iformal)
+        call set_r12i(op_pnt,trim(rule%labels(1)),dagger,
+     &       min_rank,max_rank,ncadiff,iformal,orb_info)        
+      case(DEF_R12INTERM)
+        if (rule%n_parameter_strings.lt.1)
+     &       call quit(1,'process_operators',
+     &       'no parameters provided for '//DEF_R12INTERM)
+        call xop_parameters(+1,rule%parameters,
+     &                      dagger,min_rank,max_rank,ncadiff,iformal)
+        call set_r12intm(op_pnt,trim(rule%labels(1)),dagger,
+     &       min_rank,max_rank,ncadiff,iformal,orb_info)        
       case(CLONE_OP)
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',
@@ -83,12 +125,17 @@
           call quit(0,CLONE_OP,
      &         'template not defined: '//name_template)
         end if
-        call clone_operator(op_pnt,op_info%op_arr(idx_t)%op,orb_info)
-        op_pnt%dagger = op_pnt%dagger.xor.dagger
+        call clone_operator(op_pnt,op_info%op_arr(idx_t)%op,
+     &       dagger,orb_info)
+c        op_pnt%dagger = op_pnt%dagger.xor.dagger
       case default
         call quit(1,'process_operators','unknown command: '//
      &       trim(rule%command))
       end select
+c dbg
+      if (op_pnt%dagger)
+     &     call quit(1,'process_operators','op%dagger is obsolete!')
+c dbg
 
       return
       end

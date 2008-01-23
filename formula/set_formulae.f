@@ -11,6 +11,7 @@ c      include 'def_operator_list.h'
 c      include 'def_filinf.h'
       include 'mdef_formula_info.h'
       include 'def_orbinf.h'
+      include 'cc_routes.h'
 
       type(formula_info), intent(inout) ::
      &     form_info
@@ -23,7 +24,7 @@ c      include 'def_filinf.h'
      &     ops(:)
 
 
-      if (is_keyword_set('method.CC').gt.0) then
+      if (do_cc.or.do_mp) then
 c        ! OLD
 c        ! set up pointer array for operators, which is more
 c        ! convenient than a linked list (DIFFERS FROM NEW op_arr)

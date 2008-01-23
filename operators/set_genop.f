@@ -27,7 +27,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(operator), intent(inout) ::
      &     op
@@ -98,6 +98,9 @@
 
       op%type = type
       op%njoined = 1  ! always for operators and densities
+
+      if (dagger)
+     &     call quit(1,'set_genop','the use of op%dagger is obsolete!')
 
       op%dagger = dagger
 
@@ -256,7 +259,7 @@ c very quick fix:
             end do
           end if
 c dbg
-          print *,'formal:',op%formal_blk(1:op%n_occ_cls)
+c          print *,'formal:',op%formal_blk(1:op%n_occ_cls)
 c dbg          
           do iocc = 1, op%n_occ_cls
             call wrt_occ_rstr(luout,iocc,

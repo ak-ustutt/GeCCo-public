@@ -26,6 +26,7 @@
      &     .and.associated(list_pnt%next))
         list_pnt => list_pnt%next
       end do
+
       if (trim(list_pnt%op%name).ne.trim(name)) then
         call quit(1,'del_operator','unknown label: "'//trim(name)//'"')
       end if
@@ -37,6 +38,7 @@
 
       ! decrement counter
       op_info%nops = op_info%nops-1
+      op_info%id_cnt = op_info%id_cnt-1
 
       ! update operator array
       call update_op_arr(op_info)

@@ -40,7 +40,7 @@
      &   call quit(1,'add_operator','name too long: "'
      &     //trim(label)//'"')
       list_pnt%op%name(1:len_opname) = ' '
-      list_pnt%op%name = label
+      list_pnt%op%name = trim(label)
       list_pnt%op%assoc_list(1:mxlen_melabel) = ' '
 
       ! init all pointers

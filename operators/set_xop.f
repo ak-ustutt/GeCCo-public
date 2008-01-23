@@ -12,7 +12,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 000
 
       type(operator), intent(inout) ::
      &     op
@@ -23,7 +23,7 @@
       integer, intent(in) ::
      &     min_rank, max_rank, ncadiff,iformal
 
-      type(orbinf) ::
+      type(orbinf), intent(in) ::
      &     orb_info
       integer ::
      &     hpvx_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)

@@ -1,10 +1,10 @@
 *----------------------------------------------------------------------*
       subroutine collect_terms_w_op(fpl_terms,form,
-     &                              idxop,iblkop,ntimes)
+     &                              ncmpnd,idxop,iblkop,ntimes)
 *----------------------------------------------------------------------*
 *     collect all terms in formula list form which have
-*       a) ntimes the entry idxop (if iblkop.lt.0)
-*       b) ntimes the entry idxop,iblkop
+*       a) ntimes an entry with any of idxop(1:ncmpnd) (if iblkop.lt.0)
+*       b) ntimes an entry with any of idxop(1:ncmpnd),iblkop(1:ncmpnd)
 *     and store pointers to these terms on fpl_terms
 *     exit, as soon as the next block occurs
 *----------------------------------------------------------------------*
@@ -25,7 +25,8 @@
       type(formula_item_list), target, intent(inout) ::
      &     fpl_terms
       integer, intent(in) ::
-     &     idxop, iblkop, ntimes
+     &     ncmpnd,
+     &     idxop(ncmpnd), iblkop(ncmpnd), ntimes
 
       type(formula_item), pointer ::
      &     fl_pnt
@@ -34,7 +35,7 @@
       logical ::
      &     ok
       integer ::
-     &     nfound_op, nfound_blk, nvtx, ivtx
+     &     nfound_op, nfound_blk, nvtx, ivtx, icmpnd, iblkop_cmpnd
       type(contraction), pointer ::
      &     cur_contr
 
@@ -60,13 +61,17 @@
         nfound_op = 0
         nfound_blk = 0
         do ivtx = 1, nvtx
-          if (cur_contr%vertex(ivtx)%idx_op.eq.idxop) then
-            nfound_op = nfound_op+1
-            if (cur_contr%vertex(ivtx)%iblk_op.eq.iblkop)
-     &           nfound_blk = nfound_blk+1
-          end if
+          do icmpnd = 1, ncmpnd
+            if (cur_contr%vertex(ivtx)%idx_op.eq.idxop(icmpnd)) then
+              nfound_op = nfound_op+1
+              iblkop_cmpnd = -1
+              if (iblkop(1).gt.0) iblkop_cmpnd = iblkop(icmpnd)
+              if (cur_contr%vertex(ivtx)%iblk_op.eq.iblkop_cmpnd)
+     &             nfound_blk = nfound_blk+1
+            end if
+          end do
         end do
-        if (iblkop.lt.0) then
+        if (iblkop(1).lt.0) then
           ok = nfound_op.eq.ntimes
         else
           ok = nfound_blk.eq.ntimes

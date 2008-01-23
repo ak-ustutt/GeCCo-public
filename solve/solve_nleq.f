@@ -1,7 +1,8 @@
 *----------------------------------------------------------------------*
-      subroutine solve_nleq(
+      subroutine solve_nleq(mode_str,
      &     nopt,label_opt,label_res,label_prc,label_en,
      &     label_form,
+     &     label_special,nspecial,           !<- eg. for R12
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -40,11 +41,13 @@
       include 'ifc_memman.h'
 
       integer, intent(in) ::
-     &     nopt
+     &     nopt, nspecial
       character(*), intent(in) ::
+     &     mode_str,
      &     label_opt(nopt),
      &     label_res(nopt),
      &     label_prc(nopt),
+     &     label_special(nspecial),
      &     label_en,
      &     label_form
       type(formula_info) ::
@@ -71,10 +74,13 @@
      &     xret(:)
       type(dependency_info) ::
      &     depend
+      type(filinf), target ::
+     &     ff_unit_dummy
       type(me_list_array), pointer ::
-     &     me_opt(:)
+     &     me_opt(:), me_grd(:), me_dia(:), me_special(:),
+     &     me_trv(:), me_h_trv(:)   ! not yet needed
       type(file_array), pointer ::
-     &     ffopt(:), ffgrd(:), ffdia(:),
+     &     ffopt(:), ffgrd(:), ffdia(:), ffspecial(:),
      &     ff_trv(:), ff_h_trv(:)   ! not yet needed
       type(optimize_info) ::
      &     opti_info
@@ -107,7 +113,9 @@
      &     'did not find formula '//trim(label_form))
       form_en_res => form_info%form_arr(idx)%form
 
-      allocate(ffopt(nopt),ffdia(nopt),ffgrd(nopt),me_opt(nopt))
+      allocate(ffopt(nopt),ffdia(nopt),ffgrd(nopt),ffspecial(nspecial),
+     &     me_opt(nopt),me_dia(nopt),me_grd(nopt),me_special(nspecial))
+
       do iopt = 1, nopt
         jopt = iopt
         idxmel = idx_mel_list(label_opt(iopt),op_info)
@@ -120,23 +128,41 @@
         idxmel = idx_mel_list(label_res(iopt),op_info)
         ierr = 3
         if (idxmel.le.0) exit
+        me_grd(iopt)%mel =>  op_info%mel_arr(idxmel)%mel
         ffgrd(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
         ierr = 4
         if (.not.associated(ffgrd(iopt)%fhand)) exit
         idxmel = idx_mel_list(label_prc(iopt),op_info)
         ierr = 5
         if (idxmel.le.0) exit
+        me_dia(iopt)%mel =>  op_info%mel_arr(idxmel)%mel
         ffdia(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
         ierr = 6
         if (.not.associated(ffdia(iopt)%fhand)) exit
         ierr = 0
       end do
 
+      ! special lists needed?
+      if (ierr.eq.0) then
+        do idx = 1, nspecial
+          jopt = idx
+          idxmel = idx_mel_list(label_special(idx),op_info)
+          ierr = 7
+          if (idxmel.le.0) exit
+          me_special(idx)%mel  => op_info%mel_arr(idxmel)%mel
+          ffspecial(idx)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+          ierr = 8
+          if (.not.associated(ffspecial(idx)%fhand)) exit
+          ierr = 0
+        end do
+      end if
+
       ! error handling
       if (ierr.gt.0) then
         if (ierr.eq.1.or.ierr.eq.2) label = label_opt(jopt)
         if (ierr.eq.3.or.ierr.eq.4) label = label_res(jopt)
         if (ierr.eq.5.or.ierr.eq.6) label = label_prc(jopt)
+        if (ierr.eq.7.or.ierr.eq.8) label = label_special(jopt)
         if (mod(ierr,2).eq.1)
      &       call quit(1,'solve_nleq',
      &       'did not find list '//trim(label))
@@ -145,8 +171,8 @@
      &       'no file associated to list '//trim(label))
       end if
 
-      ! for savety reasons, we allocate the two guys
-      allocate(ff_trv(1),ff_h_trv(1))
+      ! for safety reasons, we allocate the two guys
+      allocate(me_trv(1),me_h_trv(1))
 
       do iopt = 1, nopt
         ! open result vector file(s)
@@ -157,13 +183,20 @@
         if (ffdia(iopt)%fhand%unit.le.0)
      &       call file_open(ffdia(iopt)%fhand)
       end do
+
+      do idx = 1, nspecial
+        if (ffspecial(idx)%fhand%unit.le.0)
+     &       call file_open(ffspecial(idx)%fhand)
+      end do
       
       ! get initial amplitudes
       do iopt = 1, nopt
         call zeroop(me_opt(iopt)%mel)
       end do
 
-      call set_opti_info(opti_info,1,nopt,1,me_opt)
+      ! use mode_str to set special preconditioning, e.g. for R12
+
+      call set_opti_info(opti_info,1,nopt,1,me_opt,mode_str)
 
       ! read formula
       call read_form_list(form_en_res%fhand,fl_en_res)
@@ -198,8 +231,11 @@
      &       (imacit,imicit,imicit_tot,
      &       task,conv,
      &       energy,xresnrm,
-     &       ffopt,ffgrd,ffdia,
-     &       ff_trv,ff_h_trv,
+     &       me_opt,me_grd,me_dia,
+     &       me_trv,me_h_trv,
+     &       me_special, nspecial,! <- R12: pass B, X, H here
+c     &       ffopt,ffgrd,ffdia,ffmet, ! <- R12: pass X here (metric)
+c     &       ff_trv,ff_h_trv,
      &       opti_info,opti_stat)
 
         ! here?
@@ -210,7 +246,7 @@
         ! 1 - get energy
         ! 2 - get residual
         if (iand(task,1).eq.1.or.iand(task,2).eq.2) then
-          call frm_sched(xret,fl_en_res,depend,
+          call frm_sched(xret,fl_en_res,depend,0,0,
      &         op_info,str_info,strmap_info,orb_info)
           ! intermediates should be generated first, energy
           ! is expected to be the last "intermediate"
@@ -238,7 +274,24 @@
 
       call clean_formula_dependencies(depend)
 
-      deallocate(ffopt,ffdia,ffgrd,me_opt,ff_trv,ff_h_trv,xret)
+      ! close files
+      do iopt = 1, nopt
+        ! open result vector file(s)
+        call file_close_keep(ffopt(iopt)%fhand)
+        ! open corresponding residuals ...
+        call file_close_keep(ffgrd(iopt)%fhand)
+        ! ... and corresponding preconditioner(s)
+        if (ffdia(iopt)%fhand%unit.gt.0)
+     &       call file_close_keep(ffdia(iopt)%fhand)
+      end do
+
+      do idx = 1, nspecial
+        if (ffspecial(idx)%fhand%unit.gt.0)
+     &       call file_close_keep(ffspecial(idx)%fhand)
+      end do
+
+      deallocate(ffopt,ffdia,ffgrd,ffspecial,
+     &     me_opt,me_dia,me_grd,me_special,me_trv,me_h_trv,xret)
       ifree = mem_flushmark()
 
       return

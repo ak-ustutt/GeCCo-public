@@ -19,12 +19,16 @@
       ! we need (at least): SIRIFC, MOTWOINT
       inquire(file='SIRIFC',exist=l_exist)
       ok = l_exist
-c      if (ok) inquire(file='AOONEINT',exist=l_exist)
-c      ok = ok.and.l_exist
-      if (ok) inquire(file='MOTWOINT',exist=l_exist)
-      ok = ok.and.l_exist
 
-      if (ok) env_type='DALTON '
+      if (ok) inquire(file='MO_G',exist=l_exist)
+
+      if (ok.and.l_exist) then
+        env_type='DALTON_SPECIAL'
+      else
+        if (ok) inquire(file='MOTWOINT',exist=l_exist)
+        ok = ok.and.l_exist
+        if (ok) env_type='DALTON '
+      end if
 
       ! future: try other possibilities here ...
       if (.not.ok) call quit(0,'where_am_I',

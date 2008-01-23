@@ -42,6 +42,13 @@
 
       end if
 
+      icnt = is_keyword_set('method.MP')
+
+      if (icnt.gt.0) then
+        do_cc = .true.
+        do_mp = .true.
+      end if
+
       return
       end
 

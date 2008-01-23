@@ -7,17 +7,17 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'opdim.h'
       include 'stdunit.h'
       include 'def_filinf.h'
-      include 'def_operator.h'
+      include 'def_operator.h'      
       include 'def_me_list.h'
       include 'def_orbinf.h'
       include 'ifc_memman.h'
       include 'ifc_baserout.h'
-      include 'explicit.h'
+c      include 'explicit.h'
 
       real(8), intent(out) ::
      &     x1dia(*)
@@ -55,15 +55,15 @@
           ! see below for explanations
           if (max(op%ica_occ(1,iocc_cls),op%ica_occ(2,iocc_cls)).ne.1)
      &         cycle
-c          if (iextr.gt.0.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
-c     &                         op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
-c     &         cycle
-          if(iextr.gt.0)then
-            if(.not.explicit.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
-     &           op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
-     &           cycle
-            if(explicit.and.op%formal_blk(iocc_cls)) cycle
-          endif
+          if (iextr.gt.0.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
+     &                         op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
+     &         cycle
+c          if(iextr.gt.0)then
+c            if(.not.explicit.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
+c     &           op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
+c     &           cycle
+c            if(explicit.and.op%formal_blk(iocc_cls)) cycle
+c          endif
           if (list_cmp(op%ihpvca_occ(1,1,iocc_cls),
      &                 op%ihpvca_occ(1,2,iocc_cls),ngastp)) then
             nbuff = nbuff + mel%len_op_occ(iocc_cls)
@@ -72,7 +72,8 @@ c     &         cycle
         ifree = mem_alloc_real(buffer,nbuff,'buffer')
       end if
 
-      x1dia(1:2*(orb_info%ntoob+orb_info%caborb)) = 0d0
+c      x1dia(1:2*(orb_info%ntoob+orb_info%caborb)) = 0d0
+      x1dia(1:2*(orb_info%ntoob)) = 0d0
 
       mostnd => orb_info%mostnd
       ihpvgas => orb_info%ihpvgas
@@ -84,15 +85,15 @@ c     &         cycle
      &       cycle
         ! ... but the only normal ones (i.e. no 
         ! external/auxiliary orbitals)
-c        if (iextr.gt.0.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
-c     &                         op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
-c     &       cycle
-          if(iextr.gt.0)then
-            if(.not.explicit.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
-     &           op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
-     &           cycle
-            if(explicit.and.op%formal_blk(iocc_cls)) cycle
-          endif  
+        if (iextr.gt.0.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
+     &                         op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
+     &       cycle
+c          if(iextr.gt.0)then
+c            if(.not.explicit.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
+c     &           op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
+c     &           cycle
+c            if(explicit.and.op%formal_blk(iocc_cls)) cycle
+c          endif  
 
         ! diagonal: so C and A must have same occ
         if (.not.list_cmp(op%ihpvca_occ(1,1,iocc_cls),
@@ -109,13 +110,18 @@ c     &       cycle
         else
           call get_vec(ffop,buffer,ioff_blk+1,ioff_blk+ilen_blk)
         end if
+c dbg
+c        print *,'ioff_blk, ilen_blk: ',ioff_blk, ilen_blk
+c        print *,'current buffer: ',buffer(1:ilen_blk)
+c dbg
 
         ihpv = idxlist(1,op%ihpvca_occ(1,1,iocc_cls),ngastp,1)
 
         do ms = 1, -1, -2
           idxms =1
           if (ms.eq.-1) idxms = 2
-          imo_off = (idxms-1)*(orb_info%ntoob+orb_info%caborb)
+c          imo_off = (idxms-1)*(orb_info%ntoob+orb_info%caborb)
+          imo_off = (idxms-1)*orb_info%ntoob
 
           do isym = 1, orb_info%nsym
 
@@ -150,7 +156,7 @@ c     &       cycle
         write(luout,*) 'extracted diagonal: '
         idx = 0
         do ms = 1, -1, -2
-          do imo = 1, orb_info%ntoob+orb_info%caborb
+          do imo = 1, orb_info%ntoob
             idx = idx+1
             write(luout,'(x,i2,"/2",i5,2x,g12.6)') ms, imo, x1dia(idx)
           end do

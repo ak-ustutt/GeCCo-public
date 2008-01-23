@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'def_graph.h'
@@ -18,7 +18,6 @@
       include 'def_orbinf.h'
       include 'par_opnames_gen.h'
       include 'mdef_operator_info.h'
-      include 'explicit.h'
 
       character(*), intent(in) ::
      &     label_mel
@@ -32,7 +31,7 @@
      &     orb_info
 
       integer ::
-     &     ipri, idx_mel
+     &     ipri, mode, idx_mel
       type(me_list), pointer ::
      &     mel_target
 
@@ -47,19 +46,49 @@
       mel_target => op_info%mel_arr(idx_mel)%mel
 
       select case(trim(env_type))
+      case ('dalton_special','DALTON_SPECIAL')
+        ! what to import?
+        select case(trim(mel_target%op%name))
+        case (op_ham)
+          mode=0
+          call import_r12_dalton(mel_target,'MO_G',
+     &           mode,str_info,orb_info)
+          ! call after 2int import, as the above routine
+          ! zeroes all blocks, including E0 and F:
+          call import_fock_dalton(mel_target,str_info,orb_info)
+        ! Get other integrals needed for R12 calculations.
+        case(op_rint)
+          mode=1
+          call import_r12_dalton(mel_target,'MO_R',
+     &           mode,str_info,orb_info) 
+
+        case(op_rinba)
+          mode=1
+          call import_r12_dalton(mel_target,'MO_R',
+     &           mode,str_info,orb_info) 
+
+        case(op_f2)
+          mode=1
+          call import_r12_dalton(mel_target,'MO_R2',
+     &         mode,str_info,orb_info)
+
+        case(op_ttr)
+          mode=2
+          call import_r12_dalton(mel_target,'MO_TTR',
+     &         mode,str_info,orb_info) 
+
+        case default
+          call quit(1,'import_op_el',
+     &         'DALTON_SPECIAL: cannot handle operator '
+     &         //trim(mel_target%op%name))
+        end select
+          
       case ('dalton','DALTON')
         ! what to import?
         select case(trim(mel_target%op%name))
         case (op_ham)
           call import_hamint_dalton(mel_target,str_info,orb_info)
-        ! Get other integrals needed for R12 calculations.
-!        case(op_rint)
-!          if(.not.op_target%formal)then
-!            call import_r12_dalton(op_target,opfil_target,
-!     &           str_info,orb_info) 
-!          else
-!            write(luout,*)'R12 operator is purely formal.'
-!          endif  
+
         case default
           call quit(1,'import_op_el','DALTON: cannot handle operator '
      &         //trim(mel_target%op%name))

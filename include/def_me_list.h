@@ -51,6 +51,14 @@
      &       s2,mst                   ! total spin and ms
 
         integer ::
+     &       nsym                     ! for convenience: the nsym
+                                      ! value used for dimensioning
+                                      ! the arrays below (should be
+                                      ! the same as orbinf%nsym)
+                                      ! set in init_me_list()
+                                      ! do not change elsewhere!
+
+        integer ::
      &       absym,             ! symmetry on interchange of alpha/beta
      &                          ! (time reversal sym.) values: 0/+1/-1
      &       casym              ! symmetry on interchange C<->A
@@ -64,7 +72,7 @@
 *----------------------------------------------------------------------*
 *     dimension info for me_list:
 *----------------------------------------------------------------------*
-	integer :: 
+	integer ::
      &       len_op	      ! total length
 	integer, pointer ::
      &       off_op_occ(:),   ! offset for occupation class
@@ -77,6 +85,8 @@
                                ! and IRREP and MS distr. over HPV per C/A
         type(leninfx2), pointer ::
      &       len_op_gmox(:)    ! length per IRREP, MS and occupation class,
+        type(leninfx2), pointer ::
+     &       ld_op_gmox(:)     ! leading dim. per IRREP, MS and occ. class,
         integer, pointer ::
      &       idx_graph(:,:,:)  ! graph needed for addressing of
                                ! the corresp. PHVX/CA part

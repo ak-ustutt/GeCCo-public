@@ -408,12 +408,6 @@ c dbg
 c        print *,'fixing restrictions:'
 c dbg
 c          if (njoined_res.eq.1) then
-c            do ivtx = 1, contr%nvtx
-c              call fit_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
-c     &                     occ_vtx(1,1,ivtx+njoined_res),irestr_res,
-c     &                     orb_info%ihpvgas,ngas)
-c            end do
-c          else
             do ivtx = 1, contr%nvtx
               call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
      &                     occ_vtx(1,1,ivtx+njoined_res),1,

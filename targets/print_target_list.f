@@ -1,18 +1,20 @@
 *----------------------------------------------------------------------*
-      subroutine print_target_list(tgt_info)
+      subroutine print_target_list(luout,tgt_info)
 *----------------------------------------------------------------------*
 *     print target list on standard output
 *----------------------------------------------------------------------*
       implicit none
 
-      include 'stdunit.h'
       include 'mdef_target_info.h'
 
+      integer, intent(in) ::
+     &     luout
       type(target_info), intent(in) ::
      &     tgt_info
 
       character*(15), parameter ::
-     &     name_ttype(0:4) = (/'generic        ',
+     &     name_ttype(0:4) = (/
+     &                       'phony          ',
      &                       'operator       ',
      &                       'formula        ',
      &                       'opt. formula   ',

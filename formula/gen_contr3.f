@@ -57,7 +57,8 @@ c      include 'def_operator.h'
      &     nvtx, ivtx, ij_tgt
       integer ::
      &     occ_tgt_ex(ngastp,2,nj_tgt), occ_tgt_dx(ngastp,2,nj_tgt),
-     &     occ_tgt_ex_t(ngastp,2), occ_tgt_dx_t(ngastp,2)
+     &     occ_tgt_ex_t(ngastp,2), occ_tgt_dx_t(ngastp,2),
+     &     svmap(proto_main%nvtx)
 
       type(contraction) ::
      &     proto
@@ -68,6 +69,7 @@ c     &     occ_ol_vtx(:,:,:)
         write(luout,*) '===================='
         write(luout,*) ' gen_contr speaking'
         write(luout,*) '===================='
+        write(luout,*) 'nj_tgt = ',nj_tgt
         call prt_contr2(luout,proto_main,op_info)
         call prt_contr3(luout,proto_main,occ_vtx(1,1,nj_tgt+1))
       end if
@@ -129,6 +131,7 @@ c dbg
      &     ivtx_reo(nvtx), ivtx_reo2(nvtx),
      &     occ_ol_prev(ngastp,2), occ_ol_rem(ngastp,2),
      &     occ_ol_vtx(ngastp,2,nvtx),
+     &     occ_ol_scr(ngastp,2,nvtx),
      &     occ_ex(ngastp,2), occ_dx(ngastp,2),
      &     occ_cnt2prev(ngastp,2),
      &     occ_cnt2prev_min(ngastp,2),
@@ -342,7 +345,7 @@ c dbg
                   if (.not.ok.and.
      &                 iocc_nonzero(occ_conn(1:ngastp,1:2,jvtx))) then
                     call resize_contr(proto_new,nvtx,
-     &                   proto_new%narc + 1,0)
+     &                   proto_new%narc + 1,0,0)
                     proto_new%narc = proto_new%narc + 1
                     iarc = proto_new%narc
 c dbg
@@ -389,18 +392,43 @@ c     &                   occ_tgt_dx,occ_sum)
 c                    print *,'DX : ',ok
 c dbg                  
                   end if
-                  
-                  ! extra test for nj_tgt.gt.1:
-                  if (ok.and.nj_tgt.gt.1) then
-                    ! not 100%, but sufficient for current purposes
-                    call occ_contr(occ_test,ierr,proto_new,
-     &                             occ_vtx(1,1,1+nj_tgt),nj_tgt)
-                    ok = ierr.eq.0.and.
-     &                   iocc_equal_n(occ_test,.false.,
-     &                                occ_vtx, .false.,nj_tgt)
-                  end if
+
+                  ! Old part. Should be deleted once new part checked.
+c dbg                  
+c                  ! extra test for nj_tgt.gt.1:
+c                  if (ok.and.nj_tgt.gt.1) then
+c                    ! not 100%, but sufficient for current purposes
+cc dbg
+cc                    print *,'entered new part: ',nj_tgt
+cc dbg
+c                    call occ_contr(occ_test,ierr,proto_new,
+c     &                             occ_vtx(1,1,1+nj_tgt),nj_tgt)
+cc dbg
+cc                    print *,'occ_test, occ_target'
+cc                    call wrt_occ_n(luout,occ_test,nj_tgt)
+cc                    call wrt_occ_n(luout,occ_vtx,nj_tgt)
+cc dbg
+c                    ok = ierr.eq.0.and.
+c     &                   iocc_equal_n(occ_test,.false.,
+c     &                                occ_vtx, .false.,nj_tgt)
+c dbg
 
                   if (ok) then
+
+                    ! set xarc info
+                    call gen_contr3_unconn(occ_ol_prev,occ_ol_rem,! dummies
+     &                   occ_ol_scr,-1,  ! -1 -> set occ_ol_scr only
+     &                   proto_new,occ_vtx(1,1,nj_tgt+1))
+c dbg
+c                    call prt_contr2(luout,proto_new,op_info)
+c dbg
+                    call set_svmap(svmap,occ_ol_scr,
+     &                   occ_vtx,nvtx,nj_tgt,ierr)
+                    ok = ierr.eq.0
+                  end if
+                  if (ok) then
+
+                    call occ_ol2xarc(proto_new,occ_ol_scr,svmap)
 
                     ! make topological analysis
                     call topo_contr(ieqvfac,reo,ivtx_reo2,
@@ -410,6 +438,15 @@ c dbg
 c dbg
 c                    print *,'check ieqvfac: ',ok,ieqvfac
 c dbg
+                  end if
+
+                  ! extra test for nj_tgt.gt.1:
+                  if (ok.and.nj_tgt.gt.1) then
+                    ! not 100%, but sufficient for current purposes
+                    call occ_contr2(occ_test,ierr,proto_new,nj_tgt)
+                    ok = ierr.eq.0.and.
+     &                   iocc_equal_n(occ_test,.false.,
+     &                                occ_vtx, .false.,nj_tgt)
                   end if
 
                   ! very last check:
@@ -425,6 +462,9 @@ c dbg
                     ok = check_contr(proto_new,proto_main)
 
                   end if
+c dbg
+c                  print *,'final: ',ok
+c dbg
 
                   if (ok) then
 
@@ -517,6 +557,8 @@ c      include 'def_contraction.h'
         occ_ol_vtx(1:ngastp,1:2,idx2) = occ_ol_vtx(1:ngastp,1:2,idx2)
      &       - iocc_dagger(arc(iarc)%occ_cnt)
       end do
+
+      if (ivtx.le.0) return
 
       ! accumulate all vertices up to ivtx-1:
       occ_ol_prev = 0

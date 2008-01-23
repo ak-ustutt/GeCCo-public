@@ -6,7 +6,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -74,6 +74,9 @@
      &       exit search_loop
 
           ! as the node might get deleted, better save the next pointer
+          if (.not.associated(fl_tgt_pnt%next))
+     &         call quit(1,'sum_terms',
+     &         'unexpected end of list (target, inner loop)')
           fl_tgt_pnt_next => fl_tgt_pnt%next
           
           if (fl_tgt_pnt%contr%iblk_res.eq.iblk_tgt) then

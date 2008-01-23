@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       integer function iblk_occ(iocc,dag,oper)
 *----------------------------------------------------------------------*
-*     return block of operator oper that correspondents to the
+*     return block of operator oper that corresponds to the
 *     hpv-occupation iocc
 *----------------------------------------------------------------------*
       implicit none
@@ -21,7 +21,7 @@
       integer ::
      &     idx, ijoin, njoined, iblkoff
       integer, external ::
-     &     iocc_equal
+     &     iocc_equal_n
 
       iblk_occ = -1
       dago = oper%dagger
@@ -30,13 +30,9 @@
       idx_loop: do idx = 1, oper%n_occ_cls
 
         iblkoff = (idx-1)*njoined
-        if (iocc_equal(iocc,dag,oper%ihpvca_occ(1,1,iblkoff+1),dago))
+        if (iocc_equal_n(iocc,dag,
+     &                   oper%ihpvca_occ(1,1,iblkoff+1),dago,njoined))
      &                                                              then
-          do ijoin = 2, njoined
-            if (.not.iocc_equal(iocc(1,1,ijoin),dag,
-     &                         oper%ihpvca_occ(1,1,iblkoff+ijoin),dago))
-     &           cycle idx_loop
-          end do
           iblk_occ = idx
           exit idx_loop
         end if

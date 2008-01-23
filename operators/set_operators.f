@@ -10,14 +10,16 @@
       include 'def_orbinf.h'
       include 'explicit.h'
       include 'mdef_operator_info.h'
+      include 'cc_routes.h'
 
       type(operator_info), intent(inout) ::
      &     op_info
       type(orbinf) ::
      &     orb_info
 
+      call set_unit_operator(op_info)
       call set_h_operators(op_info,orb_info,explicit)
-      if (is_keyword_set('method.CC').gt.0) then
+      if (do_cc.or.do_mp) then
         call set_cc_operators(op_info,orb_info)
       endif
       if(explicit)then

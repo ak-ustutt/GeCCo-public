@@ -62,10 +62,11 @@ c dbg
       ! initialize list
       allocate(form_head)
       form_ptr => form_head
-      form_ptr%command = command_end_of_formula
-      nullify(form_ptr%next)
-      nullify(form_ptr%contr)
-      nullify(form_ptr%interm)
+      call init_formula(form_ptr)
+c      form_ptr%command = command_end_of_formula
+c      nullify(form_ptr%next)
+c      nullify(form_ptr%contr)
+c      nullify(form_ptr%interm)
 
       lentitle = 0
       ! ----------------------
@@ -107,6 +108,10 @@ c dbg
         end if
 
         call read_form_list(cur_ffile,form_ptr)
+c dbg
+c        print *,'raw formula'
+c        call print_form_list(luout,form_ptr,op_info)
+c dbg
 
         ! advance form_ptr to end of list
         ! (not possible via call list due to ifort problems)

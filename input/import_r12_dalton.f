@@ -1,4 +1,5 @@
-      subroutine import_r12_dalton(hop,ffr12,str_info,orb_info)
+      subroutine import_r12_dalton(oplist,fname_inp,
+     &     mode,str_info,orb_info)
 *-----------------------------------------------------------------------
 *     Routine to read in and reorder 2-electron integrals required for 
 *     R12 calculations. Integrals are reordered to be in type order.
@@ -8,38 +9,41 @@
 
       include 'stdunit.h'
       include 'opdim.h'
+      include 'def_filinf.h'
       include 'def_operator.h'
+      include 'def_me_list.h'
       include 'hpvxseq.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
-      include 'def_filinf.h'
       include 'par_dalton.h'
       include 'ifc_memman.h'
 
       integer, parameter::
-     &     ntest=00
+     &     ntest= 100
 
       type(orbinf),intent(in),target ::
      &     orb_info
       type(strinf),intent(in) ::
      &     str_info
-      type(operator),intent(in) ::
-     &     hop
-      type(filinf),intent(inout) ::
-     &     ffr12
+      type(me_list),intent(inout) ::
+     &     oplist
+      character*256, intent(in) ::
+     &     fname_inp
+      integer, intent(in) ::
+     &     mode
 
       integer ::
      &     idx,jdx,kdx,igas,isym,i,j,nsym,ngas,ntoob,caborb,lu2in,
-     &     ip,iq,ir,is,nstr,istr,ifree,lbuf
+     &     ip,iq,ir,is,nstr,istr,ifree,lbuf,asym_el
       integer ::
      &     index(4),igam(4),idss(4),igtp(4),idxstr(8)
       real(8) ::
      &     int
       logical ::
-     &     fexist,closeit,ierr
+     &     fexist,closeit,error,antisym
       type(filinf) ::
-     &     ffmor
+     &     ffinp
 
       integer, pointer ::
      &     ihpvgas(:),igamorb(:),igasorb(:),idx_gas(:),iad_gas(:),
@@ -49,14 +53,25 @@
       real*8,pointer ::
      &     r12scr(:)
 
-      if(hop%formal)then
-        write(luout,*)'R-operator is formal, no integrals read.'
-        return
-      endif  
+      type(operator), pointer ::
+     &     op
+      type(filinf), pointer ::
+     &     ffop
+
 
       ifree=mem_setmark('import_r12')
 
-      lbuf=hop%len_op
+      op =>   oplist%op
+      ffop => oplist%fhand
+
+      if(ntest.ge.100)then
+        write(luout,*)'=================='
+        write(luout,*)'Import-r12-dalton '
+        write(luout,*)'=================='
+        write(luout,*)'Operator-list: ',trim(oplist%label)
+      endif
+
+      lbuf=oplist%len_op
       if(lbuf.gt.ifree)
      &     call quit(1,'import_r12','insufficient memory')
       ifree=mem_alloc_real(r12scr,lbuf,'r12buf')
@@ -67,6 +82,20 @@
       ngas=orb_info%ngas
       ntoob=orb_info%ntoob
       caborb=orb_info%caborb
+
+c      ! Define some flags for different integral types.
+c      ! Mode 3 and 4 deal with (pq|[Ti,r12]|rs) type integrals whilst
+c      ! the other modes deal with 'normal' 2-electron integrals. 
+c      if(mode.eq.3)then
+c        antisym = .true.
+c        asym_el = 2
+c      elseif(mode.eq.4)then
+c        antisym=.true.
+c        asym_el = 1
+c      else
+c        antisym = .false.
+c        asym_el = 0
+c      endif  
 
       allocate(tosym(ntoob+caborb),totyp(ntoob+caborb),koffs(nsym),
      &     reord(ntoob+caborb))
@@ -86,17 +115,14 @@
       enddo  
 
       ! Open the required MO-integral file.
-      inquire(file='MO_R',exist=fexist)
+      inquire(file=fname_inp,exist=fexist)
       if(.not.fexist)
      &     call quit(1,'import_r12_dalton','No MO integral file.')
 
-c      call file_init(ffmor,mo_r,ftyp_sq_frm,0)
-c      lu2in=ffmor%unit
-c      call file_open(ffmor)
-c      write(luout,*)lu2in
-      lu2in=99
-      open(unit=lu2in,file='MO_R',status='old',form='formatted',
-     &     access='sequential')
+      call file_init(ffinp,fname_inp,ftyp_sq_frm,0)
+      call file_open(ffinp)
+
+      lu2in=ffinp%unit
       rewind(lu2in)
       read(lu2in,*)
       read(lu2in,*)
@@ -109,21 +135,31 @@ c      write(luout,*)lu2in
       iad_gas=>orb_info%iad_gas
 
       ! Open output file.
-      if(ffr12%unit.le.0)then
-        call file_open(ffr12)
+      if(ffop%unit.le.0)then
+        call file_open(ffop)
         closeit = .true.
       else
         closeit = .false.
       endif  
 
       ! Loop over the written integrals.
-      do 
+      int_loop: do 
         ! Read in the integral and its indices. Replace the indices with 
         ! those due to the type ordering array.
-        read(unit=lu2in,fmt=1000,end=999,err=998)ip,iq,ir,is,int
-        if((ip.lt.iq.and.iq.le.ntoob).or.ir.lt.is)then
-          cycle
+c        read(unit=lu2in,fmt=1000,end=999,err=998)ip,iq,ir,is,int
+        read(unit=lu2in,fmt=*,end=999,err=998)ip,iq,ir,is,int
+        if(mode.ne.2)then
+          if((ip.lt.iq.and.iq.le.ntoob).or.ir.lt.is)cycle int_loop    
         endif  
+
+c dbg
+c        if(mode.eq.1)then
+c          if(ip.eq.3.and.iq.eq.1.and.ir.eq.2.and.is.eq.1)then
+c            write(luout,*)'testing'
+c            write(luout,*)int
+c          endif
+c        endif
+c dbg
 
         ! Do two loops as we must "manually" permute p <=> q.
         do i=1,2
@@ -133,38 +169,14 @@ c      write(luout,*)lu2in
             index(3)=reord(iq)
             index(4)=reord(is)
           elseif(i.eq.2)then
-            if(ir.gt.ntoob)cycle
-            if(ip.eq.iq.or.ir.eq.is)cycle
+            if(mode.eq.2)cycle int_loop
+            if(ir.gt.ntoob)cycle int_loop
+            if(ip.eq.iq.or.ir.eq.is)cycle int_loop
             index(1)=reord(ip)
             index(2)=reord(is)
             index(3)=reord(iq)
             index(4)=reord(ir)
-c          elseif(i.eq.3)then
-c            if(ip.gt.ntoob.or.iq.gt.ntoob)cycle
-c            if(ip.eq.iq.or.ir.eq.is)cycle
-c            index(1)=reord(iq)
-c            index(2)=reord(ir)
-c            index(3)=reord(ip)
-c            index(4)=reord(is)
-c          else
-c            if(ip.gt.ntoob.or.iq.gt.ntoob)cycle
-c            if(ip.eq.iq.or.ir.eq.is)cycle
-c            index(1)=reord(iq)
-c            index(2)=reord(is)
-c            index(3)=reord(ip)
-c            index(4)=reord(ir)
           endif  
-c dbg
-c          if (ip.eq.6.and.iq.eq.7.and.ir.eq.9.and.is.eq.5)
-c     $         print *,'1 da isset ',int
-c          if ((ip.eq.9.and.iq.eq.7.and.ir.eq.6.and.is.eq.5).or.
-c     &         (ip.eq.7.and.iq.eq.6.and.ir.eq.9.and.is.eq.5).or.
-c     &         (ip.eq.9.and.iq.eq.6.and.ir.eq.7.and.is.eq.5))then
-c            print *,'2 da isset ',int
-c            write(luout,'(a,4i5)')'raw indices = ',ip,iq,ir,is
-c            write(luout,'(a,4i5)')'reo indices = ',index(1:4)
-c          endif
-c dbg            
 
           ! Place into arrays the irrep. and active space indices of the 
           ! orbitals in the integral under consideration.
@@ -182,24 +194,37 @@ c dbg
           do j=1,4
             idss(j)=idss(j)-idx_gas(igtp(j))+1
           enddo
-  
+
+c dbg
+c          if(mode.eq.1)then
+c            if(ip.eq.3.and.iq.eq.1.and.ir.eq.2.and.is.eq.1)then
+c              write(luout,*)'testing 2'
+c              write(luout,*)index(1:4)
+c              write(luout,*)int
+c            endif
+c          endif
+c dbg
+
           ! Generate the string addresses of the current integral by 
           ! reference to the spin-orbital basis.
-          call idx42str2(nstr,idxstr,  1,
+          call idx42str2(nstr,idxstr,mode,
      &         index,igam,idss,igtp,
-     &         orb_info,str_info,hop,hpvxseq,ierr)
+     &         orb_info,str_info,oplist,hpvxseq,error)
+
+c dbg
+c          if(mode.eq.1)then
+c            if(index(1).eq.8.and.index(2).eq.2.and.index(3).eq.2
+c     &           .and.index(4).eq.2)then
+c              write(luout,*)'nstr = ',nstr,error
+c            endif
+c          endif
+c dbg
 
           ! Store integral in r12scr.
           do istr=1,nstr
-c dbg
-c            if (abs(idxstr(istr)).lt.1.or.abs(idxstr(istr)).gt.lbuf)then
-c              write(luout,*) idxstr(istr),lbuf,nstr
-c              stop 'range'
-c            end if
-c dbg
 
             ! Add the integrals to the string array.
-            if(.not.ierr)then
+            if(.not.error)then
               if(idxstr(istr).gt.0)
      &             r12scr(idxstr(istr))=
      &             r12scr(idxstr(istr))+int
@@ -207,28 +232,22 @@ c dbg
      &             r12scr(-idxstr(istr))=
      &             r12scr(-idxstr(istr))-int
             endif  
+
           enddo  
         enddo
-  
-      enddo  
+
+      enddo int_loop 
 
  998  call quit(1,'import_r12_dalton','Error reading integrals.')
  999  continue
 
-      call put_vec(ffr12,r12scr,1,lbuf)
+      call put_vec(ffop,r12scr,1,lbuf)
 
       if(closeit)
-     &     call file_close_keep(ffr12)
-c      call file_close_keep(ffmor)
-      close(unit=lu2in,status='keep')
-      deallocate(tosym,totyp,koffs,reord)
+     &     call file_close_keep(ffop)
+      call file_close_keep(ffinp)
 
-      if(ntest.ge.1000)then
-        write(luout,*)'R12-integral import results:'
-        call wrt_op_file(luout,5,ffr12,hop,
-     &       1,hop%n_occ_cls,
-     &       str_info,orb_info)
-      endif  
+      deallocate(tosym,totyp,koffs,reord)
 
       ifree=mem_flushmark()
 

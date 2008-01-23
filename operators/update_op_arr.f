@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine update_op_arr(op_info)
 *----------------------------------------------------------------------*
-*     setup or update direct acces pointer array for linked list
+*     setup or update direct access pointer array for linked list
 *----------------------------------------------------------------------*
 
       implicit none

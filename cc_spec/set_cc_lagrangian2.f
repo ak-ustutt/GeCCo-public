@@ -99,7 +99,8 @@ c      include 'par_formnames_gen.h'
       ! insert here procedure to produce approx. expansions      
 
       ! post_processing and term counting:
-      call cc_form_post(flist_lag,nterms,idxtbar,idxham,idxtop,op_info)
+      call cc_form_post(flist_lag,nterms,idxtbar,idxham,idxtop,iprlvl,
+     &     op_info)
 
       ! assign comment
       form_cclag%comment = trim(title)

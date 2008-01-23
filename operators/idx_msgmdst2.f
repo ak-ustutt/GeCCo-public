@@ -33,10 +33,19 @@
       integer, pointer ::
      &     didarr(:,:,:)      
 
+      logical ::
+     &     dag_temp
+
       integer, external ::
      &     msgmdid2, ielsum
 
-      if (.not.dagger) then
+c GWR
+c DANGER DANGER .....
+      dag_temp = dagger
+      if(mel%op%dagger) dag_temp = .not.dag_temp
+c GWR
+
+      if (.not.dag_temp) then
         ! calculate integer-valued ID of (ms,Gamma) distribution
         mgdid = msgmdid2(occ_c,idxms_c,gam_c,nc,
      &                   occ_a,idxms_a,gam_a,na,nsym)

@@ -36,6 +36,8 @@
         case(command_add_contribution)
           write(luout,*) '[ADD]',form_ptr%target
           call prt_contr2(luout,form_ptr%contr,op_info)
+        case(command_symmetrise)
+          write(luout,*) '[SYMMETRISE TARGET]',form_ptr%target
         end select
 
         if (.not.associated(form_ptr%next)) exit

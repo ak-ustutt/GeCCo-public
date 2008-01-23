@@ -11,7 +11,7 @@
       include 'explicit.h'
 
       integer ::
-     &     icnt
+     &     icnt, lev
 
       ! necessary defaults
       explicit = .false.
@@ -26,7 +26,16 @@
      &         'Undefined R12 ansatz requested.')
         endif
         call get_argument_value('method.R12','triples',ival=trir12)
+        r12_apprx = ' '
+        call get_argument_value('method.R12','approx',str=r12_apprx)
       end if
+
+      icnt = is_keyword_set('method.MP')
+      mp2 = .false.
+      if(icnt.gt.0)then
+        call get_argument_value('method.MP','level',ival=lev)
+        if(lev.eq.2) mp2 = .true.
+      endif  
 
       return
       end

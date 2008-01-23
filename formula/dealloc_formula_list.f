@@ -25,8 +25,8 @@
      
       ! loop backward through list and deallocate
       do
-        if (associated(current%contr)) deallocate(current%contr)
         if (associated(current%interm)) deallocate(current%interm)
+        if (associated(current%contr)) deallocate(current%contr)
         if (.not.associated(current%prev)) exit
         current => current%prev
         deallocate(current%next)

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine frm_sched1(xret,flist,depend_info,
+      subroutine frm_sched1(xret,flist,depend_info,idxselect,nselect,
      &         op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     schedule the evaluation of a formula
@@ -19,6 +19,7 @@
       include 'def_strmapinf.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
+      include 'par_opnames_gen.h'
       include 'def_reorder_info.h'
       include 'def_dependency_info.h'
       include 'ifc_memman.h'
@@ -34,8 +35,8 @@
 
       real(8), intent(inout) ::
      &     xret(*)
-c      type(filinf), intent(inout) ::
-c     &     fffrm
+      integer, intent(in) ::
+     &     nselect, idxselect(nselect)
       type(formula_item), intent(in), target ::
      &     flist
       type(operator_info), intent(inout) ::
@@ -70,11 +71,11 @@ c     &     fffrm
      &     mel_arr(:)
 c      type(file_array), pointer ::
 c     &     ffops(:)
-c      type(operator_array), pointer ::
-c     &     ops(:)
+      type(operator_array), pointer ::
+     &     ops(:)
       integer ::
      &     mstop(2), igamtop(2), idxop(2), iblkop(2),
-     &     mstop1op2, igamtop1op2,
+     &     mstop1op2, igamtop1op2, njoined,
      &     njoined_op(2), njoined_op1op2,
      &     njoined_cnt, njoined_res
       real(8), pointer ::
@@ -113,6 +114,8 @@ c     &     op1, op2, op1op2, opres, op1op2tmp
       type(contraction) ::
      &     cur_contr
 
+      integer, external ::
+     &     idxlist
       logical, external ::
      &     me_list_uptodate
       real(8), external ::
@@ -130,8 +133,7 @@ c     &     op1, op2, op1op2, opres, op1op2tmp
       nsym = orb_info%nsym
       ngas = orb_info%ngas
 
-c      ffops => op_info%opfil_arr
-c      ops => op_info%op_arr
+      ops => op_info%op_arr
       mel_arr => op_info%mel_arr
       op2list => op_info%op2list
 
@@ -210,13 +212,19 @@ c      call init_contr(cur_form%contr)
           nres = nres+1
           idxres = nres
 
+
+          ! requested?
+          skip = nselect.gt.0.and.
+     &           idxlist(idxres,idxselect,nselect,1).le.0
+
           ! check dependency
-          skip = me_list_uptodate(idxres,depend_info,op_info)
+          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
 
           idxopres = cur_form%target      ! op index of result
-          idxme_res = op2list(idxopres)  ! list index of result
           if (idxopres.eq.0)
      &         call quit(1,'frm_sched1','idxopres==0 is obsolete!')
+
+          idxme_res = op2list(idxopres)  ! list index of result
           if (iprint.ge.10.and.skip) then
             write(luout,*) 'Skipping target: ',
      &           trim(mel_arr(idxme_res)%mel%label)
@@ -248,6 +256,12 @@ c          ffres => op_info%opfil_arr(idxopres)%fhand
 
           cycle term_loop
 c        case(command_set_target_update)
+        case(command_symmetrise)
+          
+          call symmetrise(1d0,me_res,me_res,xret_blk,op_info,orb_info)
+
+          cycle term_loop
+
         case(command_add_contribution)
         case default
           write(luout,*) 'command = ',cur_form%command
@@ -285,19 +299,27 @@ c        case(command_set_target_update)
           iblkres = cur_contr%iblk_res
           idxop(1) = cur_contr%vertex(1)%idx_op
           iblkop(1) = cur_contr%vertex(1)%iblk_op
-          idxmel = op2list(idxop(1))
 
-          if (mel_arr(idxmel)%mel%fhand%unit.le.0)
-     &         call file_open(mel_arr(idxmel)%mel%fhand)
-
-          call add_opblk(fac,
-     &         mel_arr(idxmel)%mel,me_res,
-     &         iblkop(1),iblkres,orb_info)
+          ! special: unit operator
+          if (ops(idxop(1))%op%name.eq.op_unity) then
+            call add_unity(fac,me_res,iblkres,orb_info)
+          else
+            idxmel = op2list(idxop(1))
+            if (mel_arr(idxmel)%mel%fhand%unit.le.0)
+     &           call file_open(mel_arr(idxmel)%mel%fhand)
+c fix:
+            njoined = mel_arr(idxmel)%mel%op%njoined
+            iblkop(1) = (iblkop(1)-1)/njoined + 1
+c fix:
+            call add_opblk(fac,
+     &           mel_arr(idxmel)%mel,me_res,
+     &           iblkop(1),iblkres,orb_info)
+          end if
 
           cycle term_loop
         end if
 
-        nvtx = cur_contr%nvtx
+        nvtx = cur_form%contr%nvtx
 
         ! allocate arrays for occupations and restrictions
         allocate(
@@ -321,10 +343,10 @@ c        case(command_set_target_update)
      &       occ_vtx(ngastp,2,nvtx+njoined_res),
      &       irestr_vtx(2,orb_info%ngas,2,2,nvtx+njoined_res),
      &       info_vtx(2,nvtx+njoined_res),
-     &       merge_op1(2*nvtx*nvtx), ! a bit too large, I guess ...
-     &       merge_op2(2*nvtx*nvtx),
-     &       merge_op1op2(2*nvtx*nvtx),
-     &       merge_op2op1(2*nvtx*nvtx))
+     &       merge_op1(10*nvtx*nvtx), ! a bit too large, I guess ...
+     &       merge_op2(10*nvtx*nvtx),
+     &       merge_op1op2(10*nvtx*nvtx),
+     &       merge_op2op1(10*nvtx*nvtx))
         if (nfact.gt.1) then
           allocate(opscr(nfact-1),optmp,melscr(nfact-1),meltmp)
           do idx = 1, nfact-1
@@ -523,6 +545,12 @@ c            ffop1op2 => ffscr(ninter)
      &       str_info,strmap_info,orb_info)
           if (ntest.ge.100)
      &         write(luout,*) 'returned from contraction kernel'
+
+c dbg
+c          if(idxopres.eq.8)then
+c            write(luout,*)'xret', xret_pnt(1)
+c          endif
+c dbg
 
           if (reo_op1op2) then
             call dealloc_me_list(meltmp)

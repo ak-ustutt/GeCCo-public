@@ -2,8 +2,9 @@
       subroutine optcont(imacit,imicit,imicit_tot,
      &                   task,conv,
      &                   energy,xngrd,
-     &                   ffopt,ffgrd,ffdia,
-     &                   ff_trv,ff_h_trv,
+     &                   me_opt,me_grd,me_dia,
+     &                   me_trv,me_h_trv,
+     &                   me_special,nspecial,
      &                   opti_info,opti_stat)
 *----------------------------------------------------------------------*
 *
@@ -22,19 +23,19 @@
 *     4: calculate Hessian/Jacobian(H/A) times trialvector product
 *     8: exit
 *
-* Files: 
+* Files (now: ME-lists, i.e. files + some more info): 
 * a) passed to slave routines
-*   ffopt   -- new set of wave-function parameters
+*   me_opt   -- new set of wave-function parameters
 *
 *   for 2nd-order methods:
-*   ff_trv   -- additional trial-vector for H/A matrix-vector products
+*   me_trv   -- additional trial-vector for H/A matrix-vector products
 *              and dto. for left wave-function and orb-rotations
 *
 * b) passed from slave routines
-*   ffgrd   -- gradient or vectorfunction 
+*   me_grd   -- gradient or vectorfunction 
 *
 *   2nd order
-*   ff_h_trv   -- H/A matrix-vector product
+*   me_h_trv   -- H/A matrix-vector product
 *              and dto. for ....
 *
 * c) own book keeping files
@@ -50,7 +51,8 @@
 
       include 'stdunit.h'
       include 'ioparam.h'
-      include 'def_filinf.h'
+c      include 'def_filinf.h'
+      include 'mdef_me_list.h'
       include 'def_file_array.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
@@ -74,15 +76,18 @@
       real(8), intent(in) ::
      &     energy, xngrd(*)
 
-      type(file_array), intent(in) ::
-     &     ffopt(*), ffgrd(*), ffdia(*),
-     &     ff_trv(*), ff_h_trv(*)
+      integer, intent(in) ::
+     &     nspecial
+
+      type(me_list_array), intent(in) ::
+     &     me_opt(*), me_grd(*), me_dia(*), me_special(nspecial),
+     &     me_trv(*), me_h_trv(*)
       
       type(optimize_info), intent(in) ::
      &     opti_info
       type(optimize_status), intent(inout) ::
      &     opti_stat
-
+      
 *     buffers for incore/out-of-core work:
       integer ::
      &     nincore, nbuf, lenbuf
@@ -113,11 +118,6 @@
         write(luout,*) ' imacit, imicit, imicit_tot: ',
      &         imacit, imicit, imicit_tot
       end if
-c dbg
-c      print *,'ffopt:',trim(ffopt(1)%fhand%name)
-c      print *,'ffgrd:',trim(ffgrd(1)%fhand%name)
-c      print *,'ffdia:',trim(ffdia(1)%fhand%name)
-c dbg
 
 * set iroute:
 * 0 simple perturbation (for testing, not recommended)
@@ -183,9 +183,10 @@ c dbg
         end if
 
         call optc_macit(imacit,imicit,imicit_tot,
-     &       task,iroute,
-     &       ffopt,ffgrd,ffdia,
-     &       ff_trv,ff_h_trv,
+     &       task,iroute,opti_info%nopt,
+     &       me_opt,me_grd,me_dia,
+     &       me_trv,me_h_trv,
+     &       me_special,nspecial,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
      &       opti_info,opti_stat)

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine solve_evp(
+      subroutine solve_evp(mode_str,
      &     nopt,nroots,label_opt,label_prc,label_op_mvp,
      &     label_form,
      &     op_info,form_info,str_info,strmap_info,orb_info)
@@ -52,6 +52,7 @@
       integer, intent(in) ::
      &     nopt, nroots
       character(*), intent(in) ::
+     &     mode_str,
      &     label_opt(nopt),
      &     label_prc(nopt),
      &     label_op_mvp(nopt),
@@ -161,7 +162,7 @@
      &       'no file associated to list '//trim(label))
       end if
 
-      call set_opti_info(opti_info,3,nopt,nroots,me_opt)
+      call set_opti_info(opti_info,3,nopt,nroots,me_opt,mode_str)
 
       nvectors = opti_info%maxsbsp
 
@@ -278,7 +279,7 @@ c     &           1,me_trv(1)%mel%op%n_occ_cls,
 c     &           str_info,orb_info)
 c dbg
 
-            call frm_sched(xret,fl_mvp,depend,
+            call frm_sched(xret,fl_mvp,depend,0,0,
      &           op_info,str_info,strmap_info,orb_info)
 
 c dbg

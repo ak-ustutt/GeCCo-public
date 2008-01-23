@@ -1,5 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine cc_form_post(form,nterms,idxtbar,idxham,idxtop,op_info)
+      subroutine cc_form_post(form,nterms,
+     &     idxtbar,idxham,idxtop, iprint,
+     &     op_info)
 *----------------------------------------------------------------------*
 *     resort terms according to tbar blocks and count terms
 *     print some statistics
@@ -13,12 +15,11 @@
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'def_formula_item_list.h'
-      include 'explicit.h'
 
       type(formula_item), intent(inout), target ::
      &     form
       integer, intent(in) ::
-     &     idxtbar, idxham, idxtop
+     &     idxtbar, idxham, idxtop, iprint
       type(operator_info), intent(in) ::
      &     op_info
       integer, intent(out) ::
@@ -53,7 +54,7 @@
       op_tbar => op_info%op_arr(idxtbar)%op
       nblk_tbar = op_tbar%n_occ_cls
 
-      if (iprlvl.gt.0) then
+      if (iprint.gt.0) then
         write(luout,'(2x,42("-"))')
         write(luout,'(3x,a)') '  L    number of   n-fold commutators'
         write(luout,'(3x,a)') 'class    terms    0    1    2    3    4'
@@ -63,34 +64,23 @@
       ! loop over Tbar blocks (0 is the unit-projection)
       do iblk = 0, nblk_tbar
         if (iblk.eq.0) then
-          call collect_terms_w_op(fpl_pnt,form_pnt,idxtbar,-1,0)          
+          call collect_terms_w_op(fpl_pnt,form_pnt,1,idxtbar,-1,0)          
           fpl_pnt => fpl_pnt%next
         else
-          call collect_terms_w_op(fpl_pnt,form_pnt,idxtbar,iblk,1)
+          call collect_terms_w_op(fpl_pnt,form_pnt,1,idxtbar,iblk,1)
           fpl_pnt => fpl_pnt%next
         end if
-c dbg
-c        print *,'iblk = ',iblk
-c        print *,'first collected term:'
-c        print *,' command = ',fpl_pnt%item%command
-c        if (fpl_pnt%item%command.eq.4) then
-c          call prt_contr2(luout,fpl_pnt%item%contr,op_info)
-c        end if
-c dbg
-c        if(explicit)then
-c          call r12_count_terms(fpl_pnt,idxtop,n_commu,op_info%op_arr)
-c        else  
-          call cc_count_terms(fpl_pnt,idxtop,n_commu)
-c        endif  
+
+        call cc_count_terms(fpl_pnt,idxtop,n_commu)
 
         do while(associated(fpl_pnt%next))
           fpl_pnt => fpl_pnt%next
         end do
 
-        if (iprlvl.ge.10) then
+        if (iprint.ge.10) then
           write(luout,'(2x,"??",i4,3x,i6,x,5(x,i4))')
      &       iblk,sum(n_commu(0:4)),n_commu(0:4)
-        else if (iprlvl.gt.0) then
+        else if (iprint.gt.0) then
           write(luout,'(4x,i4,3x,i6,x,5(x,i4))')
      &       iblk,sum(n_commu(0:4)),n_commu(0:4)
         end if
@@ -98,7 +88,7 @@ c        endif
 
       end do
 
-      if (iprlvl.gt.0)
+      if (iprint.gt.0)
      &     write(luout,'(2x,42("-"))')
 
       call relink_formula_list(form,fpl_reo)

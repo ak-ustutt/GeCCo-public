@@ -30,12 +30,14 @@
      &     strmap_info
 
       integer ::
-     &     idx, jdx, ioff,
+     &     idx, jdx, ioff, nfac, nspecial,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank
       type(me_list), pointer ::
      &     mel_pnt
       character(len_command_par) ::
-     &     title, env_type
+     &     title, env_type, mode
+      character(len_command_par), allocatable ::
+     &     label_met(:)
 
       integer ::
      &     idx_formlist
@@ -87,13 +89,37 @@
 
       case(PRECONDITIONER)
 
-        call set_prc4op(rule%labels(1),rule%labels(2),
+        if (rule%n_labels.lt.2)
+     &     call quit(1,'process_me_lists',
+     &       'at least two labels expected for '
+     &       //trim(PRECONDITIONER))
+
+        ! quick fix:
+        if (rule%n_labels.eq.2) then
+          mode(1:len(mode)) = ' '
+          mode = 'dia-F'
+        else
+          mode(1:len(mode)) = ' '
+          mode = 'dia-R12'
+        end if
+
+        call set_prc4op(rule%labels(1),mode,
+     &       rule%labels(2:),rule%n_labels-1,
      &       op_info,str_info,orb_info)
 
       case(EVAL)
 
         call evaluate(rule%labels(1),
      &       op_info,form_info,str_info,strmap_info,orb_info)
+
+      case(INVERT)
+
+        if (rule%n_labels.ne.2)
+     &     call quit(1,'process_me_lists','two labels expected for '
+     &       //trim(INVERT))
+
+        call inv_op(rule%labels(2),rule%labels(1),
+     &       op_info,orb_info,str_info)
 
       case(EVALPROP)
 
@@ -105,31 +131,40 @@
       case(SOLVENLEQ)
 
         call solve_parameters(+1,rule%parameters,
-     &       nopt,nroots)
+     &       rule%n_parameter_strings,
+     &       nopt,nroots,mode)
 
-        if (rule%n_labels.ne.3*nopt+2)
+        if (rule%n_labels.lt.3*nopt+2)
      &       call quit(1,'process_me_lists',
-     &       'incorrect number of labels to be passed for '//
+     &       'to few labels to be passed for '//
      &       trim(SOLVENLEQ))
 
-        call solve_nleq(nopt,
+        nspecial = rule%n_labels-3*nopt-2
+        ioff = 1
+        if (nspecial.gt.0) ioff=2
+
+        call solve_nleq(mode,nopt,
      &       rule%labels(1:nopt),               ! to be opt.
      &       rule%labels(nopt+1:nopt+nopt),     ! residual
      &       rule%labels(2*nopt+1:2*nopt+nopt), ! precond.
      &       rule%labels(3*nopt+1),             ! energy
      &       rule%labels(3*nopt+2),             ! formula
+     &       rule%labels(3*nopt+ioff+1:
+     &                   3*nopt+ioff+nspecial),
+     &          nspecial,                       ! specials
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(SOLVELEQ)
         call solve_parameters(+1,rule%parameters,
-     &       nopt,nroots)
+     &       rule%n_parameter_strings,
+     &       nopt,nroots,mode)
 
         if (rule%n_labels.ne.4*nopt+1)
      &       call quit(1,'process_me_lists',
      &       'incorrect number of labels to be passed for '//
      &       trim(SOLVELEQ))
 
-        call solve_leq(nopt,nroots,
+        call solve_leq(mode,nopt,nroots,
      &       rule%labels(1:nopt),               ! to be opt.
      &       rule%labels(  nopt+1:  nopt+nopt), ! precond.
      &       rule%labels(2*nopt+1:2*nopt+nopt), ! mvp-labels
@@ -139,14 +174,15 @@
 
       case(SOLVEEVP)
         call solve_parameters(+1,rule%parameters,
-     &       nopt,nroots)
+     &       rule%n_parameter_strings,
+     &       nopt,nroots,mode)
 
         if (rule%n_labels.ne.3*nopt+1)
      &       call quit(1,'process_me_lists',
      &       'incorrect number of labels to be passed for '//
      &       trim(SOLVEEVP))
 
-        call solve_evp(nopt,nroots,
+        call solve_evp(mode,nopt,nroots,
      &       rule%labels(1:nopt),               ! to be opt.
      &       rule%labels(  nopt+1:  nopt+nopt), ! precond.
      &       rule%labels(2*nopt+1:2*nopt+nopt), ! mvp-labels

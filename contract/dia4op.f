@@ -63,6 +63,7 @@
      &     idxorb(:),idxspn(:),idxdss(:)
       real(8), pointer ::
      &     buffer(:), xsum(:)
+
       type(filinf), pointer ::
      &     ffdia
       type(operator), pointer ::
@@ -329,7 +330,9 @@ c dbg
         end do msa_loop
 
 c dbg
-c        print *,'final buffer: ',buffer(1:me_dia%len_op_occ(iocc_cls))
+c        if (ntest.ge.100)
+c     &       print *,'final buffer: ',
+c     &       buffer(1:me_dia%len_op_occ(iocc_cls))
 c dbg
         ! put buffer to disc
         call put_vec(ffdia,buffer,me_dia%off_op_occ(iocc_cls)+1,

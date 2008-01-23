@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine contr_blk1blk2_wmaps_c(xfac,            !prefactor   
      &     xop1op2,xop1,xop2,                     !buffers: res,op1,op2
+     &     tra_op1,tra_op2,tra_op1op2,
      &     ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &     ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
      &     ncblk_cnt,nablk_cnt,ncblk_op1op2,nablk_op1op2,
@@ -43,6 +44,8 @@
       ! nstr_ex1/ex2/cnt,a/c: # strings
       ! map_ex1ex2a/c  mapping ex1*ex2->op1op2
       ! etc. for ex1cnt ex2cnt
+      logical, intent(in) ::
+     &     tra_op1, tra_op2, tra_op1op2
       integer, intent(in) ::
      &     ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &     ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
@@ -143,13 +146,14 @@ c dbg
 
       call set_op_ldim_c(ldim_op1c,ldim_op1a,
      &                   hpvxop1c,hpvxop1a,
-     &                   lstrop1,ncblk_op1,nablk_op1)
+     &                   lstrop1,ncblk_op1,nablk_op1,tra_op1)
       call set_op_ldim_c(ldim_op2c,ldim_op2a,
      &                   hpvxop2c,hpvxop2a,
-     &                   lstrop2,ncblk_op2,nablk_op2)
+     &                   lstrop2,ncblk_op2,nablk_op2,tra_op2)
       call set_op_ldim_c(ldim_op1op2c,ldim_op1op2a,
      &                   hpvxop1op2c,hpvxop1op2a,
-     &                   lstrop1op2,ncblk_op1op2,nablk_op1op2)
+     &                   lstrop1op2,ncblk_op1op2,nablk_op1op2,
+     &                                                 tra_op1op2)
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
@@ -212,15 +216,15 @@ c dbg
 c dbg
 c                  if (idxop1op2.lt.1) stop 'range12-l'
 c                  if (idxop1op2.gt.lenop12) then
-                  if (lenop12.eq.2) then
-                    print *,'-->',idxop1op2
-                    print *,'ngastp:',ngastp_op1op2c,ngastp_op1op2a
-                    print *,idxop1op2a
-                    print *,ldim_op1op2a
-                    print *,idxop1op2c
-                    print *,ldim_op1op2c
+c                  if (lenop12.eq.2) then
+c                    print *,'-->',idxop1op2
+c                    print *,'ngastp:',ngastp_op1op2c,ngastp_op1op2a
+c                    print *,idxop1op2a
+c                    print *,ldim_op1op2a
+c                    print *,idxop1op2c
+c                    print *,ldim_op1op2c
 c                    stop 'range12-h'
-                  end if
+c                  end if
 c dbg
 
               ! loop over contraction A string
@@ -319,12 +323,12 @@ c dbg
      &                          + sgn * xop1(idxop1)
      &                                * xop2(idxop2)
 c dbg
-                  if (lenop12.eq.2) then
-                  print *,' sng ',isgnop1c,isgnop1a,
-     &                 isgnop2c,isgnop2a,isgnr
-                  print *,' +++ ',sgn,xop1(idxop1),xop2(idxop2),
-     &                                ' -> ',idxop1op2
-                  end if
+c                  if (lenop12.eq.2) then
+c                  print *,' sng ',isgnop1c,isgnop1a,
+c     &                 isgnop2c,isgnop2a,isgnr
+c                  print *,' +++ ',sgn,xop1(idxop1),xop2(idxop2),
+c     &                                ' -> ',idxop1op2
+c                  end if
 c dbg
 
                 end do cntc           

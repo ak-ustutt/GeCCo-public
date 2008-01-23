@@ -19,7 +19,8 @@
      &     command_set_target_update = 1,
      &     command_new_intermediate = 2,
      &     command_del_intermediate = 3,
-     &     command_add_contribution = 4
+     &     command_add_contribution = 4,
+     &     command_symmetrise = 5
 
 
       ! 0: target operator is op(target), initialize to 0

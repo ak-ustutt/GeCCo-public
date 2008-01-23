@@ -148,8 +148,8 @@
 *     get memory for buffers, decide on in-core/out-of-core
 *======================================================================*
       ! set mark for temporarily allocated stuff
-      if (iter.ne.0) then
-        ifree = mem_setmark('leqevpc_temp')
+      ifree = mem_setmark('leqevpc_temp')
+      if (iter.ne.0.or.modestr(1:3).eq.'LEQ') then
         call leqevpc_mem(nincore,lenbuf,
      &       ifree,opti_info%nwfpar,opti_info%nopt)
 c        if (nincore.le.1) then
@@ -176,10 +176,18 @@ c        end if
         ! request slaves to put first few trial vectors and
         ! corresponding Mv-product to first nroot records on the
         ! respective files:        
-        if (modestr(1:3).eq.'LEQ')
-     &       opti_stat%nadd = 0 ! ?? <-- check that for LEQ
-        if (modestr(1:3).eq.'EVP')
-     &       opti_stat%nadd = opti_info%nroot ! <-- check that for LEQ
+        if (modestr(1:3).eq.'LEQ') then
+          call leqc_init(xrsnrm,iroute,
+     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
+     &       nincore,lenbuf,ffscr,
+     &       xbuf1,xbuf2,xbuf3,
+     &       opti_info,opti_stat)          
+          opti_stat%nadd = opti_info%nroot ! ?? <-- check that for LEQ
+        else if (modestr(1:3).eq.'EVP') then
+          opti_stat%nadd = opti_info%nroot ! <-- check that for LEQ
+        else
+          call quit(1,'leq_evp_control','this should not happen!')
+        end if
         opti_stat%ndel = 0
         nrequest = opti_info%nroot
         do irequest = 1, nrequest
@@ -188,6 +196,8 @@ c        end if
         end do
 
         iter = 1
+
+        ifree = mem_flushmark('leqevpc_temp')
 
 * return and let the slaves work
         return

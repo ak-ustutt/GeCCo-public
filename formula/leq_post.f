@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine leq_post(label_f_traf,label_f_rhs,label_f_raw,
-     &                    label_traf,label_rhs,label_x,
+     &                    label_traf,label_rhs,label_x,nx,
      &                    title_traf,title_rhs,
      &                    op_info,form_info)
 *----------------------------------------------------------------------*
@@ -8,9 +8,10 @@
 *     split formula labelled "label_f_raw" into transformation
 *     ("label_f_traf") and right-hand side part ("label_f_rhs")
 *     reorder formulae
-*     label_traf :  operator associated with Ax-trafo
-*     label_rhs  :  operator associated with rhs
-*     label_x    :  operator associated with variable x
+*     label_traf(nx) :  operator associated with Ax-trafo
+*     label_rhs(nx)  :  operator associated with rhs
+*     label_x(nx): operators associated with variable x
+*               (bx may be larger than one in case of coupled equations)
 *----------------------------------------------------------------------*
       implicit none
 
@@ -25,9 +26,13 @@
       integer, parameter ::
      &     ntest = 00
 
+      integer, intent(in) ::
+     &     nx
       character(*), intent(in) ::
      &     label_f_raw, label_f_traf, label_f_rhs,
      &     label_traf, label_rhs, label_x
+c     &     label_f_raw(nx), label_f_traf(nx), label_f_rhs(nx),
+c     &     label_traf(nx), label_rhs(nx), label_x(nx)
       type(operator_info), intent(in) ::
      &     op_info
       type(formula_info), intent(in) ::
@@ -47,6 +52,9 @@
 
       if (ntest.ge.100)
      &     call write_title(luout,wst_dbg_subr,'leq_post at work')
+
+      if (nx.gt.1)
+     &     call quit(1,'leq_post','under construction')
 
       ! check labels
       ! this one must exist:

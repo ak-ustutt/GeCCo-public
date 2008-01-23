@@ -8,3 +8,7 @@
      &     solve_cc_lhip*12   = 'SOLVE-CC-LI0',
      &     eval_1dens*10      = 'EVAL-1DENS',     
      &     eval_props*10      = 'EVAL-PROPS'
+      ! R12
+      character, parameter ::
+     &     eval_r12_inter*14  = 'EVAL-R12-INTER',
+     &     solve_mpr12_gs*14  = 'SOLVE-MPR12-GS'

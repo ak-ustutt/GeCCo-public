@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine solve_leq(
+      subroutine solve_leq(mode_str,
      &     nopt,nroots,label_opt,label_prc,label_op_mvp,label_op_rhs,
      &     label_form,
      &     op_info,form_info,str_info,strmap_info,orb_info)
@@ -53,6 +53,7 @@
       integer, intent(in) ::
      &     nopt, nroots
       character(*), intent(in) ::
+     &     mode_str,
      &     label_opt(nopt),
      &     label_prc(nopt),
      &     label_op_mvp(nopt),
@@ -75,9 +76,10 @@
      &     label
       integer ::
      &     iter, iprint, task, ifree, iopt, jopt, nintm, irequest,
-     &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout
+     &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout, idxrhs,
+     &     nselect
       real(8) ::
-     &     energy, xresnrm
+     &     energy, xresnrm, xdum
       type(me_list_array), pointer ::
      &     me_opt(:), me_trv(:), me_mvp(:), me_rhs(:)
       type(file_array), pointer ::
@@ -94,16 +96,16 @@
       type(formula_item) ::
      &     fl_rhs_mvp
 
-      integer, external ::
-     &     idx_formlist, idx_mel_list, idx_xret
-
       integer, pointer ::
-     &     irecmvp(:), irectrv(:)
+     &     irecmvp(:), irectrv(:), idxselect(:)
       real(8), pointer ::
      &      xret(:)
 
       character ::
      &     fname*256
+
+      integer, external ::
+     &     idx_formlist, idx_mel_list, idx_oplist2, idx_xret
 
       ifree = mem_setmark('solve_leq')
 
@@ -158,7 +160,7 @@
      &       'no file associated to list '//trim(label))
       end if
 
-      call set_opti_info(opti_info,2,nopt,nroots,me_opt)
+      call set_opti_info(opti_info,2,nopt,nroots,me_opt,mode_str)
 
       nvectors = opti_info%maxsbsp
 
@@ -210,7 +212,7 @@
 
       ! number of info values returned on xret
       nout = depend%ntargets
-      allocate(xret(nout))
+      allocate(xret(nout),idxselect(nout))
 
       ! records with trial vectors and Mv-products, needed in leq_control:
       ifree = mem_alloc_int(irectrv,nroots,'rectrv')
@@ -231,10 +233,18 @@
 
       ! get initial amplitudes
       do iopt = 1, nopt
+        ! get idx of RHS operator
+        nselect = 0
+        call select_formula_target(idxselect,nselect,
+     &       me_rhs(iopt)%mel%label,depend,op_info)
+
         do iroot = 1, nroots
           
-          call switch_mel_record(me_trv(iopt)%mel,iroot)
-          call zeroop(me_trv(iopt)%mel)
+          call switch_mel_record(me_rhs(iopt)%mel,iroot)
+          call touch_file_rec(me_rhs(iopt)%mel%fhand)
+
+          call frm_sched(xret,fl_rhs_mvp,depend,idxselect,nselect,
+     &         op_info,str_info,strmap_info,orb_info)
 
         end do
       end do
@@ -244,15 +254,20 @@
       task = 0
       opt_loop: do while(task.lt.8)
 
-        call leq_control
-     &       (iter,
-     &       task,conv,xresnrm,
+        call leq_evp_control
+     &       ('LEQ',iter,
+     &       task,conv,xresnrm,xdum,
      &       nrequest,irectrv,irecmvp,
      &       ffopt,ff_trv,ff_mvp,ff_rhs,ffdia,
      &       opti_info,opti_stat)
 
-        if (iter.gt.1)
-     &       write(luout,'(">>>",i3,24x,x,g10.4)')iter-1,xresnrm
+        if (conv) then
+          write(luout,'(">>> conv.",21x,x,g10.4)') xresnrm
+        else if (iter.eq.1) then
+          write(luout,'(">>> |rhs|",21x,x,g10.4)') xresnrm
+        else
+          write(luout,'(">>>",i3,24x,x,g10.4)')iter-1,xresnrm
+        end if
 c dbg
 c        if(iter.gt.1)print *,'>>> resnorm = ',xresnrm
 c dbg
@@ -269,7 +284,7 @@ c dbg
               call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
 
-            call frm_sched(xret,fl_rhs_mvp,depend,
+            call frm_sched(xret,fl_rhs_mvp,depend,0,0,
      &           op_info,str_info,strmap_info,orb_info)
 
           end do
@@ -291,11 +306,12 @@ c dbg
 
       end do
 
+      call clean_formula_dependencies(depend)
 
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
       deallocate(me_opt,me_trv,me_rhs,me_mvp)
-      deallocate(ff_trv,ff_rhs,ff_mvp,ffdia,ffopt,xret)
+      deallocate(ff_trv,ff_rhs,ff_mvp,ffdia,ffopt,xret,idxselect)
 
       ifree = mem_flushmark()
 

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine frm_sched(xret,flist,depend_info,
+      subroutine frm_sched(xret,flist,depend_info,idxselect,nselect,
      &         op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for actual scheduler routines
@@ -22,6 +22,8 @@
 
       real(8), intent(out) ::
      &     xret(*)
+      integer, intent(in) ::
+     &     nselect, idxselect
       type(formula_item), intent(inout) ::
      &     flist
       type(operator_info) ::
@@ -45,7 +47,7 @@
 
       select case (irt_sched)
       case (0)
-        call frm_sched1(xret,flist,depend_info,
+        call frm_sched1(xret,flist,depend_info,idxselect,nselect,
      &         op_info,str_info,strmap_info,orb_info)
       case default
         call quit(1,'frm_sched','illegal route')

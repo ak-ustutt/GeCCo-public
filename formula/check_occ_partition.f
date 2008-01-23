@@ -8,6 +8,7 @@
 
       include 'opdim.h'
       include 'ifc_operators.h'
+      include 'stdunit.h'
 
       integer, intent(in) ::
      &     n_tgt, n_chk,

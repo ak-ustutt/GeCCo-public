@@ -1,6 +1,8 @@
       ! generic operator names:
       character, parameter ::
+     &     op_unity*1 = 'I',
      &     op_ham*1   = 'H',
+     &     op_fock*1  = 'F',
      &     op_hhat*4  = 'Hhat',
      &     op_top*1   = 'T',
      &     op_tbar*4  = 'TBAR',
@@ -11,18 +13,10 @@
      &     op_l*1     = 'L',
      &     op_rip*5   = 'R(-1)',
      &     op_lip*5   = 'L(-1)',
-     &     op_r12*3   = 'R12',
-     &     op_rba*4   = 'RBAR',
-     &     op_c12*1   = 'C',
-     &     op_cba*4   = 'CBAR',
-     &     op_sop*1   = 'S',
-     &     op_sba*4   = 'SBAR',
-     &     op_omgr12*7= 'OMG-R12',
-     &     op_diar12*7= 'DIA-R12',
-     &     op_rint*7  = 'R12-INT',
-     &     op_rinba*7 = 'R12-IBA',
      &     op_cclg*5  = 'L(CC)',
      &     op_ccen*5  = 'E(CC)',
+     &     op_mplg*5  = 'L(MP)',
+     &     op_mpen*5  = 'E(MP)',
      &     op_tbar_a*6  = 'TBAR.A',
      &     op_eta*3   = 'ETA',
      &     op_1dens*4 = '1DEN',
@@ -30,6 +24,29 @@
      &     op_l_a*3 = 'L.A',
      &     op_a_rip*7 = 'A.R(-1)',
      &     op_l_aip*7 = 'L(-1).A'
+      ! R12 extensions
+      character, parameter ::
+     &     op_fpk*3      = 'F+K',
+     &     op_mpr12lg*8  = 'L(MPR12)',
+     &     op_mpr12en*8  = 'E(MPR12)',
+     &     op_ccr12lg*8  = 'L(CCR12)',
+     &     op_ccr12en*8  = 'E(CCR12)',
+     &     op_r12*3   = 'R12',
+     &     op_rba*6   = 'R12BAR',
+     &     op_c12*1   = 'C',
+     &     op_cba*4   = 'CBAR',
+     &     op_omgr12*7= 'OMG-R12',
+     &     op_diar12*7= 'DIA-R12',
+     &     op_rint*7  = 'R12-INT',
+     &     op_rinba*7 = 'R12-IBA',
+     &     op_ttr*7        = 'TTR_COM',
+     &     op_f2*5         = 'R12^2',
+     &     op_v_inter*1    = 'V',
+     &     op_vbar_inter*4 = 'VBAR',
+     &     op_b_inter*1    = 'B',
+     &     op_b_inv*5      = 'B_INV',
+     &     op_x_inter*1    = 'X',
+     &     op_x_inv*5      = 'X_INV'
       ! generic ME-list names
       character, parameter ::
      &     mel_cclg0*6      = 'L0(CC)',
@@ -60,3 +77,32 @@
      &     meldef_rip*7     = 'DEF-RI0',
      &     mel_a_rip*5      = 'A.RI0',
      &     meldef_a_rip*9   = 'DEF-A.RI0'
+      ! ME-lists for R12
+      character, parameter ::
+     &     mel_rint*7       = 'R12-GEM',
+     &     mel_rinba*8      = 'R12+-GEM',
+     &     mel_ttr*7        = 'TTR-INT',
+     &     mel_f2*7         = 'RSQ-INT',
+     &     mel_v_inter*7    = 'V-INTER',
+     &     mel_v_def*11     = 'DEF-V-INTER',
+     &     mel_vbar_inter*7 = 'V+-INTER',
+     &     mel_vbar_def*11  = 'DEF-V+-INTER',
+     &     mel_x_inter*7    = 'X-INTER',
+     &     mel_x_def*11     = 'DEF-X-INTER',
+     &     mel_x_inv*4      = 'XINV',
+     &     mel_b_inter*7    = 'B-INTER',
+     &     mel_b_def*11     = 'DEF-B-INTER',
+     &     mel_b_inv*4      = 'BINV',
+     &     mel_b_dia*4      = 'BDIA',
+     &     mel_c12def*10       = 'DEF-C0-R12',
+     &     mel_c12*6        = 'C0-R12',
+     &     mel_cbardef*13      = 'DEF-C0BAR-R12',
+     &     mel_cbar*9       = 'C0BAR-R12',
+     &     mel_omgr12def*12    = 'DEF-OMG0-R12',
+     &     mel_omgr12*8     = 'OMG0-R12',
+     &     mel_mpr12lg0def*13   = 'DEF-L0(MPR12)',
+     &     mel_mpr12lg0*9   = 'L0(MPR12)',
+     &     mel_mpr12en0def*13   = 'DEF-E0(MPR12)',
+     &     mel_mpr12en0*9   = 'E0(MPR12)'
+	  
+      

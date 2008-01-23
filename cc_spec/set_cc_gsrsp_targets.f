@@ -31,7 +31,7 @@
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(10)
       character(len_command_par) ::
-     &     parameters
+     &     parameters(2)
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting targets for CC properties ...'
@@ -70,42 +70,42 @@
 *     Formulae:
 *----------------------------------------------------------------------*
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cctbar_a
-      labels(2) = label_cclg0
+      labels(1) = form_cctbar_a
+      labels(2) = form_cclg0
       labels(3) = op_tbar_a
       labels(4) = op_top
       labels(5) = ' '
-      call add_target(label_cctbar_a,ttype_frm,.false.,tgt_info)
-      call add_target(label_cceta,ttype_frm,.false.,tgt_info)
-      call set_joined_targets(label_cctbar_a,label_cceta,tgt_info)
-      call set_dependency(label_cctbar_a,label_cclg0,tgt_info)
-      call set_dependency(label_cctbar_a,op_tbar_a,tgt_info)
-      call set_dependency(label_cctbar_a,op_eta,tgt_info)
-      call set_rule(label_cctbar_a,ttype_frm,DERIVATIVE,
+      call add_target(form_cctbar_a,ttype_frm,.false.,tgt_info)
+      call add_target(form_cceta,ttype_frm,.false.,tgt_info)
+      call set_joined_targets(form_cctbar_a,form_cceta,tgt_info)
+      call set_dependency(form_cctbar_a,form_cclg0,tgt_info)
+      call set_dependency(form_cctbar_a,op_tbar_a,tgt_info)
+      call set_dependency(form_cctbar_a,op_eta,tgt_info)
+      call set_rule(form_cctbar_a,ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              title_cctbar_a,1,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cctbar_a
-      labels(2) = label_cceta
-      labels(3) = label_cctbar_a
+      labels(1) = form_cctbar_a
+      labels(2) = form_cceta
+      labels(3) = form_cctbar_a
       labels(4) = op_tbar_a
       labels(5) = op_eta
       labels(6) = op_tbar
-      call set_rule(label_cctbar_a,ttype_frm,LEQ_SPLIT,
+      call set_rule(form_cctbar_a,ttype_frm,LEQ_SPLIT,
      &              labels,6,2,
      &              title_cctbar_a,1,tgt_info)
 
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cc1dens
-      labels(2) = label_cclg0
+      labels(1) = form_cc1dens
+      labels(2) = form_cclg0
       labels(3) = op_1dens
       labels(4) = op_ham
       labels(5) = ' '
-      call add_target(label_cc1dens,ttype_frm,.false.,tgt_info)
-      call set_dependency(label_cc1dens,label_cclg0,tgt_info)
-      call set_dependency(label_cc1dens,op_tbar_a,tgt_info)
-      call set_dependency(label_cc1dens,op_eta,tgt_info)
-      call set_rule(label_cc1dens,ttype_frm,DERIVATIVE,
+      call add_target(form_cc1dens,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_cc1dens,form_cclg0,tgt_info)
+      call set_dependency(form_cc1dens,op_tbar_a,tgt_info)
+      call set_dependency(form_cc1dens,op_eta,tgt_info)
+      call set_rule(form_cc1dens,ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              title_cc1dens,1,tgt_info)
 
@@ -116,40 +116,40 @@
 
       ! CC ground state left-hand eq.
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cclft0opt
-      labels(2) = label_cceta
-      labels(3) = label_cctbar_a
+      labels(1) = fopt_cclft0
+      labels(2) = form_cceta
+      labels(3) = form_cctbar_a
       ncat = 2
       nint = 0
-      call add_target(label_cclft0opt,ttype_frm,.false.,tgt_info)
-      call set_dependency(label_cclft0opt,label_cctbar_a,tgt_info)
-      call set_dependency(label_cclft0opt,label_cceta,tgt_info)
-      call set_dependency(label_cclft0opt,mel_tbar_adef,tgt_info)
-      call set_dependency(label_cclft0opt,mel_etadef,tgt_info)
-      call set_dependency(label_cclft0opt,mel_tbardef,tgt_info)
-      call set_dependency(label_cclft0opt,mel_topdef,tgt_info)
-      call set_dependency(label_cclft0opt,mel_ham,tgt_info)
+      call add_target(fopt_cclft0,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_cclft0,form_cctbar_a,tgt_info)
+      call set_dependency(fopt_cclft0,form_cceta,tgt_info)
+      call set_dependency(fopt_cclft0,mel_tbar_adef,tgt_info)
+      call set_dependency(fopt_cclft0,mel_etadef,tgt_info)
+      call set_dependency(fopt_cclft0,mel_tbardef,tgt_info)
+      call set_dependency(fopt_cclft0,mel_topdef,tgt_info)
+      call set_dependency(fopt_cclft0,mel_ham,tgt_info)
       if (isim.eq.1) then
         nint = 1
-        call set_dependency(label_cclft0opt,label_cchhat,tgt_info)
-        call set_dependency(label_cclft0opt,mel_hhatdef,tgt_info)
-        labels(4) = label_cchhat
+        call set_dependency(fopt_cclft0,form_cchhat,tgt_info)
+        call set_dependency(fopt_cclft0,mel_hhatdef,tgt_info)
+        labels(4) = form_cchhat
       end if
       call opt_parameters(-1,parameters,ncat,nint)
-      call set_rule(label_cclft0opt,ttype_frm,OPTIMIZE,
+      call set_rule(fopt_cclft0,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
       ! CC ground state density
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cc1dens_opt
-      labels(2) = label_cc1dens
-      call add_target(label_cc1dens_opt,ttype_frm,.false.,tgt_info)
-      call set_dependency(label_cc1dens_opt,label_cc1dens,tgt_info)
-      call set_dependency(label_cc1dens_opt,mel_tbardef,tgt_info)
-      call set_dependency(label_cc1dens_opt,mel_topdef,tgt_info)
+      labels(1) = fopt_cc1dens
+      labels(2) = form_cc1dens
+      call add_target(fopt_cc1dens,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_cc1dens,form_cc1dens,tgt_info)
+      call set_dependency(fopt_cc1dens,mel_tbardef,tgt_info)
+      call set_dependency(fopt_cc1dens,mel_topdef,tgt_info)
       call opt_parameters(-1,parameters,1,0)
-      call set_rule(label_cc1dens_opt,ttype_frm,OPTIMIZE,
+      call set_rule(fopt_cc1dens,ttype_frm,OPTIMIZE,
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
@@ -204,26 +204,26 @@
       ! solve TBAR (LAMBDA) equations
       call add_target(solve_cc_lhwf,ttype_gen,needed,tgt_info)
       call set_dependency(solve_cc_lhwf,mel_dia1,tgt_info)
-      call set_dependency(solve_cc_lhwf,label_cclft0opt,tgt_info)
+      call set_dependency(solve_cc_lhwf,fopt_cclft0,tgt_info)
       call set_dependency(solve_cc_lhwf,solve_cc_gs,tgt_info)
-      call solve_parameters(-1,parameters,1,1)
+      call solve_parameters(-1,parameters,2, 1,1,'DIA')
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_tbar
       labels(2) = mel_dia1
       labels(3) = op_tbar_a
       labels(4) = op_eta
-      labels(5) = label_cclft0opt
+      labels(5) = fopt_cclft0
       call set_rule(solve_cc_lhwf,ttype_opme,SOLVELEQ,
      &     labels,5,1,
-     &     parameters,1,tgt_info)
+     &     parameters,2,tgt_info)
 
       call add_target(eval_1dens,ttype_gen,.false.,tgt_info)
       call set_dependency(eval_1dens,meldef_1dens,tgt_info)
-      call set_dependency(eval_1dens,label_cc1dens_opt,tgt_info)
+      call set_dependency(eval_1dens,fopt_cc1dens,tgt_info)
       call set_dependency(eval_1dens,solve_cc_gs,tgt_info)
       call set_dependency(eval_1dens,solve_cc_lhwf,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = label_cc1dens_opt
+      labels(1) = fopt_cc1dens
       call set_rule(eval_1dens,ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)

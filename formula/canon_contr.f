@@ -29,6 +29,8 @@
      &     arc_sv
       type(cntr_vtx), pointer ::
      &     vtx_new(:)
+      integer, pointer ::
+     &     svertex_new(:)
 
       integer, external ::
      &     int_pack
@@ -44,6 +46,13 @@
         end do
         deallocate(contr%vertex)
         contr%vertex => vtx_new
+        ! update svertex array
+        allocate(svertex_new(contr%mxvtx))
+        do ivtx = 1, nvtx
+          svertex_new(ivtx) = contr%svertex(vtx_reo(ivtx))
+        end do
+        deallocate(contr%svertex)
+        contr%svertex => svertex_new
         ! update vertex references in arcs:
         ! revert reordering info to old->new        
         allocate(vtx_oer(nvtx))
@@ -79,18 +88,28 @@
       contr%narc = narc
 
       ! second round: insertion sort
-      do idx = 2, narc
-        ival = int_pack(arc(idx)%link,2,nvtx+1)
-        arc_sv = arc(idx)
-        jdx = idx-1
-        do while(jdx.gt.0)
-          jval = int_pack(arc(jdx)%link,2,nvtx+1)
-          if (jval.le.ival) exit
-          arc(jdx+1) = arc(jdx)
-          jdx = jdx-1
-        end do
-        arc(jdx+1) = arc_sv
-      end do
+      if (narc.gt.1)
+     &     call arc_sort(arc,narc,nvtx)
+
+c      do idx = 2, narc
+c        ival = int_pack(arc(idx)%link,2,nvtx+1)
+c        arc_sv = arc(idx)
+c        jdx = idx-1
+c        do while(jdx.gt.0)
+c          jval = int_pack(arc(jdx)%link,2,nvtx+1)
+c          if (jval.le.ival) exit
+c          arc(jdx+1) = arc(jdx)
+c          jdx = jdx-1
+c        end do
+c        arc(jdx+1) = arc_sv
+c      end do
+
+      ! sort xarcs as well
+      if (contr%nxarc.gt.1)
+     &     call arc_sort(contr%xarc,contr%nxarc,nvtx)
+
+      ! update svertex info
+      call update_svtx4contr(contr)
 
       return
       end

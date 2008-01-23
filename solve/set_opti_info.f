@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine set_opti_info(opti_info,mode,nopt,nroot,mel_opt)
+      subroutine set_opti_info(opti_info,
+     &     mode,nopt,nroot,mel_opt,prc_str)
 *----------------------------------------------------------------------*
       implicit none
       
@@ -17,11 +18,16 @@
      &     nopt, mode, nroot
       type(me_list_array), intent(in) ::
      &     mel_opt(nopt)
+      character(*), intent(in) ::
+     &     prc_str
 
       character ::
      &     str*16
       integer ::
-     &     ifree, iopt
+     &     ifree, iopt, ioff
+
+      integer, external ::
+     &     ndisblk_mel
 
       opti_info%variational = .false.
       if (mode.eq.1) opti_info%linear = .false.
@@ -35,6 +41,7 @@
      &     ival=opti_info%maxsbsp)
 
       ifree = mem_alloc_int (opti_info%nwfpar,nopt,'nwfpar')
+      ifree = mem_alloc_int (opti_info%typ_prc,nopt,'typprc')
       ifree = mem_alloc_real(opti_info%thrgrd,nopt,'thrgrd')
 
       call get_argument_value('calculate.solve','conv',
@@ -166,6 +173,21 @@
       else
         call quit(1,'set_opti_info','illegal value of mode')
       end if
+
+      ! set type of preconditioner
+      ioff = 0
+      do iopt = 1, nopt
+        select case(prc_str(ioff+1:ioff+3))
+        case('DIA') 
+          opti_info%typ_prc(iopt) = optinf_prc_file
+        case('BLK')
+          opti_info%typ_prc(iopt) = optinf_prc_blocked
+        case default
+          call quit(1,'set_opti_info','cannot interpret string: '//
+     &         trim(prc_str))
+        end select
+        ioff = ioff+4
+      end do
 
       return
       end
