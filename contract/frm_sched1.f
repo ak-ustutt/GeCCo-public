@@ -311,7 +311,7 @@ c fix:
             njoined = mel_arr(idxmel)%mel%op%njoined
             iblkop(1) = (iblkop(1)-1)/njoined + 1
 c fix:
-            call add_opblk(fac,
+            call add_opblk(xret_blk(iblkres),fac,
      &           mel_arr(idxmel)%mel,me_res,
      &           iblkop(1),iblkres,orb_info)
           end if

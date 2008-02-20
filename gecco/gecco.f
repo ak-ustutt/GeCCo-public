@@ -31,8 +31,8 @@
 
       ! a few settings
       luout = 6      ! output unit
-      iprlvl = 1     ! print level
-c      iprlvl = 10    ! print level
+c      iprlvl = 1     ! print level
+      iprlvl = 10    ! print level
       ivale = 3      ! V is 3
       iextr = 4      ! X is 4
 
@@ -70,7 +70,7 @@ c      iprlvl = 10    ! print level
       ! post-process input up to first "calculate" block
       ! (data resides in module parse_input)
       call process_input(one_more,orb_info)
-      ! one more is ignored, as we might have cases 
+      ! one_more is ignored, as we might have cases 
       ! (export/import stuff) where no "calculate" block is
       ! specified
 

@@ -18,9 +18,10 @@
       type(filinf) ::
      &     ffsir
       integer ::
-     &     lusir, iprint, ngas, loop, i, j, caborb
+     &     lusir, iprint, ngas, loop, i, j, caborb,
+     &     n_frozen, n_act, n_as1, n_as2, n_as3
       logical ::
-     &     have_frozen, have_act, have_as1, have_as2, have_as3, logaux
+     &     logaux
 
       integer, parameter ::
      &     mxsym = 8
@@ -112,18 +113,33 @@
 
       call file_close_keep(ffsir)
 
-      have_frozen = i4elsqsum(nfro,nsym).gt.0
-      have_act    = i4elsqsum(nash,nsym).gt.0
-      have_as1    = i4elsqsum(nas1,nsym).gt.0
-      have_as2    = i4elsqsum(nas1,nsym).gt.0
-      have_as3    = i4elsqsum(nas1,nsym).gt.0
+      n_frozen = i4elsum(nfro,nsym)
+      n_act    = i4elsum(nash,nsym)
+      n_as1    = i4elsum(nas1,nsym)
+      n_as2    = i4elsum(nas2,nsym)
+      n_as3    = i4elsum(nas3,nsym)
 
       ngas = 2
-      if (have_frozen) ngas = ngas+1
+      if (n_frozen.gt.0) ngas = ngas+1
       if(logaux) ngas=ngas+1
-      if (have_act.or.have_as1.or.have_as2.or.have_as3)
+      if (n_act.gt.0) then
+        ! test whether this can be treated as a simple
+        ! high spin open shell case:
+        if (nactel.eq.n_act.and.ispin.eq.nactel+1) then
+          ! we should check the symmetry here ...
+          write(luout,*) 'high-spin valence shell detected'
+        else
+          write(luout,*) 'valence shell is not high-spin ...'
+          call quit(1,'read_env_dalton',
+     &     'not adapted to non-high-spin open shell cases')
+        end if
+c dbg
+        stop 'TEST TEST'
+c dbg
+      end if
+      if (n_as1.gt.0.or.n_as2.gt.0.or.n_as3.gt.0)
      &     call quit(1,'read_env_dalton',
-     &     'not adapted to active orbitals')
+     &     'not adapted to RAS orbital spaces')
 
       orb_info%nsym = nsym
       orb_info%ngas = ngas
@@ -139,7 +155,7 @@
 
       orb_info%nbas(1:nsym) = nbas(1:nsym)
       orb_info%ntoobs(1:nsym) = norb(1:nsym)
-      if (have_frozen) then
+      if (n_frozen.gt.0) then
         if(logaux)then
           orb_info%iad_gas(1:ngas) = (/1,2,2,2/)
           orb_info%ihpvgas(1:ngas) = (/1,1,2,4/)

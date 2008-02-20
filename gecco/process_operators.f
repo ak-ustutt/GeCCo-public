@@ -82,6 +82,14 @@
      &                      min_rank,max_rank,iformal)
         call set_dens(op_pnt,trim(rule%labels(1)),.false.,
      &       min_rank,max_rank,iformal,orb_info)
+      case(DEF_CC_HBAR_OP)
+        if (rule%n_parameter_strings.lt.1)
+     &       call quit(1,'process_operators',
+     &       'no parameters provided for '//DEF_DENSITY)
+        call xop_parameters(+1,rule%parameters,
+     &                      dagger,min_rank,max_rank,ncadiff,iformal)
+        call set_cc_hbar(op_pnt,trim(rule%labels(1)),
+     &       max_rank,orb_info)
       case(DEF_R12GEMINAL)
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',

@@ -48,6 +48,7 @@
      &              op_hhat,1,1,
      &              parameters,1,tgt_info)
 
+
       ! T operator
       call add_target(op_top,ttype_op,.false.,tgt_info)
       call get_argument_value('method.CC','minexc',ival=min_rank)
@@ -58,6 +59,14 @@
      &              op_top,1,1,
      &              parameters,1,tgt_info)
 
+      ! Hbar intermediate
+      call add_target(op_hbar,ttype_op,.false.,tgt_info)
+      call xop_parameters(-1,parameters,
+     &                    .false.,min_rank,max_rank,0,1)
+      call set_rule(op_hbar,ttype_op,DEF_CC_HBAR_OP,
+     &              op_hbar,1,1,
+     &              parameters,1,tgt_info)
+      
       ! Tbar
       call add_target(op_tbar,ttype_op,.false.,tgt_info)
       call set_dependency(op_tbar,op_top,tgt_info)
@@ -129,6 +138,19 @@
      &              title_cchhat,1,tgt_info)
 
       labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_cchbar
+      labels(2) = op_hbar
+      labels(3) = op_ham
+      labels(4) = op_top
+      call add_target(form_cchbar,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_cchbar,op_hbar,tgt_info)
+      call set_dependency(form_cchbar,op_ham,tgt_info)
+      call set_dependency(form_cchbar,op_top,tgt_info)
+      call set_rule(form_cchbar,ttype_frm,DEF_CC_HBAR,
+     &              labels,4,1,
+     &              title_cchbar,1,tgt_info)
+
+      labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_ccen0
       labels(2) = form_cclg0
       labels(3) = op_ccen
@@ -178,6 +200,11 @@
         call set_dependency(fopt_ccrs0,form_cchhat,tgt_info)
         call set_dependency(fopt_ccrs0,mel_hhatdef,tgt_info)
         labels(4) = form_cchhat
+      else if (isim.eq.2) then
+        nint = 1
+        call set_dependency(fopt_ccrs0,form_cchbar,tgt_info)
+        call set_dependency(fopt_ccrs0,meldef_hbar,tgt_info)
+        labels(4) = form_cchbar
       end if
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_ccrs0,ttype_frm,OPTIMIZE,
@@ -258,6 +285,18 @@
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+      ! Hbar definition
+      call add_target(meldef_hbar,ttype_opme,.false.,tgt_info)
+      call set_dependency(meldef_hbar,op_hbar,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_hbar
+      labels(2) = op_hbar
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(meldef_hbar,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
       ! DIA-list for all symmetries:
       do isym = 1, orb_info%nsym
         call me_list_label(me_label,mel_dia,isym,0,0,0,.false.)
@@ -278,7 +317,7 @@
      &              labels,2,1,
      &              parameters,0,tgt_info)
       end do
-      
+
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*

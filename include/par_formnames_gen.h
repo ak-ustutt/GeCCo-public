@@ -11,13 +11,16 @@
      &     title_ccrs0*14 =  'CC residual',
      &     title_ccrs12*15 = 'R12 residual',
      &     title_cchhat*15 = 'e^{-T1}He^T1',
+     &     title_cchbar*15 = 'e^{-T}He^T',
      &     title_cctbar_a*18  = 'Tbar.A contraction',
      &     title_cceta*26     = 'Tbar right hand side (eta)',
      &     title_cc1dens*21   = 'CC 1-particle density',
      &     title_cc_a_r*18    = 'CC right transform',
      &     title_cc_l_a*17    = 'CC left transform',
      &     title_cc_a_rip*18  = 'CC right transform (IP)',
-     &     title_cc_lip_a*17  = 'CC left transform (IP)'
+     &     title_cc_lip_a*17  = 'CC left transform (IP)',
+     &     title_cc_a_rea*18  = 'CC right transform (EA)',
+     &     title_cc_lea_a*17  = 'CC left transform (EA)'
       character, parameter ::
      &     title_mpr12lg0*29 =  'MPR12 Lagrangian',
      &     title_mpr12en0*15 =  'MPR12 energy',
@@ -49,6 +52,7 @@
      &     fopt_ccrs0*10       = 'OMG_CC_OPT',
      &     fopt_cclft0*11      = 'TBAR_CC_OPT',
      &     form_cchhat*6       = 'HT1TRF',
+     &     form_cchbar*6       = 'HT_TRF',
      &     form_cctbar_a*9     = 'TBAR_A_CC',
      &     form_cceta*6        = 'ETA_CC',
      &     form_cc1dens*6      = 'CC1DEN',
@@ -60,7 +64,11 @@
      &     form_cc_a_rip*10    = 'CC_A_R(-1)',
      &     fopt_cc_a_rip*14    = 'CC_A_R(-1)_OPT',
      &     form_cc_lip_a*10    = 'CC_L_A(-1)',
-     &     fopt_cc_lip_a*14    = 'CC_L_A(-1)_OPT'
+     &     fopt_cc_lip_a*14    = 'CC_L_A(-1)_OPT',
+     &     form_cc_a_rea*10    = 'CC_A_R(+1)',
+     &     fopt_cc_a_rea*14    = 'CC_A_R(+1)_OPT',
+     &     form_cc_lea_a*10    = 'CC_L_A(+1)',
+     &     fopt_cc_lea_a*14    = 'CC_L_A(+1)_OPT'
       character, parameter ::
      &     form_mpr12lg0*9       = 'Lg0_MPR12',
      &     form_mpr12en0*8       = 'E0_MPR12',

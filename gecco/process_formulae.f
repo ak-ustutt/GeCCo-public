@@ -64,6 +64,15 @@
      &             rule%labels(ioff+3),rule%labels(ioff+4),
      &       op_info)
 
+      case(DEF_CC_HBAR)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,idum,strdum)
+        ioff = rule%n_update
+        call set_cc_hbar_formula(form_pnt,
+     &       title,rule%labels(ioff+1),
+     &             rule%labels(ioff+2),rule%labels(ioff+3),
+     &       op_info)
       case(DEF_HHAT)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

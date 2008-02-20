@@ -1,10 +1,12 @@
 *----------------------------------------------------------------------*
-      subroutine add_opblk(fac,mel_in,mel_out,
+      subroutine add_opblk(xnorm2,fac,mel_in,mel_out,
      &     iblkin,iblkout,orb_info)
 *----------------------------------------------------------------------*
 *
 *     add block from list mel_in to list mel_out
 *     occupation of blocks must be identical
+*
+*     xnorm2: updated squared norm of the block
 *
 *----------------------------------------------------------------------*
 
@@ -21,6 +23,8 @@
       integer, parameter ::
      &     ntest = 00
 
+      real(8), intent(out) ::
+     &     xnorm2
       real(8), intent(in) ::
      &     fac
       type(me_list), intent(in) ::
@@ -51,6 +55,8 @@
 
       logical, external ::
      &     iocc_equal_n, irestr_equal
+      real(8), external ::
+     &     ddot
 
       ffin  => mel_in%fhand
       ffout => mel_out%fhand
@@ -204,8 +210,11 @@ c      end if
           end if
           idxst = idxnd+1
         end do
+        xnorm2 = ddot(len_op,buffer_out,1,buffer_out,1)
       else
         call daxpy(len_op,fac,ffin%buffer(ioffin+1),1,
+     &                       ffout%buffer(ioffout+1),1)
+        xnorm2 = ddot(len_op,ffout%buffer(ioffout+1),1,
      &                       ffout%buffer(ioffout+1),1)
       end if
 

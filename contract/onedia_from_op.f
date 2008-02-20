@@ -17,7 +17,6 @@
       include 'def_orbinf.h'
       include 'ifc_memman.h'
       include 'ifc_baserout.h'
-c      include 'explicit.h'
 
       real(8), intent(out) ::
      &     x1dia(*)

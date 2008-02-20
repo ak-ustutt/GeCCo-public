@@ -73,6 +73,24 @@
      &              op_a_rip,1,1,
      &              parameters,1,tgt_info)
 
+      ! left vector
+      call add_target(op_lip,ttype_op,.false.,tgt_info)
+      call set_dependency(op_lip,op_rip,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_rip,.true.)
+      call set_rule(op_lip,ttype_op,CLONE_OP,
+     &              op_lip,1,1,
+     &              parameters,1,tgt_info)
+
+      ! left vector times Jacobian
+      call add_target(op_lip_a,ttype_op,.false.,tgt_info)
+      call set_dependency(op_lip_a,op_lip,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_lip,.false.)
+      call set_rule(op_lip_a,ttype_op,CLONE_OP,
+     &              op_lip_a,1,1,
+     &              parameters,1,tgt_info)
+      
 
 *----------------------------------------------------------------------*
 *     Formulae:
@@ -92,6 +110,21 @@
       call set_rule(form_cc_a_rip,ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              title_cc_a_rip,1,tgt_info)
+
+      ! left Jacobian transform with IP operator
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_cc_lip_a
+      labels(2) = form_cctbar_a
+      labels(3) = op_lip_a
+      labels(4) = op_tbar
+      labels(5) = op_lip
+      call add_target(form_cc_lip_a,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_cc_lip_a,form_ccrs0,tgt_info)
+      call set_dependency(form_cc_lip_a,op_lip_a,tgt_info)
+      call set_dependency(form_cc_lip_a,op_lip,tgt_info)
+      call set_rule(form_cc_lip_a,ttype_frm,DERIVATIVE,
+     &              labels,5,1,
+     &              title_cc_lip_a,1,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Optimized Formulae:

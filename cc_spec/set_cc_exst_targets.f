@@ -141,9 +141,42 @@
         call set_dependency(fopt_cc_a_r,form_cchhat,tgt_info)
         call set_dependency(fopt_cc_a_r,mel_hhatdef,tgt_info)
         labels(3) = form_cchhat
+      else if (isim.eq.2) then
+        nint = 1
+        call set_dependency(fopt_cc_a_r,form_cchbar,tgt_info)
+        call set_dependency(fopt_cc_a_r,meldef_hbar,tgt_info)
+        labels(3) = form_cchbar
       end if
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_cc_a_r,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+      ! CC left-hand Jacobian transform
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_cc_l_a
+      labels(2) = form_cc_l_a
+      ncat = 1
+      nint = 0
+      call add_target(fopt_cc_l_a,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_cc_l_a,form_cc_l_a,tgt_info)
+      call set_dependency(fopt_cc_l_a,meldef_lex_a,tgt_info)
+      call set_dependency(fopt_cc_l_a,meldef_lex,tgt_info)
+      call set_dependency(fopt_cc_l_a,mel_topdef,tgt_info)
+      call set_dependency(fopt_cc_l_a,mel_ham,tgt_info)
+      if (isim.eq.1) then
+        nint = 1
+        call set_dependency(fopt_cc_l_a,form_cchhat,tgt_info)
+        call set_dependency(fopt_cc_l_a,mel_hhatdef,tgt_info)
+        labels(3) = form_cchhat
+      else if (isim.eq.2) then
+        nint = 1
+        call set_dependency(fopt_cc_a_r,form_cchbar,tgt_info)
+        call set_dependency(fopt_cc_a_r,meldef_hbar,tgt_info)
+        labels(3) = form_cchbar
+      end if
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_cc_l_a,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
@@ -180,6 +213,34 @@
      &         parameters,1,tgt_info)
       end do
 
+      call add_target(meldef_lex,ttype_opme,.false.,tgt_info)
+      call add_target(meldef_lex_a,ttype_opme,.false.,tgt_info)
+      do isym = 1, orb_info%nsym
+        if (sym_arr(isym).eq.0) cycle
+        ! LE0
+        call me_list_label(me_label,mel_lex,isym,0,0,0,.false.)
+        call set_dependency(meldef_lex,op_l,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = me_label
+        labels(2) = op_l
+        call me_list_parameters(-1,parameters,
+     &         0,0,isym,0,0)
+        call set_rule(meldef_lex,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+        ! LE0.A
+        call me_list_label(me_label,mel_lex_a,isym,0,0,0,.false.)
+        call set_dependency(meldef_lex_a,op_l_a,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = me_label
+        labels(2) = op_l_a
+        call me_list_parameters(-1,parameters,
+     &       0,0,isym,0,0)
+        call set_rule(meldef_lex_a,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+      end do
+
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*
@@ -201,6 +262,27 @@
         labels(3) = op_a_r
         labels(4) = fopt_cc_a_r
         call set_rule(solve_cc_rhex,ttype_opme,SOLVEEVP,
+     &       labels,4,1,
+     &       parameters,2,tgt_info)
+      end do
+      
+      call add_target(solve_cc_lhex,ttype_gen,.true.,tgt_info)
+      call set_dependency(solve_cc_lhex,solve_cc_gs,tgt_info)
+      call set_dependency(solve_cc_lhex,fopt_cc_l_a,tgt_info)
+      call set_dependency(solve_cc_lhex,meldef_lex,tgt_info)
+      call set_dependency(solve_cc_lhex,meldef_lex_a,tgt_info)
+      do isym = 1, orb_info%nsym
+        if (sym_arr(isym).eq.0) cycle          
+        call me_list_label(me_label,mel_lex,isym,0,0,0,.false.)
+        call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
+        call set_dependency(solve_cc_lhex,dia_label,tgt_info)
+        call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = me_label
+        labels(2) = dia_label
+        labels(3) = op_l_a
+        labels(4) = fopt_cc_l_a
+        call set_rule(solve_cc_lhex,ttype_opme,SOLVEEVP,
      &       labels,4,1,
      &       parameters,2,tgt_info)
       end do

@@ -25,6 +25,9 @@
       call keyword_add('shell',context='orb_space')
       call argument_add('def','orb_space.shell',type=vtyp_int,len=8)
       call argument_add('type','orb_space.shell',type=vtyp_str,len=8)
+      call keyword_add('open_shells',context='orb_space')
+      call argument_add('treat','orb_space.open_shells',
+     &     type=vtyp_str,len=4,cdef=(/'p','h',' ',' '/))
 
       call keyword_add('method',required=.true.)
       call keyword_add('MP',context='method')

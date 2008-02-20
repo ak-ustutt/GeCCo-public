@@ -17,7 +17,6 @@
       include 'stdunit.h'
       include 'opdim.h'
       include 'def_orbinf.h'
-      include 'explicit.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -48,9 +47,6 @@
       ntoob = orb_info%ntoob
       caborb=orb_info%caborb 
 
-c      if (explicit.and.caborb.le.0)
-c     &     call quit(1,'set_orbinf','R12 without CABS intended?')
-
       ! allocate some arrays on orb_info structure
       allocate(orb_info%ireots(ntoob),
      &     orb_info%ireost(ntoob),orb_info%igamorb(ntoob+caborb), 
@@ -58,10 +54,10 @@ c     &     call quit(1,'set_orbinf','R12 without CABS intended?')
      &     orb_info%ngas_hpv(ngastp),orb_info%nactt_hpv(ngastp),
      &     orb_info%idx_gas(ngastp),orb_info%ioff_gas(ngastp),
      &     orb_info%gas_reo(ngas))
-      if(explicit)then
-        allocate(orb_info%xreosym(ntoob+caborb),
-     &       orb_info%xreotyp(ntoob+caborb),koffs(1:nsym))
-      endif  
+c      if(explicit)then
+c        allocate(orb_info%xreosym(ntoob+caborb),
+c     &       orb_info%xreotyp(ntoob+caborb),koffs(1:nsym))
+c      endif  
 
       ! set the info arrays:
 
@@ -205,11 +201,11 @@ c      endif
       end if
 
       ! generate symmetry ordering -> type ordering mapping
-      if(explicit)then
-        loop=2
-      else
+c      if(explicit)then
+c        loop=2
+c      else
         loop=1
-      endif
+c      endif
       do iloop=1,loop
         jdx = 0
         do isym = 1, nsym
@@ -230,7 +226,7 @@ c      endif
               if(iloop.eq.1)then
                 orb_info%ireost(jdx) = idx
               else
-                orb_info%xreosym(jdx)=idx
+c                orb_info%xreosym(jdx)=idx
               endif  
             end do
           end do
@@ -242,9 +238,9 @@ c      endif
             orb_info%ireots(orb_info%ireost(idx)) = idx 
           end do
         else
-          do idx = 1, orb_info%ntoob+caborb
-            orb_info%xreotyp(orb_info%xreosym(idx)) = idx 
-          end do
+c          do idx = 1, orb_info%ntoob+caborb
+c            orb_info%xreotyp(orb_info%xreosym(idx)) = idx 
+c          end do
         endif  
       enddo  
 
@@ -253,12 +249,12 @@ c      endif
         call iwrtma(orb_info%ireost,1,ntoob,1,ntoob)
         write(luout,*) 'ireots:'
         call iwrtma(orb_info%ireots,1,ntoob,1,ntoob)
-        if(explicit)then
-          write(luout,*)'xreosym:'
-          call iwrtma(orb_info%xreosym,1,ntoob+caborb,1,ntoob+caborb)
-          write(luout,*)'xreotyp:'
-          call iwrtma(orb_info%xreotyp,1,ntoob+caborb,1,ntoob+caborb)
-        endif  
+c        if(explicit)then
+c          write(luout,*)'xreosym:'
+c          call iwrtma(orb_info%xreosym,1,ntoob+caborb,1,ntoob+caborb)
+c          write(luout,*)'xreotyp:'
+c          call iwrtma(orb_info%xreotyp,1,ntoob+caborb,1,ntoob+caborb)
+c        endif  
       end if
 
       ! reverse iad_array

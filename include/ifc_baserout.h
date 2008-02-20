@@ -5,6 +5,11 @@
      &       nelmnt,ivec(nelmnt)
         end function ielsum
 
+        integer(4) function i4elsum(ivec,nelmnt)
+        integer(4), intent(in) ::
+     &       nelmnt,ivec(nelmnt)
+        end function i4elsum
+
         integer function ielsqsum(ivec,nelmnt)
         integer, intent(in) ::
      &       nelmnt,ivec(nelmnt)

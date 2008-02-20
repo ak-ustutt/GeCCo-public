@@ -5,6 +5,7 @@
      &     DEF_HAMILTONIAN*15 = 'DEF_HAMILTONIAN',
      &     DEF_EXCITATION*14  = 'DEF_EXCITATION',
      &     DEF_DENSITY*11     = 'DEF_DENSITY',
+     &     DEF_CC_HBAR_OP*14  = 'DEF_CC_HBAR_OP',
      &     DEF_R12GEMINAL*14  = 'DEF_R12GEMINAL',
      &     DEF_R12COEFF*12    = 'DEF_R12COEFF',
      &     DEF_R12INT*10      = 'DEF_R12INT',
@@ -14,6 +15,7 @@
       character, parameter ::
      &     DEF_CC_LAGRANGIAN*27     = 'DEF_CC_LAGRANGIAN',
      &     DEF_HHAT*8               = 'DEF_HHAT',
+     &     DEF_CC_HBAR*11           = 'DEF_CC_HBAR',
      &     DEF_R12INTM_FORMAL*28    = 'DEF_R12INTM_FORMAL',
      &     DEF_R12INTM_CABS*26      = 'DEF_R12INTM_CABS',
      &     DEF_MPR12_LAGRANGIAN*30  = 'DEF_MPR12_LAGRANGIAN',
