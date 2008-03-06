@@ -14,7 +14,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 1000
 
       include 'stdunit.h'
       include 'mdef_operator_info.h'

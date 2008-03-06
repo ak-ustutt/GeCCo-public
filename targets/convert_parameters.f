@@ -62,6 +62,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine hop_parameters(rw,parameters,
      &     min_rank,max_rank,iformal,explicit)
 
@@ -86,6 +87,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine xop_parameters(rw,parameters,
      &     dagger,min_rank,max_rank,ncadiff,iformal)
 
@@ -110,6 +112,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine dens_parameters(rw,parameters,
      &     min_rank,max_rank,iformal)
 
@@ -132,6 +135,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine r12gem_parameters(rw,parameters,
      &     dagger,min_rank,ansatz)
 
@@ -156,6 +160,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine cloneop_parameters(rw,parameters,name,dagger)
 
       implicit none
@@ -179,6 +184,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine form_parameters(rw,
      &     parameters,n_par_str,title,inum,mode_str)
 
@@ -205,6 +211,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine opt_parameters(rw,parameters,ncat,nint)
 
       implicit none
@@ -226,6 +233,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine me_list_parameters(rw,parameters,
      &     absym,casym,gamma,s2,ms)
 
@@ -248,6 +256,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine import_parameters(rw,parameters,
      &     env_type)
 
@@ -270,6 +279,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine solve_parameters(rw,parameters,n_par_str,
      &     nopt,nroots,mode_str)
 
@@ -297,6 +307,7 @@
       return
       end
 
+*----------------------------------------------------------------------*
       subroutine evalprop_parameters(rw,parameters,
      &     ndens,rank,env_type)
 

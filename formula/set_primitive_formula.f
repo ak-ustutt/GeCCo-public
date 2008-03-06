@@ -18,7 +18,7 @@
       include 'par_opnames_gen.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       logical, intent(in) ::
      &     init

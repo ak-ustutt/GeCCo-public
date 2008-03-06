@@ -1,5 +1,10 @@
-C-----------------------------------------------------------------------
       subroutine gaussj(a,n,np)
+C-----------------------------------------------------------------------
+C     Gauss-Jordan elimination routine taken from Numerical Recipes
+C     online book: www.nr.com.
+C     Slightly modified to deal with double precision values.
+C-----------------------------------------------------------------------
+      implicit none
       integer n,nmax,np
       real*8 a(np,np)
       parameter (nmax=600)

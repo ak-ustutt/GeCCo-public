@@ -136,7 +136,7 @@
 
         if (rule%n_labels.lt.3*nopt+2)
      &       call quit(1,'process_me_lists',
-     &       'to few labels to be passed for '//
+     &       'too few labels to be passed for '//
      &       trim(SOLVENLEQ))
 
         nspecial = rule%n_labels-3*nopt-2

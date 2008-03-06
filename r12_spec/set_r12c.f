@@ -30,9 +30,6 @@
 
       call set_hpvx_and_restr_for_c()
 
-c dbg
-      print *,'name ', trim(name)
-c dbg
       call set_genop(op,name,optyp_operator,
      &     dagger,
      &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,

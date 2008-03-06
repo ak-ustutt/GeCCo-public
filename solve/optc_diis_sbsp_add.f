@@ -7,7 +7,8 @@
      &     ff_rsbsp,ff_vsbsp,
      &     typ_prc,
      &     nincore,nwfpar,
-     &     lenbuf,xbuf1,xbuf2,xbuf3)
+     &     lenbuf,xbuf1,xbuf2,xbuf3,
+     &     orb_info,str_info)
 *----------------------------------------------------------------------*
 *
 *     add (preconditioned) gradient and sum of current vector and
@@ -23,6 +24,9 @@
       include 'stdunit.h'
       include 'mdef_me_list.h'
       include 'def_optimize_info.h'
+      include 'def_orbinf.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -45,6 +49,11 @@
      &     lenbuf, typ_prc
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
+      type(orbinf), intent(in) ::
+     &     orb_info
+      type(strinf),intent(in) ::
+     &     str_info
+
 
       integer ::
      &     irecr, irecv, inum, idx_inv, idx, len, iblk
@@ -94,8 +103,13 @@ c dbg
           call vec_from_da(ffdia,1,xbuf2,nwfpar)
           xbuf1(1:nwfpar) = xbuf1(1:nwfpar)/xbuf2(1:nwfpar)
         case(optinf_prc_blocked)
+c dbg
+c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
+c     &     str_info,orb_info)
+c dbg
           call optc_prc_special(me_grd,me_special,nspecial,
-     &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf)
+     &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
+     &                          orb_info,str_info)
           xbuf1(1:nwfpar) = xbuf3(1:nwfpar)
         end select
 c dbg
@@ -105,7 +119,7 @@ c dbg
         call vec_from_da(ffamp,1,xbuf2,nwfpar)
 c dbg
 c          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
-c          print *,'t: ', xbuf2(1:nwfpar)
+c          print *,'t before: ', xbuf2(1:nwfpar)
 c dbg
         xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)
 
@@ -135,7 +149,7 @@ cc dbg
 c          call vec_from_da(ffamp,1,xbuf2,nwfpar)
 cc dbg
 c          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
-c          print *,'t: ',xbuf2(1:nwfpar)
+c          print *,'t after: ',xbuf2(1:nwfpar)
 cc          print *,'t: ',xbuf2(72:92)
 cc dbg
 c          xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)

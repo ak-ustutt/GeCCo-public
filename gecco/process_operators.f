@@ -114,7 +114,7 @@
         call xop_parameters(+1,rule%parameters,
      &                      dagger,min_rank,max_rank,ncadiff,iformal)
         call set_r12intm(op_pnt,trim(rule%labels(1)),dagger,
-     &       min_rank,max_rank,ncadiff,iformal,orb_info)        
+     &       min_rank,max_rank,ncadiff,iformal,op_info,orb_info)        
       case(CLONE_OP)
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',

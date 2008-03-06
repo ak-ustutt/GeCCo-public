@@ -101,6 +101,9 @@ c      ops(3) = op_b_inter
       write(luout,'(/a)')trim(fform%label)
       call prtim(luout,'Factor R12 interm.',
      &     cpu-cpu0,sys-sys0,wall-wall0)
+c dbg
+      stop
+c dbg
 
       return
       end

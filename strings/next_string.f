@@ -45,6 +45,10 @@
         write(luout,*) ' nidx = ',nidx
       end if
 
+c dbg
+c      print *,'idorb',idorb(1:nidx)
+c dbg
+
       if (first) then
 
         next_string = .true.
@@ -72,6 +76,7 @@
               ! check symmetry
 c dbg
 c            print *,'nidx,idorb: ',nidx,idorb(1:nidx)
+c            print *,'igamorb',igamorb(1:8)
 c dbg
               succ = igamstr2(nidx,idorb,igamorb).eq.igam
               ! exit if successful
@@ -153,6 +158,11 @@ c dbg
           succ = lexlstr(nidx,ms,
      &             ioss,idorb,idspn,
      &             mostnd_cur,nsym,ngas_cur)
+
+c dbg
+c            print *,'nidx,idorb: ',nidx,idorb(1:nidx)
+c            print *,'igamorb',igamorb(1:8)
+c dbg
 
           ! ... check symmetry ...
           if (succ)

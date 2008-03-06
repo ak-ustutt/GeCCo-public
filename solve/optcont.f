@@ -5,7 +5,8 @@
      &                   me_opt,me_grd,me_dia,
      &                   me_trv,me_h_trv,
      &                   me_special,nspecial,
-     &                   opti_info,opti_stat)
+     &                   opti_info,opti_stat,
+     &                   orb_info,str_info)
 *----------------------------------------------------------------------*
 *
 * General optimization control routine for non-linear optimization.
@@ -57,6 +58,9 @@ c      include 'def_filinf.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
       include 'ifc_memman.h'
+      include 'def_orbinf.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
       
 * parameters
       integer, parameter ::
@@ -69,6 +73,11 @@ c      include 'def_filinf.h'
      &     task
       logical, intent(out) ::
      &     conv
+
+      type(orbinf),intent(in) ::
+     &     orb_info
+      type(strinf),intent(in) ::
+     &     str_info
 
       integer, intent(inout) ::
      &     imacit, imicit, imicit_tot
@@ -189,7 +198,8 @@ c      include 'def_filinf.h'
      &       me_special,nspecial,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
-     &       opti_info,opti_stat)
+     &       opti_info,opti_stat,
+     &       orb_info,str_info)
 
         de = opti_stat%energy_last - energy
 

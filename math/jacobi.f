@@ -6,6 +6,8 @@ C     dimension, n.
 C     Eigenvalues stored in d.
 C     Normalised eigenvectors formed and stored in v.
 C     nrot gives the total number of steps.
+C     Taken from Numerical Recipes Online book: www.nr.com.
+C     Slightly modified to deal with double precision reals.
 C-----------------------------------------------------------------------
       integer n,np,nrot,nmax
       real*8 a(np,np),d(np),v(np,np)

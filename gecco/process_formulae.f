@@ -78,10 +78,21 @@
      &       rule%parameters,rule%n_parameter_strings,
      &       title,idum,typ_str)
         ioff = rule%n_update
-        call set_r12intm_formal(form_pnt,
-     &       title,rule%labels(ioff+1),rule%labels(ioff+2),
-     &       rule%n_labels-ioff-1,typ_str,
-     &       op_info,orb_info)
+
+c dbg   Testing of new setup routine.
+c        print *,'titles',title
+c        if(trim(title).eq.'R12 V-intermediate (formal definition)')then
+          call set_r12intm_formal2(form_pnt,
+     &         title,rule%labels(ioff+1),rule%labels(ioff+2),
+     &         rule%n_labels-ioff-1,typ_str,
+     &         op_info,orb_info)
+c        else
+c          call set_r12intm_formal(form_pnt,
+c     &         title,rule%labels(ioff+1),rule%labels(ioff+2),
+c     &         rule%n_labels-ioff-1,typ_str,
+c     &         op_info,orb_info)
+c        endif
+c dbg
 
       case(DEF_R12INTM_CABS)
         call form_parameters(+1,

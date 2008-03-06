@@ -11,4 +11,5 @@
       ! R12
       character, parameter ::
      &     eval_r12_inter*14  = 'EVAL-R12-INTER',
-     &     solve_mpr12_gs*14  = 'SOLVE-MPR12-GS'
+     &     solve_mpr12_gs*14  = 'SOLVE-MPR12-GS',
+     &     solve_ccr12_gs*14  = 'SOLVE-CCR12-GS'

@@ -15,6 +15,7 @@
       include 'par_formnames_gen.h'
       include 'par_gen_targets.h'
       include 'par_actions.h'
+      include 'explicit.h'
 
       type(target_info), intent(inout) ::
      &     tgt_info
@@ -274,6 +275,7 @@ c     &              parameters,1,tgt_info)
       call add_target(solve_mpr12_gs,ttype_gen,.true.,tgt_info)
       call set_dependency(solve_mpr12_gs,mel_dia1,tgt_info)
       call set_dependency(solve_mpr12_gs,mel_b_inv,tgt_info)
+      call set_dependency(solve_mpr12_gs,mel_b_dia,tgt_info)
       call set_dependency(solve_mpr12_gs,mel_x_inv,tgt_info)
       call set_dependency(solve_mpr12_gs,fopt_mpr12_0,tgt_info)
       call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
@@ -287,7 +289,11 @@ c      call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
       labels(6) = mel_b_dia
       labels(7) = mel_mpr12en0
       labels(8) = fopt_mpr12_0
-      labels(9) = mel_b_inv    ! or mel_b_inter
+      if(trim(r12_apprx).eq.'A')then
+        labels(9) = mel_b_inv   ! or mel_b_inter
+      else
+        labels(9) = mel_b_inter
+      endif
       labels(10) = mel_x_inter
       labels(11) = mel_ham
       call set_rule(solve_mpr12_gs,ttype_opme,SOLVENLEQ,

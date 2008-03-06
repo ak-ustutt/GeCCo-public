@@ -3,6 +3,7 @@
 *----------------------------------------------------------------------*
 *     add entry "name_dependency" to depend_on array of target 
 *     referenced by "name_target" (must exist on tgt_info)
+*     i.e. name_target depends on name_dependency.
 *----------------------------------------------------------------------*
       implicit none
 

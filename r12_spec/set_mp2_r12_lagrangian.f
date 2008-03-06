@@ -100,7 +100,7 @@ c      include 'explicit.h'
       idx_h_temp = idx_oplist2(op_h_temp,op_info)
       h_temp_pnt => op_info%op_arr(idx_h_temp)%op
 
-      ndef =9
+      ndef = 11
       allocate(occ_def(ngastp,2,ndef))
       occ_def(1:ngastp,1,1) = (/1,0,0,0/)
       occ_def(1:ngastp,2,1) = (/1,0,0,0/)
@@ -120,6 +120,10 @@ c      include 'explicit.h'
       occ_def(1:ngastp,2,8) = (/0,1,0,1/)
       occ_def(1:ngastp,1,9) = (/2,0,0,0/)
       occ_def(1:ngastp,2,9) = (/0,0,0,2/)
+      occ_def(1:ngastp,1,10) = (/0,1,0,0/)
+      occ_def(1:ngastp,2,10) = (/0,0,0,1/)
+      occ_def(1:ngastp,1,11) = (/0,0,0,1/)
+      occ_def(1:ngastp,2,11) = (/0,1,0,0/)
       call set_uop(h_temp_pnt,op_h_temp,.false.,
      &     occ_def,ndef,orb_info)
       deallocate(occ_def)
@@ -311,7 +315,7 @@ c
       ! Assign canonical name and comment.
       form_mpr12%comment = title
       ! Write to disc.
-      write(name,'(a,".fml")') form_mpr12%label
+      write(name,'(a,".fml")') trim(form_mpr12%label)
       call file_init(form_mpr12%fhand,name,ftyp_sq_unf,0)
       call write_form_list(form_mpr12%fhand,form_lag,title)
 

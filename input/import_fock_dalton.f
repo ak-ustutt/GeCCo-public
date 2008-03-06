@@ -136,6 +136,10 @@
 
   1   call file_close_keep(ffsir)
 
+c dbg
+c      print *,'xfock',xfock(1:nfock)
+c dbg
+
       if (dnrm2(nfock,xfock,1).lt.1d-12)
      &   call quit(0,'import_fock_dalton',
      &               'No sensible fock matrix found!')

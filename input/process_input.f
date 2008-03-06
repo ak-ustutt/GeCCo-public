@@ -11,6 +11,7 @@
       include 'ifc_input.h'
       include 'def_orbinf.h'
       include 'routes.h'
+      include 'explicit.h'
 
       logical, intent(out) ::
      &     one_more
@@ -109,7 +110,7 @@
       call cc_input()
 
 c      ! R12 options
-c      call r12_input()
+      call r12_input()
 
       return
 
