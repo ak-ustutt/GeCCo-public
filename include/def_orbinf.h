@@ -1,6 +1,6 @@
       type orbinf
         integer ::
-     &     nsym, ngas
+     &     nsym, ngas, nspin
         integer ::
      &      ntoob,caborb,nbast
         integer, allocatable ::
@@ -9,7 +9,7 @@
      &     igamorb(:), igasorb(:),
      &     mostnd(:,:,:),
      &     iad_gas(:), gas_reo(:),
-     &     ihpvgas(:), ngas_hpv(:), nactt_hpv(:),
+     &     ihpvgas(:,:), ngas_hpv(:), nactt_hpv(:),
      &     idx_gas(:), ioff_gas(:), cab_orb(:),
      &     xreosym(:), xreotyp(:)
 

@@ -10,7 +10,7 @@
         integer, pointer ::
      &       ispc_typ(:),       ! hole/particle/valence space
      &       ispc_occ(:),       ! occupation of space
-     &       igas_restr(:,:,:,:)! associated restrictions per GAS
+     &       igas_restr(:,:,:,:,:)! associated restrictions per GAS
         type(graph), pointer ::
      &       g(:)               ! info on graph (see def_graph)
       end type strinf

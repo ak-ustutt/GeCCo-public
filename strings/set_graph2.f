@@ -78,7 +78,8 @@
      &         idum,
      &         nactt_hpv(ihpv),igamorb,
      &         mostnd(1,1,idx_gas(ihpv)),
-     &         str_info%igas_restr(1,1,1,igraph),
+     &         str_info%igas_restr(1,1,1,1,igraph),
+c              !   ADAPT FOR OPEN-SHELL ^^^
      &         nexc,ngam,ngas_hpv(ihpv),
      &         iwscr,iwscr(lenwscr(1)+1),iwscr(lenwscr(1)+lenwscr(2)+1))
         else
@@ -91,7 +92,8 @@
      &         str_info%g(igraph)%lenstr_dgm,
      &         nactt_hpv(ihpv),igamorb,
      &         mostnd(1,1,idx_gas(ihpv)),
-     &         str_info%igas_restr(1,1,1,igraph),
+     &         str_info%igas_restr(1,1,1,1,igraph),
+c              !   ADAPT FOR OPEN-SHELL ^^^
      &         nexc,ngam,ngas_hpv(ihpv),
      &         iwscr,iwscr(lenwscr(1)+1),iwscr(lenwscr(1)+lenwscr(2)+1))
         end if
@@ -125,7 +127,9 @@
               ! find lowest allowed distribution
               lowest_dss: do
                 if (allow_sbsp_dis(idss,nexc,ngas_hpv(ihpv),
-     &               str_info%igas_restr(1,1,1,igraph))) exit lowest_dss
+     &               str_info%igas_restr(1,1,1,1,igraph)))
+c                                   !         ^^^
+     &                             exit lowest_dss
                 if (.not.next_rvlex(nexc,idss,idmin,idmax))
      &               call quit(1,'set_graph','unexpected case (a)')
               end do lowest_dss
@@ -134,7 +138,8 @@
               ! and sum up lengths of allowed distr. to get offset arrays
               do idis = 1, ndis
                 if (allow_sbsp_dis(idss,nexc,ngas_hpv(ihpv),
-     &                       str_info%igas_restr(1,1,2,igraph))) then
+     &                       str_info%igas_restr(1,1,2,1,igraph))) then
+                              ! ADAPT FOR OPEN SHELL  ^^^
                   ! this is a masked distribution
                   str_info%g(igraph)%idis_m(idis) = 0
                 else

@@ -3,7 +3,7 @@
      &     cnt_info,
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
-     &     str_info,ngas,ihpvgas,nsym)
+     &     str_info,ngas,nsym)
 *----------------------------------------------------------------------*
 *     perform a dummy contraction for the operator blocks given
 *     and estimate the flops and the memory consumption
@@ -30,7 +30,7 @@
       integer, intent(in) ::
      &     mstop1,mstop2,mstop1op2,igamtop1,igamtop2,igamtop1op2
       integer, intent(in) ::
-     &     ngas, nsym, ihpvgas(ngas)
+     &     ngas, nsym
       type(strinf), intent(in) ::
      &     str_info
 

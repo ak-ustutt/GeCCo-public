@@ -51,8 +51,10 @@
      &       ielsum(iocc(1,2,ijoin),ngastp)
       end do
 
-      oper%igasca_restr(1:2,1:ngas,1:2,1:2,1:njoined) =
+      ! OPEN SHELL: FIX IT!
+      oper%igasca_restr(1:2,1:ngas,1:2,1:2,1,1:njoined) =
      &             irst(1:2,1:ngas,1:2,1:2,1:njoined)
+      if (orb_info%ngas.eq.2) call quit(1,'set_ps_op','OS: FIX IT')
 
       return
       end

@@ -27,14 +27,14 @@
       logical ::
      &     closeit, close_ffmo
       integer ::
-     &     ifree, nsym, ngas, nblk, ncmo, nmo, nao, nhlf,
-     &     isym, igas, iblk, idxst, idxnd, idxms, norb, njoined,
+     &     ifree, nsym, ngas, nspin, nblk, ncmo, nmo, nao, nhlf,
+     &     isym, igas, ispin, iblk, idxst, idxnd, idxms, norb, njoined,
      &     hpvx_a, hpvx_c, iblkoff, ijoin
 
       integer, pointer ::
      &     nbas(:), ntoobs(:), mostnd(:,:,:),
      &     ica_occ(:,:), hpvx_occ(:,:,:),
-     &     iad_gas(:), hpvx_gas(:), idxcmo(:,:)
+     &     iad_gas(:), hpvx_gas(:,:), idxcmo(:,:)
       real(8), pointer ::
      &     cmo(:), xao(:), xmo(:), xop(:), xhlf(:)
       type(filinf), pointer ::
@@ -63,6 +63,7 @@
       ! set up some dimensions
       nsym = orb_info%nsym
       ngas = orb_info%ngas
+      nspin = orb_info%nspin
       nbas => orb_info%nbas
       ntoobs => orb_info%ntoobs
       mostnd => orb_info%mostnd
@@ -152,6 +153,9 @@
         end do
 
         do idxms = 1, 2
+
+          ispin = 1
+          if (nspin.eq.2.and.idxms.eq.2) ispin = 2
         
           ! load density, or reassign buffer pointer
           idxst = me_dens%off_op_gmo(iblk)%gam_ms(1,idxms) + 1
@@ -168,7 +172,7 @@
 
           call btran_one_blk(xao,xop,cmo,xhlf,
      &         me_dens%gamt,idxcmo,hpvx_c,hpvx_a,
-     &         nbas,mostnd,iad_gas,hpvx_gas,ngas,nsym)
+     &         nbas,mostnd,iad_gas,hpvx_gas(1,ispin),ngas,nsym)
 
           if (ntest.ge.100) then
             write(luout,*) 'XAO after block,idxms: ',iblk, idxms

@@ -685,8 +685,8 @@ c                             ! this entity this does not matter
       end do
 
       do idx = 1, orb_info%ngas
-        if (orb_info%ihpvgas(idx).eq.IHOLE.or.
-     &      orb_info%ihpvgas(idx).eq.IVALE) cycle
+        if (orb_info%ihpvgas(idx,1).eq.IHOLE.or.
+     &      orb_info%ihpvgas(idx,1).eq.IVALE) cycle
         gas_constr(2,idx,1:2,1) = 1
       end do
 

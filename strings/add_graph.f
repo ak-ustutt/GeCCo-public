@@ -16,19 +16,20 @@
       type(orbinf), intent(in), target ::
      &     orb_info
       integer, intent(in) ::
-     &     ihpv, nocc, ica, op_restr(2,orb_info%ngas,2,2)
+     &     ihpv, nocc, ica, op_restr(2,orb_info%ngas,2,2,orb_info%nspin)
 
       integer ::
-     &     idx, igtyp, nnew, max_igtyp, jgas, igas, ngas
+     &     idx, igtyp, nnew, max_igtyp, jgas, igas, ngas, nspin
 
       type(graph), pointer ::
      &     new_g(:)
       integer, pointer ::
-     &     new_spc_typ(:), new_spc_occ(:), new_gas_restr(:,:,:,:)
+     &     new_spc_typ(:), new_spc_occ(:), new_gas_restr(:,:,:,:,:)
       integer, pointer ::
-     &     ihpvgas(:)
+     &     ihpvgas(:,:)
 
       ngas = orb_info%ngas
+      nspin = orb_info%nspin
       ihpvgas => orb_info%ihpvgas
 
       str_info%ngraph = str_info%ngraph+1
@@ -36,13 +37,13 @@
 
       ! update spc_occ, spc_typ, gas_restr
       allocate(new_spc_typ(nnew),new_spc_occ(nnew),
-     &     new_gas_restr(2,ngas,2,nnew))
+     &     new_gas_restr(2,ngas,2,nspin,nnew))
 
       do idx = 1, nnew-1
         new_spc_typ(idx) = str_info%ispc_typ(idx)
         new_spc_occ(idx) = str_info%ispc_occ(idx)
-        new_gas_restr(1:2,1:ngas,1:2,idx) =
-     &       str_info%igas_restr(1:2,1:ngas,1:2,idx)
+        new_gas_restr(1:2,1:ngas,1:2,1:nspin,idx) =
+     &       str_info%igas_restr(1:2,1:ngas,1:2,1:nspin,idx)
       end do
 
       if (nnew.gt.1)
@@ -54,9 +55,9 @@
 
       jgas = 1
       igas_loop: do igas = 1, ngas
-        if (ihpvgas(igas).ne.ihpv) cycle igas_loop
-        new_gas_restr(1:2,jgas,1:2,nnew)
-     &       = op_restr(1:2,igas,ica,1:2)
+        if (ihpvgas(igas,1).ne.ihpv) cycle igas_loop ! ADAPT
+        new_gas_restr(1:2,jgas,1:2,1:nspin,nnew)
+     &       = op_restr(1:2,igas,ica,1:2,1:nspin)
         jgas = jgas+1
       end do igas_loop
 

@@ -390,7 +390,7 @@ c fix:
      &         merge_op1,merge_op2,merge_op1op2, merge_op2op1,
      &         cur_contr,njoined_res,
      &                        occ_vtx,irestr_vtx,info_vtx,iarc,
-     &         irst_res,orb_info%ihpvgas,ngas)
+     &         irst_res,orb_info)
 
 c dbg
 c          print *,'iocc_op1op2 fresh form bc_info:'
@@ -507,7 +507,7 @@ c            ffop1op2 => ffscr(ninter)
      &           iocc_op1op2tmp,irst_op1op2tmp,njoined_op1op2,
      &           orb_info)
             meltmp%op => optmp
-            call set_ps_list(melscr(ninter),opscrnam,
+            call set_ps_list(meltmp,opscrnam,
      &           0,0,mstop1op2,igamtop1op2,0,
      &           str_info,strmap_info,orb_info)
             me_op1op2tmp => meltmp

@@ -1,7 +1,9 @@
 *----------------------------------------------------------------------*
-      subroutine set_genop(op,name,type,
-     &     dagger,
-     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
+      subroutine set_genop2(op,name,type,
+     &     min_rank,max_rank,ncadiff,
+     &     min_xrank,max_xrank,
+     &     hpvx_mnmx,hpvxca_mnmx,
+     &     irestr,iformal,
      &     orb_info)
 *----------------------------------------------------------------------*
 *     set up occupations for a general operator described by
@@ -33,24 +35,24 @@
      &     op
       character, intent(in) ::
      &     name*(*)
-      logical, intent(in) ::
-     &     dagger
       integer, intent(in) ::
      &     type, 
-     &     min_rank, max_rank, ncadiff, iformal
+     &     min_rank, max_rank, min_xrank, max_xrank,
+     &     ncadiff, iformal
       type(orbinf), intent(in), target ::
      &     orb_info
       integer, intent(in) ::
-     &     hpvx_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2) !,
+     &     hpvx_mnmx(2,ngastp), hpvxca_mnmx(2,ngastp,2),
+     &     irestr(2,orb_info%ngas,2,2)
 
       logical, parameter ::
-     &     inv_hole = .false.
+     &     inv_hole = .true.
 
       logical ::
      &     init_c, init_a, ok
       integer ::
      &     ifree, ipass, irank, na, nc, ica, igas, igasl, idiff, imaxr,
-     &     iocc, igastp, iprint, nx, idx
+     &     iocc, igastp, iprint, nx, idx, xrank
       integer ::
      &     a_distr(ngastp), c_distr(ngastp), 
      &     a_distr_rv(ngastp), c_distr_rv(ngastp),
@@ -60,6 +62,9 @@
       integer, pointer ::
      &     nspin, ngas, iad_gas(:), hpvxgas(:,:)
 
+      integer, external ::
+     &     rank_occ
+
       iprint = max(iprlvl,ntest)
 
       if (iprint.ge.100) then
@@ -67,11 +72,14 @@
         write(luout,*) ' set_genop at work'
         write(luout,*) '==================='
         write(luout,*) ' min_rank, max_rank: ',min_rank, max_rank
+        write(luout,*) ' min_xrank, max_xrank: ',min_rank, max_rank
         write(luout,*) ' ncadiff: ',ncadiff
         write(luout,'(x,a,4(i2,x,i2,2x))')
-     &       ' hpvx_mnmx: ',hpvx_mnmx(1:2,1:ngastp,1)
+     &       ' hpvx_mnmx: ',hpvx_mnmx(1:2,1:ngastp)
         write(luout,'(x,a,4(i2,x,i2,2x))')
-     &       '            ',hpvx_mnmx(1:2,1:ngastp,2)
+     &       ' hpvxca_mnmx: ',hpvxca_mnmx(1:2,1:ngastp,1)
+        write(luout,'(x,a,4(i2,x,i2,2x))')
+     &       '              ',hpvxca_mnmx(1:2,1:ngastp,2)
         call wrt_rstr(luout,irestr,orb_info%ngas)
       end if
 
@@ -100,10 +108,7 @@
       op%type = type
       op%njoined = 1  ! always for operators and densities
 
-      if (dagger)
-     &     call quit(1,'set_genop','the use of op%dagger is obsolete!')
-
-      op%dagger = dagger
+      op%dagger = .false.
 
       op%formal=.true.
 
@@ -151,8 +156,8 @@
             ! check whether distribution is allowed
             ok = .true.
             do igastp = 1, ngastp
-              ok = ok.and.hpvx_mnmx(1,igastp,1).le.c_distr(igastp)
-     &               .and.hpvx_mnmx(2,igastp,1).ge.c_distr(igastp)
+              ok = ok.and.hpvxca_mnmx(1,igastp,1).le.c_distr(igastp)
+     &               .and.hpvxca_mnmx(2,igastp,1).ge.c_distr(igastp)
             end do
             if (.not.ok) cycle c_part
 
@@ -169,9 +174,29 @@
               ! check whether distribution is allowed
               ok = .true.
               do igastp = 1, ngastp
-                ok = ok.and.hpvx_mnmx(1,igastp,2).le.a_distr(igastp)
-     &               .and.hpvx_mnmx(2,igastp,2).ge.a_distr(igastp)
+                ok = ok.and.hpvxca_mnmx(1,igastp,2).le.a_distr(igastp)
+     &               .and.hpvxca_mnmx(2,igastp,2).ge.a_distr(igastp)
               end do
+              if (.not.ok) cycle a_part
+
+              ! check total number of HPVX
+              do igastp = 1, ngastp
+                ok = ok.and.
+     &                 hpvx_mnmx(1,igastp).le.
+     &                        a_distr(igastp)+c_distr(igastp)
+     &            .and.hpvx_mnmx(2,igastp).ge.
+     &                        a_distr(igastp)+c_distr(igastp)
+              end do
+              if (.not.ok) cycle a_part
+
+              ! check excitation
+              xrank = rank_occ('X',(/c_distr,a_distr/),1)
+c dbg
+              print *,'C:',c_distr
+              print *,'A:',a_distr
+              print *,'xrank = ',xrank
+c dbg
+              ok = xrank.ge.min_xrank.and.xrank.le.max_xrank
               if (.not.ok) cycle a_part
 
               op%n_occ_cls = op%n_occ_cls + 1
@@ -241,11 +266,11 @@ c very quick fix:
         end do rank
 
         if (ipass.eq.1) then
-          if (iprlvl.ge.2)
+          if (iprlvl.ge.10.or.ntest.ge.10)
      &         write(luout,'(x,3a,i4)')
      &         'Number of occupation classes for ',
      &         trim(name),': ',op%n_occ_cls
-        else if (iprlvl.ge.5) then
+        else if (iprlvl.ge.10.or.ntest.ge.100) then
 
           do igas = 1, ngas
             hpvxprint(igas) = igas

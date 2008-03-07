@@ -15,7 +15,7 @@
       include 'ifc_operators.h'
       
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       logical, intent(in) ::
      &     dagger
@@ -27,7 +27,7 @@
      &     orb_info
 
       integer ::
-     &     n_occ_cls, ngas, njoined,
+     &     n_occ_cls, ngas, nspin, njoined,
      &     id_save, ioff, iblk
       character ::
      &     name_save*(len_opname)
@@ -88,12 +88,15 @@
         if (.not.dagger) then
           op_clone%igasca_restr = op_template%igasca_restr
         else
+          nspin = op_template%nspin
           do iblk = 1, n_occ_cls
             ioff = (iblk-1)*njoined
-           op_clone%igasca_restr(1:2,1:ngas,1:2,1:2,ioff+1:ioff+njoined)
+           op_clone%igasca_restr(1:2,1:ngas,1:2,1:2,
+     &                                     1:nspin,ioff+1:ioff+njoined)
      &           = irest_dagger_n(
-     & op_template%igasca_restr(1:2,1:ngas,1:2,1:2,ioff+1:ioff+njoined),
-     &           njoined,ngas)
+     &  op_template%igasca_restr(1:2,1:ngas,1:2,1:2,
+     &                                     1:nspin,ioff+1:ioff+njoined),
+     &           njoined,ngas,nspin)
           end do
         end if
       end if

@@ -28,7 +28,7 @@
       type(cntr_vtx), pointer ::
      &     vertex(:)
       integer, pointer ::
-     &     irestr_occ(:,:,:,:,:)
+     &     irestr_occ(:,:,:,:,:,:)
       type(operator), pointer ::
      &     op
       type(me_list), pointer ::
@@ -70,14 +70,14 @@
           irestr_occ => op%igasca_restr
           if (.not.op%dagger) then
             irestr_vtx(1:2,1:ngas,1:2,1:2,idx) =
-     &           irestr_occ(1:2,1:ngas,1:2,1:2,iblkop)
+     &           irestr_occ(1:2,1:ngas,1:2,1:2,1,iblkop)
             info_vtx(1,idx) = mel%mst
             info_vtx(2,idx) = mel%gamt
           else
             irestr_vtx(1:2,1:ngas,1,1:2,idx) =
-     &           irestr_occ(1:2,1:ngas,2,1:2,iblkop)
+     &           irestr_occ(1:2,1:ngas,2,1:2,1,iblkop)
             irestr_vtx(1:2,1:ngas,2,1:2,idx) =
-     &           irestr_occ(1:2,1:ngas,1,1:2,iblkop)
+     &           irestr_occ(1:2,1:ngas,1,1:2,1,iblkop)
             info_vtx(1,idx) = -mel%mst
             info_vtx(2,idx) = mel%gamt
           end if

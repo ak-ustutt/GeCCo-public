@@ -42,7 +42,7 @@
       integer ::
      &     hpvxprint(ngastp)
       integer, pointer ::
-     &     ngas, iad_gas(:), hpvxgas(:)
+     &     nspin, ngas, iad_gas(:), hpvxgas(:,:)
 
       iprint = max(iprlvl,ntest)
 
@@ -65,6 +65,7 @@
         call quit(1,'set_user_op','illegal type specification')
       end if
 
+      nspin => orb_info%nspin
       ngas => orb_info%ngas
       iad_gas => orb_info%iad_gas
       hpvxgas => orb_info%ihpvgas
@@ -100,16 +101,16 @@
             ! set a/c rank as upper bound
             idiff = - irestr(1,igas,ica,1)+irestr(2,igas,ica,1)
             imaxr = min(irestr(2,igas,ica,1),
-     &           op%ihpvca_occ(hpvxgas(igas),ica,iblk))
+     &           op%ihpvca_occ(hpvxgas(igas,1),ica,iblk))
             ! not sure whether this will work in all cases:
             if (igas.lt.ngas) then
-              op%igasca_restr(1,igas,ica,1,iblk) =
+              op%igasca_restr(1,igas,ica,1,1:nspin,iblk) =
      &             max(0,imaxr - idiff)
             else
-              op%igasca_restr(1,igas,ica,1,iblk) = imaxr
+              op%igasca_restr(1,igas,ica,1,1:nspin,iblk) = imaxr
             end if
 c very quick fix:                    
-            op%igasca_restr(1:2,igas,ica,1,iblk) =
+            op%igasca_restr(1:2,igas,ica,1,1:nspin,iblk) =
      &           imaxr                    
           end do
         end do
@@ -118,18 +119,18 @@ c very quick fix:
           do igas = 1, ngas
             if (iad_gas(igas).ne.2) then
               if (igas.eq.1) then                        
-                op%igasca_restr(1:2,igas,ica,1,iblk) = 0
+                op%igasca_restr(1:2,igas,ica,1,1:nspin,iblk) = 0
               else
-                op%igasca_restr(1,igas,ica,1,iblk) =
-     &               op%igasca_restr(2,igas,ica,1,iblk) 
-                op%igasca_restr(1,igas-1,ica,1,iblk) =
-     &               op%igasca_restr(2,igas-1,ica,1,iblk) 
+                op%igasca_restr(1,igas,ica,1,1:nspin,iblk) =
+     &               op%igasca_restr(2,igas,ica,1,1:nspin,iblk) 
+                op%igasca_restr(1,igas-1,ica,1,1:nspin,iblk) =
+     &               op%igasca_restr(2,igas-1,ica,1,1:nspin,iblk) 
               end if
             end if
           end do
         end do
         ! mask restriction currently unused
-        op%igasca_restr(1:2,1:ngas,1:2,2,iblk) = 0
+        op%igasca_restr(1:2,1:ngas,1:2,2,1:nspin,iblk) = 0
 
 
       end do
@@ -147,7 +148,7 @@ c very quick fix:
         if (inv_hole) then
           igasl = 0
           do igas = ngas, 1, -1
-            if (hpvxgas(igas).eq.1) then
+            if (hpvxgas(igas,1).eq.1) then
               igasl = igasl+1
               hpvxprint(igas) = igasl
             end if
@@ -157,7 +158,7 @@ c very quick fix:
           write(luout,'(/x,a,i4)') 'Occupation Nr. ',iocc
           call wrt_occ(luout,op%ihpvca_occ(1,1,iocc))
           write(luout,'(/4x,6(2x,i2,x))') hpvxprint(1:ngas)
-          call wrt_rstr(luout,op%igasca_restr(1,1,1,1,iocc),ngas)
+          call wrt_rstr(luout,op%igasca_restr(1,1,1,1,1,iocc),ngas)
         end do
       end if
       

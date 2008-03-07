@@ -118,14 +118,14 @@
         call quit(1,'add_opblk','occupations do not fit!')
       end if
 
-c      if (.not.irestr_equal(opin%igasca_restr(1,1,1,1,iblkin),
+c      if (.not.irestr_equal(opin%igasca_restr(1,1,1,1,1,iblkin),
 c     &                     opin%dagger,
-c     &                     opout%igasca_restr(1,1,1,1,iblkout),
+c     &                     opout%igasca_restr(1,1,1,1,1,iblkout),
 c     &                     opout%dagger,
 c     &                     orb_info%ngas)) then
 c        write(luout,*) 'dagger: ',opin%dagger,opout%dagger
-c        call wrt_rstr(luout,opin%igasca_restr(1,1,1,1,iblkin))
-c        call wrt_rstr(luout,opout%igasca_restr(1,1,1,1,iblkout))
+c        call wrt_rstr(luout,opin%igasca_restr(1,1,1,1,1,iblkin))
+c        call wrt_rstr(luout,opout%igasca_restr(1,1,1,1,1,iblkout))
 c        call quit(1,'add_opblk','occupations do not fit!')
 c        ! note: we must be able to handle this case in the future
 c      end if

@@ -273,7 +273,8 @@
             ! check for restrictions
             if (.not.allow_sbsp_dis(idspc(ipos),nel,
      &             orb_info%ngas_hpv(ihpv),
-     &             str_info%igas_restr(1,1,1,igraph))) then
+     &             str_info%igas_restr(1,1,1,1,igraph))) then
+              !        ADAPT FOR OPEN-SHELL ^^^
               nstr = nstr-2
               exit cnt_loop
             end if

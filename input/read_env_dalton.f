@@ -19,7 +19,7 @@
      &     ffsir
       integer ::
      &     lusir, iprint, ngas, loop, i, j, caborb,
-     &     n_frozen, n_act, n_as1, n_as2, n_as3
+     &     n_frozen, n_act, n_as1, n_as2, n_as3, nspin
       logical ::
      &     logaux
 
@@ -119,6 +119,7 @@
       n_as2    = i4elsum(nas2,nsym)
       n_as3    = i4elsum(nas3,nsym)
 
+      nspin = 1
       ngas = 2
       if (n_frozen.gt.0) ngas = ngas+1
       if(logaux) ngas=ngas+1
@@ -128,19 +129,19 @@
         if (nactel.eq.n_act.and.ispin.eq.nactel+1) then
           ! we should check the symmetry here ...
           write(luout,*) 'high-spin valence shell detected'
+          ngas = ngas+1
+          nspin = 2
         else
           write(luout,*) 'valence shell is not high-spin ...'
           call quit(1,'read_env_dalton',
      &     'not adapted to non-high-spin open shell cases')
         end if
-c dbg
-        stop 'TEST TEST'
-c dbg
       end if
       if (n_as1.gt.0.or.n_as2.gt.0.or.n_as3.gt.0)
      &     call quit(1,'read_env_dalton',
      &     'not adapted to RAS orbital spaces')
 
+      orb_info%nspin = nspin
       orb_info%nsym = nsym
       orb_info%ngas = ngas
       orb_info%ntoob = norbt
@@ -150,18 +151,21 @@ c dbg
       ! use the data to initialize orb_info structure            
       allocate(orb_info%nbas(nsym),
      &     orb_info%ntoobs(nsym),orb_info%igassh(nsym,ngas),
-     &     orb_info%iad_gas(ngas),orb_info%ihpvgas(ngas))
+     &     orb_info%iad_gas(ngas),orb_info%ihpvgas(ngas,nspin))
       if(logaux)allocate(orb_info%cab_orb(nsym))
 
       orb_info%nbas(1:nsym) = nbas(1:nsym)
       orb_info%ntoobs(1:nsym) = norb(1:nsym)
       if (n_frozen.gt.0) then
+        ! not sure whether DALTON's frozen orbitals are what we want
+        call quit(1,'read_env_dalton',
+     &       'check first what DALTON means by freezing orbitals!')
         if(logaux)then
           orb_info%iad_gas(1:ngas) = (/1,2,2,2/)
-          orb_info%ihpvgas(1:ngas) = (/1,1,2,4/)
+          orb_info%ihpvgas(1:ngas,1) = (/1,1,2,4/)
         else
           orb_info%iad_gas(1:ngas) = (/1,2,2/)
-          orb_info%ihpvgas(1:ngas) = (/1,1,2/)
+          orb_info%ihpvgas(1:ngas,1) = (/1,1,2/)
         endif  
         orb_info%igassh(1:nsym,1) = nfro(1:nsym)
         orb_info%igassh(1:nsym,2) = nrhf(1:nsym)-nfro(1:nsym)
@@ -170,18 +174,37 @@ c dbg
           orb_info%igassh(1:nsym,4) = linind(1:nsym)
         endif  
       else
-        if(logaux)then
-          orb_info%iad_gas(1:ngas) = (/2,2,2/)
-          orb_info%ihpvgas(1:ngas) = (/1,2,4/)
-        else  
-          orb_info%iad_gas(1:ngas) = (/2,2/)
-          orb_info%ihpvgas(1:ngas) = (/1,2/)
-        endif
-        orb_info%igassh(1:nsym,1) = nrhf(1:nsym)
-        orb_info%igassh(1:nsym,2) = norb(1:nsym)-nrhf(1:nsym)
-        if(logaux)then
-          orb_info%igassh(1:nsym,3) = linind(1:nsym)
-        endif  
+        if (nspin.eq.1) then
+          if(logaux)then
+            orb_info%iad_gas(1:ngas) = (/2,2,2/)
+            orb_info%ihpvgas(1:ngas,1) = (/1,2,4/)
+          else  
+            orb_info%iad_gas(1:ngas) = (/2,2/)
+            orb_info%ihpvgas(1:ngas,1) = (/1,2/)
+          endif
+          orb_info%igassh(1:nsym,1) = nrhf(1:nsym)
+          orb_info%igassh(1:nsym,2) = norb(1:nsym)-nrhf(1:nsym)
+          if(logaux)then
+            orb_info%igassh(1:nsym,3) = linind(1:nsym)
+          endif
+        else
+          if(logaux)then
+            orb_info%iad_gas(1:ngas) = (/2,2,2/)
+            orb_info%ihpvgas(1:ngas,1) = (/1,1,2,4/)
+            orb_info%ihpvgas(1:ngas,2) = (/1,2,2,4/)
+          else  
+            orb_info%iad_gas(1:ngas) = (/2,2/)
+            orb_info%ihpvgas(1:ngas,1) = (/1,1,2/)
+            orb_info%ihpvgas(1:ngas,2) = (/1,2,2/)
+          endif
+          orb_info%igassh(1:nsym,1) = nrhf(1:nsym)
+          orb_info%igassh(1:nsym,2) = nash(1:nsym)
+          orb_info%igassh(1:nsym,3) =
+     &         norb(1:nsym)-nrhf(1:nsym)-nash(1:nsym)
+          if(logaux)then
+            orb_info%igassh(1:nsym,4) = linind(1:nsym)
+          endif
+        end if
       end if
       if(logaux)then
         orb_info%cab_orb(1:nsym)=linind(1:nsym)

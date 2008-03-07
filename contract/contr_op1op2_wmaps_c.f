@@ -1170,8 +1170,8 @@ c dbg
                   ! if necessary, reorder op1op2 block:
                   if (reo_op1op2.and.nonzero) then
                     call reo_blk_wmaps_c(xop1op2,xop1op2blk,
-     &                   tra_op1op2,
      &                   reo_info%sign_reo,
+     &                   tra_op1op2,
      &                   ms12i_c(3),ms12i_a(3),
      &                                   igam12i_c(3),igam12i_a(3),
      &                   msi_dis_c,msi_dis_a,gmi_dis_c,gmi_dis_a,
@@ -1179,7 +1179,7 @@ c dbg
      &                   cinfo_op1op2tmpc,cinfo_op1op2tmpa,
      &                   lstrop1op2tmp,
      &                   me_op1op2,iblkop1op2,
-     &                   ncblk_cnt,nablk_cnt,
+     &                   ncblk_op1op2,nablk_op1op2,
      &                   cinfo_op1op2c,cinfo_op1op2a,
      &                   reo_info%ncblk_reo,reo_info%nablk_reo,
      &                   reo_info%cinfo_reo_c,reo_info%cinfo_reo_a,

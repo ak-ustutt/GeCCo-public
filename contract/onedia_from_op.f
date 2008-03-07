@@ -28,10 +28,10 @@
       integer ::
      &     ifree, iocc_cls, nbuff, ioff_blk, ilen_blk, idx, idxcur, 
      &     most, mond, ms, idxms, isym, imo, imo_off, len, igas, idxbuf,
-     &     ihpv
+     &     ihpv, ispin, nspin
 
       integer, pointer ::
-     &     ihpvgas(:), iad_gas(:), mostnd(:,:,:)
+     &     ihpvgas(:,:), iad_gas(:), mostnd(:,:,:)
 
       real(8), pointer ::
      &     buffer(:), curblk(:)
@@ -74,6 +74,7 @@ c          endif
 c      x1dia(1:2*(orb_info%ntoob+orb_info%caborb)) = 0d0
       x1dia(1:2*(orb_info%ntoob)) = 0d0
 
+      nspin = orb_info%nspin
       mostnd => orb_info%mostnd
       ihpvgas => orb_info%ihpvgas
       iad_gas => orb_info%iad_gas
@@ -117,8 +118,10 @@ c dbg
         ihpv = idxlist(1,op%ihpvca_occ(1,1,iocc_cls),ngastp,1)
 
         do ms = 1, -1, -2
-          idxms =1
+          idxms = 1
+          ispin = 1
           if (ms.eq.-1) idxms = 2
+          if (ms.eq.-1.and.nspin.eq.2) ispin = 2
 c          imo_off = (idxms-1)*(orb_info%ntoob+orb_info%caborb)
           imo_off = (idxms-1)*orb_info%ntoob
 
@@ -129,7 +132,7 @@ c          imo_off = (idxms-1)*(orb_info%ntoob+orb_info%caborb)
             curblk => buffer(idxcur:)
             idx = 0
             do igas = 1, orb_info%ngas
-              if (ihpvgas(igas).ne.ihpv) cycle
+              if (ihpvgas(igas,ispin).ne.ihpv) cycle
               if (iad_gas(igas).ne.2) cycle
               most = mostnd(1,isym,igas)
               mond = mostnd(2,isym,igas)

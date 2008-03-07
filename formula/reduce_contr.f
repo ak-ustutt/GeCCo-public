@@ -212,10 +212,10 @@ c     &                     orb_info%ihpvgas,ngas)
 c          else
             call dummy_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
      &                     occ_vtx(1,1,ivtx1+njoined_res),1,
-     &                     orb_info%ihpvgas,ngas)
+     &                     orb_info)
             call dummy_restr(irestr_vtx(1,1,1,1,ivtx2+njoined_res),
      &                     occ_vtx(1,1,ivtx2+njoined_res),1,
-     &                     orb_info%ihpvgas,ngas)
+     &                     orb_info)
 c          end if
         end if
 
@@ -272,7 +272,7 @@ c     &                     occ_vtx(1,1,ivtx1+njoined_res),irestr_res,
 c     &                     orb_info%ihpvgas,ngas)
 c              else
                 call dummy_restr(irestr_vtx(1,1,1,1,ivtx1+njoined_res),
-     &           occ_vtx(1,1,ivtx1+njoined_res),1,orb_info%ihpvgas,ngas)
+     &           occ_vtx(1,1,ivtx1+njoined_res),1,orb_info)
 c              end if
             end if
             ! update reordering array
@@ -411,7 +411,7 @@ c          if (njoined_res.eq.1) then
             do ivtx = 1, contr%nvtx
               call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
      &                     occ_vtx(1,1,ivtx+njoined_res),1,
-     &                     orb_info%ihpvgas,ngas)
+     &                     orb_info)
             end do
 c          end if
         end if

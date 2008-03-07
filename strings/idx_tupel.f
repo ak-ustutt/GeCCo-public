@@ -57,7 +57,12 @@
           ! get subspace of orbital
           idspc(ipos) = orb_info%igasorb(idorb(ipos))
           ! correct counting: only inside H/P/V
-          igtp = orb_info%ihpvgas(idspc(ipos))
+          igtp = orb_info%ihpvgas(idspc(ipos),1)
+          if (orb_info%nspin.eq.2.and.
+     &        orb_info%ihpvgas(idspc(ipos),1).ne.
+     &        orb_info%ihpvgas(idspc(ipos),2) .and.
+     &        idspn(ipos).eq.-1)
+     &         igtp = orb_info%ihpvgas(idspc(ipos),2)
           idspc(ipos) = idspc(ipos)-orb_info%idx_gas(igtp)+1
         end do
       end if
@@ -66,7 +71,12 @@
       ihpv_loop: do ihpvdx = 1, ngastp
         if (ipos.gt.nelt) exit ihpv_loop
         ! not quite efficient fix to get actual H/P/V
-        ihpv = orb_info%ihpvgas(orb_info%igasorb(idorb(ipos)))
+        ihpv = orb_info%ihpvgas(orb_info%igasorb(idorb(ipos)),1)
+        if (orb_info%nspin.eq.2.and.
+     &      orb_info%ihpvgas(idspc(ipos),1).ne.
+     &      orb_info%ihpvgas(idspc(ipos),2) .and.
+     &      idspn(ipos).eq.-1)
+     &         ihpv = orb_info%ihpvgas(idspc(ipos),2)
         nel = iocc(ihpv)
         if (nel.eq.0) then
           call quit(1,'idx_tupel','strange event')
@@ -79,7 +89,8 @@
         ! check for restrictions
         if (.not.allow_sbsp_dis(idspc(ipos),nel,
      &                          orb_info%ngas_hpv(ihpv),
-     &                          str_info%igas_restr(1,1,1,igraph))) then
+     &                        str_info%igas_restr(1,1,1,1,igraph))) then
+                         !        ADAPT FOR OPEN-SHELL ^^^
           return
         end if
 

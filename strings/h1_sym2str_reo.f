@@ -31,13 +31,13 @@
      &     orb_info
 
       integer ::
-     &     ngas, nsym, igas,
+     &     ngas, nsym, igas, nspin, ispin,
      &     idxstr, idxsym, iocc_cls, ihpv_c, ihpv_a, igc, iga,
      &     ms, idxms, isym, isymoff, imo_off, lena, lenc, igasa, igasc,
      &     mosta, monda, mostc, mondc, imo_a, imo_c, imo, jmo
 
       integer, pointer ::
-     &     mostnd(:,:,:), ntoobs(:), ihpvgas(:), iad_gas(:), ireots(:)
+     &     mostnd(:,:,:), ntoobs(:), ihpvgas(:,:), iad_gas(:), ireots(:)
 
       type(operator), pointer ::
      &     hop
@@ -50,6 +50,7 @@
       iad_gas => orb_info%iad_gas
       ireots => orb_info%ireots
       ngas = orb_info%ngas
+      nspin = orb_info%nspin
       nsym = orb_info%nsym
 
       if (ntest.ge.100) then
@@ -101,8 +102,10 @@
         ms_loop: do ms = 1, -1, -2
           
           ! the actual index in arrays:
+          ispin = 1
           idxms = 1
           if (ms.eq.-1) idxms = 2
+          if (ms.eq.-1.and.nspin.eq.2) ispin = 2
 
           ! ----------------
           ! loop over IRREPS
@@ -124,7 +127,7 @@
             ! loop over subspaces which belong to current type
             ! of A space (and which are active)
             do igasa = 1, ngas
-              if (ihpvgas(igasa).ne.ihpv_a) cycle
+              if (ihpvgas(igasa,ispin).ne.ihpv_a) cycle
               if (iad_gas(igasa).ne.2) cycle
               mosta = mostnd(1,isym,igasa)
               monda = mostnd(2,isym,igasa)
@@ -136,7 +139,7 @@
                 ! loop over subspaces which belong to current type
                 ! of C space (and which are active)
                 do igasc = 1, ngas
-                  if (ihpvgas(igasc).ne.ihpv_c) cycle
+                  if (ihpvgas(igasc,ispin).ne.ihpv_c) cycle
                   if (iad_gas(igasc).ne.2) cycle
                   mostc = mostnd(1,isym,igasc)
                   mondc = mostnd(2,isym,igasc)

@@ -109,7 +109,7 @@ c dbg
      &       irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
      &       merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &       njoined_op1, njoined_op2,njoined_op1op2, njoined_cnt,
-     &       str_info,orb_info%ihpvgas,orb_info%ngas)
+     &       str_info,orb_info)
 c dbg
 c        print *,'bef. call to contr'
 c        print *,'iblkop1op2,iblkop1op2tmp: ',iblkop1op2,iblkop1op2tmp

@@ -68,7 +68,7 @@
       ! some pointers for easy typing and efficency
       integer, pointer ::
      &     iocc(:,:), idx_graph(:,:),
-     &     igas_restr(:,:,:,:), mostnd(:,:,:),
+     &     igas_restr(:,:,:,:,:), mostnd(:,:,:),
      &     igamorb(:), ngas_hpv(:), idx_gas(:)
 
       ! allocatable stuff:
@@ -279,7 +279,7 @@ c dbg
                     str_loop_h: do
                       if (.not.next_string(idxorb,idxspn,idxdss,
      &                   nidx,ms_str,igamstr,first_str,
-     &                   igas_restr(1,1,1,igrph),
+     &                   igas_restr(1,1,1,1,igrph),
      &                   mostnd(1,1,idx_gas(ihpv)),igamorb,
      &                   nsym,ngas_hpv(ihpv))
      &                   ) exit str_loop_h

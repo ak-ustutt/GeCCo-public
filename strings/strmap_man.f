@@ -116,11 +116,13 @@
      &         str_info%g(igraph1(hpvx,ica1)),
      &         str_info%ispc_typ(igraph1(hpvx,ica1)),
      &         str_info%ispc_occ(igraph1(hpvx,ica1)),
-     &         str_info%igas_restr(1,1,1,igraph1(hpvx,ica1)),
+     &         str_info%igas_restr(1,1,1,1,igraph1(hpvx,ica1)),
+C               ! ADAPT FOR OPEN SHELL  ^^^
      &         str_info%g(igraph2(hpvx,ica2)),
      &         str_info%ispc_typ(igraph2(hpvx,ica2)),
      &         str_info%ispc_occ(igraph2(hpvx,ica2)),
-     &         str_info%igas_restr(1,1,1,igraph2(hpvx,ica2)),
+     &         str_info%igas_restr(1,1,1,1,igraph2(hpvx,ica2)),
+C               ! ADAPT FOR OPEN SHELL  ^^^
      &         str_info%g(igraph12(hpvx,ica12)),
      &         str_info%ispc_typ(igraph12(hpvx,ica12)),
      &         str_info%ispc_occ(igraph12(hpvx,ica12)),

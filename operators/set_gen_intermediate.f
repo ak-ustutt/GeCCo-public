@@ -43,7 +43,7 @@
       integer ::
      &     iblk, ioffblk, ijoin, idef, njoined
       integer, pointer ::
-     &     hpvxgas(:), ngas
+     &     hpvxgas(:,:), ngas, nspin
       integer ::
      &     iblk_min(ndefop), iblk_max(ndefop), iblk_dis(ndefop)
 
@@ -51,6 +51,7 @@
      &     call write_title(luout,wst_dbg_subr,
      &     'set_gen_intermediate speaking')
       
+      nspin => orb_info%nspin
       ngas => orb_info%ngas
       hpvxgas => orb_info%ihpvgas
 
@@ -130,30 +131,30 @@ c      dagtotal = op%dagger
         end do
 
         ! dto. for restrictions
-        op%igasca_restr(1:2,1:ngas,1:2,1:2,
+        op%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,
      &                  ioffblk+1:ioffblk+njoined) = 0
 
-        op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+1) =
+        op%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,ioffblk+1) =
      &       irest_xdn(1,defop(1)%op%
-     &                  igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(1)),
-     &                 hpvxgas,ngas)
-        op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+njoined) =
-     &       op%igasca_restr(1:2,1:ngas,1:2,1:2,ioffblk+njoined) +
+     &             igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,iblk_dis(1)),
+     &                 hpvxgas,ngas,nspin)
+        op%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,ioffblk+njoined) =
+     &      op%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,ioffblk+njoined)+
      &       irest_xdn(2,defop(1)%op%
-     &                  igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(1)),
-     &                 hpvxgas,ngas)
+     &             igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,iblk_dis(1)),
+     &                 hpvxgas,ngas,nspin)
         do idef = 2, ndefop
-          op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef-1) =
-     &       op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef-1) +
+          op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,1:nspin,ioffblk+idef-1)=
+     &    op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,1:nspin,ioffblk+idef-1)+
      &       irest_xdn(1,defop(idef)%op%
-     &                 igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(idef)),
-     &                 hpvxgas,ngas)
+     &       igasca_restr(1:2,1:ngas,1:2,1:2,   1:nspin,iblk_dis(idef)),
+     &                 hpvxgas,ngas,nspin)
 
-          op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef) =
-     &       op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,ioffblk+idef) +
+          op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,1:nspin,ioffblk+idef) =
+     &    op%igasca_restr(1:2,1:ngas,2:1:-1,1:2,1:nspin,ioffblk+idef) +
      &       irest_xdn(2,defop(idef)%op%
-     &                 igasca_restr(1:2,1:ngas,1:2,1:2,iblk_dis(idef)),
-     &                 hpvxgas,ngas)
+     &       igasca_restr(1:2,1:ngas,1:2,1:2,   1:nspin,iblk_dis(idef)),
+     &                 hpvxgas,ngas,nspin)
         end do
 
         if (.not.next_dist2(iblk_dis,ndefop,iblk_min,iblk_max,1)) exit
@@ -168,7 +169,7 @@ c      dagtotal = op%dagger
           call wrt_occ_n(luout,op%ihpvca_occ(1,1,ioffblk+1),njoined)
           do ijoin = 1, njoined
             call wrt_rstr(luout,
-     &           op%igasca_restr(1,1,1,1,ioffblk+ijoin),ngas)
+     &           op%igasca_restr(1,1,1,1,1,ioffblk+ijoin),ngas)
           end do
         end do
       end if

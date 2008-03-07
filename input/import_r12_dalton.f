@@ -46,7 +46,7 @@
      &     ffinp
 
       integer, pointer ::
-     &     ihpvgas(:),igamorb(:),igasorb(:),idx_gas(:),iad_gas(:),
+     &     ihpvgas(:,:),igamorb(:),igasorb(:),idx_gas(:),iad_gas(:),
      &     reost(:)
       integer, allocatable ::
      &     tosym(:),totyp(:),koffs(:),reord(:)
@@ -184,7 +184,7 @@ c dbg
           do j=1,4
             igam(j)=igamorb(index(j))
             idss(j)=igasorb(index(j))
-            igtp(j)=ihpvgas(idss(j))            
+            igtp(j)=ihpvgas(idss(j),1) ! OPEN SHELL: adapt            
           enddo
 
           ! Loop if not all orbitals are active.

@@ -37,10 +37,10 @@
 
       op => mel%op
 
-      if (associated(mel%fhand))
-     &     call quit(1,'init_mel_file',
-     &     'file for ME-list is already assigned: '//
-     &     trim(mel%label))
+c      if (associated(mel%fhand))
+c     &     call quit(1,'init_mel_file',
+c     &     'file for ME-list is already assigned: '//
+c     &     trim(mel%label))
 
       allocate(mel%fhand)
       fhand => mel%fhand

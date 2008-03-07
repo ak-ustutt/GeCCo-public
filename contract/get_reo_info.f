@@ -185,10 +185,9 @@
      &       reo_info%from_to,nreo_op1op2)
 
         call dummy_restr(irst_op1op2,
-     &       iocc_op1op2,njoined_op1op2,orb_info%ihpvgas,orb_info%ngas)
+     &       iocc_op1op2,njoined_op1op2,orb_info)
         call dummy_restr(irst_op1op2tmp,
-     &       iocc_op1op2tmp,njoined_op1op2,
-     &                                  orb_info%ihpvgas,orb_info%ngas)
+     &       iocc_op1op2tmp,njoined_op1op2,orb_info)
 
         ! transform merge-map to condensed representation
         ! length of map: 1 entry for each target vertex
@@ -264,12 +263,10 @@ c dbg
      &       irst(2,orb_info%ngas,2,2,max(njoined_op1op2,nreo_op1op2)))
 
         call dummy_restr(irst,
-     &       reo_info%iocc_opreo0,njoined_op1op2,
-     &       orb_info%ihpvgas,orb_info%ngas)
+     &       reo_info%iocc_opreo0,njoined_op1op2,orb_info)
         call get_grph4occ(igrph,
-     &       reo_info%iocc_opreo0,irst,
-     &       str_info,orb_info%ihpvgas,
-     &       orb_info%ngas,njoined_op1op2,.true.)
+     &       reo_info%iocc_opreo0,irst,njoined_op1op2,
+     &       str_info,orb_info,.true.)
 c dbg
 c        print *,'FOCUS:'
 c        call wrt_occ_n(luout,reo_info%iocc_opreo0,njoined_op1op2)
@@ -284,11 +281,9 @@ c dbg
      &       igrph,njoined_op1op2,hpvxblkseq)
 
         call dummy_restr(irst,
-     &       reo_info%iocc_reo,nreo_op1op2,
-     &       orb_info%ihpvgas,orb_info%ngas)
-        call get_grph4occ(igrph,reo_info%iocc_reo,irst,
-     &       str_info,orb_info%ihpvgas,
-     &       orb_info%ngas,nreo_op1op2,.true.)
+     &       reo_info%iocc_reo,nreo_op1op2,orb_info)
+        call get_grph4occ(igrph,reo_info%iocc_reo,irst,nreo_op1op2,
+     &       str_info,orb_info,.true.)
         call condense_occ(reo_info%cinfo_reo_c,reo_info%cinfo_reo_a,
      &       reo_info%cinfo_reo_c(1,3),reo_info%cinfo_reo_a(1,3),
      &       reo_info%iocc_reo,nreo_op1op2,hpvxblkseq)

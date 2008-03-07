@@ -6,7 +6,7 @@
      &     irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
      &     merge_map1, merge_map2, merge_map12, merge_map21,
      &     njoined_op1, njoined_op2, njoined_op1op2, njoined_cnt,
-     &     str_info,ihpvgas,ngas)
+     &     str_info,orb_info)
 *----------------------------------------------------------------------*
 *     obtain contraction info in condensed form
 *     
@@ -25,7 +25,7 @@
 
       include 'opdim.h'
       include 'hpvxseq.h'
-c      include 'def_orbinf.h'
+      include 'def_orbinf.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'ifc_operators.h'
@@ -33,8 +33,8 @@ c      include 'def_orbinf.h'
 
       type(strinf) ::
      &     str_info
-      integer, intent(in) ::
-     &     ngas, ihpvgas(ngas)
+      type(orbinf), intent(in), target ::
+     &     orb_info
       type(contraction_info), intent(inout) ::
      &     cnt_info
       integer, intent(in) ::
@@ -46,22 +46,25 @@ c      include 'def_orbinf.h'
      &     iocc_ex1(ngastp,2,njoined_op1),
      &     iocc_ex2(ngastp,2,njoined_op2),
      &     iocc_cnt(ngastp,2,njoined_cnt),
-     &     irst_op1(2,ngas,2,2,njoined_op1),
-     &     irst_op2(2,ngas,2,2,njoined_op2),
-     &     irst_op1op2(2,ngas,2,2,njoined_op1op2),
-     &     irst_op1op2tmp(2,ngas,2,2,njoined_op1op2),
+     &     irst_op1(2,orb_info%ngas,2,2,njoined_op1),
+     &     irst_op2(2,orb_info%ngas,2,2,njoined_op2),
+     &     irst_op1op2(2,orb_info%ngas,2,2,njoined_op1op2),
+     &     irst_op1op2tmp(2,orb_info%ngas,2,2,njoined_op1op2),
      &     merge_map1(*), merge_map2(*), merge_map12(*), merge_map21(*)
 
       integer ::
-     &     ijoin
+     &     ijoin, ngas
       integer ::
-     &     irst_ex1(2,ngas,2,2,njoined_op1),
-     &     irst_ex2(2,ngas,2,2,njoined_op2),
-     &     irst_cnt(2,ngas,2,2,njoined_cnt),
+     &     irst_ex1(2,orb_info%ngas,2,2,njoined_op1),
+     &     irst_ex2(2,orb_info%ngas,2,2,njoined_op2),
+     &     irst_cnt(2,orb_info%ngas,2,2,njoined_cnt),
      &     iocc_cnt_dagger(ngastp,2,njoined_cnt)
       integer, pointer ::
-     &     igrph(:,:,:)
+     &     igrph(:,:,:), ihpvgas(:,:)
 
+
+      ngas = orb_info%ngas
+      ihpvgas => orb_info%ihpvgas
       ! preliminary treatment of restrictions for EX, CNT:
 c      call fit_restr(irst_ex1,iocc_ex1,
 c     &     irst_op1,ihpvgas,ngas)
@@ -70,20 +73,19 @@ c     &     irst_op2,ihpvgas,ngas)
 c      call fit_restr(irst_cnt,iocc_cnt,
 c     &     irst_op1,ihpvgas,ngas)
       call dummy_restr(irst_ex1,
-     &     iocc_ex1,njoined_op1,ihpvgas,ngas)
+     &     iocc_ex1,njoined_op1,orb_info)
       call dummy_restr(irst_ex2,
-     &     iocc_ex2,njoined_op2,ihpvgas,ngas)
+     &     iocc_ex2,njoined_op2,orb_info)
       call dummy_restr(irst_cnt,
-     &     iocc_cnt,njoined_cnt,ihpvgas,ngas)
+     &     iocc_cnt,njoined_cnt,orb_info)
       ! end of preliminary code
 
       allocate(igrph(ngastp,2,
      &     max(njoined_op1,njoined_op2,njoined_op1op2,njoined_cnt)))
       
       ! OP1
-      call get_grph4occ(igrph,iocc_op1,irst_op1,
-     &                  str_info,ihpvgas,
-     &                  ngas,njoined_op1,.true.)
+      call get_grph4occ(igrph,iocc_op1,irst_op1,njoined_op1,
+     &                  str_info,orb_info,.true.)
       call condense_occ(cnt_info%cinfo_op1c, cnt_info%cinfo_op1a,
      &                  cnt_info%cinfo_op1c(1,3),
      &                  cnt_info%cinfo_op1a(1,3),
@@ -103,9 +105,8 @@ c      print *,'    ',cnt_info%cinfo_op1a(1:nca_blk(2,1),3)
 c dbg
 
       ! EX1
-      call get_grph4occ(igrph,iocc_ex1,irst_ex1,
-     &                  str_info,ihpvgas,
-     &                  ngas,njoined_op1,.true.)
+      call get_grph4occ(igrph,iocc_ex1,irst_ex1,njoined_op1,
+     &                  str_info,orb_info,.true.)
       call condense_occ(cnt_info%cinfo_ex1c, cnt_info%cinfo_ex1a,
      &                  cnt_info%cinfo_ex1c(1,3),
      &                  cnt_info%cinfo_ex1a(1,3),
@@ -117,9 +118,8 @@ c dbg
      &                  igrph,njoined_op1,hpvxblkseq)
 
       ! OP2
-      call get_grph4occ(igrph,iocc_op2,irst_op2,
-     &                  str_info,ihpvgas,
-     &                  ngas,njoined_op2,.true.)
+      call get_grph4occ(igrph,iocc_op2,irst_op2,njoined_op2,
+     &                  str_info,orb_info,.true.)
       call condense_occ(cnt_info%cinfo_op2c, cnt_info%cinfo_op2a,
      &                  cnt_info%cinfo_op2c(1,3),
      &                  cnt_info%cinfo_op2a(1,3),
@@ -139,9 +139,8 @@ c      print *,'    ',cnt_info%cinfo_op2a(1:nca_blk(2,2),3)
 c dbg
 
       ! EX2
-      call get_grph4occ(igrph,iocc_ex2,irst_ex2,
-     &                  str_info,ihpvgas,
-     &                  ngas,njoined_op2,.true.)
+      call get_grph4occ(igrph,iocc_ex2,irst_ex2,njoined_op2,
+     &                  str_info,orb_info,.true.)
       call condense_occ(cnt_info%cinfo_ex2c, cnt_info%cinfo_ex2a,
      &                  cnt_info%cinfo_ex2c(1,3),
      &                  cnt_info%cinfo_ex2a(1,3),
@@ -153,9 +152,8 @@ c dbg
      &                  igrph,njoined_op2,hpvxblkseq)
 
       ! CNT
-      call get_grph4occ(igrph,iocc_cnt,irst_cnt,
-     &                  str_info,ihpvgas,
-     &                  ngas,njoined_cnt,.true.)
+      call get_grph4occ(igrph,iocc_cnt,irst_cnt,njoined_cnt,
+     &                  str_info,orb_info,.true.)
       call condense_occ(cnt_info%cinfo_cntc,
      &                  cnt_info%cinfo_cnta,
      &                  cnt_info%cinfo_cntc(1,3),
@@ -171,9 +169,8 @@ c dbg
 c dbg
 c      print *,'call for OP1OP2'
 c dbg
-      call get_grph4occ(igrph,iocc_op1op2,irst_op1op2,
-     &                  str_info,ihpvgas,
-     &                  ngas,njoined_op1op2,.true.)
+      call get_grph4occ(igrph,iocc_op1op2,irst_op1op2,njoined_op1op2,
+     &                  str_info,orb_info,.true.)
       call condense_occ(cnt_info%cinfo_op1op2c, cnt_info%cinfo_op1op2a,
      &                  cnt_info%cinfo_op1op2c(1,3),
      &                  cnt_info%cinfo_op1op2a(1,3),
@@ -185,8 +182,8 @@ c dbg
      &                  igrph,njoined_op1op2,hpvxblkseq)
 
       call get_grph4occ(igrph,iocc_op1op2tmp,irst_op1op2tmp,
-     &                  str_info,ihpvgas,
-     &                  ngas,njoined_op1op2,.true.)
+     &                                       njoined_op1op2,
+     &                  str_info,orb_info,.true.)
       call condense_occ(cnt_info%cinfo_op1op2tmpc,
      &                  cnt_info%cinfo_op1op2tmpa,
      &                  cnt_info%cinfo_op1op2tmpc(1,3),

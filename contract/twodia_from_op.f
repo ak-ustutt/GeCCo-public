@@ -34,7 +34,7 @@
       integer ::
      &     ihpv(2), occ_temp(ngastp,2)
       integer, pointer ::
-     &     ihpvgas(:), iad_gas(:), mostnd(:,:,:)
+     &     ihpvgas(:,:), iad_gas(:), mostnd(:,:,:)
 
       logical ::
      &     loop(mel%op%n_occ_cls)

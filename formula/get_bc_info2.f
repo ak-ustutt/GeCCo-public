@@ -9,7 +9,7 @@
      &     njoined_op, njoined_op1op2, njoined_cnt,
      &     merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &     contr,njoined_res,occ_vtx,irestr_vtx,info_vtx,iarc_red,
-     &     irestr_res,ihpvgas,ngas)
+     &     irestr_res,orb_info)
 *----------------------------------------------------------------------*
 *     set info for binary contraction
 *----------------------------------------------------------------------*
@@ -19,18 +19,20 @@
       include 'stdunit.h'
       include 'ifc_operators.h'
       include 'def_contraction.h'
+      include 'def_orbinf.h'
       include 'multd2h.h'
 
       type(contraction), intent(in) ::
      &     contr
+      type(orbinf), intent(in), target ::
+     &     orb_info
       integer, intent(in) ::
-     &     ngas, iarc_red, njoined_res
+     &     iarc_red, njoined_res
       integer, intent(in) ::
      &     occ_vtx(ngastp,2,contr%nvtx+njoined_res),
-     &     irestr_vtx(2,ngas,2,2,contr%nvtx+njoined_res),
+     &     irestr_vtx(2,orb_info%ngas,2,2,contr%nvtx+njoined_res),
      &     info_vtx(2,contr%nvtx+njoined_res),
-     &     irestr_res(2,ngas,2,2,njoined_res),
-     &     ihpvgas(ngas)
+     &     irestr_res(2,orb_info%ngas,2,2,njoined_res)
       real(8), intent(out) ::
      &     bc_sign
       integer, intent(out) ::
@@ -40,8 +42,9 @@
      &     iocc_cnt(ngastp,2,*),
      &     iocc_op1(ngastp,2,*), iocc_op2(ngastp,2,*),
      &     iocc_op1op2(ngastp,2,*),
-     &     irestr_op1(2,ngas,2,2,*), irestr_op2(2,ngas,2,2,*),
-     &     irestr_op1op2(2,ngas,2,2,*),
+     &     irestr_op1(2,orb_info%ngas,2,2,*),
+     &     irestr_op2(2,orb_info%ngas,2,2,*),
+     &     irestr_op1op2(2,orb_info%ngas,2,2,*),
      &     mst_op(2), mst_op1op2, igamt_op(2), igamt_op1op2,
      &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*)
 
@@ -50,16 +53,20 @@
       integer ::
      &     ivtx1, ivtx2, ivtx, ivtxsuper1, ivtxsuper2,
      &     len_list, ilist, idum, ijoin,
-     &     ld_mmap1, ld_mmap2, ld_mmap12
+     &     ld_mmap1, ld_mmap2, ld_mmap12, ngas
       integer ::
      &     arc_list(contr%narc), inum_ori(2,contr%nvtx),
      &     iocc_ex1ex2(ngastp,2,contr%nvtx)
       integer, pointer ::
      &     merge_map_op1(:,:,:), merge_map_op2(:,:,:),
-     &     merge_map_op1op2(:,:,:)
+     &     merge_map_op1op2(:,:,:),
+     &     ihpvgas(:,:)
 
       integer, external ::
      &     imltlist
+
+      ngas = orb_info%ngas
+      ihpvgas => orb_info%ihpvgas
 
       ! set up operator info
 c dbg
@@ -159,7 +166,7 @@ c dbg
      &                contr,occ_vtx,njoined_res)
 
       call dummy_restr(irestr_op1op2,
-     &       iocc_op1op2,njoined_op1op2,ihpvgas,ngas)
+     &       iocc_op1op2,njoined_op1op2,orb_info)
       mst_op1op2 = mst_op(1) + mst_op(2)
       igamt_op1op2 = multd2h(igamt_op(1),igamt_op(2))
 

@@ -36,7 +36,7 @@
      &     ngas, nsym, maxidx, iarc, ivtx, icount, njoined,
      &     idx, narc_full, nvtx_full, nlevel, nlevel_best
       integer, pointer ::
-     &     ihpvgas(:),
+     &     ihpvgas(:,:),
      &     ifact(:,:), ifact_best(:,:), occ_vtx(:,:,:),
      &     irestr_vtx(:,:,:,:,:), info_vtx(:,:),
      &     iarc_ori(:), ivtx_ori(:),
@@ -133,7 +133,7 @@
         call set_restr_prel(irestr_res,contr,op_info,
      &       ihpvgas,ngas)
       else
-        call dummy_restr(irestr_res,occ_vtx,njoined,ihpvgas,ngas)
+        call dummy_restr(irestr_res,occ_vtx,njoined,orb_info)
       end if
 
       ! add 0-contractions, if necessary
@@ -288,7 +288,7 @@ c dbg
         ! evaluate cost of present binary contraction
         call fact_cost2(possible,cost,iscale,
      &       contr,njoined,occ_vtx,irestr_vtx,info_vtx,iarc,
-     &       op_info,str_info,ihpvgas,ngas,nsym)
+     &       op_info,str_info,orb_info)
 
         if (ntest.ge.1000) then
           write(luout,'(x,a,l1)')

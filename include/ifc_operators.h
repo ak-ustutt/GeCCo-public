@@ -43,10 +43,11 @@
         integer :: iocc_dagger_n(ngastp,2,njoined)
         end function
 
-        function irest_dagger_n(irest_in,njoined,ngas)
+        function irest_dagger_n(irest_in,njoined,ngas,nspin)
         implicit none
-        integer, intent(in) :: njoined,ngas,irest_in(2,ngas,2,2,njoined)
-        integer :: irest_dagger_n(2,ngas,2,2,njoined)
+        integer, intent(in) :: njoined,ngas,nspin,
+     &       irest_in(2,ngas,2,2,nspin,njoined)
+        integer :: irest_dagger_n(2,ngas,2,2,nspin,njoined)
         end function
 
 c        integer function idx_oplist(opname,ops,nops)
@@ -112,14 +113,14 @@ c        type(operator), intent(in) ::
 c     &       op
 c	end function
 
-      function irest_xdn(ixdn,irest,hpvxgas,ngas)
+      function irest_xdn(ixdn,irest,hpvxgas,ngas,nspin)
       implicit none
       include 'opdim.h'
       integer ::
-     &     irest_xdn(2,ngas,2,2)
+     &     irest_xdn(2,ngas,2,2,nspin)
       integer, intent(in) ::
-     &     ixdn, ngas, hpvxgas(ngas),
-     &     irest(2,ngas,2,2)
+     &     ixdn, ngas, nspin, hpvxgas(ngas),
+     &     irest(2,ngas,2,2,nspin)
       end function
 
       end interface

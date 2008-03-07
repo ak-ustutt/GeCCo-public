@@ -26,11 +26,11 @@
 
       integer ::
      &     njoined, nblk, nblk_old, ioffblk2, ioffblk,
-     &     iblk, iblk2, idxblk, nadd, ngas, ijoin, ifree
+     &     iblk, iblk2, idxblk, nadd, ngas, nspin, ijoin, ifree
       integer, pointer ::
      &     ihpvca_occ_new(:,:,:),
      &     ica_occ_new(:,:),
-     &     igasca_restr_new(:,:,:,:,:),
+     &     igasca_restr_new(:,:,:,:,:,:),
      &     idx_graph_new(:,:,:)
       logical, pointer ::
      &     formal_blk_new(:)
@@ -39,6 +39,7 @@
      &     iblk_occ
 
       ngas = orb_info%ngas
+      nspin = orb_info%nspin
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'join_operator')
@@ -67,15 +68,16 @@
         nblk_old = op1%n_occ_cls
         nblk = nblk_old + nadd
         allocate(ihpvca_occ_new(ngastp,2,nblk*njoined),
-     &           igasca_restr_new(2,orb_info%ngas,2,2,nblk*njoined),
+     &         igasca_restr_new(2,orb_info%ngas,2,2,nspin,nblk*njoined),
      &           ica_occ_new(2,nblk),
      &           formal_blk_new(nblk))
 
         ! save old info
         ihpvca_occ_new(1:ngastp,1:2,1:nblk_old*njoined) =
      &       op1%ihpvca_occ(1:ngastp,1:2,1:nblk_old*njoined)
-        igasca_restr_new(1:2,1:ngas,1:2,1:2,1:nblk_old*njoined) =
-     &       op1%igasca_restr(1:2,1:ngas,1:2,1:2,1:nblk_old*njoined)
+        igasca_restr_new(1:2,1:ngas,1:2,1:2,1:nspin,1:nblk_old*njoined)=
+     &       op1%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,
+     &                                              1:nblk_old*njoined)
         ica_occ_new(1:2,1:nblk_old) =
      &       op1%ica_occ(1:2,1:nblk_old)
         formal_blk_new(1:nblk_old) =
@@ -93,9 +95,9 @@
             ioffblk = (iblk-1)*njoined
             ihpvca_occ_new(1:ngastp,1:2,ioffblk+1:ioffblk+njoined) =
      &          op2%ihpvca_occ(1:ngastp,1:2,ioffblk2+1:ioffblk2+njoined)
-            igasca_restr_new(1:2,1:ngas,1:2,1:2,
+            igasca_restr_new(1:2,1:ngas,1:2,1:2,1:nspin,
      &                                  ioffblk+1:ioffblk+njoined) =
-     &           op2%igasca_restr(1:2,1:ngas,1:2,1:2,
+     &           op2%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,
      &                                  ioffblk2+1:ioffblk2+njoined)
             ica_occ_new(1:2,iblk) =
      &           op2%ica_occ(1:2,iblk2)
@@ -134,7 +136,7 @@
           call wrt_occ_n(luout,op1%ihpvca_occ(1,1,ioffblk+1),njoined)
           do ijoin = 1, njoined
             call wrt_rstr(luout,
-     &           op1%igasca_restr(1,1,1,1,ioffblk+ijoin),ngas)
+     &           op1%igasca_restr(1,1,1,1,1,ioffblk+ijoin),ngas)
           end do
         end do
       end if

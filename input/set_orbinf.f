@@ -27,8 +27,11 @@
      &     hole_rv
 
       integer ::
-     &     ngas, nsym, ntoob, iprint, idx, jdx, kdx, isym, igas, igastp,
+     &     ngas, nsym, ntoob, nspin,
+     &     iprint, idx, jdx, kdx, isym, igas, igastp, ispin,
      &     idxst, idxnd, ist, ind, inc, igasr, j, caborb, iloop, loop
+      integer ::
+     &     icount(ngastp)
       integer, allocatable ::
      &     iadscr(:),koffs(:)
 
@@ -42,10 +45,16 @@
       end if
 
       ! for convenience
+      nspin = orb_info%nspin
       ngas = orb_info%ngas
       nsym = orb_info%nsym
       ntoob = orb_info%ntoob
       caborb=orb_info%caborb 
+
+      if (hole_rv.and.nspin.gt.1) then
+        call quit(1,'set_orbinf',
+     &       'hole_rv is not compatible with nspin.gt.1')
+      end if
 
       ! allocate some arrays on orb_info structure
       allocate(orb_info%ireots(ntoob),
@@ -63,17 +72,34 @@ c      endif
 
       ! set ngas_hpv (number of spaces per H/P/V space)
       ! set nactt_hpv (number of active orbitals per H/P/V)
+      ! open shell with p/h splitting: we double-count!
       orb_info%ngas_hpv(1:ngastp) = 0
       orb_info%nactt_hpv(1:ngastp) = 0
-      do igas = 1, ngas
-        orb_info%ngas_hpv(orb_info%ihpvgas(igas)) =
-     &       orb_info%ngas_hpv(orb_info%ihpvgas(igas))+1
-        if (orb_info%iad_gas(igas).ne.2) cycle
-        do isym = 1, nsym
-          orb_info%nactt_hpv(orb_info%ihpvgas(igas)) =
-     &         orb_info%nactt_hpv(orb_info%ihpvgas(igas)) +
-     &         orb_info%igassh(isym,igas)
+      do ispin = 1, nspin
+        icount(1:ngastp) = 0
+        do igas = 1, ngas
+          icount(orb_info%ihpvgas(igas,ispin)) =
+     &         icount(orb_info%ihpvgas(igas,ispin))+1
         end do
+        do igastp = 1, ngastp
+          orb_info%ngas_hpv(igastp) =
+     &         max(orb_info%ngas_hpv(igastp),icount(igastp))
+        end do
+
+        icount(1:ngastp) = 0
+        do igas = 1, ngas
+          if (orb_info%iad_gas(igas).ne.2) cycle
+          do isym = 1, nsym
+            icount(orb_info%ihpvgas(igas,ispin)) =
+     &           icount(orb_info%ihpvgas(igas,ispin))+
+     &           orb_info%igassh(isym,igas)
+          end do
+        end do
+        do igastp = 1, ngastp
+          orb_info%nactt_hpv(igastp) =
+     &         max(orb_info%nactt_hpv(igastp),icount(igastp))
+        end do
+
       end do
 
       ! index and offset array from ngas_hpv:
@@ -85,6 +111,9 @@ c      endif
       end do
 
       if (iprint.ge.100) then
+        write(luout,*) 'ihpvgas:   ',orb_info%ihpvgas(1:ngastp,1)
+        if (orb_info%nspin.gt.1)
+     &       write(luout,*) '           ',orb_info%ihpvgas(1:ngastp,2)
         write(luout,*) 'ngas_hpv:  ',orb_info%ngas_hpv(1:ngastp)
         write(luout,*) 'nactt_hpv: ',orb_info%nactt_hpv(1:ngastp)
         write(luout,*) 'ioff_gas:  ',orb_info%ioff_gas(1:ngastp)
@@ -211,7 +240,7 @@ c      endif
         do isym = 1, nsym
           do igas = 1, ngas
             if(caborb.gt.0.and.iloop.eq.1.and.igas.eq.ngas)cycle
-            if (orb_info%ihpvgas(igas).eq.ihole.and.hole_rv) then
+            if (orb_info%ihpvgas(igas,1).eq.ihole.and.hole_rv) then
               igasr = orb_info%ngas_hpv(ihole)-igas+1
               ist = orb_info%mostnd(2,isym,igasr)
               ind = orb_info%mostnd(1,isym,igasr)

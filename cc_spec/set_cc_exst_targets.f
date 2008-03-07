@@ -266,7 +266,7 @@
      &       parameters,2,tgt_info)
       end do
       
-      call add_target(solve_cc_lhex,ttype_gen,.true.,tgt_info)
+      call add_target(solve_cc_lhex,ttype_gen,.false.,tgt_info)
       call set_dependency(solve_cc_lhex,solve_cc_gs,tgt_info)
       call set_dependency(solve_cc_lhex,fopt_cc_l_a,tgt_info)
       call set_dependency(solve_cc_lhex,meldef_lex,tgt_info)

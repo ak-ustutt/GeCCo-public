@@ -30,9 +30,6 @@
 
       call set_hpvx_and_restr_for_c()
 
-c dbg
-      print *,'name ', trim(name)
-c dbg
       call set_genop(op,name,optyp_operator,
      &     dagger,
      &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
@@ -63,7 +60,7 @@ c dbg
       irestr(1:2,1:orb_info%ngas,1:2,1:2)=0
       do ica = 1, 2
         do igas = 1, orb_info%ngas
-          if (orb_info%ihpvgas(igas).eq.ihole) then
+          if (orb_info%ihpvgas(igas,1).eq.ihole) then
             irestr(1,igas,ica,1) = 0
             if (ica.eq.1) then
               irestr(2,igas,ica,1) = min(2,max_rank)
@@ -71,7 +68,7 @@ c dbg
               irestr(2,igas,ica,1) = max_rank
             end if
           end if
-          if (orb_info%ihpvgas(igas).eq.ipart) then
+          if (orb_info%ihpvgas(igas,1).eq.ipart) then
             irestr(1,igas,ica,1) = 0
             irestr(2,igas,ica,1) = max(0,max_rank-2)
           end if

@@ -48,6 +48,6 @@ check
 check
   label Dipole moment
   find ZDIPLEN [ ]*:
-  compare real 4 1e-9
+  compare real 4 1e-8
 end
 

@@ -15,6 +15,8 @@
 *
 *----------------------------------------------------------------------*
 
+      implicit none
+
       include 'stdunit.h'
       include 'opdim.h'
       include 'def_filinf.h'
@@ -39,17 +41,21 @@
       logical ::
      &     unique, same
       integer ::
-     &     ngas,
+     &     ngas, nspin,
      &     iocc_cls, ihpv, ica, igas, jgas, idx, idxgr, len(ngastp),
-     &     nocc, njoined, ijoin
+     &     nocc, njoined, ijoin, ioff, igraph
       integer, pointer ::
-     &     ihpvgas(:)
+     &     ihpvgas(:,:)
+
+      logical, external ::
+     &     restr_cmp
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'update_graphs')
         write(luout,*) ' unique graphs on input: ',str_info%ngraph
       end if
 
+      nspin = orb_info%nspin
       ngas = orb_info%ngas
       ihpvgas => orb_info%ihpvgas
 
@@ -78,33 +84,52 @@
             unique = .true.
             ! loop over all graphs that are already defined
             igraph_loop: do igraph = 1, str_info%ngraph
+c dbg
+c            print *,'look at graph # ',igraph,
+c     &           str_info%ispc_typ(igraph),
+c     &           str_info%ispc_occ(igraph)
+c dbg
           
               ! we might compare number of orbitals instead of ihpv
               if (ihpv.eq.str_info%ispc_typ(igraph).and.
      &             nocc.eq.str_info%ispc_occ(igraph)) then
 
+c dbg
+c                print *,'comparing: ',ihpv, nocc
+c dbg
                 ! ... but are restrictions (=shape of graph) the same?
-                jgas = 1
-                same = .true.
-                cmp_loop: do igas = 1, ngas
-                  if (ihpvgas(igas).ne.ihpv) cycle cmp_loop
-                  same = same.and.
-     &                 (op%igasca_restr(1,igas,ica,1,idx).eq.
-     &                  str_info%igas_restr(1,jgas,1,igraph)).and.
-     &                 (op%igasca_restr(2,igas,ica,1,idx).eq.
-     &                  str_info%igas_restr(2,jgas,1,igraph)) .and.
-     &                 (op%igasca_restr(1,igas,ica,2,idx).eq.
-     &                  str_info%igas_restr(1,jgas,2,igraph)).and.
-     &                 (op%igasca_restr(2,igas,ica,2,idx).eq.
-     &                  str_info%igas_restr(2,jgas,2,igraph))
-                  if (.not.same) exit cmp_loop
-                  jgas = jgas+1
-                end do cmp_loop
+                same = restr_cmp(op%igasca_restr(1,1,1,1,1,idx),
+     &                       str_info%igas_restr(1,1,1,1,igraph),
+     &                       ica,ihpv,
+     &                       ihpvgas,ngas,nspin)
+c dbg
+c                print *,'same = ',same
+c dbg
+
+c                jgas = 1
+c                same = .true.
+c                cmp_loop: do igas = 1, ngas
+c                  if (ihpvgas(igas,1).ne.ihpv) cycle cmp_loop
+c                  same = same.and.
+c     &                 (op%igasca_restr(1,igas,ica,1,idx).eq.
+c     &                  str_info%igas_restr(1,jgas,1,igraph)).and.
+c     &                 (op%igasca_restr(2,igas,ica,1,idx).eq.
+c     &                  str_info%igas_restr(2,jgas,1,igraph)) .and.
+c     &                 (op%igasca_restr(1,igas,ica,2,idx).eq.
+c     &                  str_info%igas_restr(1,jgas,2,igraph)).and.
+c     &                 (op%igasca_restr(2,igas,ica,2,idx).eq.
+c     &                  str_info%igas_restr(2,jgas,2,igraph))
+c                  if (.not.same) exit cmp_loop
+c                  jgas = jgas+1
+c                end do cmp_loop
                 
                 unique = .not.same
 
               end if
-              
+c dbg
+c              print *,'still unique? ',unique
+c dbg              
+
               ! .not.unique == we have this graph already
               ! let op%idx_graph point to this graph ...
               if (.not.unique) mel%idx_graph(ihpv,ica,idx) = igraph
@@ -112,10 +137,13 @@
               if (.not.unique) cycle ica_loop
 
             end do igraph_loop
+c dbg
+c              print *,'final: unique = ',unique
+c dbg              
 
             ! a new unique graph was found:
             call add_graph(ihpv,nocc,ica,
-     &           op%igasca_restr(1,1,1,1,idx),
+     &           op%igasca_restr(1,1,1,1,1,idx),
      &           str_info,orb_info)
 
             ! set idxgr to that graph
@@ -132,7 +160,7 @@
         write(luout,*) 'unique graphs on output: ', str_info%ngraph
         len(1:ngastp) = 0
         do igas = 1, ngas
-          len(ihpvgas(igas)) = len(ihpvgas(igas))+1
+          len(ihpvgas(igas,1)) = len(ihpvgas(igas,1))+1
         end do
         write(luout,*) '    #    typ occ'
         write(luout,*) '                 restrictions'
@@ -142,7 +170,11 @@
      &         str_info%ispc_occ(igraph)
           write(luout,'(15x,10(2i3,x))') 
      &         str_info%igas_restr(1:2,
-     &                  1:len(str_info%ispc_typ(igraph)),1,igraph)
+     &                  1:len(str_info%ispc_typ(igraph)),1,1,igraph)
+          if (nspin.eq.2)
+     &         write(luout,'(15x,10(2i3,x))') 
+     &         str_info%igas_restr(1:2,
+     &                  1:len(str_info%ispc_typ(igraph)),1,2,igraph)
         end do
         write(luout,*) 'operator->graph assignments:'
         do iocc_cls = 1, op%n_occ_cls

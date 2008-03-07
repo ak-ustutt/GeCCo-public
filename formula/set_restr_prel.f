@@ -4,6 +4,7 @@
 *----------------------------------------------------------------------*
 *     a preliminary fix for restrictions on final result of contraction
 *     valid for standard CC only
+*     OPEN SHELL: NEEDS ADAPTATION
 *----------------------------------------------------------------------*
 
       implicit none
@@ -49,13 +50,13 @@ c dbg
         cur_op => op_info%op_arr(idxop)%op
         if (.not.cur_op%dagger) then
           maxex = maxxlvl_op(cur_op)
-          irestr_res = cur_op%igasca_restr(1:2,1:ngas,1:2,1:2,iblkop)
+          irestr_res = cur_op%igasca_restr(1:2,1:ngas,1:2,1:2,1,iblkop)
         else
           maxex = -maxxlvl_op(cur_op)
           irestr_res(1:2,1:ngas,1,1:2) =
-     &         cur_op%igasca_restr(1:2,1:ngas,2,1:2,iblkop)
+     &         cur_op%igasca_restr(1:2,1:ngas,2,1:2,1,iblkop)
           irestr_res(1:2,1:ngas,2,1:2) =
-     &         cur_op%igasca_restr(1:2,1:ngas,1,1:2,iblkop)
+     &         cur_op%igasca_restr(1:2,1:ngas,1,1:2,1,iblkop)
         end if
 c dbg
 c        print *,'maxex = ',maxex
@@ -74,12 +75,12 @@ c            irestr_res(1,igas,ica,1) = 0
           end if
           ! check for quasi-inactive spaces:
           if (
-     &       (cur_op%igasca_restr(1,igas,1,1,iblkop).eq.
-     &        cur_op%igasca_restr(2,igas,1,1,iblkop).and.
-     &        cur_op%igasca_restr(2,igas,1,1,iblkop).gt.0).or.
-     &       (cur_op%igasca_restr(1,igas,2,1,iblkop).eq.
-     &        cur_op%igasca_restr(2,igas,2,1,iblkop).and.
-     &        cur_op%igasca_restr(2,igas,2,1,iblkop).gt.0)) then
+     &       (cur_op%igasca_restr(1,igas,1,1,1,iblkop).eq.
+     &        cur_op%igasca_restr(2,igas,1,1,1,iblkop).and.
+     &        cur_op%igasca_restr(2,igas,1,1,1,iblkop).gt.0).or.
+     &       (cur_op%igasca_restr(1,igas,2,1,1,iblkop).eq.
+     &        cur_op%igasca_restr(2,igas,2,1,1,iblkop).and.
+     &        cur_op%igasca_restr(2,igas,2,1,1,iblkop).gt.0)) then
             irestr_res(1,igas,ica,1) = maxex+2
             irestr_res(2,igas,ica,1) = maxex+2
           end if

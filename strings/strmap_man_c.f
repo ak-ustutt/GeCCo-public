@@ -152,11 +152,13 @@
      &         str_info%g(igraph1r(idx1)),
      &         str_info%ispc_typ(igraph1r(idx1)),
      &         str_info%ispc_occ(igraph1r(idx1)),
-     &         str_info%igas_restr(1,1,1,igraph1r(idx1)),
+     &         str_info%igas_restr(1,1,1,1,igraph1r(idx1)),
+C               ! ADAPT FOR OPEN SHELL  ^^^
      &         str_info%g(igraph2r(idx2)),
      &         str_info%ispc_typ(igraph2r(idx2)),
      &         str_info%ispc_occ(igraph2r(idx2)),
-     &         str_info%igas_restr(1,1,1,igraph2r(idx2)),
+     &         str_info%igas_restr(1,1,1,1,igraph2r(idx2)),
+C               ! ADAPT FOR OPEN SHELL  ^^^
      &         str_info%g(igraph12r(idx12)),
      &         str_info%ispc_typ(igraph12r(idx12)),
      &         str_info%ispc_occ(igraph12r(idx12)),

@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine fact_cost2(possible,cost,iscale,
      &     contr,njoined_res,occ_vtx,irestr_vtx,info_vtx,iarc,
-     &     op_info,str_info,ihpvgas,ngas,nsym)
+     &     op_info,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     calculate the computational cost of a given contraction
 *     for each contraction step, the number of flops is summed up
@@ -19,6 +19,7 @@
       include 'def_contraction.h'
       include 'def_graph.h'
       include 'def_strinf.h'
+      include 'def_orbinf.h'
       include 'mdef_operator_info.h'
       include 'ifc_operators.h'
       include 'def_contraction_info.h'
@@ -28,12 +29,14 @@
      &     ntest = 00
       
       integer, intent(in) ::
-     &     ngas, ihpvgas(ngas), nsym, iarc, njoined_res
+     &     iarc, njoined_res
       type(contraction), intent(in) ::
      &     contr
+      type(orbinf), intent(in), target ::
+     &     orb_info
       integer, intent(in) ::
      &     occ_vtx(ngastp,2,contr%nvtx+njoined_res),
-     &     irestr_vtx(2,ngas,2,2,contr%nvtx+njoined_res),
+     &     irestr_vtx(2,orb_info%ngas,2,2,contr%nvtx+njoined_res),
      &     info_vtx(2,contr%nvtx+njoined_res)
       type(operator_info), intent(in) ::
      &     op_info
@@ -49,20 +52,20 @@
       logical, parameter ::
      &     new_route = .true.
       integer ::
-     &     nvtx, narc,
+     &     nvtx, narc, ngas, nsym,
      &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt
       integer ::
      &     iocc_cnt(ngastp,2,contr%nvtx),
      &     iocc_ex1(ngastp,2,contr%nvtx),
      &     iocc_ex2(ngastp,2,contr%nvtx),
-     &     irst_res(2,ngas,2,2,contr%nvtx),
+     &     irst_res(2,orb_info%ngas,2,2,contr%nvtx),
      &     iocc_op1(ngastp,2,contr%nvtx),
      &     iocc_op2(ngastp,2,contr%nvtx),
      &     iocc_op1op2(ngastp,2,contr%nvtx),
-     &     irst_op1op2(2,ngas,2,2,contr%nvtx),
+     &     irst_op1op2(2,orb_info%ngas,2,2,contr%nvtx),
      &     igr_op1op2(ngastp,2,contr%nvtx),
-     &     irst_op1(2,ngas,2,2,contr%nvtx),
-     &     irst_op2(2,ngas,2,2,contr%nvtx), 
+     &     irst_op1(2,orb_info%ngas,2,2,contr%nvtx),
+     &     irst_op2(2,orb_info%ngas,2,2,contr%nvtx), 
      &     mst_op(2), mst_op1op2,
      &     igamt_op(2), igamt_op1op2,
      &     njoined_op(2), njoined_op1op2, njoined_cnt,
@@ -72,6 +75,9 @@
      &     merge_op1op2(2*contr%nvtx*contr%nvtx),
      &     merge_op2op1(2*contr%nvtx*contr%nvtx)
 c     &     nca_blk(2,7)
+
+      integer, pointer ::
+     &     ihpvgas(:,:)
 
       type(contraction_info) ::
      &     cnt_info
@@ -91,6 +97,10 @@ c        call prt_contr2(luout,contr,op_info)
 c dbg
       end if
 
+      nsym = orb_info%nsym
+      ngas = orb_info%ngas
+      ihpvgas => orb_info%ihpvgas
+
       nvtx = contr%nvtx
       narc = contr%narc
 
@@ -108,7 +118,7 @@ c dbg
      &     njoined_op, njoined_op1op2, njoined_cnt,
      &     merge_op1,merge_op2,merge_op1op2,merge_op2op1,
      &     contr,njoined_res,occ_vtx,irestr_vtx,info_vtx,iarc,
-     &     irst_res,ihpvgas,ngas)
+     &     irst_res,orb_info)
 
       ! count particle, hole, (active) spaces involved:
       ! in intermediate
@@ -172,21 +182,20 @@ c dbg
       ! check whether intermediate can be addressed by
       ! the available graphs (preliminary fix)
       possible = possible.and.
-     &     check_grph4occ(iocc_op1op2,irst_op1op2,
-     &     str_info,ihpvgas,ngas,njoined_op1op2)
+     &     check_grph4occ(iocc_op1op2,irst_op1op2,njoined_op1op2,
+     &     str_info,orb_info)
       possible = possible.and.
-     &     check_grph4occ(iocc_op1,irst_op1,
-     &     str_info,ihpvgas,ngas,njoined_op(1))
+     &     check_grph4occ(iocc_op1,irst_op1,njoined_op(1),
+     &     str_info,orb_info)
       possible = possible.and.
-     &     check_grph4occ(iocc_op2,irst_op2,
-     &     str_info,ihpvgas,ngas,njoined_op(2))
+     &     check_grph4occ(iocc_op2,irst_op2,njoined_op(2),
+     &     str_info,orb_info)
 
       ! if not: do not allow this factorization
       if (.not.possible)
      &     cost(1:3) = huge(cost(1))
 
       if (possible) then
-c        if (new_route) then
           call init_cnt_info(cnt_info,
      &         iocc_op1,iocc_ex1,njoined_op(1),
      &            iocc_op2,iocc_ex2,njoined_op(2),
@@ -200,22 +209,14 @@ c        if (new_route) then
      &         irst_op1, irst_op2, irst_op1op2, irst_op1op2,
      &         merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
-     &         str_info,ihpvgas,ngas)
+     &         str_info,orb_info)
           call dummy_contr2(flops,xmemtot,xmemblk,
      &         cnt_info,
      &         mst_op(1),mst_op(2),mst_op1op2,
      &         igamt_op(1),igamt_op(2),igamt_op1op2,
-     &         str_info,ngas,ihpvgas,nsym)          
+     &         str_info,ngas,nsym)          
 
           call dealloc_cnt_info(cnt_info)
-c        else
-c          call dummy_contr(flops,xmemtot,xmemblk,
-c     &       iocc_op1,iocc_op2,iocc_ex1,iocc_ex2,
-c     &       iocc_op1op2,iocc_cnt,
-c     &       irst_op1,irst_op2,irst_op1op2,
-c     &       mst_op,mst_op1op2,igamt_op,igamt_op1op2,
-c     &       str_info,ngas,ihpvgas,nsym)
-c        end if
 
         cost(1) = cost(1)+flops
         cost(2) = max(cost(2),xmemtot)

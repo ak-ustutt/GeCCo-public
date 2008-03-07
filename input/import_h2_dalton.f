@@ -70,7 +70,7 @@ c      type(operator), pointer ::
 c     &     hop
 
       integer, pointer ::
-     &     ireost(:), ihpvgas(:), igamorb(:),
+     &     ireost(:), ihpvgas(:,:), igamorb(:),
      &     igasorb(:), idx_gas(:), iad_gas(:)
 
       real(8) ::
@@ -177,8 +177,9 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
           igam(4) = igamorb(idxprqs(4))
           idss(2) = igasorb(idxprqs(2))
           idss(4) = igasorb(idxprqs(4))
-          igtp(2) = ihpvgas(idss(2))
-          igtp(4) = ihpvgas(idss(4))
+!! OPEN SHELL: NEEDS ADAPTATION
+          igtp(2) = ihpvgas(idss(2),1)
+          igtp(4) = ihpvgas(idss(4),1)
           if (iad_gas(idss(2)).ne.2.or.iad_gas(idss(4)).ne.2) cycle
           idss(2) = idss(2)-idx_gas(igtp(2))+1
           idss(4) = idss(4)-idx_gas(igtp(4))+1
@@ -195,8 +196,8 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             igam(3) = igamorb(idxprqs(3))
             idss(1) = igasorb(idxprqs(1))
             idss(3) = igasorb(idxprqs(3))
-            igtp(1) = ihpvgas(idss(1))
-            igtp(3) = ihpvgas(idss(3))
+            igtp(1) = ihpvgas(idss(1),1)
+            igtp(3) = ihpvgas(idss(3),1)
             if (iad_gas(idss(1)).ne.2.or.iad_gas(idss(3)).ne.2) cycle
             idss(1) = idss(1)-idx_gas(igtp(1))+1
             idss(3) = idss(3)-idx_gas(igtp(3))+1
@@ -229,8 +230,8 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
             igam(3) = igamorb(idxprqs(3))
             idss(1) = igasorb(idxprqs(1))
             idss(3) = igasorb(idxprqs(3))
-            igtp(1) = ihpvgas(idss(1))
-            igtp(3) = ihpvgas(idss(3))
+            igtp(1) = ihpvgas(idss(1),1)
+            igtp(3) = ihpvgas(idss(3),1)
             idss(1) = idss(1)-idx_gas(igtp(1))+1
             idss(3) = idss(3)-idx_gas(igtp(3))+1
 

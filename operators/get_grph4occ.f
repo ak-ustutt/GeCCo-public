@@ -1,7 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine get_grph4occ(idx_gr,iocc,irst,
-     &     str_info,ihpvgas,ngas,njoined,error_exit)
-! pass orb_info instead
+      subroutine get_grph4occ(idx_gr,iocc,irst,njoined,
+     &     str_info,orb_info,error_exit)
 ! error_exit -> error_handling
 *----------------------------------------------------------------------*
 *     get graphs for each HPV/CA from occupation + restriction
@@ -11,12 +10,16 @@
       include 'stdunit.h'
       include 'def_graph.h'
       include 'def_strinf.h'
+      include 'def_orbinf.h'
 
       type(strinf), intent(in) ::
      &     str_info
+      type(orbinf), intent(in), target ::
+     &     orb_info
       integer, intent(in) ::
-     &     ngas, ihpvgas(ngas), njoined,
-     &     iocc(ngastp,2,njoined), irst(2,ngas,2,2,njoined)
+     &     njoined,
+     &     iocc(ngastp,2,njoined),
+     &     irst(2,orb_info%ngas,2,2,orb_info%nspin,njoined)
       logical, intent(in) ::
      &     error_exit
 
@@ -24,10 +27,16 @@
      &     idx_gr(ngastp,2,njoined)
 
       integer ::
-     &     ica, igastp, igtyp, ngr4typ, igr4typ,
+     &     nspin, ngas, ica, igastp, igtyp, ngr4typ, igr4typ,
      &     idxgraph, ijoin, ii
+      integer, pointer ::
+     &     ihpvgas(:,:) 
       logical, external ::
      &     restr_cmp
+
+      ngas = orb_info%ngas
+      nspin = orb_info%nspin
+      ihpvgas => orb_info%ihpvgas
 
       outer_loop: do ijoin = 1, njoined
        do ica = 1, 2
@@ -47,9 +56,9 @@
           gr4typ: do igr4typ = 1, ngr4typ
             ! actual index of graph
             idxgraph = str_info%gtab(1+igr4typ,igtyp)
-            if (restr_cmp(irst(1,1,1,1,ijoin),
-     &                    str_info%igas_restr(1,1,1,idxgraph),
-     &                    ica,igastp,ihpvgas,ngas)) exit gr4typ
+            if (restr_cmp(irst(1,1,1,1,1,ijoin),
+     &                    str_info%igas_restr(1,1,1,1,idxgraph),
+     &                    ica,igastp,ihpvgas,ngas,nspin)) exit gr4typ
             idxgraph = -idxgraph ! indicate that this was not what
                                  ! we wanted
           end do gr4typ
@@ -59,7 +68,7 @@
               write(luout,*) 'Operator was'
               call wrt_occ_n(luout,iocc,njoined)
               do ii = 1, njoined
-                call wrt_rstr(luout,irst(1,1,1,1,ii),ngas)
+                call wrt_rstr(luout,irst(1,1,1,1,1,ii),ngas)
               end do
               write(luout,*) 'C/A, GAS-TYP, VTX: ',ica,igastp,ijoin
               call quit(1,'get_grph4occ','string not in list')

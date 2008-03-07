@@ -29,7 +29,7 @@
       type(cntr_arc), pointer ::
      &     arc(:)
       integer, pointer ::
-     &     narc, nsym, svertex(:), ihpvgas(:), igassh(:,:),
+     &     narc, nsym, svertex(:), ihpvgas(:,:), igassh(:,:),
      &     sv_arc(:,:), cnt_strength(:)
 
       if (ntest.ge.100)
@@ -40,7 +40,7 @@
       igassh  => orb_info%igassh
       nsym => orb_info%nsym
       do igas = 1, orb_info%ngas
-        weight(ihpvgas(igas)) = weight(ihpvgas(igas))+
+        weight(ihpvgas(igas,1)) = weight(ihpvgas(igas,1))+
      &       sum(igassh(1:nsym,igas))
       end do
 

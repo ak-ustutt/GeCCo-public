@@ -35,12 +35,13 @@
      &     iblk, ioffblk, ijoin, idef, idx, idx_co, idx_contra,
      &     njoined_co, njoined_contra, nblk
       integer, pointer ::
-     &     hpvxgas(:), ngas
+     &     hpvxgas(:,:), ngas, nspin
 
       if (ntest.ge.100)
      &     call write_title(luout,wst_dbg_subr,
      &     'set_contrav_op speaking')
       
+      nspin => orb_info%nspin
       ngas => orb_info%ngas
       hpvxgas => orb_info%ihpvgas
 
@@ -134,24 +135,28 @@
         idx_co     = idx_co    +1
         if (add_before) then
           idx_contra = idx_contra+1
-          op_contra%igasca_restr(1:2,1:ngas,1:2,1:2,idx_contra) =
-     &        irest_xdn(1,op_co%igasca_restr(1:2,1:ngas,1:2,1:2,idx_co),
-     &         hpvxgas,ngas)
+          op_contra%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,idx_contra)=
+     &          irest_xdn (  1,
+     &        op_co%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,idx_co),
+     &                       hpvxgas,ngas,nspin )
         end if
         do ijoin = 1, njoined_co-1
           idx_contra = idx_contra+1
-          op_contra%igasca_restr(1:2,1:ngas,1:2,1:2,idx_contra) =
-     &      irest_xdn(2,op_co%igasca_restr(1:2,1:ngas,1:2,1:2,idx_co),
-     &         hpvxgas,ngas)
-     &     +irest_xdn(1,op_co%igasca_restr(1:2,1:ngas,1:2,1:2,idx_co+1),
-     &         hpvxgas,ngas)
+          op_contra%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,idx_contra)=
+     &          irest_xdn (  2,
+     &        op_co%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,idx_co),
+     &                       hpvxgas,ngas,nspin)
+     &        + irest_xdn (  1,
+     &        op_co%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,idx_co+1),
+     &                       hpvxgas,ngas,nspin)
           idx_co = idx_co + 1          
         end do
         if (add_after) then
           idx_contra = idx_contra+1
-          op_contra%igasca_restr(1:2,1:ngas,1:2,1:2,idx_contra) =
-     &        irest_xdn(2,op_co%igasca_restr(1:2,1:ngas,1:2,1:2,idx_co),
-     &         hpvxgas,ngas)
+          op_contra%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,idx_contra)=
+     &          irest_xdn (  2,
+     &        op_co%igasca_restr(1:2,1:ngas,1:2,1:2,1:nspin,idx_co),
+     &                       hpvxgas,ngas,nspin)
         end if
 
       end do
@@ -165,7 +170,7 @@
             idx = idx+1
             call wrt_occ_rstr(luout,iblk,
      &           op_contra%ihpvca_occ(1,1,idx),
-     &           op_contra%igasca_restr(1,1,1,1,idx),ngas)
+     &           op_contra%igasca_restr(1,1,1,1,1,idx),ngas,nspin)
           end do
         end do
       end if
