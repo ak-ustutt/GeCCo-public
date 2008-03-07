@@ -77,7 +77,7 @@
         ! else: 1-electron operators only ....
         if (max(hop%ica_occ(1,iocc_cls),hop%ica_occ(2,iocc_cls)).ne.1)
      &       cycle
-        ! ... but the only normal ones (i.e. no 
+        ! ... but only the normal ones (i.e. no 
         ! external/auxiliary orbitals)
         if (iextr.gt.0.and.max(hop%ihpvca_occ(iextr,1,iocc_cls),
      &                         hop%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
@@ -114,7 +114,7 @@
           imo_off = 0
           gam_loop: do isym = 1, nsym
             
-            ! get the lengthes of strings for current Ms, IRREP
+            ! get the lengths of strings for current Ms, IRREP
             lena=str_info%g(iga)%lenstr_gm(isym,idxms)
             lenc=str_info%g(igc)%lenstr_gm(isym,idxms)
             if (lena.le.0.or.lenc.le.0) then

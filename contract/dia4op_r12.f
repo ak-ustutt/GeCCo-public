@@ -26,7 +26,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       logical, intent(in) ::
      &     use_x
@@ -320,15 +320,16 @@ c dbg
               end do
 
 c dbg
-              do idx = 1, nloop
-                print *,'idx, off, len: ',idx, ioff_xsum(idx), nstr(idx)
-                print *,'xsum = ',xsum(ioff_xsum(idx)+1:
-     &                                 ioff_xsum(idx)+nstr(idx))
-                print *,'xmet = ',xmet(ioff_xsum(idx)+1:
-     &                                 ioff_xsum(idx)+nstr(idx))
-              end do
-              print *,'loop_h, loop_p, loop_bx: ',
-     &                 loop_h, loop_p, loop_bx
+c              do idx = 1, nloop
+c                print *,'idx, off, len: ',idx, ioff_xsum(idx), nstr(idx)
+c                print *,'xsum = ',xsum(ioff_xsum(idx)+1:
+c     &                                 ioff_xsum(idx)+nstr(idx))
+c                print *,'xmet = ',xmet(ioff_xsum(idx)+1:
+c     &                                 ioff_xsum(idx)+nstr(idx))
+c              end do
+c              print *,'nloop',nloop
+c              print *,'loop_h, loop_p, loop_bx: ',
+c     &                 loop_h, loop_p, loop_bx
 c dbg
 
               ! R12-doubles case:
@@ -354,14 +355,20 @@ c dbg
                 cycle
               end if
 
-              if (nloop.ne.3)
-     &             call quit(1,'dia4op_r12',
-     &           'My assumptions are not fulfilled')
+              if (nloop.ne.3)then
+c     &             call quit(1,'dia4op_r12',
+c     &           'My assumptions are not fulfilled')
+                write(luout,*) 'Warning: R12 N-tuples Cycle 1'
+                cycle
+              endif
 
               ! R12 n-tuples case
-              if (loop_h.eq.-1.or.loop_bx.eq.-1.or.loop_p.eq.-1)
-     &             call quit(1,'dia4op_r12',
-     &               'Something is wrong (2)!')
+              if (loop_h.eq.-1.or.loop_bx.eq.-1.or.loop_p.eq.-1)then
+c     &             call quit(1,'dia4op_r12',
+c     &               'Something is wrong (2)!')
+                write(luout,*) 'Warning: R12 N-tuples Cycle 2'
+                cycle
+              endif
 
               ! hard-wired implementation:
               ioff_h = ioff_xsum(loop_h)
@@ -388,9 +395,9 @@ c dbg
         end do msa_loop
 
 c dbg
-        if (ntest.ge.100)
-     &       print *,'final buffer: ',
-     &       buffer(1:me_dia%len_op_occ(iocc_cls))
+c        if (ntest.ge.100)
+c     &       print *,'final buffer: ',
+c     &       buffer(1:me_dia%len_op_occ(iocc_cls))
 c dbg
         ! shift
         ilen = me_dia%len_op_occ(iocc_cls)

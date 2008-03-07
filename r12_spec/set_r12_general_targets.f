@@ -132,7 +132,7 @@ c      call set_rule(op_ttr_bar,ttype_op,CLONE_OP,
 c     &              op_ttr_bar,1,1,
 c     &              parameters,1,tgt_info)
       
-      ! V^{ij}_{kl}
+      ! V^{ij}_{pq}
       call add_target(op_v_inter,ttype_op,.false.,tgt_info)
       call xop_parameters(-1,parameters,
      &     .false.,2,2,0,2)
@@ -142,58 +142,79 @@ c     &              parameters,1,tgt_info)
       
       ! the adjoint
       call add_target(op_vbar_inter,ttype_op,.false.,tgt_info)
-      call set_dependency(op_vbar_inter,op_v_inter,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_v_inter,.false.) ! <- dagger=.false.
-                                   ! we really need the transposed list
-      call set_rule(op_vbar_inter,ttype_op,CLONE_OP,
+      call xop_parameters(-1,parameters,
+     &     .false.,2,2,0,2)
+      call set_rule(op_vbar_inter,ttype_op,DEF_R12INTERM,
      &              op_vbar_inter,1,1,
      &              parameters,1,tgt_info)
+c      call set_dependency(op_vbar_inter,op_v_inter,tgt_info)
+c      call cloneop_parameters(-1,parameters,
+c     &                        op_v_inter,.true.) ! <- dagger=.false.
+c                                   ! we really need the transposed list
+c      call set_rule(op_vbar_inter,ttype_op,CLONE_OP,
+c     &              op_vbar_inter,1,1,
+c     &              parameters,1,tgt_info)
       
+      ! B intermediate
+      call add_target(op_b_inter,ttype_op,.false.,tgt_info)
+      call xop_parameters(-1,parameters,
+     &     .false.,2,2,0,2)
+      call set_rule(op_b_inter,ttype_op,DEF_R12INTERM,
+     &              op_b_inter,1,1,
+     &              parameters,1,tgt_info)
+
+c      call add_target(op_b_inter,ttype_op,.false.,tgt_info)
+c      call set_dependency(op_b_inter,op_v_inter,tgt_info)
+c      call cloneop_parameters(-1,parameters,
+c     &                        op_v_inter,.false.) ! <- dagger=.false.
+c      call set_rule(op_b_inter,ttype_op,CLONE_OP,
+c     &              op_b_inter,1,1,
+c     &              parameters,1,tgt_info)
+
       ! R12^{2} integrals
       call add_target(op_f2,ttype_op,.false.,tgt_info)
-      call set_dependency(op_f2,op_v_inter,tgt_info)
+      call set_dependency(op_f2,op_b_inter,tgt_info)
       call cloneop_parameters(-1,parameters,
-     &                        op_v_inter,.false.) ! <- dagger=.false.
+     &                        op_b_inter,.false.) ! <- dagger=.false.
       call set_rule(op_f2,ttype_op,CLONE_OP,
      &              op_f2,1,1,
      &              parameters,1,tgt_info)
 
-      ! B intermediate
-      call add_target(op_b_inter,ttype_op,.false.,tgt_info)
-      call set_dependency(op_b_inter,op_v_inter,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_v_inter,.false.) ! <- dagger=.false.
-      call set_rule(op_b_inter,ttype_op,CLONE_OP,
-     &              op_b_inter,1,1,
-     &              parameters,1,tgt_info)
-
       ! X intermediate
       call add_target(op_x_inter,ttype_op,.false.,tgt_info)
-      call set_dependency(op_x_inter,op_v_inter,tgt_info)
+      call set_dependency(op_x_inter,op_b_inter,tgt_info)
       call cloneop_parameters(-1,parameters,
-     &                        op_v_inter,.false.) ! <- dagger=.false.
+     &                        op_b_inter,.false.) ! <- dagger=.false.
       call set_rule(op_x_inter,ttype_op,CLONE_OP,
      &              op_x_inter,1,1,
      &              parameters,1,tgt_info)
 
       ! inverse of B
       call add_target(op_b_inv,ttype_op,.false.,tgt_info)
-      call set_dependency(op_b_inv,op_v_inter,tgt_info)
+      call set_dependency(op_b_inv,op_b_inter,tgt_info)
       call cloneop_parameters(-1,parameters,
-     &                        op_v_inter,.false.) ! <- dagger=.false.
+     &                        op_b_inter,.false.) ! <- dagger=.false.
       call set_rule(op_b_inv,ttype_op,CLONE_OP,
      &              op_b_inv,1,1,
      &              parameters,1,tgt_info)
 
       ! inverse of X
       call add_target(op_x_inv,ttype_op,.false.,tgt_info)
-      call set_dependency(op_x_inv,op_v_inter,tgt_info)
+      call set_dependency(op_x_inv,op_b_inter,tgt_info)
       call cloneop_parameters(-1,parameters,
-     &                        op_v_inter,.false.) ! <- dagger=.false.
+     &                        op_b_inter,.false.) ! <- dagger=.false.
       call set_rule(op_x_inv,ttype_op,CLONE_OP,
      &              op_x_inv,1,1,
      &              parameters,1,tgt_info)
+
+      ! Exchange operator, K.
+      call add_target(op_exchange,ttype_op,.false.,tgt_info)
+      call xop_parameters(-1,parameters,
+     &     .false.,1,1,0,2)
+      call set_rule(op_exchange,ttype_op,DEF_R12INT,
+     &              op_exchange,1,1,
+     &              parameters,1,tgt_info)
+      
 
 *----------------------------------------------------------------------*
 *     Formulae
@@ -509,6 +530,25 @@ c     &              parameters,1,tgt_info)
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
+      ! Exchange integrals, K.
+      call add_target(mel_exchange,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_exchange,op_exchange,tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_exchange
+      labels(2) = op_exchange
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(mel_exchange,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_exchange
+      call set_rule(mel_exchange,ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
       ! ---------------------------------------
       ! B) definition of list for intermediates
       ! ---------------------------------------
@@ -563,13 +603,16 @@ c     &              parameters,1,tgt_info)
 
       ! B^-1 for "diagonal"
       call add_target(mel_b_inv,ttype_opme,.true.,tgt_info)
-      call set_dependency(mel_b_inv,op_diar12,tgt_info)
+c      call set_dependency(mel_b_inv,op_diar12,tgt_info)
+      call set_dependency(mel_b_inv,op_b_inv,tgt_info)
       call set_dependency(mel_b_inv,eval_r12_inter,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_b_inv
-      labels(2) = op_diar12
-c      labels(2) = op_b_inter ! actually, B^-1 should have the contravariant shape
-c                             ! but as long as we do not formally calculate with
+c      labels(2) = op_diar12
+      labels(2) = op_b_inv ! actually, B^-1 should have the 
+c                             ! contravariant shape
+c                             ! but as long as we do not formally 
+c                             ! calculate with
 c                             ! this entity this does not matter
       call me_list_parameters(-1,parameters,
      &     0,0,1,0,0)
@@ -583,7 +626,7 @@ c                             ! this entity this does not matter
      &              parameters,1,tgt_info)
 
       ! diagonal of B(ij) for testing
-      call add_target(mel_b_dia,ttype_opme,.true.,tgt_info)
+      call add_target(mel_b_dia,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_b_dia,op_diar12,tgt_info)
       call set_dependency(mel_b_dia,eval_r12_inter,tgt_info)
       call set_dependency(mel_b_dia,mel_ham,tgt_info)
@@ -604,12 +647,12 @@ c                             ! this entity this does not matter
      &              parameters,1,tgt_info)
       
       ! X^-1 for testing
-      call add_target(mel_x_inv,ttype_opme,.true.,tgt_info)
+      call add_target(mel_x_inv,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_x_inv,op_diar12,tgt_info)
       call set_dependency(mel_x_inv,eval_r12_inter,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_x_inv
-      labels(2) = op_diar12
+      labels(2) = op_x_inter
       call me_list_parameters(-1,parameters,
      &     0,0,1,0,0)
       call set_rule(mel_x_inv,ttype_opme,DEF_ME_LIST,

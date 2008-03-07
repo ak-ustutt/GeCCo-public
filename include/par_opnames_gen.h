@@ -53,7 +53,8 @@
      &     op_b_inter*1    = 'B',
      &     op_b_inv*5      = 'B_INV',
      &     op_x_inter*1    = 'X',
-     &     op_x_inv*5      = 'X_INV'
+     &     op_x_inv*5      = 'X_INV',
+     &     op_exchange*1   = 'K'
       ! generic ME-list names
       character, parameter ::
      &     mel_cclg0*6      = 'L0(CC)',
@@ -110,6 +111,7 @@
      &     mel_rinba*8      = 'R12+-GEM',
      &     mel_ttr*7        = 'TTR-INT',
      &     mel_f2*7         = 'RSQ-INT',
+     &     mel_exchange*5   = 'K-INT',
      &     mel_v_inter*7    = 'V-INTER',
      &     mel_v_def*11     = 'DEF-V-INTER',
      &     mel_vbar_inter*7 = 'V+-INTER',
@@ -130,6 +132,10 @@
      &     mel_mpr12lg0def*13   = 'DEF-L0(MPR12)',
      &     mel_mpr12lg0*9   = 'L0(MPR12)',
      &     mel_mpr12en0def*13   = 'DEF-E0(MPR12)',
-     &     mel_mpr12en0*9   = 'E0(MPR12)'
+     &     mel_mpr12en0*9   = 'E0(MPR12)',
+     &     mel_ccr12lg0def*13   = 'DEF-L0(CCR12)',
+     &     mel_ccr12lg0*9   = 'L0(CCR12)',
+     &     mel_ccr12en0def*13   = 'DEF-E0(CCR12)',
+     &     mel_ccr12en0*9   = 'E0(CCR12)'
 	  
       

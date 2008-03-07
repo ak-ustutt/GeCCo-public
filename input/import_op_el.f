@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 10
 
       include 'stdunit.h'
       include 'def_graph.h'
@@ -69,13 +69,20 @@
 
         case(op_f2)
           mode=1
-          call import_r12_dalton(mel_target,'MO_R2',
+          call import_r12_dalton(mel_target,'MO_F2',
      &         mode,str_info,orb_info)
 
         case(op_ttr)
           mode=2
           call import_r12_dalton(mel_target,'MO_TTR',
      &         mode,str_info,orb_info) 
+
+        case(op_exchange)
+c          call import_exchange_dalton(mel_target,'MO_K',
+c     &                                str_info,orb_info)
+c dbg
+          print *,'Hello'
+c dbg
 
         case default
           call quit(1,'import_op_el',

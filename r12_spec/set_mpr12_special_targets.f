@@ -38,6 +38,14 @@
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting special targets for MP-R12 ...'
 
+      ! get keyword values
+      call get_argument_value('method.R12','minexc',ival=min_rank)
+      call get_argument_value('method.R12','maxexc',ival=max_rank)
+      call get_argument_value('method.MP','level',ival=level)
+      call get_argument_value('method.R12','ansatz',ival=ansatz)
+      approx(1:12) = ' '
+      call get_argument_value('method.R12','approx',str=approx)
+
 *----------------------------------------------------------------------*
 *     Operators:
 *----------------------------------------------------------------------*
@@ -55,8 +63,6 @@
 
       ! residual
       call add_target(op_omgr12,ttype_op,.false.,tgt_info)
-      call get_argument_value('method.R12','minexc',ival=min_rank)
-      call get_argument_value('method.R12','maxexc',ival=max_rank)
       call xop_parameters(-1,parameters,
      &     .false.,min_rank,max_rank,0,2)
       call set_rule(op_omgr12,ttype_op,DEF_R12INTERM,
@@ -75,10 +81,6 @@ c     &              parameters,1,tgt_info)
 *----------------------------------------------------------------------*
 *     Formulae
 *----------------------------------------------------------------------*
-      call get_argument_value('method.MP','level',ival=level)
-      call get_argument_value('method.R12','ansatz',ival=ansatz)
-      approx(1:12) = ' '
-      call get_argument_value('method.R12','approx',str=approx)
 
       call add_target(form_mpr12lg0,ttype_frm,.false.,tgt_info)
       ! (a) set formal Lagrangian (in 'complete' basis)
@@ -274,7 +276,8 @@ c     &              parameters,1,tgt_info)
       call add_target(solve_mpr12_gs,ttype_gen,.true.,tgt_info)
       call set_dependency(solve_mpr12_gs,mel_dia1,tgt_info)
       call set_dependency(solve_mpr12_gs,mel_b_inv,tgt_info)
-      call set_dependency(solve_mpr12_gs,mel_x_inv,tgt_info)
+      call set_dependency(solve_mpr12_gs,mel_b_dia,tgt_info)
+c      call set_dependency(solve_mpr12_gs,mel_x_inv,tgt_info)
       call set_dependency(solve_mpr12_gs,fopt_mpr12_0,tgt_info)
       call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
 c      call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
@@ -287,7 +290,11 @@ c      call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
       labels(6) = mel_b_dia
       labels(7) = mel_mpr12en0
       labels(8) = fopt_mpr12_0
-      labels(9) = mel_b_inv    ! or mel_b_inter
+      if(trim(approx).eq.'A')then
+        labels(9) = mel_b_inv   ! or mel_b_inter
+      else
+        labels(9) = mel_b_inter
+      endif
       labels(10) = mel_x_inter
       labels(11) = mel_ham
       call set_rule(solve_mpr12_gs,ttype_opme,SOLVENLEQ,

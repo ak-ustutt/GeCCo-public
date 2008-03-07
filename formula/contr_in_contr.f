@@ -13,7 +13,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 000
 
       type(contraction), intent(in) ::
      &     contra, contrb
@@ -97,7 +97,6 @@ c      allocate(extended_check(nvtxb))
           ! we must ensure, that this operator correctly connects with
           ! members of A
           extended_check = .true.
-
         end do
         if (.not.found) exit
       end do
@@ -188,11 +187,9 @@ c      allocate(extended_check(nvtxb))
         if (ntest.ge.150) then
           write(luout,*) 'the connectivity table'
           do idx = 1, nvtxb
-            write(luout,'(3x,10i5)') conn_tab(1:nvtxb,idx)
+            write(luout,'(3x,10i5)') conn_tab(idx,1:nvtxb)
           end do
-        end if
 
-        if (ntest.ge.150) then
           write(luout,*) 'before shifting (first,last=',
      &         idx_first,idx_last,')'
           write(luout,'(3x,10i5)') ivtxa4ivtxb(idx_first:idx_last)
@@ -330,11 +327,19 @@ c      allocate(extended_check(nvtxb))
             if (contrb%arc(iarc)%link(1).eq.idx_b) then
               cnt_b(1:ngastp,1:2,ninter) =
      &           cnt_b(1:ngastp,1:2,ninter) +
-     &           contrb%arc(iarc)%occ_cnt(1:ngastp,1:2)
+c     &           contrb%arc(iarc)%occ_cnt(1:ngastp,1:2)
+c dbg
+     &           iocc_dagger(contrb%arc(iarc)%occ_cnt(1:ngastp,1:2))
+              print *,'no dagger'
+c dbg
             else
               cnt_b(1:ngastp,1:2,ninter) =
      &           cnt_b(1:ngastp,1:2,ninter) +
-     &           iocc_dagger(contrb%arc(iarc)%occ_cnt(1:ngastp,1:2))
+c     &           iocc_dagger(contrb%arc(iarc)%occ_cnt(1:ngastp,1:2))
+c dbg
+     &           contrb%arc(iarc)%occ_cnt(1:ngastp,1:2)
+              print *,'dagger'
+c dbg
             end if
           end do
           idx_a = idx_b

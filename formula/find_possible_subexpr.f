@@ -28,7 +28,7 @@
       include 'def_formula_item_list.h'
 
       integer, parameter ::
-     &     ntest = 00,
+     &     ntest = 100,
      &     maxposs = 128
 
       integer, intent(out) ::
@@ -60,6 +60,10 @@
         write(luout,*) 'output from find_possible_subexpr'
         write(luout,*) '================================='
       end if
+
+c dbg
+      call print_form_list(luout,fl_intm,op_info)
+c dbg
 
       nposs = 0
       nullify(fpl_intm_start%prev)
@@ -97,7 +101,7 @@
 
         ! is intermediate contained in current term?
         if (contr_in_contr(fl_intm_pnt%contr,
-     &                     fl_tgt%contr,     op_info)) then
+     &                     fl_tgt%contr,op_info)) then
           nposs = nposs+1
           if (nposs.gt.maxposs)
      &         call quit(1,'find_possible_subexpr',

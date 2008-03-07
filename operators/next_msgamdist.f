@@ -22,6 +22,10 @@
      &     first_msdist4, first_gamdist4,
      &     next_msdist4, next_gamdist4
 
+c dbg
+c      print *,'First',first
+c dbg
+
       if (first) then
         ! initialize
         next_msgamdist = first_msdist4(ms_dist(1,1),ms_c,iocc(1,1))
@@ -126,12 +130,22 @@
       integer, intent(inout) ::
      &     msdis(4)
 
+c dbg
+c      print *,'First msgam'
+c dbg
+
       first_msdist4 = .true.
       ! start with max value for X, P and V
       msdis(2) = ihpvdis(2)
       msdis(3) = ihpvdis(3)
       msdis(4) = ihpvdis(4)
       msdis(1) = mst-msdis(2)-msdis(3)-msdis(4)
+c dbg
+c      print *,'msdis(4),ihpvdis(4)',msdis(4),ihpvdis(4)
+c      print *,'msdis(3),ihpvdis(3)',msdis(3),ihpvdis(3)
+c      print *,'msdis(2),ihpvdis(2)',msdis(2),ihpvdis(2)
+c      print *,'msdis(1),ihpvdis(1)',msdis(1),ihpvdis(1)
+c dbg
       ! if this is an acceptable value for msdis --> exit
       if (abs(msdis(1)).le.ihpvdis(1)) return
       

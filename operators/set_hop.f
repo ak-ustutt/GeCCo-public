@@ -51,8 +51,9 @@
 
       do ica = 1, 2
         do igastp = 1, ngastp
-          if (orb_info%nactt_hpv(igastp).gt.0
-     &         .or.igastp.eq.iextr.and.explicit) then
+          if ((orb_info%nactt_hpv(igastp).gt.0
+     &         .or.igastp.eq.IEXTR.and.explicit)
+     &         .and.(igastp.ne.IEXTR.or.explicit)) then
             hpvx_mnmx(1,igastp,ica) = 0
             hpvx_mnmx(2,igastp,ica) = max_rank
           else

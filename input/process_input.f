@@ -104,13 +104,6 @@
       call get_argument_value('calculate.routes','str_block',
      &     ival=len_str_block)
 
-      ! set method specific switches
-      ! CC options
-      call cc_input()
-
-c      ! R12 options
-c      call r12_input()
-
       return
 
       contains

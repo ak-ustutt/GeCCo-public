@@ -20,7 +20,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       logical, parameter ::
      &     strict = .false.
 
@@ -264,7 +264,7 @@ c            call wrt_occ_n(luout,iocc,1)
             if (contr%arc(iarc)%link(il).lt.ivtxder(ider).or.
      &           idxmlt.gt.0) then
               ! if vertex was replaced only or if
-              ! vertices below ivtxder: unchanged
+              ! vertices' indices below ivtxder: unchanged
               cur_conder%contr%arc(jarc)%link(il) =
      &             contr%arc(iarc)%link(il)
             else
@@ -284,24 +284,30 @@ c            call wrt_occ_n(luout,iocc,1)
         xarc_loop: do ixarc = 1, contr%nxarc
           ! if only derivative is taken and 
           ! vertex ivtxder is involved:
-          if ((contr%xarc(iarc)%link(1).eq.ivtxder(ider)).and.
+          if ((contr%xarc(ixarc)%link(1).eq.ivtxder(ider)).and.
      &       idxmlt.eq.0) then
             cycle xarc_loop
           end if
           jxarc = jxarc+1
           ! change vertex numbers
-          if (contr%arc(ixarc)%link(1).lt.ivtxder(ider).or.
+          if (contr%xarc(ixarc)%link(1).lt.ivtxder(ider).or.
      &           idxmlt.gt.0) then
             ! if vertex was replaced only or if
-            ! vertices below ivtxder: unchanged
+            ! vertices' indices below ivtxder: unchanged
             cur_conder%contr%xarc(jxarc)%link =
      &           contr%xarc(ixarc)%link
           else
             ! all vertices above ivtxder: shift by -1
             cur_conder%contr%xarc(jxarc)%link(1) =
      &           contr%xarc(ixarc)%link(1)-1
-            cur_conder%contr%xarc(jxarc)%link(2) =
-     &           contr%xarc(ixarc)%link(2)
+            if(contr%xarc(ixarc)%link(1).eq.contr%xarc(ixarc)%link(2))
+     &           then
+              cur_conder%contr%xarc(jxarc)%link(2) =
+     &             contr%xarc(ixarc)%link(2)-1
+            else
+              cur_conder%contr%xarc(jxarc)%link(2) =
+     &             contr%xarc(ixarc)%link(2)
+            endif
           end if
           cur_conder%contr%xarc(jxarc)%occ_cnt(1:ngastp,1:2) =
      &         contr%xarc(ixarc)%occ_cnt(1:ngastp,1:2)
@@ -310,7 +316,7 @@ c            call wrt_occ_n(luout,iocc,1)
 
         ! update xarc info
         if (nxarc_raw.gt.0)
-     &       call update_xarc(cur_conder%contr,
+     &       call update_xarc2(cur_conder%contr,
      &                    xarcs_raw,nxarc_raw,ivtxder(ider),njoined_res)
 
         ! still, no factorization info
@@ -318,7 +324,9 @@ c            call wrt_occ_n(luout,iocc,1)
 
         ! get occupation of target ...
         call occ_contr2(iocc,ierr,cur_conder%contr,njoined_res)
-
+c dbg
+        print *,'njoined',njoined_res
+c dbg
 c dbg-QUICK FIX2:::
         if (ierr.eq.0.and.ipcr_mlt.eq.-1.and.ipcr_der.eq.0) then
           print *,'QUICK FIX2 active:'
@@ -340,10 +348,6 @@ c          call wrt_occ_n(luout,iocc2,1)
           ! ... and the corresponding block in the target operator
           cur_conder%contr%iblk_res = iblk_occ(iocc,.false.,
      &                                          op_arr(idxres)%op)
-c dbg
-c          print *,'idx, occ: ',cur_conder%contr%iblk_res
-c          call wrt_occ_n(luout,iocc,njoined_res)
-c dbg          
 
           if (cur_conder%contr%iblk_res.le.0) then
             if (strict) then
@@ -356,7 +360,7 @@ c dbg
             ierr = +1
           end if
         end if
-        
+
         if (ierr.ne.0) then
           call dealloc_contr(cur_conder%contr)
           deallocate(cur_conder%contr)

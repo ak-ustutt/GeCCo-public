@@ -41,7 +41,6 @@
       call argument_add('ansatz','method.R12',type=vtyp_int,idef=(/1/))
       call argument_add('maxexc','method.R12',type=vtyp_int,idef=(/2/))
       call argument_add('minexc','method.R12',type=vtyp_int,idef=(/2/))
-      call argument_add('triples','method.R12',type=vtyp_int,idef=(/0/))
       call argument_add('approx','method.R12',type=vtyp_str,len=8,
      &     cdef=(/'A',' ',' ',' ',' ',' ',' ',' '/))
 

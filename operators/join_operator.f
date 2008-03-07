@@ -71,7 +71,6 @@
      &         igasca_restr_new(2,orb_info%ngas,2,2,nspin,nblk*njoined),
      &           ica_occ_new(2,nblk),
      &           formal_blk_new(nblk))
-
         ! save old info
         ihpvca_occ_new(1:ngastp,1:2,1:nblk_old*njoined) =
      &       op1%ihpvca_occ(1:ngastp,1:2,1:nblk_old*njoined)
@@ -108,11 +107,12 @@
         op1%n_occ_cls = nblk
         
         deallocate(op1%ihpvca_occ,op1%igasca_restr,
-     &       op1%ica_occ)
+     &       op1%ica_occ,op1%formal_blk)
 
         op1%ihpvca_occ => ihpvca_occ_new
         op1%igasca_restr => igasca_restr_new
         op1%ica_occ => ica_occ_new
+        op1%formal_blk => formal_blk_new
 
         call mem_pushmark()
         ifree = mem_gotomark(operator_def)

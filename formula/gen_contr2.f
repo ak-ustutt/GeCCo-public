@@ -393,7 +393,12 @@ c dbg
                   if (ok) then
 
                     ! set xarc info
-                    svmap(1:nvtx) = 1
+c                    svmap(1:nvtx) = 1
+c dbg
+                    do jvtx = 1, nvtx
+                      svmap(jvtx) = jvtx
+                    enddo
+c dbg
                     call gen_contr_unconn(occ_ol_prev,occ_ol_rem,! dummies
      &                   occ_ol_scr,-1,  ! -1 -> set occ_ol_scr only
      &                   proto_new,occ_vtx)
@@ -430,7 +435,10 @@ c dbg
                     end if
 
                     ! ensure canonical order
-                    call canon_contr(proto_new,reo,ivtx_reo2)
+c dbg
+c                    reo = .false.
+c dbg
+                    call canon_contr2(proto_new,reo,ivtx_reo2)
                     
                     ! apply prefactor from equivalent permutation of vertices
                     proto_new%fac = proto_new%fac/dble(ieqvfac)
@@ -496,7 +504,7 @@ c      include 'def_contraction.h'
       integer ::
      &     idx1, idx2, jvtx, iarc
 
-      ! initialize with vertex occupations
+      ! initialize with raw vertex occupations
       do jvtx = 1, nvtx
         occ_ol_vtx(1:ngastp,1:2,jvtx) = occ_vtx(1:ngastp,1:2,jvtx+1)
       end do

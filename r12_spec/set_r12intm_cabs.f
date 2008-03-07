@@ -37,7 +37,7 @@
 *     C      HX
 *
 *     1: approximation type
-*     2: assumed Brioullin condition
+*     2: assumed Brillouin condition
 *     3: hybrid approximation for exchange terms
 *     4: symmetrise
 *
@@ -64,7 +64,7 @@
       character*(*), intent(in) ::
      &     title, approx, int_type,
      &     labels(nlabels)
-      type(operator_info), intent(in) ::
+      type(operator_info), intent(inout) ::
      &     op_info
       type(orbinf), intent(in) ::
      &     orb_info
@@ -78,16 +78,16 @@
      &     op_scr_xu = '_SCR_Xu',
      &     op_scr_xl = '_SCR_Xl'
       character(8), parameter ::
-     &     op_scr_dum = '_SCR_DUM'
+     &     op_scr_dum = '_SCR_C'
 
       logical ::
      &     symmetrise
       integer ::
      &     idx_intm, idx_a, idx_b, idx_ab, idx_opa, idx_opb,
      &     idx_dum, idx_op1, idx_h, idx_x, idx_f, idx_xl, idx_xu,
-     &     ndef
+     &     ndef, idx, nblk, ioff1, ioff3, nlink
       integer, pointer ::
-     &     occ_def(:,:,:)
+     &     occ_def(:,:,:), linked(:)
       character ::
      &     name*(form_maxlen_label*2)
       type(formula_item), target ::
@@ -143,59 +143,93 @@
       call add_operator(op_scr_a,op_info)
       idx_opa = idx_oplist2(op_scr_a,op_info)
       opa_pnt => op_info%op_arr(idx_opa)%op
-      call add_operator(op_scr_b,op_info)
-      idx_opb = idx_oplist2(op_scr_b,op_info)
-      opb_pnt => op_info%op_arr(idx_opb)%op
       ! -> and a dummy operator (the contravariant of the result)
       call add_operator(op_scr_dum,op_info)
       idx_dum = idx_oplist2(op_scr_dum,op_info)
       opdum_pnt => op_info%op_arr(idx_dum)%op
+      call add_operator(op_scr_b,op_info)
+      idx_opb = idx_oplist2(op_scr_b,op_info)
+      opb_pnt => op_info%op_arr(idx_opb)%op
       ! -> and a scalar as preliminary result of AB expansion
       call add_operator(op_scr_1,op_info)
       idx_op1 = idx_oplist2(op_scr_1,op_info)
       op1_pnt => op_info%op_arr(idx_op1)%op
       
+      ! set dummy operator
+c      call set_contrav_op(opdum_pnt,op_scr_dum,op_intm,orb_info)
+      call set_spacer_op(op_intm,opdum_pnt,op_scr_dum,op_info,orb_info)
+      ! set scalar
+c      call set_hop(op1_pnt,op_scr_1,.false.,0,0,1,.false.,orb_info)
+      call get_op_shape(op_intm,op1_pnt,op_scr_1,op_info,orb_info)
+
+      nblk = opdum_pnt%n_occ_cls
+
       ! set the shape operators
       if (ansatz.eq.1) ndef = 5
       if (ansatz.eq.3) ndef = 4
       if (ansatz.eq.2)
      &     call quit(1,'set_r12intm_cabs','old ansatz 2 seems obsolete')
-      allocate(occ_def(ngastp,2,ndef))
+      allocate(occ_def(ngastp,2,ndef*nblk))
       ! set the target operator shapes as appropriate for the respective
       ! ansatz
-      call set_opshapes(occ_def,ndef,ansatz)
+      call set_opshapes(occ_def,ndef,nblk,ansatz)
 
       call set_uop(opa_pnt,op_scr_a,.true.,
-     &     occ_def,ndef,orb_info)
+     &     occ_def,ndef*nblk,orb_info)
+c      call set_hop(opa_pnt,op_scr_a,.false.,
+c     &             2,2,2,.true.,orb_info)
       call set_uop(opb_pnt,op_scr_b,.false.,
-     &     occ_def,ndef,orb_info)
+     &     occ_def,ndef*nblk,orb_info)
 
       deallocate(occ_def)
-
-      ! set dummy operator
-      call set_contrav_op(opdum_pnt,op_scr_dum,op_intm,orb_info)
-      ! set scalar
-      call set_hop(op1_pnt,op_scr_1,.false.,0,0,1,.false.,orb_info)
 
       call init_formula(flist_adb)
       call new_formula_item(flist_adb,command_set_target_init,
      &     idx_op1)
-      flist_pnt => flist_adb%next
       ! set up terms resulting from A P(1,2) B:
-      call expand_op_product(flist_pnt,idx_op1,
-     &     -1d0,3,(/idx_opa,idx_dum,idx_opb/),
-     &     (/-1,-1,-1/),(/-1,-1,-1/),
-     &     (/1,3,1,2,2,3/),3,.true.,op_info)
-      ! the ".true." in the last line:
-      ! the routine also forms 'dodgy' contractions, i.e. those where
-      ! the arcs form between non-matching faces of the operators. These 
-      ! are needed to properly evaluate the intermediates.
+      flist_pnt => flist_adb%next
+      if(int_type(1:2).eq.'V ')then
+        nlink = 2
+        allocate(linked(2*nlink))
+        linked = (/1,3,2,3/)
+      elseif(int_type(1:2).eq.'V+')then
+        nlink = 2
+        allocate(linked(2*nlink))
+        linked = (/1,3,1,2/)
+      else
+        nlink = 3
+        allocate(linked(2*nlink))
+        linked = (/1,3,1,2,2,3/)
+      endif
+
+      do idx = 1, nblk
+        ioff1 = 0
+        ioff3 = 0
+        if(int_type(1:2).eq.'V ')then
+          ioff1 = (idx-1)*ndef                             
+        elseif(int_type(1:2).eq.'V+')then
+          ioff3 = (idx-1)*ndef
+        endif
+
+        do while(associated(flist_pnt%next))
+          flist_pnt => flist_pnt%next
+        enddo
+        call expand_op_product(flist_pnt,idx_op1,
+     &       -1d0,3,(/idx_opa,idx_dum,idx_opb/),
+     &       (/ioff1+1,idx,ioff3+1/),(/ioff1+ndef,idx,ioff3+ndef/),
+     &       linked,nlink,.true.,op_info)
+        ! the ".true." in the last line:
+        ! the routine also forms 'dodgy' contractions, i.e. those where
+        ! the arcs form between non-matching faces of the operators. These 
+        ! are needed to properly evaluate the intermediates.
+      enddo
+      deallocate(linked)
 
       if (ntest.ge.1000) then
         write(luout,*) 'result from expand_op_product'
         call print_form_list(luout,flist_adb,op_info)
       end if
-      
+
       ! replace a and b by the actual operators
       ! we do this step before taking the derivatives (see (*) below)
       ! as expand_subexpr() still is buggy for results with njoined>1
@@ -227,7 +261,6 @@
       
       ! tidy up
       call dealloc_formula_list(flist_adb)
-
 
       ! add AB contribution
       ! go to end of list
@@ -403,36 +436,54 @@
 
       contains 
 
-      subroutine set_opshapes(occ_def,ndef,ansatz)
+      subroutine set_opshapes(occ_def,ndef,nblk,ansatz)
 
       implicit none
 
       integer, intent(in) ::
-     &     ndef, ansatz
+     &     ndef, ansatz, nblk
       integer, intent(inout) ::
      &     occ_def(ngastp,2,ndef)
+      integer ::
+     &     idx, ioff
 
-      occ_def(1:ngastp,2,1:ndef) = 0
-      occ_def(1,2,1:ndef) = 2
-      select case (ansatz)
-      case(1)
-        if (ndef.ne.5)
-     &       call quit(1,'set_r12intm_cabs','inconsistency (1)')
-        occ_def(1:ngastp,1,1) = (/2,0,0,0/)
-        occ_def(1:ngastp,1,2) = (/1,1,0,0/)
-        occ_def(1:ngastp,1,3) = (/1,0,0,1/)
-        occ_def(1:ngastp,1,4) = (/0,2,0,0/)
-        occ_def(1:ngastp,1,5) = (/0,1,0,1/)
-      case(3)
-        if (ndef.ne.4)
-     &       call quit(1,'set_r12intm_cabs','inconsistency (2)')
-        occ_def(1:ngastp,1,1) = (/2,0,0,0/)
-        occ_def(1:ngastp,1,2) = (/1,1,0,0/)
-        occ_def(1:ngastp,1,3) = (/1,0,0,1/)
-        occ_def(1:ngastp,1,4) = (/0,2,0,0/)
-      case default
-         call quit(1,'set_r12intm_cabs','inconsistency (3)')
-       end select
+      occ_def(1:ngastp,2,1:ndef*nblk) = 0
+
+      do idx = 1, nblk
+        ioff = (idx-1)*ndef
+
+        if(idx.eq.1)then
+          occ_def(1,2,1:ndef) = 2
+        elseif(idx.eq.2)then
+          occ_def(1,2,ioff+1:ioff+ndef) = 1
+          occ_def(2,2,ioff+1:ioff+ndef) = 1
+        elseif(idx.eq.3)then
+          occ_def(2,2,ioff+1:ioff+ndef) = 2
+        else
+          call quit(1,'set_opshapes','Too many blocks')
+        endif
+
+        select case (ansatz)
+        case(1)
+          if (ndef.ne.5)
+     &         call quit(1,'set_r12intm_cabs','inconsistency (1)')
+          occ_def(1:ngastp,1,ioff+1) = (/2,0,0,0/)
+          occ_def(1:ngastp,1,ioff+2) = (/1,1,0,0/)
+          occ_def(1:ngastp,1,ioff+3) = (/1,0,0,1/)
+          occ_def(1:ngastp,1,ioff+4) = (/0,2,0,0/)
+          occ_def(1:ngastp,1,ioff+5) = (/0,1,0,1/)
+        case(3)
+          if (ndef.ne.4)
+     &         call quit(1,'set_r12intm_cabs','inconsistency (2)')
+          occ_def(1:ngastp,1,ioff+1) = (/2,0,0,0/)
+          occ_def(1:ngastp,1,ioff+2) = (/1,1,0,0/)
+          occ_def(1:ngastp,1,ioff+3) = (/1,0,0,1/)
+          occ_def(1:ngastp,1,ioff+4) = (/0,2,0,0/)
+        case default
+          call quit(1,'set_r12intm_cabs','inconsistency (3)')
+        end select
+
+      enddo
 
       end subroutine
 

@@ -8,7 +8,7 @@
       include 'def_contraction.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(contraction), intent(inout) ::
      &     contr
@@ -22,6 +22,7 @@
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'update_xarc')
+        write(luout,*) 'no. of external lines: ',contr%nxarc
         write(luout,*) 'raw xarc list: (',nxarc_raw,')'
         do ixarc = 1, nxarc_raw
           write(luout,'(3x,i3,x,i3,3x,4i4)')

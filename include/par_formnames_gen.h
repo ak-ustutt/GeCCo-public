@@ -78,7 +78,8 @@
      &     form_ccr12en0*8       = 'E0_CCR12',
      &     form_ccr12rs_t*11     = 'OMG_T_CCR12',
      &     form_ccr12rs_c*11     = 'OMG_C_CCR12',
-     &     fopt_mpr12_0*10       = 'MP-R12-OPT'
+     &     fopt_mpr12_0*10       = 'MP-R12-OPT',
+     &     fopt_ccr12_0*10       = 'CC-R12-OPT'
       character, parameter ::
      &     form_r12_vint*8      = 'VINT_R12',
      &     form_r12_vcabs*13    = 'VINT_R12_CABS',

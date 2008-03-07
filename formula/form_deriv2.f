@@ -159,7 +159,7 @@ c      include 'def_filinf.h'
 
       end do
 c dbg
-      print *,'nterms = ',nterms
+c      print *,'nterms = ',nterms
 c dbg
 
       call file_close_keep(f_deriv%fhand)

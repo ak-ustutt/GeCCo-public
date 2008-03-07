@@ -2,6 +2,7 @@
       subroutine set_cc_general_targets(tgt_info,orb_info)
 *----------------------------------------------------------------------*
 *     set targets needed in more or less all kinds of CC calculations
+*      OBSOLETE
 *----------------------------------------------------------------------*
       implicit none
 
@@ -32,6 +33,8 @@
      &     labels(10)
       character(len_command_par) ::
      &     parameters(2)
+
+      call quit(1,'set_cc_general_targets','is obsolete ...')
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting general targets for CC ...'
@@ -76,13 +79,13 @@
      &              op_tbar,1,1,
      &              parameters,1,tgt_info)
 
-      ! Lagrange functional
+      ! Lagrange functional X
       call add_target(op_cclg,ttype_op,.false.,tgt_info)
       call set_rule(op_cclg,ttype_op,DEF_SCALAR,
      &              op_cclg,1,1,
      &              parameters,0,tgt_info)
       
-      ! Energy
+      ! Energy X
       call add_target(op_ccen,ttype_op,.false.,tgt_info)
       call set_rule(op_ccen,ttype_op,DEF_SCALAR,
      &              op_ccen,1,1,
@@ -107,7 +110,7 @@
      &              parameters,1,tgt_info)
 
 *----------------------------------------------------------------------*
-*     Formulae
+*     Formulae X
 *----------------------------------------------------------------------*
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_cclg0
@@ -177,7 +180,7 @@
 
 
 *----------------------------------------------------------------------*
-*     Opt. Formulae
+*     Opt. Formulae X
 *----------------------------------------------------------------------*
       call get_argument_value('calculate.routes','simtraf',ival=isim)
 
@@ -215,7 +218,7 @@
 *     ME-lists
 *----------------------------------------------------------------------*
 
-      ! L0/E0:
+      ! L0/E0: X
       call add_target(mel_cclg0,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_cclg0,op_cclg,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
@@ -319,7 +322,7 @@
       end do
 
 *----------------------------------------------------------------------*
-*     "phony" targets
+*     "phony" targets X
 *----------------------------------------------------------------------*
       ! totally symmetric dia for use below:
       call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)

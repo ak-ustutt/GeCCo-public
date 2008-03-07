@@ -163,9 +163,13 @@
         if (ierr.eq.3.or.ierr.eq.4) label = label_res(jopt)
         if (ierr.eq.5.or.ierr.eq.6) label = label_prc(jopt)
         if (ierr.eq.7.or.ierr.eq.8) label = label_special(jopt)
+c dbg
+c        print *,'ierr',ierr
+c dbg
+
         if (mod(ierr,2).eq.1)
      &       call quit(1,'solve_nleq',
-     &       'did not find list '//trim(label))
+     &       'did not find list "'//trim(label)//'"')
         if (mod(ierr,2).eq.0)
      &       call quit(1,'solve_nleq',
      &       'no file associated to list '//trim(label))
@@ -236,7 +240,8 @@
      &       me_special, nspecial,! <- R12: pass B, X, H here
 c     &       ffopt,ffgrd,ffdia,ffmet, ! <- R12: pass X here (metric)
 c     &       ff_trv,ff_h_trv,
-     &       opti_info,opti_stat)
+     &       opti_info,opti_stat,
+     &       orb_info,str_info)
 
         ! here?
         do iopt = 1, nopt

@@ -16,7 +16,7 @@
       integer ::
      &     idx, iblk
 
-      do idx = 1, op%n_occ_cls
+      do idx = 1, op%n_occ_cls*op%njoined
         iblk = (idx-1)/op%njoined + 1
         call wrt_occ_rstr(luout,iblk,
      &       op%ihpvca_occ(1,1,idx),

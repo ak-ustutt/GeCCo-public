@@ -8,7 +8,8 @@ c     &       ffopt,ffgrd,ffdia,ffmet,
 c     &       ff_trv,ff_h_trv,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
-     &       opti_info,opti_stat)
+     &       opti_info,opti_stat,
+     &       orb_info,str_info)
 *----------------------------------------------------------------------*
 *     driver for macro-iterations
 *----------------------------------------------------------------------*
@@ -17,10 +18,13 @@ c     &       ff_trv,ff_h_trv,
       include 'stdunit.h'
 c      include 'def_filinf.h'
       include 'mdef_me_list.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
       include 'def_file_array.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
       include 'ifc_memman.h'
+      include 'def_orbinf.h'
 
       integer, intent(inout) ::
      &     task
@@ -43,6 +47,11 @@ c      include 'def_filinf.h'
 
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
+
+      type(orbinf), intent(in) ::
+     &     orb_info
+      type(strinf), intent(in) ::
+     &     str_info
 
 * local
       type(file_array), pointer ::
@@ -100,7 +109,8 @@ c      include 'def_filinf.h'
      &             opti_stat%ffvsbsp(iopt)%fhand,
      &             opti_info%typ_prc(iopt),
      &             nincore,opti_info%nwfpar(iopt),
-     &             lenbuf,xbuf1,xbuf2,xbuf3)
+     &             lenbuf,xbuf1,xbuf2,xbuf3,
+     &             orb_info,str_info)
 
               shift = ndim_save.eq.opti_stat%ndim_rsbsp.and.iopt.eq.1
               call optc_update_redsp1(opti_stat%sbspmat,

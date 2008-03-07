@@ -68,7 +68,7 @@ c dbg
         ivtx = contr%arc(iarc)%link(1)
         jvtx = contr%arc(iarc)%link(2)
         idx = iarc
-        ! look wether connection is similar to a previous one
+        ! look whether connection is similar to a previous one
         occ_cnt => contr%arc(iarc)%occ_cnt
         ! ignore zero contractions
         if (.not.iocc_nonzero(occ_cnt)) cycle

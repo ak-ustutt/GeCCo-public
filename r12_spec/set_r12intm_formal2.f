@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_r12intm_formal(form_out,
+      subroutine set_r12intm_formal2(form_out,
      &     title,label_int,label_op,nop,typ_str,op_info,orb_info)
 *----------------------------------------------------------------------*
 *     set the formal definition of R12 intermediates
@@ -20,13 +20,13 @@
       include 'stdunit.h'
       include 'def_contraction.h'
       include 'mdef_operator_info.h'
-c      include 'ifc_operators.h'
+      include 'ifc_operators.h'
       include 'def_formula_item.h'
       include 'def_formula.h'
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -44,14 +44,14 @@ c      include 'ifc_operators.h'
      &     orb_info
 
       character(3), parameter ::
-     &     opdum_scal = '_1_',
-     &     opdum_x    = '_X_',
-     &     opdum_f    = '_F_',
-     &     opdum_g    = '_G_'
+     &     opdum_shape = '_1_',
+     &     opdum_x     = '_X_',
+     &     opdum_f     = '_F_',
+     &     opdum_g     = '_G_'
 
       integer ::
      &     iop, idx, nfact, n_x, n_f, n_g,
-     &     idx_intm, idx_scalar, idx_x, idx_f, idx_g,
+     &     idx_intm, idx_shape, idx_x, idx_f, idx_g,
      &     idx_op(nop+2), idx_prod(nop+2)
       character ::
      &     name*(form_maxlen_label*2)
@@ -60,13 +60,13 @@ c      include 'ifc_operators.h'
       type(formula_item), pointer ::
      &     flist_pnt
       type(operator), pointer ::
-     &     op_x, op_f, op_g, op_scalar, op_int
+     &     op_x, op_f, op_g, op_shape, op_int
 
       integer, external ::
      &     idx_oplist2, idxlist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_r12_intm_formal')
+        call write_title(luout,wst_dbg_subr,'set_r12_intm_formal 2')
         write(luout,*) 'setting: ',trim(label_op(1))
         write(luout,*) 'type : ',trim(typ_str)
       end if
@@ -116,20 +116,24 @@ c      include 'ifc_operators.h'
      &     call quit(1,'set_r12intm_formal',
      &     'more than one g in typ_str: '//trim(typ_str))
 
-      ! dummy operator: a scalar as target shape for operator product
-      !                 expansion
-      call add_operator(opdum_scal,op_info)
-      idx_scalar = idx_oplist2(opdum_scal,op_info)
-      op_scalar => op_info%op_arr(idx_scalar)%op
-      call set_hop(op_scalar,opdum_scal,.false.,0,0,1,.false.,orb_info)
+      ! dummy operator: the target shape for operator product expansion
+      !                 Found by considering the outer vertices of the 
+      !                 intermediate.
+      call add_operator(opdum_shape,op_info)
+      idx_shape = idx_oplist2(opdum_shape,op_info)
+      op_shape => op_info%op_arr(idx_shape)%op
+      ! Point to the actual intermediate.
+      op_int => op_info%op_arr(idx_intm)%op
 
-      ! dummy operator: the co-variant counterpart of the intermediate:
+      ! Call the routine which actually finds the necessary shape.
+      call get_op_shape(op_int,op_shape,opdum_shape,op_info,orb_info)
+
+      ! dummy operator: the spacer required to close the intermediate:
       if (n_x.gt.0) then
         call add_operator(opdum_x,op_info)
         idx_x = idx_oplist2(opdum_x,op_info)
         op_x => op_info%op_arr(idx_x)%op
-        op_int => op_info%op_arr(idx_intm)%op
-        call set_contrav_op(op_x,opdum_x,op_int,orb_info)
+        call set_spacer_op(op_int,op_x,opdum_x,op_info,orb_info)
       end if
 
       ! dummy operator: 1 particle part of H
@@ -167,11 +171,11 @@ c      include 'ifc_operators.h'
       call init_formula(flist_scr)
       flist_pnt => flist_scr
       call new_formula_item(flist_pnt,
-     &     command_set_target_init,idx_scalar)
+     &     command_set_target_init,idx_shape)
       flist_pnt => flist_pnt%next
 
       ! expand operator product, giving the intermediate as result
-      call expand_op_product(flist_pnt,idx_scalar,
+      call expand_op_product(flist_pnt,idx_shape,
      &     1d0,nfact,idx_prod,
      &     -1,-1,
      &     -1,0,.false.,
@@ -200,12 +204,18 @@ c      include 'ifc_operators.h'
         call dealloc_formula_list(flist)
       end if
 
+c dbg
+c      write(luout,*) 'intermediate formula 2'
+c      call print_form_list(luout,flist_scr,op_info)
+c dbg
+
       ! generate actual formula by taking the derivative wrt dummy
       if (n_x.gt.0) then
         call init_formula(flist)
       
         call form_deriv3(flist,flist_scr,.true.,
-     &     1,idx_x,0,idx_intm,op_info)
+     &       1,idx_x,0,idx_intm,
+     &       op_info)
         flist_pnt => flist
       else
         flist_pnt => flist_scr
@@ -229,7 +239,7 @@ c      include 'ifc_operators.h'
       if (n_g.gt.0) call del_operator(opdum_g,op_info)
       if (n_f.gt.0) call del_operator(opdum_f,op_info)
       if (n_x.gt.0) call del_operator(opdum_x,op_info)
-      call del_operator(opdum_scal,op_info)
+      call del_operator(opdum_shape,op_info)
 
       return
       end

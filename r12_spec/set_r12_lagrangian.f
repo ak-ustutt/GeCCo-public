@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -207,6 +207,11 @@ c      sbar_pnt%dagger = .true.
         call print_form_list(luout,flist_lag,op_info)
       end if
 
+c dbg
+      ! Produce truncated expansions.
+      call truncate_form(flist_lag,op_info)
+c dbg
+
       ! sum up duplicate terms (due to S->T+CR replacement)
       call sum_terms(flist_lag,op_info)
 
@@ -241,6 +246,8 @@ c      sbar_pnt%dagger = .true.
       write(luout,*) 'Number of generated terms: ',nterms
       call prtim(luout,'CC-R12 Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
-
+c dbg
+c      stop
+c dbg
       return
       end
