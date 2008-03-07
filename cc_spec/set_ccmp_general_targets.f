@@ -34,17 +34,22 @@
      &     parameters
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting general targets for CC ...'
+     &     write(luout,*) 'setting general targets for MP/CC ...'
 
 *----------------------------------------------------------------------*
 *     Operators:
 *----------------------------------------------------------------------*
       ! T1 transformed Hamiltonian
       call add_target(op_hhat,ttype_op,.false.,tgt_info)
-      call set_dependency(op_hhat,op_ham,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_ham,.false.)
-      call set_rule(op_hhat,ttype_op,CLONE_OP,
+c      call set_dependency(op_hhat,op_ham,tgt_info)
+c      call cloneop_parameters(-1,parameters,
+c     &                        op_ham,.false.)
+c      call set_rule(op_hhat,ttype_op,CLONE_OP,
+c     &              op_hhat,1,1,
+c     &              parameters,1,tgt_info)
+      call hop_parameters(-1,parameters,
+     &                   0,2,1,.false.)  ! avoid any X blocks
+      call set_rule(op_hhat,ttype_op,DEF_HAMILTONIAN,
      &              op_hhat,1,1,
      &              parameters,1,tgt_info)
 
@@ -88,6 +93,18 @@
 *----------------------------------------------------------------------*
 *     Formulae
 *----------------------------------------------------------------------*
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_cchhat
+      labels(2) = op_hhat
+      labels(3) = op_ham
+      labels(4) = op_top
+      call add_target(form_cchhat,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_cchhat,op_hhat,tgt_info)
+      call set_dependency(form_cchhat,op_ham,tgt_info)
+      call set_dependency(form_cchhat,op_top,tgt_info)
+      call set_rule(form_cchhat,ttype_frm,DEF_HHAT,
+     &              labels,4,1,
+     &              title_cchhat,1,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae
@@ -145,7 +162,7 @@
      &              parameters,1,tgt_info)
 
       ! DIA-list for all symmetries:
-      do isym = 1,  1 !orb_info%nsym
+      do isym = 1,  orb_info%nsym
         call me_list_label(me_label,mel_dia,isym,0,0,0,.false.)
         call add_target(me_label,ttype_opme,.false.,tgt_info)
         call set_dependency(me_label,mel_ham,tgt_info)

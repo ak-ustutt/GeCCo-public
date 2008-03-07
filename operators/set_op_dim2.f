@@ -50,7 +50,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 0
       
       integer, intent(in) ::
      &     ipass, ngam
@@ -112,9 +112,28 @@
       ca_occ => op%ica_occ
       graphs => str_info%g
 
+      ! we better initialize some of the key arrays
+      if (ipass.eq.1) then
+        mel%len_op_occ(1:nblk) = 0
+        mel%off_op_occ(1:nblk) = 0
+        do iblk = 1, nblk
+          mel%len_op_gmo(iblk)%gam_ms = 0
+          mel%off_op_gmo(iblk)%gam_ms = 0
+        end do
+      end if
+      if (ipass.eq.2) then
+        do iblk = 1, nblk
+          mel%len_op_gmox(iblk)%d_gam_ms = 0
+          mel%off_op_gmox(iblk)%d_gam_ms = 0
+          mel%ld_op_gmox(iblk)%d_gam_ms = 0
+        end do
+      end if
+
       ! loop over occupations (= blocks)
       occ_cls: do iblk = 1, nblk
 
+        if (ntest.ge.100.and.op%formal_blk(iblk))
+     &     write(luout,*) 'skipping formal block (#',iblk,')'
         if (op%formal_blk(iblk)) cycle
 
         iblkoff = (iblk-1)*njoined

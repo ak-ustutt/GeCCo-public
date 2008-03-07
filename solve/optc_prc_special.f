@@ -159,7 +159,7 @@ c dbg
           stop
         endif
 
-      elseif(trim(r12_apprx).eq."A'")then
+      else !if(trim(r12_apprx).eq."A'")then
         ! Point to information arrays.
         igas_restr => str_info%igas_restr
         mostnd => orb_info%mostnd
