@@ -43,6 +43,7 @@
         write(luout,*) ' info from next_string'
         write(luout,*) '-----------------------'
         write(luout,*) ' nidx = ',nidx
+        write(luout,*) ' ngas = ',ngas_cur
       end if
 
 c dbg
@@ -66,6 +67,9 @@ c dbg
           do idx = idxst, idxnd
             ioss(idss(idx)) = ioss(idss(idx))+1
           end do
+c dbg
+          print *,'idss = ',idss(1:nidx)
+c dbg
 
           succ = lexlstr(nidx,ms,
      &           ioss,idorb,idspn,
