@@ -74,9 +74,6 @@ c dbg
           do idx = idxst, idxnd
             ioss(idss(idx)) = ioss(idss(idx))+1
           end do
-c dbg
-          print *,'idss = ',idss(1:nidx)
-c dbg
 
           succ = lexlstr(nidx,ms,
      &           ioss,idorb,idspn,

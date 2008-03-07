@@ -272,11 +272,6 @@
               idx_x = idx_b
               if (.not.beyond_A) idx_x = 1
 
-c dbg
-              print *,'passing: ngas_hpv(IPART) = ',ngas_hpv(IPART)
-              print *,'passing: ngas_hpv(IHOLE) = ',ngas_hpv(IHOLE)
-c dbg
-
               call optc_prc_special2_inner
      &             (xbuf1(idx_grd), beyond_A,
      &              xbuf2,xbuf3,bmat(idx_b),xmat(idx_x),f_dia,

@@ -97,10 +97,6 @@ c     &     idxspn(max(ndim_c,ndim_a)),idxdss(max(ndim_c,ndim_a))
           xsum_c(1) = 0d0
         end if
 
-c dbg
-        print *,'past cstr'
-c dbg
-
         first = .true.
         istr = 0
         ! set up orbital sum for A-strings
@@ -117,24 +113,13 @@ c dbg
           end do
         end do astr_loop
 
-c dbg
-        print *,'past astr'
-c dbg
-
         do idx_c = 1, ndim_c
           do idx_a = 1, ndim_a
             orbsum = xsum_c(idx_c)-xsum_a(idx_a)
             ! effective Beff = B + (eps_C - eps_A)X
             scr2 = bmat + orbsum*xmat
-c dbg
-            print *,'before gaussj'
-c dbg
             ! invert
             call gaussj(scr2,ndim_bx,ndim_bx)
-
-c dbg
-            print *,'beyond gaussj'
-c dbg
 
             ! multiply with gradient
             do idx_b1 = 1, ndim_bx
