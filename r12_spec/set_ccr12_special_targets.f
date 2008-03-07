@@ -190,6 +190,8 @@ c     &              parameters,1,tgt_info)
 *----------------------------------------------------------------------*
 *     Opt. Formulae
 *----------------------------------------------------------------------*
+      call get_argument_value('calculate.routes','simtraf',ival=isim)
+
       ! CC ground state:
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = fopt_ccr12_0
@@ -208,6 +210,12 @@ c     &              parameters,1,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_c12def,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_ham,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_ccr12en0def,tgt_info)      
+      if (isim.eq.1) then
+        nint = 1
+        call set_dependency(fopt_ccr12_0,form_cchhat,tgt_info)
+        call set_dependency(fopt_ccr12_0,mel_hhatdef,tgt_info)
+        labels(5) = form_cchhat
+      end if
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_ccr12_0,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,

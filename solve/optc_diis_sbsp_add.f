@@ -107,10 +107,14 @@ c dbg
 c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
 c     &     str_info,orb_info)
 c dbg
-          call optc_prc_special(me_grd,me_special,nspecial,
+c          call optc_prc_special(me_grd,me_special,nspecial,
+c     &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
+c     &                          orb_info,str_info)
+c          xbuf1(1:nwfpar) = xbuf3(1:nwfpar)
+          call optc_prc_special2(me_grd,me_special,nspecial,
      &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
      &                          orb_info,str_info)
-          xbuf1(1:nwfpar) = xbuf3(1:nwfpar)
+          call mem_check('after prc_special2')
         end select
 c dbg
 c          print *,'|g/d|:' ,dnrm2(nwfpar,xbuf1,1)

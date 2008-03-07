@@ -138,6 +138,12 @@ c      include 'def_operator_array.h'
         deallocate(opscr)
       endif
 
+      if (ntest.ge.100) then
+        write(luout,*) 'generated: '
+        call print_op_occ(luout,op)
+        write(luout,*) 'formal: ',op%formal_blk(1:op%n_occ_cls)
+      end if
+
       return
       
       end
