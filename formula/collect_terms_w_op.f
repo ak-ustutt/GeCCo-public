@@ -35,7 +35,8 @@
       logical ::
      &     ok
       integer ::
-     &     nfound_op, nfound_blk, nvtx, ivtx, icmpnd, iblkop_cmpnd
+     &     nfound_op, nfound_blk, nvtx, ivtx, icmpnd, iblkop_cmpnd,
+     &     nterms
       type(contraction), pointer ::
      &     cur_contr
 
@@ -52,6 +53,8 @@
      &       call quit(1,'collect_terms_w_op',
      &       'formula pointer list is buggy')
       end if
+
+      nterms = 0
 
       do
         if (fl_pnt%command.ne.command_add_contribution) exit
@@ -94,12 +97,17 @@ c dbg
 c dbg
 c            print *,'(b) command = ',fpl_pnt%item%command
 c dbg
+            nterms = nterms+1
           end if
         end if
         
         if (.not.associated(fl_pnt%next)) exit
         fl_pnt => fl_pnt%next
       end do
+c dbg
+      print *,'nterms = ',nterms
+c dbg
+
 
       return
       end

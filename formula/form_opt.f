@@ -109,8 +109,8 @@ c dbg
 
         call read_form_list(cur_ffile,form_ptr)
 c dbg
-        print *,'raw formula'
-        call print_form_list(luout,form_ptr,op_info)
+c        print *,'raw formula'
+c        call print_form_list(luout,form_ptr,op_info)
 c dbg
 
         ! advance form_ptr to end of list

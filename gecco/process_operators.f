@@ -21,15 +21,18 @@
 
       type(operator), pointer ::
      &     op_pnt
+      integer, parameter ::
+     &     ndef_max = 20
       integer ::
      &     idx, idx_t,
      &     ncadiff, min_rank, max_rank, iformal, ansatz,
-     &     ndim1, ndim2,
-     &     hpvx_constr(2,ngastp,2), gas_constr(2,orb_info%ngas,2,2)
+     &     ndim1, ndim2, ndef, njoined,
+     &     hpvx_constr(2,ngastp,2), gas_constr(2,orb_info%ngas,2,2),
+     &     occ_def(2,ngastp,ndef_max)
       character*(len_opname) ::
      &     name_template
       logical ::
-     &     dagger, explicit
+     &     dagger, explicit, set_p
 
       integer, external ::
      &     idx_oplist2
@@ -55,6 +58,12 @@
      &       dagger,
      &       min_rank,max_rank,ncadiff,hpvx_constr,gas_constr,
      &       iformal,orb_info)
+      case(DEF_OP_FROM_OCC)
+        call op_from_occ_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       occ_def,ndef,njoined,ndef_max)
+        call set_uop2(op_pnt,trim(rule%labels(1)),
+     &       occ_def,ndef,njoined,orb_info)
       case(DEF_SCALAR)
         call set_hop(op_pnt,trim(rule%labels(1)),.false.,
      &       0,0,1,.false.,orb_info)
@@ -103,9 +112,9 @@
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',
      &       'no parameters provided for '//DEF_R12COEFF)
-        call xop_parameters(+1,rule%parameters,
-     &                      dagger,min_rank,max_rank,ncadiff,iformal)
-        call set_r12c(op_pnt,trim(rule%labels(1)),dagger,
+        call r12int_parameters(+1,rule%parameters,
+     &                      set_p,min_rank,max_rank,ncadiff,iformal)
+        call set_r12c(op_pnt,trim(rule%labels(1)),set_p,
      &       min_rank,max_rank,ncadiff,iformal,orb_info)        
       case(DEF_R12INT)
         if (rule%n_parameter_strings.lt.1)

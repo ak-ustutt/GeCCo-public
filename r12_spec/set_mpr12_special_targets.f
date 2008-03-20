@@ -89,7 +89,7 @@ c     &              parameters,1,tgt_info)
       labels(2) = op_mpr12lg
       labels(3) = op_ham
       labels(4) = op_r12
-      labels(5) = op_rba
+      labels(5) = op_r12
       labels(6) = op_tbar
       labels(7) = op_cba
       labels(8) = op_top
@@ -97,7 +97,7 @@ c     &              parameters,1,tgt_info)
       call set_dependency(form_mpr12lg0,op_mpr12lg,tgt_info)
       call set_dependency(form_mpr12lg0,op_ham,tgt_info)
       call set_dependency(form_mpr12lg0,op_r12,tgt_info)
-      call set_dependency(form_mpr12lg0,op_rba,tgt_info)
+c      call set_dependency(form_mpr12lg0,op_rba,tgt_info)
       call set_dependency(form_mpr12lg0,op_tbar,tgt_info)
       call set_dependency(form_mpr12lg0,op_top,tgt_info)
       call set_dependency(form_mpr12lg0,op_cba,tgt_info)
@@ -113,17 +113,27 @@ c     &              parameters,1,tgt_info)
       labels(1) = form_mpr12lg0 ! output formula (itself)
       labels(2) = form_mpr12lg0 ! input formula
       labels(3) = form_r12_vint    ! the intermediates to be factored
-      labels(4) = form_r12_vbint
+      labels(4) = trim(form_r12_vint)//'^+'
+c      labels(4) = form_r12_vbint
       labels(5) = form_r12_xint
       labels(6) = form_r12_bint
+      nint = 4
       call set_dependency(form_mpr12lg0,form_r12_vint,tgt_info)
-      call set_dependency(form_mpr12lg0,form_r12_vbint,tgt_info)
+c      call set_dependency(form_mpr12lg0,form_r12_vbint,tgt_info)
       call set_dependency(form_mpr12lg0,form_r12_xint,tgt_info)
       call set_dependency(form_mpr12lg0,form_r12_bint,tgt_info)
+      if (ansatz.ne.1) then
+        labels(7) = form_r12_cint
+        labels(8) = trim(form_r12_cint)//'^+'
+c        labels(8) = form_r12_cbint
+        call set_dependency(form_mpr12lg0,form_r12_cint,tgt_info)
+c        call set_dependency(form_mpr12lg0,form_r12_cbint,tgt_info)
+        nint = 6
+      end if
       call form_parameters(-1,
-     &     parameters,2,title_mpr12lg0,4,'---')
+     &     parameters,2,title_mpr12lg0,nint,'---')
       call set_rule(form_mpr12lg0,ttype_frm,FACTOR_OUT,
-     &              labels,6,1,
+     &              labels,nint+2,1,
      &              parameters,2,tgt_info)
       ! (c) post-processing: remove terms which do not contribute for
       !     the given R12-approximation
@@ -276,7 +286,7 @@ c     &              parameters,1,tgt_info)
       call add_target(solve_mpr12_gs,ttype_gen,.true.,tgt_info)
       call set_dependency(solve_mpr12_gs,mel_dia1,tgt_info)
       call set_dependency(solve_mpr12_gs,mel_b_inv,tgt_info)
-      call set_dependency(solve_mpr12_gs,mel_b_dia,tgt_info)
+c      call set_dependency(solve_mpr12_gs,mel_b_dia,tgt_info)
 c      call set_dependency(solve_mpr12_gs,mel_x_inv,tgt_info)
       call set_dependency(solve_mpr12_gs,fopt_mpr12_0,tgt_info)
       call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
@@ -287,7 +297,8 @@ c      call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
       labels(3) = mel_omg
       labels(4) = mel_omgr12
       labels(5) = mel_dia1
-      labels(6) = mel_b_dia
+      labels(6) = mel_dia1 ! dummy
+c      labels(6) = mel_b_dia
       labels(7) = mel_mpr12en0
       labels(8) = fopt_mpr12_0
       if(trim(approx).eq.'A')then

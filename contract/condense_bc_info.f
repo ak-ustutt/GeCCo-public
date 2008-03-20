@@ -76,8 +76,14 @@ c     &     irst_op1,ihpvgas,ngas)
      &     iocc_ex1,njoined_op1,orb_info)
       call dummy_restr(irst_ex2,
      &     iocc_ex2,njoined_op2,orb_info)
-      call dummy_restr(irst_cnt,
-     &     iocc_cnt,njoined_cnt,orb_info)
+      ! QUICK FIX FOR FROZEN-CORE-R12
+      if (njoined_cnt.eq.1.and.njoined_op1.eq.1) then
+        call fit_restr(irst_cnt,iocc_cnt,
+     &     irst_op1,ihpvgas,ngas)
+      else
+        call dummy_restr(irst_cnt,
+     &       iocc_cnt,njoined_cnt,orb_info)
+      end if
       ! end of preliminary code
 
       allocate(igrph(ngastp,2,
@@ -132,10 +138,12 @@ c dbg
 c dbg
 c      print *,'OP2:'
 c      call wrt_occ_n(6,iocc_op2,njoined_op2)
-c      print *,' C: ',cnt_info%cinfo_op2c(1:nca_blk(1,2),1)
-c      print *,'    ',cnt_info%cinfo_op2c(1:nca_blk(1,2),3)
-c      print *,' A: ',cnt_info%cinfo_op2a(1:nca_blk(2,2),1)
-c      print *,'    ',cnt_info%cinfo_op2a(1:nca_blk(2,2),3)
+c      print *,' C: ',cnt_info%cinfo_op2c(1:cnt_info%ncblk_op2,1)
+c      print *,'    ',cnt_info%cinfo_op2c(1:cnt_info%ncblk_op2,3)
+c      print *,'  g ',cnt_info%cinfo_op2c(1:cnt_info%ncblk_op2,2)
+c      print *,' A: ',cnt_info%cinfo_op2a(1:cnt_info%nablk_op2,1)
+c      print *,'    ',cnt_info%cinfo_op2a(1:cnt_info%nablk_op2,3)
+c      print *,'  g ',cnt_info%cinfo_op2a(1:cnt_info%nablk_op2,2)
 c dbg
 
       ! EX2

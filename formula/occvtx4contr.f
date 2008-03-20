@@ -47,15 +47,15 @@
       do idx = 1, nvtx+njoined
         if (idx.le.njoined) then
           idxop = contr%idx_res 
+          dagger = contr%dagger
         else
           idxop = vertex(idx-njoined)%idx_op
+          dagger = vertex(idx-njoined)%dagger
         end if
         if (idxop.eq.0) then
           occ_vtx(1:ngastp,1:2,idx) = 0
-          dagger = .false.
         else
           op_occ => op_info%op_arr(idxop)%op%ihpvca_occ
-          dagger = op_info%op_arr(idxop)%op%dagger
         end if
         if (idx.le.njoined) then
           if (.not.dagger) then

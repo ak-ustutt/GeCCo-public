@@ -77,7 +77,7 @@ c      if (.not.dagger) then
 c dbg
 c      print *,'dagger = ',dag_temp
 c      print *,'-->',iocc_cls,igamt,idxms
-c      print *,'   ',mgdid,mgdid2
+c      print *,'   ',mgdid !,mgdid2
 c      print *,'   ',
 c     &     didarr(1:mel%off_op_gmox(iocc_cls)%ndis(igamt,idxms),
 c     &     igamt,idxms)

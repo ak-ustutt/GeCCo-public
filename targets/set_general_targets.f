@@ -73,7 +73,13 @@
 *----------------------------------------------------------------------*
 *     Formulae
 *----------------------------------------------------------------------*
-
+      if (is_keyword_set('calculate.check.formulae')) then
+        call add_target(form_test,ttype_frm,.true.,tgt_info)
+        call set_rule(form_test,ttype_frm,CHECK_FORMGEN,
+     &                form_test,1,1,
+     &                parameters,0,tgt_info)
+      end if
+      
 *----------------------------------------------------------------------*
 *     Opt. Formulae
 *----------------------------------------------------------------------*

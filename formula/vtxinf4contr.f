@@ -5,6 +5,7 @@
 *     and set info_vtx(2,nvtx+1): (total_spin,total_sym)
 *     first enty is result, 2..nvtx+1 are the vertices
 *     for occupations use occvtx4contr()
+*     NEEDS OPEN-SHELL MODIFICATIONS
 *----------------------------------------------------------------------*
       implicit none
 
@@ -33,6 +34,8 @@
      &     op
       type(me_list), pointer ::
      &     mel
+      logical ::
+     &     dagger
       
       idxop = contr%idx_res
       njoined = op_info%op_arr(idxop)%op%njoined
@@ -43,10 +46,12 @@
         if (idx.le.njoined) then
           idxop = contr%idx_res 
           iblkop = (contr%iblk_res-1)*njoined+idx
+          dagger = contr%dagger
         else
           idxop = vertex(idx-njoined)%idx_op
           ! is already set to compound index in case of super-vertices:
           iblkop = vertex(idx-njoined)%iblk_op
+          dagger = vertex(idx-njoined)%dagger
         end if
 
         if (idxop.gt.0) then
@@ -68,7 +73,7 @@
           op => op_info%op_arr(idxop)%op
           mel => op_info%mel_arr(idxmel)%mel
           irestr_occ => op%igasca_restr
-          if (.not.op%dagger) then
+          if (.not.dagger) then
             irestr_vtx(1:2,1:ngas,1:2,1:2,idx) =
      &           irestr_occ(1:2,1:ngas,1:2,1:2,1,iblkop)
             info_vtx(1,idx) = mel%mst

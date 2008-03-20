@@ -243,6 +243,8 @@ c     &               form_pnt%contr%arc(1)%occ_cnt+occ_temp
             
             ! generate contractions
             call gen_contr2(form_pnt,proto,fix_vtx,occ_vtx,op_info)
+c here: only testing
+c            call gen_contr4(form_pnt,proto,occ_vtx(1,1,2),op_info)
 
             ! advance pointer
             do while(form_pnt%command.ne.command_end_of_formula)

@@ -28,7 +28,7 @@
       include 'def_formula_item_list.h'
 
       integer, parameter ::
-     &     ntest = 100,
+     &     ntest = 00,
      &     maxposs = 128
 
       integer, intent(out) ::
@@ -62,7 +62,7 @@
       end if
 
 c dbg
-      call print_form_list(luout,fl_intm,op_info)
+c      call print_form_list(luout,fl_intm,op_info)
 c dbg
 
       nposs = 0

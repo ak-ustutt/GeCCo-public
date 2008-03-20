@@ -90,7 +90,7 @@ c          write(luout,'("??",x,"L",i2,3x,i6,x,15(i4))')
           write(luout,'("??",x,"L",i1,x,i6,x,10(i4),5(i5))')
      &       iblk,sum(n_commu(1:15)),n_commu(1:15)
         else if (iprint.gt.0) then
-          write(luout,'(3x,"L",i2,3x,i6,x,15(i4))')
+          write(luout,'(3x,"L",i1,x,i6,x,10(i4),5(i5))')
      &       iblk,sum(n_commu(1:15)),n_commu(1:15)
         end if
         nterms = nterms + sum(n_commu(0:4))
@@ -99,9 +99,12 @@ c          write(luout,'("??",x,"L",i2,3x,i6,x,15(i4))')
       ! loop over Cbar blocks
       do iblk = 1, nblk_cbar
         call collect_terms_w_op(fpl_pnt,form_pnt,1,idxcbar,iblk,1)
-        fpl_pnt => fpl_pnt%next
-
-        call r12_count_terms(fpl_pnt,idxtop,idxc12,n_commu,op_info)
+        if (associated(fpl_pnt%next)) then
+          fpl_pnt => fpl_pnt%next
+          call r12_count_terms(fpl_pnt,idxtop,idxc12,n_commu,op_info)
+        else
+          n_commu = 0
+        end if
 
         do while(associated(fpl_pnt%next))
           fpl_pnt => fpl_pnt%next
@@ -112,7 +115,7 @@ c          write(luout,'("??",x,"L",i2,3x,i6,x,15(i4))')
 c          write(luout,'("??",x,"C",i2,3x,i6,x,15(i4))')
      &       iblk+1,sum(n_commu(1:15)),n_commu(1:15)
         else if (iprint.gt.0) then
-          write(luout,'(3x,"C",i2,3x,i6,x,15(i4))')
+          write(luout,'(3x,"C",i1,x,i6,x,10(i4),5(i5))')
      &       iblk+1,sum(n_commu(1:15)),n_commu(1:15)
         end if
         nterms = nterms + sum(n_commu(1:15))

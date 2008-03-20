@@ -20,19 +20,25 @@
 
       type(operator_array), pointer ::
      &     ops(:)
-      
+
+      character(2) ::
+     &     cdag
+      character(10) ::
+     &     opstr
       integer ::
      &     idx, idxph
 
       ops => op_info%op_arr
       write(luout,*) '+++ contraction info +++'
+      cdag = '  '
+      if (contr%dagger) cdag = '^+'
       if (contr%idx_res.gt.0) then
         write(luout,*) ' name (index) and block of result: ',
-     &     trim(ops(contr%idx_res)%op%name),
+     &     trim(ops(contr%idx_res)%op%name)//cdag,
      &       '(',contr%idx_res,')', contr%iblk_res
       else
         write(luout,*) ' index and block of result: ',
-     &     contr%idx_res, contr%iblk_res
+     &     contr%idx_res, cdag, contr%iblk_res
       end if
       write(luout,*) ' factor: ',contr%fac
       write(luout,'(x,a,3i5)')
@@ -44,16 +50,22 @@
           cycle
         end if
         idxph = 1
-        if (ops(contr%vertex(idx)%idx_op)%op%dagger) idxph=2
-        write(luout,'(x,"v",i2.2,x,a,i4,2x,4i3)')
-     &       contr%svertex(idx),
-     &       ops(contr%vertex(idx)%idx_op)%op%name(1:8),
+        cdag = '  '
+        if (contr%vertex(idx)%dagger) then
+          idxph=2
+          cdag = '^+'
+        end if
+        opstr(1:10) = '          '
+        write(opstr,'(a)')
+     &       trim(ops(contr%vertex(idx)%idx_op)%op%name)//cdag 
+        write(luout,'(x,"v",i2.2,x,a9,i4,2x,4i3)')
+     &       contr%svertex(idx),opstr,
      &       contr%vertex(idx)%iblk_op,
      &       ops(contr%vertex(idx)%idx_op)%op%
      &       ihpvca_occ(1:ngastp,idxph,contr%vertex(idx)%iblk_op)
         idxph = 2
-        if (ops(contr%vertex(idx)%idx_op)%op%dagger) idxph=1
-        write(luout,'(x,a,14x,4i3)')
+        if (contr%vertex(idx)%dagger) idxph=1
+        write(luout,'(x,a,15x,4i3)')
      &       '    ',ops(contr%vertex(idx)%idx_op)%op%
      &       ihpvca_occ(1:ngastp,idxph,contr%vertex(idx)%iblk_op)
       end do

@@ -82,6 +82,8 @@ c     &     nca_blk(2,7)
       type(contraction_info) ::
      &     cnt_info
 
+      logical ::
+     &     tra_op1, tra_op2, tra_op1op2
       real(8) ::
      &     flops, xmemtot, xmemblk, bc_sign
 
@@ -113,6 +115,7 @@ c dbg
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,
      &     irst_op1,irst_op2,irst_op1op2,
+     &     tra_op1,tra_op2,tra_op1op2,
      &     mst_op,mst_op1op2,
      &     igamt_op,igamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,

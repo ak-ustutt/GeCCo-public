@@ -124,7 +124,7 @@ c     &     trim(mel%label))
         call quit(1,'init_mel_file','incore>1 not supported!')
       end if
 
-      if (iprlvl.ge.10) then
+      if (iprlvl.ge.20) then
         write(luout,'(3x,7a)')
      &       'assigned file: ',trim(fhand%name),' to list ',
      &       trim(mel%label),' (operator: ',trim(op%name),')'

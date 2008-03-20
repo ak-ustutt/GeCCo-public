@@ -31,7 +31,7 @@
       call set_hpvx_and_restr_for_c()
 
       call set_genop(op,name,optyp_operator,
-     &     dagger,
+     &     .false.,
      &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
      &     orb_info)
 
@@ -48,17 +48,28 @@
       implicit none 
 
       integer ::
-     &     ica, igas
+     &     ica0, ica, igas
 
-      hpvx_mnmx(1:2,1:ngastp,1:2)=0
-      hpvx_mnmx(1,ihole,1)=min_rank
-      hpvx_mnmx(2,ihole,1)=min(2,max_rank)
-      hpvx_mnmx(1,ihole,2)=min_rank
-      hpvx_mnmx(2,ihole,2)=max_rank
-      hpvx_mnmx(2,ipart,1)=max(0,max_rank-2)
+      if (.not.dagger) then
+        hpvx_mnmx(1:2,1:ngastp,1:2)=0
+        hpvx_mnmx(1,ihole,1)=min_rank
+        hpvx_mnmx(2,ihole,1)=min(2,max_rank)
+        hpvx_mnmx(1,ihole,2)=min_rank
+        hpvx_mnmx(2,ihole,2)=max_rank
+        hpvx_mnmx(2,ipart,1)=max(0,max_rank-2)
+      else
+        hpvx_mnmx(1:2,1:ngastp,1:2)=0
+        hpvx_mnmx(1,ihole,2)=min_rank
+        hpvx_mnmx(2,ihole,2)=min(2,max_rank)
+        hpvx_mnmx(1,ihole,1)=min_rank
+        hpvx_mnmx(2,ihole,1)=max_rank
+        hpvx_mnmx(2,ipart,2)=max(0,max_rank-2)
+      end if
 
       irestr(1:2,1:orb_info%ngas,1:2,1:2)=0
-      do ica = 1, 2
+      do ica0 = 1, 2
+        ica = ica0
+        if (dagger) ica = 3-ica0
         do igas = 1, orb_info%ngas
           if (orb_info%ihpvgas(igas,1).eq.ihole) then
             irestr(1,igas,ica,1) = 0

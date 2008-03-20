@@ -49,9 +49,11 @@
       case ('dalton_special','DALTON_SPECIAL')
         ! what to import?
         select case(trim(mel_target%op%name))
-        case (op_ham)
+        case (op_ham,op_g_x)
           mode=0
-          call import_r12_dalton(mel_target,'MO_G',
+c          call import_r12_dalton(mel_target,'MO_G',
+c     &           mode,str_info,orb_info)
+          call import_2el_dalton(mel_target,'MO_G',
      &           mode,str_info,orb_info)
           ! call after 2int import, as the above routine
           ! zeroes all blocks, including E0 and F:
@@ -59,23 +61,31 @@
         ! Get other integrals needed for R12 calculations.
         case(op_rint)
           mode=1
-          call import_r12_dalton(mel_target,'MO_R',
+c         call import_r12_dalton(mel_target,'MO_R',
+c    &           mode,str_info,orb_info) 
+          call import_2el_dalton(mel_target,'MO_R',
      &           mode,str_info,orb_info) 
 
         case(op_rinba)
           mode=1
-          call import_r12_dalton(mel_target,'MO_R',
+c          call import_r12_dalton(mel_target,'MO_R',
+c     &           mode,str_info,orb_info) 
+          call import_2el_dalton(mel_target,'MO_R',
      &           mode,str_info,orb_info) 
 
         case(op_f2)
           mode=1
-          call import_r12_dalton(mel_target,'MO_F2',
+c          call import_r12_dalton(mel_target,'MO_F2',
+c     &         mode,str_info,orb_info)
+          call import_2el_dalton(mel_target,'MO_F2',
      &         mode,str_info,orb_info)
 
         case(op_ttr)
           mode=2
-          call import_r12_dalton(mel_target,'MO_TTR',
-     &         mode,str_info,orb_info) 
+c          call import_r12_dalton(mel_target,'MO_TTR',
+c     &         mode,str_info,orb_info) 
+          call import_2el_dalton(mel_target,'MO_TTR',
+     &           mode,str_info,orb_info) 
 
         case(op_exchange)
 c          call import_exchange_dalton(mel_target,'MO_K',
@@ -122,6 +132,9 @@ c dbg
      &       1,mel_target%op%n_occ_cls,
      &       str_info,orb_info)
       end if
+c dbg
+c      stop 'test import'
+c dbg
 
       return
       end

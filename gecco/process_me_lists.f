@@ -29,6 +29,10 @@
       type(strmapinf), intent(inout) ::
      &     strmap_info
 
+      integer, parameter ::
+     &     maxfac = 20
+      real(8) ::
+     &     fac(maxfac)
       integer ::
      &     idx, jdx, ioff, nfac, nspecial,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank
@@ -119,6 +123,13 @@
      &       //trim(INVERT))
 
         call inv_op(rule%labels(2),rule%labels(1),
+     &       op_info,orb_info,str_info)
+
+      case(ADD)
+
+        call add_parameters(+1,rule%parameters,nfac,fac,maxfac)
+
+        call add_op(rule%labels(1),fac,rule%labels(2),nfac,
      &       op_info,orb_info,str_info)
 
       case(EVALPROP)

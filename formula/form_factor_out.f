@@ -38,9 +38,9 @@ c      include 'def_contraction_list.h'
      &     form_info
 
       logical ::
-     &     same
+     &     same, transpose
       integer ::
-     &     iintm, idx
+     &     iintm, idx, len
       character ::
      &     name*(form_maxlen_label*2)
 
@@ -70,8 +70,14 @@ c      include 'def_contraction_list.h'
 
       ! loop over intermediates
       do iintm = 1, nintm
+
+        ! look for transposition label
+        len = len_trim(label_f_intm(iintm))
+        transpose = (label_f_intm(iintm)(len-1:len).eq.'^+') 
+        if (transpose) len = len-2
+         
         ! get index
-        idx = idx_formlist(label_f_intm(iintm),form_info)
+        idx = idx_formlist(label_f_intm(iintm)(1:len),form_info)
 
         if (idx.le.0)
      &       call quit(1,'form_factor_out',
@@ -79,7 +85,8 @@ c      include 'def_contraction_list.h'
         
         if (ntest.ge.100)
      &       write(luout,*)
-     &       'now factorizing: ',trim(label_f_intm(iintm))
+     &       'now factorizing: ',trim(label_f_intm(iintm)),
+     &       ' transpose: ',transpose
 
         ffintm => form_info%form_arr(idx)%form%fhand
         if (.not.associated(ffintm))
@@ -89,6 +96,9 @@ c      include 'def_contraction_list.h'
 
         call init_formula(fl_intm)
         call read_form_list(ffintm,fl_intm)
+
+        if (transpose)
+     &       call transpose_formula(fl_intm,op_info)
 
         call factor_out_subexpr(flist,fl_intm,op_info)
 

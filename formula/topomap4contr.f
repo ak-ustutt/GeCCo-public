@@ -1,11 +1,21 @@
 *----------------------------------------------------------------------*
-      subroutine topomap4contr(mode,
+      subroutine topomap4contr(mode,base_tm,base_em,
      &                         topomap,eqv_map,neqv,idx_eqv,
      &                         contr,occ_vtx)
 *----------------------------------------------------------------------*
 *     generate a few maps needed for topology analysis
 *
 *     mode==1: topomap only   mode==2: all quantities
+*
+*     base_tm: base for setting up the packed occ_cnt; should be greater
+*           than the maximum occupation appearing in the present 
+*           contraction;       if -1 is provided
+*           we will use an appropriate one (which might, however, not
+*           be comparable to other contractions for which another
+*           base might be chose automatically)
+*
+*     base_em: dto. for equiv. map (see below) must be larger than
+*           max. block number in present contraction
 *
 *     topomap(nvtx,nvtx) :  who is connected to who?
 *                           the index is a packed occupation, which
@@ -37,7 +47,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     mode
+     &     mode, base_tm, base_em
       type(contraction), intent(in) ::
      &     contr
       integer, intent(in) ::
@@ -61,7 +71,7 @@
         call write_title(luout,wst_dbg_subr,'this is topomap4contr')
       end if
       
-      if (mode.ne.1.and.mode.ne.2)
+      if (mode.ne.1.and.mode.ne.2.and.mode.ne.3)
      &     call quit(1,'topomap4contr','illegal mode parameter')
 
       nvtx = contr%nvtx
@@ -83,15 +93,37 @@
             exit
           end if
         end do
-        ibase = ifndmax(occ_vtx(1,1,jvtx),1,ngastp*2,1)+1
-        icpack = int_pack(contr%arc(idx)%occ_cnt,ngastp*2,ibase)
-        topomap(ivtx,jvtx) = icpack
-        ibase = ifndmax(occ_vtx(1,1,ivtx),1,ngastp*2,1)+1
-        icpack = int_pack(contr%arc(idx)%occ_cnt,ngastp*2,ibase)
-        topomap(jvtx,ivtx) = icpack
+        if (base_tm.lt.0) then
+          ! old code, not completely understood any more :-(
+          ibase = ifndmax(occ_vtx(1,1,jvtx),1,ngastp*2,1)+1
+          icpack = int_pack(contr%arc(idx)%occ_cnt,ngastp*2,ibase)
+          topomap(ivtx,jvtx) = icpack
+          ibase = ifndmax(occ_vtx(1,1,ivtx),1,ngastp*2,1)+1
+          icpack = int_pack(contr%arc(idx)%occ_cnt,ngastp*2,ibase)
+          topomap(jvtx,ivtx) = icpack
+        else
+          icpack = int_pack(contr%arc(idx)%occ_cnt,ngastp*2,base_tm)
+          topomap(ivtx,jvtx) = icpack
+          topomap(jvtx,ivtx) = icpack
+        end if
       end do
 
       if (mode.eq.1) return
+
+      if (mode.eq.2) then
+        if (base_em.lt.0) then
+          maxblk = maxblk_in_contr(contr)
+        else
+          maxblk = base_em-1
+        end if
+        do ivtx = 1, nvtx
+          idx_op = contr%vertex(ivtx)%idx_op
+          iblk_op = contr%vertex(ivtx)%iblk_op
+          idx = idx_op*(maxblk+1) + iblk_op
+          eqv_map(ivtx) = idx
+        end do
+        return
+      end if
 
       neqv(1:nvtx) = 1
       do ivtx = 1, nvtx
@@ -99,7 +131,12 @@
         idx_eqv(2:nvtx,ivtx) = 0
       end do
       
-      maxblk = maxblk_in_contr(contr)
+      if (base_em.lt.0) then
+        maxblk = maxblk_in_contr(contr)
+      else
+        maxblk = base_em-1
+      end if
+c      maxblk = maxblk_in_contr(contr)
 c      maxop  = maxop_in_contr(contr)
       do ivtx = 1, nvtx
         idx_op = contr%vertex(ivtx)%idx_op

@@ -31,6 +31,8 @@
      &     title_ccr12rs_t*29 = 'CCR12 T residual',
      &     title_ccr12rs_c*29 = 'CCR12 C residual'
       character, parameter ::
+     &     title_r12_rbar*28  ='R12 [R * (F+K)]-intermediate',
+     &     title_r12_rtilde*24='R12 [R * K]-intermediate',
      &     title_r12_vint*38 = 'R12 V-intermediate (formal definition)',
      &     title_r12_vcabs*33 ='R12 V-intermediate (CABS approx.)',
      &     title_r12_vbint*19 ='R12 V+intermediate (formal definition)',
@@ -39,11 +41,18 @@
      &     title_r12_xcabs*33 ='R12 X-intermediate (CABS approx.)',
      &     title_r12_bint*38 = 'R12 B-intermediate (formal definition)',
      &     title_r12_bcabs*33 ='R12 B-intermediate (CABS approx.)',
+     &     title_r12_cint*38 = 'R12 C-intermediate (formal definition)',
+     &     title_r12_ccabs*33 ='R12 C-intermediate (CABS approx.)',
+     &     title_r12_cbint*38 ='R12 C+intermediate (formal definition)',
+     &     title_r12_cbcabs*33 ='R12 C+intermediate (CABS approx.)',
+     &     title_r12_pint*38 ='R12 P-intermediate (formal definition)',
+     &     title_r12_zint*38 ='R12 Z-intermediate (formal definition)',
      &     title_r12_bucabs*7 ='R12 B_U',
      &     title_r12_bsymm*24  = 'Symm. R12 B-intermediate',
      &     title_r12_binv*18   = 'Inverse of diag(B)',
      &     title_ccdens*10   = 'CC density'
       character, parameter ::
+     &     form_test*4         = 'TEST',
      &     form_cclg0*6        = 'Lg0_CC',
      &     form_ccen0*5        = 'E0_CC',
      &     form_mplg0*6        = 'Lg0_MP',
@@ -81,6 +90,10 @@
      &     fopt_mpr12_0*10       = 'MP-R12-OPT',
      &     fopt_ccr12_0*10       = 'CC-R12-OPT'
       character, parameter ::
+     &     form_r12_r12bar*6    = 'R12BAR',
+     &     fopt_r12_r12bar*10   = 'R12BAR_OPT',
+     &     form_r12_r12tilde*8  = 'R12TILDE',
+     &     fopt_r12_r12tilde*12 = 'R12TILDE_OPT',
      &     form_r12_vint*8      = 'VINT_R12',
      &     form_r12_vcabs*13    = 'VINT_R12_CABS',
      &     fopt_r12_vcabs*12    = 'VINT_R12_OPT',
@@ -93,6 +106,14 @@
      &     form_r12_bint*8     = 'BINT_R12',
      &     form_r12_bcabs*13   = 'BINT_R12_CABS',
      &     fopt_r12_bcabs*12   = 'BINT_R12_OPT',
+     &     form_r12_cint*8     = 'CINT_R12',
+     &     form_r12_ccabs*13   = 'CINT_R12_CABS',
+     &     fopt_r12_ccabs*12   = 'CINT_R12_OPT',
+     &     form_r12_cbint*9    = 'C+INT_R12',
+     &     form_r12_cbcabs*14  = 'C+INT_R12_CABS',
+     &     fopt_r12_cbcabs*13  = 'C+INT_R12_OPT',
+     &     form_r12_pint*8     = 'PINT_R12',
+     &     form_r12_zint*8     = 'ZINT_R12',
      &     form_r12_bucabs*12  = 'B_U_R12_CABS',
      &     fopt_r12_bucabs*11  = 'B_U_R12_OPT',
      &     form_r12_bsymm*9    = 'BSYMM_R12',

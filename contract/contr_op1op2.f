@@ -2,6 +2,7 @@
       subroutine contr_op1op2(xfac,bc_sign,
      &     update,xret,type_xret,
      &     me_op1,me_op2,me_op1op2,me_op1op2tmp,
+     &     tra_op1, tra_op2, tra_op1op2,
      &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
@@ -35,7 +36,7 @@
       include 'def_reorder_info.h'
 
       logical, intent(in) ::
-     &     update
+     &     update, tra_op1, tra_op2, tra_op1op2
       real(8), intent(in) ::
      &     xfac, bc_sign
       real(8), intent(inout) ::
@@ -119,6 +120,7 @@ c dbg
         call contr_op1op2_wmaps_c(xfac,bc_sign,
      &       update,xret,type_xret,
      &       me_op1,me_op2,me_op1op2,me_op1op2tmp,
+     &       tra_op1, tra_op2, tra_op1op2,
      &       iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &       idoffop1,idoffop2,idoffop1op2,
      &       cnt_info,reo_info,

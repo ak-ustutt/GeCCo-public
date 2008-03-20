@@ -29,6 +29,7 @@
       ! rather than copying the entries
       contr_tgt%idx_res = contr_src%idx_res
       contr_tgt%iblk_res = contr_src%iblk_res
+      contr_tgt%dagger = contr_src%dagger
       contr_tgt%fac = contr_src%fac
       contr_tgt%nvtx = contr_src%nvtx
       contr_tgt%nsupvtx = contr_src%nsupvtx

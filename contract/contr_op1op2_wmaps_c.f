@@ -2,6 +2,7 @@
       subroutine contr_op1op2_wmaps_c(xfac,casign,
      &     update,xret,type_xret,
      &     me_op1,me_op2,me_op1op2,me_op1op2tmp,
+     &     tra_op1, tra_op2, tra_op1op2,
      &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &     cnt_info,reo_info,
@@ -55,6 +56,8 @@
      &     type_xret,
      &     iblkop1, iblkop2, iblkop1op2, iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2
+      logical, intent(in) ::
+     &     tra_op1, tra_op2, tra_op1op2
       type(me_list), intent(in) ::
      &     me_op1, me_op2, me_op1op2, me_op1op2tmp
       type(strinf), intent(in) ::
@@ -67,7 +70,7 @@
      &     reo_info
 
       logical ::
-     &     bufop1, bufop2, bufop1op2, tra_op1, tra_op2, tra_op1op2,
+     &     bufop1, bufop2, bufop1op2, 
      &     first1, first2, first3, first4, first5,
      &     reo_op1op2, nonzero
       integer ::
@@ -195,15 +198,12 @@
       ffop2 => me_op2%fhand
       ffop1op2 => me_op1op2%fhand
 
-      ! any CA transposition necessary?
-      tra_op1 = op1%dagger
-      tra_op2 = op2%dagger
-      tra_op1op2 = op1op2%dagger
 
       if (ntest.ge.10) then
-        write(luout,*) 'list1:   ',trim(me_op1%label)
-        write(luout,*) 'list2:   ',trim(me_op2%label)
-        write(luout,*) 'list12:  ',trim(me_op1op2%label)
+        write(luout,*) 'list1:   ',trim(me_op1%label),' transp:',tra_op1
+        write(luout,*) 'list2:   ',trim(me_op2%label),' transp:',tra_op2
+        write(luout,*) 'list12:  ',trim(me_op1op2%label),
+     &                                             ' transp:',tra_op1op2
         write(luout,*) 'ffop1:   ',ffop1%name(1:len_trim(ffop1%name))
         write(luout,*) 'ffop2:   ',ffop2%name(1:len_trim(ffop2%name))
         write(luout,*) 'ffop1op2:',
@@ -267,6 +267,32 @@
       cinfo_op1op2tmpa => cnt_info%cinfo_op1op2tmpa
       cinfo_cntc => cnt_info%cinfo_cntc
       cinfo_cnta => cnt_info%cinfo_cnta
+
+c dbg
+c      print *,'-------------------------------------------------------'
+c      print *,'       graph information table'
+c      print *,'-------------------------------------------------------'
+c      print *,'graphs for op1c: ',cinfo_op1c(1:ncblk_op1,2)
+c      print *,'graphs for op1a: ',cinfo_op1a(1:nablk_op1,2)
+c      print *
+c      print *,'graphs for ex1c: ',cinfo_ex1c(1:ncblk_ex1,2)
+c      print *,'graphs for ex1a: ',cinfo_ex1a(1:nablk_ex1,2)
+c      print *,'graphs for cntc: ',cinfo_cntc(1:ncblk_cnt,2)
+c      print *,'graphs for cnta: ',cinfo_cnta(1:nablk_cnt,2)
+c      print *
+c      print *
+c      print *,'graphs for op2c: ',cinfo_op2c(1:ncblk_op2,2)
+c      print *,'graphs for op2a: ',cinfo_op2a(1:nablk_op2,2)
+c      print *
+c      print *,'graphs for ex2c: ',cinfo_ex2c(1:ncblk_ex2,2)
+c      print *,'graphs for ex2a: ',cinfo_ex2a(1:nablk_ex2,2)
+c      print *
+c      print *
+c      print *,'graphs for op1op2c: ',cinfo_op1op2c(1:ncblk_op1op2,2)
+c      print *,'graphs for op1op2a: ',cinfo_op1op2a(1:nablk_op1op2,2)
+c      print *
+c      print *,'-------------------------------------------------------'
+c dbg
 
       map_info_1c => cnt_info%map_info_1c
       map_info_1a => cnt_info%map_info_1a
@@ -809,7 +835,8 @@ c dbg
      &                              gmi_dis_c,ncblk_op1op2tmp,
      &                   cinfo_op1op2tmpa,idxmsi_dis_a,
      &                              gmi_dis_a,nablk_op1op2tmp,
-     &                   .false.,me_op1op2tmp,nsym)
+     &                   tra_op1op2,me_op1op2tmp,nsym)
+c     &                   .false.,me_op1op2tmp,nsym)
                     idxdis_op1op2 = idxdis
 
                     ! relevant for case w/o reordering
@@ -908,7 +935,8 @@ c                    idxms = (na_op1-ms12i_a(1))/2 + 1
      &                              gmop1dis_c,ncblk_op1,
      &                     cinfo_op1a,idxmsop1dis_a,
      &                              gmop1dis_a,nablk_op1,
-     &                     .false.,me_op1,nsym)
+     &                     tra_op1,me_op1,nsym)
+c     &                     .false.,me_op1,nsym)
                       idxop1 = 
      &                     d_gam_ms_op1(idxdis,igam12i_a(1),idxms) + 1
      &                     - idxst_op1+1
@@ -973,7 +1001,8 @@ c                    idxms = (na_op2-ms12i_a(2))/2 + 1
      &                              gmop2dis_c,ncblk_op2,
      &                     cinfo_op2a,idxmsop2dis_a,
      &                              gmop2dis_a,nablk_op2,
-     &                     .false.,me_op2,nsym)
+     &                     tra_op2,me_op2,nsym)
+c     &                     .false.,me_op2,nsym)
                       idxop2 = 
      &                     d_gam_ms_op2(idxdis,igam12i_a(2),idxms) + 1
      &                     - idxst_op2+1

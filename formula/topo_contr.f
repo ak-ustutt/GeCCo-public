@@ -44,7 +44,7 @@
       
       integer, pointer ::
      &     topomap(:,:), eqv_map(:), occ_cnt(:,:), scr(:), svmap(:),
-     &     neqv(:), idx_eqv(:,:)
+     &     neqv(:), idx_eqv(:,:), svertex(:)
 
       integer, external ::
      &     ifac, maxblk_in_contr, ifndmax, int_pack
@@ -59,9 +59,10 @@ c dbg
       narc = contr%narc
       
       allocate(topomap(nvtx,nvtx),eqv_map(nvtx),scr(nvtx),
-     &     neqv(nvtx),idx_eqv(nvtx,nvtx),svmap(nvtx))
+     &     neqv(nvtx),idx_eqv(nvtx,nvtx),svmap(nvtx),svertex(nvtx))
 
       call svmap4contr2(svmap,contr)
+      svertex = contr%svertex
 
       topomap = 0
       do iarc = 1, narc
@@ -215,7 +216,8 @@ c      end if
      &         topo_cmp2(topomap(1:nvtx,ivtx),topomap(1:nvtx,ivtx+1),
      &         eqv_map,nvtx).gt.0) .and.
      &        (svmap(ivtx).eq.0.or.svmap(ivtx+1).eq.0.or.
-     &         svmap(ivtx).eq.svmap(ivtx+1))) then
+     &         svmap(ivtx).eq.svmap(ivtx+1)) .and.
+     &         svertex(ivtx).ne.svertex(ivtx+1)) then
             ok = .false.
             resort = .true.
             ! interchange the two indices

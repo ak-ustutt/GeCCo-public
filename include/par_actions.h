@@ -1,6 +1,7 @@
 ! operators:
       character, parameter ::
      &     DEF_GENERAL_OPERATOR*20 = 'DEF_GENERAL_OPERATOR',
+     &     DEF_OP_FROM_OCC*15 = 'DEF_OP_FROM_OCC',
      &     DEF_SCALAR*10      = 'DEF_SCALAR',
      &     DEF_HAMILTONIAN*15 = 'DEF_HAMILTONIAN',
      &     DEF_EXCITATION*14  = 'DEF_EXCITATION',
@@ -13,6 +14,7 @@
      &     CLONE_OP*14        = 'CLONE_OPERATOR'
 ! formulae:
       character, parameter ::
+     &     CHECK_FORMGEN*12         = 'CHECK_FORMGEN',
      &     DEF_CC_LAGRANGIAN*27     = 'DEF_CC_LAGRANGIAN',
      &     DEF_HHAT*8               = 'DEF_HHAT',
      &     DEF_CC_HBAR*11           = 'DEF_CC_HBAR',
@@ -32,6 +34,7 @@
      &     ASSIGN_ME2OP*12    = 'ASSIGN_ME2OP',
      &     IMPORT*6           = 'IMPORT',
      &     PRECONDITIONER*14  = 'PRECONDITIONER',
+     &     ADD*3              = 'ADD',
      &     INVERT*8           = 'INVERT',
      &     EVAL*8             = 'EVALUATE',
      &     EVALPROP*9         = 'EVAL_PROP',

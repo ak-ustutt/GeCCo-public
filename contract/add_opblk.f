@@ -137,7 +137,7 @@ c      end if
       len_op = mel_in%len_op_occ(iblkin)
       ! for the moment this must hold:
       if (len_op.ne.mel_out%len_op_occ(iblkout))
-     &     call quit(1,'add_opblk','unexpected error')
+     &     call quit(1,'add_opblk','unexpected error')      
 
       ! buffered data available?
       bufin = .false.

@@ -51,7 +51,8 @@
      &     depend_info
 
       logical ::
-     &     update, reo_op1op2, reo_other, possible, skip
+     &     update, reo_op1op2, reo_other, possible, skip,
+     &     tra_op1, tra_op2, tra_op1op2
       integer ::
      &     lufrm, idxopres, idxres, nres, type_xret, type_xret_cur,
      &     idxme_res, idxmel,
@@ -299,6 +300,8 @@ c        case(command_set_target_update)
           iblkres = cur_contr%iblk_res
           idxop(1) = cur_contr%vertex(1)%idx_op
           iblkop(1) = cur_contr%vertex(1)%iblk_op
+          tra_op1 = cur_contr%vertex(1)%dagger
+          tra_op1op2 = cur_contr%dagger
 
           ! special: unit operator
           if (ops(idxop(1))%op%name.eq.op_unity) then
@@ -311,9 +314,16 @@ c fix:
             njoined = mel_arr(idxmel)%mel%op%njoined
             iblkop(1) = (iblkop(1)-1)/njoined + 1
 c fix:
-            call add_opblk(xret_blk(iblkres),fac,
-     &           mel_arr(idxmel)%mel,me_res,
-     &           iblkop(1),iblkres,orb_info)
+            if (tra_op1.xor.tra_op1op2) then
+              call add_opblk_transp(xret_blk(iblkres),fac,
+     &             mel_arr(idxmel)%mel,me_res,tra_op1,tra_op1op2,
+     &             iblkop(1),iblkres,
+     &             op_info,str_info,orb_info)
+            else
+              call add_opblk(xret_blk(iblkres),fac,
+     &             mel_arr(idxmel)%mel,me_res,
+     &             iblkop(1),iblkres,orb_info)
+            end if
           end if
 
           cycle term_loop
@@ -360,6 +370,17 @@ c fix:
         call occvtx4contr(0,occ_vtx,cur_contr,op_info)
         call vtxinf4contr(irestr_vtx,info_vtx,
      &                            cur_contr,op_info,ngas)
+c dbg
+c        print *,'info from vtxinf4contr:'
+c        print *,'result:'
+cc        do idum = 1, njoined_res
+c          call wrt_rstr(6,irestr_vtx(1,1,1,1,idum),ngas)
+c        end do
+c        print *,'op-vertices:'
+c        do idum = njoined_res+1, njoined_res+nvtx
+c          call wrt_rstr(6,irestr_vtx(1,1,1,1,idum),ngas)
+c        end do
+c dbg
 
         fac = cur_contr%fac
 
@@ -384,6 +405,7 @@ c fix:
      &         iocc_ex1,iocc_ex2,iocc_cnt,
      &         iocc_op1,iocc_op2,iocc_op1op2,
      &         irst_op1,irst_op2,irst_op1op2,
+     &         tra_op1,tra_op2,tra_op1op2,
      &         mstop,mstop1op2,
      &         igamtop,igamtop1op2,
      &         njoined_op, njoined_op1op2, njoined_cnt,
@@ -391,11 +413,6 @@ c fix:
      &         cur_contr,njoined_res,
      &                        occ_vtx,irestr_vtx,info_vtx,iarc,
      &         irst_res,orb_info)
-
-c dbg
-c          print *,'iocc_op1op2 fresh form bc_info:'
-c          call wrt_occ(6,iocc_op1op2)
-c dbg
 
           ! set up reduced contraction after 
           ! current binary contraction
@@ -532,6 +549,7 @@ c            ffop1op2 => ffscr(ninter)
           call contr_op1op2(facc,bc_sign,
      &       update,xret_pnt,type_xret_cur,
      &       me_op1,me_op2,me_op1op2, me_op1op2tmp,
+     &       tra_op1, tra_op2, tra_op1op2,
      &       iblkop(1),iblkop(2),iblkop1op2,iblkop1op2,
      &       idoffop1,idoffop2,idoffop1op2,
      &       iocc_ex1,iocc_ex2,iocc_cnt,

@@ -17,16 +17,20 @@
       integer, intent(in) ::
      &     occ_vtx(ngastp,2,*)
       
+      character(1) ::
+     &     cdag
       integer ::
      &     idx, idxph
 
       write(luout,*) '+++ contraction info +++'
+      cdag = '  '
+      if (contr%dagger) cdag = '^+'
       if (contr%idx_res.gt.0) then
         write(luout,*) ' index and block of result: ',
-     &     contr%idx_res, contr%iblk_res
+     &     contr%idx_res, cdag, contr%iblk_res
       else
         write(luout,*) ' index and block of result: ',
-     &     contr%idx_res, contr%iblk_res
+     &     contr%idx_res, cdag, contr%iblk_res
       end if
       write(luout,*) ' factor: ',contr%fac
       write(luout,'(x,a,3i5)')
@@ -37,11 +41,13 @@
           write(luout,'(2x,"v",i2.2,x,"0")') contr%svertex(idx)
           cycle
         end if
-        write(luout,'(x,"v",i2.2,x,i5,x,i4,2x,4i3)')
-     &       contr%svertex(idx),contr%vertex(idx)%idx_op,
+        cdag = ' '
+        if (contr%vertex(idx)%dagger) cdag = '+'
+        write(luout,'(x,"v",i2.2,x,i5,a,x,i4,2x,4i3)')
+     &       contr%svertex(idx),contr%vertex(idx)%idx_op,cdag,
      &       contr%vertex(idx)%iblk_op,
      &       occ_vtx(1:ngastp,1,idx)
-        write(luout,'(x,a,12x,4i3)')
+        write(luout,'(x,a,13x,4i3)')
      &       '    ',
      &       occ_vtx(1:ngastp,2,idx)
       end do

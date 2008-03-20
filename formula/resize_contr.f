@@ -40,6 +40,7 @@
      &     call quit(1,'resize_contr','xarc pointer inconsistent')
       if (contr%mxfac.gt.0.and..not.associated(contr%inffac))
      &     call quit(1,'resize_contr','inffac pointer inconsistent')
+
       if (contr%mxvtx.lt.nvtx) then
         allocate(vtx_new(nvtx),
      &       joined_new(0:nvtx,nvtx),svertex_new(nvtx))
@@ -50,6 +51,8 @@
           joined_new(0:nsave,1:nsave) = contr%joined(0:nsave,1:nsave)
           joined_new(nsave+1:nvtx,1:nsave) = 0
         end if
+c fix for newly introduced dagger flag -- ensure that it is always def.'d
+        if (nsave+1.le.nvtx) vtx_new(nsave+1:nvtx)%dagger = .false.
         if (contr%mxvtx.gt.0) then
           deallocate(contr%vertex)
           deallocate(contr%joined)

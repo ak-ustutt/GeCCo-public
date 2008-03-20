@@ -4,6 +4,7 @@
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,
      &     irestr_op1,irestr_op2,irestr_op1op2,
+     &     tra_op1,tra_op2,tra_op1op2,
      &     mst_op,mst_op1op2,
      &     igamt_op,igamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,
@@ -35,6 +36,8 @@
      &     irestr_res(2,orb_info%ngas,2,2,njoined_res)
       real(8), intent(out) ::
      &     bc_sign
+      logical, intent(out) ::
+     &     tra_op1, tra_op2, tra_op1op2
       integer, intent(out) ::
      &     idx_op(2), iblk_op(2),
      &     njoined_op(2), njoined_op1op2, njoined_cnt,
@@ -82,6 +85,7 @@ c dbg
       if (ivtx1.le.contr%nvtx) then
         idx_op(1) = contr%vertex(ivtx1)%idx_op
         iblk_op(1) = (contr%vertex(ivtx1)%iblk_op-1)/njoined_op(1) + 1
+        tra_op1   = contr%vertex(ivtx1)%dagger
       end if
 
       ivtxsuper2 = contr%svertex(ivtx2)
@@ -89,6 +93,7 @@ c dbg
       if (ivtx2.le.contr%nvtx) then
         idx_op(2) = contr%vertex(ivtx2)%idx_op
         iblk_op(2) = (contr%vertex(ivtx2)%iblk_op-1)/njoined_op(2) + 1
+        tra_op2   = contr%vertex(ivtx2)%dagger
       end if
 
       if (ivtxsuper1.eq.ivtxsuper2)
@@ -185,6 +190,9 @@ c dbg
      &       call quit(1,'get_bc_info2','trap 2')
         if (igamt_op1op2.ne.info_vtx(2,1))
      &       call quit(1,'get_bc_info2','trap 3')
+        tra_op1op2 = contr%dagger 
+      else
+        tra_op1op2 = .false.
       end if
 
       ! calculate sign

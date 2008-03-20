@@ -37,6 +37,10 @@
       ngas = orb_info%ngas
       nspin = orb_info%nspin
       ihpvgas => orb_info%ihpvgas
+c dbg
+c      print *,'get_grph4occ: '
+c      call wrt_rstr(6,irst,ngas)
+c dbg
 
       outer_loop: do ijoin = 1, njoined
        do ica = 1, 2
@@ -53,9 +57,17 @@
           end if
           idxgraph = -1
           ! check restrictions
+c dbg
+c          print *,'ngr4typ = ',ngr4typ
+c dbg
           gr4typ: do igr4typ = 1, ngr4typ
             ! actual index of graph
             idxgraph = str_info%gtab(1+igr4typ,igtyp)
+c dbg
+c            print *,'comparing to ',idxgraph
+c            print '(10(i2,x,i2,2x))',
+c     &           str_info%igas_restr(1:2,1:ngas,1,1,idxgraph)
+c dbg
             if (restr_cmp(irst(1,1,1,1,1,ijoin),
      &                    str_info%igas_restr(1,1,1,1,idxgraph),
      &                    ica,igastp,ihpvgas,ngas,nspin)) exit gr4typ
@@ -85,6 +97,10 @@ c
         end do
        end do
       end do outer_loop
+c dbg
+c      print *,'result: '
+c      call wrt_occ_n(6,idx_gr,njoined)
+c dbg
 
       return
       end

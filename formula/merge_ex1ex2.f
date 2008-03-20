@@ -102,7 +102,7 @@ c dbg
 
       else
       
-        call topomap4contr(1,topomap,idum,idum,idum,contr,
+        call topomap4contr(1,-1,-1,topomap,idum,idum,idum,contr,
      &                   occ_vtx(1,1,njoined_res+1))
       
         ! reset map

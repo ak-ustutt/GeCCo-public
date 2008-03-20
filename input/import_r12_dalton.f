@@ -28,7 +28,7 @@
      &     str_info
       type(me_list),intent(inout) ::
      &     oplist
-      character*256, intent(in) ::
+      character*(*), intent(in) ::
      &     fname_inp
       integer, intent(in) ::
      &     mode
@@ -57,6 +57,8 @@
      &     op
       type(filinf), pointer ::
      &     ffop
+      real(8) ::
+     &     cpu0, sys0, wall0, cpu, sys, wall
 
 
       ifree=mem_setmark('import_r12')
@@ -70,6 +72,8 @@
         write(luout,*)'=================='
         write(luout,*)'Operator-list: ',trim(oplist%label)
       endif
+
+      call atim_csw(cpu0,sys0,wall0)
 
       lbuf=oplist%len_op
       if(lbuf.gt.ifree)
@@ -117,7 +121,8 @@ c      endif
       ! Open the required MO-integral file.
       inquire(file=fname_inp,exist=fexist)
       if(.not.fexist)
-     &     call quit(1,'import_r12_dalton','No MO integral file.')
+     &     call quit(1,'import_r12_dalton','No MO integral file: '//
+     &       trim(fname_inp))
 
       call file_init(ffinp,fname_inp,ftyp_sq_frm,0)
       call file_open(ffinp)
@@ -187,9 +192,10 @@ c dbg
             igtp(j)=ihpvgas(idss(j),1) ! OPEN SHELL: adapt            
           enddo
 
-          ! Loop if not all orbitals are active.
-          if(iad_gas(idss(1)).ne.2.or.iad_gas(idss(2)).ne.2.or.
-     &         iad_gas(idss(3)).ne.2.or.iad_gas(idss(4)).ne.2) cycle
+          ! we need some of the inactive orbitals as well ...
+c          ! Loop if not all orbitals are active.
+c          if(iad_gas(idss(1)).ne.2.or.iad_gas(idss(2)).ne.2.or.
+c     &         iad_gas(idss(3)).ne.2.or.iad_gas(idss(4)).ne.2) cycle
 
           do j=1,4
             idss(j)=idss(j)-idx_gas(igtp(j))+1
@@ -250,6 +256,12 @@ c dbg
       deallocate(tosym,totyp,koffs,reord)
 
       ifree=mem_flushmark()
+
+      call atim_csw(cpu,sys,wall)
+
+      if (iprlvl.ge.5) 
+     &     call prtim(luout,'time in 2int import',
+     &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return
  1000 format(4i5,e25.15)

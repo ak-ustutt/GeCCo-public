@@ -15,7 +15,7 @@
       else
         write(luout,'(/x,"INTERNAL ERROR IN <",a,">: ",a/)') rout,str
 c dbg
-        call tracebackqq()
+c        call tracebackqq()
 c dbg
         stop 'internal error exit'
       end if

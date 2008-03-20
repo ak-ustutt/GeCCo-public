@@ -43,7 +43,8 @@
      &     min_rank,max_rank,ncadiff,
      &     min_xrank,max_xrank,
      &     hpvx_mnmx,hpvxca_mnmx,
-     &     irestr,1,orb_info)
+     &     irestr,1,(/.true.,.true./),
+     &     orb_info)
 
       return
       

@@ -3,7 +3,7 @@
      &     min_rank,max_rank,ncadiff,
      &     min_xrank,max_xrank,
      &     hpvx_mnmx,hpvxca_mnmx,
-     &     irestr,iformal,
+     &     irestr,iformal,freeze,
      &     orb_info)
 *----------------------------------------------------------------------*
 *     set up occupations for a general operator described by
@@ -19,6 +19,8 @@
 *                subspace within H/P/V/X, for C/A
 *     iformal:   blocks with this number or more external indices
 *                are considered to be to be purely formal.
+*     freeze(1): use settings on iadgas to enforce frozen C occupations
+*     freeze(2): use settings on iadgas to enforce frozen A occupations
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -44,6 +46,8 @@
       integer, intent(in) ::
      &     hpvx_mnmx(2,ngastp), hpvxca_mnmx(2,ngastp,2),
      &     irestr(2,orb_info%ngas,2,2)
+      logical, intent(in) ::
+     &     freeze(2)
 
       logical, parameter ::
      &     inv_hole = .true.
@@ -52,7 +56,7 @@
      &     init_c, init_a, ok
       integer ::
      &     ifree, ipass, irank, na, nc, ica, igas, igasl, idiff, imaxr,
-     &     iocc, igastp, iprint, nx, idx, xrank
+     &     iocc, igastp, iprint, nx, idx, xrank, gasst, gasnd
       integer ::
      &     a_distr(ngastp), c_distr(ngastp), 
      &     a_distr_rv(ngastp), c_distr_rv(ngastp),
@@ -72,7 +76,7 @@
         write(luout,*) ' set_genop at work'
         write(luout,*) '==================='
         write(luout,*) ' min_rank, max_rank: ',min_rank, max_rank
-        write(luout,*) ' min_xrank, max_xrank: ',min_rank, max_rank
+        write(luout,*) ' min_xrank, max_xrank: ',min_xrank, max_xrank
         write(luout,*) ' ncadiff: ',ncadiff
         write(luout,'(x,a,4(i2,x,i2,2x))')
      &       ' hpvx_mnmx: ',hpvx_mnmx(1:2,1:ngastp)
@@ -224,25 +228,36 @@ c dbg
 
                 ! set restrictions
                 do ica = 1, 2
-                  do igas = 1, ngas
-                    ! set a/c rank as upper bound
-                    idiff = - irestr(1,igas,ica,1)+irestr(2,igas,ica,1)
-                    imaxr = min(irestr(2,igas,ica,1),
+                  do igastp = 1, ngastp
+                    gasst = orb_info%idx_gas(igastp)
+                    gasnd = gasst-1+orb_info%ngas_hpv(igastp)
+                    do igas = gasst, gasnd
+                      ! set a/c rank as upper bound
+                      idiff = -irestr(1,igas,ica,1)+irestr(2,igas,ica,1)
+                      imaxr = min(irestr(2,igas,ica,1),
      &                    op%ihpvca_occ(hpvxgas(igas,1),ica,idx))
-                    ! not sure whether this will work in all cases:
-                    if (igas.lt.ngas) then
-                      op%igasca_restr(1,igas,ica,1,1:nspin,idx) =
-     &                     max(0,imaxr - idiff)
-                    else
-                      op%igasca_restr(1,igas,ica,1,1:nspin,idx) = imaxr
-                    end if
+c dbg
+                      print *,'igas,idiff,maxr = ',igas,idiff,imaxr
+c dbg
+                      ! not sure whether this will work in all cases:
+                      if (igas.lt.gasnd) then
+                        op%igasca_restr(1,igas,ica,1,1:nspin,idx) =
+     &                       max(0,imaxr - idiff)
+                      else
+                        op%igasca_restr(1,igas,ica,1,1:nspin,idx) =
+     &                       imaxr
+                      end if
+                      op%igasca_restr(2,igas,ica,1,1:nspin,idx) =
+     &                     imaxr                    
 c very quick fix:                    
-                    op%igasca_restr(1:2,igas,ica,1,1:nspin,idx) =
-     &                   imaxr                    
+c                    op%igasca_restr(1:2,igas,ica,1,1:nspin,idx) =
+c     &                   imaxr                    
+                    end do
                   end do
                 end do
                 ! post-processing for frozen shells
                 do ica = 1, 2
+                  if (.not.freeze(ica)) cycle
                   do igas = 1, ngas
                     if (iad_gas(igas).ne.2) then
                       if (igas.eq.1) then                        

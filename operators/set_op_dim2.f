@@ -50,7 +50,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 000
       
       integer, intent(in) ::
      &     ipass, ngam
@@ -117,6 +117,7 @@
         mel%len_op_occ(1:nblk) = 0
         mel%off_op_occ(1:nblk) = 0
         do iblk = 1, nblk
+          mel%off_op_gmox(iblk)%maxd = 0
           mel%len_op_gmo(iblk)%gam_ms = 0
           mel%off_op_gmo(iblk)%gam_ms = 0
         end do
@@ -167,6 +168,12 @@
      &                    hpvx_csub,hpvx_asub,
      &                    idx_graph(1,1,iblkoff+1),njoined,hpvxblkseq)
 
+c dbg
+c        print *,'graph_csub: ',graph_csub(1:ncsub)
+c        print *,'graph_asub: ',graph_asub(1:nasub)
+c        print *,'hpvx_csub: ',hpvx_csub(1:ncsub)
+c        print *,'hpvx_asub: ',hpvx_asub(1:nasub)
+c dbg
         ! set offsets
         mel%off_op_occ(iblk) = idxstr
 
@@ -227,7 +234,9 @@ c dbg
      &            occ_csub,occ_asub,
      &            msc,msa,igamc,igama,ngam))
      &           exit distr_loop
-
+c dbg
+c              print *,'top of dist_loop'
+c dbg
               first = .false.
 
               call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncsub)
@@ -242,10 +251,16 @@ c dbg
               ld_blk = 1
               do icmp = 1, ncsub
                 ld_blk = ld_blk*len_str(icmp)
+c dbg
+c                print *,'icmp, len_str: ',icmp,len_str(icmp)
+c dbg
               end do
               len_blk = ld_blk
               do icmp = ncsub+1, ncsub+nasub
                 len_blk = len_blk*len_str(icmp)
+c dbg
+c                print *,'icmp, len_str: ',icmp,len_str(icmp)
+c dbg
               end do
 
               if (len_blk.le.0) cycle distr_loop

@@ -45,6 +45,10 @@
      &     cdef=(/'A',' ',' ',' ',' ',' ',' ',' '/))
 
       call keyword_add('calculate')
+      ! internal tests
+      call keyword_add('check',context='calculate')
+      call keyword_add('formulae',context='calculate.check')
+
       ! general
       call keyword_add('solve',context='calculate')
       call argument_add('maxiter','calculate.solve',type=vtyp_int,

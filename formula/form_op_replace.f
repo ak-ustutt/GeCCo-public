@@ -18,7 +18,7 @@
       include 'def_orbinf.h'
       include 'def_formula_item.h'
 
-      character*256, intent(in) ::
+      character*(*), intent(in) ::
      &     opin, opout
       type(formula_item), target, intent(inout) ::
      &     form

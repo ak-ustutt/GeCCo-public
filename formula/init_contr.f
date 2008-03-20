@@ -21,6 +21,7 @@
       contr%narc = 0
       contr%nxarc = 0
       contr%nfac = 0
+      contr%dagger = .false.
       nullify(contr%vertex)
       nullify(contr%arc)
       nullify(contr%xarc)

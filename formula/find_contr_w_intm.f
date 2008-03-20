@@ -102,7 +102,8 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
 
       if (success1) then
         ! get factor, vertices and arcs associated with T_0
-        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
+c        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
+        call split_contr2(.false.,contr_t0,contr_i,fl_tgt%contr,op_info)
         if (ntest.ge.100) then
           write(luout,*) 'considering contraction:'
           call prt_contr2(luout,fl_tgt%contr,op_info)
@@ -170,21 +171,6 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
           ! compare with generated target contractions
           term_loop: do iterm = 1, nterms
             if (assigned(iterm)) cycle
-            ! I should program contr_equal but the following should
-            ! also work; if A part of B and B part of A the A==B
-c dbg
-c            print *,'assigned: ',assigned(1:nterms)
-c            print *,'comparing: fml, tgt(iterm = ',iterm,')'
-c            call prt_contr2(luout,fl_tgt_pnt%contr,op_info)
-c            call prt_contr2(luout,contr_tgt(iterm),op_info)
-c            print *,'results = ',
-c     &           contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)),
-c     &           contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr),
-c     &           fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac
-c dbg
-c            if (contr_in_contr(fl_tgt_pnt%contr,contr_tgt(iterm)).and.
-c     &          contr_in_contr(contr_tgt(iterm),fl_tgt_pnt%contr).and.
-c     &          fl_tgt_pnt%contr%fac.eq.contr_tgt(iterm)%fac) then
             if (cmp_contr(fl_tgt_pnt%contr,
      &                    contr_tgt(iterm),.false.)) then
 c dbg
@@ -222,8 +208,9 @@ c dbg
         ! result is operator itself
         contr_int%idx_res = fpl_intm%item%contr%idx_res
         contr_int%iblk_res = fpl_intm%item%contr%iblk_res
+        contr_int%dagger = fpl_intm%item%contr%dagger
         njoined = op_info%op_arr(contr_int%idx_res)%op%njoined
-        dagger  = op_info%op_arr(contr_int%idx_res)%op%dagger
+        dagger  = contr_int%dagger
         call resize_contr(contr_int,njoined,0,0,0)
         contr_int%nvtx = njoined
         contr_int%nsupvtx = 1
@@ -233,6 +220,7 @@ c dbg
         contr_int%nfac = 0
         contr_int%fac = 1d0
         contr_int%vertex(1:njoined)%idx_op = contr_int%idx_res
+        contr_int%vertex(1:njoined)%dagger = dagger
         if (.not.dagger) then
           do idx = 1, njoined
             contr_int%vertex(idx)%iblk_op =
@@ -246,6 +234,9 @@ c dbg
         end if
 
         ! make new contraction
+c dbg
+c        print *,'the interesting call to join_contr2'
+c dbg
         call join_contr2(contr_rpl,
      &                  contr_t0,contr_int,
      &                  idxop_tgt,iblk_tgt,op_info)

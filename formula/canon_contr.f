@@ -91,19 +91,6 @@
       if (narc.gt.1)
      &     call arc_sort(arc,narc,nvtx)
 
-c      do idx = 2, narc
-c        ival = int_pack(arc(idx)%link,2,nvtx+1)
-c        arc_sv = arc(idx)
-c        jdx = idx-1
-c        do while(jdx.gt.0)
-c          jval = int_pack(arc(jdx)%link,2,nvtx+1)
-c          if (jval.le.ival) exit
-c          arc(jdx+1) = arc(jdx)
-c          jdx = jdx-1
-c        end do
-c        arc(jdx+1) = arc_sv
-c      end do
-
       ! sort xarcs as well
       if (contr%nxarc.gt.1)
      &     call arc_sort(contr%xarc,contr%nxarc,nvtx)

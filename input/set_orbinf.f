@@ -62,7 +62,7 @@
      &     orb_info%igasorb(ntoob+caborb),orb_info%mostnd(2,nsym,ngas),
      &     orb_info%ngas_hpv(ngastp),orb_info%nactt_hpv(ngastp),
      &     orb_info%idx_gas(ngastp),orb_info%ioff_gas(ngastp),
-     &     orb_info%gas_reo(ngas))
+     &     orb_info%gas_reo(ngas),orb_info%norb_hpv(ngastp,nspin))
 c      if(explicit)then
 c        allocate(orb_info%xreosym(ntoob+caborb),
 c     &       orb_info%xreotyp(ntoob+caborb),koffs(1:nsym))
@@ -75,6 +75,7 @@ c      endif
       ! open shell with p/h splitting: we double-count!
       orb_info%ngas_hpv(1:ngastp) = 0
       orb_info%nactt_hpv(1:ngastp) = 0
+      orb_info%norb_hpv(1:ngastp,1:nspin) = 0
       do ispin = 1, nspin
         icount(1:ngastp) = 0
         do igas = 1, ngas
@@ -98,6 +99,14 @@ c      endif
         do igastp = 1, ngastp
           orb_info%nactt_hpv(igastp) =
      &         max(orb_info%nactt_hpv(igastp),icount(igastp))
+        end do
+
+        do igas = 1, ngas
+          do isym = 1, nsym
+            orb_info%norb_hpv(orb_info%ihpvgas(igas,ispin),ispin) =
+     &           orb_info%norb_hpv(orb_info%ihpvgas(igas,ispin),ispin)+
+     &           orb_info%igassh(isym,igas)
+          end do
         end do
 
       end do

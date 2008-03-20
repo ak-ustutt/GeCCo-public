@@ -54,6 +54,14 @@
 
 *----------------------------------------------------------------------*
 
+      if (ntest.ge.100) then
+        call write_title(luout,wst_dbg_subr,'weight_4sg')
+        write(luout,'(x,a,4i4)')
+     &       'norb, nel, maxms, ngam: ',norb, nel, maxms, ngam
+        write(luout,*) 'igamorb:'
+        write(luout,'(x,2(x,5i5))') igamorb(1:norb)
+      end if
+
       ! set everything to zero
       iy4sg(1:3,0:nel,-maxms:maxms,1:ngam,1:norb)=0
       iw4sg(0:nel,-maxms:maxms,1:ngam,1:norb)=0

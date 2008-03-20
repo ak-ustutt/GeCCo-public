@@ -197,9 +197,14 @@ c      sbar_pnt%dagger = .true.
         fl_t_cr_pnt => fl_t_cr_pnt%next
       enddo
 
-      call expand_op_product(fl_t_cr_pnt,idx_sbar,
-     &     1d0,2,(/idxrba,idxcba/),-1,-1,
-     &     (/1,2/),1,.false.,op_info)
+      call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &     1d0,4,3,
+     &     (/idx_sbar,-idxr12,idxcba,idx_sbar/),(/1,2,3,1/),
+     &     -1,-1,
+     &     (/2,3/),1,
+     &     0,0,
+     &     0,0,
+     &     op_info)
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T2BAR + CR2BAR')
@@ -305,7 +310,7 @@ c        call expand_subexpr(form_lag,form_h,.false.,op_info)
 c      endif
 c
       if(ntest.ge.100)then
-        call write_title(luout,wst_title,'Final formula')
+        call write_title(luout,wst_title,'Final MP2-R12 formula')
         call print_form_list(luout,form_lag,op_info)
       endif
 

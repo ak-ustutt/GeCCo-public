@@ -157,6 +157,9 @@ c        buffer_out(1:nbuff) = 0d0
             ! a dirty quick fix to get the string length:
             len_gam_ms = int(sqrt(dble(me_out%
      &           len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa))))
+            if (len_gam_ms.ne.
+     &           me_out%ld_op_gmox(iocc_cls)%d_gam_ms(1,igama,idxmsa))
+     &           call quit(1,'symmetrise','not true?')
 
             ioff = me_out%off_op_gmo(iocc_cls)%gam_ms(igama,idxmsa)
 

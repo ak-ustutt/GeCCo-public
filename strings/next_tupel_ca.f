@@ -40,7 +40,7 @@
      &     ioss(ngas), idxoff(ngastp,2,njoined)
 
       logical, external ::
-     &     lexlstr, nextstr, next_ssd
+     &     lexlstr, nextstr, next_ssd, allow_sbsp_dis
       integer, external ::
      &     igamstr2, ielsum
       
@@ -77,6 +77,15 @@
             ! first subspace distribution
             idss(idxst:idxnd) = 1
             dss_loop: do
+              if (.not.allow_sbsp_dis(idss(idxst),nel,ngas_hpv(ihpv)
+     &                                ,igas_restr(1,1,1,igr))) then
+                if(next_ssd(idss(idxst),nel,nel,
+     &               ngas_hpv(ihpv),igas_restr(1,1,1,igr)))
+     &               cycle dss_loop
+                succ = .false.
+                exit dss_loop
+              end if
+
               ! lexically lowest string
               ! reform distribution to occupation
               ioss(1:ngas_hpv(ihpv)) = 0

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_r12i(op,name,dagger,
+      subroutine set_r12i(op,name,set_p,
      &     min_rank,max_rank,ncadiff,iformal,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_genop
@@ -19,20 +19,29 @@
       character, intent(in) ::
      &     name*(*)
       logical, intent(in) ::
-     &     dagger
+     &     set_p
       integer, intent(in) ::
      &     min_rank, max_rank, ncadiff,iformal
 
       type(orbinf) ::
      &     orb_info
       integer ::
-     &     hpvx_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
+     &     max_xrank, min_xrank, hpvx_mnmx(2,ngastp),
+     &     hpvxca_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
+      logical ::
+     &     freeze(2)
 
       call set_hpvx_and_restr_for_int()
 
-      call set_genop(op,name,optyp_operator,
-     &     dagger,
-     &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
+      min_xrank = -max_rank
+      max_xrank = max_rank
+      freeze(1) = .false.
+      freeze(2) = .true.
+      call set_genop2(op,name,optyp_operator,
+     &     min_rank,max_rank,ncadiff,
+     &     min_xrank,max_xrank,
+     &     hpvx_mnmx,hpvxca_mnmx,
+     &     irestr,iformal,freeze,
      &     orb_info)
 
       return
@@ -47,19 +56,33 @@ c-----------------------------------------------------------------------
       integer::
      &     igastp,igas
 
-      hpvx_mnmx(1:2,1:ngastp,1:2)=0
-      
-      hpvx_mnmx(1:2,IHOLE,2)=2
+      hpvxca_mnmx(1:2,1:ngastp,1:2)=0
+
+      if (.not.set_p) then
+        hpvxca_mnmx(1:2,IHOLE,2)=2
+      else
+        hpvxca_mnmx(1:2,IHOLE,2)=(/0,2/)
+        hpvxca_mnmx(1:2,IPART,2)=(/0,2/)
+      end if
       
       do igastp=1,ngastp
         if(igastp.eq.IEXTR)then
-          hpvx_mnmx(1,igastp,1)=0
-          if (orb_info%caborb.gt.0) hpvx_mnmx(2,igastp,1)=1 
+          hpvxca_mnmx(1,igastp,1)=0
+          if (orb_info%caborb.gt.0) hpvxca_mnmx(2,igastp,1)=1 
         elseif(igastp.ne.IVALE)then
-          hpvx_mnmx(1,igastp,1)=0
-          hpvx_mnmx(2,igastp,1)=max_rank
+          hpvxca_mnmx(1,igastp,1)=0
+          hpvxca_mnmx(2,igastp,1)=max_rank
         endif  
       enddo
+
+      hpvx_mnmx = 0
+      hpvx_mnmx(2,IHOLE) = 4
+      if (.not.set_p) then
+        hpvx_mnmx(2,IPART) = 2
+      else
+        hpvx_mnmx(2,IPART) = 4
+      end if
+      hpvx_mnmx(2,IEXTR) = hpvxca_mnmx(2,IEXTR,1)
 
       irestr(1,1:orb_info%ngas,1:2,1:2)=0
       irestr(2,1:orb_info%ngas,1:2,1:2)=max_rank

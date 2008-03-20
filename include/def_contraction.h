@@ -17,7 +17,8 @@
         integer ::  ! type of operator defining vertex
      &     idx_op,  !  index
      &     iblk_op  !  block (super vertices: compound vertex/block index)
-!     &     ncntr    ! number of contractions
+        logical ::
+     &     dagger   ! the operators enters as its adjoint
 
       end type cntr_vtx
 
@@ -26,6 +27,9 @@
         integer ::     ! type of result:
      &     idx_res,    ! index of operator type (0 for scalar) 
      &     iblk_res    ! block of operator type (0 for scalar)
+        logical ::
+     &     dagger      ! the result must be transposed 
+                       ! (intended for formal purposes)
 
         real(8) ::     
      &       fac       ! prefactor

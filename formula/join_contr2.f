@@ -19,7 +19,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       type(contraction), intent(out) ::
      &     contr_abc
@@ -146,6 +146,7 @@
       ! set result
       contr_abc%idx_res = idxop_abc
       contr_abc%iblk_res = iblk_abc
+      contr_abc%dagger = contr_ac%dagger
       njoined_abc = op_info%op_arr(idxop_abc)%op%njoined
 
       ! set vertices and reordering arrays

@@ -33,7 +33,8 @@
         if (idx.gt.lbuf)
      &     call quit(0,'rd_contr','too long record')
 
-        contr%iblk_res = buffer(1)
+        contr%iblk_res = abs(buffer(1))
+        contr%dagger = buffer(1).lt.0
         contr%nvtx = buffer(2)
         contr%nsupvtx = buffer(3)
         contr%narc = buffer(4) 
@@ -47,7 +48,8 @@
         idx = 6
 
         do ii = 1, contr%nvtx
-          contr%vertex(ii)%idx_op  = buffer(idx+1)
+          contr%vertex(ii)%idx_op  = abs(buffer(idx+1))
+          contr%vertex(ii)%dagger = buffer(idx+1).lt.0 
           contr%vertex(ii)%iblk_op = buffer(idx+2)
           idx = idx+2
         end do
@@ -111,6 +113,8 @@
         if (buffer(4).ne.contr%narc) ierr = ierr+1
         if (buffer(5).ne.contr%nxarc) ierr = ierr+1
         if (buffer(6).ne.contr%nfac) ierr = ierr+1
+
+        if (contr%dagger) buffer(1) = -buffer(1)
         idx = 6
         if (ierr.gt.0) goto 101
         if (idx+contr%nvtx*2.gt.lbuf) goto 103
@@ -118,6 +122,7 @@
         do ii = 1, contr%nvtx
           buffer(idx+1) = contr%vertex(ii)%idx_op
           if (buffer(idx+1).ne.contr%vertex(ii)%idx_op) ierr = ierr+1
+          if (contr%vertex(ii)%dagger) buffer(idx+1) = -buffer(idx+1)
           buffer(idx+2) = contr%vertex(ii)%iblk_op
           if (buffer(idx+2).ne.contr%vertex(ii)%iblk_op) ierr = ierr+1
           idx = idx+2

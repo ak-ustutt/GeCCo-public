@@ -59,6 +59,7 @@
      &           mel%ld_op_gmox(nblk))
         ncount = nblk+2*ngastp*nblkt
         do iblk = 1, nblk
+c          if (mel%op%formal_blk(iblk)) cycle
           nexc = min(mel%op%ica_occ(1,iblk),
      &               mel%op%ica_occ(2,iblk))
           allocate(mel%len_op_gmo(iblk)%gam_ms(nsym,nexc+1),
@@ -75,6 +76,7 @@
      &       'nsym associated with current list')
         ncount = 0
         do iblk = 1, nblk
+c          if (mel%op%formal_blk(iblk)) cycle
           nexc = min(mel%op%ica_occ(1,iblk),
      &               mel%op%ica_occ(2,iblk))
           ndis = mel%off_op_gmox(iblk)%maxd

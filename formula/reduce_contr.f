@@ -134,7 +134,7 @@ c dbg
       end if
 
       ! get topology info
-      call topomap4contr(1,topomap,idum,idum,idum,contr,
+      call topomap4contr(1,-1,-1,topomap,idum,idum,idum,contr,
      &                       occ_vtx(1,1,njoined_res+1))
 
       ! init reordering array
@@ -162,6 +162,7 @@ c dbg
 
         vertex(ivtx)%idx_op = idxop_new
         vertex(ivtx)%iblk_op = 1
+        vertex(ivtx)%dagger = .false.
         svertex(ivtx) = nsupvtx+1
 
         if (update_info) then
@@ -237,10 +238,16 @@ c dbg
 c        merge = merge_vtx1vtx2(ivtx1,ivtx2,svertex,svmap,topomap,nvtx)
           idx_merge = idx_merge_vtx1vtx2(ivtx1,ivtx2,isupvtx1,isupvtx2,
      &         nmvleft,imvleft,svertex_ori,svmap,topomap,nvtx)
+c dbg
+c          print *,'idx_merge: ',idx_merge
+c dbg
           merge = idx_merge.gt.0.and.merge_check(contr,
      &         isupvtx1,isupvtx2,
      &         ivtx1,ivtx2,occ_vtx(1,1,njoined_res+ivtx1),
      &                     occ_vtx(1,1,njoined_res+ivtx2),topomap)
+c dbg
+c          print *,'merge: ',merge
+c dbg
           if (merge) then
             ! generate occupation of new vertex 
             !  (+njoined as first entry on occ_vtx is result vertex)

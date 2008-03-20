@@ -63,6 +63,44 @@
       end
 
 *----------------------------------------------------------------------*
+      subroutine op_from_occ_parameters(rw,parameters,n_par_str,
+     &     occ_def,ndef,njoined,nmax)
+
+      implicit none
+      
+      include 'opdim.h'
+
+      integer, intent(in) ::
+     &     rw, n_par_str, nmax
+      integer, intent(inout) ::
+     &     occ_def(*), ndef, njoined
+      character(*), intent(inout) ::
+     &     parameters(n_par_str)
+
+      if (n_par_str.ne.2)
+     &       call quit(1,'genop_parameters','n_par_str must be 2!')
+      if (rw.lt.0) then
+        parameters(1)(1:len(parameters(1))) = ' '
+        parameters(2)(1:len(parameters(2))) = ' '
+        write(parameters(1),'(2(i5,x))')
+     &        njoined, ndef
+        if (2*ngastp*ndef*njoined.gt.120)
+     &       call quit(1,'op_from_occ_parameters','2*ngastp*ndef.gt.64')
+        write(parameters(2),'(120(i2))')
+     &        occ_def(1:2*ngastp*ndef*njoined)        
+      else
+        read(parameters(1),'(2(i5,x))')
+     &       njoined, ndef
+        if (ndef*njoined.gt.nmax)
+     &       call quit(1,'op_from_occ_parameters','nmax too small')
+        read(parameters(2),'(120(i2))')
+     &        occ_def(1:2*ngastp*ndef*njoined)
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine hop_parameters(rw,parameters,
      &     min_rank,max_rank,iformal,explicit)
 
@@ -135,6 +173,7 @@
       return
       end
 
+
 *----------------------------------------------------------------------*
       subroutine r12gem_parameters(rw,parameters,
      &     dagger,min_rank,ansatz)
@@ -155,6 +194,31 @@
       else
         read(parameters,'(l,x,2(i5,x))')
      &       dagger,min_rank,ansatz
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine r12int_parameters(rw,parameters,
+     &     set_p,min_rank,max_rank,ncadiff,iformal)
+
+      implicit none
+      
+      logical, intent(inout) ::
+     &     set_p
+      integer, intent(inout) ::
+     &     rw,min_rank,max_rank,ncadiff,iformal
+      character, intent(inout) ::
+     &     parameters*(*)
+
+      if (rw.lt.0) then
+        parameters(1:len(parameters)) = ' '
+        write(parameters,'(l,x,4(i5,x))')
+     &       set_p,min_rank,max_rank,ncadiff,iformal
+      else
+        read(parameters,'(l,x,4(i5,x))')
+     &       set_p,min_rank,max_rank,ncadiff,iformal
       end if
 
       return
@@ -325,6 +389,34 @@
         write(parameters,'(2i4,a)') ndens,rank,env_type
       else
         read(parameters,'(2i4,a)') ndens,rank,env_type
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine add_parameters(rw,parameters,
+     &     nfac,fac,maxfac)
+
+      implicit none
+      
+      integer, intent(in) ::
+     &     rw
+      integer, intent(inout) ::
+     &     nfac,maxfac
+      real(8), intent(inout) ::
+     &     fac(*)
+      character(*), intent(inout) ::
+     &     parameters
+
+      if (rw.lt.0) then
+        parameters(1:len(parameters)) = ' '
+        if (nfac.gt.12) call quit(1,'add_parameters','too much')
+        write(parameters,'(i2,12g20.14)') nfac,fac(1:nfac)
+      else
+        read(parameters,'(i2,12g20.14)') nfac,fac(1:nfac)
+        if (nfac.gt.maxfac)
+     &       call quit(1,'add_parameters','too much (>maxfac)')
       end if
 
       return

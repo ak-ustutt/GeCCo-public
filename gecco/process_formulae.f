@@ -54,6 +54,8 @@
       form_pnt => form_info%form_arr(idx)%form
 
       select case(trim(rule%command))
+      case(CHECK_FORMGEN)
+        call check_formula_generators(form_pnt,op_info,orb_info)
       case(DEF_CC_LAGRANGIAN)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
@@ -91,7 +93,7 @@
 c dbg   Testing of new setup routine.
 c        print *,'titles',title
 c        if(trim(title).eq.'R12 V-intermediate (formal definition)')then
-          call set_r12intm_formal2(form_pnt,
+          call set_r12intm_formal3(form_pnt,
      &         title,rule%labels(ioff+1),rule%labels(ioff+2),
      &         rule%n_labels-ioff-1,typ_str,
      &         op_info,orb_info)
@@ -108,7 +110,7 @@ c dbg
      &       rule%parameters,rule%n_parameter_strings,
      &       title,ansatz,approx)
         ioff = rule%n_update
-        call set_r12intm_cabs(form_pnt,
+        call set_r12intm_cabs3(form_pnt,
      &       title,rule%labels(ioff+1),rule%n_labels-ioff,
      &       approx(1:2),ansatz,approx(3:),
      &       op_info,orb_info)

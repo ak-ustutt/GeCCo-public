@@ -16,7 +16,7 @@ c      include 'def_operator_array.h'
       include 'par_opnames_gen.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(operator), intent(inout) ::
      &     op

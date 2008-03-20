@@ -43,7 +43,7 @@
       ! update op_list array in order to set up the lookup-table
       call update_op_arr(op_info)
 
-      if (iprlvl.ge.10) then
+      if (iprlvl.ge.20) then
         write(luout,'(3x,7a)')
      &       're-assigned list: ',trim(mel%label),' (file ',
      &       trim(mel%fhand%name),') to operator: ',trim(mel%op%name)

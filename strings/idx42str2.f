@@ -36,7 +36,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     idxprqs(4), igam(4), idss(4), igtp(4),
@@ -150,6 +150,10 @@ c dbg
 
       ! Which block of the operator does the passed integral represent?
       ! could be improved:
+c dbg
+      print *, 'iocc: ',op%njoined
+      call wrt_occ(6,iocc)
+c dbg
       if(op%njoined.eq.1)then
         iblk_ca = iblk_occ(iocc,.false.,op)
         iblk_ac = iblk_occ(iocc,.true.,op)
@@ -157,6 +161,9 @@ c dbg
         iblk_ca = iblk_occ_inter(iocc,.false.,op)
         iblk_ac = iblk_occ_inter(iocc,.true.,op)
       endif
+c dbg
+      print *,'iblk_ca, iblk_ac: ',iblk_ca, iblk_ac
+c dbg
       take_ca = iblk_ca.gt.0
       take_ac = iblk_ac.gt.0
 
@@ -303,14 +310,26 @@ c      endif
         if (take_ca) then
           idstr_ca = idx_msgmdst(iblk_ca,mst,igamt,
      &         msd,igmd,.false.,oplist,orb_info%nsym)
-          if (idstr_ca.lt.0)
-     &         call quit(1,'idx42str','error for idstr_ca')
+          
+          if (idstr_ca.lt.0) then
+            take_ca = .false.
+          end if
+c          if (idstr_ca.lt.0)
+c     &         call quit(1,'idx42str2','error for idstr_ca')
         endif
         if (take_ac) then
           idstr_ac = idx_msgmdst(iblk_ac,mst,igamt,
      &         msd,igmd,.true.,oplist,orb_info%nsym)
-          if (idstr_ac.lt.0)
-     &         call quit(1,'idx42str','error for idstr_ac') 
+          if (idstr_ac.lt.0) then
+            take_ac = .false.
+          end if
+c          if (idstr_ac.lt.0)
+c     &         call quit(1,'idx42str2','error for idstr_ac') 
+        end if
+
+        if (.not.take_ac.and..not.take_ca) then
+          error = .true.
+          return
         end if
 
         if (ntest.ge.100) then
@@ -347,6 +366,9 @@ c      endif
           endif  
         end if
 
+c dbg
+        print *,'take_ac, take_ca, inc: ',take_ac, take_ca, inc
+c dbg
         lenlast = 1
         ihpv_loop: do ihpvdx = 1, ngastp
           ihpv = ihpvseq(ihpvdx)
@@ -389,6 +411,7 @@ c            curgraph => str_info%g(igraph)
      &              oplist%idx_graph(ihpv,3-ica,(iblk_ac-1)*njoined+jdx)
                 end if
               else
+                call quit(1,'idx42str2','avoid this route')
                 if (take_ca) then
                   igraph = igraph +
      &              oplist%idx_graph(ihpv,3-ica,(iblk_ca-1)*njoined+jdx)

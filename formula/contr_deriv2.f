@@ -20,7 +20,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       logical, parameter ::
      &     strict = .false.
 
@@ -113,7 +113,8 @@
 
       call occvtx4contr(1,occ_vtx,contr,op_info)
 
-      call topomap4contr(2,topomap,eqv_map,neqv,idx_eqv,contr,occ_vtx)
+      call topomap4contr(3,-1,-1,
+     &     topomap,eqv_map,neqv,idx_eqv,contr,occ_vtx)
 
       call eqvfac4contr(ieqvfac,neqv_tup,idx_tup,ntup,
      &                  topomap,eqv_map,neqv,idx_eqv,contr)
@@ -201,10 +202,7 @@
           else
             jvtx = jvtx + 1 ! counter for copy target
             ! just copy information
-            cur_conder%contr%vertex(jvtx)%idx_op =
-     &                                        contr%vertex(ivtx)%idx_op
-            cur_conder%contr%vertex(jvtx)%iblk_op =
-     &                                        contr%vertex(ivtx)%iblk_op
+            cur_conder%contr%vertex(jvtx) = contr%vertex(ivtx)
             cur_conder%contr%svertex(jvtx) = contr%svertex(ivtx)
           end if
         end do
@@ -325,7 +323,7 @@ c            call wrt_occ_n(luout,iocc,1)
         ! get occupation of target ...
         call occ_contr2(iocc,ierr,cur_conder%contr,njoined_res)
 c dbg
-        print *,'njoined',njoined_res
+c        print *,'njoined',njoined_res
 c dbg
 c dbg-QUICK FIX2:::
         if (ierr.eq.0.and.ipcr_mlt.eq.-1.and.ipcr_der.eq.0) then

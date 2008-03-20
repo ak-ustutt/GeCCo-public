@@ -46,7 +46,8 @@
       idx_op = vertex(ivtx)%idx_op
       iblk_op = vertex(ivtx)%iblk_op
       iocc = op_arr(idx_op)%op%ihpvca_occ(1:ngastp,1:2,iblk_op)
-      dag = op_arr(idx_op)%op%dagger
+c      dag = op_arr(idx_op)%op%dagger
+      dag = vertex(ivtx)%dagger
       if (dag) iocc = iocc_dagger(iocc)
       
       if (ntest.ge.100) then

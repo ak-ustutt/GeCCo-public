@@ -52,24 +52,24 @@
 
       ! Array 1.
       temp_del => del_list%del_cond_item(1)%del_cond_arr(1)
-      temp_del%op_name = op_rba
+      temp_del%op_name = op_cba
       temp_del%num_op_restr(1:2) = 1
       temp_del%part_num_restr(1:2) = -1
 
       temp_del => del_list%del_cond_item(1)%del_cond_arr(2)
-      temp_del%op_name = op_r12
+      temp_del%op_name = op_c12
       temp_del%num_op_restr(1) = 2
       temp_del%num_op_restr(2) = -1
       temp_del%part_num_restr(1:2) = -1
       
       ! Array 2.
       temp_del => del_list%del_cond_item(2)%del_cond_arr(1)
-      temp_del%op_name = op_rba
+      temp_del%op_name = op_cba
       temp_del%num_op_restr(1:2) = 1
       temp_del%part_num_restr(1:2) = -1
 
       temp_del => del_list%del_cond_item(2)%del_cond_arr(2)
-      temp_del%op_name = op_r12
+      temp_del%op_name = op_c12
       temp_del%num_op_restr(1:2) = 1
       temp_del%part_num_restr(1:2) = -1
 
@@ -80,12 +80,12 @@
 
       ! Array 3.
       temp_del => del_list%del_cond_item(3)%del_cond_arr(1)
-      temp_del%op_name = op_rba
+      temp_del%op_name = op_cba
       temp_del%num_op_restr(1:2) = 1
       temp_del%part_num_restr(1:2) = -1
 
       temp_del => del_list%del_cond_item(3)%del_cond_arr(2)
-      temp_del%op_name = op_r12
+      temp_del%op_name = op_c12
       temp_del%num_op_restr(1:2) = 1
       temp_del%part_num_restr(1:2) = -1
 

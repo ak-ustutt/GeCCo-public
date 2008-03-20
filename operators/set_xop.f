@@ -31,7 +31,7 @@
       call set_hpvx_and_restr_for_xop()
 
       call set_genop(op,name,optyp_operator,
-     &     dagger,
+     &     .false.,
      &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
      &     orb_info)
 
@@ -48,11 +48,12 @@
       integer ::
      &     ica, igastp, igas
 
-      do ica = 1, 2
+      if (.not.dagger) then
+        do ica = 1, 2
         do igastp = 1, ngastp
           if (orb_info%nactt_hpv(igastp).gt.0.and.
-     &        ((ica.eq.1.and.(igastp.eq.ipart.or.igastp.eq.ivale)).or.
-     &         (ica.eq.2.and.(igastp.eq.ihole.or.igastp.eq.ivale)) ))
+     &        ((ica.eq.1.and.(igastp.eq.IPART.or.igastp.eq.IVALE)).or.
+     &         (ica.eq.2.and.(igastp.eq.IHOLE.or.igastp.eq.IVALE)) ))
      &           then
             hpvx_mnmx(1,igastp,ica) = 0
             hpvx_mnmx(2,igastp,ica) = max_rank
@@ -61,7 +62,23 @@
             hpvx_mnmx(2,igastp,ica) = 0
           end if
         end do
-      end do
+        end do
+      else
+        do ica = 1, 2
+        do igastp = 1, ngastp
+          if (orb_info%nactt_hpv(igastp).gt.0.and.
+     &        ((ica.eq.2.and.(igastp.eq.IPART.or.igastp.eq.IVALE)).or.
+     &         (ica.eq.1.and.(igastp.eq.IHOLE.or.igastp.eq.IVALE)) ))
+     &           then
+            hpvx_mnmx(1,igastp,ica) = 0
+            hpvx_mnmx(2,igastp,ica) = max_rank
+          else
+            hpvx_mnmx(1,igastp,ica) = 0
+            hpvx_mnmx(2,igastp,ica) = 0
+          end if
+        end do
+        end do
+      end if
       irestr(1:2,1:orb_info%ngas,1:2,1:2) = 0
       do ica = 1, 2
         do igas = 1, orb_info%ngas

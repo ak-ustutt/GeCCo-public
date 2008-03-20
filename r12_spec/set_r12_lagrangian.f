@@ -103,7 +103,7 @@
       sop_pnt => op_info%op_arr(idx_sop)%op
 
       min_rank = 2
-      max_rank = max_rank_op('A',op_info%op_arr(idxc12)%op)
+      max_rank = max_rank_op('A',op_info%op_arr(idxc12)%op,.false.)
 
       ! set CR part:
       call set_r12gem(sop_pnt,op_sop,.false.,
@@ -152,9 +152,17 @@ c      sbar_pnt%dagger = .true.
       do while(associated(fl_t_cr_pnt%next))
         fl_t_cr_pnt => fl_t_cr_pnt%next
       end do
-      call expand_op_product(fl_t_cr_pnt,idx_sbar,
-     &     1d0,2,(/idxrba,idxcbar/),-1,-1,
-     &     (/1,2/),1,.false.,op_info)
+      call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &     1d0,4,3,
+     &     (/idx_sbar,-idxr12,idxcbar,idx_sbar/),(/1,2,3,1/),
+     &     -1,-1,
+     &     (/2,3/),1,
+     &     0,0,
+     &     0,0,
+     &     op_info)
+c      call expand_op_product(fl_t_cr_pnt,idx_sbar,
+c     &     1d0,2,(/idxrba,idxcbar/),-1,-1,
+c     &     (/1,2/),1,.false.,op_info)
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'TBAR + R CBAR')

@@ -18,7 +18,7 @@
       include 'par_opnames_gen.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       logical, intent(in) ::
      &     init
@@ -89,15 +89,15 @@
           iblk_op = 1
         else if (blk_select) then          
 c dbg
-          print *,'iblk_opsh = ',iblk_opsh
-          call wrt_occ_n(6,opsh%ihpvca_occ(1,1,iblk_off_sh+1),njoined)
-          print *,'opsh%dagger = ',opsh%dagger
-          print *,'op%dagger = ',opsh%dagger
+c          print *,'iblk_opsh = ',iblk_opsh
+c          call wrt_occ_n(6,opsh%ihpvca_occ(1,1,iblk_off_sh+1),njoined)
+c          print *,'opsh%dagger = ',opsh%dagger
+c          print *,'op%dagger = ',opsh%dagger
 c dbg
           iblk_op = iblk_occ(opsh%ihpvca_occ(1,1,iblk_off_sh+1),
      &                       opsh%dagger,op)
 c dbg
-          print *,'result: iblk_op = ',iblk_op
+c          print *,'result: iblk_op = ',iblk_op
 c dbg
           if (iblk_op .lt. 1) cycle
         else

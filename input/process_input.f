@@ -71,9 +71,9 @@
       ! check input -- start version
       icnt = is_keyword_set('method')
 
-      if (icnt.le.0) then
-        call quit(0,'process_input','no "method" block specified')
-      end if
+c      if (icnt.le.0) then
+c        call quit(0,'process_input','no "method" block specified')
+c      end if
 
       icnt = is_keyword_set('orb_space.shell')
 

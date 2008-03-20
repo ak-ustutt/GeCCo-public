@@ -31,6 +31,7 @@
       
       if (ntest.ge.100)
      &     call write_title(luout,wst_dbg_subr,'occ_contr')
+      call quit(1,'occ_contr','obsolete, use occ_contr2')
 
       nvtx = contr%nvtx
 
