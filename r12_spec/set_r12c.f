@@ -73,7 +73,7 @@
         do igas = 1, orb_info%ngas
           if (orb_info%ihpvgas(igas,1).eq.ihole) then
             irestr(1,igas,ica,1) = 0
-            if (ica.eq.1) then
+            if (ica0.eq.1) then
               irestr(2,igas,ica,1) = min(2,max_rank)
             else
               irestr(2,igas,ica,1) = max_rank
