@@ -94,7 +94,11 @@
      &     call quit(1,'import_r12_dalton','No MO integral file: '//
      &       trim(fname_inp))
 
-      call file_init(ffinp,fname_inp,ftyp_sq_frm,0)
+      if (mode.gt.0) then
+        call file_init(ffinp,fname_inp,ftyp_sq_unf,0)
+      else
+        call file_init(ffinp,fname_inp,ftyp_sq_frm,0)
+      end if
       call file_open(ffinp)
 
       ! array for weights
@@ -161,7 +165,7 @@ c          mnmxspc(2,1:ngas) = 4
       
         ! set up DA-buffer for 2el integrals
         ntypes = 3
-        if (mode.eq.2) ntypes = 6
+        if (abs(mode).eq.2) ntypes = 6
         call set_integral_graph(iy_int,nints,4,mnmxspc,orb_info)
         call set_integral_typetab(ntypes,4,typetab)
 
@@ -176,9 +180,16 @@ c dbg
 
         call atim_cs(cpux,sysx)
 
-        call read_mo_file_dalton_spc(buffer,ffinp,
+        if (mode.gt.0) then
+          call read_mo_file_dalton_spc2(buffer,ffinp,
      &       iaux_max,iaux_max,nh_min,nh_max,
      &       iy_int,typetab,ntypes,orb_info)
+        else
+          call read_mo_file_dalton_spc(buffer,ffinp,
+     &       iaux_max,iaux_max,nh_min,nh_max,
+     &       iy_int,typetab,ntypes,orb_info)
+        end if
+
 
         call atim_cs(cpu,sys)
 

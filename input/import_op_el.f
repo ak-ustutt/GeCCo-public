@@ -50,7 +50,7 @@
         ! what to import?
         select case(trim(mel_target%op%name))
         case (op_ham,op_g_x)
-          mode=0
+          mode=1
 c          call import_r12_dalton(mel_target,'MO_G',
 c     &           mode,str_info,orb_info)
           call import_2el_dalton(mel_target,'MO_G',
@@ -63,28 +63,28 @@ c     &           mode,str_info,orb_info)
           mode=1
 c         call import_r12_dalton(mel_target,'MO_R',
 c    &           mode,str_info,orb_info) 
-          call import_2el_dalton(mel_target,'MO_R',
+          call import_2el_dalton(mel_target,'MO_F12',
      &           mode,str_info,orb_info) 
 
         case(op_rinba)
           mode=1
 c          call import_r12_dalton(mel_target,'MO_R',
 c     &           mode,str_info,orb_info) 
-          call import_2el_dalton(mel_target,'MO_R',
+          call import_2el_dalton(mel_target,'MO_F12',
      &           mode,str_info,orb_info) 
 
         case(op_f2)
           mode=1
 c          call import_r12_dalton(mel_target,'MO_F2',
 c     &         mode,str_info,orb_info)
-          call import_2el_dalton(mel_target,'MO_F2',
+          call import_2el_dalton(mel_target,'MO_FF',
      &         mode,str_info,orb_info)
 
         case(op_ttr)
           mode=2
 c          call import_r12_dalton(mel_target,'MO_TTR',
 c     &         mode,str_info,orb_info) 
-          call import_2el_dalton(mel_target,'MO_TTR',
+          call import_2el_dalton(mel_target,'MO_TTF',
      &           mode,str_info,orb_info) 
 
         case(op_exchange)
