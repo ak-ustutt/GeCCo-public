@@ -452,6 +452,8 @@ c dbg
      &        (max_dis_blk(0,me_op1op2tmp,iblkop1op2tmp,orb_info)
      &         + max_dis_blk(0,me_op1,iblkop1,orb_info)
      &         + max_dis_blk(0,me_op2,iblkop2,orb_info))*lenblock)
+        ! but do at most request 90 per cent of remaining core
+        lenscr = (ifree*9)/10
         ifree = mem_alloc_real(xscr,lenscr,'contr_scr')
       end if
 

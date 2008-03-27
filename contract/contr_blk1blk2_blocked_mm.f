@@ -87,7 +87,7 @@ c     &     lenblock = 200
      &     ldim_op2a(nablk_op2), ldim_op2c(ncblk_op2),
      &     ldim_op1op2a(nablk_op1op2), ldim_op1op2c(ncblk_op1op2)
       integer ::
-     &     lscr_op1op2, idxopsscr, idxoplscr, idxop1op2scr, idx,
+     &     lscr_op1op2, idxopsscr, idxoplscr, idxop1op2scr, idx, idxend,
      &     nstr_ex1a_tot, nstr_ex1c_tot,
      &     nstr_ex2a_tot, nstr_ex2c_tot,
      &     nstr_exsa_tot, nstr_exsc_tot,
@@ -196,6 +196,11 @@ c     &     lenblock = 200
      &     nstr_exsc_tot*nstr_exsa_tot*maxlen_cnt_batch
       idxop1op2scr = idxoplscr +
      &     maxlen_cnt_batch*maxlen_exl_batch
+      idxend    = idxop1op2scr + maxlen_exl_batch*maxlen_exs_batch
+
+      if (idxend.gt.lenscr)
+     &     call quit(1,'contr_blk1blk2_blocked_mm',
+     &                 'error in setting up batch lengthes')
 
       n_cnt_batch = (nstr_cntc_tot*nstr_cnta_tot-1)/maxlen_cnt_batch + 1
 
