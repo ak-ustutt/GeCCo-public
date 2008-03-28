@@ -25,7 +25,7 @@
      &     mem_maxname = 24
 
       integer, parameter ::
-     &     membuffer_maxmax_slots = 1024,
+     &     membuffer_maxmax_slots = 16*1024,
      &     membuffer_maxname = 8,
      &     membuffer_stat_max = 500
 

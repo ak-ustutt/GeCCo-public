@@ -31,7 +31,7 @@
      &     call quit(1,'detach_mel_file',
      &     'list is not assigned a file')
 
-      if (iprlvl.ge.10) then
+      if (iprlvl.ge.20) then
         write(luout,'(3x,7a)')
      &       'detaching file: ',trim(ffop%name),' from list ',
      &       trim(mel%label),' (operator: ',trim(op%name),')'
