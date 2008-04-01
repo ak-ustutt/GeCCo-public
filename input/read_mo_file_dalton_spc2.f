@@ -87,7 +87,7 @@
       rewind(lu2in)
       read(lu2in) maxlength
 c dbg
-      print *,'maxlength = ',maxlength
+c      print *,'maxlength = ',maxlength
 c dbg
 
       allocate(idxbuf(4,maxlength),valbuf(maxlength))
@@ -97,7 +97,7 @@ c dbg
         read(lu2in)!,end=999,err=998)
      &       length,idxbuf(1:4,1:length),valbuf(1:length)
 c dbg
-        print *,'length = ',length
+c        print *,'length = ',length
 c dbg
         if (length.le.0) exit
 

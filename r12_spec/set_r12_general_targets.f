@@ -124,13 +124,13 @@ c     &              parameters,1,tgt_info)
      &              parameters,1,tgt_info)
 
       ! soon obsolete: adjoint of the above ints ...
-      call add_target(op_rinba,ttype_op,.false.,tgt_info)
-      call set_dependency(op_rinba,op_rint,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_rint,.true.) ! <- dagger=.true.
-      call set_rule(op_rinba,ttype_op,CLONE_OP,
-     &              op_rinba,1,1,
-     &              parameters,1,tgt_info)
+c      call add_target(op_rinba,ttype_op,.false.,tgt_info)
+c      call set_dependency(op_rinba,op_rint,tgt_info)
+c      call cloneop_parameters(-1,parameters,
+c     &                        op_rint,.true.) ! <- dagger=.true.
+c      call set_rule(op_rinba,ttype_op,CLONE_OP,
+c     &              op_rinba,1,1,
+c     &              parameters,1,tgt_info)
 
       ! extended list of R12 integrals
       call add_target(op_rintx,ttype_op,.false.,tgt_info)
@@ -293,13 +293,13 @@ c     &              op_b_inter,1,1,
 c     &              parameters,1,tgt_info)
 
       ! R12^{2} integrals
-      call add_target(op_f2,ttype_op,.false.,tgt_info)
+      call add_target(op_ff,ttype_op,.false.,tgt_info)
       if (approx(1:1).eq.'A') then
-        call set_dependency(op_f2,op_b_inter,tgt_info)
+        call set_dependency(op_ff,op_b_inter,tgt_info)
         call cloneop_parameters(-1,parameters,
      &                        op_b_inter,.false.) ! <- dagger=.false.
-        call set_rule(op_f2,ttype_op,CLONE_OP,
-     &              op_f2,1,1,
+        call set_rule(op_ff,ttype_op,CLONE_OP,
+     &              op_ff,1,1,
      &              parameters,1,tgt_info)
       else
         occ_def = 0
@@ -316,8 +316,8 @@ c     &              parameters,1,tgt_info)
         occ_def(IHOLE,2,6) = 2
         call op_from_occ_parameters(-1,parameters,2,
      &       occ_def,3,2,6)
-        call set_rule(op_f2,ttype_op,DEF_OP_FROM_OCC,
-     &                op_f2,1,1,
+        call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
+     &                op_ff,1,1,
      &                parameters,2,tgt_info)
       end if
 
@@ -506,11 +506,13 @@ c     &     parameters,2,title_r12_vint,0,'gxxr')
       labels(2) = op_v_inter
       labels(3) = op_g_x !op_ham
       labels(4) = op_rint
-      labels(5) = op_unity
+c      labels(5) = op_unity
+      labels(5) = op_gr   
       ! F12: op_gr
       call add_target(form_r12_vcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_vcabs,op_v_inter,tgt_info)
-      call set_dependency(form_r12_vcabs,op_unity,tgt_info)
+c      call set_dependency(form_r12_vcabs,op_unity,tgt_info)
+      call set_dependency(form_r12_vcabs,op_gr,tgt_info)
 c      call set_dependency(form_r12_vcabs,op_ham,tgt_info)
       call set_dependency(form_r12_vcabs,op_g_x,tgt_info)
       call set_dependency(form_r12_vcabs,op_rint,tgt_info)
@@ -580,10 +582,10 @@ c     &     parameters,2,title_r12_xint,0,'rxxr')
       labels(2) = op_x_inter
       labels(3) = op_rint
       labels(4) = op_rint
-      labels(5) = op_f2
+      labels(5) = op_ff
       call add_target(form_r12_xcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_xcabs,op_x_inter,tgt_info)
-      call set_dependency(form_r12_xcabs,op_f2,tgt_info)
+      call set_dependency(form_r12_xcabs,op_ff,tgt_info)
 c      call set_dependency(form_r12_xcabs,op_rinba,tgt_info)
       call set_dependency(form_r12_xcabs,op_rint,tgt_info)
       call form_parameters(-1,
@@ -619,11 +621,13 @@ c     &     parameters,2,title_r12_bint,0,'rfxxr')
       labels(2) = op_b_inter
       labels(3) = op_rint
       labels(4) = op_ttr
-      labels(5) = op_unity
+c      labels(5) = op_unity
+      labels(5) = op_rttr
       nlab = 5
       call add_target(form_r12_bcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_bcabs,op_b_inter,tgt_info)
-      call set_dependency(form_r12_bcabs,op_unity,tgt_info)
+      call set_dependency(form_r12_bcabs,op_rttr,tgt_info)
+c      call set_dependency(form_r12_bcabs,op_unity,tgt_info)
 c      call set_dependency(form_r12_bcabs,op_rinba,tgt_info)
       call set_dependency(form_r12_bcabs,op_rint,tgt_info)
       if (approx(1:2).ne.'A ') then
@@ -726,6 +730,7 @@ c      call set_dependency(form_r12_zint,op_rba,tgt_info)
       nint = 0
       call add_target(fopt_r12_vcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(fopt_r12_vcabs,form_r12_vcabs,tgt_info)
+      call set_dependency(fopt_r12_vcabs,mel_gr,tgt_info)
       call set_dependency(fopt_r12_vcabs,mel_v_def,tgt_info)
       call set_dependency(fopt_r12_vcabs,mel_gintx,tgt_info)
 c      call set_dependency(fopt_r12_vcabs,mel_ham,tgt_info)
@@ -760,7 +765,7 @@ c     &              parameters,1,tgt_info)
       call add_target(fopt_r12_xcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(fopt_r12_xcabs,form_r12_xcabs,tgt_info)
       call set_dependency(fopt_r12_xcabs,mel_x_def,tgt_info)
-      call set_dependency(fopt_r12_xcabs,mel_f2,tgt_info)
+      call set_dependency(fopt_r12_xcabs,mel_ff,tgt_info)
 c      call set_dependency(fopt_r12_xcabs,mel_rinba,tgt_info)
       call set_dependency(fopt_r12_xcabs,mel_rint,tgt_info)      
       call opt_parameters(-1,parameters,ncat,nint)
@@ -777,6 +782,7 @@ c      call set_dependency(fopt_r12_xcabs,mel_rinba,tgt_info)
       call add_target(fopt_r12_bcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(fopt_r12_bcabs,form_r12_bcabs,tgt_info)
       call set_dependency(fopt_r12_bcabs,mel_b_def,tgt_info)
+      call set_dependency(fopt_r12_bcabs,mel_rttr,tgt_info)
       call set_dependency(fopt_r12_bcabs,mel_ham,tgt_info)
 c      call set_dependency(fopt_r12_bcabs,mel_rinba,tgt_info)      
       call set_dependency(fopt_r12_bcabs,mel_rint,tgt_info)      
@@ -853,24 +859,24 @@ c      call set_dependency(fopt_r12_bcabs,mel_rinba,tgt_info)
 
       ! to be changed soon:
       ! adjoint of R12integrals
-      call add_target(mel_rinba,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_rinba,op_rinba,tgt_info)
-      ! (a) define
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_rinba
-      labels(2) = op_rinba
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
-      call set_rule(mel_rinba,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      ! (b) import
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_rinba
-      call import_parameters(-1,parameters,env_type)
-      call set_rule(mel_rinba,ttype_opme,IMPORT,
-     &              labels,1,1,
-     &              parameters,1,tgt_info)
+c      call add_target(mel_rinba,ttype_opme,.false.,tgt_info)
+c      call set_dependency(mel_rinba,op_rinba,tgt_info)
+c      ! (a) define
+c      labels(1:10)(1:len_target_name) = ' '
+c      labels(1) = mel_rinba
+c      labels(2) = op_rinba
+c      call me_list_parameters(-1,parameters,
+c     &     0,0,1,0,0)
+c      call set_rule(mel_rinba,ttype_opme,DEF_ME_LIST,
+c     &              labels,2,1,
+c     &              parameters,1,tgt_info)
+c      ! (b) import
+c      labels(1:10)(1:len_target_name) = ' '
+c      labels(1) = mel_rinba
+c      call import_parameters(-1,parameters,env_type)
+c      call set_rule(mel_rinba,ttype_opme,IMPORT,
+c     &              labels,1,1,
+c     &              parameters,1,tgt_info)
 
       ! [T1+T2,R12] integrals
       call add_target(mel_ttr,ttype_opme,.true.,tgt_info)
@@ -913,42 +919,42 @@ c      call set_dependency(fopt_r12_bcabs,mel_rinba,tgt_info)
      &              parameters,1,tgt_info)
 
       ! R12^2 integrals
-      call add_target(mel_f2,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_f2,op_f2,tgt_info)
+      call add_target(mel_ff,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_ff,op_ff,tgt_info)
       ! (a) define
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_f2
-      labels(2) = op_f2
+      labels(1) = mel_ff
+      labels(2) = op_ff
       call me_list_parameters(-1,parameters,
      &     0,0,1,0,0)
-      call set_rule(mel_f2,ttype_opme,DEF_ME_LIST,
+      call set_rule(mel_ff,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_f2
+      labels(1) = mel_ff
       call import_parameters(-1,parameters,env_type)
-      call set_rule(mel_f2,ttype_opme,IMPORT,
+      call set_rule(mel_ff,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
-      ! R12.G integrals (for f(R12))
-      call add_target(mel_rg,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_rg,op_rg,tgt_info)
+      ! G.R12 integrals (for f(R12))
+      call add_target(mel_gr,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_gr,op_gr,tgt_info)
       ! (a) define
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_rg
-      labels(2) = op_rg
+      labels(1) = mel_gr
+      labels(2) = op_gr
       call me_list_parameters(-1,parameters,
      &     0,0,1,0,0)
-      call set_rule(mel_rg,ttype_opme,DEF_ME_LIST,
+      call set_rule(mel_gr,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_rg
+      labels(1) = mel_gr
       call import_parameters(-1,parameters,env_type)
-      call set_rule(mel_rg,ttype_opme,IMPORT,
+      call set_rule(mel_gr,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
@@ -1146,7 +1152,7 @@ c                             ! this entity this does not matter
       call set_dependency(eval_r12_inter,mel_gintx,tgt_info)
 c      call set_dependency(eval_r12_inter,mel_rinba,tgt_info)
       call set_dependency(eval_r12_inter,mel_ttr,tgt_info)
-      call set_dependency(eval_r12_inter,mel_f2,tgt_info)
+      call set_dependency(eval_r12_inter,mel_ff,tgt_info)
       call set_dependency(eval_r12_inter,mel_v_def,tgt_info)
 c      call set_dependency(eval_r12_inter,mel_vbar_def,tgt_info)
       call set_dependency(eval_r12_inter,mel_x_def,tgt_info)

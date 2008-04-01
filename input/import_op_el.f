@@ -51,8 +51,6 @@
         select case(trim(mel_target%op%name))
         case (op_ham,op_g_x)
           mode=1
-c          call import_r12_dalton(mel_target,'MO_G',
-c     &           mode,str_info,orb_info)
           call import_2el_dalton(mel_target,'MO_G',
      &           mode,str_info,orb_info)
           ! call after 2int import, as the above routine
@@ -61,30 +59,69 @@ c     &           mode,str_info,orb_info)
         ! Get other integrals needed for R12 calculations.
         case(op_rint)
           mode=1
-c         call import_r12_dalton(mel_target,'MO_R',
-c    &           mode,str_info,orb_info) 
           call import_2el_dalton(mel_target,'MO_F12',
+     &           mode,str_info,orb_info) 
+
+        case(op_rintbar)
+          mode=2
+          call quit(1,'import_op_el',
+     &         'adapt import mode for '//trim(mel_target%op%name))
+          call import_2el_dalton(mel_target,'MO_F12BAR',
+     &           mode,str_info,orb_info) 
+
+        case(op_rinttilde)
+          mode=2
+          call quit(1,'import_op_el',
+     &         'adapt import mode for '//trim(mel_target%op%name))
+          call import_2el_dalton(mel_target,'MO_F12TLD',
+     &           mode,str_info,orb_info) 
+
+        case(op_rintbreve)
+          mode=2
+          call quit(1,'import_op_el',
+     &         'adapt import mode for '//trim(mel_target%op%name))
+          call import_2el_dalton(mel_target,'MO_F12BRV',
+     &           mode,str_info,orb_info) 
+
+        case(op_rintc)
+          mode=2
+          call quit(1,'import_op_el',
+     &         'adapt import mode for '//trim(mel_target%op%name))
+          call import_2el_dalton(mel_target,'MO_F12C',
      &           mode,str_info,orb_info) 
 
         case(op_rinba)
+          call quit(1,'import_op_el',
+     &         'import of F12^+ is obsolete')
           mode=1
-c          call import_r12_dalton(mel_target,'MO_R',
-c     &           mode,str_info,orb_info) 
           call import_2el_dalton(mel_target,'MO_F12',
      &           mode,str_info,orb_info) 
 
-        case(op_f2)
+        case(op_ff)
           mode=1
-c          call import_r12_dalton(mel_target,'MO_F2',
-c     &         mode,str_info,orb_info)
           call import_2el_dalton(mel_target,'MO_FF',
+     &         mode,str_info,orb_info)
+
+        case(op_ffbar)
+          mode=2
+          call quit(1,'import_op_el',
+     &         'adapt import mode for '//trim(mel_target%op%name))
+          call import_2el_dalton(mel_target,'MO_FFBAR',
      &         mode,str_info,orb_info)
 
         case(op_ttr)
           mode=2
-c          call import_r12_dalton(mel_target,'MO_TTR',
-c     &         mode,str_info,orb_info) 
           call import_2el_dalton(mel_target,'MO_TTF',
+     &           mode,str_info,orb_info) 
+
+        case(op_rttr)
+          mode=1
+          call import_2el_dalton(mel_target,'MO_FTF',
+     &           mode,str_info,orb_info) 
+
+        case(op_gr)
+          mode=1
+          call import_2el_dalton(mel_target,'MO_FG',
      &           mode,str_info,orb_info) 
 
         case(op_exchange)

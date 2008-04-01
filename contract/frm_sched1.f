@@ -297,7 +297,7 @@ c        case(command_set_target_update)
 
         if (nfact.eq.0) then
 
-          iblkres = cur_contr%iblk_res
+          iblkres = (cur_contr%iblk_res-1)/njoined_res + 1
           idxop(1) = cur_contr%vertex(1)%idx_op
           iblkop(1) = cur_contr%vertex(1)%iblk_op
           tra_op1 = cur_contr%vertex(1)%dagger
