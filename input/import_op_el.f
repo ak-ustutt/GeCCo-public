@@ -55,7 +55,9 @@
      &           mode,str_info,orb_info)
           ! call after 2int import, as the above routine
           ! zeroes all blocks, including E0 and F:
-          call import_fock_dalton(mel_target,str_info,orb_info)
+          if (trim(mel_target%op%name).eq.op_ham)
+     &       call import_fock_dalton(mel_target,str_info,orb_info,
+     &         .true.,'MO_F')
         ! Get other integrals needed for R12 calculations.
         case(op_rint)
           mode=1
@@ -63,30 +65,22 @@
      &           mode,str_info,orb_info) 
 
         case(op_rintbar)
-          mode=2
-          call quit(1,'import_op_el',
-     &         'adapt import mode for '//trim(mel_target%op%name))
+          mode=3
           call import_2el_dalton(mel_target,'MO_F12BAR',
      &           mode,str_info,orb_info) 
 
         case(op_rinttilde)
-          mode=2
-          call quit(1,'import_op_el',
-     &         'adapt import mode for '//trim(mel_target%op%name))
+          mode=3
           call import_2el_dalton(mel_target,'MO_F12TLD',
      &           mode,str_info,orb_info) 
 
         case(op_rintbreve)
-          mode=2
-          call quit(1,'import_op_el',
-     &         'adapt import mode for '//trim(mel_target%op%name))
+          mode=3
           call import_2el_dalton(mel_target,'MO_F12BRV',
      &           mode,str_info,orb_info) 
 
         case(op_rintc)
-          mode=2
-          call quit(1,'import_op_el',
-     &         'adapt import mode for '//trim(mel_target%op%name))
+          mode=3
           call import_2el_dalton(mel_target,'MO_F12C',
      &           mode,str_info,orb_info) 
 
@@ -103,9 +97,7 @@
      &         mode,str_info,orb_info)
 
         case(op_ffbar)
-          mode=2
-          call quit(1,'import_op_el',
-     &         'adapt import mode for '//trim(mel_target%op%name))
+          mode=3
           call import_2el_dalton(mel_target,'MO_FFBAR',
      &         mode,str_info,orb_info)
 
@@ -125,11 +117,9 @@
      &           mode,str_info,orb_info) 
 
         case(op_exchange)
+          call quit(1,'import_op_el','K is not yet ready')
 c          call import_exchange_dalton(mel_target,'MO_K',
 c     &                                str_info,orb_info)
-c dbg
-          print *,'Hello'
-c dbg
 
         case default
           call quit(1,'import_op_el',

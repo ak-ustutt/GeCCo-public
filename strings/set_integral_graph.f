@@ -124,6 +124,18 @@
         end do
       end do
 
+      if (ntest.ge.100) then
+        write(luout,*) 'generated arc weights:'
+        do iorb = 1, norb
+          write(luout,'(2x,i2,x,i2,5x,10i6)')
+     &         iorb, 1, iy_int(1:nelmax,1,iorb)
+          do igam = 2, ngam
+            write(luout,'(5x,i2,5x,10i6)')
+     &           igam, iy_int(1:nelmax,igam,iorb)
+          end do
+        end do
+      end if
+
       deallocate(iw_int)
 
       return

@@ -19,7 +19,7 @@
       include 'ifc_memman.h'
 
       integer, parameter::
-     &     ntest= 100
+     &     ntest= 00
 
       type(orbinf),intent(in),target ::
      &     orb_info
@@ -166,6 +166,7 @@ c          mnmxspc(2,1:ngas) = 4
         ! set up DA-buffer for 2el integrals
         ntypes = 3
         if (abs(mode).eq.2) ntypes = 6
+        if (abs(mode).eq.3) ntypes = 12
         call set_integral_graph(iy_int,nints,4,mnmxspc,orb_info)
         call set_integral_typetab(ntypes,4,typetab)
 
@@ -190,7 +191,6 @@ c dbg
      &       iy_int,typetab,ntypes,orb_info)
         end if
 
-
         call atim_cs(cpu,sys)
 
         if (iprlvl.ge.5) 
@@ -198,8 +198,13 @@ c dbg
      &       cpu-cpux,sys-sysx,-1d0)
      
 c dbg
-c        do idx_int = 1, nbuffer
-c          write(luout,*) idx_int, buffer(idx_int)
+c        idx = 0
+c        do idx_int = 1, nints(1)
+c          write(luout,*) 'idx_int = ',idx_int
+c          do idx_typ = 1, ntypes
+c            idx = idx+1
+c            write(luout,*) idx_typ, buffer(idx)
+c          end do
 c        end do
 c dbg
         call atim_cs(cpux,sysx)

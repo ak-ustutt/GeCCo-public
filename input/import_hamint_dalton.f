@@ -26,7 +26,7 @@
 
       ! read reference energy and fock matrix from SIRIFC
       ! and sort fock matrix into operator file
-      call import_fock_dalton(hlist,str_info,orb_info)
+      call import_fock_dalton(hlist,str_info,orb_info,.false.,'-')
 
       ! get 2-electron integrals and sort them as well
       call import_h2_dalton(hlist,str_info,orb_info)

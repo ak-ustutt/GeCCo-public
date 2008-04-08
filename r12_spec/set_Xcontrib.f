@@ -42,7 +42,7 @@
      &     flist_pnt
 
       logical ::
-     &     GBC
+     &     GBC, assume_rsqbar
       integer ::
      &     idx_1, idx_2, idx_prj, idx_f, ndef
       type(operator), pointer ::
@@ -73,10 +73,13 @@
      &         'not enough operators on input list')
         end if
 
+        ! if no hartree operator was given, we assume that
+        ! the modified R.R integral was imported
+        assume_rsqbar = idx_op(ihartree).le.0
+
         if (idx_op(irdag).le.0.or.
      &      idx_op(irbar).le.0.or.
-     &      idx_op(irsq) .le.0.or.
-     &      idx_op(ihartree).le.0) then
+     &      idx_op(irsq) .le.0) then
           write(luout,*) 'idx: ',idx_op(irdag),idx_op(irbar),
      &         idx_op(irsq),idx_op(ihartree)
           call quit(1,'set_Xcontrib',
@@ -86,15 +89,16 @@
         !-----------------!
         ! R12^{2} * (f+k) !
         !-----------------!
-        idx_1 = idx_op(irsq)
-        idx_2 = idx_op(ihartree)
+        if (.not.assume_rsqbar) then
+          idx_1 = idx_op(irsq)
+          idx_2 = idx_op(ihartree)
 
-        ! go to end of list
-        flist_pnt => flist
-        do while(associated(flist_pnt%next))
-          flist_pnt => flist_pnt%next
-        end do
-        call expand_op_product2(flist_pnt,idx_intm,
+          ! go to end of list
+          flist_pnt => flist
+          do while(associated(flist_pnt%next))
+            flist_pnt => flist_pnt%next
+          end do
+          call expand_op_product2(flist_pnt,idx_intm,
      &       1d0,7,3,
      &       (/idx_intm,idx_1,idx_intm,idx_intm,idx_2,idx_1,idx_intm/),
      &       (/1       ,2    ,1       ,1       ,3    ,2    ,1       /),       
@@ -103,6 +107,15 @@
      &       (/2,7, 1,5, 1,6/),3, ! avoid cross contrib. to external lines
      &       (/4,5,1,0/),1,     ! def. of projector
      &       op_info)
+        else
+          idx_1 = idx_op(irsq)
+          flist_pnt => flist
+          do while(associated(flist_pnt%next))
+            flist_pnt => flist_pnt%next
+          end do
+          call set_primitive_formula(flist_pnt,idx_1,
+     &         1d0,idx_intm,.false.,op_info) 
+        end if
 
         !----------------------------------!
         ! - R12+ RBAR   (C: - R12+ RBREVE) !  
@@ -119,8 +132,8 @@
         if (ansatz.gt.1) idx_prj = 4
         call expand_op_product2(flist_pnt,idx_intm,
      &       -1d0,6,3,
-     &       (/idx_intm,idx_1,idx_intm,idx_intm,idx_2,idx_intm/),
-     &       (/1       ,2    ,1       ,1       ,3    ,1       /),       
+     &       (/idx_intm,-idx_1,idx_intm,idx_intm,idx_2,idx_intm/),
+     &       (/1       ,2     ,1       ,1       ,3    ,1       /),       
      &       -1, -1,
      &       0,0,
      &       (/2,6, 1,5/),2,    ! avoid cross contrib. to external lines

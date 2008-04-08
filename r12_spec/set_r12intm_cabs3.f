@@ -24,7 +24,7 @@
 *
 *     label     B (apr. A,B)  B (apr. C)  C (apr. A,B)  C (apr. C)
 *    --------------------------------------------------------------
-*       2       R12           R12          R12          R12
+*       2       R12           R12          R12          R12  or R12C
 *       3       [T12,R12]      --          H            H
 *       4       R12[T12,R12]  R12[T12,R12] [T12,R12]    --
 *     .............................................................
@@ -32,8 +32,8 @@
 *       6       H              --          RTILDE
 *       7       RBAR          RBREVE
 *       8       RTILDE        RTILDE
-*       9       R12^2         R12^2
-*      10       F+K           F+K
+*       9       R12^2         R12^2 / or {R12^2}BREVE
+*      10       F+K           F+K     or  --
 *    --------------------------------------------------------------
 *
 *     approx string: formatted string
@@ -65,7 +65,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -142,19 +142,26 @@
         if (ansatz.eq.1)
      &       call quit(1,'set_r12intm_cabs3','no C for ansatz 1')
         if (approx(1:1).ne.'C') then
-          call set_1contrib(flist,3,
+          call set_1contrib(flist,1d0,4,
+c          call set_1contrib(flist,-1d0,4,
      &       idx_intm,idx_op,nop,op_info)
           call set_C_fr(flist,approx,
      &         3,2,5,6,
      &         idx_intm,idx_op,nop,op_info,orb_info)
         else
-          call set_C_fr(flist,approx,
+c          if (nop.eq.2) then
+c            call set_C_fr(flist,approx,
+c     &         -1,2,-1,-1,
+c     &         idx_intm,idx_op,nop,op_info,orb_info)
+c          else
+            call set_C_fr(flist,approx,
      &         3,2,-1,-1,
      &         idx_intm,idx_op,nop,op_info,orb_info)
+c          end if
         end if
       case('V','V+','X')
         ! set up term arising from 1 in Q = 1 - P
-        call set_1contrib(flist,4,
+        call set_1contrib(flist,1d0,4,
      &       idx_intm,idx_op,nop,op_info)
         ! set up term arising from P in Q = 1 - P
         call set_Pcontrib(flist,ansatz,
@@ -162,10 +169,7 @@
      &       idx_intm,idx_op,nop,op_info)
       case('B')
         ! set up term arising from 1 in Q = 1 - P
-c dbg
-        print *,'?? idx_intm, idx_op(4): ',idx_intm, idx_op(4)
-c dbg
-        call set_1contrib(flist,4,
+        call set_1contrib(flist,1d0,4,
      &       idx_intm,idx_op,nop,op_info)
         if (approx(1:1).ne.'C') then
           ! set up term arising from P in Q = 1 - P
@@ -176,19 +180,23 @@ c dbg
           call set_Xcontrib(flist,ansatz,approx,
      &         9,2,7, 10, 5,6,
      &         idx_intm,idx_op,nop,op_info,orb_info)
-          ! Exchange contributions
-          call set_Ycontrib(flist,ansatz,approx,
+          if (approx(8:10).ne.'HY1') then
+            ! Exchange contributions
+            call set_Ycontrib(flist,ansatz,approx,
      &         2,8,
      &         idx_intm,idx_op,nop,op_info)
+          end if
         else
           ! Hartree contributions
           call set_Xcontrib(flist,ansatz,approx,
      &         9,2,7, 10, 5,6,
      &         idx_intm,idx_op,nop,op_info,orb_info)
           ! Exchange contributions
-          call set_Ycontrib(flist,ansatz,approx,
+          if (approx(8:10).ne.'HY1') then
+            call set_Ycontrib(flist,ansatz,approx,
      &         2,8,
      &         idx_intm,idx_op,nop,op_info)
+          end if
         end if
       end select
 

@@ -12,7 +12,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(operator), intent(inout) ::
      &     op
@@ -31,7 +31,7 @@
 
       ncadiff = 0
       min_rank = 1
-      max_rank = max(2,max_rank_t-1)
+      max_rank = max(2,max_rank_t-2)
       min_xrank = -max_rank
       max_xrank = max_rank-1
       hpvx_mnmx = 0

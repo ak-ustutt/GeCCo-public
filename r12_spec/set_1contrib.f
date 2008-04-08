@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_1contrib(flist,idx,
+      subroutine set_1contrib(flist,fac,idx,
      &     idx_intm,idx_op,nop,op_info)
 *----------------------------------------------------------------------*
 *     set terms arising from 1 in Q = 1 - P
@@ -18,6 +18,8 @@
 
       type(formula_item), intent(inout), target ::
      &     flist
+      real(8), intent(in) ::
+     &     fac
       integer, intent(in) ::
      &     nop,idx,idx_intm,idx_op(nop)
       type(operator_info), intent(in) ::
@@ -38,7 +40,7 @@
       end do
       ! add blocks of AB
       call set_primitive_formula(flist_pnt,idx_op(idx),
-     &       1d0,idx_intm,.false.,op_info) 
+     &       fac,idx_intm,.false.,op_info) 
 
       return
       end

@@ -18,7 +18,7 @@
       include 'par_opnames_gen.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       logical, intent(in) ::
      &     init
@@ -113,7 +113,8 @@ c dbg
         call resize_contr(form_pnt%contr,njoined,0,njoined,0)
         form_pnt%contr%fac = fac
         form_pnt%contr%idx_res = idx_opsh
-        form_pnt%contr%iblk_res = iblk_off_sh+1
+c??        form_pnt%contr%iblk_res = iblk_off_sh+1
+        form_pnt%contr%iblk_res = iblk_opsh
         form_pnt%contr%nvtx = njoined
         form_pnt%contr%svertex(1:njoined) = 1
         form_pnt%contr%nxarc = njoined

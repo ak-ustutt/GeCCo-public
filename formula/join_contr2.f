@@ -84,7 +84,7 @@
       end do
 
       if (nvtx_b.le.0.or.nproto_b.ne.0)
-     &     call quit(1,'join_contr',
+     &     call quit(1,'join_contr2',
      &     'inserted contraction fragment must be non-empty and '//
      &     'must not contain proto-vertices!')
 
@@ -102,9 +102,15 @@
       end if
       ! largest index = number of super vertices
       nsuper = ifndmax(svmap,1,nvtx_b,1)
+c dbg
+c      print *,'nvtx_b: ',nvtx_b
+c      print *,'svmap:  ',svmap(1:nvtx_b)
+c      print *,'njoined: ',njoined
+c      print *,'nsuper, nproto_ac: ',nsuper,nproto_ac
+c dbg
 
       if (nsuper.ne.nproto_ac)
-     &     call quit(1,'join_contr','incompatible contractions!')
+     &     call quit(1,'join_contr2','incompatible contractions!')
       
       nvtx_abc = nvtx_ac-nproto_ac+nvtx_b
 
@@ -257,7 +263,7 @@ c      call gen_contr2(wrap,contr_abc,fix_vtx,occ_vtx,op_info)
       if (wrap%command.eq.command_end_of_formula) then
         write(luout,*) 'proto-contraction:'
         call prt_contr2(luout,contr_abc,op_info)
-        call quit(1,'join_contr',
+        call quit(1,'join_contr2',
      &       'no possible connection found')
       end if
 
@@ -267,7 +273,7 @@ c      call gen_contr2(wrap,contr_abc,fix_vtx,occ_vtx,op_info)
         call prt_contr2(luout,contr_abc,op_info)
         write(luout,*) 'generated terms:'
         call print_form_list(luout,wrap,op_info)
-        call quit(1,'join_contr',
+        call quit(1,'join_contr2',
      &       'version 2beta allows only unique recombinations!')
       end if
 

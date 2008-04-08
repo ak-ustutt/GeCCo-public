@@ -73,8 +73,8 @@
       if (ansatz.gt.1) idx_prj = 3
       call expand_op_product2(flist_pnt,idx_intm,
      &       -1d0,6,3,
-     &       (/idx_intm,idx_1,idx_intm,idx_intm,idx_2,idx_intm/),
-     &       (/1       ,2    ,1       ,1       ,3    ,1       /),       
+     &       (/idx_intm,-idx_1,idx_intm,idx_intm,idx_2,idx_intm/),
+     &       (/1       ,2     ,1       ,1       ,3    ,1       /),       
      &       -1, -1,
      &       0,0,
      &       (/2,6, 1,5/),2,    ! avoid cross contrib. to external lines

@@ -1,7 +1,9 @@
 *----------------------------------------------------------------------*
-      subroutine import_fock_dalton(hlist,str_info,orb_info)
+      subroutine import_fock_dalton(hlist,str_info,orb_info,
+     &     use_file,name)
 *----------------------------------------------------------------------*
 *     read fock operator from SIRIFC (sirius interface file)
+*     or from file "name", if use_file is set to .true.
 *----------------------------------------------------------------------*
       implicit none
 
@@ -27,21 +29,21 @@
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info
+      logical, intent(in) ::
+     &     use_file
+      character*(*) ::
+     &     name
 
-      type(filinf) ::
-     &     ffsir
       logical ::
      &     closeit
       real(8) ::
-     &     potnuc,emy,eactiv,emcscf
-      ! DALTON writes integer*4, so we must take care of that
-      integer*4 ::
-     &     istate,ispin,nactel,lsym
+     &     eref
       real(8) ::
      &     cpu0,sys0,wall0,cpu,sys,wall
       integer ::
      &     lusir, isym, ifree, irec,
-     &     nfock, nh1reo, iocc_cls
+     &     nfock, nh1reo, iocc_cls,
+     &     idxst, idxnd, idxbufst, idxbufnd
 
       type(operator), pointer ::
      &     hop
@@ -51,8 +53,8 @@
       real(8), pointer ::
      &     xfock(:), xh1reo(:)
 
-      real(8), external ::
-     &     dnrm2
+      if (ntest.ge.100)
+     &     call write_title(luout,wst_dbg_subr,'import_fock_dalton')
 
       call atim_csw(cpu0,sys0,wall0)
 
@@ -62,11 +64,19 @@
       ifree = mem_setmark('import_h1')
 
       ! get buffers
-      nfock = 0
-      do isym = 1, orb_info%nsym
-        nfock = nfock +
+      if (.not.use_file) then
+        nfock = 0
+        do isym = 1, orb_info%nsym
+          nfock = nfock +
      &       (orb_info%ntoobs(isym)+1)*orb_info%ntoobs(isym)/2
-      end do
+        end do
+      else
+        nfock = (orb_info%ntoob+orb_info%caborb)*
+     &          (orb_info%ntoob+orb_info%caborb+1)/2
+c dbg
+        print *,'nfock = ',nfock
+c dbg
+      end if
       
       nh1reo = 0
       do iocc_cls = 1, hop%n_occ_cls
@@ -74,8 +84,9 @@
      &       cycle
         if(hop%formal_blk(iocc_cls))cycle
         ! Quick fix to ignore Fock operators with an external index.
-        if(hop%ihpvca_occ(iextr,1,iocc_cls).gt.0.or.
-     &       hop%ihpvca_occ(iextr,2,iocc_cls).gt.0)cycle
+        if(.not.use_file.and.
+     &      (hop%ihpvca_occ(iextr,1,iocc_cls).gt.0.or.
+     &       hop%ihpvca_occ(iextr,2,iocc_cls).gt.0))cycle
         nh1reo = nh1reo + hlist%len_op_occ(iocc_cls)
       end do
 
@@ -90,8 +101,10 @@
         ! check that indices on disc and in memory coincide
         ! (currently assumed in h1_sym2str_reo)
         do iocc_cls = 1, hop%n_occ_cls
-          ! ignore R12 stuff
-          if(iextr.gt.0.and.
+          if (hop%formal_blk(iocc_cls)) cycle
+          ! ignore R12 stuff unless use_file is selected
+          if(.not.use_file.and.
+     &       iextr.gt.0.and.
      &       hop%ihpvca_occ(iextr,1,iocc_cls)+
      &       hop%ihpvca_occ(iextr,2,iocc_cls).gt.0 ) cycle
 
@@ -105,13 +118,15 @@
         ifree = mem_alloc_real(xh1reo,nh1reo,'fock_reo')
       end if
 
-      ! open files
-      call file_init(ffsir,sirifc,ftyp_sq_unf,0)
-      call file_open(ffsir)
+      ! read fock matrix and reorder
+      if (.not.use_file) then
+        call read_fock_from_sirifc(eref,xfock,nfock)
+        call h1_sym2str_reo(eref,xfock,xh1reo,hlist,str_info,orb_info)
+      else
+        call read_fock_from_file(eref,xfock,nfock,name)
+        call h1_full2str_reo(eref,xfock,xh1reo,hlist,str_info,orb_info)
+      end if
 
-      lusir = ffsir%unit
-      rewind lusir
-      
       if (ffham%unit.le.0) then
         call file_open(ffham)
         closeit = .true.
@@ -119,35 +134,33 @@
         closeit = .false.
       end if
 
-      call mollab('SIR IPH ',lusir,luout)
-
-      read (lusir) potnuc,emy,eactiv,emcscf,istate,ispin,nactel,lsym
-      ! overread a few records (depends on DALTON version)
-      do irec = 1, nskip_in_sirifc-1
-        read(lusir) 
+      ! well, on file the h1-blocks may be non-contiguous, so
+      ! we have to collect the adjacent blocks and write, as 
+      ! soon as a different buffer comes in between
+      idxbufst = 1 ! counter for buffer
+      idxbufnd = 0
+      idxst = 1    ! counter for list on disc
+      idxnd = 0
+      do iocc_cls = 1, hop%n_occ_cls+1
+        if (hop%formal_blk(iocc_cls)) cycle
+        ! on any of these conditions, we have to write the present
+        ! buffer slice to disc
+        if (iocc_cls.gt.hop%n_occ_cls .or.
+     &      max(hop%ica_occ(1,iocc_cls),hop%ica_occ(2,iocc_cls)).gt.1
+     &       .or. (.not.use_file.and.
+     &      (hop%ihpvca_occ(iextr,1,iocc_cls).gt.0.or.
+     &       hop%ihpvca_occ(iextr,2,iocc_cls).gt.0)) ) then
+          ! write, if applicable
+          if (idxbufnd.ge.idxbufst)
+     &         call put_vec(ffham,xh1reo(idxbufst),idxst,idxnd)
+          idxbufst = idxbufnd+1
+          idxnd = idxnd+hlist%len_op_occ(iocc_cls)
+          idxst = idxnd+1
+        else
+          idxnd    = idxnd    + hlist%len_op_occ(iocc_cls)
+          idxbufnd = idxbufnd + hlist%len_op_occ(iocc_cls)
+        end if
       end do
-      ! and finally: the inactive fock matrix in symmetry-blocked
-      ! upper triangular form
-      read (lusir,err=16) xfock(1:nfock)
-      goto 1
-      ! on error try next record
- 16   write(luout,*) 'Trying new DALTON format ...'
-      read (lusir) xfock(1:nfock) 
-
-  1   call file_close_keep(ffsir)
-
-c dbg
-c      print *,'xfock',xfock(1:nfock)
-c dbg
-
-      if (dnrm2(nfock,xfock,1).lt.1d-12)
-     &   call quit(0,'import_fock_dalton',
-     &               'No sensible fock matrix found!')
-
-      ! and reorder
-      call h1_sym2str_reo(emcscf,xfock,xh1reo,hlist,str_info,orb_info)
-
-      call put_vec(ffham,xh1reo,1,nh1reo)
 
       if (closeit)
      &     call file_close_keep(ffham)

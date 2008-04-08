@@ -63,7 +63,7 @@
         if (rank.le.0.or.type.lt.0.or.type.gt.4)
      &       call quit(1,'set_inproj','watch your input')
 c dbg
-        print *,'v1,v2,r,t: ',ivtx1,ivtx2,rank,type
+c        print *,'v1,v2,r,t: ',ivtx1,ivtx2,rank,type
 c dbg
 
         ! get A of first operator
@@ -75,11 +75,11 @@ c dbg
         ovl = iocc_overlap(occ1,.false.,occ2,.true.)
 
 c dbg
-        write(luout,*) 'occ1, occ2'
-        call wrt_occ(luout,occ1)
-        call wrt_occ(luout,occ2)
-        write(luout,*) 'ovl'
-        call wrt_occ(luout,ovl)
+c        write(luout,*) 'occ1, occ2'
+c        call wrt_occ(luout,occ1)
+c        call wrt_occ(luout,occ2)
+c        write(luout,*) 'ovl'
+c        call wrt_occ(luout,ovl)
 c dbg
 
         ! not enough indices?
@@ -96,7 +96,7 @@ c dbg
           occ_cnt(type,2) = 1
         else if (rank.eq.2) then
 c dbg
-          print *,'nblk: ',nblk(type)
+c          print *,'nblk: ',nblk(type)
 c dbg
           do iblk = 1, nblk(type)
             ok = .true.
@@ -106,17 +106,17 @@ c dbg
      &                    occ_prj(ihpvx,ioff(type)+iblk)
             end do
 c dbg
-            print *,'block: ',iblk
-            print *,'projector: ',occ_prj(1:ngastp,ioff(type)+iblk)
-            print *,'ovl      : ',ovl(1:ngastp,2)
-            print *,'ok = ',ok
+c            print *,'block: ',iblk
+c            print *,'projector: ',occ_prj(1:ngastp,ioff(type)+iblk)
+c            print *,'ovl      : ',ovl(1:ngastp,2)
+c            print *,'ok = ',ok
 c dbg
             occ_cnt = 0
             occ_cnt(1:ngastp,2) = occ_prj(1:ngastp,ioff(type)+iblk)
             if (ok) exit
           end do
           if (.not.ok) exit
-        else
+        else if (rank.gt.1) then
           ok = .false.
 c presently:
           call quit(1,'set_inproj','I am spoilt for choice ...')

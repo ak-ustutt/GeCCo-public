@@ -14,7 +14,7 @@
       include 'ifc_memman.h'
 
       integer ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(me_list), intent(inout) ::
      &     mel

@@ -26,7 +26,7 @@
       include 'ifc_baserout.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula_item), intent(inout), target::
      &     form_list

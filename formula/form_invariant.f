@@ -21,7 +21,7 @@ c      include 'def_contraction_list.h'
       include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     ncmpnd

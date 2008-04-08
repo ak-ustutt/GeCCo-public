@@ -17,7 +17,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(operator), intent(inout) ::
      &     op
@@ -75,13 +75,13 @@
       op%njoined = njoined
 
       op%dagger = .false.
-      op%formal=.true.
+      op%formal=.false.
 
       op%n_occ_cls = nblk
 
       call init_operator(op,orb_info)
 
-      op%formal_blk(1:nblk) = .true.
+      op%formal_blk(1:nblk) = .false.
 
       ! this is basically all:
       op%ihpvca_occ = occ_def

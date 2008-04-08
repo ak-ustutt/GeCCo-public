@@ -104,6 +104,11 @@
             if (iocc_bound('<=',occ_vtx(1:ngastp,1:2,ivtx),.false.,
      &           occ_res(1:ngastp,1:2,isuper),.false.))then
               svmap(ivtx) = isuper
+c ??
+              occ_res(1:ngastp,1:2,isuper) =
+     &             occ_res(1:ngastp,1:2,isuper)-
+     &             occ_vtx(1:ngastp,1:2,ivtx)
+c ??
               exit
             end if
           end do

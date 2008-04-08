@@ -151,6 +151,8 @@
       mst = mel%mst
       dagger = mel%op%dagger
 
+      nwarn = 0
+
       if (.not.incore) then
         
         mmax = 0
@@ -208,7 +210,6 @@
 
         scalar = max(op%ica_occ(1,iblk),op%ica_occ(2,iblk)).eq.0
 
-        nwarn = 0
         mscmax = op%ica_occ(1,iblk)
         msamax = op%ica_occ(2,iblk)
         nel = msamax+op%ica_occ(1,iblk)

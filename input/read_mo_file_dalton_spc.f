@@ -109,8 +109,8 @@ c          if (idxpq(ip,ir,ntotal).gt.idxpq(iq,is,ntotal)) fac = abfac
      &        idxpq(idxpqrs(1),idxpqrs(3),ntotal)) fac = abfac
 
 c dbg
-c          print *,'val = ',val, ' fac = ',fac
-c          print '(x,4i4,a,4i4)',ip,iq,ir,is,' --> ',idxpqrs(1:4)
+          print *,'val = ',val, ' fac = ',fac
+          print '(x,4i4,a,4i4)',ip,iq,ir,is,' --> ',idxpqrs(1:4)
 c dbg
 
           idxperm = rank_ivec(rank,idxpqrs,4)+1
@@ -121,14 +121,13 @@ c dbg
           idx_ord(rank(4)+1) = idxpqrs(4)
 
 c dbg
-c          print '(x,4i4,a,4i4)',rank(1:4),' --> ',idx_ord(1:4)          
-c          print *,'rt,ct: ',rt,ct
+          print '(x,4i4,a,4i4)',rank(1:4),' --> ',idx_ord(1:4)          
 c dbg
 
           idx_int = idx_int_graph(idx_ord,4,iy_int,igamorb,ngam)
           idx_typ = abs(typetab(idxperm))
 c dbg
-c          print *,'idx_int, idxtyp: ',idx_int, idx_typ
+          print *,'idx_int, idxtyp: ',idx_int, idx_typ
 c          print *,'reord:'
 c          print *,reord(1:10)
 c          print *,'adr = ',(idx_int-1),ntypes,idx_typ
@@ -141,7 +140,7 @@ c dbg
 
           perm = (/1,2,3,4/)
 
-          ! the first 6 permutations render all needed cases
+          ! check all permutations
           do iperm = 2, 24
             call next_perm(perm,4)
             call perm_mult(rank1,rank,perm,4)
@@ -150,6 +149,7 @@ c dbg
             idx_ord1(rank1(3)+1) = idxpqrs(3)
             idx_ord1(rank1(4)+1) = idxpqrs(4)
 
+            ! index quadruple invariant under this permutation?
             if (idx_ord1(1).ne.idx_ord(1) .or.
      &          idx_ord1(2).ne.idx_ord(2) .or.
      &          idx_ord1(3).ne.idx_ord(3) .or.
@@ -158,8 +158,8 @@ c dbg
             idxperm = rank_ivec(rank2,rank1,4)+1
             idx_typ = abs(typetab(idxperm))
 c dbg
-c            print '(i4,a,4i4,a,i4,a,i4)',
-c     &           iperm,'perm: ',perm,' idx=',idxperm,' typ=',idx_typ
+            print '(i4,a,4i4,a,i4,a,i4)',
+     &           iperm,'perm: ',perm,' idx=',idxperm,' typ=',idx_typ
 c          print *,'adr = ',(idx_int-1)*ntypes+idx_typ
 c dbg
 

@@ -68,7 +68,7 @@ c-----------------------------------------------------------------------
       do igastp=1,ngastp
         if(igastp.eq.IEXTR)then
           hpvxca_mnmx(1,igastp,1)=0
-          if (orb_info%caborb.gt.0) hpvxca_mnmx(2,igastp,1)=1 
+          if (orb_info%caborb.gt.0) hpvxca_mnmx(2,igastp,1)=iformal-1
         elseif(igastp.ne.IVALE)then
           hpvxca_mnmx(1,igastp,1)=0
           hpvxca_mnmx(2,igastp,1)=max_rank

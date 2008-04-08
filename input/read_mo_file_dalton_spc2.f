@@ -94,7 +94,7 @@ c dbg
       
       ! read from file to buffer
       do
-        read(lu2in)!,end=999,err=998)
+        read(lu2in)
      &       length,idxbuf(1:4,1:length),valbuf(1:length)
 c dbg
 c        print *,'length = ',length
@@ -115,10 +115,11 @@ c dbg
           if (is.gt.ntoob) naux = naux+1
           if (naux.lt.naux_min.or.naux.gt.naux_max) cycle
 
-          idxpqrs(1) = reord(is)
-          idxpqrs(2) = reord(ir)
-          idxpqrs(3) = reord(iq)
-          idxpqrs(4) = reord(ip)
+          ! change sequence to (rs|pq)
+          idxpqrs(1) = reord(ir)
+          idxpqrs(2) = reord(is)
+          idxpqrs(3) = reord(ip)
+          idxpqrs(4) = reord(iq)
 
           nh = 0
           if (idxpqrs(1).le.nocc) nh = nh+1
@@ -129,10 +130,8 @@ c dbg
 
           ! remove anti-hermiticity, if applicable
           fac = 1d0
-c          if ((ip-1)*ntotal+ir.gt.(iq-1)*ntotal+is) fac = abfac
-c          if (idxpq(ip,ir,ntotal).gt.idxpq(iq,is,ntotal)) fac = abfac
-          if (idxpq(idxpqrs(2),idxpqrs(4),ntotal).gt.
-     &        idxpq(idxpqrs(1),idxpqrs(3),ntotal)) fac = abfac
+          if (idxpq(idxpqrs(1),idxpqrs(3),ntotal).gt.
+     &        idxpq(idxpqrs(2),idxpqrs(4),ntotal)) fac = abfac
 
 c dbg
 c          print *,'val = ',val, ' fac = ',fac
@@ -148,12 +147,12 @@ c dbg
 
 c dbg
 c          print '(x,4i4,a,4i4)',rank(1:4),' --> ',idx_ord(1:4)          
-c          print *,'rt,ct: ',rt,ct
 c dbg
 
           idx_int = idx_int_graph(idx_ord,4,iy_int,igamorb,ngam)
           idx_typ = abs(typetab(idxperm))
 c dbg
+c          print *,'idxperm = ',idxperm
 c          print *,'idx_int, idxtyp: ',idx_int, idx_typ
 c          print *,'reord:'
 c          print *,reord(1:10)
@@ -167,7 +166,7 @@ c dbg
 
           perm = (/1,2,3,4/)
 
-          ! the first 6 permutations render all needed cases
+          ! check all permutatios
           do iperm = 2, 24
             call next_perm(perm,4)
             call perm_mult(rank1,rank,perm,4)
@@ -176,6 +175,7 @@ c dbg
             idx_ord1(rank1(3)+1) = idxpqrs(3)
             idx_ord1(rank1(4)+1) = idxpqrs(4)
 
+            ! index quadruple invariant under this permutation?
             if (idx_ord1(1).ne.idx_ord(1) .or.
      &          idx_ord1(2).ne.idx_ord(2) .or.
      &          idx_ord1(3).ne.idx_ord(3) .or.

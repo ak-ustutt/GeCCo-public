@@ -23,7 +23,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(orbinf), intent(in) ::
      &     orb_info

@@ -131,17 +131,22 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       labels(2) = form_ccr12lg0 ! input formula
       labels(3) = form_r12_vint    ! the intermediates to be factored
       labels(4) = form_r12_vint//'^+'
-c      labels(4) = form_r12_vbint
       labels(5) = form_r12_xint
       labels(6) = form_r12_bint
+      nint = 4
       call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
-c      call set_dependency(form_ccr12lg0,form_r12_vbint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_xint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
+      if (ansatz.ne.1) then
+        labels(7) = form_r12_cint
+        labels(8) = trim(form_r12_cint)//'^+'
+        call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
+        nint = 6
+      end if
       call form_parameters(-1,
-     &     parameters,2,title_ccr12lg0,4,'---')
+     &     parameters,2,title_ccr12lg0,nint,'---')
       call set_rule(form_ccr12lg0,ttype_frm,FACTOR_OUT,
-     &              labels,6,1,
+     &              labels,nint+2,1,
      &              parameters,2,tgt_info)
       ! (c) post-processing: remove terms which do not contribute for
       !     the given R12-approximation
@@ -158,7 +163,19 @@ c      call set_dependency(form_ccr12lg0,form_r12_vbint,tgt_info)
      &              title_ccr12lg0,1,tgt_info)
       end if
 
-
+      ! fix to get rid of a few unprocessed R12 contributions
+      ! for ansatz > 1
+      if (ansatz.gt.1) then
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = form_ccr12lg0
+        labels(2) = form_ccr12lg0
+        labels(3) = op_ccr12lg
+        labels(4) = op_r12
+        call set_rule(form_ccr12lg0,ttype_frm,INVARIANT,
+     &              labels,4,1,
+     &              title_ccr12lg0,1,tgt_info)
+      end if
+      
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_ccr12en0
       labels(2) = form_ccr12lg0

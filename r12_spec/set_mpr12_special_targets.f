@@ -114,20 +114,16 @@ c      call set_dependency(form_mpr12lg0,op_rba,tgt_info)
       labels(2) = form_mpr12lg0 ! input formula
       labels(3) = form_r12_vint    ! the intermediates to be factored
       labels(4) = trim(form_r12_vint)//'^+'
-c      labels(4) = form_r12_vbint
       labels(5) = form_r12_xint
       labels(6) = form_r12_bint
       nint = 4
       call set_dependency(form_mpr12lg0,form_r12_vint,tgt_info)
-c      call set_dependency(form_mpr12lg0,form_r12_vbint,tgt_info)
       call set_dependency(form_mpr12lg0,form_r12_xint,tgt_info)
       call set_dependency(form_mpr12lg0,form_r12_bint,tgt_info)
       if (ansatz.ne.1) then
         labels(7) = form_r12_cint
         labels(8) = trim(form_r12_cint)//'^+'
-c        labels(8) = form_r12_cbint
         call set_dependency(form_mpr12lg0,form_r12_cint,tgt_info)
-c        call set_dependency(form_mpr12lg0,form_r12_cbint,tgt_info)
         nint = 6
       end if
       call form_parameters(-1,

@@ -30,7 +30,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -137,10 +137,10 @@
 c      if (n_x.gt.0) nfact = nfact+1
       nfact = nfact+1
 c dbg
-      print *,'nfact = ',nfact
-      print *,'n_f = ',n_f
-      print *,'n_g = ',n_g
-      print *,'n_r = ',n_r
+c      print *,'nfact = ',nfact
+c      print *,'n_f = ',n_f
+c      print *,'n_g = ',n_g
+c      print *,'n_r = ',n_r
 c dbg
 
       ! Point to the actual intermediate.
@@ -156,8 +156,13 @@ c dbg
         call add_operator(opdum_f,op_info)
         idx_f = idx_oplist2(opdum_f,op_info)
         op_f => op_info%op_arr(idx_f)%op
-        call set_hop_p(op_f,opdum_f,.false.,
-     &       1,1,0,.true.,orb_info)
+        if (typ_str(1:1).ne.'f') then
+          call set_hop_p(op_f,opdum_f,.false.,
+     &         1,1,0,.true.,orb_info)
+        else
+          call set_hop(op_f,opdum_f,.false.,
+     &         1,1,0,.true.,orb_info)
+        end if
       end if
 
       ! dummy operator: 2 particle part of H

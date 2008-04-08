@@ -346,6 +346,11 @@ c          call wrt_occ_n(luout,iocc2,1)
           ! ... and the corresponding block in the target operator
           cur_conder%contr%iblk_res = iblk_occ(iocc,.false.,
      &                                          op_arr(idxres)%op)
+cc fix - need to reconsider this:
+c          ! currently we give the absolute index of first occupation
+c          ! when njoined_res > 1
+c          cur_conder%contr%iblk_res =
+c     &         (cur_conder%contr%iblk_res-1)*njoined_res+1
 
           if (cur_conder%contr%iblk_res.le.0) then
             if (strict) then

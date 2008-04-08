@@ -7,6 +7,8 @@
 *                 -> 3 distinct types per index quadruple
 *     ntypes = 6 :  no individual CA-symmetry (e.g. [T12,r12] integrals)
 *                 -> 6 distinct types per index quadruple
+*     ntypes = 12:  no CA-symmetry at all (e.g. K-transformed r12 integrals)
+*                 -> 12 distinct types per index quadruple
 *     typetab contains for all the 24 permuations the corresponding
 *     integral type and a sign
 *----------------------------------------------------------------------*
@@ -14,7 +16,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'def_orbinf.h'
@@ -123,7 +125,7 @@
         if (ntest.ge.100)
      &       write(luout,*) '8: ',perm1
 
-        else
+        else if (ntypes.eq.6) then
 
         ! 1          
         perm0(1:4) = perm(1:4,jdx)
@@ -161,11 +163,30 @@
         if (ntest.ge.100)
      &       write(luout,*) '4: ',perm2,fac,jdx
 
+        else if (ntypes.eq.12) then
+
+        ! 1          
+        perm0(1:4) = perm(1:4,jdx)
+c        if ((perm0(1)-1)*4+perm0(3).gt.perm0(2)*4+perm0(4)) fac = -1
+        fac = 1
+        typetab(jdx) = fac*itype
+        if (ntest.ge.100)
+     &       write(luout,*) '1: ',perm0,fac,jdx
+        
+        ! 2
+        call perm_mult(perm1,perm0,p1324,4)
+        jdx = rank_ivec(rank,perm1,4)+1
+        fac = 1
+c        if (rank(1)*4+rank(3).gt.rank(2)*4+rank(4)) fac = -1
+        typetab(jdx) = fac*itype
+        if (ntest.ge.100)
+     &       write(luout,*) '2: ',perm1,fac,jdx
+
         end if
 
         itype = itype+1
 
-        if (itype.gt.6) exit
+        if (itype.gt.12) exit
       end do
 
       if (ntest.ge.100) then

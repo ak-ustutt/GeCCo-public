@@ -70,8 +70,6 @@
      &     reo_info
       type(me_list_array), pointer ::
      &     mel_arr(:)
-c      type(file_array), pointer ::
-c     &     ffops(:)
       type(operator_array), pointer ::
      &     ops(:)
       integer ::
@@ -100,12 +98,8 @@ c     &     ffops(:)
      &     opscr(:), optmp
       type(me_list), pointer ::
      &     melscr(:), meltmp
-c      type(filinf), pointer ::
-c     &     ffscr(:)
       type(operator), pointer ::
      &     opres
-c      type(operator), pointer ::
-c     &     op1, op2, op1op2, opres, op1op2tmp
       type(me_list), pointer ::
      &     me_op1, me_op2, me_op1op2, me_res, me_op1op2tmp
       type(filinf), pointer ::
@@ -138,25 +132,7 @@ c     &     op1, op2, op1op2, opres, op1op2tmp
       mel_arr => op_info%mel_arr
       op2list => op_info%op2list
 
-c      ! open files
-c      call file_open(fffrm)
-
-c      if (iprint.ge.10) then
-c        write(luout,*) 'formula file: ',
-c     &       fffrm%name(1:len_trim(fffrm%name))
-c      end if
-
-c      lufrm = fffrm%unit
-c      rewind lufrm
-
-c      read(lufrm) len,title(1:len)
-
-c      if (iprint.ge.5)
-c     &     write(luout,*) 'Evaluating:',title(1:len)
-
       cur_form => flist
-c      allocate(cur_form%contr)
-c      call init_contr(cur_form%contr)
 
       skip = .false.
       nres  = 0
@@ -291,13 +267,15 @@ c        case(command_set_target_update)
 
         idxmel = op2list(cur_contr%idx_res)
         me_op1op2 => mel_arr(idxmel)%mel
-        if (me_op1op2%len_op_occ(cur_contr%iblk_res).eq.0)
+        iblkres = (cur_contr%iblk_res-1)/njoined_res + 1
+        if (me_op1op2%len_op_occ(iblkres).eq.0)
      &       cycle term_loop
         ! check here for other zero blocks as well ...
 
         if (nfact.eq.0) then
 
-          iblkres = (cur_contr%iblk_res-1)/njoined_res + 1
+c??          iblkres = (cur_contr%iblk_res-1)/njoined_res + 1
+          iblkres = cur_contr%iblk_res
           idxop(1) = cur_contr%vertex(1)%idx_op
           iblkop(1) = cur_contr%vertex(1)%iblk_op
           tra_op1 = cur_contr%vertex(1)%dagger
@@ -313,6 +291,10 @@ c        case(command_set_target_update)
 c fix:
             njoined = mel_arr(idxmel)%mel%op%njoined
             iblkop(1) = (iblkop(1)-1)/njoined + 1
+c dbg
+c            print *,'njoined,njoined_res: ',njoined,njoined_res
+c            print *,'blocks: ',iblkop(1),iblkres
+c dbg
 c fix:
             if (tra_op1.xor.tra_op1op2) then
               call add_opblk_transp(xret_blk(iblkres),fac,
@@ -454,14 +436,10 @@ c dbg
             if (idxop(iops).gt.0) then
               idxmel = op2list(idxop(iops))
               ! primary operator or long-term intermediate
-c              if (iops.eq.1) ffop1 => ffops(idxop(iops))%fhand
-c              if (iops.eq.2) ffop2 => ffops(idxop(iops))%fhand
               if (iops.eq.1) me_op1 => mel_arr(idxmel)%mel
               if (iops.eq.2) me_op2 => mel_arr(idxmel)%mel
             else
               ! intermediate for current contraction only
-c              if (iops.eq.1) ffop1 => ffscr(-idxop(iops))
-c              if (iops.eq.2) ffop2 => ffscr(-idxop(iops))
               if (iops.eq.1) me_op1 => melscr(-idxop(iops))
               if (iops.eq.2) me_op2 => melscr(-idxop(iops))
             end if
@@ -478,9 +456,6 @@ c              if (iops.eq.2) ffop2 => ffscr(-idxop(iops))
             update = .true.
             idxop1op2 = cur_contr%idx_res
             iblkop1op2 = cur_contr%iblk_res
-c dbg
-c            print *,'SET TO ',iblkop1op2,' IN RES BRANCH:'
-c dbg
             idxmel = op2list(idxop1op2)
             me_op1op2 => mel_arr(idxmel)%mel
             xret_pnt => xret_blk(iblkop1op2:iblkop1op2)
@@ -488,14 +463,6 @@ c dbg
           else
             ! new intermediate
             update = .false.
-c            write(name_scr,'(a,i3.3,".da ")') name_scr0,ninter
-c            call file_init(ffscr(ninter),name_scr,1,lblk_da)
-c            call file_open(ffscr(ninter))
-c            if (ntest.ge.100)
-c     &           write(luout,*) 'new intermediate file: ',
-c     &           ffscr(ninter)%name(1:len_trim(ffscr(ninter)%name))
-
-c            ffop1op2 => ffscr(ninter)
             iblkop1op2 = 1
 
             ! set up pseudo-operator for current intermediate
@@ -563,12 +530,6 @@ c            ffop1op2 => ffscr(ninter)
      &       str_info,strmap_info,orb_info)
           if (ntest.ge.100)
      &         write(luout,*) 'returned from contraction kernel'
-
-c dbg
-c          if(idxopres.eq.8)then
-c            write(luout,*)'xret', xret_pnt(1)
-c          endif
-c dbg
 
           if (reo_op1op2) then
             call dealloc_me_list(meltmp)
