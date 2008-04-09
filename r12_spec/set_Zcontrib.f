@@ -1,10 +1,10 @@
 *----------------------------------------------------------------------*
-      subroutine set_Ycontrib(flist,ansatz,approx,
-     &     irdag,irtilde,
+      subroutine set_Zcontrib(flist,ansatz,approx,
+     &     irdag,irbreve,
      &     idx_intm,idx_op,nop,op_info)
 *----------------------------------------------------------------------*
-*     set Y type contributions to B matrix
-*       R12 Q12 Rtilde
+*     set Z type contributions to B matrix
+*       R12 P12 f R12 = R12 [O1+O2-2O1O2] R12tilde
 *     skip for HY1
 *----------------------------------------------------------------------*
       implicit none
@@ -24,7 +24,7 @@
       character*(*) ::
      &     approx
       integer, intent(in) ::
-     &     ansatz,nop,irdag,irtilde,
+     &     ansatz,nop,irdag,irbreve,
      &     idx_intm,idx_op(nop)
       type(operator_info), intent(inout) ::
      &     op_info
@@ -37,40 +37,37 @@
 
 
       if (approx(1:1).eq.'A') return
-      if (approx(8:10).eq.'HY1') return
-      if (approx(8:8).eq.'H')
-     &     call quit(1,'set_Ycontrib',
-     &     'Hybrid approximations: only HY1 is implemented')
+      if (approx(4:6).eq.'GBC') return
 
       if (irdag.gt.nop.or.
-     &    irtilde.gt.nop) then
-        write(luout,*) 'idx: ',irdag,irtilde
+     &    irbreve.gt.nop) then
+        write(luout,*) 'idx: ',irdag,irbreve
         write(luout,*) 'nop: ',nop
-        call quit(1,'set_Ycontrib',
+        call quit(1,'set_Zcontrib',
      &         'not enough operators on input list')
       end if
 
       if (idx_op(irdag).le.0.or.
-     &    idx_op(irtilde).le.0) then
-        write(luout,*) 'idx: ',idx_op(irdag),idx_op(irtilde)
+     &    idx_op(irbreve).le.0) then
+        write(luout,*) 'idx: ',idx_op(irdag),idx_op(irbreve)
         call quit(1,'set_Ycontrib',
      &         'operator(s) not on input list')
       end if
 
       !----------------------------------!
-      ! - R12+ Rtilde                    !
+      ! - R12+ Rbreve                    !
       !----------------------------------!
       idx_1 = idx_op(irdag)
-      idx_2 = idx_op(irtilde)
+      idx_2 = idx_op(irbreve)
 
       ! go to end of list
       flist_pnt => flist
       do while(associated(flist_pnt%next))
         flist_pnt => flist_pnt%next
       end do
-      ! set Q projector
-      idx_prj = 1
-      if (ansatz.gt.1) idx_prj = 3
+      ! set projector
+      idx_prj = 5
+      if (ansatz.gt.1) idx_prj = 6
       call expand_op_product2(flist_pnt,idx_intm,
      &       -1d0,6,3,
      &       (/idx_intm,-idx_1,idx_intm,idx_intm,idx_2,idx_intm/),
@@ -82,7 +79,7 @@
      &       op_info)
       
       if (ntest.ge.100) then
-        write(luout,*) 'Ytilde contribution'
+        write(luout,*) 'Z contribution'
         call print_form_list(luout,flist_pnt,op_info)
       end if
 

@@ -35,7 +35,7 @@
      &     needed
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
-     &     labels(10)
+     &     labels(20)
       character(len_command_par) ::
      &     parameters(3)
       character(12) ::
@@ -101,7 +101,7 @@
       call add_target(op_rint,ttype_op,.false.,tgt_info)
       call r12int_parameters(-1,parameters,
 c     &     .false.,min_rank,2,0,2)
-     &     .false.,min_rank,2,0,3)
+     &     .false.,min_rank,2,0,3) ! 3: two externals needed
       call set_rule(op_rint,ttype_op,DEF_R12INT,
      &              op_rint,1,1,
      &              parameters,1,tgt_info)
@@ -115,7 +115,7 @@ c     &     .false.,min_rank,2,0,2)
      &              op_g_x,1,1,
      &              parameters,1,tgt_info)
 
-      ! extended list of R12 integrals
+      ! extended list of R12 integrals (UNUSED at present)
       call add_target(op_rintx,ttype_op,.false.,tgt_info)
       occ_def = 0
       ! 1
@@ -189,7 +189,15 @@ c     &     .false.,min_rank,2,0,2)
      &              op_rintbar,1,1,
      &              parameters,1,tgt_info)
       
-      ! C(f+k) modified integrals r12breve
+      ! C(f+k) modified integrals r12bar+
+      call add_target(op_rdagbar,ttype_op,.false.,tgt_info)
+      call r12int_parameters(-1,parameters,
+     &     .false.,min_rank,2,0,2)
+      call set_rule(op_rdagbar,ttype_op,DEF_R12INT,
+     &              op_rdagbar,1,1,
+     &              parameters,1,tgt_info)
+      
+      ! C(f) modified integrals r12breve
       call add_target(op_rintbreve,ttype_op,.false.,tgt_info)
       call r12int_parameters(-1,parameters,
      &     .false.,min_rank,2,0,2)
@@ -197,7 +205,7 @@ c     &     .false.,min_rank,2,0,2)
      &              op_rintbreve,1,1,
      &              parameters,1,tgt_info)
       
-      ! C k modified integrals r12tilde
+      ! C k modified integrals r12tilde (cloning rint -> 2ext usually)
       call add_target(op_rinttilde,ttype_op,.false.,tgt_info)
       call set_dependency(op_rinttilde,op_rint,tgt_info)
       call cloneop_parameters(-1,parameters,
@@ -579,7 +587,7 @@ c      call set_dependency(form_r12_bint,op_rba,tgt_info)
 
 
       ! CABS approximation to B
-      labels(1:10)(1:len_target_name) = ' '
+      labels(1:20)(1:len_target_name) = ' '
       labels(1) = form_r12_bcabs
       labels(2) = op_b_inter
       labels(3) = op_rint
@@ -605,24 +613,33 @@ c      call set_dependency(form_r12_bcabs,op_unity,tgt_info)
         call set_dependency(form_r12_bcabs,op_rintbar,tgt_info)        
         call set_dependency(form_r12_bcabs,op_rinttilde,tgt_info)        
         call set_dependency(form_r12_bcabs,op_ffbar,tgt_info)        
+        call set_dependency(form_r12_bcabs,op_rintbreve,tgt_info)        
         labels(6) = op_x_inter
         labels(7) = op_ham
         labels(8) = op_rintbar
         labels(9) = op_rinttilde
         labels(10) = op_ffbar
         labels(11) = '-'
-        nlab = 11
+        labels(12) = op_rintbreve
+        nlab = 12
       else if (approx(1:1).eq.'C') then
-        call set_dependency(form_r12_bcabs,op_rintbreve,tgt_info)        
+        call set_dependency(form_r12_bcabs,op_rdagbar,tgt_info)        
         call set_dependency(form_r12_bcabs,op_rinttilde,tgt_info)        
         call set_dependency(form_r12_bcabs,op_ffbar,tgt_info)        
+        call set_dependency(form_r12_bcabs,op_rintbreve,tgt_info)        
         labels(6) = '-'
         labels(7) = '-'
-        labels(8) = op_rintbreve
+        labels(8) = op_rdagbar
         labels(9) = op_rinttilde
         labels(10) = op_ffbar
         labels(11) = '-'
-        nlab = 11
+        labels(12) = op_rintbreve
+        nlab = 12
+      end if
+      if (ansatz.gt.1) then
+        call set_dependency(form_r12_bcabs,op_c_inter,tgt_info)
+        labels(13) = op_c_inter
+        nlab = 13
       end if
       approx(12:12) = 'S' ! set symmetrization flag
 c test
@@ -657,7 +674,6 @@ c     &     parameters,2,title_r12_cint,0,'fxr')
      &              parameters,2,tgt_info)
 
       ! CABS approximation to C
-      ! currently approx C only
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_ccabs
       labels(2) = op_c_inter
@@ -794,11 +810,18 @@ c      call set_dependency(fopt_r12_bcabs,mel_rinba,tgt_info)
           call set_dependency(form_r12_bcabs,mel_rinttilde,tgt_info)        
           call set_dependency(form_r12_bcabs,mel_rintbar,tgt_info)        
           call set_dependency(form_r12_bcabs,mel_ffbar,tgt_info)        
+          call set_dependency(form_r12_bcabs,mel_rdagbar,tgt_info)        
+          call set_dependency(form_r12_bcabs,mel_rintbreve,tgt_info)        
         end if
       else if (approx(1:1).eq.'C') then
-        call set_dependency(form_r12_bcabs,mel_rintbreve,tgt_info)        
+        call set_dependency(form_r12_bcabs,mel_rdagbar,tgt_info)        
         call set_dependency(form_r12_bcabs,mel_rinttilde,tgt_info)        
         call set_dependency(form_r12_bcabs,mel_ffbar,tgt_info)        
+        call set_dependency(form_r12_bcabs,mel_rdagbar,tgt_info)        
+        call set_dependency(form_r12_bcabs,mel_rintbreve,tgt_info)        
+      end if
+      if (ansatz.gt.1) then
+        call set_dependency(form_r12_bcabs,mel_c_def,tgt_info)        
       end if
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_r12_bcabs,ttype_frm,OPTIMIZE,
@@ -1068,7 +1091,27 @@ c     &              parameters,1,tgt_info)
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
-      ! R12breve integrals
+      ! R12BAR^+ integrals
+      call add_target(mel_rdagbar,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_rdagbar,op_rdagbar,tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_rdagbar
+      labels(2) = op_rdagbar
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(mel_rdagbar,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_rdagbar
+      call import_parameters(-1,parameters,env_type)
+      call set_rule(mel_rdagbar,ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
+      ! R12BREVE integrals
       call add_target(mel_rintbreve,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_rintbreve,op_rintbreve,tgt_info)
       ! (a) define
@@ -1319,16 +1362,16 @@ c     &     parameters,0,tgt_info)
       call set_rule(eval_r12_inter,ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
-      labels(1) = fopt_r12_bcabs
-      call set_rule(eval_r12_inter,ttype_opme,EVAL,
-     &     labels,1,0,
-     &     parameters,0,tgt_info)
       if (ansatz.ne.1) then
         labels(1) = fopt_r12_ccabs
         call set_rule(eval_r12_inter,ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       end if
+      labels(1) = fopt_r12_bcabs
+      call set_rule(eval_r12_inter,ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
 
       return
 

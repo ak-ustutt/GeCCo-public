@@ -90,9 +90,9 @@
      &     fopt_mpr12_0*10       = 'MP-R12-OPT',
      &     fopt_ccr12_0*10       = 'CC-R12-OPT'
       character, parameter ::
-     &     form_r12_r12bar*6    = 'R12BAR',
+     &     form_r12_r12bar*11    = 'R12BAR_CABS',
      &     fopt_r12_r12bar*10   = 'R12BAR_OPT',
-     &     form_r12_r12tilde*8  = 'R12TILDE',
+     &     form_r12_r12tilde*13  = 'R12TILDE_CABS',
      &     fopt_r12_r12tilde*12 = 'R12TILDE_OPT',
      &     form_r12_vint*8      = 'VINT_R12',
      &     form_r12_vcabs*13    = 'VINT_R12_CABS',

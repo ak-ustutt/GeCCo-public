@@ -15,7 +15,7 @@
 *
 *     label(1) -- the intermediate to be generated
 *
-*     label     Rbar  Rtilde Rbreve V      V+     X     
+*     label     Rbar  Rtilde Rbar+  V      V+     X     
 *    ------------------------------------------------------
 *       2       R12   R12    R12    G_X    R12    R12   
 *       3       R12X  R12X   R12X   R12    G_X    R12   
@@ -30,10 +30,12 @@
 *     .............................................................
 *       5       X              --          RBAR
 *       6       H              --          RTILDE
-*       7       RBAR          RBREVE
+*       7       RBAR          RBAR+
 *       8       RTILDE        RTILDE
 *       9       R12^2         R12^2 / or {R12^2}BREVE
 *      10       F+K           F+K     or  --
+*      11       --            RBREVE
+*      12       C             C
 *    --------------------------------------------------------------
 *
 *     approx string: formatted string
@@ -116,12 +118,15 @@
       idx_op(1:nop) = -1
       do iop = 1, nop
         ! ignore empty labels
+        if (ntest.ge.100)
+     &       write(luout,*) 'checking label #',iop,
+     &       ': ',trim(labels(iop))
         if (trim(labels(iop)).eq.'-' .or.
      &      len_trim(labels(iop)).eq.0 ) cycle
         idx_op(iop) = idx_oplist2(labels(iop),op_info)
         if (idx_op(iop).lt.0)
      &       call quit(1,'set_r12intm_cabs',
-     &       'label not on list: '//labels(iop+1))
+     &       'label not on list: '//labels(iop))
       end do
 
       if (ntest.ge.100)
@@ -135,7 +140,8 @@
      &     idx_intm)
 
       select case(trim(int_type))
-      case('RB','RT','RV')
+      case('RB','RT','RV') ! NOT USED, NOT DEBUGGED
+        call quit(1,'set_r12intm_cabs3','not debugged')
         call set_r12mod(flist,int_type,
      &       idx_intm,idx_op,nop,op_info)
       case('C')
@@ -197,6 +203,14 @@ c          end if
      &         2,8,
      &         idx_intm,idx_op,nop,op_info)
           end if
+        end if
+        call set_Zcontrib(flist,ansatz,approx,
+     &       2,11,
+     &       idx_intm,idx_op,nop,op_info)
+        if (ansatz.gt.1) then
+          call set_RC_contrib(flist,ansatz,approx,
+     &       2,12,
+     &       idx_intm,idx_op,nop,op_info)
         end if
       end select
 

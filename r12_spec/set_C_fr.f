@@ -75,7 +75,6 @@
       ! how does our current C look like?
       njoined_c = op_info%op_arr(idx_intm)%op%njoined
 
-
       flist_pnt => flist
 
       if (iham.le.0) then

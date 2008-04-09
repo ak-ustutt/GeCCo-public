@@ -60,7 +60,7 @@
         ivtx2 = max(inproj(1,iproj),inproj(2,iproj))
         rank  = inproj(3,iproj)
         type  = inproj(4,iproj)
-        if (rank.le.0.or.type.lt.0.or.type.gt.4)
+        if (rank.le.0.or.type.lt.0.or.type.gt.nproj)
      &       call quit(1,'set_inproj','watch your input')
 c dbg
 c        print *,'v1,v2,r,t: ',ivtx1,ivtx2,rank,type

@@ -69,6 +69,11 @@
           call import_2el_dalton(mel_target,'MO_F12BAR',
      &           mode,str_info,orb_info) 
 
+        case(op_rdagbar)
+          mode=3
+          call import_2el_dalton(mel_target,'MO_FDGBAR',
+     &           mode,str_info,orb_info) 
+
         case(op_rinttilde)
           mode=3
           call import_2el_dalton(mel_target,'MO_F12TLD',
@@ -79,10 +84,10 @@
           call import_2el_dalton(mel_target,'MO_F12BRV',
      &           mode,str_info,orb_info) 
 
-        case(op_rintc)
-          mode=3
-          call import_2el_dalton(mel_target,'MO_F12C',
-     &           mode,str_info,orb_info) 
+c        case(op_rintc)
+c          mode=3
+c          call import_2el_dalton(mel_target,'MO_F12C',
+c     &           mode,str_info,orb_info) 
 
         case(op_rinba)
           call quit(1,'import_op_el',
