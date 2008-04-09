@@ -288,32 +288,32 @@ c     &              parameters,1,tgt_info)
 
       ! R12^{2} integrals
       call add_target(op_ff,ttype_op,.false.,tgt_info)
-      if (approx(1:1).eq.'A') then
+c      if (approx(1:1).eq.'A') then
         call set_dependency(op_ff,op_b_inter,tgt_info)
         call cloneop_parameters(-1,parameters,
      &                        op_b_inter,.false.) ! <- dagger=.false.
         call set_rule(op_ff,ttype_op,CLONE_OP,
      &              op_ff,1,1,
      &              parameters,1,tgt_info)
-      else
-        occ_def = 0
-        ! 1
-        occ_def(IHOLE,1,1) = 2
-        occ_def(IHOLE,2,2) = 2
-        ! 2
-        occ_def(IHOLE,1,3) = 1
-        occ_def(IPART,1,3) = 1
-        occ_def(IHOLE,2,4) = 2
-        ! 3
-        occ_def(IHOLE,1,5) = 1
-        occ_def(IEXTR,1,5) = 1
-        occ_def(IHOLE,2,6) = 2
-        call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,3,2,6)
-        call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
-     &                op_ff,1,1,
-     &                parameters,2,tgt_info)
-      end if
+c      else
+c        occ_def = 0
+c        ! 1
+c        occ_def(IHOLE,1,1) = 2
+c        occ_def(IHOLE,2,2) = 2
+c        ! 2
+c        occ_def(IHOLE,1,3) = 1
+c        occ_def(IPART,1,3) = 1
+c        occ_def(IHOLE,2,4) = 2
+c        ! 3
+c        occ_def(IHOLE,1,5) = 1
+c        occ_def(IEXTR,1,5) = 1
+c        occ_def(IHOLE,2,6) = 2
+c        call op_from_occ_parameters(-1,parameters,2,
+c     &       occ_def,3,2,6)
+c        call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
+c     &                op_ff,1,1,
+c     &                parameters,2,tgt_info)
+c      end if
 
       ! {R12^2}BAR integrals
       call add_target(op_ffbar,ttype_op,.false.,tgt_info)
