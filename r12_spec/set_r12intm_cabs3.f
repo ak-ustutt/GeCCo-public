@@ -46,7 +46,7 @@
 *     A
 *     A' GBC HY1 S
 *     B  EBC HY2 
-*     C      HX
+*     C  noZ HX
 *
 *     1: approximation type
 *     2: assumed Brillouin condition (EBC is not supported)
@@ -204,9 +204,13 @@ c          end if
      &         idx_intm,idx_op,nop,op_info)
           end if
         end if
-        call set_Zcontrib(flist,ansatz,approx,
+        if (approx(4:6).ne.'noZ'.and.
+     &      approx(4:6).ne.'GBC'.and.
+     &      approx(4:6).ne.'EBC') then
+          call set_Zcontrib(flist,ansatz,approx,
      &       2,11,
      &       idx_intm,idx_op,nop,op_info)
+        end if
         if (ansatz.gt.1) then
           call set_RC_contrib(flist,ansatz,approx,
      &       2,12,

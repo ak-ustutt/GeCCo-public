@@ -282,6 +282,14 @@ c     &       ff_trv,ff_h_trv,
       ! close files
       do iopt = 1, nopt
         ! open result vector file(s)
+c dbg - for R12:
+        if (iopt.eq.2) then
+          write(luout,*) ' iopt = ',iopt
+          call wrt_mel_file(luout,1000,me_opt(iopt)%mel,
+     &       1,me_opt(iopt)%mel%op%n_occ_cls,
+     &       str_info,orb_info)        
+        end if
+c dbg
         call file_close_keep(ffopt(iopt)%fhand)
         ! open corresponding residuals ...
         call file_close_keep(ffgrd(iopt)%fhand)

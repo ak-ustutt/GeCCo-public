@@ -43,6 +43,10 @@
       call argument_add('minexc','method.R12',type=vtyp_int,idef=(/2/))
       call argument_add('approx','method.R12',type=vtyp_str,len=8,
      &     cdef=(/'A',' ',' ',' ',' ',' ',' ',' '/))
+      call argument_add('F_appr','method.R12',type=vtyp_str,len=8,
+     &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
+      call argument_add('K_appr','method.R12',type=vtyp_str,len=8,
+     &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
 
       call keyword_add('calculate')
       ! internal tests

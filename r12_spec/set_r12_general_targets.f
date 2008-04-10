@@ -39,7 +39,7 @@
       character(len_command_par) ::
      &     parameters(3)
       character(12) ::
-     &     approx
+     &     approx, F_appr, K_appr
 
       character(*), intent(in) ::
      &     env_type
@@ -53,10 +53,34 @@
 *----------------------------------------------------------------------*
       ! set approx string
       approx(1:12) = ' '
-      call get_argument_value('method.R12','approx',str=approx)
+      F_appr(1:12) = ' '
+      K_appr(1:12) = ' '
       call get_argument_value('method.R12','ansatz',ival=ansatz)
+      call get_argument_value('method.R12','approx',str=approx)
+      call get_argument_value('method.R12','F_appr',str=F_appr)
+      call get_argument_value('method.R12','K_appr',str=K_appr)
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
+
+      ! assemble approx string
+      select case(trim(F_appr))
+      case('none')
+        write(luout,*) 'no approximations wrt. Fock made'
+      case('no_Z')
+        write(luout,*) 'Z matrix omitted'
+        approx(4:6) = 'noZ'
+      case('GBC','EBC')
+        write(luout,*)
+     &  'GBC/EBC are currently only possible be supplying the'
+        write(luout,*)
+     &  'suitable integrals. Make that sure and restart w/o'
+        write(luout,*)
+     &  'GBC/EBC flag'
+        call quit(0,'set_r12_general_targets','GBC/EBC?')
+      case default
+        call quit(0,'set_r12_general_targets',
+     &       'F_appr unknown: "'//trim(F_appr)//'"')
+      end select
 
 *----------------------------------------------------------------------*
 *     Operators:
