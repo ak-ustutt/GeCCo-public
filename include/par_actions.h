@@ -23,6 +23,7 @@
      &     DEF_MPR12_LAGRANGIAN*30  = 'DEF_MPR12_LAGRANGIAN',
      &     DEF_CCR12_LAGRANGIAN*30  = 'DEF_CCR12_LAGRANGIAN',
      &     FACTOR_OUT*10            = 'FACTOR_OUT',
+     &     REPLACE*7                = 'REPLACE',
      &     INVARIANT*9              = 'INVARIANT',
      &     DERIVATIVE*10            = 'DERIVATIVE',
      &     LEQ_SPLIT*9              = 'LEQ_SPLIT',

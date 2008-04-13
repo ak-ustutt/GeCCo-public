@@ -109,9 +109,13 @@ c      print *,'njoined: ',njoined
 c      print *,'nsuper, nproto_ac: ',nsuper,nproto_ac
 c dbg
 
-      if (nsuper.ne.nproto_ac)
-     &     call quit(1,'join_contr2','incompatible contractions!')
-      
+      if (nsuper.ne.nproto_ac) then
+        write(luout,*) 'joining: AC, B'
+        call prt_contr2(luout,contr_ac,op_info)
+        call prt_contr2(luout,contr_b,op_info)
+        call quit(1,'join_contr2','incompatible contractions !')
+      end if
+
       nvtx_abc = nvtx_ac-nproto_ac+nvtx_b
 
       ! generate a map: which vertex goes where

@@ -1,8 +1,8 @@
 
- Version compiled 23 Jan 2008 at 14:43:43 on paulchen                            
+ Version compiled 13 Apr 2008 at 16:56:39 on paulchen                            
 
  compiled with: ifort
- level 1 optimization: -g -assume byterecl -traceback -I../include -g
+ level 1 optimization: -O2 -cm -w95 -fpp -assume byterecl -traceback -I../include -
  level 2 optimization: 
  level 3 optimization: 
 
@@ -52,6 +52,9 @@ I   orb_space
 I     shell
          def 2  8
          type 8  8
+I     open_shells
+         treat 8  4
+  > ph  
 I   method
 I     MP
          level 2  1
@@ -68,11 +71,15 @@ I     R12
   >            2
          minexc 2  1
   >            2
-         triples 2  1
-  >            0
          approx 8  8
   > A       
+         F_appr 8  8
+  > none    
+         K_appr 8  8
+  > none    
 I   calculate
+I     check
+I       formulae
 I     solve
          maxiter 2  1
   >           30
@@ -148,53 +155,45 @@ I     routes
  ************
   set_orbinf
  ************
+ ihpvgas:              1           1           2          17
  ngas_hpv:             2           1           0           0
  nactt_hpv:            3           9           0           0
  ioff_gas:             0           2           3           3
  idx_gas:              1           3           4           4
- gas_reo:           2           1           3
+ gas_reo:           1           2           3
  igamorb:
 
-<  1>        1       1       2       1       1       1       1       1       2       2
+<  1>        1       1       1       2       1       1       1       1       2       2
         2       3       3
  igasorb:
 
-<  1>        1       1       1       2       3       3       3       3       3       3
+<  1>        1       2       2       2       3       3       3       3       3       3
         3       3       3
  mostnd:
-     1      1   2    3   3    4   3    4   3
-     2      4   4    5   4    5   4    5   4
+     1      1   1    2   1    2   1    2   1
+     2      2   3    4   4    5   4    5   4
      3      5   8    9  11   12  13   14  13
  ireost:
 
-<  1>        4       2       1       5       6       7       8       3       9      10
+<  1>        1       2       3       5       6       7       8       4       9      10
        11      12      13
  ireots:
 
-<  1>        3       2       8       1       4       5       6       7       9      10
+<  1>        1       2       3       8       4       5       6       7       9      10
        11      12      13
  iad_gas:
 
-<  1>        2
+<  1>        1
 
-<  2>        1
+<  2>        2
 
 <  3>        2
  setting general targets ...
- setting general targets for CC ...
+ setting general targets for MP/CC ...
+ setting special targets for CC ...
  setting targets for CC properties ...
  My next target: H
  Rule: DEF_HAMILTONIAN
- ===================
-  set_genop at work
- ===================
-  min_rank, max_rank:            0           2
-  ncadiff:            0
-  hpvx_mnmx:  0  2   0  2   0  0   0  0
-              0  2   0  2   0  0   0  0
- C   0  2   0  2   0  2
- A   0  2   0  2   0  2
- unmasked
  My next target: H0
  Rule: DEF_ME_LIST
  set_new_graph:            1
@@ -209,171 +208,197 @@ I     routes
  2-el. integrals on disk:         2724
     thereof nonredundant:         1086
      integrals reordered:         8808
+ 
+ imported list: H0
+  block no.    1 len =            1
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm =  38.8219    
+ norm (MS-Block) =    38.8219087466791     
+  block no.    2 len =           10
+  Ms(A) =   1/2  IRREP(A) =  1  len =            4  norm = 0.974647    
+  Ms(A) =   1/2  IRREP(A) =  2  len =            1  norm = 0.569759    
+ norm (MS-Block) =    1.12896548938274     
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            4  norm = 0.974647    
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            1  norm = 0.569759    
+ norm (MS-Block) =    1.12896548938274     
+  block no.    3 len =           22
+  Ms(A) =   1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =   1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  block no.    4 len =           22
+  Ms(A) =   1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =   1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  block no.    5 len =           58
+  Ms(A) =   1/2  IRREP(A) =  1  len =           16  norm =  1.34394    
+  Ms(A) =   1/2  IRREP(A) =  2  len =            9  norm =  1.13870    
+  Ms(A) =   1/2  IRREP(A) =  3  len =            4  norm = 0.741359    
+ norm (MS-Block) =    1.91113048814630     
+  Ms(A) =  -1/2  IRREP(A) =  1  len =           16  norm =  1.34394    
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            9  norm =  1.13870    
+  Ms(A) =  -1/2  IRREP(A) =  3  len =            4  norm = 0.741359    
+ norm (MS-Block) =    1.91113048814630     
+  block no.    6 len =           51
+  Ms(A) =   2/2  IRREP(A) =  1  len =            1  norm = 0.399088    
+  Ms(A) =   2/2  IRREP(A) =  2  len =            4  norm = 0.562555    
+ norm (MS-Block) =   0.689739167749660     
+  Ms(A) =   0/2  IRREP(A) =  1  len =           25  norm =  1.19779    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           16  norm = 0.990765    
+ norm (MS-Block) =    1.55444796745539     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =            1  norm = 0.399088    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =            4  norm = 0.562555    
+ norm (MS-Block) =   0.689739167749660     
+  block no.    7 len =          252
+  Ms(A) =   2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          110  norm = 0.407941    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.365993    
+ norm (MS-Block) =   0.548057473017485     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  block no.    8 len =          309
+  Ms(A) =   2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =   2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =          145  norm = 0.298403    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           96  norm = 0.212607    
+ norm (MS-Block) =   0.366396112634608     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  block no.    9 len =          252
+  Ms(A) =   2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          110  norm = 0.407941    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.365993    
+ norm (MS-Block) =   0.548057473017485     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  block no.   10 len =         1446
+  Ms(A) =   2/2  IRREP(A) =  1  len =          121  norm =  1.20098    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          100  norm =  1.18460    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           16  norm = 0.880982    
+  Ms(A) =   2/2  IRREP(A) =  4  len =            4  norm = 0.601055    
+ norm (MS-Block) =    1.99574961774712     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          484  norm =  2.00491    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          400  norm =  1.86579    
+  Ms(A) =   0/2  IRREP(A) =  3  len =           64  norm =  1.38201    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           16  norm = 0.879564    
+ norm (MS-Block) =    3.19129985578798     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          121  norm =  1.20098    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          100  norm =  1.18460    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           16  norm = 0.880982    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =            4  norm = 0.601055    
+ norm (MS-Block) =    1.99574961774712     
+  block no.   11 len =         1842
+  Ms(A) =   2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          638  norm = 0.512571    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          480  norm = 0.468936    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          128  norm = 0.420683    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           48  norm = 0.278522    
+ norm (MS-Block) =   0.858591396129372     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  block no.   12 len =          309
+  Ms(A) =   2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =   2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =          145  norm = 0.298403    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           96  norm = 0.212607    
+ norm (MS-Block) =   0.366396112634608     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  block no.   13 len =         1842
+  Ms(A) =   2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          638  norm = 0.512571    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          480  norm = 0.468936    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          128  norm = 0.420683    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           48  norm = 0.278522    
+ norm (MS-Block) =   0.858591396129372     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  block no.   14 len =         2505
+  Ms(A) =   2/2  IRREP(A) =  1  len =          100  norm = 0.966895    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          144  norm =  1.08057    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           64  norm =  1.02475    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           36  norm = 0.908939    
+ norm (MS-Block) =    1.99469312434103     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          841  norm =  2.12566    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          576  norm =  1.72374    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          256  norm =  1.56650    
+  Ms(A) =   0/2  IRREP(A) =  4  len =          144  norm =  1.32934    
+ norm (MS-Block) =    3.42210214070217     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          100  norm = 0.966895    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          144  norm =  1.08057    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           64  norm =  1.02475    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           36  norm = 0.908939    
+ norm (MS-Block) =    1.99469312434103     
+ total norm =    39.5165358376116     
  My next target: T
  Rule: DEF_EXCITATION
- ===================
-  set_genop at work
- ===================
-  min_rank, max_rank:            1           3
-  ncadiff:            0
-  hpvx_mnmx:  0  0   0  3   0  0   0  0
-              0  3   0  0   0  0   0  0
- C   0  3   0  3   0  3
- A   0  3   0  3   0  3
- unmasked
  My next target: DIA
  Rule: CLONE_OPERATOR
- Clone operator produced the following:
-    1  /  0  1  0  0\   0  0   0  0   1  1      0  0   0  0   0  0
-       \  1  0  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
-    2  /  0  2  0  0\   0  0   0  0   2  2      0  0   0  0   0  0
-       \  2  0  0  0/   2  2   2  2   0  0      0  0   0  0   0  0
-    3  /  0  3  0  0\   0  0   0  0   3  3      0  0   0  0   0  0
-       \  3  0  0  0/   3  3   3  3   0  0      0  0   0  0   0  0
  My next target: DIAG1SxxM00
  Rule: DEF_ME_LIST
  set_new_graph:            5
  set_new_graph:            6
  Rule: PRECONDITIONER
  set up diagonal from rank 1 part of H
- extracted diagonal: 
-  1/2    1  -.384161    
-  1/2    2  -.895744    
-  1/2    3  -.569759    
-  1/2    4   0.00000    
-  1/2    5  0.192820    
-  1/2    6  0.658529    
-  1/2    7  0.722273    
-  1/2    8  0.902028    
-  1/2    9  0.257402    
-  1/2   10  0.596465    
-  1/2   11  0.935205    
-  1/2   12  0.560719E-01
-  1/2   13  0.739236    
- -1/2    1  -.384161    
- -1/2    2  -.895744    
- -1/2    3  -.569759    
- -1/2    4   0.00000    
- -1/2    5  0.192820    
- -1/2    6  0.658529    
- -1/2    7  0.722273    
- -1/2    8  0.902028    
- -1/2    9  0.257402    
- -1/2   10  0.596465    
- -1/2   11  0.935205    
- -1/2   12  0.560719E-01
- -1/2   13  0.739236    
  @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  My next target: L(CC)
  Rule: DEF_SCALAR
- ===================
-  set_genop at work
- ===================
-  min_rank, max_rank:            0           0
-  ncadiff:            0
-  hpvx_mnmx:  0  0   0  0   0  0   0  0
-              0  0   0  0   0  0   0  0
- C   0  0   0  0   0  0
- A   0  0   0  0   0  0
- unmasked
  My next target: TBAR
  Rule: CLONE_OPERATOR
- Clone operator produced the following:
-    1  /  1  0  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
-       \  0  1  0  0/   0  0   0  0   1  1      0  0   0  0   0  0
-    2  /  2  0  0  0\   2  2   2  2   0  0      0  0   0  0   0  0
-       \  0  2  0  0/   0  0   0  0   2  2      0  0   0  0   0  0
-    3  /  3  0  0  0\   3  3   3  3   0  0      0  0   0  0   0  0
-       \  0  3  0  0/   0  0   0  0   3  3      0  0   0  0   0  0
  My next target: Lg0_CC
  Rule: DEF_CC_LAGRANGIAN
   ------------------------------------------
      L    number of   n-fold commutators
    class    terms    0    1    2    3    4
   ------------------------------------------
+ nterms =            4
        0        4     1    2    1    0    0
+ nterms =           15
        1       15     1    7    6    1    0
+ nterms =           37
        2       37     1   10   18    7    1
+ nterms =           47
        3       47     0    7   24   14    2
   ------------------------------------------
  Number of generated terms:          103
- @ CC Lagrangian                       cpu/sys/wall:      0.04 /     0.00 /     0.04 s
+ @ CC Lagrangian                       cpu/sys/wall:      0.01 /     0.00 /     0.02 s
  My next target: E(CC)
  Rule: DEF_SCALAR
- ===================
-  set_genop at work
- ===================
-  min_rank, max_rank:            0           0
-  ncadiff:            0
-  hpvx_mnmx:  0  0   0  0   0  0   0  0
-              0  0   0  0   0  0   0  0
- C   0  0   0  0   0  0
- A   0  0   0  0   0  0
- unmasked
  My next target: E0_CC
  Rule: INVARIANT
- ------------------------
-  here speaks form_indep
- ------------------------
-  f_input  = Lg0_CC
-  f_output = E0_CC
-  op_res  = E(CC)
- compound #            1
-  op  = TBAR
  read          104  entries
- +++ contraction info +++
-  name (index) and block of result: E(CC)(           6 )           1
-  factor:    1.00000000000000     
-  number of prim.vertices/sup.vertices/arcs:     1    1    0
- v01 H          1    0  0  0  0
-                     0  0  0  0
- +++ contraction info +++
-  name (index) and block of result: E(CC)(           6 )           1
-  factor:    1.00000000000000     
-  number of prim.vertices/sup.vertices/arcs:     2    2    1
- v01 H          3    1  0  0  0
-                     0  1  0  0
- v02 T          1    0  1  0  0
-                     1  0  0  0
-  c      1   2       1  0  0  0
-                     0  1  0  0
- +++ contraction info +++
-  name (index) and block of result: E(CC)(           6 )           1
-  factor:    1.00000000000000     
-  number of prim.vertices/sup.vertices/arcs:     2    2    1
- v01 H          8    2  0  0  0
-                     0  2  0  0
- v02 T          2    0  2  0  0
-                     2  0  0  0
-  c      1   2       2  0  0  0
-                     0  2  0  0
- +++ contraction info +++
-  name (index) and block of result: E(CC)(           6 )           1
-  factor:   0.500000000000000     
-  number of prim.vertices/sup.vertices/arcs:     3    3    2
- v01 H          8    2  0  0  0
-                     0  2  0  0
- v02 T          1    0  1  0  0
-                     1  0  0  0
- v03 T          1    0  1  0  0
-                     1  0  0  0
-  c      1   2       1  0  0  0
-                     0  1  0  0
-  c      1   3       1  0  0  0
-                     0  1  0  0
- generated terms:            4
  My next target: OMG
  Rule: CLONE_OPERATOR
- Clone operator produced the following:
-    1  /  0  1  0  0\   0  0   0  0   1  1      0  0   0  0   0  0
-       \  1  0  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
-    2  /  0  2  0  0\   0  0   0  0   2  2      0  0   0  0   0  0
-       \  2  0  0  0/   2  2   2  2   0  0      0  0   0  0   0  0
-    3  /  0  3  0  0\   0  0   0  0   3  3      0  0   0  0   0  0
-       \  3  0  0  0/   3  3   3  3   0  0      0  0   0  0   0  0
  My next target: OMG_CC
  Rule: DERIVATIVE
- nterms =           99
  My next target: DEF-O0
  Rule: DEF_ME_LIST
  My next target: DEF-T0
@@ -381,39 +406,10 @@ I     routes
  My next target: DEF-E0(CC)
  Rule: DEF_ME_LIST
  My next target: Hhat
- Rule: CLONE_OPERATOR
- Clone operator produced the following:
-    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
-       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
-    2  /  1  0  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
-       \  1  0  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
-    3  /  1  0  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
-       \  0  1  0  0/   0  0   0  0   1  1      0  0   0  0   0  0
-    4  /  0  1  0  0\   0  0   0  0   1  1      0  0   0  0   0  0
-       \  1  0  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
-    5  /  0  1  0  0\   0  0   0  0   1  1      0  0   0  0   0  0
-       \  0  1  0  0/   0  0   0  0   1  1      0  0   0  0   0  0
-    6  /  2  0  0  0\   2  2   2  2   0  0      0  0   0  0   0  0
-       \  2  0  0  0/   2  2   2  2   0  0      0  0   0  0   0  0
-    7  /  2  0  0  0\   2  2   2  2   0  0      0  0   0  0   0  0
-       \  1  1  0  0/   1  1   1  1   1  1      0  0   0  0   0  0
-    8  /  2  0  0  0\   2  2   2  2   0  0      0  0   0  0   0  0
-       \  0  2  0  0/   0  0   0  0   2  2      0  0   0  0   0  0
-    9  /  1  1  0  0\   1  1   1  1   1  1      0  0   0  0   0  0
-       \  2  0  0  0/   2  2   2  2   0  0      0  0   0  0   0  0
-   10  /  1  1  0  0\   1  1   1  1   1  1      0  0   0  0   0  0
-       \  1  1  0  0/   1  1   1  1   1  1      0  0   0  0   0  0
-   11  /  1  1  0  0\   1  1   1  1   1  1      0  0   0  0   0  0
-       \  0  2  0  0/   0  0   0  0   2  2      0  0   0  0   0  0
-   12  /  0  2  0  0\   0  0   0  0   2  2      0  0   0  0   0  0
-       \  2  0  0  0/   2  2   2  2   0  0      0  0   0  0   0  0
-   13  /  0  2  0  0\   0  0   0  0   2  2      0  0   0  0   0  0
-       \  1  1  0  0/   1  1   1  1   1  1      0  0   0  0   0  0
-   14  /  0  2  0  0\   0  0   0  0   2  2      0  0   0  0   0  0
-       \  0  2  0  0/   0  0   0  0   2  2      0  0   0  0   0  0
+ Rule: DEF_HAMILTONIAN
  My next target: HT1TRF
  Rule: DEF_HHAT
- @ CC Hhat                             cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ CC Hhat                             cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  My next target: DEF-Hhat
  Rule: DEF_ME_LIST
  My next target: OMG_CC_OPT
@@ -467,109 +463,39 @@ I     routes
  Threshold for residual:      0.10E-09
 >>>  1        -38.821908746679 0.3920    
 >>>  2        -38.885227112091 0.1077    
->>>  3        -38.901861451702 0.3535E-01
->>>  4        -38.907553839212 0.1577E-01
->>>  5        -38.908837398883 0.1000E-01
->>>  6        -38.909217675620 0.6349E-02
->>>  7        -38.909447787823 0.3000E-02
->>>  8        -38.909549743910 0.9147E-03
->>>  9        -38.909567968643 0.2872E-03
->>> 10        -38.909570057107 0.8347E-04
->>> 11        -38.909569767244 0.2679E-04
->>> 12        -38.909570096579 0.9488E-05
->>> 13        -38.909570216951 0.2739E-05
->>> 14        -38.909570218303 0.8357E-06
->>> 15        -38.909570226018 0.2935E-06
->>> 16        -38.909570224924 0.8091E-07
->>> 17        -38.909570225104 0.2137E-07
->>> 18        -38.909570224396 0.5564E-08
->>> 19        -38.909570224264 0.1917E-08
->>> 20        -38.909570224206 0.6076E-09
->>> 21        -38.909570224199 0.2338E-09
->>> 22        -38.909570224190 0.1307E-09
->>> 23        -38.909570224180 0.6193E-10
+>>>  3        -38.901861451707 0.3535E-01
+>>>  4        -38.907553839214 0.1577E-01
+>>>  5        -38.908837398881 0.1000E-01
+>>>  6        -38.909217675615 0.6349E-02
+>>>  7        -38.909447787818 0.3000E-02
+>>>  8        -38.909549743905 0.9147E-03
+>>>  9        -38.909567968638 0.2872E-03
+>>> 10        -38.909570057102 0.8347E-04
+>>> 11        -38.909569767239 0.2679E-04
+>>> 12        -38.909570096575 0.9488E-05
+>>> 13        -38.909570216946 0.2739E-05
+>>> 14        -38.909570218298 0.8357E-06
+>>> 15        -38.909570226013 0.2935E-06
+>>> 16        -38.909570224919 0.8091E-07
+>>> 17        -38.909570225099 0.2137E-07
+>>> 18        -38.909570224391 0.5564E-08
+>>> 19        -38.909570224259 0.1917E-08
+>>> 20        -38.909570224201 0.6076E-09
+>>> 21        -38.909570224194 0.2338E-09
+>>> 22        -38.909570224185 0.1307E-09
+>>> 23        -38.909570224175 0.6193E-10
  CONVERGED IN    23 ITERATIONS
->>> final energy:        -38.909570224180 <<<
+>>> final energy:        -38.909570224175 <<<
  My next target: 1DEN
  Rule: DEF_DENSITY
- ===================
-  set_genop at work
- ===================
-  min_rank, max_rank:            1           1
-  ncadiff:            0
-  hpvx_mnmx:  0  1   0  1   0  0   0  0
-              0  1   0  1   0  0   0  0
- C   0  1   0  1   0  1
- A   0  1   0  1   0  1
- unmasked
- -------------------------------
-  set_gen_intermediate speaking
- -------------------------------
- Intermediate: 1DEN
- generated            4  blocks
-
- Occupation Nr.    1
- /  1  0  0  0\/  0  0  0  0\/
- \  0  0  0  0/\  1  0  0  0/\
- C   1  1   1  1   0  0
- A   0  0   0  0   0  0
- unmasked
- C   0  0   0  0   0  0
- A   1  1   1  1   0  0
- unmasked
-
- Occupation Nr.    2
- /  0  0  0  0\/  0  1  0  0\/
- \  0  0  0  0/\  1  0  0  0/\
- C   0  0   0  0   0  0
- A   0  0   0  0   0  0
- unmasked
- C   0  0   0  0   1  1
- A   1  1   1  1   0  0
- unmasked
-
- Occupation Nr.    3
- /  1  0  0  0\/  0  0  0  0\/
- \  0  1  0  0/\  0  0  0  0/\
- C   1  1   1  1   0  0
- A   0  0   0  0   1  1
- unmasked
- C   0  0   0  0   0  0
- A   0  0   0  0   0  0
- unmasked
-
- Occupation Nr.    4
- /  0  0  0  0\/  0  1  0  0\/
- \  0  1  0  0/\  0  0  0  0/\
- C   0  0   0  0   0  0
- A   0  0   0  0   1  1
- unmasked
- C   0  0   0  0   1  1
- A   0  0   0  0   0  0
- unmasked
  My next target: DEF-1DEN0
  Rule: DEF_ME_LIST
  My next target: TBAR.A
  Rule: CLONE_OPERATOR
- Clone operator produced the following:
-    1  /  1  0  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
-       \  0  1  0  0/   0  0   0  0   1  1      0  0   0  0   0  0
-    2  /  2  0  0  0\   2  2   2  2   0  0      0  0   0  0   0  0
-       \  0  2  0  0/   0  0   0  0   2  2      0  0   0  0   0  0
-    3  /  3  0  0  0\   3  3   3  3   0  0      0  0   0  0   0  0
-       \  0  3  0  0/   0  0   0  0   3  3      0  0   0  0   0  0
  My next target: ETA
  Rule: CLONE_OPERATOR
- Clone operator produced the following:
-    1  /  1  0  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
-       \  0  1  0  0/   0  0   0  0   1  1      0  0   0  0   0  0
-    2  /  2  0  0  0\   2  2   2  2   0  0      0  0   0  0   0  0
-       \  0  2  0  0/   0  0   0  0   2  2      0  0   0  0   0  0
-    3  /  3  0  0  0\   3  3   3  3   0  0      0  0   0  0   0  0
-       \  0  3  0  0/   0  0   0  0   3  3      0  0   0  0   0  0
  My next target: CC1DEN
  Rule: DERIVATIVE
- nterms =           16
  My next target: DEF-L0
  Rule: DEF_ME_LIST
  My next target: CC1DEN_OPT
@@ -618,7 +544,6 @@ I     routes
  Largest intermediate      :  H^ 4 P^ 2 V^ 0 X^ 0
  My next target: TBAR_A_CC
  Rule: DERIVATIVE
- nterms =          186
  Rule: LEQ_SPLIT
  read          187  entries
  My next target: DEF-L0.A
@@ -739,12 +664,12 @@ I     routes
  read           17  entries
  My next target: EVAL-PROPS
  Rule: EVAL_PROP
-  >>> OVERLAP :     0.5091904390    
-  >>> ZDIPLEN :     0.1341868644    
+  >>> OVERLAP :     0.5091904397    
+  >>> ZDIPLEN :     0.1341868632    
  ... all targets processed!
  +----------------------------------------------------------------------------+
-   Maximum allocated memory:      47190 real(8)-words (    0.36 Mb)
-   Largest memory block:           8921 real(8)-words (    0.07 Mb)
-   Name of largest block:    zeroop.buffer
+   Maximum allocated memory:      76971 real(8)-words (    0.59 Mb)
+   Largest memory block:          32768 real(8)-words (    0.25 Mb)
+   Name of largest block:    bfstrmap.slots
  +----------------------------------------------------------------------------+
- @ total time in GeCCo run             cpu/sys/wall:     34.07 /     4.44 /    38.62 s
+ @ total time in GeCCo run             cpu/sys/wall:     21.66 /     4.12 /    25.80 s

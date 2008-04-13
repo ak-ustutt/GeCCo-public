@@ -163,17 +163,21 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
      &              title_ccr12lg0,1,tgt_info)
       end if
 
-      ! fix to get rid of a few unprocessed R12 contributions
+      ! there remain a few unprocessed R12 contributions
       ! for ansatz > 1
+      ! as a first resort we replace r12 by the actual integrals
       if (ansatz.gt.1) then
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = form_ccr12lg0
         labels(2) = form_ccr12lg0
-        labels(3) = op_ccr12lg
-        labels(4) = op_r12
-        call set_rule(form_ccr12lg0,ttype_frm,INVARIANT,
+        labels(3) = op_r12
+        labels(4) = op_rint
+        call set_dependency(form_ccr12lg0,op_rint,tgt_info)
+        call form_parameters(-1,
+     &       parameters,2,title_ccr12lg0,1,'---')
+        call set_rule(form_ccr12lg0,ttype_frm,REPLACE,
      &              labels,4,1,
-     &              title_ccr12lg0,1,tgt_info)
+     &              parameters,2,tgt_info)
       end if
       
       labels(1:10)(1:len_target_name) = ' '

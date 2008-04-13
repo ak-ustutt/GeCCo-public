@@ -92,11 +92,11 @@
           idxnd = idxst+njoined-1
           occ => op%ihpvca_occ(1:ngastp,1:2,idxst:idxnd)
 c dbg
-          call wrt_occ_n(6,occ,op%njoined)
+c          call wrt_occ_n(6,occ,op%njoined)
 c dbg
           idx = iblk_occ(occ,.true.,op)
 c dbg
-          print *,'idx = ',idx
+c          print *,'idx = ',idx
 c dbg
           if (idx.gt.0) then
             idx = (idx-1)*njoined+1
@@ -135,7 +135,7 @@ c        arc(iarc)%occ_cnt = iocc_dagger(arc(iarc)%occ_cnt)
         xarc(iarc)%occ_cnt = iocc_dagger(xarc(iarc)%occ_cnt)
       end do
 c dbg
-        call prt_contr2(luout,contr,op_info)
+c        call prt_contr2(luout,contr,op_info)
 c dbg      
       allocate(occ_vtx(ngastp,2,nvtx),vtx_reo(nvtx),fix_vtx(nvtx))
       fix_vtx = .true. ! not important

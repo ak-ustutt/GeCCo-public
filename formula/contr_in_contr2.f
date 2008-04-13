@@ -3,6 +3,7 @@
 *----------------------------------------------------------------------*
 *     check whether contraction A on contra is contained in contraction
 *     B on contrb
+*     OLD VERSION! OBSOLETE SOON
 *----------------------------------------------------------------------*
       implicit none
 
@@ -330,7 +331,7 @@ c      allocate(extended_check(nvtxb))
 c     &           contrb%arc(iarc)%occ_cnt(1:ngastp,1:2)
 c dbg
      &           iocc_dagger(contrb%arc(iarc)%occ_cnt(1:ngastp,1:2))
-              print *,'no dagger'
+c              print *,'no dagger'
 c dbg
             else
               cnt_b(1:ngastp,1:2,ninter) =
@@ -338,7 +339,7 @@ c dbg
 c     &           iocc_dagger(contrb%arc(iarc)%occ_cnt(1:ngastp,1:2))
 c dbg
      &           contrb%arc(iarc)%occ_cnt(1:ngastp,1:2)
-              print *,'dagger'
+c              print *,'dagger'
 c dbg
             end if
           end do

@@ -18,6 +18,7 @@
       include 'def_me_list.h'
       include 'def_orbinf.h'
       include 'ifc_baserout.h'
+      include 'hpvxseq.h'
 
       real(8), intent(in) ::
      &     eref, h1sym(*)
@@ -33,8 +34,9 @@
       integer ::
      &     ngas, nsym, igas, nspin, ispin,
      &     idxstr, idxsym, iocc_cls, ihpv_c, ihpv_a, igc, iga,
-     &     ms, idxms, isym, isymoff, imo_off, lena, lenc, igasa, igasc,
-     &     mosta, monda, mostc, mondc, imo_a, imo_c, imo, jmo
+     &     ihpv_o, ihpv_i,
+     &     ms, idxms, isym, isymoff, imo_off, lena, lenc, igas_i,igas_o,
+     &     mosto, mondo, mosti, mondi, imo_o, imo_i, imo, jmo
 
       integer, pointer ::
      &     mostnd(:,:,:), ntoobs(:), ihpvgas(:,:), iad_gas(:), ireots(:)
@@ -90,6 +92,14 @@
         ihpv_c = idxlist(1,hop%ihpvca_occ(1,1,iocc_cls),ngastp,1)
         ihpv_a = idxlist(1,hop%ihpvca_occ(1,2,iocc_cls),ngastp,1)
 
+        ! correct addressing order:
+        ihpv_i = ihpv_c
+        ihpv_o = ihpv_a
+        if (hpvxseq(ihpv_c).gt.hpvxseq(ihpv_a)) then
+          ihpv_i = ihpv_a
+          ihpv_o = ihpv_c
+        end if
+
         ! get indices of graphs
         igc = hlist%idx_graph(ihpv_c,1,iocc_cls)
         iga = hlist%idx_graph(ihpv_a,2,iocc_cls)
@@ -124,28 +134,30 @@
               cycle gam_loop
             end if
                           
+            ! outer loop (usually A)
             ! loop over subspaces which belong to current type
             ! of A space (and which are active)
-            do igasa = 1, ngas
-              if (ihpvgas(igasa,ispin).ne.ihpv_a) cycle
-              if (iad_gas(igasa).ne.2) cycle
-              mosta = mostnd(1,isym,igasa)
-              monda = mostnd(2,isym,igasa)
+            do igas_o = 1, ngas
+              if (ihpvgas(igas_o,ispin).ne.ihpv_o) cycle
+              if (iad_gas(igas_o).ne.2) cycle
+              mosto = mostnd(1,isym,igas_o)
+              mondo = mostnd(2,isym,igas_o)
 
-              do imo_a = mosta, monda
+              do imo_o = mosto, mondo
 
-                imo = ireots(imo_a) - imo_off
+                imo = ireots(imo_o) - imo_off
             
+                ! inner loop (usually C)
                 ! loop over subspaces which belong to current type
                 ! of C space (and which are active)
-                do igasc = 1, ngas
-                  if (ihpvgas(igasc,ispin).ne.ihpv_c) cycle
-                  if (iad_gas(igasc).ne.2) cycle
-                  mostc = mostnd(1,isym,igasc)
-                  mondc = mostnd(2,isym,igasc)
+                do igas_i = 1, ngas
+                  if (ihpvgas(igas_i,ispin).ne.ihpv_i) cycle
+                  if (iad_gas(igas_i).ne.2) cycle
+                  mosti = mostnd(1,isym,igas_i)
+                  mondi = mostnd(2,isym,igas_i)
 
-                  do imo_c = mostc, mondc
-                    jmo = ireots(imo_c) - imo_off
+                  do imo_i = mosti, mondi
+                    jmo = ireots(imo_i) - imo_off
 
                     idxstr = idxstr+1
                     if (imo.le.jmo) idxsym = isymoff+jmo*(jmo-1)/2+imo

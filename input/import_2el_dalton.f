@@ -1,5 +1,5 @@
       subroutine import_2el_dalton(oplist,fname_inp,
-     &     mode,str_info,orb_info)
+     &     mode,scaling,str_info,orb_info)
 *-----------------------------------------------------------------------
 *     Routine to read in and reorder 2-electron integrals required for 
 *     R12 calculations. Integrals are reordered to be in type order.
@@ -30,7 +30,7 @@
       character*(*), intent(in) ::
      &     fname_inp
       integer, intent(in) ::
-     &     mode
+     &     mode, scaling
 
       integer ::
      &     rt, ct, idx_int, idx_typ, ntypes, ifree, nbuffer, igas,
@@ -39,7 +39,7 @@
       integer ::
      &     nints(8)
       real(8) ::
-     &     val
+     &     fac_s, fac_t
       logical ::
      &     fexist,closeit
       type(filinf) ::
@@ -209,9 +209,30 @@ c        end do
 c dbg
         call atim_cs(cpux,sysx)
 
+        ! scaling options
+        if (.true.) then
+        select case(scaling)
+        case(0)
+          fac_s = 1d0
+          fac_t = 1d0
+        case(1)
+          fac_s = 0.50d0
+          fac_t = 0.25d0
+        case(2)
+          fac_s = 0.50d0*0.50d0
+          fac_t = 0.25d0*0.25d0
+        case default
+          call quit(1,'import_2el_dalton','unknown scaling parameter')
+        end select
+        else
+          fac_s = 1d0
+          fac_t = 1d0
+        end if
+
         ! sort into actual list
         call import_list_from_buffer(oplist,buffer,
      &       iaux_max,iaux_max,
+     &       fac_s,fac_t,
      &       iy_int,typetab,ntypes,
      &       str_info,orb_info)
 

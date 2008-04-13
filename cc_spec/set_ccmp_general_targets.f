@@ -23,10 +23,10 @@
 
       integer ::
      &     min_rank, max_rank,
-     &     isim, ncat, nint, icnt,
+     &     isim, ncat, nint, icnt, ansatz,
      &     isym, ms, msc, sym_arr(8)
       logical ::
-     &     needed
+     &     needed, explicit
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(10)
@@ -40,18 +40,26 @@
 *     Operators:
 *----------------------------------------------------------------------*
       ! T1 transformed Hamiltonian
+      ansatz=0
+      explicit = is_keyword_set('method.R12').gt.0
+      if (explicit.and.orb_info%caborb.gt.0)
+     &     call get_argument_value('method.R12','ansatz',ival=ansatz)
+
       call add_target(op_hhat,ttype_op,.false.,tgt_info)
-c      call set_dependency(op_hhat,op_ham,tgt_info)
-c      call cloneop_parameters(-1,parameters,
-c     &                        op_ham,.false.)
-c      call set_rule(op_hhat,ttype_op,CLONE_OP,
-c     &              op_hhat,1,1,
-c     &              parameters,1,tgt_info)
-      call hop_parameters(-1,parameters,
+      if (.false..and.ansatz.gt.1) then
+        call set_dependency(op_hhat,op_ham,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &       op_ham,.false.)
+        call set_rule(op_hhat,ttype_op,CLONE_OP,
+     &       op_hhat,1,1,
+     &       parameters,1,tgt_info)
+      else
+        call hop_parameters(-1,parameters,
      &                   0,2,1,.false.)  ! avoid any X blocks
-      call set_rule(op_hhat,ttype_op,DEF_HAMILTONIAN,
+        call set_rule(op_hhat,ttype_op,DEF_HAMILTONIAN,
      &              op_hhat,1,1,
      &              parameters,1,tgt_info)
+      end if
 
       ! Hbar intermediate
       call add_target(op_hbar,ttype_op,.false.,tgt_info)

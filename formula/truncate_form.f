@@ -46,17 +46,19 @@
       allocate(del_list%del_cond_item(1)%del_cond_arr(2),
      &     del_list%del_cond_item(2)%del_cond_arr(3),
      &     del_list%del_cond_item(3)%del_cond_arr(3))
-      del_list%del_cond_item(1)%and_dim = 2
+      del_list%del_cond_item(1)%and_dim = 1
+c      del_list%del_cond_item(1)%and_dim = 2
       del_list%del_cond_item(2)%and_dim = 3
       del_list%del_cond_item(3)%and_dim = 3
 
       ! Array 1.
-      temp_del => del_list%del_cond_item(1)%del_cond_arr(1)
-      temp_del%op_name = op_cba
-      temp_del%num_op_restr(1:2) = 1
-      temp_del%part_num_restr(1:2) = -1
+c      temp_del => del_list%del_cond_item(1)%del_cond_arr(1)
+c      temp_del%op_name = op_cba
+c      temp_del%num_op_restr(1:2) = 1
+c      temp_del%part_num_restr(1:2) = -1
 
-      temp_del => del_list%del_cond_item(1)%del_cond_arr(2)
+c      temp_del => del_list%del_cond_item(1)%del_cond_arr(2)
+      temp_del => del_list%del_cond_item(1)%del_cond_arr(1)
       temp_del%op_name = op_c12
       temp_del%num_op_restr(1) = 2
       temp_del%num_op_restr(2) = -1

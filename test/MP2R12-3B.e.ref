@@ -1,0 +1,1908 @@
+
+ Version compiled 13 Apr 2008 at 18:03:18 on paulchen                            
+
+ compiled with: ifort
+ level 1 optimization: -O2 -cm -w95 -fpp -assume byterecl -traceback -I../include -
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal author:                                       |
+        |       andreas koehn (university of mainz, germany)        |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       gareth richings (university of mainz, germany)      |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ raw data from section "SIR IPH "
+ potnuc =   0.713282573292537     
+ emy    =   -1.84200204390348     
+ eactiv =   0.000000000000000E+000
+ emcscf =   -1.12871947061094     
+ istate =            1
+ ispin  =            1
+ nactel =            0
+ lsym   =            1
+ nsym   =            8
+ mctype =            0
+ nrhf   =    1   0   0   0   0   0   0   0
+ nfro   =    0   0   0   0   0   0   0   0
+ nish   =    1   0   0   0   0   0   0   0
+ nash   =    0   0   0   0   0   0   0   0
+ norb   =    3   1   1   0   3   1   1   0
+ cabs   =   30  20  20  13  30  20  20  13
+ nbas   =    3   1   1   0   3   1   1   0
+ abas   =   30  20  20  13  30  20  20  13
+ tbas   =   33  21  21  13  33  21  21  13
+ nas1   =    0   0   0   0   0   0   0   0
+ nas2   =    0   0   0   0   0   0   0   0
+ nas3   =    0   0   0   0   0   0   0   0
+ nnorbt,n2orbt:   16  22
+ Reading input file ....
+I gecco keywords
+I   general
+       title 8 **
+       memmax 2  1
+  >     50000000
+I   orb_space
+I     shell
+         def 2  8
+         type 8  8
+I     open_shells
+         treat 8  4
+  > ph  
+I   method
+I     MP
+         level 2  1
+  >            2
+I     CC
+         maxexc 2  1
+  >            2
+         minexc 2  1
+  >            1
+I     R12
+         ansatz 2  1
+  >            1
+         maxexc 2  1
+  >            2
+         minexc 2  1
+  >            2
+         approx 8  8
+  > A       
+         F_appr 8  8
+  > none    
+         K_appr 8  8
+  > none    
+I   calculate
+I     check
+I       formulae
+I     solve
+         maxiter 2  1
+  >           30
+         maxmic 2  1
+  >           20
+         maxsub 2  1
+  >            8
+         conv 4  1
+  >   1.000000000000000E-006
+I       non_linear
+           maxiter 2  1
+  >           30
+           maxmic 2  1
+  >           20
+           maxsub 2  1
+  >            8
+           conv 4  1
+  >   1.000000000000000E-006
+           tr_ini 4  1
+  >    1.00000000000000     
+           method 8  8
+  > diis    
+I       linear
+           maxiter 2  1
+  >           30
+           maxsub 2  1
+  >            8
+           conv 4  1
+  >   1.000000000000000E-006
+           method 8  8
+  > subspace
+I       eigen
+           maxiter 2  1
+  >           30
+           maxsub 2  1
+  >            8
+           conv 4  1
+  >   1.000000000000000E-006
+           method 8  8
+  > davidson
+I     CC_solve_tbar
+I     CC_solve_sim
+I     properties
+I     excitation
+         sym 2  8
+  >            1           0           0           0           0           0
+           0           0
+I     ionization
+         sym 2  8
+  >            1           0           0           0           0           0
+           0           0
+I     routes
+         schedule 2  1
+  >            0
+         contract 2  1
+  >            2
+         str_block 2  1
+  >          200
+         simtraf 2  1
+  >            0
+ Memory set to     50000000 r8-words = (  381.47 Mb)
+ ************
+  set_orbinf
+ ************
+ ihpvgas:              1           2           4          41
+ ngas_hpv:             1           1           0           1
+ nactt_hpv:            1           9           0         166
+ ioff_gas:             0           1           2           2
+ idx_gas:              1           2           3           3
+ gas_reo:           1           2           3
+ igamorb:
+
+<  1>        1       1       1       2       3       5       5       5       6       7
+        1       1       1       1       1       1       1       1       1       1
+        1       1       1       1       1       1       1       1       1       1
+        1       1       1       1       1       1       1       1       1       1
+        2       2       2       2       2       2       2       2       2       2
+        2       2       2       2       2       2       2       2       2       2
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        4       4       4       4       4       4       4       4       4       4
+        4       4       4       5       5       5       5       5       5       5
+        5       5       5       5       5       5       5       5       5       5
+        5       5       5       5       5       5       5       5       5       5
+        5       5       5       6       6       6       6       6       6       6
+        6       6       6       6       6       6       6       6       6       6
+        6       6       6       7       7       7       7       7       7       7
+        7       7       7       7       7       7       7       7       7       7
+        7       7       7       8       8       8       8       8       8       8
+        8       8       8       8       8       8
+ igasorb:
+
+<  1>        1       2       2       2       2       2       2       2       2       2
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3
+ mostnd:
+     1      1   1    2   1    2   1    2   1    2   1    2   1    2   1    2   1
+     2      2   3    4   4    5   5    6   5    6   8    9   9   10  10   11  10
+     3     11  40   41  60   61  80   81  93   94 123  124 143  144 163  164 176
+ ireost:
+
+<  1>        1       2       3       4       5       6       7       8       9      10
+
+ ireots:
+
+<  1>        1       2       3       4       5       6       7       8       9      10
+
+ iad_gas:
+
+<  1>        2
+
+<  2>        2
+
+<  3>        2
+ setting general targets ...
+ setting general targets for MP/CC ...
+ setting general targets for R12 ...
+ no approximations wrt. Fock made
+ setting special targets for MP-R12 ...
+ My next target: L(MPR12)
+ Rule: DEF_SCALAR
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ My next target: R12
+ Rule: DEF_R12GEMINAL
+ ansatz =            3
+ My next target: T
+ Rule: DEF_EXCITATION
+ My next target: TBAR
+ Rule: CLONE_OPERATOR
+ My next target: T'
+ Rule: DEF_R12COEFF
+ My next target: TBAR'
+ Rule: CLONE_OPERATOR
+ My next target: V
+ Rule: DEF_R12INTERM
+ -------------
+  set_r12intm 
+ -------------
+ Intermediate: V
+ generated: 
+    1  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    2  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    3  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    3  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ formal:  F F F
+ My next target: VINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ My next target: B
+ Rule: DEF_R12INTERM
+ -------------
+  set_r12intm 
+ -------------
+ Intermediate: B
+ generated: 
+    1  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ formal:  F
+ My next target: X
+ Rule: CLONE_OPERATOR
+ My next target: XINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ My next target: BINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ My next target: C-INT
+ Rule: DEF_OP_FROM_OCC
+ My next target: CINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ My next target: Lg0_MPR12
+ Rule: DEF_MPR12_LAGRANGIAN
+ @ MP2-R12 Lagrangian                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: FACTOR_OUT
+ read           18  entries
+ read            7  entries
+ read            7  entries
+ read            3  entries
+ read            6  entries
+ read            2  entries
+ read            2  entries
+ My next target: E(MPR12)
+ Rule: DEF_SCALAR
+ My next target: E0_MPR12
+ Rule: INVARIANT
+ read           11  entries
+ My next target: OMG
+ Rule: CLONE_OPERATOR
+ My next target: OMG_T_MPR12
+ Rule: DERIVATIVE
+ My next target: OMG-R12
+ Rule: DEF_R12INTERM
+ -------------
+  set_r12intm 
+ -------------
+ Intermediate: OMG-R12
+ generated: 
+    1  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ formal:  F
+ My next target: OMG_C_MPR12
+ Rule: DERIVATIVE
+ My next target: H0
+ Rule: DEF_ME_LIST
+ set_new_graph:            1
+ set_new_graph:            2
+ set_new_graph:            3
+ set_new_graph:            4
+ set_new_graph:            5
+ Rule: IMPORT
+ size of buffer:          143           3         429
+ read in finished
+ size of buffer:         5152           3       15456
+ read in finished
+ nfock =        15576
+ 
+ imported list: H0
+  block no.    1 len =            1
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm =  1.12872    
+ norm (MS-Block) =    1.12871947061094     
+  block no.    2 len =            2
+  Ms(A) =   1/2  IRREP(A) =  1  len =            1  norm = 0.591840    
+ norm (MS-Block) =   0.591840219037642     
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            1  norm = 0.591840    
+ norm (MS-Block) =   0.591840219037642     
+  block no.    3 len =            4
+  Ms(A) =   1/2  IRREP(A) =  1  len =            2  norm = 0.429147E-11
+ norm (MS-Block) =   4.291473640704599E-012
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            2  norm = 0.429147E-11
+ norm (MS-Block) =   4.291473640704599E-012
+  block no.    4 len =            4
+  Ms(A) =   1/2  IRREP(A) =  1  len =            2  norm = 0.429147E-11
+ norm (MS-Block) =   4.291473640704599E-012
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            2  norm = 0.429147E-11
+ norm (MS-Block) =   4.291473640704599E-012
+  block no.    5 len =           34
+  Ms(A) =   1/2  IRREP(A) =  1  len =            4  norm =  2.01320    
+  Ms(A) =   1/2  IRREP(A) =  2  len =            1  norm =  1.29269    
+  Ms(A) =   1/2  IRREP(A) =  3  len =            1  norm =  1.29269    
+  Ms(A) =   1/2  IRREP(A) =  5  len =            9  norm =  3.72383    
+  Ms(A) =   1/2  IRREP(A) =  6  len =            1  norm =  2.04224    
+  Ms(A) =   1/2  IRREP(A) =  7  len =            1  norm =  2.04224    
+ norm (MS-Block) =    5.44090770807075     
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            4  norm =  2.01320    
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            1  norm =  1.29269    
+  Ms(A) =  -1/2  IRREP(A) =  3  len =            1  norm =  1.29269    
+  Ms(A) =  -1/2  IRREP(A) =  5  len =            9  norm =  3.72383    
+  Ms(A) =  -1/2  IRREP(A) =  6  len =            1  norm =  2.04224    
+  Ms(A) =  -1/2  IRREP(A) =  7  len =            1  norm =  2.04224    
+ norm (MS-Block) =    5.44090770807075     
+  block no.    6 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.658322    
+ norm (MS-Block) =   0.658321605828193     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    7 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.235666    
+ norm (MS-Block) =   0.235666082370562     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    8 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.295617    
+ norm (MS-Block) =   0.295616601424841     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    9 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.235666    
+ norm (MS-Block) =   0.235666082370562     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.   10 len =          102
+  Ms(A) =   2/2  IRREP(A) =  1  len =            4  norm = 0.660387    
+  Ms(A) =   2/2  IRREP(A) =  2  len =            1  norm = 0.526223    
+  Ms(A) =   2/2  IRREP(A) =  3  len =            1  norm = 0.526223    
+  Ms(A) =   2/2  IRREP(A) =  5  len =            9  norm = 0.839252    
+  Ms(A) =   2/2  IRREP(A) =  6  len =            1  norm = 0.541752    
+  Ms(A) =   2/2  IRREP(A) =  7  len =            1  norm = 0.541752    
+ norm (MS-Block) =    1.51038606827265     
+  Ms(A) =   0/2  IRREP(A) =  1  len =           16  norm =  1.11283    
+  Ms(A) =   0/2  IRREP(A) =  2  len =            4  norm = 0.933706    
+  Ms(A) =   0/2  IRREP(A) =  3  len =            4  norm = 0.933706    
+  Ms(A) =   0/2  IRREP(A) =  5  len =           36  norm =  1.43549    
+  Ms(A) =   0/2  IRREP(A) =  6  len =            4  norm = 0.848713    
+  Ms(A) =   0/2  IRREP(A) =  7  len =            4  norm = 0.848713    
+ norm (MS-Block) =    2.54622804614379     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =            4  norm = 0.660387    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =            1  norm = 0.526223    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =            1  norm = 0.526223    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =            9  norm = 0.839252    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =            1  norm = 0.541752    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =            1  norm = 0.541752    
+ norm (MS-Block) =    1.51038606827265     
+  block no.   11 len =          348
+  Ms(A) =   2/2  IRREP(A) =  1  len =            8  norm = 0.156746    
+  Ms(A) =   2/2  IRREP(A) =  2  len =            5  norm = 0.143920    
+  Ms(A) =   2/2  IRREP(A) =  3  len =            5  norm = 0.143920    
+  Ms(A) =   2/2  IRREP(A) =  5  len =           24  norm = 0.222821    
+  Ms(A) =   2/2  IRREP(A) =  6  len =            5  norm = 0.115330    
+  Ms(A) =   2/2  IRREP(A) =  7  len =            5  norm = 0.115330    
+ norm (MS-Block) =   0.377155857841553     
+  Ms(A) =   0/2  IRREP(A) =  1  len =           68  norm = 0.400838    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           20  norm = 0.302857    
+  Ms(A) =   0/2  IRREP(A) =  3  len =           20  norm = 0.302857    
+  Ms(A) =   0/2  IRREP(A) =  5  len =           96  norm = 0.534719    
+  Ms(A) =   0/2  IRREP(A) =  6  len =           20  norm = 0.287862    
+  Ms(A) =   0/2  IRREP(A) =  7  len =           20  norm = 0.287862    
+ norm (MS-Block) =   0.892059474021807     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =            8  norm = 0.156746    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =            5  norm = 0.143920    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =            5  norm = 0.143920    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =           24  norm = 0.222821    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =            5  norm = 0.115330    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =            5  norm = 0.115330    
+ norm (MS-Block) =   0.377155857841553     
+  block no.   12 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.295617    
+ norm (MS-Block) =   0.295616601424841     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.   13 len =          348
+  Ms(A) =   2/2  IRREP(A) =  1  len =            8  norm = 0.156746    
+  Ms(A) =   2/2  IRREP(A) =  2  len =            5  norm = 0.143920    
+  Ms(A) =   2/2  IRREP(A) =  3  len =            5  norm = 0.143920    
+  Ms(A) =   2/2  IRREP(A) =  5  len =           24  norm = 0.222821    
+  Ms(A) =   2/2  IRREP(A) =  6  len =            5  norm = 0.115330    
+  Ms(A) =   2/2  IRREP(A) =  7  len =            5  norm = 0.115330    
+ norm (MS-Block) =   0.377155857841553     
+  Ms(A) =   0/2  IRREP(A) =  1  len =           68  norm = 0.400838    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           20  norm = 0.302857    
+  Ms(A) =   0/2  IRREP(A) =  3  len =           20  norm = 0.302857    
+  Ms(A) =   0/2  IRREP(A) =  5  len =           96  norm = 0.534719    
+  Ms(A) =   0/2  IRREP(A) =  6  len =           20  norm = 0.287862    
+  Ms(A) =   0/2  IRREP(A) =  7  len =           20  norm = 0.287862    
+ norm (MS-Block) =   0.892059474021807     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =            8  norm = 0.156746    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =            5  norm = 0.143920    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =            5  norm = 0.143920    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =           24  norm = 0.222821    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =            5  norm = 0.115330    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =            5  norm = 0.115330    
+ norm (MS-Block) =   0.377155857841553     
+  block no.   14 len =         1353
+  Ms(A) =   2/2  IRREP(A) =  1  len =           16  norm = 0.868313    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           25  norm =  1.13151    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           25  norm =  1.13151    
+  Ms(A) =   2/2  IRREP(A) =  4  len =            4  norm = 0.807220    
+  Ms(A) =   2/2  IRREP(A) =  5  len =           64  norm =  1.27248    
+  Ms(A) =   2/2  IRREP(A) =  6  len =           25  norm =  1.15970    
+  Ms(A) =   2/2  IRREP(A) =  7  len =           25  norm =  1.15970    
+  Ms(A) =   2/2  IRREP(A) =  8  len =            4  norm = 0.798688    
+ norm (MS-Block) =    2.98548540172358     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          289  norm =  2.42598    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          100  norm =  1.73528    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          100  norm =  1.73528    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           16  norm =  1.21774    
+  Ms(A) =   0/2  IRREP(A) =  5  len =          256  norm =  2.23630    
+  Ms(A) =   0/2  IRREP(A) =  6  len =          100  norm =  1.72415    
+  Ms(A) =   0/2  IRREP(A) =  7  len =          100  norm =  1.72415    
+  Ms(A) =   0/2  IRREP(A) =  8  len =           16  norm =  1.17985    
+ norm (MS-Block) =    5.07238071638310     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           16  norm = 0.868313    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           25  norm =  1.13151    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           25  norm =  1.13151    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =            4  norm = 0.807220    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =           64  norm =  1.27248    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =           25  norm =  1.15970    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =           25  norm =  1.15970    
+  Ms(A) =  -2/2  IRREP(A) =  8  len =            4  norm = 0.798688    
+ norm (MS-Block) =    2.98548540172358     
+  block no.   15 len =           60
+  Ms(A) =   1/2  IRREP(A) =  1  len =           30  norm =  0.00000    
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =  -1/2  IRREP(A) =  1  len =           30  norm =  0.00000    
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.   16 len =          460
+  Ms(A) =   1/2  IRREP(A) =  1  len =           60  norm =  1.21147    
+  Ms(A) =   1/2  IRREP(A) =  2  len =           20  norm = 0.895979    
+  Ms(A) =   1/2  IRREP(A) =  3  len =           20  norm = 0.895979    
+  Ms(A) =   1/2  IRREP(A) =  5  len =           90  norm =  2.26266    
+  Ms(A) =   1/2  IRREP(A) =  6  len =           20  norm =  1.07593    
+  Ms(A) =   1/2  IRREP(A) =  7  len =           20  norm =  1.07593    
+ norm (MS-Block) =    3.24161756795857     
+  Ms(A) =  -1/2  IRREP(A) =  1  len =           60  norm =  1.21147    
+  Ms(A) =  -1/2  IRREP(A) =  2  len =           20  norm = 0.895979    
+  Ms(A) =  -1/2  IRREP(A) =  3  len =           20  norm = 0.895979    
+  Ms(A) =  -1/2  IRREP(A) =  5  len =           90  norm =  2.26266    
+  Ms(A) =  -1/2  IRREP(A) =  6  len =           20  norm =  1.07593    
+  Ms(A) =  -1/2  IRREP(A) =  7  len =           20  norm =  1.07593    
+ norm (MS-Block) =    3.24161756795857     
+  block no.   17 len =           60
+  Ms(A) =   1/2  IRREP(A) =  1  len =           30  norm =  0.00000    
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =  -1/2  IRREP(A) =  1  len =           30  norm =  0.00000    
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.   18 len =          460
+  Ms(A) =   1/2  IRREP(A) =  1  len =           60  norm =  1.21147    
+  Ms(A) =   1/2  IRREP(A) =  2  len =           20  norm = 0.895979    
+  Ms(A) =   1/2  IRREP(A) =  3  len =           20  norm = 0.895979    
+  Ms(A) =   1/2  IRREP(A) =  5  len =           90  norm =  2.26266    
+  Ms(A) =   1/2  IRREP(A) =  6  len =           20  norm =  1.07593    
+  Ms(A) =   1/2  IRREP(A) =  7  len =           20  norm =  1.07593    
+ norm (MS-Block) =    3.24161756795857     
+  Ms(A) =  -1/2  IRREP(A) =  1  len =           60  norm =  1.21147    
+  Ms(A) =  -1/2  IRREP(A) =  2  len =           20  norm = 0.895979    
+  Ms(A) =  -1/2  IRREP(A) =  3  len =           20  norm = 0.895979    
+  Ms(A) =  -1/2  IRREP(A) =  5  len =           90  norm =  2.26266    
+  Ms(A) =  -1/2  IRREP(A) =  6  len =           20  norm =  1.07593    
+  Ms(A) =  -1/2  IRREP(A) =  7  len =           20  norm =  1.07593    
+ norm (MS-Block) =    3.24161756795857     
+  block no.   19 len =           60
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           60  norm = 0.761947E-01
+ norm (MS-Block) =   7.619467089348779E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.   20 len =          460
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =          460  norm = 0.133711    
+ norm (MS-Block) =   0.133710703977964     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.   21 len =         1380
+  Ms(A) =   2/2  IRREP(A) =  1  len =           60  norm = 0.152557    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.902281E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =           20  norm = 0.902281E-01
+  Ms(A) =   2/2  IRREP(A) =  5  len =           90  norm = 0.155431    
+  Ms(A) =   2/2  IRREP(A) =  6  len =           20  norm = 0.912518E-01
+  Ms(A) =   2/2  IRREP(A) =  7  len =           20  norm = 0.912518E-01
+ norm (MS-Block) =   0.283493140292906     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          240  norm = 0.307375    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.176401    
+  Ms(A) =   0/2  IRREP(A) =  3  len =           80  norm = 0.176401    
+  Ms(A) =   0/2  IRREP(A) =  5  len =          360  norm = 0.277757    
+  Ms(A) =   0/2  IRREP(A) =  6  len =           80  norm = 0.160076    
+  Ms(A) =   0/2  IRREP(A) =  7  len =           80  norm = 0.160076    
+ norm (MS-Block) =   0.533958752063477     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           60  norm = 0.152557    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.902281E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           20  norm = 0.902281E-01
+  Ms(A) =  -2/2  IRREP(A) =  5  len =           90  norm = 0.155431    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =           20  norm = 0.912518E-01
+  Ms(A) =  -2/2  IRREP(A) =  7  len =           20  norm = 0.912518E-01
+ norm (MS-Block) =   0.283493140292906     
+  block no.   22 len =        11364
+  Ms(A) =   2/2  IRREP(A) =  1  len =          460  norm = 0.174814    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          186  norm = 0.138368    
+  Ms(A) =   2/2  IRREP(A) =  3  len =          186  norm = 0.138368    
+  Ms(A) =   2/2  IRREP(A) =  5  len =          690  norm = 0.236902    
+  Ms(A) =   2/2  IRREP(A) =  6  len =          186  norm = 0.168097    
+  Ms(A) =   2/2  IRREP(A) =  7  len =          186  norm = 0.168097    
+ norm (MS-Block) =   0.426012451840168     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         1840  norm = 0.425901    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          744  norm = 0.340636    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          744  norm = 0.340636    
+  Ms(A) =   0/2  IRREP(A) =  5  len =         2760  norm = 0.534841    
+  Ms(A) =   0/2  IRREP(A) =  6  len =          744  norm = 0.341720    
+  Ms(A) =   0/2  IRREP(A) =  7  len =          744  norm = 0.341720    
+ norm (MS-Block) =   0.965948858337566     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          460  norm = 0.174814    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          186  norm = 0.138368    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =          186  norm = 0.138368    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =          690  norm = 0.236902    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =          186  norm = 0.168097    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =          186  norm = 0.168097    
+ norm (MS-Block) =   0.426012451840168     
+  block no.   23 len =           60
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           60  norm = 0.761947E-01
+ norm (MS-Block) =   7.619467089348779E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.   24 len =         1380
+  Ms(A) =   2/2  IRREP(A) =  1  len =           60  norm = 0.152557    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.902281E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =           20  norm = 0.902281E-01
+  Ms(A) =   2/2  IRREP(A) =  5  len =           90  norm = 0.155431    
+  Ms(A) =   2/2  IRREP(A) =  6  len =           20  norm = 0.912518E-01
+  Ms(A) =   2/2  IRREP(A) =  7  len =           20  norm = 0.912518E-01
+ norm (MS-Block) =   0.283493140292906     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          240  norm = 0.307375    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.176401    
+  Ms(A) =   0/2  IRREP(A) =  3  len =           80  norm = 0.176401    
+  Ms(A) =   0/2  IRREP(A) =  5  len =          360  norm = 0.277757    
+  Ms(A) =   0/2  IRREP(A) =  6  len =           80  norm = 0.160076    
+  Ms(A) =   0/2  IRREP(A) =  7  len =           80  norm = 0.160076    
+ norm (MS-Block) =   0.533958752063477     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           60  norm = 0.152557    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.902281E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           20  norm = 0.902281E-01
+  Ms(A) =  -2/2  IRREP(A) =  5  len =           90  norm = 0.155431    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =           20  norm = 0.912518E-01
+  Ms(A) =  -2/2  IRREP(A) =  7  len =           20  norm = 0.912518E-01
+ norm (MS-Block) =   0.283493140292906     
+  block no.   25 len =         5412
+  Ms(A) =   2/2  IRREP(A) =  1  len =          120  norm = 0.132831    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          100  norm = 0.877666E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =          100  norm = 0.877666E-01
+  Ms(A) =   2/2  IRREP(A) =  4  len =           26  norm = 0.562767E-16
+  Ms(A) =   2/2  IRREP(A) =  5  len =          240  norm = 0.116203    
+  Ms(A) =   2/2  IRREP(A) =  6  len =          100  norm = 0.707092E-01
+  Ms(A) =   2/2  IRREP(A) =  7  len =          100  norm = 0.707092E-01
+  Ms(A) =   2/2  IRREP(A) =  8  len =           26  norm = 0.581375E-01
+ norm (MS-Block) =   0.244811122250634     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         1020  norm = 0.490371    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          400  norm = 0.310057    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          400  norm = 0.310057    
+  Ms(A) =   0/2  IRREP(A) =  4  len =          104  norm = 0.233022    
+  Ms(A) =   0/2  IRREP(A) =  5  len =          960  norm = 0.371431    
+  Ms(A) =   0/2  IRREP(A) =  6  len =          400  norm = 0.233977    
+  Ms(A) =   0/2  IRREP(A) =  7  len =          400  norm = 0.233977    
+  Ms(A) =   0/2  IRREP(A) =  8  len =          104  norm = 0.196327    
+ norm (MS-Block) =   0.879220568881650     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          120  norm = 0.132831    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          100  norm = 0.877666E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =          100  norm = 0.877666E-01
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           26  norm = 0.562767E-16
+  Ms(A) =  -2/2  IRREP(A) =  5  len =          240  norm = 0.116203    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =          100  norm = 0.707092E-01
+  Ms(A) =  -2/2  IRREP(A) =  7  len =          100  norm = 0.707092E-01
+  Ms(A) =  -2/2  IRREP(A) =  8  len =           26  norm = 0.581375E-01
+ norm (MS-Block) =   0.244811122250634     
+  block no.   26 len =         5412
+  Ms(A) =   2/2  IRREP(A) =  1  len =          120  norm = 0.132831    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          100  norm = 0.877666E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =          100  norm = 0.877666E-01
+  Ms(A) =   2/2  IRREP(A) =  4  len =           26  norm = 0.562767E-16
+  Ms(A) =   2/2  IRREP(A) =  5  len =          240  norm = 0.116203    
+  Ms(A) =   2/2  IRREP(A) =  6  len =          100  norm = 0.707092E-01
+  Ms(A) =   2/2  IRREP(A) =  7  len =          100  norm = 0.707092E-01
+  Ms(A) =   2/2  IRREP(A) =  8  len =           26  norm = 0.581375E-01
+ norm (MS-Block) =   0.244811122250634     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         1020  norm = 0.490371    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          400  norm = 0.310057    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          400  norm = 0.310057    
+  Ms(A) =   0/2  IRREP(A) =  4  len =          104  norm = 0.233022    
+  Ms(A) =   0/2  IRREP(A) =  5  len =          960  norm = 0.371431    
+  Ms(A) =   0/2  IRREP(A) =  6  len =          400  norm = 0.233977    
+  Ms(A) =   0/2  IRREP(A) =  7  len =          400  norm = 0.233977    
+  Ms(A) =   0/2  IRREP(A) =  8  len =          104  norm = 0.196327    
+ norm (MS-Block) =   0.879220568881650     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          120  norm = 0.132831    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          100  norm = 0.877666E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =          100  norm = 0.877666E-01
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           26  norm = 0.562767E-16
+  Ms(A) =  -2/2  IRREP(A) =  5  len =          240  norm = 0.116203    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =          100  norm = 0.707092E-01
+  Ms(A) =  -2/2  IRREP(A) =  7  len =          100  norm = 0.707092E-01
+  Ms(A) =  -2/2  IRREP(A) =  8  len =           26  norm = 0.581375E-01
+ norm (MS-Block) =   0.244811122250634     
+  block no.   27 len =        46500
+  Ms(A) =   2/2  IRREP(A) =  1  len =          920  norm = 0.331226    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          930  norm = 0.362452    
+  Ms(A) =   2/2  IRREP(A) =  3  len =          930  norm = 0.362452    
+  Ms(A) =   2/2  IRREP(A) =  4  len =          290  norm = 0.208118    
+  Ms(A) =   2/2  IRREP(A) =  5  len =         1840  norm = 0.455184    
+  Ms(A) =   2/2  IRREP(A) =  6  len =          930  norm = 0.370517    
+  Ms(A) =   2/2  IRREP(A) =  7  len =          930  norm = 0.370517    
+  Ms(A) =   2/2  IRREP(A) =  8  len =          290  norm = 0.222559    
+ norm (MS-Block) =   0.973168470371025     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         7820  norm = 0.997803    
+  Ms(A) =   0/2  IRREP(A) =  2  len =         3720  norm = 0.693446    
+  Ms(A) =   0/2  IRREP(A) =  3  len =         3720  norm = 0.693446    
+  Ms(A) =   0/2  IRREP(A) =  4  len =         1160  norm = 0.428935    
+  Ms(A) =   0/2  IRREP(A) =  5  len =         7360  norm = 0.956319    
+  Ms(A) =   0/2  IRREP(A) =  6  len =         3720  norm = 0.668683    
+  Ms(A) =   0/2  IRREP(A) =  7  len =         3720  norm = 0.668683    
+  Ms(A) =   0/2  IRREP(A) =  8  len =         1160  norm = 0.404260    
+ norm (MS-Block) =    2.02819553721014     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          920  norm = 0.331226    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          930  norm = 0.362452    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =          930  norm = 0.362452    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =          290  norm = 0.208118    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =         1840  norm = 0.455184    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =          930  norm = 0.370517    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =          930  norm = 0.370517    
+  Ms(A) =  -2/2  IRREP(A) =  8  len =          290  norm = 0.222559    
+ norm (MS-Block) =   0.973168470371025     
+  block no.   28 len =          460
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =          460  norm = 0.133711    
+ norm (MS-Block) =   0.133710703977964     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.   29 len =        11364
+  Ms(A) =   2/2  IRREP(A) =  1  len =          460  norm = 0.174814    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          186  norm = 0.138368    
+  Ms(A) =   2/2  IRREP(A) =  3  len =          186  norm = 0.138368    
+  Ms(A) =   2/2  IRREP(A) =  5  len =          690  norm = 0.236902    
+  Ms(A) =   2/2  IRREP(A) =  6  len =          186  norm = 0.168097    
+  Ms(A) =   2/2  IRREP(A) =  7  len =          186  norm = 0.168097    
+ norm (MS-Block) =   0.426012451840168     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         1840  norm = 0.425901    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          744  norm = 0.340636    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          744  norm = 0.340636    
+  Ms(A) =   0/2  IRREP(A) =  5  len =         2760  norm = 0.534841    
+  Ms(A) =   0/2  IRREP(A) =  6  len =          744  norm = 0.341720    
+  Ms(A) =   0/2  IRREP(A) =  7  len =          744  norm = 0.341720    
+ norm (MS-Block) =   0.965948858337566     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          460  norm = 0.174814    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          186  norm = 0.138368    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =          186  norm = 0.138368    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =          690  norm = 0.236902    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =          186  norm = 0.168097    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =          186  norm = 0.168097    
+ norm (MS-Block) =   0.426012451840168     
+  block no.   30 len =        46500
+  Ms(A) =   2/2  IRREP(A) =  1  len =          920  norm = 0.331226    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          930  norm = 0.362452    
+  Ms(A) =   2/2  IRREP(A) =  3  len =          930  norm = 0.362452    
+  Ms(A) =   2/2  IRREP(A) =  4  len =          290  norm = 0.208118    
+  Ms(A) =   2/2  IRREP(A) =  5  len =         1840  norm = 0.455184    
+  Ms(A) =   2/2  IRREP(A) =  6  len =          930  norm = 0.370517    
+  Ms(A) =   2/2  IRREP(A) =  7  len =          930  norm = 0.370517    
+  Ms(A) =   2/2  IRREP(A) =  8  len =          290  norm = 0.222559    
+ norm (MS-Block) =   0.973168470371025     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         7820  norm = 0.997803    
+  Ms(A) =   0/2  IRREP(A) =  2  len =         3720  norm = 0.693446    
+  Ms(A) =   0/2  IRREP(A) =  3  len =         3720  norm = 0.693446    
+  Ms(A) =   0/2  IRREP(A) =  4  len =         1160  norm = 0.428935    
+  Ms(A) =   0/2  IRREP(A) =  5  len =         7360  norm = 0.956319    
+  Ms(A) =   0/2  IRREP(A) =  6  len =         3720  norm = 0.668683    
+  Ms(A) =   0/2  IRREP(A) =  7  len =         3720  norm = 0.668683    
+  Ms(A) =   0/2  IRREP(A) =  8  len =         1160  norm = 0.404260    
+ norm (MS-Block) =    2.02819553721014     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          920  norm = 0.331226    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          930  norm = 0.362452    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =          930  norm = 0.362452    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =          290  norm = 0.208118    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =         1840  norm = 0.455184    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =          930  norm = 0.370517    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =          930  norm = 0.370517    
+  Ms(A) =  -2/2  IRREP(A) =  8  len =          290  norm = 0.222559    
+ norm (MS-Block) =   0.973168470371025     
+ total norm =    13.3426764619273     
+ My next target: DIA
+ Rule: CLONE_OPERATOR
+ My next target: DIAG1SxxM00
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: B_INV
+ Rule: CLONE_OPERATOR
+ My next target: R12-INT
+ Rule: DEF_R12INT
+ ===================
+  set_genop at work
+ ===================
+  min_rank, max_rank:            2           2
+  min_xrank, max_xrank:           -2           2
+  ncadiff:            0
+  hpvx_mnmx:  0  4   0  2   0  0   0  2
+  hpvxca_mnmx:  0  2   0  2   0  0   0  2
+                2  2   0  0   0  0   0  0
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ masked by:
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ Number of occupation classes for R12-INT:    6
+    1  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    3  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    4  /  1  0  0  1\   1  1   0  0   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    5  /  0  1  0  1\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    6  /  0  0  0  2\   0  0   0  0   2  2      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: R12-GEM
+ Rule: DEF_ME_LIST
+ set_new_graph:            6
+ Rule: IMPORT
+ size of buffer:           16           3          48
+ read in finished
+ size of buffer:          260           3         780
+ read in finished
+ size of buffer:         1952           3        5856
+ read in finished
+ 
+ imported list: R12-GEM
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.285867    
+ norm (MS-Block) =   0.285866923786137     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    2 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.996463E-01
+ norm (MS-Block) =   9.964626979637846E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    3 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.947144E-01
+ norm (MS-Block) =   9.471436860199860E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    4 len =           60
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           60  norm = 0.158806E-01
+ norm (MS-Block) =   1.588057725159052E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    5 len =          460
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =          460  norm = 0.236517E-01
+ norm (MS-Block) =   2.365166549161584E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    6 len =         3738
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =         3738  norm = 0.276168E-01
+ norm (MS-Block) =   2.761677841394878E-002
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   0.319678540542360     
+ My next target: G
+ Rule: DEF_R12INT
+ ===================
+  set_genop at work
+ ===================
+  min_rank, max_rank:            2           2
+  min_xrank, max_xrank:           -2           2
+  ncadiff:            0
+  hpvx_mnmx:  0  4   0  4   0  0   0  1
+  hpvxca_mnmx:  0  2   0  2   0  0   0  1
+                0  2   0  2   0  0   0  0
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ masked by:
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ Number of occupation classes for G:   15
+    1  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  1  1  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
+    3  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  0  2  0  0/   0  0   2  2   0  0      0  0   0  0   0  0
+    4  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    5  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  1  1  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
+    6  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  0  2  0  0/   0  0   2  2   0  0      0  0   0  0   0  0
+    7  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    8  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  1  1  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
+    9  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  0  2  0  0/   0  0   2  2   0  0      0  0   0  0   0  0
+   10  /  1  0  0  1\   1  1   0  0   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+   11  /  1  0  0  1\   1  1   0  0   1  1      0  0   0  0   0  0
+       \  1  1  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
+   12  /  1  0  0  1\   1  1   0  0   1  1      0  0   0  0   0  0
+       \  0  2  0  0/   0  0   2  2   0  0      0  0   0  0   0  0
+   13  /  0  1  0  1\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+   14  /  0  1  0  1\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  1  1  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
+   15  /  0  1  0  1\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  0  2  0  0/   0  0   2  2   0  0      0  0   0  0   0  0
+ My next target: G-X
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:          143           3         429
+ read in finished
+ size of buffer:         5152           3       15456
+ read in finished
+ 
+ imported list: G-X
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.658322    
+ norm (MS-Block) =   0.658321605828193     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    2 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.235666    
+ norm (MS-Block) =   0.235666082370562     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    3 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.295617    
+ norm (MS-Block) =   0.295616601424841     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    4 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.235666    
+ norm (MS-Block) =   0.235666082370562     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    5 len =          102
+  Ms(A) =   2/2  IRREP(A) =  1  len =            4  norm = 0.660387    
+  Ms(A) =   2/2  IRREP(A) =  2  len =            1  norm = 0.526223    
+  Ms(A) =   2/2  IRREP(A) =  3  len =            1  norm = 0.526223    
+  Ms(A) =   2/2  IRREP(A) =  5  len =            9  norm = 0.839252    
+  Ms(A) =   2/2  IRREP(A) =  6  len =            1  norm = 0.541752    
+  Ms(A) =   2/2  IRREP(A) =  7  len =            1  norm = 0.541752    
+ norm (MS-Block) =    1.51038606827265     
+  Ms(A) =   0/2  IRREP(A) =  1  len =           16  norm =  1.11283    
+  Ms(A) =   0/2  IRREP(A) =  2  len =            4  norm = 0.933706    
+  Ms(A) =   0/2  IRREP(A) =  3  len =            4  norm = 0.933706    
+  Ms(A) =   0/2  IRREP(A) =  5  len =           36  norm =  1.43549    
+  Ms(A) =   0/2  IRREP(A) =  6  len =            4  norm = 0.848713    
+  Ms(A) =   0/2  IRREP(A) =  7  len =            4  norm = 0.848713    
+ norm (MS-Block) =    2.54622804614379     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =            4  norm = 0.660387    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =            1  norm = 0.526223    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =            1  norm = 0.526223    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =            9  norm = 0.839252    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =            1  norm = 0.541752    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =            1  norm = 0.541752    
+ norm (MS-Block) =    1.51038606827265     
+  block no.    6 len =          348
+  Ms(A) =   2/2  IRREP(A) =  1  len =            8  norm = 0.156746    
+  Ms(A) =   2/2  IRREP(A) =  2  len =            5  norm = 0.143920    
+  Ms(A) =   2/2  IRREP(A) =  3  len =            5  norm = 0.143920    
+  Ms(A) =   2/2  IRREP(A) =  5  len =           24  norm = 0.222821    
+  Ms(A) =   2/2  IRREP(A) =  6  len =            5  norm = 0.115330    
+  Ms(A) =   2/2  IRREP(A) =  7  len =            5  norm = 0.115330    
+ norm (MS-Block) =   0.377155857841553     
+  Ms(A) =   0/2  IRREP(A) =  1  len =           68  norm = 0.400838    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           20  norm = 0.302857    
+  Ms(A) =   0/2  IRREP(A) =  3  len =           20  norm = 0.302857    
+  Ms(A) =   0/2  IRREP(A) =  5  len =           96  norm = 0.534719    
+  Ms(A) =   0/2  IRREP(A) =  6  len =           20  norm = 0.287862    
+  Ms(A) =   0/2  IRREP(A) =  7  len =           20  norm = 0.287862    
+ norm (MS-Block) =   0.892059474021807     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =            8  norm = 0.156746    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =            5  norm = 0.143920    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =            5  norm = 0.143920    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =           24  norm = 0.222821    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =            5  norm = 0.115330    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =            5  norm = 0.115330    
+ norm (MS-Block) =   0.377155857841553     
+  block no.    7 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.295617    
+ norm (MS-Block) =   0.295616601424841     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    8 len =          348
+  Ms(A) =   2/2  IRREP(A) =  1  len =            8  norm = 0.156746    
+  Ms(A) =   2/2  IRREP(A) =  2  len =            5  norm = 0.143920    
+  Ms(A) =   2/2  IRREP(A) =  3  len =            5  norm = 0.143920    
+  Ms(A) =   2/2  IRREP(A) =  5  len =           24  norm = 0.222821    
+  Ms(A) =   2/2  IRREP(A) =  6  len =            5  norm = 0.115330    
+  Ms(A) =   2/2  IRREP(A) =  7  len =            5  norm = 0.115330    
+ norm (MS-Block) =   0.377155857841553     
+  Ms(A) =   0/2  IRREP(A) =  1  len =           68  norm = 0.400838    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           20  norm = 0.302857    
+  Ms(A) =   0/2  IRREP(A) =  3  len =           20  norm = 0.302857    
+  Ms(A) =   0/2  IRREP(A) =  5  len =           96  norm = 0.534719    
+  Ms(A) =   0/2  IRREP(A) =  6  len =           20  norm = 0.287862    
+  Ms(A) =   0/2  IRREP(A) =  7  len =           20  norm = 0.287862    
+ norm (MS-Block) =   0.892059474021807     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =            8  norm = 0.156746    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =            5  norm = 0.143920    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =            5  norm = 0.143920    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =           24  norm = 0.222821    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =            5  norm = 0.115330    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =            5  norm = 0.115330    
+ norm (MS-Block) =   0.377155857841553     
+  block no.    9 len =         1353
+  Ms(A) =   2/2  IRREP(A) =  1  len =           16  norm = 0.868313    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           25  norm =  1.13151    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           25  norm =  1.13151    
+  Ms(A) =   2/2  IRREP(A) =  4  len =            4  norm = 0.807220    
+  Ms(A) =   2/2  IRREP(A) =  5  len =           64  norm =  1.27248    
+  Ms(A) =   2/2  IRREP(A) =  6  len =           25  norm =  1.15970    
+  Ms(A) =   2/2  IRREP(A) =  7  len =           25  norm =  1.15970    
+  Ms(A) =   2/2  IRREP(A) =  8  len =            4  norm = 0.798688    
+ norm (MS-Block) =    2.98548540172358     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          289  norm =  2.42598    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          100  norm =  1.73528    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          100  norm =  1.73528    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           16  norm =  1.21774    
+  Ms(A) =   0/2  IRREP(A) =  5  len =          256  norm =  2.23630    
+  Ms(A) =   0/2  IRREP(A) =  6  len =          100  norm =  1.72415    
+  Ms(A) =   0/2  IRREP(A) =  7  len =          100  norm =  1.72415    
+  Ms(A) =   0/2  IRREP(A) =  8  len =           16  norm =  1.17985    
+ norm (MS-Block) =    5.07238071638310     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           16  norm = 0.868313    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           25  norm =  1.13151    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           25  norm =  1.13151    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =            4  norm = 0.807220    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =           64  norm =  1.27248    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =           25  norm =  1.15970    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =           25  norm =  1.15970    
+  Ms(A) =  -2/2  IRREP(A) =  8  len =            4  norm = 0.798688    
+ norm (MS-Block) =    2.98548540172358     
+  block no.   10 len =           60
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           60  norm = 0.761947E-01
+ norm (MS-Block) =   7.619467089348779E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.   11 len =         1380
+  Ms(A) =   2/2  IRREP(A) =  1  len =           60  norm = 0.152557    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.902281E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =           20  norm = 0.902281E-01
+  Ms(A) =   2/2  IRREP(A) =  5  len =           90  norm = 0.155431    
+  Ms(A) =   2/2  IRREP(A) =  6  len =           20  norm = 0.912518E-01
+  Ms(A) =   2/2  IRREP(A) =  7  len =           20  norm = 0.912518E-01
+ norm (MS-Block) =   0.283493140292906     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          240  norm = 0.307375    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.176401    
+  Ms(A) =   0/2  IRREP(A) =  3  len =           80  norm = 0.176401    
+  Ms(A) =   0/2  IRREP(A) =  5  len =          360  norm = 0.277757    
+  Ms(A) =   0/2  IRREP(A) =  6  len =           80  norm = 0.160076    
+  Ms(A) =   0/2  IRREP(A) =  7  len =           80  norm = 0.160076    
+ norm (MS-Block) =   0.533958752063477     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           60  norm = 0.152557    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.902281E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           20  norm = 0.902281E-01
+  Ms(A) =  -2/2  IRREP(A) =  5  len =           90  norm = 0.155431    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =           20  norm = 0.912518E-01
+  Ms(A) =  -2/2  IRREP(A) =  7  len =           20  norm = 0.912518E-01
+ norm (MS-Block) =   0.283493140292906     
+  block no.   12 len =         5412
+  Ms(A) =   2/2  IRREP(A) =  1  len =          120  norm = 0.132831    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          100  norm = 0.877666E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =          100  norm = 0.877666E-01
+  Ms(A) =   2/2  IRREP(A) =  4  len =           26  norm = 0.562767E-16
+  Ms(A) =   2/2  IRREP(A) =  5  len =          240  norm = 0.116203    
+  Ms(A) =   2/2  IRREP(A) =  6  len =          100  norm = 0.707092E-01
+  Ms(A) =   2/2  IRREP(A) =  7  len =          100  norm = 0.707092E-01
+  Ms(A) =   2/2  IRREP(A) =  8  len =           26  norm = 0.581375E-01
+ norm (MS-Block) =   0.244811122250634     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         1020  norm = 0.490371    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          400  norm = 0.310057    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          400  norm = 0.310057    
+  Ms(A) =   0/2  IRREP(A) =  4  len =          104  norm = 0.233022    
+  Ms(A) =   0/2  IRREP(A) =  5  len =          960  norm = 0.371431    
+  Ms(A) =   0/2  IRREP(A) =  6  len =          400  norm = 0.233977    
+  Ms(A) =   0/2  IRREP(A) =  7  len =          400  norm = 0.233977    
+  Ms(A) =   0/2  IRREP(A) =  8  len =          104  norm = 0.196327    
+ norm (MS-Block) =   0.879220568881650     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          120  norm = 0.132831    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          100  norm = 0.877666E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =          100  norm = 0.877666E-01
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           26  norm = 0.562767E-16
+  Ms(A) =  -2/2  IRREP(A) =  5  len =          240  norm = 0.116203    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =          100  norm = 0.707092E-01
+  Ms(A) =  -2/2  IRREP(A) =  7  len =          100  norm = 0.707092E-01
+  Ms(A) =  -2/2  IRREP(A) =  8  len =           26  norm = 0.581375E-01
+ norm (MS-Block) =   0.244811122250634     
+  block no.   13 len =          460
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =          460  norm = 0.133711    
+ norm (MS-Block) =   0.133710703977964     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.   14 len =        11364
+  Ms(A) =   2/2  IRREP(A) =  1  len =          460  norm = 0.174814    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          186  norm = 0.138368    
+  Ms(A) =   2/2  IRREP(A) =  3  len =          186  norm = 0.138368    
+  Ms(A) =   2/2  IRREP(A) =  5  len =          690  norm = 0.236902    
+  Ms(A) =   2/2  IRREP(A) =  6  len =          186  norm = 0.168097    
+  Ms(A) =   2/2  IRREP(A) =  7  len =          186  norm = 0.168097    
+ norm (MS-Block) =   0.426012451840168     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         1840  norm = 0.425901    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          744  norm = 0.340636    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          744  norm = 0.340636    
+  Ms(A) =   0/2  IRREP(A) =  5  len =         2760  norm = 0.534841    
+  Ms(A) =   0/2  IRREP(A) =  6  len =          744  norm = 0.341720    
+  Ms(A) =   0/2  IRREP(A) =  7  len =          744  norm = 0.341720    
+ norm (MS-Block) =   0.965948858337566     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          460  norm = 0.174814    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          186  norm = 0.138368    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =          186  norm = 0.138368    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =          690  norm = 0.236902    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =          186  norm = 0.168097    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =          186  norm = 0.168097    
+ norm (MS-Block) =   0.426012451840168     
+  block no.   15 len =        46500
+  Ms(A) =   2/2  IRREP(A) =  1  len =          920  norm = 0.331226    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          930  norm = 0.362452    
+  Ms(A) =   2/2  IRREP(A) =  3  len =          930  norm = 0.362452    
+  Ms(A) =   2/2  IRREP(A) =  4  len =          290  norm = 0.208118    
+  Ms(A) =   2/2  IRREP(A) =  5  len =         1840  norm = 0.455184    
+  Ms(A) =   2/2  IRREP(A) =  6  len =          930  norm = 0.370517    
+  Ms(A) =   2/2  IRREP(A) =  7  len =          930  norm = 0.370517    
+  Ms(A) =   2/2  IRREP(A) =  8  len =          290  norm = 0.222559    
+ norm (MS-Block) =   0.973168470371025     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         7820  norm = 0.997803    
+  Ms(A) =   0/2  IRREP(A) =  2  len =         3720  norm = 0.693446    
+  Ms(A) =   0/2  IRREP(A) =  3  len =         3720  norm = 0.693446    
+  Ms(A) =   0/2  IRREP(A) =  4  len =         1160  norm = 0.428935    
+  Ms(A) =   0/2  IRREP(A) =  5  len =         7360  norm = 0.956319    
+  Ms(A) =   0/2  IRREP(A) =  6  len =         3720  norm = 0.668683    
+  Ms(A) =   0/2  IRREP(A) =  7  len =         3720  norm = 0.668683    
+  Ms(A) =   0/2  IRREP(A) =  8  len =         1160  norm = 0.404260    
+ norm (MS-Block) =    2.02819553721014     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          920  norm = 0.331226    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          930  norm = 0.362452    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =          930  norm = 0.362452    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =          290  norm = 0.208118    
+  Ms(A) =  -2/2  IRREP(A) =  5  len =         1840  norm = 0.455184    
+  Ms(A) =  -2/2  IRREP(A) =  6  len =          930  norm = 0.370517    
+  Ms(A) =  -2/2  IRREP(A) =  7  len =          930  norm = 0.370517    
+  Ms(A) =  -2/2  IRREP(A) =  8  len =          290  norm = 0.222559    
+ norm (MS-Block) =   0.973168470371025     
+ total norm =    8.13308174713090     
+ My next target: TTR_COM
+ Rule: DEF_R12INT
+ ===================
+  set_genop at work
+ ===================
+  min_rank, max_rank:            2           2
+  min_xrank, max_xrank:           -2           2
+  ncadiff:            0
+  hpvx_mnmx:  0  4   0  2   0  0   0  1
+  hpvxca_mnmx:  0  2   0  2   0  0   0  1
+                2  2   0  0   0  0   0  0
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ masked by:
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ Number of occupation classes for TTR_COM:    5
+    1  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    3  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    4  /  1  0  0  1\   1  1   0  0   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    5  /  0  1  0  1\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: TTR-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:           16           6          96
+ read in finished
+ size of buffer:          260           6        1560
+ read in finished
+ 
+ imported list: TTR-INT
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm =  0.00000    
+ norm (MS-Block) =   0.000000000000000E+000
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    2 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.897456E-01
+ norm (MS-Block) =   8.974563003776963E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    3 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.222489    
+ norm (MS-Block) =   0.222489464815165     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    4 len =           60
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           60  norm = 0.717801E-01
+ norm (MS-Block) =   7.178006298025681E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    5 len =          460
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =          460  norm = 0.142517    
+ norm (MS-Block) =   0.142516861868313     
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   0.288130653389840     
+ My next target: R.R
+ Rule: CLONE_OPERATOR
+ My next target: RSQ-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:           16           3          48
+ read in finished
+ 
+ imported list: RSQ-INT
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.102232    
+ norm (MS-Block) =   0.102231845601259     
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   0.102231845601259     
+ My next target: DEF-V-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-X-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-B-INTER
+ Rule: DEF_ME_LIST
+ My next target: G.R12
+ Rule: CLONE_OPERATOR
+ My next target: VINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ My next target: G.R-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:           16           3          48
+ read in finished
+ 
+ imported list: G.R-INT
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.248278    
+ norm (MS-Block) =   0.248277677675792     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    2 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.148863    
+ norm (MS-Block) =   0.148863167277906     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    3 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.208456    
+ norm (MS-Block) =   0.208456252879637     
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   0.356729669594097     
+ My next target: VINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           21
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1L(MPR12)   1   1                  
+    2       H   1  46                H0
+    3     R12   1   2                  
+    4       T   1   2                  
+    5    TBAR   1   2                  
+    6      T'   1   1                  
+    7   TBAR'   1   1                  
+    8       V   2   3           V-INTER
+    9       B   2   1           B-INTER
+   10       X   2   1           X-INTER
+   11   C-INT   1   1                  
+   12E(MPR12)   1   1                  
+   13     OMG   1   2                  
+   14 OMG-R12   2   1                  
+   15     DIA   1   2       DIAG1SxxM00
+   16   B_INV   2   1                  
+   17 R12-INT   1   6           R12-GEM
+   18       G   1  15               G-X
+   19 TTR_COM   1   5           TTR-INT
+   20     R.R   2   1           RSQ-INT
+   21   G.R12   2   3           G.R-INT
+ ----------------------------------------
+ Number of lists defined:           10
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0       133631        H                    H0_list.da
+    2     DIAG1SxxM00  1  0           21      DIA           DIAG1SxxM00_list.da
+    3         R12-GEM  1  0         4280  R12-INT               R12-GEM_list.da
+    4             G-X  1  0        67370        G                   G-X_list.da
+    5         TTR-INT  1  0          542  TTR_COM               TTR-INT_list.da
+    6         RSQ-INT  1  0            1      R.R               RSQ-INT_list.da
+    7         V-INTER  1  0           22        V               V-INTER_list.da
+    8         X-INTER  1  0            1        X               X-INTER_list.da
+    9         B-INTER  1  0            1        B               B-INTER_list.da
+   10         G.R-INT  1  0           22    G.R12               G.R-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- VINT_R12_CABS
+ read           16  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contraction:  H^ 2 P^ 4 V^ 0 X^ 0
+ Largest intermediate      :  H^ 2 P^ 2 V^ 0 X^ 0
+ My next target: XINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ My next target: XINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           21
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1L(MPR12)   1   1                  
+    2       H   1  46                H0
+    3     R12   1   2                  
+    4       T   1   2                  
+    5    TBAR   1   2                  
+    6      T'   1   1                  
+    7   TBAR'   1   1                  
+    8       V   2   3           V-INTER
+    9       B   2   1           B-INTER
+   10       X   2   1           X-INTER
+   11   C-INT   1   1                  
+   12E(MPR12)   1   1                  
+   13     OMG   1   2                  
+   14 OMG-R12   2   1                  
+   15     DIA   1   2       DIAG1SxxM00
+   16   B_INV   2   1                  
+   17 R12-INT   1   6           R12-GEM
+   18       G   1  15               G-X
+   19 TTR_COM   1   5           TTR-INT
+   20     R.R   2   1           RSQ-INT
+   21   G.R12   2   3           G.R-INT
+ ----------------------------------------
+ Number of lists defined:           10
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0       133631        H                    H0_list.da
+    2     DIAG1SxxM00  1  0           21      DIA           DIAG1SxxM00_list.da
+    3         R12-GEM  1  0         4280  R12-INT               R12-GEM_list.da
+    4             G-X  1  0        67370        G                   G-X_list.da
+    5         TTR-INT  1  0          542  TTR_COM               TTR-INT_list.da
+    6         RSQ-INT  1  0            1      R.R               RSQ-INT_list.da
+    7         V-INTER  1  0           22        V               V-INTER_list.da
+    8         X-INTER  1  0            1        X               X-INTER_list.da
+    9         B-INTER  1  0            1        B               B-INTER_list.da
+   10         G.R-INT  1  0           22    G.R12               G.R-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- XINT_R12_CABS
+ read            6  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contraction:  H^ 4 P^ 2 V^ 0 X^ 0
+ Largest intermediate      :  H^ 4 P^ 0 V^ 0 X^ 0
+ My next target: RTTR_COM
+ Rule: DEF_R12INTERM
+ -------------
+  set_r12intm 
+ -------------
+ Intermediate: RTTR_COM
+ generated: 
+    1  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ formal:  F
+ My next target: R12BAR
+ Rule: DEF_R12INT
+ ===================
+  set_genop at work
+ ===================
+  min_rank, max_rank:            2           2
+  min_xrank, max_xrank:           -2           2
+  ncadiff:            0
+  hpvx_mnmx:  0  4   0  2   0  0   0  1
+  hpvxca_mnmx:  0  2   0  2   0  0   0  1
+                2  2   0  0   0  0   0  0
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ masked by:
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ Number of occupation classes for R12BAR:    5
+    1  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    3  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    4  /  1  0  0  1\   1  1   0  0   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    5  /  0  1  0  1\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: R12TLD
+ Rule: CLONE_OPERATOR
+ My next target: R.RBAR
+ Rule: CLONE_OPERATOR
+ My next target: R12BRV
+ Rule: DEF_R12INT
+ ===================
+  set_genop at work
+ ===================
+  min_rank, max_rank:            2           2
+  min_xrank, max_xrank:           -2           2
+  ncadiff:            0
+  hpvx_mnmx:  0  4   0  2   0  0   0  1
+  hpvxca_mnmx:  0  2   0  2   0  0   0  1
+                2  2   0  0   0  0   0  0
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ masked by:
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ Number of occupation classes for R12BRV:    5
+    1  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    3  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    4  /  1  0  0  1\   1  1   0  0   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    5  /  0  1  0  1\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: R12TLD-GEM
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:           16          12         192
+ read in finished
+ size of buffer:          260          12        3120
+ read in finished
+ size of buffer:         1952          12       23424
+ read in finished
+ 
+ imported list: R12TLD-GEM
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.401005    
+ norm (MS-Block) =   0.401005301119066     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    2 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.152563    
+ norm (MS-Block) =   0.152562512379379     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    3 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.411578E-01
+ norm (MS-Block) =   4.115781690966929E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    4 len =           60
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           60  norm = 0.414956E-01
+ norm (MS-Block) =   4.149559046895454E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    5 len =          460
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =          460  norm = 0.150785E-01
+ norm (MS-Block) =   1.507849305220297E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    6 len =         3738
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =         3738  norm = 0.456174E-02
+ norm (MS-Block) =   4.561737426394780E-003
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   0.433295040395469     
+ My next target: R12BAR-GEM
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:           16          12         192
+ read in finished
+ size of buffer:          260          12        3120
+ read in finished
+ 
+ imported list: R12BAR-GEM
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.626302E-01
+ norm (MS-Block) =   6.263021554007367E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    2 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.766527E-01
+ norm (MS-Block) =   7.665270209616128E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    3 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.280833E-01
+ norm (MS-Block) =   2.808331473533875E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    4 len =           60
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           60  norm = 0.413110E-01
+ norm (MS-Block) =   4.131104959467222E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    5 len =          460
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =          460  norm = 0.233300E-01
+ norm (MS-Block) =   2.333003207567436E-002
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   0.113303779367806     
+ My next target: RSQBAR-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:           16          12         192
+ read in finished
+ 
+ imported list: RSQBAR-INT
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.280917E-01
+ norm (MS-Block) =   2.809165317034649E-002
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   2.809165317034649E-002
+ My next target: R12+BAR
+ Rule: DEF_R12INT
+ ===================
+  set_genop at work
+ ===================
+  min_rank, max_rank:            2           2
+  min_xrank, max_xrank:           -2           2
+  ncadiff:            0
+  hpvx_mnmx:  0  4   0  2   0  0   0  1
+  hpvxca_mnmx:  0  2   0  2   0  0   0  1
+                2  2   0  0   0  0   0  0
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ masked by:
+ C   0  2   0  2   0  2
+ A   0  2   0  2   0  2
+ Number of occupation classes for R12+BAR:    5
+    1  /  2  0  0  0\   2  2   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    3  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    4  /  1  0  0  1\   1  1   0  0   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    5  /  0  1  0  1\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: R12BAR+-GEM
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:           16          12         192
+ read in finished
+ size of buffer:          260          12        3120
+ read in finished
+ 
+ imported list: R12BAR+-GEM
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.626302E-01
+ norm (MS-Block) =   6.263021554007375E-002
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    2 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.162679    
+ norm (MS-Block) =   0.162679118045253     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    3 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.243192    
+ norm (MS-Block) =   0.243192446472676     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    4 len =           60
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           60  norm = 0.109299    
+ norm (MS-Block) =   0.109298524234242     
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    5 len =          460
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =          460  norm = 0.162879    
+ norm (MS-Block) =   0.162879342405784     
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   0.357778497048477     
+ My next target: R12BRV-GEM
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:           16          12         192
+ read in finished
+ size of buffer:          260          12        3120
+ read in finished
+ 
+ imported list: R12BRV-GEM
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.584011E-12
+ norm (MS-Block) =   5.840114749562349E-013
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    2 len =            4
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            4  norm = 0.190827E-11
+ norm (MS-Block) =   1.908271926826287E-012
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    3 len =           17
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           17  norm = 0.594473E-12
+ norm (MS-Block) =   5.944727580894435E-013
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    4 len =           60
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =           60  norm =  0.00000    
+ norm (MS-Block) =   0.000000000000000E+000
+ norm (MS-Block) =   0.000000000000000E+000
+  block no.    5 len =          460
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =          460  norm =  0.00000    
+ norm (MS-Block) =   0.000000000000000E+000
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   2.082298972219008E-012
+ My next target: DEF-C-INTER
+ Rule: DEF_ME_LIST
+ My next target: BINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ My next target: RTTR-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:           16           3          48
+ read in finished
+ 
+ imported list: RTTR-INT
+  block no.    1 len =            1
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.368365E-01
+ norm (MS-Block) =   3.683645719192017E-002
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   3.683645719192017E-002
+ My next target: BINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           27
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1L(MPR12)   1   1                  
+    2       H   1  46                H0
+    3     R12   1   2                  
+    4       T   1   2                  
+    5    TBAR   1   2                  
+    6      T'   1   1                  
+    7   TBAR'   1   1                  
+    8       V   2   3           V-INTER
+    9       B   2   1           B-INTER
+   10       X   2   1           X-INTER
+   11   C-INT   1   1           C-INTER
+   12E(MPR12)   1   1                  
+   13     OMG   1   2                  
+   14 OMG-R12   2   1                  
+   15     DIA   1   2       DIAG1SxxM00
+   16   B_INV   2   1                  
+   17 R12-INT   1   6           R12-GEM
+   18       G   1  15               G-X
+   19 TTR_COM   1   5           TTR-INT
+   20     R.R   2   1           RSQ-INT
+   21   G.R12   2   3           G.R-INT
+   22RTTR_COM   2   1          RTTR-INT
+   23  R12BAR   1   5        R12BAR-GEM
+   24  R12TLD   1   6        R12TLD-GEM
+   25  R.RBAR   2   1        RSQBAR-INT
+   26  R12BRV   1   5        R12BRV-GEM
+   27 R12+BAR   1   5       R12BAR+-GEM
+ ----------------------------------------
+ Number of lists defined:           17
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0       133631        H                    H0_list.da
+    2     DIAG1SxxM00  1  0           21      DIA           DIAG1SxxM00_list.da
+    3         R12-GEM  1  0         4280  R12-INT               R12-GEM_list.da
+    4             G-X  1  0        67370        G                   G-X_list.da
+    5         TTR-INT  1  0          542  TTR_COM               TTR-INT_list.da
+    6         RSQ-INT  1  0            1      R.R               RSQ-INT_list.da
+    7         V-INTER  1  0           22        V               V-INTER_list.da
+    8         X-INTER  1  0            1        X               X-INTER_list.da
+    9         B-INTER  1  0            1        B               B-INTER_list.da
+   10         G.R-INT  1  0           22    G.R12               G.R-INT_list.da
+   11      R12TLD-GEM  1  0         4280   R12TLD            R12TLD-GEM_list.da
+   12      R12BAR-GEM  1  0          542   R12BAR            R12BAR-GEM_list.da
+   13      RSQBAR-INT  1  0            1   R.RBAR            RSQBAR-INT_list.da
+   14     R12BAR+-GEM  1  0          542  R12+BAR           R12BAR+-GEM_list.da
+   15      R12BRV-GEM  1  0          542   R12BRV            R12BRV-GEM_list.da
+   16         C-INTER  1  0           17    C-INT               C-INTER_list.da
+   17        RTTR-INT  1  0            1 RTTR_COM              RTTR-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- BINT_R12_CABS
+ read           17  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contraction:  H^ 4 P^ 2 V^ 0 X^ 0
+ Largest intermediate      :  H^ 4 P^ 0 V^ 0 X^ 0
+ My next target: CINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ approx = B
+ C: F.R12 contribution:
+ [ADD]          11
+ +++ contraction info +++
+  name (index) and block of result: C-INT  (          11 )           1
+  factor:   -1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 H           5    0  1  0  0
+                      0  1  0  0
+ v02 R12-INT     3    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  1  0  0
+                     2  0  0  0
+ [END]
+ My next target: CINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           27
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1L(MPR12)   1   1                  
+    2       H   1  46                H0
+    3     R12   1   2                  
+    4       T   1   2                  
+    5    TBAR   1   2                  
+    6      T'   1   1                  
+    7   TBAR'   1   1                  
+    8       V   2   3           V-INTER
+    9       B   2   1           B-INTER
+   10       X   2   1           X-INTER
+   11   C-INT   1   1           C-INTER
+   12E(MPR12)   1   1                  
+   13     OMG   1   2                  
+   14 OMG-R12   2   1                  
+   15     DIA   1   2       DIAG1SxxM00
+   16   B_INV   2   1                  
+   17 R12-INT   1   6           R12-GEM
+   18       G   1  15               G-X
+   19 TTR_COM   1   5           TTR-INT
+   20     R.R   2   1           RSQ-INT
+   21   G.R12   2   3           G.R-INT
+   22RTTR_COM   2   1          RTTR-INT
+   23  R12BAR   1   5        R12BAR-GEM
+   24  R12TLD   1   6        R12TLD-GEM
+   25  R.RBAR   2   1        RSQBAR-INT
+   26  R12BRV   1   5        R12BRV-GEM
+   27 R12+BAR   1   5       R12BAR+-GEM
+ ----------------------------------------
+ Number of lists defined:           17
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0       133631        H                    H0_list.da
+    2     DIAG1SxxM00  1  0           21      DIA           DIAG1SxxM00_list.da
+    3         R12-GEM  1  0         4280  R12-INT               R12-GEM_list.da
+    4             G-X  1  0        67370        G                   G-X_list.da
+    5         TTR-INT  1  0          542  TTR_COM               TTR-INT_list.da
+    6         RSQ-INT  1  0            1      R.R               RSQ-INT_list.da
+    7         V-INTER  1  0           22        V               V-INTER_list.da
+    8         X-INTER  1  0            1        X               X-INTER_list.da
+    9         B-INTER  1  0            1        B               B-INTER_list.da
+   10         G.R-INT  1  0           22    G.R12               G.R-INT_list.da
+   11      R12TLD-GEM  1  0         4280   R12TLD            R12TLD-GEM_list.da
+   12      R12BAR-GEM  1  0          542   R12BAR            R12BAR-GEM_list.da
+   13      RSQBAR-INT  1  0            1   R.RBAR            RSQBAR-INT_list.da
+   14     R12BAR+-GEM  1  0          542  R12+BAR           R12BAR+-GEM_list.da
+   15      R12BRV-GEM  1  0          542   R12BRV            R12BRV-GEM_list.da
+   16         C-INTER  1  0           17    C-INT               C-INTER_list.da
+   17        RTTR-INT  1  0            1 RTTR_COM              RTTR-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- CINT_R12_CABS
+ read            5  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contraction:  H^ 2 P^ 3 V^ 0 X^ 0
+ Largest intermediate      :  H^ 2 P^ 2 V^ 0 X^ 0
+ My next target: EVAL-R12-INTER
+ Rule: EVALUATE
+ read           16  entries
+ Rule: EVALUATE
+ read            6  entries
+ Rule: EVALUATE
+ read            5  entries
+ Rule: EVALUATE
+ read           17  entries
+ My next target: BINV
+ Rule: DEF_ME_LIST
+ Rule: INVERT
+ ====================
+  Operator inversion 
+ ====================
+ To be inverted: B-INTER
+ The inverse: BINV
+ eigen_val:   8.348891556328916E-003
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DEF-O0
+ Rule: DEF_ME_LIST
+ My next target: DEF-T0
+ Rule: DEF_ME_LIST
+ My next target: DEF-OMG0-R12
+ Rule: DEF_ME_LIST
+ My next target: DEF-T0'-R12
+ Rule: DEF_ME_LIST
+ My next target: DEF-E0(MPR12)
+ Rule: DEF_ME_LIST
+ My next target: MP-R12-OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           27
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1L(MPR12)   1   1                  
+    2       H   1  46                H0
+    3     R12   1   2                  
+    4       T   1   2                T0
+    5    TBAR   1   2                  
+    6      T'   1   1           T0'-R12
+    7   TBAR'   1   1                  
+    8       V   2   3           V-INTER
+    9       B   2   1           B-INTER
+   10       X   2   1           X-INTER
+   11   C-INT   1   1           C-INTER
+   12E(MPR12)   1   1         E0(MPR12)
+   13     OMG   1   2                O0
+   14 OMG-R12   2   1          OMG0-R12
+   15     DIA   1   2       DIAG1SxxM00
+   16   B_INV   2   1              BINV
+   17 R12-INT   1   6           R12-GEM
+   18       G   1  15               G-X
+   19 TTR_COM   1   5           TTR-INT
+   20     R.R   2   1           RSQ-INT
+   21   G.R12   2   3           G.R-INT
+   22RTTR_COM   2   1          RTTR-INT
+   23  R12BAR   1   5        R12BAR-GEM
+   24  R12TLD   1   6        R12TLD-GEM
+   25  R.RBAR   2   1        RSQBAR-INT
+   26  R12BRV   1   5        R12BRV-GEM
+   27 R12+BAR   1   5       R12BAR+-GEM
+ ----------------------------------------
+ Number of lists defined:           23
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0       133631        H                    H0_list.da
+    2     DIAG1SxxM00  1  0           21      DIA           DIAG1SxxM00_list.da
+    3         R12-GEM  1  0         4280  R12-INT               R12-GEM_list.da
+    4             G-X  1  0        67370        G                   G-X_list.da
+    5         TTR-INT  1  0          542  TTR_COM               TTR-INT_list.da
+    6         RSQ-INT  1  0            1      R.R               RSQ-INT_list.da
+    7         V-INTER  1  0           22        V               V-INTER_list.da
+    8         X-INTER  1  0            1        X               X-INTER_list.da
+    9         B-INTER  1  0            1        B               B-INTER_list.da
+   10         G.R-INT  1  0           22    G.R12               G.R-INT_list.da
+   11      R12TLD-GEM  1  0         4280   R12TLD            R12TLD-GEM_list.da
+   12      R12BAR-GEM  1  0          542   R12BAR            R12BAR-GEM_list.da
+   13      RSQBAR-INT  1  0            1   R.RBAR            RSQBAR-INT_list.da
+   14     R12BAR+-GEM  1  0          542  R12+BAR           R12BAR+-GEM_list.da
+   15      R12BRV-GEM  1  0          542   R12BRV            R12BRV-GEM_list.da
+   16         C-INTER  1  0           17    C-INT               C-INTER_list.da
+   17        RTTR-INT  1  0            1 RTTR_COM              RTTR-INT_list.da
+   18            BINV  1  0            1    B_INV                  BINV_list.da
+   19              O0  1  0           21      OMG                    O0_list.da
+   20              T0  1  0           21        T                    T0_list.da
+   21        OMG0-R12  1  0            1  OMG-R12              OMG0-R12_list.da
+   22         T0'-R12  1  0            1       T'               T0'-R12_list.da
+   23       E0(MPR12)  1  0            1 E(MPR12)             E0(MPR12)_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- E0_MPR12
+ read            3  entries
+  -- OMG_T_MPR12
+ read            5  entries
+  -- OMG_C_MPR12
+ read            5  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contraction:  H^ 4 P^ 2 V^ 0 X^ 0
+ Largest intermediate      :  H^ 2 P^ 2 V^ 0 X^ 0
+ My next target: SOLVE-MPR12-GS
+ Rule: SOLVE_NLEQ
+ read           13  entries
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         30
+ Threshold for residual:      0.10E-08
+>>>  1          0.000000000000 0.2956     -.8345E-02
+>>>  2         -0.033381063541 0.1581E-01 -.2227E-03
+>>>  3         -0.033764424872 0.6881E-05 -.9360E-04
+>>>  4         -0.033852901990 0.2097E-05 0.7954E-05
+>>>  5         -0.033846014808 0.4922E-16 0.3383E-16
+ CONVERGED IN     5 ITERATIONS
+>>> final energy:         -0.033846014808 <<<
+  iopt =            2
++=============================================================================+
+  block no.    1 len =            1
+ /  2  0  0  0\/
+ \  2  0  0  0/\
++=============================================================================+
+ norm (MS-Block) =   0.000000000000000E+000
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.870444    
++-----------------------------------------------------------------------------+
+ block contains only single distribution
+ index of first element:           1
++.............................................................................+
+     1    1  1   1  1  22 22   11 11     0.8704439302    
++-----------------------------------------------------------------------------+
+ norm (MS-Block) =   0.870443930167227     
+ norm (MS-Block) =   0.000000000000000E+000
+ total norm =   0.870443930167227     
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:     191071 real(8)-words (    1.46 Mb)
+   Largest memory block:          59836 real(8)-words (    0.46 Mb)
+   Name of largest block:    graph_def.str_graphs- 6
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:      0.66 /     0.48 /     1.15 s

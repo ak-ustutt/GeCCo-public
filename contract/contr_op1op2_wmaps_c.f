@@ -353,6 +353,10 @@ c dbg
      &     call quit(1,'contr_op1op2_wmaps_c','inconsistent symmetries')
 
       if (lenop1.le.0.or.lenop2.le.0.or.lenop1op2.le.0) then
+        write(luout,*)
+     &       trim(op1%name),' ',
+     &       trim(op2%name),' ',
+     &       trim(op1op2%name)
         write(luout,*) 'lenop1, lenop2, lenop1op2: ',
      &                  lenop1, lenop2, lenop1op2
         call quit(1,'contr_op1op2_wmaps_c',

@@ -79,6 +79,7 @@ c      include 'par_formnames_gen.h'
 c dbg
 c      print *,'generated (1):'
 c      call print_form_list(luout,form_hhat,op_info)
+c      stop 'testing'
 c dbg      
       ! write to disc
 c      formula_hhat%label = label_cchhat

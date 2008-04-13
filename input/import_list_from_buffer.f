@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine import_list_from_buffer(mel,buffer_in,
      &     nauxmin,nauxmax,
+     &     fac_0,fac_ne0,
      &     iy_int,typetab,ntypes,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
@@ -29,6 +30,8 @@
       integer, intent(in) ::
      &     ntypes, iy_int(*), typetab(24)
       real(8), intent(in) ::
+     &     fac_0, fac_ne0
+      real(8), intent(in) ::
      &     buffer_in(*)
       type(strinf), intent(in) ::
      &     str_info
@@ -49,7 +52,7 @@
      &     occ(:,:,:), mostnd(:,:,:), idx_graph(:,:,:), igamorb(:),
      &     ngas_hpv(:), idx_gas(:), igas_restr(:,:,:,:,:)
       real(8) ::
-     &     abfac
+     &     abfac, gfac
       real(8), pointer ::
      &     buffer_reo(:), curblk(:)
 
@@ -147,6 +150,9 @@ c dbg
           idxms = idxms+1
 
           xchange = ms.ne.0
+
+          gfac = fac_0
+          if (ms.ne.0) gfac = fac_ne0
         
           do igam = 1, orb_info%nsym
 
@@ -274,7 +280,7 @@ c        idorb2(4) = 2*idorb(4)+idx2(idspn(4))
         if (idspn(1).ge.idspn(2)) then
           idorb2(1) = idorb(1)
           idorb2(3) = idorb(2) 
-          fac = 1d0
+          fac = gfac
 C          idx12 = idxpq(idorb(1)*2+idx1(idspn(1)),
 C     &                  idorb(2)*2+idx2(idspn(2)), ntotal*2)
 c          idx12 = (idorb(1)*2+idx1(idspn(1))-1)*ntotal*2+
@@ -282,7 +288,7 @@ c     &             idorb(2)*2+idx2(idspn(2))
         else
           idorb2(1) = idorb(2)
           idorb2(3) = idorb(1) 
-          fac = -1d0
+          fac = -gfac
 C          idx12 = idxpq(idorb(2)*2+idx1(idspn(2)),
 C     &                  idorb(1)*2+idx2(idspn(1)), ntotal*2)
 c          idx12 = (idorb(2)*2+idx1(idspn(2))-1)*ntotal*2+
@@ -352,7 +358,7 @@ c dbg
         if (idspn(1).ge.idspn(2)) then
           idorb2(1) = idorb(1)
           idorb2(3) = idorb(2) 
-          fac = 1d0
+          fac = gfac
 C          idx12 = idxpq(idorb(1)*2+idx1(idspn(1)),
 C     &                  idorb(2)*2+idx2(idspn(2)), ntotal*2)
 c          idx12 = (idorb(1)*2+idx1(idspn(1))-1)*ntotal*2+
@@ -360,7 +366,7 @@ c     &             idorb(2)*2+idx2(idspn(2))
         else
           idorb2(1) = idorb(2)
           idorb2(3) = idorb(1) 
-          fac = -1d0
+          fac = -gfac
 C          idx12 = idxpq(idorb(2)*2+idx1(idspn(2)),
 C     &                  idorb(1)*2+idx2(idspn(1)), ntotal*2)
 c          idx12 = (idorb(2)*2+idx1(idspn(2))-1)*ntotal*2+

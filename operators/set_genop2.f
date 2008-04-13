@@ -196,9 +196,9 @@
               ! check excitation
               xrank = rank_occ('X',(/c_distr,a_distr/),1)
 c dbg
-              print *,'C:',c_distr
-              print *,'A:',a_distr
-              print *,'xrank = ',xrank
+c              print *,'C:',c_distr
+c              print *,'A:',a_distr
+c              print *,'xrank = ',xrank
 c dbg
               ok = xrank.ge.min_xrank.and.xrank.le.max_xrank
               if (.not.ok) cycle a_part
@@ -237,7 +237,7 @@ c dbg
                       imaxr = min(irestr(2,igas,ica,1),
      &                    op%ihpvca_occ(hpvxgas(igas,1),ica,idx))
 c dbg
-                      print *,'igas,idiff,maxr = ',igas,idiff,imaxr
+c                      print *,'igas,idiff,maxr = ',igas,idiff,imaxr
 c dbg
                       ! not sure whether this will work in all cases:
                       if (igas.lt.gasnd) then

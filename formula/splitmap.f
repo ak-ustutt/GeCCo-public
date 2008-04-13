@@ -83,8 +83,10 @@ c dbg
       topomap_cp = topomap
       vtxmap_cp  = vtxmap
 
-      call iwrtma(vtxmap_cp,nvtx,1,nvtx,1)
-      call iwrtma(topomap_cp,nvtx,nvtx,nvtx,nvtx)
+c dbg
+c      call iwrtma(vtxmap_cp,nvtx,1,nvtx,1)
+c      call iwrtma(topomap_cp,nvtx,nvtx,nvtx,nvtx)
+c dbg
 
       do isuper = 1, nsuper_spl
         ! how may vertices (with external connections) contribute?
@@ -200,12 +202,14 @@ c dbg
       end do
       topomap_cp(ivtx_new,1:nvtx) = ivhelp(1:nvtx)
 
-      print *,'new ireo:'
-      call iwrtma(ireo,nvtx,1,nvtx,1)
-      print *,'new vtxmap:'
-      call iwrtma(vtxmap_cp,nvtx,1,nvtx,1)
-      print *,'new topomap:'
-      call iwrtma(topomap_cp,nvtx,nvtx,nvtx,nvtx)
+c dbg
+c      print *,'new ireo:'
+c      call iwrtma(ireo,nvtx,1,nvtx,1)
+c      print *,'new vtxmap:'
+c      call iwrtma(vtxmap_cp,nvtx,1,nvtx,1)
+c      print *,'new topomap:'
+c      call iwrtma(topomap_cp,nvtx,nvtx,nvtx,nvtx)
+c dbg
 
       return
       end subroutine

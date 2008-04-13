@@ -27,7 +27,8 @@
      &     orb_info
 
       integer ::
-     &     idx, jdx, ioff, ncat, nint, ansatz, ipos, idum, level
+     &     idx, jdx, ioff, ncat, nint, nrename,
+     &     ansatz, ipos, idum, level
       type(formula), pointer ::
      &     form_pnt, form0_pnt
       character(len_command_par) ::
@@ -89,21 +90,10 @@
      &       rule%parameters,rule%n_parameter_strings,
      &       title,idum,typ_str)
         ioff = rule%n_update
-
-c dbg   Testing of new setup routine.
-c        print *,'titles',title
-c        if(trim(title).eq.'R12 V-intermediate (formal definition)')then
-          call set_r12intm_formal3(form_pnt,
+        call set_r12intm_formal3(form_pnt,
      &         title,rule%labels(ioff+1),rule%labels(ioff+2),
      &         rule%n_labels-ioff-1,typ_str,
      &         op_info,orb_info)
-c        else
-c          call set_r12intm_formal(form_pnt,
-c     &         title,rule%labels(ioff+1),rule%labels(ioff+2),
-c     &         rule%n_labels-ioff-1,typ_str,
-c     &         op_info,orb_info)
-c        endif
-c dbg
 
       case(DEF_R12INTM_CABS)
         call form_parameters(+1,
@@ -148,7 +138,19 @@ c prelim
      &       nint,rule%labels(ioff+2),
      &       op_info,form_info
      &       )
-
+      case(REPLACE)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,nrename,strdum)
+        ioff = rule%n_update
+        
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_op_replace_drv(form_pnt,form0_pnt,
+     &       title,
+     &       nrename,rule%labels(ioff+2),
+     &       op_info
+     &       )
       case(INVARIANT)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

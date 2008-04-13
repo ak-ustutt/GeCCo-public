@@ -1,0 +1,16 @@
+title
+  H2/pVDZ DALTON(special) enviroment: MP2-R12/3B energy (w. GBC)
+molecule
+  H2-R12-DALTON
+input
+  MP2-R12-3B.inp
+check
+  label Number of iterations
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+check
+  label Final energy
+  find final energy: [ ]*
+  compare real 4 1e-12
+end
+

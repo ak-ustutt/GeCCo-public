@@ -54,6 +54,12 @@
       njoined = opout_pnt%njoined
       allocate(occ_temp(ngastp,2,njoined),vtx_chng_idx(njoined))
 
+      ! make sure that the operators match:
+      if (opin_pnt%njoined.ne.njoined)
+     &     call quit(1,'form_op_replace',
+     &     'the shape of the operators does not match: '//
+     &     trim(opin)//' '//trim(opout))
+
       form_pnt => form
 
       do
@@ -71,6 +77,39 @@ c          write(luout,*) '[ADD]'
           change = .false.
           ! Loop over the contraction's vertices.
           nvtx = form_pnt%contr%nvtx
+
+          if (njoined.eq.1) then
+            ! simplified version for single vertex operators
+            ! allows for several instances of the operator
+            do idx = 1,nvtx
+              ! Check the operator index of the vertex.
+              idx_form_op = form_pnt%contr%vertex(idx)%idx_op
+
+              ! If the index of the operator vertex equals that of the
+              ! intermediate operator...
+              if (idx_form_op.eq.idxin) then
+                idx_form_blk = form_pnt%contr%vertex(idx)%iblk_op
+
+                occ_temp(1:ngastp,1:2,1)=
+     &             opin_pnt%ihpvca_occ(1:ngastp,1:2,idx_form_blk)
+
+                ! apply the change directly:
+                ! Locate the formal block's counterpart in the actual 
+                ! operator. 
+                idx_blk_out =
+     &               iblk_occ(occ_temp,.false.,opout_pnt)
+
+                form_pnt%contr%vertex(idx)%idx_op = idxout
+                form_pnt%contr%vertex(idx)%iblk_op =
+     &               idx_blk_out
+              end if
+
+            end do
+
+          else
+            ! more complicated operator?
+            ! will not neccessarly work if more than on instance
+            ! is present (which happens rarely)
           idx_join = 0
           do idx = 1,nvtx
             ! Check the operator index of the vertex.
@@ -97,6 +136,8 @@ c          write(luout,*) '[ADD]'
               change = .true.
             endif
           enddo
+          ! end of old code
+          end if
 
           if(change)then
             ! Locate the formal block's counterpart in the actual 

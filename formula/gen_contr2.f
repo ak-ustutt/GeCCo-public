@@ -393,11 +393,11 @@ c dbg
                   if (ok) then
 
                     ! set xarc info
-c                    svmap(1:nvtx) = 1
+                    svmap(1:nvtx) = 1
 c dbg
-                    do jvtx = 1, nvtx
-                      svmap(jvtx) = jvtx
-                    enddo
+c                    do jvtx = 1, nvtx
+c                      svmap(jvtx) = jvtx
+c                    enddo
 c dbg
                     call gen_contr_unconn(occ_ol_prev,occ_ol_rem,! dummies
      &                   occ_ol_scr,-1,  ! -1 -> set occ_ol_scr only

@@ -30,7 +30,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       character(*) ::
      &     label_form
