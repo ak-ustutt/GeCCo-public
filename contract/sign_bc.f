@@ -226,12 +226,6 @@ c            if (ivtx1.eq.ivtx2) cycle
             nex1a = sum(iocc_prim(1:ngastp,2,ivtx1m))
             nex2c = sum(iocc_prim(1:ngastp,1,ivtx2m))
             nex2a = sum(iocc_prim(1:ngastp,2,ivtx2m))
-            ! add to ivtx1 and remove from ivtx2
-            ! here we need the ivtx1, ivtx2 in their original sequence:
-            iocc_prim(1:ngastp,1:2,ivtx1) =
-     &           iocc_prim(1:ngastp,1:2,ivtx1) +
-     &           iocc_prim(1:ngastp,1:2,ivtx2)
-            iocc_prim(1:ngastp,1:2,ivtx2) = 0
             ! count number of enclosed indices
             nencl = 0
             do ivtx = ivtx1m+1, ivtx2m-1
@@ -258,6 +252,11 @@ c            if (ivtx1.eq.ivtx2) cycle
             do hpvx = 2, ngastp
              ! ordering: ex1c,ex2c, but ex2a,ex1a
               if (iocc_prim(hpvx,1,ivtx1m).gt.0) then
+c dbg
+c                print *,'hpvx,ivtx1m,ivtx2m: ',hpvx,ivtx1m,ivtx2m
+c                print *,'iocc1:',iocc_prim(hpvx,1,ivtx1m)
+c                print *,'iocc2:',iocc_prim(1:ngastp,1,ivtx2m)
+c dbg
                 do hpvx2 = 1, hpvx-1
                   ihpvxsign = mod(ihpvxsign 
      &            +iocc_prim(hpvx,1,ivtx1m)*iocc_prim(hpvx2,1,ivtx2m),2)
@@ -270,6 +269,15 @@ c            if (ivtx1.eq.ivtx2) cycle
                 end do
               end if
             end do
+
+            ! finally we merge the two:
+            ! add to ivtx1 and remove from ivtx2
+            ! here we need the ivtx1, ivtx2 in their original sequence:
+            iocc_prim(1:ngastp,1:2,ivtx1) =
+     &           iocc_prim(1:ngastp,1:2,ivtx1) +
+     &           iocc_prim(1:ngastp,1:2,ivtx2)
+            iocc_prim(1:ngastp,1:2,ivtx2) = 0
+
             if (ntest.ge.100) then
               write(luout,*) 'updated HPVX sign: ',ihpvxsign
               write(luout,*) 'updated OP1OP2:'

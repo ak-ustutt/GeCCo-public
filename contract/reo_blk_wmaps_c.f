@@ -430,10 +430,14 @@ c dbg
                   idx00opreo =
      &                 d_gam_ms_opreo(idxdis,gm_op_a,idxms_op_a) + 1
      &                                           - idxst_opreo
-c dbg
-c                  print *,'idx00opreo:',idx00opreo
-c dbg
+                else
+                  idx00opreo =
+     &                 d_gam_ms_opreo(1,gm_op_a,idxms_op_a) + 1
+     &                                           - idxst_opreo
                 end if
+c dbg
+c                print *,'idx00opreo:',idx00opreo
+c dbg
 
                 ! loop over A strings
                 k_a: do istr_k_a = 1, nstr_k_a_tot

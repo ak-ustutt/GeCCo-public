@@ -18,7 +18,7 @@
       integer, parameter ::
      &     maxcount = 1000,  ! at most 1000 iterations
      &     ndisconn = 3,     ! at most 3 extra levels for disconnected
-     &     ntest = 000                                   ! vertices
+     &     ntest = 0                                   ! vertices
 
       type(contraction), intent(inout) ::
      &     contr
@@ -161,30 +161,33 @@ c dbg
       contr%inffac(1:ld_inffac,1:nlevel_best) =
      &     ifact_best(1:ld_inffac,1:nlevel_best)
 
-      if (ntest.ge.100) then
+      if (ntest.ge.10) then
         write(luout,*) 'optimal factorization: '
         do idx = 1, contr%nfac
           write(luout,*) contr%inffac(1:ld_inffac,idx)
         end do
         write(luout,'(x,a,g15.10)') 'flops: ',costmin(1)
         write(luout,'(x,a,2g15.10)') 'mem:   ',costmin(2:3)
-        write(luout,'(x,a,"H^",i2," P^",i2,"V^",i2)')
-     &       'contraction scaling:  ',iscalemin(1:3,1)
-        write(luout,'(x,a,"H^",i2," P^",i2,"V^",i2)')
-     &       'intermediate scaling: ',iscalemin(1:3,2)
+        write(luout,'(x,a,"H^",i2," P^",i2,"V^",i2,"X^",i2)')
+     &       'contraction scaling:  ',iscalemin(1:4,1)
+        write(luout,'(x,a,"H^",i2," P^",i2,"V^",i2,"X^",i2)')
+     &       'intermediate scaling: ',iscalemin(1:4,2)
       end if
 
       ! statistics
-      if ( sum(iscalemin(1:3,1)).gt.sum(iscale_stat(1:3,1)).or.
-     &    (sum(iscalemin(1:3,1)).eq.sum(iscale_stat(1:3,1)).and.
-     &     iscalemin(2,1).gt.iscale_stat(2,1)) ) then
-        iscale_stat(1:3,1) = iscalemin(1:3,1)
+      ! well, no yet completely correct ...
+      if ( sum(iscalemin(1:4,1)).gt.sum(iscale_stat(1:4,1)).or.
+     &    (sum(iscalemin(1:4,1)).eq.sum(iscale_stat(1:4,1)).and.
+     &    (iscalemin(2,1).gt.iscale_stat(2,1) .or.
+     &     iscalemin(4,1).gt.iscale_stat(4,1)) ) ) then
+        iscale_stat(1:4,1) = iscalemin(1:4,1)
       end if
 
-      if ( sum(iscalemin(1:3,2)).gt.sum(iscale_stat(1:3,2)).or.
-     &    (sum(iscalemin(1:3,2)).eq.sum(iscale_stat(1:3,2)).and.
-     &     iscalemin(2,2).gt.iscale_stat(2,2)) ) then
-        iscale_stat(1:3,2) = iscalemin(1:3,2)
+      if ( sum(iscalemin(1:4,2)).gt.sum(iscale_stat(1:4,2)).or.
+     &    (sum(iscalemin(1:4,2)).eq.sum(iscale_stat(1:4,2)).and.
+     &    (iscalemin(2,2).gt.iscale_stat(2,2) .or.
+     &     iscalemin(4,2).gt.iscale_stat(4,2)) ) )  then
+        iscale_stat(1:4,2) = iscalemin(1:4,2)
       end if
 
       deallocate(ifact,ifact_best,
