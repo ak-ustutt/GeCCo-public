@@ -252,6 +252,16 @@ c        case(command_set_target_update)
         if (iprint.ge.20)
      &     write(luout,*) '   term #',iterm
 
+c dbg - Ctilde check for R12
+c        if (iterm.eq.37.or.iterm.eq.41.or.
+c     &      iterm.eq.64.or.iterm.eq.83) then
+c          do nfact = 1, 20
+c            print *,'skipping term ',iterm
+c          end do
+c          cycle term_loop
+c        end if
+c dbg
+
         if (ntest.ge.50)
      &       call prt_contr2(luout,cur_contr,op_info)
          

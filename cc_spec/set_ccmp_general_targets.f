@@ -46,7 +46,7 @@
      &     call get_argument_value('method.R12','ansatz',ival=ansatz)
 
       call add_target(op_hhat,ttype_op,.false.,tgt_info)
-      if (.false..and.ansatz.gt.1) then
+      if (ansatz.gt.1) then
         call set_dependency(op_hhat,op_ham,tgt_info)
         call cloneop_parameters(-1,parameters,
      &       op_ham,.false.)
