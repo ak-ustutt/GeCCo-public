@@ -192,6 +192,7 @@ c prelim
         ioff = 1
         call opt_parameters(+1,
      &       rule%parameters,ncat,nint)
+
         call form_opt(form_pnt,
      &       ncat,rule%labels(ioff+1),
      &       nint,rule%labels(ioff+ncat+1),

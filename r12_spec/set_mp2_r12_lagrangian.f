@@ -7,7 +7,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -17,6 +17,7 @@
       include 'def_orbinf.h'
       include 'def_formula_item.h'
       include 'def_formula.h'
+      include 'ifc_input.h'
 
       integer, intent(in) ::
      &     nlabels
@@ -53,6 +54,9 @@
       integer, allocatable ::
      &     occ_def(:,:,:)
 
+      logical ::
+     &     r12fix
+
       type(operator), pointer::
      &     h_temp_pnt, sop_pnt, sbar_pnt
 
@@ -63,7 +67,7 @@
       real(8) ::
      &     cpu, wall, sys, cpu0, wall0, sys0
 
-      if (ntest.eq.100) then
+      if (ntest.ge.100) then
         write(luout,*) '==================================='
         write(luout,*) ' output from set_mp2_r12_lagrangian'
         write(luout,*) '==================================='
@@ -71,11 +75,19 @@
 
       call atim_csw(cpu0,sys0,wall0)
 
+      ! Are we fixing the F12 amplitudes?
+      call get_argument_value('method.R12','fixed',lval=r12fix)
+      
       ! get indices
-      if (nlabels.ne.8) then
+      if (nlabels.ne.8.and..not.r12fix) then
         write(luout,*) 'nlabels = ',nlabels
         call quit(1,'set_mp2_r12_lagrangian',
      &     'I expect exactly 8 labels')
+      end if
+      if (nlabels.ne.6.and.r12fix) then
+        write(luout,*) 'nlabels = ',nlabels
+        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
+     &     'I expect exactly 6 labels')
       end if
       do ilabel = 1, nlabels
         idx = idx_oplist2(label(ilabel),op_info)
@@ -87,8 +99,8 @@
         if (ilabel.eq.3) idxr12 = idx
         if (ilabel.eq.4) idxrba = idx
         if (ilabel.eq.5) idxtbar = idx
-        if (ilabel.eq.6) idxcba = idx
-        if (ilabel.eq.7) idxtop = idx
+        if (ilabel.eq.6) idxtop = idx
+        if (ilabel.eq.7) idxcba = idx
         if (ilabel.eq.8) idxc12 = idx
       end do
 
@@ -168,9 +180,16 @@
         fl_t_cr_pnt => fl_t_cr_pnt%next
       enddo
 
-      call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &     1d0,2,(/idxc12,idxr12/),-1,-1,
-     &     (/1,2/),1,.false.,op_info)
+      ! Form of the R12 part depends on whether the amplitudes are fixed.
+      if(.not.r12fix)then
+        call expand_op_product(fl_t_cr_pnt,idx_sop,
+     &       1d0,2,(/idxc12,idxr12/),-1,-1,
+     &       (/1,2/),1,.false.,op_info)
+      else
+        call expand_op_product(fl_t_cr_pnt,idx_sop,
+     &       1d0,1,idxr12,-1,-1,
+     &       0,0,.false.,op_info)
+      endif
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T2 + CR2')
@@ -197,14 +216,25 @@ c      sbar_pnt%dagger = .true.
         fl_t_cr_pnt => fl_t_cr_pnt%next
       enddo
 
-      call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &     1d0,4,3,
-     &     (/idx_sbar,-idxr12,idxcba,idx_sbar/),(/1,2,3,1/),
-     &     -1,-1,
-     &     (/2,3/),1,
-     &     0,0,
-     &     0,0,
-     &     op_info)
+      if(.not.r12fix)then
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &       1d0,4,3,
+     &       (/idx_sbar,-idxr12,idxcba,idx_sbar/),(/1,2,3,1/),
+     &       -1,-1,
+     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+      else
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &       1d0,3,2,
+     &       (/idx_sbar,-idxr12,idx_sbar/),(/1,2,1/),
+     &       -1,-1,
+     &       0,0,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+      endif
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T2BAR + CR2BAR')
@@ -223,7 +253,7 @@ c      sbar_pnt%dagger = .true.
      &     1d0,2,(/idx_h_temp,idx_sop/),-1,-1,
      &     (/1,2/),1,.false.,op_info)
 
-      if(ntest.ge.100)then
+      if(ntest.ge.1000)then
         call write_title(luout,wst_title,'raw formula 1')
         call print_form_list(luout,form_lag,op_info)
       endif
@@ -237,7 +267,7 @@ c      sbar_pnt%dagger = .true.
       call expand_op_bch(form_pnt,1,idxlag,
      &     1d0,idx_sbar,idx_h_temp,1d0,idx_sop,1,-1,op_info)
 
-      if(ntest.ge.100)then
+      if(ntest.ge.1000)then
         call write_title(luout,wst_title,'raw formula')
         call print_form_list(luout,form_lag,op_info)
       endif

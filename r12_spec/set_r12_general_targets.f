@@ -32,7 +32,7 @@
      &     isym, ms, msc, sym_arr(8),
      &     occ_def(ngastp,2,20)
       logical ::
-     &     needed
+     &     needed, r12fix
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -61,6 +61,7 @@
       call get_argument_value('method.R12','K_appr',str=K_appr)
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
+      call get_argument_value('method.R12','fixed',lval=r12fix)
 
       ! assemble approx string
       select case(trim(F_appr))
@@ -94,31 +95,34 @@
      &              op_r12,1,1,
      &              parameters,1,tgt_info)
 
-      ! the coefficients
-      call add_target(op_c12,ttype_op,.false.,tgt_info)
-      call xop_parameters(-1,parameters,
-     &     .false.,min_rank,max_rank,0,max_rank+1)
-      call set_rule(op_c12,ttype_op,DEF_R12COEFF,
-     &              op_c12,1,1,
-     &              parameters,1,tgt_info)
+      ! Only need coefficients if optimising the R12 contribution.
+      if(.not.r12fix)then
+        ! the coefficients
+        call add_target(op_c12,ttype_op,.false.,tgt_info)
+        call xop_parameters(-1,parameters,
+     &       .false.,min_rank,max_rank,0,max_rank+1)
+        call set_rule(op_c12,ttype_op,DEF_R12COEFF,
+     &                op_c12,1,1,
+     &                parameters,1,tgt_info)
 
-      ! Lagrange multipliers associated with coefficients
-      call add_target(op_cba,ttype_op,.false.,tgt_info)
-      call set_dependency(op_cba,op_c12,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_c12,.true.) ! <- dagger=.true.
-      call set_rule(op_cba,ttype_op,CLONE_OP,
-     &              op_cba,1,1,
-     &              parameters,1,tgt_info)
+        ! Lagrange multipliers associated with coefficients
+        call add_target(op_cba,ttype_op,.false.,tgt_info)
+        call set_dependency(op_cba,op_c12,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                          op_c12,.true.) ! <- dagger=.true.
+        call set_rule(op_cba,ttype_op,CLONE_OP,
+     &                op_cba,1,1,
+     &                parameters,1,tgt_info)
 
-      ! Preconditioner
-      call add_target(op_diar12,ttype_op,.false.,tgt_info)
-      call set_dependency(op_diar12,op_c12,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_c12,.false.) ! <- dagger=.false.
-      call set_rule(op_diar12,ttype_op,CLONE_OP,
-     &              op_diar12,1,1,
-     &              parameters,1,tgt_info)
+        ! Preconditioner
+        call add_target(op_diar12,ttype_op,.false.,tgt_info)
+        call set_dependency(op_diar12,op_c12,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                          op_c12,.false.) ! <- dagger=.false.
+        call set_rule(op_diar12,ttype_op,CLONE_OP,
+     &                op_diar12,1,1,
+     &                parameters,1,tgt_info)
+      endif
 
       ! Now: the operators associated with the actual R12 integrals:
       !  <pq'|r12|ij> 
@@ -680,7 +684,7 @@ c
      &              parameters,2,tgt_info)
 
 
-      ! formal definition of C
+      ! formal definition of C intermediate
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_cint
       labels(2) = op_c_inter
@@ -697,7 +701,7 @@ c     &     parameters,2,title_r12_cint,0,'fxr')
      &              labels,4,1,
      &              parameters,2,tgt_info)
 
-      ! CABS approximation to C
+      ! CABS approximation to C intermediate
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_ccabs
       labels(2) = op_c_inter
@@ -852,7 +856,7 @@ c      call set_dependency(fopt_r12_bcabs,mel_rinba,tgt_info)
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
-      ! set C
+      ! set C intermediate
       ! currently approx C only
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = fopt_r12_ccabs
@@ -1311,47 +1315,48 @@ c                             ! this entity this does not matter
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
-      ! diagonal of B(ij) for testing
-      call add_target(mel_b_dia,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_b_dia,op_diar12,tgt_info)
-      call set_dependency(mel_b_dia,eval_r12_inter,tgt_info)
-      call set_dependency(mel_b_dia,mel_ham,tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_b_dia
-      labels(2) = op_diar12
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
-      call set_rule(mel_b_dia,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      labels(1) = mel_b_dia   ! output
-      labels(2) = mel_ham     ! input
-      labels(3) = mel_b_inter ! input
-      labels(4) = mel_x_inter ! input
-      call set_rule(mel_b_dia,ttype_opme,PRECONDITIONER,
-     &              labels,4,1,
-     &              parameters,1,tgt_info)
+      if(.not.r12fix)then
+        ! diagonal of B(ij) for testing
+        call add_target(mel_b_dia,ttype_opme,.false.,tgt_info)
+        call set_dependency(mel_b_dia,op_diar12,tgt_info)
+        call set_dependency(mel_b_dia,eval_r12_inter,tgt_info)
+        call set_dependency(mel_b_dia,mel_ham,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = mel_b_dia
+        labels(2) = op_diar12
+        call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+        call set_rule(mel_b_dia,ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+        labels(1) = mel_b_dia   ! output
+        labels(2) = mel_ham     ! input
+        labels(3) = mel_b_inter ! input
+        labels(4) = mel_x_inter ! input
+        call set_rule(mel_b_dia,ttype_opme,PRECONDITIONER,
+     &                labels,4,1,
+     &                parameters,1,tgt_info)
       
-      ! X^-1 for testing
-      call add_target(mel_x_inv,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_x_inv,op_diar12,tgt_info)
-      call set_dependency(mel_x_inv,eval_r12_inter,tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_x_inv
-      labels(2) = op_x_inter
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
-      call set_rule(mel_x_inv,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      labels(1) = mel_x_inv   ! output
-      labels(2) = mel_x_inter ! input
-      call set_rule(mel_x_inv,ttype_opme,INVERT,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
+        ! X^-1 for testing
+        call add_target(mel_x_inv,ttype_opme,.false.,tgt_info)
+        call set_dependency(mel_x_inv,op_diar12,tgt_info)
+        call set_dependency(mel_x_inv,eval_r12_inter,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = mel_x_inv
+        labels(2) = op_x_inter
+        call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+        call set_rule(mel_x_inv,ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+        labels(1) = mel_x_inv   ! output
+        labels(2) = mel_x_inter ! input
+        call set_rule(mel_x_inv,ttype_opme,INVERT,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
       
+      endif
 
-      
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*

@@ -629,6 +629,7 @@ c      end function
       ! allocate space for taking arguments
       if (iand(type_arg,vtyp_log).gt.0) then
         allocate(current%val%lval(len_arg))
+        call read_log(current%val%lval,str)
       end if
       if (iand(type_arg,vtyp_int).gt.0) then
         allocate(current%val%ival(len_arg))
@@ -675,6 +676,33 @@ c      end function
       end if
 
       end function
+
+      subroutine read_log(larr,str)
+      implicit none
+
+      character, intent(in) ::
+     &     str*(*)
+      logical, intent(out) ::
+     &     larr(*)
+      integer ::
+     &     ipst, ipnd, len, idx
+      
+      if (str(1:1).eq.'(') then
+        ipst = 2
+        len = len_trim(str)
+        idx = 1
+        do while(ipst.le.len)
+          ipnd = index(str(ipst:),',')+ipst-2
+          if (ipnd.lt.ipst) ipnd=len-1
+          read(str(ipst:ipnd),*) larr(idx)
+          ipst = ipnd+2
+          idx = idx+1
+        end do
+      else
+        read(str,*) larr(1)
+      end if
+
+      end subroutine
 
       subroutine read_int(iarr,str)
       implicit none

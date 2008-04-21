@@ -23,7 +23,7 @@ c      include 'def_contraction_list.h'
       include 'mdef_formula_info.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     nintm
@@ -103,6 +103,7 @@ c      include 'def_contraction_list.h'
         call factor_out_subexpr(flist,fl_intm,op_info)
 
         call dealloc_formula_list(fl_intm)
+
       end do
 
       ! write result
