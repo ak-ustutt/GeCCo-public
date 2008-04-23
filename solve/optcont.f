@@ -317,7 +317,7 @@ c          call optc_prepnext()
       ifree = mem_flushmark('optc_temp')
 
       call atim_csw(cpu,sys,wall)
-      if (iprint.ge.5)
+      if (iprint.ge.1)
      &     call prtim(luout,'time in optimizer',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
