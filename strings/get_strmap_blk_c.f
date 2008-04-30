@@ -52,6 +52,9 @@ c dbg
       idx12 = 0
       do while(idx12.lt.n12)
         idx12 = idx12+1
+c dbg
+c        print *,'idx12 = ',idx12
+c dbg
         idx1 = 0
         idx2 = 0
         idx_minf = idx_minf+1

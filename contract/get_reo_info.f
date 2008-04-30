@@ -237,16 +237,24 @@ c dbg
      &           reo_info%map_reo2c(len_map),
      &           reo_info%map_reo2a(len_map))
 
+c dbg
+        print *,'relevant call to set_mapping_info'
+c dbg
         call set_mapping_info(reo_info%map_reo1c,reo_info%map_reo1a,
      &       1,
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,
      &       reo_info%iocc_reo,nreo_op1op2,.false.,
-     &       iocc_op1op2,merge_stp1,njoined_op1op2,hpvxblkseq)
+     &       iocc_op1op2tmp,merge_stp1,njoined_op1op2,hpvxblkseq)
+c     &       iocc_op1op2,merge_stp1,njoined_op1op2,hpvxblkseq)
+c dbg
+        print *,'after relevant call'
+c dbg
         call set_mapping_info(reo_info%map_reo1c,reo_info%map_reo1a,
      &       2,
      &       reo_info%iocc_reo,nreo_op1op2,.false.,
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,
-     &       iocc_op1op2,merge_stp1inv,njoined_op1op2,hpvxblkseq)
+     &       iocc_op1op2tmp,merge_stp1inv,njoined_op1op2,hpvxblkseq)
+c     &       iocc_op1op2,merge_stp1inv,njoined_op1op2,hpvxblkseq)
         call set_mapping_info(reo_info%map_reo2c,reo_info%map_reo2a,
      &       1,
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,

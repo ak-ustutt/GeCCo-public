@@ -125,7 +125,7 @@
       call add_target(op_rint,ttype_op,.false.,tgt_info)
       call r12int_parameters(-1,parameters,
 c     &     .false.,min_rank,2,0,2)
-     &     .false.,min_rank,2,0,3) ! 3: two externals needed
+     &     .false.,min_rank,2,0,4) ! 4: two externals for 2-el ops
       call set_rule(op_rint,ttype_op,DEF_R12INT,
      &              op_rint,1,1,
      &              parameters,1,tgt_info)

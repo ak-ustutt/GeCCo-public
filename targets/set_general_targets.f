@@ -53,7 +53,7 @@
       ! Hamiltonian
       iformal = 1
       explicit = is_keyword_set('method.R12').gt.0
-      if (explicit.and.orb_info%caborb.gt.0) iformal = 2
+      if (explicit.and.orb_info%caborb.gt.0) iformal = 3
       call add_target(op_ham,ttype_op,.false.,tgt_info)
       call hop_parameters(-1,parameters,
      &                   0,2,iformal,explicit)

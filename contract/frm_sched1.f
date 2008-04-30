@@ -51,10 +51,10 @@
      &     depend_info
 
       logical ::
-     &     update, reo_op1op2, reo_other, possible, skip,
-     &     tra_op1, tra_op2, tra_op1op2
+     &     update, reo_op1op2, reo_other, possible, skip, new,
+     &     tra_op1, tra_op2, tra_op1op2, set_reo, make_contr_red
       integer ::
-     &     lufrm, idxopres, idxres, nres, type_xret, type_xret_cur,
+     &     idxopres, idxres, nres, type_xret, type_xret_cur,
      &     idxme_res, idxmel,
      &     n_occ_cls, maxvtx, maxarc, maxfac, nblk_res,
      &     nfact, idxop1op2, iblkop1op2, iops, iblkres, ifree,
@@ -84,6 +84,8 @@
       integer, pointer ::
      &     op2list(:),
      &     occ_vtx(:,:,:), irestr_vtx(:,:,:,:,:), info_vtx(:,:),
+     &     occ_vtx_red(:,:,:), irestr_vtx_red(:,:,:,:,:),
+     &                                        info_vtx_red(:,:),
      &     merge_op1(:), merge_op2(:), merge_op1op2(:), merge_op2op1(:),
      &     iocc_op1(:,:,:), iocc_op2(:,:,:),
      &     irst_op1(:,:,:,:,:),
@@ -107,7 +109,7 @@
       type(formula_item), pointer ::
      &     cur_form
       type(contraction) ::
-     &     cur_contr
+     &     cur_contr, cur_contr_red
 
       integer, external ::
      &     idxlist
@@ -139,6 +141,9 @@
       idxres = 0
       iterm = 0
       nullify(xret_blk)
+
+      call init_contr(cur_contr)
+      call init_contr(cur_contr_red)
 
       ! loop over entries
       term_loop: do 
@@ -193,7 +198,6 @@
           ! requested?
           skip = nselect.gt.0.and.
      &           idxlist(idxres,idxselect,nselect,1).le.0
-
           ! check dependency
           skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
 
@@ -349,6 +353,10 @@ c fix:
      &       merge_op2(10*nvtx*nvtx),
      &       merge_op1op2(10*nvtx*nvtx),
      &       merge_op2op1(10*nvtx*nvtx))
+        allocate(
+     &       occ_vtx_red(ngastp,2,nvtx+njoined_res),
+     &       irestr_vtx_red(2,orb_info%ngas,2,2,nvtx+njoined_res),
+     &       info_vtx_red(2,nvtx+njoined_res))
         if (nfact.gt.1) then
           allocate(opscr(nfact-1),optmp,melscr(nfact-1),meltmp)
           do idx = 1, nfact-1
@@ -388,10 +396,12 @@ c dbg
 
           if (iprint.ge.20) write(luout,*) '    contr #',idx
           iarc = cur_contr%inffac(5,idx)
-
           ninter = ninter + 1
 
           ! set up info for binary contraction
+c          new = .false.!cur_contr%nvtx.ge.4
+          new = .true.!cur_contr%nvtx.ge.4
+          if (.not.new) then
           call get_bc_info2(bc_sign,
      &         idxop,iblkop,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
@@ -405,10 +415,44 @@ c dbg
      &         cur_contr,njoined_res,
      &                        occ_vtx,irestr_vtx,info_vtx,iarc,
      &         irst_res,orb_info)
+          else
+
+          make_contr_red = cur_contr%nsupvtx.gt.2
+          set_reo = make_contr_red
+          if (set_reo) then
+            ! reset reo_info
+            call init_reo_info(reo_info)
+          end if
+
+          call get_bc_info3(bc_sign,possible,
+     &         idxop,iblkop,
+     &         iocc_ex1,iocc_ex2,iocc_cnt,
+     &         iocc_op1,iocc_op2,iocc_op1op2,
+     &         irst_op1,irst_op2,irst_op1op2,
+     &         tra_op1,tra_op2,tra_op1op2,
+     &         mstop,mstop1op2,
+     &         igamtop,igamtop1op2,
+     &         njoined_op, njoined_op1op2, njoined_cnt,
+     &         merge_op1,merge_op2,merge_op1op2, merge_op2op1,
+     &         cur_contr,occ_vtx,irestr_vtx,info_vtx,
+     &         make_contr_red,
+     &         cur_contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
+     &         set_reo,reo_info,
+     &         iarc,idx,-ninter,
+     &         irst_res,njoined_res,orb_info,op_info)
+          if (.not.possible) then
+            call prt_contr3(luout,cur_contr,-1)
+            write(luout,*) 'get_bc_info did not raise "possible"-flag!'
+            call quit(1,'frm_sched1','could not continue ...')
+          end if
+          ! contr_red -> cur_contr, etc.
+c          stop 'test'
+          end if
 
           ! set up reduced contraction after 
           ! current binary contraction
           if (idx.ne.nfact) then
+            if (.not.new) then
             ivtx_new = cur_contr%inffac(3,idx)
             idxop_intm = -ninter
 
@@ -425,6 +469,12 @@ c dbg
             if (.not.possible)
      &           call quit(1,'frm_sched1',
      &           'inconsistency: reduce_contr is in difficulties')
+            else
+              call copy_contr(cur_contr_red,cur_contr)
+              occ_vtx    = occ_vtx_red
+              irestr_vtx = irestr_vtx_red
+              info_vtx   = info_vtx_red
+            end if
 
             ! add 0-contractions, if necessary
             call check_disconnected(cur_contr)
@@ -551,6 +601,7 @@ c dbg
 
         deallocate(
      &       occ_vtx,irestr_vtx,info_vtx,
+     &       occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &       merge_op1,merge_op2,merge_op1op2,merge_op2op1)
         deallocate(
      &       iocc_op1, iocc_op2,
@@ -572,6 +623,7 @@ c            call file_close_delete(ffscr(idx))
       end do term_loop
 
       call dealloc_contr(cur_contr)
+      call dealloc_contr(cur_contr_red)
 
       ifree = mem_flushmark()
 

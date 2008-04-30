@@ -74,7 +74,6 @@
      &     merge_op2(2*contr%nvtx*contr%nvtx),
      &     merge_op1op2(2*contr%nvtx*contr%nvtx),
      &     merge_op2op1(2*contr%nvtx*contr%nvtx)
-c     &     nca_blk(2,7)
 
       integer, pointer ::
      &     ihpvgas(:,:)

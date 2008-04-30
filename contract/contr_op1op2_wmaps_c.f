@@ -488,8 +488,13 @@ c dbg
 c dbg
       if (na_op1op2.ne.na_op1op2tmp)
      &     call quit(1,'contr_op1op2_wmaps_c','unexpected 1a')
-      if (nc_op1op2.ne.nc_op1op2tmp)
-     &     call quit(1,'contr_op1op2_wmaps_c','unexpected 1b')
+      if (nc_op1op2.ne.nc_op1op2tmp) then
+        write(luout,*) 'OP1OP2 (C)   : ',nc_op1op2,
+     &       ' <- ',cinfo_op1op2c(1:ncblk_op1op2,1)
+        write(luout,*) 'OP1OP2TMP (C): ',nc_op1op2tmp,
+     &       ' <- ',cinfo_op1op2tmpc(1:ncblk_op1op2tmp,1)
+        call quit(1,'contr_op1op2_wmaps_c','unexpected 1b')
+      end if
 c dbg
       call sum_occ(nc_ex1,cinfo_ex1c,ncblk_ex1)
       call sum_occ(na_ex1,cinfo_ex1a,nablk_ex1)

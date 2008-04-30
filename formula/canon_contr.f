@@ -20,11 +20,11 @@
      &     vtx_reo(*)
 
       integer ::
-     &     narc, nvtx, idx, jdx, ivtx, ival, jval
+     &     nxarc, narc, nvtx, idx, jdx, ivtx, ival, jval
       integer, pointer ::
      &     vtx_oer(:)
       type(cntr_arc), pointer ::
-     &     arc(:)
+     &     arc(:), xarc(:)
       type(cntr_arc) ::
      &     arc_sv
       type(cntr_vtx), pointer ::
@@ -36,6 +36,7 @@
      &     int_pack
 
       narc = contr%narc
+      nxarc = contr%nxarc
       nvtx = contr%nvtx
 
       ! reorder vertices, if necessary
@@ -53,16 +54,22 @@
         end do
         deallocate(contr%svertex)
         contr%svertex => svertex_new
-        ! update vertex references in arcs:
         ! revert reordering info to old->new        
         allocate(vtx_oer(nvtx))
         do ivtx = 1, nvtx
           vtx_oer(vtx_reo(ivtx)) = ivtx
         end do
+        ! update vertex references in arcs:
         arc => contr%arc
         do idx = 1, narc
           arc(idx)%link(1) = vtx_oer(arc(idx)%link(1))
           arc(idx)%link(2) = vtx_oer(arc(idx)%link(2))
+        end do
+        ! update vertex references in xarcs:
+        xarc => contr%xarc
+        do idx = 1, nxarc
+          xarc(idx)%link(1) = vtx_oer(xarc(idx)%link(1))
+          ! no update of link(2)!
         end do
         deallocate(vtx_oer)
       end if

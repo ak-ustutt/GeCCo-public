@@ -18,10 +18,14 @@
 
       logical ::
      &     l_infile,l_exit,one_more
-      character ::
-     &     name_infile*256, env_type*32
+      character(256) ::
+     &     name_infile, host
+      character(32) ::
+     &     env_type
+      character(24) ::
+     &     date
       integer ::
-     &     idum, memmax, ifree
+     &     idum, memmax, ifree, len
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
       type(filinf) ::
@@ -31,11 +35,16 @@
 
       ! a few settings
       luout = 6      ! output unit
-      iprlvl = 1     ! print level
-c      iprlvl = 10    ! print level
+c      iprlvl = 1     ! print level
+      iprlvl = 10    ! print level
       ivale = 3      ! V is 3
       iextr = 4      ! X is 4
 
+      call hostname(host)
+      call datum(date)
+      write(luout,'(x,"run starts at ",a,"   host: ",a)')
+     &     trim(date),trim(host)
+      
       ! give information about compilation date etc.
       call printversion()
 
@@ -44,7 +53,7 @@ c      iprlvl = 10    ! print level
       ! initialize timing routine
       call init_time()
       call atim_csw(cpu0,sys0,wall0)
-      
+
       call printheader()
 
       ! process arguments to GeCCo
@@ -98,7 +107,11 @@ c      iprlvl = 10    ! print level
       call prtim(luout,'total time in GeCCo run',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
- 2308 stop '+++ GeCCo run finished +++'
+ 2308 call datum(date)
+      write(luout,'(x,"run ends at ",a,"   host: ",a)')
+     &     trim(date),trim(host)
+
+      stop '+++ GeCCo run finished +++'
       end
 
 

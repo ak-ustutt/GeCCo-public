@@ -71,7 +71,7 @@
       ! but we must loop over different distributions
       integer, intent(in) ::
      &     ncblk_opreo, nablk_opreo,
-     &     cinfo_opreo_c(ncblk_opori,3), cinfo_opreo_a(nablk_opori,3)
+     &     cinfo_opreo_c(ncblk_opreo,3), cinfo_opreo_a(nablk_opreo,3)
 
       ! info about strings with resolved occupations [I0], [K]
       type(me_list), intent(in) ::
@@ -94,7 +94,7 @@
      &     strmap_info
 
       logical ::
-     &     first
+     &     first, possible
       integer ::
      &     ms_k_c_max, ms_k_a_max, ms_i0_c_max, ms_i0_a_max,
      &     ms_k_c,     ms_k_a,     ms_i0_c,     ms_i0_a,
@@ -150,10 +150,13 @@ c     &     first_element
 c dbg
 
       logical, external ::
-     &     next_msgamdist2, check_ms
+     &     next_msgamdist2, check_ms, check_gm
       integer, external ::
      &     get_lenmap, ielprd, idx_msgmdst2, idxlist
 
+c dbg
+c      print *,'gm_op_c/a: ',gm_op_c,gm_op_a
+c dbg
 
       graphs => str_info%g
       ngraph =  str_info%ngraph
@@ -182,6 +185,12 @@ c dbg
             gm_i0_a = multd2h(gm_k_a,gm_op_a)
             do gm_k_c = 1, nsym
               gm_i0_c = multd2h(gm_k_c,gm_op_c)
+c dbg
+c              print *,'ms_k_a,ms_k_c: ',ms_k_a,gm_k_c
+c              print *,'ms_i0_a,ms_i0_c: ',ms_i0_a,gm_i0_c
+c              print *,'gm_k_a,gm_k_c: ',gm_k_a,gm_k_c
+c              print *,'gm_i0_a,gm_i0_c: ',gm_i0_a,gm_i0_c
+c dbg
 
                ! loop over symmetry and ms-distributions of shift string K
               first = .true.
@@ -196,23 +205,48 @@ c dbg
 
                 ! get symmetry and ms-distr. of I0
                 call split_msgmdis(ms_i0_dis_c,gm_i0_dis_c,
+     &                             possible,
      &                             ms_k_dis_c,gm_k_dis_c,
      &                             ms_i_dis_c,gm_i_dis_c,
      &                             ncblk_opori,
      &                             map_info_to_ori_c,.false.)
+                if (.not.possible) cycle dis_loop
+
                 call split_msgmdis(ms_i0_dis_a,gm_i0_dis_a,
+     &                             possible,
      &                             ms_k_dis_a,gm_k_dis_a,
      &                             ms_i_dis_a,gm_i_dis_a,
      &                             nablk_opori,
      &                             map_info_to_ori_a,.true.)
+                if (.not.possible) cycle dis_loop
+
 
 c dbg                
+c                  write(luout,*) '            I   GMD C',
+c     &                 gm_i_dis_c(1:ncblk_opori)
+c                  write(luout,*) '            K   GMD C',
+c     &                 gm_k_dis_c(1:ncblk_k)
+c                  write(luout,*) '            I0  GMD C',
+c     &                 gm_i0_dis_c(1:ncblk_i0)
+c                  write(luout,*) '            I   GMD A',
+c     &                 gm_i_dis_a(1:nablk_opori)
+c                  write(luout,*) '            K   GMD A',
+c     &                 gm_k_dis_a(1:nablk_k)
+c                  write(luout,*) '            I0  GMD A',
+c     &                 gm_i0_dis_a(1:nablk_i0)
+c                  write(luout,*) '            I   MSD C',
+c     &                 ms_i_dis_c(1:ncblk_opori)
+c                  write(luout,*) '            K   MSD C',
+c     &                 ms_k_dis_c(1:ncblk_k)
+c                  write(luout,*) '            I0  MSD C',
+c     &                 ms_i0_dis_c(1:ncblk_i0)
 c                  write(luout,*) '            I   MSD A',
 c     &                 ms_i_dis_a(1:nablk_opori)
 c                  write(luout,*) '            K   MSD A',
 c     &                 ms_k_dis_a(1:nablk_k)
 c                  write(luout,*) '            I0  MSD A',
 c     &                 ms_i0_dis_a(1:nablk_i0)
+c                  write(luout,*) ' possible: ',possible
 c dbg
                 if (ntest.ge.100) then
                   write(luout,*) '               I  MS',ms_op_c,ms_op_a
@@ -246,12 +280,24 @@ c dbg
      &               cycle dis_loop
                 if (.not.check_ms(ms_i0_dis_a,cinfo_i0_a,nablk_i0))
      &               cycle dis_loop
+                if (.not.check_ms(gm_i0_dis_c,cinfo_i0_c,ncblk_i0))
+     &               cycle dis_loop
+                if (.not.check_ms(gm_i0_dis_a,cinfo_i0_a,nablk_i0))
+     &               cycle dis_loop
+c                if (.not.check_gm(gm_i0_c,gm_i0_dis_c,ncblk_i0))
+c     &               cycle dis_loop
+c                if (.not.check_gm(gm_i0_a,gm_i0_dis_a,nablk_i0))
+c     &               cycle dis_loop
 c dbg
 c                print *,'ACCEPTED'
 c                first_element = .true.
 c dbg                
   
                 ! get symmetry and ms-dist. of reordered operator I'
+c dbg
+c                print *,'merge_map1:',map_info_to_ori_c(1:8)
+c                print *,'merge_map2:',map_info_to_reo_c(1:8)
+c dbg
                 call merge_msgmdis(ms_ip_dis_c,gm_ip_dis_c,
      &                             ncblk_opreo,
      &                             ms_i0_dis_c,gm_i0_dis_c,
@@ -263,6 +309,8 @@ c dbg
      &                             ms_i0_dis_a,gm_i0_dis_a,
      &                             map_info_to_reo_a)
 c dbg
+c                write(luout,*) '            I''  MSD C',
+c     &                 ms_ip_dis_c(1:ncblk_opreo)
 c                write(luout,*) '            I''  MSD A',
 c     &                 ms_ip_dis_a(1:nablk_opreo)
 c
@@ -279,6 +327,18 @@ c dbg
                 call ms2idxms(idxms_i0_dis_a,ms_i0_dis_a,
      &               cinfo_i0_a,nablk_i0)
 
+c dbg
+c                print *,'cinfo_opreo_c: ',
+c     &               cinfo_opreo_c(1:ncblk_opreo,1)
+c                print *,'cinfo_opreo_a: ',
+c     &               cinfo_opreo_a(1:nablk_opreo,1)
+c                print *,'gm_ip_dis_c: ',gm_ip_dis_c(1:ncblk_opreo)
+c                print *,'gm_ip_dis_a: ',gm_ip_dis_a(1:nablk_opreo)
+c                print *,'gm_i0_dis_c: ',gm_i0_dis_c(1:ncblk_i0)
+c                print *,'gm_i0_dis_a: ',gm_i0_dis_a(1:nablk_i0)
+c                print *,'gm_k_dis_c:  ',gm_k_dis_c(1:ncblk_k)
+c                print *,'gm_k_dis_a:  ',gm_k_dis_a(1:nablk_k)
+c dbg
                 call ms2idxms(idxms_ip_dis_c,ms_ip_dis_c,
      &               cinfo_opreo_c,ncblk_opreo)
                 call ms2idxms(idxms_ip_dis_a,ms_ip_dis_a,
@@ -323,6 +383,11 @@ c dbg
      &               cinfo_opreo_a(1,2),idxms_ip_dis_a,
      &                               gm_ip_dis_a,cinfo_opreo_a(1,3),
      &               hpvxseq,.false.)
+c dbg
+c                print *,'cinfo_opreo_c:',cinfo_opreo_c(1:ncblk_opreo,2)
+c                print *,'cinfo_opreo_a:',cinfo_opreo_a(1:nablk_opreo,2)
+c                print *,'lstr_opreo:   ',lstr_opreo
+c dbg
 
                 if (ncblk_opreo+nablk_opreo.gt.0 .and.
      &              idxlist(0,lstr_opreo,
@@ -416,6 +481,9 @@ c dbg
 
                 ! --> offset in xop_reo
                 if (ndis_opreo(gm_op_a,idxms_op_a).gt.1) then
+c dbg
+c                  print *,'call to idx_msgmdst2'
+c dbg
                   idxdis =
      &                 idx_msgmdst2(
      &                 iblk_opreo,idxms_op_a,gm_op_a,
@@ -424,6 +492,9 @@ c dbg
      &                 cinfo_opreo_a,idxms_ip_dis_a,
      &                               gm_ip_dis_a,nablk_opreo,
      &                 .false.,me_opreo,nsym)
+c dbg
+c                  print *,'after call to idx_msgmdst2'
+c dbg
 c dbg
 c                  print *,'current target distr: ',idxdis
 c dbg

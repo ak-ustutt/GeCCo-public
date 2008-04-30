@@ -196,6 +196,7 @@ c prelim
      &       ncat,rule%labels(ioff+1),
      &       nint,rule%labels(ioff+ncat+1),
      &       form_info,op_info,str_info,orb_info)
+c      case(EXTRACT_TERM)
       case default
         call quit(1,'process_formulae','unknown command: '//
      &       trim(rule%command))

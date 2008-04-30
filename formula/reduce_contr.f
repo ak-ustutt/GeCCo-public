@@ -29,7 +29,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(contraction), intent(inout) ::
      &     contr
@@ -57,7 +57,7 @@ c dbg
 c     &     , stop_at_end
 c dbg
       integer ::
-     &     nvtx, narc, narc_new, nsupvtx, ngas,
+     &     nvtx, narc, nxarc, narc_new, nsupvtx, ngas,
      &     ivtx, jvtx, ivtx1, ivtx2, jvtx1, jvtx2, kvtx1, kvtx2,
      &     iarc, jarc, ilist, jlist, len_list, nmvleft, idx_merge,
      &     iarc_prm, isupvtx1, isupvtx2, idum, ms_new, gm_new
@@ -105,6 +105,7 @@ c dbg
       nsupvtx = contr%nsupvtx
       nvtx = contr%nvtx
       narc = contr%narc
+      nxarc = contr%nxarc
 
       ngas = orb_info%ngas
 
@@ -239,7 +240,7 @@ c        merge = merge_vtx1vtx2(ivtx1,ivtx2,svertex,svmap,topomap,nvtx)
           idx_merge = idx_merge_vtx1vtx2(ivtx1,ivtx2,isupvtx1,isupvtx2,
      &         nmvleft,imvleft,svertex_ori,svmap,topomap,nvtx)
 c dbg
-c          print *,'idx_merge: ',idx_merge
+c          print *,'ivtx1,ivtx2,idx_merge: ',ivtx1,ivtx2,idx_merge
 c dbg
           merge = idx_merge.gt.0.and.merge_check(contr,
      &         isupvtx1,isupvtx2,
@@ -262,6 +263,12 @@ c dbg
      &             contr%arc(jarc)%link(1) = ivtx1
               if (jvtx2.eq.ivtx2)
      &             contr%arc(jarc)%link(2) = ivtx1
+            end do
+            ! modify xarcs
+            do jarc = 1, nxarc
+              jvtx1 = contr%xarc(jarc)%link(1)
+              if (jvtx1.eq.ivtx2)
+     &             contr%xarc(jarc)%link(1) = ivtx1
             end do
             ! mark for deletion
             vertex(ivtx2)%idx_op = 0
@@ -325,6 +332,9 @@ c     &         svertex_ori(nvtx))
      &                          1:2,1:2,njoined_res+1:njoined_res+nvtx)
       end if
 
+c dbg
+c      print *,'ireo: ',ireo(1:nvtx)
+c dbg
       jvtx = 0
       do ivtx = 1, nvtx   ! loop over old vertices
         if (vertex_ori(ivtx)%idx_op.eq.0) cycle
@@ -352,7 +362,7 @@ c      deallocate(vertex_ori,svertex_ori,occ_vtx_ori)
       if (update_info) deallocate(info_vtx_ori,irestr_vtx_ori)
 c dbg
 c      print *,'after reo of vertices'
-c      call prt_contr3(luout,contr,occ_vtx(1,1,2))
+c      call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
 c dbg
 
       ! update vertex numbers on arcs:
@@ -365,7 +375,7 @@ c dbg
       end do
 c dbg
 c      print *,'after rename of vertices in arcs'
-c        call prt_contr3(luout,contr,occ_vtx(1,1,2))
+c        call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
 c dbg
       
       ! remove and join arcs:
@@ -377,6 +387,10 @@ c dbg
         jvtx1 = contr%arc(iarc)%link(1) ! get involved vertices
         jvtx2 = contr%arc(iarc)%link(2) !  (old numbers)
         
+c dbg
+c        print *,'iarc = ',iarc
+c        print *,'vertices: ',jvtx1, jvtx2
+c dbg
         if (jvtx1.gt.jvtx2) then
           call quit(1,'reduce_contr','this should not happen')
         end if
@@ -402,12 +416,62 @@ c dbg
       end do
       contr%narc = narc_new
 
+      ! -------------
+      ! process xarcs
+      ! -------------
+      ! update vertex numbers on xarcs:
+      do iarc = 1, nxarc         ! loop over old arcs
+        if (contr%xarc(iarc)%link(1).le.0) cycle
+        jvtx1 = contr%xarc(iarc)%link(1)
+        jvtx2 = contr%xarc(iarc)%link(2)
+        contr%xarc(iarc)%link(1) = ireo(jvtx1) ! convert to new
+        contr%xarc(iarc)%link(2) = jvtx2       !   numbering (only 1)
+      end do
+c dbg
+c      print *,'after rename of vertices in xarcs'
+c        call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
+c dbg
+      
+      ! remove and join xarcs:
+      narc_new = 0              ! counter for new arcs
+      do iarc = 1, nxarc         ! loop over old arcs
+        if (contr%xarc(iarc)%link(1).le.0) cycle
+
+        narc_new = narc_new+1
+        jvtx1 = contr%xarc(iarc)%link(1) ! get involved vertices
+        jvtx2 = contr%xarc(iarc)%link(2) !  (old numbers)
+        
+        do jarc = iarc+1, nxarc ! add arcs with same vertices
+          kvtx1 = contr%xarc(jarc)%link(1)
+          kvtx2 = contr%xarc(jarc)%link(2)
+          if (jvtx1.eq.kvtx1.and.jvtx2.eq.kvtx2) then
+            contr%xarc(iarc)%occ_cnt =
+     &           contr%xarc(iarc)%occ_cnt +
+     &           contr%xarc(jarc)%occ_cnt
+            contr%xarc(jarc)%link(1) = 0 ! mark for deletion
+          end if            
+        end do
+
+        if (iarc.gt.narc_new) then ! copy if necessary
+          contr%xarc(narc_new) = contr%xarc(iarc)
+        end if
+      end do
+      contr%nxarc = narc_new
+c dbg
+c      print *,'after adding xarcs'
+c        call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
+c dbg
+
       call update_svtx4contr(contr)
 
       possible = .true.
       ! a last additional step: reorder supervertices if necessary
       if (contr%nsupvtx.lt.contr%nvtx) then
         call reorder_supvtx(possible,
+     &     .true.,set_reo,reo_info,
+     &     contr,occ_vtx(1,1,njoined_res+1),idxop_new)
+        if (contr%nxarc.gt.0)
+     &   call reorder_supvtx_x(possible,
      &     .true.,set_reo,reo_info,
      &     contr,occ_vtx(1,1,njoined_res+1),idxop_new)
         if (update_info) then

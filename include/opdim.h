@@ -5,7 +5,9 @@
       integer, parameter ::
      &     ihole = 1,        ! hole space is always 1
      &     ipart = 2,        ! particle space is always 2
-     &     ngastp = 4        ! number of GAS types (2,3,4)
+     &     ngastp = 4,       ! number of GAS types (2,3,4)
+c     &     pack_base = 256   ! make 2*ngastp fit into integer(8)
+     &     pack_base = 10    ! better choice for debugging
 
       ! global variable
       integer ::

@@ -127,6 +127,14 @@ c dbg
       ! get all involved arcs
       call get_associated_arcs(arc_list,len_list,iarc_red,contr)
 
+c      ! experimentier-ecke:
+c      ! fetch an interesting example:
+c      if (contr%nvtx.ge.4.and.contr%nsupvtx.ne.contr%nvtx) then
+c        call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))        
+c        call get_bc_info3(contr,ivtxsuper1,ivtxsuper2,
+c     &       arc_list,len_list,njoined_res)
+c      end if
+
       ! set merging info for op1 and op2, i.e. how
       ! the blocks of op1 are related to the blocks of ex1 and cnt
       ld_mmap1  = max(njoined_op(1),len_list)

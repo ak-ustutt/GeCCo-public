@@ -8,7 +8,7 @@
       include 'def_contraction.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(contraction), intent(inout) ::
      &     contr

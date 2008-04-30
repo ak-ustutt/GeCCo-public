@@ -298,7 +298,7 @@ c dbg
 *
 *     get memory for buffers
 *
-*     internal subroutine: variable of main routine are global!
+*     internal subroutine: variables of main routine are global!
 *
 *----------------------------------------------------------------------*
 c      implicit none
