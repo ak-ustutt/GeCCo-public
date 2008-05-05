@@ -280,14 +280,10 @@ c dbg
      &               cycle dis_loop
                 if (.not.check_ms(ms_i0_dis_a,cinfo_i0_a,nablk_i0))
      &               cycle dis_loop
-                if (.not.check_ms(gm_i0_dis_c,cinfo_i0_c,ncblk_i0))
+                if (.not.check_gm(gm_i0_dis_c,cinfo_i0_c,ncblk_i0))
      &               cycle dis_loop
-                if (.not.check_ms(gm_i0_dis_a,cinfo_i0_a,nablk_i0))
+                if (.not.check_gm(gm_i0_dis_a,cinfo_i0_a,nablk_i0))
      &               cycle dis_loop
-c                if (.not.check_gm(gm_i0_c,gm_i0_dis_c,ncblk_i0))
-c     &               cycle dis_loop
-c                if (.not.check_gm(gm_i0_a,gm_i0_dis_a,nablk_i0))
-c     &               cycle dis_loop
 c dbg
 c                print *,'ACCEPTED'
 c                first_element = .true.
@@ -639,7 +635,7 @@ c                          idx1 = mod(istr1,nstr_k_c2(icmp))+1
                           istr2 = istr2/nstr_i0c2(icmp)
                         end do
 c dbg
-c                        if (first_element.or.
+c                        if (first_element ) then!.or.
 c     &                       idx_opreo.eq.1.or.
 c     &                       idx_opreo.eq.779) then
 c                          print *,'ori, reo, +/-, val: ',
