@@ -32,6 +32,10 @@
       integer, intent(in) ::
      &     mode, scaling
 
+      real(8), parameter ::
+     &     scal_aa = 0.250d0,
+     &     scal_ab = 0.375d0
+
       integer ::
      &     rt, ct, idx_int, idx_typ, ntypes, ifree, nbuffer, igas,
      &     ngam, ngas, caborb, ntoob, naux_max, iaux_max, idx,
@@ -210,29 +214,24 @@ c dbg
         call atim_cs(cpux,sysx)
 
         ! scaling options
-        if (.true.) then
         select case(scaling)
         case(0)
           fac_s = 1d0
           fac_t = 1d0
         case(1)
-          fac_s = 0.50d0
-          fac_t = 0.25d0
+          fac_s = scal_ab !0.50d0
+          fac_t = scal_aa !0.25d0
         case(2)
-          fac_s = 0.50d0*0.50d0
-          fac_t = 0.25d0*0.25d0
+          fac_s = scal_ab*scal_ab    !0.50d0*0.50d0
+          fac_t = scal_aa*scal_aa    !0.25d0*0.25d0
         case default
           call quit(1,'import_2el_dalton','unknown scaling parameter')
         end select
-        else
-          fac_s = 1d0
-          fac_t = 1d0
-        end if
 
         ! sort into actual list
         call import_list_from_buffer(oplist,buffer,
      &       iaux_max,iaux_max,
-     &       fac_s,fac_t,
+     &       fac_s,fac_t,scaling,
      &       iy_int,typetab,ntypes,
      &       str_info,orb_info)
 

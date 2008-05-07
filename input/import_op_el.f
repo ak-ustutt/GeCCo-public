@@ -30,6 +30,9 @@
       type(orbinf), intent(in) ::
      &     orb_info
 
+      integer, parameter ::
+     &     use_scaling = 10  ! use 0 to turn off scaling
+
       integer ::
      &     ipri, mode, scaling, idx_mel
       type(me_list), pointer ::
@@ -37,6 +40,10 @@
 
       integer, external ::
      &     idx_mel_list
+
+      if (use_scaling.lt.2.and.use_scaling.ne.0)
+     &     call quit(1,'import_op_el',
+     &     'use use_scaling=0 to switch off scaling')
 
       idx_mel = idx_mel_list(label_mel,op_info)
       if (idx_mel.lt.0)
@@ -51,7 +58,7 @@
         select case(trim(mel_target%op%name))
         case (op_ham,op_g_x)
           mode=1
-          scaling=0
+          scaling=min(use_scaling,0)
           call import_2el_dalton(mel_target,'MO_G',
      &           mode,scaling,str_info,orb_info)
           ! call after 2int import, as the above routine
@@ -62,31 +69,31 @@
         ! Get other integrals needed for R12 calculations.
         case(op_rint)
           mode=1
-          scaling=1
+          scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12',
      &           mode,scaling,str_info,orb_info) 
 
         case(op_rintbar)
           mode=3
-          scaling=1
+          scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12BAR',
      &           mode,scaling,str_info,orb_info) 
 
         case(op_rdagbar)
           mode=3
-          scaling=1
+          scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_FDGBAR',
      &           mode,scaling,str_info,orb_info) 
 
         case(op_rinttilde)
           mode=3
-          scaling=1
+          scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12TLD',
      &           mode,scaling,str_info,orb_info) 
 
         case(op_rintbreve)
           mode=3
-          scaling=1
+          scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12BRV',
      &           mode,scaling,str_info,orb_info) 
 
@@ -99,37 +106,37 @@ c     &           mode,scaling,str_info,orb_info)
           call quit(1,'import_op_el',
      &         'import of F12^+ is obsolete')
           mode=1
-          scaling=1
+          scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12',
      &           mode,scaling,str_info,orb_info) 
 
         case(op_ff)
           mode=1
-          scaling=2
+          scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FF',
      &         mode,scaling,str_info,orb_info)
 
         case(op_ffbar)
           mode=3
-          scaling=2
+          scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FFBAR',
      &         mode,scaling,str_info,orb_info)
 
         case(op_ttr)
           mode=2
-          scaling=1
+          scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_TTF',
      &           mode,scaling,str_info,orb_info) 
 
         case(op_rttr)
           mode=1
-          scaling=2
+          scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FTF',
      &           mode,scaling,str_info,orb_info) 
 
         case(op_gr)
           mode=1
-          scaling=1
+          scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_FG',
      &           mode,scaling,str_info,orb_info) 
 
