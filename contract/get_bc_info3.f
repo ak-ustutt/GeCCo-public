@@ -113,9 +113,6 @@
       isvtx2 = contr%svertex(ivtx2)
 
       self = (isvtx1.eq.isvtx2)
-c dbg
-      print *,'in get_bc_info: self = ',self
-c dbg
 
       if (.not.self) then
         njoined_op(2) = imltlist(isvtx2,contr%svertex,nvtx,1)
