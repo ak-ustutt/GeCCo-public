@@ -172,7 +172,7 @@ c          mnmxspc(2,1:ngas) = 4
 
         nbuffer = nints(1)*ntypes
 c dbg
-        write(luout,*) 'size of buffer: ',nints(1),ntypes,nbuffer
+c        write(luout,*) 'size of buffer: ',nints(1),ntypes,nbuffer
 c dbg
         ifree = mem_setmark('DAimport')
         ifree = mem_alloc_real(buffer,nbuffer,'DAbuffer')
@@ -216,11 +216,11 @@ c dbg
           fac_s = 1d0
           fac_t = 1d0
         case(1)
-          fac_s = 0.50d0
-          fac_t = 0.25d0
+          fac_s = 0.5d0 !3d0/4d0 !0.50d0
+          fac_t = 0.25d0 !1d0/4d0 !1d0/(2d0*sqrt(3d0)) !0.25d0
         case(2)
-          fac_s = 0.50d0*0.50d0
-          fac_t = 0.25d0*0.25d0
+          fac_s = 0.25d0 !9d0/16d0  !0.50d0*0.50d0
+          fac_t = 0.25d0*0.25d0 !1d0/16d0  !1d0/(2d0*2d0*3d0) !0.25d0*0.25d0
         case default
           call quit(1,'import_2el_dalton','unknown scaling parameter')
         end select

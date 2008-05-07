@@ -20,7 +20,8 @@
      &     command_new_intermediate = 2,
      &     command_del_intermediate = 3,
      &     command_add_contribution = 4,
-     &     command_symmetrise = 5
+     &     command_symmetrise = 5,
+     &     command_internal = 6
 
 
       ! 0: target operator is op(target), initialize to 0

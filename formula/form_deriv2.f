@@ -126,6 +126,10 @@ c      include 'def_filinf.h'
       call init_contr(contr)
       nullify(conder%contr)
 
+c dbg
+c      print *,'allow?',rd_contr(luinput,contr,idxinp)
+c dbg
+
       nterms = 0
       do while(rd_contr(luinput,contr,idxinp))
 
@@ -151,6 +155,9 @@ c      include 'def_filinf.h'
             deallocate(ivtx_reo,fix_vtx,occ_vtx)
 
             call wrt_contr(luderiv,cur_conder%contr)
+c dbg
+c            call prt_contr2(luout,cur_conder%contr,op_info)
+c dbg
             if (idx.lt.nder) cur_conder => cur_conder%next
           end do
 

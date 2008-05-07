@@ -76,7 +76,7 @@
      &     mstop(2), igamtop(2), idxop(2), iblkop(2),
      &     mstop1op2, igamtop1op2, njoined,
      &     njoined_op(2), njoined_op1op2,
-     &     njoined_cnt, njoined_res
+     &     njoined_cnt, njoined_res, idxinp
       real(8), pointer ::
      &     xret_blk(:), xret_pnt(:)
       real(8), target ::
@@ -110,7 +110,7 @@
      &     cur_contr
 
       integer, external ::
-     &     idxlist
+     &     idxlist, idx_oplist2
       logical, external ::
      &     me_list_uptodate
       real(8), external ::
@@ -161,7 +161,7 @@
 
         if (nres.eq.0 .and.
      &      cur_form%command.ne.command_set_target_init)
-     &     call quit(1,'frm_sched','first command must define target')
+     &     call quit(1,'frm_sched1','first command must define target')
 
         select case(cur_form%command)
         case(command_end_of_formula)
@@ -238,6 +238,29 @@ c        case(command_set_target_update)
           call symmetrise(1d0,me_res,me_res,xret_blk,op_info,orb_info)
 
           cycle term_loop
+
+c dbg
+        case(command_internal)
+          
+          idxopres = cur_form%target      ! op index of result
+          if (idxopres.eq.0)
+     &         call quit(1,'frm_sched1','idxopres==0 is obsolete!')
+          idxme_res = op2list(idxopres)  ! list index of result
+          me_res => op_info%mel_arr(idxme_res)%mel
+
+          if(trim(me_res%op%name).eq.op_v0_inter)then
+            idxinp = idx_oplist2(op_v_inter,op_info)
+          elseif(trim(me_res%op%name).eq.op_b0_inter)then
+            idxinp = idx_oplist2(op_b_inter,op_info)
+          elseif(trim(me_res%op%name).eq.op_x1_inter)then
+            idxinp = idx_oplist2(op_x_inter,op_info)
+          endif
+          idxinp = op2list(idxinp)
+          meltmp => op_info%mel_arr(idxinp)%mel
+
+          call internal_contract(1d0,meltmp,me_res,op_info,orb_info)
+          cycle term_loop
+c dbg
 
         case(command_add_contribution)
         case default

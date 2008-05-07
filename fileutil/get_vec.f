@@ -26,7 +26,7 @@
       ! first and last record to read from
       irecst = (idxst-1)/lenr+1
       irecnd = (idxnd-1)/lenr+1
-      
+
       ! offset in first record
       ioffrec1 = idxst-1 - (irecst-1)*lenr
       ! last index in last record

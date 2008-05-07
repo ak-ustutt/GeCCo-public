@@ -21,7 +21,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       real(8), intent(out) ::
      &     xnorm2
@@ -136,8 +136,13 @@ c      end if
 
       len_op = mel_in%len_op_occ(iblkin)
       ! for the moment this must hold:
-      if (len_op.ne.mel_out%len_op_occ(iblkout))
-     &     call quit(1,'add_opblk','unexpected error')      
+      if (len_op.ne.mel_out%len_op_occ(iblkout))then
+        write(luout,*)'len_op = ',len_op
+        write(luout,*)'mel len = ',mel_out%len_op_occ(iblkout)
+        call wrt_occ_n(luout,opin%ihpvca_occ(1,1,idx_in),njoined_in)
+        call wrt_occ_n(luout,opout%ihpvca_occ(1,1,idx_out),njoined_out)
+        call quit(1,'add_opblk','unexpected error')      
+      endif
 
       ! buffered data available?
       bufin = .false.

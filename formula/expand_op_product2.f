@@ -142,7 +142,7 @@ c      ! currently, we expand primitive operators only
       if (nops.ne.proto%nsupvtx) then
         call quit(1,'expand_op_product2',
      &              'number of operators does not conform with '//
-     &              'super-vertex informations')
+     &              'super-vertex information')
       end if
       proto%narc = narc
       proto%fac  = fac

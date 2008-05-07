@@ -54,8 +54,8 @@
       integer, allocatable ::
      &     occ_def(:,:,:)
 
-      logical ::
-     &     r12fix
+c      logical ::
+c     &     r12fix
 
       type(operator), pointer::
      &     h_temp_pnt, sop_pnt, sbar_pnt
@@ -75,20 +75,22 @@
 
       call atim_csw(cpu0,sys0,wall0)
 
-      ! Are we fixing the F12 amplitudes?
-      call get_argument_value('method.R12','fixed',lval=r12fix)
+c      ! Are we fixing the F12 amplitudes?
+c      call get_argument_value('method.R12','fixed',lval=r12fix)
       
       ! get indices
-      if (nlabels.ne.8.and..not.r12fix) then
+c      if (nlabels.ne.8.and..not.r12fix) then
+      if(nlabels.ne.8)then
         write(luout,*) 'nlabels = ',nlabels
         call quit(1,'set_mp2_r12_lagrangian',
      &     'I expect exactly 8 labels')
       end if
-      if (nlabels.ne.6.and.r12fix) then
-        write(luout,*) 'nlabels = ',nlabels
-        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
-     &     'I expect exactly 6 labels')
-      end if
+c      if (nlabels.ne.6.and.r12fix) then
+c        write(luout,*) 'nlabels = ',nlabels
+c        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
+c     &     'I expect exactly 6 labels')
+c      end if
+
       do ilabel = 1, nlabels
         idx = idx_oplist2(label(ilabel),op_info)
         if (idx.le.0)
@@ -181,15 +183,15 @@
       enddo
 
       ! Form of the R12 part depends on whether the amplitudes are fixed.
-      if(.not.r12fix)then
+c      if(.not.r12fix)then
         call expand_op_product(fl_t_cr_pnt,idx_sop,
      &       1d0,2,(/idxc12,idxr12/),-1,-1,
      &       (/1,2/),1,.false.,op_info)
-      else
-        call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &       1d0,1,idxr12,-1,-1,
-     &       0,0,.false.,op_info)
-      endif
+c      else
+c        call expand_op_product(fl_t_cr_pnt,idx_sop,
+c     &       1d0,1,idxr12,-1,-1,
+c     &       0,0,.false.,op_info)
+c      endif
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T2 + CR2')
@@ -216,7 +218,7 @@ c      sbar_pnt%dagger = .true.
         fl_t_cr_pnt => fl_t_cr_pnt%next
       enddo
 
-      if(.not.r12fix)then
+c      if(.not.r12fix)then
         call expand_op_product2(fl_t_cr_pnt,idx_sbar,
      &       1d0,4,3,
      &       (/idx_sbar,-idxr12,idxcba,idx_sbar/),(/1,2,3,1/),
@@ -225,16 +227,16 @@ c      sbar_pnt%dagger = .true.
      &       0,0,
      &       0,0,
      &       op_info)
-      else
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,3,2,
-     &       (/idx_sbar,-idxr12,idx_sbar/),(/1,2,1/),
-     &       -1,-1,
-     &       0,0,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      endif
+c      else
+c        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+c     &       1d0,3,2,
+c     &       (/idx_sbar,-idxr12,idx_sbar/),(/1,2,1/),
+c     &       -1,-1,
+c     &       0,0,
+c     &       0,0,
+c     &       0,0,
+c     &       op_info)
+c      endif
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T2BAR + CR2BAR')

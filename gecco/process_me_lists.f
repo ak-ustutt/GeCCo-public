@@ -45,6 +45,8 @@
 
       integer ::
      &     idx_formlist
+      integer, external ::
+     &     idx_mel_list
 
       if (rule%type.ne.ttype_opme)
      &     call quit(1,'process_me_lists',
@@ -65,6 +67,24 @@
      &       absym,casym,gamma,s2,ms,
      &       -1,-1,
      &       op_info,orb_info,str_info,strmap_info)
+
+      case(UNITY)
+
+        idx = idx_mel_list(rule%labels(1),op_info)
+        if(idx.lt.0)
+     &       call quit(1,'process_me_lists','Label not on list: "'//
+     &       trim(rule%labels(1))//'"')
+
+        mel_pnt => op_info%mel_arr(idx)%mel
+
+        call zeroop(mel_pnt)
+
+        call add_unity(1d0,mel_pnt,1,orb_info)
+c dbg
+        write(luout,*)'writing unity'
+        call wrt_mel_file(luout,5,mel_pnt,1,1,
+     &       str_info,orb_info)
+c dbg
 
       case(ASSIGN_ME2OP)
         

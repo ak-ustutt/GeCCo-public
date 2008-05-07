@@ -27,7 +27,10 @@
      &     INVARIANT*9              = 'INVARIANT',
      &     DERIVATIVE*10            = 'DERIVATIVE',
      &     LEQ_SPLIT*9              = 'LEQ_SPLIT',
-     &     OPTIMIZE*8               = 'OPTIMIZE'
+     &     OPTIMIZE*8               = 'OPTIMIZE',
+c dbg
+     &     CONTRACT*8               = 'CONTRACT'
+c dbg
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',
@@ -41,4 +44,5 @@
      &     EVALPROP*9         = 'EVAL_PROP',
      &     SOLVENLEQ*10       = 'SOLVE_NLEQ',
      &     SOLVELEQ*9         = 'SOLVE_LEQ',
-     &     SOLVEEVP*9         = 'SOLVE_EVP'
+     &     SOLVEEVP*9         = 'SOLVE_EVP',
+     &     UNITY*9            = 'ADD_UNITY'
