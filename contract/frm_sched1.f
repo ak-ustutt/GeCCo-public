@@ -52,7 +52,7 @@
 
       logical ::
      &     update, reo_op1op2, reo_other, possible, skip, new,
-     &     tra_op1, tra_op2, tra_op1op2, set_reo, make_contr_red
+     &     tra_op1, tra_op2, tra_op1op2, set_reo, make_contr_red, self
       integer ::
      &     idxopres, idxres, nres, type_xret, type_xret_cur,
      &     idxme_res, idxmel,
@@ -255,16 +255,6 @@ c        case(command_set_target_update)
         iterm = iterm+1
         if (iprint.ge.20)
      &     write(luout,*) '   term #',iterm
-
-c dbg - Ctilde check for R12
-c        if (iterm.eq.37.or.iterm.eq.41.or.
-c     &      iterm.eq.64.or.iterm.eq.83) then
-c          do nfact = 1, 20
-c            print *,'skipping term ',iterm
-c          end do
-c          cycle term_loop
-c        end if
-c dbg
 
         if (ntest.ge.50)
      &       call prt_contr2(luout,cur_contr,op_info)
@@ -492,22 +482,27 @@ c          stop 'test'
           end if
 
           ! set up operator 1 and 2
+          self = .false.
           do iops = 1, 2
             if (idxop(iops).gt.0) then
               idxmel = op2list(idxop(iops))
               ! primary operator or long-term intermediate
               if (iops.eq.1) me_op1 => mel_arr(idxmel)%mel
               if (iops.eq.2) me_op2 => mel_arr(idxmel)%mel
-            else
+            else if (idxop(iops).lt.0) then
               ! intermediate for current contraction only
               if (iops.eq.1) me_op1 => melscr(-idxop(iops))
               if (iops.eq.2) me_op2 => melscr(-idxop(iops))
+            else if (iops.eq.2) then
+              self = .true.
+            else
+              call quit(1,'frm_sched1','inconsistent idxop occurred!')
             end if
           end do
 
           if (me_op1%fhand%unit.le.0)
      &             call file_open(me_op1%fhand)
-          if (me_op2%fhand%unit.le.0)
+          if (.not.self.and.me_op2%fhand%unit.le.0)
      &             call file_open(me_op2%fhand)
 
           ! set up result
@@ -563,10 +558,11 @@ c          stop 'test'
           ! (makes life easier in case we once decide to use
           ! one scratch file only: no changes to contr_op1op2 necessary)
           ffop1 => me_op1%fhand
-          ffop2 => me_op2%fhand
+          if (.not.self) ffop2 => me_op2%fhand
           ffop1op2 => me_op1op2%fhand
           idoffop1 = ffop1%length_of_record*(ffop1%current_record-1)
-          idoffop2 = ffop2%length_of_record*(ffop2%current_record-1)
+          if (.not.self)
+     &        idoffop2 = ffop2%length_of_record*(ffop2%current_record-1)
           idoffop1op2 = ffop1op2%length_of_record*
      &                                   (ffop1op2%current_record-1)
 
@@ -574,7 +570,7 @@ c          stop 'test'
      &         write(luout,*) 'calling contraction kernel'
           ! do the contraction
           call contr_op1op2(facc,bc_sign,
-     &       update,xret_pnt,type_xret_cur,
+     &       update,self,xret_pnt,type_xret_cur,
      &       me_op1,me_op2,me_op1op2, me_op1op2tmp,
      &       tra_op1, tra_op2, tra_op1op2,
      &       iblkop(1),iblkop(2),iblkop1op2,iblkop1op2,

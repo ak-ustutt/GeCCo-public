@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine idx_tupel(idxhpv,
-     &     iocc,idx_graph,idspc,idorb,idspn,idgam,set_spc_gam,
+     &     iocc,idx_graph,igam,idxms,nj,get_max,
+     &     idspc,idorb,idspn,idgam,set_spc_gam,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
 *     given a C or A string, obtain the string numbers for 
@@ -16,11 +17,12 @@
       include 'def_orbinf.h'
 
       integer, intent(out) ::
-     &     idxhpv(ngastp)
+     &     idxhpv(ngastp,nj)
       logical, intent(in) ::
-     &     set_spc_gam
+     &     set_spc_gam,get_max
       integer, intent(in) ::
-     &     iocc(ngastp), idx_graph(ngastp),
+     &     nj,igam,idxms,
+     &     iocc(ngastp,2,nj), idx_graph(ngastp,2,nj),
      &     idorb(*), idspn(*)
       integer, intent(inout) ::
      &     idspc(*), idgam(*)
@@ -30,7 +32,7 @@
      &     orb_info
 
       integer ::
-     &     nelt, nel, igraph, ipos, ihpv, ihpvdx, igtp
+     &     nelt, nel, igraph, ipos, ihpv, ihpvdx, igtp, ij
 
       type(graph), pointer ::
      &     curgraph
@@ -41,16 +43,18 @@
      &     idx4sg
 
 
-      idxhpv(1:ngastp) = 0
+      idxhpv(1:ngastp,1:nj) = 0
 
       nelt = 0
+      do ij = 1, nj
       do ihpv = 1, ngastp
-        nelt = nelt + iocc(ihpv)
+        nelt = nelt + iocc(ihpv,1,ij)
+      end do
       end do
 
       if (nelt.eq.0) return
 
-      if (set_spc_gam) then
+      if (.not.get_max.and.set_spc_gam) then
         do ipos = 1, nelt
           ! get IRREP of orbital
           idgam(ipos) = orb_info%igamorb(idorb(ipos))
@@ -69,22 +73,36 @@
 
       ipos = 1
       ihpv_loop: do ihpvdx = 1, ngastp
+      do ij = 1, nj
         if (ipos.gt.nelt) exit ihpv_loop
         ! not quite efficient fix to get actual H/P/V
-        ihpv = orb_info%ihpvgas(orb_info%igasorb(idorb(ipos)),1)
-        if (orb_info%nspin.eq.2.and.
+        if (.not.get_max) then
+          ihpv = orb_info%ihpvgas(orb_info%igasorb(idorb(ipos)),1)
+         if (orb_info%nspin.eq.2.and.
      &      orb_info%ihpvgas(idspc(ipos),1).ne.
      &      orb_info%ihpvgas(idspc(ipos),2) .and.
      &      idspn(ipos).eq.-1)
      &         ihpv = orb_info%ihpvgas(idspc(ipos),2)
-        nel = iocc(ihpv)
-        if (nel.eq.0) then
-          call quit(1,'idx_tupel','strange event')
+        end if
+        nel = iocc(ihpv,1,ij)
+        if (nel.eq.0) cycle
+c          call quit(1,'idx_tupel','strange event')
+c        end if
+        if (.not.get_max) then
+        else
+          ihpv = ihpvdx
         end if
 
         ! point to graph needed for current string
-        igraph = idx_graph(ihpv) !,ica,iblk_op)
+        igraph = idx_graph(ihpv,1,ij) !,ica,iblk_op)
         curgraph => str_info%g(igraph)
+        if (igraph.eq.0) cycle
+c dbg
+        print *,'igam,idxms,ihpv,ij: ',igam,idxms,ihpv,ij,igraph
+c dbg
+        if (get_max) then
+          idxhpv(ihpv,ij) = curgraph%lenstr_gm(igam,idxms)
+        else
 
         ! check for restrictions
         if (.not.allow_sbsp_dis(idspc(ipos),nel,
@@ -95,7 +113,7 @@
         end if
 
         ! get string index
-        idxhpv(ihpv) = idx4sg(nel,idspc(ipos),idorb(ipos),
+        idxhpv(ihpv,ij) = idx4sg(nel,idspc(ipos),idorb(ipos),
      &                               idspn(ipos),idgam(ipos),
      &             curgraph%y4sg,curgraph%yinf,
      &             curgraph%yssg,curgraph%wssg,
@@ -104,8 +122,10 @@
      &             orb_info%ngas_hpv(ihpv))
 
         ! string number is actual index - 1
+        end if
 
         ipos = ipos+nel
+      end do
       end do ihpv_loop
 
       return

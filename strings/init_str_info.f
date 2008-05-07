@@ -14,6 +14,7 @@
       
       str_info%ngraph = 0
       str_info%max_igtyp = 0
+      str_info%max_idxms = 0
       str_info%gtab => null()
       str_info%ispc_typ => null()
       str_info%ispc_occ => null()

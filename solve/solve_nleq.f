@@ -40,6 +40,9 @@
       include 'def_dependency_info.h'
       include 'ifc_memman.h'
 
+      integer, parameter ::
+     &     ntest = 00
+
       integer, intent(in) ::
      &     nopt, nspecial
       character(*), intent(in) ::
@@ -69,7 +72,7 @@
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
      &     idx, idxmel, ierr, nout, idx_en_xret, idx_res_xret(nopt)
       real(8) ::
-     &     energy, xresnrm(nopt)
+     &     energy, xresnrm(nopt), xdum
       real(8), pointer ::
      &     xret(:)
       type(dependency_info) ::
@@ -93,6 +96,10 @@
 
       integer, external ::
      &     idx_formlist, idx_mel_list, idx_xret
+      logical, external ::
+     &     file_exists
+      real(8), external ::
+     &     xnormop
 
       ifree = mem_setmark('solve_nleq')
 
@@ -163,9 +170,6 @@
         if (ierr.eq.3.or.ierr.eq.4) label = label_res(jopt)
         if (ierr.eq.5.or.ierr.eq.6) label = label_prc(jopt)
         if (ierr.eq.7.or.ierr.eq.8) label = label_special(jopt)
-c dbg
-c        print *,'ierr',ierr
-c dbg
 
         if (mod(ierr,2).eq.1)
      &       call quit(1,'solve_nleq',
@@ -243,6 +247,17 @@ c     &       ff_trv,ff_h_trv,
      &       opti_info,opti_stat,
      &       orb_info,str_info)
 
+        if (ntest.ge.1000) then
+          do iopt = 1, nopt
+            write(luout,*) 'dump of '//trim(me_opt(iopt)%mel%label)
+            write(luout,*) 'iopt = ',iopt
+            call wrt_mel_file(luout,5,
+     &           me_opt(iopt)%mel,
+     &           1,me_opt(iopt)%mel%op%n_occ_cls,
+     &           str_info,orb_info)
+          end do
+        end if
+
         ! here?
         do iopt = 1, nopt
           call touch_file_rec(ffopt(iopt)%fhand)
@@ -256,6 +271,18 @@ c     &       ff_trv,ff_h_trv,
           ! intermediates should be generated first, energy
           ! is expected to be the last "intermediate"
           energy =  xret(idx_en_xret)
+
+          if (ntest.ge.1000) then
+            do iopt = 1, nopt
+              write(luout,*) 'dump of residual '//
+     &             trim(me_grd(iopt)%mel%label)
+              call wrt_mel_file(luout,5,
+     &           me_grd(iopt)%mel,
+     &           1,me_grd(iopt)%mel%op%n_occ_cls,
+     &           str_info,orb_info)
+            end do
+          end if
+
           do iopt = 1, nopt
             xresnrm(iopt) = xret(idx_res_xret(iopt))
           end do

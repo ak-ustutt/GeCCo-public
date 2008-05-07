@@ -46,7 +46,7 @@
       do while(form_ptr%command.ne.command_end_of_formula)
         if (form_ptr%command.eq.command_add_contribution) then
           iterm = iterm + 1
-          if (ntest.ge.10)
+          if (iprlvl.ge.10)
      &         write(luout,*) 'factorizing term # ',iterm
           call form_fact2(form_ptr%contr,
      &         op_info,str_info,orb_info,iscale_stat)

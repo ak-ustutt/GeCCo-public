@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine contr_op1op2(xfac,bc_sign,
-     &     update,xret,type_xret,
+     &     update,self,xret,type_xret,
      &     me_op1,me_op2,me_op1op2,me_op1op2tmp,
      &     tra_op1, tra_op2, tra_op1op2,
      &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
@@ -36,7 +36,7 @@
       include 'def_reorder_info.h'
 
       logical, intent(in) ::
-     &     update, tra_op1, tra_op2, tra_op1op2
+     &     update, self, tra_op1, tra_op2, tra_op1op2
       real(8), intent(in) ::
      &     xfac, bc_sign
       real(8), intent(inout) ::
@@ -117,7 +117,8 @@ c        print *,'iblkop1op2,iblkop1op2tmp: ',iblkop1op2,iblkop1op2tmp
 c        print *,'iocc_op1op2:'
 c        call wrt_occ(6,iocc_op1op2)
 c dbg
-        call contr_op1op2_wmaps_c(xfac,bc_sign,
+        if (.not.self) then
+          call contr_op1op2_wmaps_c(xfac,bc_sign,
      &       update,xret,type_xret,
      &       me_op1,me_op2,me_op1op2,me_op1op2tmp,
      &       tra_op1, tra_op2, tra_op1op2,
@@ -125,6 +126,18 @@ c dbg
      &       idoffop1,idoffop2,idoffop1op2,
      &       cnt_info,reo_info,
      &       str_info,strmap_info,orb_info)
+        else
+          call trace_op(xfac,bc_sign,
+     &     update,xret,type_xret,
+     &     me_op1,me_op1op2,me_op1op2tmp,
+     &     tra_op1, tra_op1op2,
+     &     iblkop1,iblkop1op2,iblkop1op2tmp,
+     &     idoffop1,idoffop1op2,
+     &     cnt_info,reo_info,
+     &     str_info,strmap_info,orb_info)
+
+          stop 'test exit after trace_op'
+        end if
 
         call dealloc_cnt_info(cnt_info)
 

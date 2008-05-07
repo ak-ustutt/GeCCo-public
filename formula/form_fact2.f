@@ -33,7 +33,7 @@
      &     iscale_stat(ngastp,2)
 
       integer ::
-     &     ngas, nsym, maxidx, iarc, ivtx, icount, njoined,
+     &     ngas, nsym, maxidx, iarc, ivtx, icount, njoined, ncost_eval,
      &     idx, narc_full, nvtx_full, nlevel, nlevel_best
       integer, pointer ::
      &     ihpvgas(:,:),
@@ -146,6 +146,7 @@ c dbg
       costmin = huge(costmin)
       nlevel = 1
       icount = 0
+      ncost_eval = 0
 c dbg
 c      print *,'now diving into the recursions, njoined = ',njoined
 c dbg
@@ -153,6 +154,10 @@ c dbg
      &     cost,iscale,
      &     contr,occ_vtx,irestr_vtx,info_vtx,
      &     ivtx_ori,iarc_ori)
+
+      if (iprlvl.ge.10) then
+        write(luout,*) '# of dummy contractions: ',ncost_eval
+      end if
 
       if (.not.found) then
         call prt_contr2(luout,contr,op_info)
@@ -310,6 +315,7 @@ c dbg
         ! the contraction is not allowed (for some reason)
         if (.not.possible) cycle
 
+        ncost_eval = ncost_eval+1
         ! already more expensive than current best factorization?
         if (cost(1).ge.costmin(1)) cycle
 

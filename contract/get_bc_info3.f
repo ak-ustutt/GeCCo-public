@@ -71,6 +71,8 @@
      &     mst_op(2), mst_op1op2, gamt_op(2), gamt_op1op2,
      &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*)
 
+      logical ::
+     &     self
       integer ::
      &     ld_mmap1, ld_mmap2, ld_mmap12, ngas,
      &     nvtx, ivtx, idx,
@@ -109,20 +111,39 @@
       end if
 
       isvtx2 = contr%svertex(ivtx2)
-      njoined_op(2) = imltlist(isvtx2,contr%svertex,nvtx,1)
-      if (ivtx2.le.nvtx) then
-        idx_op(2) = contr%vertex(ivtx2)%idx_op
-        iblk_op(2) = (contr%vertex(ivtx2)%iblk_op-1)/njoined_op(2) + 1
-        tra_op2   = contr%vertex(ivtx2)%dagger
+
+      self = (isvtx1.eq.isvtx2)
+c dbg
+      print *,'in get_bc_info: self = ',self
+c dbg
+
+      if (.not.self) then
+        njoined_op(2) = imltlist(isvtx2,contr%svertex,nvtx,1)
+        if (ivtx2.le.nvtx) then
+          idx_op(2) = contr%vertex(ivtx2)%idx_op
+          iblk_op(2) = (contr%vertex(ivtx2)%iblk_op-1)/njoined_op(2) + 1
+          tra_op2   = contr%vertex(ivtx2)%dagger
+        end if
+      else
+        njoined_op(2) = 0
+        if (ivtx2.le.nvtx) then
+          idx_op(2) = 0
+          iblk_op(2) = 0
+          tra_op2   = .false.
+        end if
       end if
 
-      if (isvtx1.eq.isvtx2)
-     &     call quit(1,'get_bc_info3','I am confused ....')
+c     &     call quit(1,'get_bc_info3','I am confused ....')
 
       mst_op(1) = info_vtx(1,ivtx1+njoined_res)
-      mst_op(2) = info_vtx(1,ivtx2+njoined_res)
       gamt_op(1) = info_vtx(2,ivtx1+njoined_res)
-      gamt_op(2) = info_vtx(2,ivtx2+njoined_res)
+      if (.not.self) then
+        mst_op(2) = info_vtx(1,ivtx2+njoined_res)
+        gamt_op(2) = info_vtx(2,ivtx2+njoined_res)
+      else
+        mst_op(2) = 0
+        gamt_op(2) = 1
+      end if
 
       ivtx1 = 0
       ivtx2 = 0
@@ -134,7 +155,7 @@
           irestr_op1(1:2,1:ngas,1:2,1:2,ivtx1) =
      &         irestr_vtx(1:2,1:ngas,1:2,1:2,ivtx+njoined_res)
         end if
-        if (contr%svertex(ivtx).eq.isvtx2) then
+        if (contr%svertex(ivtx).eq.isvtx2.and..not.self) then
           ivtx2 = ivtx2+1
           iocc_op2(1:ngastp,1:2,ivtx2) =
      &         occ_vtx(1:ngastp,1:2,ivtx+njoined_res)
@@ -143,6 +164,11 @@
         end if
       end do
       
+      if (self) then
+        iocc_op2(1:ngastp,1:2,1) = 0
+        irestr_op2(1:2,1:ngas,1:2,1:2,njoined_res+1) = 0
+      end if
+
       allocate(arc_list(contr%narc))
       ! set external and contraction indices
       ! get all involved arcs
@@ -162,14 +188,16 @@
      &               .true.,.true.,ld_mmap1,
      &               1,iocc_op1,njoined_op(1),isvtx1,
      &               contr,arc_list,len_list)
-      call occ_op2ex(iocc_ex2,iocc_cnt,merge_map_op2,
+      if (.not.self) 
+     &  call occ_op2ex(iocc_ex2,iocc_cnt,merge_map_op2,
      &               .false.,.true.,ld_mmap2,
      &               2,iocc_op2,njoined_op(2),isvtx2,
      &               contr,arc_list,len_list)
 
       call condense_merge_map(merge_op1,
      &                   merge_map_op1,ld_mmap1,njoined_op(1),.false.)
-      call condense_merge_map(merge_op2,
+      if (.not.self)
+     &     call condense_merge_map(merge_op2,
      &                   merge_map_op2,ld_mmap2,njoined_op(2),.false.)
 
       allocate(ireo_vtx_no(nvtx),ireo_vtx_on(nvtx),ivtx_op1op2(nvtx))
@@ -248,14 +276,21 @@ c dbg
         end do
 
       end if
-
+      
       ! calculate sign
-      call sign_bc(bc_sign,
+      if (.not.self) then
+        call sign_bc(bc_sign,
      &     isvtx1,isvtx2,contr%svertex,nvtx,
      &     iocc_op1,iocc_op2,iocc_cnt,
      &     njoined_op(1),njoined_op(2),njoined_op1op2,njoined_cnt,
      &     merge_map_op1,merge_map_op2,merge_map_op1op2,
      &     ld_mmap1,ld_mmap2,ld_mmap12)
+      else
+        write(luout,*) 'setting self-contraction sign to +1'
+        write(luout,*) 'setting self-contraction sign to +1'
+        write(luout,*) 'setting self-contraction sign to +1'
+        bc_sign = +1d0
+      end if
 
       deallocate(merge_map_op1op2)
       deallocate(merge_map_op1,merge_map_op2)
@@ -268,6 +303,7 @@ c dbg
         write(luout,*) 'MS:           ',mst_op(1), mst_op(2), mst_op1op2
         write(luout,*) 'IRREP:        ',gamt_op(1), gamt_op(2),
      &                                                       gamt_op1op2
+        write(luout,*) 'sign: ',bc_sign
         write(luout,*) 'op1, op2, op1op2:'
         call wrt_occ_n(luout,iocc_op1,njoined_op(1))
         call wrt_occ_n(luout,iocc_op2,njoined_op(2))

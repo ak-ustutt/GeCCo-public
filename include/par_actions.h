@@ -22,12 +22,16 @@
      &     DEF_R12INTM_CABS*26      = 'DEF_R12INTM_CABS',
      &     DEF_MPR12_LAGRANGIAN*30  = 'DEF_MPR12_LAGRANGIAN',
      &     DEF_CCR12_LAGRANGIAN*30  = 'DEF_CCR12_LAGRANGIAN',
+     &     EXPAND_OP_PRODUCT*27     = 'EXPAND_OP_PRODUCT',
      &     FACTOR_OUT*10            = 'FACTOR_OUT',
      &     REPLACE*7                = 'REPLACE',
      &     INVARIANT*9              = 'INVARIANT',
      &     DERIVATIVE*10            = 'DERIVATIVE',
      &     LEQ_SPLIT*9              = 'LEQ_SPLIT',
-     &     OPTIMIZE*8               = 'OPTIMIZE'
+     &     OPTIMIZE*8               = 'OPTIMIZE',
+     &     KEEP_TERMS*9             = 'KEEP_TERMS',
+     &     DEL_TERMS*8              = 'DEL_TERMS',
+     &     MODIFY_FACTORIZATION*30  = 'MODIFY_FACTORIZATION'
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',
@@ -36,6 +40,7 @@
      &     IMPORT*6           = 'IMPORT',
      &     PRECONDITIONER*14  = 'PRECONDITIONER',
      &     ADD*3              = 'ADD',
+     &     SCALE*5            = 'SCALE',
      &     INVERT*8           = 'INVERT',
      &     EVAL*8             = 'EVALUATE',
      &     EVALPROP*9         = 'EVAL_PROP',

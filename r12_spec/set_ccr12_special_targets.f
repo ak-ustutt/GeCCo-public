@@ -178,6 +178,16 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
         call set_rule(form_ccr12lg0,ttype_frm,REPLACE,
      &              labels,4,1,
      &              parameters,2,tgt_info)
+
+        ! put here rule to remove/keep certain terms
+        ! for comp. with dalton
+        labels(1) = form_ccr12lg0
+        labels(2) = form_ccr12lg0
+        call modify_parameters(-1,
+     &       parameters,4,(/37,41,64,83/),4)
+        call set_rule(form_ccr12lg0,ttype_frm,DEL_TERMS,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)        
       end if
       
       labels(1:10)(1:len_target_name) = ' '

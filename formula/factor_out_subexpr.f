@@ -75,7 +75,14 @@
             write(luout,*) 'New operator target: ',idxop_tgt
             write(luout,'(70("="))')
           end if
+          ! for a save exit (although this normally should not happen):
+          if (.not.associated(fl_tgt_current%next)) exit tgt_loop
+
           fl_tgt_current => fl_tgt_current%next
+          cycle tgt_loop
+        else if (fl_tgt_current%command.eq.command_end_of_formula) then
+          ! may happen for empty formulae
+          exit tgt_loop
         end if
 
         if (.not.associated(fl_tgt_current%contr))

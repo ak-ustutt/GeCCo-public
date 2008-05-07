@@ -25,5 +25,7 @@
       call set_r12_general_targets(tgt_info,orb_info,env_type)
       call set_mpr12_special_targets(tgt_info,orb_info)
 
+c      call set_ccr12_debug_targets(tgt_info,orb_info)
+
       return
       end

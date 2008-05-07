@@ -92,7 +92,7 @@ c fix for newly introduced dagger flag -- ensure that it is always def.'d
      &       contr%inffac(1:ld_inffac,1:nsave)
         if (contr%mxfac.gt.0) deallocate(contr%inffac)
         contr%inffac => inf_new
-        contr%mxarc = nfac
+        contr%mxfac = nfac
       end if
 
       return

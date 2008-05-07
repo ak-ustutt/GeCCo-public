@@ -16,6 +16,14 @@
       include 'par_formnames_gen.h'
       include 'par_gen_targets.h'
       include 'par_actions.h'
+c test
+      character, parameter ::
+     &     op_b0_inter*2 = 'B0',
+     &     mel_b0_inter*6 = 'B0list',
+     &     mel_b0_def*9   = 'defB0list',
+     &     form_b0*6        = 'B0test',
+     &     fopt_b0*5        = 'B0opt'
+c test
 
       type(target_info), intent(inout) ::
      &     tgt_info
@@ -478,7 +486,6 @@ c      occ_def(IHOLE,2,6) = 2
       call set_rule(op_hartree,ttype_op,DEF_HAMILTONIAN,
      &              op_hartree,1,1,
      &              parameters,1,tgt_info)
-      
 
 *----------------------------------------------------------------------*
 *     Formulae
@@ -760,6 +767,81 @@ c     &     'C           ')
      &              labels,5,1,
      &              parameters,2,tgt_info)
 
+c test
+      call add_target(op_b0_inter,ttype_op,.false.,tgt_info)
+      occ_def = 0
+      occ_def(1,1,1) = 1
+      occ_def(1,2,2) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &       occ_def,1,2,2)
+c      call op_from_occ_parameters(-1,parameters,2,
+c     &       occ_def,1,1,1)
+      call set_rule(op_b0_inter,ttype_op,DEF_OP_FROM_OCC,
+     &              op_b0_inter,1,1,
+     &              parameters,2,tgt_info)      
+
+      call add_target(form_b0,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_b0,op_b0_inter,tgt_info)
+      call set_dependency(form_b0,op_b_inter,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_b0
+      labels(2) = op_b0_inter
+      labels(3) = op_b0_inter
+      labels(4) = op_b_inter
+      labels(5) = op_b0_inter
+      labels(6) = op_b0_inter
+      labels(7) = op_b_inter
+      labels(8) = op_b0_inter
+      call form_parameters2(-1,
+     &     parameters,2,
+     &     'title',6,(/2,1,2,2,1,2/))
+      call set_rule(form_b0,ttype_frm,EXPAND_OP_PRODUCT,
+     &     labels,8,1,
+     &     parameters,2,tgt_info)
+c      labels(1) = form_b0
+c      labels(2) = op_b0_inter
+c      labels(3) = op_b_inter
+c      labels(4) = op_b_inter
+c      call form_parameters2(-1,
+c     &     parameters,2,
+c     &     'title',2,(/1,1/))
+c      call set_rule(form_b0,ttype_frm,EXPAND_OP_PRODUCT,
+c     &     labels,4,1,
+c     &     parameters,2,tgt_info)
+
+      call add_target(mel_b0_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_b0_def,op_b0_inter,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_b0_inter
+      labels(2) = op_b0_inter
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(mel_b0_def,ttype_opme,DEF_ME_LIST,
+     &     labels,2,1,
+     &     parameters,1,tgt_info)
+
+      call add_target(fopt_b0,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_b0,form_b0,tgt_info)
+      call set_dependency(fopt_b0,mel_b0_def,tgt_info)
+      call set_dependency(fopt_b0,mel_b_def,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_b0
+      labels(2) = form_b0
+      ncat = 1
+      nint = 0
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_b0,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+      call add_target(mel_b0_inter,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_b0_inter,fopt_b0,tgt_info)
+      labels(1) = fopt_b0
+      call set_rule(mel_b0_inter,ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+      
+c test
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae

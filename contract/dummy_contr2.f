@@ -42,7 +42,7 @@
      &     msex1_a, msex1_c, msex2_a, msex2_c,
      &     igamc_ac, igamc_a, igamc_c,
      &     igamex1_a, igamex1_c, igamex2_a, igamex2_c,
-     &     icmp
+     &     icmp, maxidxms
       integer ::
      &     irst_ext(2,ngas,2,2,2),irst_cnt(2,ngas,2,2),
      &     ms12i_a(3), ms12i_c(3), igam12i_a(3), igam12i_c(3),
@@ -81,7 +81,8 @@
      &     map_info_2c(:),
      &     map_info_2a(:),
      &     map_info_12c(:),
-     &     map_info_12a(:)
+     &     map_info_12a(:),
+     &     lenstr_array(:,:,:)
       type(graph), pointer ::
      &     graphs(:)
       real(8) ::
@@ -102,6 +103,11 @@
       flops = 0d0
       xmemtot = 0d0
       xmemblk = 0d0
+
+      maxidxms =  str_info%max_idxms
+      allocate(lenstr_array(nsym,str_info%max_idxms,str_info%ngraph))
+      call set_lenstr_array(lenstr_array,nsym,
+     &                      str_info%max_idxms,str_info)
 
       graphs => str_info%g
 
@@ -286,8 +292,10 @@
                 call ms2idxms(idxmsex1dis_a,msex1dis_a,
      &               cinfo_ex1a,nablk_ex1)
 
-                call set_len_str(lenex1,ncblk_ex1,nablk_ex1,
-     &                  graphs,
+c                call set_len_str(lenex1,ncblk_ex1,nablk_ex1,
+c     &                  graphs,
+                call set_len_str2(lenex1,ncblk_ex1,nablk_ex1,
+     &                  lenstr_array,nsym,maxidxms,
      &                  cinfo_ex1c(1,2),idxmsex1dis_c,
      &                                 gmex1dis_c,cinfo_ex1c(1,3),
      &                  cinfo_ex1a(1,2),idxmsex1dis_a,
@@ -324,8 +332,10 @@ c dbg
                   call ms2idxms(idxmsex2dis_a,msex2dis_a,
      &                 cinfo_ex2a,nablk_ex2)
 
-                  call set_len_str(lenex2,ncblk_ex2,nablk_ex2,
-     &                 graphs,
+c                  call set_len_str(lenex2,ncblk_ex2,nablk_ex2,
+c     &                 graphs,
+                  call set_len_str2(lenex2,ncblk_ex2,nablk_ex2,
+     &                 lenstr_array,nsym,maxidxms,
      &                 cinfo_ex2c(1,2),idxmsex2dis_c,
      &                                gmex2dis_c,cinfo_ex2c(1,3),
      &                 cinfo_ex2a(1,2),idxmsex2dis_a,
@@ -369,9 +379,12 @@ c dbg
      &                   cinfo_op1op2a,nablk_op1op2)
 
                   ! length of intermediate
-                  call set_len_str(
+c                  call set_len_str(
+c     &                   lenop1op2,ncblk_op1op2,nablk_op1op2,
+c     &                   graphs,
+                  call set_len_str2(
      &                   lenop1op2,ncblk_op1op2,nablk_op1op2,
-     &                   graphs,
+     &                   lenstr_array,nsym,maxidxms,
      &                   cinfo_op1op2c(1,2),idxmsi_dis_c,
      &                                    gmi_dis_c,cinfo_op1op2c(1,3),
      &                   cinfo_op1op2a(1,2),idxmsi_dis_a,
@@ -408,8 +421,10 @@ c dbg
      &                   cinfo_cnta,nablk_cnt)
 
                     ! length of contraction
-                    call set_len_str(lencnt,ncblk_cnt,nablk_cnt,
-     &                  graphs,
+c                    call set_len_str(lencnt,ncblk_cnt,nablk_cnt,
+c     &                  graphs,
+                    call set_len_str2(lencnt,ncblk_cnt,nablk_cnt,
+     &                  lenstr_array,nsym,maxidxms,
      &                  cinfo_cntc(1,2),idxmsc_dis_c,
      &                                  gmc_dis_c,cinfo_cntc(1,3),
      &                  cinfo_cnta(1,2),idxmsc_dis_a,
@@ -467,6 +482,7 @@ c dbg
      &     lenex1, lenex2, lencnt, lenop1op2
      &     )
 
+      deallocate(lenstr_array)
 
       return
 
