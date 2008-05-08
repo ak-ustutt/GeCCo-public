@@ -982,7 +982,7 @@ c      end function
       logical, parameter ::
      &     new_line_is_delim = .true.
       character, parameter ::
-     &     delimiter*1(n_delim) = 
+     &     delimiter(n_delim) = 
      &     (/' ', ';', ',', '(', ')', '\\', '"', '!', '=' /)
       integer, parameter ::
      &     ispace =   1,
