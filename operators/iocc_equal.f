@@ -28,7 +28,7 @@
           iocc_equal = iocc_equal.and.
      &         iocc(ihpv,ica_i).eq.jocc(ihpv,ica_j)
         end do
-        if (iocc_equal.eq..false.) exit
+        if (.not.iocc_equal) exit
       end do
 
       return

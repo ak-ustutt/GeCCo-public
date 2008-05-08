@@ -23,7 +23,7 @@
      &     idx, ijoin, njoined, iblkoff
       integer ::
      &     iocc_temp(ngastp,2)
-      integer, external ::
+      logical, external ::
      &     iocc_equal
 
       iblk_occ_inter = -1

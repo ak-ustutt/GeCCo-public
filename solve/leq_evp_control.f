@@ -195,6 +195,8 @@ c        end if
           irecmvp(irequest) = irequest
         end do
 
+        if (ffscr%unit.gt.0) call file_close_delete(ffscr)
+
         iter = 1
 
         ifree = mem_flushmark('leqevpc_temp')
@@ -290,7 +292,7 @@ c        end if
      &       'different subspace dimensions?')
         nrequest = opti_stat%nadd
 c dbg
-        print *,'set nrequest to : ',nrequest
+c        print *,'set nrequest to : ',nrequest
 c dbg
         do irequest = 1, nrequest
           irectrv(irequest) =

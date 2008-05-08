@@ -20,7 +20,7 @@
      &     dago
       integer ::
      &     idx, ijoin, njoined, iblkoff
-      integer, external ::
+      logical, external ::
      &     iocc_equal_n
 
       iblk_occ = -1

@@ -295,10 +295,6 @@ c??          iblkres = (cur_contr%iblk_res-1)/njoined_res + 1
 c fix:
             njoined = mel_arr(idxmel)%mel%op%njoined
             iblkop(1) = (iblkop(1)-1)/njoined + 1
-c dbg
-c            print *,'njoined,njoined_res: ',njoined,njoined_res
-c            print *,'blocks: ',iblkop(1),iblkres
-c dbg
 c fix:
             if (tra_op1.xor.tra_op1op2) then
               call add_opblk_transp(xret_blk(iblkres),fac,
