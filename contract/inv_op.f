@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       
       include 'stdunit.h'
       include 'opdim.h'
@@ -90,9 +90,9 @@
       ! Check that the two operators have the same shape.
       ! not necessarily: in principle, the inverse is the 
       ! contravariant operator with a different shape!
-c      njoined = me_inp%op%njoined
-c      if(njoined.ne.me_inv%op%njoined)
-c     &     call quit(1,'inv_op','in and out incompatible: njoined')
+      njoined = me_inp%op%njoined
+      if(njoined.ne.me_inv%op%njoined)
+     &     call quit(1,'inv_op','in and out incompatible: njoined')
       nocc_cls = me_inp%op%n_occ_cls
       if(nocc_cls.ne.me_inv%op%n_occ_cls)
      &     call quit(1,'inv_op','in and out incompatible: nocc_cls')
@@ -105,7 +105,6 @@ c     &     call quit(1,'inv_op','in and out incompatible: njoined')
 
       do iocc_cls = 1, nocc_cls
         join_off = (iocc_cls-1)*njoined
-
         do idx=1,njoined
           opinp_temp(1:ngastp,1:2) =
      &         me_inp%op%ihpvca_occ(1:ngastp,1:2,join_off+idx)

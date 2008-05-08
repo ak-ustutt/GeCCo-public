@@ -48,7 +48,7 @@
             iocc_equal_n = iocc_equal_n.and.
      &           iocc(ihpv,ica_i,idx).eq.jocc(ihpv,ica_j,jdx)
           end do
-          if (iocc_equal_n.eq..false.) exit outer_loop
+          if (.not.iocc_equal_n) exit outer_loop
         end do
         
         idx = idx+inc
