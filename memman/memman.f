@@ -421,8 +421,9 @@ c      in_last_section = associated(cursection,mem_cursection)
      &       trim(slice%name))        
         ! check paddings
         if (npad.gt.0) then
-          if (.not.cmpiarr(ipad,slice%imem(1-npad),npad).or.
-     &        .not.cmpiarr(ipad,slice%imem(nalloc+1),npad)) then
+          if (.not.cmpiarr(ipad,slice%imem(1-npad:0),npad).or.
+     &        .not.cmpiarr(ipad,slice%imem(nalloc+1:nalloc+npad),npad)) 
+     &    then 
             call memman_map(luout,.true.)
             call quit(1,'memman','range error for '//trim(slice%name))
           end if
@@ -436,8 +437,9 @@ c      in_last_section = associated(cursection,mem_cursection)
      &       trim(slice%name))
         ! check paddings
         if (npad.gt.0) then
-          if (.not.cmpxarr(xpad,slice%xmem(1-npad),npad).or.
-     &        .not.cmpxarr(xpad,slice%xmem(nalloc+1),npad)) then
+          if (.not.cmpxarr(xpad,slice%xmem(1-npad:0),npad).or.
+     &        .not.cmpxarr(xpad,slice%xmem(nalloc+1:nalloc+npad),npad)) 
+     &    then
             call memman_map(luout,.true.)
             call quit(1,'memman','range error for '//trim(slice%name))
           end if
@@ -743,14 +745,16 @@ c      in_last_section = associated(cursection,mem_cursection)
               memsum = memsum + nalloc/irat + 2*npad
               if (mod(nalloc,irat).ne.0) memsum = memsum+1
               if (check) then
-                patchk1 = cmpiarr(ipad,curslc%imem(1-npad),npad)
-                patchk2 = cmpiarr(ipad,curslc%imem(nalloc+1),npad)
+                patchk1 = cmpiarr(ipad,curslc%imem(1-npad:0),npad)
+                patchk2 = cmpiarr(ipad,
+     &                     curslc%imem(nalloc+1:nalloc+npad),npad)
               end if
             case (mtyp_rl8)
               memsum = memsum + nalloc + 2*npad
               if (check) then
-                patchk1 = cmpxarr(xpad,curslc%xmem(1-npad),npad)
-                patchk2 = cmpxarr(xpad,curslc%xmem(nalloc+1),npad)
+                patchk1 = cmpxarr(xpad,curslc%xmem(1-npad:0),npad)
+                patchk2 = cmpxarr(xpad,
+     &                     curslc%xmem(nalloc+1:nalloc+npad),npad)
               end if
             case default
               memsum = memsum + nalloc + 2*npad
@@ -824,12 +828,14 @@ c      in_last_section = associated(cursection,mem_cursection)
             nalloc = curslc%len
             select case(curslc%type)
             case (mtyp_int)
-              patchk1 = cmpiarr(ipad,curslc%imem(1-npad),npad)
-              patchk2 = cmpiarr(ipad,curslc%imem(nalloc+1),npad)
+              patchk1 = cmpiarr(ipad,curslc%imem(1-npad:0),npad)
+              patchk2 = cmpiarr(ipad,
+     &                   curslc%imem(nalloc+1:nalloc+npad),npad)
               ok = patchk1.and.patchk2
             case (mtyp_rl8)
-              patchk1 = cmpxarr(xpad,curslc%xmem(1-npad),npad)
-              patchk2 = cmpxarr(xpad,curslc%xmem(nalloc+1),npad)
+              patchk1 = cmpxarr(xpad,curslc%xmem(1-npad:0),npad)
+              patchk2 = cmpxarr(xpad,
+     &                   curslc%xmem(nalloc+1:nalloc+npad),npad)
               ok = patchk1.and.patchk2
             case default
               ok = .true.

@@ -27,7 +27,7 @@
       integer, parameter ::
      &     ntest = 00
 
-      integer, parameter ::
+      integer(4), parameter ::
      &     imsk16 = 65535,
      &     imsk08 =   255
       

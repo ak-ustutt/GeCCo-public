@@ -40,7 +40,7 @@
       case ('X')
         rank_occ = 0
         do ijoin = 1, njoined
-          rank_occ = rank_occ+
+          rank_occ = rank_occ 
      &        -occ(IHOLE,1,ijoin)
      &        +occ(IPART,1,ijoin)
      &        +occ(IEXTR,1,ijoin)

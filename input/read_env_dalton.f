@@ -25,8 +25,10 @@
 
       integer, parameter ::
      &     mxsym = 8
+      integer(4), parameter ::
+     &     four4 = 4
       ! DALTON writes integer*4, so we must take care of that
-      integer*4 ::
+      integer(4) ::
      &     istate,ispin,nactel,lsym,nsym,
      &     nisht,nasht,nocct,norbt,nbast,nconf,nwopt,nwoph,
      &     ncdets, ncmot,nnashx,nnashy,nnorbt,n2orbt,
@@ -69,7 +71,7 @@
           read(999,'(5x,3i5)')nbas(i),linind(i),totbas(i)
           auxbas(i)=totbas(i)-nbas(i)
           loop=linind(i)*(2+totbas(i)/4)
-          if(mod(totbas(i),4).ne.0)loop=loop+linind(i)
+          if(mod(totbas(i),four4).ne.0)loop=loop+linind(i)
           do j=1,loop
             read(999,*)
           enddo
