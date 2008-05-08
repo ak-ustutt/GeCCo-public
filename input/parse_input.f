@@ -82,12 +82,16 @@
       nullify(keyword_root%up)
       nullify(keyword_root%down_h)
       nullify(keyword_root%down_t)
+      nullify(keyword_root%arg_h)
+      nullify(keyword_root%arg_t)
       keyword_history%key="keyword hist"
       nullify(keyword_history%prev)
       nullify(keyword_history%next)
       nullify(keyword_history%up)
       nullify(keyword_history%down_h)
       nullify(keyword_history%down_t)
+      nullify(keyword_history%arg_h)
+      nullify(keyword_history%arg_t)
 
       keyword_status = 0
 
@@ -802,7 +806,6 @@ c      end function
           write(fmtstr,'("(""I"",",i3,"x,a)")') 2*level+1
         end if
         write(luout,fmtstr) trim(current%key)
-
         ! show arguments to keyword (if applicable)
         if (shw_arg.and.associated(current%arg_h)) then
           curarg => current%arg_h
@@ -1125,7 +1128,6 @@ c        ipst = first_nonblank(line)
 
           ipst = ipnd+2
         end do line_loop
-
       end do file_loop
       
  100  continue
