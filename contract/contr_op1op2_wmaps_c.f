@@ -1209,6 +1209,12 @@ c dbg
                   
                   ! if necessary, reorder op1op2 block:
                   if (reo_op1op2.and.nonzero) then
+c dbg
+c          write(luout,*) 'input block '
+c          write(luout,'(x,5g15.8)')    xbf12tmp(1:lblk_op1op2tmp)
+c          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
+c     &         iblkop1op2,iblkop1op2,str_info,orb_info)
+c dbg
                     call reo_blk_wmaps_c(xop1op2,xop1op2blk,
      &                   reo_info%sign_reo,
      &                   tra_op1op2,
@@ -1228,6 +1234,11 @@ c dbg
      &                   reo_info%map_reo1c,reo_info%map_reo1a,
      &                   reo_info%map_reo2c,reo_info%map_reo2a,
      &                   nsym,str_info,strmap_info)
+c dbg
+c          write(luout,*) 'reordered operator (',trim(op1op2%name),')'
+c          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
+c     &         iblkop1op2,iblkop1op2,str_info,orb_info)
+c dbg
                   end if
 
                 end do caex2_loop

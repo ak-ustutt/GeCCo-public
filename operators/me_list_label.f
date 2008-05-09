@@ -23,11 +23,11 @@
      &     call quit(1,'me_list_label',
      &     'root-name too long: '//trim(root))
 
-      if (spin_adapt.eq.0.and.msc.eq.0) then
+      if (.not.spin_adapt.and.msc.eq.0) then
         write(label,'(a,"G",i1,"SxxM",i2.2)') trim(root),sym,ms
-      else if (spin_adapt.eq.0.and.msc.eq.+1) then
+      else if (.not.spin_adapt.and.msc.eq.+1) then
         write(label,'(a,"G",i1,"C+1M",i2.2)') trim(root),sym,ms
-      else if (spin_adapt.eq.0.and.msc.eq.-1) then
+      else if (.not.spin_adapt.and.msc.eq.-1) then
         write(label,'(a,"G",i1,"C-1M",i2.2)') trim(root),sym,ms
       else
         write(label,'(a,"G",i1,"S",i2,"M",i2.2)') trim(root),sym,spin,ms

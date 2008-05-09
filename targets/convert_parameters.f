@@ -276,6 +276,33 @@
       end
 
 *----------------------------------------------------------------------*
+      subroutine form_parameters2(rw,
+     &     parameters,n_par_str,title,inum,idxlist)
+
+      implicit none
+      
+      integer, intent(in) ::
+     &     rw, n_par_str
+      integer, intent(inout) ::
+     &     inum, idxlist(*)
+      character*(*), intent(inout) ::
+     &     parameters(n_par_str),
+     &     title
+
+      if (rw.lt.0) then
+        write(parameters(1),'(a)') title
+        if (n_par_str.gt.1)
+     &       write(parameters(2),'(i4,20i4)') inum, idxlist(1:inum)
+      else
+        read(parameters(1),'(a)') title
+        if (n_par_str.gt.1)
+     &       read(parameters(2),'(i4,20i4)') inum, idxlist(1:inum)
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine opt_parameters(rw,parameters,ncat,nint)
 
       implicit none
@@ -417,6 +444,64 @@
         read(parameters,'(i2,12g20.14)') nfac,fac(1:nfac)
         if (nfac.gt.maxfac)
      &       call quit(1,'add_parameters','too much (>maxfac)')
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine scale_parameters(rw,parameters,
+     &     nfac,idxblk,fac,maxfac)
+
+      implicit none
+      
+      integer, intent(in) ::
+     &     rw
+      integer, intent(inout) ::
+     &     nfac,maxfac,idxblk(*)
+      real(8), intent(inout) ::
+     &     fac(*)
+      character(*), intent(inout) ::
+     &     parameters
+
+      if (rw.lt.0) then
+        parameters(1:len(parameters)) = ' '
+        if (nfac.gt.12) call quit(1,'scale_parameters','too much')
+        write(parameters,'(i2,12i4,12g20.14)')
+     &       nfac,idxblk(1:nfac),fac(1:nfac)
+      else
+        read(parameters,'(i2,12i4,12g20.14)')
+     &       nfac,idxblk(1:nfac),fac(1:nfac)
+        if (nfac.gt.maxfac)
+     &       call quit(1,'scale_parameters','too much (>maxfac)')
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine modify_parameters(rw,parameters,
+     &     nterm,idxterm,maxterm)
+
+      implicit none
+      
+      integer, intent(in) ::
+     &     rw
+      integer, intent(inout) ::
+     &     nterm,maxterm,idxterm(*)
+      character(*), intent(inout) ::
+     &     parameters
+
+      if (rw.lt.0) then
+        parameters(1:len(parameters)) = ' '
+        if (nterm.gt.30) call quit(1,'modify_parameters','too much')
+        write(parameters,'(i2,30i4)')
+     &       nterm,idxterm(1:nterm)
+      else
+        read(parameters,'(i2,30i4)')
+     &       nterm,idxterm(1:nterm)
+        if (nterm.gt.maxterm)
+     &       call quit(1,'modify_parameters','too much (>maxterm)')
       end if
 
       return

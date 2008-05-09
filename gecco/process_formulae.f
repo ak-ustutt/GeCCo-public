@@ -26,9 +26,12 @@
       type(orbinf), intent(in) ::
      &     orb_info
 
+      integer, parameter ::
+     &     maxterms = 20
       integer ::
-     &     idx, jdx, ioff, ncat, nint, nrename,
-     &     ansatz, ipos, idum, level
+     &     idxterms(maxterms), idx_sv(maxterms),
+     &     idx, jdx, ioff, ncat, nint, nrename, nop,
+     &     ansatz, ipos, idum, level, nterms
       type(formula), pointer ::
      &     form_pnt, form0_pnt
       character(len_command_par) ::
@@ -125,6 +128,17 @@ c prelim
         call set_r12_lagrangian(form_pnt,
      &       title,rule%labels(ioff+1),rule%n_labels-ioff,ansatz,
      &       op_info,orb_info)
+      case(EXPAND_OP_PRODUCT)
+        call form_parameters2(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,nop,idx_sv)
+        ioff = rule%n_update
+c dbg
+        print *,'ioff,nop = ',ioff,nop
+c dbg        
+        call form_expand_op_product(form_pnt,
+     &       title,rule%labels(ioff+1),rule%labels(ioff+2),nop,idx_sv,
+     &       op_info,orb_info)
       case(FACTOR_OUT)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
@@ -208,6 +222,33 @@ c     &       rule%labels(2),
 c     &       rule%labels(ioff+1:ioff+jdx),jdx,
 c     &       op_info)
 c      case(EXTRACT_TERM)
+      case(DEL_TERMS)
+        call modify_parameters(+1,
+     &       rule%parameters,nterms,idxterms,maxterms)
+        ioff = rule%n_update        
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_del_terms(form_pnt,form0_pnt,
+     &       nterms,idxterms,-1,
+     &       op_info)
+      case(KEEP_TERMS)
+        call modify_parameters(+1,
+     &       rule%parameters,nterms,idxterms,maxterms)
+        ioff = rule%n_update        
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_del_terms(form_pnt,form0_pnt,
+     &       nterms,idxterms,+1,
+     &       op_info)
+      case(MODIFY_FACTORIZATION)
+        call modify_parameters(+1,
+     &       rule%parameters,nterms,idxterms,maxterms)
+        ioff = rule%n_update        
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_mod_factorization(form_pnt,form0_pnt,
+     &       nterms,idxterms,
+     &       op_info)
       case default
         call quit(1,'process_formulae','unknown command: '//
      &       trim(rule%command))

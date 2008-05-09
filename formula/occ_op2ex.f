@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine occ_op2ex(iocc_ex,iocc_cnt,merge_map,
      &                     set_cnt,set_map,ld_map,
-     &                     iop1or2,iocc_op,njoined,isupvtx_op,
+     &                     iop1or2_in,iocc_op,njoined,isupvtx_op,
      &                     contr,arc_list,len_list)
 *----------------------------------------------------------------------*
 *     return the remaining ("external") occupation of super-vertex
@@ -22,7 +22,7 @@
      &     set_map, set_cnt
       integer, intent(in) ::
      &     ld_map, njoined, len_list,
-     &     iop1or2,
+     &     iop1or2_in,
      &     iocc_op(ngastp,2,njoined),isupvtx_op,arc_list(len_list)
       type(contraction), intent(in) ::
      &     contr
@@ -31,8 +31,12 @@
       integer, intent(out) ::
      &     iocc_ex(ngastp,2,njoined), merge_map(ld_map,2,njoined)
 
+      logical ::
+     &     self
       integer ::
-     &     iop_other, ijoin, ivtx, ilist, idx, jdx, iarc, ii
+     &     iop_other, ijoin, ivtx, ilist, idx, jdx, iarc, ii,
+     &     iop1or2,
+     &     ipass, npass
       integer, external ::
      &     imltlist
 
@@ -40,15 +44,22 @@
         call write_title(luout,wst_dbg_subr,'occ_op2ex')
         write(luout,*) 'set_cnt, set_map: ', set_cnt, set_map
         write(luout,*) 'isupvtx_op: ',isupvtx_op
-        write(luout,*) 'iop1or2: ',iop1or2
+        write(luout,*) 'iop1or2: ',iop1or2_in
+        write(luout,*) 'ld_map:  ',ld_map
         write(luout,*) 'OP:'
         call wrt_occ_n(luout,iocc_op,njoined)
       end if
 
+      iop1or2 = iop1or2_in
       ! iop1or2 == 1: the current supervertex precedes the second, so
       if (iop1or2.eq.1) iop_other = 2
       ! else:
       if (iop1or2.eq.2) iop_other = 1
+
+      ! check whether this is a self-contraction
+      iarc = arc_list(1)
+      self = contr%svertex(contr%arc(iarc)%link(1)).eq.
+     &       contr%svertex(contr%arc(iarc)%link(2))
 
       ! we start out with the operator occupations
       iocc_ex(1:ngastp,1:2,1:njoined) =
@@ -66,18 +77,29 @@
 
       end if
 
-      do ilist = 1, len_list
+      npass = 1
+      if (self) npass = 2
+      if (ntest.ge.100) write(luout,*) 'self = ',self
+
+      do ipass = 1, npass
+       if (ipass.eq.2) then
+         iop1or2 = iop_other
+         if (iop1or2.eq.1) iop_other = 2
+         if (iop1or2.eq.2) iop_other = 1
+       end if
+
+       do ilist = 1, len_list
         iarc = arc_list(ilist)
 
         if (contr%svertex(contr%arc(iarc)%
      &        link(iop1or2)).eq.isupvtx_op) then
           ivtx = contr%arc(iarc)%link(iop1or2)
-          if (set_cnt)
+          if (set_cnt.and.ipass.eq.1)
      &         iocc_cnt(1:ngastp,1:2,ilist) = contr%arc(iarc)%occ_cnt
         else if (contr%svertex(contr%arc(iarc)%
      &        link(iop_other)).eq.isupvtx_op) then
           ivtx = contr%arc(iarc)%link(iop_other)
-          if (set_cnt)
+          if (set_cnt.and.ipass.eq.1)
      &         iocc_cnt(1:ngastp,1:2,ilist) =
      &         iocc_dagger(contr%arc(iarc)%occ_cnt)
         else 
@@ -98,7 +120,10 @@ c dbg
      &                      - iocc_dagger(iocc_cnt(1:ngastp,1:2,ilist))
         end if
 
-        if (set_map) then
+        if (set_map.and.ipass.eq.1) then
+c dbg
+c          print *,'ipass = ',ipass
+c dbg
           ! store merging info: the current contraction contributes
           ! to vertex idx of the original operator
           ! get a free entry:
@@ -110,7 +135,16 @@ c dbg
      &         call quit(1,'occ_op2ex','ld_map too small?')
           merge_map(jdx,1,idx) = ilist
         end if
+       end do
       end do
+
+      if (self.and.set_cnt) then
+        do ilist = 1, len_list
+          iocc_cnt(1:ngastp,1:2,ilist) =
+     &                       iocc_cnt(1:ngastp,1:2,ilist)
+     &         + iocc_dagger(iocc_cnt(1:ngastp,1:2,ilist))
+        end do
+      end if
 
       if (ntest.ge.100) then
         write(luout,*) 'EX:'

@@ -17,9 +17,13 @@
       type(operator_info), intent(in) ::
      &     op_info
 
+      integer ::
+     &     idx
+
       type(formula_item), pointer ::
      &     form_ptr
 
+      idx = 0
       form_ptr => form_head
       do
         select case(form_ptr%command)
@@ -34,7 +38,8 @@
         case(command_del_intermediate)
           write(luout,*) '[DELETE INTERMEDIATE]',form_ptr%target
         case(command_add_contribution)
-          write(luout,*) '[ADD]',form_ptr%target
+          idx = idx+1
+          write(luout,*) '[ADD]',form_ptr%target,'( term #',idx,')'
           call prt_contr2(luout,form_ptr%contr,op_info)
         case(command_symmetrise)
           write(luout,*) '[SYMMETRISE TARGET]',form_ptr%target

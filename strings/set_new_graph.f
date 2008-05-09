@@ -65,6 +65,7 @@ c dbg
      &         str_info%g(igraph)%lenstr_gm(nsym,leny(4)),
      &         str_info%g(igraph)%lenstr_dgm(leny(3)),
      &         str_info%g(igraph)%ioffstr_dgm(leny(3)) )
+      str_info%max_idxms = max(str_info%max_idxms,leny(4))
       mem = mem+leny(1)+leny(2)+str_info%g(igraph)%ndis
      &       +nsym*leny(4)+2*leny(3)
       write(label,'("str_graphs-",i2)'),igraph

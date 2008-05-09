@@ -47,7 +47,7 @@
      &     bufin, bufout, open_close_in, open_close_out, same, first
       integer ::
      &     nocc_cls, njoined,
-     &     ifree, nblk, nbuff, iocc_cls, idxmsa, idxmsc, idxdis,
+     &     ifree, nblk, nbuff, idxmsa, idxmsc, idxdis,
      &     idxdis_in, ioff_out, ioff_in, ioff0_out, ioff0_in,
      &     msa, msc, igama, igamc, idxa, idxc, ngam, lena, lenc,
      &     iblkoff, iblkoff_in, ncblk, nablk, msc_max, msa_max
@@ -129,6 +129,9 @@
       bufin = ffin%buffered
       bufout = ffout%buffered
 
+      if (bufin.or.bufout)
+     &   call quit(1,'add_opblk_tranposed',
+     &               'buffered files are not yet debugged')
       ifree = mem_setmark('add_transp')
 
       ! Number of irreps in symmetry group.
@@ -145,7 +148,7 @@
         call get_vec(ffin,buffer_in,ioff0_in+1,ioff0_in+nbuff)
 
       else
-        buffer_in => ffin%buffer(1:)
+        buffer_in => ffin%buffer(ioff0_in+1:)
       endif
 
       if(.not.bufout.or.same)then
@@ -153,7 +156,7 @@
         ifree= mem_alloc_real(buffer_out,nbuff,'buffer_out')
         call get_vec(ffout,buffer_out,ioff0_out+1,ioff0_out+nbuff)
       else
-        buffer_out => ffout%buffer(1:)
+        buffer_out => ffout%buffer(ioff0_out+1:)
       endif
 
       hpvx_occ => op_out%ihpvca_occ
@@ -264,9 +267,8 @@
       end do msa_loop
 
       ! update norm^2
-      xnorm2 = ddot(me_out%len_op_occ(iocc_cls),
-     &       buffer_out(me_out%off_op_occ(iocc_cls)+1),1,
-     &       buffer_out(me_out%off_op_occ(iocc_cls)+1),1)
+      xnorm2 = ddot(me_out%len_op_occ(iblk_out),
+     &       buffer_out,1,buffer_out,1)
 
       if(.not.bufout)then
         call put_vec(ffout,buffer_out,ioff0_out+1,ioff0_out+nbuff)

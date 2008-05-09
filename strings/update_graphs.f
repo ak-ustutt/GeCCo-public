@@ -102,26 +102,6 @@ c dbg
      &                       str_info%igas_restr(1,1,1,1,igraph),
      &                       ica,ihpv,
      &                       ihpvgas,ngas,nspin)
-c dbg
-c                print *,'same = ',same
-c dbg
-
-c                jgas = 1
-c                same = .true.
-c                cmp_loop: do igas = 1, ngas
-c                  if (ihpvgas(igas,1).ne.ihpv) cycle cmp_loop
-c                  same = same.and.
-c     &                 (op%igasca_restr(1,igas,ica,1,idx).eq.
-c     &                  str_info%igas_restr(1,jgas,1,igraph)).and.
-c     &                 (op%igasca_restr(2,igas,ica,1,idx).eq.
-c     &                  str_info%igas_restr(2,jgas,1,igraph)) .and.
-c     &                 (op%igasca_restr(1,igas,ica,2,idx).eq.
-c     &                  str_info%igas_restr(1,jgas,2,igraph)).and.
-c     &                 (op%igasca_restr(2,igas,ica,2,idx).eq.
-c     &                  str_info%igas_restr(2,jgas,2,igraph))
-c                  if (.not.same) exit cmp_loop
-c                  jgas = jgas+1
-c                end do cmp_loop
                 
                 unique = .not.same
 

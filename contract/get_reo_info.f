@@ -237,18 +237,12 @@ c dbg
      &           reo_info%map_reo2c(len_map),
      &           reo_info%map_reo2a(len_map))
 
-c dbg
-        print *,'relevant call to set_mapping_info'
-c dbg
         call set_mapping_info(reo_info%map_reo1c,reo_info%map_reo1a,
      &       1,
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,
      &       reo_info%iocc_reo,nreo_op1op2,.false.,
      &       iocc_op1op2tmp,merge_stp1,njoined_op1op2,hpvxblkseq)
 c     &       iocc_op1op2,merge_stp1,njoined_op1op2,hpvxblkseq)
-c dbg
-        print *,'after relevant call'
-c dbg
         call set_mapping_info(reo_info%map_reo1c,reo_info%map_reo1a,
      &       2,
      &       reo_info%iocc_reo,nreo_op1op2,.false.,
@@ -275,11 +269,6 @@ c     &       iocc_op1op2,merge_stp1inv,njoined_op1op2,hpvxblkseq)
         call get_grph4occ(igrph,
      &       reo_info%iocc_opreo0,irst,njoined_op1op2,
      &       str_info,orb_info,.true.)
-c dbg
-c        print *,'FOCUS:'
-c        call wrt_occ_n(luout,reo_info%iocc_opreo0,njoined_op1op2)
-c        call wrt_occ_n(luout,igrph,njoined_op1op2)
-c dbg
         call condense_occ(reo_info%cinfo_opreo0c,reo_info%cinfo_opreo0a,
      &       reo_info%cinfo_opreo0c(1,3),reo_info%cinfo_opreo0a(1,3),
      &       reo_info%iocc_opreo0,njoined_op1op2,hpvxblkseq)

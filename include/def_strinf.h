@@ -3,7 +3,8 @@
       type strinf
         integer ::
      &     ngraph,              ! number of graphs
-     &     max_igtyp
+     &     max_igtyp,
+     &     max_idxms
         integer, pointer ::
      &     gtab(:,:)      ! little "hash"-table for finding
      &                    ! graphs if ispc_occ, and ispc_typ are given

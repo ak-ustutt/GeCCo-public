@@ -34,7 +34,8 @@
       real(8) ::
      &     fac(maxfac)
       integer ::
-     &     idx, jdx, ioff, nfac, nspecial,
+     &     idxblk(maxfac),
+     &     idx, jdx, ioff, nfac, nblk, nspecial,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank
       type(me_list), pointer ::
      &     mel_pnt
@@ -150,6 +151,13 @@ c dbg
         call add_parameters(+1,rule%parameters,nfac,fac,maxfac)
 
         call add_op(rule%labels(1),fac,rule%labels(2),nfac,
+     &       op_info,orb_info,str_info)
+
+      case(SCALE)
+
+        call scale_parameters(+1,rule%parameters,nblk,idxblk,fac,maxfac)
+
+        call scale_op(rule%labels(1),idxblk,fac,rule%labels(2),nblk,
      &       op_info,orb_info,str_info)
 
       case(EVALPROP)
