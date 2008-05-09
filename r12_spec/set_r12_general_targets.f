@@ -30,9 +30,9 @@
      &     min_rank, max_rank, ansatz,
      &     isim, ncat, nint, icnt, nlab,
      &     isym, ms, msc, sym_arr(8),
-     &     occ_def(ngastp,2,20)
+     &     occ_def(ngastp,2,20), ndef
       logical ::
-     &     needed, r12fix
+     &     needed, r12fix, extend
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -62,6 +62,11 @@
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       call get_argument_value('method.R12','fixed',lval=r12fix)
+      call get_argument_value('method.R12','extend',lval=extend)
+
+      if(extend.and..not.r12fix)
+     &     call quit(1,'set_r12_general_targets',
+     &     'Extension only valid for MP2-R12 with fixed C12')
 
       ! assemble approx string
       select case(trim(F_appr))
@@ -88,37 +93,87 @@
 *----------------------------------------------------------------------*
       ! the formal R12 geminal: P12 r12|0>
       call add_target(op_r12,ttype_op,.false.,tgt_info)
-      min_rank = 2  ! 1 is a possibility 
-      call r12gem_parameters(-1,parameters,
-     &                   .false.,min_rank,ansatz)
-      call set_rule(op_r12,ttype_op,DEF_R12GEMINAL,
-     &              op_r12,1,1,
-     &              parameters,1,tgt_info)
+      if(.not.extend)then
+        min_rank = 2  ! 1 is a possibility 
+        call r12gem_parameters(-1,parameters,
+     &                         .false.,min_rank,ansatz)
+        call set_rule(op_r12,ttype_op,DEF_R12GEMINAL,
+     &                op_r12,1,1,
+     &                parameters,1,tgt_info)
+      else
+        occ_def = 0
+        ! 1
+        occ_def(IEXTR,1,1) = 2
+        occ_def(IHOLE,2,1) = 2
+        ! 2
+        occ_def(IEXTR,1,2) = 2
+        occ_def(IPART,2,2) = 1
+        occ_def(IHOLE,2,2) = 1
+        ndef = 2
+        if(ansatz.gt.1)then
+          ! 3
+          occ_def(IEXTR,1,3) = 1
+          occ_def(IPART,1,3) = 1
+          occ_def(IHOLE,2,3) = 2
+          ! 4
+          occ_def(IEXTR,1,4) = 1
+          occ_def(IPART,1,4) = 1
+          occ_def(IPART,2,4) = 1
+          occ_def(IHOLE,2,4) = 1
+          ndef = 4
+        endif
+
+        call op_from_occ_parameters(-1,parameters,2,
+     &                              occ_def,ndef,1,ndef)
+        call set_rule(op_r12,ttype_op,DEF_OP_FROM_OCC,
+     &                op_r12,1,1,
+     &                parameters,2,tgt_info)
+      endif
 
       ! Only need coefficients if optimising the R12 contribution.
 c      if(.not.r12fix)then
         ! the coefficients
-        call add_target(op_c12,ttype_op,.false.,tgt_info)
-c        if(r12fix)then
-c          call set_dependency(op_c12,op_unity,tgt_info)
-c        endif
+      call add_target(op_c12,ttype_op,.false.,tgt_info)
+c     if(r12fix)then
+c     call set_dependency(op_c12,op_unity,tgt_info)
+c     endif
+      call xop_parameters(-1,parameters,
+     &     .false.,min_rank,max_rank,0,max_rank+1)
+      call set_rule(op_c12,ttype_op,DEF_R12COEFF,
+     &              op_c12,1,1,
+     &              parameters,1,tgt_info)
+
+      ! Lagrange multipliers associated with coefficients
+      call add_target(op_cba,ttype_op,.false.,tgt_info)
+      call set_dependency(op_cba,op_c12,tgt_info)
+c     if(r12fix)then
+c     call set_dependency(op_cba,op_unity,tgt_info)
+c     endif
+      call cloneop_parameters(-1,parameters,
+     &     op_c12,.true.)       ! <- dagger=.true.
+      call set_rule(op_cba,ttype_op,CLONE_OP,
+     &              op_cba,1,1,
+     &              parameters,1,tgt_info)
+
+      if(extend)then
+        ! T1' operators for extended MP2-F12.
+        call add_target(op_cex,ttype_op,.false.,tgt_info)
         call xop_parameters(-1,parameters,
-     &       .false.,min_rank,max_rank,0,max_rank+1)
-        call set_rule(op_c12,ttype_op,DEF_R12COEFF,
-     &                op_c12,1,1,
+     &       .false.,1,1,0,2)
+        call set_rule(op_cex,ttype_op,DEF_EXCITATION,
+     &                op_cex,1,1,
      &                parameters,1,tgt_info)
 
-        ! Lagrange multipliers associated with coefficients
-        call add_target(op_cba,ttype_op,.false.,tgt_info)
-        call set_dependency(op_cba,op_c12,tgt_info)
-c        if(r12fix)then
-c          call set_dependency(op_cba,op_unity,tgt_info)
-c        endif
+        ! The Lagrangian multipliers.
+        call add_target(op_cexbar,ttype_op,.false.,tgt_info)
+        call set_dependency(op_cexbar,op_cex,tgt_info)
         call cloneop_parameters(-1,parameters,
-     &                          op_c12,.true.) ! <- dagger=.true.
-        call set_rule(op_cba,ttype_op,CLONE_OP,
-     &                op_cba,1,1,
+     &                          op_cex,.true.) ! <- dagger=.true.
+        call set_rule(op_cexbar,ttype_op,CLONE_OP,
+     &                op_cexbar,1,1,
      &                parameters,1,tgt_info)
+      endif
+
 
       if(.not.r12fix)then
         ! Preconditioner
@@ -136,7 +191,7 @@ c        endif
       call add_target(op_rint,ttype_op,.false.,tgt_info)
       call r12int_parameters(-1,parameters,
 c     &     .false.,min_rank,2,0,2)
-     &     .false.,min_rank,2,0,3) ! 3: two externals needed
+     &     .false.,min_rank,2,0,4) ! 4: two externals for 2-el ops
       call set_rule(op_rint,ttype_op,DEF_R12INT,
      &              op_rint,1,1,
      &              parameters,1,tgt_info)
@@ -521,39 +576,6 @@ c      occ_def(IHOLE,2,6) = 2
       call set_rule(op_hartree,ttype_op,DEF_HAMILTONIAN,
      &              op_hartree,1,1,
      &              parameters,1,tgt_info)
-      
-
-c dbg
-      ! F12 integral contract with C12 for testing.
-      if(r12fix)then
-        call add_target(op_f12int_fix,ttype_op,.false.,tgt_info)
-        call set_dependency(op_f12int_fix,op_rint,tgt_info)
-        call cloneop_parameters(-1,parameters,
-     &                          op_rint,.false.)
-        call set_rule(op_f12int_fix,ttype_op,CLONE_OP,
-     &                op_f12int_fix,1,1,
-     &                parameters,1,tgt_info)
-
-      ! [T12,F12] integral contract with C12 for testing.
-        call add_target(op_t12f12int_fix,ttype_op,.false.,tgt_info)
-        call set_dependency(op_t12f12int_fix,op_ttr,tgt_info)
-        call cloneop_parameters(-1,parameters,
-     &                          op_ttr,.false.)
-        call set_rule(op_t12f12int_fix,ttype_op,CLONE_OP,
-     &                op_t12f12int_fix,1,1,
-     &                parameters,1,tgt_info)
-
-      ! G12.F12 integral contract with C12 for testing.
-        call add_target(op_g12f12int_fix,ttype_op,.false.,tgt_info)
-        call set_dependency(op_g12f12int_fix,op_gr,tgt_info)
-        call cloneop_parameters(-1,parameters,
-     &                          op_gr,.false.)
-        call set_rule(op_g12f12int_fix,ttype_op,CLONE_OP,
-     &                op_g12f12int_fix,1,1,
-     &                parameters,1,tgt_info)
-
-      endif
-c dbg
 
 *----------------------------------------------------------------------*
 *     Formulae
@@ -960,63 +982,6 @@ c     &     'C           ')
      &              labels,5,1,
      &              parameters,2,tgt_info)
 
-c dbg
-      ! Test evaluation of integrals connected to fixed amplitudes.
-      if(r12fix)then
-        
-        ! F12 integral connects once to t'.
-        labels(1:)(1:len_target_name) = ' '
-        labels(1) = form_f12int_fix
-        labels(2) = op_f12int_fix
-        labels(3) = op_c12
-        labels(4) = op_rint
-        call add_target(form_f12int_fix,ttype_frm,.false.,tgt_info)
-        call set_dependency(form_f12int_fix,op_f12int_fix,tgt_info)
-        call set_dependency(form_f12int_fix,op_rint,tgt_info)
-        call set_dependency(form_f12int_fix,op_c12,tgt_info)
-        call form_parameters(-1,
-     &       parameters,2,title_f12int_fix,0,'F12.C12')
-        call set_rule(form_f12int_fix,ttype_frm,CONTRACT,
-     &       labels,4,1,
-     &       parameters,2,tgt_info)
-
-        ! [T12,F12] integral connects once to t'.
-        labels(1:)(1:len_target_name) = ' '
-        labels(1) = form_t12f12int_fix
-        labels(2) = op_t12f12int_fix
-        labels(3) = op_c12
-        labels(4) = op_ttr
-        call add_target(form_t12f12int_fix,ttype_frm,.false.,tgt_info)
-        call set_dependency(form_t12f12int_fix,
-     &       op_t12f12int_fix,tgt_info)
-        call set_dependency(form_t12f12int_fix,op_ttr,tgt_info)
-        call set_dependency(form_t12f12int_fix,op_c12,tgt_info)
-        call form_parameters(-1,
-     &       parameters,2,title_t12f12int_fix,0,'T12F12.C12')
-        call set_rule(form_t12f12int_fix,ttype_frm,CONTRACT,
-     &       labels,4,1,
-     &       parameters,2,tgt_info)
-
-        ! g12.F12 integral connects once to t'.
-        labels(1:)(1:len_target_name) = ' '
-        labels(1) = form_g12f12int_fix
-        labels(2) = op_g12f12int_fix
-        labels(3) = op_c12
-        labels(4) = op_gr
-        call add_target(form_g12f12int_fix,ttype_frm,.false.,tgt_info)
-        call set_dependency(form_g12f12int_fix,
-     &       op_g12f12int_fix,tgt_info)
-        call set_dependency(form_g12f12int_fix,op_gr,tgt_info)
-        call set_dependency(form_g12f12int_fix,op_c12,tgt_info)
-        call form_parameters(-1,
-     &       parameters,2,title_g12f12int_fix,0,'G12.F12.C12')
-        call set_rule(form_g12f12int_fix,ttype_frm,CONTRACT,
-     &       labels,4,1,
-     &       parameters,2,tgt_info)
-
-      endif
-c dbg
-
 *----------------------------------------------------------------------*
 *     Opt. Formulae
 *----------------------------------------------------------------------*
@@ -1181,26 +1146,6 @@ c      call set_dependency(fopt_r12_ccabs,mel_rintc,tgt_info)
       call set_rule(fopt_r12_ccabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
-
-
-c dbg
-      ! Fixed amplitude integrals for testing.
-      if(r12fix)then
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = fopt_f12int_fix
-        labels(2) = form_f12int_fix
-        ncat = 1
-        nint = 0
-        call add_target(fopt_f12int_fix,ttype_frm,.false.,tgt_info)
-        call set_dependency(fopt_f12int_fix,form_f12int_fix,tgt_info)
-        call set_dependency(fopt_f12int_fix,mel_f12fix_def,tgt_info)
-        call opt_parameters(-1,parameters,ncat,nint)
-        call set_rule(fopt_f12int_fix,ttype_frm,OPTIMIZE,
-     &                labels,ncat+nint+1,1,
-     &                parameters,1,tgt_info)
-
-      endif
-c dbg
 
 *----------------------------------------------------------------------*
 *     ME-lists
@@ -1662,23 +1607,6 @@ c      endif
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
-c dbg
-      ! Test contractions of integrals with fixed amplitudes.
-      if(r12fix)then
-        call add_target(mel_f12fix_def,ttype_opme,.false.,tgt_info)
-        call set_dependency(mel_f12fix_def,op_f12int_fix,tgt_info)
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = mel_f12fix
-        labels(2) = op_f12int_fix
-        call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
-        call set_rule(mel_f12fix_def,ttype_opme,DEF_ME_LIST,
-     &                labels,2,1,
-     &                parameters,1,tgt_info)
-
-      endif
-c dbg
-
       ! B^-1 for "diagonal"
       call add_target(mel_b_inv,ttype_opme,.false.,tgt_info)
 c      call set_dependency(mel_b_inv,op_diar12,tgt_info)
@@ -1809,21 +1737,6 @@ c        call set_rule(eval_r12_inter,ttype_opme,EVAL,
 c     &       labels,1,0,
 c     &       parameters,0,tgt_info)
 c      endif
-
-c dbg
-      if(r12fix)then
-        call add_target('EVALINTS',ttype_gen,.false.,tgt_info)
-        call set_dependency('EVALINTS',mel_rint,tgt_info)
-        call set_dependency('EVALINTS',mel_c12def,tgt_info)
-        call set_dependency('EVALINTS',mel_f12fix,tgt_info)
-        call set_dependency('EVALINTS',fopt_f12int_fix,tgt_info)
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = fopt_f12int_fix
-        call set_rule('EVALINTS',ttype_opme,EVAL,
-     &       labels,1,0,
-     &       parameters,0,tgt_info)
-      endif
-c dbg
 
       return
 

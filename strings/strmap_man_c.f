@@ -43,6 +43,8 @@
      &     ngraph, ica, hpvx, idxmap, idx1, idx2, idx12,
      &     nsplit, idx_minf,
      &     iocc1, iocc2, nsym, ifree, lenoff, maxstr
+      logical ::
+     &     error
       integer, pointer ::
      &     idx_strmap(:)
       integer, external ::
@@ -70,20 +72,27 @@
 
       idx_minf = 0
       idx12 = 0
+      error = .false.
       do while(idx12.lt.n12)
         idx12 = idx12+1
         idx1 = 0
         idx2 = 0
         idx_minf = idx_minf+1
         nsplit = map_info(idx_minf)
-        if (nsplit.gt.1) call quit(1,'strmap_man_c','multi map needed')
+        if (nsplit.gt.1) then
+          error = .true.
+          exit
+        end if
         if (nsplit.eq.1) then
           idx_minf = idx_minf+1
           idx1 = map_info(idx_minf)
         end if
         idx_minf = idx_minf+1
         nsplit = map_info(idx_minf)
-        if (nsplit.gt.1) call quit(1,'strmap_man_c','multi map needed')
+        if (nsplit.gt.1) then
+          error = .true.
+          exit
+        end if
         if (nsplit.eq.1) then
           idx_minf = idx_minf+1
           idx2 = map_info(idx_minf)
@@ -167,6 +176,35 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
         maxbuffer = maxbuffer + strmap_info%maxlen_blk(idxmap)
 
       end do
+
+      if (error) then
+        write(luout,*) 'igraph1r: ',igraph1r
+        write(luout,*) 'igraph2r: ',igraph2r
+        write(luout,*) 'igraph12r: ',igraph12r
+
+        idx_minf = 0
+        idx12 = 0
+        do while(idx12.lt.n12)
+          idx12 = idx12+1
+          idx1 = 0
+          idx2 = 0
+          idx_minf = idx_minf+1
+          nsplit = map_info(idx_minf)
+          write(luout,*) 'idx12, nsplit1: ',idx12,nsplit
+          write(luout,*) 'indices: ',
+     &         map_info(idx_minf+1:idx_minf+nsplit)
+          idx_minf = idx_minf+nsplit
+
+          idx_minf = idx_minf+1
+          nsplit = map_info(idx_minf)
+          write(luout,*) 'idx12, nsplit2: ',idx12,nsplit
+          write(luout,*) 'indices: ',
+     &         map_info(idx_minf+1:idx_minf+nsplit)
+          idx_minf = idx_minf+nsplit
+        end do
+        
+        call quit(1,'strmap_man_c','multi map needed')
+      end if
 
       return
       end

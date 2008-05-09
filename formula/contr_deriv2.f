@@ -300,6 +300,9 @@ c            call wrt_occ_n(luout,iocc,1)
      &           contr%xarc(ixarc)%link(1)-1
             if(contr%xarc(ixarc)%link(1).eq.contr%xarc(ixarc)%link(2))
      &           then
+c dbg
+              print *,'executed this part of the code'
+c dbg
               cur_conder%contr%xarc(jxarc)%link(2) =
      &             contr%xarc(ixarc)%link(2)-1
             else
@@ -389,6 +392,7 @@ c     &         (cur_conder%contr%iblk_res-1)*njoined_res+1
         do ider = 1, nder
           write(luout,*) 'term #',ider
           call prt_contr2(luout,cur_conder%contr,op_info)
+          call check_xarcs(cur_conder%contr,op_info)
           if (ider.lt.nder) cur_conder => cur_conder%next
         end do
       end if

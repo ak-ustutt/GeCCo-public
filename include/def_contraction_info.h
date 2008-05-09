@@ -1,5 +1,24 @@
       type contraction_info
+      
+      ! occupations in full form
+c      integer ::
+c     &     njoined_op1, njoined_op2, njoined_op1op2,
+c     &     njoined_cnt
+c
+c      integer ::
+c     &     iocc_ex1(:,:,:), iocc_ex2(:,:,:),
+c     &     iocc_cnt(:,:,:),
+c     &     iocc_op1(:,:,:), iocc_op2(:,:,:), iocc_op1op2(:,:,:),
+c     &     irst_op1(:,:,:), irst_op2(:,:,:), irst_op1op2(:,:,:),
+c      logical ::
+c     &     tra_op1, tra_op2, tra_op1op2
+c      integer ::
+c     &     mst_op1, mst_op2, mst_op1op2,
+c     &     gam_op1, gam_op2, gam_op1op2,
+c      integer ::
+c     &     merge_op1, merge_op2, merge_op1op2, merge_op2op1
 
+      ! condensed occupation version
       integer ::
      &     ncblk_op1, nablk_op1,
      &     ncblk_op2, nablk_op2,

@@ -281,7 +281,7 @@ c dbg
       end if
 
       call atim_csw(cpu,sys,wall)
-      if (iprint.ge.5)
+      if (iprint.ge.1)
      &     call prtim(luout,'time in optimizer',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
@@ -298,7 +298,7 @@ c dbg
 *
 *     get memory for buffers
 *
-*     internal subroutine: variable of main routine are global!
+*     internal subroutine: variables of main routine are global!
 *
 *----------------------------------------------------------------------*
 c      implicit none

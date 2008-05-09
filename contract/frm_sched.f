@@ -75,7 +75,7 @@ c     &       cnt_op1op2(3)-cnt_kernel(3))
      &       -1d0)
         
       end if
-      if (iprlvl.ge.5)
+      if (iprlvl.ge.1)
      &     call prtim(luout,'formula evaluation',
      &     cpu-cpu0,sys-sys0,wall-wall0)
       

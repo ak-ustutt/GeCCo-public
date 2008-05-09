@@ -100,9 +100,6 @@
      &       rule%parameters,rule%n_parameter_strings,
      &       title,ansatz,approx)
         ioff = rule%n_update
-c dbg
-c        print *,'title',title
-c dbg
         call set_r12intm_cabs3(form_pnt,
      &       title,rule%labels(ioff+1),rule%n_labels-ioff,
      &       approx(1:2),ansatz,approx(3:),
@@ -200,19 +197,17 @@ c prelim
      &       ncat,rule%labels(ioff+1),
      &       nint,rule%labels(ioff+ncat+1),
      &       form_info,op_info,str_info,orb_info)
-      case(CONTRACT)
-        call form_parameters(+1,
-     &       rule%parameters,rule%n_parameter_strings,
-     &       title,idum,strdum)
-
-        ioff = rule%n_update+1
-        jdx = rule%n_labels-ioff
-
-        call test_contract(form_pnt,title,
-     &       rule%labels(2),
-     &       rule%labels(ioff+1:ioff+jdx),jdx,
-     &       op_info)
-
+c      case(CONTRACT)
+c        call form_parameters(+1,
+c     &       rule%parameters,rule%n_parameter_strings,
+c     &       title,idum,strdum)
+c        ioff = rule%n_update+1
+c        jdx = rule%n_labels-ioff
+c        call test_contract(form_pnt,title,
+c     &       rule%labels(2),
+c     &       rule%labels(ioff+1:ioff+jdx),jdx,
+c     &       op_info)
+c      case(EXTRACT_TERM)
       case default
         call quit(1,'process_formulae','unknown command: '//
      &       trim(rule%command))

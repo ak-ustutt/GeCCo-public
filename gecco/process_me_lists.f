@@ -81,9 +81,9 @@
 
         call add_unity(1d0,mel_pnt,1,orb_info)
 c dbg
-        write(luout,*)'writing unity'
-        call wrt_mel_file(luout,5,mel_pnt,1,1,
-     &       str_info,orb_info)
+c        write(luout,*)'writing unity'
+c        call wrt_mel_file(luout,5,mel_pnt,1,1,
+c     &       str_info,orb_info)
 c dbg
 
       case(ASSIGN_ME2OP)

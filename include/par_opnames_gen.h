@@ -76,10 +76,13 @@ c     &     op_cba*4   = 'CBAR',
      &     op_x_inv*5      = 'X_INV',
      &     op_exchange*1   = 'K',
      &     op_hartree*3    = 'F+K',
+     &     op_cex*3        = 'T1''',
+     &     op_cexbar*6     = 'T1BAR''',
+     &     op_omgcex*7     = 'OMG_T1'''
 c dbg
-     &     op_f12int_fix*6 = 'F12FIX',
-     &     op_t12f12int_fix*7 = 'TF12FIX',
-     &     op_g12f12int_fix*7 = 'GF12FIX'
+c     &     op_f12int_fix*6 = 'F12FIX',
+c     &     op_t12f12int_fix*7 = 'TF12FIX',
+c     &     op_g12f12int_fix*7 = 'GF12FIX'
 c dbg
       ! generic ME-list names
       character, parameter ::
@@ -177,14 +180,14 @@ c dbg
      &     mel_cbar_inter*8 = 'C+-INTER',
      &     mel_cbar_def*12  = 'DEF-C+-INTER',
      &     mel_b_inv*4      = 'BINV',
-     &     mel_b_dia*4      = 'BDIA',
+     &     mel_b_dia*4      = 'BDIA'
 c dbg
-     &     mel_f12fix*6      = 'F12FIX',
-     &     mel_f12fix_def*10 = 'F12FIX_DEF',
-     &     mel_t12f12fix*9       = 'T12F12FIX',
-     &     mel_t12f12fix_def*13  = 'T12F12FIX_DEF',
-     &     mel_g12f12fix*9      = 'G12F12FIX',
-     &     mel_g12f12fix_def*13 = 'G12F12FIX_DEF'
+c     &     mel_f12fix*6      = 'F12FIX',
+c     &     mel_f12fix_def*10 = 'F12FIX_DEF',
+c     &     mel_t12f12fix*9       = 'T12F12FIX',
+c     &     mel_t12f12fix_def*13  = 'T12F12FIX_DEF',
+c     &     mel_g12f12fix*9      = 'G12F12FIX',
+c     &     mel_g12f12fix_def*13 = 'G12F12FIX_DEF'
 c dbg
       character, parameter ::
 c     &     mel_c12def*10    = 'DEF-C0-R12',
@@ -204,6 +207,13 @@ c     &     mel_cbar*9       = 'C0BAR-R12',
      &     mel_ccr12lg0def*13   = 'DEF-L0(CCR12)',
      &     mel_ccr12lg0*9   = 'L0(CCR12)',
      &     mel_ccr12en0def*13   = 'DEF-E0(CCR12)',
-     &     mel_ccr12en0*9   = 'E0(CCR12)'
+     &     mel_ccr12en0*9   = 'E0(CCR12)',
+     &     mel_cex_def*11   = 'DEF-T1''-R12',      
+     &     mel_cex*7        = 'T1''-R12',
+     &     mel_cexbar_def*14 = 'DEF-T1BAR''-R12',
+     &     mel_cexbar*10    = 'T1BAR''-R12',
+     &     mel_omgcexdef*12 = 'DEF-OMG1-R12',
+     &     mel_omgcex*8     = 'OMG1-R12'
+
 	  
       

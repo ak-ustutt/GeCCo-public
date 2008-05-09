@@ -241,10 +241,11 @@
         do iroot = 1, nroots
           
           call switch_mel_record(me_rhs(iopt)%mel,iroot)
-          call touch_file_rec(me_rhs(iopt)%mel%fhand)
 
           call frm_sched(xret,fl_rhs_mvp,depend,idxselect,nselect,
      &         op_info,str_info,strmap_info,orb_info)
+
+          call touch_file_rec(me_rhs(iopt)%mel%fhand)
 
         end do
       end do
@@ -280,12 +281,14 @@ c dbg
             do iopt = 1, nopt
               call switch_mel_record(me_trv(iopt)%mel,irectrv(irequest))
               call switch_mel_record(me_mvp(iopt)%mel,irecmvp(irequest))
-              ! here?
-              call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
 
             call frm_sched(xret,fl_rhs_mvp,depend,0,0,
      &           op_info,str_info,strmap_info,orb_info)
+
+            do iopt = 1, nopt
+              call touch_file_rec(me_trv(iopt)%mel%fhand)
+            end do
 
           end do
         end if

@@ -26,6 +26,7 @@
      &     title_mpr12en0*15 =  'MPR12 energy',
      &     title_mpr12rs_t*29 = 'MPR12 T residual',
      &     title_mpr12rs_c*29 = 'MPR12 C residual',
+     &     title_mpr12rs_cex*30 = 'MPR12 C1 residual',
      &     title_ccr12lg0*29 =  'CCR12 Lagrangian',
      &     title_ccr12en0*15 =  'CCR12 energy',
      &     title_ccr12rs_t*29 = 'CCR12 T residual',
@@ -59,11 +60,11 @@
      &     title_r12_bucabs*7 ='R12 B_U',
      &     title_r12_bsymm*24  = 'Symm. R12 B-intermediate',
      &     title_r12_binv*18   = 'Inverse of diag(B)',
-     &     title_ccdens*10   = 'CC density',
+     &     title_ccdens*10   = 'CC density'
 c dbg
-     &     title_f12int_fix*13    = 'F12.C12 fixed',
-     &     title_t12f12int_fix*16 = 'T12F12.C12 fixed',
-     &     title_g12f12int_fix*17 = 'G12.F12.C12 fixed'
+c     &     title_f12int_fix*13    = 'F12.C12 fixed',
+c     &     title_t12f12int_fix*16 = 'T12F12.C12 fixed',
+c     &     title_g12f12int_fix*17 = 'G12.F12.C12 fixed'
 c dbg
       character, parameter ::
      &     form_test*4         = 'TEST',
@@ -97,6 +98,7 @@ c dbg
      &     form_mpr12en0*8       = 'E0_MPR12',
      &     form_mpr12rs_t*11     = 'OMG_T_MPR12',
      &     form_mpr12rs_c*11     = 'OMG_C_MPR12',
+     &     form_mpr12rs_cex*12   = 'OMG_C1_MPR12',
      &     form_ccr12lg0*9       = 'Lg0_CCR12',
      &     form_ccr12en0*8       = 'E0_CCR12',
      &     form_ccr12rs_t*11     = 'OMG_T_CCR12',
@@ -143,12 +145,12 @@ c dbg
      &     form_r12_bucabs*12  = 'B_U_R12_CABS',
      &     fopt_r12_bucabs*11  = 'B_U_R12_OPT',
      &     form_r12_bsymm*9    = 'BSYMM_R12',
-     &     form_r12_binv*8     = 'BINV_R12',
+     &     form_r12_binv*8     = 'BINV_R12'
 c dbg
-     &     form_f12int_fix*8   = 'F12FIXED',
-     &     fopt_f12int_fix*12  = 'F12FIXED_OPT',
-     &     form_t12f12int_fix*11  = 'T12F12FIXED',
-     &     fopt_t12f12int_fix*15  = 'T12F12FIXED_OPT',
-     &     form_g12f12int_fix*11  = 'G12F12FIXED',
-     &     fopt_g12f12int_fix*15  = 'G12F12FIXED_OPT'
+c     &     form_f12int_fix*8   = 'F12FIXED',
+c     &     fopt_f12int_fix*12  = 'F12FIXED_OPT',
+c     &     form_t12f12int_fix*11  = 'T12F12FIXED',
+c     &     fopt_t12f12int_fix*15  = 'T12F12FIXED_OPT',
+c     &     form_g12f12int_fix*11  = 'G12F12FIXED',
+c     &     fopt_g12f12int_fix*15  = 'G12F12FIXED_OPT'
 c dbg

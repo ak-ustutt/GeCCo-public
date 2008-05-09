@@ -50,7 +50,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
       
       integer, intent(in) ::
      &     ipass, ngam
@@ -248,6 +248,16 @@ c dbg
      &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
      &                         hpvxseq,.false.)
 
+c dbg
+c              print *,'current dis:'
+c              write(luout,*) idxmsdis_c(1:ncsub)
+c              write(luout,*) gamdis_c(1:ncsub)
+c              write(luout,*) idxmsdis_a(1:nasub)
+c              write(luout,*) gamdis_a(1:nasub)
+c              print *,'graphs c:',graph_csub(1:ncsub)
+c              print *,'graphs a:',graph_asub(1:nasub)
+c              print *,'len_str: ',len_str(1:ncsub+nasub)
+c dbg
               ld_blk = 1
               do icmp = 1, ncsub
                 ld_blk = ld_blk*len_str(icmp)
@@ -401,7 +411,8 @@ c dbg
             nexc = min(ca_occ(1,iblk),
      &                 ca_occ(2,iblk))
             write(luout,*) 'occ-class: ',iblk
-            call wrt_occ(luout,op%ihpvca_occ(1,1,iblk))
+            iblkoff = (iblk-1)*njoined
+            call wrt_occ_n(luout,op%ihpvca_occ(1,1,iblkoff+1),njoined)
             do iexc = 1, nexc+1
               do igam = 1, ngam
                 if (mel%off_op_gmox(iblk)%ndis(igam,iexc).eq.0) cycle

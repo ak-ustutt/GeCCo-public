@@ -47,12 +47,17 @@
 
       call add_target(op_hhat,ttype_op,.false.,tgt_info)
       if (ansatz.gt.1) then
-        call set_dependency(op_hhat,op_ham,tgt_info)
-        call cloneop_parameters(-1,parameters,
-     &       op_ham,.false.)
-        call set_rule(op_hhat,ttype_op,CLONE_OP,
-     &       op_hhat,1,1,
-     &       parameters,1,tgt_info)
+        call hop_parameters(-1,parameters,
+     &                   0,2,2,.true.) ! 1-external at most
+        call set_rule(op_hhat,ttype_op,DEF_HAMILTONIAN,
+     &              op_hhat,1,1,
+     &              parameters,1,tgt_info)
+c        call set_dependency(op_hhat,op_ham,tgt_info)
+c        call cloneop_parameters(-1,parameters,
+c     &       op_ham,.false.)
+c        call set_rule(op_hhat,ttype_op,CLONE_OP,
+c     &       op_hhat,1,1,
+c     &       parameters,1,tgt_info)
       else
         call hop_parameters(-1,parameters,
      &                   0,2,1,.false.)  ! avoid any X blocks

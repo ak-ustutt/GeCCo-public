@@ -49,7 +49,10 @@ c      include 'def_filinf.h'
      &     cur_conder
 
       logical ::
-     &     reo
+     &     reo,
+c dbg
+     &     first
+c dbg
       integer ::
      &     idxder(ncmpnd), idxmlt(ncmpnd), idxres,
      &     luinput, luderiv, nvtx,
@@ -155,9 +158,17 @@ c dbg
             deallocate(ivtx_reo,fix_vtx,occ_vtx)
 
             call wrt_contr(luderiv,cur_conder%contr)
+
+            if(ntest.ge.100)then
+              call prt_contr2(luout,cur_conder%contr,op_info)
+            endif
+
 c dbg
-c            call prt_contr2(luout,cur_conder%contr,op_info)
+c            first = .true.
+c            call tex_contr(luout,first,cur_conder%contr,op_info)
+c            if(first) first = .false.
 c dbg
+
             if (idx.lt.nder) cur_conder => cur_conder%next
           end do
 

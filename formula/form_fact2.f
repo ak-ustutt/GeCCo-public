@@ -74,6 +74,9 @@
         call write_title(luout,wst_dbg_subr,'form_fact at work!')
         call prt_contr2(luout,contr,op_info)
       end if
+c dbg
+c      call check_xarcs(contr,op_info)
+c dbg
 
       call atim_csw(cpu0,sys0,wall0)
 

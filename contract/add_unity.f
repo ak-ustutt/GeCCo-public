@@ -134,55 +134,6 @@
           
       enddo msa_loop
 
-c dbg
-      buffer_out(6) = 0.75d0
-      buffer_out(7) = -0.25d0
-      buffer_out(8) = -0.25d0
-      buffer_out(9) = 0.75d0
-
-c      buffer_out(37) = 0.75d0
-c      buffer_out(45) = 0.75d0
-c      buffer_out(78) = 0.75d0
-c      buffer_out(85) = 0.75d0
-c      buffer_out(92) = 0.75d0
-c      buffer_out(99) = 0.75d0
-c      buffer_out(106) = 0.75d0
-c      buffer_out(113) = 0.75d0
-c      buffer_out(114) = 0.75d0
-c      buffer_out(121) = 0.75d0
-c      buffer_out(128) = 0.75d0
-c      buffer_out(135) = 0.75d0
-c      buffer_out(142) = 0.75d0
-c      buffer_out(149) = 0.75d0
-c      buffer_out(150) = 0.75d0
-c      buffer_out(157) = 0.75d0
-c      buffer_out(164) = 0.75d0
-c      buffer_out(171) = 0.75d0
-c      buffer_out(178) = 0.75d0
-c      buffer_out(185) = 0.75d0
-
-c      buffer_out(38) = -0.25d0
-c      buffer_out(44) = -0.25d0
-c      buffer_out(80) = -0.25d0
-c      buffer_out(87) = -0.25d0
-c      buffer_out(90) = -0.25d0
-c      buffer_out(97) = -0.25d0
-c      buffer_out(107) = -0.25d0
-c      buffer_out(112) = -0.25d0
-c      buffer_out(116) = -0.25d0
-c      buffer_out(123) = -0.25d0
-c      buffer_out(126) = -0.25d0
-c      buffer_out(133) = -0.25d0
-c      buffer_out(143) = -0.25d0
-c      buffer_out(148) = -0.25d0
-c      buffer_out(151) = -0.25d0
-c      buffer_out(156) = -0.25d0
-c      buffer_out(166) = -0.25d0
-c      buffer_out(173) = -0.25d0
-c      buffer_out(176) = -0.25d0
-c      buffer_out(183) = -0.25d0
-c dbg
-
       if(.not.bufout)then
         call put_vec(ffout,buffer_out,ioff_blk+1,ioff_blk+len_blk)
       endif  

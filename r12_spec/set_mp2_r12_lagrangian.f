@@ -37,7 +37,8 @@
       character(3), parameter ::
      &     op_h_temp = '_H_',
      &     op_sop    = '_S_',
-     &     op_sba    = '_SB'
+     &     op_sba    = '_SB',
+     &     op_rsh    = 'RSH'
 
       ! local variables
       character ::
@@ -48,17 +49,20 @@
       type(formula_item), pointer ::
      &     form_pnt, form_h_pnt, fl_t_cr_pnt
       integer ::
-     &     idxham,idxtbar,idxtop,idxlag,idxrba,idxcba,idxr12,idxc12
+     &     idxham,idxtbar,idxtop,idxlag,idxrba,idxcba,idxr12,idxc12,
+     &     idxcex,idxcexbar
       integer ::
-     &     nterms, idx_h_temp, idx_sop, idx_sbar, ndef, ilabel, idx
+     &     nterms, idx_h_temp, idx_sop, idx_sbar, ndef, ilabel, idx,
+     &     ansatz, idx_rsh
       integer, allocatable ::
      &     occ_def(:,:,:)
 
-c      logical ::
+      logical ::
+     &     extend
 c     &     r12fix
 
       type(operator), pointer::
-     &     h_temp_pnt, sop_pnt, sbar_pnt
+     &     h_temp_pnt, sop_pnt, sbar_pnt, rsh_pnt
 
       integer, external::
      &     idx_oplist2
@@ -77,13 +81,24 @@ c     &     r12fix
 
 c      ! Are we fixing the F12 amplitudes?
 c      call get_argument_value('method.R12','fixed',lval=r12fix)
-      
+      ! Are we using an extended Lagrangian?
+      call get_argument_value('method.R12','extend',lval=extend)
+      call get_argument_value('method.R12','ansatz',ival=ansatz)
+
       ! get indices
 c      if (nlabels.ne.8.and..not.r12fix) then
       if(nlabels.ne.8)then
-        write(luout,*) 'nlabels = ',nlabels
-        call quit(1,'set_mp2_r12_lagrangian',
-     &     'I expect exactly 8 labels')
+        if(.not.extend)then
+          write(luout,*) 'nlabels = ',nlabels
+          call quit(1,'set_mp2_r12_lagrangian',
+     &         'I expect exactly 8 labels')
+        else
+          if(nlabels.ne.10)then
+            write(luout,*) 'nlabels = ',nlabels
+            call quit(1,'set_mp2_r12_lagrangian',
+     &           'Extended MP2-F12: I expect exactly 10 labels')
+          endif
+        endif
       end if
 c      if (nlabels.ne.6.and.r12fix) then
 c        write(luout,*) 'nlabels = ',nlabels
@@ -96,14 +111,16 @@ c      end if
         if (idx.le.0)
      &       call quit(1,'set_mp2_r12_lagrangian',
      &       'label not on list: '//trim(label(ilabel)))
-        if (ilabel.eq.1) idxlag = idx
-        if (ilabel.eq.2) idxham = idx
-        if (ilabel.eq.3) idxr12 = idx
-        if (ilabel.eq.4) idxrba = idx
-        if (ilabel.eq.5) idxtbar = idx
-        if (ilabel.eq.6) idxtop = idx
-        if (ilabel.eq.7) idxcba = idx
-        if (ilabel.eq.8) idxc12 = idx
+        if (ilabel.eq.1)  idxlag    = idx
+        if (ilabel.eq.2)  idxham    = idx
+        if (ilabel.eq.3)  idxr12    = idx
+        if (ilabel.eq.4)  idxrba    = idx
+        if (ilabel.eq.5)  idxtbar   = idx
+        if (ilabel.eq.6)  idxtop    = idx
+        if (ilabel.eq.7)  idxcba    = idx
+        if (ilabel.eq.8)  idxc12    = idx
+        if (ilabel.eq.9)  idxcexbar = idx
+        if (ilabel.eq.10) idxcex    = idx
       end do
 
       ! Add the parts of the Hamiltonian that are required.
@@ -168,7 +185,24 @@ c      end if
       deallocate(occ_def)
 
       ! Add CR part.
-      call join_operator(sop_pnt,op_info%op_arr(idxr12)%op,orb_info)
+      call add_operator(op_rsh,op_info)
+      idx_rsh = idx_oplist2(op_rsh,op_info)
+      rsh_pnt => op_info%op_arr(idx_rsh)%op
+
+      ndef = 1
+      if(ansatz.gt.1) ndef = 2
+      allocate(occ_def(ngastp,2,ndef))
+      occ_def(1:ngastp,1,1) = (/0,0,0,2/)
+      occ_def(1:ngastp,2,1) = (/2,0,0,0/)
+      if(ansatz.gt.1)then
+        occ_def(1:ngastp,1,2) = (/0,1,0,1/)
+        occ_def(1:ngastp,2,2) = (/2,0,0,0/)
+      endif
+      call set_uop(rsh_pnt,op_rsh,.false.,
+     &     occ_def,ndef,orb_info)
+      deallocate(occ_def)
+
+      call join_operator(sop_pnt,rsh_pnt,orb_info)
 
       ! Replace the formal terms with the predefined operators.
       call init_formula(form_t_cr)
@@ -184,14 +218,24 @@ c      end if
 
       ! Form of the R12 part depends on whether the amplitudes are fixed.
 c      if(.not.r12fix)then
-        call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &       1d0,2,(/idxc12,idxr12/),-1,-1,
-     &       (/1,2/),1,.false.,op_info)
+      call expand_op_product(fl_t_cr_pnt,idx_sop,
+     &     1d0,2,(/idxc12,idxr12/),-1,-1,
+     &     (/1,2/),1,.false.,op_info)
 c      else
 c        call expand_op_product(fl_t_cr_pnt,idx_sop,
 c     &       1d0,1,idxr12,-1,-1,
 c     &       0,0,.false.,op_info)
 c      endif
+
+      if(extend)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+
+        call expand_op_product(fl_t_cr_pnt,idx_sop,
+     &       1d0,2,(/idxr12,idxcex/),-1,-1,
+     &       (/1,2/),1,.false.,op_info)
+      endif
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T2 + CR2')
@@ -219,14 +263,14 @@ c      sbar_pnt%dagger = .true.
       enddo
 
 c      if(.not.r12fix)then
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,4,3,
-     &       (/idx_sbar,-idxr12,idxcba,idx_sbar/),(/1,2,3,1/),
-     &       -1,-1,
-     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       op_info)
+      call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &     1d0,4,3,
+     &     (/idx_sbar,-idxr12,idxcba,idx_sbar/),(/1,2,3,1/),
+     &     -1,-1,
+     &     (/2,3/),1,
+     &     0,0,
+     &     0,0,
+     &     op_info)
 c      else
 c        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
 c     &       1d0,3,2,
@@ -237,6 +281,21 @@ c     &       0,0,
 c     &       0,0,
 c     &       op_info)
 c      endif
+
+      if(extend)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &       1d0,4,3,
+     &       (/idx_sbar,idxcexbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+     &       -1,-1,
+     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+      endif
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T2BAR + CR2BAR')
@@ -353,6 +412,11 @@ c
       call file_init(form_mpr12%fhand,name,ftyp_sq_unf,0)
       call write_form_list(form_mpr12%fhand,form_lag,title)
 
+c dbg
+c      write(luout,*)'TeX list: Lagrangian'
+c      call tex_form_list(luout,form_lag,op_info)
+c dbg
+
       ! Delete linked lists (!)
       call dealloc_formula_list(form_h)
       call dealloc_formula_list(form_t_cr)
@@ -362,6 +426,7 @@ c
       ! Delete the temporary operators.
       call del_operator(op_h_temp,op_info)
       call del_operator(op_sba,op_info)
+      call del_operator(op_rsh,op_info)
       call del_operator(op_sop,op_info)
 
       call atim_csw(cpu,sys,wall)

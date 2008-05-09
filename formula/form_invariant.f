@@ -138,6 +138,11 @@ c dbg
       f_output%comment = trim(title)
       call write_form_list(f_output%fhand,flist,title)
 
+c dbg
+c      write(luout,*)'TeX list'
+c      call tex_form_list(luout,flist,op_info)
+c dbg
+
       call dealloc_formula_list(flist)
 
       if (ntest.ge.10) then

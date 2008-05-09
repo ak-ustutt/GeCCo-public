@@ -20,7 +20,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       logical, intent(in) ::
      &     last_cntr
@@ -49,10 +49,11 @@
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'merge_ex1ex2')
+        write(luout,*) 'last_cntr:      ',last_cntr
         write(luout,*) 'EX1EX2 on entry:'
         call wrt_occ_n(luout,iocc_ex1ex2,njoined12)
 c dbg
-        call prt_contr3(6,contr,occ_vtx(1,1,1+njoined_res))
+c        call prt_contr3(6,contr,occ_vtx(1,1,1+njoined_res))
 c dbg
       end if
 
@@ -60,7 +61,8 @@ c dbg
       if (njoined_res.eq.1) then
         svmap(1:contr%nvtx) = 1
       else
-        call svmap4contr(svmap,contr,occ_vtx,njoined_res)
+c        call svmap4contr(svmap,contr,occ_vtx,njoined_res)
+        call svmap4contr2(svmap,contr)
       end if
 c dbg
 c      print *,'svmap : ',svmap(1:contr%nvtx)
@@ -127,15 +129,6 @@ c      idxop1op2 = 0
             ! interesting for us?
             if (contr%svertex(ivtx2).ne.ivtxsuper1.and.
      &          contr%svertex(ivtx2).ne.ivtxsuper2) cycle
-
-c          ! is there a contraction ?          
-c          do ilist = 1, len_list
-c            iarc = arc_list(ilist)
-c            if (contr%arc(iarc)%link(1).eq.ivtx1.and.
-c     &          contr%arc(iarc)%link(2).eq.ivtx2) exit
-c            iarc = -1
-c          end do
-c          if (iarc.le.0) cycle
 
             ! idx1 on ex1ex2, as corresponding to ivtx1 
             idx1 = imltlist(ivtxsuper1,contr%svertex,ivtx1,1)

@@ -72,6 +72,12 @@ c      idxmm = idxlist(idxmm,ireo,nel,1)
       idxmm = ireo(idxmm)
       if (idx1m.le.0.or.idx2m.le.0.or.idxmm.le.0)
      &     call quit(1,'update_reo','inconsistent ireo (input)')
+
+      ! FIX: exception:
+      if (idxmm.lt.idx1m.and.idxmm.eq.1) then
+        ! shift merging place up by one
+        idxmm = idxmm+1
+      end if
 c dbg
 c      print *,'b) idx1m, idx2m, idxmm: ',idx1m, idx2m, idxmm
 c dbg      
@@ -81,9 +87,15 @@ c dbg
         ireo2(idx) = idx
       end do
       ! make permutation:
-      do idx = idx1m, idxmm-1
-        ireo2(idx) = ireo2(idx+1)
-      end do
+      if (idx1m.le.idxmm) then
+        do idx = idx1m, idxmm-1
+          ireo2(idx) = ireo2(idx+1)
+        end do
+      else
+        do idx = idx1m-1, idxmm, -1
+          ireo2(idx+1) = ireo2(idx)
+        end do
+      end if
       ireo2(idxmm) = idx1m
       do idx = max(idx2m,idxmm), nel-1
         ireo2(idx) = ireo2(idx+1)

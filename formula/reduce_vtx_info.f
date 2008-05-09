@@ -1,7 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine reduce_vtx_info(irestr_vtx,info_vtx,
      &                           contr,occ_vtx,iarc_red,
-c     &                           njoined_red,
      &                           irestr_res,orb_info)
 *----------------------------------------------------------------------*
 *     analogon to reduce_contr() for updating info on intermediates
@@ -52,13 +51,10 @@ c     &                           njoined_red,
         end do
       end if
 
-c      ! get further arcs
-c      call get_associated_arcs(arc_list,len_list,iarc_red,contr)
 
       ngas = orb_info%ngas
       nvtx = contr%nvtx
 
-c      do ilist = 1, len_list        
       iarc_prm =  iarc_red      !arc_list(ilist)
 
       ivtx1 = contr%arc(iarc_prm)%link(1)

@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine import_list_from_buffer(mel,buffer_in,
      &     nauxmin,nauxmax,
-     &     fac_0,fac_ne0,
+     &     fac_0,fac_ne0,scaling,
      &     iy_int,typetab,ntypes,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
@@ -25,6 +25,8 @@
 
       integer, intent(in) ::
      &     nauxmin, nauxmax
+      integer, intent(in) ::
+     &     scaling
       type(me_list), intent(in) ::
      &     mel
       integer, intent(in) ::
@@ -149,7 +151,7 @@ c dbg
           if (abs(ms+mst).gt.mscmax) cycle
           idxms = idxms+1
 
-          xchange = ms.ne.0
+          xchange = ms.ne.0.or.scaling.gt.0
 
           gfac = fac_0
           if (ms.ne.0) gfac = fac_ne0
@@ -231,12 +233,14 @@ c dbg
       real(8), intent(inout) ::
      &     curdisblk(*)
 
+      real(8), parameter ::
+     &     sp_fac = 1d0/3d0
       integer, parameter ::
      &     idx1(-1:2) = (/1,0,0,0/),
      &     idx2(-1:2) = (/1,0,0,1/)
 
       integer ::
-     &     idxstr, idxperm, idx_typ, idx_typx, idx_int, ihelp,
+     &     idxstr, idxperm, idx_typ, idx_int, ihelp,
      &     idx12, idx34, idx43, p,q, ld, idxpq
       integer ::
      &     idx_ord(4), rank(4)
@@ -264,55 +268,33 @@ c dbg
         first = .false.
         idxstr = idxstr+1
 
-C TEST
-c        idx12 = idxpq(idorb(1)*2+idx1(idspn(1)),
-c     &       idorb(2)*2+idx2(idspn(2)), ntotal*2)
-c        idx34 = idxpq(idorb(3)*2+idx1(idspn(3)),
-c     &       idorb(4)*2+idx2(idspn(4)), ntotal*2)
         idx12 = idxpq(idorb(1),idorb(2), ntotal)
         idx34 = idxpq(idorb(3),idorb(4), ntotal)
 
-
-c        idorb2(1) = 2*idorb(1)+idx1(idspn(1))
-c        idorb2(3) = 2*idorb(2)+idx2(idspn(2)) 
-c        idorb2(2) = 2*idorb(3)+idx1(idspn(3)) 
-c        idorb2(4) = 2*idorb(4)+idx2(idspn(4)) 
         if (idspn(1).ge.idspn(2)) then
           idorb2(1) = idorb(1)
           idorb2(3) = idorb(2) 
           fac = gfac
-C          idx12 = idxpq(idorb(1)*2+idx1(idspn(1)),
-C     &                  idorb(2)*2+idx2(idspn(2)), ntotal*2)
-c          idx12 = (idorb(1)*2+idx1(idspn(1))-1)*ntotal*2+
-c     &             idorb(2)*2+idx2(idspn(2))
         else
           idorb2(1) = idorb(2)
           idorb2(3) = idorb(1) 
           fac = -gfac
-C          idx12 = idxpq(idorb(2)*2+idx1(idspn(2)),
-C     &                  idorb(1)*2+idx2(idspn(1)), ntotal*2)
-c          idx12 = (idorb(2)*2+idx1(idspn(2))-1)*ntotal*2+
-c     &             idorb(1)*2+idx2(idspn(1))
         end if
         if (idspn(3).ge.idspn(4)) then
           idorb2(2) = idorb(3) 
           idorb2(4) = idorb(4)
-C          idx34 = idxpq(idorb(3)*2+idx1(idspn(3)),
-C     &                  idorb(4)*2+idx2(idspn(4)), ntotal*2)
-c          idx34 = (idorb(3)*2+idx1(idspn(3))-1)*ntotal*2+
-c     &             idorb(4)*2+idx2(idspn(4))
         else
           idorb2(2) = idorb(4) 
           idorb2(4) = idorb(3)
           fac = -fac
-C          idx34 = idxpq(idorb(4)*2+idx1(idspn(4)),
-C     &                  idorb(3)*2+idx2(idspn(3)), ntotal*2)
-c          idx34 = (idorb(4)*2+idx1(idspn(4))-1)*ntotal*2+
-c     &             idorb(3)*2+idx2(idspn(3))
         end if
 
         if (idx12.gt.idx34    ) fac  = abfac * fac
 
+        if (ms.eq.0.and.scaling.eq.2) then
+          fac = (1d0+sp_fac*sp_fac)*fac
+        end if
+        
         idxperm = rank_ivec(rank,idorb2,4)+1
 c dbg
 c
@@ -322,10 +304,6 @@ c        print *,'idorb2: ',idorb2(1:4),'  fac = ',fac
 c        print *,'rank :',rank(1:4),'  idxperm: ',idxperm
 c dbg
 
-c        idx_ord(rank(1)+1) = idorb(1)
-c        idx_ord(rank(2)+1) = idorb(3)
-c        idx_ord(rank(3)+1) = idorb(2)
-c        idx_ord(rank(4)+1) = idorb(4)
         idx_ord(rank(1)+1) = idorb2(1)
         idx_ord(rank(2)+1) = idorb2(2)
         idx_ord(rank(3)+1) = idorb2(3)
@@ -333,7 +311,6 @@ c        idx_ord(rank(4)+1) = idorb(4)
 
         idx_int = idx_int_graph(idx_ord,4,iy_int,igamorb,ngam)
         idx_typ  = abs(typetab(idxperm))
-c        fac = fac*dble(sign(1,typetab(idxperm)))
 
 c dbg
 c        print *,'Xidorb2: ',idorb2(1:4)
@@ -343,10 +320,10 @@ c dbg
 c dbg
 c        if (idxstr.le.10) then
 c          if (idxstr.eq.1) print *,' -------e.g. -------------------'
-c          print '(x,i4,a,4i4,a,3i4,f16.10)',
+c          print '(x,i4,a,4i4,a,2i4,2f16.10)',
 c     &       idxstr,': (',idx_ord(1:4),') <- ',
-c     &       idx_int,idx_typ, idx_typx,
-c     &       fac*buffer_in((idx_int-1)*ntypes+idx_typ)
+c     &       idx_int,idx_typ, fac,
+c     &       buffer_in((idx_int-1)*ntypes+idx_typ)
 c          print *,'adr = ',(idx_int-1)*ntypes+idx_typ
 c          if (idxstr.eq.10) print *,' ----------------- etc ---------'
 c        end if
@@ -359,37 +336,28 @@ c dbg
           idorb2(1) = idorb(1)
           idorb2(3) = idorb(2) 
           fac = gfac
-C          idx12 = idxpq(idorb(1)*2+idx1(idspn(1)),
-C     &                  idorb(2)*2+idx2(idspn(2)), ntotal*2)
-c          idx12 = (idorb(1)*2+idx1(idspn(1))-1)*ntotal*2+
-c     &             idorb(2)*2+idx2(idspn(2))
         else
           idorb2(1) = idorb(2)
           idorb2(3) = idorb(1) 
           fac = -gfac
-C          idx12 = idxpq(idorb(2)*2+idx1(idspn(2)),
-C     &                  idorb(1)*2+idx2(idspn(1)), ntotal*2)
-c          idx12 = (idorb(2)*2+idx1(idspn(2))-1)*ntotal*2+
-c     &             idorb(1)*2+idx2(idspn(1))
         end if
-        if (idspn(4).ge.idspn(3)) then
+c        if (idspn(4).ge.idspn(3)) then
+        if (idspn(3).ge.idspn(4)) then
           idorb2(2) = idorb(4) 
           idorb2(4) = idorb(3)
-C          idx34 = idxpq(idorb(4)*2+idx1(idspn(4)),
-C     &                  idorb(3)*2+idx2(idspn(3)), ntotal*2)
-c          idx34 = (idorb(4)*2+idx1(idspn(4))-1)*ntotal*2+
-c     &             idorb(3)*2+idx2(idspn(3))
         else
           idorb2(2) = idorb(3) 
           idorb2(4) = idorb(4)
           fac = -fac
-C          idx34 = idxpq(idorb(3)*2+idx1(idspn(3)),
-c     &                  idorb(4)*2+idx2(idspn(4)), ntotal*2)
-c         idx34 = (idorb(3)*2+idx1(idspn(3))-1)*ntotal*2+
-c     &             idorb(4)*2+idx2(idspn(4))
         end if
 
         if (idx12.gt.idx34    ) fac  = abfac * fac
+
+        if (ms.eq.0.and.scaling.eq.1) then
+          fac = -sp_fac*fac
+        else if (ms.eq.0.and.scaling.eq.2) then
+          fac = -(2d0*sp_fac)*fac
+        end if
 
         idxperm = rank_ivec(rank,idorb2,4)+1
 c dbg
@@ -399,10 +367,6 @@ c        print *,'X: idorb2: ',idorb2(1:4),'  fac = ',fac
 c        print *,'rank :',rank(1:4),'  idxperm: ',idxperm
 c dbg
 
-c        idx_ord(rank(1)+1) = idorb(1)
-c        idx_ord(rank(2)+1) = idorb(3)
-c        idx_ord(rank(3)+1) = idorb(2)
-c        idx_ord(rank(4)+1) = idorb(4)
         idx_ord(rank(1)+1) = idorb2(1)
         idx_ord(rank(2)+1) = idorb2(2)
         idx_ord(rank(3)+1) = idorb2(3)
@@ -410,7 +374,6 @@ c        idx_ord(rank(4)+1) = idorb(4)
 
         idx_int = idx_int_graph(idx_ord,4,iy_int,igamorb,ngam)
         idx_typ  = abs(typetab(idxperm))
-c        fac = fac*dble(sign(1,typetab(idxperm)))
 
 c dbg
 c        print *,'Xidorb2: ',idorb2(1:4)
@@ -420,12 +383,10 @@ c dbg
 c dbg
 c        if (idxstr.le.10) then
 c          if (idxstr.eq.1) print *,' -------e.g. -------------------'
-c          print '("X",i4,a,4i4,a,3i4,f16.10)',
+c          print '("X",i4,a,4i4,a,2i4,2f16.10)',
 c     &       idxstr,': (',idx_ord(1:4),') <- ',
-c     &       idx_int,idx_typ, idx_typx,
-c     &       -fac*buffer_in((idx_int-1)*ntypes+idx_typ)
-cc          if (xchange) print *,'      X: ',
-cc     &         -facx*buffer_in((idx_int-1)*ntypes+idx_typx),ntypes
+c     &       idx_int,idx_typ, -fac,
+c     &       buffer_in((idx_int-1)*ntypes+idx_typ)
 c          print *,'X adr = ',(idx_int-1)*ntypes+idx_typ
 c          if (idxstr.eq.10) print *,' ----------------- etc ---------'
 c        end if

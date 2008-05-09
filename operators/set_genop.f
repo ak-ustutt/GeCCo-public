@@ -27,7 +27,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(operator), intent(inout) ::
      &     op
@@ -188,8 +188,15 @@
                 idx_occls_x012(nx) = idx_occls_x012(nx)+1
                 idx = idx_occls_x012(nx)
                 ! declare whether this block is formal or not.
-                op%formal_blk(idx)=
+                if (iformal.lt.3) then
+                  op%formal_blk(idx)=
      &               ((c_distr(iextr)+a_distr(iextr)).ge.iformal)
+                else
+                  ! QUICK FIX (intended for Fock-operator)
+                  op%formal_blk(idx)=
+     &               max(nc,na).gt.1 .and.
+     &               (c_distr(iextr)+a_distr(iextr)).ge.iformal-1
+                end if
                 op%formal=op%formal.and.op%formal_blk(idx)
 
                 op%ihpvca_occ(1:ngastp,1,idx) = c_distr

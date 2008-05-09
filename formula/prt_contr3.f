@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine prt_contr3(luout,contr,occ_vtx)
+      subroutine prt_contr3(luout,contr,occ_vtx_in)
 *----------------------------------------------------------------------*
 *     write info on contraction onto unit luout
 *     alternative version if no op_info available
@@ -14,13 +14,23 @@
      &     luout
       type(contraction), intent(in) ::
      &     contr
-      integer, intent(in) ::
-     &     occ_vtx(ngastp,2,*)
+      integer, intent(in), target ::
+     &     occ_vtx_in(ngastp,2,contr%nvtx)
       
       character(1) ::
      &     cdag
       integer ::
      &     idx, idxph
+
+      integer, pointer ::
+     &     occ_vtx(:,:,:)
+
+      if (occ_vtx_in(1,1,1).lt.0) then
+        allocate(occ_vtx(ngastp,2,contr%nvtx))
+        call occvtx_from_arcs(1,occ_vtx,contr,0)
+      else
+        occ_vtx => occ_vtx_in
+      end if
 
       write(luout,*) '+++ contraction info +++'
       cdag = '  '
@@ -66,10 +76,29 @@
      &       '    ',contr%arc(idx)%occ_cnt(1:ngastp,2)
         end if
       end do
+      do idx = 1, contr%nxarc
+        if (contr%xarc(idx)%occ_cnt(1,1).lt.0) then
+          ! prototype connection:
+          write(luout,'(x,a,x,2i4)')
+     &       ' xp ',contr%xarc(idx)%link(1),
+     &       contr%xarc(idx)%link(2)
+        else
+          write(luout,'(x,a,x,2i4,5x,4i3)')
+     &       ' x  ',contr%xarc(idx)%link(1),
+     &       contr%xarc(idx)%link(2),
+     &       contr%xarc(idx)%occ_cnt(1:ngastp,1)
+          write(luout,'(x,a,14x,4i3)')
+     &       '    ',contr%xarc(idx)%occ_cnt(1:ngastp,2)
+        end if
+      end do
       do idx = 1, contr%nfac
         write(luout,'(x,i5,"*",i5,"->",i5,"(",i5,")")')
      &       contr%inffac(1:4,idx)
       end do
+
+      if (occ_vtx_in(1,1,1).lt.0) then
+        deallocate(occ_vtx)
+      end if
 
       return
       end
