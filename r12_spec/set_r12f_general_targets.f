@@ -30,10 +30,10 @@
       integer ::
      &     min_rank, max_rank, ansatz, n_pp, ndef,
      &     isim, ncat, nint, icnt, nlab,
-     &     isym, ms, msc, sym_arr(8),
+     &     isym, ms, msc, sym_arr(8), mode,
      &     occ_def(ngastp,2,20)
       logical ::
-     &     needed
+     &     needed, r12fix
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -41,14 +41,6 @@
      &     parameters(3)
       character(12) ::
      &     approx, F_appr, K_appr
-
-      character, parameter ::
-     &     op_bh_inter*2     = 'Bh',
-     &     mel_bh_inter*8    = 'Bh-INTER',
-     &     mel_bh_def*12      = 'DEF-Bh-INTER',
-     &     form_r12_bhint*9  = 'BhINT_R12',
-     &     form_r12_bhcabs*14= 'BhINT_R12_CABS',
-     &     fopt_r12_bhcabs*13 = 'BhINT_R12_OPT'
 
       character(*), intent(in) ::
      &     env_type
@@ -64,13 +56,15 @@
       approx(1:12) = ' '
       F_appr(1:12) = ' '
       K_appr(1:12) = ' '
-      n_pp = 1  ! number of particle-particle interaction in R12
+      n_pp = 0  ! number of particle-particle interaction in R12
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','F_appr',str=F_appr)
       call get_argument_value('method.R12','K_appr',str=K_appr)
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
+      call get_argument_value('method.R12','fixed',lval=r12fix)
+      call get_argument_value('method.R12','extend',ival=mode)
 
       ! assemble approx string
       select case(trim(F_appr))
@@ -100,10 +94,29 @@
       call add_target(op_r12,ttype_op,.false.,tgt_info)
       min_rank = 2  ! 1 is a possibility 
       call r12gem_parameters(-1,parameters,
-     &                   .false.,min_rank,ansatz)
+     &                   n_pp,min_rank,ansatz)
       call set_rule(op_r12,ttype_op,DEF_R12GEMINAL,
      &              op_r12,1,1,
      &              parameters,1,tgt_info)
+
+      if (mode.gt.0) then
+        ! T1' operators for extended MP2-F12.
+        call add_target(op_cex,ttype_op,.false.,tgt_info)
+        call xop_parameters(-1,parameters,
+     &       .false.,1,1,0,2)
+        call set_rule(op_cex,ttype_op,DEF_EXCITATION,
+     &                op_cex,1,1,
+     &                parameters,1,tgt_info)
+
+        ! The Lagrangian multipliers.
+        call add_target(op_cexbar,ttype_op,.false.,tgt_info)
+        call set_dependency(op_cexbar,op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                          op_cex,.true.) ! <- dagger=.true.
+        call set_rule(op_cexbar,ttype_op,CLONE_OP,
+     &                op_cexbar,1,1,
+     &                parameters,1,tgt_info)
+      endif
 
       ! Now: the operators associated with the actual R12 integrals:
       !  <pq'|r12|ij> 

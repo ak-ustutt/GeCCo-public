@@ -206,10 +206,22 @@ c dbg
         ioff = 1
         call opt_parameters(+1,
      &       rule%parameters,ncat,nint)
+
         call form_opt(form_pnt,
      &       ncat,rule%labels(ioff+1),
      &       nint,rule%labels(ioff+ncat+1),
      &       form_info,op_info,str_info,orb_info)
+c      case(CONTRACT)
+c        call form_parameters(+1,
+c     &       rule%parameters,rule%n_parameter_strings,
+c     &       title,idum,strdum)
+c        ioff = rule%n_update+1
+c        jdx = rule%n_labels-ioff
+c        call test_contract(form_pnt,title,
+c     &       rule%labels(2),
+c     &       rule%labels(ioff+1:ioff+jdx),jdx,
+c     &       op_info)
+c      case(EXTRACT_TERM)
       case(DEL_TERMS)
         call modify_parameters(+1,
      &       rule%parameters,nterms,idxterms,maxterms)

@@ -76,7 +76,7 @@
      &     mstop(2), igamtop(2), idxop(2), iblkop(2),
      &     mstop1op2, igamtop1op2, njoined,
      &     njoined_op(2), njoined_op1op2,
-     &     njoined_cnt, njoined_res
+     &     njoined_cnt, njoined_res, idxinp
       real(8), pointer ::
      &     xret_blk(:), xret_pnt(:)
       real(8), target ::
@@ -112,7 +112,7 @@
      &     cur_contr, cur_contr_red
 
       integer, external ::
-     &     idxlist
+     &     idxlist, idx_oplist2
       logical, external ::
      &     me_list_uptodate
       real(8), external ::
@@ -166,7 +166,7 @@
 
         if (nres.eq.0 .and.
      &      cur_form%command.ne.command_set_target_init)
-     &     call quit(1,'frm_sched','first command must define target')
+     &     call quit(1,'frm_sched1','first command must define target')
 
         select case(cur_form%command)
         case(command_end_of_formula)

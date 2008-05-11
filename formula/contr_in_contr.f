@@ -38,8 +38,8 @@
         write(luout,*) 'vertices A/B: ',contra%nvtx,contrb%nvtx
         write(luout,*) 'arcs A/B:     ',contra%narc,contrb%narc
 c dbg
-c        call prt_contr2(6,contra,op_info)
-c        call prt_contr2(6,contrb,op_info)
+        call prt_contr2(6,contra,op_info)
+        call prt_contr2(6,contrb,op_info)
 c dbg
       end if
 

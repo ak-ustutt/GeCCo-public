@@ -176,7 +176,7 @@ c          mnmxspc(2,1:ngas) = 4
 
         nbuffer = nints(1)*ntypes
 c dbg
-        write(luout,*) 'size of buffer: ',nints(1),ntypes,nbuffer
+c        write(luout,*) 'size of buffer: ',nints(1),ntypes,nbuffer
 c dbg
         ifree = mem_setmark('DAimport')
         ifree = mem_alloc_real(buffer,nbuffer,'DAbuffer')

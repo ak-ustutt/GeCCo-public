@@ -23,7 +23,8 @@
       case(command_set_target_init,
      &     command_set_target_update,
      &     command_del_intermediate,
-     &     command_symmetrise)
+     &     command_symmetrise,
+     &     command_internal)
       ! nothing to do
       case(command_add_contribution)
         allocate(form_pnt%contr)

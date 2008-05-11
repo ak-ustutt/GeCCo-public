@@ -28,6 +28,7 @@
       include 'def_formula_item.h'
       include 'def_formula.h'
       include 'def_orbinf.h'
+      include 'ifc_input.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -58,6 +59,8 @@
      &     avoid(10), connect(10), navoid, nconnect
       integer, pointer ::
      &     idx_prod(:), idx_supv(:), idx_op(:)
+      logical ::
+     &     r12fix
       character ::
      &     name*(form_maxlen_label*2)
       type(formula_item), target ::
@@ -70,8 +73,13 @@
       integer, external ::
      &     idx_oplist2, idxlist
 
+      ! Check to see whether we want to fix the R12-amplitudes.
+      call get_argument_value('method.R12','fixed',lval=r12fix)
+
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'set_r12_intm_formal 3')
+        if(r12fix) write(luout,*)'Amplitudeless formal intermediates '//
+     &       'formed.'
         write(luout,*) 'setting: ',trim(label_int)
         write(luout,*) 'type : ',trim(typ_str)
         write(luout,*) 'input ops: '
@@ -89,7 +97,7 @@
       idx_intm = idx_oplist2(label_int,op_info)
       if (idx_intm.lt.0)
      &     call quit(1,'set_r12intm_formal',
-     &     'label not on list: '//label_int)
+     &     'label not on list (1): '//label_int)
 
       allocate(idx_op(len))
 
@@ -98,7 +106,8 @@
       nvtx = 2  ! external lines at borders
       do idx = 1, len
         if (typ_str(idx:idx).eq.'x') then
-          nvtx = nvtx+2
+c          if(.not.r12fix.or.typ_str(1:len).eq.'rxr') nvtx = nvtx+2
+          nvtx = nvtx + 2
           cycle
         end if
         nvtx = nvtx+1
@@ -106,7 +115,7 @@
         idx_op(idx) = idx_oplist2(label_op(iop),op_info)
         if (idx_op(idx).lt.0)
      &     call quit(1,'set_r12intm_formal',
-     &     'label not on list: '//label_op(iop))
+     &     'label not on list (2): '//label_op(iop))
       end do
 
       allocate(idx_prod(nvtx),idx_supv(nvtx))
@@ -117,6 +126,9 @@
       n_g = 0
       n_r = 0
       do idx = 1, nvtx
+c        if (typ_str(idx:idx).eq.'x')then
+c          if(.not.r12fix.or.typ_str(1:len).eq.'rxr') n_x = n_x+1
+c        endif
         if (typ_str(idx:idx).eq.'x') n_x = n_x+1
         if (typ_str(idx:idx).eq.'f') n_f = n_f+1
         if (typ_str(idx:idx).eq.'g') n_g = n_g+1
@@ -181,10 +193,12 @@ c dbg
       idx_supv(nvtx) = 1
       ivtx = 2
       do idx = 1, len
-        if (typ_str(idx:idx).eq.'x') then          
+        if (typ_str(idx:idx).eq.'x') then
+c          if(.not.r12fix.or.typ_str(1:len).eq.'rxr')then
           idx_prod(ivtx:ivtx+1) = idx_intm
           idx_supv(ivtx:ivtx+1) = 1
           ivtx = ivtx+2
+c          endif
         else if (typ_str(idx:idx).eq.'f') then
           idx_prod(ivtx) = idx_f
           idx_supv(ivtx) = 2
@@ -213,9 +227,13 @@ c dbg
       navoid = 0
       nconnect = 0
       if (trim(typ_str).eq.'rgxr') then ! xrgxxrx
+        if(r12fix) call quit(1,'set_r12intm_formal3',
+     &       'Not ready for fixed amplitude P-intermediate')
         avoid(1:2) = (/2,6/)
         navoid = 1
       else if (trim(typ_str).eq.'rxgxr') then ! xrxxgxxrx
+        if(r12fix) call quit(1,'set_r12intm_formal3',
+     &       'Not ready for fixed amplitude Z-intermediate')
         avoid(1:4) = (/2,7, 3,8/)
         navoid = 2
         connect(1:2) = (/2,8/)
@@ -232,7 +250,7 @@ c dbg
      &     -1,0,
      &     op_info)
 
-      if (ntest.ge.100) then
+      if (ntest.ge.1000) then
         write(luout,*) 'intermediate formula'
         call print_form_list(luout,flist_scr,op_info)
       end if

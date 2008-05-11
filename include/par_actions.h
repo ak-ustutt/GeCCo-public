@@ -28,6 +28,9 @@
      &     INVARIANT*9              = 'INVARIANT',
      &     DERIVATIVE*10            = 'DERIVATIVE',
      &     LEQ_SPLIT*9              = 'LEQ_SPLIT',
+c dbg
+     &     CONTRACT*8               = 'CONTRACT',
+c dbg
      &     OPTIMIZE*8               = 'OPTIMIZE',
      &     KEEP_TERMS*9             = 'KEEP_TERMS',
      &     DEL_TERMS*8              = 'DEL_TERMS',
@@ -46,4 +49,5 @@
      &     EVALPROP*9         = 'EVAL_PROP',
      &     SOLVENLEQ*10       = 'SOLVE_NLEQ',
      &     SOLVELEQ*9         = 'SOLVE_LEQ',
-     &     SOLVEEVP*9         = 'SOLVE_EVP'
+     &     SOLVEEVP*9         = 'SOLVE_EVP',
+     &     UNITY*9            = 'ADD_UNITY'

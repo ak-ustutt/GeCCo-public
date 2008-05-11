@@ -65,9 +65,10 @@
       include 'def_formula_item.h'
       include 'def_formula.h'
       include 'def_orbinf.h'
+      include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -84,7 +85,7 @@
       logical ::
      &     symmetrise
       integer ::
-     &     idx_intm, idx_op(nlabels), nop, iop
+     &     idx_intm, idx_op(nlabels), nop, iop, iop1, iop2, nder, nopen
       integer, pointer ::
      &     occ_def(:,:,:)
       character ::
@@ -93,9 +94,11 @@
      &     flist
       type(formula_item), pointer ::
      &     flist_pnt
+      type(formula) ::
+     &     form_inp
 
       integer, external ::
-     &     idx_oplist2
+     &     idx_oplist2, idx_formlist
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'set_r12_intm_cabs')
@@ -149,7 +152,6 @@
      &       call quit(1,'set_r12intm_cabs3','no C for ansatz 1')
         if (approx(1:1).ne.'C') then
           call set_1contrib(flist,1d0,4,
-c          call set_1contrib(flist,-1d0,4,
      &       idx_intm,idx_op,nop,op_info)
           call set_C_fr(flist,approx,
      &         3,2,5,6,
@@ -220,6 +222,7 @@ c          end if
      &       2,12,
      &       idx_intm,idx_op,nop,op_info)
         end if
+
       end select
 
       ! add symmetrisation command if required

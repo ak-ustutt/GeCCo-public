@@ -17,7 +17,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       real(8), intent(in)::
      &     fac
@@ -29,7 +29,7 @@
      &     iblkout
 
       logical ::
-     &     bufout
+     &     bufout,closeit
       integer ::
      &     len_str, idum, ifree, lblk, nblkmax, nblk, nbuff,
      &     ioffin, ioffout, idxst, idxnd, njoined, join_off,
@@ -64,7 +64,9 @@
      &       '  block: ',iblkout
       end if
 
+      closeit = .false.
       njoined = opout%njoined
+
       join_off=(iblkout-1)*njoined
       ! check whether the out operator is a diagonal block:
       if (.not.
@@ -81,7 +83,7 @@
       ! Find total block length.
       ioff_blk = mel_out%off_op_occ(iblkout)
       len_blk  = mel_out%len_op_occ(iblkout)
-      
+
       if(len_blk.gt.ifree)
      &     call quit(1,'add_unity','insufficient space')
       
@@ -96,6 +98,10 @@
       endif
 
       if(.not.bufout)then
+        if(ffout%unit.le.0)then
+          call file_open(ffout)
+          closeit = .true.
+        endif
         call get_vec(ffout,buffer_out,ioff_blk+1,ioff_blk+len_blk)
       endif  
 
@@ -131,6 +137,8 @@
       if(.not.bufout)then
         call put_vec(ffout,buffer_out,ioff_blk+1,ioff_blk+len_blk)
       endif  
+      if(closeit)
+     &     call file_close_keep(ffout)
 
       ifree = mem_flushmark('add_unity')
 

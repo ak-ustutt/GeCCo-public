@@ -104,9 +104,9 @@
      &       call quit(1,'process_operators',
      &       'no parameters provided for '//DEF_R12GEMINAL)
         call r12gem_parameters(+1,rule%parameters,
-     &                      dagger,min_rank,ansatz)
+     &                      n_ap,min_rank,ansatz)
         max_rank = 2
-        call set_r12gem(op_pnt,trim(rule%labels(1)),dagger,
+        call set_r12gem(op_pnt,trim(rule%labels(1)),n_ap,
      &       min_rank,max_rank,ansatz,orb_info)        
       case(DEF_R12COEFF)
         if (rule%n_parameter_strings.lt.1)

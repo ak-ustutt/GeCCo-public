@@ -22,7 +22,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       real(8), intent(out) ::
      &     xnorm2
@@ -55,7 +55,7 @@
      &     buffer_in(:), buffer_out(:)
 
       logical, external ::
-c     &     iocc_equal_n,
+c     &     iocc_equal_n, iocc_equal,
      &     irestr_equal
       real(8), external ::
      &     ddot
@@ -96,26 +96,17 @@ c     &     iocc_equal_n,
      &                   .false.,
      &                   njoined_in)
       else if (njoined_in.eq.2.and.njoined_out.eq.1) then
-c dbg
-        print *,'special 1'
-c dbg
         allocate(occ_try(ngastp,2,1))
         occ_try(1:ngastp,1:2,1) =
      &      iocc_overlap(opin%ihpvca_occ(1:ngastp,1:2,idx_in),.false.,
      &                   opin%ihpvca_occ(1:ngastp,1:2,idx_in+1),.false.)
         ok = iocc_zero(occ_try)
         if (ok) then
-c dbg
-        print *,'special 1 cnt'
-c dbg
           occ_try(1:ngastp,1:2,1) =
      &        iocc_add(1,opin%ihpvca_occ(1:ngastp,1:2,idx_in),.false.,
      &                 1,opin%ihpvca_occ(1:ngastp,1:2,idx_in+1),.false.)
           ok = iocc_equal(occ_try,.false.,
      &                   opout%ihpvca_occ(1:ngastp,1:2,idx_out),.false.)
-c dbg
-        print *,'special 1 res = ',ok
-c dbg
         end if
         deallocate(occ_try)
       else if (njoined_out-njoined_in.eq.1) then
@@ -167,8 +158,13 @@ c      end if
 
       len_op = mel_in%len_op_occ(iblkin)
       ! for the moment this must hold:
-      if (len_op.ne.mel_out%len_op_occ(iblkout))
-     &     call quit(1,'add_opblk','unexpected error')      
+      if (len_op.ne.mel_out%len_op_occ(iblkout))then
+        write(luout,*)'len_op = ',len_op
+        write(luout,*)'mel len = ',mel_out%len_op_occ(iblkout)
+        call wrt_occ_n(luout,opin%ihpvca_occ(1,1,idx_in),njoined_in)
+        call wrt_occ_n(luout,opout%ihpvca_occ(1,1,idx_out),njoined_out)
+        call quit(1,'add_opblk','unexpected error')      
+      endif
 
       ! buffered data available?
       bufin = .false.

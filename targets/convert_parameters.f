@@ -176,24 +176,22 @@
 
 *----------------------------------------------------------------------*
       subroutine r12gem_parameters(rw,parameters,
-     &     dagger,min_rank,ansatz)
+     &     n_ap,min_rank,ansatz)
 
       implicit none
       
-      logical, intent(inout) ::
-     &     dagger
       integer, intent(inout) ::
-     &     rw,min_rank,ansatz
+     &     rw,min_rank,ansatz,n_ap
       character, intent(inout) ::
      &     parameters*(*)
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
-        write(parameters,'(l,x,2(i5,x))')
-     &       dagger,min_rank,ansatz
+        write(parameters,'(i2,x,2(i5,x))')
+     &       n_ap,min_rank,ansatz
       else
-        read(parameters,'(l,x,2(i5,x))')
-     &       dagger,min_rank,ansatz
+        read(parameters,'(i2,x,2(i5,x))')
+     &       n_ap,min_rank,ansatz
       end if
 
       return

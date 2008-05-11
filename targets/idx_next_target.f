@@ -57,7 +57,7 @@ c dbg
       if (icycle.gt.maxcycles)
      &     call quit(1,'idx_next_target','infinite loop?')
 
-      ! any depencies?
+      ! any dependencies?
       if (tgt_in%n_depends_on.gt.0) then
         ! check whether any target we depend on needs to be re-made
         do idep = 1, tgt_in%n_depends_on
