@@ -24,7 +24,7 @@
       integer, parameter ::
      &     ndef_max = 20
       integer ::
-     &     idx, idx_t,
+     &     idx, idx_t, n_ap,
      &     ncadiff, min_rank, max_rank, iformal, ansatz,
      &     ndim1, ndim2, ndef, njoined,
      &     hpvx_constr(2,ngastp,2), gas_constr(2,orb_info%ngas,2,2),
@@ -32,7 +32,7 @@
       character*(len_opname) ::
      &     name_template
       logical ::
-     &     dagger, explicit, set_p
+     &     dagger, explicit
 
       integer, external ::
      &     idx_oplist2
@@ -112,17 +112,17 @@
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',
      &       'no parameters provided for '//DEF_R12COEFF)
-        call r12int_parameters(+1,rule%parameters,
-     &                      set_p,min_rank,max_rank,ncadiff,iformal)
-        call set_r12c(op_pnt,trim(rule%labels(1)),set_p,
+        call xop_parameters(+1,rule%parameters,
+     &                      dagger,min_rank,max_rank,ncadiff,iformal)
+        call set_r12c(op_pnt,trim(rule%labels(1)),dagger,
      &       min_rank,max_rank,ncadiff,iformal,orb_info)        
       case(DEF_R12INT)
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',
      &       'no parameters provided for '//DEF_R12INT)
-        call xop_parameters(+1,rule%parameters,
-     &                      dagger,min_rank,max_rank,ncadiff,iformal)
-        call set_r12i(op_pnt,trim(rule%labels(1)),dagger,
+        call r12int_parameters(+1,rule%parameters,
+     &                      n_ap,min_rank,max_rank,ncadiff,iformal)
+        call set_r12i(op_pnt,trim(rule%labels(1)),n_ap,
      &       min_rank,max_rank,ncadiff,iformal,orb_info)        
       case(DEF_R12INTERM)
         if (rule%n_parameter_strings.lt.1)

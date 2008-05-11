@@ -173,7 +173,11 @@ c          end if
         call set_Pcontrib(flist,ansatz,
      &       2,3,
      &       idx_intm,idx_op,nop,op_info)
-      case('B')
+      case('BH')
+        call set_Bhole(flist,ansatz,
+     &       4,2,3,6,
+     &       idx_intm,idx_op,nop,op_info,orb_info)
+      case('B','BP')
         ! set up term arising from 1 in Q = 1 - P
         call set_1contrib(flist,1d0,4,
      &       idx_intm,idx_op,nop,op_info)

@@ -201,12 +201,12 @@
 
 *----------------------------------------------------------------------*
       subroutine r12int_parameters(rw,parameters,
-     &     set_p,min_rank,max_rank,ncadiff,iformal)
+     &     n_ap,min_rank,max_rank,ncadiff,iformal)
 
       implicit none
       
-      logical, intent(inout) ::
-     &     set_p
+      integer, intent(inout) ::
+     &     n_ap
       integer, intent(inout) ::
      &     rw,min_rank,max_rank,ncadiff,iformal
       character, intent(inout) ::
@@ -214,11 +214,11 @@
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
-        write(parameters,'(l,x,4(i5,x))')
-     &       set_p,min_rank,max_rank,ncadiff,iformal
+        write(parameters,'(i2,x,4(i5,x))')
+     &       n_ap,min_rank,max_rank,ncadiff,iformal
       else
-        read(parameters,'(l,x,4(i5,x))')
-     &       set_p,min_rank,max_rank,ncadiff,iformal
+        read(parameters,'(i2,x,4(i5,x))')
+     &       n_ap,min_rank,max_rank,ncadiff,iformal
       end if
 
       return

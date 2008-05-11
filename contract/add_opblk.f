@@ -19,6 +19,7 @@
       include 'def_orbinf.h'
       include 'opdim.h'
       include 'ifc_memman.h'
+      include 'ifc_operators.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -54,7 +55,8 @@
      &     buffer_in(:), buffer_out(:)
 
       logical, external ::
-     &     iocc_equal_n, irestr_equal
+c     &     iocc_equal_n,
+     &     irestr_equal
       real(8), external ::
      &     ddot
 
@@ -86,10 +88,38 @@
       idx_out = (iblkout-1)*njoined_out+1
 
       if (njoined_in.eq.njoined_out) then
-        ok = iocc_equal_n(opin%ihpvca_occ(1,1,idx_in),opin%dagger,
-     &                   opout%ihpvca_occ(1,1,idx_out),opout%dagger,
+        ok = iocc_equal_n(opin%ihpvca_occ(1:ngastp,1:2,
+     &                                    idx_in:idx_in-1+njoined_in),
+     &                   .false.,
+     &                   opout%ihpvca_occ(1:ngastp,1:2,
+     &                                    idx_out:idx_out-1+njoined_in),
+     &                   .false.,
      &                   njoined_in)
+      else if (njoined_in.eq.2.and.njoined_out.eq.1) then
+c dbg
+        print *,'special 1'
+c dbg
+        allocate(occ_try(ngastp,2,1))
+        occ_try(1:ngastp,1:2,1) =
+     &      iocc_overlap(opin%ihpvca_occ(1:ngastp,1:2,idx_in),.false.,
+     &                   opin%ihpvca_occ(1:ngastp,1:2,idx_in+1),.false.)
+        ok = iocc_zero(occ_try)
+        if (ok) then
+c dbg
+        print *,'special 1 cnt'
+c dbg
+          occ_try(1:ngastp,1:2,1) =
+     &        iocc_add(1,opin%ihpvca_occ(1:ngastp,1:2,idx_in),.false.,
+     &                 1,opin%ihpvca_occ(1:ngastp,1:2,idx_in+1),.false.)
+          ok = iocc_equal(occ_try,.false.,
+     &                   opout%ihpvca_occ(1:ngastp,1:2,idx_out),.false.)
+c dbg
+        print *,'special 1 res = ',ok
+c dbg
+        end if
+        deallocate(occ_try)
       else if (njoined_out-njoined_in.eq.1) then
+        ! needed ?
         ! density exception: insert a zero-occupation
         allocate(occ_try(ngastp,2,njoined_out))
         do ijoin = 1, njoined_out
@@ -102,8 +132,9 @@
      &         opin%ihpvca_occ(1:ngastp,1:2,idx_in-1+ijoin:
      &                             idx_in-1+njoined_out-1)
           ok = iocc_equal_n(occ_try,opin%dagger,
-     &                   opout%ihpvca_occ(1,1,idx_out),opout%dagger,
-     &                   njoined_out)
+     &          opout%ihpvca_occ(1:ngastp,1:2,
+     &                           idx_out:idx_out-1+njoined_out),.false.,
+     &          njoined_out)
           if (ok) exit
         end do
         deallocate(occ_try)

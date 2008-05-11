@@ -1,7 +1,8 @@
 *----------------------------------------------------------------------*
-      subroutine set_r12_general_targets(tgt_info,orb_info,env_type)
+      subroutine set_r12f_general_targets(tgt_info,orb_info,env_type)
 *----------------------------------------------------------------------*
-*     set targets needed in more or less all kinds of R12 calculations
+*     set targets needed in all kinds of R12 calculations based on 
+*     fixed geminals
 *----------------------------------------------------------------------*
       implicit none
 
@@ -16,14 +17,6 @@
       include 'par_formnames_gen.h'
       include 'par_gen_targets.h'
       include 'par_actions.h'
-c test
-      character, parameter ::
-     &     op_b0_inter*2 = 'B0',
-     &     mel_b0_inter*6 = 'B0list',
-     &     mel_b0_def*9   = 'defB0list',
-     &     form_b0*6        = 'B0test',
-     &     fopt_b0*5        = 'B0opt'
-c test
 
       type(target_info), intent(inout) ::
      &     tgt_info
@@ -35,7 +28,7 @@ c test
      &     gas_constr(2,orb_info%ngas,2,2)
 
       integer ::
-     &     min_rank, max_rank, ansatz,
+     &     min_rank, max_rank, ansatz, n_pp, ndef,
      &     isim, ncat, nint, icnt, nlab,
      &     isym, ms, msc, sym_arr(8),
      &     occ_def(ngastp,2,20)
@@ -48,6 +41,14 @@ c test
      &     parameters(3)
       character(12) ::
      &     approx, F_appr, K_appr
+
+      character, parameter ::
+     &     op_bh_inter*2     = 'Bh',
+     &     mel_bh_inter*8    = 'Bh-INTER',
+     &     mel_bh_def*12      = 'DEF-Bh-INTER',
+     &     form_r12_bhint*9  = 'BhINT_R12',
+     &     form_r12_bhcabs*14= 'BhINT_R12_CABS',
+     &     fopt_r12_bhcabs*13 = 'BhINT_R12_OPT'
 
       character(*), intent(in) ::
      &     env_type
@@ -63,6 +64,7 @@ c test
       approx(1:12) = ' '
       F_appr(1:12) = ' '
       K_appr(1:12) = ' '
+      n_pp = 1  ! number of particle-particle interaction in R12
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','F_appr',str=F_appr)
@@ -93,7 +95,8 @@ c test
 *----------------------------------------------------------------------*
 *     Operators:
 *----------------------------------------------------------------------*
-      ! the formal R12 geminal: P12 r12|0>
+      ! the formal R12 geminal: P12 r12 X12
+      ! need to be extended ...
       call add_target(op_r12,ttype_op,.false.,tgt_info)
       min_rank = 2  ! 1 is a possibility 
       call r12gem_parameters(-1,parameters,
@@ -102,38 +105,13 @@ c test
      &              op_r12,1,1,
      &              parameters,1,tgt_info)
 
-      ! the coefficients
-      call add_target(op_c12,ttype_op,.false.,tgt_info)
-      call xop_parameters(-1,parameters,
-     &     .false.,min_rank,max_rank,0,max_rank+1)
-      call set_rule(op_c12,ttype_op,DEF_R12COEFF,
-     &              op_c12,1,1,
-     &              parameters,1,tgt_info)
-
-      ! Lagrange multipliers associated with coefficients
-      call add_target(op_cba,ttype_op,.false.,tgt_info)
-      call set_dependency(op_cba,op_c12,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_c12,.true.) ! <- dagger=.true.
-      call set_rule(op_cba,ttype_op,CLONE_OP,
-     &              op_cba,1,1,
-     &              parameters,1,tgt_info)
-
-      ! Preconditioner
-      call add_target(op_diar12,ttype_op,.false.,tgt_info)
-      call set_dependency(op_diar12,op_c12,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_c12,.false.) ! <- dagger=.false.
-      call set_rule(op_diar12,ttype_op,CLONE_OP,
-     &              op_diar12,1,1,
-     &              parameters,1,tgt_info)
-
       ! Now: the operators associated with the actual R12 integrals:
       !  <pq'|r12|ij> 
       call add_target(op_rint,ttype_op,.false.,tgt_info)
+      
       call r12int_parameters(-1,parameters,
 c     &     .false.,min_rank,2,0,2)
-     &     0,min_rank,2,0,4) ! 4: two externals for 2-el ops
+     &      n_pp,min_rank,2,0,4) ! 4: two externals for 2-el ops
       call set_rule(op_rint,ttype_op,DEF_R12INT,
      &              op_rint,1,1,
      &              parameters,1,tgt_info)
@@ -146,69 +124,11 @@ c     &     .false.,min_rank,2,0,2)
       call set_rule(op_g_x,ttype_op,DEF_R12INT,
      &              op_g_x,1,1,
      &              parameters,1,tgt_info)
-
-      ! extended list of R12 integrals (UNUSED at present)
-      call add_target(op_rintx,ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ! 1
-      occ_def(IEXTR,1,1) = 2
-      occ_def(IHOLE,2,1) = 2
-      ! 2
-      occ_def(IHOLE,1,2) = 2
-      occ_def(IHOLE,2,2) = 1
-      occ_def(IPART,2,2) = 1
-      ! 3
-      occ_def(IHOLE,1,3) = 1
-      occ_def(IPART,1,3) = 1
-      occ_def(IHOLE,2,3) = 1
-      occ_def(IPART,2,3) = 1
-      ! 4
-      occ_def(IHOLE,1,4) = 1
-      occ_def(IEXTR,1,4) = 1
-      occ_def(IHOLE,2,4) = 1
-      occ_def(IPART,2,4) = 1
-      ! 5
-      occ_def(IPART,1,5) = 2
-      occ_def(IHOLE,2,5) = 1
-      occ_def(IPART,2,5) = 1
-      ! 6
-      occ_def(IPART,1,6) = 1
-      occ_def(IEXTR,1,6) = 1
-      occ_def(IHOLE,2,6) = 1
-      occ_def(IPART,2,6) = 1
-      ! 7
-      occ_def(IHOLE,1,7) = 2
-      occ_def(IHOLE,2,7) = 1
-      occ_def(IEXTR,2,7) = 1
-      ! 8
-      occ_def(IHOLE,1,8) = 1
-      occ_def(IPART,1,8) = 1
-      occ_def(IHOLE,2,8) = 1
-      occ_def(IEXTR,2,8) = 1
-      ! 9
-      occ_def(IHOLE,1,9) = 1
-      occ_def(IEXTR,1,9) = 1
-      occ_def(IHOLE,2,9) = 1
-      occ_def(IEXTR,2,9) = 1
-      ! 10
-      occ_def(IPART,1,10) = 2
-      occ_def(IHOLE,2,10) = 1
-      occ_def(IEXTR,2,10) = 1
-      ! 11
-      occ_def(IPART,1,11) = 1
-      occ_def(IEXTR,1,11) = 1
-      occ_def(IHOLE,2,11) = 1
-      occ_def(IEXTR,2,11) = 1
-      call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,11,1,11)
-      call set_rule(op_rintx,ttype_op,DEF_OP_FROM_OCC,
-     &              op_rintx,1,1,
-     &              parameters,2,tgt_info)
       
       ! commutator integrals <ab|[T1+T2,r12]|ij>
       call add_target(op_ttr,ttype_op,.false.,tgt_info)
       call r12int_parameters(-1,parameters,
-     &     0,min_rank,2,0,2)
+     &     n_pp,min_rank,2,0,2)
       call set_rule(op_ttr,ttype_op,DEF_R12INT,
      &              op_ttr,1,1,
      &              parameters,1,tgt_info)
@@ -216,7 +136,7 @@ c     &     .false.,min_rank,2,0,2)
       ! A(f+k) modified integrals r12bar
       call add_target(op_rintbar,ttype_op,.false.,tgt_info)
       call r12int_parameters(-1,parameters,
-     &     0,min_rank,2,0,2)
+     &     n_pp,min_rank,2,0,2)
       call set_rule(op_rintbar,ttype_op,DEF_R12INT,
      &              op_rintbar,1,1,
      &              parameters,1,tgt_info)
@@ -224,7 +144,7 @@ c     &     .false.,min_rank,2,0,2)
       ! C(f+k) modified integrals r12bar+
       call add_target(op_rdagbar,ttype_op,.false.,tgt_info)
       call r12int_parameters(-1,parameters,
-     &     0,min_rank,2,0,2)
+     &     n_pp,min_rank,2,0,2)
       call set_rule(op_rdagbar,ttype_op,DEF_R12INT,
      &              op_rdagbar,1,1,
      &              parameters,1,tgt_info)
@@ -232,7 +152,7 @@ c     &     .false.,min_rank,2,0,2)
       ! C(f) modified integrals r12breve
       call add_target(op_rintbreve,ttype_op,.false.,tgt_info)
       call r12int_parameters(-1,parameters,
-     &     0,min_rank,2,0,2)
+     &     n_pp,min_rank,2,0,2)
       call set_rule(op_rintbreve,ttype_op,DEF_R12INT,
      &              op_rintbreve,1,1,
      &              parameters,1,tgt_info)
@@ -246,122 +166,156 @@ c     &     .false.,min_rank,2,0,2)
      &              op_rinttilde,1,1,
      &              parameters,1,tgt_info)
       
-      ! C f modified integrals r12c (=C-intermediate of approx C)
-c      call add_target(op_rintc,ttype_op,.false.,tgt_info)
-c      call xop_parameters(-1,parameters,
-c     &     .false.,2,2,0,1)
-c      call set_rule(op_rintc,ttype_op,DEF_EXCITATION,
-c     &              op_rintc,1,1,
-c     &              parameters,1,tgt_info)
-c      call set_dependency(op_rintc,op_c_inter,tgt_info)
-c      call cloneop_parameters(-1,parameters,
-c     &                        op_c_inter,.false.) 
-c      call set_rule(op_rintc,ttype_op,CLONE_OP,
-c     &              op_rintc,1,1,
-c     &              parameters,1,tgt_info)
-      
       ! commutator integrals <kl|r12[T1+T2,r12]|ij>
       call add_target(op_rttr,ttype_op,.false.,tgt_info)
-      call xop_parameters(-1,parameters,
-     &     .false.,2,2,0,2)
-      call set_rule(op_rttr,ttype_op,DEF_R12INTERM,
+      occ_def = 0
+      if (n_pp.ge.0) then
+        ndef = 1
+        occ_def(IHOLE,1,1) = 2
+        occ_def(IHOLE,2,2) = 2
+      end if
+      if (n_pp.ge.1) then
+        ndef = 2
+        occ_def(IHOLE,1,3) = 1
+        occ_def(IPART,1,3) = 1
+        occ_def(IHOLE,2,4) = 1
+        occ_def(IPART,2,4) = 1
+      end if      
+      if (n_pp.ge.2) then
+        ndef = 3
+        occ_def(IPART,1,5) = 2
+        occ_def(IPART,2,6) = 2
+      end if
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,2,ndef)
+      call set_rule(op_rttr,ttype_op,DEF_OP_FROM_OCC,
      &              op_rttr,1,1,
-     &              parameters,1,tgt_info)
-
-
-c      ! the adjoint
-c      call add_target(op_ttr_bar,ttype_op,.false.,tgt_info)
-c      call set_dependency(op_ttr_bar,op_ttr,tgt_info)
-c      call cloneop_parameters(-1,parameters,
-c     &                        op_ttr,.true.) ! <- dagger=.true.
-c      call set_rule(op_ttr_bar,ttype_op,CLONE_OP,
-c     &              op_ttr_bar,1,1,
-c     &              parameters,1,tgt_info)
+     &              parameters,2,tgt_info)
 
       ! (G.R)^{ij}_{pq}
       call add_target(op_gr,ttype_op,.false.,tgt_info)
-      call set_dependency(op_gr,op_v_inter,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_v_inter,.false.) ! <- dagger=.false.
-      call set_rule(op_gr,ttype_op,CLONE_OP,
-     &              op_gr,1,1,
-     &              parameters,1,tgt_info)
-            
-      ! V^{ij}_{pq}
-      call add_target(op_v_inter,ttype_op,.false.,tgt_info)
-      call xop_parameters(-1,parameters,
-     &     .false.,2,2,0,2)
-      call set_rule(op_v_inter,ttype_op,DEF_R12INTERM,
-     &              op_v_inter,1,1,
-     &              parameters,1,tgt_info)
-      
-c      ! the adjoint
-c      call add_target(op_vbar_inter,ttype_op,.false.,tgt_info)
-c      call xop_parameters(-1,parameters,
-c     &     .false.,2,2,0,2)
-c      call set_rule(op_vbar_inter,ttype_op,DEF_R12INTERM,
-c     &              op_vbar_inter,1,1,
-c     &              parameters,1,tgt_info)
-c      call set_dependency(op_vbar_inter,op_v_inter,tgt_info)
-c      call cloneop_parameters(-1,parameters,
-c     &                        op_v_inter,.true.) ! <- dagger=.false.
-c                                   ! we really need the transposed list
-c      call set_rule(op_vbar_inter,ttype_op,CLONE_OP,
-c     &              op_vbar_inter,1,1,
-c     &              parameters,1,tgt_info)
-      
-      ! B intermediate
-      call add_target(op_b_inter,ttype_op,.false.,tgt_info)
-      call xop_parameters(-1,parameters,
-     &     .false.,2,2,0,2)
-      call set_rule(op_b_inter,ttype_op,DEF_R12INTERM,
-     &              op_b_inter,1,1,
-     &              parameters,1,tgt_info)
+      occ_def = 0
+      ! n_pp == 0:
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IHOLE,2,2) = 2
 
-c      call add_target(op_b_inter,ttype_op,.false.,tgt_info)
-c      call set_dependency(op_b_inter,op_v_inter,tgt_info)
-c      call cloneop_parameters(-1,parameters,
-c     &                        op_v_inter,.false.) ! <- dagger=.false.
-c      call set_rule(op_b_inter,ttype_op,CLONE_OP,
-c     &              op_b_inter,1,1,
-c     &              parameters,1,tgt_info)
+      occ_def(IHOLE,1,3) = 1
+      occ_def(IPART,1,3) = 1
+      occ_def(IHOLE,2,4) = 2
+
+      occ_def(IPART,1,5) = 2
+      occ_def(IHOLE,2,6) = 2
+      ! n_pp == 1:
+      occ_def(IHOLE,1,7) = 2
+      occ_def(IHOLE,2,8) = 1
+      occ_def(IPART,2,8) = 1
+
+      occ_def(IHOLE,1,9) = 1
+      occ_def(IPART,1,9) = 1
+      occ_def(IHOLE,2,10) = 1
+      occ_def(IPART,2,10) = 1
+
+      occ_def(IPART,1,11) = 2
+      occ_def(IHOLE,2,12) = 1
+      occ_def(IPART,2,12) = 1
+      ! n_pp == 2:
+      occ_def(IHOLE,1,13) = 2
+      occ_def(IPART,2,14) = 2
+
+      occ_def(IHOLE,1,15) = 1
+      occ_def(IPART,1,15) = 1
+      occ_def(IPART,2,16) = 2
+
+      occ_def(IPART,1,17) = 2
+      occ_def(IPART,2,18) = 2
+
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,3*(n_pp+1),2,3*(n_pp+1))
+      call set_rule(op_gr,ttype_op,DEF_OP_FROM_OCC,
+     &              op_gr,1,1,
+     &              parameters,2,tgt_info)
 
       ! R12^{2} integrals
       call add_target(op_ff,ttype_op,.false.,tgt_info)
-c      if (approx(1:1).eq.'A') then
-        call set_dependency(op_ff,op_b_inter,tgt_info)
-        call cloneop_parameters(-1,parameters,
-     &                        op_b_inter,.false.) ! <- dagger=.false.
-        call set_rule(op_ff,ttype_op,CLONE_OP,
-     &              op_ff,1,1,
-     &              parameters,1,tgt_info)
-c      else
-c        occ_def = 0
-c        ! 1
-c        occ_def(IHOLE,1,1) = 2
-c        occ_def(IHOLE,2,2) = 2
-c        ! 2
-c        occ_def(IHOLE,1,3) = 1
-c        occ_def(IPART,1,3) = 1
-c        occ_def(IHOLE,2,4) = 2
-c        ! 3
-c        occ_def(IHOLE,1,5) = 1
-c        occ_def(IEXTR,1,5) = 1
-c        occ_def(IHOLE,2,6) = 2
-c        call op_from_occ_parameters(-1,parameters,2,
-c     &       occ_def,3,2,6)
-c        call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
-c     &                op_ff,1,1,
-c     &                parameters,2,tgt_info)
-c      end if
+      call set_dependency(op_ff,op_rttr,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_rttr,.false.) ! <- dagger=.false.
+      call set_rule(op_ff,ttype_op,CLONE_OP,
+     &     op_ff,1,1,
+     &     parameters,1,tgt_info)
 
       ! {R12^2}BAR integrals
       call add_target(op_ffbar,ttype_op,.false.,tgt_info)
-      call set_dependency(op_ffbar,op_b_inter,tgt_info)
+      call set_dependency(op_ffbar,op_rttr,tgt_info)
       call cloneop_parameters(-1,parameters,
-     &                        op_b_inter,.false.) ! <- dagger=.false.
+     &                        op_rttr,.false.) ! <- dagger=.false.
       call set_rule(op_ffbar,ttype_op,CLONE_OP,
      &              op_ffbar,1,1,
+     &              parameters,1,tgt_info)
+
+            
+      ! V^{ij}_{pq}
+      call add_target(op_v_inter,ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ! for n_pp >= 0
+      if (n_pp.ge.0) then
+        ndef = 3
+        ! block 1 -> scalar
+        occ_def(IPART,1,2) = 1
+        occ_def(IHOLE,2,2) = 1
+        occ_def(IPART,1,3) = 2
+        occ_def(IHOLE,2,3) = 2
+      end if
+      ! for n_pp >= 1
+      if (n_pp.eq.1) then
+        ndef = 5
+        occ_def(IPART,1,4) = 1
+        occ_def(IPART,2,4) = 1
+        occ_def(IPART,1,5) = 2
+        occ_def(IHOLE,2,5) = 1
+        occ_def(IPART,2,5) = 1
+      end if
+      ! for n_pp >= 2
+      if (n_pp.eq.2) then
+        ndef = 6
+        occ_def(IPART,1,6) = 2
+        occ_def(IPART,2,6) = 2
+      end if
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,ndef)
+      call set_rule(op_v_inter,ttype_op,DEF_OP_FROM_OCC,
+     &              op_v_inter,1,1,
+     &              parameters,2,tgt_info)
+            
+      ! B intermediate
+      occ_def = 0
+      if (n_pp.ge.0) then
+        ndef = 1
+      end if
+      if (n_pp.ge.1) then
+        ndef = 2
+        occ_def(IPART,1,2) = 1
+        occ_def(IPART,2,2) = 1
+      end if
+      if (n_pp.ge.2) then
+        ndef = 3
+        occ_def(IPART,1,3) = 2
+        occ_def(IPART,2,3) = 2
+      end if
+      call add_target(op_b_inter,ttype_op,.false.,tgt_info)
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,ndef)
+      call set_rule(op_b_inter,ttype_op,DEF_OP_FROM_OCC,
+     &              op_b_inter,1,1,
+     &              parameters,2,tgt_info)
+
+      ! Bhole intermediate
+      call add_target(op_bh_inter,ttype_op,.false.,tgt_info)
+      call set_dependency(op_bh_inter,op_b_inter,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_b_inter,.false.) ! <- dagger=.false.
+      call set_rule(op_bh_inter,ttype_op,CLONE_OP,
+     &              op_bh_inter,1,1,
      &              parameters,1,tgt_info)
 
       ! X intermediate
@@ -373,160 +327,29 @@ c      end if
      &              op_x_inter,1,1,
      &              parameters,1,tgt_info)
 
-c      ! Xbar = X(f+k) intermediate
-c      call add_target(op_xbar_inter,ttype_op,.false.,tgt_info)
-c      call set_dependency(op_xbar_inter,op_b_inter,tgt_info)
-c      call cloneop_parameters(-1,parameters,
-c     &                        op_b_inter,.false.) ! <- dagger=.false.
-c      call set_rule(op_xbar_inter,ttype_op,CLONE_OP,
-c     &              op_xbar_inter,1,1,
-c     &              parameters,1,tgt_info)
-
-c      ! Xtilde = X k intermediate
-c      call add_target(op_xtilde_inter,ttype_op,.false.,tgt_info)
-c      call set_dependency(op_xtilde_inter,op_b_inter,tgt_info)
-c      call cloneop_parameters(-1,parameters,
-c     &                        op_b_inter,.false.) ! <- dagger=.false.
-c      call set_rule(op_xtilde_inter,ttype_op,CLONE_OP,
-c     &              op_xtilde_inter,1,1,
-c     &              parameters,1,tgt_info)
-
       ! C intermediate
       call add_target(op_c_inter,ttype_op,.false.,tgt_info)
       occ_def = 0
-      ! 1
-c      occ_def(IHOLE,1,1) = 1
-c      occ_def(IHOLE,1,2) = 1
-c      occ_def(IHOLE,2,2) = 2
-      ! 2
-c      occ_def(IHOLE,1,3) = 1
-c      occ_def(IPART,1,4) = 1
-c      occ_def(IHOLE,2,4) = 2
-c      ! 3 - symmetrized: currently a problem
+      ! n_pp == 0:
       occ_def(IPART,1,1) = 2
       occ_def(IHOLE,2,1) = 2
-      ! 3 - not symmetrized:
-c      occ_def(IPART,1,5) = 1
-c      occ_def(IPART,1,6) = 1
-c      occ_def(IHOLE,2,6) = 2
+      ! n_pp == 1:
+      occ_def(IPART,1,2) = 2
+      occ_def(IHOLE,2,2) = 1
+      occ_def(IPART,2,2) = 1
+      ! n_pp == 2:
+      occ_def(IPART,1,3) = 2
+      occ_def(IPART,2,3) = 2
+
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,1,1,6)
+     &     occ_def,n_pp+1,1,6)
       call set_rule(op_c_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_c_inter,1,1,
      &              parameters,2,tgt_info)
 
-      ! P intermediate
-      call add_target(op_p_inter,ttype_op,.false.,tgt_info)
-      call set_dependency(op_p_inter,op_b_inter,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_b_inter,.false.) ! <- dagger=.false.
-      call set_rule(op_p_inter,ttype_op,CLONE_OP,
-     &              op_p_inter,1,1,
-     &              parameters,1,tgt_info)
-
-      ! Z intermediate
-      call add_target(op_z_inter,ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ! 1
-      occ_def(IHOLE,1,1) = 2
-      occ_def(IHOLE,1,2) = 1
-      occ_def(IHOLE,2,2) = 1
-      occ_def(IHOLE,2,3) = 2
-      ! 2
-      occ_def(IHOLE,1,4) = 2
-      occ_def(IHOLE,1,5) = 1
-      occ_def(IPART,2,5) = 1
-      occ_def(IHOLE,2,6) = 2
-      ! 3
-      occ_def(IHOLE,1,7) = 2
-      occ_def(IPART,1,8) = 1
-      occ_def(IHOLE,2,8) = 1
-      occ_def(IHOLE,2,9) = 2
-      ! 4
-      occ_def(IHOLE,1,10) = 2
-      occ_def(IPART,1,11) = 1
-      occ_def(IPART,2,11) = 1
-      occ_def(IHOLE,2,12) = 2
-      call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,4,3,12)
-      call set_rule(op_z_inter,ttype_op,DEF_OP_FROM_OCC,
-     &              op_z_inter,1,1,
-     &              parameters,2,tgt_info)
-
-      ! inverse of B
-      call add_target(op_b_inv,ttype_op,.false.,tgt_info)
-      call set_dependency(op_b_inv,op_b_inter,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_b_inter,.false.) ! <- dagger=.false.
-      call set_rule(op_b_inv,ttype_op,CLONE_OP,
-     &              op_b_inv,1,1,
-     &              parameters,1,tgt_info)
-
-      ! inverse of X
-      call add_target(op_x_inv,ttype_op,.false.,tgt_info)
-      call set_dependency(op_x_inv,op_b_inter,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_b_inter,.false.) ! <- dagger=.false.
-      call set_rule(op_x_inv,ttype_op,CLONE_OP,
-     &              op_x_inv,1,1,
-     &              parameters,1,tgt_info)
-
-      ! Exchange operator, K.
-      call add_target(op_exchange,ttype_op,.false.,tgt_info)
-      call hop_parameters(-1,parameters,
-     &     1,1,2,.true.)
-      call set_rule(op_exchange,ttype_op,DEF_HAMILTONIAN,
-     &              op_exchange,1,1,
-     &              parameters,1,tgt_info)
-      
-      ! Hartree operator, F+K.
-      call add_target(op_hartree,ttype_op,.false.,tgt_info)
-      call hop_parameters(-1,parameters,
-     &     1,1,2,.true.)
-      call set_rule(op_hartree,ttype_op,DEF_HAMILTONIAN,
-     &              op_hartree,1,1,
-     &              parameters,1,tgt_info)
-
 *----------------------------------------------------------------------*
 *     Formulae
 *----------------------------------------------------------------------*
-      ! R-bar intermediate
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = form_r12_r12bar
-      labels(2) = op_rintbar
-      labels(3) = op_rint
-      labels(4) = op_rintx
-      labels(5) = op_hartree
-      ! for GBC: pass op_exchange instead
-      call add_target(form_r12_r12bar,ttype_frm,.false.,tgt_info)
-      call set_dependency(form_r12_r12bar,op_rintbar,tgt_info)
-      call set_dependency(form_r12_r12bar,op_rint,tgt_info)
-      call set_dependency(form_r12_r12bar,op_rintx,tgt_info)
-      call set_dependency(form_r12_r12bar,op_hartree,tgt_info)
-      call form_parameters(-1,
-     &     parameters,2,title_r12_rbar,ansatz,'RB'//approx)
-      call set_rule(form_r12_r12bar,ttype_frm,DEF_R12INTM_CABS,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
-      
-      ! R-tilde intermediate
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = form_r12_r12tilde
-      labels(2) = op_rinttilde
-      labels(3) = op_rint
-      labels(4) = op_rintx
-      labels(5) = op_exchange
-      call add_target(form_r12_r12tilde,ttype_frm,.false.,tgt_info)
-      call set_dependency(form_r12_r12tilde,op_rinttilde,tgt_info)
-      call set_dependency(form_r12_r12tilde,op_rint,tgt_info)
-      call set_dependency(form_r12_r12tilde,op_rintx,tgt_info)
-      call set_dependency(form_r12_r12tilde,op_exchange,tgt_info)
-      call form_parameters(-1,
-     &     parameters,2,title_r12_rtilde,ansatz,'RT'//approx)
-      call set_rule(form_r12_r12tilde,ttype_frm,DEF_R12INTM_CABS,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
-
       ! formal definition of V
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_vint
@@ -538,7 +361,7 @@ c      occ_def(IHOLE,2,6) = 2
       call set_dependency(form_r12_vint,op_ham,tgt_info)
       call set_dependency(form_r12_vint,op_r12,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_vint,0,'gxr')
+     &     parameters,2,title_r12_vint,0,'gr')
       call set_rule(form_r12_vint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
      &              parameters,2,tgt_info)
@@ -549,12 +372,10 @@ c      occ_def(IHOLE,2,6) = 2
       labels(2) = op_v_inter
       labels(3) = op_g_x !op_ham
       labels(4) = op_rint
-c      labels(5) = op_unity
       labels(5) = op_gr   
       ! F12: op_gr
       call add_target(form_r12_vcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_vcabs,op_v_inter,tgt_info)
-c      call set_dependency(form_r12_vcabs,op_unity,tgt_info)
       call set_dependency(form_r12_vcabs,op_gr,tgt_info)
       call set_dependency(form_r12_vcabs,op_g_x,tgt_info)
       call set_dependency(form_r12_vcabs,op_rint,tgt_info)
@@ -568,14 +389,13 @@ c      call set_dependency(form_r12_vcabs,op_unity,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_xint
       labels(2) = op_x_inter
-c      labels(3) = op_rba
       labels(3) = op_r12
       labels(4) = op_r12
       call add_target(form_r12_xint,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_xint,op_x_inter,tgt_info)
       call set_dependency(form_r12_xint,op_r12,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_xint,0,'rxr')
+     &     parameters,2,title_r12_xint,0,'rr')
       call set_rule(form_r12_xint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
      &              parameters,2,tgt_info)
@@ -601,17 +421,15 @@ c      labels(3) = op_rba
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_bint
       labels(2) = op_b_inter
-c      labels(3) = op_rba
       labels(3) = op_r12
       labels(4) = op_ham
       labels(5) = op_r12
       call add_target(form_r12_bint,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_bint,op_b_inter,tgt_info)
-c      call set_dependency(form_r12_bint,op_rba,tgt_info)
       call set_dependency(form_r12_bint,op_ham,tgt_info)
       call set_dependency(form_r12_bint,op_r12,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_bint,0,'rfxr')
+     &     parameters,2,title_r12_bint,0,'rfr')
       call set_rule(form_r12_bint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,5,1,
      &              parameters,2,tgt_info)
@@ -623,13 +441,11 @@ c      call set_dependency(form_r12_bint,op_rba,tgt_info)
       labels(2) = op_b_inter
       labels(3) = op_rint
       labels(4) = op_ttr
-c      labels(5) = op_unity
       labels(5) = op_rttr
       nlab = 5
       call add_target(form_r12_bcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_bcabs,op_b_inter,tgt_info)
       call set_dependency(form_r12_bcabs,op_rttr,tgt_info)
-c      call set_dependency(form_r12_bcabs,op_unity,tgt_info)
       call set_dependency(form_r12_bcabs,op_rint,tgt_info)
       if (approx(1:2).eq.'A''') then
         call set_dependency(form_r12_bcabs,op_x_inter,tgt_info)
@@ -673,19 +489,48 @@ c      call set_dependency(form_r12_bcabs,op_unity,tgt_info)
         nlab = 13
       end if
       approx(12:12) = 'S' ! set symmetrization flag
-c test
-c      approx(8:10)  = 'HY1'
-c
       call form_parameters(-1,
      &     parameters,2,title_r12_bcabs,ansatz,'B '//approx)
       approx(12:12) = ' ' ! unset flag
-c test
-      approx(8:10)  = '   '
-c
       call set_rule(form_r12_bcabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,nlab,1,
      &              parameters,2,tgt_info)
 
+      ! formal definition of Bh
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_bhint
+      labels(2) = op_bh_inter
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      call add_target(form_r12_bhint,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_bhint,op_bh_inter,tgt_info)
+      call set_dependency(form_r12_bhint,op_r12,tgt_info)
+      call set_dependency(form_r12_bhint,op_ham,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'title missing',0,'rfr')
+      call set_rule(form_r12_bhint,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,4,1,
+     &              parameters,2,tgt_info)
+
+      ! CABS approximation to Bh
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_bhcabs
+      labels(2) = op_bh_inter
+      labels(3) = op_rint
+      labels(4) = op_rint
+      labels(5) = op_ff
+      labels(6) = '-'
+      labels(7) = op_ham
+      call add_target(form_r12_bhcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_bhcabs,op_x_inter,tgt_info)
+      call set_dependency(form_r12_bhcabs,op_ff,tgt_info)
+      call set_dependency(form_r12_bhcabs,op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'title missing',ansatz,'BH'//approx)
+      call set_rule(form_r12_bhcabs,ttype_frm,DEF_R12INTM_CABS,
+     &              labels,7,1,
+     &              parameters,2,tgt_info)
 
       ! formal definition of C
       labels(1:10)(1:len_target_name) = ' '
@@ -698,7 +543,6 @@ c
       call set_dependency(form_r12_cint,op_r12,tgt_info)
       call set_dependency(form_r12_cint,op_ham,tgt_info)
       call form_parameters(-1,
-c     &     parameters,2,title_r12_cint,0,'fxr')
      &     parameters,2,title_r12_cint,0,'fr')
       call set_rule(form_r12_cint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
@@ -726,122 +570,9 @@ c     &     parameters,2,title_r12_cint,0,'fxr')
       call set_dependency(form_r12_ccabs,op_ham,tgt_info)
       call form_parameters(-1,
      &     parameters,2,title_r12_ccabs,ansatz,'C '//approx)
-c     &     parameters,2,title_r12_ccabs,ansatz,'C '//
-c     &     'C           ')
       call set_rule(form_r12_ccabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,nlab,1,
      &              parameters,2,tgt_info)
-
-      ! formal definition of P
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = form_r12_pint
-      labels(2) = op_p_inter
-      labels(3) = op_r12
-      labels(4) = op_ham
-      labels(5) = op_r12
-      call add_target(form_r12_pint,ttype_frm,.false.,tgt_info)
-      call set_dependency(form_r12_pint,op_p_inter,tgt_info)
-      call set_dependency(form_r12_pint,op_ham,tgt_info)
-      call set_dependency(form_r12_pint,op_r12,tgt_info)
-      call form_parameters(-1,
-     &     parameters,2,title_r12_pint,0,'rgxr')
-      call set_rule(form_r12_pint,ttype_frm,DEF_R12INTM_FORMAL,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
-
-      ! formal definition of Z
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = form_r12_zint
-      labels(2) = op_z_inter
-      labels(3) = op_r12
-      labels(4) = op_ham
-      labels(5) = op_r12
-      call add_target(form_r12_zint,ttype_frm,.false.,tgt_info)
-      call set_dependency(form_r12_zint,op_z_inter,tgt_info)
-      call set_dependency(form_r12_zint,op_r12,tgt_info)
-      call set_dependency(form_r12_zint,op_ham,tgt_info)
-      call set_dependency(form_r12_zint,op_r12,tgt_info)
-      call form_parameters(-1,
-     &     parameters,2,title_r12_zint,0,'rxgxr')
-      call set_rule(form_r12_zint,ttype_frm,DEF_R12INTM_FORMAL,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
-
-c test
-      call add_target(op_b0_inter,ttype_op,.false.,tgt_info)
-      occ_def = 0
-      occ_def(1,1,1) = 1
-      occ_def(1,2,2) = 1
-      call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,1,2,2)
-c      call op_from_occ_parameters(-1,parameters,2,
-c     &       occ_def,1,1,1)
-      call set_rule(op_b0_inter,ttype_op,DEF_OP_FROM_OCC,
-     &              op_b0_inter,1,1,
-     &              parameters,2,tgt_info)      
-
-      call add_target(form_b0,ttype_frm,.false.,tgt_info)
-      call set_dependency(form_b0,op_b0_inter,tgt_info)
-      call set_dependency(form_b0,op_b_inter,tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = form_b0
-      labels(2) = op_b0_inter
-      labels(3) = op_b0_inter
-      labels(4) = op_b_inter
-      labels(5) = op_b0_inter
-      labels(6) = op_b0_inter
-      labels(7) = op_b_inter
-      labels(8) = op_b0_inter
-      call form_parameters2(-1,
-     &     parameters,2,
-     &     'title',6,(/2,1,2,2,1,2/))
-      call set_rule(form_b0,ttype_frm,EXPAND_OP_PRODUCT,
-     &     labels,8,1,
-     &     parameters,2,tgt_info)
-c      labels(1) = form_b0
-c      labels(2) = op_b0_inter
-c      labels(3) = op_b_inter
-c      labels(4) = op_b_inter
-c      call form_parameters2(-1,
-c     &     parameters,2,
-c     &     'title',2,(/1,1/))
-c      call set_rule(form_b0,ttype_frm,EXPAND_OP_PRODUCT,
-c     &     labels,4,1,
-c     &     parameters,2,tgt_info)
-
-      call add_target(mel_b0_def,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_b0_def,op_b0_inter,tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_b0_inter
-      labels(2) = op_b0_inter
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
-      call set_rule(mel_b0_def,ttype_opme,DEF_ME_LIST,
-     &     labels,2,1,
-     &     parameters,1,tgt_info)
-
-      call add_target(fopt_b0,ttype_frm,.false.,tgt_info)
-      call set_dependency(fopt_b0,form_b0,tgt_info)
-      call set_dependency(fopt_b0,mel_b0_def,tgt_info)
-      call set_dependency(fopt_b0,mel_b_def,tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = fopt_b0
-      labels(2) = form_b0
-      ncat = 1
-      nint = 0
-      call opt_parameters(-1,parameters,ncat,nint)
-      call set_rule(fopt_b0,ttype_frm,OPTIMIZE,
-     &              labels,ncat+nint+1,1,
-     &              parameters,1,tgt_info)
-
-      call add_target(mel_b0_inter,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_b0_inter,fopt_b0,tgt_info)
-      labels(1) = fopt_b0
-      call set_rule(mel_b0_inter,ttype_opme,EVAL,
-     &     labels,1,0,
-     &     parameters,0,tgt_info)
-      
-c test
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae
@@ -857,28 +588,11 @@ c test
       call set_dependency(fopt_r12_vcabs,mel_gr,tgt_info)
       call set_dependency(fopt_r12_vcabs,mel_v_def,tgt_info)
       call set_dependency(fopt_r12_vcabs,mel_gintx,tgt_info)
-c      call set_dependency(fopt_r12_vcabs,mel_ham,tgt_info)
       call set_dependency(fopt_r12_vcabs,mel_rint,tgt_info)      
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_r12_vcabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
-
-c      ! set V+
-c      labels(1:10)(1:len_target_name) = ' '
-c      labels(1) = fopt_r12_vbcabs
-c      labels(2) = form_r12_vbcabs
-c      ncat = 1
-c      nint = 0
-c      call add_target(fopt_r12_vbcabs,ttype_frm,.false.,tgt_info)
-c      call set_dependency(fopt_r12_vbcabs,form_r12_vbcabs,tgt_info)
-c      call set_dependency(fopt_r12_vbcabs,mel_vbar_def,tgt_info)
-c      call set_dependency(fopt_r12_vbcabs,mel_ham,tgt_info)
-c      call set_dependency(fopt_r12_vbcabs,mel_rint,tgt_info)      
-c      call opt_parameters(-1,parameters,ncat,nint)
-c      call set_rule(fopt_r12_vbcabs,ttype_frm,OPTIMIZE,
-c     &              labels,ncat+nint+1,1,
-c     &              parameters,1,tgt_info)
 
       ! set X
       labels(1:10)(1:len_target_name) = ' '
@@ -890,7 +604,6 @@ c     &              parameters,1,tgt_info)
       call set_dependency(fopt_r12_xcabs,form_r12_xcabs,tgt_info)
       call set_dependency(fopt_r12_xcabs,mel_x_def,tgt_info)
       call set_dependency(fopt_r12_xcabs,mel_ff,tgt_info)
-c      call set_dependency(fopt_r12_xcabs,mel_rinba,tgt_info)
       call set_dependency(fopt_r12_xcabs,mel_rint,tgt_info)      
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_r12_xcabs,ttype_frm,OPTIMIZE,
@@ -908,7 +621,6 @@ c      call set_dependency(fopt_r12_xcabs,mel_rinba,tgt_info)
       call set_dependency(fopt_r12_bcabs,mel_b_def,tgt_info)
       call set_dependency(fopt_r12_bcabs,mel_rttr,tgt_info)
       call set_dependency(fopt_r12_bcabs,mel_ham,tgt_info)
-c      call set_dependency(fopt_r12_bcabs,mel_rinba,tgt_info)      
       call set_dependency(fopt_r12_bcabs,mel_rint,tgt_info)      
       if (approx(1:2).ne.'A '.and.approx(1:1).ne.'C') then
         call set_dependency(fopt_r12_bcabs,mel_x_def,tgt_info)
@@ -934,6 +646,23 @@ c      call set_dependency(fopt_r12_bcabs,mel_rinba,tgt_info)
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
+      ! set Bhole
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_r12_bhcabs
+      labels(2) = form_r12_bhcabs
+      ncat = 1
+      nint = 0
+      call add_target(fopt_r12_bhcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_r12_bhcabs,form_r12_bhcabs,tgt_info)
+      call set_dependency(fopt_r12_bhcabs,mel_bh_def,tgt_info)
+      call set_dependency(fopt_r12_bhcabs,mel_ff,tgt_info)
+      call set_dependency(fopt_r12_bhcabs,mel_rint,tgt_info)      
+      call set_dependency(fopt_r12_bhcabs,mel_ham,tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_r12_bhcabs,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
       ! set C
       ! currently approx C only
       labels(1:10)(1:len_target_name) = ' '
@@ -944,7 +673,6 @@ c      call set_dependency(fopt_r12_bcabs,mel_rinba,tgt_info)
       call add_target(fopt_r12_ccabs,ttype_frm,.false.,tgt_info)
       call set_dependency(fopt_r12_ccabs,form_r12_ccabs,tgt_info)
       call set_dependency(fopt_r12_ccabs,mel_c_def,tgt_info)
-c      call set_dependency(fopt_r12_ccabs,mel_rintc,tgt_info)
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_r12_ccabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
@@ -976,26 +704,6 @@ c      call set_dependency(fopt_r12_ccabs,mel_rintc,tgt_info)
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
-      ! R12integrals (extended list)
-      call add_target(mel_rintx,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_rintx,op_rintx,tgt_info)
-      ! (a) define
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_rintx
-      labels(2) = op_rintx
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
-      call set_rule(mel_rintx,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      ! (b) import
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_rintx
-      call import_parameters(-1,parameters,env_type)
-      call set_rule(mel_rintx,ttype_opme,IMPORT,
-     &              labels,1,1,
-     &              parameters,1,tgt_info)
-
       ! special two-electron integral list
       call add_target(mel_gintx,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_gintx,op_g_x,tgt_info)
@@ -1015,27 +723,6 @@ c      call set_dependency(fopt_r12_ccabs,mel_rintc,tgt_info)
       call set_rule(mel_gintx,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
-
-      ! to be changed soon:
-      ! adjoint of R12integrals
-c      call add_target(mel_rinba,ttype_opme,.false.,tgt_info)
-c      call set_dependency(mel_rinba,op_rinba,tgt_info)
-c      ! (a) define
-c      labels(1:10)(1:len_target_name) = ' '
-c      labels(1) = mel_rinba
-c      labels(2) = op_rinba
-c      call me_list_parameters(-1,parameters,
-c     &     0,0,1,0,0)
-c      call set_rule(mel_rinba,ttype_opme,DEF_ME_LIST,
-c     &              labels,2,1,
-c     &              parameters,1,tgt_info)
-c      ! (b) import
-c      labels(1:10)(1:len_target_name) = ' '
-c      labels(1) = mel_rinba
-c      call import_parameters(-1,parameters,env_type)
-c      call set_rule(mel_rinba,ttype_opme,IMPORT,
-c     &              labels,1,1,
-c     &              parameters,1,tgt_info)
 
       ! [T1+T2,R12] integrals
       call add_target(mel_ttr,ttype_opme,.false.,tgt_info)
@@ -1137,26 +824,6 @@ c     &              parameters,1,tgt_info)
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
-c      ! R12C integrals (for approx C)
-c      call add_target(mel_rintc,ttype_opme,.false.,tgt_info)
-c      call set_dependency(mel_rintc,op_rintc,tgt_info)
-c      ! (a) define
-c      labels(1:10)(1:len_target_name) = ' '
-c      labels(1) = mel_rintc
-c      labels(2) = op_rintc
-c      call me_list_parameters(-1,parameters,
-c     &     0,0,1,0,0)
-c      call set_rule(mel_rintc,ttype_opme,DEF_ME_LIST,
-c     &              labels,2,1,
-c     &              parameters,1,tgt_info)
-c      ! (b) import
-c      labels(1:10)(1:len_target_name) = ' '
-c      labels(1) = mel_rintc
-c      call import_parameters(-1,parameters,env_type)
-c      call set_rule(mel_rintc,ttype_opme,IMPORT,
-c     &              labels,1,1,
-c     &              parameters,1,tgt_info)
-
       ! R12BAR integrals
       call add_target(mel_rintbar,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_rintbar,op_rintbar,tgt_info)
@@ -1237,75 +904,9 @@ c     &              parameters,1,tgt_info)
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
-      ! Exchange integrals, K.
-      call add_target(mel_exchange,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_exchange,op_exchange,tgt_info)
-      ! (a) define
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_exchange
-      labels(2) = op_exchange
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
-      call set_rule(mel_exchange,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      ! (b) import
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_exchange
-      call set_rule(mel_exchange,ttype_opme,IMPORT,
-     &              labels,1,1,
-     &              parameters,1,tgt_info)
-
-      ! Hartree integrals, F+K.
-      call add_target(mel_hartree,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_hartree,op_hartree,tgt_info)
-      call set_dependency(mel_hartree,mel_exchange,tgt_info)
-      call set_dependency(mel_hartree,mel_ham,tgt_info)
-      ! (a) define
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_hartree
-      labels(2) = op_hartree
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
-      call set_rule(mel_hartree,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      ! (b) calculate
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_hartree
-      labels(2) = mel_ham
-      labels(3) = mel_exchange
-      call add_parameters(-1,parameters,2,(/1d0,1d0/),2)
-      call set_rule(mel_hartree,ttype_opme,ADD,
-     &              labels,3,1,
-     &              parameters,1,tgt_info)
-
       ! ----------------------------------------
       ! B) definition of lists for intermediates
       ! ----------------------------------------
-c      ! RBAR-list
-c      call add_target(meldef_rintbar,ttype_opme,.false.,tgt_info)
-c      call set_dependency(meldef_rintbar,op_rintbar,tgt_info)
-c      labels(1:10)(1:len_target_name) = ' '
-c      labels(1) = mel_rintbar
-c      labels(2) = op_rintbar
-c      call me_list_parameters(-1,parameters,
-c     &     0,0,1,0,0)
-c      call set_rule(meldef_rintbar,ttype_opme,DEF_ME_LIST,
-c     &              labels,2,1,
-c     &              parameters,1,tgt_info)
-c
-c      ! RTILDE-list
-c      call add_target(meldef_rinttilde,ttype_opme,.false.,tgt_info)
-c      call set_dependency(meldef_rinttilde,op_rinttilde,tgt_info)
-c      labels(1:10)(1:len_target_name) = ' '
-c      labels(1) = mel_rinttilde
-c      labels(2) = op_rinttilde
-c      call me_list_parameters(-1,parameters,
-c     &     0,0,1,0,0)
-c      call set_rule(meldef_rinttilde,ttype_opme,DEF_ME_LIST,
-c     &              labels,2,1,
-c     &              parameters,1,tgt_info)
 
       ! V-list
       call add_target(mel_v_def,ttype_opme,.false.,tgt_info)
@@ -1318,19 +919,6 @@ c     &              parameters,1,tgt_info)
       call set_rule(mel_v_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
-
-c      ! V+-list
-c      call add_target(mel_vbar_def,ttype_opme,.false.,tgt_info)
-c      call set_dependency(mel_vbar_def,op_vbar_inter,tgt_info)
-c      labels(1:10)(1:len_target_name) = ' '
-c      labels(1) = mel_vbar_inter
-c      labels(2) = op_vbar_inter
-c      call me_list_parameters(-1,parameters,
-c     &     0,0,1,0,0)
-c      call set_rule(mel_vbar_def,ttype_opme,DEF_ME_LIST,
-c     &              labels,2,1,
-c     &              parameters,1,tgt_info)
-
 
       ! X-list
       call add_target(mel_x_def,ttype_opme,.false.,tgt_info)
@@ -1356,6 +944,18 @@ c     &              parameters,1,tgt_info)
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+      ! Bhole-list
+      call add_target(mel_bh_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_bh_def,op_bh_inter,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_bh_inter
+      labels(2) = op_bh_inter
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(mel_bh_def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
       ! C-list
       call add_target(mel_c_def,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_c_def,op_c_inter,tgt_info)
@@ -1367,92 +967,25 @@ c     &              parameters,1,tgt_info)
       call set_rule(mel_c_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
-
-
-      ! B^-1 for "diagonal"
-      call add_target(mel_b_inv,ttype_opme,.false.,tgt_info)
-c      call set_dependency(mel_b_inv,op_diar12,tgt_info)
-      call set_dependency(mel_b_inv,op_b_inv,tgt_info)
-      call set_dependency(mel_b_inv,eval_r12_inter,tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_b_inv
-c      labels(2) = op_diar12
-      labels(2) = op_b_inv ! actually, B^-1 should have the 
-c                             ! contravariant shape
-c                             ! but as long as we do not formally 
-c                             ! calculate with
-c                             ! this entity this does not matter
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
-      call set_rule(mel_b_inv,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      labels(1) = mel_b_inv   ! output
-      labels(2) = mel_b_inter ! input
-      call set_rule(mel_b_inv,ttype_opme,INVERT,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-
-      ! diagonal of B(ij) for testing
-      call add_target(mel_b_dia,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_b_dia,op_diar12,tgt_info)
-      call set_dependency(mel_b_dia,eval_r12_inter,tgt_info)
-      call set_dependency(mel_b_dia,mel_ham,tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_b_dia
-      labels(2) = op_diar12
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
-      call set_rule(mel_b_dia,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      labels(1) = mel_b_dia   ! output
-      labels(2) = mel_ham     ! input
-      labels(3) = mel_b_inter ! input
-      labels(4) = mel_x_inter ! input
-      call set_rule(mel_b_dia,ttype_opme,PRECONDITIONER,
-     &              labels,4,1,
-     &              parameters,1,tgt_info)
-      
-      ! X^-1 for testing
-      call add_target(mel_x_inv,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_x_inv,op_diar12,tgt_info)
-      call set_dependency(mel_x_inv,eval_r12_inter,tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_x_inv
-      labels(2) = op_x_inter
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
-      call set_rule(mel_x_inv,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      labels(1) = mel_x_inv   ! output
-      labels(2) = mel_x_inter ! input
-      call set_rule(mel_x_inv,ttype_opme,INVERT,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      
-
       
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*
       ! test
-      call add_target(eval_r12_inter,ttype_gen,.false.,tgt_info)
+      call add_target(eval_r12_inter,ttype_gen,.true.,tgt_info)
       call set_dependency(eval_r12_inter,mel_ham,tgt_info)
       call set_dependency(eval_r12_inter,mel_rint,tgt_info)
       call set_dependency(eval_r12_inter,mel_gintx,tgt_info)
-c      call set_dependency(eval_r12_inter,mel_rinba,tgt_info)
       call set_dependency(eval_r12_inter,mel_ttr,tgt_info)
       call set_dependency(eval_r12_inter,mel_ff,tgt_info)
       call set_dependency(eval_r12_inter,mel_v_def,tgt_info)
-c      call set_dependency(eval_r12_inter,mel_vbar_def,tgt_info)
       call set_dependency(eval_r12_inter,mel_x_def,tgt_info)
       call set_dependency(eval_r12_inter,mel_b_def,tgt_info)
+      call set_dependency(eval_r12_inter,mel_bh_def,tgt_info)
       call set_dependency(eval_r12_inter,fopt_r12_vcabs,tgt_info)
-c      call set_dependency(eval_r12_inter,fopt_r12_vbcabs,tgt_info)
       call set_dependency(eval_r12_inter,fopt_r12_xcabs,tgt_info)
       call set_dependency(eval_r12_inter,fopt_r12_bcabs,tgt_info)
+      call set_dependency(eval_r12_inter,fopt_r12_bhcabs,tgt_info)
       if (ansatz.ne.1)
      &     call set_dependency(eval_r12_inter,fopt_r12_ccabs,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
@@ -1460,10 +993,6 @@ c      call set_dependency(eval_r12_inter,fopt_r12_vbcabs,tgt_info)
       call set_rule(eval_r12_inter,ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
-c      labels(1) = fopt_r12_vbcabs
-c      call set_rule(eval_r12_inter,ttype_opme,EVAL,
-c     &     labels,1,0,
-c     &     parameters,0,tgt_info)
       labels(1) = fopt_r12_xcabs
       call set_rule(eval_r12_inter,ttype_opme,EVAL,
      &     labels,1,0,
@@ -1478,38 +1007,11 @@ c     &     parameters,0,tgt_info)
       call set_rule(eval_r12_inter,ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+      labels(1) = fopt_r12_bhcabs
+      call set_rule(eval_r12_inter,ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
 
       return
-
-      contains
-
-      subroutine set_fvirt_constr(hpvx_constr,gas_constr)
-
-      implicit none
-
-      integer, intent(out) ::
-     &     hpvx_constr(2,ngastp,2),
-     &     gas_constr(2,orb_info%ngas,2,2)
-      
-      integer ::
-     &     idx
-
-      hpvx_constr(1:2,1:ngastp,1:2) = 0
-      gas_constr(1:2,1:orb_info%ngas,1:2,1:2)  = 0
-
-      print *,'1: ',hpvx_constr
-
-      do idx = 1, ngastp
-        if (idx.eq.IHOLE.or.idx.eq.IVALE) cycle
-        hpvx_constr(2,idx,1:2) = 1
-      end do
-
-      do idx = 1, orb_info%ngas
-        if (orb_info%ihpvgas(idx,1).eq.IHOLE.or.
-     &      orb_info%ihpvgas(idx,1).eq.IVALE) cycle
-        gas_constr(2,idx,1:2,1) = 1
-      end do
-
-      end subroutine
 
       end

@@ -163,7 +163,8 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
       
       if (self) then
         iocc_op2(1:ngastp,1:2,1) = 0
-        irestr_op2(1:2,1:ngas,1:2,1:2,njoined_res+1) = 0
+        iocc_ex2(1:ngastp,1:2,1) = 0
+        irestr_op2(1:2,1:ngas,1:2,1:2,1) = 0
       end if
 
       allocate(arc_list(contr%narc))
@@ -174,6 +175,7 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
       ! set merging info for op1 and op2, i.e. how
       ! the blocks of op1 are related to the blocks of ex1 and cnt
       ld_mmap1  = max(njoined_op(1),len_list)
+      if (self) ld_mmap1 = ld_mmap1*2
       ld_mmap2  = max(njoined_op(2),len_list)
       ld_mmap12 = max(njoined_op(1),njoined_op(2))
       allocate(merge_map_op1(ld_mmap1,2,njoined_op(1)),
@@ -181,6 +183,7 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &         merge_map_op1op2(ld_mmap12,2,nvtx))
 
       njoined_cnt = len_list
+      if (self) njoined_cnt = 2*len_list
       call occ_op2ex(iocc_ex1,iocc_cnt,merge_map_op1,
      &               .true.,.true.,ld_mmap1,
      &               1,iocc_op1,njoined_op(1),isvtx1,
@@ -241,7 +244,7 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &       irestr_op1op2,mst_op1op2,gamt_op1op2,
      &       ireo_vtx_no,ivtx_op1op2,
      &       nvtx,nvtx_red,njoined_op1op2,njoined_res,ngas)
-        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
+c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
       end if
 
       deallocate(arc_list)
@@ -301,11 +304,13 @@ c dbg
         write(luout,*) 'IRREP:        ',gamt_op(1), gamt_op(2),
      &                                                       gamt_op1op2
         write(luout,*) 'sign: ',bc_sign
-        write(luout,*) 'op1, op2, op1op2:'
+        if (.not.self) write(luout,*) 'op1, op2, op1op2:'
+        if (     self) write(luout,*) 'op1, tr(op1):'
         call wrt_occ_n(luout,iocc_op1,njoined_op(1))
         call wrt_occ_n(luout,iocc_op2,njoined_op(2))
         call wrt_occ_n(luout,iocc_op1op2,njoined_op1op2)
-        write(luout,*) 'ex1, ex2, cnt:'
+        if (.not.self) write(luout,*) 'ex1, ex2, cnt:'
+        if (     self) write(luout,*) 'ex1, cnt:'
         call wrt_occ_n(luout,iocc_ex1,njoined_op(1))
         call wrt_occ_n(luout,iocc_ex2,njoined_op(2))
         call wrt_occ_n(luout,iocc_cnt,njoined_cnt)

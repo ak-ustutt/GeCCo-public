@@ -32,7 +32,7 @@
      &     flist_pnt
 
       integer ::
-     &     idx_1, idx_2, idx_prj, njoined_c
+     &     idx_1, idx_2, idx_prj, njoined_c, njoined_intm
 
       if (irdag.gt.nop.or.
      &    icint.gt.nop) then
@@ -52,6 +52,7 @@
       njoined_c = op_info%op_arr(idx_op(icint))%op%njoined
       if (njoined_c.ne.1)
      &     call quit(1,'set_RC_contrib','not yet prepared for this')
+      njoined_intm = op_info%op_arr(idx_intm)%op%njoined
 
       !----------------------------------!
       ! - R12+ C                    !
@@ -66,7 +67,18 @@
       end do
 
       ! should automatically give the correct connection (only 1)
-      call expand_op_product2(flist_pnt,idx_intm,
+      if (njoined_intm.eq.1) then
+        call expand_op_product2(flist_pnt,idx_intm,
+     &       -1d0,4,3,
+     &       (/idx_intm,-idx_1,idx_2,idx_intm/),
+     &       (/1       ,2     ,3    ,1       /),       
+     &       -1, -1,
+     &       0,0,
+     &       (/1,3, 2,4/),2,    ! avoid cross contrib. to external lines
+     &       0,0,
+     &       op_info)
+      else if (njoined_intm.eq.2) then
+        call expand_op_product2(flist_pnt,idx_intm,
      &       -1d0,6,3,
      &       (/idx_intm,-idx_1,idx_intm,idx_intm,idx_2,idx_intm/),
      &       (/1       ,2     ,1       ,1       ,3    ,1       /),       
@@ -75,7 +87,10 @@
      &       (/2,6, 1,5/),2,    ! avoid cross contrib. to external lines
      &       0,0,
      &       op_info)
-      
+      else
+        call quit(1,'set_RC_contrib','unexpected: njoined_intm>2')
+      end if
+
       if (ntest.ge.100) then
         write(luout,*) 'R^+.C contribution'
         call print_form_list(luout,flist_pnt,op_info)

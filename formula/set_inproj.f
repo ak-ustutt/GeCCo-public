@@ -84,11 +84,15 @@ c dbg
 
         ! not enough indices?
         nidx = ielsum(ovl(1,2),ngastp)
+c dbg
+c        print *,'nidx, rank: ',nidx,rank
+c dbg
         if (nidx.lt.rank) then
           ok = .false.
           exit
         end if
 
+        occ_cnt = 0
         if (type.eq.0.and.nidx.eq.rank) then
           occ_cnt = ovl
         else if(rank.eq.1.and.ovl(type,2).eq.1) then
@@ -120,6 +124,8 @@ c dbg
           ok = .false.
 c presently:
           call quit(1,'set_inproj','I am spoilt for choice ...')
+        else
+          ok = .false.
           exit
         end if
 

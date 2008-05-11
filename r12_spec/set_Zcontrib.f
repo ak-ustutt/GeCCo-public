@@ -30,10 +30,10 @@
      &     op_info
 
       type(formula_item), pointer ::
-     &     flist_pnt
+     &     flist_pnt, flist_pnt0
 
       integer ::
-     &     idx_1, idx_2, idx_prj
+     &     idx_1, idx_2, idx_prj, njoined_intm
 
 
       if (approx(1:1).eq.'A') return
@@ -46,6 +46,8 @@
         call quit(1,'set_Zcontrib',
      &         'not enough operators on input list')
       end if
+
+      njoined_intm = op_info%op_arr(idx_intm)%op%njoined
 
       if (idx_op(irdag).le.0.or.
      &    idx_op(irbreve).le.0) then
@@ -65,10 +67,36 @@
       do while(associated(flist_pnt%next))
         flist_pnt => flist_pnt%next
       end do
+      flist_pnt0 => flist_pnt
       ! set projector
       idx_prj = 5
       if (ansatz.gt.1) idx_prj = 6
-      call expand_op_product2(flist_pnt,idx_intm,
+      if (njoined_intm.eq.1) then
+        call expand_op_product2(flist_pnt,idx_intm,
+     &       -1d0,4,3,
+     &       (/idx_intm,-idx_1,idx_2,idx_intm/),
+     &       (/1       ,2     ,3    ,1       /),       
+     &       -1, -1,
+     &       (/2,3/),1,  ! force additional contraction
+     &       0,0,
+     &       (/2,3,2,idx_prj/),1, ! def. of projector
+     &       op_info)
+        flist_pnt => flist
+        do while(associated(flist_pnt%next))
+          flist_pnt => flist_pnt%next
+        end do
+        ! this gives the terms with ONLY the projector as contraction
+        call expand_op_product2(flist_pnt,idx_intm,
+     &       -1d0,4,3,
+     &       (/idx_intm,-idx_1,idx_2,idx_intm/),
+     &       (/1       ,2     ,3    ,1       /),       
+     &       -1, -1,
+     &       0,0,
+     &       0,0,
+     &       (/2,3,2,idx_prj/),1, ! def. of projector
+     &       op_info)
+      else if (njoined_intm.eq.2) then
+        call expand_op_product2(flist_pnt,idx_intm,
      &       -1d0,6,3,
      &       (/idx_intm,-idx_1,idx_intm,idx_intm,idx_2,idx_intm/),
      &       (/1       ,2     ,1       ,1       ,3    ,1       /),       
@@ -77,6 +105,9 @@
      &       (/2,6, 1,5/),2,    ! avoid cross contrib. to external lines
      &       (/2,5,2,idx_prj/),1, ! def. of projector
      &       op_info)
+      else
+        call quit(1,'set_Zcontrib','unexpected: njoined_intm>2')
+      end if
       
       if (ntest.ge.100) then
         write(luout,*) 'Z contribution'

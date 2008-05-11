@@ -22,7 +22,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character(6), parameter ::
      &     op_scr_f  = '_SCR_F'
 
@@ -118,7 +118,6 @@
           idx_prj = IEXTR
         else
           fac = -1d0
-c          fac = 1d0
           idx_prj = IPART
         end if
 

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_r12i(op,name,set_p,
+      subroutine set_r12i(op,name,n_ap,
      &     min_rank,max_rank,ncadiff,iformal,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_genop
@@ -18,8 +18,8 @@
      &     op
       character, intent(in) ::
      &     name*(*)
-      logical, intent(in) ::
-     &     set_p
+      integer, intent(in) ::
+     &     n_ap
       integer, intent(in) ::
      &     min_rank, max_rank, ncadiff,iformal
 
@@ -58,11 +58,12 @@ c-----------------------------------------------------------------------
 
       hpvxca_mnmx(1:2,1:ngastp,1:2)=0
 
-      if (.not.set_p) then
-        hpvxca_mnmx(1:2,IHOLE,2)=2
+      if (n_ap.eq.0) then
+        hpvxca_mnmx(1:2,IHOLE,2)=(/0,2/)
+c        hpvxca_mnmx(1:2,IHOLE,2)=2
       else
         hpvxca_mnmx(1:2,IHOLE,2)=(/0,2/)
-        hpvxca_mnmx(1:2,IPART,2)=(/0,2/)
+        hpvxca_mnmx(1:2,IPART,2)=(/0,n_ap/)
       end if
       
       do igastp=1,ngastp
@@ -77,10 +78,10 @@ c-----------------------------------------------------------------------
 
       hpvx_mnmx = 0
       hpvx_mnmx(2,IHOLE) = 4
-      if (.not.set_p) then
+      if (n_ap.eq.0) then
         hpvx_mnmx(2,IPART) = 2
       else
-        hpvx_mnmx(2,IPART) = 4
+        hpvx_mnmx(2,IPART) = 2+n_ap
       end if
       hpvx_mnmx(2,IEXTR) = hpvxca_mnmx(2,IEXTR,1)
 

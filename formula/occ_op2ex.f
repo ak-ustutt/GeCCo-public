@@ -35,7 +35,7 @@
      &     self
       integer ::
      &     iop_other, ijoin, ivtx, ilist, idx, jdx, iarc, ii,
-     &     iop1or2,
+     &     iop1or2, idxlist,
      &     ipass, npass
       integer, external ::
      &     imltlist
@@ -90,18 +90,24 @@
 
        do ilist = 1, len_list
         iarc = arc_list(ilist)
+        idxlist = (ipass-1)*len_list+ilist
 
         if (contr%svertex(contr%arc(iarc)%
      &        link(iop1or2)).eq.isupvtx_op) then
           ivtx = contr%arc(iarc)%link(iop1or2)
           if (set_cnt.and.ipass.eq.1)
-     &         iocc_cnt(1:ngastp,1:2,ilist) = contr%arc(iarc)%occ_cnt
+     &         iocc_cnt(1:ngastp,1:2,idxlist) = contr%arc(iarc)%occ_cnt
+          if (set_cnt.and.ipass.eq.2)
+     &         iocc_cnt(1:ngastp,1:2,idxlist) =
+     &         iocc_dagger(contr%arc(iarc)%occ_cnt)
         else if (contr%svertex(contr%arc(iarc)%
      &        link(iop_other)).eq.isupvtx_op) then
           ivtx = contr%arc(iarc)%link(iop_other)
           if (set_cnt.and.ipass.eq.1)
-     &         iocc_cnt(1:ngastp,1:2,ilist) =
+     &         iocc_cnt(1:ngastp,1:2,idxlist) =
      &         iocc_dagger(contr%arc(iarc)%occ_cnt)
+          if (set_cnt.and.ipass.eq.2)
+     &         iocc_cnt(1:ngastp,1:2,idxlist) = contr%arc(iarc)%occ_cnt
         else 
           call quit(1,'occ_op2ex','arc does not contain supervertex?')
         end if
@@ -117,10 +123,10 @@ c dbg
      &                              - iocc_cnt(1:ngastp,1:2,ilist)
         else
           iocc_ex(1:ngastp,1:2,idx) = iocc_ex(1:ngastp,1:2,idx)
-     &                      - iocc_dagger(iocc_cnt(1:ngastp,1:2,ilist))
+     &                     - iocc_dagger(iocc_cnt(1:ngastp,1:2,ilist))
         end if
 
-        if (set_map.and.ipass.eq.1) then
+        if (set_map) then
 c dbg
 c          print *,'ipass = ',ipass
 c dbg
@@ -133,24 +139,25 @@ c dbg
           end do
           if (jdx.gt.ld_map)
      &         call quit(1,'occ_op2ex','ld_map too small?')
-          merge_map(jdx,1,idx) = ilist
+          merge_map(jdx,1,idx) = idxlist
         end if
        end do
       end do
 
-      if (self.and.set_cnt) then
-        do ilist = 1, len_list
-          iocc_cnt(1:ngastp,1:2,ilist) =
-     &                       iocc_cnt(1:ngastp,1:2,ilist)
-     &         + iocc_dagger(iocc_cnt(1:ngastp,1:2,ilist))
-        end do
-      end if
+c      if (self.and.set_cnt) then
+c        do ilist = 1, len_list
+c          iocc_cnt(1:ngastp,1:2,ilist) =
+c     &                       iocc_cnt(1:ngastp,1:2,ilist)
+c     &         + iocc_dagger(iocc_cnt(1:ngastp,1:2,ilist))
+c        end do
+c      end if
 
       if (ntest.ge.100) then
         write(luout,*) 'EX:'
         call wrt_occ_n(luout,iocc_ex,njoined)
         write(luout,*) 'CNT:'
-        call wrt_occ_n(luout,iocc_cnt,len_list)
+        if (.not.self) call wrt_occ_n(luout,iocc_cnt,len_list)
+        if (     self)call wrt_occ_n(luout,iocc_cnt,2*len_list)
 
         write(luout,*) 'merge map:'
         do ivtx = 1, njoined

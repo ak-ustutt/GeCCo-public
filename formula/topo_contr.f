@@ -52,7 +52,7 @@
 
 c dbg
 c      print *,'on entry'
-c      call wrt_occ_n(luout,occ_vtx,nvtx)
+c      call wrt_occ_n(luout,occ_vtx,contr%nvtx)
 c dbg
 
       nvtx = contr%nvtx

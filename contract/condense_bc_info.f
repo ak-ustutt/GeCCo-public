@@ -101,14 +101,6 @@ c     &     irst_op1,ihpvgas,ngas)
      &                  cnt_info%cinfo_op1c(1,3),
      &                  cnt_info%cinfo_op1a(1,3),
      &                  igrph,njoined_op1,hpvxblkseq)
-c dbg
-c      print *,'OP1:'
-c      call wrt_occ_n(6,iocc_op1,njoined_op1)
-c      print *,' C: ',cnt_info%cinfo_op1c(1:nca_blk(1,1),1)
-c      print *,'    ',cnt_info%cinfo_op1c(1:nca_blk(1,1),3)
-c      print *,' A: ',cnt_info%cinfo_op1a(1:nca_blk(2,1),1)
-c      print *,'    ',cnt_info%cinfo_op1a(1:nca_blk(2,1),3)
-c dbg
 
       ! EX1
       call get_grph4occ(igrph,iocc_ex1,irst_ex1,njoined_op1,
@@ -135,16 +127,6 @@ c dbg
      &                  cnt_info%cinfo_op2c(1,3),
      &                  cnt_info%cinfo_op2a(1,3),
      &                  igrph,njoined_op2,hpvxblkseq)
-c dbg
-c      print *,'OP2:'
-c      call wrt_occ_n(6,iocc_op2,njoined_op2)
-c      print *,' C: ',cnt_info%cinfo_op2c(1:cnt_info%ncblk_op2,1)
-c      print *,'    ',cnt_info%cinfo_op2c(1:cnt_info%ncblk_op2,3)
-c      print *,'  g ',cnt_info%cinfo_op2c(1:cnt_info%ncblk_op2,2)
-c      print *,' A: ',cnt_info%cinfo_op2a(1:cnt_info%nablk_op2,1)
-c      print *,'    ',cnt_info%cinfo_op2a(1:cnt_info%nablk_op2,3)
-c      print *,'  g ',cnt_info%cinfo_op2a(1:cnt_info%nablk_op2,2)
-c dbg
 
       ! EX2
       call get_grph4occ(igrph,iocc_ex2,irst_ex2,njoined_op2,
@@ -174,9 +156,6 @@ c dbg
      &                  igrph,njoined_cnt,hpvxblkseq)
 
       ! OP1OP2
-c dbg
-c      print *,'call for OP1OP2'
-c dbg
       call get_grph4occ(igrph,iocc_op1op2,irst_op1op2,njoined_op1op2,
      &                  str_info,orb_info,.true.)
       call condense_occ(cnt_info%cinfo_op1op2c, cnt_info%cinfo_op1op2a,
@@ -223,9 +202,6 @@ c dbg
       !  if OP1OP2 differs, this is taken care of by the additional
       !  reordering step
       ! EX1/EX2 for C
-c dbg
-c      print *,'call for ex1ex2'
-c dbg
       call set_mapping_info(cnt_info%map_info_12c,cnt_info%map_info_12a,
      &                  1,
      &                  iocc_ex1,njoined_op1,.false.,
@@ -233,9 +209,6 @@ c dbg
      &                  iocc_op1op2tmp,merge_map12,
      &                                  njoined_op1op2,hpvxblkseq)
       ! EX2/EX1 for A
-c dbg
-c      print *,'call for ex2ex1'
-c dbg
       call set_mapping_info(cnt_info%map_info_12c,cnt_info%map_info_12a,
      &                  2,
      &                  iocc_ex2,njoined_op2,.false.,

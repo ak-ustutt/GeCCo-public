@@ -1,6 +1,9 @@
 *----------------------------------------------------------------------*
       subroutine fact_cost2(possible,cost,iscale,
-     &     contr,njoined_res,occ_vtx,irestr_vtx,info_vtx,iarc,
+     &     iarc,njoined_res,nlevel,
+     &     contr,occ_vtx,irestr_vtx,info_vtx,
+     &     make_red,
+     &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     op_info,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     calculate the computational cost of a given contraction
@@ -23,21 +26,30 @@
       include 'mdef_operator_info.h'
       include 'ifc_operators.h'
       include 'def_contraction_info.h'
+      include 'def_reorder_info.h'
       include 'multd2h.h'
       
       integer, parameter ::
      &     ntest = 00
       
+      logical, intent(in) ::
+     &     make_red
       integer, intent(in) ::
-     &     iarc, njoined_res
+     &     iarc, njoined_res, nlevel
       type(contraction), intent(in) ::
      &     contr
+      type(contraction), intent(out) ::
+     &     contr_red
       type(orbinf), intent(in), target ::
      &     orb_info
       integer, intent(in) ::
      &     occ_vtx(ngastp,2,contr%nvtx+njoined_res),
      &     irestr_vtx(2,orb_info%ngas,2,2,contr%nvtx+njoined_res),
      &     info_vtx(2,contr%nvtx+njoined_res)
+      integer, intent(out) ::
+     &     occ_vtx_red(ngastp,2,contr%nvtx+njoined_res),
+     &     irestr_vtx_red(2,orb_info%ngas,2,2,contr%nvtx+njoined_res),
+     &     info_vtx_red(2,contr%nvtx+njoined_res)
       type(operator_info), intent(in) ::
      &     op_info
       type(strinf), intent(in) ::
@@ -49,10 +61,8 @@
       logical, intent(out) ::
      &     possible
 
-      logical, parameter ::
-     &     new_route = .true.
       integer ::
-     &     nvtx, narc, ngas, nsym,
+     &     nvtx, narc, ngas, nsym, idum,
      &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt
       integer ::
      &     iocc_cnt(ngastp,2,contr%nvtx),
@@ -77,7 +87,11 @@
 
       integer, pointer ::
      &     ihpvgas(:,:)
-
+      
+      type(contraction) ::
+     &     contr_dum
+      type(reorder_info) ::
+     &     reo_dum
       type(contraction_info) ::
      &     cnt_info
 
@@ -108,7 +122,9 @@ c dbg
       ! preliminary version (valid for standard CC only):
       ! restriction on result:
       call set_restr_prel(irst_res,contr,op_info,ihpvgas,ngas)
- 
+
+      if (.false.) then
+        ! old
       call get_bc_info2(bc_sign,
      &     idar1,idar2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
@@ -121,6 +137,25 @@ c dbg
      &     merge_op1,merge_op2,merge_op1op2,merge_op2op1,
      &     contr,njoined_res,occ_vtx,irestr_vtx,info_vtx,iarc,
      &     irst_res,orb_info)
+      else
+
+      call get_bc_info3(bc_sign,possible,
+     &     idar1,idar2,
+     &     iocc_ex1,iocc_ex2,iocc_cnt,
+     &     iocc_op1,iocc_op2,iocc_op1op2,
+     &     irst_op1,irst_op2,irst_op1op2,
+     &     tra_op1,tra_op2,tra_op1op2,
+     &     mst_op,mst_op1op2,
+     &     igamt_op,igamt_op1op2,
+     &     njoined_op, njoined_op1op2, njoined_cnt,
+     &     merge_op1,merge_op2,merge_op1op2,merge_op2op1,
+     &     contr,occ_vtx,irestr_vtx,info_vtx,
+     &     make_red,
+     &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
+     &     .false.,reo_dum,
+     &     iarc,nlevel,-nlevel,
+     &     irst_res,njoined_res,orb_info,op_info)
+      end if
 
       ! count particle, hole, (active) spaces involved:
       ! in intermediate
@@ -180,7 +215,7 @@ c dbg
         iscale(iextr,2) = nx_op1op2
       end if
 
-      possible = .true.     
+c      possible = .true.     
       ! check whether intermediate can be addressed by
       ! the available graphs (preliminary fix)
       possible = possible.and.

@@ -43,9 +43,11 @@
      &     call quit(1,'get_strmap_blk_c',
      &     'you forgot to update the maps after adding a graph')
       offsets => strmap_info%offsets
-c dbg
-c      print *,'n1, n2, n12: ',n1, n2, n12
-c dbg
+      if (n1.lt.0.or.n2.lt.0.or.n12.lt.0) then
+        write(luout,*) 'n1, n2, n12: ',n1, n2, n12
+        call quit(1,'get_strmap_blk_c',
+     &     'n1, n2, or n12: check call list')
+      end if
 
       ioffmap = 0
       idx_minf = 0
@@ -109,6 +111,7 @@ c dbg
           end do
           ioffmap = ioffmap+ilen
         else
+          write(luout,*) 'n1,n2,n12: ',n1,n2,n12
           write(luout,*) 'map_info:  ',map_info(1:2*(n1+n2)*n12)
           write(luout,*) 'last index:',idx_minf
           call quit(1,'get_strmap_blk_c','buggy map_info?')

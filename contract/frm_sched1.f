@@ -320,7 +320,7 @@ c fix:
      &       irst_op2(2,ngas,2,2,nvtx),
      &       irst_res(2,ngas,2,2,nvtx),
      &       iocc_ex1(ngastp,2,nvtx),
-     &       iocc_ex2(ngastp,2,nvtx), iocc_cnt(ngastp,2,nvtx),
+     &       iocc_ex2(ngastp,2,nvtx), iocc_cnt(ngastp,2,2*nvtx),
      &       iocc_op1op2(ngastp,2,nvtx),
      &       irst_op1op2(2,orb_info%ngas,2,2,nvtx),
      &       iocc_op1op2tmp(ngastp,2,nvtx),
@@ -403,7 +403,9 @@ c          new = .false.!cur_contr%nvtx.ge.4
      &         irst_res,orb_info)
           else
 
-          make_contr_red = cur_contr%nsupvtx.gt.2
+          make_contr_red = cur_contr%nsupvtx.gt.2 .or.
+     &                    (cur_contr%nsupvtx.eq.2 .and.
+     &                     cur_contr%narc.gt.1)
           set_reo = make_contr_red
           if (set_reo) then
             ! reset reo_info

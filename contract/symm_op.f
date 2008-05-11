@@ -18,7 +18,7 @@
       include 'par_opnames_gen.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       character(*), intent(in) ::
      &     label_in, label_out

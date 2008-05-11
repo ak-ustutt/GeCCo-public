@@ -234,7 +234,7 @@ c dbg
      &     cost_in(3)
 
       logical ::
-     &     possible
+     &     possible, new
       integer ::
      &     narc, ivtx_new, iarc, idx_op_new, ilist, len_list,
      &     iscale(ngastp,2)
@@ -270,6 +270,8 @@ c dbg
         call prt_contr3(luout,contr,occ_vtx(1,1,njoined+1))
       end if
 
+      call init_contr(contr_red)
+
       narc = contr%narc
 
       if (nlevel.gt.narc_full+ndisconn)
@@ -296,9 +298,13 @@ c dbg
         if (icount.gt.maxcount)
      &       call quit(1,'form_fact_rec','too many cycles')
 
+        new = .true.
         ! evaluate cost of present binary contraction
         call fact_cost2(possible,cost,iscale,
-     &       contr,njoined,occ_vtx,irestr_vtx,info_vtx,iarc,
+     &       iarc,njoined,nlevel,
+     &       contr,occ_vtx,irestr_vtx,info_vtx,
+     &       new,
+     &       contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &       op_info,str_info,orb_info)
 
         if (ntest.ge.1000) then
@@ -322,6 +328,7 @@ c dbg
         ! if the binary contraction is accepted, ...
 
         ! ... update ifact array ...
+        if (.not.new) then
         ifact(1,nlevel) = ivtx_ori(contr%arc(iarc)%link(1))
         ifact(2,nlevel) = ivtx_ori(contr%arc(iarc)%link(2))
         ivtx_new = joint_idx(ifact(1,nlevel),ifact(2,nlevel),
@@ -329,7 +336,15 @@ c dbg
         ifact(3,nlevel) = ivtx_new
         ifact(4,nlevel) = iarc_ori(iarc)
         ifact(5,nlevel) = iarc
+        else
+        ifact(1,nlevel) = contr%vertex(contr%arc(iarc)%link(1))%idx_op
+        ifact(2,nlevel) = contr%vertex(contr%arc(iarc)%link(2))%idx_op
+        ifact(3,nlevel) = -nlevel
+        ifact(4,nlevel) = iarc !iarc_ori(iarc)
+        ifact(5,nlevel) = iarc
+        end if
 
+        if (.not.new) then
         ! ... and find out what the
         ! contr structure looks like after this operation
         call init_contr(contr_red)
@@ -354,6 +369,8 @@ c     &       idx_op_new,irestr_res,contr,occ_vtx)
      &       .false.,reo_dummy,orb_info)
 
         if (.not.possible) cycle
+
+        end if ! old
 
         ! add 0-contractions, if necessary
 c dbg
@@ -403,6 +420,10 @@ c dbg
       if (ntest.ge.1000) then
         write(luout,*) 'returning from level ',nlevel
       end if
+
+      if (new) call dealloc_contr(contr_red)
+
+      return
 
       end subroutine
 

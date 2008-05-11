@@ -240,6 +240,12 @@ c dbg
      &         must_not_connect(proto%arc(iarc)%link(1)) = .true.
         end do
 
+        ! a must_connect overrides must_not_connect
+        do jvtx = 1, ivtx-1
+          must_not_connect(jvtx) = must_not_connect(jvtx).and.
+     &                            .not.must_connect(jvtx)
+        end do
+
         ! also, we should avoid contractions between open lines:
         if (ol_map(ivtx).ne.0) then
           do jvtx = 1, ivtx-1
@@ -362,6 +368,13 @@ c dbg
                       ok = .true.
                     end if
                   end do
+                  
+                  ! in a few cases two or more contractions between
+                  ! the same vertices end up on different arcs:
+                  ! merge these and adapt narc accordingly
+                  if (proto_new%narc.gt.0)
+     &               call contr_clean_arcs(proto_new%arc,proto_new%narc)
+
                   if (.not.ok.and.
      &                 iocc_nonzero(occ_conn(1:ngastp,1:2,jvtx))) then
                     call resize_contr(proto_new,nvtx,
