@@ -139,8 +139,8 @@ c dbg
       call write_form_list(f_output%fhand,flist,title)
 
 c dbg
-c      write(luout,*)'TeX list'
-c      call tex_form_list(luout,flist,op_info)
+      write(luout,*)'TeX list'
+      call tex_form_list(luout,flist,op_info)
 c dbg
 
       call dealloc_formula_list(flist)

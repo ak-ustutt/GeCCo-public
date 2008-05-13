@@ -164,9 +164,9 @@ c dbg
             endif
 
 c dbg
-c            first = .true.
-c            call tex_contr(luout,first,cur_conder%contr,op_info)
-c            if(first) first = .false.
+            first = .true.
+            call tex_contr(luout,first,cur_conder%contr,op_info)
+            if(first) first = .false.
 c dbg
 
             if (idx.lt.nder) cur_conder => cur_conder%next

@@ -188,9 +188,9 @@ c dbg
         form0_pnt => form_info%form_arr(jdx)%form
         call form_deriv2(form_pnt,form0_pnt,
      &       title,1,
-     &             rule%labels(ioff+2),
-     &             rule%labels(ioff+3),
-     &             rule%labels(ioff+4),
+     &       rule%labels(ioff+2),
+     &       rule%labels(ioff+3),
+     &       rule%labels(ioff+4),
      &       op_info)
       case(LEQ_SPLIT)
         call form_parameters(+1,
