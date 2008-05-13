@@ -86,13 +86,14 @@
       endif
 
 c      ! diagonal
-c      call add_target(op_diar12,ttype_op,.false.,tgt_info)
-c      call set_dependency(op_diar12,op_omgr12,tgt_info)
-c      call cloneop_parameters(-1,parameters,
-c     &                        op_omgr12,.false.) ! <- dagger=.false.
-c      call set_rule(op_diar12,ttype_op,CLONE_OP,
-c     &              op_diar12,1,1,
-c     &              parameters,1,tgt_info)
+
+      call add_target(op_diar12,ttype_op,.false.,tgt_info)
+      call set_dependency(op_diar12,op_omgr12,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_omgcex,.false.) ! <- dagger=.false.
+      call set_rule(op_diar12,ttype_op,CLONE_OP,
+     &              op_diar12,1,1,
+     &              parameters,1,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Formulae
@@ -297,6 +298,8 @@ c dbg
      &                labels,2,1,
      &                parameters,1,tgt_info)
 
+        call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
+
         call add_target(mel_cexbar_def,ttype_opme,.false.,tgt_info)
         call set_dependency(mel_cexbar_def,op_cexbar,tgt_info)
         labels(1:20)(1:len_target_name) = ' '
@@ -307,6 +310,24 @@ c dbg
         call set_rule(mel_cexbar_def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
+
+        call add_target('DIATEST',ttype_opme,.false.,tgt_info)
+        call set_dependency('DIATEST',op_diar12,tgt_info)
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = 'DIATEST'
+        labels(2) = op_diar12
+        call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+        call set_rule('DIATEST',ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+        call scale_parameters(-1,parameters,1,1,0.02d0,12)
+        labels(1) = 'DIATEST'
+        labels(2) = mel_dia1
+        call set_rule('DIATEST',ttype_opme,SCALE,
+     &       labels,2,1,
+     &       parameters,1,tgt_info)
+        
       endif
 
 c      if(.not.r12fix)then
@@ -348,6 +369,7 @@ c      endif
         
         call add_target(solve_mpr12_gs,ttype_gen,.true.,tgt_info)
         call set_dependency(solve_mpr12_gs,mel_dia1,tgt_info)
+        call set_dependency(solve_mpr12_gs,'DIATEST',tgt_info)
 c        call set_dependency(solve_mpr12_gs,mel_b_inv,tgt_info)
 c        call set_dependency(solve_mpr12_gs,mel_b_dia,tgt_info)
 c        call set_dependency(solve_mpr12_gs,mel_x_inv,tgt_info)
@@ -360,7 +382,7 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         labels(3) = mel_omg
         labels(4) = mel_omgcex
         labels(5) = mel_dia1
-        labels(6) = mel_dia1
+        labels(6) = 'DIATEST'
         labels(7) = mel_mpr12en0
         labels(8) = fopt_mpr12_0
         call set_rule(solve_mpr12_gs,ttype_opme,SOLVENLEQ,

@@ -461,15 +461,17 @@
      &     fac(*)
       character(*), intent(inout) ::
      &     parameters
+      integer ::
+     &     ii
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
         if (nfac.gt.12) call quit(1,'scale_parameters','too much')
-        write(parameters,'(i2,12i4,12g20.14)')
-     &       nfac,idxblk(1:nfac),fac(1:nfac)
+        write(parameters,'(i2,12(i4,g20.14))')
+     &       nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
       else
-        read(parameters,'(i2,12i4,12g20.14)')
-     &       nfac,idxblk(1:nfac),fac(1:nfac)
+        read(parameters,'(i2,12(i4,g20.14))')
+     &       nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
         if (nfac.gt.maxfac)
      &       call quit(1,'scale_parameters','too much (>maxfac)')
       end if
