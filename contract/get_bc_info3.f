@@ -214,8 +214,19 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
       call condense_merge_map(merge_op2op1,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.true.)
 
+c dbg
+        print *,'passing this line 1!'
+c dbg
       call dummy_restr(irestr_op1op2,
      &       iocc_op1op2,njoined_op1op2,orb_info)
+
+      if (.not.self) call special_restr(irestr_op1op2,
+     &     iocc_op1op2,njoined_op1op2,
+     &     merge_op1op2,
+     &     iocc_op1,iocc_ex1,irestr_op1,njoined_op(1),
+     &     iocc_op2,iocc_ex2,irestr_op2,njoined_op(2),
+     &     orb_info%nspin,orb_info%ngas)
+
       mst_op1op2 = mst_op(1) + mst_op(2)
       gamt_op1op2 = multd2h(gamt_op(1),gamt_op(2))
 
@@ -269,11 +280,16 @@ c dbg
      &       call reorder_supvtx_x(possible,
      &         .true.,set_reo,reo_info,
      &         contr_red,occ_vtx_red(1,1,njoined_res+1),idxnew_op1op2)
-        do ivtx = 1, nvtx
-          call dummy_restr(irestr_vtx_red(1,1,1,1,ivtx+njoined_res),
-     &         occ_vtx_red(1,1,ivtx+njoined_res),1,
-     &         orb_info)
-        end do
+        if (.not.set_reo.or.reo_info%nreo.gt.0) then
+c dbg
+        print *,'passing this line 2!'
+c dbg
+          do ivtx = 1, nvtx
+            call dummy_restr(irestr_vtx_red(1,1,1,1,ivtx+njoined_res),
+     &           occ_vtx_red(1,1,ivtx+njoined_res),1,
+     &           orb_info)
+          end do
+        end if
 
       end if
       

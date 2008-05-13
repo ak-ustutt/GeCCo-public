@@ -72,11 +72,21 @@ c      call fit_restr(irst_ex2,iocc_ex2,
 c     &     irst_op2,ihpvgas,ngas)
 c      call fit_restr(irst_cnt,iocc_cnt,
 c     &     irst_op1,ihpvgas,ngas)
-      call dummy_restr(irst_ex1,
-     &     iocc_ex1,njoined_op1,orb_info)
-      call dummy_restr(irst_ex2,
-     &     iocc_ex2,njoined_op2,orb_info)
       ! QUICK FIX FOR FROZEN-CORE-R12
+      if (njoined_op1.eq.1) then
+        call fit_restr(irst_ex1,iocc_ex1,
+     &       irst_op1,ihpvgas,ngas)
+      else
+        call dummy_restr(irst_ex1,
+     &       iocc_ex1,njoined_op1,orb_info)
+      end if
+      if (njoined_op2.eq.1) then
+        call fit_restr(irst_ex2,iocc_ex2,
+     &       irst_op2,ihpvgas,ngas)
+      else
+        call dummy_restr(irst_ex2,
+     &       iocc_ex2,njoined_op2,orb_info)
+      end if
       if (njoined_cnt.eq.1.and.njoined_op1.eq.1) then
         call fit_restr(irst_cnt,iocc_cnt,
      &     irst_op1,ihpvgas,ngas)

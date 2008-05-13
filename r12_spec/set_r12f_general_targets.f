@@ -703,6 +703,15 @@ c      occ_def(IPART,2,16) = 2
       call set_rule(fopt_r12_bhcabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
+c dbg
+c         labels(1) = fopt_r12_bhcabs
+c         labels(2) = fopt_r12_bhcabs
+c         call modify_parameters(-1,
+c     &       parameters,4,(/2,2,2,1/),4)
+c         call set_rule(fopt_r12_bhcabs,ttype_frm,MODIFY_FACTORIZATION,
+c     &              labels,2,1,
+c     &              parameters,1,tgt_info)        
+c dbg
 
       ! set C
       ! currently approx C only
