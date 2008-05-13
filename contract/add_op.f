@@ -9,7 +9,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
       
       include 'stdunit.h'
       include 'opdim.h'
@@ -128,7 +128,7 @@
           end if
 
           call add_opblk(xnorm2,1,fac(isum),me_current,me_res,
-     &         iblk,iblk_sum,orb_info)
+     &         iblk_sum,iblk,orb_info)
 
         end do
 
@@ -139,6 +139,14 @@
 
       if (open_close_res)
      &     call file_close_keep(me_res%fhand)
+
+      if (ntest.ge.1000) then
+        write(luout,*) 'dump of result list:'
+        call wrt_mel_file(luout,5,
+     &       me_res,
+     &       1,me_res%op%n_occ_cls,
+     &       str_info,orb_info)
+      end if
 
       call atim_csw(cpu,sys,wall)
       call prtim(luout,'time for adding',
