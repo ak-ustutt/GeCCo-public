@@ -7,7 +7,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 10000
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -406,8 +406,8 @@ c
       call write_form_list(form_mpr12%fhand,form_lag,title)
 
 c dbg
-      write(luout,*)'TeX list: Lagrangian'
-      call tex_form_list(luout,form_lag,op_info)
+c      write(luout,*)'TeX list: Lagrangian'
+c      call tex_form_list(luout,form_lag,op_info)
 c dbg
 
       ! Delete linked lists (!)

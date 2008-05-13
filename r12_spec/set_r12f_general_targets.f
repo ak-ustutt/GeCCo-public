@@ -252,9 +252,9 @@ c     &     .false.,min_rank,2,0,2)
       occ_def(IHOLE,1,13) = 2
       occ_def(IPART,2,14) = 2
 
-      occ_def(IHOLE,1,15) = 1
-      occ_def(IPART,1,15) = 1
-      occ_def(IPART,2,16) = 2
+c      occ_def(IHOLE,1,15) = 1
+c      occ_def(IPART,1,15) = 1
+c      occ_def(IPART,2,16) = 2
 
       occ_def(IPART,1,17) = 2
       occ_def(IPART,2,18) = 2
