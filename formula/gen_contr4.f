@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine gen_contr4(form_list,proto_main,
+      subroutine gen_contr4(strict,
+     &                      form_list,proto_main,
      &                      occ_vtx,ol_map,op_info)
 *----------------------------------------------------------------------*
 *     generate all contraction originating from a proto-contraction
@@ -48,6 +49,8 @@ c      include 'def_operator.h'
       include 'mdef_operator_info.h'
       include 'ifc_operators.h'
       
+      logical, intent(in) ::
+     &     strict
       type(formula_item), intent(in), target ::
      &     form_list
       type(contraction), intent(in) ::
@@ -236,8 +239,15 @@ c dbg
         must_not_connect(1:ivtx-1) = .false.
         do iarc = 1, proto%narc
           if (proto%arc(iarc)%link(2).eq.ivtx .and.
-     &        proto%arc(iarc)%occ_cnt(1,1).ge.0)
+     &        (strict.and.proto%arc(iarc)%occ_cnt(1,1).ge.0 .or.
+     &    .not.strict.and.iocc_zero(proto%arc(iarc)%occ_cnt)) )
      &         must_not_connect(proto%arc(iarc)%link(1)) = .true.
+        end do
+
+        ! a must_connect overrides must_not_connect
+        do jvtx = 1, ivtx-1
+          must_not_connect(jvtx) = must_not_connect(jvtx).and.
+     &                            .not.must_connect(jvtx)
         end do
 
         ! also, we should avoid contractions between open lines:
@@ -356,12 +366,29 @@ c dbg
                       ! by a negative number on first entry)
                       ! else: do nothing, as we have above checked that
                       ! only an additional 0-connection remains
-                      if (proto_new%arc(iarc)%occ_cnt(1,1).lt.0)
-     &                     proto_new%arc(iarc)%occ_cnt =
+c                      if (proto_new%arc(iarc)%occ_cnt(1,1).lt.0)
+c     &                     proto_new%arc(iarc)%occ_cnt =
+c     &                     occ_conn(1:ngastp,1:2,jvtx)
+                      ! do not completely understand that behaviour,
+                      ! trying instead:
+                      if (proto_new%arc(iarc)%occ_cnt(1,1).lt.0) then
+                        proto_new%arc(iarc)%occ_cnt =
      &                     occ_conn(1:ngastp,1:2,jvtx)
+                      else
+                        proto_new%arc(iarc)%occ_cnt =
+     &                       proto_new%arc(iarc)%occ_cnt +
+     &                       occ_conn(1:ngastp,1:2,jvtx)
+                      end if
                       ok = .true.
                     end if
                   end do
+                  
+                  ! in a few cases two or more contractions between
+                  ! the same vertices end up on different arcs:
+                  ! merge these and adapt narc accordingly
+                  if (proto_new%narc.gt.0)
+     &               call contr_clean_arcs(proto_new%arc,proto_new%narc)
+
                   if (.not.ok.and.
      &                 iocc_nonzero(occ_conn(1:ngastp,1:2,jvtx))) then
                     call resize_contr(proto_new,nvtx,

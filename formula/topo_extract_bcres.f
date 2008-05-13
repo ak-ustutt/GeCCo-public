@@ -26,7 +26,7 @@
           bcres(jdx) = bcres(jdx) + xlines(idx,kdx)
         end do
         do kdx = 1, nvtx
-          if (imltlist(kdx,vtx_list,nvtx_bcr,1).gt.0) cycle
+c          if (imltlist(kdx,vtx_list,nvtx_bcr,1).gt.0) cycle
           bcres(jdx) = bcres(jdx) + topo(idx,kdx)
         end do
       end do

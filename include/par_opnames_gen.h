@@ -65,7 +65,7 @@ c     &     op_cba*4   = 'CBAR',
      &     op_v0_inter*2   = 'V0',
      &     op_vbar_inter*2 = 'V+',
      &     op_b_inter*1    = 'B',
-c     &     op_b0_inter*2   = 'B0',
+     &     op_bh_inter*2   = 'Bh',
      &     op_c_inter*5    = 'C-INT',
      &     op_cbar_inter*6 = 'C+-INT',
      &     op_p_inter*5    = 'P-INT',
@@ -79,11 +79,6 @@ c     &     op_b0_inter*2   = 'B0',
      &     op_cex*3        = 'T1''',
      &     op_cexbar*6     = 'T1BAR''',
      &     op_omgcex*7     = 'OMG_T1'''
-c dbg
-c     &     op_f12int_fix*6 = 'F12FIX',
-c     &     op_t12f12int_fix*7 = 'TF12FIX',
-c     &     op_g12f12int_fix*7 = 'GF12FIX'
-c dbg
       ! generic ME-list names
       character, parameter ::
      &     mel_cclg0*6      = 'L0(CC)',
@@ -173,27 +168,15 @@ c dbg
      &     mel_x_inv*4      = 'XINV',
      &     mel_b_inter*7    = 'B-INTER',
      &     mel_b_def*11     = 'DEF-B-INTER',
-c     &     mel_b0_inter*8    = 'B0-INTER',
-c     &     mel_b0_def*12     = 'DEF-B0-INTER',
+     &     mel_bh_inter*8    = 'Bh-INTER',
+     &     mel_bh_def*12      = 'DEF-Bh-INTER',
      &     mel_c_inter*7    = 'C-INTER',
      &     mel_c_def*11     = 'DEF-C-INTER',
      &     mel_cbar_inter*8 = 'C+-INTER',
      &     mel_cbar_def*12  = 'DEF-C+-INTER',
      &     mel_b_inv*4      = 'BINV',
      &     mel_b_dia*4      = 'BDIA'
-c dbg
-c     &     mel_f12fix*6      = 'F12FIX',
-c     &     mel_f12fix_def*10 = 'F12FIX_DEF',
-c     &     mel_t12f12fix*9       = 'T12F12FIX',
-c     &     mel_t12f12fix_def*13  = 'T12F12FIX_DEF',
-c     &     mel_g12f12fix*9      = 'G12F12FIX',
-c     &     mel_g12f12fix_def*13 = 'G12F12FIX_DEF'
-c dbg
       character, parameter ::
-c     &     mel_c12def*10    = 'DEF-C0-R12',
-c     &     mel_c12*6        = 'C0-R12',
-c     &     mel_cbardef*13   = 'DEF-C0BAR-R12',
-c     &     mel_cbar*9       = 'C0BAR-R12',
      &     mel_c12def*11    = 'DEF-T0''-R12',
      &     mel_c12*7        = 'T0''-R12',
      &     mel_cbardef*14   = 'DEF-T0BAR''-R12',

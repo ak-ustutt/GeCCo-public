@@ -39,12 +39,13 @@
      &     orb_info
 
       type(formula_item), pointer ::
-     &     flist_pnt
+     &     flist_pnt, flist_pnt0
 
       logical ::
      &     GBC, assume_rsqbar
       integer ::
-     &     idx_1, idx_2, idx_prj, idx_f, ndef
+     &     idx_1, idx_2, idx_prj, idx_f, ndef,
+     &     njoined_intm, njoined_op
       type(operator), pointer ::
      &     opf_pnt, op_pnt
       integer ::
@@ -54,6 +55,8 @@
      &     idx_oplist2
 
       if (approx(1:2).eq.'A ') return
+
+      njoined_intm = op_info%op_arr(idx_intm)%op%njoined
 
       GBC = approx(4:6).eq.'GBC'.or.approx(1:2).eq.'A'''
 
@@ -73,6 +76,12 @@
      &         'not enough operators on input list')
         end if
 
+        flist_pnt => flist
+        do while(associated(flist_pnt%next))
+          flist_pnt => flist_pnt%next
+        end do
+        flist_pnt0 => flist_pnt
+
         ! if no hartree operator was given, we assume that
         ! the modified R.R integral was imported
         assume_rsqbar = idx_op(ihartree).le.0
@@ -90,6 +99,10 @@
         ! R12^{2} * (f+k) !
         !-----------------!
         if (.not.assume_rsqbar) then
+
+          call quit(1,'set_Xcontrib',
+     &         'unused route. how did you get here?')
+
           idx_1 = idx_op(irsq)
           idx_2 = idx_op(ihartree)
 
@@ -113,8 +126,24 @@
           do while(associated(flist_pnt%next))
             flist_pnt => flist_pnt%next
           end do
-          call set_primitive_formula(flist_pnt,idx_1,
+          njoined_op   = op_info%op_arr(idx_1)%op%njoined
+          if (njoined_intm.eq.njoined_op) then
+            call set_primitive_formula(flist_pnt,idx_1,
      &         1d0,idx_intm,.false.,op_info) 
+          else if (njoined_intm.lt.njoined_op) then
+            ! generate the appropriate self-contraction
+            call expand_op_product2(flist_pnt,idx_intm,
+     &           1d0,4,2,
+     &           (/idx_intm,idx_1,idx_1,idx_intm/),
+     &           (/1       ,2   , 2, 1       /),       
+     &           -1, -1,
+     &           0,0,
+     &           0,0,
+     &           0,0,
+     &           op_info)
+          else
+            call quit(1,'set_1contrib','not prepared for this case !')                    
+          end if
         end if
 
         !----------------------------------!
@@ -130,7 +159,31 @@
         end do
         idx_prj = 2
         if (ansatz.gt.1) idx_prj = 4
-        call expand_op_product2(flist_pnt,idx_intm,
+        if (njoined_intm.eq.1) then
+c          call expand_op_product2(flist_pnt,idx_intm,
+c     &       -1d0,4,3,
+c     &       (/idx_intm,-idx_1,idx_2,idx_intm/),
+c     &       (/1       ,2     ,3    ,1       /),       
+c     &       -1, -1,
+c     &       (/2,3/),1, ! force additional contraction
+c     &       0,0,
+c     &       (/2,3,2,idx_prj/),1, ! def. of projector
+c     &       op_info)
+c          ! this gives the terms with ONLY the projector as contraction
+c          do while(associated(flist_pnt%next))
+c            flist_pnt => flist_pnt%next
+c          end do
+          call expand_op_product2(flist_pnt,idx_intm,
+     &       -1d0,4,3,
+     &       (/idx_intm,-idx_1,idx_2,idx_intm/),
+     &       (/1       ,2     ,3    ,1       /),       
+     &       -1, -1,
+     &       0,0,      
+     &       0,0,
+     &       (/2,3,2,idx_prj/),1, ! def. of projector
+     &       op_info)
+        else if (njoined_intm.eq.2) then
+          call expand_op_product2(flist_pnt,idx_intm,
      &       -1d0,6,3,
      &       (/idx_intm,-idx_1,idx_intm,idx_intm,idx_2,idx_intm/),
      &       (/1       ,2     ,1       ,1       ,3    ,1       /),       
@@ -139,10 +192,13 @@
      &       (/2,6, 1,5/),2,    ! avoid cross contrib. to external lines
      &       (/2,5,2,idx_prj/),1, ! def. of projector
      &       op_info)
-      
+        else
+          call quit(1,'set_Xcontrib','unexpected: njoined_intm>2')
+        end if
+
         if (ntest.ge.100) then
           write(luout,*) 'Xbar contribution'
-          call print_form_list(luout,flist,op_info)
+          call print_form_list(luout,flist_pnt,op_info)
         end if
 
       end if
@@ -199,7 +255,7 @@
 
         if (ntest.ge.100) then
           write(luout,*) 'XF contribution:'
-          call print_form_list(luout,flist_pnt,op_info)
+          call print_form_list(luout,flist_pnt0,op_info)
         end if
 
         call del_operator(op_scr_f,op_info)

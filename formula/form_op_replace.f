@@ -44,6 +44,12 @@
       integer, external ::
      &     idx_oplist2, iblk_occ
 
+      if (ntest.ge.100) then
+        call write_title(luout,wst_dbg_subr,'form_op_replace')
+        write(luout,*) 'opin:  "',trim(opin),'"'
+        write(luout,*) 'opout: "',trim(opout),'"'
+      end if
+
 
       ! Get the required operators.
       idxin = idx_oplist2(trim(opin),op_info)
@@ -98,6 +104,13 @@ c          write(luout,*) '[ADD]'
                 ! operator. 
                 idx_blk_out =
      &               iblk_occ(occ_temp,.false.,opout_pnt)
+
+                if (idx_blk_out.le.0) then
+                  call quit(1,'form_op_replace',
+     &                 'There is no block of '//trim(opout)//
+     &                 ' that corresponds to the present block of '//
+     &                 trim(opin)//'!')
+                end if
 
                 form_pnt%contr%vertex(idx)%idx_op = idxout
                 form_pnt%contr%vertex(idx)%iblk_op =

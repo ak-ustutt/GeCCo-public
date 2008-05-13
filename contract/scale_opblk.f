@@ -120,7 +120,8 @@
 
       if (opin%dagger.and..not.opout%dagger .or.
      &    .not.opin%dagger.and.opout%dagger)
-     &     call quit(1,'add_opblk','cannot (yet) transpose on-the-fly!')
+     &     call quit(1,'scale_opblk',
+     &     'cannot (yet) transpose on-the-fly!')
 
       len_op = mel_in%len_op_occ(iblkin)
       ! for the moment this must hold:

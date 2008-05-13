@@ -136,7 +136,6 @@ c dbg
      &     cnt_info,reo_info,
      &     str_info,strmap_info,orb_info)
 
-          stop 'test exit after trace_op'
         end if
 
         call dealloc_cnt_info(cnt_info)

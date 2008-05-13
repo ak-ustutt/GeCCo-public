@@ -667,7 +667,7 @@ c     &                     .false.,me_op,nsym)
      &                                  lstrtroptmp(ncblk_trop+1),
      &                                  map_info_a,nablk_op)
               call get_strmap_blk_c(map_tropcnta,
-     &                   nablk_trop,nablk_trop,nablk_op,
+     &                   nablk_cnt,nablk_trop,nablk_op,
      &                   cinfo_cnta,cinfo_tropa,
      &                     lstrcnt(ncblk_cnt+1),
      &                             lstrtroptmp(ncblk_trop+1),

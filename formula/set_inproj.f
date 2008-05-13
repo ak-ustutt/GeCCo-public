@@ -32,7 +32,7 @@
      &     ninproj, inproj(4,ninproj)
 
       integer ::
-     &     narc_old, iproj, ivtx1, ivtx2, rank, type, nidx,
+     &     narc_old, iproj, ivtx1, ivtx2, rank, type, type2, nidx,
      &     iblk, ihpvx, idx, ivtx
       integer ::
      &     occ1(ngastp,2), occ2(ngastp,2),
@@ -60,10 +60,15 @@
         ivtx2 = max(inproj(1,iproj),inproj(2,iproj))
         rank  = inproj(3,iproj)
         type  = inproj(4,iproj)
-        if (rank.le.0.or.type.lt.0.or.type.gt.nproj)
+        type2 = 0
+        if (rank.le.0.or.type.lt.0.or.(rank.eq.2.and.type.gt.nproj))
      &       call quit(1,'set_inproj','watch your input')
+        if (rank.eq.1) then
+          type2 = type/(ngastp+1)
+          type = mod(type,ngastp+1)
+        end if
 c dbg
-c        print *,'v1,v2,r,t: ',ivtx1,ivtx2,rank,type
+c        print *,'v1,v2,r,t: ',ivtx1,ivtx2,rank,type,type2
 c dbg
 
         ! get A of first operator
@@ -84,16 +89,23 @@ c dbg
 
         ! not enough indices?
         nidx = ielsum(ovl(1,2),ngastp)
+c dbg
+c        print *,'nidx, rank: ',nidx,rank
+c dbg
         if (nidx.lt.rank) then
           ok = .false.
           exit
         end if
 
+        occ_cnt = 0
         if (type.eq.0.and.nidx.eq.rank) then
           occ_cnt = ovl
-        else if(rank.eq.1.and.ovl(type,2).eq.1) then
+        else if(rank.eq.1.and.ovl(type,2).ge.1) then
           occ_cnt = 0
           occ_cnt(type,2) = 1
+        else if(rank.eq.1.and.type2.gt.0.and.ovl(type2,2).eq.1) then
+          occ_cnt = 0
+          occ_cnt(type2,2) = 1
         else if (rank.eq.2) then
 c dbg
 c          print *,'nblk: ',nblk(type)
@@ -120,6 +132,8 @@ c dbg
           ok = .false.
 c presently:
           call quit(1,'set_inproj','I am spoilt for choice ...')
+        else
+          ok = .false.
           exit
         end if
 

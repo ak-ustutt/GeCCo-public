@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine add_opblk(xnorm2,fac,mel_in,mel_out,
+      subroutine add_opblk(xnorm2,type,fac,mel_in,mel_out,
      &     iblkin,iblkout,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -19,6 +19,7 @@
       include 'def_orbinf.h'
       include 'opdim.h'
       include 'ifc_memman.h'
+      include 'ifc_operators.h'
 
       integer, parameter ::
      &     ntest = 000
@@ -32,7 +33,7 @@
       type(orbinf), intent(in) ::
      &     orb_info
       integer, intent(in) ::
-     &     iblkin, iblkout
+     &     iblkin, iblkout, type
 
       logical ::
      &     ok, bufin, bufout
@@ -54,7 +55,8 @@
      &     buffer_in(:), buffer_out(:)
 
       logical, external ::
-     &     iocc_equal_n, irestr_equal
+c     &     iocc_equal_n, iocc_equal,
+     &     irestr_equal
       real(8), external ::
      &     ddot
 
@@ -86,10 +88,29 @@
       idx_out = (iblkout-1)*njoined_out+1
 
       if (njoined_in.eq.njoined_out) then
-        ok = iocc_equal_n(opin%ihpvca_occ(1,1,idx_in),opin%dagger,
-     &                   opout%ihpvca_occ(1,1,idx_out),opout%dagger,
+        ok = iocc_equal_n(opin%ihpvca_occ(1:ngastp,1:2,
+     &                                    idx_in:idx_in-1+njoined_in),
+     &                   .false.,
+     &                   opout%ihpvca_occ(1:ngastp,1:2,
+     &                                    idx_out:idx_out-1+njoined_in),
+     &                   .false.,
      &                   njoined_in)
+      else if (njoined_in.eq.2.and.njoined_out.eq.1) then
+        allocate(occ_try(ngastp,2,1))
+        occ_try(1:ngastp,1:2,1) =
+     &      iocc_overlap(opin%ihpvca_occ(1:ngastp,1:2,idx_in),.false.,
+     &                   opin%ihpvca_occ(1:ngastp,1:2,idx_in+1),.false.)
+        ok = iocc_zero(occ_try)
+        if (ok) then
+          occ_try(1:ngastp,1:2,1) =
+     &        iocc_add(1,opin%ihpvca_occ(1:ngastp,1:2,idx_in),.false.,
+     &                 1,opin%ihpvca_occ(1:ngastp,1:2,idx_in+1),.false.)
+          ok = iocc_equal(occ_try,.false.,
+     &                   opout%ihpvca_occ(1:ngastp,1:2,idx_out),.false.)
+        end if
+        deallocate(occ_try)
       else if (njoined_out-njoined_in.eq.1) then
+        ! needed ?
         ! density exception: insert a zero-occupation
         allocate(occ_try(ngastp,2,njoined_out))
         do ijoin = 1, njoined_out
@@ -102,8 +123,9 @@
      &         opin%ihpvca_occ(1:ngastp,1:2,idx_in-1+ijoin:
      &                             idx_in-1+njoined_out-1)
           ok = iocc_equal_n(occ_try,opin%dagger,
-     &                   opout%ihpvca_occ(1,1,idx_out),opout%dagger,
-     &                   njoined_out)
+     &          opout%ihpvca_occ(1:ngastp,1:2,
+     &                           idx_out:idx_out-1+njoined_out),.false.,
+     &          njoined_out)
           if (ok) exit
         end do
         deallocate(occ_try)
@@ -215,12 +237,20 @@ c      end if
           end if
           idxst = idxnd+1
         end do
-        xnorm2 = ddot(len_op,buffer_out,1,buffer_out,1)
+        if (type.eq.1) then
+          xnorm2 = ddot(len_op,buffer_out,1,buffer_out,1)
+        else
+          xnorm2 = buffer_out(1)
+        end if
       else
         call daxpy(len_op,fac,ffin%buffer(ioffin+1),1,
      &                       ffout%buffer(ioffout+1),1)
-        xnorm2 = ddot(len_op,ffout%buffer(ioffout+1),1,
+        if (type.eq.1) then
+          xnorm2 = ddot(len_op,ffout%buffer(ioffout+1),1,
      &                       ffout%buffer(ioffout+1),1)
+        else
+          xnorm2 = ffout%buffer(ioffout+1)
+        end if
       end if
 
       ifree = mem_flushmark()

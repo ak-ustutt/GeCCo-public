@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_r12gem(op,name,dagger,
+      subroutine set_r12gem(op,name,n_ap,
      &     min_rank,max_rank,ansatz,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_genop
@@ -20,10 +20,8 @@
      &     op
       character, intent(in) ::
      &     name*(*)
-      logical, intent(in) ::
-     &     dagger
       integer, intent(in) ::
-     &     min_rank, max_rank, ansatz
+     &     min_rank, max_rank, ansatz, n_ap
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -62,7 +60,7 @@ c dbg
       call set_hpvx_and_restr_for_r()
 
       call set_genop(op,name,optyp_operator,
-     &     dagger,
+     &     .false.,
      &     min_rank,max_rank,ncadiff,hpvx_mnmx,irestr,iformal,
      &     orb_info)
 
@@ -81,27 +79,34 @@ c-----------------------------------------------------------------------
       ! Constraints on the operator are made depending on which ansatz
       ! is being used.
       hpvx_mnmx(1:2,1:ngastp,1:2)=0
-      do ica=1,2
-        do igastp=1,ngastp
-          if(orb_info%nactt_hpv(igastp).gt.0.or.igastp.eq.iextr)then
-            if(ica.eq.2.and.igastp.eq.ihole)then
-              hpvx_mnmx(1,igastp,ica)=min_h_rank
-              hpvx_mnmx(2,igastp,ica)=max_h_rank
-            elseif(ica.eq.1)then
-              if(igastp.eq.ipart)then
-                hpvx_mnmx(1,igastp,ica)=min_p_rank
-                hpvx_mnmx(2,igastp,ica)=max_p_rank
-              elseif(igastp.eq.iextr)then
-                hpvx_mnmx(1,igastp,ica)=min_x_rank
-                hpvx_mnmx(2,igastp,ica)=max_x_rank 
-              endif
-            endif  
-          else
-            hpvx_mnmx(1,igastp,ica)=0
-            hpvx_mnmx(2,igastp,ica)=0
-          endif
-        enddo
-      enddo  
+      
+      hpvx_mnmx(1:2,IPART,1) = (/min_p_rank,max_p_rank/)
+      hpvx_mnmx(1:2,IEXTR,1) = (/min_x_rank,max_x_rank/)
+      
+      hpvx_mnmx(1:2,IHOLE,2) = (/0,2/)
+      hpvx_mnmx(1:2,IPART,2) = (/0,n_ap/)
+
+c      do ica=1,2
+c        do igastp=1,ngastp
+c          if(orb_info%nactt_hpv(igastp).gt.0.or.igastp.eq.iextr)then
+c            if(ica.eq.2.and.igastp.eq.IHOLE)then
+c              hpvx_mnmx(1,igastp,ica)=min_h_rank
+c              hpvx_mnmx(2,igastp,ica)=max_h_rank
+c            elseif(ica.eq.1)then
+c              if(igastp.eq.IPART)then
+c                hpvx_mnmx(1,igastp,ica)=min_p_rank
+c                hpvx_mnmx(2,igastp,ica)=max_p_rank
+c              elseif(igastp.eq.iextr)then
+c                hpvx_mnmx(1,igastp,ica)=min_x_rank
+c                hpvx_mnmx(2,igastp,ica)=max_x_rank 
+c              endif
+c            endif  
+c          else
+c            hpvx_mnmx(1,igastp,ica)=0
+c            hpvx_mnmx(2,igastp,ica)=0
+c          endif
+c        enddo
+c      enddo  
 
       irestr(1:2,1:orb_info%ngas,1:2,1:2)=0
       do ica=1,2

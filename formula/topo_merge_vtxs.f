@@ -135,6 +135,10 @@ c dbg
 c dbg
 c      print *,'may_merge>',ivtx1,ivtx2
 c dbg
+      ! very inital test: no self contraction between the two
+      ! nodes to be merged:
+      may_merge = topo(ivtx1,ivtx2).eq.0.and.topo(ivtx2,ivtx1).eq.0
+      if (.not.may_merge) return
       ! check external lines
       ! preliminarly allow merge only if ...
       ! a) the number of vertices is still larger than the

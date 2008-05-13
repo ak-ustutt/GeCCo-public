@@ -171,6 +171,12 @@ c        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
           ! compare with generated target contractions
           term_loop: do iterm = 1, nterms
             if (assigned(iterm)) cycle
+c dbg
+c            print *,'comparing: iterm = ',iterm
+c            print *,'assigned: ',assigned(1:nterms)
+c            call prt_contr2(6,fl_tgt_pnt%contr,op_info)
+c            call prt_contr2(6,contr_tgt(iterm),op_info)
+c dbg
             if (cmp_contr(fl_tgt_pnt%contr,
      &                    contr_tgt(iterm),.false.)) then
 c dbg

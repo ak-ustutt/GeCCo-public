@@ -9,7 +9,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       
       include 'stdunit.h'
       include 'opdim.h'
@@ -127,7 +127,7 @@
      &           'block not found: '//trim(me_current%op%name))
           end if
 
-          call add_opblk(xnorm2,fac(isum),me_current,me_res,
+          call add_opblk(xnorm2,1,fac(isum),me_current,me_res,
      &         iblk,iblk_sum,orb_info)
 
         end do

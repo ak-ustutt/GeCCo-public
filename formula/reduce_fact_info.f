@@ -17,12 +17,11 @@
      &     nfac, idx, jdx, ivtx1, ivtx2, iarc, jarc
 
       nfac = contr%nfac
-      contr_red%nfac = nfac
-
       call resize_contr(contr_red,contr_red%nvtx,contr_red%narc,
      &                            contr_red%nxarc,contr%nfac)
-      contr_red%inffac = contr%inffac
-      
+      contr_red%nfac = nfac
+      if (nfac.gt.0) contr_red%inffac = contr%inffac
+
       do idx = idxst, nfac
         iarc = contr%inffac(4,idx)
         ! old vertices

@@ -690,7 +690,7 @@ c      end function
      &     larr(*)
       integer ::
      &     ipst, ipnd, len, idx
-      
+
       if (str(1:1).eq.'(') then
         ipst = 2
         len = len_trim(str)

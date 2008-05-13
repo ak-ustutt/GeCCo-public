@@ -239,32 +239,11 @@ c          ffres => op_info%opfil_arr(idxopres)%fhand
 c        case(command_set_target_update)
         case(command_symmetrise)
           
-          call symmetrise(1d0,me_res,me_res,xret_blk,op_info,orb_info)
+          call symmetrise(1d0,me_res,me_res,
+     &         xret_blk,
+     &         op_info,str_info,orb_info)
 
           cycle term_loop
-
-c dbg
-c        case(command_internal)
-c          
-c          idxopres = cur_form%target      ! op index of result
-c          if (idxopres.eq.0)
-c     &         call quit(1,'frm_sched1','idxopres==0 is obsolete!')
-c          idxme_res = op2list(idxopres)  ! list index of result
-c          me_res => op_info%mel_arr(idxme_res)%mel
-c
-c          if(trim(me_res%op%name).eq.op_v0_inter)then
-c            idxinp = idx_oplist2(op_v_inter,op_info)
-c          elseif(trim(me_res%op%name).eq.op_b0_inter)then
-c            idxinp = idx_oplist2(op_b_inter,op_info)
-c          elseif(trim(me_res%op%name).eq.op_x1_inter)then
-c            idxinp = idx_oplist2(op_x_inter,op_info)
-c          endif
-c          idxinp = op2list(idxinp)
-c          meltmp => op_info%mel_arr(idxinp)%mel
-c
-c          call internal_contract(1d0,meltmp,me_res,op_info,orb_info)
-c          cycle term_loop
-c dbg
 
         case(command_add_contribution)
         case default
@@ -320,12 +299,12 @@ c fix:
             iblkop(1) = (iblkop(1)-1)/njoined + 1
 c fix:
             if (tra_op1.xor.tra_op1op2) then
-              call add_opblk_transp(xret_blk(iblkres),fac,
+              call add_opblk_transp(xret_blk(iblkres),type_xret,fac,
      &             mel_arr(idxmel)%mel,me_res,tra_op1,tra_op1op2,
      &             iblkop(1),iblkres,
      &             op_info,str_info,orb_info)
             else
-              call add_opblk(xret_blk(iblkres),fac,
+              call add_opblk(xret_blk(iblkres),type_xret,fac,
      &             mel_arr(idxmel)%mel,me_res,
      &             iblkop(1),iblkres,orb_info)
             end if
@@ -343,7 +322,7 @@ c fix:
      &       irst_op2(2,ngas,2,2,nvtx),
      &       irst_res(2,ngas,2,2,nvtx),
      &       iocc_ex1(ngastp,2,nvtx),
-     &       iocc_ex2(ngastp,2,nvtx), iocc_cnt(ngastp,2,nvtx),
+     &       iocc_ex2(ngastp,2,nvtx), iocc_cnt(ngastp,2,2*nvtx),
      &       iocc_op1op2(ngastp,2,nvtx),
      &       irst_op1op2(2,orb_info%ngas,2,2,nvtx),
      &       iocc_op1op2tmp(ngastp,2,nvtx),
@@ -426,7 +405,9 @@ c          new = .false.!cur_contr%nvtx.ge.4
      &         irst_res,orb_info)
           else
 
-          make_contr_red = cur_contr%nsupvtx.gt.2
+          make_contr_red = cur_contr%nsupvtx.gt.2 .or.
+     &                    (cur_contr%nsupvtx.eq.2 .and.
+     &                     cur_contr%narc.gt.1)
           set_reo = make_contr_red
           if (set_reo) then
             ! reset reo_info
