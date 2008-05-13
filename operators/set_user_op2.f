@@ -147,7 +147,7 @@ c very quick fix (HM, A COPIED ONE, ACTUALLY):
      &       'Number of occupation classes for ',
      &       trim(name),': ',op%n_occ_cls
 
-      if (iprint.ge.20) then
+      if (iprint.ge.10) then
         write(luout,*) 'According to your wishes, I set the following:'
         call print_op_occ(luout,op)
       end if

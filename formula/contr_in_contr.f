@@ -76,13 +76,14 @@ c dbg
      &     contrb,occ_vtx_b)
 
 c dbg
-c      print *,'A'
-c      call iwrtma(vtxinf_a,1,nvtx_a,1,nvtx_a)
-c      call iwrtma(topomap_a,nvtx_a,nvtx_a,nvtx_a,nvtx_a)
-c      print *,'B'
-c      call iwrtma(vtxinf_b,1,nvtx_b,1,nvtx_b)
-c      call iwrtma(topomap_b,nvtx_b,nvtx_b,nvtx_b,nvtx_b)
-c
+      if (ntest.ge.100) then
+        print *,'A'
+        call iwrtma(vtxinf_a,1,nvtx_a,1,nvtx_a)
+        call iwrtma(topomap_a,nvtx_a,nvtx_a,nvtx_a,nvtx_a)
+        print *,'B'
+        call iwrtma(vtxinf_b,1,nvtx_b,1,nvtx_b)
+        call iwrtma(topomap_b,nvtx_b,nvtx_b,nvtx_b,nvtx_b)
+      end if
 c dbg
 
       call identify_vertices(vtxmap,contr_in_contr,

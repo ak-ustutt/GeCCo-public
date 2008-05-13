@@ -1,6 +1,6 @@
       subroutine symmetrise(fac,me_in,me_out,
      &     xnorm2_blk,
-     &     op_info,orb_info)
+     &     op_info,str_info,orb_info)
 *----------------------------------------------------------------------*
 *
 *     Routine to symmetrise an operator matrix:
@@ -12,6 +12,8 @@
 *     It is assumed that the two operators have the same shape.
 *     GWR November 2007
 *
+*     generalised and extended May 2008, andreas
+*     
 *----------------------------------------------------------------------*
 
       implicit none
@@ -19,14 +21,18 @@
       include 'stdunit.h'
       include 'opdim.h'
       include 'def_orbinf.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
       include 'mdef_operator_info.h'
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       type(orbinf), intent(in) ::
      &     orb_info
+      type(strinf), intent(in) ::
+     &     str_info
       type(operator_info), intent(in) ::
      &     op_info
       type(me_list), intent(inout) ::
@@ -40,13 +46,13 @@
      &     bufin, bufout, open_close_in, open_close_out, same
       integer ::
      &     nocc_cls, njoined,
-     &     ifree, nblk, nbuff, iblk, idxmsa, ioff_blk,
-     &     msmax, msa, igama, idx, jdx, ngam, len_gam_ms, ioff
+     &     ifree, nblk, nbuff, nbuff2, iblk, jblk, ioff_blk,
+     &     idx, jdx, ngam, ioff, joff, lenblk
       real(8) ::
      &     fac_off, fac_dia, value
 
       real(8), pointer ::
-     &     buffer_in(:), buffer_out(:)
+     &     buffer_in(:), buffer_out(:), buffer_in2(:), buffer_out2(:)
 
       type(operator), pointer ::
      &     op_in, op_out
@@ -57,6 +63,22 @@
      &     ddot
       logical, external ::
      &     occ_is_diag_blk, iocc_equal_n
+      integer, external ::
+     &     iblk_occ
+
+
+      if (ntest.ge.100) then
+        call write_title(luout,wst_dbg_subr,'symmetrise')
+        write(luout,*) 'IN:  ',trim(me_in%label)
+        write(luout,*) 'OUT: ',trim(me_out%label)
+        write(luout,*) 'elements on input:'
+      end if
+      if (ntest.ge.1000) then
+        call wrt_mel_file(luout,5,
+     &       me_in,
+     &       1,me_in%op%n_occ_cls,
+     &       str_info,orb_info)
+      end if
 
       ffin  => me_in%fhand
       ffout => me_out%fhand
@@ -64,6 +86,9 @@
       ! in and out on same file?
       same = associated(ffin,ffout)
       
+      if (.not.same)
+     &     call quit(1,'symmetrise','needed?')
+
       op_in  => me_in%op
       op_out => me_out%op
 
@@ -71,17 +96,9 @@
       njoined  = op_in%njoined
 
       if (nocc_cls.ne.op_out%n_occ_cls.or.
-     &    njoined.ne.op_out%njoined.or.
-     &    .not.iocc_equal_n(op_in%ihpvca_occ,op_in%dagger,
-     &                      op_out%ihpvca_occ,op_out%dagger,njoined))
+     &    njoined.ne.op_out%njoined)
      &     call quit(1,'symmetrise',
      &     'Input and output list do not have identical operators')
-
-c      ! well, currently for operators with one block only
-c      if (nocc_cls.gt.1)
-c     &     call quit(1,'symmetrise',
-c     &     'currently restricted to one-block operators')
-
  
       open_close_in  = ffin%unit.le.0
       open_close_out = ffout%unit.le.0
@@ -103,26 +120,53 @@ c     &     'currently restricted to one-block operators')
       ! Allocations made to maximum block length
       if(.not.bufin)then
         nbuff = 0
+        nbuff2 = 0
         do iblk = 1, nocc_cls 
+          ioff_blk = (iblk-1)*njoined
           if(op_in%formal_blk(iblk))
      &         cycle
-          nbuff = nbuff + me_in%len_op_occ(iblk)
+          if (occ_is_diag_blk(op_in%ihpvca_occ(1,1,ioff_blk+1),njoined))
+     &         then
+            nbuff = max(nbuff,me_in%len_op_occ(iblk))
+          else
+            ! need two buffers in case of off-diagonal blocks:
+            nbuff = max(nbuff,me_in%len_op_occ(iblk)) 
+            nbuff2 = max(nbuff2,me_in%len_op_occ(iblk)) 
+          end if
         enddo
         ifree = mem_alloc_real(buffer_in,nbuff,'buffer_in')
-        call get_vec(ffin,buffer_in,1,nbuff)
+        if (nbuff2.gt.0)
+     &       ifree = mem_alloc_real(buffer_in2,nbuff,'buffer_in2')
       else
+        call quit(1,'symmetrise','buffered file: not yet')
         buffer_in => ffin%buffer(1:)
       endif
 
       if(.not.bufout.and..not.same)then
-        nbuff=0
+        nbuff = 0
+        nbuff2 = 0
         do iblk = 1, nocc_cls 
-          nbuff = nbuff + me_out%len_op_occ(iblk)
+          ioff_blk = (iblk-1)*njoined
+          if(op_out%formal_blk(iblk))
+     &         cycle
+          if (occ_is_diag_blk(op_out%ihpvca_occ(1,1,ioff_blk+1),
+     &         njoined))
+     &    then
+            nbuff = max(nbuff,me_out%len_op_occ(iblk))
+          else
+            ! need two buffers in case of off-diagonal blocks:
+            nbuff = max(nbuff,me_out%len_op_occ(iblk)) 
+            nbuff2 = max(nbuff2,me_out%len_op_occ(iblk)) 
+          end if
         enddo
-        ifree= mem_alloc_real(buffer_out,nbuff,'buffer_out')
+        ifree = mem_alloc_real(buffer_out,nbuff,'buffer_out')
+        if (nbuff2.gt.0)
+     &       ifree = mem_alloc_real(buffer_out2,nbuff,'buffer_out2')
       else if (same) then
         buffer_out => buffer_in
+        if (nbuff2.gt.0) buffer_out2 => buffer_in2
       else
+        call quit(1,'symmetrise','buffered file: not yet')
         buffer_out => ffout%buffer(1:)
       endif
 
@@ -130,68 +174,104 @@ c     &     'currently restricted to one-block operators')
       fac_off = 0.5d0*fac
       fac_dia = fac
 
+      if (ntest.ge.100) then
+        write(luout,*) 'size of buffer: ',nbuff,nbuff2
+      end if
+
       ! Loop over occupation classes.
       iocc_loop: do iblk = 1, nocc_cls 
 
         ioff_blk = (iblk-1)*njoined
 
-        ! of course, the block must be a "diagonal" block (str(C)==str(A)):
+        if (ntest.ge.100)
+     &       write(luout,*) 'iblk: ',iblk
+
         if (.not.
      &       occ_is_diag_blk(op_in%ihpvca_occ(1,1,ioff_blk+1),njoined))
-     &     call quit(1,'symmetrise',
-     &     'the block cannot be symmetrised (not on diagonal)')
-
-        if (me_out%off_op_gmox(iblk)%maxd.gt.1)
-     &     call quit(1,'symmetrise',
-     &         'more than 1 distribution - I am lost :-(')
-
-
-        ! Loop over Ms of annihilator string.
-        idxmsa = 0
-        msmax = me_out%op%ica_occ(1,iblk)
-        msa_loop : do msa = msmax, -msmax, -2
-
-          idxmsa = idxmsa+1
-      
-          ! Loop over Irrep of annihilator string.
-          igama_loop: do igama =1, ngam
-
-            ! a dirty quick fix to get the string length:
-            len_gam_ms =
-     &         me_out%ld_op_gmox(iblk)%d_gam_ms(1,igama,idxmsa)
-
-            ioff = me_out%off_op_gmo(iblk)%gam_ms(igama,idxmsa)
-
-            idx_loop: do idx = 1,len_gam_ms
-              jdx_loop: do jdx = 1,idx-1
+     &  then
+          jblk = iblk_occ(op_in%ihpvca_occ(1,1,ioff_blk+1),
+     &                     .true.,op_in)
+          if (jblk.le.0) then
+            call wrt_occ_n(luout,op_in%ihpvca_occ(1,1,ioff_blk+1),
+     &           njoined)
+            call quit(1,'symmetrise',
+     &           'no adjoint found for this occupation')
+          end if
             
-                value = 
-     &             fac_off * (buffer_in((idx-1)*len_gam_ms+jdx+ioff) +
-     &                        buffer_in((jdx-1)*len_gam_ms+idx+ioff))
-                buffer_out((idx-1)*len_gam_ms+jdx+ioff) = value
-                buffer_out((jdx-1)*len_gam_ms+idx+ioff) = value
+          if (jblk.lt.iblk) cycle
 
-              enddo jdx_loop
-              buffer_out(idx*len_gam_ms+ioff) =
-     &             fac_dia * buffer_in(idx*len_gam_ms+ioff)
-            enddo idx_loop
-          
-          enddo igama_loop
-          
-        enddo msa_loop
+          ioff = me_in%off_op_occ(iblk)
+          joff = me_in%off_op_occ(jblk)
+          lenblk = me_in%len_op_occ(iblk)
 
-        ! update norm^2
-        xnorm2_blk(iblk) = ddot(me_out%len_op_occ(iblk),
-     &       buffer_out(me_out%off_op_occ(iblk)+1),1,
-     &       buffer_out(me_out%off_op_occ(iblk)+1),1)
-      enddo iocc_loop
+          if (ntest.ge.100) then
+            write(luout,*) 'ioff, joff, lenblk: ',ioff, joff, lenblk
+            write(luout,*) 'off-diagonal case'
+          end if
 
-      if(.not.bufout)then
-        call put_vec(ffout,buffer_out,1,nbuff)
-      endif  
+          call get_vec(ffin,buffer_in,ioff+1,ioff+lenblk)
+          call get_vec(ffin,buffer_in2,joff+1,joff+lenblk)
+c dbg
+          print *,'buf1: ',buffer_in(1:lenblk)
+          print *,'buf2: ',buffer_in2(1:lenblk)
+c dbg
+          call symmetrise_blk1blk2(buffer_out,buffer_out2,
+     &                        buffer_in, buffer_in2,
+     &                         fac_off,fac_dia,
+     &                        me_in,iblk,jblk,
+     &                        str_info,orb_info)
+
+          call put_vec(ffout,buffer_out,ioff+1,ioff+lenblk)
+          call put_vec(ffout,buffer_out2,joff+1,joff+lenblk)
+
+          ! update norm^2
+          xnorm2_blk(iblk) = ddot(me_out%len_op_occ(iblk),
+     &         buffer_out(me_out%off_op_occ(iblk)+1),1,
+     &         buffer_out(me_out%off_op_occ(iblk)+1),1)
+          xnorm2_blk(jblk) = xnorm2_blk(iblk)
+
+        else
+
+          ioff = me_in%off_op_occ(iblk)
+          lenblk = me_in%len_op_occ(iblk)
+
+          if (ntest.ge.100) then
+            write(luout,*) 'ioff, lenblk: ',ioff, lenblk
+            write(luout,*) 'diagonal case'
+          end if
+
+          call get_vec(ffin,buffer_in,ioff+1,ioff+lenblk)
+
+c dbg
+          print *,'buf1: ',buffer_in(1:lenblk)
+c dbg
+          call symmetrise_blk1blk2(buffer_out,buffer_out,
+     &                        buffer_in, buffer_in,fac_off,fac_dia,
+     &                        me_in,iblk,iblk,
+     &                        str_info,orb_info)
+
+          call put_vec(ffout,buffer_out,ioff+1,ioff+lenblk)
+
+          ! update norm^2
+          xnorm2_blk(iblk) = ddot(me_out%len_op_occ(iblk),
+     &         buffer_out(me_out%off_op_occ(iblk)+1),1,
+     &         buffer_out(me_out%off_op_occ(iblk)+1),1)
+
+        end if
+
+      end do iocc_loop
 
       if (open_close_in ) call file_close_keep(ffin)
       if (open_close_out.and..not.same) call file_close_keep(ffout)
+
+      if (ntest.ge.1000) then
+        write(luout,*) 'elements on output:'
+        call wrt_mel_file(luout,5,
+     &       me_in,
+     &       1,me_in%op%n_occ_cls,
+     &       str_info,orb_info)
+      end if
+
 
       ifree = mem_flushmark('symmetrise')
 

@@ -1,5 +1,6 @@
-      subroutine add_opblk_transp(xnorm2,fac,
-     &     me_in,me_out,tra_in,tra_out,iblk_in,iblk_out,
+      subroutine add_opblk_transp(xnorm2,type,fac,
+     &     me_in,me_out,tra_in,tra_out,
+     &     iblk_in,iblk_out,
      &     op_info,str_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -37,7 +38,7 @@
       type(me_list), intent(inout) ::
      &     me_in, me_out
       integer, intent(in) ::
-     &     iblk_in, iblk_out
+     &     iblk_in, iblk_out, type
       real(8), intent(in) ::
      &     fac
       real(8), intent(out) ::
@@ -238,7 +239,7 @@
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
      &                .true.,me_in,ngam)
 
-            ioff_in = me_out%off_op_gmox(iblk_in)%
+            ioff_in = me_in%off_op_gmox(iblk_in)%
      &             d_gam_ms(idxdis_in,igamc,idxmsc) - ioff0_in
 
             call set_len_str(len_str,ncblk,nablk,
@@ -267,8 +268,12 @@
       end do msa_loop
 
       ! update norm^2
-      xnorm2 = ddot(me_out%len_op_occ(iblk_out),
+      if (type.eq.1) then
+        xnorm2 = ddot(me_out%len_op_occ(iblk_out),
      &       buffer_out,1,buffer_out,1)
+      else
+        xnorm2 = buffer_out(1)
+      end if
 
       if(.not.bufout)then
         call put_vec(ffout,buffer_out,ioff0_out+1,ioff0_out+nbuff)

@@ -56,7 +56,6 @@
       approx(1:12) = ' '
       F_appr(1:12) = ' '
       K_appr(1:12) = ' '
-      n_pp = 0  ! number of particle-particle interaction in R12
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','F_appr',str=F_appr)
@@ -65,6 +64,16 @@
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','extend',ival=mode)
+
+      n_pp = 0  ! number of particle-particle interaction in R12
+      select case(mode)
+      case(1) 
+        n_pp=1
+      case(2) 
+        n_pp=2
+      case default 
+        n_pp=0
+      end select
 
       ! assemble approx string
       select case(trim(F_appr))
@@ -188,16 +197,24 @@ c     &     .false.,min_rank,2,0,2)
         occ_def(IHOLE,2,2) = 2
       end if
       if (n_pp.ge.1) then
-        ndef = 2
-        occ_def(IHOLE,1,3) = 1
-        occ_def(IPART,1,3) = 1
+        ndef = 4
+        occ_def(IHOLE,1,3) = 2
         occ_def(IHOLE,2,4) = 1
         occ_def(IPART,2,4) = 1
+
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IPART,1,5) = 1
+        occ_def(IHOLE,2,6) = 2
+
+        occ_def(IHOLE,1,7) = 1
+        occ_def(IPART,1,7) = 1
+        occ_def(IHOLE,2,8) = 1
+        occ_def(IPART,2,8) = 1
       end if      
       if (n_pp.ge.2) then
-        ndef = 3
-        occ_def(IPART,1,5) = 2
-        occ_def(IPART,2,6) = 2
+        ndef = 5
+        occ_def(IPART,1,9) = 2
+        occ_def(IPART,2,10) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,2,ndef)
@@ -281,12 +298,17 @@ c     &     .false.,min_rank,2,0,2)
       end if
       ! for n_pp >= 1
       if (n_pp.eq.1) then
-        ndef = 5
-        occ_def(IPART,1,4) = 1
+        ndef = 6
+        occ_def(IHOLE,1,4) = 1
         occ_def(IPART,2,4) = 1
-        occ_def(IPART,1,5) = 2
-        occ_def(IHOLE,2,5) = 1
+
+        occ_def(IPART,1,5) = 1
         occ_def(IPART,2,5) = 1
+
+        occ_def(IHOLE,1,6) = 1
+        occ_def(IPART,1,6) = 1
+        occ_def(IHOLE,2,6) = 1
+        occ_def(IPART,2,6) = 1
       end if
       ! for n_pp >= 2
       if (n_pp.eq.2) then
@@ -306,9 +328,17 @@ c     &     .false.,min_rank,2,0,2)
         ndef = 1
       end if
       if (n_pp.ge.1) then
-        ndef = 2
-        occ_def(IPART,1,2) = 1
+        ndef = 5
+        occ_def(IHOLE,1,2) = 1
         occ_def(IPART,2,2) = 1
+        occ_def(IPART,1,3) = 1
+        occ_def(IHOLE,2,3) = 1
+        occ_def(IPART,1,4) = 1
+        occ_def(IPART,2,4) = 1
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IPART,2,5) = 1
+        occ_def(IPART,1,5) = 1
+        occ_def(IHOLE,2,5) = 1
       end if
       if (n_pp.ge.2) then
         ndef = 3
@@ -367,14 +397,14 @@ c     &     .false.,min_rank,2,0,2)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_vint
       labels(2) = op_v_inter
-      labels(3) = op_ham
-      labels(4) = op_r12
+      labels(3) = op_r12
+      labels(4) = op_ham
       call add_target(form_r12_vint,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_vint,op_v_inter,tgt_info)
       call set_dependency(form_r12_vint,op_ham,tgt_info)
       call set_dependency(form_r12_vint,op_r12,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_vint,0,'gr')
+     &     parameters,2,title_r12_vint,0,'V')
       call set_rule(form_r12_vint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
      &              parameters,2,tgt_info)
@@ -408,7 +438,7 @@ c     &     .false.,min_rank,2,0,2)
       call set_dependency(form_r12_xint,op_x_inter,tgt_info)
       call set_dependency(form_r12_xint,op_r12,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_xint,0,'rr')
+     &     parameters,2,title_r12_xint,0,'X')
       call set_rule(form_r12_xint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
      &              parameters,2,tgt_info)
@@ -436,15 +466,14 @@ c     &     .false.,min_rank,2,0,2)
       labels(2) = op_b_inter
       labels(3) = op_r12
       labels(4) = op_ham
-      labels(5) = op_r12
       call add_target(form_r12_bint,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_bint,op_b_inter,tgt_info)
       call set_dependency(form_r12_bint,op_ham,tgt_info)
       call set_dependency(form_r12_bint,op_r12,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_bint,0,'rfr')
+     &     parameters,2,title_r12_bint,0,'Bp')
       call set_rule(form_r12_bint,ttype_frm,DEF_R12INTM_FORMAL,
-     &              labels,5,1,
+     &              labels,4,1,
      &              parameters,2,tgt_info)
 
 
@@ -515,13 +544,12 @@ c     &     .false.,min_rank,2,0,2)
       labels(2) = op_bh_inter
       labels(3) = op_r12
       labels(4) = op_ham
-      labels(5) = op_r12
       call add_target(form_r12_bhint,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_bhint,op_bh_inter,tgt_info)
       call set_dependency(form_r12_bhint,op_r12,tgt_info)
       call set_dependency(form_r12_bhint,op_ham,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,'title missing',0,'rfr')
+     &     parameters,2,'title missing',0,'Bh')
       call set_rule(form_r12_bhint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
      &              parameters,2,tgt_info)
@@ -549,14 +577,14 @@ c     &     .false.,min_rank,2,0,2)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_cint
       labels(2) = op_c_inter
-      labels(3) = op_ham
-      labels(4) = op_r12
+      labels(3) = op_r12
+      labels(4) = op_ham
       call add_target(form_r12_cint,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_cint,op_c_inter,tgt_info)
       call set_dependency(form_r12_cint,op_r12,tgt_info)
       call set_dependency(form_r12_cint,op_ham,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_cint,0,'fr')
+     &     parameters,2,title_r12_cint,0,'C')
       call set_rule(form_r12_cint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
      &              parameters,2,tgt_info)
@@ -985,7 +1013,7 @@ c     &     .false.,min_rank,2,0,2)
 *     "phony" targets
 *----------------------------------------------------------------------*
       ! test
-      call add_target(eval_r12_inter,ttype_gen,.true.,tgt_info)
+      call add_target(eval_r12_inter,ttype_gen,.false.,tgt_info)
       call set_dependency(eval_r12_inter,mel_ham,tgt_info)
       call set_dependency(eval_r12_inter,mel_rint,tgt_info)
       call set_dependency(eval_r12_inter,mel_gintx,tgt_info)

@@ -108,7 +108,7 @@
       if (ntest.gt.0) then
         call write_title(luout,wst_dbg_subr,'this is fact_cost')
 c dbg
-c        call prt_contr2(luout,contr,op_info)
+c        call prt_contr3(luout,contr,-1)
 c dbg
       end if
 
@@ -224,7 +224,7 @@ c      possible = .true.
       possible = possible.and.
      &     check_grph4occ(iocc_op1,irst_op1,njoined_op(1),
      &     str_info,orb_info)
-      possible = possible.and.
+      if (njoined_op(2).gt.0) possible = possible.and.
      &     check_grph4occ(iocc_op2,irst_op2,njoined_op(2),
      &     str_info,orb_info)
 

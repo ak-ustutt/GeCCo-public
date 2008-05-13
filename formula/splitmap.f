@@ -46,7 +46,7 @@ c      print *,'in splitmap'
 c      print *,'vtxmap: ',vtxmap(1:nvtx)
 c dbg
 
-      ! we start by setting up splmap for the given ordering
+c      ! we start by setting up splmap for the given ordering
       ivtx_rem = 0
       ivtx_spl_last = -1
       isupervtx_spl_last = -1
@@ -65,6 +65,9 @@ c dbg
           splmap_raw(ivtx) = ivtx_rem
         end if        
       end do
+c dbg
+c      print *,'splmap_raw: ',splmap_raw
+c dbg
 
       nvtx_rem = ivtx_rem
 
@@ -141,16 +144,40 @@ c dbg
 
       end do
 
-c      print *,'suggested reordering'
-c      call iwrtma(ireo,nvtx,1,nvtx,1)
+      print *,'suggested reordering'
+      call iwrtma(ireo,nvtx,1,nvtx,1)
 
+      ! we finish by setting up splmap for the given ordering
+      ivtx_rem = 0
+      ivtx_spl_last = -1
+      isupervtx_spl_last = -1
       do ivtx = 1, nvtx
-        if (splmap_raw(ivtx).gt.0) then
-          splmap(ivtx) = ireo(splmap_raw(ivtx))
+        jvtx = ireo(ivtx)
+        if (vtxmap(jvtx).ge.0) then
+          if (vtxmap(jvtx).gt.isupervtx_spl_last) then
+            ivtx_rem = ivtx_rem + 1
+            splmap(jvtx) = -ivtx_rem
+            isupervtx_spl_last = vtxmap(jvtx)
+          else
+            splmap(jvtx) = -ivtx_spl_last
+          end if
+          ivtx_spl_last = ivtx_rem
         else
-          splmap(ivtx) = -ireo(-splmap_raw(ivtx))
-        end if
+          ivtx_rem = ivtx_rem + 1
+          splmap(jvtx) = ivtx_rem
+        end if        
       end do
+c dbg
+c      print *,'splmap: ',splmap
+c dbg
+
+c      do ivtx = 1, nvtx
+c        if (splmap_raw(ivtx).gt.0) then
+c          splmap(ivtx) = ireo(splmap_raw(ivtx))
+c        else
+c          splmap(ivtx) = -ireo(-splmap_raw(ivtx))
+c        end if
+c      end do
 
       return
 

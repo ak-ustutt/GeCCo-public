@@ -31,7 +31,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -54,11 +54,11 @@
 
       integer ::
      &     iop, idx, nfact, n_x, n_f, n_g, n_r,
-     &     idx_intm, idx_f, idx_g, nvtx, len, ivtx
+     &     idx_intm, idx_f, idx_g, nvtx, len, ivtx, ndef
       integer ::
      &     avoid(10), connect(10), navoid, nconnect
       integer, pointer ::
-     &     idx_prod(:), idx_supv(:), idx_op(:)
+     &     idx_prod(:), idx_supv(:), idx_op(:), occ_def(:,:,:)
       logical ::
      &     r12fix
       character ::
@@ -74,12 +74,8 @@
      &     idx_oplist2, idxlist
 
       ! Check to see whether we want to fix the R12-amplitudes.
-      call get_argument_value('method.R12','fixed',lval=r12fix)
-
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'set_r12_intm_formal 3')
-        if(r12fix) write(luout,*)'Amplitudeless formal intermediates '//
-     &       'formed.'
         write(luout,*) 'setting: ',trim(label_int)
         write(luout,*) 'type : ',trim(typ_str)
         write(luout,*) 'input ops: '
@@ -106,7 +102,6 @@
       nvtx = 2  ! external lines at borders
       do idx = 1, len
         if (typ_str(idx:idx).eq.'x') then
-c          if(.not.r12fix.or.typ_str(1:len).eq.'rxr') nvtx = nvtx+2
           nvtx = nvtx + 2
           cycle
         end if
@@ -126,11 +121,9 @@ c          if(.not.r12fix.or.typ_str(1:len).eq.'rxr') nvtx = nvtx+2
       n_g = 0
       n_r = 0
       do idx = 1, nvtx
-c        if (typ_str(idx:idx).eq.'x')then
-c          if(.not.r12fix.or.typ_str(1:len).eq.'rxr') n_x = n_x+1
-c        endif
         if (typ_str(idx:idx).eq.'x') n_x = n_x+1
-        if (typ_str(idx:idx).eq.'f') n_f = n_f+1
+        if (typ_str(idx:idx).eq.'f' .or.
+     &      typ_str(idx:idx).eq.'F') n_f = n_f+1
         if (typ_str(idx:idx).eq.'g') n_g = n_g+1
         if (typ_str(idx:idx).eq.'r') n_r = n_r+1
       end do
@@ -163,18 +156,36 @@ c dbg
         call print_op_occ(luout,op_int)
       end if
 
-      ! dummy operator: 1 particle part of H (P/X-space only)
+      ! dummy operator: 1 particle part of H 
       if (n_f.gt.0) then
+        idx = index(typ_str,'f')
+        if (idx.le.0) idx = index(typ_str,'F')
         call add_operator(opdum_f,op_info)
         idx_f = idx_oplist2(opdum_f,op_info)
         op_f => op_info%op_arr(idx_f)%op
-        if (typ_str(1:1).ne.'f') then
-          call set_hop_p(op_f,opdum_f,.false.,
-     &         1,1,0,.true.,orb_info)
+        allocate(occ_def(ngastp,2,4))
+        if (typ_str(idx:idx).eq.'f') then ! (P/X-space only)
+          ndef = 4
+          occ_def = 0
+          occ_def(IPART,1,1) = 1
+          occ_def(IPART,2,1) = 1
+          occ_def(IPART,1,2) = 1
+          occ_def(IEXTR,2,2) = 1
+          occ_def(IEXTR,1,3) = 1
+          occ_def(IPART,2,3) = 1
+          occ_def(IEXTR,1,4) = 1
+          occ_def(IEXTR,2,4) = 1
+        else if (typ_str(idx:idx).eq.'F') then ! (H-space only)
+          ndef = 1
+          occ_def = 0
+          occ_def(IHOLE,1,1) = 1
+          occ_def(IHOLE,2,1) = 1
         else
-          call set_hop(op_f,opdum_f,.false.,
-     &         1,1,0,.true.,orb_info)
+          call quit(1,'set_r12intm_formal','???')
         end if
+        call set_uop2(op_f,opdum_f,
+     &       occ_def,ndef,1,orb_info)
+        deallocate(occ_def)
       end if
 
       ! dummy operator: 2 particle part of H
@@ -194,12 +205,12 @@ c dbg
       ivtx = 2
       do idx = 1, len
         if (typ_str(idx:idx).eq.'x') then
-c          if(.not.r12fix.or.typ_str(1:len).eq.'rxr')then
           idx_prod(ivtx:ivtx+1) = idx_intm
           idx_supv(ivtx:ivtx+1) = 1
           ivtx = ivtx+2
 c          endif
-        else if (typ_str(idx:idx).eq.'f') then
+        else if (typ_str(idx:idx).eq.'f'.or.
+     &           typ_str(idx:idx).eq.'F') then
           idx_prod(ivtx) = idx_f
           idx_supv(ivtx) = 2
           ivtx = ivtx+1
@@ -227,18 +238,39 @@ c          endif
       navoid = 0
       nconnect = 0
       if (trim(typ_str).eq.'rgxr') then ! xrgxxrx
-        if(r12fix) call quit(1,'set_r12intm_formal3',
-     &       'Not ready for fixed amplitude P-intermediate')
         avoid(1:2) = (/2,6/)
         navoid = 1
       else if (trim(typ_str).eq.'rxgxr') then ! xrxxgxxrx
-        if(r12fix) call quit(1,'set_r12intm_formal3',
-     &       'Not ready for fixed amplitude Z-intermediate')
         avoid(1:4) = (/2,7, 3,8/)
         navoid = 2
         connect(1:2) = (/2,8/)
         nconnect = 1
       end if
+
+c test
+      if (n_f+n_g.gt.0) then
+        nconnect = 0
+        do ivtx = 1, nvtx
+          if (idx_supv(ivtx).eq.2.or.idx_supv(ivtx).eq.3) then
+            idx = ivtx
+            exit
+          end if
+        end do
+        do ivtx = 1, nvtx
+          if (idx_supv(ivtx).gt.4) then
+            if (ivtx.lt.idx) then
+              connect(nconnect*2+1:nconnect*2+2) = (/ivtx,idx/)
+            else
+              connect(nconnect*2+1:nconnect*2+2) = (/idx,ivtx/)
+            end if
+            nconnect = nconnect + 1
+          end if
+        end do
+      end if
+c dbg
+      print *,'connect: ',connect(1:nconnect*2)
+c dbg
+c test
 
       ! expand operator product, giving the intermediate as result
       call expand_op_product2(flist_pnt,idx_intm,
@@ -258,23 +290,14 @@ c          endif
       ! replace f and g by their actual operator
       if (n_f.gt.0) then
         idx = index(typ_str,'f')
+        if (idx.le.0) idx = index(typ_str,'F')
         op   => op_info%op_arr(idx_op(idx))%op
         call form_op_replace(opdum_f,op%name,flist_scr,op_info)
-c        call init_formula(flist)
-c        call set_primitive_formula(flist,idx_op(idx),
-c     &       1d0,idx_f,.true.,op_info)
-c        call expand_subexpr2(flist_scr,flist,.false.,op_info)
-c        call dealloc_formula_list(flist)
       end if
       if (n_g.gt.0) then
         idx = index(typ_str,'g')
         op   => op_info%op_arr(idx_op(idx))%op
         call form_op_replace(opdum_g,op%name,flist_scr,op_info)
-c        call init_formula(flist)
-c        call set_primitive_formula(flist,idx_op(idx),
-c     &       1d0,idx_g,.true.,op_info)
-c        call expand_subexpr2(flist_scr,flist,.false.,op_info)
-c        call dealloc_formula_list(flist)
       end if
       
       ! prepare file:

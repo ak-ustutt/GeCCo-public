@@ -7,7 +7,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 10000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -57,6 +57,8 @@
       integer, allocatable ::
      &     occ_def(:,:,:)
 
+      logical ::
+     &     r12fix
       integer ::
      &     extend
 
@@ -79,25 +81,17 @@
       call atim_csw(cpu0,sys0,wall0)
 
 c      ! Are we fixing the F12 amplitudes?
-c      call get_argument_value('method.R12','fixed',lval=r12fix)
+      call get_argument_value('method.R12','fixed',lval=r12fix)
       ! Are we using an extended Lagrangian?
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','ansatz',ival=ansatz)
 
       ! get indices
 c      if (nlabels.ne.8.and..not.r12fix) then
-      if(nlabels.ne.8)then
-        if(extend.eq.0)then
-          write(luout,*) 'nlabels = ',nlabels
-          call quit(1,'set_mp2_r12_lagrangian',
+      if(nlabels.ne.8.and..not.r12fix)then
+        write(luout,*) 'nlabels = ',nlabels
+        call quit(1,'set_mp2_r12_lagrangian',
      &         'I expect exactly 8 labels')
-        else
-          if(nlabels.ne.10)then
-            write(luout,*) 'nlabels = ',nlabels
-            call quit(1,'set_mp2_r12_lagrangian',
-     &           'Extended MP2-F12: I expect exactly 10 labels')
-          endif
-        endif
       end if
 c      if (nlabels.ne.6.and.r12fix) then
 c        write(luout,*) 'nlabels = ',nlabels
@@ -116,10 +110,10 @@ c      end if
         if (ilabel.eq.4)  idxrba    = idx
         if (ilabel.eq.5)  idxtbar   = idx
         if (ilabel.eq.6)  idxtop    = idx
-        if (ilabel.eq.7)  idxcba    = idx
-        if (ilabel.eq.8)  idxc12    = idx
-        if (ilabel.eq.9)  idxcexbar = idx
-        if (ilabel.eq.10) idxcex    = idx
+        if (ilabel.eq.7.and.extend.eq.0)  idxcba    = idx
+        if (ilabel.eq.7.and.extend.ne.0)  idxcexbar    = idx
+        if (ilabel.eq.8.and.extend.eq.0)  idxc12    = idx
+        if (ilabel.eq.8.and.extend.ne.0)  idxcex    = idx
       end do
 
       ! Add the parts of the Hamiltonian that are required.
@@ -216,15 +210,15 @@ c      end if
       enddo
 
       ! Form of the R12 part depends on whether the amplitudes are fixed.
-c      if(.not.r12fix)then
+      if(.not.r12fix.and.extend.eq.0)then
       call expand_op_product(fl_t_cr_pnt,idx_sop,
      &     1d0,2,(/idxc12,idxr12/),-1,-1,
      &     (/1,2/),1,.false.,op_info)
-c      else
-c        call expand_op_product(fl_t_cr_pnt,idx_sop,
-c     &       1d0,1,idxr12,-1,-1,
-c     &       0,0,.false.,op_info)
-c      endif
+      else
+        call expand_op_product(fl_t_cr_pnt,idx_sop,
+     &       1d0,1,idxr12,-1,-1,
+     &       0,0,.false.,op_info)
+      endif
 
       if(extend.gt.0)then
         do while(associated(fl_t_cr_pnt%next))
@@ -261,8 +255,8 @@ c      sbar_pnt%dagger = .true.
         fl_t_cr_pnt => fl_t_cr_pnt%next
       enddo
 
-c      if(.not.r12fix)then
-      call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+      if(.not.r12fix.and.extend.eq.0)then
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
      &     1d0,4,3,
      &     (/idx_sbar,-idxr12,idxcba,idx_sbar/),(/1,2,3,1/),
      &     -1,-1,
@@ -270,16 +264,16 @@ c      if(.not.r12fix)then
      &     0,0,
      &     0,0,
      &     op_info)
-c      else
-c        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-c     &       1d0,3,2,
-c     &       (/idx_sbar,-idxr12,idx_sbar/),(/1,2,1/),
-c     &       -1,-1,
-c     &       0,0,
-c     &       0,0,
-c     &       0,0,
-c     &       op_info)
-c      endif
+      else
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &       1d0,3,2,
+     &       (/idx_sbar,-idxr12,idx_sbar/),(/1,2,1/),
+     &       -1,-1,
+     &       0,0,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+      endif
 
       if(extend.gt.0)then
         do while(associated(fl_t_cr_pnt%next))

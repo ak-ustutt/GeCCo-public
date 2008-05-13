@@ -160,19 +160,19 @@
         idx_prj = 2
         if (ansatz.gt.1) idx_prj = 4
         if (njoined_intm.eq.1) then
-          call expand_op_product2(flist_pnt,idx_intm,
-     &       -1d0,4,3,
-     &       (/idx_intm,-idx_1,idx_2,idx_intm/),
-     &       (/1       ,2     ,3    ,1       /),       
-     &       -1, -1,
-     &       (/2,3/),1, ! force additional contraction
-     &       0,0,
-     &       (/2,3,2,idx_prj/),1, ! def. of projector
-     &       op_info)
-          ! this gives the terms with ONLY the projector as contraction
-          do while(associated(flist_pnt%next))
-            flist_pnt => flist_pnt%next
-          end do
+c          call expand_op_product2(flist_pnt,idx_intm,
+c     &       -1d0,4,3,
+c     &       (/idx_intm,-idx_1,idx_2,idx_intm/),
+c     &       (/1       ,2     ,3    ,1       /),       
+c     &       -1, -1,
+c     &       (/2,3/),1, ! force additional contraction
+c     &       0,0,
+c     &       (/2,3,2,idx_prj/),1, ! def. of projector
+c     &       op_info)
+c          ! this gives the terms with ONLY the projector as contraction
+c          do while(associated(flist_pnt%next))
+c            flist_pnt => flist_pnt%next
+c          end do
           call expand_op_product2(flist_pnt,idx_intm,
      &       -1d0,4,3,
      &       (/idx_intm,-idx_1,idx_2,idx_intm/),

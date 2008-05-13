@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine add_opblk(xnorm2,fac,mel_in,mel_out,
+      subroutine add_opblk(xnorm2,type,fac,mel_in,mel_out,
      &     iblkin,iblkout,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -33,7 +33,7 @@
       type(orbinf), intent(in) ::
      &     orb_info
       integer, intent(in) ::
-     &     iblkin, iblkout
+     &     iblkin, iblkout, type
 
       logical ::
      &     ok, bufin, bufout
@@ -237,12 +237,20 @@ c      end if
           end if
           idxst = idxnd+1
         end do
-        xnorm2 = ddot(len_op,buffer_out,1,buffer_out,1)
+        if (type.eq.1) then
+          xnorm2 = ddot(len_op,buffer_out,1,buffer_out,1)
+        else
+          xnorm2 = buffer_out(1)
+        end if
       else
         call daxpy(len_op,fac,ffin%buffer(ioffin+1),1,
      &                       ffout%buffer(ioffout+1),1)
-        xnorm2 = ddot(len_op,ffout%buffer(ioffout+1),1,
+        if (type.eq.1) then
+          xnorm2 = ddot(len_op,ffout%buffer(ioffout+1),1,
      &                       ffout%buffer(ioffout+1),1)
+        else
+          xnorm2 = ffout%buffer(ioffout+1)
+        end if
       end if
 
       ifree = mem_flushmark()

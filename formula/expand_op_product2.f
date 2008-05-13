@@ -448,7 +448,7 @@ C??                proto%vertex(joined(ivtx,iop))%iblk_op = iblk_op(iop)
             end do
 
             ! generate contractions
-            call gen_contr4(form_pnt,proto,
+            call gen_contr4(.false.,form_pnt,proto,
      &           occ_vtx(1,1,1),ol_map,op_info)
 
             ! advance pointer

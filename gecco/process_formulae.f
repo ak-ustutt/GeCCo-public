@@ -93,7 +93,7 @@
      &       rule%parameters,rule%n_parameter_strings,
      &       title,idum,typ_str)
         ioff = rule%n_update
-        call set_r12intm_formal3(form_pnt,
+        call set_r12intm_formal4(form_pnt,
      &         title,rule%labels(ioff+1),rule%labels(ioff+2),
      &         rule%n_labels-ioff-1,typ_str,
      &         op_info,orb_info)

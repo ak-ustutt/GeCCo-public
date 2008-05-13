@@ -218,6 +218,9 @@
 
       ! find out, which entries of xret are the ones that we need
       idx_en_xret = idx_xret(label_en,op_info,depend)
+c dbg
+      print *,'idx_en_xret: ',idx_en_xret
+c dbg
       if (idx_en_xret.le.0)
      &     call quit(1,'solve_nleq',
      &     'formula does not provide an update for the energy')
@@ -271,6 +274,9 @@ c     &       ff_trv,ff_h_trv,
           ! intermediates should be generated first, energy
           ! is expected to be the last "intermediate"
           energy =  xret(idx_en_xret)
+c dbg
+          print *,'xret : ',xret
+c dbg
 
           if (ntest.ge.1000) then
             do iopt = 1, nopt

@@ -53,7 +53,7 @@
       real(8) ::
      &     fac, cpu, sys, wall, cpu0, sys0, wall0
       real(8), pointer ::
-     &     buffer_in(:), buffer_out(:)
+     &     xnrm(:)
 
       integer, external ::
      &     idx_mel_list
@@ -140,9 +140,11 @@
         enddo
       enddo
 
+      allocate(xnrm(op_out%n_occ_cls))
       ! Call the routine which actually does the symmetrisation.
-      call symmetrise(fac,me_in,me_out,nocc_cls,
-     &     op_info,orb_info)
+      call symmetrise(fac,me_in,me_out,xnrm,
+     &     op_info,str_info,orb_info)
+      deallocate(xnrm)
 
 
       if(ntest.ge.1000)then

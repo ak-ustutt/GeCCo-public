@@ -239,7 +239,9 @@ c          ffres => op_info%opfil_arr(idxopres)%fhand
 c        case(command_set_target_update)
         case(command_symmetrise)
           
-          call symmetrise(1d0,me_res,me_res,xret_blk,op_info,orb_info)
+          call symmetrise(1d0,me_res,me_res,
+     &         xret_blk,
+     &         op_info,str_info,orb_info)
 
           cycle term_loop
 
@@ -297,12 +299,12 @@ c fix:
             iblkop(1) = (iblkop(1)-1)/njoined + 1
 c fix:
             if (tra_op1.xor.tra_op1op2) then
-              call add_opblk_transp(xret_blk(iblkres),fac,
+              call add_opblk_transp(xret_blk(iblkres),type_xret,fac,
      &             mel_arr(idxmel)%mel,me_res,tra_op1,tra_op1op2,
      &             iblkop(1),iblkres,
      &             op_info,str_info,orb_info)
             else
-              call add_opblk(xret_blk(iblkres),fac,
+              call add_opblk(xret_blk(iblkres),type_xret,fac,
      &             mel_arr(idxmel)%mel,me_res,
      &             iblkop(1),iblkres,orb_info)
             end if
