@@ -126,6 +126,7 @@
      &         mel%idx_graph(1:ngastp,1:2,idx_occ:idx_occ+njoined-1)
         naux = sum(occ(IEXTR,1:2,1:njoined))
 c dbg
+c        print *,'present block of ',trim(op%name)
 c        call wrt_occ_n(6,occ,njoined)
 c        print *,'naux, (min, max): ',naux,'(',nauxmin,nauxmax,')'
 c dbg
@@ -325,7 +326,7 @@ c     &       idxstr,': (',idx_ord(1:4),') <- ',
 c     &       idx_int,idx_typ, fac,
 c     &       buffer_in((idx_int-1)*ntypes+idx_typ)
 c          print *,'adr = ',(idx_int-1)*ntypes+idx_typ
-c          if (idxstr.eq.10) print *,' ----------------- etc ---------'
+cc          if (idxstr.eq.10) print *,' ----------------- etc ---------'
 c        end if
 c dbg
         curdisblk(idxstr) = fac*buffer_in((idx_int-1)*ntypes+idx_typ)
@@ -382,7 +383,7 @@ c dbg
 
 c dbg
 c        if (idxstr.le.10) then
-c          if (idxstr.eq.1) print *,' -------e.g. -------------------'
+cc          if (idxstr.eq.1) print *,' -------e.g. -------------------'
 c          print '("X",i4,a,4i4,a,2i4,2f16.10)',
 c     &       idxstr,': (',idx_ord(1:4),') <- ',
 c     &       idx_int,idx_typ, -fac,

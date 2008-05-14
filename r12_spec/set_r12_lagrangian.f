@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 1000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -59,6 +59,8 @@
      &     min_rank, max_rank, iprint
       logical ::
      &     r12fix
+      integer ::
+     &     extend
 
       type(operator), pointer::
      &     sop_pnt, sbar_pnt
@@ -81,7 +83,10 @@
 
       ! Are we fixing the F12 amplitudes?
       call get_argument_value('method.R12','fixed',lval=r12fix)
+      call get_argument_value('method.R12','extend',ival=extend)
       
+      r12fix = r12fix .or. extend.gt.0
+
       ! get indices
       if (nlabels.ne.8.and..not.r12fix) then
         write(luout,*) 'nlabels = ',nlabels
@@ -158,6 +163,16 @@ c      sbar_pnt%dagger = .true.
      &       0,0,.false.,op_info)
       endif
 
+      if(extend.gt.0)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+
+        call expand_op_product(fl_t_cr_pnt,idx_sop,
+     &       1d0,2,(/idxr12,idxtop/),-1,(/-1,1/),
+     &       (/1,2/),1,.false.,op_info)
+      endif
+
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T + CR')
         call print_form_list(luout,flist_t_cr,op_info)
@@ -198,6 +213,21 @@ c      sbar_pnt%dagger = .true.
 c      call expand_op_product(fl_t_cr_pnt,idx_sbar,
 c     &     1d0,2,(/idxrba,idxcbar/),-1,-1,
 c     &     (/1,2/),1,.false.,op_info)
+
+      if(extend.gt.0)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &       1d0,4,3,
+     &       (/idx_sbar,idxtbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+     &       -1,(/-1,1,-1,-1/),
+     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+      endif
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'TBAR + R CBAR')
@@ -266,10 +296,10 @@ c dbg
      &       op_info)
       endif
 
-      if (ntest.ge.100) then
+c      if (ntest.ge.100) then
         call write_title(luout,wst_title,'Final formula')
         call print_form_list(luout,flist_lag,op_info)
-      end if
+c      end if
 
       ! assign comment
       form_cclag%comment = trim(title)
@@ -292,7 +322,7 @@ c dbg
       call prtim(luout,'CC-R12 Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
 c dbg
-c      stop
+c      stop 'testing'
 c dbg
       return
       end

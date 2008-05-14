@@ -153,6 +153,7 @@ c dbg
      &            ncblk, nablk,
      &            occ_csub,occ_asub,
      &            msc,msa,igamc,igama,ngam)) exit
+            first = .false.
 
             call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
             call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
@@ -170,7 +171,6 @@ c dbg
 
             idxdis_1 = idxdis_1+1
 
-            first = .false.
 
             if (ntest.ge.1000)
      &         write(luout,*) 'dist: ',idxdis_1,' len = ',

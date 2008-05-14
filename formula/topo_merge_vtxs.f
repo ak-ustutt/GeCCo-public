@@ -83,12 +83,8 @@ c dbg
           do kdx = jdx+1, jdxnd
             if (merged(kdx)) cycle
             if (may_merge(vtx_list(jdx),vtx_list(kdx))) then
-c dbg
-c              print *,'merging: ',jdx,kdx,'->',
-c     &             vtx_list(jdx),vtx_list(kdx)
-c dbg
               merged(kdx) = .true.
-              iord(vtx_list(kdx)) = vtx_list(jdx)
+              iord(vtx_list(kdx)) = iord(vtx_list(jdx))
               do ii = 1, nvtx
                 if (ireo(ii).gt.vtx_list(kdx))
      &               iord(ii) = iord(ii)-1

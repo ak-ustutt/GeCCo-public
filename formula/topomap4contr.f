@@ -120,6 +120,7 @@
           idx_op = contr%vertex(ivtx)%idx_op
           iblk_op = contr%vertex(ivtx)%iblk_op
           idx = idx_op*(maxblk+1) + iblk_op
+          if (contr%vertex(ivtx)%dagger) idx = idx + (maxblk+1)**2
           eqv_map(ivtx) = idx
         end do
         return

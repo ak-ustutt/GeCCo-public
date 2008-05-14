@@ -49,6 +49,10 @@ c dbg
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','fixed',lval=r12fix)
+c dbg
+      ! for debugging only:
+      r12fix = .false.
+c dbg
 
       call get_argument_value('calculate.routes','simtraf',ival=isim)
 
@@ -113,22 +117,17 @@ c     &              parameters,1,tgt_info)
       labels(5) = op_r12
       labels(6) = op_tbar
       labels(7) = op_top
-      nlabel = 7
-      if(.not.r12fix)then
-        labels(8) = op_cba
-        labels(9) = op_c12
-        nlabel = 9
-      endif
+      labels(8) = op_cba
+      labels(9) = op_c12
+      nlabel = 9
       call set_dependency(form_ccr12lg0,op_ccr12lg,tgt_info)
       call set_dependency(form_ccr12lg0,op_ham,tgt_info)
       call set_dependency(form_ccr12lg0,op_r12,tgt_info)
 c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       call set_dependency(form_ccr12lg0,op_tbar,tgt_info)
       call set_dependency(form_ccr12lg0,op_top,tgt_info)
-      if(.not.r12fix)then
-        call set_dependency(form_ccr12lg0,op_cba,tgt_info)
-        call set_dependency(form_ccr12lg0,op_c12,tgt_info)
-      endif
+      call set_dependency(form_ccr12lg0,op_cba,tgt_info)
+      call set_dependency(form_ccr12lg0,op_c12,tgt_info)
       call form_parameters(-1,
      &     parameters,2,title_ccr12lg0,ansatz,'---')
       call set_rule(form_ccr12lg0,ttype_frm,DEF_CCR12_LAGRANGIAN,
@@ -253,22 +252,26 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       call add_target(fopt_ccr12_0,ttype_frm,.false.,tgt_info)
       call set_dependency(fopt_ccr12_0,form_ccr12en0,tgt_info)
       call set_dependency(fopt_ccr12_0,form_ccr12rs_t,tgt_info)
-      if(.not.r12fix)then
-        call set_dependency(fopt_ccr12_0,form_ccr12rs_c,tgt_info)
-      endif
       call set_dependency(fopt_ccr12_0,mel_omgdef,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_topdef,tgt_info)
+      call set_dependency(fopt_ccr12_0,mel_b_def,tgt_info)
+      call set_dependency(fopt_ccr12_0,mel_v_def,tgt_info)
+      call set_dependency(fopt_ccr12_0,mel_x_def,tgt_info)
+      call set_dependency(fopt_ccr12_0,mel_rint,tgt_info)
+      if (ansatz.gt.1)
+     &     call set_dependency(fopt_ccr12_0,mel_c_def,tgt_info)
       if(.not.r12fix)then
+        call set_dependency(fopt_ccr12_0,form_ccr12rs_c,tgt_info)
         call set_dependency(fopt_ccr12_0,mel_omgr12def,tgt_info)
-        call set_dependency(fopt_ccr12_0,mel_c12def,tgt_info)
       endif
+      call set_dependency(fopt_ccr12_0,mel_c12def,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_ham,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_ccr12en0def,tgt_info)      
       if (isim.eq.1) then
         nint = 1
         call set_dependency(fopt_ccr12_0,form_cchhat,tgt_info)
         call set_dependency(fopt_ccr12_0,mel_hhatdef,tgt_info)
-        labels(5) = form_cchhat
+        labels(1+ncat+1) = form_cchhat
       end if
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_ccr12_0,ttype_frm,OPTIMIZE,
@@ -300,31 +303,31 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
-      if(.not.r12fix)then
-        ! CBAR list definition
-        call add_target(mel_cbardef,ttype_opme,.false.,tgt_info)
-        call set_dependency(mel_cbardef,op_cba,tgt_info)
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = mel_cbar
-        labels(2) = op_cba
-        call me_list_parameters(-1,parameters,
+      ! CBAR list definition
+      call add_target(mel_cbardef,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_cbardef,op_cba,tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = mel_cbar
+      labels(2) = op_cba
+      call me_list_parameters(-1,parameters,
      &       0,0,1,0,0)
-        call set_rule(mel_cbardef,ttype_opme,DEF_ME_LIST,
+      call set_rule(mel_cbardef,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
 
-        ! C12  list definition
-        call add_target(mel_c12def,ttype_opme,.false.,tgt_info)
-        call set_dependency(mel_c12def,op_c12,tgt_info)
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = mel_c12
-        labels(2) = op_c12
-        call me_list_parameters(-1,parameters,
+      ! C12  list definition
+      call add_target(mel_c12def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_c12def,op_c12,tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = mel_c12
+      labels(2) = op_c12
+      call me_list_parameters(-1,parameters,
      &       0,0,1,0,0)
-        call set_rule(mel_c12def,ttype_opme,DEF_ME_LIST,
+      call set_rule(mel_c12def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
 
+      if (.not.r12fix) then
         ! OMG-R12 list definition
         call add_target(mel_omgr12def,ttype_opme,.false.,tgt_info)
         call set_dependency(mel_omgr12def,op_omgr12,tgt_info)
@@ -381,15 +384,26 @@ c        labels(6) = mel_b_dia
 
         call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
+        call set_dependency(solve_ccr12_gs,mel_c12def,tgt_info)
+        call set_dependency(solve_ccr12_gs,mel_cbardef,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
-        call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = mel_c12
+        call set_rule(solve_ccr12_gs,ttype_opme,UNITY,
+     &       labels,1,1,
+     &       parameters,0,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = mel_cbar
+        call set_rule(solve_ccr12_gs,ttype_opme,UNITY,
+     &       labels,1,1,
+     &       parameters,0,tgt_info)
+        call solve_parameters(-1,parameters,2, 1,1,'DIA')
 c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = mel_top
         labels(2) = mel_omg
-        labels(3) = mel_dia1    ! dummy
-c        labels(6) = mel_b_dia
+        labels(3) = mel_dia1    
         labels(4) = mel_ccr12en0
         labels(5) = fopt_ccr12_0
         labels(6) = mel_ham
