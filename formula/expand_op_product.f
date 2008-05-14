@@ -240,7 +240,7 @@ c        iblk_op(1:nops) = 1
 c     &               form_pnt%contr%arc(1)%occ_cnt+occ_temp  
               endif  
             endif  
-            
+
             ! generate contractions
             call gen_contr2(form_pnt,proto,fix_vtx,occ_vtx,op_info)
 

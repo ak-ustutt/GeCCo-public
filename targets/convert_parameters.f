@@ -274,6 +274,53 @@
       end
 
 *----------------------------------------------------------------------*
+      subroutine expand_parameters(rw,
+     &     parameters,n_par_str,title,nop,
+     &     idx_sv,iblkmin,iblkmax,
+     &     connect,nconnect,
+     &     avoid,navoid,
+     &     inproj,ninproj)
+
+      implicit none
+      
+      integer, intent(in) ::
+     &     rw, n_par_str
+      integer, intent(inout) ::
+     &     nop,
+     &     idx_sv(*),iblkmin(*),iblkmax(*),
+     &     connect(*),nconnect,
+     &     avoid(*),navoid,
+     &     inproj(*),ninproj
+      character*(*), intent(inout) ::
+     &     parameters(n_par_str),
+     &     title
+
+      integer ::
+     &     ii
+
+      if (n_par_str.lt.3)
+     &     call quit(1,'expand_parameters','3 strings!')
+
+      if (rw.lt.0) then
+        write(parameters(1),'(a)') title
+        write(parameters(2),'(50i4,a)') nop,
+     &       (idx_sv(ii),iblkmin(ii),iblkmax(ii), ii = 1, nop)
+        write(parameters(3),'(50i4,a)') nconnect,navoid,ninproj,
+     &       connect(1:2*nconnect), avoid(1:2*navoid),
+     &       inproj(1:4*ninproj)
+      else
+        read(parameters(1),'(a)') title
+        read(parameters(2),'(50i4,a)') nop,
+     &       (idx_sv(ii),iblkmin(ii),iblkmax(ii), ii = 1, nop)
+        read(parameters(3),'(50i4,a)') nconnect,navoid,ninproj,
+     &       connect(1:2*nconnect), avoid(1:2*navoid),
+     &       inproj(1:4*ninproj)
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine form_parameters2(rw,
      &     parameters,n_par_str,title,inum,idxlist)
 

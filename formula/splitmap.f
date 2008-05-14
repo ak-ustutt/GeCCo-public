@@ -104,7 +104,7 @@ c dbg
         do ivtx = 1, nvtx
           if (vtxmap_cp(ivtx).ne.isuper) cycle
 c dbg
-c          print *,'contributing vertex: '
+c          print *,'contributing vertex: ',ivtx
 c dbg
           ! vertices above: shift up as much as possible
           do jvtx = 1, ivtx-1
@@ -115,10 +115,15 @@ c              print *,'1> connected to ',jvtx
 c dbg
               lvtx = jvtx
               do kvtx = jvtx-1, 1, -1
+c dbg
+c                print *,'kvtx,jvtx,topo: ',
+c     &               kvtx,jvtx,topomap_cp(kvtx,jvtx)
+c dbg
                 if (topomap_cp(kvtx,jvtx).ne.0) then
-                  lvtx = kvtx+1
+c                  lvtx = kvtx+1
                   exit
                 end if
+                lvtx = lvtx-1
               end do
               call shift_vtx(jvtx,lvtx)
             end if
@@ -133,9 +138,10 @@ c dbg
               lvtx = jvtx
               do kvtx = jvtx+1, nvtx
                 if (topomap_cp(kvtx,jvtx).ne.0) then
-                  lvtx = kvtx-1
+c                  lvtx = kvtx-1
                   exit
                 end if
+                lvtx = lvtx+1
               end do
               call shift_vtx(jvtx,lvtx)
             end if
@@ -144,8 +150,10 @@ c dbg
 
       end do
 
-      print *,'suggested reordering'
-      call iwrtma(ireo,nvtx,1,nvtx,1)
+c dbg
+c      print *,'suggested reordering'
+c      call iwrtma(ireo,nvtx,1,nvtx,1)
+c dbg
 
       ! we finish by setting up splmap for the given ordering
       ivtx_rem = 0

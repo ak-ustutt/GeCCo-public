@@ -289,26 +289,45 @@ c     &     .false.,min_rank,2,0,2)
       occ_def = 0
       ! for n_pp >= 0
       if (n_pp.ge.0) then
-        ndef = 3
+        ndef = 6
         ! block 1 -> scalar
-        occ_def(IPART,1,2) = 1
+        occ_def(IHOLE,1,2) = 1
         occ_def(IHOLE,2,2) = 1
-        occ_def(IPART,1,3) = 2
-        occ_def(IHOLE,2,3) = 2
+
+        occ_def(IPART,1,3) = 1
+        occ_def(IHOLE,2,3) = 1
+
+        occ_def(IHOLE,1,4) = 2
+        occ_def(IHOLE,2,4) = 2
+
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IPART,1,5) = 1
+        occ_def(IHOLE,2,5) = 2
+
+        occ_def(IPART,1,6) = 2
+        occ_def(IHOLE,2,6) = 2
       end if
       ! for n_pp >= 1
       if (n_pp.eq.1) then
-        ndef = 6
-        occ_def(IHOLE,1,4) = 1
-        occ_def(IPART,2,4) = 1
+        ndef = 11
+        occ_def(IHOLE,1,7) = 1
+        occ_def(IPART,2,7) = 1
 
-        occ_def(IPART,1,5) = 1
-        occ_def(IPART,2,5) = 1
+        occ_def(IPART,1,8) = 1
+        occ_def(IPART,2,8) = 1
 
-        occ_def(IHOLE,1,6) = 1
-        occ_def(IPART,1,6) = 1
-        occ_def(IHOLE,2,6) = 1
-        occ_def(IPART,2,6) = 1
+        occ_def(IHOLE,1,9) = 2
+        occ_def(IHOLE,2,9) = 1
+        occ_def(IPART,2,9) = 1
+
+        occ_def(IHOLE,1,10) = 1
+        occ_def(IPART,1,10) = 1
+        occ_def(IHOLE,2,10) = 1
+        occ_def(IPART,2,10) = 1
+
+        occ_def(IPART,1,11) = 2
+        occ_def(IHOLE,2,11) = 1
+        occ_def(IPART,2,11) = 1
       end if
       ! for n_pp >= 2
       if (n_pp.eq.2) then
@@ -855,7 +874,7 @@ c dbg
      &              parameters,1,tgt_info)
 
       ! G.R12 integrals (for f(R12))
-      call add_target(mel_gr,ttype_opme,.false.,tgt_info)
+      call add_target(mel_gr,ttype_opme,.true.,tgt_info)
       call set_dependency(mel_gr,op_gr,tgt_info)
       ! (a) define
       labels(1:10)(1:len_target_name) = ' '

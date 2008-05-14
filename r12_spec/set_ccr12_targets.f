@@ -21,9 +21,23 @@
       character(*), intent(in) ::
      &     env_type
 
+      integer ::
+     &     mode
+      logical ::
+     &     fixed
+
       call set_ccmp_general_targets(tgt_info,orb_info)
-      call set_r12_general_targets(tgt_info,orb_info,env_type)
-      call set_ccr12_special_targets(tgt_info,orb_info)
+
+      call get_argument_value('method.R12','fixed',lval=fixed)
+      call get_argument_value('method.R12','extend',ival=mode)
+
+      if (fixed.or.mode.gt.0) then
+        call set_r12f_general_targets(tgt_info,orb_info,env_type)
+        call set_ccr12f_special_targets(tgt_info,orb_info)
+      else
+        call set_r12_general_targets(tgt_info,orb_info,env_type)
+        call set_ccr12_special_targets(tgt_info,orb_info)
+      end if
 
       return
       end

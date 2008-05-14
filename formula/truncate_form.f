@@ -59,40 +59,52 @@ c      temp_del%part_num_restr(1:2) = -1
 
 c      temp_del => del_list%del_cond_item(1)%del_cond_arr(2)
       temp_del => del_list%del_cond_item(1)%del_cond_arr(1)
-      temp_del%op_name = op_c12
+c      temp_del%op_name = op_c12
+      temp_del%op_name = op_r12
+      temp_del%transposed = .false.
       temp_del%num_op_restr(1) = 2
       temp_del%num_op_restr(2) = -1
       temp_del%part_num_restr(1:2) = -1
       
       ! Array 2.
       temp_del => del_list%del_cond_item(2)%del_cond_arr(1)
-      temp_del%op_name = op_cba
+c      temp_del%op_name = op_cba
+      temp_del%op_name = op_r12
+      temp_del%transposed = .true.
       temp_del%num_op_restr(1:2) = 1
       temp_del%part_num_restr(1:2) = -1
 
       temp_del => del_list%del_cond_item(2)%del_cond_arr(2)
-      temp_del%op_name = op_c12
+c      temp_del%op_name = op_c12
+      temp_del%op_name = op_r12
+      temp_del%transposed = .false.
       temp_del%num_op_restr(1:2) = 1
       temp_del%part_num_restr(1:2) = -1
 
       temp_del => del_list%del_cond_item(2)%del_cond_arr(3)
       temp_del%op_name = op_ham
+      temp_del%transposed = .false.
       temp_del%num_op_restr(1:2) = 1
       temp_del%part_num_restr(1:2) = 2
 
       ! Array 3.
       temp_del => del_list%del_cond_item(3)%del_cond_arr(1)
-      temp_del%op_name = op_cba
+c      temp_del%op_name = op_cba
+      temp_del%op_name = op_r12
+      temp_del%transposed = .true.
       temp_del%num_op_restr(1:2) = 1
       temp_del%part_num_restr(1:2) = -1
 
       temp_del => del_list%del_cond_item(3)%del_cond_arr(2)
-      temp_del%op_name = op_c12
+c      temp_del%op_name = op_c12
+      temp_del%op_name = op_r12
+      temp_del%transposed = .false.
       temp_del%num_op_restr(1:2) = 1
       temp_del%part_num_restr(1:2) = -1
 
       temp_del => del_list%del_cond_item(3)%del_cond_arr(3)
       temp_del%op_name = op_top
+      temp_del%transposed = .false.
       temp_del%num_op_restr(1) = 1
       temp_del%num_op_restr(2) = -1
       temp_del%part_num_restr(1:2) = -1

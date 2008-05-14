@@ -93,17 +93,17 @@
         call set_rule(op_omgcex,ttype_op,CLONE_OP,
      &                op_omgcex,1,1,
      &                parameters,1,tgt_info)
-      endif
 
 c      ! diagonal
 
-      call add_target(op_diar12,ttype_op,.false.,tgt_info)
-      call set_dependency(op_diar12,op_omgr12,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_omgcex,.false.) ! <- dagger=.false.
-      call set_rule(op_diar12,ttype_op,CLONE_OP,
+        call add_target(op_diar12,ttype_op,.false.,tgt_info)
+        call set_dependency(op_diar12,op_omgr12,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &       op_omgcex,.false.) ! <- dagger=.false.
+        call set_rule(op_diar12,ttype_op,CLONE_OP,
      &              op_diar12,1,1,
      &              parameters,1,tgt_info)
+      endif
 
       call add_target(op_bprc,ttype_op,.false.,tgt_info)
       ndef = 1
@@ -217,7 +217,7 @@ c dbg
         labels(5) = op_cexbar
         nlabel = 5
       endif
-      call add_target(form_mpr12en0,ttype_frm,.true.,tgt_info)
+      call add_target(form_mpr12en0,ttype_frm,.false.,tgt_info)
       call set_dependency(form_mpr12en0,form_mpr12lg0,tgt_info)
       call set_dependency(form_mpr12en0,op_mpr12en,tgt_info)
       call set_rule(form_mpr12en0,ttype_frm,INVARIANT,
@@ -230,7 +230,7 @@ c dbg
       labels(3) = op_omg
       labels(4) = op_tbar
       labels(5) = ' '
-      call add_target(form_mpr12rs_t,ttype_frm,.true.,tgt_info)
+      call add_target(form_mpr12rs_t,ttype_frm,.false.,tgt_info)
       call set_dependency(form_mpr12rs_t,form_mpr12lg0,tgt_info)
       call set_dependency(form_mpr12rs_t,op_omg,tgt_info)
       call set_rule(form_mpr12rs_t,ttype_frm,DERIVATIVE,
@@ -244,7 +244,7 @@ c dbg
         labels(3) = op_omgcex
         labels(4) = op_cexbar
         labels(5) = ' '
-        call add_target(form_mpr12rs_cex,ttype_frm,.true.,tgt_info)
+        call add_target(form_mpr12rs_cex,ttype_frm,.false.,tgt_info)
         call set_dependency(form_mpr12rs_cex,form_mpr12lg0,tgt_info)
         call set_dependency(form_mpr12rs_cex,op_omgcex,tgt_info)
         call set_rule(form_mpr12rs_cex,ttype_frm,DERIVATIVE,
@@ -388,7 +388,7 @@ c      endif
      &                parameters,1,tgt_info)
       endif
 
-      call add_target(me_bprc,ttype_opme,.true.,tgt_info)
+      call add_target(me_bprc,ttype_opme,.false.,tgt_info)
       call set_dependency(me_bprc,op_bprc,tgt_info)
       call set_dependency(me_bprc,eval_r12_inter,tgt_info)
       labels(1:20)(1:len_target_name) = ' '
@@ -409,7 +409,7 @@ c      endif
      &              labels,3,1,
      &              parameters,1,tgt_info)
       
-      call add_target(me_xprc,ttype_opme,.true.,tgt_info)
+      call add_target(me_xprc,ttype_opme,.false.,tgt_info)
       call set_dependency(me_xprc,op_xprc,tgt_info)
       call set_dependency(me_bprc,eval_r12_inter,tgt_info)
       labels(1:20)(1:len_target_name) = ' '
@@ -440,12 +440,14 @@ c      endif
         
         call add_target(solve_mpr12_gs,ttype_gen,.true.,tgt_info)
         call set_dependency(solve_mpr12_gs,mel_dia1,tgt_info)
-        call set_dependency(solve_mpr12_gs,'DIATEST',tgt_info)
+c        call set_dependency(solve_mpr12_gs,'DIATEST',tgt_info)
 c        call set_dependency(solve_mpr12_gs,mel_b_inv,tgt_info)
 c        call set_dependency(solve_mpr12_gs,mel_b_dia,tgt_info)
 c        call set_dependency(solve_mpr12_gs,mel_x_inv,tgt_info)
         call set_dependency(solve_mpr12_gs,fopt_mpr12_0,tgt_info)
         call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
+        call set_dependency(solve_mpr12_gs,me_bprc,tgt_info)
+        call set_dependency(solve_mpr12_gs,me_xprc,tgt_info)
 c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = mel_top
@@ -453,7 +455,7 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         labels(3) = mel_omg
         labels(4) = mel_omgcex
         labels(5) = mel_dia1
-        labels(6) = 'DIATEST'
+        labels(6) = mel_dia1!'DIATEST'
         labels(7) = mel_mpr12en0
         labels(8) = fopt_mpr12_0
         labels(9) = me_bprc

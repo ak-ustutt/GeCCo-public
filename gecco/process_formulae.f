@@ -30,6 +30,9 @@
      &     maxterms = 20
       integer ::
      &     idxterms(maxterms), idx_sv(maxterms),
+     &     iblkmin(maxterms), iblkmax(maxterms),
+     &     connect(maxterms*2), avoid(maxterms*2),
+     &     inproj(maxterms*2), nconnect, navoid, ninproj,
      &     idx, jdx, ioff, ncat, nint, nrename, nop,
      &     ansatz, ipos, idum, level, nterms
       type(formula), pointer ::
@@ -129,15 +132,19 @@ c prelim
      &       title,rule%labels(ioff+1),rule%n_labels-ioff,ansatz,
      &       op_info,orb_info)
       case(EXPAND_OP_PRODUCT)
-        call form_parameters2(+1,
+        call expand_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title,nop,idx_sv)
+     &       title,nop,idx_sv,iblkmin,iblkmax,
+     &       connect,nconnect,
+     &       avoid,navoid,
+     &       inproj,ninproj)
         ioff = rule%n_update
-c dbg
-        print *,'ioff,nop = ',ioff,nop
-c dbg        
         call form_expand_op_product(form_pnt,
-     &       title,rule%labels(ioff+1),rule%labels(ioff+2),nop,idx_sv,
+     &       title,rule%labels(ioff+1),rule%labels(ioff+2),nop,
+     &       idx_sv,iblkmin,iblkmax,
+     &       connect,nconnect,
+     &       avoid,navoid,
+     &       inproj,ninproj,
      &       op_info,orb_info)
       case(FACTOR_OUT)
         call form_parameters(+1,

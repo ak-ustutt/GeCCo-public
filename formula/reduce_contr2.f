@@ -125,6 +125,9 @@
 
       ! resort list
       call unique_list(vtx_list_reo,nvtx_cnt)
+      if (ntest.ge.1000)
+     &     write(luout,*) 'updated vtx(reo): ',vtx_list_reo(1:nvtx_cnt)
+
       ! merge (=symmetrize) contracted vertices, if possible
       call topo_merge_vtxs(ireo2,nvtx_new,nvtx_op1op2,
      &                     topo,xlines,nvtx,njoined_res,
@@ -204,10 +207,6 @@
         end if
       end if
 
-c dbg
-c      print *,'reo:  ',ireo(1:nvtx)
-c      print *,'reo2: ',ireo2(1:nvtx)
-c dbg
       nvtx_red = nvtx_new
       ! new -> old reo; idx_old = ireo_vtx_no(idx_new)
       do ivtx = 1, nvtx
