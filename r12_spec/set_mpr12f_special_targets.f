@@ -7,6 +7,7 @@
 
       include 'stdunit.h'
       include 'mdef_target_info.h'
+      include 'opdim.h'
       include 'def_orbinf.h'
 
       include 'ifc_input.h'
@@ -24,7 +25,8 @@
       integer ::
      &     min_rank, max_rank, level,
      &     isim, ncat, nint, icnt, ansatz,
-     &     isym, ms, msc, sym_arr(8), nlabel, mode
+     &     isym, ms, msc, sym_arr(8), nlabel, mode,
+     &     occ_def(ngastp,2,20), ndef
       logical ::
      &     needed,r12fix
       character(len_target_name) ::
@@ -34,6 +36,14 @@
      &     parameters(2)
       character(12) ::
      &     approx
+
+      character ::
+     &     op_bprc*4 = 'BPRC',
+     &     op_xprc*4 = 'XPRC',
+     &     me_bprc*8 = 'BPRCLIST',
+     &     me_xprc*8 = 'XPRCLIST',
+     &     medef_bprc*12 = 'DEF-BPRCLIST',
+     &     medef_xprc*12 = 'DEF-XPRCLIST'
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting special targets for MP-R12 ...'
@@ -94,6 +104,26 @@ c      ! diagonal
       call set_rule(op_diar12,ttype_op,CLONE_OP,
      &              op_diar12,1,1,
      &              parameters,1,tgt_info)
+
+      call add_target(op_bprc,ttype_op,.false.,tgt_info)
+      ndef = 1
+      occ_def(IPART,1,1) = 1
+      occ_def(IPART,2,1) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,ndef)
+      call set_rule(op_bprc,ttype_op,DEF_OP_FROM_OCC,
+     &              op_bprc,1,1,
+     &              parameters,2,tgt_info)
+
+      call add_target(op_xprc,ttype_op,.false.,tgt_info)
+      ndef = 1
+      occ_def(IPART,1,1) = 1
+      occ_def(IPART,2,1) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,ndef)
+      call set_rule(op_xprc,ttype_op,DEF_OP_FROM_OCC,
+     &              op_xprc,1,1,
+     &              parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Formulae
@@ -357,7 +387,48 @@ c      endif
      &                labels,2,1,
      &                parameters,1,tgt_info)
       endif
-        
+
+      call add_target(me_bprc,ttype_opme,.true.,tgt_info)
+      call set_dependency(me_bprc,op_bprc,tgt_info)
+      call set_dependency(me_bprc,eval_r12_inter,tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = me_bprc
+      labels(2) = op_bprc
+      call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+      call set_rule(me_bprc,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = me_bprc
+      labels(2) = mel_b_inter
+      labels(3) = mel_bh_inter
+      call add_parameters(-1,parameters,
+     &     2,(/1d0,1d0/),2)
+      call set_rule(me_bprc,ttype_opme,ADD,
+     &              labels,3,1,
+     &              parameters,1,tgt_info)
+      
+      call add_target(me_xprc,ttype_opme,.true.,tgt_info)
+      call set_dependency(me_xprc,op_xprc,tgt_info)
+      call set_dependency(me_bprc,eval_r12_inter,tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = me_xprc
+      labels(2) = op_xprc
+      call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+      call set_rule(me_xprc,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = me_xprc
+      labels(2) = mel_x_inter
+      call add_parameters(-1,parameters,
+     &     1,(/1d0/),2)
+      call set_rule(me_xprc,ttype_opme,ADD,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      
 
 *----------------------------------------------------------------------*
 *     "phony" targets
@@ -374,7 +445,7 @@ c        call set_dependency(solve_mpr12_gs,mel_b_inv,tgt_info)
 c        call set_dependency(solve_mpr12_gs,mel_b_dia,tgt_info)
 c        call set_dependency(solve_mpr12_gs,mel_x_inv,tgt_info)
         call set_dependency(solve_mpr12_gs,fopt_mpr12_0,tgt_info)
-        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
+        call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
 c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = mel_top
@@ -385,8 +456,11 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         labels(6) = 'DIATEST'
         labels(7) = mel_mpr12en0
         labels(8) = fopt_mpr12_0
+        labels(9) = me_bprc
+        labels(10) = me_xprc
+        labels(11) = mel_ham
         call set_rule(solve_mpr12_gs,ttype_opme,SOLVENLEQ,
-     &       labels,8,4,
+     &       labels,11,4,
      &       parameters,2,tgt_info)
 
       else
