@@ -83,7 +83,7 @@ c-----------------------------------------------------------------------
       hpvx_mnmx(1:2,IPART,1) = (/min_p_rank,max_p_rank/)
       hpvx_mnmx(1:2,IEXTR,1) = (/min_x_rank,max_x_rank/)
       
-      hpvx_mnmx(1:2,IHOLE,2) = (/0,2/)
+      hpvx_mnmx(1:2,IHOLE,2) = (/0,max_h_rank/)
       hpvx_mnmx(1:2,IPART,2) = (/0,n_ap/)
 
 c      do ica=1,2

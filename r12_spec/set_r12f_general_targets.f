@@ -212,9 +212,15 @@ c     &     .false.,min_rank,2,0,2)
         occ_def(IPART,2,8) = 1
       end if      
       if (n_pp.ge.2) then
-        ndef = 5
-        occ_def(IPART,1,9) = 2
+        ndef = 7
+        occ_def(IHOLE,1,9) = 2
         occ_def(IPART,2,10) = 2
+
+        occ_def(IPART,1,11) = 2
+        occ_def(IHOLE,2,12) = 2
+
+        occ_def(IPART,1,13) = 2
+        occ_def(IPART,2,14) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,2,ndef)
@@ -331,9 +337,14 @@ c     &     .false.,min_rank,2,0,2)
       end if
       ! for n_pp >= 2
       if (n_pp.eq.2) then
-        ndef = 6
-        occ_def(IPART,1,6) = 2
-        occ_def(IPART,2,6) = 2
+        ndef = 7
+        occ_def(IHOLE,1,12) = 2
+        occ_def(IPART,2,12) = 2
+        occ_def(IHOLE,1,13) = 1
+        occ_def(IPART,1,13) = 1
+        occ_def(IPART,2,13) = 2
+        occ_def(IPART,1,14) = 2
+        occ_def(IPART,2,14) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,ndef)

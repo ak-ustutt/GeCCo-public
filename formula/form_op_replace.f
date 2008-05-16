@@ -4,6 +4,7 @@
 *     opin, with opout. This is useful for replacing formal 
 *     intermediate-type operators with their actual counterparts.
 *     GWR November 2007
+*     CAVEAT: opin and opout are strings (operator names)!
 *-----------------------------------------------------------------------
       implicit none
 

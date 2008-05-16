@@ -284,6 +284,7 @@ c dbg
      &           orb_info)
           end do
         end if
+        if (set_reo) call tidy_reo_info(reo_info)
 
       end if
       
