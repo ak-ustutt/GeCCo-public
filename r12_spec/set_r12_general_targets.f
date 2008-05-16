@@ -97,9 +97,9 @@
       ! the formal R12 geminal: P12 r12|0>
       call add_target(op_r12,ttype_op,.false.,tgt_info)
       if(.not.extend)then
-        min_rank = 2  ! 1 is a possibility 
+c        min_rank = 2  ! 1 is a possibility 
         call r12gem_parameters(-1,parameters,
-     &                         0,min_rank,ansatz)
+     &                         0,2,2,ansatz)
         call set_rule(op_r12,ttype_op,DEF_R12GEMINAL,
      &                op_r12,1,1,
      &                parameters,1,tgt_info)

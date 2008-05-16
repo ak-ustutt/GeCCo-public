@@ -176,22 +176,22 @@
 
 *----------------------------------------------------------------------*
       subroutine r12gem_parameters(rw,parameters,
-     &     n_ap,min_rank,ansatz)
+     &     n_ap,min_rank,max_rank,ansatz)
 
       implicit none
       
       integer, intent(inout) ::
-     &     rw,min_rank,ansatz,n_ap
+     &     rw,min_rank,max_rank,ansatz,n_ap
       character, intent(inout) ::
      &     parameters*(*)
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
-        write(parameters,'(i2,x,2(i5,x))')
-     &       n_ap,min_rank,ansatz
+        write(parameters,'(i2,x,3(i5,x))')
+     &       n_ap,min_rank,max_rank,ansatz
       else
-        read(parameters,'(i2,x,2(i5,x))')
-     &       n_ap,min_rank,ansatz
+        read(parameters,'(i2,x,3(i5,x))')
+     &       n_ap,min_rank,max_rank,ansatz
       end if
 
       return

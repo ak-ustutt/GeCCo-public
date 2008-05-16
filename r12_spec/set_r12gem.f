@@ -54,7 +54,7 @@ c dbg
       min_h_rank=min_rank
       max_h_rank=max_rank
 
-      iformal = 0
+      iformal = max_x_rank+1
       ncadiff = 0
 
       call set_hpvx_and_restr_for_r()

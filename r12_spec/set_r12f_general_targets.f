@@ -101,9 +101,9 @@
       ! the formal R12 geminal: P12 r12 X12
       ! need to be extended ...
       call add_target(op_r12,ttype_op,.false.,tgt_info)
-      min_rank = 2  ! 1 is a possibility 
+c      min_rank = 2  ! 1 is a possibility 
       call r12gem_parameters(-1,parameters,
-     &                   n_pp,min_rank,ansatz)
+     &                   n_pp,2,2,ansatz)
       call set_rule(op_r12,ttype_op,DEF_R12GEMINAL,
      &              op_r12,1,1,
      &              parameters,1,tgt_info)
@@ -140,9 +140,9 @@ c     &     .false.,min_rank,2,0,2)
       
       ! (pq)_frozen/(pq)_ae block of 2e-Hamiltonian
       call add_target(op_g_x,ttype_op,.false.,tgt_info)
-      min_rank = 2 
+c      min_rank = 2 
       call r12int_parameters(-1,parameters,
-     &     2,min_rank,2,0,2)
+     &     2,2,2,0,2)
       call set_rule(op_g_x,ttype_op,DEF_R12INT,
      &              op_g_x,1,1,
      &              parameters,1,tgt_info)

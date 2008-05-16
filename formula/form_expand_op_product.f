@@ -17,7 +17,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 10
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -112,7 +112,7 @@
      &     inproj,ninproj,
      &     op_info)
 
-      if(ntest.ge.100)then
+      if(ntest.ge.10)then
         call write_title(luout,wst_title,'Generated formula')
         call print_form_list(luout,flist_res,op_info)
       endif

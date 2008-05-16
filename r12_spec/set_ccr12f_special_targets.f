@@ -42,10 +42,10 @@
      &     parameters(3)
 
       character, parameter ::
-     &     form_r_t*9 = 'FORM_R_T1',
-     &     op_r_t*7   = 'OP_R_T1',
-     &     me_r_t*7   = 'ME_R_T1',
-     &     medef_r_t*11  = 'DEF-ME_R_T1'
+     &     form_r_t*8 = 'FORM_R_T',
+     &     op_r_t*6   = 'OP_R_T',
+     &     me_r_t*6   = 'ME_R_T',
+     &     medef_r_t*10  = 'DEF-ME_R_T'
       
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting special targets for CC-R12 ...'
@@ -188,14 +188,19 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
 
       call add_target(op_r_t,ttype_frm,.false.,tgt_info)
       ndef = 1
-      occ_def(IPART,1,1) = 1
-      occ_def(IEXTR,1,1) = 1
-      occ_def(IHOLE,2,1) = 2
-      call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,ndef)
-      call set_rule(op_r_t,ttype_op,DEF_OP_FROM_OCC,
+      call r12gem_parameters(-1,parameters,
+     &     0,2,max_rank,ansatz)
+      call set_rule(op_r_t,ttype_op,DEF_R12GEMINAL,
      &              op_r_t,1,1,
-     &              parameters,2,tgt_info)
+     &              parameters,1,tgt_info)
+c      occ_def(IPART,1,1) = 1
+c      occ_def(IEXTR,1,1) = 1
+c      occ_def(IHOLE,2,1) = 2
+c      call op_from_occ_parameters(-1,parameters,2,
+c     &     occ_def,ndef,1,ndef)
+c      call set_rule(op_r_t,ttype_op,DEF_OP_FROM_OCC,
+c     &              op_r_t,1,1,
+c     &              parameters,2,tgt_info)
 
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r_t
@@ -206,7 +211,7 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       labels(6) = op_r_t
       idx_sv(1:4) = (/1,2,3,1/)
       iblkmin(1:4) = (/1,10,1,1/)
-      iblkmax(1:4) = (/1,10,1,1/)
+      iblkmax(1:4) = (/0,10,0,0/)
       nconnect = 1
       connect(1:2) = (/2,3/)
       navoid = 0
