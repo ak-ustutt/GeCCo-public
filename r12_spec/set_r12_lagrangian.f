@@ -302,8 +302,10 @@ c     &     (/1,2/),1,.false.,op_info)
       call truncate_form(flist_lag,op_info)
 
       ! rename _T_ -> T
-      call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,
+      if (extend.gt.0) then
+        call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,
      &     flist_lag,op_info)
+      end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)
       call sum_terms(flist_lag,op_info)
