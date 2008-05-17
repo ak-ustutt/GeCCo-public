@@ -297,7 +297,7 @@ c dbg
           end if
         end do
       end do
-      if (iblk_min_in(1).le.0) then
+      if (iblk_min_in(1).lt.0) then
         iblk_min(1:nops) = 1
       else
         iblk_min(1:nops) = iblk_min_in(1:nops)

@@ -46,7 +46,8 @@
      &     ifree, nblk, nbuff, idxmsa, idxmsc, idxdis_1,
      &     idxdis_2, ioff_1, ioff_2, ioff0_1, ioff0_2,
      &     msa, msc, igama, igamc, idxa, idxc, ngam, lena, lenc,
-     &     iblkoff, ncblk, nablk, msc_max, msa_max
+     &     iblkoff, ncblk, nablk, msc_max, msa_max,
+     &     istr, idx1, idx2, icmp
       real(8) ::
      &     fac_off, fac_dia, value
 
@@ -65,23 +66,22 @@
      &     idxmsdis_c(:),  idxmsdis_a(:),
      &     gamdis_c(:), gamdis_a(:),
      &     len_str(:),
-     &     hpvx_occ(:,:,:), ca_occ(:,:), idx_graph(:,:,:)
+     &     hpvx_occ(:,:,:), ca_occ(:,:), idx_graph(:,:,:),
+     &     ldim_op_c(:), ldim_op_a(:),
+     &     ldim_optr_c(:), ldim_optr_a(:),
+     &     istr_csub(:), istr_asub(:)
 
       real(8), external ::
      &     ddot
       logical, external ::
      &     iocc_equal_n, next_msgamdist2
       integer, external ::
-     &     ielprd, idx_msgmdst2
+     &     ielprd, idx_msgmdst2, idx_str_blk3
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'symmetrise_blk1blk2')
       end if
 
-c dbg
-c      print *,'buffer_in1: ',buffer_in1(1:mel%len_op_occ(iblk_1))
-c      print *,'buffer_in2: ',buffer_in2(1:mel%len_op_occ(iblk_2))
-c dbg
       op  => mel%op
 
       ioff0_1 = mel%off_op_occ(iblk_1)
@@ -107,7 +107,10 @@ c dbg
      &         msdis_c(ncblk),  msdis_a(nablk),
      &         idxmsdis_c(ncblk),  idxmsdis_a(nablk),
      &         gamdis_c(ncblk), gamdis_a(nablk),
-     &         len_str(ncblk+nablk))
+     &         len_str(ncblk+nablk),
+     &         istr_csub(ncblk),istr_asub(nablk),
+     &         ldim_op_c(ncblk),ldim_op_a(nablk),
+     &         ldim_optr_c(ncblk),ldim_optr_a(nablk))
 
       ! set HPVX and OCC info
       call condense_occ(occ_csub, occ_asub,
@@ -197,14 +200,37 @@ c dbg
               write(luout,*) 'ioff_1,ioff_2:     ',ioff_1,ioff_2
             end if
 
+            call set_op_ldim_c(ldim_op_c,ldim_op_a,
+     &           hpvx_csub,hpvx_asub,
+     &           len_str,ncblk,nablk,.false.)
+            call set_op_ldim_c(ldim_optr_c,ldim_optr_a,
+     &           hpvx_csub,hpvx_asub,
+     &           len_str,ncblk,nablk,.true.)
             idxc_loop: do idxc = 1, lenc
+              istr = idxc-1
+              do icmp = 1, ncblk
+                istr_csub(icmp) = mod(istr,len_str(icmp)) !+1
+                istr = istr/len_str(icmp)
+              end do
               idxa_loop: do idxa = 1, lena
+                istr = idxa-1
+                do icmp = 1, nablk
+                  istr_asub(icmp) = mod(istr,len_str(ncblk+icmp))!+1
+                  istr = istr/len_str(icmp)
+                end do
 
-                value =fac*buffer_in1(ioff_1+(idxc-1)*lena+idxa) +
-     &                 fac*buffer_in2(ioff_2+(idxa-1)*lenc+idxc)
+                idx1 = ioff_1 + idx_str_blk3(istr_csub,istr_asub,
+     &               ldim_op_c,ldim_op_a,
+     &               ncblk,nablk)
+                idx2 = ioff_2 + idx_str_blk3(istr_csub,istr_asub,
+     &               ldim_optr_c,ldim_optr_a,
+     &               ncblk,nablk)
 
-                buffer_out1(ioff_1+(idxc-1)*lena+idxa) = value
-                buffer_out2(ioff_2+(idxa-1)*lenc+idxc) = value
+                value =fac*buffer_in1(idx1) +
+     &                 fac*buffer_in2(idx2)
+
+                buffer_out1(idx1) = value
+                buffer_out2(idx2) = value
 
               end do idxa_loop
             end do idxc_loop
@@ -221,7 +247,10 @@ c dbg
      &         msdis_c,  msdis_a,
      &         idxmsdis_c,  idxmsdis_a,
      &         gamdis_c, gamdis_a,
-     &         len_str)
+     &         len_str,
+     &         istr_csub,istr_asub,
+     &         ldim_op_c,ldim_op_a,
+     &         ldim_optr_c,ldim_optr_a)
 
       return
       end
