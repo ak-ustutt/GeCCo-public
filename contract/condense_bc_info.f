@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine condense_bc_info(
-     &     cnt_info,
+     &     cnt_info,self,
      &     iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
@@ -24,6 +24,7 @@
       implicit none
 
       include 'opdim.h'
+      include 'stdunit.h'
       include 'hpvxseq.h'
       include 'def_orbinf.h'
       include 'def_graph.h'
@@ -37,6 +38,8 @@
      &     orb_info
       type(contraction_info), intent(inout) ::
      &     cnt_info
+      logical, intent(in) ::
+     &     self
       integer, intent(in) ::
      &     njoined_op1, njoined_op2, njoined_op1op2, njoined_cnt,
      &     iocc_op1(ngastp,2,njoined_op1),
@@ -52,18 +55,23 @@
      &     irst_op1op2tmp(2,orb_info%ngas,2,2,njoined_op1op2),
      &     merge_map1(*), merge_map2(*), merge_map12(*), merge_map21(*)
 
+      logical ::
+     &     ok
       integer ::
-     &     ijoin, ngas
+     &     ijoin, ngas, nspin
       integer ::
      &     irst_ex1(2,orb_info%ngas,2,2,njoined_op1),
      &     irst_ex2(2,orb_info%ngas,2,2,njoined_op2),
      &     irst_cnt(2,orb_info%ngas,2,2,njoined_cnt),
+     &     irst_cnt_dagger(2,orb_info%ngas,2,2,njoined_cnt),
      &     iocc_cnt_dagger(ngastp,2,njoined_cnt)
       integer, pointer ::
      &     igrph(:,:,:), ihpvgas(:,:)
-
+      logical, external ::
+     &     irestr_equal
 
       ngas = orb_info%ngas
+      nspin = orb_info%nspin
       ihpvgas => orb_info%ihpvgas
       ! preliminary treatment of restrictions for EX, CNT:
 c      call fit_restr(irst_ex1,iocc_ex1,
@@ -73,27 +81,63 @@ c     &     irst_op2,ihpvgas,ngas)
 c      call fit_restr(irst_cnt,iocc_cnt,
 c     &     irst_op1,ihpvgas,ngas)
       ! QUICK FIX FOR FROZEN-CORE-R12
-      if (njoined_op1.eq.1) then
-        call fit_restr(irst_ex1,iocc_ex1,
-     &       irst_op1,ihpvgas,ngas)
-      else
-        call dummy_restr(irst_ex1,
-     &       iocc_ex1,njoined_op1,orb_info)
+      do ijoin = 1, njoined_cnt
+        iocc_cnt_dagger(1:ngastp,1:2,ijoin) =
+     &       iocc_dagger(iocc_cnt(1:ngastp,1:2,ijoin))
+      end do
+
+      call fit_restr3(irst_ex1,irst_cnt,
+     &     iocc_op1,iocc_ex1,iocc_cnt,
+     &     irst_op1,merge_map1,
+     &     njoined_op1,njoined_cnt,
+     &     ihpvgas,ngas,nspin)
+      if (.not.self) then
+        call fit_restr3(irst_ex2,irst_cnt_dagger,
+     &       iocc_op2,iocc_ex2,iocc_cnt_dagger,
+     &       irst_op2,merge_map2,
+     &       njoined_op2,njoined_cnt,
+     &       ihpvgas,ngas,nspin)
+      
+        ok = .true.
+        do ijoin = 1, njoined_cnt
+          ok = ok.and.irestr_equal(irst_cnt(1,1,1,1,ijoin),.false.,
+     &         irst_cnt_dagger(1,1,1,1,ijoin),.true.,ngas)
+        end do
+        if (.not.ok) then
+          write(luout,*) 'generated restrictions: CNT != CNT^+'
+          do ijoin = 1, njoined_cnt
+            if (njoined_cnt.gt.1) write(luout,*) 'pair # ',ijoin
+            call wrt_rstr(luout,irst_cnt(1,1,1,1,ijoin),ngas)
+            call wrt_rstr(luout,irst_cnt_dagger(1,1,1,1,ijoin),ngas)
+          end do
+          call quit(1,'condense_bc_info','problem with restrictions !')
+        end if
       end if
-      if (njoined_op2.eq.1) then
-        call fit_restr(irst_ex2,iocc_ex2,
-     &       irst_op2,ihpvgas,ngas)
-      else
-        call dummy_restr(irst_ex2,
-     &       iocc_ex2,njoined_op2,orb_info)
-      end if
-      if (njoined_cnt.eq.1.and.njoined_op1.eq.1) then
-        call fit_restr(irst_cnt,iocc_cnt,
-     &     irst_op1,ihpvgas,ngas)
-      else
-        call dummy_restr(irst_cnt,
-     &       iocc_cnt,njoined_cnt,orb_info)
-      end if
+
+c      if (njoined_op1.eq.1) then
+c        call fit_restr(irst_ex1,iocc_ex1,
+c     &       irst_op1,ihpvgas,ngas)
+c      else
+c        call dummy_restr(irst_ex1,
+c     &       iocc_ex1,njoined_op1,orb_info)
+c      end if
+c      if (njoined_op2.eq.1) then
+c        call fit_restr(irst_ex2,iocc_ex2,
+c     &       irst_op2,ihpvgas,ngas)
+c      else
+c        call dummy_restr(irst_ex2,
+c     &       iocc_ex2,njoined_op2,orb_info)
+c      end if
+c      if (njoined_cnt.eq.1.and.njoined_op1.eq.1) then
+c        call fit_restr(irst_cnt,iocc_cnt,
+c     &     irst_op1,ihpvgas,ngas)
+c      else if (njoined_cnt.eq.1.and.njoined_op2.eq.1) then
+c        call fit_restr(irst_cnt,iocc_cnt,
+c     &     irst_op2,ihpvgas,ngas)
+c      else
+c        call dummy_restr(irst_cnt,
+c     &       iocc_cnt,njoined_cnt,orb_info)
+c      end if
       ! end of preliminary code
 
       allocate(igrph(ngastp,2,
