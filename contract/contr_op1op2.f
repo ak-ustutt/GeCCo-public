@@ -104,7 +104,7 @@ c        print *,'iocc_op1op2:'
 c        call wrt_occ_n(6,iocc_op1op2,njoined_op1)
 c dbg
         call condense_bc_info(
-     &       cnt_info,
+     &       cnt_info,self,
      &       iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
      &       iocc_ex1,iocc_ex2,iocc_cnt,
      &       irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
