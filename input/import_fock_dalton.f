@@ -73,9 +73,6 @@
       else
         nfock = (orb_info%ntoob+orb_info%caborb)*
      &          (orb_info%ntoob+orb_info%caborb+1)/2
-c dbg
-        print *,'nfock = ',nfock
-c dbg
       end if
       
       nh1reo = 0
@@ -142,7 +139,8 @@ c dbg
       idxst = 1    ! counter for list on disc
       idxnd = 0
       do iocc_cls = 1, hop%n_occ_cls+1
-        if (hop%formal_blk(iocc_cls)) cycle
+        if (iocc_cls.le.hop%n_occ_cls.and.hop%formal_blk(iocc_cls)) 
+     &     cycle
         ! on any of these conditions, we have to write the present
         ! buffer slice to disc
         if (iocc_cls.gt.hop%n_occ_cls .or.
