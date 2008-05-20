@@ -79,7 +79,7 @@
      &     mst_op(2), mst_op1op2,
      &     igamt_op(2), igamt_op1op2,
      &     njoined_op(2), njoined_op1op2, njoined_cnt,
-     &     idar1(2), idar2(2),
+     &     idxop(2), idar2(2),
      &     merge_op1(2*contr%nvtx*contr%nvtx), ! a bit too large, I guess ...
      &     merge_op2(2*contr%nvtx*contr%nvtx),
      &     merge_op1op2(2*contr%nvtx*contr%nvtx),
@@ -126,7 +126,7 @@ c dbg
       if (.false.) then
         ! old
       call get_bc_info2(bc_sign,
-     &     idar1,idar2,
+     &     idxop,idar2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,
      &     irst_op1,irst_op2,irst_op1op2,
@@ -140,7 +140,7 @@ c dbg
       else
 
       call get_bc_info3(bc_sign,possible,
-     &     idar1,idar2,
+     &     idxop,idar2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,
      &     irst_op1,irst_op2,irst_op1op2,
@@ -240,7 +240,7 @@ c      possible = .true.
      &         iocc_op1op2,njoined_op1op2,iocc_op1op2,njoined_op1op2)
 
           call condense_bc_info(
-     &         cnt_info,
+     &         cnt_info,idxop(2).eq.0,
      &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
      &         irst_op1, irst_op2, irst_op1op2, irst_op1op2,

@@ -98,7 +98,7 @@
      &                  trim(me_inp%label))
         open_close_inp = me_inp%fhand%unit.le.0
         if(open_close_inp)then
-          call file_open(me_res%fhand)
+          call file_open(me_inp%fhand)
         endif
       else
         open_close_inp = .false.

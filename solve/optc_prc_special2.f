@@ -135,9 +135,9 @@
 
       off_bx_gam_ms => me_bmat%off_op_gmo(1)%gam_ms
 
-      if (njoined.ne.2)
-     &     call quit(1,'optc_prc_special',
-     &     'strange -- expected njoined==2')
+c      if (njoined.ne.2)
+c     &     call quit(1,'optc_prc_special',
+c     &     'strange -- expected njoined==2')
 
       ! loop over occupations of GRD
       do iblk = 1, nblk_grd
@@ -212,11 +212,6 @@
 
               first = .false.
               
-              idxdis = idxdis+1
-
-              if (len_grd_d_gam_ms(idxdis,gama,idxmsa).le.0)
-     &             cycle distr_loop
-
               call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncsub)
               call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nasub)
 
@@ -225,6 +220,28 @@
      &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
      &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
      &                         hpvxseq,.false.)
+
+              if (idxlist(0,len_str,ncsub+nasub,1).gt.0)
+     &             cycle distr_loop
+
+              idxdis = idxdis+1
+
+c test -- special insert 
+              if (njoined.eq.1) then
+                idx = idxlist(IPART,hpvx_csub,ncsub,1)
+                if (idx.ne.1) stop '???'
+                idxms_bx  = idxmsdis_c(idx)
+                gam_bx = gamdis_c(idx)
+                ld_bx  = len_str(idx)
+                idx_b = off_bx_gam_ms(gam_bx,idxms_bx)+1
+                len_astr = len_str(2)
+                idx_grd = off_grd_d_gam_ms(idxdis,gama,idxmsa)+1
+                call optc_prc_test(xbuf1(idx_grd),
+     &               xbuf2,xbuf3,bmat(idx_b),ld_bx,len_astr)
+
+                cycle
+              end if
+              
 
               ! Gamma and Ms of B and X
               idx = idxlist(IHOLE,hpvx_csub,ncsub,1)
@@ -300,3 +317,45 @@
       end
 
 
+      subroutine optc_prc_test(grd,
+     &     buf1,buf2,bmat,lenp,lenh)
+
+      implicit none
+
+      integer, intent(in) ::
+     &     lenp, lenh
+      real(8), intent(in) ::
+     &     bmat(lenp,lenp)
+      real(8), intent(inout) ::
+     &     buf1(lenp,lenh), buf2(lenp,lenh)
+      real(8), intent(inout) ::
+     &     grd(lenp,lenh)
+
+      real(8), pointer ::
+     &     scr(:,:)
+
+      integer ::
+     &     idx, jdx, kdx
+
+      allocate(scr(lenp,lenp))
+
+      scr = bmat
+
+      call gaussj(scr,lenp,lenp)
+
+      do jdx = 1, lenh
+        do idx = 1, lenp
+          buf1(idx,jdx) = 0d0
+          do kdx = 1, lenp
+            buf1(idx,jdx) = buf1(idx,jdx)+
+     &           scr(kdx,idx)*grd(kdx,jdx)
+          end do
+        end do
+      end do
+
+      grd = buf1
+
+      deallocate(scr)
+      
+      return
+      end

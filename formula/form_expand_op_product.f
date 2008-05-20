@@ -1,6 +1,10 @@
 *----------------------------------------------------------------------*
       subroutine form_expand_op_product(form_res,
-     &     title,label_res,label,nlabels,idx_sv,
+     &     title,label_res,label,nlabels,
+     &     idx_sv,iblkmin,iblkmax,
+     &     connect,nconnect,
+     &     avoid,navoid,
+     &     inproj,ninproj,
      &     op_info,orb_info)
 *----------------------------------------------------------------------*
 *     Driver routine to set up the operator product
@@ -13,7 +17,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 10
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -25,7 +29,10 @@
       include 'def_formula.h'
 
       integer, intent(in) ::
-     &     nlabels, idx_sv(nlabels)
+     &     nlabels, nconnect, navoid, ninproj,
+     &     idx_sv(nlabels), iblkmin(nlabels), iblkmax(nlabels),
+     &     connect(nconnect*2), avoid(navoid*2), inproj(ninproj*4)
+     &     
       character(*), intent(in) ::
      &     label_res, label(nlabels), title
 
@@ -62,8 +69,14 @@
         write(luout,*) '===================================='
         write(luout,*) ' output from form_expand_op_product'
         write(luout,*) '===================================='
+        write(luout,*) 'result op: ',trim(label_res)
         write(luout,*) 'nlabels = ',nlabels
+        do ilabel = 1, nlabels
+          write(luout,'(1x,i4,1x,a)') ilabel, trim(label(ilabel))
+        end do
         write(luout,*) 'idx_sv  = ',idx_sv(1:nlabels)
+        write(luout,*) 'iblkmin  = ',iblkmin(1:nlabels)
+        write(luout,*) 'iblkmax  = ',iblkmax(1:nlabels)
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -93,13 +106,13 @@
       call expand_op_product2(fl_pnt,idxres,
      &     1d0,nvtx,nops,
      &     idxop,idx_sv,
-     &     -1,-1,
-     &     0,0,
-     &     0,0,
-     &     0,0,
+     &     iblkmin,iblkmax,
+     &     connect,nconnect,
+     &     avoid,navoid,
+     &     inproj,ninproj,
      &     op_info)
 
-      if(ntest.ge.100)then
+      if(ntest.ge.10)then
         call write_title(luout,wst_title,'Generated formula')
         call print_form_list(luout,flist_res,op_info)
       endif

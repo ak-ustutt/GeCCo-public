@@ -5,6 +5,8 @@
       type del_cond
         character*64 ::
      &     op_name
+        logical ::
+     &     transposed
         integer ::
      &       num_op_restr(2),
      &       part_num_restr(2)

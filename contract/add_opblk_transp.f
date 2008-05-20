@@ -51,7 +51,8 @@
      &     ifree, nblk, nbuff, idxmsa, idxmsc, idxdis,
      &     idxdis_in, ioff_out, ioff_in, ioff0_out, ioff0_in,
      &     msa, msc, igama, igamc, idxa, idxc, ngam, lena, lenc,
-     &     iblkoff, iblkoff_in, ncblk, nablk, msc_max, msa_max
+     &     iblkoff, iblkoff_in, ncblk, nablk, msc_max, msa_max,
+     &     istr, idx_in, idx_out, icmp
       real(8) ::
      &     fac_off, fac_dia, value
 
@@ -73,14 +74,17 @@
      &     idxmsdis_c(:),  idxmsdis_a(:),
      &     gamdis_c(:), gamdis_a(:),
      &     len_str(:),
-     &     hpvx_occ(:,:,:), ca_occ(:,:), idx_graph(:,:,:)
+     &     hpvx_occ(:,:,:), ca_occ(:,:), idx_graph(:,:,:),
+     &     ldim_opin_c(:), ldim_opin_a(:),
+     &     ldim_opout_c(:), ldim_opout_a(:),
+     &     istr_csub(:), istr_asub(:)
 
       real(8), external ::
      &     ddot
       logical, external ::
      &     iocc_equal_n, next_msgamdist2
       integer, external ::
-     &     ielprd, idx_msgmdst2
+     &     ielprd, idx_msgmdst2, idx_str_blk3
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'add_opblk_transp')
@@ -174,7 +178,10 @@
      &         msdis_c(ncblk),  msdis_a(nablk),
      &         idxmsdis_c(ncblk),  idxmsdis_a(nablk),
      &         gamdis_c(ncblk), gamdis_a(nablk),
-     &         len_str(ncblk+nablk))
+     &         len_str(ncblk+nablk),
+     &         istr_csub(ncblk),istr_asub(nablk),
+     &         ldim_opin_c(ncblk),ldim_opin_a(nablk),
+     &         ldim_opout_c(ncblk),ldim_opout_a(nablk))
 
       ! set HPVX and OCC info
       call condense_occ(occ_csub, occ_asub,
@@ -216,16 +223,23 @@
      &            ncblk, nablk,
      &            occ_csub,occ_asub,
      &            msc,msa,igamc,igama,ngam)) exit
-
-            idxdis = idxdis+1
-
             first = .false.
-
-            if (me_out%len_op_gmox(iblk_out)%
-     &             d_gam_ms(idxdis,igama,idxmsa).le.0) cycle
 
             call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
             call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
+
+            call set_len_str(len_str,ncblk,nablk,
+     &                         graphs,
+     &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
+     &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
+     &                         hpvxseq,.false.)
+
+            lenc = ielprd(len_str,ncblk)
+            lena = ielprd(len_str(ncblk+1),nablk)
+
+            if (lenc.eq.0.or.lena.eq.0) cycle
+
+            idxdis = idxdis+1
 
             ioff_out = me_out%off_op_gmox(iblk_out)%
      &             d_gam_ms(idxdis,igama,idxmsa) - ioff0_out
@@ -242,21 +256,39 @@
             ioff_in = me_in%off_op_gmox(iblk_in)%
      &             d_gam_ms(idxdis_in,igamc,idxmsc) - ioff0_in
 
-            call set_len_str(len_str,ncblk,nablk,
-     &                         graphs,
-     &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
-     &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
-     &                         hpvxseq,.false.)
+            if (me_out%len_op_gmox(iblk_out)%
+     &             d_gam_ms(idxdis,igama,idxmsa).le.0) cycle
 
-            lenc = ielprd(len_str,ncblk)
-            lena = ielprd(len_str(ncblk+1),nablk)
+            call set_op_ldim_c(ldim_opin_c,ldim_opin_a,
+     &           hpvx_csub,hpvx_asub,
+     &           len_str,ncblk,nablk,tra_in)
+            call set_op_ldim_c(ldim_opout_c,ldim_opout_a,
+     &           hpvx_csub,hpvx_asub,
+     &           len_str,ncblk,nablk,tra_out)
 
             idxc_loop: do idxc = 1, lenc
+              istr = idxc-1
+              do icmp = 1, ncblk
+                istr_csub(icmp) = mod(istr,len_str(icmp))
+                istr = istr/len_str(icmp)
+              end do
               idxa_loop: do idxa = 1, lena
+                istr = idxa-1
+                do icmp = 1, nablk
+                  istr_asub(icmp) = mod(istr,len_str(ncblk+icmp))
+                  istr = istr/len_str(icmp)
+                end do
 
-                buffer_out(ioff_out+(idxc-1)*lena+idxa) =
-     &                   buffer_out(ioff_out+(idxc-1)*lena+idxa) +
-     &               fac*buffer_in (ioff_in+(idxa-1)*lenc+idxc)
+                idx_in  = ioff_in + idx_str_blk3(istr_csub,istr_asub,
+     &               ldim_opin_c,ldim_opin_a,
+     &               ncblk,nablk)
+                idx_out = ioff_out + idx_str_blk3(istr_csub,istr_asub,
+     &               ldim_opout_c,ldim_opout_a,
+     &               ncblk,nablk)                
+
+                buffer_out(idx_out) =
+     &                   buffer_out(idx_out) +
+     &               fac*buffer_in (idx_in)
 
               end do idxa_loop
             end do idxc_loop
@@ -288,7 +320,10 @@
      &         msdis_c,  msdis_a,
      &         idxmsdis_c,  idxmsdis_a,
      &         gamdis_c, gamdis_a,
-     &         len_str)
+     &         len_str,
+     &         istr_csub,istr_asub,
+     &         ldim_opin_c,ldim_opin_a,
+     &         ldim_opout_c,ldim_opout_a)
 
       ifree = mem_flushmark('add_transp')
 

@@ -36,6 +36,8 @@
      &     iblk_op, op_occur, nelec
       character*64 ::
      &     op_name
+      logical ::
+     &     dagger
 
       type(formula_item), pointer ::
      &     form_pnt
@@ -67,9 +69,7 @@ c            call prt_contr2(luout,form_pnt%contr,op_info)
 c          endif
 
           nvtx = form_pnt%contr%nvtx
-
           or_loop: do ordx = 1, or_dim
-
             del_item = .true.
             and_dim = del_list%del_cond_item(ordx)%and_dim
             and_loop: do anddx = 1, and_dim
@@ -79,12 +79,19 @@ c          endif
 
               op_name = temp_del%op_name
               idxop = idx_oplist2(trim(op_name),op_info)
+              if (idxop.lt.0) then
+                del_item = .false.
+                exit and_loop
+              end if
+
+              dagger = temp_del%transposed
 
               op_occur = 0 
+
               vert_loop: do idx = 1, nvtx
                 ! Is this vertex represented by the correct operator?
-                if(form_pnt%contr%vertex(idx)%idx_op.eq.
-     &               idxop)then
+                if(form_pnt%contr%vertex(idx)%idx_op.eq.idxop .and.
+     &             (form_pnt%contr%vertex(idx)%dagger.eqv.dagger))then
                   ! Properties of the vertex.
                   iblk_op = form_pnt%contr%vertex(idx)%iblk_op
                   nelec = op_info%op_arr(idxop)%op%ica_occ(1,iblk_op)

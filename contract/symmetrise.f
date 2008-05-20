@@ -211,10 +211,6 @@
 
           call get_vec(ffin,buffer_in,ioff+1,ioff+lenblk)
           call get_vec(ffin,buffer_in2,joff+1,joff+lenblk)
-c dbg
-          print *,'buf1: ',buffer_in(1:lenblk)
-          print *,'buf2: ',buffer_in2(1:lenblk)
-c dbg
           call symmetrise_blk1blk2(buffer_out,buffer_out2,
      &                        buffer_in, buffer_in2,
      &                         fac_off,fac_dia,
@@ -242,9 +238,6 @@ c dbg
 
           call get_vec(ffin,buffer_in,ioff+1,ioff+lenblk)
 
-c dbg
-          print *,'buf1: ',buffer_in(1:lenblk)
-c dbg
           call symmetrise_blk1blk2(buffer_out,buffer_out,
      &                        buffer_in, buffer_in,fac_off,fac_dia,
      &                        me_in,iblk,iblk,
@@ -271,7 +264,6 @@ c dbg
      &       1,me_in%op%n_occ_cls,
      &       str_info,orb_info)
       end if
-
 
       ifree = mem_flushmark('symmetrise')
 

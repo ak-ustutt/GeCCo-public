@@ -119,6 +119,10 @@
       nh_max = 4
       if (hhgg_list) nh_min = 2
 
+c dbg
+      print *,'naux_max',naux_max
+c dbg
+
       do iaux_max = 0, naux_max
         
 c          mnmxspc(1,1:ngas) = 0
@@ -204,10 +208,11 @@ c dbg
 c dbg
 c        idx = 0
 c        do idx_int = 1, nints(1)
-c          write(luout,*) 'idx_int = ',idx_int
+cc          write(luout,*) 'idx_int = ',idx_int
 c          do idx_typ = 1, ntypes
 c            idx = idx+1
-c            write(luout,*) idx_typ, buffer(idx)
+cc            if (abs(buffer(idx)).gt.10d0)
+c                write(luout,*) idx, idx_int, idx_typ, buffer(idx)
 c          end do
 c        end do
 c dbg
@@ -241,23 +246,10 @@ c dbg
      &       call prtim(luout,'time for sorting integrals',
      &       cpu-cpux,sys-sysx,-1d0)
 
-c dbg
-c        stop 'test 1'
-c dbg
         ifree = mem_flushmark('DAimport')
       
       end do
 
-
-      ! Open output file.
-c      if(ffop%unit.le.0)then
-c        call file_open(ffop)
-c        closeit = .true.
-c      else
-c        closeit = .false.
-c      endif  
-c      if(closeit)
-c     &     call file_close_keep(ffop)
       call file_close_keep(ffinp)
 
       ifree=mem_flushmark()

@@ -141,7 +141,10 @@ c dbg
             nproto = 1
             do jparc = iparc+1, nparc
               if (visited(jparc)) cycle
-              if (parc(jparc)%link(idx1).eq.ivtx1.and.
+c              if (parc(jparc)%link(idx1).eq.ivtx1.and.
+c     &             iocc_nonzero(parc(jparc)%occ_cnt)) then
+              if (parc(jparc)%link(idx1).eq.0 .and.
+     &            parc(jparc)%link(idx1).eq.ivtx1.and.
      &             iocc_nonzero(parc(jparc)%occ_cnt)) then
                 nproto = nproto + 1
                 if (nproto.gt.mxfound)
@@ -151,15 +154,23 @@ c dbg
             end do
             ! find all arcs in actual contraction with ivtx1
             ncontr = 0
-            do iarc = 1, narc
+            arc_loop: do iarc = 1, narc
               if (arc(iarc)%link(idx1).eq.ivtx1.and.
      &             iocc_nonzero(arc(iarc)%occ_cnt)) then
+c test -- but do not consider those which explicitly occurred in proto
+                do jparc = 1, nparc
+                  if (parc(jparc)%link(idx1).eq.arc(iarc)%link(idx1)
+     &                 .and.
+     &                parc(jparc)%link(idx2).eq.arc(iarc)%link(idx2))
+     &               cycle arc_loop
+                end do
+c test
                 ncontr = ncontr+1
                 if (ncontr.gt.mxfound)
      &             call quit(1,'check_contr','increase mxfound')
                 occ_found(1:ngastp,1:2,ncontr) = arc(iarc)%occ_cnt
               end if            
-            end do
+            end do arc_loop
             if (.not.
      &           check_occ_partition(pocc_found,nproto,
      &                               occ_found,ncontr)) return

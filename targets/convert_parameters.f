@@ -176,22 +176,22 @@
 
 *----------------------------------------------------------------------*
       subroutine r12gem_parameters(rw,parameters,
-     &     n_ap,min_rank,ansatz)
+     &     n_ap,min_rank,max_rank,ansatz)
 
       implicit none
       
       integer, intent(inout) ::
-     &     rw,min_rank,ansatz,n_ap
+     &     rw,min_rank,max_rank,ansatz,n_ap
       character, intent(inout) ::
      &     parameters*(*)
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
-        write(parameters,'(i2,x,2(i5,x))')
-     &       n_ap,min_rank,ansatz
+        write(parameters,'(i2,x,3(i5,x))')
+     &       n_ap,min_rank,max_rank,ansatz
       else
-        read(parameters,'(i2,x,2(i5,x))')
-     &       n_ap,min_rank,ansatz
+        read(parameters,'(i2,x,3(i5,x))')
+     &       n_ap,min_rank,max_rank,ansatz
       end if
 
       return
@@ -268,6 +268,53 @@
         read(parameters(1),'(a)') title
         if (n_par_str.gt.1)
      &       read(parameters(2),'(i8,a)') inum, mode_str
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine expand_parameters(rw,
+     &     parameters,n_par_str,title,nop,
+     &     idx_sv,iblkmin,iblkmax,
+     &     connect,nconnect,
+     &     avoid,navoid,
+     &     inproj,ninproj)
+
+      implicit none
+      
+      integer, intent(in) ::
+     &     rw, n_par_str
+      integer, intent(inout) ::
+     &     nop,
+     &     idx_sv(*),iblkmin(*),iblkmax(*),
+     &     connect(*),nconnect,
+     &     avoid(*),navoid,
+     &     inproj(*),ninproj
+      character*(*), intent(inout) ::
+     &     parameters(n_par_str),
+     &     title
+
+      integer ::
+     &     ii
+
+      if (n_par_str.lt.3)
+     &     call quit(1,'expand_parameters','3 strings!')
+
+      if (rw.lt.0) then
+        write(parameters(1),'(a)') title
+        write(parameters(2),'(50i4,a)') nop,
+     &       (idx_sv(ii),iblkmin(ii),iblkmax(ii), ii = 1, nop)
+        write(parameters(3),'(50i4,a)') nconnect,navoid,ninproj,
+     &       connect(1:2*nconnect), avoid(1:2*navoid),
+     &       inproj(1:4*ninproj)
+      else
+        read(parameters(1),'(a)') title
+        read(parameters(2),'(50i4,a)') nop,
+     &       (idx_sv(ii),iblkmin(ii),iblkmax(ii), ii = 1, nop)
+        read(parameters(3),'(50i4,a)') nconnect,navoid,ninproj,
+     &       connect(1:2*nconnect), avoid(1:2*navoid),
+     &       inproj(1:4*ninproj)
       end if
 
       return
@@ -461,15 +508,17 @@
      &     fac(*)
       character(*), intent(inout) ::
      &     parameters
+      integer ::
+     &     ii
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
         if (nfac.gt.12) call quit(1,'scale_parameters','too much')
-        write(parameters,'(i2,12i4,12g20.14)')
-     &       nfac,idxblk(1:nfac),fac(1:nfac)
+        write(parameters,'(i2,12(i4,g20.14))')
+     &       nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
       else
-        read(parameters,'(i2,12i4,12g20.14)')
-     &       nfac,idxblk(1:nfac),fac(1:nfac)
+        read(parameters,'(i2,12(i4,g20.14))')
+     &       nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
         if (nfac.gt.maxfac)
      &       call quit(1,'scale_parameters','too much (>maxfac)')
       end if

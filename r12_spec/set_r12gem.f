@@ -54,7 +54,7 @@ c dbg
       min_h_rank=min_rank
       max_h_rank=max_rank
 
-      iformal = 0
+      iformal = max_x_rank+1
       ncadiff = 0
 
       call set_hpvx_and_restr_for_r()
@@ -83,7 +83,7 @@ c-----------------------------------------------------------------------
       hpvx_mnmx(1:2,IPART,1) = (/min_p_rank,max_p_rank/)
       hpvx_mnmx(1:2,IEXTR,1) = (/min_x_rank,max_x_rank/)
       
-      hpvx_mnmx(1:2,IHOLE,2) = (/0,2/)
+      hpvx_mnmx(1:2,IHOLE,2) = (/0,max_h_rank/)
       hpvx_mnmx(1:2,IPART,2) = (/0,n_ap/)
 
 c      do ica=1,2

@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 1000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -42,7 +42,8 @@
       ! local constants
       character(3), parameter ::
      &     op_sop    = '_S_',
-     &     op_sba    = '_SB'
+     &     op_sba    = '_SB',
+     &     op_scr    = '_T_'
 
       ! local variables
       character ::
@@ -55,13 +56,16 @@
 
       integer ::
      &     nterms, idx_sop, idx_sbar, ndef, idxrint, ilabel, idx,
+     &     idx_scr,
      &     idxham,idxtbar,idxtop,idxlcc,idxrba,idxcbar,idxr12,idxc12,
      &     min_rank, max_rank, iprint
       logical ::
      &     r12fix
+      integer ::
+     &     extend
 
       type(operator), pointer::
-     &     sop_pnt, sbar_pnt
+     &     sop_pnt, sbar_pnt, scr_pnt
 
       integer, external::
      &     idx_oplist2, max_rank_op
@@ -81,7 +85,11 @@
 
       ! Are we fixing the F12 amplitudes?
       call get_argument_value('method.R12','fixed',lval=r12fix)
+      call get_argument_value('method.R12','extend',ival=extend)
+      call get_argument_value('method.R12','maxexc',ival=max_rank)
       
+      r12fix = r12fix .or. extend.gt.0
+
       ! get indices
       if (nlabels.ne.8.and..not.r12fix) then
         write(luout,*) 'nlabels = ',nlabels
@@ -115,13 +123,13 @@
       sop_pnt => op_info%op_arr(idx_sop)%op
 
       min_rank = 2
-      max_rank = 2
-      if(.not.r12fix)then
-        max_rank = max_rank_op('A',op_info%op_arr(idxc12)%op,.false.)
-      endif
+c      max_rank = 2
+c      if(.not.r12fix)then
+c        max_rank = max_rank_op('A',op_info%op_arr(idxc12)%op,.false.)
+c      endif
 
       ! set CR part:
-      call set_r12gem(sop_pnt,op_sop,.false.,
+      call set_r12gem(sop_pnt,op_sop,0,
      &     min_rank,max_rank,ansatz,orb_info)
 
       ! join with T
@@ -147,6 +155,15 @@ c      sbar_pnt%dagger = .true.
         fl_t_cr_pnt => fl_t_cr_pnt%next
       end do
 
+      ! in order to use different names for T connected with geminal:
+      if (extend.gt.0) then
+        call add_operator(op_scr,op_info)
+        idx_scr = idx_oplist2(op_scr,op_info)
+        scr_pnt => op_info%op_arr(idx_scr)%op
+        call clone_operator(scr_pnt,op_info%op_arr(idxtop)%op,
+     &       .false.,orb_info)
+      end if
+
       ! Form of the R12 part depends on whether the amplitudes are fixed.
       if(.not.r12fix)then
         call expand_op_product(fl_t_cr_pnt,idx_sop,
@@ -156,6 +173,22 @@ c      sbar_pnt%dagger = .true.
         call expand_op_product(fl_t_cr_pnt,idx_sop,
      &       1d0,1,idxr12,-1,-1,
      &       0,0,.false.,op_info)
+      endif
+
+      if(extend.gt.0)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+
+        call expand_op_product2(fl_t_cr_pnt,idx_sop,
+     &       1d0,4,3,
+     &       (/idx_sop,idxr12,idx_scr,idx_sop/),
+     &       (/1      ,2     ,3       ,1     /),
+     &       (/1,1,1,1/),-1,
+     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
       endif
 
       if (ntest.ge.1000) then
@@ -198,6 +231,21 @@ c      sbar_pnt%dagger = .true.
 c      call expand_op_product(fl_t_cr_pnt,idx_sbar,
 c     &     1d0,2,(/idxrba,idxcbar/),-1,-1,
 c     &     (/1,2/),1,.false.,op_info)
+
+      if(extend.gt.0)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &       1d0,4,3,
+     &       (/idx_sbar,idxtbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+     &       (/1,1,1,1/),-1,
+     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+      endif
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'TBAR + R CBAR')
@@ -250,10 +298,14 @@ c     &     (/1,2/),1,.false.,op_info)
         call print_form_list(luout,flist_lag,op_info)
       end if
 
-c dbg
       ! Produce truncated expansions.
 c      call truncate_form(flist_lag,op_info)
-c dbg
+
+      ! rename _T_ -> T
+      if (extend.gt.0) then
+        call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,
+     &     flist_lag,op_info)
+      end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)
       call sum_terms(flist_lag,op_info)
@@ -266,10 +318,10 @@ c dbg
      &       op_info)
       endif
 
-      if (ntest.ge.100) then
+c      if (ntest.ge.100) then
         call write_title(luout,wst_title,'Final formula')
         call print_form_list(luout,flist_lag,op_info)
-      end if
+c      end if
 
       ! assign comment
       form_cclag%comment = trim(title)
@@ -286,13 +338,14 @@ c dbg
       ! remove the formal operators
       call del_operator(op_sba,op_info)
       call del_operator(op_sop,op_info)
+      if (extend.gt.0) call del_operator(op_scr,op_info)
 
       call atim_csw(cpu,sys,wall)
       write(luout,*) 'Number of generated terms: ',nterms
       call prtim(luout,'CC-R12 Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
 c dbg
-c      stop
+c      stop 'testing'
 c dbg
       return
       end
