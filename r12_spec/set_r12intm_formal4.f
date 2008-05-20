@@ -22,7 +22,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -44,7 +44,7 @@
      &     opdum_g     = '_G_'
 
       logical ::
-     &     def_fpp, def_fhh, def_g, unknown
+     &     def_fpp, def_fhh, def_g, unknown, def_fp3f
       integer ::
      &     idx, nfact, 
      &     idx_intm, idx_r, idx_f, idx_g, idx_h, idx_rpl,
@@ -123,6 +123,7 @@
       unknown = .false.
       def_fhh = .false.
       def_fpp = .false.
+      def_fp3f = .false.
       def_g   = .false.
       idx_g   = -99
       idx_f   = -99
@@ -231,8 +232,110 @@
         else
           unknown = .true.
         end if
-c      case('P')
-c      case('Z')
+      case('P')
+        def_g = .true.
+        idx_rpl = 3
+        if(njoined_int.eq.2)then
+          idx_prod(1:7) = (/idx_intm,-idx_r,idx_g,idx_intm,idx_intm,
+     &                      idx_r,idx_intm/)
+          idx_supv(1:7) = (/       1,     2,    3,       1,       1,
+     &                          4,       1/)
+          nvtx = 7
+          nfact = 4
+          connect(1:4) = (/2,3,3,6/)
+          nconnect = 2
+          avoid(1:4) = (/2,5,2,6/)
+          navoid = 2
+        else
+          unknown = .true.
+        endif
+      case('P3G')
+        def_g = .true.
+        idx_rpl = 5
+        if(njoined_int.eq.3)then
+          idx_prod(1:9) = (/idx_intm,-idx_r,idx_intm,idx_intm,idx_g,
+     &                      idx_intm,idx_intm,idx_r,idx_intm/)
+          idx_supv(1:9) = (/       1,     2,       1,       1,    3,
+     &                             1,       1,    4,       1/)
+          nvtx = 9
+          nfact = 4
+          connect(1:4) = (/2,5,5,8/)
+          nconnect = 2
+          avoid(1:6) = (/2,7,2,8,3,8/)
+          navoid = 3
+        else
+          unknown = .true.
+        endif
+      case('P3F')
+        def_fp3f = .true.
+        idx_rpl = 5
+        if(njoined_int.eq.3)then
+          idx_prod(1:9) = (/idx_intm,-idx_r,idx_intm,idx_intm,idx_f,
+     &                      idx_intm,idx_intm,idx_r,idx_intm/)
+          idx_supv(1:9) = (/       1,     2,       1,       1,    3,
+     &                             1,       1,    4,       1/)
+          nvtx = 9
+          nfact = 4
+          connect(1:4) = (/2,8,5,8/)
+          nconnect = 2
+          avoid(1:6) = (/2,7,2,5,3,8/)
+          navoid = 3
+        else
+          unknown = .true.
+        endif
+      case('Z')
+        def_g = .true.
+        idx_rpl = 5
+        if(njoined_int.eq.3)then
+          idx_prod(1:9) = (/idx_intm,-idx_r,idx_intm,idx_intm,idx_g,
+     &                      idx_intm,idx_intm,idx_r,idx_intm/)
+          idx_supv(1:9) = (/       1,     2,       1,       1,    3,
+     &                             1,       1,    4,       1/)
+          nvtx = 9
+          nfact = 4
+          connect(1:6) = (/2,5,2,8,5,8/)
+          nconnect = 3
+          avoid(1:4) = (/2,7,3,8/)
+          navoid = 2
+        else
+          unknown = .true.
+        endif
+      case('Z4')
+        def_g = .true.
+        idx_rpl = 5
+        if(njoined_int.eq.4)then
+          idx_prod(1:12) = (/idx_intm,-idx_r,idx_intm,idx_intm,idx_g,
+     &                       idx_intm,idx_intm,idx_r,idx_intm,idx_intm,
+     &                       idx_r,idx_intm/)
+          idx_supv(1:12) = (/       1,     2,       1,       1,    3,
+     &                              1,       1,    4,       1,       1,
+     &                           5,       1/)
+          nvtx = 12
+          nfact = 5
+          connect(1:8) = (/2,8,2,11,5,8,5,11/)
+          nconnect = 4
+          avoid(1:10) = (/2,7,2,10,3,8,3,11,2,5/)
+          navoid = 5
+        else
+          unknown = .true.
+        endif
+      case('K4')
+        def_g = .true.
+        idx_rpl = 5
+        if(njoined_int.eq.3)then
+          idx_prod(1:9) = (/idx_intm,-idx_r,idx_intm,idx_intm,idx_g,
+     &                      idx_intm,idx_intm,idx_r,idx_intm/)
+          idx_supv(1:9) = (/       1,     2,       1,       1,    3,
+     &                             1,       1,    4,       1/)
+          nvtx = 9
+          nfact = 4
+          connect(1:4) = (/2,8,5,8/)
+          nconnect = 2
+          avoid(1:6) = (/2,7,3,8,2,5/)
+          navoid = 3
+        else
+          unknown = .true.
+        endif
       case default
         call quit(1,'set_r12intm_formal4',
      &       'unknown type: '//trim(typ_str))
@@ -273,6 +376,21 @@ c      case('Z')
         occ_def(IPART,2,3) = 1
         occ_def(IEXTR,1,4) = 1
         occ_def(IEXTR,2,4) = 1
+        call set_uop2(op_f,opdum_f,
+     &       occ_def,ndef,1,orb_info)
+        deallocate(occ_def)
+        idx_prod(idx_rpl) = idx_f
+      elseif(def_fp3f)then
+        call add_operator(opdum_f,op_info)
+        idx_f = idx_oplist2(opdum_f,op_info)
+        op_f => op_info%op_arr(idx_f)%op
+        allocate(occ_def(ngastp,2,2))
+        ndef = 2
+        occ_def = 0
+        occ_def(IHOLE,1,1) = 1
+        occ_def(IEXTR,2,1) = 1
+        occ_def(IHOLE,1,2) = 1
+        occ_def(IPART,2,2) = 1
         call set_uop2(op_f,opdum_f,
      &       occ_def,ndef,1,orb_info)
         deallocate(occ_def)
@@ -325,7 +443,7 @@ c      case('Z')
       end if
 
       ! replace f and g by their actual operator
-      if (def_fhh.or.def_fpp) then
+      if (def_fhh.or.def_fpp.or.def_fp3f) then
         op   => op_info%op_arr(idx_h)%op
         call form_op_replace(opdum_f,op%name,flist_scr,op_info)
       end if
@@ -348,7 +466,8 @@ c      case('Z')
 
       call dealloc_formula_list(flist_scr)
       if (def_g) call del_operator(opdum_g,op_info)
-      if (def_fhh.or.def_fpp) call del_operator(opdum_f,op_info)
+      if (def_fhh.or.def_fpp.or.def_fp3f)
+     &     call del_operator(opdum_f,op_info)
 
       return
       end

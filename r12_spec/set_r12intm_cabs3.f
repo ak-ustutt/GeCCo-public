@@ -223,6 +223,15 @@ c          end if
      &       idx_intm,idx_op,nop,op_info)
         end if
 
+      case('PG')
+
+        call set_p3g_contract(form_out,title,
+     &       labels(1),labels(2:3),2,
+     &       op_info,orb_info)
+
+c dbg
+c        stop
+c dbg
       end select
 
       ! add symmetrisation command if required
@@ -242,7 +251,7 @@ c          end if
       call write_form_list(form_out%fhand,flist,form_out%comment)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final formula'
+        write(luout,*) 'CABS final formula'
         call print_form_list(luout,flist,op_info)
       end if
 

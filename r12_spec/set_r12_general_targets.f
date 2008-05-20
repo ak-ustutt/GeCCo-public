@@ -195,8 +195,13 @@ c     &     .false.,min_rank,2,0,2)
       ! (pq)_frozen/(pq)_ae block of 2e-Hamiltonian
       call add_target(op_g_x,ttype_op,.false.,tgt_info)
       min_rank = 2 
+c      call hop_parameters(-1,parameters,
+c     &     min_rank,2,3,.true.)        ! 1-external at most
+c      call set_rule(op_g_x,ttype_op,DEF_HAMILTONIAN,
+c     &     op_g_x,1,1,
+c     &     parameters,1,tgt_info)
       call r12int_parameters(-1,parameters,
-     &     2,min_rank,2,0,2)
+     &     2,min_rank,2,0,3)
       call set_rule(op_g_x,ttype_op,DEF_R12INT,
      &              op_g_x,1,1,
      &              parameters,1,tgt_info)
@@ -319,11 +324,32 @@ c     &     .false.,min_rank,2,0,2)
 
       ! V^{ij}_{pq}
       call add_target(op_v_inter,ttype_op,.false.,tgt_info)
-      call xop_parameters(-1,parameters,
-     &     .false.,2,2,0,2)
-      call set_rule(op_v_inter,ttype_op,DEF_R12INTERM,
+c      call xop_parameters(-1,parameters,
+c     &     .false.,2,2,0,2)
+c      call set_rule(op_v_inter,ttype_op,DEF_R12INTERM,
+c     &              op_v_inter,1,1,
+c     &              parameters,1,tgt_info)
+      occ_def = 0
+      ! 1
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IHOLE,2,2) = 2
+      ! 2
+      occ_def(IHOLE,1,3) = 1
+      occ_def(IPART,1,3) = 1
+      occ_def(IHOLE,2,4) = 2
+      ! 3
+      occ_def(IPART,1,5) = 2
+      occ_def(IHOLE,2,6) = 2
+      ! 4
+      occ_def(IHOLE,1,7) = 1
+      occ_def(IEXTR,1,7) = 1
+      occ_def(IHOLE,2,8) = 2
+
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,4,2,8)
+      call set_rule(op_v_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_v_inter,1,1,
-     &              parameters,1,tgt_info)
+     &              parameters,2,tgt_info)
       
       ! B intermediate
       call add_target(op_b_inter,ttype_op,.false.,tgt_info)
@@ -405,11 +431,50 @@ c      occ_def(IHOLE,2,6) = 2
 
       ! P intermediate
       call add_target(op_p_inter,ttype_op,.false.,tgt_info)
-      call set_dependency(op_p_inter,op_b_inter,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_b_inter,.false.) ! <- dagger=.false.
-      call set_rule(op_p_inter,ttype_op,CLONE_OP,
+      occ_def = 0
+      ! 1
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IHOLE,2,2) = 2
+
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,1,2,2)
+      call set_rule(op_p_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_p_inter,1,1,
+     &              parameters,2,tgt_info)
+
+c      call set_dependency(op_p_inter,op_b_inter,tgt_info)
+c      call cloneop_parameters(-1,parameters,
+c     &                        op_b_inter,.false.) ! <- dagger=.false.
+c      call set_rule(op_p_inter,ttype_op,CLONE_OP,
+c     &              op_p_inter,1,1,
+c     &              parameters,1,tgt_info)
+
+      ! P3 intermediate:
+      ! G-part
+      call add_target(op_p3g_inter,ttype_op,.false.,tgt_info)
+c dbg
+c      call add_target(op_p3g_inter,ttype_op,.true.,tgt_info)
+c dbg
+      occ_def = 0
+      ! 1
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IPART,2,1) = 1
+      occ_def(IHOLE,1,2) = 1
+      occ_def(IHOLE,2,3) = 2
+
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,1,3,3)
+      call set_rule(op_p3g_inter,ttype_op,DEF_OP_FROM_OCC,
+     &              op_p3g_inter,1,1,
+     &              parameters,2,tgt_info)
+
+      ! F-part
+      call add_target(op_p3f_inter,ttype_op,.false.,tgt_info)
+      call set_dependency(op_p3f_inter,op_p3g_inter,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_p3g_inter,.false.) ! <- dagger=.false.
+      call set_rule(op_p3f_inter,ttype_op,CLONE_OP,
+     &              op_p3f_inter,1,1,
      &              parameters,1,tgt_info)
 
       ! Z intermediate
@@ -439,6 +504,35 @@ c      occ_def(IHOLE,2,6) = 2
      &     occ_def,4,3,12)
       call set_rule(op_z_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_z_inter,1,1,
+     &              parameters,2,tgt_info)
+
+      ! Z4 intermediate
+      call add_target(op_z4_inter,ttype_op,.true.,tgt_info)
+      occ_def = 0
+      ! 1
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IHOLE,1,2) = 2
+      occ_def(IHOLE,2,3) = 2
+      occ_def(IHOLE,2,4) = 2
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,1,4,4)
+      call set_rule(op_z4_inter,ttype_op,DEF_OP_FROM_OCC,
+     &              op_z4_inter,1,1,
+     &              parameters,2,tgt_info)
+
+      ! K4 intermediate
+      call add_target(op_k4_inter,ttype_op,.true.,tgt_info)
+      occ_def = 0
+      ! 1
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IPART,2,1) = 1
+      occ_def(IHOLE,1,2) = 2
+      occ_def(IPART,2,2) = 1
+      occ_def(IHOLE,2,3) = 2
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,1,3,3)
+      call set_rule(op_k4_inter,ttype_op,DEF_OP_FROM_OCC,
+     &              op_k4_inter,1,1,
      &              parameters,2,tgt_info)
 
       ! inverse of B
@@ -722,10 +816,61 @@ c     &     'C           ')
       call set_dependency(form_r12_pint,op_ham,tgt_info)
       call set_dependency(form_r12_pint,op_r12,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_pint,0,'rgxr')
+     &     parameters,2,title_r12_pint,0,'P')
       call set_rule(form_r12_pint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,5,1,
      &              parameters,2,tgt_info)
+
+      ! Formal definition of P3F
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_p3fint
+      labels(2) = op_p3f_inter
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      call add_target(form_r12_p3fint,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_p3fint,op_p3f_inter,tgt_info)
+      call set_dependency(form_r12_p3fint,op_ham,tgt_info)
+      call set_dependency(form_r12_p3fint,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_p3fint,0,'P3F')
+      call set_rule(form_r12_p3fint,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      ! Formal definition of P3G
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_p3gint
+      labels(2) = op_p3g_inter
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      call add_target(form_r12_p3gint,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_p3gint,op_p3g_inter,tgt_info)
+      call set_dependency(form_r12_p3gint,op_ham,tgt_info)
+      call set_dependency(form_r12_p3gint,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_p3gint,0,'P3G')
+      call set_rule(form_r12_p3gint,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      ! CABS approximation to P3G.
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_p3gcabs
+      labels(2) = op_p3g_inter
+      labels(3) = op_rint
+      labels(4) = op_v_inter
+      call add_target(form_r12_p3gcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_p3gcabs,op_p3g_inter,tgt_info)
+      call set_dependency(form_r12_p3gcabs,op_rint,tgt_info)
+      call set_dependency(form_r12_p3gcabs,op_v_inter,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_p3gcabs,ansatz,'PG '//approx)
+      call set_rule(form_r12_p3gcabs,ttype_frm,DEF_R12INTM_CABS,
+     &              labels,4,1,
+     &              parameters,2,tgt_info)
+
 
       ! formal definition of Z
       labels(1:10)(1:len_target_name) = ' '
@@ -740,10 +885,66 @@ c     &     'C           ')
       call set_dependency(form_r12_zint,op_ham,tgt_info)
       call set_dependency(form_r12_zint,op_r12,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_zint,0,'rxgxr')
+     &     parameters,2,title_r12_zint,0,'Z')
       call set_rule(form_r12_zint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,5,1,
      &              parameters,2,tgt_info)
+
+c      ! CABS approximation to Z.
+c      labels(1:10)(1:len_target_name) = ' '
+c      labels(1) = form_r12_zcabs
+c      labels(2) = op_z_inter
+c      labels(3) = op_rint
+c      labels(4) = op_ham
+c      labels(5) = op_rint
+c      labels(6) = op_ff
+c      call add_target(form_r12_xcabs,ttype_frm,.false.,tgt_info)
+c      call set_dependency(form_r12_xcabs,op_x_inter,tgt_info)
+c      call set_dependency(form_r12_xcabs,op_ff,tgt_info)
+c      call set_dependency(form_r12_xcabs,op_rint,tgt_info)
+c      call form_parameters(-1,
+c     &     parameters,2,title_r12_xcabs,ansatz,'X '//approx)
+c      call set_rule(form_r12_xcabs,ttype_frm,DEF_R12INTM_CABS,
+c     &              labels,5,1,
+c     &              parameters,2,tgt_info)
+
+      ! Formal definition of Z4
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_z4int
+      labels(2) = op_z4_inter
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      labels(6) = op_r12
+      call add_target(form_r12_z4int,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_z4int,op_z4_inter,tgt_info)
+      call set_dependency(form_r12_z4int,op_r12,tgt_info)
+      call set_dependency(form_r12_z4int,op_ham,tgt_info)
+      call set_dependency(form_r12_z4int,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_z4int,0,'Z4')
+      call set_rule(form_r12_z4int,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,6,1,
+     &              parameters,2,tgt_info)
+
+      ! Formal definition of K4
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_k4int
+      labels(2) = op_k4_inter
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      call add_target(form_r12_k4int,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_k4int,op_k4_inter,tgt_info)
+      call set_dependency(form_r12_k4int,op_r12,tgt_info)
+      call set_dependency(form_r12_k4int,op_ham,tgt_info)
+      call set_dependency(form_r12_k4int,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_k4int,0,'K4')
+      call set_rule(form_r12_k4int,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae
@@ -816,6 +1017,22 @@ c     &     'C           ')
       call set_rule(fopt_r12_bcabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
+
+c      ! set P3G
+c      labels(1:10)(1:len_target_name) = ' '
+c      labels(1) = fopt_r12_p3gcabs
+c      labels(2) = form_r12_p3gcabs
+c      ncat = 1
+c      nint = 0
+c      call add_target(fopt_r12_p3gcabs,ttype_frm,.false.,tgt_info)
+c      call set_dependency(fopt_r12_p3gcabs,form_r12_p3gcabs,tgt_info)
+c      call set_dependency(fopt_r12_p3gcabs,mel_p3g_def,tgt_info)
+c      call set_dependency(fopt_r12_p3gcabs,mel_v_def,tgt_info)
+c      call set_dependency(fopt_r12_p3gcabs,mel_rint,tgt_info)      
+c      call opt_parameters(-1,parameters,ncat,nint)
+c      call set_rule(fopt_r12_p3gcabs,ttype_frm,OPTIMIZE,
+c     &              labels,ncat+nint+1,1,
+c     &              parameters,1,tgt_info)
 
       ! set C intermediate
       ! currently approx C only

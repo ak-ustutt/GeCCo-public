@@ -205,6 +205,7 @@ c      lblk_da = 1024*1024/nrecfc
 
       iunit = igetunit(-1)
       len = len_trim(filename)
+
       open(unit=iunit,file=filename(1:len),
      &     form="unformatted",access="sequential")
 

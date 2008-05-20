@@ -31,7 +31,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -163,29 +163,46 @@ c dbg
         call add_operator(opdum_f,op_info)
         idx_f = idx_oplist2(opdum_f,op_info)
         op_f => op_info%op_arr(idx_f)%op
-        allocate(occ_def(ngastp,2,4))
-        if (typ_str(idx:idx).eq.'f') then ! (P/X-space only)
-          ndef = 4
-          occ_def = 0
-          occ_def(IPART,1,1) = 1
-          occ_def(IPART,2,1) = 1
-          occ_def(IPART,1,2) = 1
-          occ_def(IEXTR,2,2) = 1
-          occ_def(IEXTR,1,3) = 1
-          occ_def(IPART,2,3) = 1
-          occ_def(IEXTR,1,4) = 1
-          occ_def(IEXTR,2,4) = 1
-        else if (typ_str(idx:idx).eq.'F') then ! (H-space only)
-          ndef = 1
+        if(n_x.le.1)then
+          allocate(occ_def(ngastp,2,4))
+          if (typ_str(idx:idx).eq.'f') then ! (P/X-space only)
+            ndef = 4
+            occ_def = 0
+            occ_def(IPART,1,1) = 1
+            occ_def(IPART,2,1) = 1
+            occ_def(IPART,1,2) = 1
+            occ_def(IEXTR,2,2) = 1
+            occ_def(IEXTR,1,3) = 1
+            occ_def(IPART,2,3) = 1
+            occ_def(IEXTR,1,4) = 1
+            occ_def(IEXTR,2,4) = 1
+          else if (typ_str(idx:idx).eq.'F') then ! (H-space only)
+            ndef = 1
+            occ_def = 0
+            occ_def(IHOLE,1,1) = 1
+            occ_def(IHOLE,2,1) = 1
+          else
+            call quit(1,'set_r12intm_formal','???')
+          end if
+          call set_uop2(op_f,opdum_f,
+     &         occ_def,ndef,1,orb_info)
+          deallocate(occ_def)
+        elseif(n_x.eq.2)then
+          allocate(occ_def(ngastp,2,2))
+          ndef = 2
           occ_def = 0
           occ_def(IHOLE,1,1) = 1
-          occ_def(IHOLE,2,1) = 1
+          occ_def(IEXTR,2,1) = 1
+          occ_def(IHOLE,1,2) = 1
+          occ_def(IPART,2,2) = 1
+          call set_uop2(op_f,opdum_f,
+     &         occ_def,ndef,1,orb_info)
+          deallocate(occ_def)
+c          call set_hop(op_f,opdum_f,.false.,
+c     &         1,1,0,.true.,orb_info)
         else
-          call quit(1,'set_r12intm_formal','???')
-        end if
-        call set_uop2(op_f,opdum_f,
-     &       occ_def,ndef,1,orb_info)
-        deallocate(occ_def)
+          call quit(1,'set_r12intm_formal','Too many X with F')
+        endif
       end if
 
       ! dummy operator: 2 particle part of H
@@ -245,6 +262,11 @@ c          endif
         navoid = 2
         connect(1:2) = (/2,8/)
         nconnect = 1
+      elseif (trim(typ_str).eq.'rxfxr')then ! xrxxfxxrx
+        avoid(1:6) = (/2,7, 2,5, 3,8/)
+        navoid = 3
+        connect(1:4) = (/2,8, 5,8/)
+        nconnect = 2
       end if
 
 c test
@@ -268,7 +290,8 @@ c test
         end do
       end if
 c dbg
-      print *,'connect: ',connect(1:nconnect*2)
+c      print *,'idx_supv',idx_supv(1:nvtx)
+c      print *,'connect: ',connect(1:nconnect*2)
 c dbg
 c test
 

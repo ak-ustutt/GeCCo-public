@@ -252,7 +252,7 @@ c     &     (/1,2/),1,.false.,op_info)
 
 c dbg
       ! Produce truncated expansions.
-      call truncate_form(flist_lag,op_info)
+c      call truncate_form(flist_lag,op_info)
 c dbg
 
       ! sum up duplicate terms (due to S->T+CR replacement)

@@ -119,6 +119,10 @@ c      include 'def_contraction_list.h'
         call print_form_list(luout,flist,op_info)
       end if
 
+c dbg
+c      stop
+c dbg
+
       call dealloc_formula_list(flist)
       
       return

@@ -390,6 +390,24 @@ c      occ_def(IPART,2,16) = 2
      &              op_c_inter,1,1,
      &              parameters,2,tgt_info)
 
+c      ! Z^{ijp}_{klm} intermediate (needed for CC)
+cc      call add_target(op_z_inter,ttype_op,.false.,tgt_info)
+cc dbg
+c      call add_target(op_z_inter,ttype_op,.true.,tgt_info)
+cc dbg
+c      occ_def = 0
+c      occ_def(IHOLE,1,1) = 3
+c      occ_def(IHOLE,2,1) = 3
+c      occ_def(IHOLE,1,2) = 3
+c      occ_def(IHOLE,2,2) = 2
+c      occ_def(IPART,2,2) = 1
+c      ndef = 2
+c      call op_from_occ_parameters(-1,parameters,2,
+c     &     occ_def,ndef,1,ndef)
+c      call set_rule(op_z_inter,ttype_op,DEF_OP_FROM_OCC,
+c     &              op_z_inter,1,1,
+c     &              parameters,2,tgt_info)
+
 *----------------------------------------------------------------------*
 *     Formulae
 *----------------------------------------------------------------------*
@@ -614,6 +632,23 @@ c      occ_def(IPART,2,16) = 2
       call set_rule(form_r12_ccabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,nlab,1,
      &              parameters,2,tgt_info)
+
+c      ! Formal definition of Z.
+c      labels(1:10)(1:len_target_name) = ' '
+c      labels(1) = form_r12_zint
+c      labels(2) = op_z_inter
+c      labels(3) = op_r12
+c      labels(4) = op_ham
+c      labels(5) = op_r12
+c      call add_target(form_r12_zint,ttype_frm,.true.,tgt_info)
+c      call set_dependency(form_r12_zint,op_b_inter,tgt_info)
+c      call set_dependency(form_r12_zint,op_ham,tgt_info)
+c      call set_dependency(form_r12_zint,op_r12,tgt_info)
+c      call form_parameters(-1,
+c     &     parameters,2,title_r12_zint,0,'Z')
+c      call set_rule(form_r12_zint,ttype_frm,DEF_R12INTM_FORMAL,
+c     &              labels,5,1,
+c     &              parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae

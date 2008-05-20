@@ -134,7 +134,7 @@ c prelim
      &       title,nop,idx_sv)
         ioff = rule%n_update
 c dbg
-        print *,'ioff,nop = ',ioff,nop
+c        print *,'ioff,nop = ',ioff,nop
 c dbg        
         call form_expand_op_product(form_pnt,
      &       title,rule%labels(ioff+1),rule%labels(ioff+2),nop,idx_sv,
@@ -152,6 +152,10 @@ c dbg
      &       nint,rule%labels(ioff+2),
      &       op_info,form_info
      &       )
+
+c dbg
+        stop
+c dbg
       case(REPLACE)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

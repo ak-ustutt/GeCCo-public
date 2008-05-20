@@ -70,9 +70,18 @@ c        hpvxca_mnmx(1:2,IHOLE,2)=2
         if(igastp.eq.IEXTR)then
           hpvxca_mnmx(1,igastp,1)=0
           if (orb_info%caborb.gt.0) hpvxca_mnmx(2,igastp,1)=iformal-1
-        elseif(igastp.ne.IVALE)then
-          hpvxca_mnmx(1,igastp,1)=0
-          hpvxca_mnmx(2,igastp,1)=max_rank
+c dbg
+          ! Quick fix.
+          if(trim(name).eq.'G')then
+            hpvxca_mnmx(1,igastp,2)=0
+            if (orb_info%caborb.gt.0) hpvxca_mnmx(2,igastp,2)=iformal-1
+          endif
+c dbg
+        else
+          if(igastp.ne.IVALE)then
+            hpvxca_mnmx(1,igastp,1)=0
+            hpvxca_mnmx(2,igastp,1)=max_rank
+          endif
         endif  
       enddo
 

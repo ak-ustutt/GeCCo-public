@@ -215,7 +215,7 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.true.)
 
 c dbg
-        print *,'passing this line 1!'
+c        print *,'passing this line 1!'
 c dbg
       call dummy_restr(irestr_op1op2,
      &       iocc_op1op2,njoined_op1op2,orb_info)
@@ -282,7 +282,7 @@ c dbg
      &         contr_red,occ_vtx_red(1,1,njoined_res+1),idxnew_op1op2)
         if (.not.set_reo.or.reo_info%nreo.gt.0) then
 c dbg
-        print *,'passing this line 2!'
+c        print *,'passing this line 2!'
 c dbg
           do ivtx = 1, nvtx
             call dummy_restr(irestr_vtx_red(1,1,1,1,ivtx+njoined_res),

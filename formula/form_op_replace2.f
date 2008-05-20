@@ -1,4 +1,4 @@
-      subroutine form_op_replace(opin,opout,form,op_info)
+      subroutine form_op_replace2(opin,opout,dagout,form,op_info)
 *-----------------------------------------------------------------------
 *     Routine which loops over a formula, form, replacing the operator, 
 *     opin, with opout. This is useful for replacing formal 
@@ -20,6 +20,8 @@
 
       character*(*), intent(in) ::
      &     opin, opout
+      logical, intent(in) ::
+     &     dagout
       type(formula_item), target, intent(inout) ::
      &     form
       type(operator_info), intent(in) ::
@@ -103,7 +105,7 @@ c          write(luout,*) '[ADD]'
                 ! Locate the formal block's counterpart in the actual 
                 ! operator. 
                 idx_blk_out =
-     &               iblk_occ(occ_temp,.false.,opout_pnt)
+     &               iblk_occ(occ_temp,dagout,opout_pnt)
 
                 if (idx_blk_out.le.0) then
                   call quit(1,'form_op_replace',
@@ -115,6 +117,7 @@ c          write(luout,*) '[ADD]'
                 form_pnt%contr%vertex(idx)%idx_op = idxout
                 form_pnt%contr%vertex(idx)%iblk_op =
      &               idx_blk_out
+                form_pnt%contr%vertex(idx)%dagger = dagout
               end if
 
             end do
@@ -123,33 +126,36 @@ c          write(luout,*) '[ADD]'
             ! more complicated operator?
             ! will not neccessarly work if more than one instance
             ! is present (which happens rarely)
-          idx_join = 0
-          do idx = 1,nvtx
-            ! Check the operator index of the vertex.
-            idx_form_op = form_pnt%contr%vertex(idx)%idx_op
+            if(dagout)
+     &           call quit(1,'form_op_replace2','njoined and daggers')
 
-            ! If the index of the operator vertex equals that of the
-            ! intermediate operator...
-            if(idx_form_op.eq.idxin)then
-              idx_form_blk = form_pnt%contr%vertex(idx)%iblk_op
+            idx_join = 0
+            do idx = 1,nvtx
+              ! Check the operator index of the vertex.
+              idx_form_op = form_pnt%contr%vertex(idx)%idx_op
 
-              ! Keep a tally of the number of vertices of opin that have
-              ! been found, and store their indices within the 
-              ! contraction.
-              idx_join = idx_join+1
-              if(idx_join.gt.njoined)
-     &             call quit(1,'form_op_replace','idx_join gt njoined')
-              vtx_chng_idx(idx_join) = idx
+              ! If the index of the operator vertex equals that of the
+              ! intermediate operator...
+              if(idx_form_op.eq.idxin)then
+                idx_form_blk = form_pnt%contr%vertex(idx)%iblk_op
 
-              ! Copy the flagged vertex to a temporary array.
-              occ_temp(1:ngastp,1:2,idx_join)=
-     &             opin_pnt%ihpvca_occ(1:ngastp,1:2,idx_form_blk)
+                ! Keep a tally of the number of vertices of opin that have
+                ! been found, and store their indices within the 
+                ! contraction.
+                idx_join = idx_join+1
+                if(idx_join.gt.njoined)
+     &              call quit(1,'form_op_replace','idx_join gt njoined')
+                vtx_chng_idx(idx_join) = idx
 
-              ! Note that a change has to be made to the contraction.
-              change = .true.
-            endif
-          enddo
-          ! end of old code
+                ! Copy the flagged vertex to a temporary array.
+                occ_temp(1:ngastp,1:2,idx_join)=
+     &               opin_pnt%ihpvca_occ(1:ngastp,1:2,idx_form_blk)
+
+                ! Note that a change has to be made to the contraction.
+                change = .true.
+              endif
+            enddo
+            ! end of old code
           end if
 
           if(change)then

@@ -6,6 +6,7 @@
       implicit none
 
       include 'stdunit.h'
+      include 'opdim.h'
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
 
@@ -24,7 +25,8 @@
       integer ::
      &     min_rank, max_rank, level,
      &     isim, ncat, nint, icnt, ansatz,
-     &     isym, ms, msc, sym_arr(8), nlabel, mode
+     &     isym, ms, msc, sym_arr(8), nlabel, mode,
+     &     occ_def(ngastp,2,20)
       logical ::
      &     needed,r12fix
       character(len_target_name) ::
@@ -34,6 +36,12 @@
      &     parameters(2)
       character(12) ::
      &     approx
+      character(6), parameter ::
+     &     op_jac = 'JACOBI',
+     &     form_jac = 'FRMJAC',
+     &     fopt_jac = 'OPTJAC',
+     &     mel_jac = 'MELJAC',
+     &     mel_jac_def = 'DEFJAC'
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting special targets for MP-R12 ...'
@@ -83,6 +91,21 @@
         call set_rule(op_omgcex,ttype_op,CLONE_OP,
      &                op_omgcex,1,1,
      &                parameters,1,tgt_info)
+
+        call add_target(op_jac,ttype_op,.false.,tgt_info)
+        occ_def = 0
+        occ_def(IHOLE,1,1) = 1
+        occ_def(IPART,1,1) = 1
+        occ_def(IHOLE,2,1) = 1
+        occ_def(IPART,2,1) = 1
+
+        occ_def(IPART,1,2) = 1
+        occ_def(IPART,2,2) = 1
+        call op_from_occ_parameters(-1,parameters,2,
+     &       occ_def,2,1,2)
+        call set_rule(op_jac,ttype_op,DEF_OP_FROM_OCC,
+     &       op_jac,1,1,
+     &       parameters,2,tgt_info)
       endif
 
 c      ! diagonal
@@ -219,6 +242,19 @@ c dbg
         call set_rule(form_mpr12rs_cex,ttype_frm,DERIVATIVE,
      &                labels,5,1,
      &                title_mpr12rs_cex,1,tgt_info)
+
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = form_jac
+        labels(2) = form_mpr12rs_cex
+        labels(3) = op_jac
+        labels(4) = op_cex
+        labels(5) = ' '
+        call add_target(form_jac,ttype_frm,.true.,tgt_info)
+        call set_dependency(form_jac,form_mpr12rs_cex,tgt_info)
+        call set_dependency(form_jac,op_jac,tgt_info)
+        call set_rule(form_jac,ttype_frm,DERIVATIVE,
+     &                labels,5,1,
+     &                'JAC',1,tgt_info)
       endif
 
 *----------------------------------------------------------------------*
@@ -259,7 +295,31 @@ c dbg
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
+      if(mode.gt.0)then
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = fopt_jac
+        labels(2) = form_jac
+        ncat = 1
+        nint = 0
+        call add_target(fopt_jac,ttype_frm,.true.,tgt_info)
+        call set_dependency(fopt_jac,form_jac,tgt_info)
+        call set_dependency(fopt_jac,mel_jac_def,tgt_info)
+        call set_dependency(fopt_jac,mel_omgcexdef,tgt_info)
+        call set_dependency(fopt_jac,mel_cex_def,tgt_info)
+        call set_dependency(fopt_jac,mel_ham,tgt_info)
+        call set_dependency(fopt_jac,mel_mpr12en0def,tgt_info)      
+        call set_dependency(fopt_jac,mel_v_def,tgt_info)      
+        call set_dependency(fopt_jac,mel_b_def,tgt_info)      
+        call set_dependency(fopt_jac,mel_bh_def,tgt_info)      
+        call set_dependency(fopt_jac,mel_c_def,tgt_info)      
+        call set_dependency(fopt_jac,mel_x_def,tgt_info)
+        call set_dependency(fopt_jac,eval_r12_inter,tgt_info)
+        call opt_parameters(-1,parameters,ncat,nint)
+        call set_rule(fopt_jac,ttype_frm,OPTIMIZE,
+     &       labels,ncat+nint+1,1,
+     &       parameters,1,tgt_info)
 
+      endif
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -307,6 +367,18 @@ c dbg
         call set_rule(mel_cexbar_def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
+
+        call add_target(mel_jac_def,ttype_opme,.false.,tgt_info)
+        call set_dependency(mel_jac_def,op_jac,tgt_info)
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = mel_jac
+        labels(2) = op_jac
+        call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+        call set_rule(mel_jac_def,ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+
       endif
 
 c      if(.not.r12fix)then
@@ -347,6 +419,13 @@ c      endif
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
         
         call add_target(solve_mpr12_gs,ttype_gen,.true.,tgt_info)
+
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = fopt_jac
+        call set_rule(solve_mpr12_gs,ttype_opme,EVAL,
+     &       labels,1,0,
+     &       parameters,0,tgt_info)
+
         call set_dependency(solve_mpr12_gs,mel_dia1,tgt_info)
 c        call set_dependency(solve_mpr12_gs,mel_b_inv,tgt_info)
 c        call set_dependency(solve_mpr12_gs,mel_b_dia,tgt_info)

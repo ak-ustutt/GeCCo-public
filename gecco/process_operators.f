@@ -69,7 +69,7 @@
      &       0,0,1,.false.,orb_info)
       case(DEF_HAMILTONIAN)
         if (rule%n_parameter_strings.lt.1)
-     &       call quit(1,'process_operatorss',
+     &       call quit(1,'process_operators',
      &       'no parameters provided for '//DEF_HAMILTONIAN)
         call hop_parameters(+1,rule%parameters,
      &                      min_rank,max_rank,iformal,explicit)

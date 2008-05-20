@@ -136,22 +136,34 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
      &              parameters,2,tgt_info)
       ! (b) Factor out the R12 intermediates 
       ! (effectively removing all reference to the complete basis)
-      labels(1:10)(1:len_target_name) = ' '
+      labels(1:15)(1:len_target_name) = ' '
       labels(1) = form_ccr12lg0 ! output formula (itself)
       labels(2) = form_ccr12lg0 ! input formula
       labels(3) = form_r12_vint    ! the intermediates to be factored
       labels(4) = form_r12_vint//'^+'
       labels(5) = form_r12_xint
       labels(6) = form_r12_bint
-      nint = 4
+      labels(7) = form_r12_pint
+      labels(8) = form_r12_z4int
+      labels(9) = form_r12_zint
+      nint = 7
       call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_xint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
+      call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
+      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
+      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
       if (ansatz.ne.1) then
-        labels(7) = form_r12_cint
-        labels(8) = trim(form_r12_cint)//'^+'
+        labels(10) = form_r12_p3gint
+        labels(11) = form_r12_p3fint
+        labels(12) = form_r12_k4int
+        labels(13) = form_r12_cint
+        labels(14) = trim(form_r12_cint)//'^+'
+        call set_dependency(form_ccr12lg0,form_r12_p3gint,tgt_info)
+        call set_dependency(form_ccr12lg0,form_r12_p3fint,tgt_info)
         call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
-        nint = 6
+        call set_dependency(form_ccr12lg0,form_r12_k4int,tgt_info)
+        nint = 12
       end if
       call form_parameters(-1,
      &     parameters,2,title_ccr12lg0,nint,'---')

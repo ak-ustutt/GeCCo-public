@@ -127,61 +127,61 @@ c      endif
         op%formal = op%formal.and.op%formal_blk(idx)
       end do
 
-      ! Extra terms required for CC-R12 intermediates.
-      ! Initially only for V.
-      if((trim(name).eq.op_v_inter.or.trim(name).eq.op_vbar_inter)
-     &     .and.cclog)then
-        if(trim(name).eq.op_v_inter)then
-          i=1
-          j=2
-        else
-          i=2
-          j=1
-        endif
-        allocate(opscr(2))
-        do idx = 1, 2
-          ! Shape of the operator.
-          occ0 = 0
-          call add_operator(op_dummy1,op_info)
-          idx_dum = idx_oplist2(op_dummy1,op_info)
-          dum1_pnt => op_info%op_arr(idx_dum)%op
-          occ0(2,i) = idx
-          call set_uop(dum1_pnt,op_dummy1,.false.,
-     &         occ0,1,orb_info)
-
-c          if(.not.r12fix)then
-            ! Spacer operator.
-            occ0 = 0
-            call add_operator(op_dummy2,op_info)
-            idx_dum = idx_oplist2(op_dummy2,op_info)
-            dum2_pnt => op_info%op_arr(idx_dum)%op
-            occ0(1,i) = 2
-            occ0(1,j) = 2-idx
-            call set_uop(dum2_pnt,op_dummy2,.false.,
-     &           occ0,1,orb_info)
-        
-            opscr(1)%op => dum1_pnt
-            opscr(2)%op => dum2_pnt
-
-            ! Temporary intermediate.
-            call add_operator(op_dummy3,op_info)
-            idx_dum = idx_oplist2(op_dummy3,op_info)
-            dum3_pnt => op_info%op_arr(idx_dum)%op
-          
-            call set_gen_intermediate(dum3_pnt,op_dummy3,
-     &           opscr,2,orb_info)
-
-            call join_operator(op,dum3_pnt,orb_info)
-
-            call del_operator(op_dummy3,op_info)
-            call del_operator(op_dummy2,op_info)
-c          else
-c            call join_operator(op,dum1_pnt,orb_info)
-c          endif
-          call del_operator(op_dummy1,op_info)
-        enddo
-        deallocate(opscr)
-      endif
+c      ! Extra terms required for CC-R12 intermediates.
+c      ! Initially only for V.
+c      if((trim(name).eq.op_v_inter.or.trim(name).eq.op_vbar_inter)
+c     &     .and.cclog)then
+c        if(trim(name).eq.op_v_inter)then
+c          i=1
+c          j=2
+c        else
+c          i=2
+c          j=1
+c        endif
+c        allocate(opscr(2))
+c        do idx = 1, 2
+c          ! Shape of the operator.
+c          occ0 = 0
+c          call add_operator(op_dummy1,op_info)
+c          idx_dum = idx_oplist2(op_dummy1,op_info)
+c          dum1_pnt => op_info%op_arr(idx_dum)%op
+c          occ0(2,i) = idx
+c          call set_uop(dum1_pnt,op_dummy1,.false.,
+c     &         occ0,1,orb_info)
+c
+cc          if(.not.r12fix)then
+c            ! Spacer operator.
+c            occ0 = 0
+c            call add_operator(op_dummy2,op_info)
+c            idx_dum = idx_oplist2(op_dummy2,op_info)
+c            dum2_pnt => op_info%op_arr(idx_dum)%op
+c            occ0(1,i) = 2
+c            occ0(1,j) = 2-idx
+c            call set_uop(dum2_pnt,op_dummy2,.false.,
+c     &           occ0,1,orb_info)
+c        
+c            opscr(1)%op => dum1_pnt
+c            opscr(2)%op => dum2_pnt
+c
+c            ! Temporary intermediate.
+c            call add_operator(op_dummy3,op_info)
+c            idx_dum = idx_oplist2(op_dummy3,op_info)
+c            dum3_pnt => op_info%op_arr(idx_dum)%op
+c          
+c            call set_gen_intermediate(dum3_pnt,op_dummy3,
+c     &           opscr,2,orb_info)
+c
+c            call join_operator(op,dum3_pnt,orb_info)
+c
+c            call del_operator(op_dummy3,op_info)
+c            call del_operator(op_dummy2,op_info)
+cc          else
+cc            call join_operator(op,dum1_pnt,orb_info)
+cc          endif
+c          call del_operator(op_dummy1,op_info)
+c        enddo
+c        deallocate(opscr)
+c      endif
 
       if (ntest.ge.100) then
         write(luout,*) 'generated: '
