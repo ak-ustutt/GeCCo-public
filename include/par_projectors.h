@@ -1,9 +1,9 @@
       integer, parameter ::
-     &     nproj = 6,
+     &     nproj = 7,
 *     blocks of projector
-     &     nblk(nproj) = (/1,5,2,4,1,2/),
+     &     nblk(nproj) = (/1,5,2,4,1,2,1/),
 *     offset of projector
-     &     ioff(nproj) = (/0,1,6,8,12,13/)!,
+     &     ioff(nproj) = (/0,1,6,8,12,13,15/)!,
 c*     the projectors:
 c     &     occ_prj(ngastp,15) = (/
 c*     ansatz 1, Q
@@ -26,12 +26,13 @@ c*     O1+O2-2O1O2-V1O2-V2O1  Z for ansatz 1
 c     &     (/1,0,0,1/),
 c*     O1+O2-2O1O2            Z for ansatz 2
 c     &     (/1,1,0,0/),
-c     &     (/1,0,0,1/)
-c     &     /)
+c     &     (/1,0,0,1/),
+c*     P1P2
+c     &     (/0,2,0,0/)/)
 c PGF90 only accepts this:
 *     the projectors:
       integer ::
-     &     occ_prj(ngastp,15)
+     &     occ_prj(ngastp,16)
       data occ_prj /
 *     ansatz 1, Q
      &     0,0,0,2,
@@ -53,4 +54,6 @@ c PGF90 only accepts this:
      &     1,0,0,1,
 *     O1+O2-2O1O2            Z for ansatz 2
      &     1,1,0,0,
-     &     1,0,0,1/
+     &     1,0,0,1,
+*     P1P2                   
+     &     0,2,0,0/

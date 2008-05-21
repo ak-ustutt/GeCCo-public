@@ -43,7 +43,9 @@
      &     me_bprc*8 = 'BPRCLIST',
      &     me_xprc*8 = 'XPRCLIST',
      &     medef_bprc*12 = 'DEF-BPRCLIST',
-     &     medef_xprc*12 = 'DEF-XPRCLIST'
+     &     medef_xprc*12 = 'DEF-XPRCLIST',
+c     &     mel_mpr12lg0def*8 = 'L(MPR12)',
+     &     fopt_mpr12lg0*13 = 'LAG_MPR12_OPT'
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting special targets for MP-R12 ...'
@@ -290,19 +292,43 @@ c dbg
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
+      ! lagrangian for testing:
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = fopt_mpr12lg0
+      labels(2) = form_mpr12lg0
+      ncat = 1
+      nint = 0
+      call add_target(fopt_mpr12lg0,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_mpr12lg0,form_mpr12lg0,tgt_info)
+      call set_dependency(fopt_mpr12lg0,mel_topdef,tgt_info)
+      if(mode.gt.0)then
+        call set_dependency(fopt_mpr12lg0,mel_cex_def,tgt_info)
+      endif
+      call set_dependency(fopt_mpr12lg0,mel_ham,tgt_info)
+      call set_dependency(fopt_mpr12lg0,mel_mpr12lg0def,tgt_info)      
+      call set_dependency(fopt_mpr12lg0,mel_v_def,tgt_info)      
+      call set_dependency(fopt_mpr12lg0,mel_b_def,tgt_info)      
+      call set_dependency(fopt_mpr12lg0,mel_bh_def,tgt_info)      
+      call set_dependency(fopt_mpr12lg0,mel_c_def,tgt_info)      
+      call set_dependency(fopt_mpr12lg0,mel_x_def,tgt_info)
+      call set_dependency(fopt_mpr12lg0,eval_r12_inter,tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_mpr12lg0,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
 
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
       ! L0/E0:
-      call add_target(mel_mpr12lg0,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_mpr12lg0,op_mpr12lg,tgt_info)
+      call add_target(mel_mpr12lg0def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_mpr12lg0def,op_mpr12lg,tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = mel_mpr12lg0
       labels(2) = op_mpr12lg
       call me_list_parameters(-1,parameters,
      &     0,0,1,0,0)
-      call set_rule(mel_mpr12lg0,ttype_opme,DEF_ME_LIST,
+      call set_rule(mel_mpr12lg0def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
       call add_target(mel_mpr12en0def,ttype_opme,.false.,tgt_info)
@@ -455,7 +481,7 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         labels(3) = mel_omg
         labels(4) = mel_omgcex
         labels(5) = mel_dia1
-        labels(6) = mel_dia1!'DIATEST'
+        labels(6) = mel_dia1
         labels(7) = mel_mpr12en0
         labels(8) = fopt_mpr12_0
         labels(9) = me_bprc
@@ -464,6 +490,12 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         call set_rule(solve_mpr12_gs,ttype_opme,SOLVENLEQ,
      &       labels,11,4,
      &       parameters,2,tgt_info)
+c testing
+c        labels(1) = fopt_mpr12lg0
+c        call set_dependency(solve_mpr12_gs,fopt_mpr12lg0,tgt_info)
+c        call set_rule(solve_mpr12_gs,ttype_opme,EVAL,
+c     &       labels,1,1,
+c     &       parameters,2,tgt_info)
 
       else
         ! totally symmetric dia for use below:
