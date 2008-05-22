@@ -108,9 +108,19 @@ c      ! diagonal
       endif
 
       call add_target(op_bprc,ttype_op,.false.,tgt_info)
+      occ_def=0
       ndef = 1
-      occ_def(IPART,1,1) = 1
-      occ_def(IPART,2,1) = 1
+      if (mode.eq.1) then
+        ndef = 1
+        occ_def(IPART,1,1) = 1
+        occ_def(IPART,2,1) = 1
+      else if (mode.eq.2) then
+        ndef = 1
+      else if (mode.eq.3) then
+        ndef = 2
+        occ_def(IPART,1,2) = 1
+        occ_def(IPART,2,2) = 1
+      end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,ndef)
       call set_rule(op_bprc,ttype_op,DEF_OP_FROM_OCC,
@@ -118,9 +128,19 @@ c      ! diagonal
      &              parameters,2,tgt_info)
 
       call add_target(op_xprc,ttype_op,.false.,tgt_info)
+      occ_def=0
       ndef = 1
-      occ_def(IPART,1,1) = 1
-      occ_def(IPART,2,1) = 1
+      if (mode.eq.1) then
+        ndef = 1
+        occ_def(IPART,1,1) = 1
+        occ_def(IPART,2,1) = 1
+      else if (mode.eq.2) then
+        ndef = 1
+      else if (mode.eq.3) then
+        ndef = 2
+        occ_def(IPART,1,2) = 1
+        occ_def(IPART,2,2) = 1
+      end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,ndef)
       call set_rule(op_xprc,ttype_op,DEF_OP_FROM_OCC,

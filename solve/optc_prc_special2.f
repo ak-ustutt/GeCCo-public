@@ -46,7 +46,8 @@
      &     graph_cstr, graph_astr, len_cstr, len_astr,
      &     idx_grd, idx_b, idx_x,
      &     ngas, njoined, mstotal, gamtotal,
-     &     iblk, iblk_off, idxms_bx, gam_bx, ld_bx
+     &     iblk, iblk_off, idxms_bx, gam_bx, ld_bx, iblk_b,
+     &     occ_b(ngastp,2)
       logical ::
      &     first, beyond_A
 
@@ -73,7 +74,7 @@
      &     f_dia(:), xmat(:), bmat(:)
 
       integer, external ::
-     &     idxlist
+     &     idxlist, iblk_occ
       logical,external ::
      &     next_msgamdist2
 
@@ -133,8 +134,6 @@
       graphs => str_info%g
       igas_restr => str_info%igas_restr
 
-      off_bx_gam_ms => me_bmat%off_op_gmo(1)%gam_ms
-
 c      if (njoined.ne.2)
 c     &     call quit(1,'optc_prc_special',
 c     &     'strange -- expected njoined==2')
@@ -157,6 +156,31 @@ c     &     'strange -- expected njoined==2')
 
         call get_num_subblk(ncsub,nasub,
      &       hpvx_occ(1,1,iblk_off+1),njoined)
+
+        ! find the relevant block of B
+        if (njoined.eq.2) then
+          iblk_b = 1
+        else if (njoined.eq.1) then
+          occ_b(1:ngastp,1) = occ_blk(1:ngastp,1,1)
+          occ_b(1:ngastp,2) = occ_blk(1:ngastp,1,1)
+          iblk_b = iblk_occ(occ_b,.false.,me_bmat%op)
+          if (iblk_b.le.0)
+     &         call quit(1,'optc_prc_special2',
+     &         'did not find an appropriate block of B (precond)')
+        else
+          call quit(1,'optc_prc_special2',
+     &         'gradient -- njoined > 2 ??')
+        end if
+
+        off_bx_gam_ms => me_bmat%off_op_gmo(iblk_b)%gam_ms
+
+        ! special case: scalar:
+        if (ncsub.eq.0.and.nasub.eq.0) then
+          idx_grd = off_grd_d_gam_ms(1,1,1)+1
+          idx_b   = off_bx_gam_ms(1,1)+1
+          xbuf1(idx_grd) = xbuf1(idx_grd)/bmat(idx_b)
+          cycle
+        end if
 
         if (ncsub.ne.1.and.ncsub.ne.2.and.nasub.ne.1) then
           write(luout,*) 'ncsub, nasub: ',ncsub,nasub
