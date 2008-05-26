@@ -116,10 +116,16 @@ c      ! diagonal
         occ_def(IPART,2,1) = 1
       else if (mode.eq.2) then
         ndef = 1
-      else if (mode.eq.3) then
+      else if (mode.eq.3.or.mode.eq.4) then
         ndef = 2
         occ_def(IPART,1,2) = 1
         occ_def(IPART,2,2) = 1
+      else if (mode.gt.4) then
+        ndef = 3
+        occ_def(IPART,1,2) = 1
+        occ_def(IPART,2,2) = 1
+        occ_def(IPART,1,3) = 2
+        occ_def(IPART,2,3) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,ndef)
@@ -136,10 +142,16 @@ c      ! diagonal
         occ_def(IPART,2,1) = 1
       else if (mode.eq.2) then
         ndef = 1
-      else if (mode.eq.3) then
+      else if (mode.eq.3.or.mode.eq.4) then
         ndef = 2
         occ_def(IPART,1,2) = 1
         occ_def(IPART,2,2) = 1
+      else if (mode.gt.4) then
+        ndef = 3
+        occ_def(IPART,1,2) = 1
+        occ_def(IPART,2,2) = 1
+        occ_def(IPART,1,3) = 2
+        occ_def(IPART,2,3) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,ndef)
@@ -228,6 +240,20 @@ c dbg
      &              labels,4,1,
      &              title_mpr12lg0,1,tgt_info)
       end if
+
+c test
+      if (mode.eq.6) then
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = form_mpr12lg0
+        labels(2) = form_mpr12lg0
+        labels(3) = op_mpr12lg
+        labels(4) = op_cex
+        labels(5) = op_cexbar
+        call set_rule(form_mpr12lg0,ttype_frm,INVARIANT,
+     &              labels,5,1,
+     &              title_mpr12lg0,1,tgt_info)
+      end if
+c test
 
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = form_mpr12en0
@@ -480,7 +506,7 @@ c      endif
 *     "phony" targets
 *----------------------------------------------------------------------*
 
-      if(mode.gt.0)then
+      if(mode.gt.0.and.mode.lt.6)then
         ! totally symmetric dia for use below:
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
         

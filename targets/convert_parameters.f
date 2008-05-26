@@ -84,16 +84,19 @@
         parameters(2)(1:len(parameters(2))) = ' '
         write(parameters(1),'(2(i5,x))')
      &        njoined, ndef
-        if (2*ngastp*ndef*njoined.gt.120)
-     &       call quit(1,'op_from_occ_parameters','2*ngastp*ndef.gt.64')
-        write(parameters(2),'(120(i2))')
+c        if (2*ngastp*ndef*njoined.gt.120)
+        if (2*ngastp*ndef*njoined.gt.240)
+     &      call quit(1,'op_from_occ_parameters','2*ngastp*ndef.gt.240')
+c        write(parameters(2),'(120(i2))')
+        write(parameters(2),'(240(i1))')
      &        occ_def(1:2*ngastp*ndef*njoined)        
       else
         read(parameters(1),'(2(i5,x))')
      &       njoined, ndef
         if (ndef*njoined.gt.nmax)
      &       call quit(1,'op_from_occ_parameters','nmax too small')
-        read(parameters(2),'(120(i2))')
+c        read(parameters(2),'(120(i2))')
+        read(parameters(2),'(240(i1))')
      &        occ_def(1:2*ngastp*ndef*njoined)
       end if
 

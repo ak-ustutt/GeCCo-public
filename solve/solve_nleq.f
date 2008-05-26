@@ -275,7 +275,7 @@ c     &       ff_trv,ff_h_trv,
           ! is expected to be the last "intermediate"
           energy =  xret(idx_en_xret)
 c dbg
-          print *,'xret : ',xret
+c          print *,'xret : ',xret
 c dbg
 
           if (ntest.ge.1000) then

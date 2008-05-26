@@ -21,15 +21,19 @@
      &     op_info
 
       integer ::
-     &     nvtx_a, nvtx_b, narc_a, narc_b, base1, base2, idum
+     &     nvtx_a, nvtx_b, narc_a, narc_b,
+     &     nj_a, nj_b, lenlist, ivtx, jvtx, nvtx_int, nvtx_new
 
       integer, pointer ::
-     &     occ_vtx_a(:,:,:), occ_vtx_b(:,:,:),
-     &     topomap_a(:,:), topomap_b(:,:),
-     &     vtxinf_a(:), vtxinf_b(:), vtxmap(:)
+     &     svertex_a(:), svertex_b(:),
+     &     vtxmap(:), list(:), list_reo(:), ireo(:)
+      integer(8), pointer ::
+     &     xlines_a(:,:), xlines_b(:,:),
+     &     topo_a(:,:), topo_b(:,:),
+     &     vtx_a(:), vtx_b(:)
 
       integer, external ::
-     &     maxblk_in_contr, ifndmax
+     &     maxblk_in_contr, ifndmax, njres_contr
 
       if (ntest.ge.100) then
         write(luout,*) '--------------------------'
@@ -37,10 +41,8 @@
         write(luout,*) '--------------------------'
         write(luout,*) 'vertices A/B: ',contra%nvtx,contrb%nvtx
         write(luout,*) 'arcs A/B:     ',contra%narc,contrb%narc
-c dbg
-        call prt_contr2(6,contra,op_info)
-        call prt_contr2(6,contrb,op_info)
-c dbg
+        call prt_contr2(luout,contra,op_info)
+        call prt_contr2(luout,contrb,op_info)
       end if
 
       contr_in_contr = .false.
@@ -55,48 +57,96 @@ c dbg
       if (nvtx_a.gt.nvtx_b.or.
      &    narc_a.gt.narc_b) return
 
-      allocate(occ_vtx_a(ngastp,2,nvtx_a),
-     &         occ_vtx_b(ngastp,2,nvtx_b),
-     &         topomap_a(nvtx_a,nvtx_a), topomap_b(nvtx_b,nvtx_b),
-     &         vtxinf_a(nvtx_a), vtxinf_b(nvtx_b),vtxmap(nvtx_b))
+      nj_a = njres_contr(contra)
+      nj_b = njres_contr(contrb)
 
-      call occvtx4contr(1,occ_vtx_a,contra,op_info)
-      call occvtx4contr(1,occ_vtx_b,contrb,op_info)
+      allocate(svertex_a(nvtx_a),
+     &         svertex_b(nvtx_b),
+     &         topo_a(nvtx_a,nvtx_a), topo_b(nvtx_b,nvtx_b),
+     &         vtx_a(nvtx_a), vtx_b(nvtx_b),vtxmap(nvtx_b),
+     &         xlines_a(nvtx_a,nj_a),xlines_b(nvtx_b,nj_b),
+     &         list(nvtx_b*(nvtx_b+1)),ireo(nvtx_b),
+     &         list_reo(nvtx_b*(nvtx_b+1)))
 
-      base1 = ifndmax(occ_vtx_a,1,ngastp*2*nvtx_a,1)
-      base1 = max(base1,ifndmax(occ_vtx_b,1,ngastp*2*nvtx_b,1))
-      base2 = maxblk_in_contr(contra)
-      base2 = max(base2,maxblk_in_contr(contrb))
+      call pack_contr(svertex_a,vtx_a,topo_a,xlines_a,contra,nj_a)
+      call pack_contr(svertex_b,vtx_b,topo_b,xlines_b,contrb,nj_b)
 
-      call topomap4contr(2,base1,base2,
-     &     topomap_a,vtxinf_a,idum,idum,
-     &     contra,occ_vtx_a)
-      call topomap4contr(2,base1,base2,
-     &     topomap_b,vtxinf_b,idum,idum,
-     &     contrb,occ_vtx_b)
-
-c dbg
       if (ntest.ge.100) then
         print *,'A'
-        call iwrtma(vtxinf_a,1,nvtx_a,1,nvtx_a)
-        call iwrtma(topomap_a,nvtx_a,nvtx_a,nvtx_a,nvtx_a)
+        call prt_contr_p(luout,svertex_a,vtx_a,topo_a,
+     &       xlines_a,nvtx_a,nj_a)
         print *,'B'
-        call iwrtma(vtxinf_b,1,nvtx_b,1,nvtx_b)
-        call iwrtma(topomap_b,nvtx_b,nvtx_b,nvtx_b,nvtx_b)
+        call prt_contr_p(luout,svertex_b,vtx_b,topo_b,
+     &       xlines_b,nvtx_b,nj_b)
       end if
+
+      call identify_vertices_i8(vtxmap,contr_in_contr,
+     &                       vtx_a,topo_a,nvtx_a,
+     &                       vtx_b,topo_b,nvtx_b)
+
+      if (ntest.ge.100) then
+        write(luout,*) 'result (prel.): ',contr_in_contr
+        write(luout,*) 'vtxmap: ',vtxmap
+      end if
+
+      if (contr_in_contr.and.nvtx_a.gt.nj_a) then
+
+        ! extra test: can all vertices of a be merged to the
+        ! correct number ?
+
+        lenlist = 0
+        do ivtx = 1, nvtx_b
+          if (vtxmap(ivtx).eq.0) cycle
+          do jvtx = ivtx, nvtx_b
+            if (vtxmap(jvtx).eq.0) cycle
+            lenlist = lenlist+1
+            list(1+(lenlist-1)*2) = ivtx
+            list(2+(lenlist-1)*2) = jvtx
+          end do
+        end do
+        
+        call topo_remove_arcs(topo_b,nvtx_b,list,lenlist)
+c dbg
+c        print *,'I:'
+c        call prt_contr_p(luout,svertex_b,vtx_b,topo_b,
+c     &       xlines_b,nvtx_b,nj_b)
+c dbg
+        
+        lenlist = lenlist*2
+        call unique_list(list,lenlist)
+
+        call topo_approach_vtxs(ireo,
+     &       svertex_b,vtx_b,topo_b,xlines_b,
+     &       nvtx_b,nj_b,list,lenlist)
+
+        do ivtx = 1, lenlist
+          list_reo(ivtx) = ireo(list(ivtx))
+        end do
+        call unique_list(list_reo,lenlist)
+c dbg
+c        print *,'II:'
+c        call prt_contr_p(luout,svertex_b,vtx_b,topo_b,
+c     &       xlines_b,nvtx_b,nj_b)
 c dbg
 
-      call identify_vertices(vtxmap,contr_in_contr,
-     &                       vtxinf_a,topomap_a,nvtx_a,
-     &                       vtxinf_b,topomap_b,nvtx_b)
+        call topo_merge_vtxs(ireo,nvtx_new,nvtx_int,
+     &                     topo_b,xlines_b,nvtx_b,nj_b,
+     &                     list_reo,lenlist)
+
+        contr_in_contr = nvtx_int.le.nj_a
+
+        if (ntest.ge.100)
+     &       write(luout,*) '> ',nvtx_int, nj_a
+
+      end if
 
       if (ntest.ge.100) then
         write(luout,*) 'result: ',contr_in_contr
         write(luout,*) 'vtxmap: ',vtxmap
       end if
 
-      deallocate(occ_vtx_a,occ_vtx_b,vtxinf_a,vtxinf_b,
-     &     topomap_a,topomap_b,vtxmap)
+      deallocate(xlines_a,xlines_b,topo_a,topo_b,
+     &     list,ireo,vtxmap,vtx_a,vtx_b,list_reo)
 
       return
       end

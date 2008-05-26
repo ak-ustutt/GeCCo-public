@@ -1,0 +1,26 @@
+title
+  NeHe/pVDZ DALTON(special) enviroment: CCSD(R12)/3B energy (w. GBC)
+molecule
+  NeHe-R12-DALTON
+input
+  CCSD-R12-3B.inp
+check
+  label Number of terms in Lagrangian
+  find Number of generated terms:
+  compare int 5
+check
+  label Factorization of CC equations
+  find next target: CC-R12-OPT
+  find Most expensive contraction:
+  compare int 5
+  compare int 7
+check
+  label Number of iterations
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+check
+  label Final energy
+  find final energy: [ ]*
+  compare real 4 1e-12
+end
+

@@ -214,8 +214,16 @@
         if (iarc_rem.gt.narc_rem)
      &       call quit(1,'split_contr2','na sowas ...!?!')
         if (new) then
-          contr_rem%arc(iarc_rem)%link(1) = abs(ivtx_new(ivtx1))
-          contr_rem%arc(iarc_rem)%link(2) = abs(ivtx_new(ivtx2))
+          if (ivtx_new(ivtx1).gt.0) then
+            contr_rem%arc(iarc_rem)%link(1) = ivtx_new(ivtx1)
+          else
+            contr_rem%arc(iarc_rem)%link(1) = -isupervtx_spl(ivtx1)
+          end if
+          if (ivtx_new(ivtx2).gt.0) then
+            contr_rem%arc(iarc_rem)%link(2) = ivtx_new(ivtx2)
+          else
+            contr_rem%arc(iarc_rem)%link(2) = -isupervtx_spl(ivtx2)
+          end if
           contr_rem%arc(iarc_rem)%occ_cnt = contr%arc(iarc)%occ_cnt
         else
           contr_rem%arc(iarc_rem)%link(1) = max(0,ivtx_new(ivtx1))
@@ -265,12 +273,12 @@
 
       call update_svtx4contr(contr_rem)
 
-      if (.not.new) then ! ???
+c      if (.not.new) then ! ???
         call contr_clean_arcs(contr_rem%arc,contr_rem%narc)
         call arc_sort(contr_rem%arc,contr_rem%narc,contr_rem%nvtx)
         call contr_clean_arcs(contr_rem%xarc,contr_rem%nxarc)
         call arc_sort(contr_rem%xarc,contr_rem%nxarc,contr_rem%nvtx)
-      end if
+c      end if
 
       deallocate(svmap,svmap_spl,ivtx_new, isupervtx_spl)
       deallocate(occ_vtx,topomap,

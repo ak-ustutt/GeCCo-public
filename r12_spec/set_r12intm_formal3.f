@@ -31,7 +31,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -248,28 +248,28 @@ c          endif
       end if
 
 c test
-      if (n_f+n_g.gt.0) then
-        nconnect = 0
-        do ivtx = 1, nvtx
-          if (idx_supv(ivtx).eq.2.or.idx_supv(ivtx).eq.3) then
-            idx = ivtx
-            exit
-          end if
-        end do
-        do ivtx = 1, nvtx
-          if (idx_supv(ivtx).gt.4) then
-            if (ivtx.lt.idx) then
-              connect(nconnect*2+1:nconnect*2+2) = (/ivtx,idx/)
-            else
-              connect(nconnect*2+1:nconnect*2+2) = (/idx,ivtx/)
-            end if
-            nconnect = nconnect + 1
-          end if
-        end do
-      end if
-c dbg
-      print *,'connect: ',connect(1:nconnect*2)
-c dbg
+c      if (n_f+n_g.gt.0) then
+c        nconnect = 0
+c        do ivtx = 1, nvtx
+c          if (idx_supv(ivtx).eq.2.or.idx_supv(ivtx).eq.3) then
+c            idx = ivtx
+c            exit
+c          end if
+c        end do
+c        do ivtx = 1, nvtx
+c          if (idx_supv(ivtx).gt.4) then
+c            if (ivtx.lt.idx) then
+c              connect(nconnect*2+1:nconnect*2+2) = (/ivtx,idx/)
+c            else
+c              connect(nconnect*2+1:nconnect*2+2) = (/idx,ivtx/)
+c            end if
+c            nconnect = nconnect + 1
+c          end if
+c        end do
+c      end if
+cc dbg
+c      print *,'connect: ',connect(1:nconnect*2)
+cc dbg
 c test
 
       ! expand operator product, giving the intermediate as result

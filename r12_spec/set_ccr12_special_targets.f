@@ -143,14 +143,19 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       labels(5) = form_r12_xint
       labels(6) = form_r12_bint
       nint = 4
+c test
+c      labels(7) = form_r12_zint
+c      nint = 5
+c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
+c test
       call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_xint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
       if (ansatz.ne.1) then
-        labels(7) = form_r12_cint
-        labels(8) = trim(form_r12_cint)//'^+'
+        labels(2+nint+1) = form_r12_cint
+        labels(2+nint+2) = trim(form_r12_cint)//'^+'
         call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
-        nint = 6
+        nint = nint+2
       end if
       call form_parameters(-1,
      &     parameters,2,title_ccr12lg0,nint,'---')
