@@ -27,7 +27,16 @@
      &     occ_vtx_a(:,:,:), occ_vtx_b(:,:,:),
      &     topomap_a(:,:), topomap_b(:,:),
      &     vtxinf_a(:), vtxinf_b(:), vtxmap(:)
-
+c dbg
+c      integer ::
+c     &     ieqvfac
+c      integer, pointer ::
+c     &     ivtx_reo(:), occ_vtx(:,:,:)
+c      logical, pointer ::
+c     &     fix_vtx(:)
+c      logical ::
+c     &     reo
+c dbg
       integer, external ::
      &     maxblk_in_contr, ifndmax
 
@@ -61,12 +70,32 @@ c dbg
      &         vtxinf_a(nvtx_a), vtxinf_b(nvtx_b),vtxmap(nvtx_b))
 
       call occvtx4contr(1,occ_vtx_a,contra,op_info)
-      call occvtx4contr(1,occ_vtx_b,contrb,op_info)
+      call occvtx4contr(1,occ_vtx_b,contrb,op_info) 
 
       base1 = ifndmax(occ_vtx_a,1,ngastp*2*nvtx_a,1)
       base1 = max(base1,ifndmax(occ_vtx_b,1,ngastp*2*nvtx_b,1))
       base2 = maxblk_in_contr(contra)
       base2 = max(base2,maxblk_in_contr(contrb))
+
+c dbg
+      base1 = base1 + 1
+      base2 = base2 + 1
+c      print *,'base 1, base 2', base1,base2
+
+c      allocate(ivtx_reo(nvtx_a),fix_vtx(nvtx_a),
+c     &     occ_vtx(ngastp,2,nvtx_a))
+c      call topo_contr(ieqvfac,reo,ivtx_reo,contra,
+c     &     occ_vtx_a,.false.)
+c      call canon_contr(contra,reo,ivtx_reo)
+c      deallocate(ivtx_reo,fix_vtx,occ_vtx)
+c
+c      allocate(ivtx_reo(nvtx_b),fix_vtx(nvtx_b),
+c     &     occ_vtx(ngastp,2,nvtx_b))
+c      call topo_contr(ieqvfac,reo,ivtx_reo,contrb,
+c     &     occ_vtx_b,.false.)
+c      call canon_contr(contrb,reo,ivtx_reo)
+c      deallocate(ivtx_reo,fix_vtx,occ_vtx)
+c dbg
 
       call topomap4contr(2,base1,base2,
      &     topomap_a,vtxinf_a,idum,idum,
@@ -86,9 +115,10 @@ c dbg
       end if
 c dbg
 
-      call identify_vertices(vtxmap,contr_in_contr,
-     &                       vtxinf_a,topomap_a,nvtx_a,
-     &                       vtxinf_b,topomap_b,nvtx_b)
+      call identify_vertices3(vtxmap,contr_in_contr,
+     &     vtxinf_a,topomap_a,nvtx_a,
+     &     vtxinf_b,topomap_b,nvtx_b)
+
 
       if (ntest.ge.100) then
         write(luout,*) 'result: ',contr_in_contr

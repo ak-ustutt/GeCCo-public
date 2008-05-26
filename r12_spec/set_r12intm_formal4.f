@@ -22,7 +22,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -175,6 +175,40 @@
         else
           unknown = .true.
         end if
+      case('V3')
+        def_g = .true.
+        idx_rpl = 2
+        if(njoined_int.eq.2)then
+          idx_prod(1:6) = (/idx_intm,idx_g,idx_intm,idx_intm,idx_r,
+     &                      idx_intm/)
+          idx_supv(1:6) = (/       1,    2,       1,       1,    3,
+     &                             1/)
+          nvtx = 6
+          nfact = 3
+          connect(1:2) = (/2,5/)
+          nconnect = 1
+          avoid(1:4) = (/3,5,2,4/)
+          navoid = 2
+        else
+          unknown = .true.
+        endif
+      case('V4')
+        def_g = .true.
+        idx_rpl = 2
+        if(njoined_int.eq.3)then
+          idx_prod(1:9) = (/idx_intm,idx_g,idx_intm,idx_intm,idx_r,
+     &                      idx_intm,idx_intm,idx_r,idx_intm/)
+          idx_supv(1:9) = (/       1,    2,       1,       1,    3,
+     &                             1,       1,    4,       1/)
+          nvtx = 9
+          nfact = 4
+          connect(1:4) = (/2,5,2,8/)
+          nconnect = 2
+          avoid(1:10) = (/2,4,2,7,5,8,3,5,3,8/)
+          navoid = 5
+        else
+          unknown = .true.
+        endif
       case('B','Bp')
         def_fpp = .true.
         idx_rpl  = 3

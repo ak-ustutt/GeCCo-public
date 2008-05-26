@@ -122,6 +122,12 @@ c     &           mode,scaling,str_info,orb_info)
           call import_2el_dalton(mel_target,'MO_FFBAR',
      &         mode,scaling,str_info,orb_info)
 
+        case(op_ffg)
+          mode=1
+          scaling=min(use_scaling,2)
+          call import_2el_dalton(mel_target,'MO_FFG',
+     &         mode,scaling,str_info,orb_info)
+
         case(op_ttr)
           mode=2
           scaling=min(use_scaling,1)
@@ -131,9 +137,6 @@ c     &           mode,scaling,str_info,orb_info)
         case(op_rttr)
           mode=1
           scaling=min(use_scaling,2)
-c dbg
-          print *,'what ho'
-c dbg
           call import_2el_dalton(mel_target,'MO_FTF',
      &           mode,scaling,str_info,orb_info) 
 

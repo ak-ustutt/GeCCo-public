@@ -158,11 +158,15 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
         labels(12) = form_r12_k4int
         labels(13) = form_r12_cint
         labels(14) = trim(form_r12_cint)//'^+'
+        labels(15) = form_r12_v3int
+        labels(16) = form_r12_v4int
         call set_dependency(form_ccr12lg0,form_r12_p3gint,tgt_info)
         call set_dependency(form_ccr12lg0,form_r12_p3fint,tgt_info)
         call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
         call set_dependency(form_ccr12lg0,form_r12_k4int,tgt_info)
-        nint = 12
+        call set_dependency(form_ccr12lg0,form_r12_v3int,tgt_info)
+        call set_dependency(form_ccr12lg0,form_r12_v4int,tgt_info)
+        nint = 14
       end if
       call form_parameters(-1,
      &     parameters,2,title_ccr12lg0,nint,'---')

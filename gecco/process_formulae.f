@@ -161,7 +161,7 @@ c prelim
      &       )
 
 c dbg
-c        stop
+        stop
 c dbg
       case(REPLACE)
         call form_parameters(+1,

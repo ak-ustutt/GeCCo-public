@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'opdim.h'

@@ -38,6 +38,16 @@
 *      12       C             C
 *    --------------------------------------------------------------
 *
+*     label     P      P3G
+*    --------------------------------------------------------------
+*       2       R12    R12
+*       3       G_X    V
+*       4       R12
+*       5       R.G
+*       6       V
+*       7       R.R.G
+*    --------------------------------------------------------------
+*
 *     approx string: formatted string
 *
 *     123456789012
@@ -223,15 +233,22 @@ c          end if
      &       idx_intm,idx_op,nop,op_info)
         end if
 
+      case('P')
+
+        call set_pint_contract(flist,
+     &       idx_op,7,
+     &       op_info,orb_info)
+c dbg        
+        print *,'what ho'
+        stop
+c dbg
+
       case('PG')
 
         call set_p3g_contract(form_out,title,
      &       labels(1),labels(2:3),2,
      &       op_info,orb_info)
 
-c dbg
-c        stop
-c dbg
       end select
 
       ! add symmetrisation command if required
