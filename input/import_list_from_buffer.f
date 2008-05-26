@@ -125,11 +125,6 @@
         idx_graph =>
      &         mel%idx_graph(1:ngastp,1:2,idx_occ:idx_occ+njoined-1)
         naux = sum(occ(IEXTR,1:2,1:njoined))
-c dbg
-c        print *,'present block of ',trim(op%name)
-c        call wrt_occ_n(6,occ,njoined)
-c        print *,'naux, (min, max): ',naux,'(',nauxmin,nauxmax,')'
-c dbg
         if (naux.lt.nauxmin .or. naux.gt.nauxmax) cycle
 
         blk_buf = ffop%buffered

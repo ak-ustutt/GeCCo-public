@@ -74,8 +74,8 @@
      &       (/1       ,2     ,3    ,1       /),       
      &       -1, -1,
      &       0,0,
-     &       (/1,3, 2,4/),2,    ! avoid cross contrib. to external lines
      &       0,0,
+     &       (/2,3,2,7/),1,  ! force P1P2 contraction
      &       op_info)
       else if (njoined_intm.eq.2) then
         call expand_op_product2(flist_pnt,idx_intm,

@@ -308,6 +308,12 @@ c fix:
      &             mel_arr(idxmel)%mel,me_res,
      &             iblkop(1),iblkres,orb_info)
             end if
+
+            if (ntest.ge.50) then
+              write(luout,*) 'xret after term ',iterm
+              write(luout,'(x,4g19.10)') xret_blk(1:nblk_res)
+            end if
+
           end if
 
           cycle term_loop
@@ -594,6 +600,11 @@ c          stop 'test'
           end if
 
         end do bin_loop
+
+        if (ntest.ge.50) then
+          write(luout,*) 'xret after term ',iterm
+          write(luout,'(x,4f19.10)') xret_blk(1:nblk_res)
+        end if
 
         deallocate(
      &       occ_vtx,irestr_vtx,info_vtx,

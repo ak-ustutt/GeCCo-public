@@ -7,7 +7,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 1000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -214,10 +214,14 @@ c      end if
       call expand_op_product(fl_t_cr_pnt,idx_sop,
      &     1d0,2,(/idxc12,idxr12/),-1,-1,
      &     (/1,2/),1,.false.,op_info)
-      else
+      else if (r12fix.or.extend.eq.1) then
         call expand_op_product(fl_t_cr_pnt,idx_sop,
      &       1d0,1,idxr12,-1,-1,
      &       0,0,.false.,op_info)
+c      else
+c        call expand_op_product(fl_t_cr_pnt,idx_sop,
+c     &       1d0,2,(/idxr12,idxcex/),-1,(/0,1/),
+c     &       0,0,.false.,op_info)
       endif
 
       if(extend.gt.0)then
@@ -227,7 +231,8 @@ c      end if
 
         call expand_op_product(fl_t_cr_pnt,idx_sop,
      &       1d0,2,(/idxr12,idxcex/),-1,-1,
-     &       (/1,2/),1,.false.,op_info)
+c     &       (/1,2/),1,.false.,op_info)
+     &       0,0,.false.,op_info)
       endif
 
       if (ntest.ge.1000) then
@@ -264,7 +269,7 @@ c      sbar_pnt%dagger = .true.
      &     0,0,
      &     0,0,
      &     op_info)
-      else
+      else if (r12fix.or.extend.eq.1) then
         call expand_op_product2(fl_t_cr_pnt,idx_sbar,
      &       1d0,3,2,
      &       (/idx_sbar,-idxr12,idx_sbar/),(/1,2,1/),
@@ -284,7 +289,8 @@ c      sbar_pnt%dagger = .true.
      &       1d0,4,3,
      &       (/idx_sbar,idxcexbar,-idxr12,idx_sbar/),(/1,2,3,1/),
      &       -1,-1,
-     &       (/2,3/),1,
+c     &       (/2,3/),1,
+     &       0,0,
      &       0,0,
      &       0,0,
      &       op_info)

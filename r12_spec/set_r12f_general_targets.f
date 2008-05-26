@@ -31,9 +31,9 @@
      &     min_rank, max_rank, ansatz, n_pp, ndef,
      &     isim, ncat, nint, icnt, nlab,
      &     isym, ms, msc, sym_arr(8), mode,
-     &     occ_def(ngastp,2,20)
+     &     occ_def(ngastp,2,20), ntp_min, ntp_max
       logical ::
-     &     needed, r12fix
+     &     needed, r12fix, set_tp
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -68,10 +68,27 @@
       n_pp = 0  ! number of particle-particle interaction in R12
       select case(mode)
       case(1) 
+        ! T1'
+        set_tp = .true.
+        ntp_min=1
+        ntp_max=1
         n_pp=1
-      case(2) 
-        n_pp=2
+      case(2)
+        ! T0'
+        set_tp = .true.
+        ntp_min=0
+        ntp_max=0
+        n_pp=0
+      case(3)
+        ! T0' + T1'
+        set_tp = .true.
+        ntp_min=0
+        ntp_max=1
+        n_pp=1   
       case default 
+        set_tp = .false.
+        ntp_min=0
+        ntp_max=0
         n_pp=0
       end select
 
@@ -108,11 +125,11 @@ c      min_rank = 2  ! 1 is a possibility
      &              op_r12,1,1,
      &              parameters,1,tgt_info)
 
-      if (mode.gt.0) then
+      if (set_tp) then
         ! T1' operators for extended MP2-F12.
         call add_target(op_cex,ttype_op,.false.,tgt_info)
         call xop_parameters(-1,parameters,
-     &       .false.,1,1,0,2)
+     &       .false.,ntp_min,ntp_max,0,ntp_max+2)
         call set_rule(op_cex,ttype_op,DEF_EXCITATION,
      &                op_cex,1,1,
      &                parameters,1,tgt_info)

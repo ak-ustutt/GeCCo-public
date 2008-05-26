@@ -290,7 +290,7 @@ c dbg
           end if
 
           do iopt = 1, nopt
-            xresnrm(iopt) = xret(idx_res_xret(iopt))
+            xresnrm(iopt) = abs(xret(idx_res_xret(iopt)))
           end do
         end if
 
