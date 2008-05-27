@@ -355,31 +355,63 @@ c test -- special insert
       real(8), intent(inout) ::
      &     grd(lenp,lenh)
 
+      real(8), parameter ::
+     &     thrsh = 1d-12
+
       real(8), pointer ::
-     &     scr(:,:)
+     &     scr(:,:), umat(:,:), vtmat(:,:), wrk(:,:), singval(:)
 
       integer ::
-     &     idx, jdx, kdx
+     &     idx, jdx, kdx, info, lwrk
 
-      allocate(scr(lenp,lenp))
+      allocate(scr(lenp,lenp),umat(lenp,lenp),vtmat(lenp,lenp),
+     &     wrk(lenp,max(lenh,lenp)),singval(lenp))
 
       scr = bmat
 
-      call gaussj(scr,lenp,lenp)
+      lwrk=lenp*max(lenh,lenp)
+      call dgesvd('A','A',lenp,lenp,
+     &     scr,lenp,singval,
+     &     umat,lenp,vtmat,lenp,
+     &     wrk,lwrk,info)
 
       do jdx = 1, lenh
         do idx = 1, lenp
+          wrk(idx,1) = 0d0
+          if (abs(singval(idx)).lt.thrsh) cycle
+          do kdx = 1, lenp
+            wrk(idx,1) = wrk(idx,1)+
+     &           umat(kdx,idx)*grd(kdx,jdx)
+          end do
+          wrk(idx,1) = wrk(idx,1)/singval(idx)
+        end do
+        
+        do idx = 1, lenp
           buf1(idx,jdx) = 0d0
           do kdx = 1, lenp
-            buf1(idx,jdx) = buf1(idx,jdx)+
-     &           scr(kdx,idx)*grd(kdx,jdx)
+            buf1(idx,jdx) = buf1(idx,jdx) +
+     &           vtmat(kdx,idx)*wrk(kdx,1)
           end do
         end do
+
       end do
+      
+
+c      call gaussj(scr,lenp,lenp)
+
+c      do jdx = 1, lenh
+c        do idx = 1, lenp
+c          buf1(idx,jdx) = 0d0
+c          do kdx = 1, lenp
+c            buf1(idx,jdx) = buf1(idx,jdx)+
+c     &           scr(kdx,idx)*grd(kdx,jdx)
+c          end do
+c        end do
+c      end do
 
       grd = buf1
 
-      deallocate(scr)
+      deallocate(scr,wrk,umat,vtmat,singval)
       
       return
       end
