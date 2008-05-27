@@ -1,15 +1,15 @@
-      subroutine set_pint_contract(flist,ansatz,
+      subroutine set_zint_contract(flist,ansatz,
      &     idx_opsin,nopsin,
      &     op_info,orb_info)
 *----------------------------------------------------------------------*
 *     Routine used to form the various contractions necessary to form
-*     the CABS approximation to the P-intermediate.
+*     the CABS approximation to the Z-intermediate.
 *----------------------------------------------------------------------*
 
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -30,9 +30,14 @@
 
 
       integer ::
-     &     idx, idx_shape, idx_temp, ndef, idx_prj
+     &     idx, idx_shape, nops ,nvtx, idx_temp, ndef, idx_prj
       character ::
      &     name*(form_maxlen_label*2)
+
+      integer, pointer ::
+     &     idxarr(:), svtxarr(:), occ_def(:,:,:)
+      character(4), parameter ::
+     &     op_temp = 'TEMP'
 
       type(operator), pointer ::
      &     op
@@ -44,7 +49,7 @@
 
 
       if(ntest.ge.100)then
-        write(luout,*)'P-Intermediate Contraction'
+        write(luout,*)'Z-Intermediate Contraction'
         write(luout,*)'Constituent operators: '
         do idx = 1, nopsin
           write(luout,*)trim(op_info%op_arr(idx_opsin(idx))%op%name)
@@ -60,28 +65,42 @@
         form_pnt => form_pnt%next
       enddo
 
-      ! Add the F2G part:
-      call set_1contrib(form_pnt,1d0,6,
-     &     idx_shape,idx_opsin,nopsin,op_info)
+      ! Add the F_{ij}^{p"q"}.G_{p"q}^{r"s}.R_{r"q"}^{ij}.
+      idx_prj = 4
+      call expand_op_product2(form_pnt,idx_shape,
+     &     -1d0,9,4,
+     &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
+     &       idx_shape,idx_shape,idx_opsin(2),idx_shape/),
+     &     (/        1,            2,        1,        1,           3,
+     &               1,        1,           4,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/2,5,1,idx_prj,2,8,1,idx_prj,5,8,1,idx_prj/),3,
+     &     op_info)
 
-      ! Move to the end of the list.
+      ! Point to the formula and move to the end of the list.
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
       enddo
 
-      ! Add the (FG) contracted with F part.
-      idx_prj = 8
+      ! Add the F_{ij}^{p"q"}.G_{p"q}^{r"s}.R_{r"q"}^{ij}.
+      idx_prj = 4
       call expand_op_product2(form_pnt,idx_shape,
-     &     -1d0,7,3,
-     &     (/idx_shape,idx_opsin(4),idx_opsin(4),
+     &     -1d0,9,4,
+     &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
      &       idx_shape,idx_shape,idx_opsin(2),idx_shape/),
-     &     (/        1,            2,            2,
-     &               1,        1,           3,        1/),
+     &     (/        1,            2,        1,        1,           3,
+     &               1,        1,           4,        1/),
      &     -1,-1,
      &     0,0,
      &     0,0,
-     &     (/3,6,2,idx_prj/),1,
+     &     (/2,5,1,idx_prj,2,8,1,idx_prj,5,8,1,idx_prj/),3,
      &     op_info)
+
+c dbg
+      goto 100
+c dbg
 
       ! Move to the end of the list.
       do while(associated(form_pnt%next))
@@ -142,10 +161,14 @@
      &     (/2,3,2,idx_prj,3,6,2,idx_prj/),2,
      &     op_info)
 
-      if(ntest.ge.100)then
-        write(luout,*)'Final formula: P-Int.'
+ 100  if(ntest.ge.100)then
+        write(luout,*)'Final formula: Z-Int.'
         call print_form_list(luout,flist,op_info)
       endif
+
+c dbg
+      stop
+c dbg
 
       return
       end

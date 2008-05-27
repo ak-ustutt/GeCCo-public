@@ -38,11 +38,11 @@
 *      12       C             C
 *    --------------------------------------------------------------
 *
-*     label     P      P3G
+*     label     P      P3F    P3G    Z
 *    --------------------------------------------------------------
-*       2       R12    R12
-*       3       G_X    V
-*       4       R12
+*       2       R12    R12    R12    R12
+*       3       G_X    H      V      G_X
+*       4       R12                  R12^2
 *       5       R.G
 *       6       V
 *       7       R.R.G
@@ -235,18 +235,22 @@ c          end if
 
       case('P')
 
-        call set_pint_contract(flist,
-     &       idx_op,7,
+        call set_pint_contract(flist,ansatz,
+     &       idx_op,6,
      &       op_info,orb_info)
-c dbg        
-        print *,'what ho'
-        stop
-c dbg
+      case('PF')
+        call set_p3f_contract(flist,
+     &       idx_op,3,
+     &       op_info,orb_info)
 
       case('PG')
+        call set_p3g_contract2(flist,
+     &       idx_op,3,
+     &       op_info,orb_info)
 
-        call set_p3g_contract(form_out,title,
-     &       labels(1),labels(2:3),2,
+      case('Z')
+        call set_zint_contract(flist,ansatz,
+     &       idx_op,4,
      &       op_info,orb_info)
 
       end select

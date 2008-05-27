@@ -1,5 +1,5 @@
       integer, parameter ::
-     &     nproj = 10
+     &     nproj = 10,
 *     blocks of projector
      &     nblk(nproj) = (/1,5,2,4,1,2,1,3,2,1/),
 *     offset of projector
