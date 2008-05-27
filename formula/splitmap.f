@@ -35,7 +35,6 @@
      &     ivtx_rem, ivtx_spl_last, isupervtx_spl_last,
      &     ivtx, jvtx, kvtx, lvtx, nsuper_spl,  isuper, ncontr
       integer ::
-     &     splmap_raw(nvtx),
      &     ireo(nvtx), topomap_cp(nvtx,nvtx), vtxmap_cp(nvtx)
 
       integer, external ::
@@ -54,20 +53,13 @@ c      ! we start by setting up splmap for the given ordering
         if (vtxmap(ivtx).ge.0) then
           if (vtxmap(ivtx).gt.isupervtx_spl_last) then
             ivtx_rem = ivtx_rem + 1
-            splmap_raw(ivtx) = -ivtx_rem
             isupervtx_spl_last = vtxmap(ivtx)
-          else
-            splmap_raw(ivtx) = -ivtx_spl_last
+            ivtx_spl_last = ivtx_rem
           end if
-          ivtx_spl_last = ivtx_rem
         else
           ivtx_rem = ivtx_rem + 1
-          splmap_raw(ivtx) = ivtx_rem
         end if        
       end do
-c dbg
-c      print *,'splmap_raw: ',splmap_raw
-c dbg
 
       nvtx_rem = ivtx_rem
 
@@ -166,10 +158,10 @@ c dbg
             ivtx_rem = ivtx_rem + 1
             splmap(jvtx) = -ivtx_rem
             isupervtx_spl_last = vtxmap(jvtx)
+            ivtx_spl_last = ivtx_rem
           else
             splmap(jvtx) = -ivtx_spl_last
           end if
-          ivtx_spl_last = ivtx_rem
         else
           ivtx_rem = ivtx_rem + 1
           splmap(jvtx) = ivtx_rem
@@ -178,14 +170,6 @@ c dbg
 c dbg
 c      print *,'splmap: ',splmap
 c dbg
-
-c      do ivtx = 1, nvtx
-c        if (splmap_raw(ivtx).gt.0) then
-c          splmap(ivtx) = ireo(splmap_raw(ivtx))
-c        else
-c          splmap(ivtx) = -ireo(-splmap_raw(ivtx))
-c        end if
-c      end do
 
       return
 
