@@ -35,7 +35,7 @@
      &     fix_vtx(*)
 
       logical ::
-     &     ok
+     &     ok, new
       integer ::
      &     nvtx, ivtx, jvtx, kvtx, lvtx, narc, iarc, jarc, idx, nsame,
      &     idx_op, iblk_op, jdx_op, jblk_op, maxblk, ibase, icpack,
@@ -203,6 +203,61 @@ c      end if
       do ivtx = 1, nvtx
         vtx_reo(ivtx) = ivtx
       end do
+      resort = .false.
+      new = .true.
+      if (new) then
+      ! loop over vertices
+      do jvtx = 2, nvtx
+c dbg
+c        print *,'jvtx = ',jvtx
+c        print *,'present sequence: ',eqv_map(1:nvtx)
+c        print *,'present reo     : ',vtx_reo(1:nvtx)
+c        print *,'present svmap   : ',svmap(1:nvtx)
+c        print *,'present svertex : ',svertex(1:nvtx)
+c dbg
+        ivtx = jvtx-1
+        ! maximum "upper" position to that we may shift vertex(jvtx):
+        do while (ivtx.gt.0.and.topomap(ivtx,jvtx).eq.0.and.! must commute
+     &            (svmap(ivtx).eq.0.or.svmap(jvtx).eq.0.or. ! and not interchange
+     &             svmap(ivtx).eq.svmap(jvtx)).and.         !  external lines
+     &             svertex(ivtx).ne.svertex(jvtx))
+          ivtx = ivtx-1
+        end do
+        ivtx = ivtx+1 ! actual "upper" position is ivtx+1
+c dbg
+c        print *,'upper = ',ivtx
+c dbg
+        ! now find the uppermost postion such that vertex(jvtx) has lower
+        ! rank than the succeding vertex
+        do while(ivtx.lt.jvtx .and. 
+     &           ( eqv_map(jvtx).gt.eqv_map(ivtx) .or.
+     &            (eqv_map(jvtx).eq.eqv_map(ivtx).and.
+     &             topo_cmp2(topomap(1:nvtx,jvtx),
+     &                       topomap(1:nvtx,ivtx),
+     &                       eqv_map,nvtx).ge.0
+     &            )
+     &           )
+     &          )
+          ivtx = ivtx+1
+        end do
+c dbg
+c        print *,'insert at ',ivtx
+c dbg
+
+        ! insert jvtx at position ivtx
+        if (ivtx.ne.jvtx) then
+          resort = .true.
+          call shift_imat(topomap,jvtx,ivtx,nvtx)
+          call shift_ivec(eqv_map,jvtx,ivtx,nvtx)
+          call shift_ivec(vtx_reo,jvtx,ivtx,nvtx)
+          call shift_ivec(svmap,jvtx,ivtx,nvtx)
+          call shift_ivec(svertex,jvtx,ivtx,nvtx)
+        end if
+
+      end do
+      ok = .true.
+
+      else
       ! looks like bubble sort:
       ! the sort is restricted to certain transpositions, so this
       ! is the most error-save variant
@@ -244,6 +299,7 @@ c      end if
         end do
         if (ok) exit
       end do
+      end if
 
       if (.not.ok)
      &     call quit(1,'topo_contr','restricted sort in problems')
@@ -336,6 +392,61 @@ c     &     arc(*)
 
       return
       end function
+
+      subroutine shift_ivec(vec,idx1,idx2,len)
+
+      implicit none
+
+      integer, intent(in) ::
+     &     len, idx1, idx2
+      integer, intent(inout) ::
+     &     vec(len)
+
+      integer ::
+     &     ihelp, idx, inc
+
+      inc = +1
+      if (idx1.gt.idx2) inc = -1
+
+      ihelp = vec(idx1)
+      do idx = idx1, idx2-inc, inc
+        vec(idx) = vec(idx+inc)
+      end do
+      vec(idx2) = ihelp
+
+      return
+      end subroutine
+
+      subroutine shift_imat(mat,idx1,idx2,len)
+
+      implicit none
+
+      integer, intent(in) ::
+     &     len, idx1, idx2
+      integer, intent(inout) ::
+     &     mat(len,len)
+
+      integer ::
+     &     ihelp(len), idx, inc
+
+      inc = +1
+      if (idx1.gt.idx2) inc = -1
+
+      ! shift rows
+      ihelp(1:len) = mat(idx1,1:len)
+      do idx = idx1, idx2-inc, inc
+        mat(idx,1:len) = mat(idx+inc,1:len)
+      end do
+      mat(idx2,1:len) = ihelp(1:len)
+      ! shift columns
+      ihelp(1:len) = mat(1:len,idx1)
+      do idx = idx1, idx2-inc, inc
+        mat(1:len,idx) = mat(1:len,idx+inc)
+      end do
+      mat(1:len,idx2) = ihelp(1:len)
+
+      return
+      end subroutine
 
 c      logical function topo_cmp(top1,top2,eqv,nel)
 c
