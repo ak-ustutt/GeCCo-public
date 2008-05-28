@@ -255,6 +255,57 @@ c dbg
         end if
 
       end do
+c dbg
+c      print *,'2nd round'
+c dbg
+      do jvtx = nvtx-1, 1, -1
+c dbg
+c        print *,'jvtx = ',jvtx
+c        print *,'present sequence: ',eqv_map(1:nvtx)
+c        print *,'present reo     : ',vtx_reo(1:nvtx)
+c        print *,'present svmap   : ',svmap(1:nvtx)
+c        print *,'present svertex : ',svertex(1:nvtx)
+c dbg
+        ivtx = jvtx+1
+        ! maximum "upper" position to that we may shift vertex(jvtx):
+        do while (ivtx.le.nvtx.and.topomap(ivtx,jvtx).eq.0.and.! must commute
+     &            (svmap(ivtx).eq.0.or.svmap(jvtx).eq.0.or. ! and not interchange
+     &             svmap(ivtx).eq.svmap(jvtx)).and.         !  external lines
+     &             svertex(ivtx).ne.svertex(jvtx))
+          ivtx = ivtx+1
+        end do
+        ivtx = ivtx-1 ! actual "lower" position is ivtx-1
+c dbg
+c        print *,'lower = ',ivtx
+c dbg
+        ! now find the lowermost postion such that vertex(jvtx) has higher
+        ! rank than the preceding vertex
+        do while(ivtx.gt.jvtx .and. 
+     &           ( eqv_map(jvtx).lt.eqv_map(ivtx) .or.
+     &            (eqv_map(jvtx).eq.eqv_map(ivtx).and.
+     &             topo_cmp2(topomap(1:nvtx,jvtx),
+     &                       topomap(1:nvtx,ivtx),
+     &                       eqv_map,nvtx).lt.0
+     &            )
+     &           )
+     &          )
+          ivtx = ivtx-1
+        end do
+c dbg
+c        print *,'insert at ',ivtx
+c dbg
+
+        ! insert jvtx at position ivtx
+        if (ivtx.ne.jvtx) then
+          resort = .true.
+          call shift_imat(topomap,jvtx,ivtx,nvtx)
+          call shift_ivec(eqv_map,jvtx,ivtx,nvtx)
+          call shift_ivec(vtx_reo,jvtx,ivtx,nvtx)
+          call shift_ivec(svmap,jvtx,ivtx,nvtx)
+          call shift_ivec(svertex,jvtx,ivtx,nvtx)
+        end if
+
+      end do
       ok = .true.
 
       else

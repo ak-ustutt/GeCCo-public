@@ -159,11 +159,6 @@ c prelim
      &       nint,rule%labels(ioff+2),
      &       op_info,form_info
      &       )
-
-c dbg
-        write(luout,*)'What ho!'
-        stop
-c dbg
       case(REPLACE)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

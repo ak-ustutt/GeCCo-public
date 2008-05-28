@@ -28,7 +28,7 @@
       include 'def_formula_item_list.h'
 
       integer, parameter ::
-     &     ntest = 100,
+     &     ntest = 00,
      &     maxposs = 128
 
       integer, intent(out) ::

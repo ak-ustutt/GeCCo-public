@@ -138,47 +138,27 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       labels(1:15)(1:len_target_name) = ' '
       labels(1) = form_ccr12lg0 ! output formula (itself)
       labels(2) = form_ccr12lg0 ! input formula
-c      labels(3) = form_r12_z4int
-c      labels(4) = form_r12_zint
-c      labels(5) = form_r12_pint
-      nint = 1
-c      if (ansatz.ne.1) then
-c        labels(6) = form_r12_p3fint
-c        labels(7) = form_r12_p3gint
-c        labels(8) = form_r12_k4int
-c        labels(9) = form_r12_cint
-c        labels(10) = trim(form_r12_cint)//'^+'
-c        labels(11) = form_r12_v3int
-c        labels(12) = form_r12_v4int
-c        labels(13) = form_r12_v3int//'^+'
-c        call set_dependency(form_ccr12lg0,form_r12_p3gint,tgt_info)
-c        call set_dependency(form_ccr12lg0,form_r12_p3fint,tgt_info)
-cc        labels(2+nint+1) = form_r12_cint
-cc        labels(2+nint+2) = trim(form_r12_cint)//'^+'
-c        call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
-c        call set_dependency(form_ccr12lg0,form_r12_k4int,tgt_info)
-c        call set_dependency(form_ccr12lg0,form_r12_v3int,tgt_info)
-c        call set_dependency(form_ccr12lg0,form_r12_v4int,tgt_info)
-c        nint = 11
-cc        nint = nint+2
-c      end if
-c      labels(nint+3) = form_r12_vint    ! the intermediates to be factored
-c      labels(nint+4) = form_r12_xint
-c      labels(nint+5) = form_r12_vint//'^+'
-c      labels(nint+6) = form_r12_bint
-c      nint = nint + 4
-cc test
-      labels(3) = form_r12_xint
-cc      labels(7) = form_r12_zint
-cc      nint = 5
-cc      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
-cc test
-c      call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
+      labels(3) = form_r12_zint
+      labels(4) = form_r12_pint
+      nint = 2
+      if (ansatz.ne.1) then
+        labels(5) = form_r12_p3gint
+        labels(6) = form_r12_cint
+        labels(7) = trim(form_r12_cint)//'^+'
+        call set_dependency(form_ccr12lg0,form_r12_p3gint,tgt_info)
+        call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
+        nint = 5
+      end if
+      labels(nint+3) = form_r12_vint    ! the intermediates to be factored
+      labels(nint+4) = form_r12_xint
+      labels(nint+5) = form_r12_vint//'^+'
+      labels(nint+6) = form_r12_bint
+      nint = nint + 4
+      call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_xint,tgt_info)
-c      call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
-c      call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
-c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
-c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
+      call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
+      call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
+      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
       call form_parameters(-1,
      &     parameters,2,title_ccr12lg0,nint,'---')
       call set_rule(form_ccr12lg0,ttype_frm,FACTOR_OUT,

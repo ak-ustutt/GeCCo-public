@@ -129,7 +129,7 @@ c dbg
                   ! ixarc fully contracted to ivtx1
                   ! -> move jxarc here
 c dbg
-                  print *,'left case (x)'
+c                  print *,'left case (x)'
 c dbg
 
                   cnt_shl(hpvx,ica) = xarc(jxarc)%occ_cnt(hpvx,ica)
@@ -140,7 +140,7 @@ c dbg
                   ! jxarc fully contracted to ivtx2
                   ! -> move ixarc here
 c dbg
-                  print *,'right case (x)'
+c                  print *,'right case (x)'
 c dbg
 
                   cnt_shr(hpvx,ica) = xarc(ixarc)%occ_cnt(hpvx,ica)
@@ -159,7 +159,7 @@ c     &                 - xarc(ixarc)%occ_cnt(hpvx,ica)
 c
                 else
 c dbg
-                  print *,'skipping difficult reo (x)'
+c                  print *,'skipping difficult reo (x)'
 c dbg
                   possible = .false.
                   return

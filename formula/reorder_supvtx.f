@@ -155,7 +155,7 @@ c     &                               arc(jarc)%occ_cnt,.false.))) cycle
                   ! iarc fully contracted to ivtx1
                   ! -> move jarc here
 c dbg
-                  print *,'left case'
+c                  print *,'left case'
 c dbg
 
                   cnt_shl(hpvx,ica) = arc(jarc)%occ_cnt(hpvx,ica)
@@ -166,7 +166,7 @@ c dbg
                   ! jarc fully contracted to ivtx2
                   ! -> move iarc here
 c dbg
-                  print *,'right case'
+c                  print *,'right case'
 c dbg
 
                   cnt_shr(hpvx,ica) = arc(iarc)%occ_cnt(hpvx,ica)
@@ -174,7 +174,7 @@ c dbg
 
                 else if (contr%nsupvtx.eq.2) then
 c dbg
-                  print *,'special case'
+c                  print *,'special case'
 c dbg
                   
                   cnt_shl(hpvx,ica) = arc(jarc)%occ_cnt(hpvx,ica)
@@ -185,7 +185,7 @@ c dbg
 
                 else
 c dbg
-                  print *,'skipping difficult reo'
+c                  print *,'skipping difficult reo'
 c dbg
                   possible = .false.
                   return
