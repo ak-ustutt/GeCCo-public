@@ -119,17 +119,20 @@ c     &     idxspn(max(ndim_c,ndim_a)),idxdss(max(ndim_c,ndim_a))
             ! effective Beff = B + (eps_C - eps_A)X
             scr2 = bmat + orbsum*xmat
             ! invert
-            call gaussj(scr2,ndim_bx,ndim_bx)
+            call inv_svd(scr1(1,idx_a),scr2,grad(idx_c,1,idx_a),
+     &                   ndim_bx,ndim_c)
 
-            ! multiply with gradient
-            do idx_b1 = 1, ndim_bx
-              scr1(idx_b1,idx_a) = 0d0
-              do idx_b2 = 1, ndim_bx
-                scr1(idx_b1,idx_a) =
-     &               scr1(idx_b1,idx_a) +
-     &               scr2(idx_b1,idx_b2)*grad(idx_c,idx_b2,idx_a)
-              end do
-            end do
+c            call gaussj(scr2,ndim_bx,ndim_bx)
+
+c            ! multiply with gradient
+c            do idx_b1 = 1, ndim_bx
+c              scr1(idx_b1,idx_a) = 0d0
+c              do idx_b2 = 1, ndim_bx
+c                scr1(idx_b1,idx_a) =
+c     &               scr1(idx_b1,idx_a) +
+c     &               scr2(idx_b1,idx_b2)*grad(idx_c,idx_b2,idx_a)
+c              end do
+c            end do
             
           end do
 
