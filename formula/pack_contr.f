@@ -1,4 +1,14 @@
+*----------------------------------------------------------------------*
       subroutine pack_contr(svertex,vtx,topo,xlines,contr,nj_res)
+*----------------------------------------------------------------------*
+*          
+*     transform contraction info on contr in into:
+*         svertex               - which super-vertex the vertex belongs to
+*         vtx                   - condensed operator/block/adj info
+*         topo                  - the contraction pattern
+*         xlines (if nj_res>0)  - 
+*          
+*----------------------------------------------------------------------*
 
       implicit none
 
@@ -75,6 +85,10 @@
         topo(jvtx,ivtx) = int8_pack(occ,ngastp*2,base)
       end do
 
+      svertex(1:nvtx) = contr%svertex(1:nvtx)
+
+      if (nj_res.le.0) return
+
       ! -------------------------------
       ! make packed external line table
       ! -------------------------------
@@ -85,8 +99,6 @@
         occ  = xarc(iarc)%occ_cnt
         xlines(ivtx,jvtx) = int8_pack(occ,ngastp*2,base)
       end do
-
-      svertex(1:nvtx) = contr%svertex(1:nvtx)
 
       return
       end

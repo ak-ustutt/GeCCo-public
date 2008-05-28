@@ -37,7 +37,7 @@
      &     nvtx_abc, nvtx_ac, nvtx_a, nvtx_b, nvtx_c,
      &     narc_abc, narc_abc0, narc_ac, narc_b, 
      &     idx, ivtx_abc, iarc, ivtx, jvtx, jvtx_last,
-     &     nproto_ac, nproto_b,
+     &     nproto_ac, nproto_b, idxsuper,
      &     nsuper, njoined, isuper, njoined_abc
       type(formula_item) ::
      &     wrap
@@ -54,7 +54,7 @@
      &     arc(:)
 
       integer, external ::
-     &     ifndmax
+     &     ifndmax, imltlist, idxlist
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'This is join_contr')
@@ -125,8 +125,6 @@ c dbg
      &                   0,-1,
      &                   svmap,nvtx_b,njoined)
 
-      deallocate(svmap)
-
       if (ntest.ge.1000) then
         write(luout,'(3x,a,10i5)') 'ivtx_old: ',ivtx_old(1:nvtx_abc)
       end if
@@ -180,8 +178,8 @@ c dbg
       narc_abc = 0
       ! add all arcs from A and C, except the external ones
       do idx = 1, narc_ac
-        if (contr_ac%arc(idx)%link(1).eq.0.or.
-     &      contr_ac%arc(idx)%link(2).eq.0) cycle
+        if (contr_ac%arc(idx)%link(1).le.0.or.
+     &      contr_ac%arc(idx)%link(2).le.0) cycle
         narc_abc = narc_abc + 1
         contr_abc%arc(narc_abc)%link(1) =
      &       ivtx_ac_reo(contr_ac%arc(idx)%link(1))
@@ -203,17 +201,35 @@ c dbg
       ! add the external arcs from A and C
       ! which make gen_contr consider only special connections
       do idx = 1, narc_ac
-        if (contr_ac%arc(idx)%link(1).eq.0.or.
-     &      contr_ac%arc(idx)%link(2).eq.0) then
+        if (contr_ac%arc(idx)%link(1).le.0.or.
+     &      contr_ac%arc(idx)%link(2).le.0) then
           narc_abc = narc_abc + 1
           if (contr_ac%arc(idx)%link(1).eq.0) then
             contr_abc%arc(narc_abc)%link(1) = 0
+          else if (contr_ac%arc(idx)%link(1).lt.0) then
+            ! fix for unique re-substitutions:
+            idxsuper = -contr_ac%arc(idx)%link(1)
+            if (imltlist(idxsuper,svmap,nvtx_b,1).eq.1) then
+              contr_abc%arc(narc_abc)%link(1) =
+     &             ivtx_b_reo(idxlist(idxsuper,svmap,nvtx_b,1))
+            else
+              contr_abc%arc(narc_abc)%link(1) = 0
+            end if
           else
             contr_abc%arc(narc_abc)%link(1) = 
      &           ivtx_ac_reo(contr_ac%arc(idx)%link(1))
           end if
           if (contr_ac%arc(idx)%link(2).eq.0) then
             contr_abc%arc(narc_abc)%link(2) = 0
+          else if (contr_ac%arc(idx)%link(2).lt.0) then
+            ! fix for unique re-substitutions:
+            idxsuper = -contr_ac%arc(idx)%link(2)
+            if (imltlist(idxsuper,svmap,nvtx_b,1).eq.1) then
+              contr_abc%arc(narc_abc)%link(2) =
+     &             ivtx_b_reo(idxlist(idxsuper,svmap,nvtx_b,1))
+            else
+              contr_abc%arc(narc_abc)%link(2) = 0
+            end if
           else
             contr_abc%arc(narc_abc)%link(2) =
      &           ivtx_ac_reo(contr_ac%arc(idx)%link(2))
@@ -288,6 +304,8 @@ c      call gen_contr2(wrap,contr_abc,fix_vtx,occ_vtx,op_info)
       if (nvtx_b.gt.0)  deallocate(ivtx_b_reo)
       deallocate(fix_vtx,occ_vtx,ivtx_old)
       call dealloc_formula_list(wrap)
+
+      deallocate(svmap)
 
       if (ntest.ge.100) then
         write(luout,*) 'generated contraction:'

@@ -214,7 +214,7 @@ c      end if
       call expand_op_product(fl_t_cr_pnt,idx_sop,
      &     1d0,2,(/idxc12,idxr12/),-1,-1,
      &     (/1,2/),1,.false.,op_info)
-      else if (r12fix.or.extend.eq.1) then
+      else if (r12fix.or.extend.eq.1.or.extend.ge.4) then
         call expand_op_product(fl_t_cr_pnt,idx_sop,
      &       1d0,1,idxr12,-1,-1,
      &       0,0,.false.,op_info)
@@ -231,6 +231,16 @@ c     &       0,0,.false.,op_info)
 
         call expand_op_product(fl_t_cr_pnt,idx_sop,
      &       1d0,2,(/idxr12,idxcex/),-1,-1,
+c     &       (/1,2/),1,.false.,op_info)
+     &       0,0,.false.,op_info)
+      endif
+      if(extend.eq.6)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+
+        call expand_op_product(fl_t_cr_pnt,idx_sop,
+     &       0.5d0,2,(/idxr12,idxtop/),-1,-1,
 c     &       (/1,2/),1,.false.,op_info)
      &       0,0,.false.,op_info)
       endif
@@ -269,7 +279,7 @@ c      sbar_pnt%dagger = .true.
      &     0,0,
      &     0,0,
      &     op_info)
-      else if (r12fix.or.extend.eq.1) then
+      else if (r12fix.or.extend.eq.1.or.extend.ge.4) then
         call expand_op_product2(fl_t_cr_pnt,idx_sbar,
      &       1d0,3,2,
      &       (/idx_sbar,-idxr12,idx_sbar/),(/1,2,1/),
@@ -288,6 +298,21 @@ c      sbar_pnt%dagger = .true.
         call expand_op_product2(fl_t_cr_pnt,idx_sbar,
      &       1d0,4,3,
      &       (/idx_sbar,idxcexbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+     &       -1,-1,
+c     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+      endif
+      if(extend.eq.6)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &       1d0,4,3,
+     &       (/idx_sbar,idxtbar,-idxr12,idx_sbar/),(/1,2,3,1/),
      &       -1,-1,
 c     &       (/2,3/),1,
      &       0,0,

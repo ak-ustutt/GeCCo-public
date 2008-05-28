@@ -84,7 +84,25 @@
         set_tp = .true.
         ntp_min=0
         ntp_max=1
-        n_pp=1   
+        n_pp=1
+      case(4)
+        ! T1' + T2' (for CC)
+        set_tp = .true.
+        ntp_min=1
+        ntp_max=2
+        n_pp=1
+      case(5)
+        ! T1' + T2'
+        set_tp = .true.
+        ntp_min=1
+        ntp_max=2
+        n_pp=2
+      case(6)
+        ! T1' 
+        set_tp = .true.
+        ntp_min=1
+        ntp_max=1
+        n_pp=2
       case default 
         set_tp = .false.
         ntp_min=0
@@ -229,15 +247,23 @@ c      min_rank = 2
         occ_def(IPART,2,8) = 1
       end if      
       if (n_pp.ge.2) then
-        ndef = 7
+        ndef = 9
         occ_def(IHOLE,1,9) = 2
         occ_def(IPART,2,10) = 2
 
         occ_def(IPART,1,11) = 2
         occ_def(IHOLE,2,12) = 2
 
-        occ_def(IPART,1,13) = 2
+        occ_def(IHOLE,1,13) = 1
+        occ_def(IPART,1,13) = 1
         occ_def(IPART,2,14) = 2
+
+        occ_def(IPART,1,15) = 2
+        occ_def(IHOLE,2,16) = 1
+        occ_def(IPART,2,16) = 1
+
+        occ_def(IPART,1,17) = 2
+        occ_def(IPART,2,18) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,2,ndef)
@@ -331,7 +357,7 @@ c      occ_def(IPART,2,16) = 2
         occ_def(IHOLE,2,6) = 2
       end if
       ! for n_pp >= 1
-      if (n_pp.eq.1) then
+      if (n_pp.ge.1) then
         ndef = 11
         occ_def(IHOLE,1,7) = 1
         occ_def(IPART,2,7) = 1
@@ -353,13 +379,15 @@ c      occ_def(IPART,2,16) = 2
         occ_def(IPART,2,11) = 1
       end if
       ! for n_pp >= 2
-      if (n_pp.eq.2) then
-        ndef = 7
+      if (n_pp.ge.2) then
+        ndef = 14
         occ_def(IHOLE,1,12) = 2
         occ_def(IPART,2,12) = 2
+
         occ_def(IHOLE,1,13) = 1
         occ_def(IPART,1,13) = 1
         occ_def(IPART,2,13) = 2
+
         occ_def(IPART,1,14) = 2
         occ_def(IPART,2,14) = 2
       end if
@@ -378,19 +406,36 @@ c      occ_def(IPART,2,16) = 2
         ndef = 5
         occ_def(IHOLE,1,2) = 1
         occ_def(IPART,2,2) = 1
+
         occ_def(IPART,1,3) = 1
         occ_def(IHOLE,2,3) = 1
+
         occ_def(IPART,1,4) = 1
         occ_def(IPART,2,4) = 1
+
         occ_def(IHOLE,1,5) = 1
-        occ_def(IPART,2,5) = 1
         occ_def(IPART,1,5) = 1
         occ_def(IHOLE,2,5) = 1
+        occ_def(IPART,2,5) = 1
       end if
       if (n_pp.ge.2) then
-        ndef = 3
-        occ_def(IPART,1,3) = 2
-        occ_def(IPART,2,3) = 2
+        ndef = 10
+        occ_def(IHOLE,1,6) = 2
+        occ_def(IPART,2,6) = 2
+
+        occ_def(IPART,1,7) = 2
+        occ_def(IHOLE,2,7) = 2
+
+        occ_def(IHOLE,1,8) = 1
+        occ_def(IPART,1,8) = 1
+        occ_def(IPART,2,8) = 2
+
+        occ_def(IPART,1,9) = 2
+        occ_def(IHOLE,2,9) = 1
+        occ_def(IPART,2,9) = 1
+
+        occ_def(IPART,1,10) = 2
+        occ_def(IPART,2,10) = 2
       end if
       call add_target(op_b_inter,ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,

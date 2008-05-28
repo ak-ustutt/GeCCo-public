@@ -161,6 +161,7 @@ c prelim
      &       )
 
 c dbg
+        write(luout,*)'What ho!'
         stop
 c dbg
       case(REPLACE)

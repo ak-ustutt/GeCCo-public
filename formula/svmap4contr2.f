@@ -38,9 +38,11 @@
         do ixarc = 1, nxarc
           if (xarc(ixarc)%link(1).eq.ivtx) then
             isvtx = xarc(ixarc)%link(2)
-            if (svmap(ivtx).gt.0.and.isvtx.ne.svmap(ivtx))
-     &           call quit(1,'svmap4contr2',
+            if (svmap(ivtx).gt.0.and.isvtx.ne.svmap(ivtx)) then
+              call prt_contr3(luout,contr,-1)
+              call quit(1,'svmap4contr2',
      &                       'inconsistent xarc detected!')
+            end if
             svmap(ivtx) = isvtx
           end if
         end do

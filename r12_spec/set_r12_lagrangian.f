@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -43,7 +43,8 @@
       character(3), parameter ::
      &     op_sop    = '_S_',
      &     op_sba    = '_SB',
-     &     op_scr    = '_T_'
+     &     op_scr    = '_T_',
+     &     op_scrbar = '_TB'
 
       ! local variables
       character ::
@@ -56,7 +57,7 @@
 
       integer ::
      &     nterms, idx_sop, idx_sbar, ndef, idxrint, ilabel, idx,
-     &     idx_scr,
+     &     idx_scr,idx_scrbar,
      &     idxham,idxtbar,idxtop,idxlcc,idxrba,idxcbar,idxr12,idxc12,
      &     min_rank, max_rank, iprint
       logical ::
@@ -65,7 +66,7 @@
      &     extend
 
       type(operator), pointer::
-     &     sop_pnt, sbar_pnt, scr_pnt
+     &     sop_pnt, sbar_pnt, scr_pnt, scrbar_pnt
 
       integer, external::
      &     idx_oplist2, max_rank_op
@@ -96,10 +97,10 @@
         call quit(1,'set_r12_lagrangian',
      &     'I expect exactly 8 labels')
       end if
-      if (nlabels.ne.6.and.r12fix) then
+      if (nlabels.lt.6.and.r12fix) then
         write(luout,*) 'nlabels = ',nlabels
         call quit(1,'set_mp2_r12_lagrangian fixed amp.',
-     &     'I expect exactly 6 labels')
+     &     'I expect > 6 labels')
       end if
 
       do ilabel = 1, nlabels
@@ -161,6 +162,11 @@ c      sbar_pnt%dagger = .true.
         idx_scr = idx_oplist2(op_scr,op_info)
         scr_pnt => op_info%op_arr(idx_scr)%op
         call clone_operator(scr_pnt,op_info%op_arr(idxtop)%op,
+     &       .false.,orb_info)
+        call add_operator(op_scrbar,op_info)
+        idx_scrbar = idx_oplist2(op_scrbar,op_info)
+        scrbar_pnt => op_info%op_arr(idx_scrbar)%op
+        call clone_operator(scrbar_pnt,op_info%op_arr(idxtbar)%op,
      &       .false.,orb_info)
       end if
 
@@ -239,7 +245,7 @@ c     &     (/1,2/),1,.false.,op_info)
 
         call expand_op_product2(fl_t_cr_pnt,idx_sbar,
      &       1d0,4,3,
-     &       (/idx_sbar,idxtbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+     &       (/idx_sbar,idx_scrbar,-idxr12,idx_sbar/),(/1,2,3,1/),
      &       (/1,1,1,1/),-1,
      &       (/2,3/),1,
      &       0,0,
@@ -303,8 +309,12 @@ c      call truncate_form(flist_lag,op_info)
 
       ! rename _T_ -> T
       if (extend.gt.0) then
-        call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,
+        call form_op_replace(op_scr,op_info%op_arr(idxc12)%op%name,
      &     flist_lag,op_info)
+        call form_op_replace(op_scrbar,op_info%op_arr(idxcbar)%op%name,
+     &     flist_lag,op_info)
+c        call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,
+c     &     flist_lag,op_info)
       end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)
@@ -339,6 +349,7 @@ c      end if
       call del_operator(op_sba,op_info)
       call del_operator(op_sop,op_info)
       if (extend.gt.0) call del_operator(op_scr,op_info)
+      if (extend.gt.0) call del_operator(op_scrbar,op_info)
 
       call atim_csw(cpu,sys,wall)
       write(luout,*) 'Number of generated terms: ',nterms

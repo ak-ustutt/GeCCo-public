@@ -221,9 +221,8 @@
           call put_vec(ffout,buffer_out2,joff+1,joff+lenblk)
 
           ! update norm^2
-          xnorm2_blk(iblk) = ddot(me_out%len_op_occ(iblk),
-     &         buffer_out(me_out%off_op_occ(iblk)+1),1,
-     &         buffer_out(me_out%off_op_occ(iblk)+1),1)
+          xnorm2_blk(iblk) = ddot(lenblk,
+     &         buffer_out,1,buffer_out,1)
           xnorm2_blk(jblk) = xnorm2_blk(iblk)
 
         else
@@ -246,9 +245,8 @@
           call put_vec(ffout,buffer_out,ioff+1,ioff+lenblk)
 
           ! update norm^2
-          xnorm2_blk(iblk) = ddot(me_out%len_op_occ(iblk),
-     &         buffer_out(me_out%off_op_occ(iblk)+1),1,
-     &         buffer_out(me_out%off_op_occ(iblk)+1),1)
+          xnorm2_blk(iblk) = ddot(lenblk,
+     &         buffer_out,1,buffer_out,1)
 
         end if
 

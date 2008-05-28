@@ -28,7 +28,6 @@
       integer ::
      &     ivtx, jvtx, ivtx_sub, jvtx_sub
 
-
       success = .false.
 
       vtxmap = 0

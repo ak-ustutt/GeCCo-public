@@ -29,7 +29,8 @@
      &     op_info
 
       integer ::
-     &     nterms, nposs, idxop_tgt, iblk_tgt, iterm, iposs
+     &     nterms, nposs, idxop_tgt, iblk_tgt, iterm, iposs,
+     &     count
       type(contraction) ::
      &     contr_rpl
       type(formula_item), pointer ::
@@ -60,6 +61,8 @@
      &     call quit(1,'factor_out_subexpr',
      &     'intermediate definition must start with [INIT]')
 
+
+      count = 0
       fl_tgt_current => fl_tgt
       ! loop over target items
       tgt_loop: do
@@ -88,9 +91,10 @@
         if (.not.associated(fl_tgt_current%contr))
      &       call quit(1,'factor_out_subexpr','I''m confused ...')
 
+        count = count + 1
         iblk_tgt = fl_tgt_current%contr%iblk_res
         if (ntest.ge.100) then
-          write(luout,*) 'current term:'
+          write(luout,*) 'current term: ',count
           call prt_contr2(luout,fl_tgt_current%contr,op_info)
         end if
 

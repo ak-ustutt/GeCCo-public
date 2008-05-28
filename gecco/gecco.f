@@ -35,8 +35,8 @@
 
       ! a few settings
       luout = 6      ! output unit
-!      iprlvl = 1     ! print level
-      iprlvl = 10    ! print level
+      iprlvl = 1     ! print level
+c      iprlvl = 10    ! print level
       ivale = 3      ! V is 3
       iextr = 4      ! X is 4
 
