@@ -100,6 +100,12 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
         fpl_intm_pnt => fpl_intm_pnt%next
       end do
 
+c dbg
+c      print *,'success 1',success1
+c      print *,'nterms',nterms
+c      print *,'assoc',associated(fl_tgt%next)
+c dbg
+
       if (success1) then
         ! get factor, vertices and arcs associated with T_0
 c        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
@@ -133,6 +139,11 @@ c        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
             call join_contr2(contr_tgt(iterm),
      &           contr_t0,fpl_intm_pnt%item%contr,
      &           idxop_tgt,iblk_tgt,op_info)
+c dbg
+c            print *,'iterm',iterm
+c            print *,'targeted'
+c            call prt_contr2(luout,contr_tgt(iterm),op_info)
+c dbg
           endif    
           if (.not.associated(fpl_intm_pnt%next)) exit
           fpl_intm_pnt => fpl_intm_pnt%next
@@ -184,6 +195,9 @@ c              print *,'hurra'
 c dbg
               assigned(iterm) = .true.
               nfound = nfound+1
+c dbg
+c              print *,'nfound',nfound
+c dbg
               fpa_found(nfound)%item => fl_tgt_pnt
               ! all terms found? let's go
               success2 =  nfound.eq.nterms

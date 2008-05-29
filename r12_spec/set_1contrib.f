@@ -53,7 +53,7 @@
         call expand_op_product2(flist_pnt,idx_intm,
      &     1d0,4,2,
      &     (/idx_intm,idx_op(idx),idx_op(idx),idx_intm/),
-     &     (/1       ,2   , 2, 1       /),       
+     &     (/       1,          2,          2,       1/),       
      &     -1, -1,
      &     0,0,
      &     0,0,

@@ -19,7 +19,7 @@
      &     iord(nvtx)
       integer ::
      &     idx, jdx, kdx, jdxnd, ii, ivtx, ij,
-     &     n_zero_vtx_res, n_zero_vtx
+     &     n_zero_vtx_res, n_zero_vtx, kdx_v, jdx_v
       logical ::
      &     merged(nvtx)
 
@@ -79,22 +79,55 @@ c dbg
         if (jdxnd.eq.idx) cycle
         ! loop over pairs of vertices in contiguous list and try to merge
         do jdx = idx, jdxnd
+c dbg
+c          print *,'jdx =',jdx
+c          print *,'merged',merged
+c          print *,'iord  ',iord
+c          print *,'ireo  ',ireo
+c dbg
           if (merged(jdx)) cycle
           do kdx = jdx+1, jdxnd
             if (merged(kdx)) cycle
             if (may_merge(vtx_list(jdx),vtx_list(kdx))) then
               merged(kdx) = .true.
-              iord(vtx_list(kdx)) = iord(vtx_list(jdx))
-              ireo(vtx_list(kdx)) = ireo(vtx_list(jdx))
+              jdx_v = vtx_list(jdx)
+              kdx_v = vtx_list(kdx)
+              iord(kdx_v) = iord(jdx_v)
+              ireo(kdx_v) = ireo(jdx_v)
+c dbg
+c              print *,'modified in iord: ',vtx_list(kdx)
+c              print *,'iord  ',iord
+c              print *,'ireo  ',ireo
+c dbg
               do ii = 1, nvtx
-                if (ireo(ii).gt.vtx_list(kdx))
+                if (ireo(ii).gt.kdx_v)
      &               iord(ii) = iord(ii)-1
               end do
+c dbg
+c              print *,'iord(final) ',iord
+c dbg
               nvtx_new = nvtx_new-1
               nvtx_bcres = nvtx_bcres-1
-              if (zero_i8vec(xlines(vtx_list(jdx),1),nj,nvtx) .or.
-     &            zero_i8vec(xlines(vtx_list(kdx),1),nj,nvtx) )
+              if (zero_i8vec(xlines(jdx_v,1),nj,nvtx) .or.
+     &            zero_i8vec(xlines(kdx_v,1),nj,nvtx) )
      &             n_zero_vtx = n_zero_vtx-1
+
+              ! add column topo(:,kdx) to topo(:,jdx)
+              topo(1:nvtx,jdx_v) = topo(1:nvtx,jdx_v) 
+     &                           + topo(1:nvtx,kdx_v)
+              ! zero column topo(:,kdx)
+              topo(1:nvtx,kdx_v) = 0
+              ! add row topo(kdx,:) to topo(jdx,:)
+              topo(jdx_v,1:nvtx) = topo(jdx_v,1:nvtx) 
+     &                           + topo(kdx_v,1:nvtx)
+              ! zero row topo(kdx,:)
+              topo(kdx_v,1:nvtx) = 0
+
+              ! add xlines(kdx,:) to xlines(jdx,:)
+              xlines(jdx_v,1:nj) = xlines(jdx_v,1:nj) 
+     &                           + xlines(kdx_v,1:nj)
+              ! zero xlines(kdx,:)
+              xlines(kdx_v,1:nj) = 0
 
             end if
           end do

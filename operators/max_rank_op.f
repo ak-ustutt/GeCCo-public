@@ -21,6 +21,7 @@
 
       njoined = op%njoined
       nblk = op%n_occ_cls
+      njoined = op%njoined
       ca_occ => op%ica_occ
       hpvx_occ => op%ihpvca_occ
       max_rank_op = -huge(max_rank_op)

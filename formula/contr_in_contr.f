@@ -106,11 +106,6 @@
         end do
         
         call topo_remove_arcs(topo_b,nvtx_b,list,lenlist)
-c dbg
-c        print *,'I:'
-c        call prt_contr_p(luout,svertex_b,vtx_b,topo_b,
-c     &       xlines_b,nvtx_b,nj_b)
-c dbg
         
         lenlist = lenlist*2
         call unique_list(list,lenlist)
@@ -123,11 +118,6 @@ c dbg
           list_reo(ivtx) = ireo(list(ivtx))
         end do
         call unique_list(list_reo,lenlist)
-c dbg
-c        print *,'II:'
-c        call prt_contr_p(luout,svertex_b,vtx_b,topo_b,
-c     &       xlines_b,nvtx_b,nj_b)
-c dbg
 
         call topo_merge_vtxs(ireo,nvtx_new,nvtx_int,
      &                     topo_b,xlines_b,nvtx_b,nj_b,

@@ -28,7 +28,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       logical, intent(in) ::
      &     new
@@ -131,7 +131,7 @@
         call iwrtma(topomap_spl,nvtx_spl,nvtx_spl,nvtx_spl,nvtx_spl)
         write(luout, *) 'vtxmap: ',vtxmap
         call quit(1,'split_contr2',
-     &     'contrations do not match; check with contr_in_contr() '//
+     &     'contractions do not match; check with contr_in_contr() '//
      &     'before call to split_contr2()')
       end if
 

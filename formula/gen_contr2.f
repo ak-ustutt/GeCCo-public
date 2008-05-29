@@ -438,7 +438,8 @@ c dbg
 c dbg
 c                    reo = .false.
 c dbg
-                    call canon_contr2(proto_new,reo,ivtx_reo2)
+c                    call canon_contr2(proto_new,reo,ivtx_reo2)
+                    call canon_contr(proto_new,reo,ivtx_reo2)
                     
                     ! apply prefactor from equivalent permutation of vertices
                     proto_new%fac = proto_new%fac/dble(ieqvfac)

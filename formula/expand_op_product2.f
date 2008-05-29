@@ -119,7 +119,7 @@
 
       if (idx_res.lt.0) then
         write(luout,*)
-     &       'idx_res < 0 detected; if you meat to set up a formula'
+     &       'idx_res < 0 detected; if you meant to set up a formula'
         write(luout,*)
      &       'for the adjoint operator: set up the formula for the'
         write(luout,*)
@@ -188,6 +188,7 @@ c dbg
           ol_map(ivtx) = 0
         end if
       end do
+
       if (mod(nopen,2).ne.0)
      &     call quit(1,'expand_op_product2',
      &     'expected even number of open line vertices')

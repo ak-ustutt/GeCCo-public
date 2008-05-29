@@ -28,7 +28,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 1000
 
       type(contraction), intent(in) ::
      &     contr
@@ -69,9 +69,9 @@
       nvtx = contr%nvtx
       allocate(vtx(nvtx), topo(nvtx,nvtx), xlines(nvtx,njoined_res),
      &         scr(nvtx), ireo(nvtx), ireo2(nvtx))
-      allocate(vtx_list(max(nvtx,nlist*2)),
-     &         vtx_list_reo(max(nvtx,nlist*2)),
-     &         vtx_list_new(max(nvtx,nlist*2)) )
+      allocate(vtx_list(max(nvtx**2,nlist*2)),
+     &         vtx_list_reo(max(nvtx**2,nlist*2)),
+     &         vtx_list_new(max(nvtx**2,nlist*2)) )
       allocate(svertex(nvtx),svertex_reo(nvtx))
 
       call pack_contr(svertex,vtx,topo,xlines,contr,njoined_res)
@@ -146,7 +146,8 @@
         write(luout,*) 'final: ',vtx_list_new(1:nvtx_cnt)
       end if
 
-      if (nvtx_op1op2.ne.nvtx_cnt) stop 'testing?'
+      if (nvtx_op1op2.ne.nvtx_cnt)
+     &     call quit(1,'reduce_contr2','testing?')
 
       ! store in new topo array
       allocate(topo_new(nvtx_new,nvtx_new),
@@ -167,6 +168,9 @@
      &       topo_new,xlines_new,nvtx_new,njoined_res)
       end if
 
+c dbg
+      print *,'nvtx_op1op2: ',nvtx_op1op2
+c dbg
       allocate(op1op2(nvtx_op1op2))
       ! extract occupation of binary contraction result
       call topo_extract_bcres(op1op2,
@@ -224,9 +228,22 @@
         write(luout,*) 'ireo_vtx_on = ',ireo_vtx_on(1:nvtx)
       end if
 
-      deallocate(vtx, topo, xlines, scr, ireo, ireo2,
-     &     vtx_list,vtx_list_reo,vtx_list_new, svertex,
-     &     topo_new,xlines_new,vtx_new,svertex_new,svertex_reo)
+c      deallocate(vtx, topo, xlines, scr, ireo, ireo2,
+c     &     vtx_list,vtx_list_reo,vtx_list_new, svertex,
+c     &     topo_new,xlines_new,vtx_new,svertex_new,svertex_reo,
+c     &     op1op2)
+      deallocate(vtx)
+      deallocate(topo)
+      deallocate(xlines)
+      deallocate(scr) 
+      deallocate(ireo)
+      deallocate(ireo2)
+      deallocate(vtx_list)
+      deallocate(vtx_list_reo)
+      deallocate(vtx_list_new)
+      deallocate(svertex)
+      deallocate(topo_new,xlines_new,vtx_new,svertex_new,svertex_reo)
+      deallocate(op1op2)
 
       return
       end

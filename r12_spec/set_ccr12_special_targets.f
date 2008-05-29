@@ -135,28 +135,30 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
      &              parameters,2,tgt_info)
       ! (b) Factor out the R12 intermediates 
       ! (effectively removing all reference to the complete basis)
-      labels(1:10)(1:len_target_name) = ' '
+      labels(1:15)(1:len_target_name) = ' '
       labels(1) = form_ccr12lg0 ! output formula (itself)
       labels(2) = form_ccr12lg0 ! input formula
-      labels(3) = form_r12_vint    ! the intermediates to be factored
-      labels(4) = form_r12_vint//'^+'
-      labels(5) = form_r12_xint
-      labels(6) = form_r12_bint
-      nint = 4
-c test
-c      labels(7) = form_r12_zint
-c      nint = 5
-c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
-c test
+c      labels(3) = form_r12_zint
+c      labels(4) = form_r12_pint
+c      nint = 2
+      if (ansatz.ne.1) then
+c        labels(5) = form_r12_p3gint
+        labels(3) = form_r12_cint
+        labels(4) = trim(form_r12_cint)//'^+'
+c        call set_dependency(form_ccr12lg0,form_r12_p3gint,tgt_info)
+        call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
+        nint = 2
+      end if
+      labels(nint+3) = form_r12_vint    ! the intermediates to be factored
+      labels(nint+4) = form_r12_xint
+      labels(nint+5) = form_r12_vint//'^+'
+      labels(nint+6) = form_r12_bint
+      nint = nint + 4
       call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_xint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
-      if (ansatz.ne.1) then
-        labels(2+nint+1) = form_r12_cint
-        labels(2+nint+2) = trim(form_r12_cint)//'^+'
-        call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
-        nint = nint+2
-      end if
+c      call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
+c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
       call form_parameters(-1,
      &     parameters,2,title_ccr12lg0,nint,'---')
       call set_rule(form_ccr12lg0,ttype_frm,FACTOR_OUT,
