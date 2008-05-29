@@ -261,7 +261,7 @@ c test -- special insert
                 len_astr = len_str(2)
                 idx_grd = off_grd_d_gam_ms(idxdis,gama,idxmsa)+1
                 call optc_prc_test(xbuf1(idx_grd),
-     &               xbuf2,xbuf3,bmat(idx_b),ld_bx,len_astr)
+     &               xbuf2,xbuf3,bmat(idx_b),xmat(idx_b),ld_bx,len_astr)
 
                 cycle
               end if
@@ -342,14 +342,14 @@ c test -- special insert
 
 
       subroutine optc_prc_test(grd,
-     &     buf1,buf2,bmat,lenp,lenh)
+     &     buf1,buf2,bmat,xmat,lenp,lenh)
 
       implicit none
 
       integer, intent(in) ::
      &     lenp, lenh
       real(8), intent(in) ::
-     &     bmat(lenp,lenp)
+     &     bmat(lenp,lenp), xmat(lenp,lenp)
       real(8), intent(inout) ::
      &     buf1(lenp,lenh), buf2(lenp,lenh)
       real(8), intent(inout) ::
@@ -359,44 +359,46 @@ c test -- special insert
      &     thrsh = 1d-12
 
       real(8), pointer ::
-     &     scr(:,:), umat(:,:), vtmat(:,:), wrk(:,:), singval(:)
+     &     scr(:,:), umat(:,:), vtmat(:,:), wrk(:), singval(:)
 
       integer ::
      &     idx, jdx, kdx, info, lwrk
 
+      lwrk=max(1024,lenp*max(lenh,lenp))
       allocate(scr(lenp,lenp),umat(lenp,lenp),vtmat(lenp,lenp),
-     &     wrk(lenp,max(lenh,lenp)),singval(lenp))
+     &     wrk(lwrk),singval(lenp))
 
-      scr = bmat
+      scr = bmat + 10*xmat
 
-      lwrk=lenp*max(lenh,lenp)
       call dgesvd('A','A',lenp,lenp,
      &     scr,lenp,singval,
      &     umat,lenp,vtmat,lenp,
      &     wrk,lwrk,info)
+c dbg
+      print *,'singval: ',singval
+c dbg
 
       do jdx = 1, lenh
         do idx = 1, lenp
-          wrk(idx,1) = 0d0
+          wrk(idx) = 0d0
           if (abs(singval(idx)).lt.thrsh) cycle
           do kdx = 1, lenp
-            wrk(idx,1) = wrk(idx,1)+
+            wrk(idx) = wrk(idx)+
      &           umat(kdx,idx)*grd(kdx,jdx)
           end do
-          wrk(idx,1) = wrk(idx,1)/singval(idx)
+          wrk(idx) = wrk(idx)/singval(idx)
         end do
         
         do idx = 1, lenp
           buf1(idx,jdx) = 0d0
           do kdx = 1, lenp
             buf1(idx,jdx) = buf1(idx,jdx) +
-     &           vtmat(kdx,idx)*wrk(kdx,1)
+     &           vtmat(kdx,idx)*wrk(kdx)
           end do
         end do
 
       end do
       
-
 c      call gaussj(scr,lenp,lenp)
 
 c      do jdx = 1, lenh

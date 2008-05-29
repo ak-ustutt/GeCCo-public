@@ -57,7 +57,7 @@
      &     ifndmax, imltlist, idxlist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'This is join_contr')
+        call write_title(luout,wst_dbg_subr,'This is join_contr 2')
         write(luout,*) 'joining: AC, B'
         call prt_contr2(luout,contr_ac,op_info)
         call prt_contr2(luout,contr_b,op_info)

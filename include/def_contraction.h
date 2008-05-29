@@ -1,6 +1,7 @@
 ! need to include before: opdim.h      
       integer, parameter ::
-     &      ld_inffac = 5
+     &     ld_inffac = 5,
+     &     max_vtx_group = 10
 
       type cntr_arc
 
@@ -12,6 +13,16 @@
                       ! convention: V1(C)V2(C^+)
       end type cntr_arc
 
+c      type cntr_proto_arc
+c
+c         integer ::
+c     &      link_group(max_vtx_group,2)   
+c                       ! list of verticex groups to be contracted
+c         integer ::
+c     &      occ_cnt_min(ngastp,2),  minimum
+c     &      occ_cnt_max(ngastp,2)
+c      end type cntr_arc
+c
       type cntr_vtx
  
         integer ::  ! type of operator defining vertex

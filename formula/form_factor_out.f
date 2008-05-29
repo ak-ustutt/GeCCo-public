@@ -100,7 +100,7 @@ c      include 'def_contraction_list.h'
         if (transpose)
      &       call transpose_formula(fl_intm,op_info)
 
-        call factor_out_subexpr(flist,fl_intm,op_info)
+        call factor_out_subexpr2(flist,fl_intm,op_info)
 
         call dealloc_formula_list(fl_intm)
 

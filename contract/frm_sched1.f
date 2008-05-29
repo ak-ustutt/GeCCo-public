@@ -25,7 +25,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       character, parameter ::
      &     name_scr0*6 = 'cntscr'

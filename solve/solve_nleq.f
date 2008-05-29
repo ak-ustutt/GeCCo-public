@@ -301,6 +301,9 @@ c dbg
           if (nopt.eq.2)
      &       write(luout,'(">>>",i3,f24.12,2(x,g10.4))')
      &       imacit,energy,xresnrm(1:2)
+          if (nopt.eq.3)
+     &       write(luout,'(">>>",i3,f24.12,3(x,g10.4))')
+     &       imacit,energy,xresnrm(1:3)
         else if (.not.conv) then
           write(luout,'(">>> NOT CONVERGED! <<<")')
         else

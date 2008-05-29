@@ -143,79 +143,79 @@
      &     0,0,
      &     op_info)
 
-      write(luout,*) 'expansion 1 (result: r)'
-      call print_form_list(luout,form_r,op_info)
-      call dealloc_formula_list(form_r)
-      call init_formula(form_c)
-
-      call expand_op_product2(form_c,idxopc,
-     &     1d0,9,8,
-     &     (/idxopc,idxopb,idxopb,idxopb,
-     &                            idxope,idxopa,idxopa,idxopa,idxopc/),
-     &     (/1     ,2     ,3     ,4     ,
-     &                            5     ,6     ,7     ,8,     1     /),
-     &     -1,-1,
-     &     (/1,6, 2,5, 3,6, 4,7, 5,6, 2,8, 3,9/),7,
-     &     0,0,
-     &     op_info)
-
-      write(luout,*) 'expansion 2 (result: c)'
-      call print_form_list(luout,form_c,op_info)
-
-      call add_operator('R2',op_info)
-
-      idxopr2 = idx_oplist2('R2',op_info)
-      opr2 => op_info%op_arr(idxopr2)%op
-
-      occ_def(1:ngastp,1,1) = (/0,0,0,0/)
-      occ_def(1:ngastp,2,1) = (/0,2,0,0/)
-      occ_def(1:ngastp,1,2) = (/0,2,0,0/)
-      occ_def(1:ngastp,2,2) = (/0,0,0,0/)
-      call set_uop2(opr2,'R2',
-     &     occ_def,1,2,orb_info)
-
-      call init_formula(form_r2)
-c      call expand_op_product2(form_r2,idxopr2,
-c     &     1d0,6,3,
-c     &     (/idxopr2,idxopb,idxopr2,idxopr2,idxopa,idxopr2/),
-c     &     (/1     ,2     ,1     ,1  , 3     ,1/),
+c      write(luout,*) 'expansion 1 (result: r)'
+c      call print_form_list(luout,form_r,op_info)
+c      call dealloc_formula_list(form_r)
+c      call init_formula(form_c)
+c
+c      call expand_op_product2(form_c,idxopc,
+c     &     1d0,9,8,
+c     &     (/idxopc,idxopb,idxopb,idxopb,
+c     &                            idxope,idxopa,idxopa,idxopa,idxopc/),
+c     &     (/1     ,2     ,3     ,4     ,
+c     &                            5     ,6     ,7     ,8,     1     /),
 c     &     -1,-1,
-c     &     (/2,5/),1,
+c     &     (/1,6, 2,5, 3,6, 4,7, 5,6, 2,8, 3,9/),7,
 c     &     0,0,
 c     &     op_info)
-      call expand_op_product2(form_r2,idxopr2,
-     &     1d0,8,5,
-     &     (/idxopr2,idxopb,idxopb,idxopr2,
-     &                         idxopr2,idxopa,idxopa,idxopr2/),
-     &     (/1     ,2     ,4,1     ,1  , 3,5     ,1/),
-     &     -1,-1,
-     &     (/2,6,2,7,3,6,3,7/),4,
-     &     0,0,
-     &     op_info)
-
-      write(luout,*) 'expansion 3 (result: r2)'
-      call print_form_list(luout,form_r2,op_info)
-
-      write(luout,*) 'trying to split'
-
-      if (.not.associated(form_c%contr)) stop '1'
-      if (.not.associated(form_r2%contr)) stop '2'
-
-      write(luout,*) 'contr_in_contr(1): ',
-     &     contr_in_contr(form_r2%contr,form_c%contr)
-      write(luout,*) 'contr_in_contr(2): ',
-     &     contr_in_contr(form_r2%next%contr,form_c%contr)
-      write(luout,*) 'contr_in_contr(3): ',
-     &     contr_in_contr(form_r2%next%next%contr,form_c%contr)
-
-      call init_contr(ctest)
-      call split_contr2(ctest,form_r2%contr,
-     &     form_c%contr,
-     &     op_info)
-
-      call init_contr(ctest2)
-      call join_contr3(ctest2,ctest,form_r2%contr,
-     &     idxopr2,1,op_info)
+c
+c      write(luout,*) 'expansion 2 (result: c)'
+c      call print_form_list(luout,form_c,op_info)
+c
+c      call add_operator('R2',op_info)
+c
+c      idxopr2 = idx_oplist2('R2',op_info)
+c      opr2 => op_info%op_arr(idxopr2)%op
+c
+c      occ_def(1:ngastp,1,1) = (/0,0,0,0/)
+c      occ_def(1:ngastp,2,1) = (/0,2,0,0/)
+c      occ_def(1:ngastp,1,2) = (/0,2,0,0/)
+c      occ_def(1:ngastp,2,2) = (/0,0,0,0/)
+c      call set_uop2(opr2,'R2',
+c     &     occ_def,1,2,orb_info)
+c
+c      call init_formula(form_r2)
+cc      call expand_op_product2(form_r2,idxopr2,
+cc     &     1d0,6,3,
+cc     &     (/idxopr2,idxopb,idxopr2,idxopr2,idxopa,idxopr2/),
+cc     &     (/1     ,2     ,1     ,1  , 3     ,1/),
+cc     &     -1,-1,
+cc     &     (/2,5/),1,
+cc     &     0,0,
+cc     &     op_info)
+c      call expand_op_product2(form_r2,idxopr2,
+c     &     1d0,8,5,
+c     &     (/idxopr2,idxopb,idxopb,idxopr2,
+c     &                         idxopr2,idxopa,idxopa,idxopr2/),
+c     &     (/1     ,2     ,4,1     ,1  , 3,5     ,1/),
+c     &     -1,-1,
+c     &     (/2,6,2,7,3,6,3,7/),4,
+c     &     0,0,
+c     &     op_info)
+c
+c      write(luout,*) 'expansion 3 (result: r2)'
+c      call print_form_list(luout,form_r2,op_info)
+c
+c      write(luout,*) 'trying to split'
+c
+c      if (.not.associated(form_c%contr)) stop '1'
+c      if (.not.associated(form_r2%contr)) stop '2'
+c
+c      write(luout,*) 'contr_in_contr(1): ',
+c     &     contr_in_contr(form_r2%contr,form_c%contr)
+c      write(luout,*) 'contr_in_contr(2): ',
+c     &     contr_in_contr(form_r2%next%contr,form_c%contr)
+c      write(luout,*) 'contr_in_contr(3): ',
+c     &     contr_in_contr(form_r2%next%next%contr,form_c%contr)
+c
+c      call init_contr(ctest)
+c      call split_contr2(ctest,form_r2%contr,
+c     &     form_c%contr,
+c     &     op_info)
+c
+c      call init_contr(ctest2)
+c      call join_contr3(ctest2,ctest,form_r2%contr,
+c     &     idxopr2,1,op_info)
 
       return
       end

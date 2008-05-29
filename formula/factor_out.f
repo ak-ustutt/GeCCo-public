@@ -60,7 +60,7 @@
       fintm_tail => form_ptr
 
       ! factor out the sub-expressions
-      call factor_out_subexpr(form_link,fintm_head,op_info)
+      call factor_out_subexpr2(form_link,fintm_head,op_info)
 
       ! remove [END] from Intm list (if any)
       if (fintm_tail%command.eq.command_end_of_formula) then

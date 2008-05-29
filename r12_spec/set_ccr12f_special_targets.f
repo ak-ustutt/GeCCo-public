@@ -25,14 +25,14 @@
 
       integer ::
      &     min_rank, max_rank, ansatz, nop,
-     &     isim, ncat, nint, icnt, ndef, extend,
+     &     isim, ncat, nint, icnt, ndef, extend, r12op,
      &     isym, ms, msc, sym_arr(8), nlabel,
      &     ninproj, navoid, nconnect,
      &     connect(20), idx_sv(20), iblkmin(20),
      &     iblkmax(20),
      &     occ_def(ngastp,2,20)
       logical ::
-     &     needed, r12fix
+     &     needed, r12fix, set_tp, set_tpp
       character(8) ::
      &     approx
       character(len_target_name) ::
@@ -65,8 +65,12 @@
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','extend',ival=extend)
+      call get_argument_value('method.R12','r12op',ival=r12op)
 
       call get_argument_value('calculate.routes','simtraf',ival=isim)
+
+      set_tp = extend.gt.0.or.r12op.eq.1.or.r12op.eq.3
+      set_tpp = r12op.eq.2.or.r12op.eq.3
 
 *----------------------------------------------------------------------*
 *     Operators:
@@ -83,7 +87,7 @@
      &              op_ccr12en,1,1,
      &              parameters,0,tgt_info)
 
-      if(extend.gt.0)then
+      if(set_tp)then
         call add_target(op_omgcex,ttype_op,.false.,tgt_info)
         call set_dependency(op_omgcex,op_cex,tgt_info)
         call cloneop_parameters(-1,parameters,
@@ -92,10 +96,21 @@
      &                op_omgcex,1,1,
      &                parameters,1,tgt_info)
       end if
+
+      if(set_tpp)then
+        call add_target(op_omgcexx,ttype_op,.false.,tgt_info)
+        call set_dependency(op_omgcexx,op_cexx,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                          op_cexx,.false.)
+        call set_rule(op_omgcexx,ttype_op,CLONE_OP,
+     &                op_omgcexx,1,1,
+     &                parameters,1,tgt_info)
+      end if
+
       call add_target(op_bprc,ttype_op,.false.,tgt_info)
       occ_def=0
       ndef = 1
-      if (extend.eq.1) then
+      if (extend.eq.1.or.r12op.eq.1) then
         ndef = 1
         occ_def(IPART,1,1) = 1
         occ_def(IPART,2,1) = 1
@@ -105,7 +120,7 @@
         ndef = 2
         occ_def(IPART,1,2) = 1
         occ_def(IPART,2,2) = 1
-      else if (extend.gt.4) then
+      else if (extend.gt.4.or.r12op.ge.2) then
         ndef = 3
         occ_def(IPART,1,2) = 1
         occ_def(IPART,2,2) = 1
@@ -121,7 +136,7 @@
       call add_target(op_xprc,ttype_op,.false.,tgt_info)
       occ_def=0
       ndef = 1
-      if (extend.eq.1) then
+      if (extend.eq.1.or.r12op.eq.1) then
         ndef = 1
         occ_def(IPART,1,1) = 1
         occ_def(IPART,2,1) = 1
@@ -131,7 +146,7 @@
         ndef = 2
         occ_def(IPART,1,2) = 1
         occ_def(IPART,2,2) = 1
-      else if (extend.gt.4) then
+      else if (extend.gt.4.or.r12op.ge.2) then
         ndef = 3
         occ_def(IPART,1,2) = 1
         occ_def(IPART,2,2) = 1
@@ -159,12 +174,19 @@
       labels(6) = op_tbar
       labels(7) = op_top
       nlabel = 7
-      if (extend.gt.0) then
+      if (set_tp) then
         call set_dependency(form_ccr12lg0,op_cex,tgt_info)
         call set_dependency(form_ccr12lg0,op_cexbar,tgt_info)
-        labels(8) = op_cexbar
-        labels(9) = op_cex
-        nlabel = 9
+        labels(nlabel+1) = op_cexbar
+        labels(nlabel+2) = op_cex
+        nlabel = nlabel+2
+      end if
+      if (set_tpp) then
+        call set_dependency(form_ccr12lg0,op_cexx,tgt_info)
+        call set_dependency(form_ccr12lg0,op_cexxbar,tgt_info)
+        labels(nlabel+1) = op_cexxbar
+        labels(nlabel+2) = op_cexx
+        nlabel = nlabel+2
       end if
       call set_dependency(form_ccr12lg0,op_ccr12lg,tgt_info)
       call set_dependency(form_ccr12lg0,op_ham,tgt_info)
@@ -241,9 +263,13 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       labels(3) = op_ccr12en
       labels(4) = op_tbar
       nlabel = 4
-      if (extend.gt.0) then
-        labels(5) = op_cexbar
-        nlabel = 5
+      if (set_tp) then
+        labels(nlabel+1) = op_cexbar
+        nlabel = nlabel+1
+      end if
+      if (set_tpp) then
+        labels(nlabel+1) = op_cexxbar
+        nlabel = nlabel+1
       end if
       call add_target(form_ccr12en0,ttype_frm,.true.,tgt_info)
       call set_dependency(form_ccr12en0,form_ccr12lg0,tgt_info)
@@ -314,7 +340,7 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
      &              parameters,3,tgt_info)
       end if
 
-      if(extend.gt.0)then
+      if(set_tp)then
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = form_ccr12rs_c
         labels(2) = form_ccr12lg0
@@ -329,6 +355,21 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
      &                title_ccr12rs_c,1,tgt_info)
       endif
 
+      if(set_tpp)then
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = form_ccr12rs_cpp
+        labels(2) = form_ccr12lg0
+        labels(3) = op_omgcexx
+        labels(4) = op_cexxbar
+        labels(5) = ' '
+        call add_target(form_ccr12rs_cpp,ttype_frm,.false.,tgt_info)
+        call set_dependency(form_ccr12rs_cpp,form_ccr12lg0,tgt_info)
+        call set_dependency(form_ccr12rs_cpp,op_omgcexx,tgt_info)
+        call set_rule(form_ccr12rs_cpp,ttype_frm,DERIVATIVE,
+     &                labels,5,1,
+     &                title_ccr12rs_cpp,1,tgt_info)
+      endif
+
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae
@@ -340,22 +381,32 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
       labels(2) = form_ccr12en0
       labels(3) = form_ccr12rs_t
       ncat = 2
-      if(extend.gt.0)then
-        labels(4) = form_ccr12rs_c
-        ncat = 3
+      if(set_tp)then
+        labels(1+ncat+1) = form_ccr12rs_c
+        ncat = ncat+1
+      endif
+      if(set_tpp)then
+        labels(1+ncat+1) = form_ccr12rs_cpp
+        ncat = ncat+1
       endif
       nint = 0
       call add_target(fopt_ccr12_0,ttype_frm,.false.,tgt_info)
       call set_dependency(fopt_ccr12_0,form_ccr12en0,tgt_info)
       call set_dependency(fopt_ccr12_0,form_ccr12rs_t,tgt_info)
-      if(extend.gt.0)
+      if(set_tp)
      &     call set_dependency(fopt_ccr12_0,form_ccr12rs_c,tgt_info)
+      if(set_tpp)
+     &     call set_dependency(fopt_ccr12_0,form_ccr12rs_cpp,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_omgdef,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_topdef,tgt_info)
-      if(extend.gt.0)
+      if(set_tp)
      &     call set_dependency(fopt_ccr12_0,mel_cex_def,tgt_info)
-      if(extend.gt.0)
+      if(set_tpp)
+     &     call set_dependency(fopt_ccr12_0,mel_cexx_def,tgt_info)
+      if(set_tp)
      &     call set_dependency(fopt_ccr12_0,mel_omgcexdef,tgt_info)
+      if(set_tpp)
+     &     call set_dependency(fopt_ccr12_0,mel_omgcexxdef,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_ham,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_rint,tgt_info)      
       call set_dependency(fopt_ccr12_0,mel_v_def,tgt_info)      
@@ -417,7 +468,7 @@ c      end if
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
-      if(extend.gt.0)then
+      if(set_tp)then
         ! OMG-R12-EXT list definition
         call add_target(mel_omgcexdef,ttype_opme,.false.,tgt_info)
         call set_dependency(mel_omgcexdef,op_omgcex,tgt_info)
@@ -449,6 +500,43 @@ c      end if
         call me_list_parameters(-1,parameters,
      &       0,0,1,0,0)
         call set_rule(mel_cexbar_def,ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+
+      endif
+
+      if(set_tpp)then
+        ! OMG-R12-EXT list definition
+        call add_target(mel_omgcexxdef,ttype_opme,.false.,tgt_info)
+        call set_dependency(mel_omgcexxdef,op_omgcexx,tgt_info)
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = mel_omgcexx
+        labels(2) = op_omgcexx
+        call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+        call set_rule(mel_omgcexxdef,ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+
+        call add_target(mel_cexx_def,ttype_opme,.false.,tgt_info)
+        call set_dependency(mel_cexx_def,op_cexx,tgt_info)
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = mel_cexx
+        labels(2) = op_cexx
+        call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+        call set_rule(mel_cexx_def,ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+
+        call add_target(mel_cexxbar_def,ttype_opme,.false.,tgt_info)
+        call set_dependency(mel_cexxbar_def,op_cexxbar,tgt_info)
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = mel_cexxbar
+        labels(2) = op_cexxbar
+        call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+        call set_rule(mel_cexxbar_def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
 
@@ -499,14 +587,13 @@ c      end if
 *     "phony" targets
 *----------------------------------------------------------------------*
       ! totally symmetric dia for use below:
-      if (extend.gt.0) then
+      if (set_tp.and..not.set_tpp) then
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
         call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
-        call solve_parameters(-1,parameters,2, 1,1,'DIA')
         call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
         call set_dependency(solve_ccr12_gs,me_xprc,tgt_info)
         labels(1:20)(1:len_target_name) = ' '
@@ -521,10 +608,66 @@ c      end if
         labels(9) = me_bprc
         labels(10)= me_xprc
         labels(11) = mel_ham
+        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
+c        call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
+        call set_rule(solve_ccr12_gs,ttype_opme,SOLVENLEQ,
+     &       labels,11,4,
+     &       parameters,2,tgt_info)
+        
+      else if (.not.set_tp.and.set_tpp) then
+        call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
+
+        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+        call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
+        call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
+        call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
+        call set_dependency(solve_ccr12_gs,me_xprc,tgt_info)
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = mel_top
+        labels(2) = mel_cexx
+        labels(3) = mel_omg
+        labels(4) = mel_omgcexx
+        labels(5) = mel_dia1    ! dummy
+        labels(6) = mel_dia1    ! dummy
+        labels(7) = mel_ccr12en0
+        labels(8) = fopt_ccr12_0
+        labels(9) = me_bprc
+        labels(10)= me_xprc
+        labels(11) = mel_ham
 c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
         call set_rule(solve_ccr12_gs,ttype_opme,SOLVENLEQ,
      &       labels,11,4,
+     &       parameters,2,tgt_info)
+
+      else if (set_tp.and.set_tpp) then
+        call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
+
+        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+        call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
+        call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
+        call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
+        call set_dependency(solve_ccr12_gs,me_xprc,tgt_info)
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = mel_top
+        labels(2) = mel_cex
+        labels(3) = mel_cexx
+        labels(4) = mel_omg
+        labels(5) = mel_omgcex
+        labels(6) = mel_omgcexx
+        labels(7) = mel_dia1    
+        labels(8) = mel_dia1    ! dummy
+        labels(9) = mel_dia1    ! dummy
+        labels(10) = mel_ccr12en0
+        labels(11) = fopt_ccr12_0
+        labels(12) = me_bprc
+        labels(13)= me_xprc
+        labels(14) = mel_ham
+        call solve_parameters(-1,parameters,2, 3,1,'DIA/BLK/BLK')
+        call set_rule(solve_ccr12_gs,ttype_opme,SOLVENLEQ,
+     &       labels,14,6,
      &       parameters,2,tgt_info)
         
       else

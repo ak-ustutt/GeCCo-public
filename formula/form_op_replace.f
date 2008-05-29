@@ -107,6 +107,8 @@ c          write(luout,*) '[ADD]'
      &               iblk_occ(occ_temp,.false.,opout_pnt)
 
                 if (idx_blk_out.le.0) then
+                  write(luout,*) trim(opin),' block no. ', idx_form_blk
+                  call wrt_occ(luout,occ_temp)
                   call quit(1,'form_op_replace',
      &                 'There is no block of '//trim(opout)//
      &                 ' that corresponds to the present block of '//

@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 1000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -57,9 +57,12 @@
 
       integer ::
      &     nterms, idx_sop, idx_sbar, ndef, idxrint, ilabel, idx,
-     &     idx_scr,idx_scrbar,
+     &     idx_scr,idx_scrbar, r12op,
      &     idxham,idxtbar,idxtop,idxlcc,idxrba,idxcbar,idxr12,idxc12,
-     &     min_rank, max_rank, iprint
+     &     idxcpp12, idxcppbar,
+     &     iblk_xxhp, iblk_pxhp, iblk_xxpp, iblk_pxpp,
+     &     min_rank, max_rank, iprint,
+     &     occ(ngastp,2)
       logical ::
      &     r12fix
       integer ::
@@ -69,7 +72,7 @@
      &     sop_pnt, sbar_pnt, scr_pnt, scrbar_pnt
 
       integer, external::
-     &     idx_oplist2, max_rank_op
+     &     idx_oplist2, max_rank_op, iblk_occ
 
       ! for timings:
       real(8) ::
@@ -87,21 +90,25 @@
       ! Are we fixing the F12 amplitudes?
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','extend',ival=extend)
+      call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       
-      r12fix = r12fix .or. extend.gt.0
+      if (extend.gt.0) call quit(1,'set_r12_lagrangian',
+     &     'do not use "extend" for CC (use "r12op" instead)!')
+
+c      r12fix = r12fix .or. extend.gt.0
 
       ! get indices
-      if (nlabels.ne.8.and..not.r12fix) then
-        write(luout,*) 'nlabels = ',nlabels
-        call quit(1,'set_r12_lagrangian',
-     &     'I expect exactly 8 labels')
-      end if
-      if (nlabels.lt.6.and.r12fix) then
-        write(luout,*) 'nlabels = ',nlabels
-        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
-     &     'I expect > 6 labels')
-      end if
+c      if (nlabels.ne.8.and..not.r12fix) then
+c        write(luout,*) 'nlabels = ',nlabels
+c        call quit(1,'set_r12_lagrangian',
+c     &     'I expect exactly 8 labels')
+c      end if
+c      if (nlabels.lt.6.and.r12fix) then
+c        write(luout,*) 'nlabels = ',nlabels
+c        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
+c     &     'I expect > 6 labels')c
+c      end if
 
       do ilabel = 1, nlabels
         idx = idx_oplist2(label(ilabel),op_info)
@@ -114,8 +121,17 @@
         if (ilabel.eq.4) idxrba = idx
         if (ilabel.eq.5) idxtbar = idx
         if (ilabel.eq.6) idxtop = idx
-        if (ilabel.eq.7) idxcbar = idx
-        if (ilabel.eq.8) idxc12 = idx
+        if (r12op.ne.2) then
+          if (ilabel.eq.7) idxcbar = idx
+          if (ilabel.eq.8) idxc12 = idx
+        else
+          if (ilabel.eq.7) idxcppbar = idx
+          if (ilabel.eq.8) idxcpp12 = idx
+        end if
+        if (r12op.ne.2) then
+          if (ilabel.eq.9) idxcppbar = idx
+          if (ilabel.eq.10) idxcpp12 = idx
+        end if
       end do
 
       ! Definition of the S=T+CR operator.
@@ -124,10 +140,6 @@
       sop_pnt => op_info%op_arr(idx_sop)%op
 
       min_rank = 2
-c      max_rank = 2
-c      if(.not.r12fix)then
-c        max_rank = max_rank_op('A',op_info%op_arr(idxc12)%op,.false.)
-c      endif
 
       ! set CR part:
       call set_r12gem(sop_pnt,op_sop,0,
@@ -156,22 +168,22 @@ c      sbar_pnt%dagger = .true.
         fl_t_cr_pnt => fl_t_cr_pnt%next
       end do
 
-      ! in order to use different names for T connected with geminal:
-      if (extend.gt.0) then
-        call add_operator(op_scr,op_info)
-        idx_scr = idx_oplist2(op_scr,op_info)
-        scr_pnt => op_info%op_arr(idx_scr)%op
-        call clone_operator(scr_pnt,op_info%op_arr(idxtop)%op,
-     &       .false.,orb_info)
-        call add_operator(op_scrbar,op_info)
-        idx_scrbar = idx_oplist2(op_scrbar,op_info)
-        scrbar_pnt => op_info%op_arr(idx_scrbar)%op
-        call clone_operator(scrbar_pnt,op_info%op_arr(idxtbar)%op,
-     &       .false.,orb_info)
-      end if
+c      ! in order to use different names for T connected with geminal:
+c      if (extend.gt.0) then
+c        call add_operator(op_scr,op_info)
+c        idx_scr = idx_oplist2(op_scr,op_info)
+c        scr_pnt => op_info%op_arr(idx_scr)%op
+c        call clone_operator(scr_pnt,op_info%op_arr(idxtop)%op,
+c     &       .false.,orb_info)
+c        call add_operator(op_scrbar,op_info)
+c        idx_scrbar = idx_oplist2(op_scrbar,op_info)
+c        scrbar_pnt => op_info%op_arr(idx_scrbar)%op
+c        call clone_operator(scrbar_pnt,op_info%op_arr(idxtbar)%op,
+c     &       .false.,orb_info)
+c      end if
 
       ! Form of the R12 part depends on whether the amplitudes are fixed.
-      if(.not.r12fix)then
+      if(r12op.eq.0.and..not.r12fix)then
         call expand_op_product(fl_t_cr_pnt,idx_sop,
      &       1d0,2,(/idxc12,idxr12/),-1,-1,
      &       (/1,2/),1,.false.,op_info)
@@ -181,16 +193,94 @@ c      sbar_pnt%dagger = .true.
      &       0,0,.false.,op_info)
       endif
 
-      if(extend.gt.0)then
+      if(r12op.eq.1.or.r12op.eq.3)then
         do while(associated(fl_t_cr_pnt%next))
           fl_t_cr_pnt => fl_t_cr_pnt%next
         enddo
+        
+        call expand_op_product2(fl_t_cr_pnt,idx_sop,
+     &       1d0,5,3,
+     &       (/idx_sop,idxc12,idxr12,idxc12,idx_sop/),
+     &       (/1      ,2     ,3     ,2     ,1     /),
+     &       -1,-1,
+     &       (/3,4/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+c        ! find xp|hp and xx|hp blocks of R12
+c        occ = 0
+c        occ(IPART,1) = 1
+c        occ(IEXTR,1) = 1
+c        occ(IHOLE,2) = 1
+c        occ(IPART,2) = 1
+c        iblk_pxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+c        occ = 0
+c        occ(IEXTR,1) = 2
+c        occ(IHOLE,2) = 1
+c        occ(IPART,2) = 1
+c        iblk_xxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+c        
+c
+c        call expand_op_product2(fl_t_cr_pnt,idx_sop,
+c     &       1d0,4,3,
+c     &       (/idx_sop,idxr12,idxc12,idx_sop/),
+c     &       (/1      ,2     ,3       ,1     /),
+c     &       (/1,iblk_pxhp,1,1/),(/0,iblk_pxhp,0,0/),
+c     &       (/2,3/),1,
+c     &       0,0,
+c     &       0,0,
+c     &       op_info)
+c
+c        do while(associated(fl_t_cr_pnt%next))
+c          fl_t_cr_pnt => fl_t_cr_pnt%next
+c        enddo
+c        call expand_op_product2(fl_t_cr_pnt,idx_sop,
+c     &       1d0,4,3,
+c     &       (/idx_sop,idxr12,idxc12,idx_sop/),
+c     &       (/1      ,2     ,3       ,1     /),
+c     &       (/1,iblk_xxhp,1,1/),(/0,iblk_xxhp,0,0/),
+c     &       (/2,3/),1,
+c     &       0,0,
+c     &       0,0,
+c     &       op_info)
+      endif
+      if(r12op.eq.2.or.r12op.eq.3)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+        
+        ! find xp|pp and xx|pp blocks of R12
+        occ = 0
+        occ(IPART,1) = 1
+        occ(IEXTR,1) = 1
+        occ(IPART,2) = 2
+        iblk_pxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+        occ = 0
+        occ(IEXTR,1) = 2
+        occ(IPART,2) = 2
+        iblk_xxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+c dbg
+        print *,'iblk: ',iblk_pxpp,iblk_xxpp
+c dbg        
 
         call expand_op_product2(fl_t_cr_pnt,idx_sop,
      &       1d0,4,3,
-     &       (/idx_sop,idxr12,idx_scr,idx_sop/),
+     &       (/idx_sop,idxr12,idxcpp12,idx_sop/),
      &       (/1      ,2     ,3       ,1     /),
-     &       (/1,1,1,1/),-1,
+     &       (/1,iblk_pxpp,1,1/),(/0,iblk_pxpp,0,0/),
+     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+        call expand_op_product2(fl_t_cr_pnt,idx_sop,
+     &       1d0,4,3,
+     &       (/idx_sop,idxr12,idxcpp12,idx_sop/),
+     &       (/1      ,2     ,3       ,1     /),
+     &       (/1,iblk_xxpp,1,1/),(/0,iblk_xxpp,0,0/),
      &       (/2,3/),1,
      &       0,0,
      &       0,0,
@@ -215,7 +305,7 @@ c      sbar_pnt%dagger = .true.
         fl_t_cr_pnt => fl_t_cr_pnt%next
       end do
 
-      if(.not.r12fix)then
+      if(r12op.eq.0.and..not.r12fix)then
         call expand_op_product2(fl_t_cr_pnt,idx_sbar,
      &       1d0,4,3,
      &       (/idx_sbar,-idxr12,idxcbar,idx_sbar/),(/1,2,3,1/),
@@ -238,15 +328,60 @@ c      call expand_op_product(fl_t_cr_pnt,idx_sbar,
 c     &     1d0,2,(/idxrba,idxcbar/),-1,-1,
 c     &     (/1,2/),1,.false.,op_info)
 
-      if(extend.gt.0)then
+      if(r12op.eq.1.or.r12op.eq.3)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &       1d0,5,3,
+     &       (/idx_sbar,idxcbar,-idxr12,idxcbar,idx_sbar/),
+     &       (/1       ,2      , 3     ,2      ,1/),
+     &       -1,-1,
+     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+c        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+c     &       1d0,4,3,
+c     &       (/idx_sbar,idxcbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+c     &       (/1,1,iblk_pxhp,1/),(/0,0,iblk_pxhp,0/),
+c     &       (/2,3/),1,
+c     &       0,0,
+c     &       0,0,
+c     &       op_info)
+c        do while(associated(fl_t_cr_pnt%next))
+c          fl_t_cr_pnt => fl_t_cr_pnt%next
+c        enddo
+c        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+c     &       1d0,4,3,
+c     &       (/idx_sbar,idxcbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+c     &       (/1,1,iblk_xxhp,1/),(/0,0,iblk_xxhp,0/),
+c     &       (/2,3/),1,
+c     &       0,0,
+c     &       0,0,
+c     &       op_info)
+      endif
+      if(r12op.eq.2.or.r12op.eq.3)then
         do while(associated(fl_t_cr_pnt%next))
           fl_t_cr_pnt => fl_t_cr_pnt%next
         enddo
 
         call expand_op_product2(fl_t_cr_pnt,idx_sbar,
      &       1d0,4,3,
-     &       (/idx_sbar,idx_scrbar,-idxr12,idx_sbar/),(/1,2,3,1/),
-     &       (/1,1,1,1/),-1,
+     &       (/idx_sbar,idxcppbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+     &       (/1,1,iblk_pxpp,1/),(/0,0,iblk_pxpp,0/),
+     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &       1d0,4,3,
+     &       (/idx_sbar,idxcppbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+     &       (/1,1,iblk_xxpp,1/),(/0,0,iblk_xxpp,0/),
      &       (/2,3/),1,
      &       0,0,
      &       0,0,
@@ -307,21 +442,21 @@ c     &     (/1,2/),1,.false.,op_info)
       ! Produce truncated expansions.
       call truncate_form(flist_lag,op_info)
 
-      ! rename _T_ -> T
-      if (extend.gt.0) then
-        call form_op_replace(op_scr,op_info%op_arr(idxc12)%op%name,
-     &     flist_lag,op_info)
-        call form_op_replace(op_scrbar,op_info%op_arr(idxcbar)%op%name,
-     &     flist_lag,op_info)
-c        call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,
+c      ! rename _T_ -> T
+c      if (extend.gt.0) then
+c        call form_op_replace(op_scr,op_info%op_arr(idxc12)%op%name,
 c     &     flist_lag,op_info)
-      end if
+c        call form_op_replace(op_scrbar,op_info%op_arr(idxcbar)%op%name,
+c     &     flist_lag,op_info)
+cc        call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,
+cc     &     flist_lag,op_info)
+c      end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)
       call sum_terms(flist_lag,op_info)
 
       ! post_processing and term counting:
-      if(.not.r12fix)then
+      if(.not.r12fix.and.r12op.eq.0)then
         iprint = iprlvl
         call r12_form_post(flist_lag,nterms,
      &       idxtbar,idxcbar,idxham,idxtop,idxc12, iprint,
@@ -348,15 +483,15 @@ c      end if
       ! remove the formal operators
       call del_operator(op_sba,op_info)
       call del_operator(op_sop,op_info)
-      if (extend.gt.0) call del_operator(op_scr,op_info)
-      if (extend.gt.0) call del_operator(op_scrbar,op_info)
+c      if (extend.gt.0) call del_operator(op_scr,op_info)
+c      if (extend.gt.0) call del_operator(op_scrbar,op_info)
 
       call atim_csw(cpu,sys,wall)
       write(luout,*) 'Number of generated terms: ',nterms
       call prtim(luout,'CC-R12 Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
 c dbg
-c      stop 'testing'
+c      if (r12op.gt.0) stop 'testing'
 c dbg
       return
       end

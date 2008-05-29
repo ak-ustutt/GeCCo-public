@@ -29,11 +29,12 @@
 
       integer ::
      &     min_rank, max_rank, ansatz, n_pp, ndef,
-     &     isim, ncat, nint, icnt, nlab,
-     &     isym, ms, msc, sym_arr(8), mode,
-     &     occ_def(ngastp,2,20), ntp_min, ntp_max
+     &     isim, ncat, nint, icnt, nlab, irank, idef,
+     &     isym, ms, msc, sym_arr(8), extend, r12op,
+     &     occ_def(ngastp,2,20),
+     &     ntp_min, ntp_max, ntpp_min, ntpp_max
       logical ::
-     &     needed, r12fix, set_tp
+     &     needed, r12fix, set_tp, set_tpp
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -63,10 +64,13 @@
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       call get_argument_value('method.R12','fixed',lval=r12fix)
-      call get_argument_value('method.R12','extend',ival=mode)
+      call get_argument_value('method.R12','extend',ival=extend)
+      call get_argument_value('method.R12','r12op',ival=r12op)
 
       n_pp = 0  ! number of particle-particle interaction in R12
-      select case(mode)
+      set_tp = .false.
+      set_tpp = .false.
+      select case(extend)
       case(1) 
         ! T1'
         set_tp = .true.
@@ -110,6 +114,42 @@
         n_pp=0
       end select
 
+      if (r12op.gt.0.and.extend.gt.0)
+     &     call quit(1,'set_r12f_general_targets',
+     &     'use either r12op or extend')
+      if (r12op.gt.0) then
+        set_tp  = .false.
+        set_tpp = .false.
+        ntp_min=0
+        ntp_max=0
+        ntpp_min=0
+        ntpp_max=0
+      end if
+      select case(r12op)
+      case(1)
+        ! T' operators (singly p-connected to R12)
+        set_tp = .true.
+        ntp_min=1
+        ntp_max=max_rank-1
+        n_pp=1
+      case(2)
+        ! T'' operators (doubly p-connected to R12)
+        set_tpp = .true.
+        ntpp_min=2
+        ntpp_max=max_rank
+        n_pp=2
+      case(3)
+        ! T' + T'' operators
+        set_tp = .true.
+        ntp_min=1
+        ntp_max=max_rank-1
+        n_pp=1
+        set_tpp = .true.
+        ntpp_min=2
+        ntpp_max=max_rank
+        n_pp=2
+      end select
+
       ! assemble approx string
       select case(trim(F_appr))
       case('none')
@@ -144,13 +184,28 @@ c      min_rank = 2  ! 1 is a possibility
      &              parameters,1,tgt_info)
 
       if (set_tp) then
-        ! T1' operators for extended MP2-F12.
+        ! T1' operators for extended CC/MP2-F12.
         call add_target(op_cex,ttype_op,.false.,tgt_info)
-        call xop_parameters(-1,parameters,
-     &       .false.,ntp_min,ntp_max,0,ntp_max+2)
-        call set_rule(op_cex,ttype_op,DEF_EXCITATION,
-     &                op_cex,1,1,
-     &                parameters,1,tgt_info)
+        occ_def = 0
+        ndef = ntp_max-ntp_min+1
+        irank = ntp_min-1
+        do idef = 1, ndef
+          irank = irank+1
+          occ_def(IPART,1,(idef-1)*2+1) = irank-1
+          occ_def(IHOLE,2,(idef-1)*2+1) = irank
+          occ_def(IPART,1,(idef-1)*2+2) = 1
+        end do
+
+        call op_from_occ_parameters(-1,parameters,2,
+     &       occ_def,ndef,2,ndef)
+        call set_rule(op_cex,ttype_op,DEF_OP_FROM_OCC,
+     &       op_cex,1,1,
+     &       parameters,2,tgt_info)
+c        call xop_parameters(-1,parameters,
+c     &       .false.,ntp_min,ntp_max,0,ntp_max+2)
+c        call set_rule(op_cex,ttype_op,DEF_EXCITATION,
+c     &                op_cex,1,1,
+c     &                parameters,1,tgt_info)
 
         ! The Lagrangian multipliers.
         call add_target(op_cexbar,ttype_op,.false.,tgt_info)
@@ -159,6 +214,25 @@ c      min_rank = 2  ! 1 is a possibility
      &                          op_cex,.true.) ! <- dagger=.true.
         call set_rule(op_cexbar,ttype_op,CLONE_OP,
      &                op_cexbar,1,1,
+     &                parameters,1,tgt_info)
+      endif
+
+      if (set_tpp) then
+        ! T1' operators for extended CC/MP2-F12.
+        call add_target(op_cexx,ttype_op,.false.,tgt_info)
+        call xop_parameters(-1,parameters,
+     &       .false.,ntpp_min,ntpp_max,0,ntpp_max+2)
+        call set_rule(op_cexx,ttype_op,DEF_EXCITATION,
+     &                op_cexx,1,1,
+     &                parameters,1,tgt_info)
+
+        ! The Lagrangian multipliers.
+        call add_target(op_cexxbar,ttype_op,.false.,tgt_info)
+        call set_dependency(op_cexxbar,op_cexx,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                          op_cexx,.true.) ! <- dagger=.true.
+        call set_rule(op_cexxbar,ttype_op,CLONE_OP,
+     &                op_cexxbar,1,1,
      &                parameters,1,tgt_info)
       endif
 

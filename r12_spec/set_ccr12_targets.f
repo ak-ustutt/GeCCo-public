@@ -29,7 +29,7 @@
       call set_ccmp_general_targets(tgt_info,orb_info)
 
       call get_argument_value('method.R12','fixed',lval=fixed)
-      call get_argument_value('method.R12','extend',ival=mode)
+      call get_argument_value('method.R12','r12op',ival=mode)
 
       if (fixed.or.mode.gt.0) then
         call set_r12f_general_targets(tgt_info,orb_info,env_type)

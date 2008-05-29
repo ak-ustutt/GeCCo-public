@@ -76,9 +76,12 @@ c     &     op_cba*4   = 'CBAR',
      &     op_x_inv*5      = 'X_INV',
      &     op_exchange*1   = 'K',
      &     op_hartree*3    = 'F+K',
-     &     op_cex*3        = 'T1''',
-     &     op_cexbar*6     = 'T1BAR''',
-     &     op_omgcex*7     = 'OMG_T1'''
+     &     op_cex*4        = 'T12''',
+     &     op_cexbar*7     = 'T12BAR''',
+     &     op_omgcex*8     = 'OMG_T12''',
+     &     op_cexx*4       = 'T12"',
+     &     op_cexxbar*7    = 'T12BAR"',
+     &     op_omgcexx*8    = 'OMG_T12"'
       ! generic ME-list names
       character, parameter ::
      &     mel_cclg0*6      = 'L0(CC)',
@@ -191,12 +194,18 @@ c     &     op_cba*4   = 'CBAR',
      &     mel_ccr12lg0*9   = 'L0(CCR12)',
      &     mel_ccr12en0def*13   = 'DEF-E0(CCR12)',
      &     mel_ccr12en0*9   = 'E0(CCR12)',
-     &     mel_cex_def*11   = 'DEF-T1''-R12',      
-     &     mel_cex*7        = 'T1''-R12',
-     &     mel_cexbar_def*14 = 'DEF-T1BAR''-R12',
-     &     mel_cexbar*10    = 'T1BAR''-R12',
-     &     mel_omgcexdef*12 = 'DEF-OMG1-R12',
-     &     mel_omgcex*8     = 'OMG1-R12'
+     &     mel_cex_def*11   = 'DEF-T12''-R12',      
+     &     mel_cex*8        = 'T12''-R12',
+     &     mel_cexbar_def*15 = 'DEF-T12BAR''-R12',
+     &     mel_cexbar*11    = 'T12BAR''-R12',
+     &     mel_omgcexdef*14 = 'DEF-OMG12''-R12',
+     &     mel_omgcex*10     = 'OMG12''-R12',
+     &     mel_cexx_def*11   = 'DEF-T12"-R12',      
+     &     mel_cexx*8        = 'T12"-R12',
+     &     mel_cexxbar_def*15 = 'DEF-T12BAR"-R12',
+     &     mel_cexxbar*11    = 'T12BAR"-R12',
+     &     mel_omgcexxdef*14 = 'DEF-OMG12"-R12',
+     &     mel_omgcexx*10     = 'OMG12"-R12'
 
 	  
       

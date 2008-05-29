@@ -85,6 +85,7 @@ c dbg
             if (may_merge(vtx_list(jdx),vtx_list(kdx))) then
               merged(kdx) = .true.
               iord(vtx_list(kdx)) = iord(vtx_list(jdx))
+              ireo(vtx_list(kdx)) = ireo(vtx_list(jdx))
               do ii = 1, nvtx
                 if (ireo(ii).gt.vtx_list(kdx))
      &               iord(ii) = iord(ii)-1
