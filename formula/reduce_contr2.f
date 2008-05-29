@@ -69,9 +69,9 @@
       nvtx = contr%nvtx
       allocate(vtx(nvtx), topo(nvtx,nvtx), xlines(nvtx,njoined_res),
      &         scr(nvtx), ireo(nvtx), ireo2(nvtx))
-      allocate(vtx_list(max(nvtx,nlist*2)),
-     &         vtx_list_reo(max(nvtx,nlist*2)),
-     &         vtx_list_new(max(nvtx,nlist*2)) )
+      allocate(vtx_list(max(nvtx**2,nlist*2)),
+     &         vtx_list_reo(max(nvtx**2,nlist*2)),
+     &         vtx_list_new(max(nvtx**2,nlist*2)) )
       allocate(svertex(nvtx),svertex_reo(nvtx))
 
       call pack_contr(svertex,vtx,topo,xlines,contr,njoined_res)
@@ -224,9 +224,22 @@
         write(luout,*) 'ireo_vtx_on = ',ireo_vtx_on(1:nvtx)
       end if
 
-      deallocate(vtx, topo, xlines, scr, ireo, ireo2,
-     &     vtx_list,vtx_list_reo,vtx_list_new, svertex,
-     &     topo_new,xlines_new,vtx_new,svertex_new,svertex_reo)
+c      deallocate(vtx, topo, xlines, scr, ireo, ireo2,
+c     &     vtx_list,vtx_list_reo,vtx_list_new, svertex,
+c     &     topo_new,xlines_new,vtx_new,svertex_new,svertex_reo,
+c     &     op1op2)
+      deallocate(vtx)
+      deallocate(topo)
+      deallocate(xlines)
+      deallocate(scr) 
+      deallocate(ireo)
+      deallocate(ireo2)
+      deallocate(vtx_list)
+      deallocate(vtx_list_reo)
+      deallocate(vtx_list_new)
+      deallocate(svertex)
+      deallocate(topo_new,xlines_new,vtx_new,svertex_new,svertex_reo)
+      deallocate(op1op2)
 
       return
       end
