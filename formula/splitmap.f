@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine splitmap(splmap,nvtx_rem,
-     &                    vtxmap,vtxinf,topomap,nvtx)
+     &                    vtxmap,svertex,vtxinf,topomap,nvtx)
 *----------------------------------------------------------------------*
 *     on entry:
 *       vtxmap(nvtx) contains -1 if the vertex remains after splitting
@@ -29,13 +29,15 @@
       integer, intent(out) ::
      &     splmap(nvtx), nvtx_rem
       integer, intent(in) ::
-     &     vtxmap(nvtx), vtxinf(nvtx), topomap(nvtx,nvtx)
+     &     vtxmap(nvtx), vtxinf(nvtx), topomap(nvtx,nvtx),
+     &     svertex(nvtx)
 
       integer ::
      &     ivtx_rem, ivtx_spl_last, isupervtx_spl_last,
      &     ivtx, jvtx, kvtx, lvtx, nsuper_spl,  isuper, ncontr
       integer ::
-     &     ireo(nvtx), topomap_cp(nvtx,nvtx), vtxmap_cp(nvtx)
+     &     ireo(nvtx), topomap_cp(nvtx,nvtx), vtxmap_cp(nvtx),
+     &     svertex_cp(nvtx)
 
       integer, external ::
      &     imltlist
@@ -51,7 +53,8 @@ c      ! we start by setting up splmap for the given ordering
       isupervtx_spl_last = -1
       do ivtx = 1, nvtx
         if (vtxmap(ivtx).ge.0) then
-          if (vtxmap(ivtx).gt.isupervtx_spl_last) then
+          if (vtxmap(ivtx).gt.isupervtx_spl_last .and.
+     &        isupervtx_spl_last.ne.0 ) then
             ivtx_rem = ivtx_rem + 1
             isupervtx_spl_last = vtxmap(ivtx)
             ivtx_spl_last = ivtx_rem
@@ -77,6 +80,7 @@ c      ! we start by setting up splmap for the given ordering
 
       topomap_cp = topomap
       vtxmap_cp  = vtxmap
+      svertex_cp = svertex
 
 c dbg
 c      call iwrtma(vtxmap_cp,nvtx,1,nvtx,1)
@@ -111,7 +115,8 @@ c dbg
 c                print *,'kvtx,jvtx,topo: ',
 c     &               kvtx,jvtx,topomap_cp(kvtx,jvtx)
 c dbg
-                if (topomap_cp(kvtx,jvtx).ne.0) then
+                if (topomap_cp(kvtx,jvtx).ne.0.or.
+     &              svertex_cp(kvtx).eq.svertex_cp(jvtx)) then
 c                  lvtx = kvtx+1
                   exit
                 end if
@@ -129,7 +134,8 @@ c              print *,'2> connected to ',jvtx
 c dbg
               lvtx = jvtx
               do kvtx = jvtx+1, nvtx
-                if (topomap_cp(kvtx,jvtx).ne.0) then
+                if (topomap_cp(kvtx,jvtx).ne.0.or.
+     &              svertex_cp(kvtx).eq.svertex_cp(jvtx)) then
 c                  lvtx = kvtx-1
                   exit
                 end if
@@ -154,7 +160,8 @@ c dbg
       do ivtx = 1, nvtx
         jvtx = ireo(ivtx)
         if (vtxmap(jvtx).ge.0) then
-          if (vtxmap(jvtx).gt.isupervtx_spl_last) then
+          if (vtxmap(jvtx).gt.isupervtx_spl_last .and.
+     &        isupervtx_spl_last.ne.0 ) then
             ivtx_rem = ivtx_rem + 1
             splmap(jvtx) = -ivtx_rem
             isupervtx_spl_last = vtxmap(jvtx)
@@ -169,6 +176,7 @@ c dbg
       end do
 c dbg
 c      print *,'splmap: ',splmap
+c      print *,'ivtx_rem: ',ivtx_rem
 c dbg
 
       return
@@ -205,6 +213,13 @@ c dbg
         vtxmap_cp(idx) = vtxmap_cp(idx+inc)        
       end do
       vtxmap_cp(ivtx_new) = ihelp
+
+      ! shift in svertex_cp
+      ihelp = svertex_cp(ivtx_old)
+      do idx = ivtx_old, ivtx_new-inc, inc
+        svertex_cp(idx) = svertex_cp(idx+inc)        
+      end do
+      svertex_cp(ivtx_new) = ihelp
 
       ! shift in topomap_cp
       ! rows

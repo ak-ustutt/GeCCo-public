@@ -1,10 +1,12 @@
+*----------------------------------------------------------------------*
       subroutine optc_prc_special2_inner
-     &     (grad, beyond_A,
+     &     (grad, beyond_A, scale,
      &      scr1, scr2,  bmat, xmat, xdia,
      &      ndim_bx, ndim_c, ndim_a,
      &      nidx_cstr,ms_cstr,gam_cstr,restr_cstr,mostnd_cstr,ngas_cstr,
      &      nidx_astr,ms_astr,gam_astr,restr_astr,mostnd_astr,ngas_astr,
      &      igamorb,ngam,ngas)
+*----------------------------------------------------------------------*
 
       implicit none
 
@@ -14,7 +16,7 @@
      &     ntest = 00
 
       logical ::
-     &     beyond_A
+     &     beyond_A, scale
       integer, intent(in) ::
      &     ndim_bx, ndim_c, ndim_a,
      &     nidx_cstr,ms_cstr,gam_cstr,ngas_cstr,
@@ -32,7 +34,7 @@
       logical ::
      &     first
       integer ::
-     &     idx_c, idx_a, idx_b1, idx_b2, istr, idx
+     &     idx_c, idx_a, idx_b1, idx_b2, istr, idx, jdx
       real(8) ::
      &     xsum_c(ndim_c), xsum_a(ndim_a), orbsum
       integer ::
@@ -115,9 +117,22 @@ c     &     idxspn(max(ndim_c,ndim_a)),idxdss(max(ndim_c,ndim_a))
 
         do idx_c = 1, ndim_c
           do idx_a = 1, ndim_a
-            orbsum = xsum_c(idx_c)-xsum_a(idx_a)
+            orbsum = xsum_c(idx_c)-xsum_a(idx_a) ! + 1d0  !shift
             ! effective Beff = B + (eps_C - eps_A)X
-            scr2 = bmat + orbsum*xmat
+            scr2 = bmat + orbsum*xmat 
+
+c test
+            if (scale) then
+              scr2 = 4d0*scr2
+c              do idx = 1, ndim_bx
+c                do jdx = 1, idx-1
+c                  scr2(idx,jdx) = 0d0
+c                  scr2(jdx,idx) = 0d0
+c                end do
+c                scr2(idx,idx) = scr2(idx,idx)
+c              end do
+            end if
+c
             ! invert
             call inv_svd(scr1(1,idx_a),scr2,grad(idx_c,1,idx_a),
      &                   ndim_bx,ndim_c)

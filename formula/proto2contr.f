@@ -154,9 +154,6 @@
       if (ntest.ge.100) then
         write(luout,*) 'on exit:'
         call prt_contr2(luout,contr,op_info)
-        allocate(svmap(contr%nvtx))
-        call svmap4contr2(svmap,contr)
-        deallocate(svmap)
       end if
 
       return

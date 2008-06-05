@@ -1,6 +1,13 @@
+*----------------------------------------------------------------------*
       subroutine topo_approach_vtxs(ireo,
      &     svertex,vtx,topo,xlines,
      &     nvtx,nj,vtx_list,nlist)
+*----------------------------------------------------------------------*
+*     given a contraction in matrix form and a list of vertices:
+*     try to move the vertices as close together as commutativity
+*     with the intervening operators allows
+*     this is the step to take prior to calling topo_merge_vtxs
+*----------------------------------------------------------------------*
       
       implicit none
 
@@ -19,7 +26,14 @@
       integer ::
      &     iord(nvtx)
       integer ::
-     &     idx, jdx, ivtxr, ivtxa, ivtxb, ivtxt, jvtx
+     &     idx, jdx, ivtxr, ivtxrm1, ivtxrp1, ivtx, jvtx
+
+      if (nlist.eq.1) then
+        do idx = 1, nvtx
+          ireo(idx) = idx
+        end do
+        return
+      end if
 
       ! check list
       do idx = 1, nlist
@@ -37,59 +51,101 @@
         ireo(idx) = idx
         iord(idx) = idx
       end do
-
+c dbg
+c      print *,'ireo (initial): ',ireo(1:nvtx)
+c dbg
       ! loop over list
-      do idx = 1, nlist
-        ! reference point
+      ! a) first vertex
+      ivtxr = ireo(vtx_list(1))
+      ! position of second vertex
+      ivtxrp1 = ireo(vtx_list(2))
+      ! if vertices lie in between ...
+c dbg
+c        print *,'(1) ivtxr, ivtxrp1: ',ivtxr,ivtxrp1
+c        call prt_contr_p(luout,svertex,vtx,topo,
+c     &       xlines,nvtx,nj)
+c dbg
+      if (ivtxrp1-ivtxr.gt.1) then
+        ! ... try to shift those up
+        do ivtx = ivtxr+1, ivtxrp1-1
+          jvtx = ivtx-1
+          do while(jvtx.ge.1)
+            if (.not.may_commute(jvtx,ivtx)) exit
+            jvtx = jvtx-1
+          end do
+          call shift_vtx(ivtx,jvtx+1)
+        end do
+      end if
+      ! update ivtxr position (ireo has changed)
+      ivtxr = ireo(vtx_list(1))
+c dbg
+c        print *,'(2) ivtxr, ivtxrp1: ',ivtxr,ivtxrp1
+c        call prt_contr_p(luout,svertex,vtx,topo,
+c     &       xlines,nvtx,nj)
+c dbg
+      ! if still someone stands between us: push that vertex 
+      ! below position of next vertex on list (if possible)
+      if (ivtxrp1-ivtxr.gt.1) then
+        do ivtx = ivtxrp1-1, ivtxr+1, -1
+          jvtx = ivtx+1
+          do while(jvtx.le.ivtxrp1)
+            if (.not.may_commute(jvtx,ivtx)) exit
+            jvtx = jvtx+1
+          end do
+          call shift_vtx(ivtx,jvtx-1)
+        end do
+      end if
+c dbg
+c        print *,'(3)'
+c        call prt_contr_p(luout,svertex,vtx,topo,
+c     &       xlines,nvtx,nj)
+c dbg
+
+      ! process further vertices on list
+      do idx = 2, nlist-1
         ivtxr = ireo(vtx_list(idx))
+        ivtxrp1 = ireo(vtx_list(idx+1))
+        ivtxrm1 = ireo(vtx_list(idx-1))
 c dbg
-c        print *,'ref = ',ivtxr,' <- ', vtx_list(idx)
+c        print *,'(4) ivtxr, ivtxrp1, ivtxrm1 ',ivtxr,ivtxrp1,ivtxrm1
+c        call prt_contr_p(luout,svertex,vtx,topo,
+c     &       xlines,nvtx,nj)
 c dbg
-        ! vertices above reference
-        do jdx = 1, idx-1
-          ivtxa = ireo(vtx_list(jdx))
-c dbg
-c          print *,'a = ',ivtxa,' <- ', vtx_list(jdx)
-c dbg
-          if (ivtxr-ivtxa.gt.1) then
-            ! try to move down
-            ivtxt = ivtxa
-            do jvtx = ivtxa+1, ivtxr-1
-              ivtxt = jvtx
-c              if (topo(jvtx,ivtxa).ne.0) then
-              if (.not.may_commute(jvtx,ivtxa)) then
-                ivtxt = jvtx-1
-                exit
-              end if
+        ! pushing up only, if upper vertex was separated anyway
+        if (ivtxrp1-ivtxr.gt.1 .and. ivtxr-ivtxrm1.gt.1) then
+          do ivtx = ivtxr+1, ivtxrp1-1
+            jvtx = ivtx-1
+            do while(jvtx.ge.1)
+              if (.not.may_commute(jvtx,ivtx)) exit
+              jvtx = jvtx-1
             end do
-            call shift_vtx(ivtxa,ivtxt)
-          end if
-        end do
-        ! vertices below reference
-        do jdx = idx+1, nlist
-          ivtxb = ireo(vtx_list(jdx))
+            call shift_vtx(ivtx,jvtx+1)
+          end do
+        end if
+        ivtxr = ireo(vtx_list(idx)) ! update
 c dbg
-c          print *,'b = ',ivtxb,' <- ', vtx_list(jdx)
+c        print *,'(5) ivtxr, ivtxrp1, ivtxrm1 ',ivtxr,ivtxrp1,ivtxrm1
+c        call prt_contr_p(luout,svertex,vtx,topo,
+c     &       xlines,nvtx,nj)
 c dbg
-          if (ivtxb-ivtxr.gt.1) then
-            ! try to move up
-            ivtxt = ivtxb
-            do jvtx = ivtxb-1, ivtxr+1, -1
-c dbg
-c              print *,'jvtx,topo: ',jvtx,topo(jvtx,ivtxb)
-c dbg
-              ivtxt = jvtx
-c              if (topo(jvtx,ivtxb).ne.0) then
-              if (.not.may_commute(jvtx,ivtxb)) then
-                ivtxt = jvtx+1
-                exit
-              end if
+        ! else we try pushing down ...
+        if (ivtxrp1-ivtxr.gt.1) then
+          do ivtx = ivtxrp1-1, ivtxr+1, -1
+            jvtx = ivtx+1
+            do while(jvtx.le.ivtxrp1)
+              if (.not.may_commute(jvtx,ivtx)) exit
+              jvtx = jvtx+1
             end do
-            call shift_vtx(ivtxb,ivtxt)
-          end if
-        end do
+            call shift_vtx(ivtx,jvtx-1)
+          end do
+        end if
 
       end do
+
+c dbg
+c      print *,'ireo (final): ',ireo(1:nvtx)
+c dbg
+      return
 
       contains
 

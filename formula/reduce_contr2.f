@@ -28,7 +28,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       type(contraction), intent(in) ::
      &     contr
@@ -159,7 +159,7 @@
      &              ireo2, njoined_res)
 
       call topo_rename_vtxs(svertex_new,vtx_new,
-     &     nvtx+1,idxnew_op1op2,
+     &     nvtx+1,idxnew_op1op2,0,0,
      &     vtx_list_new,nvtx_new,nvtx_op1op2)
 
       if (ntest.ge.100) then
@@ -168,9 +168,6 @@
      &       topo_new,xlines_new,nvtx_new,njoined_res)
       end if
 
-c dbg
-      print *,'nvtx_op1op2: ',nvtx_op1op2
-c dbg
       allocate(op1op2(nvtx_op1op2))
       ! extract occupation of binary contraction result
       call topo_extract_bcres(op1op2,

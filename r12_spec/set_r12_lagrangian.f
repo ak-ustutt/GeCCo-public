@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -198,51 +198,51 @@ c      end if
           fl_t_cr_pnt => fl_t_cr_pnt%next
         enddo
         
+c        call expand_op_product2(fl_t_cr_pnt,idx_sop,
+c     &       1d0,5,3,
+c     &       (/idx_sop,idxc12,idxr12,idxc12,idx_sop/),
+c     &       (/1      ,2     ,3     ,2     ,1     /),
+c     &       -1,-1,
+c     &       (/3,4/),1,
+c     &       0,0,
+c     &       0,0,
+c     &       op_info)
+        ! find xp|hp and xx|hp blocks of R12
+        occ = 0
+        occ(IPART,1) = 1
+        occ(IEXTR,1) = 1
+        occ(IHOLE,2) = 1
+        occ(IPART,2) = 1
+        iblk_pxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+        occ = 0
+        occ(IEXTR,1) = 2
+        occ(IHOLE,2) = 1
+        occ(IPART,2) = 1
+        iblk_xxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+        
+
         call expand_op_product2(fl_t_cr_pnt,idx_sop,
-     &       1d0,5,3,
-     &       (/idx_sop,idxc12,idxr12,idxc12,idx_sop/),
-     &       (/1      ,2     ,3     ,2     ,1     /),
-     &       -1,-1,
-     &       (/3,4/),1,
+     &       1d0,4,3,
+     &       (/idx_sop,idxr12,idxc12,idx_sop/),
+     &       (/1      ,2     ,3       ,1     /),
+     &       (/1,iblk_pxhp,1,1/),(/0,iblk_pxhp,0,0/),
+     &       (/2,3/),1,
      &       0,0,
      &       0,0,
      &       op_info)
-c        ! find xp|hp and xx|hp blocks of R12
-c        occ = 0
-c        occ(IPART,1) = 1
-c        occ(IEXTR,1) = 1
-c        occ(IHOLE,2) = 1
-c        occ(IPART,2) = 1
-c        iblk_pxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
-c        occ = 0
-c        occ(IEXTR,1) = 2
-c        occ(IHOLE,2) = 1
-c        occ(IPART,2) = 1
-c        iblk_xxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
-c        
-c
-c        call expand_op_product2(fl_t_cr_pnt,idx_sop,
-c     &       1d0,4,3,
-c     &       (/idx_sop,idxr12,idxc12,idx_sop/),
-c     &       (/1      ,2     ,3       ,1     /),
-c     &       (/1,iblk_pxhp,1,1/),(/0,iblk_pxhp,0,0/),
-c     &       (/2,3/),1,
-c     &       0,0,
-c     &       0,0,
-c     &       op_info)
-c
-c        do while(associated(fl_t_cr_pnt%next))
-c          fl_t_cr_pnt => fl_t_cr_pnt%next
-c        enddo
-c        call expand_op_product2(fl_t_cr_pnt,idx_sop,
-c     &       1d0,4,3,
-c     &       (/idx_sop,idxr12,idxc12,idx_sop/),
-c     &       (/1      ,2     ,3       ,1     /),
-c     &       (/1,iblk_xxhp,1,1/),(/0,iblk_xxhp,0,0/),
-c     &       (/2,3/),1,
-c     &       0,0,
-c     &       0,0,
-c     &       op_info)
+
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+        call expand_op_product2(fl_t_cr_pnt,idx_sop,
+     &       1d0,4,3,
+     &       (/idx_sop,idxr12,idxc12,idx_sop/),
+     &       (/1      ,2     ,3       ,1     /),
+     &       (/1,iblk_xxhp,1,1/),(/0,iblk_xxhp,0,0/),
+     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
       endif
       if(r12op.eq.2.or.r12op.eq.3)then
         do while(associated(fl_t_cr_pnt%next))
@@ -260,7 +260,7 @@ c     &       op_info)
         occ(IPART,2) = 2
         iblk_xxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
 c dbg
-        print *,'iblk: ',iblk_pxpp,iblk_xxpp
+c        print *,'iblk: ',iblk_pxpp,iblk_xxpp
 c dbg        
 
         call expand_op_product2(fl_t_cr_pnt,idx_sop,
@@ -333,34 +333,34 @@ c     &     (/1,2/),1,.false.,op_info)
           fl_t_cr_pnt => fl_t_cr_pnt%next
         enddo
 
+c        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+c     &       1d0,5,3,
+c     &       (/idx_sbar,idxcbar,-idxr12,idxcbar,idx_sbar/),
+c     &       (/1       ,2      , 3     ,2      ,1/),
+c     &       -1,-1,
+c     &       (/2,3/),1,
+c     &       0,0,
+c     &       0,0,
+c     &       op_info)
         call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,5,3,
-     &       (/idx_sbar,idxcbar,-idxr12,idxcbar,idx_sbar/),
-     &       (/1       ,2      , 3     ,2      ,1/),
-     &       -1,-1,
+     &       1d0,4,3,
+     &       (/idx_sbar,idxcbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+     &       (/1,1,iblk_pxhp,1/),(/0,0,iblk_pxhp,0/),
      &       (/2,3/),1,
      &       0,0,
      &       0,0,
      &       op_info)
-c        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-c     &       1d0,4,3,
-c     &       (/idx_sbar,idxcbar,-idxr12,idx_sbar/),(/1,2,3,1/),
-c     &       (/1,1,iblk_pxhp,1/),(/0,0,iblk_pxhp,0/),
-c     &       (/2,3/),1,
-c     &       0,0,
-c     &       0,0,
-c     &       op_info)
-c        do while(associated(fl_t_cr_pnt%next))
-c          fl_t_cr_pnt => fl_t_cr_pnt%next
-c        enddo
-c        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-c     &       1d0,4,3,
-c     &       (/idx_sbar,idxcbar,-idxr12,idx_sbar/),(/1,2,3,1/),
-c     &       (/1,1,iblk_xxhp,1/),(/0,0,iblk_xxhp,0/),
-c     &       (/2,3/),1,
-c     &       0,0,
-c     &       0,0,
-c     &       op_info)
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
+     &       1d0,4,3,
+     &       (/idx_sbar,idxcbar,-idxr12,idx_sbar/),(/1,2,3,1/),
+     &       (/1,1,iblk_xxhp,1/),(/0,0,iblk_xxhp,0/),
+     &       (/2,3/),1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
       endif
       if(r12op.eq.2.or.r12op.eq.3)then
         do while(associated(fl_t_cr_pnt%next))
@@ -424,12 +424,13 @@ c     &       op_info)
       ! replace S by T+CR
       call expand_subexpr(flist_lag,flist_t_cr,.false.,op_info)
 
+      ! sum up duplicate terms (due to S->T+CR replacement)
+      call sum_terms(flist_lag,op_info)
+
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'after replacing S')
         call print_form_list(luout,flist_lag,op_info)
       end if
-
-      call sum_terms(flist_lag,op_info)
 
       ! replace Sbar by Tbar + R^t CBAR
       call expand_subexpr(flist_lag,flist_tbar_cbarr,.false.,op_info)
@@ -438,6 +439,9 @@ c     &       op_info)
         call write_title(luout,wst_title,'after replacing S')
         call print_form_list(luout,flist_lag,op_info)
       end if
+
+      ! sum up duplicate terms (due to S->T+CR replacement)
+      call sum_terms(flist_lag,op_info)
 
       ! Produce truncated expansions.
       call truncate_form(flist_lag,op_info)
@@ -452,11 +456,8 @@ cc        call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,
 cc     &     flist_lag,op_info)
 c      end if
 
-      ! sum up duplicate terms (due to S->T+CR replacement)
-      call sum_terms(flist_lag,op_info)
-
       ! post_processing and term counting:
-      if(.not.r12fix.and.r12op.eq.0)then
+      if(.not.r12fix.and.r12op.le.1)then
         iprint = iprlvl
         call r12_form_post(flist_lag,nterms,
      &       idxtbar,idxcbar,idxham,idxtop,idxc12, iprint,

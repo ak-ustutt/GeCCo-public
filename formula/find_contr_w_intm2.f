@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine find_contr_w_intm(success,fpa_found,contr_rpl,
+      subroutine find_contr_w_intm2(success,fpl_found,contr_rpl,
      &                             fl_tgt,fpl_intm,nterms,
      &                             op_info)
 *----------------------------------------------------------------------*
@@ -12,6 +12,10 @@
 *     if yes, factorize  T = T0*I_i and look for the other terms 
 *     originating from T0*I_j (i/=j)
 *     
+*     slightly improved version: allows factorization of intermediates
+*       which imply symmetrization of external lines in their defining
+*       formula (like Ttilde(iajb) = T(iajb) + T(ia)T(jb))
+*
 *----------------------------------------------------------------------*
       implicit none
 
@@ -32,8 +36,8 @@
      &     nterms
       type(formula_item), target, intent(in) ::
      &     fl_tgt
-      type(formula_item_array), intent(out) ::
-     &     fpa_found(nterms)
+      type(formula_item_list), intent(out), target ::
+     &     fpl_found
       type(contraction), intent(inout) ::
      &     contr_rpl
       type(formula_item_list), target, intent(in) ::
@@ -43,25 +47,27 @@
 
       integer ::
      &     len_i_max, idxop_tgt, iblk_tgt, iterm, nfound,
-     &     idxop_current, iblk_current, njoined, idx
+     &     idxop_current, iblk_current, njoined, idx, nterms_gen
       type(formula_item_list), pointer ::
-     &     fpl_intm_pnt
+     &     fpl_intm_pnt, fpl_found_pnt
       logical ::
-     &     assigned(nterms), success1, success2, dagger
+     &     success1, success2, dagger
+      logical, pointer ::
+     &     assigned(:)
       type(contraction) ::
      &     contr_t0, contr_int
       type(contraction), pointer ::
-     &     contr_tgt(:), contr_i
+     &     contr_i
       type(formula_item), pointer ::
-     &     fl_tgt_pnt
+     &     fl_tgt_pnt, fl_t0_i, fl_t0_i_pnt
 
       logical, external ::
      &     contr_in_contr, cmp_contr
 
       if (ntest.ge.100) then
-        write(luout,*) '==========================='
-        write(luout,*) ' entered find_contr_w_intm'
-        write(luout,*) '==========================='
+        write(luout,*) '============================='
+        write(luout,*) ' entered find_contr_w_intm 2'
+        write(luout,*) '============================='
       end if
 
       call init_contr(contr_t0)
@@ -86,30 +92,23 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
           ! take I_i with longest contraction
           if (fpl_intm_pnt%item%contr%nvtx.gt.len_i_max) then
             len_i_max = fpl_intm_pnt%item%contr%nvtx
-            ! let first element of fpa_found point to T
-            fpa_found(1)%item => fl_tgt
             ! remember I_i
             contr_i => fpl_intm_pnt%item%contr
             success1 = .true.
-            ! mark this term as "assigned"
-            assigned(1:nterms) = .false.
-            assigned(iterm) = .true.
           end if
         end if
         if (.not.associated(fpl_intm_pnt%next)) exit
         fpl_intm_pnt => fpl_intm_pnt%next
       end do
 
-c dbg
-c      print *,'success 1',success1
-c      print *,'nterms',nterms
-c      print *,'assoc',associated(fl_tgt%next)
-c dbg
-
       if (success1) then
         ! get factor, vertices and arcs associated with T_0
-c        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
-         call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
+c        if (fl_tgt%contr%nvtx.le.4) then
+c         call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
+c        else
+          call split_contr3(contr_t0,contr_i,fl_tgt%contr,op_info)
+c        end if
+c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
         if (ntest.ge.100) then
           write(luout,*) 'considering contraction:'
           call prt_contr2(luout,fl_tgt%contr,op_info)
@@ -122,96 +121,123 @@ c        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
 
       ! more than one term (which should be the usual case)?
       ! look for the remaining terms
-      if (success1.and.nterms.gt.1.and.associated(fl_tgt%next)) then
+      if (success1.and.associated(fl_tgt%next)) then
 
-        allocate(contr_tgt(nterms))
-        do iterm = 1, nterms
-          call init_contr(contr_tgt(iterm))
-        end do
+        allocate(fl_t0_i)
+        call init_formula(fl_t0_i)
+        fl_t0_i_pnt => fl_t0_i
 
         success2 = .false.
         fpl_intm_pnt => fpl_intm
         iterm = 0
         do
-          iterm = iterm+1
           ! make target contractions that we need to find
-          if (.not.assigned(iterm))then
-            call join_contr2(contr_tgt(iterm),
+          call join_contr2a(fl_t0_i_pnt,nterms_gen,
      &           contr_t0,fpl_intm_pnt%item%contr,
      &           idxop_tgt,iblk_tgt,op_info)
-c dbg
-c            print *,'iterm',iterm
-c            print *,'targeted'
-c            call prt_contr2(luout,contr_tgt(iterm),op_info)
-c dbg
-          endif    
+          iterm = iterm+nterms_gen
+          do while(associated(fl_t0_i_pnt%next))
+            fl_t0_i_pnt => fl_t0_i_pnt%next
+          end do
           if (.not.associated(fpl_intm_pnt%next)) exit
           fpl_intm_pnt => fpl_intm_pnt%next
         end do
 
-        nfound = 1 ! the first term is already on fpa_found list
-        ! continue with next record of fl_tgt
+        nterms_gen = iterm
+        if (ntest.ge.100) then
+          write(luout,*) 'looking for ',nterms_gen,' terms'
+        end if
+
+        allocate(assigned(nterms_gen))
+        assigned(1:nterms_gen) = .false.
+
+        nfound = 0
+        ! continue with present record of fl_tgt
         ! increment to %next will be at top of tgt_loop
         fl_tgt_pnt => fl_tgt
         idxop_current = idxop_tgt
 
         ! loop items of formula
         tgt_loop: do
-          ! go to next record
-          if (.not.associated(fl_tgt_pnt%next)) exit tgt_loop
-          fl_tgt_pnt => fl_tgt_pnt%next
-
           ! result block OK?
           select case (fl_tgt_pnt%command)
-            case(command_end_of_formula)
-              exit tgt_loop
-            case(command_set_target_init,command_set_target_update)
-              idxop_current = fl_tgt_pnt%target
+          case(command_end_of_formula)
+            exit tgt_loop
+          case(command_set_target_init,command_set_target_update)
+            idxop_current = fl_tgt_pnt%target
+            fl_tgt_pnt => fl_tgt_pnt%next
+            cycle tgt_loop
+          case(command_add_contribution)
+            ! we are looking for same operator/block
+            if (idxop_current.ne.idxop_tgt) then
+              fl_tgt_pnt => fl_tgt_pnt%next
               cycle tgt_loop
-            case(command_add_contribution)
-              ! we are looking for same operator/block
-              if (idxop_current.ne.idxop_tgt) cycle tgt_loop
-              iblk_current = fl_tgt_pnt%contr%iblk_res
-              if (iblk_current.ne.iblk_tgt) cycle tgt_loop
-            case default
-              write(luout,*) 'command = ',fl_tgt_pnt%command
-              call quit(1,'find_contr_w_intm',
+            end if
+            iblk_current = fl_tgt_pnt%contr%iblk_res
+            if (iblk_current.ne.iblk_tgt) then
+              fl_tgt_pnt => fl_tgt_pnt%next
+              cycle tgt_loop
+            end if
+          case default
+            write(luout,*) 'command = ',fl_tgt_pnt%command
+            call quit(1,'find_contr_w_intm',
      &             'not prepared for that command (see above)')
           end select
 
           ! compare with generated target contractions
-          term_loop: do iterm = 1, nterms
-            if (assigned(iterm)) cycle
+          iterm = 0
+          fl_t0_i_pnt => fl_t0_i
+          term_loop: do
+            iterm = iterm+1
+       
+            if (.not.associated(fl_t0_i_pnt%contr))
+     &           call quit(1,'find_contr_w_intm2',
+     &                       'this should not happen')
+
+            if (.not.assigned(iterm)) then
 c dbg
-c            print *,'comparing: iterm = ',iterm
-c            print *,'assigned: ',assigned(1:nterms)
-c            call prt_contr2(6,fl_tgt_pnt%contr,op_info)
-c            call prt_contr2(6,contr_tgt(iterm),op_info)
+              print *,'comparing: iterm = ',iterm
+              print *,'assigned: ',assigned(1:nterms)
+              call prt_contr2(6,fl_tgt_pnt%contr,op_info)
+              call prt_contr2(6,fl_t0_i_pnt%contr,op_info)
 c dbg
-            if (cmp_contr(fl_tgt_pnt%contr,
-     &                    contr_tgt(iterm),.false.)) then
+              if (cmp_contr(fl_tgt_pnt%contr,
+     &                      fl_t0_i_pnt%contr,.false.)) then
 c dbg
-c              print *,'hurra'
+                print *,'OK!'
 c dbg
-              assigned(iterm) = .true.
-              nfound = nfound+1
-c dbg
-c              print *,'nfound',nfound
-c dbg
-              fpa_found(nfound)%item => fl_tgt_pnt
-              ! all terms found? let's go
-              success2 =  nfound.eq.nterms
-              if (success2) exit tgt_loop
-              exit term_loop
+                assigned(iterm) = .true.
+                nfound = nfound+1
+                if (nfound.eq.1) then
+                  fpl_found_pnt => fpl_found
+                else
+                  call new_formula_plist_entry(fpl_found_pnt)
+                  fpl_found_pnt => fpl_found_pnt%next
+                end if
+                fpl_found_pnt%item => fl_tgt_pnt
+                ! all terms found? let's go
+                success2 =  nfound.eq.nterms
+                if (success2) exit tgt_loop
+                exit term_loop
+              end if
             end if
+
+            if (.not.associated(fl_t0_i_pnt%next).or.
+     &               fl_t0_i_pnt%next%command.eq.command_end_of_formula)
+     &           exit term_loop
+            fl_t0_i_pnt => fl_t0_i_pnt%next
+
           end do term_loop
+
+          ! go to next record
+          if (.not.associated(fl_tgt_pnt%next)) exit tgt_loop
+          fl_tgt_pnt => fl_tgt_pnt%next
 
         end do tgt_loop
 
-        deallocate(contr_tgt)
+        call dealloc_formula_list(fl_t0_i)
+        deallocate(fl_t0_i)
 
-      else if (nterms.eq.1) then
-        success2 = .true.
       end if
 
       if (ntest.ge.100) then
@@ -254,9 +280,6 @@ c dbg
         end if
 
         ! make new contraction
-c dbg
-c        print *,'the interesting call to join_contr2'
-c dbg
         call join_contr2(contr_rpl,
      &                  contr_t0,contr_int,
      &                  idxop_tgt,iblk_tgt,op_info)

@@ -326,7 +326,7 @@ c test
         labels(3) = op_jac
         labels(4) = op_cex
         labels(5) = ' '
-        call add_target(form_jac,ttype_frm,.true.,tgt_info)
+        call add_target(form_jac,ttype_frm,.false.,tgt_info)
         call set_dependency(form_jac,form_mpr12rs_cex,tgt_info)
         call set_dependency(form_jac,op_jac,tgt_info)
         call set_rule(form_jac,ttype_frm,DERIVATIVE,
@@ -581,11 +581,11 @@ c      endif
         
         call add_target(solve_mpr12_gs,ttype_gen,.true.,tgt_info)
 
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = fopt_jac
-        call set_rule(solve_mpr12_gs,ttype_opme,EVAL,
-     &       labels,1,0,
-     &       parameters,0,tgt_info)
+c        labels(1:10)(1:len_target_name) = ' '
+c        labels(1) = fopt_jac
+c        call set_rule(solve_mpr12_gs,ttype_opme,EVAL,
+c     &       labels,1,0,
+c     &       parameters,0,tgt_info)
 
         call set_dependency(solve_mpr12_gs,mel_dia1,tgt_info)
 c        call set_dependency(solve_mpr12_gs,'DIATEST',tgt_info)

@@ -25,7 +25,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       character, parameter ::
      &     name_scr0*6 = 'cntscr'
@@ -479,7 +479,7 @@ c          stop 'test'
      &           iocc_op1op2,iocc_op1op2tmp,
      &           irst_op1op2,irst_op1op2tmp,
      &           njoined_op1op2,
-     &           cur_contr,reo_info,str_info,orb_info)
+     &           reo_info,str_info,orb_info)
           else
             reo_op1op2 = .false.
             reo_other = .false.

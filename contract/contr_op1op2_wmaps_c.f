@@ -1217,7 +1217,7 @@ c     &         iblkop1op2,iblkop1op2,str_info,orb_info)
 c dbg
                     call reo_blk_wmaps_c(xop1op2,xop1op2blk,
      &                   reo_info%sign_reo,
-     &                   tra_op1op2,
+     &                   tra_op1op2, tra_op1op2,
      &                   ms12i_c(3),ms12i_a(3),
      &                                   igam12i_c(3),igam12i_a(3),
      &                   msi_dis_c,msi_dis_a,gmi_dis_c,gmi_dis_a,

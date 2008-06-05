@@ -15,20 +15,33 @@
       int = 0
       ibs = 1
       ib8 = ibase
-      do iexp = 1, nexp
-        if (ibs.le.0) goto 100
+      do iexp = 1, nexp, 4
         n = int_exp(iexp)
         int = int + n*ibs
-        ibs = ibs*ibase
+        ibs = ibs*ib8
+        n = int_exp(iexp+1)
+        int = int + n*ibs
+        ibs = ibs*ib8
+        n = int_exp(iexp+2)
+        int = int + n*ibs
+        ibs = ibs*ib8
+        n = int_exp(iexp+3)
+        int = int + n*ibs
+        ibs = ibs*ib8
+      end do
+      do iexp = nexp - mod(nexp,4) + 1, nexp
+        n = int_exp(iexp)
+        int = int + n*ibs
+        ibs = ibs*ib8
       end do
 
       int8_pack = int
 
       return
 
- 100  write(luout,*) 'intlist not suited for packing:'
-      write(luout,*) ' list = ',int_exp(1:nexp)
-      write(luout,*) ' base = ',ibase
-      call quit(1,'int8_pack','intlist not suited for packing')
+c 100  write(luout,*) 'intlist not suited for packing:'
+c      write(luout,*) ' list = ',int_exp(1:nexp)
+c      write(luout,*) ' base = ',ibase
+c      call quit(1,'int8_pack','intlist not suited for packing')
 
       end

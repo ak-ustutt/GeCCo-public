@@ -186,26 +186,25 @@ c      min_rank = 2  ! 1 is a possibility
       if (set_tp) then
         ! T1' operators for extended CC/MP2-F12.
         call add_target(op_cex,ttype_op,.false.,tgt_info)
-        occ_def = 0
-        ndef = ntp_max-ntp_min+1
-        irank = ntp_min-1
-        do idef = 1, ndef
-          irank = irank+1
-          occ_def(IPART,1,(idef-1)*2+1) = irank-1
-          occ_def(IHOLE,2,(idef-1)*2+1) = irank
-          occ_def(IPART,1,(idef-1)*2+2) = 1
-        end do
-
-        call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,ndef,2,ndef)
-        call set_rule(op_cex,ttype_op,DEF_OP_FROM_OCC,
-     &       op_cex,1,1,
-     &       parameters,2,tgt_info)
-c        call xop_parameters(-1,parameters,
-c     &       .false.,ntp_min,ntp_max,0,ntp_max+2)
-c        call set_rule(op_cex,ttype_op,DEF_EXCITATION,
-c     &                op_cex,1,1,
-c     &                parameters,1,tgt_info)
+c        occ_def = 0
+c        ndef = ntp_max-ntp_min+1
+c        irank = ntp_min-1
+c        do idef = 1, ndef
+c          irank = irank+1
+c          occ_def(IPART,1,(idef-1)*2+1) = irank-1
+c          occ_def(IHOLE,2,(idef-1)*2+1) = irank
+c          occ_def(IPART,1,(idef-1)*2+2) = 1
+c        end do
+c        call op_from_occ_parameters(-1,parameters,2,
+c     &       occ_def,ndef,2,ndef)
+c        call set_rule(op_cex,ttype_op,DEF_OP_FROM_OCC,
+c     &       op_cex,1,1,
+c     &       parameters,2,tgt_info)
+        call xop_parameters(-1,parameters,
+     &       .false.,ntp_min,ntp_max,0,ntp_max+2)
+        call set_rule(op_cex,ttype_op,DEF_EXCITATION,
+     &                op_cex,1,1,
+     &                parameters,1,tgt_info)
 
         ! The Lagrangian multipliers.
         call add_target(op_cexbar,ttype_op,.false.,tgt_info)
@@ -218,7 +217,7 @@ c     &                parameters,1,tgt_info)
       endif
 
       if (set_tpp) then
-        ! T1' operators for extended CC/MP2-F12.
+        ! T1'' operators for extended CC/MP2-F12.
         call add_target(op_cexx,ttype_op,.false.,tgt_info)
         call xop_parameters(-1,parameters,
      &       .false.,ntpp_min,ntpp_max,0,ntpp_max+2)

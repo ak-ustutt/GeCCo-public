@@ -608,8 +608,8 @@ c      end if
         labels(9) = me_bprc
         labels(10)= me_xprc
         labels(11) = mel_ham
-        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
-c        call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
+c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
+        call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
         call set_rule(solve_ccr12_gs,ttype_opme,SOLVENLEQ,
      &       labels,11,4,
      &       parameters,2,tgt_info)

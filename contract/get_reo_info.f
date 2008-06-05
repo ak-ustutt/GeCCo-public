@@ -3,7 +3,7 @@
      &     iocc_op1op2,iocc_op1op2tmp,
      &     irst_op1op2,irst_op1op2tmp,
      &     njoined_op1op2,
-     &     contr,reo_info,str_info,orb_info)
+     &     reo_info,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     process raw reordering info from reduce_contr:
 *
@@ -33,8 +33,6 @@
       integer, parameter ::
      &     ntest = 00
 
-      type(contraction), intent(in) ::
-     &     contr
       type(reorder_info), intent(inout) ::
      &     reo_info
       type(orbinf), intent(in) ::

@@ -1,4 +1,8 @@
+*----------------------------------------------------------------------*
       subroutine prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx,nj)
+*----------------------------------------------------------------------*
+*     print contraction in topo-matrix form
+*----------------------------------------------------------------------*
 
       implicit none
 
@@ -20,10 +24,17 @@
 
       write(fmt,'("(x,i2,i5,""|"",",i1,"i9.8,""|"",",i1,"i9.8",")")')
      &     nvtx, nj
-      do ivtx = 1, nvtx
-        write(luout,fmt) svtx(ivtx), vtx(ivtx),
-     &       topo(ivtx,1:nvtx), xlines(ivtx,1:nj)
-      end do
+      if (nvtx.gt.0.and.svtx(1).gt.0) then
+        do ivtx = 1, nvtx
+          write(luout,fmt) svtx(ivtx), vtx(ivtx),
+     &         topo(ivtx,1:nvtx), xlines(ivtx,1:nj)
+        end do
+      else
+        do ivtx = 1, nvtx
+          write(luout,fmt) 0, vtx(ivtx),
+     &         topo(ivtx,1:nvtx), xlines(ivtx,1:nj)
+        end do
+      end if
 
       return
       end
