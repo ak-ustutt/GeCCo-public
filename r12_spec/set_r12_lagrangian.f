@@ -446,15 +446,27 @@ c     &       op_info)
       ! Produce truncated expansions.
       call truncate_form(flist_lag,op_info)
 
-c      ! rename _T_ -> T
-c      if (extend.gt.0) then
-c        call form_op_replace(op_scr,op_info%op_arr(idxc12)%op%name,
-c     &     flist_lag,op_info)
-c        call form_op_replace(op_scrbar,op_info%op_arr(idxcbar)%op%name,
-c     &     flist_lag,op_info)
+      ! replace T12 -> T
+      if (r12fix.and.r12op.gt.0) then
+        if (r12op.ne.2) then
+          call form_op_replace(op_info%op_arr(idxc12)%op%name,
+     &                       op_info%op_arr(idxtop)%op%name,
+     &     flist_lag,op_info)
+          call form_op_replace(op_info%op_arr(idxcbar)%op%name,
+     &                       op_info%op_arr(idxtbar)%op%name,
+     &     flist_lag,op_info)
+        end if
+        if (r12op.gt.1) then
+          call form_op_replace(op_info%op_arr(idxcpp12)%op%name,
+     &                       op_info%op_arr(idxtop)%op%name,
+     &     flist_lag,op_info)
+          call form_op_replace(op_info%op_arr(idxcppbar)%op%name,
+     &                       op_info%op_arr(idxtbar)%op%name,
+     &     flist_lag,op_info)
+        end if
 cc        call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,
 cc     &     flist_lag,op_info)
-c      end if
+      end if
 
       ! post_processing and term counting:
       if(.not.r12fix.and.r12op.le.1)then
@@ -464,10 +476,10 @@ c      end if
      &       op_info)
       endif
 
-c      if (ntest.ge.100) then
+      if (ntest.ge.100) then
         call write_title(luout,wst_title,'Final formula')
         call print_form_list(luout,flist_lag,op_info)
-c      end if
+      end if
 
       ! assign comment
       form_cclag%comment = trim(title)

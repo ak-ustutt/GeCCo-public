@@ -116,9 +116,9 @@
       end do
 
       if (iprint.ge.100) then
-        write(luout,*) 'ihpvgas:   ',orb_info%ihpvgas(1:ngastp,1)
+        write(luout,*) 'ihpvgas:   ',orb_info%ihpvgas(1:ngas,1)
         if (orb_info%nspin.gt.1)
-     &       write(luout,*) '           ',orb_info%ihpvgas(1:ngastp,2)
+     &       write(luout,*) '           ',orb_info%ihpvgas(1:ngas,2)
         write(luout,*) 'ngas_hpv:  ',orb_info%ngas_hpv(1:ngastp)
         write(luout,*) 'nactt_hpv: ',orb_info%nactt_hpv(1:ngastp)
         write(luout,*) 'ioff_gas:  ',orb_info%ioff_gas(1:ngastp)

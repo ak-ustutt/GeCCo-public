@@ -192,7 +192,8 @@ c     &     op_cba*4   = 'CBAR',
      &     mel_p3g_inter*9    = 'P3G-INTER',
      &     mel_p3g_def*13     = 'DEF-P3G-INTER',
      &     mel_b_inv*4        = 'BINV',
-     &     mel_b_dia*4        = 'BDIA'
+     &     mel_b_dia*4        = 'BDIA',
+     &     mel_diar12*8       = 'DIA(R12)'
       character, parameter ::
      &     mel_c12def*11    = 'DEF-T0''-R12',
      &     mel_c12*7        = 'T0''-R12',

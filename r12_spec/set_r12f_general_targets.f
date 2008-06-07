@@ -29,6 +29,7 @@
 
       integer ::
      &     min_rank, max_rank, ansatz, n_pp, ndef,
+     &     min_rank_tp, min_rank_tpp,
      &     isim, ncat, nint, icnt, nlab, irank, idef,
      &     isym, ms, msc, sym_arr(8), extend, r12op,
      &     occ_def(ngastp,2,20),
@@ -61,6 +62,8 @@
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','F_appr',str=F_appr)
       call get_argument_value('method.R12','K_appr',str=K_appr)
+      call get_argument_value('method.R12','min_tp',ival=min_rank_tp)
+      call get_argument_value('method.R12','min_tpp',ival=min_rank_tpp)
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       call get_argument_value('method.R12','fixed',lval=r12fix)
@@ -129,23 +132,23 @@
       case(1)
         ! T' operators (singly p-connected to R12)
         set_tp = .true.
-        ntp_min=1
+        ntp_min=min_rank_tp
         ntp_max=max_rank-1
         n_pp=1
       case(2)
         ! T'' operators (doubly p-connected to R12)
         set_tpp = .true.
-        ntpp_min=2
+        ntpp_min=min_rank_tpp
         ntpp_max=max_rank
         n_pp=2
       case(3)
         ! T' + T'' operators
         set_tp = .true.
-        ntp_min=1
+        ntp_min=min_rank_tp
         ntp_max=max_rank-1
         n_pp=1
         set_tpp = .true.
-        ntpp_min=2
+        ntpp_min=min_rank_tpp
         ntpp_max=max_rank
         n_pp=2
       end select
@@ -214,6 +217,15 @@ c     &       parameters,2,tgt_info)
         call set_rule(op_cexbar,ttype_op,CLONE_OP,
      &                op_cexbar,1,1,
      &                parameters,1,tgt_info)
+
+        call add_target(op_diar12,ttype_op,.false.,tgt_info)
+        call set_dependency(op_diar12,op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                          op_cex,.false.) ! <- dagger=.false.
+        call set_rule(op_diar12,ttype_op,CLONE_OP,
+     &                op_diar12,1,1,
+     &                parameters,1,tgt_info)
+
       endif
 
       if (set_tpp) then
@@ -233,6 +245,7 @@ c     &       parameters,2,tgt_info)
         call set_rule(op_cexxbar,ttype_op,CLONE_OP,
      &                op_cexxbar,1,1,
      &                parameters,1,tgt_info)
+
       endif
 
       ! Now: the operators associated with the actual R12 integrals:
@@ -1218,6 +1231,28 @@ c dbg
      &              labels,2,1,
      &              parameters,1,tgt_info)
       
+      if (set_tp) then
+        ! diagonal preconditioner
+        call add_target(mel_diar12,ttype_opme,.false.,tgt_info)
+        call set_dependency(mel_diar12,op_diar12,tgt_info)
+        call set_dependency(mel_diar12,eval_r12_inter,tgt_info)
+        call set_dependency(mel_diar12,mel_ham,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = mel_diar12
+        labels(2) = op_diar12
+        call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+        call set_rule(mel_diar12,ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+        labels(1) = mel_diar12   ! output
+        labels(2) = mel_ham     ! input
+        labels(3) = mel_b_inter ! input
+        labels(4) = mel_x_inter ! input
+        call set_rule(mel_diar12,ttype_opme,PRECONDITIONER,
+     &                labels,4,1,
+     &                parameters,1,tgt_info)
+      end if
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*

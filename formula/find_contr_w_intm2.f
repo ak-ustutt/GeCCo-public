@@ -196,15 +196,15 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
 
             if (.not.assigned(iterm)) then
 c dbg
-              print *,'comparing: iterm = ',iterm
-              print *,'assigned: ',assigned(1:nterms)
-              call prt_contr2(6,fl_tgt_pnt%contr,op_info)
-              call prt_contr2(6,fl_t0_i_pnt%contr,op_info)
+c              print *,'comparing: iterm = ',iterm
+c              print *,'assigned: ',assigned(1:nterms)
+c              call prt_contr2(6,fl_tgt_pnt%contr,op_info)
+c              call prt_contr2(6,fl_t0_i_pnt%contr,op_info)
 c dbg
               if (cmp_contr(fl_tgt_pnt%contr,
      &                      fl_t0_i_pnt%contr,.false.)) then
 c dbg
-                print *,'OK!'
+c                print *,'OK!'
 c dbg
                 assigned(iterm) = .true.
                 nfound = nfound+1
