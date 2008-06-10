@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine topo_approach_vtxs(ireo,
+      subroutine topo_approach_vtxs(ireo,sh_sign,
      &     svertex,vtx,topo,xlines,
      &     nvtx,nj,vtx_list,nlist)
 *----------------------------------------------------------------------*
@@ -7,6 +7,8 @@
 *     try to move the vertices as close together as commutativity
 *     with the intervening operators allows
 *     this is the step to take prior to calling topo_merge_vtxs
+*     we also calculate a possible sign change due to the reordering
+*     of the operators
 *----------------------------------------------------------------------*
       
       implicit none
@@ -21,12 +23,14 @@
       integer(8), intent(inout) ::
      &     vtx(nvtx), topo(nvtx,nvtx), xlines(nvtx,nj)
       integer, intent(out) ::
-     &     ireo(nvtx)
+     &     ireo(nvtx), sh_sign
       
       integer ::
      &     iord(nvtx)
       integer ::
      &     idx, jdx, ivtxr, ivtxrm1, ivtxrp1, ivtx, jvtx
+
+      sh_sign = 1
 
       if (nlist.eq.1) then
         do idx = 1, nvtx
@@ -144,6 +148,7 @@ c dbg
 
 c dbg
 c      print *,'ireo (final): ',ireo(1:nvtx)
+      if (sh_sign.ne.1) print *,'sh_sign = ',sh_sign
 c dbg
       return
 
@@ -178,14 +183,31 @@ c dbg
       integer ::
      &     ivtx_old, ivtx_new
       integer ::
-     &     inc, idx, ij, ihelp
+     &     inc, idx, ij, ihelp, n_shift, n_pass
       integer(8) ::
-     &     ivhelp(nvtx)
+     &     ivhelp(nvtx), i8occ
+
+      integer, external ::
+     &     nca_i8occ
 
       if (ivtx_old.eq.ivtx_new) return
 c dbg
 c      if (ivtx_old.ne.ivtx_new) print *,'shifting: ',ivtx_old,ivtx_new
 c dbg
+      i8occ = sum(xlines(ivtx_old,1:nj))+sum(topo(ivtx_old,1:nvtx))
+      n_shift = nca_i8occ(i8occ)
+c dbg
+c      print *,'i8occ,n_shift: ',i8occ,n_shift
+c dbg
+      n_pass  = 0
+      do idx = ivtx_old+1, ivtx_new
+        i8occ = sum(xlines(idx,1:nj))+sum(topo(idx,1:nvtx))
+        n_pass = n_pass + nca_i8occ(i8occ)
+      end do
+c dbg
+c      print *,'n_pass: ',i8occ,n_pass
+c dbg
+      if (mod(n_shift*n_pass,2).ne.0) sh_sign = -1*sh_sign
 
       ! shift in ord array
       call shift_ivec(iord,ivtx_old,ivtx_new,nvtx)

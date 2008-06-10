@@ -5,7 +5,7 @@
       logical ::
      &     is_bc_result
       integer ::
-     &     idxsuper, to, from
+     &     idxsuper, to, from, to_vtx, from_vtx
       integer ::
      &     occ_shift(ngastp,2)
 
@@ -18,6 +18,11 @@
      &     nreo
       type(reorder_list), pointer ::
      &     reo(:)
+      ! keep info on number of CA on intervening vertices
+      integer ::
+     &     nvtx_contr
+      integer, pointer ::
+     &     nca_vtx(:)
       ! processed info
       integer ::
      &     n_op_reo

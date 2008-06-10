@@ -21,6 +21,11 @@
         reo_info%reo => null()
       end if
       
+      if (associated(reo_info%nca_vtx)) then
+        deallocate(reo_info%nca_vtx)
+        reo_info%nca_vtx => null()
+      end if
+
       if (associated(reo_info%merge_stp1)) then
         deallocate(reo_info%merge_stp1)
         reo_info%merge_stp1 => null()

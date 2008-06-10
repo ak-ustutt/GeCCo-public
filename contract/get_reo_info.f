@@ -57,11 +57,15 @@
      &     merge_map_stp1(:,:,:), merge_map_stp2(:,:,:),
      &     merge_stp1(:), merge_stp1inv(:),
      &     merge_stp2(:), merge_stp2inv(:),
-     &     igrph(:,:,:), irst(:,:,:,:,:)
+     &     igrph(:,:,:), irst(:,:,:,:,:),
+     &     from_to_vtx(:,:), is_op1op2(:)
 
       integer, external ::
      &     imltlist, sign_reo
 
+c dbg
+      if (reo_info%nreo.gt.0) print *,'nreo = ',reo_info%nreo
+c dbg
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'get_reo_info')
         write(luout,*) 'nreo = ',reo_info%nreo
@@ -148,12 +152,16 @@
         ! store shift occupations in iocc_reo array
         allocate(reo_info%iocc_reo(ngastp,2,nreo_op1op2))
         allocate(reo_info%from_to(2,nreo_op1op2))
+        allocate(from_to_vtx(2,nreo_op1op2),
+     &           is_op1op2(reo_info%nvtx_contr))
         ! ... and the remainder of the operator during reo:
         allocate(reo_info%iocc_opreo0(ngastp,2,njoined_op1op2))
 
         reo_info%iocc_opreo0 = iocc_op1op2tmp
 
         ireo_op1op2 = 0
+        from_to_vtx = 0
+        is_op1op2   = 0
         do ireo = 1, nreo
           if (.not.reo(ireo)%is_bc_result) cycle
           ireo_op1op2 = ireo_op1op2+1
@@ -161,6 +169,10 @@
      &       reo(ireo)%occ_shift
           reo_info%from_to(1,ireo_op1op2) = reo(ireo)%from
           reo_info%from_to(2,ireo_op1op2) = reo(ireo)%to
+          from_to_vtx(1,ireo_op1op2) = reo(ireo)%from_vtx
+          from_to_vtx(2,ireo_op1op2) = reo(ireo)%to_vtx
+          is_op1op2(reo(ireo)%from_vtx) = 1
+          is_op1op2(reo(ireo)%to_vtx)   = 1
           reo_info%iocc_opreo0(1:ngastp,1:2,reo(ireo)%from) =
      &         reo_info%iocc_opreo0(1:ngastp,1:2,reo(ireo)%from) -
      &         reo(ireo)%occ_shift
@@ -175,12 +187,15 @@
           call wrt_occ_n(luout,reo_info%iocc_reo,nreo_op1op2)
           write(luout,*) 'OPREO_0:'
           call wrt_occ_n(luout,reo_info%iocc_opreo0,njoined_op1op2)
+          write(luout,*) 'is_op1op2:'
+          write(luout,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
         end if
 
         reo_info%sign_reo = sign_reo(
      &       iocc_op1op2tmp,reo_info%iocc_opreo0,
      &       njoined_op1op2,reo_info%iocc_reo,
-     &       reo_info%from_to,nreo_op1op2)
+     &       reo_info%from_to,nreo_op1op2,
+     &       from_to_vtx,reo_info%nca_vtx,is_op1op2,reo_info%nvtx_contr)
 
         call dummy_restr(irst_op1op2,
      &       iocc_op1op2,njoined_op1op2,orb_info)
@@ -288,7 +303,8 @@ c     &       iocc_op1op2,merge_stp1inv,njoined_op1op2,hpvxblkseq)
      &       igrph,nreo_op1op2,hpvxblkseq)
 
         deallocate(igrph,irst,merge_stp1,merge_stp1inv,
-     &                        merge_stp2,merge_stp2inv)
+     &                        merge_stp2,merge_stp2inv,
+     &             is_op1op2,from_to_vtx)
 
       end if
 

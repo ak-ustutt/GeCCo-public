@@ -77,10 +77,11 @@
      &     ld_mmap1, ld_mmap2, ld_mmap12, ngas,
      &     nvtx, ivtx, idx,
      &     ivtx1, ivtx2, isvtx1, isvtx2,
-     &     len_list, nvtx_red
+     &     len_list, nvtx_red, sh_sign
 
       integer, pointer ::
-     &     ireo_vtx_no(:), ireo_vtx_on(:), ivtx_op1op2(:),
+     &     ireo_vtx_no(:), ireo_vtx_on(:),
+     &     ireo_after_contr(:), ivtx_op1op2(:),
      &     arc_list(:),
      &     merge_map_op1(:,:,:), merge_map_op2(:,:,:),
      &     merge_map_op1op2(:,:,:),
@@ -200,10 +201,13 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &     call condense_merge_map(merge_op2,
      &                   merge_map_op2,ld_mmap2,njoined_op(2),.false.)
 
-      allocate(ireo_vtx_no(nvtx),ireo_vtx_on(nvtx),ivtx_op1op2(nvtx))
+      allocate(ireo_vtx_no(nvtx),ireo_vtx_on(nvtx),
+     &         ireo_after_contr(nvtx),
+     &         ivtx_op1op2(nvtx))
 
-      call reduce_contr2(iocc_op1op2,njoined_op1op2,
-     &     ireo_vtx_no,ireo_vtx_on,ivtx_op1op2,nvtx_red,
+      call reduce_contr2(sh_sign,iocc_op1op2,njoined_op1op2,
+     &     ireo_vtx_no,ireo_vtx_on,ireo_after_contr,
+     &     ivtx_op1op2,nvtx_red,
      &     merge_map_op1op2,ld_mmap12,
      &     make_contr_red,contr_red,idxnew_op1op2,
      &     contr,isvtx1,isvtx2,arc_list,len_list,njoined_res)
@@ -255,9 +259,6 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
 c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
       end if
 
-      deallocate(arc_list)
-      deallocate(ireo_vtx_no,ireo_vtx_on,ivtx_op1op2)
-
       possible = .true.
       ! if this is not the last contraction and
       ! joined vertices exist: test for possible
@@ -287,21 +288,30 @@ c dbg
         if (set_reo) call tidy_reo_info(reo_info)
 
       end if
-      
+
       ! calculate sign
       if (.not.self) then
+        ! we must evaluate the contraction sign for the old ordering ...
         call sign_bc(bc_sign,
-     &     isvtx1,isvtx2,contr%svertex,nvtx,
-     &     iocc_op1,iocc_op2,iocc_cnt,
-     &     njoined_op(1),njoined_op(2),njoined_op1op2,njoined_cnt,
-     &     merge_map_op1,merge_map_op2,merge_map_op1op2,
-     &     ld_mmap1,ld_mmap2,ld_mmap12)
+     &         isvtx1,isvtx2,contr%svertex,nvtx,
+     &         occ_vtx(1,1,njoined_res+1),iocc_op1,iocc_op2,iocc_cnt,
+     &         njoined_op(1),njoined_op(2),njoined_op1op2,njoined_cnt,
+     &         merge_map_op1,merge_map_op2,merge_map_op1op2,
+     &         ld_mmap1,ld_mmap2,ld_mmap12)
+        ! ... and additionally consider a sign change due to the 
+        ! rearrangement of vertices:
+        bc_sign = bc_sign*dble(sh_sign)
       else
         write(luout,*) 'setting self-contraction sign to +1'
         write(luout,*) 'setting self-contraction sign to +1'
         write(luout,*) 'setting self-contraction sign to +1'
         bc_sign = +1d0
       end if
+
+      deallocate(arc_list)
+      deallocate(ireo_vtx_no,ireo_vtx_on,ivtx_op1op2)
+
+      deallocate(ireo_after_contr)
 
       deallocate(merge_map_op1op2)
       deallocate(merge_map_op1,merge_map_op2)

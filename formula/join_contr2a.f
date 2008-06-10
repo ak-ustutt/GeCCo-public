@@ -18,7 +18,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 0
 
       type(formula_item), intent(out), target ::
      &     fl_abc
@@ -59,7 +59,7 @@
       integer, external ::
      &     ifndmax, imltlist, idxlist
 
-      if (ntest.ge.100) then
+      if (ntest.ge.50) then
         call write_title(luout,wst_dbg_subr,'This is join_contr 2a')
         write(luout,*) 'joining: AC, B'
         call prt_contr2(luout,contr_ac,op_info)
@@ -273,6 +273,9 @@
       call gen_contr3(fl_abc,contr_abc,fix_vtx,
      &                occ_vtx,njoined_abc,op_info)
 
+      ! sum up duplicate terms
+      call sum_terms(fl_abc,op_info)
+
       ! count terms
       nterms = 0
       fl_abc_pnt => fl_abc
@@ -297,7 +300,7 @@
 
       deallocate(svmap)
 
-      if (ntest.ge.100) then
+      if (ntest.ge.50) then
         write(luout,*) 'generated contraction(s):'
         call print_form_list(luout,fl_abc,op_info)
       end if

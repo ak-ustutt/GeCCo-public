@@ -22,7 +22,8 @@
 
       integer ::
      &     nvtx_a, nvtx_b, narc_a, narc_b,
-     &     nj_a, nj_b, lenlist, ivtx, jvtx, nvtx_int, nvtx_new
+     &     nj_a, nj_b, lenlist, ivtx, jvtx, nvtx_int, nvtx_new,
+     &     sh_sign
 
       integer, pointer ::
      &     svertex_a(:), svertex_b(:),
@@ -110,7 +111,7 @@
         lenlist = lenlist*2
         call unique_list(list,lenlist)
 
-        call topo_approach_vtxs(ireo,
+        call topo_approach_vtxs(ireo,sh_sign,
      &       svertex_b,vtx_b,topo_b,xlines_b,
      &       nvtx_b,nj_b,list,lenlist)
 

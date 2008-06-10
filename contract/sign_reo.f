@@ -1,10 +1,13 @@
 *----------------------------------------------------------------------*
       integer function sign_reo(occ_opori,occ_op0,njoined,
-     &     occ_reo,from_to,nreo)
+     &     occ_reo,from_to,nreo,
+     &     from_to_vtx,nca_vtx,is_op,nvtx)
 *----------------------------------------------------------------------*
 *     get sign for nreo (simultaneous!) reorderings given by occ_reo
 *     occ_opori is the original occupation
 *     occ_op0   is the original occupation less the reo occupations
+*     extended to considering sign changes if intervening vertices with
+*     odd occupation exist
 *----------------------------------------------------------------------*
       implicit none
 
@@ -12,9 +15,10 @@
       include 'stdunit.h'
 
       integer, intent(in) ::
-     &     njoined, nreo,
+     &     njoined, nreo, nvtx,
      &     occ_opori(ngastp,2,njoined), occ_op0(ngastp,2,njoined),
-     &     occ_reo(ngastp,2,nreo), from_to(2,nreo)
+     &     occ_reo(ngastp,2,nreo), from_to(2,nreo),
+     &     from_to_vtx(2,nreo), is_op(nvtx), nca_vtx(nvtx)
 
       integer ::
      &     occ_k_from(ngastp,2,njoined), occ_k_to(ngastp,2,njoined)
@@ -22,7 +26,7 @@
       logical ::
      &     error
       integer ::
-     &     ireo, jreo
+     &     ireo, jreo, ivtx, nencl
 
       integer, external ::
      &     sign_shift, sign_hpvx
@@ -68,10 +72,20 @@ c dbg
 c        print *,'updated occ_k_from'
 c        call wrt_occ_n(luout,occ_k_from,njoined)
 c dbg
+        ! count number of CA-op's on passive vertices between reo-vertices:
+        nencl = 0
+        do ivtx = min(from_to_vtx(1,ireo),from_to_vtx(2,ireo))+1,
+     &            max(from_to_vtx(1,ireo),from_to_vtx(2,ireo))-1
+          if (is_op(ivtx).gt.0) cycle
+          nencl = nencl + nca_vtx(ivtx)
+        end do
+c dbg
+        if (mod(nencl,2).ne.0) write(luout,*) 'ODD nencl appeared!'
+c dbg
 
         sign_reo = sign_reo*sign_shift(
      &       occ_reo(1,1,ireo),from_to(1,ireo),from_to(2,ireo),
-     &       occ_op0,occ_k_from,occ_k_to,njoined)
+     &       occ_op0,occ_k_from,occ_k_to,nencl,njoined)
 c dbg
 c        print *,'sign_reo(1) = ',sign_reo
 c dbg

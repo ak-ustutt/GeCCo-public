@@ -1,11 +1,11 @@
 *----------------------------------------------------------------------*
       subroutine find_contr_w_intm2(success,fpl_found,contr_rpl,
-     &                             fl_tgt,fpl_intm,nterms,
+     &                             fl_tgt,fpl_intm,
      &                             op_info)
 *----------------------------------------------------------------------*
 *
 *     given: a formula list starting at fl_tgt
-*            a pointer list to terms of an intermediate (nterms terms)
+*            a pointer list to terms of an intermediate
 *
 *     check whether current item on formula list contains a term I_i of the
 *     intermediate I
@@ -32,8 +32,6 @@
       
       logical, intent(out) ::
      &     success
-      integer, intent(in) ::
-     &     nterms
       type(formula_item), target, intent(in) ::
      &     fl_tgt
       type(formula_item_list), intent(out), target ::
@@ -197,7 +195,7 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
             if (.not.assigned(iterm)) then
 c dbg
 c              print *,'comparing: iterm = ',iterm
-c              print *,'assigned: ',assigned(1:nterms)
+c              print *,'assigned: ',assigned(1:nterms_gen)
 c              call prt_contr2(6,fl_tgt_pnt%contr,op_info)
 c              call prt_contr2(6,fl_t0_i_pnt%contr,op_info)
 c dbg
@@ -216,7 +214,7 @@ c dbg
                 end if
                 fpl_found_pnt%item => fl_tgt_pnt
                 ! all terms found? let's go
-                success2 =  nfound.eq.nterms
+                success2 =  nfound.eq.nterms_gen
                 if (success2) exit tgt_loop
                 exit term_loop
               end if

@@ -44,7 +44,7 @@
      &     nxarc,nxarc_spl,nxarc_rem, nvtx_test,
      &     ivtx_spl, ivtx_rem, ivtx, ivtx1, ivtx2, nj, nj_spl,
      &     iarc, ixarc, iarc_rem, ixarc_rem, lenlist, jvtx, ij,
-     &     isuper_spl_last
+     &     isuper_spl_last, sh_sign
       integer, pointer ::
      &     ivtx_new(:), isupervtx_spl(:),
      &     vtxmap(:), ireo(:), ireo2(:), svertex(:), svertex_spl(:),
@@ -122,9 +122,16 @@
       lenlist = lenlist*2
       call unique_list(list,lenlist)
 
-      call topo_approach_vtxs(ireo,
+      call topo_approach_vtxs(ireo,sh_sign,
      &       svertex,vtx,topo,xlines,
      &       nvtx,nj,list,lenlist)
+
+      if (sh_sign.ne.1) then
+c dbg
+        print *,'sh_sign in split: ',sh_sign
+c dbg
+        contr_rem%fac = -contr_rem%fac
+      end if
 c dbg
 c      print *,'after approach:'
 c      call prt_contr_p(luout,svertex,vtx,topo,

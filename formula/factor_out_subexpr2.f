@@ -143,7 +143,7 @@
             ! the new contraction with the intermediate is on
             ! contr_rpl
             call find_contr_w_intm2(success,fpl_intm_in_tgt,contr_rpl,
-     &         fl_tgt_current,fpl_intm_c2blk,nterms,
+     &         fl_tgt_current,fpl_intm_c2blk,
      &         op_info)
 
             if (ntest.ge.100.and..not.success) then

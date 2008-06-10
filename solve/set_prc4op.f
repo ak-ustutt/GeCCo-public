@@ -69,6 +69,8 @@
       ifree = mem_setmark('prc4op')
 
       too_few = .false.
+      use_b1 = .false.
+      use_x1 = .false.
       select case(trim(mode_str))
       case('','dia-F')
         use_h = .true.

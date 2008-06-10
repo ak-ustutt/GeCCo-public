@@ -217,7 +217,9 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       if (ansatz.ne.1) then
         labels(8) = form_r12_cint
         labels(9) = trim(form_r12_cint)//'^+'
+c        labels(10) = form_r12_xpint
         call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
+        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
         nint = 7
       end if
       call form_parameters(-1,

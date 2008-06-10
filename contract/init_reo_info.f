@@ -14,6 +14,8 @@
       reo_info%nreo = 0
       reo_info%n_op_reo = 0
 
+      reo_info%nca_vtx => null()
+
       reo_info%reo => null()
       
       reo_info%merge_stp1 => null()

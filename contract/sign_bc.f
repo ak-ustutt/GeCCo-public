@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine sign_bc(bc_sign,
      &     idxsuper1,idxsuper2,svertex,nvtx,
-     &     iocc_op1,iocc_op2,iocc_cnt,
+     &     occ_vtx,iocc_op1,iocc_op2,iocc_cnt,
      &     njoined_op1,njoined_op2,njoined_op1op2,njoined_cnt,
      &     merge_ex1cnt,merge_ex2cnt,merge_ex1ex2,
      &     ld_m1c,ld_m2c,ld_m12)
@@ -22,6 +22,7 @@
      &     nvtx,
      &     idxsuper1, idxsuper2, svertex(nvtx),
      &     njoined_op1,njoined_op2,njoined_op1op2,njoined_cnt,
+     &     occ_vtx(ngastp,2,nvtx),
      &     ld_m1c, ld_m2c, ld_m12, 
      &     iocc_op1(ngastp,2,njoined_op1),
      &     iocc_op2(ngastp,2,njoined_op2),
@@ -39,8 +40,8 @@
      &     ncntc, ncnta, nex1c, nex1a, nex2c, nex2a, nencl, nrem,
      &     icasign, ihpvxsign, icnt
       integer ::
-     &     iocc_prim(ngastp,2,njoined_op1+njoined_op2),
-     &     idx_ex1ex2(2,njoined_op1+njoined_op2)
+     &     iocc_prim(ngastp,2,nvtx),
+     &     idx_ex1ex2(2,nvtx)
 
       integer, external ::
      &     idxlist
@@ -56,6 +57,8 @@
      &                           ld_m12,2*njoined_op1op2)
       end if
 
+      iocc_prim = occ_vtx
+
       ! loop over svertex and assemble occupations of
       ! primitive vertices in original order:
       iop1op2 = 0
@@ -65,15 +68,15 @@
         if (svertex(idx).eq.idxsuper1) then
           iop1op2 = iop1op2+1
           ivtx1 = ivtx1+1
-          iocc_prim(1:ngastp,1:2,iop1op2) = iocc_op1(1:ngastp,1:2,ivtx1)
-          idx_ex1ex2(1,ivtx1) = iop1op2
+c          iocc_prim(1:ngastp,1:2,iop1op2) = iocc_op1(1:ngastp,1:2,ivtx1)
+          idx_ex1ex2(1,ivtx1) = idx !iop1op2
 c          idx_ex1ex2(1,iop1op2) = 1
 c          idx_ex1ex2(1,iop1op2) = ivtx1
         else if (svertex(idx).eq.idxsuper2) then
           iop1op2 = iop1op2+1
           ivtx2 = ivtx2+1
-          iocc_prim(1:ngastp,1:2,iop1op2) = iocc_op2(1:ngastp,1:2,ivtx2)
-          idx_ex1ex2(2,ivtx2) = iop1op2
+c          iocc_prim(1:ngastp,1:2,iop1op2) = iocc_op2(1:ngastp,1:2,ivtx2)
+          idx_ex1ex2(2,ivtx2) = idx !iop1op2
 c          idx_ex1ex2(1,iop1op2) = 2
 c          idx_ex1ex2(1,iop1op2) = ivtx2
         end if
@@ -85,8 +88,8 @@ c dbg
       if (ntest.ge.100) then
         write(luout,*) 'Contractions:'
         call wrt_occ_n(luout,iocc_cnt,njoined_cnt)
-        write(luout,*) 'Op1Op2 vertices in merged order'
-        call wrt_occ_n(luout,iocc_prim,njoined_op1+njoined_op2)
+        write(luout,*) 'Vertices in original order'
+        call wrt_occ_n(luout,iocc_prim,nvtx)
       end if
 
       ! 
@@ -178,8 +181,8 @@ c dbg
 
         if (ntest.ge.100) then
           write(luout,*) 'updated HPVX sign: ',ihpvxsign
-          write(luout,*) 'updated OP1OP2:'
-          call wrt_occ_n(luout,iocc_prim,njoined_op1+njoined_op2)
+          write(luout,*) 'updated vertices:'
+          call wrt_occ_n(luout,iocc_prim,nvtx)
         end if
 
       end do
@@ -280,8 +283,8 @@ c dbg
 
             if (ntest.ge.100) then
               write(luout,*) 'updated HPVX sign: ',ihpvxsign
-              write(luout,*) 'updated OP1OP2:'
-              call wrt_occ_n(luout,iocc_prim,njoined_op1+njoined_op2)
+              write(luout,*) 'updated vertices:'
+              call wrt_occ_n(luout,iocc_prim,nvtx)
             end if
           end do
         end do
