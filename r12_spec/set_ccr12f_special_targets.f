@@ -69,8 +69,8 @@
 
       call get_argument_value('calculate.routes','simtraf',ival=isim)
 
-      set_tp = extend.gt.0.or.r12op.eq.1.or.r12op.eq.3
-      set_tpp = r12op.eq.2.or.r12op.eq.3
+      set_tp = extend.gt.0.or.r12op.eq.1.or.r12op.ge.3
+      set_tpp = r12op.eq.2.or.r12op.ge.3
 
 *----------------------------------------------------------------------*
 *     Operators:

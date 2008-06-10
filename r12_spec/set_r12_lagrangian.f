@@ -193,7 +193,7 @@ c      end if
      &       0,0,.false.,op_info)
       endif
 
-      if(r12op.eq.1.or.r12op.eq.3)then
+      if(r12op.eq.1.or.r12op.ge.3)then
         do while(associated(fl_t_cr_pnt%next))
           fl_t_cr_pnt => fl_t_cr_pnt%next
         enddo
@@ -244,7 +244,7 @@ c     &       op_info)
      &       0,0,
      &       op_info)
       endif
-      if(r12op.eq.2.or.r12op.eq.3)then
+      if(r12op.eq.2.or.r12op.ge.3)then
         do while(associated(fl_t_cr_pnt%next))
           fl_t_cr_pnt => fl_t_cr_pnt%next
         enddo
@@ -286,11 +286,53 @@ c dbg
      &       0,0,
      &       op_info)
       endif
+      if(r12op.ge.4)then
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+        
+        ! find xp|pp and xx|pp blocks of R12
+        occ = 0
+        occ(IPART,1) = 1
+        occ(IEXTR,1) = 1
+        occ(IPART,2) = 2
+        iblk_pxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+        occ = 0
+        occ(IEXTR,1) = 2
+        occ(IPART,2) = 2
+        iblk_xxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+c dbg
+c        print *,'iblk: ',iblk_pxpp,iblk_xxpp
+c dbg        
 
-      if (ntest.ge.1000) then
+        call expand_op_product2(fl_t_cr_pnt,idx_sop,
+     &       1.0d0,5,4,
+     &       (/idx_sop,idxr12,idxc12,idxc12,idx_sop/),
+     &       (/1      ,2     ,3     ,4     ,1     /),
+     &       (/1,iblk_pxpp,1,1,1/),(/0,iblk_pxpp,0,0,0/),
+     &       (/2,3,2,4/),2,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+
+        do while(associated(fl_t_cr_pnt%next))
+          fl_t_cr_pnt => fl_t_cr_pnt%next
+        enddo
+        call expand_op_product2(fl_t_cr_pnt,idx_sop,
+     &       1d0,5,4,
+     &       (/idx_sop,idxr12,idxc12,idxc12,idx_sop/),
+     &       (/1      ,2     ,3       ,4   ,1     /),
+     &       (/1,iblk_xxpp,1,1,1/),(/0,iblk_xxpp,0,0,0/),
+     &       (/2,3,2,4/),2,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+      endif
+
+c      if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T + CR')
         call print_form_list(luout,flist_t_cr,op_info)
-      end if
+c      end if
 
       ! Must also form SBAR.
       call init_formula(flist_tbar_cbarr)
@@ -328,7 +370,7 @@ c      call expand_op_product(fl_t_cr_pnt,idx_sbar,
 c     &     1d0,2,(/idxrba,idxcbar/),-1,-1,
 c     &     (/1,2/),1,.false.,op_info)
 
-      if(r12op.eq.1.or.r12op.eq.3)then
+      if(r12op.eq.1.or.r12op.ge.3)then
         do while(associated(fl_t_cr_pnt%next))
           fl_t_cr_pnt => fl_t_cr_pnt%next
         enddo
@@ -362,7 +404,7 @@ c     &       op_info)
      &       0,0,
      &       op_info)
       endif
-      if(r12op.eq.2.or.r12op.eq.3)then
+      if(r12op.eq.2.or.r12op.ge.3)then
         do while(associated(fl_t_cr_pnt%next))
           fl_t_cr_pnt => fl_t_cr_pnt%next
         enddo

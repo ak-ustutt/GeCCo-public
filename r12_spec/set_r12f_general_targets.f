@@ -141,7 +141,7 @@
         ntpp_min=min_rank_tpp
         ntpp_max=max_rank
         n_pp=2
-      case(3)
+      case(3,4)
         ! T' + T'' operators
         set_tp = .true.
         ntp_min=min_rank_tp
