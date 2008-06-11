@@ -246,15 +246,21 @@ c            if (ivtx1.eq.ivtx2) cycle
      &                             +nex1a*(nex2c+nex2a+nencl), 2)
             end if
             if (ntest.ge.100) then
-              write(luout,*) 'nencl,nex1a,nex2a,nex2c: ',
-     &             nencl,nex1a,nex2a,nex2c
+              write(luout,'(1x,a,8i3)')
+     &             'nencl,nex1a,nex1c,nex2a,nex2c: ',
+     &              nencl,nex1a,nex1c,nex2a,nex2c
               write(luout,*) 'updated CA sign:   ',icasign
             end if
 
             ! hpvx transpositions:
+            ! BUGFIX:
+            ! after the CA carried out above, we have in all cases
+            ! the ordering vtx1, vtx2, so use these (and not vtx1m/vtx2m)
+            ! does not affect usual CC and linear R12 (as it seems)
             do hpvx = 2, ngastp
              ! ordering: ex1c,ex2c, but ex2a,ex1a
-              if (iocc_prim(hpvx,1,ivtx1m).gt.0) then
+cold              if (iocc_prim(hpvx,1,ivtx1m).gt.0) then
+              if (iocc_prim(hpvx,1,ivtx1).gt.0) then
 c dbg
 c                print *,'hpvx,ivtx1m,ivtx2m: ',hpvx,ivtx1m,ivtx2m
 c                print *,'iocc1:',iocc_prim(hpvx,1,ivtx1m)
@@ -262,13 +268,16 @@ c                print *,'iocc2:',iocc_prim(1:ngastp,1,ivtx2m)
 c dbg
                 do hpvx2 = 1, hpvx-1
                   ihpvxsign = mod(ihpvxsign 
-     &            +iocc_prim(hpvx,1,ivtx1m)*iocc_prim(hpvx2,1,ivtx2m),2)
+cold     &            +iocc_prim(hpvx,1,ivtx1m)*iocc_prim(hpvx2,1,ivtx2m),2)
+     &            +iocc_prim(hpvx,1,ivtx1)*iocc_prim(hpvx2,1,ivtx2),2)
                 end do
               end if
-              if (iocc_prim(hpvx,2,ivtx2m).gt.0) then
+cold              if (iocc_prim(hpvx,2,ivtx2m).gt.0) then
+              if (iocc_prim(hpvx,2,ivtx2).gt.0) then
                 do hpvx2 = 1, hpvx-1
                   ihpvxsign = mod(ihpvxsign 
-     &            +iocc_prim(hpvx,2,ivtx2m)*iocc_prim(hpvx2,2,ivtx1m),2)
+c     &            +iocc_prim(hpvx,2,ivtx2m)*iocc_prim(hpvx2,2,ivtx1m),2)
+     &            +iocc_prim(hpvx,2,ivtx2)*iocc_prim(hpvx2,2,ivtx1),2)
                 end do
               end if
             end do
