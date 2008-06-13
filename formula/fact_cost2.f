@@ -31,6 +31,8 @@
       
       integer, parameter ::
      &     ntest = 00
+      logical, parameter ::
+     &     formal = .false.
       
       logical, intent(in) ::
      &     make_red
@@ -83,7 +85,8 @@
      &     merge_op1(2*contr%nvtx*contr%nvtx), ! a bit too large, I guess ...
      &     merge_op2(2*contr%nvtx*contr%nvtx),
      &     merge_op1op2(2*contr%nvtx*contr%nvtx),
-     &     merge_op2op1(2*contr%nvtx*contr%nvtx)
+     &     merge_op2op1(2*contr%nvtx*contr%nvtx),
+     &     iscale_new(ngastp)
 
       integer, pointer ::
      &     ihpvgas(:,:)
@@ -104,6 +107,8 @@
      &     idxlist, int_expand, int_pack, maxxlvl_op
       logical, external ::
      &     check_grph4occ
+      real(8), external ::
+     &     scale_rank
 
       if (ntest.gt.0) then
         call write_title(luout,wst_dbg_subr,'this is fact_cost')
@@ -196,24 +201,21 @@ c dbg
 
       ! set iscale
       ! maximum is taken over total scaling, so H^2 .gt. P^1 
-      if ( nh_op1op2+np_op1op2+nx_op1op2+nh_cnt+np_cnt+nx_cnt.gt.
-     &           iscale(ihole,1)+iscale(ipart,1)+iscale(iextr,1) .or.
-     &    (nh_op1op2+np_op1op2+nx_op1op2+nh_cnt+np_cnt+nx_cnt.eq.
-     &           iscale(ihole,1)+iscale(ipart,1)+iscale(iextr,1).and.
-     &     np_op1op2+np_cnt.gt.iscale(ipart,1) ) ) then
-        iscale(ihole,1) = nh_op1op2+nh_cnt
-        iscale(ipart,1) = np_op1op2+np_cnt
-        iscale(iextr,1) = nx_op1op2+nx_cnt
-      end if
-      if ( nh_op1op2+np_op1op2+nx_op1op2.gt.
-     &     iscale(ihole,2)+iscale(ipart,2)+iscale(iextr,2) .or.
-     &    (nh_op1op2+np_op1op2+nx_op1op2.eq.
-     &     iscale(ihole,2)+iscale(ipart,2)+iscale(iextr,2).and.
-     &     np_op1op2.gt.iscale(ipart,2) ) ) then
-        iscale(ihole,2) = nh_op1op2
-        iscale(ipart,2) = np_op1op2
-        iscale(iextr,2) = nx_op1op2
-      end if
+      iscale_new = 0
+      iscale_new(IHOLE) = nh_op1op2+nh_cnt
+      iscale_new(IPART) = np_op1op2+np_cnt
+      iscale_new(IEXTR) = nx_op1op2+nx_cnt
+
+      if (scale_rank(iscale_new).gt.scale_rank(iscale(1,1)))
+     &     iscale(1:ngastp,1) = iscale_new(1:ngastp)
+
+      iscale_new = 0
+      iscale_new(IHOLE) = nh_op1op2
+      iscale_new(IPART) = np_op1op2
+      iscale_new(IEXTR) = nx_op1op2
+
+      if (scale_rank(iscale_new).gt.scale_rank(iscale(1,2)))
+     &     iscale(1:ngastp,2) = iscale_new(1:ngastp)
 
 c      possible = .true.     
       ! check whether intermediate can be addressed by
@@ -233,6 +235,7 @@ c      possible = .true.
      &     cost(1:3) = huge(cost(1))
 
       if (possible) then
+        if (.not.formal) then
           call init_cnt_info(cnt_info,
      &         iocc_op1,iocc_ex1,njoined_op(1),
      &            iocc_op2,iocc_ex2,njoined_op(2),
@@ -255,9 +258,14 @@ c      possible = .true.
 
           call dealloc_cnt_info(cnt_info)
 
-        cost(1) = cost(1)+flops
-        cost(2) = max(cost(2),xmemtot)
-        cost(3) = max(cost(3),xmemblk)
+          cost(1) = cost(1)+flops
+          cost(2) = max(cost(2),xmemtot)
+          cost(3) = max(cost(3),xmemblk)
+        else
+          cost(1) = cost(1) + scale_rank(iscale(1,1))
+          cost(2) = max(cost(2),scale_rank(iscale(1,2)))
+          cost(3) = max(cost(3),scale_rank(iscale(1,2)))
+        end if
 
         if (ntest.ge.10)
      &       write(luout,'(x,a,3(g20.10,x))') '$$ cost: ',cost(1:3)

@@ -52,7 +52,7 @@
      &       call quit(1,'extract_rhs',
      &       'raw formula must not contain other commands than [ADD]')
         
-        if (vtx_in_contr(idx_x,fl_raw_pnt%contr).gt.0) then
+        if (vtx_in_contr(idx_x,.false.,fl_raw_pnt%contr).gt.0) then
           call new_formula_item(fl_traf_pnt,
      &         command_add_contribution,idx_traf)
           call copy_contr(fl_raw_pnt%contr,fl_traf_pnt%contr)

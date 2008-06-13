@@ -11,9 +11,10 @@ check
   compare int 5
 check
   label Factorization of right equations
-  find Most expensive contraction:
-  compare int 5
-  compare int 7
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
 check
   label Settings for ground state optimization
   find Max.\ number of iterations
@@ -27,9 +28,10 @@ check
   compare real 4 1e-12
 check
   label Factorization of right transformation
-  find Most expensive contraction:
-  compare int 5
-  compare int 7
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
 check
   label Settings for eigenvalue solver
   find Max.\ number of iterations

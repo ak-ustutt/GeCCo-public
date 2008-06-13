@@ -37,6 +37,8 @@
 
       type(contraction) ::
      &     proto
+      logical ::
+     &     adj_intm
       integer ::
      &     nvtx, narc, narc0, ivtx, jvtx, kvtx, iarc,
      &     iop_intm, iblk_intm, iblk, iadd
@@ -68,13 +70,14 @@
 
       iop_intm  = fpl_intm%item%contr%idx_res
       iblk_intm = fpl_intm%item%contr%iblk_res
+      adj_intm  = fpl_intm%item%contr%dagger
       op_intm => op_info%op_arr(iop_intm)%op
 c      njoined = op_intm%njoined
 
       allocate(ipos_vtx(njoined))
 
       term => f_term%contr
-      call get_vtx_in_contr(ipos_vtx,iop_intm,njoined,term)
+      call get_vtx_in_contr(ipos_vtx,iop_intm,adj_intm,njoined,term)
 
       iblk = term%vertex(ipos_vtx(1))%iblk_op
       if (njoined.gt.1)

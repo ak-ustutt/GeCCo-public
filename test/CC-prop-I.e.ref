@@ -1,8 +1,9 @@
+ run starts at 2008-06-12 14:54:58.160   host: dhcppc1
 
- Version compiled 13 Apr 2008 at 16:56:39 on paulchen                            
+ Version compiled 12 Jun 2008 at 14:54:41 on dhcppc1                             
 
  compiled with: ifort
- level 1 optimization: -O2 -cm -w95 -fpp -assume byterecl -traceback -I../include -
+ level 1 optimization: -g -assume byterecl -traceback -I../include -g
  level 2 optimization: 
  level 3 optimization: 
 
@@ -71,12 +72,22 @@ I     R12
   >            2
          minexc 2  1
   >            2
+         min_tp 2  1
+  >            1
+         min_tpp 2  1
+  >            2
          approx 8  8
   > A       
          F_appr 8  8
   > none    
          K_appr 8  8
   > none    
+         fixed 1  1
+  >  F
+         extend 2  1
+  >            0
+         r12op 2  1
+  >            0
 I   calculate
 I     check
 I       formulae
@@ -155,7 +166,7 @@ I     routes
  ************
   set_orbinf
  ************
- ihpvgas:              1           1           2          17
+ ihpvgas:              1           1           2
  ngas_hpv:             2           1           0           0
  nactt_hpv:            3           9           0           0
  ioff_gas:             0           2           3           3
@@ -389,7 +400,7 @@ I     routes
        3       47     0    7   24   14    2
   ------------------------------------------
  Number of generated terms:          103
- @ CC Lagrangian                       cpu/sys/wall:      0.01 /     0.00 /     0.02 s
+ @ CC Lagrangian                       cpu/sys/wall:      0.10 /     0.00 /     0.10 s
  My next target: E(CC)
  Rule: DEF_SCALAR
  My next target: E0_CC
@@ -409,7 +420,7 @@ I     routes
  Rule: DEF_HAMILTONIAN
  My next target: HT1TRF
  Rule: DEF_HHAT
- @ CC Hhat                             cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ CC Hhat                             cpu/sys/wall:      0.02 /     0.00 /     0.02 s
  My next target: DEF-Hhat
  Rule: DEF_ME_LIST
  My next target: OMG_CC_OPT
@@ -453,36 +464,97 @@ I     routes
  -----------------------
   Summary
  ---------
- Most expensive contraction:  H^ 3 P^ 5 V^ 0 X^ 0
- Largest intermediate      :  H^ 3 P^ 3 V^ 0 X^ 0
+ Most expensive contractions: 
+  term #   93 - H^ 4 P^ 4 V^ 0 X^ 0 - flops:  0.390E+06(  20.5%)
+  term #   83 - H^ 4 P^ 4 V^ 0 X^ 0 - flops:  0.366E+06(  19.2%)
+  term #   94 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.139E+06(   7.3%)
+  term #   89 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.132E+06(   6.9%)
+  term #   84 - H^ 3 P^ 5 V^ 0 X^ 0 - flops:  0.115E+06(   6.0%)
+ Formally most expensive contractions: 
+  term #   84 - H^ 3 P^ 5 V^ 0 X^ 0
+  term #   93 - H^ 4 P^ 4 V^ 0 X^ 0
+  term #   83 - H^ 4 P^ 4 V^ 0 X^ 0
+  term #   95 - H^ 5 P^ 3 V^ 0 X^ 0
+  term #   91 - H^ 5 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   93 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.181E+01
+  term #   83 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.181E+01
+  term #   96 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.907E+00
+  term #   78 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.907E+00
+  term #   79 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.907E+00
  My next target: SOLVE-CC-GS
  Rule: SOLVE_NLEQ
  read           99  entries
  Optimization algorithm:          DIIS
  Max. number of iterations:         35
  Threshold for residual:      0.10E-09
+ @ formula evaluation                  cpu/sys/wall:      0.63 /     0.16 /     0.82 s
 >>>  1        -38.821908746679 0.3920    
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.93 /     0.18 /     1.22 s
 >>>  2        -38.885227112091 0.1077    
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.34 /     0.21 /     1.55 s
 >>>  3        -38.901861451707 0.3535E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.35 /     0.21 /     1.60 s
 >>>  4        -38.907553839214 0.1577E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.37 /     0.19 /     1.58 s
 >>>  5        -38.908837398881 0.1000E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.35 /     0.21 /     1.57 s
 >>>  6        -38.909217675615 0.6349E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.35 /     0.20 /     1.58 s
 >>>  7        -38.909447787818 0.3000E-02
+ @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.77 /     0.10 /     0.92 s
 >>>  8        -38.909549743905 0.9147E-03
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.59 /     0.07 /     0.66 s
 >>>  9        -38.909567968638 0.2872E-03
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.61 /     0.06 /     0.67 s
 >>> 10        -38.909570057102 0.8347E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.58 /     0.09 /     0.67 s
 >>> 11        -38.909569767239 0.2679E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.58 /     0.08 /     0.67 s
 >>> 12        -38.909570096575 0.9488E-05
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.62 /     0.05 /     0.67 s
 >>> 13        -38.909570216946 0.2739E-05
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.60 /     0.08 /     0.68 s
 >>> 14        -38.909570218298 0.8357E-06
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.91 /     0.16 /     1.07 s
 >>> 15        -38.909570226013 0.2935E-06
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.51 /     0.24 /     1.79 s
 >>> 16        -38.909570224919 0.8091E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.52 /     0.25 /     1.78 s
 >>> 17        -38.909570225099 0.2137E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.52 /     0.24 /     1.78 s
 >>> 18        -38.909570224391 0.5564E-08
+ @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.49 /     0.26 /     1.78 s
 >>> 19        -38.909570224259 0.1917E-08
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.52 /     0.18 /     1.71 s
 >>> 20        -38.909570224201 0.6076E-09
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.48 /     0.20 /     1.70 s
 >>> 21        -38.909570224194 0.2338E-09
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.49 /     0.20 /     1.71 s
 >>> 22        -38.909570224185 0.1307E-09
+ @ time in optimizer                   cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ formula evaluation                  cpu/sys/wall:      1.48 /     0.27 /     1.78 s
 >>> 23        -38.909570224175 0.6193E-10
  CONVERGED IN    23 ITERATIONS
 >>> final energy:        -38.909570224175 <<<
@@ -540,8 +612,24 @@ I     routes
  -----------------------
   Summary
  ---------
- Most expensive contraction:  H^ 3 P^ 4 V^ 0 X^ 0
- Largest intermediate      :  H^ 4 P^ 2 V^ 0 X^ 0
+ Most expensive contractions: 
+  term #   14 - H^ 4 P^ 3 V^ 0 X^ 0 - flops:  0.294E+05(  29.2%)
+  term #   13 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.190E+05(  18.8%)
+  term #   16 - H^ 4 P^ 3 V^ 0 X^ 0 - flops:  0.153E+05(  15.2%)
+  term #   15 - H^ 4 P^ 3 V^ 0 X^ 0 - flops:  0.116E+05(  11.5%)
+  term #   12 - H^ 4 P^ 3 V^ 0 X^ 0 - flops:  0.116E+05(  11.5%)
+ Formally most expensive contractions: 
+  term #   13 - H^ 3 P^ 4 V^ 0 X^ 0
+  term #   16 - H^ 4 P^ 3 V^ 0 X^ 0
+  term #   15 - H^ 4 P^ 3 V^ 0 X^ 0
+  term #   14 - H^ 4 P^ 3 V^ 0 X^ 0
+  term #   12 - H^ 4 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   16 - H^ 4 P^ 2 V^ 0 X^ 0 - Mb:     0.638E-01
+  term #   14 - H^ 3 P^ 1 V^ 0 X^ 0 - Mb:     0.154E-01
+  term #   11 - H^ 3 P^ 1 V^ 0 X^ 0 - Mb:     0.769E-02
+  term #   13 - H^ 0 P^ 2 V^ 0 X^ 0 - Mb:     0.531E-02
+  term #    8 - H^ 0 P^ 2 V^ 0 X^ 0 - Mb:     0.354E-02
  My next target: TBAR_A_CC
  Rule: DERIVATIVE
  Rule: LEQ_SPLIT
@@ -596,72 +684,83 @@ I     routes
   Now looking for the optimal factorization of terms ...
   Formula factorization
  -----------------------
- left case
- left case
- left case
   Summary
  ---------
- Most expensive contraction:  H^ 3 P^ 5 V^ 0 X^ 0
- Largest intermediate      :  H^ 3 P^ 3 V^ 0 X^ 0
+ Most expensive contractions: 
+  term #  126 - H^ 4 P^ 4 V^ 0 X^ 0 - flops:  0.390E+06(   9.5%)
+  term #  142 - H^ 4 P^ 4 V^ 0 X^ 0 - flops:  0.390E+06(   9.5%)
+  term #   89 - H^ 4 P^ 4 V^ 0 X^ 0 - flops:  0.371E+06(   9.1%)
+  term #  137 - H^ 4 P^ 4 V^ 0 X^ 0 - flops:  0.366E+06(   8.9%)
+  term #   87 - H^ 5 P^ 3 V^ 0 X^ 0 - flops:  0.157E+06(   3.8%)
+ Formally most expensive contractions: 
+  term #  138 - H^ 3 P^ 5 V^ 0 X^ 0
+  term #  126 - H^ 4 P^ 4 V^ 0 X^ 0
+  term #   90 - H^ 4 P^ 4 V^ 0 X^ 0
+  term #   89 - H^ 4 P^ 4 V^ 0 X^ 0
+  term #  142 - H^ 4 P^ 4 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #  137 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.181E+01
+  term #  142 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.181E+01
+  term #  133 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.907E+00
+  term #  132 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.907E+00
+  term #  143 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.907E+00
  My next target: SOLVE-CC-TBAR0
  Rule: SOLVE_LEQ
- -------------------
-  entered solve_leq
- -------------------
- nopt   =            1
- nroots =            1
  read          148  entries
+ @ formula evaluation                  cpu/sys/wall:      0.48 /     0.11 /     0.59 s
  Optimization algorithm:      SUBSPACE
  Max. number of iterations:         35
  Threshold for residual:      0.10E-09
 >>> |rhs|                      0.3920    
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      1.27 /     0.42 /     1.72 s
 >>>  1                         0.9134E-01
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.30 /     0.39 /     2.71 s
 >>>  2                         0.3288E-01
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.27 /     0.30 /     2.60 s
 >>>  3                         0.2024E-01
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.33 /     0.29 /     2.67 s
 >>>  4                         0.1379E-01
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.31 /     0.42 /     2.76 s
 >>>  5                         0.7162E-02
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.28 /     0.43 /     2.73 s
 >>>  6                         0.2734E-02
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.35 /     0.34 /     2.72 s
 >>>  7                         0.7924E-03
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.31 /     0.28 /     2.62 s
 >>>  8                         0.2263E-03
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.34 /     0.26 /     2.64 s
 >>>  9                         0.7296E-04
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.28 /     0.44 /     2.74 s
 >>> 10                         0.2375E-04
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.32 /     0.40 /     2.76 s
 >>> 11                         0.6659E-05
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.30 /     0.39 /     2.73 s
 >>> 12                         0.2081E-05
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.28 /     0.30 /     2.61 s
 >>> 13                         0.8019E-06
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.26 /     0.35 /     2.65 s
 >>> 14                         0.2914E-06
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.30 /     0.43 /     2.80 s
 >>> 15                         0.8309E-07
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.29 /     0.41 /     2.74 s
 >>> 16                         0.2514E-07
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.36 /     0.34 /     2.74 s
 >>> 17                         0.7152E-08
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.28 /     0.31 /     2.62 s
 >>> 18                         0.2332E-08
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.31 /     0.28 /     2.63 s
 >>> 19                         0.8433E-09
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.28 /     0.44 /     2.75 s
 >>> 20                         0.4996E-09
- set nrequest to :            1
+ @ formula evaluation                  cpu/sys/wall:      2.34 /     0.38 /     2.75 s
 >>> 21                         0.2641E-09
+ @ formula evaluation                  cpu/sys/wall:      2.29 /     0.42 /     2.74 s
  CONVERGED IN    22 ITERATIONS
->>> conv.                      0.9866E-10
+>>> conv.                      0.9865E-10
  My next target: EVAL-1DENS
  Rule: EVALUATE
  read           17  entries
+ @ formula evaluation                  cpu/sys/wall:      0.09 /     0.03 /     0.12 s
  My next target: EVAL-PROPS
  Rule: EVAL_PROP
   >>> OVERLAP :     0.5091904397    
@@ -672,4 +771,5 @@ I     routes
    Largest memory block:          32768 real(8)-words (    0.25 Mb)
    Name of largest block:    bfstrmap.slots
  +----------------------------------------------------------------------------+
- @ total time in GeCCo run             cpu/sys/wall:     21.66 /     4.12 /    25.80 s
+ @ total time in GeCCo run             cpu/sys/wall:     79.74 /    12.28 /    93.27 s
+ run ends at 2008-06-12 14:56:31.426   host: dhcppc1

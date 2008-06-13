@@ -12,7 +12,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       integer, intent(in) ::
      &     nlist,nvtx,nvtx_new,nj,nj_new,

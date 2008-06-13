@@ -147,7 +147,7 @@ c dbg
       if (iprint.gt.0)
      &     write(luout,'(2x,a)')
      &       'Now looking for the optimal factorization of terms ...'
-      call factorize(form_head,op_info,str_info,orb_info)
+      call factorize(form_head,op_info,str_info,orb_info,f_opt%label)
 
       ! ----------------------------------------
       ! round three:

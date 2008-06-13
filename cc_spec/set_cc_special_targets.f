@@ -94,7 +94,6 @@
      &              labels,5,1,
      &              title_ccrs0,1,tgt_info)
 
-
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -153,6 +152,18 @@
       call me_list_parameters(-1,parameters,
      &     0,0,1,0,0)
       call set_rule(mel_ccen0def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
+      ! Hbar definition
+      call add_target(meldef_hbar,ttype_opme,.false.,tgt_info)
+      call set_dependency(meldef_hbar,op_hbar,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_hbar
+      labels(2) = op_hbar
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(meldef_hbar,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
 

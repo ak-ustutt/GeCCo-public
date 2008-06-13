@@ -34,9 +34,9 @@ c      include 'def_contraction_list.h'
      &     op_info
       
       logical ::
-     &     ok, same
+     &     ok, same, transpose
       integer ::
-     &     nterms, idum, idxinp, idx, icmpnd, idxres, idxop(ncmpnd)
+     &     nterms, idum, idxinp, idx, icmpnd, idxres, idxop(ncmpnd), len
       character ::
      &     name*(form_maxlen_label*2)
 
@@ -65,16 +65,32 @@ c      include 'def_contraction_list.h'
 
       ! get indices
       idxres = idx_oplist2(label_opres,op_info)
+      if (idxres.lt.0)
+     &     call quit(1,'form_invariant',
+     &     'required operators are not yet defined? '//
+     &       trim(label_opres))
+
       do icmpnd = 1, ncmpnd
-        idxop(icmpnd) = idx_oplist2(label_op(icmpnd),op_info)
+
+        ! look for transposition label
+        len = len_trim(label_op(icmpnd))
+        transpose = (label_op(icmpnd)(len-1:len).eq.'^+') 
+        if (transpose) len = len-2
+
+        idxop(icmpnd) = idx_oplist2(label_op(icmpnd)(1:len),op_info)
+
+        if (idxop(icmpnd).lt.0)
+     &     call quit(1,'form_invariant',
+     &     'required operators are not yet defined? '//
+     &       label_op(icmpnd)(1:len))
+
+        if (transpose) idxop(icmpnd) = -idxop(icmpnd)
+
       end do
 c dbg
 c      print *,idxop
 c      print *,idxres
 c dbg
-      if (idxop(1).lt.0.or.idxres.lt.0)
-     &     call quit(1,'form_invariant',
-     &     'required operators are not yet defined')
 
       ! read in input formula
       call init_formula(flist)
@@ -101,7 +117,9 @@ c dbg
           contr => fl_pnt%contr
           cmp_loop: do idx = 1, contr%nvtx
             do icmpnd = 1, ncmpnd
-              if (contr%vertex(idx)%idx_op.eq.idxop(icmpnd)) then
+              if (contr%vertex(idx)%idx_op.eq.abs(idxop(icmpnd)).and.
+     &           (contr%vertex(idx)%dagger.eqv.(idxop(icmpnd).lt.0)))
+     &        then
                 ok = .false.
                 exit cmp_loop
               end if

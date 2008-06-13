@@ -31,12 +31,12 @@
       type(operator_info), intent(in) ::
      &     op_info
       logical ::
-     &     success, advance
+     &     success, advance, adj_intm
       integer ::
      &     idxop_tgt, iblk_tgt, idxop_intm, iblk_intm, ivtx, nterms,
      &     njoined
       type(formula_item), pointer ::
-     &     fl_tgt_current, fl_intm_pnt, fl_expand
+     &     fl_tgt_current, fl_tgt_current_next, fl_intm_pnt, fl_expand
       type(formula_item_list), pointer ::
      &     fpl_intm_c2blk
       type(operator), pointer ::
@@ -60,7 +60,8 @@
      &     call quit(1,'expand_subexpr',
      &     'intermediate definition must start with [INIT]')
 
-      idxop_intm = fl_intm%target 
+      idxop_intm = abs(fl_intm%target)
+      adj_intm = fl_intm%target.lt.0
       op_intm => op_info%op_arr(idxop_intm)%op
       njoined = op_intm%njoined
 
@@ -89,7 +90,7 @@
         end if
 
         ! is intermediate vertex contained in terms?
-        ivtx = vtx_in_contr(idxop_intm,fl_tgt_current%contr)
+        ivtx = vtx_in_contr(idxop_intm,adj_intm,fl_tgt_current%contr)
         advance = .true.
 
         if (ntest.ge.100) then
@@ -160,7 +161,12 @@ c dbg
             ! we re-visit the generated terms (for multiple expansions)
             advance = .false.
           else
-            call quit(1,'expand_subexpr','strange event: no terms')
+c            call quit(1,'expand_subexpr','strange event: no terms')
+            fl_tgt_current => fl_tgt_current%prev
+            fl_tgt_current_next => fl_tgt_current%next
+            call delete_fl_node(fl_tgt_current_next)
+            deallocate(fl_tgt_current_next)
+            advance = .true.
           end if
 
           call dealloc_formula_plist(fpl_intm_c2blk)

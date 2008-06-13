@@ -87,9 +87,10 @@
      &               op_info,str_info,strmap_info,orb_info)
 
       if (iprlvl.ge.5) then
-        call write_title(luout,wst_title,'norms of output operators')
+        call write_title(luout,wst_title,
+     &       'norms/values of output operators')
         do iout = 1, nout
-          write(luout,'(4x,i4," - ",g12.6)') iout, xret(iout)
+          write(luout,'(">>>",1x,i4," --> ",g16.10)') iout, xret(iout)
         end do
       end if
 

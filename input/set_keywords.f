@@ -37,6 +37,9 @@
       call argument_add('maxexc','method.CC',type=vtyp_int,idef=(/2/))
       call argument_add('minexc','method.CC',type=vtyp_int,idef=(/1/))
 
+      call keyword_add('CCPT',context='method')
+      call argument_add('maxexc','method.CCPT',type=vtyp_int,idef=(/3/))
+
       call keyword_add('R12',context='method')
       call argument_add('ansatz','method.R12',type=vtyp_int,idef=(/1/))
       call argument_add('maxexc','method.R12',type=vtyp_int,idef=(/2/))

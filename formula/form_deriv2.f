@@ -29,7 +29,7 @@ c      include 'def_filinf.h'
       include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     ncmpnd
@@ -49,9 +49,9 @@ c      include 'def_filinf.h'
      &     cur_conder
 
       logical ::
-     &     reo,
+     &     reo, transpose
 c dbg
-     &     first
+     &     ,first
 c dbg
       integer ::
      &     idxder(ncmpnd), idxmlt(ncmpnd), idxres,
@@ -86,7 +86,20 @@ c dbg
       ! get indices
       idxres = idx_oplist2(label_opres,op_info)
       do icmpnd = 1, ncmpnd
-        idxder(icmpnd) = idx_oplist2(label_opder(icmpnd),op_info)
+        ! look for transposition label
+        len = len_trim(label_opder(icmpnd))
+        transpose = (label_opder(icmpnd)(len-1:len).eq.'^+') 
+        if (transpose) len = len-2
+
+        idxder(icmpnd) = idx_oplist2(label_opder(icmpnd)(1:len),op_info)
+
+        if (idxder(icmpnd).lt.0)
+     &     call quit(1,'form_deriv2',
+     &     'required operators are not yet defined? '//
+     &       label_opder(icmpnd)(1:len))
+
+        if (transpose) idxder(icmpnd) = -idxder(icmpnd)
+
       end do
       if (len_trim(label_opmlt(1)).eq.0) then
         if (ncmpnd.gt.1)
@@ -98,7 +111,7 @@ c dbg
           idxmlt(icmpnd) = idx_oplist2(label_opmlt(icmpnd),op_info)          
         end do
       end if
-      if (idxder(1).lt.0.or.idxres.lt.0.or.idxmlt(1).lt.0) then
+      if (idxres.lt.0.or.idxmlt(1).lt.0) then
         write(luout,*) 'idxder:', idxder
         write(luout,*) 'idxmlt:', idxmlt
         write(luout,*) 'idxres:', idxres

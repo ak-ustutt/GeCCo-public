@@ -169,9 +169,7 @@ c          call idxsort8_qs_dsc(ilist,nel)
         if (nel.lt.nswitch) then
           call idxsortx_is_dsc(xlist,ireo,nel)
         else
-          ! not checked yet
-          call quit(0,'isort','check descending quicksort!')
-c          call idxsortx_qs_dsc(xlist,nel)
+          call idxsortx_qs_dsc(xlist,ireo,nel)
         end if
       else
         call quit(0,'isort','mode == 0')

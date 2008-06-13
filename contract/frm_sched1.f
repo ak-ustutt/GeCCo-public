@@ -62,7 +62,7 @@
      &     idoffop1, idoffop2, idoffop1op2, ivtx_new, nvtx,
      &     iarc, idum, idxop_intm
       real(8) ::
-     &     fac, facc, xnrm, bc_sign
+     &     fac, facc, xnrm, bc_sign, xret_last
       character ::
      &     title*256, opscrnam*8
 
@@ -141,6 +141,7 @@
       idxres = 0
       iterm = 0
       nullify(xret_blk)
+      xret_last = 0d0
 
       call init_contr(cur_contr)
       call init_contr(cur_contr_red)
@@ -189,6 +190,7 @@
               xret(idxres) = xret_blk(1)
             end if
           end if
+          xret_last = 0d0
 
           ! initialize result
           nres = nres+1
@@ -308,6 +310,11 @@ c fix:
      &             mel_arr(idxmel)%mel,me_res,
      &             iblkop(1),iblkres,orb_info)
             end if
+
+            if (type_xret.eq.2.and.iprint.ge.3)
+     &           write(luout,'(1x,"term # ",i5,":",2(x,g19.10))')
+     &           iterm, xret_blk(1)-xret_last, xret_blk(1)
+            if (type_xret.eq.2) xret_last = xret_blk(1)
 
             if (ntest.ge.50) then
               write(luout,*) 'xret after term ',iterm
@@ -562,6 +569,11 @@ c          new = .false.!cur_contr%nvtx.ge.4
           end if
 
         end do bin_loop
+
+        if (type_xret.eq.2.and.iprint.ge.3)
+     &       write(luout,'(1x,"term # ",i5,":",2(x,g19.10))')
+     &       iterm, xret_blk(1)-xret_last, xret_blk(1)
+        if (type_xret.eq.2) xret_last = xret_blk(1)
 
         if (ntest.ge.50) then
           write(luout,*) 'xret after term ',iterm

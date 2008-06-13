@@ -11,7 +11,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -31,12 +31,12 @@
       type(operator_info), intent(in) ::
      &     op_info
       logical ::
-     &     success, advance
+     &     success, advance, adj_intm
       integer ::
      &     idxop_tgt, iblk_tgt, idxop_intm, iblk_intm, ivtx, nterms,
      &     njoined
       type(formula_item), pointer ::
-     &     fl_tgt_current, fl_intm_pnt, fl_expand
+     &     fl_tgt_current, fl_tgt_current_next, fl_intm_pnt, fl_expand
       type(formula_item_list), pointer ::
      &     fpl_intm_c2blk
       type(operator), pointer ::
@@ -46,21 +46,22 @@
      &     vtx_in_contr
 
       if (ntest.ge.100) then
-        write(luout,*) '==============================='
-        write(luout,*) ' expand_subexpr messing around'
-        write(luout,*) '==============================='
+        write(luout,*) '================================'
+        write(luout,*) ' expand_subexpr2 messing around'
+        write(luout,*) '================================'
       end if
 
       if (fl_tgt%command.ne.command_set_target_init)
-     &       call quit(1,'expand_subexpr',
+     &       call quit(1,'expand_subexpr2',
      &       'target formula definition must start with [INIT]')
 
       ! first item should define new operator target
       if (fl_intm%command.ne.command_set_target_init)
-     &     call quit(1,'expand_subexpr',
+     &     call quit(1,'expand_subexpr2',
      &     'intermediate definition must start with [INIT]')
 
-      idxop_intm = fl_intm%target 
+      idxop_intm = abs(fl_intm%target)
+      adj_intm = fl_intm%target.lt.0
       op_intm => op_info%op_arr(idxop_intm)%op
       njoined = op_intm%njoined
 
@@ -72,7 +73,7 @@
         if (fl_tgt_current%command.eq.command_set_target_init) then
           idxop_tgt = fl_tgt_current%target
           if (.not.associated(fl_tgt_current%next))
-     &         call quit(1,'expand_subexpr',
+     &         call quit(1,'expand_subexpr2',
      &         'unexpected end of list (target)')
           if (ntest.ge.100) then
             write(luout,'(70("="))')
@@ -89,7 +90,7 @@
         end if
 
         ! is intermediate vertex contained in terms?
-        ivtx = vtx_in_contr(idxop_intm,fl_tgt_current%contr)
+        ivtx = vtx_in_contr(idxop_intm,adj_intm,fl_tgt_current%contr)
         advance = .true.
 
         if (ntest.ge.100) then
@@ -117,7 +118,7 @@
           
           if (.not.success) then
             write(luout,*) 'undefined block: ',iblk_intm
-            call quit(1,'expand_subexpr','block not defined')
+            call quit(1,'expand_subexpr2','block not defined')
           end if
 
           ! ... and collect all terms
@@ -160,7 +161,12 @@ c dbg
             ! we re-visit the generated terms (for multiple expansions)
             advance = .false.
           else
-            call quit(1,'expand_subexpr','strange event: no terms')
+c            call quit(1,'expand_subexpr','strange event: no terms')
+            fl_tgt_current => fl_tgt_current%prev
+            fl_tgt_current_next => fl_tgt_current%next
+            call delete_fl_node(fl_tgt_current_next)
+            deallocate(fl_tgt_current_next)
+            advance = .true.
           end if
 
           call dealloc_formula_plist(fpl_intm_c2blk)
