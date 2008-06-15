@@ -453,28 +453,52 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
       ! totally symmetric dia for use below:
       call me_list_label(mel_dia1,mel_dia_pt,1,0,0,0,.false.)
 
-      ! solve GS equations
-      call add_target(solve_cc_pt,ttype_gen,.true.,tgt_info)
-c      call set_dependency(solve_cc_pt,solve_cc_gs,tgt_info)
-      call set_dependency(solve_cc_pt,mel_dia1,tgt_info)
-      call set_dependency(solve_cc_pt,fopt_h0_tpt,tgt_info)
-      call set_dependency(solve_cc_pt,mel_tptdef,tgt_info)
-      call set_dependency(solve_cc_pt,fopt_ptde0,tgt_info)
-      call solve_parameters(-1,parameters,2, 1,1,'DIA')
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = mel_tpt
-      labels(2) = mel_dia1
-      labels(3) = op_h0_r
-      labels(4) = op_etapt
-      labels(5) = fopt_h0_tpt
-      call set_rule(solve_cc_pt,ttype_opme,SOLVELEQ,
-     &     labels,5,1,
-     &     parameters,2,tgt_info)
+
+        ! solve GS equations
+        call add_target(solve_cc_pt,ttype_gen,.true.,tgt_info)
+        call set_dependency(solve_cc_pt,mel_dia1,tgt_info)
+        call set_dependency(solve_cc_pt,fopt_h0_tpt,tgt_info)
+        call set_dependency(solve_cc_pt,mel_tptdef,tgt_info)
+        call set_dependency(solve_cc_pt,fopt_ptde0,tgt_info)
+        call solve_parameters(-1,parameters,2, 1,1,'DIA')
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = mel_tpt
+        labels(2) = mel_dia1
+        labels(3) = op_h0_r
+        labels(4) = op_etapt
+        labels(5) = fopt_h0_tpt
+        call set_rule(solve_cc_pt,ttype_opme,SOLVELEQ,
+     &       labels,5,1,
+     &       parameters,2,tgt_info)
+c      else if (.not.set_tpp) then
+c        call quit(1,'set_cc_pt_targets','trap 2')
+c        call add_target(solve_cc_pt,ttype_gen,.true.,tgt_info)
+c        call set_dependency(solve_cc_pt,mel_dia1,tgt_info)
+c        call set_dependency(solve_cc_pt,fopt_h0_tpt,tgt_info)
+c        call set_dependency(solve_cc_pt,mel_tptdef,tgt_info)
+c        call set_dependency(solve_cc_pt,fopt_ptde0,tgt_info)
+cc        call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
+cc        call set_dependency(solve_ccr12_gs,me_xprc,tgt_info)
+c        call solve_parameters(-1,parameters,2, 1,1,'DIA/BLK')
+c        ! baustelle: ...
+c        labels(1:20)(1:len_target_name) = ' '
+c        labels(1) = mel_tpt
+cc        labels(1) = mel_cex_pt
+c        labels(2) = mel_dia1
+c        labels(3) = op_h0_r
+c        labels(4) = op_etapt
+c        labels(5) = fopt_h0_tpt
+c        call set_rule(solve_cc_pt,ttype_opme,SOLVELEQ,
+c     &       labels,5,1,
+c     &       parameters,2,tgt_info)        
+c      else
+c        call quit(1,'set_cc_pt_targets','trap 1')
+c      end if
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = fopt_ptde0
       call set_rule(solve_cc_pt,ttype_opme,EVAL,
-     &     labels,1,0,
-     &     parameters,0,tgt_info)
-
+     &       labels,1,0,
+     &       parameters,0,tgt_info)
+        
       return
       end

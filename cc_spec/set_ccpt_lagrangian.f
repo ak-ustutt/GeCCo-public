@@ -148,7 +148,7 @@ c        deallocate(occ_def)
 
         call init_formula(flist_t_r)
 
-        call set_t_r(flist_t_r,idxsop,idxtop,idxtop,
+        call set_t_r(flist_t_r,.false.,idxsop,idxtop,
      &               idxr12,idxc12,idxcpp12,
      &               r12op,r12fix,op_info)
 
@@ -175,7 +175,7 @@ c        end if
 
         call init_formula(flist_t_r_pt)
 
-        call set_t_r(flist_t_r_pt,idxspt,idxtpt,idxtop,
+        call set_t_r(flist_t_r_pt,.false.,idxspt,idxtpt,
      &               idxr12,idxc12_pt,idxcpp12_pt,
      &               r12op,r12fix,op_info)
 

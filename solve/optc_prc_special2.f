@@ -97,7 +97,8 @@ c      include 'ifc_input.h'
      &     idxmsdis_c(:), idxmsdis_a(:), gamdis_c(:), gamdis_a(:),
      &     len_str(:)
       real(8), pointer ::
-     &     f_dia(:), xmat(:), bmat(:), xgrd_pnt(:), xgrd_buf(:)
+     &     f_dia(:), xmat(:), bmat(:), xgrd_pnt(:), xgrd_buf(:),
+     &     scrbuf(:)
 
       integer, external ::
      &     idxlist, iblk_occ, idx_oplist2, idx_mel_list, imltlist
@@ -131,6 +132,9 @@ c      include 'ifc_input.h'
 
         me_xmat => me_special(2)%mel
         nxmat = me_xmat%len_op
+c dbg
+        print *,'nxmat, nbmat: ',nxmat, nbmat
+c dbg
 
         allocate(xmat(nxmat))
         ! should be open as well
@@ -477,10 +481,16 @@ c test -- special insert
               idx_x = idx_b
               if (.not.beyond_A) idx_x = 1
 
+              if (ld_bx.lt.len_cstr*len_astr) then
+                scrbuf => xbuf3
+              else
+                allocate(scrbuf(ld_bx*ld_bx))
+              end if
+
               call optc_prc_special2_inner
      &             (xgrd_pnt(idx_grd), beyond_A,njoined.eq.1
      &                 .and.nidx_cstr.gt.0,
-     &              xbuf2,xbuf3,bmat(idx_b),xmat(idx_x),f_dia,
+     &              xbuf2,scrbuf,bmat(idx_b),xmat(idx_x),f_dia,
      &              ld_bx,len_cstr, len_astr,
      &              nidx_cstr,ms_cstr,gam_cstr,
      &               igas_restr(1,1,1,1,graph_cstr),
@@ -489,6 +499,10 @@ c test -- special insert
      &               igas_restr(1,1,1,1,graph_astr),
      &               mostnd(1,1,idx_gas(IHOLE)),ngas_hpv(IHOLE),
      &              igamorb,ngam,ngas)
+              
+              if (ld_bx.ge.len_cstr*len_astr) then
+                deallocate(scrbuf)
+              end if
 
             end do distr_loop
 

@@ -196,7 +196,6 @@
           nres = nres+1
           idxres = nres
 
-
           ! requested?
           skip = nselect.gt.0.and.
      &           idxlist(idxres,idxselect,nselect,1).le.0
