@@ -306,4 +306,3 @@ c        end if
       call prtim(luout,'CCPT Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
       end
-
