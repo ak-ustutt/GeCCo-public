@@ -34,7 +34,7 @@
       integer, intent(in) ::
      &     nlabels
 
-      type(operator_info), intent(in) ::
+      type(operator_info), intent(inout) ::
      &     op_info
 
       type(orbinf), intent(inout) ::
@@ -91,9 +91,6 @@
       call atim_csw(cpu0,sys0,wall0)
 
       do ilabel = 1, nlabels
-c dbg
-        print *,'>>',trim(label_op(ilabel))
-c dbg
         idx = idx_oplist2(label_op(ilabel),op_info)
         if (idx.le.0)
      &       call quit(1,'set_ccpt_lagrangian',
@@ -176,12 +173,12 @@ c        end if
      &         orb_info)
         end if
 
-
         call init_formula(flist_t_r_pt)
 
         call set_t_r(flist_t_r_pt,idxspt,idxtpt,idxtop,
      &               idxr12,idxc12_pt,idxcpp12_pt,
      &               r12op,r12fix,op_info)
+
 
 c        if (ntest.ge.1000) then
           call write_title(luout,wst_title,'T + CR (PT)')
@@ -278,7 +275,7 @@ c        end if
      &                       op_info%op_arr(idxtop)%op%name,
      &           flist_lag,op_info)
             call form_op_replace(op_info%op_arr(idxcpp12_pt)%op%name,
-     &                       op_info%op_arr(idxtop)%op%name,
+     &                       op_info%op_arr(idxtpt)%op%name,
      &           flist_lag,op_info)
           end if
         end if
@@ -485,6 +482,5 @@ c        end if
      &       0,0,
      &       op_info)
       endif
-
 
       end

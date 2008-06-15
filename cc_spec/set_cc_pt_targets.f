@@ -78,17 +78,17 @@ c          n_pp=1
           ! T'' operators (doubly p-connected to R12)
           set_tpp = .true.
           ntpp_min=max(min_rank_pt,min_rank_tpp)
-          ntpp_max=max_rank
+          ntpp_max=max_rank_pt
 c          n_pp=2
         case(3,4)
           ! T' + T'' operators
           set_tp = .true.
           ntp_min=max(min_rank_pt-1,min_rank_tp)
-          ntp_max=max_rank-1
+          ntp_max=max_rank_pt-1
 c          n_pp=1
           set_tpp = .true.
           ntpp_min=max(min_rank_pt,min_rank_tpp)
-          ntpp_max=max_rank
+          ntpp_max=max_rank_pt
 c          n_pp=2
         end select
 
@@ -178,7 +178,8 @@ c          n_pp=2
         nint = 8
         if (.not.r12fix) then
           labels(9) = op_c12
-          nint = 9
+          labels(10) = op_c12
+          nint = 10
         else if (r12op.gt.0) then
           if (r12op.ne.2) then
             call set_dependency(form_ptdl0,op_cex,tgt_info)
@@ -210,21 +211,29 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = form_ptdl0 ! output formula (itself)
         labels(2) = form_ptdl0 ! input formula
-        labels(3) = form_r12_vint ! the intermediates to be factored
-        labels(4) = form_r12_vint//'^+'
-        labels(5) = form_r12_bint
-        labels(6) = form_r12_bhint
-        labels(7) = form_r12_xint
-        nint = 5
+        if (r12fix.or.r12op.gt.0) then
+          call set_dependency(form_ptdl0,form_r12_bhint,tgt_info)
+          labels(3) = form_r12_vint ! the intermediates to be factored
+          labels(4) = form_r12_vint//'^+'
+          labels(5) = form_r12_bint
+          labels(6) = form_r12_bhint
+          labels(7) = form_r12_xint
+          nint = 5
+        else
+          labels(3) = form_r12_vint ! the intermediates to be factored
+          labels(4) = form_r12_vint//'^+'
+          labels(5) = form_r12_bint
+          labels(6) = form_r12_xint
+          nint = 4
+        end if
         call set_dependency(form_ptdl0,form_r12_vint,tgt_info)
         call set_dependency(form_ptdl0,form_r12_xint,tgt_info)
         call set_dependency(form_ptdl0,form_r12_bint,tgt_info)
-        call set_dependency(form_ptdl0,form_r12_bhint,tgt_info)
         if (ansatz.ne.1) then
-          labels(8) = form_r12_cint
-          labels(9) = trim(form_r12_cint)//'^+'
+          labels(2+nint+1) = form_r12_cint
+          labels(2+nint+2) = trim(form_r12_cint)//'^+'
           call set_dependency(form_ptdl0,form_r12_cint,tgt_info)
-          nint = 7
+          nint = nint+2
         end if
         call form_parameters(-1,
      &       parameters,2,title_ptdl0,nint,'---')
@@ -291,7 +300,8 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
-      call get_argument_value('calculate.routes','simtraf',ival=isim)
+      !call get_argument_value('calculate.routes','simtraf',ival=isim)
+      isim=0
 
       ! equations:
       labels(1:20)(1:len_target_name) = ' '

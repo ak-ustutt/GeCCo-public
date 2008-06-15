@@ -25,7 +25,7 @@
      &     mem_maxname = 24
 
       integer, parameter ::
-     &     membuffer_maxmax_slots = 16*1024,
+     &     membuffer_maxmax_slots = 128*1024,
      &     membuffer_maxname = 8,
      &     membuffer_stat_max = 500
 
@@ -1581,9 +1581,13 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
         end do
       end if
 
-      if (id_slot.gt.mem_buf_pnt%max_buf_slots)
-     &     call quit(1,'memman_idx_buffer',
+      if (id_slot.gt.mem_buf_pnt%max_buf_slots) then
+        write(luout,*) ' ID buffer: ',id_buf
+        write(luout,*) ' ID slot  : ',id_slot
+        write(luout,*) ' ID slot(max): ',mem_buf_pnt%max_buf_slots
+        call quit(1,'memman_idx_buffer',
      &     'requested slot is out of range')
+      end if
 
       if (present(ipnt)) nullify(ipnt)
       if (present(xpnt)) nullify(xpnt)

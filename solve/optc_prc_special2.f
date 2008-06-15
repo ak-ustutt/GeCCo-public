@@ -478,7 +478,8 @@ c test -- special insert
               if (.not.beyond_A) idx_x = 1
 
               call optc_prc_special2_inner
-     &             (xgrd_pnt(idx_grd), beyond_A,njoined.eq.1,
+     &             (xgrd_pnt(idx_grd), beyond_A,njoined.eq.1
+     &                 .and.nidx_cstr.gt.0,
      &              xbuf2,xbuf3,bmat(idx_b),xmat(idx_x),f_dia,
      &              ld_bx,len_cstr, len_astr,
      &              nidx_cstr,ms_cstr,gam_cstr,

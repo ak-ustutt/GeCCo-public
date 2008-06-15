@@ -25,13 +25,13 @@
       call mem_pushmark()
       ifree = mem_gotomark(operator_def)
 
-      if (op%n_occ_cls.le.0.or.op%n_occ_cls.ge.1000) then
+      if (op%n_occ_cls.lt.0.or.op%n_occ_cls.ge.1000) then
         write(luout,*) 'n_occ_cls = ',op%n_occ_cls
         call quit(1,'init_operator',
      &              'suspicious number of blocks (bug?)')
       end if
 
-      nblk = op%n_occ_cls
+      nblk = max(1,op%n_occ_cls)
       op%ngas = orb_info%ngas  ! remember dimension
       op%nspin = orb_info%nspin
 

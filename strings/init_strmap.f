@@ -44,7 +44,7 @@
 
       ! currently: hard coded dimensioning
       call mem_init_vbuffer(strmap_info%ffstrmap,
-     &     'bfstrmap',256*lblk_da,4096)
+     &     'bfstrmap',2048*lblk_da,20000)!8192)
 
       return
       end
