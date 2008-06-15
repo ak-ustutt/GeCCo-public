@@ -227,6 +227,9 @@ c     &       parameters,2,tgt_info)
      &                parameters,1,tgt_info)
 
       endif
+c dbg
+      print *,'in r12f_gen: set_tp = ',set_tp
+c dbg
 
       if (set_tpp) then
         ! T1'' operators for extended CC/MP2-F12.

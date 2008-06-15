@@ -49,8 +49,9 @@
       type(formula_item), pointer ::
      &     form_pnt, form_h_pnt, fl_t_cr_pnt
       integer ::
-     &     idxham,idxtbar,idxtop,idxlag,idxrba,idxcba,idxr12,idxc12,
-     &     idxcex,idxcexbar
+     &     r12op,
+     &     idxham,idxtbar,idxtop,idxlag,idxrba,idxcbar,idxr12,idxc12,
+     &     idxcpp12,idxcppbar
       integer ::
      &     nterms, idx_h_temp, idx_sop, idx_sbar, ndef, ilabel, idx,
      &     ansatz, idx_rsh
@@ -75,7 +76,7 @@
       if (ntest.ge.100) then
         write(luout,*) '==================================='
         write(luout,*) ' output from set_mp2_r12_lagrangian'
-        write(luout,*) '==================================='
+        write(luout,*) '==================================='        
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -85,14 +86,21 @@ c      ! Are we fixing the F12 amplitudes?
       ! Are we using an extended Lagrangian?
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','ansatz',ival=ansatz)
+      call get_argument_value('method.R12','r12op',ival=r12op)
+c dbg
+      print *,'r12op: ',r12op
+c dbg
+
+      if (extend.gt.0) call quit(1,'set_r12_lagrangian',
+     &     'do not use "extend" any further (use "r12op" instead)!')
 
       ! get indices
 c      if (nlabels.ne.8.and..not.r12fix) then
-      if(nlabels.ne.8.and..not.r12fix)then
-        write(luout,*) 'nlabels = ',nlabels
-        call quit(1,'set_mp2_r12_lagrangian',
-     &         'I expect exactly 8 labels')
-      end if
+c      if(nlabels.ne.8.and..not.r12fix)then
+c        write(luout,*) 'nlabels = ',nlabels
+c        call quit(1,'set_mp2_r12_lagrangian',
+c     &         'I expect exactly 8 labels')
+c      end if
 c      if (nlabels.ne.6.and.r12fix) then
 c        write(luout,*) 'nlabels = ',nlabels
 c        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
@@ -110,10 +118,17 @@ c      end if
         if (ilabel.eq.4)  idxrba    = idx
         if (ilabel.eq.5)  idxtbar   = idx
         if (ilabel.eq.6)  idxtop    = idx
-        if (ilabel.eq.7.and.extend.eq.0)  idxcba    = idx
-        if (ilabel.eq.7.and.extend.ne.0)  idxcexbar    = idx
-        if (ilabel.eq.8.and.extend.eq.0)  idxc12    = idx
-        if (ilabel.eq.8.and.extend.ne.0)  idxcex    = idx
+        if (r12op.ne.2) then
+          if (ilabel.eq.7) idxcbar = idx
+          if (ilabel.eq.8) idxc12 = idx
+        else
+          if (ilabel.eq.7) idxcppbar = idx
+          if (ilabel.eq.8) idxcpp12 = idx
+        end if
+        if (r12op.ne.2) then
+          if (ilabel.eq.9) idxcppbar = idx
+          if (ilabel.eq.10) idxcpp12 = idx
+        end if
       end do
 
       ! Add the parts of the Hamiltonian that are required.
@@ -199,51 +214,10 @@ c      end if
 
       ! Replace the formal terms with the predefined operators.
       call init_formula(form_t_cr)
-      fl_t_cr_pnt => form_t_cr
-      call new_formula_item(fl_t_cr_pnt,command_set_target_init,idx_sop)
-      fl_t_cr_pnt => fl_t_cr_pnt%next
-      call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &     1d0,1,idxtop,-1,-1,
-     &     0,0,.false.,op_info)
-      do while(associated(fl_t_cr_pnt%next))
-        fl_t_cr_pnt => fl_t_cr_pnt%next
-      enddo
 
-      ! Form of the R12 part depends on whether the amplitudes are fixed.
-      if(.not.r12fix.and.extend.eq.0)then
-      call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &     1d0,2,(/idxc12,idxr12/),-1,-1,
-     &     (/1,2/),1,.false.,op_info)
-      else if (r12fix.or.extend.eq.1.or.extend.ge.4) then
-        call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &       1d0,1,idxr12,-1,-1,
-     &       0,0,.false.,op_info)
-c      else
-c        call expand_op_product(fl_t_cr_pnt,idx_sop,
-c     &       1d0,2,(/idxr12,idxcex/),-1,(/0,1/),
-c     &       0,0,.false.,op_info)
-      endif
-
-      if(extend.gt.0)then
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-
-        call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &       1d0,2,(/idxr12,idxcex/),-1,-1,
-c     &       (/1,2/),1,.false.,op_info)
-     &       0,0,.false.,op_info)
-      endif
-      if(extend.eq.6)then
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-
-        call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &       0.5d0,2,(/idxr12,idxtop/),-1,-1,
-c     &       (/1,2/),1,.false.,op_info)
-     &       0,0,.false.,op_info)
-      endif
+      call set_t_r(form_t_cr,.false.,idx_sop,idxtop,
+     &             idxr12,idxc12,idxcpp12,
+     &             r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T2 + CR2')
@@ -259,67 +233,10 @@ c      sbar_pnt%dagger = .true.
 
       ! Complete Sbar also.
       call init_formula(form_tbar_cbarr)
-      fl_t_cr_pnt => form_tbar_cbarr
-      call new_formula_item(fl_t_cr_pnt,
-     &     command_set_target_init,idx_sbar)
-      fl_t_cr_pnt => fl_t_cr_pnt%next
-      call expand_op_product(fl_t_cr_pnt,idx_sbar,
-     &     1d0,1,idxtbar,-1,-1,
-     &     0,0,.false.,op_info)
-      do while(associated(fl_t_cr_pnt%next))
-        fl_t_cr_pnt => fl_t_cr_pnt%next
-      enddo
 
-      if(.not.r12fix.and.extend.eq.0)then
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &     1d0,4,3,
-     &     (/idx_sbar,-idxr12,idxcba,idx_sbar/),(/1,2,3,1/),
-     &     -1,-1,
-     &     (/2,3/),1,
-     &     0,0,
-     &     0,0,
-     &     op_info)
-      else if (r12fix.or.extend.eq.1.or.extend.ge.4) then
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,3,2,
-     &       (/idx_sbar,-idxr12,idx_sbar/),(/1,2,1/),
-     &       -1,-1,
-     &       0,0,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      endif
-
-      if(extend.gt.0)then
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,4,3,
-     &       (/idx_sbar,idxcexbar,-idxr12,idx_sbar/),(/1,2,3,1/),
-     &       -1,-1,
-c     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      endif
-      if(extend.eq.6)then
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,4,3,
-     &       (/idx_sbar,idxtbar,-idxr12,idx_sbar/),(/1,2,3,1/),
-     &       -1,-1,
-c     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      endif
+      call set_t_r(form_tbar_cbarr,.true.,idx_sbar,idxtbar,
+     &             idxr12,idxcbar,idxcppbar,
+     &             r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T2BAR + CR2BAR')
@@ -377,53 +294,26 @@ c     &       (/2,3/),1,
         call print_form_list(luout,form_lag,op_info)
       endif
 
-      ! this runs counter the philosophy of the approach
-c      ! Add extra, artificial terms for approximations beyond A.
-c      if(trim(r12_apprx).ne.'A')then
-c
-c        call del_operator(idx_h_temp,op_info)
-c        call add_operator(op_h_temp,op_info)
-c        idx_h_temp = idx_oplist2(op_h_temp,op_info)
-c        h_temp_pnt => op_info%op_arr(idx_h_temp)%op
-c
-c        ndef = 1
-c        allocate(occ_def(ngastp,2,ndef))
-c        occ_def(1:ngastp,1,1) = (/1,0,0,0/)
-c        occ_def(1:ngastp,2,1) = (/1,0,0,0/)
-c        call set_uop(h_temp_pnt,op_h_temp,.false.,
-c     &       occ_def,ndef,orb_info)
-c        deallocate(occ_def)
-c        
-c       ! Replace the formal terms with elements of H.
-c        call dealloc_formula_list(form_h)
-c        call init_formula(form_h)
-c        form_h_pnt => form_h
-c        call new_formula_item(form_h_pnt,
-c     &       command_set_target_init,idx_h_temp)
-c        form_h_pnt => form_h_pnt%next
-c        call expand_op_product(form_h_pnt,idx_h_temp,
-c     &       1d0,1,idxham,-1,-1,
-c     &       0,0,.false.,op_info)
-c
-c        do while(associated(form_pnt%next))
-c          form_pnt => form_pnt%next
-c        enddo
-c
-c        call expand_op_product(form_pnt,idxlag,
-c     &       -0.5d0,5,(/idxrba,idx_h_temp,idxcba,idxc12,idxr12/),-1,-1,
-c     &       (/1,2,2,3,1,3,1,5,3,4,4,5/),6,.false.,op_info)
-c
-c        do while(associated(form_pnt%next))
-c          form_pnt => form_pnt%next
-c        enddo
-c
-c        call expand_op_product(form_pnt,idxlag,
-c     &       -0.5d0,5,(/idxrba,idxcba,idxc12,idx_h_temp,idxr12/),-1,-1,
-c     &       (/1,2,2,3,1,5,3,4,3,5,4,5/),6,.false.,op_info)
-c
-c        call expand_subexpr(form_lag,form_h,.false.,op_info)
-c      endif
-c
+      ! for r12fix: replace T12 -> T
+      if (r12fix.and.r12op.gt.0) then
+        if (r12op.ne.2) then
+          call form_op_replace(op_info%op_arr(idxc12)%op%name,
+     &                       op_info%op_arr(idxtop)%op%name,
+     &     form_lag,op_info)
+          call form_op_replace(op_info%op_arr(idxcbar)%op%name,
+     &                       op_info%op_arr(idxtbar)%op%name,
+     &     form_lag,op_info)
+        end if
+        if (r12op.gt.1) then
+          call form_op_replace(op_info%op_arr(idxcpp12)%op%name,
+     &                       op_info%op_arr(idxtop)%op%name,
+     &     form_lag,op_info)
+          call form_op_replace(op_info%op_arr(idxcppbar)%op%name,
+     &                       op_info%op_arr(idxtbar)%op%name,
+     &     form_lag,op_info)
+        end if
+      end if
+
       if(ntest.ge.100)then
         call write_title(luout,wst_title,'Final MP2-R12 formula')
         call print_form_list(luout,form_lag,op_info)
