@@ -89,15 +89,17 @@
             max_rank_op = max(max_rank_op,occsum)
           end do
         end do
-      case ('X','CX','AX')
+      case ('X','CX','AX','XTOT')
         icast = 1
         icand = 2
         if (trim(mode_str).eq.'CX') icand = 1
         if (trim(mode_str).eq.'AX') icast = 2
         do iblk = 1, nblk
           if (skip_formal.and.formal(iblk)) cycle
+          occsum = 0
           do ica = icast, icand
-            occsum = 0
+            if(trim(mode_str).ne.'XTOT')
+     &           occsum = 0
             do idx = (iblk-1)*njoined+1, iblk*njoined
               occsum = occsum + hpvx_occ(IEXTR,ica,idx)
             end do

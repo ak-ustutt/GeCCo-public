@@ -98,7 +98,9 @@ c      include 'def_filinf.h'
             do iopt = 1, opti_info%nopt
 
               init = iopt.eq.1
-
+c dbg
+              print *,'xbuf2 (2)',xbuf2(1:opti_info%nwfpar(iopt))
+c dbg
               call optc_diis_sbsp_add(opti_stat%ndim_rsbsp,
      &             opti_stat%ndim_vsbsp,opti_stat%mxdim_sbsp,
      &             init,

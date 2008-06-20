@@ -51,6 +51,8 @@
      &     ldef=(/.false./))
       call argument_add('extend','method.R12',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('truncate','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
 
       call keyword_add('calculate')
       ! internal tests

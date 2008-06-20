@@ -59,7 +59,7 @@
         case (op_ham,op_g_x)
           mode=1
           scaling=min(use_scaling,0)
-          call import_2el_dalton(mel_target,'MO_G',
+          call import_2el_dalton2(mel_target,'MO_G',
      &           mode,scaling,str_info,orb_info)
           ! call after 2int import, as the above routine
           ! zeroes all blocks, including E0 and F:

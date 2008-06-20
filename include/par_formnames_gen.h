@@ -79,7 +79,15 @@
      &     title_r12_bucabs*7 ='R12 B_U',
      &     title_r12_bsymm*24  = 'Symm. R12 B-intermediate',
      &     title_r12_binv*18   = 'Inverse of diag(B)',
-     &     title_ccdens*10   = 'CC density'
+     &     title_ccdens*10   = 'CC density',
+c dbg
+     &     title_x_test*12      = 'X-TEST-TITLE',
+     &     title_x_test_eval*17 = 'X-TEST-TITLE-EVAL',
+     &     title_p_test*12      = 'P-TEST-TITLE',
+     &     title_p_test_eval*17 = 'P-TEST-TITLE-EVAL',
+     &     title_z_test*12      = 'Z-TEST-TITLE',
+     &     title_z_test_eval*17 = 'Z-TEST-TITLE-EVAL'
+c dbg
 c dbg
 c     &     title_f12int_fix*13    = 'F12.C12 fixed',
 c     &     title_t12f12int_fix*16 = 'T12F12.C12 fixed',
@@ -192,7 +200,17 @@ c dbg
      &     form_r12_bucabs*12  = 'B_U_R12_CABS',
      &     fopt_r12_bucabs*11  = 'B_U_R12_OPT',
      &     form_r12_bsymm*9    = 'BSYMM_R12',
-     &     form_r12_binv*8     = 'BINV_R12'
+     &     form_r12_binv*8     = 'BINV_R12',
+c dbg
+     &     form_x_test*11      = 'X-TEST_FORM',
+     &     form_x_test_eval*15 = 'X-TEST_FORM_EVAL',
+     &     fopt_x_test*12      = 'X-TEST_OPT',
+     &     form_p_test*11      = 'P-TEST_FORM',
+     &     form_p_test_eval*15 = 'P-TEST_FORM_EVAL',
+     &     fopt_p_test*12      = 'P-TEST_OPT',
+     &     form_z_test*11      = 'Z-TEST_FORM',
+     &     form_z_test_eval*15 = 'Z-TEST_FORM_EVAL',
+     &     fopt_z_test*12      = 'Z-TEST_OPT'
 c dbg
 c     &     form_f12int_fix*8   = 'F12FIXED',
 c     &     fopt_f12int_fix*12  = 'F12FIXED_OPT',

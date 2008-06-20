@@ -119,6 +119,10 @@
       nh_max = 4
       if (hhgg_list) nh_min = 2
 
+c dbg
+c      print *,'import naux_mx',naux_max
+c dbg
+
       do iaux_max = 0, naux_max
         
 c          mnmxspc(1,1:ngas) = 0

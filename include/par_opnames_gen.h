@@ -85,7 +85,12 @@ c     &     op_cba*4   = 'CBAR',
      &     op_hartree*3    = 'F+K',
      &     op_cex*3        = 'T1''',
      &     op_cexbar*6     = 'T1BAR''',
-     &     op_omgcex*7     = 'OMG_T1'''
+     &     op_omgcex*7     = 'OMG_T1''',
+c dbg
+     &     op_x_test*6     = 'X-TEST',
+     &     op_p_test*6     = 'P-TEST',
+     &     op_z_test*6     = 'Z-TEST'
+c dbg
       ! generic ME-list names
       character, parameter ::
      &     mel_cclg0*6      = 'L0(CC)',
@@ -184,12 +189,22 @@ c     &     op_cba*4   = 'CBAR',
      &     mel_cbar_def*12    = 'DEF-C+-INTER',
      &     mel_p_inter*7      = 'P-INTER',
      &     mel_p_def*11       = 'DEF-P-INTER',
+     &     mel_z_inter*7      = 'Z-INTER',
+     &     mel_z_def*11       = 'DEF-Z-INTER',
      &     mel_p3f_inter*9    = 'P3F-INTER',
      &     mel_p3f_def*13     = 'DEF-P3F-INTER',
      &     mel_p3g_inter*9    = 'P3G-INTER',
      &     mel_p3g_def*13     = 'DEF-P3G-INTER',
      &     mel_b_inv*4        = 'BINV',
-     &     mel_b_dia*4        = 'BDIA'
+     &     mel_b_dia*4        = 'BDIA',
+c dbg
+     &     mel_x_test_def*10  = 'DEF-X-TEST',
+     &     mel_x_test*12      = 'X-INTER-TEST',
+     &     mel_p_test_def*10  = 'DEF-P-TEST',
+     &     mel_p_test*12      = 'P-INTER-TEST',
+     &     mel_z_test_def*10  = 'DEF-Z-TEST',
+     &     mel_z_test*12      = 'Z-INTER-TEST'
+c dbg
       character, parameter ::
      &     mel_c12def*11    = 'DEF-T0''-R12',
      &     mel_c12*7        = 'T0''-R12',

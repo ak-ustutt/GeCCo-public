@@ -32,7 +32,7 @@
      &     isym, ms, msc, sym_arr(8),
      &     occ_def(ngastp,2,20), ndef, mode
       logical ::
-     &     needed, r12fix, extend
+     &     needed, r12fix, extend, truncate
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -63,6 +63,7 @@
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','extend',ival=mode)
+      call get_argument_value('method.R12','truncate',lval=truncate)
 
       ! actual processing moved to set_r12f_general_targets
       extend = mode.gt.0
@@ -202,6 +203,9 @@ c     &     op_g_x,1,1,
 c     &     parameters,1,tgt_info)
       call r12int_parameters(-1,parameters,
      &     2,min_rank,2,0,3)
+c dbg
+c     &     2,min_rank,2,0,5)
+c dbg
       call set_rule(op_g_x,ttype_op,DEF_R12INT,
      &              op_g_x,1,1,
      &              parameters,1,tgt_info)
@@ -470,31 +474,32 @@ c     &              parameters,1,tgt_info)
       ! R12^{2} integrals
       call add_target(op_ff,ttype_op,.false.,tgt_info)
 c      if (approx(1:1).eq.'A') then
-      call set_dependency(op_ff,op_b_inter,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &     op_b_inter,.false.)  ! <- dagger=.false.
-      call set_rule(op_ff,ttype_op,CLONE_OP,
-     &              op_ff,1,1,
-     &              parameters,1,tgt_info)
-c      else
-c        occ_def = 0
-c        ! 1
-c        occ_def(IHOLE,1,1) = 2
-c        occ_def(IHOLE,2,2) = 2
-c        ! 2
-c        occ_def(IHOLE,1,3) = 1
-c        occ_def(IPART,1,3) = 1
-c        occ_def(IHOLE,2,4) = 2
-c        ! 3
-c        occ_def(IHOLE,1,5) = 1
-c        occ_def(IEXTR,1,5) = 1
-c        occ_def(IHOLE,2,6) = 2
-c        call op_from_occ_parameters(-1,parameters,2,
-c     &       occ_def,3,2,6)
-c        call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
-c     &                op_ff,1,1,
-c     &                parameters,2,tgt_info)
-c      end if
+      if(is_keyword_set('method.CC').gt.0.and..not.truncate)then
+        occ_def = 0
+        ! 1
+        occ_def(IHOLE,1,1) = 2
+        occ_def(IHOLE,2,2) = 2
+        ! 2
+        occ_def(IHOLE,1,3) = 1
+        occ_def(IPART,1,3) = 1
+        occ_def(IHOLE,2,4) = 2
+        ! 3
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IEXTR,1,5) = 1
+        occ_def(IHOLE,2,6) = 2
+        call op_from_occ_parameters(-1,parameters,2,
+     &       occ_def,3,2,6)
+        call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
+     &                op_ff,1,1,
+     &                parameters,2,tgt_info)
+      else
+        call set_dependency(op_ff,op_b_inter,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &       op_b_inter,.false.) ! <- dagger=.false.
+        call set_rule(op_ff,ttype_op,CLONE_OP,
+     &                op_ff,1,1,
+     &                parameters,1,tgt_info)
+      end if
 
       ! {R12^2}BAR integrals
       call add_target(op_ffbar,ttype_op,.false.,tgt_info)
@@ -512,6 +517,16 @@ c      end if
       call set_rule(op_x_inter,ttype_op,DEF_R12INTERM,
      &              op_x_inter,1,1,
      &              parameters,1,tgt_info)
+
+c dbg
+      call add_target(op_x_test,ttype_op,.false.,tgt_info)
+      call set_dependency(op_x_test,op_x_inter,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_x_inter,.false.) ! <- dagger=.false.
+      call set_rule(op_x_test,ttype_op,CLONE_OP,
+     &              op_x_test,1,1,
+     &              parameters,1,tgt_info)
+c dbg
 
       ! C intermediate
       call add_target(op_c_inter,ttype_op,.false.,tgt_info)
@@ -549,6 +564,16 @@ c      occ_def(IHOLE,2,6) = 2
       call set_rule(op_p_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_p_inter,1,1,
      &              parameters,2,tgt_info)
+
+c dbg
+      call add_target(op_p_test,ttype_op,.false.,tgt_info)
+      call set_dependency(op_p_test,op_p_inter,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_p_inter,.false.) ! <- dagger=.false.
+      call set_rule(op_p_test,ttype_op,CLONE_OP,
+     &              op_p_test,1,1,
+     &              parameters,1,tgt_info)
+c dbg
 
       ! R12^{2}*G12 integrals
       call add_target(op_ffg,ttype_op,.false.,tgt_info)
@@ -597,21 +622,31 @@ c      occ_def(IHOLE,2,6) = 2
       occ_def(IHOLE,1,5) = 1
       occ_def(IPART,2,5) = 1
       occ_def(IHOLE,2,6) = 2
-      ! 3
-      occ_def(IHOLE,1,7) = 2
-      occ_def(IPART,1,8) = 1
-      occ_def(IHOLE,2,8) = 1
-      occ_def(IHOLE,2,9) = 2
-      ! 4
-      occ_def(IHOLE,1,10) = 2
-      occ_def(IPART,1,11) = 1
-      occ_def(IPART,2,11) = 1
-      occ_def(IHOLE,2,12) = 2
+c      ! 3
+c      occ_def(IHOLE,1,7) = 2
+c      occ_def(IPART,1,8) = 1
+c      occ_def(IHOLE,2,8) = 1
+c      occ_def(IHOLE,2,9) = 2
+c      ! 4
+c      occ_def(IHOLE,1,10) = 2
+c      occ_def(IPART,1,11) = 1
+c      occ_def(IPART,2,11) = 1
+c      occ_def(IHOLE,2,12) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,4,3,12)
+     &     occ_def,2,3,6)
       call set_rule(op_z_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_z_inter,1,1,
      &              parameters,2,tgt_info)
+
+c dbg
+      call add_target(op_z_test,ttype_op,.false.,tgt_info)
+      call set_dependency(op_z_test,op_z_inter,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_z_inter,.false.) ! <- dagger=.false.
+      call set_rule(op_z_test,ttype_op,CLONE_OP,
+     &              op_z_test,1,1,
+     &              parameters,1,tgt_info)
+c dbg
 
       ! Z4 intermediate
       call add_target(op_z4_inter,ttype_op,.false.,tgt_info)
@@ -818,6 +853,35 @@ c      labels(3) = op_rba
      &              labels,5,1,
      &              parameters,2,tgt_info)
 
+c dbg
+      ! formal definition of X-test
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_x_test
+      labels(2) = op_x_test
+      labels(3) = op_r12
+      labels(4) = op_r12
+      call add_target(form_x_test,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_x_test,op_x_test,tgt_info)
+      call set_dependency(form_x_test,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_x_test,0,'rxr')
+      call set_rule(form_x_test,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,4,1,
+     &              parameters,2,tgt_info)
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_x_test
+      labels(2) = form_x_test
+      labels(3) = op_r12
+      labels(4) = op_rint
+      call set_dependency(form_x_test,op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_x_test,1,'---')
+      call set_rule(form_x_test,ttype_frm,REPLACE,
+     &     labels,4,1,
+     &     parameters,2,tgt_info)
+c dbg
+
       ! formal definition of B
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_bint
@@ -984,6 +1048,49 @@ c     &     'C           ')
      &              labels,7,1,
      &              parameters,2,tgt_info)
 
+c dbg
+      ! formal definition of P-test
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_p_test
+      labels(2) = op_p_test
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      call add_target(form_p_test,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_p_test,op_p_test,tgt_info)
+      call set_dependency(form_p_test,op_ham,tgt_info)
+      call set_dependency(form_p_test,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_p_test,0,'P')
+      call set_rule(form_p_test,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_p_test
+      labels(2) = form_p_test
+      labels(3) = op_r12
+      labels(4) = op_rint
+      call set_dependency(form_p_test,op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_p_test,1,'---')
+      call set_rule(form_p_test,ttype_frm,REPLACE,
+     &     labels,4,1,
+     &     parameters,2,tgt_info)
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_p_test
+      labels(2) = form_p_test
+      labels(3) = op_ham
+      labels(4) = op_g_x
+      call set_dependency(form_p_test,op_g_x,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_p_test,1,'---')
+      call set_rule(form_p_test,ttype_frm,REPLACE,
+     &     labels,4,1,
+     &     parameters,2,tgt_info)
+c dbg
+
       ! Formal definition of P3F
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_p3fint
@@ -1076,16 +1183,61 @@ c     &     'C           ')
       labels(3) = op_rint
       labels(4) = op_g_x
       labels(5) = op_ff
-      call add_target(form_r12_zcabs,ttype_frm,.false.,tgt_info)
+      call add_target(form_r12_zcabs,ttype_frm,.true.,tgt_info)
       call set_dependency(form_r12_zcabs,op_z_inter,tgt_info)
       call set_dependency(form_r12_zcabs,op_ff,tgt_info)
       call set_dependency(form_r12_zcabs,op_rint,tgt_info)
       call set_dependency(form_r12_zcabs,op_g_x,tgt_info)
+c      approx(12:12) = 'S' ! set symmetrization flag
       call form_parameters(-1,
      &     parameters,2,title_r12_zcabs,ansatz,'Z '//approx)
+c      approx(12:12) = ' ' ! unset flag
       call set_rule(form_r12_zcabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,5,1,
      &              parameters,2,tgt_info)
+
+c dbg
+      ! formal definition of Z-test
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_z_test
+      labels(2) = op_z_test
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      call add_target(form_z_test,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_z_test,op_z_test,tgt_info)
+      call set_dependency(form_z_test,op_ham,tgt_info)
+      call set_dependency(form_z_test,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_z_test,0,'Z')
+      call set_rule(form_z_test,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_z_test
+      labels(2) = form_z_test
+      labels(3) = op_r12
+      labels(4) = op_rint
+      call set_dependency(form_z_test,op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_z_test,1,'---')
+      call set_rule(form_z_test,ttype_frm,REPLACE,
+     &     labels,4,1,
+     &     parameters,2,tgt_info)
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_z_test
+      labels(2) = form_z_test
+      labels(3) = op_ham
+      labels(4) = op_g_x
+      call set_dependency(form_z_test,op_g_x,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_z_test,1,'---')
+      call set_rule(form_z_test,ttype_frm,REPLACE,
+     &     labels,4,1,
+     &     parameters,2,tgt_info)
+c dbg
 
       ! Formal definition of Z4
       labels(1:10)(1:len_target_name) = ' '
@@ -1245,6 +1397,23 @@ c     &     'C           ')
       call set_dependency(fopt_r12_p3gcabs,mel_rint,tgt_info)      
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_r12_p3gcabs,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+      ! set Z
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_r12_zcabs
+      labels(2) = form_r12_zcabs
+      ncat = 1
+      nint = 0
+      call add_target(fopt_r12_zcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_r12_zcabs,form_r12_zcabs,tgt_info)
+      call set_dependency(fopt_r12_zcabs,mel_z_def,tgt_info)
+      call set_dependency(fopt_r12_zcabs,mel_rint,tgt_info)      
+      call set_dependency(fopt_r12_zcabs,mel_gintx,tgt_info)      
+      call set_dependency(fopt_r12_zcabs,mel_ff,tgt_info)      
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_r12_zcabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
@@ -1599,6 +1768,20 @@ c     &     'C           ')
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+c dbg
+      ! X-test
+      call add_target(mel_x_test_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_x_test_def,op_x_test,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_x_test
+      labels(2) = op_x_test
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(mel_x_test_def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+c dbg
+
       ! B-list
       call add_target(mel_b_def,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_b_def,op_b_inter,tgt_info)
@@ -1623,6 +1806,20 @@ c     &     'C           ')
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+c dbg
+      ! P-test
+      call add_target(mel_p_test_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_p_test_def,op_p_test,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_p_test
+      labels(2) = op_p_test
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(mel_p_test_def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+c dbg
+
       ! P3F-list
       call add_target(mel_p3f_def,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_p3f_def,op_p3f_inter,tgt_info)
@@ -1646,6 +1843,32 @@ c     &     'C           ')
       call set_rule(mel_p3g_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
+
+      ! Z-list
+      call add_target(mel_z_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_z_def,op_z_inter,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_z_inter
+      labels(2) = op_z_inter
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(mel_z_def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
+c dbg
+      ! Z-test
+      call add_target(mel_z_test_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_z_test_def,op_z_test,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_z_test
+      labels(2) = op_z_test
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(mel_z_test_def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+c dbg
 
       ! C-list
       call add_target(mel_c_def,ttype_opme,.false.,tgt_info)
@@ -1727,27 +1950,36 @@ c                             ! this entity this does not matter
 *     "phony" targets
 *----------------------------------------------------------------------*
       ! test
-      call add_target(eval_r12_inter,ttype_gen,.false.,tgt_info)
+c      call add_target(eval_r12_inter,ttype_gen,.false.,tgt_info)
+c dbg
+      call add_target(eval_r12_inter,ttype_gen,.true.,tgt_info)
+c dbg
       call set_dependency(eval_r12_inter,mel_ham,tgt_info)
       call set_dependency(eval_r12_inter,mel_rint,tgt_info)
       call set_dependency(eval_r12_inter,mel_gintx,tgt_info)
       call set_dependency(eval_r12_inter,mel_ttr,tgt_info)
       call set_dependency(eval_r12_inter,mel_ff,tgt_info)
       call set_dependency(eval_r12_inter,mel_gr,tgt_info)
-      call set_dependency(eval_r12_inter,mel_ffg,tgt_info)
       call set_dependency(eval_r12_inter,mel_v_def,tgt_info)
       call set_dependency(eval_r12_inter,mel_x_def,tgt_info)
       call set_dependency(eval_r12_inter,mel_b_def,tgt_info)
-      call set_dependency(eval_r12_inter,mel_p_def,tgt_info)
-      call set_dependency(eval_r12_inter,mel_p3g_def,tgt_info)
+      if(is_keyword_set('method.CC').gt.0.and..not.truncate)then
+        call set_dependency(eval_r12_inter,mel_ffg,tgt_info)
+        call set_dependency(eval_r12_inter,mel_p_def,tgt_info)
+        call set_dependency(eval_r12_inter,mel_p3g_def,tgt_info)
+        call set_dependency(eval_r12_inter,fopt_r12_pcabs,tgt_info)
+        call set_dependency(eval_r12_inter,mel_z_def,tgt_info)
+        call set_dependency(eval_r12_inter,fopt_r12_zcabs,tgt_info)
+      endif
       call set_dependency(eval_r12_inter,fopt_r12_vcabs,tgt_info)
       call set_dependency(eval_r12_inter,fopt_r12_xcabs,tgt_info)
       call set_dependency(eval_r12_inter,fopt_r12_bcabs,tgt_info)
-      call set_dependency(eval_r12_inter,fopt_r12_pcabs,tgt_info)
       if (ansatz.ne.1)then
         call set_dependency(eval_r12_inter,fopt_r12_ccabs,tgt_info)
-        call set_dependency(eval_r12_inter,fopt_r12_p3fcabs,tgt_info)
-        call set_dependency(eval_r12_inter,fopt_r12_p3gcabs,tgt_info)
+c        call set_dependency(eval_r12_inter,fopt_r12_p3fcabs,tgt_info)
+        if(is_keyword_set('method.CC').gt.0.and..not.truncate)then
+          call set_dependency(eval_r12_inter,fopt_r12_p3gcabs,tgt_info)
+        endif
       endif
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = fopt_r12_vcabs
@@ -1765,15 +1997,17 @@ c                             ! this entity this does not matter
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
-        labels(1) = fopt_r12_p3fcabs
-        call set_rule(eval_r12_inter,ttype_opme,EVAL,
-     &     labels,1,0,
-     &     parameters,0,tgt_info)
+c        labels(1) = fopt_r12_p3fcabs
+c        call set_rule(eval_r12_inter,ttype_opme,EVAL,
+c     &     labels,1,0,
+c     &     parameters,0,tgt_info)
 
-        labels(1) = fopt_r12_p3gcabs
-        call set_rule(eval_r12_inter,ttype_opme,EVAL,
-     &     labels,1,0,
-     &     parameters,0,tgt_info)
+        if(is_keyword_set('method.CC').gt.0.and..not.truncate)then
+          labels(1) = fopt_r12_p3gcabs
+          call set_rule(eval_r12_inter,ttype_opme,EVAL,
+     &         labels,1,0,
+     &         parameters,0,tgt_info)
+        endif
       end if
 
       labels(1) = fopt_r12_bcabs
@@ -1781,11 +2015,101 @@ c                             ! this entity this does not matter
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
-      labels(1) = fopt_r12_pcabs
-      call set_rule(eval_r12_inter,ttype_opme,EVAL,
+      if(is_keyword_set('method.CC').gt.0.and..not.truncate)then
+        labels(1) = fopt_r12_pcabs
+        call set_rule(eval_r12_inter,ttype_opme,EVAL,
+     &       labels,1,0,
+     &       parameters,0,tgt_info)
+
+        labels(1) = fopt_r12_zcabs
+        call set_rule(eval_r12_inter,ttype_opme,EVAL,
+     &       labels,1,0,
+     &       parameters,0,tgt_info)
+      endif
+
+c dbg
+      ! set X-test opt
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_x_test
+      labels(2) = form_x_test
+      ncat = 1
+      nint = 0
+      call add_target(fopt_x_test,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_x_test,form_x_test,tgt_info)
+      call set_dependency(fopt_x_test,mel_x_test_def,tgt_info)
+      call set_dependency(fopt_x_test,mel_rint,tgt_info)      
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_x_test,ttype_frm,OPTIMIZE,
+     &     labels,ncat+nint+1,1,
+     &     parameters,1,tgt_info)
+
+c      call add_target(eval_x_test,ttype_gen,.true.,tgt_info)
+      call add_target(eval_x_test,ttype_gen,.false.,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_x_test
+      call set_dependency(eval_x_test,mel_rint,tgt_info)
+      call set_dependency(eval_x_test,mel_x_test_def,tgt_info)
+      call set_dependency(eval_x_test,fopt_x_test,tgt_info)
+      call set_rule(eval_x_test,ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
+      ! set P-test opt
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_p_test
+      labels(2) = form_p_test
+      ncat = 1
+      nint = 0
+      call add_target(fopt_p_test,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_p_test,form_p_test,tgt_info)
+      call set_dependency(fopt_p_test,mel_p_test_def,tgt_info)
+      call set_dependency(fopt_p_test,mel_rint,tgt_info)      
+      call set_dependency(fopt_p_test,mel_gintx,tgt_info)      
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_p_test,ttype_frm,OPTIMIZE,
+     &     labels,ncat+nint+1,1,
+     &     parameters,1,tgt_info)
+
+c      call add_target(eval_p_test,ttype_gen,.true.,tgt_info)
+      call add_target(eval_p_test,ttype_gen,.false.,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_p_test
+      call set_dependency(eval_p_test,mel_rint,tgt_info)
+      call set_dependency(eval_p_test,mel_gintx,tgt_info)
+      call set_dependency(eval_p_test,mel_p_test_def,tgt_info)
+      call set_dependency(eval_p_test,fopt_p_test,tgt_info)
+      call set_rule(eval_p_test,ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
+      ! set Z-test opt
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_z_test
+      labels(2) = form_z_test
+      ncat = 1
+      nint = 0
+      call add_target(fopt_z_test,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_z_test,form_z_test,tgt_info)
+      call set_dependency(fopt_z_test,mel_z_test_def,tgt_info)
+      call set_dependency(fopt_z_test,mel_rint,tgt_info)      
+      call set_dependency(fopt_z_test,mel_gintx,tgt_info)      
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_z_test,ttype_frm,OPTIMIZE,
+     &     labels,ncat+nint+1,1,
+     &     parameters,1,tgt_info)
+
+      call add_target(eval_z_test,ttype_gen,.true.,tgt_info)
+c      call add_target(eval_z_test,ttype_gen,.false.,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_z_test
+      call set_dependency(eval_z_test,mel_rint,tgt_info)
+      call set_dependency(eval_z_test,mel_gintx,tgt_info)
+      call set_dependency(eval_z_test,mel_z_test_def,tgt_info)
+      call set_dependency(eval_z_test,fopt_z_test,tgt_info)
+      call set_rule(eval_z_test,ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+c dbg
       return
 
       contains

@@ -12,4 +12,9 @@
       character, parameter ::
      &     eval_r12_inter*14  = 'EVAL-R12-INTER',
      &     solve_mpr12_gs*14  = 'SOLVE-MPR12-GS',
-     &     solve_ccr12_gs*14  = 'SOLVE-CCR12-GS'
+     &     solve_ccr12_gs*14  = 'SOLVE-CCR12-GS',
+c dbg
+     &     eval_x_test*12     = 'EVAL-X-INTER',
+     &     eval_p_test*12     = 'EVAL-P-INTER',
+     &     eval_z_test*12     = 'EVAL-Z-INTER'
+c dbg

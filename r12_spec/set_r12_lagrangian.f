@@ -61,7 +61,7 @@
      &     idxham,idxtbar,idxtop,idxlcc,idxrba,idxcbar,idxr12,idxc12,
      &     min_rank, max_rank, iprint
       logical ::
-     &     r12fix
+     &     r12fix, truncate
       integer ::
      &     extend
 
@@ -88,6 +88,7 @@
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
+      call get_argument_value('method.R12','truncate',lval=truncate)
       
       r12fix = r12fix .or. extend.gt.0
 
@@ -304,8 +305,9 @@ c     &     (/1,2/),1,.false.,op_info)
         call print_form_list(luout,flist_lag,op_info)
       end if
 
-      ! Produce truncated expansions.
-c      call truncate_form(flist_lag,op_info)
+      ! Produce truncated expansions if required.
+      if(truncate)
+     &     call truncate_form(flist_lag,op_info)
 
       ! rename _T_ -> T
       if (extend.gt.0) then

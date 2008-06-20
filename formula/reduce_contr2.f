@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine reduce_contr2(iocc_op1op2,njoined_op1op2,
-     &     ireo_vtx_no,ireo_vtx_on,ivtx_op1op2,nvtx_red,
+      subroutine reduce_contr2(sh_sign,iocc_op1op2,njoined_op1op2,
+     &     ireo_vtx_no,ireo_vtx_on,ireo0,
+     &     ivtx_op1op2,nvtx_red,
      &     mergemap,ld_mmap, 
      &     make_contr_red,contr_red,idxnew_op1op2,
      &     contr,isvtx1,isvtx2,arc_list,nlist,njoined_res)
@@ -28,7 +29,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       type(contraction), intent(in) ::
      &     contr
@@ -40,18 +41,19 @@
      &     njoined_res, idxnew_op1op2, isvtx1, isvtx2, nlist,
      &     arc_list(nlist), ld_mmap
       integer, intent(out) ::
+     &     sh_sign,
      &     nvtx_red,
      &     njoined_op1op2,
      &     iocc_op1op2(ngastp,2,*),
      &     mergemap(ld_mmap,2,*),
-     &     ireo_vtx_no(*), ireo_vtx_on(*), ivtx_op1op2(*)
+     &     ireo0(*), ireo_vtx_no(*), ireo_vtx_on(*), ivtx_op1op2(*)
 
       integer(8), pointer ::
      &     vtx(:), topo(:,:), xlines(:,:), scr(:),
      &     vtx_new(:), topo_new(:,:), xlines_new(:,:), op1op2(:)
       integer, pointer ::
      &     svertex(:), vtx_list(:),vtx_list_reo(:),vtx_list_new(:),
-     &     ireo(:), ireo2(:),
+     &     ireo2(:),
      &     svertex_new(:), svertex_reo(:)
 
       integer ::
@@ -68,7 +70,7 @@
 
       nvtx = contr%nvtx
       allocate(vtx(nvtx), topo(nvtx,nvtx), xlines(nvtx,njoined_res),
-     &         scr(nvtx), ireo(nvtx), ireo2(nvtx))
+     &         scr(nvtx), ireo2(nvtx))
       allocate(vtx_list(max(nvtx**2,nlist*2)),
      &         vtx_list_reo(max(nvtx**2,nlist*2)),
      &         vtx_list_new(max(nvtx**2,nlist*2)) )
@@ -105,12 +107,12 @@
       ! report reordering in ireo array
       ! idx_new = ireo(idx_old)
       svertex_reo = svertex
-      call topo_approach_vtxs(ireo,
+      call topo_approach_vtxs(ireo0,sh_sign,
      &     svertex_reo,vtx,topo,xlines,
      &     nvtx,njoined_res,vtx_list,nvtx_cnt)
 
       do ivtx = 1, nvtx_cnt        
-        idx = ireo(vtx_list(ivtx)) 
+        idx = ireo0(vtx_list(ivtx)) 
         vtx_list_reo(ivtx) = idx
       end do
 
@@ -146,7 +148,8 @@
         write(luout,*) 'final: ',vtx_list_new(1:nvtx_cnt)
       end if
 
-      if (nvtx_op1op2.ne.nvtx_cnt) stop 'testing?'
+      if (nvtx_op1op2.ne.nvtx_cnt)
+     &     call quit(1,'reduce_contr2','testing?')
 
       ! store in new topo array
       allocate(topo_new(nvtx_new,nvtx_new),
@@ -158,7 +161,7 @@
      &              ireo2, njoined_res)
 
       call topo_rename_vtxs(svertex_new,vtx_new,
-     &     nvtx+1,idxnew_op1op2,
+     &     nvtx+1,idxnew_op1op2,!0,0,
      &     vtx_list_new,nvtx_new,nvtx_op1op2)
 
       if (ntest.ge.100) then
@@ -211,11 +214,11 @@
       ! new -> old reo; idx_old = ireo_vtx_no(idx_new)
       do ivtx = 1, nvtx
         idx = ireo2(ivtx)
-        ireo_vtx_no(idx) = idxlist(ivtx,ireo,nvtx,1)
+        ireo_vtx_no(idx) = idxlist(ivtx,ireo0,nvtx,1)
       end do
       ! old -> new reo; idx_new = ireo_vtx_no(idx_old)
       do ivtx = 1, nvtx
-        ireo_vtx_on(ivtx) = ireo2(ireo(ivtx))
+        ireo_vtx_on(ivtx) = ireo2(ireo0(ivtx))
       end do
       ivtx_op1op2(1:nvtx_op1op2) = vtx_list_new(1:nvtx_op1op2)
       if (ntest.ge.100) then
@@ -224,22 +227,10 @@
         write(luout,*) 'ireo_vtx_on = ',ireo_vtx_on(1:nvtx)
       end if
 
-c      deallocate(vtx, topo, xlines, scr, ireo, ireo2,
-c     &     vtx_list,vtx_list_reo,vtx_list_new, svertex,
-c     &     topo_new,xlines_new,vtx_new,svertex_new,svertex_reo,
-c     &     op1op2)
-      deallocate(vtx)
-      deallocate(topo)
-      deallocate(xlines)
-      deallocate(scr) 
-      deallocate(ireo)
-      deallocate(ireo2)
-      deallocate(vtx_list)
-      deallocate(vtx_list_reo)
-      deallocate(vtx_list_new)
-      deallocate(svertex)
-      deallocate(topo_new,xlines_new,vtx_new,svertex_new,svertex_reo)
-      deallocate(op1op2)
+      deallocate(vtx, topo, xlines, scr, ireo2,
+     &     vtx_list,vtx_list_reo,vtx_list_new, svertex,
+     &     topo_new,xlines_new,vtx_new,svertex_new,svertex_reo,
+     &     op1op2)
 
       return
       end

@@ -216,7 +216,7 @@ c dbg
         ok = iocc_bound('<=',occ_sum,.false.,zero_occ,.false.)
 c dbg
 c      call wrt_occ(luout,occ_sum)
-c      print *,'ok 2: ',ok
+c        print *,'ok 2: ',ok
 c dbg
       end if
 
@@ -271,9 +271,9 @@ c dbg
           end if
         end do
 c dbg
-c      print *,'ok 3: ',ok
-c      print *,'must_connect:     ',must_connect(1:ivtx-1)
-c      print *,'must_not_connect: ',must_not_connect(1:ivtx-1)
+c        print *,'ok 3: ',ok
+c        print *,'must_connect:     ',must_connect(1:ivtx-1)
+c        print *,'must_not_connect: ',must_not_connect(1:ivtx-1)
 c dbg
 
         if (ok) then
@@ -491,10 +491,10 @@ c dbg
                     ! transform to actual contraction form
                     ! i.e. remove external line vertices (if any)
 c dbg
-                    do kvtx = 1, nvtx
-                      occ_test(1:ngastp,1:2,kvtx) =
-     &                     occ_vtx(1:ngastp,1:2,ivtx_reo2(kvtx))
-                    end do
+c                    do kvtx = 1, nvtx
+c                      occ_test(1:ngastp,1:2,kvtx) =
+c     &                     occ_vtx(1:ngastp,1:2,ivtx_reo2(kvtx))
+c                    end do
 c dbg
                     call proto2contr(form_pnt%contr,proto_new,
      &                   ol_map_reo,occ_test,op_info)

@@ -95,6 +95,7 @@ c          print *,'prc name: ',trim(ffdia%name)
 c          print *,'|g|,|d|:',dnrm2(nwfpar,xbuf1,1),dnrm2(nwfpar,xbuf2,1)
 c          print *,'g: ', xbuf1(1:nwfpar)
 c          print *,'d: ', xbuf2(1:nwfpar)
+c          xbuf2(1:nwfpar) = 0d0
 c dbg
 
         select case(typ_prc)
@@ -115,6 +116,10 @@ c          xbuf1(1:nwfpar) = xbuf3(1:nwfpar)
      &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
      &                          orb_info,str_info)
           call mem_check('after prc_special2')
+c dbg
+c          print *,'After'
+c          print *,'d: ', xbuf2(1:nwfpar)
+c dbg
         end select
 c dbg
 c          print *,'|g/d|:' ,dnrm2(nwfpar,xbuf1,1)

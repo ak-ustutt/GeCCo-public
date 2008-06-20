@@ -72,10 +72,10 @@
       ! Add the (FG) contracted with F part.
       idx_prj = 8
       call expand_op_product2(form_pnt,idx_shape,
-     &     -1d0,7,3,
+     &     -2d0,7,3,
      &     (/idx_shape,idx_opsin(4),idx_opsin(4),
      &       idx_shape,idx_shape,idx_opsin(2),idx_shape/),
-     &     (/        1,            2,            2,
+     &     (/        1,           2,           2,
      &               1,        1,           3,        1/),
      &     -1,-1,
      &     0,0,
@@ -107,11 +107,11 @@
         form_pnt => form_pnt%next
       enddo
 
-      ! Add the F_{ij}^{p"m}.V_{p"m}^{ij}.
-      idx_prj = 10
-      if(ansatz.gt.1) idx_prj = 9
+      ! Add the F_{kl}^{p"m}.V_{p"m}^{ij}.
+      idx_prj = 9
+      if(ansatz.gt.1) idx_prj = 10
       call expand_op_product2(form_pnt,idx_shape,
-     &     -1d0,7,3,
+     &     -2d0,7,3,
      &     (/idx_shape,-idx_opsin(2),idx_opsin(5),
      &       idx_shape,idx_shape,idx_opsin(5),idx_shape/),
      &     (/        1,            2,           3,
@@ -128,8 +128,8 @@
       enddo
 
       ! Add the F_{ij}^{p"q}.G_{p"q}^{r"s}.R_{r"s}^{ij}.
-      idx_prj = 10
-      if(ansatz.gt.1) idx_prj = 9
+      idx_prj = 9
+      if(ansatz.gt.1) idx_prj = 10
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,7,4,
      &     (/idx_shape,-idx_opsin(2),idx_opsin(3),

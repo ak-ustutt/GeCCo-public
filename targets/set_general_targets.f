@@ -28,7 +28,7 @@
      &     isim, ncat, nint, icnt, iformal,
      &     isym, ms, msc, sym_arr(8)
       logical ::
-     &     needed, explicit
+     &     needed, explicit, truncate
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(10)
@@ -37,6 +37,8 @@
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting general targets ...'
+
+      call get_argument_value('method.R12','truncate',lval=truncate)
 
 *----------------------------------------------------------------------*
 *     Operators:
@@ -53,7 +55,10 @@
       ! Hamiltonian
       iformal = 1
       explicit = is_keyword_set('method.R12').gt.0
-      if (explicit.and.orb_info%caborb.gt.0) iformal = 3
+      if (explicit.and.orb_info%caborb.gt.0.and..not.truncate)
+     &     iformal = 4
+      if (explicit.and.orb_info%caborb.gt.0.and.truncate)
+     &     iformal = 3
       call add_target(op_ham,ttype_op,.false.,tgt_info)
       call hop_parameters(-1,parameters,
      &                   0,2,iformal,explicit)

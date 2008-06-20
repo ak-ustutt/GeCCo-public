@@ -26,7 +26,7 @@
      &     isim, ncat, nint, icnt,
      &     isym, ms, msc, sym_arr(8), nlabel
       logical ::
-     &     needed, r12fix
+     &     needed, r12fix, truncate
       character(8) ::
      &     approx
       character(len_target_name) ::
@@ -49,6 +49,7 @@ c dbg
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','fixed',lval=r12fix)
+      call get_argument_value('method.R12','truncate',lval=truncate)
 c dbg
       ! for debugging only:
       r12fix = .false.
@@ -138,27 +139,36 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       labels(1:15)(1:len_target_name) = ' '
       labels(1) = form_ccr12lg0 ! output formula (itself)
       labels(2) = form_ccr12lg0 ! input formula
-      labels(3) = form_r12_zint
-      labels(4) = form_r12_pint
-      nint = 2
+c      labels(3) = form_r12_z4int
+c      labels(4) = form_r12_zint
+      nint = 0
+      if(.not.truncate)then
+        labels(3) = form_r12_pint
+        nint = 1
+      endif
       if (ansatz.ne.1) then
-        labels(5) = form_r12_p3gint
-        labels(6) = form_r12_cint
-        labels(7) = trim(form_r12_cint)//'^+'
-        call set_dependency(form_ccr12lg0,form_r12_p3gint,tgt_info)
+        if(.not.truncate)then
+          labels(nint+3) = form_r12_p3gint
+          nint = nint + 1
+          call set_dependency(form_ccr12lg0,form_r12_p3gint,tgt_info)
+        endif
+        labels(nint+3) = form_r12_cint
+        labels(nint+4) = trim(form_r12_cint)//'^+'
         call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
-        nint = 5
+        nint = nint + 2
       end if
       labels(nint+3) = form_r12_vint    ! the intermediates to be factored
-      labels(nint+4) = form_r12_xint
-      labels(nint+5) = form_r12_vint//'^+'
-      labels(nint+6) = form_r12_bint
+      labels(nint+4) = form_r12_vint//'^+'
+      labels(nint+5) = form_r12_bint
+      labels(nint+6) = form_r12_xint
       nint = nint + 4
       call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_xint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
-      call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
-      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
+      if(.not.truncate)
+     &     call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
+c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
+c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
       call form_parameters(-1,
      &     parameters,2,title_ccr12lg0,nint,'---')
       call set_rule(form_ccr12lg0,ttype_frm,FACTOR_OUT,
@@ -355,7 +365,11 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
         ! totally symmetric dia for use below:
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
-        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+c        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+c dbg
+        call add_target(solve_ccr12_gs,ttype_gen,.false.,tgt_info)
+c dbg
+
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_b_inv,tgt_info)
 c        call set_dependency(solve_ccr12_gs,mel_x_inv,tgt_info)
