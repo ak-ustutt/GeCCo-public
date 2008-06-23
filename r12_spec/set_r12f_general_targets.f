@@ -29,11 +29,13 @@
 
       integer ::
      &     min_rank, max_rank, ansatz, n_pp, ndef,
-     &     isim, ncat, nint, icnt, nlab,
-     &     isym, ms, msc, sym_arr(8), mode,
-     &     occ_def(ngastp,2,20), ntp_min, ntp_max
+     &     min_rank_tp, min_rank_tpp,
+     &     isim, ncat, nint, icnt, nlab, irank, idef,
+     &     isym, ms, msc, sym_arr(8), extend, r12op,
+     &     occ_def(ngastp,2,20),
+     &     ntp_min, ntp_max, ntpp_min, ntpp_max
       logical ::
-     &     needed, r12fix, set_tp
+     &     needed, r12fix, set_tp, set_tpp
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -60,13 +62,18 @@
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','F_appr',str=F_appr)
       call get_argument_value('method.R12','K_appr',str=K_appr)
+      call get_argument_value('method.R12','min_tp',ival=min_rank_tp)
+      call get_argument_value('method.R12','min_tpp',ival=min_rank_tpp)
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       call get_argument_value('method.R12','fixed',lval=r12fix)
-      call get_argument_value('method.R12','extend',ival=mode)
+      call get_argument_value('method.R12','extend',ival=extend)
+      call get_argument_value('method.R12','r12op',ival=r12op)
 
       n_pp = 0  ! number of particle-particle interaction in R12
-      select case(mode)
+      set_tp = .false.
+      set_tpp = .false.
+      select case(extend)
       case(1) 
         ! T1'
         set_tp = .true.
@@ -110,6 +117,42 @@
         n_pp=0
       end select
 
+      if (r12op.gt.0.and.extend.gt.0)
+     &     call quit(1,'set_r12f_general_targets',
+     &     'use either r12op or extend')
+      if (r12op.gt.0) then
+        set_tp  = .false.
+        set_tpp = .false.
+        ntp_min=0
+        ntp_max=0
+        ntpp_min=0
+        ntpp_max=0
+      end if
+      select case(r12op)
+      case(1)
+        ! T' operators (singly p-connected to R12)
+        set_tp = .true.
+        ntp_min=min_rank_tp
+        ntp_max=max_rank-1
+        n_pp=1
+      case(2)
+        ! T'' operators (doubly p-connected to R12)
+        set_tpp = .true.
+        ntpp_min=min_rank_tpp
+        ntpp_max=max_rank
+        n_pp=2
+      case(3,4)
+        ! T' + T'' operators
+        set_tp = .true.
+        ntp_min=min_rank_tp
+        ntp_max=max_rank-1
+        n_pp=1
+        set_tpp = .true.
+        ntpp_min=min_rank_tpp
+        ntpp_max=max_rank
+        n_pp=2
+      end select
+
       ! assemble approx string
       select case(trim(F_appr))
       case('none')
@@ -144,8 +187,22 @@ c      min_rank = 2  ! 1 is a possibility
      &              parameters,1,tgt_info)
 
       if (set_tp) then
-        ! T1' operators for extended MP2-F12.
+        ! T1' operators for extended CC/MP2-F12.
         call add_target(op_cex,ttype_op,.false.,tgt_info)
+c        occ_def = 0
+c        ndef = ntp_max-ntp_min+1
+c        irank = ntp_min-1
+c        do idef = 1, ndef
+c          irank = irank+1
+c          occ_def(IPART,1,(idef-1)*2+1) = irank-1
+c          occ_def(IHOLE,2,(idef-1)*2+1) = irank
+c          occ_def(IPART,1,(idef-1)*2+2) = 1
+c        end do
+c        call op_from_occ_parameters(-1,parameters,2,
+c     &       occ_def,ndef,2,ndef)
+c        call set_rule(op_cex,ttype_op,DEF_OP_FROM_OCC,
+c     &       op_cex,1,1,
+c     &       parameters,2,tgt_info)
         call xop_parameters(-1,parameters,
      &       .false.,ntp_min,ntp_max,0,ntp_max+2)
         call set_rule(op_cex,ttype_op,DEF_EXCITATION,
@@ -160,6 +217,35 @@ c      min_rank = 2  ! 1 is a possibility
         call set_rule(op_cexbar,ttype_op,CLONE_OP,
      &                op_cexbar,1,1,
      &                parameters,1,tgt_info)
+
+        call add_target(op_diar12,ttype_op,.false.,tgt_info)
+        call set_dependency(op_diar12,op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                          op_cex,.false.) ! <- dagger=.false.
+        call set_rule(op_diar12,ttype_op,CLONE_OP,
+     &                op_diar12,1,1,
+     &                parameters,1,tgt_info)
+
+      endif
+
+      if (set_tpp) then
+        ! T1'' operators for extended CC/MP2-F12.
+        call add_target(op_cexx,ttype_op,.false.,tgt_info)
+        call xop_parameters(-1,parameters,
+     &       .false.,ntpp_min,ntpp_max,0,ntpp_max+2)
+        call set_rule(op_cexx,ttype_op,DEF_EXCITATION,
+     &                op_cexx,1,1,
+     &                parameters,1,tgt_info)
+
+        ! The Lagrangian multipliers.
+        call add_target(op_cexxbar,ttype_op,.false.,tgt_info)
+        call set_dependency(op_cexxbar,op_cexx,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                          op_cexx,.true.) ! <- dagger=.true.
+        call set_rule(op_cexxbar,ttype_op,CLONE_OP,
+     &                op_cexxbar,1,1,
+     &                parameters,1,tgt_info)
+
       endif
 
       ! Now: the operators associated with the actual R12 integrals:
@@ -396,6 +482,15 @@ c      occ_def(IPART,2,16) = 2
       call set_rule(op_v_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_v_inter,1,1,
      &              parameters,2,tgt_info)
+
+      ! V' intermediate
+      call add_target(op_vp_inter,ttype_op,.false.,tgt_info)
+      call set_dependency(op_vp_inter,op_v_inter,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_v_inter,.false.) ! <- dagger=.false.
+      call set_rule(op_vp_inter,ttype_op,CLONE_OP,
+     &              op_vp_inter,1,1,
+     &              parameters,1,tgt_info)
             
       ! B intermediate
       occ_def = 0
@@ -403,7 +498,7 @@ c      occ_def(IPART,2,16) = 2
         ndef = 1
       end if
       if (n_pp.ge.1) then
-        ndef = 5
+        ndef = 7
         occ_def(IHOLE,1,2) = 1
         occ_def(IPART,2,2) = 1
 
@@ -415,27 +510,35 @@ c      occ_def(IPART,2,16) = 2
 
         occ_def(IHOLE,1,5) = 1
         occ_def(IPART,1,5) = 1
-        occ_def(IHOLE,2,5) = 1
-        occ_def(IPART,2,5) = 1
+        occ_def(IHOLE,2,5) = 2
+
+        occ_def(IHOLE,1,6) = 2
+        occ_def(IHOLE,2,6) = 1
+        occ_def(IPART,2,6) = 1
+
+        occ_def(IHOLE,1,7) = 1
+        occ_def(IPART,1,7) = 1
+        occ_def(IHOLE,2,7) = 1
+        occ_def(IPART,2,7) = 1
       end if
       if (n_pp.ge.2) then
-        ndef = 10
-        occ_def(IHOLE,1,6) = 2
-        occ_def(IPART,2,6) = 2
+        occ_def(IHOLE,1,ndef+1) = 2
+        occ_def(IPART,2,ndef+1) = 2
 
-        occ_def(IPART,1,7) = 2
-        occ_def(IHOLE,2,7) = 2
+        occ_def(IPART,1,ndef+2) = 2
+        occ_def(IHOLE,2,ndef+2) = 2
 
-        occ_def(IHOLE,1,8) = 1
-        occ_def(IPART,1,8) = 1
-        occ_def(IPART,2,8) = 2
+        occ_def(IHOLE,1,ndef+3) = 1
+        occ_def(IPART,1,ndef+3) = 1
+        occ_def(IPART,2,ndef+3) = 2
 
-        occ_def(IPART,1,9) = 2
-        occ_def(IHOLE,2,9) = 1
-        occ_def(IPART,2,9) = 1
+        occ_def(IPART,1,ndef+4) = 2
+        occ_def(IHOLE,2,ndef+4) = 1
+        occ_def(IPART,2,ndef+4) = 1
 
-        occ_def(IPART,1,10) = 2
-        occ_def(IPART,2,10) = 2
+        occ_def(IPART,1,ndef+5) = 2
+        occ_def(IPART,2,ndef+5) = 2
+        ndef = ndef + 5
       end if
       call add_target(op_b_inter,ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
@@ -461,6 +564,32 @@ c      occ_def(IPART,2,16) = 2
       call set_rule(op_x_inter,ttype_op,CLONE_OP,
      &              op_x_inter,1,1,
      &              parameters,1,tgt_info)
+
+      ! X' intermediate
+      call add_target(op_xp_inter,ttype_op,.false.,tgt_info)
+      ndef = 4
+      occ_def = 0
+      occ_def(IPART,1,1) = 1
+      occ_def(IPART,2,1) = 1
+
+      occ_def(IHOLE,1,2) = 1
+      occ_def(IPART,1,2) = 1
+      occ_def(IHOLE,2,2) = 1
+      occ_def(IPART,2,2) = 1
+
+      occ_def(IHOLE,1,3) = 1
+      occ_def(IPART,1,3) = 1
+      occ_def(IPART,2,3) = 2
+
+      occ_def(IPART,1,4) = 2
+      occ_def(IHOLE,2,4) = 1
+      occ_def(IPART,2,4) = 1
+
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,ndef)
+      call set_rule(op_xp_inter,ttype_op,DEF_OP_FROM_OCC,
+     &              op_xp_inter,1,1,
+     &              parameters,2,tgt_info)
 
       ! C intermediate
       call add_target(op_c_inter,ttype_op,.false.,tgt_info)
@@ -568,6 +697,37 @@ c     &              parameters,2,tgt_info)
      &     parameters,2,title_r12_xcabs,ansatz,'X '//approx)
       call set_rule(form_r12_xcabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      ! formal definition of X'
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_xpint
+      labels(2) = op_xp_inter
+      labels(3) = op_r12
+      labels(4) = op_r12
+      call add_target(form_r12_xpint,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_xpint,op_xp_inter,tgt_info)
+      call set_dependency(form_r12_xpint,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_xpint,0,'X''')
+      call set_rule(form_r12_xpint,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,4,1,
+     &              parameters,2,tgt_info)
+
+      ! CABS approximation to X'
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_xpcabs
+      labels(2) = form_r12_xpint
+      labels(3) = op_r12
+      labels(4) = op_rint
+      call add_target(form_r12_xpcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_xcabs,op_xp_inter,tgt_info)
+      call set_dependency(form_r12_xcabs,op_r12,tgt_info)
+      call set_dependency(form_r12_xcabs,op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_xpcabs,1,'---')
+      call set_rule(form_r12_xpcabs,ttype_frm,REPLACE,
+     &              labels,4,1,
      &              parameters,2,tgt_info)
 
       ! formal definition of B
@@ -775,6 +935,22 @@ c     &              parameters,2,tgt_info)
       call set_dependency(fopt_r12_xcabs,mel_rint,tgt_info)      
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_r12_xcabs,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+      ! set X'
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_r12_xpcabs
+      labels(2) = form_r12_xpcabs
+      ncat = 1
+      nint = 0
+      call add_target(fopt_r12_xpcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_r12_xpcabs,form_r12_xpcabs,tgt_info)
+      call set_dependency(fopt_r12_xpcabs,mel_xp_def,tgt_info)
+      call set_dependency(fopt_r12_xpcabs,mel_ff,tgt_info)
+      call set_dependency(fopt_r12_xpcabs,mel_rint,tgt_info)      
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_r12_xpcabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
@@ -1109,6 +1285,18 @@ c dbg
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+      ! X'-list
+      call add_target(mel_xp_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_xp_def,op_xp_inter,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_xp_inter
+      labels(2) = op_xp_inter
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0)
+      call set_rule(mel_xp_def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
       ! B-list
       call add_target(mel_b_def,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_b_def,op_b_inter,tgt_info)
@@ -1145,6 +1333,28 @@ c dbg
      &              labels,2,1,
      &              parameters,1,tgt_info)
       
+      if (set_tp) then
+        ! diagonal preconditioner
+        call add_target(mel_diar12,ttype_opme,.false.,tgt_info)
+        call set_dependency(mel_diar12,op_diar12,tgt_info)
+        call set_dependency(mel_diar12,eval_r12_inter,tgt_info)
+        call set_dependency(mel_diar12,mel_ham,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = mel_diar12
+        labels(2) = op_diar12
+        call me_list_parameters(-1,parameters,
+     &       0,0,1,0,0)
+        call set_rule(mel_diar12,ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+        labels(1) = mel_diar12   ! output
+        labels(2) = mel_ham     ! input
+        labels(3) = mel_b_inter ! input
+        labels(4) = mel_x_inter ! input
+        call set_rule(mel_diar12,ttype_opme,PRECONDITIONER,
+     &                labels,4,1,
+     &                parameters,1,tgt_info)
+      end if
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*
@@ -1165,6 +1375,8 @@ c dbg
       call set_dependency(eval_r12_inter,fopt_r12_bhcabs,tgt_info)
       if (ansatz.ne.1)
      &     call set_dependency(eval_r12_inter,fopt_r12_ccabs,tgt_info)
+c      if (ansatz.ne.1)
+c     &     call set_dependency(eval_r12_inter,fopt_r12_xpcabs,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = fopt_r12_vcabs
       call set_rule(eval_r12_inter,ttype_opme,EVAL,
@@ -1179,6 +1391,10 @@ c dbg
         call set_rule(eval_r12_inter,ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+c        labels(1) = fopt_r12_xpcabs
+c        call set_rule(eval_r12_inter,ttype_opme,EVAL,
+c     &     labels,1,0,
+c     &     parameters,0,tgt_info)
       end if
       labels(1) = fopt_r12_bcabs
       call set_rule(eval_r12_inter,ttype_opme,EVAL,

@@ -17,6 +17,7 @@
      &     ntest = 000
 
       include 'stdunit.h'
+      include 'opdim.h'
       include 'mdef_operator_info.h'
       include 'def_graph.h'
       include 'def_strinf.h'
@@ -37,14 +38,15 @@
      &     orb_info
 
       logical ::
-     &     use_h, use_b, use_x, too_few,
+     &     use_h, use_b1, use_x1, use_b, use_x, too_few,
      &     open_close_b,
      &     open_close_x,
      &     open_close_ham,
      &     open_close_prc
       integer ::
      &     ifree, nops,
-     &     idxprc, idxham, idx_b, idx_x, x2nblk, b2nblk
+     &     idxprc, idxham, idx_b, idx_x, x2nblk, b2nblk,
+     &     occ_test(ngastp,2)
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
 
@@ -57,16 +59,18 @@
       integer, pointer ::
      &     b2off(:), x2off(:)
       real(8), pointer ::
-     &     h1dia(:), b2dia(:), x2dia(:)
+     &     h1dia(:), b1dia(:), x1dia(:), b2dia(:), x2dia(:)
 
       integer, external ::
-     &     idx_mel_list, ndisblk_mel
+     &     idx_mel_list, ndisblk_mel, iblk_occ
 
       call atim_csw(cpu0,sys0,wall0)
 
       ifree = mem_setmark('prc4op')
 
       too_few = .false.
+      use_b1 = .false.
+      use_x1 = .false.
       select case(trim(mode_str))
       case('','dia-F')
         use_h = .true.
@@ -124,6 +128,9 @@
      &       call quit(1,'set_prc4op','no file handle defined for '//
      &       trim(me_b%label))
         open_close_b = me_ham%fhand%unit.le.0
+        occ_test = 0
+        occ_test(IPART,1:2) = 1
+        use_b1 = iblk_occ(occ_test,.false.,me_b%op).gt.0
       end if
 
       if (use_x) then
@@ -137,6 +144,9 @@
      &       call quit(1,'set_prc4op','no file handle defined for '//
      &       trim(me_x%label))
         open_close_x = me_ham%fhand%unit.le.0
+        occ_test = 0
+        occ_test(IPART,1:2) = 1
+        use_x1 = iblk_occ(occ_test,.false.,me_x%op).gt.0
       end if
 
       h1dia => xdummy
@@ -145,20 +155,18 @@
       ! this assumption is probably not too bad:
       if (use_h)
      &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
+      if (use_b1)
+     &     ifree = mem_alloc_real(b1dia,2*orb_info%ntoob,'b1dia')
+      if (use_x1)
+     &     ifree = mem_alloc_real(x1dia,2*orb_info%ntoob,'x1dia')
       if (use_b) then        
         ifree = mem_alloc_real(b2dia,4*orb_info%ntoob**2,'b2dia')
         b2nblk = ndisblk_mel(me_b)    * 10
-c dbg
-        print *,'b2nblk = ',b2nblk
-c dbg
         ifree = mem_alloc_int (b2off,b2nblk,'b2off')
       end if
       if (use_x) then
         ifree = mem_alloc_real(x2dia,4*orb_info%ntoob**2,'x2dia')
         x2nblk = ndisblk_mel(me_x)    * 10
-c dbg
-        print *,'x2nblk = ',x2nblk
-c dbg
         ifree = mem_alloc_int (x2off,x2nblk,'x2off')
       end if
 
@@ -185,13 +193,26 @@ c dbg
       ! extract the fock-matrix diagonal
       if (use_h)
      &     call onedia_from_op(h1dia,me_ham,orb_info)
+      ! diagonal of partial trace of B/X (for R12):
+      if (use_b1)
+     &     call onedia_from_op(b1dia,me_b,orb_info)
+      if (use_x1)
+     &     call onedia_from_op(x1dia,me_x,orb_info)
+
 
       ! Extract the diagonal elements of the B-matrix for R12.
       if (use_b)
-     &     call twodia_from_op(b2dia,b2off,b2nblk,me_b,orb_info)
+     &     call twodia_from_op(b2dia,!b2off,b2nblk,
+     &                         me_b,
+     &                         orb_info,str_info)
+c dbg
+c      if (use_b1) stop 'testing'
+c dbg
       ! Extract the diagonal elements of the X-matrix for R12.
       if (use_x)
-     &     call twodia_from_op(x2dia,x2off,x2nblk,me_x,orb_info)
+     &     call twodia_from_op(x2dia,!x2off,x2nblk,
+     &                         me_x,
+     &                         orb_info,str_info)
 
       ! set up preconditioner
       if (.not.use_b.and..not.use_x) then

@@ -41,6 +41,8 @@
       call argument_add('ansatz','method.R12',type=vtyp_int,idef=(/1/))
       call argument_add('maxexc','method.R12',type=vtyp_int,idef=(/2/))
       call argument_add('minexc','method.R12',type=vtyp_int,idef=(/2/))
+      call argument_add('min_tp','method.R12',type=vtyp_int,idef=(/1/))
+      call argument_add('min_tpp','method.R12',type=vtyp_int,idef=(/2/))
       call argument_add('approx','method.R12',type=vtyp_str,len=8,
      &     cdef=(/'A',' ',' ',' ',' ',' ',' ',' '/))
       call argument_add('F_appr','method.R12',type=vtyp_str,len=8,
@@ -53,6 +55,8 @@
      &     idef=(/0/))
       call argument_add('truncate','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('r12op','method.R12',type=vtyp_int,
+     &     idef=(/0/))
 
       call keyword_add('calculate')
       ! internal tests

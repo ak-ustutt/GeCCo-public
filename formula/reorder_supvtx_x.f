@@ -211,6 +211,8 @@ c dbg
      &             imltlist(idxsuper,svertex,ivtx2,1)
               reo_info%reo(idx)%from =
      &             imltlist(idxsuper,svertex,ivtx1,1)
+              reo_info%reo(idx)%to_vtx   = ivtx2
+              reo_info%reo(idx)%from_vtx = ivtx1
               ! shifted occupation
               reo_info%reo(idx)%occ_shift = occ_shr
             end if
@@ -229,6 +231,8 @@ c dbg
      &             imltlist(idxsuper,svertex,ivtx1,1)
               reo_info%reo(idx)%from =
      &             imltlist(idxsuper,svertex,ivtx2,1)
+              reo_info%reo(idx)%to_vtx   = ivtx1
+              reo_info%reo(idx)%from_vtx = ivtx2
               ! shifted occupation
               reo_info%reo(idx)%occ_shift = occ_shl
             end if

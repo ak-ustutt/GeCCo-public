@@ -23,7 +23,7 @@ c      include 'def_contraction_list.h'
       include 'mdef_formula_info.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     nintm
@@ -100,15 +100,7 @@ c      include 'def_contraction_list.h'
         if (transpose)
      &       call transpose_formula(fl_intm,op_info)
 
-c dbg
-c        print *,'first call'
-c dbg
-        call factor_out_subexpr(flist,fl_intm,op_info)
-
-c dbg
-c        print *,'second call'
-        call factor_out_subexpr(flist,fl_intm,op_info)
-c dbg
+        call factor_out_subexpr2(flist,fl_intm,op_info)
 
         call dealloc_formula_list(fl_intm)
 

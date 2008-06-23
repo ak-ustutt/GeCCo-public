@@ -1,7 +1,8 @@
 *----------------------------------------------------------------------*
       subroutine optc_prc_special2(me_grd,me_special,nspecial,
+     &                            name_opt,
      &                            nincore,xbuf1,xbuf2,xbuf3,lenbuf,
-     &                            orb_info,str_info)
+     &                            orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     experimental routine for testing special preconditioners
 *     if nincore>1: xbuf1 contains the gradient vector on entry
@@ -12,13 +13,16 @@
 
       include 'opdim.h'
       include 'stdunit.h'
-      include 'mdef_me_list.h'
+      include 'mdef_operator_info.h'
       include 'def_orbinf.h'
       include 'hpvxseq.h'
       include 'def_graph.h'
       include 'def_strinf.h'
+      include 'def_strmapinf.h'
+      include 'def_reorder_info.h'
       include 'multd2h.h'
-      include 'ifc_input.h'
+c      include 'ifc_input.h'
+      include 'ifc_memman.h'
       include 'par_opnames_gen.h'
 
       integer, parameter ::
@@ -30,31 +34,50 @@
      &     me_grd
       type(me_list_array) ::
      &     me_special(nspecial)
-      real(8), intent(inout) ::
+      character(*), intent(in) ::
+     &     name_opt
+      real(8), intent(inout), target ::
      &     xbuf1(lenbuf), xbuf2(lenbuf), xbuf3(lenbuf)
       type(orbinf), intent(in), target ::
      &     orb_info
       type(strinf),intent(in), target ::
      &     str_info
+      type(strinf),intent(in), target ::
+     &     strmap_info
+      type(operator_info), intent(inout) ::
+     &     op_info
 
+      real(8) ::
+     &     xdum
+      logical ::
+     &     ldum1, ldum2
       integer ::
      &     ngrd, nblk_grd, nbmat, nxmat, nfmat,
      &     idxmsa, msa, msc, gama, gamc,  ngam,
-     &     msc_max, msa_max, idxdis,  idx,
-     &     ncsub, nasub,
+     &     msc_max, msa_max, idxdis,  idx, idoff_grd,
+     &     ncsub, nasub, nidx_p,
      &     nidx_cstr, nidx_astr, ms_cstr, ms_astr, gam_cstr, gam_astr,
-     &     graph_cstr, graph_astr, len_cstr, len_astr,
-     &     idx_grd, idx_b, idx_x,
-     &     ngas, njoined, mstotal, gamtotal,
+     &     graph_cstr, graph_astr, len_cstr, len_astr, len_grd, ifree,
+     &     idx_grd, idx_b, idx_x, mode,
+     &     ngas, nspin, njoined, njoined_tmp, mstotal, gamtotal,
      &     iblk, iblk_off, idxms_bx, gam_bx, ld_bx, iblk_b,
-     &     occ_b(ngastp,2)
+     &     occ_b(ngastp,2),
+     &     occ_blk_tmp(ngastp,2,2),
+     &     rst_blk_tmp(2,orb_info%ngas,2,2,orb_info%nspin,2),
+     &     rst_blk_reo(2,orb_info%ngas,2,2,orb_info%nspin,2)
+      integer, target ::
+     &     occ_blk_reo(ngastp,2,2)
       logical ::
      &     first, beyond_A
 
+      type(operator), pointer ::
+     &     op_grd_reo
       type(me_list), pointer ::
-     &     me_bmat, me_xmat, me_fmat
+     &     me_bmat, me_xmat, me_fmat, me_grd_reo
       type(graph), pointer ::
      &     graphs(:)
+      type(reorder_info) ::
+     &     reo_info
 
       integer ::
      &     f_hpvx(ngastp,2), msdst(ngastp,2), igamdst(ngastp,2),
@@ -62,7 +85,10 @@
 
       integer, pointer ::
      &     hpvx_occ(:,:,:), idx_graph(:,:,:),
-     &     ca_occ(:,:), occ_blk(:,:,:), igas_restr(:,:,:,:,:),
+     &     ca_occ(:,:), occ_blk(:,:,:), rst_blk(:,:,:,:,:,:),
+     &     igasca_restr(:,:,:,:,:,:),
+     &     igas_restr(:,:,:,:,:),
+     &     occ_blk_pnt(:,:,:), graph_blk_pnt(:,:,:),
      &     off_grd_d_gam_ms(:,:,:), len_grd_d_gam_ms(:,:,:),
      &     off_bx_gam_ms(:,:),
      &     mostnd(:,:,:), igamorb(:), idx_gas(:), ngas_hpv(:),
@@ -71,12 +97,17 @@
      &     idxmsdis_c(:), idxmsdis_a(:), gamdis_c(:), gamdis_a(:),
      &     len_str(:)
       real(8), pointer ::
-     &     f_dia(:), xmat(:), bmat(:)
+     &     f_dia(:), xmat(:), bmat(:), xgrd_pnt(:), xgrd_buf(:)
 
       integer, external ::
-     &     idxlist, iblk_occ
+     &     idxlist, iblk_occ, idx_oplist2, idx_mel_list, imltlist
       logical,external ::
      &     next_msgamdist2
+
+      if (ntest.ge.100) then
+        call write_title(luout,wst_dbg_subr,'special preconditioner')
+      end if
+        
 
       if (nincore.ne.3)
      &     call quit(1,'optc_prc_special',
@@ -119,6 +150,7 @@
       
       ngam = orb_info%nsym
       ngas = orb_info%ngas
+      nspin = orb_info%nspin
       mostnd => orb_info%mostnd
       igamorb => orb_info%igamorb
       idx_gas => orb_info%idx_gas
@@ -127,6 +159,7 @@
       nblk_grd = me_grd%op%n_occ_cls
       njoined  = me_grd%op%njoined
       hpvx_occ => me_grd%op%ihpvca_occ
+      igasca_restr => me_grd%op%igasca_restr
       idx_graph => me_grd%idx_graph
       ca_occ => me_grd%op%ica_occ
       mstotal = me_grd%mst
@@ -144,8 +177,11 @@ c     &     'strange -- expected njoined==2')
 
         occ_blk =>
      &       hpvx_occ(1:ngastp,1:2,iblk_off+1:iblk_off+njoined)
-        len_grd_d_gam_ms =>
-     &       me_grd%len_op_gmox(iblk)%d_gam_ms
+        rst_blk =>
+     &       igasca_restr(1:ngastp,1:ngas,1:2,1:2,1:nspin,
+     &                             iblk_off+1:iblk_off+njoined)
+c        len_grd_d_gam_ms =>
+c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
         off_grd_d_gam_ms =>
      &       me_grd%off_op_gmox(iblk)%d_gam_ms
 
@@ -157,12 +193,30 @@ c     &     'strange -- expected njoined==2')
         call get_num_subblk(ncsub,nasub,
      &       hpvx_occ(1,1,iblk_off+1),njoined)
 
+        if (ntest.ge.100)
+     &       write(luout,*) 'ncsub, nasub: ',ncsub, nasub
+
+        mode = 0
         ! find the relevant block of B
         if (njoined.eq.2) then
           iblk_b = 1
         else if (njoined.eq.1) then
-          occ_b(1:ngastp,1) = occ_blk(1:ngastp,1,1)
-          occ_b(1:ngastp,2) = occ_blk(1:ngastp,1,1)
+          if (name_opt.eq.op_cex) then
+            mode = 1
+            nidx_p = occ_blk(IPART,1,1)
+            occ_b = 0
+            occ_b(IPART,1) = 1
+            occ_b(IPART,2) = 1
+          else if (name_opt.eq.op_cexx) then
+            mode = 2
+            nidx_p = occ_blk(IPART,1,1)
+            occ_b = 0
+            occ_b(IPART,1) = 2
+            occ_b(IPART,2) = 2
+          else
+            occ_b(1:ngastp,1) = occ_blk(1:ngastp,1,1)
+            occ_b(1:ngastp,2) = occ_blk(1:ngastp,1,1)
+          end if
           iblk_b = iblk_occ(occ_b,.false.,me_bmat%op)
           if (iblk_b.le.0)
      &         call quit(1,'optc_prc_special2',
@@ -187,6 +241,94 @@ c     &     'strange -- expected njoined==2')
           call quit(1,'optc_prc_special2','this is not what I expected')
         end if
 
+        if (njoined.eq.1.and.mode.ne.nidx_p) then
+
+          call init_reo_info(reo_info)
+
+          call set_reo_special(1,reo_info,mode)
+
+          ! cheat get_reo_info: append zero block, so both
+          ! reordered and original occupation have njoined==2
+          occ_blk_tmp = 0
+          rst_blk_tmp = 0
+          occ_blk_tmp(1:ngastp,1:2,1) = occ_blk(1:ngastp,1:2,1)
+          rst_blk_tmp(1:2,1:ngas,1:2,1:2,1:nspin,1)
+     &         = rst_blk(1:2,1:ngas,1:2,1:2,1:nspin,1)
+
+          ! post-processing
+          occ_blk_reo = occ_blk_tmp
+          call get_reo_info(ldum1,ldum2,
+     &         occ_blk_reo,occ_blk_tmp,
+     &         rst_blk_reo,rst_blk_tmp,
+     &         2,
+     &         reo_info,str_info,orb_info)
+
+          ! set up operator and list for re-ordered block
+          call add_operator('GRD_REO',op_info)
+          idx = idx_oplist2('GRD_REO',op_info)
+          op_grd_reo => op_info%op_arr(idx)%op
+          call set_uop2(op_grd_reo,'GRD_REO',
+     &         occ_blk_reo,1,2,orb_info)
+c          call add_me_list('L_GRD_REO',op_info)
+          call define_me_list('L_GRD_REO','GRD_REO',
+     &         me_grd%absym,me_grd%casym,me_grd%gamt,
+     &         me_grd%s2,me_grd%mst,
+     &         1,1,
+     &         op_info,orb_info,str_info,strmap_info)
+          idx = idx_mel_list('L_GRD_REO',op_info)
+          me_grd_reo => op_info%mel_arr(idx)%mel
+
+          len_grd = me_grd_reo%len_op
+          ifree = mem_setmark('grd_reo')
+          ifree = mem_alloc_real(xgrd_buf,len_grd,'reo_buf')
+          xgrd_pnt => xgrd_buf
+
+          ! make the buffer pointer point to the buffer
+          if (me_grd_reo%fhand%buffered)
+     &         call quit(1,'optc_prc_special2',
+     &         'OK, adapt the hand-made buffering in this routine ...')
+          me_grd_reo%fhand%buffered = .true.
+          allocate(me_grd_reo%fhand%incore(1))
+          me_grd_reo%fhand%incore(1) = 1
+          me_grd_reo%fhand%buffer => xgrd_pnt
+
+          if (me_grd%fhand%buffered)
+     &         call quit(1,'optc_prc_special2',
+     &         'OK, adapt the hand-made buffering in this routine ...')
+          me_grd%fhand%buffered = .true.
+          allocate(me_grd%fhand%incore(nblk_grd))
+          me_grd%fhand%incore(1:nblk_grd) = 0
+          me_grd%fhand%incore(iblk) = 1
+          me_grd%fhand%buffer => xbuf1
+          ! we must resort
+          idoff_grd = 0
+          call reo_op_wmaps_c(
+     &         .false.,xdum,0,
+     &         me_grd,me_grd_reo,
+     &         .false.,.false.,
+     &         iblk,1,
+     &         idoff_grd,0,
+     &         reo_info,
+     &         str_info,strmap_info,orb_info)
+
+          call get_num_subblk(ncsub,nasub,
+     &       occ_blk_reo,2)
+          occ_blk_pnt => occ_blk_reo
+          idx_graph => me_grd_reo%idx_graph
+          graph_blk_pnt => idx_graph(1:ngastp,1:2,1:2)
+          njoined_tmp = 2
+          off_grd_d_gam_ms =>
+     &         me_grd_reo%off_op_gmox(1)%d_gam_ms
+        else
+          occ_blk_pnt =>
+     &         hpvx_occ(1:ngastp,1:2,iblk_off+1:iblk_off+njoined)
+          graph_blk_pnt => idx_graph(1:ngastp,1:2,
+     &         iblk_off+1:iblk_off+njoined)
+          njoined_tmp = njoined
+          xgrd_pnt => xbuf1
+        end if
+
+        ! uses new ncsub/nasub if reordered
         allocate(hpvx_csub(ncsub),hpvx_asub(nasub),
      &           occ_csub(ncsub), occ_asub(nasub),
      &           graph_csub(ncsub), graph_asub(nasub),
@@ -195,17 +337,19 @@ c     &     'strange -- expected njoined==2')
      &           gamdis_c(ncsub), gamdis_a(nasub),
      &           len_str(ncsub+nasub))
 
+        ! the same for reordered and un-reordered case...
         msc_max = ca_occ(1,iblk)
         msa_max = ca_occ(2,iblk)
 
         ! set HPVX and OCC info
         call condense_occ(occ_csub, occ_asub,
      &                    hpvx_csub,hpvx_asub,
-     &                    hpvx_occ(1,1,iblk_off+1),njoined,hpvxblkseq)
+     &                    occ_blk_pnt,njoined_tmp,hpvxblkseq)
         ! do the same for the graph info
         call condense_occ(graph_csub, graph_asub,
      &                    hpvx_csub,hpvx_asub,
-     &                    idx_graph(1,1,iblk_off+1),njoined,hpvxblkseq)
+     &                    graph_blk_pnt,
+     &                                njoined_tmp,hpvxblkseq)
 
         ! loop over MS(A)
         idxmsa = 0
@@ -251,26 +395,34 @@ c     &     'strange -- expected njoined==2')
               idxdis = idxdis+1
 
 c test -- special insert 
-              if (njoined.eq.1) then
-                idx = idxlist(IPART,hpvx_csub,ncsub,1)
-                if (idx.ne.1) stop '???'
-                idxms_bx  = idxmsdis_c(idx)
-                gam_bx = gamdis_c(idx)
-                ld_bx  = len_str(idx)
-                idx_b = off_bx_gam_ms(gam_bx,idxms_bx)+1
-                len_astr = len_str(2)
-                idx_grd = off_grd_d_gam_ms(idxdis,gama,idxmsa)+1
-                call optc_prc_test(xbuf1(idx_grd),
-     &               xbuf2,xbuf3,bmat(idx_b),ld_bx,len_astr)
+              if (.false..and.njoined.eq.1) then
 
-                cycle
+                if (mode.eq.nidx_p) then
+                  idx = idxlist(IPART,hpvx_csub,ncsub,1)
+                  if (idx.ne.1) stop '???'
+                  idxms_bx  = idxmsdis_c(idx)
+                  gam_bx = gamdis_c(idx)
+                  ld_bx  = len_str(idx)
+                  idx_b = off_bx_gam_ms(gam_bx,idxms_bx)+1
+                  len_astr = len_str(2)
+                  idx_grd = off_grd_d_gam_ms(idxdis,gama,idxmsa)+1
+                  call optc_prc_test(xbuf1(idx_grd),
+     &               xbuf2,xbuf3,bmat(idx_b),xmat(idx_b),ld_bx,len_astr)
+                  cycle
+                else
+                  stop 'I cannot do this ...'
+                end if
+                
               end if
-              
-
+  
               ! Gamma and Ms of B and X
               idx = idxlist(IHOLE,hpvx_csub,ncsub,1)
-              if (idx.le.0)
+              if (idx.le.0.and.njoined.eq.2)
      &             call quit(1,'optc_prc_special','no HOLE??')
+              if (njoined.eq.1)
+     &             idx = imltlist(IPART,hpvx_csub,ncsub,1)
+              if (idx.le.0.or.idx.gt.2)
+     &             call quit(1,'optc_prc_special','strange')
               idxms_bx  = idxmsdis_c(idx)
               gam_bx = gamdis_c(idx)
               ld_bx  = len_str(idx)
@@ -278,7 +430,16 @@ c test -- special insert
               if (ld_bx.le.0) cycle
 
               ! occupation, Gamma and Ms of C-string
-              idx = idxlist(IPART,hpvx_csub,ncsub,1)
+              if (njoined.eq.2) then
+                idx = idxlist(IPART,hpvx_csub,ncsub,1)
+              else
+                idx = imltlist(IPART,hpvx_csub,ncsub,1)
+                if (idx.eq.2) then
+                  idx = 1
+                else
+                  idx = 0
+                end if
+              end if
               if (idx.le.0) then
                 nidx_cstr = 0
                 ms_cstr = 0
@@ -311,10 +472,13 @@ c test -- special insert
               ! offset of appropriate block of B (and X)
               idx_b = off_bx_gam_ms(gam_bx,idxms_bx)+1
               idx_x = idx_b
+
+              idx_b = off_bx_gam_ms(gam_bx,idxms_bx)+1
+              idx_x = idx_b
               if (.not.beyond_A) idx_x = 1
 
               call optc_prc_special2_inner
-     &             (xbuf1(idx_grd), beyond_A,
+     &             (xgrd_pnt(idx_grd), beyond_A,njoined.eq.1,
      &              xbuf2,xbuf3,bmat(idx_b),xmat(idx_x),f_dia,
      &              ld_bx,len_cstr, len_astr,
      &              nidx_cstr,ms_cstr,gam_cstr,
@@ -325,13 +489,51 @@ c test -- special insert
      &               mostnd(1,1,idx_gas(IHOLE)),ngas_hpv(IHOLE),
      &              igamorb,ngam,ngas)
 
-
             end do distr_loop
 
           end do gama_loop
 
         end do msa_loop
 
+        if (njoined.eq.1.and.mode.ne.nidx_p) then
+
+          call set_reo_special(2,reo_info,mode)
+
+          ! post-processing
+          occ_blk_tmp = occ_blk_reo
+          call get_reo_info(ldum1,ldum2,
+     &         occ_blk_tmp,occ_blk_reo,
+     &         rst_blk_tmp,rst_blk_reo,
+     &         2,
+     &         reo_info,str_info,orb_info)
+
+          ! we must sort back, as well
+          idoff_grd = 0
+          call reo_op_wmaps_c(
+     &         .false.,xdum,0,
+     &         me_grd_reo,me_grd,
+     &         .false.,.false.,
+     &         1,iblk,
+     &         0,idoff_grd,
+     &         reo_info,
+     &         str_info,strmap_info,orb_info)
+
+          ! clean up
+          deallocate(me_grd%fhand%incore,
+     &               me_grd_reo%fhand%incore)
+
+          me_grd%fhand%buffered = .false.
+          me_grd%fhand%incore => null()
+          me_grd%fhand%buffer => null()
+
+          me_grd_reo%fhand%buffered = .false.
+          me_grd_reo%fhand%incore => null()
+          me_grd_reo%fhand%buffer => null()
+
+          call del_me_list('L_GRD_REO',op_info)
+          call del_operator('GRD_REO',op_info)
+          call dealloc_reo_info(reo_info)
+        end if
 
       end do
 
@@ -342,14 +544,14 @@ c test -- special insert
 
 
       subroutine optc_prc_test(grd,
-     &     buf1,buf2,bmat,lenp,lenh)
+     &     buf1,buf2,bmat,xmat,lenp,lenh)
 
       implicit none
 
       integer, intent(in) ::
      &     lenp, lenh
       real(8), intent(in) ::
-     &     bmat(lenp,lenp)
+     &     bmat(lenp,lenp), xmat(lenp,lenp)
       real(8), intent(inout) ::
      &     buf1(lenp,lenh), buf2(lenp,lenh)
       real(8), intent(inout) ::
@@ -359,17 +561,17 @@ c test -- special insert
      &     thrsh = 1d-12
 
       real(8), pointer ::
-     &     scr(:,:), umat(:,:), vtmat(:,:), wrk(:,:), singval(:)
+     &     scr(:,:), umat(:,:), vtmat(:,:), wrk(:), singval(:)
 
       integer ::
      &     idx, jdx, kdx, info, lwrk
 
+      lwrk=max(1024,lenp*max(lenh,lenp))
       allocate(scr(lenp,lenp),umat(lenp,lenp),vtmat(lenp,lenp),
-     &     wrk(lenp,max(lenh,lenp)),singval(lenp))
+     &     wrk(lwrk),singval(lenp))
 
-      scr = bmat
+      scr = bmat + 10*xmat
 
-      lwrk=lenp*max(lenh,lenp)
       call dgesvd('A','A',lenp,lenp,
      &     scr,lenp,singval,
      &     umat,lenp,vtmat,lenp,
@@ -377,26 +579,25 @@ c test -- special insert
 
       do jdx = 1, lenh
         do idx = 1, lenp
-          wrk(idx,1) = 0d0
+          wrk(idx) = 0d0
           if (abs(singval(idx)).lt.thrsh) cycle
           do kdx = 1, lenp
-            wrk(idx,1) = wrk(idx,1)+
+            wrk(idx) = wrk(idx)+
      &           umat(kdx,idx)*grd(kdx,jdx)
           end do
-          wrk(idx,1) = wrk(idx,1)/singval(idx)
+          wrk(idx) = wrk(idx)/singval(idx)
         end do
         
         do idx = 1, lenp
           buf1(idx,jdx) = 0d0
           do kdx = 1, lenp
             buf1(idx,jdx) = buf1(idx,jdx) +
-     &           vtmat(kdx,idx)*wrk(kdx,1)
+     &           vtmat(kdx,idx)*wrk(kdx)
           end do
         end do
 
       end do
       
-
 c      call gaussj(scr,lenp,lenp)
 
 c      do jdx = 1, lenh
@@ -413,5 +614,38 @@ c      end do
 
       deallocate(scr,wrk,umat,vtmat,singval)
       
+      return
+      end
+
+      subroutine set_reo_special(iway,reo_info,np)
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_reorder_info.h'
+
+      type(reorder_info), intent(out) ::
+     &     reo_info
+      integer, intent(in) ::
+     &     np, iway
+
+      integer ::
+     &     occ_shift(ngastp,2)
+
+      reo_info%nreo = 1
+      allocate(reo_info%reo(1))
+      reo_info%reo(1)%idxsuper = 1          ! dummy
+      reo_info%reo(1)%is_bc_result = .true. ! dummy
+      if (iway==1) then
+        reo_info%reo(1)%from = 1
+        reo_info%reo(1)%to   = 2
+      else
+        reo_info%reo(1)%from = 2
+        reo_info%reo(1)%to   = 1
+      end if
+      occ_shift = 0
+      occ_shift(IPART,1) = np
+      reo_info%reo(1)%occ_shift = occ_shift
+
       return
       end

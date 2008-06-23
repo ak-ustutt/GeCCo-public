@@ -137,7 +137,7 @@ c dbg
       do while(rd_contr(luinput,contr,idxinp))
 
         do icmpnd = 1, ncmpnd
-          call contr_deriv2(conder,nder,contr,op_info,
+          call contr_deriv3(conder,nder,contr,op_info,
      &         idxder(icmpnd),idxmlt(icmpnd),idxres)
 
           cur_conder => conder
@@ -151,8 +151,10 @@ c dbg
             fix_vtx = .true.    ! "fix" all vertices -> ieqvfac will be 1
             call occvtx4contr(1,occ_vtx,cur_conder%contr,op_info)
 
-            call topo_contr(ieqvfac,reo,ivtx_reo,
-     &           cur_conder%contr,occ_vtx,fix_vtx)
+            call topo_contr2(ieqvfac,reo,ivtx_reo,
+     &           cur_conder%contr,fix_vtx,op_info)
+c            call topo_contr(ieqvfac,reo,ivtx_reo,
+c     &           cur_conder%contr,occ_vtx,fix_vtx)
             ! ieqvfac is ignored
             call canon_contr(cur_conder%contr,reo,ivtx_reo)
             deallocate(ivtx_reo,fix_vtx,occ_vtx)

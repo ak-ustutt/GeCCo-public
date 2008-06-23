@@ -47,6 +47,8 @@
       logical, external ::
      &     merge_check
 
+      call quit(1,'merge_ex1e2','obsolete routine')
+
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'merge_ex1ex2')
         write(luout,*) 'last_cntr:      ',last_cntr

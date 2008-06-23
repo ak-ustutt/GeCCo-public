@@ -1183,7 +1183,7 @@ c dbg
       labels(3) = op_rint
       labels(4) = op_g_x
       labels(5) = op_ff
-      call add_target(form_r12_zcabs,ttype_frm,.true.,tgt_info)
+      call add_target(form_r12_zcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_zcabs,op_z_inter,tgt_info)
       call set_dependency(form_r12_zcabs,op_ff,tgt_info)
       call set_dependency(form_r12_zcabs,op_rint,tgt_info)
@@ -1950,9 +1950,9 @@ c                             ! this entity this does not matter
 *     "phony" targets
 *----------------------------------------------------------------------*
       ! test
-c      call add_target(eval_r12_inter,ttype_gen,.false.,tgt_info)
+      call add_target(eval_r12_inter,ttype_gen,.false.,tgt_info)
 c dbg
-      call add_target(eval_r12_inter,ttype_gen,.true.,tgt_info)
+c      call add_target(eval_r12_inter,ttype_gen,.true.,tgt_info)
 c dbg
       call set_dependency(eval_r12_inter,mel_ham,tgt_info)
       call set_dependency(eval_r12_inter,mel_rint,tgt_info)
@@ -1968,8 +1968,8 @@ c dbg
         call set_dependency(eval_r12_inter,mel_p_def,tgt_info)
         call set_dependency(eval_r12_inter,mel_p3g_def,tgt_info)
         call set_dependency(eval_r12_inter,fopt_r12_pcabs,tgt_info)
-        call set_dependency(eval_r12_inter,mel_z_def,tgt_info)
-        call set_dependency(eval_r12_inter,fopt_r12_zcabs,tgt_info)
+c        call set_dependency(eval_r12_inter,mel_z_def,tgt_info)
+c        call set_dependency(eval_r12_inter,fopt_r12_zcabs,tgt_info)
       endif
       call set_dependency(eval_r12_inter,fopt_r12_vcabs,tgt_info)
       call set_dependency(eval_r12_inter,fopt_r12_xcabs,tgt_info)
@@ -2021,10 +2021,10 @@ c     &     parameters,0,tgt_info)
      &       labels,1,0,
      &       parameters,0,tgt_info)
 
-        labels(1) = fopt_r12_zcabs
-        call set_rule(eval_r12_inter,ttype_opme,EVAL,
-     &       labels,1,0,
-     &       parameters,0,tgt_info)
+c        labels(1) = fopt_r12_zcabs
+c        call set_rule(eval_r12_inter,ttype_opme,EVAL,
+c     &       labels,1,0,
+c     &       parameters,0,tgt_info)
       endif
 
 c dbg
@@ -2098,8 +2098,8 @@ c      call add_target(eval_p_test,ttype_gen,.true.,tgt_info)
      &     labels,ncat+nint+1,1,
      &     parameters,1,tgt_info)
 
-      call add_target(eval_z_test,ttype_gen,.true.,tgt_info)
-c      call add_target(eval_z_test,ttype_gen,.false.,tgt_info)
+c      call add_target(eval_z_test,ttype_gen,.true.,tgt_info)
+      call add_target(eval_z_test,ttype_gen,.false.,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = fopt_z_test
       call set_dependency(eval_z_test,mel_rint,tgt_info)
@@ -2110,6 +2110,7 @@ c      call add_target(eval_z_test,ttype_gen,.false.,tgt_info)
      &     labels,1,0,
      &     parameters,0,tgt_info)
 c dbg
+
       return
 
       contains

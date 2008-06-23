@@ -301,10 +301,6 @@ c dbg
         ! ... and additionally consider a sign change due to the 
         ! rearrangement of vertices:
         bc_sign = bc_sign*dble(sh_sign)
-c dbg
-c        print *,'sh_sign',sh_sign
-c        print *,'bc_sign',bc_sign
-c dbg
       else
         write(luout,*) 'setting self-contraction sign to +1'
         write(luout,*) 'setting self-contraction sign to +1'

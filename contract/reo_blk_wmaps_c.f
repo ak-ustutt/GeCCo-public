@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine reo_blk_wmaps_c(xop_reo,xop_ori,
      &     sign_reo,
-     &     tra_op,
+     &     tra_opreo,tra_opori,
      &     ms_op_c,ms_op_a,gm_op_c,gm_op_a,
      &     ms_i_dis_c,ms_i_dis_a,gm_i_dis_c,gm_i_dis_a,
      &     ncblk_opori,nablk_opori,
@@ -55,7 +55,7 @@
      &     sign_reo
       ! transposed addressing?
       logical, intent(in) ::
-     &     tra_op
+     &     tra_opreo, tra_opori
 
       ! info about operator block in original order
       integer, intent(in) ::
@@ -422,10 +422,10 @@ c dbg
 
                 call set_op_ldim_c(ldim_opori_c,ldim_opori_a,
      &                 cinfo_opori_c(1,3),cinfo_opori_a(1,3),
-     &                 lstr_opori,ncblk_opori,nablk_opori,tra_op)
+     &                 lstr_opori,ncblk_opori,nablk_opori,tra_opori)
                 call set_op_ldim_c(ldim_opreo_c,ldim_opreo_a,
      &                 cinfo_opreo_c(1,3),cinfo_opreo_a(1,3),
-     &                 lstr_opreo,ncblk_opreo,nablk_opreo,tra_op)
+     &                 lstr_opreo,ncblk_opreo,nablk_opreo,tra_opreo)
 
                 ifree = mem_setmark('reostr')
                 lenmap = get_lenmap(lstr_i0,lstr_k,

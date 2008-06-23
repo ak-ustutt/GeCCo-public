@@ -28,7 +28,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       logical, intent(in) ::
      &     new
@@ -116,7 +116,7 @@
         call iwrtma(topomap_spl,nvtx_spl,nvtx_spl,nvtx_spl,nvtx_spl)
       end if
 
-      call identify_vertices3(vtxmap, success,
+      call identify_vertices(vtxmap, success,
      &                       vtxinf_spl,topomap_spl,nvtx_spl,
      &                       vtxinf,    topomap,    nvtx)
 
@@ -147,8 +147,11 @@
         end if
       end do
 
+      if (ntest.eq.100)
+     &     write(luout, *) 'mod. vtxmap: ',vtxmap2
+
       call splitmap(ivtx_new,nvtx_rem,
-     &     vtxmap2,vtxinf,topomap,nvtx)
+     &     vtxmap2,contr%svertex,vtxinf,topomap,nvtx)
 
       isupervtx_spl = vtxmap2
       do ivtx = 1, nvtx
@@ -156,6 +159,7 @@
       end do
 
       if (ntest.ge.100) then
+        write(luout,*) 'nvtx_rem: ',nvtx_rem
         write(luout,*) 'ivtx_new (new): ',ivtx_new(1:nvtx)
         write(luout,*) 'isupervtx_spl: ',isupervtx_spl(1:nvtx)
       end if

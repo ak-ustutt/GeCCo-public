@@ -22,7 +22,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 1000
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -150,6 +150,18 @@
           nfact    = 3
           project(1:4)  = (/2,4,2,3/)
           nproject = 1
+        else
+          unknown = .true.
+        end if
+      case('X''')
+        if (njoined_int.eq.1) then
+          idx_prod(1:4) = (/idx_intm,-idx_r,idx_r,idx_intm/)
+          idx_supv(1:4) = (/1       ,2    ,3    ,1       /)
+          nvtx     = 4
+          nfact    = 3
+          project(1:4)  = (/2,3,1,4/)
+          nproject = 1
+c        else if (njoined_int.eq.2) then
         else
           unknown = .true.
         end if

@@ -161,7 +161,7 @@
      &              ireo2, njoined_res)
 
       call topo_rename_vtxs(svertex_new,vtx_new,
-     &     nvtx+1,idxnew_op1op2,!0,0,
+     &     nvtx+1,idxnew_op1op2,0,0,
      &     vtx_list_new,nvtx_new,nvtx_op1op2)
 
       if (ntest.ge.100) then

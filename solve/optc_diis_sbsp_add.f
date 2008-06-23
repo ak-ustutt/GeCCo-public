@@ -8,7 +8,7 @@
      &     typ_prc,
      &     nincore,nwfpar,
      &     lenbuf,xbuf1,xbuf2,xbuf3,
-     &     orb_info,str_info)
+     &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
 *     add (preconditioned) gradient and sum of current vector and
@@ -22,11 +22,12 @@
       implicit none
 
       include 'stdunit.h'
-      include 'mdef_me_list.h'
+      include 'mdef_operator_info.h'
       include 'def_optimize_info.h'
       include 'def_orbinf.h'
       include 'def_graph.h'
       include 'def_strinf.h'
+      include 'def_strmapinf.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -53,6 +54,10 @@
      &     orb_info
       type(strinf),intent(in) ::
      &     str_info
+      type(strmapinf),intent(in) ::
+     &     strmap_info
+      type(operator_info), intent(inout) ::
+     &     op_info
 
 
       integer ::
@@ -113,13 +118,10 @@ c     &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
 c     &                          orb_info,str_info)
 c          xbuf1(1:nwfpar) = xbuf3(1:nwfpar)
           call optc_prc_special2(me_grd,me_special,nspecial,
+     &                           me_amp%op%name,
      &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
-     &                          orb_info,str_info)
-          call mem_check('after prc_special2')
-c dbg
-c          print *,'After'
-c          print *,'d: ', xbuf2(1:nwfpar)
-c dbg
+     &                          orb_info,op_info,str_info,strmap_info)
+c          call mem_check('after prc_special2')
         end select
 c dbg
 c          print *,'|g/d|:' ,dnrm2(nwfpar,xbuf1,1)

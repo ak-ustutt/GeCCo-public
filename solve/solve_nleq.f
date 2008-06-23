@@ -41,7 +41,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       integer, intent(in) ::
      &     nopt, nspecial
@@ -199,7 +199,9 @@
       
       ! get initial amplitudes
       do iopt = 1, nopt
-        call zeroop(me_opt(iopt)%mel)
+c        if (.not.file_exists(me_opt(iopt)%mel%fhand)) then
+          call zeroop(me_opt(iopt)%mel)
+c        end if
       end do
 
       ! use mode_str to set special preconditioning, e.g. for R12
@@ -219,7 +221,7 @@
       ! find out, which entries of xret are the ones that we need
       idx_en_xret = idx_xret(label_en,op_info,depend)
 c dbg
-      print *,'idx_en_xret: ',idx_en_xret
+c      print *,'idx_en_xret: ',idx_en_xret
 c dbg
       if (idx_en_xret.le.0)
      &     call quit(1,'solve_nleq',
@@ -248,7 +250,7 @@ c dbg
 c     &       ffopt,ffgrd,ffdia,ffmet, ! <- R12: pass X here (metric)
 c     &       ff_trv,ff_h_trv,
      &       opti_info,opti_stat,
-     &       orb_info,str_info)
+     &       orb_info,op_info,str_info,strmap_info)
 
         if (ntest.ge.1000) then
           do iopt = 1, nopt
@@ -288,6 +290,17 @@ c dbg
      &           str_info,orb_info)
             end do
           end if
+c dbg:
+c test
+c          if (imacit.ge.3) then
+c            print *,'>> put O to zero'
+c            do idx=1,20
+c              print *,'   put O to zero'
+c            end do
+c            call scale_opblk(xdum,0d0,me_grd(1)%mel,me_grd(1)%mel,
+c     &           1,1,orb_info)
+c          end if
+c test
 
           do iopt = 1, nopt
             xresnrm(iopt) = abs(xret(idx_res_xret(iopt)))
@@ -301,6 +314,9 @@ c dbg
           if (nopt.eq.2)
      &       write(luout,'(">>>",i3,f24.12,2(x,g10.4))')
      &       imacit,energy,xresnrm(1:2)
+          if (nopt.eq.3)
+     &       write(luout,'(">>>",i3,f24.12,3(x,g10.4))')
+     &       imacit,energy,xresnrm(1:3)
         else if (.not.conv) then
           write(luout,'(">>> NOT CONVERGED! <<<")')
         else

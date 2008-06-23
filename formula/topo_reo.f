@@ -17,7 +17,7 @@
       integer(8), intent(in) ::
      &     vtx(nvtx), topo(nvtx,nvtx),
      &     xlines(nvtx,nj)
-      integer, intent(out) ::
+      integer, intent(in) ::
      &     svertex(nvtx)
 
       integer ::

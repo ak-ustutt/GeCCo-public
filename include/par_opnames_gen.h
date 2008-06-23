@@ -63,6 +63,7 @@ c     &     op_cba*4   = 'CBAR',
      &     op_gr*5         = 'G.R12',
      &     op_rg*5         = 'R12.G',
      &     op_v_inter*1    = 'V',
+     &     op_vp_inter*2   = 'V''',
      &     op_v3_inter*2   = 'V3',
      &     op_v4_inter*2   = 'V4',
      &     op_v0_inter*2   = 'V0',
@@ -79,18 +80,22 @@ c     &     op_cba*4   = 'CBAR',
      &     op_k4_inter*6   = 'K4-INT',
      &     op_b_inv*5      = 'B_INV',
      &     op_x_inter*1    = 'X',
+     &     op_xp_inter*2   = 'X''',
      &     op_x1_inter*2   = 'X1',
      &     op_x_inv*5      = 'X_INV',
      &     op_exchange*1   = 'K',
      &     op_hartree*3    = 'F+K',
-     &     op_cex*3        = 'T1''',
-     &     op_cexbar*6     = 'T1BAR''',
-     &     op_omgcex*7     = 'OMG_T1''',
 c dbg
      &     op_x_test*6     = 'X-TEST',
      &     op_p_test*6     = 'P-TEST',
-     &     op_z_test*6     = 'Z-TEST'
+     &     op_z_test*6     = 'Z-TEST',
 c dbg
+     &     op_cex*4        = 'T12''',
+     &     op_cexbar*7     = 'T12BAR''',
+     &     op_omgcex*8     = 'OMG_T12''',
+     &     op_cexx*4       = 'T12"',
+     &     op_cexxbar*7    = 'T12BAR"',
+     &     op_omgcexx*8    = 'OMG_T12"'
       ! generic ME-list names
       character, parameter ::
      &     mel_cclg0*6      = 'L0(CC)',
@@ -168,6 +173,8 @@ c dbg
      &     meldef_hartree*7 = 'DEF-F+K-INT',
      &     mel_v_inter*7    = 'V-INTER',
      &     mel_v_def*11     = 'DEF-V-INTER',
+     &     mel_vp_inter*8    = 'V''-INTER',
+     &     mel_vp_def*12     = 'DEF-V''-INTER',
      &     mel_v0_inter*8   = 'V0-INTER',
      &     mel_v0_def*12    = 'DEF-V0-INTER',
      &     mel_vbar_inter*8 = 'V+-INTER',
@@ -176,6 +183,8 @@ c dbg
      &     mel_v0bar_def*13 = 'DEF-V0+-INTER',
      &     mel_x_inter*7    = 'X-INTER',
      &     mel_x_def*11     = 'DEF-X-INTER',
+     &     mel_xp_inter*8    = 'X''-INTER',
+     &     mel_xp_def*12     = 'DEF-X''-INTER',
      &     mel_x1_inter*8   = 'X1-INTER',
      &     mel_x1_def*12    = 'DEF-X1-INTER',
      &     mel_x_inv*4      = 'XINV',
@@ -203,8 +212,9 @@ c dbg
      &     mel_p_test_def*10  = 'DEF-P-TEST',
      &     mel_p_test*12      = 'P-INTER-TEST',
      &     mel_z_test_def*10  = 'DEF-Z-TEST',
-     &     mel_z_test*12      = 'Z-INTER-TEST'
+     &     mel_z_test*12      = 'Z-INTER-TEST',
 c dbg
+     &     mel_diar12*8       = 'DIA(R12)'
       character, parameter ::
      &     mel_c12def*11    = 'DEF-T0''-R12',
      &     mel_c12*7        = 'T0''-R12',
@@ -220,12 +230,18 @@ c dbg
      &     mel_ccr12lg0*9   = 'L0(CCR12)',
      &     mel_ccr12en0def*13   = 'DEF-E0(CCR12)',
      &     mel_ccr12en0*9   = 'E0(CCR12)',
-     &     mel_cex_def*11   = 'DEF-T1''-R12',      
-     &     mel_cex*7        = 'T1''-R12',
-     &     mel_cexbar_def*14 = 'DEF-T1BAR''-R12',
-     &     mel_cexbar*10    = 'T1BAR''-R12',
-     &     mel_omgcexdef*12 = 'DEF-OMG1-R12',
-     &     mel_omgcex*8     = 'OMG1-R12'
+     &     mel_cex_def*11   = 'DEF-T12''-R12',      
+     &     mel_cex*8        = 'T12''-R12',
+     &     mel_cexbar_def*15 = 'DEF-T12BAR''-R12',
+     &     mel_cexbar*11    = 'T12BAR''-R12',
+     &     mel_omgcexdef*14 = 'DEF-OMG12''-R12',
+     &     mel_omgcex*10     = 'OMG12''-R12',
+     &     mel_cexx_def*11   = 'DEF-T12"-R12',      
+     &     mel_cexx*8        = 'T12"-R12',
+     &     mel_cexxbar_def*15 = 'DEF-T12BAR"-R12',
+     &     mel_cexxbar*11    = 'T12BAR"-R12',
+     &     mel_omgcexxdef*14 = 'DEF-OMG12"-R12',
+     &     mel_omgcexx*10     = 'OMG12"-R12'
 
 	  
       

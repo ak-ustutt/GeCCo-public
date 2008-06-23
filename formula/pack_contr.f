@@ -42,7 +42,7 @@
      &     arc(:), xarc(:)
 
       integer(8), external ::
-     &     int8_pack
+     &     int8_pack, pack_vtx
 
       base =  pack_base
       
@@ -58,18 +58,9 @@
       ! make packed vertex list
       ! -----------------------
       do ivtx = 1, nvtx
-        idx_op = vertex(ivtx)%idx_op
-        iblk_op = vertex(ivtx)%iblk_op
-        iadj = 0
-        if (vertex(ivtx)%dagger) iadj = 1
-        vtx(ivtx) = sign(iadj*(base**4)+abs(idx_op)*(base**2)+iblk_op,
-     &                   idx_op)
-        if (iblk_op.gt.base*base) then
-          write(luout,*) 'base    = ',base*base
-          write(luout,*) 'iblk_op = ',iblk_op
-          call quit(1,'contr2topo',
-     &         'incredibly large iblk_op encountered')
-        end if
+        vtx(ivtx) = pack_vtx(vertex(ivtx)%idx_op,
+     &                       vertex(ivtx)%iblk_op,
+     &                       vertex(ivtx)%dagger  )
       end do
 
       ! -----------------------------

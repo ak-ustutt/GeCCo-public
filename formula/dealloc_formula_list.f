@@ -16,13 +16,20 @@
 
       type(formula_item), pointer ::
      &     current
+
+      integer ::
+     &     isave
       
       current => formula_list
       ! go to end of list
+      isave = 0
       do while(associated(current%next))
         current => current%next
+        if (isave.gt.10 000)
+     &       call quit(1,'dealloc_formula_list','infinite loop (1)?')
       end do
      
+      isave = 0
       ! loop backward through list and deallocate
       do
         if (associated(current%interm)) deallocate(current%interm)
@@ -30,6 +37,9 @@
         if (.not.associated(current%prev)) exit
         current => current%prev
         deallocate(current%next)
+        isave = isave+1
+        if (isave.gt.10 000)
+     &       call quit(1,'dealloc_formula_list','infinite loop (2)?')
       end do
 
       return

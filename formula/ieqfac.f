@@ -5,6 +5,7 @@
 *     i.e. contraction index and operator index (itlist) are equal
 *     itlist is supposed to be ordered, and icidxlist is ordered
 *     for equivalent operators
+*     VERY OLD AND OBSOLETE ROUTINE
 *----------------------------------------------------------------------*
       implicit none
 

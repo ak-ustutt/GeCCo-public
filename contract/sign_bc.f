@@ -253,6 +253,10 @@ c            if (ivtx1.eq.ivtx2) cycle
             end if
 
             ! hpvx transpositions:
+            ! BUGFIX:
+            ! after the CA carried out above, we have in all cases
+            ! the ordering vtx1, vtx2, so use these (and not vtx1m/vtx2m)
+            ! does not affect usual CC and linear R12 (as it seems)
             do hpvx = 2, ngastp
              ! ordering: ex1c,ex2c, but ex2a,ex1a
 cold              if (iocc_prim(hpvx,1,ivtx1m).gt.0) then

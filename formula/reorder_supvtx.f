@@ -72,7 +72,9 @@
       if (set_reord_list) then
         maxreo = 2*(contr%nvtx - contr%nsupvtx)
         reo_info%nreo = 0
-        allocate(reo_info%reo(maxreo))
+        allocate(reo_info%reo(maxreo),reo_info%nca_vtx(contr%nvtx))
+        reo_info%nvtx_contr = contr%nvtx
+        call set_nca_vtx(reo_info%nca_vtx,occ_vtx,contr%nvtx)
       end if
 
       narc = contr%narc
@@ -237,6 +239,8 @@ c dbg
      &             imltlist(idxsuper,svertex,ivtx2,1)
               reo_info%reo(idx)%from =
      &             imltlist(idxsuper,svertex,ivtx1,1)
+              reo_info%reo(idx)%to_vtx   = ivtx2
+              reo_info%reo(idx)%from_vtx = ivtx1
               ! shifted occupation
               reo_info%reo(idx)%occ_shift = occ_shr
             end if
@@ -255,6 +259,8 @@ c dbg
      &             imltlist(idxsuper,svertex,ivtx1,1)
               reo_info%reo(idx)%from =
      &             imltlist(idxsuper,svertex,ivtx2,1)
+              reo_info%reo(idx)%to_vtx   = ivtx1
+              reo_info%reo(idx)%from_vtx = ivtx2
               ! shifted occupation
               reo_info%reo(idx)%occ_shift = occ_shl
             end if

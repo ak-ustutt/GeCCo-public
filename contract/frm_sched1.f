@@ -394,23 +394,6 @@ c dbg
 
           ! set up info for binary contraction
 c          new = .false.!cur_contr%nvtx.ge.4
-          new = .true.!cur_contr%nvtx.ge.4
-          if (.not.new) then
-          call get_bc_info2(bc_sign,
-     &         idxop,iblkop,
-     &         iocc_ex1,iocc_ex2,iocc_cnt,
-     &         iocc_op1,iocc_op2,iocc_op1op2,
-     &         irst_op1,irst_op2,irst_op1op2,
-     &         tra_op1,tra_op2,tra_op1op2,
-     &         mstop,mstop1op2,
-     &         igamtop,igamtop1op2,
-     &         njoined_op, njoined_op1op2, njoined_cnt,
-     &         merge_op1,merge_op2,merge_op1op2, merge_op2op1,
-     &         cur_contr,njoined_res,
-     &                        occ_vtx,irestr_vtx,info_vtx,iarc,
-     &         irst_res,orb_info)
-          else
-
           make_contr_red = cur_contr%nsupvtx.gt.2 .or.
      &                    (cur_contr%nsupvtx.eq.2 .and.
      &                     cur_contr%narc.gt.1)
@@ -441,45 +424,24 @@ c          new = .false.!cur_contr%nvtx.ge.4
             write(luout,*) 'get_bc_info did not raise "possible"-flag!'
             call quit(1,'frm_sched1','could not continue ...')
           end if
-          ! contr_red -> cur_contr, etc.
-c          stop 'test'
-          end if
 
           ! set up reduced contraction after 
           ! current binary contraction
           if (idx.ne.nfact) then
-            if (.not.new) then
-            ivtx_new = cur_contr%inffac(3,idx)
-            idxop_intm = -ninter
-
-            ! reset reo_info
-            call init_reo_info(reo_info)
-            
-            call reduce_contr(cur_contr,occ_vtx,
-     &           possible,
-     &           iarc,idxop_intm,ivtx_new,
-     &           njoined_res,
-     &           .false.,idum,idum,
-     &           .true.,irestr_vtx,info_vtx,irst_res,
-     &           .true.,reo_info,orb_info)
-            if (.not.possible)
-     &           call quit(1,'frm_sched1',
-     &           'inconsistency: reduce_contr is in difficulties')
-            else
-              call copy_contr(cur_contr_red,cur_contr)
-              occ_vtx    = occ_vtx_red
-              irestr_vtx = irestr_vtx_red
-              info_vtx   = info_vtx_red
-            end if
-
-            ! add 0-contractions, if necessary
-            call check_disconnected(cur_contr)
             ! process reordering info
             call get_reo_info(reo_op1op2,reo_other,
      &           iocc_op1op2,iocc_op1op2tmp,
      &           irst_op1op2,irst_op1op2tmp,
      &           njoined_op1op2,
-     &           cur_contr,reo_info,str_info,orb_info)
+     &           reo_info,str_info,orb_info)
+
+            call copy_contr(cur_contr_red,cur_contr)
+            occ_vtx    = occ_vtx_red
+            irestr_vtx = irestr_vtx_red
+            info_vtx   = info_vtx_red
+            ! add 0-contractions, if necessary
+            call check_disconnected(cur_contr)
+
           else
             reo_op1op2 = .false.
             reo_other = .false.

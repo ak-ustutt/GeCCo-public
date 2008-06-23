@@ -26,19 +26,6 @@
      &     sh_sign
 
       integer, pointer ::
-c     &     occ_vtx_a(:,:,:), occ_vtx_b(:,:,:),
-c     &     topomap_a(:,:), topomap_b(:,:),
-c     &     vtxinf_a(:), vtxinf_b(:), vtxmap(:)
-cc dbg
-cc      integer ::
-cc     &     ieqvfac
-cc      integer, pointer ::
-cc     &     ivtx_reo(:), occ_vtx(:,:,:)
-cc      logical, pointer ::
-cc     &     fix_vtx(:)
-cc      logical ::
-cc     &     reo
-cc dbg
      &     svertex_a(:), svertex_b(:),
      &     vtxmap(:), list(:), list_reo(:), ireo(:)
       integer(8), pointer ::
@@ -70,44 +57,6 @@ cc dbg
       ! else we can directly say good-bye
       if (nvtx_a.gt.nvtx_b.or.
      &    narc_a.gt.narc_b) return
-
-c      allocate(occ_vtx_a(ngastp,2,nvtx_a),
-c     &         occ_vtx_b(ngastp,2,nvtx_b),
-c     &         topomap_a(nvtx_a,nvtx_a), topomap_b(nvtx_b,nvtx_b),
-c     &         vtxinf_a(nvtx_a), vtxinf_b(nvtx_b),vtxmap(nvtx_b))
-c
-c      call occvtx4contr(1,occ_vtx_a,contra,op_info)
-c      call occvtx4contr(1,occ_vtx_b,contrb,op_info) 
-c
-c      base1 = ifndmax(occ_vtx_a,1,ngastp*2*nvtx_a,1)
-c      base1 = max(base1,ifndmax(occ_vtx_b,1,ngastp*2*nvtx_b,1))
-c      base2 = maxblk_in_contr(contra)
-c      base2 = max(base2,maxblk_in_contr(contrb))
-cc dbg
-c      base1 = base1 + 1
-c      base2 = base2 + 1
-cc      print *,'base 1, base 2', base1,base2
-cc      allocate(ivtx_reo(nvtx_a),fix_vtx(nvtx_a),
-cc     &     occ_vtx(ngastp,2,nvtx_a))
-cc      call topo_contr(ieqvfac,reo,ivtx_reo,contra,
-cc     &     occ_vtx_a,.false.)
-cc      call canon_contr(contra,reo,ivtx_reo)
-cc      deallocate(ivtx_reo,fix_vtx,occ_vtx)
-cc
-cc      allocate(ivtx_reo(nvtx_b),fix_vtx(nvtx_b),
-cc     &     occ_vtx(ngastp,2,nvtx_b))
-cc      call topo_contr(ieqvfac,reo,ivtx_reo,contrb,
-cc     &     occ_vtx_b,.false.)
-cc      call canon_contr(contrb,reo,ivtx_reo)
-cc      deallocate(ivtx_reo,fix_vtx,occ_vtx)
-cc dbg
-c
-c      call topomap4contr(2,base1,base2,
-c     &     topomap_a,vtxinf_a,idum,idum,
-c     &     contra,occ_vtx_a)
-c      call topomap4contr(2,base1,base2,
-c     &     topomap_b,vtxinf_b,idum,idum,
-c     &     contrb,occ_vtx_b)
 
       nj_a = njres_contr(contra)
       nj_b = njres_contr(contrb)
@@ -158,11 +107,6 @@ c     &     contrb,occ_vtx_b)
         end do
         
         call topo_remove_arcs(topo_b,nvtx_b,list,lenlist)
-c dbg
-c        print *,'I:'
-c        call prt_contr_p(luout,svertex_b,vtx_b,topo_b,
-c     &       xlines_b,nvtx_b,nj_b)
-c dbg
         
         lenlist = lenlist*2
         call unique_list(list,lenlist)
@@ -175,21 +119,12 @@ c dbg
           list_reo(ivtx) = ireo(list(ivtx))
         end do
         call unique_list(list_reo,lenlist)
-c dbg
-c        print *,'II:'
-c        call prt_contr_p(luout,svertex_b,vtx_b,topo_b,
-c     &       xlines_b,nvtx_b,nj_b)
-c dbg
 
         call topo_merge_vtxs(ireo,nvtx_new,nvtx_int,
      &                     topo_b,xlines_b,nvtx_b,nj_b,
      &                     list_reo,lenlist)
 
         contr_in_contr = nvtx_int.le.nj_a
-
-c      call identify_vertices3(vtxmap,contr_in_contr,
-c     &     vtxinf_a,topomap_a,nvtx_a,
-c     &     vtxinf_b,topomap_b,nvtx_b)
 
         if (ntest.ge.100)
      &       write(luout,*) '> ',nvtx_int, nj_a

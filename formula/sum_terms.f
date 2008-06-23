@@ -36,9 +36,12 @@
         write(luout,*) '====================='
       end if
 
-      if (fl_tgt%command.ne.command_set_target_init)
+      if (fl_tgt%command.ne.command_set_target_init) then
+        if (fl_tgt%command.ne.command_add_contribution)
      &       call quit(1,'sum_terms',
-     &       'target formula definition must start with [INIT]')
+     &         'must start with [INIT] or [ADD]')
+        idxop_tgt = fl_tgt%target
+      end if
 
       fl_tgt_current => fl_tgt
       ! loop over target items
@@ -95,11 +98,6 @@
               fl_tgt_current%contr%fac =
      &             fl_tgt_current%contr%fac + fl_tgt_pnt%contr%fac
               call delete_fl_node(fl_tgt_pnt)
-c dbg
-c              print *,'mark top'
-c              call print_form_list(luout,fl_tgt,op_info)
-c              print *,'mark bot'
-c dbg
               deallocate(fl_tgt_pnt)
             end if
           end if

@@ -109,7 +109,7 @@ c dbg
       if (success1) then
         ! get factor, vertices and arcs associated with T_0
 c        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
-        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
+         call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
         if (ntest.ge.100) then
           write(luout,*) 'considering contraction:'
           call prt_contr2(luout,fl_tgt%contr,op_info)

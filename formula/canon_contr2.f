@@ -6,6 +6,7 @@
 *     b) for all all arcs: (left_op,right_op) in lexcically ascending
 *        order (and we check that link(1) is left of link(2))
 *     Debug version used for contractions where njoined=1 in all cases.
+*     OBSOLETE
 *----------------------------------------------------------------------*
       implicit none
 

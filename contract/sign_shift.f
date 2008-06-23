@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       integer function sign_shift(occ_k,ivtx1,ivtx2,
-     &     occ_i0,occ_k_tomove,occ_k_moved,njoined)
+     &     occ_i0,occ_k_tomove,occ_k_moved,nencl_pass,njoined)
 *----------------------------------------------------------------------*
 *     sign for shifting string K characterized by occupation occ_k 
 *     from vertex ivtx1 to vertex ivtx2 of super-vertex I, characterized
@@ -10,6 +10,10 @@
 *     we always consider right-resolved restrictions, i.e.
 *      I1;...;I2 -> I1',K;...;I2 -> I1';...;I2,K -> I1';...;I2'   or
 *      I1;...;I2 -> I1;...;I2",K -> I1,K;...;I2" -> I1";...;I2"   
+*
+*     nencl_pass: number of CA on passive vertices that are passed by
+*                 the presently considered operator
+*
 *----------------------------------------------------------------------*
       implicit none
 
@@ -20,7 +24,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     njoined, ivtx1, ivtx2,
+     &     njoined, ivtx1, ivtx2, nencl_pass,
      &     occ_k(ngastp,2), occ_i0(ngastp,2,njoined),
      &     occ_k_tomove(ngastp,2,njoined), occ_k_moved(ngastp,2,njoined)
 
@@ -76,7 +80,7 @@
       ! includes those elements which either
       ! will move in succeeding step (occ_k_tomove)
       ! or those which already moved (occ_k_moved)
-      nenclosed = 0
+      nenclosed = nencl_pass
       do ivtx = ivtx_l+1, ivtx_h-1
         nenclosed = nenclosed +
      &       sum(occ_i0(1:ngastp,1:2,ivtx))+

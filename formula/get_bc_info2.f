@@ -68,6 +68,8 @@
       integer, external ::
      &     imltlist
 
+      call quit(1,'get_bc_info2','you should not enter this routine')
+
       ngas = orb_info%ngas
       ihpvgas => orb_info%ihpvgas
 
