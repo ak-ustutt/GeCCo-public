@@ -30,7 +30,7 @@
       include 'multd2h.h'
       
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       
       logical, intent(in) ::
      &     make_red

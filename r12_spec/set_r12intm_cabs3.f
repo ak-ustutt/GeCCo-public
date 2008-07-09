@@ -249,7 +249,7 @@ c          end if
      &       op_info,orb_info)
 
       case('Z')
-        call set_zint_contract(flist,ansatz,
+        call set_zint_contract2(flist,ansatz,
      &       idx_op,4,
      &       op_info,orb_info)
 

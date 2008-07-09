@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine set_r12_lagrangian(form_cclag,
      &     title,label,nlabels,ansatz,
-     &     op_info,orb_info)
+     &     op_info,orb_info,form_info)
 *----------------------------------------------------------------------*
 *
 *     set up sequence of operators, integrals and contractions that
@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -21,12 +21,14 @@
       include 'mdef_operator_info.h'
       include 'ifc_operators.h'
       include 'def_orbinf.h'
+      include 'mdef_formula_info.h'
       include 'def_formula_item.h'
-      include 'def_formula.h'
       include 'ifc_input.h'
 
       type(formula), intent(inout), target ::
      &     form_cclag
+      type(formula_info), intent(inout) ::
+     &     form_info
       integer, intent(in) ::
      &     ansatz, nlabels
       character(*), intent(in) ::
@@ -61,7 +63,7 @@
      &     idxham,idxtbar,idxtop,idxlcc,idxrba,idxcbar,idxr12,idxc12,
      &     idxcpp12, idxcppbar,
      &     iblk_xxhp, iblk_pxhp, iblk_xxpp, iblk_pxpp,
-     &     min_rank, max_rank, iprint,
+     &     min_rank, max_rank, iprint, trunc_type,
      &     occ(ngastp,2)
       logical ::
      &     r12fix, truncate
@@ -92,7 +94,11 @@
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
-      call get_argument_value('method.R12','truncate',lval=truncate)
+      truncate = is_keyword_set('method.truncate').gt.0
+      if(truncate)
+     &     call get_argument_value('method.truncate','trunc_type',
+     &                              ival=trunc_type)
+c      call get_argument_value('method.R12','truncate',lval=truncate)
       
       if (extend.gt.0) call quit(1,'set_r12_lagrangian',
      &     'do not use "extend" for CC (use "r12op" instead)!')
@@ -485,7 +491,7 @@ c     &       op_info)
 
       ! Produce truncated expansions if required.
       if(truncate)
-     &     call truncate_form(flist_lag,op_info)
+     &     call truncate_form(flist_lag,trunc_type,op_info,form_info)
 
       ! sum up duplicate terms (due to S->T+CR replacement)
       call sum_terms(flist_lag,op_info)
@@ -548,6 +554,7 @@ c      if (extend.gt.0) call del_operator(op_scrbar,op_info)
       call prtim(luout,'CC-R12 Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
 c dbg
+c      stop
 c      if (r12op.gt.0) stop 'testing'
 c dbg
       return

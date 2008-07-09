@@ -182,6 +182,12 @@
      &     svertex_reo,isvtx1,isvtx2,
      &     ireo2,vtx_list_new,nvtx,nvtx_op1op2)
 
+c dbg
+c      print *,'svertex_reo',svertex_reo
+c      print *,'ireo2',ireo2
+c      print *,'vtx_new',vtx_new
+c dbg
+
       ! unpack op1op2 to iocc_op1op2
       call unpack_occ(iocc_op1op2,op1op2,nvtx_op1op2)
 

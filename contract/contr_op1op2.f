@@ -74,6 +74,13 @@
       real(8) ::
      &     cpu, sys, cpu0, sys0
 
+c dbg
+c      print *,'op1 ',trim(me_op1%op%name)
+c      print *,'op2 ',trim(me_op2%op%name)
+c      print *,'op1op2 ',trim(me_op1op2%op%name)
+c      print *,'op1op2tmp ',trim(me_op1op2tmp%op%name)
+c dbg
+
       call atim_cs(cpu0,sys0)
       select case (irt_contr)
       case(0)

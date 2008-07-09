@@ -24,7 +24,7 @@
       integer ::
      &     min_rank, max_rank, ansatz,
      &     isim, ncat, nint, icnt,
-     &     isym, ms, msc, sym_arr(8), nlabel
+     &     isym, ms, msc, sym_arr(8), nlabel, trunc_type
       logical ::
      &     needed, r12fix, truncate
       character(8) ::
@@ -49,7 +49,11 @@ c dbg
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','fixed',lval=r12fix)
-      call get_argument_value('method.R12','truncate',lval=truncate)
+c      call get_argument_value('method.R12','truncate',lval=truncate)
+      truncate = is_keyword_set('method.truncate').gt.0
+      call get_argument_value('method.truncate','trunc_type',
+     &     ival=trunc_type)
+
 c dbg
       ! for debugging only:
       r12fix = .false.
@@ -142,16 +146,16 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
 c      labels(3) = form_r12_z4int
 c      labels(4) = form_r12_zint
       nint = 0
-      if(.not.truncate)then
+      if(.not.truncate.or.(truncate.and.trunc_type.gt.0))then
         labels(3) = form_r12_pint
         nint = 1
       endif
       if (ansatz.ne.1) then
-        if(.not.truncate)then
-          labels(nint+3) = form_r12_p3gint
-          nint = nint + 1
-          call set_dependency(form_ccr12lg0,form_r12_p3gint,tgt_info)
-        endif
+c        if(.not.truncate)then
+c          labels(nint+3) = form_r12_p3gint
+c          nint = nint + 1
+c          call set_dependency(form_ccr12lg0,form_r12_p3gint,tgt_info)
+c        endif
         labels(nint+3) = form_r12_cint
         labels(nint+4) = trim(form_r12_cint)//'^+'
         call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
@@ -165,7 +169,7 @@ c      labels(4) = form_r12_zint
       call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_xint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
-      if(.not.truncate)
+      if(.not.truncate.or.(truncate.and.trunc_type.gt.0))
      &     call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
 c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
 c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
@@ -274,7 +278,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_b_def,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_v_def,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_x_def,tgt_info)
-      if(.not.truncate)
+      if(.not.truncate.or.(truncate.and.(trunc_type.gt.0)))
      &           call set_dependency(fopt_ccr12_0,mel_p_def,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_rint,tgt_info)
       if (ansatz.gt.1)
@@ -367,9 +371,9 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
         ! totally symmetric dia for use below:
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
-        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+c        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
 c dbg
-c        call add_target(solve_ccr12_gs,ttype_gen,.false.,tgt_info)
+        call add_target(solve_ccr12_gs,ttype_gen,.false.,tgt_info)
 c dbg
 
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)

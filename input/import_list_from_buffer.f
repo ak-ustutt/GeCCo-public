@@ -3,6 +3,7 @@
      &     nauxmin,nauxmax,
      &     fac_0,fac_ne0,scaling,
      &     iy_int,typetab,ntypes,
+     &     anti,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
 *     set integral list on mel using the graph-indexed raw integral
@@ -39,6 +40,8 @@
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info
+      logical, intent(in) ::
+     &     anti
       
       logical ::
      &     first, close_again, blk_buf, scalar, dagger, xchange
@@ -147,7 +150,7 @@
           if (abs(ms+mst).gt.mscmax) cycle
           idxms = idxms+1
 
-          xchange = ms.ne.0.or.scaling.gt.0
+          xchange = (ms.ne.0.or.scaling.gt.0).and.anti
 
           gfac = fac_0
           if (ms.ne.0) gfac = fac_ne0
@@ -264,26 +267,52 @@ c dbg
         first = .false.
         idxstr = idxstr+1
 
-        idx12 = idxpq(idorb(1),idorb(2), ntotal)
-        idx34 = idxpq(idorb(3),idorb(4), ntotal)
+        if(anti)then
+          idx12 = idxpq(idorb(1),idorb(2), ntotal)
+          idx34 = idxpq(idorb(3),idorb(4), ntotal)
 
-        if (idspn(1).ge.idspn(2)) then
-          idorb2(1) = idorb(1)
-          idorb2(3) = idorb(2) 
-          fac = gfac
+          if (idspn(1).ge.idspn(2)) then
+            idorb2(1) = idorb(1)
+            idorb2(3) = idorb(2) 
+            fac = gfac
+          else
+            idorb2(1) = idorb(2)
+            idorb2(3) = idorb(1) 
+            fac = -gfac
+          end if
+          if (idspn(3).ge.idspn(4)) then
+            idorb2(2) = idorb(3) 
+            idorb2(4) = idorb(4)
+          else
+            idorb2(2) = idorb(4) 
+            idorb2(4) = idorb(3)
+            fac = -fac
+          end if
         else
-          idorb2(1) = idorb(2)
-          idorb2(3) = idorb(1) 
-          fac = -gfac
-        end if
-        if (idspn(3).ge.idspn(4)) then
-          idorb2(2) = idorb(3) 
-          idorb2(4) = idorb(4)
-        else
-          idorb2(2) = idorb(4) 
-          idorb2(4) = idorb(3)
-          fac = -fac
-        end if
+          ! Used for two-vertex integrals where anti-symmetry is not 
+          ! required (e.g. for F12 Z-intermediate). No reordering of 
+          ! indices, so integrals reported in Mulliken notation.
+          idx12 = idxpq(idorb(1),idorb(3), ntotal)
+          idx34 = idxpq(idorb(2),idorb(4), ntotal)
+
+          if (idspn(1).ge.idspn(2)) then
+            idorb2(1) = idorb(1)
+            idorb2(2) = idorb(2) 
+            fac = gfac
+          else
+            idorb2(1) = idorb(2)
+            idorb2(2) = idorb(1) 
+            fac = -gfac
+          end if
+          if (idspn(3).ge.idspn(4)) then
+            idorb2(3) = idorb(3) 
+            idorb2(4) = idorb(4)
+          else
+            idorb2(3) = idorb(4) 
+            idorb2(4) = idorb(3)
+            fac = -fac
+          end if
+        endif
 
         if (idx12.gt.idx34    ) fac  = abfac * fac
 
@@ -328,34 +357,34 @@ c dbg
 
         if (xchange) then
 
-        if (idspn(1).ge.idspn(2)) then
-          idorb2(1) = idorb(1)
-          idorb2(3) = idorb(2) 
-          fac = gfac
-        else
-          idorb2(1) = idorb(2)
-          idorb2(3) = idorb(1) 
-          fac = -gfac
-        end if
+          if (idspn(1).ge.idspn(2)) then
+            idorb2(1) = idorb(1)
+            idorb2(3) = idorb(2) 
+            fac = gfac
+          else
+            idorb2(1) = idorb(2)
+            idorb2(3) = idorb(1) 
+            fac = -gfac
+          end if
 c        if (idspn(4).ge.idspn(3)) then
-        if (idspn(3).ge.idspn(4)) then
-          idorb2(2) = idorb(4) 
-          idorb2(4) = idorb(3)
-        else
-          idorb2(2) = idorb(3) 
-          idorb2(4) = idorb(4)
-          fac = -fac
-        end if
+          if (idspn(3).ge.idspn(4)) then
+            idorb2(2) = idorb(4) 
+            idorb2(4) = idorb(3)
+          else
+            idorb2(2) = idorb(3) 
+            idorb2(4) = idorb(4)
+            fac = -fac
+          end if
 
-        if (idx12.gt.idx34    ) fac  = abfac * fac
+          if (idx12.gt.idx34    ) fac  = abfac * fac
 
-        if (ms.eq.0.and.scaling.eq.1) then
-          fac = -sp_fac*fac
-        else if (ms.eq.0.and.scaling.eq.2) then
-          fac = -(2d0*sp_fac)*fac
-        end if
+          if (ms.eq.0.and.scaling.eq.1) then
+            fac = -sp_fac*fac
+          else if (ms.eq.0.and.scaling.eq.2) then
+            fac = -(2d0*sp_fac)*fac
+          end if
 
-        idxperm = rank_ivec(rank,idorb2,4)+1
+          idxperm = rank_ivec(rank,idorb2,4)+1
 c dbg
 c        print *,'X: idorb: ',idorb(1:4)
 c        print *,'X: idspn: ',idspn(1:4)
@@ -363,13 +392,13 @@ c        print *,'X: idorb2: ',idorb2(1:4),'  fac = ',fac
 c        print *,'rank :',rank(1:4),'  idxperm: ',idxperm
 c dbg
 
-        idx_ord(rank(1)+1) = idorb2(1)
-        idx_ord(rank(2)+1) = idorb2(2)
-        idx_ord(rank(3)+1) = idorb2(3)
-        idx_ord(rank(4)+1) = idorb2(4)
+          idx_ord(rank(1)+1) = idorb2(1)
+          idx_ord(rank(2)+1) = idorb2(2)
+          idx_ord(rank(3)+1) = idorb2(3)
+          idx_ord(rank(4)+1) = idorb2(4)
 
-        idx_int = idx_int_graph(idx_ord,4,iy_int,igamorb,ngam)
-        idx_typ  = abs(typetab(idxperm))
+          idx_int = idx_int_graph(idx_ord,4,iy_int,igamorb,ngam)
+          idx_typ  = abs(typetab(idxperm))
 
 c dbg
 c        print *,'Xidorb2: ',idorb2(1:4)

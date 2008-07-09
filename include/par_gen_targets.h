@@ -15,6 +15,7 @@
      &     solve_ccr12_gs*14  = 'SOLVE-CCR12-GS',
 c dbg
      &     eval_x_test*12     = 'EVAL-X-INTER',
+     &     eval_v_test*12     = 'EVAL-V-INTER',
      &     eval_p_test*12     = 'EVAL-P-INTER',
      &     eval_z_test*12     = 'EVAL-Z-INTER'
 c dbg

@@ -42,7 +42,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 1000
 
       logical, intent(in) ::
      &     update
@@ -194,6 +194,11 @@
       op1op2 => me_op1op2%op
       op1op2tmp => me_op1op2tmp%op
 
+c dbg
+c      print *,'final name',trim(op1op2%name)
+c      print *,'temp name',trim(op1op2tmp%name)
+c dbg
+
       ffop1 => me_op1%fhand
       ffop2 => me_op2%fhand
       ffop1op2 => me_op1op2%fhand
@@ -267,6 +272,12 @@
       cinfo_op1op2tmpa => cnt_info%cinfo_op1op2tmpa
       cinfo_cntc => cnt_info%cinfo_cntc
       cinfo_cnta => cnt_info%cinfo_cnta
+
+c dbg
+c      print *,'Print 1'
+c      print *,'Create ',cinfo_op1op2tmpc
+c      print *,'Annihilate ',cinfo_op1op2tmpa
+c dbg
 
 c dbg
 c      print *,'-------------------------------------------------------'
@@ -485,6 +496,13 @@ c dbg
       call sum_occ(na_op1op2,cinfo_op1op2a,nablk_op1op2)
       call sum_occ(nc_op1op2tmp,cinfo_op1op2tmpc,ncblk_op1op2tmp)
       call sum_occ(na_op1op2tmp,cinfo_op1op2tmpa,nablk_op1op2tmp)
+
+c dbg
+c      print *,'Print 2'
+c      print *,'Create ',cinfo_op1op2tmpc
+c      print *,'Annihilate ',cinfo_op1op2tmpa
+c dbg
+
 c dbg
       if (na_op1op2.ne.na_op1op2tmp)
      &     call quit(1,'contr_op1op2_wmaps_c','unexpected 1a')

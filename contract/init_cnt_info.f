@@ -39,7 +39,7 @@
      &                    iocc_op1op2tmp,nj_op1op2tmp)
       call get_num_subblk(cnt_info%ncblk_cnt,cnt_info%nablk_cnt,
      &                    iocc_cnt,nj_cnt)
-      
+
       allocate(
      &     cnt_info%cinfo_op1c(cnt_info%ncblk_op1,3),
      &     cnt_info%cinfo_op1a(cnt_info%nablk_op1,3),

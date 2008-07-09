@@ -307,6 +307,11 @@ c dbg
                 ! get ID of current distr
                 did = msgmdid2(occ_csub,idxmsdis_c,gamdis_c,ncsub,
      &                         occ_asub,idxmsdis_a,gamdis_a,nasub,ngam)
+
+c dbg
+c                if(trim(mel%op%name).eq.'Z-INT')
+c     &               print *,'did',did
+c dbg
                 ! save ID of current distr
                 mel%off_op_gmox(iblk)%
      &               did(idxdis,igama,idxmsa) = did

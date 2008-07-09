@@ -87,6 +87,8 @@
 c dbg
      &     title_x_test*12      = 'X-TEST-TITLE',
      &     title_x_test_eval*17 = 'X-TEST-TITLE-EVAL',
+     &     title_v_test*12      = 'V-TEST-TITLE',
+     &     title_v_test_eval*17 = 'V-TEST-TITLE-EVAL',
      &     title_p_test*12      = 'P-TEST-TITLE',
      &     title_p_test_eval*17 = 'P-TEST-TITLE-EVAL',
      &     title_z_test*12      = 'Z-TEST-TITLE',
@@ -213,6 +215,9 @@ c dbg
      &     form_x_test*11      = 'X-TEST_FORM',
      &     form_x_test_eval*15 = 'X-TEST_FORM_EVAL',
      &     fopt_x_test*12      = 'X-TEST_OPT',
+     &     form_v_test*11      = 'V-TEST_FORM',
+     &     form_v_test_eval*15 = 'V-TEST_FORM_EVAL',
+     &     fopt_v_test*12      = 'V-TEST_OPT',
      &     form_p_test*11      = 'P-TEST_FORM',
      &     form_p_test_eval*15 = 'P-TEST_FORM_EVAL',
      &     fopt_p_test*12      = 'P-TEST_OPT',

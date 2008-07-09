@@ -130,7 +130,7 @@ c prelim
         ioff = rule%n_update
         call set_r12_lagrangian(form_pnt,
      &       title,rule%labels(ioff+1),rule%n_labels-ioff,ansatz,
-     &       op_info,orb_info)
+     &       op_info,orb_info,form_info)
       case(EXPAND_OP_PRODUCT)
         call expand_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
