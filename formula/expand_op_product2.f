@@ -447,10 +447,17 @@ c dbg
             do iop = 1, nops
               if (iop.eq.num_res) cycle
               ioff = (iblk_op(iop)-1)*ops(iop)%op%njoined
-              do ivtx = 1, joined(0,iop)
-                proto%vertex(joined(ivtx,iop))%iblk_op = ioff+ivtx
+              if (.not.proto%vertex(iop)%dagger) then
+                do ivtx = 1, joined(0,iop)
+                  proto%vertex(joined(ivtx,iop))%iblk_op = ioff+ivtx
 C??                proto%vertex(joined(ivtx,iop))%iblk_op = iblk_op(iop)
-              end do
+                end do
+              else
+                ioff = ioff+ops(iop)%op%njoined+1
+                do ivtx = 1, joined(0,iop)
+                  proto%vertex(joined(ivtx,iop))%iblk_op = ioff-ivtx
+                end do
+              end if
             end do
 
 c dbg
