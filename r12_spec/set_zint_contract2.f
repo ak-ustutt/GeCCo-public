@@ -153,19 +153,20 @@ c dbg
       enddo
 
 c dbg
-      do idx = 1,3
+      do idx = 1,1
         idx_prj = 1
         idx_prj2 = 2*idx-min(idx,2)
         call expand_op_product2(form_pnt,idx_shape,
      &      0.5d0,10,3,
-     &      (/idx_shape,-idx_opsin(4),idx_shape,idx_shape,idx_opsin(3),
-     &      -idx_opsin(4),idx_opsin(3),idx_shape,idx_shape,idx_shape/),
+     &      (/idx_shape,idx_opsin(4),idx_shape,idx_shape,idx_opsin(3),
+     &      idx_opsin(4),idx_opsin(3),idx_shape,idx_shape,idx_shape/),
      &      (/        1,            2,        1,        1,           3,
-     &                  2,           3,        1,        1,        1/),
+     &                 2,           3,        1,        1,        1/),
      &      -1,-1,
      &      (/5,8/),1,
      &      0,0,
      &      (/6,7,1,idx_prj2,6,9,1,idx_prj,7,9,1,idx_prj/),3,
+c     &      (/6,9,1,idx_prj,7,9,1,idx_prj/),2,
      &      op_info)
 
         ! Point to the formula and move to the end of the list.

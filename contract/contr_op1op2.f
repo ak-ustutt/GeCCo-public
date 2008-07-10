@@ -122,7 +122,8 @@ c dbg
 c        print *,'bef. call to contr'
 c        print *,'iblkop1op2,iblkop1op2tmp: ',iblkop1op2,iblkop1op2tmp
 c        print *,'iocc_op1op2:'
-c        call wrt_occ(6,iocc_op1op2)
+cc        call wrt_occ(6,iocc_op1op2)
+c        call wrt_occ_n(6,iocc_op1op2,njoined_op1op2)
 c dbg
         if (.not.self) then
           call contr_op1op2_wmaps_c(xfac,bc_sign,

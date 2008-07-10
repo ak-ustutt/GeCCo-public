@@ -4,7 +4,8 @@ orb_space
  shell type=frozen,def=(1,0,0,0)
 method
  CC maxexc=2
- R12 ansatz=3,maxexc=2,approx=B,truncate=T
+ R12 ansatz=3,maxexc=2,approx=B
+ truncate trunc_type=0
 calculate
  solve maxiter=30,conv=1d-8
  routes contract=3,simtraf=1

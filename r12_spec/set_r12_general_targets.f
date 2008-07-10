@@ -2214,9 +2214,9 @@ c                             ! this entity this does not matter
 *     "phony" targets
 *----------------------------------------------------------------------*
       ! test
-c      call add_target(eval_r12_inter,ttype_gen,.false.,tgt_info)
+      call add_target(eval_r12_inter,ttype_gen,.false.,tgt_info)
 c dbg
-      call add_target(eval_r12_inter,ttype_gen,.true.,tgt_info)
+c      call add_target(eval_r12_inter,ttype_gen,.true.,tgt_info)
 c dbg
       call set_dependency(eval_r12_inter,mel_ham,tgt_info)
       call set_dependency(eval_r12_inter,mel_rint,tgt_info)
@@ -2393,7 +2393,7 @@ c      call add_target(eval_p_test,ttype_gen,.true.,tgt_info)
      &     labels,ncat+nint+1,1,
      &     parameters,1,tgt_info)
 
-      call add_target(eval_z_test,ttype_gen,.true.,tgt_info)
+      call add_target(eval_z_test,ttype_gen,.false.,tgt_info)
 c      call add_target(eval_z_test,ttype_gen,.false.,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = fopt_z_test

@@ -371,9 +371,9 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
         ! totally symmetric dia for use below:
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
-c        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
 c dbg
-        call add_target(solve_ccr12_gs,ttype_gen,.false.,tgt_info)
+c        call add_target(solve_ccr12_gs,ttype_gen,.false.,tgt_info)
 c dbg
 
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
