@@ -27,6 +27,7 @@
       ngraph = max(initial_ngraph,str_info%ngraph)
       strmap_info%mxgraph = ngraph
       allocate(strmap_info%idx_strmap(ngraph*ngraph))
+      allocate(strmap_info%idx_flipmap(ngraph))
 
       strmap_info%idx_strmap(1:ngraph*ngraph) = -1
       strmap_info%idx_last = 0
@@ -35,6 +36,14 @@
       do idx = 1, ngraph*ngraph
         nullify(strmap_info%offsets(idx)%msms)
         nullify(strmap_info%offsets(idx)%msmsgmgm)
+      end do
+
+      strmap_info%idx_flipmap(1:ngraph) = -1
+      allocate(strmap_info%offsets_flip(ngraph))
+      allocate(strmap_info%maxlen_blk_flip(ngraph))
+      do idx = 1, ngraph
+        nullify(strmap_info%offsets_flip(idx)%ms)
+        nullify(strmap_info%offsets_flip(idx)%msgm)
       end do
 
       call file_init(strmap_info%ffstrmap,

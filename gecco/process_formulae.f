@@ -73,6 +73,15 @@
      &             rule%labels(ioff+3),rule%labels(ioff+4),
      &       op_info)
 
+      case(DEF_ECC_LAGRANGIAN)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,idum,strdum)
+        ioff = rule%n_update
+        call set_ecc_lagrangian(form_pnt,
+     &       title,rule%labels(ioff+1),rule%n_labels-1,ansatz,typ_str,
+     &       op_info,orb_info)
+
       case(DEF_CCPT_LAGRANGIAN)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

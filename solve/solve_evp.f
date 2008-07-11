@@ -77,7 +77,7 @@
      &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout,
      &     idxlist(2*nroots)
       real(8) ::
-     &     xresmax,
+     &     xresmax, xdum,
      &     xeig(nroots,2), xresnrm(nroots), xlist(2*nroots)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:)
@@ -226,7 +226,7 @@
           
           call switch_mel_record(me_trv(iopt)%mel,iroot)
           call diag_guess(me_trv(iopt)%mel,
-     &         xlist,idxlist,2*nroots,iroot,0)
+     &         xlist,idxlist,2*nroots,iroot,me_trv(iopt)%mel%absym)
 
         end do
       end do
@@ -268,6 +268,15 @@
             do iopt = 1, nopt
               call switch_mel_record(me_trv(iopt)%mel,irectrv(irequest))
               call switch_mel_record(me_mvp(iopt)%mel,irecmvp(irequest))
+
+              ! enforce MS-combination symmetry of trial vectors
+              ! (if requested)
+              if (iter.gt.1.and.me_trv(iopt)%mel%absym.ne.0)
+     &             call sym_ab_list(
+     &             0.5d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
+     &             xdum,.false.,
+     &             op_info,str_info,strmap_info,orb_info)
+
               ! here?
               call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
@@ -307,6 +316,25 @@ c dbg
 
       end do
 
+      ! print results
+      call write_title(luout,wst_title,
+     &     'Results for '//trim(label_opt(1)))
+      write(luout,'(">>>",66("="))')
+      write(luout,'(">>>",2x,'//
+     &     '"root     eigenvalue (real)       eigenvalue (img.)'//
+     &     '  |residual|")')
+      write(luout,'(">>>",66("-"))') 
+      do iroot = 1, nroots
+        if (xeig(iroot,2).eq.0d0) then
+          write(luout,'(">>>",3x,i2,x,f22.12,20x,"---",2x,x,g10.4)')
+     &         iroot,xeig(iroot,1),xresnrm(iroot)
+        else
+          write(luout,
+     &         '(">>>",3x,i2,x,f22.12,x,g24.12,x,g10.4)')
+     &         iroot,xeig(iroot,1:2),xresnrm(iroot)
+        end if
+      end do
+      write(luout,'(">>>",66("="))') 
 
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:

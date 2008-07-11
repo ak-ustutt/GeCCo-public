@@ -352,16 +352,24 @@ c dbg
       if (multd2h(igamtop1,igamtop2).ne.igamtop1op2)
      &     call quit(1,'contr_op1op2_wmaps_c','inconsistent symmetries')
 
-      if (lenop1.le.0.or.lenop2.le.0.or.lenop1op2.le.0) then
-        write(luout,*)
-     &       trim(op1%name),' ',
-     &       trim(op2%name),' ',
-     &       trim(op1op2%name)
-        write(luout,*) 'lenop1, lenop2, lenop1op2: ',
-     &                  lenop1, lenop2, lenop1op2
-        call quit(1,'contr_op1op2_wmaps_c',
-     &     'zero length for operator?')
-      end if
+c      ! we accept that certain non-totally symmetric operator blocks
+c      ! may have zero length ...
+c      if (lenop1.eq.0.and.igamtop1.ne.1 .or.
+c     &    lenop2.eq.0.and.igamtop2.ne.1 .or.
+c     &    lenop1op2.eq.0.and.igamtop1op2.ne.1) return
+c
+c      ! ... else we raise an error flag; check whether this is
+c      ! useful or not ....
+c      if (lenop1.le.0.or.lenop2.le.0.or.lenop1op2.le.0) then
+c        write(luout,*)
+c     &       trim(op1%name),' ',
+c     &       trim(op2%name),' ',
+c     &       trim(op1op2%name)
+c        write(luout,*) 'lenop1, lenop2, lenop1op2: ',
+c     &                  lenop1, lenop2, lenop1op2
+c        call quit(1,'contr_op1op2_wmaps_c',
+c     &     'zero length for operator?')
+c      end if
 
       ifree = mem_setmark('contr1')
 

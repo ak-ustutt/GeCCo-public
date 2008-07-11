@@ -1,0 +1,1124 @@
+ run starts at 2008-06-12 15:06:56.187   host: dhcppc1
+
+ Version compiled 12 Jun 2008 at 14:54:41 on dhcppc1                             
+
+ compiled with: ifort
+ level 1 optimization: -g -assume byterecl -traceback -I../include -g
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal author:                                       |
+        |       andreas koehn (university of mainz, germany)        |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       gareth richings (university of mainz, germany)      |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ raw data from section "SIR IPH "
+ potnuc =    6.04302693535581     
+ emy    =   -44.8649356820350     
+ eactiv =   0.000000000000000E+000
+ emcscf =   -38.8219087466791     
+ istate =            1
+ ispin  =            1
+ nactel =            0
+ lsym   =            1
+ nsym   =            4
+ mctype =            0
+ nrhf   =    3   1   0   0   0   0   0   0
+ nfro   =    0   0   0   0   0   0   0   0
+ nish   =    3   1   0   0   0   0   0   0
+ nash   =    0   0   0   0   0   0   0   0
+ norb   =    7   4   2   0   0   0   0   0
+ nbas   =    7   4   2   0   0   0   0   0
+ nas1   =    0   0   0   0   0   0   0   0
+ nas2   =    0   0   0   0   0   0   0   0
+ nas3   =    0   0   0   0   0   0   0   0
+ nnorbt,n2orbt:   41  69
+ Reading input file ....
+I gecco keywords
+I   general
+       title 8 **
+       memmax 2  1
+  >     50000000
+I   orb_space
+I     shell
+         def 2  8
+         type 8  8
+I     open_shells
+         treat 8  4
+  > ph  
+I   method
+I     MP
+         level 2  1
+  >            2
+I     CC
+         maxexc 2  1
+  >            2
+         minexc 2  1
+  >            1
+I     R12
+         ansatz 2  1
+  >            1
+         maxexc 2  1
+  >            2
+         minexc 2  1
+  >            2
+         min_tp 2  1
+  >            1
+         min_tpp 2  1
+  >            2
+         approx 8  8
+  > A       
+         F_appr 8  8
+  > none    
+         K_appr 8  8
+  > none    
+         fixed 1  1
+  >  F
+         extend 2  1
+  >            0
+         r12op 2  1
+  >            0
+I   calculate
+I     check
+I       formulae
+I     solve
+         maxiter 2  1
+  >           30
+         maxmic 2  1
+  >           20
+         maxsub 2  1
+  >            8
+         conv 4  1
+  >   1.000000000000000E-006
+I       non_linear
+           maxiter 2  1
+  >           30
+           maxmic 2  1
+  >           20
+           maxsub 2  1
+  >            8
+           conv 4  1
+  >   1.000000000000000E-006
+           tr_ini 4  1
+  >    1.00000000000000     
+           method 8  8
+  > diis    
+I       linear
+           maxiter 2  1
+  >           30
+           maxsub 2  1
+  >            8
+           conv 4  1
+  >   1.000000000000000E-006
+           method 8  8
+  > subspace
+I       eigen
+           maxiter 2  1
+  >           30
+           maxsub 2  1
+  >            8
+           conv 4  1
+  >   1.000000000000000E-006
+           method 8  8
+  > davidson
+I     CC_solve_tbar
+I     CC_solve_sim
+I     properties
+I     excitation
+         sym 2  8
+  >            1           0           0           0           0           0
+           0           0
+I     ionization
+         sym 2  8
+  >            1           0           0           0           0           0
+           0           0
+I     routes
+         schedule 2  1
+  >            0
+         contract 2  1
+  >            2
+         str_block 2  1
+  >          200
+         simtraf 2  1
+  >            0
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:            1           0           0           0
+  defined shells: 
+   1     3   1   0   0
+   2     4   3   2   0
+  new shell definition: 
+   1     1   0   0   0
+   2     2   1   0   0
+   3     4   3   2   0
+ Memory set to     30000000 r8-words = (  228.88 Mb)
+ ************
+  set_orbinf
+ ************
+ ihpvgas:              1           1           2
+ ngas_hpv:             2           1           0           0
+ nactt_hpv:            3           9           0           0
+ ioff_gas:             0           2           3           3
+ idx_gas:              1           3           4           4
+ gas_reo:           1           2           3
+ igamorb:
+
+<  1>        1       1       1       2       1       1       1       1       2       2
+        2       3       3
+ igasorb:
+
+<  1>        1       2       2       2       3       3       3       3       3       3
+        3       3       3
+ mostnd:
+     1      1   1    2   1    2   1    2   1
+     2      2   3    4   4    5   4    5   4
+     3      5   8    9  11   12  13   14  13
+ ireost:
+
+<  1>        1       2       3       5       6       7       8       4       9      10
+       11      12      13
+ ireots:
+
+<  1>        1       2       3       8       4       5       6       7       9      10
+       11      12      13
+ iad_gas:
+
+<  1>        1
+
+<  2>        2
+
+<  3>        2
+ setting general targets ...
+ setting general targets for MP/CC ...
+ setting special targets for CC ...
+ setting targets for CC properties ...
+ setting targets for CC excited states ...
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ My next target: H0
+ Rule: DEF_ME_LIST
+ set_new_graph:            1
+ set_new_graph:            2
+ set_new_graph:            3
+ set_new_graph:            4
+ Rule: IMPORT
+ number of incore-blocks in geth2:            3
+ size of buffer in geth2:        0.07Mb
+ passes over integral file:            1
+ 
+ 2-el. integrals on disk:         2724
+    thereof nonredundant:         1086
+     integrals reordered:         8808
+ 
+ imported list: H0
+  block no.    1 len =            1
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm =  38.8219    
+ norm (MS-Block) =    38.8219087466791     
+  block no.    2 len =           10
+  Ms(A) =   1/2  IRREP(A) =  1  len =            4  norm = 0.974647    
+  Ms(A) =   1/2  IRREP(A) =  2  len =            1  norm = 0.569759    
+ norm (MS-Block) =    1.12896548938274     
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            4  norm = 0.974647    
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            1  norm = 0.569759    
+ norm (MS-Block) =    1.12896548938274     
+  block no.    3 len =           22
+  Ms(A) =   1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =   1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  block no.    4 len =           22
+  Ms(A) =   1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =   1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  block no.    5 len =           58
+  Ms(A) =   1/2  IRREP(A) =  1  len =           16  norm =  1.34394    
+  Ms(A) =   1/2  IRREP(A) =  2  len =            9  norm =  1.13870    
+  Ms(A) =   1/2  IRREP(A) =  3  len =            4  norm = 0.741359    
+ norm (MS-Block) =    1.91113048814630     
+  Ms(A) =  -1/2  IRREP(A) =  1  len =           16  norm =  1.34394    
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            9  norm =  1.13870    
+  Ms(A) =  -1/2  IRREP(A) =  3  len =            4  norm = 0.741359    
+ norm (MS-Block) =    1.91113048814630     
+  block no.    6 len =           51
+  Ms(A) =   2/2  IRREP(A) =  1  len =            1  norm = 0.399088    
+  Ms(A) =   2/2  IRREP(A) =  2  len =            4  norm = 0.562555    
+ norm (MS-Block) =   0.689739167749660     
+  Ms(A) =   0/2  IRREP(A) =  1  len =           25  norm =  1.19779    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           16  norm = 0.990765    
+ norm (MS-Block) =    1.55444796745539     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =            1  norm = 0.399088    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =            4  norm = 0.562555    
+ norm (MS-Block) =   0.689739167749660     
+  block no.    7 len =          252
+  Ms(A) =   2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          110  norm = 0.407941    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.365993    
+ norm (MS-Block) =   0.548057473017485     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  block no.    8 len =          309
+  Ms(A) =   2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =   2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =          145  norm = 0.298403    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           96  norm = 0.212607    
+ norm (MS-Block) =   0.366396112634608     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  block no.    9 len =          252
+  Ms(A) =   2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          110  norm = 0.407941    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.365993    
+ norm (MS-Block) =   0.548057473017485     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  block no.   10 len =         1446
+  Ms(A) =   2/2  IRREP(A) =  1  len =          121  norm =  1.20098    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          100  norm =  1.18460    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           16  norm = 0.880982    
+  Ms(A) =   2/2  IRREP(A) =  4  len =            4  norm = 0.601055    
+ norm (MS-Block) =    1.99574961774712     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          484  norm =  2.00491    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          400  norm =  1.86579    
+  Ms(A) =   0/2  IRREP(A) =  3  len =           64  norm =  1.38201    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           16  norm = 0.879564    
+ norm (MS-Block) =    3.19129985578798     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          121  norm =  1.20098    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          100  norm =  1.18460    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           16  norm = 0.880982    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =            4  norm = 0.601055    
+ norm (MS-Block) =    1.99574961774712     
+  block no.   11 len =         1842
+  Ms(A) =   2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          638  norm = 0.512571    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          480  norm = 0.468936    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          128  norm = 0.420683    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           48  norm = 0.278522    
+ norm (MS-Block) =   0.858591396129372     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  block no.   12 len =          309
+  Ms(A) =   2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =   2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =          145  norm = 0.298403    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           96  norm = 0.212607    
+ norm (MS-Block) =   0.366396112634608     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  block no.   13 len =         1842
+  Ms(A) =   2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          638  norm = 0.512571    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          480  norm = 0.468936    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          128  norm = 0.420683    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           48  norm = 0.278522    
+ norm (MS-Block) =   0.858591396129372     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  block no.   14 len =         2505
+  Ms(A) =   2/2  IRREP(A) =  1  len =          100  norm = 0.966895    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          144  norm =  1.08057    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           64  norm =  1.02475    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           36  norm = 0.908939    
+ norm (MS-Block) =    1.99469312434103     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          841  norm =  2.12566    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          576  norm =  1.72374    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          256  norm =  1.56650    
+  Ms(A) =   0/2  IRREP(A) =  4  len =          144  norm =  1.32934    
+ norm (MS-Block) =    3.42210214070217     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          100  norm = 0.966895    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          144  norm =  1.08057    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           64  norm =  1.02475    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           36  norm = 0.908939    
+ norm (MS-Block) =    1.99469312434103     
+ total norm =    39.5165358376116     
+ My next target: T
+ Rule: DEF_EXCITATION
+ My next target: DIA
+ Rule: CLONE_OPERATOR
+ My next target: DIAG1SxxM00
+ Rule: DEF_ME_LIST
+ set_new_graph:            5
+ set_new_graph:            6
+ set_new_graph:            7
+ set_new_graph:            8
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ My next target: L(CC)
+ Rule: DEF_SCALAR
+ My next target: TBAR
+ Rule: CLONE_OPERATOR
+ My next target: Lg0_CC
+ Rule: DEF_CC_LAGRANGIAN
+  ------------------------------------------
+     L    number of   n-fold commutators
+   class    terms    0    1    2    3    4
+  ------------------------------------------
+ nterms =            4
+       0        4     1    2    1    0    0
+ nterms =           15
+       1       15     1    7    6    1    0
+ nterms =           38
+       2       38     1   11   18    7    1
+ nterms =           53
+       3       53     0   10   27   14    2
+ nterms =           74
+       4       74     0    7   36   26    5
+  ------------------------------------------
+ Number of generated terms:          184
+ @ CC Lagrangian                       cpu/sys/wall:      0.13 /     0.00 /     0.13 s
+ My next target: E(CC)
+ Rule: DEF_SCALAR
+ My next target: E0_CC
+ Rule: INVARIANT
+ read          185  entries
+ My next target: OMG
+ Rule: CLONE_OPERATOR
+ My next target: OMG_CC
+ Rule: DERIVATIVE
+ My next target: DEF-O0
+ Rule: DEF_ME_LIST
+ My next target: DEF-T0
+ Rule: DEF_ME_LIST
+ My next target: DEF-E0(CC)
+ Rule: DEF_ME_LIST
+ My next target: Hhat
+ Rule: DEF_HAMILTONIAN
+ My next target: HT1TRF
+ Rule: DEF_HHAT
+ @ CC Hhat                             cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ My next target: DEF-Hhat
+ Rule: DEF_ME_LIST
+ My next target: OMG_CC_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:            8
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1       H   1  14                H0
+    2       T   1   4                T0
+    3     DIA   1   4       DIAG1SxxM00
+    4   L(CC)   1   1                  
+    5    TBAR   1   4                  
+    6   E(CC)   1   1            E0(CC)
+    7     OMG   1   4                O0
+    8    Hhat   1  14             H0hat
+ ----------------------------------------
+ Number of lists defined:            6
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0         8921        H                    H0_list.da
+    2     DIAG1SxxM00  1  0         6223      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0         6223      OMG                    O0_list.da
+    4              T0  1  0         6223        T                    T0_list.da
+    5          E0(CC)  1  0            1    E(CC)                E0(CC)_list.da
+    6           H0hat  1  0         8921     Hhat                 H0hat_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- E0_CC
+ read            5  entries
+  -- OMG_CC
+ read          181  entries
+  I will factor out the intermediate: HT1TRF ...
+ read           58  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #  124 - H^ 5 P^ 5 V^ 0 X^ 0 - flops:  0.607E+07(  23.3%)
+  term #  128 - H^ 5 P^ 5 V^ 0 X^ 0 - flops:  0.214E+07(   8.2%)
+  term #  106 - H^ 5 P^ 5 V^ 0 X^ 0 - flops:  0.211E+07(   8.1%)
+  term #  119 - H^ 4 P^ 5 V^ 0 X^ 0 - flops:  0.168E+07(   6.5%)
+  term #  129 - H^ 4 P^ 5 V^ 0 X^ 0 - flops:  0.145E+07(   5.5%)
+ Formally most expensive contractions: 
+  term #  107 - H^ 4 P^ 6 V^ 0 X^ 0
+  term #  106 - H^ 5 P^ 5 V^ 0 X^ 0
+  term #  128 - H^ 5 P^ 5 V^ 0 X^ 0
+  term #  124 - H^ 5 P^ 5 V^ 0 X^ 0
+  term #  115 - H^ 6 P^ 4 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #  124 - H^ 4 P^ 4 V^ 0 X^ 0 - Mb:     0.916E+01
+  term #  119 - H^ 4 P^ 4 V^ 0 X^ 0 - Mb:     0.535E+01
+  term #  128 - H^ 4 P^ 4 V^ 0 X^ 0 - Mb:     0.431E+01
+  term #  106 - H^ 4 P^ 4 V^ 0 X^ 0 - Mb:     0.431E+01
+  term #  116 - H^ 4 P^ 4 V^ 0 X^ 0 - Mb:     0.369E+01
+ My next target: SOLVE-CC-GS
+ Rule: SOLVE_NLEQ
+ read          137  entries
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         30
+ Threshold for residual:      0.10E-07
+ @ formula evaluation                  cpu/sys/wall:      0.73 /     0.14 /     0.88 s
+>>>  1        -38.821908746679 0.3920    
+ @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.83 /     0.13 /     0.97 s
+>>>  2        -38.885227112091 0.1078    
+ @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.28 /     0.17 /     1.64 s
+>>>  3        -38.901859972285 0.3616E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.33 /     0.13 /     1.46 s
+>>>  4        -38.907708302876 0.1632E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.26 /     0.21 /     1.48 s
+>>>  5        -38.908891380391 0.1040E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      1.87 /     0.33 /     2.22 s
+>>>  6        -38.909294106507 0.6699E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.29 /     0.57 /     3.95 s
+>>>  7        -38.909573921113 0.3313E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.26 /     0.52 /     3.81 s
+>>>  8        -38.909668192848 0.1127E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.32 /     0.36 /     3.71 s
+>>>  9        -38.909691505061 0.3914E-03
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.30 /     0.56 /     3.91 s
+>>> 10        -38.909697379519 0.1250E-03
+ @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.32 /     0.53 /     3.89 s
+>>> 11        -38.909697290586 0.4479E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.26 /     0.46 /     3.75 s
+>>> 12        -38.909697483514 0.1854E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.24 /     0.52 /     3.82 s
+>>> 13        -38.909697401642 0.6752E-05
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.31 /     0.56 /     3.93 s
+>>> 14        -38.909697493586 0.2107E-05
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.26 /     0.61 /     4.05 s
+>>> 15        -38.909697500853 0.8083E-06
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.28 /     0.42 /     3.78 s
+>>> 16        -38.909697498860 0.2675E-06
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.32 /     0.57 /     4.04 s
+>>> 17        -38.909697491843 0.1033E-06
+ @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.31 /     0.58 /     4.05 s
+>>> 18        -38.909697489215 0.3464E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.26 /     0.50 /     3.81 s
+>>> 19        -38.909697488700 0.1476E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      3.24 /     0.51 /     3.82 s
+>>> 20        -38.909697488717 0.7210E-08
+ CONVERGED IN    20 ITERATIONS
+>>> final energy:        -38.909697488717 <<<
+ My next target: A.R
+ Rule: CLONE_OPERATOR
+ My next target: R
+ Rule: CLONE_OPERATOR
+ My next target: CC_A_R
+ Rule: DERIVATIVE
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            4 F R
+ in easy section:            4 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            4 F R
+ in easy section:            4 F R
+ in easy section:            4 F R
+ in easy section:            4 F R
+ in easy section:            4 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            2 F R
+ in easy section:            4 F R
+ in easy section:            2 F R
+ in easy section:            4 F R
+ in easy section:            2 F R
+ in easy section:            4 F R
+ in easy section:            2 F R
+ in easy section:            4 F R
+ in easy section:            2 F R
+ in easy section:            4 F R
+ in easy section:            2 F R
+ in easy section:            4 F R
+ in easy section:            2 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            4 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            2 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ in easy section:            1 F R
+ in easy section:            1 F R
+ in easy section:            3 F R
+ My next target: DEF-A.RE0
+ Rule: DEF_ME_LIST
+ My next target: DEF-RE0
+ Rule: DEF_ME_LIST
+ My next target: CC_A_R_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           10
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1       H   1  14                H0
+    2       T   1   4                T0
+    3     DIA   1   4       DIAG1SxxM00
+    4   L(CC)   1   1                  
+    5    TBAR   1   4                  
+    6   E(CC)   1   1            E0(CC)
+    7     OMG   1   4                O0
+    8    Hhat   1  14             H0hat
+    9     A.R   1   4     A.RE0G2SxxM00
+   10       R   1   4       RE0G2SxxM00
+ ----------------------------------------
+ Number of lists defined:            8
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0         8921        H                    H0_list.da
+    2     DIAG1SxxM00  1  0         6223      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0         6223      OMG                    O0_list.da
+    4              T0  1  0         6223        T                    T0_list.da
+    5          E0(CC)  1  0            1    E(CC)                E0(CC)_list.da
+    6           H0hat  1  0         8921     Hhat                 H0hat_list.da
+    7   A.RE0G2SxxM00  2  0         6176      A.R         A.RE0G2SxxM00_list.da
+    8     RE0G2SxxM00  2  0         6176        R           RE0G2SxxM00_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- CC_A_R
+ read          354  entries
+  I will factor out the intermediate: HT1TRF ...
+ read           58  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #  192 - H^ 5 P^ 5 V^ 0 X^ 0 - flops:  0.607E+07(  11.7%)
+  term #  208 - H^ 5 P^ 5 V^ 0 X^ 0 - flops:  0.214E+07(   4.1%)
+  term #  156 - H^ 5 P^ 5 V^ 0 X^ 0 - flops:  0.211E+07(   4.1%)
+  term #  207 - H^ 5 P^ 5 V^ 0 X^ 0 - flops:  0.210E+07(   4.0%)
+  term #  199 - H^ 5 P^ 5 V^ 0 X^ 0 - flops:  0.208E+07(   4.0%)
+ Formally most expensive contractions: 
+  term #  157 - H^ 4 P^ 6 V^ 0 X^ 0
+  term #  207 - H^ 5 P^ 5 V^ 0 X^ 0
+  term #  200 - H^ 5 P^ 5 V^ 0 X^ 0
+  term #  199 - H^ 5 P^ 5 V^ 0 X^ 0
+  term #  192 - H^ 5 P^ 5 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #  192 - H^ 4 P^ 4 V^ 0 X^ 0 - Mb:     0.910E+01
+  term #  182 - H^ 4 P^ 4 V^ 0 X^ 0 - Mb:     0.535E+01
+  term #  183 - H^ 4 P^ 4 V^ 0 X^ 0 - Mb:     0.534E+01
+  term #  156 - H^ 4 P^ 4 V^ 0 X^ 0 - Mb:     0.428E+01
+  term #  199 - H^ 4 P^ 4 V^ 0 X^ 0 - Mb:     0.428E+01
+ My next target: DIAG2SxxM00
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ My next target: SOLVE-CC-RE0
+ Rule: SOLVE_EVP
+ read          237  entries
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-06
+ @ formula evaluation                  cpu/sys/wall:      5.11 /     1.20 /     6.41 s
+ nnew =            1
+>>>  1                         0.2597    
+ >>             0.401225510416 0.2597    
+ @ formula evaluation                  cpu/sys/wall:      7.10 /     1.07 /     8.27 s
+ nnew =            1
+>>>  2                         0.9915E-01
+ >>             0.331596412235 0.9915E-01
+ @ formula evaluation                  cpu/sys/wall:      7.16 /     1.25 /     8.51 s
+ nnew =            1
+>>>  3                         0.6609E-01
+ >>             0.325196960619 0.6609E-01
+ @ formula evaluation                  cpu/sys/wall:      7.06 /     1.13 /     8.30 s
+ nnew =            1
+>>>  4                         0.8884E-01
+ >>             0.318509137332 0.8884E-01
+ @ formula evaluation                  cpu/sys/wall:      7.12 /     1.15 /     8.36 s
+ nnew =            1
+>>>  5                         0.6149E-01
+ >>             0.308090026724 0.6149E-01
+ @ formula evaluation                  cpu/sys/wall:      7.14 /     1.19 /     8.44 s
+ nnew =            1
+>>>  6                         0.4713E-01
+ >>             0.303844926567 0.4713E-01
+ @ formula evaluation                  cpu/sys/wall:      7.11 /     1.06 /     8.26 s
+ nnew =            1
+>>>  7                         0.1407    
+ >>             0.297175000330 0.1407    
+ @ formula evaluation                  cpu/sys/wall:      7.31 /     1.09 /     8.54 s
+ nnew =            1
+>>>  8                         0.1427    
+ >>             0.254602949042 0.1427    
+ @ formula evaluation                  cpu/sys/wall:      7.24 /     1.01 /     8.44 s
+ nnew =            1
+>>>  9                         0.5244E-01
+ >>             0.242942985873 0.5244E-01
+ @ formula evaluation                  cpu/sys/wall:      7.10 /     1.15 /     8.50 s
+ nnew =            1
+>>> 10                         0.2099E-01
+ >>             0.241465795805 0.2099E-01
+ @ formula evaluation                  cpu/sys/wall:      7.07 /     1.33 /     8.52 s
+ nnew =            1
+>>> 11                         0.1055E-01
+ >>             0.241234389575 0.1055E-01
+ @ formula evaluation                  cpu/sys/wall:      7.24 /     0.96 /     8.36 s
+ nnew =            1
+>>> 12                         0.7391E-02
+ >>             0.241149294783 0.7391E-02
+ @ formula evaluation                  cpu/sys/wall:      7.12 /     1.24 /     8.49 s
+ nnew =            1
+>>> 13                         0.5762E-02
+ >>             0.241090575347 0.5762E-02
+ @ formula evaluation                  cpu/sys/wall:      7.12 /     1.18 /     8.55 s
+ nnew =            1
+>>> 14                         0.7458E-02
+ >>             0.241004149329 0.7458E-02
+ @ formula evaluation                  cpu/sys/wall:      7.09 /     1.10 /     8.34 s
+ nnew =            1
+>>> 15                         0.4936E-02
+ >>             0.240967145048 0.4936E-02
+ @ formula evaluation                  cpu/sys/wall:      7.21 /     1.23 /     8.55 s
+ nnew =            1
+>>> 16                         0.2495E-02
+ >>             0.240966887099 0.2495E-02
+ @ formula evaluation                  cpu/sys/wall:      7.09 /     1.10 /     8.28 s
+ nnew =            1
+>>> 17                         0.1099E-02
+ >>             0.240963160757 0.1099E-02
+ @ formula evaluation                  cpu/sys/wall:      7.13 /     1.15 /     8.38 s
+ nnew =            1
+>>> 18                         0.4786E-03
+ >>             0.240960119699 0.4786E-03
+ @ formula evaluation                  cpu/sys/wall:      7.07 /     1.27 /     8.48 s
+ nnew =            1
+>>> 19                         0.2805E-03
+ >>             0.240960363343 0.2805E-03
+ @ formula evaluation                  cpu/sys/wall:      7.16 /     1.04 /     8.28 s
+ nnew =            1
+>>> 20                         0.2165E-03
+ >>             0.240960173904 0.2165E-03
+ @ formula evaluation                  cpu/sys/wall:      7.11 /     1.31 /     8.55 s
+ nnew =            1
+>>> 21                         0.9358E-04
+ >>             0.240959862528 0.9358E-04
+ @ formula evaluation                  cpu/sys/wall:      7.04 /     1.22 /     8.44 s
+ nnew =            1
+>>> 22                         0.3598E-04
+ >>             0.240959975574 0.3598E-04
+ @ formula evaluation                  cpu/sys/wall:      7.07 /     1.19 /     8.47 s
+ nnew =            1
+>>> 23                         0.1423E-04
+ >>             0.240960059603 0.1423E-04
+ @ formula evaluation                  cpu/sys/wall:      7.22 /     1.22 /     8.63 s
+ nnew =            1
+>>> 24                         0.7938E-05
+ >>             0.240960045537 0.7938E-05
+ @ formula evaluation                  cpu/sys/wall:      7.12 /     1.07 /     8.39 s
+ nnew =            1
+>>> 25                         0.4369E-05
+ >>             0.240960046456 0.4369E-05
+ @ formula evaluation                  cpu/sys/wall:      7.12 /     1.22 /     8.47 s
+ nnew =            1
+>>> 26                         0.2062E-05
+ >>             0.240960044552 0.2062E-05
+ @ formula evaluation                  cpu/sys/wall:      7.14 /     1.17 /     8.46 s
+ nnew =            1
+>>> 27                         0.7794E-06
+ >>             0.240960040723 0.7794E-06
+ @ formula evaluation                  cpu/sys/wall:      7.12 /     1.05 /     8.26 s
+ nnew =            1
+>>> 28                         0.4665E-06
+ >>             0.240960041222 0.4665E-06
+ @ formula evaluation                  cpu/sys/wall:      7.25 /     1.20 /     8.58 s
+ nnew =            1
+>>> 29                         0.3140E-06
+ >>             0.240960042528 0.3140E-06
+ @ formula evaluation                  cpu/sys/wall:      7.15 /     1.04 /     8.30 s
+ nnew =            1
+>>> 30                         0.1836E-06
+ >>             0.240960041980 0.1836E-06
+ @ formula evaluation                  cpu/sys/wall:      7.14 /     1.15 /     8.47 s
+ nnew =            0
+ CONVERGED IN    31 ITERATIONS
+>>> 30                         0.7663E-07
+ >>             0.240960041436 0.7663E-07
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:   27031550 real(8)-words (  206.23 Mb)
+   Largest memory block:       26941350 real(8)-words (  205.55 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:    285.20 /    44.56 /   335.58 s
+ run ends at 2008-06-12 15:12:31.763   host: dhcppc1

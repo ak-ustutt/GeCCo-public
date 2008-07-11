@@ -3,6 +3,11 @@
      &     msms(:), msmsgmgm(:)
       end type strmap_offsets
 
+      type flpmap_offsets
+        integer, pointer ::
+     &     ms(:), msgm(:)
+      end type flpmap_offsets
+
       type strmapinf
         integer ::
      &     mxgraph
@@ -18,4 +23,12 @@
      &     maxlen_blk(:)
         type(strmap_offsets), pointer ::
      &       offsets(:)
+
+        ! info for flip-maps
+        integer, pointer ::
+     &     idx_flipmap(:)
+        integer, pointer ::
+     &     maxlen_blk_flip(:)
+        type(flpmap_offsets), pointer ::
+     &     offsets_flip(:)
       end type strmapinf

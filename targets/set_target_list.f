@@ -29,6 +29,12 @@
         call set_cc_targets(tgt_info,orb_info)
       end if
 
+      ! extended CC
+      if (is_keyword_set('method.ECC').gt.0 .and.
+     &    is_keyword_set('method.R12').eq.0 ) then
+        call set_ecc_targets(tgt_info,orb_info)
+      end if
+
       ! MP-R12
       if (is_keyword_set('method.MP').gt.0 .and.
      &    is_keyword_set('method.R12').gt.0 ) then

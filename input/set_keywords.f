@@ -40,6 +40,10 @@
       call keyword_add('CCPT',context='method')
       call argument_add('maxexc','method.CCPT',type=vtyp_int,idef=(/3/))
 
+      call keyword_add('ECC',context='method')
+      call argument_add('maxexc','method.ECC',type=vtyp_int,idef=(/2/))
+      call argument_add('minexc','method.ECC',type=vtyp_int,idef=(/1/))
+
       call keyword_add('R12',context='method')
       call argument_add('ansatz','method.R12',type=vtyp_int,idef=(/1/))
       call argument_add('maxexc','method.R12',type=vtyp_int,idef=(/2/))
@@ -132,6 +136,8 @@
       call argument_add('sym','calculate.excitation',
      &     type=vtyp_int,len=8,
      &     idef=(/1,0,0,0,0,0,0,0/))
+      call argument_add('msc','calculate.excitation',
+     &     type=vtyp_int,len=1,idef=(/0/))
 
       call keyword_add('ionization',context='calculate')
       call argument_add('sym','calculate.ionization',

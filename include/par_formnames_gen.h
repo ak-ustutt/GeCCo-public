@@ -5,6 +5,7 @@
      &     name_form_sym*15 = 'formula_sym.fml'
       character, parameter ::
      &     title_cclg0*26 = 'CC ground state Lagrangian',
+     &     title_ecclg0*27= 'ECC ground state Lagrangian',
      &     title_ccen0*12 = 'CC energy',
      &     title_mplg0*26 = 'MP Lagrangian',
      &     title_mpen0*12 = 'MP energy',
@@ -13,6 +14,8 @@
      &     title_ptde0*22 =
      &                'CC ground state pert. correction',
      &     title_ccrs0*14 =  'CC residual',
+     &     title_eccrs0_l*14 =  'ECC TBAR residual',
+     &     title_eccrs0_t*14 =  'ECC T residual',
      &     title_ccrs12*15 = 'R12 residual',
      &     title_cchhat*15 = 'e^{-T1}He^T1',
      &     title_cchbar*15 = 'e^{-T}He^T',
@@ -99,6 +102,7 @@ c dbg
       character, parameter ::
      &     form_test*4         = 'TEST',
      &     form_cclg0*6        = 'Lg0_CC',
+     &     form_ecclg0*7       = 'Lg0_ECC',
      &     form_ccen0*5        = 'E0_CC',
      &     form_ptdl0*9        = 'DLg0_CCPT',
      &     form_ptde0*8        = 'DE0_CCPT',
@@ -108,6 +112,9 @@ c dbg
      &     form_ccrs0*6        = 'OMG_CC',
      &     fopt_ccrs0*10       = 'OMG_CC_OPT',
      &     fopt_cclft0*11      = 'TBAR_CC_OPT',
+     &     form_eccrs0_t*5     = 'OMG_T',
+     &     form_eccrs0_l*8     = 'OMG_TBAR',
+     &     fopt_eccrs0*11      = 'OMG_ECC_OPT',
      &     form_cchhat*6       = 'HT1TRF',
      &     form_cchbar*6       = 'HT_TRF',
      &     form_cctbar_a*9     = 'TBAR_A_CC',

@@ -66,6 +66,15 @@ c     &       parameters,1,tgt_info)
      &              parameters,1,tgt_info)
       end if
 
+      ! T operator
+      call add_target(op_top,ttype_op,.false.,tgt_info)
+      call get_argument_value('method.CC','minexc',ival=min_rank)
+      call get_argument_value('method.CC','maxexc',ival=max_rank)
+      if (is_keyword_set('method.ECC').gt.0) then
+        call get_argument_value('method.ECC','minexc',ival=min_rank)
+        call get_argument_value('method.ECC','maxexc',ival=max_rank)
+      end if
+
       ! Hbar intermediate
       call add_target(op_hbar,ttype_op,.false.,tgt_info)
       call xop_parameters(-1,parameters,
@@ -74,10 +83,6 @@ c     &       parameters,1,tgt_info)
      &              op_hbar,1,1,
      &              parameters,1,tgt_info)
       
-      ! T operator
-      call add_target(op_top,ttype_op,.false.,tgt_info)
-      call get_argument_value('method.CC','minexc',ival=min_rank)
-      call get_argument_value('method.CC','maxexc',ival=max_rank)
       call xop_parameters(-1,parameters,
      &                   .false.,min_rank,max_rank,0,1)
       call set_rule(op_top,ttype_op,DEF_EXCITATION,

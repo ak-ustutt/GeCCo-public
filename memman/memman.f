@@ -790,8 +790,9 @@ c      in_last_section = associated(cursection,mem_cursection)
       end do
 
       if (ierr.gt.0)
-     &     call quit(1,'memman_map',
-     &     'range errors detected (see above)')
+     &     write(luout,*) '!! range errors detected (see above) !!'
+c     &     call quit(1,'memman_map',
+c     &     'range errors detected (see above)')
 
       end subroutine
 
@@ -857,6 +858,7 @@ c      in_last_section = associated(cursection,mem_cursection)
       if (.not.ok) then
         write(luout,*) 'Errors detected at check-point: ',trim(label)
         call memman_map(luout,.true.)
+        call quit(1,'memman_check','Check failed!')
       end if
 
       end subroutine

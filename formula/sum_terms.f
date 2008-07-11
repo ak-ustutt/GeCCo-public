@@ -6,7 +6,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -23,7 +23,7 @@
      &     op_info
 
       integer ::
-     &     idxop_tgt, iblk_tgt
+     &     idxop_tgt, iblk_tgt, iterm, jterm
       type(formula_item), pointer ::
      &     fl_tgt_pnt, fl_tgt_pnt_next, fl_tgt_current
 
@@ -43,6 +43,7 @@
         idxop_tgt = fl_tgt%target
       end if
 
+      iterm = 0
       fl_tgt_current => fl_tgt
       ! loop over target items
       tgt_loop: do
@@ -62,8 +63,10 @@
         end if
 
         iblk_tgt = fl_tgt_current%contr%iblk_res
+        iterm = iterm+1
+        jterm = iterm+1
         if (ntest.ge.100) then
-          write(luout,*) 'current term:'
+          write(luout,*) 'current term: # ',iterm
           call prt_contr2(luout,fl_tgt_current%contr,op_info)
         end if
 
@@ -90,8 +93,8 @@
             if (cmp_contr(fl_tgt_pnt%contr,
      &                    fl_tgt_current%contr,.true.)) then
               if (ntest.ge.100) then
-                write(luout,*) 'found equal term:'
-                call prt_contr2(luout,fl_tgt_current%contr,
+                write(luout,*) 'found equal term: # ',jterm
+                call prt_contr2(luout,fl_tgt_pnt%contr,
      &               op_info)
                 write(luout,*) 'now summing and deleting'
               end if
@@ -99,10 +102,15 @@
      &             fl_tgt_current%contr%fac + fl_tgt_pnt%contr%fac
               call delete_fl_node(fl_tgt_pnt)
               deallocate(fl_tgt_pnt)
+            else if (ntest.ge.1000) then              
+              write(luout,*) 'non-equiv term: # ',jterm
+              call prt_contr2(luout,fl_tgt_pnt%contr,
+     &               op_info)
             end if
           end if
 
           fl_tgt_pnt => fl_tgt_pnt_next
+          jterm = jterm+1
         end do search_loop
 
         ! advance to next item
