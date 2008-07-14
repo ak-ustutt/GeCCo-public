@@ -7,7 +7,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'ifc_memman.h'

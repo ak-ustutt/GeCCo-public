@@ -296,7 +296,7 @@ c dbg
      &               istr_csub_flip,istr_asub_flip,
      &               ldim_op_c,ldim_op_a,
      &               ncblk,nablk)
-                
+                if (idx1.gt.idx2) cycle
 c dbg
 c                print *,'C:    ',istr_csub,'A:    ',istr_asub
 c                print *,'C_fl: ',istr_csub_flip,'A_fl: ',istr_asub_flip

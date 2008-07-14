@@ -254,6 +254,11 @@
           call switch_mel_record(me_trv(iopt)%mel,iroot)
           call diag_guess(me_trv(iopt)%mel,
      &         xlist,idxlist,2*nroots,iroot,me_trv(iopt)%mel%absym)
+          if (me_trv(iopt)%mel%absym.ne.0)
+     &         call sym_ab_list(
+     &             1d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
+     &             xdum,.false.,
+     &             op_info,str_info,strmap_info,orb_info)
 
         end do
       end do
@@ -302,6 +307,7 @@
               
               ! enforce MS-combination symmetry of trial vectors
               ! (if requested)
+c              if (me_trv(iopt)%mel%absym.ne.0)
               if (iter.gt.1.and.me_trv(iopt)%mel%absym.ne.0)
      &             call sym_ab_list(
      &             0.5d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
@@ -328,6 +334,15 @@ c            call wrt_mel_file(luout,5,me_mvp(1)%mel,
 c     &           1,me_mvp(1)%mel%op%n_occ_cls,
 c     &           str_info,orb_info)
 c dbg
+              ! enforce MS-combination symmetry of Mv-products:
+              ! (if requested)
+            do iopt = 1, nopt
+              if (me_mvp(iopt)%mel%absym.ne.0)
+     &             call sym_ab_list(
+     &             0.5d0,me_mvp(iopt)%mel,me_mvp(iopt)%mel,
+     &             xdum,.false.,
+     &             op_info,str_info,strmap_info,orb_info)
+            end do
 
           end do
         end if
