@@ -1,16 +1,22 @@
 *----------------------------------------------------------------------*
-      subroutine eigen_asym(ndim,xmat,eigr,eigi,vecs,xscr,ierr)
+      subroutine eigen_asym_met(ndim,xmat,smat,eigr,eigi,vecs,xscr,ierr)
 *----------------------------------------------------------------------*
-*     wrapper for eispack call
+*     wrapper for eispack call to rgg
 *     covers some ordering and renormalization issues as needed
 *     in GeCCo
 *----------------------------------------------------------------------*
       implicit none
 
+      include 'stdunit.h'
+
+      real(8), parameter ::
+     &     thrsh = 1d-12
+
       integer, intent(in) ::
      &     ndim
       real(8), intent(in) ::
-     &     xmat(ndim,ndim)
+     &     xmat(ndim,ndim),
+     &     smat(ndim,ndim)
       real(8), intent(out) ::
      &     eigr(ndim), eigi(ndim), vecs(ndim,ndim),
      &     xscr(ndim,ndim)
@@ -28,7 +34,7 @@
      &     ddot, dnrm2
 
       irg = 1
-      call rg(ndim,ndim,xmat,eigr,eigi,irg,vecs,ivec,xvec,ierr)
+      call rgg(ndim,ndim,xmat,smat,eigr,eigi,xvec,irg,vecs,ierr)
       if (ierr.ne.0) return
 
       ! normalize and re-orthogonalize degenerate pairs
@@ -44,6 +50,22 @@
           vecs(1:ndim,idx+1) = (1d0/rnorm)*vecs(1:ndim,idx+1)
           ! re-ortho. part still missing (cf. lucia_ccrsp, l3110ff)
           idx = idx+2
+        end if
+      end do
+
+      ! divide by denominator
+      do idx = 1, ndim
+        if (xvec(idx).lt.thrsh) then
+          write(luout,*) 'idx, xvec: ',idx,xvec(idx)
+          call quit(1,'eigen_asym_met',
+     &         'negative, or extremely small denominator detected')
+        end if
+        if (xvec(idx).lt.1d0/(1000d0*thrsh)) then
+          eigr(idx) = eigr(idx)/xvec(idx)
+          eigi(idx) = eigi(idx)/xvec(idx)
+        else
+          eigr(idx) = 0d0
+          eigi(idx) = 0d0
         end if
       end do
 

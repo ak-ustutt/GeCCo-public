@@ -50,11 +50,12 @@
      &     gred(:), vred(:), mred(:),
      &     xmat1(:), xmat2(:), xvec(:)
       integer, pointer ::
-     &     ndim_rsbsp, ndim_vsbsp, iord_rsbsp(:), iord_vsbsp(:),
+     &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
+     &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
      &     nwfpar(:),
      &     ipiv(:), iconv(:), idxroot(:)
       type(filinf), pointer ::
-     &     ffrsbsp, ffvsbsp
+     &     ffvsbsp
 
       integer, external ::
      &     ioptc_get_sbsp_rec
@@ -72,9 +73,10 @@
       vred => opti_stat%sbspmat(2*mxsub**2+1:)
       ndim_rsbsp => opti_stat%ndim_rsbsp
       ndim_vsbsp => opti_stat%ndim_vsbsp
+      ndim_ssbsp => opti_stat%ndim_ssbsp
       iord_rsbsp => opti_stat%iord_rsbsp
       iord_vsbsp => opti_stat%iord_vsbsp
-      ffrsbsp => opti_stat%ffrsbsp(1)%fhand
+      iord_ssbsp => opti_stat%iord_ssbsp
       ffvsbsp => opti_stat%ffvsbsp(1)%fhand
       nwfpar => opti_info%nwfpar
 
@@ -125,6 +127,9 @@
       ! |Mv> subspace organisation should be identical to |v> subsp.
       ndim_rsbsp = ndim_vsbsp
       iord_rsbsp = iord_vsbsp
+      ! dto. for |Sv> subspace
+      ndim_ssbsp = ndim_vsbsp
+      iord_ssbsp = iord_vsbsp
 
       return
       end

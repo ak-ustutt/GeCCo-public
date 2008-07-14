@@ -149,6 +149,14 @@ c prelim
         call set_r12_lagrangian(form_pnt,
      &       title,rule%labels(ioff+1),rule%n_labels-ioff,ansatz,
      &       op_info,orb_info)
+      case(DEF_CCR12_METRIC)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,ansatz,strdum)
+        ioff = rule%n_update
+        call set_r12_metric(form_pnt,
+     &       title,rule%labels(ioff+1),rule%n_labels-ioff,ansatz,
+     &       op_info,orb_info)
       case(EXPAND_OP_PRODUCT)
         call expand_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

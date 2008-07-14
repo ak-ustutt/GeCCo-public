@@ -1,13 +1,18 @@
 *----------------------------------------------------------------------*
-      subroutine set_r12_lagrangian(form_cclag,
+      subroutine set_r12_metric(form_metric,
      &     title,label,nlabels,ansatz,
      &     op_info,orb_info)
 *----------------------------------------------------------------------*
 *
-*     set up sequence of operators, integrals and contractions that
-*     defines an R12-Lagrangian within the chosen operator space 
+*     set up 
+*          S_0 = <0|(1+Tbar)e^{-T}Te^{T}|0> = <0|Tbar T|0>
+*     
+*     which defines the metric of the CC approach needed for
+*     response equations. Not necessary for normal CC which uses
+*     a unit metric, but for R12 a modified metric occurs due to
+*     non-unit R^+R integrals (X-intermediate).
 *
-*     modified from set_cc_lagrangian2 by GWR June 2007
+*     andreas, july 2008
 *
 *----------------------------------------------------------------------*
       implicit none
@@ -26,7 +31,7 @@
       include 'ifc_input.h'
 
       type(formula), intent(inout), target ::
-     &     form_cclag
+     &     form_metric
       integer, intent(in) ::
      &     ansatz, nlabels
       character(*), intent(in) ::
@@ -51,14 +56,14 @@
      &     name*(form_maxlen_label*2)
 
       type(formula_item), target ::
-     &     flist_lag, flist_t_cr, flist_tbar_cbarr
+     &     flist_metric, flist_t_cr, flist_tbar_cbarr
       type(formula_item), pointer ::
      &     flist_pnt, fl_t_cr_pnt
 
       integer ::
      &     nterms, idx_sop, idx_sbar, ndef, idxrint, ilabel, idx,
      &     idx_scr,idx_scrbar, r12op,
-     &     idxham,idxtbar,idxtop,idxlcc,idxrba,idxcbar,idxr12,idxc12,
+     &     idxham,idxtbar,idxtop,idxmet,idxrba,idxcbar,idxr12,idxc12,
      &     idxcpp12, idxcppbar,
      &     iblk_xxhp, iblk_pxhp, iblk_xxpp, iblk_pxpp,
      &     min_rank, max_rank, iprint,
@@ -80,7 +85,7 @@
 
       if (ntest.eq.100) then
         write(luout,*) '==============================='
-        write(luout,*) ' output from set_r12_lagrangian'
+        write(luout,*) ' output from set_r12_metricrangian'
         write(luout,*) '==============================='
         write(luout,*) ' ansatz = ',ansatz
       end if
@@ -93,44 +98,28 @@
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       
-      if (extend.gt.0) call quit(1,'set_r12_lagrangian',
+      if (extend.gt.0) call quit(1,'set_r12_metric',
      &     'do not use "extend" for CC (use "r12op" instead)!')
-
-c      r12fix = r12fix .or. extend.gt.0
-
-      ! get indices
-c      if (nlabels.ne.8.and..not.r12fix) then
-c        write(luout,*) 'nlabels = ',nlabels
-c        call quit(1,'set_r12_lagrangian',
-c     &     'I expect exactly 8 labels')
-c      end if
-c      if (nlabels.lt.6.and.r12fix) then
-c        write(luout,*) 'nlabels = ',nlabels
-c        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
-c     &     'I expect > 6 labels')c
-c      end if
 
       do ilabel = 1, nlabels
         idx = idx_oplist2(label(ilabel),op_info)
         if (idx.le.0)
-     &       call quit(1,'set_mp2_r12_lagrangian',
+     &       call quit(1,'set_r12_metric',
      &       'label not on list: '//trim(label(ilabel)))
-        if (ilabel.eq.1) idxlcc = idx
-        if (ilabel.eq.2) idxham = idx
-        if (ilabel.eq.3) idxr12 = idx
-        if (ilabel.eq.4) idxrba = idx
-        if (ilabel.eq.5) idxtbar = idx
-        if (ilabel.eq.6) idxtop = idx
+        if (ilabel.eq.1) idxmet = idx
+        if (ilabel.eq.2) idxr12 = idx
+        if (ilabel.eq.3) idxtbar = idx
+        if (ilabel.eq.4) idxtop = idx
         if (r12op.ne.2) then
-          if (ilabel.eq.7) idxcbar = idx
-          if (ilabel.eq.8) idxc12 = idx
+          if (ilabel.eq.5) idxcbar = idx
+          if (ilabel.eq.6) idxc12 = idx
         else
-          if (ilabel.eq.7) idxcppbar = idx
-          if (ilabel.eq.8) idxcpp12 = idx
+          if (ilabel.eq.5) idxcppbar = idx
+          if (ilabel.eq.6) idxcpp12 = idx
         end if
         if (r12op.ne.2) then
-          if (ilabel.eq.9) idxcppbar = idx
-          if (ilabel.eq.10) idxcpp12 = idx
+          if (ilabel.eq.7) idxcppbar = idx
+          if (ilabel.eq.8) idxcpp12 = idx
         end if
       end do
 
@@ -154,7 +143,6 @@ c      end if
       sbar_pnt => op_info%op_arr(idx_sbar)%op
 
       call clone_operator(sbar_pnt,sop_pnt,.true.,orb_info)
-c      sbar_pnt%dagger = .true.
 
       ! combine the C and R operators (S=T+CR).
       call init_formula(flist_t_cr)
@@ -180,113 +168,86 @@ c      end if
 
       ! and now: the actual formula
       ! initialize formula
-      call init_formula(flist_lag)
-      flist_pnt => flist_lag
+      call init_formula(flist_metric)
+      flist_pnt => flist_metric
       ! put [INIT] at the beginning
-      call new_formula_item(flist_pnt,command_set_target_init,idxlcc)
+      call new_formula_item(flist_pnt,command_set_target_init,idxmet)
       flist_pnt => flist_pnt%next
 
-      ! expand <0|(1+Sbar) e^{-S} H e^S|0> =
-      ! <0| e^{-S} H e^S|0> +
-      call expand_op_bch(flist_pnt,2,idxlcc,
-     &     1d0,-1,idxham,1d0,idx_sop,1,-1,op_info)
-
-      ! advance pointer
-      do while(associated(flist_pnt%next))
-        flist_pnt => flist_pnt%next
-      end do
-      ! <0|Sbar e^{-S} H e^S|0>
-      call expand_op_bch(flist_pnt,4,idxlcc,
-     &     1d0,idx_sbar,idxham,1d0,idx_sop,1,-1,op_info)
-
-      ! insert here procedure to produce approx. expansions      
-      ! ...
-      if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'raw formula')
-        call print_form_list(luout,flist_lag,op_info)
-      end if
+      ! expand <0|Sbar S|0>
+      call expand_op_product2(flist_pnt,idxmet,
+     &     1d0,4,3,
+     &     (/idxmet,idx_sbar,idx_sop,idxmet/),
+     &     (/1     ,2       ,3      ,1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     0,0,
+     &     op_info)
 
       ! replace S by T+CR
-      call expand_subexpr(flist_lag,flist_t_cr,.false.,op_info)
-
-      ! sum up duplicate terms (due to S->T+CR replacement)
-      call sum_terms(flist_lag,op_info)
+      call expand_subexpr(flist_metric,flist_t_cr,.false.,op_info)
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'after replacing S')
-        call print_form_list(luout,flist_lag,op_info)
+        call print_form_list(luout,flist_metric,op_info)
       end if
 
       ! replace Sbar by Tbar + R^t CBAR
-      call expand_subexpr(flist_lag,flist_tbar_cbarr,.false.,op_info)
+      call expand_subexpr(flist_metric,flist_tbar_cbarr,.false.,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'after replacing S')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(luout,wst_title,'after replacing SBAR')
+        call print_form_list(luout,flist_metric,op_info)
       end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)
-      call sum_terms(flist_lag,op_info)
-
-      ! Produce truncated expansions.
-      call truncate_form(flist_lag,op_info)
+      call sum_terms(flist_metric,op_info)
 
       ! replace T12 -> T
       if (r12fix.and.r12op.gt.0) then
         if (r12op.ne.2) then
           call form_op_replace(op_info%op_arr(idxc12)%op%name,
      &                       op_info%op_arr(idxtop)%op%name,
-     &     flist_lag,op_info)
+     &     flist_metric,op_info)
           call form_op_replace(op_info%op_arr(idxcbar)%op%name,
      &                       op_info%op_arr(idxtbar)%op%name,
-     &     flist_lag,op_info)
+     &     flist_metric,op_info)
         end if
         if (r12op.gt.1) then
           call form_op_replace(op_info%op_arr(idxcpp12)%op%name,
      &                       op_info%op_arr(idxtop)%op%name,
-     &     flist_lag,op_info)
+     &     flist_metric,op_info)
           call form_op_replace(op_info%op_arr(idxcppbar)%op%name,
      &                       op_info%op_arr(idxtbar)%op%name,
-     &     flist_lag,op_info)
+     &     flist_metric,op_info)
         end if
-cc        call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,
-cc     &     flist_lag,op_info)
       end if
-
-      ! post_processing and term counting:
-      if(.not.r12fix.and.r12op.le.1)then
-        iprint = iprlvl
-        call r12_form_post(flist_lag,nterms,
-     &       idxtbar,idxcbar,idxham,idxtop,idxc12, iprint,
-     &       op_info)
-      endif
 
       if (ntest.ge.100) then
         call write_title(luout,wst_title,'Final formula')
-        call print_form_list(luout,flist_lag,op_info)
+        call print_form_list(luout,flist_metric,op_info)
       end if
 
       ! assign comment
-      form_cclag%comment = trim(title)
+      form_metric%comment = trim(title)
       ! write to disc
-      write(name,'(a,".fml")') trim(form_cclag%label)
-      call file_init(form_cclag%fhand,name,ftyp_sq_unf,0)
-      call write_form_list(form_cclag%fhand,flist_lag,
-     &     form_cclag%comment)
+      write(name,'(a,".fml")') trim(form_metric%label)
+      call file_init(form_metric%fhand,name,ftyp_sq_unf,0)
+      call write_form_list(form_metric%fhand,flist_metric,
+     &     form_metric%comment)
 
       call dealloc_formula_list(flist_t_cr)
       call dealloc_formula_list(flist_tbar_cbarr)
-      call dealloc_formula_list(flist_lag)
+      call dealloc_formula_list(flist_metric)
 
       ! remove the formal operators
       call del_operator(op_sba,op_info)
       call del_operator(op_sop,op_info)
-c      if (extend.gt.0) call del_operator(op_scr,op_info)
-c      if (extend.gt.0) call del_operator(op_scrbar,op_info)
 
       call atim_csw(cpu,sys,wall)
-      write(luout,*) 'Number of generated terms: ',nterms
-      call prtim(luout,'CC-R12 Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
+c      write(luout,*) 'Number of generated terms: ',nterms
+      call prtim(luout,'CC-R12 metric',cpu-cpu0,sys-sys0,wall-wall0)
 
 c dbg
 c      if (r12op.gt.0) stop 'testing'

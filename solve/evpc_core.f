@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine evpc_core(iter,
      &       task,iroute,xrsnrm,xeig,
+     &       use_s,
      &       ffopt,fftrv,ffmvp,ffdia,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
@@ -26,6 +27,8 @@
      &     iter
       integer, intent(in) ::
      &     iroute, nincore, lenbuf
+      logical, intent(in) ::
+     &     use_s(*)
 
       type(file_array), intent(in) ::
      &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
@@ -53,14 +56,15 @@
       real(8) ::
      &     cond, xdum, xnrm, xshf
       real(8), pointer ::
-     &     gred(:), vred(:), mred(:), eigr(:), eigi(:),
+     &     gred(:), vred(:), mred(:), sred(:), eigr(:), eigi(:),
      &     xmat1(:), xmat2(:), xmat3(:), xvec(:)
       integer, pointer ::
-     &     ndim_rsbsp, ndim_vsbsp, iord_rsbsp(:), iord_vsbsp(:),
+     &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
+     &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
      &     nwfpar(:),
      &     ipiv(:), iconv(:), idxroot(:)
       type(filinf), pointer ::
-     &     ffrsbsp, ffvsbsp
+     &     ffrsbsp, ffvsbsp, ffssbsp
       type(filinf) ::
      &     fdum
 
@@ -78,13 +82,16 @@
       mxsub = opti_stat%mxdim_sbsp
       mred => opti_stat%sbspmat(1:)
       vred => opti_stat%sbspmat(mxsub**2+1:)
-c      vred => opti_stat%sbspmat(2*mxsub**2+1:)
+      sred => opti_stat%sbspmat(2*mxsub**2+1:)
       ndim_rsbsp => opti_stat%ndim_rsbsp
       ndim_vsbsp => opti_stat%ndim_vsbsp
+      ndim_ssbsp => opti_stat%ndim_ssbsp
       iord_rsbsp => opti_stat%iord_rsbsp
       iord_vsbsp => opti_stat%iord_vsbsp
+      iord_ssbsp => opti_stat%iord_ssbsp
       ffrsbsp => opti_stat%ffrsbsp(1)%fhand
       ffvsbsp => opti_stat%ffvsbsp(1)%fhand
+      ffssbsp => opti_stat%ffssbsp(1)%fhand
       nwfpar => opti_info%nwfpar
 
       if (nopt.gt.1)
@@ -110,11 +117,21 @@ c      vred => opti_stat%sbspmat(2*mxsub**2+1:)
       nred = ndim_vsbsp
       ! update reduced space:
       ! ffvsbsp and ffrsbsp point to ff_trv(iopt)%fhand ...
-      call optc_update_redsp3
+      if (.not.use_s(1)) then
+        call optc_update_redsp3
      &       (mred,xdum,nred,0,mxsub,
      &       opti_stat%nadd,opti_stat%ndel,
      &       iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,fdum,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
+      else
+        call optc_update_redsp4
+     &       (mred,sred,xdum,nred,0,mxsub,
+     &       opti_stat%nadd,opti_stat%ndel,
+     &       iord_vsbsp,ffvsbsp,
+     &       iord_rsbsp,ffrsbsp,
+     &       iord_ssbsp,ffssbsp,fdum,
+     &       nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
+      end if
 
       ! ------------------------
       !    solve reduced EVP
@@ -138,8 +155,19 @@ c      vred => opti_stat%sbspmat(2*mxsub**2+1:)
           xmat1(kdx) = mred((idx-1)*mxsub+jdx)
         end do
       end do
+      kdx = 0
+      do idx = 1, nred
+        do jdx = 1, nred
+          kdx = kdx+1
+          xmat3(kdx) = sred((idx-1)*mxsub+jdx)
+        end do
+      end do
 
-      call eigen_asym(nred,xmat1,eigr,eigi,xmat2,xmat3,ierr)
+      if (.not.use_s(1)) then
+        call eigen_asym(nred,xmat1,eigr,eigi,xmat2,xmat3,ierr)
+      else
+        call eigen_asym_met(nred,xmat1,xmat3,eigr,eigi,xmat2,xmat3,ierr)
+      end if
 
       ! copy back to vred with mxsub as leading dim
       kdx = 0
@@ -169,6 +197,7 @@ c      vred => opti_stat%sbspmat(2*mxsub**2+1:)
       do iroot = 1, nroot
         ! assemble residual in full space
         
+        ! M.v ....
         idx = (iroot-1)*mxsub + 1
         xvec(1:nred) = vred(idx:idx+nred-1)
         call optc_expand_vec(xvec,ndim_rsbsp,xrsnrm(iroot),.false.,
@@ -176,9 +205,17 @@ c      vred => opti_stat%sbspmat(2*mxsub**2+1:)
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
         xvec(1:nred) = -eigr(iroot)*xvec(1:nred)
-        call optc_expand_vec(xvec,ndim_vsbsp,xrsnrm(iroot),.true.,
+        if (.not.use_s(1)) then
+          ! - eig * v
+          call optc_expand_vec(xvec,ndim_vsbsp,xrsnrm(iroot),.true.,
      &       ffscr,irecscr,1d0,ffvsbsp,iord_vsbsp,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+        else
+          ! - eig * S * v
+          call optc_expand_vec(xvec,ndim_vsbsp,xrsnrm(iroot),.true.,
+     &       ffscr,irecscr,1d0,ffssbsp,iord_ssbsp,
+     &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+        end if
 
         ! not yet converged? increase record counter
         if (xrsnrm(iroot).gt.opti_info%thrgrd(iopt)) then
@@ -203,12 +240,15 @@ c dbg
             ! assemble orth. subspace exactly spanning the nroot 
             ! currently best solution vectors
             call optc_minspace(
-     &           iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,
-     &           vred,xdum,mred,nred,nroot,0,mxsub,
+     &           iord_vsbsp,ffvsbsp,
+     &           iord_rsbsp,ffrsbsp,
+     &           iord_ssbsp,ffssbsp,use_s,
+     &           vred,xdum,mred,sred,nred,nroot,0,mxsub,
      &           ffscr,nnew,
      &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
             ndim_vsbsp = nred
             ndim_rsbsp = nred
+            ndim_ssbsp = nred
           else
             call quit(1,'evpc_core','baustelle')
           end if
@@ -257,6 +297,9 @@ c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
         ! |Mv> subspace organisation should be identical to |v> subsp.
         ndim_rsbsp = ndim_vsbsp
         iord_rsbsp = iord_vsbsp
+        ! dto. for |Sv> subspace ...
+        ndim_ssbsp = ndim_vsbsp
+        iord_ssbsp = iord_vsbsp
 
       else
         ! if all converged: assemble vectors 

@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine set_cc_exst_targets(tgt_info,orb_info)
+      subroutine set_ccr12_exst_targets(tgt_info,orb_info)
 *----------------------------------------------------------------------*
-*     set targets needed in CC excited state calculations
+*     set targets needed in CC-R12 excited state calculations
 *----------------------------------------------------------------------*
       implicit none
 
@@ -39,7 +39,7 @@
       if (ncnt.eq.0) return
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting targets for CC excited states ...'
+     &    write(luout,*) 'setting targets for CC-R12 excited states ...'
 
 *----------------------------------------------------------------------*
 *     Operators:
@@ -63,6 +63,26 @@
       call set_rule(op_a_r,ttype_op,CLONE_OP,
      &              op_a_r,1,1,
      &              parameters,1,tgt_info)
+
+      ! T vector times Metric
+      call add_target(op_s_t,ttype_op,.false.,tgt_info)
+      call set_dependency(op_s_t,op_top,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_top,.false.)
+      call set_rule(op_s_t,ttype_op,CLONE_OP,
+     &              op_s_t,1,1,
+     &              parameters,1,tgt_info)
+
+      ! right-response vector times Metric
+      call add_target(op_s_r,ttype_op,.false.,tgt_info)
+      call set_dependency(op_s_r,op_top,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_top,.false.)
+      call set_rule(op_s_r,ttype_op,CLONE_OP,
+     &              op_s_r,1,1,
+     &              parameters,1,tgt_info)
+
+      ! if applicable: define here additional R12-part of response:
 
       ! left-response vector
       call add_target(op_l,ttype_op,.false.,tgt_info)
@@ -89,34 +109,63 @@
 *----------------------------------------------------------------------*
 
       ! right Jacobian transform
+      ! 2-components: make derivative wrt both comp.s
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_cc_a_r
-      labels(2) = form_ccrs0
+      labels(2) = form_ccr12rs_t
       labels(3) = op_a_r
       labels(4) = op_top
       labels(5) = op_r
       call add_target(form_cc_a_r,ttype_frm,.false.,tgt_info)
-      call set_dependency(form_cc_a_r,form_ccrs0,tgt_info)
+      call set_dependency(form_cc_a_r,form_ccr12rs_t,tgt_info)
       call set_dependency(form_cc_a_r,op_a_r,tgt_info)
       call set_dependency(form_cc_a_r,op_r,tgt_info)
       call set_rule(form_cc_a_r,ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              title_cc_a_r,1,tgt_info)
+      ! 2-components: add here derivative of rs_c component
 
-      ! left Jacobian transform
+      call add_target(form_ccr12_s_r,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_ccr12_s_r,form_ccr12_s0,tgt_info)
+      call set_dependency(form_ccr12_s_r,op_s_t,tgt_info)
+      call set_dependency(form_ccr12_s_r,op_s_r,tgt_info)
+      call set_dependency(form_ccr12_s_r,op_r,tgt_info)
+      ! we also need the transform with the metric
+      ! 2-components: make derivative wrt both comp.s
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = form_cc_l_a
-      labels(2) = form_cctbar_a
-      labels(3) = op_l_a
+      labels(1) = form_ccr12_s_t
+      labels(2) = form_ccr12_s0
+      labels(3) = op_s_t
       labels(4) = op_tbar
-      labels(5) = op_l
-      call add_target(form_cc_l_a,ttype_frm,.false.,tgt_info)
-      call set_dependency(form_cc_l_a,form_cctbar_a,tgt_info)
-      call set_dependency(form_cc_l_a,op_l_a,tgt_info)
-      call set_dependency(form_cc_l_a,op_l,tgt_info)
-      call set_rule(form_cc_l_a,ttype_frm,DERIVATIVE,
+      labels(5) = ' '
+      call set_rule(form_ccr12_s_r,ttype_frm,DERIVATIVE,
      &              labels,5,1,
-     &              title_cc_l_a,1,tgt_info)
+     &              title_ccr12_s_t,1,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_ccr12_s_r
+      labels(2) = form_ccr12_s_t
+      labels(3) = op_s_r
+      labels(4) = op_top
+      labels(5) = op_r
+      call set_rule(form_ccr12_s_r,ttype_frm,DERIVATIVE,
+     &              labels,5,1,
+     &              title_ccr12_s_r,1,tgt_info)
+      ! 2-components: add here derivative of rs_c component
+
+c      ! left Jacobian transform
+c      labels(1:10)(1:len_target_name) = ' '
+c      labels(1) = form_cc_l_a
+c      labels(2) = form_cctbar_a
+c      labels(3) = op_l_a
+c      labels(4) = op_tbar
+c      labels(5) = op_l
+c      call add_target(form_cc_l_a,ttype_frm,.false.,tgt_info)
+c      call set_dependency(form_cc_l_a,form_cctbar_a,tgt_info)
+c      call set_dependency(form_cc_l_a,op_l_a,tgt_info)
+c      call set_dependency(form_cc_l_a,op_l,tgt_info)
+c      call set_rule(form_cc_l_a,ttype_frm,DERIVATIVE,
+c     &              labels,5,1,
+c     &              title_cc_l_a,1,tgt_info)
 
 
 *----------------------------------------------------------------------*
@@ -128,10 +177,13 @@
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = fopt_cc_a_r
       labels(2) = form_cc_a_r
-      ncat = 1
+      labels(3) = form_ccr12_s_r
+      ncat = 2
       nint = 0
       call add_target(fopt_cc_a_r,ttype_frm,.false.,tgt_info)
       call set_dependency(fopt_cc_a_r,form_cc_a_r,tgt_info)
+      call set_dependency(fopt_cc_a_r,form_ccr12_s_r,tgt_info)
+      call set_dependency(fopt_cc_a_r,meldef_s_rex,tgt_info)
       call set_dependency(fopt_cc_a_r,meldef_a_rex,tgt_info)
       call set_dependency(fopt_cc_a_r,meldef_rex,tgt_info)
       call set_dependency(fopt_cc_a_r,mel_topdef,tgt_info)
@@ -140,51 +192,52 @@
         nint = 1
         call set_dependency(fopt_cc_a_r,form_cchhat,tgt_info)
         call set_dependency(fopt_cc_a_r,mel_hhatdef,tgt_info)
-        labels(3) = form_cchhat
+        labels(1+ncat+1) = form_cchhat
       else if (isim.eq.2) then
         nint = 1
         call set_dependency(fopt_cc_a_r,form_cchbar,tgt_info)
         call set_dependency(fopt_cc_a_r,meldef_hbar,tgt_info)
-        labels(3) = form_cchbar
+        labels(1+ncat+1) = form_cchbar
       end if
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_cc_a_r,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
-      ! CC left-hand Jacobian transform
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = fopt_cc_l_a
-      labels(2) = form_cc_l_a
-      ncat = 1
-      nint = 0
-      call add_target(fopt_cc_l_a,ttype_frm,.false.,tgt_info)
-      call set_dependency(fopt_cc_l_a,form_cc_l_a,tgt_info)
-      call set_dependency(fopt_cc_l_a,meldef_lex_a,tgt_info)
-      call set_dependency(fopt_cc_l_a,meldef_lex,tgt_info)
-      call set_dependency(fopt_cc_l_a,mel_topdef,tgt_info)
-      call set_dependency(fopt_cc_l_a,mel_ham,tgt_info)
-      if (isim.eq.1) then
-        nint = 1
-        call set_dependency(fopt_cc_l_a,form_cchhat,tgt_info)
-        call set_dependency(fopt_cc_l_a,mel_hhatdef,tgt_info)
-        labels(3) = form_cchhat
-      else if (isim.eq.2) then
-        nint = 1
-        call set_dependency(fopt_cc_a_r,form_cchbar,tgt_info)
-        call set_dependency(fopt_cc_a_r,meldef_hbar,tgt_info)
-        labels(3) = form_cchbar
-      end if
-      call opt_parameters(-1,parameters,ncat,nint)
-      call set_rule(fopt_cc_l_a,ttype_frm,OPTIMIZE,
-     &              labels,ncat+nint+1,1,
-     &              parameters,1,tgt_info)
+c      ! CC left-hand Jacobian transform
+c      labels(1:10)(1:len_target_name) = ' '
+c      labels(1) = fopt_cc_l_a
+c      labels(2) = form_cc_l_a
+c      ncat = 1
+c      nint = 0
+c      call add_target(fopt_cc_l_a,ttype_frm,.false.,tgt_info)
+c      call set_dependency(fopt_cc_l_a,form_cc_l_a,tgt_info)
+c      call set_dependency(fopt_cc_l_a,meldef_lex_a,tgt_info)
+c      call set_dependency(fopt_cc_l_a,meldef_lex,tgt_info)
+c      call set_dependency(fopt_cc_l_a,mel_topdef,tgt_info)
+c      call set_dependency(fopt_cc_l_a,mel_ham,tgt_info)
+c      if (isim.eq.1) then
+c        nint = 1
+c        call set_dependency(fopt_cc_l_a,form_cchhat,tgt_info)
+c        call set_dependency(fopt_cc_l_a,mel_hhatdef,tgt_info)
+c        labels(3) = form_cchhat
+c      else if (isim.eq.2) then
+c        nint = 1
+c        call set_dependency(fopt_cc_a_r,form_cchbar,tgt_info)
+c        call set_dependency(fopt_cc_a_r,meldef_hbar,tgt_info)
+c        labels(3) = form_cchbar
+c      end if
+c      call opt_parameters(-1,parameters,ncat,nint)
+c      call set_rule(fopt_cc_l_a,ttype_frm,OPTIMIZE,
+c     &              labels,ncat+nint+1,1,
+c     &              parameters,1,tgt_info)
 
 *----------------------------------------------------------------------*
 *     ME-lists:
 *----------------------------------------------------------------------*
       call add_target(meldef_rex,ttype_opme,.false.,tgt_info)
       call add_target(meldef_a_rex,ttype_opme,.false.,tgt_info)
+      call add_target(meldef_s_rex,ttype_opme,.false.,tgt_info)
       call add_target(meldef_lex,ttype_opme,.false.,tgt_info)
       call add_target(meldef_lex_a,ttype_opme,.false.,tgt_info)
       do icnt = 1, ncnt 
@@ -216,6 +269,17 @@
           call me_list_parameters(-1,parameters,
      &         msc,0,isym,0,0)
           call set_rule(meldef_a_rex,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+          ! S.RE0
+          call me_list_label(me_label,mel_s_rex,isym,0,0,msc,.false.)
+          call set_dependency(meldef_s_rex,op_s_r,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = op_s_r
+          call me_list_parameters(-1,parameters,
+     &         msc,0,isym,0,0)
+          call set_rule(meldef_s_rex,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
         end do
@@ -252,16 +316,17 @@
 *----------------------------------------------------------------------*
 
       call add_target(solve_cc_rhex,ttype_gen,.true.,tgt_info)
-      call set_dependency(solve_cc_rhex,solve_cc_gs,tgt_info)
+      call set_dependency(solve_cc_rhex,solve_ccr12_gs,tgt_info)
       call set_dependency(solve_cc_rhex,fopt_cc_a_r,tgt_info)
       call set_dependency(solve_cc_rhex,meldef_rex,tgt_info)
       call set_dependency(solve_cc_rhex,meldef_a_rex,tgt_info)
+      call set_dependency(solve_cc_rhex,meldef_s_rex,tgt_info)
 
-      call add_target(solve_cc_lhex,ttype_gen,.false.,tgt_info)
-      call set_dependency(solve_cc_lhex,solve_cc_gs,tgt_info)
-      call set_dependency(solve_cc_lhex,fopt_cc_l_a,tgt_info)
-      call set_dependency(solve_cc_lhex,meldef_lex,tgt_info)
-      call set_dependency(solve_cc_lhex,meldef_lex_a,tgt_info)
+c      call add_target(solve_cc_lhex,ttype_gen,.false.,tgt_info)
+c      call set_dependency(solve_cc_lhex,solve_ccr12_gs,tgt_info)
+c      call set_dependency(solve_cc_lhex,fopt_cc_l_a,tgt_info)
+c      call set_dependency(solve_cc_lhex,meldef_lex,tgt_info)
+c      call set_dependency(solve_cc_lhex,meldef_lex_a,tgt_info)
 
       do icnt = 1, ncnt 
         call get_argument_value('calculate.excitation','sym',
@@ -280,31 +345,29 @@
           labels(1) = me_label
           labels(2) = dia_label
           labels(3) = op_a_r
-          labels(4) = op_r
+          labels(4) = op_s_r
           labels(5) = fopt_cc_a_r
           call set_rule(solve_cc_rhex,ttype_opme,SOLVEEVP,
      &         labels,5,1,
      &         parameters,2,tgt_info)
         end do
       
-        do isym = 1, orb_info%nsym
-          if (sym_arr(isym).eq.0) cycle          
-          call me_list_label(me_label,mel_lex,isym,0,0,msc,.false.)
-          call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
-          call set_dependency(solve_cc_lhex,dia_label,tgt_info)
-          call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
-          labels(1:10)(1:len_target_name) = ' '
-          labels(1) = me_label
-          labels(2) = dia_label
-          labels(3) = op_l_a
-          labels(4) = op_l
-          labels(5) = fopt_cc_l_a
-          call set_rule(solve_cc_lhex,ttype_opme,SOLVEEVP,
-     &         labels,5,1,
-     &         parameters,2,tgt_info)
-        end do
+c        do isym = 1, orb_info%nsym
+c          if (sym_arr(isym).eq.0) cycle          
+c          call me_list_label(me_label,mel_lex,isym,0,0,msc,.false.)
+c          call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
+c          call set_dependency(solve_cc_lhex,dia_label,tgt_info)
+c          call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
+c          labels(1:10)(1:len_target_name) = ' '
+c          labels(1) = me_label
+c          labels(2) = dia_label
+c          labels(3) = op_l_a
+c          labels(4) = fopt_cc_l_a
+c          call set_rule(solve_cc_lhex,ttype_opme,SOLVEEVP,
+c     &         labels,4,1,
+c     &         parameters,2,tgt_info)
+c        end do
       end do
       
-
       return
       end

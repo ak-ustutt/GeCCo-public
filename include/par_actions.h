@@ -24,6 +24,7 @@
      &     DEF_R12INTM_CABS*26      = 'DEF_R12INTM_CABS',
      &     DEF_MPR12_LAGRANGIAN*30  = 'DEF_MPR12_LAGRANGIAN',
      &     DEF_CCR12_LAGRANGIAN*30  = 'DEF_CCR12_LAGRANGIAN',
+     &     DEF_CCR12_METRIC*26      = 'DEF_CCR12_METRIC',
      &     EXPAND_OP_PRODUCT*27     = 'EXPAND_OP_PRODUCT',
      &     FACTOR_OUT*10            = 'FACTOR_OUT',
      &     REPLACE*7                = 'REPLACE',

@@ -87,6 +87,12 @@
      &              op_ccr12en,1,1,
      &              parameters,0,tgt_info)
 
+      ! prototype formula for metric:
+      call add_target(op_ccr12s0,ttype_op,.false.,tgt_info)
+      call set_rule(op_ccr12s0,ttype_op,DEF_SCALAR,
+     &              op_ccr12s0,1,1,
+     &              parameters,0,tgt_info)
+      
       if(set_tp)then
         call add_target(op_omgcex,ttype_op,.false.,tgt_info)
         call set_dependency(op_omgcex,op_cex,tgt_info)
@@ -257,6 +263,68 @@ c        labels(10) = form_r12_xpint
      &              labels,4,1,
      &              parameters,2,tgt_info)
       end if
+      
+      call add_target(form_ccr12_s0,ttype_frm,.false.,tgt_info)
+      ! (a) set formal Metric (in 'complete' basis)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_ccr12_s0
+      labels(2) = op_ccr12s0
+      labels(3) = op_r12
+      labels(4) = op_tbar
+      labels(5) = op_top
+      nlabel = 5
+      if (set_tp) then
+        call set_dependency(form_ccr12_s0,op_cex,tgt_info)
+        call set_dependency(form_ccr12_s0,op_cexbar,tgt_info)
+        labels(nlabel+1) = op_cexbar
+        labels(nlabel+2) = op_cex
+        nlabel = nlabel+2
+      end if
+      if (set_tpp) then
+        call set_dependency(form_ccr12_s0,op_cexx,tgt_info)
+        call set_dependency(form_ccr12_s0,op_cexxbar,tgt_info)
+        labels(nlabel+1) = op_cexxbar
+        labels(nlabel+2) = op_cexx
+        nlabel = nlabel+2
+      end if
+      call set_dependency(form_ccr12_s0,op_ccr12s0,tgt_info)
+      call set_dependency(form_ccr12_s0,op_r12,tgt_info)
+      call set_dependency(form_ccr12_s0,op_tbar,tgt_info)
+      call set_dependency(form_ccr12_s0,op_top,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_ccr12lg0,ansatz,'---')
+      call set_rule(form_ccr12_s0,ttype_frm,DEF_CCR12_METRIC,
+     &              labels,nlabel,1,
+     &              parameters,2,tgt_info)
+      ! (b) Factor out the R12 intermediates 
+      ! (effectively removing all reference to the complete basis)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_ccr12_s0 ! output formula (itself)
+      labels(2) = form_ccr12_s0 ! input formula
+      labels(3) = form_r12_xint
+      nint = 1
+      call set_dependency(form_ccr12_s0,form_r12_xint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_ccr12lg0,nint,'---')
+      call set_rule(form_ccr12_s0,ttype_frm,FACTOR_OUT,
+     &              labels,nint+2,1,
+     &              parameters,2,tgt_info)
+c      ! there remain a few unprocessed R12 contributions
+c      ! for ansatz > 1
+c      ! as a first resort we replace r12 by the actual integrals
+c      if (ansatz.gt.1) then
+c        labels(1:20)(1:len_target_name) = ' '
+c        labels(1) = form_ccr12_s0
+c        labels(2) = form_ccr12_s0
+c        labels(3) = op_r12
+c        labels(4) = op_rint
+c        call set_dependency(form_ccr12_s0,op_rint,tgt_info)
+c        call form_parameters(-1,
+c     &       parameters,2,title_ccr12lg0,1,'---')
+c        call set_rule(form_ccr12_s0,ttype_frm,REPLACE,
+c     &              labels,4,1,
+c     &              parameters,2,tgt_info)
+c      end if
       
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_ccr12en0

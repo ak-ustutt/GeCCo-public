@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine solve_evp(mode_str,
-     &     nopt,nroots,label_opt,label_prc,label_op_mvp,
+     &     nopt,nroots,label_opt,label_prc,label_op_mvp,label_op_met,
      &     label_form,
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
@@ -17,6 +17,9 @@
 *     label_opt(nopt)       label of solution vectors
 *     label_prc(nopt)       label of preconditioners
 *     label_op_mvp(nopt)    label operators describing Mx-products
+*     label_op_met(nopt)    label operators describing Sx-products
+*                           if S is unity, pass label of operator
+*                           associated with ME-list label_opt
 *
 *     the latter two are used to initilize temporary ME-lists
 *
@@ -56,6 +59,7 @@
      &     label_opt(nopt),
      &     label_prc(nopt),
      &     label_op_mvp(nopt),
+     &     label_op_met(nopt),
      &     label_form
       type(formula_info) ::
      &     form_info
@@ -69,7 +73,7 @@
      &     orb_info
 
       logical ::
-     &     conv
+     &     conv, use_s_t, use_s(nopt)
       character(len_opname) ::
      &     label
       integer ::
@@ -80,10 +84,10 @@
      &     xresmax, xdum,
      &     xeig(nroots,2), xresnrm(nroots), xlist(2*nroots)
       type(me_list_array), pointer ::
-     &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:)
+     &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:), me_met(:)
       type(file_array), pointer ::
      &     ffdia(:), ff_trv(:),
-     &     ffopt(:), ff_mvp(:)
+     &     ffopt(:), ff_mvp(:), ff_met(:)
       type(dependency_info) ::
      &     depend
       type(optimize_info) ::
@@ -96,7 +100,7 @@
      &     fl_mvp
 
       integer, pointer ::
-     &     irecmvp(:), irectrv(:)
+     &     irecmvp(:), irectrv(:), irecmet(:)
       real(8), pointer ::
      &      xret(:)
 
@@ -125,10 +129,10 @@
      &     'did not find formula '//trim(label_form))
       form_mvp => form_info%form_arr(idx)%form
 
-
-      allocate(me_opt(nopt),me_dia(nopt),me_trv(nopt),me_mvp(nopt))
+      allocate(me_opt(nopt),me_dia(nopt),me_trv(nopt),me_mvp(nopt),
+     &         me_met(nopt))
       allocate(ffopt(nopt),ffdia(nopt),
-     &     ff_trv(nopt),ff_mvp(nopt))
+     &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt))
       do iopt = 1, nopt
         ! pointer array for operators:
         ierr = 1
@@ -165,6 +169,7 @@
       call set_opti_info(opti_info,3,nopt,nroots,me_opt,mode_str)
 
       nvectors = opti_info%maxsbsp
+      use_s_t = .false.
 
       do iopt = 1, nopt
         ! get a ME-list for trial-vectors
@@ -182,7 +187,7 @@
         ! get a ME list for matrix-vector products
         ! (have same symmtry properties as result!)
         write(fname,'("mvp_",i3.3)') iopt
-        call define_me_list(fname,label_op_mvp,
+        call define_me_list(fname,label_op_mvp(iopt),
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,
@@ -191,6 +196,25 @@
         idxmel = idx_mel_list(fname,op_info)
         me_mvp(iopt)%mel   => op_info%mel_arr(idxmel)%mel
         ff_mvp(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+
+        ! use of metric requested?
+        use_s(iopt) = trim(label_op_met(iopt)).ne.
+     &       trim(me_opt(iopt)%mel%op%name)
+        if (use_s(iopt)) then
+          use_s_t = .true.
+          ! get a ME list for metric-times-vector products
+          ! (have same symmtry properties as result!)
+          write(fname,'("svp_",i3.3)') iopt
+          call define_me_list(fname,label_op_met(iopt),
+     &         me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
+     &         me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
+     &         me_opt(iopt)%mel%mst,
+     &         1,nvectors,
+     &         op_info,orb_info,str_info,strmap_info)
+          idxmel = idx_mel_list(fname,op_info)
+          me_met(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+          ff_met(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand          
+        end if
 
       end do
 
@@ -207,6 +231,7 @@
       ! records with trial vectors and Mv-products, needed in evp_control:
       ifree = mem_alloc_int(irectrv,nroots,'rectrv')
       ifree = mem_alloc_int(irecmvp,nroots,'recmvp')
+      ifree = mem_alloc_int(irecmet,nroots,'recmet')
 
       do iopt = 1, nopt
         ! open result vector file(s)
@@ -214,6 +239,8 @@
         call file_open(ff_trv(iopt)%fhand)
         ! open corresponding matrix vector products ...
         call file_open(ff_mvp(iopt)%fhand)
+        if (use_s(iopt))
+     &       call file_open(ff_met(iopt)%fhand)
         ! ... and corresponding preconditioner(s)
         if (ffdia(iopt)%fhand%unit.le.0)
      &       call file_open(ffdia(iopt)%fhand)
@@ -239,8 +266,9 @@
         call leq_evp_control
      &       ('EVP',iter,
      &       task,conv,xresnrm,xeig,
-     &       nrequest,irectrv,irecmvp,
-     &       ffopt,ff_trv,ff_mvp,ffdia,ffdia,  ! #4 is dummy
+     &       use_s,
+     &       nrequest,irectrv,irecmvp,irecmet,
+     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #4 is dummy
      &       opti_info,opti_stat)
 
         if (iter.gt.1) then
@@ -268,7 +296,10 @@
             do iopt = 1, nopt
               call switch_mel_record(me_trv(iopt)%mel,irectrv(irequest))
               call switch_mel_record(me_mvp(iopt)%mel,irecmvp(irequest))
-
+              if (use_s(iopt))
+     &             call switch_mel_record(me_met(iopt)%mel,
+     &                                                irecmet(irequest))
+              
               ! enforce MS-combination symmetry of trial vectors
               ! (if requested)
               if (iter.gt.1.and.me_trv(iopt)%mel%absym.ne.0)
@@ -308,6 +339,8 @@ c dbg
         ! remove the temporary lists
         call del_me_list(me_trv(iopt)%mel%label,op_info)
         call del_me_list(me_mvp(iopt)%mel%label,op_info)
+        if (use_s(iopt))
+     &       call del_me_list(me_met(iopt)%mel%label,op_info)
 
         ! make sure that the operator is now associated with
         ! the list containing the solution vector
@@ -338,8 +371,8 @@ c dbg
 
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
-      deallocate(me_opt,me_dia,me_trv,me_mvp)
-      deallocate(ff_trv,ff_mvp,ffdia,ffopt,xret)
+      deallocate(me_opt,me_dia,me_trv,me_mvp,me_met)
+      deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret)
 
       ifree = mem_flushmark()
 

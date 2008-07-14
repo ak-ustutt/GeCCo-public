@@ -216,7 +216,7 @@ c dbg
      &       rule%n_parameter_strings,
      &       nopt,nroots,mode)
 
-        if (rule%n_labels.ne.3*nopt+1)
+        if (rule%n_labels.ne.4*nopt+1)
      &       call quit(1,'process_me_lists',
      &       'incorrect number of labels to be passed for '//
      &       trim(SOLVEEVP))
@@ -225,7 +225,8 @@ c dbg
      &       rule%labels(1:nopt),               ! to be opt.
      &       rule%labels(  nopt+1:  nopt+nopt), ! precond.
      &       rule%labels(2*nopt+1:2*nopt+nopt), ! mvp-labels
-     &       rule%labels(3*nopt+1),             ! formula
+     &       rule%labels(3*nopt+1:3*nopt+nopt), ! metric-labels
+     &       rule%labels(4*nopt+1),             ! formula
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case default

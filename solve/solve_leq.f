@@ -71,7 +71,7 @@
      &     orb_info
 
       logical ::
-     &     conv
+     &     conv, use_s(nopt)
       character(len_opname) ::
      &     label
       integer ::
@@ -97,7 +97,7 @@
      &     fl_rhs_mvp
 
       integer, pointer ::
-     &     irecmvp(:), irectrv(:), idxselect(:)
+     &     irecmvp(:), irectrv(:), irecmet(:), idxselect(:)
       real(8), pointer ::
      &      xret(:)
 
@@ -124,6 +124,7 @@
      &     'did not find formula '//trim(label_form))
       form_rhs_mvp => form_info%form_arr(idx)%form
 
+      use_s(1:nopt) = .false.
 
       allocate(me_opt(nopt),me_rhs(nopt),me_trv(nopt),me_mvp(nopt))
       allocate(ffopt(nopt),ffdia(nopt),
@@ -217,6 +218,7 @@
       ! records with trial vectors and Mv-products, needed in leq_control:
       ifree = mem_alloc_int(irectrv,nroots,'rectrv')
       ifree = mem_alloc_int(irecmvp,nroots,'recmvp')
+      ifree = mem_alloc_int(irecmet,nroots,'recmet')
 
       do iopt = 1, nopt
         ! open result vector file(s)
@@ -258,8 +260,9 @@
         call leq_evp_control
      &       ('LEQ',iter,
      &       task,conv,xresnrm,xdum,
-     &       nrequest,irectrv,irecmvp,
-     &       ffopt,ff_trv,ff_mvp,ff_rhs,ffdia,
+     &       use_s,
+     &       nrequest,irectrv,irecmvp,irecmet, 
+     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
      &       opti_info,opti_stat)
 
         if (conv) then

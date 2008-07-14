@@ -55,7 +55,8 @@
      &     gred(:), vred(:), mred(:),
      &     xmat1(:), xmat2(:), xvec(:)
       integer, pointer ::
-     &     ndim_rsbsp, ndim_vsbsp, iord_rsbsp(:), iord_vsbsp(:),
+     &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
+     &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
      &     nwfpar(:),
      &     ipiv(:), iconv(:), idxroot(:)
       type(filinf), pointer ::
@@ -77,8 +78,10 @@
       vred => opti_stat%sbspmat(2*mxsub**2+1:)
       ndim_rsbsp => opti_stat%ndim_rsbsp
       ndim_vsbsp => opti_stat%ndim_vsbsp
+      ndim_ssbsp => opti_stat%ndim_rsbsp
       iord_rsbsp => opti_stat%iord_rsbsp
       iord_vsbsp => opti_stat%iord_vsbsp
+      iord_ssbsp => opti_stat%iord_rsbsp
       ffrsbsp => opti_stat%ffrsbsp(1)%fhand
       ffvsbsp => opti_stat%ffvsbsp(1)%fhand
       nwfpar => opti_info%nwfpar
@@ -206,8 +209,10 @@ c dbg
             ! assemble orth. subspace exactly spanning the nroot 
             ! currently best solution vectors
             call optc_minspace(
-     &           iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,
-     &           vred,gred,mred,nred,nroot,nroot,mxsub,
+     &           iord_vsbsp,ffvsbsp,
+     &           iord_rsbsp,ffrsbsp,
+     &           iord_rsbsp,ffrsbsp,.false., ! #1,#2 are dummies
+     &           vred,gred,mred,xdum,nred,nroot,nroot,mxsub,
      &           ffscr,nnew,
      &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
             ndim_vsbsp = nred
@@ -259,6 +264,9 @@ c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
         ! |Mv> subspace organisation should be identical to |v> subsp.
         ndim_rsbsp = ndim_vsbsp
         iord_rsbsp = iord_vsbsp
+        ! dto. for |Sv> subspace
+        ndim_ssbsp = ndim_vsbsp
+        iord_ssbsp = iord_vsbsp
 
       else
         ! if all converged: assemble vectors 

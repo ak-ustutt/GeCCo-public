@@ -43,6 +43,9 @@
      &     title_ccr12rs_c*29 = 'CCR12 C residual',
      &     title_ccr12rs_cpp*30 = 'CCR12 C" residual'
       character, parameter ::
+     &     title_ccr12_s_t*18    = 'CCR12 metric times T',
+     &     title_ccr12_s_r*18    = 'CCR12 metric times R'
+      character, parameter ::
      &     title_r12_rbar*28  ='R12 [R * (F+K)]-intermediate',
      &     title_r12_rtilde*24='R12 [R * K]-intermediate',
      &     title_r12_vint*38 = 'R12 V-intermediate (formal definition)',
@@ -150,6 +153,10 @@ c dbg
      &     form_ccr12rs_cpp*12   = 'OMG_C"_CCR12',
      &     fopt_mpr12_0*10       = 'MP-R12-OPT',
      &     fopt_ccr12_0*10       = 'CC-R12-OPT'
+      character, parameter ::
+     &     form_ccr12_s0*8       = 'CCR12_S0',
+     &     form_ccr12_s_t*9      = 'CCR12_S_T',
+     &     form_ccr12_s_r*9      = 'CCR12_S_R'
       character, parameter ::
      &     form_r12_r12bar*11  = 'R12BAR_CABS',
      &     fopt_r12_r12bar*10  = 'R12BAR_OPT',

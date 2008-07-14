@@ -1,8 +1,9 @@
 *----------------------------------------------------------------------*
       subroutine leq_evp_control(modestr,iter,
      &                   task,conv,xrsnrm,xeig,
-     &                   nrequest,irectrv,irecmvp,
-     &                   ffopt,fftrv,ffmvp,ffrhs,ffdia,
+     &                   use_s,
+     &                   nrequest,irectrv,irecmvp,irecmet,
+     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
      &                   opti_info,opti_stat)
 *----------------------------------------------------------------------*
 *
@@ -63,15 +64,17 @@
      &     conv
       character(*), intent(in) ::
      &     modestr
+      logical, intent(in) ::
+     &     use_s(*)
 
       integer, intent(inout) ::
      &     iter
 
       integer, intent(out) ::
-     &     nrequest,irectrv(*),irecmvp(*)
+     &     nrequest,irectrv(*),irecmvp(*),irecmet(*)
 
       type(file_array), intent(in) ::
-     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
+     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
       
       type(optimize_info), intent(in) ::
      &     opti_info
@@ -193,6 +196,7 @@ c        end if
         do irequest = 1, nrequest
           irectrv(irequest) = irequest
           irecmvp(irequest) = irequest
+          irecmet(irequest) = irequest
         end do
 
         if (ffscr%unit.gt.0) call file_close_delete(ffscr)
@@ -222,6 +226,7 @@ c        end if
         else
           call evpc_core(iter,
      &         task,iroute,xrsnrm,xeig,
+     &         use_s,
      &         ffopt,fftrv,ffmvp,ffdia,
      &         nincore,lenbuf,ffscr,
      &         xbuf1,xbuf2,xbuf3,
@@ -291,14 +296,13 @@ c        end if
      &       call quit(1,'leq_evp_control',
      &       'different subspace dimensions?')
         nrequest = opti_stat%nadd
-c dbg
-c        print *,'set nrequest to : ',nrequest
-c dbg
         do irequest = 1, nrequest
           irectrv(irequest) =
      &         opti_stat%iord_vsbsp(nsub-nrequest+irequest)
           irecmvp(irequest) =
      &         opti_stat%iord_rsbsp(nsub-nrequest+irequest)
+          irecmet(irequest) =
+     &         opti_stat%iord_ssbsp(nsub-nrequest+irequest)
         end do
         task = 4
           
@@ -434,15 +438,18 @@ c dbg
       if (iroute.eq.1) then
 
         allocate(opti_stat%ffrsbsp(opti_info%nopt),
-     &       opti_stat%ffvsbsp(opti_info%nopt))
+     &       opti_stat%ffvsbsp(opti_info%nopt),
+     &       opti_stat%ffssbsp(opti_info%nopt))
         do iopt = 1, opti_info%nopt
           opti_stat%ffrsbsp(iopt)%fhand => ffmvp(iopt)%fhand
           opti_stat%ffvsbsp(iopt)%fhand => fftrv(iopt)%fhand
+          if (use_s(iopt))
+     &         opti_stat%ffssbsp(iopt)%fhand => ffmet(iopt)%fhand
         end do
 
-        ! space for Mred, and for each root: xred, RHSred
+        ! space for Mred, and for each root: xred, RHSred, Sred
         lenord = opti_info%maxsbsp ! includes nopt-factor
-        lenmat = 3*lenord**2
+        lenmat = 4*lenord**2
       else
         lenmat = 0
         lenord = 0
@@ -454,20 +461,25 @@ c dbg
         ifree = mem_alloc_real(opti_stat%sbspmat,lenmat,'sbspmat')
         ifree = mem_alloc_int (opti_stat%iord_rsbsp,lenord,'iord_rsbsp')
         ifree = mem_alloc_int (opti_stat%iord_vsbsp,lenord,'iord_vsbsp')
+        ifree = mem_alloc_int (opti_stat%iord_ssbsp,lenord,'iord_ssbsp')
         opti_stat%iord_rsbsp(1:lenord) = 0
         opti_stat%iord_vsbsp(1:lenord) = 0
+        opti_stat%iord_ssbsp(1:lenord) = 0
       end if
 
 * initialize variables - we start with nroot user-provided guess vectors:
       if (modestr(1:3).eq.'LEQ') then
         opti_stat%ndim_rsbsp = 0 !opti_info%nroot
         opti_stat%ndim_vsbsp = 0 !opti_info%nroot
+        opti_stat%ndim_ssbsp = 0 !opti_info%nroot
       else
         opti_stat%ndim_rsbsp = opti_info%nroot
         opti_stat%ndim_vsbsp = opti_info%nroot
+        opti_stat%ndim_ssbsp = opti_info%nroot
         do idx = 1, opti_info%nroot
           opti_stat%iord_rsbsp(idx) = idx
           opti_stat%iord_vsbsp(idx) = idx
+          opti_stat%iord_ssbsp(idx) = idx
         end do
       end if
 
@@ -484,7 +496,8 @@ c dbg
      &     iopt
 
       if (iroute.ge.1) then
-        deallocate(opti_stat%ffrsbsp,opti_stat%ffvsbsp)
+        deallocate(opti_stat%ffrsbsp,opti_stat%ffvsbsp,
+     &             opti_stat%ffssbsp)
       end if
 
       return
