@@ -81,7 +81,7 @@
       real(8) ::
      &     energy, xresnrm, xdum
       type(me_list_array), pointer ::
-     &     me_opt(:), me_trv(:), me_mvp(:), me_rhs(:)
+     &     me_opt(:), me_trv(:), me_mvp(:), me_rhs(:), me_dia(:)
       type(file_array), pointer ::
      &     ffdia(:), ff_rhs(:), ff_trv(:),
      &     ffopt(:), ff_mvp(:)
@@ -126,7 +126,8 @@
 
       use_s(1:nopt) = .false.
 
-      allocate(me_opt(nopt),me_rhs(nopt),me_trv(nopt),me_mvp(nopt))
+      allocate(me_opt(nopt),me_rhs(nopt),me_trv(nopt),me_mvp(nopt),
+     &     me_dia(nopt))
       allocate(ffopt(nopt),ffdia(nopt),
      &     ff_trv(nopt),ff_mvp(nopt),ff_rhs(nopt))
       do iopt = 1, nopt
@@ -142,8 +143,9 @@
         ierr = 3
         jopt = iopt
         idxmel = idx_mel_list(label_prc(iopt),op_info)
-        if (idxmel.le.0) exit
+        if (idxmel.le.0) exit        
         ierr = 4
+        me_dia(iopt)%mel  => op_info%mel_arr(idxmel)%mel
         ffdia(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
         if (.not.associated(ffdia(iopt)%fhand)) exit
         ierr = 0
@@ -262,8 +264,11 @@
      &       task,conv,xresnrm,xdum,
      &       use_s,
      &       nrequest,irectrv,irecmvp,irecmet, 
-     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
-     &       opti_info,opti_stat)
+     &       me_opt,me_trv,me_mvp,me_mvp,me_rhs,me_dia, ! #4 is dummy
+     &       me_dia,0,
+c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
+     &       opti_info,opti_stat,
+     &       orb_info,op_info,str_info,strmap_info)
 
         if (conv) then
           write(luout,'(">>> conv.",21x,x,g10.4)') xresnrm
@@ -316,7 +321,7 @@ c dbg
 
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
-      deallocate(me_opt,me_trv,me_rhs,me_mvp)
+      deallocate(me_opt,me_trv,me_rhs,me_mvp,me_dia)
       deallocate(ff_trv,ff_rhs,ff_mvp,ffdia,ffopt,xret,idxselect)
 
       ifree = mem_flushmark()

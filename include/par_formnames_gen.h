@@ -25,6 +25,7 @@
      &     title_pteta*21     = 'T(pt) right hand side',
      &     title_cc1dens*21   = 'CC 1-particle density',
      &     title_cc_a_r*18    = 'CC right transform',
+     &     title_cc_a_rp*30   = 'CC right transform (R12 part)',
      &     title_cc_l_a*17    = 'CC left transform',
      &     title_cc_a_rip*18  = 'CC right transform (IP)',
      &     title_cc_lip_a*17  = 'CC left transform (IP)',
@@ -44,7 +45,9 @@
      &     title_ccr12rs_cpp*30 = 'CCR12 C" residual'
       character, parameter ::
      &     title_ccr12_s_t*18    = 'CCR12 metric times T',
-     &     title_ccr12_s_r*18    = 'CCR12 metric times R'
+     &     title_ccr12_s_c*29    = 'CCR12 metric times T (R12 part)',
+     &     title_ccr12_s_r*18    = 'CCR12 metric times R',
+     &     title_ccr12_s_rp*29   = 'CCR12 metric times R (R12 part)'
       character, parameter ::
      &     title_r12_rbar*28  ='R12 [R * (F+K)]-intermediate',
      &     title_r12_rtilde*24='R12 [R * K]-intermediate',
@@ -156,7 +159,10 @@ c dbg
       character, parameter ::
      &     form_ccr12_s0*8       = 'CCR12_S0',
      &     form_ccr12_s_t*9      = 'CCR12_S_T',
-     &     form_ccr12_s_r*9      = 'CCR12_S_R'
+     &     form_ccr12_s_c*10     = 'CCR12_S_TP',
+     &     form_ccr12_s_r*9      = 'CCR12_S_R',
+     &     form_ccr12_s_rp*10    = 'CCR12_S_RP',
+     &     form_cc_a_rp*7        = 'CC_A_RP'
       character, parameter ::
      &     form_r12_r12bar*11  = 'R12BAR_CABS',
      &     fopt_r12_r12bar*10  = 'R12BAR_OPT',

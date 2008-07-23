@@ -3,8 +3,11 @@
      &                   task,conv,xrsnrm,xeig,
      &                   use_s,
      &                   nrequest,irectrv,irecmvp,irecmet,
-     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
-     &                   opti_info,opti_stat)
+     &                   me_opt,me_trv,me_mvp,me_met,me_rhs,me_dia,
+     &                   me_special,nspecial,
+c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
+     &                   opti_info,opti_stat,
+     &                   orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
 * Control routine for linear equations and eigenvalue problems.
@@ -43,10 +46,14 @@
 
       include 'stdunit.h'
       include 'ioparam.h'
-      include 'def_filinf.h'
+      include 'mdef_operator_info.h'
       include 'def_file_array.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
+      include 'def_orbinf.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
+      include 'def_strmapinf.h'
       include 'ifc_memman.h'
       
 * parameters
@@ -73,16 +80,31 @@
       integer, intent(out) ::
      &     nrequest,irectrv(*),irecmvp(*),irecmet(*)
 
-      type(file_array), intent(in) ::
-     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
+      integer, intent(in) ::
+     &     nspecial
+
+      type(me_list_array), intent(in) ::
+     &     me_opt(*), me_dia(*), me_special(nspecial),
+     &     me_trv(*), me_mvp(*), me_rhs(*), me_met(*)
+c      type(file_array), intent(in) ::
+c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
       
       type(optimize_info), intent(in) ::
      &     opti_info
       type(optimize_status), intent(inout) ::
      &     opti_stat
 
+      type(orbinf),intent(in) ::
+     &     orb_info
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf),intent(in) ::
+     &     str_info
+      type(strmapinf) ::
+     &     strmap_info
+
       real(8), intent(inout) ::
-     &     xrsnrm(opti_info%nroot),
+     &     xrsnrm(opti_info%nroot*opti_info%nopt),
      &     xeig(opti_info%nroot,2)
 
 
@@ -93,7 +115,9 @@
      &     xbuf1(:), xbuf2(:), xbuf3(:)
 
       type(filinf) ::
-     &     ffscr
+     &     ffscr(opti_info%nopt)
+      character(60) ::
+     &     fname
       logical ::
      &     lexit, lconv
       integer ::
@@ -156,9 +180,17 @@
         call leqevpc_mem(nincore,lenbuf,
      &       ifree,opti_info%nwfpar,opti_info%nopt)
 c        if (nincore.le.1) then
-          call file_init(ffscr,'leqscr.da',ftyp_da_unf,lblk_da)
-          call file_open(ffscr)
+        do iopt = 1, opti_info%nopt
+          write(fname,'("scr",i2.2,".da")') iopt
+          call file_init(ffscr(iopt),fname,ftyp_da_unf,lblk_da)
+          call file_open(ffscr(iopt))
+        end do
 c        end if
+      else
+        do iopt = 1, opti_info%nopt
+          write(fname,'("scr",i2.2,".da")') iopt
+          call file_init(ffscr(iopt),fname,ftyp_da_unf,lblk_da)
+        end do
       end if
 
       ! still, we assume this:
@@ -181,7 +213,7 @@ c        end if
         ! respective files:        
         if (modestr(1:3).eq.'LEQ') then
           call leqc_init(xrsnrm,iroute,
-     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
+     &       me_opt,me_trv,me_mvp,me_rhs,me_dia,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
      &       opti_info,opti_stat)          
@@ -199,7 +231,9 @@ c        end if
           irecmet(irequest) = irequest
         end do
 
-        if (ffscr%unit.gt.0) call file_close_delete(ffscr)
+        do iopt = 1, opti_info%nopt
+          if (ffscr(iopt)%unit.gt.0) call file_close_delete(ffscr(iopt))
+        end do          
 
         iter = 1
 
@@ -219,18 +253,23 @@ c        end if
         if (modestr(1:3).eq.'LEQ') then
           call leqc_core(iter,
      &         task,iroute,xrsnrm,
-     &         ffopt,fftrv,ffmvp,ffrhs,ffdia,
-     &         nincore,lenbuf,ffscr,
+     &         me_opt,me_trv,me_mvp,me_rhs,me_dia,
+     &         me_special,nspecial,
+c     &         ffopt,fftrv,ffmvp,ffrhs,ffdia,
+     &         nincore,lenbuf,ffscr(1),
      &         xbuf1,xbuf2,xbuf3,
      &         opti_info,opti_stat)
         else
           call evpc_core(iter,
      &         task,iroute,xrsnrm,xeig,
      &         use_s,
-     &         ffopt,fftrv,ffmvp,ffdia,
+     &         me_opt,me_trv,me_mvp,me_dia,
+     &         me_special,nspecial,
+c     &         ffopt,fftrv,ffmvp,ffdia,
      &         nincore,lenbuf,ffscr,
      &         xbuf1,xbuf2,xbuf3,
-     &         opti_info,opti_stat)
+     &         opti_info,opti_stat,
+     &         orb_info,op_info,str_info,strmap_info)
         end if
 
       end if
@@ -285,7 +324,9 @@ c        end if
 * do some stuff for the next macro-iteration
 *----------------------------------------------------------------------*
 
-        if (ffscr%unit.gt.0) call file_close_delete(ffscr)
+        do iopt = 1, opti_info%nopt
+          if (ffscr(iopt)%unit.gt.0) call file_close_delete(ffscr(iopt))
+        end do
 
         ! release all temporary memory
         ifree = mem_flushmark('leqevpc_temp')
@@ -312,7 +353,9 @@ c        end if
 *----------------------------------------------------------------------*
         call leqevpc_cleanup()
 
-        if (ffscr%unit.gt.0) call file_close_delete(ffscr)
+        do iopt = 1, opti_info%nopt
+          if (ffscr(iopt)%unit.gt.0) call file_close_delete(ffscr(iopt))
+        end do
 
         ! release all temporary memory
         ifree = mem_flushmark('leqevpc_temp')
@@ -441,10 +484,10 @@ c        end if
      &       opti_stat%ffvsbsp(opti_info%nopt),
      &       opti_stat%ffssbsp(opti_info%nopt))
         do iopt = 1, opti_info%nopt
-          opti_stat%ffrsbsp(iopt)%fhand => ffmvp(iopt)%fhand
-          opti_stat%ffvsbsp(iopt)%fhand => fftrv(iopt)%fhand
+          opti_stat%ffrsbsp(iopt)%fhand => me_mvp(iopt)%mel%fhand
+          opti_stat%ffvsbsp(iopt)%fhand => me_trv(iopt)%mel%fhand
           if (use_s(iopt))
-     &         opti_stat%ffssbsp(iopt)%fhand => ffmet(iopt)%fhand
+     &         opti_stat%ffssbsp(iopt)%fhand => me_met(iopt)%mel%fhand
         end do
 
         ! space for Mred, and for each root: xred, RHSred, Sred

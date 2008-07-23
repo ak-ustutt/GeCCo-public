@@ -104,10 +104,6 @@
         end do
 
         lenbuf = idxbuf
-c dbg
-        print *,'putting to: ',strmap_info%idx_last+1,
-     &                         strmap_info%idx_last+lenbuf
-c dbg
         call mem_iput(strmap_info%ffstrmap,buffer,
      &       strmap_info%idx_last+1,strmap_info%idx_last+lenbuf)
 

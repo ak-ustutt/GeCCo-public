@@ -2,6 +2,7 @@
       subroutine solve_evp(mode_str,
      &     nopt,nroots,label_opt,label_prc,label_op_mvp,label_op_met,
      &     label_form,
+     &     label_special,nspecial,
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -50,16 +51,17 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
-     &     nopt, nroots
+     &     nopt, nroots, nspecial
       character(*), intent(in) ::
      &     mode_str,
      &     label_opt(nopt),
      &     label_prc(nopt),
      &     label_op_mvp(nopt),
      &     label_op_met(nopt),
+     &     label_special(nspecial),
      &     label_form
       type(formula_info) ::
      &     form_info
@@ -82,12 +84,13 @@
      &     idxlist(2*nroots)
       real(8) ::
      &     xresmax, xdum,
-     &     xeig(nroots,2), xresnrm(nroots), xlist(2*nroots)
+     &     xeig(nroots,2), xresnrm(nroots*nopt), xlist(2*nroots)
       type(me_list_array), pointer ::
-     &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:), me_met(:)
+     &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:), me_met(:),
+     &     me_special(:)
       type(file_array), pointer ::
      &     ffdia(:), ff_trv(:),
-     &     ffopt(:), ff_mvp(:), ff_met(:)
+     &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:)
       type(dependency_info) ::
      &     depend
       type(optimize_info) ::
@@ -112,16 +115,16 @@
       real(8), external ::
      &     fndmnx
 
-      ifree = mem_setmark('solve_leq')
+      ifree = mem_setmark('solve_evp')
 
+c dbg
+      print *,'in solve_evp: nspecial = ',nspecial
+c dbg
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'entered solve_evp')
         write(luout,*) 'nopt   = ',nopt
         write(luout,*) 'nroots = ',nroots
       end if
-
-      if (nopt.gt.1)
-     &     call quit(1,'solve_evp','did not yet consider coupled EVPs')
 
       idx = idx_formlist(label_form,form_info)
       if (idx.le.0)
@@ -130,9 +133,9 @@
       form_mvp => form_info%form_arr(idx)%form
 
       allocate(me_opt(nopt),me_dia(nopt),me_trv(nopt),me_mvp(nopt),
-     &         me_met(nopt))
+     &         me_met(nopt),me_special(nspecial))
       allocate(ffopt(nopt),ffdia(nopt),
-     &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt))
+     &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt),ffspecial(nspecial))
       do iopt = 1, nopt
         ! pointer array for operators:
         ierr = 1
@@ -154,16 +157,32 @@
         ierr = 0
       end do
 
+      ! special lists needed?
+      if (ierr.eq.0) then
+        do idx = 1, nspecial
+          jopt = idx
+          idxmel = idx_mel_list(label_special(idx),op_info)
+          ierr = 5
+          if (idxmel.le.0) exit
+          me_special(idx)%mel  => op_info%mel_arr(idxmel)%mel
+          ffspecial(idx)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+          ierr = 6
+          if (.not.associated(ffspecial(idx)%fhand)) exit
+          ierr = 0
+        end do
+      end if
+
       ! error handling
       if (ierr.gt.0) then
         if (ierr.eq.1.or.ierr.eq.2) label = label_opt(jopt)
         if (ierr.eq.3.or.ierr.eq.4) label = label_prc(jopt)
+        if (ierr.eq.5.or.ierr.eq.6) label = label_special(jopt)
         if (mod(ierr,2).eq.1)
      &       call quit(1,'solve_evp',
      &       'did not find list '//trim(label))
         if (mod(ierr,2).eq.0)
      &       call quit(1,'solve_evp',
-     &       'no file associated to list '//trim(label))
+     &       'no file associated with list '//trim(label))
       end if
 
       call set_opti_info(opti_info,3,nopt,nroots,me_opt,mode_str)
@@ -246,8 +265,18 @@
      &       call file_open(ffdia(iopt)%fhand)
       end do
 
+      do idx = 1, nspecial
+        if (ffspecial(idx)%fhand%unit.le.0)
+     &       call file_open(ffspecial(idx)%fhand)
+      end do
+
       ! get initial amplitudes
       do iopt = 1, nopt
+        ! preliminary solution: set only component 1, rest is zero
+        if (iopt.gt.1) then
+          call zeroop(me_trv(iopt)%mel)
+          cycle
+        end if
         call find_nmin_list(xlist,idxlist,2*nroots,me_dia(iopt)%mel)
         do iroot = 1, nroots
           
@@ -273,17 +302,21 @@
      &       task,conv,xresnrm,xeig,
      &       use_s,
      &       nrequest,irectrv,irecmvp,irecmet,
-     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #4 is dummy
-     &       opti_info,opti_stat)
+     &       me_opt,me_trv,me_mvp,me_met,me_dia,me_dia,
+     &       me_special,nspecial,
+c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
+     &       opti_info,opti_stat,
+     &       orb_info,op_info,str_info,strmap_info)
 
         if (iter.gt.1) then
-          xresmax = fndmnx(xresnrm,nroots,2)
+          xresmax = fndmnx(xresnrm,nroots*nopt,2)
           write(luout,'(">>>",i3,24x,x,g10.4)') iter-1,xresmax
           if (iprlvl.gt.0) then
             do iroot = 1, nroots
               if (xeig(iroot,2).eq.0d0) then
-                write(luout,'(" >>",3x,f24.12,x,g10.4)')
-     &               xeig(iroot,1),xresnrm(iroot)
+                write(luout,'(" >>",3x,f24.12,x,3g10.4)')
+     &               xeig(iroot,1),(xresnrm(iroot+idx*nroots),
+     &                              idx = 0, nopt-1)
               else
                 write(luout,
      &               '(" >>",3x,f24.12,x,g10.4," (img=",g24.12,")")')
@@ -364,6 +397,11 @@ c dbg
 
       end do
 
+      do idx = 1, nspecial
+        if (ffspecial(idx)%fhand%unit.gt.0)
+     &       call file_close_keep(ffspecial(idx)%fhand)
+      end do
+
       ! print results
       call write_title(luout,wst_title,
      &     'Results for '//trim(label_opt(1)))
@@ -386,8 +424,8 @@ c dbg
 
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
-      deallocate(me_opt,me_dia,me_trv,me_mvp,me_met)
-      deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret)
+      deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special)
+      deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial)
 
       ifree = mem_flushmark()
 

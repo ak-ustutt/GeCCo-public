@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine optc_prc_special2(me_grd,me_special,nspecial,
-     &                            name_opt,
+     &                            name_opt,w_shift,
      &                            nincore,xbuf1,xbuf2,xbuf3,lenbuf,
      &                            orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -36,6 +36,8 @@ c      include 'ifc_input.h'
      &     me_special(nspecial)
       character(*), intent(in) ::
      &     name_opt
+      real(8), intent(in) ::
+     &     w_shift
       real(8), intent(inout), target ::
      &     xbuf1(lenbuf), xbuf2(lenbuf), xbuf3(lenbuf)
       type(orbinf), intent(in), target ::
@@ -205,7 +207,7 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
         if (njoined.eq.2) then
           iblk_b = 1
         else if (njoined.eq.1) then
-          if (name_opt.eq.op_cex) then
+          if (name_opt.eq.op_cex.or.name_opt.eq.op_rp) then
             mode = 1
             nidx_p = occ_blk(IPART,1,1)
             occ_b = 0
@@ -489,7 +491,7 @@ c test -- special insert
 
               call optc_prc_special2_inner
      &             (xgrd_pnt(idx_grd), beyond_A,njoined.eq.1
-     &                 .and.nidx_cstr.gt.0,
+     &                 .and.nidx_cstr.gt.0, w_shift,
      &              xbuf2,scrbuf,bmat(idx_b),xmat(idx_x),f_dia,
      &              ld_bx,len_cstr, len_astr,
      &              nidx_cstr,ms_cstr,gam_cstr,

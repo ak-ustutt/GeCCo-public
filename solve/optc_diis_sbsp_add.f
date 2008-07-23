@@ -117,7 +117,7 @@ c     &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
 c     &                          orb_info,str_info)
 c          xbuf1(1:nwfpar) = xbuf3(1:nwfpar)
           call optc_prc_special2(me_grd,me_special,nspecial,
-     &                           me_amp%op%name,
+     &                           me_amp%op%name,0d0,
      &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
      &                          orb_info,op_info,str_info,strmap_info)
 c          call mem_check('after prc_special2')

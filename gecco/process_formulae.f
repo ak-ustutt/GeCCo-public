@@ -214,16 +214,19 @@ c prelim
       case(DERIVATIVE)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title,idum,strdum)
+     &       title,nop,strdum)
         ioff = rule%n_update
+
+        ! fix:
+        if (rule%n_parameter_strings.eq.1) nop = 1
         
         jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
         form0_pnt => form_info%form_arr(jdx)%form
         call form_deriv2(form_pnt,form0_pnt,
-     &       title,1,
+     &       title,nop,
      &       rule%labels(ioff+2),
      &       rule%labels(ioff+3),
-     &       rule%labels(ioff+4),
+     &       rule%labels(ioff+3+nop),
      &       op_info)
       case(LEQ_SPLIT)
         call form_parameters(+1,

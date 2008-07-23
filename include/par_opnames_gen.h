@@ -107,6 +107,11 @@ c     &     op_cba*4   = 'CBAR',
      &     op_cexx_pt*8     = 'T12"(pt)',
      &     op_cexxbar*7    = 'T12BAR"',
      &     op_omgcexx*8    = 'OMG_T12"'
+      character, parameter ::
+     &     op_rp*2         = 'R''',
+     &     op_a_rp*6       = '(A.R)''',
+     &     op_s_rp*6       = '(S.R)''',
+     &     op_s_c*6        = '(S.T)'''
       ! generic ME-list names
       character, parameter ::
      &     mel_cclg0*6      = 'L0(CC)',
@@ -258,6 +263,13 @@ c     &     op_cba*4   = 'CBAR',
      &     mel_cexxbar*11    = 'T12BAR"-R12',
      &     mel_omgcexxdef*14 = 'DEF-OMG12"-R12',
      &     mel_omgcexx*10     = 'OMG12"-R12'
+      character, parameter ::
+     &     mel_rpex*4        = 'RE0''',
+     &     meldef_rpex*8     = 'DEF-RE0''',
+     &     mel_a_rpex*6      = 'A.RE0''',
+     &     meldef_a_rpex*10  = 'DEF-A.RE0''',
+     &     mel_s_rpex*6      = 'S.RE0''',
+     &     meldef_s_rpex*10  = 'DEF-S.RE0'''
 
 	  
       

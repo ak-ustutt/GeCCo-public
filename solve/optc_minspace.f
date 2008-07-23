@@ -3,7 +3,7 @@
      &     iord_vsbsp,ffvsbsp,
      &     iord_rsbsp,ffrsbsp,
      &     iord_ssbsp,ffssbsp,use_s,
-     &     vred,gred,mred,sred,nred,nroot,nrhs,mxdim,
+     &     vred,gred,mred,sred,nred,nroot,nrhs,mxdim,nopt,
      &     ffscr,ioffscr,
      &     nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
 *----------------------------------------------------------------------*
@@ -14,27 +14,32 @@
 
       include 'stdunit.h'
       include 'def_filinf.h'
+      include 'def_file_array.h'
 
       integer, parameter ::
      &     ntest = 00
 
-      logical, intent(in) ::
-     &     use_s
       integer, intent(inout) ::
-     &     nred, nrhs, mxdim,
+     &     nred, nrhs, mxdim, nopt,
      &     iord_vsbsp(*), iord_rsbsp(*), iord_ssbsp(*)
+      logical, intent(in) ::
+     &     use_s(nopt)
+      type(file_array), intent(inout) ::
+     &     ffvsbsp(nopt), ffrsbsp(nopt), ffssbsp(nopt)
       type(filinf), intent(inout) ::
-     &     ffvsbsp, ffrsbsp, ffssbsp, ffscr
+     &     ffscr
       integer, intent(in) ::
-     &     nroot, nincore, nwfpar, lenbuf, ioffscr
+     &     nroot, nincore, nwfpar(nopt), lenbuf, ioffscr
       real(8), intent(inout) ::
      &     vred(mxdim,nroot), gred(mxdim,nrhs),
      &     mred(mxdim,nred), sred(mxdim,nred)
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
 
+      logical ::
+     &     update_s
       integer ::
-     &     iroot, idxvec
+     &     iroot, idxvec, iopt
       real(8) ::
      &     xnrm
       real(8) ::
@@ -43,6 +48,11 @@
 
       real(8), external ::
      &     dnrm2
+
+      update_s = .false.
+      do iopt = 1, nopt
+        update_s = update_s.or.use_s(iopt)
+      end do
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'optc_minspace')
@@ -55,7 +65,7 @@
         end if
         write(luout,*) 'mred on entry:'
         call wrtmat2(mred,nred,nred,mxdim,nred)
-        if (use_s) then
+        if (update_s) then
           write(luout,*) 'sred on entry:'
           call wrtmat2(sred,nred,nred,mxdim,nred)
         end if
@@ -151,7 +161,7 @@ c dbg
       end if
 
       ! do the same for metric:
-      if (use_s) then
+      if (update_s) then
         call dgemm('T','N',nroot,nred,nred,
      &           1d0,vorth,nred,
      &               sred,mxdim,
@@ -168,12 +178,14 @@ c dbg
 
       end if
 
+      do iopt = 1, nopt
+
       ! update trial vectors and MV-products in full space
       ! assemble trial vectors:
       idxvec = 1
       do iroot = 1, nroot
         call optc_expand_vec(vorth(idxvec),nred,xnrm,.false.,
-     &       ffscr,ioffscr+iroot,0d0,ffvsbsp,iord_vsbsp,
+     &       ffscr,ioffscr+iroot,0d0,ffvsbsp(iopt)%fhand,iord_vsbsp,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
         idxvec = idxvec+nred
       end do
@@ -181,7 +193,7 @@ c dbg
       do iroot = 1, nroot
         iord_vsbsp(iroot) = iroot
         call da_sccpvec(ffscr,ioffscr+iroot,
-     &                  ffvsbsp,iroot,
+     &                  ffvsbsp(iopt)%fhand,iroot,
      &                  1d0,nwfpar,xbuf1,lenbuf)
       end do
 c dbg
@@ -197,7 +209,7 @@ c dbg
       idxvec = 1
       do iroot = 1, nroot
         call optc_expand_vec(vorth(idxvec),nred,xnrm,.false.,
-     &       ffscr,ioffscr+iroot,0d0,ffrsbsp,iord_rsbsp,
+     &       ffscr,ioffscr+iroot,0d0,ffrsbsp(iopt)%fhand,iord_rsbsp,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
         idxvec = idxvec+nred
       end do
@@ -205,20 +217,20 @@ c dbg
       do iroot = 1, nroot
         iord_rsbsp(iroot) = iroot
         call da_sccpvec(ffscr,ioffscr+iroot,
-     &                  ffrsbsp,iroot,
+     &                  ffrsbsp(iopt)%fhand,iroot,
      &                  1d0,nwfpar,xbuf1,lenbuf)
       end do
 c dbg
 c      print *,'contents on new ffrsbsp file:'
-c      call da_listvec(ffrsbsp,1,nwfpar,0,xbuf1,lenbuf)
+c      call da_listvec(ffrsbsp(iopt)%fhand,1,nwfpar,0,xbuf1,lenbuf)
 c dbg
 
-      if (use_s) then
+      if (use_s(iopt)) then
         ! assemble metric-vector products:
         idxvec = 1
         do iroot = 1, nroot
           call optc_expand_vec(vorth(idxvec),nred,xnrm,.false.,
-     &       ffscr,ioffscr+iroot,0d0,ffssbsp,iord_ssbsp,
+     &       ffscr,ioffscr+iroot,0d0,ffssbsp(iopt)%fhand,iord_ssbsp,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
           idxvec = idxvec+nred
         end do
@@ -226,15 +238,17 @@ c dbg
         do iroot = 1, nroot
           iord_ssbsp(iroot) = iroot
           call da_sccpvec(ffscr,ioffscr+iroot,
-     &                  ffssbsp,iroot,
+     &                  ffssbsp(iopt)%fhand,iroot,
      &                  1d0,nwfpar,xbuf1,lenbuf)
         end do
 c dbg
 c        print *,'contents on new ffssbsp file:'
-c        call da_listvec(ffssbsp,1,nwfpar,0,xbuf1,lenbuf)
+c        call da_listvec(ffssbsp(iopt)%fhand,1,nwfpar,0,xbuf1,lenbuf)
 c dbg
       end if
       
+      end do ! iopt
+
       ! reset nred:
       nred = nroot
 

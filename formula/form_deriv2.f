@@ -109,9 +109,13 @@ c dbg
       else
         do icmpnd = 1, ncmpnd
           idxmlt(icmpnd) = idx_oplist2(label_opmlt(icmpnd),op_info)          
+          if (idxmlt(icmpnd).lt.0)
+     &     call quit(1,'form_deriv2',
+     &         'required operators are not yet defined? '//
+     &         label_opmlt(icmpnd)(1:len))
         end do
       end if
-      if (idxres.lt.0.or.idxmlt(1).lt.0) then
+      if (idxres.lt.0) then
         write(luout,*) 'idxder:', idxder
         write(luout,*) 'idxmlt:', idxmlt
         write(luout,*) 'idxres:', idxres

@@ -50,9 +50,6 @@
 
       ! loop over vectors
       do ii = 1, ndim
-c dbg
-c        print *,'ii = ',ii
-c dbg        
         call dgemv('n',ndim,ndim,1d0,smat,ndim,xmat(1,ii),1,
      &                 0d0,xscr,1)
         xnorm = ddot(ndim,xmat(1,ii),1,xscr,1)

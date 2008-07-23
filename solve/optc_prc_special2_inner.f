@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine optc_prc_special2_inner
-     &     (grad, beyond_A, scale,
+     &     (grad, beyond_A, scale, w_shift,
      &      scr1, scr2,  bmat, xmat, xdia,
      &      ndim_bx, ndim_c, ndim_a,
      &      nidx_cstr,ms_cstr,gam_cstr,restr_cstr,mostnd_cstr,ngas_cstr,
@@ -25,6 +25,8 @@
      &     igamorb(*),
      &     restr_cstr(2,ngas,2), mostnd_cstr(2,ngam,ngas_cstr),
      &     restr_astr(2,ngas,2), mostnd_astr(2,ngam,ngas_astr)
+      real(8), intent(in) ::
+     &     w_shift
       real(8), intent(in) ::
      &     bmat(ndim_bx,ndim_bx), xmat(ndim_bx,ndim_bx), xdia(*)
       real(8), intent(inout) ::
@@ -117,7 +119,7 @@ c     &     idxspn(max(ndim_c,ndim_a)),idxdss(max(ndim_c,ndim_a))
 
         do idx_c = 1, ndim_c
           do idx_a = 1, ndim_a
-            orbsum = xsum_c(idx_c)-xsum_a(idx_a) ! + 1d0  !shift
+            orbsum = xsum_c(idx_c)-xsum_a(idx_a) + w_shift
             ! effective Beff = B + (eps_C - eps_A)X
             scr2 = bmat + orbsum*xmat 
 

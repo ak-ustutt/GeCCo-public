@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine optc_update_redsp4(
-     &     xmat,smat,xvec,ndim,nrhs,mxdim,nadd,ndel,
+     &     xmat,smat,xvec,ndim,nrhs,mxdim,nadd,ndel,init,
      &     iordv,ff_vsbsp,iordw,ff_wsbsp,iordx,ff_xsbsp,
      &     ff_rhs,
      &     nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
@@ -14,7 +14,9 @@
 *     nadd is the number of entries that need be updated (always from
 *           (ndim-nadd+1) to (ndim)
 *     ndel is the number of entries to be deleted first (matrix is
-*          shifted accordingly, always entries 1 to ndel are deleted) 
+*          shifted accordingly, always entries 1 to ndel are deleted)
+*     init if (.true.) init new entries to 0d0 and perform shift of 
+*          matrix if requested by ndel
 *
 *     xmat and xvec have the leading dimension mxdim
 *
@@ -27,6 +29,8 @@
       integer, parameter ::
      &     ntest = 0
 
+      logical ::
+     &     init
       type(filinf) ::
      &     ff_vsbsp, ff_wsbsp, ff_xsbsp, ff_rhs
       integer, intent(in) ::
@@ -44,9 +48,10 @@
 
       if (ntest.gt.0) then
         write(luout,*) '==============================='
-        write(luout,*) ' welcome to optc_update_redsp3'
+        write(luout,*) ' welcome to optc_update_redsp4'
         write(luout,*) '==============================='
         write(luout,*) ' ndim, nadd, ndel: ',ndim, nadd, ndel
+        write(luout,*) ' init = ',init
       end if
 
       if (ntest.ge.20) then
@@ -62,7 +67,7 @@
 
       ! subspace is full: delete contribution from first ndel vectors
       ! i.e. shift all matrix-elements down by one
-      if (ndel.gt.0) then
+      if (ndel.gt.0.and.init) then
         do jj = 1, ndim - ndel
           do ii = 1, ndim - ndel
             xmat(ii,jj) = xmat(ii+ndel,jj+ndel)
@@ -81,7 +86,7 @@
         end if
       end if
 
-      if (nrhs.gt.0.and.ndel.gt.0) then
+      if (nrhs.gt.0.and.ndel.gt.0.and.init) then
         do jj = 1, nrhs
           do ii = 1, ndim - ndel
             xmat(ii,jj) = xmat(ii+ndel,jj)
@@ -91,6 +96,20 @@
           write(luout,*) 'subspace rhs after shift:'
           call wrtmat2(xmat,ndim,nrhs,mxdim,nrhs)
         end if
+      end if
+
+      if (init) then
+        if (nrhs.gt.0) then
+          xvec(ndim-nadd+1:ndim,1:nrhs) = 0d0
+        end if
+        do ii = 1, ndim
+          xmat(ii,ndim-nadd+1:ndim) = 0d0
+          xmat(ndim-nadd+1:ndim,ii) = 0d0
+        end do
+        do ii = 1, ndim
+          smat(ii,ndim-nadd+1:ndim) = 0d0
+          smat(ndim-nadd+1:ndim,ii) = 0d0
+        end do
       end if
 
       ! loop over records of <v|-file
@@ -119,10 +138,11 @@ c              if (jrec_last.ne.jrec) then
                 jrec_last = jrec
                 call vec_from_da(ff_wsbsp,jrec,xbuf2,nwfpar)
 c              end if
-              xmat(ii,jj) = ddot(nwfpar,xbuf1,1,xbuf2,1)
+              xmat(ii,jj) = xmat(ii,jj)+ddot(nwfpar,xbuf1,1,xbuf2,1)
             else
-              xmat(ii,jj) = da_ddot(ff_vsbsp,irec,ff_wsbsp,jrec,
-     &             nwfpar,xbuf1,xbuf2,lenbuf)
+              xmat(ii,jj) = xmat(ii,jj)+
+     &                      da_ddot(ff_vsbsp,irec,ff_wsbsp,jrec,
+     &                              nwfpar,xbuf1,xbuf2,lenbuf)
             end if
           end if
 
@@ -143,10 +163,11 @@ c              if (jrec_last.ne.jrec) then
                 jrec_last = jrec
                 call vec_from_da(ff_xsbsp,jrec,xbuf2,nwfpar)
 c              end if
-              smat(ii,jj) = ddot(nwfpar,xbuf1,1,xbuf2,1)
+              smat(ii,jj) = smat(ii,jj)+ddot(nwfpar,xbuf1,1,xbuf2,1)
             else
-              smat(ii,jj) = da_ddot(ff_vsbsp,irec,ff_xsbsp,jrec,
-     &             nwfpar,xbuf1,xbuf2,lenbuf)
+              smat(ii,jj) = smat(ii,jj)+
+     &                      da_ddot(ff_vsbsp,irec,ff_xsbsp,jrec,
+     &                              nwfpar,xbuf1,xbuf2,lenbuf)
             end if
           end if
 
@@ -162,14 +183,17 @@ c              end if
                 rhsrec_last = rhsrec
                 call vec_from_da(ff_rhs,rhsrec,xbuf3,nwfpar)                
               end if
-              xvec(ii,rhsrec) = ddot(nwfpar,xbuf1,1,xbuf3,1)
+              xvec(ii,rhsrec) =
+     &             xvec(ii,rhsrec)+ddot(nwfpar,xbuf1,1,xbuf3,1)
             else if (nincore.eq.2) then
               jrec_last = -1 ! signal that xbuf2 is destroyed
               call vec_from_da(ff_rhs,rhsrec,xbuf2,nwfpar)
-              xvec(ii,rhsrec) = ddot(nwfpar,xbuf1,1,xbuf2,1)
+              xvec(ii,rhsrec) =
+     &             xvec(ii,rhsrec)+ddot(nwfpar,xbuf1,1,xbuf2,1)
             else
-              xvec(ii,rhsrec) = da_ddot(ff_vsbsp,irec,ff_rhs,rhsrec,
-     &             nwfpar,xbuf1,xbuf2,lenbuf)
+              xvec(ii,rhsrec) = xvec(ii,rhsrec)+
+     &             da_ddot(ff_vsbsp,irec,ff_rhs,rhsrec,
+     &                     nwfpar,xbuf1,xbuf2,lenbuf)
             end if
           end do
         end if

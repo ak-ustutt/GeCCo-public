@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine leqc_init(xrsnrm,iroute,
-     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
+     &       me_opt,me_trv,me_mvp,me_rhs,me_dia,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
      &       opti_info,opti_stat)
@@ -10,7 +10,8 @@
       implicit none
 
       include 'stdunit.h'
-      include 'def_filinf.h'
+c      include 'def_filinf.h'
+      include 'mdef_operator_info.h'
       include 'def_file_array.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
@@ -24,8 +25,11 @@
       integer, intent(in) ::
      &     iroute, nincore, lenbuf
 
-      type(file_array), intent(in) ::
-     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
+      type(me_list_array), intent(in) ::
+     &     me_opt(*), me_dia(*), 
+     &     me_trv(*), me_mvp(*), me_rhs(*)
+c      type(file_array), intent(in) ::
+c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       type(filinf), intent(in) ::
      &     ffscr
 
@@ -88,10 +92,10 @@
       if (nincore.ge.2) then
         do iopt = 1, nopt
           ! read diagonal pre-conditioner
-          call vec_from_da(ffdia(iopt)%fhand,1,xbuf2,nwfpar)
+          call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar)
           do iroot = 1, nroot
             ! divide rhs's by preconditioner
-            call vec_from_da(ffrhs(iopt)%fhand,iroot,xbuf1,nwfpar)
+            call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,nwfpar)
             xnrm = dnrm2(nwfpar,xbuf1,1)
             xrsnrm(iroot) = xnrm
             call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,0d0,nwfpar)
@@ -105,16 +109,18 @@
         ! ... something using:
             call da_diavec(ffscr,iroot,0d0,
      &                     ffscr,iroot,1d0/xnrm,
-     &                      ffdia,1,0d0,-1d0,
+     &                      me_dia(iopt)%mel%fhand,1,0d0,-1d0,
      &                      nwfpar,xbuf1,xbuf2,lenbuf)
 
       end if
 
-      if (ndim_vsbsp.ne.0) stop'aha'
+      if (ndim_vsbsp.ne.0)
+     &     call quit(1,'leqc_init','ndim_vsbsp.ne.0 ???')
       ! orthogonalize initial subspace
       call optc_orthvec(nadd,
-     &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
-     &                  ffscr,nroot,
+     &                  opti_stat%ffvsbsp,
+     &                     iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
+     &                  ffscr,nroot,nopt,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 
       ! set nadd
