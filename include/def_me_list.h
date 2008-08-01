@@ -63,6 +63,13 @@
      &                          ! (time reversal sym.) values: 0/+1/-1
      &       casym              ! symmetry on interchange C<->A
                                 ! (adjungation) values: 0/+1/-1
+
+        logical ::
+     &       fix_vertex_ms      ! Flag as to whether the ms value for each
+                                ! block should be fixed (usually false, but
+                                ! set up to be true for the non-antisym
+                                ! Hamiltonian elements needed for the F12 Z
+                                ! intermediate). May need later sophistication.
 *----------------------------------------------------------------------*
 *       absym, casym imply that only triangles are saved
 *       convention: MS >= 0, index(alpha) >= index(beta)

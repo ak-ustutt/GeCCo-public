@@ -381,22 +381,24 @@ c        read(parameters(2),'(240(i1))')
 
 *----------------------------------------------------------------------*
       subroutine me_list_parameters(rw,parameters,
-     &     absym,casym,gamma,s2,ms)
+     &     absym,casym,gamma,s2,ms,ms_fix)
 
       implicit none
       
       integer, intent(inout) ::
      &     rw,absym,casym,gamma,s2,ms
+      logical, intent(inout) ::
+     &     ms_fix
       character, intent(inout) ::
      &     parameters*(*)
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
-        write(parameters,'(8(i5,x))')
-     &        absym,casym,gamma,s2,ms
+        write(parameters,'(l,8(i5,x))')
+     &        ms_fix,absym,casym,gamma,s2,ms
       else
-        read(parameters,'(8(i5,x))')
-     &       absym,casym,gamma,s2,ms
+        read(parameters,'(l,8(i5,x))')
+     &       ms_fix,absym,casym,gamma,s2,ms
       end if
 
       return

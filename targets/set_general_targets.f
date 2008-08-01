@@ -106,7 +106,7 @@ c      call get_argument_value('method.R12','truncate',lval=truncate)
       labels(1) = mel_ham
       labels(2) = op_ham
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_ham,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)

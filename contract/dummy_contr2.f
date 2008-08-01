@@ -283,7 +283,7 @@
      &             msex1dis_c,msex1dis_a,gmex1dis_c,gmex1dis_a,
      &             ncblk_ex1, nablk_ex1,
      &             cinfo_ex1c,cinfo_ex1a,
-     &             msex1_c,msex1_a,igamex1_c,igamex1_a,nsym))
+     &             msex1_c,msex1_a,igamex1_c,igamex1_a,nsym,.false.))
      &             exit caex1_loop
                 first3 = .false.
 
@@ -323,7 +323,7 @@ c dbg
      &               msex2dis_c,msex2dis_a,gmex2dis_c,gmex2dis_a,
      &               ncblk_ex2, nablk_ex2,
      &               cinfo_ex2c,cinfo_ex2a,
-     &               msex2_c,msex2_a,igamex2_c,igamex2_a,nsym))
+     &               msex2_c,msex2_a,igamex2_c,igamex2_a,nsym,.false.))
      &               exit caex2_loop
                   first4 = .false.
 
@@ -411,7 +411,7 @@ c dbg
      &                 msc_dis_c,msc_dis_a,gmc_dis_c,gmc_dis_a,
      &                 ncblk_cnt, nablk_cnt,
      &                 cinfo_cntc,cinfo_cnta,
-     &                 msc_c,msc_a,igamc_c,igamc_a,nsym))
+     &                 msc_c,msc_a,igamc_c,igamc_a,nsym,.false.))
      &                 exit cac_loop
                     first5 = .false.
 

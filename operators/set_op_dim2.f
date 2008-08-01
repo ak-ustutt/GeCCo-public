@@ -60,7 +60,7 @@
      &     mel
 
       logical ::
-     &     first
+     &     first, ms_fix
       integer ::
      &     idxstr, idxstr_tot, idxdis, iblk, iblkoff, nexc,
      &     msa_max, msc_max, njoined, nblk,
@@ -107,10 +107,15 @@
       idxstr_tot = 0
       njoined = op%njoined
       nblk = op%n_occ_cls
+      ms_fix = mel%fix_vertex_ms
       hpvx_occ => op%ihpvca_occ
       idx_graph => mel%idx_graph
       ca_occ => op%ica_occ
       graphs => str_info%g
+
+c dbg
+c      print *,'set dim, fix =',ms_fix
+c dbg
 
       ! we better initialize some of the key arrays
       if (ipass.eq.1) then
@@ -232,7 +237,7 @@ c dbg
      &            msdis_c,msdis_a,gamdis_c,gamdis_a,
      &            ncsub, nasub,
      &            occ_csub,occ_asub,
-     &            msc,msa,igamc,igama,ngam))
+     &            msc,msa,igamc,igama,ngam,ms_fix))
      &           exit distr_loop
 c dbg
 c              print *,'top of dist_loop'
@@ -309,7 +314,7 @@ c dbg
      &                         occ_asub,idxmsdis_a,gamdis_a,nasub,ngam)
 
 c dbg
-c                if(trim(mel%op%name).eq.'Z-INT')
+c                if(trim(mel%op%name).eq.'G_Z')
 c     &               print *,'did',did
 c dbg
                 ! save ID of current distr

@@ -141,7 +141,7 @@
       labels(1) = mel_cclg0
       labels(2) = op_cclg
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_cclg0,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -151,7 +151,7 @@
       labels(1) = mel_ccen0
       labels(2) = op_ccen
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_ccen0def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)

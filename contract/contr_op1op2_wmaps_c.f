@@ -72,7 +72,8 @@
       logical ::
      &     bufop1, bufop2, bufop1op2, 
      &     first1, first2, first3, first4, first5,
-     &     reo_op1op2, nonzero
+     &     reo_op1op2, nonzero, ms_fix1, ms_fix2, ms_fix12, ms_fix_tmp,
+     &     reject
       integer ::
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
@@ -90,7 +91,7 @@
      &     igamc_ac, igamc_a, igamc_c,
      &     igamex1_a, igamex1_c, igamex2_a, igamex2_c,
      &     idxms, idxdis, lenmap, lblk_op1op2tmp,
-     &     idxdis_op1op2
+     &     idxdis_op1op2, idx
       integer ::
      &     ncblk_op1, nablk_op1, ncblk_ex1, nablk_ex1, 
      &     ncblk_op2, nablk_op2, ncblk_ex2, nablk_ex2, 
@@ -202,7 +203,6 @@ c dbg
       ffop1 => me_op1%fhand
       ffop2 => me_op2%fhand
       ffop1op2 => me_op1op2%fhand
-
 
       if (ntest.ge.10) then
         write(luout,*) 'list1:   ',trim(me_op1%label),' transp:',tra_op1
@@ -359,6 +359,19 @@ c dbg
       igamtop1 = me_op1%gamt
       igamtop2 = me_op2%gamt
       igamtop1op2 = me_op1op2%gamt
+
+      ! See which, if any, operators need to have their Ms values fixed.
+      ms_fix1 = me_op1%fix_vertex_ms
+      ms_fix2 = me_op2%fix_vertex_ms
+      ms_fix12 = me_op1op2%fix_vertex_ms
+      ms_fix_tmp = me_op1op2tmp%fix_vertex_ms
+
+c dbg
+c      print *,'op1 name, fix ', trim(me_op1%op%name),ms_fix1
+c      print *,'op2 name, fix ', trim(me_op2%op%name),ms_fix2
+c      print *,'op12 name, fix ', trim(me_op1op2%op%name),ms_fix12
+c      print *,'optmp name, fix ', trim(me_op1op2tmp%op%name),ms_fix_tmp
+c dbg
 
       if (multd2h(igamtop1,igamtop2).ne.igamtop1op2)
      &     call quit(1,'contr_op1op2_wmaps_c','inconsistent symmetries')
@@ -724,7 +737,7 @@ c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
      &             msex1dis_c,msex1dis_a,gmex1dis_c,gmex1dis_a,
      &             ncblk_ex1, nablk_ex1,
      &             cinfo_ex1c,cinfo_ex1a,
-     &             msex1_c,msex1_a,igamex1_c,igamex1_a,nsym))
+     &             msex1_c,msex1_a,igamex1_c,igamex1_a,nsym,ms_fix1))
      &             exit caex1_loop
                 first3 = .false.
 
@@ -755,7 +768,7 @@ c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
      &               msex2dis_c,msex2dis_a,gmex2dis_c,gmex2dis_a,
      &               ncblk_ex2, nablk_ex2,
      &               cinfo_ex2c,cinfo_ex2a,
-     &               msex2_c,msex2_a,igamex2_c,igamex2_a,nsym))
+     &               msex2_c,msex2_a,igamex2_c,igamex2_a,nsym,ms_fix2))
      &               exit caex2_loop
                   first4 = .false.
 
@@ -857,6 +870,10 @@ c     &                 ndis_op1op2tmp(igam12i_a(3),idxms)
 c dbg
                   if (iblkop1op2tmp.gt.0.and.
      &                 ndis_op1op2tmp(igam12i_a(3),idxms).gt.1) then
+
+c dbg
+c                    print *,'here 1'
+c dbg
                     idxdis =
      &                  idx_msgmdst2(
      &                   iblkop1op2tmp,idxms,igam12i_a(3),
@@ -866,6 +883,16 @@ c dbg
      &                              gmi_dis_a,nablk_op1op2tmp,
      &                   tra_op1op2,me_op1op2tmp,nsym)
 c     &                   .false.,me_op1op2tmp,nsym)
+c     &                  idx_msgmdst3(
+c     &                   iblkop1op2tmp,idxms,igam12i_a(3),
+c     &                   cinfo_op1op2tmpc,idxmsi_dis_c,
+c     &                              gmi_dis_c,ncblk_op1op2tmp,
+c     &                   cinfo_op1op2tmpa,idxmsi_dis_a,
+c     &                              gmi_dis_a,nablk_op1op2tmp,
+c     &                   tra_op1op2,me_op1op2tmp,nsym,
+c     &                   ms_fix_tmp,reject)
+c                    if(reject) cycle caex2_loop 
+
                     idxdis_op1op2 = idxdis
 
                     ! relevant for case w/o reordering
@@ -897,7 +924,7 @@ c     &                   .false.,me_op1op2tmp,nsym)
      &                 msc_dis_c,msc_dis_a,gmc_dis_c,gmc_dis_a,
      &                 ncblk_cnt, nablk_cnt,
      &                 cinfo_cntc,cinfo_cnta,
-     &                 msc_c,msc_a,igamc_c,igamc_a,nsym))
+     &                 msc_c,msc_a,igamc_c,igamc_a,nsym,ms_fix12))
      &                 exit cac_loop
                     first5 = .false.
 
@@ -933,11 +960,26 @@ c     &                   .false.,me_op1op2tmp,nsym)
      &                                 msex1dis_a,gmex1dis_a,
      &                                 map_info_1a)
 
+c dbg
+c                    if(ms_fix1)then
+c                      print *,'msop1dis_c',msop1dis_c
+c                      print *,'msop1dis_a',msop1dis_a
+c                      do idx = 1, min(ncblk_op1,nablk_op1)
+c                        if(msop1dis_c(idx).ne.msop1dis_a(idx))
+c     &                       cycle cac_loop
+cc                      print *,'msc_dis_c',msc_dis_c
+cc                      do idx = 1, 2 !min(ncblk_op1,nablk_op1)
+cc                        if(msc_dis_c(idx).ne.msc_dis_a(idx))
+cc     &                       cycle cac_loop
+c                      enddo
+c                    endif
+c dbg
+                    
                     call ms2idxms(idxmsop1dis_c,msop1dis_c,
      &                   cinfo_op1c,ncblk_op1)
                     call ms2idxms(idxmsop1dis_a,msop1dis_a,
      &                   cinfo_op1a,nablk_op1)
-                    
+
                     call set_len_str(
      &                   lstrop1,ncblk_op1,nablk_op1,
      &                   graphs,
@@ -957,6 +999,9 @@ c     &                   .false.,me_op1op2tmp,nsym)
      &                   msa2idxms4op(ms12i_a(1),mstop1,na_op1,nc_op1)
 c                    idxms = (na_op1-ms12i_a(1))/2 + 1
                     if (ndis_op1(igam12i_a(1),idxms).gt.1) then
+c dbg
+c                      print *,'here 2'
+c dbg
                       idxdis =
      &                   idx_msgmdst2(
      &                     iblkop1,idxms,igam12i_a(1),
@@ -966,6 +1011,16 @@ c                    idxms = (na_op1-ms12i_a(1))/2 + 1
      &                              gmop1dis_a,nablk_op1,
      &                     tra_op1,me_op1,nsym)
 c     &                     .false.,me_op1,nsym)
+c     &                   idx_msgmdst3(
+c     &                     iblkop1,idxms,igam12i_a(1),
+c     &                     cinfo_op1c,idxmsop1dis_c,
+c     &                              gmop1dis_c,ncblk_op1,
+c     &                     cinfo_op1a,idxmsop1dis_a,
+c     &                              gmop1dis_a,nablk_op1,
+c     &                     tra_op1,me_op1,nsym,
+c     &                     ms_fix1,reject)
+c                      if(reject) cycle caex2_loop 
+
                       idxop1 = 
      &                     d_gam_ms_op1(idxdis,igam12i_a(1),idxms) + 1
      &                     - idxst_op1+1
@@ -985,6 +1040,20 @@ c dbg
 c                    print *,'msc_dis_a:  ',msc_dis_a
 c                    print *,'msex2dis_c: ',msex2dis_c
 c dbg
+
+c dbg
+c                    if(ms_fix2)then
+cc                      do idx = 1, min(ncblk_op2,nablk_op2)
+cc                        if(idxmsop2dis_c(idx).ne.idxmsop2dis_a(idx))
+cc     &                       cycle cac_loop
+c                      print *,'msc_dis_c',msc_dis_c
+c                      do idx = 1, 2 !min(ncblk_op2,nablk_op2)
+c                        if(msc_dis_c(idx).ne.msc_dis_a(idx))
+c     &                       cycle cac_loop
+c                      enddo
+c                    endif
+c dbg
+
                     call merge_msgmdis(msop2dis_c,gmop2dis_c,
      &                                 ncblk_op2,
      &                                 msc_dis_a,gmc_dis_a,
@@ -1023,6 +1092,9 @@ c dbg
      &                   msa2idxms4op(ms12i_a(2),mstop2,na_op2,nc_op2)
 c                    idxms = (na_op2-ms12i_a(2))/2 + 1
                     if (ndis_op2(igam12i_a(2),idxms).gt.1) then
+c dbg
+c                      print *,'here 3'
+c dbg
                       idxdis =
      &                   idx_msgmdst2(
      &                     iblkop2,idxms,igam12i_a(2),
@@ -1032,6 +1104,18 @@ c                    idxms = (na_op2-ms12i_a(2))/2 + 1
      &                              gmop2dis_a,nablk_op2,
      &                     tra_op2,me_op2,nsym)
 c     &                     .false.,me_op2,nsym)
+c     &                  idx_msgmdst3(
+c     &                     iblkop2,idxms,igam12i_a(2),
+c     &                     cinfo_op2c,idxmsop2dis_c,
+c     &                              gmop2dis_c,ncblk_op2,
+c     &                     cinfo_op2a,idxmsop2dis_a,
+c     &                              gmop2dis_a,nablk_op2,
+c     &                     tra_op2,me_op2,nsym,
+c     &                     ms_fix2,reject)
+c                      if(reject) cycle cac_loop 
+
+
+
                       idxop2 = 
      &                     d_gam_ms_op2(idxdis,igam12i_a(2),idxms) + 1
      &                     - idxst_op2+1

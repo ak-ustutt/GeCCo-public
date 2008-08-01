@@ -1432,14 +1432,17 @@ c dbg
       labels(1) = form_z_test
       labels(2) = op_z_test
       labels(3) = op_r12
-      labels(4) = op_ham
+      labels(4) = op_ham ! Full
+c      labels(4) = op_g_z ! Coulomb or exchange
       labels(5) = op_r12
       call add_target(form_z_test,ttype_frm,.false.,tgt_info)
       call set_dependency(form_z_test,op_z_test,tgt_info)
-      call set_dependency(form_z_test,op_ham,tgt_info)
+      call set_dependency(form_z_test,op_ham,tgt_info) ! Full
+c      call set_dependency(form_z_test,op_g_z,tgt_info) ! Coulomb or exchnage
       call set_dependency(form_z_test,op_r12,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_z_test,0,'Z')
+     &     parameters,2,title_z_test,0,'Z') ! Full
+c     &     parameters,2,title_z_test,0,'ZT') ! Coulomb or exchange.
       call set_rule(form_z_test,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,5,1,
      &              parameters,2,tgt_info)
@@ -1456,6 +1459,7 @@ c dbg
      &     labels,4,1,
      &     parameters,2,tgt_info)
 
+      ! Only if full.
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_z_test
       labels(2) = form_z_test
@@ -1676,7 +1680,7 @@ c dbg
       labels(1) = mel_rint
       labels(2) = op_rint
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_rint,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1696,7 +1700,7 @@ c dbg
       labels(1) = mel_rintx
       labels(2) = op_rintx
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_rintx,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1716,7 +1720,7 @@ c dbg
       labels(1) = mel_gintx
       labels(2) = op_g_x
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_gintx,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1736,7 +1740,8 @@ c dbg
       labels(1) = mel_gintz
       labels(2) = op_g_z
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+c     &     0,0,1,0,0,.true.)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_gintz,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1756,7 +1761,7 @@ c dbg
       labels(1) = mel_ttr
       labels(2) = op_ttr
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_ttr,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1776,7 +1781,7 @@ c dbg
       labels(1) = mel_rttr
       labels(2) = op_rttr
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_rttr,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1796,7 +1801,7 @@ c dbg
       labels(1) = mel_ff
       labels(2) = op_ff
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_ff,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1816,7 +1821,7 @@ c dbg
       labels(1) = mel_ffbar
       labels(2) = op_ffbar
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_ffbar,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1836,7 +1841,7 @@ c dbg
       labels(1) = mel_gr
       labels(2) = op_gr
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_gr,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1856,7 +1861,7 @@ c dbg
       labels(1) = mel_ffg
       labels(2) = op_ffg
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_ffg,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1876,7 +1881,7 @@ c dbg
       labels(1) = mel_rintbar
       labels(2) = op_rintbar
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_rintbar,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1896,7 +1901,7 @@ c dbg
       labels(1) = mel_rinttilde
       labels(2) = op_rinttilde
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_rinttilde,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1916,7 +1921,7 @@ c dbg
       labels(1) = mel_rdagbar
       labels(2) = op_rdagbar
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_rdagbar,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1936,7 +1941,7 @@ c dbg
       labels(1) = mel_rintbreve
       labels(2) = op_rintbreve
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_rintbreve,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1956,7 +1961,7 @@ c dbg
       labels(1) = mel_exchange
       labels(2) = op_exchange
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_exchange,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1977,7 +1982,7 @@ c dbg
       labels(1) = mel_hartree
       labels(2) = op_hartree
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_hartree,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2001,7 +2006,7 @@ c dbg
       labels(1) = mel_v_inter
       labels(2) = op_v_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_v_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2014,7 +2019,7 @@ c dbg
       labels(1) = mel_v_test
       labels(2) = op_v_test
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_v_test_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2027,7 +2032,7 @@ c dbg
       labels(1) = mel_x_inter
       labels(2) = op_x_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_x_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2040,7 +2045,7 @@ c dbg
       labels(1) = mel_x_test
       labels(2) = op_x_test
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_x_test_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2053,7 +2058,7 @@ c dbg
       labels(1) = mel_b_inter
       labels(2) = op_b_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_b_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2065,7 +2070,7 @@ c dbg
       labels(1) = mel_p_inter
       labels(2) = op_p_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_p_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2078,7 +2083,7 @@ c dbg
       labels(1) = mel_p_test
       labels(2) = op_p_test
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_p_test_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2091,7 +2096,7 @@ c dbg
       labels(1) = mel_p3f_inter
       labels(2) = op_p3f_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_p3f_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2103,7 +2108,7 @@ c dbg
       labels(1) = mel_p3g_inter
       labels(2) = op_p3g_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_p3g_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2115,7 +2120,7 @@ c dbg
       labels(1) = mel_z_inter
       labels(2) = op_z_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_z_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2128,7 +2133,7 @@ c dbg
       labels(1) = mel_z_test
       labels(2) = op_z_test
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_z_test_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2141,7 +2146,7 @@ c dbg
       labels(1) = mel_c_inter
       labels(2) = op_c_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_c_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2158,7 +2163,7 @@ c                             ! but as long as we do not formally
 c                             ! calculate with
 c                             ! this entity this does not matter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_b_inv,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -2178,7 +2183,7 @@ c                             ! this entity this does not matter
         labels(1) = mel_b_dia
         labels(2) = op_diar12
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       0,0,1,0,0,.false.)
         call set_rule(mel_b_dia,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -2198,7 +2203,7 @@ c                             ! this entity this does not matter
         labels(1) = mel_x_inv
         labels(2) = op_x_inter
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       0,0,1,0,0,.false.)
         call set_rule(mel_x_inv,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -2387,18 +2392,20 @@ c      call add_target(eval_p_test,ttype_gen,.true.,tgt_info)
       call set_dependency(fopt_z_test,form_z_test,tgt_info)
       call set_dependency(fopt_z_test,mel_z_test_def,tgt_info)
       call set_dependency(fopt_z_test,mel_rint,tgt_info)      
-      call set_dependency(fopt_z_test,mel_gintx,tgt_info)      
+      call set_dependency(fopt_z_test,mel_gintx,tgt_info) ! Full
+c      call set_dependency(fopt_z_test,mel_gintz,tgt_info) ! Coulomb or exc
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_z_test,ttype_frm,OPTIMIZE,
      &     labels,ncat+nint+1,1,
      &     parameters,1,tgt_info)
 
+c      call add_target(eval_z_test,ttype_gen,.true.,tgt_info)
       call add_target(eval_z_test,ttype_gen,.false.,tgt_info)
-c      call add_target(eval_z_test,ttype_gen,.false.,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = fopt_z_test
       call set_dependency(eval_z_test,mel_rint,tgt_info)
-      call set_dependency(eval_z_test,mel_gintx,tgt_info)
+      call set_dependency(eval_z_test,mel_gintx,tgt_info) ! Full
+c      call set_dependency(eval_z_test,mel_gintz,tgt_info) ! Coulomb or exc
       call set_dependency(eval_z_test,mel_z_test_def,tgt_info)
       call set_dependency(eval_z_test,fopt_z_test,tgt_info)
       call set_rule(eval_z_test,ttype_opme,EVAL,

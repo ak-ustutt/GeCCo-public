@@ -494,6 +494,10 @@ c          new = .false.!cur_contr%nvtx.ge.4
             call set_ps_op(opscr(ninter),opscrnam,
      &           iocc_op1op2,irst_op1op2,njoined_op1op2,orb_info)
             melscr(ninter)%op => opscr(ninter)
+
+            ! Fix Ms?
+            melscr(ninter)%fix_vertex_ms = .false.
+
             call set_ps_list(melscr(ninter),opscrnam,
      &           0,0,mstop1op2,igamtop1op2,0,
      &           str_info,strmap_info,orb_info)
@@ -514,12 +518,18 @@ c          new = .false.!cur_contr%nvtx.ge.4
      &           iocc_op1op2tmp,irst_op1op2tmp,njoined_op1op2,
      &           orb_info)
             meltmp%op => optmp
+
+            ! Should Ms be fixed?
+            meltmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
+
             call set_ps_list(meltmp,opscrnam,
      &           0,0,mstop1op2,igamtop1op2,0,
      &           str_info,strmap_info,orb_info)
             me_op1op2tmp => meltmp
+c            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
           else
             me_op1op2tmp => me_op1op2
+            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
           end if
 
           ! translate records to offset in file:

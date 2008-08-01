@@ -147,8 +147,14 @@ c      labels(3) = form_r12_z4int
 c      labels(4) = form_r12_zint
       nint = 0
       if(.not.truncate.or.(truncate.and.trunc_type.gt.0))then
-        labels(3) = form_r12_pint
-        nint = 1
+        labels(nint+3) = form_r12_pint
+        call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
+        nint = nint+1
+      endif
+      if(.not.truncate.or.(truncate.and.trunc_type.eq.1))then
+        labels(nint+3) = form_r12_zint
+        call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
+        nint = nint+1
       endif
       if (ansatz.ne.1) then
 c        if(.not.truncate)then
@@ -169,9 +175,6 @@ c        endif
       call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_xint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
-      if(.not.truncate.or.(truncate.and.trunc_type.gt.0))
-     &     call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
-c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
 c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
       call form_parameters(-1,
      &     parameters,2,title_ccr12lg0,nint,'---')
@@ -311,7 +314,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
       labels(1) = mel_ccr12lg0
       labels(2) = op_ccr12lg
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_ccr12lg0,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -321,7 +324,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
       labels(1) = mel_ccr12en0
       labels(2) = op_ccr12en
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(mel_ccr12en0def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -333,7 +336,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
       labels(1) = mel_cbar
       labels(2) = op_cba
       call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       0,0,1,0,0,.false.)
       call set_rule(mel_cbardef,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -345,7 +348,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
       labels(1) = mel_c12
       labels(2) = op_c12
       call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       0,0,1,0,0,.false.)
       call set_rule(mel_c12def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -358,7 +361,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
         labels(1) = mel_omgr12
         labels(2) = op_omgr12
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       0,0,1,0,0,.false.)
         call set_rule(mel_omgr12def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)

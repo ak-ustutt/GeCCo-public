@@ -62,7 +62,7 @@ c dbg
 c        print *,'ivtx_final = ',ivtx_final
 c dbg
         ! last contraction?
-        if (nj.eq.nvtx_new) then
+        if (nj.eq.nvtx_new.and.nj.eq.nvtx_final) then
           ! look at xlines to find result vertices to which the 
           ! present vertex contributes
           do jdx = 1, nj

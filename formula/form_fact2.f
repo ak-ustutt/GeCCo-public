@@ -18,7 +18,7 @@
       integer, parameter ::
      &     maxcount = 1000,  ! at most 1000 iterations
      &     ndisconn = 3,     ! at most 3 extra levels for disconnected
-     &     ntest = 100                                   ! vertices
+     &     ntest = 00                                   ! vertices
 
       type(contraction), intent(inout) ::
      &     contr

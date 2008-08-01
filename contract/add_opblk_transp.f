@@ -45,7 +45,8 @@
      &     xnorm2
 
       logical ::
-     &     bufin, bufout, open_close_in, open_close_out, same, first
+     &     bufin, bufout, open_close_in, open_close_out, same, first,
+     &     ms_fix
       integer ::
      &     nocc_cls, njoined,
      &     ifree, nblk, nbuff, idxmsa, idxmsc, idxdis,
@@ -97,6 +98,13 @@
       ffin  => me_in%fhand
       ffout => me_out%fhand
 
+      ms_fix = .false.
+      if(me_in%fix_vertex_ms.or.me_out%fix_vertex_ms)then
+        ms_fix = me_in%fix_vertex_ms.and.me_out%fix_vertex_ms
+        if(.not.ms_fix) call quit(1,'add_opblk_transp',
+     &                            'fix ms or not?')
+      endif
+        
       ! in and out on same file?
       same = associated(ffin,ffout)
       
@@ -222,7 +230,7 @@
      &            msdis_c,msdis_a,gamdis_c,gamdis_a,
      &            ncblk, nablk,
      &            occ_csub,occ_asub,
-     &            msc,msa,igamc,igama,ngam)) exit
+     &            msc,msa,igamc,igama,ngam,ms_fix)) exit
             first = .false.
 
             call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)

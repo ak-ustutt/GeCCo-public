@@ -148,6 +148,8 @@ c dbg
 c      logical ::
 c     &     first_element
 c dbg
+      logical ::
+     &     ms_fix
 
       logical, external ::
      &     next_msgamdist2, check_ms, check_gm
@@ -161,6 +163,8 @@ c dbg
       graphs => str_info%g
       ngraph =  str_info%ngraph
       opreo => me_opreo%op
+
+      ms_fix = me_opreo%fix_vertex_ms
 
       idxst_opreo = me_opreo%off_op_occ(iblk_opreo)
       ndis_opreo  => me_opreo%off_op_gmox(iblk_opreo)%ndis
@@ -199,7 +203,8 @@ c dbg
      &             ms_k_dis_c,ms_k_dis_a,gm_k_dis_c,gm_k_dis_a,
      &             ncblk_k,nablk_k,
      &             cinfo_k_c,cinfo_k_a,
-     &             ms_k_c,ms_k_a,gm_k_c,gm_k_a,nsym)) exit dis_loop
+     &             ms_k_c,ms_k_a,gm_k_c,gm_k_a,nsym,ms_fix))
+     &             exit dis_loop
 
                 first = .false.
 

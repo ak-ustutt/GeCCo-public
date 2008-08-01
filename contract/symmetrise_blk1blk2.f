@@ -40,7 +40,7 @@
      &     fac, facd
 
       logical ::
-     &     first
+     &     first, ms_fix
       integer ::
      &     nocc_cls, njoined,
      &     ifree, nblk, nbuff, idxmsa, idxmsc, idxdis_1,
@@ -89,6 +89,7 @@
 
       njoined  = op%njoined
       iblkoff = (iblk_1-1)*njoined
+      ms_fix = mel%fix_vertex_ms
 
       ! Number of irreps in symmetry group.
       ngam = orb_info%nsym
@@ -155,7 +156,7 @@
      &            msdis_c,msdis_a,gamdis_c,gamdis_a,
      &            ncblk, nablk,
      &            occ_csub,occ_asub,
-     &            msc,msa,igamc,igama,ngam)) exit
+     &            msc,msa,igamc,igama,ngam,ms_fix)) exit
             first = .false.
 
             call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)

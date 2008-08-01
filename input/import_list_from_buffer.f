@@ -44,12 +44,15 @@
      &     anti
       
       logical ::
-     &     first, close_again, blk_buf, scalar, dagger, xchange
+     &     first, close_again, blk_buf, scalar, dagger, xchange, ignore
       integer ::
      &     idoff, idxoff, idxoff_blk, iblk, lenblk, ifree, mmax,
      &     msamax, mscmax, idxms, ms, igam, idx_dis, ndis, did,
      &     idum, nel, mst, ngas, ngam, naux, lendis,
-     &     njoined, idx_occ, ntotal
+     &     njoined, idx_occ, ntotal,
+c dbg
+     &     idx, jdx, kdx, spinc, spina
+c dbg
       integer ::
      &     msd(ngastp,2,mel%op%njoined), igamd(ngastp,2,mel%op%njoined),
      &     lexlscr(8,3), idorb(8), idorb2(8), idspn(8), idspc(8)
@@ -191,8 +194,39 @@ c     &           'Ms(A) = ',ms,'/2  IRREP(A) = ',igam,'  len = ',lenblk
                 call did2msgm(msd,igamd,did,occ,ngam,njoined)
 
 c dbg
+c                print *,'current msd: ', msd
 c                print *,'idxoff_blk, idxoff: ',idxoff_blk, idxoff
 c dbg
+
+c dbg
+                ignore = .false.
+                if(.not.(xchange.or.anti))then
+                   joined_loop: do idx = 1, njoined
+                    spinc = 0
+                    spina = 0
+                    do jdx = 1, 2
+                      do kdx = 1, ngastp
+                        if(msd(kdx,jdx,idx).ne.0)then
+                          if(jdx.eq.1) spinc = msd(kdx,jdx,idx)
+                          if(jdx.eq.2) spina = msd(kdx,jdx,idx)
+                        endif
+                      enddo
+                    enddo
+c                    print *,'spinc',spinc
+c                    print *,'spina',spina
+                    if(abs(spinc).gt.1.or.abs(spina).gt.1)
+     &                   call quit(1,'import_list_from_buffer',
+     &                             'Spins too great')
+                    if(spinc.ne.spina)then
+                      ignore = .true.
+                      exit joined_loop
+                    endif
+                  enddo joined_loop
+c dbg
+c                  print *,'ignore',ignore
+c dbg
+                endif
+                      
                 call inner_loop(curblk(idxoff_blk+1))
 c dbg
 c                print *,'current block:'
@@ -355,6 +389,10 @@ c        end if
 c dbg
         curdisblk(idxstr) = fac*buffer_in((idx_int-1)*ntypes+idx_typ)
 
+c dbg
+        if(ignore)curdisblk(idxstr)=0d0
+c dbg
+
         if (xchange) then
 
           if (idspn(1).ge.idspn(2)) then
@@ -419,6 +457,10 @@ c dbg
 
           curdisblk(idxstr) = curdisblk(idxstr) -
      &                   fac*buffer_in((idx_int-1)*ntypes+idx_typ)
+c dbg
+        if(ignore)curdisblk(idxstr)=0d0
+c dbg
+
 
         end if
 
