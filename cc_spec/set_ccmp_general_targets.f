@@ -36,6 +36,8 @@
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting general targets for MP/CC ...'
 
+      msc = 1 ! presently assuming closed shell
+
 *----------------------------------------------------------------------*
 *     Operators:
 *----------------------------------------------------------------------*
@@ -159,7 +161,7 @@ c     &       parameters,1,tgt_info)
       labels(1) = mel_top
       labels(2) = op_top
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_topdef,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -171,7 +173,7 @@ c     &       parameters,1,tgt_info)
       labels(1) = mel_omg
       labels(2) = op_omg
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_omgdef,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -183,7 +185,7 @@ c     &       parameters,1,tgt_info)
       labels(1) = mel_tbar
       labels(2) = op_tbar
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_tbardef,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -195,8 +197,20 @@ c     &       parameters,1,tgt_info)
       labels(1) = mel_hhat
       labels(2) = op_hhat
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_hhatdef,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
+      ! Hbar definition
+      call add_target(meldef_hbar,ttype_opme,.false.,tgt_info)
+      call set_dependency(meldef_hbar,op_hbar,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_hbar
+      labels(2) = op_hbar
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0)
+      call set_rule(meldef_hbar,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
 

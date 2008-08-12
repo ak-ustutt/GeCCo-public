@@ -29,7 +29,7 @@
      &     needed, r12fix
       character(len_target_name) ::
      &     me_label, mep_label, medef_label, dia_label, mel_dia1,
-     &     labels(10)
+     &     labels(20)
       character(len_command_par) ::
      &     parameters(2)
 

@@ -3,6 +3,7 @@
      &     iocc,irestr,idxms,igam,
      &     g_y4sg,g_yinf,
      &     g_yssg,g_wssg,
+     &     g_off_dgm,g_ndis,
      &     mostnd_cur,nsym,ngas_cur,igamorb)
 *----------------------------------------------------------------------*
 *     core routine for setting up the (str)->(str_spin_flipped) mapping
@@ -24,7 +25,8 @@
      &     nsym, ngas_cur,
      &     mostnd_cur(2,nsym),igamorb(*),
      &     g_y4sg(*),g_yinf(*),
-     &     g_yssg(*),g_wssg(*)
+     &     g_yssg(*),g_wssg(*),
+     &     g_off_dgm(*),g_ndis
 
       logical ::
      &     first
@@ -70,14 +72,20 @@
 c dbg
 c        print *,'idorb:   ',idorb(1:iocc)
 c        print *,'idspn:   ',idspn(1:iocc)
+c        print *,'idss:    ',idss (1:iocc)
 c        print *,'idspn_fl:',idspn_flipped(1:iocc)
 c        print *,'sign: ',strmap(idxmap)
 c dbg
         strmap(idxmap) = strmap(idxmap)*
      &        (idx4sg(iocc,idss,idorb,idspn_flipped,idgam,
      &                g_y4sg,g_yinf,
-     &                g_yssg,g_wssg,mostnd_cur,
+     &                g_yssg,g_wssg,
+     &                g_off_dgm,g_ndis,
+     &                mostnd_cur,
      &                iocc,nsym,ngas_cur)+1)
+c dbg
+c        print *,'idx = ',abs(strmap(idxmap))
+c dbg
 
       end do
 
@@ -94,7 +102,7 @@ c dbg
 
       integer function std_spsign(idspn,nel)
 *
-*     set up standard sign for spin-strin
+*     set up standard sign for spin-string
 *     i.e. the sign for bringing spin string into order aaaabbb
 *
       integer, intent(in) ::

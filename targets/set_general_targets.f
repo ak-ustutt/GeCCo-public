@@ -38,6 +38,7 @@
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting general targets ...'
 
+      msc = +1  ! assuming closed shell
 *----------------------------------------------------------------------*
 *     Operators:
 *----------------------------------------------------------------------*
@@ -96,7 +97,7 @@
       labels(1) = mel_ham
       labels(2) = op_ham
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_ham,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)

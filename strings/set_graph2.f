@@ -124,15 +124,15 @@ c              !   ADAPT FOR OPEN-SHELL ^^^
               idss(1:nexc) = 1
               idmin(1:nexc) = 1
               idmax(1:nexc) = ngas_hpv(ihpv)
-              ! find lowest allowed distribution
-              lowest_dss: do
-                if (allow_sbsp_dis(idss,nexc,ngas_hpv(ihpv),
-     &               str_info%igas_restr(1,1,1,1,igraph)))
-c                                   !         ^^^
-     &                             exit lowest_dss
-                if (.not.next_rvlex(nexc,idss,idmin,idmax))
-     &               call quit(1,'set_graph','unexpected case (a)')
-              end do lowest_dss
+C              ! find lowest allowed distribution
+C              lowest_dss: do
+C                if (allow_sbsp_dis(idss,nexc,ngas_hpv(ihpv),
+C     &               str_info%igas_restr(1,1,1,1,igraph)))
+Cc                                   !         ^^^
+C     &                             exit lowest_dss
+C                if (.not.next_rvlex(nexc,idss,idmin,idmax))
+C     &               call quit(1,'set_graph','unexpected case (a)')
+C              end do lowest_dss
               
               ! loop over distributions, identify and mark the allowed ones
               ! and sum up lengths of allowed distr. to get offset arrays
@@ -146,9 +146,12 @@ c                                   !         ^^^
                   str_info%g(igraph)%idis_m(idis) = 1
                   str_info%g(igraph)%ioffstr_dgm(idx_dgm) = isum
                   isum = isum + str_info%g(igraph)%lenstr_dgm(idx_dgm)
-                  idx_dgm = idx_dgm+1
+c                  idx_dgm = idx_dgm+1
                   ndis_a=ndis_a+1
                 end if
+
+                idx_dgm = idx_dgm+1
+
                 if (.not.next_rvlex(nexc,idss,idmin,idmax)
      &               .and.idis.ne.ndis)
      &               call quit(1,'set_graph','unexpected case (b)')

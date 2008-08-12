@@ -38,6 +38,8 @@
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting special targets for MP-R12 ...'
 
+      msc = +1    ! assuming closed shell
+
       ! get keyword values
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
@@ -348,7 +350,7 @@ c dbg
       labels(1) = mel_mpr12lg0
       labels(2) = op_mpr12lg
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_mpr12lg0,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -358,7 +360,7 @@ c dbg
       labels(1) = mel_mpr12en0
       labels(2) = op_mpr12en
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_mpr12en0def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -371,7 +373,7 @@ c      if(.not.r12fix)then
       labels(1) = mel_c12
       labels(2) = op_c12
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_c12def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -393,7 +395,7 @@ c     call add_parameters(-1,parameters,1,1d0,1)
       labels(1) = mel_cbar
       labels(2) = op_cba
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_cbardef,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -440,7 +442,7 @@ c      endif
         labels(1) = mel_omgr12
         labels(2) = op_omgr12
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       msc,0,1,0,0)
         call set_rule(mel_omgr12def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)

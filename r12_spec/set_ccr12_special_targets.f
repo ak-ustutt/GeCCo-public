@@ -41,6 +41,8 @@ c dbg
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting special targets for CC-R12 ...'
+      
+      msc = +1  ! assuming closed shell
 
       approx = '        '
       ! read keyword values
@@ -295,7 +297,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
       labels(1) = mel_ccr12lg0
       labels(2) = op_ccr12lg
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_ccr12lg0,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -305,7 +307,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
       labels(1) = mel_ccr12en0
       labels(2) = op_ccr12en
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_ccr12en0def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -317,7 +319,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
       labels(1) = mel_cbar
       labels(2) = op_cba
       call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       msc,0,1,0,0)
       call set_rule(mel_cbardef,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -329,7 +331,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
       labels(1) = mel_c12
       labels(2) = op_c12
       call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       msc,0,1,0,0)
       call set_rule(mel_c12def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -342,7 +344,7 @@ c      call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
         labels(1) = mel_omgr12
         labels(2) = op_omgr12
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       msc,0,1,0,0)
         call set_rule(mel_omgr12def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)

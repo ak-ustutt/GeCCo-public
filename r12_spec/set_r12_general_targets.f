@@ -48,6 +48,7 @@
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting general targets for R12 ...'
 
+      msc = +1 ! assuming closed shell
 *----------------------------------------------------------------------*
 *     read input
 *----------------------------------------------------------------------*
@@ -1277,7 +1278,7 @@ c     &     'C           ')
       labels(1) = mel_rint
       labels(2) = op_rint
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_rint,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1297,7 +1298,7 @@ c     &     'C           ')
       labels(1) = mel_rintx
       labels(2) = op_rintx
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_rintx,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1317,7 +1318,7 @@ c     &     'C           ')
       labels(1) = mel_gintx
       labels(2) = op_g_x
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_gintx,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1337,7 +1338,7 @@ c     &     'C           ')
       labels(1) = mel_ttr
       labels(2) = op_ttr
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_ttr,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1357,7 +1358,7 @@ c     &     'C           ')
       labels(1) = mel_rttr
       labels(2) = op_rttr
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_rttr,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1377,7 +1378,7 @@ c     &     'C           ')
       labels(1) = mel_ff
       labels(2) = op_ff
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_ff,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1397,7 +1398,7 @@ c     &     'C           ')
       labels(1) = mel_ffbar
       labels(2) = op_ffbar
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_ffbar,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1417,7 +1418,7 @@ c     &     'C           ')
       labels(1) = mel_gr
       labels(2) = op_gr
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_gr,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1437,7 +1438,7 @@ c     &     'C           ')
       labels(1) = mel_ffg
       labels(2) = op_ffg
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_ffg,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1457,7 +1458,7 @@ c     &     'C           ')
       labels(1) = mel_rintbar
       labels(2) = op_rintbar
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_rintbar,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1477,7 +1478,7 @@ c     &     'C           ')
       labels(1) = mel_rinttilde
       labels(2) = op_rinttilde
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_rinttilde,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1497,7 +1498,7 @@ c     &     'C           ')
       labels(1) = mel_rdagbar
       labels(2) = op_rdagbar
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_rdagbar,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1517,7 +1518,7 @@ c     &     'C           ')
       labels(1) = mel_rintbreve
       labels(2) = op_rintbreve
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_rintbreve,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1537,7 +1538,7 @@ c     &     'C           ')
       labels(1) = mel_exchange
       labels(2) = op_exchange
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_exchange,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1558,7 +1559,7 @@ c     &     'C           ')
       labels(1) = mel_hartree
       labels(2) = op_hartree
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_hartree,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1582,7 +1583,7 @@ c     &     'C           ')
       labels(1) = mel_v_inter
       labels(2) = op_v_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_v_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1594,7 +1595,7 @@ c     &     'C           ')
       labels(1) = mel_x_inter
       labels(2) = op_x_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_x_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1606,7 +1607,7 @@ c     &     'C           ')
       labels(1) = mel_b_inter
       labels(2) = op_b_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_b_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1618,7 +1619,7 @@ c     &     'C           ')
       labels(1) = mel_p_inter
       labels(2) = op_p_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_p_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1630,7 +1631,7 @@ c     &     'C           ')
       labels(1) = mel_p3f_inter
       labels(2) = op_p3f_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_p3f_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1642,7 +1643,7 @@ c     &     'C           ')
       labels(1) = mel_p3g_inter
       labels(2) = op_p3g_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_p3g_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1654,7 +1655,7 @@ c     &     'C           ')
       labels(1) = mel_c_inter
       labels(2) = op_c_inter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_c_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1671,7 +1672,7 @@ c                             ! but as long as we do not formally
 c                             ! calculate with
 c                             ! this entity this does not matter
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     msc,0,1,0,0)
       call set_rule(mel_b_inv,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -1691,7 +1692,7 @@ c                             ! this entity this does not matter
         labels(1) = mel_b_dia
         labels(2) = op_diar12
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       msc,0,1,0,0)
         call set_rule(mel_b_dia,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -1711,7 +1712,7 @@ c                             ! this entity this does not matter
         labels(1) = mel_x_inv
         labels(2) = op_x_inter
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0)
+     &       msc,0,1,0,0)
         call set_rule(mel_x_inv,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)

@@ -37,7 +37,7 @@
      &     orb_info
 
       integer ::
-     &     ngraph, ica, hpvx, idxmap, idx,
+     &     ngraph, ica, hpvx, idxgraph, idx,
      &     iocc, nsym, ifree, lenoff
       integer, pointer ::
      &     idx_flipmap(:)
@@ -69,20 +69,20 @@
         end if
 
         ! does primitive map exist?
-        idxmap = igraph(idx)
-        if (idx_flipmap(idxmap).gt.-1) then
+        idxgraph = igraph(idx)
+        if (idx_flipmap(idxgraph).gt.-1) then
           ! check that offsets are set
           if (.not.associated(strmap_info%offsets_flip))
      &         call quit(1,'strmap_man_flip','offsets not initialized?')
-          if (.not.associated(strmap_info%offsets_flip(idxmap)%ms)
+          if (.not.associated(strmap_info%offsets_flip(idxgraph)%ms)
      &           .or.
-     &         .not.associated(strmap_info%offsets_flip(idxmap)%msgm))
+     &         .not.associated(strmap_info%offsets_flip(idxgraph)%msgm))
      &         call quit(1,'strmap_man_flip','offsets not initialized?')
           if (ntest.ge.100) then
             write(luout,*) 'I have this map already ...'
           end if
           maxbuffer = maxbuffer
-     &             + strmap_info%maxlen_blk_flip(idxmap)
+     &             + strmap_info%maxlen_blk_flip(idxgraph)
           cycle
         end if
 
@@ -90,30 +90,30 @@
           write(luout,*) 'I will generate this map ...'
         end if
 
-        idx_flipmap(idxmap) = strmap_info%idx_last+1
+        idx_flipmap(idxgraph) = strmap_info%idx_last+1
           
         ! get memory for offset arrays
         nsym = orb_info%nsym
         call mem_pushmark()
         ifree = mem_gotomark(strmaps)
         lenoff = (iocc+1)
-        ifree = mem_alloc_int(strmap_info%offsets_flip(idxmap)%ms,
+        ifree = mem_alloc_int(strmap_info%offsets_flip(idxgraph)%ms,
      &       lenoff,'m_off')
         lenoff = lenoff*nsym
-        ifree = mem_alloc_int(strmap_info%offsets_flip(idxmap)%msgm,
+        ifree = mem_alloc_int(strmap_info%offsets_flip(idxgraph)%msgm,
      &                          lenoff,'mg_off')
 
         call mem_popmark()
 
         call set_flipmap(
-     &         str_info%g(igraph(idx)),
-     &         str_info%ispc_typ(igraph(idx)),
-     &         str_info%ispc_occ(igraph(idx)),
-     &         str_info%igas_restr(1,1,1,1,igraph(idx)),
+     &         str_info%g(idxgraph),
+     &         str_info%ispc_typ(idxgraph),
+     &         str_info%ispc_occ(idxgraph),
+     &         str_info%igas_restr(1,1,1,1,idxgraph),
 C               ! ADAPT FOR OPEN SHELL  ^^^
-     &         idxmap,strmap_info,orb_info)
+     &         idxgraph,strmap_info,orb_info)
 
-        maxbuffer = maxbuffer + strmap_info%maxlen_blk_flip(idxmap)
+        maxbuffer = maxbuffer + strmap_info%maxlen_blk_flip(idxgraph)
 
       end do
 

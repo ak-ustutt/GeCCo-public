@@ -72,7 +72,7 @@
       logical ::
      &     bufop1, bufop2, bufop1op2, 
      &     first1, first2, first3, first4, first5,
-     &     reo_op1op2, nonzero
+     &     reo_op1op2, nonzero, use_tr_here
       integer ::
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
@@ -80,7 +80,7 @@
      &     nc_ex1, na_ex1, nc_ex2, na_ex2, 
      &     nc_op1op2, na_op1op2,
      &     nc_op1op2tmp, na_op1op2tmp,
-     &     nc_cnt, na_cnt,
+     &     nc_cnt, na_cnt, idx_restr,
      &     nsym, ifree, lenscr, lenblock,
      &     idxst_op1, idxst_op2, idxst_op1op2,
      &     idxop1, idxop2, idxop1op2,
@@ -120,7 +120,7 @@
      &     map_info_12a(:)
 
       real(8) ::
-     &     xnrm
+     &     xnrm, fac_scal, fac_scal0, fac_ab
       real(8) ::
      &     cpu, sys, cpu0, sys0, cpu00, sys00
 
@@ -348,6 +348,15 @@ c dbg
       igamtop1 = me_op1%gamt
       igamtop2 = me_op2%gamt
       igamtop1op2 = me_op1op2%gamt
+
+      ! use spin flip symmetry: only if all operators have a distinct
+      ! alpha/beta symmetry
+      use_tr_here = use_tr       .and.
+     &     me_op1%absym   .ne.0  .and.
+     &     me_op2%absym   .ne.0  .and.
+     &     me_op1op2%absym.ne.0
+
+      fac_scal = 1d0
 
       if (multd2h(igamtop1,igamtop2).ne.igamtop1op2)
      &     call quit(1,'contr_op1op2_wmaps_c','inconsistent symmetries')
@@ -588,6 +597,9 @@ c dbg
       msbnd(1,1) = -na_op1 ! operator 1
       msbnd(1,2) = -na_op2 ! operator 2        
       msbnd(1,3) = -na_op1op2 ! product
+      ! if use_tr is active, restrict the operator with larger max MS:
+      idx_restr = 1
+      if (na_op2.gt.na_op1) idx_restr = 2
       ! maximum Ms(A) for ...
       msbnd(2,1) = -msbnd(1,1)
       msbnd(2,2) = -msbnd(1,2)
@@ -627,9 +639,26 @@ c dbg
 
         if (mscmx_a+mscmx_c.lt.abs(msc_ac)) cycle ms_loop
           
+        ! time-reversal symmetry (spin-flip) used:
+        ! process only cases with MS(A) >= 0 for OP1, OP1OP2
+        if (use_tr_here.and.
+c     &      (ms12i_a(idx_restr).lt.0.or.ms12i_a(3).lt.0) then
+     &      (ms12i_a(3).lt.0 .or.
+     &       ms12i_a(3).eq.0.and.ms12i_a(idx_restr).lt.0)) then
+c dbg
+c          print *,'skipping: ',ms12i_a(1:3)
+c dbg
+          cycle ms_loop
+        end if
+        fac_scal0 = 1d0
+        if (use_tr_here.and.ms12i_a(3).gt.0) fac_scal0 = fac_scal0*2d0
+        if (use_tr_here.and.ms12i_a(3).eq.0.and.
+     &              ms12i_a(idx_restr).gt.0) fac_scal0 = fac_scal0*2d0
+
         msc_loop: do msc_a = mscmx_a, -mscmx_a, -2
           msc_c = msc_ac - msc_a
           if (abs(msc_c).gt.mscmx_c) cycle
+
           ! Ms of string after lifting restrictions:
           !  Op1(C1,A1) -> Op1(C10,A10;CC,AC)
           msex1_c = ms12i_c(1) - msc_c
@@ -644,6 +673,24 @@ c dbg
      &         cycle msc_loop
           if (abs(msex2_a).gt.na_ex2)
      &         cycle msc_loop
+
+          if (use_tr_here.and.
+     &        ms12i_a(idx_restr).eq.0.and.ms12i_a(3).eq.0.and.
+     &        msc_c-msc_a.gt.0) then
+c dbg
+c          print *,'skipping: ',ms12i_a(1:3),'msc_c,msc_a: ',msc_c,msc_a
+c dbg
+            cycle msc_loop
+          end if          
+          fac_scal = fac_scal0
+          if (use_tr_here.and.
+     &         ms12i_a(idx_restr).eq.0.and.ms12i_a(3).eq.0.and.
+     &         msc_c-msc_a.lt.0) fac_scal = fac_scal*2d0
+c dbg
+c          print *,'processing: ',ms12i_a(1:3),
+c     &            'msc_c,msc_a: ',msc_c,msc_a,' fac = ',fac_scal
+c dbg
+
           if (ntest.ge.100) then
             write(luout,*) 'Current spin case:'
             write(luout,*) ' OP1/OP2/INT (C) ->',ms12i_c(1:3)
@@ -1027,10 +1074,6 @@ c     &                     .false.,me_op2,nsym)
      &                     - idxst_op2+1
                     end if
 
-c dbg
-c                    print *,'call ddot(2)',idxop2,
-c     &                   lstrop2(1:ncblk_op2+nablk_op2)
-c dbg
                     xnrm = ddot(ielprd(lstrop2,
      &                   ncblk_op2+nablk_op2),
      &                   xop2(idxop2),1,xop2(idxop2),1)
@@ -1154,7 +1197,8 @@ c                        print *,'xop1op2blk before: ',xop1op2blk(1),
 c     &                       xop1op2(1)
 c                      end if
 c dbg
-                      call contr_blk1blk2_wmaps_c(xfac*casign,
+                      call contr_blk1blk2_wmaps_c(
+     &                     xfac*casign*fac_scal,
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
      &                   tra_op1, tra_op2, tra_op1op2,
@@ -1181,7 +1225,8 @@ c     &                       xop1op2(1)
 c                      end if
 c dbg
                     else
-                      call contr_blk1blk2_blocked_mm(xfac*casign,
+                      call contr_blk1blk2_blocked_mm(
+     &                     xfac*casign*fac_scal,
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
      &                   tra_op1, tra_op2, tra_op1op2,
@@ -1261,6 +1306,30 @@ c dbg
 
         end do msc_loop
       end do ms_loop
+
+c      if (use_tr_here.and..not.update) then
+      if (use_tr_here) then
+        if (abs(me_op1op2%absym).ne.1) then
+c          write(luout,*) 'assuming AL-BE symmetry = +1'
+c          fac_ab = +1
+          call quit(1,'contr_op1op2_wmaps_c',
+     &         'absym.ne.+/-1 for list: '//trim(me_op1op2%label))
+        else
+          fac_ab = dble(me_op1op2%absym)
+        end if
+        if (ntest.ge.1000) then
+          if (iblkop1op2.gt.0
+     &           ) then
+           write(luout,*) 'operator 12 bef. sym (',trim(op1op2%name),')'
+            call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
+     &             iblkop1op2,iblkop1op2,str_info,orb_info)
+          end if
+        end if
+        call sym_ab_blk(xop1op2,
+     &       xop1op2,0.5d0,fac_ab,
+     &       me_op1op2,iblkop1op2,
+     &       str_info,strmap_info,orb_info)
+      end if
 
       if (ntest.ge.1000) then
         if (iblkop1op2.gt.0

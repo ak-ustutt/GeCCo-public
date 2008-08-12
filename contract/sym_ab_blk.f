@@ -6,6 +6,8 @@
 *----------------------------------------------------------------------*
 *     core routine for spin symmetrizer
 *
+*     buffer_in/buffer_out may be the same
+*
 *     andreas, july 2008
 *     
 *----------------------------------------------------------------------*
@@ -45,13 +47,13 @@
      &     first
       integer ::
      &     nocc_cls, njoined,
-     &     ifree, nblk, nbuff, idxmsa, idxmsc, idxdis_1,
+     &     ifree, nblk, nbuff, idxmsa, idxmsc, idxdis_1, idxdis_1_x,
      &     idxdis_2, ioff_1, ioff_2, ioff0_1, ioff0_2, ioff,
      &     msa, msc, igama, igamc, idxa, idxc, ngam, lena, lenc,
      &     msa2, msc2,  idxmsa2, idxmsc2,
      &     iblkoff, ncblk, nablk, msc_max, msa_max,
      &     istr, idx1, idx2, icmp, ngraph, maxbuf,
-     &     asign, csign, imap
+     &     asign, csign, gsign, imap
       real(8) ::
      &     fac_off, fac_dia, value
 
@@ -86,7 +88,7 @@
       logical, external ::
      &     iocc_equal_n, next_msgamdist2
       integer, external ::
-     &     ielprd, idx_msgmdst2, idx_str_blk3
+     &     ielprd, idx_msgmdst2, idx_str_blk3, std_spsign_msdis
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'sym_ab_blk')
@@ -119,6 +121,10 @@
 
       call get_num_subblk(ncblk,nablk,
      &     op%ihpvca_occ(1,1,iblkoff+1),njoined)
+c dbg
+c      call wrt_occ_n(6,op%ihpvca_occ(1,1,iblkoff+1),njoined)
+c      print *,'ncblk,nablk: ',ncblk,nablk
+c dbg
 
       allocate(hpvx_csub(ncblk),hpvx_asub(nablk),
      &         occ_csub(ncblk), occ_asub(nablk),
@@ -188,7 +194,7 @@
      &         gam_ms(igama,idxmsa).le.0) cycle
 
           first = .true.
-          idxdis_1 = 0
+          idxdis_1_x = 0
           distr_loop: do
 
             if (.not.next_msgamdist2(first,
@@ -200,6 +206,11 @@
 
             msdis_c2(1:ncblk) = -msdis_c(1:ncblk)
             msdis_a2(1:nablk) = -msdis_a(1:nablk)
+
+            gsign =       std_spsign_msdis(msdis_c,occ_csub,ncblk)
+            gsign = gsign*std_spsign_msdis(msdis_a,occ_asub,nablk)
+            gsign = gsign*std_spsign_msdis(msdis_c2,occ_csub,ncblk)
+            gsign = gsign*std_spsign_msdis(msdis_a2,occ_asub,nablk)
 
             call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
             call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
@@ -214,10 +225,25 @@
 
             lenc = ielprd(len_str,ncblk)
             lena = ielprd(len_str(ncblk+1),nablk)
+c dbg
+c            print *,'len_str: ',len_str
+c dbg
 
             if (lenc.eq.0.or.lena.eq.0) cycle
 
-            idxdis_1 = idxdis_1+1
+            idxdis_1_x = idxdis_1_x+1
+c test
+            idxdis_1 = 1
+            if (mel%off_op_gmox(iblk)%ndis(igama,idxmsa).gt.1)
+     &           idxdis_1 =
+     &               idx_msgmdst2(
+     &                iblk,idxmsa,igama,
+     &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
+     &                occ_asub,idxmsdis_a,gamdis_a,nablk,
+     &                .false.,mel,ngam)
+c            print *,'idxdis_1: ',idxdis_1,idxdis_1_x
+            if (idxdis_1.ne.idxdis_1_x) print *,'!!!OHA!!!'
+c test
 
             if (ntest.ge.1000)
      &         write(luout,*) 'dist: ',idxdis_1,' len = ',
@@ -239,6 +265,7 @@
             ioff_2 = mel%off_op_gmox(iblk)%
      &             d_gam_ms(idxdis_2,igama,idxmsa2) - ioff0_1
 
+            if (msa.eq.0.and.idxdis_1.gt.idxdis_2) cycle distr_loop
             if (ntest.ge.1000) then
               write(luout,*) 'idxdis_1,idxdis_2: ',idxdis_1,idxdis_2
               write(luout,*) 'ioff_1,ioff_2:     ',ioff_1,ioff_2
@@ -257,33 +284,36 @@
      &           len_str,ncblk,nablk,.false.)
             
 c dbg
-c            print *,'flipmap_c:'
-c            print '(10i6)',flipmap_c
+c            print *,'ldim_op_c: ',ldim_op_c
+c            print *,'ldim_op_a: ',ldim_op_a
+c            print *,'flipmap_c: len=',len_str(1:ncblk)
+c            print '(10i6)',flipmap_c(1:sum(len_str(1:ncblk)))
 c            print *,'flipmap_a:'
-c            print '(10i6)',flipmap_a
+c            print '(10i6)',
+c     &           flipmap_a(1:sum(len_str(ncblk+1:ncblk+nablk)))
 c dbg
 
-            idxc_loop: do idxc = 1, lenc
-              istr = idxc-1
+            idxa_loop: do idxa = 1, lena
+              istr = idxa-1
               ioff = 1
-              csign = 1
-              do icmp = 1, ncblk
-                istr_csub(icmp) = mod(istr,len_str(icmp))
-                imap = flipmap_c(ioff+istr_csub(icmp))
-                istr_csub_flip(icmp) = abs(imap)-1
-                csign = csign*sign(1,imap)
-                istr = istr/len_str(icmp)
-                ioff = ioff + len_str(icmp)
+              asign = gsign
+              do icmp = 1, nablk
+                istr_asub(icmp) = mod(istr,len_str(ncblk+icmp))
+                imap = flipmap_a(ioff+istr_asub(icmp))
+                istr_asub_flip(icmp) = abs(imap)-1
+                asign = asign*sign(1,imap)
+                istr = istr/len_str(ncblk+icmp)
+                ioff = ioff + len_str(ncblk+icmp)
               end do
-              idxa_loop: do idxa = 1, lena
-                istr = idxa-1
+              idxc_loop: do idxc = 1, lenc
+                istr = idxc-1
                 ioff = 1
-                asign = 1
-                do icmp = 1, nablk
-                  istr_asub(icmp) = mod(istr,len_str(ncblk+icmp))
-                  imap = flipmap_a(ioff+istr_asub(icmp))
-                  istr_asub_flip(icmp) = abs(imap)-1
-                  asign = asign*sign(1,imap)
+                csign = 1
+                do icmp = 1, ncblk
+                  istr_csub(icmp) = mod(istr,len_str(icmp))
+                  imap = flipmap_c(ioff+istr_csub(icmp))
+                  istr_csub_flip(icmp) = abs(imap)-1
+                  csign = csign*sign(1,imap)
                   istr = istr/len_str(icmp)
                   ioff = ioff + len_str(icmp)
                 end do
@@ -313,8 +343,8 @@ c dbg
                 buffer_out(idx1) = value
                 buffer_out(idx2) = dble(csign*asign)*relfac*value
 
-              end do idxa_loop
-            end do idxc_loop
+              end do idxc_loop
+            end do idxa_loop
 
           end do distr_loop
           

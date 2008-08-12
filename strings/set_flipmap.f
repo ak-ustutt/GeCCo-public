@@ -41,7 +41,10 @@
         write(luout,*) '==================='
         write(luout,*) 'this is set_flipmap'
         write(luout,*) '==================='
-        write(luout,*) 'ityp, iocc, ms: ',ityp, iocc, ms
+        write(luout,*) 'idxflip: ',idxflip
+        write(luout,*) 'irestr:  ',
+     &       irestr(1:2*orb_info%nspin*orb_info%ngas)
+        write(luout,*) 'ityp, iocc: ',ityp, iocc
       end if
 
       ifree = mem_setmark('set_flipmap')
@@ -58,7 +61,8 @@
       maxlen_blk = 0
       maxlenbuf = 0
       idxms = 0
-      do ms = iocc, 0, -2
+      do ms = iocc, -iocc, -2
+c      do ms = iocc, 0, -2
         idxms = idxms+1
         lenbuf = 0
         do igam = 1, nsym
@@ -84,7 +88,8 @@
 
       idxmap = 0
       idxms = 0
-      do ms = iocc, 0, -2
+c      do ms = iocc, 0, -2
+      do ms = iocc, -iocc, -2
         idxms = idxms+1
         strmap_info%offsets_flip(idxflip)%ms(idxms) = idxmap
         idxbuf = 0
@@ -92,11 +97,17 @@
           nstr = grph%lenstr_gm(igam,idxms)
           strmap_info%offsets_flip(idxflip)%msgm((idxms-1)*nsym+igam)
      &         = idxmap
+c dbg
+c          print *,'idxflip,idxms,igam: ',idxflip,idxms,igam
+c          print *,'offset: ',idxmap
+c          print *,'ityp,ngas_hpv(ityp)',ityp,ngas_hpv(ityp)
+c dbg
           if (nstr.eq.0) cycle
           call set_flipmap_kernel(buffer(idxbuf+1),
      &                 iocc,irestr,idxms,igam,
      &                 grph%y4sg,grph%yinf,
      &                 grph%yssg,grph%wssg,
+     &                 grph%ioffstr_dgm,grph%ndis,
      &                 mostnd(1,1,idx_gas(ityp)),
      &                 nsym,ngas_hpv(ityp),igamorb)
           idxmap = idxmap + nstr

@@ -42,6 +42,7 @@
       do iblk = 1, nblk
         if (.true.) then
 c dbg
+c          print *,'iblk = ',iblk
 c      print *,'fetching G,MS/G: ',igrph(iblk),idxms(iblk),igam(iblk)
 c dbg
           idxgraph = igrph(iblk)
@@ -49,11 +50,13 @@ c dbg
           ! offset of string map
           ioff = strmap_info%idx_flipmap(idxgraph)-1
 c dbg
+c          print *,'idxgraph = ',idxgraph
 c          print *,'ioff0: ',ioff
 c dbg
           ! plus offset of current ms/gm block
           ioff = ioff + offsets(idxgraph)%msgm(idxmap)
 c dbg
+c          print *,'idxgraph,idxmap: ',idxgraph,idxmap
 c          print *,'idxmap,ioff1: ',idxmap,offsets(idxgraph)%msgm(idxmap)
 c dbg
           ilen = lstr(iblk)
@@ -61,6 +64,7 @@ c dbg
 c          print *,'ilen = ',ilen
 c          print *,'fetching from: ',ioff+1,
 c     &                              ioff+ilen
+c          print *,'fetching map: ',ioffmap+1,ioffmap+ilen
 c dbg
           call mem_iget(strmap_info%ffstrmap,
      &         strmap(ioffmap+1),ioff+1,ioff+ilen)          
@@ -71,6 +75,7 @@ c dbg
           ilen = lstr(iblk)
 c dbg
 c          print *,'setting trivial map of length : ',ilen
+c          print *,'settig map: ',ioffmap+1,ioffmap+ilen
 c dbg
           curmap => strmap(ioffmap+1:ioffmap+ilen)
           do idx = 1, ilen

@@ -151,6 +151,8 @@
      &     idef=(/3/))
       call argument_add('str_block','calculate.routes',type=vtyp_int,
      &     idef=(/200/))
+      call argument_add('use_tr','calculate.routes',type=vtyp_log,
+     &     ldef=(/.true./))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
 

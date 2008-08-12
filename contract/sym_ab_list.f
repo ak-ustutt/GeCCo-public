@@ -7,7 +7,9 @@
 *     Routine to symmetrize ME list wrt. MS-combinations
 *     the symmetrization type (+1/-1) is given by me_out%absym
 *     use fac=0.5d0 if both non-flipped and flipped parts have
-*     been set before and fac=1d0, if flipped parts were omitted
+*     been set before or if one of both has been pre-multiplied
+*     by the appropriate symmetry factor
+*     one might use fac=1d0, if flipped parts were omitted
 *     previously
 *
 *     july 2008, andreas
@@ -26,7 +28,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -79,7 +81,8 @@
       end if
 
       if (me_out%absym.ne.+1.and.me_out%absym.ne.-1)
-     &     call quit(1,'sym_ab_list','absym.ne.+1.and.absym.ne.-1')
+     &     call quit(1,'sym_ab_list',
+     &     'absym.ne.+1.and.absym.ne.-1, list='//trim(me_out%label))
       ! factor for off-diagonal and diagonal
       fac_rel = dble(me_out%absym)
       fac_pre = fac
@@ -159,6 +162,8 @@
 
       ! Loop over occupation classes.
       iocc_loop: do iblk = 1, nocc_cls 
+
+        if(op_out%formal_blk(iblk)) cycle
 
         ioff_blk = (iblk-1)*njoined
 
