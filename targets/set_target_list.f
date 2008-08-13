@@ -44,10 +44,12 @@
       ! CC-R12
       if (is_keyword_set('method.CC').gt.0 .and.
      &    is_keyword_set('method.R12').gt.0 ) then
-c dbg
-        print *,'CC-R12 route'
-c dbg
         call set_ccr12_targets(tgt_info,orb_info,env_type)
+      end if
+
+      ! experimental section
+      if (is_keyword_set('calculate.experimental').gt.0) then
+        call set_experimental_targets(tgt_info,orb_info)
       end if
 
       call set_idx4deps(tgt_info)

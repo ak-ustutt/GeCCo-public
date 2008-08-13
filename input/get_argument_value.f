@@ -12,6 +12,7 @@
 
       use parse_input
       implicit none
+      include 'par_vtypes.h'
 
       character, intent(in) ::
      &     context*(*), argkey*(*)

@@ -9,10 +9,6 @@
 
       ! parameters
       integer, parameter ::
-     &     vtyp_log = 1,    ! input variable types
-     &     vtyp_int = 2,
-     &     vtyp_rl8 = 4,
-     &     vtyp_str = 8,
      &     sttyp_undef = 0,
      &     sttyp_set   = 1,
      &     sttyp_auto  = 2
@@ -68,7 +64,7 @@
       contains
 
 *----------------------------------------------------------------------*
-      subroutine keyword_init()
+      subroutine keyword_init_()
 *----------------------------------------------------------------------*
 *     inititialization routine
 *----------------------------------------------------------------------*
@@ -365,7 +361,7 @@ c      end function
       end subroutine
 
 *----------------------------------------------------------------------*
-      subroutine keyword_add(key,context,required,status)
+      subroutine keyword_add_(key,context,required,status)
 *----------------------------------------------------------------------*
 *     add a new keyword to level below context (default: keyword_root)
 *     context is a string like "<key>.<key>.<key>"
@@ -434,13 +430,14 @@ c      end function
       end subroutine
 
 *----------------------------------------------------------------------*
-      subroutine argument_add(argkey,context,type,len,
+      subroutine argument_add_(argkey,context,type,len,
      &     idef,xdef,ldef,cdef)
 *----------------------------------------------------------------------*
 *     add argument to keyword given by context
 *----------------------------------------------------------------------*
 
       implicit none
+      include 'par_vtypes.h'
 
       character, intent(in) ::
      &     argkey*(*), context*(*)
@@ -589,6 +586,7 @@ c      end function
 *----------------------------------------------------------------------*
 
       implicit none
+      include 'par_vtypes.h'
 
       character, intent(in) ::
      &     context*(*)

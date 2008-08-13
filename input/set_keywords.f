@@ -1,9 +1,10 @@
       subroutine set_keywords()
 
-      use parse_input
+c      use parse_input
       implicit none
 
       include 'stdunit.h'
+      include 'ifc_input.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -156,8 +157,12 @@
       call argument_add('simtraf','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
 
+      call keyword_add('experimental',context='calculate')
+      ! set additional experimental keyword in this subroutine:
+      call set_experimental_keywords()
+
       if (iprint.ge.50)
-     &     call keyword_list(luout,keyword_root,show_args=.true.)
+     &     call show_keywords(luout)
 
       return
       end

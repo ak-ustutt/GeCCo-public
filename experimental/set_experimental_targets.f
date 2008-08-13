@@ -1,0 +1,119 @@
+*----------------------------------------------------------------------*
+      subroutine set_experimental_targets(tgt_info,orb_info)
+*----------------------------------------------------------------------*
+*     set targets for experiments with GeCCo
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'stdunit.h'
+      include 'mdef_target_info.h'
+      include 'def_orbinf.h'
+
+      include 'ifc_input.h'
+
+      include 'par_opnames_gen.h'
+      include 'par_formnames_gen.h'
+      include 'par_gen_targets.h'
+      include 'par_actions.h'
+
+      type(target_info), intent(inout) ::
+     &     tgt_info
+      type(orbinf), intent(in) ::
+     &     orb_info
+
+      integer ::
+     &     min_rank, max_rank,
+     &     isim, ncat, nint, icnt,
+     &     isym, ms, msc, sym_arr(8)
+      logical ::
+     &     needed
+      character(len_target_name) ::
+     &     me_label, medef_label, dia_label, mel_dia1,
+     &     labels(20)
+      character(len_command_par) ::
+     &     parameters(2)
+
+      if (iprlvl.gt.0)
+     &     write(luout,*) 'setting experimental targets ...'
+
+      ! CAVEAT: should be adapted as soon as open-shell version
+      !         is up and running
+      msc = +1 ! assuming closed shell
+
+*----------------------------------------------------------------------*
+*     Operators:
+*----------------------------------------------------------------------*
+      ! e.g. 
+      call add_target('MY_OP',ttype_op,.false.,tgt_info)
+      call set_rule('MY_OP',ttype_op,DEF_SCALAR,
+     &              'MY_OP',1,1,
+     &              parameters,0,tgt_info)
+      ! cf. set_xxxx_targets.f routines in e.g. cc_special for
+      ! further examples
+      
+*----------------------------------------------------------------------*
+*     Formulae 
+*----------------------------------------------------------------------*
+      ! e.g.
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'MY_FORM'
+      labels(2) = 'OP_RES'
+      labels(3) = 'MY_OP1'
+      labels(4) = 'MY_OP2'
+      labels(5) = 'MY_OP3'
+      call add_target('MY_FORM',ttype_frm,.false.,tgt_info)
+      call set_dependency('MY_FORM','OP_RES',tgt_info)
+      call set_dependency('MY_FORM','MY_OP1',tgt_info)
+      call set_dependency('MY_FORM','MY_OP2',tgt_info)
+      call set_dependency('MY_FORM','MY_OP3',tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'title of my new formula',0,'mode string')
+      call set_rule('MY_FORM',ttype_frm,DEF_EXP_FORMULA,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+*----------------------------------------------------------------------*
+*     Opt. Formulae 
+*----------------------------------------------------------------------*
+
+      ! e.g.:
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'MY_OPT_FORM'
+      labels(2) = 'MY_FORM'
+      labels(3) = '1_MORE_FORM'
+      ncat = 2  ! 2 formulae pasted into final formula
+      nint = 0  ! no intermediate to factor out so far ...
+      call add_target('MY_OPT_FORM',ttype_frm,.false.,tgt_info)
+      call set_dependency('MY_OPT_FORM','MY_FORM',tgt_info)
+      call set_dependency('MY_OPT_FORM','1_MORE_FORM',tgt_info)
+      call set_dependency('MY_OPT_FORM','MY_MEL1',tgt_info)
+      call set_dependency('MY_OPT_FORM','MY_MEL2',tgt_info)
+      call set_dependency('MY_OPT_FORM','MY_MEL3',tgt_info)
+      call set_dependency('MY_OPT_FORM','MY_MELR',tgt_info)      
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('MY_OPT_FORM',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+*----------------------------------------------------------------------*
+*     ME-lists
+*----------------------------------------------------------------------*
+
+      ! e.g.: 
+      call add_target('MY_MEL1',ttype_opme,.false.,tgt_info)
+      call set_dependency('MY_MEL1','MY_OP1',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'MY_MEL1'
+      labels(2) = 'MY_OP1'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0)
+      call set_rule('MY_MEL1',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      
+*----------------------------------------------------------------------*
+*     "phony" targets: solve equations, evaluate expressions
+*----------------------------------------------------------------------*
+
+      return
+      end
