@@ -324,7 +324,8 @@
         ipnt => mem_curslice%imem(1:nalloc)
       case(mtyp_rl8)
         allocate(mem_curslice%xmem(1-npad:nalloc+npad),stat=istat)
-        if (istat.ne.0) call memman_error('allocate(rl8)',istat)
+        if (istat.ne.0) 
+     &       call memman_error('allocate(rl8) '//trim(name),istat)
         if (npad.gt.0) then
           mem_curslice%xmem(1-npad:0) = xpad
           mem_curslice%xmem(nalloc+1:nalloc+npad) = xpad
@@ -775,7 +776,7 @@ c      in_last_section = associated(cursection,mem_cursection)
             end select
             namscr(1:mem_maxname) = ' '
             namscr = curslc%name
-            if (curslc%type.eq.1.or.curslc%type.eq.2) then
+            if ((curslc%type.eq.1.or.curslc%type.eq.2).and.check) then
               if (patchk1.and.patchk2) then
                 write(luout,'(6x,a,x,i2,x,i10,x,i10,x,l,2x,l)')
      &               namscr(1:mem_maxname),curslc%type,
@@ -1718,7 +1719,7 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
       write(luout,*) 'ERROR in memory manager: '
       write(luout,*) 'status: ',stat,' location: ',trim(msg)
 
-      call memman_map(luout,.true.)
+      call memman_map(luout,.false.)
 
       call quit(0,'memman','error in memory manager')
 
