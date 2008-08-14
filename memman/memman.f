@@ -143,8 +143,12 @@
 
       integer, intent(in) ::
      &     mem_free_init
+      integer ::
+     &     istat
 
-      allocate(mem_root)
+      allocate(mem_root,stat=istat)
+      if (istat.ne.0) call memman_error('init',istat)
+
       mem_root%name = 'static'
       
       nullify(mem_root%head)
@@ -208,7 +212,11 @@
       implicit none
       include 'stdunit.h'
 
-      allocate(mem_cursection%head)
+      integer ::
+     &     istat
+
+      allocate(mem_cursection%head,stat=istat)
+      if (istat.ne.0) call memman_error('init_slice',istat)
       mem_cursection%tail => mem_cursection%head
       mem_curslice => mem_cursection%head
 
@@ -244,11 +252,14 @@
      &     mem_reg, len
       real(8) ::
      &     over
+      integer ::
+     &     istat
 
       if (.not.associated(mem_curslice)) then
         call memman_initslice()
       else
-        allocate(mem_curslice%next)
+        allocate(mem_curslice%next,stat=istat)
+        if (istat.ne.0) call memman_error('allocate(ini)',istat)
         mem_curslice%next%prev => mem_curslice
         nullify(mem_curslice%next%next)
         mem_curslice => mem_curslice%next
@@ -302,7 +313,8 @@
 
       select case(type)
       case(mtyp_int)
-        allocate(mem_curslice%imem(1-npad:nalloc+npad))
+        allocate(mem_curslice%imem(1-npad:nalloc+npad),stat=istat)
+        if (istat.ne.0) call memman_error('allocate(int)',istat)
         if (npad.gt.0) then
           mem_curslice%imem(1-npad:0) = ipad
           mem_curslice%imem(nalloc+1:nalloc+npad) = ipad
@@ -311,7 +323,8 @@
      &       call quit(1,'mem_alloc','ipnt not present')
         ipnt => mem_curslice%imem(1:nalloc)
       case(mtyp_rl8)
-        allocate(mem_curslice%xmem(1-npad:nalloc+npad))
+        allocate(mem_curslice%xmem(1-npad:nalloc+npad),stat=istat)
+        if (istat.ne.0) call memman_error('allocate(rl8)',istat)
         if (npad.gt.0) then
           mem_curslice%xmem(1-npad:0) = xpad
           mem_curslice%xmem(nalloc+1:nalloc+npad) = xpad
@@ -502,12 +515,13 @@ c      in_last_section = associated(cursection,mem_cursection)
      &     name*(*)
 
       integer ::
-     &     len
+     &     len, istat
 
       if (.not.associated(mem_tail))
      &     call quit(1,'memman_addsection','memman not initialized?')
 
-      allocate(mem_tail%next)
+      allocate(mem_tail%next,stat=istat)
+      if (istat.ne.0) call memman_error('addsection',istat)
       mem_tail%next%prev => mem_tail
       nullify(mem_tail%next%next)
       mem_tail => mem_tail%next
@@ -1689,6 +1703,25 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
       deallocate(ibuf)
 
       return
+      end subroutine
+
+      subroutine memman_error(msg,stat)
+
+      implicit none
+      include 'stdunit.h'
+
+      integer, intent(in) ::
+     &     stat
+      character(len=*), intent(in) ::
+     &     msg
+
+      write(luout,*) 'ERROR in memory manager: '
+      write(luout,*) 'status: ',stat,' location: ',trim(msg)
+
+      call memman_map(luout,.true.)
+
+      call quit(0,'memman','error in memory manager')
+
       end subroutine
 
       end module
