@@ -214,20 +214,20 @@ c dbg
 
       idx = nold
 c dbg
-      print *,'iopt = ',iopt,'  idx = ',idx
+c      print *,'iopt = ',iopt,'  idx = ',idx
 c dbg
       do inew = 1, nnew
         ! check whether vector is nonzero
 c dbg
-        print *,'test = ',ddot(nold+nnew,xmat(1,nold+inew),1,
-     &                     xmat(1,nold+inew),1),nold,nnew,inew
+c        print *,'test = ',ddot(nold+nnew,xmat(1,nold+inew),1,
+c     &                     xmat(1,nold+inew),1),nold,nnew,inew
 c dbg
         if (ddot(nold+nnew,xmat(1,nold+inew),1,
      &                     xmat(1,nold+inew),1).lt.1d-10)
      &       cycle
         idx = idx+1
 c dbg
-        print *,'idx, ndim_sbsp: ',idx, ndim_sbsp
+c        print *,'idx, ndim_sbsp: ',idx, ndim_sbsp
 c dbg
         if (idx.le.ndim_sbsp) then
           ! overwrite previous (zero) record
@@ -237,7 +237,7 @@ c dbg
           irec = ioptc_get_sbsp_rec(0,iord_sbsp,ndim_sbsp,mxsbsp)
         end if
 c dbg
-        print *,'idx = ',idx,'   irec = ',irec
+c        print *,'idx = ',idx,'   irec = ',irec
 c dbg
         
         if (ntest.ge.100)

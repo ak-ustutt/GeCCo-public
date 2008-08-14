@@ -274,7 +274,10 @@ c dbg
       do iopt = 1, nopt
         ! preliminary solution: set only component 1, rest is zero
         if (iopt.gt.1) then
-          call zeroop(me_trv(iopt)%mel)
+          do iroot = 1, nroots          
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            call zeroop(me_trv(iopt)%mel)
+          end do
           cycle
         end if
         call find_nmin_list(xlist,idxlist,2*nroots,me_dia(iopt)%mel)
