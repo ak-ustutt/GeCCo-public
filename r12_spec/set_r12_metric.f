@@ -208,18 +208,18 @@ c      end if
       if (r12fix.and.r12op.gt.0) then
         if (r12op.ne.2) then
           call form_op_replace(op_info%op_arr(idxc12)%op%name,
-     &                       op_info%op_arr(idxtop)%op%name,
+     &                       op_info%op_arr(idxtop)%op%name,.true.,
      &     flist_metric,op_info)
           call form_op_replace(op_info%op_arr(idxcbar)%op%name,
-     &                       op_info%op_arr(idxtbar)%op%name,
+     &                       op_info%op_arr(idxtbar)%op%name,.true.,
      &     flist_metric,op_info)
         end if
         if (r12op.gt.1) then
           call form_op_replace(op_info%op_arr(idxcpp12)%op%name,
-     &                       op_info%op_arr(idxtop)%op%name,
+     &                       op_info%op_arr(idxtop)%op%name,.true.,
      &     flist_metric,op_info)
           call form_op_replace(op_info%op_arr(idxcppbar)%op%name,
-     &                       op_info%op_arr(idxtbar)%op%name,
+     &                       op_info%op_arr(idxtbar)%op%name,.true.,
      &     flist_metric,op_info)
         end if
       end if

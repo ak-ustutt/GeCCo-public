@@ -251,7 +251,8 @@ c          end do
 
         ! F -> H replacement:
         op_pnt => op_info%op_arr(idx_2)%op
-        call form_op_replace(opf_pnt%name,op_pnt%name,flist_pnt,op_info)
+        call form_op_replace(opf_pnt%name,op_pnt%name,
+     &       .true.,flist_pnt,op_info)
 
         if (ntest.ge.100) then
           write(luout,*) 'XF contribution:'

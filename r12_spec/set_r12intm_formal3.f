@@ -314,12 +314,12 @@ c test
         idx = index(typ_str,'f')
         if (idx.le.0) idx = index(typ_str,'F')
         op   => op_info%op_arr(idx_op(idx))%op
-        call form_op_replace(opdum_f,op%name,flist_scr,op_info)
+        call form_op_replace(opdum_f,op%name,.true.,flist_scr,op_info)
       end if
       if (n_g.gt.0) then
         idx = index(typ_str,'g')
         op   => op_info%op_arr(idx_op(idx))%op
-        call form_op_replace(opdum_g,op%name,flist_scr,op_info)
+        call form_op_replace(opdum_g,op%name,.true.,flist_scr,op_info)
       end if
       
       ! prepare file:

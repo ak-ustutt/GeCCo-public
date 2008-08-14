@@ -240,7 +240,7 @@ c        end if
       end if
 
       call form_op_replace(op_info%op_arr(idx_f_temp)%op%name,
-     &                     op_info%op_arr(idxham)%op%name,
+     &                     op_info%op_arr(idxham)%op%name,.true.,
      &     flist_lag,op_info)
 
       if (ansatz.gt.0) then
@@ -264,10 +264,10 @@ c        end if
         if (r12fix.and.r12op.gt.0) then
           if (r12op.ne.2) then
             call form_op_replace(op_info%op_arr(idxc12)%op%name,
-     &                         op_info%op_arr(idxtop)%op%name,
+     &                         op_info%op_arr(idxtop)%op%name,.true.,
      &           flist_lag,op_info)
             call form_op_replace(op_info%op_arr(idxc12_pt)%op%name,
-     &                         op_info%op_arr(idxtop)%op%name,
+     &                         op_info%op_arr(idxtop)%op%name,.true.,
      &           flist_lag,op_info)
           end if
           if (r12op.gt.1) then
