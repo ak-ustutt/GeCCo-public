@@ -42,6 +42,14 @@ mkinstalldirs=$(topdir)/config/mkinstalldirs
 FC_MODEXT=@FC_MODEXT@
 FC_MODCASE=@FC_MODCASE@
 
+ARCH:=$(host_cpu)-$(host_os)-$(FC)
+ifdef DEBUG
+  ARCH:=$(host_cpu)-$(host_os)-$(FC)-dbg
+endif
+ifdef PROF
+  ARCH:=$(host_cpu)-$(host_os)-$(FC)-prf
+endif
+
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 inst_bindir=@bindir@
@@ -63,8 +71,6 @@ tag_src:=$(filter-out y.tab.c, $(tag_src))
 # search path used by make to find dependencies
 VPATH=$(includedir):$(libdir):$(bindir)
 
-ARCH=@host@
-
 BLAS_LIBS=@BLAS_LIBS@ 
 LAPACK_LIBS=@LAPACK_LIBS@ $(BLAS_LIBS)
 
@@ -74,6 +80,7 @@ LIBMPI_F90=@F90_LIBS_mpi_f90@
 
 #Fortran flags
 fcflags:=@fcflags@
+fmodule:=@fmodule@
 fdebug:=@fdebug@
 fprof:=@fprof@
 frange:=@frange@
@@ -89,10 +96,9 @@ cldflags:=@cldflags@
 ifdef DEBUG
   fcflags:=$(fdebug) 
   cflags:=$(cdebug) 
-  bindir:=.
 endif
 
-fcflags+=-I$(includedir) 
+fcflags+=-I$(includedir) $(fmodule) $(ARCH) 
 cflags+=-I$(includedir) 
 
 ifdef PROF
@@ -100,13 +106,11 @@ ifdef PROF
   fldflags+=$(fprof)
   cflags+=$(cprof)
   cldflags+=$(cprof)
-  bindir:=.
 endif
 
 ifdef RANGE
   fcflags+=$(frange)
   cflags+=$(crange)
-  bindir:=.
 endif
 
 fldflags:=$(fldflags) -L. -L$(libdir) $(LDFLAGS)

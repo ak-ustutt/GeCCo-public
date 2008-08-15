@@ -9,10 +9,12 @@
 topdir:=..
 srcdir:=.
 
+this_lib:=libcc_spec.a
+
 include $(topdir)/make.config
 
 INST_PROGS:= 
-INST_LIBS:=libcc_spec.a
+INST_LIBS:=$(this_lib)
 INST_INCLUDES:=
 INST_DATA:=
 # module names are listed in smallcaps and wihtout any .mod
@@ -20,24 +22,5 @@ INST_MODULES:=
 
 include $(topdir)/make.rules
 
-#mod_objs:=$(addsuffix .o,$(basename $(INST_MODULES)))
-src:=$(wildcard *.f90 *.F *.f)
-objs:=$(mod_objs) $(filter-out $(mod_objs),$(addsuffix .o, $(basename $(src))))
-
-libs:=
-
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)
-
-$(libdir)/libcc_spec.a: $(objs)
-	$(AR) rv $@ $?
-	$(RAN) $@
-
-.PHONY: dep deps
-dep deps:
-	$(topdir)/config/mkdep90.py $(src) >deps.mk
-
-ifeq (, $(wildcard $(srcdir)/deps.mk))
-$(shell $(topdir)/config/mkdep90.py $(src) >deps.mk)
-endif
-include deps.mk
 

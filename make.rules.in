@@ -6,6 +6,40 @@
 .PHONY: all
 all:
 
+# how to get C objects:
+c_objs:=$(addprefix $(ARCH)/,$(patsubst %.c,%.o,$(wildcard *.c)))
+# mod_objs, hlo_objs, llo_objs spc_objs are user defined
+# special objects treated differently in local Makefile
+spc_objs:=$(addprefix $(ARCH)/,$(spc_obj_list))
+# FORTRAN modules
+mod_objs:=$(addprefix $(ARCH)/,$(mod_obj_list))
+# high level optimization objects
+hlo_objs:=$(addprefix $(ARCH)/,$(hlo_obj_list))
+# low level optimization objects
+llo_objs:=$(addprefix $(ARCH)/,$(llo_obj_list))
+# generical FORTRAN objects
+objs:=$(addprefix $(ARCH)/,$(filter-out $(spc_obj_list) $(mod_obj_list) $(hlo_obj_list) $(llo_obj_list),$(patsubst %.f,%.o,$(wildcard *.f)))) 
+
+all_objs:=$(c_objs) $(mod_objs) $(spc_objs) $(hlo_objs) $(llo_objs) $(objs)
+
+$(libdir)/$(this_lib): $(all_objs)
+	$(AR) rv $@ $(all_objs)
+	$(RAN) $@
+
+ifeq (, $(wildcard $(ARCH)))
+$(shell mkdir $(ARCH))
+endif
+
+.PHONY: dep deps
+dep deps:
+	$(topdir)/config/mkdep90.py $(src) >deps.mk
+
+ifeq (, $(wildcard $(srcdir)/deps.mk))
+$(shell $(topdir)/config/mkdep90.py $(src) >deps.mk)
+endif
+include deps.mk
+
+
 # TAGS and tags are for people working with vi(m) or emacs who wants to
 # use the tag feature of the editors (VERY useful...)
 #.PHONY: TAGS tags
@@ -19,7 +53,7 @@ tags: $(tag_src)
 clean:
 	-@set -e; \
 	echo "rm -f *.o *.pyc *.pyo"; \
-	rm -f *.o *.mod *.d *.pyc *.pyo; 
+	rm -rf $(ARCH) *.d *.pyc *.pyo; 
 ifneq ($(FC_MODEXT),)
 	-@set -e; \
 	echo "rm -f *.$(FC_MODEXT)"; \
@@ -149,17 +183,17 @@ $(inst_datadir):
 $(inst_includedir):
 	@$(mkinstalldirs) $(inst_includedir)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< 
+$(ARCH)/%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o: %.f
-	$(FC) $(FCFLAGS) -c $< 
+$(ARCH)/%.o: %.f
+	$(FC) $(FCFLAGS) -c $< -o $@
 
-%.o: %.F
-	$(FC) $(FCFLAGS) -c $< 
+$(ARCH)/%.o: %.F
+	$(FC) $(FCFLAGS) -c $< -o $@
 
-%.o: %.f90
-	$(FC) $(FCFLAGS) -c $< 
+$(ARCH)/%.o: %.f90
+	$(FC) $(FCFLAGS) -c $< -o $@
 
 (%.o): %.o
 	$(AR) rc $@ $<

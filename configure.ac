@@ -125,9 +125,9 @@ AC_CACHE_SAVE
 #AC_CACHE_SAVE
 
 ACX_SUBST_BUILD_FLAGS 
-AC_SUBST(top_bindir,['$(topdir)/bin'])
+AC_SUBST(top_bindir,['$(topdir)/bin/$(ARCH)'])
 AC_SUBST(top_includedir,['$(topdir)/include'])
-AC_SUBST(top_libdir,['$(topdir)/lib'])
+AC_SUBST(top_libdir,['$(topdir)/lib/$(ARCH)'])
 
 AC_CONFIG_FILES([Makefile make.config make.rules])
 AC_OUTPUT

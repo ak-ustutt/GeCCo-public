@@ -21,6 +21,7 @@ AC_DEFUN([ACX_BUILD_FLAGS],[. ./config/$1.conf])
 AC_DEFUN([ACX_SUBST_BUILD_FLAGS],[
 AC_SUBST(fcflags, $fcflags)
 AC_SUBST(fdebug, $fdebug)
+AC_SUBST(fmodule, $fmodule)
 AC_SUBST(fprof, $fprof)
 AC_SUBST(frange, $frange)
 AC_SUBST(fldflags, $fldflags)

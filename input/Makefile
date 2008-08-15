@@ -9,36 +9,20 @@
 topdir:=..
 srcdir:=.
 
+this_lib:=libinput.a
+
 include $(topdir)/make.config
 
 INST_PROGS:= 
-INST_LIBS:=libinput.a
+INST_LIBS:=$(this_lib)
 INST_INCLUDES:=
 INST_DATA:=
 # module names are listed in smallcaps and wihtout any .mod
 INST_MODULES:=
 
+mod_obj_list:=parse_input.o
+
 include $(topdir)/make.rules
 
-#mod_objs:=$(addsuffix .o,$(basename $(INST_MODULES)))
-mod_objs:=parse_input.o
-src:=$(wildcard *.f90 *.F *.f)
-objs:=$(mod_objs) $(filter-out $(mod_objs),$(addsuffix .o, $(basename $(src))))
-
-libs:=
-
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)
-
-$(libdir)/libinput.a: $(objs)
-	$(AR) rv $@ $?
-	$(RAN) $@
-
-.PHONY: dep deps
-dep deps:
-	$(topdir)/config/mkdep90.py $(src) >deps.mk
-
-ifeq (, $(wildcard $(srcdir)/deps.mk))
-$(shell $(topdir)/config/mkdep90.py $(src) >deps.mk)
-endif
-include deps.mk
 

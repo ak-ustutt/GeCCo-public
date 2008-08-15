@@ -9,36 +9,25 @@
 topdir:=..
 srcdir:=.
 
+this_lib:=libmemman.a
+
 include $(topdir)/make.config
 
 INST_PROGS:= 
-INST_LIBS:=libmemman.a
+INST_LIBS:=$(this_lib)
 INST_INCLUDES:=
 INST_DATA:=
 # module names are listed in smallcaps and wihtout any .mod
 INST_MODULES:=
 
-include $(topdir)/make.rules
-
 #mod_objs:=$(addsuffix .o,$(basename $(INST_MODULES)))
-mod_objs:=memman.o
-src:=$(wildcard *.f90 *.F *.f)
-objs:=$(mod_objs) $(filter-out $(mod_objs),$(addsuffix .o, $(basename $(src))))
+mod_obj_list:=memman.o
+#src:=$(wildcard *.f90 *.F *.f)
+#objs:=$(mod_objs) $(filter-out $(mod_objs),$(addsuffix .o, $(basename $(src))))
 
 libs:=
 
+include $(topdir)/make.rules
+
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)
-
-$(libdir)/libmemman.a: $(objs)
-	$(AR) rv $@ $?
-	$(RAN) $@
-
-.PHONY: dep deps
-dep deps:
-	$(topdir)/config/mkdep90.py $(src) >deps.mk
-
-ifeq (, $(wildcard $(srcdir)/deps.mk))
-$(shell $(topdir)/config/mkdep90.py $(src) >deps.mk)
-endif
-include deps.mk
 
