@@ -57,7 +57,7 @@
           xbuf1(1:nwfpar) = xfac*xbuf1(1:nwfpar)
         end if
 
-        if (ntest.gt.30) then
+        if (ntest.ge.30) then
           xscr = sqrt(ddot(nwfpar,xbuf1,1,xbuf1,1))
           write(luout,*) ' |initial| = ',xscr
         end if
@@ -76,11 +76,11 @@
           xbuf1(1:nwfpar) = xbuf1(1:nwfpar)+xvec(ii)*xbuf2(1:nwfpar)
         end do
 
-        if (getnrm.or.ntest.gt.30)
+        if (getnrm.or.ntest.ge.30)
      &       xscr = sqrt(ddot(nwfpar,xbuf1,1,xbuf1,1))
         if (getnrm) xnrm = xscr
 
-        if (ntest.gt.30) then
+        if (ntest.ge.30) then
           write(luout,*) ' |final| = ',xscr
         end if
         call vec_to_da(ffamp,irecamp,xbuf1,nwfpar)

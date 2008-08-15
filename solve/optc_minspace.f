@@ -186,7 +186,7 @@ c dbg
       do iroot = 1, nroot
         call optc_expand_vec(vorth(idxvec),nred,xnrm,.false.,
      &       ffscr,ioffscr+iroot,0d0,ffvsbsp(iopt)%fhand,iord_vsbsp,
-     &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+     &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
         idxvec = idxvec+nred
       end do
       ! copy to ffvsbsp and reset iord_vsbsp:
@@ -194,7 +194,7 @@ c dbg
         iord_vsbsp(iroot) = iroot
         call da_sccpvec(ffscr,ioffscr+iroot,
      &                  ffvsbsp(iopt)%fhand,iroot,
-     &                  1d0,nwfpar,xbuf1,lenbuf)
+     &                  1d0,nwfpar(iopt),xbuf1,lenbuf)
       end do
 c dbg
 c      print *,'ioffscr = ',ioffscr
@@ -210,7 +210,7 @@ c dbg
       do iroot = 1, nroot
         call optc_expand_vec(vorth(idxvec),nred,xnrm,.false.,
      &       ffscr,ioffscr+iroot,0d0,ffrsbsp(iopt)%fhand,iord_rsbsp,
-     &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+     &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
         idxvec = idxvec+nred
       end do
       ! copy to ffrsbsp and reset iord_rsbsp:
@@ -218,7 +218,7 @@ c dbg
         iord_rsbsp(iroot) = iroot
         call da_sccpvec(ffscr,ioffscr+iroot,
      &                  ffrsbsp(iopt)%fhand,iroot,
-     &                  1d0,nwfpar,xbuf1,lenbuf)
+     &                  1d0,nwfpar(iopt),xbuf1,lenbuf)
       end do
 c dbg
 c      print *,'contents on new ffrsbsp file:'
@@ -231,7 +231,7 @@ c dbg
         do iroot = 1, nroot
           call optc_expand_vec(vorth(idxvec),nred,xnrm,.false.,
      &       ffscr,ioffscr+iroot,0d0,ffssbsp(iopt)%fhand,iord_ssbsp,
-     &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+     &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
           idxvec = idxvec+nred
         end do
         ! copy to ffssbsp and reset iord_ssbsp:
@@ -239,7 +239,7 @@ c dbg
           iord_ssbsp(iroot) = iroot
           call da_sccpvec(ffscr,ioffscr+iroot,
      &                  ffssbsp(iopt)%fhand,iroot,
-     &                  1d0,nwfpar,xbuf1,lenbuf)
+     &                  1d0,nwfpar(iopt),xbuf1,lenbuf)
         end do
 c dbg
 c        print *,'contents on new ffssbsp file:'
