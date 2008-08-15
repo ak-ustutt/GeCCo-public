@@ -24,6 +24,9 @@
       include 'def_formula_item.h'
       include 'def_formula.h'
 c      include 'par_formnames_gen.h'
+c prelim
+      include 'ifc_input.h'
+c prelim
 
       type(formula), intent(inout), target ::
      &     form_cclag
@@ -51,6 +54,11 @@ c      include 'par_formnames_gen.h'
 
       integer, external ::
      &     idx_oplist2
+
+c prelim
+      character(len=8) ::
+     &     trmode
+c prelim
 
       ! for timings:
       real(8) ::
@@ -97,6 +105,13 @@ c      include 'par_formnames_gen.h'
      &     1d0,idxtbar,idxham,1d0,idxtop,1,-1,op_info)
 
       ! insert here procedure to produce approx. expansions      
+c prelim
+      trmode = '        '
+      call get_argument_value('method.CC','truncate',str=trmode)
+      if (trim(trmode).ne.'no')
+     &     call pert_truncation(flist_lag,trmode,
+     &     idxtbar,idxham,idxtop,op_info)
+c prelim
 
       ! post_processing and term counting:
       call cc_form_post(flist_lag,nterms,idxtbar,idxham,idxtop,iprlvl,
@@ -109,6 +124,15 @@ c      include 'par_formnames_gen.h'
       call file_init(form_cclag%fhand,name,ftyp_sq_unf,0)
       call write_form_list(form_cclag%fhand,flist_lag,
      &     form_cclag%comment)
+
+      if (iprlvl.ge.50
+c prelim
+     &     .or.trim(trmode).ne.'no'
+c prelim
+     &     ) then
+        call write_title(luout,wst_around_double,'Generated formula:')
+        call print_form_list(luout,flist_lag,op_info)
+      end if
 
       call dealloc_formula_list(flist_lag)
 

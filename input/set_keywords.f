@@ -7,7 +7,7 @@ c      use parse_input
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer ::
      &     iprint
@@ -37,6 +37,8 @@ c      use parse_input
       call keyword_add('CC',context='method')
       call argument_add('maxexc','method.CC',type=vtyp_int,idef=(/2/))
       call argument_add('minexc','method.CC',type=vtyp_int,idef=(/1/))
+      call argument_add('truncate','method.CC',type=vtyp_str,
+     &     len=8,cdef=(/'n','o',' ',' ',' ',' ',' ',' '/))
 
       call keyword_add('CCPT',context='method')
       call argument_add('maxexc','method.CCPT',type=vtyp_int,idef=(/3/))
