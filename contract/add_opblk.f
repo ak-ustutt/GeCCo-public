@@ -231,9 +231,13 @@ c      end if
      &                                  idoffin+ioffin+idxnd)
             call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
      &                                    idoffout+ioffout+idxnd)
-            buffer_out(1:lenbat)
-     &         = fac*buffer_in(1:lenbat)
-     &              +buffer_out(1:lenbat)
+            do idx = 1, lenbat
+              buffer_out(idx) = buffer_out(idx)+fac*buffer_in(idx)
+            end do
+c does not alway work correctly (range error at end of buffer_out) ???
+c            buffer_out(1:lenbat)
+c     &         = fac*buffer_in(1:lenbat)
+c     &              +buffer_out(1:lenbat)
             call put_vec(ffout,buffer_out,idoffout+ioffout+idxst,
      &                                    idoffout+ioffout+idxnd)
           end if
