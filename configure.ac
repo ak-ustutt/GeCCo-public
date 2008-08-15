@@ -131,3 +131,18 @@ AC_SUBST(top_libdir,['$(topdir)/lib/$(ARCH)'])
 
 AC_CONFIG_FILES([Makefile make.config make.rules])
 AC_OUTPUT
+
+ARCH=$host_cpu-$host_os-$FC
+cp make.config make.config.$ARCH
+cat <<EOF
+==========================================================================
+ A back-up of the present configuration is stored in 
+
+   make.config.$ARCH
+
+ If you compile for multiple architectures, just copy the respective
+ make.config.<ARCH> to make.config and run "make" afterwards.
+==========================================================================
+EOF
+
+
