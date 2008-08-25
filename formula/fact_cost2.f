@@ -30,7 +30,7 @@
       include 'multd2h.h'
       
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 0
       logical, parameter ::
      &     formal = .false.
       

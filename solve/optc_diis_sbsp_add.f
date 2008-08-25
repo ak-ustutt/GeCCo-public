@@ -158,7 +158,7 @@ c          print *,'g/d: ',xbuf1(72:92)
 cc dbg
 c          call vec_from_da(ffamp,1,xbuf2,nwfpar)
 cc dbg
-c          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
+          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
 c          print *,'t after: ',xbuf2(1:nwfpar)
 cc          print *,'t: ',xbuf2(72:92)
 cc dbg

@@ -129,8 +129,8 @@ c     &     idx_oplist2
 
           if (nham.ne.1)
      &         call quit(1,'pert_truncation','strange: nham.ne.1')
-          if (ntbar.gt.1)
-     &         call quit(1,'pert_truncation','strange: ntbar.ne.1')
+c          if (ntbar.gt.1)
+c     &         call quit(1,'pert_truncation','strange: ntbar.ne.1')
           ! restrict to second order (T1 counts 0 here)
           delete = (ord_ham+ord_t+ord_tbar).gt.max_pert
           ! avoid <0|TBAR2 [[F,T1],T2]|0>

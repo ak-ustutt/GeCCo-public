@@ -46,6 +46,8 @@ c      use parse_input
       call keyword_add('ECC',context='method')
       call argument_add('maxexc','method.ECC',type=vtyp_int,idef=(/2/))
       call argument_add('minexc','method.ECC',type=vtyp_int,idef=(/1/))
+      call argument_add('truncate','method.ECC',type=vtyp_str,
+     &     len=8,cdef=(/'n','o',' ',' ',' ',' ',' ',' '/))
 
       call keyword_add('R12',context='method')
       call argument_add('ansatz','method.R12',type=vtyp_int,idef=(/1/))

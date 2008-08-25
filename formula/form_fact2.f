@@ -16,9 +16,9 @@
       include 'mdef_operator_info.h'
       
       integer, parameter ::
-     &     maxcount = 1000,  ! at most 1000 iterations
+     &     maxcount = 10000, ! at most 10000 iterations
      &     ndisconn = 3,     ! at most 3 extra levels for disconnected
-     &     ntest = 000                                   ! vertices
+     &     ntest = 00                                   ! vertices
 
       type(contraction), intent(inout) ::
      &     contr
