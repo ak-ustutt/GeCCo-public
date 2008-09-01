@@ -28,6 +28,8 @@
       include 'mdef_formula_info.h'
       include 'def_dependency_info.h'
       include 'ifc_memman.h'
+      include 'ifc_input.h'
+      include 'par_opnames_gen.h'
 
       integer, parameter ::
      &     ntest = 1000
@@ -47,6 +49,8 @@
 
       integer ::
      &     ifree, nout, iout, idx
+      logical ::
+     &     pz_eval
 
       type(formula), pointer ::
      &     f_eval
@@ -85,6 +89,24 @@
       ! call the scheduler
       call frm_sched(xret,fl_eval,depend,0,0,
      &               op_info,str_info,strmap_info,orb_info)
+
+c dbg
+      call get_argument_value('method.R12','pz_eval',lval=pz_eval)
+      if(pz_eval)then
+        do iout = 1, nout
+          idx = depend%idxlist(iout)
+          if(trim(op_info%mel_arr(idx)%mel%op%name).eq.op_z_inter.or.
+c          if(trim(op_info%mel_arr(idx)%mel%op%name).eq.op_z_test.or.
+     &     trim(op_info%mel_arr(idx)%mel%op%name).eq.op_p_inter)then
+            print *,'EVALUATION OF P/Z'
+            call wrt_mel_seq(luout,
+     &           op_info%mel_arr(idx)%mel,
+     &           1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
+     &           str_info,orb_info)
+          endif
+        enddo
+      endif
+c dbg
 
       if (iprlvl.ge.5) then
         call write_title(luout,wst_title,'norms of output operators')

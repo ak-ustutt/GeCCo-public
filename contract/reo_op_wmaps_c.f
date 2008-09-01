@@ -63,7 +63,7 @@
 
       logical ::
      &     bufopori, bufopreo, first,
-     &     nonzero, ms_fix
+     &     nonzero, ms_fix, fix_success
       integer ::
      &     njoined_opori, njoined_opreo, ngam,
      &     mstopori,mstopreo,
@@ -372,9 +372,11 @@
      &            ms_dis_c,ms_dis_a,gm_dis_c,gm_dis_a,
      &            ncblk_opori, nablk_opori,
      &            cinfo_oporic,cinfo_oporia,
-     &            msc,msa,igamc,igama,ngam,ms_fix))
+     &            msc,msa,igamc,igama,ngam,
+     &            ms_fix,fix_success))
      &           exit distr_loop
             first = .false.                            
+            if(ms_fix.and..not.fix_success)cycle distr_loop
 
 c dbg
 c            print *,'igama, igamc: ',igama, igamc

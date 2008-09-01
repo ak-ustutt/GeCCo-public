@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'def_graph.h'
@@ -155,6 +155,10 @@ c     &           mode,scaling,str_info,orb_info)
           call quit(1,'import_op_el','K is not yet ready')
 c          call import_exchange_dalton(mel_target,'MO_K',
 c     &                                str_info,orb_info)
+
+        case(op_z_inter,op_p_inter)
+          call import_intm_fc(mel_target,mel_target%op%name,
+     &         str_info,orb_info)
 
         case default
           call quit(1,'import_op_el',

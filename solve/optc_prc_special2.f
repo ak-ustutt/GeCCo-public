@@ -50,7 +50,7 @@ c      include 'ifc_input.h'
       real(8) ::
      &     xdum
       logical ::
-     &     ldum1, ldum2, ms_fix
+     &     ldum1, ldum2, ms_fix, fix_success
       integer ::
      &     ngrd, nblk_grd, nbmat, nxmat, nfmat,
      &     idxmsa, msa, msc, gama, gamc,  ngam,
@@ -385,9 +385,11 @@ c          call add_me_list('L_GRD_REO',op_info)
      &             msdis_c,msdis_a,gamdis_c,gamdis_a,
      &             ncsub,nasub,
      &             occ_csub,occ_asub,
-     &             msc,msa,gamc,gama,ngam,ms_fix)) exit distr_loop
+     &             msc,msa,gamc,gama,ngam,
+     &             ms_fix,fix_success)) exit distr_loop
 
               first = .false.
+c              if(ms_fix.and..not.fix_success)cycle distr_loop
               
               call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncsub)
               call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nasub)

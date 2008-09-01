@@ -69,8 +69,8 @@
       mel%fix_vertex_ms = ms_fix
 
 c dbg
-      print *,'name ',trim(mel%op%name)
-      print *,'ms_fix = ', mel%fix_vertex_ms
+c      print *,'name ',trim(mel%op%name)
+c      print *,'ms_fix = ', mel%fix_vertex_ms
 c dbg
 
       ! make sure that all graphs exist to address the ME-list

@@ -235,7 +235,10 @@ c          end if
 
       case('P')
 
-        call set_pint_contract(flist,ansatz,
+c        call set_pint_contract(flist,ansatz,
+c     &       idx_op,6,
+c     &       op_info,orb_info)
+        call set_pint_contract2(flist,ansatz,
      &       idx_op,6,
      &       op_info,orb_info)
       case('PF')

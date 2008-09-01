@@ -96,6 +96,7 @@ c dbg
 
       njoined = op%njoined
 
+      ! Find maximum length needed for reorder buffer.
       mmax = 0
       do iblk = 1, op%n_occ_cls
         if (op%formal_blk(iblk)) cycle
@@ -117,6 +118,7 @@ c dbg
       end do
       ifree = mem_alloc_real(buffer_reo,mmax,'buffer_reo')
 
+      ! open ME-list file
       close_again = .false.
       if (ffop%unit.le.0) then
         close_again = .true.

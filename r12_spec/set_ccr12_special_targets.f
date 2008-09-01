@@ -26,7 +26,7 @@
      &     isim, ncat, nint, icnt,
      &     isym, ms, msc, sym_arr(8), nlabel, trunc_type
       logical ::
-     &     needed, r12fix, truncate
+     &     needed, r12fix, truncate, pz_eval
       character(8) ::
      &     approx
       character(len_target_name) ::
@@ -49,6 +49,7 @@ c dbg
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','fixed',lval=r12fix)
+      call get_argument_value('method.R12','pz_eval',lval=pz_eval)
 c      call get_argument_value('method.R12','truncate',lval=truncate)
       truncate = is_keyword_set('method.truncate').gt.0
       call get_argument_value('method.truncate','trunc_type',
@@ -155,6 +156,11 @@ c      labels(4) = form_r12_zint
         labels(nint+3) = form_r12_zint
         call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
         nint = nint+1
+c dbg
+c        labels(nint+3) = form_z_test
+c        call set_dependency(form_ccr12lg0,form_z_test,tgt_info)
+c        nint = nint+1
+c dbg        
       endif
       if (ansatz.ne.1) then
 c        if(.not.truncate)then
@@ -283,6 +289,8 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_x_def,tgt_info)
       if(.not.truncate.or.(truncate.and.(trunc_type.gt.0)))
      &           call set_dependency(fopt_ccr12_0,mel_p_def,tgt_info)
+      if(.not.truncate.or.(truncate.and.(trunc_type.eq.1)))
+     &           call set_dependency(fopt_ccr12_0,mel_z_def,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_rint,tgt_info)
       if (ansatz.gt.1)
      &     call set_dependency(fopt_ccr12_0,mel_c_def,tgt_info)
@@ -374,10 +382,11 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
         ! totally symmetric dia for use below:
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
-        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
-c dbg
-c        call add_target(solve_ccr12_gs,ttype_gen,.false.,tgt_info)
-c dbg
+        if(.not.pz_eval)then
+          call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+        else
+          call add_target(solve_ccr12_gs,ttype_gen,.false.,tgt_info)
+        endif
 
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_b_inv,tgt_info)

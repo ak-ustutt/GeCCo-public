@@ -25,7 +25,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       character, parameter ::
      &     name_scr0*6 = 'cntscr'
@@ -547,6 +547,12 @@ c            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
           if (ntest.ge.100)
      &         write(luout,*) 'calling contraction kernel'
           ! do the contraction
+c dbg
+c          if(iterm.eq.9)then
+c            call zeroop(me_op1op2)
+c            call zeroop(me_op1op2tmp)
+c          endif
+c dbg
           call contr_op1op2(facc,bc_sign,
      &       update,self,xret_pnt,type_xret_cur,
      &       me_op1,me_op2,me_op1op2, me_op1op2tmp,
@@ -599,6 +605,9 @@ c            call file_close_delete(ffscr(idx))
           deallocate(opscr,optmp,melscr,meltmp)
         end if
 
+c dbg
+c        exit term_loop
+c dbg
       end do term_loop
 
       call dealloc_contr(cur_contr)

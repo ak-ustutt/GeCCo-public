@@ -22,7 +22,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(formula), intent(inout), target ::
      &     form_out

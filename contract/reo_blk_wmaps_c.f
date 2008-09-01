@@ -94,7 +94,7 @@
      &     strmap_info
 
       logical ::
-     &     first, possible
+     &     first, possible, fix_success
       integer ::
      &     ms_k_c_max, ms_k_a_max, ms_i0_c_max, ms_i0_a_max,
      &     ms_k_c,     ms_k_a,     ms_i0_c,     ms_i0_a,
@@ -203,10 +203,12 @@ c dbg
      &             ms_k_dis_c,ms_k_dis_a,gm_k_dis_c,gm_k_dis_a,
      &             ncblk_k,nablk_k,
      &             cinfo_k_c,cinfo_k_a,
-     &             ms_k_c,ms_k_a,gm_k_c,gm_k_a,nsym,ms_fix))
+     &             ms_k_c,ms_k_a,gm_k_c,gm_k_a,nsym,
+     &             ms_fix,fix_success))
      &             exit dis_loop
 
                 first = .false.
+                if(ms_fix.and..not.fix_success)cycle dis_loop
 
                 ! get symmetry and ms-distr. of I0
                 call split_msgmdis(ms_i0_dis_c,gm_i0_dis_c,

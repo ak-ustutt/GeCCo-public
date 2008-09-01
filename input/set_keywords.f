@@ -55,6 +55,8 @@
      &     idef=(/0/))
       call argument_add('r12op','method.R12',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('pz_eval','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
 
       ! Truncations
       call keyword_add('truncate',context='method')

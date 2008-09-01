@@ -42,7 +42,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 1000
 
       logical, intent(in) ::
      &     update
@@ -73,7 +73,7 @@
      &     bufop1, bufop2, bufop1op2, 
      &     first1, first2, first3, first4, first5,
      &     reo_op1op2, nonzero, ms_fix1, ms_fix2, ms_fix12, ms_fix_tmp,
-     &     reject
+     &     reject, fix_success1, fix_success2, fix_success12
       integer ::
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
@@ -98,7 +98,8 @@
      &     ncblk_op1op2, nablk_op1op2, ncblk_op1op2tmp, nablk_op1op2tmp, 
      &     ncblk_cnt, nablk_cnt,
      &     ncblk_op1op2_0, nablk_op1op2_0,
-     &     ncblk_reo12,    nablk_reo12
+     &     ncblk_reo12,    nablk_reo12,
+     &     iblkoff
       type(filinf), pointer ::
      &     ffop1,ffop2,ffop1op2
       type(operator), pointer ::
@@ -173,6 +174,16 @@
      &     cinfo_op1op2_0c(:,:), cinfo_op1op2_0a(:,:),
      &     map_info_reo1c(:), map_info_reo1a(:),
      &     map_info_reo2c(:), map_info_reo2a(:)
+
+c dbg
+      integer, pointer ::
+     &     dum1_c(:), dum1_a(:), hpvx1_c(:), hpvx1_a(:),
+     &     dum2_c(:), dum2_a(:), hpvx2_c(:), hpvx2_a(:)
+      integer ::
+     &     msd1(ngastp,2,me_op1%op%njoined),
+     &     msd2(ngastp,2,me_op2%op%njoined),
+     &     jdx, tot_c, tot_a
+c dbg
 
       type(graph), pointer ::
      &     graphs(:)
@@ -365,6 +376,12 @@ c dbg
       ms_fix2 = me_op2%fix_vertex_ms
       ms_fix12 = me_op1op2%fix_vertex_ms
       ms_fix_tmp = me_op1op2tmp%fix_vertex_ms
+
+      if(ms_fix1) allocate(dum1_c(ncblk_op1),dum1_a(nablk_op1),
+     &       hpvx1_c(ncblk_op1),hpvx1_a(nablk_op1))
+      if(ms_fix2) allocate(dum2_c(ncblk_op2),dum2_a(nablk_op2),
+     &       hpvx2_c(ncblk_op2),hpvx2_a(nablk_op2))
+
 
 c dbg
 c      print *,'op1 name, fix ', trim(me_op1%op%name),ms_fix1
@@ -737,9 +754,16 @@ c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
      &             msex1dis_c,msex1dis_a,gmex1dis_c,gmex1dis_a,
      &             ncblk_ex1, nablk_ex1,
      &             cinfo_ex1c,cinfo_ex1a,
-     &             msex1_c,msex1_a,igamex1_c,igamex1_a,nsym,ms_fix1))
+     &             msex1_c,msex1_a,igamex1_c,igamex1_a,nsym,
+     &             ms_fix1,fix_success1))
      &             exit caex1_loop
                 first3 = .false.
+                if(ms_fix1.and..not.fix_success1)then
+c dbg
+c                  print *,'cycle caex1_loop'
+c dbg
+c                  cycle caex1_loop
+                endif
 
                 call ms2idxms(idxmsex1dis_c,msex1dis_c,
      &               cinfo_ex1c,ncblk_ex1)
@@ -768,9 +792,16 @@ c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
      &               msex2dis_c,msex2dis_a,gmex2dis_c,gmex2dis_a,
      &               ncblk_ex2, nablk_ex2,
      &               cinfo_ex2c,cinfo_ex2a,
-     &               msex2_c,msex2_a,igamex2_c,igamex2_a,nsym,ms_fix2))
+     &               msex2_c,msex2_a,igamex2_c,igamex2_a,nsym,
+     &               ms_fix2,fix_success2))
      &               exit caex2_loop
                   first4 = .false.
+                  if(ms_fix2.and..not.fix_success2)then
+c dbg
+c                    print *,'cycle caex2_loop'
+c dbg
+c                    cycle caex2_loop
+                  endif
 
                   call ms2idxms(idxmsex2dis_c,msex2dis_c,
      &                 cinfo_ex2c,ncblk_ex2)
@@ -874,6 +905,17 @@ c dbg
 c dbg
 c                    print *,'here 1'
 c dbg
+c dbg
+                    if(ms_fix12)then
+c                      print *,'msop1dis_c',msop1dis_c
+c                      print *,'msop1dis_a',msop1dis_a
+                      do idx = 1, min(ncblk_op1op2tmp,nablk_op1op2tmp)
+                        if(idxmsi_dis_c(idx).ne.idxmsi_dis_a(idx))
+     &                       cycle caex2_loop
+                      enddo
+                    endif
+c dbg
+                    
                     idxdis =
      &                  idx_msgmdst2(
      &                   iblkop1op2tmp,idxms,igam12i_a(3),
@@ -924,9 +966,16 @@ c                    if(reject) cycle caex2_loop
      &                 msc_dis_c,msc_dis_a,gmc_dis_c,gmc_dis_a,
      &                 ncblk_cnt, nablk_cnt,
      &                 cinfo_cntc,cinfo_cnta,
-     &                 msc_c,msc_a,igamc_c,igamc_a,nsym,ms_fix12))
+     &                 msc_c,msc_a,igamc_c,igamc_a,nsym,
+     &                 ms_fix12,fix_success12))
      &                 exit cac_loop
                     first5 = .false.
+c                    if(ms_fix12.and..not.fix_success12)then
+c dbg
+c                      print *,'cycle cac_loop 1'
+c dbg
+c                      cycle cac_loop
+c                    endif
 
                     ! length of contraction
                     call ms2idxms(idxmsc_dis_c,msc_dis_c,
@@ -960,21 +1009,6 @@ c                    if(reject) cycle caex2_loop
      &                                 msex1dis_a,gmex1dis_a,
      &                                 map_info_1a)
 
-c dbg
-c                    if(ms_fix1)then
-c                      print *,'msop1dis_c',msop1dis_c
-c                      print *,'msop1dis_a',msop1dis_a
-c                      do idx = 1, min(ncblk_op1,nablk_op1)
-c                        if(msop1dis_c(idx).ne.msop1dis_a(idx))
-c     &                       cycle cac_loop
-cc                      print *,'msc_dis_c',msc_dis_c
-cc                      do idx = 1, 2 !min(ncblk_op1,nablk_op1)
-cc                        if(msc_dis_c(idx).ne.msc_dis_a(idx))
-cc     &                       cycle cac_loop
-c                      enddo
-c                    endif
-c dbg
-                    
                     call ms2idxms(idxmsop1dis_c,msop1dis_c,
      &                   cinfo_op1c,ncblk_op1)
                     call ms2idxms(idxmsop1dis_a,msop1dis_a,
@@ -994,6 +1028,47 @@ c dbg
      &                             ncblk_op1+nablk_op1,1).gt.0)
      &                   cycle cac_loop
 
+c dbg
+                    if(ms_fix1)then
+                      iblkoff = (iblkop1-1)*op1%njoined
+                      call condense_occ(dum1_c,dum1_a,
+     &                     hpvx1_c,hpvx1_a,
+     &                     op1%ihpvca_occ(1,1,iblkoff+1),
+     &                     op1%njoined,hpvxblkseq)
+
+                      call expand_occ(msd1,
+     &                     me_op1%idx_graph(1,1,iblkoff+1),
+     &                     ncblk_op1,nablk_op1,
+     &                     msop1dis_c,msop1dis_a,
+     &                     hpvx1_c,hpvx1_a,
+     &                     op1%njoined)
+
+                      do idx = 1, op1%njoined
+                        tot_c = 0
+                        tot_a = 0
+                        do jdx = 1, ngastp
+                          tot_c = tot_c + msd1(jdx,1,idx)
+                          tot_a = tot_a + msd1(jdx,2,idx)
+                        enddo
+                        if(tot_c.ne.tot_a)then
+c                          print *,'cycle cac_loop 2'
+                          cycle cac_loop
+                        endif
+                      enddo
+
+c                      do idx = 1, min(ncblk_op1,nablk_op1)
+c                        if(idxmsop1dis_c(idx).ne.idxmsop1dis_a(idx))then
+cc dbg
+cc                          print *,'idxmsop1dis_c',idxmsop1dis_c
+cc                          print *,'idxmsop1dis_a',idxmsop1dis_a
+c                          print *,'cycle cac_loop 2'
+cc dbg
+c                          cycle cac_loop
+c                        endif
+c                      enddo
+                    endif
+c dbg
+                    
                     ! get distribution index
                     idxms =
      &                   msa2idxms4op(ms12i_a(1),mstop1,na_op1,nc_op1)
@@ -1041,19 +1116,6 @@ c                    print *,'msc_dis_a:  ',msc_dis_a
 c                    print *,'msex2dis_c: ',msex2dis_c
 c dbg
 
-c dbg
-c                    if(ms_fix2)then
-cc                      do idx = 1, min(ncblk_op2,nablk_op2)
-cc                        if(idxmsop2dis_c(idx).ne.idxmsop2dis_a(idx))
-cc     &                       cycle cac_loop
-c                      print *,'msc_dis_c',msc_dis_c
-c                      do idx = 1, 2 !min(ncblk_op2,nablk_op2)
-c                        if(msc_dis_c(idx).ne.msc_dis_a(idx))
-c     &                       cycle cac_loop
-c                      enddo
-c                    endif
-c dbg
-
                     call merge_msgmdis(msop2dis_c,gmop2dis_c,
      &                                 ncblk_op2,
      &                                 msc_dis_a,gmc_dis_a,
@@ -1086,6 +1148,47 @@ c dbg
      &                   idxlist(0,lstrop2,
      &                             ncblk_op2+nablk_op2,1).gt.0)
      &                   cycle cac_loop
+
+c dbg
+                    if(ms_fix2)then
+                      iblkoff = (iblkop2-1)*op2%njoined
+                      call condense_occ(dum2_c,dum2_a,
+     &                     hpvx2_c,hpvx2_a,
+     &                     op2%ihpvca_occ(1,1,iblkoff+1),
+     &                     op2%njoined,hpvxblkseq)
+
+                      call expand_occ(msd2,
+     &                     me_op2%idx_graph(1,1,iblkoff+1),
+     &                     ncblk_op2,nablk_op2,
+     &                     msop2dis_c,msop2dis_a,
+     &                     hpvx2_c,hpvx2_a,
+     &                     op2%njoined)
+
+                      do idx = 1, op2%njoined
+                        tot_c = 0
+                        tot_a = 0
+                        do jdx = 1, ngastp
+                          tot_c = tot_c + msd2(jdx,1,idx)
+                          tot_a = tot_a + msd2(jdx,2,idx)
+                        enddo
+                        if(tot_c.ne.tot_a)then
+c                          print *,'cycle cac_loop 3'
+                          cycle cac_loop
+                        endif
+                      enddo
+
+c                      do idx = 1, min(ncblk_op2,nablk_op2)
+c                        if(idxmsop2dis_c(idx).ne.idxmsop2dis_a(idx))then
+cc dbg
+c                          print *,'idxmsop2dis_c',idxmsop2dis_c
+c                          print *,'idxmsop2dis_a',idxmsop2dis_a
+c                          print *,'cycle cac_loop 3'
+cc dbg
+c                          cycle cac_loop
+c                        endif
+c                      enddo
+                    endif
+c dbg
 
                     ! get distribution index
                     idxms =
@@ -1240,6 +1343,7 @@ c                      print *,gmi_dis_a
 c                      print *,lstrop1op2tmp
 c                    end if
 c                    call mem_check('before kernel')
+c                    print *,'irt_contr',irt_contr
 c dbg
                     if (irt_contr.eq.2) then
 c dbg
