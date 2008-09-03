@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine eigen_asym(ndim,xmat,eigr,eigi,vecs,xscr,ierr)
 *----------------------------------------------------------------------*
-*     wrapper for eipack call
+*     wrapper for eispack call
 *     covers some ordering and renormalization issues as needed
 *     in GeCCo
 *----------------------------------------------------------------------*

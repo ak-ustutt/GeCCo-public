@@ -110,7 +110,7 @@ c      include 'def_contraction_list.h'
      &       ' transpose: ',transpose2
 
         call form_op_replace(label_replace(irepl1)(1:len1),
-     &                       label_replace(irepl2)(1:len2),
+     &                       label_replace(irepl2)(1:len2),.false.,
      &                       flist,op_info)
 
       end do

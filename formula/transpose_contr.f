@@ -40,6 +40,9 @@
       
       integer, external ::
      &     iblk_occ
+      logical, external ::
+     &     occ_is_diag_blk
+
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'transpose_contr')
         write(luout,*) 'on input:'
@@ -94,7 +97,14 @@
 c dbg
 c          call wrt_occ_n(6,occ,op%njoined)
 c dbg
-          idx = iblk_occ(occ,.true.,op)
+          ! ... but only if we have off-diagonal blocks
+          ! as we currently do not know the C/A symmetry
+          ! of the operator ...
+          if (.not.occ_is_diag_blk(occ,njoined)) then
+            idx = iblk_occ(occ,.true.,op)
+          else
+            idx = -1
+          end if
 c dbg
 c          print *,'idx = ',idx
 c dbg

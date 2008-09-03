@@ -165,176 +165,9 @@ c      sbar_pnt%dagger = .true.
 
       ! combine the C and R operators (S=T+CR).
       call init_formula(flist_t_cr)
-      fl_t_cr_pnt => flist_t_cr
-      call new_formula_item(fl_t_cr_pnt,command_set_target_init,idx_sop)
-      fl_t_cr_pnt => fl_t_cr_pnt%next
-      call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &     1d0,1,idxtop,-1,-1,
-     &     0,0,.false.,op_info)
-      do while(associated(fl_t_cr_pnt%next))
-        fl_t_cr_pnt => fl_t_cr_pnt%next
-      end do
-
-c      ! in order to use different names for T connected with geminal:
-c      if (extend.gt.0) then
-c        call add_operator(op_scr,op_info)
-c        idx_scr = idx_oplist2(op_scr,op_info)
-c        scr_pnt => op_info%op_arr(idx_scr)%op
-c        call clone_operator(scr_pnt,op_info%op_arr(idxtop)%op,
-c     &       .false.,orb_info)
-c        call add_operator(op_scrbar,op_info)
-c        idx_scrbar = idx_oplist2(op_scrbar,op_info)
-c        scrbar_pnt => op_info%op_arr(idx_scrbar)%op
-c        call clone_operator(scrbar_pnt,op_info%op_arr(idxtbar)%op,
-c     &       .false.,orb_info)
-c      end if
-
-      ! Form of the R12 part depends on whether the amplitudes are fixed.
-      if(r12op.eq.0.and..not.r12fix)then
-        call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &       1d0,2,(/idxc12,idxr12/),-1,-1,
-     &       (/1,2/),1,.false.,op_info)
-      else
-        call expand_op_product(fl_t_cr_pnt,idx_sop,
-     &       1d0,1,idxr12,-1,-1,
-     &       0,0,.false.,op_info)
-      endif
-
-      if(r12op.eq.1.or.r12op.ge.3)then
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-        
-c        call expand_op_product2(fl_t_cr_pnt,idx_sop,
-c     &       1d0,5,3,
-c     &       (/idx_sop,idxc12,idxr12,idxc12,idx_sop/),
-c     &       (/1      ,2     ,3     ,2     ,1     /),
-c     &       -1,-1,
-c     &       (/3,4/),1,
-c     &       0,0,
-c     &       0,0,
-c     &       op_info)
-        ! find xp|hp and xx|hp blocks of R12
-        occ = 0
-        occ(IPART,1) = 1
-        occ(IEXTR,1) = 1
-        occ(IHOLE,2) = 1
-        occ(IPART,2) = 1
-        iblk_pxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
-        occ = 0
-        occ(IEXTR,1) = 2
-        occ(IHOLE,2) = 1
-        occ(IPART,2) = 1
-        iblk_xxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
-        
-
-        call expand_op_product2(fl_t_cr_pnt,idx_sop,
-     &       1d0,4,3,
-     &       (/idx_sop,idxr12,idxc12,idx_sop/),
-     &       (/1      ,2     ,3       ,1     /),
-     &       (/1,iblk_pxhp,1,1/),(/0,iblk_pxhp,0,0/),
-     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-        call expand_op_product2(fl_t_cr_pnt,idx_sop,
-     &       1d0,4,3,
-     &       (/idx_sop,idxr12,idxc12,idx_sop/),
-     &       (/1      ,2     ,3       ,1     /),
-     &       (/1,iblk_xxhp,1,1/),(/0,iblk_xxhp,0,0/),
-     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      endif
-      if(r12op.eq.2.or.r12op.ge.3)then
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-        
-        ! find xp|pp and xx|pp blocks of R12
-        occ = 0
-        occ(IPART,1) = 1
-        occ(IEXTR,1) = 1
-        occ(IPART,2) = 2
-        iblk_pxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
-        occ = 0
-        occ(IEXTR,1) = 2
-        occ(IPART,2) = 2
-        iblk_xxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
-c dbg
-c        print *,'iblk: ',iblk_pxpp,iblk_xxpp
-c dbg        
-
-        call expand_op_product2(fl_t_cr_pnt,idx_sop,
-     &       1d0,4,3,
-     &       (/idx_sop,idxr12,idxcpp12,idx_sop/),
-     &       (/1      ,2     ,3       ,1     /),
-     &       (/1,iblk_pxpp,1,1/),(/0,iblk_pxpp,0,0/),
-     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-        call expand_op_product2(fl_t_cr_pnt,idx_sop,
-     &       1d0,4,3,
-     &       (/idx_sop,idxr12,idxcpp12,idx_sop/),
-     &       (/1      ,2     ,3       ,1     /),
-     &       (/1,iblk_xxpp,1,1/),(/0,iblk_xxpp,0,0/),
-     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      endif
-      if(r12op.ge.4)then
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-        
-        ! find xp|pp and xx|pp blocks of R12
-        occ = 0
-        occ(IPART,1) = 1
-        occ(IEXTR,1) = 1
-        occ(IPART,2) = 2
-        iblk_pxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
-        occ = 0
-        occ(IEXTR,1) = 2
-        occ(IPART,2) = 2
-        iblk_xxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
-c dbg
-c        print *,'iblk: ',iblk_pxpp,iblk_xxpp
-c dbg        
-
-        call expand_op_product2(fl_t_cr_pnt,idx_sop,
-     &       1.0d0,5,4,
-     &       (/idx_sop,idxr12,idxc12,idxc12,idx_sop/),
-     &       (/1      ,2     ,3     ,4     ,1     /),
-     &       (/1,iblk_pxpp,1,1,1/),(/0,iblk_pxpp,0,0,0/),
-     &       (/2,3,2,4/),2,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-        call expand_op_product2(fl_t_cr_pnt,idx_sop,
-     &       1d0,5,4,
-     &       (/idx_sop,idxr12,idxc12,idxc12,idx_sop/),
-     &       (/1      ,2     ,3       ,4   ,1     /),
-     &       (/1,iblk_xxpp,1,1,1/),(/0,iblk_xxpp,0,0,0/),
-     &       (/2,3,2,4/),2,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      endif
+      call set_t_r(flist_t_cr,.false.,idx_sop,idxtop,
+     &     idxr12,idxc12,idxcpp12,
+     &     r12op,r12fix,op_info)
 
 c      if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T + CR')
@@ -343,99 +176,9 @@ c      end if
 
       ! Must also form SBAR.
       call init_formula(flist_tbar_cbarr)
-      fl_t_cr_pnt => flist_tbar_cbarr
-      call new_formula_item(fl_t_cr_pnt,
-     &                      command_set_target_init,idx_sbar)
-      fl_t_cr_pnt => fl_t_cr_pnt%next
-      call expand_op_product(fl_t_cr_pnt,idx_sbar,
-     &     1d0,1,idxtbar,-1,-1,
-     &     0,0,.false.,op_info)
-      do while(associated(fl_t_cr_pnt%next))
-        fl_t_cr_pnt => fl_t_cr_pnt%next
-      end do
-
-      if(r12op.eq.0.and..not.r12fix)then
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,4,3,
-     &       (/idx_sbar,-idxr12,idxcbar,idx_sbar/),(/1,2,3,1/),
-     &       -1,-1,
-     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      else
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,3,2,
-     &       (/idx_sbar,-idxr12,idx_sbar/),(/1,2,1/),
-     &       -1,-1,
-     &       0,0,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      endif
-c      call expand_op_product(fl_t_cr_pnt,idx_sbar,
-c     &     1d0,2,(/idxrba,idxcbar/),-1,-1,
-c     &     (/1,2/),1,.false.,op_info)
-
-      if(r12op.eq.1.or.r12op.ge.3)then
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-
-c        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-c     &       1d0,5,3,
-c     &       (/idx_sbar,idxcbar,-idxr12,idxcbar,idx_sbar/),
-c     &       (/1       ,2      , 3     ,2      ,1/),
-c     &       -1,-1,
-c     &       (/2,3/),1,
-c     &       0,0,
-c     &       0,0,
-c     &       op_info)
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,4,3,
-     &       (/idx_sbar,idxcbar,-idxr12,idx_sbar/),(/1,2,3,1/),
-     &       (/1,1,iblk_pxhp,1/),(/0,0,iblk_pxhp,0/),
-     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,4,3,
-     &       (/idx_sbar,idxcbar,-idxr12,idx_sbar/),(/1,2,3,1/),
-     &       (/1,1,iblk_xxhp,1/),(/0,0,iblk_xxhp,0/),
-     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      endif
-      if(r12op.eq.2.or.r12op.ge.3)then
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,4,3,
-     &       (/idx_sbar,idxcppbar,-idxr12,idx_sbar/),(/1,2,3,1/),
-     &       (/1,1,iblk_pxpp,1/),(/0,0,iblk_pxpp,0/),
-     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-        do while(associated(fl_t_cr_pnt%next))
-          fl_t_cr_pnt => fl_t_cr_pnt%next
-        enddo
-        call expand_op_product2(fl_t_cr_pnt,idx_sbar,
-     &       1d0,4,3,
-     &       (/idx_sbar,idxcppbar,-idxr12,idx_sbar/),(/1,2,3,1/),
-     &       (/1,1,iblk_xxpp,1/),(/0,0,iblk_xxpp,0/),
-     &       (/2,3/),1,
-     &       0,0,
-     &       0,0,
-     &       op_info)
-      endif
+      call set_t_r(flist_tbar_cbarr,.true.,idx_sbar,idxtbar,
+     &     idxr12,idxcbar,idxcppbar,
+     &     r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'TBAR + R CBAR')
@@ -500,18 +243,18 @@ c     &       op_info)
       if (r12fix.and.r12op.gt.0) then
         if (r12op.ne.2) then
           call form_op_replace(op_info%op_arr(idxc12)%op%name,
-     &                       op_info%op_arr(idxtop)%op%name,
+     &                       op_info%op_arr(idxtop)%op%name,.true.,
      &     flist_lag,op_info)
           call form_op_replace(op_info%op_arr(idxcbar)%op%name,
-     &                       op_info%op_arr(idxtbar)%op%name,
+     &                       op_info%op_arr(idxtbar)%op%name,.true.,
      &     flist_lag,op_info)
         end if
         if (r12op.gt.1) then
           call form_op_replace(op_info%op_arr(idxcpp12)%op%name,
-     &                       op_info%op_arr(idxtop)%op%name,
+     &                       op_info%op_arr(idxtop)%op%name,.true.,
      &     flist_lag,op_info)
           call form_op_replace(op_info%op_arr(idxcppbar)%op%name,
-     &                       op_info%op_arr(idxtbar)%op%name,
+     &                       op_info%op_arr(idxtbar)%op%name,.true.,
      &     flist_lag,op_info)
         end if
 cc        call form_op_replace(op_scr,op_info%op_arr(idxtop)%op%name,

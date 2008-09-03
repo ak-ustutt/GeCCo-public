@@ -57,6 +57,8 @@
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting special targets for CC-R12 ...'
 
+      msc = +1  ! assuming closed shell
+
       approx = '        '
       ! read keyword values
       call get_argument_value('method.R12','minexc',ival=min_rank)
@@ -87,6 +89,12 @@
      &              op_ccr12en,1,1,
      &              parameters,0,tgt_info)
 
+      ! prototype formula for metric:
+      call add_target(op_ccr12s0,ttype_op,.false.,tgt_info)
+      call set_rule(op_ccr12s0,ttype_op,DEF_SCALAR,
+     &              op_ccr12s0,1,1,
+     &              parameters,0,tgt_info)
+      
       if(set_tp)then
         call add_target(op_omgcex,ttype_op,.false.,tgt_info)
         call set_dependency(op_omgcex,op_cex,tgt_info)
@@ -158,7 +166,6 @@
       call set_rule(op_xprc,ttype_op,DEF_OP_FROM_OCC,
      &              op_xprc,1,1,
      &              parameters,2,tgt_info)
-
 
 *----------------------------------------------------------------------*
 *     Formulae
@@ -258,6 +265,68 @@ c        labels(10) = form_r12_xpint
      &              labels,4,1,
      &              parameters,2,tgt_info)
       end if
+      
+      call add_target(form_ccr12_s0,ttype_frm,.false.,tgt_info)
+      ! (a) set formal Metric (in 'complete' basis)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_ccr12_s0
+      labels(2) = op_ccr12s0
+      labels(3) = op_r12
+      labels(4) = op_tbar
+      labels(5) = op_top
+      nlabel = 5
+      if (set_tp) then
+        call set_dependency(form_ccr12_s0,op_cex,tgt_info)
+        call set_dependency(form_ccr12_s0,op_cexbar,tgt_info)
+        labels(nlabel+1) = op_cexbar
+        labels(nlabel+2) = op_cex
+        nlabel = nlabel+2
+      end if
+      if (set_tpp) then
+        call set_dependency(form_ccr12_s0,op_cexx,tgt_info)
+        call set_dependency(form_ccr12_s0,op_cexxbar,tgt_info)
+        labels(nlabel+1) = op_cexxbar
+        labels(nlabel+2) = op_cexx
+        nlabel = nlabel+2
+      end if
+      call set_dependency(form_ccr12_s0,op_ccr12s0,tgt_info)
+      call set_dependency(form_ccr12_s0,op_r12,tgt_info)
+      call set_dependency(form_ccr12_s0,op_tbar,tgt_info)
+      call set_dependency(form_ccr12_s0,op_top,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_ccr12lg0,ansatz,'---')
+      call set_rule(form_ccr12_s0,ttype_frm,DEF_CCR12_METRIC,
+     &              labels,nlabel,1,
+     &              parameters,2,tgt_info)
+      ! (b) Factor out the R12 intermediates 
+      ! (effectively removing all reference to the complete basis)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_ccr12_s0 ! output formula (itself)
+      labels(2) = form_ccr12_s0 ! input formula
+      labels(3) = form_r12_xint
+      nint = 1
+      call set_dependency(form_ccr12_s0,form_r12_xint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_ccr12lg0,nint,'---')
+      call set_rule(form_ccr12_s0,ttype_frm,FACTOR_OUT,
+     &              labels,nint+2,1,
+     &              parameters,2,tgt_info)
+c      ! there remain a few unprocessed R12 contributions
+c      ! for ansatz > 1
+c      ! as a first resort we replace r12 by the actual integrals
+c      if (ansatz.gt.1) then
+c        labels(1:20)(1:len_target_name) = ' '
+c        labels(1) = form_ccr12_s0
+c        labels(2) = form_ccr12_s0
+c        labels(3) = op_r12
+c        labels(4) = op_rint
+c        call set_dependency(form_ccr12_s0,op_rint,tgt_info)
+c        call form_parameters(-1,
+c     &       parameters,2,title_ccr12lg0,1,'---')
+c        call set_rule(form_ccr12_s0,ttype_frm,REPLACE,
+c     &              labels,4,1,
+c     &              parameters,2,tgt_info)
+c      end if
       
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_ccr12en0
@@ -428,6 +497,11 @@ c      end if
         call set_dependency(fopt_ccr12_0,form_cchhat,tgt_info)
         call set_dependency(fopt_ccr12_0,mel_hhatdef,tgt_info)
         labels(ncat+nint+1) = form_cchhat
+      else if (isim.eq.2) then
+        nint = nint+ 1
+        call set_dependency(fopt_ccr12_0,form_cchbar,tgt_info)
+        call set_dependency(fopt_ccr12_0,meldef_hbar,tgt_info)
+        labels(ncat+nint+1) = form_cchbar
       end if
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_ccr12_0,ttype_frm,OPTIMIZE,
@@ -444,7 +518,7 @@ c      end if
       labels(1) = mel_ccr12lg0
       labels(2) = op_ccr12lg
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0,.false.)
+     &     msc,0,1,0,0,.false.)
       call set_rule(mel_ccr12lg0,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -454,7 +528,7 @@ c      end if
       labels(1) = mel_ccr12en0
       labels(2) = op_ccr12en
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0,.false.)
+     &     msc,0,1,0,0,.false.)
       call set_rule(mel_ccr12en0def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -465,7 +539,7 @@ c      end if
       labels(1) = me_r_t
       labels(2) = op_r_t
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0,.false.)
+     &     msc,0,1,0,0,.false.)
       call set_rule(medef_r_t,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -478,7 +552,7 @@ c      end if
         labels(1) = mel_omgcex
         labels(2) = op_omgcex
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0,.false.)
+     &       msc,0,1,0,0,.false.)
         call set_rule(mel_omgcexdef,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -489,7 +563,7 @@ c      end if
         labels(1) = mel_cex
         labels(2) = op_cex
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0,.false.)
+     &       msc,0,1,0,0,.false.)
         call set_rule(mel_cex_def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -500,7 +574,7 @@ c      end if
         labels(1) = mel_cexbar
         labels(2) = op_cexbar
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0,.false.)
+     &       msc,0,1,0,0,.false.)
         call set_rule(mel_cexbar_def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -515,7 +589,7 @@ c      end if
         labels(1) = mel_omgcexx
         labels(2) = op_omgcexx
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0,.false.)
+     &       msc,0,1,0,0,.false.)
         call set_rule(mel_omgcexxdef,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -526,7 +600,7 @@ c      end if
         labels(1) = mel_cexx
         labels(2) = op_cexx
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0,.false.)
+     &       msc,0,1,0,0,.false.)
         call set_rule(mel_cexx_def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -537,7 +611,7 @@ c      end if
         labels(1) = mel_cexxbar
         labels(2) = op_cexxbar
         call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0,.false.)
+     &       msc,0,1,0,0,.false.)
         call set_rule(mel_cexxbar_def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -551,7 +625,7 @@ c      end if
       labels(1) = me_bprc
       labels(2) = op_bprc
       call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0,.false.)
+     &       msc,0,1,0,0,.false.)
       call set_rule(me_bprc,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -572,7 +646,7 @@ c      end if
       labels(1) = me_xprc
       labels(2) = op_xprc
       call me_list_parameters(-1,parameters,
-     &       0,0,1,0,0,.false.)
+     &       msc,0,1,0,0,.false.)
       call set_rule(me_xprc,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -605,14 +679,14 @@ c        call set_dependency(solve_ccr12_gs,mel_diar12,tgt_info)
         labels(3) = mel_omg
         labels(4) = mel_omgcex
         labels(5) = mel_dia1    
-        labels(6) = mel_diar12  
+        labels(6) = mel_dia1 !r12  
         labels(7) = mel_ccr12en0
         labels(8) = fopt_ccr12_0
         labels(9) = me_bprc
         labels(10)= me_xprc
         labels(11) = mel_ham
-        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
-c        call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
+c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
+        call solve_parameters(-1,parameters,2, 2,1,'DIA/BLK')
         call set_rule(solve_ccr12_gs,ttype_opme,SOLVENLEQ,
      &       labels,11,4,
      &       parameters,2,tgt_info)

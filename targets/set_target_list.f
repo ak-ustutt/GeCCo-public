@@ -29,6 +29,12 @@
         call set_cc_targets(tgt_info,orb_info)
       end if
 
+      ! extended CC
+      if (is_keyword_set('method.ECC').gt.0 .and.
+     &    is_keyword_set('method.R12').eq.0 ) then
+        call set_ecc_targets(tgt_info,orb_info)
+      end if
+
       ! MP-R12
       if (is_keyword_set('method.MP').gt.0 .and.
      &    is_keyword_set('method.R12').gt.0 ) then
@@ -38,10 +44,12 @@
       ! CC-R12
       if (is_keyword_set('method.CC').gt.0 .and.
      &    is_keyword_set('method.R12').gt.0 ) then
-c dbg
-        print *,'CC-R12 route'
-c dbg
         call set_ccr12_targets(tgt_info,orb_info,env_type)
+      end if
+
+      ! experimental section
+      if (is_keyword_set('calculate.experimental').gt.0) then
+        call set_experimental_targets(tgt_info,orb_info)
       end if
 
       call set_idx4deps(tgt_info)

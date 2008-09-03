@@ -15,9 +15,10 @@ check
   compare str 7
 check
   label Factorization of right equations
-  find Most expensive contraction:
-  compare int 5
-  compare int 7
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
 check
   find CONVERGED IN .* ITERATIONS
   label Final energy
@@ -27,16 +28,18 @@ check
   label Factorization of one-particle density
   rewind
   find target:[ ]* CC1DEN_OPT
-  find Most expensive contraction:
-  compare int 5
-  compare int 7
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
 check
   label Factorization of left equations
   rewind
   find target:[ ]* TBAR_CC_OPT
-  find Most expensive contraction:
-  compare int 5
-  compare int 7
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
 check
   label Number of iterations in LHS equations
   find CONVERGED IN .* ITERATIONS

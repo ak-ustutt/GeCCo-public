@@ -25,7 +25,7 @@
      &     mem_maxname = 24
 
       integer, parameter ::
-     &     membuffer_maxmax_slots = 16*1024,
+     &     membuffer_maxmax_slots = 128*1024,
      &     membuffer_maxname = 8,
      &     membuffer_stat_max = 500
 
@@ -143,8 +143,12 @@
 
       integer, intent(in) ::
      &     mem_free_init
+      integer ::
+     &     istat
 
-      allocate(mem_root)
+      allocate(mem_root,stat=istat)
+      if (istat.ne.0) call memman_error('init',istat)
+
       mem_root%name = 'static'
       
       nullify(mem_root%head)
@@ -208,7 +212,11 @@
       implicit none
       include 'stdunit.h'
 
-      allocate(mem_cursection%head)
+      integer ::
+     &     istat
+
+      allocate(mem_cursection%head,stat=istat)
+      if (istat.ne.0) call memman_error('init_slice',istat)
       mem_cursection%tail => mem_cursection%head
       mem_curslice => mem_cursection%head
 
@@ -244,11 +252,14 @@
      &     mem_reg, len
       real(8) ::
      &     over
+      integer ::
+     &     istat
 
       if (.not.associated(mem_curslice)) then
         call memman_initslice()
       else
-        allocate(mem_curslice%next)
+        allocate(mem_curslice%next,stat=istat)
+        if (istat.ne.0) call memman_error('allocate(ini)',istat)
         mem_curslice%next%prev => mem_curslice
         nullify(mem_curslice%next%next)
         mem_curslice => mem_curslice%next
@@ -302,7 +313,8 @@
 
       select case(type)
       case(mtyp_int)
-        allocate(mem_curslice%imem(1-npad:nalloc+npad))
+        allocate(mem_curslice%imem(1-npad:nalloc+npad),stat=istat)
+        if (istat.ne.0) call memman_error('allocate(int)',istat)
         if (npad.gt.0) then
           mem_curslice%imem(1-npad:0) = ipad
           mem_curslice%imem(nalloc+1:nalloc+npad) = ipad
@@ -311,7 +323,9 @@
      &       call quit(1,'mem_alloc','ipnt not present')
         ipnt => mem_curslice%imem(1:nalloc)
       case(mtyp_rl8)
-        allocate(mem_curslice%xmem(1-npad:nalloc+npad))
+        allocate(mem_curslice%xmem(1-npad:nalloc+npad),stat=istat)
+        if (istat.ne.0) 
+     &       call memman_error('allocate(rl8) '//trim(name),istat)
         if (npad.gt.0) then
           mem_curslice%xmem(1-npad:0) = xpad
           mem_curslice%xmem(nalloc+1:nalloc+npad) = xpad
@@ -502,12 +516,13 @@ c      in_last_section = associated(cursection,mem_cursection)
      &     name*(*)
 
       integer ::
-     &     len
+     &     len, istat
 
       if (.not.associated(mem_tail))
      &     call quit(1,'memman_addsection','memman not initialized?')
 
-      allocate(mem_tail%next)
+      allocate(mem_tail%next,stat=istat)
+      if (istat.ne.0) call memman_error('addsection',istat)
       mem_tail%next%prev => mem_tail
       nullify(mem_tail%next%next)
       mem_tail => mem_tail%next
@@ -761,7 +776,7 @@ c      in_last_section = associated(cursection,mem_cursection)
             end select
             namscr(1:mem_maxname) = ' '
             namscr = curslc%name
-            if (curslc%type.eq.1.or.curslc%type.eq.2) then
+            if ((curslc%type.eq.1.or.curslc%type.eq.2).and.check) then
               if (patchk1.and.patchk2) then
                 write(luout,'(6x,a,x,i2,x,i10,x,i10,x,l,2x,l)')
      &               namscr(1:mem_maxname),curslc%type,
@@ -790,8 +805,9 @@ c      in_last_section = associated(cursection,mem_cursection)
       end do
 
       if (ierr.gt.0)
-     &     call quit(1,'memman_map',
-     &     'range errors detected (see above)')
+     &     write(luout,*) '!! range errors detected (see above) !!'
+c     &     call quit(1,'memman_map',
+c     &     'range errors detected (see above)')
 
       end subroutine
 
@@ -857,6 +873,7 @@ c      in_last_section = associated(cursection,mem_cursection)
       if (.not.ok) then
         write(luout,*) 'Errors detected at check-point: ',trim(label)
         call memman_map(luout,.true.)
+        call quit(1,'memman_check','Check failed!')
       end if
 
       end subroutine
@@ -1581,9 +1598,13 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
         end do
       end if
 
-      if (id_slot.gt.mem_buf_pnt%max_buf_slots)
-     &     call quit(1,'memman_idx_buffer',
+      if (id_slot.gt.mem_buf_pnt%max_buf_slots) then
+        write(luout,*) ' ID buffer: ',id_buf
+        write(luout,*) ' ID slot  : ',id_slot
+        write(luout,*) ' ID slot(max): ',mem_buf_pnt%max_buf_slots
+        call quit(1,'memman_idx_buffer',
      &     'requested slot is out of range')
+      end if
 
       if (present(ipnt)) nullify(ipnt)
       if (present(xpnt)) nullify(xpnt)
@@ -1683,6 +1704,25 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
       deallocate(ibuf)
 
       return
+      end subroutine
+
+      subroutine memman_error(msg,stat)
+
+      implicit none
+      include 'stdunit.h'
+
+      integer, intent(in) ::
+     &     stat
+      character(len=*), intent(in) ::
+     &     msg
+
+      write(luout,*) 'ERROR in memory manager: '
+      write(luout,*) 'status: ',stat,' location: ',trim(msg)
+
+      call memman_map(luout,.false.)
+
+      call quit(0,'memman','error in memory manager')
+
       end subroutine
 
       end module

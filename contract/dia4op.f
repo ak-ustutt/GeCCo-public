@@ -113,8 +113,11 @@
 
       ! we should of course use a better memory management
       ! when going to large calculations
-      if (maxbuff.gt.ifree)
-     &     call quit(1,'dia4op','inadequate memory management')
+      if (maxbuff.gt.ifree) then
+        write(luout,*) 'maxbuff, ifree: ',maxbuff,ifree
+        call mem_map(.true.)
+        call quit(1,'dia4op','inadequate memory management')
+      end if
 
       if (ntest.ge.100)
      &     write(luout,*)'allocating result buffer of size: ',maxbuff

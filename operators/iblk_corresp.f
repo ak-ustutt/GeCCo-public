@@ -57,9 +57,6 @@
 
       ! easy game
       if (pcr1.eq.pcr2) then
-c dbg
-        print *,'in easy section: ',idxblk1,dag2,trim(op2%name)
-c dbg
         iblk_corresp = iblk_occ(occ_blk1(1,1,idxblk1),dag2,op2)
         idx_next_poss = -1
       else if (abs(pcr1-pcr2).eq.1) then

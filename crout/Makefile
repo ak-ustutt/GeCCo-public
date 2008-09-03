@@ -9,10 +9,12 @@
 topdir:=..
 srcdir:=.
 
+this_lib:=libcrout.a
+
 include $(topdir)/make.config
 
 INST_PROGS:= 
-INST_LIBS:= libcrout.a
+INST_LIBS:= $(this_lib)
 INST_INCLUDES:=
 INST_DATA:=
 # module names are listed in smallcaps and wihtout any .mod
@@ -20,15 +22,16 @@ INST_MODULES:=
 
 include $(topdir)/make.rules
 
-src:=$(wildcard *.c)
-objs:=$(addsuffix .o, $(basename $(src)))
+#src:=$(wildcard *.c)
+# objs:=$(addprefix $(ARCH)/,$(addsuffix .o, $(basename $(src))))
+#objs:=$(addprefix $(ARCH)/,$(patsubst %.c,%.o,$(src)))
 
 libs:=
 
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)
 
-$(libdir)/libcrout.a: $(objs)
-	$(AR) rv $@ $?
-	$(RAN) $@
+#$(libdir)/libcrout.a: objdir $(all_objs)
+#	$(AR) rv $@ $(all_objs)
+#	$(RAN) $@
 
 

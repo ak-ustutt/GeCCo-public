@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 10
 
       include 'stdunit.h'
       include 'def_graph.h'

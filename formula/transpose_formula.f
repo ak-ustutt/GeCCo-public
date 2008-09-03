@@ -21,6 +21,7 @@
 
       form_ptr => form_head
       do
+        form_ptr%target = -form_ptr%target
         if (form_ptr%command.eq.command_add_contribution)
      &       call transpose_contr(form_ptr%contr,op_info)
 

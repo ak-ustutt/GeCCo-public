@@ -92,7 +92,8 @@
      &     ok
       integer ::
      &     narc, iarc, iblk_res, iop, jop, ivtx, nopen, idx, ioff, inc,
-     &     num_res, nvtx_res, njoined_res, iblk_res_min, iblk_res_max
+     &     num_res, nvtx_res, njoined_res, iblk_res_min, iblk_res_max,
+     &     nterms
       integer ::
      &     iblk_min(nops), iblk_max(nops), iblk_op(nops),
      &     occ_test(ngastp,2), occ_temp(ngastp,2)
@@ -470,9 +471,15 @@ c dbg
      &           occ_vtx(1,1,1),ol_map,op_info)
 
             ! advance pointer
+            nterms = 0
             do while(form_pnt%command.ne.command_end_of_formula)
+              nterms = nterms+1
               form_pnt => form_pnt%next
             end do
+
+            if (ntest.ge.100)
+     &           write(luout,*) nterms,' new terms ...'
+
           end if
 
           if (.not.next_dist2(iblk_op,nops,iblk_min,iblk_max,+1)) exit

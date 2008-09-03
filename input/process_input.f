@@ -103,6 +103,8 @@ c      end if
      &     ival=irt_contr)
       call get_argument_value('calculate.routes','str_block',
      &     ival=len_str_block)
+      call get_argument_value('calculate.routes','use_tr',
+     &     lval=use_tr)
 
       return
 

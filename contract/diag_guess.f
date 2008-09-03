@@ -41,11 +41,14 @@
         if (isign.ne.0.and.abs(xlist(idx)-xlist(idx+1)).lt.thresh) then
           ! set a spin combination
           jroot = jroot+1
-          nset = 2
+c          nset = 2
+c          idxset(1) = idxlist(idx)
+c          idxset(2) = idxlist(idx+1)
+c          valset(1) = 1d0/sqrt(2d0)
+c          valset(2) = dble(isign)/sqrt(2d0)
+          nset = 1
           idxset(1) = idxlist(idx)
-          idxset(2) = idxlist(idx+1)
           valset(1) = 1d0/sqrt(2d0)
-          valset(2) = dble(isign)/sqrt(2d0)
           idx = idx+2
         else if (isign.eq.0.or.isign.eq.+1) then
           ! set a single element

@@ -80,6 +80,9 @@ c dbg
      &     orb_info%ngas_hpv,orb_info%nactt_hpv,
      &     orb_info%igamorb,orb_info%mostnd,orb_info%idx_gas,ngas,nsym)
 
+c dbg
+      call check_graph(igraph,str_info,orb_info)
+c dbg
       deallocate(iwscr)      
 
       call mem_popmark()

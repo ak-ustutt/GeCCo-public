@@ -39,7 +39,7 @@
      &     ok, bufin, bufout
       integer ::
      &     len_op, idum, ifree, lblk, nblkmax, nblk, nbuff,
-     &     ioffin, ioffout, idxst, idxnd,
+     &     ioffin, ioffout, idx, idxst, idxnd, lenbat,
      &     idoffin, idoffout,
      &     njoined_in, njoined_out, ijoin,
      &     idx_in, idx_out
@@ -209,9 +209,11 @@ c      end if
         idoffin  = ffin %length_of_record*(ffin %current_record-1)
         idoffout = ffout%length_of_record*(ffout%current_record-1)
 
+        xnorm2 = 0d0
         idxst = 1
         do while(idxst.le.len_op)
           idxnd = min(len_op,idxst-1+nbuff)
+          lenbat = idxnd-idxst+1
           if (bufin) then
             call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
      &                                    idoffout+ioffout+idxnd)
@@ -229,19 +231,22 @@ c      end if
      &                                  idoffin+ioffin+idxnd)
             call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
      &                                    idoffout+ioffout+idxnd)
-            buffer_out(1:(idxnd-idxst+1))
-     &         = fac*buffer_in(1:(idxnd-idxst+1))
-     &              +buffer_out(1:(idxnd-idxst+1))
+            do idx = 1, lenbat
+              buffer_out(idx) = buffer_out(idx)+fac*buffer_in(idx)
+            end do
+c does not alway work correctly (range error at end of buffer_out) ???
+c            buffer_out(1:lenbat)
+c     &         = fac*buffer_in(1:lenbat)
+c     &              +buffer_out(1:lenbat)
             call put_vec(ffout,buffer_out,idoffout+ioffout+idxst,
      &                                    idoffout+ioffout+idxnd)
           end if
           idxst = idxnd+1
+          if (type.eq.1)
+     &      xnorm2 = xnorm2 + ddot(lenbat,buffer_out,1,buffer_out,1)
         end do
-        if (type.eq.1) then
-          xnorm2 = ddot(len_op,buffer_out,1,buffer_out,1)
-        else
-          xnorm2 = buffer_out(1)
-        end if
+        if (type.eq.2)
+     &      xnorm2 = buffer_out(1)
       else
         call daxpy(len_op,fac,ffin%buffer(ioffin+1),1,
      &                       ffout%buffer(ioffout+1),1)

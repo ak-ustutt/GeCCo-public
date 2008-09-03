@@ -1,12 +1,13 @@
       subroutine set_keywords()
 
-      use parse_input
+c      use parse_input
       implicit none
 
       include 'stdunit.h'
+      include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer ::
      &     iprint
@@ -36,6 +37,17 @@
       call keyword_add('CC',context='method')
       call argument_add('maxexc','method.CC',type=vtyp_int,idef=(/2/))
       call argument_add('minexc','method.CC',type=vtyp_int,idef=(/1/))
+      call argument_add('truncate','method.CC',type=vtyp_str,
+     &     len=8,cdef=(/'n','o',' ',' ',' ',' ',' ',' '/))
+
+      call keyword_add('CCPT',context='method')
+      call argument_add('maxexc','method.CCPT',type=vtyp_int,idef=(/3/))
+
+      call keyword_add('ECC',context='method')
+      call argument_add('maxexc','method.ECC',type=vtyp_int,idef=(/2/))
+      call argument_add('minexc','method.ECC',type=vtyp_int,idef=(/1/))
+      call argument_add('truncate','method.ECC',type=vtyp_str,
+     &     len=8,cdef=(/'n','o',' ',' ',' ',' ',' ',' '/))
 
       call keyword_add('R12',context='method')
       call argument_add('ansatz','method.R12',type=vtyp_int,idef=(/1/))
@@ -136,6 +148,8 @@
       call argument_add('sym','calculate.excitation',
      &     type=vtyp_int,len=8,
      &     idef=(/1,0,0,0,0,0,0,0/))
+      call argument_add('msc','calculate.excitation',
+     &     type=vtyp_int,len=1,idef=(/0/))
 
       call keyword_add('ionization',context='calculate')
       call argument_add('sym','calculate.ionization',
@@ -146,14 +160,20 @@
       call argument_add('schedule','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
       call argument_add('contract','calculate.routes',type=vtyp_int,
-     &     idef=(/2/))
+     &     idef=(/3/))
       call argument_add('str_block','calculate.routes',type=vtyp_int,
      &     idef=(/200/))
+      call argument_add('use_tr','calculate.routes',type=vtyp_log,
+     &     ldef=(/.true./))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
 
+      call keyword_add('experimental',context='calculate')
+      ! set additional experimental keyword in this subroutine:
+      call set_experimental_keywords()
+
       if (iprint.ge.50)
-     &     call keyword_list(luout,keyword_root,show_args=.true.)
+     &     call show_keywords(luout)
 
       return
       end

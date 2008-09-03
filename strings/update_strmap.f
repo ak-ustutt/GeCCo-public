@@ -23,9 +23,12 @@
      &     ngraph, ngraph_old, idx, igraph, jgraph, idx_old, idx_new
 
       integer, pointer ::
-     &     new_idx_strmap(:), new_maxlen_blk(:)
+     &     new_idx_strmap(:), new_maxlen_blk(:),
+     &     new_idx_flipmap(:), new_maxlen_blk_flip(:)
       type(strmap_offsets), pointer ::
      &     new_offsets(:)
+      type(flpmap_offsets), pointer ::
+     &     new_offsets_flip(:)
 
       ! everything OK?
       if (str_info%ngraph.le.strmap_info%mxgraph) return
@@ -38,14 +41,23 @@ c dbg
       ngraph_old = strmap_info%mxgraph
       strmap_info%mxgraph = ngraph
       allocate(new_idx_strmap(ngraph*ngraph))
+      allocate(new_idx_flipmap(ngraph))
 
       new_idx_strmap(1:ngraph*ngraph) = -1
+      new_idx_flipmap(1:ngraph) = -1
 
       allocate(new_offsets(ngraph*ngraph))
       allocate(new_maxlen_blk(ngraph*ngraph))
       do idx = 1, ngraph*ngraph
         nullify(new_offsets(idx)%msms)
         nullify(new_offsets(idx)%msmsgmgm)
+      end do
+
+      allocate(new_offsets_flip(ngraph))
+      allocate(new_maxlen_blk_flip(ngraph))
+      do idx = 1, ngraph
+        nullify(new_offsets_flip(idx)%ms)
+        nullify(new_offsets_flip(idx)%msgm)
       end do
 
       do igraph = 1, ngraph_old
@@ -63,10 +75,25 @@ c dbg
         end do
       end do
 
+      do igraph = 1, ngraph_old
+        new_idx_flipmap(igraph) = strmap_info%idx_flipmap(igraph)
+        new_maxlen_blk_flip(igraph) =
+     &                            strmap_info%maxlen_blk_flip(igraph)
+        new_offsets_flip(igraph)%ms =>
+     &       strmap_info%offsets_flip(igraph)%ms
+        new_offsets_flip(igraph)%msgm =>
+     &       strmap_info%offsets_flip(igraph)%msgm
+      end do
+
       deallocate(strmap_info%idx_strmap,strmap_info%offsets)
 
       strmap_info%idx_strmap => new_idx_strmap
       strmap_info%offsets    => new_offsets
+
+      deallocate(strmap_info%idx_flipmap,strmap_info%offsets_flip)
+
+      strmap_info%idx_flipmap  => new_idx_flipmap
+      strmap_info%offsets_flip => new_offsets_flip
 
       return
       end

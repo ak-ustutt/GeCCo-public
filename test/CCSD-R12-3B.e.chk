@@ -11,9 +11,10 @@ check
 check
   label Factorization of CC equations
   find next target: CC-R12-OPT
-  find Most expensive contraction:
-  compare int 5
-  compare int 7
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
 check
   label Number of iterations
   find CONVERGED IN .* ITERATIONS

@@ -94,6 +94,9 @@ c dbg
           ioff = ioff + offsets(idxgrgr)%msms(idxmsms)
           ! plus offset of gam/gam block
           ioff = ioff + offsets(idxgrgr)%msmsgmgm(idxgmgm)
+c dbg
+c          print *,'fetching: ioff, len = ',ioff,ilen
+c dbg
           call mem_iget(strmap_info%ffstrmap,
      &                  strmap(ioffmap+1),ioff+1,ioff+ilen)          
 

@@ -1,0 +1,48 @@
+Step I - set up Makefile system
+------
+Change directory to the GeCCo main source directory and run
+  autoconf
+in order to generate the configure file. This step should be redone
+from time to time (in case someone has changed the config stuff).
+
+Step II - configure
+-------
+Run
+- for xeon machines on our cluster
+ ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/em64t/ -lmkl -lmkl_lapack -lguide -lpthread'
+- for p4 machines on our cluster
+ ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/32/ -lmkl -lmkl_lapack -lguide -lpthread'
+- on a laptop installition this my rather read
+ ./configure --with-blas='-L/opt/intel/mkl/8.0/lib/32/ -lmkl -lmkl_lapack -lguide -lpthread'
+- for pgf90 the following seems to work OK:
+ ./configure --with-blas=-lacml
+
+or whatever is appropriate on the present machine.
+
+
+Step III - compile
+--------
+Run (gives optimized executable ./bin/gecco.x)
+> make
+or (gives non-optimized debugger-ready executable ./gecco/gecco.x)
+> DEBUG=1 make
+or (gives optimized executable that produces input for gprof ./gecco/gecco.x)
+> PROF=1 make
+
+Step IV - test
+-------
+cd into the test subdirectory
+make sure that the environment variable GECCO_TMP is set
+to a (non-existent, as it will automatically generated and 
+removed) subdirectory on a scratch disc, e.g. by
+ export GECCO_TMP=/scr/$USER/gecco_test.$$
+type
+ make
+to run the test (or issue the command in a run-shell script
+submitted to a queueing-system)
+A shorter version of the test suite can be run by typing
+ make essential
+If a debug version is to be tested, use
+ DEBUG=1 make
+
+

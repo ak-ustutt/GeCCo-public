@@ -52,7 +52,6 @@
 
       include 'stdunit.h'
       include 'ioparam.h'
-c      include 'def_filinf.h'
       include 'def_file_array.h'
       include 'mdef_operator_info.h'
       include 'def_optimize_info.h'

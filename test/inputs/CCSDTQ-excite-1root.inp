@@ -8,5 +8,5 @@ calculate
   solve maxiter=30,conv=1d-8
   eigen maxiter=50,maxsub=12,conv=1d-7
   excitation sym=(0,1,0,0)
-  routes simtraf=1,contract=3
+  routes simtraf=2,contract=3
 

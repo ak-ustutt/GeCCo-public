@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine form_fact2(contr,
-     &     op_info,str_info,orb_info,iscale_stat)
+     &     op_info,str_info,orb_info,iscale_stat,cost_stat,mem_stat)
 *----------------------------------------------------------------------*
 *     find optimum factorization of a given contraction
 *----------------------------------------------------------------------*
@@ -16,7 +16,7 @@
       include 'mdef_operator_info.h'
       
       integer, parameter ::
-     &     maxcount = 1000,  ! at most 1000 iterations
+     &     maxcount = 10000, ! at most 10000 iterations
      &     ndisconn = 3,     ! at most 3 extra levels for disconnected
      &     ntest = 00                                   ! vertices
 
@@ -31,6 +31,8 @@
      &     orb_info
       integer, intent(inout) ::
      &     iscale_stat(ngastp,2)
+      real(8), intent(inout) ::
+     &     cost_stat, mem_stat
 
       integer ::
      &     ngas, nsym, maxidx, iarc, ivtx, icount, njoined, ncost_eval,
@@ -183,20 +185,9 @@ c dbg
       end if
 
       ! statistics
-      ! well, no yet completely correct ...
-      if ( sum(iscalemin(1:4,1)).gt.sum(iscale_stat(1:4,1)).or.
-     &    (sum(iscalemin(1:4,1)).eq.sum(iscale_stat(1:4,1)).and.
-     &    (iscalemin(2,1).gt.iscale_stat(2,1) .or.
-     &     iscalemin(4,1).gt.iscale_stat(4,1)) ) ) then
-        iscale_stat(1:4,1) = iscalemin(1:4,1)
-      end if
-
-      if ( sum(iscalemin(1:4,2)).gt.sum(iscale_stat(1:4,2)).or.
-     &    (sum(iscalemin(1:4,2)).eq.sum(iscale_stat(1:4,2)).and.
-     &    (iscalemin(2,2).gt.iscale_stat(2,2) .or.
-     &     iscalemin(4,2).gt.iscale_stat(4,2)) ) )  then
-        iscale_stat(1:4,2) = iscalemin(1:4,2)
-      end if
+      iscale_stat(1:4,1:2) = iscalemin(1:4,1:2)
+      cost_stat = costmin(1)
+      mem_stat  = costmin(2)
 
       deallocate(ifact,ifact_best,
      &     occ_vtx,irestr_vtx,info_vtx,iarc_ori,ivtx_ori,irestr_res)

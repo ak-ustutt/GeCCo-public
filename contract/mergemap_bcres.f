@@ -65,6 +65,9 @@ c dbg
         if (nj.eq.nvtx_new.and.nj.eq.nvtx_final) then
           ! look at xlines to find result vertices to which the 
           ! present vertex contributes
+c dbg
+c          print *,'last contraction route taken!'
+c dbg
           do jdx = 1, nj
             if (xlines(ivtx_final,jdx).eq.0.and.nj.gt.1) cycle
             ! store in mergemap

@@ -103,6 +103,7 @@
      &                 iocc2,irestr2,idxms2,igam2,
      &                 graph12%y4sg,graph12%yinf,
      &                 graph12%yssg,graph12%wssg,
+     &                 graph12%ioffstr_dgm,graph12%ndis,
      &                 mostnd(1,1,idx_gas(ityp12)),
      &                 nsym,ngas_hpv(ityp12),igamorb)
                 end if

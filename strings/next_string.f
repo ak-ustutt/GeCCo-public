@@ -28,7 +28,7 @@
       logical ::
      &     succ
       integer ::
-     &     idx, idxoff, idxnd, idxst
+     &     idx, idxoff
       integer ::
      &     ioss(ngas_cur)
 
@@ -55,9 +55,6 @@ c dbg
         next_string = .true.
         if (nidx.eq.0) return
 
-        ! index range within tupel
-        idxst = 1
-        idxnd = nidx
         ! first subspace distribution
         idss(1:nidx) = 1
         dss_loop: do
@@ -71,7 +68,7 @@ c dbg
           ! lexically lowest string
           ! reform distribution to occupation
           ioss(1:ngas_cur) = 0
-          do idx = idxst, idxnd
+          do idx = 1, nidx
             ioss(idss(idx)) = ioss(idss(idx))+1
           end do
 
@@ -159,7 +156,7 @@ c dbg
 
           ! reform distribution to occupation
           ioss(1:ngas_cur) = 0
-          do idx = idxst, idxnd
+          do idx = 1, nidx
             ioss(idss(idx)) = ioss(idss(idx))+1
           end do
 

@@ -56,6 +56,9 @@
      &     cmp_contr = abs(contr1%fac-contr2%fac).lt.1d-12
 
       if (.not.cmp_contr) return
+c dbg
+c      print *,'survived basic tests'
+c dbg
 
       ! as the exact comparison takes some time, pre-screen with
       ! checksum
@@ -94,6 +97,9 @@
       cmp_contr = iocc_zero(occ)
 
       if (.not.cmp_contr) return
+c dbg
+c      print *,'survived initial tests'
+c dbg
 
       ! NEW:
       nj = njres_contr(contr1)  ! idxres was already compared
@@ -115,6 +121,14 @@
       cmp_contr = cmp_contr.and.
      &            i8list_cmp(topo1,topo2,nvtx*nvtx).eq.0
       if (ntest.ge.100) write(luout,*) 'cmp_contr > (3): ',cmp_contr
+c dbg
+c      if (.not.cmp_contr.and.nvtx.eq.8) then
+c        print *,'topo1'
+c        call prt_contr_p(6,ivtx1,ivtx1,topo1,xlines1,nvtx,nj)
+c        print *,'topo2'
+c        call prt_contr_p(6,ivtx2,ivtx2,topo2,xlines2,nvtx,nj)
+c      end if
+c dbg
 
       deallocate(ivtx1,topo1,xlines1,
      &           ivtx2,topo2,xlines2,scr)

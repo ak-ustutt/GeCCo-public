@@ -22,6 +22,7 @@
       call set_ccmp_general_targets(tgt_info,orb_info)
 c      call set_cc_general_targets(tgt_info,orb_info)
       call set_cc_special_targets(tgt_info,orb_info)
+      call set_cc_pt_targets(tgt_info,orb_info)
       call set_cc_gsrsp_targets(tgt_info,orb_info)
       call set_cc_exst_targets(tgt_info,orb_info)
       call set_cc_ipst_targets(tgt_info,orb_info)

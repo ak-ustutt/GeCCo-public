@@ -30,7 +30,7 @@
       include 'def_strmapinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     nspecial
@@ -107,36 +107,36 @@ c dbg
         ! prelim. w/o damping
         case(optinf_prc_file)
 c dbg
-          print *,'Raw grad:'
-          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
-     &     str_info,orb_info)
+c          print *,'Raw grad:'
+c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
+c     &     str_info,orb_info)
 c dbg
           call vec_from_da(ffdia,1,xbuf2,nwfpar)
           xbuf1(1:nwfpar) = xbuf1(1:nwfpar)/xbuf2(1:nwfpar)
 c dbg
-          print *,'Precond. grad:'
-          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
-     &         str_info,orb_info)
+c          print *,'Precond. grad:'
+c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
+c     &         str_info,orb_info)
 c dbg
         case(optinf_prc_blocked)
 c dbg
-          print *,'Raw grad:'
-          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,1,
-     &     str_info,orb_info)
+c          print *,'Raw grad:'
+c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,1,
+c     &     str_info,orb_info)
 c dbg
 c          call optc_prc_special(me_grd,me_special,nspecial,
 c     &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
 c     &                          orb_info,str_info)
 c          xbuf1(1:nwfpar) = xbuf3(1:nwfpar)
           call optc_prc_special2(me_grd,me_special,nspecial,
-     &                           me_amp%op%name,
+     &                           me_amp%op%name,0d0,
      &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
      &                          orb_info,op_info,str_info,strmap_info)
 c          call mem_check('after prc_special2')
 c dbg
-          print *,'Precond. grad:'
-          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,1,
-     &         str_info,orb_info)
+c          print *,'Precond. grad:'
+c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,1,
+c     &         str_info,orb_info)
 c dbg
         end select
 c dbg
@@ -145,13 +145,13 @@ c          print *,'g/d: ', xbuf1(1:nwfpar)
 c dbg
         call vec_from_da(ffamp,1,xbuf2,nwfpar)
 c dbg
-          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
-          print *,'t before: ', xbuf2(1:nwfpar)
+c          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
+c          print *,'t before: ', xbuf2(1:nwfpar)
 c dbg
         xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)
 c dbg
-          print *,'t norm new:',dnrm2(nwfpar,xbuf2,1)
-          print *,'t before new: ', xbuf2(1:nwfpar)
+c          print *,'t norm new:',dnrm2(nwfpar,xbuf2,1)
+c          print *,'t before new: ', xbuf2(1:nwfpar)
 c dbg
 
 c        else

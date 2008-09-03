@@ -73,6 +73,24 @@
      &             rule%labels(ioff+3),rule%labels(ioff+4),
      &       op_info)
 
+      case(DEF_ECC_LAGRANGIAN)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,idum,strdum)
+        ioff = rule%n_update
+        call set_ecc_lagrangian(form_pnt,
+     &       title,rule%labels(ioff+1),rule%n_labels-1,ansatz,typ_str,
+     &       op_info,orb_info)
+
+      case(DEF_CCPT_LAGRANGIAN)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,ansatz,typ_str)
+        ioff = rule%n_update
+        call set_ccpt_lagrangian(form_pnt,
+     &       title,rule%labels(ioff+1),rule%n_labels-1,ansatz,typ_str,
+     &       op_info,orb_info)
+
       case(DEF_CC_HBAR)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
@@ -131,6 +149,23 @@ c prelim
         call set_r12_lagrangian(form_pnt,
      &       title,rule%labels(ioff+1),rule%n_labels-ioff,ansatz,
      &       op_info,orb_info,form_info)
+      case(DEF_CCR12_METRIC)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,ansatz,strdum)
+        ioff = rule%n_update
+        call set_r12_metric(form_pnt,
+     &       title,rule%labels(ioff+1),rule%n_labels-ioff,ansatz,
+     &       op_info,orb_info)
+      case(DEF_EXP_FORMULA)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,ansatz,approx)
+        ioff = rule%n_update
+        call set_experimental_formula(form_pnt,
+     &       title,rule%labels(ioff+1),rule%n_labels-ioff,
+     &       ansatz,approx,
+     &       op_info,orb_info)
       case(EXPAND_OP_PRODUCT)
         call expand_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
@@ -188,16 +223,19 @@ c prelim
       case(DERIVATIVE)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title,idum,strdum)
+     &       title,nop,strdum)
         ioff = rule%n_update
+
+        ! fix:
+        if (rule%n_parameter_strings.eq.1) nop = 1
         
         jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
         form0_pnt => form_info%form_arr(jdx)%form
         call form_deriv2(form_pnt,form0_pnt,
-     &       title,1,
+     &       title,nop,
      &       rule%labels(ioff+2),
      &       rule%labels(ioff+3),
-     &       rule%labels(ioff+4),
+     &       rule%labels(ioff+3+nop),
      &       op_info)
       case(LEQ_SPLIT)
         call form_parameters(+1,

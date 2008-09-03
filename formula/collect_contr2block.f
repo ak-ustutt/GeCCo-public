@@ -52,7 +52,7 @@ c      nullify(fpl_intm_c2blk%prev)
 
       fpl_intm_c2blk%item => fl_intm
 
-      idxop_intm = fl_intm%target
+      idxop_intm = abs(fl_intm%target)
       iblk_intm  = fl_intm%contr%iblk_res
 
       if (ntest.ge.100) then

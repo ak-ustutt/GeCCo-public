@@ -75,7 +75,6 @@
       logical, external ::
      &     allow_sbsp_dis
 
-
       if (ntest.ge.10) then
         write(luout,*) '----------------------'
         write(luout,*) ' output from idx42str'
@@ -284,6 +283,7 @@
      &             idspn(ipos),idgam(ipos),
      &             curgraph%y4sg,curgraph%yinf,
      &             curgraph%yssg,curgraph%wssg,
+     &             curgraph%ioffstr_dgm,curgraph%ndis,
      &             orb_info%mostnd(1,1,orb_info%idx_gas(ihpv)),
      &             str_info%ispc_occ(igraph),orb_info%nsym,
      &             orb_info%ngas_hpv(ihpv))

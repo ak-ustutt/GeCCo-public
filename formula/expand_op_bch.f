@@ -19,7 +19,11 @@
 
       implicit none
 
+      integer, parameter ::
+     &     ntest = 00
+
       include 'opdim.h'
+      include 'stdunit.h'
       include 'mdef_operator_info.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
@@ -53,6 +57,12 @@
       integer, external ::
      &     vtx_type
 
+      if (ntest.ge.100) then
+        call write_title(luout,wst_dbg_subr,
+     &     'expand_op_bch')
+        write(luout,*) 'max_n = ',max_n
+      end if      
+
       form_pnt => form_res
 
       ! check type of operator b
@@ -64,6 +74,9 @@
 
       pure_ex = iop_typ_b.eq.vtxtyp_ph_ex
       pure_dx = iop_typ_b.eq.vtxtyp_ph_dx
+
+      if (ntest.ge.100)
+     &     write(luout,*) 'pure_ex, pure_dx: ', pure_ex, pure_dx
 
       allocate(connect(2,max_n),idx_op(max_n+2),
      &     iblk_min(max_n+2),iblk_max(max_n+2))
@@ -92,8 +105,8 @@
             iblk_min(n_proj+n+1) = iblk_b_min
             iblk_max(n_proj+n+1) = iblk_b_max
           else if (pure_dx) then
-            connect(1,n) = n_proj+1
-            connect(2,n) = n_proj+n+1
+            connect(1,n) = n_proj+n
+            connect(2,1:n) = n_proj+n+1
             idx_op(n_proj+n) = idx_b
             iblk_min(n_proj+n) = iblk_b_min
             iblk_max(n_proj+n) = iblk_b_max
@@ -102,9 +115,14 @@
             iblk_max(n_proj+n+1) = 0
           end if
         end if
-c dbg
-c        print *,'n = ',n
-c dbg
+
+        if (ntest.ge.100) then
+          write(luout,*) 'n = ',n
+          write(luout,*) 'idx_op: ',idx_op(1:n+n_proj+1)
+          write(luout,*) 'iblk_min: ',iblk_min(1:n+n_proj+1)
+          write(luout,*) 'iblk_max: ',iblk_max(1:n+n_proj+1)
+          write(luout,*) 'connect: ',connect(1:2,1:n)
+        end if
 
         call expand_op_product(form_pnt,idx_res,
      &       fac_t,n_proj+n+1,idx_op,

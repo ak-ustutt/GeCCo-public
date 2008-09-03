@@ -55,7 +55,7 @@
         iidx = iidx+1
         vtx2(iidx) = vtx(idx)
         xlines2(iidx,1:nj) = xlines(iidx,1:nj)
-        xlines2(iidx,nj+1) = topo(iidx,ivtx)
+        xlines2(iidx,nj+1) = topo(iidx,jvtx)
         jjdx = 0
         do jdx = 1, nvtx
           if (idx.eq.jvtx) cycle

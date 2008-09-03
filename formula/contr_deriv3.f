@@ -84,7 +84,7 @@
       op_arr => op_info%op_arr
 
       idx_0 = contr%idx_res
-      op_der => op_arr(idxder)%op
+      op_der => op_arr(abs(idxder))%op
       op_res => op_arr(idxres)%op
       op_res0 => op_arr(idx_0)%op
       if (idxmlt.gt.0) op_mlt => op_arr(idxmlt)%op
@@ -156,7 +156,8 @@
       svtx_last = -1
       do ivtx = 1, nvtx
         if (neqv(ivtx).lt.0) cycle
-        if (contr%vertex(ivtx)%idx_op.eq.idxder.and.
+        if (contr%vertex(ivtx)%idx_op.eq.abs(idxder).and.
+     &     (contr%vertex(ivtx)%dagger.eqv.(idxder.lt.0)).and.
      &      svertex(ivtx).gt.svtx_last) then
           nderiv = nderiv+1
           svtx_last = svertex(ivtx)
@@ -171,7 +172,8 @@
       svtx_last = -1
       do ivtx = 1, nvtx
         if (neqv(ivtx).lt.0) cycle
-        if (contr%vertex(ivtx)%idx_op.eq.idxder.and.
+        if (contr%vertex(ivtx)%idx_op.eq.abs(idxder).and.
+     &     (contr%vertex(ivtx)%dagger.eqv.(idxder.lt.0)).and.
      &      svertex(ivtx).gt.svtx_last) then
           ideriv = ideriv+1
           iblkder(ideriv) = contr%vertex(ivtx)%iblk_op

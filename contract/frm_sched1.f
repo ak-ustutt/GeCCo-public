@@ -9,6 +9,8 @@
 
       implicit none
 
+      include 'routes.h'
+
       include 'opdim.h'
       include 'stdunit.h'
       include 'ioparam.h'
@@ -55,14 +57,14 @@
      &     tra_op1, tra_op2, tra_op1op2, set_reo, make_contr_red, self
       integer ::
      &     idxopres, idxres, nres, type_xret, type_xret_cur,
-     &     idxme_res, idxmel,
+     &     idxme_res, idxmel, absym12,
      &     n_occ_cls, maxvtx, maxarc, maxfac, nblk_res,
      &     nfact, idxop1op2, iblkop1op2, iops, iblkres, ifree,
      &     ninter, idx, nsym, ngas, nexc, ndis, iprint, iterm, len,
      &     idoffop1, idoffop2, idoffop1op2, ivtx_new, nvtx,
      &     iarc, idum, idxop_intm
       real(8) ::
-     &     fac, facc, xnrm, bc_sign
+     &     fac, facc, xnrm, bc_sign, xret_last
       character ::
      &     title*256, opscrnam*8
 
@@ -141,6 +143,7 @@
       idxres = 0
       iterm = 0
       nullify(xret_blk)
+      xret_last = 0d0
 
       call init_contr(cur_contr)
       call init_contr(cur_contr_red)
@@ -169,20 +172,19 @@
      &     call quit(1,'frm_sched1','first command must define target')
 
         select case(cur_form%command)
-        case(command_end_of_formula)
-          ! get xret value for final target
-          if (type_xret.eq.1) then
-            xret(idxres) = sqrt(sum(xret_blk(1:nblk_res)))
-          else if (type_xret.eq.2) then
-            xret(idxres) = xret_blk(1)
-          end if
-
-          exit term_loop
-
-        case(command_set_target_init)
+        case(command_end_of_formula,command_set_target_init)
 
           ! for previous target: assemble xret value
           if (idxres.gt.0.and..not.skip) then
+
+            ! in case of splin-flip symmetry exploitation:
+            ! symmetrize final result here (if not scalar)
+            if (use_tr.and.me_res%absym.ne.0.and.type_xret.eq.1) then
+              call sym_ab_list(0.5d0,me_res,me_res,
+     &             xret_blk,.true.,
+     &             op_info,str_info,strmap_info,orb_info)
+            end if
+
             if (type_xret.eq.1) then
               xret(idxres) = sqrt(sum(xret_blk(1:nblk_res)))
             else if (type_xret.eq.2) then
@@ -190,10 +192,14 @@
             end if
           end if
 
+          if (cur_form%command.eq.command_end_of_formula)
+     &         exit term_loop
+
+          xret_last = 0d0
+
           ! initialize result
           nres = nres+1
           idxres = nres
-
 
           ! requested?
           skip = nselect.gt.0.and.
@@ -308,6 +314,11 @@ c fix:
      &             mel_arr(idxmel)%mel,me_res,
      &             iblkop(1),iblkres,orb_info)
             end if
+
+            if (type_xret.eq.2.and.iprint.ge.3)
+     &           write(luout,'(1x,"term # ",i5,":",2(x,g19.10))')
+     &           iterm, xret_blk(1)-xret_last, xret_blk(1)
+            if (type_xret.eq.2) xret_last = xret_blk(1)
 
             if (ntest.ge.50) then
               write(luout,*) 'xret after term ',iterm
@@ -498,8 +509,14 @@ c          new = .false.!cur_contr%nvtx.ge.4
             ! Fix Ms?
             melscr(ninter)%fix_vertex_ms = .false.
 
+            absym12 = me_op1%absym*me_op2%absym 
+c dbg
+c            print *,'ab(OP1): ',me_op1%absym,trim(me_op1%label)
+c            print *,'ab(OP2): ',me_op2%absym,trim(me_op2%label)
+c            print *,'ABSYM12 = ',absym12
+c dbg
             call set_ps_list(melscr(ninter),opscrnam,
-     &           0,0,mstop1op2,igamtop1op2,0,
+     &           absym12,0,mstop1op2,igamtop1op2,0,
      &           str_info,strmap_info,orb_info)
             call file_open(melscr(ninter)%fhand)
 
@@ -578,6 +595,11 @@ c dbg
           end if
 
         end do bin_loop
+
+        if (type_xret.eq.2.and.iprint.ge.3)
+     &       write(luout,'(1x,"term # ",i5,":",2(x,g19.10))')
+     &       iterm, xret_blk(1)-xret_last, xret_blk(1)
+        if (type_xret.eq.2) xret_last = xret_blk(1)
 
         if (ntest.ge.50) then
           write(luout,*) 'xret after term ',iterm

@@ -1,7 +1,9 @@
 *----------------------------------------------------------------------*
       subroutine leqc_core(iter,
      &       task,iroute,xrsnrm,
-     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
+     &       me_opt,me_trv,me_mvp,me_rhs,me_dia,
+     &       me_special,nspecial,
+c     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
      &       opti_info,opti_stat)
@@ -11,7 +13,8 @@
       implicit none
 
       include 'stdunit.h'
-      include 'def_filinf.h'
+c      include 'def_filinf.h'
+      include 'mdef_operator_info.h'
       include 'def_file_array.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
@@ -27,10 +30,14 @@
       integer, intent(inout) ::
      &     iter
       integer, intent(in) ::
-     &     iroute, nincore, lenbuf
+     &     iroute, nincore, lenbuf, nspecial
 
-      type(file_array), intent(in) ::
-     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
+      type(me_list_array), intent(in) ::
+     &     me_opt(*), me_trv(*), me_dia(*),
+     &     me_mvp(*), me_rhs(*),
+     &     me_special(nspecial)
+c      type(file_array), intent(in) ::
+c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       type(filinf), intent(in) ::
      &     ffscr
 
@@ -55,7 +62,8 @@
      &     gred(:), vred(:), mred(:),
      &     xmat1(:), xmat2(:), xvec(:)
       integer, pointer ::
-     &     ndim_rsbsp, ndim_vsbsp, iord_rsbsp(:), iord_vsbsp(:),
+     &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
+     &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
      &     nwfpar(:),
      &     ipiv(:), iconv(:), idxroot(:)
       type(filinf), pointer ::
@@ -77,8 +85,10 @@
       vred => opti_stat%sbspmat(2*mxsub**2+1:)
       ndim_rsbsp => opti_stat%ndim_rsbsp
       ndim_vsbsp => opti_stat%ndim_vsbsp
+      ndim_ssbsp => opti_stat%ndim_rsbsp
       iord_rsbsp => opti_stat%iord_rsbsp
       iord_vsbsp => opti_stat%iord_vsbsp
+      iord_ssbsp => opti_stat%iord_rsbsp
       ffrsbsp => opti_stat%ffrsbsp(1)%fhand
       ffvsbsp => opti_stat%ffvsbsp(1)%fhand
       nwfpar => opti_info%nwfpar
@@ -109,7 +119,8 @@
       call optc_update_redsp3
      &       (mred,gred,nred,nroot,mxsub,
      &       opti_stat%nadd,opti_stat%ndel,
-     &       iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,ffrhs(iopt)%fhand,
+     &       iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,
+     &                              me_rhs(iopt)%mel%fhand,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
 
       zero_vec(1:opti_stat%ndim_vsbsp) = .false.
@@ -170,9 +181,9 @@
       do iroot = 1, nroot
         ! assemble residual in full space
         if (nincore.ge.2) then
-          call vec_from_da(ffrhs(iopt)%fhand,iroot,xbuf1,nwfpar)
+          call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,nwfpar)
         else
-          call da_sccpvec(ffrhs(iopt)%fhand,iroot,
+          call da_sccpvec(me_rhs(iopt)%mel%fhand,iroot,
      &                    ffscr,iroot,
      &                    1d0,nwfpar,xbuf1,lenbuf)
         end if
@@ -206,8 +217,10 @@ c dbg
             ! assemble orth. subspace exactly spanning the nroot 
             ! currently best solution vectors
             call optc_minspace(
-     &           iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,
-     &           vred,gred,mred,nred,nroot,nroot,mxsub,
+     &           iord_vsbsp,opti_stat%ffvsbsp,
+     &           iord_rsbsp,opti_stat%ffrsbsp,
+     &           iord_rsbsp,opti_stat%ffrsbsp,.false., ! #1,#2 are dummies
+     &           vred,gred,mred,xdum,nred,nroot,nroot,mxsub,nopt,
      &           ffscr,nnew,
      &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
             ndim_vsbsp = nred
@@ -220,7 +233,7 @@ c dbg
 
         ! divide new directions by preconditioner
         if (nincore.ge.2) then
-          call vec_from_da(ffdia(iopt)%fhand,1,xbuf2,nwfpar)
+          call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar)
           do iroot = 1, nnew
             call vec_from_da(ffscr,iroot,xbuf1,nwfpar)
             ! scale residual for numerical stability:
@@ -237,7 +250,7 @@ c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
             xnrm = xrsnrm(idxroot(iroot))
             call da_diavec(ffscr,iroot,0d0,
      &                     ffscr,iroot,1d0/xnrm,
-     &                      ffdia,1,0d0,-1d0,
+     &                      me_dia(1)%mel%fhand,1,0d0,-1d0,
      &                      nwfpar,xbuf1,xbuf2,lenbuf)
           end do
         end if
@@ -245,8 +258,9 @@ c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
         call optc_orthvec(nadd,
-     &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
-     &                  ffscr,nnew,
+     &                  opti_stat%ffvsbsp,
+     &                      iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
+     &                  ffscr,nnew,nopt,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 
         ! set nadd
@@ -259,6 +273,9 @@ c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
         ! |Mv> subspace organisation should be identical to |v> subsp.
         ndim_rsbsp = ndim_vsbsp
         iord_rsbsp = iord_vsbsp
+        ! dto. for |Sv> subspace
+        ndim_ssbsp = ndim_vsbsp
+        iord_ssbsp = iord_vsbsp
 
       else
         ! if all converged: assemble vectors 
@@ -267,7 +284,7 @@ c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
 
           idx = (iroot-1)*mxsub + 1
           call optc_expand_vec(vred(idx),ndim_vsbsp,xdum,.false.,
-     &         ffopt(1)%fhand,iroot,1d0,ffvsbsp,iord_vsbsp,
+     &         me_opt(1)%mel%fhand,iroot,1d0,ffvsbsp,iord_vsbsp,
      &         nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
         end do

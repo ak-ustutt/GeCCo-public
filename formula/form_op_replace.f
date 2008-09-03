@@ -1,4 +1,4 @@
-      subroutine form_op_replace(opin,opout,form,op_info)
+      subroutine form_op_replace(opin,opout,strict,form,op_info)
 *-----------------------------------------------------------------------
 *     Routine which loops over a formula, form, replacing the operator, 
 *     opin, with opout. This is useful for replacing formal 
@@ -21,6 +21,8 @@
 
       character*(*), intent(in) ::
      &     opin, opout
+      logical, intent(in) ::
+     &     strict
       type(formula_item), target, intent(inout) ::
      &     form
       type(operator_info), intent(in) ::
@@ -29,7 +31,7 @@
       type(operator), pointer ::
      &     opin_pnt, opout_pnt
       type(formula_item), pointer ::
-     &     form_pnt
+     &     form_pnt, form_pnt_next
       integer ::
      &     idxin, idxout, idx, idx_form_op, idx_form_blk, idx_blk_out,
      &     ieqvfac, nvtx, narc, nxarc, nfac, njoined, idx_join
@@ -38,7 +40,7 @@
       integer, pointer ::
      &     ivtx_reo(:), occ_vtx(:,:,:)
       logical ::
-     &     reo, change
+     &     reo, change, remove
       logical, pointer ::
      &     fix_vtx(:)
 
@@ -70,6 +72,9 @@
       form_pnt => form
 
       do
+        ! save pointer to next node
+        form_pnt_next => form_pnt%next
+
         ! Navigate to the correct parts of the formula.
         select case(form_pnt%command)
         case(command_end_of_formula)
@@ -82,6 +87,7 @@
 c          write(luout,*) '[ADD]'
 
           change = .false.
+          remove = .false.
           ! Loop over the contraction's vertices.
           nvtx = form_pnt%contr%nvtx
 
@@ -106,13 +112,16 @@ c          write(luout,*) '[ADD]'
                 idx_blk_out =
      &               iblk_occ(occ_temp,.false.,opout_pnt)
 
-                if (idx_blk_out.le.0) then
+                if (idx_blk_out.le.0.and.strict) then
                   write(luout,*) trim(opin),' block no. ', idx_form_blk
                   call wrt_occ(luout,occ_temp)
                   call quit(1,'form_op_replace',
      &                 'There is no block of '//trim(opout)//
      &                 ' that corresponds to the present block of '//
      &                 trim(opin)//'!')
+                else if (idx_blk_out.le.0) then
+                  ! not strict: remove that term
+                  remove = .true.
                 end if
 
                 form_pnt%contr%vertex(idx)%idx_op = idxout
@@ -155,7 +164,10 @@ c          write(luout,*) '[ADD]'
           ! end of old code
           end if
 
-          if(change)then
+          if (remove) then
+            call delete_fl_node(form_pnt)
+            deallocate(form_pnt)
+          else if (change) then
             ! Locate the formal block's counterpart in the actual 
             ! operator. 
             idx_blk_out =
@@ -170,38 +182,40 @@ c          write(luout,*) '[ADD]'
             enddo
           endif
 
-          ! Ensure everything is properly set up.
-          narc = form_pnt%contr%narc
-          nfac = form_pnt%contr%nfac
-          nxarc = form_pnt%contr%nxarc
-          call resize_contr(form_pnt%contr,nvtx,narc,nxarc,nfac)
+          if (.not.remove) then
+            ! Ensure everything is properly set up.
+            narc = form_pnt%contr%narc
+            nfac = form_pnt%contr%nfac
+            nxarc = form_pnt%contr%nxarc
+            call resize_contr(form_pnt%contr,nvtx,narc,nxarc,nfac)
 
-          call update_svtx4contr(form_pnt%contr)
+            call update_svtx4contr(form_pnt%contr)
           
-          allocate(ivtx_reo(nvtx),fix_vtx(nvtx),
-     &         occ_vtx(ngastp,2,nvtx))
-          fix_vtx = .true.
-          call occvtx4contr(1,occ_vtx,form_pnt%contr,op_info)
+            allocate(ivtx_reo(nvtx),fix_vtx(nvtx),
+     &           occ_vtx(ngastp,2,nvtx))
+            fix_vtx = .true.
+            call occvtx4contr(1,occ_vtx,form_pnt%contr,op_info)
           
-          call topo_contr(ieqvfac,reo,ivtx_reo,form_pnt%contr,
-     &         occ_vtx,fix_vtx)
+            call topo_contr(ieqvfac,reo,ivtx_reo,form_pnt%contr,
+     &           occ_vtx,fix_vtx)
           
-          call canon_contr(form_pnt%contr,reo,ivtx_reo)
-          deallocate(ivtx_reo,fix_vtx,occ_vtx)
+            call canon_contr(form_pnt%contr,reo,ivtx_reo)
+            deallocate(ivtx_reo,fix_vtx,occ_vtx)
           
+            if(ntest.ge.100.and.change)then
+              write(luout,*) 'Operator-replaced contraction'
+              call prt_contr2(luout,form_pnt%contr,op_info)
+            endif
 
-          if(ntest.ge.100.and.change)then
-            write(luout,*) 'Operator-replaced contraction'
-            call prt_contr2(luout,form_pnt%contr,op_info)
-          endif
+          end if ! .not.remove
 
         case default
           write(luout,*) 'command = ',form_pnt%command
           call quit(1,'form_op_replace','command undefined here')
         end select
 
-        if(.not.associated(form_pnt%next))exit
-        form_pnt => form_pnt%next
+        if(.not.associated(form_pnt_next))exit
+        form_pnt => form_pnt_next
 
       enddo
 

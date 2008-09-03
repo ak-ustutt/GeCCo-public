@@ -4,6 +4,7 @@
      &     iocc2,irestr2,idxms2,igam2,
      &     g12y4sg,g12yinf,
      &     g12yssg,g12wssg,
+     &     g_off_dgm, g_ndis,
      &     mostnd_cur,nsym,ngas_cur,igamorb)
 *----------------------------------------------------------------------*
 *     core routine for setting up the (str1,str2)->(str12) mapping
@@ -31,7 +32,8 @@
      &     nsym, ngas_cur,
      &     mostnd_cur(2,nsym),igamorb(*),
      &     g12y4sg(*),g12yinf(*),
-     &     g12yssg(*),g12wssg(*)
+     &     g12yssg(*),g12wssg(*),
+     &     g_off_dgm(*), g_ndis
 
       logical ::
      &     first1, first2
@@ -95,7 +97,9 @@
           strmap(idxmap) = isgn12*
      &        (idx4sg(iocc12,idss12,idorb12,idspn12,idgam12,
      &                g12y4sg,g12yinf,
-     &                g12yssg,g12wssg,mostnd_cur,
+     &                g12yssg,g12wssg,
+     &                g_off_dgm,g_ndis,
+     &                mostnd_cur,
      &                iocc12,nsym,ngas_cur)+1)
 
         end do

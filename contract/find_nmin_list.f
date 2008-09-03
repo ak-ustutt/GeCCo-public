@@ -13,7 +13,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(me_list), intent(inout) ::
      &     mel

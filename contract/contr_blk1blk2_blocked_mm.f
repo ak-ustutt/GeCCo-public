@@ -74,6 +74,13 @@ c     &     lenblock = 200
       logical ::
      &     op1shorter
       integer ::
+     &     ireo_ex1a1(nablk_ex1),   ireo_ex1c1(ncblk_ex1),
+     &     ireo_ex1a12(nablk_ex1),  ireo_ex1c12(ncblk_ex1),
+     &     ireo_ex2a2(nablk_ex2),   ireo_ex2c2(ncblk_ex2),
+     &     ireo_ex2a12(nablk_ex2),  ireo_ex2c12(ncblk_ex2),
+     &     ireo_cnta1(nablk_cnt),   ireo_cntc1(ncblk_cnt),
+     &     ireo_cnta2(nablk_cnt),   ireo_cntc2(ncblk_cnt)
+      integer ::
      &     nstr_ex1a1(nablk_op1),   nstr_ex1c1(ncblk_op1),
      &     nstr_ex1a12(nablk_op1op2),  nstr_ex1c12(ncblk_op1op2),
      &     nstr_ex2a2(nablk_op2),   nstr_ex2c2(ncblk_op2),
@@ -116,25 +123,31 @@ c     &     lenblock = 200
       nstr_cnta_tot = ielprd(lstr_cnt(ncblk_cnt+1),nablk_cnt)
 
       ! C: ex1,ex2
-      call set_strmapdim_c(nstr_ex1ex2c,nstr_ex1c12,nstr_ex2c12,
+      call set_strmapdim_c2(nstr_ex1ex2c,nstr_ex1c12,nstr_ex2c12,
+     &                   ireo_ex1c12,ireo_ex2c12,
      &                   ncblk_op1op2,
      &                   lstr_ex1,lstr_ex2,map_info_12c)
       ! A: ex2,ex1
-      call set_strmapdim_c(nstr_ex1ex2a,nstr_ex2a12,nstr_ex1a12,
+      call set_strmapdim_c2(nstr_ex1ex2a,nstr_ex2a12,nstr_ex1a12,
+     &                   ireo_ex2a12,ireo_ex1a12,
      &                   nablk_op1op2,
      &                   lstr_ex2(ncblk_ex2+1),
      &                    lstr_ex1(ncblk_ex1+1),map_info_12a)
-      call set_strmapdim_c(nstr_ex1cntc,nstr_cntc1,nstr_ex1c1,
+      call set_strmapdim_c2(nstr_ex1cntc,nstr_cntc1,nstr_ex1c1,
+     &                   ireo_cntc1,ireo_ex1c1,
      &                   ncblk_op1,
      &                   lstr_cnt,lstr_ex1,map_info_1c)
-      call set_strmapdim_c(nstr_ex1cnta,nstr_cnta1,nstr_ex1a1,
+      call set_strmapdim_c2(nstr_ex1cnta,nstr_cnta1,nstr_ex1a1,
+     &                   ireo_cnta1,ireo_ex1a1,
      &                   nablk_op1,
      &                   lstr_cnt(ncblk_cnt+1),
      &                     lstr_ex1(ncblk_ex1+1),map_info_1a)
-      call set_strmapdim_c(nstr_ex2cntc,nstr_cnta2,nstr_ex2c2,
+      call set_strmapdim_c2(nstr_ex2cntc,nstr_cnta2,nstr_ex2c2,
+     &                   ireo_cnta2,ireo_ex2c2,
      &                   ncblk_op2,
      &                   lstr_cnt(ncblk_cnt+1),lstr_ex2,map_info_2c)
-      call set_strmapdim_c(nstr_ex2cnta,nstr_cntc2,nstr_ex2a2,
+      call set_strmapdim_c2(nstr_ex2cnta,nstr_cntc2,nstr_ex2a2,
+     &                   ireo_cntc2,ireo_ex2a2,
      &                   nablk_op2,
      &                   lstr_cnt,lstr_ex2(ncblk_ex2+1),map_info_2a)
 
@@ -148,7 +161,6 @@ c     &     lenblock = 200
      &                   hpvxop1op2c,hpvxop1op2a,
      &                   lstrop1op2,ncblk_op1op2,nablk_op1op2,
      &                                               tra_op1op2)
-
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
      &       'News from contr_op1op2_blocked_mm')
@@ -215,10 +227,6 @@ c     &     lenblock = 200
         write(luout,*) '# CNT    : ',nstr_cntc_tot*nstr_cnta_tot
         write(luout,*) '# EXlong : ',nstr_exlc_tot*nstr_exla_tot
         write(luout,*) '# EXshort: ',nstr_exsc_tot*nstr_exsa_tot
-c dbg
-c        if (n_cnt_batch*n_exl_batch*n_exs_batch.ne.1)
-c     &       write(luout,*) 'NOW BATCHING'
-c dbg
         write(luout,*) 'n_cnt_batch = ',n_cnt_batch
         write(luout,*) 'n_exl_batch = ',n_exl_batch
         write(luout,*) 'n_exs_batch = ',n_exs_batch
@@ -230,8 +238,6 @@ c dbg
       end if
 
       ! loop over CNT blocks
-c      istr_cntc_bnd = 0
-c      istr_cnta_bnd = 0
       do cnt_batch = 1, n_cnt_batch
 
         call idxstnd_batch(ncnt,
@@ -260,8 +266,14 @@ c      istr_cnta_bnd = 0
      &         map_ex1cntc,map_ex1cnta,
      &         ncblk_op1,nablk_op1,
      &         ldim_op1c,ldim_op1a,
+     &         ncblk_cnt,nablk_cnt,
+     &         ncblk_ex1,nablk_ex1,
+     &         lstr_cnt,lstr_cnt(ncblk_cnt+1),
+     &         lstr_ex1,lstr_ex1(ncblk_ex1+1),
      &         nstr_cntc1,nstr_cnta1,
-     &         nstr_ex1c1,nstr_ex1a1)
+     &         nstr_ex1c1,nstr_ex1a1,
+     &         ireo_cntc1,ireo_cnta1,
+     &         ireo_ex1c1,ireo_ex1a1)
         else
           call collect_block(xscr(idxopsscr),xop2,
      &         istr_cnta_bst,istr_cnta_bnd,nstr_cnta_tot, ! CA exchanged !
@@ -273,8 +285,14 @@ c      istr_cnta_bnd = 0
      &         map_ex2cntc,map_ex2cnta,
      &         ncblk_op2,nablk_op2,
      &         ldim_op2c,ldim_op2a,
+     &         nablk_cnt,ncblk_cnt,      ! CA exchanged !
+     &         ncblk_ex2,nablk_ex2,
+     &         lstr_cnt(ncblk_cnt+1),lstr_cnt,    ! CA exchanged !
+     &         lstr_ex2,lstr_ex2(ncblk_ex2+1),
      &         nstr_cnta2,nstr_cntc2,    ! CA exchanged !
-     &         nstr_ex2c2,nstr_ex2a2)
+     &         nstr_ex2c2,nstr_ex2a2,
+     &         ireo_cnta2,ireo_cntc2,    ! CA exchanged !
+     &         ireo_ex2c2,ireo_ex2a2)
         end if
 
         if (ntest.ge.1000) then
@@ -285,8 +303,6 @@ c      istr_cnta_bnd = 0
      &                                 ncnt,nstr_exsc_tot*nstr_exsa_tot)
         end if
 
-c        istr_exlc_bnd = 0
-c        istr_exla_bnd = 0
         ! loop over blocks of EX_LONG
         do exl_batch = 1, n_exl_batch
 
@@ -318,8 +334,14 @@ c        istr_exla_bnd = 0
      &         map_ex2cntc,map_ex2cnta,
      &         ncblk_op2,nablk_op2,
      &         ldim_op2c,ldim_op2a,
-     &         nstr_cnta2,nstr_cntc2,   ! CA exchanged !
-     &         nstr_ex2c2,nstr_ex2a2)
+     &         nablk_cnt,ncblk_cnt,      ! CA exchanged !
+     &         ncblk_ex2,nablk_ex2,
+     &         lstr_cnt(ncblk_cnt+1),lstr_cnt,    ! CA exchanged !
+     &         lstr_ex2,lstr_ex2(ncblk_ex2+1),
+     &         nstr_cnta2,nstr_cntc2,    ! CA exchanged !
+     &         nstr_ex2c2,nstr_ex2a2,
+     &         ireo_cnta2,ireo_cntc2,    ! CA exchanged !
+     &         ireo_ex2c2,ireo_ex2a2)
           else
             call collect_block(xscr(idxoplscr),xop1,
      &         istr_cntc_bst,istr_cntc_bnd,nstr_cntc_tot,
@@ -331,19 +353,22 @@ c        istr_exla_bnd = 0
      &         map_ex1cntc,map_ex1cnta,
      &         ncblk_op1,nablk_op1,
      &         ldim_op1c,ldim_op1a,
+     &         ncblk_cnt,nablk_cnt,
+     &         ncblk_ex1,nablk_ex1,
+     &         lstr_cnt,lstr_cnt(ncblk_cnt+1),
+     &         lstr_ex1,lstr_ex1(ncblk_ex1+1),
      &         nstr_cntc1,nstr_cnta1,
-     &         nstr_ex1c1,nstr_ex1a1)
+     &         nstr_ex1c1,nstr_ex1a1,
+     &         ireo_cntc1,ireo_cnta1,
+     &         ireo_ex1c1,ireo_ex1a1)
           end if
           if (ntest.ge.1000) then
             if (op1shorter)      write(luout,*) 'resorted operator 2'
             if (.not.op1shorter) write(luout,*) 'resorted operator 1'
             call wrtmat2(xscr(idxoplscr),ncnt,nexl,ncnt,nexl)
           end if
-c            stop 'test'
           
           ! loop over blocks of EX_SHORT
-c          istr_exsc_bnd = 0
-c          istr_exsa_bnd = 0
           do exs_batch = 1, n_exs_batch
 
             call idxstnd_batch(nexs,
@@ -386,8 +411,14 @@ c          istr_exsa_bnd = 0
      &             map_ex1ex2c,map_ex1ex2a,
      &             ncblk_op1op2,nablk_op1op2,
      &             ldim_op1op2c,ldim_op1op2a,
+     &             ncblk_ex1,nablk_ex1,
+     &             ncblk_ex2,nablk_ex2,
+     &             lstr_ex1,lstr_ex1(ncblk_ex1+1),
+     &             lstr_ex2,lstr_ex2(ncblk_ex2+1),
      &             nstr_ex1c12,nstr_ex1a12,
-     &             nstr_ex2c12,nstr_ex2a12)
+     &             nstr_ex2c12,nstr_ex2a12,
+     &             ireo_ex1c12,ireo_ex1a12,
+     &             ireo_ex2c12,ireo_ex2a12)
 
             else
 
@@ -414,8 +445,14 @@ c          istr_exsa_bnd = 0
      &             map_ex1ex2c,map_ex1ex2a,
      &             ncblk_op1op2,nablk_op1op2,
      &             ldim_op1op2c,ldim_op1op2a,
+     &             ncblk_ex1,nablk_ex1,
+     &             ncblk_ex2,nablk_ex2,
+     &             lstr_ex1,lstr_ex1(ncblk_ex1+1),
+     &             lstr_ex2,lstr_ex2(ncblk_ex2+1),
      &             nstr_ex1c12,nstr_ex1a12,
-     &             nstr_ex2c12,nstr_ex2a12)
+     &             nstr_ex2c12,nstr_ex2a12,
+     &             ireo_ex1c12,ireo_ex1a12,
+     &             ireo_ex2c12,ireo_ex2a12)
 
             end if
 
@@ -424,10 +461,6 @@ c          istr_exsa_bnd = 0
         end do
 
       end do
-c dbg
-c      write(luout,*) 'updated iop1op2: '
-c      write(6,'(x,": ",4g20.12)') xop1op2(1:lenop12)
-c dbg        
 
       return
       end

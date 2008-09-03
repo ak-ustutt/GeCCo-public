@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine get_vtx_in_contr(ivtx,idxop,njoined,contr)
+      subroutine get_vtx_in_contr(ivtx,idxop,adjop,njoined,contr)
 *----------------------------------------------------------------------*
 *     return the first occurrence of operator idxop's vertices in contr
 *     version of vtx_in_contr for super-vertices
@@ -18,6 +18,8 @@
      &     idxop, njoined
       integer, intent(out) ::
      &     ivtx(njoined)
+      logical, intent(in) ::
+     &     adjop
 
       logical ::
      &     first
@@ -27,13 +29,15 @@
       first = .true.
       ijoin = 0
       do jvtx = 1, contr%nvtx
-        if (first.and.contr%vertex(jvtx)%idx_op.eq.idxop) then
+        if (first.and.contr%vertex(jvtx)%idx_op.eq.idxop.and.
+     &               (contr%vertex(jvtx)%dagger.eqv.adjop)) then
           ivtx(1) = jvtx
           ijoin = 1
           if (ijoin.eq.njoined) exit
           iblk_next = contr%vertex(jvtx)%iblk_op+1
           first = .false.
         else if (contr%vertex(jvtx)%idx_op.eq.idxop .and.
+     &          (contr%vertex(jvtx)%dagger.eqv.adjop) .and.
      &           contr%vertex(jvtx)%iblk_op.eq.iblk_next) then
           ijoin = ijoin+1
           ivtx(ijoin) = jvtx
@@ -44,6 +48,7 @@
 
       if (ijoin.ne.njoined) then
         write(luout,*) 'idxop:        ',idxop
+        write(luout,*) 'adjop:        ',adjop
         write(luout,*) 'ijoin,njoined:', ijoin,njoined
         do jvtx = 1, contr%nvtx
           write(luout,*) jvtx,contr%vertex(jvtx)%idx_op,

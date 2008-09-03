@@ -176,6 +176,12 @@ c      do idx = 1,2 ! SA
         form_pnt => form_pnt%next
       enddo
 
+c dbg
+c      print *,'skipping all R.G.R type terms'
+c      goto 200 ! skip the rest
+c dbg
+
+
       ! Add the F_{lm}^{pq}.G_{pm}^{nk}.R_{nq}^{ij}.
       idx_prj  = 2
       idx_prj2 = 1

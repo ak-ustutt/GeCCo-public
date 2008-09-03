@@ -32,9 +32,6 @@
      &     min_h_rank, max_h_rank,
      &     hpvx_mnmx(2,ngastp,2), irestr(2,orb_info%ngas,2,2)
 
-c dbg
-      print *,'ansatz = ',ansatz
-c dbg
       if(ansatz.eq.1)then
         min_x_rank=2
         max_x_rank=2

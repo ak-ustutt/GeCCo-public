@@ -23,7 +23,7 @@
 
       integer ::
      &     min_rank, max_rank,
-     &     isim, ncat, nint, icnt,
+     &     isim, ncat, nint, icnt, ncnt,
      &     isym, ms, msc, sym_arr(8)
       logical ::
      &     needed
@@ -35,8 +35,8 @@
 
 
       ! skip this section if not requested
-      icnt = is_keyword_set('calculate.excitation')
-      if (icnt.eq.0) return
+      ncnt = is_keyword_set('calculate.excitation')
+      if (ncnt.eq.0) return
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting targets for CC excited states ...'
@@ -183,62 +183,68 @@
 *----------------------------------------------------------------------*
 *     ME-lists:
 *----------------------------------------------------------------------*
-      call get_argument_value('calculate.excitation','sym',
-     &       iarr=sym_arr)
       call add_target(meldef_rex,ttype_opme,.false.,tgt_info)
       call add_target(meldef_a_rex,ttype_opme,.false.,tgt_info)
-      do isym = 1, orb_info%nsym
-        if (sym_arr(isym).eq.0) cycle
-        ! RE0
-        call me_list_label(me_label,mel_rex,isym,0,0,0,.false.)
-        call set_dependency(meldef_rex,op_r,tgt_info)
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = me_label
-        labels(2) = op_r
-        call me_list_parameters(-1,parameters,
-     &         0,0,isym,0,0,.false.)
-        call set_rule(meldef_rex,ttype_opme,DEF_ME_LIST,
-     &         labels,2,1,
-     &         parameters,1,tgt_info)
-        ! A.RE0
-        call me_list_label(me_label,mel_a_rex,isym,0,0,0,.false.)
-        call set_dependency(meldef_a_rex,op_a_r,tgt_info)
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = me_label
-        labels(2) = op_a_r
-        call me_list_parameters(-1,parameters,
-     &       0,0,isym,0,0,.false.)
-        call set_rule(meldef_a_rex,ttype_opme,DEF_ME_LIST,
-     &         labels,2,1,
-     &         parameters,1,tgt_info)
-      end do
-
       call add_target(meldef_lex,ttype_opme,.false.,tgt_info)
       call add_target(meldef_lex_a,ttype_opme,.false.,tgt_info)
-      do isym = 1, orb_info%nsym
-        if (sym_arr(isym).eq.0) cycle
-        ! LE0
-        call me_list_label(me_label,mel_lex,isym,0,0,0,.false.)
-        call set_dependency(meldef_lex,op_l,tgt_info)
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = me_label
-        labels(2) = op_l
-        call me_list_parameters(-1,parameters,
-     &         0,0,isym,0,0,.false.)
-        call set_rule(meldef_lex,ttype_opme,DEF_ME_LIST,
+      do icnt = 1, ncnt 
+        call get_argument_value('calculate.excitation','sym',
+     &       keycount=icnt,
+     &       iarr=sym_arr)
+        call get_argument_value('calculate.excitation','msc',
+     &       keycount=icnt,
+     &       ival=msc)
+        do isym = 1, orb_info%nsym
+          if (sym_arr(isym).eq.0) cycle
+          ! RE0
+          call me_list_label(me_label,mel_rex,isym,0,0,msc,.false.)
+          call set_dependency(meldef_rex,op_r,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = op_r
+          call me_list_parameters(-1,parameters,
+     &         msc,0,isym,0,0,.false.)
+          call set_rule(meldef_rex,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
-        ! LE0.A
-        call me_list_label(me_label,mel_lex_a,isym,0,0,0,.false.)
-        call set_dependency(meldef_lex_a,op_l_a,tgt_info)
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = me_label
-        labels(2) = op_l_a
-        call me_list_parameters(-1,parameters,
-     &       0,0,isym,0,0,.false.)
-        call set_rule(meldef_lex_a,ttype_opme,DEF_ME_LIST,
+          ! A.RE0
+          call me_list_label(me_label,mel_a_rex,isym,0,0,msc,.false.)
+          call set_dependency(meldef_a_rex,op_a_r,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = op_a_r
+          call me_list_parameters(-1,parameters,
+     &         msc,0,isym,0,0,.false.)
+          call set_rule(meldef_a_rex,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
+        end do
+
+        do isym = 1, orb_info%nsym
+          if (sym_arr(isym).eq.0) cycle
+          ! LE0
+          call me_list_label(me_label,mel_lex,isym,0,0,msc,.false.)
+          call set_dependency(meldef_lex,op_l,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = op_l
+          call me_list_parameters(-1,parameters,
+     &         msc,0,isym,0,0,.false.)
+          call set_rule(meldef_lex,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+          ! LE0.A
+          call me_list_label(me_label,mel_lex_a,isym,0,0,msc,.false.)
+          call set_dependency(meldef_lex_a,op_l_a,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = op_l_a
+          call me_list_parameters(-1,parameters,
+     &         msc,0,isym,0,0,.false.)
+          call set_rule(meldef_lex_a,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+        end do
       end do
 
 *----------------------------------------------------------------------*
@@ -250,41 +256,53 @@
       call set_dependency(solve_cc_rhex,fopt_cc_a_r,tgt_info)
       call set_dependency(solve_cc_rhex,meldef_rex,tgt_info)
       call set_dependency(solve_cc_rhex,meldef_a_rex,tgt_info)
-      do isym = 1, orb_info%nsym
-        if (sym_arr(isym).eq.0) cycle          
-        call me_list_label(me_label,mel_rex,isym,0,0,0,.false.)
-        call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
-        call set_dependency(solve_cc_rhex,dia_label,tgt_info)
-        call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = me_label
-        labels(2) = dia_label
-        labels(3) = op_a_r
-        labels(4) = fopt_cc_a_r
-        call set_rule(solve_cc_rhex,ttype_opme,SOLVEEVP,
-     &       labels,4,1,
-     &       parameters,2,tgt_info)
-      end do
-      
+
       call add_target(solve_cc_lhex,ttype_gen,.false.,tgt_info)
       call set_dependency(solve_cc_lhex,solve_cc_gs,tgt_info)
       call set_dependency(solve_cc_lhex,fopt_cc_l_a,tgt_info)
       call set_dependency(solve_cc_lhex,meldef_lex,tgt_info)
       call set_dependency(solve_cc_lhex,meldef_lex_a,tgt_info)
-      do isym = 1, orb_info%nsym
-        if (sym_arr(isym).eq.0) cycle          
-        call me_list_label(me_label,mel_lex,isym,0,0,0,.false.)
-        call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
-        call set_dependency(solve_cc_lhex,dia_label,tgt_info)
-        call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = me_label
-        labels(2) = dia_label
-        labels(3) = op_l_a
-        labels(4) = fopt_cc_l_a
-        call set_rule(solve_cc_lhex,ttype_opme,SOLVEEVP,
-     &       labels,4,1,
-     &       parameters,2,tgt_info)
+
+      do icnt = 1, ncnt 
+        call get_argument_value('calculate.excitation','sym',
+     &       keycount=icnt,
+     &       iarr=sym_arr)
+        call get_argument_value('calculate.excitation','msc',
+     &       keycount=icnt,
+     &       ival=msc)
+        do isym = 1, orb_info%nsym
+          if (sym_arr(isym).eq.0) cycle          
+          call me_list_label(me_label,mel_rex,isym,0,0,msc,.false.)
+          call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
+          call set_dependency(solve_cc_rhex,dia_label,tgt_info)
+          call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = dia_label
+          labels(3) = op_a_r
+          labels(4) = op_r
+          labels(5) = fopt_cc_a_r
+          call set_rule(solve_cc_rhex,ttype_opme,SOLVEEVP,
+     &         labels,5,1,
+     &         parameters,2,tgt_info)
+        end do
+      
+        do isym = 1, orb_info%nsym
+          if (sym_arr(isym).eq.0) cycle          
+          call me_list_label(me_label,mel_lex,isym,0,0,msc,.false.)
+          call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
+          call set_dependency(solve_cc_lhex,dia_label,tgt_info)
+          call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = dia_label
+          labels(3) = op_l_a
+          labels(4) = op_l
+          labels(5) = fopt_cc_l_a
+          call set_rule(solve_cc_lhex,ttype_opme,SOLVEEVP,
+     &         labels,5,1,
+     &         parameters,2,tgt_info)
+        end do
       end do
       
 
