@@ -15,7 +15,7 @@
       include 'def_me_list.h'
       include 'stdunit.h'
 
-      integer, intent(in) ::
+      integer, intent(inout) ::
      &     iblk, idxmsa_blk, gama_blk,
      &     nc, na, nsym,
      &     occ_c(nc), idxms_c(nc), gam_c(nc),
@@ -76,6 +76,7 @@ c dbg
         write(luout,*) 'list: ',trim(mel%label)
         write(luout,*) 'op:   ',trim(mel%op%name)
         write(luout,*) 'gamma(A),idxms(A):',gama_blk,idxmsa_blk
+        write(luout,*) 'nc,na    ',nc,na
         write(luout,*) 'occ_c:   ',occ_c(1:nc)
         write(luout,*) 'idxms_c: ',idxms_c(1:nc)
         write(luout,*) 'gam_c:   ',gam_c(1:nc)
@@ -87,6 +88,22 @@ c dbg
      &       didarr(1:idx_end,gama_blk,idxmsa_blk)
         call quit(1,'idx_msgmdst2','distribution not found')
       end if
+
+c dbg
+c        write(luout,*) 'list: ',trim(mel%label)
+c        write(luout,*) 'op:   ',trim(mel%op%name)
+c        write(luout,*) 'gamma(A),idxms(A):',gama_blk,idxmsa_blk
+c        write(luout,*) 'nc,na    ',nc,na
+c        write(luout,*) 'occ_c:   ',occ_c(1:nc)
+c        write(luout,*) 'idxms_c: ',idxms_c(1:nc)
+c        write(luout,*) 'gam_c:   ',gam_c(1:nc)
+c        write(luout,*) 'occ_a:   ',occ_a(1:na)
+c        write(luout,*) 'idxms_a: ',idxms_a(1:na)
+c        write(luout,*) 'gam_a:   ',gam_a(1:na)
+c        write(luout,*) 'mgdid: ',mgdid
+c        write(luout,*) 'didarr:',
+c     &       didarr(1:idx_end,gama_blk,idxmsa_blk)
+c dbg
 
       return
       end

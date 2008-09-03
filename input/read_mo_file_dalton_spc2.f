@@ -21,7 +21,7 @@
       include 'par_dalton.h'
 
       integer, parameter::
-     &     ntest= 00
+     &     ntest= 100
 
       real(8), intent(out) ::
      &     buffer(*)
@@ -88,6 +88,8 @@
       read(lu2in) maxlength
 c dbg
 c      print *,'maxlength = ',maxlength
+c      print *,'naux_max',naux_max
+c      print *,'naux_min',naux_min
 c dbg
 
       allocate(idxbuf(4,maxlength),valbuf(maxlength))
@@ -113,6 +115,9 @@ c dbg
           if (iq.gt.ntoob) naux = naux+1
           if (ir.gt.ntoob) naux = naux+1
           if (is.gt.ntoob) naux = naux+1
+c dbg
+c          print *,'naux',naux
+c dbg
           if (naux.lt.naux_min.or.naux.gt.naux_max) cycle
 
           ! change sequence to (rs|pq)

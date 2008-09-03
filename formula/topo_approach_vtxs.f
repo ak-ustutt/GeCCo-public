@@ -148,7 +148,7 @@ c dbg
 
 c dbg
 c      print *,'ireo (final): ',ireo(1:nvtx)
-      if (sh_sign.ne.1) print *,'sh_sign = ',sh_sign
+c      if (sh_sign.ne.1) print *,'sh_sign = ',sh_sign
 c dbg
       return
 

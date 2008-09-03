@@ -158,7 +158,7 @@
       labels(1) = mel_ecclg0
       labels(2) = op_ecclg
       call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0)
+     &     0,0,1,0,0,.false.)
       call set_rule(meldef_ecclg0,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -170,7 +170,7 @@
       labels(1) = mel_omg_t
       labels(2) = op_omg_t
       call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0)
+     &     msc,0,1,0,0,.false.)
       call set_rule(meldef_omg_t,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -181,7 +181,7 @@
       labels(1) = mel_omg_l
       labels(2) = op_omg_l
       call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0)
+     &     msc,0,1,0,0,.false.)
       call set_rule(meldef_omg_l,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -192,7 +192,7 @@ c      labels(1:10)(1:len_target_name) = ' '
 c      labels(1) = mel_hbar
 c      labels(2) = op_hbar
 c      call me_list_parameters(-1,parameters,
-c     &     0,0,1,0,0)
+c     &     0,0,1,0,0,.false.)
 c      call set_rule(meldef_hbar,ttype_opme,DEF_ME_LIST,
 c     &              labels,2,1,
 c     &              parameters,1,tgt_info)

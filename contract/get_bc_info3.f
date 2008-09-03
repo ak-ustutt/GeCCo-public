@@ -212,9 +212,15 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &     make_contr_red,contr_red,idxnew_op1op2,
      &     contr,isvtx1,isvtx2,arc_list,len_list,njoined_res)
 
+c dbg
+c      print *,'relevant call to condense_merge_map I'
+c dbg
       call condense_merge_map(merge_op1op2,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.false.)
       ! the same for EX2/EX1 sequence
+c dbg
+c      print *,'relevant call to condense_merge_map II'
+c dbg
       call condense_merge_map(merge_op2op1,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.true.)
 

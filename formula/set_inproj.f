@@ -91,6 +91,8 @@ c dbg
         nidx = ielsum(ovl(1,2),ngastp)
 c dbg
 c        print *,'nidx, rank: ',nidx,rank
+c        print *,'type,type2',type,type2
+c        print *,'ovl',ovl(type,2)
 c dbg
         if (nidx.lt.rank) then
           ok = .false.

@@ -85,18 +85,25 @@
         write(parameters(1),'(2(i5,x))')
      &        njoined, ndef
 c        if (2*ngastp*ndef*njoined.gt.120)
-        if (2*ngastp*ndef*njoined.gt.240)
-     &      call quit(1,'op_from_occ_parameters','2*ngastp*ndef.gt.240')
+c        if (2*ngastp*ndef*njoined.gt.240)
+        if (2*ngastp*ndef*njoined.gt.480)
+     &      call quit(1,'op_from_occ_parameters','2*ngastp*ndef.gt.480')
 c        write(parameters(2),'(120(i2))')
-        write(parameters(2),'(240(i1))')
+c        write(parameters(2),'(240(i1))')
+        write(parameters(2),'(480(i1))')
      &        occ_def(1:2*ngastp*ndef*njoined)        
       else
         read(parameters(1),'(2(i5,x))')
      &       njoined, ndef
+c dbg
+        print *,'njoined,ndef',njoined,ndef
+        print *,'nmax',nmax
+c dbg
         if (ndef*njoined.gt.nmax)
      &       call quit(1,'op_from_occ_parameters','nmax too small')
 c        read(parameters(2),'(120(i2))')
-        read(parameters(2),'(240(i1))')
+c        read(parameters(2),'(240(i1))')
+        read(parameters(2),'(480(i1))')
      &        occ_def(1:2*ngastp*ndef*njoined)
       end if
 
@@ -374,22 +381,24 @@ c        read(parameters(2),'(120(i2))')
 
 *----------------------------------------------------------------------*
       subroutine me_list_parameters(rw,parameters,
-     &     absym,casym,gamma,s2,ms)
+     &     absym,casym,gamma,s2,ms,ms_fix)
 
       implicit none
       
       integer, intent(inout) ::
      &     rw,absym,casym,gamma,s2,ms
+      logical, intent(inout) ::
+     &     ms_fix
       character, intent(inout) ::
      &     parameters*(*)
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
-        write(parameters,'(8(i5,x))')
-     &        absym,casym,gamma,s2,ms
+        write(parameters,'(l,8(i5,x))')
+     &        ms_fix,absym,casym,gamma,s2,ms
       else
-        read(parameters,'(8(i5,x))')
-     &       absym,casym,gamma,s2,ms
+        read(parameters,'(l,8(i5,x))')
+     &       ms_fix,absym,casym,gamma,s2,ms
       end if
 
       return

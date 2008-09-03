@@ -173,7 +173,7 @@
         labels(1) = me_label
         labels(2) = op_rip
         call me_list_parameters(-1,parameters,
-     &         msc,0,isym,0,ms)
+     &         msc,0,isym,0,ms,.false.)
         call set_rule(meldef_rip,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -183,7 +183,7 @@
         labels(1) = me_label
         labels(2) = op_a_rip
         call me_list_parameters(-1,parameters,
-     &       msc,0,isym,0,ms)
+     &       msc,0,isym,0,ms,.false.)
         call set_rule(meldef_a_rip,ttype_opme,DEF_ME_LIST,
      &       labels,2,1,
      &       parameters,1,tgt_info)
@@ -211,7 +211,7 @@
         labels(1) = dia_label
         labels(2) = op_dia_ip
         call me_list_parameters(-1,parameters,
-     &       msc,0,isym,0,ms)
+     &       msc,0,isym,0,ms,.false.)
         call set_rule(solve_cc_rhip,ttype_opme,DEF_ME_LIST,
      &       labels,2,1,
      &       parameters,1,tgt_info)

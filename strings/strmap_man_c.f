@@ -41,6 +41,7 @@
 
       integer ::
      &     ngraph, ica, hpvx, idxmap, idx1, idx2, idx12,
+     &     idx1mx, idx2mx,
      &     nsplit, idx_minf,
      &     iocc1, iocc2, nsym, ifree, lenoff, maxstr
       logical ::
@@ -72,6 +73,8 @@
 
       idx_minf = 0
       idx12 = 0
+      idx1mx = 0
+      idx2mx = 0
       error = .false.
       do while(idx12.lt.n12)
         idx12 = idx12+1
@@ -97,6 +100,15 @@
           idx_minf = idx_minf+1
           idx2 = map_info(idx_minf)
         end if
+
+c        if ((idx1.gt.0.and.idx1.lt.idx1mx) .or.
+c     &       idx2.gt.0.and.idx2.lt.idx2mx) then
+c          error = .true.
+c          exit
+c        end if
+c        idx1mx = max(idx1,idx1mx)
+c        idx2mx = max(idx2,idx2mx)
+
         ! do not consider trivial maps
         if (idx1.eq.0.or.idx2.eq.0) then
           ! set buffer space for trivial map
@@ -181,6 +193,7 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
         write(luout,*) 'igraph1r: ',igraph1r
         write(luout,*) 'igraph2r: ',igraph2r
         write(luout,*) 'igraph12r: ',igraph12r
+        write(luout,*) 'map_info: ',map_info(1:n12*2*(n1+n2))
 
         idx_minf = 0
         idx12 = 0
@@ -203,7 +216,7 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
           idx_minf = idx_minf+nsplit
         end do
         
-        call quit(1,'strmap_man_c','multi map needed')
+        call quit(1,'strmap_man_c','Unsupported mapping type!')
       end if
 
       return

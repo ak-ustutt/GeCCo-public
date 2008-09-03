@@ -350,7 +350,7 @@ c dbg
       labels(1) = mel_mpr12lg0
       labels(2) = op_mpr12lg
       call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0)
+     &     msc,0,1,0,0,.false.)
       call set_rule(mel_mpr12lg0,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -360,7 +360,7 @@ c dbg
       labels(1) = mel_mpr12en0
       labels(2) = op_mpr12en
       call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0)
+     &     msc,0,1,0,0,.false.)
       call set_rule(mel_mpr12en0def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -373,7 +373,7 @@ c      if(.not.r12fix)then
       labels(1) = mel_c12
       labels(2) = op_c12
       call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0)
+     &     msc,0,1,0,0,.false.)
       call set_rule(mel_c12def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -395,7 +395,7 @@ c     call add_parameters(-1,parameters,1,1d0,1)
       labels(1) = mel_cbar
       labels(2) = op_cba
       call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0)
+     &     msc,0,1,0,0,.false.)
       call set_rule(mel_cbardef,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -417,7 +417,7 @@ c        labels(1:20)(1:len_target_name) = ' '
 c        labels(1) = mel_cex
 c        labels(2) = op_cex
 c        call me_list_parameters(-1,parameters,
-c     &       0,0,1,0,0)
+c     &       0,0,1,0,0,.false.)
 c        call set_rule(mel_cex_def,ttype_opme,DEF_ME_LIST,
 c     &                labels,2,1,
 c     &                parameters,1,tgt_info)
@@ -428,7 +428,7 @@ c        labels(1:20)(1:len_target_name) = ' '
 c        labels(1) = mel_cexbar
 c        labels(2) = op_cexbar
 c        call me_list_parameters(-1,parameters,
-c     &       0,0,1,0,0)
+c     &       0,0,1,0,0,.false.)
 c        call set_rule(mel_cexbar_def,ttype_opme,DEF_ME_LIST,
 c     &                labels,2,1,
 c     &                parameters,1,tgt_info)
@@ -442,7 +442,7 @@ c      endif
         labels(1) = mel_omgr12
         labels(2) = op_omgr12
         call me_list_parameters(-1,parameters,
-     &       msc,0,1,0,0)
+     &       msc,0,1,0,0,.false.)
         call set_rule(mel_omgr12def,ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
@@ -456,7 +456,7 @@ c        labels(1:20)(1:len_target_name) = ' '
 c        labels(1) = mel_omgcex
 c        labels(2) = op_omgcex
 c        call me_list_parameters(-1,parameters,
-c     &       0,0,1,0,0)
+c     &       0,0,1,0,0,.false.)
 c        call set_rule(mel_omgcexdef,ttype_opme,DEF_ME_LIST,
 c     &                labels,2,1,
 c     &                parameters,1,tgt_info)

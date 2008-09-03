@@ -17,19 +17,34 @@
      &     idx, jdx, kdx
       integer, external ::
      &     imltlist
+      logical, external ::
+     &     zero_i8vec
 
       bcres = 0
 
-      do jdx = 1, nvtx_bcr
-        idx = vtx_list(jdx)
-        do kdx = 1, nj
-          bcres(jdx) = bcres(jdx) + xlines(idx,kdx)
+      if (zero_i8vec(topo,nvtx*nvtx,1)) then
+        ! final result: the sequence is given by xlines
+        do idx = 1, nj
+          do jdx = 1, nvtx
+            bcres(idx) = bcres(idx) + xlines(jdx,idx)
+          end do
         end do
-        do kdx = 1, nvtx
+
+      else
+        ! intermediate: sum up along lines
+
+        do jdx = 1, nvtx_bcr
+          idx = vtx_list(jdx)
+          do kdx = 1, nj
+            bcres(jdx) = bcres(jdx) + xlines(idx,kdx)
+          end do
+          do kdx = 1, nvtx
 c          if (imltlist(kdx,vtx_list,nvtx_bcr,1).gt.0) cycle
-          bcres(jdx) = bcres(jdx) + topo(idx,kdx)
+            bcres(jdx) = bcres(jdx) + topo(idx,kdx)
+          end do
         end do
-      end do
+ 
+      end if
 
       return
       end

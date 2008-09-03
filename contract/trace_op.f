@@ -69,7 +69,7 @@
       logical ::
      &     bufop, buftrop, 
      &     first1, first2, first3, first4, first5,
-     &     reo_trop, nonzero
+     &     reo_trop, nonzero, ms_fix, fix_success
       integer ::
      &     mstop,msttrop,
      &     igamtop,igamttrop,
@@ -172,7 +172,13 @@
       ffop => me_op%fhand
       fftrop => me_trop%fhand
 
-
+      ms_fix=.false.
+      if(me_op%fix_vertex_ms.or.me_trop%fix_vertex_ms)then
+        ms_fix = me_op%fix_vertex_ms.and.me_trop%fix_vertex_ms
+        if(.not.ms_fix) call quit(1,'trace_op',
+     &                            'fix ms or not?')
+      endif
+ 
       if (ntest.ge.10) then
         write(luout,*) 'list(in):   ',trim(me_op%label),
      &       ' transp:',tra_op
@@ -509,9 +515,11 @@ c dbg
      &          ncblk_trop, nablk_trop,
      &          cinfo_tropc,cinfo_tropa,
      &          ms_op_tr_c(2),ms_op_tr_a(2),
-     &            igam_op_tr_c(2),igam_op_tr_a(2),nsym))
+     &          igam_op_tr_c(2),igam_op_tr_a(2),nsym,
+     &          ms_fix,fix_success))
      &          exit caex_loop
             first3 = .false.
+            if(ms_fix.and..not.fix_success)cycle caex_loop
 
             call ms2idxms(idxmstropdis_c,mstropdis_c,
      &           cinfo_tropc,ncblk_trop)

@@ -27,7 +27,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       character, parameter ::
      &     name_scr0*6 = 'cntscr'
@@ -505,6 +505,10 @@ c          new = .false.!cur_contr%nvtx.ge.4
             call set_ps_op(opscr(ninter),opscrnam,
      &           iocc_op1op2,irst_op1op2,njoined_op1op2,orb_info)
             melscr(ninter)%op => opscr(ninter)
+
+            ! Fix Ms?
+            melscr(ninter)%fix_vertex_ms = .false.
+
             absym12 = me_op1%absym*me_op2%absym 
 c dbg
 c            print *,'ab(OP1): ',me_op1%absym,trim(me_op1%label)
@@ -531,12 +535,18 @@ c dbg
      &           iocc_op1op2tmp,irst_op1op2tmp,njoined_op1op2,
      &           orb_info)
             meltmp%op => optmp
+
+            ! Should Ms be fixed?
+            meltmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
+
             call set_ps_list(meltmp,opscrnam,
      &           0,0,mstop1op2,igamtop1op2,0,
      &           str_info,strmap_info,orb_info)
             me_op1op2tmp => meltmp
+c            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
           else
             me_op1op2tmp => me_op1op2
+            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
           end if
 
           ! translate records to offset in file:
@@ -554,6 +564,12 @@ c dbg
           if (ntest.ge.100)
      &         write(luout,*) 'calling contraction kernel'
           ! do the contraction
+c dbg
+c          if(iterm.eq.9)then
+c            call zeroop(me_op1op2)
+c            call zeroop(me_op1op2tmp)
+c          endif
+c dbg
           call contr_op1op2(facc,bc_sign,
      &       update,self,xret_pnt,type_xret_cur,
      &       me_op1,me_op2,me_op1op2, me_op1op2tmp,
@@ -611,6 +627,9 @@ c            call file_close_delete(ffscr(idx))
           deallocate(opscr,optmp,melscr,meltmp)
         end if
 
+c dbg
+c        exit term_loop
+c dbg
       end do term_loop
 
       call dealloc_contr(cur_contr)

@@ -63,7 +63,7 @@
 
       logical ::
      &     bufopori, bufopreo, first,
-     &     nonzero
+     &     nonzero, ms_fix, fix_success
       integer ::
      &     njoined_opori, njoined_opreo, ngam,
      &     mstopori,mstopreo,
@@ -137,6 +137,13 @@
 
       ffopori => me_opori%fhand
       ffopreo => me_opreo%fhand
+
+      ms_fix = .false.
+      if(me_opori%fix_vertex_ms.or.me_opreo%fix_vertex_ms)then
+        ms_fix = me_opori%fix_vertex_ms.and.me_opreo%fix_vertex_ms
+        if(.not.ms_fix) call quit(1,'reo_op_wmaps_c',
+     &                            'fix ms or not?')
+      endif
 
       ngam = orb_info%nsym
 
@@ -365,9 +372,11 @@
      &            ms_dis_c,ms_dis_a,gm_dis_c,gm_dis_a,
      &            ncblk_opori, nablk_opori,
      &            cinfo_oporic,cinfo_oporia,
-     &            msc,msa,igamc,igama,ngam))
+     &            msc,msa,igamc,igama,ngam,
+     &            ms_fix,fix_success))
      &           exit distr_loop
             first = .false.                            
+            if(ms_fix.and..not.fix_success)cycle distr_loop
 
 c dbg
 c            print *,'igama, igamc: ',igama, igamc

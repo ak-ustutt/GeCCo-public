@@ -106,7 +106,7 @@
       labels(1) = 'MY_MEL1'
       labels(2) = 'MY_OP1'
       call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0)
+     &     msc,0,1,0,0,.false.)
       call set_rule('MY_MEL1',ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)

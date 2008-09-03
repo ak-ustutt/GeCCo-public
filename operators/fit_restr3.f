@@ -5,7 +5,7 @@
      &     njoined_op,njoined_cnt,
      &     ihpvgas,ngas,nspin)
 *----------------------------------------------------------------------*
-*     one more dummy routine to deal with restrictions
+*     one more dummy routine to deal with restrictions.
 *     given the occupations and restrictions of the operator 
 *     and the occupations of external and the contraction part
 *     decide on the contractions applied to external and contraction

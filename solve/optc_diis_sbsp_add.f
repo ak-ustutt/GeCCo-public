@@ -96,20 +96,32 @@
 !        select case(typ_prc) ...
 c        if(trim(ffdia%name).ne.'op_B_INV_elements.da')then
 c dbg
-c          print *,'prc name: ',trim(ffdia%name)
+          print *,'prc name: ',trim(ffdia%name)
 c          print *,'|g|,|d|:',dnrm2(nwfpar,xbuf1,1),dnrm2(nwfpar,xbuf2,1)
 c          print *,'g: ', xbuf1(1:nwfpar)
 c          print *,'d: ', xbuf2(1:nwfpar)
+c          xbuf2(1:nwfpar) = 0d0
 c dbg
 
         select case(typ_prc)
         ! prelim. w/o damping
         case(optinf_prc_file)
+c dbg
+c          print *,'Raw grad:'
+c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
+c     &     str_info,orb_info)
+c dbg
           call vec_from_da(ffdia,1,xbuf2,nwfpar)
           xbuf1(1:nwfpar) = xbuf1(1:nwfpar)/xbuf2(1:nwfpar)
+c dbg
+c          print *,'Precond. grad:'
+c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
+c     &         str_info,orb_info)
+c dbg
         case(optinf_prc_blocked)
 c dbg
-c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
+c          print *,'Raw grad:'
+c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,1,
 c     &     str_info,orb_info)
 c dbg
 c          call optc_prc_special(me_grd,me_special,nspecial,
@@ -121,6 +133,11 @@ c          xbuf1(1:nwfpar) = xbuf3(1:nwfpar)
      &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
      &                          orb_info,op_info,str_info,strmap_info)
 c          call mem_check('after prc_special2')
+c dbg
+c          print *,'Precond. grad:'
+c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,1,
+c     &         str_info,orb_info)
+c dbg
         end select
 c dbg
 c          print *,'|g/d|:' ,dnrm2(nwfpar,xbuf1,1)
@@ -132,6 +149,10 @@ c          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
 c          print *,'t before: ', xbuf2(1:nwfpar)
 c dbg
         xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)
+c dbg
+c          print *,'t norm new:',dnrm2(nwfpar,xbuf2,1)
+c          print *,'t before new: ', xbuf2(1:nwfpar)
+c dbg
 
 c        else
 cc dbg
@@ -158,7 +179,7 @@ c          print *,'g/d: ',xbuf1(72:92)
 cc dbg
 c          call vec_from_da(ffamp,1,xbuf2,nwfpar)
 cc dbg
-          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
+c          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
 c          print *,'t after: ',xbuf2(1:nwfpar)
 cc          print *,'t: ',xbuf2(72:92)
 cc dbg
