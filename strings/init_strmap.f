@@ -51,9 +51,12 @@
 
       call file_open(strmap_info%ffstrmap)
 
-      ! currently: hard coded dimensioning
+      ! use 1/10 of available memory for buffering of string
+      ! maps, at least 10 DA blocks
+      ifree = max(mem_free_words(),10*lblk_da)
       call mem_init_vbuffer(strmap_info%ffstrmap,
-     &     'bfstrmap',2048*lblk_da,20000)!8192)
+     &     'bfstrmap',ifree/10,20000)!8192)
+c     &     'bfstrmap',2048*lblk_da,20000)!8192)
 
       return
       end

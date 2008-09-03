@@ -81,8 +81,10 @@
      &     nc_op1op2, na_op1op2,
      &     nc_op1op2tmp, na_op1op2tmp,
      &     nc_cnt, na_cnt, idx_restr,
-     &     nsym, ifree, lenscr, lenblock,
+     &     nsym, isym, ifree, lenscr, lenblock, lenbuf,
+     &     buftyp1, buftyp2, buftyp12,
      &     idxst_op1, idxst_op2, idxst_op1op2,
+     &     ioff_op1, ioff_op2, ioff_op1op2,
      &     idxop1, idxop2, idxop1op2,
      &     lenop1, lenop2, lenop1op2,
      &     mscmx_a, mscmx_c, msc_ac, msc_a, msc_c,
@@ -162,7 +164,9 @@
 
       integer, pointer ::
      &     ndis_op1(:,:), d_gam_ms_op1(:,:,:), gam_ms_op1(:,:),
+     &     len_gam_ms_op1(:,:),
      &     ndis_op2(:,:), d_gam_ms_op2(:,:,:), gam_ms_op2(:,:),
+     &     len_gam_ms_op2(:,:),
      &     ndis_op1op2tmp(:,:), d_gam_ms_op1op2(:,:,:),
      &     gam_ms_op1op2(:,:),
      &     len_gam_ms_op1op2tmp(:,:), len_d_gam_ms_op1op2tmp(:,:,:)
@@ -382,6 +386,10 @@ c      end if
 
       ifree = mem_setmark('contr1')
 
+      ! average scratch for each operator:
+      !    about 1/6th of the available remaining core
+      lenscr = ifree/6
+
       if (ffop1%buffered.and.ffop1%incore(iblkop1).gt.0) then
         bufop1 = .true.
         xop1 => ffop1%buffer(idxst_op1:)
@@ -389,13 +397,19 @@ c      end if
         bufop1 = .false.
         ! LOWER incore requirements:
         ! check for length of operator
-        ! if length < 2 * blocks * da_reclen, try to alloc
-        !   full block
-        ! else get largest symmetry block
-        ifree = mem_alloc_real(xbf1,lenop1,'xbf1')
+        call set_op_scratch(lenbuf,buftyp1,me_op1,iblkop1,
+     &       lenscr,orb_info)
+c dbg
+        print *,'set_op_scratch1: ',lenbuf,buftyp1,lenscr
+c dbg
+        ifree = mem_alloc_real(xbf1,lenbuf,'xbf1')
+c        ifree = mem_alloc_real(xbf1,lenop1,'xbf1')
         xop1 => xbf1
-        call get_vec(ffop1,xop1,idoffop1+idxst_op1,
+        if (buftyp1.eq.0) then
+          ioff_op1 = idxst_op1-1
+          call get_vec(ffop1,xop1,idoffop1+idxst_op1,
      &                          idoffop1+idxst_op1-1+lenop1)
+        end if
       end if
       if (ffop2%buffered.and.ffop2%incore(iblkop2).gt.0) then
         bufop2 = .true.
@@ -404,10 +418,19 @@ c      end if
         bufop2 = .false.
         ! LOWER incore requirements:
         ! see above
-        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
+        call set_op_scratch(lenbuf,buftyp2,me_op2,iblkop2,
+     &       lenscr,orb_info)
+c dbg
+        print *,'set_op_scratch2: ',lenbuf,buftyp2,lenscr
+c dbg
+        ifree = mem_alloc_real(xbf2,lenbuf,'xbf2')
+c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
         xop2 => xbf2
-        call get_vec(ffop2,xop2,idoffop2+idxst_op2,
+        if (buftyp2.eq.0) then
+          ioff_op2 = idxst_op2-1
+          call get_vec(ffop2,xop2,idoffop2+idxst_op2,
      &                          idoffop2+idxst_op2-1+lenop2)
+        end if
       end if
 
       if (ntest.ge.100) write(luout,*) ' bufop1/2: ',bufop1,bufop2
@@ -444,8 +467,20 @@ c      end if
         ! this will work if all blocks incore, only:
         write(luout,*) 'operator 1 (',trim(op1%name),
      &                    ',list=',trim(me_op1%label),')'
-        call wrt_mel_buf(luout,5,xop1,me_op1,iblkop1,iblkop1,
+        if (buftyp1.eq.0) then
+          write(luout,*) 'full list loaded:'
+          call wrt_mel_buf(luout,5,xop1,me_op1,iblkop1,iblkop1,
      &                  str_info,orb_info)
+        else
+          write(luout,*) 'buftyp1 = ',buftyp1
+          if (ntest.lt.10000) then
+            write(luout,*)
+     &         'complete list not available for printout'
+          else
+            call wrt_mel_file(luout,5,me_op1,iblkop1,iblkop1,
+     &           str_info,orb_info)
+          end if
+        end if
         write(luout,*) 'operator 2 (',trim(op2%name),
      &                    ',list=',trim(me_op2%label),')'
         call wrt_mel_buf(luout,5,xop2,me_op2,iblkop2,iblkop2,
@@ -482,9 +517,11 @@ c      end if
 
       ndis_op1 => me_op1%off_op_gmox(iblkop1)%ndis
       gam_ms_op1 => me_op1%off_op_gmo(iblkop1)%gam_ms
+      len_gam_ms_op1 => me_op1%len_op_gmo(iblkop1)%gam_ms
       d_gam_ms_op1 => me_op1%off_op_gmox(iblkop1)%d_gam_ms
       ndis_op2 => me_op2%off_op_gmox(iblkop2)%ndis
       gam_ms_op2 => me_op2%off_op_gmo(iblkop2)%gam_ms
+      len_gam_ms_op2 => me_op2%len_op_gmo(iblkop2)%gam_ms
       d_gam_ms_op2 => me_op2%off_op_gmox(iblkop2)%d_gam_ms
       ndis_op1op2tmp => me_op1op2tmp%off_op_gmox(iblkop1op2tmp)%ndis
       gam_ms_op1op2 => me_op1op2%off_op_gmo(iblkop1op2)%gam_ms
@@ -655,6 +692,27 @@ c dbg
         if (use_tr_here.and.ms12i_a(3).eq.0.and.
      &              ms12i_a(idx_restr).gt.0) fac_scal0 = fac_scal0*2d0
 
+        if (buftyp1.eq.1) then
+          idxms = msa2idxms4op(ms12i_a(1),mstop1,na_op1,nc_op1)
+          ioff_op1 = gam_ms_op1(1,idxms)
+          lenblock = len_gam_ms_op1(1,idxms)
+          do isym = 2, nsym
+            lenblock = lenblock + len_gam_ms_op1(isym,idxms)
+          end do
+          call get_vec(ffop1,xop1,idoffop1+ioff_op1+1,
+     &                          idoffop1+ioff_op1+lenblock)
+        end if
+        if (buftyp2.eq.1) then
+          idxms = msa2idxms4op(ms12i_a(2),mstop2,na_op2,nc_op2)
+          ioff_op2 = gam_ms_op2(1,idxms)
+          lenblock = len_gam_ms_op2(1,idxms)
+          do isym = 2, nsym
+            lenblock = lenblock + len_gam_ms_op2(isym,idxms)
+          end do
+          call get_vec(ffop2,xop2,idoffop2+ioff_op2+1,
+     &                          idoffop2+ioff_op2+lenblock)
+        end if
+
         msc_loop: do msc_a = mscmx_a, -mscmx_a, -2
           msc_c = msc_ac - msc_a
           if (abs(msc_c).gt.mscmx_c) cycle
@@ -713,13 +771,24 @@ c dbg
             ! need to be modified, if more than one distribution
             ! exists, see below
             idxms = msa2idxms4op(ms12i_a(1),mstop1,na_op1,nc_op1)
-c            idxms = (na_op1-ms12i_a(1))/2 + 1
+            if (buftyp1.eq.2) then
+              ioff_op1 = gam_ms_op1(igam12i_a(1),idxms)
+              lenblock = len_gam_ms_op1(igam12i_a(1),idxms)
+              call get_vec(ffop1,xop1,idoffop1+ioff_op1+1,
+     &             idoffop1+ioff_op1+lenblock)
+            end if
             idxop1 = gam_ms_op1(igam12i_a(1),idxms) + 1
-     &             - idxst_op1+1
+     &             - ioff_op1
+
             idxms = msa2idxms4op(ms12i_a(2),mstop2,na_op2,nc_op2)
-c            idxms = (na_op2-ms12i_a(2))/2 + 1
+            if (buftyp2.eq.2) then
+              ioff_op2 = gam_ms_op2(igam12i_a(2),idxms)
+              lenblock = len_gam_ms_op2(igam12i_a(2),idxms)
+              call get_vec(ffop2,xop2,idoffop2+ioff_op2+1,
+     &             idoffop2+ioff_op2+lenblock)
+            end if
             idxop2 = gam_ms_op2(igam12i_a(2),idxms) + 1
-     &             - idxst_op2+1
+     &             - ioff_op2
             idxms =
      &           msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
 c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
@@ -1005,7 +1074,8 @@ c                    idxms = (na_op1-ms12i_a(1))/2 + 1
 c     &                     .false.,me_op1,nsym)
                       idxop1 = 
      &                     d_gam_ms_op1(idxdis,igam12i_a(1),idxms) + 1
-     &                     - idxst_op1+1
+c     &                     - idxst_op1+1-ioff_op1
+     &                     - ioff_op1
                     end if
 
 c dbg
@@ -1071,7 +1141,8 @@ c                    idxms = (na_op2-ms12i_a(2))/2 + 1
 c     &                     .false.,me_op2,nsym)
                       idxop2 = 
      &                     d_gam_ms_op2(idxdis,igam12i_a(2),idxms) + 1
-     &                     - idxst_op2+1
+c     &                     - idxst_op2+1
+     &                     - ioff_op2
                     end if
 
                     xnrm = ddot(ielprd(lstrop2,

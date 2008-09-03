@@ -1,4 +1,8 @@
       interface
+      integer function mem_free_words()
+      implicit none
+      end function
+
       integer function mem_alloc_int(iarr,nalloc,name)
       implicit none
       integer, pointer ::
