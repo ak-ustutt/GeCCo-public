@@ -43,6 +43,8 @@
       character ::
      &     spnstr*(nel+1+mel%op%njoined),fmtstr*256
 
+      integer(8) ::
+     &     lenbuf
       integer(2) ::
      &     spins(nindex,maxlen), indices(nindex,maxlen)
       real(8) ::
@@ -125,7 +127,8 @@ c          iadd = iadd+1
 
         if(idxstr.lt.maxlen)cycle
 
-        write(luwrt) idxstr,
+        lenbuf = idxstr
+        write(luwrt) lenbuf,
      &       indices(1:nel,1:idxstr), spins(1:nel,1:idxstr),
      &       val(1:idxstr)
         idxstr = 0
@@ -133,7 +136,8 @@ c          iadd = iadd+1
       end do
 
       if(idxstr.gt.0)then
-        write(luwrt) idxstr,
+        lenbuf = idxstr
+        write(luwrt) lenbuf,
      &       indices(1:nel,1:idxstr), spins(1:nel,1:idxstr),
      &       val(1:idxstr)
       endif
