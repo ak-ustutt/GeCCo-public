@@ -31,13 +31,13 @@
      &     op
 
       integer(8) ::
-     &     nindex,maxlen
+     &     nindex,maxlen,lenbuf
 
       integer ::
      &     lutemp, mst, njoined, idxstr, iblk, idx_occ,
      &     mscmax, msamax, nel, idxms, idxoff, idxoff_blk, ms, lenblk,
      &     ndis, igam, idx_dis, lendis, did, ngam, ngas, idoff, mmax,
-     &     ifree
+     &     ifree, idxbuf
       logical ::
      &     fexist, close_again, first, blk_buf
 
@@ -52,6 +52,11 @@
      &     spins(:,:), indices(:,:)
       real(8),pointer ::
      &     val(:), curblk(:), buffer_reo(:)
+
+      real(8) ::
+     &     cpu0, sys0, wall0, cpu, sys, wall
+
+      call atim_csw(cpu0,sys0,wall0)
 
       ngam = orb_info%nsym
       ngas = orb_info%ngas
@@ -110,7 +115,13 @@
 
       ! Read in initial info about block sizes and allocate arrays.
       read(lutemp) nindex,maxlen
+c dbg
+c      print *,'indices: ',nindex
+c      print *,'block length: ',maxlen
+c dbg
       allocate(spins(nindex,maxlen),indices(nindex,maxlen),val(maxlen))
+      idxbuf = maxlen+1 ! indicate that we have to read a buffer
+      lenbuf = 0
 
       if((trim(op%name).eq.op_p_inter.and.nindex.ne.4).or.
      &     (trim(op%name).eq.op_z_inter.and.nindex.ne.6))
@@ -185,6 +196,12 @@
       call file_close_keep(fftemp)
       if(close_again) call file_close_keep(ffop)
 
+      call atim_csw(cpu,sys,wall)
+
+      if (iprlvl.ge.5) 
+     &     call prtim(luout,'time in intermediate import',
+     &     cpu-cpu0,sys-sys0,wall-wall0)
+
       return
 
       contains
@@ -199,7 +216,7 @@
      &     curdisblk(*)
 
       integer ::
-     &     idxstr, lenblk, idx, jdx
+     &     idxstr, jdx
       logical ::
      &     match
 
@@ -225,18 +242,6 @@ c      print *,'nel, njoined, ngam, ngas',nel,njoined,ngam,ngas
 c      print *,'ihpvseq',hpvxseq
 c dbg
 
-
-
-        ! Loop over blocks of the import file.
-        rewind lutemp
-        read(lutemp) nindex,maxlen
-        do
-          read(lutemp)  lenblk,indices(1:nindex,1:lenblk),
-     &         spins(1:nindex,1:lenblk),val(1:lenblk)
-          if(lenblk.eq.0) exit
-
-          do idx = 1, lenblk
-
       first = .true.
       idxstr = 0
       do while(next_tupel_ca(idorb,idspn,idspc,
@@ -251,28 +256,43 @@ c dbg
         first = .false.
         idxstr = idxstr+1
 
+        do
 
-            match = .true.
-            ! Check indices.
-            do jdx = 1, nindex
-              match = match.and.idorb(jdx).eq.indices(jdx,idx)
-            enddo
-            if(.not.match) cycle
+          ! read next buffer, if necessary
+          if (idxbuf.gt.lenbuf) then
+            read(lutemp)  lenbuf,indices(1:nindex,1:lenbuf),
+     &         spins(1:nindex,1:lenbuf),val(1:lenbuf)
+c dbg
+c            print *,'read new block, length = ',lenbuf
+c            print *,'idxstr = ',idxstr
+c dbg
+            if (lenbuf.le.0)
+     &           call quit(1,'import_intm_fc',
+     &           'arrived at end of file, but import seems'//
+     &           ' not complete !?')
+            idxbuf = 0
+          end if
+          idxbuf = idxbuf+1
 
-            ! Check spins.
-            do jdx = 1, nindex
-              match = match.and.idspn(jdx).eq.spins(jdx,idx)
-            enddo
-             if(.not.match)cycle
-
-            ! If correct indices and spins, copy to the buffer.
-            curdisblk(idxstr) = val(idx)
-            exit
-      enddo
-
-
+          match = .true.
+          ! Check indices.
+          do jdx = 1, nindex
+            match = match.and.idorb(jdx).eq.indices(jdx,idxbuf)
           enddo
-        enddo
+          if(.not.match) cycle
+
+          ! Check spins.
+          do jdx = 1, nindex
+            match = match.and.idspn(jdx).eq.spins(jdx,idxbuf)
+          enddo
+          if(.not.match)cycle
+
+          ! If correct indices and spins, copy to the buffer.
+          curdisblk(idxstr) = val(idxbuf)
+          exit
+        end do
+
+      end do
 
       return
       end subroutine
