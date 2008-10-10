@@ -126,6 +126,9 @@
      &         mel%idx_graph(1:ngastp,1:2,idx_occ:idx_occ+njoined-1)
         naux = sum(occ(IEXTR,1:2,1:njoined))
         if (naux.lt.nauxmin .or. naux.gt.nauxmax) cycle
+c dbg
+c        call wrt_occ_n(6,occ,njoined)
+c dbg
 
         blk_buf = ffop%buffered
         if (blk_buf) blk_buf = blk_buf.and.ffop%incore(iblk).gt.0
@@ -168,8 +171,10 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
               curblk => ffop%buffer(idxoff+1:idxoff+lenblk)
             end if
 
+c dbg
 c              write(luout,'(2x,a,i3,a,i2,a,i12)')
 c     &           'Ms(A) = ',ms,'/2  IRREP(A) = ',igam,'  len = ',lenblk
+c dbg
 
             ! loop over distributions
             first = .true.

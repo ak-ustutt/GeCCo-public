@@ -176,11 +176,17 @@ c          mnmxspc(2,1:ngas) = 4
 
         nbuffer = nints(1)*ntypes
 c dbg
-c        write(luout,*) 'size of buffer: ',nints(1),ntypes,nbuffer
+        write(luout,*) 'size of buffer: ',nints(1),ntypes,nbuffer
 c dbg
         ifree = mem_setmark('DAimport')
-        ifree = mem_alloc_real(buffer,nbuffer,'DAbuffer')
-
+c FUSK FIX - we currently allow up to 3 times of ifree:
+        if (nbuffer.gt.3*ifree) then
+          write(luout,*) nbuffer,ifree
+          call quit(0,'DAimport buffer','definitely too large')
+        end if
+        !ifree = mem_alloc_real(buffer,nbuffer,'DAbuffer')
+        allocate(buffer(nbuffer))        
+c
         buffer(1:nbuffer) = 0d0
 
         call atim_cs(cpux,sysx)
@@ -242,6 +248,9 @@ c dbg
      &       call prtim(luout,'time for sorting integrals',
      &       cpu-cpux,sys-sysx,-1d0)
 
+c FUSK FIX
+        deallocate(buffer)
+c
         ifree = mem_flushmark('DAimport')
       
       end do
