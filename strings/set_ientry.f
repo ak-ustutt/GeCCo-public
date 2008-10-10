@@ -14,5 +14,8 @@
       ! get appropriate line from iwexit
       ientry(-maxms:maxms,1:ngam) = iwexit(-maxms:maxms,1:ngam,nel)
 
+c dbg
+      print *,'iwexit',iwexit(-maxms:maxms,1:ngam,nel)
+c dbg
       return
       end

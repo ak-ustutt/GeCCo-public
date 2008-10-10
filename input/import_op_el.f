@@ -35,6 +35,8 @@
 
       integer ::
      &     ipri, mode, scaling, idx_mel
+      logical ::
+     &     anti
       type(me_list), pointer ::
      &     mel_target
 
@@ -52,15 +54,18 @@
 
       mel_target => op_info%mel_arr(idx_mel)%mel
 
+      anti = .true.
+
       select case(trim(env_type))
       case ('dalton_special','DALTON_SPECIAL')
         ! what to import?
         select case(trim(mel_target%op%name))
-        case (op_ham,op_g_x)
+        case (op_ham,op_g_x,op_g_z)
+          if(trim(mel_target%op%name).eq.op_g_z) anti = .false.
           mode=1
           scaling=min(use_scaling,0)
           call import_2el_dalton(mel_target,'MO_G',
-     &           mode,scaling,str_info,orb_info)
+     &           mode,scaling,anti,str_info,orb_info)
           ! call after 2int import, as the above routine
           ! zeroes all blocks, including E0 and F:
           if (trim(mel_target%op%name).eq.op_ham)
@@ -71,31 +76,31 @@
           mode=1
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12',
-     &           mode,scaling,str_info,orb_info) 
+     &           mode,scaling,anti,str_info,orb_info) 
 
         case(op_rintbar)
           mode=3
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12BAR',
-     &           mode,scaling,str_info,orb_info) 
+     &           mode,scaling,anti,str_info,orb_info) 
 
         case(op_rdagbar)
           mode=3
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_FDGBAR',
-     &           mode,scaling,str_info,orb_info) 
+     &           mode,scaling,anti,str_info,orb_info) 
 
         case(op_rinttilde)
           mode=3
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12TLD',
-     &           mode,scaling,str_info,orb_info) 
+     &           mode,scaling,anti,str_info,orb_info) 
 
         case(op_rintbreve)
           mode=3
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12BRV',
-     &           mode,scaling,str_info,orb_info) 
+     &           mode,scaling,anti,str_info,orb_info) 
 
 c        case(op_rintc)
 c          mode=3
@@ -108,48 +113,52 @@ c     &           mode,scaling,str_info,orb_info)
           mode=1
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12',
-     &           mode,scaling,str_info,orb_info) 
+     &           mode,scaling,anti,str_info,orb_info) 
 
         case(op_ff)
           mode=1
           scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FF',
-     &         mode,scaling,str_info,orb_info)
+     &         mode,scaling,anti,str_info,orb_info)
 
         case(op_ffbar)
           mode=3
           scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FFBAR',
-     &         mode,scaling,str_info,orb_info)
+     &         mode,scaling,anti,str_info,orb_info)
 
         case(op_ffg)
           mode=1
           scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FFG',
-     &         mode,scaling,str_info,orb_info)
+     &         mode,scaling,anti,str_info,orb_info)
 
         case(op_ttr)
           mode=2
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_TTF',
-     &           mode,scaling,str_info,orb_info) 
+     &           mode,scaling,anti,str_info,orb_info) 
 
         case(op_rttr)
           mode=1
           scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FTF',
-     &           mode,scaling,str_info,orb_info) 
+     &           mode,scaling,anti,str_info,orb_info) 
 
         case(op_gr)
           mode=1
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_FG',
-     &           mode,scaling,str_info,orb_info) 
+     &           mode,scaling,anti,str_info,orb_info) 
 
         case(op_exchange)
           call quit(1,'import_op_el','K is not yet ready')
 c          call import_exchange_dalton(mel_target,'MO_K',
 c     &                                str_info,orb_info)
+
+        case(op_z_inter,op_p_inter)
+          call import_intm_fc(mel_target,mel_target%op%name,
+     &         str_info,orb_info)
 
         case default
           call quit(1,'import_op_el',

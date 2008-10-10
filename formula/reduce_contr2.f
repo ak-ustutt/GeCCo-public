@@ -29,7 +29,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       type(contraction), intent(in) ::
      &     contr
@@ -179,8 +179,14 @@
       ! extract merge-map for binary contraction result
       call mergemap_bcres(mergemap,
      &     ld_mmap,
-     &     svertex_reo,isvtx1,isvtx2,
-     &     ireo2,vtx_list_new,nvtx,nvtx_op1op2)
+     &     svertex_reo,isvtx1,isvtx2,xlines_new,
+     &     ireo2,vtx_list_new,njoined_res,nvtx_new,nvtx,nvtx_op1op2)
+
+c dbg
+c      print *,'svertex_reo',svertex_reo
+c      print *,'ireo2',ireo2
+c      print *,'vtx_new',vtx_new
+c dbg
 
       ! unpack op1op2 to iocc_op1op2
       call unpack_occ(iocc_op1op2,op1op2,nvtx_op1op2)

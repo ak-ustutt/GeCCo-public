@@ -1,15 +1,16 @@
-      subroutine set_pint_contract(flist,ansatz,
+      subroutine set_pint_contract2(flist,ansatz,
      &     idx_opsin,nopsin,
      &     op_info,orb_info)
 *----------------------------------------------------------------------*
 *     Routine used to form the various contractions necessary to form
 *     the CABS approximation to the P-intermediate.
+*     Modified formulation: August 2008
 *----------------------------------------------------------------------*
 
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -51,6 +52,8 @@
         enddo
       endif
 
+      if(ansatz.ne.3)call quit(1,'set_pint_contract2','wrong ansatz')
+
       ! Get indices of input operators.
       idx_shape = idx_opsin(1)
 
@@ -72,15 +75,15 @@
       ! Add the (FG) contracted with F part.
       idx_prj = 8
       call expand_op_product2(form_pnt,idx_shape,
-     &     -2d0,7,3,
-     &     (/idx_shape,idx_opsin(4),idx_opsin(4),
-     &       idx_shape,idx_shape,idx_opsin(2),idx_shape/),
-     &     (/        1,           2,           2,
-     &               1,        1,           3,        1/),
+     &     -1d0,7,3,
+     &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,
+     &       idx_opsin(4),idx_opsin(4),idx_shape/),
+     &     (/        1,            2,        1,        1,
+     &                  3,           3,        1/),
      &     -1,-1,
      &     0,0,
      &     0,0,
-     &     (/3,6,2,idx_prj/),1,
+     &     (/2,5,2,idx_prj/),1,
      &     op_info)
 
       ! Move to the end of the list.
@@ -88,18 +91,18 @@
         form_pnt => form_pnt%next
       enddo
 
-      ! Add the F_{ij}^{pq}.G_{pq}^{rs}.R_{rs}^{ij}.
-      idx_prj = 8
+      ! Add the (FG) contracted with F part.
+      idx_prj = 10
       call expand_op_product2(form_pnt,idx_shape,
-     &     1d0,7,4,
-     &     (/idx_shape,-idx_opsin(2),idx_opsin(3),
-     &       idx_shape,idx_shape,idx_opsin(2),idx_shape/),
-     &     (/        1,            2,           3,
-     &               1,        1,           4,        1/),
+     &     -1d0,7,3,
+     &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,
+     &       idx_opsin(4),idx_opsin(4),idx_shape/),
+     &     (/        1,            2,        1,        1,
+     &                  3,           3,        1/),
      &     -1,-1,
      &     0,0,
      &     0,0,
-     &     (/2,3,2,idx_prj,3,6,2,idx_prj/),2,
+     &     (/2,5,2,idx_prj/),1,
      &     op_info)
 
       ! Move to the end of the list.
@@ -107,19 +110,19 @@
         form_pnt => form_pnt%next
       enddo
 
-      ! Add the F_{kl}^{p"m}.V_{p"m}^{ij}.
-      idx_prj = 9
+      ! Add the V^{p"m}_{kl}.F^{ij}_{p"m}
+c      idx_prj = 9
       if(ansatz.gt.1) idx_prj = 10
       call expand_op_product2(form_pnt,idx_shape,
-     &     -2d0,7,3,
-     &     (/idx_shape,-idx_opsin(2),idx_opsin(5),
-     &       idx_shape,idx_shape,idx_opsin(5),idx_shape/),
-     &     (/        1,            2,           3,
-     &               1,        1,           3,        1/),
+     &     -1d0,7,3,
+     &     (/idx_shape,-idx_opsin(5),idx_shape,idx_shape,
+     &       -idx_opsin(5),idx_opsin(2),idx_shape/),
+     &     (/        1,            2,        1,        1,
+     &                   2,           3,        1/),
      &     -1,-1,
      &     0,0,
      &     0,0,
-     &     (/2,3,2,idx_prj/),1,
+     &     (/5,6,2,idx_prj/),1,
      &     op_info)
 
       ! Move to the end of the list.
@@ -127,22 +130,22 @@
         form_pnt => form_pnt%next
       enddo
 
-      ! Add the F_{ij}^{p"q}.G_{p"q}^{r"s}.R_{r"s}^{ij}.
-      idx_prj = 9
-      if(ansatz.gt.1) idx_prj = 10
+      ! Add the V^{pq}_{kl}.F^{ij}_{pq}
+c      idx_prj = 9
+      if(ansatz.gt.1) idx_prj = 8
       call expand_op_product2(form_pnt,idx_shape,
-     &     -1d0,7,4,
-     &     (/idx_shape,-idx_opsin(2),idx_opsin(3),
-     &       idx_shape,idx_shape,idx_opsin(2),idx_shape/),
-     &     (/        1,            2,           3,
-     &               1,        1,           4,        1/),
+     &     -1d0,7,3,
+     &     (/idx_shape,-idx_opsin(5),idx_shape,idx_shape,
+     &       -idx_opsin(5),idx_opsin(2),idx_shape/),
+     &     (/        1,            2,        1,        1,
+     &                   2,           3,        1/),
      &     -1,-1,
      &     0,0,
      &     0,0,
-     &     (/2,3,2,idx_prj,3,6,2,idx_prj/),2,
+     &     (/5,6,2,idx_prj/),1,
      &     op_info)
 
-      if(ntest.ge.100)then
+ 100  if(ntest.ge.100)then
         write(luout,*)'Final formula: P-Int.'
         call print_form_list(luout,flist,op_info)
       endif

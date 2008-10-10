@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine define_me_list(label_mel,label_op,
-     &     absym,casym,gamma,s2,ms,
+     &     absym,casym,gamma,s2,ms,ms_fix,
      &     rec_lo,rec_hi,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -20,6 +20,8 @@
 
       integer, intent(in) ::
      &     absym, casym, gamma, s2, ms, rec_lo, rec_hi
+      logical, intent(in) ::
+     &     ms_fix
       character(*), intent(in) ::
      &     label_mel, label_op
       type(operator_info), intent(inout) ::
@@ -64,6 +66,12 @@
       mel%gamt  = gamma
       mel%mst   = ms
       mel%s2    = s2
+      mel%fix_vertex_ms = ms_fix
+
+c dbg
+c      print *,'name ',trim(mel%op%name)
+c      print *,'ms_fix = ', mel%fix_vertex_ms
+c dbg
 
       ! make sure that all graphs exist to address the ME-list
       call update_graphs(str_info,mel,orb_info)

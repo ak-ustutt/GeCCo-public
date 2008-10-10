@@ -37,6 +37,8 @@
      &     idxblk(maxfac),
      &     idx, jdx, ioff, nfac, nblk, nspecial,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank
+      logical ::
+     &     ms_fix
       type(me_list), pointer ::
      &     mel_pnt
       character(len_command_par) ::
@@ -62,10 +64,10 @@
      &     call quit(1,'process_me_lists','two labels expected')
 
         call me_list_parameters(+1,rule%parameters,
-     &       absym,casym,gamma,s2,ms)
+     &       absym,casym,gamma,s2,ms,ms_fix)
 
         call define_me_list(rule%labels(1),rule%labels(2),
-     &       absym,casym,gamma,s2,ms,
+     &       absym,casym,gamma,s2,ms,ms_fix,
      &       -1,-1,
      &       op_info,orb_info,str_info,strmap_info)
 

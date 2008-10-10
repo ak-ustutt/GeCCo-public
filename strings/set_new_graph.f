@@ -42,6 +42,7 @@ c dbg
       ihpv = str_info%ispc_typ(igraph)
       nocc = str_info%ispc_occ(igraph)
       nspc = orb_info%ngas_hpv(ihpv)
+
       ! Allocate space for arc and vertex weights respectively.
       allocate(str_info%g(igraph)%yssg(nocc*nspc),
      &         str_info%g(igraph)%wssg((nocc+1)*nspc))

@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -71,6 +71,11 @@
       integer, external ::
      &     idx_oplist2, maxxlvl_op
 
+c prelim
+      character(len=8) ::
+     &     trmode
+c prelim
+
       ! for timings:
       real(8) ::
      &     cpu, wall, sys, cpu0, wall0, sys0
@@ -100,6 +105,10 @@
       call new_formula_item(fl_pnt,command_set_target_init,idxlag)
       fl_pnt => fl_pnt%next
 
+c prelim
+      trmode = '        '
+      call get_argument_value('method.ECC','truncate',str=trmode)
+c prelim
       ! -------------------
       ! define and set Hbar
       ! -------------------
@@ -107,8 +116,13 @@
       idx_hb_temp = idx_oplist2(op_hb_temp,op_info)
       hb_temp_pnt => op_info%op_arr(idx_hb_temp)%op
       max_rank_t = maxxlvl_op(op_info%op_arr(idxtop)%op)
-      call set_xop(hb_temp_pnt,op_hb_temp,.false.,
+      if (trim(trmode).eq.'no') then
+        call set_xop(hb_temp_pnt,op_hb_temp,.false.,
      &     0,4*max_rank_t-2,0,0,orb_info)
+      else
+        call set_xop(hb_temp_pnt,op_hb_temp,.false.,
+     &     0,max_rank_t+1,0,0,orb_info)
+      end if
 
       ! expand e^{-T} H e^T 
       call init_formula(flist_hbar)
@@ -144,11 +158,19 @@
         call print_form_list_p(luout,flist_lag,op_info)
       end if
 
-      stop 'testing'
 
       ! reform to doubly linked expression
+      call make_doubly_connected(flist_lag,
+     &     idxtbar,idxham,idxtop,op_info)
+      
 
-
+      if (trim(trmode).ne.'no') then
+        call pert_truncation(flist_lag,trmode,
+     &     idxtbar,idxham,idxtop,op_info)
+      else
+        call quit(1,'set_ecc_lagrangian',
+     &       'only valid in truncation mode')
+      end if
 
       if (ntest.ge.100) then
         call write_title(luout,wst_title,'Final formula')

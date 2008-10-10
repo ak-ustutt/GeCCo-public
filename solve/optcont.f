@@ -195,6 +195,10 @@
           write(luout,*) 'macro iteration part entered'
         end if
 
+c dbg
+c              print *,'xbuf2 (1)',xbuf2(1:)
+        xbuf2 = 0d0
+c dbg
         call optc_macit(imacit,imicit,imicit_tot,
      &       task,iroute,opti_info%nopt,
      &       me_opt,me_grd,me_dia,

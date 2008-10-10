@@ -30,7 +30,7 @@
       include 'multd2h.h'
       
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 0
       logical, parameter ::
      &     formal = .false.
       
@@ -262,7 +262,8 @@ c      possible = .true.
           cost(2) = max(cost(2),xmemtot)
           cost(3) = max(cost(3),xmemblk)
         else
-          cost(1) = cost(1) + scale_rank(iscale(1,1))
+c          cost(1) = cost(1) + scale_rank(iscale(1,1))
+          cost(1) = max(cost(1),scale_rank(iscale(1,1)))
           cost(2) = max(cost(2),scale_rank(iscale(1,2)))
           cost(3) = max(cost(3),scale_rank(iscale(1,2)))
         end if

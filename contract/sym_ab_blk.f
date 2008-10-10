@@ -44,7 +44,7 @@
      &     prefac, relfac
 
       logical ::
-     &     first
+     &     first, ms_fix, ms_fix_ok
       integer ::
      &     nocc_cls, njoined,
      &     ifree, nblk, nbuff, idxmsa, idxmsc, idxdis_1, idxdis_1_x,
@@ -101,6 +101,8 @@
      &       'I should only be called if the total '//
      &       'Ms-projection equals 0')
       end if
+
+      ms_fix = mel%fix_vertex_ms
 
       op  => mel%op
 
@@ -201,8 +203,11 @@ c dbg
      &            msdis_c,msdis_a,gamdis_c,gamdis_a,
      &            ncblk, nablk,
      &            occ_csub,occ_asub,
-     &            msc,msa,igamc,igama,ngam)) exit
+     &            msc,msa,igamc,igama,ngam,
+     &            ms_fix,ms_fix_ok)) exit
             first = .false.
+
+            if (ms_fix.and..not.ms_fix_ok) cycle
 
             msdis_c2(1:ncblk) = -msdis_c(1:ncblk)
             msdis_a2(1:nablk) = -msdis_a(1:nablk)

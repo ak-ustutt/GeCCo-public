@@ -196,7 +196,7 @@ c dbg
         call define_me_list(fname,me_opt(iopt)%mel%op%name,
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
-     &       me_opt(iopt)%mel%mst,
+     &       me_opt(iopt)%mel%mst,.false.,
      &       1,nvectors,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
@@ -209,7 +209,7 @@ c dbg
         call define_me_list(fname,label_op_mvp(iopt),
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
-     &       me_opt(iopt)%mel%mst,
+     &       me_opt(iopt)%mel%mst,.false.,
      &       1,nvectors,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
@@ -227,7 +227,7 @@ c dbg
           call define_me_list(fname,label_op_met(iopt),
      &         me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &         me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
-     &         me_opt(iopt)%mel%mst,
+     &         me_opt(iopt)%mel%mst,.false.,
      &         1,nvectors,
      &         op_info,orb_info,str_info,strmap_info)
           idxmel = idx_mel_list(fname,op_info)

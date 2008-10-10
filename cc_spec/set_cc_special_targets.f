@@ -70,6 +70,9 @@
       call set_rule(form_cclg0,ttype_frm,DEF_CC_LAGRANGIAN,
      &              labels,5,1,
      &              title_cclg0,1,tgt_info)
+      call set_rule(form_cclg0,ttype_frm,TEX_FORMULA,
+     &              labels,5,1,
+     &              'cc_lag.tex',1,tgt_info)
 
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_ccen0
@@ -142,7 +145,7 @@
       labels(1) = mel_cclg0
       labels(2) = op_cclg
       call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0)
+     &     msc,0,1,0,0,.false.)
       call set_rule(mel_cclg0,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -152,7 +155,7 @@
       labels(1) = mel_ccen0
       labels(2) = op_ccen
       call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0)
+     &     msc,0,1,0,0,.false.)
       call set_rule(mel_ccen0def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)

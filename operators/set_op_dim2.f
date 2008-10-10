@@ -60,13 +60,13 @@
      &     mel
 
       logical ::
-     &     first
+     &     first, ms_fix, fix_success
       integer ::
      &     idxstr, idxstr_tot, idxdis, iblk, iblkoff, nexc,
      &     msa_max, msc_max, njoined, nblk,
      &     msa, msc, idxmsa, idxmsa2, igama, igamc,
      &     nasub, ncsub, icmp,
-     &     did, iexc, igam, len_blk, ld_blk
+     &     did, iexc, igam, len_blk, ld_blk, idx, jdx, tot_c, tot_a
 
       integer, pointer ::
      &     hpvx_csub(:), hpvx_asub(:),
@@ -85,7 +85,8 @@
      &     op
 
       integer ::
-     &     msd(ngastp,2), igamd(ngastp,2)
+c     &     msd(ngastp,2), igamd(ngastp,2)
+     &     msd(ngastp,2,mel%op%njoined), igamd(ngastp,2,mel%op%njoined)
 
       logical, external ::
      &     next_msgamdist2
@@ -107,10 +108,15 @@
       idxstr_tot = 0
       njoined = op%njoined
       nblk = op%n_occ_cls
+      ms_fix = mel%fix_vertex_ms
       hpvx_occ => op%ihpvca_occ
       idx_graph => mel%idx_graph
       ca_occ => op%ica_occ
       graphs => str_info%g
+
+c dbg
+c      print *,'set dim, fix =',ms_fix
+c dbg
 
       ! we better initialize some of the key arrays
       if (ipass.eq.1) then
@@ -232,8 +238,10 @@ c dbg
      &            msdis_c,msdis_a,gamdis_c,gamdis_a,
      &            ncsub, nasub,
      &            occ_csub,occ_asub,
-     &            msc,msa,igamc,igama,ngam))
+     &            msc,msa,igamc,igama,ngam,
+     &            ms_fix,fix_success))
      &           exit distr_loop
+c              if(ms_fix.and..not.fix_success)cycle distr_loop
 c dbg
 c              print *,'top of dist_loop'
 c dbg
@@ -278,20 +286,24 @@ c dbg
               ! increment distribution index
               idxdis = idxdis+1
               
-              if (njoined.eq.1.and.ntest.ge.150) then
-                write(luout,*) 'current MS and IRREP distr:'
+              if (njoined.eq.1.and.ntest.ge.150.or.
+     &             (ms_fix.and.ipass.eq.2)) then
+                if(.not.ms_fix)
+     &               write(luout,*) 'current MS and IRREP distr:'
                 call expand_occ(msd,idx_graph(1,1,iblkoff+1),
      &                    ncsub,nasub,
      &                    msdis_c,msdis_a,
      &                    hpvx_csub,hpvx_asub,
      &                    njoined)
-                call wrt_occ_n(luout,msd,njoined)
+                if(.not.ms_fix)
+     &               call wrt_occ_n(luout,msd,njoined)
                 call expand_occ(igamd,idx_graph(1,1,iblkoff+1),
      &                    ncsub,nasub,
      &                    gamdis_c,gamdis_a,
      &                    hpvx_csub,hpvx_asub,
      &                    njoined)
-                call wrt_occ_n(luout,igamd,njoined)
+                if(.not.ms_fix)
+     &               call wrt_occ_n(luout,igamd,njoined)
                 if (njoined.eq.1) then
                   did = msgmdid(hpvx_occ(1,1,iblkoff+1),
      &                        msd,igamd,ngam)
@@ -299,6 +311,19 @@ c dbg
                 end if
                 write(luout,*) 'current idxdis = ',idxdis
               end if
+c dbg
+              if(ms_fix)then
+                do idx = 1, njoined
+                  tot_c = 0
+                  tot_a = 0
+                  do jdx = 1, ngastp
+                    tot_c = tot_c + msd(jdx,1,idx)
+                    tot_a = tot_a + msd(jdx,2,idx)
+                  enddo
+                  if(tot_c.ne.tot_a) cycle distr_loop
+                enddo
+              endif
+c dbg
 
               ! save current offset
               if (ipass.eq.2) then
@@ -307,6 +332,11 @@ c dbg
                 ! get ID of current distr
                 did = msgmdid2(occ_csub,idxmsdis_c,gamdis_c,ncsub,
      &                         occ_asub,idxmsdis_a,gamdis_a,nasub,ngam)
+
+c dbg
+c                if(trim(mel%op%name).eq.'G_Z')
+c     &               print *,'did',did
+c dbg
                 ! save ID of current distr
                 mel%off_op_gmox(iblk)%
      &               did(idxdis,igama,idxmsa) = did

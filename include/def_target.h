@@ -1,7 +1,7 @@
       integer, parameter ::
      &     len_target_name = 32,
      &     len_command_name = 32,
-     &     len_command_par  = 256
+     &     len_command_par  = 512
 
       integer, parameter ::
      &     ttype_op  = 1,

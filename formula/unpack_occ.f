@@ -15,7 +15,7 @@
      &     scr1, scr2
       integer ::
      &     ivtx, iel
-      
+
       do ivtx = 1, nvtx
         scr1 = occ_pack(ivtx)
         do iel = 1, ngastp*2

@@ -22,7 +22,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 100
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -64,9 +64,13 @@
      &     flist_pnt
       type(operator), pointer ::
      &     op_x, op_f, op_g, op_shape, op_int, op
+      real(8) ::
+     &     fac
 
       integer, external ::
      &     idx_oplist2, idxlist
+
+      fac = 1d0
 
       ! preliminary: go to old code, if necessary
       if (typ_str(1:1).eq.'r'.or.typ_str(1:1).eq.'g'.or.
@@ -346,6 +350,27 @@ c        else if (njoined_int.eq.2) then
         else
           unknown = .true.
         endif
+c dbg
+      case('ZT')
+c        def_g = .true.
+c        idx_rpl = 5
+        if(njoined_int.eq.3)then
+          idx_prod(1:10) = (/idx_intm,-idx_r,idx_intm,idx_intm,idx_h,
+     &                      idx_h,idx_intm,idx_intm,idx_r,idx_intm/)
+          idx_supv(1:10) = (/       1,     2,       1,       1,    3,
+     &                          3,       1,       1,    4,       1/)
+          nvtx = 10
+          nfact = 4
+c          connect(1:6) = (/2,6,2,9,6,9/) ! Coulomb part
+          connect(1:6) = (/2,6,2,9,5,9/) ! Exchange part
+          nconnect = 3
+          avoid(1:4) = (/2,8,3,9/)
+          navoid = 2
+          fac = -1d0 ! Exchange only
+        else
+          unknown = .true.
+        endif
+c dbg
       case('Z4')
         def_g = .true.
         idx_rpl = 5
@@ -459,7 +484,7 @@ c        else if (njoined_int.eq.2) then
 
       ! expand operator product, giving the intermediate as result
       call expand_op_product2(flist_pnt,idx_intm,
-     &     1d0,nvtx,nfact,
+     &     fac,nvtx,nfact,
      &     idx_prod,idx_supv,
      &     -1,-1,
      &     connect,nconnect,
@@ -506,7 +531,7 @@ c        else if (njoined_int.eq.2) then
       call write_form_list(form_out%fhand,flist_scr,form_out%comment)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final formula'
+        write(luout,*) 'final formula: ',trim(op_int%name)
         call print_form_list(luout,flist_scr,op_info)
       end if
 

@@ -203,7 +203,7 @@
           labels(1) = me_label
           labels(2) = op_r
           call me_list_parameters(-1,parameters,
-     &         msc,0,isym,0,0)
+     &         msc,0,isym,0,0,.false.)
           call set_rule(meldef_rex,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -214,7 +214,7 @@
           labels(1) = me_label
           labels(2) = op_a_r
           call me_list_parameters(-1,parameters,
-     &         msc,0,isym,0,0)
+     &         msc,0,isym,0,0,.false.)
           call set_rule(meldef_a_rex,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -229,7 +229,7 @@
           labels(1) = me_label
           labels(2) = op_l
           call me_list_parameters(-1,parameters,
-     &         msc,0,isym,0,0)
+     &         msc,0,isym,0,0,.false.)
           call set_rule(meldef_lex,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -240,7 +240,7 @@
           labels(1) = me_label
           labels(2) = op_l_a
           call me_list_parameters(-1,parameters,
-     &         msc,0,isym,0,0)
+     &         msc,0,isym,0,0,.false.)
           call set_rule(meldef_lex_a,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)

@@ -23,7 +23,7 @@
       end type del_cond_array
 *----------------------------------------------------------------------*
 *     Define the list constaining the above arrays.
-*     The memebers of the list are linked by the logical OR operation.
+*     The members of the list are linked by the logical OR operation.
 *----------------------------------------------------------------------*
       type del_cond_list
         integer ::

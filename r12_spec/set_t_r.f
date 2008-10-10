@@ -122,7 +122,7 @@
         enddo
         if (.not.bar) then
           call expand_op_product2(fl_t_r_pnt,idxsop,
-     &         1d0,4,3,
+     &         1.0d0,4,3,
      &         (/idxsop,idxr12,idxc12,idxsop/),
      &         (/1      ,2     ,3       ,1     /),
      &         (/1,iblk_xxhp,1,1/),(/0,iblk_xxhp,0,0/),
@@ -160,7 +160,7 @@
 
         if (.not.bar) then
           call expand_op_product2(fl_t_r_pnt,idxsop,
-     &         1d0,4,3,
+     &         1.0d0,4,3,
      &         (/idxsop,idxr12,idxcpp12,idxsop/),
      &         (/1      ,2     ,3       ,1     /),
      &         (/1,iblk_pxpp,1,1/),(/0,iblk_pxpp,0,0/),
@@ -184,7 +184,7 @@
         enddo
         if (.not.bar) then
           call expand_op_product2(fl_t_r_pnt,idxsop,
-     &         1d0,4,3,
+     &         1.0d0,4,3,
      &         (/idxsop,idxr12,idxcpp12,idxsop/),
      &         (/1      ,2     ,3       ,1     /),
      &         (/1,iblk_xxpp,1,1/),(/0,iblk_xxpp,0,0/),

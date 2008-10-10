@@ -1,7 +1,8 @@
 *----------------------------------------------------------------------*
       logical function next_msgamdist2(first,
      &     msdis_c,msdis_a,gamdis_c,gamdis_a,
-     &     nc,na,occ_c,occ_a,ms_c,ms_a,gam_c,gam_a,nsym)
+     &     nc,na,occ_c,occ_a,ms_c,ms_a,gam_c,gam_a,nsym,
+     &     ms_fix,fix_success)
 *----------------------------------------------------------------------*
 *     increment an entire set of Ms and IRREP distributions
 *----------------------------------------------------------------------*
@@ -12,7 +13,9 @@
       include 'multd2h.h'
       
       logical, intent(in) ::
-     &     first
+     &     first, ms_fix
+      logical, intent(out) ::
+     &     fix_success
       integer, intent(in) ::
      &     nc, na, ms_a, ms_c, gam_a, gam_c, nsym,
      &     occ_c(nc), occ_a(na)
@@ -20,9 +23,16 @@
      &     msdis_c(nc), msdis_a(na),
      &     gamdis_c(nc), gamdis_a(na)
 
+      integer ::
+     &     msa_tot, msc_tot, idx, did
       logical ::
      &     success
 
+      integer, pointer ::
+     &     msd, gmd, iocc
+
+      integer, external ::
+     &     msgmdid2
       logical, external ::
      &     first_msdistn, first_gamdistn,
      &     next_msdistn, next_gamdistn
@@ -69,6 +79,24 @@
 
       end if
 
+      ! Extra condition if we want to fix the c/a terms to have the 
+      ! same spin distribution.      
+c dbg
+c      print *,'success 1 = ',success
+c      print *,'na,nc',na,nc
+c      print *,'msdis_a',msdis_a
+c      print *,'msdis_c',msdis_c
+c      print *,'gamdis_a',gamdis_a
+c      print *,'gamdis_c',gamdis_c
+c dbg
+      fix_success = .true.
+
+      if(ms_fix)then
+        do idx = 1, min(na,nc)
+          fix_success = fix_success.and.(msdis_a(idx).eq.msdis_c(idx))
+        enddo
+      endif          
+      
       next_msgamdist2 = success
 
       return

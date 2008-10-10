@@ -77,8 +77,10 @@ c      end do
           call idxsort_is_dsc(ilist,ireo,nel)
         else
           ! not checked yet
-          call quit(0,'isort','check descending quicksort!')
-c          call idxsort_qs_dsc(ilist,nel)
+c          print *,'ilist in: ',ilist(1:nel)
+          call idxsort_qs_dsc(ilist,ireo,nel)
+c          print *,'ilist out: ',ilist(1:nel)
+c          call quit(0,'idxsort','check descending quicksort!')
         end if
       else
         call quit(0,'isort','mode == 0')
@@ -126,7 +128,7 @@ c      end do
           call idxsort8_is_dsc(ilist,ireo,nel)
         else
           ! not checked yet
-          call quit(0,'isort','check descending quicksort!')
+          call quit(0,'idxsort8','check descending quicksort!')
 c          call idxsort8_qs_dsc(ilist,nel)
         end if
       else

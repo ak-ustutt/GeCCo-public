@@ -26,9 +26,9 @@
       integer ::
      &     min_rank, max_rank,
      &     isim, ncat, nint, icnt, iformal,
-     &     isym, ms, msc, sym_arr(8)
+     &     isym, ms, msc, sym_arr(8),trunc_type
       logical ::
-     &     needed, explicit
+     &     needed, explicit, truncate
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(10)
@@ -37,6 +37,11 @@
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting general targets ...'
+
+c      call get_argument_value('method.R12','truncate',lval=truncate)
+      truncate = is_keyword_set('method.truncate').gt.0
+      call get_argument_value('method.truncate','trunc_type',
+     &     ival=trunc_type)
 
       msc = +1  ! assuming closed shell
 *----------------------------------------------------------------------*
@@ -54,7 +59,12 @@
       ! Hamiltonian
       iformal = 1
       explicit = is_keyword_set('method.R12').gt.0
-      if (explicit.and.orb_info%caborb.gt.0) iformal = 3
+      if (explicit.and.orb_info%caborb.gt.0.and.(.not.truncate
+     &     .or.(truncate.and.trunc_type.gt.0)))
+     &     iformal = 4
+      if (explicit.and.orb_info%caborb.gt.0.and.truncate
+     &     .and.trunc_type.eq.0)
+     &     iformal = 3
       call add_target(op_ham,ttype_op,.false.,tgt_info)
       call hop_parameters(-1,parameters,
      &                   0,2,iformal,explicit)
@@ -97,7 +107,7 @@
       labels(1) = mel_ham
       labels(2) = op_ham
       call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0)
+     &     msc,0,1,0,0,.false.)
       call set_rule(mel_ham,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)

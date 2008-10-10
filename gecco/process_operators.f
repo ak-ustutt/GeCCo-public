@@ -22,7 +22,7 @@
       type(operator), pointer ::
      &     op_pnt
       integer, parameter ::
-     &     ndef_max = 20
+     &     ndef_max = 52
       integer ::
      &     idx, idx_t, n_ap,
      &     ncadiff, min_rank, max_rank, iformal, ansatz,

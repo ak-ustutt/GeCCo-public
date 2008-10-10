@@ -148,7 +148,7 @@ c prelim
         ioff = rule%n_update
         call set_r12_lagrangian(form_pnt,
      &       title,rule%labels(ioff+1),rule%n_labels-ioff,ansatz,
-     &       op_info,orb_info)
+     &       op_info,orb_info,form_info)
       case(DEF_CCR12_METRIC)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
@@ -256,17 +256,11 @@ c prelim
      &       ncat,rule%labels(ioff+1),
      &       nint,rule%labels(ioff+ncat+1),
      &       form_info,op_info,str_info,orb_info)
-c      case(CONTRACT)
-c        call form_parameters(+1,
-c     &       rule%parameters,rule%n_parameter_strings,
-c     &       title,idum,strdum)
-c        ioff = rule%n_update+1
-c        jdx = rule%n_labels-ioff
-c        call test_contract(form_pnt,title,
-c     &       rule%labels(2),
-c     &       rule%labels(ioff+1:ioff+jdx),jdx,
-c     &       op_info)
-c      case(EXTRACT_TERM)
+      case(TEX_FORMULA)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,idum,strdum)
+        call tex_formula_drv(form_pnt,title,op_info)
       case(DEL_TERMS)
         call modify_parameters(+1,
      &       rule%parameters,nterms,idxterms,maxterms)

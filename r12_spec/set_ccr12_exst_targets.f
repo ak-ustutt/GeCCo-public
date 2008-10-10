@@ -94,7 +94,6 @@
      &              op_s_r,1,1,
      &              parameters,1,tgt_info)
 
-      ! if applicable: define here additional R12-part of response:
       ! R' response vector
       call add_target(op_rp,ttype_op,.false.,tgt_info)
       call set_dependency(op_rp,op_cex,tgt_info)
@@ -139,6 +138,39 @@
      &              op_l_a,1,1,
      &              parameters,1,tgt_info)
 
+      ! left-response vector times Metric
+      call add_target(op_l_s,ttype_op,.false.,tgt_info)
+      call set_dependency(op_l_s,op_tbar,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_tbar,.false.)
+      call set_rule(op_l_s,ttype_op,CLONE_OP,
+     &              op_l_s,1,1,
+     &              parameters,1,tgt_info)
+
+      ! L' response vector
+      call add_target(op_lp,ttype_op,.false.,tgt_info)
+      call set_dependency(op_lp,op_cexbar,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_cexbar,.false.)
+      call set_rule(op_lp,ttype_op,CLONE_OP,
+     &              op_lp,1,1,
+     &              parameters,1,tgt_info)
+      ! L' times Jacobian
+      call add_target(op_lp_a,ttype_op,.false.,tgt_info)
+      call set_dependency(op_lp_a,op_cexbar,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_cexbar,.false.)
+      call set_rule(op_lp_a,ttype_op,CLONE_OP,
+     &              op_lp_a,1,1,
+     &              parameters,1,tgt_info)
+      ! L' times Metric
+      call add_target(op_lp_s,ttype_op,.false.,tgt_info)
+      call set_dependency(op_lp_s,op_cexbar,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_cexbar,.false.)
+      call set_rule(op_lp_s,ttype_op,CLONE_OP,
+     &              op_lp_s,1,1,
+     &              parameters,1,tgt_info)
 
 
 *----------------------------------------------------------------------*
@@ -299,8 +331,7 @@ c      call set_dependency(form_cc_l_a,op_l,tgt_info)
 c      call set_rule(form_cc_l_a,ttype_frm,DERIVATIVE,
 c     &              labels,5,1,
 c     &              title_cc_l_a,1,tgt_info)
-
-
+c
 *----------------------------------------------------------------------*
 *     Optimized Formulae:
 *----------------------------------------------------------------------*
@@ -404,7 +435,7 @@ c     &              parameters,1,tgt_info)
           labels(1) = me_label
           labels(2) = op_r
           call me_list_parameters(-1,parameters,
-     &         msc,0,isym,0,0)
+     &         msc,0,isym,0,0,.false.)
           call set_rule(meldef_rex,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -415,7 +446,7 @@ c     &              parameters,1,tgt_info)
           labels(1) = me_label
           labels(2) = op_a_r
           call me_list_parameters(-1,parameters,
-     &         msc,0,isym,0,0)
+     &         msc,0,isym,0,0,.false.)
           call set_rule(meldef_a_rex,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -426,7 +457,7 @@ c     &              parameters,1,tgt_info)
           labels(1) = me_label
           labels(2) = op_s_r
           call me_list_parameters(-1,parameters,
-     &         msc,0,isym,0,0)
+     &         msc,0,isym,0,0,.false.)
           call set_rule(meldef_s_rex,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -438,7 +469,7 @@ c     &              parameters,1,tgt_info)
             labels(1) = me_label
             labels(2) = op_rp
             call me_list_parameters(-1,parameters,
-     &           msc,0,isym,0,0)
+     &           msc,0,isym,0,0,.false.)
             call set_rule(meldef_rpex,ttype_opme,DEF_ME_LIST,
      &           labels,2,1,
      &           parameters,1,tgt_info)
@@ -449,7 +480,7 @@ c     &              parameters,1,tgt_info)
             labels(1) = me_label
             labels(2) = op_a_rp
             call me_list_parameters(-1,parameters,
-     &           msc,0,isym,0,0)
+     &           msc,0,isym,0,0,.false.)
             call set_rule(meldef_a_rpex,ttype_opme,DEF_ME_LIST,
      &           labels,2,1,
      &           parameters,1,tgt_info)
@@ -460,7 +491,7 @@ c     &              parameters,1,tgt_info)
             labels(1) = me_label
             labels(2) = op_s_rp
             call me_list_parameters(-1,parameters,
-     &           msc,0,isym,0,0)
+     &           msc,0,isym,0,0,.false.)
             call set_rule(meldef_s_rpex,ttype_opme,DEF_ME_LIST,
      &           labels,2,1,
      &           parameters,1,tgt_info)            
@@ -477,7 +508,7 @@ c     &              parameters,1,tgt_info)
           labels(1) = me_label
           labels(2) = op_l
           call me_list_parameters(-1,parameters,
-     &         msc,0,isym,0,0)
+     &         msc,0,isym,0,0,.false.)
           call set_rule(meldef_lex,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -488,7 +519,7 @@ c     &              parameters,1,tgt_info)
           labels(1) = me_label
           labels(2) = op_l_a
           call me_list_parameters(-1,parameters,
-     &         msc,0,isym,0,0)
+     &         msc,0,isym,0,0,.false.)
           call set_rule(meldef_lex_a,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)

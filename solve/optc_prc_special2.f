@@ -52,7 +52,7 @@ c      include 'ifc_input.h'
       real(8) ::
      &     xdum
       logical ::
-     &     ldum1, ldum2
+     &     ldum1, ldum2, ms_fix, fix_success
       integer ::
      &     ngrd, nblk_grd, nbmat, nxmat, nfmat,
      &     idxmsa, msa, msc, gama, gamc,  ngam,
@@ -148,7 +148,7 @@ c dbg
         allocate(f_dia(2*orb_info%ntoob))
 
         ! xtract diagonal
-        call onedia_from_op(f_dia,me_fmat,orb_info)
+        call onedia_from_op(f_dia,me_fmat,.false.,orb_info)
         
       else
         allocate(xmat(1),f_dia(1))
@@ -172,6 +172,15 @@ c dbg
       gamtotal = me_grd%gamt
       graphs => str_info%g
       igas_restr => str_info%igas_restr
+
+      ms_fix = me_grd%fix_vertex_ms
+      do idx = 1, nspecial
+        if(ms_fix.or.me_special(idx)%mel%fix_vertex_ms)then
+          ms_fix = ms_fix.and.me_special(idx)%mel%fix_vertex_ms
+          if(.not.ms_fix) call quit(1,'optc_prc_special2',
+     &                              'fix ms or not?')
+        endif
+      enddo
 
 c      if (njoined.ne.2)
 c     &     call quit(1,'optc_prc_special',
@@ -278,7 +287,7 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
 c          call add_me_list('L_GRD_REO',op_info)
           call define_me_list('L_GRD_REO','GRD_REO',
      &         me_grd%absym,me_grd%casym,me_grd%gamt,
-     &         me_grd%s2,me_grd%mst,
+     &         me_grd%s2,me_grd%mst,.false.,
      &         1,1,
      &         op_info,orb_info,str_info,strmap_info)
           idx = idx_mel_list('L_GRD_REO',op_info)
@@ -382,9 +391,11 @@ c          call add_me_list('L_GRD_REO',op_info)
      &             msdis_c,msdis_a,gamdis_c,gamdis_a,
      &             ncsub,nasub,
      &             occ_csub,occ_asub,
-     &             msc,msa,gamc,gama,ngam)) exit distr_loop
+     &             msc,msa,gamc,gama,ngam,
+     &             ms_fix,fix_success)) exit distr_loop
 
               first = .false.
+c              if(ms_fix.and..not.fix_success)cycle distr_loop
               
               call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncsub)
               call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nasub)

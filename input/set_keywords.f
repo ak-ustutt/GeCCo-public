@@ -7,7 +7,7 @@ c      use parse_input
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer ::
      &     iprint
@@ -37,6 +37,8 @@ c      use parse_input
       call keyword_add('CC',context='method')
       call argument_add('maxexc','method.CC',type=vtyp_int,idef=(/2/))
       call argument_add('minexc','method.CC',type=vtyp_int,idef=(/1/))
+      call argument_add('truncate','method.CC',type=vtyp_str,
+     &     len=8,cdef=(/'n','o',' ',' ',' ',' ',' ',' '/))
 
       call keyword_add('CCPT',context='method')
       call argument_add('maxexc','method.CCPT',type=vtyp_int,idef=(/3/))
@@ -44,6 +46,8 @@ c      use parse_input
       call keyword_add('ECC',context='method')
       call argument_add('maxexc','method.ECC',type=vtyp_int,idef=(/2/))
       call argument_add('minexc','method.ECC',type=vtyp_int,idef=(/1/))
+      call argument_add('truncate','method.ECC',type=vtyp_str,
+     &     len=8,cdef=(/'n','o',' ',' ',' ',' ',' ',' '/))
 
       call keyword_add('R12',context='method')
       call argument_add('ansatz','method.R12',type=vtyp_int,idef=(/1/))
@@ -51,6 +55,7 @@ c      use parse_input
       call argument_add('minexc','method.R12',type=vtyp_int,idef=(/2/))
       call argument_add('min_tp','method.R12',type=vtyp_int,idef=(/1/))
       call argument_add('min_tpp','method.R12',type=vtyp_int,idef=(/2/))
+      call argument_add('T1ext','method.R12',type=vtyp_int,idef=(/0/))
       call argument_add('approx','method.R12',type=vtyp_str,len=8,
      &     cdef=(/'A',' ',' ',' ',' ',' ',' ',' '/))
       call argument_add('F_appr','method.R12',type=vtyp_str,len=8,
@@ -63,6 +68,13 @@ c      use parse_input
      &     idef=(/0/))
       call argument_add('r12op','method.R12',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('pz_eval','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
+
+      ! Truncations
+      call keyword_add('truncate',context='method')
+      call argument_add('trunc_type','method.truncate',
+     &     type=vtyp_int,idef=(/0/))
 
       call keyword_add('calculate')
       ! internal tests

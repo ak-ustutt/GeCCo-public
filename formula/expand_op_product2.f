@@ -233,6 +233,8 @@ c dbg
       end if
 
 c dbg
+c      print *,'nvtx_res',nvtx_res
+c      print *,'njoined_res',njoined_res
 c      print *,'ol_map: ',ol_map
 c      print *,'svertx: ',proto%svertex
 c      print *,'joined: '
@@ -405,6 +407,10 @@ c          proto%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
 c dbg
 c              print *,'iop, ioff, n: ',iop, ioff, joined(0,iop)
 c              print *,'              ',joined(1:joined(0,iop),iop)
+c              print *,'proto'
+c              call prt_contr2(luout,proto,op_info)
+c              write(luout,*) 'occ_vtx test:'
+c              call wrt_occ_n(luout,occ_vtx,nvtx)
 c dbg
               
             end do
@@ -414,7 +420,6 @@ c dbg
               ! reset number of arcs
               proto%narc = nconnect+navoid
               call set_inproj(proto,occ_vtx,ok,inproj,ninproj)
-
             else
               ! check whether contraction is possible:
               ! sum_i [EX_op(i)] - [DX_op(i)]^dag = 0
@@ -443,11 +448,23 @@ c dbg
             do iop = 1, nops
               if (iop.eq.num_res) cycle
               ioff = (iblk_op(iop)-1)*ops(iop)%op%njoined
-              do ivtx = 1, joined(0,iop)
-                proto%vertex(joined(ivtx,iop))%iblk_op = ioff+ivtx
+              if (.not.proto%vertex(iop)%dagger) then
+                do ivtx = 1, joined(0,iop)
+                  proto%vertex(joined(ivtx,iop))%iblk_op = ioff+ivtx
 C??                proto%vertex(joined(ivtx,iop))%iblk_op = iblk_op(iop)
-              end do
+                end do
+              else
+                ioff = ioff+ops(iop)%op%njoined+1
+                do ivtx = 1, joined(0,iop)
+                  proto%vertex(joined(ivtx,iop))%iblk_op = ioff-ivtx
+                end do
+              end if
             end do
+
+c dbg
+c            print *,'proto'
+c            call prt_contr2(luout,proto,op_info)
+c dbg
 
             ! generate contractions
             call gen_contr4(.false.,form_pnt,proto,

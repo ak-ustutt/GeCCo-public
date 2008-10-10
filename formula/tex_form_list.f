@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine tex_form_list(luout,form_head,op_info)
+      subroutine tex_form_list(lutex,form_head,op_info)
 *----------------------------------------------------------------------*
-*     print formula on linked list in TeX style to unit luout
+*     print formula on linked list in TeX style to unit lutex
 *----------------------------------------------------------------------*
       implicit none
 
@@ -10,8 +10,11 @@
       include 'def_contraction.h'
       include 'def_formula_item.h'
 
+      integer, parameter ::
+     &     max_count = 35
+
       integer, intent(in) ::
-     &     luout
+     &     lutex
       type(formula_item), intent(in), target ::
      &     form_head
       type(operator_info), intent(in) ::
@@ -22,8 +25,11 @@
       integer ::
      &     iblk_cur
       logical ::
-     &     first
+     &     first, newline
+      integer ::
+     &     length_count, length_term
 
+      length_count = 0
       form_ptr => form_head
       do
         select case(form_ptr%command)
@@ -40,7 +46,14 @@
           if (.not.first) then
             if (iblk_cur.ne.form_ptr%contr%iblk_res) first = .true.
           end if
-          call tex_contr(luout,first,form_ptr%contr,op_info)
+          if (length_count.gt.max_count) then
+            newline = .true.
+            length_count = 0
+          end if
+          call tex_contr(lutex,length_term,
+     &                   first,newline,form_ptr%contr,op_info)
+          length_count = length_count + length_term
+          newline = .false.
           iblk_cur = form_ptr%contr%iblk_res
           first = .false.
         end select

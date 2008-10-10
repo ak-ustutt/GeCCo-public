@@ -240,7 +240,10 @@ c dbg
 
       case('P')
 
-        call set_pint_contract(flist,ansatz,
+c        call set_pint_contract(flist,ansatz,
+c     &       idx_op,6,
+c     &       op_info,orb_info)
+        call set_pint_contract2(flist,ansatz,
      &       idx_op,6,
      &       op_info,orb_info)
       case('PF')
@@ -254,7 +257,7 @@ c dbg
      &       op_info,orb_info)
 
       case('Z')
-        call set_zint_contract(flist,ansatz,
+        call set_zint_contract2(flist,ansatz,
      &       idx_op,4,
      &       op_info,orb_info)
 
