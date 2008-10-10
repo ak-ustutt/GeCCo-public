@@ -70,6 +70,9 @@
       call set_rule(form_cclg0,ttype_frm,DEF_CC_LAGRANGIAN,
      &              labels,5,1,
      &              title_cclg0,1,tgt_info)
+      call set_rule(form_cclg0,ttype_frm,TEX_FORMULA,
+     &              labels,5,1,
+     &              'cc_lag.tex',1,tgt_info)
 
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_ccen0

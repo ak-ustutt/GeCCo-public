@@ -1671,14 +1671,14 @@ c     &              parameters,1,tgt_info)
      &                labels,ncat+nint+1,1,
      &                parameters,1,tgt_info)
 c dbg
-        ! Keep only certain terms for debugging.
-        labels(1) = fopt_r12_zcabs
-        labels(2) = fopt_r12_zcabs
-        call modify_parameters(-1,
-     &       parameters,1,(/3/),1)
-        call set_rule(fopt_r12_zcabs,ttype_frm,KEEP_TERMS,
-     &       labels,2,1,
-     &       parameters,1,tgt_info)        
+c        ! Keep only certain terms for debugging.
+c        labels(1) = fopt_r12_zcabs
+c        labels(2) = fopt_r12_zcabs
+c        call modify_parameters(-1,
+c     &       parameters,1,(/3/),1)
+c        call set_rule(fopt_r12_zcabs,ttype_frm,KEEP_TERMS,
+c     &       labels,2,1,
+c     &       parameters,1,tgt_info)        
 c dbg
       endif        
 

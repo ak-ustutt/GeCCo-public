@@ -153,8 +153,11 @@
       b2dia => xdummy
       x2dia => xdummy
       ! this assumption is probably not too bad:
+c      if (use_h)
+c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
       if (use_h)
-     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
+     &     ifree = mem_alloc_real(h1dia,
+     &     2*(orb_info%ntoob+orb_info%caborb),'h1dia')
       if (use_b1)
      &     ifree = mem_alloc_real(b1dia,2*orb_info%ntoob,'b1dia')
       if (use_x1)
@@ -192,12 +195,12 @@
 
       ! extract the fock-matrix diagonal
       if (use_h)
-     &     call onedia_from_op(h1dia,me_ham,orb_info)
+     &     call onedia_from_op(h1dia,me_ham,.true.,orb_info)
       ! diagonal of partial trace of B/X (for R12):
       if (use_b1)
-     &     call onedia_from_op(b1dia,me_b,orb_info)
+     &     call onedia_from_op(b1dia,me_b,.false.,orb_info)
       if (use_x1)
-     &     call onedia_from_op(x1dia,me_x,orb_info)
+     &     call onedia_from_op(x1dia,me_x,.false.,orb_info)
 
 
       ! Extract the diagonal elements of the B-matrix for R12.

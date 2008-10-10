@@ -233,8 +233,11 @@ c      end if
       end if
 
       ! Produce truncated expansions if required.
-      if(truncate)
-     &     call truncate_form(flist_lag,trunc_type,op_info,form_info)
+      if (truncate)
+     &     call r12_truncation(flist_lag,trunc_type,
+     &     idxr12,idxham,idxtbar,idxtop,op_info)
+c      if(truncate)
+c     &     call truncate_form(flist_lag,trunc_type,op_info,form_info)
 
       ! sum up duplicate terms (due to S->T+CR replacement)
       call sum_terms(flist_lag,op_info)

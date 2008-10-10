@@ -90,6 +90,11 @@ c        if (2*ngastp*ndef*njoined.gt.240)
      &      call quit(1,'op_from_occ_parameters','2*ngastp*ndef.gt.480')
 c        write(parameters(2),'(120(i2))')
 c        write(parameters(2),'(240(i1))')
+c dbg
+        print *,'njoined,ndef',njoined,ndef
+        print *,'nmax',nmax
+        print *,'passed: ',occ_def(1:2*ngastp*ndef*njoined)
+c dbg
         write(parameters(2),'(480(i1))')
      &        occ_def(1:2*ngastp*ndef*njoined)        
       else

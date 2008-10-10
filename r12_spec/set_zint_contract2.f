@@ -69,7 +69,7 @@
       enddo
 
 c dbg
-      goto 100 ! Exchange parts only
+c      goto 100 ! Exchange parts only
 c dbg
 
       ! Add the G^{p'q}_{km}.FF_{p'l}^{ij} terms.

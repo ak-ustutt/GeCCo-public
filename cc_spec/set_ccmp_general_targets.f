@@ -6,6 +6,7 @@
       implicit none
 
       include 'stdunit.h'
+      include 'opdim.h'
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
 
@@ -22,16 +23,17 @@
      &     orb_info
 
       integer ::
-     &     min_rank, max_rank,
+     &     min_rank, max_rank, t1ext_mode,
      &     isim, ncat, nint, icnt, ansatz,
-     &     isym, ms, msc, sym_arr(8)
+     &     isym, ms, msc, sym_arr(8),
+     &     occ_def(ngastp,2,60), ndef
       logical ::
      &     needed, explicit
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(10)
       character(len_command_par) ::
-     &     parameters
+     &     parameters(2)
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting general targets for MP/CC ...'
@@ -68,13 +70,47 @@ c     &       parameters,1,tgt_info)
      &              parameters,1,tgt_info)
       end if
 
-      ! T operator
-      call add_target(op_top,ttype_op,.false.,tgt_info)
       call get_argument_value('method.CC','minexc',ival=min_rank)
       call get_argument_value('method.CC','maxexc',ival=max_rank)
       if (is_keyword_set('method.ECC').gt.0) then
         call get_argument_value('method.ECC','minexc',ival=min_rank)
         call get_argument_value('method.ECC','maxexc',ival=max_rank)
+      end if
+      if (is_keyword_set('method.R12').gt.0) then
+        call get_argument_value('method.R12','T1ext',ival=t1ext_mode)
+      else
+        t1ext_mode = 0
+      end if
+
+      ! T operator
+      call add_target(op_top,ttype_op,.false.,tgt_info)
+      if (t1ext_mode.eq.0) then
+        call xop_parameters(-1,parameters,
+     &                   .false.,min_rank,max_rank,0,1)
+        call set_rule(op_top,ttype_op,DEF_EXCITATION,
+     &              op_top,1,1,
+     &              parameters,1,tgt_info)
+      else
+        if (min_rank.ne.1.or.max_rank.ne.2.or..not.explicit)
+     &       call quit(1,'set_ccmp_general_targets',
+     &       'experimental T1ext option is for CCSD with R12 only')
+        occ_def = 0
+        ! 1 -- T1
+        occ_def(IPART,1,1) = 1
+        occ_def(IHOLE,2,1) = 1
+        ! 2 -- T1'
+        occ_def(IEXTR,1,2) = 1
+        occ_def(IHOLE,2,2) = 1
+        ! 3 -- T2
+        occ_def(IPART,1,3) = 2
+        occ_def(IHOLE,2,3) = 2
+        ndef = 3
+        call op_from_occ_parameters(-1,parameters,2,
+     &                              occ_def,ndef,1,ndef)
+        call set_rule(op_top,ttype_op,DEF_OP_FROM_OCC,
+     &                op_top,1,1,
+     &                parameters,2,tgt_info)
+
       end if
 
       ! Hbar intermediate
@@ -85,12 +121,6 @@ c     &       parameters,1,tgt_info)
      &              op_hbar,1,1,
      &              parameters,1,tgt_info)
       
-      call xop_parameters(-1,parameters,
-     &                   .false.,min_rank,max_rank,0,1)
-      call set_rule(op_top,ttype_op,DEF_EXCITATION,
-     &              op_top,1,1,
-     &              parameters,1,tgt_info)
-
       ! Tbar
       call add_target(op_tbar,ttype_op,.false.,tgt_info)
       call set_dependency(op_tbar,op_top,tgt_info)

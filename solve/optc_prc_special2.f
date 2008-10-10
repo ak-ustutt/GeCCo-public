@@ -148,7 +148,7 @@ c dbg
         allocate(f_dia(2*orb_info%ntoob))
 
         ! xtract diagonal
-        call onedia_from_op(f_dia,me_fmat,orb_info)
+        call onedia_from_op(f_dia,me_fmat,.false.,orb_info)
         
       else
         allocate(xmat(1),f_dia(1))

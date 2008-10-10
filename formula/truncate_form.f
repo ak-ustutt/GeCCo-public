@@ -145,6 +145,7 @@ c     temp_del%op_name = op_c12
         narrays = 1
 
       elseif(type.eq.2)then
+        call quit(1,'truncate_form','do not use this method')
         ! Deletion of terms factorised by Z.
 
         ! Factor out Z first.
@@ -174,6 +175,7 @@ c     temp_del%op_name = op_c12
         narrays = 1
 
       elseif(type.eq.3)then
+        call quit(1,'truncate_form','do not use this method')
         ! Deletion of terms factorised by Z and of terms containing
         ! 2 or more F12 terms.
 

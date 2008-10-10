@@ -220,6 +220,9 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
      &              labels,4,1,
      &              parameters,2,tgt_info)
       end if
+      call set_rule(form_ccr12lg0,ttype_frm,TEX_FORMULA,
+     &              labels,5,1,
+     &              'ccr12_lag.tex',1,tgt_info)
       
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_ccr12en0

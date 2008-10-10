@@ -265,6 +265,9 @@ c        labels(10) = form_r12_xpint
      &              labels,4,1,
      &              parameters,2,tgt_info)
       end if
+      call set_rule(form_ccr12lg0,ttype_frm,TEX_FORMULA,
+     &              labels,5,1,
+     &              'ccr12f_lag.tex',1,tgt_info)
       
       call add_target(form_ccr12_s0,ttype_frm,.false.,tgt_info)
       ! (a) set formal Metric (in 'complete' basis)

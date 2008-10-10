@@ -42,7 +42,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       logical, intent(in) ::
      &     update
@@ -406,6 +406,26 @@ c dbg
       if (multd2h(igamtop1,igamtop2).ne.igamtop1op2)
      &     call quit(1,'contr_op1op2_wmaps_c','inconsistent symmetries')
 
+      if (me_op1%op%formal_blk(iblkop1).or.
+     &    me_op2%op%formal_blk(iblkop2).or.
+     &    me_op1op2%op%formal_blk(iblkop1op2)) then
+        write(luout,*) me_op1%op%formal_blk(iblkop1),
+     &                 me_op2%op%formal_blk(iblkop2),
+     &                 me_op1op2%op%formal_blk(iblkop1op2)
+        write(luout,*) 'op1: ',trim(op1%name),
+     &       ' block ',iblkop1
+        write(luout,*) 'op2: ',trim(op2%name),
+     &       ' block ',iblkop2
+        if (iblkop1op2.gt.0) then
+          write(luout,*) 'op1op2: ',trim(op1op2%name),
+     &       ' block ',iblkop1op2
+        else
+          write(luout,*) 'op1op2: scalar'
+        end if
+
+        call quit(1,'contr_op1op2_wmaps_c','called for formal block')
+      end if
+        
 c      ! we accept that certain non-totally symmetric operator blocks
 c      ! may have zero length ...
 c      if (lenop1.eq.0.and.igamtop1.ne.1 .or.
@@ -441,7 +461,7 @@ c      end if
         call set_op_scratch(lenbuf,buftyp1,me_op1,iblkop1,
      &       lenscr,orb_info)
 c dbg
-        print *,'set_op_scratch1: ',lenbuf,buftyp1,lenscr
+c        print *,'set_op_scratch1: ',lenbuf,buftyp1,lenscr
 c dbg
         ifree = mem_alloc_real(xbf1,lenbuf,'xbf1')
 c        ifree = mem_alloc_real(xbf1,lenop1,'xbf1')
@@ -462,7 +482,7 @@ c        ifree = mem_alloc_real(xbf1,lenop1,'xbf1')
         call set_op_scratch(lenbuf,buftyp2,me_op2,iblkop2,
      &       lenscr,orb_info)
 c dbg
-        print *,'set_op_scratch2: ',lenbuf,buftyp2,lenscr
+c        print *,'set_op_scratch2: ',lenbuf,buftyp2,lenscr
 c dbg
         ifree = mem_alloc_real(xbf2,lenbuf,'xbf2')
 c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')

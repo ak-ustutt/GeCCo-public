@@ -60,7 +60,7 @@ c GWR
 
       idx_end = mel%off_op_gmox(iblk)%ndis(gama_blk,idxmsa_blk)
 c dbg
-c      print *,'-->',iocc_cls,igamt,idxms
+c      print *,'-->',gama_blk,idxmsa_blk,idx_end
 c dbg
       do idx = 1, idx_end
         if (didarr(idx,gama_blk,idxmsa_blk).eq.mgdid) then

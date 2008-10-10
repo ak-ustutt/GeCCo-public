@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine onedia_from_op(x1dia,mel,orb_info)
+      subroutine onedia_from_op(x1dia,mel,wcabs,orb_info)
 *----------------------------------------------------------------------*
 *     extract the diagonal of the rank-one part of ME-list mel
 *----------------------------------------------------------------------*
@@ -20,6 +20,8 @@
 
       real(8), intent(out) ::
      &     x1dia(*)
+      logical, intent(in) ::
+     &     wcabs
       type(orbinf), intent(in), target ::
      &     orb_info
       type(me_list), intent(in) ::
@@ -28,7 +30,7 @@
       integer ::
      &     ifree, iocc_cls, nbuff, ioff_blk, ilen_blk, idx, idxcur, 
      &     most, mond, ms, idxms, isym, imo, imo_off, len, igas, idxbuf,
-     &     ihpv, ispin, nspin
+     &     ihpv, ispin, nspin, norbs
 
       integer, pointer ::
      &     ihpvgas(:,:), iad_gas(:), mostnd(:,:,:)
@@ -54,15 +56,10 @@
           ! see below for explanations
           if (max(op%ica_occ(1,iocc_cls),op%ica_occ(2,iocc_cls)).ne.1)
      &         cycle
-          if (iextr.gt.0.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
-     &                         op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
+          if (.not.wcabs .and. 
+     &        (iextr.gt.0.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
+     &                         op%ihpvca_occ(iextr,2,iocc_cls)).gt.0))
      &         cycle
-c          if(iextr.gt.0)then
-c            if(.not.explicit.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
-c     &           op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
-c     &           cycle
-c            if(explicit.and.op%formal_blk(iocc_cls)) cycle
-c          endif
           if (list_cmp(op%ihpvca_occ(1,1,iocc_cls),
      &                 op%ihpvca_occ(1,2,iocc_cls),ngastp)) then
             nbuff = nbuff + mel%len_op_occ(iocc_cls)
@@ -71,8 +68,10 @@ c          endif
         ifree = mem_alloc_real(buffer,nbuff,'buffer')
       end if
 
-c      x1dia(1:2*(orb_info%ntoob+orb_info%caborb)) = 0d0
-      x1dia(1:2*(orb_info%ntoob)) = 0d0
+      norbs = orb_info%ntoob
+      if (wcabs) norbs = norbs + orb_info%caborb
+
+      x1dia(1:2*norbs) = 0d0
 
       nspin = orb_info%nspin
       mostnd => orb_info%mostnd
@@ -85,15 +84,10 @@ c      x1dia(1:2*(orb_info%ntoob+orb_info%caborb)) = 0d0
      &       cycle
         ! ... but the only normal ones (i.e. no 
         ! external/auxiliary orbitals)
-        if (iextr.gt.0.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
-     &                         op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
+        if (.not.wcabs .and.
+     &      (iextr.gt.0.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
+     &                         op%ihpvca_occ(iextr,2,iocc_cls)).gt.0))
      &       cycle
-c          if(iextr.gt.0)then
-c            if(.not.explicit.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
-c     &           op%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
-c     &           cycle
-c            if(explicit.and.op%formal_blk(iocc_cls)) cycle
-c          endif  
 
         ! diagonal: so C and A must have same occ
         if (.not.list_cmp(op%ihpvca_occ(1,1,iocc_cls),
@@ -122,8 +116,7 @@ c dbg
           ispin = 1
           if (ms.eq.-1) idxms = 2
           if (ms.eq.-1.and.nspin.eq.2) ispin = 2
-c          imo_off = (idxms-1)*(orb_info%ntoob+orb_info%caborb)
-          imo_off = (idxms-1)*orb_info%ntoob
+          imo_off = (idxms-1)*norbs
 
           do isym = 1, orb_info%nsym
 
@@ -158,7 +151,7 @@ c          imo_off = (idxms-1)*(orb_info%ntoob+orb_info%caborb)
         write(luout,*) 'extracted diagonal: '
         idx = 0
         do ms = 1, -1, -2
-          do imo = 1, orb_info%ntoob
+          do imo = 1, norbs
             idx = idx+1
             write(luout,'(x,i2,"/2",i5,2x,g12.6)') ms, imo, x1dia(idx)
           end do
