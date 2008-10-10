@@ -79,6 +79,7 @@ c     &     idx_oplist2
           nr12  = 0
           nham    = 0
           ord_ham = 0
+          ord_t   = 0
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
             iblk_op = vertex(ivtx)%iblk_op
