@@ -447,6 +447,8 @@ c      end if
 
       ifree = mem_setmark('contr1')
 
+      call atim_cs(cpu0,sys0)
+
       ! average scratch for each operator:
       !    about 1/6th of the available remaining core
       lenscr = ifree/6
@@ -523,6 +525,10 @@ c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
         xop1op2 => xret
         if (ntest.ge.100) write(luout,*) ' result is scalar '
       end if
+
+      call atim_cs(cpu,sys)
+      cnt_rd(1) = cnt_rd(1) + cpu-cpu0
+      cnt_rd(2) = cnt_rd(2) + sys-sys0
 
       if (ntest.ge.1000) then
         ! this will work if all blocks incore, only:
@@ -1650,11 +1656,15 @@ c dbg
         xret(1) = ddot(lenop1op2,xop1op2,1,xop1op2,1)
       end if
 
+      call atim_cs(cpu0,sys0)
       ! put result to disc
       if (.not.bufop1op2) then
         call put_vec(ffop1op2,xop1op2,idoffop1op2+idxst_op1op2,
      &                    idoffop1op2+idxst_op1op2-1+lenop1op2)
       end if
+      call atim_cs(cpu,sys)
+      cnt_wr(1) = cnt_wr(1)+cpu-cpu0
+      cnt_wr(2) = cnt_wr(2)+sys-sys0
 
       deallocate(
      &     gmop1dis_c, gmop1dis_a,

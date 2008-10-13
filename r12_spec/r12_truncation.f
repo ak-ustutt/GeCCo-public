@@ -113,6 +113,8 @@ c     &     idx_oplist2
 
           if (nham.ne.1)
      &         call quit(1,'r12_truncation','strange: nham.ne.1')
+          if (ntop-ntx.lt.0)
+     &         call quit(1,'r12_truncation','strange: ntop-ntx.lt.0')
 
           ! always linear in T1X
           delete = ntx.gt.1
@@ -123,7 +125,7 @@ c     &     idx_oplist2
             delete = delete.or.nr12+ntx.gt.1
             ! R12 projection:
             delete = delete.or.nrdag+ntbx.gt.0.and.
-     &           ord_ham+ord_t.gt.0.and.nr12+ntx.gt.0
+     &           ord_ham+(ntop-ntx).gt.0.and.nr12+ntx.gt.0
             
           else if (trunc_type.eq.1) then
             ! linearized R12:

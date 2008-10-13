@@ -9,13 +9,13 @@ Step II - configure
 -------
 Run
 - for xeon machines on our cluster
- ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/em64t/ -lmkl -lmkl_lapack -lguide -lpthread'
+FC=ifort CC=icc ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/em64t/ -lmkl -lmkl_lapack -lguide -lpthread'
 - for p4 machines on our cluster
- ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/32/ -lmkl -lmkl_lapack -lguide -lpthread'
+FC=ifort CC=icc ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/32/ -lmkl -lmkl_lapack -lguide -lpthread'
 - on a laptop installition this my rather read
- ./configure --with-blas='-L/opt/intel/mkl/8.0/lib/32/ -lmkl -lmkl_lapack -lguide -lpthread'
+FC=ifort CC=icc ./configure --with-blas='-L/opt/intel/mkl/8.0/lib/32/ -lmkl -lmkl_lapack -lguide -lpthread'
 - for pgf90 the following seems to work OK:
- ./configure --with-blas=-lacml
+FC=pgf95 CC=pgcc ./configure --with-blas=-lacml
 
 or whatever is appropriate on the present machine.
 

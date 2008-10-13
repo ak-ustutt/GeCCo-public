@@ -234,6 +234,11 @@
         write(luout,*) 'ndis = ',ndis
       end if
 
+      ! exception: empty space
+      if (ipass.eq.2.and.norb.eq.0) then
+        lenstr(1:ndis*ngam*(msmax+1)) = 0
+      end if
+
       if (ipass.eq.2.and.iprint.ge.20) then
         write(luout,*) 'lengths per dis, IRREP, Ms'
         idxw=1

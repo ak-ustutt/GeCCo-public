@@ -44,6 +44,8 @@
       cnt_op1op2(1:3) = 0d0
       cnt_dloop(1:3) = 0d0
       cnt_kernel(1:3) = 0d0
+      cnt_rd(1:3) = 0d0
+      cnt_wr(1:3) = 0d0
 
       select case (irt_sched)
       case (0)
@@ -65,9 +67,13 @@ c     &       cnt_op1op2(3)-cnt_kernel(3))
      &       cnt_dloop(1)-cnt_kernel(1),
      &       cnt_dloop(2)-cnt_kernel(2),
      &       -1d0)
+        call prtim(luout,'IO read',
+     &      cnt_rd(1),cnt_rd(2),-1d0)
+        call prtim(luout,'IO write',
+     &      cnt_wr(1),cnt_wr(2),-1d0)
         call prtim(luout,'overhead contraction 2',
-     &       cnt_op1op2(1)-cnt_dloop(1),
-     &       cnt_op1op2(2)-cnt_dloop(2),
+     &       cnt_op1op2(1)-cnt_dloop(1)-cnt_rd(1)-cnt_wr(1),
+     &       cnt_op1op2(2)-cnt_dloop(2)-cnt_rd(2)-cnt_wr(2),
      &       -1d0)
         call prtim(luout,'overhead scheduler',
      &       cpu-cpu0-cnt_op1op2(1),
