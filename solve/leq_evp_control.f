@@ -165,6 +165,9 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
      &                 'Max. number of iterations: ',opti_info%maxmacit
         write(luout,'(x,a,e10.2)')
      &                 'Threshold for residual:    ',opti_info%thrgrd(1)
+        write(luout,'(x,a,i10)')
+     &                 'Number of parameters:      ',
+     &       opti_info%nwfpar(1:opti_info%nopt)
       end if
 
       if (ntest.ge.10) then

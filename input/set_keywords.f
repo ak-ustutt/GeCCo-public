@@ -42,6 +42,7 @@ c      use parse_input
 
       call keyword_add('CCPT',context='method')
       call argument_add('maxexc','method.CCPT',type=vtyp_int,idef=(/3/))
+      call argument_add('extern','method.CCPT',type=vtyp_int,idef=(/0/))
 
       call keyword_add('ECC',context='method')
       call argument_add('maxexc','method.ECC',type=vtyp_int,idef=(/2/))

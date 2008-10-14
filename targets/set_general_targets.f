@@ -25,7 +25,7 @@
 
       integer ::
      &     min_rank, max_rank,
-     &     isim, ncat, nint, icnt, iformal,
+     &     isim, ncat, nint, icnt, iformal, extern,
      &     isym, ms, msc, sym_arr(8),trunc_type
       logical ::
      &     needed, explicit, truncate
@@ -42,6 +42,7 @@ c      call get_argument_value('method.R12','truncate',lval=truncate)
       truncate = is_keyword_set('method.truncate').gt.0
       call get_argument_value('method.truncate','trunc_type',
      &     ival=trunc_type)
+      call get_argument_value('method.CCPT','extern',ival=extern)
 
       msc = +1  ! assuming closed shell
 *----------------------------------------------------------------------*
@@ -60,14 +61,14 @@ c      call get_argument_value('method.R12','truncate',lval=truncate)
       iformal = 1
       explicit = is_keyword_set('method.R12').gt.0
       if (explicit.and.orb_info%caborb.gt.0.and.(.not.truncate
-     &     .or.(truncate.and.trunc_type.gt.0)))
+     &     .or.(truncate.and.trunc_type.gt.0)).or.extern.ge.2)
      &     iformal = 4
       if (explicit.and.orb_info%caborb.gt.0.and.truncate
-     &     .and.trunc_type.eq.0)
+     &     .and.trunc_type.eq.0.or.extern.eq.1)
      &     iformal = 3
       call add_target(op_ham,ttype_op,.false.,tgt_info)
       call hop_parameters(-1,parameters,
-     &                   0,2,iformal,explicit)
+     &                   0,2,iformal,explicit.or.extern.gt.0)
       call set_rule(op_ham,ttype_op,DEF_HAMILTONIAN,
      &              op_ham,1,1,
      &              parameters,1,tgt_info)
