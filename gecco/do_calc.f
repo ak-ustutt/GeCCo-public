@@ -91,8 +91,8 @@
         write(luout,*)
      &       'My next target: ',trim(tgt_info%array(idx)%tgt%name)
 
-        if (tgt%n_rules.eq.0)
-     &       call quit(1,'do_calc','no rules for target?')
+c        if (tgt%n_rules.eq.0)
+c     &       call quit(1,'do_calc','no rules for target?')
 
         ! loop over rules for this target
         do jdx = 1, tgt%n_rules
