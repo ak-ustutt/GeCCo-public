@@ -117,7 +117,6 @@ c dbg
      &     ifact_best(ld_inffac,narc_full+ndisconn),
      &     occ_vtx(ngastp,2,nvtx_full+njoined),
      &     irestr_vtx(2,orb_info%ngas,2,2,nvtx_full+njoined),
-     &     irestr_res(2,orb_info%ngas,2,2,njoined),
      &     info_vtx(2,nvtx_full+njoined),
      &     iarc_ori(narc_full+ndisconn),ivtx_ori(nvtx_full),
      &     irestr_res(2,orb_info%ngas,2,2,njoined))

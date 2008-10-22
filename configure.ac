@@ -46,6 +46,11 @@ case $host in
 		try_fc="pgf90 ifort ifc f90"
 		build_type="x86_64-linux"
 		;;
+        *i*86*darwin*)
+		try_cc="gcc icc pgcc cc"
+		try_fc="ifort ifc pgf90 g95"
+		build_type="i386_apple"
+		;;
 	*alpha*-linux*)
 		try_cc="ccc cc gcc"
 		try_fc="fort f90"

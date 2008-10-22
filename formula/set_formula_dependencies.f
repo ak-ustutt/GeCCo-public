@@ -41,21 +41,20 @@
       integer, pointer ::
      &     op2list(:), idxlist(:), depends_on_idxlist(:,:)
 
-
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
      &       'this is set_formula_dependencies')
       end if
 
+
       op2list => op_info%op2list 
       do ipass = 1, 2
-
         if (ntest.ge.100) write(luout,*) 'pass: ',ipass
-
         fl_ptr => flist
         iptr = 0
         iptr_last = 0
         itarget = 0
+        maxlist=0
         sorted = .false.
         do
           select case(fl_ptr%command)
@@ -111,13 +110,12 @@
               iptr_last = iptr
             end if
 
+
           end select
 
           if (.not.associated(fl_ptr%next)) exit
           fl_ptr => fl_ptr%next
-
         end do
-
         if (ipass.eq.1) then
           depend%ntargets = itarget
           depend%ndepend  = maxlist
@@ -132,7 +130,6 @@
         end if
 
       end do
-
       if (ntest.ge.100) then
         write(luout,*) 'targets: dependencies'
         idxlist => depend%idxlist
