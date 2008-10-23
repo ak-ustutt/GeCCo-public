@@ -48,7 +48,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       integer, intent(in) ::
      &     nopt, nroots
@@ -254,6 +254,17 @@
         end do
       end do
 
+      if (ntest.ge.1000.and.nroots.eq.1) then
+        do iopt = 1, nopt
+          write(luout,*) 'dump of '//trim(me_rhs(iopt)%mel%label)
+          write(luout,*) 'iopt = ',iopt
+          call wrt_mel_file(luout,5,
+     &         me_rhs(iopt)%mel,
+     &         1,me_rhs(iopt)%mel%op%n_occ_cls,
+     &         str_info,orb_info)
+        end do
+      end if
+
       ! start optimization loop
       iter = 0
       task = 0
@@ -291,12 +302,34 @@ c dbg
               call switch_mel_record(me_mvp(iopt)%mel,irecmvp(irequest))
             end do
 
+            if (ntest.ge.1000) then
+              do iopt = 1, nopt
+                write(luout,*) 'dump of '//trim(me_trv(iopt)%mel%label)
+                write(luout,*) 'iopt = ',iopt
+                call wrt_mel_file(luout,5,
+     &               me_trv(iopt)%mel,
+     &               1,me_trv(iopt)%mel%op%n_occ_cls,
+     &               str_info,orb_info)
+              end do
+            end if
+
             call frm_sched(xret,fl_rhs_mvp,depend,0,0,
      &           op_info,str_info,strmap_info,orb_info)
 
             do iopt = 1, nopt
               call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
+
+            if (ntest.ge.1000) then
+              do iopt = 1, nopt
+                write(luout,*) 'dump of '//
+     &               trim(me_mvp(iopt)%mel%label)
+                call wrt_mel_file(luout,5,
+     &               me_mvp(iopt)%mel,
+     &               1,me_mvp(iopt)%mel%op%n_occ_cls,
+     &               str_info,orb_info)
+              end do
+            end if
 
           end do
         end if
@@ -316,6 +349,18 @@ c dbg
      &                      me_opt(iopt)%mel%op%name,op_info)
 
       end do
+
+      if (ntest.ge.1000) then
+        do iopt = 1, nopt
+          write(luout,*) 'dump of final '//trim(me_opt(iopt)%mel%label)
+          write(luout,*) 'iopt = ',iopt
+          call wrt_mel_file(luout,5,
+     &         me_opt(iopt)%mel,
+     &         1,me_opt(iopt)%mel%op%n_occ_cls,
+     &         str_info,orb_info)
+        end do
+      end if
+
 
       call clean_formula_dependencies(depend)
 

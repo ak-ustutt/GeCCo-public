@@ -2,7 +2,7 @@
 # eine kleine TURBOMOLE-Leihgabe
 
 # probably very inelegant way to keep strings limited:
-echo $2 | split -C60
+echo $2 | split -b60
 optstr=`cat xaa`
 rm xa*
 

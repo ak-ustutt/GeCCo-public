@@ -16,6 +16,8 @@ FC=ifort CC=icc ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/32/ -lm
 FC=ifort CC=icc ./configure --with-blas='-L/opt/intel/mkl/8.0/lib/32/ -lmkl -lmkl_lapack -lguide -lpthread'
 - for pgf90 the following seems to work OK:
 FC=pgf95 CC=pgcc ./configure --with-blas=-lacml
+- on a MAC with ifort 10 something like:
+FC=ifort CC=gcc ./configure --with-blas='-L/Library/Frameworks/Intel_MKL.framework/Versions/Current/Libraries/em64t  -I/Library/Frameworks/Intel_MKL.framework/Versions/Current/include -lmkl_intel_lp64 -lmkl_sequential -lmkl_lapack -lguide -lpthread'
 
 or whatever is appropriate on the present machine.
 

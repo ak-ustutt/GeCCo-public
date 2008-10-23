@@ -126,8 +126,24 @@ c        occ_def(1:ngastp,2,4) = (/0,1,0,0/)
 c        call set_uop(f_temp_pnt,op_f_temp,.false.,
 c     &       occ_def,ndef,orb_info)
 c        deallocate(occ_def)
-        call set_hop(f_temp_pnt,op_f_temp,.false.,
-     &       1,1,2,.false.,orb_info)
+        if (trim(mode).ne.'EXTERN') then
+          call set_hop(f_temp_pnt,op_f_temp,.false.,
+     &         1,1,2,.false.,orb_info)
+        else
+c          ndef = 3
+c          allocate(occ_def(ngastp,2,ndef))
+c          occ_def(1:ngastp,1,1) = (/1,0,0,0/)
+c          occ_def(1:ngastp,2,1) = (/1,0,0,0/)
+c          occ_def(1:ngastp,1,2) = (/0,1,0,0/)
+c          occ_def(1:ngastp,2,2) = (/0,1,0,0/)
+c          occ_def(1:ngastp,1,3) = (/0,0,0,1/)
+c          occ_def(1:ngastp,2,3) = (/0,0,0,1/)
+c          call set_uop(f_temp_pnt,op_f_temp,.false.,
+c     &         occ_def,ndef,orb_info)
+c          deallocate(occ_def)
+          call set_hop(f_temp_pnt,op_f_temp,.false.,
+     &         1,1,2,.true.,orb_info)
+        end if
 
         idxsop = idxtop
         idxspt = idxtpt

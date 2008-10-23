@@ -6,6 +6,7 @@
       implicit none
 
       include 'stdunit.h'
+      include 'opdim.h'
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
 
@@ -22,14 +23,17 @@
      &     orb_info
 
       integer ::
-     &     max_rank, min_rank_pt, max_rank_pt,
+     &     max_rank, min_rank_pt, max_rank_pt, max_extern,
      &     min_rank_tp, min_rank_tpp, ntp_min, ntp_max,
      &     ntpp_min, ntpp_max,
      &     ansatz,
      &     isim, ncat, nint, icnt, r12op,
-     &     isym, ms, msc, sym_arr(8)
+     &     isym, ms, msc, sym_arr(8),
+     &     occ_def(ngastp,2,60), ndef
       logical ::
      &     needed, explicit, r12fix, set_tp, set_tpp
+      character(len=8) ::
+     &     mode
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -51,6 +55,7 @@
       call get_argument_value('method.CC','maxexc',ival=max_rank)
       min_rank_pt = max_rank+1
       call get_argument_value('method.CCPT','maxexc',ival=max_rank_pt)      
+      call get_argument_value('method.CCPT','extern',ival=max_extern)      
 
       if (explicit) then
         call get_argument_value('method.R12','ansatz',ival=ansatz)      
@@ -112,11 +117,39 @@ c          n_pp=2
 
       ! T(pt) operator
       call add_target(op_tpt,ttype_op,.false.,tgt_info)
-      call xop_parameters(-1,parameters,
-     &                   .false.,min_rank_pt,max_rank_pt,0,1)
-      call set_rule(op_tpt,ttype_op,DEF_EXCITATION,
-     &              op_tpt,1,1,
-     &              parameters,1,tgt_info)
+      if (max_extern.eq.0) then
+        call xop_parameters(-1,parameters,
+     &       .false.,min_rank_pt,max_rank_pt,0,1)
+        call set_rule(op_tpt,ttype_op,DEF_EXCITATION,
+     &       op_tpt,1,1,
+     &       parameters,1,tgt_info)
+      else ! try n-externals
+        if (max_rank_pt-min_rank_pt.ne.0)
+     &       call quit(1,'set_cc_pt_targets','not allowed!')
+        occ_def = 0
+        ! 0-ext
+        occ_def(IPART,1,1) = max_rank_pt
+        occ_def(IHOLE,2,1) = max_rank_pt
+        ! 1-ext
+        occ_def(IPART,1,2) = max_rank_pt-1
+        occ_def(IEXTR,1,2) = 1
+        occ_def(IHOLE,2,2) = max_rank_pt
+        ndef = 2
+        if (max_extern.ge.2) then
+          ! 2-ext
+          occ_def(IPART,1,3) = max_rank_pt-2
+          occ_def(IEXTR,1,3) = 2
+          occ_def(IHOLE,2,3) = max_rank_pt
+          ndef = 3
+        end if
+        if (max_extern.gt.2)
+     &       call quit(1,'set_cc_pt_targets','extern>2 not allowed!')
+        call op_from_occ_parameters(-1,parameters,2,
+     &                              occ_def,ndef,1,ndef)
+        call set_rule(op_tpt,ttype_op,DEF_OP_FROM_OCC,
+     &                op_tpt,1,1,
+     &                parameters,2,tgt_info)
+      end if
       ! T'(pt) operator
       if (set_tp) then
         call add_target(op_cex_pt,ttype_op,.false.,tgt_info)
@@ -202,8 +235,10 @@ c          n_pp=2
 c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
       call set_dependency(form_ptdl0,op_top,tgt_info)
       call set_dependency(form_ptdl0,op_tpt,tgt_info)
+      mode = '----'
+      if (max_extern.gt.0) mode = 'EXTERN'
       call form_parameters(-1,
-     &     parameters,2,title_ptdl0,ansatz,'---')
+     &     parameters,2,title_ptdl0,ansatz,mode)
       call set_rule(form_ptdl0,ttype_frm,DEF_CCPT_LAGRANGIAN,
      &              labels,nint,1,
      &              parameters,2,tgt_info)

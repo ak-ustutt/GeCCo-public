@@ -35,9 +35,9 @@
       logical ::
      &     first, first_str, open_close_ffdia
       integer ::
-     &     iocc_cls, msamax, mscmax, ica, ihpvdx, ihpv, nsym, ngas,
+     &     iblk, msamax, mscmax, ica, ihpvdx, ihpv, nsym, ngas,
      &     msa, msc, igama, igamc, igamstr, ms_str,
-     &     idxms, igrph, idis,
+     &     idxms, igrph, ndis, idis, did, njoined,
      &     ncidx, naidx, maxidx, nidx, idx, ifree,
      &     nblk, nblkmax, idum, maxbuff,
      &     maxstrbuf, nstrbuf, nloop,
@@ -83,6 +83,11 @@
       op => me_dia%op
       ffdia => me_dia%fhand
 
+      njoined = op%njoined
+
+      if (njoined.ne.1)
+     &     call quit(1,'dia4op','njoined!=1 occurred!')
+
       call atim_csw(cpu0,sys0,wall0)
       
       igas_restr => str_info%igas_restr
@@ -99,15 +104,15 @@
       maxbuff=0
       do iocc_cls = 1, op%n_occ_cls
         iocc => op%ihpvca_occ(1:ngastp,1:2,iocc_cls)
-        ! currently only tested for pure excitations, so:
-        if (imltlist(0,iocc(1:,1),ngastp,1).lt.3.or.
-     &      imltlist(0,iocc(1:,2),ngastp,1).lt.3.or.
-     &      iocc(ihole,1).gt.0 .or.
-     &      iocc(ipart,2).gt.0 ) then
-          call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
-          call quit(1,'dia4op',
-     &         'routine not tested for this kind of occupation')
-        end if
+c        ! currently only tested for pure excitations, so:
+c        if (imltlist(0,iocc(1:,1),ngastp,1).lt.3.or.
+c     &      imltlist(0,iocc(1:,2),ngastp,1).lt.3.or.
+c     &      iocc(ihole,1).gt.0 .or.
+c     &      iocc(ipart,2).gt.0 ) then
+c          call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
+c          call quit(1,'dia4op',
+c     &         'routine not tested for this kind of occupation')
+c        end if
         maxbuff = max(maxbuff,me_dia%len_op_occ(iocc_cls))
       end do
 
@@ -124,23 +129,23 @@
         
       ifree = mem_alloc_real(buffer,maxbuff,'buffer')
       ! loop over operator elements
-      occ_cls: do iocc_cls = 1, op%n_occ_cls
+      occ_cls: do iblk = 1, op%n_occ_cls
 
-        if(op%formal_blk(iocc_cls))cycle
+        if(op%formal_blk(iblk))cycle
 
         ! buffer: start from new
         idxbuf = 0
 
-        iocc => op%ihpvca_occ(1:ngastp,1:2,iocc_cls)
-        idx_graph => me_dia%idx_graph(1:ngastp,1:2,iocc_cls)
+        iocc => op%ihpvca_occ(1:ngastp,1:2,iblk)
+        idx_graph => me_dia%idx_graph(1:ngastp,1:2,iblk)
 
         if (ntest.ge.100) then
           write(luout,*) 'current occupation class:'
-          call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
+          call wrt_occ(luout,op%ihpvca_occ(1,1,iblk))
         end if
 
-        ncidx = op%ica_occ(1,iocc_cls)
-        naidx = op%ica_occ(2,iocc_cls)
+        ncidx = op%ica_occ(1,iblk)
+        naidx = op%ica_occ(2,iblk)
         maxidx = max(ncidx,naidx)
        
         mscmax = ncidx
@@ -195,28 +200,34 @@
           if (abs(msc).gt.mscmax) cycle msa_loop
           idxms = idxms+1
 
-          igama_loop: do igama = 1, orb_info%nsym
+          igama_loop: do igama = 1, nsym
             igamc = multd2h(igama,me_dia%gamt)
             
-            if (me_dia%len_op_gmo(iocc_cls)%gam_ms(igama,idxms).eq.0)
+            if (me_dia%len_op_gmo(iblk)%gam_ms(igama,idxms).eq.0)
      &           cycle igama_loop
 
-            idis = 0
-            first = .true.
+c            idis = 0
+c            first = .true.
             ! for pure P/H excitations we will not need this:
             ! separate loop / procedure ?
-            distr_loop: do
+            ndis = me_dia%off_op_gmox(iblk)%ndis(igama,idxms)
+            distr_loop: do idis = 1, ndis
 
-              if (.not.next_msgamdist(first,
-     &           msa,msc,igama,igamc,iocc,
-     &                   orb_info%nsym,
-     &           msdst,igamdst)) exit distr_loop
-              first = .false.
-              idis = idis+1
+              did = me_dia%off_op_gmox(iblk)%did(idis,igama,idxms)
+            
+              call did2msgm(msdst,igamdst,did,
+     &               iocc,nsym,njoined)
 
-              if (me_dia%len_op_gmox(iocc_cls)%
-     &             d_gam_ms(idis,igama,idxms).eq.0)
-     &             cycle distr_loop
+c              if (.not.next_msgamdist(first,
+c     &           msa,msc,igama,igamc,iocc,
+c     &                   orb_info%nsym,
+c     &           msdst,igamdst)) exit distr_loop
+c              first = .false.
+c              idis = idis+1
+
+c              if (me_dia%len_op_gmox(iblk)%
+c     &             d_gam_ms(idis,igama,idxms).eq.0)
+c     &             cycle distr_loop
               
               if (ntest.ge.100) then
                 write(luout,*) 'msc,msa,igamc,igama: ',
@@ -305,12 +316,25 @@ c dbg
               do while(ioffbuf.lt.ioffbuf0+lenblk)
                 ! collect contributions from formal outer loops 
                 ! (over more than two strings):
-                idxbuf = ioffbuf+1
+                idxbuf = ioffbuf - ioffbuf0 !+1
                 xsum_outer = 0d0
                 do iouter = 1, nouter
                   idx = ioff_xsum(iouter) + idxbuf/nincr(iouter)+1
-                  idxbuf = mod(idxbuf,nincr(iouter)) 
                   xsum_outer = xsum_outer + xsum(idx)
+c dbg
+c                  if (idx.gt.nstr(iouter).or.idx.lt.1) then
+c                    write(6,*) 'range(O) iouter,idx,nstr: ',
+c     &                 iouter,idx,nstr(iouter)
+c                    write(6,*) 'range(O) '//
+c     &                   'idxbuf,nincr(iouter),ioff_xsum(iouter): ',
+c     &                   idxbuf,nincr(iouter),
+c     &                 ioff_xsum(iouter)
+c                    write(6,*) 'off,idx/nicr: ',
+c     &                   ioff_xsum(iouter),idxbuf/nincr(iouter),
+c     &                   ioff_xsum(iouter) + idxbuf/nincr(iouter)+1
+c                  end if
+c dbg
+                  idxbuf = mod(idxbuf,nincr(iouter)) 
                 end do
                 ! explicit loops for the two innermost strings
                 do idx_inner1 = ioff_inner1+1, ioff_inner1+n_inner1
@@ -335,12 +359,12 @@ c dbg
 c dbg
 c        if (ntest.ge.100)
 c     &       print *,'final buffer: ',
-c     &       buffer(1:me_dia%len_op_occ(iocc_cls))
+c     &       buffer(1:me_dia%len_op_occ(iblk))
 c dbg
         ! put buffer to disc
-        call put_vec(ffdia,buffer,me_dia%off_op_occ(iocc_cls)+1,
-     &                            me_dia%off_op_occ(iocc_cls)
-     &                           +me_dia%len_op_occ(iocc_cls))
+        call put_vec(ffdia,buffer,me_dia%off_op_occ(iblk)+1,
+     &                            me_dia%off_op_occ(iblk)
+     &                           +me_dia%len_op_occ(iblk))
         
         ifree = mem_flushmark()
 

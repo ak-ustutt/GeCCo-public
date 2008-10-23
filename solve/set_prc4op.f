@@ -208,9 +208,6 @@ c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
      &     call twodia_from_op(b2dia,!b2off,b2nblk,
      &                         me_b,
      &                         orb_info,str_info)
-c dbg
-c      if (use_b1) stop 'testing'
-c dbg
       ! Extract the diagonal elements of the X-matrix for R12.
       if (use_x)
      &     call twodia_from_op(x2dia,!x2off,x2nblk,
@@ -241,6 +238,7 @@ c dbg
 
       call prtim(luout,'time for diagonal ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
+
 
       return
       end
