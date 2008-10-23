@@ -91,7 +91,7 @@ c     &       parameters,1,tgt_info)
      &              op_top,1,1,
      &              parameters,1,tgt_info)
       else
-        if (min_rank.ne.1.or.max_rank.ne.2.or..not.explicit)
+        if (min_rank.ne.1.or.max_rank.gt.2.or..not.explicit)
      &       call quit(1,'set_ccmp_general_targets',
      &       'experimental T1ext option is for CCSD with R12 only')
         occ_def = 0
@@ -101,10 +101,13 @@ c     &       parameters,1,tgt_info)
         ! 2 -- T1'
         occ_def(IEXTR,1,2) = 1
         occ_def(IHOLE,2,2) = 1
-        ! 3 -- T2
-        occ_def(IPART,1,3) = 2
-        occ_def(IHOLE,2,3) = 2
-        ndef = 3
+        ndef = 2
+        if (max_rank.eq.2) then
+          ! 3 -- T2
+          occ_def(IPART,1,3) = 2
+          occ_def(IHOLE,2,3) = 2
+          ndef = 3
+        end if
         call op_from_occ_parameters(-1,parameters,2,
      &                              occ_def,ndef,1,ndef)
         call set_rule(op_top,ttype_op,DEF_OP_FROM_OCC,
