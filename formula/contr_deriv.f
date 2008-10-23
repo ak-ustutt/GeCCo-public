@@ -113,12 +113,12 @@
         else
           if (contr%idx_res.ne.0) then
             iocc = iocc_add(1,ops(contr%idx_res)%
-     &                        ihpvca_occ(1,1,contr%iblk_res),.false.,
-     &                  1,ops(idxder)%ihpvca_occ(1,1,iblk(ider)),
+     &                        ihpvca_occ(1:,1:,contr%iblk_res),.false.,
+     &                  1,ops(idxder)%ihpvca_occ(1:,1:,iblk(ider)),
      &                  .not.ops(idxder)%dagger)
           else
             if (.not.ops(idxder)%dagger) then
-              iocc = iocc_dagger(ops(idxder)%ihpvca_occ(1,1,iblk(ider)))
+              iocc=iocc_dagger(ops(idxder)%ihpvca_occ(1:,1:,iblk(ider)))
             else
               iocc(1:ngastp,1:2) =
      &             ops(idxder)%ihpvca_occ(1:ngastp,1:2,iblk(ider))

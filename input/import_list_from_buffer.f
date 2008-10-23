@@ -234,7 +234,7 @@ c                  print *,'ignore',ignore
 c dbg
                 endif
                       
-                call inner_loop(curblk(idxoff_blk+1))
+                call inner_loop(curblk(idxoff_blk+1:))
 c dbg
 c                print *,'current block:'
 c                print '(5f16.8)',curblk(1:lenblk)

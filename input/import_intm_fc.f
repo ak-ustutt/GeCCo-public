@@ -182,7 +182,7 @@ c dbg
               did = mel%off_op_gmox(iblk)%did(idx_dis,igam,idxms)
               call did2msgm(msd,igamd,did,occ,ngam,njoined)
 
-              call inner_loop(curblk(idxoff_blk+1))
+              call inner_loop(curblk(idxoff_blk+1:))
 
             enddo distr_loop
             idoff = ffop%length_of_record*(ffop%current_record-1)

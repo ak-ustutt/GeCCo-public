@@ -100,8 +100,8 @@
       do iocc_cls = 1, op%n_occ_cls
         iocc => op%ihpvca_occ(1:ngastp,1:2,iocc_cls)
         ! currently only tested for pure excitations, so:
-        if (imltlist(0,iocc(1,1),ngastp,1).lt.3.or.
-     &      imltlist(0,iocc(1,2),ngastp,1).lt.3.or.
+        if (imltlist(0,iocc(1:,1),ngastp,1).lt.3.or.
+     &      imltlist(0,iocc(1:,2),ngastp,1).lt.3.or.
      &      iocc(ihole,1).gt.0 .or.
      &      iocc(ipart,2).gt.0 ) then
           call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
