@@ -174,6 +174,20 @@
      &       'F_appr unknown: "'//trim(F_appr)//'"')
       end select
 
+      select case(trim(K_appr))
+      case('none')
+        write(luout,*) 'no approximations wrt. Xchange made'
+      case('HY1')
+        write(luout,*) 'Y contribution omitted'
+        approx(8:10) = 'HY1'
+      case('HY2')
+        write(luout,*) 'Y contribution approx with 1 CABS index'
+        approx(8:10) = 'HY2'
+      case default
+        call quit(0,'set_r12_general_targets',
+     &       'K_appr unknown: "'//trim(K_appr)//'"')
+      end select
+
 *----------------------------------------------------------------------*
 *     Operators:
 *----------------------------------------------------------------------*
@@ -867,7 +881,7 @@ c     &              parameters,2,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_ccabs
       labels(2) = op_c_inter
-      if (approx.eq.'B') then
+      if (approx(1:1).eq.'B') then
         labels(3) = op_rint
         labels(4) = op_ham
         labels(5) = op_ttr

@@ -150,10 +150,10 @@
      &     idxr12,idxc12,idxcpp12,
      &     r12op,r12fix,op_info)
 
-c      if (ntest.ge.1000) then
+      if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T + CR')
         call print_form_list(luout,flist_t_cr,op_info)
-c      end if
+      end if
 
       ! Must also form SBAR.
       call init_formula(flist_tbar_cbarr)

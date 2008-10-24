@@ -90,20 +90,11 @@ c        if (2*ngastp*ndef*njoined.gt.240)
      &      call quit(1,'op_from_occ_parameters','2*ngastp*ndef.gt.480')
 c        write(parameters(2),'(120(i2))')
 c        write(parameters(2),'(240(i1))')
-c dbg
-        print *,'njoined,ndef',njoined,ndef
-        print *,'nmax',nmax
-        print *,'passed: ',occ_def(1:2*ngastp*ndef*njoined)
-c dbg
         write(parameters(2),'(480(i1))')
      &        occ_def(1:2*ngastp*ndef*njoined)        
       else
         read(parameters(1),'(2(i5,x))')
      &       njoined, ndef
-c dbg
-        print *,'njoined,ndef',njoined,ndef
-        print *,'nmax',nmax
-c dbg
         if (ndef*njoined.gt.nmax)
      &       call quit(1,'op_from_occ_parameters','nmax too small')
 c        read(parameters(2),'(120(i2))')
