@@ -53,6 +53,8 @@
       last_rule => new_rules(tgt%n_rules+1)
       last_rule%command(1:len_command_name) = ' '
       last_rule%command = trim(command)
+      ! this routine works for the old behaviour
+      last_rule%new = .false.
 
       allocate(last_rule%labels(n_labels))
       allocate(last_rule%parameters(n_parameter_strings))

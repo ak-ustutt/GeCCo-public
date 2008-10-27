@@ -280,6 +280,31 @@ c        read(parameters(2),'(240(i1))')
       end
 
 *----------------------------------------------------------------------*
+      subroutine def_form_parameters(rw,
+     &     parameters,n_par_str,form_str,title)
+
+      implicit none
+      
+      integer, intent(in) ::
+     &     rw, n_par_str
+      character*(*), intent(inout) ::
+     &     parameters(n_par_str),
+     &     title, form_str
+
+      if (rw.lt.0) then
+        write(parameters(1),'(a)') title
+        if (n_par_str.gt.1)
+     &       write(parameters(2),'(a)') form_str
+      else
+        read(parameters(1),'(a)') title
+        if (n_par_str.gt.1)
+     &       read(parameters(2),'(a)') form_str
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine expand_parameters(rw,
      &     parameters,n_par_str,title,nop,
      &     idx_sv,iblkmin,iblkmax,

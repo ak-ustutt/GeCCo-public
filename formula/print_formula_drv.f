@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine tex_formula_drv(f_input,name_output,op_info)
+      subroutine print_formula_drv(f_input,name_output,op_info)
 *----------------------------------------------------------------------*
 *
 *     driver for printing formula
@@ -16,7 +16,7 @@ c      include 'def_contraction_list.h'
       include 'mdef_formula_info.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       character(len=*), intent(in) ::
      &     name_output
@@ -26,7 +26,9 @@ c      include 'def_contraction_list.h'
      &     op_info
 
       type(filinf) ::
-     &     fftex
+     &     ffprint
+      integer ::
+     &     luprint
 
       type(formula_item) ::
      &     flist
@@ -37,23 +39,23 @@ c      include 'def_contraction_list.h'
         write(luout,*) ' f_input  = ',trim(f_input%label)
       end if
 
-      call file_init(fftex,name_output,ftyp_sq_frm,0)
-      call file_open(fftex)
+      if (name_output.ne.'stdout') then
+        call file_init(ffprint,name_output,ftyp_sq_frm,0)
+        call file_open(ffprint)
+        luprint = ffprint%unit
+      else
+        luprint = luout
+      end if
 
       ! read in input formula
       call init_formula(flist)
       call read_form_list(f_input%fhand,flist)
 
-      ! TeX it ...
-      if (iprlvl.gt.0) then
-        write(luout,*) 'A TeX formatted version of formula ',
-     &       trim(f_input%label)
-        write(luout,*) 'is written to file: ',trim(fftex%name)
-      end if
+      ! print it ...
+      call print_form_list(luprint,flist,op_info)
 
-      call tex_form_list(fftex%unit,flist,op_info)
-
-      call file_close_keep(fftex)
+      if (name_output.ne.'stdout')
+     &     call file_close_keep(ffprint)
 
       call dealloc_formula_list(flist)
       
