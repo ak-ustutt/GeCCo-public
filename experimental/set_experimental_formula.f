@@ -54,10 +54,10 @@ c     &     op_scrbar = '_TB'
       integer ::
      &     nterms, idx_sop, idx_sbar, ndef, idxrint, ilabel, idx,
      &     idx_scr,idx_scrbar, r12op,
-     &     idxham,idxtbar,idxtop,idxmet,idxrba,idxcbar,idxr12,idxc12,
-     &     idxcpp12, idxcppbar,
+     &     idxham,idx_l,idx_t,idx_resplag,idxrba,idxcbar,idx_op,
+     &     idxc12,idxcpp12,idxcppbar,
      &     iblk_xxhp, iblk_pxhp, iblk_xxpp, iblk_pxpp,
-     &     min_rank, max_rank, iprint,
+     &     min_rank, max_rank, iprint, fact, iterm,
      &     occ(ngastp,2)
  
       type(operator), pointer::
@@ -70,6 +70,16 @@ c     &     op_scrbar = '_TB'
       real(8) ::
      &     cpu, wall, sys, cpu0, wall0, sys0
 
+      integer, parameter ::
+     &     maxterm = 4
+
+      integer ::
+     &     op_idx(5+maxterm), op_num(5+maxterm),
+     &     connect(2*maxterm+1), switch
+
+      integer, external ::
+     &      factorial
+
       if (ntest.eq.100) then
         call write_title(luout,wst_dbg_subr,
      &       'output from set_experimental')
@@ -78,42 +88,101 @@ c     &     op_scrbar = '_TB'
       end if
 
       call atim_csw(cpu0,sys0,wall0)
-
       ! transform labels into indices in this way
       do ilabel = 1, nlabels
         idx = idx_oplist2(label(ilabel),op_info)
         if (idx.le.0)
      &       call quit(1,'set_exp',
      &       'label not on list: '//trim(label(ilabel)))
-        if (ilabel.eq.1) idxmet = idx
-        if (ilabel.eq.2) idxr12 = idx
-        if (ilabel.eq.3) idxtbar = idx
-        if (ilabel.eq.4) idxtop = idx
+        if (ilabel.eq.1) idx_resplag = idx
+        if (ilabel.eq.2) idx_op = idx
+        if (ilabel.eq.3) idx_t = idx
       end do
 
       ! initialize formula
       call init_formula(flist_exp)
       flist_pnt => flist_exp
       ! put [INIT] at the beginning
-      call new_formula_item(flist_pnt,command_set_target_init,idxmet)
-      flist_pnt => flist_pnt%next
+      call new_formula_item(flist_pnt,
+     &    command_set_target_init,idx_resplag)
+c      flist_pnt => flist_pnt%next
 
-      ! formulae are set up e.g. by ...
-      ! expand <0|Sbar S|0>
-c      call expand_op_product2(flist_pnt,idxmet,
+      ! expand <0|Tbar exp(-T) Op exp(T) |0>
+      op_idx(1) = idx_resplag
+      op_idx(2) = -idx_t
+      op_idx(3) = idx_op
+      op_idx(4) = idx_resplag
+      op_num(1:4) = (/1,2,3,1/)
+      connect(1) = 0
+      switch = 1
+      do iterm = 1,maxterm+1
+        do while(associated(flist_pnt%next))
+          flist_pnt => flist_pnt%next
+        end do
+        fact = factorial(iterm-1)
+   
+        call expand_op_product2(flist_pnt,idx_resplag,
+     &       1d0/fact,iterm+3,iterm+2,
+     &       op_idx(1:iterm+3),
+     &       op_num(1:iterm+3),
+     &       -1,-1,
+     &       connect(1:2*iterm-switch),iterm-1,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+        op_idx(iterm+3) = idx_t
+        op_idx(iterm+4) = idx_resplag
+        op_num(iterm+3) = iterm+3
+        op_num(iterm+4) = 1
+        connect(2*iterm-1) = 3
+        connect(2*iterm) = iterm+3
+        switch = 2
+      end do
+
+c      ! formulae are set up e.g. by ...
+c      ! expand <0|T2bar [F,T2]|0>
+c      call expand_op_product2(flist_pnt,idx_mp2lag,
+c     &     1d0,5,4,
+c     &     (/idx_mp2lag,-idx_t2,idx_fock,idx_t2,idx_mp2lag/),
+c     &     (/1         ,2      ,3       ,4     ,1/),
+c     &     -1,-1,
+c     &     (/3,4/),1,
+c     &     0,0,
+c     &     0,0,
+c     &     op_info)
+
+c      do while(associated(flist_pnt%next))
+c        flist_pnt => flist_pnt%next
+c      end do
+c      ! expand <0|PHI T2|0>
+c      call expand_op_product2(flist_pnt,idx_mp2lag,
 c     &     1d0,4,3,
-c     &     (/idxmet,idx_sbar,idx_sop,idxmet/),
-c     &     (/1     ,2       ,3      ,1/),
+c     &     (/idx_mp2lag,idx_phi,idx_t2,idx_mp2lag/),
+c     &     (/1         ,2      ,3     ,1         /),
+c     &     -1,-1,
+c     &     (/2,3/),1,
+c     &     0,0,
+c     &     0,0,
+c     &     op_info)
+
+c      do while(associated(flist_pnt%next))
+c        flist_pnt => flist_pnt%next
+c      end do
+c      ! expand <0|T2bar PHI|0>
+c      call expand_op_product2(flist_pnt,idx_mp2lag,
+c     &     1d0,4,3,
+c     &     (/idx_mp2lag,-idx_t2,idx_phi,idx_mp2lag/),
+c     &     (/1         ,2      ,3     ,1         /),
 c     &     -1,-1,
 c     &     0,0,
 c     &     0,0,
 c     &     0,0,
 c     &     op_info)
 
-      if (ntest.ge.100) then
+c      if (ntest.ge.100) then
         call write_title(luout,wst_title,'Final formula')
         call print_form_list(luout,flist_exp,op_info)
-      end if
+c      end if
 
       ! assign comment
       form_exp%comment = trim(title)

@@ -56,9 +56,6 @@ c      include 'def_contraction_list.h'
       call file_close_keep(fftex)
 
       call dealloc_formula_list(flist)
-c dbg
-c      stop 'still stopping'
-c dbg
       
       return
       end

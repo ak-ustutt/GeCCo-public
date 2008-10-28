@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -169,10 +169,10 @@ c      sbar_pnt%dagger = .true.
      &     idxr12,idxc12,idxcpp12,
      &     r12op,r12fix,op_info)
 
-c      if (ntest.ge.1000) then
+      if (ntest.ge.1000) then
         call write_title(luout,wst_title,'T + CR')
         call print_form_list(luout,flist_t_cr,op_info)
-c      end if
+      end if
 
       ! Must also form SBAR.
       call init_formula(flist_tbar_cbarr)
@@ -270,6 +270,11 @@ cc     &     flist_lag,op_info)
         call r12_form_post(flist_lag,nterms,
      &       idxtbar,idxcbar,idxham,idxtop,idxc12, iprint,
      &       op_info)
+      else if (r12fix.and.r12op.le.1) then
+        iprint = iprlvl
+        call cc_form_post(flist_lag,nterms,
+     &       idxtbar,idxham,idxtop, iprint,
+     &       op_info)
       endif
 
       if (ntest.ge.100) then
@@ -292,16 +297,10 @@ cc     &     flist_lag,op_info)
       ! remove the formal operators
       call del_operator(op_sba,op_info)
       call del_operator(op_sop,op_info)
-c      if (extend.gt.0) call del_operator(op_scr,op_info)
-c      if (extend.gt.0) call del_operator(op_scrbar,op_info)
 
       call atim_csw(cpu,sys,wall)
       write(luout,*) 'Number of generated terms: ',nterms
       call prtim(luout,'CC-R12 Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
-c dbg
-c      stop
-c      if (r12op.gt.0) stop 'testing'
-c dbg
       return
       end

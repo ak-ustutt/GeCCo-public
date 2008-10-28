@@ -90,20 +90,11 @@ c        if (2*ngastp*ndef*njoined.gt.240)
      &      call quit(1,'op_from_occ_parameters','2*ngastp*ndef.gt.480')
 c        write(parameters(2),'(120(i2))')
 c        write(parameters(2),'(240(i1))')
-c dbg
-        print *,'njoined,ndef',njoined,ndef
-        print *,'nmax',nmax
-        print *,'passed: ',occ_def(1:2*ngastp*ndef*njoined)
-c dbg
         write(parameters(2),'(480(i1))')
      &        occ_def(1:2*ngastp*ndef*njoined)        
       else
         read(parameters(1),'(2(i5,x))')
      &       njoined, ndef
-c dbg
-        print *,'njoined,ndef',njoined,ndef
-        print *,'nmax',nmax
-c dbg
         if (ndef*njoined.gt.nmax)
      &       call quit(1,'op_from_occ_parameters','nmax too small')
 c        read(parameters(2),'(120(i2))')
@@ -283,6 +274,31 @@ c        read(parameters(2),'(240(i1))')
         read(parameters(1),'(a)') title
         if (n_par_str.gt.1)
      &       read(parameters(2),'(i8,a)') inum, mode_str
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine def_form_parameters(rw,
+     &     parameters,n_par_str,form_str,title)
+
+      implicit none
+      
+      integer, intent(in) ::
+     &     rw, n_par_str
+      character*(*), intent(inout) ::
+     &     parameters(n_par_str),
+     &     title, form_str
+
+      if (rw.lt.0) then
+        write(parameters(1),'(a)') title
+        if (n_par_str.gt.1)
+     &       write(parameters(2),'(a)') form_str
+      else
+        read(parameters(1),'(a)') title
+        if (n_par_str.gt.1)
+     &       read(parameters(2),'(a)') form_str
       end if
 
       return

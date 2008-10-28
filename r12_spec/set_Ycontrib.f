@@ -37,10 +37,11 @@
 
 
       if (approx(1:1).eq.'A') return
-      if (approx(8:10).eq.'HY1') return
-      if (approx(8:8).eq.'H')
+      if ( approx(8:10).eq.'HY1' .or.
+     &    (approx(8:10).eq.'HY2'.and.ansatz.eq.1)) return
+      if (approx(8:10).ne.'HY2'.and.approx(8:10).ne.'   ')
      &     call quit(1,'set_Ycontrib',
-     &     'Hybrid approximations: only HY1 is implemented')
+     &     'Hybrid approximations: only HY1/HY2 is implemented')
 
       if (irdag.gt.nop.or.
      &    irtilde.gt.nop) then
@@ -79,6 +80,7 @@
       ! set Q projector
       idx_prj = 1
       if (ansatz.gt.1) idx_prj = 3
+      if (approx(8:10).eq.'HY2') idx_prj = 11
       if (njoined_intm.eq.1) then
 c        call expand_op_product2(flist_pnt,idx_intm,
 c     &       -1d0,4,3,
