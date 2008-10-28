@@ -29,7 +29,7 @@ c      include 'def_filinf.h'
       include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     ncmpnd

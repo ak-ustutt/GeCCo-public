@@ -51,6 +51,9 @@
       integer, external ::
      &     idx_formlist
 
+c dbgmh
+      print *,'m1'
+c dbgend
       iprint = max(ntest,iprlvl)
 
       call write_title(luout,wst_section,'Formula optimization')
@@ -139,7 +142,6 @@ c dbg
         call factor_out(form_head,finlabels(iint),
      &       form_info,op_info)
       end do
-
       ! ----------------------------------------
       ! round two:
       ! find optimal factorization for each term

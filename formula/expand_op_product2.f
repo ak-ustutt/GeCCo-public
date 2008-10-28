@@ -104,6 +104,9 @@
       integer, external ::
      &     vtx_type
 
+c dbg
+c      integer ii,jj
+c dbg
       if (ntest.ge.100) then
         write(luout,*) '============================='
         write(luout,*) ' Info from expand_op_product'
@@ -198,6 +201,9 @@ c dbg
       do ivtx = 1, nvtx        
         idx_op(proto%svertex(ivtx)) = idx_op_vtx(ivtx)
       end do
+c dbg
+c      print *,'mark1b'
+c dbg
 
       ! number of result operator
       num_res = 0 ! no open lines?
@@ -215,9 +221,9 @@ c dbg
       op_res => op_info%op_arr(idx_res)%op
       allocate(ops(nops))
       do iop = 1, nops
-c dbg
+c dbg*
 c        print *,'iop, idx_op(iop): ',iop, idx_op(iop)
-c dbg
+c dbg*
         ops(iop)%op => op_info%op_arr(abs(idx_op(iop)))%op
       end do
 
@@ -232,7 +238,7 @@ c dbg
         njoined_res = nvtx_res/2
       end if
 
-c dbg
+c dbg*
 c      print *,'nvtx_res',nvtx_res
 c      print *,'njoined_res',njoined_res
 c      print *,'ol_map: ',ol_map
@@ -244,7 +250,7 @@ c     &       proto%joined(1:proto%joined(0,iop),iop)
 c      end do
 c      print *,'idx_op: ',idx_op
 c      print *,'num_res:',num_res
-c dbg
+c dbg*
       ! aux-array needed for gen_contr: occupations of vertices
       allocate(occ_vtx(ngastp,2,nvtx))
 
@@ -257,9 +263,9 @@ c dbg
       end do
 
       do iop = 1, nops
-c dbg
+c dbg*
 c        print *,'iop = ',iop
-c dbg
+c dbg*
         iop_typ(iop) = vtx_type(ops(iop)%op)
       end do
 
@@ -277,10 +283,10 @@ c dbg
         end if
         if (iblk_max_in(1).lt.0) then
           iblk_max(iop) = ops(iop)%op%n_occ_cls
-c dbg
+c dbg*
 c          print *,' iop = ',iop,
 c     &         ' "',trim(ops(iop)%op%name),'" >',iblk_max(iop)
-c dbg
+c dbg*
         else if (iblk_max_in(iop).le.0) then
           iblk_max(iop) = ops(iop)%op%n_occ_cls
         else
@@ -333,14 +339,14 @@ c dbg
      &       iblk_res_max = iblk_max_in(num_res)
       end if
 
-c dbg
+c dbg*
 c      print *,'iblk_res: ',iblk_res_min, iblk_res_max
-c dbg
+c dbg*
       do iblk_res = iblk_res_min, iblk_res_max
         proto%iblk_res = iblk_res
-c dbg
+c dbg*
 c      print *,'current iblk_res: ',iblk_res
-c dbg
+c dbg*
 
         ioff = (iblk_res-1)*njoined_res
         do ivtx = 1, nvtx_res
@@ -389,12 +395,44 @@ c          proto%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
 
             ! set up occ_vtx
             do iop = 1, nops
+c dbg
+c      print *,'mark1c. iop,joined(0,iop): ',iop,joined(0,iop)
+c dbg
               if (iop.eq.num_res) cycle
               if (idx_op(iop).gt.0) then
                 ioff = (iblk_op(iop)-1)*ops(iop)%op%njoined
                 do ivtx = 1, joined(0,iop)
+c dbg
+c      print *,'ivtx,ioff,joined(ivtx,iop): ',ivtx,ioff,joined(ivtx,iop)
+c      print *,'ops(iop)%...: ',
+c     &        ops(iop)%op%ihpvca_occ(1:ngastp,1:2,ioff+ivtx)
+c      print *,'occ_vtx...: ',occ_vtx(1:ngastp,1:2,joined(ivtx,iop))
+c dbg
+c dbg
+c      do ii=1,ngastp
+c        do jj=1,2
+c          print *,'i,j,occ_vtx(i,j,',joined(ivtx,iop),'): ',
+c     &            occ_vtx(ii,jj,joined(ivtx,iop))
+c          print *,'i,j,ops...(i,j,',ioff+ivtx,'): ',
+c     &            ops(iop)%op%ihpvca_occ(ii,jj,ioff+ivtx)
+c        end do
+c      end do
+c dbg
                   occ_vtx(1:ngastp,1:2,joined(ivtx,iop)) =
      &              ops(iop)%op%ihpvca_occ(1:ngastp,1:2,ioff+ivtx)
+c dbg
+c      do ii=1,ngastp
+c        do jj=1,2
+c          print *,'i,j: ',ii,jj
+c          occ_vtx(ii,jj,joined(ivtx,iop)) =
+c     &      ops(iop)%op%ihpvca_occ(ii,jj,ioff+ivtx)
+c          print *,'i,j: ',ii,jj
+c        end do
+c      end do
+c dbg
+c dbg
+c      print *,'mark2c'
+c dbg
                 end do
               else
                 ioff = (iblk_op(iop))*ops(iop)%op%njoined+1
@@ -404,7 +442,7 @@ c          proto%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
      &              ops(iop)%op%ihpvca_occ(1:ngastp,1:2,ioff-ivtx))
                 end do
               end if
-c dbg
+c dbg*
 c              print *,'iop, ioff, n: ',iop, ioff, joined(0,iop)
 c              print *,'              ',joined(1:joined(0,iop),iop)
 c              print *,'proto'
@@ -412,9 +450,15 @@ c              call prt_contr2(luout,proto,op_info)
 c              write(luout,*) 'occ_vtx test:'
 c              call wrt_occ_n(luout,occ_vtx,nvtx)
 c dbg
+c      print *,'done. occ_vtx,nvtx: ',occ_vtx,nvtx
+c dbg
+c dbg*
               
             end do
 
+c dbg
+c      print *,'mark2.5b. ninproj: ',ninproj
+c dbg
             if (ninproj.gt.0) then
               ! Handle inner projection
               ! reset number of arcs
@@ -443,6 +487,9 @@ c dbg
 
           end if
 
+c dbg
+c      print *,'mark3b, ok: ',ok
+c dbg
           if (ok) then
             ! set remaining proto-contraction info
             do iop = 1, nops
@@ -461,10 +508,10 @@ C??                proto%vertex(joined(ivtx,iop))%iblk_op = iblk_op(iop)
               end if
             end do
 
-c dbg
+c dbg*
 c            print *,'proto'
 c            call prt_contr2(luout,proto,op_info)
-c dbg
+c dbg*
 
             ! generate contractions
             call gen_contr4(.false.,form_pnt,proto,

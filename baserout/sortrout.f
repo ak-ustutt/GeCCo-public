@@ -201,6 +201,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
         do while (jel.gt.0.and.ihlp.lt.ilist(jel))
           ilist(jel+1) = ilist(jel)
           jel = jel-1
+c dbg fix by mh
+          if (jel.eq.0) exit
+c dbg end fix
         end do
         ilist(jel+1) = ihlp
       end do
@@ -228,6 +231,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
         do while (jel.gt.0.and.ihlp.gt.ilist(jel))
           ilist(jel+1) = ilist(jel)
           jel = jel-1
+c dbg fix by mh
+          if (jel.eq.0) exit
+c dbg end fix
         end do
         ilist(jel+1) = ihlp
       end do
@@ -271,6 +277,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
             do while (jj.gt.0.and.ihlp.lt.ilist(jj))
               ilist(jj+1) = ilist(jj)
               jj = jj-1
+c dbg fix by mh
+              if (jj.eq.0) exit
+c dbg end fix
             end do
             ilist(jj+1) = ihlp
           end do
@@ -389,6 +398,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
             do while (jj.gt.0.and.ihlp.gt.ilist(jj))
               ilist(jj+1) = ilist(jj)
               jj = jj-1
+c dbg fix by mh
+              if (jj.eq.0) exit
+c dbg end fix
             end do
             ilist(jj+1) = ihlp
           end do
@@ -493,6 +505,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
           ilist(jel+1) = ilist(jel)
           ireo(jel+1)  = ireo(jel)
           jel = jel-1
+c dbg fix by mh
+          if (jel.eq.0) exit
+c dbg end fix
         end do
         ilist(jel+1) = ihlp
         ireo(jel+1) = jhlp
@@ -523,6 +538,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
           ilist(jel+1) = ilist(jel)
           ireo(jel+1)  = ireo(jel)
           jel = jel-1
+c dbg fix by mh
+          if (jel.eq.0) exit
+c dbg end fix
         end do
         ilist(jel+1) = ihlp
         ireo(jel+1)  = jhlp
@@ -569,6 +587,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
               ilist(jj+1) = ilist(jj)
               ireo(jj+1)  = ireo(jj)
               jj = jj-1
+c dbg fix by mh
+              if (jj.eq.0) exit
+c dbg end fix
             end do
             ilist(jj+1) = ihlp
             ireo(jj+1)  = jhlp
@@ -707,6 +728,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
               ilist(jj+1) = ilist(jj)
               ireo(jj+1) = ireo(jj)
               jj = jj-1
+c dbg fix by mh
+              if (jj.eq.0) exit
+c dbg end fix
             end do
             ilist(jj+1) = ihlp
             ireo(jj+1) = jhlp
@@ -834,6 +858,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
           ilist(jel+1) = ilist(jel)
           ireo(jel+1)  = ireo(jel)
           jel = jel-1
+c dbg fix by mh
+          if (jel.eq.0) exit
+c dbg end fix        
         end do
         ilist(jel+1) = ihlp
         ireo(jel+1) = jhlp
@@ -868,6 +895,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
           ilist(jel+1) = ilist(jel)
           ireo(jel+1)  = ireo(jel)
           jel = jel-1
+c dbg fix by mh
+          if (jel.eq.0) exit
+c dbg end fix
         end do
         ilist(jel+1) = ihlp
         ireo(jel+1)  = jhlp
@@ -918,6 +948,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
               ilist(jj+1) = ilist(jj)
               ireo(jj+1)  = ireo(jj)
               jj = jj-1
+c dbg fix by mh
+              if (jj.eq.0) exit
+c dbg end fix
             end do
             ilist(jj+1) = ihlp
             ireo(jj+1)  = jhlp
@@ -1060,6 +1093,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
               ilist(jj+1) = ilist(jj)
               ireo(jj+1) = ireo(jj)
               jj = jj-1
+c dbg fix by mh
+              if (jj.eq.0) exit
+c dbg end fix
             end do
             ilist(jj+1) = ihlp
             ireo(jj+1) = jhlp
@@ -1187,6 +1223,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
           xlist(jel+1) = xlist(jel)
           ireo(jel+1)  = ireo(jel)
           jel = jel-1
+c dbg fix by mh
+          if (jel.eq.0) exit
+c dbg end fix
         end do
         xlist(jel+1) = xhlp
         ireo(jel+1) = jhlp
@@ -1221,6 +1260,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
           xlist(jel+1) = xlist(jel)
           ireo(jel+1)  = ireo(jel)
           jel = jel-1
+c dbg fix by mh
+          if (jel.eq.0) exit
+c dbg end fix
         end do
         xlist(jel+1) = xhlp
         ireo(jel+1)  = jhlp
@@ -1271,6 +1313,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
               xlist(jj+1) = xlist(jj)
               ireo(jj+1)  = ireo(jj)
               jj = jj-1
+c dbg fix by mh
+              if (jj.eq.0) exit
+c dbg end fix
             end do
             xlist(jj+1) = xhlp
             ireo(jj+1)  = jhlp
@@ -1413,6 +1458,9 @@ c          call idxsort8_qs_dsc(ilist,nel)
               xlist(jj+1) = xlist(jj)
               ireo(jj+1) = ireo(jj)
               jj = jj-1
+c dbg fix by mh
+              if (jj.eq.0) exit
+c dbg end fix
             end do
             xlist(jj+1) = xhlp
             ireo(jj+1) = jhlp

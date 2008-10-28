@@ -222,6 +222,11 @@ c dbg
      &             svmap(ivtx).eq.svmap(jvtx)).and.         !  external lines
      &             svertex(ivtx).ne.svertex(jvtx))
           ivtx = ivtx-1
+c dbg fix by mh
+          if (ivtx.eq.0) exit
+c dbg end of fix
+
+
         end do
         ivtx = ivtx+1 ! actual "upper" position is ivtx+1
 c dbg
@@ -273,6 +278,9 @@ c dbg
      &             svmap(ivtx).eq.svmap(jvtx)).and.         !  external lines
      &             svertex(ivtx).ne.svertex(jvtx))
           ivtx = ivtx+1
+c dbg fix by mh
+          if (ivtx.gt.nvtx) exit
+c dbg end fix
         end do
         ivtx = ivtx-1 ! actual "lower" position is ivtx-1
 c dbg

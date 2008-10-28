@@ -45,6 +45,9 @@
      &     n_occ_cls,           ! number of occupation classes
      &     ngas,nspin           ! info from orb_info<-for convenience 
 
+        integer ::
+     &     order                ! perturbation order
+
         logical ::
      &       formal                   ! formal operator only?
         logical, pointer ::

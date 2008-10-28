@@ -132,7 +132,7 @@ c     &       call quit(1,'do_calc','no rules for target?')
       end do
 
       write(luout,*) '... all targets processed!'
-        
+     
       ! still a few deallocs missing .... !!      
       call clean_strmap(strmap_info)
       ifree = mem_flushmark(strmaps)

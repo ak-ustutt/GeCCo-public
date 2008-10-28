@@ -251,11 +251,24 @@ c prelim
         ioff = 1
         call opt_parameters(+1,
      &       rule%parameters,ncat,nint)
-
+c dbgmh
+      print *,'m1.ncat,nint',ncat,nint
+c dbgend
+c dbg fix by mh
+        if (ioff+ncat+1.le.rule%n_labels) then
+c dbg original
         call form_opt(form_pnt,
      &       ncat,rule%labels(ioff+1),
      &       nint,rule%labels(ioff+ncat+1),
      &       form_info,op_info,str_info,orb_info)
+c dbg resume fix
+        else
+        call form_opt(form_pnt,
+     &       ncat,rule%labels(ioff+1),
+     &       nint,rule%labels(ioff+ncat),
+     &       form_info,op_info,str_info,orb_info)
+        end if
+c dbg end fix
       case(TEX_FORMULA)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
@@ -292,6 +305,5 @@ c prelim
         call quit(1,'process_formulae','unknown command: '//
      &       trim(rule%command))
       end select
-
       return
       end

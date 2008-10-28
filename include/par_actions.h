@@ -11,7 +11,8 @@
      &     DEF_R12COEFF*12    = 'DEF_R12COEFF',
      &     DEF_R12INT*10      = 'DEF_R12INT',
      &     DEF_R12INTERM*13   = 'DEF_R12INTERM',
-     &     CLONE_OP*14        = 'CLONE_OPERATOR'
+     &     CLONE_OP*14        = 'CLONE_OPERATOR',
+     &     SET_ORDER*9        = 'SET_ORDER'
 ! formulae:
       character, parameter ::
      &     CHECK_FORMGEN*12         = 'CHECK_FORMGEN',

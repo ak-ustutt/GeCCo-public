@@ -24,9 +24,9 @@
       integer, parameter ::
      &     ndef_max = 52
       integer ::
-     &     idx, idx_t, n_ap,
+     &     idx, jdx, idx_t, n_ap,
      &     ncadiff, min_rank, max_rank, iformal, ansatz,
-     &     ndim1, ndim2, ndef, njoined,
+     &     ndim1, ndim2, ndef, njoined, iorder,
      &     hpvx_constr(2,ngastp,2), gas_constr(2,orb_info%ngas,2,2),
      &     occ_def(2,ngastp,ndef_max)
       character*(len_opname) ::
@@ -43,8 +43,13 @@
       if (rule%n_labels.ne.1)
      &     call quit(1,'process_operators','exactly one label expected')
 
-      ! allocate a new entry
-      call add_operator(trim(rule%labels(1)),op_info)
+      ! allocate a new entry if necessary
+      do idx = 1,rule%n_update
+        jdx = idx_oplist2(trim(rule%labels(idx)),op_info)
+        if (jdx.gt.0) cycle
+        call add_operator(trim(rule%labels(idx)),op_info)
+      end do
+
       idx = idx_oplist2(trim(rule%labels(1)),op_info)
       op_pnt => op_info%op_arr(idx)%op
 
@@ -145,6 +150,13 @@
         call clone_operator(op_pnt,op_info%op_arr(idx_t)%op,
      &       dagger,orb_info)
 c        op_pnt%dagger = op_pnt%dagger.xor.dagger
+      case(SET_ORDER)
+        if (rule%n_parameter_strings.lt.1)
+     &      call quit(1,'process_operators',
+     &      'no parameters provided for '//SET_ORDER)
+        call ord_parameters(+1,rule%parameters,
+     &                      iorder)
+        call set_pert_order(op_pnt,iorder)
       case default
         call quit(1,'process_operators','unknown command: '//
      &       trim(rule%command))

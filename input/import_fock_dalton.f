@@ -139,11 +139,25 @@
       idxst = 1    ! counter for list on disc
       idxnd = 0
       do iocc_cls = 1, hop%n_occ_cls+1
+c dbg fix by mh
+        if (iocc_cls.le.hop%n_occ_cls) then
+c dbg original
         if (iocc_cls.le.hop%n_occ_cls.and.hop%formal_blk(iocc_cls)) 
      &     cycle
+c dbg resume fix
+        end if
+c dbg end fix
         ! on any of these conditions, we have to write the present
         ! buffer slice to disc
-        if (iocc_cls.gt.hop%n_occ_cls .or.
+c dbg fix by mh
+        if (iocc_cls.gt.hop%n_occ_cls) then
+          if (idxbufnd.ge.idxbufst)
+     &         call put_vec(ffham,xh1reo(idxbufst),idxst,idxnd)
+          idxbufst = idxbufnd+1
+          idxst = idxnd+1
+        else if (iocc_cls.gt.hop%n_occ_cls .or.
+c dbg original line        if (iocc_cls.gt.hop%n_occ_cls .or.
+c dbg end fix
      &      max(hop%ica_occ(1,iocc_cls),hop%ica_occ(2,iocc_cls)).gt.1
      &       .or. (.not.use_file.and.
      &      (hop%ihpvca_occ(iextr,1,iocc_cls).gt.0.or.
@@ -152,11 +166,23 @@
           if (idxbufnd.ge.idxbufst)
      &         call put_vec(ffham,xh1reo(idxbufst),idxst,idxnd)
           idxbufst = idxbufnd+1
+c dbg fix by mh
+          if (iocc_cls.le.hop%n_occ_cls) then
+c dbg original
           idxnd = idxnd+hlist%len_op_occ(iocc_cls)
+c dbg resume fix
+          end if
+c dbg end fix
           idxst = idxnd+1
         else
+c dbg fix by mh
+          if (iocc_cls.le.hop%n_occ_cls) then
+c dbg original
           idxnd    = idxnd    + hlist%len_op_occ(iocc_cls)
           idxbufnd = idxbufnd + hlist%len_op_occ(iocc_cls)
+c dbg resume fix
+          end if
+c dbg end fix
         end if
       end do
 

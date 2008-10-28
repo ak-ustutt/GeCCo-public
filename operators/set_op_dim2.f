@@ -250,11 +250,18 @@ c dbg
               call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncsub)
               call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nasub)
 
+c dbg fix by mh ???
+              if (associated(graphs)) then
+              print *,'assograph!'
+c dbg original
               call set_len_str(len_str,ncsub,nasub,
      &                         graphs,
      &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
      &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
      &                         hpvxseq,.false.)
+c dbg resume fix
+              end if
+c dbg end fix
 
 c dbg
 c              print *,'current dis:'

@@ -241,7 +241,7 @@ c dbg
 
       integer, external ::
      &     joint_idx
-      
+     
       if (orb_info%nsym.eq.0) call quit(1,'form_fact2_r1','buggy nsym!')
       if (ntest.ge.1000) then
         call write_title(luout,wst_dbg_subr,

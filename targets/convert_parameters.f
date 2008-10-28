@@ -571,4 +571,28 @@ c        read(parameters(2),'(240(i1))')
       return
       end
 
-      
+     
+*---------------------------------------------------------------------*
+
+      subroutine ord_parameters(rw,parameters,
+     &     iorder)
+
+      implicit none
+
+      integer, intent(inout) ::
+     &     rw,iorder
+      character, intent(inout) ::
+     &     parameters*(*)
+
+      if (rw.lt.0) then
+        parameters(1:len(parameters)) = ' '
+        write(parameters,'(i5)')
+     &        iorder
+      else
+        read(parameters,'(i5)')
+     &       iorder
+      end if
+
+      return
+      end
+

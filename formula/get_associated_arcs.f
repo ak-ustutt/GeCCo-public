@@ -14,14 +14,20 @@
       integer, parameter ::
      &     ntest = 00
 
-      integer, intent(out) ::
-     &     len_list, arc_list(len_list)
+c dbg fix by mh
+c original line      integer, intent(out) ::
+c original line     &     len_list, arc_list(len_list)
+c dbg original
 
       type(contraction), intent(in), target ::
      &     contr
       integer, intent(in) ::
      &     iarc0
-      
+
+c dbg resume fix
+      integer, intent(out) ::
+     &     len_list, arc_list(contr%narc)
+c dbg end fix      
       integer ::
      &     iarc, ivtx1, ivtx2, isupvtx1, isupvtx2
       integer, pointer ::

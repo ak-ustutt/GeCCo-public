@@ -118,7 +118,8 @@
       integer ::
      &     msbnd(2,2), igambnd(2,2),
      &     ms_op_tr_a(2), ms_op_tr_c(2),
-     &     igam_op_tr_a(2), igam_op_tr_c(2)
+c dbg mh igam_op_tr_a(2) --> igam_op_tr_a(3)
+     &     igam_op_tr_a(3), igam_op_tr_c(2)
 
       integer, pointer ::
      &     gmopdis_c(:), gmopdis_a(:),
