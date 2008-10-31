@@ -427,22 +427,23 @@ c        read(parameters(2),'(240(i1))')
 
 *----------------------------------------------------------------------*
       subroutine import_parameters(rw,parameters,
-     &     env_type)
+     &     list_type,env_type)
 
       implicit none
       
       integer, intent(in) ::
      &     rw
       character(*), intent(inout) ::
-     &     env_type
+     &     list_type, env_type
       character(*), intent(inout) ::
      &     parameters
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
-        write(parameters,'(a)') env_type
+        write(parameters,'(a)') trim(list_type)
+        write(parameters(33:),'(a)') trim(env_type)
       else
-        read(parameters,'(a)') env_type
+        read(parameters,'(2a32)') list_type,env_type
       end if
 
       return

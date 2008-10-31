@@ -54,7 +54,7 @@ c     &     op_scrbar = '_TB'
       integer ::
      &     nterms, idx_sop, idx_sbar, ndef, idxrint, ilabel, idx,
      &     idx_scr,idx_scrbar, r12op,
-     &     idxham,idxtbar,idxtop,idxmet,idxrba,idxcbar,idxr12,idxc12,
+     &     idx_mp2lag, idx_fock, idx_phi, idx_t2,
      &     idxcpp12, idxcppbar,
      &     iblk_xxhp, iblk_pxhp, iblk_xxpp, iblk_pxpp,
      &     min_rank, max_rank, iprint,
@@ -85,35 +85,62 @@ c     &     op_scrbar = '_TB'
         if (idx.le.0)
      &       call quit(1,'set_exp',
      &       'label not on list: '//trim(label(ilabel)))
-        if (ilabel.eq.1) idxmet = idx
-        if (ilabel.eq.2) idxr12 = idx
-        if (ilabel.eq.3) idxtbar = idx
-        if (ilabel.eq.4) idxtop = idx
+        if (ilabel.eq.1) idx_mp2lag = idx
+        if (ilabel.eq.2) idx_fock = idx
+        if (ilabel.eq.3) idx_phi = idx
+        if (ilabel.eq.4) idx_t2 = idx
       end do
 
       ! initialize formula
       call init_formula(flist_exp)
       flist_pnt => flist_exp
       ! put [INIT] at the beginning
-      call new_formula_item(flist_pnt,command_set_target_init,idxmet)
+      call new_formula_item(flist_pnt,
+     &     command_set_target_init,idx_mp2lag)
       flist_pnt => flist_pnt%next
 
-      ! formulae are set up e.g. by ...
-      ! expand <0|Sbar S|0>
-c      call expand_op_product2(flist_pnt,idxmet,
-c     &     1d0,4,3,
-c     &     (/idxmet,idx_sbar,idx_sop,idxmet/),
-c     &     (/1     ,2       ,3      ,1/),
-c     &     -1,-1,
-c     &     0,0,
-c     &     0,0,
-c     &     0,0,
-c     &     op_info)
+      do while(associated(flist_pnt%next))
+        flist_pnt => flist_pnt%next
+      end do
+      call expand_op_product2(flist_pnt,idx_mp2lag,
+     &     1d0,4,3,
+     &     (/idx_mp2lag,idx_phi,idx_t2,idx_mp2lag/),
+     &     (/1         ,2      ,3       ,1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     0,0,
+     &     op_info)
+      do while(associated(flist_pnt%next))
+        flist_pnt => flist_pnt%next
+      end do
+      call expand_op_product2(flist_pnt,idx_mp2lag,
+     &     1d0,4,3,
+     &     (/idx_mp2lag,-idx_t2,idx_phi,idx_mp2lag/),
+     &     (/1         ,2      ,3       ,1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     0,0,
+     &     op_info)
+      do while(associated(flist_pnt%next))
+        flist_pnt => flist_pnt%next
+      end do
+      call expand_op_product2(flist_pnt,idx_mp2lag,
+     &     1d0,5,4,
+     &     (/idx_mp2lag,-idx_t2,idx_fock,idx_t2,idx_mp2lag/),
+     &     (/1         ,2      ,3       ,4     ,1/),
+     &     -1,-1,
+     &     (/3,4/),1,
+     &     0,0,
+     &     0,0,
+     &     op_info)
 
-      if (ntest.ge.100) then
+
+c      if (ntest.ge.100) then
         call write_title(luout,wst_title,'Final formula')
         call print_form_list(luout,flist_exp,op_info)
-      end if
+c      end if
 
       ! assign comment
       form_exp%comment = trim(title)

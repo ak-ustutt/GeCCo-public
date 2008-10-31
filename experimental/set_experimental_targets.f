@@ -50,70 +50,310 @@
      &              parameters,0,tgt_info)
       ! cf. set_xxxx_targets.f routines in e.g. cc_special for
       ! further examples
+      call add_target('FOCK',ttype_op,.false.,tgt_info)
+      call hop_parameters(-1,parameters,
+     &                   1,1,1,.false.)
+      call set_rule('FOCK',ttype_op,DEF_HAMILTONIAN,
+     &              'FOCK',1,1,
+     &              parameters,1,tgt_info)
+      call add_target('PHI',ttype_op,.false.,tgt_info)
+      call hop_parameters(-1,parameters,
+     &                   2,2,1,.false.)
+      call set_rule('PHI',ttype_op,DEF_HAMILTONIAN,
+     &              'PHI',1,1,
+     &              parameters,1,tgt_info)
+      call add_target('V(1)',ttype_op,.false.,tgt_info)
+      call hop_parameters(-1,parameters,
+     &                   1,1,1,.false.)
+      call set_rule('V(1)',ttype_op,DEF_HAMILTONIAN,
+     &              'V(1)',1,1,
+     &              parameters,1,tgt_info)
+      call add_target('H(0)',ttype_op,.false.,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &     'H',.false.)
+      call set_rule('H(0)',ttype_op,CLONE_OP,
+     &              'H(0)',1,1,
+     &              parameters,1,tgt_info)
+
+      call add_target('LMP2',ttype_op,.false.,tgt_info)
+      call set_rule('LMP2',ttype_op,DEF_SCALAR,
+     &              'LMP2',1,1,
+     &              parameters,0,tgt_info)
+      call add_target('EMP2',ttype_op,.false.,tgt_info)
+      call set_rule('EMP2',ttype_op,DEF_SCALAR,
+     &              'EMP2',1,1,
+     &              parameters,0,tgt_info)
+
+
+      call add_target('T2',ttype_op,.false.,tgt_info)
+      call xop_parameters(-1,parameters,
+     &                   .false.,2,2,0,1)
+      call set_rule('T2',ttype_op,DEF_EXCITATION,
+     &              'T2',1,1,
+     &              parameters,1,tgt_info)
+      call add_target('O2',ttype_op,.false.,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &     'T2',.false.)
+      call set_rule('O2',ttype_op,CLONE_OP,
+     &              'O2',1,1,
+     &              parameters,1,tgt_info)
+
       
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
       ! e.g.
       labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'MY_FORM'
-      labels(2) = 'OP_RES'
-      labels(3) = 'MY_OP1'
-      labels(4) = 'MY_OP2'
-      labels(5) = 'MY_OP3'
-      call add_target('MY_FORM',ttype_frm,.false.,tgt_info)
-      call set_dependency('MY_FORM','OP_RES',tgt_info)
-      call set_dependency('MY_FORM','MY_OP1',tgt_info)
-      call set_dependency('MY_FORM','MY_OP2',tgt_info)
-      call set_dependency('MY_FORM','MY_OP3',tgt_info)
+      labels(1) = 'MP2_FORM'
+      labels(2) = 'LMP2'
+      labels(3) = 'FOCK'
+      labels(4) = 'PHI'
+      labels(5) = 'T2'
+      call add_target('MP2_FORM',ttype_frm,.false.,tgt_info)
+      call set_dependency('MP2_FORM','LMP2',tgt_info)
+      call set_dependency('MP2_FORM','FOCK',tgt_info)
+      call set_dependency('MP2_FORM','PHI',tgt_info)
+      call set_dependency('MP2_FORM','T2',tgt_info)
       call form_parameters(-1,
      &     parameters,2,'title of my new formula',0,'mode string')
-      call set_rule('MY_FORM',ttype_frm,DEF_EXP_FORMULA,
+      call set_rule('MP2_FORM',ttype_frm,DEF_EXP_FORMULA,
      &              labels,5,1,
      &              parameters,2,tgt_info)
-
-*----------------------------------------------------------------------*
-*     Opt. Formulae 
-*----------------------------------------------------------------------*
-
-      ! e.g.:
       labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'MY_OPT_FORM'
-      labels(2) = 'MY_FORM'
-      labels(3) = '1_MORE_FORM'
+      labels(1) = 'MP2_FORM'
+      labels(2) = 'MP2_FORM'
+      labels(3) = 'FOCK'
+      labels(4) = 'H'
+      labels(5) = 'PHI'
+      labels(6) = 'H'
+      call set_dependency('MP2_FORM','H',tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'same title?',2,'---')
+      call set_rule('MP2_FORM',ttype_frm,REPLACE,
+     &     labels,6,1,
+     &     parameters,2,tgt_info)
+
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'MP2_RES'
+      labels(2) = 'MP2_FORM'
+      labels(3) = 'O2'
+      labels(4) = 'T2^+'
+      labels(5) = ' '
+      call add_target('MP2_RES',ttype_frm,.false.,tgt_info)
+      call set_dependency('MP2_RES','MP2_FORM',tgt_info)
+      call set_dependency('MP2_RES','O2',tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'residual',1,'---')
+      call set_rule('MP2_RES',ttype_frm,DERIVATIVE,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+c      call set_rule('MP2_RES',ttype_frm,TEX_FORMULA,
+c     &              labels,1,0,
+c     &              'mp2res.tex',1,tgt_info)
+
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'MP2_EN'
+      labels(2) = 'MP2_FORM'
+      labels(3) = 'MP2_RES'
+      call add_target('MP2_EN',ttype_frm,.false.,tgt_info)
+      call set_dependency('MP2_EN','MP2_FORM',tgt_info)
+      call set_dependency('MP2_EN','MP2_RES',tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'energy',1,'---')
+      call set_rule('MP2_EN',ttype_frm,FACTOR_OUT,
+     &              labels,3,1,
+     &              parameters,2,tgt_info)
+     
+
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'H_FORM'
+      call add_target('H_FORM',ttype_frm,.false.,tgt_info)
+      call set_dependency('H_FORM','H',tgt_info)
+      call set_dependency('H_FORM','H(0)',tgt_info)
+      call set_dependency('H_FORM','V(1)',tgt_info)
+      call def_form_parameters(-1,
+     &     parameters,2,'H=H(0)+V(1)','pert exp of H')
+      call set_rule('H_FORM',ttype_frm,DEF_FORMULA,
+     &              labels,1,1,
+     &              parameters,2,tgt_info)
+
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'MP2_FORM2'
+      labels(2) = 'MP2_FORM'
+      labels(3) = 'H_FORM'
+      call add_target('MP2_FORM2',ttype_frm,.false.,tgt_info)
+      call set_dependency('MP2_FORM2','MP2_FORM',tgt_info)
+      call set_dependency('MP2_FORM2','H_FORM',tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'title of my new formula',1,'mode string')
+      call set_rule('MP2_FORM2',ttype_frm,EXPAND,
+     &              labels,3,1,
+     &              parameters,2,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule('MP2_FORM2',ttype_frm,PRINT_FORMULA,
+     &              labels,1,0,
+     &              parameters,2,tgt_info)
+
+c*----------------------------------------------------------------------*
+c*     Opt. Formulae 
+c*----------------------------------------------------------------------*
+c
+c      ! e.g.:
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'MP2_OPT'
+      labels(2) = 'MP2_RES'
+      labels(3) = 'MP2_EN'
       ncat = 2  ! 2 formulae pasted into final formula
       nint = 0  ! no intermediate to factor out so far ...
-      call add_target('MY_OPT_FORM',ttype_frm,.false.,tgt_info)
-      call set_dependency('MY_OPT_FORM','MY_FORM',tgt_info)
-      call set_dependency('MY_OPT_FORM','1_MORE_FORM',tgt_info)
-      call set_dependency('MY_OPT_FORM','MY_MEL1',tgt_info)
-      call set_dependency('MY_OPT_FORM','MY_MEL2',tgt_info)
-      call set_dependency('MY_OPT_FORM','MY_MEL3',tgt_info)
-      call set_dependency('MY_OPT_FORM','MY_MELR',tgt_info)      
+      call add_target('MP2_OPT',ttype_frm,.false.,tgt_info)
+      call set_dependency('MP2_OPT','MP2_EN',tgt_info)
+      call set_dependency('MP2_OPT','MP2_RES',tgt_info)
+      call set_dependency('MP2_OPT','DEF_ME_LMP2',tgt_info)
+      call set_dependency('MP2_OPT','DEF_ME_O2',tgt_info)
+      call set_dependency('MP2_OPT','DEF_ME_T2',tgt_info)
+      call set_dependency('MP2_OPT','H0',tgt_info)
+c      call set_dependency('MY_OPT','MY_MELR',tgt_info)      
       call opt_parameters(-1,parameters,ncat,nint)
-      call set_rule('MY_OPT_FORM',ttype_frm,OPTIMIZE,
+      call set_rule('MP2_OPT',ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
-
+c
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
 
-      ! e.g.: 
-      call add_target('MY_MEL1',ttype_opme,.false.,tgt_info)
-      call set_dependency('MY_MEL1','MY_OP1',tgt_info)
+      call add_target('DEF_ME_LMP2',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF_ME_LMP2','LMP2',tgt_info)
       labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'MY_MEL1'
-      labels(2) = 'MY_OP1'
+      labels(1) = 'ME_LMP2'
+      labels(2) = 'LMP2'
       call me_list_parameters(-1,parameters,
      &     msc,0,1,0,0,.false.)
-      call set_rule('MY_MEL1',ttype_opme,DEF_ME_LIST,
+      call set_rule('DEF_ME_LMP2',ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
+      call add_target('DEF_ME_T2',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF_ME_T2','T2',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'ME_T2'
+      labels(2) = 'T2'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('DEF_ME_T2',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      call add_target('DEF_ME_O2',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF_ME_O2','O2',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'ME_O2'
+      labels(2) = 'O2'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('DEF_ME_O2',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
+      call add_target('DIAG',ttype_opme,.false.,tgt_info)
+      call set_dependency('DIAG','H0',tgt_info)
+      call set_dependency('DIAG','T2',tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &     'T2',.false.)
+      call set_rule('DIAG',ttype_op,CLONE_OP,
+     &              'D2',1,1,
+     &              parameters,1,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'DIAG'
+      labels(2) = 'D2'
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0,.false.)
+      call set_rule('DIAG',ttype_opme,DEF_ME_LIST,
+     &     labels,2,1,
+     &     parameters,1,tgt_info)
+      labels(1) = 'DIAG'
+      labels(2) = 'H0'
+      call set_rule('DIAG',ttype_opme,PRECONDITIONER,
+     &              labels,2,1,
+     &              parameters,0,tgt_info)
+
+      call add_target('V(1)LIST',ttype_opme,.false.,tgt_info)
+      call set_dependency('V(1)LIST','V(1)',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'V(1)LIST'
+      labels(2) = 'V(1)'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('V(1)LIST',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'V(1)LIST'
+      call import_parameters(-1,parameters,'ZDIPLEN','DALTON')
+      call set_rule('V(1)LIST',ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+      call add_target('V(1)LISTX',ttype_opme,.false.,tgt_info)
+      call set_dependency('V(1)LISTX','V(1)',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'V(1)LISTX'
+      labels(2) = 'V(1)'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,2,0,0,.false.)
+      call set_rule('V(1)LISTX',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'V(1)LISTX'
+      call import_parameters(-1,parameters,'XDIPLEN','DALTON')
+      call set_rule('V(1)LISTX',ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
       
+
+
+c
+c      ! e.g.: 
+c      call add_target('MY_MEL1',ttype_opme,.false.,tgt_info)
+c      call set_dependency('MY_MEL1','MY_OP1',tgt_info)
+c      labels(1:20)(1:len_target_name) = ' '
+c      labels(1) = 'MY_MEL1'
+c      labels(2) = 'MY_OP1'
+c      call me_list_parameters(-1,parameters,
+c     &     msc,0,1,0,0,.false.)
+c      call set_rule('MY_MEL1',ttype_opme,DEF_ME_LIST,
+c     &              labels,2,1,
+c     &              parameters,1,tgt_info)
+c      
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
+
+      call add_target('MY_TARGET',ttype_gen,.true.,tgt_info)
+c      call set_dependency('MY_TARGET','FOCK',tgt_info)
+c      call set_dependency('MY_TARGET','PHI',tgt_info)
+c      call set_dependency('MY_TARGET','EMP2',tgt_info)
+c      call set_dependency('MY_TARGET','LMP2',tgt_info)
+c      call set_dependency('MY_TARGET','T2',tgt_info)
+c      call set_dependency('MY_TARGET','O2',tgt_info)
+c      call set_dependency('MY_TARGET','MP2_FORM2',tgt_info)
+      call set_dependency('MY_TARGET','V(1)LISTX',tgt_info)
+c      call set_dependency('MY_TARGET','MP2_RES',tgt_info)
+c      call set_dependency('MY_TARGET','MP2_EN',tgt_info)
+c      call set_dependency('MY_TARGET','MP2_OPT',tgt_info)
+c      call set_dependency('MY_TARGET','DEF_ME_LMP2',tgt_info)
+c      call set_dependency('MY_TARGET','DEF_ME_T2',tgt_info)
+c      call set_dependency('MY_TARGET','DIAG',tgt_info)
+
+c      call solve_parameters(-1,parameters,2, 1,1,'DIA')
+c      labels(1:20)(1:len_target_name) = ' '
+c      labels(1) = 'ME_T2'
+c      labels(2) = 'ME_O2'
+c      labels(3) = 'DIAG'
+c      labels(4) = 'ME_LMP2'
+c      labels(5) = 'MP2_OPT'
+c      call set_rule('MY_TARGET',ttype_opme,SOLVENLEQ,
+c     &     labels,5,2,
+c     &     parameters,2,tgt_info)
 
       return
       end

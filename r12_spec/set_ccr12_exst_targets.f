@@ -77,13 +77,15 @@
      &              parameters,1,tgt_info)
       
       ! T' vector times Metric
-      call add_target(op_s_c,ttype_op,.false.,tgt_info)
-      call set_dependency(op_s_c,op_cex,tgt_info)
-      call cloneop_parameters(-1,parameters,
+      if (r12op.gt.0) then
+        call add_target(op_s_c,ttype_op,.false.,tgt_info)
+        call set_dependency(op_s_c,op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,
      &                        op_cex,.false.)
-      call set_rule(op_s_c,ttype_op,CLONE_OP,
+        call set_rule(op_s_c,ttype_op,CLONE_OP,
      &              op_s_c,1,1,
      &              parameters,1,tgt_info)
+      end if
 
       ! right-response vector times Metric
       call add_target(op_s_r,ttype_op,.false.,tgt_info)
@@ -95,29 +97,31 @@
      &              parameters,1,tgt_info)
 
       ! R' response vector
-      call add_target(op_rp,ttype_op,.false.,tgt_info)
-      call set_dependency(op_rp,op_cex,tgt_info)
-      call cloneop_parameters(-1,parameters,
+      if (r12op.gt.0) then
+        call add_target(op_rp,ttype_op,.false.,tgt_info)
+        call set_dependency(op_rp,op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,
      &                        op_cex,.false.)
-      call set_rule(op_rp,ttype_op,CLONE_OP,
+        call set_rule(op_rp,ttype_op,CLONE_OP,
      &              op_rp,1,1,
      &              parameters,1,tgt_info)
-      ! R' times Jacobian
-      call add_target(op_a_rp,ttype_op,.false.,tgt_info)
-      call set_dependency(op_a_rp,op_cex,tgt_info)
-      call cloneop_parameters(-1,parameters,
+        ! R' times Jacobian
+        call add_target(op_a_rp,ttype_op,.false.,tgt_info)
+        call set_dependency(op_a_rp,op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,
      &                        op_cex,.false.)
-      call set_rule(op_a_rp,ttype_op,CLONE_OP,
+        call set_rule(op_a_rp,ttype_op,CLONE_OP,
      &              op_a_rp,1,1,
      &              parameters,1,tgt_info)
-      ! R' times Metric
-      call add_target(op_s_rp,ttype_op,.false.,tgt_info)
-      call set_dependency(op_s_rp,op_cex,tgt_info)
-      call cloneop_parameters(-1,parameters,
+        ! R' times Metric
+        call add_target(op_s_rp,ttype_op,.false.,tgt_info)
+        call set_dependency(op_s_rp,op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,
      &                        op_cex,.false.)
-      call set_rule(op_s_rp,ttype_op,CLONE_OP,
+        call set_rule(op_s_rp,ttype_op,CLONE_OP,
      &              op_s_rp,1,1,
      &              parameters,1,tgt_info)
+      end if
 
 
       ! left-response vector
@@ -148,30 +152,32 @@
      &              parameters,1,tgt_info)
 
       ! L' response vector
-      call add_target(op_lp,ttype_op,.false.,tgt_info)
-      call set_dependency(op_lp,op_cexbar,tgt_info)
-      call cloneop_parameters(-1,parameters,
+      if (r12op.gt.0) then
+        call add_target(op_lp,ttype_op,.false.,tgt_info)
+        call set_dependency(op_lp,op_cexbar,tgt_info)
+        call cloneop_parameters(-1,parameters,
      &                        op_cexbar,.false.)
-      call set_rule(op_lp,ttype_op,CLONE_OP,
+        call set_rule(op_lp,ttype_op,CLONE_OP,
      &              op_lp,1,1,
      &              parameters,1,tgt_info)
       ! L' times Jacobian
-      call add_target(op_lp_a,ttype_op,.false.,tgt_info)
-      call set_dependency(op_lp_a,op_cexbar,tgt_info)
-      call cloneop_parameters(-1,parameters,
+        call add_target(op_lp_a,ttype_op,.false.,tgt_info)
+        call set_dependency(op_lp_a,op_cexbar,tgt_info)
+        call cloneop_parameters(-1,parameters,
      &                        op_cexbar,.false.)
-      call set_rule(op_lp_a,ttype_op,CLONE_OP,
+        call set_rule(op_lp_a,ttype_op,CLONE_OP,
      &              op_lp_a,1,1,
      &              parameters,1,tgt_info)
       ! L' times Metric
-      call add_target(op_lp_s,ttype_op,.false.,tgt_info)
-      call set_dependency(op_lp_s,op_cexbar,tgt_info)
-      call cloneop_parameters(-1,parameters,
+        call add_target(op_lp_s,ttype_op,.false.,tgt_info)
+        call set_dependency(op_lp_s,op_cexbar,tgt_info)
+        call cloneop_parameters(-1,parameters,
      &                        op_cexbar,.false.)
-      call set_rule(op_lp_s,ttype_op,CLONE_OP,
+        call set_rule(op_lp_s,ttype_op,CLONE_OP,
      &              op_lp_s,1,1,
      &              parameters,1,tgt_info)
 
+      end if
 
 *----------------------------------------------------------------------*
 *     Formulae:
