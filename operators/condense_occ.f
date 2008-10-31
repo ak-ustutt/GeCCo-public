@@ -25,9 +25,6 @@
       integer ::
      &     ijoin, hpvx, idx_hpvx, idx_c, idx_a
 
-c dbgmh
-      print *,'m.'
-c dbgend
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'condense_occ')
         call wrt_occ_n(luout,occ,njoined)
@@ -51,12 +48,12 @@ c dbgend
         end do
       end do
       
-c dbgmh      if (ntest.ge.100) then
+      if (ntest.ge.100) then
         write(luout,'(3x,"C: occ  ",10i5)') occ_csub(1:idx_c) 
         write(luout,'(3x,"   hpvx ",10i5)') hpvx_csub(1:idx_c) 
         write(luout,'(3x,"A: occ  ",10i5)') occ_asub(1:idx_a) 
         write(luout,'(3x,"   hpvx ",10i5)') hpvx_asub(1:idx_a) 
-c dbgmh      end if
+      end if
 
       return
       end

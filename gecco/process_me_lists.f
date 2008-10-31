@@ -242,8 +242,5 @@ c dbg
      &       trim(rule%command))
       end select
 
-c dbgmh
-        print *,'mend'
-c dbgend
       return
       end

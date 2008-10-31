@@ -86,9 +86,5 @@
 
       call set_new_graph(nnew,str_info,orb_info)
 
-c dbgmh
-      print *,'mgraph:'
-      if (associated(str_info%g)) print *,'graph associated!'
-c dbgend
       return
       end

@@ -70,9 +70,6 @@
       logical, external ::
      &     irestr_equal
 
-c dbgmh
-      print *,'m1'
-c dbgend
       ngas = orb_info%ngas
       nspin = orb_info%nspin
       ihpvgas => orb_info%ihpvgas
@@ -146,12 +143,6 @@ c      end if
       allocate(igrph(ngastp,2,
      &     max(njoined_op1,njoined_op2,njoined_op1op2,njoined_cnt)))
      
-c dbgmh
-      print *,'m2. cnt_info%cinfo_op1c: ',cnt_info%cinfo_op1c
-      print *,'m2. (1,3): ',cnt_info%cinfo_op1c(1,3)
-      print *,'m2. cnt_info%cinfo_op1a: ',cnt_info%cinfo_op1a
-      print *,'m2. (1,3): ',cnt_info%cinfo_op1a(1,3)
-c dbgend 
       ! OP1
       call get_grph4occ(igrph,iocc_op1,irst_op1,njoined_op1,
      &                  str_info,orb_info,.true.)
@@ -165,37 +156,19 @@ c dbgend
      &                  cnt_info%cinfo_op1a(1,3),
      &                  igrph,njoined_op1,hpvxblkseq)
 
-c dbgmh
-      print *,'m3. cnt_info%cinfo_op1c: ',cnt_info%cinfo_op1c
-      print *,'m3. (1,3): ',cnt_info%cinfo_op1c(1,3)
-      print *,'m3. cnt_info%cinfo_op1a: ',cnt_info%cinfo_op1a
-      print *,'m3. (1,3): ',cnt_info%cinfo_op1a(1,3)
-c dbgend
       ! EX1
       call get_grph4occ(igrph,iocc_ex1,irst_ex1,njoined_op1,
      &                  str_info,orb_info,.true.)
-c dbgmh
-      print *,'m3a. cnt_info%cinfo_ex1c: ',cnt_info%cinfo_ex1c
-c      print *,'m3a. (1,3): ',cnt_info%cinfo_ex1c(1,3)
-      print *,'m3a. cnt_info%cinfo_ex1a: ',cnt_info%cinfo_ex1a
-c      print *,'m3a. (1,3): ',cnt_info%cinfo_ex1a(1,3)
-c dbgend
       call condense_occ(cnt_info%cinfo_ex1c, cnt_info%cinfo_ex1a,
      &                  cnt_info%cinfo_ex1c(1,3),
      &                  cnt_info%cinfo_ex1a(1,3),
      &                  iocc_ex1,njoined_op1,hpvxblkseq)
-c dbgmh
-      print *,'m3b'
-c dbgend
       call condense_occ(cnt_info%cinfo_ex1c(1,2),
      &                  cnt_info%cinfo_ex1a(1,2),
      &                  cnt_info%cinfo_ex1c(1,3),
      &                  cnt_info%cinfo_ex1a(1,3),
      &                  igrph,njoined_op1,hpvxblkseq)
 
-c dbgmh
-      print *,'m4'
-c dbgend
       ! OP2
       call get_grph4occ(igrph,iocc_op2,irst_op2,njoined_op2,
      &                  str_info,orb_info,.true.)
@@ -209,9 +182,6 @@ c dbgend
      &                  cnt_info%cinfo_op2a(1,3),
      &                  igrph,njoined_op2,hpvxblkseq)
 
-c dbgmh
-      print *,'m5'
-c dbgend
       ! EX2
       call get_grph4occ(igrph,iocc_ex2,irst_ex2,njoined_op2,
      &                  str_info,orb_info,.true.)
@@ -225,9 +195,6 @@ c dbgend
      &                  cnt_info%cinfo_ex2a(1,3),
      &                  igrph,njoined_op2,hpvxblkseq)
 
-c dbgmh
-      print *,'m6'
-c dbgend
       ! CNT
       call get_grph4occ(igrph,iocc_cnt,irst_cnt,njoined_cnt,
      &                  str_info,orb_info,.true.)
@@ -242,9 +209,6 @@ c dbgend
      &                  cnt_info%cinfo_cnta(1,3),
      &                  igrph,njoined_cnt,hpvxblkseq)
 
-c dbgmh
-      print *,'m7'
-c dbgend
       ! OP1OP2
       call get_grph4occ(igrph,iocc_op1op2,irst_op1op2,njoined_op1op2,
      &                  str_info,orb_info,.true.)
@@ -264,9 +228,6 @@ c dbg
      &                  cnt_info%cinfo_op1op2a(1,3),
      &                  igrph,njoined_op1op2,hpvxblkseq)
 
-c dbgmh
-      print *,'m8'
-c dbgend
       call get_grph4occ(igrph,iocc_op1op2tmp,irst_op1op2tmp,
      &                                       njoined_op1op2,
      &                  str_info,orb_info,.true.)
@@ -321,8 +282,5 @@ c dbg
      &                  iocc_op1op2tmp,merge_map21,
      &                                  njoined_op1op2,hpvxblkseq)
 
-c dbgmh
-      print *,'mend'
-c dbgend
       return
       end

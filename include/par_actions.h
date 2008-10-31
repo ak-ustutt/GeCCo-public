@@ -40,7 +40,8 @@
      &     TEX_FORMULA*11           = 'TEX_FORMULA',
      &     KEEP_TERMS*10            = 'KEEP_TERMS',
      &     DEL_TERMS*9              = 'DEL_TERMS',
-     &     MODIFY_FACTORIZATION*20  = 'MODIFY_FACTORIZATION'
+     &     MODIFY_FACTORIZATION*20  = 'MODIFY_FACTORIZATION',
+     &     EXTRACT_ORDER*13         = 'EXTRACT_ORDER'
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',

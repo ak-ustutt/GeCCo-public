@@ -275,9 +275,6 @@ c        call quit(1,DEF_FORMULA,'not yet')
         ioff = 1
         call opt_parameters(+1,
      &       rule%parameters,ncat,nint)
-c dbgmh
-      print *,'m1.ncat,nint',ncat,nint
-c dbgend
 c dbg fix by mh
         if (ioff+ncat+1.le.rule%n_labels) then
 c dbg original
@@ -330,6 +327,15 @@ c dbg end fix
         call form_mod_factorization(form_pnt,form0_pnt,
      &       nterms,idxterms,
      &       op_info)
+      case(EXTRACT_ORDER)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,nint,strdum)
+        ioff = rule%n_update
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_extract_order(form_pnt,form0_pnt,
+     &       title, rule%labels(3), nint, op_info)
       case default
         call quit(1,'process_formulae','unknown command: '//
      &       trim(rule%command))

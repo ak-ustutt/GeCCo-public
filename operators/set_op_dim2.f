@@ -252,7 +252,6 @@ c dbg
 
 c dbg fix by mh ???
               if (associated(graphs)) then
-              print *,'assograph!'
 c dbg original
               call set_len_str(len_str,ncsub,nasub,
      &                         graphs,

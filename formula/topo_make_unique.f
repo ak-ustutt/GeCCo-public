@@ -35,9 +35,6 @@
       integer, external ::
      &     i8list_cmp
 
-c dbgmh
-      print *,'m1'
-c dbgend
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'topo_make_unique')
         write(luout,*) 'topo on entry'

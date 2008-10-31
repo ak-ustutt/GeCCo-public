@@ -24,9 +24,6 @@
      &     iocc_op1op2(ngastp,2,nj_op1op2),
      &     iocc_op1op2tmp(ngastp,2,nj_op1op2tmp)
 
-c dbgmh
-      print *,'m1'
-c dbgend
       call get_num_subblk(cnt_info%ncblk_op1,cnt_info%nablk_op1,
      &                    iocc_op1,nj_op1)
       call get_num_subblk(cnt_info%ncblk_ex1,cnt_info%nablk_ex1,
