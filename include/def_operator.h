@@ -46,7 +46,8 @@
      &     ngas,nspin           ! info from orb_info<-for convenience 
 
         integer ::
-     &     order                ! perturbation order
+     &     order,               ! perturbation order
+     &     species              ! 1: t-amplitude, 2: lagr. multipl., 3: other
 
         logical ::
      &       formal                   ! formal operator only?

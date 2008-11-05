@@ -115,7 +115,7 @@ c      call get_argument_value('method.R12','truncate',lval=truncate)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_ham
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'H_INT',env_type)
       call set_rule(mel_ham,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)

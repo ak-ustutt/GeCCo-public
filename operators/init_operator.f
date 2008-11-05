@@ -36,6 +36,7 @@
       op%nspin = orb_info%nspin
 
       op%order = -1            ! set perturbation order to undefined
+      op%species = -1             ! set operator species to undefined
 
         ! some arrays run over 1..njoined as second index
       nblkt = nblk * op%njoined

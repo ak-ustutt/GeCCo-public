@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine import_op_el(label_mel,
-     &     op_info,
-     &     env_type,str_info,orb_info)
+     &     list_type,env_type,
+     &     op_info,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     import matrix elements from environment for ME-list with 
 *     label "label_mel" 
@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'def_graph.h'
@@ -24,7 +24,7 @@
       type(operator_info), intent(in) ::
      &     op_info
       character, intent(in) ::
-     &     env_type*(*)
+     &     env_type*(*), list_type*(*)
       type(strinf), intent(in) ::
      &     str_info
       type(orbinf), intent(in) ::
@@ -59,8 +59,8 @@
       select case(trim(env_type))
       case ('dalton_special','DALTON_SPECIAL')
         ! what to import?
-        select case(trim(mel_target%op%name))
-        case (op_ham,op_g_x,op_g_z)
+        select case(trim(list_type))
+        case ('H_INT','G_INT')
           if(trim(mel_target%op%name).eq.op_g_z) anti = .false.
           mode=1
           scaling=min(use_scaling,0)
@@ -68,113 +68,106 @@
      &           mode,scaling,anti,str_info,orb_info)
           ! call after 2int import, as the above routine
           ! zeroes all blocks, including E0 and F:
-          if (trim(mel_target%op%name).eq.op_ham)
+          if (trim(list_type).eq.'H_INT')
      &       call import_fock_dalton(mel_target,str_info,orb_info,
      &         .true.,'MO_F')
         ! Get other integrals needed for R12 calculations.
-        case(op_rint)
+        case('F12_INT')
           mode=1
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12',
      &           mode,scaling,anti,str_info,orb_info) 
 
-        case(op_rintbar)
+        case('F12BAR_INT')
           mode=3
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12BAR',
      &           mode,scaling,anti,str_info,orb_info) 
 
-        case(op_rdagbar)
+        case('FDGBAR_INT')
           mode=3
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_FDGBAR',
      &           mode,scaling,anti,str_info,orb_info) 
 
-        case(op_rinttilde)
+        case('F12TLD_INT')
           mode=3
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12TLD',
      &           mode,scaling,anti,str_info,orb_info) 
 
-        case(op_rintbreve)
+        case('F12BRV_INT')
           mode=3
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_F12BRV',
      &           mode,scaling,anti,str_info,orb_info) 
-
-c        case(op_rintc)
-c          mode=3
-c          call import_2el_dalton(mel_target,'MO_F12C',
-c     &           mode,scaling,str_info,orb_info) 
-
-        case(op_rinba)
-          call quit(1,'import_op_el',
-     &         'import of F12^+ is obsolete')
-          mode=1
-          scaling=min(use_scaling,1)
-          call import_2el_dalton(mel_target,'MO_F12',
-     &           mode,scaling,anti,str_info,orb_info) 
-
-        case(op_ff)
+        case('FF_INT')
           mode=1
           scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FF',
      &         mode,scaling,anti,str_info,orb_info)
 
-        case(op_ffbar)
+        case('FFBAR_INT')
           mode=3
           scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FFBAR',
      &         mode,scaling,anti,str_info,orb_info)
 
-        case(op_ffg)
+        case('FFG_INT')
           mode=1
           scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FFG',
      &         mode,scaling,anti,str_info,orb_info)
 
-        case(op_ttr)
+        case('TTF_INT')
           mode=2
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_TTF',
      &           mode,scaling,anti,str_info,orb_info) 
 
-        case(op_rttr)
+        case('FTF_INT')
           mode=1
           scaling=min(use_scaling,2)
           call import_2el_dalton(mel_target,'MO_FTF',
      &           mode,scaling,anti,str_info,orb_info) 
 
-        case(op_gr)
+        case('FG_INT')
           mode=1
           scaling=min(use_scaling,1)
           call import_2el_dalton(mel_target,'MO_FG',
      &           mode,scaling,anti,str_info,orb_info) 
 
-        case(op_exchange)
+        case('K_INT')
           call quit(1,'import_op_el','K is not yet ready')
 c          call import_exchange_dalton(mel_target,'MO_K',
 c     &                                str_info,orb_info)
 
-        case(op_z_inter,op_p_inter)
+        case('Z_LIST','P_LIST')
           call import_intm_fc(mel_target,mel_target%op%name,
+     &         str_info,orb_info)
+
+        case ('XDIPLEN','YDIPLEN','ZDIPLEN')
+          call import_propint_dalton(mel_target,list_type,
      &         str_info,orb_info)
 
         case default
           call quit(1,'import_op_el',
-     &         'DALTON_SPECIAL: cannot handle operator '
-     &         //trim(mel_target%op%name))
+     &         'DALTON_SPECIAL: cannot handle list_type "'
+     &         //trim(list_type)//'"')
         end select
           
       case ('dalton','DALTON')
         ! what to import?
-        select case(trim(mel_target%op%name))
-        case (op_ham)
+        select case(trim(list_type))
+        case ('H_INT')
           call import_hamint_dalton(mel_target,str_info,orb_info)
+        case ('XDIPLEN','YDIPLEN','ZDIPLEN')
+          call import_propint_dalton(mel_target,list_type,
+     &         str_info,orb_info)
 
         case default
-          call quit(1,'import_op_el','DALTON: cannot handle operator '
-     &         //trim(mel_target%op%name))
+          call quit(1,'import_op_el','DALTON: cannot handle list_type "'
+     &         //trim(list_type)//'"')
         end select
       case ('intern','INTERN')
         call quit(1,'import_op_el','type INTERN not implemented')
@@ -183,7 +176,7 @@ c     &                                str_info,orb_info)
       case ('tmole','TMOLE')
         call quit(1,'import_op_el','type TMOLE not implemented')
       case default
-        call quit(1,'import_op_el','unknown type '//trim(env_type))
+        call quit(1,'import_op_el','unknown type "'//trim(env_type),'"')
       end select
 
       if (ntest.ge.10.and.(.not.mel_target%op%formal)) then
@@ -198,9 +191,6 @@ c     &                                str_info,orb_info)
      &       1,mel_target%op%n_occ_cls,
      &       str_info,orb_info)
       end if
-c dbg
-c      stop 'test import'
-c dbg
 
       return
       end

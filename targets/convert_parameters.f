@@ -591,22 +591,22 @@ c        read(parameters(2),'(240(i1))')
 *---------------------------------------------------------------------*
 
       subroutine ord_parameters(rw,parameters,
-     &     iorder)
+     &     iorder,species)
 
       implicit none
 
       integer, intent(inout) ::
-     &     rw,iorder
+     &     rw, iorder, species
       character, intent(inout) ::
      &     parameters*(*)
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
-        write(parameters,'(i5)')
-     &        iorder
+        write(parameters,'(2i5)')
+     &        iorder, species
       else
-        read(parameters,'(i5)')
-     &       iorder
+        read(parameters,'(2i5)')
+     &       iorder, species
       end if
 
       return

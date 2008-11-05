@@ -42,7 +42,7 @@
       type(me_list), pointer ::
      &     mel_pnt
       character(len_command_par) ::
-     &     title, env_type, mode
+     &     title, env_type, list_type, mode
       character(len_command_par), allocatable ::
      &     label_met(:)
 
@@ -108,11 +108,11 @@ c dbg
       case(IMPORT)
 
         call import_parameters(+1,rule%parameters,
-     &       env_type)
+     &       list_type,env_type)
 
         call import_op_el(rule%labels(1),
-     &       op_info,
-     &       env_type,str_info,orb_info)
+     &       list_type,env_type,
+     &       op_info,str_info,orb_info)
 
       case(PRECONDITIONER)
 

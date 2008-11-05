@@ -5,7 +5,6 @@
 *----------------------------------------------------------------------*
       implicit none
 
-c      include 'opdim.h'
       include 'stdunit.h'
       include 'def_orbinf.h'
       include 'def_filinf.h'

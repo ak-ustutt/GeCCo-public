@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine import_hamint_dalton(hlist,str_info,orb_info)
 *----------------------------------------------------------------------*
-*     import one- and two-electron densities from DALTON
+*     import one- and two-electron integrals from DALTON
 *     environment
 *     we need:
 *      SIRIFC for fock matrix

@@ -1732,7 +1732,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rint
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'F12_INT',env_type)
       call set_rule(mel_rint,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1752,7 +1752,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rintx
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'F12_INT',env_type)
       call set_rule(mel_rintx,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1772,7 +1772,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_gintx
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'G_INT',env_type)
       call set_rule(mel_gintx,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1794,7 +1794,7 @@ c     &       0,0,1,0,0,.false.)
         ! (b) import
         labels(1:10)(1:len_target_name) = ' '
         labels(1) = mel_gintz
-        call import_parameters(-1,parameters,env_type)
+        call import_parameters(-1,parameters,'G_INT',env_type)
         call set_rule(mel_gintz,ttype_opme,IMPORT,
      &                labels,1,1,
      &                parameters,1,tgt_info)
@@ -1815,7 +1815,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_ttr
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'TTF_INT',env_type)
       call set_rule(mel_ttr,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1835,7 +1835,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rttr
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FTF_INT',env_type)
       call set_rule(mel_rttr,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1855,7 +1855,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_ff
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FF_INT',env_type)
       call set_rule(mel_ff,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1875,7 +1875,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_ffbar
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FFBAR_INT',env_type)
       call set_rule(mel_ffbar,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1895,7 +1895,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_gr
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FG_INT',env_type)
       call set_rule(mel_gr,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1915,7 +1915,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_ffg
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FFG_INT',env_type)
       call set_rule(mel_ffg,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1935,7 +1935,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rintbar
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'F12BAR_INT',env_type)
       call set_rule(mel_rintbar,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1955,7 +1955,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rinttilde
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'F12TLD_INT',env_type)
       call set_rule(mel_rinttilde,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1975,7 +1975,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rdagbar
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FDGBAR_INT',env_type)
       call set_rule(mel_rdagbar,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1995,7 +1995,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rintbreve
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'F12BRV_INT',env_type)
       call set_rule(mel_rintbreve,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -2015,6 +2015,7 @@ c     &       0,0,1,0,0,.false.)
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_exchange
+      call import_parameters(-1,parameters,'K_INT',env_type)
       call set_rule(mel_exchange,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -2125,7 +2126,7 @@ c dbg
         ! import
         labels(1:10)(1:len_target_name) = ' '
         labels(1) = mel_p_def
-        call import_parameters(-1,parameters,env_type)
+        call import_parameters(-1,parameters,'P_LIST',env_type)
         call set_rule(mel_p_def,ttype_opme,IMPORT,
      &                labels,1,1,
      &                parameters,1,tgt_info)
@@ -2195,7 +2196,7 @@ c     &              parameters,1,tgt_info)
         ! import
         labels(1:10)(1:len_target_name) = ' '
         labels(1) = mel_z_def
-        call import_parameters(-1,parameters,env_type)
+        call import_parameters(-1,parameters,'Z_LIST',env_type)
         call set_rule(mel_z_def,ttype_opme,IMPORT,
      &                labels,1,1,
      &                parameters,1,tgt_info)

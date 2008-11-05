@@ -30,7 +30,7 @@
       ! DALTON writes integer*4, so we must take care of that
       integer(4) ::
      &     istate,ispin,nactel,lsym,nsym,
-     &     nisht,nasht,nocct,norbt,nbast,nconf,nwopt,nwoph,
+     &     nisht,nasht,nocct,norbt,nbast,nxbast,nconf,nwopt,nwoph,
      &     ncdets, ncmot,nnashx,nnashy,nnorbt,n2orbt,
      &     nelmn1, nelmx1, nelmn3, nelmx3, mctype,
      &     nish(mxsym),nash(mxsym),norb(mxsym),nbas(mxsym),
@@ -143,18 +143,24 @@
      &     call quit(1,'read_env_dalton',
      &     'not adapted to RAS orbital spaces')
 
+      nbast  = sum(nbas(1:nsym))
+      nxbast = sum(auxbas(1:nsym))
+
       orb_info%nspin = nspin
       orb_info%nsym = nsym
       orb_info%ngas = ngas
       orb_info%ntoob = norbt
       orb_info%nbast = nbast
+      orb_info%nxbast = nxbast
       orb_info%caborb = caborb
 
       ! use the data to initialize orb_info structure            
       allocate(orb_info%nbas(nsym),
      &     orb_info%ntoobs(nsym),orb_info%igassh(nsym,ngas),
      &     orb_info%iad_gas(ngas),orb_info%ihpvgas(ngas,nspin))
-      if(logaux)allocate(orb_info%cab_orb(nsym))
+      allocate(orb_info%cab_orb(nsym),
+     &              orb_info%nxbas(nsym) )
+      
 
       orb_info%nbas(1:nsym) = nbas(1:nsym)
       orb_info%ntoobs(1:nsym) = norb(1:nsym)
@@ -210,6 +216,10 @@
       end if
       if(logaux)then
         orb_info%cab_orb(1:nsym)=linind(1:nsym)
+        orb_info%nxbas(1:nsym)=auxbas(1:nsym)
+      else
+        orb_info%cab_orb(1:nsym)=0
+        orb_info%nxbas(1:nsym)=0
       endif 
 
       return

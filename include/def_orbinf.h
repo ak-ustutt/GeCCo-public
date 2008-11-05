@@ -2,7 +2,7 @@
         integer ::
      &     nsym, ngas, nspin
         integer ::
-     &      ntoob,caborb,nbast
+     &      ntoob,caborb,nbast,nxbast
         integer, allocatable ::
      &     igassh(:,:),
      &     nbas(:), ntoobs(:), ireots(:), ireost(:),
@@ -10,7 +10,7 @@
      &     mostnd(:,:,:),
      &     iad_gas(:), gas_reo(:),
      &     ihpvgas(:,:), ngas_hpv(:), nactt_hpv(:), norb_hpv(:,:),
-     &     idx_gas(:), ioff_gas(:), cab_orb(:),
+     &     idx_gas(:), ioff_gas(:), cab_orb(:), nxbas(:),
      &     xreosym(:), xreotyp(:)
 
       end type orbinf
