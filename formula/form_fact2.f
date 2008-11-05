@@ -334,35 +334,38 @@ c dbg
         ifact(5,nlevel) = iarc
         end if
 
-        if (.not.new) then
-        ! ... and find out what the
-        ! contr structure looks like after this operation
-        call init_contr(contr_red)
-        call copy_contr(contr,contr_red)
-        occ_vtx_red = occ_vtx
-        ivtx_ori_red = ivtx_ori
-        iarc_ori_red = iarc_ori
-
-        idx_op_new = op_info%nops+nlevel
-c        call add_interm_info(irestr_interm,info_interm,
-c     &       idx_op_new,irestr_res,contr,occ_vtx)
-
-        irestr_vtx_red = irestr_vtx
-        info_vtx_red = info_vtx
-        
-        call reduce_contr(contr_red,occ_vtx_red,
-     &       possible,
-     &       iarc,idx_op_new,ivtx_new,
-     &       njoined,
-     &       .true.,ivtx_ori_red,iarc_ori_red,
-     &       .true.,irestr_vtx_red,info_vtx_red,irestr_res,
-     &       .false.,reo_dummy,orb_info)
-
-        if (.not.possible) cycle
-
-        end if ! old
+c        if (.not.new) then
+c        ! ... and find out what the
+c        ! contr structure looks like after this operation
+c        call init_contr(contr_red)
+c        call copy_contr(contr,contr_red)
+c        occ_vtx_red = occ_vtx
+c        ivtx_ori_red = ivtx_ori
+c        iarc_ori_red = iarc_ori
+c
+c        idx_op_new = op_info%nops+nlevel
+cc        call add_interm_info(irestr_interm,info_interm,
+cc     &       idx_op_new,irestr_res,contr,occ_vtx)
+c
+c        irestr_vtx_red = irestr_vtx
+c        info_vtx_red = info_vtx
+c        
+c        call reduce_contr(contr_red,occ_vtx_red,
+c     &       possible,
+c     &       iarc,idx_op_new,ivtx_new,
+c     &       njoined,
+c     &       .true.,ivtx_ori_red,iarc_ori_red,
+c     &       .true.,irestr_vtx_red,info_vtx_red,irestr_res,
+c     &       .false.,reo_dummy,orb_info)
+c
+c        if (.not.possible) cycle
+c
+c        end if ! old
 
         ! add 0-contractions, if necessary
+        ! I think it is needed here as we else miss disconnected
+        ! terms ....
+        call check_disconnected(contr_red)
 c dbg
 c        print *,'calling check disc for'
 c        call prt_contr3(luout,contr_red,occ_vtx_red(1,1,njoined+1))
@@ -372,7 +375,8 @@ c dbg
         if (contr_red%narc.gt.0) then
 
           ! add 0-contractions, if necessary
-          call check_disconnected(contr_red)
+c          ! why did we put it here?
+c          call check_disconnected(contr_red)
           
           call form_fact_rec(nlevel+1,ifact,
      &         cost,iscale,contr_red,occ_vtx_red,

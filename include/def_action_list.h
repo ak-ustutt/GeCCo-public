@@ -1,6 +1,6 @@
       type action_list
         type(action), pointer ::
-     &       act
+     &     act
         type(action_list), pointer ::
-     &       prev, next
+     &     prev, next
       end type action_list

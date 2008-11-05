@@ -1,0 +1,1310 @@
+ run starts at 2008-11-05 16:45:47.252   host: dhcppc1
+
+ Version compiled 5 Nov 2008 at 16:45:40 on dhcppc1                              
+
+ compiled with: ifort
+ level 1 optimization: -g -assume byterecl -traceback -I../include -mod i686-linux-
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal author:                                       |
+        |       andreas koehn (university of mainz, germany)        |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       gareth richings (university of mainz, germany)      |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ raw data from section "SIR IPH "
+ potnuc =    2.14693787982525     
+ emy    =   -27.2722697088377     
+ eactiv =   0.000000000000000E+000
+ emcscf =   -25.1253318290124     
+ istate =            1
+ ispin  =            1
+ nactel =            0
+ lsym   =            1
+ nsym   =            4
+ mctype =            0
+ nrhf   =    3   0   0   0   0   0   0   0
+ nfro   =    0   0   0   0   0   0   0   0
+ nish   =    3   0   0   0   0   0   0   0
+ nash   =    0   0   0   0   0   0   0   0
+ norb   =   10   4   4   1   0   0   0   0
+ cabs   =   26  13  13   5   0   0   0   0
+ nbas   =   10   4   4   1   0   0   0   0
+ abas   =   26  13  13   5   0   0   0   0
+ tbas   =   36  17  17   6   0   0   0   0
+ nas1   =    0   0   0   0   0   0   0   0
+ nas2   =    0   0   0   0   0   0   0   0
+ nas3   =    0   0   0   0   0   0   0   0
+ nnorbt,n2orbt:   76 133
+ Reading input file ....
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:            1           0           0           0
+  defined shells: 
+   1     3   0   0   0
+   2     7   4   4   1
+   3    26  13  13   5
+  new shell definition: 
+   1     1   0   0   0
+   2     2   0   0   0
+   3     7   4   4   1
+   4    26  13  13   5
+ Memory set to     30000000 r8-words = (  228.88 Mb)
+ ************
+  set_orbinf
+ ************
+ ihpvgas:              1           1           2           4
+ ngas_hpv:             2           1           0           1
+ nactt_hpv:            2          16           0          57
+ ioff_gas:             0           2           3           3
+ idx_gas:              1           3           4           4
+ gas_reo:           1           2           3           4
+ igamorb:
+
+<  1>        1       1       1       1       1       1       1       1       1       1
+        2       2       2       2       3       3       3       3       4       1
+        1       1       1       1       1       1       1       1       1       1
+        1       1       1       1       1       1       1       1       1       1
+        1       1       1       1       1       2       2       2       2       2
+        2       2       2       2       2       2       2       2       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       4       4       4       4       4
+ igasorb:
+
+<  1>        1       2       2       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       4
+        4       4       4       4       4       4       4       4       4       4
+        4       4       4       4       4       4       4       4       4       4
+        4       4       4       4       4       4       4       4       4       4
+        4       4       4       4       4       4       4       4       4       4
+        4       4       4       4       4       4       4       4       4       4
+        4       4       4       4       4       4
+ mostnd:
+     1      1   1    2   1    2   1    2   1
+     2      2   3    4   3    4   3    4   3
+     3      4  10   11  14   15  18   19  19
+     4     20  45   46  58   59  71   72  76
+ ireost:
+
+<  1>        1       2       3       4       5       6       7       8       9      10
+       11      12      13      14      15      16      17      18      19
+ ireots:
+
+<  1>        1       2       3       4       5       6       7       8       9      10
+       11      12      13      14      15      16      17      18      19
+ iad_gas:
+
+<  1>        1
+
+<  2>        2
+
+<  3>        2
+
+<  4>        2
+ setting general targets ...
+ setting general targets for MP/CC ...
+ setting general targets for R12 ...
+ no approximations wrt. Fock made
+ no approximations wrt. Xchange made
+ in r12f_gen: set_tp =  T
+ setting special targets for CC-R12 ...
+ setting targets for CC-R12 excited states ...
+ My next target: G.R12
+ Rule: DEF_OP_FROM_OCC
+ My next target: G.R-INT
+ Rule: DEF_ME_LIST
+ set_new_graph:            1
+ iwexit           0           0           1           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0
+ set_new_graph:            2
+ iwexit           0           1           0           0           0           0
+           0           0           0           0           0           0
+ set_new_graph:            3
+ set_new_graph:            4
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ My next target: T12'
+ Rule: DEF_EXCITATION
+ My next target: T12BAR'
+ Rule: CLONE_OPERATOR
+ My next target: L(CCR12)
+ Rule: DEF_SCALAR
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ My next target: R12
+ Rule: DEF_R12GEMINAL
+ My next target: T
+ Rule: DEF_EXCITATION
+ My next target: TBAR
+ Rule: CLONE_OPERATOR
+ My next target: V
+ Rule: DEF_OP_FROM_OCC
+ My next target: VINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ My next target: B
+ Rule: DEF_OP_FROM_OCC
+ My next target: X
+ Rule: CLONE_OPERATOR
+ My next target: XINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ My next target: BINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ My next target: Bh
+ Rule: CLONE_OPERATOR
+ My next target: BhINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ My next target: C-INT
+ Rule: DEF_OP_FROM_OCC
+ My next target: CINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ My next target: X'
+ Rule: DEF_OP_FROM_OCC
+ My next target: X'INT_R12
+ Rule: DEF_R12INTM_FORMAL
+ My next target: R12-INT
+ Rule: DEF_R12INT
+ My next target: Lg0_CCR12
+ Rule: DEF_CCR12_LAGRANGIAN
+  ------------------------------------------
+     L    number of   n-fold commutators
+   class    terms    0    1    2    3    4
+  ------------------------------------------
+ nterms =           40
+       0       40    12   20    7    1    0
+ nterms =           84
+       1       84    16   45   21    2    0
+ nterms =           80
+       2       80     5   25   37   12    1
+  ------------------------------------------
+ Number of generated terms:          204
+ @ CC-R12 Lagrangian                   cpu/sys/wall:      0.44 /     0.00 /     0.44 s
+ Rule: FACTOR_OUT
+ read          205  entries
+ read           23  entries
+ read           23  entries
+ read           36  entries
+ read            9  entries
+ read           15  entries
+ read            3  entries
+ read            3  entries
+ Rule: REPLACE
+ read          148  entries
+ Rule: TEX_FORMULA
+ -----------------
+  tex_formula_drv
+ -----------------
+  f_input  = Lg0_CCR12
+ read          148  entries
+ A TeX formatted version of formula Lg0_CCR12
+ is written to file: ccr12f_lag.tex
+ My next target: E(CCR12)
+ Rule: DEF_SCALAR
+ My next target: E0_CCR12
+ Rule: INVARIANT
+ read          148  entries
+ My next target: OMG
+ Rule: CLONE_OPERATOR
+ My next target: OMG_T_CCR12
+ Rule: DERIVATIVE
+ My next target: H0
+ Rule: DEF_ME_LIST
+ set_new_graph:            5
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ size of buffer:        21200           3       63600
+ read in finished
+ My next target: DIA
+ Rule: CLONE_OPERATOR
+ My next target: DIAG1SxxM00
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DEF-O0
+ Rule: DEF_ME_LIST
+ My next target: DEF-T0
+ Rule: DEF_ME_LIST
+ My next target: R12-GEM
+ Rule: DEF_ME_LIST
+ set_new_graph:            6
+ iwexit           0           0           1           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0
+ iwexit           0           1           0           1           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0
+ set_new_graph:            7
+ iwexit           0           1           0           0           0           0
+           0           0           0           0           0           0
+ set_new_graph:            8
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ size of buffer:        21200           3       63600
+ read in finished
+ size of buffer:        84886           3      254658
+ read in finished
+ My next target: DEF-V-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-B-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-Bh-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-X-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-C-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-E0(CCR12)
+ Rule: DEF_ME_LIST
+ My next target: Hbar
+ Rule: DEF_CC_HBAR_OP
+ My next target: HT_TRF
+ Rule: DEF_CC_HBAR
+ @ CC Hbar                             cpu/sys/wall:      0.15 /     0.00 /     0.15 s
+ My next target: DEF-Hbar
+ Rule: DEF_ME_LIST
+ My next target: CC-R12-OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           19
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   G.R12   2   6           G.R-INT
+    2    T12'   1   1                  
+    3 T12BAR'   1   1                  
+    4L(CCR12)   1   1                  
+    5       H   1  46                H0
+    6     R12   1   4                  
+    7       T   1   2                T0
+    8    TBAR   1   2                  
+    9       V   1  11           V-INTER
+   10       B   1   7           B-INTER
+   11       X   1   7           X-INTER
+   12      Bh   1   7          Bh-INTER
+   13   C-INT   1   2           C-INTER
+   14      X'   1   4                  
+   15 R12-INT   1  12           R12-GEM
+   16E(CCR12)   1   1         E0(CCR12)
+   17     OMG   1   2                O0
+   18     DIA   1   2       DIAG1SxxM00
+   19    Hbar   1   9             H0bar
+ ----------------------------------------
+ Number of lists defined:           13
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1         G.R-INT  1  0         9228    G.R12               G.R-INT_list.da
+    2              H0  1  0       562837        H                    H0_list.da
+    3     DIAG1SxxM00  1  0          422      DIA           DIAG1SxxM00_list.da
+    4              O0  1  0          422      OMG                    O0_list.da
+    5              T0  1  0          422        T                    T0_list.da
+    6         R12-GEM  1  0       163234  R12-INT               R12-GEM_list.da
+    7         V-INTER  1  0         9457        V               V-INTER_list.da
+    8         B-INTER  1  0         2469        B               B-INTER_list.da
+    9        Bh-INTER  1  0         2469       Bh              Bh-INTER_list.da
+   10         X-INTER  1  0         2469        X               X-INTER_list.da
+   11         C-INTER  1  0         6962    C-INT               C-INTER_list.da
+   12       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   13           H0bar  1  0         2888     Hbar                 H0bar_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- E0_CCR12
+ read           24  entries
+  -- OMG_T_CCR12
+ read          125  entries
+  I will factor out the intermediate: HT_TRF ...
+ read           51  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #  139 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.233E+06(   4.6%)
+  term #  112 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.233E+06(   4.6%)
+  term #  113 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.233E+06(   4.6%)
+  term #  140 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.233E+06(   4.6%)
+  term #  155 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.222E+06(   4.4%)
+ Formally most expensive contractions: 
+  term #  130 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #  120 - H^ 3 P^ 2 V^ 0 X^ 1
+  term #  155 - H^ 3 P^ 2 V^ 0 X^ 1
+  term #   98 - H^ 3 P^ 2 V^ 0 X^ 1
+  term #   97 - H^ 3 P^ 2 V^ 0 X^ 1
+ Largest intermediates occur in: 
+  term #  112 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.355E+00
+  term #   71 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.355E+00
+  term #  113 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.355E+00
+  term #   97 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.355E+00
+  term #   98 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.355E+00
+ My next target: G
+ Rule: DEF_R12INT
+ My next target: G-X
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ size of buffer:        21200           3       63600
+ read in finished
+ My next target: TTR_COM
+ Rule: DEF_R12INT
+ My next target: TTR-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:         2221           6       13326
+ read in finished
+ size of buffer:        21200           6      127200
+ read in finished
+ My next target: RTTR_COM
+ Rule: DEF_OP_FROM_OCC
+ My next target: R.R
+ Rule: CLONE_OPERATOR
+ My next target: RSQ-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ My next target: VINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ My next target: VINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           23
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   G.R12   2   6           G.R-INT
+    2    T12'   1   1                  
+    3 T12BAR'   1   1                  
+    4L(CCR12)   1   1                  
+    5       H   1  46                H0
+    6     R12   1   4                  
+    7       T   1   2                T0
+    8    TBAR   1   2                  
+    9       V   1  11           V-INTER
+   10       B   1   7           B-INTER
+   11       X   1   7           X-INTER
+   12      Bh   1   7          Bh-INTER
+   13   C-INT   1   2           C-INTER
+   14      X'   1   4                  
+   15 R12-INT   1  12           R12-GEM
+   16E(CCR12)   1   1         E0(CCR12)
+   17     OMG   1   2                O0
+   18     DIA   1   2       DIAG1SxxM00
+   19    Hbar   1   9             H0bar
+   20       G   1  21               G-X
+   21 TTR_COM   1  10           TTR-INT
+   22RTTR_COM   2   4                  
+   23     R.R   2   4           RSQ-INT
+ ----------------------------------------
+ Number of lists defined:           16
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1         G.R-INT  1  0         9228    G.R12               G.R-INT_list.da
+    2              H0  1  0       562837        H                    H0_list.da
+    3     DIAG1SxxM00  1  0          422      DIA           DIAG1SxxM00_list.da
+    4              O0  1  0          422      OMG                    O0_list.da
+    5              T0  1  0          422        T                    T0_list.da
+    6         R12-GEM  1  0       163234  R12-INT               R12-GEM_list.da
+    7         V-INTER  1  0         9457        V               V-INTER_list.da
+    8         B-INTER  1  0         2469        B               B-INTER_list.da
+    9        Bh-INTER  1  0         2469       Bh              Bh-INTER_list.da
+   10         X-INTER  1  0         2469        X               X-INTER_list.da
+   11         C-INTER  1  0         6962    C-INT               C-INTER_list.da
+   12       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   13           H0bar  1  0         2888     Hbar                 H0bar_list.da
+   14             G-X  1  0       612122        G                   G-X_list.da
+   15         TTR-INT  1  0        72980  TTR_COM               TTR-INT_list.da
+   16         RSQ-INT  1  0         2266      R.R               RSQ-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- VINT_R12_CABS
+ read           56  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   55 - H^ 2 P^ 3 V^ 0 X^ 1 - flops:  0.637E+06(  32.3%)
+  term #   54 - H^ 1 P^ 5 V^ 0 X^ 0 - flops:  0.393E+06(  19.9%)
+  term #   51 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.203E+06(  10.3%)
+  term #   53 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.179E+06(   9.1%)
+  term #   50 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.119E+06(   6.0%)
+ Formally most expensive contractions: 
+  term #   54 - H^ 1 P^ 5 V^ 0 X^ 0
+  term #   55 - H^ 2 P^ 3 V^ 0 X^ 1
+  term #   53 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   50 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   34 - H^ 2 P^ 4 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   54 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.200E+00
+  term #   52 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.200E+00
+  term #   55 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.200E+00
+  term #   53 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.200E+00
+  term #   51 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.601E-01
+ My next target: XINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ My next target: XINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           23
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   G.R12   2   6           G.R-INT
+    2    T12'   1   1                  
+    3 T12BAR'   1   1                  
+    4L(CCR12)   1   1                  
+    5       H   1  46                H0
+    6     R12   1   4                  
+    7       T   1   2                T0
+    8    TBAR   1   2                  
+    9       V   1  11           V-INTER
+   10       B   1   7           B-INTER
+   11       X   1   7           X-INTER
+   12      Bh   1   7          Bh-INTER
+   13   C-INT   1   2           C-INTER
+   14      X'   1   4                  
+   15 R12-INT   1  12           R12-GEM
+   16E(CCR12)   1   1         E0(CCR12)
+   17     OMG   1   2                O0
+   18     DIA   1   2       DIAG1SxxM00
+   19    Hbar   1   9             H0bar
+   20       G   1  21               G-X
+   21 TTR_COM   1  10           TTR-INT
+   22RTTR_COM   2   4                  
+   23     R.R   2   4           RSQ-INT
+ ----------------------------------------
+ Number of lists defined:           16
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1         G.R-INT  1  0         9228    G.R12               G.R-INT_list.da
+    2              H0  1  0       562837        H                    H0_list.da
+    3     DIAG1SxxM00  1  0          422      DIA           DIAG1SxxM00_list.da
+    4              O0  1  0          422      OMG                    O0_list.da
+    5              T0  1  0          422        T                    T0_list.da
+    6         R12-GEM  1  0       163234  R12-INT               R12-GEM_list.da
+    7         V-INTER  1  0         9457        V               V-INTER_list.da
+    8         B-INTER  1  0         2469        B               B-INTER_list.da
+    9        Bh-INTER  1  0         2469       Bh              Bh-INTER_list.da
+   10         X-INTER  1  0         2469        X               X-INTER_list.da
+   11         C-INTER  1  0         6962    C-INT               C-INTER_list.da
+   12       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   13           H0bar  1  0         2888     Hbar                 H0bar_list.da
+   14             G-X  1  0       612122        G                   G-X_list.da
+   15         TTR-INT  1  0        72980  TTR_COM               TTR-INT_list.da
+   16         RSQ-INT  1  0         2266      R.R               RSQ-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- XINT_R12_CABS
+ read           36  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   35 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.203E+06(  32.6%)
+  term #   34 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.119E+06(  19.1%)
+  term #   23 - H^ 2 P^ 2 V^ 0 X^ 1 - flops:  0.610E+05(   9.8%)
+  term #   33 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.566E+05(   9.1%)
+  term #   22 - H^ 1 P^ 4 V^ 0 X^ 0 - flops:  0.351E+05(   5.6%)
+ Formally most expensive contractions: 
+  term #   34 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   35 - H^ 3 P^ 2 V^ 0 X^ 1
+  term #   33 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   30 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   26 - H^ 3 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   34 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.601E-01
+  term #   33 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.601E-01
+  term #   32 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.601E-01
+  term #   35 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.601E-01
+  term #   20 - H^ 0 P^ 2 V^ 0 X^ 0 - Mb:     0.100E-01
+ My next target: R12+BAR
+ Rule: DEF_R12INT
+ My next target: R12TLD
+ Rule: CLONE_OPERATOR
+ My next target: R.RBAR
+ Rule: CLONE_OPERATOR
+ My next target: R12BRV
+ Rule: DEF_R12INT
+ My next target: R12BAR+-GEM
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:         2221          12       26652
+ read in finished
+ size of buffer:        21200          12      254400
+ read in finished
+ My next target: R12TLD-GEM
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:         2221          12       26652
+ read in finished
+ size of buffer:        21200          12      254400
+ read in finished
+ size of buffer:        84886          12     1018632
+ read in finished
+ My next target: RSQBAR-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:         2221          12       26652
+ read in finished
+ My next target: R12BRV-GEM
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:         2221          12       26652
+ read in finished
+ size of buffer:        21200          12      254400
+ read in finished
+ My next target: BINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ My next target: RTTR-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ My next target: BINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           27
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   G.R12   2   6           G.R-INT
+    2    T12'   1   1                  
+    3 T12BAR'   1   1                  
+    4L(CCR12)   1   1                  
+    5       H   1  46                H0
+    6     R12   1   4                  
+    7       T   1   2                T0
+    8    TBAR   1   2                  
+    9       V   1  11           V-INTER
+   10       B   1   7           B-INTER
+   11       X   1   7           X-INTER
+   12      Bh   1   7          Bh-INTER
+   13   C-INT   1   2           C-INTER
+   14      X'   1   4                  
+   15 R12-INT   1  12           R12-GEM
+   16E(CCR12)   1   1         E0(CCR12)
+   17     OMG   1   2                O0
+   18     DIA   1   2       DIAG1SxxM00
+   19    Hbar   1   9             H0bar
+   20       G   1  21               G-X
+   21 TTR_COM   1  10           TTR-INT
+   22RTTR_COM   2   4          RTTR-INT
+   23     R.R   2   4           RSQ-INT
+   24 R12+BAR   1  10       R12BAR+-GEM
+   25  R12TLD   1  12        R12TLD-GEM
+   26  R.RBAR   2   4        RSQBAR-INT
+   27  R12BRV   1  10        R12BRV-GEM
+ ----------------------------------------
+ Number of lists defined:           21
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1         G.R-INT  1  0         9228    G.R12               G.R-INT_list.da
+    2              H0  1  0       562837        H                    H0_list.da
+    3     DIAG1SxxM00  1  0          422      DIA           DIAG1SxxM00_list.da
+    4              O0  1  0          422      OMG                    O0_list.da
+    5              T0  1  0          422        T                    T0_list.da
+    6         R12-GEM  1  0       163234  R12-INT               R12-GEM_list.da
+    7         V-INTER  1  0         9457        V               V-INTER_list.da
+    8         B-INTER  1  0         2469        B               B-INTER_list.da
+    9        Bh-INTER  1  0         2469       Bh              Bh-INTER_list.da
+   10         X-INTER  1  0         2469        X               X-INTER_list.da
+   11         C-INTER  1  0         6962    C-INT               C-INTER_list.da
+   12       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   13           H0bar  1  0         2888     Hbar                 H0bar_list.da
+   14             G-X  1  0       612122        G                   G-X_list.da
+   15         TTR-INT  1  0        72980  TTR_COM               TTR-INT_list.da
+   16         RSQ-INT  1  0         2266      R.R               RSQ-INT_list.da
+   17     R12BAR+-GEM  1  0        72980  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       163234   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         2266   R.RBAR            RSQBAR-INT_list.da
+   20      R12BRV-GEM  1  0        72980   R12BRV            R12BRV-GEM_list.da
+   21        RTTR-INT  1  0         2266 RTTR_COM              RTTR-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- BINT_R12_CABS
+ read           79  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   56 - H^ 2 P^ 2 V^ 0 X^ 2 - flops:  0.153E+07(  30.5%)
+  term #   55 - H^ 2 P^ 3 V^ 0 X^ 1 - flops:  0.869E+06(  17.2%)
+  term #   50 - H^ 1 P^ 2 V^ 0 X^ 2 - flops:  0.458E+06(   9.1%)
+  term #   49 - H^ 1 P^ 3 V^ 0 X^ 1 - flops:  0.261E+06(   5.2%)
+  term #   70 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.203E+06(   4.0%)
+ Formally most expensive contractions: 
+  term #   56 - H^ 2 P^ 2 V^ 0 X^ 2
+  term #   55 - H^ 2 P^ 3 V^ 0 X^ 1
+  term #   41 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   77 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   52 - H^ 3 P^ 1 V^ 0 X^ 2
+ Largest intermediates occur in: 
+  term #   40 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.601E-01
+  term #   39 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.601E-01
+  term #   70 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.601E-01
+  term #   69 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.601E-01
+  term #   56 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.601E-01
+ My next target: BhINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ My next target: BhINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           27
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   G.R12   2   6           G.R-INT
+    2    T12'   1   1                  
+    3 T12BAR'   1   1                  
+    4L(CCR12)   1   1                  
+    5       H   1  46                H0
+    6     R12   1   4                  
+    7       T   1   2                T0
+    8    TBAR   1   2                  
+    9       V   1  11           V-INTER
+   10       B   1   7           B-INTER
+   11       X   1   7           X-INTER
+   12      Bh   1   7          Bh-INTER
+   13   C-INT   1   2           C-INTER
+   14      X'   1   4                  
+   15 R12-INT   1  12           R12-GEM
+   16E(CCR12)   1   1         E0(CCR12)
+   17     OMG   1   2                O0
+   18     DIA   1   2       DIAG1SxxM00
+   19    Hbar   1   9             H0bar
+   20       G   1  21               G-X
+   21 TTR_COM   1  10           TTR-INT
+   22RTTR_COM   2   4          RTTR-INT
+   23     R.R   2   4           RSQ-INT
+   24 R12+BAR   1  10       R12BAR+-GEM
+   25  R12TLD   1  12        R12TLD-GEM
+   26  R.RBAR   2   4        RSQBAR-INT
+   27  R12BRV   1  10        R12BRV-GEM
+ ----------------------------------------
+ Number of lists defined:           21
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1         G.R-INT  1  0         9228    G.R12               G.R-INT_list.da
+    2              H0  1  0       562837        H                    H0_list.da
+    3     DIAG1SxxM00  1  0          422      DIA           DIAG1SxxM00_list.da
+    4              O0  1  0          422      OMG                    O0_list.da
+    5              T0  1  0          422        T                    T0_list.da
+    6         R12-GEM  1  0       163234  R12-INT               R12-GEM_list.da
+    7         V-INTER  1  0         9457        V               V-INTER_list.da
+    8         B-INTER  1  0         2469        B               B-INTER_list.da
+    9        Bh-INTER  1  0         2469       Bh              Bh-INTER_list.da
+   10         X-INTER  1  0         2469        X               X-INTER_list.da
+   11         C-INTER  1  0         6962    C-INT               C-INTER_list.da
+   12       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   13           H0bar  1  0         2888     Hbar                 H0bar_list.da
+   14             G-X  1  0       612122        G                   G-X_list.da
+   15         TTR-INT  1  0        72980  TTR_COM               TTR-INT_list.da
+   16         RSQ-INT  1  0         2266      R.R               RSQ-INT_list.da
+   17     R12BAR+-GEM  1  0        72980  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       163234   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         2266   R.RBAR            RSQBAR-INT_list.da
+   20      R12BRV-GEM  1  0        72980   R12BRV            R12BRV-GEM_list.da
+   21        RTTR-INT  1  0         2266 RTTR_COM              RTTR-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- BhINT_R12_CABS
+ read           21  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   20 - H^ 2 P^ 2 V^ 0 X^ 1 - flops:  0.616E+05(  33.0%)
+  term #   19 - H^ 1 P^ 4 V^ 0 X^ 0 - flops:  0.482E+05(  25.9%)
+  term #   18 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.172E+05(   9.2%)
+  term #   16 - H^ 3 P^ 1 V^ 0 X^ 1 - flops:  0.125E+05(   6.7%)
+  term #   12 - H^ 3 P^ 1 V^ 0 X^ 1 - flops:  0.125E+05(   6.7%)
+ Formally most expensive contractions: 
+  term #   19 - H^ 1 P^ 4 V^ 0 X^ 0
+  term #   20 - H^ 2 P^ 2 V^ 0 X^ 1
+  term #   11 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #   18 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #   15 - H^ 2 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   20 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.320E+00
+  term #   19 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.200E+00
+  term #   18 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.901E-01
+  term #   16 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.571E-01
+  term #   12 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.571E-01
+ My next target: CINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ My next target: CINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           27
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   G.R12   2   6           G.R-INT
+    2    T12'   1   1                  
+    3 T12BAR'   1   1                  
+    4L(CCR12)   1   1                  
+    5       H   1  46                H0
+    6     R12   1   4                  
+    7       T   1   2                T0
+    8    TBAR   1   2                  
+    9       V   1  11           V-INTER
+   10       B   1   7           B-INTER
+   11       X   1   7           X-INTER
+   12      Bh   1   7          Bh-INTER
+   13   C-INT   1   2           C-INTER
+   14      X'   1   4                  
+   15 R12-INT   1  12           R12-GEM
+   16E(CCR12)   1   1         E0(CCR12)
+   17     OMG   1   2                O0
+   18     DIA   1   2       DIAG1SxxM00
+   19    Hbar   1   9             H0bar
+   20       G   1  21               G-X
+   21 TTR_COM   1  10           TTR-INT
+   22RTTR_COM   2   4          RTTR-INT
+   23     R.R   2   4           RSQ-INT
+   24 R12+BAR   1  10       R12BAR+-GEM
+   25  R12TLD   1  12        R12TLD-GEM
+   26  R.RBAR   2   4        RSQBAR-INT
+   27  R12BRV   1  10        R12BRV-GEM
+ ----------------------------------------
+ Number of lists defined:           21
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1         G.R-INT  1  0         9228    G.R12               G.R-INT_list.da
+    2              H0  1  0       562837        H                    H0_list.da
+    3     DIAG1SxxM00  1  0          422      DIA           DIAG1SxxM00_list.da
+    4              O0  1  0          422      OMG                    O0_list.da
+    5              T0  1  0          422        T                    T0_list.da
+    6         R12-GEM  1  0       163234  R12-INT               R12-GEM_list.da
+    7         V-INTER  1  0         9457        V               V-INTER_list.da
+    8         B-INTER  1  0         2469        B               B-INTER_list.da
+    9        Bh-INTER  1  0         2469       Bh              Bh-INTER_list.da
+   10         X-INTER  1  0         2469        X               X-INTER_list.da
+   11         C-INTER  1  0         6962    C-INT               C-INTER_list.da
+   12       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   13           H0bar  1  0         2888     Hbar                 H0bar_list.da
+   14             G-X  1  0       612122        G                   G-X_list.da
+   15         TTR-INT  1  0        72980  TTR_COM               TTR-INT_list.da
+   16         RSQ-INT  1  0         2266      R.R               RSQ-INT_list.da
+   17     R12BAR+-GEM  1  0        72980  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       163234   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         2266   R.RBAR            RSQBAR-INT_list.da
+   20      R12BRV-GEM  1  0        72980   R12BRV            R12BRV-GEM_list.da
+   21        RTTR-INT  1  0         2266 RTTR_COM              RTTR-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- CINT_R12_CABS
+ read            3  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    2 - H^ 1 P^ 3 V^ 0 X^ 1 - flops:  0.262E+06(  93.9%)
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 1 - flops:  0.170E+05(   6.1%)
+ Formally most expensive contractions: 
+  term #    2 - H^ 1 P^ 3 V^ 0 X^ 1
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 1
+ Largest intermediates occur in: 
+  term #    2 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.135E+01
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.881E-01
+ My next target: EVAL-R12-INTER
+ Rule: EVALUATE
+ read           56  entries
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.02 /     0.12 s
+ Rule: EVALUATE
+ read           36  entries
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.02 /     0.07 s
+ Rule: EVALUATE
+ read            3  entries
+ @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Rule: EVALUATE
+ read           79  entries
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ @ formula evaluation                  cpu/sys/wall:      0.22 /     0.05 /     0.26 s
+ Rule: EVALUATE
+ read           21  entries
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ @ formula evaluation                  cpu/sys/wall:      0.06 /     0.01 /     0.07 s
+ My next target: SOLVE-CCR12-GS
+ Rule: SOLVE_NLEQ
+ read          172  entries
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         30
+ Threshold for residual:      0.10E-07
+ @ formula evaluation                  cpu/sys/wall:      0.37 /     0.15 /     0.52 s
+>>>  1        -25.142833846699 0.3535    
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.52 /     0.14 /     0.67 s
+>>>  2        -25.198669553005 0.9755E-01
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.53 /     0.13 /     0.66 s
+>>>  3        -25.219423934143 0.2821E-01
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.50 /     0.17 /     0.71 s
+>>>  4        -25.222959895848 0.7900E-02
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.52 /     0.15 /     0.67 s
+>>>  5        -25.223822827734 0.2989E-02
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.55 /     0.11 /     0.66 s
+>>>  6        -25.223707369702 0.1171E-02
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.51 /     0.14 /     0.65 s
+>>>  7        -25.223715847265 0.3406E-03
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.51 /     0.14 /     0.65 s
+>>>  8        -25.223730344950 0.7180E-04
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.52 /     0.13 /     0.66 s
+>>>  9        -25.223723864958 0.1510E-04
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.54 /     0.12 /     0.66 s
+>>> 10        -25.223725186350 0.3115E-05
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.50 /     0.15 /     0.67 s
+>>> 11        -25.223725064928 0.7852E-06
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.56 /     0.10 /     0.65 s
+>>> 12        -25.223725030733 0.1560E-06
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.50 /     0.15 /     0.66 s
+>>> 13        -25.223725030073 0.4521E-07
+ prc name: DIAG1SxxM00_list.da
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.50 /     0.17 /     0.67 s
+>>> 14        -25.223725029495 0.6977E-08
+ prc name: DIAG1SxxM00_list.da
+ CONVERGED IN    14 ITERATIONS
+>>> final energy:        -25.223725029495 <<<
+ My next target: A.R
+ Rule: CLONE_OPERATOR
+ My next target: R
+ Rule: CLONE_OPERATOR
+ My next target: CC_A_R
+ Rule: DERIVATIVE
+ My next target: S0(R12)
+ Rule: DEF_SCALAR
+ My next target: CCR12_S0
+ Rule: DEF_CCR12_METRIC
+ @ CC-R12 metric                       cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: FACTOR_OUT
+ read           13  entries
+ read           15  entries
+ My next target: S.T
+ Rule: CLONE_OPERATOR
+ My next target: S.R
+ Rule: CLONE_OPERATOR
+ My next target: CCR12_S_R
+ Rule: DERIVATIVE
+ Rule: DERIVATIVE
+ My next target: DEF-S.RE0
+ Rule: DEF_ME_LIST
+ Rule: DEF_ME_LIST
+ My next target: DEF-A.RE0
+ Rule: DEF_ME_LIST
+ Rule: DEF_ME_LIST
+ My next target: DEF-RE0
+ Rule: DEF_ME_LIST
+ Rule: DEF_ME_LIST
+ My next target: CC_A_R_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           32
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   G.R12   2   6           G.R-INT
+    2    T12'   1   1                  
+    3 T12BAR'   1   1                  
+    4L(CCR12)   1   1                  
+    5       H   1  46                H0
+    6     R12   1   4                  
+    7       T   1   2                T0
+    8    TBAR   1   2                  
+    9       V   1  11           V-INTER
+   10       B   1   7           B-INTER
+   11       X   1   7           X-INTER
+   12      Bh   1   7          Bh-INTER
+   13   C-INT   1   2           C-INTER
+   14      X'   1   4                  
+   15 R12-INT   1  12           R12-GEM
+   16E(CCR12)   1   1         E0(CCR12)
+   17     OMG   1   2                O0
+   18     DIA   1   2       DIAG1SxxM00
+   19    Hbar   1   9             H0bar
+   20       G   1  21               G-X
+   21 TTR_COM   1  10           TTR-INT
+   22RTTR_COM   2   4          RTTR-INT
+   23     R.R   2   4           RSQ-INT
+   24 R12+BAR   1  10       R12BAR+-GEM
+   25  R12TLD   1  12        R12TLD-GEM
+   26  R.RBAR   2   4        RSQBAR-INT
+   27  R12BRV   1  10        R12BRV-GEM
+   28     A.R   1   2     A.RE0G1C-1M00
+   29       R   1   2       RE0G1C-1M00
+   30 S0(R12)   1   1                  
+   31     S.T   1   2                  
+   32     S.R   1   2     S.RE0G1C-1M00
+ ----------------------------------------
+ Number of lists defined:           27
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1         G.R-INT  1  0         9228    G.R12               G.R-INT_list.da
+    2              H0  1  0       562837        H                    H0_list.da
+    3     DIAG1SxxM00  1  0          422      DIA           DIAG1SxxM00_list.da
+    4              O0  1  0          422      OMG                    O0_list.da
+    5              T0  1  0          422        T                    T0_list.da
+    6         R12-GEM  1  0       163234  R12-INT               R12-GEM_list.da
+    7         V-INTER  1  0         9457        V               V-INTER_list.da
+    8         B-INTER  1  0         2469        B               B-INTER_list.da
+    9        Bh-INTER  1  0         2469       Bh              Bh-INTER_list.da
+   10         X-INTER  1  0         2469        X               X-INTER_list.da
+   11         C-INTER  1  0         6962    C-INT               C-INTER_list.da
+   12       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   13           H0bar  1  0         2888     Hbar                 H0bar_list.da
+   14             G-X  1  0       612122        G                   G-X_list.da
+   15         TTR-INT  1  0        72980  TTR_COM               TTR-INT_list.da
+   16         RSQ-INT  1  0         2266      R.R               RSQ-INT_list.da
+   17     R12BAR+-GEM  1  0        72980  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       163234   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         2266   R.RBAR            RSQBAR-INT_list.da
+   20      R12BRV-GEM  1  0        72980   R12BRV            R12BRV-GEM_list.da
+   21        RTTR-INT  1  0         2266 RTTR_COM              RTTR-INT_list.da
+   22   S.RE0G2C+1M00  2  0          336      S.R         S.RE0G2C+1M00_list.da
+   23   S.RE0G1C-1M00  1  0          422      S.R         S.RE0G1C-1M00_list.da
+   24   A.RE0G2C+1M00  2  0          336      A.R         A.RE0G2C+1M00_list.da
+   25   A.RE0G1C-1M00  1  0          422      A.R         A.RE0G1C-1M00_list.da
+   26     RE0G2C+1M00  2  0          336        R           RE0G2C+1M00_list.da
+   27     RE0G1C-1M00  1  0          422        R           RE0G1C-1M00_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- CC_A_R
+ read          181  entries
+  -- CCR12_S_R
+ read            5  entries
+  I will factor out the intermediate: HT_TRF ...
+ read           51  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   98 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.233E+06(   3.1%)
+  term #   99 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.233E+06(   3.1%)
+  term #  100 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.233E+06(   3.1%)
+  term #  129 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.233E+06(   3.1%)
+  term #  130 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.233E+06(   3.1%)
+ Formally most expensive contractions: 
+  term #  116 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #  131 - H^ 3 P^ 2 V^ 0 X^ 1
+  term #   73 - H^ 3 P^ 2 V^ 0 X^ 1
+  term #   72 - H^ 3 P^ 2 V^ 0 X^ 1
+  term #  153 - H^ 3 P^ 2 V^ 0 X^ 1
+ Largest intermediates occur in: 
+  term #   73 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.355E+00
+  term #   72 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.355E+00
+  term #   97 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.355E+00
+  term #   98 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.355E+00
+  term #  100 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.355E+00
+ My next target: DIAG2SxxM00
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: SOLVE-CC-RE0
+ Rule: SOLVE_EVP
+ in solve_evp: nspecial =            0
+ -------------------
+  entered solve_evp
+ -------------------
+ nopt   =            1
+ nroots =            2
+ read          193  entries
+ after batch:            1  to          336
+           1  0.403614325113066                5
+           2  0.403614325113066               13
+           3  0.705610786759949                1
+           4  0.705610786759949                9
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-06
+ Number of parameters:             336
+ @ formula evaluation                  cpu/sys/wall:      0.73 /     0.19 /     0.93 s
+ @ formula evaluation                  cpu/sys/wall:      0.65 /     0.17 /     0.83 s
+>>>  1                         0.2444    
+ >>             0.172327129388 0.2444    
+ >>             0.479901809974 0.2429    
+ @ formula evaluation                  cpu/sys/wall:      0.64 /     0.20 /     0.86 s
+ @ formula evaluation                  cpu/sys/wall:      0.67 /     0.17 /     0.85 s
+>>>  2                         0.8061E-01
+ >>             0.112656809429 0.5531E-01
+ >>             0.414778543441 0.8061E-01
+ @ formula evaluation                  cpu/sys/wall:      0.69 /     0.17 /     0.86 s
+ @ formula evaluation                  cpu/sys/wall:      0.65 /     0.19 /     0.84 s
+>>>  3                         0.5035E-01
+ >>             0.110108789845 0.1526E-01
+ >>             0.403346271690 0.5035E-01
+ @ formula evaluation                  cpu/sys/wall:      0.66 /     0.19 /     0.86 s
+ @ formula evaluation                  cpu/sys/wall:      0.67 /     0.20 /     0.87 s
+>>>  4                         0.3159E-01
+ >>             0.109989704282 0.3566E-02
+ >>             0.398650742849 0.3159E-01
+ @ formula evaluation                  cpu/sys/wall:      0.69 /     0.17 /     0.87 s
+ @ formula evaluation                  cpu/sys/wall:      0.67 /     0.21 /     0.88 s
+>>>  5                         0.1439E-01
+ >>             0.109988782750 0.1131E-02
+ >>             0.397066868593 0.1439E-01
+ @ formula evaluation                  cpu/sys/wall:      0.68 /     0.21 /     0.91 s
+ @ formula evaluation                  cpu/sys/wall:      0.71 /     0.16 /     0.88 s
+>>>  6                         0.5905E-02
+ >>             0.109989774601 0.2452E-03
+ >>             0.396863394053 0.5905E-02
+ @ formula evaluation                  cpu/sys/wall:      0.70 /     0.17 /     0.87 s
+ @ formula evaluation                  cpu/sys/wall:      0.70 /     0.18 /     0.89 s
+>>>  7                         0.1777E-02
+ >>             0.109989901382 0.4525E-04
+ >>             0.396829480681 0.1777E-02
+ @ formula evaluation                  cpu/sys/wall:      0.76 /     0.11 /     0.88 s
+ @ formula evaluation                  cpu/sys/wall:      0.67 /     0.19 /     0.87 s
+>>>  8                         0.6677E-03
+ >>             0.109989882722 0.9219E-05
+ >>             0.396822464358 0.6677E-03
+ @ formula evaluation                  cpu/sys/wall:      0.67 /     0.18 /     0.86 s
+ @ formula evaluation                  cpu/sys/wall:      0.68 /     0.17 /     0.84 s
+>>>  9                         0.1845E-03
+ >>             0.109989872288 0.1525E-05
+ >>             0.396823787835 0.1845E-03
+ @ formula evaluation                  cpu/sys/wall:      0.71 /     0.16 /     0.89 s
+ @ formula evaluation                  cpu/sys/wall:      0.69 /     0.16 /     0.86 s
+>>> 10                         0.4579E-04
+ >>             0.109989867218 0.2660E-06
+ >>             0.396823594650 0.4579E-04
+ @ formula evaluation                  cpu/sys/wall:      0.73 /     0.12 /     0.85 s
+ @ formula evaluation                  cpu/sys/wall:      0.66 /     0.20 /     0.87 s
+>>> 11                         0.1127E-04
+ >>             0.109989866969 0.4394E-07
+ >>             0.396823388879 0.1127E-04
+ @ formula evaluation                  cpu/sys/wall:      0.66 /     0.21 /     0.87 s
+>>> 12                         0.3004E-05
+ >>             0.109989866962 0.4284E-07
+ >>             0.396823346388 0.3004E-05
+ @ formula evaluation                  cpu/sys/wall:      0.71 /     0.18 /     3.36 s
+>>> 13                         0.7155E-06
+ >>             0.109989866961 0.4235E-07
+ >>             0.396823333783 0.7155E-06
+ @ formula evaluation                  cpu/sys/wall:      0.70 /     0.19 /     1.76 s
+>>> 14                         0.2195E-06
+ >>             0.109989866975 0.4136E-07
+ >>             0.396823332658 0.2195E-06
+ @ formula evaluation                  cpu/sys/wall:      0.67 /     0.21 /     1.76 s
+ CONVERGED IN    15 ITERATIONS
+>>> 14                         0.6581E-07
+ >>             0.109989866981 0.4159E-07
+ >>             0.396823331598 0.6581E-07
+  Results for RE0G2C+1M00
+ -------------------------
+>>>==================================================================
+>>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+>>>------------------------------------------------------------------
+>>>    1         0.109989866981                    ---   0.4159E-07
+>>>    2         0.396823331598                    ---   0.6581E-07
+>>>==================================================================
+ Rule: SOLVE_EVP
+ in solve_evp: nspecial =            0
+ -------------------
+  entered solve_evp
+ -------------------
+ nopt   =            1
+ nroots =            1
+ read          193  entries
+ after batch:            1  to          422
+           1  0.601202183494829                8
+           2  0.601202183494829               22
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-06
+ Number of parameters:             422
+ @ formula evaluation                  cpu/sys/wall:      0.69 /     0.19 /     1.85 s
+>>>  1                         0.2203    
+ >>             0.365662338822 0.2203    
+ @ formula evaluation                  cpu/sys/wall:      0.76 /     0.16 /     1.90 s
+>>>  2                         0.6751E-01
+ >>             0.312023604394 0.6751E-01
+ @ formula evaluation                  cpu/sys/wall:      0.77 /     0.14 /     1.03 s
+>>>  3                         0.3645E-01
+ >>             0.305289249639 0.3645E-01
+ @ formula evaluation                  cpu/sys/wall:      0.79 /     0.12 /     0.91 s
+>>>  4                         0.1817E-01
+ >>             0.303818378712 0.1817E-01
+ @ formula evaluation                  cpu/sys/wall:      0.78 /     0.16 /     0.94 s
+>>>  5                         0.7206E-02
+ >>             0.303471006127 0.7206E-02
+ @ formula evaluation                  cpu/sys/wall:      0.70 /     0.23 /     0.94 s
+>>>  6                         0.3250E-02
+ >>             0.303439203249 0.3250E-02
+ @ formula evaluation                  cpu/sys/wall:      0.76 /     0.18 /     0.93 s
+>>>  7                         0.1378E-02
+ >>             0.303433423087 0.1378E-02
+ @ formula evaluation                  cpu/sys/wall:      0.78 /     0.14 /     0.93 s
+>>>  8                         0.4382E-03
+ >>             0.303433980739 0.4382E-03
+ @ formula evaluation                  cpu/sys/wall:      0.75 /     0.18 /     0.94 s
+>>>  9                         0.1338E-03
+ >>             0.303434018283 0.1338E-03
+ @ formula evaluation                  cpu/sys/wall:      0.72 /     0.19 /     0.93 s
+>>> 10                         0.4496E-04
+ >>             0.303433785487 0.4496E-04
+ @ formula evaluation                  cpu/sys/wall:      0.77 /     0.16 /     0.92 s
+>>> 11                         0.1031E-04
+ >>             0.303433508167 0.1031E-04
+ @ formula evaluation                  cpu/sys/wall:      0.74 /     0.19 /     0.93 s
+>>> 12                         0.3164E-05
+ >>             0.303433490190 0.3164E-05
+ @ formula evaluation                  cpu/sys/wall:      0.73 /     0.19 /     0.92 s
+>>> 13                         0.1224E-05
+ >>             0.303433493000 0.1224E-05
+ @ formula evaluation                  cpu/sys/wall:      0.71 /     0.20 /     0.91 s
+>>> 14                         0.3185E-06
+ >>             0.303433493073 0.3185E-06
+ @ formula evaluation                  cpu/sys/wall:      0.79 /     0.14 /     0.93 s
+>>> 15                         0.1158E-06
+ >>             0.303433491707 0.1158E-06
+ @ formula evaluation                  cpu/sys/wall:      0.73 /     0.19 /     0.92 s
+ CONVERGED IN    16 ITERATIONS
+>>> 15                         0.3508E-07
+ >>             0.303433491585 0.3508E-07
+  Results for RE0G1C-1M00
+ -------------------------
+>>>==================================================================
+>>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+>>>------------------------------------------------------------------
+>>>    1         0.303433491585                    ---   0.3508E-07
+>>>==================================================================
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:   27043937 real(8)-words (  206.33 Mb)
+   Largest memory block:       26769247 real(8)-words (  204.23 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:     52.02 /     9.92 /    68.79 s
+ run ends at 2008-11-05 16:46:56.046   host: dhcppc1

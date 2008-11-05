@@ -26,7 +26,10 @@
      &     title_cc1dens*21   = 'CC 1-particle density',
      &     title_cc_a_r*18    = 'CC right transform',
      &     title_cc_a_rp*30   = 'CC right transform (R12 part)',
+     &     title_cc_tbar_a*17 = 'CC tbar transform',
+     &     title_cc_tbar_ap*29= 'CC tbar transform (R12 part)',
      &     title_cc_l_a*17    = 'CC left transform',
+     &     title_cc_l_ap*29   = 'CC left transform (R12 part)',
      &     title_cc_a_rip*18  = 'CC right transform (IP)',
      &     title_cc_lip_a*17  = 'CC left transform (IP)',
      &     title_cc_a_rea*18  = 'CC right transform (EA)',
@@ -46,8 +49,12 @@
       character, parameter ::
      &     title_ccr12_s_t*18    = 'CCR12 metric times T',
      &     title_ccr12_s_c*29    = 'CCR12 metric times T (R12 part)',
+     &     title_ccr12_tbar_s*18 = 'CCR12 metric times TBAR',
+     &     title_ccr12_tbar_sp*29= 'CCR12 metric times TBAR (R12 part)',
      &     title_ccr12_s_r*18    = 'CCR12 metric times R',
-     &     title_ccr12_s_rp*29   = 'CCR12 metric times R (R12 part)'
+     &     title_ccr12_s_rp*29   = 'CCR12 metric times R (R12 part)',
+     &     title_ccr12_l_s*18    = 'CCR12 metric times L',
+     &     title_ccr12_l_sp*29   = 'CCR12 metric times L (R12 part)'
       character, parameter ::
      &     title_r12_rbar*28  ='R12 [R * (F+K)]-intermediate',
      &     title_r12_rtilde*24='R12 [R * K]-intermediate',
@@ -170,9 +177,16 @@ c dbg
      &     form_ccr12_s0*8       = 'CCR12_S0',
      &     form_ccr12_s_t*9      = 'CCR12_S_T',
      &     form_ccr12_s_c*10     = 'CCR12_S_TP',
+     &     form_ccr12_tbar_a*12  = 'CCR12_TBAR_A',
+     &     form_ccr12_tbar_ap*13 = 'CCR12_TBAR_AP',
+     &     form_ccr12_tbar_s*12  = 'CCR12_TBAR_S',
+     &     form_ccr12_tbar_sp*13 = 'CCR12_TBAR_SP',
      &     form_ccr12_s_r*9      = 'CCR12_S_R',
      &     form_ccr12_s_rp*10    = 'CCR12_S_RP',
-     &     form_cc_a_rp*7        = 'CC_A_RP'
+     &     form_ccr12_l_s*9      = 'CCR12_L_S',
+     &     form_ccr12_l_sp*10    = 'CCR12_L_SP',
+     &     form_cc_a_rp*7        = 'CC_A_RP',
+     &     form_cc_l_ap*7        = 'CC_L_AP'
       character, parameter ::
      &     form_r12_r12bar*11  = 'R12BAR_CABS',
      &     fopt_r12_r12bar*10  = 'R12BAR_OPT',

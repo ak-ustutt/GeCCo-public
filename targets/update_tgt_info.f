@@ -13,6 +13,7 @@
       integer ::
      &     itgt
 
+      ! treat target array
       if (associated(tgt_info%array)) deallocate(tgt_info%array)
 
       if (tgt_info%ntargets.gt.0) then
@@ -27,6 +28,17 @@
       do itgt = 1, tgt_info%ntargets
         tgt_info%last_mod(itgt) = tgt_info%array(itgt)%tgt%last_mod
       end do
+
+      ! treat action array
+      if (associated(tgt_info%act_array))
+     &     deallocate(tgt_info%act_array)
+
+      if (tgt_info%nactions.gt.0) then
+        allocate(tgt_info%array(tgt_info%nactions))
+        call act_list2arr(tgt_info%act_list,
+     &       tgt_info%act_array,tgt_info%nactions)
+      end if
+      
 
       return
       end

@@ -26,6 +26,12 @@
      &     orb_info
 
       select case(trim(env_type))
+      case ('dalton_special','DALTON_SPECIAL')
+        ! normal CMOs ...
+        call import_cmo_dalton(ffcmo,orb_info)
+        ! ... and CMOs for auxbasis
+        call import_cmox_dalton_special(ffcmo,orb_info)
+        cmo_type = 1  ! DALTON provides SAO basis only
       case ('dalton','DALTON')
         call import_cmo_dalton(ffcmo,orb_info)
         cmo_type = 1  ! DALTON provides SAO basis only

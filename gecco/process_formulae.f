@@ -39,6 +39,8 @@
      &     form_pnt, form0_pnt
       character(len_command_par) ::
      &     title, strdum, approx, typ_str
+      character(len=512) ::
+     &     form_str
 
       integer ::
      &     idx_formlist
@@ -166,6 +168,15 @@ c prelim
      &       title,rule%labels(ioff+1),rule%n_labels-ioff,
      &       ansatz,approx,
      &       op_info,orb_info)
+      case(DEF_FORMULA)
+c        call quit(1,DEF_FORMULA,'not yet')
+        call def_form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       form_str,title)
+        ioff = rule%n_update
+        call set_formula(form_pnt,
+     &       form_str,title,
+     &       op_info)
       case(EXPAND_OP_PRODUCT)
         call expand_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
@@ -190,6 +201,19 @@ c prelim
         jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
         form0_pnt => form_info%form_arr(jdx)%form
         call form_factor_out(form_pnt,form0_pnt,
+     &       title,
+     &       nint,rule%labels(ioff+2),
+     &       op_info,form_info
+     &       )
+      case(EXPAND)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,nint,strdum)
+        ioff = rule%n_update
+        
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_expand_subexpr(form_pnt,form0_pnt,
      &       title,
      &       nint,rule%labels(ioff+2),
      &       op_info,form_info
@@ -256,6 +280,11 @@ c prelim
      &       ncat,rule%labels(ioff+1),
      &       nint,rule%labels(ioff+ncat+1),
      &       form_info,op_info,str_info,orb_info)
+      case(PRINT_FORMULA)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,idum,strdum)
+        call print_formula_drv(form_pnt,title,op_info)
       case(TEX_FORMULA)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

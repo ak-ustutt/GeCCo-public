@@ -228,11 +228,6 @@ c          end if
      &       idx_intm,idx_op,nop,op_info)
         end if
         if (ansatz.gt.1) then
-c dbg -- test:
-c          do iop = 1, 10000
-c            write(6,*) 'WARNING: RC contribution left out'
-c          end do
-c dbg
           call set_RC_contrib(flist,ansatz,approx,
      &       2,12,
      &       idx_intm,idx_op,nop,op_info)

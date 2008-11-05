@@ -174,6 +174,20 @@
      &       'F_appr unknown: "'//trim(F_appr)//'"')
       end select
 
+      select case(trim(K_appr))
+      case('none')
+        write(luout,*) 'no approximations wrt. Xchange made'
+      case('HY1')
+        write(luout,*) 'Y contribution omitted'
+        approx(8:10) = 'HY1'
+      case('HY2')
+        write(luout,*) 'Y contribution approx with 1 CABS index'
+        approx(8:10) = 'HY2'
+      case default
+        call quit(0,'set_r12_general_targets',
+     &       'K_appr unknown: "'//trim(K_appr)//'"')
+      end select
+
 *----------------------------------------------------------------------*
 *     Operators:
 *----------------------------------------------------------------------*
@@ -867,7 +881,7 @@ c     &              parameters,2,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_ccabs
       labels(2) = op_c_inter
-      if (approx.eq.'B') then
+      if (approx(1:1).eq.'B') then
         labels(3) = op_rint
         labels(4) = op_ham
         labels(5) = op_ttr
@@ -1056,7 +1070,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rint
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'F12_INT',env_type)
       call set_rule(mel_rint,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1076,7 +1090,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_gintx
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'G_INT',env_type)
       call set_rule(mel_gintx,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1096,7 +1110,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_ttr
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'TTF_INT',env_type)
       call set_rule(mel_ttr,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1116,7 +1130,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rttr
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FTF_INT',env_type)
       call set_rule(mel_rttr,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1136,7 +1150,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_ff
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FF_INT',env_type)
       call set_rule(mel_ff,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1156,7 +1170,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_ffbar
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FFBAR_INT',env_type)
       call set_rule(mel_ffbar,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1176,7 +1190,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_gr
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FG_INT',env_type)
       call set_rule(mel_gr,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1196,7 +1210,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rintbar
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'F12BAR_INT',env_type)
       call set_rule(mel_rintbar,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1216,7 +1230,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rinttilde
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'F12TLD_INT',env_type)
       call set_rule(mel_rinttilde,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1236,7 +1250,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rdagbar
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'FDGBAR_INT',env_type)
       call set_rule(mel_rdagbar,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
@@ -1256,7 +1270,7 @@ c dbg
       ! (b) import
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_rintbreve
-      call import_parameters(-1,parameters,env_type)
+      call import_parameters(-1,parameters,'F12BRV_INT',env_type)
       call set_rule(mel_rintbreve,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)

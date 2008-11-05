@@ -375,17 +375,6 @@ c fix:
         call occvtx4contr(0,occ_vtx,cur_contr,op_info)
         call vtxinf4contr(irestr_vtx,info_vtx,
      &                            cur_contr,op_info,ngas)
-c dbg
-c        print *,'info from vtxinf4contr:'
-c        print *,'result:'
-cc        do idum = 1, njoined_res
-c          call wrt_rstr(6,irestr_vtx(1,1,1,1,idum),ngas)
-c        end do
-c        print *,'op-vertices:'
-c        do idum = njoined_res+1, njoined_res+nvtx
-c          call wrt_rstr(6,irestr_vtx(1,1,1,1,idum),ngas)
-c        end do
-c dbg
 
         fac = cur_contr%fac
 
@@ -510,11 +499,6 @@ c          new = .false.!cur_contr%nvtx.ge.4
             melscr(ninter)%fix_vertex_ms = .false.
 
             absym12 = me_op1%absym*me_op2%absym 
-c dbg
-c            print *,'ab(OP1): ',me_op1%absym,trim(me_op1%label)
-c            print *,'ab(OP2): ',me_op2%absym,trim(me_op2%label)
-c            print *,'ABSYM12 = ',absym12
-c dbg
             call set_ps_list(melscr(ninter),opscrnam,
      &           absym12,0,mstop1op2,igamtop1op2,0,
      &           str_info,strmap_info,orb_info)
@@ -564,12 +548,6 @@ c            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
           if (ntest.ge.100)
      &         write(luout,*) 'calling contraction kernel'
           ! do the contraction
-c dbg
-c          if(iterm.eq.9)then
-c            call zeroop(me_op1op2)
-c            call zeroop(me_op1op2tmp)
-c          endif
-c dbg
           call contr_op1op2(facc,bc_sign,
      &       update,self,xret_pnt,type_xret_cur,
      &       me_op1,me_op2,me_op1op2, me_op1op2tmp,
@@ -627,9 +605,6 @@ c            call file_close_delete(ffscr(idx))
           deallocate(opscr,optmp,melscr,meltmp)
         end if
 
-c dbg
-c        exit term_loop
-c dbg
       end do term_loop
 
       call dealloc_contr(cur_contr)
