@@ -212,16 +212,10 @@ c      end if
       ! OP1OP2
       call get_grph4occ(igrph,iocc_op1op2,irst_op1op2,njoined_op1op2,
      &                  str_info,orb_info,.true.)
-c dbg
-c      print *,'relevant call to condense_occ (OCC,OP1OP2)'
-c dbg
       call condense_occ(cnt_info%cinfo_op1op2c, cnt_info%cinfo_op1op2a,
      &                  cnt_info%cinfo_op1op2c(1,3),
      &                  cnt_info%cinfo_op1op2a(1,3),
      &                  iocc_op1op2,njoined_op1op2,hpvxblkseq)
-c dbg
-c      print *,'relevant call to condense_occ (GRPH,OP1OP2)'
-c dbg
       call condense_occ(cnt_info%cinfo_op1op2c(1,2),
      &                  cnt_info%cinfo_op1op2a(1,2),
      &                  cnt_info%cinfo_op1op2c(1,3),
@@ -261,9 +255,6 @@ c dbg
       ! note: map goes to OP1OP2tmp, actually
       !  if OP1OP2 differs, this is taken care of by the additional
       !  reordering step
-c dbg
-c      print *,'relevant call to set_mapping_info C'
-c dbg
       ! EX1/EX2 for C
       call set_mapping_info(cnt_info%map_info_12c,cnt_info%map_info_12a,
      &                  1,
@@ -271,9 +262,6 @@ c dbg
      &                  iocc_ex2,njoined_op2,.false.,
      &                  iocc_op1op2tmp,merge_map12,
      &                                  njoined_op1op2,hpvxblkseq)
-c dbg
-c      print *,'relevant call to set_mapping_info A'
-c dbg
       ! EX2/EX1 for A
       call set_mapping_info(cnt_info%map_info_12c,cnt_info%map_info_12a,
      &                  2,

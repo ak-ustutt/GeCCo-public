@@ -230,8 +230,16 @@ c            if (ivtx1.eq.ivtx2) cycle
             nex2c = sum(iocc_prim(1:ngastp,1,ivtx2m))
             nex2a = sum(iocc_prim(1:ngastp,2,ivtx2m))
             ! count number of enclosed indices
+            ! but only those which belong the presently contracting
+            ! super-vertices (others are taken care of by sh_sign)
+            ! I promise to come up with a better treatment of signs as soon
+            ! as possible ...
             nencl = 0
             do ivtx = ivtx1m+1, ivtx2m-1
+c new
+              if (svertex(ivtx).ne.idxsuper1.and.
+     &            svertex(ivtx).ne.idxsuper2) cycle
+c new
               nencl = nencl + sum(iocc_prim(1:ngastp,1:2,ivtx))
             end do
             if (ivtx1.lt.ivtx2) then

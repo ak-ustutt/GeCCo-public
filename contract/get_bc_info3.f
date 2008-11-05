@@ -212,15 +212,9 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &     make_contr_red,contr_red,idxnew_op1op2,
      &     contr,isvtx1,isvtx2,arc_list,len_list,njoined_res)
 
-c dbg
-c      print *,'relevant call to condense_merge_map I'
-c dbg
       call condense_merge_map(merge_op1op2,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.false.)
       ! the same for EX2/EX1 sequence
-c dbg
-c      print *,'relevant call to condense_merge_map II'
-c dbg
       call condense_merge_map(merge_op2op1,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.true.)
 
@@ -269,10 +263,6 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
       ! if this is not the last contraction and
       ! joined vertices exist: test for possible
       ! reorderings of vertices
-c dbg
-c      print *,'contr%narc,len_list: ',contr%narc,len_list
-c      print *,'contr_red%nsupvtx,nvtx:  ',contr_red%nsupvtx,nvtx
-c dbg
       if (make_contr_red .and.
      &    contr%narc.ne.len_list .and.
      &    contr_red%nsupvtx.lt.nvtx
@@ -306,6 +296,10 @@ c dbg
      &         ld_mmap1,ld_mmap2,ld_mmap12)
         ! ... and additionally consider a sign change due to the 
         ! rearrangement of vertices:
+        if (ntest.ge.100)
+     &       write(luout,'(x,a,2f8.2,a,f8.2)')
+     &       'bc_sign, sh_sign -> bc_sign: ',
+     &       bc_sign, dble(sh_sign), ' -> ', bc_sign*dble(sh_sign)
         bc_sign = bc_sign*dble(sh_sign)
       else
         write(luout,*) 'setting self-contraction sign to +1'

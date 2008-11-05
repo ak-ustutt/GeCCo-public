@@ -111,6 +111,9 @@
      &     svertex_reo,vtx,topo,xlines,
      &     nvtx,njoined_res,vtx_list,nvtx_cnt)
 
+      if (ntest.ge.100)
+     &     write(luout,*) 'sh_sign = ',sh_sign
+
       do ivtx = 1, nvtx_cnt        
         idx = ireo0(vtx_list(ivtx)) 
         vtx_list_reo(ivtx) = idx

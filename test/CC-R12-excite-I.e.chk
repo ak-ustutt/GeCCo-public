@@ -1,5 +1,5 @@
 title
-  CH2/DZ; DALTON env.: CCSD(F12)/3C singlet and triplet excitation energies
+  BH/pVDZ; DALTON env.: CCSD(F12)/3C singlet and triplet excitation energies
 molecule
   BH-R12-DALTON
 input

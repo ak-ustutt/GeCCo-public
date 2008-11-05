@@ -120,9 +120,10 @@ c dbg
      &     op_s_rp*6       = '(S.R)''',
      &     op_s_c*6        = '(S.T)''',
      &     op_lp*2         = 'L''',
-     &     op_lp_a*6       = '(L.A)''',
-     &     op_lp_s*6       = '(L.S)''',
-     &     op_cb_s*9        = '(TBAR.S)'''
+     &     op_l_ap*6       = '(L.A)''',
+     &     op_l_sp*6       = '(L.S)''',
+     &     op_tbar_ap*9    = '(TBAR.A)''',
+     &     op_tbar_sp*9    = '(TBAR.S)'''
       ! generic ME-list names
       character, parameter ::
      &     mel_cclg0*6      = 'L0(CC)',
@@ -175,6 +176,8 @@ c dbg
      &     meldef_lex*7     = 'DEF-LE0',
      &     mel_lex_a*5      = 'LE0.A',
      &     meldef_lex_a*9   = 'DEF-LE0.A',
+     &     mel_lex_s*5      = 'LE0.S',
+     &     meldef_lex_s*9   = 'DEF-LE0.S',
      &     mel_rip*3        = 'RI0',
      &     meldef_rip*7     = 'DEF-RI0',
      &     mel_a_rip*5      = 'A.RI0',
@@ -291,12 +294,18 @@ c dbg
      &     mel_omgcexxdef*14 = 'DEF-OMG12"-R12',
      &     mel_omgcexx*10     = 'OMG12"-R12'
       character, parameter ::
-     &     mel_rpex*4        = 'RE0''',
-     &     meldef_rpex*8     = 'DEF-RE0''',
-     &     mel_a_rpex*6      = 'A.RE0''',
-     &     meldef_a_rpex*10  = 'DEF-A.RE0''',
-     &     mel_s_rpex*6      = 'S.RE0''',
-     &     meldef_s_rpex*10  = 'DEF-S.RE0'''
+     &     mel_rpex*4        = 'RE0P',
+     &     meldef_rpex*8     = 'DEF-RE0P',
+     &     mel_a_rpex*6      = 'A.RE0P',
+     &     meldef_a_rpex*10  = 'DEF-A.RE0P',
+     &     mel_s_rpex*6      = 'S.RE0P',
+     &     meldef_s_rpex*10  = 'DEF-S.RE0P',
+     &     mel_lpex*4        = 'LE0P',
+     &     meldef_lpex*8     = 'DEF-LE0P',
+     &     mel_lex_ap*6      = 'LE0.AP',
+     &     meldef_lex_ap*10  = 'DEF-LE0.AP',
+     &     mel_lex_sp*6      = 'LE0.SP',
+     &     meldef_lex_sp*10  = 'DEF-LE0.SP'
 
 	  
       

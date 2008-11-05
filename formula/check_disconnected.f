@@ -26,10 +26,10 @@
 c dbg
 c      print *,'in check_disconnected'
 c dbg
+      if (contr%nsupvtx.le.1) return
+
       nvtx = contr%nvtx
       narc = contr%narc
-
-      if (nvtx.le.1) return
 
       arc => contr%arc
 
@@ -41,10 +41,10 @@ c dbg
 
       ! do not consider vertices that are part of a supervertex
       do ivtx = 1, nvtx
-        if (.not.connected(ivtx)) cycle
         do jvtx = 1,nvtx
           if (connected(jvtx)) cycle
-          if (contr%svertex(ivtx).eq.contr%svertex(jvtx))
+          if (contr%svertex(ivtx).eq.contr%svertex(jvtx)
+     &         .and.connected(ivtx))
      &         connected(jvtx) = .true.
         end do
       end do
@@ -82,7 +82,7 @@ c dbg
             if (jvtx.lt.ivtx.and..not.connected(jvtx)) cycle
             iarc = iarc+1
 c dbg
-            if (iarc.gt.narc+narc_new) stop 'cd: oha!'
+c            if (iarc.gt.narc+narc_new) stop 'cd: oha!'
 c dbg
             arc(iarc)%link(1) = min(ivtx,jvtx)
             arc(iarc)%link(2) = max(ivtx,jvtx)

@@ -146,10 +146,6 @@ c dbg
       call init_contr(contr)
       nullify(conder%contr)
 
-c dbg
-c      print *,'allow?',rd_contr(luinput,contr,idxinp)
-c dbg
-
       nterms = 0
       do while(rd_contr(luinput,contr,idxinp))
 
@@ -170,8 +166,6 @@ c dbg
 
             call topo_contr2(ieqvfac,reo,ivtx_reo,
      &           cur_conder%contr,fix_vtx,op_info)
-c            call topo_contr(ieqvfac,reo,ivtx_reo,
-c     &           cur_conder%contr,occ_vtx,fix_vtx)
             ! ieqvfac is ignored
             call canon_contr(cur_conder%contr,reo,ivtx_reo)
             deallocate(ivtx_reo,fix_vtx,occ_vtx)
@@ -182,12 +176,6 @@ c     &           cur_conder%contr,occ_vtx,fix_vtx)
               call prt_contr2(luout,cur_conder%contr,op_info)
             endif
 
-c dbg
-c            first = .true.
-c            call tex_contr(luout,first,cur_conder%contr,op_info)
-c            if(first) first = .false.
-c dbg
-
             if (idx.lt.nder) cur_conder => cur_conder%next
           end do
 
@@ -195,9 +183,6 @@ c dbg
         end do
 
       end do
-c dbg
-c      print *,'nterms = ',nterms
-c dbg
 
       call file_close_keep(f_deriv%fhand)
       call file_close_keep(f_input%fhand)
