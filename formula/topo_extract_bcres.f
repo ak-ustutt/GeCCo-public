@@ -22,7 +22,8 @@
 
       bcres = 0
 
-      if (zero_i8vec(topo,nvtx*nvtx,1)) then
+      if ( nvtx_bcr.eq.nvtx .and.
+     &     zero_i8vec(topo,nvtx*nvtx,1)) then
         ! final result: the sequence is given by xlines
         do idx = 1, nj
           do jdx = 1, nvtx

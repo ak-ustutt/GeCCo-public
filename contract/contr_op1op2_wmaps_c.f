@@ -42,7 +42,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       logical, intent(in) ::
      &     update
@@ -403,8 +403,15 @@ c dbg
 
       fac_scal = 1d0
 
-      if (multd2h(igamtop1,igamtop2).ne.igamtop1op2)
-     &     call quit(1,'contr_op1op2_wmaps_c','inconsistent symmetries')
+      if (multd2h(igamtop1,igamtop2).ne.igamtop1op2) then
+        write(luout,*) ' 1: gamma=',igamtop1,' op=',trim(op1%name),
+     &                                       ' list=',trim(me_op1%label)
+        write(luout,*) ' 2: gamma=',igamtop2,' op=',trim(op2%name),
+     &                                       ' list=',trim(me_op2%label)
+        write(luout,*)' R: gamma=',igamtop1op2,' op=',trim(op1op2%name),
+     &                                    ' list=',trim(me_op1op2%label)
+        call quit(1,'contr_op1op2_wmaps_c','inconsistent symmetries')
+      end if
 
       if (me_op1%op%formal_blk(iblkop1).or.
      &    me_op2%op%formal_blk(iblkop2).or.
