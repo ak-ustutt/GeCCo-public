@@ -482,19 +482,15 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
       if(set_tpp.and..not.r12fix)
      &     call set_dependency(fopt_ccr12_0,mel_omgcexxdef,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_ham,tgt_info)
-      call set_dependency(fopt_ccr12_0,mel_rint,tgt_info)      
-      call set_dependency(fopt_ccr12_0,mel_v_def,tgt_info)      
-      call set_dependency(fopt_ccr12_0,mel_b_def,tgt_info)      
-      call set_dependency(fopt_ccr12_0,mel_bh_def,tgt_info)      
-      call set_dependency(fopt_ccr12_0,mel_x_def,tgt_info)      
-      call set_dependency(fopt_ccr12_0,mel_c_def,tgt_info)      
+      if (max_rank.ge.2) then
+        call set_dependency(fopt_ccr12_0,mel_rint,tgt_info)      
+        call set_dependency(fopt_ccr12_0,mel_v_def,tgt_info)      
+        call set_dependency(fopt_ccr12_0,mel_b_def,tgt_info)      
+        call set_dependency(fopt_ccr12_0,mel_bh_def,tgt_info)      
+        call set_dependency(fopt_ccr12_0,mel_x_def,tgt_info)      
+        call set_dependency(fopt_ccr12_0,mel_c_def,tgt_info)      
+      end if
       call set_dependency(fopt_ccr12_0,mel_ccr12en0def,tgt_info)      
-c      if (extend.gt.0) then
-c        nint = 1
-c        call set_dependency(fopt_ccr12_0,form_r_t,tgt_info)
-c        call set_dependency(fopt_ccr12_0,medef_r_t,tgt_info)
-c        labels(1+ncat+1) = form_r_t
-c      end if
       if (isim.eq.1) then
         nint = nint+ 1
         call set_dependency(fopt_ccr12_0,form_cchhat,tgt_info)
@@ -756,7 +752,8 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
-        call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        if (max_rank.ge.2) 
+     &    call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
         call solve_parameters(-1,parameters,2, 1,1,'DIA')
 c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         labels(1:20)(1:len_target_name) = ' '

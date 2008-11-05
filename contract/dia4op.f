@@ -102,18 +102,18 @@
       if (open_close_ffdia) call file_open(ffdia)
 
       maxbuff=0
-      do iocc_cls = 1, op%n_occ_cls
-        iocc => op%ihpvca_occ(1:ngastp,1:2,iocc_cls)
+      do iblk = 1, op%n_occ_cls
+        iocc => op%ihpvca_occ(1:ngastp,1:2,iblk)
 c        ! currently only tested for pure excitations, so:
 c        if (imltlist(0,iocc(1:,1),ngastp,1).lt.3.or.
 c     &      imltlist(0,iocc(1:,2),ngastp,1).lt.3.or.
 c     &      iocc(ihole,1).gt.0 .or.
 c     &      iocc(ipart,2).gt.0 ) then
-c          call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
+c          call wrt_occ(luout,op%ihpvca_occ(1,1,iblk))
 c          call quit(1,'dia4op',
 c     &         'routine not tested for this kind of occupation')
 c        end if
-        maxbuff = max(maxbuff,me_dia%len_op_occ(iocc_cls))
+        maxbuff = max(maxbuff,me_dia%len_op_occ(iblk))
       end do
 
       ! we should of course use a better memory management

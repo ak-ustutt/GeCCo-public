@@ -90,13 +90,8 @@
      &       cycle
 
         ! diagonal: so C and A must have same occ
-<<<<<<< master
         if (.not.list_cmp(op%ihpvca_occ(1:,1,iocc_cls),
      &                    op%ihpvca_occ(1:,2,iocc_cls),ngastp)) cycle
-=======
-        if (.not.list_cmp(op%ihpvca_occ(1:ngastp,1,iocc_cls),
-     &               op%ihpvca_occ(1:ngastp,2,iocc_cls),ngastp)) cycle
->>>>>>> origin
 
         ioff_blk = mel%off_op_occ(iocc_cls)
         ilen_blk = mel%len_op_occ(iocc_cls)
@@ -114,11 +109,7 @@ c        print *,'ioff_blk, ilen_blk: ',ioff_blk, ilen_blk
 c        print *,'current buffer: ',buffer(1:ilen_blk)
 c dbg
 
-<<<<<<< master
         ihpv = idxlist(1,op%ihpvca_occ(1:,1,iocc_cls),ngastp,1)
-=======
-        ihpv = idxlist(1,op%ihpvca_occ(1:ngastp,1,iocc_cls),ngastp,1)
->>>>>>> origin
 
         do ms = 1, -1, -2
           idxms = 1

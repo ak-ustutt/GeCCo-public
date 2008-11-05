@@ -1162,7 +1162,7 @@ c dbg
      &              parameters,1,tgt_info)
 
       ! G.R12 integrals (for f(R12))
-      call add_target(mel_gr,ttype_opme,.true.,tgt_info)
+      call add_target(mel_gr,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_gr,op_gr,tgt_info)
       ! (a) define
       labels(1:10)(1:len_target_name) = ' '
