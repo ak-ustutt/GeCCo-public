@@ -24,7 +24,7 @@
       end type leninfx2
 
       integer, parameter ::
-     &     mxlen_melabel = len_opname*2
+     &     mxlen_melabel = len_opname*2+2
 *----------------------------------------------------------------------*
 *     me_list definition
 *----------------------------------------------------------------------*

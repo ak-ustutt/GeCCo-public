@@ -524,7 +524,7 @@ c     &                parameters,1,tgt_info)
         call set_rule('DIATEST',ttype_opme,DEF_ME_LIST,
      &                labels,2,1,
      &                parameters,1,tgt_info)
-        call scale_parameters(-1,parameters,1,1,0.02d0,12)
+        call scale_parameters(-1,parameters,1,1,1,0.02d0,12)
         labels(1) = 'DIATEST'
         labels(2) = mel_dia1
         call set_rule('DIATEST',ttype_opme,SCALE,

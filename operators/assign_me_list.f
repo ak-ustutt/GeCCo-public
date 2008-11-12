@@ -37,8 +37,8 @@
      &     'operator not found: "'//trim(label_op)//'"')
       mel%op => op_info%op_arr(idx)%op
       ! set associated list on operator:
-      mel%op%assoc_list(1:len_opname) = ' '
-      mel%op%assoc_list(1:len_opname) = trim(label_mel)
+      mel%op%assoc_list(1:mxlen_melabel) = ' '
+      mel%op%assoc_list(1:mxlen_melabel) = trim(label_mel)
 
       ! update op_list array in order to set up the lookup-table
       call update_op_arr(op_info)
