@@ -8,13 +8,13 @@ check
   label Number of terms in Lagrangian
   find Number of generated terms:
   compare int 5
-#check
-#  label Factorization of CC equations
-#  find next target: CC-R12-OPT
-#  find Formally most expensive contractions:
-#  skip 1
-#  compare int 6
-#  compare int 8
+check
+  label Factorization of CC equations
+  find next target: CC-R12-OPT
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
 check
   label Number of iterations
   find CONVERGED IN .* ITERATIONS
