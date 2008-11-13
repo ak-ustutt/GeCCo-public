@@ -35,7 +35,7 @@
      &     fac(maxfac)
       integer ::
      &     idxblk(maxfac),
-     &     idx, jdx, ioff, nfac, nblk, nspecial,
+     &     idx, jdx, ioff, nfac, nblk, nspecial, imode,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank
       logical ::
      &     ms_fix
@@ -157,9 +157,11 @@ c dbg
 
       case(SCALE)
 
-        call scale_parameters(+1,rule%parameters,nblk,idxblk,fac,maxfac)
+        call scale_parameters(+1,rule%parameters,imode,
+     &       nblk,idxblk,fac,maxfac)
 
-        call scale_op(rule%labels(1),idxblk,fac,rule%labels(2),nblk,
+        call scale_op(rule%labels(1),
+     &       imode,idxblk,fac,rule%labels(2:),nblk,
      &       op_info,orb_info,str_info)
 
       case(EVALPROP)

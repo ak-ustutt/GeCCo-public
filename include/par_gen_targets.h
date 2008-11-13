@@ -7,6 +7,8 @@
      &     solve_cc_lhex*12   = 'SOLVE-CC-LE0',
      &     solve_cc_rhip*12   = 'SOLVE-CC-RI0',
      &     solve_cc_lhip*12   = 'SOLVE-CC-LI0',
+     &     norm_cc_lhex*12    = 'NORM-CC-LE0',
+     &     analyze_cc_ex*14   = 'ANALYZE-CC-EXC',
      &     eval_1dens*10      = 'EVAL-1DENS',     
      &     eval_props*10      = 'EVAL-PROPS'
       ! R12

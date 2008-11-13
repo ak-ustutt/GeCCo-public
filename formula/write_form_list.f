@@ -23,6 +23,10 @@
      &     form_ptr
       logical ::
      &     closeit
+c dbg
+      integer ::
+     &     nterms
+c dbg
 
       if (ffform%unit.le.0) then
         call file_open(ffform)
@@ -32,13 +36,22 @@
       end if
       write(ffform%unit) len_trim(title),title
       form_ptr => form_head
+c dbg
+      nterms = 0
+c dbg
       do
+c dbg
+        nterms = nterms+1
+c dbg
         call wr_formula(ffform,form_ptr)
 
         if (.not.associated(form_ptr%next)) exit
         form_ptr => form_ptr%next
 
       end do
+c dbg
+      print *,'wrote ',nterms,' entries'
+c dbg
 
       if (closeit)
      &     call file_close_keep(ffform)

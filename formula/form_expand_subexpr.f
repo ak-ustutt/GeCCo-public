@@ -102,6 +102,8 @@ c      include 'def_contraction_list.h'
 
         call expand_subexpr(flist,fl_intm,.false.,op_info)
 
+        call sum_terms(flist,op_info)
+
         call dealloc_formula_list(fl_intm)
 
       end do

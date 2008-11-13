@@ -41,6 +41,8 @@
      &     op_s_r*3 = 'S.R',
      &     op_tbar_s*6 = 'TBAR.S',
      &     op_l_s*3 = 'L.S',
+     &     op_l_s_r*5 = 'L.S.R',
+     &     op_l_a_r*5 = 'L.A.R',
      &     op_a_rip*7 = 'A.R(-1)',
      &     op_lip_a*7 = 'L(-1).A',
      &     op_a_rea*7 = 'A.R(+1)',
@@ -122,8 +124,8 @@ c dbg
      &     op_lp*2         = 'L''',
      &     op_l_ap*6       = '(L.A)''',
      &     op_l_sp*6       = '(L.S)''',
-     &     op_tbar_ap*9    = '(TBAR.A)''',
-     &     op_tbar_sp*9    = '(TBAR.S)'''
+     &     op_tbar_ap*8    = '(TBR.A)''',
+     &     op_tbar_sp*8    = '(TBR.S)'''
       ! generic ME-list names
       character, parameter ::
      &     mel_cclg0*6      = 'L0(CC)',
@@ -176,6 +178,10 @@ c dbg
      &     meldef_lex*7     = 'DEF-LE0',
      &     mel_lex_a*5      = 'LE0.A',
      &     meldef_lex_a*9   = 'DEF-LE0.A',
+     &     mel_l_s_r*8      = 'LE.S.RE0',
+     &     meldef_l_s_r*13   = 'DEF-LE0.S.RE0',
+     &     mel_l_a_r*8      = 'LE.A.RE0',
+     &     meldef_l_a_r*13   = 'DEF-LE0.A.RE0',
      &     mel_lex_s*5      = 'LE0.S',
      &     meldef_lex_s*9   = 'DEF-LE0.S',
      &     mel_rip*3        = 'RI0',

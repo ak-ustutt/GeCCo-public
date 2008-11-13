@@ -20,6 +20,8 @@ INST_DATA:=
 # module names are listed in smallcaps and wihtout any .mod
 INST_MODULES:=
 
+src:=$(wildcard *.f90 *.F *.f)
+
 spc_obj_list:=printversion.o
 
 include $(topdir)/make.rules

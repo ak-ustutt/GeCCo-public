@@ -98,8 +98,10 @@ c      njoined = op_intm%njoined
 
         ! estimate new number of vertices and arcs:
         nvtx = term%nvtx-njoined + intm%nvtx
-        narc = max(term%narc,(term%nvtx-njoined)*(term%nvtx-njoined-1))
-     &       + intm%narc
+c        narc = max(term%narc,(term%nvtx-njoined)*(term%nvtx-njoined-1))
+c     &       + intm%narc
+        narc = max(term%narc,(term%nvtx+intm%nvtx-njoined)**2)
+     &       + intm%narc 
 
         ! make a map: which vertex goes where ...
 
@@ -157,13 +159,30 @@ c      njoined = op_intm%njoined
         ! copy arcs
         narc = 0
         do iarc = 1, term%narc
-          if (idxlist(term%arc(iarc)%link(1),ipos_vtx,njoined,1).gt.0
-     &      .or.idxlist(term%arc(iarc)%link(2),ipos_vtx,njoined,1).gt.0)
-     &      cycle  
+          if (idxlist(term%arc(iarc)%link(1),ipos_vtx,njoined,1).gt.0)
+     &         then
+            narc = narc+1
+            proto%arc(narc)%link(1)=0
+            proto%arc(narc)%link(2)=
+     &           ivtx_term_reo(term%arc(iarc)%link(2))
+            proto%arc(narc)%occ_cnt = term%arc(iarc)%occ_cnt
+          else if
+     &       (idxlist(term%arc(iarc)%link(2),ipos_vtx,njoined,1).gt.0)
+     &           then
+            narc = narc+1
+            proto%arc(narc)%link(1)=
+     &           ivtx_term_reo(term%arc(iarc)%link(1))
+            proto%arc(narc)%link(2)=0
+            proto%arc(narc)%occ_cnt = term%arc(iarc)%occ_cnt
+          else
+c          if (idxlist(term%arc(iarc)%link(1),ipos_vtx,njoined,1).gt.0
+c     &      .or.idxlist(term%arc(iarc)%link(2),ipos_vtx,njoined,1).gt.0)
+c     &      cycle  
           narc = narc+1
           proto%arc(narc)%link(1)=ivtx_term_reo(term%arc(iarc)%link(1))
           proto%arc(narc)%link(2)=ivtx_term_reo(term%arc(iarc)%link(2))
           proto%arc(narc)%occ_cnt = term%arc(iarc)%occ_cnt
+          end if
         end do
         narc0 = narc
         do iarc = 1, intm%narc

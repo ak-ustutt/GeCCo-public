@@ -530,14 +530,14 @@ c        read(parameters(2),'(240(i1))')
 
 *----------------------------------------------------------------------*
       subroutine scale_parameters(rw,parameters,
-     &     nfac,idxblk,fac,maxfac)
+     &     imode,nfac,idxblk,fac,maxfac)
 
       implicit none
       
       integer, intent(in) ::
      &     rw
       integer, intent(inout) ::
-     &     nfac,maxfac,idxblk(*)
+     &     imode,nfac,maxfac,idxblk(*)
       real(8), intent(inout) ::
      &     fac(*)
       character(*), intent(inout) ::
@@ -548,11 +548,11 @@ c        read(parameters(2),'(240(i1))')
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
         if (nfac.gt.12) call quit(1,'scale_parameters','too much')
-        write(parameters,'(i2,12(i4,g20.14))')
-     &       nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
+        write(parameters,'(2i2,12(i4,g20.14))')
+     &       imode,nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
       else
-        read(parameters,'(i2,12(i4,g20.14))')
-     &       nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
+        read(parameters,'(2i2,12(i4,g20.14))')
+     &       imode,nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
         if (nfac.gt.maxfac)
      &       call quit(1,'scale_parameters','too much (>maxfac)')
       end if
@@ -583,6 +583,47 @@ c        read(parameters(2),'(240(i1))')
      &       nterm,idxterm(1:nterm)
         if (nterm.gt.maxterm)
      &       call quit(1,'modify_parameters','too much (>maxterm)')
+      end if
+
+      return
+      end
+*----------------------------------------------------------------------*
+      subroutine select_parameters(rw,parameters,n_par_str,
+     &     ninclude,ninclude_or,nexclude,
+     &     iblk_include,iblk_include_or,iblk_exclude)
+
+      implicit none
+      
+      integer, intent(in) ::
+     &     rw
+      integer, intent(inout) ::
+     &     n_par_str,
+     &     ninclude,ninclude_or,nexclude,
+     &     iblk_include(*),iblk_include_or(*),iblk_exclude(*)
+      character(*), intent(inout) ::
+     &     parameters(n_par_str)
+
+      if (rw.lt.0) then
+        parameters(1)(1:len(parameters(1))) = ' '
+        parameters(2)(1:len(parameters(2))) = ' '
+        parameters(3)(1:len(parameters(3))) = ' '
+        if (ninclude.gt.30) call quit(1,'select_parameters','too much')
+        if (ninclude_or.gt.30)
+     &                      call quit(1,'select_parameters','too much')
+        if (nexclude.gt.30) call quit(1,'select_parameters','too much')
+        write(parameters(1),'(i2,30i4)')
+     &       ninclude,iblk_include(1:ninclude)
+        write(parameters(2),'(i2,30i4)')
+     &       ninclude_or,iblk_include_or(1:ninclude_or)
+        write(parameters(3),'(i2,30i4)')
+     &       nexclude,iblk_exclude(1:nexclude)
+      else
+        read(parameters(1),'(i2,30i4)')
+     &       ninclude,iblk_include(1:ninclude)
+        read(parameters(2),'(i2,30i4)')
+     &       ninclude_or,iblk_include_or(1:ninclude_or)
+        read(parameters(3),'(i2,30i4)')
+     &       nexclude,iblk_exclude(1:nexclude)
       end if
 
       return
