@@ -124,8 +124,8 @@ c dbg
      &     op_lp*2         = 'L''',
      &     op_l_ap*6       = '(L.A)''',
      &     op_l_sp*6       = '(L.S)''',
-     &     op_tbar_ap*9    = '(TBAR.A)''',
-     &     op_tbar_sp*9    = '(TBAR.S)'''
+     &     op_tbar_ap*8    = '(TBR.A)''',
+     &     op_tbar_sp*8    = '(TBR.S)'''
       ! generic ME-list names
       character, parameter ::
      &     mel_cclg0*6      = 'L0(CC)',

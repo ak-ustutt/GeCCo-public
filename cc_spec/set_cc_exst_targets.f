@@ -456,7 +456,7 @@
           labels(1) = me_label
           labels(2) = op_l_s_r
           call me_list_parameters(-1,parameters,
-     &         msc,0,1,0,0,.false.)
+     &         abs(msc),0,1,0,0,.false.)
           call set_rule(meldef_l_s_r,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -467,7 +467,7 @@
           labels(1) = me_label
           labels(2) = op_l_a_r
           call me_list_parameters(-1,parameters,
-     &         msc,0,1,0,0,.false.)
+     &         abs(msc),0,1,0,0,.false.)
           call set_rule(meldef_l_a_r,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -476,7 +476,7 @@
           labels(1) = trim(me_label)
           labels(2) = op_l_a_r//'_1'
           call me_list_parameters(-1,parameters,
-     &         msc,0,1,0,0,.false.)
+     &         abs(msc),0,1,0,0,.false.)
           call set_rule(meldef_l_a_r,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -485,7 +485,7 @@
           labels(1) = trim(me_label)
           labels(2) = op_l_a_r//'_2'
           call me_list_parameters(-1,parameters,
-     &         msc,0,1,0,0,.false.)
+     &         abs(msc),0,1,0,0,.false.)
           call set_rule(meldef_l_a_r,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -494,7 +494,7 @@
           labels(1) = trim(me_label)
           labels(2) = op_l_a_r//'_3'
           call me_list_parameters(-1,parameters,
-     &         msc,0,1,0,0,.false.)
+     &         abs(msc),0,1,0,0,.false.)
           call set_rule(meldef_l_a_r,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -503,7 +503,7 @@
           labels(1) = trim(me_label)
           labels(2) = op_l_a_r//'_4'
           call me_list_parameters(-1,parameters,
-     &         msc,0,1,0,0,.false.)
+     &         abs(msc),0,1,0,0,.false.)
           call set_rule(meldef_l_a_r,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -512,7 +512,7 @@
           labels(1) = trim(me_label)
           labels(2) = op_l_a_r//'_5'
           call me_list_parameters(-1,parameters,
-     &         msc,0,1,0,0,.false.)
+     &         abs(msc),0,1,0,0,.false.)
           call set_rule(meldef_l_a_r,ttype_opme,DEF_ME_LIST,
      &         labels,2,1,
      &         parameters,1,tgt_info)
@@ -662,10 +662,42 @@
      &         parameters,0,tgt_info)
           labels(1:10)(1:len_target_name) = ' '
           labels(1) = me_label_lr
-          labels(2) = op_l_s_r
+          labels(2) = op_l_a_r
           call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
      &         labels,2,1,
      &         parameters,0,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          call me_list_label(me_label_lr,'L1HR1',isym,0,0,msc,.false.)
+          labels(1) = me_label_lr
+          labels(2) = op_l_a_r//'_1'
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          call me_list_label(me_label_lr,'L1HcR1',isym,0,0,msc,.false.)
+          labels(1) = me_label_lr
+          labels(2) = op_l_a_r//'_2'
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          call me_list_label(me_label_lr,'L1HR2',isym,0,0,msc,.false.)
+          labels(1) = me_label_lr
+          labels(2) = op_l_a_r//'_3'
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          call me_list_label(me_label_lr,'L2HR1',isym,0,0,msc,.false.)
+          labels(1) = me_label_lr
+          labels(2) = op_l_a_r//'_4'
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          call me_list_label(me_label_lr,'L2HR2',isym,0,0,msc,.false.)
+          labels(1) = me_label_lr
+          labels(2) = op_l_a_r//'_5'
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+
           labels(1:10)(1:len_target_name) = ' '
           labels(1) = fopt_cc_l_a_r
           call set_rule(analyze_cc_ex,ttype_opme,EVAL,
