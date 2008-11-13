@@ -48,6 +48,8 @@
         integer ::
      &     order,               ! perturbation order
      &     species              ! 1: t-amplitude, 2: lagr. multipl., 3: other
+        integer, pointer ::
+     &     ifreq(:)             ! frequency index
 
         logical ::
      &       formal                   ! formal operator only?

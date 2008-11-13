@@ -47,7 +47,7 @@
      &     label_met(:)
 
       integer ::
-     &     idx_formlist
+     &     idx_formlist, order, ifreq, dummy
       integer, external ::
      &     idx_mel_list
 
@@ -236,6 +236,18 @@ c dbg
      &       rule%labels(4*nopt+ioff+1:
      &                   4*nopt+ioff+nspecial),nspecial,
      &       op_info,form_info,str_info,strmap_info,orb_info)
+
+      case(SET_FREQ)
+
+        idx = idx_mel_list(rule%labels(1),op_info)
+        if(idx.lt.0)
+     &       call quit(1,'process_me_lists','Label not on list: "'//
+     &       trim(rule%labels(1))//'"')
+        mel_pnt => op_info%mel_arr(idx)%mel
+
+        call ord_parameters(+1,rule%parameters,
+     &                      order,ifreq,dummy)
+        call set_frequency(mel_pnt,order,ifreq)
 
       case default
         call quit(1,'process_me_lists','unknown command: '//

@@ -41,7 +41,8 @@
      &     KEEP_TERMS*10            = 'KEEP_TERMS',
      &     DEL_TERMS*9              = 'DEL_TERMS',
      &     MODIFY_FACTORIZATION*20  = 'MODIFY_FACTORIZATION',
-     &     EXTRACT_ORDER*13         = 'EXTRACT_ORDER'
+     &     EXTRACT_ORDER*13         = 'EXTRACT_ORDER',
+     &     EXTRACT_FREQ*12          = 'EXTRACT_FREQ'
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',
@@ -57,4 +58,5 @@
      &     SOLVENLEQ*10       = 'SOLVE_NLEQ',
      &     SOLVELEQ*9         = 'SOLVE_LEQ',
      &     SOLVEEVP*9         = 'SOLVE_EVP',
-     &     UNITY*9            = 'ADD_UNITY'
+     &     UNITY*9            = 'ADD_UNITY',
+     &     SET_FREQ*8         = 'SET_FREQ'

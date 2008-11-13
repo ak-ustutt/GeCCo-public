@@ -108,7 +108,7 @@ c          if(trim(op_info%mel_arr(idx)%mel%op%name).eq.op_z_test.or.
       endif
 c dbg
 
-      if (iprlvl.ge.5) then
+      if (iprlvl.ge.1) then
         call write_title(luout,wst_title,
      &       'norms/values of output operators')
         do iout = 1, nout

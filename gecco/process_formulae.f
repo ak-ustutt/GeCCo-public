@@ -27,7 +27,7 @@
      &     orb_info
 
       integer, parameter ::
-     &     maxterms = 20
+     &     maxterms = 20, maximum_order = 10
       integer ::
      &     idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -44,6 +44,8 @@
 
       integer ::
      &     idx_formlist
+      integer, allocatable ::
+     &     idxfreqdum(:), idxfreq(:)
 
       if (rule%type.ne.ttype_frm)
      &     call quit(1,'process_formulae',
@@ -336,6 +338,20 @@ c dbg end fix
         form0_pnt => form_info%form_arr(jdx)%form
         call form_extract_order(form_pnt,form0_pnt,
      &       title, rule%labels(3), nint, op_info)
+      case(EXTRACT_FREQ)
+        allocate(idxfreqdum(maximum_order))
+        call form_parameters2(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,nint,idxfreqdum)
+        allocate(idxfreq(nint))
+        idxfreq = idxfreqdum(1:nint)
+        deallocate(idxfreqdum)
+        ioff = rule%n_update
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_extract_freq(form_pnt,form0_pnt,
+     &       title, rule%labels(3), nint, idxfreq, op_info)
+        deallocate(idxfreq)
       case default
         call quit(1,'process_formulae','unknown command: '//
      &       trim(rule%command))

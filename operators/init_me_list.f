@@ -41,6 +41,8 @@
      &              'suspicious number of blocks (bug?)')
       end if
 
+      mel%frequency = 0d0      ! set assigned frequency to zero
+
       nblk = mel%op%n_occ_cls
       select case(ipass)
       case(1)

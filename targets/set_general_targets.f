@@ -119,7 +119,7 @@ c      call get_argument_value('method.R12','truncate',lval=truncate)
       call set_rule(mel_ham,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
-      
+     
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*

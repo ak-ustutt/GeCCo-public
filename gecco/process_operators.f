@@ -22,7 +22,7 @@
       type(operator), pointer ::
      &     op_pnt
       integer, parameter ::
-     &     ndef_max = 52
+     &     ndef_max = 52, maximum_order = 10
       integer ::
      &     idx, jdx, idx_t, n_ap,
      &     ncadiff, min_rank, max_rank, iformal, ansatz,
@@ -33,6 +33,8 @@
      &     name_template
       logical ::
      &     dagger, explicit
+      integer, allocatable ::
+     &     ifreq_dum(:), ifreq(:)
 
       integer, external ::
      &     idx_oplist2
@@ -154,9 +156,14 @@ c        op_pnt%dagger = op_pnt%dagger.xor.dagger
         if (rule%n_parameter_strings.lt.1)
      &      call quit(1,'process_operators',
      &      'no parameters provided for '//SET_ORDER)
+        allocate(ifreq_dum(maximum_order))
         call ord_parameters(+1,rule%parameters,
-     &                      iorder,spec)
-        call set_pert_order(op_pnt,iorder,spec)
+     &                      iorder,spec,ifreq_dum)
+        allocate(ifreq(iorder))
+        ifreq = ifreq_dum(1:iorder)
+        deallocate(ifreq_dum)
+        call set_pert_order(op_pnt,iorder,spec,ifreq)
+        deallocate(ifreq)
       case default
         call quit(1,'process_operators','unknown command: '//
      &       trim(rule%command))
