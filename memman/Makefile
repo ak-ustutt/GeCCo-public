@@ -22,7 +22,7 @@ INST_MODULES:=
 
 #mod_objs:=$(addsuffix .o,$(basename $(INST_MODULES)))
 mod_obj_list:=memman.o
-#src:=$(wildcard *.f90 *.F *.f)
+src:=$(wildcard *.f90 *.F *.f)
 #objs:=$(mod_objs) $(filter-out $(mod_objs),$(addsuffix .o, $(basename $(src))))
 
 libs:=

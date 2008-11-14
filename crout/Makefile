@@ -20,6 +20,8 @@ INST_DATA:=
 # module names are listed in smallcaps and wihtout any .mod
 INST_MODULES:=
 
+#src:=$(wildcard *.c)
+
 include $(topdir)/make.rules
 
 #src:=$(wildcard *.c)

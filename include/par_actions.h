@@ -25,6 +25,7 @@
      &     DEF_MPR12_LAGRANGIAN*20  = 'DEF_MPR12_LAGRANGIAN',
      &     DEF_CCR12_LAGRANGIAN*20  = 'DEF_CCR12_LAGRANGIAN',
      &     DEF_CCR12_METRIC*16      = 'DEF_CCR12_METRIC',
+     &     SPLIT_R12EXC_FORMULA*20  = 'SPLIT_R12EXC_FORMULA',
      &     DEF_EXP_FORMULA*15       = 'DEF_EXP_FORMULA',
      &     DEF_FORMULA*11           = 'DEF_FORMULA',
      &     EXPAND_OP_PRODUCT*17     = 'EXPAND_OP_PRODUCT',
@@ -38,6 +39,7 @@
      &     PRINT_FORMULA*13         = 'PRINT_FORMULA',
      &     TEX_FORMULA*11           = 'TEX_FORMULA',
      &     KEEP_TERMS*10            = 'KEEP_TERMS',
+     &     SELECT_TERMS*12          = 'SELECT_TERMS',
      &     DEL_TERMS*9              = 'DEL_TERMS',
      &     MODIFY_FACTORIZATION*20  = 'MODIFY_FACTORIZATION'
 ! ME-lists:

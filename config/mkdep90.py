@@ -55,7 +55,7 @@ def main():
 			try:
 				if (allmods[dd] != df.name):
 					ri=string.rindex(allmods[dd], '.')
-					omod=allmods[dd][:ri]+'.o'
+					omod='$(ARCH)/'+allmods[dd][:ri]+'.o'
 					deps.append(omod)
 			except:
 				print >> sys.stderr, 'Missing dependency for', dd, 'in',\
@@ -65,7 +65,7 @@ def main():
 				deps.append(dd)
 
 		if deps:
-			dstr=df.oname+': '
+			dstr='$(ARCH)/'+df.oname+': '
 			for i in deps:
 				dstr=dstr+i+' '
 			print dstr

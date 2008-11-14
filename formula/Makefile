@@ -20,6 +20,8 @@ INST_DATA:=
 # module names are listed in smallcaps and wihtout any .mod
 INST_MODULES:=
 
+src:=$(wildcard *.f90 *.F *.f)
+
 include $(topdir)/make.rules
 
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)

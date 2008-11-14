@@ -1,8 +1,13 @@
-      subroutine scale_op(label_res,idx_blk,fac,label_inp,nblk,
+      subroutine scale_op(label_res,mode,idx_blk,fac,label_inp,nblk,
      &     op_info,orb_info,str_info)
 *----------------------------------------------------------------------*
-*     scale blocks of operator by factor fac,
-*     if nblk==-1, all blocks are scaled with the same factor
+*     scale blocks of operator list
+*     mode == 1:
+*       by factor fac,
+*       if nblk==-1, all blocks are scaled with the same factor
+*     mode == 2:
+*       label_inp(2) contains scalar ME-list with respective scaling
+*       factor
 *----------------------------------------------------------------------*
 
       implicit none
@@ -20,11 +25,11 @@
       include 'par_opnames_gen.h'
 
       integer, intent(in) ::
-     &     nblk, idx_blk(*)
+     &     mode, nblk, idx_blk(*)
       real(8), intent(in) ::
      &     fac(*)
       character(*), intent(in) ::
-     &     label_res, label_inp
+     &     label_res, label_inp(2)
       type(operator_info), intent(inout) ::
      &     op_info
       type(orbinf), intent(in) ::
@@ -33,20 +38,21 @@
      &     str_info
 
       type(me_list), pointer ::
-     &     me_res, me_inp
+     &     me_res, me_inp, me_fac
 
       integer ::
-     &     idx_res, idx_inp, idx, idxnd,
+     &     idx_res, idx_inp, idx_fac, idx, idxnd,
      &     njoined, iblk, ipri
       logical ::
-     &     open_close_res, open_close_inp, same
+     &     open_close_res, open_close_inp, open_close_fac,
+     &     same
       real(8) ::
-     &     cpu, sys, wall, cpu0, sys0, wall0, xnorm2
+     &     cpu, sys, wall, cpu0, sys0, wall0, xnorm2, factor
       integer, pointer  ::
      &     occ(:,:,:)
 
       integer, external ::
-     &     idx_mel_list
+     &     idx_mel_list, vtx_type
 
       call atim_csw(cpu0,sys0,wall0)
 
@@ -55,17 +61,28 @@
         write(luout,*) ' scale operators   '
         write(luout,*) '===================='
         write(luout,*) 'Result: ',trim(label_res)
-        write(luout,*) 'The factors and summands: '
-        do idx = 1, nblk
-          write(luout,'(3x,f12.6,x,i8)') fac(idx),idx_blk(idx)
-        end do
-        if (nblk.lt.0) then
-          write(luout,'(3x,f12.6,x,a)') fac(idx),'applied to all blocks'
+        if (mode.eq.1) then
+          write(luout,*) 'The factors and summands: '
+          do idx = 1, nblk
+            write(luout,'(3x,f12.6,x,i8)') fac(idx),idx_blk(idx)
+          end do
+          if (nblk.lt.0) then
+            write(luout,'(3x,f12.6,x,a)')
+     &           fac(idx),'applied to all blocks'
+          end if
+        else
+          write(luout,*) 'Scaling factor(s) on: ',trim(label_inp(2))
         end if
       endif
 
       idx_res = idx_mel_list(label_res,op_info)
-      idx_inp = idx_mel_list(label_inp,op_info)
+      idx_inp = idx_mel_list(label_inp(1),op_info)
+
+      if (mode.ge.2) then
+        idx_fac = idx_mel_list(label_inp(2),op_info)
+      else
+        idx_fac = 1
+      end if
 
       if (idx_res.lt.0) then
         write(luout,*) '"',trim(label_res),'"'
@@ -73,8 +90,13 @@
         call quit(1,'scale_op','label not on list')
       end if
       if (idx_inp.lt.0) then
-        write(luout,*) '"',trim(label_inp),'"'
+        write(luout,*) '"',trim(label_inp(1)),'"'
         write(luout,*) idx_inp
+        call quit(1,'scale_op','label not on list')
+      end if
+      if (idx_inp.lt.0) then
+        write(luout,*) '"',trim(label_inp(2)),'"'
+        write(luout,*) idx_fac
         call quit(1,'scale_op','label not on list')
       end if
 
@@ -97,28 +119,67 @@
      &     call quit(1,'add_op','no file handle defined for '//
      &                  trim(me_inp%label))
         open_close_inp = me_inp%fhand%unit.le.0
-        if(open_close_inp)then
+        if (open_close_inp) then
           call file_open(me_inp%fhand)
         endif
       else
         open_close_inp = .false.
       end if
 
-      idxnd = nblk
-      if (nblk.lt.0) idxnd = me_inp%op%n_occ_cls
+      if (mode.eq.1) then
+        idxnd = nblk
+        if (nblk.lt.0) idxnd = me_inp%op%n_occ_cls
+      else
+        idxnd = me_inp%op%n_occ_cls
+        
+        me_fac => op_info%mel_arr(idx_fac)%mel
+
+        if (vtx_type(me_fac%op).ne.vtxtyp_scalar)
+     &       call quit(1,'scale_op',
+     &       trim(me_fac%label)//' is not a scalar')
+
+        open_close_fac = me_fac%fhand%unit.le.0
+        if (open_close_fac) then
+          call file_open(me_fac%fhand)
+        endif
+        
+      end if
+
       njoined = me_res%op%njoined
 
+      ! needed: outer loop over active records
+
+      ! load factor
+      if (mode.ge.2) then
+        if (me_fac%fhand%buffered) then
+          factor = me_fac%fhand%buffer(1)
+        else
+          call get_vec(me_fac%fhand,factor,1,1)
+        end if
+        if (mode.ge.3) factor = 1d0/factor
+        if (ntest.ge.10) write(luout,*)
+     &       'factor from list: ',factor
+      else
+        factor = fac(1)
+      end if
+
       do idx = 1, idxnd
-        if (nblk.gt.0) then
+        if (mode.eq.1.and.nblk.gt.0) then
           iblk = idx_blk(idx)
+          factor = fac(idx)
         else
           iblk = idx
         end if
 
-        call scale_opblk(xnorm2,fac(idx),me_inp,me_res,
+        call scale_opblk(xnorm2,factor,me_inp,me_res,
      &       iblk,iblk,orb_info)
 
       end do
+
+      ! needed: close loop over active records
+
+      if (open_close_fac)
+     &     call file_close_keep(me_fac%fhand)
 
       if (open_close_res)
      &     call file_close_keep(me_res%fhand)

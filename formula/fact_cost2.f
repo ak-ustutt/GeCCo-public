@@ -32,7 +32,7 @@
       integer, parameter ::
      &     ntest = 0
       logical, parameter ::
-     &     formal = .false.
+     &     formal = .false., exact = .false.
       
       logical, intent(in) ::
      &     make_red
@@ -250,14 +250,18 @@ c      possible = .true.
      &         merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &         str_info,orb_info)
-          call dummy_contr2(flops,xmemtot,xmemblk,
+          if (exact) then
+            call dummy_contr2(flops,xmemtot,xmemblk,
      &         cnt_info,
      &         mst_op(1),mst_op(2),mst_op1op2,
      &         igamt_op(1),igamt_op(2),igamt_op1op2,
      &         str_info,ngas,nsym)          
-
+          else
+            call fact_cost_estimate(flops,xmemtot,xmemblk,
+     &           cnt_info,
+     &           str_info,ngas,nsym)
+          end if
           call dealloc_cnt_info(cnt_info)
-
           cost(1) = cost(1)+flops
           cost(2) = max(cost(2),xmemtot)
           cost(3) = max(cost(3),xmemblk)

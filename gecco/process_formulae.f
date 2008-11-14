@@ -34,7 +34,10 @@
      &     connect(maxterms*2), avoid(maxterms*2),
      &     inproj(maxterms*2), nconnect, navoid, ninproj,
      &     idx, jdx, ioff, ncat, nint, nrename, nop,
-     &     ansatz, ipos, idum, level, nterms
+     &     ansatz, ipos, idum, level, nterms,mode,
+     &     ninclude, ninclude_or, nexclude,
+     &     iblk_include(maxterms), iblk_include_or(maxterms),
+     &     iblk_exclude(maxterms)
       type(formula), pointer ::
      &     form_pnt, form0_pnt
       character(len_command_par) ::
@@ -159,6 +162,17 @@ c prelim
         call set_r12_metric(form_pnt,
      &       title,rule%labels(ioff+1),rule%n_labels-ioff,ansatz,
      &       op_info,orb_info)
+      case(SPLIT_R12EXC_FORMULA)  
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,mode,strdum)
+        jdx = idx_formlist(trim(rule%labels(2)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_r12exc_split(form_pnt,form0_pnt,
+     &       rule%labels(3),
+     &       mode,
+     &       rule%labels(4:),rule%n_labels-3,
+     &       op_info)
       case(DEF_EXP_FORMULA)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
@@ -290,6 +304,21 @@ c        call quit(1,DEF_FORMULA,'not yet')
      &       rule%parameters,rule%n_parameter_strings,
      &       title,idum,strdum)
         call tex_formula_drv(form_pnt,title,op_info)
+      case(SELECT_TERMS)
+        call select_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       ninclude,ninclude_or,nexclude,
+     &       iblk_include,iblk_include_or,iblk_exclude)
+        ioff = rule%n_update        
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_select_terms(form_pnt,form0_pnt,
+     &       rule%labels(ioff+2:),
+     &       ninclude,rule%labels(ioff+3:),iblk_include,
+     &       ninclude_or,rule%labels(ioff+ninclude+3:),iblk_include_or,
+     &       nexclude,rule%labels(ioff+ninclude+ninclude_or+3:),
+     &                                              iblk_exclude,
+     &       op_info)
       case(DEL_TERMS)
         call modify_parameters(+1,
      &       rule%parameters,nterms,idxterms,maxterms)

@@ -152,6 +152,8 @@ c      use parse_input
      &     idef=(/1,0,0,0,0,0,0,0/))
       call argument_add('msc','calculate.excitation',
      &     type=vtyp_int,len=1,idef=(/0/))
+      call keyword_add('normalize',context='calculate.excitation')
+      call keyword_add('analyze',context='calculate.excitation')
 
       call keyword_add('ionization',context='calculate')
       call argument_add('sym','calculate.ionization',

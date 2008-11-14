@@ -29,9 +29,11 @@
      &     needed, r12fix
       character(len_target_name) ::
      &     me_label, mep_label, medef_label, dia_label, mel_dia1,
+     &     me_label_l, me_label_r, me_label_lr,
+     &     me_label_lp, me_label_rp,
      &     labels(20)
       character(len_command_par) ::
-     &     parameters(2)
+     &     parameters(4)
 
 
       ! skip this section if not requested
@@ -142,6 +144,16 @@
      &              op_tbar_a,1,1,
      &              parameters,1,tgt_info)
 
+      if (r12op.gt.0) then
+        call add_target(op_tbar_ap,ttype_op,.false.,tgt_info)
+        call set_dependency(op_tbar_ap,op_cexbar,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                        op_cexbar,.false.)
+        call set_rule(op_tbar_ap,ttype_op,CLONE_OP,
+     &              op_tbar_ap,1,1,
+     &              parameters,1,tgt_info)
+      end if
+
       ! left-response vector times Jacobian
       call add_target(op_l_a,ttype_op,.false.,tgt_info)
       call set_dependency(op_l_a,op_tbar,tgt_info)
@@ -206,6 +218,39 @@
      &              parameters,1,tgt_info)
 
       end if
+
+      ! result of <L|R>
+      call add_target(op_l_s_r,ttype_op,.false.,tgt_info)
+      call set_rule(op_l_s_r,ttype_op,DEF_SCALAR,
+     &              op_l_s_r,1,1,
+     &              parameters,0,tgt_info)
+
+      ! result of <L|A|R>
+      call add_target(op_l_a_r,ttype_op,.false.,tgt_info)
+      call set_rule(op_l_a_r,ttype_op,DEF_SCALAR,
+     &              op_l_a_r,1,1,
+     &              parameters,0,tgt_info)
+
+      call add_target(op_l_a_r//'_1',ttype_op,.false.,tgt_info)
+      call set_rule(op_l_a_r//'_1',ttype_op,DEF_SCALAR,
+     &              op_l_a_r//'_1',1,1,
+     &              parameters,0,tgt_info)
+      call add_target(op_l_a_r//'_2',ttype_op,.false.,tgt_info)
+      call set_rule(op_l_a_r//'_2',ttype_op,DEF_SCALAR,
+     &              op_l_a_r//'_2',1,1,
+     &              parameters,0,tgt_info)
+      call add_target(op_l_a_r//'_3',ttype_op,.false.,tgt_info)
+      call set_rule(op_l_a_r//'_3',ttype_op,DEF_SCALAR,
+     &              op_l_a_r//'_3',1,1,
+     &              parameters,0,tgt_info)
+      call add_target(op_l_a_r//'_4',ttype_op,.false.,tgt_info)
+      call set_rule(op_l_a_r//'_4',ttype_op,DEF_SCALAR,
+     &              op_l_a_r//'_4',1,1,
+     &              parameters,0,tgt_info)
+      call add_target(op_l_a_r//'_5',ttype_op,.false.,tgt_info)
+      call set_rule(op_l_a_r//'_5',ttype_op,DEF_SCALAR,
+     &              op_l_a_r//'_5',1,1,
+     &              parameters,0,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Formulae:
@@ -349,6 +394,238 @@
         call set_rule(form_ccr12_s_rp,ttype_frm,DERIVATIVE,
      &              labels,7,1,
      &              parameters,2,tgt_info)
+      end if
+
+      ! make <L|R> formula
+      call add_target(form_ccr12_l_s_r,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_ccr12_l_s_r,form_ccr12_s0,tgt_info)
+      call set_dependency(form_ccr12_l_s_r,op_l_s_r,tgt_info)
+      call set_dependency(form_ccr12_l_s_r,op_r,tgt_info)
+      if (r12fix) then
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = 'FORM_SCRATCH'
+        labels(2) = form_ccr12_s0
+        labels(3) = op_l_s_r
+        labels(4) = op_tbar
+        labels(5) = op_l
+        call form_parameters(-1,
+     &       parameters,2,
+     &       'scratch',1,'-')
+        call set_rule(form_ccr12_l_s_r,ttype_frm,DERIVATIVE,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = form_ccr12_l_s_r
+        labels(2) = 'FORM_SCRATCH'
+        labels(3) = op_l_s_r
+        labels(4) = op_top
+        labels(5) = op_r
+        call form_parameters(-1,
+     &       parameters,2,
+     &       title_ccr12_l_s_r,1,'-')
+        call set_rule(form_ccr12_l_s_r,ttype_frm,DERIVATIVE,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+      else
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = 'FORM_SCRATCH'
+        labels(2) = form_ccr12_s0
+        labels(3) = op_l_s_r
+        labels(4) = op_tbar
+        labels(5) = op_cexbar
+        labels(6) = op_l
+        labels(7) = op_lp
+        call form_parameters(-1,
+     &       parameters,2,
+     &       'scratch',2,'-')
+        call set_rule(form_ccr12_l_s_r,ttype_frm,DERIVATIVE,
+     &              labels,7,1,
+     &              parameters,2,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = form_ccr12_l_s_r
+        labels(2) = 'FORM_SCRATCH'
+        labels(3) = op_l_s_r
+        labels(4) = op_top
+        labels(5) = op_cex
+        labels(6) = op_r
+        labels(7) = op_rp
+        call form_parameters(-1,
+     &       parameters,2,
+     &       title_ccr12_l_s_r,2,'-')
+        call set_rule(form_ccr12_l_s_r,ttype_frm,DERIVATIVE,
+     &              labels,7,1,
+     &              parameters,2,tgt_info)
+      end if
+
+      ! make <L|A|R> formula
+      call add_target(form_cc_l_a_r,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_cc_l_a_r,form_ccr12lg0,tgt_info)
+      call set_dependency(form_cc_l_a_r,op_l_a_r,tgt_info)
+      call set_dependency(form_cc_l_a_r,op_l_a_r//'_1',tgt_info)
+      call set_dependency(form_cc_l_a_r,op_l_a_r//'_2',tgt_info)
+      call set_dependency(form_cc_l_a_r,op_l_a_r//'_3',tgt_info)
+      call set_dependency(form_cc_l_a_r,op_l_a_r//'_4',tgt_info)
+      call set_dependency(form_cc_l_a_r,op_l_a_r//'_5',tgt_info)
+      call set_dependency(form_cc_l_a_r,op_r,tgt_info)
+      call set_dependency(form_cc_l_a_r,op_l,tgt_info)
+      if (r12fix) then
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = 'FORM_SCRATCH'
+        labels(2) = form_ccr12lg0
+        labels(3) = op_l_a_r
+        labels(4) = op_tbar
+        labels(5) = op_l
+        call form_parameters(-1,
+     &       parameters,2,
+     &       'scratch',1,'-')
+        call set_rule(form_cc_l_a_r,ttype_frm,DERIVATIVE,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = form_cc_l_a_r
+        labels(2) = 'FORM_SCRATCH'
+        labels(3) = op_l_a_r
+        labels(4) = op_top
+        labels(5) = op_r
+        call form_parameters(-1,
+     &       parameters,2,
+     &       title_cc_l_a_r,1,'-')
+        call set_rule(form_cc_l_a_r,ttype_frm,DERIVATIVE,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = trim(form_cc_l_a_r)//'_1'
+        labels(2) = form_cc_l_a_r
+        labels(3) = op_l_a_r//'_1'
+        labels(4) = op_ham
+        labels(5) = op_top
+        labels(6) = op_rint
+        labels(7) = op_l
+        labels(8) = op_r
+        labels(9) = op_v_inter
+        call form_parameters(-1,
+     &       parameters,2,
+     &       'XXX',1,'--')
+        call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
+     &              labels,9,1,
+     &              parameters,2,tgt_info)
+
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = trim(form_cc_l_a_r)//'_2'
+        labels(2) = form_cc_l_a_r
+        labels(3) = op_l_a_r//'_2'
+        labels(4) = op_ham
+        labels(5) = op_top
+        labels(6) = op_rint
+        labels(7) = op_l
+        labels(8) = op_r
+        labels(9) = op_v_inter
+        call form_parameters(-1,
+     &       parameters,2,
+     &       'XXX',2,'--')
+        call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
+     &              labels,9,1,
+     &              parameters,2,tgt_info)
+
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = trim(form_cc_l_a_r)//'_3'
+        labels(2) = form_cc_l_a_r
+        labels(3) = op_l_a_r//'_3'
+        labels(4) = op_ham
+        labels(5) = op_top
+        labels(6) = op_rint
+        labels(7) = op_l
+        labels(8) = op_r
+        labels(9) = op_v_inter
+        call form_parameters(-1,
+     &       parameters,2,
+     &       'XXX',3,'--')
+        call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
+     &              labels,9,1,
+     &              parameters,2,tgt_info)
+
+      else
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = 'FORM_SCRATCH'
+        labels(2) = form_ccr12lg0
+        labels(3) = op_l_a_r
+        labels(4) = op_tbar
+        labels(5) = op_cexbar
+        labels(6) = op_l
+        labels(7) = op_lp
+        call form_parameters(-1,
+     &       parameters,2,
+     &       'scratch',2,'-')
+        call set_rule(form_cc_l_a_r,ttype_frm,DERIVATIVE,
+     &              labels,7,1,
+     &              parameters,2,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = form_cc_l_a_r
+        labels(2) = 'FORM_SCRATCH'
+        labels(3) = op_l_a_r
+        labels(4) = op_top
+        labels(5) = op_cex
+        labels(6) = op_r
+        labels(7) = op_rp
+        call form_parameters(-1,
+     &       parameters,2,
+     &       title_cc_l_a_r,2,'-')
+        call set_rule(form_cc_l_a_r,ttype_frm,DERIVATIVE,
+     &              labels,7,1,
+     &              parameters,2,tgt_info)
+
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = trim(form_cc_l_a_r)//'_1'
+        labels(2) = form_cc_l_a_r
+        labels(3) = op_l_a_r//'_1'
+        labels(4) = op_ham
+        labels(5) = op_top
+        labels(6) = op_rint
+        labels(7) = op_l
+        labels(8) = op_r
+        labels(9) = op_v_inter
+        call form_parameters(-1,
+     &       parameters,2,
+     &       'XXX',1,'--')
+        call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
+     &              labels,9,1,
+     &              parameters,2,tgt_info)
+
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = trim(form_cc_l_a_r)//'_2'
+        labels(2) = form_cc_l_a_r
+        labels(3) = op_l_a_r//'_2'
+        labels(4) = op_ham
+        labels(5) = op_top
+        labels(6) = op_rint
+        labels(7) = op_l
+        labels(8) = op_r
+        labels(9) = op_v_inter
+        call form_parameters(-1,
+     &       parameters,2,
+     &       'XXX',2,'--')
+        call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
+     &              labels,9,1,
+     &              parameters,2,tgt_info)
+
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = trim(form_cc_l_a_r)//'_3'
+        labels(2) = form_cc_l_a_r
+        labels(3) = op_l_a_r//'_3'
+        labels(4) = op_ham
+        labels(5) = op_top
+        labels(6) = op_rint
+        labels(7) = op_l
+        labels(8) = op_r
+        labels(9) = op_v_inter
+        call form_parameters(-1,
+     &       parameters,2,
+     &       'XXX',3,'--')
+        call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
+     &              labels,9,1,
+     &              parameters,2,tgt_info)
+
       end if
 
       ! make derivative wrt T/T'
@@ -607,6 +884,50 @@
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
+      ! <L|R>
+      call add_target(fopt_ccr12_l_s_r,ttype_frm,.false.,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_ccr12_l_s_r
+      labels(2) = form_ccr12_l_s_r
+      ncat = 1
+      nint = 0
+      call set_dependency(fopt_ccr12_l_s_r,form_ccr12_l_s_r,tgt_info)
+      call set_dependency(fopt_ccr12_l_s_r,meldef_rex,tgt_info)
+      call set_dependency(fopt_ccr12_l_s_r,meldef_lex,tgt_info)
+      call set_dependency(fopt_ccr12_l_s_r,meldef_l_s_r,tgt_info)
+      if (.not.r12fix) then
+        call set_dependency(fopt_ccr12_l_s_r,meldef_rpex,tgt_info)
+        call set_dependency(fopt_ccr12_l_s_r,meldef_lpex,tgt_info)
+      end if
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_ccr12_l_s_r,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      
+      ! <L|A|R>
+      call add_target(fopt_cc_l_a_r,ttype_frm,.false.,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_cc_l_a_r
+      labels(2) = form_cc_l_a_r
+      labels(3) = form_cc_l_a_r//'_3'
+      labels(4) = form_cc_l_a_r//'_2'
+      labels(5) = form_cc_l_a_r//'_1'
+      ncat = 1
+c      nint = 3
+      nint = 0
+      call set_dependency(fopt_cc_l_a_r,form_cc_l_a_r,tgt_info)
+      call set_dependency(fopt_cc_l_a_r,meldef_rex,tgt_info)
+      call set_dependency(fopt_cc_l_a_r,meldef_lex,tgt_info)
+      call set_dependency(fopt_cc_l_a_r,meldef_l_a_r,tgt_info)
+      if (.not.r12fix) then
+        call set_dependency(fopt_cc_l_a_r,meldef_rpex,tgt_info)
+        call set_dependency(fopt_cc_l_a_r,meldef_lpex,tgt_info)
+      end if
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_cc_l_a_r,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      
 *----------------------------------------------------------------------*
 *     ME-lists:
 *----------------------------------------------------------------------*
@@ -621,6 +942,13 @@
       call add_target(meldef_lex,ttype_opme,.false.,tgt_info)
       call add_target(meldef_lex_a,ttype_opme,.false.,tgt_info)
       call add_target(meldef_lex_s,ttype_opme,.false.,tgt_info)
+      if (.not.r12fix) then
+        call add_target(meldef_lpex,ttype_opme,.false.,tgt_info)
+        call add_target(meldef_lex_ap,ttype_opme,.false.,tgt_info)
+        call add_target(meldef_lex_sp,ttype_opme,.false.,tgt_info)
+      end if
+      call add_target(meldef_l_s_r,ttype_opme,.false.,tgt_info)
+      call add_target(meldef_l_a_r,ttype_opme,.false.,tgt_info)
       do icnt = 1, ncnt 
         call get_argument_value('calculate.excitation','sym',
      &       keycount=icnt,
@@ -773,6 +1101,61 @@
           end if ! .not.r12fix
 
         end do
+
+        do isym = 1, orb_info%nsym
+          if (sym_arr(isym).eq.0) cycle
+          ! LE0.S.RE0
+          call me_list_label(me_label,mel_l_s_r,isym,0,0,msc,.false.)
+          call set_dependency(meldef_l_s_r,op_l,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = op_l_s_r
+          call me_list_parameters(-1,parameters,
+     &         abs(msc),0,1,0,0,.false.)
+          call set_rule(meldef_l_s_r,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+          ! LE0.A.RE0
+          call me_list_label(me_label,mel_l_a_r,isym,0,0,msc,.false.)
+          call set_dependency(meldef_l_a_r,op_l,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = op_l_a_r
+          call me_list_parameters(-1,parameters,
+     &         abs(msc),0,1,0,0,.false.)
+          call set_rule(meldef_l_a_r,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+          call me_list_label(me_label,'L1HR1',isym,0,0,msc,.false.)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = trim(me_label)
+          labels(2) = op_l_a_r//'_1'
+          call me_list_parameters(-1,parameters,
+     &         abs(msc),0,1,0,0,.false.)
+          call set_rule(meldef_l_a_r,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+          call me_list_label(me_label,'L1HcR1',isym,0,0,msc,.false.)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = trim(me_label)
+          labels(2) = op_l_a_r//'_2'
+          call me_list_parameters(-1,parameters,
+     &         abs(msc),0,1,0,0,.false.)
+          call set_rule(meldef_l_a_r,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+          call me_list_label(me_label,'LHRcorr',isym,0,0,msc,.false.)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = trim(me_label)
+          labels(2) = op_l_a_r//'_3'
+          call me_list_parameters(-1,parameters,
+     &         abs(msc),0,1,0,0,.false.)
+          call set_rule(meldef_l_a_r,ttype_opme,DEF_ME_LIST,
+     &         labels,2,1,
+     &         parameters,1,tgt_info)
+
+        end do
+
       end do
 
 *----------------------------------------------------------------------*
@@ -792,6 +1175,19 @@
       call set_dependency(solve_cc_lhex,meldef_lex,tgt_info)
       call set_dependency(solve_cc_lhex,meldef_lex_a,tgt_info)
       call set_dependency(solve_cc_lhex,meldef_lex_s,tgt_info)
+
+      needed = is_keyword_set('calculate.excitation.normalize').gt.0
+      call add_target(norm_cc_lhex,ttype_gen,needed,tgt_info)
+      call set_dependency(norm_cc_lhex,solve_cc_rhex,tgt_info)
+      call set_dependency(norm_cc_lhex,solve_cc_lhex,tgt_info)
+      call set_dependency(norm_cc_lhex,fopt_ccr12_l_s_r,tgt_info)      
+
+      needed = is_keyword_set('calculate.excitation.analyze').gt.0
+      call add_target(analyze_cc_ex,ttype_gen,needed,tgt_info)
+      call set_dependency(analyze_cc_ex,solve_cc_rhex,tgt_info)
+      call set_dependency(analyze_cc_ex,solve_cc_lhex,tgt_info)
+      call set_dependency(analyze_cc_ex,norm_cc_lhex,tgt_info)      
+      call set_dependency(analyze_cc_ex,fopt_cc_l_a_r,tgt_info)      
 
       do icnt = 1, ncnt 
         call get_argument_value('calculate.excitation','sym',
@@ -891,7 +1287,142 @@ c            labels(11)= me_xprc
      &           parameters,2,tgt_info)
           end if
         end do
+
+        do isym = 1, orb_info%nsym
+          if (sym_arr(isym).eq.0) cycle          
+
+          call me_list_label(me_label_l,mel_lex,isym,0,0,msc,.false.)
+          call me_list_label(me_label_r,mel_rex,isym,0,0,msc,.false.)
+          call me_list_label(me_label_lp,mel_lpex,isym,0,0,msc,.false.)
+          call me_list_label(me_label_rp,mel_rpex,isym,0,0,msc,.false.)
+          call me_list_label(me_label_lr,mel_l_s_r,isym,0,0,msc,.false.)
+
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label_l
+          labels(2) = op_l
+          call set_rule(norm_cc_lhex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label_r
+          labels(2) = op_r
+          call set_rule(norm_cc_lhex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          if (.not.r12fix) then
+            labels(1:10)(1:len_target_name) = ' '
+            labels(1) = me_label_lp
+            labels(2) = op_lp
+            call set_rule(norm_cc_lhex,ttype_opme,ASSIGN_ME2OP,
+     &           labels,2,1,
+     &           parameters,0,tgt_info)
+            labels(1:10)(1:len_target_name) = ' '
+            labels(1) = me_label_rp
+            labels(2) = op_rp
+            call set_rule(norm_cc_lhex,ttype_opme,ASSIGN_ME2OP,
+     &           labels,2,1,
+     &           parameters,0,tgt_info)
+          end if
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label_lr
+          labels(2) = op_l_s_r
+          call set_rule(norm_cc_lhex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = fopt_ccr12_l_s_r
+          call set_rule(norm_cc_lhex,ttype_opme,EVAL,
+     &         labels,1,1,
+     &         parameters,0,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label_l
+          labels(2) = me_label_l
+          labels(3) = me_label_lr
+          call scale_parameters(-1,parameters,3,0,0,0d0,1)
+          call set_rule(norm_cc_lhex,ttype_opme,SCALE,
+     &         labels,3,1,
+     &         parameters,1,tgt_info)
+          if (.not.r12fix) then
+            labels(1:10)(1:len_target_name) = ' '
+            labels(1) = me_label_lp
+            labels(2) = me_label_lp
+            labels(3) = me_label_lr
+            call scale_parameters(-1,parameters,3,0,0,0d0,1)
+            call set_rule(norm_cc_lhex,ttype_opme,SCALE,
+     &           labels,3,1,
+     &           parameters,1,tgt_info)
+          end if
+        end do
+
+        do isym = 1, orb_info%nsym
+          if (sym_arr(isym).eq.0) cycle          
+
+          call me_list_label(me_label_l,mel_lex,isym,0,0,msc,.false.)
+          call me_list_label(me_label_r,mel_rex,isym,0,0,msc,.false.)
+          call me_list_label(me_label_lp,mel_lpex,isym,0,0,msc,.false.)
+          call me_list_label(me_label_rp,mel_rpex,isym,0,0,msc,.false.)
+          call me_list_label(me_label_lr,mel_l_a_r,isym,0,0,msc,.false.)
+
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label_l
+          labels(2) = op_l
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label_r
+          labels(2) = op_r
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          if (.not.r12fix) then
+            labels(1:10)(1:len_target_name) = ' '
+            labels(1) = me_label_lp
+            labels(2) = op_lp
+            call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &           labels,2,1,
+     &           parameters,0,tgt_info)
+            labels(1:10)(1:len_target_name) = ' '
+            labels(1) = me_label_rp
+            labels(2) = op_rp
+            call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &           labels,2,1,
+     &           parameters,0,tgt_info)
+          end if
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label_lr
+          labels(2) = op_l_a_r
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          call me_list_label(me_label_lr,'L1HR1',isym,0,0,msc,.false.)
+          labels(1) = me_label_lr
+          labels(2) = op_l_a_r//'_1'
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          call me_list_label(me_label_lr,'L1HcR1',isym,0,0,msc,.false.)
+          labels(1) = me_label_lr
+          labels(2) = op_l_a_r//'_2'
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+          call me_list_label(me_label_lr,'LHRcorr',isym,0,0,msc,.false.)
+          labels(1) = me_label_lr
+          labels(2) = op_l_a_r//'_3'
+          call set_rule(analyze_cc_ex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
+
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = fopt_cc_l_a_r
+          call set_rule(analyze_cc_ex,ttype_opme,EVAL,
+     &         labels,1,1,
+     &         parameters,0,tgt_info)
+        end do
+
       end do
+
       
       return
       end

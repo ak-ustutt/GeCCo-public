@@ -68,9 +68,11 @@ c      include 'ifc_input.h'
      &     rst_blk_tmp(2,orb_info%ngas,2,2,orb_info%nspin,2),
      &     rst_blk_reo(2,orb_info%ngas,2,2,orb_info%nspin,2)
       integer, target ::
-     &     occ_blk_reo(ngastp,2,2)
+     &     occ_blk_reo(ngastp,2,2),
+     &     occ_blk_dag(ngastp,2,2),
+     &     graph_blk_dag(ngastp,2,2)
       logical ::
-     &     first, beyond_A
+     &     first, beyond_A, ca_reverse
 
       type(operator), pointer ::
      &     op_grd_reo
@@ -110,7 +112,6 @@ c      include 'ifc_input.h'
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'special preconditioner')
       end if
-        
 
       if (nincore.ne.3)
      &     call quit(1,'optc_prc_special',
@@ -134,9 +135,6 @@ c      include 'ifc_input.h'
 
         me_xmat => me_special(2)%mel
         nxmat = me_xmat%len_op
-c dbg
-        print *,'nxmat, nbmat: ',nxmat, nbmat
-c dbg
 
         allocate(xmat(nxmat))
         ! should be open as well
@@ -212,16 +210,27 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
      &       write(luout,*) 'ncsub, nasub: ',ncsub, nasub
 
         mode = 0
+        ca_reverse = .false.
         ! find the relevant block of B
         if (njoined.eq.2) then
           iblk_b = 1
         else if (njoined.eq.1) then
-          if (name_opt.eq.op_cex.or.name_opt.eq.op_rp) then
+          if (name_opt.eq.op_cex.or.
+     &        name_opt.eq.op_rp) then
             mode = 1
             nidx_p = occ_blk(IPART,1,1)
             occ_b = 0
             occ_b(IPART,1) = 1
             occ_b(IPART,2) = 1
+          else if (
+     &        name_opt.eq.op_cexbar.or.
+     &        name_opt.eq.op_lp) then
+            mode = 1
+            nidx_p = occ_blk(IPART,2,1)
+            occ_b = 0
+            occ_b(IPART,1) = 1
+            occ_b(IPART,2) = 1
+            ca_reverse = .true.
           else if (name_opt.eq.op_cexx) then
             mode = 2
             nidx_p = occ_blk(IPART,1,1)
@@ -335,10 +344,23 @@ c          call add_me_list('L_GRD_REO',op_info)
           off_grd_d_gam_ms =>
      &         me_grd_reo%off_op_gmox(1)%d_gam_ms
         else
-          occ_blk_pnt =>
+c          if (.not.ca_reverse) then
+            occ_blk_pnt =>
      &         hpvx_occ(1:ngastp,1:2,iblk_off+1:iblk_off+njoined)
-          graph_blk_pnt => idx_graph(1:ngastp,1:2,
+            graph_blk_pnt => idx_graph(1:ngastp,1:2,
      &         iblk_off+1:iblk_off+njoined)
+c          else
+c            occ_blk_dag(1:ngastp,1,1:njoined) =
+c     &           hpvx_occ(1:ngastp,2,iblk_off+1:iblk_off+njoined)
+c            occ_blk_dag(1:ngastp,2,1:njoined) =
+c     &           hpvx_occ(1:ngastp,1,iblk_off+1:iblk_off+njoined)
+c            graph_blk_dag(1:ngastp,1,1:njoined) =
+c     &           idx_graph(1:ngastp,2,iblk_off+1:iblk_off+njoined)
+c            graph_blk_dag(1:ngastp,2,1:njoined) =
+c     &           idx_graph(1:ngastp,1,iblk_off+1:iblk_off+njoined)
+c            occ_blk_pnt   => occ_blk_dag
+c            graph_blk_pnt => graph_blk_dag
+c          end if
           njoined_tmp = njoined
           xgrd_pnt => xbuf1
         end if
@@ -436,13 +458,21 @@ c test -- special insert
               idx = idxlist(IHOLE,hpvx_csub,ncsub,1)
               if (idx.le.0.and.njoined.eq.2)
      &             call quit(1,'optc_prc_special','no HOLE??')
-              if (njoined.eq.1)
+              if (njoined.eq.1.and..not.ca_reverse)
      &             idx = imltlist(IPART,hpvx_csub,ncsub,1)
+              if (njoined.eq.1.and.ca_reverse)
+     &             idx = imltlist(IPART,hpvx_asub,nasub,1)
               if (idx.le.0.or.idx.gt.2)
      &             call quit(1,'optc_prc_special','strange')
-              idxms_bx  = idxmsdis_c(idx)
-              gam_bx = gamdis_c(idx)
-              ld_bx  = len_str(idx)
+              if (.not.ca_reverse) then
+                idxms_bx  = idxmsdis_c(idx)
+                gam_bx = gamdis_c(idx)
+                ld_bx  = len_str(idx)
+              else
+                idxms_bx  = idxmsdis_a(idx)
+                gam_bx = gamdis_a(idx)
+                ld_bx  = len_str(ncsub+idx)
+              end if
 
               if (ld_bx.le.0) cycle
 
@@ -450,7 +480,10 @@ c test -- special insert
               if (njoined.eq.2) then
                 idx = idxlist(IPART,hpvx_csub,ncsub,1)
               else
-                idx = imltlist(IPART,hpvx_csub,ncsub,1)
+                if (.not.ca_reverse)
+     &               idx = imltlist(IPART,hpvx_csub,ncsub,1)
+                if (     ca_reverse)
+     &               idx = imltlist(IPART,hpvx_asub,nasub,1)
                 if (idx.eq.2) then
                   idx = 1
                 else
@@ -464,22 +497,38 @@ c test -- special insert
                 len_cstr = 1
                 graph_cstr = 1 ! dummy
               else
-                nidx_cstr = occ_csub(idx)
-                ms_cstr   = msdis_c(idx)
-                gam_cstr  = gamdis_c(idx)
-                len_cstr = len_str(idx)
-                graph_cstr = graph_csub(idx)
+                if (.not.ca_reverse) then
+                  nidx_cstr = occ_csub(idx)
+                  ms_cstr   = msdis_c(idx)
+                  gam_cstr  = gamdis_c(idx)
+                  len_cstr = len_str(idx)
+                  graph_cstr = graph_csub(idx)
+                else
+                  nidx_cstr = occ_asub(idx)
+                  ms_cstr   = msdis_a(idx)
+                  gam_cstr  = gamdis_a(idx)
+                  len_cstr = len_str(ncsub+idx)
+                  graph_cstr = graph_asub(idx)
+                end if
               end if
 
               if (len_cstr.le.0) cycle
 
               ! occupation, Gamma and Ms of A-string
               ! idx = 1,  we know that for sure
-              nidx_astr = occ_asub(1)
-              ms_astr   = msdis_a(1)
-              gam_astr  = gamdis_a(1)
-              len_astr = len_str(ncsub+1)
-              graph_astr = graph_asub(1)
+              if (.not.ca_reverse) then
+                nidx_astr = occ_asub(1)
+                ms_astr   = msdis_a(1)
+                gam_astr  = gamdis_a(1)
+                len_astr = len_str(ncsub+1)
+                graph_astr = graph_asub(1)
+              else
+                nidx_astr = occ_csub(1)
+                ms_astr   = msdis_c(1)
+                gam_astr  = gamdis_c(1)
+                len_astr = len_str(1)
+                graph_astr = graph_csub(1)
+              end if
 
               if (len_astr.le.0) cycle
 
