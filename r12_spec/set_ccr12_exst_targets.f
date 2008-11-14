@@ -913,8 +913,7 @@
       labels(4) = form_cc_l_a_r//'_2'
       labels(5) = form_cc_l_a_r//'_1'
       ncat = 1
-c      nint = 3
-      nint = 0
+      nint = 3
       call set_dependency(fopt_cc_l_a_r,form_cc_l_a_r,tgt_info)
       call set_dependency(fopt_cc_l_a_r,meldef_rex,tgt_info)
       call set_dependency(fopt_cc_l_a_r,meldef_lex,tgt_info)
