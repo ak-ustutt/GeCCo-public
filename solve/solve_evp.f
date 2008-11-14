@@ -110,6 +110,8 @@
       character ::
      &     fname*256
 
+      logical, external ::
+     &     file_exists
       integer, external ::
      &     idx_formlist, idx_mel_list, idx_xret
       real(8), external ::
@@ -117,9 +119,6 @@
 
       ifree = mem_setmark('solve_evp')
 
-c dbg
-      print *,'in solve_evp: nspecial = ',nspecial
-c dbg
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'entered solve_evp')
         write(luout,*) 'nopt   = ',nopt
@@ -292,6 +291,13 @@ c dbg
      &             xdum,.false.,
      &             op_info,str_info,strmap_info,orb_info)
 
+c dbg
+c          if (file_exists(me_opt(iopt)%mel%fhand)) then
+c            print *,' *** RESTARTING ***'
+c            call switch_mel_record(me_opt(iopt)%mel,iroot)
+c            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel)
+c          end if
+c dbg
         end do
       end do
 

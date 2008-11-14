@@ -385,7 +385,7 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
 
             idx = (iroot-1)*mxsub + 1
             call optc_expand_vec(vred(idx),ndim_vsbsp,xdum,.false.,
-     &           me_opt(iopt)%mel%fhand,iroot,1d0,
+     &           me_opt(iopt)%mel%fhand,iroot,0d0,
      &                              ffvsbsp(iopt)%fhand,iord_vsbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
 

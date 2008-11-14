@@ -45,6 +45,7 @@
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',
+     &     RES_ME_LIST*13     = 'RESET_ME_LIST',
      &     DELETE_ME_LIST*14  = 'DELETE_ME_LIST',
      &     ASSIGN_ME2OP*12    = 'ASSIGN_ME2OP',
      &     IMPORT*6           = 'IMPORT',
