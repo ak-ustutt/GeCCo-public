@@ -146,6 +146,15 @@ c      use parse_input
       call keyword_add('CC_solve_sim',context='calculate')
       call keyword_add('properties',context='calculate')
 
+      call keyword_add('skip_E',context='calculate')
+
+      call keyword_add('check_S',context='calculate')
+      call argument_add('sym','calculate.check_S',
+     &     type=vtyp_int,len=8,
+     &     idef=(/1,0,0,0,0,0,0,0/))
+      call argument_add('msc','calculate.check_S',
+     &     type=vtyp_int,len=1,idef=(/0/))
+
       call keyword_add('excitation',context='calculate')
       call argument_add('sym','calculate.excitation',
      &     type=vtyp_int,len=8,

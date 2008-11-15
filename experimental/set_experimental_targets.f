@@ -68,11 +68,36 @@
       call set_rule('V(1)',ttype_op,DEF_HAMILTONIAN,
      &              'V(1)',1,1,
      &              parameters,1,tgt_info)
+      call add_target('V(A)',ttype_op,.false.,tgt_info)
+      call hop_parameters(-1,parameters,
+     &                   1,1,1,.false.)
+      call set_rule('V(A)',ttype_op,DEF_HAMILTONIAN,
+     &              'V(A)',1,1,
+     &              parameters,1,tgt_info)
+      call add_target('V(B)',ttype_op,.false.,tgt_info)
+      call hop_parameters(-1,parameters,
+     &                   1,1,1,.false.)
+      call set_rule('V(B)',ttype_op,DEF_HAMILTONIAN,
+     &              'V(B)',1,1,
+     &              parameters,1,tgt_info)
       call add_target('H(0)',ttype_op,.false.,tgt_info)
       call cloneop_parameters(-1,parameters,
      &     'H',.false.)
       call set_rule('H(0)',ttype_op,CLONE_OP,
      &              'H(0)',1,1,
+     &              parameters,1,tgt_info)
+
+      call add_target('T(A)',ttype_op,.false.,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &     'T',.false.)
+      call set_rule('T(A)',ttype_op,CLONE_OP,
+     &              'T(A)',1,1,
+     &              parameters,1,tgt_info)
+      call add_target('T(B)',ttype_op,.false.,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &     'T',.false.)
+      call set_rule('T(B)',ttype_op,CLONE_OP,
+     &              'T(B)',1,1,
      &              parameters,1,tgt_info)
 
       call add_target('LMP2',ttype_op,.false.,tgt_info)
@@ -178,6 +203,30 @@ c     &              'mp2res.tex',1,tgt_info)
      &              parameters,2,tgt_info)
 
       labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'VV_FORM'
+      call add_target('VV_FORM',ttype_frm,.false.,tgt_info)
+      call set_dependency('VV_FORM','V(1)',tgt_info)
+      call set_dependency('VV_FORM','V(A)',tgt_info)
+      call set_dependency('VV_FORM','V(B)',tgt_info)
+      call def_form_parameters(-1,
+     &     parameters,2,'V(1)=V(A)+V(B)','pert exp of H')
+      call set_rule('VV_FORM',ttype_frm,DEF_FORMULA,
+     &              labels,1,1,
+     &              parameters,2,tgt_info)
+
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'TT_FORM'
+      call add_target('TT_FORM',ttype_frm,.false.,tgt_info)
+      call set_dependency('TT_FORM','T',tgt_info)
+      call set_dependency('TT_FORM','T(A)',tgt_info)
+      call set_dependency('TT_FORM','T(B)',tgt_info)
+      call def_form_parameters(-1,
+     &     parameters,2,'T=T(A)+T(B)','pert exp of T')
+      call set_rule('TT_FORM',ttype_frm,DEF_FORMULA,
+     &              labels,1,1,
+     &              parameters,2,tgt_info)
+
+      labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'MP2_FORM2'
       labels(2) = 'MP2_FORM'
       labels(3) = 'H_FORM'
@@ -194,6 +243,68 @@ c     &              'mp2res.tex',1,tgt_info)
       call set_rule('MP2_FORM2',ttype_frm,PRINT_FORMULA,
      &              labels,1,0,
      &              parameters,2,tgt_info)
+
+      call add_target('CC_FORM1',ttype_frm,.false.,tgt_info)
+      call set_dependency('CC_FORM1',form_cclg0,tgt_info)
+      call set_dependency('CC_FORM1','H_FORM',tgt_info)
+      call set_dependency('CC_FORM1','VV_FORM',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'CC_FORM1'
+      labels(2) = form_cclg0
+      labels(3) = 'H_FORM'
+      call form_parameters(-1,
+     &     parameters,2,'title of my new formula',1,'mode string')
+      call set_rule('CC_FORM1',ttype_frm,EXPAND,
+     &              labels,3,1,
+     &              parameters,2,tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'CC_FORM1'
+      labels(2) = 'CC_FORM1'
+      labels(3) = 'VV_FORM'
+      call form_parameters(-1,
+     &     parameters,2,'title of my new formula',1,'mode string')
+      call set_rule('CC_FORM1',ttype_frm,EXPAND,
+     &              labels,3,1,
+     &              parameters,2,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule('CC_FORM1',ttype_frm,PRINT_FORMULA,
+     &              labels,1,0,
+     &              parameters,2,tgt_info)
+
+      call add_target('CC_FORM2',ttype_frm,.false.,tgt_info)
+      call set_dependency('CC_FORM2',form_cclg0,tgt_info)
+      call set_dependency('CC_FORM2','H_FORM',tgt_info)
+      call set_dependency('CC_FORM2','TT_FORM',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'CC_FORM2'
+      labels(2) = form_cctbar_a
+      labels(3) = 'TT_FORM'
+      call form_parameters(-1,
+     &     parameters,2,'title of my new formula',1,'mode string')
+      call set_rule('CC_FORM2',ttype_frm,EXPAND,
+     &              labels,3,1,
+     &              parameters,2,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule('CC_FORM2',ttype_frm,PRINT_FORMULA,
+     &              labels,1,0,
+     &              parameters,2,tgt_info)
+c      labels(1:20)(1:len_target_name) = ' '
+c      labels(1) = 'CC_FORM2'
+c      labels(2) = 'CC_FORM2'
+c      labels(3) = 'VV_FORM'
+c      call form_parameters(-1,
+c     &     parameters,2,'title of my new formula',1,'mode string')
+c      call set_rule('CC_FORM2',ttype_frm,EXPAND,
+c     &              labels,3,1,
+c     &              parameters,2,tgt_info)
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule('CC_FORM2',ttype_frm,PRINT_FORMULA,
+c     &              labels,1,0,
+c     &              parameters,2,tgt_info)
+
 
 c*----------------------------------------------------------------------*
 c*     Opt. Formulae 
@@ -336,7 +447,9 @@ c      call set_dependency('MY_TARGET','LMP2',tgt_info)
 c      call set_dependency('MY_TARGET','T2',tgt_info)
 c      call set_dependency('MY_TARGET','O2',tgt_info)
 c      call set_dependency('MY_TARGET','MP2_FORM2',tgt_info)
-      call set_dependency('MY_TARGET','V(1)LISTX',tgt_info)
+c      call set_dependency('MY_TARGET','V(1)LISTX',tgt_info)
+c      call set_dependency('MY_TARGET','CC_FORM1',tgt_info)
+      call set_dependency('MY_TARGET','CC_FORM2',tgt_info)
 c      call set_dependency('MY_TARGET','MP2_RES',tgt_info)
 c      call set_dependency('MY_TARGET','MP2_EN',tgt_info)
 c      call set_dependency('MY_TARGET','MP2_OPT',tgt_info)

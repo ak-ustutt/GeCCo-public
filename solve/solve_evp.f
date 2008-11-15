@@ -51,7 +51,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     nopt, nroots, nspecial
@@ -284,12 +284,13 @@
           
           call switch_mel_record(me_trv(iopt)%mel,iroot)
           call diag_guess(me_trv(iopt)%mel,
-     &         xlist,idxlist,2*nroots,iroot,me_trv(iopt)%mel%absym)
-          if (me_trv(iopt)%mel%absym.ne.0)
-     &         call sym_ab_list(
-     &             1d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
-     &             xdum,.false.,
-     &             op_info,str_info,strmap_info,orb_info)
+     &         xlist,idxlist,2*nroots,iroot,me_trv(iopt)%mel%absym,
+     &         op_info,str_info,strmap_info,orb_info)
+c          if (me_trv(iopt)%mel%absym.ne.0)
+c     &         call sym_ab_list(
+c     &             1d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
+c     &             xdum,.false.,
+c     &             op_info,str_info,strmap_info,orb_info)
 
 c dbg
 c          if (file_exists(me_opt(iopt)%mel%fhand)) then
@@ -428,6 +429,12 @@ c dbg
      &         '(">>>",3x,i2,x,f22.12,x,g24.12,x,g10.4)')
      &         iroot,xeig(iroot,1:2),xresnrm(iroot)
         end if
+c dbg
+c          call switch_mel_record(me_opt(1)%mel,iroot)
+c          call wrt_mel_file(luout,5,me_opt(1)%mel,
+c     &           1,me_mvp(1)%mel%op%n_occ_cls,
+c     &           str_info,orb_info)
+c dbg
       end do
       write(luout,'(">>>",66("="))') 
 

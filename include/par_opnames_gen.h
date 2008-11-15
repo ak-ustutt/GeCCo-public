@@ -121,6 +121,8 @@ c dbg
      &     op_a_rp*6       = '(A.R)''',
      &     op_s_rp*6       = '(S.R)''',
      &     op_s_c*6        = '(S.T)''',
+     &     op_evs*3        = 'V_S',
+     &     op_s_evs*5      = 'S.V_S',
      &     op_lp*2         = 'L''',
      &     op_l_ap*6       = '(L.A)''',
      &     op_l_sp*6       = '(L.S)''',
@@ -311,7 +313,11 @@ c dbg
      &     mel_lex_ap*6      = 'LE0.AP',
      &     meldef_lex_ap*10  = 'DEF-LE0.AP',
      &     mel_lex_sp*6      = 'LE0.SP',
-     &     meldef_lex_sp*10  = 'DEF-LE0.SP'
+     &     meldef_lex_sp*10  = 'DEF-LE0.SP',
+     &     mel_evs*4         = 'V0_S',
+     &     meldef_evs*8      = 'DEF-V0_S',
+     &     mel_s_evs*6       = 'S.V0_S',
+     &     meldef_s_evs*10   = 'DEF-S.V0_S'
 
 	  
       

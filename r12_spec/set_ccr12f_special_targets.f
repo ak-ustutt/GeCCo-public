@@ -26,7 +26,7 @@
       integer ::
      &     min_rank, max_rank, ansatz, nop,
      &     isim, ncat, nint, icnt, ndef, extend, r12op,
-     &     isym, ms, msc, sym_arr(8), nlabel,
+     &     isym, ms, msc, msc_s, sym_arr(8), nlabel, ncnt,
      &     ninproj, navoid, nconnect,
      &     connect(20), idx_sv(20), iblkmin(20),
      &     iblkmax(20),
@@ -166,6 +166,42 @@
       call set_rule(op_xprc,ttype_op,DEF_OP_FROM_OCC,
      &              op_xprc,1,1,
      &              parameters,2,tgt_info)
+
+      ! T vector times Metric
+      call add_target(op_s_t,ttype_op,.false.,tgt_info)
+      call set_dependency(op_s_t,op_top,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_top,.false.)
+      call set_rule(op_s_t,ttype_op,CLONE_OP,
+     &              op_s_t,1,1,
+     &              parameters,1,tgt_info)
+      
+      ! T' vector times Metric
+      if (r12op.gt.0) then
+        call add_target(op_s_c,ttype_op,.false.,tgt_info)
+        call set_dependency(op_s_c,op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                        op_cex,.false.)
+        call set_rule(op_s_c,ttype_op,CLONE_OP,
+     &              op_s_c,1,1,
+     &              parameters,1,tgt_info)
+
+        call add_target(op_evs,ttype_op,.false.,tgt_info)
+        call set_dependency(op_evs,op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                        op_cex,.false.)
+        call set_rule(op_evs,ttype_op,CLONE_OP,
+     &              op_evs,1,1,
+     &              parameters,1,tgt_info)
+
+        call add_target(op_s_evs,ttype_op,.false.,tgt_info)
+        call set_dependency(op_s_evs,op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                        op_cex,.false.)
+        call set_rule(op_s_evs,ttype_op,CLONE_OP,
+     &              op_s_evs,1,1,
+     &              parameters,1,tgt_info)
+      end if
 
 *----------------------------------------------------------------------*
 *     Formulae
@@ -330,6 +366,36 @@ c        call set_rule(form_ccr12_s0,ttype_frm,REPLACE,
 c     &              labels,4,1,
 c     &              parameters,2,tgt_info)
 c      end if
+
+      ! formula for obtaining eigenvalues of R12 metric: S.VEC
+      if (.not.r12fix) then
+        call add_target(form_ccr12_s_v,ttype_frm,.false.,tgt_info)
+        call set_dependency(form_ccr12_s_v,form_ccr12_s0,tgt_info)
+        call set_dependency(form_ccr12_s_v,op_s_c,tgt_info)
+        call set_dependency(form_ccr12_s_v,op_evs,tgt_info)
+        call set_dependency(form_ccr12_s_v,op_s_evs,tgt_info)
+        call set_dependency(form_ccr12_s_v,op_cex,tgt_info)
+        call set_dependency(form_ccr12_s_v,op_cexbar,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = 'FORM_SCRATCH'
+        labels(2) = form_ccr12_s0
+        labels(3) = op_s_c
+        labels(4) = op_cexbar
+        labels(5) = ' '
+        call set_rule(form_ccr12_s_v,ttype_frm,DERIVATIVE,
+     &               labels,5,1,
+     &               'scratch',1,tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = form_ccr12_s_v
+        labels(2) = 'FORM_SCRATCH'
+        labels(3) = op_s_evs
+        labels(4) = op_cex
+        labels(5) = op_evs
+        call set_rule(form_ccr12_s_v,ttype_frm,DERIVATIVE,
+     &               labels,5,1,
+     &               'S.EV',1,tgt_info)
+
+      end if
       
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_ccr12en0
@@ -345,7 +411,7 @@ c      end if
         labels(nlabel+1) = op_cexxbar
         nlabel = nlabel+1
       end if
-      call add_target(form_ccr12en0,ttype_frm,.true.,tgt_info)
+      call add_target(form_ccr12en0,ttype_frm,.false.,tgt_info)
       call set_dependency(form_ccr12en0,form_ccr12lg0,tgt_info)
       call set_dependency(form_ccr12en0,op_ccr12en,tgt_info)
       call set_rule(form_ccr12en0,ttype_frm,INVARIANT,
@@ -359,7 +425,7 @@ c      end if
       labels(3) = op_omg
       labels(4) = op_tbar
       labels(5) = ' '
-      call add_target(form_ccr12rs_t,ttype_frm,.true.,tgt_info)
+      call add_target(form_ccr12rs_t,ttype_frm,.false.,tgt_info)
       call set_dependency(form_ccr12rs_t,form_ccr12lg0,tgt_info)
       call set_dependency(form_ccr12rs_t,op_omg,tgt_info)
       call set_rule(form_ccr12rs_t,ttype_frm,DERIVATIVE,
@@ -398,7 +464,7 @@ c     labels(5) = op_top
         connect(1:2) = (/2,3/)
         navoid = 0
         ninproj = 0
-        call add_target(form_r_t,ttype_frm,.true.,tgt_info)
+        call add_target(form_r_t,ttype_frm,.false.,tgt_info)
         call set_dependency(form_r_t,op_rint,tgt_info)
 c     call set_dependency(form_r_t,op_top,tgt_info)
         call set_dependency(form_r_t,op_cex,tgt_info)
@@ -511,6 +577,23 @@ c      end if
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
+      if (.not.r12fix) then
+        call add_target(fopt_ccr12_s_v,ttype_frm,.false.,tgt_info)
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = fopt_ccr12_s_v
+        labels(2) = form_ccr12_s_v
+        ncat = 1
+        nint = 0
+        call set_dependency(fopt_ccr12_s_v,form_ccr12_s_v,tgt_info)
+        call set_dependency(fopt_ccr12_s_v,meldef_s_evs,tgt_info)
+        call set_dependency(fopt_ccr12_s_v,meldef_evs,tgt_info)
+        call set_dependency(fopt_ccr12_s_v,mel_x_def,tgt_info)
+        call opt_parameters(-1,parameters,ncat,nint)
+        call set_rule(fopt_ccr12_s_v,ttype_frm,OPTIMIZE,
+     &       labels,ncat+nint+1,1,
+     &       parameters,1,tgt_info)
+      end if
+        
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -621,6 +704,47 @@ c      end if
 
       endif
 
+      ncnt = is_keyword_set('calculate.check_S')
+      if (ncnt.gt.0.and..not.r12fix) then
+        call add_target(meldef_evs,ttype_opme,.false.,tgt_info)
+        call add_target(meldef_s_evs,ttype_opme,.false.,tgt_info)
+        call set_dependency(meldef_evs,op_evs,tgt_info)
+        call set_dependency(meldef_s_evs,op_s_evs,tgt_info)
+        do icnt = 1, ncnt
+          call get_argument_value('calculate.check_S','sym',
+     &         keycount=icnt,
+     &         iarr=sym_arr)
+          call get_argument_value('calculate.check_S','msc',
+     &         keycount=icnt,
+     &         ival=msc_s)
+          do isym = 1, orb_info%nsym
+            if (sym_arr(isym).eq.0) cycle
+
+            call me_list_label(me_label,mel_evs,isym,0,0,msc_s,.false.)
+            labels(1:20)(1:len_target_name) = ' '
+            labels(1) = me_label
+            labels(2) = op_evs
+            call me_list_parameters(-1,parameters,
+     &           msc_s,0,isym,0,0,.false.)
+            call set_rule(meldef_evs,ttype_opme,DEF_ME_LIST,
+     &           labels,2,1,
+     &           parameters,1,tgt_info)
+
+            call me_list_label(me_label,mel_s_evs,
+     &                         isym,0,0,msc_s,.false.)
+            labels(1:20)(1:len_target_name) = ' '
+            labels(1) = me_label
+            labels(2) = op_s_evs
+            call me_list_parameters(-1,parameters,
+     &           msc_s,0,isym,0,0,.false.)
+            call set_rule(meldef_s_evs,ttype_opme,DEF_ME_LIST,
+     &           labels,2,1,
+     &           parameters,1,tgt_info)
+          end do
+        end do
+        
+      end if
+
       call add_target(me_bprc,ttype_opme,.false.,tgt_info)
       call set_dependency(me_bprc,op_bprc,tgt_info)
       call set_dependency(me_bprc,eval_r12_inter,tgt_info)
@@ -665,11 +789,13 @@ c      end if
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*
+      needed = is_keyword_set('calculate.skip_E').eq.0
+
       ! totally symmetric dia for use below:
       if (set_tp.and..not.set_tpp.and..not.r12fix) then
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
-        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+        call add_target(solve_ccr12_gs,ttype_gen,needed,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
 c        call set_dependency(solve_ccr12_gs,mel_diar12,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
@@ -697,7 +823,7 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
       else if (.not.set_tp.and.set_tpp.and..not.r12fix) then
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
-        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+        call add_target(solve_ccr12_gs,ttype_gen,needed,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
@@ -724,7 +850,7 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
       else if (set_tp.and.set_tpp.and..not.r12fix) then
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
-        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+        call add_target(solve_ccr12_gs,ttype_gen,needed,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
@@ -753,7 +879,7 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
       else
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
-        call add_target(solve_ccr12_gs,ttype_gen,.true.,tgt_info)
+        call add_target(solve_ccr12_gs,ttype_gen,needed,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
@@ -770,6 +896,56 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
      &       labels,6,2,
      &       parameters,2,tgt_info)
       end if
+
+      ncnt = is_keyword_set('calculate.check_S')
+      if (ncnt.gt.0.and..not.r12fix) then
+        call add_target(check_s,ttype_gen,.true.,tgt_info)
+        call set_dependency(check_s,fopt_ccr12_s_v,tgt_info)
+        call set_dependency(check_s,eval_r12_inter,tgt_info)
+
+        do icnt = 1, ncnt
+          call get_argument_value('calculate.check_S','sym',
+     &         keycount=icnt,
+     &         iarr=sym_arr)
+          call get_argument_value('calculate.check_S','msc',
+     &         keycount=icnt,
+     &         ival=msc_s)
+          do isym = 1, orb_info%nsym
+            if (sym_arr(isym).eq.0) cycle
+
+            call me_list_label(me_label,mel_evs,isym,0,0,msc_s,.false.)
+            labels(1:10)(1:len_target_name) = ' '
+            labels(1) = 'SDIAG'
+            labels(2) = op_evs
+            call me_list_parameters(-1,parameters,
+     &           msc_s,0,isym,0,0,.false.)
+            call set_rule(check_s,ttype_opme,DEF_ME_LIST,
+     &           labels,2,1,
+     &           parameters,1,tgt_info)
+            labels(1) = 'SDIAG'
+            labels(2) = mel_x_inter
+            call set_rule(check_s,ttype_opme,PRECONDITIONER,
+     &           labels,2,1,
+     &           parameters,0,tgt_info)
+            call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
+            labels(1:10)(1:len_target_name) = ' '
+            labels(1) = me_label
+            labels(2) = 'SDIAG'
+            labels(3) = op_s_evs
+            labels(4) = op_evs
+            labels(5) = fopt_ccr12_s_v
+            call set_rule(check_s,ttype_opme,SOLVEEVP,
+     &           labels,5,1,
+     &           parameters,2,tgt_info)
+            call set_rule(check_s,ttype_opme,DELETE_ME_LIST,
+     &           'SDIAG',1,1,
+     &           parameters,0,tgt_info)
+
+          end do
+        end do
+
+      end if
+
 
       return
       end

@@ -69,26 +69,6 @@
      &              op_a_r,1,1,
      &              parameters,1,tgt_info)
 
-      ! T vector times Metric
-      call add_target(op_s_t,ttype_op,.false.,tgt_info)
-      call set_dependency(op_s_t,op_top,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_top,.false.)
-      call set_rule(op_s_t,ttype_op,CLONE_OP,
-     &              op_s_t,1,1,
-     &              parameters,1,tgt_info)
-      
-      ! T' vector times Metric
-      if (r12op.gt.0) then
-        call add_target(op_s_c,ttype_op,.false.,tgt_info)
-        call set_dependency(op_s_c,op_cex,tgt_info)
-        call cloneop_parameters(-1,parameters,
-     &                        op_cex,.false.)
-        call set_rule(op_s_c,ttype_op,CLONE_OP,
-     &              op_s_c,1,1,
-     &              parameters,1,tgt_info)
-      end if
-
       ! right-response vector times Metric
       call add_target(op_s_r,ttype_op,.false.,tgt_info)
       call set_dependency(op_s_r,op_top,tgt_info)
