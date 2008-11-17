@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine set_experimental_targets(tgt_info,orb_info)
 *----------------------------------------------------------------------*
-*     set targets for response theory calculations with GeCCo
+*     set targets for response theory calculations
 *
 *     matthias, 2008
 *----------------------------------------------------------------------*
@@ -107,21 +107,6 @@
       call ord_parameters(-1,parameters,1,3,0)  ! defined as freq. "joker"
       call set_rule('V(1)',ttype_op,SET_ORDER,'V(1)',
      &              1,1,parameters,1,tgt_info)
-
-c      ! define frequency components V(1)1, V(1)2, ...,V(1)maxord
-c      opname(1:len_short) = ' '
-c      opname(1:4) = 'V(1)'
-c      do freq_idx = 1,maxord
-c        write(opname(5:5),'(i1)') freq_idx
-c        call add_target(trim(opname),ttype_op,.false.,tgt_info)
-c        call hop_parameters(-1,parameters,1,1,1,.false.)
-c        call set_rule(trim(opname),ttype_op,DEF_HAMILTONIAN,
-c     &                trim(opname),
-c     &                1,1,parameters,1,tgt_info)
-c        call ord_parameters(-1,parameters,1,3,freq_idx)
-c        call set_rule(trim(opname),ttype_op,SET_ORDER,trim(opname),
-c     &                1,1,parameters,1,tgt_info)
-c      end do
 
       ! Hnew will be used as sum of H(0) and V(1)
       call add_target('Hnew',ttype_op,.false.,tgt_info)
@@ -391,30 +376,6 @@ c      end do
      &                parameters,2,tgt_info)
       end do
 
-c      ! frequency expansion of V(1): V(1)=V(1)1+V(1)2+...
-c      labels(1:20)(1:len_target_name) = ' '
-c      labels(1) = 'V(1)_FORM'
-c      call add_target('V(1)_FORM',ttype_frm,.false.,tgt_info)
-c      opexp(1:len_long) = ' '
-c      opexp(1:5) = 'V(1)='
-c      len_op_exp = 5
-c      opname(1:len_short) = ' '
-c      opname(1:4) = 'V(1)'
-c      do freq_idx = 1,maxord
-c        write(opname(5:5),'(i1)') freq_idx
-c        opexp(len_op_exp+1:len_op_exp+6) = trim(opname)//'+'
-c        len_op_exp = len_op_exp + 6
-c        call set_dependency('V(1)_FORM',trim(opname),tgt_info)
-c      end do
-c      opexp(len_op_exp:len_op_exp) = ' '
-c      len_op_exp = len_op_exp - 1
-c      call def_form_parameters(-1,
-c     &     parameters,2,opexp(1:len_op_exp),
-c     &     'freq exp of V(1)')
-c      call set_rule('V(1)_FORM',ttype_frm,DEF_FORMULA,
-c     &              labels,1,1,
-c     &              parameters,2,tgt_info)
-
       ! frequency expansion of X(n), n>0: X(1) = X(1)1+X(1)2+..., ...
       ! following the (2n+1) and (2n+2) rules regarding the maximum order
       formname(1:len_short) = ' '
@@ -494,11 +455,9 @@ c     &              parameters,2,tgt_info)
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = trim(formname)
         labels(2) = lag_name
-c        labels(3) = 'V(1)_FORM'
         ilabels = 2
         call add_target(trim(formname),ttype_frm,.false.,tgt_info)
         call set_dependency(trim(formname),lag_name,tgt_info)
-c        call set_dependency(trim(formname),'V(1)_FORM',tgt_info)
         formname2(1:len_short) = ' '
         formname2(1:9) = 'X(n)_FORM'
         do op_par = 1,2
@@ -554,11 +513,9 @@ c        call set_dependency(trim(formname),'V(1)_FORM',tgt_info)
             labels(1:20)(1:len_target_name) = ' '
             labels(1) = trim(formname)
             labels(2) = resl_lag_name
-c            labels(3) = 'V(1)_FORM'
             ilabels = 2
             call add_target(trim(formname),ttype_frm,.false.,tgt_info)
             call set_dependency(trim(formname),resl_lag_name,tgt_info)
-c            call set_dependency(trim(formname),'V(1)_FORM',tgt_info)
             formname2(1:len_short) = ' '
             formname2(1:9) = 'X(n)_FORM'
             do op_par = 1,2
@@ -910,7 +867,6 @@ c
               write(defmelname(13+digit:13+digit),'(i1)') ifreq(digit)
               write(defmelname2(11+digit:11+digit),'(i1)') ifreq(digit)
             end do
-
             labels(1:20)(1:len_target_name) = ' '
             labels(1) = trim(optname)
             labels(2) = trim(formname)
@@ -947,11 +903,9 @@ c
             call set_rule(trim(optname),ttype_frm,OPTIMIZE,
      &                    labels,ncat+nint+1,1,
      &                    parameters,1,tgt_info)
-
             comb_ok = next_comb(ifreq,ord,maxord)
           end do
           deallocate(ifreq)
-
         end do
       end do
 
@@ -1004,7 +958,7 @@ c
 
       ! for H(0) (op_ham), a ME-list is already defined and imported
 
-      ! ME_V(1)1, ME_V(1)2,...
+      ! ME_V(1)
       call get_argument_value('calculate.experimental','pert',
      &                        str=pert)
       call get_argument_value('calculate.experimental','pert_sym',
@@ -1015,10 +969,6 @@ c
       melname(1:7) = 'ME_V(1)'
       defmelname(1:len_short) = ' '
       defmelname(1:11) = 'DEF_ME_V(1)'
-c      do freq_idx = 1,maxord
-c        write(opname(5:5),'(i1)') freq_idx
-c        write(melname(8:8),'(i1)') freq_idx
-c        write(defmelname(12:12),'(i1)') freq_idx
         call add_target(trim(defmelname),ttype_opme,.false.,tgt_info)
         call set_dependency(trim(defmelname),trim(opname),tgt_info)
         ! (a) define
@@ -1037,7 +987,6 @@ c        write(defmelname(12:12),'(i1)') freq_idx
         call set_rule(trim(defmelname),ttype_opme,IMPORT,
      &                labels,1,1,
      &                parameters,1,tgt_info)
-c      end do
 
       ! ME_Y(n)1,..., ME_O(n)SX1,... (X=T,L; n=0,..,x_max_ord, S=L,R)
       ! not for ME_O(0)SL because of non-linear CC-equations
@@ -1104,6 +1053,10 @@ c      end do
             call me_list_parameters(-1,parameters,
      &           msc,0,1,0,0,.false.)
             call set_rule(trim(defmelname),ttype_opme,DEF_ME_LIST,
+     &                    labels,2,1,
+     &                    parameters,1,tgt_info)
+            call opt_parameters(-1,parameters,maxord,0)
+            call set_rule(trim(defmelname),ttype_opme,SET_FREQ,
      &                    labels,2,1,
      &                    parameters,1,tgt_info)
             comb_ok = next_comb(ifreq,ord,maxord)
@@ -1252,12 +1205,6 @@ c     &     parameters,1,tgt_info)
      &     parameters,2,tgt_info)
 
       ! solve linear equations for X(n) (X=T,L, n=0,...,x_max_ord, not for T(0))
-      if (maxord.gt.0) then
-        freq(1) = 0d0
-        call get_argument_value('calculate.experimental','freq',
-     &                          xarr=freq(1:maxord-1))
-        freq(maxord) = -sum(freq)
-      end if
       call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
       call solve_parameters(-1,parameters,2, 1,1,'DIA')
       solvename(1:len_short) = ' '
@@ -1402,15 +1349,6 @@ c     &     parameters,1,tgt_info)
           deallocate(ifreq)
         end do
       end do   
-
-c      ! hub for DEF_ME_V(1)-dependencies
-c      defmelname(1:len_short) = ' '
-c      defmelname(1:11) = 'DEF_ME_V(1)'
-c      call add_target('HUB_DEFME_V(1)',ttype_gen,.false.,tgt_info)
-c      do freq_idx = 1,maxord
-c        write(defmelname(12:12),'(i1)') freq_idx
-c        call set_dependency('HUB_DEFME_V(1)',trim(defmelname),tgt_info)
-c      end do
 
       ! hub for SOLVE_Y(n)-dependencies
       solvename(1:len_short) = ' '

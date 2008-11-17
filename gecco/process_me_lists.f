@@ -47,7 +47,7 @@
      &     label_met(:)
 
       integer ::
-     &     idx_formlist, order, ifreq, dummy
+     &     idx_formlist, order, dummy
       integer, external ::
      &     idx_mel_list
 
@@ -247,9 +247,9 @@ c dbg
      &       trim(rule%labels(1))//'"')
         mel_pnt => op_info%mel_arr(idx)%mel
 
-        call ord_parameters(+1,rule%parameters,
-     &                      order,ifreq,dummy)
-        call set_frequency(mel_pnt,order,ifreq)
+        call opt_parameters(+1,rule%parameters,
+     &                      order,dummy)
+        call set_frequency(mel_pnt,order)
 
       case default
         call quit(1,'process_me_lists','unknown command: '//
