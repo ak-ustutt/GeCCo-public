@@ -48,7 +48,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 100
 
       integer, intent(in) ::
      &     nopt, nroots

@@ -137,7 +137,15 @@
         case default
           call quit(0,'set_opti','invalid method: '//trim(str))
         end select
-      
+     
+        ! set shift
+        opti_info%shift = mel_opt(1)%mel%frequency
+        do iopt = 2,nopt
+          if (mel_opt(iopt)%mel%frequency.ne.opti_info%shift)
+     &      call quit(0,'set_opti','shift associated with solution '//
+     &                'vectors must be identical for all of them')
+        end do
+ 
       else if (mode.eq.3) then
 
         if (is_argument_set('calculate.solve.eigen','maxiter'))

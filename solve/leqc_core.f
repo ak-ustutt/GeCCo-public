@@ -142,6 +142,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
         do jdx = 1, nred
           kdx = kdx+1
           xmat1(kdx) = mred((idx-1)*mxsub+jdx)
+          ! shift matrix
+          if (idx.eq.jdx) xmat1(kdx) = xmat1(kdx) + opti_info%shift
         end do
       end do
 
@@ -193,6 +195,13 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &       ffscr,irecscr,1d0,ffrsbsp,iord_rsbsp,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
+        if (opti_info%shift.ne.0d0)
+     &    call optc_expand_vec(
+     &         opti_info%shift*vred(idx:idx-1+ndim_vsbsp),ndim_vsbsp,
+     &                   xrsnrm(iroot),.true.,
+     &         ffscr,irecscr,1d0,ffvsbsp,iord_rsbsp,
+     &         nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+
         ! not yet converged? increase record counter
         if (xrsnrm(iroot).gt.opti_info%thrgrd(iopt)) then
           idxroot(irecscr) = iroot
@@ -239,7 +248,8 @@ c dbg
             ! scale residual for numerical stability:
 c            xnrm = dnrm2(nwfpar,xbuf1,1)
             xnrm = xrsnrm(idxroot(iroot))
-            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,0d0,nwfpar)
+            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
+     &                 opti_info%shift,nwfpar)
             call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
           end do
         else
