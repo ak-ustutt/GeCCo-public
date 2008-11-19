@@ -12,9 +12,9 @@
       ! maximum perturbation order
       call argument_add('order','calculate.experimental',type=vtyp_int,
      &                  idef=(/0/))
-      ! perturbation operator (XDIPLEN,YDIPLEN,ZDIPLEN)
+      ! perturbation operator (X,Y,Z)
       call argument_add('pert','calculate.experimental',type=vtyp_str,
-     &                  len=7,cdef=(/'Z','D','I','P','L','E','N'/))
+     &                  len=1,cdef=(/'Z'/))
       ! irrep of perturbation operator
       call argument_add('pert_sym','calculate.experimental',
      &                  type=vtyp_int,idef=(/1/))
