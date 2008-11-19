@@ -484,11 +484,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = '-'
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',1,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
         labels(1:10)(1:len_target_name) = ' '
@@ -501,11 +502,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = '-'
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',2,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
         labels(1:10)(1:len_target_name) = ' '
@@ -518,11 +520,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = '-'
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',3,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
       else
@@ -565,11 +568,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = op_cex
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',1,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
         labels(1:10)(1:len_target_name) = ' '
@@ -582,11 +586,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = op_cex
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',2,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
         labels(1:10)(1:len_target_name) = ' '
@@ -599,11 +604,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = op_cex
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',3,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
       end if

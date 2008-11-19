@@ -117,7 +117,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       if (ndim_vsbsp.ne.0)
      &     call quit(1,'leqc_init','ndim_vsbsp.ne.0 ???')
       ! orthogonalize initial subspace
-      call optc_orthvec(nadd,
+      call optc_orthvec(nadd,.false.,
      &                  opti_stat%ffvsbsp,
      &                     iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  ffscr,nroot,nopt,

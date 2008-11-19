@@ -310,6 +310,7 @@ c dbg
                   xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
                 end do
                 xnrm = sqrt(xnrm)
+c                xnrm = 1d0
                 xshf = -xeig(idxroot(iroot),1)
                 call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,xshf,nwfpar(iopt))
                 if (nopt.eq.1) then
@@ -345,6 +346,7 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
                 xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
               end do
               xnrm = sqrt(xnrm)
+c              xnrm = 1d0
               call vec_from_da(ffscr(iopt),iroot,xbuf1,nwfpar(iopt))
               call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
               xshf = -xeig(idxroot(iroot),1)
@@ -362,7 +364,7 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
 
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
-        call optc_orthvec(nadd,
+        call optc_orthvec(nadd,nopt.gt.1,
      &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  ffscr,nnew,nopt,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)

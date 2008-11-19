@@ -573,7 +573,8 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
-      if (.not.r12fix) then
+      ncnt = is_keyword_set('calculate.check_S')
+      if (ncnt.gt.0.and..not.r12fix) then
         call add_target(fopt_ccr12_s_v,ttype_frm,.false.,tgt_info)
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = fopt_ccr12_s_v
