@@ -180,6 +180,8 @@ c dbg
      &     fopt_ccr12_0*10       = 'CC-R12-OPT'
       character, parameter ::
      &     form_ccr12_s0*8       = 'CCR12_S0',
+     &     form_ccr12_s_v*9      = 'CCR12_S_V',
+     &     fopt_ccr12_s_v*12     = 'CCR12_S_V_OPT',
      &     form_ccr12_s_t*9      = 'CCR12_S_T',
      &     form_ccr12_s_c*10     = 'CCR12_S_TP',
      &     form_ccr12_tbar_a*12  = 'CCR12_TBAR_A',

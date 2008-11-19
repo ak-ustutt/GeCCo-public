@@ -312,6 +312,10 @@ c dbg
                 xnrm = sqrt(xnrm)
                 xshf = -xeig(idxroot(iroot),1)
                 call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,xshf,nwfpar(iopt))
+                if (nopt.eq.1) then
+                  xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
+                  call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
+                end if
                 call vec_to_da(ffscr(iopt),iroot,xbuf1,nwfpar(iopt))
               end do
             else
