@@ -8,6 +8,7 @@
       implicit none
 
       include 'stdunit.h'
+      include 'warnings.h'
       include 'ioparam.h'
       include 'def_filinf.h'
       include 'def_orbinf.h'
@@ -29,12 +30,13 @@
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
       type(filinf) ::
-     &     ffinput
+     &     ffinput, ffwarn
       type(orbinf) ::
      &     orb_info
 
       ! a few settings
       luout = 6      ! output unit
+
 c      iprlvl = 1     ! print level
       iprlvl = 10    ! print level
       ivale = 3      ! V is 3
@@ -62,6 +64,12 @@ c      iprlvl = 1     ! print level
 
       ! init the file-handler
       call fh_init(iprlvl)
+
+      ! warnings
+      nwarn = 0
+      call file_init(ffwarn,'WARNINGS',ftyp_sq_frm,idum)
+      call file_open(ffwarn)
+      luwarn = ffwarn%unit
 
       ! find out, which environment we are using, and where
       ! to get our input data from
@@ -102,6 +110,14 @@ c      iprlvl = 1     ! print level
       end do
 
       call mem_clean
+
+      if (nwarn.gt.0) then
+        call file_close_keep(ffwarn)
+        write(luout,'(1x,a,i4,a)')
+     &     'There were ',nwarn,' warnings, see file '//trim(ffwarn%name)
+      else
+        call file_close_delete(ffwarn)
+      end if
 
       call atim_csw(cpu,sys,wall)
       call prtim(luout,'total time in GeCCo run',
