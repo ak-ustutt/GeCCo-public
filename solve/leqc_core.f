@@ -267,7 +267,7 @@ c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
 
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
-        call optc_orthvec(nadd,
+        call optc_orthvec(nadd,.false.,
      &                  opti_stat%ffvsbsp,
      &                      iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  ffscr,nnew,nopt,
@@ -294,7 +294,7 @@ c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
 
           idx = (iroot-1)*mxsub + 1
           call optc_expand_vec(vred(idx),ndim_vsbsp,xdum,.false.,
-     &         me_opt(1)%mel%fhand,iroot,1d0,ffvsbsp,iord_vsbsp,
+     &         me_opt(1)%mel%fhand,iroot,0d0,ffvsbsp,iord_vsbsp,
      &         nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
         end do

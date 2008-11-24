@@ -537,13 +537,13 @@
       call set_dependency(solve_cc_lhex,meldef_lex,tgt_info)
       call set_dependency(solve_cc_lhex,meldef_lex_a,tgt_info)
 
-      needed = is_keyword_set('calculate.excitation.normalize')
+      needed = is_keyword_set('calculate.excitation.normalize').gt.0
       call add_target(norm_cc_lhex,ttype_gen,needed,tgt_info)
       call set_dependency(norm_cc_lhex,solve_cc_rhex,tgt_info)
       call set_dependency(norm_cc_lhex,solve_cc_lhex,tgt_info)
       call set_dependency(norm_cc_lhex,fopt_cc_l_s_r,tgt_info)      
 
-      needed = is_keyword_set('calculate.excitation.analyze')
+      needed = is_keyword_set('calculate.excitation.analyze').gt.0
       call add_target(analyze_cc_ex,ttype_gen,needed,tgt_info)
       call set_dependency(analyze_cc_ex,solve_cc_rhex,tgt_info)
       call set_dependency(analyze_cc_ex,solve_cc_lhex,tgt_info)
@@ -571,6 +571,12 @@
           if (sym_arr(isym).eq.0) cycle          
           call me_list_label(me_label,mel_rex,isym,0,0,msc,.false.)
           call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = op_r
+          call set_rule(solve_cc_rhex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
           call set_dependency(solve_cc_rhex,dia_label,tgt_info)
           call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
           labels(1:10)(1:len_target_name) = ' '
@@ -588,6 +594,13 @@
           if (sym_arr(isym).eq.0) cycle          
           call me_list_label(me_label,mel_lex,isym,0,0,msc,.false.)
           call me_list_label(dia_label,mel_dia,isym,0,0,0,.false.)
+
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = me_label
+          labels(2) = op_l
+          call set_rule(solve_cc_lhex,ttype_opme,ASSIGN_ME2OP,
+     &         labels,2,1,
+     &         parameters,0,tgt_info)
           call set_dependency(solve_cc_lhex,dia_label,tgt_info)
           call solve_parameters(-1,parameters,2,1,sym_arr(isym),'DIA')
           labels(1:10)(1:len_target_name) = ' '

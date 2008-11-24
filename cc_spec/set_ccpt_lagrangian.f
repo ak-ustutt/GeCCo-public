@@ -61,12 +61,12 @@
      &     mode
 
       logical ::
-     &     r12fix
+     &     r12fix,truncate
       integer ::
      &     nterms, ilabel, idx, ndef, 
      &     idxham,idxtbar,idxtop,idxtpt,idxtptbar,idxlcc,
      &     idxr12,idxc12,idxcpp12,idxc12_pt,idxcpp12_pt,
-     &     idx_f_temp,idxsop,idxspt,r12op
+     &     idx_f_temp,idxsop,idxspt,r12op,trunc_type
       integer, allocatable ::
      &     occ_def(:,:,:)
 
@@ -87,6 +87,11 @@
 
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','r12op',ival=r12op)
+      truncate = is_keyword_set('method.truncate').gt.0
+      if(truncate)
+     &     call get_argument_value('method.truncate','trunc_type',
+     &                              ival=trunc_type)
+
 
       call atim_csw(cpu0,sys0,wall0)
 
@@ -274,7 +279,11 @@ c        end if
         call sum_terms(flist_lag,op_info)
 
         ! Produce truncated expansions.
-        call truncate_form(flist_lag,op_info)
+        if (truncate)
+     &     call r12_truncation(flist_lag,trunc_type,
+     &     idxr12,idxham,idxtbar,idxtop,op_info)
+
+c        call truncate_form(flist_lag,op_info)
 
         ! replace T12 -> T
         if (r12fix.and.r12op.gt.0) then

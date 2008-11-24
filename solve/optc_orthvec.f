@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine optc_orthvec(nadd,
+      subroutine optc_orthvec(nadd,prenorm,
      &     ff_sbsp,iord_sbsp,ndim_sbsp,mxsbsp,zero_vec,
      &     ffnew,nnew,nopt,
      &     nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
@@ -29,12 +29,12 @@
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
       logical ::
-     &     zero_vec(ndim_sbsp)
+     &     zero_vec(ndim_sbsp), prenorm
 
       integer ::
      &     nold, inew, jnew, iold, ii, jj, idx, ivec, irec, iopt
       real(8) ::
-     &     xdum
+     &     xdum, xnorm, xnorm_
       logical ::
      &     previous_zero
 
@@ -84,6 +84,52 @@
       do iold = 1, nold
         smat(iold,iold) = 1d0
       end do
+
+      ! pre-normalize |new>
+      if (.false..and.prenorm) then
+        if (nincore.lt.nopt)
+     &       call quit(1,'optc_orthvec','no prenormalization '//
+     &       'for nincore.lt.nopt so far ...')
+        do inew = 1, nnew
+          call vec_from_da(ffnew(1),inew,xbuf1,nwfpar(1))
+          xnorm = ddot(nwfpar(1),xbuf1,1,xbuf1,1)
+          if (nopt.ge.2) then
+            call vec_from_da(ffnew(2),inew,xbuf2,nwfpar(2))
+            xnorm_ = ddot(nwfpar(2),xbuf2,1,xbuf2,1)
+            if (xnorm_.gt.1D-6.and.
+     &          (xnorm/xnorm_.gt.1D6.or.
+     &           xnorm/xnorm_.lt.1D-6))
+     &           write(luout,*) 'WARNING: <1|1> = ',xnorm,
+     &                                  ' <2|2> = ',xnorm_ 
+            xnorm = xnorm + xnorm_
+          end if
+          if (nopt.ge.3) then
+            call vec_from_da(ffnew(3),inew,xbuf3,nwfpar(3))
+            xnorm_ = ddot(nwfpar(3),xbuf3,1,xbuf3,1)
+            xnorm = xnorm + xnorm_
+          end if
+          if (nopt.ge.4)
+     &         call quit(1,'optc_orthvec',
+     &         'nopt.ge.4 not supported')
+          xnorm = sqrt(xnorm)
+c dbg
+          print *,'prenorm: ',inew,xnorm
+c dbg
+          call dscal(nwfpar(1),1d0/xnorm,xbuf1,1)
+          call vec_to_da(ffnew(1),inew,xbuf1,nwfpar(1))
+          if (nopt.ge.2) then
+            call dscal(nwfpar(2),1d0/xnorm,xbuf2,1)
+            call vec_to_da(ffnew(2),inew,xbuf2,nwfpar(2))
+          end if
+          if (nopt.ge.3) then
+            call dscal(nwfpar(3),1d0/xnorm,xbuf3,1)
+            call vec_to_da(ffnew(3),inew,xbuf3,nwfpar(3))
+          end if
+          if (nopt.ge.4)
+     &         call quit(1,'optc_orthvec',
+     &         'nopt.ge.4 not supported')
+        end do
+      end if
 
       do iopt = 1, nopt
 

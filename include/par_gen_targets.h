@@ -16,6 +16,7 @@
      &     eval_r12_inter*14  = 'EVAL-R12-INTER',
      &     solve_mpr12_gs*14  = 'SOLVE-MPR12-GS',
      &     solve_ccr12_gs*14  = 'SOLVE-CCR12-GS',
+     &     check_s*12         = 'CHECK-METRIC',
 c dbg
      &     eval_x_test*12     = 'EVAL-X-INTER',
      &     eval_v_test*12     = 'EVAL-V-INTER',

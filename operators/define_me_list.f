@@ -12,6 +12,7 @@
       implicit none
 
       include 'opdim.h'
+      include 'stdunit.h'
       include 'mdef_operator_info.h'
       include 'def_orbinf.h'
       include 'def_graph.h'
@@ -67,6 +68,18 @@
       mel%mst   = ms
       mel%s2    = s2
       mel%fix_vertex_ms = ms_fix
+
+      if (abs(absym).gt.1.or.abs(casym).gt.1.or.
+     &     gamma.le.0.or.gamma.gt.orb_info%nsym) then
+        write(luout,*) 'absym: ',absym,abs(absym).gt.1
+        write(luout,*) 'casym: ',casym,abs(casym).gt.1
+        write(luout,*) 'gamma: ',gamma,
+     &       gamma.le.0.or.gamma.gt.orb_info%nsym
+        write(luout,*)
+     &       'the symmetry specifiers marked by F are not correct'
+        call quit(1,'define_me_list',
+     &       'incorrect symmetry specifier for ME list')
+      end if
 
 c dbg
 c      print *,'name ',trim(mel%op%name)

@@ -79,6 +79,9 @@
      &     title_r12_v3bcabs*34='R12 V3+intermediate (CABS approx.)',
      &     title_r12_xint*38 = 'R12 X-intermediate (formal definition)',
      &     title_r12_xcabs*33 ='R12 X-intermediate (CABS approx.)',
+     &     title_r12_xhint*39 =
+     &                       'R12 Xh-intermediate (formal definition)',
+     &     title_r12_xhcabs*34 ='R12 Xh-intermediate (CABS approx.)',
      &     title_r12_xpint*39 =
      &                       'R12 X''-intermediate (formal definition)',
      &     title_r12_xpcabs*34 ='R12 X''-intermediate (CABS approx.)',
@@ -180,6 +183,8 @@ c dbg
      &     fopt_ccr12_0*10       = 'CC-R12-OPT'
       character, parameter ::
      &     form_ccr12_s0*8       = 'CCR12_S0',
+     &     form_ccr12_s_v*9      = 'CCR12_S_V',
+     &     fopt_ccr12_s_v*12     = 'CCR12_S_V_OPT',
      &     form_ccr12_s_t*9      = 'CCR12_S_T',
      &     form_ccr12_s_c*10     = 'CCR12_S_TP',
      &     form_ccr12_tbar_a*12  = 'CCR12_TBAR_A',
@@ -225,6 +230,9 @@ c dbg
      &     form_r12_xint*8     = 'XINT_R12', 
      &     form_r12_xcabs*13   = 'XINT_R12_CABS', 
      &     fopt_r12_xcabs*12   = 'XINT_R12_OPT', 
+     &     form_r12_xhint*9     = 'XhINT_R12', 
+     &     form_r12_xhcabs*14   = 'XhINT_R12_CABS', 
+     &     fopt_r12_xhcabs*13   = 'XhINT_R12_OPT', 
      &     form_r12_xpint*9     = 'X''INT_R12', 
      &     form_r12_xpcabs*14   = 'X''INT_R12_CABS', 
      &     fopt_r12_xpcabs*13   = 'X''INT_R12_OPT', 

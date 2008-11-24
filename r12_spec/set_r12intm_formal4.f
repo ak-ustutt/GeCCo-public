@@ -152,7 +152,7 @@
      &         (/1       ,2    ,1       ,1       ,3    ,1       /)
           nvtx     = 6
           nfact    = 3
-          project(1:4)  = (/2,4,2,3/)
+          project(1:4)  = (/2,5,2,3/)
           nproject = 1
         else
           unknown = .true.

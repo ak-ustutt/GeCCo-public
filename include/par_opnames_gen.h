@@ -97,6 +97,7 @@ c     &     op_cba*4   = 'CBAR',
      &     op_k4_inter*6   = 'K4-INT',
      &     op_b_inv*5      = 'B_INV',
      &     op_x_inter*1    = 'X',
+     &     op_xh_inter*2   = 'Xh',
      &     op_xp_inter*2   = 'X''',
      &     op_x1_inter*2   = 'X1',
      &     op_x_inv*5      = 'X_INV',
@@ -121,6 +122,8 @@ c dbg
      &     op_a_rp*6       = '(A.R)''',
      &     op_s_rp*6       = '(S.R)''',
      &     op_s_c*6        = '(S.T)''',
+     &     op_evs*3        = 'V_S',
+     &     op_s_evs*5      = 'S.V_S',
      &     op_lp*2         = 'L''',
      &     op_l_ap*6       = '(L.A)''',
      &     op_l_sp*6       = '(L.S)''',
@@ -238,6 +241,8 @@ c dbg
      &     mel_v0bar_def*13 = 'DEF-V0+-INTER',
      &     mel_x_inter*7    = 'X-INTER',
      &     mel_x_def*11     = 'DEF-X-INTER',
+     &     mel_xh_inter*8    = 'Xh-INTER',
+     &     mel_xh_def*12     = 'DEF-Xh-INTER',
      &     mel_xp_inter*8    = 'X''-INTER',
      &     mel_xp_def*12     = 'DEF-X''-INTER',
      &     mel_x1_inter*8   = 'X1-INTER',
@@ -311,7 +316,11 @@ c dbg
      &     mel_lex_ap*6      = 'LE0.AP',
      &     meldef_lex_ap*10  = 'DEF-LE0.AP',
      &     mel_lex_sp*6      = 'LE0.SP',
-     &     meldef_lex_sp*10  = 'DEF-LE0.SP'
+     &     meldef_lex_sp*10  = 'DEF-LE0.SP',
+     &     mel_evs*4         = 'V0_S',
+     &     meldef_evs*8      = 'DEF-V0_S',
+     &     mel_s_evs*6       = 'S.V0_S',
+     &     meldef_s_evs*10   = 'DEF-S.V0_S'
 
 	  
       

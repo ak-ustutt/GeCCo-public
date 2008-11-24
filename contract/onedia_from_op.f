@@ -60,8 +60,8 @@
      &        (iextr.gt.0.and.max(op%ihpvca_occ(iextr,1,iocc_cls),
      &                         op%ihpvca_occ(iextr,2,iocc_cls)).gt.0))
      &         cycle
-          if (list_cmp(op%ihpvca_occ(1:ngastp,1,iocc_cls),
-     &                 op%ihpvca_occ(1:ngastp,2,iocc_cls),ngastp)) then
+          if (list_cmp(op%ihpvca_occ(1:,1,iocc_cls),
+     &                 op%ihpvca_occ(1:,2,iocc_cls),ngastp)) then
             nbuff = nbuff + mel%len_op_occ(iocc_cls)
           end if
         end do
@@ -90,8 +90,8 @@
      &       cycle
 
         ! diagonal: so C and A must have same occ
-        if (.not.list_cmp(op%ihpvca_occ(1:ngastp,1,iocc_cls),
-     &               op%ihpvca_occ(1:ngastp,2,iocc_cls),ngastp)) cycle
+        if (.not.list_cmp(op%ihpvca_occ(1:,1,iocc_cls),
+     &                    op%ihpvca_occ(1:,2,iocc_cls),ngastp)) cycle
 
         ioff_blk = mel%off_op_occ(iocc_cls)
         ilen_blk = mel%len_op_occ(iocc_cls)
@@ -109,7 +109,7 @@ c        print *,'ioff_blk, ilen_blk: ',ioff_blk, ilen_blk
 c        print *,'current buffer: ',buffer(1:ilen_blk)
 c dbg
 
-        ihpv = idxlist(1,op%ihpvca_occ(1:ngastp,1,iocc_cls),ngastp,1)
+        ihpv = idxlist(1,op%ihpvca_occ(1:,1,iocc_cls),ngastp,1)
 
         do ms = 1, -1, -2
           idxms = 1

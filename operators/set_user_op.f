@@ -92,10 +92,8 @@
       ! well, a few loops for restrictions
       do iblk = 1, nblk
 
-        op%ica_occ(1,iblk) = 
-     &     ielsum(op%ihpvca_occ(1:ngastp,1,iblk),ngastp)
-        op%ica_occ(2,iblk) = 
-     &     ielsum(op%ihpvca_occ(1:ngastp,2,iblk),ngastp)
+        op%ica_occ(1,iblk) = ielsum(op%ihpvca_occ(1:,1,iblk),ngastp)
+        op%ica_occ(2,iblk) = ielsum(op%ihpvca_occ(1:,2,iblk),ngastp)
 
         ! set restrictions
         do ica = 1, 2

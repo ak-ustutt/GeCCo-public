@@ -94,11 +94,14 @@
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
-      truncate = is_keyword_set('method.truncate').gt.0
-      if(truncate)
+      call get_argument_value('method.R12','trunc',ival=trunc_type)
+      truncate = trunc_type.ge.0
+      if (is_keyword_set('method.truncate').gt.0) then
+        truncate = is_keyword_set('method.truncate').gt.0
+        if(truncate)
      &     call get_argument_value('method.truncate','trunc_type',
      &                              ival=trunc_type)
-c      call get_argument_value('method.R12','truncate',lval=truncate)
+      end if
       
       if (extend.gt.0) call quit(1,'set_r12_lagrangian',
      &     'do not use "extend" for CC (use "r12op" instead)!')

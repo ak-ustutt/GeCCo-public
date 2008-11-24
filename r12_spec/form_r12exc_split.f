@@ -69,6 +69,10 @@
      &       call quit(1,'form_select_terms',
      &       'label not on list: '//trim(label_res))
       do idx = 1, nlabels
+        if (trim(labels(idx)).eq.'-') then
+          idxop(idx) = -1
+          cycle
+        end if
         idxop(idx) = idx_oplist2(labels(idx),op_info)
         if (idxop(idx).le.0)
      &       call quit(1,'form_select_terms',
@@ -83,7 +87,8 @@
 
       call r12exc_split_terms(flist,
      &     mode,idxop_res,
-     &     idxop(1),idxop(2),idxop(3),idxop(4),idxop(5),idxop(6),
+     &     idxop(1),idxop(2),idxop(3),idxop(4),
+     &     idxop(5),idxop(6),idxop(7),
      &     op_info)
 
       ! write result

@@ -93,9 +93,9 @@
         op%ica_occ(1:2,iblk) = 0
         do ijoin = 1, njoined
           op%ica_occ(1,iblk) = op%ica_occ(1,iblk) +
-     &         ielsum(op%ihpvca_occ(1:ngastp,1,ioff_blk+ijoin),ngastp)
+     &         ielsum(op%ihpvca_occ(1:,1,ioff_blk+ijoin),ngastp)
           op%ica_occ(2,iblk) = op%ica_occ(2,iblk) +
-     &         ielsum(op%ihpvca_occ(1:ngastp,2,ioff_blk+ijoin),ngastp)
+     &         ielsum(op%ihpvca_occ(1:,2,ioff_blk+ijoin),ngastp)
         end do
 
         ! set restrictions

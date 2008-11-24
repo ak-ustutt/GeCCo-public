@@ -89,8 +89,8 @@
         idxstr = hlist%off_op_occ(iocc_cls)
 
         ! get type of space for C/A
-        ihpv_c = idxlist(1,hop%ihpvca_occ(1:ngastp,1,iocc_cls),ngastp,1)
-        ihpv_a = idxlist(1,hop%ihpvca_occ(1:ngastp,2,iocc_cls),ngastp,1)
+        ihpv_c = idxlist(1,hop%ihpvca_occ(1:,1,iocc_cls),ngastp,1)
+        ihpv_a = idxlist(1,hop%ihpvca_occ(1:,2,iocc_cls),ngastp,1)
 
         ! correct addressing order:
         ihpv_i = ihpv_c

@@ -97,6 +97,14 @@ c dbg
 
         call assign_me_list(rule%labels(1),rule%labels(2),op_info)
 
+      case(RES_ME_LIST)
+        
+        if (rule%n_labels.ne.1)
+     &     call quit(1,'process_me_lists','one label expected for '
+     &       //trim(RES_ME_LIST))
+
+        call reset_me_list(rule%labels(1),op_info)
+
       case(DELETE_ME_LIST)
         
         if (rule%n_labels.ne.1)

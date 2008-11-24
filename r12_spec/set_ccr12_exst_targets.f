@@ -69,26 +69,6 @@
      &              op_a_r,1,1,
      &              parameters,1,tgt_info)
 
-      ! T vector times Metric
-      call add_target(op_s_t,ttype_op,.false.,tgt_info)
-      call set_dependency(op_s_t,op_top,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_top,.false.)
-      call set_rule(op_s_t,ttype_op,CLONE_OP,
-     &              op_s_t,1,1,
-     &              parameters,1,tgt_info)
-      
-      ! T' vector times Metric
-      if (r12op.gt.0) then
-        call add_target(op_s_c,ttype_op,.false.,tgt_info)
-        call set_dependency(op_s_c,op_cex,tgt_info)
-        call cloneop_parameters(-1,parameters,
-     &                        op_cex,.false.)
-        call set_rule(op_s_c,ttype_op,CLONE_OP,
-     &              op_s_c,1,1,
-     &              parameters,1,tgt_info)
-      end if
-
       ! right-response vector times Metric
       call add_target(op_s_r,ttype_op,.false.,tgt_info)
       call set_dependency(op_s_r,op_top,tgt_info)
@@ -504,11 +484,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = '-'
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',1,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
         labels(1:10)(1:len_target_name) = ' '
@@ -521,11 +502,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = '-'
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',2,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
         labels(1:10)(1:len_target_name) = ' '
@@ -538,11 +520,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = '-'
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',3,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
       else
@@ -585,11 +568,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = op_cex
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',1,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
         labels(1:10)(1:len_target_name) = ' '
@@ -602,11 +586,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = op_cex
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',2,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
         labels(1:10)(1:len_target_name) = ' '
@@ -619,11 +604,12 @@
         labels(7) = op_l
         labels(8) = op_r
         labels(9) = op_v_inter
+        labels(10) = op_cex
         call form_parameters(-1,
      &       parameters,2,
      &       'XXX',3,'--')
         call set_rule(form_cc_l_a_r,ttype_frm,SPLIT_R12EXC_FORMULA,
-     &              labels,9,1,
+     &              labels,10,1,
      &              parameters,2,tgt_info)
 
       end if
@@ -913,8 +899,7 @@
       labels(4) = form_cc_l_a_r//'_2'
       labels(5) = form_cc_l_a_r//'_1'
       ncat = 1
-c      nint = 3
-      nint = 0
+      nint = 3
       call set_dependency(fopt_cc_l_a_r,form_cc_l_a_r,tgt_info)
       call set_dependency(fopt_cc_l_a_r,meldef_rex,tgt_info)
       call set_dependency(fopt_cc_l_a_r,meldef_lex,tgt_info)
