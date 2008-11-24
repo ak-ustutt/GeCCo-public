@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_experimental_targets(tgt_info,orb_info)
+      subroutine set_experimental_targets(tgt_info,orb_info,env_type)
 *----------------------------------------------------------------------*
 *     set targets for response theory calculations
 *
@@ -24,13 +24,15 @@
      &     tgt_info
       type(orbinf), intent(in) ::
      &     orb_info
+      character(*), intent(in) ::
+     &     env_type
 
       integer, parameter ::
      &     len_short = 20, len_long = 200, maxsym = 8
 
       integer ::
      &     isim, ncat, nint,
-     &     msc, sym,
+     &     msc, sym, r12op, ansatz,
      &     ord, op_par, len_op_exp, side, x_max_ord, maxord,
      &     freq_idx, digit, ilabels, ord2, op_par2, x_max_ord2
 
@@ -55,8 +57,11 @@
      &     lresp_name*8, def_me_l_name*15, me_l_name*11,
      &     eval_lag_name*11, opt_l_name*12
 
+      character(len=8) ::
+     &     approx
+
       logical ::
-     &     comb_ok
+     &     comb_ok, setr12, r12fix
 
       real(8),allocatable ::
      &     freq(:)
@@ -69,6 +74,20 @@
 
       logical, external ::
      &     next_comb
+
+      ! set r12 targets
+      setr12 = is_keyword_set('method.R12').gt.0
+      if (setr12) then
+        call get_argument_value('method.R12','ansatz',ival=ansatz)
+        call get_argument_value('method.R12','approx',str=approx)
+        call get_argument_value('method.R12','fixed',lval=r12fix)
+        call get_argument_value('method.R12','r12op',ival=r12op)
+        if (r12op.eq.1.and.r12fix) then
+          call set_r12f_general_targets(tgt_info,orb_info,env_type)
+        else
+          call quit(1,'set_experimental_targets','wrong r12 method')
+        end if
+      end if
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting experimental targets ...'
@@ -90,11 +109,12 @@
      &                        str=pert(1:maxord))
 
       ! to be improved: irrep can be recognized automatically
-      call get_argument_value('calculate.experimental','pert_sym',
-     &                        iarr=isym(1:maxord))
+      if (maxord.gt.0)
+     &      call get_argument_value('calculate.experimental','pert_sym',
+     &                              iarr=isym(1:maxord))
       freq = 0d0
       evaluate = .false.
-      
+
       ! to be improved: only evaluate lagrangian of order maxord for now
       evaluate(maxord) = .true.
 *----------------------------------------------------------------------*
@@ -105,9 +125,28 @@
       call set_rule(op_ham,ttype_op,SET_ORDER,op_ham,
      &              1,1,parameters,1,tgt_info)
 
+      if (setr12) then
+        ! set order of R12, V, B, Bh, X, R12-INT, C-INT to zero
+        call ord_parameters(-1,parameters,0,3,-1)
+        call set_rule(op_r12,ttype_op,SET_ORDER,op_r12,
+     &                1,1,parameters,1,tgt_info)
+        call set_rule(op_v_inter,ttype_op,SET_ORDER,op_v_inter,
+     &                1,1,parameters,1,tgt_info)
+        call set_rule(op_b_inter,ttype_op,SET_ORDER,op_b_inter,
+     &                1,1,parameters,1,tgt_info)
+        call set_rule(op_bh_inter,ttype_op,SET_ORDER,op_bh_inter,
+     &                1,1,parameters,1,tgt_info)
+        call set_rule(op_x_inter,ttype_op,SET_ORDER,op_x_inter,
+     &                1,1,parameters,1,tgt_info)
+        call set_rule(op_rint,ttype_op,SET_ORDER,op_rint,
+     &                1,1,parameters,1,tgt_info)
+        call set_rule(op_c_inter,ttype_op,SET_ORDER,op_c_inter,
+     &                1,1,parameters,1,tgt_info)
+      end if
+
       ! define V(1)
       call add_target('V(1)',ttype_op,.false.,tgt_info)
-      call hop_parameters(-1,parameters,1,1,1,.false.)
+      call hop_parameters(-1,parameters,1,1,1,setr12)
       call set_rule('V(1)',ttype_op,DEF_HAMILTONIAN,'V(1)',
      &              1,1,parameters,1,tgt_info)
       call ord_parameters(-1,parameters,1,3,-1)
@@ -120,7 +159,7 @@
       do freq_idx = 1,maxord
         write(opname(5:5),'(i1)') freq_idx
         call add_target(trim(opname),ttype_op,.false.,tgt_info)
-        call hop_parameters(-1,parameters,1,1,1,.false.)
+        call hop_parameters(-1,parameters,1,1,3,setr12)
         call set_rule(trim(opname),ttype_op,DEF_HAMILTONIAN,
      &                trim(opname),
      &                1,1,parameters,1,tgt_info)
@@ -330,23 +369,54 @@
 *     Formulae 
 *----------------------------------------------------------------------*
 
-      ! define response lagrangian
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'RESP_LAG'
-      labels(2) = 'LRESP'
-      labels(3) = 'L'
-      labels(4) = 'Hnew'
-      labels(5) = 'T'
-      call add_target('RESP_LAG',ttype_frm,.false.,tgt_info)
-      call set_dependency('RESP_LAG','LRESP',tgt_info)
-      call set_dependency('RESP_LAG','L',tgt_info)
-      call set_dependency('RESP_LAG','Hnew',tgt_info)
-      call set_dependency('RESP_LAG','T',tgt_info)
-      call form_parameters(-1,
-     &     parameters,2,'response lagrange functional',0,'---')
-      call set_rule('RESP_LAG',ttype_frm,DEF_EXP_FORMULA,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
+      if (.not.setr12) then
+        ! define response lagrangian
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = 'RESP_LAG'
+        labels(2) = 'LRESP'
+        labels(3) = 'L'
+        labels(4) = 'Hnew'
+        labels(5) = 'T'
+        call add_target('RESP_LAG',ttype_frm,.false.,tgt_info)
+        call set_dependency('RESP_LAG','LRESP',tgt_info)
+        call set_dependency('RESP_LAG','L',tgt_info)
+        call set_dependency('RESP_LAG','Hnew',tgt_info)
+        call set_dependency('RESP_LAG','T',tgt_info)
+        call form_parameters(-1,
+     &       parameters,2,'response lagrange functional',0,'---')
+        call set_rule('RESP_LAG',ttype_frm,DEF_EXP_FORMULA,
+     &                labels,5,1,
+     &                parameters,2,tgt_info)
+      else
+        ! define r12 response lagrangian
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = 'RESP_LAG'
+        labels(2) = 'LRESP'
+        labels(3) = 'Hnew'
+        labels(4) = op_r12
+        labels(5) = op_r12
+        labels(6) = 'L'
+        labels(7) = 'T'
+        labels(8) = op_cexbar
+        labels(9) = op_cex
+        call add_target('RESP_LAG',ttype_frm,.false.,tgt_info)
+        call set_dependency('RESP_LAG','LRESP',tgt_info)
+        call set_dependency('RESP_LAG','L',tgt_info)
+        call set_dependency('RESP_LAG','Hnew',tgt_info)
+        call set_dependency('RESP_LAG','T',tgt_info)
+        call set_dependency('RESP_LAG',op_r12,tgt_info)
+        call set_dependency('RESP_LAG',op_cex,tgt_info)
+        call set_dependency('RESP_LAG',op_cexbar,tgt_info)
+        call form_parameters(-1,
+     &       parameters,2,'r12 response lagrange functional',
+     &                    ansatz,'---')
+        call set_rule('RESP_LAG',ttype_frm,DEF_CCR12_LAGRANGIAN,
+     &                labels,9,1,
+     &                parameters,2,tgt_info)
+c        call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c        call set_rule('RESP_LAG',ttype_frm,PRINT_FORMULA,
+c     &                labels,2,1,parameters,2,tgt_info)
+      end if
 
       ! perturbation expansion of H: Hnew=H+V(1)
       labels(1:20)(1:len_target_name) = ' '
@@ -470,22 +540,81 @@
         end do
       end do
 
-      ! expand response lagrangian with Hnew=H+V(1),T=T(0)+T(1)+...,L=...
+      ! expand response lagrangian with Hnew=H+V(1)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'RESP_LAGF'
       labels(2) = 'RESP_LAG'
       labels(3) = 'H_FORM'
-      labels(4) = 'T_FORM'
-      labels(5) = 'L_FORM'
       call add_target('RESP_LAGF',ttype_frm,.false.,tgt_info)
       call set_dependency('RESP_LAGF','RESP_LAG',tgt_info)
       call set_dependency('RESP_LAGF','H_FORM',tgt_info)
       call set_dependency('RESP_LAGF','T_FORM',tgt_info)
       call set_dependency('RESP_LAGF','L_FORM',tgt_info)
       call form_parameters(-1,
-     &     parameters,2,'full response lagrangian',3,'---')
+     &     parameters,2,'full response lagrangian',1,'---')
       call set_rule('RESP_LAGF',ttype_frm,EXPAND,
-     &              labels,5,1,
+     &              labels,3,1,
+     &              parameters,2,tgt_info)
+
+      ! R12: factor out special intermediates
+      if (setr12) then
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = 'RESP_LAGF' ! output formula (itself)
+        labels(2) = 'RESP_LAGF' ! input formula
+        labels(3) = form_r12_vint    ! the intermediates to be factored
+        labels(4) = form_r12_vint//'^+'
+        labels(5) = form_r12_bint
+        labels(6) = form_r12_bhint
+        labels(7) = form_r12_xint
+        nint = 5
+        call set_dependency('RESP_LAGF',form_r12_vint,tgt_info)
+        call set_dependency('RESP_LAGF',form_r12_xint,tgt_info)
+        call set_dependency('RESP_LAGF',form_r12_bint,tgt_info)
+        call set_dependency('RESP_LAGF',form_r12_bhint,tgt_info)
+        if (ansatz.ne.1) then
+          labels(8) = form_r12_cint
+          labels(9) = trim(form_r12_cint)//'^+'
+          call set_dependency('RESP_LAGF',form_r12_cint,tgt_info)
+          nint = 7
+        end if
+        call form_parameters(-1,
+     &       parameters,2,'r12 response lag., factored out',nint,'---')
+        call set_rule('RESP_LAGF',ttype_frm,FACTOR_OUT,
+     &                labels,nint+2,1,
+     &                parameters,2,tgt_info)
+c        call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c        call set_rule('RESP_LAGF',ttype_frm,PRINT_FORMULA,
+c     &                labels,2,1,parameters,2,tgt_info)
+
+        ! replace r12 by the actual integrals
+        if (ansatz.gt.1) then
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = 'RESP_LAGF'
+          labels(2) = 'RESP_LAGF'
+          labels(3) = op_r12
+          labels(4) = op_rint
+          call set_dependency('RESP_LAGF',op_rint,tgt_info)
+          call form_parameters(-1,
+     &         parameters,2,'complete r12 response lag.',1,'---')
+          call set_rule('RESP_LAGF',ttype_frm,REPLACE,
+     &                labels,4,1,
+     &                parameters,2,tgt_info)
+          call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+          call set_rule('RESP_LAGF',ttype_frm,PRINT_FORMULA,
+     &                  labels,2,1,parameters,2,tgt_info)
+        end if
+      end if
+
+      ! expand response lagrangian with T=T(0)+T(1)+...,L=...
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'RESP_LAGF'
+      labels(2) = 'RESP_LAGF'
+      labels(3) = 'T_FORM'
+      labels(4) = 'L_FORM'
+      call form_parameters(-1,
+     &     parameters,2,'full response lagrangian',2,'---')
+      call set_rule('RESP_LAGF',ttype_frm,EXPAND,
+     &              labels,4,1,
      &              parameters,2,tgt_info)
 
       ! expand RESP_LAG(n) with X(1)=X(1)1+X(1)2+..., X(2)=X(2)12+X(2)13+...
@@ -962,7 +1091,16 @@
       call set_dependency('OPT_T(0)','DEF_ME_LRESP(0)',tgt_info)
       call set_dependency('OPT_T(0)','DEF_ME_O(0)_L',tgt_info)
       call set_dependency('OPT_T(0)','DEF_ME_T(0)',tgt_info)
-      call set_dependency('OPT_T(0)',mel_ham,tgt_info)      
+      call set_dependency('OPT_T(0)',mel_ham,tgt_info)
+      ! r12 dependencies
+      if (setr12) then
+        call set_dependency('OPT_T(0)',mel_x_def,tgt_info)
+        call set_dependency('OPT_T(0)',mel_bh_def,tgt_info)
+        call set_dependency('OPT_T(0)',mel_b_def,tgt_info)
+        call set_dependency('OPT_T(0)',mel_v_def,tgt_info)
+        call set_dependency('OPT_T(0)',mel_c_def,tgt_info)
+        call set_dependency('OPT_T(0)',mel_rint,tgt_info)
+      end if 
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule('OPT_T(0)',ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
@@ -1237,6 +1375,8 @@
   
       ! solve CC-equations 
       call add_target('SOLVE_T(0)',ttype_gen,.false.,tgt_info)
+      if (setr12)
+     &       call set_dependency('SOLVE_T(0)',eval_r12_inter,tgt_info)
       call set_dependency('SOLVE_T(0)','OPT_T(0)',tgt_info)
       call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
       call set_dependency('SOLVE_T(0)',mel_dia1,tgt_info)
@@ -1296,6 +1436,9 @@
               sym = multd2h(sym,isym(ifreq(digit)))
             end do
             call add_target(trim(solvename),ttype_gen,.false.,tgt_info)
+            if (setr12)
+     &              call set_dependency(trim(solvename),
+     &              eval_r12_inter,tgt_info)
             call set_dependency(trim(solvename),trim(defmelname),
      &                          tgt_info)
             call set_dependency(trim(solvename),trim(optname),tgt_info)
@@ -1345,15 +1488,19 @@
         write(eval_lag_name(10:10),'(i1)') ord
         write(def_me_l_name(14:14),'(i1)') ord
         call add_target(eval_lag_name,ttype_gen,evaluate(ord),tgt_info)
+        if (setr12)
+     &       call set_dependency(eval_lag_name,eval_r12_inter,tgt_info)
         ! first solve T(k), L(k) equations according to (2n+1) and (2n+2) rules
         hubname(11:11) = 'T'
         x_max_ord = int((real(ord)-1)/2+0.6)
         write(hubname(13:13),'(i1)') x_max_ord
         call set_dependency(eval_lag_name,hubname(1:14),tgt_info)
-        hubname(11:11) = 'L'
-        x_max_ord = int((real(ord)-2)/2+0.6)
-        write(hubname(13:13),'(i1)') x_max_ord
-        call set_dependency(eval_lag_name,hubname(1:14),tgt_info)
+        if (maxord.gt.0) then
+          hubname(11:11) = 'L'
+          x_max_ord = int((real(ord)-2)/2+0.6)
+          write(hubname(13:13),'(i1)') x_max_ord
+          call set_dependency(eval_lag_name,hubname(1:14),tgt_info)
+        end if
         ! evaluate
         call set_dependency(eval_lag_name,opt_l_name,tgt_info)
         call set_dependency(eval_lag_name,def_me_l_name,tgt_info)
