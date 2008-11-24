@@ -70,6 +70,10 @@
           iord = 0
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
+            if (op_info%op_arr(idx_op)%op%order.lt.0)
+     &        call quit(1,'pert_order_truncation',
+     &           'no order assigned to '//
+     &           trim(op_info%op_arr(idx_op)%op%name))
             iord = iord + op_info%op_arr(idx_op)%op%order
           end do
 
