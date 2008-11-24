@@ -177,7 +177,7 @@ c          else
      &         idx_intm,idx_op,nop,op_info,orb_info)
 c          end if
         end if
-      case('V','V+','X')
+      case('V','V+','X','XH')
         ! set up term arising from 1 in Q = 1 - P
         call set_1contrib(flist,1d0,4,
      &       idx_intm,idx_op,nop,op_info)

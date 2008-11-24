@@ -307,6 +307,7 @@
           call memman_map(luout,.true.)
           call quit(0,'memman','memory exceeded')
         else if (over.gt.over_warn) then
+          call warn('memman','memory exeeded')
           write(luout,'(x,a,e8.1,a)') 'WARNING: memory exceeded by ',
      &         over*100d0,' %'
           write(luout,'(x,2a)') 'trying to allocate slice: ',

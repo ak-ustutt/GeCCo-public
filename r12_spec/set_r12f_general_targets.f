@@ -609,6 +609,32 @@ c      occ_def(IPART,2,16) = 2
      &              op_xp_inter,1,1,
      &              parameters,2,tgt_info)
 
+      ! Xh intermediate
+      call add_target(op_xh_inter,ttype_op,.false.,tgt_info)
+      ndef = 4
+      occ_def = 0
+      occ_def(IHOLE,1,1) = 1
+      occ_def(IHOLE,2,2) = 1
+
+      occ_def(IHOLE,1,3) = 2
+      occ_def(IHOLE,2,4) = 1
+      occ_def(IPART,2,4) = 1
+
+      occ_def(IHOLE,1,5) = 1
+      occ_def(IPART,1,5) = 1
+      occ_def(IHOLE,2,6) = 2
+
+      occ_def(IHOLE,1,7) = 1
+      occ_def(IPART,1,7) = 1
+      occ_def(IHOLE,2,8) = 1
+      occ_def(IPART,2,8) = 1
+
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,2,ndef*2)
+      call set_rule(op_xh_inter,ttype_op,DEF_OP_FROM_OCC,
+     &              op_xh_inter,1,1,
+     &              parameters,2,tgt_info)
+
       ! C intermediate
       call add_target(op_c_inter,ttype_op,.false.,tgt_info)
       occ_def = 0
@@ -714,6 +740,45 @@ c     &              parameters,2,tgt_info)
       call form_parameters(-1,
      &     parameters,2,title_r12_xcabs,ansatz,'X '//approx)
       call set_rule(form_r12_xcabs,ttype_frm,DEF_R12INTM_CABS,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      ! formal definition of Xh
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_xhint
+      labels(2) = op_xh_inter
+      labels(3) = op_r12
+      labels(4) = op_r12
+      call add_target(form_r12_xhint,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_xhint,op_xh_inter,tgt_info)
+      call set_dependency(form_r12_xhint,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_xhint,0,'X ')
+      call set_rule(form_r12_xhint,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,4,1,
+     &              parameters,2,tgt_info)
+c dbg
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule(form_r12_xhint,ttype_frm,PRINT_FORMULA,
+     &              labels,2,1,
+     &              parameters,2,tgt_info)
+c dbg
+
+      ! CABS approximation to Xh
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_xhcabs
+      labels(2) = op_xh_inter
+      labels(3) = op_rint
+      labels(4) = op_rint
+      labels(5) = op_ff
+      call add_target(form_r12_xhcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_xhcabs,op_xh_inter,tgt_info)
+      call set_dependency(form_r12_xhcabs,op_ff,tgt_info)
+      call set_dependency(form_r12_xhcabs,op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_xcabs,ansatz,'XH'//approx)
+      call set_rule(form_r12_xhcabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,5,1,
      &              parameters,2,tgt_info)
 
@@ -953,6 +1018,22 @@ c     &              parameters,2,tgt_info)
       call set_dependency(fopt_r12_xcabs,mel_rint,tgt_info)      
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_r12_xcabs,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+      ! set Xh
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_r12_xhcabs
+      labels(2) = form_r12_xhcabs
+      ncat = 1
+      nint = 0
+      call add_target(fopt_r12_xhcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_r12_xhcabs,form_r12_xhcabs,tgt_info)
+      call set_dependency(fopt_r12_xhcabs,mel_xh_def,tgt_info)
+      call set_dependency(fopt_r12_xhcabs,mel_ff,tgt_info)
+      call set_dependency(fopt_r12_xhcabs,mel_rint,tgt_info)      
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_r12_xhcabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
@@ -1303,6 +1384,18 @@ c dbg
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+      ! Xh-list
+      call add_target(mel_xh_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_xh_def,op_xh_inter,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_xh_inter
+      labels(2) = op_xh_inter
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule(mel_xh_def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
       ! X'-list
       call add_target(mel_xp_def,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_xp_def,op_xp_inter,tgt_info)
@@ -1385,10 +1478,12 @@ c dbg
       call set_dependency(eval_r12_inter,mel_ff,tgt_info)
       call set_dependency(eval_r12_inter,mel_v_def,tgt_info)
       call set_dependency(eval_r12_inter,mel_x_def,tgt_info)
+      call set_dependency(eval_r12_inter,mel_xh_def,tgt_info)
       call set_dependency(eval_r12_inter,mel_b_def,tgt_info)
       call set_dependency(eval_r12_inter,mel_bh_def,tgt_info)
       call set_dependency(eval_r12_inter,fopt_r12_vcabs,tgt_info)
       call set_dependency(eval_r12_inter,fopt_r12_xcabs,tgt_info)
+      call set_dependency(eval_r12_inter,fopt_r12_xhcabs,tgt_info)
       call set_dependency(eval_r12_inter,fopt_r12_bcabs,tgt_info)
       call set_dependency(eval_r12_inter,fopt_r12_bhcabs,tgt_info)
       if (ansatz.ne.1)
@@ -1401,6 +1496,10 @@ c     &     call set_dependency(eval_r12_inter,fopt_r12_xpcabs,tgt_info)
      &     labels,1,0,
      &     parameters,0,tgt_info)
       labels(1) = fopt_r12_xcabs
+      call set_rule(eval_r12_inter,ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+      labels(1) = fopt_r12_xhcabs
       call set_rule(eval_r12_inter,ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)

@@ -65,10 +65,13 @@
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','pz_eval',lval=pz_eval)
       call get_argument_value('method.R12','extend',ival=mode)
-c      call get_argument_value('method.R12','truncate',lval=truncate)
-      truncate = is_keyword_set('method.truncate').gt.0
-      call get_argument_value('method.truncate','trunc_type',
-     &     ival=trunc_type)
+      call get_argument_value('method.R12','trunc',ival=trunc_type)
+      truncate = trunc_type.ge.0
+      if (is_keyword_set('method.truncate').gt.0) then
+        truncate = is_keyword_set('method.truncate').gt.0
+        call get_argument_value('method.truncate','trunc_type',
+     &       ival=trunc_type)
+      end if
       ! Frozen core?
       frozen = .false.
       shell_typ(1:12) = ' '

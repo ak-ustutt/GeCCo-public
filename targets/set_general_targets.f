@@ -38,10 +38,13 @@
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting general targets ...'
 
-c      call get_argument_value('method.R12','truncate',lval=truncate)
-      truncate = is_keyword_set('method.truncate').gt.0
-      call get_argument_value('method.truncate','trunc_type',
-     &     ival=trunc_type)
+      call get_argument_value('method.R12','trunc',ival=trunc_type)
+      truncate = trunc_type.ge.0
+      if (is_keyword_set('method.truncate').gt.0) then
+        truncate = is_keyword_set('method.truncate').gt.0
+        call get_argument_value('method.truncate','trunc_type',
+     &       ival=trunc_type)
+      end if
       call get_argument_value('method.CCPT','extern',ival=extern)
 
       msc = +1  ! assuming closed shell

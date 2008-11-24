@@ -32,7 +32,7 @@
      &     iblkmax(20),
      &     occ_def(ngastp,2,20)
       logical ::
-     &     needed, r12fix, set_tp, set_tpp
+     &     needed, r12fix, set_tp, set_tpp, screen
       character(8) ::
      &     approx
       character(len_target_name) ::
@@ -68,6 +68,7 @@
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','r12op',ival=r12op)
+      call get_argument_value('method.R12','screen',lval=screen)
 
       call get_argument_value('calculate.routes','simtraf',ival=isim)
 
@@ -251,10 +252,12 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       labels(4) = form_r12_vint//'^+'
       labels(5) = form_r12_bint
       labels(6) = form_r12_bhint
+c      labels(6) = form_r12_xhint
       labels(7) = form_r12_xint
       nint = 5
       call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_xint,tgt_info)
+c      call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bhint,tgt_info)
       if (ansatz.ne.1) then
@@ -280,6 +283,19 @@ c        labels(10) = form_r12_xpint
         labels(2) = form_ccr12lg0
         labels(3) = op_ccr12lg
         labels(4) = op_x_inter
+        call set_rule(form_ccr12lg0,ttype_frm,INVARIANT,
+     &              labels,4,1,
+     &              title_ccr12lg0,1,tgt_info)
+      end if
+
+      ! screen all remaining R12 terms
+      ! (argument: would vanish in standard approximation)
+      if (screen) then        
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = form_ccr12lg0
+        labels(2) = form_ccr12lg0
+        labels(3) = op_ccr12lg
+        labels(4) = op_r12
         call set_rule(form_ccr12lg0,ttype_frm,INVARIANT,
      &              labels,4,1,
      &              title_ccr12lg0,1,tgt_info)
@@ -554,6 +570,7 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
         call set_dependency(fopt_ccr12_0,mel_b_def,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_bh_def,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_x_def,tgt_info)      
+c        call set_dependency(fopt_ccr12_0,mel_xh_def,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_c_def,tgt_info)      
       end if
       call set_dependency(fopt_ccr12_0,mel_ccr12en0def,tgt_info)      

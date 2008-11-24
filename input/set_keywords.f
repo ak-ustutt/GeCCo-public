@@ -71,6 +71,10 @@ c      use parse_input
      &     idef=(/0/))
       call argument_add('pz_eval','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('trunc','method.R12',type=vtyp_int,
+     &     idef=(/0/))
+      call argument_add('screen','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
 
       ! Truncations
       call keyword_add('truncate',context='method')

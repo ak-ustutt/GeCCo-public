@@ -79,6 +79,9 @@
      &     title_r12_v3bcabs*34='R12 V3+intermediate (CABS approx.)',
      &     title_r12_xint*38 = 'R12 X-intermediate (formal definition)',
      &     title_r12_xcabs*33 ='R12 X-intermediate (CABS approx.)',
+     &     title_r12_xhint*39 =
+     &                       'R12 Xh-intermediate (formal definition)',
+     &     title_r12_xhcabs*34 ='R12 Xh-intermediate (CABS approx.)',
      &     title_r12_xpint*39 =
      &                       'R12 X''-intermediate (formal definition)',
      &     title_r12_xpcabs*34 ='R12 X''-intermediate (CABS approx.)',
@@ -227,6 +230,9 @@ c dbg
      &     form_r12_xint*8     = 'XINT_R12', 
      &     form_r12_xcabs*13   = 'XINT_R12_CABS', 
      &     fopt_r12_xcabs*12   = 'XINT_R12_OPT', 
+     &     form_r12_xhint*9     = 'XhINT_R12', 
+     &     form_r12_xhcabs*14   = 'XhINT_R12_CABS', 
+     &     fopt_r12_xhcabs*13   = 'XhINT_R12_OPT', 
      &     form_r12_xpint*9     = 'X''INT_R12', 
      &     form_r12_xpcabs*14   = 'X''INT_R12_CABS', 
      &     fopt_r12_xpcabs*13   = 'X''INT_R12_OPT', 

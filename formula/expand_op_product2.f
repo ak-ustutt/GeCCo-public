@@ -461,10 +461,10 @@ C??                proto%vertex(joined(ivtx,iop))%iblk_op = iblk_op(iop)
               end if
             end do
 
-c dbg
-c            print *,'proto'
-c            call prt_contr2(luout,proto,op_info)
-c dbg
+            if (ntest.ge.1000) then
+              write(luout,*) 'passing proto contraction:'
+              call prt_contr2(luout,proto,op_info)
+            end if
 
             ! generate contractions
             call gen_contr4(.false.,form_pnt,proto,

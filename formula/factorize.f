@@ -73,8 +73,7 @@
             scale_stat(iterm) = scale_rank(iscale_stat(1,1,iterm))
           else
             if (iterm.eq.max_stat+1)
-     &           write(luout,*)
-     &           'WARNING: max_stat exceeded in factorize!'
+     &           call warn('factorize','max_stat exceeded')
             call form_fact2(form_ptr%contr,
      &         op_info,str_info,orb_info,
      &         iscale_stat(1,1,max_stat),

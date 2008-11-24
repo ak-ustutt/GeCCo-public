@@ -44,16 +44,29 @@
       do while(associated(flist_pnt%next))
         flist_pnt => flist_pnt%next
       end do
-      if (njoined_intm.eq.njoined_op) then
+      if (njoined_intm.eq.1.and.njoined_intm.eq.njoined_op) then
         ! add blocks of AB
         call set_primitive_formula(flist_pnt,idx_op(idx),
      &       fac,idx_intm,.false.,op_info) 
-      else if (njoined_intm.lt.njoined_op) then
+      else if (njoined_intm.eq.1) then
         ! generate the appropriate self-contraction
         call expand_op_product2(flist_pnt,idx_intm,
      &     1d0,4,2,
      &     (/idx_intm,idx_op(idx),idx_op(idx),idx_intm/),
      &     (/       1,          2,          2,       1/),       
+     &     -1, -1,
+     &     0,0,
+     &     0,0,
+     &     0,0,
+     &     op_info)
+      else if (njoined_intm.eq.2.and.njoined_op.eq.2) then
+        ! generate the appropriate self-contraction
+        call expand_op_product2(flist_pnt,idx_intm,
+     &     1d0,6,2,
+     &     (/idx_intm,idx_op(idx),idx_intm,
+     &                            idx_intm,idx_op(idx),idx_intm/),
+     &     (/       1,          2,       1,
+     &                                   1,          2,       1/),       
      &     -1, -1,
      &     0,0,
      &     0,0,
