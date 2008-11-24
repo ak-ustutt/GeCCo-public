@@ -8,6 +8,7 @@
       implicit none
 
       include 'stdunit.h'
+      include 'opdim.h'
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
 
@@ -31,8 +32,8 @@
      &     len_short = 20, len_long = 200, maxsym = 8
 
       integer ::
-     &     isim, ncat, nint,
-     &     msc, sym, r12op, ansatz,
+     &     isim, ncat, nint, ndef, occ_def(ngastp,2,60),
+     &     msc, sym, r12op, ansatz, maxexc, t1ext_mode,
      &     ord, op_par, len_op_exp, side, x_max_ord, maxord,
      &     freq_idx, digit, ilabels, ord2, op_par2, x_max_ord2
 
@@ -82,6 +83,7 @@
         call get_argument_value('method.R12','approx',str=approx)
         call get_argument_value('method.R12','fixed',lval=r12fix)
         call get_argument_value('method.R12','r12op',ival=r12op)
+        call get_argument_value('method.R12','T1ext',ival=t1ext_mode)
         if (r12op.eq.1.and.r12fix) then
           call set_r12f_general_targets(tgt_info,orb_info,env_type)
         else
@@ -115,6 +117,10 @@
       freq = 0d0
       evaluate = .false.
 
+      ! maximum excitation
+      call get_argument_value('calculate.experimental','maxexc',
+     &                        ival=maxexc)
+
       ! to be improved: only evaluate lagrangian of order maxord for now
       evaluate(maxord) = .true.
 *----------------------------------------------------------------------*
@@ -126,7 +132,7 @@
      &              1,1,parameters,1,tgt_info)
 
       if (setr12) then
-        ! set order of R12, V, B, Bh, X, R12-INT, C-INT to zero
+        ! set order of R12, V, B, Bh, X, R12-INT, C-INT, Xh to zero
         call ord_parameters(-1,parameters,0,3,-1)
         call set_rule(op_r12,ttype_op,SET_ORDER,op_r12,
      &                1,1,parameters,1,tgt_info)
@@ -136,12 +142,15 @@
      &                1,1,parameters,1,tgt_info)
         call set_rule(op_bh_inter,ttype_op,SET_ORDER,op_bh_inter,
      &                1,1,parameters,1,tgt_info)
+        call set_rule(op_xh_inter,ttype_op,SET_ORDER,op_xh_inter,
+     &                1,1,parameters,1,tgt_info)
         call set_rule(op_x_inter,ttype_op,SET_ORDER,op_x_inter,
      &                1,1,parameters,1,tgt_info)
         call set_rule(op_rint,ttype_op,SET_ORDER,op_rint,
      &                1,1,parameters,1,tgt_info)
         call set_rule(op_c_inter,ttype_op,SET_ORDER,op_c_inter,
      &                1,1,parameters,1,tgt_info)
+
       end if
 
       ! define V(1)
@@ -183,9 +192,40 @@
 
       ! define excitation operator T
       call add_target('T',ttype_op,.false.,tgt_info)
-      call xop_parameters(-1,parameters,.false.,1,2,0,1)
-      call set_rule('T',ttype_op,DEF_EXCITATION,'T',
-     &              1,1,parameters,1,tgt_info)
+      if (t1ext_mode.eq.0) then
+        call xop_parameters(-1,parameters,
+     &                   .false.,1,maxexc,0,1)
+        call set_rule(op_top,ttype_op,DEF_EXCITATION,
+     &              op_top,1,1,
+     &              parameters,1,tgt_info)
+      else
+        if (maxexc.gt.2.or..not.setr12)
+     &       call quit(1,'set_experimental_targets',
+     &       'experimental T1ext option is for CCSD with R12 only')
+        occ_def = 0
+        ! 1 -- T1
+        occ_def(IPART,1,1) = 1
+        occ_def(IHOLE,2,1) = 1
+        ! 2 -- T1'
+        occ_def(IEXTR,1,2) = 1
+        occ_def(IHOLE,2,2) = 1
+        ndef = 2
+        if (maxexc.eq.2) then
+          ! 3 -- T2
+          occ_def(IPART,1,3) = 2
+          occ_def(IHOLE,2,3) = 2
+          ndef = 3
+        end if
+        call op_from_occ_parameters(-1,parameters,2,
+     &                              occ_def,ndef,1,ndef)
+        call set_rule(op_top,ttype_op,DEF_OP_FROM_OCC,
+     &                op_top,1,1,
+     &                parameters,2,tgt_info)
+      end if
+
+c      call xop_parameters(-1,parameters,.false.,1,maxexc,0,1)
+c      call set_rule('T',ttype_op,DEF_EXCITATION,'T',
+c     &              1,1,parameters,1,tgt_info)
  
       ! define deexcitation operator L
       call add_target('L',ttype_op,.false.,tgt_info)
@@ -566,16 +606,18 @@ c     &                labels,2,1,parameters,2,tgt_info)
         labels(5) = form_r12_bint
         labels(6) = form_r12_bhint
         labels(7) = form_r12_xint
-        nint = 5
+        labels(8) = form_r12_xhint
+        nint = 6
         call set_dependency('RESP_LAGF',form_r12_vint,tgt_info)
         call set_dependency('RESP_LAGF',form_r12_xint,tgt_info)
         call set_dependency('RESP_LAGF',form_r12_bint,tgt_info)
         call set_dependency('RESP_LAGF',form_r12_bhint,tgt_info)
+        call set_dependency('RESP_LAGF',form_r12_xhint,tgt_info)
         if (ansatz.ne.1) then
-          labels(8) = form_r12_cint
-          labels(9) = trim(form_r12_cint)//'^+'
+          labels(9) = form_r12_cint
+          labels(10) = trim(form_r12_cint)//'^+'
           call set_dependency('RESP_LAGF',form_r12_cint,tgt_info)
-          nint = 7
+          nint = 8
         end if
         call form_parameters(-1,
      &       parameters,2,'r12 response lag., factored out',nint,'---')

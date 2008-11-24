@@ -22,6 +22,9 @@
       call argument_add('freq','calculate.experimental',
      &                  type=vtyp_rl8,xdef=(/0d0/))
 
+      ! maximum excitation
+      call argument_add('maxexc','calculate.experimental',type=vtyp_int,
+     &                  idef=(/2/))
 
       ! call keyword_add('new_kwd',context='calculate.experimental')
       ! see set_keywors for how to set up things ...
