@@ -62,4 +62,5 @@
      &     SOLVELEQ*9         = 'SOLVE_LEQ',
      &     SOLVEEVP*9         = 'SOLVE_EVP',
      &     UNITY*9            = 'ADD_UNITY',
-     &     SET_FREQ*8         = 'SET_FREQ'
+     &     SET_FREQ*8         = 'SET_FREQ',
+     &     PRINT_RES*9        = 'PRINT_RES'

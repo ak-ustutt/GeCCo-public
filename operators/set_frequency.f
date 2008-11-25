@@ -11,6 +11,7 @@
       include 'ifc_input.h'
       include 'def_me_list.h'
       include 'def_filinf.h'
+      include 'stdunit.h'
 
       type(me_list), intent(inout) ::
      &     mel
@@ -18,18 +19,23 @@
       integer, intent(in) ::
      &     order
 
+      integer, parameter ::
+     &     maximum_order = 10, ntest = 00
+
       real(8) ::
-     &     freq(order)
+     &     freq(maximum_order)
 
       integer ::
-     &     ii
+     &     ii, iprint
+
+      iprint = max(iprlvl, ntest)
 
       if (order.gt.0) then
 
         ! get complete user defined frequency array, sum of frequencies is zero
-        freq = 0d0
         call get_argument_value('calculate.experimental','freq',
-     &                          xarr=freq(1:order-1))
+     &                          xarr=freq(1:maximum_order))
+        freq(order:maximum_order) = 0d0
         freq(order) = -sum(freq)
 
         ! frequency is sum of frequencies associated with frequency indices
@@ -46,8 +52,11 @@
           call quit(1,'set_frequency',
      &       'no sign associated with this operator species')
         end if
-c some output would be nice here (if ntest.ge.100)
-c        print *,'associated frequency: ',mel%frequency
+
+        if (iprint.ge.10) 
+     &        write(luout,*)
+     &             'Frequency associated with ',trim(mel%label),
+     &             ': ',mel%frequency
       end if
 
       return

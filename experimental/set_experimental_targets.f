@@ -18,7 +18,7 @@
       include 'par_formnames_gen.h'
       include 'par_gen_targets.h'
       include 'par_actions.h'
-
+      include 'mdef_me_list.h'
       include 'multd2h.h'
 
       type(target_info), intent(inout) ::
@@ -29,13 +29,15 @@
      &     env_type
 
       integer, parameter ::
-     &     len_short = 20, len_long = 200, maxsym = 8
+     &     len_short = 20, len_long = 200, maxsym = 8,
+     &     maximum_order = 10
 
       integer ::
      &     isim, ncat, nint, ndef, occ_def(ngastp,2,60),
      &     msc, sym, r12op, ansatz, maxexc, t1ext_mode,
      &     ord, op_par, len_op_exp, side, x_max_ord, maxord,
-     &     freq_idx, digit, ilabels, ord2, op_par2, x_max_ord2
+     &     freq_idx, digit, ilabels, ord2, op_par2, x_max_ord2,
+     &     pertdirsym(3), pertdir
 
       character(len_target_name) ::
      &     mel_dia1,
@@ -64,14 +66,14 @@
       logical ::
      &     comb_ok, setr12, r12fix
 
-      real(8),allocatable ::
-     &     freq(:)
-
       logical, allocatable ::
      &     evaluate(:)
 
       integer, allocatable ::
      &     ifreq(:), isym(:)
+
+      type(me_list_array), allocatable ::
+     &     mel_dummy(:)
 
       logical, external ::
      &     next_comb
@@ -89,6 +91,8 @@
         else
           call quit(1,'set_experimental_targets','wrong r12 method')
         end if
+      else
+        t1ext_mode = 0
       end if
 
       if (iprlvl.gt.0)
@@ -103,18 +107,54 @@
 *----------------------------------------------------------------------*
       call get_argument_value('calculate.experimental','order',
      &                        ival=maxord)
-      allocate(freq(maxord),evaluate(0:maxord),
-     &         isym(maxord))
+      allocate(evaluate(0:maxord),
+     &         isym(maximum_order))
+      if (maxord.gt.maximum_order) then
+        write(pert_ord,'(i1)') maximum_order
+        call quit(1,'set_experimental_targets',
+     &        'maxord must not exceed '//pert_ord)
+      end if
       pert(1:len_short) = ' '
-      isym = 1
+      isym = -1
       call get_argument_value('calculate.experimental','pert',
-     &                        str=pert(1:maxord))
+     &                        str=pert(1:len_short))
 
       ! to be improved: irrep can be recognized automatically
       if (maxord.gt.0)
      &      call get_argument_value('calculate.experimental','pert_sym',
-     &                              iarr=isym(1:maxord))
-      freq = 0d0
+     &                              iarr=isym(1:maximum_order))
+
+      ! duplicate values for isym and pert if necessary and not specified
+      do freq_idx = 2,maxord
+        if (isym(freq_idx).eq.-1) isym(freq_idx) = isym(freq_idx-1)
+        if (pert(freq_idx:freq_idx).eq.' ')
+     &      pert(freq_idx:freq_idx) = pert(freq_idx-1:freq_idx-1)
+      end do
+
+      ! check if isym and pert input is contradicting
+      pertdirsym = -1
+      do freq_idx = 1, maxord
+        if (isym(freq_idx).lt.1.or.isym(freq_idx).gt.maxsym)
+     &      call quit(1,'set_experimental_targets',
+     &                  'pert_sym exceeds allowed range')
+        if (pert(freq_idx:freq_idx).eq.'X') then
+          pertdir = 1
+        else if (pert(freq_idx:freq_idx).eq.'Y') then
+          pertdir = 2
+        else if (pert(freq_idx:freq_idx).eq.'Z') then
+          pertdir = 3
+        else
+          call quit(1,'set_experimental_targets',
+     &                'pert must contain X,Y,Z')
+        end if
+        if (pertdirsym(pertdir).eq.-1) then
+          pertdirsym(pertdir) = isym(freq_idx)
+        else if (pertdirsym(pertdir).ne.isym(freq_idx)) then
+          call quit(1,'set_experimental_targets',
+     &                'pert and pert_sym input is contradicting')
+        end if
+      end do
+
       evaluate = .false.
 
       ! maximum excitation
@@ -390,12 +430,16 @@ c     &              1,1,parameters,1,tgt_info)
 
       ! T1 transformed Hamiltonian
       call add_target(op_hhat,ttype_op,.false.,tgt_info)
-      call set_dependency(op_hhat,op_ham,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_ham,.false.)
-      call set_rule(op_hhat,ttype_op,CLONE_OP,
-     &              op_hhat,1,1,
-     &              parameters,1,tgt_info)
+      if (.not.setr12) then
+        call set_dependency(op_hhat,op_ham,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &                          op_ham,.false.)
+        call set_rule(op_hhat,ttype_op,CLONE_OP,
+     &                op_hhat,1,1,
+     &                parameters,1,tgt_info)
+      else
+        call define_r12_hhat(tgt_info)
+      end if
 
       ! Hbar intermediate
       call add_target(op_hbar,ttype_op,.false.,tgt_info)
@@ -1128,6 +1172,19 @@ c     &                labels,2,1,parameters,2,tgt_info)
       ncat = 2  ! 2 formulae pasted into final formula
       nint = 0  ! no intermediate to factor out so far ...
       call add_target('OPT_T(0)',ttype_frm,.false.,tgt_info)
+      call get_argument_value('calculate.routes','simtraf',
+     &                        ival=isim)
+      if (isim.eq.1) then
+        nint = 1
+        call set_dependency('OPT_T(0)',form_cchhat,tgt_info)
+        call set_dependency('OPT_T(0)',mel_hhatdef,tgt_info)
+        labels(4) = form_cchhat
+      else if (isim.eq.2) then
+        nint = 1
+        call set_dependency('OPT_T(0)',form_cchbar,tgt_info)
+        call set_dependency('OPT_T(0)',meldef_hbar,tgt_info)
+        labels(4) = form_cchbar
+      end if
       call set_dependency('OPT_T(0)','RES_LAG(0)_L',tgt_info)
       call set_dependency('OPT_T(0)','RESP_LAG(0)',tgt_info)
       call set_dependency('OPT_T(0)','DEF_ME_LRESP(0)',tgt_info)
@@ -1346,9 +1403,19 @@ c     &                labels,2,1,parameters,2,tgt_info)
       lresp_name = 'LRESP(n)'
       do ord = 0,maxord
         sym = 1
+        allocate(ifreq(ord))
         do freq_idx = 1,ord
           sym = multd2h(sym,isym(freq_idx))
+          ifreq(freq_idx) = freq_idx
         end do
+        if (sym.ne.1.and.evaluate(ord)) then
+          ! non-total symmetric integrals are zero
+          evaluate(ord) = .false.
+          allocate(mel_dummy(1))
+          call print_result(maxord,ord,ifreq,mel_dummy(1)%mel,.true.)
+          deallocate(mel_dummy)
+        end if
+        deallocate(ifreq)
         write(def_me_l_name(14:14),'(i1)') ord
         write(me_l_name(10:10),'(i1)') ord
         write(lresp_name(7:7),'(i1)') ord
@@ -1551,6 +1618,16 @@ c     &                labels,2,1,parameters,2,tgt_info)
         call set_rule(eval_lag_name,ttype_opme,EVAL,
      &       labels,1,0,
      &       parameters,0,tgt_info)
+        ! print result
+        allocate(ifreq(ord))
+        do digit = 1,ord
+          ifreq(digit) = digit
+        end do
+        call ord_parameters(-1,parameters,ord,maxord,ifreq)
+        deallocate(ifreq)
+        call set_rule(eval_lag_name,ttype_opme,PRINT_RES,
+     &       def_me_l_name(5:15),1,1,
+     &       parameters,1,tgt_info)
       end do
 
       ! hub for DEF_ME_Y(n)w-dependencies
