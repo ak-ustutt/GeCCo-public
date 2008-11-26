@@ -38,9 +38,6 @@
       type(formula_item), pointer ::
      &     form_pnt, form_pnt_next
 
-      integer, external ::
-     &     factorial
-
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'pert_order_trunction')
       endif
@@ -78,12 +75,9 @@
           end do
 
           ! order >= 0: delete term if total order does not equal order
-c          !             and multiply contraction factor with factorial(order)
           ! order < 0: delete term if zero by (2n+1) and (2n+2) rules
           if (order.ge.0) then
             delete = (iord.ne.order)
-c            if (.not.delete) form_pnt%contr%fac = 
-c     &                       form_pnt%contr%fac*factorial(order)
           else
             t_max_ord = int((real(iord)-1)/2+0.6)
             l_max_ord = int((real(iord)-2)/2+0.6)
