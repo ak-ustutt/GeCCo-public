@@ -33,7 +33,7 @@
       logical ::
      &     first
       integer ::
-     &     did, idxstr, iel, ioff, msa, ihpv,
+     &     did, idxstr, idxbuf, iel, ioff, msa, ihpv,
      &     idx_occ, njoined, idxst, idxnd, iadd, ijoin, idum
       integer ::
      &     msdst(ngastp,2,mel%op%njoined),
@@ -79,6 +79,7 @@
       ! loop over all possible index tuples:
       first = .true.
       idxstr = 0
+      idxbuf = 0
       do while(next_tupel_ca(idorb,idspn,idspc,
      &     nel,njoined,op%ihpvca_occ(1,1,idx_occ),
      &     mel%idx_graph(1,1,idx_occ),
@@ -90,6 +91,7 @@
      &     hpvxseq,lexlscr))
         first = .false.
         idxstr = idxstr+1
+        idxbuf = idxbuf+1
 
         idxnd = 0
         iadd = 0
@@ -97,7 +99,7 @@
           idxst = idxnd+1
           idxnd = idxst+nelc(ijoin)+nela(ijoin)-1
 
-          spins(idxst:idxnd,idxstr) = idspn(idxst:idxnd)
+          spins(idxst:idxnd,idxbuf) = idspn(idxst:idxnd)
 
 c          do iel = idxst, idxnd
 c            if (idspn(iel).eq.1)
@@ -122,24 +124,24 @@ c          iadd = iadd+1
 
         end do
 
-        indices(1:nel,idxstr) = idorb(1:nel)
-        val(idxstr) = buffer(idxstr)
+        indices(1:nel,idxbuf) = idorb(1:nel)
+        val(idxbuf) = buffer(idxstr)
 
-        if(idxstr.lt.maxlen)cycle
+        if(idxbuf.lt.maxlen)cycle
 
-        lenbuf = idxstr
+        lenbuf = idxbuf
         write(luwrt) lenbuf,
-     &       indices(1:nel,1:idxstr), spins(1:nel,1:idxstr),
-     &       val(1:idxstr)
-        idxstr = 0
+     &       indices(1:nel,1:lenbuf), spins(1:nel,1:lenbuf),
+     &       val(1:lenbuf)
+        idxbuf = 0
 
       end do
 
-      if(idxstr.gt.0)then
-        lenbuf = idxstr
+      if(idxbuf.gt.0)then
+        lenbuf = idxbuf
         write(luwrt) lenbuf,
-     &       indices(1:nel,1:idxstr), spins(1:nel,1:idxstr),
-     &       val(1:idxstr)
+     &       indices(1:nel,1:lenbuf), spins(1:nel,1:lenbuf),
+     &       val(1:lenbuf)
       endif
 
 c dbg

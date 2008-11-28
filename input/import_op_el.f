@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine import_op_el(label_mel,
      &     list_type,env_type,
-     &     op_info,str_info,orb_info)
+     &     op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     import matrix elements from environment for ME-list with 
 *     label "label_mel" 
@@ -18,6 +18,7 @@
       include 'def_orbinf.h'
       include 'par_opnames_gen.h'
       include 'mdef_operator_info.h'
+      include 'def_strmapinf.h'
 
       character(*), intent(in) ::
      &     label_mel
@@ -27,6 +28,8 @@
      &     env_type*(*), list_type*(*)
       type(strinf), intent(in) ::
      &     str_info
+      type(strmapinf) ::
+     &     strmap_info
       type(orbinf), intent(in) ::
      &     orb_info
 
@@ -35,6 +38,8 @@
 
       integer ::
      &     ipri, mode, scaling, idx_mel
+      real(8) ::
+     &     xdum
       logical ::
      &     anti
       type(me_list), pointer ::
