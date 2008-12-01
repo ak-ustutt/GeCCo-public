@@ -54,8 +54,8 @@
         ! get complete user defined frequency array, sum of frequencies is zero
         call get_argument_value('calculate.experimental','freq',
      &                          xarr=freq(1:maximum_order))
-        freq(order:maximum_order) = 0d0
-        freq(order) = -sum(freq)
+        freq(maxord:maximum_order) = 0d0
+        freq(maxord) = -sum(freq)
       end if
 
       if (order.eq.0) then
@@ -85,7 +85,8 @@
       if (order.gt.0) then
         part2(1:2) = '<<'
         do freq_idx = 1,order
-          part2(2*freq_idx+1:2*freq_idx+2) =pert(freq_idx:freq_idx)//','
+          part2(2*freq_idx+1:2*freq_idx+2) =
+     &                    pert(ifreq(freq_idx):ifreq(freq_idx))//','
         end do
         part2(2*order+2:2*order+3) = '>>'
         last2 = 2*order+3
@@ -93,9 +94,9 @@
         part3(1:19) = ' with frequencies ('
         abssum = 0d0
         do freq_idx = 1,order
-          abssum = abssum + abs(freq(freq_idx))
+          abssum = abssum + abs(freq(ifreq(freq_idx)))
           write(part3(10*freq_idx+10:10*freq_idx+18),'(f9.6)')
-     &            freq(freq_idx)
+     &            freq(ifreq(freq_idx))
           part3(10*freq_idx+19:10*freq_idx+19) = ','
         end do
         if (abssum.gt.0d0) then

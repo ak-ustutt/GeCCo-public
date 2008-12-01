@@ -52,8 +52,8 @@
 
       integer ::
      &     ilabel, idx, idx_l, idx_t, idx_resplag, idx_op,
-     &     iprint, iterm, op_idx(5+maxterm), op_num(5+maxterm),
-     &     connect(2*maxterm+1), switch, no_l
+     &     iprint, iterm, op_idx(6+maxterm), op_num(6+maxterm),
+     &     connect(2*maxterm+2), switch, no_l
  
       integer, external::
      &     idx_oplist2

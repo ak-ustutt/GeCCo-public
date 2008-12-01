@@ -33,15 +33,19 @@
      &     maximum_order = 10
 
       logical ::
-     &     delete, recognized
+     &     delete, recognized, multiply
       integer ::
      &     nvtx, ivtx, op_ord, idx_op, t_max_ord, l_max_ord, op_spec,
-     &     count_freq(order), ii, jj, op_ifreq, njoker
+     &     count_freq(maximum_order), ii, jj, op_ifreq, njoker,
+     &     pattern(maximum_order), factor
 
       type(cntr_vtx), pointer ::
      &     vertex(:)
       type(formula_item), pointer ::
      &     form_pnt, form_pnt_next
+
+      integer, allocatable ::
+     &     structure(:,:)
 
       integer, external ::
      &     factorial
@@ -50,17 +54,11 @@
         call write_title(luout,wst_dbg_subr,'freq_pattern_trunction')
       endif
 
-      ! check whether freq_idx has unique entries
-      count_freq = 0
-      do jj = 1,maximum_order
-        do ii = 1,order
-          if (jj.eq.freq_idx(ii)) 
-     &       count_freq(ii) = count_freq(ii) + 1
-        end do
+      ! determine frequency index pattern
+      pattern = 0
+      do ii = 1,order
+        pattern(freq_idx(ii)) = pattern(freq_idx(ii)) + 1
       end do
-      if (.not.all(count_freq.eq.1)) 
-     &       call quit(1,'freq_pattern_truncation',
-     &       'Frequency pattern must have unique entries.')
 
       form_pnt => flist
       do 
@@ -81,10 +79,12 @@
 
           nvtx = form_pnt%contr%nvtx
           vertex => form_pnt%contr%vertex
+          allocate(structure(maximum_order,nvtx))
 
           ! delete term if frequency pattern does not match freq_idx
           njoker = 0
           count_freq = 0
+          structure = 0
           delete = .false.
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
@@ -94,13 +94,14 @@
               if (op_info%op_arr(idx_op)%op%ifreq(1).gt.0) then
                 do ii = 1,op_ord
                   op_ifreq = op_info%op_arr(idx_op)%op%ifreq(ii)
+                  structure(op_ifreq,ivtx) = structure(op_ifreq,ivtx)+1
                   recognized = .false.
                   do jj = 1,order
                     if (op_ifreq.eq.freq_idx(jj)) then
-                      count_freq(jj) = count_freq(jj) + 1
                       recognized = .true.
                     end if
                   end do
+                  count_freq(op_ifreq) = count_freq(op_ifreq) + 1
                   if (.not.recognized) delete = .true.
                 end do
               else if (op_info%op_arr(idx_op)%op%ifreq(1).eq.0) then
@@ -112,19 +113,38 @@
           ii = 0
           do while ((njoker.gt.0).and.(ii.lt.order))
             ii = ii+1
-            if (count_freq(ii).eq.0) then
+            if (count_freq(ii).lt.pattern(ii)) then
               count_freq(ii) = 1
               njoker = njoker - 1
             end if
           end do
-          if ((.not.all(count_freq.eq.1)).and.(njoker.eq.0))
+          if (njoker.gt.0) call quit(1,'freq_pattern_truncation',
+     &                            'too many frequency index jokers')
+          if ((.not.all(count_freq-pattern.eq.0)).and.(njoker.eq.0))
      &              delete = .true.
 
           if (delete) then
             ! Delete the node.
             call delete_fl_node(form_pnt)
             deallocate(form_pnt)
+          else
+            ! multiply with factor to correct for omitted ("redundant") terms
+            do ii = 1,maximum_order
+              multiply = .false.
+              recognized = .false.
+              do jj = 1,nvtx
+                if (structure(ii,jj).gt.0.and.recognized)
+     &                        multiply = .true.
+                if (structure(ii,jj).gt.0) recognized = .true.
+              end do
+              if (multiply) then
+                factor = factorial(sum(structure(ii,:)))
+                form_pnt%contr%fac = form_pnt%contr%fac * factor
+              end if
+            end do
           end if
+        
+          deallocate(structure)
 
         case default
           write(luout,*)'command = ',form_pnt%command

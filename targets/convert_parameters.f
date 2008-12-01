@@ -644,10 +644,10 @@ c        read(parameters(2),'(240(i1))')
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
-        write(parameters,'(20i2)')
+        write(parameters,*)
      &        iorder, species, ifreq(1:iorder)
       else
-        read(parameters,'(20i2)')
+        read(parameters,*)
      &       iorder, species, ifreq(1:iorder)
       end if
 
