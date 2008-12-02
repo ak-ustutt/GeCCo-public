@@ -25,16 +25,30 @@
       type(operator), pointer ::
      &     op
       
+      real(8) ::
+     &     fac
       logical ::
      &     dagger
       integer ::
      &     njres, maxnj, maxset, isvtx, idxoff, nset, nj, narc, nxarc,
-     &     ipos, nocc, ioff, ivtx, iarc, ixarc, idx, ifac, p, q
+     &     ipos, nocc, ioff, ivtx, iarc, iarc0, ixarc, idx, ifac, p, q
       integer, pointer ::
      &     occ(:,:,:), occset(:,:,:,:), typset(:), idx0set(:,:,:,:),
-     &     idxoff_cnt(:,:,:), idxoff_opn(:,:,:), occ_scr(:,:)
+     &     idxoff_cnt(:,:,:), idxoff_opn(:,:,:), occ_scr(:,:),
+     &     arc_seq(:)
       character ::
      &     str*1024
+
+      integer, external ::
+     &     sign_global
+
+
+      allocate(arc_seq(contr%narc+1))
+
+      ! get a nice sequence of contractions (as to get "nice-looking diagrams")
+      call get_nice_arc_seq(arc_seq,contr)
+
+      fac = contr%fac*dble(sign_global(arc_seq,contr,op_info))
 
       op => op_info%op_arr(contr%idx_res)%op
       njres = op%njoined
@@ -65,10 +79,12 @@
         ipos = len_trim(str)+1
         write(str(ipos:),'("&=")')
       else if (newline) then
-        write(str,'("\\&+")')
+        if (fac.ge.0d0) write(str,'("\\&+")')
+        if (fac.lt.0d0) write(str,'("\\&-")')
         lencnt = lencnt+1
       else
-        write(str,'("+")')
+        if (fac.ge.0d0) write(str,'("+")')
+        if (fac.lt.0d0) write(str,'("-")')
         lencnt = lencnt+1
       end if
 
@@ -88,9 +104,10 @@
       
       idxoff_cnt(1:ngastp,1:2,1) = 0      
       occ_scr = 0
-      do iarc = 1, narc-1
+      do iarc0 = 1, narc-1
+        iarc = arc_seq(iarc0)
         occ_scr = occ_scr + contr%arc(iarc)%occ_cnt
-        idxoff_cnt(1:ngastp,1:2,iarc+1) = occ_scr
+        idxoff_cnt(1:ngastp,1:2,iarc0+1) = occ_scr
       end do
 
       idxoff_opn(1:ngastp,1:2,1) = 0
@@ -117,13 +134,14 @@
           idx0set = 0
           typset = 0
           nset = 0
-          do iarc = 1, narc
+          do iarc0 = 1, narc
+            iarc = arc_seq(iarc0)
             if (contr%arc(iarc)%link(1).eq.ivtx) then
               nset = nset+1
               typset(nset) = 2
               occset(1:ngastp,1:2,idx,nset) = contr%arc(iarc)%occ_cnt
               idx0set(1:ngastp,1:2,idx,nset) =
-     &                                   idxoff_cnt(1:ngastp,1:2,iarc)
+     &                                   idxoff_cnt(1:ngastp,1:2,iarc0)
             end if
             if (contr%arc(iarc)%link(2).eq.ivtx) then
               nset = nset+1
@@ -131,7 +149,7 @@
               occset(1:ngastp,1:2,idx,nset) =
      &                           iocc_dagger(contr%arc(iarc)%occ_cnt)
               idx0set(1:ngastp,1:2,idx,nset) =
-     &                       iocc_dagger(idxoff_cnt(1:ngastp,1:2,iarc))
+     &                       iocc_dagger(idxoff_cnt(1:ngastp,1:2,iarc0))
             end if
           end do
 
@@ -162,7 +180,7 @@
       write(lutex,'(a)') trim(str)
 
       deallocate(occset,idx0set,typset,occ_scr,
-     &     idxoff_cnt,idxoff_opn)
+     &     idxoff_cnt,idxoff_opn,arc_seq)
 
       return
       end
