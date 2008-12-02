@@ -38,6 +38,28 @@
       logical ::
      &     irrep_found
 
+      ! buffer for AO-matrix as read from AOPROPER
+      nao_full = (orb_info%nbast+orb_info%nxbast+1)*
+     &           (orb_info%nbast+orb_info%nxbast)/2
+      ifree = mem_alloc_real(ao_full,nao_full,'ao_full')
+
+      label = pertdir//'DIPLEN '
+      luerror = luout
+
+      ! open files
+      call file_init(ffaoprop,aoproper,ftyp_sq_unf,0)
+      call file_open(ffaoprop)
+
+      luaoprop = ffaoprop%unit
+      rewind luaoprop
+
+      call mollab(label,luaoprop,luerror)
+
+      ! read matrix in upper triangular form
+      read (luaoprop) ao_full(1:nao_full)
+
+      call file_close_keep(ffaoprop)
+
       ! get norm for all IRREPS
       norm = 0d0
       do gamma = 1, orb_info%nsym
@@ -50,29 +72,9 @@
      &            + (orb_info%nbas(isym)+orb_info%nxbas(isym))*
      &              (orb_info%nbas(jsym)+orb_info%nxbas(jsym))
         end do
-        nao_full = (orb_info%nbast+orb_info%nxbast+1)*
-     &             (orb_info%nbast+orb_info%nxbast)/2
 
-        ! buffer for AO-matrix as read from AOPROPER
-        ifree = mem_alloc_real(ao_full,nao_full,'ao_full')
         ! buffer for extracted matrix in symmetry blocked form
         ifree = mem_alloc_real(ao_blk,nao_blk,'ao_blk')
-
-        ! open files
-        call file_init(ffaoprop,aoproper,ftyp_sq_unf,0)
-        call file_open(ffaoprop)
-
-        luaoprop = ffaoprop%unit
-        rewind luaoprop
-
-        label = pertdir//'DIPLEN '
-        luerror = luout
-        call mollab(label,luaoprop,luerror)
-
-        ! read matrix in upper triangular form
-        read (luaoprop) ao_full(1:nao_full)
-
-        call file_close_keep(ffaoprop)
 
         ! reorder
         len_blk(1:orb_info%nsym) =
@@ -85,7 +87,13 @@
         do isym = 1,nao_blk
           norm(gamma) = norm(gamma) + ao_blk(isym)**2
         end do
+
+        ! clear buffer for extracted matrix in symmetry blocked form
+        ifree = mem_dealloc('ao_blk')
       end do
+
+      ! clear buffer for AO matrix as read from AOPROPER
+      ifree = mem_dealloc('ao_full')
 
       ! pert_sym is only irrep with a non-zero norm
       irrep_found = .false.
