@@ -197,7 +197,7 @@
 
       ! define V(1)
       call add_target('V(1)',ttype_op,.false.,tgt_info)
-      call hop_parameters(-1,parameters,1,1,1,setr12)
+      call hop_parameters(-1,parameters,0,1,1,setr12)
       call set_rule('V(1)',ttype_op,DEF_HAMILTONIAN,'V(1)',
      &              1,1,parameters,1,tgt_info)
       call ord_parameters(-1,parameters,1,3,-1)
@@ -211,7 +211,7 @@
         if (redundant_comb(freq_idx,freq_idxnew,redun,1,maxord)) cycle
         write(opname(5:5),'(i1)') freq_idxnew
         call add_target(trim(opname),ttype_op,.false.,tgt_info)
-        call hop_parameters(-1,parameters,1,1,3,setr12)
+        call hop_parameters(-1,parameters,0,1,3,setr12)
         call set_rule(trim(opname),ttype_op,DEF_HAMILTONIAN,
      &                trim(opname),
      &                1,1,parameters,1,tgt_info)

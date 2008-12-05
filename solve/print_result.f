@@ -29,16 +29,16 @@
      &     pert
 
       character(len_long) ::
-     &     part1, part2, part3, part4, line
+     &     part1, part2, part3, part4, line, phrase
 
       integer ::
-     &     freq_idx, last1, last2, last3, last4
+     &     freq_idx, last1, last2, last3, last4, iostatus
 
       real(8) ::
-     &     freq(maximum_order), abssum, value
+     &     freq(maximum_order), abssum, value, nucmom
 
       logical ::
-     &     closeit
+     &     closeit, file_exists, got_nucmom
 
       pert(1:len_short) = ' '
       call get_argument_value('calculate.experimental','pert',
@@ -62,8 +62,34 @@
         last1 = 6
         part1(1:last1) = 'Energy'
       else if (order.eq.1) then
-        last1 = 41
-        part1(1:last1) = 'Dipole moment (correlation contribution) '
+        got_nucmom = .false.
+        nucmom = 0d0
+        inquire(file='4traf.out',exist=file_exists)
+        if (file_exists) then
+          ! read nuclear dipole moment from file 4traf.out if existing
+          open(1,file='4traf.out')
+          do while (iostatus.ge.0)
+            read(1,'(a25)',iostat=iostatus) phrase(1:25)
+            if (phrase(1:25).eq.' dipole moment of nuclei:') then
+              if (pert(ifreq(1):ifreq(1)).ne.'X') read(1,*) phrase(1:25)
+              if (pert(ifreq(1):ifreq(1)).eq.'Z') read(1,*) phrase(1:25)
+              read(1,*) phrase, nucmom
+              got_nucmom = .true.
+              write(luout,'("adding nuclear dipole moment <<",a1,
+     &                       "nuc>> = ",f18.12)')
+     &                       pert(ifreq(1):ifreq(1)), nucmom
+              exit
+            end if
+          end do
+          close(1)
+        end if
+        if (got_nucmom) then
+          last1 = 22
+          part1(1:last1) = 'Dipole moment (total) '
+        else
+          last1 = 27
+          part1(1:last1) = 'Dipole moment (electronic) '
+        end if
       else if (order.eq.2) then
         last1 = 15
         part1(1:last1) = 'Polarizability '
@@ -120,6 +146,12 @@
         if (closeit)
      &       call file_close_keep(mel%fhand)
       end if
+
+      ! flip sign acc. to Taylor expansion convention: 
+      ! E = E0 - mu*e - (1/2)alpha*e^2 - (1/6)beta*e^3 - ...
+      if (order.gt.0) value = -value
+      ! add nuclear dipole moment (if not found, add zero)
+      if (order.eq.1) value = value + nucmom
 
       last4 = 28
       write(part4(1:last4),'(": >>> ",f18.12," <<<")') value
