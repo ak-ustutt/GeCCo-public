@@ -64,7 +64,7 @@
      &            write(luout,*) 'cmo(icmoc) = ',cmo(icmoc)
 
             call dgemm('n','n',nbas(isym),norb,nbas(isym),
-     &                1d0,xao(ixao),nbas(isym),
+     &                1d0,xao(ixao),nbas(isym)+nxbas(isym),
      &                    cmo(icmoc),nbas(isym),
      &                0d0,xhlf,nbas(isym))
 
