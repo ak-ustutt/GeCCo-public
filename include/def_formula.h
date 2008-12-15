@@ -1,6 +1,6 @@
       integer, parameter ::
      &     form_maxlen_comment = 256,
-     &     form_maxlen_label = 16
+     &     form_maxlen_label = 32
 
       type formula
         character ::

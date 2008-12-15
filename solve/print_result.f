@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine print_result(maxord,order,ifreq,mel,zero)
+      subroutine print_result(order,ifreq,mel,zero)
 *----------------------------------------------------------------------*
 *     print calculated property
 *     matthias, 2008
@@ -17,46 +17,59 @@
      &     mel
 
       integer, intent(in) ::
-     &     maxord, order, ifreq(order)
+     &     order, ifreq(order)
 
       logical, intent(in) ::
      &     zero
 
       integer, parameter ::
-     &     len_short = 20, maximum_order = 10, len_long = 200
-
-      character(len_short) ::
-     &     pert
+     &     maximum_order = 10, len_long = 200
 
       character(len_long) ::
-     &     part1, part2, part3, part4, line, phrase
+     &     pert, part1, part2, part3, part4, line, phrase
 
       integer ::
-     &     freq_idx, last1, last2, last3, last4, iostatus
+     &     freq_idx, last1, last2, last3, last4, iostatus,
+     &     icnt, ncnt, pos
 
       real(8) ::
-     &     freq(maximum_order), abssum, value, nucmom
+     &     abssum, value, nucmom
+
+      integer, allocatable ::
+     &     maxord(:)
+
+      real(8), allocatable ::
+     &     freq(:,:)
 
       logical ::
      &     closeit, file_exists, got_nucmom
 
-      pert(1:len_short) = ' '
-      call get_argument_value('calculate.experimental','pert',
-     &                        str=pert(1:len_short))
+      ncnt = is_keyword_set('calculate.experimental')
+      allocate(maxord(ncnt),freq(ncnt,maximum_order))
 
-      ! duplicate values for pert if necessary and not specified
-      do freq_idx = 2,maxord
-        if (pert(freq_idx:freq_idx).eq.' ')
-     &      pert(freq_idx:freq_idx) = pert(freq_idx-1:freq_idx-1)
+      pert(1:len_long) = ' '
+      do icnt = 1,ncnt
+        call get_argument_value('calculate.experimental','order',
+     &       keycount=icnt,ival=maxord(icnt))
       end do
+      do icnt = 1,ncnt
+        pos = (icnt-1)*maxval(maxord) + 1
+        call get_argument_value('calculate.experimental','pert',
+     &       keycount=icnt,str=pert(pos:len_long))
 
-      if (order.gt.0) then
+        ! duplicate values for pert if necessary and not specified
+        do freq_idx = 2,maxord(icnt)
+          pos = (icnt-1)*maxval(maxord) + freq_idx
+          if (pert(pos:pos).eq.' ')
+     &        pert(pos:pos) = pert(pos-1:pos-1)
+        end do
+
         ! get complete user defined frequency array, sum of frequencies is zero
         call get_argument_value('calculate.experimental','freq',
-     &                          xarr=freq(1:maximum_order))
-        freq(maxord:maximum_order) = 0d0
-        freq(maxord) = -sum(freq)
-      end if
+     &       keycount=icnt,xarr=freq(icnt,1:maximum_order))
+        freq(icnt,maxord(icnt):maximum_order) = 0d0
+        freq(icnt,maxord(icnt)) = -sum(freq(icnt,:))
+      end do
 
       if (order.eq.0) then
         last1 = 6
@@ -105,7 +118,7 @@
       else
         last1 = 24
         part1(1:last1) = 'xth Hyperpolarizability '
-        write(part1(1:1),'(i1)') order
+        write(part1(1:1),'(i1)') order-2
       end if
 
       if (order.gt.0) then
@@ -120,9 +133,11 @@
         part3(1:19) = ' with frequencies ('
         abssum = 0d0
         do freq_idx = 1,order
-          abssum = abssum + abs(freq(ifreq(freq_idx)))
+          icnt = (ifreq(freq_idx)-1)/maxval(maxord)+1
+          pos = ifreq(freq_idx)-(icnt-1)*maxval(maxord)
+          abssum = abssum + abs(freq(icnt,pos))
           write(part3(10*freq_idx+10:10*freq_idx+18),'(f9.6)')
-     &            freq(ifreq(freq_idx))
+     &            freq(icnt,pos)
           part3(10*freq_idx+19:10*freq_idx+19) = ','
         end do
         if (abssum.gt.0d0) then

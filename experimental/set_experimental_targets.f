@@ -29,15 +29,15 @@
      &     env_type
 
       integer, parameter ::
-     &     len_short = 20, len_long = 200, maxsym = 8,
-     &     maximum_order = 10
+     &     len_short = 32, len_long = 256, maxsym = 8,
+     &     maximum_order = 8, ntest = 00
 
       integer ::
      &     isim, ncat, nint, ndef, occ_def(ngastp,2,60),
      &     msc, sym, r12op, ansatz, maxexc, t1ext_mode,
-     &     ord, op_par, len_op_exp, side, x_max_ord, maxord,
+     &     ord, op_par, len_op_exp, side, x_max_ord,
      &     freq_idx, digit, ilabels, ord2, op_par2, x_max_ord2,
-     &     pertdir, freq_idxnew
+     &     pertdir, freq_idxnew, ncnt, icnt, pos, maxexc_cur,icnt2
 
       character(len_target_name) ::
      &     mel_dia1,
@@ -48,10 +48,10 @@
       character(len_short) ::
      &     opname, melname, defmelname, formname, formname2,
      &     opname2, melname2, defmelname2, hubname, optname,
-     &     solvename, pert, evalname, lagname
+     &     solvename, evalname, lagname
 
       character(len_long) ::
-     &     opexp
+     &     opexp, pert
 
       character ::
      &     op_name*4, op_parent*1, lagf_name*12, op_exp*50,
@@ -63,22 +63,32 @@
      &     approx
 
       logical ::
-     &     comb_ok, setr12, r12fix, redundant, evaluate
+     &     setr12, r12fix, set_zero, eval_dipmom(3)
 
       real(8) ::
-     &     freq(maximum_order), freqsum
+     &     freqsum
+
+      real(8), allocatable ::
+     &     freq(:,:)
 
       integer, allocatable ::
-     &     ifreq(:), isym(:), redun(:), ifreqnew(:)
+     &     ifreq(:), isym(:), redun(:), ifreqnew(:), maxord(:)
+
+      logical, allocatable ::
+     &     evaluate(:)
 
       type(me_list_array), allocatable ::
      &     mel_dummy(:)
 
       logical, external ::
-     &     next_comb, redundant_comb
+     &     next_comb
 
       integer, external ::
-     &     pert_sym
+     &     pert_sym, idx_target
+
+      ! skip this section if not requested
+      ncnt = is_keyword_set('calculate.experimental')
+      if (ncnt.eq.0) return
 
       ! set r12 targets
       setr12 = is_keyword_set('method.R12').gt.0
@@ -107,63 +117,94 @@
 *----------------------------------------------------------------------*
 *     get keywords and allocate arrays:
 *----------------------------------------------------------------------*
-      call get_argument_value('calculate.experimental','order',
-     &                        ival=maxord)
-      allocate(redun(maxord),isym(maxord))
-      if (maxord.gt.maximum_order) then
+      allocate(maxord(ncnt),freq(ncnt,maximum_order),evaluate(ncnt))
+      do icnt = 1,ncnt
+        call get_argument_value('calculate.experimental','order',
+     &       keycount=icnt,ival=maxord(icnt))
+      end do
+      allocate(redun(ncnt*maxval(maxord)),isym(ncnt*maxval(maxord)))
+      redun = 0
+      isym = 0
+      if (maxval(maxord).gt.maximum_order) then
         write(pert_ord,'(i1)') maximum_order
         call quit(1,'set_experimental_targets',
      &        'maxord must not exceed '//pert_ord)
       end if
-      pert(1:len_short) = ' '
-      call get_argument_value('calculate.experimental','pert',
-     &                        str=pert(1:len_short))
+      pert(1:len_long) = ' '
+      do icnt = 1,ncnt
+        pos = (icnt-1)*maxval(maxord) + 1
+        call get_argument_value('calculate.experimental','pert',
+     &       keycount=icnt,str=pert(pos:len_long))
 
-      ! duplicate values for pert if necessary and not specified
-      do freq_idx = 2,maxord
-        if (pert(freq_idx:freq_idx).eq.' ')
-     &      pert(freq_idx:freq_idx) = pert(freq_idx-1:freq_idx-1)
-      end do
+        ! duplicate values for pert if necessary and not specified
+        do freq_idx = 2,maxord(icnt)
+          pos = (icnt-1)*maxval(maxord) + freq_idx
+          if (pert(pos:pos).eq.' ')
+     &        pert(pos:pos) = pert(pos-1:pos-1)
+        end do
 
-      ! check if pert input is ok
-      do freq_idx = 1, maxord
-        if (pert(freq_idx:freq_idx).ne.'X' .and.
-     &        pert(freq_idx:freq_idx).ne.'Y' .and.
-     &        pert(freq_idx:freq_idx).ne.'Z')
-     &        call quit(1,'set_experimental_targets',
-     &        'pert must contain X,Y,Z')
-      end do
+        ! check if pert input is ok
+        pos = (icnt-1)*maxval(maxord)
+        do freq_idx = pos+1,pos+maxord(icnt)
+          if (pert(freq_idx:freq_idx).ne.'X' .and.
+     &          pert(freq_idx:freq_idx).ne.'Y' .and.
+     &          pert(freq_idx:freq_idx).ne.'Z')
+     &          call quit(1,'set_experimental_targets',
+     &          'pert must contain X,Y,Z')
 
-      ! determine irreps of perturbation operators
-      do freq_idx = 1, maxord
-        isym(freq_idx) = pert_sym(pert(freq_idx:freq_idx),orb_info)
+          ! determine irreps of perturbation operators
+          isym(freq_idx) = pert_sym(pert(freq_idx:freq_idx),orb_info)
+        end do
       end do
 
       ! determine redundancies
-      if (maxord.gt.0) then
+      if (maxval(maxord).gt.0) then
 
-        ! get complete user defined frequency array, sum of frequencies is zero
-        call get_argument_value('calculate.experimental','freq',
-     &                          xarr=freq(1:maximum_order))
-        freq(maxord:maximum_order) = 0d0
-        freq(maxord) = -sum(freq)
+        do icnt = 1,ncnt
 
-        redun = 0
-        do digit = 1,maxord
-          do freq_idx = 1,digit-1
-            if (pert(digit:digit).eq.pert(freq_idx:freq_idx) .and.
-     &          abs(freq(digit)-freq(freq_idx)).lt.1d-12)
-     &          redun(digit) = freq_idx
+          ! get user defined frequency array, sum of frequencies is zero
+          call get_argument_value('calculate.experimental','freq',
+     &         keycount=icnt,xarr=freq(icnt,1:maximum_order))
+          freq(icnt,maxord(icnt):maximum_order) = 0d0
+          freq(icnt,maxord(icnt)) = -sum(freq(icnt,:))
+
+          ! determine redundancies
+          do digit = 1,maxord(icnt)
+            pos = (icnt-1)*maxval(maxord) + digit
+            do freq_idx = 1,pos-1
+              icnt2 = (freq_idx-1)/maxval(maxord)+1
+              if (pert(pos:pos).eq.pert(freq_idx:freq_idx) .and.
+     &           abs(freq(icnt,digit) - freq(icnt2,freq_idx-(icnt2-1) *
+     &           maxval(maxord))).lt.1d-12) redun(pos) = freq_idx
+            end do
+            if (redun(pos).eq.0) redun(pos) = pos
           end do
-          if (redun(digit).eq.0) redun(digit) = digit
         end do
       end if
 
       evaluate = .true.
 
       ! maximum excitation
-      call get_argument_value('calculate.experimental','maxexc',
-     &                        ival=maxexc)
+      maxexc = -1
+      do icnt = 1,ncnt
+        call get_argument_value('calculate.experimental','maxexc',
+     &       keycount=icnt,ival=maxexc_cur)
+        if (icnt.eq.1) then
+          maxexc = maxexc_cur
+        else if (maxexc.ne.maxexc_cur) then
+          call quit(1,'set_experimental_targets',
+     &                'maxexc must be the same for all requested props')
+        end if
+      end do
+
+      if (ntest.ge.100) then
+        write(luout,*) 'keywords processed:'
+        write(luout,*) 'ncnt: ',ncnt
+        write(luout,*) 'maxord: ',maxord
+        write(luout,*) 'pert: ',pert(1:ncnt*maxval(maxord))
+        write(luout,*) 'freq: ',freq
+        write(luout,*) 'redun: ',redun
+      end if
 
 *----------------------------------------------------------------------*
 *     Operators:
@@ -207,9 +248,11 @@
       ! define frequency components V(1)1, V(1)2, ...,V(1)maxord
       opname(1:len_short) = ' '
       opname(1:4) = 'V(1)'
-      do freq_idx = 1,maxord
-        if (redundant_comb(freq_idx,freq_idxnew,redun,1,maxord)) cycle
-        write(opname(5:5),'(i1)') freq_idxnew
+      freq_idx = 0
+      do while (next_comb(freq_idx,1,maxord,ncnt))
+        call redundant_comb(freq_idx,freq_idxnew,redun,1,maxord,ncnt)
+        write(opname(5:6),'(i2.2)') freq_idxnew
+        if (idx_target(trim(opname),tgt_info).gt.0) cycle
         call add_target(trim(opname),ttype_op,.false.,tgt_info)
         call hop_parameters(-1,parameters,0,1,3,setr12)
         call set_rule(trim(opname),ttype_op,DEF_HAMILTONIAN,
@@ -284,11 +327,11 @@ c     &              1,1,parameters,1,tgt_info)
         if (op_par.eq.1.) then
           op_parent = 'T'
           op_name = 'T(x)'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         else
           op_parent = 'L'
           op_name = 'L(x)'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         end if
         do ord=0,x_max_ord
           write(op_name(3:3),'(i1)') ord
@@ -308,33 +351,32 @@ c     &              1,1,parameters,1,tgt_info)
             opname(1:len_short) = ' '
             opname(1:4) = op_name
             allocate(ifreq(ord), ifreqnew(ord))
-            do digit = 1,ord
-              ifreq(digit) = digit
-            end do
-            comb_ok = .true.
-            do while (comb_ok)
-              if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &        then
-                do digit = 1,ord
-                  write(opname(4+digit:4+digit),'(i1)') ifreqnew(digit)
-                end do
-                call add_target(trim(opname),ttype_op,.false.,tgt_info)
-                call set_dependency(trim(opname),op_parent,tgt_info)
-                call cloneop_parameters(-1,parameters,op_parent,.false.)
-                call set_rule(trim(opname),ttype_op,CLONE_OP,
-     &                        trim(opname),1,1,
-     &                        parameters,1,tgt_info)
-                call ord_parameters(-1,parameters,ord,op_par,ifreqnew)
-                call set_rule(trim(opname),ttype_op,SET_ORDER,
-     &                        trim(opname),
-     &                        1,1,parameters,1,tgt_info)
-              end if
-              comb_ok = next_comb(ifreq,ord,maxord)
+            ifreq = 0
+            do while (next_comb(ifreq,ord,maxord,ncnt))
+              call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+              do digit = 1,ord
+                write(opname(3+2*digit:4+2*digit),'(i2.2)') 
+     &                  ifreqnew(digit)
+              end do
+              if (idx_target(trim(opname),tgt_info).gt.0) cycle
+              call add_target(trim(opname),ttype_op,.false.,tgt_info)
+              call set_dependency(trim(opname),op_parent,tgt_info)
+              call cloneop_parameters(-1,parameters,op_parent,.false.)
+              call set_rule(trim(opname),ttype_op,CLONE_OP,
+     &                      trim(opname),1,1,
+     &                      parameters,1,tgt_info)
+              call ord_parameters(-1,parameters,ord,op_par,ifreqnew)
+              call set_rule(trim(opname),ttype_op,SET_ORDER,
+     &                      trim(opname),
+     &                      1,1,parameters,1,tgt_info)
             end do
             deallocate(ifreq, ifreqnew)
           end if
         end do
       end do
+
+      if (ntest.ge.100)
+     &  write(luout,*) 'defining residuals'
 
       ! define residuals O(n)_L(0) and O(n)_T(0)
       ! following (2n+1) and (2n+2) rules regarding the maximum order
@@ -342,11 +384,11 @@ c     &              1,1,parameters,1,tgt_info)
         if (op_par.eq.1) then
           op_parent = 'T'
           res_name = 'O(x)_L'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         else
           op_parent = 'L'
           res_name = 'O(x)_T'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         end if
         do ord=0,x_max_ord
           write(res_name(3:3),'(i1)') ord
@@ -367,11 +409,11 @@ c     &              1,1,parameters,1,tgt_info)
         if (op_par.eq.1) then
           op_parent = 'L'
           opname(6:6) = 'T'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           op_parent = 'T'
           opname(6:6) = 'L'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         do side = 1,2
           if (side.eq.1) then
@@ -393,34 +435,35 @@ c     &              1,1,parameters,1,tgt_info)
      &                      parameters,1,tgt_info)
             end if
             allocate(ifreq(ord),ifreqnew(ord))
-            do digit = 1,ord
-              ifreq(digit) = digit
-            end do
-            comb_ok = .true.
-            do while (comb_ok)
-              if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &        then
-                do digit = 1,ord
-                  write(opname(6+digit:6+digit),'(i1)') ifreqnew(digit)
-                end do
-                call add_target(trim(opname),ttype_op,.false.,tgt_info)
-                call set_dependency(trim(opname),op_parent,tgt_info)
-                call cloneop_parameters(-1,parameters,op_parent,.false.)
-                call set_rule(trim(opname),ttype_op,CLONE_OP,
-     &                        trim(opname),1,1,
-     &                        parameters,1,tgt_info)
-              end if
-              comb_ok = next_comb(ifreq,ord,maxord)
+            ifreq = 0
+            set_zero = ord.eq.0
+            do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+              set_zero = .false.
+              call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+              do digit = 1,ord
+                write(opname(5+2*digit:6+2*digit),'(i2.2)') 
+     &                    ifreqnew(digit)
+              end do
+              if (idx_target(trim(opname),tgt_info).gt.0) cycle
+              call add_target(trim(opname),ttype_op,.false.,tgt_info)
+              call set_dependency(trim(opname),op_parent,tgt_info)
+              call cloneop_parameters(-1,parameters,op_parent,.false.)
+              call set_rule(trim(opname),ttype_op,CLONE_OP,
+     &                      trim(opname),1,1,
+     &                      parameters,1,tgt_info)
             end do
             deallocate(ifreq, ifreqnew)
           end do
         end do
       end do
 
+      if (ntest.ge.100)
+     &  write(luout,*) 'defining lagrangians'
+
       ! define scalar response lagrangian LRESP(n) of order n
       lagname(1:len_short) = ' '
       lagname(1:8) = 'LRESP(n)'
-      do ord=0,maxord
+      do ord=0,maxval(maxord)
         write(lagname(7:7),'(i1)') ord
         lagname(9:len_short) = ' '
         ! is this one necessary (without frequency indices)???
@@ -433,27 +476,27 @@ c     &              1,1,parameters,1,tgt_info)
      &                  parameters,1,tgt_info)
         end if
         allocate(ifreq(ord),ifreqnew(ord))
-        do digit = 1,ord
-          ifreq(digit) = digit
-        end do
-        comb_ok = .true.
-        do while (comb_ok)
-          if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &    then
-            do digit = 1,ord
-              write(lagname(8+digit:8+digit),'(i1)') ifreqnew(digit)
-            end do
-            call add_target(trim(lagname),ttype_op,.false.,tgt_info)
-            call set_dependency(trim(lagname),'LRESP',tgt_info)
-            call cloneop_parameters(-1,parameters,'LRESP',.false.)
-            call set_rule(trim(lagname),ttype_op,CLONE_OP,
-     &                    trim(lagname),1,1,
-     &                    parameters,1,tgt_info)
-          end if
-          comb_ok = next_comb(ifreq,ord,maxord)
+        ifreq = 0
+        set_zero = ord.eq.0
+        do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+          set_zero = .false.
+          call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+          do digit = 1,ord
+            write(lagname(7+2*digit:8+2*digit),'(i2.2)') ifreqnew(digit)
+          end do
+          if (idx_target(trim(lagname),tgt_info).gt.0) cycle
+          call add_target(trim(lagname),ttype_op,.false.,tgt_info)
+          call set_dependency(trim(lagname),'LRESP',tgt_info)
+          call cloneop_parameters(-1,parameters,'LRESP',.false.)
+          call set_rule(trim(lagname),ttype_op,CLONE_OP,
+     &                  trim(lagname),1,1,
+     &                  parameters,1,tgt_info)
         end do
         deallocate(ifreq, ifreqnew)
       end do
+
+      if (ntest.ge.100)
+     &  write(luout,*) 'defining other operators'
 
       ! Diagonal
       call add_target(op_dia,ttype_op,.false.,tgt_info)
@@ -484,6 +527,9 @@ c     &              1,1,parameters,1,tgt_info)
       call set_rule(op_hbar,ttype_op,DEF_CC_HBAR_OP,
      &              op_hbar,1,1,
      &              parameters,1,tgt_info)
+
+      if (ntest.ge.100)
+     &  write(luout,*) 'operators defined'
 
 *----------------------------------------------------------------------*
 *     Formulae 
@@ -559,12 +605,12 @@ c     &                labels,2,1,parameters,2,tgt_info)
           op_parent = 'T'
           op_exp(1:len_op_exp) = 'T=T(0)'
           op_name = 'T(x)'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         else
           op_parent = 'L'
           op_exp(1:len_op_exp) = 'L=L(0)'
           op_name = 'L(x)'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         end if
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = op_parent//'_FORM'
@@ -586,6 +632,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &                parameters,2,tgt_info)
       end do
 
+      if (ntest.ge.100)
+     &  write(luout,*) 'frequency expansion of perturbation operators'
+
       ! frequency expansion of V(1): V(1)=V(1)1+V(1)2+...
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'V(1)_FORM'
@@ -595,15 +644,17 @@ c     &                labels,2,1,parameters,2,tgt_info)
       len_op_exp = 5
       opname(1:len_short) = ' '
       opname(1:4) = 'V(1)'
-      do freq_idx = 1,maxord
-        if (.not.redundant_comb(freq_idx,freq_idxnew,redun,1,maxord))
-     &  then
-          write(opname(5:5),'(i1)') freq_idxnew
-          opexp(len_op_exp+1:len_op_exp+6) = trim(opname)//'+'
-          len_op_exp = len_op_exp + 6
-          call set_dependency('V(1)_FORM',trim(opname),tgt_info)
-        end if
-      end do
+      freq_idx = 0
+      comb_loop: do while (next_comb(freq_idx,1,maxord,ncnt))
+        call redundant_comb(freq_idx,freq_idxnew,redun,1,maxord,ncnt)
+        write(opname(5:6),'(i2.2)') freq_idxnew
+        do pos = 1,len_op_exp-5
+          if (opexp(pos:pos+5).eq.opname(1:6)) cycle comb_loop
+        end do
+        opexp(len_op_exp+1:len_op_exp+7) = trim(opname)//'+'
+        len_op_exp = len_op_exp + 7
+        call set_dependency('V(1)_FORM',trim(opname),tgt_info)
+      end do comb_loop
       opexp(len_op_exp:len_op_exp) = ' '
       len_op_exp = len_op_exp - 1
       call def_form_parameters(-1,
@@ -613,6 +664,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &              labels,1,1,
      &              parameters,2,tgt_info)
 
+      if (ntest.ge.100)
+     &  write(luout,*) 'frequency expansion of L and T operators'
+
       ! frequency expansion of X(n), n>0: X(1) = X(1)1+X(1)2+..., ...
       ! following the (2n+1) and (2n+2) rules regarding the maximum order
       formname(1:len_short) = ' '
@@ -620,10 +674,10 @@ c     &                labels,2,1,parameters,2,tgt_info)
       do op_par = 1,2
         if (op_par.eq.1) then
           op_name = 'T(x)'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         else
           op_name = 'L(x)'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         end if
         do ord=1,x_max_ord
           write(op_name(3:3),'(i1)') ord
@@ -638,22 +692,21 @@ c     &                labels,2,1,parameters,2,tgt_info)
           opname(1:len_short) = ' '
           opname(1:4) = op_name
           allocate(ifreq(ord),ifreqnew(ord))
-          do digit = 1,ord
-            ifreq(digit) = digit
-          end do
-          comb_ok = .true.
-          do while (comb_ok)
-            if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &      then
-              do digit = 1,ord
-                write(opname(4+digit:4+digit),'(i1)') ifreqnew(digit)
-              end do
-              opexp(len_op_exp+1:len_op_exp+5+ord) = trim(opname)//'+'
-              len_op_exp = len_op_exp + 5 + ord
-              call set_dependency(trim(formname),trim(opname),tgt_info)
-            end if
-            comb_ok = next_comb(ifreq,ord,maxord)
-          end do
+          ifreq = 0
+          comb_loop2: do while (next_comb(ifreq,ord,maxord,ncnt))
+            call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+            do digit = 1,ord
+              write(opname(3+2*digit:4+2*digit),'(i2.2)') 
+     &                    ifreqnew(digit)
+            end do
+            do pos = 1,len_op_exp-3-2*ord
+              if (opexp(pos:pos+3+2*ord).eq.opname(1:4+2*ord))
+     &                              cycle comb_loop2
+            end do
+            opexp(len_op_exp+1:len_op_exp+5+2*ord) = trim(opname)//'+'
+            len_op_exp = len_op_exp + 5 + 2*ord
+            call set_dependency(trim(formname),trim(opname),tgt_info)
+          end do comb_loop2
           deallocate(ifreq,ifreqnew)
           opexp(len_op_exp:len_op_exp) = ' '
           len_op_exp = len_op_exp - 1
@@ -681,6 +734,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_rule('RESP_LAGF',ttype_frm,EXPAND,
      &              labels,3,1,
      &              parameters,2,tgt_info)
+
+      if (ntest.ge.100)
+     &  write(luout,*) 'factoring out special intermediates'
 
       ! R12: factor out special intermediates
       if (setr12) then
@@ -750,7 +806,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
       formname(1:len_short) = ' '
       formname(1:8) = 'F_LAG(n)'
       lag_name = 'RESP_LAG(n)'
-      do ord = 1,maxord
+      do ord = 1,maxval(maxord)
         write(formname(7:7),'(i1)') ord
         write(lag_name(10:10),'(i1)') ord
         labels(1:20)(1:len_target_name) = ' '
@@ -766,10 +822,10 @@ c     &                labels,2,1,parameters,2,tgt_info)
         do op_par = 1,2
           if (op_par.eq.1) then
             formname2(1:1) = 'T'
-            x_max_ord = int((real(maxord)-1)/2+0.6)
+            x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
           else
             formname2(1:1) = 'L'
-            x_max_ord = int((real(maxord)-2)/2+0.6)
+            x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
           end if
           do ord2=1,x_max_ord
             write(formname2(3:3),'(i1)') ord2
@@ -786,6 +842,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &                parameters,2,tgt_info)
       end do
 
+      if (ntest.ge.100)
+     &  write(luout,*) 'expanding left and right residuals'
+
       ! expand left and right residuals RESS_LAG(n)_X
       ! with X(1)=X(1)1+X(1)2+..., X(2)=X(2)12+X(2)13+...
       ! and V(1)=V(1)1+V(1)2+...
@@ -797,11 +856,11 @@ c     &                labels,2,1,parameters,2,tgt_info)
         if (op_par2.eq.1) then
           formname(14:14) = 'T'
           resl_lag_name(13:13) = 'T'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           formname(14:14) = 'L'
           resl_lag_name(13:13) = 'L'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         do ord = op_par2-1,x_max_ord
           write(formname(11:11),'(i1)') ord
@@ -827,10 +886,10 @@ c     &                labels,2,1,parameters,2,tgt_info)
             do op_par = 1,2
               if (op_par.eq.1) then
                 formname2(1:1) = 'T'
-                x_max_ord2 = int((real(maxord)-1)/2+0.6)
+                x_max_ord2 = int((real(maxval(maxord))-1)/2+0.6)
               else
                 formname2(1:1) = 'L'
-                x_max_ord2 = int((real(maxord)-2)/2+0.6)
+                x_max_ord2 = int((real(maxval(maxord))-2)/2+0.6)
               end if
               do ord2=1,x_max_ord2
                 write(formname2(3:3),'(i1)') ord2
@@ -852,7 +911,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
 
       ! extract lagrangian of orders 0 to maxord
       lagf_name = 'RESP_LAGF(n)'
-      do ord = 0,maxord
+      do ord = 0,maxval(maxord)
         write(lagf_name(11:11),'(i1)') ord
         write(pert_ord,'(i1)') ord
         labels(1:20)(1:len_target_name) = ' '
@@ -873,7 +932,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
       lagf_name = 'RESP_LAGF(n)'
       lag_name = 'RESP_LAG(n)'
       lresp_name = 'LRESP(n)'
-      do ord = 0,maxord
+      do ord = 0,maxval(maxord)
         write(lagf_name(11:11),'(i1)') ord
         write(lag_name(10:10),'(i1)') ord
         write(pert_ord,'(i1)') ord
@@ -893,6 +952,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &                parameters,2,tgt_info)
       end do
 
+      if (ntest.ge.100)
+     &  write(luout,*) 'extracting terms according to frequency pattern'
+
       ! extract terms of F_LAG(n) with correct freq. pattern
       formname(1:len_short) = ' '
       formname(1:6) = 'LAG(n)'
@@ -900,39 +962,35 @@ c     &                labels,2,1,parameters,2,tgt_info)
       formname2(1:8) = 'F_LAG(n)'
       lagname(1:len_short) = ' '
       lagname(1:8) = 'LRESP(n)'
-      do ord = 1,maxord
+      do ord = 1,maxval(maxord)
         write(formname(5:5),'(i1)') ord
         write(formname2(7:7),'(i1)') ord
         write(lagname(7:7),'(i1)') ord
         write(pert_ord,'(i1)') ord
         allocate(ifreq(ord),ifreqnew(ord))
-        do digit = 1,ord
-          ifreq(digit) = digit
-        end do
-        comb_ok = .true.
-        do while (comb_ok)
-          if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &    then
-            do digit = 1,ord
-              write(formname(6+digit:6+digit),'(i1)') ifreqnew(digit)
-              write(lagname(8+digit:8+digit),'(i1)') ifreqnew(digit)
-            end do
-            labels(1:20)(1:len_target_name) = ' '
-            labels(1) = trim(formname)
-            labels(2) = trim(formname2)
-            labels(3) = trim(lagname)
-            call add_target(trim(formname),ttype_frm,.false.,tgt_info)
-            call set_dependency(trim(formname),trim(formname2),tgt_info)
-            call set_dependency(trim(formname),trim(lagname),tgt_info)
-            call form_parameters2(-1,
-     &           parameters,2,'lagrangian of pert order '//pert_ord//
-     &           ' with freqs',
-     &           ord,ifreqnew)
-            call set_rule(trim(formname),ttype_frm,EXTRACT_FREQ,
-     &                    labels,3,1,
-     &                    parameters,2,tgt_info)
-          end if
-          comb_ok = next_comb(ifreq,ord,maxord)
+        ifreq = 0
+        do while (next_comb(ifreq,ord,maxord,ncnt))
+          call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+          do digit = 1,ord
+            write(formname(5+2*digit:6+2*digit),'(i2.2)') 
+     &                       ifreqnew(digit)
+            write(lagname(7+2*digit:8+2*digit),'(i2.2)') ifreqnew(digit)
+          end do
+          if (idx_target(trim(formname),tgt_info).gt.0) cycle
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = trim(formname)
+          labels(2) = trim(formname2)
+          labels(3) = trim(lagname)
+          call add_target(trim(formname),ttype_frm,.false.,tgt_info)
+          call set_dependency(trim(formname),trim(formname2),tgt_info)
+          call set_dependency(trim(formname),trim(lagname),tgt_info)
+          call form_parameters2(-1,
+     &         parameters,2,'lagrangian of pert order '//pert_ord//
+     &         ' with freqs',
+     &         ord,ifreqnew)
+          call set_rule(trim(formname),ttype_frm,EXTRACT_FREQ,
+     &                  labels,3,1,
+     &                  parameters,2,tgt_info)
         end do
         deallocate(ifreq,ifreqnew)
       end do
@@ -949,10 +1007,10 @@ c     &                labels,2,1,parameters,2,tgt_info)
       do op_par = 1,2
         if (op_par.eq.1) then
           op_parent = 'T'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           op_parent = 'L'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         formname(6:6) = op_parent
         formname2(14:14) = op_parent
@@ -972,37 +1030,35 @@ c     &                labels,2,1,parameters,2,tgt_info)
             formname2(5:5) = leftright
             opname(5:5) = leftright
             allocate(ifreq(ord),ifreqnew(ord))
-            do digit = 1,ord
-              ifreq(digit) = digit
-            end do
-            comb_ok = .true.
-            do while (comb_ok)
-              if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &        then
-                do digit = 1,ord
-                  write(formname(6+digit:6+digit),'(i1)')
-     &                                            ifreqnew(digit)
-                  write(opname(6+digit:6+digit),'(i1)') ifreqnew(digit)
-                end do
-                labels(1:20)(1:len_target_name) = ' '
-                labels(1) = trim(formname)
-                labels(2) = trim(formname2)
-                labels(3) = trim(opname)
-                call add_target(trim(formname),ttype_frm,.false.,
-     &                        tgt_info)
-                call set_dependency(trim(formname),trim(formname2),
-     &                        tgt_info)
-                call set_dependency(trim(formname),trim(opname),
-     &                        tgt_info)
-                call form_parameters2(-1,
-     &               parameters,2,'residual of pert order '//pert_ord//
-     &               ' with freqs',
-     &               ord,ifreqnew)
-                call set_rule(trim(formname),ttype_frm,EXTRACT_FREQ,
-     &                        labels,3,1,
-     &                        parameters,2,tgt_info)
-              end if
-              comb_ok = next_comb(ifreq,ord,maxord)
+            ifreq = 0
+            set_zero = ord.eq.0
+            do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+              set_zero = .false.
+              call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+              do digit = 1,ord
+                write(formname(5+2*digit:6+2*digit),'(i2.2)')
+     &                                          ifreqnew(digit)
+                write(opname(5+2*digit:6+2*digit),'(i2.2)') 
+     &                                          ifreqnew(digit)
+              end do
+              if (idx_target(trim(formname),tgt_info).gt.0) cycle
+              labels(1:20)(1:len_target_name) = ' '
+              labels(1) = trim(formname)
+              labels(2) = trim(formname2)
+              labels(3) = trim(opname)
+              call add_target(trim(formname),ttype_frm,.false.,
+     &                      tgt_info)
+              call set_dependency(trim(formname),trim(formname2),
+     &                      tgt_info)
+              call set_dependency(trim(formname),trim(opname),
+     &                      tgt_info)
+              call form_parameters2(-1,
+     &             parameters,2,'residual of pert order '//pert_ord//
+     &             ' with freqs',
+     &             ord,ifreqnew)
+              call set_rule(trim(formname),ttype_frm,EXTRACT_FREQ,
+     &                      labels,3,1,
+     &                      parameters,2,tgt_info)
             end do
             deallocate(ifreq,ifreqnew)
           end do
@@ -1018,10 +1074,10 @@ c     &                labels,2,1,parameters,2,tgt_info)
       do op_par = 1,2
         if (op_par.eq.1) then
           op_parent = 'T'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           op_parent = 'L'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         res_lag_name(12:12) = op_parent
         res_name(6:6) = op_parent
@@ -1060,11 +1116,11 @@ c     &                labels,2,1,parameters,2,tgt_info)
         if (op_par.eq.1) then
           op_parent = 'T'
           op_name = 'L(n)'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           op_parent = 'L'
           op_name = 'T(n)'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         resl_lag_name(13:13) = op_parent
         resr_lag_name(13:13) = op_parent
@@ -1126,6 +1182,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &              labels,4,1,
      &              title_cchbar,1,tgt_info)
 
+      if (ntest.ge.100)
+     &  write(luout,*) 'formulae defined'
+
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -1148,12 +1207,12 @@ c     &                labels,2,1,parameters,2,tgt_info)
           op_parent = 'T'
           optname(1:8) = 'OPT_L(n)'
           defmelname2(1:11) = 'DEF_ME_L(n)'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           op_parent = 'L'
           optname(1:8) = 'OPT_T(n)'
           defmelname2(1:11) = 'DEF_ME_T(n)'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         formname(6:6) = op_parent
         formname2(6:6) = op_parent
@@ -1170,63 +1229,63 @@ c     &                labels,2,1,parameters,2,tgt_info)
           write(defmelname(10:10),'(i1)') ord
           defmelname(14:len_short) = ' '
           allocate(ifreq(ord),ifreqnew(ord))
-          do digit = 1,ord
-            ifreq(digit) = digit
-          end do
-          comb_ok = .true.
-          do while (comb_ok)
-            if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &      then
-              do digit = 1,ord
-                write(optname(8+digit:8+digit),'(i1)') ifreqnew(digit)
-                write(formname(6+digit:6+digit),'(i1)') ifreqnew(digit)
-                write(formname2(6+digit:6+digit),'(i1)') ifreqnew(digit)
-                write(defmelname(13+digit:13+digit),'(i1)')
-     &                               ifreqnew(digit)
-                write(defmelname2(11+digit:11+digit),'(i1)')
-     &                               ifreqnew(digit)
-              end do
-              labels(1:20)(1:len_target_name) = ' '
-              labels(1) = trim(optname)
-              labels(2) = trim(formname)
-              labels(3) = trim(formname2)
-              ncat = 2  ! 2 formulae pasted into final formula
-              nint = 0  ! no intermediate to factor out so far ...
-              call add_target(trim(optname),ttype_frm,.false.,tgt_info)
-              call get_argument_value('calculate.routes','simtraf',
-     &                                ival=isim)
-              if (isim.eq.1) then
-                nint = 1
-                call set_dependency(trim(optname),form_cchhat,tgt_info)
-                call set_dependency(trim(optname),mel_hhatdef,tgt_info)
-                labels(4) = form_cchhat
-              else if (isim.eq.2) then
-                nint = 1
-                call set_dependency(trim(optname),form_cchbar,tgt_info)
-                call set_dependency(trim(optname),meldef_hbar,tgt_info)
-                labels(4) = form_cchbar
-              end if
-              call set_dependency(trim(optname),trim(formname),tgt_info)
-              call set_dependency(trim(optname),trim(formname2),
-     &                      tgt_info)
-              call set_dependency(trim(optname),mel_ham,tgt_info)
-              if (ord.gt.0)
-     &           call set_dependency(trim(optname),'HUB_DEFME_V(1)',
-     &                               tgt_info)
-              call set_dependency(trim(optname),trim(defmelname2),
-     &                            tgt_info)
-              defmelname(12:12) = 'L'
-              call set_dependency(trim(optname),trim(defmelname),
-     &                      tgt_info)
-              defmelname(12:12) = 'R'
-              call set_dependency(trim(optname),trim(defmelname),
-     &                      tgt_info)
-              call opt_parameters(-1,parameters,ncat,nint)
-              call set_rule(trim(optname),ttype_frm,OPTIMIZE,
-     &                      labels,ncat+nint+1,1,
-     &                      parameters,1,tgt_info)
+          ifreq = 0
+          set_zero = ord.eq.0
+          do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+            set_zero = .false.
+            call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+            do digit = 1,ord
+              write(optname(7+2*digit:8+2*digit),'(i2.2)') 
+     &                             ifreqnew(digit)
+              write(formname(5+2*digit:6+2*digit),'(i2.2)') 
+     &                             ifreqnew(digit)
+              write(formname2(5+2*digit:6+2*digit),'(i2.2)') 
+     &                             ifreqnew(digit)
+              write(defmelname(12+2*digit:13+2*digit),'(i2.2)')
+     &                             ifreqnew(digit)
+              write(defmelname2(10+2*digit:11+2*digit),'(i2.2)')
+     &                             ifreqnew(digit)
+            end do
+            if (idx_target(trim(optname),tgt_info).gt.0) cycle
+            labels(1:20)(1:len_target_name) = ' '
+            labels(1) = trim(optname)
+            labels(2) = trim(formname)
+            labels(3) = trim(formname2)
+            ncat = 2  ! 2 formulae pasted into final formula
+            nint = 0  ! no intermediate to factor out so far ...
+            call add_target(trim(optname),ttype_frm,.false.,tgt_info)
+            call get_argument_value('calculate.routes','simtraf',
+     &                              ival=isim)
+            if (isim.eq.1) then
+              nint = 1
+              call set_dependency(trim(optname),form_cchhat,tgt_info)
+              call set_dependency(trim(optname),mel_hhatdef,tgt_info)
+              labels(4) = form_cchhat
+            else if (isim.eq.2) then
+              nint = 1
+              call set_dependency(trim(optname),form_cchbar,tgt_info)
+              call set_dependency(trim(optname),meldef_hbar,tgt_info)
+              labels(4) = form_cchbar
             end if
-            comb_ok = next_comb(ifreq,ord,maxord)
+            call set_dependency(trim(optname),trim(formname),tgt_info)
+            call set_dependency(trim(optname),trim(formname2),
+     &                    tgt_info)
+            call set_dependency(trim(optname),mel_ham,tgt_info)
+            if (ord.gt.0)
+     &         call set_dependency(trim(optname),'HUB_DEFME_V(1)',
+     &                             tgt_info)
+            call set_dependency(trim(optname),trim(defmelname2),
+     &                          tgt_info)
+            defmelname(12:12) = 'L'
+            call set_dependency(trim(optname),trim(defmelname),
+     &                    tgt_info)
+            defmelname(12:12) = 'R'
+            call set_dependency(trim(optname),trim(defmelname),
+     &                    tgt_info)
+            call opt_parameters(-1,parameters,ncat,nint)
+            call set_rule(trim(optname),ttype_frm,OPTIMIZE,
+     &                    labels,ncat+nint+1,1,
+     &                    parameters,1,tgt_info)
           end do
           deallocate(ifreq,ifreqnew)
         end do
@@ -1280,43 +1339,45 @@ c     &                labels,2,1,parameters,2,tgt_info)
       defmelname(1:15) = 'DEF_ME_LRESP(n)'
       formname(1:len_short) = ' '
       formname(1:11) = 'RESP_LAG(0)'
-      do ord = 0,maxord
+      do ord = 0,maxval(maxord)
         write(optname(11:11),'(i1)') ord
         write(defmelname(14:14),'(i1)') ord
         allocate(ifreq(ord),ifreqnew(ord))
-        do digit = 1,ord
-          ifreq(digit) = digit
-        end do
-        comb_ok = .true.
-        do while (comb_ok)
-          if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &    then
-            do digit = 1,ord
-              write(defmelname(15+digit:15+digit),'(i1)')
-     &                                     ifreqnew(digit)
-              write(optname(12+digit:12+digit),'(i1)') ifreqnew(digit)
-              if (formname(1:3).eq.'LAG')
-     &           write(formname(6+digit:6+digit),'(i1)') ifreqnew(digit)
-            end do
-            labels(1:20)(1:len_target_name) = ' '
-            labels(1) = trim(optname)
-            labels(2) = trim(formname)
-            ncat = 1
-            nint = 0
-            call add_target(trim(optname),ttype_frm,.false.,tgt_info)
-            call set_dependency(trim(optname),trim(formname),tgt_info)
-            call set_dependency(trim(optname),trim(defmelname),tgt_info)
-            call opt_parameters(-1,parameters,ncat,nint)
-            call set_rule(trim(optname),ttype_frm,OPTIMIZE,
-     &                    labels,ncat+nint+1,1,
-     &                    parameters,1,tgt_info)
-          end if
-          comb_ok = next_comb(ifreq,ord,maxord)
+        ifreq = 0
+        set_zero = ord.eq.0
+        do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+          set_zero = .false.
+          call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+          do digit = 1,ord
+            write(defmelname(14+2*digit:15+2*digit),'(i2.2)')
+     &                                   ifreqnew(digit)
+            write(optname(11+2*digit:12+2*digit),'(i2.2)') 
+     &                                   ifreqnew(digit)
+            if (formname(1:3).eq.'LAG')
+     &         write(formname(5+2*digit:6+2*digit),'(i2.2)') 
+     &                                   ifreqnew(digit)
+          end do
+          if (idx_target(trim(optname),tgt_info).gt.0) cycle
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = trim(optname)
+          labels(2) = trim(formname)
+          ncat = 1
+          nint = 0
+          call add_target(trim(optname),ttype_frm,.false.,tgt_info)
+          call set_dependency(trim(optname),trim(formname),tgt_info)
+          call set_dependency(trim(optname),trim(defmelname),tgt_info)
+          call opt_parameters(-1,parameters,ncat,nint)
+          call set_rule(trim(optname),ttype_frm,OPTIMIZE,
+     &                  labels,ncat+nint+1,1,
+     &                  parameters,1,tgt_info)
         end do
         deallocate(ifreq,ifreqnew)
         formname(1:11) = 'LAG(n)     '
         write(formname(5:5),'(i1)') ord+1
       end do
+
+      if (ntest.ge.100)
+     &  write(luout,*) 'opt. formulae defined'
 
 *----------------------------------------------------------------------*
 *     ME-lists
@@ -1331,11 +1392,13 @@ c     &                labels,2,1,parameters,2,tgt_info)
       melname(1:7) = 'ME_V(1)'
       defmelname(1:len_short) = ' '
       defmelname(1:11) = 'DEF_ME_V(1)'
-      do freq_idx = 1,maxord
-        if (redundant_comb(freq_idx,freq_idxnew,redun,1,maxord)) cycle
-        write(opname(5:5),'(i1)') freq_idxnew
-        write(melname(8:8),'(i1)') freq_idxnew
-        write(defmelname(12:12),'(i1)') freq_idxnew
+      freq_idx = 0
+      do while (next_comb(freq_idx,1,maxord,ncnt))
+        call redundant_comb(freq_idx,freq_idxnew,redun,1,maxord,ncnt)
+        write(opname(5:6),'(i2.2)') freq_idxnew
+        write(melname(8:9),'(i2.2)') freq_idxnew
+        write(defmelname(12:13),'(i2.2)') freq_idxnew
+        if (idx_target(trim(defmelname),tgt_info).gt.0) cycle
         call add_target(trim(defmelname),ttype_opme,.false.,tgt_info)
         call set_dependency(trim(defmelname),trim(opname),tgt_info)
         ! (a) define
@@ -1358,6 +1421,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &                parameters,1,tgt_info)
       end do
 
+      if (ntest.ge.100)
+     &  write(luout,*) 'ME_V lists defined'
+
       ! ME_Y(n)1,..., ME_O(n)SX1,... (X=T,L; n=0,..,x_max_ord, S=L,R)
       ! not for ME_O(0)SL because of non-linear CC-equations
       defmelname(1:len_short) = ' '
@@ -1378,11 +1444,11 @@ c     &                labels,2,1,parameters,2,tgt_info)
         if (op_par.eq.1) then
           opname2(6:6) = 'T'
           opname(1:1) = 'L'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           opname2(6:6) = 'L'
           opname(1:1) = 'T'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         do ord = 0,x_max_ord
           write(opname(3:3),'(i1)') ord
@@ -1390,52 +1456,49 @@ c     &                labels,2,1,parameters,2,tgt_info)
           write(opname2(3:3),'(i1)') ord
           opname2(7:len_short) = ' '
           allocate(ifreq(ord),ifreqnew(ord))
-          do digit = 1,ord
-            ifreq(digit) = digit
-          end do
-          comb_ok = .true.
-          do while (comb_ok)
-            if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &      then
-              sym = 1
-              do digit = 1,ord
-                write(opname(4+digit:4+digit),'(i1)') ifreqnew(digit)
-                sym = multd2h(sym,isym(ifreqnew(digit)))
-              end do
-              melname(4:len_short) = opname(1:len_short-3)
-              defmelname(8:len_short) = opname(1:len_short-7)
-              call add_target(trim(defmelname),ttype_opme,.false.,
-     &                        tgt_info)
-              call set_dependency(trim(defmelname),trim(opname),
+          ifreq = 0
+          set_zero = ord.eq.0
+          do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+            set_zero = .false.
+            call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+            sym = 1
+            do digit = 1,ord
+              write(opname(3+2*digit:4+2*digit),'(i2.2)') 
+     &                                    ifreqnew(digit)
+              sym = multd2h(sym,isym(ifreqnew(digit)))
+            end do
+            melname(4:len_short) = opname(1:len_short-3)
+            defmelname(8:len_short) = opname(1:len_short-7)
+            if (idx_target(trim(defmelname),tgt_info).gt.0) cycle
+            call add_target(trim(defmelname),ttype_opme,.false.,
+     &                      tgt_info)
+            call set_dependency(trim(defmelname),trim(opname),
+     &                          tgt_info)
+            ! (a) T(n) depends on T(n-1), L(n) depends on both L(n-1) and T(n)
+            hubname(11:14) = opname(1:4)
+            if (op_name(1:1).eq.'L') then
+              hubname(11:11) = 'T'
+              call set_dependency(trim(defmelname),trim(hubname),
      &                            tgt_info)
-              ! (a) T(n) depends on T(n-1), L(n) depends on both L(n-1) and T(n)
               hubname(11:14) = opname(1:4)
-              if (op_name(1:1).eq.'L') then
-                hubname(11:11) = 'T'
-                call set_dependency(trim(defmelname),trim(hubname),
-     &                              tgt_info)
-                hubname(11:14) = opname(1:4)
-              end if
-              if (ord.gt.0) then
-                write(hubname(13:13),'(i1)') ord-1
-                call set_dependency(trim(defmelname),trim(hubname),
-     &                              tgt_info)
-              end if
-              ! (b) ME_X(n)w
-              labels(1:20)(1:len_target_name) = ' '
-              labels(1) = trim(melname)
-              labels(2) = trim(opname)
-              call me_list_parameters(-1,parameters,
-     &             msc,0,sym,0,0,.false.)
-              call set_rule(trim(defmelname),ttype_opme,DEF_ME_LIST,
-     &                      labels,2,1,
-     &                      parameters,1,tgt_info)
-              call opt_parameters(-1,parameters,maxord,0)
-              call set_rule(trim(defmelname),ttype_opme,SET_FREQ,
-     &                      labels,2,1,
-     &                      parameters,1,tgt_info)
             end if
-            comb_ok = next_comb(ifreq,ord,maxord)
+            if (ord.gt.0) then
+              write(hubname(13:13),'(i1)') ord-1
+              call set_dependency(trim(defmelname),trim(hubname),
+     &                            tgt_info)
+            end if
+            ! (b) ME_X(n)w
+            labels(1:20)(1:len_target_name) = ' '
+            labels(1) = trim(melname)
+            labels(2) = trim(opname)
+            call me_list_parameters(-1,parameters,
+     &           msc,0,sym,0,0,.false.)
+            call set_rule(trim(defmelname),ttype_opme,DEF_ME_LIST,
+     &                    labels,2,1,
+     &                    parameters,1,tgt_info)
+            call set_rule(trim(defmelname),ttype_opme,SET_FREQ,
+     &                    labels,2,1,
+     &                    parameters,1,tgt_info)
           end do
           deallocate(ifreq,ifreqnew)
           ! (c) ME_OS(n)_Xw (S=L,R; X=T,L; n=0,...,maxord)
@@ -1447,42 +1510,43 @@ c     &                labels,2,1,parameters,2,tgt_info)
             end if
             opname2(5:5) = leftright
             allocate(ifreq(ord),ifreqnew(ord))
-            do digit = 1,ord
-              ifreq(digit) = digit
-            end do
-            comb_ok = .true.
-            do while (comb_ok)
-              if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &        then
-                sym = 1
-                do digit = 1,ord
-                  write(opname2(6+digit:6+digit),'(i1)') ifreqnew(digit)
-                  sym = multd2h(sym,isym(ifreqnew(digit)))
-                end do
-                melname2(4:len_short) = opname2(1:len_short-3)
-                defmelname2(8:len_short) = opname2(1:len_short-7)
-                if (ord.ge.op_par-1) then
-                  call add_target(trim(defmelname2),
-     &                            ttype_opme,.false.,tgt_info)
-                  call set_dependency(trim(defmelname2),trim(opname2),
-     &                                tgt_info)
-                  labels(1:20)(1:len_target_name) = ' '
-                  labels(1) = trim(melname2)
-                  labels(2) = trim(opname2)
-                  call me_list_parameters(-1,parameters,
-     &                 msc,0,sym,0,0,.false.)
-                  call set_rule(trim(defmelname2),ttype_opme,
-     &                          DEF_ME_LIST,
-     &                          labels,2,1,
-     &                          parameters,1,tgt_info)
-                end if
+            ifreq = 0
+            set_zero = ord.eq.0
+            do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+              set_zero = .false.
+              call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+              sym = 1
+              do digit = 1,ord
+                write(opname2(5+2*digit:6+2*digit),'(i2.2)') 
+     &                                       ifreqnew(digit)
+                sym = multd2h(sym,isym(ifreqnew(digit)))
+              end do
+              melname2(4:len_short) = opname2(1:len_short-3)
+              defmelname2(8:len_short) = opname2(1:len_short-7)
+              if (idx_target(trim(defmelname2),tgt_info).gt.0) cycle
+              if (ord.ge.op_par-1) then
+                call add_target(trim(defmelname2),
+     &                          ttype_opme,.false.,tgt_info)
+                call set_dependency(trim(defmelname2),trim(opname2),
+     &                              tgt_info)
+                labels(1:20)(1:len_target_name) = ' '
+                labels(1) = trim(melname2)
+                labels(2) = trim(opname2)
+                call me_list_parameters(-1,parameters,
+     &               msc,0,sym,0,0,.false.)
+                call set_rule(trim(defmelname2),ttype_opme,
+     &                        DEF_ME_LIST,
+     &                        labels,2,1,
+     &                        parameters,1,tgt_info)
               end if
-              comb_ok = next_comb(ifreq,ord,maxord)
             end do
             deallocate(ifreq,ifreqnew)
           end do
         end do
       end do
+
+      if (ntest.ge.100)
+     &  write(luout,*) 'ME_L, ME_T, ME_O-lists defined'
 
       ! ME_O(0)_L
       call add_target('DEF_ME_O(0)_L',ttype_opme,.false.,tgt_info)
@@ -1503,49 +1567,52 @@ c     &                labels,2,1,parameters,2,tgt_info)
       melname(1:11) = 'ME_LRESP(n)'
       lagname(1:len_short) = ' '
       lagname(1:8) = 'LRESP(n)'
-      do ord = 0,maxord
+      do ord = 0,maxval(maxord)
         write(defmelname(14:14),'(i1)') ord
         write(melname(10:10),'(i1)') ord
         write(lagname(7:7),'(i1)') ord
         allocate(ifreq(ord),ifreqnew(ord))
-        do digit = 1,ord
-          ifreq(digit) = digit
-        end do
-        comb_ok = .true.
-        do while (comb_ok)
-          if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &    then
-            sym = 1
-            do digit = 1,ord
-              write(defmelname(15+digit:15+digit),'(i1)')
-     &                                     ifreqnew(digit)
-              write(melname(11+digit:11+digit),'(i1)') ifreqnew(digit)
-              write(lagname(8+digit:8+digit),'(i1)') ifreqnew(digit)
-              sym = multd2h(sym,isym(ifreqnew(digit)))
-            end do
-            if (sym.ne.1.and.ord.eq.maxord) then
-              ! print zero as result and don't calculate any other property
-              evaluate = .false.
-              allocate(mel_dummy(1))
-              call print_result(maxord,ord,ifreqnew,mel_dummy(1)%mel,
-     &                          .true.)
-              deallocate(mel_dummy)
-            end if
-            call add_target(trim(defmelname),ttype_opme,.false.,
-     &                                                  tgt_info)
-            call set_dependency(trim(defmelname),trim(lagname),tgt_info)
-            if (ord.gt.0) call set_dependency(trim(defmelname),
-     &                         'HUB_DEFME_V(1)',tgt_info)
-            labels(1:20)(1:len_target_name) = ' '
-            labels(1) = trim(melname)
-            labels(2) = trim(lagname)
-            call me_list_parameters(-1,parameters,
-     &           msc,0,sym,0,0,.false.)
-            call set_rule(trim(defmelname),ttype_opme,DEF_ME_LIST,
-     &                    labels,2,1,
-     &                    parameters,1,tgt_info)
+        ifreq = 0
+        set_zero = ord.eq.0
+        do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+          set_zero = .false.
+          call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+          sym = 1
+          do digit = 1,ord
+            write(defmelname(14+2*digit:15+2*digit),'(i2.2)')
+     &                                   ifreqnew(digit)
+            write(melname(10+2*digit:11+2*digit),'(i2.2)') 
+     &                                   ifreqnew(digit)
+            write(lagname(7+2*digit:8+2*digit),'(i2.2)') ifreqnew(digit)
+            sym = multd2h(sym,isym(ifreqnew(digit)))
+          end do
+          if (ord.gt.0) then
+            icnt = (ifreq(1)-1)/maxval(maxord)+1
+          else
+            icnt = 1
           end if
-          comb_ok = next_comb(ifreq,ord,maxord)
+          if (sym.ne.1.and.ord.eq.maxord(icnt)) then
+            ! print zero as result and don't calculate any other property
+            evaluate(icnt) = .false.
+            allocate(mel_dummy(1))
+            call print_result(ord,ifreqnew,
+     &                        mel_dummy(1)%mel,.true.)
+            deallocate(mel_dummy)
+          end if
+          if (idx_target(trim(defmelname),tgt_info).gt.0) cycle
+          call add_target(trim(defmelname),ttype_opme,.false.,
+     &                                                tgt_info)
+          call set_dependency(trim(defmelname),trim(lagname),tgt_info)
+          if (ord.gt.0) call set_dependency(trim(defmelname),
+     &                       'HUB_DEFME_V(1)',tgt_info)
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = trim(melname)
+          labels(2) = trim(lagname)
+          call me_list_parameters(-1,parameters,
+     &         msc,0,sym,0,0,.false.)
+          call set_rule(trim(defmelname),ttype_opme,DEF_ME_LIST,
+     &                  labels,2,1,
+     &                  parameters,1,tgt_info)
         end do
         deallocate(ifreq,ifreqnew)
       end do
@@ -1595,6 +1662,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+      if (ntest.ge.100)
+     &  write(luout,*) 'me-lists defined'
+
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
@@ -1617,6 +1687,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &     labels,5,2,
      &     parameters,2,tgt_info)
 
+      if (ntest.ge.100)
+     &  write(luout,*) 'define solvers for linear equations'
+
       ! solve linear equations for X(n)w 
       ! (X=T,L, n=0,...,x_max_ord, not for T(0))
       solvename(1:len_short) = ' '
@@ -1631,14 +1704,14 @@ c     &                labels,2,1,parameters,2,tgt_info)
           opname(1:6) = 'O(n)LT'
           optname(1:8) = 'OPT_L(n)'
           solvename(1:10) = 'SOLVE_L(n)'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           defmelname(1:11) = 'DEF_ME_T(n)'
           melname(1:7) = 'ME_T(n)'
           opname(1:6) = 'O(n)LL'
           optname(1:8) = 'OPT_T(n)'
           solvename(1:10) = 'SOLVE_T(n)'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         do ord = op_par-1,x_max_ord
           write(solvename(9:9),'(i1)') ord
@@ -1647,69 +1720,72 @@ c     &                labels,2,1,parameters,2,tgt_info)
           write(opname(3:3),'(i1)') ord
           write(optname(7:7),'(i1)') ord
           allocate(ifreq(ord),ifreqnew(ord))
-          do digit = 1,ord
-            ifreq(digit) = digit
-          end do
-          comb_ok = .true.
-          do while (comb_ok)
-            if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &      then
-              sym = 1
-              do digit = 1,ord
-                write(solvename(10+digit:10+digit),'(i1)')
-     &                                     ifreqnew(digit)
-                write(defmelname(11+digit:11+digit),'(i1)')
-     &                                     ifreqnew(digit)
-                write(optname(8+digit:8+digit),'(i1)') ifreqnew(digit)
-                write(opname(6+digit:6+digit),'(i1)') ifreqnew(digit)
-                write(melname(7+digit:7+digit),'(i1)') ifreqnew(digit)
-                sym = multd2h(sym,isym(ifreqnew(digit)))
-              end do
-              call add_target(trim(solvename),ttype_gen,.false.,
+          ifreq = 0
+          set_zero = ord.eq.0
+          do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+            set_zero = .false.
+            call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+            sym = 1
+            do digit = 1,ord
+              write(solvename(9+2*digit:10+2*digit),'(i2.2)')
+     &                                   ifreqnew(digit)
+              write(defmelname(10+2*digit:11+2*digit),'(i2.2)')
+     &                                   ifreqnew(digit)
+              write(optname(7+2*digit:8+2*digit),'(i2.2)') 
+     &                                   ifreqnew(digit)
+              write(opname(5+2*digit:6+2*digit),'(i2.2)') 
+     &                                   ifreqnew(digit)
+              write(melname(6+2*digit:7+2*digit),'(i2.2)') 
+     &                                   ifreqnew(digit)
+              sym = multd2h(sym,isym(ifreqnew(digit)))
+            end do
+            if (idx_target(trim(solvename),tgt_info).gt.0) cycle
+            call add_target(trim(solvename),ttype_gen,.false.,
+     &                          tgt_info)
+            if (setr12)
+     &              call set_dependency(trim(solvename),
+     &              eval_r12_inter,tgt_info)
+            call set_dependency(trim(solvename),trim(defmelname),
+     &                          tgt_info)
+            call set_dependency(trim(solvename),trim(optname),
+     &                          tgt_info)
+            call me_list_label(mel_dia1,mel_dia,sym,0,0,0,.false.)
+            call solve_parameters(-1,parameters,2, 1,1,'DIA')
+            call set_dependency(trim(solvename),mel_dia1,tgt_info)
+            ! SOLVE_T(n) depends on SOLVE_T(n-1),
+            ! SOLVE_L(n) depends on SOLVE_L(n-1) and SOLVE_T(n)
+            hubname(1:14) = 'HUB_SOLVE_Y(n)'
+            hubname(5:14) = solvename(1:10)
+            if (op_par.eq.1) then
+              hubname(11:11) = 'T'
+              call set_dependency(trim(solvename),hubname(1:14),
      &                            tgt_info)
-              if (setr12)
-     &                call set_dependency(trim(solvename),
-     &                eval_r12_inter,tgt_info)
-              call set_dependency(trim(solvename),trim(defmelname),
-     &                            tgt_info)
-              call set_dependency(trim(solvename),trim(optname),
-     &                            tgt_info)
-              call me_list_label(mel_dia1,mel_dia,sym,0,0,0,.false.)
-              call solve_parameters(-1,parameters,2, 1,1,'DIA')
-              call set_dependency(trim(solvename),mel_dia1,tgt_info)
-              ! SOLVE_T(n) depends on SOLVE_T(n-1),
-              ! SOLVE_L(n) depends on SOLVE_L(n-1) and SOLVE_T(n)
-              hubname(1:14) = 'HUB_SOLVE_Y(n)'
               hubname(5:14) = solvename(1:10)
-              if (op_par.eq.1) then
-                hubname(11:11) = 'T'
-                call set_dependency(trim(solvename),hubname(1:14),
-     &                              tgt_info)
-                hubname(5:14) = solvename(1:10)
-              end if
-              if (ord.gt.0) then
-                write(hubname(13:13),'(i1)') ord-1
-                call set_dependency(trim(solvename),hubname(1:14),
-     &                              tgt_info)
-              end if
-              ! SOLVE_Y(n)w
-              labels(1:20)(1:len_target_name) = ' '
-              labels(1) = trim(melname)
-              labels(2) = mel_dia1
-              labels(3) = trim(opname)
-              opname(5:5) = 'R'
-              labels(4) = trim(opname)
-              opname(5:5) = 'L'
-              labels(5) = trim(optname)
-              call set_rule(trim(solvename),ttype_opme,SOLVELEQ,
-     &             labels,5,1,
-     &             parameters,2,tgt_info)
             end if
-            comb_ok = next_comb(ifreq,ord,maxord)
+            if (ord.gt.0) then
+              write(hubname(13:13),'(i1)') ord-1
+              call set_dependency(trim(solvename),hubname(1:14),
+     &                            tgt_info)
+            end if
+            ! SOLVE_Y(n)w
+            labels(1:20)(1:len_target_name) = ' '
+            labels(1) = trim(melname)
+            labels(2) = mel_dia1
+            labels(3) = trim(opname)
+            opname(5:5) = 'R'
+            labels(4) = trim(opname)
+            opname(5:5) = 'L'
+            labels(5) = trim(optname)
+            call set_rule(trim(solvename),ttype_opme,SOLVELEQ,
+     &           labels,5,1,
+     &           parameters,2,tgt_info)
           end do
           deallocate(ifreq,ifreqnew)
         end do
       end do
+
+      if (ntest.ge.100)
+     &  write(luout,*) 'define evaluaters'
 
       ! evaluate RESP_LAG(n)
       optname(1:len_short) = ' '
@@ -1721,71 +1797,99 @@ c     &                labels,2,1,parameters,2,tgt_info)
       defmelname(1:15) = 'DEF_ME_LRESP(n)'
       melname(1:len_short) = ' '
       melname(1:11) = 'ME_LRESP(n)'
-      do ord = 0,maxord
+      eval_dipmom = .false.
+      do ord = 0,maxval(maxord)
         write(optname(11:11),'(i1)') ord
         write(evalname(10:10),'(i1)') ord
         write(defmelname(14:14),'(i1)') ord
         write(melname(10:10),'(i1)') ord
         allocate(ifreq(ord),ifreqnew(ord))
-        do digit = 1,ord
-          ifreq(digit) = digit
-        end do
-        comb_ok = .true.
-        do while (comb_ok)
-          if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &    then
-            sym = 1
-            freqsum = 0d0
-            do digit = 1,ord
-              write(evalname(11+digit:11+digit),'(i1)')
-     &                                   ifreqnew(digit)
-              write(defmelname(15+digit:15+digit),'(i1)')
-     &                                   ifreqnew(digit)
-              write(optname(12+digit:12+digit),'(i1)') ifreqnew(digit)
-              write(melname(11+digit:11+digit),'(i1)') ifreqnew(digit)
-              sym = multd2h(sym,isym(ifreqnew(digit)))
-              freqsum = freqsum + freq(ifreqnew(digit))
-            end do
-            ! only evaluate IF requested prop not zero by symmetry (evaluate)
-            ! AND this prop not zero by symmetry (sym.eq.1)
-            ! AND sum of frequencies is zero (abs(freqsum).lt.1d-12)
-            if (evaluate.and.(sym.eq.1).and.abs(freqsum).lt.1d-12) then
-              call add_target(trim(evalname),ttype_gen,.true.,tgt_info)
-              if (setr12)
-     &             call set_dependency(trim(evalname),eval_r12_inter,
-     &                                                tgt_info)
-              ! first solve T(k), L(k) using (2n+1) and (2n+2) rules
-              hubname(11:11) = 'T'
-              x_max_ord = int((real(ord)-1)/2+0.6)
-              write(hubname(13:13),'(i1)') x_max_ord
-              call set_dependency(trim(evalname),hubname(1:14),tgt_info)
-              if (maxord.gt.0) then
-                hubname(11:11) = 'L'
-                x_max_ord = int((real(ord)-2)/2+0.6)
-                write(hubname(13:13),'(i1)') x_max_ord
-                call set_dependency(trim(evalname),hubname(1:14),
-     &                                             tgt_info)
-              end if
-              ! evaluate
-              call set_dependency(trim(evalname),trim(optname),tgt_info)
-              call set_dependency(trim(evalname),trim(defmelname),
-     &                                           tgt_info)
-              labels(1:20)(1:len_target_name) = ' '
-              labels(1) = trim(optname)
-              call set_rule(trim(evalname),ttype_opme,EVAL,
-     &             labels,1,0,
-     &             parameters,0,tgt_info)
-              ! print result
-              call ord_parameters(-1,parameters,ord,maxord,ifreqnew)
-              call set_rule(trim(evalname),ttype_opme,PRINT_RES,
-     &               trim(melname),1,1,
-     &               parameters,1,tgt_info)
-            end if
+        ifreq = 0
+        set_zero = ord.eq.0
+        do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+          set_zero = .false.
+          call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+          sym = 1
+          freqsum = 0d0
+          if (ord.gt.0) then
+            icnt = (ifreq(1)-1)/maxval(maxord)+1
+          else
+            icnt = 1
           end if
-          comb_ok = next_comb(ifreq,ord,maxord)
+          do digit = 1,ord
+            pos = ifreq(digit)-(icnt-1)*maxval(maxord)
+            write(evalname(10+2*digit:11+2*digit),'(i2.2)')
+     &                                 ifreqnew(digit)
+            write(defmelname(14+2*digit:15+2*digit),'(i2.2)')
+     &                                 ifreqnew(digit)
+            write(optname(11+2*digit:12+2*digit),'(i2.2)') 
+     &                                 ifreqnew(digit)
+            write(melname(10+2*digit:11+2*digit),'(i2.2)') 
+     &                                 ifreqnew(digit)
+            sym = multd2h(sym,isym(ifreqnew(digit)))
+            freqsum = freqsum + freq(icnt,pos)
+          end do
+          ! only evaluate IF (requested prop not zero by symmetry (evaluate)
+          !                   OR prop is energy (ord.eq.0))
+          ! AND this prop not zero by symmetry (sym.eq.1)
+          ! AND (sum of frequencies is zero (abs(freqsum).lt.1d-12)
+          !      OR prop is dipole moment (ord.eq.1))
+          if ((evaluate(icnt).or.(ord.eq.0.and..not.all(.not.evaluate)))
+     &        .and.(sym.eq.1).and.
+     &        (abs(freqsum).lt.1d-12.or.ord.eq.1)) then
+            if (idx_target(trim(evalname),tgt_info).gt.0) cycle
+            if (ord.eq.1) then
+              ! evaluate dipole moment (ord.eq.1) only once
+              if (pert(ifreqnew(1):ifreqnew(1)).eq.'X') then
+                pertdir = 1
+              else if (pert(ifreqnew(1):ifreqnew(1)).eq.'Y') then
+                pertdir = 2
+              else if (pert(ifreqnew(1):ifreqnew(1)).eq.'Z') then
+                pertdir = 3
+              else
+                call quit(1,'set_experimental_targets',
+     &                      'pert must be X, Y, or Z')
+              end if
+              if (eval_dipmom(pertdir)) cycle
+              eval_dipmom(pertdir) = .true.
+            end if
+            call add_target(trim(evalname),ttype_gen,.true.,tgt_info)
+            if (setr12)
+     &           call set_dependency(trim(evalname),eval_r12_inter,
+     &                                              tgt_info)
+            ! first solve T(k), L(k) using (2n+1) and (2n+2) rules
+            hubname(11:11) = 'T'
+            x_max_ord = int((real(ord)-1)/2+0.6)
+            write(hubname(13:13),'(i1)') x_max_ord
+            call set_dependency(trim(evalname),hubname(1:14),tgt_info)
+            if (maxord(icnt).gt.0) then
+              hubname(11:11) = 'L'
+              x_max_ord = int((real(ord)-2)/2+0.6)
+              write(hubname(13:13),'(i1)') x_max_ord
+              call set_dependency(trim(evalname),hubname(1:14),
+     &                                           tgt_info)
+            end if
+            ! evaluate
+            call set_dependency(trim(evalname),trim(optname),tgt_info)
+            call set_dependency(trim(evalname),trim(defmelname),
+     &                                         tgt_info)
+            labels(1:20)(1:len_target_name) = ' '
+            labels(1) = trim(optname)
+            call set_rule(trim(evalname),ttype_opme,EVAL,
+     &           labels,1,0,
+     &           parameters,0,tgt_info)
+            ! print result
+            call ord_parameters(-1,parameters,ord,0,ifreqnew)
+            call set_rule(trim(evalname),ttype_opme,PRINT_RES,
+     &             trim(melname),1,1,
+     &             parameters,1,tgt_info)
+          end if
         end do
         deallocate(ifreq,ifreqnew)
       end do
+
+      if (ntest.ge.100)
+     &  write(luout,*) 'define dependency hubs'
 
       ! hub for DEF_ME_Y(n)w-dependencies
       defmelname(1:len_short) = ' '
@@ -1795,10 +1899,10 @@ c     &                labels,2,1,parameters,2,tgt_info)
       do op_par = 1,2
         if (op_par.eq.1) then
           op_parent = 'T'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         else
           op_parent = 'L'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         end if
         defmelname(8:8) = op_parent
         hubname(11:11) = op_parent
@@ -1808,21 +1912,17 @@ c     &                labels,2,1,parameters,2,tgt_info)
           write(hubname(13:13),'(i1)') ord
           call add_target(trim(hubname),ttype_gen,.false.,tgt_info)
           allocate(ifreq(ord),ifreqnew(ord))
-          do digit = 1,ord
-            ifreq(digit) = digit
-          end do
-          comb_ok = .true.
-          do while (comb_ok)
-            if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &      then
-              do digit = 1,ord
-                write(defmelname(11+digit:11+digit),'(i1)')
-     &                                       ifreqnew(digit)
-              end do
-              call set_dependency(trim(hubname),trim(defmelname),
-     &                                       tgt_info)
-            end if
-            comb_ok = next_comb(ifreq,ord,maxord)
+          ifreq = 0
+          set_zero = ord.eq.0
+          do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+            set_zero = .false.
+            call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+            do digit = 1,ord
+              write(defmelname(10+2*digit:11+2*digit),'(i2.2)')
+     &                                     ifreqnew(digit)
+            end do
+            call set_dependency(trim(hubname),trim(defmelname),
+     &                                     tgt_info)
           end do
           deallocate(ifreq,ifreqnew)
         end do
@@ -1832,13 +1932,12 @@ c     &                labels,2,1,parameters,2,tgt_info)
       defmelname(1:len_short) = ' '
       defmelname(1:11) = 'DEF_ME_V(1)'
       call add_target('HUB_DEFME_V(1)',ttype_gen,.false.,tgt_info)
-      do freq_idx = 1,maxord
-        if (.not.redundant_comb(freq_idx,freq_idxnew,redun,1,maxord))
-     &  then
-          write(defmelname(12:12),'(i1)') freq_idxnew
-          call set_dependency('HUB_DEFME_V(1)',trim(defmelname),
-     &                                      tgt_info)
-        end if
+      freq_idx = 0
+      do while (next_comb(freq_idx,1,maxord,ncnt))
+        call redundant_comb(freq_idx,freq_idxnew,redun,1,maxord,ncnt)
+        write(defmelname(12:13),'(i2.2)') freq_idxnew
+        call set_dependency('HUB_DEFME_V(1)',trim(defmelname),
+     &                                    tgt_info)
       end do
 
       ! hub for SOLVE_Y(n)w-dependencies
@@ -1849,10 +1948,10 @@ c     &                labels,2,1,parameters,2,tgt_info)
       do op_par = 1,2
         if (op_par.eq.1) then
           op_parent = 'T'
-          x_max_ord = int((real(maxord)-1)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         else
           op_parent = 'L'
-          x_max_ord = int((real(maxord)-2)/2+0.6)
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         end if
         solvename(7:7) = op_parent
         hubname(11:11) = op_parent
@@ -1862,25 +1961,36 @@ c     &                labels,2,1,parameters,2,tgt_info)
           write(hubname(13:13),'(i1)') ord
           call add_target(trim(hubname),ttype_gen,.false.,tgt_info)
           allocate(ifreq(ord),ifreqnew(ord))
-          do digit = 1,ord
-            ifreq(digit) = digit
-          end do
-          comb_ok = .true.
-          do while (comb_ok)
-            if (.not.redundant_comb(ifreq,ifreqnew,redun,ord,maxord))
-     &      then
-              do digit = 1,ord
-                write(solvename(10+digit:10+digit),'(i1)')
-     &                                       ifreqnew(digit)
-              end do
-              call set_dependency(trim(hubname),trim(solvename),
-     &                                       tgt_info)
+          ifreq = 0
+          set_zero = ord.eq.0
+          do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+            set_zero = .false.
+            call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+            do digit = 1,ord
+              write(solvename(9+2*digit:10+2*digit),'(i2.2)')
+     &                                     ifreqnew(digit)
+            end do
+            ! only solve if property (for which Y(n)w is required) is needed
+            if (ord.gt.0) then
+              icnt = (ifreq(1)-1)/maxval(maxord)+1
+            else
+              icnt = 1
             end if
-            comb_ok = next_comb(ifreq,ord,maxord)
+            if (op_par.eq.1) then
+              x_max_ord2 = int((real(maxord(icnt))-1)/2+0.6)
+            else
+              x_max_ord2 = int((real(maxord(icnt))-2)/2+0.6)
+            end if
+            if ((evaluate(icnt).or.ord.eq.0).and.ord.le.x_max_ord2)
+     &        call set_dependency(trim(hubname),trim(solvename),
+     &                                     tgt_info)
           end do
           deallocate(ifreq,ifreqnew)
         end do
       end do
+
+      if (ntest.ge.100)
+     &  write(luout,*) 'phony targets processed'
 
       return
       end

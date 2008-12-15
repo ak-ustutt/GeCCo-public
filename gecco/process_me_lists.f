@@ -47,7 +47,7 @@
      &     label_met(:)
 
       integer ::
-     &     idx_formlist, order, dummy, maxord
+     &     idx_formlist, order, dummy
       integer, allocatable ::
      &     ifreq_dum(:), ifreq(:)
 
@@ -258,9 +258,7 @@ c dbg
      &       trim(rule%labels(1))//'"')
         mel_pnt => op_info%mel_arr(idx)%mel
 
-        call opt_parameters(+1,rule%parameters,
-     &                      order,dummy)
-        call set_frequency(mel_pnt,order)
+        call set_frequency(mel_pnt)
 
       case(PRINT_RES)
         idx = idx_mel_list(rule%labels(1),op_info)
@@ -270,11 +268,11 @@ c dbg
         mel_pnt => op_info%mel_arr(idx)%mel
         allocate(ifreq_dum(maximum_order))
         call ord_parameters(+1,rule%parameters,
-     &                      order,maxord,ifreq_dum)
+     &                      order,dummy,ifreq_dum)
         allocate(ifreq(order))
         ifreq = ifreq_dum(1:order)
         deallocate(ifreq_dum)
-        call print_result(maxord,order,ifreq,mel_pnt,.false.)
+        call print_result(order,ifreq,mel_pnt,.false.)
         deallocate(ifreq)
 
       case default
