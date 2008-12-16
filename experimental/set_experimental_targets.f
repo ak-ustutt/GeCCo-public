@@ -86,6 +86,10 @@
       integer, external ::
      &     pert_sym, idx_target
 
+*----------------------------------------------------------------------*
+*     process keywords and allocate arrays:
+*----------------------------------------------------------------------*
+
       ! skip this section if not requested
       ncnt = is_keyword_set('calculate.experimental')
       if (ncnt.eq.0) return
@@ -114,9 +118,6 @@
       !         is up and running
       msc = +1 ! assuming closed shell
 
-*----------------------------------------------------------------------*
-*     get keywords and allocate arrays:
-*----------------------------------------------------------------------*
       allocate(maxord(ncnt),freq(ncnt,maximum_order),evaluate(ncnt))
       do icnt = 1,ncnt
         call get_argument_value('calculate.experimental','order',
@@ -998,11 +999,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
       ! extract terms of left and right residuals RESFS_LAG(n)_X
       ! with correct freq. pattern
       ! following (2n+1) and (2n+2) rules
-      formname(1:len_short) = ' '
       formname(1:6) = 'R(n)SX'
       formname2(1:len_short) = ' '
       formname2(1:14) = 'RESFS_LAG(n)_X'
-      opname(1:len_short) = ' '
       opname(1:6) = 'O(n)SX'
       do op_par = 1,2
         if (op_par.eq.1) then
@@ -1035,6 +1034,8 @@ c     &                labels,2,1,parameters,2,tgt_info)
             do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
               set_zero = .false.
               call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+              formname(7:len_short) = ' '
+              opname(7:len_short) = ' '
               do digit = 1,ord
                 write(formname(5+2*digit:6+2*digit),'(i2.2)')
      &                                          ifreqnew(digit)
@@ -1692,11 +1693,6 @@ c     &                labels,2,1,parameters,2,tgt_info)
 
       ! solve linear equations for X(n)w 
       ! (X=T,L, n=0,...,x_max_ord, not for T(0))
-      solvename(1:len_short) = ' '
-      defmelname(1:len_short) = ' '
-      opname(1:len_short) = ' '
-      melname(1:len_short) = ' '
-      optname(1:len_short) = ' '
       do op_par = 1,2
         if (op_par.eq.1) then
           defmelname(1:11) = 'DEF_ME_L(n)'
@@ -1726,6 +1722,11 @@ c     &                labels,2,1,parameters,2,tgt_info)
             set_zero = .false.
             call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
             sym = 1
+            solvename(11:len_short) = ' '
+            defmelname(12:len_short) = ' '
+            opname(7:len_short) = ' '
+            melname(8:len_short) = ' '
+            optname(9:len_short) = ' '
             do digit = 1,ord
               write(solvename(9+2*digit:10+2*digit),'(i2.2)')
      &                                   ifreqnew(digit)
@@ -1991,6 +1992,12 @@ c     &                labels,2,1,parameters,2,tgt_info)
 
       if (ntest.ge.100)
      &  write(luout,*) 'phony targets processed'
+
+*----------------------------------------------------------------------*
+*     deallocate arrays
+*----------------------------------------------------------------------*
+
+      deallocate(maxord,freq,evaluate,redun,isym)
 
       return
       end

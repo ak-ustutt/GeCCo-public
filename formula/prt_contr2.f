@@ -23,7 +23,7 @@
 
       character(2) ::
      &     cdag
-      character(10) ::
+      character(len_opname) ::
      &     opstr
       integer ::
      &     idx, idxph
@@ -55,11 +55,11 @@
           idxph=2
           cdag = '^+'
         end if
-        opstr(1:10) = '          '
+        opstr(1:len_opname) = ' '
         write(opstr,'(a)')
      &       trim(ops(contr%vertex(idx)%idx_op)%op%name)//cdag 
         write(luout,'(x,"v",i2.2,x,a9,i4,2x,4i3)')
-     &       contr%svertex(idx),opstr,
+     &       contr%svertex(idx),opstr(1:9),
      &       contr%vertex(idx)%iblk_op,
      &       ops(contr%vertex(idx)%idx_op)%op%
      &       ihpvca_occ(1:ngastp,idxph,contr%vertex(idx)%iblk_op)

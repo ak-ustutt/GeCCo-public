@@ -30,14 +30,14 @@
      &     order, idx_tgt, freq_idx(*)
 
       integer, parameter ::
-     &     maximum_order = 10
+     &     maximum_idx = 40
 
       logical ::
      &     delete, recognized, multiply
       integer ::
      &     nvtx, ivtx, op_ord, idx_op, t_max_ord, l_max_ord, op_spec,
-     &     count_freq(maximum_order), ii, jj, op_ifreq, njoker,
-     &     pattern(maximum_order), factor
+     &     count_freq(maximum_idx), ii, jj, op_ifreq, njoker,
+     &     pattern(maximum_idx), factor
 
       type(cntr_vtx), pointer ::
      &     vertex(:)
@@ -55,6 +55,9 @@
       endif
 
       ! determine frequency index pattern
+      if (maxval(freq_idx(1:order)).gt.maximum_idx)
+     &   call quit(1,'freq_pattern_truncation',
+     &       'increase maximum_idx or request fewer pert.op.components')
       pattern = 0
       do ii = 1,order
         pattern(freq_idx(ii)) = pattern(freq_idx(ii)) + 1
@@ -79,7 +82,7 @@
 
           nvtx = form_pnt%contr%nvtx
           vertex => form_pnt%contr%vertex
-          allocate(structure(maximum_order,nvtx))
+          allocate(structure(maximum_idx,nvtx))
 
           ! delete term if frequency pattern does not match freq_idx
           njoker = 0
@@ -129,19 +132,14 @@
             deallocate(form_pnt)
           else
             ! multiply with factor to correct for omitted ("redundant") terms
-            do ii = 1,maximum_order
-              multiply = .false.
-              recognized = .false.
+            factor = 1
+            do ii = 1,maximum_idx
+              factor = factor * factorial(sum(structure(ii,:)))
               do jj = 1,nvtx
-                if (structure(ii,jj).gt.0.and.recognized)
-     &                        multiply = .true.
-                if (structure(ii,jj).gt.0) recognized = .true.
+                factor = factor / factorial(structure(ii,jj))
               end do
-              if (multiply) then
-                factor = factorial(sum(structure(ii,:)))
-                form_pnt%contr%fac = form_pnt%contr%fac * factor
-              end if
             end do
+            form_pnt%contr%fac = form_pnt%contr%fac * factor
           end if
         
           deallocate(structure)
