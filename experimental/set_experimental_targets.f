@@ -102,7 +102,7 @@
         call get_argument_value('method.R12','fixed',lval=r12fix)
         call get_argument_value('method.R12','r12op',ival=r12op)
         call get_argument_value('method.R12','T1ext',ival=t1ext_mode)
-        if (r12op.eq.1.and.r12fix) then
+        if (r12op.le.1.and.r12fix) then
           call set_r12f_general_targets(tgt_info,orb_info,env_type)
         else
           call quit(1,'set_experimental_targets','wrong r12 method')
@@ -556,6 +556,7 @@ c     &              1,1,parameters,1,tgt_info)
      &                parameters,2,tgt_info)
       else
         ! define r12 response lagrangian
+        call add_target('RESP_LAG',ttype_frm,.false.,tgt_info)
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = 'RESP_LAG'
         labels(2) = 'LRESP'
@@ -564,25 +565,28 @@ c     &              1,1,parameters,1,tgt_info)
         labels(5) = op_r12
         labels(6) = 'L'
         labels(7) = 'T'
-        labels(8) = op_cexbar
-        labels(9) = op_cex
-        call add_target('RESP_LAG',ttype_frm,.false.,tgt_info)
+        ilabels = 7
+        if (r12op.eq.1) then
+          labels(8) = op_cexbar
+          labels(9) = op_cex
+          call set_dependency('RESP_LAG',op_cex,tgt_info)
+          call set_dependency('RESP_LAG',op_cexbar,tgt_info)
+          ilabels = 9
+        end if
         call set_dependency('RESP_LAG','LRESP',tgt_info)
         call set_dependency('RESP_LAG','L',tgt_info)
         call set_dependency('RESP_LAG','Hnew',tgt_info)
         call set_dependency('RESP_LAG','T',tgt_info)
         call set_dependency('RESP_LAG',op_r12,tgt_info)
-        call set_dependency('RESP_LAG',op_cex,tgt_info)
-        call set_dependency('RESP_LAG',op_cexbar,tgt_info)
         call form_parameters(-1,
      &       parameters,2,'r12 response lagrange functional',
      &                    ansatz,'---')
         call set_rule('RESP_LAG',ttype_frm,DEF_CCR12_LAGRANGIAN,
-     &                labels,9,1,
+     &                labels,ilabels,1,
      &                parameters,2,tgt_info)
-c        call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-c        call set_rule('RESP_LAG',ttype_frm,PRINT_FORMULA,
-c     &                labels,2,1,parameters,2,tgt_info)
+        call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+        call set_rule('RESP_LAG',ttype_frm,PRINT_FORMULA,
+     &                labels,2,1,parameters,2,tgt_info)
       end if
 
       ! perturbation expansion of H: Hnew=H+V(1)
