@@ -65,6 +65,7 @@
         end do
 
         ! get complete user defined frequency array, sum of frequencies is zero
+        freq(icnt,1:maximum_order) = 0d0
         call get_argument_value('calculate.experimental','freq',
      &       keycount=icnt,xarr=freq(icnt,1:maximum_order))
         freq(icnt,maxord(icnt):maximum_order) = 0d0

@@ -164,6 +164,7 @@
         do icnt = 1,ncnt
 
           ! get user defined frequency array, sum of frequencies is zero
+          freq(icnt,1:maximum_order) = 0d0
           call get_argument_value('calculate.experimental','freq',
      &         keycount=icnt,xarr=freq(icnt,1:maximum_order))
           freq(icnt,maxord(icnt):maximum_order) = 0d0
@@ -286,9 +287,6 @@
      &              op_top,1,1,
      &              parameters,1,tgt_info)
       else
-        if (maxexc.gt.2.or..not.setr12)
-     &       call quit(1,'set_experimental_targets',
-     &       'experimental T1ext option is for CCSD with R12 only')
         occ_def = 0
         ! 1 -- T1
         occ_def(IPART,1,1) = 1
@@ -296,13 +294,12 @@
         ! 2 -- T1'
         occ_def(IEXTR,1,2) = 1
         occ_def(IHOLE,2,2) = 1
-        ndef = 2
-        if (maxexc.eq.2) then
-          ! 3 -- T2
-          occ_def(IPART,1,3) = 2
-          occ_def(IHOLE,2,3) = 2
-          ndef = 3
-        end if
+        ndef = maxexc + 1
+        ! 3,4,... -- T2,T3,...
+        do nint = 2,maxexc
+          occ_def(IPART,1,nint+1) = nint
+          occ_def(IHOLE,2,nint+1) = nint
+        end do
         call op_from_occ_parameters(-1,parameters,2,
      &                              occ_def,ndef,1,ndef)
         call set_rule(op_top,ttype_op,DEF_OP_FROM_OCC,
@@ -310,10 +307,6 @@
      &                parameters,2,tgt_info)
       end if
 
-c      call xop_parameters(-1,parameters,.false.,1,maxexc,0,1)
-c      call set_rule('T',ttype_op,DEF_EXCITATION,'T',
-c     &              1,1,parameters,1,tgt_info)
- 
       ! define deexcitation operator L
       call add_target('L',ttype_op,.false.,tgt_info)
       call set_dependency('L','T',tgt_info)
