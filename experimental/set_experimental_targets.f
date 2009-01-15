@@ -72,7 +72,8 @@
      &     freq(:,:)
 
       integer, allocatable ::
-     &     ifreq(:), isym(:), redun(:), ifreqnew(:), maxord(:)
+     &     ifreq(:), isym(:), redun(:), ifreqnew(:), maxord(:),
+     &     subset(:)
 
       logical, allocatable ::
      &     evaluate(:)
@@ -634,33 +635,53 @@
      &  write(luout,*) 'frequency expansion of perturbation operators'
 
       ! frequency expansion of V(1): V(1)=V(1)1+V(1)2+...
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'V(1)_FORM'
-      call add_target('V(1)_FORM',ttype_frm,.false.,tgt_info)
-      opexp(1:len_long) = ' '
-      opexp(1:5) = 'V(1)='
-      len_op_exp = 5
-      opname(1:len_short) = ' '
-      opname(1:4) = 'V(1)'
-      freq_idx = 0
-      comb_loop: do while (next_comb(freq_idx,1,maxord,ncnt))
-        call redundant_comb(freq_idx,freq_idxnew,redun,1,maxord,ncnt)
-        write(opname(5:6),'(i2.2)') freq_idxnew
-        do pos = 1,len_op_exp-5
-          if (opexp(pos:pos+5).eq.opname(1:6)) cycle comb_loop
+
+      formname(1:len_short) = ' '
+      formname(1:6) = 'V(1)_F'
+      do ord=0,maxval(maxord)
+        allocate(ifreq(ord),ifreqnew(ord))
+        ifreq = 0
+        set_zero = ord.eq.0
+        do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+          set_zero = .false.
+          call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+          do digit = 1,ord
+            write(formname(5+2*digit:6+2*digit),'(i2.2)')
+     &                  ifreqnew(digit)
+          end do
+          if (idx_target(trim(formname),tgt_info).gt.0) cycle      
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = trim(formname)
+          call add_target(trim(formname),ttype_frm,.false.,tgt_info)
+          opexp(1:len_long) = ' '
+          opexp(1:5) = 'V(1)='
+          len_op_exp = 5
+          opname(1:len_short) = ' '
+          opname(1:4) = 'V(1)'
+          comb_loop: do digit = 1,ord
+            write(opname(5:6),'(i2.2)') ifreqnew(digit)
+            do pos = 1,len_op_exp-5
+              if (opexp(pos:pos+5).eq.opname(1:6)) cycle comb_loop
+            end do
+            opexp(len_op_exp+1:len_op_exp+7) = trim(opname)//'+'
+            len_op_exp = len_op_exp + 7
+            call set_dependency(trim(formname),trim(opname),tgt_info)
+          end do comb_loop
+          opexp(len_op_exp:len_op_exp) = ' '
+          len_op_exp = len_op_exp - 1
+          if (ord.eq.0) then
+            opexp(5:9) = '=V(1)'
+            len_op_exp = 9
+          end if
+          call def_form_parameters(-1,
+     &         parameters,2,opexp(1:len_op_exp),
+     &         'freq exp of V(1)')
+          call set_rule(trim(formname),ttype_frm,DEF_FORMULA,
+     &                  labels,1,1,
+     &                  parameters,2,tgt_info)
         end do
-        opexp(len_op_exp+1:len_op_exp+7) = trim(opname)//'+'
-        len_op_exp = len_op_exp + 7
-        call set_dependency('V(1)_FORM',trim(opname),tgt_info)
-      end do comb_loop
-      opexp(len_op_exp:len_op_exp) = ' '
-      len_op_exp = len_op_exp - 1
-      call def_form_parameters(-1,
-     &     parameters,2,opexp(1:len_op_exp),
-     &     'freq exp of V(1)')
-      call set_rule('V(1)_FORM',ttype_frm,DEF_FORMULA,
-     &              labels,1,1,
-     &              parameters,2,tgt_info)
+        deallocate(ifreq,ifreqnew)
+      end do
 
       if (ntest.ge.100)
      &  write(luout,*) 'frequency expansion of L and T operators'
@@ -668,52 +689,66 @@
       ! frequency expansion of X(n), n>0: X(1) = X(1)1+X(1)2+..., ...
       ! following the (2n+1) and (2n+2) rules regarding the maximum order
       formname(1:len_short) = ' '
-      formname(1:9) = 'X(n)_FORM'
-      do op_par = 1,2
-        if (op_par.eq.1) then
-          op_name = 'T(x)'
-          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
-        else
-          op_name = 'L(x)'
-          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
-        end if
-        do ord=1,x_max_ord
-          write(op_name(3:3),'(i1)') ord
-          formname(1:4) = op_name(1:4)
-          labels(1:20)(1:len_target_name) = ' '
-          labels(1) = trim(formname)
-          call add_target(trim(formname),ttype_frm,.false.,tgt_info)
-          call set_dependency(trim(formname),op_name,tgt_info)
-          opexp(1:len_long) = ' '
-          opexp(1:5) = op_name//'='
-          len_op_exp = 5
-          opname(1:len_short) = ' '
-          opname(1:4) = op_name
-          allocate(ifreq(ord),ifreqnew(ord))
-          ifreq = 0
-          comb_loop2: do while (next_comb(ifreq,ord,maxord,ncnt))
-            call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
-            do digit = 1,ord
-              write(opname(3+2*digit:4+2*digit),'(i2.2)') 
-     &                    ifreqnew(digit)
+      formname(1:6) = 'X(n)_F'
+      do ord=1,maxval(maxord)
+        do op_par = 1,2
+          if (op_par.eq.1) then
+            op_name = 'T(x)'
+            x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
+          else
+            op_name = 'L(x)'
+            x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
+          end if
+          do ord2=1,min(x_max_ord,ord)
+            write(op_name(3:3),'(i1)') ord2
+            formname(1:4) = op_name(1:4)
+            allocate(ifreq(ord),ifreqnew(ord))
+            ifreq = 0
+            do while (next_comb(ifreq,ord,maxord,ncnt))
+              call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+              do digit = 1,ord
+                write(formname(5+2*digit:6+2*digit),'(i2.2)')
+     &                      ifreqnew(digit)
+              end do
+              if (idx_target(trim(formname),tgt_info).gt.0) cycle
+              labels(1:20)(1:len_target_name) = ' '
+              labels(1) = trim(formname)
+              call add_target(trim(formname),ttype_frm,.false.,tgt_info)
+              call set_dependency(trim(formname),op_name,tgt_info)
+              opexp(1:len_long) = ' '
+              opexp(1:5) = op_name//'='
+              len_op_exp = 5
+              opname(1:len_short) = ' '
+              opname(1:4) = op_name
+              allocate(subset(ord2))
+              subset = 0
+              comb_loop2: do while (next_comb(subset,ord2,ord,1))
+                do digit = 1,ord2
+                  write(opname(3+2*digit:4+2*digit),'(i2.2)') 
+     &                        ifreqnew(subset(digit))
+                end do
+                do pos = 1,len_op_exp-3-2*ord2
+                  if (opexp(pos:pos+3+2*ord2).eq.opname(1:4+2*ord2))
+     &                                  cycle comb_loop2
+                end do
+                opexp(len_op_exp+1:len_op_exp+5+2*ord2) = 
+     &                              trim(opname)//'+'
+                len_op_exp = len_op_exp + 5 + 2*ord2
+                call set_dependency(trim(formname),trim(opname),
+     &                              tgt_info)
+              end do comb_loop2
+              deallocate(subset)
+              opexp(len_op_exp:len_op_exp) = ' '
+              len_op_exp = len_op_exp - 1
+              call def_form_parameters(-1,
+     &             parameters,2,opexp(1:len_op_exp),
+     &             'freq exp of '//op_name)
+              call set_rule(trim(formname),ttype_frm,DEF_FORMULA,
+     &                      labels,1,1,
+     &                      parameters,2,tgt_info)
             end do
-            do pos = 1,len_op_exp-3-2*ord
-              if (opexp(pos:pos+3+2*ord).eq.opname(1:4+2*ord))
-     &                              cycle comb_loop2
-            end do
-            opexp(len_op_exp+1:len_op_exp+5+2*ord) = trim(opname)//'+'
-            len_op_exp = len_op_exp + 5 + 2*ord
-            call set_dependency(trim(formname),trim(opname),tgt_info)
-          end do comb_loop2
-          deallocate(ifreq,ifreqnew)
-          opexp(len_op_exp:len_op_exp) = ' '
-          len_op_exp = len_op_exp - 1
-          call def_form_parameters(-1,
-     &         parameters,2,opexp(1:len_op_exp),
-     &         'freq exp of '//op_name)
-          call set_rule(trim(formname),ttype_frm,DEF_FORMULA,
-     &                  labels,1,1,
-     &                  parameters,2,tgt_info)
+            deallocate(ifreq,ifreqnew)
+          end do
         end do
       end do
 
@@ -807,37 +842,51 @@ c     &                labels,2,1,parameters,2,tgt_info)
       do ord = 1,maxval(maxord)
         write(formname(7:7),'(i1)') ord
         write(lag_name(10:10),'(i1)') ord
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = trim(formname)
-        labels(2) = lag_name
-        labels(3) = 'V(1)_FORM'
-        ilabels = 3
-        call add_target(trim(formname),ttype_frm,.false.,tgt_info)
-        call set_dependency(trim(formname),lag_name,tgt_info)
-        call set_dependency(trim(formname),'V(1)_FORM',tgt_info)
-        formname2(1:len_short) = ' '
-        formname2(1:9) = 'X(n)_FORM'
-        do op_par = 1,2
-          if (op_par.eq.1) then
-            formname2(1:1) = 'T'
-            x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
-          else
-            formname2(1:1) = 'L'
-            x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
-          end if
-          do ord2=1,x_max_ord
-            write(formname2(3:3),'(i1)') ord2
-            ilabels = ilabels+1
-            labels(ilabels) = trim(formname2)
-            call set_dependency(trim(formname),trim(formname2),tgt_info)
+        allocate(ifreq(ord),ifreqnew(ord))
+        ifreq = 0
+        do while (next_comb(ifreq,ord,maxord,ncnt))
+          call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+          formname2(1:len_short) = ' '
+          formname2(1:6) = 'V(1)_F'
+          do digit = 1,ord
+            write(formname(7+2*digit:8+2*digit),'(i2.2)')
+     &                       ifreqnew(digit)
+            write(formname2(5+2*digit:6+2*digit),'(i2.2)')
+     &                       ifreqnew(digit)
           end do
+          if (idx_target(trim(formname),tgt_info).gt.0) cycle
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = trim(formname)
+          labels(2) = lag_name
+          labels(3) = trim(formname2)
+          ilabels = 3
+          call add_target(trim(formname),ttype_frm,.false.,tgt_info)
+          call set_dependency(trim(formname),lag_name,tgt_info)
+          call set_dependency(trim(formname),trim(formname2),tgt_info)
+          do op_par = 1,2
+            if (op_par.eq.1) then
+              formname2(1:1) = 'T'
+              x_max_ord = int((real(ord)-1)/2+0.6)
+            else
+              formname2(1:1) = 'L'
+              x_max_ord = int((real(ord)-2)/2+0.6)
+            end if
+            do ord2=1,x_max_ord
+              write(formname2(3:3),'(i1)') ord2
+              ilabels = ilabels+1
+              labels(ilabels) = trim(formname2)
+              call set_dependency(trim(formname),trim(formname2),
+     &                            tgt_info)
+            end do
+          end do
+          call form_parameters(-1,
+     &         parameters,2,'full response lagrangian with freqs',
+     &         ilabels-2,'---')
+          call set_rule(trim(formname),ttype_frm,EXPAND,
+     &                  labels,ilabels,1,
+     &                  parameters,2,tgt_info)
         end do
-        call form_parameters(-1,
-     &       parameters,2,'full response lagrangian with freqs',
-     &       ilabels-2,'---')
-        call set_rule(trim(formname),ttype_frm,EXPAND,
-     &                labels,ilabels,1,
-     &                parameters,2,tgt_info)
+        deallocate(ifreq,ifreqnew)
       end do
 
       if (ntest.ge.100)
@@ -848,61 +897,77 @@ c     &                labels,2,1,parameters,2,tgt_info)
       ! and V(1)=V(1)1+V(1)2+...
       ! following (2n+1) and (2n+2) rules
       formname(1:len_short) = ' '
-      formname(1:14) = 'RESFS_LAG(n)_X'
+      formname(1:7) = 'RF(n)SX'
       resl_lag_name = 'RESS_LAG(n)_X'
       do op_par2 = 1,2
         if (op_par2.eq.1) then
-          formname(14:14) = 'T'
+          formname(7:7) = 'T'
           resl_lag_name(13:13) = 'T'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
-          formname(14:14) = 'L'
+          formname(7:7) = 'L'
           resl_lag_name(13:13) = 'L'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         do ord = op_par2-1,x_max_ord
-          write(formname(11:11),'(i1)') ord
+          write(formname(4:4),'(i1)') ord
           write(resl_lag_name(10:10),'(i1)') ord
           do side = 1,2
             if (side.eq.1) then
-              formname(5:5) = 'L'
+              formname(6:6) = 'L'
               resl_lag_name(4:4) = 'L'
             else
-              formname(5:5) = 'R'
+              formname(6:6) = 'R'
               resl_lag_name(4:4) = 'R'
             end if
-            labels(1:20)(1:len_target_name) = ' '
-            labels(1) = trim(formname)
-            labels(2) = resl_lag_name
-            labels(3) = 'V(1)_FORM'
-            ilabels = 3
-            call add_target(trim(formname),ttype_frm,.false.,tgt_info)
-            call set_dependency(trim(formname),resl_lag_name,tgt_info)
-            call set_dependency(trim(formname),'V(1)_FORM',tgt_info)
-            formname2(1:len_short) = ' '
-            formname2(1:9) = 'X(n)_FORM'
-            do op_par = 1,2
-              if (op_par.eq.1) then
-                formname2(1:1) = 'T'
-                x_max_ord2 = int((real(maxval(maxord))-1)/2+0.6)
-              else
-                formname2(1:1) = 'L'
-                x_max_ord2 = int((real(maxval(maxord))-2)/2+0.6)
-              end if
-              do ord2=1,x_max_ord2
-                write(formname2(3:3),'(i1)') ord2
-                ilabels = ilabels+1
-                labels(ilabels) = trim(formname2)
-                call set_dependency(trim(formname),
-     &                              trim(formname2),tgt_info)
+            allocate(ifreq(ord),ifreqnew(ord))
+            ifreq = 0
+            set_zero = ord.eq.0
+            do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+              set_zero = .false.
+              call redundant_comb(ifreq,ifreqnew,redun,ord,maxord,ncnt)
+              formname2(1:len_short) = ' '
+              formname2(1:6) = 'V(1)_F'
+              do digit = 1,ord
+                write(formname(6+2*digit:7+2*digit),'(i2.2)')
+     &                           ifreqnew(digit)
+                write(formname2(5+2*digit:6+2*digit),'(i2.2)')
+     &                           ifreqnew(digit)
               end do
+              if (idx_target(trim(formname),tgt_info).gt.0) cycle
+              labels(1:20)(1:len_target_name) = ' '
+              labels(1) = trim(formname)
+              labels(2) = resl_lag_name
+              labels(3) = trim(formname2)
+              ilabels = 3
+              call add_target(trim(formname),ttype_frm,.false.,tgt_info)
+              call set_dependency(trim(formname),resl_lag_name,tgt_info)
+              call set_dependency(trim(formname),trim(formname2),
+     &                            tgt_info)
+              do op_par = 1,2
+                if (op_par.eq.1) then
+                  formname2(1:1) = 'T'
+                  x_max_ord2 = int((real(maxval(maxord))-1)/2+0.6)
+                else
+                  formname2(1:1) = 'L'
+                  x_max_ord2 = int((real(maxval(maxord))-2)/2+0.6)
+                 end if
+                do ord2=1,min(x_max_ord2,ord)
+                  write(formname2(3:3),'(i1)') ord2
+                  ilabels = ilabels+1
+                  labels(ilabels) = trim(formname2)
+                  call set_dependency(trim(formname),
+     &                                trim(formname2),tgt_info)
+                end do
+              end do
+              call form_parameters(-1,
+     &             parameters,2,'left and right residuals with freqs',
+     &             ilabels-2,'---')
+              call set_rule(trim(formname),ttype_frm,EXPAND,
+     &                      labels,ilabels,1,
+     &                      parameters,2,tgt_info)
             end do
-            call form_parameters(-1,
-     &           parameters,2,'left and right residuals with freqs',
-     &           ilabels-2,'---')
-            call set_rule(trim(formname),ttype_frm,EXPAND,
-     &                    labels,ilabels,1,
-     &                    parameters,2,tgt_info)
+            deallocate(ifreq,ifreqnew)
           end do
         end do
       end do
@@ -972,6 +1037,8 @@ c     &                labels,2,1,parameters,2,tgt_info)
           do digit = 1,ord
             write(formname(5+2*digit:6+2*digit),'(i2.2)') 
      &                       ifreqnew(digit)
+            write(formname2(7+2*digit:8+2*digit),'(i2.2)')
+     &                       ifreqnew(digit)
             write(lagname(7+2*digit:8+2*digit),'(i2.2)') ifreqnew(digit)
           end do
           if (idx_target(trim(formname),tgt_info).gt.0) cycle
@@ -993,12 +1060,12 @@ c     &                labels,2,1,parameters,2,tgt_info)
         deallocate(ifreq,ifreqnew)
       end do
 
-      ! extract terms of left and right residuals RESFS_LAG(n)_X
+      ! extract terms of left and right residuals RF(n)SX
       ! with correct freq. pattern
       ! following (2n+1) and (2n+2) rules
       formname(1:6) = 'R(n)SX'
       formname2(1:len_short) = ' '
-      formname2(1:14) = 'RESFS_LAG(n)_X'
+      formname2(1:7) = 'RF(n)SX'
       opname(1:6) = 'O(n)SX'
       do op_par = 1,2
         if (op_par.eq.1) then
@@ -1009,11 +1076,11 @@ c     &                labels,2,1,parameters,2,tgt_info)
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         formname(6:6) = op_parent
-        formname2(14:14) = op_parent
+        formname2(7:7) = op_parent
         opname(6:6) = op_parent
         do ord = op_par-1,x_max_ord
           write(formname(3:3),'(i1)') ord
-          write(formname2(11:11),'(i1)') ord
+          write(formname2(4:4),'(i1)') ord
           write(opname(3:3),'(i1)') ord
           write(pert_ord,'(i1)') ord
           do side = 1,2
@@ -1023,7 +1090,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
               leftright = 'R'
             end if
             formname(5:5) = leftright
-            formname2(5:5) = leftright
+            formname2(6:6) = leftright
             opname(5:5) = leftright
             allocate(ifreq(ord),ifreqnew(ord))
             ifreq = 0
@@ -1035,6 +1102,8 @@ c     &                labels,2,1,parameters,2,tgt_info)
               opname(7:len_short) = ' '
               do digit = 1,ord
                 write(formname(5+2*digit:6+2*digit),'(i2.2)')
+     &                                          ifreqnew(digit)
+                write(formname2(6+2*digit:7+2*digit),'(i2.2)')
      &                                          ifreqnew(digit)
                 write(opname(5+2*digit:6+2*digit),'(i2.2)') 
      &                                          ifreqnew(digit)

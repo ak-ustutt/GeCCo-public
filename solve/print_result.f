@@ -130,6 +130,11 @@
         end do
         part2(2*order+2:2*order+3) = '>>'
         last2 = 2*order+3
+        ! only one ‹› for dipole moment
+        if (order.eq.1) then
+          part2(last2-4:last2-2) = part2(last2-3:last2-1)
+          last2 = last2 - 2
+        end if
 
         part3(1:19) = ' with frequencies ('
         abssum = 0d0
