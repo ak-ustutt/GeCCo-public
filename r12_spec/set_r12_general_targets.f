@@ -158,7 +158,7 @@ c        min_rank = 2  ! 1 is a possibility
         endif
 
         call op_from_occ_parameters(-1,parameters,2,
-     &                              occ_def,ndef,1,ndef)
+     &                        occ_def,ndef,1,(/.true.,.true./),ndef)
         call set_rule(op_r12,ttype_op,DEF_OP_FROM_OCC,
      &                op_r12,1,1,
      &                parameters,2,tgt_info)
@@ -293,7 +293,7 @@ c dbg
       occ_def(IHOLE,2,11) = 1
       occ_def(IEXTR,2,11) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,11,1,11)
+     &       occ_def,11,1,(/.true.,.true./),11)
       call set_rule(op_rintx,ttype_op,DEF_OP_FROM_OCC,
      &              op_rintx,1,1,
      &              parameters,2,tgt_info)
@@ -377,7 +377,7 @@ c dbg
       occ_def(IPART,2,14) = 2
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,7,2,14)
+     &     occ_def,7,2,(/.true.,.true./),14)
       call set_rule(op_gr,ttype_op,DEF_OP_FROM_OCC,
      &              op_gr,1,1,
      &              parameters,2,tgt_info)
@@ -417,7 +417,7 @@ c     &              parameters,1,tgt_info)
       occ_def(IHOLE,2,10) = 2
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,5,2,10)
+     &     occ_def,5,2,(/.true.,.true./),10)
       call set_rule(op_v_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_v_inter,1,1,
      &              parameters,2,tgt_info)
@@ -450,7 +450,7 @@ c      occ_def(IEXTR,1,9) = 1
 c      occ_def(IHOLE,2,10) = 2
 c
 c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,5,2,10)
+c     &     occ_def,5,2,(/.true.,.true./),10)
 c      call set_rule(op_v_test,ttype_op,DEF_OP_FROM_OCC,
 c     &              op_v_test,1,1,
 c     &              parameters,2,tgt_info)
@@ -493,7 +493,7 @@ c      occ_def(IPART,1,12) = 1
 c      occ_def(IHOLE,2,12) = 2
 c
 c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,6,2,12)
+c     &     occ_def,6,2,(/.true.,.true./),12)
 c      call set_rule(op_v3_inter,ttype_op,DEF_OP_FROM_OCC,
 c     &              op_v3_inter,1,1,
 c     &              parameters,2,tgt_info)
@@ -522,7 +522,7 @@ c      occ_def(IPART,1,9) = 1
 c      occ_def(IHOLE,2,9) = 2
 c
 c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,3,3,9)
+c     &     occ_def,3,3,(/.true.,.true./),9)
 c      call set_rule(op_v4_inter,ttype_op,DEF_OP_FROM_OCC,
 c     &              op_v4_inter,1,1,
 c     &              parameters,2,tgt_info)
@@ -561,7 +561,7 @@ c        ! 5
         occ_def(IHOLE,2,10) = 1
         occ_def(IEXTR,2,10) = 1
         call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,5,2,10)
+     &       occ_def,5,2,(/.true.,.true./),10)
         call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
      &                op_ff,1,1,
      &                parameters,2,tgt_info)
@@ -620,7 +620,7 @@ c      occ_def(IPART,1,5) = 1
 c      occ_def(IPART,1,6) = 1
 c      occ_def(IHOLE,2,6) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,1,1,6)
+     &     occ_def,1,1,(/.true.,.true./),6)
       call set_rule(op_c_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_c_inter,1,1,
      &              parameters,2,tgt_info)
@@ -633,7 +633,7 @@ c      occ_def(IHOLE,2,6) = 2
       occ_def(IHOLE,2,2) = 2
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,1,2,2)
+     &     occ_def,1,2,(/.true.,.true./),2)
       call set_rule(op_p_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_p_inter,1,1,
      &              parameters,2,tgt_info)
@@ -668,7 +668,7 @@ c      occ_def(IHOLE,1,2) = 1
 c      occ_def(IHOLE,2,3) = 2
 c
 c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,1,3,3)
+c     &     occ_def,1,3,(/.true.,.true./),3)
 c      call set_rule(op_p3g_inter,ttype_op,DEF_OP_FROM_OCC,
 c     &              op_p3g_inter,1,1,
 c     &              parameters,2,tgt_info)
@@ -706,7 +706,7 @@ c      occ_def(IPART,1,11) = 1
 c      occ_def(IPART,2,11) = 1
 c      occ_def(IHOLE,2,12) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,2,3,6)
+     &     occ_def,2,3,(/.true.,.true./),6)
       call set_rule(op_z_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_z_inter,1,1,
      &              parameters,2,tgt_info)
@@ -847,7 +847,7 @@ c      occ_def(IHOLE,2,12) = 2
         occ_def(IEXTR,1,52) = 1
         occ_def(IEXTR,2,52) = 1
         call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,26,2,52)
+     &       occ_def,26,2,(/.true.,.true./),52)
         call set_rule(op_g_z,ttype_op,DEF_OP_FROM_OCC,
      &                op_g_z,1,1,
      &                parameters,2,tgt_info)
@@ -872,7 +872,7 @@ c      occ_def(IHOLE,1,2) = 2
 c      occ_def(IHOLE,2,3) = 2
 c      occ_def(IHOLE,2,4) = 2
 c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,1,4,4)
+c     &     occ_def,1,4,(/.true.,.true./),4)
 c      call set_rule(op_z4_inter,ttype_op,DEF_OP_FROM_OCC,
 c     &              op_z4_inter,1,1,
 c     &              parameters,2,tgt_info)
@@ -887,7 +887,7 @@ c      occ_def(IHOLE,1,2) = 2
 c      occ_def(IPART,2,2) = 1
 c      occ_def(IHOLE,2,3) = 2
 c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,1,3,3)
+c     &     occ_def,1,3,(/.true.,.true./),3)
 c      call set_rule(op_k4_inter,ttype_op,DEF_OP_FROM_OCC,
 c     &              op_k4_inter,1,1,
 c     &              parameters,2,tgt_info)

@@ -6,7 +6,7 @@
 *     set X type contributions to B matrix
 *     no GBC assumed:
 *      B  : assemble Xbar from r^2(f+k) and r+ and rbar
-*      C  :                    r^2(f+k) and r+ and rbreve
+*      C  :                    r^2(f+k) and r+ and rbar+
 *     GBC assumed (A' and B only)
 *       assemble Xbar_F from X and Fock matrix
 *       if approx B: assemble Xbar_K from r+ and rbar (contains K only) 
@@ -100,8 +100,8 @@
         !-----------------!
         if (.not.assume_rsqbar) then
 
-          call quit(1,'set_Xcontrib',
-     &         'unused route. how did you get here?')
+c          call quit(1,'set_Xcontrib',
+c     &         'unused route. how did you get here?')
 
           idx_1 = idx_op(irsq)
           idx_2 = idx_op(ihartree)
@@ -111,7 +111,21 @@
           do while(associated(flist_pnt%next))
             flist_pnt => flist_pnt%next
           end do
-          call expand_op_product2(flist_pnt,idx_intm,
+          if (njoined_intm.eq.1) then
+c dbg
+            print *,'!! here !!'
+c dbg
+            call expand_op_product2(flist_pnt,idx_intm,
+     &       1d0,5,3,
+     &       (/idx_intm,idx_2,idx_1,idx_1,idx_intm/),
+     &       (/1       ,2    ,3    ,3    ,1       /),       
+     &       -1, -1,
+     &       0,0,
+     &       0,0, 
+     &       (/2,3,1,0/),1,     ! def. of projector
+     &       op_info)
+          else if (njoined_intm.eq.2) then
+            call expand_op_product2(flist_pnt,idx_intm,
      &       1d0,7,3,
      &       (/idx_intm,idx_1,idx_intm,idx_intm,idx_2,idx_1,idx_intm/),
      &       (/1       ,2    ,1       ,1       ,3    ,2    ,1       /),       
@@ -120,6 +134,9 @@
      &       (/2,7, 1,5, 1,6/),3, ! avoid cross contrib. to external lines
      &       (/4,5,1,0/),1,     ! def. of projector
      &       op_info)
+          else
+            call quit(1,'set_Xcontrib','not prepared for this case !')
+          end if
         else
           idx_1 = idx_op(irsq)
           flist_pnt => flist
@@ -142,7 +159,7 @@
      &           0,0,
      &           op_info)
           else
-            call quit(1,'set_1contrib','not prepared for this case !')                    
+            call quit(1,'set_Xcontrib','not prepared for this case !')
           end if
         end if
 

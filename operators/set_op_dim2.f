@@ -66,7 +66,8 @@
      &     msa_max, msc_max, njoined, nblk,
      &     msa, msc, idxmsa, idxmsa2, igama, igamc,
      &     nasub, ncsub, icmp,
-     &     did, iexc, igam, len_blk, ld_blk, idx, jdx, tot_c, tot_a
+     &     did, iexc, igam, len_blk, ld_blk, idx, jdx, tot_c, tot_a,
+     &     idx_hpvx, hpvx
 
       integer, pointer ::
      &     hpvx_csub(:), hpvx_asub(:),
@@ -286,6 +287,24 @@ c dbg
 c                print *,'icmp, len_str: ',icmp,len_str(icmp)
 c dbg
               end do
+
+              ! get actual leading dimension
+              search_loop: do idx_hpvx = 1, ngastp
+                hpvx = hpvxseq(idx_hpvx)
+                do icmp = 1, ncsub
+                  if (hpvx_csub(icmp).eq.hpvx) then
+                    ld_blk = len_str(icmp)
+                    exit search_loop
+                  end if
+                end do
+                do icmp = 1, nasub
+                  if (hpvx_asub(icmp).eq.hpvx) then
+                    ld_blk = len_str(ncsub+icmp)
+                    exit search_loop
+                  end if
+                end do
+
+              end do search_loop
 
               if (len_blk.le.0) cycle distr_loop
               

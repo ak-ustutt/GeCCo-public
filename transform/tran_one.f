@@ -37,8 +37,9 @@
 
       integer, pointer ::
      &     nbas(:), nxbas(:), ntoobs(:), mostnd(:,:,:),
-     &     ica_occ(:,:), hpvx_occ(:,:,:),
-     &     iad_gas(:), hpvx_gas(:,:), idxcmo(:,:,:)
+     &     ica_occ(:,:), hpvx_occ(:,:,:), restr(:,:,:,:,:,:),
+     &     iad_gas(:), hpvx_gas(:,:), idxcmo(:,:,:),
+     &     iad_gasca(:,:), ld_blk(:,:,:)
       real(8), pointer ::
      &     cmo(:), xao(:), xmo(:), xop(:), xhlf(:)
       type(filinf), pointer ::
@@ -47,6 +48,8 @@
      &     opdef
       real(8) ::
      &     xref
+      type(leninfx2), pointer ::
+     &     ldim_gmox(:)
 
       integer, external ::
      &     max_dis_blk, idxlist
@@ -64,6 +67,8 @@
 
       me_sym = me_mo%gamt
 
+      ldim_gmox => me_mo%ld_op_gmox 
+
       ! set up some dimensions
       nsym = orb_info%nsym
       ngas = orb_info%ngas
@@ -75,7 +80,7 @@
       iad_gas => orb_info%iad_gas
       hpvx_gas => orb_info%ihpvgas
 
-      allocate(idxcmo(nsym,ngas,2))
+      allocate(idxcmo(nsym,ngas,2),iad_gasca(ngas,2))
 
       nao  = 0
       do isym = 1, nsym
@@ -106,6 +111,7 @@
       njoined = opdef%njoined
       ica_occ => opdef%ica_occ
       hpvx_occ => opdef%ihpvca_occ
+      restr => opdef%igasca_restr
 
       do iblk = 1, nblk
         ! only zero- and one-particle part is of interest:
@@ -165,19 +171,52 @@
         if (ica_occ(1,iblk).ne.1 .or.
      &      ica_occ(2,iblk).ne.1) cycle
 
+        ld_blk => ldim_gmox(iblk)%d_gam_ms
+
         iblkoff = (iblk-1)*njoined
 
         if (ntest.ge.100) then
           call wrt_occ_n(luout,hpvx_occ(1,1,iblkoff+1),njoined)
         end if
 
+        ! set standard frozen core settings:
+        do igas = 1, ngas
+          iad_gasca(igas,1) = iad_gas(igas)
+          iad_gasca(igas,2) = iad_gas(igas)
+        end do
+
         ! get HPVX of C and A
+        ! and actual frozen core settings:
         do ijoin = 1, njoined
           hpvx_c = idxlist(1,hpvx_occ(1,1,iblkoff+ijoin),ngastp,1)
+          if (hpvx_c.eq.1) then
+            do igas = 1, ngas
+              if (hpvx_gas(igas,1).ne.1) cycle
+              if ( restr(2,igas,1,1,1,iblkoff+ijoin).eq.0.or.
+     &            (igas.gt.1.and.
+     &             restr(1,igas-1,1,1,1,iblkoff+ijoin).eq.1)) then
+                iad_gasca(igas,1) = 1
+              else
+                iad_gasca(igas,1) = 2
+              end if
+            end do
+          end if
           if (hpvx_c.gt.0) exit
         end do
         do ijoin = 1, njoined
           hpvx_a = idxlist(1,hpvx_occ(1,2,iblkoff+ijoin),ngastp,1)
+          if (hpvx_a.eq.1) then
+            do igas = 1, ngas
+              if (hpvx_gas(igas,1).ne.1) cycle
+              if ( restr(2,igas,2,1,1,iblkoff+ijoin).eq.0.or.
+     &            (igas.gt.1.and.
+     &             restr(1,igas-1,2,1,1,iblkoff+ijoin).eq.1)) then
+                iad_gasca(igas,2) = 1
+              else
+                iad_gasca(igas,2) = 2
+              end if
+            end do
+          end if
           if (hpvx_a.gt.0) exit
         end do
 
@@ -201,8 +240,10 @@
           xop(1:len_blk) = 0d0
 
           call tran_one_blk(xop,xao,cmo,xhlf,
-     &         me_sym,idxcmo,hpvx_c,hpvx_a,
-     &         nbas,nxbas,mostnd,iad_gas,hpvx_gas(1,ispin),ngas,nsym)
+     &         me_sym,idxcmo,ld_blk(1,1,idxms),
+     &         hpvx_c,hpvx_a,
+     &         nbas,nxbas,mostnd,
+     &         iad_gasca,hpvx_gas(1,ispin),ngas,nsym)
 
           if (.not.ffmo%buffered.or.ffmo%incore(iblk).eq.0) then
             call put_vec(ffmo,xop,idxst,idxnd)
@@ -214,7 +255,7 @@
       if (close_ffmo)
      &     call file_close_keep(ffmo)
 
-      deallocate(idxcmo)
+      deallocate(idxcmo,iad_gasca)
 
       ifree = mem_flushmark('tran_one')
 
