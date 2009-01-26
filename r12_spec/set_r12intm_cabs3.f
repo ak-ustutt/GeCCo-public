@@ -18,7 +18,7 @@
 *     label     Rbar  Rtilde Rbar+  V      V+     X     
 *    ------------------------------------------------------
 *       2       R12   R12    R12    G_X    R12    R12   
-*       3       R12X  R12X   R12X   R12    G_X    R12   
+*       3       R12X  R12X          R12    G_X    R12   
 *       4       F+K   K      F+K    H.R12  R12.H  R12^2 
 *    -------------------------------------------------------
 *
@@ -34,8 +34,17 @@
 *       8       RTILDE        RTILDE
 *       9       R12^2         R12^2 / or {R12^2}BREVE
 *      10       F+K           F+K     or  --
-*      11       --            RBREVE
+*      11       RBREVE        RBREVE
 *      12       C             C
+*    --------------------------------------------------------------
+*
+*     label     BV (apr. A,B)  BV (apr. C)
+*    -------------------------------------
+*       2       R12           R12         
+*       3       RBAR(V)       RBAR(V)+
+*       4       R12^2         R12^2
+*       5       V             V
+*       6       RBREVE(V)     RBREVE(V)
 *    --------------------------------------------------------------
 *
 *     label     P      P3F    P3G    Z
@@ -153,10 +162,14 @@
      &     idx_intm)
 
       select case(trim(int_type))
-      case('RB','RT','RV') ! NOT USED, NOT DEBUGGED
-        call quit(1,'set_r12intm_cabs3','not debugged')
+      case('RD','RV') 
         call set_r12mod(flist,int_type,
-     &       idx_intm,idx_op,nop,op_info)
+     &       idx_intm,idx_op(2:),nop,op_info)
+      case('RB','RT') ! NOT USED, NOT DEBUGGED
+        call quit(1,'set_r12intm_cabs3',
+     &       'not debugged: '//trim(int_type))
+        call set_r12mod(flist,int_type,
+     &       idx_intm,idx_op(2:),nop,op_info)
       case('C')
         if (ansatz.eq.1)
      &       call quit(1,'set_r12intm_cabs3','no C for ansatz 1')
@@ -230,6 +243,36 @@ c          end if
         if (ansatz.gt.1) then
           call set_RC_contrib(flist,ansatz,approx,
      &       2,12,
+     &       idx_intm,idx_op,nop,op_info)
+        end if
+
+      case('BV')
+        if (approx(1:1).ne.'C') then
+          call quit(1,'set_r12intm_cabs3','no BV for approx A/B')
+          ! set up term arising from P in Q = 1 - P
+          call set_Pcontrib(flist,ansatz,
+     &         2,3,
+     &         idx_intm,idx_op,nop,op_info)
+          ! Hartree contributions
+          call set_Xcontrib(flist,ansatz,approx,
+     &         9,2,7, 10, 5,6,
+     &         idx_intm,idx_op,nop,op_info,orb_info)
+        else
+          ! Hartree contributions
+          call set_Xcontrib(flist,ansatz,approx,
+     &         4,2,3, 5, 5,6, ! last 2 are dummies
+     &         idx_intm,idx_op,nop,op_info,orb_info)
+        end if
+        if (approx(4:6).ne.'noZ'.and.
+     &      approx(4:6).ne.'GBC'.and.
+     &      approx(4:6).ne.'EBC') then
+          call set_Zcontrib(flist,ansatz,approx,
+     &       2,6,
+     &       idx_intm,idx_op,nop,op_info)
+        end if
+        if (ansatz.gt.1) then
+          call set_RVR2_contrib(flist,ansatz,approx,
+     &       2,5,
      &       idx_intm,idx_op,nop,op_info)
         end if
 

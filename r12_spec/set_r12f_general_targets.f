@@ -214,7 +214,7 @@ c          occ_def(IHOLE,2,(idef-1)*2+1) = irank
 c          occ_def(IPART,1,(idef-1)*2+2) = 1
 c        end do
 c        call op_from_occ_parameters(-1,parameters,2,
-c     &       occ_def,ndef,2,ndef)
+c     &       occ_def,ndef,2,(/.true.,.true./),ndef)
 c        call set_rule(op_cex,ttype_op,DEF_OP_FROM_OCC,
 c     &       op_cex,1,1,
 c     &       parameters,2,tgt_info)
@@ -370,7 +370,7 @@ c      min_rank = 2
         occ_def(IPART,2,18) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,ndef)
+     &     occ_def,ndef,2,(/.true.,.true./),ndef)
       call set_rule(op_rttr,ttype_op,DEF_OP_FROM_OCC,
      &              op_rttr,1,1,
      &              parameters,2,tgt_info)
@@ -413,7 +413,7 @@ c      occ_def(IPART,2,16) = 2
       occ_def(IPART,2,18) = 2
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,3*(n_pp+1),2,3*(n_pp+1))
+     &     occ_def,3*(n_pp+1),2,(/.true.,.true./),3*(n_pp+1))
       call set_rule(op_gr,ttype_op,DEF_OP_FROM_OCC,
      &              op_gr,1,1,
      &              parameters,2,tgt_info)
@@ -436,6 +436,53 @@ c      occ_def(IPART,2,16) = 2
      &              op_ffbar,1,1,
      &              parameters,1,tgt_info)
 
+      ! special R12^{2} integrals
+      call add_target('FF-X',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      if (n_pp.ge.0) then
+        ndef = 3
+        ! 1
+        occ_def(IHOLE,1,1) = 2
+        occ_def(IHOLE,2,2) = 2
+        ! 2
+        occ_def(IHOLE,1,3) = 1
+        occ_def(IPART,1,3) = 1
+        occ_def(IHOLE,2,4) = 2
+        ! 3
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IEXTR,1,5) = 1
+        occ_def(IHOLE,2,6) = 2
+      end if
+      if (n_pp.ge.1) then
+        ! 4
+        occ_def(IHOLE,1,7) = 2
+        occ_def(IHOLE,2,8) = 1
+        occ_def(IPART,2,8) = 1
+        ! 5
+        occ_def(IHOLE,1,9) = 1
+        occ_def(IPART,1,9) = 1
+        occ_def(IHOLE,2,10) = 1
+        occ_def(IPART,2,10) = 1
+        ! 6
+        occ_def(IHOLE,1,11) = 1
+        occ_def(IEXTR,1,11) = 1
+        occ_def(IHOLE,2,12) = 1
+        occ_def(IPART,2,12) = 1
+        ! 7
+        occ_def(IPART,1,13) = 2
+        occ_def(IHOLE,2,14) = 1
+        occ_def(IPART,2,14) = 1
+        ! 8
+        occ_def(IPART,1,15) = 1
+        occ_def(IEXTR,1,15) = 1
+        occ_def(IHOLE,2,16) = 1
+        occ_def(IPART,2,16) = 1
+      end if
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,2,(/.false.,.true./),ndef*2)
+      call set_rule('FF-X',ttype_op,DEF_OP_FROM_OCC,
+     &              'FF-X',1,1,
+     &              parameters,2,tgt_info)
             
       ! V^{ij}_{pq}
       call add_target(op_v_inter,ttype_op,.false.,tgt_info)
@@ -496,7 +543,7 @@ c      occ_def(IPART,2,16) = 2
         occ_def(IPART,2,14) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,ndef)
+     &     occ_def,ndef,1,(/.true.,.true./),ndef)
       call set_rule(op_v_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_v_inter,1,1,
      &              parameters,2,tgt_info)
@@ -560,7 +607,7 @@ c      occ_def(IPART,2,16) = 2
       end if
       call add_target(op_b_inter,ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,ndef)
+     &     occ_def,ndef,1,(/.true.,.true./),ndef)
       call set_rule(op_b_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_b_inter,1,1,
      &              parameters,2,tgt_info)
@@ -604,7 +651,7 @@ c      occ_def(IPART,2,16) = 2
       occ_def(IPART,2,4) = 1
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,ndef)
+     &     occ_def,ndef,1,(/.true.,.true./),ndef)
       call set_rule(op_xp_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_xp_inter,1,1,
      &              parameters,2,tgt_info)
@@ -630,7 +677,7 @@ c      occ_def(IPART,2,16) = 2
       occ_def(IPART,2,8) = 1
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,ndef*2)
+     &     occ_def,ndef,2,(/.true.,.true./),ndef*2)
       call set_rule(op_xh_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_xh_inter,1,1,
      &              parameters,2,tgt_info)
@@ -650,7 +697,7 @@ c      occ_def(IPART,2,16) = 2
       occ_def(IPART,2,3) = 2
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,n_pp+1,1,6)
+     &     occ_def,n_pp+1,1,(/.true.,.true./),6)
       call set_rule(op_c_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_c_inter,1,1,
      &              parameters,2,tgt_info)
@@ -668,7 +715,7 @@ c      occ_def(IHOLE,2,2) = 2
 c      occ_def(IPART,2,2) = 1
 c      ndef = 2
 c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,ndef,1,ndef)
+c     &     occ_def,ndef,1,(/.true.,.true./),ndef)
 c      call set_rule(op_z_inter,ttype_op,DEF_OP_FROM_OCC,
 c     &              op_z_inter,1,1,
 c     &              parameters,2,tgt_info)
@@ -925,6 +972,25 @@ c dbg
       call set_rule(form_r12_bhcabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,7,1,
      &              parameters,2,tgt_info)
+
+c     for response: may define formal B_V in this way
+c      ! formal definition of B_V
+c      labels(1:10)(1:len_target_name) = ' '
+c      labels(1) = form_r12_bint
+c      labels(2) = op_bv_inter
+c      labels(3) = op_r12
+c      labels(4) = op_v
+c      call add_target(form_r12_bint,ttype_frm,.false.,tgt_info)
+c      call set_dependency(form_r12_bint,op_bv_inter,tgt_info)
+c      call set_dependency(form_r12_bint,op_v,tgt_info)
+c      call set_dependency(form_r12_bint,op_r12,tgt_info)
+c      call form_parameters(-1,
+c     &     parameters,2,title_r12_bint,0,'Bp')
+c      call set_rule(form_r12_bint,ttype_frm,DEF_R12INTM_FORMAL,
+c     &              labels,4,1,
+c     &              parameters,2,tgt_info)
+
+
 
       ! formal definition of C
       labels(1:10)(1:len_target_name) = ' '
@@ -1253,6 +1319,26 @@ c dbg
       labels(1) = mel_ffbar
       call import_parameters(-1,parameters,'FFBAR_INT',env_type)
       call set_rule(mel_ffbar,ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
+      ! special R12^2 integrals
+      call add_target('FF-X-INT',ttype_opme,.false.,tgt_info)
+      call set_dependency('FF-X-INT','FF-X',tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FF-X-INT'
+      labels(2) = 'FF-X'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('FF-X-INT',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FF-X-INT'
+      call import_parameters(-1,parameters,'FF_INT',env_type)
+      call set_rule('FF-X-INT',ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
 

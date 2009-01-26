@@ -42,6 +42,11 @@
       integer, external ::
      &     sign_global
 
+c dbg
+c      integer ::
+c     &     nr12, nttld, nt1x, idx_t, idx_tb, idx_r, idx_tt, idx_ttb,
+c     &     idx_op, iblkop
+c dbg
 
       allocate(arc_seq(contr%narc+1))
 
@@ -54,6 +59,37 @@
       njres = op%njoined
       idxoff = (contr%iblk_res-1)*njres 
       occ => op%ihpvca_occ(1:ngastp,1:2,idxoff+1:idxoff+njres)
+
+      ipos = 1
+c dbg
+c      nr12 = 0
+c      nttld = 0
+c      nt1x = 0
+c      idx_t = 2
+c      idx_tb = 8
+c      idx_r = 15
+c      idx_tt = 4
+c      idx_ttb = 5
+c      do ivtx = 1, contr%nvtx
+c        idx_op = contr%vertex(ivtx)%idx_op
+c        iblkop = contr%vertex(ivtx)%iblk_op
+c        if (idx_op.eq.idx_t.and.iblkop.eq.2) nt1x = nt1x+1
+c        if (idx_op.eq.idx_tb.and.iblkop.eq.2) nt1x = nt1x+1
+c        if (idx_op.eq.idx_r) nr12 = nr12+1
+c        if (idx_op.eq.idx_tt) nttld = nttld+1
+c        if (idx_op.eq.idx_ttb) nttld = nttld+1        
+c      end do
+c      if (nt1x.gt.0) then
+c        write(str,'("D")')
+c      else if (nttld.gt.0) then
+c        write(str,'("C")')
+c      else if (nr12.gt.0) then
+c        write(str,'("B")')
+c      else
+c        write(str,'("A")')
+c      end if
+c      ipos = 2
+c dbg
 
       maxnj = njres
       do isvtx = 1, contr%nsupvtx
@@ -79,12 +115,12 @@
         ipos = len_trim(str)+1
         write(str(ipos:),'("&=")')
       else if (newline) then
-        if (fac.ge.0d0) write(str,'("\\&+")')
-        if (fac.lt.0d0) write(str,'("\\&-")')
+        if (fac.ge.0d0) write(str(ipos:),'("\\&+")')
+        if (fac.lt.0d0) write(str(ipos:),'("\\&-")')
         lencnt = lencnt+1
       else
-        if (fac.ge.0d0) write(str,'("+")')
-        if (fac.lt.0d0) write(str,'("-")')
+        if (fac.ge.0d0) write(str(ipos:),'("+")')
+        if (fac.lt.0d0) write(str(ipos:),'("-")')
         lencnt = lencnt+1
       end if
 

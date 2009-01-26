@@ -1,12 +1,14 @@
 *----------------------------------------------------------------------*
       subroutine set_user_op2(op,name,type,
-     &     occ_def,nblk,njoined,irestr,orb_info)
+     &     occ_def,nblk,njoined,irestr,freeze,orb_info)
 *----------------------------------------------------------------------*
 *     set up occupations for a general operator described by
 *     occ_def:   user provided occupations
 *     irestr:    restriction on subspaces 
 *                min, max. number of operators after completion of
 *                subspace within H/P/V/X, for C/A
+*     freeze(1): use settings on iadgas to enforce frozen C occupations
+*     freeze(2): use settings on iadgas to enforce frozen A occupations
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -29,13 +31,15 @@
      &     orb_info
       integer, intent(in) ::
      &     occ_def(ngastp,2,nblk*njoined), irestr(2,orb_info%ngas,2,2)
+      logical, intent(in) ::
+     &     freeze(2)
 
       logical, parameter ::
      &     inv_hole = .false.
 
       integer ::
      &     ifree, ipass, irank, na, nc, ica, igas, igasl, idiff, imaxr,
-     &     iocc, igastp, iprint, nx, iblk, ijoin, ioff_blk
+     &     iocc, igastp, iprint, nx, iblk, ijoin, ioff_blk, gasst, gasnd
       integer ::
      &     hpvxprint(ngastp)
       integer, pointer ::
@@ -101,27 +105,53 @@
         ! set restrictions
         do ijoin = 1, njoined
          do ica = 1, 2
-          do igas = 1, ngas
-            ! set a/c rank as upper bound
-            idiff = - irestr(1,igas,ica,1)+irestr(2,igas,ica,1)
-            imaxr = min(irestr(2,igas,ica,1),
+           do igastp = 1, ngastp
+             gasst = orb_info%idx_gas(igastp)
+             gasnd = gasst-1+orb_info%ngas_hpv(igastp)
+             do igas = gasst, gasnd
+               ! set a/c rank as upper bound
+               idiff = -irestr(1,igas,ica,1)+irestr(2,igas,ica,1)
+               imaxr = min(irestr(2,igas,ica,1),
      &           op%ihpvca_occ(hpvxgas(igas,1),ica,ioff_blk+ijoin))
-            ! not sure whether this will work in all cases:
-            if (igas.lt.ngas) then
-              op%igasca_restr(1,igas,ica,1,1:nspin,ioff_blk+ijoin) =
-     &             max(0,imaxr - idiff)
-            else
-              op%igasca_restr(1,igas,ica,1,1:nspin,ioff_blk+ijoin)=imaxr
-            end if
-c very quick fix (HM, A COPIED ONE, ACTUALLY):
-            op%igasca_restr(1:2,igas,ica,1,1:nspin,ioff_blk+ijoin) =
-     &           imaxr                    
-          end do
+               ! not sure whether this will work in all cases:
+               if (igas.lt.gasnd) then
+                 op%igasca_restr(1,igas,ica,1,1:nspin,ioff_blk+ijoin) =
+     &                max(0,imaxr - idiff)
+               else
+                 op%igasca_restr(1,igas,ica,1,1:nspin,ioff_blk+ijoin)=
+     &                imaxr
+               end if
+               op%igasca_restr(2,igas,ica,1,1:nspin,ioff_blk+ijoin) =
+     &              imaxr                    
+             end do
+           end do
          end do
         end do
+c        ! set restrictions (OLD)
+c        do ijoin = 1, njoined
+c         do ica = 1, 2
+c          do igas = 1, ngas
+c            ! set a/c rank as upper bound
+c            idiff = - irestr(1,igas,ica,1)+irestr(2,igas,ica,1)
+c            imaxr = min(irestr(2,igas,ica,1),
+c     &           op%ihpvca_occ(hpvxgas(igas,1),ica,ioff_blk+ijoin))
+c            ! not sure whether this will work in all cases:
+c            if (igas.lt.ngas) then
+c              op%igasca_restr(1,igas,ica,1,1:nspin,ioff_blk+ijoin) =
+c     &             max(0,imaxr - idiff)
+c            else
+c              op%igasca_restr(1,igas,ica,1,1:nspin,ioff_blk+ijoin)=imaxr
+c            end if
+cc very quick fix (HM, A COPIED ONE, ACTUALLY):
+c            op%igasca_restr(1:2,igas,ica,1,1:nspin,ioff_blk+ijoin) =
+c     &           imaxr                    
+c          end do
+c         end do
+c        end do
         ! post-processing for frozen shells
         do ijoin = 1, njoined
          do ica = 1, 2
+          if (.not.freeze(ica)) cycle
           do igas = 1, ngas
             if (iad_gas(igas).ne.2) then
               if (igas.eq.1) then                        

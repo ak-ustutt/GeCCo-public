@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_uop2(op,name,
-     &     occ_def,ndef,njoined,orb_info)
+     &     occ_def,ndef,njoined,freeze,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_user_op
 *     set up user-provided operator 
@@ -20,6 +20,8 @@
      &     name*(*)
       integer, intent(in) ::
      &     occ_def(ngastp,2,ndef*njoined), ndef, njoined
+      logical, intent(in) ::
+     &     freeze(2)
 
       type(orbinf) ::
      &     orb_info
@@ -31,7 +33,7 @@
       call set_restr_for_uop()
 
       call set_user_op2(op,name,optyp_operator,
-     &     occ_def,ndef,njoined,irestr,orb_info)
+     &     occ_def,ndef,njoined,irestr,freeze,orb_info)
 
       return
       

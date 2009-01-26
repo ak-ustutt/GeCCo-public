@@ -185,7 +185,7 @@ c dbg
             call quit(1,'set_r12intm_formal','???')
           end if
           call set_uop2(op_f,opdum_f,
-     &         occ_def,ndef,1,orb_info)
+     &         occ_def,ndef,1,(/.true.,.true./),orb_info)
           deallocate(occ_def)
         elseif(n_x.eq.2)then
           allocate(occ_def(ngastp,2,2))
@@ -196,7 +196,7 @@ c dbg
           occ_def(IHOLE,1,2) = 1
           occ_def(IPART,2,2) = 1
           call set_uop2(op_f,opdum_f,
-     &         occ_def,ndef,1,orb_info)
+     &         occ_def,ndef,1,(/.true.,.true./),orb_info)
           deallocate(occ_def)
 c          call set_hop(op_f,opdum_f,.false.,
 c     &         1,1,0,.true.,orb_info)
