@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 10
 
       include 'stdunit.h'
       include 'def_graph.h'
@@ -65,15 +65,18 @@
       case ('dalton_special','DALTON_SPECIAL')
         ! what to import?
         select case(trim(list_type))
-        case ('H_INT','G_INT')
+        case ('H_INT','G_INT','F_INT')
           if(trim(mel_target%op%name).eq.op_g_z) anti = .false.
           mode=1
           scaling=min(use_scaling,0)
-          call import_2el_dalton(mel_target,'MO_G',
+          if (trim(list_type).eq.'G_INT'.or.
+     &        trim(list_type).eq.'H_INT')
+     &         call import_2el_dalton(mel_target,'MO_G',
      &           mode,scaling,anti,str_info,orb_info)
           ! call after 2int import, as the above routine
           ! zeroes all blocks, including E0 and F:
-          if (trim(list_type).eq.'H_INT')
+          if (trim(list_type).eq.'F_INT'.or.
+     &        trim(list_type).eq.'H_INT')
      &       call import_fock_dalton(mel_target,str_info,orb_info,
      &         .true.,'MO_F')
         ! Get other integrals needed for R12 calculations.

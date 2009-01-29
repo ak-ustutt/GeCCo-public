@@ -25,14 +25,17 @@
      &     ndef_max = 52
       integer ::
      &     idx, idx_t, n_ap,
-     &     ncadiff, min_rank, max_rank, iformal, ansatz,
+     &     ncadiff, min_rank, max_rank, min_xrank, max_xrank,
+     &     iformal, ansatz,
      &     ndim1, ndim2, ndef, njoined,
-     &     hpvx_constr(2,ngastp,2), gas_constr(2,orb_info%ngas,2,2),
+     &     hpvx_constr(2,ngastp),
+     &     hpvxca_constr(2,ngastp,2), 
+     &     gas_constr(2,orb_info%ngas,2,2),
      &     occ_def(2,ngastp,ndef_max)
       character*(len_opname) ::
      &     name_template
       logical ::
-     &     dagger, explicit
+     &     dagger, explicit, freeze(2)
 
       integer, external ::
      &     idx_oplist2
@@ -52,18 +55,21 @@
       case(DEF_GENERAL_OPERATOR)
         call genop_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       dagger,min_rank,max_rank,ncadiff,iformal,explicit,
-     &       hpvx_constr,ndim1,gas_constr,ndim2)
-        call set_genop(op_pnt,trim(rule%labels(1)),optyp_operator,
-     &       dagger,
-     &       min_rank,max_rank,ncadiff,hpvx_constr,gas_constr,
-     &       iformal,orb_info)
+     &       min_rank,max_rank,ncadiff,
+     &       min_xrank,max_xrank,iformal,freeze,
+     &       hpvx_constr,hpvxca_constr,ndim1,gas_constr,ndim2)
+        call set_genop2(op_pnt,trim(rule%labels(1)),optyp_operator,
+     &       min_rank,max_rank,ncadiff,
+     &       min_xrank,max_xrank,
+     &       hpvx_constr,hpvxca_constr,
+     &       gas_constr,iformal,freeze,
+     &       orb_info)
       case(DEF_OP_FROM_OCC)
         call op_from_occ_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       occ_def,ndef,njoined,ndef_max)
+     &       occ_def,ndef,njoined,freeze,ndef_max)
         call set_uop2(op_pnt,trim(rule%labels(1)),
-     &       occ_def,ndef,njoined,orb_info)
+     &       occ_def,ndef,njoined,freeze,orb_info)
       case(DEF_SCALAR)
         call set_hop(op_pnt,trim(rule%labels(1)),.false.,
      &       0,0,1,.false.,orb_info)

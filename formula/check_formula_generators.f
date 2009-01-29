@@ -172,7 +172,7 @@ c      occ_def(1:ngastp,2,1) = (/0,2,0,0/)
 c      occ_def(1:ngastp,1,2) = (/0,2,0,0/)
 c      occ_def(1:ngastp,2,2) = (/0,0,0,0/)
 c      call set_uop2(opr2,'R2',
-c     &     occ_def,1,2,orb_info)
+c     &     occ_def,1,2,(/.true.,.true./),orb_info)
 c
 c      call init_formula(form_r2)
 cc      call expand_op_product2(form_r2,idxopr2,

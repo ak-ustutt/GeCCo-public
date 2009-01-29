@@ -1,7 +1,9 @@
 *----------------------------------------------------------------------*
       subroutine tran_one_blk(xmo,xao,cmo,xhlf,
-     &     isym,idxcmo,hpvx_c,hpvx_a,
-     &     nbas,nxbas,mostnd,iad_gas,hpvx_gas,ngas,nsym)
+     &     isym,idxcmo,ldim,
+     &     hpvx_c,hpvx_a,
+     &     nbas,nxbas,mostnd,
+     &     iad_gasca,hpvx_gas,ngas,nsym)
 *----------------------------------------------------------------------*
 *     transform one-particle block (of an operator) to the
 *     MO basis
@@ -14,12 +16,12 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     ngas, nsym, isym, hpvx_c, hpvx_a,
-     &     idxcmo(nsym,ngas,2),
-     &     iad_gas(ngas), hpvx_gas(ngas),
+     &     idxcmo(nsym,ngas,2), ldim(nsym),
+     &     iad_gasca(ngas,2), hpvx_gas(ngas),
      &     mostnd(2,nsym,ngas), nbas(nsym), nxbas(nsym)
       real(8), intent(in) ::
      &     cmo(*), xmo(*)
@@ -29,7 +31,7 @@
       logical ::
      &     transp, xbas_c, xbas_a
       integer ::
-     &     icmoc, icmoa, ixao, ixmo, igasc, igasa,
+     &     icmoc, icmoa, ixao, ixmo, ixmo0, ixmo00, igasc, igasa,
      &     isymc, isyma, nmoa, nmoc, naoa, naoc, ntaoa, ntaoc
       real(8) :: fac
 
@@ -37,7 +39,7 @@
       fac = 1d0
 
       ixao = 1
-      ixmo = 1
+      ixmo00 = 1
 
       transp = hpvxseq(hpvx_c).gt.hpvxseq(hpvx_a)
       xbas_c = hpvx_c.eq.IEXTR
@@ -46,6 +48,9 @@
       do isyma = 1, nsym
         isymc = multd2h(isyma,isym)
 
+        ixmo0 = ixmo00
+        ixmo  = ixmo0
+
         if (ntest.ge.100)
      &       write(luout,*) 'isymc,isyma: ',isymc,isyma
 
@@ -53,14 +58,19 @@
         naoc = nbas(isymc)
         ntaoa = nbas(isyma)+nxbas(isyma)
         ntaoc = nbas(isymc)+nxbas(isymc)
- 
+
+        if (ntest.ge.100) then
+          write(luout,*) 'naoc,naoa:   ',naoc,naoa
+          write(luout,*) 'ntaoc,ntaoa: ',ntaoc,ntaoa
+        end if
+
         if (xbas_c) naoc = ntaoc
         if (xbas_a) naoa = ntaoa
 
         if (naoa*naoc.eq.0) cycle
 
         do igasa = 1, ngas
-          if (iad_gas(igasa).ne.2) cycle
+          if (iad_gasca(igasa,2).ne.2) cycle
           if (hpvx_gas(igasa).ne.hpvx_a) cycle
 
           if (xbas_a) then
@@ -71,8 +81,10 @@
 
           nmoa = mostnd(2,isyma,igasa)-mostnd(1,isyma,igasa)+1
 
+          ixmo = ixmo0
+
           do igasc = 1, ngas
-            if (iad_gas(igasc).ne.2) cycle
+            if (iad_gasca(igasc,1).ne.2) cycle
             if (hpvx_gas(igasc).ne.hpvx_c) cycle
 
             if (xbas_c) then
@@ -92,6 +104,9 @@
               if (ntest.ge.100)
      &             write(luout,*) 'nmoa,nmoc,naoa,naoc,ntaoc: ',
      &                 nmoa,nmoc,naoa,naoc,ntaoc
+              if (ntest.ge.100)
+     &             write(luout,*) 'ldim: ',
+     &                 ldim(isyma)
 
               if (.not.transp) then
 
@@ -113,11 +128,12 @@
                 call dgemm('n','n',nmoc,nmoa,naoa,
      &                   fac,xhlf,nmoc,
      &                       cmo(icmoa),naoa,
-     &                   0d0,xmo(ixmo),nmoc)
+     &                   0d0,xmo(ixmo),ldim(isyma))
+c     &                   0d0,xmo(ixmo),nmoc)
 
               if (ntest.ge.100)
-     &               write(luout,'(a,4i4)')
-     &               'result block ',isymc,isyma,igasc,igasa
+     &               write(luout,'(a,5i4)')
+     &               'result block ',isymc,isyma,igasc,igasa,ixmo
               if (ntest.ge.100)
      &             call wrtmat2(xmo(ixmo),nmoc,nmoa,nmoc,nmoa)
 
@@ -141,11 +157,12 @@
                 call dgemm('t','t',nmoa,nmoc,naoa,
      &                   fac,cmo(icmoa),naoa,
      &                       xhlf,nmoc,
-     &                   0d0,xmo(ixmo),nmoa)
+     &                   0d0,xmo(ixmo),ldim(isyma))
+c     &                   0d0,xmo(ixmo),nmoa)
 
                 if (ntest.ge.100)
-     &               write(luout,'(a,4i4)')
-     &               'result block ',isymc,isyma,igasc,igasa
+     &               write(luout,'(a,5i4)')
+     &               'result block ',isymc,isyma,igasc,igasa,ixmo
                 if (ntest.ge.100)
      &               call wrtmat2(xmo(ixmo),nmoa,nmoc,nmoa,nmoc)
 
@@ -153,8 +170,13 @@
 
             end if
 
-            ixmo = ixmo + nmoc*nmoa
+c            ixmo = ixmo + nmoc*nmoa
+            ixmo00 = ixmo00 + nmoc*nmoa
+            if (.not.transp) ixmo = ixmo + nmoc
+            if (     transp) ixmo = ixmo + nmoc*ldim(isyma)
           end do
+          if (.not.transp) ixmo0 = ixmo0 + nmoa*ldim(isyma)
+          if (     transp) ixmo0 = ixmo0 + nmoa
         end do
 
         ixao = ixao + ntaoc*ntaoa

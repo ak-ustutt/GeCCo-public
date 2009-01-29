@@ -17,18 +17,20 @@
 *
 *----------------------------------------------------------------------*
       subroutine genop_parameters(rw,parameters,n_par_str,
-     &     dagger,min_rank,max_rank,ncadiff,iformal,explicit,
-     &     hpvx_constr,ngastp,gas_constr,ngas)
+     &     min_rank,max_rank,ncadiff,
+     &     min_xrank,max_xrank,iformal,freeze,
+     &     hpvx_constr,hpvxca_constr,ngastp,gas_constr,ngas)
 
       implicit none
       
       integer, intent(in) ::
      &     rw, n_par_str
       logical, intent(inout) ::
-     &     explicit, dagger
+     &     freeze(2)
       integer, intent(inout) ::
-     &     min_rank,max_rank,ncadiff,iformal,ngas,ngastp,
-     &     hpvx_constr(*),gas_constr(*) 
+     &     min_rank,max_rank,min_xrank,max_xrank,
+     &     ncadiff,iformal,ngas,ngastp,
+     &     hpvx_constr(*),hpvxca_constr(*),gas_constr(*) 
       character(*), intent(inout) ::
      &     parameters(n_par_str)
 
@@ -38,23 +40,23 @@
         parameters(1)(1:len(parameters(1))) = ' '
         parameters(2)(1:len(parameters(2))) = ' '
         parameters(3)(1:len(parameters(3))) = ' '
-        write(parameters(1),'(4(i5,x),2l,2(i5,x))')
-     &        min_rank,max_rank,ncadiff,iformal,dagger,explicit,
-     &        ngastp,ngas
+        write(parameters(1),'(8(i5,x),2(l2))')
+     &        min_rank,max_rank,min_xrank,max_xrank,ncadiff,iformal,
+     &        ngastp,ngas,freeze(1:2)
         if (ngastp.gt.8.or.ngas.gt.12)
      &       call quit(1,'genop_parameters',
      &       'ngastp or ngas larger than expected')
-        write(parameters(2),'(64(i2))')
-     &        hpvx_constr(1:2*ngastp*2)
+        write(parameters(2),'(96(i2))')
+     &        hpvx_constr(1:2*ngastp),hpvxca_constr(1:2*ngastp*2)
         write(parameters(3),'(96(i2))')
      &        gas_constr(1:2*ngas*2*2)
         
       else
-        read(parameters(1),'(4(i5,x),2l,2(i5,x))')
-     &       min_rank,max_rank,ncadiff,iformal,dagger,explicit,
-     &       ngastp,ngas
-        read(parameters(2),'(64(i2))')
-     &        hpvx_constr(1:2*ngastp*2)
+        read(parameters(1),'(8(i5,x),2(l2))')
+     &        min_rank,max_rank,min_xrank,max_xrank,ncadiff,iformal,
+     &        ngastp,ngas,freeze(1:2)
+        read(parameters(2),'(96(i2))')
+     &        hpvx_constr(1:2*ngastp),hpvxca_constr(1:2*ngastp*2)
         read(parameters(3),'(96(i2))')
      &        gas_constr(1:2*ngas*2*2)
       end if
@@ -64,7 +66,7 @@
 
 *----------------------------------------------------------------------*
       subroutine op_from_occ_parameters(rw,parameters,n_par_str,
-     &     occ_def,ndef,njoined,nmax)
+     &     occ_def,ndef,njoined,freeze,nmax)
 
       implicit none
       
@@ -74,6 +76,8 @@
      &     rw, n_par_str, nmax
       integer, intent(inout) ::
      &     occ_def(*), ndef, njoined
+      logical, intent(inout) ::
+     &     freeze(2)
       character(*), intent(inout) ::
      &     parameters(n_par_str)
 
@@ -82,8 +86,8 @@
       if (rw.lt.0) then
         parameters(1)(1:len(parameters(1))) = ' '
         parameters(2)(1:len(parameters(2))) = ' '
-        write(parameters(1),'(2(i5,x))')
-     &        njoined, ndef
+        write(parameters(1),'(2(i5,x),2(l2))')
+     &        njoined, ndef, freeze(1:2)
 c        if (2*ngastp*ndef*njoined.gt.120)
 c        if (2*ngastp*ndef*njoined.gt.240)
         if (2*ngastp*ndef*njoined.gt.480)
@@ -93,8 +97,8 @@ c        write(parameters(2),'(240(i1))')
         write(parameters(2),'(480(i1))')
      &        occ_def(1:2*ngastp*ndef*njoined)        
       else
-        read(parameters(1),'(2(i5,x))')
-     &       njoined, ndef
+        read(parameters(1),'(2(i5,x),2(l2))')
+     &       njoined, ndef, freeze(1:2)
         if (ndef*njoined.gt.nmax)
      &       call quit(1,'op_from_occ_parameters','nmax too small')
 c        read(parameters(2),'(120(i2))')

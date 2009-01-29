@@ -137,7 +137,7 @@
         occ_def(IPART,2,3) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,ndef)
+     &     occ_def,ndef,1,(/.true.,.true./),ndef)
       call set_rule(op_bprc,ttype_op,DEF_OP_FROM_OCC,
      &              op_bprc,1,1,
      &              parameters,2,tgt_info)
@@ -163,7 +163,7 @@
         occ_def(IPART,2,3) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,ndef)
+     &     occ_def,ndef,1,(/.true.,.true./),ndef)
       call set_rule(op_xprc,ttype_op,DEF_OP_FROM_OCC,
      &              op_xprc,1,1,
      &              parameters,2,tgt_info)
@@ -459,7 +459,7 @@ c      occ_def(IPART,1,1) = 1
 c      occ_def(IEXTR,1,1) = 1
 c      occ_def(IHOLE,2,1) = 2
 c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,ndef,1,ndef)
+c     &     occ_def,ndef,1,(/.true.,.true./),ndef)
 c      call set_rule(op_r_t,ttype_op,DEF_OP_FROM_OCC,
 c     &              op_r_t,1,1,
 c     &              parameters,2,tgt_info)

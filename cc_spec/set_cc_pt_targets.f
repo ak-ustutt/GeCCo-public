@@ -145,7 +145,7 @@ c          n_pp=2
         if (max_extern.gt.2)
      &       call quit(1,'set_cc_pt_targets','extern>2 not allowed!')
         call op_from_occ_parameters(-1,parameters,2,
-     &                              occ_def,ndef,1,ndef)
+     &                         occ_def,ndef,1,(/.true.,.true./),ndef)
         call set_rule(op_tpt,ttype_op,DEF_OP_FROM_OCC,
      &                op_tpt,1,1,
      &                parameters,2,tgt_info)
