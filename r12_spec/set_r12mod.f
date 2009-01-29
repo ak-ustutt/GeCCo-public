@@ -29,7 +29,7 @@
      &     flist_pnt
 
       integer ::
-     &     idx_1, idx_2, iproj
+     &     idx_1, idx_2, nproj, iproj(12)
 
       if ((trim(type).ne.'RB'.and.
      &     trim(type).ne.'RD'.and.
@@ -48,9 +48,17 @@
         idx_2 = idx_op(1) ! R12
       end if
 
-      if (trim(type).eq.'RD') iproj = 0 ! full one-particle RI
-      if (trim(type).eq.'RV')  iproj = IPART ! only P contraction
-                                             ! (and X contraction, see below)
+      if (trim(type).eq.'RD') then 
+        iproj(1:4) = (/2,3,1,0/) ! full one-particle RI
+        nproj = 1
+      end if
+      if (trim(type).eq.'RV') then
+        iproj(5:8) = (/2,3,1,IPART/) ! only P contraction
+                                    ! (and X contraction, see below)
+        iproj(1:4) = (/2,4,1,-IHOLE/) ! only H contribution to open line
+        iproj(9:12)= (/1,3,1,IEXTR/) ! only X contribution to open line
+        nproj = 3
+      end if
 
       ! ------------------------------------
       ! contributions from usual R12-list
@@ -61,6 +69,9 @@
         flist_pnt => flist_pnt%next
       end do
       ! set the product
+c dbg
+      print *,'relevant call'
+c dbg
       call expand_op_product2(flist_pnt,idx_intm,
      &       1d0,4,3,
      &       (/idx_intm,idx_1,idx_2,idx_intm/),
@@ -68,12 +79,13 @@
      &       -1, -1,
      &       0,0,
      &       0,0,
-     &       (/2,3,1,iproj/),1,
+     &       iproj,nproj,
      &       op_info)
 
       if (trim(type).eq.'RV') then
         ! add X contraction contributions
-        iproj = IEXTR
+        iproj(5:8) = (/2,3,1,IEXTR/)
+        nproj = 2
         ! go to end of list
         flist_pnt => flist
         do while(associated(flist_pnt%next))
@@ -87,7 +99,7 @@
      &       -1, -1,
      &       0,0,
      &       0,0,
-     &       (/2,3,1,iproj/),1,
+     &       iproj,nproj,
      &       op_info)
       end if
 

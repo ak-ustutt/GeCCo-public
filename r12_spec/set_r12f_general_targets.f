@@ -286,6 +286,20 @@ c      min_rank = 2
      &              op_g_x,1,1,
      &              parameters,1,tgt_info)
       
+      ! i,(a/x) block of Fock
+      call add_target('F-X',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 2
+      occ_def(IHOLE,1,1) = 1
+      occ_def(IPART,2,1) = 1
+      occ_def(IHOLE,1,2) = 1
+      occ_def(IEXTR,2,2) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+      call set_rule('F-X',ttype_op,DEF_OP_FROM_OCC,
+     &              'F-X',1,1,
+     &              parameters,2,tgt_info)
+
       ! commutator integrals <ab|[T1+T2,r12]|ij>
       call add_target(op_ttr,ttype_op,.false.,tgt_info)
       call r12int_parameters(-1,parameters,
@@ -312,11 +326,50 @@ c      min_rank = 2
       
       ! C(f) modified integrals r12breve
       call add_target(op_rintbreve,ttype_op,.false.,tgt_info)
-      call r12int_parameters(-1,parameters,
-     &     n_pp,min_rank,2,0,2)
-      call set_rule(op_rintbreve,ttype_op,DEF_R12INT,
+c      call r12int_parameters(-1,parameters,
+c     &     n_pp,min_rank,2,0,2)
+c      call set_rule(op_rintbreve,ttype_op,DEF_R12INT,
+c     &              op_rintbreve,1,1,
+c     &              parameters,1,tgt_info)
+      occ_def = 0
+      ndef = 2
+      ! 1
+      occ_def(IHOLE,1,1) = 1
+      occ_def(IPART,1,1) = 1
+      occ_def(IHOLE,2,1) = 2
+      ! 2
+      occ_def(IHOLE,1,2) = 1
+      occ_def(IEXTR,1,2) = 1
+      occ_def(IHOLE,2,2) = 2
+      if (n_pp.ge.1) then
+        ndef = 4
+        ! 3
+        occ_def(IHOLE,1,3) = 1
+        occ_def(IPART,1,3) = 1
+        occ_def(IHOLE,2,3) = 1
+        occ_def(IPART,2,3) = 1
+        ! 4
+        occ_def(IHOLE,1,4) = 1
+        occ_def(IEXTR,1,4) = 1
+        occ_def(IHOLE,2,4) = 1
+        occ_def(IPART,2,4) = 1
+      end if
+      if (n_pp.ge.2) then
+        ndef = 4
+        ! 5
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IPART,1,5) = 1
+        occ_def(IPART,2,5) = 2
+        ! 6
+        occ_def(IHOLE,1,6) = 1
+        occ_def(IEXTR,1,6) = 1
+        occ_def(IPART,2,6) = 2
+      end if
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+      call set_rule(op_rintbreve,ttype_op,DEF_OP_FROM_OCC,
      &              op_rintbreve,1,1,
-     &              parameters,1,tgt_info)
+     &              parameters,2,tgt_info)
       
       ! C k modified integrals r12tilde (cloning rint -> 2ext usually)
       call add_target(op_rinttilde,ttype_op,.false.,tgt_info)
@@ -1242,6 +1295,26 @@ c dbg
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
+      ! special one-electron integral list
+      call add_target('F-X-INT',ttype_opme,.false.,tgt_info)
+      call set_dependency('F-X-INT','F-X',tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'F-X-INT'
+      labels(2) = 'F-X'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('F-X-INT',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'F-X-INT'
+      call import_parameters(-1,parameters,'F_INT',env_type)
+      call set_rule('F-X-INT',ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
       ! [T1+T2,R12] integrals
       call add_target(mel_ttr,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_ttr,op_ttr,tgt_info)
@@ -1434,13 +1507,47 @@ c dbg
       call set_rule(mel_rintbreve,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
-      ! (b) import
+c      ! OLD:
+c      ! (b) import
+c      labels(1:10)(1:len_target_name) = ' '
+c      labels(1) = mel_rintbreve
+c      call import_parameters(-1,parameters,'F12BRV_INT',env_type)
+c      call set_rule(mel_rintbreve,ttype_opme,IMPORT,
+c     &              labels,1,1,
+c     &              parameters,1,tgt_info)
+      ! (b) define formula
+      call set_dependency(mel_rintbreve,'F-X',tgt_info)
+      call set_dependency(mel_rintbreve,'F-X-INT',tgt_info)
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_rintbreve
-      call import_parameters(-1,parameters,'F12BRV_INT',env_type)
-      call set_rule(mel_rintbreve,ttype_opme,IMPORT,
-     &              labels,1,1,
+      labels(1) = 'BBRV_FRM'
+      labels(2) = op_rintbreve
+      labels(3) = op_rint
+      labels(4) = '-'
+      labels(5) = 'F-X'
+      call form_parameters(-1,
+     &     parameters,2,'R12BREVE',3,'RV')
+      call set_rule(mel_rintbreve,ttype_frm,DEF_R12INTM_CABS,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule(mel_rintbreve,ttype_frm,PRINT_FORMULA,
+     &              labels,1,0,
+     &              parameters,2,tgt_info)
+      ! (c) optimize formula
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'BBRV_OPT'
+      labels(2) = 'BBRV_FRM'
+      call opt_parameters(-1,parameters,1,0)
+      call set_rule(mel_rintbreve,ttype_frm,OPTIMIZE,
+     &              labels,2,1,
      &              parameters,1,tgt_info)
+      ! (d) evaluate
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'BBRV_OPT'
+      call set_rule(mel_rintbreve,ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
 
       ! ----------------------------------------
       ! B) definition of lists for intermediates
