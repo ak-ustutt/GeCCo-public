@@ -96,7 +96,7 @@
 !        select case(typ_prc) ...
 c        if(trim(ffdia%name).ne.'op_B_INV_elements.da')then
 c dbg
-          print *,'prc name: ',trim(ffdia%name)
+c          print *,'prc name: ',trim(ffdia%name)
 c          print *,'|g|,|d|:',dnrm2(nwfpar,xbuf1,1),dnrm2(nwfpar,xbuf2,1)
 c          print *,'g: ', xbuf1(1:nwfpar)
 c          print *,'d: ', xbuf2(1:nwfpar)

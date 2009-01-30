@@ -33,7 +33,7 @@
 
       integer ::
      &     narc_old, iproj, ivtx1, ivtx2, rank, type, type2, nidx,
-     &     iblk, ihpvx, idx, ivtx
+     &     iblk, ihpvx, idx, ivtx, ica1, ica2
       integer ::
      &     occ1(ngastp,2), occ2(ngastp,2),
      &     ovl(ngastp,2), occ_cnt(ngastp,2)
@@ -59,8 +59,17 @@
         ivtx1 = min(inproj(1,iproj),inproj(2,iproj))
         ivtx2 = max(inproj(1,iproj),inproj(2,iproj))
         rank  = inproj(3,iproj)
-        type  = inproj(4,iproj)
+        type  = abs(inproj(4,iproj))
         type2 = 0
+        if (inproj(4,iproj).ge.0) then
+          ! the usual case: OCC1(A) connects to OCC2(C)
+          ica1 = 2
+          ica2 = 1
+        else
+          ! reversed case
+          ica1 = 1
+          ica2 = 2
+        end if
         if (rank.le.0.or.type.lt.0.or.(rank.eq.2.and.type.gt.nproj))
      &       call quit(1,'set_inproj','watch your input')
         if (rank.eq.1) then
@@ -73,10 +82,10 @@ c dbg
 
         ! get A of first operator
         occ1 = 0
-        occ1(1:ngastp,2) = occ_vtx(1:ngastp,2,ivtx1)
+        occ1(1:ngastp,ica1) = occ_vtx(1:ngastp,ica1,ivtx1)
         ! get C of second operator
         occ2 = 0
-        occ2(1:ngastp,1) = occ_vtx(1:ngastp,1,ivtx2)
+        occ2(1:ngastp,ica2) = occ_vtx(1:ngastp,ica2,ivtx2)
         ovl = iocc_overlap(occ1,.false.,occ2,.true.)
 
 c dbg
@@ -88,11 +97,11 @@ c        call wrt_occ(luout,ovl)
 c dbg
 
         ! not enough indices?
-        nidx = ielsum(ovl(1,2),ngastp)
+        nidx = ielsum(ovl(1,ica1),ngastp)
 c dbg
 c        print *,'nidx, rank: ',nidx,rank
 c        print *,'type,type2',type,type2
-c        print *,'ovl',ovl(type,2)
+c        print *,'ovl',ovl(type,ica1)
 c dbg
         if (nidx.lt.rank) then
           ok = .false.
@@ -102,12 +111,12 @@ c dbg
         occ_cnt = 0
         if (type.eq.0.and.nidx.eq.rank) then
           occ_cnt = ovl
-        else if(rank.eq.1.and.ovl(type,2).ge.1) then
+        else if(rank.eq.1.and.ovl(type,ica1).ge.1) then
           occ_cnt = 0
-          occ_cnt(type,2) = 1
-        else if(rank.eq.1.and.type2.gt.0.and.ovl(type2,2).eq.1) then
+          occ_cnt(type,ica1) = 1
+        else if(rank.eq.1.and.type2.gt.0.and.ovl(type2,ica1).eq.1) then
           occ_cnt = 0
-          occ_cnt(type2,2) = 1
+          occ_cnt(type2,ica1) = 1
         else if (rank.eq.2) then
 c dbg
 c          print *,'nblk: ',nblk(type)
@@ -116,17 +125,17 @@ c dbg
             ok = .true.
             do ihpvx = 1, ngastp
               if (occ_prj(ihpvx,ioff(type)+iblk).eq.0) cycle
-              ok = ok.and.ovl(ihpvx,2).eq.
+              ok = ok.and.ovl(ihpvx,ica1).eq.
      &                    occ_prj(ihpvx,ioff(type)+iblk)
             end do
 c dbg
 c            print *,'block: ',iblk
 c            print *,'projector: ',occ_prj(1:ngastp,ioff(type)+iblk)
-c            print *,'ovl      : ',ovl(1:ngastp,2)
+c            print *,'ovl      : ',ovl(1:ngastp,ica1)
 c            print *,'ok = ',ok
 c dbg
             occ_cnt = 0
-            occ_cnt(1:ngastp,2) = occ_prj(1:ngastp,ioff(type)+iblk)
+            occ_cnt(1:ngastp,ica1) = occ_prj(1:ngastp,ioff(type)+iblk)
             if (ok) exit
           end do
           if (.not.ok) exit
