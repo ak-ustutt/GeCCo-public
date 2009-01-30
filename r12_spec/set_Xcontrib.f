@@ -112,9 +112,6 @@ c     &         'unused route. how did you get here?')
             flist_pnt => flist_pnt%next
           end do
           if (njoined_intm.eq.1) then
-c dbg
-            print *,'!! here !!'
-c dbg
             call expand_op_product2(flist_pnt,idx_intm,
      &       1d0,5,3,
      &       (/idx_intm,idx_2,idx_1,idx_1,idx_intm/),
