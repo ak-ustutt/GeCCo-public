@@ -80,11 +80,16 @@
      &       nsym,ngas_cur))
           first1 = .false.
 
-        if (ntest.ge.1000) nstr1 = nstr1+1
+          if (ntest.ge.1000) nstr1 = nstr1+1
 
           isgn12 = iordstr2(idorb12,idspn12,idss12,
      &         idorb1,idspn1,idss1,iocc1,
      &         idorb2,idspn2,idss2,iocc2)
+c dbg
+c          print *,'idorb1:  ',idorb1(1:iocc1)
+c          print *,'idorb2:  ',idorb2(1:iocc2)
+c          print *,'idorb12: ',isgn12,idorb12(1:iocc1+iocc2)
+c dbg
 
           idxmap = idxmap+1
           strmap(idxmap) = isgn12

@@ -75,7 +75,7 @@
      &     self
       integer ::
      &     ld_mmap1, ld_mmap2, ld_mmap12, ngas,
-     &     nvtx, ivtx, idx,
+     &     nvtx, ivtx, idx, iblk,
      &     ivtx1, ivtx2, isvtx1, isvtx2,
      &     len_list, nvtx_red, sh_sign
 
@@ -218,8 +218,18 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
       call condense_merge_map(merge_op2op1,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.true.)
 
-      call dummy_restr(irestr_op1op2,
+      ! final result? get restr from op_info
+      if (contr%narc.eq.len_list) then
+        idx = contr%idx_res
+        iblk = contr%iblk_res        
+        irestr_op1op2(:,:,:,:,1:njoined_op1op2)
+     &       = op_info%op_arr(idx)%op%igasca_restr(:,:,:,:,1,
+     &          (iblk-1)*njoined_op1op2+1:
+     &          (iblk-1)*njoined_op1op2+njoined_op1op2)
+      else
+        call dummy_restr(irestr_op1op2,
      &       iocc_op1op2,njoined_op1op2,orb_info)
+      end if
 
       if (.not.self) call special_restr(irestr_op1op2,
      &     iocc_op1op2,njoined_op1op2,

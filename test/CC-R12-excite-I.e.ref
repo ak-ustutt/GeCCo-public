@@ -1,6 +1,6 @@
- run starts at 2009-01-29 19:14:24.871   host: dhcppc1
+ run starts at 2009-01-30 23:10:11.680   host: dhcppc1
 
- Version compiled 29 Jan 2009 at 19:12:26 on dhcppc1                             
+ Version compiled 30 Jan 2009 at 23:05:29 on dhcppc1                             
 
  compiled with: ifort
  level 1 optimization: -g -assume byterecl -traceback -I../include -mod i686-linux-
@@ -536,7 +536,7 @@
   ------------------------------------------
  wrote          205  entries
  Number of generated terms:          204
- @ CC-R12 Lagrangian                   cpu/sys/wall:      0.45 /     0.01 /     0.45 s
+ @ CC-R12 Lagrangian                   cpu/sys/wall:      0.44 /     0.01 /     0.44 s
  Rule: FACTOR_OUT
  read          205  entries
  read           23  entries
@@ -743,7 +743,7 @@
  My next target: HT_TRF
  Rule: DEF_CC_HBAR
  wrote           51  entries
- @ CC Hbar                             cpu/sys/wall:      0.15 /     0.00 /     0.16 s
+ @ CC Hbar                             cpu/sys/wall:      0.15 /     0.00 /     0.15 s
  My next target: DEF-Hbar
  Rule: DEF_ME_LIST
  My next target: CC-R12-OPT
@@ -2195,15 +2195,15 @@
   term #    4 - H^ 3 P^ 0 V^ 0 X^ 2
   term #    1 - H^ 3 P^ 1 V^ 0 X^ 1
  Largest intermediates occur in: 
-  term #    2 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.222E-01
-  term #    6 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.222E-01
-  term #    1 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.635E-02
-  term #    4 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.635E-02
-  term #    5 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.598E-02
+  term #    2 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.333E-01
+  term #    6 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.333E-01
+  term #    1 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.952E-02
+  term #    4 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.952E-02
+  term #    5 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.897E-02
  wrote            8  entries
  Rule: EVALUATE
  read            7  entries
- @ formula evaluation                  cpu/sys/wall:      0.04 /     0.00 /     0.04 s
+ @ formula evaluation                  cpu/sys/wall:      0.03 /     0.00 /     0.04 s
  My next target: BINT_R12_CABS
  Rule: DEF_R12INTM_CABS
  wrote           80  entries
@@ -2555,7 +2555,7 @@
  setting self-contraction sign to +1
  setting self-contraction sign to +1
  setting self-contraction sign to +1
- @ formula evaluation                  cpu/sys/wall:      0.09 /     0.03 /     0.12 s
+ @ formula evaluation                  cpu/sys/wall:      0.09 /     0.02 /     0.11 s
  Rule: EVALUATE
  read           36  entries
  setting self-contraction sign to +1
@@ -2570,13 +2570,13 @@
  setting self-contraction sign to +1
  setting self-contraction sign to +1
  setting self-contraction sign to +1
- @ formula evaluation                  cpu/sys/wall:      0.06 /     0.01 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.00 /     0.07 s
  Rule: EVALUATE
  read           21  entries
  setting self-contraction sign to +1
  setting self-contraction sign to +1
  setting self-contraction sign to +1
- @ formula evaluation                  cpu/sys/wall:      0.04 /     0.00 /     0.04 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.01 /     0.05 s
  Rule: EVALUATE
  read            3  entries
  @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.01 s
@@ -2606,62 +2606,62 @@
  setting self-contraction sign to +1
  setting self-contraction sign to +1
  setting self-contraction sign to +1
- @ formula evaluation                  cpu/sys/wall:      0.21 /     0.04 /     0.27 s
+ @ formula evaluation                  cpu/sys/wall:      0.22 /     0.05 /     0.26 s
  Rule: EVALUATE
  read           21  entries
  setting self-contraction sign to +1
  setting self-contraction sign to +1
  setting self-contraction sign to +1
- @ formula evaluation                  cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.01 /     0.07 s
  My next target: SOLVE-CCR12-GS
  Rule: SOLVE_NLEQ
  read          172  entries
  Optimization algorithm:          DIIS
  Max. number of iterations:         30
  Threshold for residual:      0.10E-07
- @ formula evaluation                  cpu/sys/wall:      0.38 /     0.16 /     0.53 s
->>>  1        -25.142852546527 0.3535    
+ @ formula evaluation                  cpu/sys/wall:      0.41 /     0.13 /     0.71 s
+>>>  1        -25.142847440161 0.3535    
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.57 /     0.10 /     0.68 s
->>>  2        -25.198688662420 0.9755E-01
+ @ formula evaluation                  cpu/sys/wall:      0.59 /     0.15 /     0.75 s
+>>>  2        -25.198683437044 0.9755E-01
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.53 /     0.16 /     0.68 s
->>>  3        -25.219443261589 0.2821E-01
+ @ formula evaluation                  cpu/sys/wall:      0.53 /     0.15 /     0.71 s
+>>>  3        -25.219437962065 0.2821E-01
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.55 /     0.15 /     0.71 s
->>>  4        -25.222979258027 0.7900E-02
+ @ formula evaluation                  cpu/sys/wall:      0.57 /     0.15 /     0.73 s
+>>>  4        -25.222973939211 0.7900E-02
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.55 /     0.13 /     0.81 s
->>>  5        -25.223842181738 0.2989E-02
+ @ formula evaluation                  cpu/sys/wall:      0.53 /     0.17 /     0.72 s
+>>>  5        -25.223836861909 0.2989E-02
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.57 /     0.11 /     0.68 s
->>>  6        -25.223726722762 0.1171E-02
+ @ formula evaluation                  cpu/sys/wall:      0.57 /     0.14 /     0.72 s
+>>>  6        -25.223721403328 0.1171E-02
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.57 /     0.13 /     0.70 s
->>>  7        -25.223735203495 0.3406E-03
+ @ formula evaluation                  cpu/sys/wall:      0.55 /     0.14 /     0.70 s
+>>>  7        -25.223729882856 0.3406E-03
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.53 /     0.16 /     0.69 s
->>>  8        -25.223749701451 0.7180E-04
+ @ formula evaluation                  cpu/sys/wall:      0.58 /     0.12 /     0.74 s
+>>>  8        -25.223744380668 0.7180E-04
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.56 /     0.15 /     0.70 s
->>>  9        -25.223743221292 0.1510E-04
+ @ formula evaluation                  cpu/sys/wall:      0.58 /     0.11 /     0.69 s
+>>>  9        -25.223737900632 0.1510E-04
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.52 /     0.19 /     0.71 s
->>> 10        -25.223744542690 0.3115E-05
+ @ formula evaluation                  cpu/sys/wall:      0.55 /     0.15 /     0.73 s
+>>> 10        -25.223739221999 0.3115E-05
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.55 /     0.15 /     0.71 s
->>> 11        -25.223744421244 0.7854E-06
+ @ formula evaluation                  cpu/sys/wall:      0.59 /     0.10 /     0.71 s
+>>> 11        -25.223739100566 0.7853E-06
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.54 /     0.14 /     0.69 s
->>> 12        -25.223744387041 0.1561E-06
+ @ formula evaluation                  cpu/sys/wall:      0.54 /     0.16 /     0.70 s
+>>> 12        -25.223739066367 0.1561E-06
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ formula evaluation                  cpu/sys/wall:      0.55 /     0.14 /     0.69 s
->>> 13        -25.223744386380 0.4522E-07
+ @ formula evaluation                  cpu/sys/wall:      0.53 /     0.15 /     0.69 s
+>>> 13        -25.223739065707 0.4521E-07
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ formula evaluation                  cpu/sys/wall:      0.52 /     0.18 /     0.70 s
->>> 14        -25.223744385803 0.6979E-08
+>>> 14        -25.223739065129 0.6978E-08
  CONVERGED IN    14 ITERATIONS
->>> final energy:        -25.223744385803 <<<
+>>> final energy:        -25.223739065129 <<<
  My next target: A.R
  Rule: CLONE_OPERATOR
  My next target: R
@@ -2673,7 +2673,7 @@
  My next target: CCR12_S0
  Rule: DEF_CCR12_METRIC
  wrote           14  entries
- @ CC-R12 metric                       cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ CC-R12 metric                       cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  Rule: FACTOR_OUT
  read           13  entries
  read           15  entries
@@ -2820,85 +2820,85 @@
  Max. number of iterations:         50
  Threshold for residual:      0.10E-06
  Number of parameters:             336
- @ formula evaluation                  cpu/sys/wall:      0.72 /     0.23 /     0.95 s
- @ formula evaluation                  cpu/sys/wall:      0.70 /     0.19 /     0.88 s
+ @ formula evaluation                  cpu/sys/wall:      0.75 /     0.18 /     0.95 s
+ @ formula evaluation                  cpu/sys/wall:      0.68 /     0.17 /     0.85 s
 >>>  1                         0.2444    
- >>             0.172326355369 0.2444    
- >>             0.479898893052 0.2429    
- @ formula evaluation                  cpu/sys/wall:      0.67 /     0.23 /     0.90 s
- @ formula evaluation                  cpu/sys/wall:      0.69 /     0.18 /     0.88 s
+ >>             0.172326899279 0.2444    
+ >>             0.479900056959 0.2429    
+ @ formula evaluation                  cpu/sys/wall:      0.72 /     0.16 /     0.88 s
+ @ formula evaluation                  cpu/sys/wall:      0.66 /     0.22 /     0.88 s
 >>>  2                         0.8061E-01
- >>             0.112656015825 0.5531E-01
- >>             0.414776170657 0.8061E-01
- @ formula evaluation                  cpu/sys/wall:      0.71 /     0.16 /     0.87 s
- @ formula evaluation                  cpu/sys/wall:      0.67 /     0.21 /     0.88 s
+ >>             0.112656932312 0.5531E-01
+ >>             0.414777315247 0.8061E-01
+ @ formula evaluation                  cpu/sys/wall:      0.71 /     0.17 /     0.88 s
+ @ formula evaluation                  cpu/sys/wall:      0.70 /     0.18 /     0.88 s
 >>>  3                         0.5035E-01
- >>             0.110107969178 0.1526E-01
- >>             0.403344178933 0.5035E-01
- @ formula evaluation                  cpu/sys/wall:      0.69 /     0.20 /     0.89 s
+ >>             0.110108944004 0.1526E-01
+ >>             0.403345218887 0.5035E-01
+ @ formula evaluation                  cpu/sys/wall:      0.72 /     0.15 /     0.86 s
  @ formula evaluation                  cpu/sys/wall:      0.71 /     0.16 /     0.88 s
 >>>  4                         0.3159E-01
- >>             0.109988874270 0.3566E-02
- >>             0.398648798213 0.3159E-01
- @ formula evaluation                  cpu/sys/wall:      0.71 /     0.18 /     0.90 s
- @ formula evaluation                  cpu/sys/wall:      0.72 /     0.17 /     0.89 s
+ >>             0.109989853877 0.3566E-02
+ >>             0.398649750491 0.3159E-01
+ @ formula evaluation                  cpu/sys/wall:      0.68 /     0.20 /     0.88 s
+ @ formula evaluation                  cpu/sys/wall:      0.69 /     0.20 /     0.88 s
 >>>  5                         0.1439E-01
- >>             0.109987950162 0.1131E-02
- >>             0.397064966478 0.1439E-01
- @ formula evaluation                  cpu/sys/wall:      0.68 /     0.22 /     0.90 s
- @ formula evaluation                  cpu/sys/wall:      0.71 /     0.18 /     0.90 s
+ >>             0.109988930781 0.1131E-02
+ >>             0.397065913595 0.1439E-01
+ @ formula evaluation                  cpu/sys/wall:      0.70 /     0.19 /     0.89 s
+ @ formula evaluation                  cpu/sys/wall:      0.69 /     0.18 /     0.88 s
 >>>  6                         0.5905E-02
- >>             0.109988941010 0.2452E-03
- >>             0.396861475601 0.5905E-02
- @ formula evaluation                  cpu/sys/wall:      0.74 /     0.16 /     0.89 s
- @ formula evaluation                  cpu/sys/wall:      0.68 /     0.23 /     0.91 s
+ >>             0.109989922054 0.2452E-03
+ >>             0.396862436696 0.5905E-02
+ @ formula evaluation                  cpu/sys/wall:      0.70 /     0.17 /     0.87 s
+ @ formula evaluation                  cpu/sys/wall:      0.67 /     0.21 /     0.88 s
 >>>  7                         0.1777E-02
- >>             0.109989067773 0.4525E-04
- >>             0.396827554808 0.1777E-02
- @ formula evaluation                  cpu/sys/wall:      0.69 /     0.19 /     0.89 s
- @ formula evaluation                  cpu/sys/wall:      0.73 /     0.17 /     0.91 s
+ >>             0.109990048830 0.4525E-04
+ >>             0.396828521687 0.1777E-02
+ @ formula evaluation                  cpu/sys/wall:      0.68 /     0.20 /     0.88 s
+ @ formula evaluation                  cpu/sys/wall:      0.70 /     0.18 /     0.87 s
 >>>  8                         0.6677E-03
- >>             0.109989049127 0.9219E-05
- >>             0.396820535055 0.6677E-03
- @ formula evaluation                  cpu/sys/wall:      0.66 /     0.22 /     0.89 s
- @ formula evaluation                  cpu/sys/wall:      0.77 /     0.14 /     0.90 s
+ >>             0.109990030185 0.9219E-05
+ >>             0.396821503951 0.6677E-03
+ @ formula evaluation                  cpu/sys/wall:      0.70 /     0.17 /     0.88 s
+ @ formula evaluation                  cpu/sys/wall:      0.71 /     0.17 /     0.89 s
 >>>  9                         0.1844E-03
- >>             0.109989038698 0.1525E-05
- >>             0.396821858456 0.1844E-03
- @ formula evaluation                  cpu/sys/wall:      0.73 /     0.16 /     0.89 s
- @ formula evaluation                  cpu/sys/wall:      0.73 /     0.16 /     0.89 s
+ >>             0.109990019755 0.1525E-05
+ >>             0.396822827453 0.1844E-03
+ @ formula evaluation                  cpu/sys/wall:      0.68 /     0.18 /     0.87 s
+ @ formula evaluation                  cpu/sys/wall:      0.71 /     0.17 /     0.88 s
 >>> 10                         0.4579E-04
- >>             0.109989033627 0.2660E-06
- >>             0.396821665253 0.4579E-04
- @ formula evaluation                  cpu/sys/wall:      0.73 /     0.14 /     0.87 s
- @ formula evaluation                  cpu/sys/wall:      0.71 /     0.16 /     0.87 s
+ >>             0.109990014684 0.2660E-06
+ >>             0.396822634293 0.4579E-04
+ @ formula evaluation                  cpu/sys/wall:      0.66 /     0.22 /     0.88 s
+ @ formula evaluation                  cpu/sys/wall:      0.73 /     0.15 /     0.88 s
 >>> 11                         0.1127E-04
- >>             0.109989033378 0.4394E-07
- >>             0.396821459515 0.1127E-04
- @ formula evaluation                  cpu/sys/wall:      0.68 /     0.19 /     0.87 s
+ >>             0.109990014435 0.4394E-07
+ >>             0.396822428548 0.1127E-04
+ @ formula evaluation                  cpu/sys/wall:      0.66 /     0.23 /     0.88 s
 >>> 12                         0.3004E-05
- >>             0.109989033371 0.4284E-07
- >>             0.396821417020 0.3004E-05
- @ formula evaluation                  cpu/sys/wall:      0.70 /     0.17 /     0.89 s
->>> 13                         0.7153E-06
- >>             0.109989033370 0.4235E-07
- >>             0.396821404414 0.7153E-06
- @ formula evaluation                  cpu/sys/wall:      0.66 /     0.26 /     0.92 s
+ >>             0.109990014428 0.4284E-07
+ >>             0.396822386054 0.3004E-05
+ @ formula evaluation                  cpu/sys/wall:      0.69 /     0.17 /     0.86 s
+>>> 13                         0.7154E-06
+ >>             0.109990014427 0.4235E-07
+ >>             0.396822373448 0.7154E-06
+ @ formula evaluation                  cpu/sys/wall:      0.73 /     0.14 /     0.87 s
 >>> 14                         0.2195E-06
- >>             0.109989033384 0.4136E-07
- >>             0.396821403289 0.2195E-06
- @ formula evaluation                  cpu/sys/wall:      0.72 /     0.19 /     0.91 s
+ >>             0.109990014442 0.4136E-07
+ >>             0.396822372323 0.2195E-06
+ @ formula evaluation                  cpu/sys/wall:      0.68 /     0.19 /     0.88 s
  CONVERGED IN    15 ITERATIONS
->>> 14                         0.6579E-07
- >>             0.109989033390 0.4159E-07
- >>             0.396821402229 0.6579E-07
+>>> 14                         0.6580E-07
+ >>             0.109990014447 0.4159E-07
+ >>             0.396822371263 0.6580E-07
   Results for RE0G2C+1M00
  -------------------------
 >>>==================================================================
 >>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
 >>>------------------------------------------------------------------
->>>    1         0.109989033390                    ---   0.4159E-07
->>>    2         0.396821402229                    ---   0.6579E-07
+>>>    1         0.109990014447                    ---   0.4159E-07
+>>>    2         0.396822371263                    ---   0.6580E-07
 >>>==================================================================
  Rule: SOLVE_EVP
  read          193  entries
@@ -2909,61 +2909,61 @@
  Max. number of iterations:         50
  Threshold for residual:      0.10E-06
  Number of parameters:             422
- @ formula evaluation                  cpu/sys/wall:      0.74 /     0.18 /     0.93 s
+ @ formula evaluation                  cpu/sys/wall:      0.77 /     0.15 /     0.93 s
 >>>  1                         0.2203    
- >>             0.365661590078 0.2203    
- @ formula evaluation                  cpu/sys/wall:      0.77 /     0.20 /     0.96 s
+ >>             0.365661818097 0.2203    
+ @ formula evaluation                  cpu/sys/wall:      0.78 /     0.18 /     0.96 s
 >>>  2                         0.6751E-01
- >>             0.312023892444 0.6751E-01
- @ formula evaluation                  cpu/sys/wall:      0.78 /     0.20 /     0.97 s
+ >>             0.312023546934 0.6751E-01
+ @ formula evaluation                  cpu/sys/wall:      0.76 /     0.19 /     0.95 s
 >>>  3                         0.3645E-01
- >>             0.305289682635 0.3645E-01
- @ formula evaluation                  cpu/sys/wall:      0.76 /     0.21 /     0.98 s
+ >>             0.305289202681 0.3645E-01
+ @ formula evaluation                  cpu/sys/wall:      0.76 /     0.18 /     0.94 s
 >>>  4                         0.1817E-01
- >>             0.303818831879 0.1817E-01
- @ formula evaluation                  cpu/sys/wall:      0.77 /     0.21 /     0.97 s
+ >>             0.303818340425 0.1817E-01
+ @ formula evaluation                  cpu/sys/wall:      0.74 /     0.21 /     0.95 s
 >>>  5                         0.7206E-02
- >>             0.303471417826 0.7206E-02
- @ formula evaluation                  cpu/sys/wall:      0.76 /     0.20 /     0.96 s
+ >>             0.303470945227 0.7206E-02
+ @ formula evaluation                  cpu/sys/wall:      0.78 /     0.17 /     0.95 s
 >>>  6                         0.3250E-02
- >>             0.303439623791 0.3250E-02
- @ formula evaluation                  cpu/sys/wall:      0.75 /     0.20 /     0.96 s
+ >>             0.303439149021 0.3250E-02
+ @ formula evaluation                  cpu/sys/wall:      0.77 /     0.18 /     0.95 s
 >>>  7                         0.1378E-02
- >>             0.303433849453 0.1378E-02
- @ formula evaluation                  cpu/sys/wall:      0.75 /     0.20 /     0.96 s
+ >>             0.303433373342 0.1378E-02
+ @ formula evaluation                  cpu/sys/wall:      0.77 /     0.19 /     0.96 s
 >>>  8                         0.4382E-03
- >>             0.303434407352 0.4382E-03
- @ formula evaluation                  cpu/sys/wall:      0.74 /     0.22 /     0.95 s
+ >>             0.303433931245 0.4382E-03
+ @ formula evaluation                  cpu/sys/wall:      0.77 /     0.16 /     0.94 s
 >>>  9                         0.1339E-03
- >>             0.303434445157 0.1339E-03
- @ formula evaluation                  cpu/sys/wall:      0.78 /     0.16 /     0.95 s
+ >>             0.303433968902 0.1339E-03
+ @ formula evaluation                  cpu/sys/wall:      0.77 /     0.17 /     0.94 s
 >>> 10                         0.4496E-04
- >>             0.303434212319 0.4496E-04
- @ formula evaluation                  cpu/sys/wall:      0.79 /     0.14 /     0.94 s
+ >>             0.303433736039 0.4496E-04
+ @ formula evaluation                  cpu/sys/wall:      0.74 /     0.21 /     0.95 s
 >>> 11                         0.1031E-04
- >>             0.303433934999 0.1031E-04
- @ formula evaluation                  cpu/sys/wall:      0.78 /     0.16 /     0.94 s
+ >>             0.303433458720 0.1031E-04
+ @ formula evaluation                  cpu/sys/wall:      0.80 /     0.15 /     0.95 s
 >>> 12                         0.3164E-05
- >>             0.303433917024 0.3164E-05
- @ formula evaluation                  cpu/sys/wall:      0.80 /     0.17 /     0.97 s
+ >>             0.303433440744 0.3164E-05
+ @ formula evaluation                  cpu/sys/wall:      0.78 /     0.16 /     0.95 s
 >>> 13                         0.1224E-05
- >>             0.303433919831 0.1224E-05
- @ formula evaluation                  cpu/sys/wall:      0.78 /     0.19 /     0.98 s
+ >>             0.303433443553 0.1224E-05
+ @ formula evaluation                  cpu/sys/wall:      0.76 /     0.18 /     0.94 s
 >>> 14                         0.3185E-06
- >>             0.303433919905 0.3185E-06
- @ formula evaluation                  cpu/sys/wall:      0.76 /     0.22 /     0.97 s
+ >>             0.303433443626 0.3185E-06
+ @ formula evaluation                  cpu/sys/wall:      0.76 /     0.18 /     0.95 s
 >>> 15                         0.1158E-06
- >>             0.303433918539 0.1158E-06
- @ formula evaluation                  cpu/sys/wall:      0.74 /     0.22 /     0.96 s
+ >>             0.303433442260 0.1158E-06
+ @ formula evaluation                  cpu/sys/wall:      0.76 /     0.18 /     0.94 s
  CONVERGED IN    16 ITERATIONS
->>> 15                         0.3508E-07
- >>             0.303433918417 0.3508E-07
+>>> 15                         0.3509E-07
+ >>             0.303433442138 0.3509E-07
   Results for RE0G1C-1M00
  -------------------------
 >>>==================================================================
 >>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
 >>>------------------------------------------------------------------
->>>    1         0.303433918417                    ---   0.3508E-07
+>>>    1         0.303433442138                    ---   0.3509E-07
 >>>==================================================================
  ... all targets processed!
  +----------------------------------------------------------------------------+
@@ -2971,5 +2971,5 @@
    Largest memory block:       26770695 real(8)-words (  204.24 Mb)
    Name of largest block:    contr1.contr_scr
  +----------------------------------------------------------------------------+
- @ total time in GeCCo run             cpu/sys/wall:     42.91 /    10.42 /    53.60 s
- run ends at 2009-01-29 19:15:18.467   host: dhcppc1
+ @ total time in GeCCo run             cpu/sys/wall:     43.00 /     9.90 /    55.39 s
+ run ends at 2009-01-30 23:11:07.075   host: dhcppc1

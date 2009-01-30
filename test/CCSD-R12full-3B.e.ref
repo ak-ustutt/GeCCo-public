@@ -1,6 +1,6 @@
- run starts at 2009-01-29 19:15:46.256   host: dhcppc1
+ run starts at 2009-01-30 23:05:38.843   host: dhcppc1
 
- Version compiled 29 Jan 2009 at 19:12:26 on dhcppc1                             
+ Version compiled 30 Jan 2009 at 23:05:29 on dhcppc1                             
 
  compiled with: ifort
  level 1 optimization: -g -assume byterecl -traceback -I../include -mod i686-linux-
@@ -182,7 +182,7 @@
  ------------------------------------------------------------------------------
  wrote          178  entries
  Number of generated terms:          145
- @ CC-R12 Lagrangian                   cpu/sys/wall:      0.22 /     0.00 /     0.22 s
+ @ CC-R12 Lagrangian                   cpu/sys/wall:      0.21 /     0.00 /     0.21 s
  Rule: FACTOR_OUT
  read          178  entries
  read            5  entries
@@ -1907,13 +1907,13 @@
   term #    1 - H^ 3 P^ 1 V^ 0 X^ 1
   term #    2 - H^ 3 P^ 1 V^ 0 X^ 1
  Largest intermediates occur in: 
-  term #    1 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.635E-02
-  term #    3 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.635E-02
-  term #    2 - H^ 3 P^ 1 V^ 0 X^ 0 - Mb:     0.171E-02
+  term #    1 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.952E-02
+  term #    3 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.952E-02
+  term #    2 - H^ 3 P^ 1 V^ 0 X^ 0 - Mb:     0.256E-02
  wrote            5  entries
  Rule: EVALUATE
  read            4  entries
- @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.02 s
+ @ formula evaluation                  cpu/sys/wall:      0.02 /     0.00 /     0.02 s
  My next target: DEF-C-INTER
  Rule: DEF_ME_LIST
  My next target: BINT_R12_CABS
@@ -2121,7 +2121,7 @@
  My next target: EVAL-R12-INTER
  Rule: EVALUATE
  read           26  entries
- @ formula evaluation                  cpu/sys/wall:      0.07 /     0.03 /     0.09 s
+ @ formula evaluation                  cpu/sys/wall:      0.07 /     0.01 /     0.08 s
  Rule: EVALUATE
  read            6  entries
  @ formula evaluation                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
@@ -2130,7 +2130,7 @@
  @ formula evaluation                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  Rule: EVALUATE
  read           17  entries
- @ formula evaluation                  cpu/sys/wall:      0.00 /     0.01 /     0.01 s
+ @ formula evaluation                  cpu/sys/wall:      0.02 /     0.00 /     0.01 s
  My next target: BINV
  Rule: DEF_ME_LIST
  Rule: INVERT
@@ -2304,8 +2304,30 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.41 /     0.15 /     0.57 s
+ @ formula evaluation                  cpu/sys/wall:      0.38 /     0.18 /     0.55 s
 >>>  1        -25.125331829012 0.3700     0.8237E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ @ formula evaluation                  cpu/sys/wall:      0.61 /     0.14 /     0.75 s
+>>>  2        -25.205490931415 0.8470E-01 0.2032E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ @ formula evaluation                  cpu/sys/wall:      0.54 /     0.21 /     0.75 s
+>>>  3        -25.212472880677 0.4607E-01 0.3613E-03
  @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  nreo =            1
  ODD nencl appeared!
@@ -2315,8 +2337,30 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.59 /     0.18 /     0.78 s
->>>  2        -25.205502477387 0.8469E-01 0.2032E-02
+ @ formula evaluation                  cpu/sys/wall:      0.56 /     0.20 /     0.77 s
+>>>  4        -25.219842458237 0.1875E-01 0.1132E-03
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ @ formula evaluation                  cpu/sys/wall:      0.58 /     0.19 /     0.78 s
+>>>  5        -25.222669345239 0.7672E-02 0.2417E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ nreo =            1
+ ODD nencl appeared!
+ @ formula evaluation                  cpu/sys/wall:      0.59 /     0.20 /     0.78 s
+>>>  6        -25.223596201256 0.2756E-02 0.1668E-04
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  nreo =            1
  ODD nencl appeared!
@@ -2326,8 +2370,8 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.57 /     0.20 /     0.88 s
->>>  3        -25.212479869092 0.4607E-01 0.3611E-03
+ @ formula evaluation                  cpu/sys/wall:      0.64 /     0.19 /     1.02 s
+>>>  7        -25.223438409106 0.1222E-02 0.8478E-05
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  nreo =            1
  ODD nencl appeared!
@@ -2337,8 +2381,8 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.55 /     0.23 /     0.78 s
->>>  4        -25.219845877826 0.1876E-01 0.1132E-03
+ @ formula evaluation                  cpu/sys/wall:      0.58 /     0.17 /     0.75 s
+>>>  8        -25.223594454237 0.5259E-03 0.5127E-05
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  nreo =            1
  ODD nencl appeared!
@@ -2348,8 +2392,8 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.57 /     0.21 /     0.78 s
->>>  5        -25.222675436424 0.7671E-02 0.2416E-04
+ @ formula evaluation                  cpu/sys/wall:      0.59 /     0.17 /     0.75 s
+>>>  9        -25.223619518861 0.2022E-03 0.1020E-05
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  nreo =            1
  ODD nencl appeared!
@@ -2359,8 +2403,8 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.60 /     0.20 /     0.80 s
->>>  6        -25.223602808709 0.2758E-02 0.1670E-04
+ @ formula evaluation                  cpu/sys/wall:      0.62 /     0.14 /     0.76 s
+>>> 10        -25.223624747290 0.5911E-04 0.7467E-07
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  nreo =            1
  ODD nencl appeared!
@@ -2370,19 +2414,8 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.59 /     0.20 /     0.80 s
->>>  7        -25.223445628179 0.1220E-02 0.8449E-05
- @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.60 /     0.20 /     0.80 s
->>>  8        -25.223600686554 0.5254E-03 0.5135E-05
+ @ formula evaluation                  cpu/sys/wall:      0.54 /     0.22 /     0.77 s
+>>> 11        -25.223621891440 0.8680E-05 0.7301E-07
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  nreo =            1
  ODD nencl appeared!
@@ -2392,8 +2425,8 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.59 /     0.20 /     0.90 s
->>>  9        -25.223626238682 0.2029E-03 0.1024E-05
+ @ formula evaluation                  cpu/sys/wall:      0.58 /     0.19 /     0.77 s
+>>> 12        -25.223620531459 0.2009E-05 0.5067E-08
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  nreo =            1
  ODD nencl appeared!
@@ -2403,19 +2436,8 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.60 /     0.16 /     0.76 s
->>> 10        -25.223631374429 0.5938E-04 0.7527E-07
- @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.59 /     0.22 /     0.83 s
->>> 11        -25.223628485344 0.8662E-05 0.7300E-07
+ @ formula evaluation                  cpu/sys/wall:      0.59 /     0.20 /     0.78 s
+>>> 13        -25.223620512187 0.5114E-06 0.2013E-08
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  nreo =            1
  ODD nencl appeared!
@@ -2425,8 +2447,8 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.60 /     0.21 /     0.82 s
->>> 12        -25.223627128082 0.2006E-05 0.5089E-08
+ @ formula evaluation                  cpu/sys/wall:      0.50 /     0.23 /     0.74 s
+>>> 14        -25.223620483071 0.1338E-06 0.3858E-09
  @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  nreo =            1
  ODD nencl appeared!
@@ -2436,9 +2458,9 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.59 /     0.18 /     0.77 s
->>> 13        -25.223627108116 0.5175E-06 0.2031E-08
- @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.57 /     0.18 /     0.75 s
+>>> 15        -25.223620487859 0.2893E-07 0.1061E-09
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  nreo =            1
  ODD nencl appeared!
  nreo =            1
@@ -2447,83 +2469,50 @@
  ODD nencl appeared!
  nreo =            1
  ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.54 /     0.27 /     0.81 s
->>> 14        -25.223627079016 0.1336E-06 0.3853E-09
- @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.57 /     0.24 /     0.83 s
->>> 15        -25.223627083732 0.2934E-07 0.1088E-09
- @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- nreo =            1
- ODD nencl appeared!
- @ formula evaluation                  cpu/sys/wall:      0.54 /     0.20 /     0.76 s
->>> 16        -25.223627084539 0.7750E-08 0.2108E-10
+ @ formula evaluation                  cpu/sys/wall:      0.63 /     0.12 /     0.76 s
+>>> 16        -25.223620488644 0.7725E-08 0.2094E-10
  CONVERGED IN    16 ITERATIONS
->>> final energy:        -25.223627084539 <<<
+>>> final energy:        -25.223620488644 <<<
   iopt =            2
 +=============================================================================+
   block no.    1 len =           18
  /  2  0  0  0\/
  \  2  0  0  0/\
 +=============================================================================+
-  Ms(A) =   2/2  IRREP(A) =  1  len =            1  norm =  1.93439    
+  Ms(A) =   2/2  IRREP(A) =  1  len =            1  norm =  1.93449    
 +-----------------------------------------------------------------------------+
  block contains only single distribution
  index of first element:           1
 +.............................................................................+
-     1    2  3   2  3  ++ ++   22 22      1.934391591    
+     1    2  3   2  3  ++ ++   22 22      1.934485934    
 +-----------------------------------------------------------------------------+
- norm (MS-Block) =    1.93439159092326     
-  Ms(A) =   0/2  IRREP(A) =  1  len =           16  norm =  2.68466    
+ norm (MS-Block) =    1.93448593391770     
+  Ms(A) =   0/2  IRREP(A) =  1  len =           16  norm =  2.67686    
 +-----------------------------------------------------------------------------+
  block contains only single distribution
  index of first element:           2
 +.............................................................................+
-     2    2  2   2  2  22 22   22 22      1.067329829    
-     3    2  3   2  2  -+ 22   22 22     0.2395746707E-01
-     4    2  3   2  2  +- 22   22 22    -0.2395746707E-01
-     5    3  3   2  2  22 22   22 22    -0.6204754066E-01
-     6    2  2   2  3  22 -+   22 22     0.8050571042E-01
-     7    2  3   2  3  -+ -+   22 22      1.437685225    
-     8    2  3   2  3  +- -+   22 22     0.5270963129    
-     9    3  3   2  3  22 -+   22 22    -0.4445443673E-01
-    10    2  2   2  3  22 +-   22 22    -0.8050571042E-01
-    11    2  3   2  3  -+ +-   22 22     0.5270963129    
-    12    2  3   2  3  +- +-   22 22      1.437685225    
-    13    3  3   2  3  22 +-   22 22     0.4445443673E-01
-    14    2  2   3  3  22 22   22 22    -0.2010260424    
-    15    2  3   3  3  -+ 22   22 22     0.1490738569    
-    16    2  3   3  3  +- 22   22 22    -0.1490738569    
-    17    3  3   3  3  22 22   22 22      1.127779452    
+     2    2  2   2  2  22 22   22 22      1.068845680    
+     3    2  3   2  2  -+ 22   22 22     0.2194956162E-01
+     4    2  3   2  2  +- 22   22 22    -0.2194956162E-01
+     5    3  3   2  2  22 22   22 22    -0.6343964872E-01
+     6    2  2   2  3  22 -+   22 22     0.8084740287E-01
 +-----------------------------------------------------------------------------+
- norm (MS-Block) =    2.68465792326286     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =            1  norm =  1.93439    
+ norm (MS-Block) =    2.67686347945303     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =            1  norm =  1.93449    
 +-----------------------------------------------------------------------------+
  block contains only single distribution
  index of first element:          18
 +.............................................................................+
-    18    2  3   2  3  -- --   22 22      1.934391591    
+    18    2  3   2  3  -- --   22 22      1.934485934    
 +-----------------------------------------------------------------------------+
- norm (MS-Block) =    1.93439159092326     
- total norm =    3.83290096650139     
+ norm (MS-Block) =    1.93448593391770     
+ total norm =    3.82754095271106     
  ... all targets processed!
  +----------------------------------------------------------------------------+
    Maximum allocated memory:   67551923 real(8)-words (  515.38 Mb)
    Largest memory block:       67273114 real(8)-words (  513.25 Mb)
    Name of largest block:    contr1.contr_scr
  +----------------------------------------------------------------------------+
- @ total time in GeCCo run             cpu/sys/wall:     16.94 /     3.58 /    20.90 s
- run ends at 2009-01-29 19:16:07.157   host: dhcppc1
+ @ total time in GeCCo run             cpu/sys/wall:     16.75 /     3.29 /    20.30 s
+ run ends at 2009-01-30 23:05:59.146   host: dhcppc1
