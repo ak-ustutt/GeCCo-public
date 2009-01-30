@@ -239,6 +239,8 @@
           len_blk = idxnd-idxst+1
           xop(1:len_blk) = 0d0
 
+          if (me_mo%len_op_occ(iblk).eq.0) cycle
+
           call tran_one_blk(xop,xao,cmo,xhlf,
      &         me_sym,idxcmo,ld_blk(1,1,idxms),
      &         hpvx_c,hpvx_a,

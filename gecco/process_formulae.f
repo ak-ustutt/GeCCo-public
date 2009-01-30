@@ -41,7 +41,7 @@
       type(formula), pointer ::
      &     form_pnt, form0_pnt
       character(len_command_par) ::
-     &     title, strdum, approx, typ_str
+     &     title, strdum, dir_str, approx, typ_str
       character(len=512) ::
      &     form_str
 
@@ -371,7 +371,7 @@ c dbg end fix
         allocate(idxfreqdum(maximum_order))
         call form_parameters2(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title,nint,idxfreqdum)
+     &       title,nint,idxfreqdum,dir_str)
         allocate(idxfreq(nint))
         idxfreq = idxfreqdum(1:nint)
         deallocate(idxfreqdum)
@@ -379,7 +379,7 @@ c dbg end fix
         jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)
         form0_pnt => form_info%form_arr(jdx)%form
         call form_extract_freq(form_pnt,form0_pnt,
-     &       title, rule%labels(3), nint, idxfreq, op_info)
+     &       title, rule%labels(3), nint, idxfreq, dir_str, op_info)
         deallocate(idxfreq)
       case default
         call quit(1,'process_formulae','unknown command: '//

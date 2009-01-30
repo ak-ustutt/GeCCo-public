@@ -29,6 +29,7 @@
       integer, external ::
      &     ndisblk_mel
 
+      opti_info%shift = 0d0
       opti_info%variational = .false.
       if (mode.eq.1) opti_info%linear = .false.
       if (mode.eq.2) opti_info%linear = .true.

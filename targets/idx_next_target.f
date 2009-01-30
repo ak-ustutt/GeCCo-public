@@ -8,7 +8,7 @@
       include 'mdef_target_info.h'
 
       integer, parameter ::
-     &     maxcycles = 10 000 000
+     &     maxcycles = 100 000 000
       
       type(target_info), intent(in) ::
      &     tgt_info

@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine form_extract_freq(f_output,f_input,
-     &                      title, label, order, freq_idx, op_info)
+     &                      title, label, order, freq_idx, dir, op_info)
 *----------------------------------------------------------------------*
 *
 *     driver for extracting terms of specific frequency pattern
@@ -25,7 +25,7 @@
       integer, intent(in) ::
      &     order, freq_idx(*)
       character(*), intent(in) ::
-     &     title, label
+     &     title, label, dir
       type(formula), intent(inout) ::
      &     f_input, f_output
       type(operator_info), intent(in) ::
@@ -65,7 +65,8 @@
       idx_tgt = idx_oplist2(label, op_info)
       if (idx_tgt.le.0) call quit(1,'form_extract_freq',
      &    'Operator '//label//' not found')
-      call freq_pattern_truncation(flist,order,freq_idx,idx_tgt,op_info)
+      call freq_pattern_truncation(flist,order,freq_idx,dir,
+     &                             idx_tgt,op_info)
 
       ! write result
       if (.not.same) then

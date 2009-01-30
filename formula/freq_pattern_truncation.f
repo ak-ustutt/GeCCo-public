@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine freq_pattern_truncation(flist,order,freq_idx,
+      subroutine freq_pattern_truncation(flist,order,freq_idx,dir,
      &                                   idx_tgt,op_info)
 *----------------------------------------------------------------------*
 *     truncate formula to terms of specific frequency pattern
@@ -9,7 +9,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -28,15 +28,17 @@
      &     op_info
       integer, intent(in) ::
      &     order, idx_tgt, freq_idx(*)
+      character(*), intent(in) ::
+     &     dir
 
       integer, parameter ::
-     &     maximum_idx = 40
+     &     maximum_idx = 99
 
       logical ::
      &     delete, recognized, multiply
       integer ::
      &     nvtx, ivtx, op_ord, idx_op, t_max_ord, l_max_ord, op_spec,
-     &     count_freq(maximum_idx), ii, jj, op_ifreq, njoker,
+     &     count_freq(maximum_idx), ii, jj, op_ifreq, njoker(3),
      &     pattern(maximum_idx), factor
 
       type(cntr_vtx), pointer ::
@@ -51,7 +53,7 @@
      &     factorial
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'freq_pattern_trunction')
+        call write_title(luout,wst_dbg_subr,'freq_pattern_truncation')
       endif
 
       ! determine frequency index pattern
@@ -62,6 +64,12 @@
       do ii = 1,order
         pattern(freq_idx(ii)) = pattern(freq_idx(ii)) + 1
       end do
+
+      if (ntest.ge.100) then
+         write(luout,*)'pattern: ',
+     &                     pattern(1:maxval(freq_idx(1:order)))
+         write(luout,*)'dir: ',dir(1:maxval(freq_idx(1:order)))
+      end if
 
       form_pnt => flist
       do 
@@ -89,11 +97,13 @@
           count_freq = 0
           structure = 0
           delete = .false.
+          if (ntest.ge.100) write(luout,*)'checking ',nvtx,' vertices'
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
             op_ord = op_info%op_arr(idx_op)%op%order
             if ((associated(op_info%op_arr(idx_op)%op%ifreq)).and.
      &          (op_ord.gt.0)) then
+              op_spec = op_info%op_arr(idx_op)%op%species
               if (op_info%op_arr(idx_op)%op%ifreq(1).gt.0) then
                 do ii = 1,op_ord
                   op_ifreq = op_info%op_arr(idx_op)%op%ifreq(ii)
@@ -106,26 +116,50 @@
                   end do
                   count_freq(op_ifreq) = count_freq(op_ifreq) + 1
                   if (.not.recognized) delete = .true.
+                  if ((.not.recognized).and.ntest.ge.100)
+     &                 write(luout,*)'non-matching vertex no.',ivtx
                 end do
-              else if (op_info%op_arr(idx_op)%op%ifreq(1).eq.0) then
-                njoker = njoker + 1    ! can belong to any frequency index
+              else if (op_spec.ge.4.and.op_spec.le.6) then
+                ! can belong to any frequency index in X,Y, or Z direction
+                njoker(op_spec-3) = njoker(op_spec-3) + 1
+                if (ntest.ge.100) write(luout,*)'collected joker in ',
+     &                                          op_spec-3, ' direction'
               end if
             end if
           end do
           ! play all jokers and check if frequency pattern is ok
           ii = 0
-          do while ((njoker.gt.0).and.(ii.lt.order))
+          if (ntest.ge.100) then
+            write(luout,*) 'current jokers: ', njoker
+            write(luout,*) 'current counts: ', 
+     &                     count_freq(1:maxval(freq_idx(1:order)))
+          end if
+          do while (maxval(njoker).gt.0.and.
+     &              ii.lt.maxval(freq_idx(1:order)))
             ii = ii+1
+            do jj = 1, nvtx
+              if (sum(structure(:,jj)).eq.0) ivtx = jj
+            end do
             if (count_freq(ii).lt.pattern(ii)) then
-              count_freq(ii) = 1
-              njoker = njoker - 1
+              if (dir(ii:ii).eq.'X'.and.njoker(1).gt.0) then
+                count_freq(ii) = count_freq(ii) + 1
+                njoker(1) = njoker(1) - 1
+                structure(ii,ivtx) = structure(ii,ivtx)+1
+              else if (dir(ii:ii).eq.'Y'.and.njoker(2).gt.0) then
+                count_freq(ii) = count_freq(ii) + 1
+                njoker(2) = njoker(2) - 1
+                structure(ii,ivtx) = structure(ii,ivtx)+1
+              else if (dir(ii:ii).eq.'Z'.and.njoker(3).gt.0) then
+                count_freq(ii) = count_freq(ii) + 1
+                njoker(3) = njoker(3) - 1
+                structure(ii,ivtx) = structure(ii,ivtx)+1
+              end if
             end if
           end do
-          if (njoker.gt.0) call quit(1,'freq_pattern_truncation',
-     &                            'too many frequency index jokers')
-          if ((.not.all(count_freq-pattern.eq.0)).and.(njoker.eq.0))
-     &              delete = .true.
+          if (.not.(all(count_freq-pattern.eq.0).and.
+     &        all(njoker.eq.0))) delete = .true.
 
+          if (ntest.ge.100) write(luout,*) 'delete node?: ',delete
           if (delete) then
             ! Delete the node.
             call delete_fl_node(form_pnt)

@@ -23,6 +23,10 @@
       call argument_add('maxexc','calculate.experimental',type=vtyp_int,
      &                  idef=(/2/))
 
+      ! treat V(1) intermediates as fock operator in approximation C
+      call argument_add('treat_BV','calculate.experimental',
+     &     type=vtyp_log,ldef=(/.true./))
+
       ! call keyword_add('new_kwd',context='calculate.experimental')
       ! see set_keywors for how to set up things ...
 

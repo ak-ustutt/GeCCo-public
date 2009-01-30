@@ -64,10 +64,10 @@
       iformal = 1
       explicit = is_keyword_set('method.R12').gt.0
       if (explicit.and.orb_info%caborb.gt.0.and.(.not.truncate
-     &     .or.(truncate.and.trunc_type.gt.0)).or.extern.ge.2)
+     &     .or.(truncate.and.trunc_type.eq.1)).or.extern.ge.2)
      &     iformal = 4
       if (explicit.and.orb_info%caborb.gt.0.and.truncate
-     &     .and.trunc_type.eq.0.or.extern.eq.1)
+     &     .and.trunc_type.ne.1.or.extern.eq.1)
      &     iformal = 3
       call add_target(op_ham,ttype_op,.false.,tgt_info)
       call hop_parameters(-1,parameters,

@@ -357,7 +357,7 @@ c        read(parameters(2),'(240(i1))')
 
 *----------------------------------------------------------------------*
       subroutine form_parameters2(rw,
-     &     parameters,n_par_str,title,inum,idxlist)
+     &     parameters,n_par_str,title,inum,idxlist,dir)
 
       implicit none
       
@@ -368,15 +368,21 @@ c        read(parameters(2),'(240(i1))')
       character*(*), intent(inout) ::
      &     parameters(n_par_str),
      &     title
+      character*(*), intent(inout), optional ::
+     &     dir
 
       if (rw.lt.0) then
         write(parameters(1),'(a)') title
         if (n_par_str.gt.1)
      &       write(parameters(2),'(i4,20i4)') inum, idxlist(1:inum)
+        if (n_par_str.gt.2)
+     &       write(parameters(3),'(a)') dir
       else
         read(parameters(1),'(a)') title
         if (n_par_str.gt.1)
      &       read(parameters(2),'(i4,20i4)') inum, idxlist(1:inum)
+        if (n_par_str.gt.2)
+     &       read(parameters(3),'(a)') dir
       end if
 
       return
