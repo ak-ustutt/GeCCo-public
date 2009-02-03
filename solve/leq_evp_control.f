@@ -256,6 +256,7 @@ c        end if
         if (modestr(1:3).eq.'LEQ') then
           call leqc_core(iter,
      &         task,iroute,xrsnrm,
+     &         use_s,
      &         me_opt,me_trv,me_mvp,me_rhs,me_dia,
      &         me_special,nspecial,
 c     &         ffopt,fftrv,ffmvp,ffrhs,ffdia,

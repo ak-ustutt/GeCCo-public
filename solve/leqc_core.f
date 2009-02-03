@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine leqc_core(iter,
      &       task,iroute,xrsnrm,
+     &       use_s,
      &       me_opt,me_trv,me_mvp,me_rhs,me_dia,
      &       me_special,nspecial,
 c     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
@@ -31,6 +32,8 @@ c      include 'def_filinf.h'
      &     iter
       integer, intent(in) ::
      &     iroute, nincore, lenbuf, nspecial
+      logical, intent(in) ::
+     &     use_s(*)
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_trv(*), me_dia(*),
@@ -59,7 +62,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       real(8) ::
      &     cond, xdum, xnrm
       real(8), pointer ::
-     &     gred(:), vred(:), mred(:),
+     &     gred(:), vred(:), mred(:), sred(:),
      &     xmat1(:), xmat2(:), xvec(:)
       integer, pointer ::
      &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
@@ -67,7 +70,9 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     nwfpar(:),
      &     ipiv(:), iconv(:), idxroot(:)
       type(filinf), pointer ::
-     &     ffrsbsp, ffvsbsp
+     &     ffrsbsp, ffvsbsp, ffssbsp
+      type(filinf) ::
+     &     fdum
 
       integer, external ::
      &     ioptc_get_sbsp_rec
@@ -83,6 +88,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       mred => opti_stat%sbspmat(1:)
       gred => opti_stat%sbspmat(mxsub**2+1:)
       vred => opti_stat%sbspmat(2*mxsub**2+1:)
+      sred => opti_stat%sbspmat(2*mxsub**2+1:)
       ndim_rsbsp => opti_stat%ndim_rsbsp
       ndim_vsbsp => opti_stat%ndim_vsbsp
       ndim_ssbsp => opti_stat%ndim_rsbsp
@@ -91,6 +97,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       iord_ssbsp => opti_stat%iord_rsbsp
       ffrsbsp => opti_stat%ffrsbsp(1)%fhand
       ffvsbsp => opti_stat%ffvsbsp(1)%fhand
+      ffssbsp => opti_stat%ffssbsp(1)%fhand
       nwfpar => opti_info%nwfpar
 
       if (nopt.gt.1)
@@ -116,12 +123,26 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       nred = ndim_vsbsp
       ! update reduced space:
       ! ffvsbsp and ffrsbsp point to ff_trv(iopt)%fhand ...
-      call optc_update_redsp3
+        if (.not.use_s(iopt)) then
+          if (nopt.ne.1) call quit(1,'evpc_core','not this route')
+          call optc_update_redsp3
      &       (mred,gred,nred,nroot,mxsub,
      &       opti_stat%nadd,opti_stat%ndel,
      &       iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,
      &                              me_rhs(iopt)%mel%fhand,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
+        else
+          call optc_update_redsp4
+     &         (mred,sred,gred,nred,nroot,mxsub,
+     &       opti_stat%nadd,opti_stat%ndel, .true.,!init,
+     &       iord_vsbsp,ffvsbsp,
+     &       iord_rsbsp,ffrsbsp,
+     &       iord_ssbsp,ffssbsp,fdum,
+c     &       iord_vsbsp,ffvsbsp(iopt)%fhand,
+c     &       iord_rsbsp,ffrsbsp(iopt)%fhand,
+c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
+     &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)
+        end if
 
       zero_vec(1:opti_stat%ndim_vsbsp) = .false.
 
@@ -144,6 +165,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
           xmat1(kdx) = mred((idx-1)*mxsub+jdx)
         end do
       end do
+
+      ! apply shift (incl. metric if applicable)
 
       ! condition number and pivot vector
       call dgeco(xmat1,nred,nred,ipiv,cond,xvec)
@@ -193,6 +216,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &       ffscr,irecscr,1d0,ffrsbsp,iord_rsbsp,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
+        ! care for shift (incl. metric, if applicable)
+
         ! not yet converged? increase record counter
         if (xrsnrm(iroot).gt.opti_info%thrgrd(iopt)) then
           idxroot(irecscr) = iroot
@@ -219,12 +244,13 @@ c dbg
             call optc_minspace(
      &           iord_vsbsp,opti_stat%ffvsbsp,
      &           iord_rsbsp,opti_stat%ffrsbsp,
-     &           iord_rsbsp,opti_stat%ffrsbsp,.false., ! #1,#2 are dummies
-     &           vred,gred,mred,xdum,nred,nroot,nroot,mxsub,nopt,
+     &           iord_ssbsp,opti_stat%ffssbsp,use_s,
+     &           vred,gred,mred,sred,nred,nroot,nroot,mxsub,nopt,
      &           ffscr,nnew,
      &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
             ndim_vsbsp = nred
             ndim_rsbsp = nred
+            ndim_ssbsp = nred
           else
             call quit(1,'leqc_core','baustelle')
           end if
