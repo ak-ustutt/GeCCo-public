@@ -175,7 +175,17 @@
       if (order.eq.1) value = value + nucmom
 
       last4 = 28
-      write(part4(1:last4),'(": >>> ",f18.12," <<<")') value
+      if (abs(value).lt.100000d0) then
+        write(part4(1:last4),'(": >>>",f19.12," <<<")') value
+      else if (abs(value).lt.10000000d0) then
+        write(part4(1:last4),'(": >>>",f19.10," <<<")') value
+      else if (abs(value).lt.1000000000d0) then
+        write(part4(1:last4),'(": >>>",f19.8," <<<")') value
+      else if (abs(value).lt.100000000000d0) then
+        write(part4(1:last4),'(": >>>",f19.6," <<<")') value
+      else
+        write(part4(1:last4),'(": >>>",E19.10," <<<")') value
+      end if
 
       ! print result
       line(1:79) = '>============================================='//
