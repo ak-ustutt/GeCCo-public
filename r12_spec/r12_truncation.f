@@ -119,7 +119,7 @@ c     &     idx_oplist2
           ! always linear in T1X
           delete = ntx.gt.1
 
-          if (trunc_type.eq.0) then
+          if (trunc_type.ne.1) then
             ! (R12):
             ! always linear in R12
             delete = delete.or.nr12+ntx.gt.1
@@ -130,6 +130,11 @@ c     &     idx_oplist2
           else if (trunc_type.eq.1) then
             ! linearized R12:
             delete = delete.or.nr12.gt.1
+          end if
+          if (trunc_type.eq.2) then
+            ! no R12 at all:
+            delete = delete.or.nr12.gt.0
+            delete = delete.or.nrdag.gt.0
           end if
 
           if (delete) then

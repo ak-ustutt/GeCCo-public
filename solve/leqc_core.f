@@ -158,15 +158,27 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
       ifree = mem_alloc_int (ipiv,nred,'LEQ_piv')
 
       ! get a copy of the subspace matrix
-      kdx = 0
-      do idx = 1, nred
-        do jdx = 1, nred
-          kdx = kdx+1
-          xmat1(kdx) = mred((idx-1)*mxsub+jdx)
+      ! and apply shift (incl. metric if applicable)
+      if (opti_info%shift.eq.0d0.or..not.use_s(1)) then
+        kdx = 0
+        do idx = 1, nred
+          do jdx = 1, nred
+            kdx = kdx+1
+            xmat1(kdx) = mred((idx-1)*mxsub+jdx)
+            ! shift matrix
+            if (idx.eq.jdx) xmat1(kdx) = xmat1(kdx) + opti_info%shift
+          end do
         end do
-      end do
-
-      ! apply shift (incl. metric if applicable)
+      else
+        kdx = 0
+        do idx = 1, nred
+          do jdx = 1, nred
+            kdx = kdx+1
+            xmat1(kdx) = mred((idx-1)*mxsub+jdx)
+     &           + opti_info%shift * sred((idx-1)*mxsub+jdx)
+          end do
+        end do
+      end if
 
       ! condition number and pivot vector
       call dgeco(xmat1,nred,nred,ipiv,cond,xvec)
@@ -217,6 +229,19 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
         ! care for shift (incl. metric, if applicable)
+        if (opti_info%shift.ne.0d0 .and. .not.use_s(iopt))
+     &    call optc_expand_vec(
+     &         opti_info%shift*vred(idx:idx-1+ndim_vsbsp),ndim_vsbsp,
+     &                   xrsnrm(iroot),.true.,
+     &         ffscr,irecscr,1d0,ffvsbsp,iord_rsbsp,
+     &         nincore,nwfpar,lenbuf,xbuf1,xbuf2)
+
+        if (opti_info%shift.ne.0d0 .and. use_s(iopt))
+     &    call optc_expand_vec(
+     &         opti_info%shift*vred(idx:idx-1+ndim_vsbsp),ndim_ssbsp,
+     &                   xrsnrm(iroot),.true.,
+     &         ffscr,irecscr,1d0,ffssbsp,iord_rsbsp,
+     &         nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
         ! not yet converged? increase record counter
         if (xrsnrm(iroot).gt.opti_info%thrgrd(iopt)) then
@@ -265,7 +290,8 @@ c dbg
             ! scale residual for numerical stability:
 c            xnrm = dnrm2(nwfpar,xbuf1,1)
             xnrm = xrsnrm(idxroot(iroot))
-            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,0d0,nwfpar)
+            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
+     &                 opti_info%shift,nwfpar)
             call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
           end do
         else

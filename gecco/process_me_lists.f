@@ -30,7 +30,7 @@
      &     strmap_info
 
       integer, parameter ::
-     &     maxfac = 20
+     &     maxfac = 20, maximum_order = 10
       real(8) ::
      &     fac(maxfac)
       integer ::
@@ -47,7 +47,10 @@
      &     label_met(:)
 
       integer ::
-     &     idx_formlist
+     &     idx_formlist, order, dummy
+      integer, allocatable ::
+     &     ifreq_dum(:), ifreq(:)
+
       integer, external ::
      &     idx_mel_list
 
@@ -246,6 +249,31 @@ c dbg
      &       rule%labels(4*nopt+ioff+1:
      &                   4*nopt+ioff+nspecial),nspecial,
      &       op_info,form_info,str_info,strmap_info,orb_info)
+
+      case(SET_FREQ)
+
+        idx = idx_mel_list(rule%labels(1),op_info)
+        if(idx.lt.0)
+     &       call quit(1,'process_me_lists','Label not on list: "'//
+     &       trim(rule%labels(1))//'"')
+        mel_pnt => op_info%mel_arr(idx)%mel
+
+        call set_frequency(mel_pnt)
+
+      case(PRINT_RES)
+        idx = idx_mel_list(rule%labels(1),op_info)
+        if(idx.lt.0)
+     &       call quit(1,'process_me_lists','Label not on list: "'//
+     &       trim(rule%labels(1))//'"')
+        mel_pnt => op_info%mel_arr(idx)%mel
+        allocate(ifreq_dum(maximum_order))
+        call ord_parameters(+1,rule%parameters,
+     &                      order,dummy,ifreq_dum)
+        allocate(ifreq(order))
+        ifreq = ifreq_dum(1:order)
+        deallocate(ifreq_dum)
+        call print_result(order,ifreq,mel_pnt,.false.)
+        deallocate(ifreq)
 
       case default
         call quit(1,'process_me_lists','unknown command: '//

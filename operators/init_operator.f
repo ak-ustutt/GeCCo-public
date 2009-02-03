@@ -35,6 +35,10 @@
       op%ngas = orb_info%ngas  ! remember dimension
       op%nspin = orb_info%nspin
 
+      op%order = -1            ! set perturbation order to undefined
+      op%species = -1             ! set operator species to undefined
+      nullify(op%ifreq)        ! point to zero
+
         ! some arrays run over 1..njoined as second index
       nblkt = nblk * op%njoined
       ifree = mem_register(2*ngastp*nblkt

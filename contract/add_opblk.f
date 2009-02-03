@@ -71,7 +71,7 @@ c     &     iocc_equal_n, iocc_equal,
         write(luout,*) '=========================='
         write(luout,*) ' fac = ',fac
         write(luout,*) ' mel_in: ',trim(mel_in%label)
-        write(luout,*) ' opout: ',trim(mel_out%label)
+        write(luout,*) ' mel_out: ',trim(mel_out%label)
         write(luout,*) ' ffin:  ',trim(ffin%name),
      &                   ' rec: ',ffin%current_record
         write(luout,*) ' ffout: ',trim(ffout%name),

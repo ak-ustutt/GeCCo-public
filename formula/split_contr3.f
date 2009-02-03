@@ -333,8 +333,14 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
 
       call contr_clean_arcs(contr_rem%arc,contr_rem%narc)
       call arc_sort(contr_rem%arc,contr_rem%narc,contr_rem%nvtx)
+c dbg fix by mh
+      if (associated(contr_rem%xarc)) then
+c dbg original
       call contr_clean_arcs(contr_rem%xarc,contr_rem%nxarc)
       call arc_sort(contr_rem%xarc,contr_rem%nxarc,contr_rem%nvtx)
+c dbg resume fix
+      end if
+c dbg end fix
 
       deallocate(topo,topo_spl,vtx,vtx_spl,xlines,xlines_spl,ireo,ireo2,
      &       svertex,svertex_spl,list,ivtx_new,isupervtx_spl,vtxmap)

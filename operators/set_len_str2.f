@@ -26,7 +26,7 @@
 
       integer ::
      &     idx_ca, hpvx, idx_hpvx, idx_c, idx_a, idx_high
-      
+     
       if (na+nc.eq.0) return
 c dbg
 c      print *,'gam_a: ',gam_a

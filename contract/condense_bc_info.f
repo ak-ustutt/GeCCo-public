@@ -142,7 +142,7 @@ c      end if
 
       allocate(igrph(ngastp,2,
      &     max(njoined_op1,njoined_op2,njoined_op1op2,njoined_cnt)))
-      
+     
       ! OP1
       call get_grph4occ(igrph,iocc_op1,irst_op1,njoined_op1,
      &                  str_info,orb_info,.true.)

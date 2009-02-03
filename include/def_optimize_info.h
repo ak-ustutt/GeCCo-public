@@ -19,7 +19,8 @@
      &       maxmacit, maxmicit, micifac,
      &       maxsbsp
         real(8) ::
-     &       trini
+     &       trini,
+     &       shift            ! shift linear equations by value
         integer, pointer ::   ! # of wave-function parameters (wfp's)
      &       nwfpar(:),                     ! dimension: nopt
      &       typ_prc(:)       ! type of preconditioner

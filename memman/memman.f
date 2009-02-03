@@ -22,7 +22,7 @@
 *     parameters
 *----------------------------------------------------------------------*
       integer, parameter ::
-     &     mem_maxname = 24
+     &     mem_maxname = 32
 
       integer, parameter ::
      &     membuffer_maxmax_slots = 128*1024,

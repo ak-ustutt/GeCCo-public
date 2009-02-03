@@ -22,12 +22,12 @@
       type(operator), pointer ::
      &     op_pnt
       integer, parameter ::
-     &     ndef_max = 52
+     &     ndef_max = 52, maximum_order = 10
       integer ::
-     &     idx, idx_t, n_ap,
+     &     idx, jdx, idx_t, n_ap,
      &     ncadiff, min_rank, max_rank, min_xrank, max_xrank,
      &     iformal, ansatz,
-     &     ndim1, ndim2, ndef, njoined,
+     &     ndim1, ndim2, ndef, njoined, iorder, spec,
      &     hpvx_constr(2,ngastp),
      &     hpvxca_constr(2,ngastp,2), 
      &     gas_constr(2,orb_info%ngas,2,2),
@@ -36,6 +36,8 @@
      &     name_template
       logical ::
      &     dagger, explicit, freeze(2)
+      integer, allocatable ::
+     &     ifreq_dum(:), ifreq(:)
 
       integer, external ::
      &     idx_oplist2
@@ -46,8 +48,13 @@
       if (rule%n_labels.ne.1)
      &     call quit(1,'process_operators','exactly one label expected')
 
-      ! allocate a new entry
-      call add_operator(trim(rule%labels(1)),op_info)
+      ! allocate a new entry if necessary
+      do idx = 1,rule%n_update
+        jdx = idx_oplist2(trim(rule%labels(idx)),op_info)
+        if (jdx.gt.0) cycle
+        call add_operator(trim(rule%labels(idx)),op_info)
+      end do
+
       idx = idx_oplist2(trim(rule%labels(1)),op_info)
       op_pnt => op_info%op_arr(idx)%op
 
@@ -151,6 +158,18 @@
         call clone_operator(op_pnt,op_info%op_arr(idx_t)%op,
      &       dagger,orb_info)
 c        op_pnt%dagger = op_pnt%dagger.xor.dagger
+      case(SET_ORDER)
+        if (rule%n_parameter_strings.lt.1)
+     &      call quit(1,'process_operators',
+     &      'no parameters provided for '//SET_ORDER)
+        allocate(ifreq_dum(maximum_order))
+        call ord_parameters(+1,rule%parameters,
+     &                      iorder,spec,ifreq_dum)
+        allocate(ifreq(iorder))
+        ifreq = ifreq_dum(1:iorder)
+        deallocate(ifreq_dum)
+        call set_pert_order(op_pnt,iorder,spec,ifreq)
+        deallocate(ifreq)
       case default
         call quit(1,'process_operators','unknown command: '//
      &       trim(rule%command))

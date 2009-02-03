@@ -178,7 +178,6 @@ c dbg
         write(luout,*) 'occ_ol_prev,occ_ol_rem:'
         call wrt_occ2(luout,occ_ol_prev,occ_ol_rem)
       end if
-
       ! get unconnected excitation and deexcitation part of operator
       occ_ex = iocc_xdn(1,occ_ol_vtx(1:ngastp,1:2,ivtx))
       occ_dx = iocc_xdn(2,occ_ol_vtx(1:ngastp,1:2,ivtx))
@@ -382,7 +381,7 @@ c     &                     occ_conn(1:ngastp,1:2,jvtx)
                       ok = .true.
                     end if
                   end do
-                  
+                 
                   ! in a few cases two or more contractions between
                   ! the same vertices end up on different arcs:
                   ! merge these and adapt narc accordingly

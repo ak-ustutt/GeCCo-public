@@ -27,7 +27,7 @@
      &     orb_info
 
       integer, parameter ::
-     &     maxterms = 20
+     &     maxterms = 20, maximum_order = 10
       integer ::
      &     idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -41,12 +41,14 @@
       type(formula), pointer ::
      &     form_pnt, form0_pnt
       character(len_command_par) ::
-     &     title, strdum, approx, typ_str
+     &     title, strdum, dir_str, approx, typ_str
       character(len=512) ::
      &     form_str
 
       integer ::
      &     idx_formlist
+      integer, allocatable ::
+     &     idxfreqdum(:), idxfreq(:)
 
       if (rule%type.ne.ttype_frm)
      &     call quit(1,'process_formulae',
@@ -289,11 +291,21 @@ c        call quit(1,DEF_FORMULA,'not yet')
         ioff = 1
         call opt_parameters(+1,
      &       rule%parameters,ncat,nint)
-
+c dbg fix by mh
+        if (ioff+ncat+1.le.rule%n_labels) then
+c dbg original
         call form_opt(form_pnt,
      &       ncat,rule%labels(ioff+1),
      &       nint,rule%labels(ioff+ncat+1),
      &       form_info,op_info,str_info,orb_info)
+c dbg resume fix
+        else
+        call form_opt(form_pnt,
+     &       ncat,rule%labels(ioff+1),
+     &       nint,rule%labels(ioff+ncat),
+     &       form_info,op_info,str_info,orb_info)
+        end if
+c dbg end fix
       case(PRINT_FORMULA)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
@@ -346,10 +358,32 @@ c        call quit(1,DEF_FORMULA,'not yet')
         call form_mod_factorization(form_pnt,form0_pnt,
      &       nterms,idxterms,
      &       op_info)
+      case(EXTRACT_ORDER)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,nint,strdum)
+        ioff = rule%n_update
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_extract_order(form_pnt,form0_pnt,
+     &       title, rule%labels(3), nint, op_info)
+      case(EXTRACT_FREQ)
+        allocate(idxfreqdum(maximum_order))
+        call form_parameters2(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,nint,idxfreqdum,dir_str)
+        allocate(idxfreq(nint))
+        idxfreq = idxfreqdum(1:nint)
+        deallocate(idxfreqdum)
+        ioff = rule%n_update
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_extract_freq(form_pnt,form0_pnt,
+     &       title, rule%labels(3), nint, idxfreq, dir_str, op_info)
+        deallocate(idxfreq)
       case default
         call quit(1,'process_formulae','unknown command: '//
      &       trim(rule%command))
       end select
-
       return
       end

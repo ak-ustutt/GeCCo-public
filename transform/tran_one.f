@@ -46,6 +46,8 @@
      &     ffmo
       type(operator), pointer ::
      &     opdef
+      real(8) ::
+     &     xref
       type(leninfx2), pointer ::
      &     ldim_gmox(:)
 
@@ -112,9 +114,9 @@
       restr => opdef%igasca_restr
 
       do iblk = 1, nblk
-        ! only one-particle part is of interest:
-        if (ica_occ(1,iblk).ne.1 .or.
-     &      ica_occ(2,iblk).ne.1) cycle
+        ! only zero- and one-particle part is of interest:
+        if (ica_occ(1,iblk).gt.1 .or.
+     &      ica_occ(2,iblk).gt.1) cycle
         nmo = max(nmo,max_dis_blk(-1,me_mo,iblk,orb_info))
       end do
 
@@ -154,7 +156,18 @@
 
       ! loop over all blocks of operator
       do iblk = 1, nblk
-        ! process only one-particle part
+        ! process zero-particle term: <0|V|0>
+        if (max(ica_occ(1,iblk),ica_occ(2,iblk)).eq.0 .and.
+     &      me_mo%len_op_gmo(iblk)%gam_ms(1,1).gt.0) then
+          call calc_xref(xref,xao,cmo,xhlf,nsym,nbas,nxbas,
+     &                   ngas,hpvx_gas(:,1),idxcmo(:,:,1),
+     &                   mostnd)
+          idxst = me_mo%off_op_gmo(iblk)%gam_ms(1,1) + 1
+          call put_vec(ffmo,xref,idxst,idxst)
+          cycle
+        end if
+
+        ! process one-particle part
         if (ica_occ(1,iblk).ne.1 .or.
      &      ica_occ(2,iblk).ne.1) cycle
 
@@ -225,6 +238,8 @@
           end if
           len_blk = idxnd-idxst+1
           xop(1:len_blk) = 0d0
+
+          if (me_mo%len_op_occ(iblk).eq.0) cycle
 
           call tran_one_blk(xop,xao,cmo,xhlf,
      &         me_sym,idxcmo,ld_blk(1,1,idxms),

@@ -97,7 +97,6 @@ c              !   ADAPT FOR OPEN-SHELL ^^^
      &         nexc,ngam,ngas_hpv(ihpv),
      &         iwscr,iwscr(lenwscr(1)+1),iwscr(lenwscr(1)+lenwscr(2)+1))
         end if
-
         if (ipass.eq.1) then
           ! Set array sizes.
           leny(2) = 3*leninf

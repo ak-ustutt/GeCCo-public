@@ -26,7 +26,14 @@
         call quit(1,'pack_vtx',
      &       'incredibly large iblk_op encountered')
       end if
-      
+
+      if (idx_op.gt.pack_base*pack_base) then
+        write(luout,*) 'pack_base    = ',pack_base*pack_base
+        write(luout,*) 'idx_op = ',idx_op
+        call quit(1,'pack_vtx',
+     &       'large number of operators. increase pack_base')
+      end if
+
       return
       end
 

@@ -92,14 +92,30 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       if (nincore.ge.2) then
         do iopt = 1, nopt
           ! read diagonal pre-conditioner
-          call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar)
+          if (ntest.ge.100) then
+            write(luout,*) 'current ME-list: ',
+     &            trim(me_dia(iopt)%mel%label)
+          end if
+          call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar(iopt))
+          if (ntest.ge.100)
+     &        write(luout,*) 'xbuf2 norm = ',
+     &                       dnrm2(nwfpar(iopt),xbuf2,1)
           do iroot = 1, nroot
             ! divide rhs's by preconditioner
-            call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,nwfpar)
-            xnrm = dnrm2(nwfpar,xbuf1,1)
+            call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,
+     &                       nwfpar(iopt))
+            if (ntest.ge.100)
+     &           write(luout,*) 'xbuf1 norm = ',
+     &                          dnrm2(nwfpar(iopt),xbuf1,1) 
+            xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
             xrsnrm(iroot) = xnrm
-            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,0d0,nwfpar)
-            call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
+            ! %shift is for shifted LEQ
+            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,opti_info%shift,
+     &                 nwfpar(iopt))
+            if (ntest.ge.100)
+     &           write(luout,*) 'xbuf1 after division: ' //
+     &                          ' norm = ', dnrm2(nwfpar(iopt),xbuf1,1)
+            call vec_to_da(ffscr,iroot,xbuf1,nwfpar(iopt))
           end do
         end do
       else
@@ -110,7 +126,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
             call da_diavec(ffscr,iroot,0d0,
      &                     ffscr,iroot,1d0/xnrm,
      &                      me_dia(iopt)%mel%fhand,1,0d0,-1d0,
-     &                      nwfpar,xbuf1,xbuf2,lenbuf)
+     &                      nwfpar(iopt),xbuf1,xbuf2,lenbuf)
 
       end if
 
