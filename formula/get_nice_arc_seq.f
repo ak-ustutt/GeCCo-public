@@ -27,8 +27,9 @@
       do iarc = 2, narc
         iarc0 = arc_seq(iarc)
         jarc = iarc-1        
-        do while (.not.correct_arc_seq(arc(arc_seq(jarc)),arc(iarc0))
-     &            .and.jarc.gt.0)
+        do while (jarc.gt.0.and.
+     &            .not.correct_arc_seq(arc(arc_seq(max(jarc,1))),
+     &            arc(iarc0)))
           arc_seq(jarc+1) = arc_seq(jarc)
           jarc = jarc-1
         end do

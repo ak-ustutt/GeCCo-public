@@ -438,6 +438,8 @@ c dbg
       end do
       write(luout,'(">>>",66("="))') 
 
+      call clean_formula_dependencies(depend)
+
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
       deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special)

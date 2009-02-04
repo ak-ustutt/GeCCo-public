@@ -11,7 +11,8 @@
      &     DEF_R12COEFF*12    = 'DEF_R12COEFF',
      &     DEF_R12INT*10      = 'DEF_R12INT',
      &     DEF_R12INTERM*13   = 'DEF_R12INTERM',
-     &     CLONE_OP*14        = 'CLONE_OPERATOR'
+     &     CLONE_OP*14        = 'CLONE_OPERATOR',
+     &     SET_ORDER*9        = 'SET_ORDER'
 ! formulae:
       character, parameter ::
      &     CHECK_FORMGEN*12         = 'CHECK_FORMGEN',
@@ -41,7 +42,9 @@
      &     KEEP_TERMS*10            = 'KEEP_TERMS',
      &     SELECT_TERMS*12          = 'SELECT_TERMS',
      &     DEL_TERMS*9              = 'DEL_TERMS',
-     &     MODIFY_FACTORIZATION*20  = 'MODIFY_FACTORIZATION'
+     &     MODIFY_FACTORIZATION*20  = 'MODIFY_FACTORIZATION',
+     &     EXTRACT_ORDER*13         = 'EXTRACT_ORDER',
+     &     EXTRACT_FREQ*12          = 'EXTRACT_FREQ'
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',
@@ -58,4 +61,6 @@
      &     SOLVENLEQ*10       = 'SOLVE_NLEQ',
      &     SOLVELEQ*9         = 'SOLVE_LEQ',
      &     SOLVEEVP*9         = 'SOLVE_EVP',
-     &     UNITY*9            = 'ADD_UNITY'
+     &     UNITY*9            = 'ADD_UNITY',
+     &     SET_FREQ*8         = 'SET_FREQ',
+     &     PRINT_RES*9        = 'PRINT_RES'

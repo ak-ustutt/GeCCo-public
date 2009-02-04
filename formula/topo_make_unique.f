@@ -58,9 +58,15 @@ c test
       if (nj.gt.0) then
         do idx = 1, nvtx
           jdx = idx
+c dbg fix by mh
+          if (jdx.lt.nvtx) then
+c dbg original
           do while(jdx.lt.nvtx.and.vtx(jdx+1).eq.vtx(idx))
             jdx = jdx+1
           end do
+c dbg resume fix
+          end if
+c dbg end fix
           if (idx.ne.jdx) then
             ! sort such that xlines(,nj:1) give ascending seq
             call topo_sort_xlines(xlines,ireo,idx,jdx,nvtx,nj)
@@ -76,10 +82,16 @@ c test
         neqv_blocks = 0
         do idx = 1, nvtx
           jdx = idx
+c dbg fix by mh
+          if (jdx.lt.nvtx) then
+c dbg original
           do while(jdx.lt.nvtx.and.vtx(jdx+1).eq.vtx(idx).and.
      &         i8list_cmp(xlines(jdx+1,1:nj),xlines(jdx,1:nj),nj).eq.0)
             jdx = jdx+1
           end do
+c dbg resume fix
+          end if
+c dbg end fix
           if (idx.ne.jdx) then
             neqv_blocks = neqv_blocks+1
             ! sort such that topo gives ascending seq

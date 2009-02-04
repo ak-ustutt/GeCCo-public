@@ -89,8 +89,15 @@ c      include 'def_contraction_list.h'
         
         ! look for transposition label of second operator
         len2 = len_trim(label_replace(irepl2))
-        transpose2 = (label_replace(irepl2)(len2-1:len2).eq.'^+') 
-        if (transpose2) len2 = len2-2         
+c dbg fix by mh
+c original line        transpose2 = (label_replace(irepl2)(len2-1:len2).eq.'^+') 
+        if (len2.gt.1) then
+          transpose2 = (label_replace(irepl2)(len2-1:len2).eq.'^+')
+        else
+          transpose2 = .false.
+        end if
+c dbg end fix
+        if (transpose2) len2 = len2-2
         ! get index
         idx2 = idx_oplist2(label_replace(irepl2)(1:len2),op_info)
         if (idx2.le.0)
@@ -129,6 +136,6 @@ c      include 'def_contraction_list.h'
       end if
 
       call dealloc_formula_list(flist)
-      
+
       return
       end

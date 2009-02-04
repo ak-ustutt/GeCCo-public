@@ -43,6 +43,9 @@
           call prt_contr2(luout,form_ptr%contr,op_info)
         case(command_symmetrise)
           write(luout,*) '[SYMMETRISE TARGET]',form_ptr%target
+        case default
+          write(luout,*) 'unknown command ',form_ptr%command,
+     &                   form_ptr%target
         end select
 
         if (.not.associated(form_ptr%next)) exit

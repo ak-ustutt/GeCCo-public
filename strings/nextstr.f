@@ -81,6 +81,9 @@
 
         iorbmax=mostnd(2,ngam,idss(ipos))
         if (ipos.lt.nel) idorbn = idorb(ipos+1)
+c dbg fix by mh
+        if (ipos.ge.nel) idorbn = 100
+c dbg end fix
         if (ipos.lt.nel) idspnn = idspn(ipos+1)
         if (ntest.ge.100) then
           write(luout,*) 'ipos,nalph,nbeta: ',ipos,nalph,nbeta

@@ -31,6 +31,17 @@
       ipos_loop: do
         ipos = ipos+1
         ! element lt next element, or last element
+c dbg fix by mh
+        if (ipos.eq.nel) then
+          if (idistr(ipos).lt.ielmax(ipos)) then
+            idistr(ipos) = idistr(ipos)+1
+            exit ipos_loop
+          else if (ipos.eq.nel) then
+            lnext = .false.
+            exit ipos_loop
+          end if
+        end if
+c dbg end fix
         if (ipos.eq.nel.or.idistr(ipos).lt.idistr(ipos+1)) then    
           ! check bounds
           if (idistr(ipos).lt.ielmax(ipos)) then

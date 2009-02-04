@@ -42,11 +42,18 @@
 
           if (ispc.eq.1.and.iel.le.mnmxspc(2,1)) then
             iwssg(iel,ispc) = 1
-          else if (ispc.gt.1.and.iel.ge.mnmxspc(1,ispc-1)
+c dbg fix by mh
+c dbg original line          else if (ispc.gt.1.and.iel.ge.mnmxspc(1,ispc-1)
+          else if (ispc.gt.1) then
+          if (iel.ge.mnmxspc(1,ispc-1)
+c dbg original
      &                      .and.iel.le.mnmxspc(2,ispc)) then
             iwssg(iel,ispc) = iwssg(iel,ispc-1)
             if (iel.gt.0) iwssg(iel,ispc)
      &           = iwssg(iel,ispc)+iwssg(iel-1,ispc)
+c dbg resume fix
+          end if
+c dbg end fix
           end if
 
         end do

@@ -196,7 +196,7 @@
      &                                             exit tgt_loop
 
       end do tgt_loop
-        
+
       call dealloc_contr(contr_rpl)
 
       return

@@ -33,9 +33,15 @@ c        print *,'ivtx, isvtx: ',ivtx,isvtx
 c        call wrt_occ_n(6,occ_scr,nj_res)
 c        call wrt_occ_n(6,occ_res,nj_res)
 c dbg
+c dbg fix by mh
+        if (isvtx.le.nj_res) then
+c dbg original
         if (iocc_equal(occ_scr(1:ngastp,1:2,isvtx),.false.,
      &                 occ_res(1:ngastp,1:2,isvtx),.false.))
      &       isvtx = isvtx+1
+c dbg resume fix
+        end if
+c dbg end fix
         if (iocc_zero(occ_ol(1:ngastp,1:2,ivtx))) cycle
         if (isvtx.gt.nj_res) call quit(1,'set_svmap','error 1')
         if (isvtx.gt.nj_res) ierr = 1!call quit(1,'set_svmap','error 1')
@@ -50,6 +56,7 @@ c dbg
      &                           occ_res(1:ngastp,1:2,isvtx),.false.))
      &       then
           ierr = 2
+          
           return
 c          call quit(1,'set_svmap','error 2')
         end if

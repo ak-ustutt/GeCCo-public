@@ -16,7 +16,7 @@
      &     vtxtyp_val   = 4    ! V spaces as well
 
       integer, parameter ::
-     &     len_opname = 8
+     &     len_opname = 32
 *----------------------------------------------------------------------*
 *     operator definition
 *----------------------------------------------------------------------*
@@ -44,6 +44,12 @@
      &                          !      vertices
      &     n_occ_cls,           ! number of occupation classes
      &     ngas,nspin           ! info from orb_info<-for convenience 
+
+        integer ::
+     &     order,               ! perturbation order
+     &     species              ! 1: t-amplitude, 2: lagr. multipl., 3: other
+        integer, pointer ::
+     &     ifreq(:)             ! frequency index
 
         logical ::
      &       formal                   ! formal operator only?

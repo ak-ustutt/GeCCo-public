@@ -49,7 +49,7 @@
 
       ! experimental section
       if (is_keyword_set('calculate.experimental').gt.0) then
-        call set_experimental_targets(tgt_info,orb_info)
+        call set_experimental_targets(tgt_info,orb_info,env_type)
       end if
 
       call set_idx4deps(tgt_info)

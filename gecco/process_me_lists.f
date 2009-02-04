@@ -30,7 +30,7 @@
      &     strmap_info
 
       integer, parameter ::
-     &     maxfac = 20
+     &     maxfac = 20, maximum_order = 10
       real(8) ::
      &     fac(maxfac)
       integer ::
@@ -47,7 +47,10 @@
      &     label_met(:)
 
       integer ::
-     &     idx_formlist
+     &     idx_formlist, order, dummy
+      integer, allocatable ::
+     &     ifreq_dum(:), ifreq(:)
+
       integer, external ::
      &     idx_mel_list
 
@@ -210,17 +213,24 @@ c dbg
      &       rule%n_parameter_strings,
      &       nopt,nroots,mode)
 
-        if (rule%n_labels.ne.4*nopt+1)
+        if (rule%n_labels.ne.5*nopt+1)
      &       call quit(1,'process_me_lists',
      &       'incorrect number of labels to be passed for '//
      &       trim(SOLVELEQ))
+
+        nspecial = rule%n_labels-(5*nopt+1)
+        ioff = 0
+        if (nspecial.gt.0) ioff=1
 
         call solve_leq(mode,nopt,nroots,
      &       rule%labels(1:nopt),               ! to be opt.
      &       rule%labels(  nopt+1:  nopt+nopt), ! precond.
      &       rule%labels(2*nopt+1:2*nopt+nopt), ! mvp-labels
-     &       rule%labels(3*nopt+1:3*nopt+nopt), ! rhs-labels
-     &       rule%labels(4*nopt+1),             ! formula
+     &       rule%labels(3*nopt+1:3*nopt+nopt), ! metric-labels
+     &       rule%labels(4*nopt+1:4*nopt+nopt), ! rhs-labels
+     &       rule%labels(5*nopt+1),             ! formula
+     &       rule%labels(5*nopt+ioff+1:
+     &                   5*nopt+ioff+nspecial),nspecial,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(SOLVEEVP)
@@ -246,6 +256,31 @@ c dbg
      &       rule%labels(4*nopt+ioff+1:
      &                   4*nopt+ioff+nspecial),nspecial,
      &       op_info,form_info,str_info,strmap_info,orb_info)
+
+      case(SET_FREQ)
+
+        idx = idx_mel_list(rule%labels(1),op_info)
+        if(idx.lt.0)
+     &       call quit(1,'process_me_lists','Label not on list: "'//
+     &       trim(rule%labels(1))//'"')
+        mel_pnt => op_info%mel_arr(idx)%mel
+
+        call set_frequency(mel_pnt)
+
+      case(PRINT_RES)
+        idx = idx_mel_list(rule%labels(1),op_info)
+        if(idx.lt.0)
+     &       call quit(1,'process_me_lists','Label not on list: "'//
+     &       trim(rule%labels(1))//'"')
+        mel_pnt => op_info%mel_arr(idx)%mel
+        allocate(ifreq_dum(maximum_order))
+        call ord_parameters(+1,rule%parameters,
+     &                      order,dummy,ifreq_dum)
+        allocate(ifreq(order))
+        ifreq = ifreq_dum(1:order)
+        deallocate(ifreq_dum)
+        call print_result(order,ifreq,mel_pnt,.false.)
+        deallocate(ifreq)
 
       case default
         call quit(1,'process_me_lists','unknown command: '//

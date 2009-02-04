@@ -16,7 +16,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     ngas, nsym, isym, hpvx_c, hpvx_a,
