@@ -212,10 +212,11 @@
       labels(1) = mel_tbar
       labels(2) = mel_dia1
       labels(3) = op_tbar_a
-      labels(4) = op_eta
-      labels(5) = fopt_cclft0
+      labels(4) = op_tbar
+      labels(5) = op_eta
+      labels(6) = fopt_cclft0
       call set_rule(solve_cc_lhwf,ttype_opme,SOLVELEQ,
-     &     labels,5,1,
+     &     labels,6,1,
      &     parameters,2,tgt_info)
 
       call add_target(eval_1dens,ttype_gen,.false.,tgt_info)

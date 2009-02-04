@@ -1,9 +1,9 @@
 *----------------------------------------------------------------------*
       subroutine solve_leq(mode_str,
-     &     nopt,nroots,label_opt,label_prc,label_op_mvp,label_op_rhs,
-c     &     label_op_met,
+     &     nopt,nroots,label_opt,label_prc,label_op_mvp,label_op_met,
+     &     label_op_rhs,
      &     label_form,
-c     &     label_special,nspecial,
+     &     label_special,nspecial,
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -56,14 +56,14 @@ c     &     label_special,nspecial,
      &     ntest = 100
 
       integer, intent(in) ::
-     &     nopt, nroots!, nspecial
+     &     nopt, nroots, nspecial
       character(*), intent(in) ::
      &     mode_str,
      &     label_opt(nopt),
      &     label_prc(nopt),
      &     label_op_mvp(nopt),
-c     &     label_op_met(nopt),
-c     &     label_special(nspecial),
+     &     label_op_met(nopt),
+     &     label_special(nspecial),
      &     label_op_rhs(nopt),
      &     label_form
       type(formula_info) ::
@@ -85,7 +85,6 @@ c     &     label_special(nspecial),
      &     iter, iprint, task, ifree, iopt, jopt, nintm, irequest,
      &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout, idxrhs,
      &     nselect
-     &     ,nspecial !<- remove later on
       real(8) ::
      &     energy, xresnrm, xdum
       type(me_list_array), pointer ::
@@ -135,7 +134,6 @@ c     &     label_special(nspecial),
 
       use_s(1:nopt) = .false.
 
-      nspecial = 0
       allocate(me_opt(nopt),me_rhs(nopt),me_trv(nopt),me_mvp(nopt),
      &     me_dia(nopt),me_met(nopt),me_special(nspecial))
       allocate(ffopt(nopt),ffdia(nopt),
@@ -163,25 +161,25 @@ c     &     label_special(nspecial),
       end do
 
       ! special lists needed?
-c      if (ierr.eq.0) then
-c        do idx = 1, nspecial
-c          jopt = idx
-c          idxmel = idx_mel_list(label_special(idx),op_info)
-c          ierr = 5
-c          if (idxmel.le.0) exit
-c          me_special(idx)%mel  => op_info%mel_arr(idxmel)%mel
-c          ffspecial(idx)%fhand => op_info%mel_arr(idxmel)%mel%fhand
-c          ierr = 6
-c          if (.not.associated(ffspecial(idx)%fhand)) exit
-c          ierr = 0
-c        end do
-c      end if
+      if (ierr.eq.0) then
+        do idx = 1, nspecial
+          jopt = idx
+          idxmel = idx_mel_list(label_special(idx),op_info)
+          ierr = 5
+          if (idxmel.le.0) exit
+          me_special(idx)%mel  => op_info%mel_arr(idxmel)%mel
+          ffspecial(idx)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+          ierr = 6
+          if (.not.associated(ffspecial(idx)%fhand)) exit
+          ierr = 0
+        end do
+      end if
 
       ! error handling
       if (ierr.gt.0) then
         if (ierr.eq.1.or.ierr.eq.2) label = label_opt(jopt)
         if (ierr.eq.3.or.ierr.eq.4) label = label_prc(jopt)
-c        if (ierr.eq.5.or.ierr.eq.6) label = label_special(jopt)
+        if (ierr.eq.5.or.ierr.eq.6) label = label_special(jopt)
         if (mod(ierr,2).eq.1)
      &       call quit(1,'solve_leq',
      &       'did not find list '//trim(label))
@@ -234,24 +232,23 @@ c        if (ierr.eq.5.or.ierr.eq.6) label = label_special(jopt)
         ff_rhs(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
 
         ! use of metric requested?
-        use_s(iopt) = .false.
-c        use_s(iopt) = trim(label_op_met(iopt)).ne.
-c     &       trim(me_opt(iopt)%mel%op%name)
-c        if (use_s(iopt)) then
-c          use_s_t = .true.
-c          ! get a ME list for metric-times-vector products
-c          ! (have same symmtry properties as result!)
-c          write(fname,'("svp_",i3.3)') iopt
-c          call define_me_list(fname,label_op_met(iopt),
-c     &         me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
-c     &         me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
-c     &         me_opt(iopt)%mel%mst,.false.,
-c     &         1,nvectors,
-c     &         op_info,orb_info,str_info,strmap_info)
-c          idxmel = idx_mel_list(fname,op_info)
-c          me_met(iopt)%mel   => op_info%mel_arr(idxmel)%mel
-c          ff_met(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand          
-c        end if
+        use_s(iopt) = trim(label_op_met(iopt)).ne.
+     &       trim(me_opt(iopt)%mel%op%name)
+        if (use_s(iopt)) then
+          use_s_t = .true.
+          ! get a ME list for metric-times-vector products
+          ! (have same symmtry properties as result!)
+          write(fname,'("svp_",i3.3)') iopt
+          call define_me_list(fname,label_op_met(iopt),
+     &         me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
+     &         me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
+     &         me_opt(iopt)%mel%mst,.false.,
+     &         1,nvectors,
+     &         op_info,orb_info,str_info,strmap_info)
+          idxmel = idx_mel_list(fname,op_info)
+          me_met(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+          ff_met(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand          
+        end if
 
       end do
 
@@ -330,7 +327,7 @@ c        end if
      &       task,conv,xresnrm,xdum,
      &       use_s,
      &       nrequest,irectrv,irecmvp,irecmet, 
-     &       me_opt,me_trv,me_mvp,me_met,me_rhs,me_dia, ! #4 is dummy
+     &       me_opt,me_trv,me_mvp,me_met,me_rhs,me_dia, 
      &       me_special,nspecial,
 c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
      &       opti_info,opti_stat,

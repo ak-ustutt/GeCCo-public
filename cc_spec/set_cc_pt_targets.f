@@ -502,10 +502,11 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
         labels(1) = mel_tpt
         labels(2) = mel_dia1
         labels(3) = op_h0_r
-        labels(4) = op_etapt
-        labels(5) = fopt_h0_tpt
+        labels(4) = op_tpt  ! no metric
+        labels(5) = op_etapt
+        labels(6) = fopt_h0_tpt
         call set_rule(solve_cc_pt,ttype_opme,SOLVELEQ,
-     &       labels,5,1,
+     &       labels,6,1,
      &       parameters,2,tgt_info)
 c      else if (.not.set_tpp) then
 c        call quit(1,'set_cc_pt_targets','trap 2')
