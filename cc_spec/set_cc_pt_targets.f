@@ -31,7 +31,7 @@
      &     isym, ms, msc, sym_arr(8),
      &     occ_def(ngastp,2,60), ndef
       logical ::
-     &     needed, explicit, r12fix, set_tp, set_tpp
+     &     needed, explicit, r12fix, set_tp, set_tpp, gbc4pt
       character(len=8) ::
      &     mode
       character(len_target_name) ::
@@ -56,6 +56,7 @@
       min_rank_pt = max_rank+1
       call get_argument_value('method.CCPT','maxexc',ival=max_rank_pt)      
       call get_argument_value('method.CCPT','extern',ival=max_extern)      
+      call get_argument_value('method.CCPT','GBC',lval=gbc4pt)
 
       if (explicit) then
         call get_argument_value('method.R12','ansatz',ival=ansatz)      
@@ -236,7 +237,8 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
       call set_dependency(form_ptdl0,op_top,tgt_info)
       call set_dependency(form_ptdl0,op_tpt,tgt_info)
       mode = '----'
-      if (max_extern.gt.0) mode = 'EXTERN'
+      if (max_extern.gt.0) mode(1:4) = 'EXT '
+      if (gbc4pt)          mode(4:4) =    '0'
       call form_parameters(-1,
      &     parameters,2,title_ptdl0,ansatz,mode)
       call set_rule(form_ptdl0,ttype_frm,DEF_CCPT_LAGRANGIAN,
@@ -500,10 +502,11 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
         labels(1) = mel_tpt
         labels(2) = mel_dia1
         labels(3) = op_h0_r
-        labels(4) = op_etapt
-        labels(5) = fopt_h0_tpt
+        labels(4) = op_tpt  ! no metric
+        labels(5) = op_etapt
+        labels(6) = fopt_h0_tpt
         call set_rule(solve_cc_pt,ttype_opme,SOLVELEQ,
-     &       labels,5,1,
+     &       labels,6,1,
      &       parameters,2,tgt_info)
 c      else if (.not.set_tpp) then
 c        call quit(1,'set_cc_pt_targets','trap 2')

@@ -43,6 +43,7 @@
       ! local constants
       character(3), parameter ::
      &     op_f_temp = '_F_',
+     &     op_h_temp = '_H_',
      &     op_sop    = '_S_',
      &     op_spt    = '_SP'
 
@@ -66,12 +67,13 @@
      &     nterms, ilabel, idx, ndef, 
      &     idxham,idxtbar,idxtop,idxtpt,idxtptbar,idxlcc,
      &     idxr12,idxc12,idxcpp12,idxc12_pt,idxcpp12_pt,
-     &     idx_f_temp,idxsop,idxspt,r12op,trunc_type
+     &     idx_f_temp,idx_h_temp,
+     &     idxsop,idxspt,r12op,trunc_type
       integer, allocatable ::
      &     occ_def(:,:,:)
 
       type(operator), pointer::
-     &     f_temp_pnt, sop_pnt, spt_pnt
+     &     f_temp_pnt, h_temp_pnt, sop_pnt, spt_pnt
 
       integer, external ::
      &     idx_oplist2
@@ -87,11 +89,14 @@
 
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','r12op',ival=r12op)
-      truncate = is_keyword_set('method.truncate').gt.0
-      if(truncate)
+      call get_argument_value('method.R12','trunc',ival=trunc_type)
+      truncate = trunc_type.ge.0
+      if (is_keyword_set('method.truncate').gt.0) then
+        truncate = is_keyword_set('method.truncate').gt.0
+        if(truncate)
      &     call get_argument_value('method.truncate','trunc_type',
      &                              ival=trunc_type)
-
+      end if
 
       call atim_csw(cpu0,sys0,wall0)
 
@@ -131,23 +136,24 @@ c        occ_def(1:ngastp,2,4) = (/0,1,0,0/)
 c        call set_uop(f_temp_pnt,op_f_temp,.false.,
 c     &       occ_def,ndef,orb_info)
 c        deallocate(occ_def)
-        if (trim(mode).ne.'EXTERN') then
-          call set_hop(f_temp_pnt,op_f_temp,.false.,
-     &         1,1,2,.false.,orb_info)
-        else
-c          ndef = 3
-c          allocate(occ_def(ngastp,2,ndef))
-c          occ_def(1:ngastp,1,1) = (/1,0,0,0/)
-c          occ_def(1:ngastp,2,1) = (/1,0,0,0/)
-c          occ_def(1:ngastp,1,2) = (/0,1,0,0/)
-c          occ_def(1:ngastp,2,2) = (/0,1,0,0/)
-c          occ_def(1:ngastp,1,3) = (/0,0,0,1/)
-c          occ_def(1:ngastp,2,3) = (/0,0,0,1/)
-c          call set_uop(f_temp_pnt,op_f_temp,.false.,
-c     &         occ_def,ndef,orb_info)
-c          deallocate(occ_def)
+        if (mode(1:4).eq.'EXT ') then
           call set_hop(f_temp_pnt,op_f_temp,.false.,
      &         1,1,2,.true.,orb_info)
+        else if (mode(4:4).eq.'0') then
+          ndef = 3
+          allocate(occ_def(ngastp,2,ndef))
+          occ_def(1:ngastp,1,1) = (/1,0,0,0/)
+          occ_def(1:ngastp,2,1) = (/1,0,0,0/)
+          occ_def(1:ngastp,1,2) = (/0,1,0,0/)
+          occ_def(1:ngastp,2,2) = (/0,1,0,0/)
+          occ_def(1:ngastp,1,3) = (/0,0,0,1/)
+          occ_def(1:ngastp,2,3) = (/0,0,0,1/)
+          call set_uop(f_temp_pnt,op_f_temp,.false.,
+     &         occ_def,ndef,orb_info)
+          deallocate(occ_def)
+        else
+          call set_hop(f_temp_pnt,op_f_temp,.false.,
+     &         1,1,2,.false.,orb_info)
         end if
 
         idxsop = idxtop
@@ -209,6 +215,18 @@ c        end if
 
       end if
 
+      call add_operator(op_h_temp,op_info)
+      idx_h_temp = idx_oplist2(op_h_temp,op_info)
+      h_temp_pnt => op_info%op_arr(idx_h_temp)%op
+
+      if (mode(4:4).eq.'0') then
+        call set_hop(h_temp_pnt,op_h_temp,.false.,
+     &       2,2,2,ansatz.ne.0,orb_info)
+      else
+        call set_hop(h_temp_pnt,op_h_temp,.false.,
+     &       1,2,2,ansatz.ne.0,orb_info)
+      end if
+
       ! initialize formula
       call init_formula(flist_lag)
       flist_pnt => flist_lag
@@ -218,7 +236,7 @@ c        end if
       ! set <0|T^+[H,T(pt)]|0>
       call expand_op_product2(flist_pnt,idxlcc,
      &     1d0,5,4,
-     &     (/idxlcc,-idxsop,idxham,idxspt,idxlcc/),
+     &     (/idxlcc,-idxsop,idx_h_temp,idxspt,idxlcc/),
      &     (/1     ,2      ,3     ,4     ,1/),
      &     -1,-1,
      &     (/3,4/),1,
@@ -233,7 +251,7 @@ c        end if
       end do
       call expand_op_product2(flist_pnt,idxlcc,
      &     1d0,5,4,
-     &     (/idxlcc,-idxspt,idxham,idxsop,idxlcc/),
+     &     (/idxlcc,-idxspt,idx_h_temp,idxsop,idxlcc/),
      &     (/1     ,2      ,3     ,4     ,1/),
      &     -1,-1,
      &     (/3,4/),1,
@@ -261,6 +279,9 @@ c        end if
       end if
 
       call form_op_replace(op_info%op_arr(idx_f_temp)%op%name,
+     &                     op_info%op_arr(idxham)%op%name,.true.,
+     &     flist_lag,op_info)
+      call form_op_replace(op_info%op_arr(idx_h_temp)%op%name,
      &                     op_info%op_arr(idxham)%op%name,.true.,
      &     flist_lag,op_info)
 
