@@ -45,6 +45,8 @@ c      use parse_input
       call argument_add('extern','method.CCPT',type=vtyp_int,idef=(/0/))
       call argument_add('GBC','method.CCPT',type=vtyp_log,
      &                                                 ldef=(/.false./))
+      call argument_add('R2_coupling','method.CCPT',type=vtyp_log,
+     &                                                 ldef=(/.true./))
 
       call keyword_add('ECC',context='method')
       call argument_add('maxexc','method.ECC',type=vtyp_int,idef=(/2/))

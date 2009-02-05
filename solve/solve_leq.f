@@ -352,6 +352,9 @@ c dbg
             do iopt = 1, nopt
               call switch_mel_record(me_trv(iopt)%mel,irectrv(irequest))
               call switch_mel_record(me_mvp(iopt)%mel,irecmvp(irequest))
+              if (use_s(iopt))
+     &             call switch_mel_record(me_met(iopt)%mel,
+     &                                                irecmet(irequest))
             end do
 
             if (ntest.ge.1000) then
