@@ -167,11 +167,16 @@ c        deallocate(occ_def)
         call add_operator(op_sop,op_info)
         idxsop = idx_oplist2(op_sop,op_info)
         sop_pnt => op_info%op_arr(idxsop)%op
-        ! set R12 part:
-        call set_r12gem(sop_pnt,op_sop,0,
-     &     2 , 2 ,ansatz,orb_info)
-        ! join with T
-        call join_operator(sop_pnt,op_info%op_arr(idxtop)%op,orb_info)
+        if (mode(5:8).eq.'NOR2') then ! no coupling to R2?
+          call clone_operator(sop_pnt,op_info%op_arr(idxtop)%op,.false.,
+     &         orb_info)
+        else
+          ! set R12 part:
+          call set_r12gem(sop_pnt,op_sop,0,
+     &         2 , 2 ,ansatz,orb_info)
+          ! join with T
+          call join_operator(sop_pnt,op_info%op_arr(idxtop)%op,orb_info)
+        end if
 
         call init_formula(flist_t_r)
 
