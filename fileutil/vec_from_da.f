@@ -37,6 +37,9 @@
       if (luda.lt.0)
      &     call quit(1,'vec_from_da',
      &     'file is not open: '//trim(ffda%name))
+      if (lblk.eq.0)
+     &     call quit(1,'vec_from_da',
+     &     'length of file is zero: '//trim(ffda%name))
 
       nrecs = len/lblk
       len_rest = mod(len,lblk)

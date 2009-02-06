@@ -507,6 +507,7 @@ c      occ_def(IPART,2,16) = 2
         occ_def(IHOLE,2,6) = 2
       end if
       if (n_pp.ge.1) then
+        ndef = 8
         ! 4
         occ_def(IHOLE,1,7) = 2
         occ_def(IHOLE,2,8) = 1
