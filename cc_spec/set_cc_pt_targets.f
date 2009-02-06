@@ -31,7 +31,8 @@
      &     isym, ms, msc, sym_arr(8),
      &     occ_def(ngastp,2,60), ndef
       logical ::
-     &     needed, explicit, r12fix, set_tp, set_tpp, gbc4pt
+     &     needed, explicit, r12fix, set_tp, set_tpp, gbc4pt,
+     &     R2_coupling
       character(len=8) ::
      &     mode
       character(len_target_name) ::
@@ -57,6 +58,8 @@
       call get_argument_value('method.CCPT','maxexc',ival=max_rank_pt)      
       call get_argument_value('method.CCPT','extern',ival=max_extern)      
       call get_argument_value('method.CCPT','GBC',lval=gbc4pt)
+      call get_argument_value('method.CCPT','R2_coupling',
+     &     lval=R2_coupling)
 
       if (explicit) then
         call get_argument_value('method.R12','ansatz',ival=ansatz)      
@@ -236,9 +239,10 @@ c          n_pp=2
 c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
       call set_dependency(form_ptdl0,op_top,tgt_info)
       call set_dependency(form_ptdl0,op_tpt,tgt_info)
-      mode = '----'
+      mode = '--------'
       if (max_extern.gt.0) mode(1:4) = 'EXT '
       if (gbc4pt)          mode(4:4) =    '0'
+      if (.not.R2_coupling)  mode(5:8) = 'NOR2'
       call form_parameters(-1,
      &     parameters,2,title_ptdl0,ansatz,mode)
       call set_rule(form_ptdl0,ttype_frm,DEF_CCPT_LAGRANGIAN,
