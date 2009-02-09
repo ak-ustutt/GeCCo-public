@@ -70,6 +70,10 @@
      &     .and.trunc_type.ne.1.or.extern.eq.1)
      &     iformal = 3
       call add_target(op_ham,ttype_op,.false.,tgt_info)
+c patch for CCPT-R12 tests:
+      if (explicit.and.is_keyword_set('method.CCPT').gt.0)
+     &     iformal = 4
+c patch end
       call hop_parameters(-1,parameters,
      &                   0,2,iformal,explicit.or.extern.gt.0)
       call set_rule(op_ham,ttype_op,DEF_HAMILTONIAN,

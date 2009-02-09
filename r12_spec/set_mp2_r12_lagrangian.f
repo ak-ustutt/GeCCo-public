@@ -215,8 +215,9 @@ c      end if
       ! Replace the formal terms with the predefined operators.
       call init_formula(form_t_cr)
 
-      call set_t_r(form_t_cr,.false.,idx_sop,idxtop,
-     &             idxr12,idxc12,idxcpp12,
+      call set_t_r(form_t_cr,.false.,.false.,
+     &             idx_sop,idxtop,
+     &             idxr12,-1,idxc12,idxcpp12,
      &             r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then
@@ -234,8 +235,9 @@ c      sbar_pnt%dagger = .true.
       ! Complete Sbar also.
       call init_formula(form_tbar_cbarr)
 
-      call set_t_r(form_tbar_cbarr,.true.,idx_sbar,idxtbar,
-     &             idxr12,idxcbar,idxcppbar,
+      call set_t_r(form_tbar_cbarr,.true.,.false.,
+     &             idx_sbar,idxtbar,
+     &             idxr12,-1,idxcbar,idxcppbar,
      &             r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then

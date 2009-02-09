@@ -76,7 +76,7 @@
         write(luout,*) 'gamma: ',gamma,
      &       gamma.le.0.or.gamma.gt.orb_info%nsym
         write(luout,*)
-     &       'the symmetry specifiers marked by F are not correct'
+     &       'the symmetry specifiers marked by T are not correct'
         call quit(1,'define_me_list',
      &       'incorrect symmetry specifier for ME list')
       end if
