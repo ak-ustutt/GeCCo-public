@@ -242,9 +242,6 @@ c     &       parameters,2,tgt_info)
      &                parameters,1,tgt_info)
 
       endif
-c dbg
-      print *,'in r12f_gen: set_tp = ',set_tp
-c dbg
 
       if (set_tpp) then
         ! T1'' operators for extended CC/MP2-F12.
@@ -507,30 +504,37 @@ c      occ_def(IPART,2,16) = 2
         occ_def(IHOLE,2,6) = 2
       end if
       if (n_pp.ge.1) then
-        ndef = 8
+        ndef = 10
         ! 4
-        occ_def(IHOLE,1,7) = 2
-        occ_def(IHOLE,2,8) = 1
-        occ_def(IPART,2,8) = 1
+        occ_def(IPART,1,7) = 2
+        occ_def(IHOLE,2,8) = 2
         ! 5
-        occ_def(IHOLE,1,9) = 1
         occ_def(IPART,1,9) = 1
-        occ_def(IHOLE,2,10) = 1
-        occ_def(IPART,2,10) = 1
+        occ_def(IEXTR,1,9) = 1
+        occ_def(IHOLE,2,10) = 2
         ! 6
-        occ_def(IHOLE,1,11) = 1
-        occ_def(IEXTR,1,11) = 1
+        occ_def(IHOLE,1,11) = 2
         occ_def(IHOLE,2,12) = 1
         occ_def(IPART,2,12) = 1
         ! 7
-        occ_def(IPART,1,13) = 2
+        occ_def(IHOLE,1,13) = 1
+        occ_def(IPART,1,13) = 1
         occ_def(IHOLE,2,14) = 1
         occ_def(IPART,2,14) = 1
         ! 8
-        occ_def(IPART,1,15) = 1
+        occ_def(IHOLE,1,15) = 1
         occ_def(IEXTR,1,15) = 1
         occ_def(IHOLE,2,16) = 1
         occ_def(IPART,2,16) = 1
+        ! 9
+        occ_def(IPART,1,17) = 2
+        occ_def(IHOLE,2,18) = 1
+        occ_def(IPART,2,18) = 1
+        ! 10
+        occ_def(IPART,1,19) = 1
+        occ_def(IEXTR,1,19) = 1
+        occ_def(IHOLE,2,20) = 1
+        occ_def(IPART,2,20) = 1
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,2,(/.false.,.true./),ndef*2)
