@@ -1,0 +1,16 @@
+*----------------------------------------------------------------------*
+      subroutine set_my_experimental_keywords()
+*----------------------------------------------------------------------*
+*     set here additional sub-keyword of "calculate.experimental"
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'stdunit.h'
+      include 'ifc_input.h'
+
+      ! call keyword_add('new_kwd',context='calculate.experimental')
+      ! see set_keywors for how to set up things ...
+
+      return
+      end

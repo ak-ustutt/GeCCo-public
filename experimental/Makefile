@@ -13,6 +13,11 @@ this_lib:=libexperimental.a
 
 include $(topdir)/make.config
 
+# switch call to user routines in exp_wrap.F
+ifneq ($(strip $(wildcard set_my*.f)),)
+  FCFLAGS+=-DEXPRIMENTAL
+endif
+
 INST_PROGS:= 
 INST_LIBS:=$(this_lib)
 INST_INCLUDES:=
