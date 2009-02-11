@@ -15,7 +15,7 @@ include $(topdir)/make.config
 
 # switch call to user routines in exp_wrap.F
 ifneq ($(strip $(wildcard set_my*.f)),)
-  FCFLAGS+=-DEXPRIMENTAL
+  FCFLAGS+=-DEXPERIMENTAL
 endif
 
 INST_PROGS:= 
