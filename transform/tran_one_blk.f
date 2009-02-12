@@ -35,6 +35,11 @@
      &     isymc, isyma, nmoa, nmoc, naoa, naoc, ntaoa, ntaoc
       real(8) :: fac
 
+      if (ntest.ge.100) then
+        call write_title(luout,wst_dbg_subr,'tran_one_blk')
+        write(luout,*) 'hpvx_c, hpvx_a: ', hpvx_c, hpvx_a
+        write(luout,*) 'isym = ',isym
+      end if
 
       fac = 1d0
 
@@ -67,7 +72,10 @@
         if (xbas_c) naoc = ntaoc
         if (xbas_a) naoa = ntaoa
 
-        if (naoa*naoc.eq.0) cycle
+        if (naoa*naoc.eq.0) then
+          ixao = ixao + ntaoc*ntaoa
+          cycle
+        end if
 
         do igasa = 1, ngas
           if (iad_gasca(igasa,2).ne.2) cycle
@@ -129,7 +137,6 @@
      &                   fac,xhlf,nmoc,
      &                       cmo(icmoa),naoa,
      &                   0d0,xmo(ixmo),ldim(isyma))
-c     &                   0d0,xmo(ixmo),nmoc)
 
               if (ntest.ge.100)
      &               write(luout,'(a,5i4)')
@@ -158,7 +165,6 @@ c     &                   0d0,xmo(ixmo),nmoc)
      &                   fac,cmo(icmoa),naoa,
      &                       xhlf,nmoc,
      &                   0d0,xmo(ixmo),ldim(isyma))
-c     &                   0d0,xmo(ixmo),nmoa)
 
                 if (ntest.ge.100)
      &               write(luout,'(a,5i4)')
