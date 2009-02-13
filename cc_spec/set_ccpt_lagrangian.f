@@ -62,11 +62,11 @@
      &     mode
 
       logical ::
-     &     r12fix,truncate
+     &     r12fix,truncate,set_r_r
       integer ::
      &     nterms, ilabel, idx, ndef, 
      &     idxham,idxtbar,idxtop,idxtpt,idxtptbar,idxlcc,
-     &     idxr12,idxc12,idxcpp12,idxc12_pt,idxcpp12_pt,
+     &     idxr12,idxc12,idxcpp12,idxc12_pt,idxcpp12_pt,idxr12x,
      &     idx_f_temp,idx_h_temp,
      &     idxsop,idxspt,r12op,trunc_type
       integer, allocatable ::
@@ -114,8 +114,13 @@
         if (ilabel.eq.7) idxr12 = idx
         if (ilabel.eq.8) idxc12 = idx
         if (ilabel.eq.9) idxc12_pt = idx
-        if (ilabel.eq.10) idxcpp12 = idx
-        if (ilabel.eq.11) idxcpp12_pt = idx
+        if (r12op.gt.1) then
+          if (ilabel.eq.10) idxcpp12 = idx
+          if (ilabel.eq.11) idxcpp12_pt = idx
+          if (ilabel.eq.12) idxr12x = idx
+        else
+          if (ilabel.eq.10) idxr12x = idx
+        end if
       end do
 
       call add_operator(op_f_temp,op_info)
@@ -180,8 +185,9 @@ c        deallocate(occ_def)
 
         call init_formula(flist_t_r)
 
-        call set_t_r(flist_t_r,.false.,idxsop,idxtop,
-     &               idxr12,idxc12,idxcpp12,
+        call set_t_r(flist_t_r,.false.,.false.,
+     &               idxsop,idxtop,
+     &               idxr12,-1,idxc12,idxcpp12,
      &               r12op,r12fix,op_info)
 
 c        if (ntest.ge.1000) then
@@ -207,8 +213,11 @@ c        end if
 
         call init_formula(flist_t_r_pt)
 
-        call set_t_r(flist_t_r_pt,.false.,idxspt,idxtpt,
-     &               idxr12,idxc12_pt,idxcpp12_pt,
+        set_r_r = mode(1:3).eq.'R.R'
+
+        call set_t_r(flist_t_r_pt,.false.,set_r_r,
+     &               idxspt,idxtpt,
+     &               idxr12,idxr12x,idxc12_pt,idxcpp12_pt,
      &               r12op,r12fix,op_info)
 
 
@@ -305,9 +314,9 @@ c        end if
         call sum_terms(flist_lag,op_info)
 
         ! Produce truncated expansions.
-        if (truncate)
-     &     call r12_truncation(flist_lag,trunc_type,
-     &     idxr12,idxham,idxtbar,idxtop,op_info)
+c        if (truncate)
+c     &     call r12_truncation(flist_lag,trunc_type,
+c     &     idxr12,idxham,idxtbar,idxtop,op_info)
 
 c        call truncate_form(flist_lag,op_info)
 

@@ -20,8 +20,11 @@
 
       ! for debugging it is sometimes convenient to have at most:
       integer, parameter ::
-     &     maxlines = 50 !5 !75
+     &     maxlines = -1 !5 !75
       ! set to -1 if you want the full output
+      real(8), parameter ::
+     &     thrsh = -0.5d0
+      ! set < 0d0 if you want the full output
 
       integer, intent(in) ::
      &     luout, iblk, igam, idxms, idxdis, nel
@@ -144,6 +147,7 @@ c     &     nelc,nela,nelc,nela
         first = .false.
         idxstr = idxstr+1
         if (maxlines.gt.0.and.idxstr.gt.maxlines) exit
+        if (abs(buffer(idxstr)).lt.thrsh) cycle
 
         idxnd = 0
         iadd = 0

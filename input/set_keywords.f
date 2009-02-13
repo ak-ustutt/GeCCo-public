@@ -47,6 +47,8 @@ c      use parse_input
      &                                                 ldef=(/.false./))
       call argument_add('R2_coupling','method.CCPT',type=vtyp_log,
      &                                                 ldef=(/.true./))
+      call argument_add('R2R2','method.CCPT',type=vtyp_log,
+     &                                                ldef=(/.false./))
 
       call keyword_add('ECC',context='method')
       call argument_add('maxexc','method.ECC',type=vtyp_int,idef=(/2/))

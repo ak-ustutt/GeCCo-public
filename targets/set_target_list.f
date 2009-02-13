@@ -26,7 +26,7 @@
       ! normal CC
       if (is_keyword_set('method.CC').gt.0 .and.
      &    is_keyword_set('method.R12').eq.0 ) then
-        call set_cc_targets(tgt_info,orb_info)
+        call set_cc_targets(tgt_info,orb_info,env_type)
       end if
 
       ! extended CC

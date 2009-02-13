@@ -190,7 +190,7 @@
             if (mel%off_op_gmox(iblk_2)%ndis(igamc,idxmsc).gt.1)
      &           idxdis_2 =
      &               idx_msgmdst2(
-     &                iblk_2,idxmsa,igama,
+     &                iblk_2,idxmsc,igamc,
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
      &                .true.,mel,ngam)
@@ -209,6 +209,16 @@
             call set_op_ldim_c(ldim_optr_c,ldim_optr_a,
      &           hpvx_csub,hpvx_asub,
      &           len_str,ncblk,nablk,.true.)
+
+            if (ntest.ge.1000) then
+              write(luout,*) 'len_str(C):',len_str(1:ncblk)
+              write(luout,*) 'len_str(A):',len_str(ncblk+1:ncblk+nablk)
+              write(luout,*) 'ldim_op_c: ',ldim_op_c(1:ncblk)
+              write(luout,*) 'ldim_op_a: ',ldim_op_a(1:nablk)
+              write(luout,*) 'ldim_optr_c: ',ldim_optr_c(1:ncblk)
+              write(luout,*) 'ldim_optr_a: ',ldim_optr_a(1:nablk)
+            end if
+
             idxc_loop: do idxc = 1, lenc
               istr = idxc-1
               do icmp = 1, ncblk
@@ -219,8 +229,14 @@
                 istr = idxa-1
                 do icmp = 1, nablk
                   istr_asub(icmp) = mod(istr,len_str(ncblk+icmp))!+1
-                  istr = istr/len_str(icmp)
+                  istr = istr/len_str(ncblk+icmp)
                 end do
+c dbg
+c                print *,'idxc, istr_csub: ',
+c     &               idxc,' : ',istr_csub(1:ncblk)
+c                print *,'idxa, istr_asub: ',
+c     &               idxa,' : ',istr_asub(1:nablk)
+c dbg
 
                 idx1 = ioff_1 + idx_str_blk3(istr_csub,istr_asub,
      &               ldim_op_c,ldim_op_a,
@@ -228,6 +244,9 @@
                 idx2 = ioff_2 + idx_str_blk3(istr_csub,istr_asub,
      &               ldim_optr_c,ldim_optr_a,
      &               ncblk,nablk)
+c dbg
+c                print *,'pair: ',idx1+ioff0_1,idx2+ioff0_2
+c dbg
 
                 value =fac*buffer_in1(idx1) +
      &                 fac*buffer_in2(idx2)
