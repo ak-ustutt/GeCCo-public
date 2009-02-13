@@ -91,6 +91,7 @@ c      use parse_input
       ! internal tests
       call keyword_add('check',context='calculate')
       call keyword_add('formulae',context='calculate.check')
+      call keyword_add('signs',context='calculate.check')
 
       ! general
       call keyword_add('solve',context='calculate')
