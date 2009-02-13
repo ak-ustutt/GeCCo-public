@@ -200,8 +200,10 @@ c dbg
 c      print *,'i8occ,n_shift: ',i8occ,n_shift
 c dbg
       ! count vertex occupations that we pass while shifting
+      inc = +1
+      if (ivtx_old.gt.ivtx_new) inc = -1
       n_pass  = 0
-      do idx = ivtx_old+1, ivtx_new
+      do idx = ivtx_old+inc, ivtx_new, inc
         i8occ = sum(xlines(idx,1:nj))+sum(topo(idx,1:nvtx))
         n_pass = n_pass + nca_i8occ(i8occ)
       end do
