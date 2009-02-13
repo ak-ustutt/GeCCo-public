@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_my_experimental_targets(tgt_info,orb_info)
+      subroutine set_my_experimental_targets(tgt_info,orb_info,env_type)
 *----------------------------------------------------------------------*
 *     set targets for experiments with GeCCo
 *----------------------------------------------------------------------*
@@ -20,6 +20,8 @@
      &     tgt_info
       type(orbinf), intent(in) ::
      &     orb_info
+      character(*), intent(in) ::
+     &     env_type
 
       integer ::
      &     min_rank, max_rank,

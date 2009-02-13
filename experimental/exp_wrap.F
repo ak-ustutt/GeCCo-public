@@ -58,7 +58,7 @@
       return
       end
 *----------------------------------------------------------------------*
-      subroutine set_experimental_targets(tgt_info,orb_info)
+      subroutine set_experimental_targets(tgt_info,orb_info,env_type)
 *----------------------------------------------------------------------*
 
       implicit none
@@ -79,9 +79,11 @@
      &     tgt_info
       type(orbinf), intent(in) ::
      &     orb_info
+      character(*), intent(in) ::
+     &     env_type
 
 #if defined(EXPERIMENTAL)
-      call set_my_experimental_targets(tgt_info,orb_info)
+      call set_my_experimental_targets(tgt_info,orb_info,env_type)
 #endif
 
       return

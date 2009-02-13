@@ -29,7 +29,7 @@
      &     label
 
       integer, parameter ::
-     &     max_stat = 2000
+     &     max_stat = 3000
       type(formula_item), pointer ::
      &     form_ptr
       integer ::
