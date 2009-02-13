@@ -62,13 +62,13 @@
      &     mode
 
       logical ::
-     &     r12fix,truncate,set_r_r
+     &     r12fix,truncate,set_r_r,explicit
       integer ::
      &     nterms, ilabel, idx, ndef, 
      &     idxham,idxtbar,idxtop,idxtpt,idxtptbar,idxlcc,
      &     idxr12,idxc12,idxcpp12,idxc12_pt,idxcpp12_pt,idxr12x,
      &     idx_f_temp,idx_h_temp,
-     &     idxsop,idxspt,r12op,trunc_type
+     &     idxsop,idxspt,r12op,trunc_type,iprint
       integer, allocatable ::
      &     occ_def(:,:,:)
 
@@ -87,6 +87,7 @@
      &     'Setting up CCPT-Lagrangian')
       end if
 
+      explicit = is_keyword_set('method.R12').gt.0
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','trunc',ival=trunc_type)
@@ -319,6 +320,12 @@ c     &     call r12_truncation(flist_lag,trunc_type,
 c     &     idxr12,idxham,idxtbar,idxtop,op_info)
 
 c        call truncate_form(flist_lag,op_info)
+        
+c        iprint = iprlvl
+c        call ccpt_form_post(flist_lag,nterms,
+c     &       -idxtop,-idxtpt,-idxc12,-idxc12_pt,idxham,
+c     &       idxtop,idxtpt,idxc12,idxc12_pt,iprint,
+c     &       op_info)
 
         ! replace T12 -> T
         if (r12fix.and.r12op.gt.0) then

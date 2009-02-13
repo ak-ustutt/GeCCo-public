@@ -65,7 +65,10 @@
         nfound_blk = 0
         do ivtx = 1, nvtx
           do icmpnd = 1, ncmpnd
-            if (cur_contr%vertex(ivtx)%idx_op.eq.idxop(icmpnd)) then
+            if (cur_contr%vertex(ivtx)%idx_op.eq.
+     &           abs(idxop(icmpnd)) .and.
+     &         (cur_contr%vertex(ivtx)%dagger.eqv.
+     &           idxop(icmpnd).lt.0)) then
               nfound_op = nfound_op+1
               iblkop_cmpnd = -1
               if (iblkop(1).gt.0) iblkop_cmpnd = iblkop(icmpnd)
@@ -80,7 +83,7 @@
           ok = nfound_blk.eq.ntimes
         end if
 c dbg
-c        print *,'ok = ',ok,nfound_op,nfound_blk,ntimes
+        print *,'ok = ',ok,nfound_op,nfound_blk,ntimes
 c dbg
         if (ok) then
           if (.not.associated(fpl_pnt%item)) then
@@ -107,7 +110,6 @@ c dbg
 c dbg
       print *,'nterms = ',nterms
 c dbg
-
 
       return
       end

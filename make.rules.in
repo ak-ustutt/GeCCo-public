@@ -19,8 +19,9 @@ hlo_objs:=$(addprefix $(ARCH)/,$(hlo_obj_list))
 llo_objs:=$(addprefix $(ARCH)/,$(llo_obj_list))
 # generical FORTRAN objects
 objs:=$(addprefix $(ARCH)/,$(filter-out $(spc_obj_list) $(mod_obj_list) $(hlo_obj_list) $(llo_obj_list),$(patsubst %.f,%.o,$(wildcard *.f)))) 
+Fobjs:=$(addprefix $(ARCH)/,$(patsubst %.F,%.o,$(wildcard *.F)))
 
-all_objs:=$(c_objs) $(mod_objs) $(spc_objs) $(hlo_objs) $(llo_objs) $(objs)
+all_objs:=$(c_objs) $(mod_objs) $(spc_objs) $(hlo_objs) $(llo_objs) $(objs) $(Fobjs)
 
 $(libdir)/$(this_lib): $(all_objs)
 	$(AR) rv $@ $(all_objs)

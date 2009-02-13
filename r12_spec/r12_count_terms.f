@@ -43,6 +43,9 @@
 
       n_per_class(1:15) = 0
 
+      if (.not.associated(fpl_terms%item)) print *,'WARN'
+      if (.not.associated(fpl_terms%item)) return
+
       fpl_pnt => fpl_terms
 
       do
