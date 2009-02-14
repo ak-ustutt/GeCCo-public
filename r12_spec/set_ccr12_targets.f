@@ -35,6 +35,7 @@
         call set_r12f_general_targets(tgt_info,orb_info,env_type)
         call set_ccr12f_special_targets(tgt_info,orb_info)
         call set_ccr12_exst_targets(tgt_info,orb_info)
+        call set_r12_test_targets(tgt_info,orb_info,env_type)
       else
         call set_r12_general_targets(tgt_info,orb_info,env_type)
         call set_ccr12_special_targets(tgt_info,orb_info)

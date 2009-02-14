@@ -91,7 +91,8 @@ c      use parse_input
       ! internal tests
       call keyword_add('check',context='calculate')
       call keyword_add('formulae',context='calculate.check')
-      call keyword_add('signs',context='calculate.check')
+      call argument_add('sign_test','calculate.check',
+     &     type=vtyp_int,idef=(/1/))
 
       ! general
       call keyword_add('solve',context='calculate')
