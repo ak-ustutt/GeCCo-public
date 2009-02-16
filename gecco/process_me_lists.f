@@ -282,6 +282,13 @@ c dbg
         call print_result(order,ifreq,mel_pnt,.false.)
         deallocate(ifreq)
 
+      case(PRINT_MEL)
+        idx = idx_mel_list(rule%labels(1),op_info)
+        mel_pnt => op_info%mel_arr(idx)%mel
+        call form_parameters(+1,rule%parameters,
+     &       rule%n_parameter_strings,title,imode,mode)
+        call print_list(title,mel_pnt,mode,str_info,orb_info)
+
       case default
         call quit(1,'process_me_lists','unknown command: '//
      &       trim(rule%command))

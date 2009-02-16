@@ -172,6 +172,7 @@
      &     len_gam_ms_op2(:,:),
      &     ndis_op1op2tmp(:,:), d_gam_ms_op1op2(:,:,:),
      &     gam_ms_op1op2(:,:),
+     &     len_gam_ms_op1op2(:,:),
      &     len_gam_ms_op1op2tmp(:,:), len_d_gam_ms_op1op2tmp(:,:,:)
 
       integer, pointer ::
@@ -599,6 +600,7 @@ c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
       d_gam_ms_op2 => me_op2%off_op_gmox(iblkop2)%d_gam_ms
       ndis_op1op2tmp => me_op1op2tmp%off_op_gmox(iblkop1op2tmp)%ndis
       gam_ms_op1op2 => me_op1op2%off_op_gmo(iblkop1op2)%gam_ms
+      len_gam_ms_op1op2 => me_op1op2%len_op_gmo(iblkop1op2)%gam_ms
       len_gam_ms_op1op2tmp =>
      &                   me_op1op2tmp%len_op_gmo(iblkop1op2tmp)%gam_ms
       d_gam_ms_op1op2 => me_op1op2%off_op_gmox(iblkop1op2)%d_gam_ms
@@ -780,6 +782,9 @@ c dbg
           do isym = 2, nsym
             lenblock = lenblock + len_gam_ms_op1(isym,idxms)
           end do
+c dbg
+c          print *,'loading MS blk for op1'
+c dbg
           call get_vec(ffop1,xop1,idoffop1+ioff_op1+1,
      &                          idoffop1+ioff_op1+lenblock)
         end if
@@ -790,6 +795,9 @@ c dbg
           do isym = 2, nsym
             lenblock = lenblock + len_gam_ms_op2(isym,idxms)
           end do
+c dbg
+c          print *,'loading MS blk for op2'
+c dbg
           call get_vec(ffop2,xop2,idoffop2+ioff_op2+1,
      &                          idoffop2+ioff_op2+lenblock)
         end if
@@ -851,10 +859,27 @@ c dbg
             ! set up start addresses
             ! need to be modified, if more than one distribution
             ! exists, see below
+            
+            idxms = msa2idxms4op(ms12i_a(1),mstop1,
+     &                           na_op1,nc_op1)
+            if (len_gam_ms_op1(igam12i_a(1),idxms).eq.0)
+     &           cycle gam_loop
+            idxms = msa2idxms4op(ms12i_a(2),mstop2,
+     &                           na_op2,nc_op2)
+            if (len_gam_ms_op2(igam12i_a(2),idxms).eq.0)
+     &           cycle gam_loop
+            idxms = msa2idxms4op(ms12i_a(3),mstop1op2,
+     &                           na_op1op2,nc_op1op2)
+            if (len_gam_ms_op1op2(igam12i_a(3),idxms).eq.0)
+     &           cycle gam_loop
+
             idxms = msa2idxms4op(ms12i_a(1),mstop1,na_op1,nc_op1)
             if (buftyp1.eq.2) then
               ioff_op1 = gam_ms_op1(igam12i_a(1),idxms)
               lenblock = len_gam_ms_op1(igam12i_a(1),idxms)
+c dbg
+c          print *,'loading GAM blk for op1, ',igam12i_a(1),idxms
+c dbg
               call get_vec(ffop1,xop1,idoffop1+ioff_op1+1,
      &             idoffop1+ioff_op1+lenblock)
             end if
@@ -865,6 +890,9 @@ c dbg
             if (buftyp2.eq.2) then
               ioff_op2 = gam_ms_op2(igam12i_a(2),idxms)
               lenblock = len_gam_ms_op2(igam12i_a(2),idxms)
+c dbg
+c          print *,'loading GAM blk for op2, ',igam12i_a(2),idxms
+c dbg
               call get_vec(ffop2,xop2,idoffop2+ioff_op2+1,
      &             idoffop2+ioff_op2+lenblock)
             end if
@@ -895,11 +923,21 @@ c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
             gamc_loop: do igamc_a = 1, nsym
               igamc_c = multd2h(igamc_a,igamc_ac)
 
+              ! info on zero length CNT string?
+              ! this we know for sure:
+              if (ncblk_cnt.eq.0.and.igamc_c.gt.1) cycle gamc_loop
+              if (nablk_cnt.eq.0.and.igamc_a.gt.1) cycle gamc_loop
+
               ! IRREPs after lifting restrictions (cf. above)
               igamex1_a = multd2h(igam12i_a(1),igamc_a)
               igamex1_c = multd2h(igam12i_c(1),igamc_c)
               igamex2_a = multd2h(igam12i_a(2),igamc_c) !  !!
               igamex2_c = multd2h(igam12i_c(2),igamc_a) !  !!
+
+              if (ncblk_ex1.eq.0.and.igamex1_c.gt.1) cycle gamc_loop
+              if (nablk_ex1.eq.0.and.igamex1_a.gt.1) cycle gamc_loop
+              if (ncblk_ex2.eq.0.and.igamex2_c.gt.1) cycle gamc_loop
+              if (nablk_ex2.eq.0.and.igamex2_a.gt.1) cycle gamc_loop
 
               call atim_cs(cpu00,sys00)
 
@@ -1502,6 +1540,7 @@ c                    print *,'irt_contr',irt_contr
 c                    print *,'lstrop1op2tmp: ',lstrop1op2tmp
 c                    print *,'lstrex1: ',lstrex1
 c                    print *,'lstrex2: ',lstrex2
+c                    print *,'calling kernel'
 c dbg
                     if (irt_contr.eq.2) then
 c dbg
