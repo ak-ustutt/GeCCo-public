@@ -150,6 +150,7 @@
 
       count = mod(count,2)
 
+      ! ADAPT HERE
       if (nxarc.gt.0)
      &     call quit(1,'sign_global','adapt me for xarcs!')
 

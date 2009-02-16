@@ -20,6 +20,7 @@
       include 'opdim.h'
       include 'mdef_me_list.h'
       include 'def_orbinf.h'
+      include 'routes.h'
 
       integer, intent(in) ::
      &     iblk, maxscr
@@ -35,11 +36,11 @@
 
       buffering_type=0
       len_buffer = me_op%len_op_occ(iblk)
-      if (len_buffer.le.maxscr) return
+      if (force_batching.le.0.and.len_buffer.le.maxscr) return
 
       buffering_type=1
       len_buffer = max_dis_blk(-1,me_op,iblk,orb_info)
-      if (len_buffer.le.maxscr) return
+      if (force_batching.le.1.and.len_buffer.le.maxscr) return
 
       buffering_type=2
       len_buffer =  max_dis_blk(0,me_op,iblk,orb_info)

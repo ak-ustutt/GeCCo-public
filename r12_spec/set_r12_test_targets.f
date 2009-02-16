@@ -20,20 +20,16 @@
      &     tgt_info
       type(orbinf), intent(in) ::
      &     orb_info
+      character(*), intent(in) ::
+     &     env_type
 
       integer ::
-     &     hpvx_constr(2,ngastp,2),
-     &     gas_constr(2,orb_info%ngas,2,2)
-
-      integer ::
-     &     min_rank, max_rank, ansatz, n_pp, ndef,
-     &     min_rank_tp, min_rank_tpp,
-     &     isim, ncat, nint, icnt, nlab, irank, idef,
-     &     isym, ms, msc, sym_arr(8), extend, r12op,
-     &     occ_def(ngastp,2,20),
-     &     ntp_min, ntp_max, ntpp_min, ntpp_max, testnr
+     &     ndef,
+     &     ncat, nint, ncnt, icnt,
+     &     isym, ms, msc, sym_arr(8), 
+     &     occ_def(ngastp,2,20)
       logical ::
-     &     needed, r12fix, set_tp, set_tpp
+     &     needed
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -41,9 +37,12 @@
      &     parameters(3)
       character(12) ::
      &     approx, F_appr, K_appr
+      integer, pointer ::
+     &     testnr(:)
 
-      character(*), intent(in) ::
-     &     env_type
+
+      integer, external ::
+     &     idxlist
 
 *----------------------------------------------------------------------*
       if (is_keyword_set('calculate.check').eq.0) return
@@ -55,140 +54,12 @@
 *----------------------------------------------------------------------*
 *     read input
 *----------------------------------------------------------------------*
-      call get_argument_value('calculate.check','sign_test',ival=testnr)
-
-      ! set approx string
-      approx(1:12) = ' '
-      F_appr(1:12) = ' '
-      K_appr(1:12) = ' '
-      call get_argument_value('method.R12','ansatz',ival=ansatz)
-      call get_argument_value('method.R12','approx',str=approx)
-      call get_argument_value('method.R12','F_appr',str=F_appr)
-      call get_argument_value('method.R12','K_appr',str=K_appr)
-      call get_argument_value('method.R12','min_tp',ival=min_rank_tp)
-      call get_argument_value('method.R12','min_tpp',ival=min_rank_tpp)
-      call get_argument_value('method.R12','minexc',ival=min_rank)
-      call get_argument_value('method.R12','maxexc',ival=max_rank)
-      call get_argument_value('method.R12','fixed',lval=r12fix)
-      call get_argument_value('method.R12','extend',ival=extend)
-      call get_argument_value('method.R12','r12op',ival=r12op)
-
-      n_pp = 0  ! number of particle-particle interaction in R12
-      set_tp = .false.
-      set_tpp = .false.
-      select case(extend)
-      case(1) 
-        ! T1'
-        set_tp = .true.
-        ntp_min=1
-        ntp_max=1
-        n_pp=1
-      case(2)
-        ! T0'
-        set_tp = .true.
-        ntp_min=0
-        ntp_max=0
-        n_pp=0
-      case(3)
-        ! T0' + T1'
-        set_tp = .true.
-        ntp_min=0
-        ntp_max=1
-        n_pp=1
-      case(4)
-        ! T1' + T2' (for CC)
-        set_tp = .true.
-        ntp_min=1
-        ntp_max=2
-        n_pp=1
-      case(5)
-        ! T1' + T2'
-        set_tp = .true.
-        ntp_min=1
-        ntp_max=2
-        n_pp=2
-      case(6)
-        ! T1' 
-        set_tp = .true.
-        ntp_min=1
-        ntp_max=1
-        n_pp=2
-      case default 
-        set_tp = .false.
-        ntp_min=0
-        ntp_max=0
-        n_pp=0
-      end select
-
-      if (r12op.gt.0.and.extend.gt.0)
-     &     call quit(1,'set_r12f_general_targets',
-     &     'use either r12op or extend')
-      if (r12op.gt.0) then
-        set_tp  = .false.
-        set_tpp = .false.
-        ntp_min=0
-        ntp_max=0
-        ntpp_min=0
-        ntpp_max=0
-      end if
-      select case(r12op)
-      case(1)
-        ! T' operators (singly p-connected to R12)
-        set_tp = .true.
-        ntp_min=min_rank_tp
-        ntp_max=max_rank-1
-        n_pp=1
-      case(2)
-        ! T'' operators (doubly p-connected to R12)
-        set_tpp = .true.
-        ntpp_min=min_rank_tpp
-        ntpp_max=max_rank
-        n_pp=2
-      case(3,4)
-        ! T' + T'' operators
-        set_tp = .true.
-        ntp_min=min_rank_tp
-        ntp_max=max_rank-1
-        n_pp=1
-        set_tpp = .true.
-        ntpp_min=min_rank_tpp
-        ntpp_max=max_rank
-        n_pp=2
-      end select
-
-      ! assemble approx string
-      select case(trim(F_appr))
-      case('none')
-        write(luout,*) 'no approximations wrt. Fock made'
-      case('no_Z')
-        write(luout,*) 'Z matrix omitted'
-        approx(4:6) = 'noZ'
-      case('GBC','EBC')
-        write(luout,*)
-     &  'GBC/EBC are currently only possible be supplying the'
-        write(luout,*)
-     &  'suitable integrals. Make that sure and restart w/o'
-        write(luout,*)
-     &  'GBC/EBC flag'
-        call quit(0,'set_r12_general_targets','GBC/EBC?')
-      case default
-        call quit(0,'set_r12_general_targets',
-     &       'F_appr unknown: "'//trim(F_appr)//'"')
-      end select
-
-      select case(trim(K_appr))
-      case('none')
-        write(luout,*) 'no approximations wrt. Xchange made'
-      case('HY1')
-        write(luout,*) 'Y contribution omitted'
-        approx(8:10) = 'HY1'
-      case('HY2')
-        write(luout,*) 'Y contribution approx with 1 CABS index'
-        approx(8:10) = 'HY2'
-      case default
-        call quit(0,'set_r12_general_targets',
-     &       'K_appr unknown: "'//trim(K_appr)//'"')
-      end select
+      ncnt = is_argument_set('calculate.check','contr_test')
+      allocate(testnr(ncnt))
+      do icnt = 1, ncnt
+        call get_argument_value('calculate.check','contr_test',
+     &       argcount=icnt,ival=testnr(icnt))
+      end do
 
 *----------------------------------------------------------------------*
 *     Operators:
@@ -215,10 +86,12 @@
      &              parameters,2,tgt_info)
 
       occ_def = 0
-      ndef = 1
+      ndef = 2
       occ_def(IHOLE,1,1) = 1
       occ_def(IPART,1,1) = 1
       occ_def(IHOLE,2,2) = 2
+      occ_def(IPART,1,3) = 2
+      occ_def(IHOLE,2,4) = 2
       call add_target('TEST_R2',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,2,(/.true.,.true./),ndef)
@@ -227,10 +100,12 @@
      &              parameters,2,tgt_info)
 
       occ_def = 0
-      ndef = 1
+      ndef = 2
       occ_def(IHOLE,1,1) = 1
       occ_def(IPART,1,1) = 1
       occ_def(IHOLE,2,2) = 2
+      occ_def(IPART,1,3) = 2
+      occ_def(IHOLE,2,4) = 2
       call add_target('TEST_H2',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,2,(/.true.,.true./),ndef)
@@ -239,10 +114,14 @@
      &              parameters,2,tgt_info)
 
       occ_def = 0
-      ndef = 1
+      ndef = 2
       occ_def(IHOLE,1,1) = 1
       occ_def(IEXTR,1,1) = 1
       occ_def(IPART,2,1) = 2
+      occ_def(IHOLE,1,2) = 1
+      occ_def(IPART,1,2) = 1
+      occ_def(IHOLE,2,2) = 1
+      occ_def(IPART,2,2) = 1
       call add_target('TEST_H',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,(/.true.,.true./),ndef)
@@ -350,6 +229,37 @@ c     &     0,0,
      &              labels,2,1,
      &              parameters,2,tgt_info)
 
+      ! test formula III
+      call add_target('FORM_TEST_III',ttype_frm,.false.,tgt_info)
+      call set_dependency('FORM_TEST_III','TEST_RES',tgt_info)
+      call set_dependency('FORM_TEST_III','TEST_A',tgt_info)
+      call set_dependency('FORM_TEST_III','TEST_B',tgt_info)
+      call set_dependency('FORM_TEST_III','TEST_R',tgt_info)
+      call set_dependency('FORM_TEST_III','TEST_H',tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_III'
+      labels(2) = 'TEST_RES'
+      labels(3) = 'TEST_A^+'
+      labels(4) = 'TEST_H'
+      labels(5) = 'TEST_B'
+      call expand_parameters(-1,
+     &     parameters,3,
+     &     'formula test 3',3,
+     &     (/1,2,3/),
+     &     (/2,2,2/),
+     &     (/2,2,2/),
+     &     0,0,
+     &     0,0,
+     &     0,0)
+      call set_rule('FORM_TEST_III',ttype_frm,EXPAND_OP_PRODUCT,
+     &     labels,5,1,
+     &     parameters,3,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule('FORM_TEST_III',ttype_frm,PRINT_FORMULA,
+     &              labels,2,1,
+     &              parameters,2,tgt_info)
+
 *----------------------------------------------------------------------*
 *     Opt. Formulae
 *----------------------------------------------------------------------*
@@ -370,7 +280,7 @@ c     &     0,0,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
-      ! test I
+      ! test II
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = 'FOPT_TEST_II'
       labels(2) = 'FORM_TEST_II'
@@ -385,6 +295,24 @@ c     &     0,0,
       call set_dependency('FOPT_TEST_II','ME_TEST_B',tgt_info)
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule('FOPT_TEST_II',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+      ! test II
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FOPT_TEST_III'
+      labels(2) = 'FORM_TEST_III'
+      ncat = 1
+      nint = 0
+      call add_target('FOPT_TEST_III',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_III','FORM_TEST_III',tgt_info)
+      call set_dependency('FOPT_TEST_III','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_III','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_III','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_III','ME_TEST_A',tgt_info)
+      call set_dependency('FOPT_TEST_III','ME_TEST_B',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_III',ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
@@ -504,8 +432,8 @@ c     &     0,0,
      &     parameters,3,
      &     'A from R',4,
      &     (/1,2,2,1/),
-     &     (/1,1,1,1/),
-     &     (/1,1,1,1/),
+     &     (/-1,-1,-1,-1/),
+     &     (/-1,-1,-1,-1/),
      &     0,0,
      &     0,0,
      &     0,0)
@@ -527,6 +455,11 @@ c     &     0,0,
       call set_rule('ME_TEST_A',ttype_opme,EVAL,
      &     'FOPT_A',1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST OPERATOR A: norm =',0,'NORM E20.10')
+      call set_rule('ME_TEST_A',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_A',1,0,
+     &     parameters,2,tgt_info)
 
       call add_target('ME_TEST_B',ttype_opme,.false.,tgt_info)
       call set_dependency('ME_TEST_B','TEST_B',tgt_info)
@@ -551,8 +484,8 @@ c     &     0,0,
      &     parameters,3,
      &     'B from H',4,
      &     (/1,2,2,1/),
-     &     (/1,1,1,1/),
-     &     (/1,1,1,1/),
+     &     (/-1,-1,-1,-1/),
+     &     (/-1,-1,-1,-1/),
      &     0,0,
      &     0,0,
      &     0,0)
@@ -574,127 +507,258 @@ c     &     0,0,
       call set_rule('ME_TEST_B',ttype_opme,EVAL,
      &     'FOPT_B',1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST OPERATOR B: norm =',0,'NORM E20.10')
+      call set_rule('ME_TEST_B',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_B',1,0,
+     &     parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*
-      needed = testnr.eq.1
+      needed = idxlist(1,testnr,ncnt,1).gt.0
       
-      call add_target('SIGN_TEST_I',ttype_gen,needed,tgt_info)
-      call set_dependency('SIGN_TEST_I','FOPT_TEST_I',tgt_info)
+      call add_target('CONTR_TEST_I',ttype_gen,needed,tgt_info)
+      call set_dependency('CONTR_TEST_I','FOPT_TEST_I',tgt_info)
       labels(1) = 'FOPT_TEST_I'
-      call set_rule('SIGN_TEST_I',ttype_opme,EVAL,
+      call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST I.1, opt. factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_I',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
       labels(1) = 'ME_TEST_RES'
-      call set_rule('SIGN_TEST_I',ttype_opme,RES_ME_LIST,
+      call set_rule('CONTR_TEST_I',ttype_opme,RES_ME_LIST,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+
       labels(1) = 'FOPT_TEST_I'
       call modify_parameters(-1,parameters,7,(/1,5,3,5,2,2,1/),7)
-      call set_rule('SIGN_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
      &     labels,1,0,
      &     parameters,1,tgt_info)
-      call set_rule('SIGN_TEST_I',ttype_opme,EVAL,
+      call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST I.2, 35221 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_I',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
       labels(1) = 'ME_TEST_RES'
-      call set_rule('SIGN_TEST_I',ttype_opme,RES_ME_LIST,
+      call set_rule('CONTR_TEST_I',ttype_opme,RES_ME_LIST,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
       labels(1) = 'FOPT_TEST_I'
       call modify_parameters(-1,parameters,7,(/1,5,3,6,5,2,1/),7)
-      call set_rule('SIGN_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
      &     labels,1,0,
      &     parameters,1,tgt_info)
-      call set_rule('SIGN_TEST_I',ttype_opme,EVAL,
+      call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST I.3, 36521 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_I',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
       labels(1) = 'ME_TEST_RES'
-      call set_rule('SIGN_TEST_I',ttype_opme,RES_ME_LIST,
+      call set_rule('CONTR_TEST_I',ttype_opme,RES_ME_LIST,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
       labels(1) = 'FOPT_TEST_I'
       call modify_parameters(-1,parameters,7,(/1,5,1,1,1,2,1/),7)
-      call set_rule('SIGN_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
      &     labels,1,0,
      &     parameters,1,tgt_info)
-      call set_rule('SIGN_TEST_I',ttype_opme,EVAL,
+      call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST I.4, 11121 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_I',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
       labels(1) = 'ME_TEST_RES'
-      call set_rule('SIGN_TEST_I',ttype_opme,RES_ME_LIST,
+      call set_rule('CONTR_TEST_I',ttype_opme,RES_ME_LIST,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
       labels(1) = 'FOPT_TEST_I'
       call modify_parameters(-1,parameters,7,(/1,5,7,5,1,1,1/),7)
-      call set_rule('SIGN_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
      &     labels,1,0,
      &     parameters,1,tgt_info)
-      call set_rule('SIGN_TEST_I',ttype_opme,EVAL,
+      call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST I.5, 75111 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_I',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
       labels(1) = 'ME_TEST_RES'
-      call set_rule('SIGN_TEST_I',ttype_opme,RES_ME_LIST,
+      call set_rule('CONTR_TEST_I',ttype_opme,RES_ME_LIST,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
       labels(1) = 'FOPT_TEST_I'
       call modify_parameters(-1,parameters,7,(/1,5,7,6,3,2,1/),7)
-      call set_rule('SIGN_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
      &     labels,1,0,
      &     parameters,1,tgt_info)
-      call set_rule('SIGN_TEST_I',ttype_opme,EVAL,
+      call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST I.6, 76321 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_I',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
       labels(1) = 'ME_TEST_RES'
-      call set_rule('SIGN_TEST_I',ttype_opme,RES_ME_LIST,
+      call set_rule('CONTR_TEST_I',ttype_opme,RES_ME_LIST,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
       labels(1) = 'FOPT_TEST_I'
       call modify_parameters(-1,parameters,7,(/1,5,5,6,4,3,1/),7)
-      call set_rule('SIGN_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
      &     labels,1,0,
      &     parameters,1,tgt_info)
-      call set_rule('SIGN_TEST_I',ttype_opme,EVAL,
+      call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST I.7, 56431 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_I',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
       labels(1) = 'ME_TEST_RES'
-      call set_rule('SIGN_TEST_I',ttype_opme,RES_ME_LIST,
+      call set_rule('CONTR_TEST_I',ttype_opme,RES_ME_LIST,
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
       ! test 2
-      needed = testnr.eq.2
+      needed = idxlist(2,testnr,ncnt,1).gt.0
       
-      call add_target('SIGN_TEST_II',ttype_gen,needed,tgt_info)
-      call set_dependency('SIGN_TEST_II','FOPT_TEST_II',tgt_info)
+      call add_target('CONTR_TEST_II',ttype_gen,needed,tgt_info)
+      call set_dependency('CONTR_TEST_II','FOPT_TEST_II',tgt_info)
       labels(1) = 'FOPT_TEST_II'
-      call set_rule('SIGN_TEST_II',ttype_opme,EVAL,
+      call set_rule('CONTR_TEST_II',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST II.1, opt. factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_II',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
       labels(1) = 'ME_TEST_RES'
-      call set_rule('SIGN_TEST_II',ttype_opme,RES_ME_LIST,
+      call set_rule('CONTR_TEST_II',ttype_opme,RES_ME_LIST,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
       labels(1) = 'FOPT_TEST_II'
       call modify_parameters(-1,parameters,7,(/1,5,3,4,6,2,1/),7)
-      call set_rule('SIGN_TEST_II',ttype_frm,MODIFY_FACTORIZATION,
+      call set_rule('CONTR_TEST_II',ttype_frm,MODIFY_FACTORIZATION,
      &     labels,1,0,
      &     parameters,1,tgt_info)
-      call set_rule('SIGN_TEST_II',ttype_opme,EVAL,
+      call set_rule('CONTR_TEST_II',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST II.2, 34621 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_II',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
       labels(1) = 'ME_TEST_RES'
-      call set_rule('SIGN_TEST_II',ttype_opme,RES_ME_LIST,
+      call set_rule('CONTR_TEST_II',ttype_opme,RES_ME_LIST,
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
+      labels(1) = 'FOPT_TEST_II'
+      call modify_parameters(-1,parameters,7,(/1,5,8,5,4,1,1/),7)
+      call set_rule('CONTR_TEST_II',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      call set_rule('CONTR_TEST_II',ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST II.3, 85411 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_II',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
+      labels(1) = 'ME_TEST_RES'
+      call set_rule('CONTR_TEST_II',ttype_opme,RES_ME_LIST,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
+      ! test 3
+      needed = idxlist(3,testnr,ncnt,1).gt.0
+      
+      call add_target('CONTR_TEST_III',ttype_gen,needed,tgt_info)
+      call set_dependency('CONTR_TEST_III','FOPT_TEST_III',tgt_info)
+      labels(1) = 'FOPT_TEST_III'
+      call modify_parameters(-1,parameters,4,(/1,2,1,1/),4)
+      call set_rule('CONTR_TEST_III',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      call set_rule('CONTR_TEST_III',ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST III.1, 12 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_III',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
+      labels(1) = 'ME_TEST_RES'
+      call set_rule('CONTR_TEST_III',ttype_opme,RES_ME_LIST,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
+      labels(1) = 'FOPT_TEST_III'
+      call modify_parameters(-1,parameters,4,(/1,2,2,2/),4)
+      call set_rule('CONTR_TEST_III',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      call set_rule('CONTR_TEST_III',ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST III.2, 23 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_III',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
+      labels(1) = 'ME_TEST_RES'
+      call set_rule('CONTR_TEST_III',ttype_opme,RES_ME_LIST,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
+      labels(1) = 'FOPT_TEST_III'
+      call modify_parameters(-1,parameters,4,(/1,2,3,1/),4)
+      call set_rule('CONTR_TEST_III',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      call set_rule('CONTR_TEST_III',ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'TEST III.3, 31 factorization:',0,'SCAL E20.10')
+      call set_rule('CONTR_TEST_III',ttype_opme,PRINT_MEL,
+     &     'ME_TEST_RES',1,0,
+     &     parameters,2,tgt_info)
+      labels(1) = 'ME_TEST_RES'
+      call set_rule('CONTR_TEST_III',ttype_opme,RES_ME_LIST,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
+
+      deallocate(testnr)
+      
       return
 
       end

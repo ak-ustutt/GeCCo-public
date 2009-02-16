@@ -91,7 +91,7 @@ c      use parse_input
       ! internal tests
       call keyword_add('check',context='calculate')
       call keyword_add('formulae',context='calculate.check')
-      call argument_add('sign_test','calculate.check',
+      call argument_add('contr_test','calculate.check',
      &     type=vtyp_int,idef=(/1/))
 
       ! general
@@ -188,6 +188,9 @@ c      use parse_input
      &     idef=(/3/))
       call argument_add('str_block','calculate.routes',type=vtyp_int,
      &     idef=(/200/))
+      call argument_add('force_batching',
+     &     'calculate.routes',type=vtyp_int,
+     &     idef=(/-1/))
       call argument_add('use_tr','calculate.routes',type=vtyp_log,
      &     ldef=(/.true./))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,

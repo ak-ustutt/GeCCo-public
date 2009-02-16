@@ -47,6 +47,8 @@
         call set_ccr12_targets(tgt_info,orb_info,env_type)
       end if
 
+      call set_r12_test_targets(tgt_info,orb_info,env_type)
+
       ! experimental section
       if (is_keyword_set('calculate.experimental').gt.0) then
         call set_experimental_targets(tgt_info,orb_info,env_type)
