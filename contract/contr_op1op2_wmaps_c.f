@@ -89,6 +89,7 @@
      &     ioff_op1, ioff_op2, ioff_op1op2,
      &     idxop1, idxop2, idxop1op2,
      &     lenop1, lenop2, lenop1op2,
+     &     idxms_op1op2_last,
      &     mscmx_a, mscmx_c, msc_ac, msc_a, msc_c,
      &     msex1_a, msex1_c, msex2_a, msex2_c,
      &     igamc_ac, igamc_a, igamc_c,
@@ -516,15 +517,35 @@ c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
           bufop1op2 = .false.
           ! LOWER incore requirements:
           ! see above
-          ifree = mem_alloc_real(xbf12,lenop1op2,'xbf12')
+          ! decide on buftyp12 here
+          lenscr = 2*ifree/3
+          call set_op_scratch(lenbuf,buftyp12,me_op1op2,iblkop1op2,
+     &         lenscr,orb_info)
+c dbg
+c          print *,'set_op_scratch12: ',lenbuf,buftyp12,lenscr
+c dbg
+          ! presently: only buftyp12=0/1
+          if (buftyp12.gt.1) then
+            call warn('contr_op1op2_wmaps_c','setting buftyp12 to 1')
+            buftyp12 = 1
+            lenbuf = max_dis_blk(-1,me_op1op2,iblkop1op2,orb_info)
+          end if
+
+          ! unset use_tr_here, if buftyp12!=0
+          use_tr_here = use_tr_here.and.buftyp12.eq.0
+
+          ifree = mem_alloc_real(xbf12,lenbuf,'xbf12')
           xop1op2 => xbf12
-          if (update) then
-            ! read from disc
-            call get_vec(ffop1op2,xop1op2,idoffop1op2+idxst_op1op2,
+          if (buftyp12.eq.0) then
+            ioff_op1op2 = idxst_op1op2-1
+            if (update) then
+              ! read from disc
+              call get_vec(ffop1op2,xop1op2,idoffop1op2+idxst_op1op2,
      &                             idoffop1op2+idxst_op1op2-1+lenop1op2)
-          else
-            ! init with zero
-            xop1op2(1:lenop1op2) = 0d0
+            else
+              ! init with zero
+              xop1op2(1:lenop1op2) = 0d0
+            end if
           end if
         end if
         if (ntest.ge.100) write(luout,*) ' bufop1op2: ',bufop1op2
@@ -558,15 +579,41 @@ c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
         end if
         write(luout,*) 'operator 2 (',trim(op2%name),
      &                    ',list=',trim(me_op2%label),')'
-        call wrt_mel_buf(luout,5,xop2,me_op2,iblkop2,iblkop2,
+        if (buftyp2.eq.0) then
+          write(luout,*) 'full list loaded:'
+          call wrt_mel_buf(luout,5,xop2,me_op2,iblkop2,iblkop2,
      &                  str_info,orb_info)
+        else
+          write(luout,*) 'buftyp2 = ',buftyp2
+          if (ntest.lt.10000) then
+            write(luout,*)
+     &         'complete list not available for printout'
+          else
+            call wrt_mel_file(luout,5,me_op2,iblkop2,iblkop2,
+     &           str_info,orb_info)
+          end if
+        end if
+
         if (iblkop1op2.gt.0) then
           write(luout,*) 'operator 12 on entry (',trim(op1op2%name),
      &                                ',list=',trim(me_op1op2%label),')'
 
-          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
+          if (buftyp12.eq.0) then
+            write(luout,*) 'full list loaded:'
+            call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
      &                    iblkop1op2,iblkop1op2,
      &                    str_info,orb_info)
+          else
+            write(luout,*) 'buftyp12 = ',buftyp12
+            if (ntest.lt.10000) then
+              write(luout,*)
+     &         'complete list not available for printout'
+            else
+              call wrt_mel_file(luout,5,me_op1op2,iblkop1op2,iblkop1op2,
+     &           str_info,orb_info)
+            end if
+          end if
+
         end if
       end if
 
@@ -738,6 +785,7 @@ c dbg
       igambnd(2,3) = nsym
       ! loop Ms-cases of (Op1(A),Op2(A),Op1Op2(A))
       first1 = .true.
+      idxms_op1op2_last = -1
       ms_loop: do
         if (first1) then
           first1 = .false.
@@ -800,6 +848,28 @@ c          print *,'loading MS blk for op2'
 c dbg
           call get_vec(ffop2,xop2,idoffop2+ioff_op2+1,
      &                          idoffop2+ioff_op2+lenblock)
+        end if
+        if (buftyp12.eq.1) then
+          idxms = msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
+          ioff_op1op2 = gam_ms_op1op2(1,idxms)
+          lenblock = len_gam_ms_op1op2(1,idxms)
+          do isym = 2, nsym
+            lenblock = lenblock + len_gam_ms_op1op2(isym,idxms)
+          end do
+          if (update) then
+c dbg
+c          print *,'loading MS blk for op1op2 ',lenblock
+c dbg
+            call get_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
+     &                                 idoffop1op2+ioff_op1op2+lenblock)
+          else if (idxms_op1op2_last.ne.idxms) then
+c dbg
+c          print *,'zeroing MS blk for op1op2 ',lenblock
+c dbg
+            xop1op2(1:lenblock) = 0d0
+          end if
+          idxms_op1op2_last = idxms
+          
         end if
 
         msc_loop: do msc_a = mscmx_a, -mscmx_a, -2
@@ -905,7 +975,8 @@ c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
             ! then we have: op1op2tmp == op1op2
             if (iblkop1op2.gt.0)
      &           idxop1op2 = gam_ms_op1op2(igam12i_a(3),idxms) + 1
-     &                - idxst_op1op2+1
+c     &                - idxst_op1op2+1
+     &                - ioff_op1op2
             if (reo_op1op2)
      &           lblk_op1op2tmp=len_gam_ms_op1op2tmp(igam12i_a(3),idxms)
             if (iblkop1op2.eq.0) idxop1op2 = 1
@@ -1136,7 +1207,8 @@ c                    if(reject) cycle caex2_loop
                     ! then we have op1op2tmp == op1op2
                     idxop1op2 = 
      &                   d_gam_ms_op1op2(idxdis,igam12i_a(3),idxms)+1
-     &                   - idxst_op1op2+1
+c     &                   - idxst_op1op2+1
+     &                   - ioff_op1op2
 
                     if (reo_op1op2)
      &                 lblk_op1op2tmp =
@@ -1657,10 +1729,27 @@ c dbg
           end do gam_loop
 
         end do msc_loop
+
+        if (buftyp12.eq.1) then
+          idxms = msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
+          ioff_op1op2 = gam_ms_op1op2(1,idxms)
+          lenblock = len_gam_ms_op1op2(1,idxms)
+          do isym = 2, nsym
+            lenblock = lenblock + len_gam_ms_op1op2(isym,idxms)
+          end do
+c dbg
+c          print *,'punching MS blk for op1op2 ',lenblock
+c dbg
+          call put_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
+     &                                 idoffop1op2+ioff_op1op2+lenblock)
+        end if
+
       end do ms_loop
 
 c      if (use_tr_here.and..not.update) then
       if (use_tr_here) then
+        if (buftyp12.ne.0)
+     &       call quit(1,'contr_op1op2_wmaps_c','use_tr + buftyp!=0?')
         if (abs(me_op1op2%absym).ne.1) then
 c          write(luout,*) 'assuming AL-BE symmetry = +1'
 c          fac_ab = +1
@@ -1704,7 +1793,7 @@ c dbg
 
       call atim_cs(cpu0,sys0)
       ! put result to disc
-      if (.not.bufop1op2) then
+      if (.not.bufop1op2.and.buftyp12.eq.0) then
         call put_vec(ffop1op2,xop1op2,idoffop1op2+idxst_op1op2,
      &                    idoffop1op2+idxst_op1op2-1+lenop1op2)
       end if
