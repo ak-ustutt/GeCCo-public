@@ -188,6 +188,8 @@ c      use parse_input
      &     idef=(/3/))
       call argument_add('str_block','calculate.routes',type=vtyp_int,
      &     idef=(/200/))
+      call argument_add('cnt_block','calculate.routes',type=vtyp_int,
+     &     idef=(/-1/))
       call argument_add('force_batching',
      &     'calculate.routes',type=vtyp_int,
      &     idef=(/-1/))

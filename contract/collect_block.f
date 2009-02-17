@@ -86,6 +86,7 @@ c dbg
 c      print *,'ka_st, ka_nd: ',ka_st, ka_nd
 c dbg
       kdx0 = 0
+      if (kca_trp) kdx0 = mod(ka_len-ka_st0+1,ka_len)
       ka_loop: do ka = ka_st, ka_nd
         if (.not.kca_trp) then
           kc_st = 1
@@ -96,8 +97,10 @@ c dbg
           kc_st = kc_st0
           kc_nd = kc_nd0
           if (ka.lt.ka_st0) kc_st = kc_st0+1
-          if (ka.gt.ka_nd0) kc_nd = kc_nd0+1
+          if (ka.gt.ka_nd0) kc_nd = kc_nd0-1
         end if
+
+        if (kca_trp .and. ka.eq.ka_st0) kdx0 = 0
 
         ! the array which we collect to is addressed as
         ! (kdx,ldx), where these are the current relative indices
@@ -176,6 +179,9 @@ c dbg
 
             ! KC-strings
             ! set index for xblk array:
+c dbg
+c            print *,'ldx,k_len,kdx_st: ',ldx,k_len,kdx_st
+c dbg
             kldx = (ldx-1)*k_len + kdx_st
             inc  = 1
             if (kca_trp) kldx = (ldx-1)*k_len + kdx_st + 1 - ka_len

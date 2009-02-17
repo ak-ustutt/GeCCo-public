@@ -44,6 +44,10 @@
       cnt_op1op2(1:3) = 0d0
       cnt_dloop(1:3) = 0d0
       cnt_kernel(1:3) = 0d0
+      cnt_coll1(1:2) = 0d0
+      cnt_coll2(1:2) = 0d0
+      cnt_dgemm(1:2) = 0d0
+      cnt_scatt(1:2) = 0d0
       cnt_rd(1:3) = 0d0
       cnt_wr(1:3) = 0d0
 
@@ -59,10 +63,14 @@
       if (iprlvl.ge.10) then
         call prtim(luout,'contraction kernel',
      &       cnt_kernel(1),cnt_kernel(2),-1d0)
-c        call prtim(luout,'overhead contraction 1',
-c     &       cnt_op1op2(1)-cnt_kernel(1),
-c     &       cnt_op1op2(2)-cnt_kernel(2),
-c     &       cnt_op1op2(3)-cnt_kernel(3))
+        call prtim(luout,'     in collect 1',
+     &       cnt_coll1(1),cnt_coll1(2),-1d0)
+        call prtim(luout,'     in collect 2',
+     &       cnt_coll2(1),cnt_coll2(2),-1d0)
+        call prtim(luout,'         in dgemm',
+     &       cnt_dgemm(1),cnt_dgemm(2),-1d0)
+        call prtim(luout,'       in scatter',
+     &       cnt_scatt(1),cnt_scatt(2),-1d0)
         call prtim(luout,'overhead contraction 1',
      &       cnt_dloop(1)-cnt_kernel(1),
      &       cnt_dloop(2)-cnt_kernel(2),
