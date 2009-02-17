@@ -1582,7 +1582,7 @@ c dbg
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
      &                   tra_op1, tra_op2, tra_op1op2,
-     &                   xscr,lenscr,len_str_block,
+     &                   xscr,lenscr,len_str_block,len_cnt_block,
      &                   ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &                   ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
      &                   ncblk_cnt,nablk_cnt,

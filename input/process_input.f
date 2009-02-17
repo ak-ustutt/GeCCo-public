@@ -103,6 +103,8 @@ c      end if
      &     ival=irt_contr)
       call get_argument_value('calculate.routes','str_block',
      &     ival=len_str_block)
+      call get_argument_value('calculate.routes','cnt_block',
+     &     ival=len_cnt_block)
       call get_argument_value('calculate.routes','force_batching',
      &     ival=force_batching)
       if (force_batching.gt.2)
