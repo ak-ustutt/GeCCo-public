@@ -51,9 +51,9 @@
       if (form_pnt%command.ne.command_add_contribution)
      &     call quit(1,'cc_form_post','wrong assumptions? (2)')
 
-      op_tbar => op_info%op_arr(idxtbar)%op
+      op_tbar => op_info%op_arr(abs(idxtbar))%op
       nblk_tbar = op_tbar%n_occ_cls
-      op_cbar => op_info%op_arr(idxcbar)%op
+      op_cbar => op_info%op_arr(abs(idxcbar))%op
       nblk_cbar = op_cbar%n_occ_cls
 
       if (iprint.gt.0) then
@@ -73,10 +73,10 @@
         if (iblk.eq.0) then
           call collect_terms_w_op(fpl_pnt,form_pnt,
      &         2,(/idxtbar,idxcbar/),-1,0)          
-          fpl_pnt => fpl_pnt%next
+          if (associated(fpl_pnt%next)) fpl_pnt => fpl_pnt%next
         else
           call collect_terms_w_op(fpl_pnt,form_pnt,1,idxtbar,iblk,1)
-          fpl_pnt => fpl_pnt%next
+          if (associated(fpl_pnt%next)) fpl_pnt => fpl_pnt%next
         end if
 
         call r12_count_terms(fpl_pnt,idxtop,idxc12,n_commu,op_info)

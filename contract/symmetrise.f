@@ -185,6 +185,9 @@
 
         if (ntest.ge.100)
      &       write(luout,*) 'iblk: ',iblk
+        if (ntest.ge.100)
+     &       call wrt_occ_n(luout,op_in%ihpvca_occ(1,1,ioff_blk+1),
+     &           njoined)
 
         if (.not.
      &       occ_is_diag_blk(op_in%ihpvca_occ(1,1,ioff_blk+1),njoined))
@@ -205,6 +208,7 @@
           lenblk = me_in%len_op_occ(iblk)
 
           if (ntest.ge.100) then
+            write(luout,*) 'iblk, jblk: ',iblk, jblk
             write(luout,*) 'ioff, joff, lenblk: ',ioff, joff, lenblk
             write(luout,*) 'off-diagonal case'
           end if
@@ -231,6 +235,7 @@
           lenblk = me_in%len_op_occ(iblk)
 
           if (ntest.ge.100) then
+            write(luout,*) 'iblk: ',iblk
             write(luout,*) 'ioff, lenblk: ',ioff, lenblk
             write(luout,*) 'diagonal case'
           end if

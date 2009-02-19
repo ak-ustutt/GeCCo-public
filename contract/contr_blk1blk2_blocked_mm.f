@@ -2,7 +2,7 @@
       subroutine contr_blk1blk2_blocked_mm(xfac,         !prefactor   
      &     xop1op2,xop1,xop2,                     !buffers: res,op1,op2
      &     tra_op1,tra_op2,tra_op1op2,
-     &     xscr,lenscr,lenblock,                   ! scratch
+     &     xscr,lenscr,lenblock,lenblock_cnt,               ! scratch
      &     ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &     ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
      &     ncblk_cnt,nablk_cnt,ncblk_op1op2,nablk_op1op2,
@@ -25,6 +25,8 @@
 *----------------------------------------------------------------------*
 
       implicit none
+
+      include 'contr_times.h'
 
       include 'opdim.h'
       include 'stdunit.h'
@@ -49,7 +51,7 @@ c     &     lenblock = 200
       logical, intent(in) ::
      &     tra_op1, tra_op2, tra_op1op2
       integer, intent(in) ::
-     &     lenblock,
+     &     lenblock,lenblock_cnt,
      &     ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &     ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
      &     ncblk_cnt,nablk_cnt,ncblk_op1op2,nablk_op1op2,
@@ -107,6 +109,9 @@ c     &     lenblock = 200
      &     istr_cntc_bst, istr_cntc_bnd, istr_cnta_bst, istr_cnta_bnd, 
      &     istr_exsc_bst, istr_exsc_bnd, istr_exsa_bst, istr_exsa_bnd, 
      &     istr_exlc_bst, istr_exlc_bnd, istr_exla_bst, istr_exla_bnd
+
+      real(8) ::
+     &     cpu, sys, cpu0, sys0
 
       integer, external ::
      &     ielprd
@@ -199,6 +204,10 @@ c     &     lenblock = 200
         nstr_exla_tot = nstr_ex1a_tot
       end if
 
+      ! restrict CNT batch length, if requested
+      if (lenblock_cnt.gt.0)
+     &     maxlen_cnt_batch = min(maxlen_cnt_batch,lenblock_cnt)
+
       if (maxlen_cnt_batch.lt.1)
      &     call quit(1,'contr_blk1blk2_blocked_mm',
      &     'insufficient scratch memory')
@@ -250,9 +259,13 @@ c     &     lenblock = 200
           write(luout,*) 'cnt-batch: ',cnt_batch
           write(luout,*) 'maxlen_cnt_batch: ',maxlen_cnt_batch
           write(luout,*) 'ncnt = ',ncnt
-          write(luout,*) '           ',istr_cntc_bst,istr_cntc_bnd
-          write(luout,*) '           ',istr_cnta_bst,istr_cnta_bnd
+          write(luout,*) ' CNT(C) from ',istr_cntc_bst,
+     &                            ' to ',istr_cntc_bnd
+          write(luout,*) ' CNT(A) from ',istr_cnta_bst,
+     &                            ' to ',istr_cnta_bnd
         end if
+
+        call atim_cs(cpu0,sys0)
 
         ! resort OpSHORT
         if (op1shorter) then
@@ -295,6 +308,10 @@ c     &     lenblock = 200
      &         ireo_ex2c2,ireo_ex2a2)
         end if
 
+        call atim_cs(cpu,sys)
+        cnt_coll1(1) = cnt_coll1(1)+cpu-cpu0
+        cnt_coll1(2) = cnt_coll1(2)+sys-sys0
+
         if (ntest.ge.1000) then
           write(luout,*) ncnt,nstr_exsc_tot*nstr_exsa_tot
           if (op1shorter)      write(luout,*) 'resorted operator 1'
@@ -321,6 +338,8 @@ c     &     lenblock = 200
             write(luout,*) '  istr_exlc_bnd,istr_exla_bnd:',
      &           istr_exlc_bnd,istr_exla_bnd
           end if
+
+          call atim_cs(cpu0,sys0)
 
           ! resort OpLONG -> (CNT,EX_LONG) for current block
           if (op1shorter) then
@@ -368,6 +387,10 @@ c     &     lenblock = 200
             call wrtmat2(xscr(idxoplscr),ncnt,nexl,ncnt,nexl)
           end if
           
+          call atim_cs(cpu,sys)
+          cnt_coll2(1) = cnt_coll2(1)+cpu-cpu0
+          cnt_coll2(2) = cnt_coll2(2)+sys-sys0
+
           ! loop over blocks of EX_SHORT
           do exs_batch = 1, n_exs_batch
 
@@ -388,6 +411,9 @@ c     &     lenblock = 200
             end if
 
             if (op1shorter) then
+
+              call atim_cs(cpu0,sys0)
+
               ! calculate Op1Op2(EX_SHORT,EX_LONG)
               idx = idxopsscr + (exs_batch-1)*maxlen_exs_batch*ncnt
               call dgemm('t','n',nexs,nexl,ncnt,
@@ -395,10 +421,16 @@ c     &     lenblock = 200
      &                  xscr(idxoplscr),ncnt,
      &              0d0,xscr(idxop1op2scr),nexs)
 
+              call atim_cs(cpu,sys)
+              cnt_dgemm(1) = cnt_dgemm(1)+cpu-cpu0
+              cnt_dgemm(2) = cnt_dgemm(2)+sys-sys0
+
               if (ntest.ge.1000) then
                 write(luout,*) 'result (fac was ',xfac,')'
                 call wrtmat2(xscr(idxop1op2scr),nexs,nexl,nexs,nexl)
               end if
+
+              call atim_cs(cpu0,sys0)
 
               ! resort Op1Op2
               call scatter_block(xop1op2,xscr(idxop1op2scr),
@@ -420,7 +452,13 @@ c     &     lenblock = 200
      &             ireo_ex1c12,ireo_ex1a12,
      &             ireo_ex2c12,ireo_ex2a12)
 
+              call atim_cs(cpu,sys)
+              cnt_dgemm(1) = cnt_scatt(1)+cpu-cpu0
+              cnt_dgemm(2) = cnt_scatt(2)+sys-sys0
+
             else
+
+              call atim_cs(cpu0,sys0)
 
               ! calculate Op1Op2(EX_LONG,EX_SHORT)
               idx = idxopsscr + (exs_batch-1)*maxlen_exs_batch*ncnt
@@ -429,10 +467,16 @@ c     &     lenblock = 200
      &                  xscr(idx),ncnt,
      &              0d0,xscr(idxop1op2scr),nexl)
 
+              call atim_cs(cpu,sys)
+              cnt_dgemm(1) = cnt_dgemm(1)+cpu-cpu0
+              cnt_dgemm(2) = cnt_dgemm(2)+sys-sys0
+
               if (ntest.ge.1000) then
                 write(luout,*) 'result (fac was ',xfac,')'
                 call wrtmat2(xscr(idxop1op2scr),nexl,nexs,nexl,nexs)
               end if
+
+              call atim_cs(cpu0,sys0)
 
               ! resort Op1Op2
               call scatter_block(xop1op2,xscr(idxop1op2scr),
@@ -454,7 +498,17 @@ c     &     lenblock = 200
      &             ireo_ex1c12,ireo_ex1a12,
      &             ireo_ex2c12,ireo_ex2a12)
 
+              call atim_cs(cpu,sys)
+              cnt_scatt(1) = cnt_scatt(1)+cpu-cpu0
+              cnt_scatt(2) = cnt_scatt(2)+sys-sys0
+
             end if
+
+            if (ntest.ge.1000) then
+              write(luout,*) 'updated OP1OP2: (first element): ',
+     &             xop1op2(1)
+            end if
+
 
           end do
 

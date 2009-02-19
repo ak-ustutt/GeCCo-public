@@ -46,7 +46,7 @@
      &        +occ(IEXTR,1,ijoin)
      &        +occ(IHOLE,2,ijoin)
      &        -occ(IPART,2,ijoin)
-     &        -occ(IEXTR,1,ijoin)
+     &        -occ(IEXTR,2,ijoin)
         end do
         rank_occ = rank_occ/2
       case default

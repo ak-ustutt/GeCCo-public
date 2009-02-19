@@ -1,0 +1,1805 @@
+ run starts at 2009-02-17 15:20:02.988   host: dhcppc1
+
+ Version compiled 17 Feb 2009 at 15:05:41 on dhcppc1                             
+
+ compiled with: ifort
+ level 1 optimization: -g -assume byterecl -traceback -I../include -mod i686-linux-
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal author:                                       |
+        |       andreas koehn (university of mainz, germany)        |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       gareth richings (university of mainz, germany)      |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ Environment type: DALTON_SPECIAL
+ raw data from section "SIR IPH "
+ potnuc =    2.64588604150000     
+ emy    =   -133.989822124509     
+ eactiv =   0.000000000000000E+000
+ emcscf =   -131.343936083009     
+ istate =            1
+ ispin  =            1
+ nactel =            0
+ lsym   =            1
+ nsym   =            4
+ mctype =            0
+ nrhf   =    4   1   1   0   0   0   0   0
+ nfro   =    0   0   0   0   0   0   0   0
+ nish   =    4   1   1   0   0   0   0   0
+ nash   =    0   0   0   0   0   0   0   0
+ norb   =   10   4   4   1   0   0   0   0
+ cabs   =   26  13  13   5   0   0   0   0
+ nbas   =   10   4   4   1   0   0   0   0
+ abas   =   26  13  13   5   0   0   0   0
+ tbas   =   36  17  17   6   0   0   0   0
+ nas1   =    0   0   0   0   0   0   0   0
+ nas2   =    0   0   0   0   0   0   0   0
+ nas3   =    0   0   0   0   0   0   0   0
+ nnorbt,n2orbt:   76 133
+ Reading input file ....
+ Input file: batch-4.inp
+I keyword hist
+I   general
+       memmax 2  1
+  >     30000000
+I   calculate
+I     skip_E
+I     check
+         contr_test 2  1
+  >            3
+I     routes
+         contract 2  1
+  >            3
+         str_block 2  1
+  >           20
+         cnt_block 2  1
+  >            6
+I keyword hist
+A   general
+A   calculate
+A     skip_E
+A     check
+A     routes
+ Memory set to     30000000 r8-words = (  228.88 Mb)
+ real-word/integer-word ratio =            2
+ ************
+  set_orbinf
+ ************
+ ihpvgas:              1           2           4
+ ngas_hpv:             1           1           0           1
+ nactt_hpv:            6          13           0          57
+ ioff_gas:             0           1           2           2
+ idx_gas:              1           2           3           3
+ gas_reo:           1           2           3
+ igamorb:
+
+<  1>        1       1       1       1       2       3       1       1       1       1
+        1       1       2       2       2       3       3       3       4       1
+        1       1       1       1       1       1       1       1       1       1
+        1       1       1       1       1       1       1       1       1       1
+        1       1       1       1       1       2       2       2       2       2
+        2       2       2       2       2       2       2       2       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       4       4       4       4       4
+ igasorb:
+
+<  1>        1       1       1       1       1       1       2       2       2       2
+        2       2       2       2       2       2       2       2       2       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3
+ mostnd:
+     1      1   4    5   5    6   6    7   6
+     2      7  12   13  15   16  18   19  19
+     3     20  45   46  58   59  71   72  76
+ ireost:
+
+<  1>        1       2       3       4       7       8       9      10      11      12
+        5      13      14      15       6      16      17      18      19
+ ireots:
+
+<  1>        1       2       3       4      11      15       5       6       7       8
+        9      10      12      13      14      16      17      18      19
+ iad_gas:
+
+<  1>        2
+
+<  2>        2
+
+<  3>        2
+ setting general targets ...
+ setting test targets for R12 ...
+ My next target: TEST_RES
+ Rule: DEF_SCALAR
+ Number of occupation classes for TEST_RES:    1
+    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+ My next target: TEST_A
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_A:    2
+ According to your wishes, I set the following:
+    1  /  0  1  0  0\   0  0   1  1   0  0      0  0   0  0   0  0
+       \  1  0  0  0/   1  1   0  0   0  0      0  0   0  0   0  0
+    2  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: TEST_B
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_B:    2
+ According to your wishes, I set the following:
+    1  /  0  1  0  0\   0  0   1  1   0  0      0  0   0  0   0  0
+       \  1  0  0  0/   1  1   0  0   0  0      0  0   0  0   0  0
+    2  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: TEST_R
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_R:    2
+ According to your wishes, I set the following:
+    1  /  0  1  0  1\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  1  1  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
+    2  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: TEST_H
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_H:    2
+ According to your wishes, I set the following:
+    1  /  1  0  0  1\   1  1   0  0   1  1      0  0   0  0   0  0
+       \  0  2  0  0/   0  0   2  2   0  0      0  0   0  0   0  0
+    2  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  1  1  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
+ My next target: FORM_TEST_III
+ Rule: EXPAND_OP_PRODUCT
+  Generated formula
+ -------------------
+ [INIT TARGET]           1
+ [ADD]           1 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [END]
+ wrote            3  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_FORMULA
+ read            2  entries
+ [INIT TARGET]           1
+ [ADD]           1 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [END]
+ My next target: DEF-ME_TEST_RES
+ Rule: DEF_ME_LIST
+ My next target: ME_TEST_H
+ Rule: DEF_ME_LIST
+ set_new_graph:            1
+ Memory for current weight array:        432 words (=  0.00 Mb)
+ Number of strings
+ -----------------
+   Graph electr.  MS      length   
+      1     1    -1              6
+            1     1              6
+ set_new_graph:            2
+ Memory for current weight array:       2340 words (=  0.02 Mb)
+ Number of strings
+ -----------------
+   Graph electr.  MS      length   
+      2     2    -2             78
+            2     0            169
+            2     2             78
+ set_new_graph:            3
+ Memory for current weight array:       4104 words (=  0.03 Mb)
+ Number of strings
+ -----------------
+   Graph electr.  MS      length   
+      3     1    -1             57
+            1     1             57
+ set_new_graph:            4
+ Memory for current weight array:        936 words (=  0.01 Mb)
+ Number of strings
+ -----------------
+   Graph electr.  MS      length   
+      4     1    -1             13
+            1     1             13
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.02 /     0.01 s
+ @ time for sorting integrals          cpu/sys:           0.02 /     0.00 s
+ size of buffer:        21200           3       63600
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.07 /     0.01 s
+ @ time for sorting integrals          cpu/sys:           0.04 /     0.01 s
+ @ time in 2int import                 cpu/sys/wall:      0.15 /     0.03 /     0.17 s
+ 
+ imported list: ME_TEST_H
+  block no.    1 len =        44816
+  Ms(A) =   2/2  IRREP(A) =  1  len =         2730  norm = 0.337413    
+  Ms(A) =   2/2  IRREP(A) =  2  len =         1743  norm = 0.426646    
+  Ms(A) =   2/2  IRREP(A) =  3  len =         1743  norm = 0.426646    
+  Ms(A) =   2/2  IRREP(A) =  4  len =          690  norm = 0.404330    
+ norm (MS-Block) =   0.800864658306930     
+  Ms(A) =   0/2  IRREP(A) =  1  len =        14300  norm =  1.41811    
+  Ms(A) =   0/2  IRREP(A) =  2  len =         6972  norm =  1.10599    
+  Ms(A) =   0/2  IRREP(A) =  3  len =         6972  norm =  1.10599    
+  Ms(A) =   0/2  IRREP(A) =  4  len =         2760  norm = 0.938209    
+ norm (MS-Block) =    2.31034958137715     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =         2730  norm = 0.337413    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =         1743  norm = 0.426646    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =         1743  norm = 0.426646    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =          690  norm = 0.404330    
+ norm (MS-Block) =   0.800864658306930     
+  block no.    2 len =        10332
+  Ms(A) =   2/2  IRREP(A) =  1  len =          900  norm =  3.80699    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          361  norm =  3.13198    
+  Ms(A) =   2/2  IRREP(A) =  3  len =          361  norm =  3.13198    
+  Ms(A) =   2/2  IRREP(A) =  4  len =          100  norm =  2.48339    
+ norm (MS-Block) =    6.34657186620015     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         3600  norm =  6.12994    
+  Ms(A) =   0/2  IRREP(A) =  2  len =         1444  norm =  4.90529    
+  Ms(A) =   0/2  IRREP(A) =  3  len =         1444  norm =  4.90529    
+  Ms(A) =   0/2  IRREP(A) =  4  len =          400  norm =  3.65525    
+ norm (MS-Block) =    9.95292923199541     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          900  norm =  3.80699    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          361  norm =  3.13198    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =          361  norm =  3.13198    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =          100  norm =  2.48339    
+ norm (MS-Block) =    6.34657186620015     
+ total norm =    13.6469495783056     
+ My next target: ME_TEST_R
+ Rule: DEF_ME_LIST
+ set_new_graph:            5
+ Memory for current weight array:       1080 words (=  0.01 Mb)
+ Number of strings
+ -----------------
+   Graph electr.  MS      length   
+      5     2    -2             15
+            2     0             36
+            2     2             15
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.02 /     0.01 s
+ @ time for sorting integrals          cpu/sys:           0.00 /     0.00 s
+ size of buffer:        21200           3       63600
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.09 /     0.00 s
+ @ time for sorting integrals          cpu/sys:           0.09 /     0.00 s
+ @ time in 2int import                 cpu/sys/wall:      0.20 /     0.01 /     0.21 s
+ 
+ imported list: ME_TEST_R
+  block no.    1 len =        93012
+  Ms(A) =   2/2  IRREP(A) =  1  len =         7170  norm = 0.584439E-01
+  Ms(A) =   2/2  IRREP(A) =  2  len =         3496  norm = 0.505997E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =         3496  norm = 0.505997E-01
+  Ms(A) =   2/2  IRREP(A) =  4  len =         1340  norm = 0.400984E-01
+ norm (MS-Block) =   0.100718550199550     
+  Ms(A) =   0/2  IRREP(A) =  1  len =        28680  norm = 0.156813    
+  Ms(A) =   0/2  IRREP(A) =  2  len =        13984  norm = 0.132394    
+  Ms(A) =   0/2  IRREP(A) =  3  len =        13984  norm = 0.132394    
+  Ms(A) =   0/2  IRREP(A) =  4  len =         5360  norm = 0.885634E-01
+ norm (MS-Block) =   0.259789187855280     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =         7170  norm = 0.584439E-01
+  Ms(A) =  -2/2  IRREP(A) =  2  len =         3496  norm = 0.505997E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =         3496  norm = 0.505997E-01
+  Ms(A) =  -2/2  IRREP(A) =  4  len =         1340  norm = 0.400984E-01
+ norm (MS-Block) =   0.100718550199550     
+  block no.    2 len =         2340
+  Ms(A) =   2/2  IRREP(A) =  1  len =          126  norm = 0.876450E-02
+  Ms(A) =   2/2  IRREP(A) =  2  len =           84  norm = 0.211033E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =           84  norm = 0.211033E-01
+  Ms(A) =   2/2  IRREP(A) =  4  len =           15  norm = 0.191972E-01
+ norm (MS-Block) =   3.655202640382404E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =          990  norm = 0.968053E-01
+  Ms(A) =   0/2  IRREP(A) =  2  len =          336  norm = 0.469108E-01
+  Ms(A) =   0/2  IRREP(A) =  3  len =          336  norm = 0.469108E-01
+  Ms(A) =   0/2  IRREP(A) =  4  len =           60  norm = 0.390708E-01
+ norm (MS-Block) =   0.123689261097053     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          126  norm = 0.876450E-02
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           84  norm = 0.211033E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           84  norm = 0.211033E-01
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           15  norm = 0.191972E-01
+ norm (MS-Block) =   3.655202640382404E-002
+ total norm =   0.325192265305145     
+ My next target: TEST_R2
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_R2:    2
+ According to your wishes, I set the following:
+    1  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    2  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: ME_TEST_R2
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:          893           3        2679
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.02 /     0.00 s
+ @ time for sorting integrals          cpu/sys:           0.01 /     0.00 s
+ @ time in 2int import                 cpu/sys/wall:      0.03 /     0.00 /     0.02 s
+ 
+ imported list: ME_TEST_R2
+  block no.    1 len =         2412
+  Ms(A) =   2/2  IRREP(A) =  1  len =          180  norm = 0.616041E-01
+  Ms(A) =   2/2  IRREP(A) =  2  len =           76  norm = 0.597531E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =           76  norm = 0.597531E-01
+  Ms(A) =   2/2  IRREP(A) =  4  len =           10  norm = 0.308107E-01
+ norm (MS-Block) =   0.109019373952018     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         1080  norm = 0.210146    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          304  norm = 0.148597    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          304  norm = 0.148597    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           40  norm = 0.805794E-01
+ norm (MS-Block) =   0.307922195058139     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          180  norm = 0.616041E-01
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           76  norm = 0.597531E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           76  norm = 0.597531E-01
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           10  norm = 0.308107E-01
+ norm (MS-Block) =   0.109019373952018     
+  block no.    2 len =         2340
+  Ms(A) =   2/2  IRREP(A) =  1  len =          126  norm = 0.876450E-02
+  Ms(A) =   2/2  IRREP(A) =  2  len =           84  norm = 0.211033E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =           84  norm = 0.211033E-01
+  Ms(A) =   2/2  IRREP(A) =  4  len =           15  norm = 0.191972E-01
+ norm (MS-Block) =   3.655202640382404E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =          990  norm = 0.968053E-01
+  Ms(A) =   0/2  IRREP(A) =  2  len =          336  norm = 0.469108E-01
+  Ms(A) =   0/2  IRREP(A) =  3  len =          336  norm = 0.469108E-01
+  Ms(A) =   0/2  IRREP(A) =  4  len =           60  norm = 0.390708E-01
+ norm (MS-Block) =   0.123689261097053     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          126  norm = 0.876450E-02
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           84  norm = 0.211033E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           84  norm = 0.211033E-01
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           15  norm = 0.191972E-01
+ norm (MS-Block) =   3.655202640382404E-002
+ total norm =   0.369537089589650     
+ My next target: ME_TEST_A
+ Rule: DEF_ME_LIST
+ Rule: EXPAND_OP_PRODUCT
+  Generated formula
+ -------------------
+ [INIT TARGET]           2
+ [ADD]           2 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_R2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_R2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+ [ADD]           2 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_R2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_R2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ wrote            4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_FORMULA
+ read            3  entries
+ [INIT TARGET]           2
+ [ADD]           2 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_R2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_R2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+ [ADD]           2 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_R2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_R2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:            6
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1TEST_RES   1   1       ME_TEST_RES
+    2  TEST_A   1   2         ME_TEST_A
+    3  TEST_B   1   2                  
+    4  TEST_R   1   2         ME_TEST_R
+    5  TEST_H   1   2         ME_TEST_H
+    6 TEST_R2   2   2        ME_TEST_R2
+ ----------------------------------------
+ Number of lists defined:            5
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1     ME_TEST_RES  1  0            1 TEST_RES           ME_TEST_RES_list.da
+    2       ME_TEST_H  1  0        55148   TEST_H             ME_TEST_H_list.da
+    3       ME_TEST_R  1  0        95352   TEST_R             ME_TEST_R_list.da
+    4      ME_TEST_R2  1  0         4752  TEST_R2            ME_TEST_R2_list.da
+    5       ME_TEST_A  1  0         2400   TEST_A             ME_TEST_A_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- FORM_A
+ read            3  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+ factorizing term #            1
+ factorizing term #            2
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.000E+00( NaN  %)
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.000E+00( NaN  %)
+ Formally most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.000E+00
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.000E+00
+ @ factorization                       cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ +====================+
+ | Optimized formula: |
+ +====================+
+ [INIT TARGET]           2
+ [ADD]           2 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_R2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_R2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+     1*    2->    7(    1)
+ [ADD]           2 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_R2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_R2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ wrote            4  entries
+ Rule: EVALUATE
+ read            3  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_A
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ @ contraction kernel                  cpu/sys:           0.00 /     0.00 s
+ @      in collect 1                   cpu/sys:           0.00 /     0.00 s
+ @      in collect 2                   cpu/sys:           0.00 /     0.00 s
+ @          in dgemm                   cpu/sys:           0.00 /     0.00 s
+ @        in scatter                   cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.00 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.8527451119    
+ Rule: PRINT_MEL
+ TEST OPERATOR A: norm =    0.8527451119E+00
+ My next target: TEST_H2
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_H2:    2
+ According to your wishes, I set the following:
+    1  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    2  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: ME_TEST_H2
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:          893           3        2679
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.02 /     0.00 s
+ @ time for sorting integrals          cpu/sys:           0.00 /     0.00 s
+ @ time in 2int import                 cpu/sys/wall:      0.02 /     0.00 /     0.03 s
+ 
+ imported list: ME_TEST_H2
+  block no.    1 len =         2412
+  Ms(A) =   2/2  IRREP(A) =  1  len =          180  norm = 0.847616    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           76  norm = 0.763674    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           76  norm = 0.763674    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           10  norm = 0.332269    
+ norm (MS-Block) =    1.41253440049195     
+  Ms(A) =   0/2  IRREP(A) =  1  len =         1080  norm =  1.92495    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          304  norm =  1.29332    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          304  norm =  1.29332    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           40  norm = 0.593757    
+ norm (MS-Block) =    2.72091071913739     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          180  norm = 0.847616    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           76  norm = 0.763674    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           76  norm = 0.763674    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           10  norm = 0.332269    
+ norm (MS-Block) =    1.41253440049195     
+  block no.    2 len =         2340
+  Ms(A) =   2/2  IRREP(A) =  1  len =          126  norm = 0.128414    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           84  norm = 0.270767    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           84  norm = 0.270767    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           15  norm = 0.238382    
+ norm (MS-Block) =   0.468984049680944     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          990  norm = 0.859985    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          336  norm = 0.459888    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          336  norm = 0.459888    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           60  norm = 0.364530    
+ norm (MS-Block) =    1.13817818502028     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          126  norm = 0.128414    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           84  norm = 0.270767    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           84  norm = 0.270767    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           15  norm = 0.238382    
+ norm (MS-Block) =   0.468984049680944     
+ total norm =    3.62342430102098     
+ My next target: ME_TEST_B
+ Rule: DEF_ME_LIST
+ Rule: EXPAND_OP_PRODUCT
+  Generated formula
+ -------------------
+ [INIT TARGET]           3
+ [ADD]           3 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           3 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_H2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_H2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+ [ADD]           3 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           3 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_H2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_H2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ wrote            4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_FORMULA
+ read            3  entries
+ [INIT TARGET]           3
+ [ADD]           3 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           3 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_H2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_H2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+ [ADD]           3 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           3 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_H2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_H2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:            7
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1TEST_RES   1   1       ME_TEST_RES
+    2  TEST_A   1   2         ME_TEST_A
+    3  TEST_B   1   2         ME_TEST_B
+    4  TEST_R   1   2         ME_TEST_R
+    5  TEST_H   1   2         ME_TEST_H
+    6 TEST_R2   2   2        ME_TEST_R2
+    7 TEST_H2   2   2        ME_TEST_H2
+ ----------------------------------------
+ Number of lists defined:            7
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1     ME_TEST_RES  1  0            1 TEST_RES           ME_TEST_RES_list.da
+    2       ME_TEST_H  1  0        55148   TEST_H             ME_TEST_H_list.da
+    3       ME_TEST_R  1  0        95352   TEST_R             ME_TEST_R_list.da
+    4      ME_TEST_R2  1  0         4752  TEST_R2            ME_TEST_R2_list.da
+    5       ME_TEST_A  1  0         2400   TEST_A             ME_TEST_A_list.da
+    6      ME_TEST_H2  1  0         4752  TEST_H2            ME_TEST_H2_list.da
+    7       ME_TEST_B  1  0         2400   TEST_B             ME_TEST_B_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- FORM_B
+ read            3  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+ factorizing term #            1
+ factorizing term #            2
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.000E+00( NaN  %)
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.000E+00( NaN  %)
+ Formally most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.000E+00
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.000E+00
+ @ factorization                       cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ +====================+
+ | Optimized formula: |
+ +====================+
+ [INIT TARGET]           3
+ [ADD]           3 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           3 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_H2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_H2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+     1*    2->    7(    1)
+ [ADD]           3 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           3 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_H2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_H2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ wrote            4  entries
+ Rule: EVALUATE
+ read            3  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_B
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ @ contraction kernel                  cpu/sys:           0.00 /     0.00 s
+ @      in collect 1                   cpu/sys:           0.00 /     0.00 s
+ @      in collect 2                   cpu/sys:           0.00 /     0.00 s
+ @          in dgemm                   cpu/sys:           0.00 /     0.00 s
+ @        in scatter                   cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.00 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 -->  8.317942934    
+ Rule: PRINT_MEL
+ TEST OPERATOR B: norm =    0.8317942934E+01
+ My next target: FOPT_TEST_III
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:            7
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1TEST_RES   1   1       ME_TEST_RES
+    2  TEST_A   1   2         ME_TEST_A
+    3  TEST_B   1   2         ME_TEST_B
+    4  TEST_R   1   2         ME_TEST_R
+    5  TEST_H   1   2         ME_TEST_H
+    6 TEST_R2   2   2        ME_TEST_R2
+    7 TEST_H2   2   2        ME_TEST_H2
+ ----------------------------------------
+ Number of lists defined:            7
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1     ME_TEST_RES  1  0            1 TEST_RES           ME_TEST_RES_list.da
+    2       ME_TEST_H  1  0        55148   TEST_H             ME_TEST_H_list.da
+    3       ME_TEST_R  1  0        95352   TEST_R             ME_TEST_R_list.da
+    4      ME_TEST_R2  1  0         4752  TEST_R2            ME_TEST_R2_list.da
+    5       ME_TEST_A  1  0         2400   TEST_A             ME_TEST_A_list.da
+    6      ME_TEST_H2  1  0         4752  TEST_H2            ME_TEST_H2_list.da
+    7       ME_TEST_B  1  0         2400   TEST_B             ME_TEST_B_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- FORM_TEST_III
+ read            2  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+ factorizing term #            1
+ # of dummy contractions:            6
+ @ time in form_fact                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    1 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.576E+05( 100.0%)
+ Formally most expensive contractions: 
+  term #    1 - H^ 3 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.176E-01
+ @ factorization                       cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ +====================+
+ | Optimized formula: |
+ +====================+
+ [INIT TARGET]           1
+ [ADD]           1 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    2)
+    -1*    5->   -2(    1)
+ [END]
+ wrote            3  entries
+ My next target: CONTR_TEST_III
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_III
+  f_output = FOPT_TEST_III
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    2)
+    -1*    5->   -2(    1)
+ nfac =            2
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    2)
+    -1*    5->   -2(    1)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    1)
+    -1*    5->   -2(    1)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:          126           6
+ it happened:           84           6
+ it happened:           84           6
+ it happened:           15           6
+ it happened:          990           6
+ it happened:          336           6
+ it happened:          336           6
+ it happened:           60           6
+ term #     1:    0.4314287480        0.4314287480    
+ @ contraction kernel                  cpu/sys:           0.02 /     0.00 s
+ @      in collect 1                   cpu/sys:           0.01 /     0.00 s
+ @      in collect 2                   cpu/sys:           0.01 /     0.00 s
+ @          in dgemm                   cpu/sys:           0.00 /     0.00 s
+ @        in scatter                   cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.18 /     0.01 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.20 /     0.01 /     0.20 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.4314287480    
+ Rule: PRINT_MEL
+ TEST III.1, 12 factorization:    0.4314287480E+00
+ Rule: RESET_ME_LIST
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_III
+  f_output = FOPT_TEST_III
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    1)
+    -1*    5->   -2(    1)
+ nfac =            2
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    1)
+    -1*    5->   -2(    1)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    2)
+    -1*    5->   -2(    2)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:          576           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           72           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           36           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:          144           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           36           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:          144           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           12           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           16           6
+ it happened:          576           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:          576           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           72           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           72           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           72           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:          576           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:          576           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           72           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           72           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           72           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           36           6
+ it happened:           72           6
+ it happened:           36           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:          144           6
+ it happened:           12           6
+ it happened:           72           6
+ it happened:          144           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           36           6
+ it happened:           72           6
+ it happened:           36           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:          144           6
+ it happened:           12           6
+ it happened:           72           6
+ it happened:          144           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           36           6
+ it happened:           72           6
+ it happened:           36           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:          144           6
+ it happened:           12           6
+ it happened:           72           6
+ it happened:          144           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           36           6
+ it happened:           72           6
+ it happened:           36           6
+ it happened:           72           6
+ it happened:           72           6
+ it happened:          144           6
+ it happened:           12           6
+ it happened:           72           6
+ it happened:          144           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           12           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           12           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           12           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           16           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           16           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           12           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           12           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           12           6
+ it happened:            9           6
+ it happened:            9           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           16           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           16           6
+ term #     1:    0.4314287480        0.4314287480    
+ @ contraction kernel                  cpu/sys:           0.02 /     0.01 s
+ @      in collect 1                   cpu/sys:           0.01 /     0.00 s
+ @      in collect 2                   cpu/sys:           0.00 /     0.00 s
+ @          in dgemm                   cpu/sys:           0.00 /     0.00 s
+ @        in scatter                   cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.02 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.12 /     0.01 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.16 /     0.02 /     0.18 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.4314287480    
+ Rule: PRINT_MEL
+ TEST III.2, 23 factorization:    0.4314287480E+00
+ Rule: RESET_ME_LIST
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_III
+  f_output = FOPT_TEST_III
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    2)
+    -1*    5->   -2(    2)
+ nfac =            2
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    2)
+    -1*    5->   -2(    2)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TEST_A^+    2    2  0  0  0
+                      0  2  0  0
+ v02 TEST_H      2    1  1  0  0
+                      1  1  0  0
+ v03 TEST_B      2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    3)
+    -1*    5->   -2(    1)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:           12           6
+ it happened:           24           6
+ it happened:           12           6
+ it happened:          126           6
+ it happened:           84           6
+ it happened:           84           6
+ it happened:           15           6
+ it happened:          990           6
+ it happened:          336           6
+ it happened:          336           6
+ it happened:           60           6
+ term #     1:    0.4314287480        0.4314287480    
+ @ contraction kernel                  cpu/sys:           0.00 /     0.01 s
+ @      in collect 1                   cpu/sys:           0.00 /     0.00 s
+ @      in collect 2                   cpu/sys:           0.00 /     0.00 s
+ @          in dgemm                   cpu/sys:           0.00 /     0.00 s
+ @        in scatter                   cpu/sys:           0.00 /     0.01 s
+ @ overhead contraction 1              cpu/sys:           0.04 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.16 /     0.01 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.20 /     0.02 /     0.22 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.4314287480    
+ Rule: PRINT_MEL
+ TEST III.3, 31 factorization:    0.4314287480E+00
+ Rule: RESET_ME_LIST
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:   27022705 real(8)-words (  206.17 Mb)
+   Largest memory block:       26806854 real(8)-words (  204.52 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:      1.00 /     0.09 /     1.10 s
+ run ends at 2009-02-17 15:20:04.085   host: dhcppc1

@@ -1,0 +1,57 @@
+title
+  Check of sign-handling in multi-contractions
+molecule
+  BH-R12-DALTON
+input
+  signs.inp
+check
+  label Norm of test operator A
+  find TEST OPERATOR A: norm =
+  compare real 6 1e-12
+check
+  label Norm of test operator B
+  find TEST OPERATOR B: norm =
+  compare real 6 1e-12
+check
+  label Test I.1
+  rewind
+  find TEST I.1
+  compare real 5 1e-12
+check
+  label Test I.2
+  find TEST I.2
+  compare real 5 1e-12
+check
+  label Test I.3
+  find TEST I.3
+  compare real 5 1e-12
+check
+  label Test I.4
+  find TEST I.4
+  compare real 5 1e-12
+check
+  label Test I.5
+  find TEST I.5
+  compare real 5 1e-12
+check
+  label Test I.6
+  find TEST I.6
+  compare real 5 1e-12
+check
+  label Test I.7
+  find TEST I.7
+  compare real 5 1e-12
+check
+  label Test II.1
+  find TEST II.1
+  compare real 5 1e-12
+check
+  label Test II.2
+  find TEST II.2
+  compare real 5 1e-12
+check
+  label Test II.3
+  find TEST II.3
+  compare real 5 1e-12
+end
+

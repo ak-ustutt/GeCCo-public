@@ -1,0 +1,7 @@
+general
+ memmax=30000000
+calculate
+  skip_E
+  check contr_test=3
+  routes contract=3,force_batching=2
+ 

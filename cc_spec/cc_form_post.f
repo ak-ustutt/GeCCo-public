@@ -51,7 +51,7 @@
       if (form_pnt%command.ne.command_add_contribution)
      &     call quit(1,'cc_form_post','wrong assumptions? (2)')
 
-      op_tbar => op_info%op_arr(idxtbar)%op
+      op_tbar => op_info%op_arr(abs(idxtbar))%op
       nblk_tbar = op_tbar%n_occ_cls
 
       if (iprint.gt.0) then
