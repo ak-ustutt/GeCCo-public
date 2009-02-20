@@ -89,7 +89,7 @@
      &     ioff_op1, ioff_op2, ioff_op1op2,
      &     idxop1, idxop2, idxop1op2,
      &     lenop1, lenop2, lenop1op2,
-     &     idxms_op1op2_last,
+     &     idxms_op1op2_last, igam_op1op2_last,
      &     mscmx_a, mscmx_c, msc_ac, msc_a, msc_c,
      &     msex1_a, msex1_c, msex2_a, msex2_c,
      &     igamc_ac, igamc_a, igamc_c,
@@ -525,11 +525,11 @@ c dbg
 c          print *,'set_op_scratch12: ',lenbuf,buftyp12,lenscr
 c dbg
           ! presently: only buftyp12=0/1
-          if (buftyp12.gt.1) then
-            call warn('contr_op1op2_wmaps_c','setting buftyp12 to 1')
-            buftyp12 = 1
-            lenbuf = max_dis_blk(-1,me_op1op2,iblkop1op2,orb_info)
-          end if
+c          if (buftyp12.gt.1) then
+c            call warn('contr_op1op2_wmaps_c','setting buftyp12 to 1')
+c            buftyp12 = 1
+c            lenbuf = max_dis_blk(-1,me_op1op2,iblkop1op2,orb_info)
+c          end if
 
           ! unset use_tr_here, if buftyp12!=0
           use_tr_here = use_tr_here.and.buftyp12.eq.0
@@ -849,6 +849,7 @@ c dbg
           call get_vec(ffop2,xop2,idoffop2+ioff_op2+1,
      &                          idoffop2+ioff_op2+lenblock)
         end if
+
         if (buftyp12.eq.1) then
           idxms = msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
           ioff_op1op2 = gam_ms_op1op2(1,idxms)
@@ -908,15 +909,16 @@ c          print *,'processing: ',ms12i_a(1:3),
 c     &            'msc_c,msc_a: ',msc_c,msc_a,' fac = ',fac_scal
 c dbg
 
-          if (ntest.ge.100) then
+c          if (ntest.ge.100) then
             write(luout,*) 'Current spin case:'
             write(luout,*) ' OP1/OP2/INT (C) ->',ms12i_c(1:3)
             write(luout,*) ' OP1/OP2/INT (A) ->',ms12i_a(1:3)
             write(luout,*) ' CNT(C)/CNT(A)   ->',msc_c,msc_a
-          end if
+c          end if
 
           ! loop IRREP cases of (Op1(A),Op2(A),Interm)
           first2 = .true.
+          igam_op1op2_last = -1
           gam_loop: do
             if (first2) then
               first2 = .false.
@@ -970,6 +972,26 @@ c dbg
      &             - ioff_op2
             idxms =
      &           msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
+
+            ! inefficient, but it works ....
+            if (buftyp12.eq.2) then
+              ioff_op1op2 = gam_ms_op1op2(igam12i_a(3),idxms)
+              lenblock = len_gam_ms_op1op2(igam12i_a(3),idxms)
+              if (update) then
+                call get_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
+     &             idoffop1op2+ioff_op1op2+lenblock)
+              else if (igam_op1op2_last.ne.igam12i_a(3).and.
+     &                 idxms_op1op2_last.ne.idxms) then
+                xop1op2(1:lenblock) = 0d0
+              else
+                call get_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
+     &             idoffop1op2+ioff_op1op2+lenblock)
+              end if
+              igam_op1op2_last = igam12i_a(3)
+                
+            end if
+              
+
 c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
             ! relevant for case where no reordering necessary
             ! then we have: op1op2tmp == op1op2
@@ -1726,9 +1748,26 @@ c dbg
               cnt_dloop(2) = cnt_dloop(2)+sys-sys00
 
             end do gamc_loop
+
+            if (buftyp12.eq.2) then
+              idxms =
+     &           msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
+              ioff_op1op2 = gam_ms_op1op2(igam12i_a(3),idxms)
+              lenblock = len_gam_ms_op1op2(igam12i_a(3),idxms)
+c dbg
+          print *,'punching GAM blk for op1op2, ',igam12i_a(3),idxms
+c dbg
+              call put_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
+     &             idoffop1op2+ioff_op1op2+lenblock)
+                
+            end if
+
           end do gam_loop
 
         end do msc_loop
+
+        if (buftyp12.eq.2)
+     &       idxms_op1op2_last = idxms
 
         if (buftyp12.eq.1) then
           idxms = msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
