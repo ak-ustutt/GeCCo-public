@@ -34,7 +34,7 @@
      &     occ_def(ngastp,2,60), ndef
       logical ::
      &     needed, explicit, r12fix, set_tp, set_tpp, gbc4pt,
-     &     R2_coupling, set_R2_R2
+     &     R2_coupling, set_R2_R2, set_Rhxhh
       character(len=8) ::
      &     mode
       character(len_target_name) ::
@@ -68,6 +68,8 @@
      &     lval=R2_coupling)
       call get_argument_value('method.CCPT','R2R2',
      &     lval=set_R2_R2)
+      call get_argument_value('method.CCPT','hh_scatter',
+     &     lval=set_Rhxhh)
 
       if (explicit) then
         approx(1:12) = ' '
@@ -130,17 +132,30 @@ c          n_pp=2
      &              op_dept,1,1,
      &              parameters,0,tgt_info)
 
-      ! formal R12(ic|ab) block for testing
-      call add_target('R12VV',ttype_op,.false.,tgt_info)
+c      ! formal R12(ic|ab) block for testing
+c      call add_target('R12VV',ttype_op,.false.,tgt_info)
+c      occ_def = 0
+c      ndef = 1
+c      occ_def(IPART,1,1) = 2
+c      occ_def(IHOLE,2,1) = 1
+c      occ_def(IPART,2,1) = 1
+c      call op_from_occ_parameters(-1,parameters,2,
+c     &                         occ_def,ndef,1,(/.true.,.true./),ndef)
+c      call set_rule('R12VV',ttype_op,DEF_OP_FROM_OCC,
+c     &     'R12VV',1,1,
+c     &     parameters,2,tgt_info)
+
+      ! R12<i beta|kl> block for testing
+      call add_target('R12hxhh',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 1
-      occ_def(IPART,1,1) = 2
-      occ_def(IHOLE,2,1) = 1
-      occ_def(IPART,2,1) = 1
+      occ_def(IHOLE,1,1) = 1
+      occ_def(IEXTR,1,1) = 1
+      occ_def(IHOLE,2,1) = 2
       call op_from_occ_parameters(-1,parameters,2,
      &                         occ_def,ndef,1,(/.true.,.true./),ndef)
-      call set_rule('R12VV',ttype_op,DEF_OP_FROM_OCC,
-     &     'R12VV',1,1,
+      call set_rule('R12hxhh',ttype_op,DEF_OP_FROM_OCC,
+     &     'R12hxhh',1,1,
      &     parameters,2,tgt_info)
 
       ! T(pt) operator
@@ -296,10 +311,11 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
       if (max_extern.gt.0) mode(1:4) = 'EXT '
       if (gbc4pt)          mode(4:4) =    '0'
       if (.not.R2_coupling)  mode(5:8) = 'NOR2'
-      if (r12op.gt.0.and.set_R2_R2) then 
-        mode(1:3) = 'R.R'
-        call set_dependency(form_ptdl0,'R12VV',tgt_info)
-        labels(nint+1) = 'R12VV'
+
+      if (r12op.gt.0.and.set_Rhxhh) then 
+        mode(1:3) = 'hhs'
+        call set_dependency(form_ptdl0,'R12hxhh',tgt_info)
+        labels(nint+1) = 'R12hxhh'
         nint = nint+1
       end if
       call form_parameters(-1,
@@ -356,11 +372,11 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
           labels(3) = op_r12
           labels(4) = op_rint
           nint = 1
-          if (r12op.gt.0.and.set_R2_R2) then
-            labels(5) = 'R12VV'
-            labels(6) = op_rint
-            nint = 2
-          end if
+c          if (r12op.gt.0.and.set_R2_R2) then
+c            labels(5) = 'R12VV'
+c            labels(6) = op_rint
+c            nint = 2
+c          end if
           call form_parameters(-1,
      &         parameters,2,title_ptdl0,nint,'---')
           call set_rule(form_ptdl0,ttype_frm,REPLACE,
@@ -503,6 +519,8 @@ c dbg
       call set_dependency(fopt_ptde0,mel_tptdef,tgt_info)      
       call set_dependency(fopt_ptde0,mel_etaptdef,tgt_info)      
       call set_dependency(fopt_ptde0,'Vpx-INTER',tgt_info)
+      if (set_Rhxhh)
+     &     call set_dependency(fopt_ptde0,'R12hxhh-INT',tgt_info)
       if (isim.eq.1) then
         nint = 1
         call set_dependency(fopt_ptde0,form_cchhat,tgt_info)
@@ -617,6 +635,27 @@ c dbg
       labels(1) = 'G.R-X-INT'
       call import_parameters(-1,parameters,'FG_INT',env_type)
       call set_rule('G.R-X-INT',ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
+      ! quick-fix:
+c      call add_target('R12hxhh-INT',ttype_opme,.false.,tgt_info)
+      call add_target('R12hxhh-INT',ttype_opme,set_Rhxhh,tgt_info)
+      call set_dependency('R12hxhh-INT','R12hxhh',tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'R12hxhh-INT'
+      labels(2) = 'R12hxhh'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('R12hxhh-INT',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'R12hxhh-INT'
+      call import_parameters(-1,parameters,'F12_INT',env_type)
+      call set_rule('R12hxhh-INT',ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
       
