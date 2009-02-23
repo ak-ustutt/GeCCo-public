@@ -909,12 +909,12 @@ c          print *,'processing: ',ms12i_a(1:3),
 c     &            'msc_c,msc_a: ',msc_c,msc_a,' fac = ',fac_scal
 c dbg
 
-c          if (ntest.ge.100) then
+          if (ntest.ge.100) then
             write(luout,*) 'Current spin case:'
             write(luout,*) ' OP1/OP2/INT (C) ->',ms12i_c(1:3)
             write(luout,*) ' OP1/OP2/INT (A) ->',ms12i_a(1:3)
             write(luout,*) ' CNT(C)/CNT(A)   ->',msc_c,msc_a
-c          end if
+          end if
 
           ! loop IRREP cases of (Op1(A),Op2(A),Interm)
           first2 = .true.
@@ -1755,7 +1755,7 @@ c dbg
               ioff_op1op2 = gam_ms_op1op2(igam12i_a(3),idxms)
               lenblock = len_gam_ms_op1op2(igam12i_a(3),idxms)
 c dbg
-          print *,'punching GAM blk for op1op2, ',igam12i_a(3),idxms
+c          print *,'punching GAM blk for op1op2, ',igam12i_a(3),idxms
 c dbg
               call put_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
      &             idoffop1op2+ioff_op1op2+lenblock)
