@@ -330,16 +330,19 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
         if (r12fix.or.r12op.gt.0) then
           call set_dependency(form_ptdl0,form_r12_bhint,tgt_info)
           call set_dependency(form_ptdl0,form_r12_xhint,tgt_info)
-          call set_dependency(form_ptdl0,'Vpx_formal',tgt_info)
           labels(3) = form_r12_vint ! the intermediates to be factored
           labels(4) = form_r12_vint//'^+'
           labels(5) = form_r12_bint
           labels(6) = form_r12_bhint
           labels(7) = form_r12_xint
-          labels(8) = 'Vpx_formal'
-          labels(9) = 'Vpx_formal^+'
-          labels(10) = form_r12_xhint
-          nint = 8
+          nint = 5
+          if (r12op.gt.0) then
+            call set_dependency(form_ptdl0,'Vpx_formal',tgt_info)
+            labels(8) = 'Vpx_formal'
+            labels(9) = 'Vpx_formal^+'
+            labels(10) = form_r12_xhint
+            nint = 8
+          end if
         else
           labels(3) = form_r12_vint ! the intermediates to be factored
           labels(4) = form_r12_vint//'^+'
