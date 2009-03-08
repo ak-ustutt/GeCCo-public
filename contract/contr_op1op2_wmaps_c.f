@@ -1714,6 +1714,8 @@ c          write(luout,'(x,5g15.8)')    xbf12tmp(1:lblk_op1op2tmp)
 c          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
 c     &         iblkop1op2,iblkop1op2,str_info,orb_info)
 c dbg
+                    call atim_cs(cpu0,sys0)
+                    cnt_used_reo = .true.
                     call reo_blk_wmaps_c(xop1op2,xop1op2blk,
      &                   reo_info%sign_reo,
      &                   tra_op1op2, tra_op1op2,
@@ -1738,6 +1740,9 @@ c          write(luout,*) 'reordered operator (',trim(op1op2%name),')'
 c          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
 c     &         iblkop1op2,iblkop1op2,str_info,orb_info)
 c dbg
+                    call atim_cs(cpu,sys)
+                    cnt_reo(1) = cnt_reo(1)+cpu-cpu0
+                    cnt_reo(2) = cnt_reo(2)+sys-sys0
                   end if
 
                 end do caex2_loop

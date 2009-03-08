@@ -94,7 +94,9 @@ c     &     lenblock = 200
      &     nstr_ex2cnta(nablk_op2), nstr_ex2cntc(ncblk_op2),
      &     ldim_op1a(nablk_op1), ldim_op1c(ncblk_op1),
      &     ldim_op2a(nablk_op2), ldim_op2c(ncblk_op2),
-     &     ldim_op1op2a(nablk_op1op2), ldim_op1op2c(ncblk_op1op2)
+     &     ldim_op1op2a(nablk_op1op2), ldim_op1op2c(ncblk_op1op2),
+     &     istrscr1_c(ncblk_op1op2), istrscr1_a(nablk_op1op2),
+     &     istrscr2_c(ncblk_op1op2), istrscr2_a(nablk_op1op2)
       integer ::
      &     lscr_op1op2, idxopsscr, idxoplscr, idxop1op2scr, idx, idxend,
      &     nstr_ex1a_tot, nstr_ex1c_tot,
@@ -112,9 +114,14 @@ c     &     lenblock = 200
 
       real(8) ::
      &     cpu, sys, cpu0, sys0
-
+c dbg
+     &     , cpu00, sys00, cpu1, sys1, cpu2, sys2, cpu3, sys3, cpu4,sys4
+c dbg
       integer, external ::
      &     ielprd
+c dbg
+      call atim_cs(cpu00,sys00)
+c dbg
 
       lenop1  = ielprd(lstrop1,ncblk_op1+nablk_op1)
       lenop2  = ielprd(lstrop2,ncblk_op2+nablk_op2)
@@ -245,7 +252,15 @@ c     &     lenblock = 200
         write(luout,*) 'lenscr = ',lenscr
         write(luout,*) 'idxscr = ',idxopsscr, idxoplscr, idxop1op2scr
       end if
+c dbg
+      call atim_cs(cpu,sys)
+      cnt_test(3) = cnt_test(3)+cpu-cpu00
+      cnt_test(4) = cnt_test(4)+sys-sys00
+c dbg
 
+c dbg
+      call atim_cs(cpu1,sys1)
+c dbg
       ! loop over CNT blocks
       do cnt_batch = 1, n_cnt_batch
 
@@ -320,6 +335,9 @@ c     &     lenblock = 200
      &                                 ncnt,nstr_exsc_tot*nstr_exsa_tot)
         end if
 
+c dbg
+        call atim_cs(cpu2,sys2)
+c dbg
         ! loop over blocks of EX_LONG
         do exl_batch = 1, n_exl_batch
 
@@ -392,6 +410,9 @@ c     &     lenblock = 200
           cnt_coll2(2) = cnt_coll2(2)+sys-sys0
 
           ! loop over blocks of EX_SHORT
+c dbg
+          call atim_cs(cpu3,sys3)
+c dbg
           do exs_batch = 1, n_exs_batch
 
             call idxstnd_batch(nexs,
@@ -410,9 +431,21 @@ c     &     lenblock = 200
      &             istr_exsc_bnd,istr_exsa_bnd
             end if
 
+c dbg
+            call atim_cs(cpu4,sys4)
+c dbg
             if (op1shorter) then
 
               call atim_cs(cpu0,sys0)
+c stat
+              mm_call = mm_call+1
+              mm_dim1   = mm_dim1  +nexs
+              mm_dim1sq = mm_dim1sq+nexs*nexs
+              mm_dim2   = mm_dim2  +nexl
+              mm_dim2sq = mm_dim2sq+nexl*nexl
+              mm_cnt    = mm_cnt   +ncnt
+              mm_cntsq  = mm_cntsq +ncnt*ncnt
+c stat
 
               ! calculate Op1Op2(EX_SHORT,EX_LONG)
               idx = idxopsscr + (exs_batch-1)*maxlen_exs_batch*ncnt
@@ -450,7 +483,9 @@ c     &     lenblock = 200
      &             nstr_ex1c12,nstr_ex1a12,
      &             nstr_ex2c12,nstr_ex2a12,
      &             ireo_ex1c12,ireo_ex1a12,
-     &             ireo_ex2c12,ireo_ex2a12)
+     &             ireo_ex2c12,ireo_ex2a12,
+     &             istrscr1_c,istrscr1_a,
+     &             istrscr2_c,istrscr2_a)
 
               call atim_cs(cpu,sys)
               cnt_dgemm(1) = cnt_scatt(1)+cpu-cpu0
@@ -459,6 +494,15 @@ c     &     lenblock = 200
             else
 
               call atim_cs(cpu0,sys0)
+c stat
+              mm_call = mm_call+1
+              mm_dim1   = mm_dim1  +nexl
+              mm_dim1sq = mm_dim1sq+nexl*nexl
+              mm_dim2   = mm_dim2  +nexs
+              mm_dim2sq = mm_dim2sq+nexs*nexs
+              mm_cnt    = mm_cnt   +ncnt
+              mm_cntsq  = mm_cntsq +ncnt*ncnt
+c stat
 
               ! calculate Op1Op2(EX_LONG,EX_SHORT)
               idx = idxopsscr + (exs_batch-1)*maxlen_exs_batch*ncnt
@@ -496,26 +540,50 @@ c     &     lenblock = 200
      &             nstr_ex1c12,nstr_ex1a12,
      &             nstr_ex2c12,nstr_ex2a12,
      &             ireo_ex1c12,ireo_ex1a12,
-     &             ireo_ex2c12,ireo_ex2a12)
+     &             ireo_ex2c12,ireo_ex2a12,
+     &             istrscr1_c,istrscr1_a,
+     &             istrscr2_c,istrscr2_a)
 
               call atim_cs(cpu,sys)
               cnt_scatt(1) = cnt_scatt(1)+cpu-cpu0
               cnt_scatt(2) = cnt_scatt(2)+sys-sys0
-
+              
             end if
 
             if (ntest.ge.1000) then
               write(luout,*) 'updated OP1OP2: (first element): ',
      &             xop1op2(1)
             end if
-
+c dbg
+            call atim_cs(cpu,sys)
+            cnt_test(11) = cnt_test(11)+cpu-cpu4
+            cnt_test(12) = cnt_test(12)+sys-sys4
+c dbg
 
           end do
+c dbg
+          call atim_cs(cpu,sys)
+          cnt_test(9)  = cnt_test(9)+cpu-cpu3
+          cnt_test(10) = cnt_test(10)+sys-sys3
+c dbg
+
 
         end do
+c dbg
+        call atim_cs(cpu,sys)
+        cnt_test(7) = cnt_test(7)+cpu-cpu2
+        cnt_test(8) = cnt_test(8)+sys-sys2
+c dbg
 
       end do
 
+c dbg
+      call atim_cs(cpu,sys)
+      cnt_test(5) = cnt_test(5)+cpu-cpu1
+      cnt_test(6) = cnt_test(6)+sys-sys1
+      cnt_test(1) = cnt_test(1)+cpu-cpu00
+      cnt_test(2) = cnt_test(2)+sys-sys00
+c dbg
       return
       end
 

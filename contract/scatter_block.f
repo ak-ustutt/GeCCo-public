@@ -12,7 +12,9 @@
      &         nstr_kc,nstr_ka, ! same as lstr_.. but reordered
      &         nstr_lc,nstr_la,
      &         ireo_kc,ireo_ka,
-     &         ireo_lc,ireo_la)
+     &         ireo_lc,ireo_la,
+     &         istr_kc,istr_ka,
+     &         istr_lc,istr_la)
 *----------------------------------------------------------------------*
 *     scatter for a given batch of strings K and L the block Op(K,L)
 *     to the full array Op(K*L)
@@ -39,15 +41,18 @@
      &     nstr_lc(ncblk_op),  nstr_la(nablk_op),
      &     ireo_kc(ncblk_op),  ireo_ka(nablk_op),
      &     ireo_lc(ncblk_op),  ireo_la(nablk_op)
+      integer, intent(inout) ::
+     &     istr_kc(ncblk_op),  istr_ka(nablk_op),
+     &     istr_lc(ncblk_op),  istr_la(nablk_op)
 
       integer ::
      &     ka, kc, kc_st, kc_nd,
      &     la, lc, lc_st, lc_nd,
      &     ioff, istr1, icmp, idx1, idx2, idx, ielmap,
      &     isgn, isgna, idxop, idx0op, kdx0, kdx_st, ldx0, ldx, kldx
-      integer ::
-     &     istr_kc(ncblk_op),  istr_ka(nablk_op),
-     &     istr_lc(ncblk_op),  istr_la(nablk_op)
+c      integer ::
+c     &     istr_kc(ncblk_op),  istr_ka(nablk_op),
+c     &     istr_lc(ncblk_op),  istr_la(nablk_op)
 
       ! KA-strings
       kdx0 = 0
