@@ -113,6 +113,9 @@
       type(contraction) ::
      &     cur_contr, cur_contr_red
 
+      real(8) ::
+     &     cpu, sys, wall, cpu0, sys0, wall0
+
       integer, external ::
      &     idxlist, idx_oplist2
       logical, external ::
@@ -190,7 +193,14 @@
             else if (type_xret.eq.2) then
               xret(idxres) = xret_blk(1)
             end if
+
+            call atim_csw(cpu,sys,wall)
+            call prtim(luout,'time for target',
+     &           cpu-cpu0,sys-sys0,wall-wall0)
+
           end if
+
+          call atim_csw(cpu0,sys0,wall0)
 
           if (cur_form%command.eq.command_end_of_formula)
      &         exit term_loop

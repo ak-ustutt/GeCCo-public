@@ -219,8 +219,9 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
         labels(2) = form_ccr12lg0
         labels(3) = op_ccr12lg
         labels(4) = op_r12
+        labels(5) = op_r12//'^+'
         call set_rule(form_ccr12lg0,ttype_frm,INVARIANT,
-     &              labels,4,1,
+     &              labels,5,1,
      &              title_ccr12lg0,1,tgt_info)
       end if
 

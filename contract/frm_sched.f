@@ -39,6 +39,10 @@
 
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
+c stat
+      real(8) ::
+     &     avg, sig
+c stat
 
       call atim_csw(cpu0,sys0,wall0)
       cnt_op1op2(1:3) = 0d0
@@ -48,8 +52,22 @@
       cnt_coll2(1:2) = 0d0
       cnt_dgemm(1:2) = 0d0
       cnt_scatt(1:2) = 0d0
+      cnt_reo(1:2) = 0d0
       cnt_rd(1:3) = 0d0
       cnt_wr(1:3) = 0d0
+      cnt_used_reo = .false.
+c dbg
+      cnt_test(1:12) = 0d0
+c dbg
+c stat
+      mm_call   = 0
+      mm_dim1   = 0
+      mm_dim1sq = 0
+      mm_dim2   = 0
+      mm_dim2sq = 0
+      mm_cnt    = 0
+      mm_cntsq  = 0
+c stat
 
       select case (irt_sched)
       case (0)
@@ -63,6 +81,20 @@
       if (iprlvl.ge.10) then
         call prtim(luout,'contraction kernel',
      &       cnt_kernel(1),cnt_kernel(2),-1d0)
+c dbg
+        call prtim(luout,'check kernel     ',
+     &       cnt_test(1),cnt_test(2),-1d0)
+        call prtim(luout,'     in setup    ',
+     &       cnt_test(3),cnt_test(4),-1d0)
+        call prtim(luout,'     inner loop ?',
+     &       cnt_test(11),cnt_test(12),-1d0)
+        call prtim(luout,'     inner loop  ',
+     &       cnt_test(9),cnt_test(10),-1d0)
+        call prtim(luout,'    middle loop  ',
+     &       cnt_test(7)-cnt_test(9),cnt_test(8)-cnt_test(10),-1d0)
+        call prtim(luout,'     outer loop  ',
+     &       cnt_test(5)-cnt_test(7),cnt_test(6)-cnt_test(8),-1d0)
+c dbg
         call prtim(luout,'     in collect 1',
      &       cnt_coll1(1),cnt_coll1(2),-1d0)
         call prtim(luout,'     in collect 2',
@@ -71,9 +103,12 @@
      &       cnt_dgemm(1),cnt_dgemm(2),-1d0)
         call prtim(luout,'       in scatter',
      &       cnt_scatt(1),cnt_scatt(2),-1d0)
+        if (cnt_used_reo)
+     &       call prtim(luout,'additional reord.',
+     &       cnt_reo(1),cnt_reo(2),-1d0)
         call prtim(luout,'overhead contraction 1',
-     &       cnt_dloop(1)-cnt_kernel(1),
-     &       cnt_dloop(2)-cnt_kernel(2),
+     &       cnt_dloop(1)-cnt_kernel(1)-cnt_reo(1),
+     &       cnt_dloop(2)-cnt_kernel(2)-cnt_reo(2),
      &       -1d0)
         call prtim(luout,'IO read',
      &      cnt_rd(1),cnt_rd(2),-1d0)
@@ -87,6 +122,18 @@
      &       cpu-cpu0-cnt_op1op2(1),
      &       sys-sys0-cnt_op1op2(2),
      &       -1d0)
+c stat
+        write(luout,*) 'calls to dgemm: ',mm_call
+        avg = dble(mm_dim1)/dble(mm_call)
+        sig = sqrt(abs(avg*avg - dble(mm_dim1sq)/dble(mm_call)))
+        write(luout,'(2x,a,2f12.2)') ' avg dim1, sigma:',avg,sig
+        avg = dble(mm_dim2)/dble(mm_call)
+        sig = sqrt(abs(avg*avg - dble(mm_dim2sq)/dble(mm_call)))
+        write(luout,'(2x,a,2f12.2)') ' avg dim2, sigma:',avg,sig
+        avg = dble(mm_cnt)/dble(mm_call)
+        sig = sqrt(abs(avg*avg - dble(mm_cntsq)/dble(mm_call)))
+        write(luout,'(2x,a,2f12.2)') ' avg cnt , sigma:',avg,sig
+c stat
         
       end if
       if (iprlvl.ge.1)

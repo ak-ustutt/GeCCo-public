@@ -147,32 +147,29 @@
         do while(associated(fl_t_r_pnt%next))
           fl_t_r_pnt => fl_t_r_pnt%next
         enddo
-        
-        ! find pp|hp, xp|hp and xx|hp blocks of R12X/R12
+
+        ! find hx|hp R12X
         occ = 0
-        occ(IPART,1) = 2
         occ(IHOLE,2) = 1
         occ(IPART,2) = 1
+        occ(IHOLE,1) = 2
         iblk_pphp = iblk_occ(occ,.false.,op_info%op_arr(idxr12x)%op)
-        occ = 0
-        occ(IPART,1) = 1
-        occ(IEXTR,1) = 1
-        occ(IHOLE,2) = 1
-        occ(IPART,2) = 1
-        iblk_pxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
-        occ = 0
-        occ(IEXTR,1) = 2
-        occ(IHOLE,2) = 1
-        occ(IPART,2) = 1
-        iblk_xxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
-      
+c dbg
+        print *,'iblk_pphp : ',iblk_pphp,idxr12x
+        print *,'set to 1'
+        iblk_pphp = 1
+c dbg
 
         if (.not.bar) then
+c dbg
+          print *,'call'
+c dbg
           call expand_op_product2(fl_t_r_pnt,idxsop,
      &         1d0,4,3,
-     &         (/idxsop,idxr12x,idxr12,idxsop/),
+     &         (/idxsop,idxr12x,idxc12,idxsop/),
      &         (/1      ,2     ,3       ,1     /),
-     &         (/1,iblk_pphp,1,1/),(/0,iblk_pphp,0,0/),
+c     &         (/1,iblk_pphp,1,1/),(/0,iblk_pphp,0,0/),
+     &         -1,-1,
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
@@ -180,7 +177,7 @@
         else
           call expand_op_product2(fl_t_r_pnt,idxsop,
      &         1d0,4,3,
-     &         (/idxsop,-idxr12,-idxr12x,idxsop/),
+     &         (/idxsop,idxc12,-idxr12x,idxsop/),
      &         (/1      ,2     ,3       ,1     /),
      &         (/1,1,iblk_pphp,1/),(/0,0,iblk_pphp,0/),
      &         (/2,3/),1,
@@ -188,6 +185,48 @@
      &         0,0,
      &         op_info)
         end if
+
+c        
+c        ! find pp|hp, xp|hp and xx|hp blocks of R12X/R12
+c        occ = 0
+c        occ(IPART,1) = 2
+c        occ(IHOLE,2) = 1
+c        occ(IPART,2) = 1
+c        iblk_pphp = iblk_occ(occ,.false.,op_info%op_arr(idxr12x)%op)
+c        occ = 0
+c        occ(IPART,1) = 1
+c        occ(IEXTR,1) = 1
+c        occ(IHOLE,2) = 1
+c        occ(IPART,2) = 1
+c        iblk_pxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+c        occ = 0
+c        occ(IEXTR,1) = 2
+c        occ(IHOLE,2) = 1
+c        occ(IPART,2) = 1
+c        iblk_xxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+c      
+c
+cc        if (.not.bar) then
+cc          call expand_op_product2(fl_t_r_pnt,idxsop,
+cc     &         1d0,4,3,
+cc     &         (/idxsop,idxr12x,idxr12,idxsop/),
+cc     &         (/1      ,2     ,3       ,1     /),
+cc     &         (/1,iblk_pphp,1,1/),(/0,iblk_pphp,0,0/),
+cc     &         (/2,3/),1,
+cc     &         0,0,
+cc     &         0,0,
+cc     &         op_info)
+cc        else
+cc          call expand_op_product2(fl_t_r_pnt,idxsop,
+cc     &         1d0,4,3,
+cc     &         (/idxsop,-idxr12,-idxr12x,idxsop/),
+cc     &         (/1      ,2     ,3       ,1     /),
+cc     &         (/1,1,iblk_pphp,1/),(/0,0,iblk_pphp,0/),
+cc     &         (/2,3/),1,
+cc     &         0,0,
+cc     &         0,0,
+cc     &         op_info)
+cc        end if
 c        do while(associated(fl_t_r_pnt%next))
 c          fl_t_r_pnt => fl_t_r_pnt%next
 c        enddo

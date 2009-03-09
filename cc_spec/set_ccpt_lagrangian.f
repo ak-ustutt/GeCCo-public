@@ -62,7 +62,7 @@
      &     mode
 
       logical ::
-     &     r12fix,truncate,set_r_r,explicit
+     &     r12fix,truncate,set_rhxhh,explicit
       integer ::
      &     nterms, ilabel, idx, ndef, 
      &     idxham,idxtbar,idxtop,idxtpt,idxtptbar,idxlcc,
@@ -214,9 +214,9 @@ c        end if
 
         call init_formula(flist_t_r_pt)
 
-        set_r_r = mode(1:3).eq.'R.R'
+        set_rhxhh = mode(1:3).eq.'hhs'
 
-        call set_t_r(flist_t_r_pt,.false.,set_r_r,
+        call set_t_r(flist_t_r_pt,.false.,set_rhxhh,
      &               idxspt,idxtpt,
      &               idxr12,idxr12x,idxc12_pt,idxcpp12_pt,
      &               r12op,r12fix,op_info)
