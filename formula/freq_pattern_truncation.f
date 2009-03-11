@@ -99,11 +99,22 @@
           delete = .false.
           if (ntest.ge.100) write(luout,*)'checking ',nvtx,' vertices'
           do ivtx = 1, nvtx
+c
+c            print *,'ivtx = ',ivtx
+c
             idx_op  = vertex(ivtx)%idx_op
             op_ord = op_info%op_arr(idx_op)%op%order
+c           
+c            print *,'name: ',trim(op_info%op_arr(idx_op)%op%name)
+c            print *,'op_ord = ',op_ord
+c
             if ((associated(op_info%op_arr(idx_op)%op%ifreq)).and.
      &          (op_ord.gt.0)) then
               op_spec = op_info%op_arr(idx_op)%op%species
+c           
+c            print *,'op_spec = ',op_spec
+c            print *,'op_ifreq(1) = ',op_info%op_arr(idx_op)%op%ifreq(1)
+c
               if (op_info%op_arr(idx_op)%op%ifreq(1).gt.0) then
                 do ii = 1,op_ord
                   op_ifreq = op_info%op_arr(idx_op)%op%ifreq(ii)

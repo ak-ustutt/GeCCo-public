@@ -44,7 +44,8 @@
      &     DEL_TERMS*9              = 'DEL_TERMS',
      &     MODIFY_FACTORIZATION*20  = 'MODIFY_FACTORIZATION',
      &     EXTRACT_ORDER*13         = 'EXTRACT_ORDER',
-     &     EXTRACT_FREQ*12          = 'EXTRACT_FREQ'
+     &     EXTRACT_FREQ*12          = 'EXTRACT_FREQ',
+     &     CLASS_FORMULA*13         = 'CLASS_FORMULA'
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',
