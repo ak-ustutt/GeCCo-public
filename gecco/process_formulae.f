@@ -381,6 +381,11 @@ c dbg end fix
         call form_extract_freq(form_pnt,form0_pnt,
      &       title, rule%labels(3), nint, idxfreq, dir_str, op_info)
         deallocate(idxfreq)
+      case(CLASS_FORMULA)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,idum,strdum)
+        call class_formula_drv(form_pnt,title,op_info,idum)
       case default
         call quit(1,'process_formulae','unknown command: '//
      &       trim(rule%command))

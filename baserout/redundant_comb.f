@@ -43,6 +43,8 @@
       do ii = 1,items
         newcomb(ii) = temp(comb(ii))
       end do
+      ! sort in ascending order
+      call isort(newcomb,items,1)
 
       return
       end

@@ -16,10 +16,13 @@
      &     iorder, spec, freq_idx(*)
 
       op%order = iorder
+c      print *,'order = ',iorder
       op%species = spec
+c      print *,'species = ',spec
       if (associated(op%ifreq)) deallocate(op%ifreq)
       allocate(op%ifreq(iorder))
       op%ifreq=freq_idx(1:iorder)
+c      print *,'ifreq = ',op%ifreq(1:iorder)
 
       return
       end

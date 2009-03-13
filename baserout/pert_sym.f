@@ -21,7 +21,10 @@
 
       integer ::
      &     isym, gamma, jsym, nao_blk, nao_full, ifree, luaoprop,
-     &     luerror, len_blk(8), norm(orb_info%nsym)
+     &     luerror, len_blk(8)
+
+      real(8) ::
+     &     norm(orb_info%nsym)
 
       real(8), pointer ::
      &     ao_full(:), ao_blk(:)

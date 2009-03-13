@@ -88,13 +88,13 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       mred => opti_stat%sbspmat(1:)
       gred => opti_stat%sbspmat(mxsub**2+1:)
       vred => opti_stat%sbspmat(2*mxsub**2+1:)
-      sred => opti_stat%sbspmat(2*mxsub**2+1:)
+      sred => opti_stat%sbspmat(3*mxsub**2+1:)
       ndim_rsbsp => opti_stat%ndim_rsbsp
       ndim_vsbsp => opti_stat%ndim_vsbsp
-      ndim_ssbsp => opti_stat%ndim_rsbsp
+      ndim_ssbsp => opti_stat%ndim_ssbsp
       iord_rsbsp => opti_stat%iord_rsbsp
       iord_vsbsp => opti_stat%iord_vsbsp
-      iord_ssbsp => opti_stat%iord_rsbsp
+      iord_ssbsp => opti_stat%iord_ssbsp
       ffrsbsp => opti_stat%ffrsbsp(1)%fhand
       ffvsbsp => opti_stat%ffvsbsp(1)%fhand
       ffssbsp => opti_stat%ffssbsp(1)%fhand
@@ -137,7 +137,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &       opti_stat%nadd,opti_stat%ndel, .true.,!init,
      &       iord_vsbsp,ffvsbsp,
      &       iord_rsbsp,ffrsbsp,
-     &       iord_ssbsp,ffssbsp,fdum,
+     &       iord_ssbsp,ffssbsp,me_rhs(iopt)%mel%fhand,
 c     &       iord_vsbsp,ffvsbsp(iopt)%fhand,
 c     &       iord_rsbsp,ffrsbsp(iopt)%fhand,
 c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
