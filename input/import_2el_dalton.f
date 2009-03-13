@@ -232,11 +232,11 @@ c dbg
           fac_s = 1d0
           fac_t = 1d0
         case(1)
-          fac_s = scal_ab !0.50d0
-          fac_t = scal_aa !0.25d0
+          fac_s = scal_ab
+          fac_t = scal_aa
         case(2)
-          fac_s = scal_ab*scal_ab    !0.50d0*0.50d0
-          fac_t = scal_aa*scal_aa    !0.25d0*0.25d0
+          fac_s = scal_ab*scal_ab
+          fac_t = scal_aa*scal_aa
         case default
           call quit(1,'import_2el_dalton','unknown scaling parameter')
         end select
