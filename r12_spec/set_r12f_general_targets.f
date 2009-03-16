@@ -33,7 +33,7 @@
      &     isim, ncat, nint, icnt, nlab, irank, idef,
      &     isym, ms, msc, sym_arr(8), extend, r12op,
      &     occ_def(ngastp,2,20),
-     &     ntp_min, ntp_max, ntpp_min, ntpp_max
+     &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext
       logical ::
      &     needed, r12fix, set_tp, set_tpp
       character(len_target_name) ::
@@ -70,6 +70,7 @@
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','r12op',ival=r12op)
+      call get_argument_value('method.R12','T1ext',ival=t1ext)
 
       n_pp = 0  ! number of particle-particle interaction in R12
       set_tp = .false.
@@ -439,31 +440,44 @@ c     &              parameters,1,tgt_info)
       occ_def(IPART,1,5) = 2
       occ_def(IHOLE,2,6) = 2
       ! n_pp == 1:
-      occ_def(IHOLE,1,7) = 2
-      occ_def(IHOLE,2,8) = 1
-      occ_def(IPART,2,8) = 1
+      if (n_pp.ge.1) then
+        occ_def(IHOLE,1,7) = 2
+        occ_def(IHOLE,2,8) = 1
+        occ_def(IPART,2,8) = 1
 
-      occ_def(IHOLE,1,9) = 1
-      occ_def(IPART,1,9) = 1
-      occ_def(IHOLE,2,10) = 1
-      occ_def(IPART,2,10) = 1
+        occ_def(IHOLE,1,9) = 1
+        occ_def(IPART,1,9) = 1
+        occ_def(IHOLE,2,10) = 1
+        occ_def(IPART,2,10) = 1
 
-      occ_def(IPART,1,11) = 2
-      occ_def(IHOLE,2,12) = 1
-      occ_def(IPART,2,12) = 1
+        occ_def(IPART,1,11) = 2
+        occ_def(IHOLE,2,12) = 1
+        occ_def(IPART,2,12) = 1
+      end if
       ! n_pp == 2:
-      occ_def(IHOLE,1,13) = 2
-      occ_def(IPART,2,14) = 2
-
+      if (n_pp.ge.2) then
+        occ_def(IHOLE,1,13) = 2
+        occ_def(IPART,2,14) = 2
+        
 c      occ_def(IHOLE,1,15) = 1
 c      occ_def(IPART,1,15) = 1
 c      occ_def(IPART,2,16) = 2
 
-      occ_def(IPART,1,17) = 2
-      occ_def(IPART,2,18) = 2
+        occ_def(IPART,1,17) = 2
+        occ_def(IPART,2,18) = 2
+      end if
+
+      ndef = 3*(n_pp+1)
+
+      if (t1ext.gt.0) then        
+        occ_def(IPART,1,2*ndef+1) = 1
+        occ_def(IEXTR,1,2*ndef+1) = 1
+        occ_def(IHOLE,2,2*ndef+2) = 2
+        ndef = ndef+1
+      end if
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,3*(n_pp+1),2,(/.true.,.true./),3*(n_pp+1))
+     &     occ_def,ndef,2,(/.true.,.true./),3*(n_pp+1))
       call set_rule(op_gr,ttype_op,DEF_OP_FROM_OCC,
      &              op_gr,1,1,
      &              parameters,2,tgt_info)
@@ -564,6 +578,7 @@ c      occ_def(IPART,2,16) = 2
 
         occ_def(IPART,1,6) = 2
         occ_def(IHOLE,2,6) = 2
+
       end if
       ! for n_pp >= 1
       if (n_pp.ge.1) then
@@ -599,6 +614,18 @@ c      occ_def(IPART,2,16) = 2
 
         occ_def(IPART,1,14) = 2
         occ_def(IPART,2,14) = 2
+      end if
+      if (t1ext.gt.0) then
+        occ_def(IEXTR,1,ndef+1) = 1
+        occ_def(IHOLE,2,ndef+1) = 1
+
+c        occ_def(IHOLE,1,ndef+2) = 1
+c        occ_def(IEXTR,1,ndef+2) = 1
+c        occ_def(IHOLE,2,ndef+2) = 2
+        occ_def(IPART,1,ndef+2) = 1
+        occ_def(IEXTR,1,ndef+2) = 1
+        occ_def(IHOLE,2,ndef+2) = 2
+        ndef = ndef+2
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,(/.true.,.true./),ndef)

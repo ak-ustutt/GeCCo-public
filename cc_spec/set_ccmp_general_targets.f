@@ -76,10 +76,9 @@ c     &       parameters,1,tgt_info)
         call get_argument_value('method.ECC','minexc',ival=min_rank)
         call get_argument_value('method.ECC','maxexc',ival=max_rank)
       end if
-      if (is_keyword_set('method.R12').gt.0) then
+      call get_argument_value('method.CC','T1ext',ival=t1ext_mode)
+      if (t1ext_mode.eq.0.and.is_keyword_set('method.R12').gt.0) then
         call get_argument_value('method.R12','T1ext',ival=t1ext_mode)
-      else
-        t1ext_mode = 0
       end if
 
       ! T operator
@@ -91,9 +90,9 @@ c     &       parameters,1,tgt_info)
      &              op_top,1,1,
      &              parameters,1,tgt_info)
       else
-        if (min_rank.ne.1.or.max_rank.gt.2.or..not.explicit)
+        if (min_rank.ne.1.or.max_rank.gt.2)
      &       call quit(1,'set_ccmp_general_targets',
-     &       'experimental T1ext option is for CCSD with R12 only')
+     &       'experimental T1ext option is for CCSD only')
         occ_def = 0
         ! 1 -- T1
         occ_def(IPART,1,1) = 1

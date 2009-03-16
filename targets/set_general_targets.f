@@ -26,7 +26,7 @@
       integer ::
      &     min_rank, max_rank,
      &     isim, ncat, nint, icnt, iformal, extern,
-     &     isym, ms, msc, sym_arr(8),trunc_type
+     &     isym, ms, msc, sym_arr(8),trunc_type,t1ext_mode
       logical ::
      &     needed, explicit, truncate
       character(len_target_name) ::
@@ -46,6 +46,9 @@
      &       ival=trunc_type)
       end if
       call get_argument_value('method.CCPT','extern',ival=extern)
+      call get_argument_value('method.CC','T1ext',ival=t1ext_mode)
+      if (t1ext_mode.eq.0)
+     &     call get_argument_value('method.R12','T1ext',ival=t1ext_mode)
 
       msc = +1  ! assuming closed shell
 *----------------------------------------------------------------------*
@@ -74,17 +77,28 @@ c patch for CCPT-R12 tests:
       if (explicit.and.is_keyword_set('method.CCPT').gt.0)
      &     iformal = 4
 c patch end
+      if (t1ext_mode.gt.0) iformal = min(5,max(t1ext_mode+2,iformal))
       call hop_parameters(-1,parameters,
-     &                   0,2,iformal,explicit.or.extern.gt.0)
+     &                   0,2,iformal,
+     &                   explicit.or.extern.gt.0.or.t1ext_mode.gt.0)
       call set_rule(op_ham,ttype_op,DEF_HAMILTONIAN,
      &              op_ham,1,1,
      &              parameters,1,tgt_info)
+      call opt_parameters(-1,parameters,+1,0)
+      call set_rule(op_ham,ttype_op,SET_HERMIT,
+     &              op_ham,1,1,
+     &              parameters,1,tgt_info)
+      
 
       ! Fock-Operator
       call add_target(op_fock,ttype_op,.false.,tgt_info)
       call hop_parameters(-1,parameters,
      &                   1,1,1,explicit)
       call set_rule(op_fock,ttype_op,DEF_HAMILTONIAN,
+     &              op_fock,1,1,
+     &              parameters,1,tgt_info)
+      call opt_parameters(-1,parameters,+1,0)
+      call set_rule(op_fock,ttype_op,SET_HERMIT,
      &              op_fock,1,1,
      &              parameters,1,tgt_info)
 

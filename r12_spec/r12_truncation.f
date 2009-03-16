@@ -1,4 +1,4 @@
-      subroutine r12_truncation(flist,trunc_type,
+      subroutine r12_truncation(flist,trunc_type,trunc_t1x,
      &     idxr12,idxham,idxtbar,idxtop,op_info)
 *----------------------------------------------------------------------*
 *     preliminary start-up for truncated R12 expansions
@@ -25,7 +25,8 @@
       type(operator_info), intent(in) ::
      &     op_info
       integer, intent(in) ::
-     &     trunc_type, idxr12, idxtbar, idxtop, idxham
+     &     trunc_type, idxr12, idxtbar, idxtop, idxham,
+     &     trunc_t1x
 
       logical ::
      &     delete
@@ -115,6 +116,11 @@ c     &     idx_oplist2
      &         call quit(1,'r12_truncation','strange: nham.ne.1')
           if (ntop-ntx.lt.0)
      &         call quit(1,'r12_truncation','strange: ntop-ntx.lt.0')
+
+          ! well, old behaviour only for trunc_t1x.eq.-1
+          ! else, we forget about these operators and treat them later:
+          if (trunc_t1x.ne.-1) ntx = 0
+          if (trunc_t1x.ne.-1) ntbx = 0
 
           ! always linear in T1X
           delete = ntx.gt.1

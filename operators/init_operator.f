@@ -37,6 +37,9 @@
 
       op%order = -1            ! set perturbation order to undefined
       op%species = -1             ! set operator species to undefined
+
+      op%hermitian = 0         ! start with non-symmetric operator
+
       nullify(op%ifreq)        ! point to zero
 
         ! some arrays run over 1..njoined as second index

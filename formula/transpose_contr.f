@@ -98,10 +98,15 @@ c dbg
 c          call wrt_occ_n(6,occ,op%njoined)
 c dbg
           ! ... but only if we have off-diagonal blocks
-          ! as we currently do not know the C/A symmetry
-          ! of the operator ...
-          if (.not.occ_is_diag_blk(occ,njoined)) then
+          ! or if we know that the operator is hermitian
+          if (.not.occ_is_diag_blk(occ,njoined).or.
+     &         abs(op%hermitian).eq.1)
+     &         then
             idx = iblk_occ(occ,.true.,op)
+            ! we have to change the overall sign, if the
+            ! operator is anti-hermitian:
+            if (op%hermitian.eq.-1)
+     &           contr%fac = -contr%fac
           else
             idx = -1
           end if

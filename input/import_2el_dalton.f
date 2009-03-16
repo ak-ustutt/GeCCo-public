@@ -111,7 +111,7 @@
       allocate(iy_int(4,orb_info%nsym,orb_info%ntoob+orb_info%caborb),
      &     typetab(24),mnmxspc(2,ngas))
 
-      naux_max = max_rank_op('X',oplist%op,.true.)
+      naux_max = max_rank_op('XTOT',oplist%op,.true.)
       hhgg_list = (max_rank_op('AP',oplist%op,.true.)+
      &             max_rank_op('AX',oplist%op,.true.) ) .eq. 0 .or.
      &            (max_rank_op('CP',oplist%op,.true.)+
@@ -120,10 +120,6 @@
       nh_min = 0
       nh_max = 4
       if (hhgg_list) nh_min = 2
-
-c dbg
-c      print *,'import naux_mx',naux_max
-c dbg
 
       do iaux_max = 0, naux_max
         
@@ -171,6 +167,19 @@ c          mnmxspc(2,1:ngas) = 4
             if (ihpvgas(igas,1).eq.IEXTR) mnmxspc(2,igas) = 4              
           end do
           if (ihpvgas(ngas,1).eq.IEXTR) mnmxspc(1:2,ngas) = 4
+        case(3)
+          mnmxspc(1,1:ngas) = 0
+          mnmxspc(2,1:ngas) = 1
+          do igas = 1, ngas-1
+            if (ihpvgas(igas+1,1).eq.IEXTR) then
+              mnmxspc(1,igas) = 1
+            end if
+            if (ihpvgas(igas,1).eq.IEXTR) mnmxspc(2,igas) = 4              
+          end do
+          if (ihpvgas(ngas,1).eq.IEXTR) mnmxspc(1:2,ngas) = 4
+        case default
+          write(luout,*) 'naux_max = ',naux_max
+          call quit(1,'import_2el_dalton','unsupported nauxmax')
         end select
       
         ! set up DA-buffer for 2el integrals

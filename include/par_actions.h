@@ -12,7 +12,8 @@
      &     DEF_R12INT*10      = 'DEF_R12INT',
      &     DEF_R12INTERM*13   = 'DEF_R12INTERM',
      &     CLONE_OP*14        = 'CLONE_OPERATOR',
-     &     SET_ORDER*9        = 'SET_ORDER'
+     &     SET_ORDER*9        = 'SET_ORDER',
+     &     SET_HERMIT*13      = 'SET_HERMITIAN'
 ! formulae:
       character, parameter ::
      &     CHECK_FORMGEN*12         = 'CHECK_FORMGEN',
