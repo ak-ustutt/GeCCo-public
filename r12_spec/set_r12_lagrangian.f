@@ -249,8 +249,8 @@ c      sbar_pnt%dagger = .true.
       if (trunc_t1x.gt.0.and.h0_t1x.ne.-1) then
         trmode = '        '
         write(trmode,'("ord",i1," ",i1)') trunc_t1x, h0_t1x
-        call t1x_truncation(flist_lag,trmode,
-     &       idxtbar,idxham,idxtop,op_info)
+        call t1x_r12_truncation(flist_lag,trmode,
+     &       idxr12,idxtbar,idxham,idxtop,op_info)
       end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)

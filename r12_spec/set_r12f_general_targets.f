@@ -475,6 +475,11 @@ c      occ_def(IPART,2,16) = 2
         occ_def(IHOLE,2,2*ndef+2) = 2
         ndef = ndef+1
       end if
+      if (t1ext.ge.4) then        
+        occ_def(IEXTR,1,2*ndef+1) = 2
+        occ_def(IHOLE,2,2*ndef+2) = 2
+        ndef = ndef+1
+      end if
 
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,2,(/.true.,.true./),3*(n_pp+1))
@@ -626,6 +631,11 @@ c        occ_def(IHOLE,2,ndef+2) = 2
         occ_def(IEXTR,1,ndef+2) = 1
         occ_def(IHOLE,2,ndef+2) = 2
         ndef = ndef+2
+      end if
+      if (t1ext.ge.4) then
+        occ_def(IEXTR,1,ndef+1) = 2
+        occ_def(IHOLE,2,ndef+1) = 2
+        ndef = ndef+1
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,(/.true.,.true./),ndef)
