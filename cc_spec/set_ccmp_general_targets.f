@@ -80,6 +80,9 @@ c     &       parameters,1,tgt_info)
       if (t1ext_mode.eq.0.and.is_keyword_set('method.R12').gt.0) then
         call get_argument_value('method.R12','T1ext',ival=t1ext_mode)
       end if
+      if (t1ext_mode.eq.0.and.is_keyword_set('method.ECC').gt.0) then
+        call get_argument_value('method.ECC','T1ext',ival=t1ext_mode)
+      end if
 
       ! T operator
       call add_target(op_top,ttype_op,.false.,tgt_info)

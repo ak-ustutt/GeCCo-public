@@ -49,6 +49,8 @@
       call get_argument_value('method.CC','T1ext',ival=t1ext_mode)
       if (t1ext_mode.eq.0)
      &     call get_argument_value('method.R12','T1ext',ival=t1ext_mode)
+      if (t1ext_mode.eq.0)
+     &     call get_argument_value('method.ECC','T1ext',ival=t1ext_mode)
 
       msc = +1  ! assuming closed shell
 *----------------------------------------------------------------------*
@@ -78,6 +80,9 @@ c patch for CCPT-R12 tests:
      &     iformal = 4
 c patch end
       if (t1ext_mode.gt.0) iformal = min(5,max(t1ext_mode+2,iformal))
+c another patch
+      if (is_keyword_set('method.ECC').gt.0) iformal = 6
+c patch end
       call hop_parameters(-1,parameters,
      &                   0,2,iformal,
      &                   explicit.or.extern.gt.0.or.t1ext_mode.gt.0)

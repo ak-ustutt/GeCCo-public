@@ -177,6 +177,16 @@ c          mnmxspc(2,1:ngas) = 4
             if (ihpvgas(igas,1).eq.IEXTR) mnmxspc(2,igas) = 4              
           end do
           if (ihpvgas(ngas,1).eq.IEXTR) mnmxspc(1:2,ngas) = 4
+        case(4)
+          mnmxspc(1,1:ngas) = 0
+          mnmxspc(2,1:ngas) = 0
+          do igas = 1, ngas-1
+            if (ihpvgas(igas+1,1).eq.IEXTR) then
+              mnmxspc(1,igas) = 0
+            end if
+            if (ihpvgas(igas,1).eq.IEXTR) mnmxspc(2,igas) = 4              
+          end do
+          if (ihpvgas(ngas,1).eq.IEXTR) mnmxspc(1:2,ngas) = 4
         case default
           write(luout,*) 'naux_max = ',naux_max
           call quit(1,'import_2el_dalton','unsupported nauxmax')

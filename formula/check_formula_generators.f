@@ -60,7 +60,7 @@
       idxopa = idx_oplist2('A',op_info)
       opa => op_info%op_arr(idxopa)%op
       call set_xop(opa,'A',.false.,
-     &     2,2,0,iformal,orb_info)
+     &     2,2,0,0,iformal,orb_info)
 
       write(luout,*) '-------------------'
       write(luout,*) ' adding B operator'

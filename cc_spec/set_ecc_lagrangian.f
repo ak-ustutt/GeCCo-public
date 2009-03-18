@@ -63,7 +63,7 @@
       integer ::
      &     nterms, ilabel, idx, 
      &     idxham,idxtbar,idxtop,idxtpt,idxtptbar,idxlag,
-     &     idx_hb_temp, max_rank_t
+     &     idx_hb_temp, max_rank_t, max_ext_t
 
       type(operator), pointer::
      &     hb_temp_pnt
@@ -108,6 +108,7 @@ c prelim
 c prelim
       trmode = '        '
       call get_argument_value('method.ECC','truncate',str=trmode)
+      max_ext_t = 1
 c prelim
       ! -------------------
       ! define and set Hbar
@@ -118,10 +119,10 @@ c prelim
       max_rank_t = maxxlvl_op(op_info%op_arr(idxtop)%op)
       if (trim(trmode).eq.'no') then
         call set_xop(hb_temp_pnt,op_hb_temp,.false.,
-     &     0,4*max_rank_t-2,0,0,orb_info)
+     &     0,4*max_rank_t-2,2*max_ext_t,0,0,orb_info)
       else
         call set_xop(hb_temp_pnt,op_hb_temp,.false.,
-     &     0,max_rank_t+1,0,0,orb_info)
+     &     0,max_rank_t+1,0,0,0,orb_info)
       end if
 
       ! expand e^{-T} H e^T 
@@ -168,8 +169,8 @@ c prelim
         call pert_truncation(flist_lag,trmode,
      &     idxtbar,idxham,idxtop,op_info)
       else
-        call quit(1,'set_ecc_lagrangian',
-     &       'only valid in truncation mode')
+c        call quit(1,'set_ecc_lagrangian',
+c     &       'only valid in truncation mode')
       end if
 
       if (ntest.ge.100) then

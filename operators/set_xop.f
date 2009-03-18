@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_xop(op,name,dagger,
-     &     min_rank,max_rank,ncadiff,iformal,orb_info)
+     &     min_rank,max_rank,max_ext,ncadiff,iformal,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_genop
 *     set up excitation operator (minrank to maxrank)
@@ -21,7 +21,7 @@
       logical, intent(in) ::
      &     dagger
       integer, intent(in) ::
-     &     min_rank, max_rank, ncadiff,iformal
+     &     min_rank, max_rank, max_ext, ncadiff,iformal
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -57,6 +57,12 @@
      &           then
             hpvx_mnmx(1,igastp,ica) = 0
             hpvx_mnmx(2,igastp,ica) = max_rank
+          else if (orb_info%nactt_hpv(igastp).gt.0.and.
+     &        ((ica.eq.1.and.(igastp.eq.IEXTR)).or.
+     &         (ica.eq.2.and.(igastp.eq.IHOLE.or.igastp.eq.IVALE)) ))
+     &           then
+            hpvx_mnmx(1,igastp,ica) = 0
+            hpvx_mnmx(2,igastp,ica) = max_ext
           else
             hpvx_mnmx(1,igastp,ica) = 0
             hpvx_mnmx(2,igastp,ica) = 0
@@ -72,6 +78,12 @@
      &           then
             hpvx_mnmx(1,igastp,ica) = 0
             hpvx_mnmx(2,igastp,ica) = max_rank
+          else if (orb_info%nactt_hpv(igastp).gt.0.and.
+     &        ((ica.eq.2.and.(igastp.eq.IEXTR)).or.
+     &         (ica.eq.1.and.(igastp.eq.IHOLE.or.igastp.eq.IVALE)) ))
+     &           then
+            hpvx_mnmx(1,igastp,ica) = 0
+            hpvx_mnmx(2,igastp,ica) = max_ext
           else
             hpvx_mnmx(1,igastp,ica) = 0
             hpvx_mnmx(2,igastp,ica) = 0

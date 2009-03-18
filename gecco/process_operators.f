@@ -95,7 +95,7 @@
         call xop_parameters(+1,rule%parameters,
      &                      dagger,min_rank,max_rank,ncadiff,iformal)
         call set_xop(op_pnt,trim(rule%labels(1)),dagger,
-     &       min_rank,max_rank,ncadiff,iformal,orb_info)
+     &       min_rank,max_rank,0,ncadiff,iformal,orb_info)
       case(DEF_DENSITY)
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',

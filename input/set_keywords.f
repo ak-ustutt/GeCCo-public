@@ -59,6 +59,9 @@ c      use parse_input
       call argument_add('minexc','method.ECC',type=vtyp_int,idef=(/1/))
       call argument_add('truncate','method.ECC',type=vtyp_str,
      &     len=8,cdef=(/'n','o',' ',' ',' ',' ',' ',' '/))
+      call argument_add('T1ext','method.ECC',type=vtyp_int,idef=(/0/))
+      call argument_add('H0_T1ext','method.ECC',
+     &                                       type=vtyp_int,idef=(/0/))
 
       call keyword_add('R12',context='method')
       call argument_add('ansatz','method.R12',type=vtyp_int,idef=(/1/))
