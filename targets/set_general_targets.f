@@ -81,7 +81,8 @@ c patch for CCPT-R12 tests:
 c patch end
       if (t1ext_mode.gt.0) iformal = min(5,max(t1ext_mode+2,iformal))
 c another patch
-      if (is_keyword_set('method.ECC').gt.0) iformal = 6
+      if (is_keyword_set('method.ECC').gt.0)
+     &     iformal = min(6,max(t1ext_mode+1,4))
 c patch end
       call hop_parameters(-1,parameters,
      &                   0,2,iformal,

@@ -70,22 +70,28 @@
       select case(mode(1:4))
       case('ord1')
         max_pert = 1
-        max_t1x  = 4
+        max_t1x  = 40
       case('ord2')
         max_pert = 2
-        max_t1x  = 4
+        max_t1x  = 40
       case('ord3')
         max_pert = 3
-        max_t1x  = 4
+        max_t1x  = 40
       case('ord4')
         max_pert = 4
-        max_t1x  = 4
+        max_t1x  = 40
       case('ord5')
         max_pert = 5
-        max_t1x  = 4
+        max_t1x  = 40
       case('ord6')
         max_pert = 6
-        max_t1x  = 4
+        max_t1x  = 40
+      case('ord7')
+        max_pert = 7
+        max_t1x  = 40
+      case('ord8')
+        max_pert = 8
+        max_t1x  = 40
       case('line')
         max_pert = 5
         max_t1x  = 1

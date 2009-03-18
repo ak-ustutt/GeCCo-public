@@ -63,7 +63,7 @@
       integer ::
      &     nterms, ilabel, idx, 
      &     idxham,idxtbar,idxtop,idxtpt,idxtptbar,idxlag,
-     &     idx_hb_temp, max_rank_t, max_ext_t
+     &     idx_hb_temp, max_rank_t, max_ext_t, t1xmode
 
       type(operator), pointer::
      &     hb_temp_pnt
@@ -171,6 +171,18 @@ c prelim
       else
 c        call quit(1,'set_ecc_lagrangian',
 c     &       'only valid in truncation mode')
+      end if
+c quick'n'dirty:
+      call get_argument_value('method.ECC','T1ext',ival=t1xmode)
+c dbg
+      print *,'in set_ecc_lagrangian: t1ext= ',t1xmode
+c dbg
+      if (t1xmode.gt.0) then
+        write(trmode,'("ord",i1)') t1xmode
+        call get_argument_value('method.ECC','H0_T1ext',ival=t1xmode)
+        write(trmode(6:),'(i1)') t1xmode
+        call t1x_truncation(flist_lag,trmode,
+     &       idxtbar,idxham,idxtop,op_info)
       end if
 
       if (ntest.ge.100) then
