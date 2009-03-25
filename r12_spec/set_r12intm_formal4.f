@@ -22,7 +22,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -44,7 +44,7 @@
      &     opdum_g     = '_G_'
 
       logical ::
-     &     def_fpp, def_fhh, def_g, unknown, def_fp3f
+     &     def_fpp, def_fhh, def_g, unknown, def_fp3f, def_gppph
       integer ::
      &     idx, nfact, 
      &     idx_intm, idx_r, idx_f, idx_g, idx_h, idx_rpl,
@@ -334,9 +334,9 @@ c        else if (njoined_int.eq.2) then
           unknown = .true.
         endif
       case('Z')
-        def_g = .true.
-        idx_rpl = 5
         if(njoined_int.eq.3)then
+          def_g = .true.
+          idx_rpl = 5
           idx_prod(1:9) = (/idx_intm,-idx_r,idx_intm,idx_intm,idx_g,
      &                      idx_intm,idx_intm,idx_r,idx_intm/)
           idx_supv(1:9) = (/       1,     2,       1,       1,    3,
@@ -347,6 +347,18 @@ c        else if (njoined_int.eq.2) then
           nconnect = 3
           avoid(1:4) = (/2,7,3,8/)
           navoid = 2
+        else if(njoined_int.eq.1) then
+          def_gppph = .true.
+          idx_rpl = 3
+          idx_prod(1:5) = (/idx_intm,-idx_r,idx_g,idx_r,idx_intm/)
+          idx_supv(1:5) = (/       1,     2,    3,    4,       1/)
+          nvtx = 5
+          nfact = 4
+          connect(1:6) = (/2,3,2,4,3,4/)
+          nconnect = 3
+          project(1:4)  =  (/3,5,1,IPART/)
+          nproject = 1
+          navoid = 0
         else
           unknown = .true.
         endif
@@ -473,6 +485,35 @@ c dbg
         call set_hop(op_g,opdum_g,.false.,
      &       2,2,0,.true.,orb_info)
         idx_prod(idx_rpl) = idx_g
+      else if (def_gppph) then
+        call add_operator(opdum_g,op_info)
+        idx_g = idx_oplist2(opdum_g,op_info)
+        op_g => op_info%op_arr(idx_g)%op
+        allocate(occ_def(ngastp,2,4))
+        ndef = 4
+        occ_def = 0
+        ! 1
+        occ_def(IHOLE,1,1) = 1
+        occ_def(IPART,1,1) = 1
+        occ_def(IPART,2,1) = 2
+        ! 2
+        occ_def(IHOLE,1,2) = 1
+        occ_def(IPART,1,2) = 1
+        occ_def(IPART,2,2) = 1
+        occ_def(IEXTR,2,2) = 1
+        ! 3
+        occ_def(IHOLE,1,3) = 1
+        occ_def(IEXTR,1,3) = 1
+        occ_def(IPART,2,3) = 2
+        ! 4
+        occ_def(IHOLE,1,4) = 1
+        occ_def(IEXTR,1,4) = 1
+        occ_def(IPART,2,4) = 1
+        occ_def(IEXTR,2,4) = 1
+        call set_uop2(op_g,opdum_g,
+     &       occ_def,ndef,1,(/.true.,.true./),orb_info)
+        deallocate(occ_def)
+        idx_prod(idx_rpl) = idx_g
       end if
 
       ! set up scratch formula
@@ -518,7 +559,7 @@ c dbg
         op   => op_info%op_arr(idx_h)%op
         call form_op_replace(opdum_f,op%name,.true.,flist_scr,op_info)
       end if
-      if (def_g) then
+      if (def_g.or.def_gppph) then
         op   => op_info%op_arr(idx_h)%op
         call form_op_replace(opdum_g,op%name,.true.,flist_scr,op_info)
       end if
@@ -536,7 +577,7 @@ c dbg
       end if
 
       call dealloc_formula_list(flist_scr)
-      if (def_g) call del_operator(opdum_g,op_info)
+      if (def_g.or.def_gppph) call del_operator(opdum_g,op_info)
       if (def_fhh.or.def_fpp.or.def_fp3f)
      &     call del_operator(opdum_f,op_info)
 

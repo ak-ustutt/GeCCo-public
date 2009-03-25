@@ -32,7 +32,7 @@
      &     min_rank_tp, min_rank_tpp,
      &     isim, ncat, nint, icnt, nlab, irank, idef,
      &     isym, ms, msc, sym_arr(8), extend, r12op,
-     &     occ_def(ngastp,2,20),
+     &     occ_def(ngastp,2,60),
      &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext
       logical ::
      &     needed, r12fix, set_tp, set_tpp
@@ -797,6 +797,166 @@ c        occ_def(IHOLE,2,ndef+2) = 2
      &              op_c_inter,1,1,
      &              parameters,2,tgt_info)
 
+      ! P intermediate
+      call add_target(op_p_inter,ttype_op,.false.,tgt_info)
+      call set_dependency(op_p_inter,op_b_inter,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_p_inter,.false.) ! <- dagger=.false.
+      call set_rule(op_p_inter,ttype_op,CLONE_OP,
+     &              op_p_inter,1,1,
+     &              parameters,1,tgt_info)
+
+      ! Z2 intermediate (for R^+ R couplings)
+      call add_target('Z2-INT',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ! 1
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IPART,2,1) = 2
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,1,1,(/.true.,.true./),6)
+      call set_rule('Z2-INT',ttype_op,DEF_OP_FROM_OCC,
+     &              'Z2-INT',1,1,
+     &              parameters,2,tgt_info)
+      
+        ! Non-anti-symmetrised Hamiltonian integrals.
+        call add_target(op_g_z,ttype_op,.false.,tgt_info)
+        occ_def = 0
+        ! 1
+        occ_def(IHOLE,1,1) = 1
+        occ_def(IHOLE,2,1) = 1
+        occ_def(IHOLE,1,2) = 1
+        occ_def(IHOLE,2,2) = 1
+        ! 2
+        occ_def(IHOLE,1,3) = 1
+        occ_def(IPART,2,3) = 1
+        occ_def(IHOLE,1,4) = 1
+        occ_def(IHOLE,2,4) = 1
+        ! 3
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IEXTR,2,5) = 1
+        occ_def(IHOLE,1,6) = 1
+        occ_def(IHOLE,2,6) = 1
+        ! 4
+        occ_def(IHOLE,1,7) = 1
+        occ_def(IHOLE,2,7) = 1
+        occ_def(IHOLE,1,8) = 1
+        occ_def(IPART,2,8) = 1
+        ! 5
+        occ_def(IHOLE,1,9) = 1
+        occ_def(IPART,2,9) = 1
+        occ_def(IHOLE,1,10) = 1
+        occ_def(IPART,2,10) = 1
+        ! 6
+        occ_def(IHOLE,1,11) = 1
+        occ_def(IEXTR,2,11) = 1
+        occ_def(IHOLE,1,12) = 1
+        occ_def(IPART,2,12) = 1
+        ! 7
+        occ_def(IHOLE,1,13) = 1
+        occ_def(IHOLE,2,13) = 1
+        occ_def(IPART,1,14) = 1
+        occ_def(IHOLE,2,14) = 1
+        ! 8
+        occ_def(IHOLE,1,15) = 1
+        occ_def(IPART,2,15) = 1
+        occ_def(IPART,1,16) = 1
+        occ_def(IHOLE,2,16) = 1
+        ! 9
+        occ_def(IHOLE,1,17) = 1
+        occ_def(IEXTR,2,17) = 1
+        occ_def(IPART,1,18) = 1
+        occ_def(IHOLE,2,18) = 1
+        ! 10
+        occ_def(IHOLE,1,19) = 1
+        occ_def(IHOLE,2,19) = 1
+        occ_def(IPART,1,20) = 1
+        occ_def(IPART,2,20) = 1
+        ! 11
+        occ_def(IHOLE,1,21) = 1
+        occ_def(IPART,2,21) = 1
+        occ_def(IPART,1,22) = 1
+        occ_def(IPART,2,22) = 1
+        ! 12
+        occ_def(IHOLE,1,23) = 1
+        occ_def(IEXTR,2,23) = 1
+        occ_def(IPART,1,24) = 1
+        occ_def(IPART,2,24) = 1
+        ! 13
+        occ_def(IHOLE,1,25) = 1
+        occ_def(IHOLE,2,25) = 1
+        occ_def(IHOLE,1,26) = 1
+        occ_def(IEXTR,2,26) = 1
+        ! 14
+        occ_def(IHOLE,1,27) = 1
+        occ_def(IPART,2,27) = 1
+        occ_def(IHOLE,1,28) = 1
+        occ_def(IEXTR,2,28) = 1
+        ! 15
+        occ_def(IHOLE,1,29) = 1
+        occ_def(IEXTR,2,29) = 1
+        occ_def(IHOLE,1,30) = 1
+        occ_def(IEXTR,2,30) = 1
+        ! 16
+        occ_def(IHOLE,1,31) = 1
+        occ_def(IHOLE,2,31) = 1
+        occ_def(IPART,1,32) = 1
+        occ_def(IEXTR,2,32) = 1
+        ! 17
+        occ_def(IHOLE,1,33) = 1
+        occ_def(IPART,2,33) = 1
+        occ_def(IPART,1,34) = 1
+        occ_def(IEXTR,2,34) = 1
+        ! 18
+        occ_def(IHOLE,1,35) = 1
+        occ_def(IEXTR,2,35) = 1
+        occ_def(IPART,1,36) = 1
+        occ_def(IEXTR,2,36) = 1
+        ! 19
+        occ_def(IHOLE,1,37) = 1
+        occ_def(IHOLE,2,37) = 1
+        occ_def(IEXTR,1,38) = 1
+        occ_def(IHOLE,2,38) = 1
+        ! 20
+        occ_def(IHOLE,1,39) = 1
+        occ_def(IPART,2,39) = 1
+        occ_def(IEXTR,1,40) = 1
+        occ_def(IHOLE,2,40) = 1
+        ! 21
+        occ_def(IHOLE,1,41) = 1
+        occ_def(IEXTR,2,41) = 1
+        occ_def(IEXTR,1,42) = 1
+        occ_def(IHOLE,2,42) = 1
+        ! 22
+        occ_def(IHOLE,1,43) = 1
+        occ_def(IHOLE,2,43) = 1
+        occ_def(IEXTR,1,44) = 1
+        occ_def(IPART,2,44) = 1
+        ! 23
+        occ_def(IHOLE,1,45) = 1
+        occ_def(IPART,2,45) = 1
+        occ_def(IEXTR,1,46) = 1
+        occ_def(IPART,2,46) = 1
+        ! 24
+        occ_def(IHOLE,1,47) = 1
+        occ_def(IEXTR,2,47) = 1
+        occ_def(IEXTR,1,48) = 1
+        occ_def(IPART,2,48) = 1
+        ! 25
+        occ_def(IHOLE,1,49) = 1
+        occ_def(IHOLE,2,49) = 1
+        occ_def(IEXTR,1,50) = 1
+        occ_def(IEXTR,2,50) = 1
+        ! 26
+        occ_def(IHOLE,1,51) = 1
+        occ_def(IPART,2,51) = 1
+        occ_def(IEXTR,1,52) = 1
+        occ_def(IEXTR,2,52) = 1
+        call op_from_occ_parameters(-1,parameters,2,
+     &       occ_def,26,2,(/.true.,.true./),52)
+        call set_rule(op_g_z,ttype_op,DEF_OP_FROM_OCC,
+     &                op_g_z,1,1,
+     &                parameters,2,tgt_info)
+
 c      ! Z^{ijp}_{klm} intermediate (needed for CC)
 cc      call add_target(op_z_inter,ttype_op,.false.,tgt_info)
 cc dbg
@@ -1129,22 +1289,22 @@ c     &              parameters,2,tgt_info)
      &              labels,nlab,1,
      &              parameters,2,tgt_info)
 
-c      ! Formal definition of Z.
-c      labels(1:10)(1:len_target_name) = ' '
-c      labels(1) = form_r12_zint
-c      labels(2) = op_z_inter
-c      labels(3) = op_r12
-c      labels(4) = op_ham
-c      labels(5) = op_r12
-c      call add_target(form_r12_zint,ttype_frm,.true.,tgt_info)
-c      call set_dependency(form_r12_zint,op_b_inter,tgt_info)
-c      call set_dependency(form_r12_zint,op_ham,tgt_info)
-c      call set_dependency(form_r12_zint,op_r12,tgt_info)
-c      call form_parameters(-1,
-c     &     parameters,2,title_r12_zint,0,'Z')
-c      call set_rule(form_r12_zint,ttype_frm,DEF_R12INTM_FORMAL,
-c     &              labels,5,1,
-c     &              parameters,2,tgt_info)
+      ! Formal definition of Z2
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12'
+      labels(2) = 'Z2-INT'
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      call add_target('Z2INT_R12',ttype_frm,.false.,tgt_info)
+      call set_dependency('Z2INT_R12','Z2-INT',tgt_info)
+      call set_dependency('Z2INT_R12',op_ham,tgt_info)
+      call set_dependency('Z2INT_R12',op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_zint,0,'Z')
+      call set_rule('Z2INT_R12',ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae
@@ -1701,6 +1861,19 @@ c     &              parameters,1,tgt_info)
      &                labels,4,1,
      &                parameters,1,tgt_info)
       end if
+
+      ! Z2-list
+        call add_target('DEF-Z2LIST',ttype_opme,.false.,tgt_info)
+        call set_dependency('DEF-Z2LIST','Z2-INT',tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = 'DEF_Z2LIST'
+        labels(2) = 'Z2-INT'
+        call me_list_parameters(-1,parameters,
+     &       msc,0,1,0,0,.false.)
+        call set_rule('DEF-Z2LIST',ttype_opme,DEF_ME_LIST,
+     &       labels,2,1,
+     &       parameters,1,tgt_info)
+
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*

@@ -221,6 +221,17 @@ c        call quit(1,DEF_FORMULA,'not yet')
      &       nint,rule%labels(ioff+2),
      &       op_info,form_info
      &       )
+      case(SUM_HERMIT)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,nint,strdum)
+        ioff = rule%n_update
+        
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_sum_hermite(form_pnt,form0_pnt,
+     &       title,rule%labels(ioff+2),
+     &       op_info)
       case(EXPAND)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

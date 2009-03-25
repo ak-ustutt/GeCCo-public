@@ -21,7 +21,7 @@
      &     current
 
       integer ::
-     &     icnt, len
+     &     icnt, len, nfreeze
       integer, allocatable ::
      &     iscr(:)
       character ::
@@ -87,10 +87,23 @@ c      end if
      &       call quit(0,'process_input','unexpected shell type: "'//
      &         trim(str)//'"')
 
-        call get_argument_dimension(len,'orb_space.shell','def')
-        allocate(iscr(len))
-        call get_argument_value('orb_space.shell','def',iarr=iscr)
- 
+        if (is_argument_set('orb_space.shell','def').gt.0) then
+          call get_argument_dimension(len,'orb_space.shell','def')
+          allocate(iscr(len))
+          call get_argument_value('orb_space.shell','def',iarr=iscr)
+        else if (is_argument_set('orb_space.shell','nfreeze').gt.0) then
+          call get_argument_value('orb_space.shell',
+     &                            'nfreeze',ival=nfreeze)
+          len = orb_info%nsym
+          allocate(iscr(len))
+          call auto_freeze(iscr,nfreeze,orb_info)
+        else
+          nfreeze = -1
+          len = orb_info%nsym
+          allocate(iscr(len))
+          call auto_freeze(iscr,nfreeze,orb_info)
+        end if
+
         call add_frozen_shell(iscr,len,orb_info)
         deallocate(iscr)
 

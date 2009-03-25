@@ -12,5 +12,9 @@
      &     ihpvgas(:,:), ngas_hpv(:), nactt_hpv(:), norb_hpv(:,:),
      &     idx_gas(:), ioff_gas(:), cab_orb(:), nxbas(:),
      &     xreosym(:), xreotyp(:)
+        integer ::
+     &     n_bound_orbs, n_freeze_rcmd
+        integer, allocatable ::
+     &     isym_bound_orbs(:)
 
       end type orbinf

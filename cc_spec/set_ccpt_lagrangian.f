@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -302,17 +302,41 @@ c        end if
 
       if (ansatz.gt.0) then
         call expand_subexpr(flist_lag,flist_t_r,.false.,op_info)
+        if (ntest.ge.1000) then
+          call write_title(luout,wst_title,'after R2 expansion')
+          call print_form_list(luout,flist_lag,op_info)
+        end if
         call expand_subexpr(flist_lag,flist_t_r_pt,.false.,op_info)
+        if (ntest.ge.1000) then
+          call write_title(luout,wst_title,'after R3 expansion')
+          call print_form_list(luout,flist_lag,op_info)
+        end if
 
         call sum_terms(flist_lag,op_info)
+        if (ntest.ge.1000) then
+          call write_title(luout,wst_title,'after summing terms')
+          call print_form_list(luout,flist_lag,op_info)
+        end if
 
         call transpose_formula(flist_t_r,op_info)
         call transpose_formula(flist_t_r_pt,op_info)
 
         call expand_subexpr(flist_lag,flist_t_r,.false.,op_info)
+        if (ntest.ge.1000) then
+          call write_title(luout,wst_title,'after R2^+ expansion')
+          call print_form_list(luout,flist_lag,op_info)
+        end if
         call expand_subexpr(flist_lag,flist_t_r_pt,.false.,op_info)
+        if (ntest.ge.1000) then
+          call write_title(luout,wst_title,'after R3^+ expansion')
+          call print_form_list(luout,flist_lag,op_info)
+        end if
 
         call sum_terms(flist_lag,op_info)
+        if (ntest.ge.1000) then
+          call write_title(luout,wst_title,'after summing terms (2)')
+          call print_form_list(luout,flist_lag,op_info)
+        end if
 
         ! Produce truncated expansions.
 c        if (truncate)

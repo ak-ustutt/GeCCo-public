@@ -342,6 +342,15 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
             labels(9) = 'Vpx_formal^+'
             labels(10) = form_r12_xhint
             nint = 8
+c test
+c            call set_dependency(form_ptdl0,'Z2INT_R12',tgt_info)
+c            labels(8)  = 'Z2INT_R12'
+c            labels(9)  = 'Z2INT_R12^+'
+c            labels(10) = 'Vpx_formal'
+c            labels(11) = 'Vpx_formal^+'
+c            labels(12) = form_r12_xhint
+c            nint = 10
+c test
           end if
         else
           labels(3) = form_r12_vint ! the intermediates to be factored
@@ -406,6 +415,12 @@ c dbg
       call set_dependency(form_ptde0,op_dept,tgt_info)
       call set_rule(form_ptde0,ttype_frm,INVARIANT,
      &              labels,4,1,
+     &              title_ptde0,1,tgt_info)
+      labels(1) = form_ptde0
+      labels(2) = form_ptde0
+      labels(3) = op_dept
+      call set_rule(form_ptde0,ttype_frm,SUM_HERMIT,
+     &              labels,3,1,
      &              title_ptde0,1,tgt_info)
 
       labels(1:20)(1:len_target_name) = ' '

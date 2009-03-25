@@ -26,6 +26,8 @@ c      use parse_input
       call keyword_add('shell',context='orb_space')
       call argument_add('def','orb_space.shell',type=vtyp_int,len=8)
       call argument_add('type','orb_space.shell',type=vtyp_str,len=8)
+      call argument_add('nfreeze','orb_space.shell',type=vtyp_int,
+     &     idef=(/0/))
       call keyword_add('open_shells',context='orb_space')
       call argument_add('treat','orb_space.open_shells',
      &     type=vtyp_str,len=4,cdef=(/'p','h',' ',' '/))
@@ -101,6 +103,8 @@ c      use parse_input
       call keyword_add('check',context='calculate')
       call keyword_add('formulae',context='calculate.check')
       call argument_add('contr_test','calculate.check',
+     &     type=vtyp_int,idef=(/1/))
+      call argument_add('algebra_test','calculate.check',
      &     type=vtyp_int,idef=(/1/))
 
       ! general

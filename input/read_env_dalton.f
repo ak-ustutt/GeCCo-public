@@ -11,6 +11,8 @@
 
       integer, parameter ::
      &     ntest = 100
+      real(8), parameter ::
+     &     thr_auto_freeze = -2.5d0
 
       type(orbinf) ::
      &     orb_info
@@ -18,7 +20,7 @@
       type(filinf) ::
      &     ffsir
       integer ::
-     &     lusir, iprint, ngas, loop, i, j, caborb,
+     &     lusir, luerr, iprint, ngas, loop, i, j, caborb, idx, jdx,
      &     n_frozen, n_act, n_as1, n_as2, n_as3, nspin
       logical ::
      &     logaux
@@ -40,6 +42,11 @@
       real(8) ::
      &     potnuc,emy,eactiv,emcscf
 
+      real(8), pointer ::
+     &     orb_en(:), orb_en_sort(:)
+      integer(4), pointer ::
+     &     orb_sym_i4(:)
+
       iprint = max(iprlvl,ntest)
 
       inquire(file='AUXBAS',exist=logaux)
@@ -48,8 +55,9 @@
       call file_open(ffsir)
 
       lusir = ffsir%unit
+      luerr = luout
       rewind lusir
-      call mollab('SIR IPH ',lusir,luout)
+      call mollab('SIR IPH ',lusir,luerr)
 
       read (lusir) potnuc,emy,eactiv,emcscf,istate,ispin,nactel,lsym
       read (lusir) nisht,nasht,nocct,norbt,nbast,nconf,nwopt,nwoph,
@@ -58,6 +66,40 @@
      &     nish(1:mxsym),nash(1:mxsym),norb(1:mxsym),nbas(1:mxsym),
      &     nelmn1, nelmx1, nelmn3, nelmx3, mctype,
      &     nas1(1:mxsym), nas2(1:mxsym), nas3(1:mxsym)
+
+      ! read orbital energies from SIRIFC and set up
+      ! proposal for frozen core
+      allocate(orb_en(norbt),orb_sym_i4(norbt))
+      call mollab('TRCCINT ',lusir,luerr)
+      read (lusir)
+      read (lusir) orb_en(1:norbt), orb_sym_i4(1:norbt)
+      
+      ! scan through orbital energies and find bound orbital
+      orb_info%n_bound_orbs = 0
+      do idx = 1, norbt
+        if (orb_en(idx).lt.0d0)
+     &       orb_info%n_bound_orbs = orb_info%n_bound_orbs+1 
+        
+        if (orb_en(idx).lt.thr_auto_freeze)
+     &       orb_info%n_freeze_rcmd = orb_info%n_freeze_rcmd+1
+
+      end do
+      allocate(orb_info%isym_bound_orbs(orb_info%n_bound_orbs),
+     &     orb_en_sort(orb_info%n_bound_orbs))
+      
+      jdx = 0
+      do idx = 1, norbt
+        if (orb_en(idx).ge.0d0) cycle
+        jdx = jdx+1
+        orb_en_sort(jdx) = orb_en(idx)
+        orb_info%isym_bound_orbs(jdx) =
+     &       orb_sym_i4(idx)
+      end do
+
+      call idxsortx(orb_en_sort,orb_info%isym_bound_orbs,
+     &                          orb_info%n_bound_orbs,+1)
+
+      deallocate(orb_en,orb_en_sort,orb_sym_i4)
 
       ! If necessary, deal with auxiliary basis functions.
       caborb=0 
@@ -111,6 +153,10 @@
         write(luout,'(x,a,8i4)') 'nas3   = ',nas3(1:8)
 
         write(luout,'(x,a,2i4)') 'nnorbt,n2orbt: ',nnorbt,n2orbt
+
+        write(luout,'(x,a,16i4)')'sym_bound_orbs: ',
+     &       orb_info%isym_bound_orbs
+        write(luout,'(x,a,i4)')  'n_freeze_rcmd: ',b_freeze_rcmd
       end if
 
       call file_close_keep(ffsir)
