@@ -156,7 +156,8 @@
 
         write(luout,'(x,a,16i4)')'sym_bound_orbs: ',
      &       orb_info%isym_bound_orbs
-        write(luout,'(x,a,i4)')  'n_freeze_rcmd: ',b_freeze_rcmd
+        write(luout,'(x,a,i4)')  'n_freeze_rcmd: ',
+     &       orb_info%n_freeze_rcmd
       end if
 
       call file_close_keep(ffsir)
