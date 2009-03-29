@@ -806,14 +806,50 @@ c        occ_def(IHOLE,2,ndef+2) = 2
      &              op_p_inter,1,1,
      &              parameters,1,tgt_info)
 
+      ! V-X operator
+      call add_target('Vpx',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 2
+      occ_def(IEXTR,1,1) = 1
+      occ_def(IPART,2,1) = 1
+      occ_def(IHOLE,1,2) = 1
+      occ_def(IEXTR,1,2) = 1
+      occ_def(IHOLE,2,2) = 1
+      occ_def(IPART,2,2) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+      call set_rule('Vpx',ttype_op,DEF_OP_FROM_OCC,
+     &              'Vpx',1,1,
+     &              parameters,2,tgt_info)
+      
+      call add_target('G.R-X',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 1
+      occ_def(IHOLE,1,1) = 1
+      occ_def(IEXTR,1,1) = 1
+      occ_def(IHOLE,2,2) = 1
+      occ_def(IPART,2,2) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,2,(/.true.,.true./),ndef)
+      call set_rule('G.R-X',ttype_op,DEF_OP_FROM_OCC,
+     &              'G.R-X',1,1,
+     &              parameters,2,tgt_info)
+
       ! Z2 intermediate (for R^+ R couplings)
       call add_target('Z2-INT',ttype_op,.false.,tgt_info)
       occ_def = 0
       ! 1
       occ_def(IHOLE,1,1) = 2
       occ_def(IPART,2,1) = 2
+      ndef = 1
+      if (max_rank.gt.3) then
+        occ_def(IHOLE,1,2) = 1
+        occ_def(IPART,1,2) = 1
+        occ_def(IPART,2,2) = 2
+        ndef = 2   
+      end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,1,1,(/.true.,.true./),6)
+     &     occ_def,ndef,1,(/.true.,.true./),6)
       call set_rule('Z2-INT',ttype_op,DEF_OP_FROM_OCC,
      &              'Z2-INT',1,1,
      &              parameters,2,tgt_info)
@@ -1010,6 +1046,41 @@ c     &              parameters,2,tgt_info)
       call form_parameters(-1,
      &     parameters,2,title_r12_vcabs,ansatz,'V '//approx)
       call set_rule(form_r12_vcabs,ttype_frm,DEF_R12INTM_CABS,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      ! formal definition of Vpx
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Vpx_formal'
+      labels(2) = 'Vpx'
+      labels(3) = op_r12
+      labels(4) = op_ham
+      call add_target('Vpx_formal',ttype_frm,.false.,tgt_info)
+      call set_dependency('Vpx_formal','Vpx',tgt_info)
+      call set_dependency('Vpx_formal',op_ham,tgt_info)
+      call set_dependency('Vpx_formal',op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_vint,0,'V')
+      call set_rule('Vpx_formal',ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,4,1,
+     &              parameters,2,tgt_info)
+
+      ! CABS approximation to V
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Vpx_CABS'
+      labels(2) = 'Vpx'
+      labels(3) = op_g_x !op_ham
+      labels(4) = op_rint
+      labels(5) = 'G.R-X'   
+      ! F12: op_gr
+      call add_target('Vpx_CABS',ttype_frm,.false.,tgt_info)
+      call set_dependency('Vpx_CABS',op_v_inter,tgt_info)
+      call set_dependency('Vpx_CABS','G.R-X',tgt_info)
+      call set_dependency('Vpx_CABS',op_g_x,tgt_info)
+      call set_dependency('Vpx_CABS',op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_vcabs,ansatz,'V '//approx)
+      call set_rule('Vpx_CABS',ttype_frm,DEF_R12INTM_CABS,
      &              labels,5,1,
      &              parameters,2,tgt_info)
 
@@ -1451,6 +1522,40 @@ c dbg
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
+      ! set Z2 (direct evaluation)
+      call add_target('Z2INT_R12_DIR',ttype_frm,.false.,tgt_info)
+      call set_dependency('Z2INT_R12_DIR','Z2INT_R12',tgt_info)
+      call set_dependency('Z2INT_R12_DIR',mel_ham,tgt_info)
+      call set_dependency('Z2INT_R12_DIR',mel_rint,tgt_info)      
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12_DIR'
+      labels(2) = 'Z2INT_R12'
+      labels(3) = op_r12
+      labels(4) = op_rint
+      nint = 1
+      call form_parameters(-1,
+     &     parameters,2,'Z2 direct',nint,'---')
+      call set_rule('Z2INT_R12_DIR',ttype_frm,REPLACE,
+     &     labels,2+nint*2,1,
+     &     parameters,2,tgt_info)
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12_DIR'
+      labels(2) = 'Z2INT_R12_DIR'
+      ncat = 1
+      nint = 0
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('Z2INT_R12_DIR',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12_DIR'
+      call set_rule('Z2INT_R12_DIR',ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
+
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -1634,6 +1739,25 @@ c dbg
       labels(1) = mel_gr
       call import_parameters(-1,parameters,'FG_INT',env_type)
       call set_rule(mel_gr,ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
+      call add_target('G.R-X-INT',ttype_opme,.false.,tgt_info)
+      call set_dependency('G.R-X-INT','G.R-X',tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'G.R-X-INT'
+      labels(2) = 'G.R-X'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('G.R-X-INT',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'G.R-X-INT'
+      call import_parameters(-1,parameters,'FG_INT',env_type)
+      call set_rule('G.R-X-INT',ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
@@ -1862,15 +1986,40 @@ c     &              parameters,1,tgt_info)
      &                parameters,1,tgt_info)
       end if
 
+
+      call add_target('Vpx-INTER',ttype_opme,.false.,tgt_info)
+      call set_dependency('Vpx-INTER','Vpx',tgt_info)
+      call set_dependency('Vpx-INTER','Vpx_CABS',tgt_info)
+      call set_dependency('Vpx-INTER','G.R-X-INT',tgt_info)
+      call set_dependency('Vpx-INTER',mel_gintx,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Vpx-INTER'
+      labels(2) = 'Vpx'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('Vpx-INTER',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      labels(1) = 'Vpx_OPT'
+      labels(2) = 'Vpx_CABS'
+      call opt_parameters(-1,parameters,1,0)
+      call set_rule('Vpx-INTER',ttype_frm,OPTIMIZE,
+     &     labels,2,1,
+     &     parameters,1,tgt_info)
+      labels(1) = 'Vpx_OPT'
+      call set_rule('Vpx-INTER',ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
       ! Z2-list
-        call add_target('DEF-Z2LIST',ttype_opme,.false.,tgt_info)
-        call set_dependency('DEF-Z2LIST','Z2-INT',tgt_info)
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = 'DEF_Z2LIST'
-        labels(2) = 'Z2-INT'
-        call me_list_parameters(-1,parameters,
+      call add_target('DEF-Z2LIST',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF-Z2LIST','Z2-INT',tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2LIST'
+      labels(2) = 'Z2-INT'
+      call me_list_parameters(-1,parameters,
      &       msc,0,1,0,0,.false.)
-        call set_rule('DEF-Z2LIST',ttype_opme,DEF_ME_LIST,
+      call set_rule('DEF-Z2LIST',ttype_opme,DEF_ME_LIST,
      &       labels,2,1,
      &       parameters,1,tgt_info)
 

@@ -125,6 +125,10 @@ c        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
 c     &     'I expect > 6 labels')c
 c      end if
 
+      idxcbar = -1
+      idxc12  = -1
+      idxcppbar = -1
+      idxcpp12  = -1
       do ilabel = 1, nlabels
         idx = idx_oplist2(label(ilabel),op_info)
         if (idx.le.0)
@@ -245,7 +249,7 @@ c      sbar_pnt%dagger = .true.
       ! Produce truncated expansions if required.
       if (truncate)
      &     call r12_truncation(flist_lag,trunc_type,h0_t1x,
-     &     idxr12,idxham,idxtbar,idxtop,op_info)
+     &     idxr12,idxham,idxtbar,idxtop,idxcbar,idxc12,op_info)
       if (trunc_t1x.gt.0.and.h0_t1x.ne.-1) then
         trmode = '        '
         write(trmode,'("ord",i1," ",i1)') trunc_t1x, h0_t1x

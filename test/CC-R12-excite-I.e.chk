@@ -11,6 +11,7 @@ check
   compare int 5
 check
   label Factorization of right equations
+  find My next target: CC-R12-OPT
   find Formally most expensive contractions:
   skip 1
   compare int 6

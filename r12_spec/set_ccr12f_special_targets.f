@@ -265,9 +265,30 @@ c      call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
         labels(9) = trim(form_r12_cint)//'^+'
 c        labels(10) = form_r12_xpint
         call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
-        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
+c        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
         nint = 7
+      end if      
+      if (r12op.gt.0.and.max_rank.gt.2) then
+        if (.not.screen) then
+          call set_dependency(form_ccr12lg0,'Vpx_formal',tgt_info)
+          call set_dependency(form_ccr12lg0,'Z2INT_R12',tgt_info)
+          call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
+          labels(10) = 'Vpx_formal'
+          labels(11) = 'Vpx_formal^+'
+          labels(12)  = 'Z2INT_R12'
+          labels(13)  = 'Z2INT_R12^+'
+          labels(14) = form_r12_xhint
+          nint = 12
+        else
+          call set_dependency(form_ccr12lg0,'Z2INT_R12',tgt_info)
+          call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
+          labels(10)  = 'Z2INT_R12'
+          labels(11)  = 'Z2INT_R12^+'
+          labels(12) = form_r12_xhint
+          nint = 10
+        end if
       end if
+ 
       call form_parameters(-1,
      &     parameters,2,title_ccr12lg0,nint,'---')
       call set_rule(form_ccr12lg0,ttype_frm,FACTOR_OUT,
@@ -571,8 +592,13 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
         call set_dependency(fopt_ccr12_0,mel_b_def,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_bh_def,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_x_def,tgt_info)      
-c        call set_dependency(fopt_ccr12_0,mel_xh_def,tgt_info)      
+        call set_dependency(fopt_ccr12_0,mel_xh_def,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_c_def,tgt_info)      
+      end if
+      if (max_rank.ge.2) then
+        call set_dependency(fopt_ccr12_0,'DEF-Z2LIST',tgt_info)
+        if (.not.screen)
+     &       call set_dependency(fopt_ccr12_0,'Vpx-INTER',tgt_info)
       end if
       call set_dependency(fopt_ccr12_0,mel_ccr12en0def,tgt_info)      
       if (isim.eq.1) then
@@ -899,6 +925,8 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         if (max_rank.ge.2) 
      &    call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        if (max_rank.ge.3)
+     &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_DIR',tgt_info)
         call solve_parameters(-1,parameters,2, 1,1,'DIA')
 c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         labels(1:20)(1:len_target_name) = ' '

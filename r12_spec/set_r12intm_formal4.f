@@ -50,8 +50,9 @@
      &     idx_intm, idx_r, idx_f, idx_g, idx_h, idx_rpl,
      &     nvtx, len, ivtx, ndef, njoined_int, calls
       integer ::
-     &     avoid(20), connect(20), project(20), project2(20),
-     &     navoid, nconnect, nproject, nproject2
+     &     avoid(20), connect(20),
+     &     project(20), project2(20), project3(20),
+     &     navoid, nconnect, nproject, nproject2, nproject3
       integer ::
      &     idx_prod(20), idx_supv(20)
       integer, pointer ::
@@ -129,6 +130,7 @@
       def_fpp = .false.
       def_fp3f = .false.
       def_g   = .false.
+      def_gppph = .false.
       idx_g   = -99
       idx_f   = -99
       nconnect = 0
@@ -354,10 +356,19 @@ c        else if (njoined_int.eq.2) then
           idx_supv(1:5) = (/       1,     2,    3,    4,       1/)
           nvtx = 5
           nfact = 4
-          connect(1:6) = (/2,3,2,4,3,4/)
-          nconnect = 3
-          project(1:4)  =  (/3,5,1,IPART/)
-          nproject = 1
+c          connect(1:6) = (/2,3,2,4,3,4/)
+c          nconnect = 3
+c          project(1:4)  =  (/3,5,1,IPART/)
+c          nproject = 1
+          calls = 3
+          connect(1:2) = (/2,3/)
+          nconnect = 1
+          project(1:12)  =  (/3,5,1,IPART,2,4,1,IPART,3,4,1,IEXTR/)
+          nproject = 3
+          project2(1:12)  = (/3,5,1,IPART,2,4,1,IEXTR,3,4,1,IPART/)
+          nproject2 = 3
+          project3(1:12)  = (/3,5,1,IPART,2,4,1,IEXTR,3,4,1,IEXTR/)
+          nproject3 = 3
           navoid = 0
         else
           unknown = .true.
@@ -534,7 +545,7 @@ c dbg
      &     op_info)
 
       ! quick fix:
-      if (calls.eq.2) then
+      if (calls.ge.2) then
         do while(associated(flist_pnt%next))
           flist_pnt => flist_pnt%next
         end do        
@@ -546,8 +557,23 @@ c dbg
      &     avoid,navoid,
      &     project2,nproject2,
      &     op_info)
-        call reorder_formula(flist_scr,op_info)
       end if
+      ! quick fix II:
+      if (calls.ge.3) then
+        do while(associated(flist_pnt%next))
+          flist_pnt => flist_pnt%next
+        end do        
+        call expand_op_product2(flist_pnt,idx_intm,
+     &     1d0,nvtx,nfact,
+     &     idx_prod,idx_supv,
+     &     -1,-1,
+     &     connect,nconnect,
+     &     avoid,navoid,
+     &     project3,nproject3,
+     &     op_info)
+      end if
+      if (calls.gt.1)
+     &     call reorder_formula(flist_scr,op_info)
 
       if (ntest.ge.1000) then
         write(luout,*) 'intermediate formula'

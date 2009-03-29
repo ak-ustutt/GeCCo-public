@@ -1,5 +1,5 @@
       subroutine r12_truncation(flist,trunc_type,trunc_t1x,
-     &     idxr12,idxham,idxtbar,idxtop,op_info)
+     &     idxr12,idxham,idxtbar,idxtop,idxcbar,idxc12,op_info)
 *----------------------------------------------------------------------*
 *     preliminary start-up for truncated R12 expansions
 *----------------------------------------------------------------------*
@@ -25,7 +25,7 @@
       type(operator_info), intent(in) ::
      &     op_info
       integer, intent(in) ::
-     &     trunc_type, idxr12, idxtbar, idxtop, idxham,
+     &     trunc_type, idxr12, idxtbar, idxtop, idxham, idxc12, idxcbar,
      &     trunc_t1x
 
       logical ::
@@ -33,8 +33,8 @@
       integer ::
      &     nvtx, ivtx,
      &     idx_op, iblk_op,
-     &     ntop, ntx, nrdag, nr12, nham, ntbar, ntbx,
-     &     ord_t, ord_ham,
+     &     ntop, ntx, nrdag, nr12, nham, ntbar, ntbx, nc12, ncbar,
+     &     ord_t, ord_ham, ord_c12, ord_cbar,
      &     max_pert, max_comm, max_t1
       character*64 ::
      &     op_name
@@ -72,15 +72,21 @@ c     &     idx_oplist2
           ! - perturbation order of H
           ! - number of R+
           ! - number of R
+          ! - T (TBAR) p connected to R (R+): count as 
+          !   special T (TBAR) operator
           ntop  = 0
           ntx   = 0
           ntbar = 0
           ntbx  = 0
           nrdag = 0
           nr12  = 0
+          ncbar = 0
+          nc12  = 0
           nham    = 0
           ord_ham = 0
           ord_t   = 0
+          ord_c12 = 0
+          ord_cbar= 0
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
             iblk_op = vertex(ivtx)%iblk_op
@@ -110,6 +116,16 @@ c     &     idx_oplist2
               ord_ham = ord_ham
      &              + op_info%op_arr(idx_op)%op%ica_occ(1,iblk_op)-1
             end if
+            if (idx_op.eq.idxcbar) then
+              ncbar = ncbar+1
+              ! no need to add (there should be only one)
+              ord_cbar = op_info%op_arr(idx_op)%op%ica_occ(1,iblk_op)-1
+            end if
+            if (idx_op.eq.idxc12) then
+              nc12 = nc12+1
+              ord_c12 = ord_c12+
+     &             op_info%op_arr(idx_op)%op%ica_occ(1,iblk_op)-1
+            end if
           end do
 
           if (nham.ne.1)
@@ -132,7 +148,7 @@ c     &     idx_oplist2
             ! R12 projection:
             delete = delete.or.nrdag+ntbx.gt.0.and.
      &           ord_ham+(ntop-ntx).gt.0.and.nr12+ntx.gt.0
-            
+     &          .and.(ntop-ntx.gt.0 .or. ord_cbar.eq.ord_c12)            
           else if (trunc_type.eq.1) then
             ! linearized R12:
             delete = delete.or.nr12.gt.1

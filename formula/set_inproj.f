@@ -73,6 +73,7 @@
         if (rank.le.0.or.type.lt.0.or.(rank.eq.2.and.type.gt.nproj))
      &       call quit(1,'set_inproj','watch your input')
         if (rank.eq.1) then
+          ! NOTE: type2 does not work properly ...
           type2 = type/(ngastp+1)
           type = mod(type,ngastp+1)
         end if

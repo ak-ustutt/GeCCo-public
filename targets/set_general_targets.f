@@ -26,7 +26,8 @@
       integer ::
      &     min_rank, max_rank,
      &     isim, ncat, nint, icnt, iformal, extern,
-     &     isym, ms, msc, sym_arr(8),trunc_type,t1ext_mode
+     &     isym, ms, msc, sym_arr(8),trunc_type,t1ext_mode,
+     &     maxr12exc
       logical ::
      &     needed, explicit, truncate
       character(len_target_name) ::
@@ -45,6 +46,8 @@
         call get_argument_value('method.truncate','trunc_type',
      &       ival=trunc_type)
       end if
+      call get_argument_value('method.R12','maxexc',ival=maxr12exc)
+
       call get_argument_value('method.CCPT','extern',ival=extern)
       call get_argument_value('method.CC','T1ext',ival=t1ext_mode)
       if (t1ext_mode.eq.0)
@@ -76,7 +79,8 @@
      &     iformal = 3
       call add_target(op_ham,ttype_op,.false.,tgt_info)
 c patch for CCPT-R12 tests:
-      if (explicit.and.is_keyword_set('method.CCPT').gt.0)
+      if (explicit.and.
+     &     (is_keyword_set('method.CCPT').gt.0.or.maxr12exc.ge.3))
      &     iformal = 4
 c patch end
       if (t1ext_mode.gt.0) iformal = min(5,max(t1ext_mode+2,iformal))
