@@ -61,7 +61,8 @@
 
       call get_argument_value('method.CC','maxexc',ival=max_rank)
       min_rank_pt = max_rank+1
-      call get_argument_value('method.CCPT','maxexc',ival=max_rank_pt)      
+      call get_argument_value('method.CCPT','maxexc',ival=max_rank_pt)
+      max_rank_pt = max(min_rank_pt,max_rank_pt)
       call get_argument_value('method.CCPT','extern',ival=max_extern)      
       call get_argument_value('method.CCPT','GBC',lval=gbc4pt)
       call get_argument_value('method.CCPT','R2_coupling',
@@ -371,7 +372,9 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
           labels(2) = form_ptdl0
           labels(3) = op_r12
           labels(4) = op_rint
-          nint = 1
+          labels(5) = op_r12//'^+'
+          labels(6) = op_rint//'^+'
+          nint = 2
 c          if (r12op.gt.0.and.set_R2_R2) then
 c            labels(5) = 'R12VV'
 c            labels(6) = op_rint
@@ -663,7 +666,7 @@ c     &       parameters,2,tgt_info)
 c      else
 c        call quit(1,'set_cc_pt_targets','trap 1')
 c      end if
-      if (r12op.ge.1) then
+      if (explicit.and.r12op.ge.1) then
         call set_dependency(solve_cc_pt,'Z2INT_R12_DIR',tgt_info)
       end if
       labels(1:20)(1:len_target_name) = ' '

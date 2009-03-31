@@ -82,6 +82,8 @@ c      use parse_input
      &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
       call argument_add('fixed','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('fix_new','method.R12',type=vtyp_int,
+     &     idef=(/0/))
       call argument_add('extend','method.R12',type=vtyp_int,
      &     idef=(/0/))
       call argument_add('r12op','method.R12',type=vtyp_int,

@@ -1176,14 +1176,16 @@ c dbg
       labels(2) = form_r12_xpint
       labels(3) = op_r12
       labels(4) = op_rint
+      labels(5) = op_r12//'^+'
+      labels(6) = op_rint//'^+'
       call add_target(form_r12_xpcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_xcabs,op_xp_inter,tgt_info)
       call set_dependency(form_r12_xcabs,op_r12,tgt_info)
       call set_dependency(form_r12_xcabs,op_rint,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_xpcabs,1,'---')
+     &     parameters,2,title_r12_xpcabs,2,'---')
       call set_rule(form_r12_xpcabs,ttype_frm,REPLACE,
-     &              labels,4,1,
+     &              labels,6,1,
      &              parameters,2,tgt_info)
 
       ! formal definition of B
@@ -1533,7 +1535,9 @@ c dbg
       labels(2) = 'Z2INT_R12'
       labels(3) = op_r12
       labels(4) = op_rint
-      nint = 1
+      labels(5) = op_r12//'^+'
+      labels(6) = op_rint//'^+'
+      nint = 2
       call form_parameters(-1,
      &     parameters,2,'Z2 direct',nint,'---')
       call set_rule('Z2INT_R12_DIR',ttype_frm,REPLACE,

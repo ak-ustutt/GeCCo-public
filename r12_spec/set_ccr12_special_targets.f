@@ -234,11 +234,13 @@ c      call set_dependency(form_ccr12lg0,form_r12_z4int,tgt_info)
         labels(2) = form_ccr12lg0
         labels(3) = op_r12
         labels(4) = op_rint
+        labels(5) = op_r12//'^+'
+        labels(6) = op_rint//'^+'
         call set_dependency(form_ccr12lg0,op_rint,tgt_info)
         call form_parameters(-1,
-     &       parameters,2,title_ccr12lg0,1,'---')
+     &       parameters,2,title_ccr12lg0,2,'---')
         call set_rule(form_ccr12lg0,ttype_frm,REPLACE,
-     &              labels,4,1,
+     &              labels,6,1,
      &              parameters,2,tgt_info)
       end if
       call set_rule(form_ccr12lg0,ttype_frm,TEX_FORMULA,

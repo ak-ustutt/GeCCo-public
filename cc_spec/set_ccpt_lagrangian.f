@@ -64,7 +64,7 @@
       logical ::
      &     r12fix,truncate,set_rhxhh,explicit
       integer ::
-     &     nterms, ilabel, idx, ndef, 
+     &     nterms, ilabel, idx, ndef, rank_tpt,
      &     idxham,idxtbar,idxtop,idxtpt,idxtptbar,idxlcc,
      &     idxr12,idxc12,idxcpp12,idxc12_pt,idxcpp12_pt,idxr12x,
      &     idx_f_temp,idx_h_temp,
@@ -76,7 +76,7 @@
      &     f_temp_pnt, h_temp_pnt, sop_pnt, spt_pnt
 
       integer, external ::
-     &     idx_oplist2
+     &     idx_oplist2, max_rank_op
 
       ! for timings:
       real(8) ::
@@ -123,6 +123,8 @@
           if (ilabel.eq.10) idxr12x = idx
         end if
       end do
+
+      rank_tpt = max_rank_op('C',op_info%op_arr(idxtpt)%op,.false.)
 
       call add_operator(op_f_temp,op_info)
       idx_f_temp = idx_oplist2(op_f_temp,op_info)
@@ -179,7 +181,7 @@ c        deallocate(occ_def)
         else
           ! set R12 part:
           call set_r12gem(sop_pnt,op_sop,0,
-     &         2 , 2 ,ansatz,orb_info)
+     &         2 , max(2,rank_tpt-1) ,ansatz,orb_info)
           ! join with T
           call join_operator(sop_pnt,op_info%op_arr(idxtop)%op,orb_info)
         end if
@@ -204,7 +206,7 @@ c        end if
         if (r12op.gt.0) then
           ! set R12 part:
           call set_r12gem(spt_pnt,op_spt,0,
-     &         3 , 3 ,ansatz,orb_info)
+     &         max(3,rank_tpt) , max(3,rank_tpt) ,ansatz,orb_info)
           ! join with T
           call join_operator(spt_pnt,op_info%op_arr(idxtpt)%op,orb_info)
         else
@@ -273,6 +275,26 @@ c        end if
      &     0,0,
      &     0,0,
      &     op_info)
+
+      if (rank_tpt.gt.3) then
+        ! set 1/2<0|T(pt)^+[[H,T2],T2]|0>
+        ! advance pointer
+        do while(associated(flist_pnt%next))
+          flist_pnt => flist_pnt%next
+        end do
+        ! select T2-type ops: ??
+        call quit(1,'set_ccpt_lagrangian','not yet settled')
+        call expand_op_product2(flist_pnt,idxlcc,
+     &       1d0,6,5,
+     &       (/idxlcc,-idxspt,idx_h_temp,idxsop,idxsop,idxlcc/),
+     &       (/1,2,3,4,5,1/),
+     &       -1,-1,
+     &       (/3,4,3,5/),2,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+
+      end if
 
       ! set <0|T(pt)^+[F,T(pt)]|0>
       do while(associated(flist_pnt%next))
