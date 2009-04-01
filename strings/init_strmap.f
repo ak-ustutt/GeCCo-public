@@ -55,7 +55,7 @@
       ! maps, at least 10 DA blocks
       ifree = max(mem_free_words(),10*lblk_da)
       call mem_init_vbuffer(strmap_info%ffstrmap,
-     &     'bfstrmap',ifree/10,20000)!8192)
+     &     'bfstrmap',ifree/10,min(10*ifree/lblk_da,128000))
 c     &     'bfstrmap',2048*lblk_da,20000)!8192)
 
       return

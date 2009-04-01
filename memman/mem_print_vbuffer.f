@@ -12,7 +12,7 @@ c      include 'def_filinf.h'
       integer, intent(in) ::
      &     luout
 
-      call print_vbuffer_int(luout,ffbuf%buf_id)
+      call print_vbuffer_int(luout,ffbuf%buf_id,.false.)
 
       return
       end
