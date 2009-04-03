@@ -55,6 +55,7 @@ c stat
       cnt_reo(1:2) = 0d0
       cnt_rd(1:3) = 0d0
       cnt_wr(1:3) = 0d0
+      cnt_maxscr = 0
       cnt_used_reo = .false.
 c dbg
       cnt_test(1:12) = 0d0
@@ -133,6 +134,9 @@ c stat
         avg = dble(mm_cnt)/dble(mm_call)
         sig = sqrt(abs(avg*avg - dble(mm_cntsq)/dble(mm_call)))
         write(luout,'(2x,a,2f12.2)') ' avg cnt , sigma:',avg,sig
+        write(luout,'(/2x,a,i10,a,f12.3,a)')
+     &       'max. scratch: ',cnt_maxscr,' = ',
+     &       dble(cnt_maxscr)*8d0/1024d0**3d0,' Gbytes'
 c stat
         
       end if
