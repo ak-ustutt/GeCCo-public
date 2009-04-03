@@ -8,6 +8,7 @@
 
       implicit none
       include 'stdunit.h'
+      include 'ioparam.h'
       include 'ifc_input.h'
       include 'def_orbinf.h'
       include 'routes.h'
@@ -74,6 +75,13 @@
 c      if (icnt.le.0) then
 c        call quit(0,'process_input','no "method" block specified')
 c      end if
+
+      ! set file block-length
+      icnt = is_keyword_set('general')
+      if (icnt.gt.1) then
+        call get_argument_value('general','da_block',ival=lblk_da)
+        lblk_da = lblk_da*1024
+      end if
 
       icnt = is_keyword_set('orb_space.shell')
 
