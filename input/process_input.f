@@ -77,11 +77,8 @@ c        call quit(0,'process_input','no "method" block specified')
 c      end if
 
       ! set file block-length
-      icnt = is_keyword_set('general')
-      if (icnt.gt.1) then
-        call get_argument_value('general','da_block',ival=lblk_da)
-        lblk_da = lblk_da*1024
-      end if
+      call get_argument_value('general','da_block',ival=lblk_da)
+      lblk_da = lblk_da*1024/nrecfc
 
       icnt = is_keyword_set('orb_space.shell')
 

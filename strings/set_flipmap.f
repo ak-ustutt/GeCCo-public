@@ -7,7 +7,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'ifc_memman.h'
@@ -122,7 +122,7 @@ c dbg
 
       end do
 
-      if (ntest.ge.100) then
+      if (ntest.ge.150) then
         write(luout,*) 'maxlen:',strmap_info%maxlen_blk_flip(idxflip)
         write(luout,*) 'the MS offset array: '
         write(luout,'(1x,10i6)')
