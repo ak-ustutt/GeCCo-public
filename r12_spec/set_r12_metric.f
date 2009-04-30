@@ -69,7 +69,7 @@
      &     min_rank, max_rank, iprint,
      &     occ(ngastp,2)
       logical ::
-     &     r12fix
+     &     r12fix, opt
       integer ::
      &     extend
 
@@ -97,6 +97,7 @@
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
+      call get_argument_value('method.R12','opt',lval=opt)
       
       if (extend.gt.0) call quit(1,'set_r12_metric',
      &     'do not use "extend" for CC (use "r12op" instead)!')
@@ -201,6 +202,12 @@
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'after replacing SBAR')
         call print_form_list(luout,flist_metric,op_info)
+      end if
+
+      ! delete redundant operator blocks (if more than one block version)
+      if (opt) then
+        call r12_opt_truncation(flist_metric,idxtop,idxc12,op_info)
+        call r12_opt_truncation(flist_metric,idxtbar,idxcbar,op_info)
       end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)

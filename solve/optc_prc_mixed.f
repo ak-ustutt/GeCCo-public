@@ -1,13 +1,14 @@
 *----------------------------------------------------------------------*
-      subroutine optc_prc_special2(me_grd,me_special,nspecial,
+      subroutine optc_prc_mixed(me_grd,me_special,nspecial,
      &                            name_opt,w_shift,
      &                            nincore,xbuf1,xbuf2,xbuf3,lenbuf,
      &                            orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
-*     experimental routine for testing special preconditioners
+*     experimental routine for testing mixed preconditioner
 *     if nincore>1: xbuf1 contains the gradient vector on entry
 *                   and should contain the preconditioned gradient
 *                   on exit
+*                   xbuf2 contains DIA for op. blocks with version=1
 *----------------------------------------------------------------------*
       implicit none
 
@@ -110,15 +111,15 @@ c      include 'ifc_input.h'
      &     next_msgamdist2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'special preconditioner')
+        call write_title(luout,wst_dbg_subr,'mixed preconditioner')
       end if
 
       if (nincore.ne.3)
-     &     call quit(1,'optc_prc_special',
+     &     call quit(1,'optc_prc_mixed',
      &     'currently: special preconditioning for nincore==3, only')
 
       if (nspecial.lt.1)
-     &     call quit(1,'optc_prc_special',
+     &     call quit(1,'optc_prc_mixed',
      &     'nspecial must be >= 1')
 
       me_bmat => me_special(1)%mel
@@ -131,7 +132,7 @@ c      include 'ifc_input.h'
 
       if (beyond_A) then
         if (nspecial.lt.3)
-     &       call quit(1,'optc_prc_special','nspecial must be >= 3')
+     &       call quit(1,'optc_prc_mixed','nspecial must be >= 3')
 
         me_xmat => me_special(2)%mel
         nxmat = me_xmat%len_op
@@ -175,7 +176,7 @@ c      include 'ifc_input.h'
       do idx = 1, nspecial
         if(ms_fix.or.me_special(idx)%mel%fix_vertex_ms)then
           ms_fix = ms_fix.and.me_special(idx)%mel%fix_vertex_ms
-          if(.not.ms_fix) call quit(1,'optc_prc_special2',
+          if(.not.ms_fix) call quit(1,'optc_prc_mixed',
      &                              'fix ms or not?')
         endif
       enddo
@@ -184,9 +185,29 @@ c      if (njoined.ne.2)
 c     &     call quit(1,'optc_prc_special',
 c     &     'strange -- expected njoined==2')
 
-      ! loop over occupations of GRD
+      ! loops over occupations of GRD
+
+      ! a) first use DIA for blocks with version = 1
       do iblk = 1, nblk_grd
-        iblk_off = (iblk-1)*njoined
+        if (me_grd%op%blk_version(iblk).ne.1) cycle
+        idx_grd = me_grd%off_op_occ(iblk)+1
+        len_grd = me_grd%len_op_occ(iblk)
+        if (ntest.ge.100) then
+          write(luout,*) 'iblk = ',iblk
+          write(luout,*) 'gradient vector before:'
+          write(luout,*) xbuf1(idx_grd:idx_grd+len_grd)
+        end if
+        call diavc(xbuf1(idx_grd),xbuf1(idx_grd),1d0,
+     &             xbuf2(idx_grd),w_shift,len_grd)
+        if (ntest.ge.100) then
+          write(luout,*) 'gradient vector afterwards:'
+          write(luout,*) xbuf1(idx_grd:idx_grd+len_grd)
+        end if
+      end do
+
+      ! b) then use BLK for blocks with version <> 1
+      do iblk = 1, nblk_grd
+        if (me_grd%op%blk_version(iblk).eq.1) cycle
 
         if (ntest.ge.100) then
           idx_grd = me_grd%off_op_occ(iblk)+1
@@ -195,6 +216,8 @@ c     &     'strange -- expected njoined==2')
           write(luout,*) 'gradient vector before:'
           write(luout,*) xbuf1(idx_grd+1:idx_grd+len_grd)
         end if
+
+        iblk_off = (iblk-1)*njoined
 
         occ_blk =>
      &       hpvx_occ(1:ngastp,1:2,iblk_off+1:iblk_off+njoined)
@@ -217,7 +240,8 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
         if (ntest.ge.100)
      &       write(luout,*) 'ncsub, nasub: ',ncsub, nasub
 
-        mode = 0
+        mode = 1
+        nidx_p = 1
         ca_reverse = .false.
         ! find the relevant block of B
         if (njoined.eq.2) then
@@ -251,10 +275,10 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
           end if
           iblk_b = iblk_occ(occ_b,.false.,me_bmat%op,1)
           if (iblk_b.le.0)
-     &         call quit(1,'optc_prc_special2',
+     &         call quit(1,'optc_prc_mixed',
      &         'did not find an appropriate block of B (precond)')
         else
-          call quit(1,'optc_prc_special2',
+          call quit(1,'optc_prc_mixed',
      &         'gradient -- njoined > 2 ??')
         end if
 
@@ -270,7 +294,7 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
 
         if (ncsub.ne.1.and.ncsub.ne.2.and.nasub.ne.1) then
           write(luout,*) 'ncsub, nasub: ',ncsub,nasub
-          call quit(1,'optc_prc_special2','this is not what I expected')
+          call quit(1,'optc_prc_mixed','this is not what I expected')
         end if
 
         if (njoined.eq.1.and.mode.ne.nidx_p) then
@@ -317,7 +341,7 @@ c          call add_me_list('L_GRD_REO',op_info)
 
           ! make the buffer pointer point to the buffer
           if (me_grd_reo%fhand%buffered)
-     &         call quit(1,'optc_prc_special2',
+     &         call quit(1,'optc_prc_mixed',
      &         'OK, adapt the hand-made buffering in this routine ...')
           me_grd_reo%fhand%buffered = .true.
           allocate(me_grd_reo%fhand%incore(1))
@@ -325,7 +349,7 @@ c          call add_me_list('L_GRD_REO',op_info)
           me_grd_reo%fhand%buffer => xgrd_pnt
 
           if (me_grd%fhand%buffered)
-     &         call quit(1,'optc_prc_special2',
+     &         call quit(1,'optc_prc_mixed',
      &         'OK, adapt the hand-made buffering in this routine ...')
           me_grd%fhand%buffered = .true.
           allocate(me_grd%fhand%incore(nblk_grd))
@@ -628,114 +652,6 @@ c test -- special insert
       end do
 
       deallocate(f_dia,xmat,bmat)
-
-      return
-      end
-
-
-      subroutine optc_prc_test(grd,
-     &     buf1,buf2,bmat,xmat,lenp,lenh)
-
-      implicit none
-
-      integer, intent(in) ::
-     &     lenp, lenh
-      real(8), intent(in) ::
-     &     bmat(lenp,lenp), xmat(lenp,lenp)
-      real(8), intent(inout) ::
-     &     buf1(lenp,lenh), buf2(lenp,lenh)
-      real(8), intent(inout) ::
-     &     grd(lenp,lenh)
-
-      real(8), parameter ::
-     &     thrsh = 1d-12
-
-      real(8), pointer ::
-     &     scr(:,:), umat(:,:), vtmat(:,:), wrk(:), singval(:)
-
-      integer ::
-     &     idx, jdx, kdx, info, lwrk
-
-      lwrk=max(1024,lenp*max(lenh,lenp))
-      allocate(scr(lenp,lenp),umat(lenp,lenp),vtmat(lenp,lenp),
-     &     wrk(lwrk),singval(lenp))
-
-      scr = bmat + 10*xmat
-
-      call dgesvd('A','A',lenp,lenp,
-     &     scr,lenp,singval,
-     &     umat,lenp,vtmat,lenp,
-     &     wrk,lwrk,info)
-
-      do jdx = 1, lenh
-        do idx = 1, lenp
-          wrk(idx) = 0d0
-          if (abs(singval(idx)).lt.thrsh) cycle
-          do kdx = 1, lenp
-            wrk(idx) = wrk(idx)+
-     &           umat(kdx,idx)*grd(kdx,jdx)
-          end do
-          wrk(idx) = wrk(idx)/singval(idx)
-        end do
-        
-        do idx = 1, lenp
-          buf1(idx,jdx) = 0d0
-          do kdx = 1, lenp
-            buf1(idx,jdx) = buf1(idx,jdx) +
-     &           vtmat(kdx,idx)*wrk(kdx)
-          end do
-        end do
-
-      end do
-      
-c      call gaussj(scr,lenp,lenp)
-
-c      do jdx = 1, lenh
-c        do idx = 1, lenp
-c          buf1(idx,jdx) = 0d0
-c          do kdx = 1, lenp
-c            buf1(idx,jdx) = buf1(idx,jdx)+
-c     &           scr(kdx,idx)*grd(kdx,jdx)
-c          end do
-c        end do
-c      end do
-
-      grd = buf1
-
-      deallocate(scr,wrk,umat,vtmat,singval)
-      
-      return
-      end
-
-      subroutine set_reo_special(iway,reo_info,np)
-
-      implicit none
-
-      include 'opdim.h'
-      include 'def_reorder_info.h'
-
-      type(reorder_info), intent(out) ::
-     &     reo_info
-      integer, intent(in) ::
-     &     np, iway
-
-      integer ::
-     &     occ_shift(ngastp,2)
-
-      reo_info%nreo = 1
-      allocate(reo_info%reo(1))
-      reo_info%reo(1)%idxsuper = 1          ! dummy
-      reo_info%reo(1)%is_bc_result = .true. ! dummy
-      if (iway==1) then
-        reo_info%reo(1)%from = 1
-        reo_info%reo(1)%to   = 2
-      else
-        reo_info%reo(1)%from = 2
-        reo_info%reo(1)%to   = 1
-      end if
-      occ_shift = 0
-      occ_shift(IPART,1) = np
-      reo_info%reo(1)%occ_shift = occ_shift
 
       return
       end

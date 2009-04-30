@@ -31,7 +31,8 @@
      &     ihpvca_occ_new(:,:,:),
      &     ica_occ_new(:,:),
      &     igasca_restr_new(:,:,:,:,:,:),
-     &     idx_graph_new(:,:,:)
+     &     idx_graph_new(:,:,:),
+     &     blk_version_new(:)
       logical, pointer ::
      &     formal_blk_new(:)
       
@@ -60,7 +61,8 @@
       nadd = 0
       do iblk2 = 1, op2%n_occ_cls
         idxblk = (iblk2-1)*njoined+1
-        if (iblk_occ(op2%ihpvca_occ(1,1,idxblk),.false.,op1).le.0)
+        if (iblk_occ(op2%ihpvca_occ(1,1,idxblk),.false.,op1,
+     &      op2%blk_version(iblk2)).le.0)
      &       nadd = nadd+1
       end do
 
@@ -70,7 +72,7 @@
         allocate(ihpvca_occ_new(ngastp,2,nblk*njoined),
      &         igasca_restr_new(2,orb_info%ngas,2,2,nspin,nblk*njoined),
      &           ica_occ_new(2,nblk),
-     &           formal_blk_new(nblk))
+     &           formal_blk_new(nblk),blk_version_new(nblk))
         ! save old info
         ihpvca_occ_new(1:ngastp,1:2,1:nblk_old*njoined) =
      &       op1%ihpvca_occ(1:ngastp,1:2,1:nblk_old*njoined)
@@ -81,13 +83,15 @@
      &       op1%ica_occ(1:2,1:nblk_old)
         formal_blk_new(1:nblk_old) =
      &       op1%formal_blk(1:nblk_old)
+        blk_version_new(1:nblk_old) =
+     &       op1%blk_version(1:nblk_old)
 
         ! add new blocks
         iblk = nblk_old
         do iblk2 = 1, op2%n_occ_cls
           ioffblk2 = (iblk2-1)*njoined
           if (iblk_occ(op2%ihpvca_occ(1,1,ioffblk2+1),
-     &                 .false.,op1).le.0) then
+     &                 .false.,op1,op2%blk_version(iblk2)).le.0) then
             iblk = iblk+1
             if (iblk.gt.nblk)
      &           call quit(1,'join_operator','something''s wrong...')
@@ -101,18 +105,20 @@
             ica_occ_new(1:2,iblk) =
      &           op2%ica_occ(1:2,iblk2)
             formal_blk_new(iblk) = op2%formal_blk(iblk2)
+            blk_version_new(iblk) = op2%blk_version(iblk2)
           end if
         end do
 
         op1%n_occ_cls = nblk
         
         deallocate(op1%ihpvca_occ,op1%igasca_restr,
-     &       op1%ica_occ,op1%formal_blk)
+     &       op1%ica_occ,op1%formal_blk,op1%blk_version)
 
         op1%ihpvca_occ => ihpvca_occ_new
         op1%igasca_restr => igasca_restr_new
         op1%ica_occ => ica_occ_new
         op1%formal_blk => formal_blk_new
+        op1%blk_version => blk_version_new
 
         call mem_pushmark()
         ifree = mem_gotomark(operator_def)

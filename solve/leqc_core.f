@@ -7,7 +7,8 @@
 c     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
-     &       opti_info,opti_stat)
+     &       opti_info,opti_stat,
+     &       orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     core driver for LEQ solver
 *----------------------------------------------------------------------*
@@ -20,6 +21,10 @@ c      include 'def_filinf.h'
       include 'def_optimize_info.h'
       include 'def_optimize_status.h'
       include 'ifc_memman.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
+      include 'def_strmapinf.h'
+      include 'def_orbinf.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -51,6 +56,15 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
 
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
+
+      type(orbinf), intent(in) ::
+     &     orb_info
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      type(strmapinf) ::
+     &     strmap_info
 
 * local
       logical ::
@@ -283,29 +297,50 @@ c dbg
         end if
 
         ! divide new directions by preconditioner
-        if (nincore.ge.2) then
-          call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar)
+        select case(opti_info%typ_prc(iopt))
+        case(optinf_prc_file)
+          if (nincore.ge.2) then
+            call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar)
+            do iroot = 1, nnew
+              call vec_from_da(ffscr,iroot,xbuf1,nwfpar)
+              ! scale residual for numerical stability:
+c              xnrm = dnrm2(nwfpar,xbuf1,1)
+              xnrm = xrsnrm(idxroot(iroot))
+              call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
+     &                   opti_info%shift,nwfpar)
+              call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
+            end do
+          else
+            do iroot = 1, nnew
+c              ! request (nroot-iroot+1)th-last root 
+c              irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
+c     &             iord_vsbsp,ndim_vsbsp,mxsbsp)
+              xnrm = xrsnrm(idxroot(iroot))
+              call da_diavec(ffscr,iroot,0d0,
+     &                       ffscr,iroot,1d0/xnrm,
+     &                        me_dia(1)%mel%fhand,1,0d0,-1d0,
+     &                        nwfpar,xbuf1,xbuf2,lenbuf)
+            end do
+          end if
+        case(optinf_prc_mixed)
+          if (nincore.lt.3)
+     &         call quit(1,'leqc_core',
+     &         'I need at least 3 incore vectors (prc_mixed)')
           do iroot = 1, nnew
             call vec_from_da(ffscr,iroot,xbuf1,nwfpar)
-            ! scale residual for numerical stability:
-c            xnrm = dnrm2(nwfpar,xbuf1,1)
+            call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar)
             xnrm = xrsnrm(idxroot(iroot))
-            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
-     &                 opti_info%shift,nwfpar)
+            call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
+            call optc_prc_mixed(me_mvp(iopt)%mel,me_special,
+     &                                                      nspecial,
+     &                         me_opt(iopt)%mel%op%name,opti_info%shift,
+     &                         nincore,xbuf1,xbuf2,xbuf3,lenbuf,
+     &                         orb_info,op_info,str_info,strmap_info)
             call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
           end do
-        else
-          do iroot = 1, nnew
-c            ! request (nroot-iroot+1)th-last root 
-c            irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
-c     &           iord_vsbsp,ndim_vsbsp,mxsbsp)
-            xnrm = xrsnrm(idxroot(iroot))
-            call da_diavec(ffscr,iroot,0d0,
-     &                     ffscr,iroot,1d0/xnrm,
-     &                      me_dia(1)%mel%fhand,1,0d0,-1d0,
-     &                      nwfpar,xbuf1,xbuf2,lenbuf)
-          end do
-        end if
+        case default
+          call quit(1,'leqc_core','unknown preconditioner type')
+        end select
 
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace

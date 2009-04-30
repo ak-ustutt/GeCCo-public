@@ -101,7 +101,8 @@ c dbg
           ! as we currently do not know the C/A symmetry
           ! of the operator ...
           if (.not.occ_is_diag_blk(occ,njoined)) then
-            idx = iblk_occ(occ,.true.,op)
+            idx = iblk_occ(occ,.true.,op,
+     &                     op%blk_version((idxst-1)/njoined+1))
           else
             idx = -1
           end if

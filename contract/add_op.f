@@ -119,7 +119,8 @@
           occ => me_res%op%ihpvca_occ(1:ngastp,1:2,
      &                               iblkoff+1:iblkoff+njoined)
 
-          iblk_sum = iblk_occ(occ,.false.,me_current%op)
+          iblk_sum = iblk_occ(occ,.false.,me_current%op,
+     &                        me_res%op%blk_version(iblk))
 
           if (iblk_sum.lt.1) then
             call wrt_occ_n(luout,occ,njoined)

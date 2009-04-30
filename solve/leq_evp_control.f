@@ -262,7 +262,8 @@ c        end if
 c     &         ffopt,fftrv,ffmvp,ffrhs,ffdia,
      &         nincore,lenbuf,ffscr(1),
      &         xbuf1,xbuf2,xbuf3,
-     &         opti_info,opti_stat)
+     &         opti_info,opti_stat,
+     &         orb_info,op_info,str_info,strmap_info)
         else
           call evpc_core(iter,
      &         task,iroute,xrsnrm,xeig,

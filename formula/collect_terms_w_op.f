@@ -83,7 +83,7 @@
           ok = nfound_blk.eq.ntimes
         end if
 c dbg
-        print *,'ok = ',ok,nfound_op,nfound_blk,ntimes
+c        print *,'ok = ',ok,nfound_op,nfound_blk,ntimes
 c dbg
         if (ok) then
           if (.not.associated(fpl_pnt%item)) then
@@ -108,7 +108,7 @@ c dbg
         fl_pnt => fl_pnt%next
       end do
 c dbg
-      print *,'nterms = ',nterms
+c      print *,'nterms = ',nterms
 c dbg
 
       return

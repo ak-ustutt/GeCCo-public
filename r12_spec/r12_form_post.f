@@ -81,7 +81,7 @@
 
         call r12_count_terms(fpl_pnt,idxtop,idxc12,n_commu,op_info)
 
-        do while(associated(fpl_pnt%next))
+        do while(associated(fpl_pnt).and.associated(fpl_pnt%next))
           fpl_pnt => fpl_pnt%next
         end do
 

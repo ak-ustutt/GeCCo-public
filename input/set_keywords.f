@@ -83,6 +83,8 @@ c      use parse_input
      &     idef=(/0/))
       call argument_add('screen','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('opt','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
 
       ! Truncations
       call keyword_add('truncate',context='method')

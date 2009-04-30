@@ -73,7 +73,7 @@
 
         call cc_count_terms(fpl_pnt,idxtop,n_commu)
 
-        do while(associated(fpl_pnt%next))
+        do while(associated(fpl_pnt).and.associated(fpl_pnt%next))
           fpl_pnt => fpl_pnt%next
         end do
 

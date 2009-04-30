@@ -54,6 +54,8 @@
       integer, external ::
      &     iblk_occ
 
+      call quit(1,'inter_full_contr','should be obsolete')
+
       if(ntest.ge.100)then
         write(luout,*) '==========================='
         write(luout,*) 'Info from inter_full_contr'

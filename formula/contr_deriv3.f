@@ -271,7 +271,9 @@
      &         xlines_new,nvtx_new,njoined_res)
           call unpack_occ(occ_res,occ_res_p,njoined_res)
 
-          iblkres = iblk_occ(occ_res,.false.,op_res)
+          iblkres = iblk_occ(occ_res,.false.,op_res,
+     &                       op_der%blk_version((iblkder(ideriv)-1)/
+     &                       njoined_der+1))
 
           if (ntest.ge.100) then
             write(luout,*) 'result occupation'

@@ -193,7 +193,7 @@
      &       occ_is_diag_blk(op_in%ihpvca_occ(1,1,ioff_blk+1),njoined))
      &  then
           jblk = iblk_occ(op_in%ihpvca_occ(1,1,ioff_blk+1),
-     &                     .true.,op_in)
+     &                     .true.,op_in,op_in%blk_version(iblk))
           if (jblk.le.0) then
             call wrt_occ_n(luout,op_in%ihpvca_occ(1,1,ioff_blk+1),
      &           njoined)

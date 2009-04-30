@@ -39,9 +39,13 @@
       fl_t_r_pnt => flist_t_r
       call new_formula_item(fl_t_r_pnt,command_set_target_init,idxsop)
       fl_t_r_pnt => fl_t_r_pnt%next
-      call expand_op_product(fl_t_r_pnt,idxsop,
-     &       1d0,1,idxtop,-1,-1,
-     &       0,0,.false.,op_info)
+c replaced by set_primitive_formula, because operator block versions
+c of top and sop should match
+c      call expand_op_product(fl_t_r_pnt,idxsop,
+c     &       1d0,1,idxtop,-1,-1,
+c     &       0,0,.false.,op_info)
+      call set_primitive_formula(fl_t_r_pnt,idxtop,
+     &     1d0,idxsop,.false.,op_info)
       do while(associated(fl_t_r_pnt%next))
         fl_t_r_pnt => fl_t_r_pnt%next
       end do
@@ -89,12 +93,12 @@
         occ(IEXTR,1) = 1
         occ(IHOLE,2) = 1
         occ(IPART,2) = 1
-        iblk_pxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+        iblk_pxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op,1)
         occ = 0
         occ(IEXTR,1) = 2
         occ(IHOLE,2) = 1
         occ(IPART,2) = 1
-        iblk_xxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+        iblk_xxhp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op,1)
       
 
         if (.not.bar) then
@@ -153,7 +157,7 @@
         occ(IHOLE,2) = 1
         occ(IPART,2) = 1
         occ(IHOLE,1) = 2
-        iblk_pphp = iblk_occ(occ,.false.,op_info%op_arr(idxr12x)%op)
+        iblk_pphp = iblk_occ(occ,.false.,op_info%op_arr(idxr12x)%op,1)
 c dbg
         print *,'iblk_pphp : ',iblk_pphp,idxr12x
         print *,'set to 1'
@@ -286,11 +290,11 @@ c        end if
         occ(IPART,1) = 1
         occ(IEXTR,1) = 1
         occ(IPART,2) = 2
-        iblk_pxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+        iblk_pxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op,1)
         occ = 0
         occ(IEXTR,1) = 2
         occ(IPART,2) = 2
-        iblk_xxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+        iblk_xxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op,1)
 
         if (.not.bar) then
           call expand_op_product2(fl_t_r_pnt,idxsop,
@@ -349,11 +353,11 @@ c        end if
         occ(IPART,1) = 1
         occ(IEXTR,1) = 1
         occ(IPART,2) = 2
-        iblk_pxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+        iblk_pxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op,1)
         occ = 0
         occ(IEXTR,1) = 2
         occ(IPART,2) = 2
-        iblk_xxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op)
+        iblk_xxpp = iblk_occ(occ,.false.,op_info%op_arr(idxr12)%op,1)
 
         call expand_op_product2(fl_t_r_pnt,idxsop,
      &       1.0d0,5,4,

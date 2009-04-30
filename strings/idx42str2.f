@@ -78,6 +78,7 @@
 
       call quit(1,'idx42str2','should be obsolete')
       ! if needed, adapt idx4sg call before use
+      ! also check op%blk_version when calling iblk_occ
 
       if (ntest.ge.10) then
         write(luout,*) '----------------------'

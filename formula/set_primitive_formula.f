@@ -95,9 +95,13 @@ c          print *,'opsh%dagger = ',opsh%dagger
 c          print *,'op%dagger = ',opsh%dagger
 c dbg
           iblk_op = iblk_occ(opsh%ihpvca_occ(1,1,iblk_off_sh+1),
-     &                       opsh%dagger,op)
+     &                       opsh%dagger,op,
+     &                       opsh%blk_version(iblk_opsh))
 c dbg
-c          print *,'result: iblk_op = ',iblk_op
+          print *,'result: iblk_op = ',iblk_op
+
+          print *,'op blks: ',op%blk_version(:)
+          print *,'version: ',opsh%blk_version(iblk_opsh)
 c dbg
           if (iblk_op .lt. 1) cycle
         else
