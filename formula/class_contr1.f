@@ -33,7 +33,7 @@
       character(1) ::
      &     charord
       integer, parameter ::
-     &     r12ops = 10, singler12 = 3
+     &     r12ops = 13, singler12 = 3
       integer ::
      &     idx, idxph(2),idxr12(r12ops), ii, class, opidx(2)
       logical ::
@@ -52,6 +52,9 @@
       idxr12(8) = idx_oplist2('BVX',op_info)
       idxr12(9) = idx_oplist2('BVY',op_info)
       idxr12(10) = idx_oplist2('BVZ',op_info)
+      idxr12(11) = idx_oplist2('CVX',op_info)
+      idxr12(12) = idx_oplist2('CVY',op_info)
+      idxr12(13) = idx_oplist2('CVZ',op_info)
 
       ops => op_info%op_arr
 

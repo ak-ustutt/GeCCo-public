@@ -213,7 +213,7 @@ c dbg
      &       rule%n_parameter_strings,
      &       nopt,nroots,mode)
 
-        if (rule%n_labels.ne.5*nopt+1)
+        if (rule%n_labels.lt.5*nopt+1)
      &       call quit(1,'process_me_lists',
      &       'incorrect number of labels to be passed for '//
      &       trim(SOLVELEQ))

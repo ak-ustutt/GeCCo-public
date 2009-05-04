@@ -194,13 +194,14 @@ c     &     'strange -- expected njoined==2')
         len_grd = me_grd%len_op_occ(iblk)
         if (ntest.ge.100) then
           write(luout,*) 'iblk = ',iblk
-          write(luout,*) 'gradient vector before:'
+          write(luout,*) '(a) gradient vector before:'
           write(luout,*) xbuf1(idx_grd:idx_grd+len_grd)
+          write(luout,*) 'using shift: ',w_shift
         end if
         call diavc(xbuf1(idx_grd),xbuf1(idx_grd),1d0,
      &             xbuf2(idx_grd),w_shift,len_grd)
         if (ntest.ge.100) then
-          write(luout,*) 'gradient vector afterwards:'
+          write(luout,*) '(a) gradient vector afterwards:'
           write(luout,*) xbuf1(idx_grd:idx_grd+len_grd)
         end if
       end do
@@ -213,8 +214,9 @@ c     &     'strange -- expected njoined==2')
           idx_grd = me_grd%off_op_occ(iblk)+1
           len_grd = me_grd%len_op_occ(iblk)
           write(luout,*) 'iblk = ',iblk
-          write(luout,*) 'gradient vector before:'
+          write(luout,*) '(b) gradient vector before:'
           write(luout,*) xbuf1(idx_grd+1:idx_grd+len_grd)
+          write(luout,*) 'using shift: ',w_shift
         end if
 
         iblk_off = (iblk-1)*njoined
@@ -247,16 +249,13 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
         if (njoined.eq.2) then
           iblk_b = 1
         else if (njoined.eq.1) then
-          if (name_opt.eq.op_cex.or.
-     &        name_opt.eq.op_rp) then
+          if (name_opt(1:1).eq.'T') then
             mode = 1
             nidx_p = occ_blk(IPART,1,1)
             occ_b = 0
             occ_b(IPART,1) = 1
             occ_b(IPART,2) = 1
-          else if (
-     &        name_opt.eq.op_cexbar.or.
-     &        name_opt.eq.op_lp) then
+          else if (name_opt(1:1).eq.'L') then
             mode = 1
             nidx_p = occ_blk(IPART,2,1)
             occ_b = 0
@@ -645,7 +644,7 @@ c test -- special insert
         end if
 
         if (ntest.ge.100) then
-          write(luout,*) 'gradient vector afterwards:'
+          write(luout,*) '(b) gradient vector afterwards:'
           write(luout,*) xbuf1(idx_grd+1:idx_grd+len_grd)
         end if
 

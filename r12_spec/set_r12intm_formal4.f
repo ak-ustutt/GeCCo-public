@@ -269,7 +269,7 @@ c        else if (njoined_int.eq.2) then
         else
           unknown = .true.
         end if
-      case('C')
+      case('C','Cp')
         def_fpp = .true.
         idx_rpl = 2
         if (njoined_int.eq.1) then
