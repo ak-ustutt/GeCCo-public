@@ -110,12 +110,13 @@
       case(DEF_HHAT)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title,idum,strdum)
+     &       title,nint,strdum)
         ioff = rule%n_update
+        if (rule%n_parameter_strings.le.1)  nint = 1
         call set_hhat2(form_pnt,
      &       title,rule%labels(ioff+1),
      &             rule%labels(ioff+2),rule%labels(ioff+3),
-     &       op_info)
+     &       nint,op_info)
       case(DEF_R12INTM_FORMAL)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

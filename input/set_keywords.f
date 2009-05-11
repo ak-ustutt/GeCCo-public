@@ -21,6 +21,8 @@ c      use parse_input
      &     len=256)
       call argument_add('memmax',context='general',type=vtyp_int,
      &     len=1,idef=(/50 000 000/))
+      call argument_add('form_test','general',type=vtyp_log,
+     &     ldef=(/.false./))
 
       call keyword_add('orb_space')
       call keyword_add('shell',context='orb_space')
