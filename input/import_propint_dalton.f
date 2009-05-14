@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine import_propint_dalton(plist,prop_type,
+      subroutine import_propint_dalton(plist,prop_type,psym,
      &                                 str_info,orb_info)
 *----------------------------------------------------------------------*
 *     import property integrals from DALTON environment
@@ -21,6 +21,8 @@
      &     plist
       character(len=*), intent(in) ::
      &     prop_type
+      integer, intent(in) ::
+     &     psym
       type(strinf), intent(in) ::
      &     str_info
       type(orbinf), intent(in) ::
@@ -39,7 +41,7 @@
       ! read property integrals in SAO basis
       call file_init(ffao,'PRAO.da',ftyp_da_unf,lblk_da)
       call file_open(ffao)
-      call import_propao_dalton(ffao,prop_type,plist%gamt,1,orb_info)
+      call import_propao_dalton(ffao,prop_type,plist%gamt,psym,orb_info)
 
       ! transfrom to MO basis
       call tran_one(plist,ffao,ffcmo,orb_info)

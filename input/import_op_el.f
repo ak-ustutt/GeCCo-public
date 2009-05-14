@@ -154,10 +154,13 @@ c     &                                str_info,orb_info)
           call import_intm_fc(mel_target,mel_target%op%name,
      &         str_info,orb_info)
 
-        case ('XDIPLEN','YDIPLEN','ZDIPLEN',
-     &        'XDIPVEL','YDIPVEL','ZDIPVEL',
+        case ('XDIPLEN','YDIPLEN','ZDIPLEN')
+          call import_propint_dalton(mel_target,list_type,1,
+     &         str_info,orb_info)
+
+        case ('XDIPVEL','YDIPVEL','ZDIPVEL',
      &        'XANGMOM','YANGMOM','ZANGMOM')
-          call import_propint_dalton(mel_target,list_type,
+          call import_propint_dalton(mel_target,list_type,-1,
      &         str_info,orb_info)
 
         case default
@@ -173,6 +176,10 @@ c     &                                str_info,orb_info)
           call import_hamint_dalton(mel_target,str_info,orb_info)
         case ('XDIPLEN','YDIPLEN','ZDIPLEN')
           call import_propint_dalton(mel_target,list_type,
+     &         str_info,orb_info)
+        case ('XDIPVEL','YDIPVEL','ZDIPVEL',
+     &        'XANGMOM','YANGMOM','ZANGMOM')
+          call import_propint_dalton(mel_target,list_type,-1,
      &         str_info,orb_info)
 
         case default

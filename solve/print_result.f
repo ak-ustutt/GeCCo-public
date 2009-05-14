@@ -170,29 +170,13 @@
         if (mod(order,2).eq.0.and.order.gt.0) value = -value
         property = 'elec'
       end if
-      if (all(pop(cmp(ifreq(1:order))%pop_idx)%name.eq.'r')) then
+      if (all(pop(cmp(ifreq(1:order))%pop_idx)%name.eq.'r').and.
+     &    order.gt.0) then
         value = -value
         property = 'elec'
       end if
       if (order.eq.0) property = 'ener'
 
-      last4 = 28
-      if (abs(value).lt.100000d0) then
-        write(part4(1:last4),'(": >>>",f19.12," <<<")') value
-      else if (abs(value).lt.10000000d0) then
-        write(part4(1:last4),'(": >>>",f19.10," <<<")') value
-      else if (abs(value).lt.1000000000d0) then
-        write(part4(1:last4),'(": >>>",f19.8," <<<")') value
-      else if (abs(value).lt.100000000000d0) then
-        write(part4(1:last4),'(": >>>",f19.6," <<<")') value
-      else
-        write(part4(1:last4),'(": >>>",E19.10," <<<")') value
-      end if
-
-      select case(property)
-      case('ener')
-        write(luout,*) 'Energy'//part4(1:last4)
-      case('elec')
       if (order.eq.1) then
         got_nucmom = .false.
         nucmom = 0d0
@@ -217,6 +201,27 @@
           end do
           close(1)
         end if
+        value = value + nucmom
+      end if
+
+      last4 = 28
+      if (abs(value).lt.100000d0) then
+        write(part4(1:last4),'(": >>>",f19.12," <<<")') value
+      else if (abs(value).lt.10000000d0) then
+        write(part4(1:last4),'(": >>>",f19.10," <<<")') value
+      else if (abs(value).lt.1000000000d0) then
+        write(part4(1:last4),'(": >>>",f19.8," <<<")') value
+      else if (abs(value).lt.100000000000d0) then
+        write(part4(1:last4),'(": >>>",f19.6," <<<")') value
+      else
+        write(part4(1:last4),'(": >>>",E19.10," <<<")') value
+      end if
+
+      select case(property)
+      case('ener')
+        write(luout,*) 'Energy'//part4(1:last4)
+      case('elec')
+      if (order.eq.1) then
         if (got_nucmom) then
           last1 = 22
           part1(1:last1) = 'Dipole moment (total) '
@@ -224,7 +229,6 @@
           last1 = 27
           part1(1:last1) = 'Dipole moment (electronic) '
         end if
-        value = value + nucmom
         write(luout,*) part1(1:last1)//part5(1:last5)//part4(1:last4)
       else if (order.eq.2) then
         last1 = 15

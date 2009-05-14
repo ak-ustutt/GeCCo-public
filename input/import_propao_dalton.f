@@ -16,7 +16,7 @@
       include 'par_dalton.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(orbinf), intent(in), target ::
      &     orb_info
