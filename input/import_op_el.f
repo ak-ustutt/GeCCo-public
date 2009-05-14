@@ -154,7 +154,9 @@ c     &                                str_info,orb_info)
           call import_intm_fc(mel_target,mel_target%op%name,
      &         str_info,orb_info)
 
-        case ('XDIPLEN','YDIPLEN','ZDIPLEN')
+        case ('XDIPLEN','YDIPLEN','ZDIPLEN',
+     &        'XDIPVEL','YDIPVEL','ZDIPVEL',
+     &        'XANGMOM','YANGMOM','ZANGMOM')
           call import_propint_dalton(mel_target,list_type,
      &         str_info,orb_info)
 

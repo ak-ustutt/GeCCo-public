@@ -291,7 +291,7 @@ c dbg
         allocate(ifreq(order))
         ifreq = ifreq_dum(1:order)
         deallocate(ifreq_dum)
-        call print_result(order,ifreq,mel_pnt,.false.)
+        call print_result(order,ifreq,mel_pnt,.false.,orb_info)
         deallocate(ifreq)
 
       case(PRINT_MEL)

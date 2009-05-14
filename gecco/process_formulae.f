@@ -34,21 +34,21 @@
      &     connect(maxterms*2), avoid(maxterms*2),
      &     inproj(maxterms*2), nconnect, navoid, ninproj,
      &     idx, jdx, ioff, ncat, nint, nrename, nop,
-     &     ansatz, ipos, idum, level, nterms,mode,
+     &     ansatz, ipos, idum, level, nterms, mode, nint2,
      &     ninclude, ninclude_or, nexclude,
      &     iblk_include(maxterms), iblk_include_or(maxterms),
      &     iblk_exclude(maxterms)
       type(formula), pointer ::
      &     form_pnt, form0_pnt
       character(len_command_par) ::
-     &     title, strdum, dir_str, approx, typ_str
+     &     title, strdum, approx, typ_str
       character(len=512) ::
      &     form_str
 
       integer ::
      &     idx_formlist
       integer, allocatable ::
-     &     idxfreqdum(:), idxfreq(:)
+     &     idxfreqdum(:), idxfreq(:), pop_idxdum(:), pop_idx(:)
 
       if (rule%type.ne.ttype_frm)
      &     call quit(1,'process_formulae',
@@ -369,19 +369,21 @@ c dbg end fix
         call form_extract_order(form_pnt,form0_pnt,
      &       title, rule%labels(3), nint, op_info)
       case(EXTRACT_FREQ)
-        allocate(idxfreqdum(maximum_order))
+        allocate(idxfreqdum(maximum_order),pop_idxdum(100))
         call form_parameters2(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title,nint,idxfreqdum,dir_str)
-        allocate(idxfreq(nint))
+     &       title,nint,idxfreqdum,nint2,pop_idxdum)
+        allocate(idxfreq(nint),pop_idx(nint2))
         idxfreq = idxfreqdum(1:nint)
-        deallocate(idxfreqdum)
+        pop_idx = pop_idxdum(1:nint2)
+        deallocate(idxfreqdum,pop_idxdum)
         ioff = rule%n_update
         jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)
         form0_pnt => form_info%form_arr(jdx)%form
         call form_extract_freq(form_pnt,form0_pnt,
-     &       title, rule%labels(3), nint, idxfreq, dir_str, op_info)
-        deallocate(idxfreq)
+     &       title, rule%labels(3), nint, idxfreq, nint2, pop_idx,
+     &       op_info)
+        deallocate(idxfreq,pop_idx)
       case(CLASS_FORMULA)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

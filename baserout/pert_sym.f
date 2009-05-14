@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      integer function pert_sym(pertdir,orb_info)
+      integer function pert_sym(int_name,orb_info)
 *----------------------------------------------------------------------*
 *     determines IRREP of a given perturbation direction
 *     matthias, 2008
@@ -13,8 +13,8 @@
       include 'def_orbinf.h'
       include 'ifc_memman.h'
 
-      character(len=1), intent(in) ::
-     &     pertdir
+      character(len=8), intent(in) ::
+     &     int_name
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -35,9 +35,6 @@
       type(filinf) ::
      &     ffaoprop
 
-      character(len=8) ::
-     &     label
-
       logical ::
      &     irrep_found
 
@@ -46,7 +43,6 @@
      &           (orb_info%nbast+orb_info%nxbast)/2
       ifree = mem_alloc_real(ao_full,nao_full,'ao_full')
 
-      label = pertdir//'DIPLEN '
       luerror = luout
 
       ! open files
@@ -56,7 +52,7 @@
       luaoprop = ffaoprop%unit
       rewind luaoprop
 
-      call mollab(label,luaoprop,luerror)
+      call mollab(int_name,luaoprop,luerror)
 
       ! read matrix in upper triangular form
       read (luaoprop) ao_full(1:nao_full)
@@ -108,12 +104,12 @@
         else if (norm(gamma).gt.1d-12) then
           write(irr1,'(i1)') pert_sym
           write(irr2,'(i1)') gamma
-          call quit(1,'pert_sym','cannot tell if '//pertdir//
+          call quit(1,'pert_sym','cannot tell if '//int_name//
      &       ' belongs to irrep '//irr1//' or '//irr2)
         end if
       end do
       if (.not.irrep_found) call quit(1,'pert_sym',
-     &       'no irrep found for '//pertdir)
+     &       'no irrep found for '//int_name)
 
       return
       end
