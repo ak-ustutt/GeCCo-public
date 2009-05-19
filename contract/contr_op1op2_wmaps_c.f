@@ -137,7 +137,8 @@
 
       integer ::
      &     msbnd(2,3), igambnd(2,3),
-     &     ms12i_a(3), ms12i_c(3), igam12i_a(3), igam12i_c(3)
+     &     ms12i_a(3), ms12i_c(3), igam12i_a(3), igam12i_c(3),
+     &     igam12i_raw(3)
 
       integer, pointer ::
      &     gmop1dis_c(:), gmop1dis_a(:),
@@ -923,71 +924,94 @@ c dbg
             if (first2) then
               first2 = .false.
               ! initial IRREP distribution
-              igam12i_a(1:3) = igambnd(1,1:3)
+              igam12i_raw(1:3) = igambnd(1,1:3)
             else
               ! next IRREP distribution
-              if (.not.next_dist(igam12i_a,3,igambnd,+1)) exit
+              if (.not.next_dist(igam12i_raw,3,igambnd,+1)) exit
             end if
+
+            if (.not.tra_op1) then
+              igam12i_a(1) = igam12i_raw(1)
+              igam12i_c(1) = multd2h(igam12i_a(1),igamtop1)
+            else
+              igam12i_c(1) = igam12i_raw(1)
+              igam12i_a(1) = multd2h(igam12i_c(1),igamtop1)
+            end if
+            if (.not.tra_op2) then
+              igam12i_a(2) = igam12i_raw(2)
+              igam12i_c(2) = multd2h(igam12i_a(2),igamtop2)
+            else
+              igam12i_c(2) = igam12i_raw(2)
+              igam12i_a(2) = multd2h(igam12i_c(2),igamtop2)
+            end if
+            if (.not.tra_op1op2) then
+              igam12i_a(3) = igam12i_raw(3)
+              igam12i_c(3) = multd2h(igam12i_a(3),igamtop1op2)
+            else
+              igam12i_c(3) = igam12i_raw(3)
+              igam12i_a(3) = multd2h(igam12i_c(3),igamtop1op2)
+            end if
+
             ! set up start addresses
             ! need to be modified, if more than one distribution
             ! exists, see below
             
             idxms = msa2idxms4op(ms12i_a(1),mstop1,
      &                           na_op1,nc_op1)
-            if (len_gam_ms_op1(igam12i_a(1),idxms).eq.0)
+            if (len_gam_ms_op1(igam12i_raw(1),idxms).eq.0)
      &           cycle gam_loop
             idxms = msa2idxms4op(ms12i_a(2),mstop2,
      &                           na_op2,nc_op2)
-            if (len_gam_ms_op2(igam12i_a(2),idxms).eq.0)
+            if (len_gam_ms_op2(igam12i_raw(2),idxms).eq.0)
      &           cycle gam_loop
             idxms = msa2idxms4op(ms12i_a(3),mstop1op2,
      &                           na_op1op2,nc_op1op2)
-            if (len_gam_ms_op1op2(igam12i_a(3),idxms).eq.0)
+            if (len_gam_ms_op1op2(igam12i_raw(3),idxms).eq.0)
      &           cycle gam_loop
 
             idxms = msa2idxms4op(ms12i_a(1),mstop1,na_op1,nc_op1)
             if (buftyp1.eq.2) then
-              ioff_op1 = gam_ms_op1(igam12i_a(1),idxms)
-              lenblock = len_gam_ms_op1(igam12i_a(1),idxms)
+              ioff_op1 = gam_ms_op1(igam12i_raw(1),idxms)
+              lenblock = len_gam_ms_op1(igam12i_raw(1),idxms)
 c dbg
 c          print *,'loading GAM blk for op1, ',igam12i_a(1),idxms
 c dbg
               call get_vec(ffop1,xop1,idoffop1+ioff_op1+1,
      &             idoffop1+ioff_op1+lenblock)
             end if
-            idxop1 = gam_ms_op1(igam12i_a(1),idxms) + 1
+            idxop1 = gam_ms_op1(igam12i_raw(1),idxms) + 1
      &             - ioff_op1
 
             idxms = msa2idxms4op(ms12i_a(2),mstop2,na_op2,nc_op2)
             if (buftyp2.eq.2) then
-              ioff_op2 = gam_ms_op2(igam12i_a(2),idxms)
-              lenblock = len_gam_ms_op2(igam12i_a(2),idxms)
+              ioff_op2 = gam_ms_op2(igam12i_raw(2),idxms)
+              lenblock = len_gam_ms_op2(igam12i_raw(2),idxms)
 c dbg
 c          print *,'loading GAM blk for op2, ',igam12i_a(2),idxms
 c dbg
               call get_vec(ffop2,xop2,idoffop2+ioff_op2+1,
      &             idoffop2+ioff_op2+lenblock)
             end if
-            idxop2 = gam_ms_op2(igam12i_a(2),idxms) + 1
+            idxop2 = gam_ms_op2(igam12i_raw(2),idxms) + 1
      &             - ioff_op2
             idxms =
      &           msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
 
             ! inefficient, but it works ....
             if (buftyp12.eq.2) then
-              ioff_op1op2 = gam_ms_op1op2(igam12i_a(3),idxms)
-              lenblock = len_gam_ms_op1op2(igam12i_a(3),idxms)
+              ioff_op1op2 = gam_ms_op1op2(igam12i_raw(3),idxms)
+              lenblock = len_gam_ms_op1op2(igam12i_raw(3),idxms)
               if (update) then
                 call get_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
      &             idoffop1op2+ioff_op1op2+lenblock)
-              else if (igam_op1op2_last.ne.igam12i_a(3).and.
+              else if (igam_op1op2_last.ne.igam12i_raw(3).and.
      &                 idxms_op1op2_last.ne.idxms) then
                 xop1op2(1:lenblock) = 0d0
               else
                 call get_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
      &             idoffop1op2+ioff_op1op2+lenblock)
               end if
-              igam_op1op2_last = igam12i_a(3)
+              igam_op1op2_last = igam12i_raw(3)
                 
             end if
               
@@ -996,16 +1020,13 @@ c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
             ! relevant for case where no reordering necessary
             ! then we have: op1op2tmp == op1op2
             if (iblkop1op2.gt.0)
-     &           idxop1op2 = gam_ms_op1op2(igam12i_a(3),idxms) + 1
+     &           idxop1op2 = gam_ms_op1op2(igam12i_raw(3),idxms) + 1
 c     &                - idxst_op1op2+1
      &                - ioff_op1op2
             if (reo_op1op2)
-     &           lblk_op1op2tmp=len_gam_ms_op1op2tmp(igam12i_a(3),idxms)
+     &           lblk_op1op2tmp=len_gam_ms_op1op2tmp(igam12i_raw(3),
+     &                                               idxms)
             if (iblkop1op2.eq.0) idxop1op2 = 1
-
-            igam12i_c(1) = multd2h(igam12i_a(1),igamtop1)
-            igam12i_c(2) = multd2h(igam12i_a(2),igamtop2)
-            igam12i_c(3) = multd2h(igam12i_a(3),igamtop1op2)
 
             igamc_ac = multd2h(igam12i_a(1),igam12i_a(2))
             igamc_ac = multd2h(igamc_ac,igam12i_a(3))
@@ -1188,7 +1209,7 @@ c                  print *,'ndis_op1op2tmp(igam12i_a(3),idxms):',
 c     &                 ndis_op1op2tmp(igam12i_a(3),idxms)
 c dbg
                   if (iblkop1op2tmp.gt.0.and.
-     &                 ndis_op1op2tmp(igam12i_a(3),idxms).gt.1) then
+     &                 ndis_op1op2tmp(igam12i_raw(3),idxms).gt.1) then
 
 c dbg
 c                    print *,'here 1'
@@ -1206,7 +1227,7 @@ c dbg
                     
                     idxdis =
      &                  idx_msgmdst2(
-     &                   iblkop1op2tmp,idxms,igam12i_a(3),
+     &                   iblkop1op2tmp,idxms,igam12i_raw(3),
      &                   cinfo_op1op2tmpc,idxmsi_dis_c,
      &                              gmi_dis_c,ncblk_op1op2tmp,
      &                   cinfo_op1op2tmpa,idxmsi_dis_a,
@@ -1228,13 +1249,14 @@ c                    if(reject) cycle caex2_loop
                     ! relevant for case w/o reordering
                     ! then we have op1op2tmp == op1op2
                     idxop1op2 = 
-     &                   d_gam_ms_op1op2(idxdis,igam12i_a(3),idxms)+1
+     &                   d_gam_ms_op1op2(idxdis,igam12i_raw(3),idxms)+1
 c     &                   - idxst_op1op2+1
      &                   - ioff_op1op2
 
                     if (reo_op1op2)
      &                 lblk_op1op2tmp =
-     &                 len_d_gam_ms_op1op2tmp(idxdis,igam12i_a(3),idxms)
+     &                 len_d_gam_ms_op1op2tmp(idxdis,igam12i_raw(3),
+     &                                        idxms)
 
                   end if
 
@@ -1362,13 +1384,13 @@ c dbg
                     idxms =
      &                   msa2idxms4op(ms12i_a(1),mstop1,na_op1,nc_op1)
 c                    idxms = (na_op1-ms12i_a(1))/2 + 1
-                    if (ndis_op1(igam12i_a(1),idxms).gt.1) then
+                    if (ndis_op1(igam12i_raw(1),idxms).gt.1) then
 c dbg
 c                      print *,'here 2'
 c dbg
                       idxdis =
      &                   idx_msgmdst2(
-     &                     iblkop1,idxms,igam12i_a(1),
+     &                     iblkop1,idxms,igam12i_raw(1),
      &                     cinfo_op1c,idxmsop1dis_c,
      &                              gmop1dis_c,ncblk_op1,
      &                     cinfo_op1a,idxmsop1dis_a,
@@ -1386,7 +1408,7 @@ c     &                     ms_fix1,reject)
 c                      if(reject) cycle caex2_loop 
 
                       idxop1 = 
-     &                     d_gam_ms_op1(idxdis,igam12i_a(1),idxms) + 1
+     &                     d_gam_ms_op1(idxdis,igam12i_raw(1),idxms) + 1
 c     &                     - idxst_op1+1-ioff_op1
      &                     - ioff_op1
                     end if
@@ -1484,13 +1506,13 @@ c dbg
                     idxms =
      &                   msa2idxms4op(ms12i_a(2),mstop2,na_op2,nc_op2)
 c                    idxms = (na_op2-ms12i_a(2))/2 + 1
-                    if (ndis_op2(igam12i_a(2),idxms).gt.1) then
+                    if (ndis_op2(igam12i_raw(2),idxms).gt.1) then
 c dbg
 c                      print *,'here 3'
 c dbg
                       idxdis =
      &                   idx_msgmdst2(
-     &                     iblkop2,idxms,igam12i_a(2),
+     &                     iblkop2,idxms,igam12i_raw(2),
      &                     cinfo_op2c,idxmsop2dis_c,
      &                              gmop2dis_c,ncblk_op2,
      &                     cinfo_op2a,idxmsop2dis_a,
@@ -1510,7 +1532,7 @@ c                      if(reject) cycle cac_loop
 
 
                       idxop2 = 
-     &                     d_gam_ms_op2(idxdis,igam12i_a(2),idxms) + 1
+     &                     d_gam_ms_op2(idxdis,igam12i_raw(2),idxms)+1
 c     &                     - idxst_op2+1
      &                     - ioff_op2
                     end if
@@ -1716,6 +1738,9 @@ c     &         iblkop1op2,iblkop1op2,str_info,orb_info)
 c dbg
                     call atim_cs(cpu0,sys0)
                     cnt_used_reo = .true.
+                    if (igam12i_a(3).ne.igam12i_raw(3))
+     &                 call quit(1,'contr_op1op2_wmaps_c',
+     &                           'check this case')
                     call reo_blk_wmaps_c(xop1op2,xop1op2blk,
      &                   reo_info%sign_reo,
      &                   tra_op1op2, tra_op1op2,
@@ -1757,8 +1782,8 @@ c dbg
             if (buftyp12.eq.2) then
               idxms =
      &           msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
-              ioff_op1op2 = gam_ms_op1op2(igam12i_a(3),idxms)
-              lenblock = len_gam_ms_op1op2(igam12i_a(3),idxms)
+              ioff_op1op2 = gam_ms_op1op2(igam12i_raw(3),idxms)
+              lenblock = len_gam_ms_op1op2(igam12i_raw(3),idxms)
 c dbg
 c          print *,'punching GAM blk for op1op2, ',igam12i_a(3),idxms
 c dbg
