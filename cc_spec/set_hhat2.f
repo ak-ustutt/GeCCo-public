@@ -43,10 +43,7 @@ c      include 'par_formnames_gen.h'
 
       integer ::
      &     nterms,
-     &     idxhhat,idxham,idxtop,trunc_type
-
-      logical ::
-     &     truncate
+     &     idxhhat,idxham,idxtop
 
       integer, external ::
      &     idx_oplist2
@@ -81,19 +78,7 @@ c      include 'par_formnames_gen.h'
       call expand_op_bch(form_pnt,4,idxhhat,
      &     1d0,-1,idxham,1d0,idxtop,1,iblkmax_t,op_info)
 
-      if (iblkmax_t.eq.2) then
-        call get_argument_value('method.R12','trunc',ival=trunc_type)
-        truncate = trunc_type.ge.0
-        if (is_keyword_set('method.truncate').gt.0) then
-          truncate = is_keyword_set('method.truncate').gt.0
-          if(truncate)
-     &       call get_argument_value('method.truncate','trunc_type',
-     &                                ival=trunc_type)
-        end if
-        if (truncate)
-     &       call r12_truncation(form_pnt,trunc_type,
-     &       0,idxham,0,idxtop,op_info)
-      end if
+      call r12_hhat_truncation(form_pnt,idxham,idxtop,op_info)
 
       ! reorder
       call reorder_formula(form_hhat,op_info)

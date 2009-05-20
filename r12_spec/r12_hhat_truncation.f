@@ -1,10 +1,8 @@
-      subroutine r12_opt_truncation(flist,idxop1,idxop2,op_info)
+      subroutine r12_hhat_truncation(flist,idxham,idxtop,op_info)
 *----------------------------------------------------------------------*
-*     delete terms which contain operator blocks of wrong version
-*     op1: only blocks with version = 1 allowed
-*     op2: only blocks with version = 2 allowed
+*     truncate formula for Hhat
 *
-*     matthias, april 2009
+*     matthias, 2009
 *----------------------------------------------------------------------*
 
       implicit none
@@ -28,21 +26,25 @@
       type(operator_info), intent(in) ::
      &     op_info
       integer, intent(in) ::
-     &     idxop1, idxop2
+     &     idxtop, idxham
 
       logical ::
      &     delete
       integer ::
-     &     nvtx, ivtx, njoined,
-     &     idx_op, iblk_op, version
+     &     nvtx, ivtx,
+     &     idx_op, iblk_op,
+     &     ntop, ntx, nham, ord_ham
 
       type(cntr_vtx), pointer ::
      &     vertex(:)
       type(formula_item), pointer ::
      &     form_pnt, form_pnt_next
 
+c      integer, external ::
+c     &     idx_oplist2
+
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'r12_opt_truncation')
+        call write_title(luout,wst_dbg_subr,'Hhat_truncation')
       endif
 
       form_pnt => flist
@@ -59,22 +61,48 @@
           nvtx = form_pnt%contr%nvtx
           vertex => form_pnt%contr%vertex
 
-          delete = .false.
+          ! find out:
+          ! - number and X-indices of T operators
+          ! - perturbation order of H
+          ! - number of R+
+          ! - number of R
+          ntop  = 0
+          ntx   = 0
+          nham    = 0
+          ord_ham = 0
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
             iblk_op = vertex(ivtx)%iblk_op
-            njoined = op_info%op_arr(idx_op)%op%njoined
-            version = op_info%op_arr(idx_op)%op%
-     &                        blk_version((iblk_op-1)/njoined+1)
-            delete = delete.or.idx_op.eq.idxop1.and.version.ne.1.or.
-     &                         idx_op.eq.idxop2.and.version.ne.2
+            if (idx_op.eq.idxtop) then
+              ntop = ntop+1
+              if (op_info%op_arr(idx_op)%
+     &            op%ihpvca_occ(IEXTR,1,iblk_op).gt.0)
+     &             ntx = ntx+1
+            end if
+            if (idx_op.eq.idxham) then
+              nham = nham+1
+              ord_ham = ord_ham
+     &           + op_info%op_arr(idx_op)%op%ica_occ(1,iblk_op)-1
+     &           + op_info%op_arr(idx_op)%op%ihpvca_occ(IEXTR,1,iblk_op)
+     &           + op_info%op_arr(idx_op)%op%ihpvca_occ(IEXTR,2,iblk_op)
+            end if
           end do
+
+          if (nham.ne.1)
+     &         call quit(1,'r12_hhat_truncation','strange: nham.ne.1')
+          if (ntop-ntx.lt.0)
+     &         call quit(1,'r12_hhat_truncation',
+     &                     'strange: ntop-ntx.lt.0')
+
+          ! linear in T1X and no "formal" blocks of hamiltonian
+          delete = ntx.gt.1.or.ord_ham.ge.3
 
           if (delete) then
             ! Print the deleted contraction.
             if(ntest.ge.1000)then
               write(luout,*) 'Deleted formula item:'
               call prt_contr2(luout,form_pnt%contr,op_info)
+              write(luout,*) 'ntx,ord_ham: ',ntx,ord_ham
             endif
 
             ! Delete the node.
@@ -84,7 +112,7 @@
 
         case default
           write(luout,*)'command = ',form_pnt%command
-          call quit(1,'r12_opt_truncation','command undefined here')
+          call quit(1,'r12_hhat_truncation','command undefined here')
         end select
 
         ! Exit or move to the next item.
