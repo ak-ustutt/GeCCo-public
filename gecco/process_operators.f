@@ -37,7 +37,7 @@
       logical ::
      &     dagger, explicit, freeze(2)
       integer, allocatable ::
-     &     ifreq_dum(:), ifreq(:)
+     &     ifreq_temp(:), ifreq(:)
 
       integer, external ::
      &     idx_oplist2
@@ -162,12 +162,12 @@ c        op_pnt%dagger = op_pnt%dagger.xor.dagger
         if (rule%n_parameter_strings.lt.1)
      &      call quit(1,'process_operators',
      &      'no parameters provided for '//SET_ORDER)
-        allocate(ifreq_dum(maximum_order))
+        allocate(ifreq_temp(maximum_order))
         call ord_parameters(+1,rule%parameters,
-     &                      iorder,spec,ifreq_dum)
+     &                      iorder,spec,ifreq_temp)
         allocate(ifreq(iorder))
-        ifreq = ifreq_dum(1:iorder)
-        deallocate(ifreq_dum)
+        ifreq = ifreq_temp(1:iorder)
+        deallocate(ifreq_temp)
         call set_pert_order(op_pnt,iorder,spec,ifreq)
         deallocate(ifreq)
       case default

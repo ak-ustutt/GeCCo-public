@@ -33,7 +33,7 @@
       integer, parameter ::
      &     maxfac = 20, maximum_order = 10
       real(8) ::
-     &     fac(maxfac)
+     &     fac(maxfac), freq
       integer ::
      &     idxblk(maxfac),
      &     idx, jdx, ioff, nfac, nblk, nspecial, imode,
@@ -50,7 +50,7 @@
       integer ::
      &     idx_formlist, order, dummy, loopdum
       integer, allocatable ::
-     &     ifreq_dum(:), ifreq(:)
+     &     ifreq_temp(:), ifreq(:)
 
       integer, external ::
      &     idx_mel_list
@@ -275,8 +275,8 @@ c dbg
      &       call quit(1,'process_me_lists','Label not on list: "'//
      &       trim(rule%labels(1))//'"')
         mel_pnt => op_info%mel_arr(idx)%mel
-
-        call set_frequency(mel_pnt)
+        call freq_parameters(+1,rule%parameters,freq)
+        call set_frequency(mel_pnt,freq)
 
       case(PRINT_RES)
         if (form_test) exit loop
@@ -285,12 +285,12 @@ c dbg
      &       call quit(1,'process_me_lists','Label not on list: "'//
      &       trim(rule%labels(1))//'"')
         mel_pnt => op_info%mel_arr(idx)%mel
-        allocate(ifreq_dum(maximum_order))
+        allocate(ifreq_temp(maximum_order))
         call ord_parameters(+1,rule%parameters,
-     &                      order,dummy,ifreq_dum)
+     &                      order,dummy,ifreq_temp)
         allocate(ifreq(order))
-        ifreq = ifreq_dum(1:order)
-        deallocate(ifreq_dum)
+        ifreq = ifreq_temp(1:order)
+        deallocate(ifreq_temp)
         call print_result(order,ifreq,mel_pnt,.false.,orb_info)
         deallocate(ifreq)
 

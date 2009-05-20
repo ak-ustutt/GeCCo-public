@@ -663,3 +663,26 @@ c        read(parameters(2),'(240(i1))')
 
       return
       end
+
+*---------------------------------------------------------------------*
+
+      subroutine freq_parameters(rw,parameters,freq)
+
+      implicit none
+
+      integer, intent(inout) ::
+     &     rw
+      real(8), intent(inout) ::
+     &     freq
+      character, intent(inout) ::
+     &     parameters*(*)
+
+      if (rw.lt.0) then
+        parameters(1:len(parameters)) = ' '
+        write(parameters,'(g20.14)') freq
+      else
+        read(parameters,'(g20.14)') freq
+      end if
+
+      return
+      end
