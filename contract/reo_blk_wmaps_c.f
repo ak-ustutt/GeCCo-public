@@ -484,9 +484,6 @@ c dbg
 
                 ! --> offset in xop_reo
                 if (ndis_opreo(gm_op_a,idxms_op_a).gt.1) then
-c dbg
-c                  print *,'call to idx_msgmdst2'
-c dbg
                   idxdis =
      &                 idx_msgmdst2(
      &                 iblk_opreo,idxms_op_a,gm_op_a,
@@ -495,12 +492,6 @@ c dbg
      &                 cinfo_opreo_a,idxms_ip_dis_a,
      &                               gm_ip_dis_a,nablk_opreo,
      &                 .false.,me_opreo,nsym)
-c dbg
-c                  print *,'after call to idx_msgmdst2'
-c dbg
-c dbg
-c                  print *,'current target distr: ',idxdis
-c dbg
                   idx00opreo =
      &                 d_gam_ms_opreo(idxdis,gm_op_a,idxms_op_a) + 1
      &                                           - idxst_opreo
@@ -543,11 +534,6 @@ c dbg
                       istr1 = istr1/nstr_i0a1(icmp)
                       istr2 = istr2/nstr_k_a1(icmp)
                     end do
-c dbg
-c                    if (idx0opori.eq.1.or.idx0opori.eq.779)
-c     &                   print *,'HIER HIER HIER: idx0opori = ',
-c     &                   idx0opori
-c dbg
                     
                     ! map K,I0 -> I'
                     idx0opreo = idx00opreo
@@ -579,7 +565,7 @@ c dbg
      &                     + (abs(ielmap)-1)*ldim_opreo_a(icmp)
 c dbg
 c                      print *,'icmp, idx_i0a, idx_k_a: ',icmp,idx1,idx2
-c                      print *,'    ->idx_ipa: ',ielmap                      
+c                      print *,'    ->idx_ipa: ',ielmap
 c dbg
                       ioff = ioff + nstr_opreo_a(icmp)
                       istr1 = istr1/nstr_i0a2(icmp)

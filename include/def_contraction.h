@@ -78,3 +78,54 @@ c
 *----------------------------------------------------------------------*
         
       end type contraction
+
+      integer, parameter ::
+     &     maxlen_bc_label = 32
+
+      type binary_contr
+      integer ::
+     &     n_operands, n_cnt
+      real(8) ::
+     &     fact
+      character(len=maxlen_bc_label) ::
+     &     label_res, label_op1, label_op2
+      integer ::
+     &     iblk_res, iblk_op1, iblk_op2,
+     &     nj_res, nj_op1, nj_op2,
+     &     ngas, nspin
+      logical ::
+     &     tra_res, tra_op1, tra_op2
+      integer, pointer ::
+     &     occ_res(:,:,:),
+     &     occ_op1(:,:,:),
+     &     occ_op2(:,:,:),
+     &     rst_res(:,:,:,:,:,:),
+     &     rst_op1(:,:,:,:,:,:),
+     &     rst_op2(:,:,:,:,:,:),
+     &     occ_ex1(:,:,:),
+     &     occ_ex2(:,:,:),
+     &     occ_cnt(:,:,:),
+     &     merge_op1(:), merge_op2(:),
+     &     merge_op1op2(:), merge_op2op1(:)
+      end type binary_contr
+
+      type reorder
+      character(len=maxlen_bc_label) ::
+     &     label_out, label_in
+      integer ::
+     &     iblk_out, iblk_in,
+     &     nj_out, nj_in
+      integer ::
+     &     nreo,sign,
+     &     ngas, nspin
+      integer, pointer ::
+     &     from_to(:,:),
+     &     occ_shift(:,:,:),
+     &     occ_opout(:,:,:),
+     &     rst_opout(:,:,:,:,:,:),
+     &     occ_opin(:,:,:),
+     &     rst_opin(:,:,:,:,:,:),
+     &     occ_op0(:,:,:),
+     &     merge_stp1(:),merge_stp1inv(:),
+     &     merge_stp2(:),merge_stp2inv(:)
+      end type reorder

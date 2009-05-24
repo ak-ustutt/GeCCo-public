@@ -393,6 +393,9 @@ c dbg
      &       labels,1,0,
      &       parameters,2,tgt_info)
 c dbg
+        call set_rule(form_ptdl0,ttype_frm,TEX_FORMULA,
+     &              labels,5,1,
+     &              'pt_lag.tex',1,tgt_info)
 
       end if
 
@@ -413,6 +416,9 @@ c dbg
       call set_rule(form_ptde0,ttype_frm,SUM_HERMIT,
      &              labels,3,1,
      &              title_ptde0,1,tgt_info)
+      call set_rule(form_ptde0,ttype_frm,TEX_FORMULA,
+     &              labels,5,1,
+     &              'pt_en.tex',1,tgt_info)
 
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = form_h0_tpt
@@ -429,6 +435,9 @@ c dbg
       call set_rule(form_h0_tpt,ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              title_h0_tpt,1,tgt_info)
+c      call set_rule(form_h0_tpt,ttype_frm,TEX_FORMULA,
+c     &              labels,5,1,
+c     &              'pt_leq.tex',1,tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = form_h0_tpt
       labels(2) = form_etapt
@@ -667,7 +676,7 @@ c      else
 c        call quit(1,'set_cc_pt_targets','trap 1')
 c      end if
       if (explicit.and.r12op.ge.1) then
-        call set_dependency(solve_cc_pt,'Z2INT_R12_DIR',tgt_info)
+        call set_dependency(solve_cc_pt,'Z2INT_R12_EVAL',tgt_info)
       end if
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = fopt_ptde0

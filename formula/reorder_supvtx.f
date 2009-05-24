@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine reorder_supvtx(possible,
-     &     modify_contr,set_reord_list,reo_info,
+     &     modify_contr,set_reord_list,reo_before,reo_info,
      &     contr,occ_vtx,idxop12)
 *----------------------------------------------------------------------*
 *     check whether a single vertex is contracted to more than one 
@@ -30,7 +30,7 @@
       logical, intent(out) ::
      &     possible
       logical, intent(in) ::
-     &     modify_contr, set_reord_list
+     &     modify_contr, set_reord_list, reo_before
       integer, intent(in) ::
      &     idxop12
       type(contraction), intent(inout) ::
@@ -53,11 +53,17 @@
       integer ::
      &     narc, iarc, jarc, ivtx0, ivtx1, ivtx2, iprim, isuper,
      &     iarc_shift, iarc_sum, narc_new,
-     &     maxreo, idx, idxsuper, ica, ica_vtx, hpvx
+     &     maxreo, idx, idxsuper, ica, ica_vtx, hpvx,
+     &     iblk, ivtx, idxnew, ireo
+      logical, pointer ::
+     &     reo_generated(:)
 
       integer, external ::
      &     imltlist
 
+c dbg
+c      print *,'reorder_supvtx: on input nreo ',reo_info%nreo
+c dbg
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'reorder_supvtx')
         write(luout,*) 'modify_contr: ',modify_contr
@@ -69,13 +75,15 @@
 
       possible = .true.
 
-      if (set_reord_list) then
-        maxreo = 2*(contr%nvtx - contr%nsupvtx)
+      maxreo = 2*contr%nvtx
+      if (set_reord_list.and..not.associated(reo_info%reo)) then
         reo_info%nreo = 0
         allocate(reo_info%reo(maxreo),reo_info%nca_vtx(contr%nvtx))
         reo_info%nvtx_contr = contr%nvtx
         call set_nca_vtx(reo_info%nca_vtx,occ_vtx,contr%nvtx)
       end if
+      allocate(reo_generated(maxreo))
+      reo_generated = .false.
 
       narc = contr%narc
       if (modify_contr) then
@@ -96,6 +104,7 @@
         do jarc = 1, narc
           ! deleted arc? or the arc itself?
           if (arc(iarc)%link(1).le.0.or.iarc.eq.jarc) cycle
+
 c dbg
 c          print *,'iarc, jarc: ',iarc,jarc
 c dbg
@@ -118,6 +127,9 @@ c dbg
           ivtx0 = arc(iarc)%link(iprim)
           ivtx1 = arc(iarc)%link(isuper)
           ivtx2 = arc(jarc)%link(isuper)
+
+c fix -- do not consider this case:
+c          if (vertex(ivtx1)%idx_op.ne.idxop12) cycle
 
 c dbg
 c          print *,'iprim,isuper:',iprim,isuper
@@ -226,14 +238,23 @@ c dbg
           if (set_reord_list) then
             if (iocc_nonzero(occ_shr)) then
               reo_info%nreo = reo_info%nreo+1
+              reo_generated(reo_info%nreo) = .true.
               idx = reo_info%nreo
-              if (idx.gt.maxreo)
-     &             call quit(1,'reorder_supvtx','unexpected event')
+              if (idx.gt.maxreo) then
+                write(luout,*) 'idx,maxreo: ',idx,maxreo
+                call quit(1,'reorder_supvtx','unexpected event')
+              end if
               idxsuper = svertex(ivtx1)
               reo_info%reo(idx)%idxsuper = idxsuper
+              reo_info%reo(idx)%idxop_ori =
+     &             vertex(ivtx1)%idx_op
+              reo_info%reo(idx)%iblkop_ori =
+     &             vertex(ivtx1)%iblk_op
               ! flag whether this is the result vertex of prev. binary contr.
               reo_info%reo(idx)%is_bc_result =
      &             idxop12.eq.vertex(ivtx1)%idx_op
+              ! flag whether reo should occur before contraction
+              reo_info%reo(idx)%reo_before   = reo_before
               ! which components of super-vertex
               reo_info%reo(idx)%to =
      &             imltlist(idxsuper,svertex,ivtx2,1)
@@ -246,14 +267,23 @@ c dbg
             end if
             if (iocc_nonzero(occ_shl)) then
               reo_info%nreo = reo_info%nreo+1
+              reo_generated(reo_info%nreo) = .true.
               idx = reo_info%nreo
-              if (idx.gt.maxreo)
-     &             call quit(1,'reorder_supvtx','unexpected event')
+              if (idx.gt.maxreo) then
+                write(luout,*) 'idx,maxreo: ',idx,maxreo
+                call quit(1,'reorder_supvtx','unexpected event')
+              end if
               idxsuper = svertex(ivtx1)
               reo_info%reo(idx)%idxsuper = idxsuper
+              reo_info%reo(idx)%idxop_ori =
+     &             vertex(ivtx1)%idx_op
+              reo_info%reo(idx)%iblkop_ori =
+     &             vertex(ivtx1)%iblk_op
               ! flag whether this is the result vertex of prev. binary contr.
               reo_info%reo(idx)%is_bc_result =
      &             idxop12.eq.vertex(ivtx1)%idx_op
+              ! flag whether reo should occur before contraction
+              reo_info%reo(idx)%reo_before   = reo_before
               ! which components of super-vertex
               reo_info%reo(idx)%to =
      &             imltlist(idxsuper,svertex,ivtx1,1)
@@ -281,12 +311,39 @@ c dbg
           if (narc_new.lt.iarc) arc(narc_new) = arc(iarc)
         end do
         contr%narc = narc_new
+
+        ! a quickie: new intermediate
+        idxnew = idxop12-1
+        do ireo = 1, reo_info%nreo
+          if (.not.reo_generated(ireo)) cycle
+          reo_info%reo(ireo)%idxop_new = idxop12 ! default
+          idxsuper = reo_info%reo(idx)%idxsuper
+          iblk = 0
+          do ivtx = 1, contr%nvtx
+            if (svertex(ivtx).ne.idxsuper) cycle
+            if (vertex(ivtx)%idx_op.ne.idxop12) then
+              vertex(ivtx)%idx_op = idxnew
+              iblk = iblk+1
+              vertex(ivtx)%iblk_op = iblk
+            end if
+          end do
+          if (iblk.ne.0) reo_info%reo(ireo)%idxop_new = idxnew
+          if (iblk.ne.0) idxnew = idxnew-1
+        end do
+
+        ! set 0-contraction, if necessary
+        ! as they were removed above
+        call check_disconnected(contr)
+
       end if
 
       if (.not.modify_contr) deallocate(arc_scr)
 
+      deallocate(reo_generated)
+
       if (ntest.ge.100) then
-        write(luout,*) 'contr at the end of reorder_supvtx'
+        write(luout,*) 'contr at the end of reorder_supvtx: nreo = ',
+     &       reo_info%nreo
         if (.not.modify_contr) write(luout,*) 'should not have changed!'
         call prt_contr3(luout,contr,occ_vtx)
       end if

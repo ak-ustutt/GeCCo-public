@@ -27,7 +27,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       character, parameter ::
      &     name_scr0*6 = 'cntscr'
@@ -427,7 +427,7 @@ c          new = .false.!cur_contr%nvtx.ge.4
      &         make_contr_red,
      &         cur_contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &         set_reo,reo_info,
-     &         iarc,idx,-ninter,
+     &         iarc,.false.,-ninter,
      &         irst_res,njoined_res,orb_info,op_info)
           if (.not.possible) then
             call prt_contr3(luout,cur_contr,-1)
@@ -444,6 +444,10 @@ c          new = .false.!cur_contr%nvtx.ge.4
      &           irst_op1op2,irst_op1op2tmp,
      &           njoined_op1op2,
      &           reo_info,str_info,orb_info)
+            if (reo_other) then
+              call quit(1,'frm_sched1',
+     &             'reordering of operator other than OP1OP2 requested')
+            end if
 
             call copy_contr(cur_contr_red,cur_contr)
             occ_vtx    = occ_vtx_red

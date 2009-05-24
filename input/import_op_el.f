@@ -70,9 +70,18 @@
           mode=1
           scaling=min(use_scaling,0)
           if (trim(list_type).eq.'G_INT'.or.
-     &        trim(list_type).eq.'H_INT')
-     &         call import_2el_dalton(mel_target,'MO_G',
-     &           mode,scaling,anti,str_info,orb_info)
+     &        trim(list_type).eq.'H_INT') then
+c     &         call import_2el_dalton(mel_target,'MO_G',
+c     &           mode,scaling,anti,str_info,orb_info)
+c     &         call import_2el_dalton(mel_target,'MO_G',
+            if (anti) then
+              call import_2el_dalton_new(mel_target,'MO_G',
+     &             mode,scaling,anti,str_info,orb_info)
+            else ! G_Z still works with old import only:
+              call import_2el_dalton(mel_target,'MO_G',
+     &             mode,scaling,anti,str_info,orb_info)
+            end if
+          end if
           ! call after 2int import, as the above routine
           ! zeroes all blocks, including E0 and F:
           if (trim(list_type).eq.'F_INT'.or.
@@ -83,66 +92,77 @@
         case('F12_INT')
           mode=1
           scaling=min(use_scaling,1)
-          call import_2el_dalton(mel_target,'MO_F12',
+c          call import_2el_dalton(mel_target,'MO_F12',
+          call import_2el_dalton_new(mel_target,'MO_F12',
      &           mode,scaling,anti,str_info,orb_info) 
 
         case('F12BAR_INT')
           mode=3
           scaling=min(use_scaling,1)
-          call import_2el_dalton(mel_target,'MO_F12BAR',
+c          call import_2el_dalton(mel_target,'MO_F12BAR',
+          call import_2el_dalton_new(mel_target,'MO_F12BAR',
      &           mode,scaling,anti,str_info,orb_info) 
 
         case('FDGBAR_INT')
           mode=3
           scaling=min(use_scaling,1)
-          call import_2el_dalton(mel_target,'MO_FDGBAR',
+c          call import_2el_dalton(mel_target,'MO_FDGBAR',
+          call import_2el_dalton_new(mel_target,'MO_FDGBAR',
      &           mode,scaling,anti,str_info,orb_info) 
 
         case('F12TLD_INT')
           mode=3
           scaling=min(use_scaling,1)
-          call import_2el_dalton(mel_target,'MO_F12TLD',
+c          call import_2el_dalton(mel_target,'MO_F12TLD',
+          call import_2el_dalton_new(mel_target,'MO_F12TLD',
      &           mode,scaling,anti,str_info,orb_info) 
 
         case('F12BRV_INT')
           mode=3
           scaling=min(use_scaling,1)
-          call import_2el_dalton(mel_target,'MO_F12BRV',
+c          call import_2el_dalton(mel_target,'MO_F12BRV',
+          call import_2el_dalton_new(mel_target,'MO_F12BRV',
      &           mode,scaling,anti,str_info,orb_info) 
         case('FF_INT')
           mode=1
           scaling=min(use_scaling,2)
-          call import_2el_dalton(mel_target,'MO_FF',
+c          call import_2el_dalton(mel_target,'MO_FF',
+          call import_2el_dalton_new(mel_target,'MO_FF',
      &         mode,scaling,anti,str_info,orb_info)
 
         case('FFBAR_INT')
           mode=3
           scaling=min(use_scaling,2)
-          call import_2el_dalton(mel_target,'MO_FFBAR',
+c          call import_2el_dalton(mel_target,'MO_FFBAR',
+          call import_2el_dalton_new(mel_target,'MO_FFBAR',
      &         mode,scaling,anti,str_info,orb_info)
 
         case('FFG_INT')
           mode=1
           scaling=min(use_scaling,2)
-          call import_2el_dalton(mel_target,'MO_FFG',
+c          call import_2el_dalton(mel_target,'MO_FFG',
+          call import_2el_dalton_new(mel_target,'MO_FFG',
      &         mode,scaling,anti,str_info,orb_info)
 
         case('TTF_INT')
           mode=2
           scaling=min(use_scaling,1)
-          call import_2el_dalton(mel_target,'MO_TTF',
+c          call import_2el_dalton(mel_target,'MO_TTF',
+          call import_2el_dalton_new(mel_target,'MO_TTF',
      &           mode,scaling,anti,str_info,orb_info) 
 
         case('FTF_INT')
           mode=1
           scaling=min(use_scaling,2)
-          call import_2el_dalton(mel_target,'MO_FTF',
+c          call import_2el_dalton(mel_target,'MO_FTF',
+          call import_2el_dalton_new(mel_target,'MO_FTF',
      &           mode,scaling,anti,str_info,orb_info) 
 
         case('FG_INT')
           mode=1
           scaling=min(use_scaling,1)
-          call import_2el_dalton(mel_target,'MO_FG',
+c          call import_2el_dalton(mel_target,'MO_FG',
+          call import_2el_dalton_new(mel_target,'MO_FG',
      &           mode,scaling,anti,str_info,orb_info) 
 
         case('K_INT')
@@ -198,6 +218,9 @@ c     &                                str_info,orb_info)
         call wrt_mel_file(luout,ipri,mel_target,
      &       1,mel_target%op%n_occ_cls,
      &       str_info,orb_info)
+c dbg
+c        if (trim(list_type).eq.'H_INT') stop 'H stop'
+c dbg
       end if
 
       return

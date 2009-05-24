@@ -43,6 +43,8 @@
 
       mel%frequency = 0d0      ! set assigned frequency to zero
 
+      mel%fix_vertex_ms = .false.
+
       nblk = mel%op%n_occ_cls
       select case(ipass)
       case(1)

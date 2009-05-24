@@ -163,6 +163,8 @@ c      end if
         write(luout,*)'mel len = ',mel_out%len_op_occ(iblkout)
         call wrt_occ_n(luout,opin%ihpvca_occ(1,1,idx_in),njoined_in)
         call wrt_occ_n(luout,opout%ihpvca_occ(1,1,idx_out),njoined_out)
+        write(luout,*)'formal? ',mel_in%op%formal_blk(iblkin)
+        write(luout,*)'formal? ',mel_out%op%formal_blk(iblkout)
         call quit(1,'add_opblk','unexpected error')      
       endif
 

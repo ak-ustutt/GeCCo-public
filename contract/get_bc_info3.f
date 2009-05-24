@@ -8,11 +8,11 @@
      &     gamt_op,gamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,
      &     merge_op1, merge_op2, merge_op1op2, merge_op2op1,
-     &     contr,occ_vtx,irestr_vtx,info_vtx,
+     &     contr_in,occ_vtx_in,irestr_vtx_in,info_vtx,
      &     make_contr_red,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     set_reo, reo_info,
-     &     iarc_contr,idx_contr,idxnew_op1op2,
+     &     iarc_contr,update_idxintm,idxintm,
      &     irestr_res,njoined_res,orb_info,op_info)
 
       implicit none
@@ -29,8 +29,8 @@
       integer, parameter ::
      &     ntest = 00
 
-      type(contraction), intent(in) ::
-     &     contr
+      type(contraction), intent(in), target ::
+     &     contr_in
       type(contraction), intent(out) ::
      &     contr_red
       type(reorder_info), intent(inout) ::
@@ -40,15 +40,17 @@
       type(operator_info), intent(in) ::
      &     op_info
       logical, intent(in) ::
-     &     set_reo, make_contr_red
+     &     set_reo, make_contr_red, update_idxintm
       logical, intent(out) ::
      &     possible
+      integer, intent(inout) ::
+     &     idxintm
       integer, intent(in) ::
-     &     iarc_contr, idx_contr, idxnew_op1op2, njoined_res
+     &     iarc_contr, njoined_res
       integer, intent(in) ::
-     &     occ_vtx(ngastp,2,contr%nvtx+njoined_res),
-     &     irestr_vtx(2,orb_info%ngas,2,2,contr%nvtx+njoined_res),
-     &     info_vtx(2,contr%nvtx+njoined_res),
+     &     occ_vtx_in(ngastp,2,contr_in%nvtx+njoined_res),
+     &     irestr_vtx_in(2,orb_info%ngas,2,2,contr_in%nvtx+njoined_res),
+     &     info_vtx(2,contr_in%nvtx+njoined_res),
      &     irestr_res(2,orb_info%ngas,2,2,njoined_res)
       integer, intent(out) ::
      &     occ_vtx_red(ngastp,2,*),
@@ -71,13 +73,16 @@
      &     mst_op(2), mst_op1op2, gamt_op(2), gamt_op1op2,
      &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*)
 
+      type(contraction), pointer ::
+     &     contr, contr_pnt
+
       logical ::
      &     self
       integer ::
      &     ld_mmap1, ld_mmap2, ld_mmap12, ngas,
-     &     nvtx, ivtx, idx, iblk,
+     &     nvtx, ivtx, idx, iblk, idxnew_op1op2,
      &     ivtx1, ivtx2, isvtx1, isvtx2,
-     &     len_list, nvtx_red, sh_sign
+     &     len_list, nvtx_red, sh_sign, ireo, jreo
 
       integer, pointer ::
      &     ireo_vtx_no(:), ireo_vtx_on(:),
@@ -86,19 +91,56 @@
      &     merge_map_op1(:,:,:), merge_map_op2(:,:,:),
      &     merge_map_op1op2(:,:,:),
      &     ihpvgas(:,:)
+      integer ::
+     &     occ_vtx(ngastp,2,contr_in%nvtx+njoined_res),
+     &     irestr_vtx(2,orb_info%ngas,2,2,contr_in%nvtx+njoined_res)
+
 
       integer, external ::
      &     imltlist
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'get_bc_info3')
-        call prt_contr3(luout,contr,-1)
+        call prt_contr3(luout,contr_in,-1)
       end if
 
       ngas = orb_info%ngas
       ihpvgas => orb_info%ihpvgas
 
-      nvtx = contr%nvtx
+      nvtx = contr_in%nvtx
+
+      ! test: check re-sort possibilities prior to contraction:
+      allocate(contr)
+      call init_contr(contr)
+      call copy_contr(contr_in,contr)
+      occ_vtx    = occ_vtx_in
+      irestr_vtx = irestr_vtx_in
+
+      if (.true..and.update_idxintm) then
+        possible = .true.
+        idxnew_op1op2 = idxintm
+        call reorder_supvtx(possible,
+     &       .true.,set_reo,.true.,reo_info,
+     &       contr,occ_vtx(1,1,njoined_res+1),idxnew_op1op2)
+        if (contr%nxarc.gt.0)
+     &       call reorder_supvtx_x(possible,
+     &         .true.,set_reo,.true.,reo_info,
+     &         contr,occ_vtx(1,1,njoined_res+1),idxnew_op1op2)
+
+        possible = .true.
+        if (reo_info%nreo.gt.0) idxintm = idxintm-1
+        ! report that REO is before contraction!
+
+        if (.not.set_reo.or.reo_info%nreo.gt.0) then
+          do ivtx = 1, nvtx
+            call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
+     &           occ_vtx(1,1,ivtx+njoined_res),1,
+     &           orb_info)
+          end do
+        end if
+        if (set_reo) call tidy_reo_info(reo_info)
+
+      end if
 
       ivtx1 = contr%arc(iarc_contr)%link(1)
       ivtx2 = contr%arc(iarc_contr)%link(2)
@@ -107,6 +149,7 @@
       njoined_op(1) = imltlist(isvtx1,contr%svertex,nvtx,1)
       if (ivtx1.le.nvtx) then
         idx_op(1) = contr%vertex(ivtx1)%idx_op
+        ! iblkop fix:
         iblk_op(1) = (contr%vertex(ivtx1)%iblk_op-1)/njoined_op(1) + 1
         tra_op1   = contr%vertex(ivtx1)%dagger
       end if
@@ -119,6 +162,7 @@
         njoined_op(2) = imltlist(isvtx2,contr%svertex,nvtx,1)
         if (ivtx2.le.nvtx) then
           idx_op(2) = contr%vertex(ivtx2)%idx_op
+          ! iblkop fix:
           iblk_op(2) = (contr%vertex(ivtx2)%iblk_op-1)/njoined_op(2) + 1
           tra_op2   = contr%vertex(ivtx2)%dagger
         end if
@@ -205,11 +249,13 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &         ireo_after_contr(nvtx),
      &         ivtx_op1op2(nvtx))
 
+      if (update_idxintm) idxintm = idxintm-1
+
       call reduce_contr2(sh_sign,iocc_op1op2,njoined_op1op2,
      &     ireo_vtx_no,ireo_vtx_on,ireo_after_contr,
      &     ivtx_op1op2,nvtx_red,
      &     merge_map_op1op2,ld_mmap12,
-     &     make_contr_red,contr_red,idxnew_op1op2,
+     &     make_contr_red,contr_red,idxintm,
      &     contr,isvtx1,isvtx2,arc_list,len_list,njoined_res)
 
       call condense_merge_map(merge_op1op2,
@@ -277,13 +323,22 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
      &    contr%narc.ne.len_list .and.
      &    contr_red%nsupvtx.lt.nvtx
      &    ) then
+        idxnew_op1op2 = idxintm
         call reorder_supvtx(possible,
-     &       .true.,set_reo,reo_info,
+     &       .true.,set_reo,.false.,reo_info,
      &       contr_red,occ_vtx_red(1,1,njoined_res+1),idxnew_op1op2)
         if (contr%nxarc.gt.0)
      &       call reorder_supvtx_x(possible,
-     &         .true.,set_reo,reo_info,
+     &         .true.,set_reo,.false.,reo_info,
      &         contr_red,occ_vtx_red(1,1,njoined_res+1),idxnew_op1op2)
+        ! FIX - unclear, whether 2x reo to same vertex works
+        do ireo = 1, reo_info%nreo
+          do jreo = ireo+1, reo_info%nreo
+            if (reo_info%reo(ireo)%from.eq.reo_info%reo(jreo)%from.or.
+     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to)
+     &           possible = .false.
+          end do
+        end do
         if (.not.set_reo.or.reo_info%nreo.gt.0) then
           do ivtx = 1, nvtx
             call dummy_restr(irestr_vtx_red(1,1,1,1,ivtx+njoined_res),
@@ -325,6 +380,9 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
 
       deallocate(merge_map_op1op2)
       deallocate(merge_map_op1,merge_map_op2)
+
+      call dealloc_contr(contr)
+      deallocate(contr)
 
       if (ntest.ge.100) then
         write(luout,*) 'get_bc_info3 on exit:'

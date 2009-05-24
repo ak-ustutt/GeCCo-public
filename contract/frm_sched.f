@@ -74,6 +74,9 @@ c stat
       case (0)
         call frm_sched1(xret,flist,depend_info,idxselect,nselect,
      &         op_info,str_info,strmap_info,orb_info)
+      case (1)
+        call frm_sched2(xret,flist,depend_info,idxselect,nselect,
+     &         op_info,str_info,strmap_info,orb_info)
       case default
         call quit(1,'frm_sched','illegal route')
       end select

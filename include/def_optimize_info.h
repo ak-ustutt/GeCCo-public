@@ -17,7 +17,7 @@
      &       mode_leq,
      &       mode_nleq,
      &       maxmacit, maxmicit, micifac,
-     &       maxsbsp
+     &       maxsbsp, max_incore
         real(8) ::
      &       trini,
      &       shift            ! shift linear equations by value

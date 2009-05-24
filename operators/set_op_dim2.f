@@ -211,8 +211,14 @@ c dbg
           ! test indexing routine
           idxmsa2 = msa2idxms4op(msa,mel%mst,msa_max,msc_max)
 
-          if (idxmsa.ne.idxmsa2)
-     &         call quit(1,'set_op_dim2','bug in msa2idxms4op!')
+c          if (idxmsa.ne.idxmsa2)
+c     &         call quit(1,'set_op_dim2','bug in msa2idxms4op!')
+          if (idxmsa.ne.idxmsa2) then
+            print *,'msa,mst,msa_max,msa_max: ',
+     &           msa,mel%mst,msa_max,msc_max
+            print *,'idxmsa2, idxmsa: ',idxmsa2, idxmsa
+            call quit(1,'set_op_dim2','bug in msa2idxms4op !')
+          end if
 c dbg
 c          print *,'msa, msc: ',msa,msc
 c dbg

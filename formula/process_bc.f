@@ -1,0 +1,540 @@
+*----------------------------------------------------------------------*
+      subroutine process_bc(mode,fl_fact,possible,cost,iscale,
+     &     iarc,njoined_res,nlevel,idx_intm,
+     &     contr,occ_vtx,irestr_vtx,info_vtx,
+     &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
+     &     op_info,str_info,orb_info)
+*----------------------------------------------------------------------*
+*
+*     extract the next binary contraction and set up 
+*     reduced contraction info
+*
+*     for the binary contraction:
+*
+*     mode == 'FIND'
+*
+*     calculate the computational cost of a given contraction
+*     for each contraction step, the number of flops is summed up
+*     and the maximum size of the occurring intermediates is evaluated
+*     returned on cost(1:3): cost(1)<-flops, 
+*                            cost(2)<-memory(tot)
+*                            cost(3)<-memory(block)
+*     the maximum scaling of contraction and intermediates is returned
+*     on iscale(ngastp,1:2): iscale(,1)<-contr, iscale(,2)<-mem
+*
+*     mode == 'SET'
+*
+*     put info on contraction
+*
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'opdim.h'
+      include 'stdunit.h'
+      include 'def_contraction.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
+      include 'def_orbinf.h'
+      include 'mdef_operator_info.h'
+      include 'ifc_operators.h'
+      include 'def_contraction_info.h'
+      include 'def_reorder_info.h'
+      include 'def_formula_item.h'
+      include 'multd2h.h'
+      
+      integer, parameter ::
+     &     ntest = 0
+      logical, parameter ::
+     &     formal = .false., exact = .false.
+
+      character(len=*), intent(in) ::
+     &     mode
+      integer, intent(in) ::
+     &     iarc, njoined_res, nlevel
+      integer, intent(inout) ::
+     &     idx_intm
+      type(contraction), intent(in) ::
+     &     contr
+      type(contraction), intent(out) ::
+     &     contr_red
+      type(formula_item), intent(inout), target ::
+     &     fl_fact
+      type(orbinf), intent(in), target ::
+     &     orb_info
+      integer, intent(in) ::
+     &     occ_vtx(ngastp,2,contr%nvtx+njoined_res),
+     &     irestr_vtx(2,orb_info%ngas,2,2,contr%nvtx+njoined_res),
+     &     info_vtx(2,contr%nvtx+njoined_res)
+      integer, intent(out) ::
+     &     occ_vtx_red(ngastp,2,contr%nvtx+njoined_res),
+     &     irestr_vtx_red(2,orb_info%ngas,2,2,contr%nvtx+njoined_res),
+     &     info_vtx_red(2,contr%nvtx+njoined_res)
+      type(operator_info), intent(in) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      real(8), intent(out) ::
+     &     cost(3)
+      integer, intent(out) ::
+     &     iscale(ngastp,2)
+      logical, intent(out) ::
+     &     possible
+
+      character(len=len_opname) ::
+     &     label, label1, label2, label_reo
+      real(8) ::
+     &     fact
+      integer ::
+     &     nvtx, narc, ngas, nsym, idum, target, command,
+     &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt,
+     &     idxop_reo, idxop_ori, iblkop_reo, iblkop_ori,
+     &     ireo, idxs_reo
+      integer ::
+     &     iocc_cnt(ngastp,2,contr%nvtx),
+     &     iocc_ex1(ngastp,2,contr%nvtx),
+     &     iocc_ex2(ngastp,2,contr%nvtx),
+     &     irst_res(2,orb_info%ngas,2,2,contr%nvtx),
+     &     iocc_op1(ngastp,2,contr%nvtx),
+     &     iocc_op2(ngastp,2,contr%nvtx),
+     &     iocc_ori(ngastp,2,contr%nvtx),
+     &     iocc_reo(ngastp,2,contr%nvtx),
+     &     iocc_op1op2(ngastp,2,contr%nvtx),
+     &     irst_op1op2(2,orb_info%ngas,2,2,contr%nvtx),
+     &     iocc_op1op2tmp(ngastp,2,contr%nvtx),
+     &     irst_op1op2tmp(2,orb_info%ngas,2,2,contr%nvtx),
+     &     igr_op1op2(ngastp,2,contr%nvtx),
+     &     irst_ori(2,orb_info%ngas,2,2,contr%nvtx),
+     &     irst_reo(2,orb_info%ngas,2,2,contr%nvtx), 
+     &     irst_op1(2,orb_info%ngas,2,2,contr%nvtx),
+     &     irst_op2(2,orb_info%ngas,2,2,contr%nvtx), 
+     &     mst_op(2), mst_op1op2, mst_opreo,
+     &     igamt_op(2), igamt_op1op2, igamt_opreo,
+     &     njoined_op(2), njoined_op1op2, njoined_cnt, nj_ret,
+     &     idxop(2), iblkop(2), iblkop1op2, iblkop1op2tmp,
+     &     merge_op1(2*contr%nvtx*contr%nvtx), ! a bit too large, I guess ...
+     &     merge_op2(2*contr%nvtx*contr%nvtx),
+     &     merge_op1op2(2*contr%nvtx*contr%nvtx),
+     &     merge_op2op1(2*contr%nvtx*contr%nvtx),
+     &     merge_stp1(2*contr%nvtx*contr%nvtx),
+     &     merge_stp1inv(2*contr%nvtx*contr%nvtx),
+     &     merge_stp2(2*contr%nvtx*contr%nvtx),
+     &     merge_stp2inv(2*contr%nvtx*contr%nvtx),
+     &     iscale_new(ngastp)
+
+      integer, pointer ::
+     &     ihpvgas(:,:)
+      
+      type(formula_item), pointer ::
+     &     fl_pnt
+      type(operator_array), pointer ::
+     &     op_arr(:)
+
+      type(contraction) ::
+     &     contr_dum
+      type(reorder_info) ::
+     &     reo_info
+      type(contraction_info) ::
+     &     cnt_info
+
+      logical ::
+     &     tra_op1, tra_op2, tra_op1op2,
+     &     reo_op1op2, reo_other, reo_before
+      real(8) ::
+     &     flops, xmemtot, xmemblk, bc_sign
+
+      integer, external ::
+     &     idxlist, int_expand, int_pack, maxxlvl_op
+      logical, external ::
+     &     check_grph4occ
+      real(8), external ::
+     &     scale_rank
+
+      if (ntest.gt.0) then
+        call write_title(luout,wst_dbg_subr,'this is process_bc')
+      end if
+
+      op_arr => op_info%op_arr
+
+      fl_pnt => fl_fact
+
+      nsym = orb_info%nsym
+      ngas = orb_info%ngas
+      ihpvgas => orb_info%ihpvgas
+
+      nvtx = contr%nvtx
+      narc = contr%narc
+
+      ! reset reo_info
+      call init_reo_info(reo_info)
+
+      ! extract BC
+      call get_bc_info3(bc_sign,possible,
+     &     idxop,iblkop,
+     &     iocc_ex1,iocc_ex2,iocc_cnt,
+     &     iocc_op1,iocc_op2,iocc_op1op2,
+     &     irst_op1,irst_op2,irst_op1op2,
+     &     tra_op1,tra_op2,tra_op1op2,
+     &     mst_op,mst_op1op2,
+     &     igamt_op,igamt_op1op2,
+     &     njoined_op, njoined_op1op2, njoined_cnt,
+     &     merge_op1,merge_op2,merge_op1op2,merge_op2op1,
+     &     contr,occ_vtx,irestr_vtx,info_vtx,
+     &     .true.,
+     &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
+     &     .true.,reo_info,
+     &     iarc,.true.,idx_intm,
+     &     irst_res,njoined_res,orb_info,op_info) ! irst_res is dummy
+
+      reo_before = .false.
+      reo_op1op2 = .false.
+      reo_other  = .false.
+      do ireo = 1, reo_info%nreo
+        reo_before = reo_before.or.
+     &             reo_info%reo(ireo)%reo_before
+        reo_op1op2 = reo_op1op2.or.
+     &       (     reo_info%reo(ireo)%is_bc_result.and.
+     &        .not.reo_info%reo(ireo)%reo_before)
+        reo_other  = reo_other.or.
+     &       (.not.reo_info%reo(ireo)%is_bc_result.and.
+     &        .not.reo_info%reo(ireo)%reo_before)
+      end do
+
+      iocc_op1op2tmp = iocc_op1op2
+      irst_op1op2tmp = irst_op1op2
+      
+      if (reo_op1op2.and.possible) then
+        do ireo = 1, reo_info%nreo
+          if (reo_info%reo(ireo)%is_bc_result.and.
+     &         .not.reo_info%reo(ireo)%reo_before) then
+            idxs_reo = reo_info%reo(ireo)%idxsuper
+            exit
+          end if
+        end do
+        call get_reo_info2(1,idxs_reo,
+     &           iocc_op1op2,iocc_op1op2tmp,
+     &           irst_op1op2,irst_op1op2tmp,
+     &           njoined_op1op2,mst_op1op2,igamt_op1op2,
+     &           merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &           occ_vtx_red,contr_red%svertex,info_vtx_red,
+     &                       njoined_res,contr_red%nvtx,
+     &           reo_info,str_info,orb_info)
+      end if
+
+      if (ntest.ge.100) then
+        write(luout,*) 'op 1:'
+        call wrt_occ_n(luout,iocc_op1,njoined_op(1))
+        write(luout,*) 'op 2:'
+        call wrt_occ_n(luout,iocc_op2,njoined_op(2))
+        write(luout,*) 'externals 1:'
+        call wrt_occ_n(luout,iocc_ex1,njoined_op(1))
+        write(luout,*) 'externals 2:'
+        call wrt_occ_n(luout,iocc_ex2,njoined_op(2))
+        write(luout,*) 'contraction:'
+        call wrt_occ_n(luout,iocc_cnt,njoined_cnt)
+        if (reo_op1op2) then
+          write(luout,*) 'intermediate/result bef. reo:'
+          call wrt_occ_n(luout,iocc_op1op2tmp,njoined_op1op2)
+        end if
+        write(luout,*) 'intermediate/result:'
+        call wrt_occ_n(luout,iocc_op1op2,njoined_op1op2)
+      end if
+
+      ! check whether intermediate can be addressed by
+      ! the available graphs (preliminary fix)
+      possible = possible.and.
+     &     check_grph4occ(iocc_op1op2,irst_op1op2,njoined_op1op2,
+     &     str_info,orb_info)
+      possible = possible.and.
+     &     check_grph4occ(iocc_op1,irst_op1,njoined_op(1),
+     &     str_info,orb_info)
+      if (njoined_op(2).gt.0) possible = possible.and.
+     &     check_grph4occ(iocc_op2,irst_op2,njoined_op(2),
+     &     str_info,orb_info)
+
+      if (mode.eq.'FIND') then
+        ! count particle, hole, (active) spaces involved:
+        ! in intermediate
+        nh_op1op2 = sum(iocc_ex1(ihole,1:2,1:njoined_op(1)))
+     &            + sum(iocc_ex2(ihole,1:2,1:njoined_op(2)))
+        np_op1op2 = sum(iocc_ex1(ipart,1:2,1:njoined_op(1)))
+     &            + sum(iocc_ex2(ipart,1:2,1:njoined_op(2)))
+        nx_op1op2 = sum(iocc_ex1(iextr,1:2,1:njoined_op(1)))
+     &            + sum(iocc_ex2(iextr,1:2,1:njoined_op(2)))
+        ! in contraction length
+        nh_cnt = sum(iocc_cnt(ihole,1:2,1:njoined_cnt))
+        np_cnt = sum(iocc_cnt(ipart,1:2,1:njoined_cnt))
+        nx_cnt = sum(iocc_cnt(iextr,1:2,1:njoined_cnt))
+
+        if (ntest.ge.50) then
+          write(luout,'(x,a,i2,a,i2,a)')
+     &         'Contraction scales as  H^{',nh_op1op2+nh_cnt,
+     &                                   '}P^{',np_op1op2+np_cnt,'}'
+          write(luout,'(x,a,i2,a,i2,a)')
+     &             'Intermediate scales as H^{',nh_op1op2,
+     &                                   '}P^{',np_op1op2,'}'
+        end if
+
+        ! set iscale
+        ! maximum is taken over total scaling, so H^2 .gt. P^1 
+        iscale_new = 0
+        iscale_new(IHOLE) = nh_op1op2+nh_cnt
+        iscale_new(IPART) = np_op1op2+np_cnt
+        iscale_new(IEXTR) = nx_op1op2+nx_cnt
+
+        if (scale_rank(iscale_new).gt.scale_rank(iscale(1,1)))
+     &       iscale(1:ngastp,1) = iscale_new(1:ngastp)
+
+        iscale_new = 0
+        iscale_new(IHOLE) = nh_op1op2
+        iscale_new(IPART) = np_op1op2
+        iscale_new(IEXTR) = nx_op1op2
+
+        if (scale_rank(iscale_new).gt.scale_rank(iscale(1,2)))
+     &       iscale(1:ngastp,2) = iscale_new(1:ngastp)
+
+        ! if not: do not allow this factorization
+        if (.not.possible)
+     &     cost(1:3) = huge(cost(1))
+
+        if (possible) then
+          call init_cnt_info(cnt_info,
+     &         iocc_op1,iocc_ex1,njoined_op(1),
+     &            iocc_op2,iocc_ex2,njoined_op(2),
+     &         iocc_cnt,njoined_cnt,
+     &         iocc_op1op2,njoined_op1op2,iocc_op1op2,njoined_op1op2)
+
+          call condense_bc_info(
+     &         cnt_info,idxop(2).eq.0,
+     &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2,
+     &         iocc_ex1,iocc_ex2,iocc_cnt,
+     &         irst_op1, irst_op2, irst_op1op2, irst_op1op2,
+     &         merge_op1, merge_op2, merge_op1op2, merge_op2op1,
+     &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
+     &         str_info,orb_info)
+          if (exact) then
+            call dummy_contr2(flops,xmemtot,xmemblk,
+     &         cnt_info,
+     &         mst_op(1),mst_op(2),mst_op1op2,
+     &         igamt_op(1),igamt_op(2),igamt_op1op2,
+     &         str_info,ngas,nsym)          
+          else
+            call fact_cost_estimate(flops,xmemtot,xmemblk,
+     &           cnt_info,
+     &           str_info,ngas,nsym)
+          end if
+          call dealloc_cnt_info(cnt_info)
+          cost(1) = cost(1)+flops
+          cost(2) = max(cost(2),xmemtot)
+          cost(3) = max(cost(3),xmemblk)
+
+          if (ntest.ge.10)
+     &        write(luout,'(x,a,3(g20.10,x))') '$$ cost: ',cost(1:3)
+          if (ntest.ge.10)
+     &        write(luout,'(x,a,2(2i4,2x))') '$$ scal: ',iscale(1:2,1:2)
+        end if
+      else if (mode.eq.'SET') then
+
+        ! a reordering takes place before contraction?
+        if (reo_before) then
+          command = command_new_intermediate
+          target = -1           ! unused here
+          call new_formula_item(fl_pnt,command,target)
+
+          do ireo = 1, reo_info%nreo
+            if (reo_info%reo(ireo)%reo_before) then
+              idxs_reo = reo_info%reo(ireo)%idxsuper
+              idxop_reo = reo_info%reo(ireo)%idxop_new
+              iblkop_reo = 1
+              idxop_ori = reo_info%reo(ireo)%idxop_ori
+              iblkop_ori = reo_info%reo(ireo)%iblkop_ori
+              exit
+            end if
+          end do
+
+          if (idxop_reo.gt.0) then
+            label_reo = op_arr(idxop_reo)%op%name
+          else
+            write(label_reo,'("_STIN",i4.4)') abs(idxop_reo)
+          end if
+
+          if (idxop_ori.gt.0) then
+            label = op_arr(idxop_ori)%op%name
+          else
+            write(label1,'("_STIN",i4.4)') abs(idxop_ori)
+          end if
+          
+          call get_reo_info2(-1,idxs_reo,
+     &           iocc_reo,iocc_ori,
+     &           irst_reo,irst_ori,
+     &           nj_ret,mst_opreo,igamt_opreo,
+     &           merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &           occ_vtx,contr%svertex,info_vtx,
+     &                       njoined_res,contr%nvtx,
+     &           reo_info,str_info,orb_info)
+
+          ! FIX:
+          if (nj_ret.gt.1) then
+            iblkop_ori = (iblkop_ori-1)/nj_ret + 1
+          end if
+
+          call store_def_intm(fl_pnt,
+     &         label_reo,iocc_reo,irst_reo,nj_ret,1,
+     &         label,' ',
+     &         orb_info)
+          
+          fl_pnt => fl_pnt%next
+
+          command = command_reorder
+          target = -1           ! unused here
+          call new_formula_item(fl_pnt,command,target)
+
+          call store_reorder(fl_pnt,
+     &       label_reo,label,
+     &       iblkop_reo,iblkop_ori,
+     &       reo_info%sign_reo,reo_info%iocc_opreo0,
+     &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,
+     &       iocc_reo,irst_reo,nj_ret,
+     &       iocc_ori,irst_ori,nj_ret,
+     &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &       orb_info)
+
+          fl_pnt => fl_pnt%next
+
+        end if
+
+        target = -1 ! unused here
+        if (idxop(1).gt.0) then
+          label1 = op_arr(idxop(1))%op%name
+        else
+          write(label1,'("_STIN",i4.4)') abs(idxop(1))
+        end if
+        if (idxop(2).gt.0) then
+          label2 = op_arr(idxop(2))%op%name
+        else if (idxop(2).eq.0) then
+          label2 = '---'
+        else
+          write(label2,'("_STIN",i4.4)') abs(idxop(2))
+        end if
+
+        ! not in final level? result is new intermediate
+        if (contr_red%narc.gt.0) then
+          command = command_new_intermediate
+          target = -1           ! unused here
+          write(label,'("_STIN",i4.4)') abs(idx_intm)
+          call new_formula_item(fl_pnt,command,target)
+          call store_def_intm(fl_pnt,
+     &         label,iocc_op1op2,irst_op1op2,njoined_op1op2,1,
+     &         label1,label2,
+     &         orb_info)
+          fl_pnt => fl_pnt%next
+          fact = bc_sign
+          iblkop1op2 = 1
+          command = command_bc
+          if (reo_op1op2) command = command_bc_reo
+        else
+          label = op_arr(contr%idx_res)%op%name
+          fact = bc_sign*contr%fac
+          iblkop1op2 = contr%iblk_res
+          command = command_add_bc
+          if (reo_op1op2) command = command_add_bc_reo
+        end if
+          
+        call new_formula_item(fl_pnt,command,target)
+        call store_bc(fl_pnt,
+     &       fact,
+     &       label,label1,label2,
+     &       iblkop1op2,iblkop(1),iblkop(2),
+     &       tra_op1op2,tra_op1,tra_op2,
+     &       njoined_op1op2,njoined_op(1),njoined_op(2),
+     &       iocc_op1op2tmp,iocc_op1,iocc_op2,
+     &       irst_op1op2tmp,irst_op1,irst_op2,
+     &       iocc_ex1,iocc_ex2,iocc_cnt,njoined_cnt,
+     &       merge_op1,merge_op2,
+     &       merge_op1op2,merge_op2op1,
+     &       orb_info)
+        if (reo_op1op2) then
+          iblkop1op2tmp = 1
+          call store_reorder(fl_pnt,
+     &       label,label,
+     &       iblkop1op2,iblkop1op2tmp,
+     &       reo_info%sign_reo,reo_info%iocc_opreo0,
+     &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,
+     &       iocc_op1op2,irst_op1op2,njoined_op1op2,
+     &       iocc_op1op2tmp,irst_op1op2tmp,njoined_op1op2,
+     &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &       orb_info)
+        end if
+        if (reo_other) then
+          fl_pnt => fl_pnt%next
+          command = command_new_intermediate
+          target = -1           ! unused here
+          call new_formula_item(fl_pnt,command,target)
+
+          do ireo = 1, reo_info%nreo
+            if (.not.reo_info%reo(ireo)%is_bc_result.and.
+     &          .not.reo_info%reo(ireo)%reo_before) then
+              idxs_reo = reo_info%reo(ireo)%idxsuper
+              idxop_reo = reo_info%reo(ireo)%idxop_new
+              iblkop_reo = 1
+              idxop_ori = reo_info%reo(ireo)%idxop_ori
+              iblkop_ori = reo_info%reo(ireo)%iblkop_ori
+              exit
+            end if
+          end do
+
+          if (idxop_reo.gt.0) then
+            label_reo = op_arr(idxop_reo)%op%name
+          else
+            write(label_reo,'("_STIN",i4.4)') abs(idxop_reo)
+          end if
+
+          if (idxop_ori.gt.0) then
+            label = op_arr(idxop_ori)%op%name
+          else
+            write(label,'("_STIN",i4.4)') abs(idxop_ori)
+          end if
+          
+          call get_reo_info2(1,idxs_reo,
+     &           iocc_reo,iocc_ori,
+     &           irst_reo,irst_ori,
+     &           nj_ret,mst_opreo,igamt_opreo,
+     &           merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &           occ_vtx_red,contr_red%svertex,info_vtx_red,
+     &                       njoined_res,contr_red%nvtx,
+     &           reo_info,str_info,orb_info)
+
+          ! FIX:
+          if (nj_ret.gt.1) then
+            iblkop_ori = (iblkop_ori-1)/nj_ret + 1
+          end if
+
+          call store_def_intm(fl_pnt,
+     &         label_reo,iocc_reo,irst_reo,nj_ret,1,
+     &         label,' ',
+     &         orb_info)
+          
+          fl_pnt => fl_pnt%next
+
+          command = command_reorder
+          target = -1           ! unused here
+          call new_formula_item(fl_pnt,command,target)
+
+          call store_reorder(fl_pnt,
+     &       label_reo,label,
+     &       iblkop_reo,iblkop_ori,
+     &       reo_info%sign_reo,reo_info%iocc_opreo0,
+     &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,
+     &       iocc_reo,irst_reo,nj_ret,
+     &       iocc_ori,irst_ori,nj_ret,
+     &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &       orb_info)
+        end if
+      else
+        call quit(1,'process_bc','unknown mode: "'//trim(mode)//'"')
+      end if
+
+      call dealloc_reo_info(reo_info)
+
+      return
+      end
+

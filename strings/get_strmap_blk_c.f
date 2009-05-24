@@ -117,6 +117,7 @@ c dbg
           write(luout,*) 'n1,n2,n12: ',n1,n2,n12
           write(luout,*) 'map_info:  ',map_info(1:2*(n1+n2)*n12)
           write(luout,*) 'last index:',idx_minf
+          write(luout,*) 'last idx12:',idx12
           call quit(1,'get_strmap_blk_c','buggy map_info?')
         end if
       end do

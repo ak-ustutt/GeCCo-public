@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine reorder_supvtx_x(possible,
-     &     modify_contr,set_reord_list,reo_info,
+     &     modify_contr,set_reord_list,reo_before,reo_info,
      &     contr,occ_vtx,idxop12)
 *----------------------------------------------------------------------*
 *     analoguous to reorder_supvtx_x but now for external arcs
@@ -27,7 +27,7 @@
       logical, intent(out) ::
      &     possible
       logical, intent(in) ::
-     &     modify_contr, set_reord_list
+     &     modify_contr, set_reord_list, reo_before
       integer, intent(in) ::
      &     idxop12
       type(contraction), intent(inout) ::
@@ -50,11 +50,17 @@
       integer ::
      &     nxarc, ixarc, jxarc, ivtx1, ivtx2, 
      &     ixarc_shift, ixarc_sum, nxarc_new,
-     &     maxreo, idx, idxsuper, ica, ica_vtx, hpvx
+     &     maxreo, idx, idxsuper, ica, ica_vtx, hpvx,
+     &     iblk, ivtx, idxnew, ireo
+      logical, pointer ::
+     &     reo_generated(:)
 
       integer, external ::
      &     imltlist
 
+c dbg
+c      print *,'reorder_supvtx: on input nreo ',reo_info%nreo
+c dbg
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'reorder_supvtx_x')
         write(luout,*) 'modify_contr: ',modify_contr
@@ -66,14 +72,21 @@
 
       possible = .true.
 
+      maxreo = 2*contr%nvtx
       if (set_reord_list) then
-        maxreo = 2*(contr%nvtx - contr%nsupvtx)
 c        reo_info%nreo = 0
 c        allocate(reo_info%reo(maxreo))
-        if (.not.associated(reo_info%reo))
-     &       call quit(1,'reorder_supvtx_x',
-     &       'call reorder_supvtx first')
+c        if (.not.associated(reo_info%reo))
+c     &       call quit(1,'reorder_supvtx_x',
+c     &       'call reorder_supvtx first')
+        if (.not.associated(reo_info%reo)) then
+          reo_info%nreo = 0
+          allocate(reo_info%reo(maxreo))
+        end if
+
       end if
+      allocate(reo_generated(maxreo))
+      reo_generated = .false.
 
       nxarc = contr%nxarc
       if (modify_contr) then
@@ -105,6 +118,8 @@ c dbg
           ivtx1 = xarc(ixarc)%link(1)
           ivtx2 = xarc(jxarc)%link(1)
 
+c fix -- do not consider this case:
+c          if (vertex(ivtx1)%idx_op.ne.idxop12) cycle
 c dbg
 c          print *,'ivtx1,2: ',ivtx1,ivtx2
 c dbg
@@ -198,14 +213,23 @@ c dbg
           if (set_reord_list) then
             if (iocc_nonzero(occ_shr)) then
               reo_info%nreo = reo_info%nreo+1
+              reo_generated(reo_info%nreo) = .true.
               idx = reo_info%nreo
-              if (idx.gt.maxreo)
-     &             call quit(1,'reorder_supvtx','unexpected event')
+              if (idx.gt.maxreo) then
+                write(luout,*) 'idx,maxreo: ',idx,maxreo
+                call quit(1,'reorder_supvtx_x','unexpected event')
+              end if
               idxsuper = svertex(ivtx1)
               reo_info%reo(idx)%idxsuper = idxsuper
+              reo_info%reo(idx)%idxop_ori =
+     &             vertex(ivtx1)%idx_op
+              reo_info%reo(idx)%iblkop_ori =
+     &             vertex(ivtx1)%iblk_op
               ! flag whether this is the result vertex of prev. binary contr.
               reo_info%reo(idx)%is_bc_result =
      &             idxop12.eq.vertex(ivtx1)%idx_op
+              ! flag whether reo should occur before contraction
+              reo_info%reo(idx)%reo_before   = reo_before
               ! which components of super-vertex
               reo_info%reo(idx)%to =
      &             imltlist(idxsuper,svertex,ivtx2,1)
@@ -218,14 +242,23 @@ c dbg
             end if
             if (iocc_nonzero(occ_shl)) then
               reo_info%nreo = reo_info%nreo+1
+              reo_generated(reo_info%nreo) = .true.
               idx = reo_info%nreo
-              if (idx.gt.maxreo)
-     &             call quit(1,'reorder_supvtx','unexpected event')
+              if (idx.gt.maxreo) then
+                write(luout,*) 'idx,maxreo: ',idx,maxreo
+                call quit(1,'reorder_supvtx_x','unexpected event')
+              end if
               idxsuper = svertex(ivtx1)
               reo_info%reo(idx)%idxsuper = idxsuper
+              reo_info%reo(idx)%idxop_ori =
+     &             vertex(ivtx1)%idx_op
+              reo_info%reo(idx)%iblkop_ori =
+     &             vertex(ivtx1)%iblk_op
               ! flag whether this is the result vertex of prev. binary contr.
               reo_info%reo(idx)%is_bc_result =
      &             idxop12.eq.vertex(ivtx1)%idx_op
+              ! flag whether reo should occur before contraction
+              reo_info%reo(idx)%reo_before   = reo_before
               ! which components of super-vertex
               reo_info%reo(idx)%to =
      &             imltlist(idxsuper,svertex,ivtx1,1)
@@ -253,12 +286,39 @@ c dbg
           if (nxarc_new.lt.ixarc) xarc(nxarc_new) = xarc(ixarc)
         end do
         contr%nxarc = nxarc_new
+
+        ! a quickie: new intermediate
+        idxnew = idxop12-1
+        do ireo = 1, reo_info%nreo          
+          if (.not.reo_generated(ireo)) cycle
+          reo_info%reo(ireo)%idxop_new = idxop12 ! default
+          idxsuper = reo_info%reo(idx)%idxsuper
+          iblk = 0
+          do ivtx = 1, contr%nvtx
+            if (svertex(ivtx).ne.idxsuper) cycle
+            if (vertex(ivtx)%idx_op.ne.idxop12) then
+              vertex(ivtx)%idx_op = idxnew
+              iblk = iblk+1
+              vertex(ivtx)%iblk_op = iblk
+            end if
+          end do
+          if (iblk.ne.0) reo_info%reo(ireo)%idxop_new = idxnew
+          if (iblk.ne.0) idxnew = idxnew-1
+        end do
+
+        ! set 0-contraction, if necessary
+        ! as they were removed above
+        call check_disconnected(contr)
+
       end if
 
       if (.not.modify_contr) deallocate(xarc_scr)
 
+      deallocate(reo_generated)
+
       if (ntest.ge.100) then
-        write(luout,*) 'contr at the end of reorder_supvtx'
+        write(luout,*) 'contr at the end of reorder_supvtx_x: nreo = ',
+     &       reo_info%nreo
         if (.not.modify_contr) write(luout,*) 'should not have changed!'
         call prt_contr3(luout,contr,occ_vtx)
       end if

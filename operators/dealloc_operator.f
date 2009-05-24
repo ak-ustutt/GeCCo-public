@@ -15,19 +15,11 @@
      &     op
 
       integer ::
-     &     nblk, iblk, ifree
+     &     ifree
 
       call mem_pushmark()
 
       ifree = mem_gotomark(operator_def)
-
-      if (op%n_occ_cls.le.0.or.op%n_occ_cls.ge.1000) then
-        write(luout,*) 'n_occ_cls = ',op%n_occ_cls
-        call quit(1,'dealloc_operator',
-     &              'suspicious number of blocks (bug?)')
-      end if
-
-      nblk = op%n_occ_cls
 
       if (associated(op%ihpvca_occ)) then
         deallocate(op%ihpvca_occ)

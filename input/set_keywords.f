@@ -82,6 +82,9 @@ c      use parse_input
      &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
       call argument_add('K_appr','method.R12',type=vtyp_str,len=8,
      &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
+      call argument_add('Z_appr','method.R12',type=vtyp_str,len=8,
+     &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
+c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('fixed','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
       call argument_add('fix_new','method.R12',type=vtyp_int,
@@ -119,6 +122,8 @@ c      use parse_input
      &     idef=(/20/))
       call argument_add('maxsub','calculate.solve',type=vtyp_int,
      &     idef=(/8/))
+      call argument_add('check_incore','calculate.solve',type=vtyp_int,
+     &     idef=(/-1/))
       call argument_add('conv','calculate.solve',type=vtyp_rl8,
      &     xdef=(/1d-6/))
 
@@ -200,7 +205,8 @@ c      use parse_input
 
       call keyword_add('routes',context='calculate')
       call argument_add('schedule','calculate.routes',type=vtyp_int,
-     &     idef=(/0/))
+c     &     idef=(/0/))
+     &     idef=(/1/))
       call argument_add('contract','calculate.routes',type=vtyp_int,
      &     idef=(/3/))
       call argument_add('str_block','calculate.routes',type=vtyp_int,
@@ -210,6 +216,9 @@ c      use parse_input
       call argument_add('force_batching',
      &     'calculate.routes',type=vtyp_int,
      &     idef=(/-1/))
+      call argument_add('force_ooc_sort',
+     &     'calculate.routes',type=vtyp_int,
+     &     idef=(/0/))
       call argument_add('use_tr','calculate.routes',type=vtyp_log,
      &     ldef=(/.true./))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,

@@ -40,6 +40,8 @@
      &     ival=opti_info%maxmacit)
       call get_argument_value('calculate.solve','maxsub',
      &     ival=opti_info%maxsbsp)
+      call get_argument_value('calculate.solve','check_incore',
+     &     ival=opti_info%max_incore)
 
       ifree = mem_alloc_int (opti_info%nwfpar,nopt,'nwfpar')
       ifree = mem_alloc_int (opti_info%typ_prc,nopt,'typprc')

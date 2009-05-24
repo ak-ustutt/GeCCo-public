@@ -13,6 +13,7 @@
 
       include 'stdunit.h'
       include 'opdim.h'
+      include 'routes.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
@@ -22,6 +23,9 @@
       include 'def_formula_item.h'
       include 'ifc_input.h'
 
+c      logical, parameter ::
+cc     &     new = .true.
+c     &     new = .false.
       integer, intent(in) ::
      &     nfcat, ninterm
       character(*), intent(in) ::
@@ -38,7 +42,7 @@
      &     orb_info
       
       type(formula_item), pointer ::
-     &     form_head, form_tail, form_ptr
+     &     fl_head, fl_tail, fl_ptr, fl_new, fl_opt
       type(filinf), pointer ::
      &     cur_ffile
 
@@ -60,13 +64,13 @@ c dbg
       call print_op_info(luout,'mel',op_info)
 c dbg
       ! initialize list
-      allocate(form_head)
-      form_ptr => form_head
-      call init_formula(form_ptr)
-c      form_ptr%command = command_end_of_formula
-c      nullify(form_ptr%next)
-c      nullify(form_ptr%contr)
-c      nullify(form_ptr%interm)
+      allocate(fl_head)
+      fl_ptr => fl_head
+      call init_formula(fl_ptr)
+c      fl_ptr%command = command_end_of_formula
+c      nullify(fl_ptr%next)
+c      nullify(fl_ptr%contr)
+c      nullify(fl_ptr%interm)
 
       lentitle = 0
       ! ----------------------
@@ -107,7 +111,7 @@ c dbg
           end if
         end if
 
-        call read_form_list(cur_ffile,form_ptr)
+        call read_form_list(cur_ffile,fl_ptr)
 c dbg
 c        print *,'raw formula'
 c        call print_form_list(luout,form_ptr,op_info)
@@ -115,11 +119,11 @@ c dbg
 
         ! advance form_ptr to end of list
         ! (not possible via call list due to ifort problems)
-        do while(associated(form_ptr%next))
-          form_ptr => form_ptr%next
+        do while(associated(fl_ptr%next))
+          fl_ptr => fl_ptr%next
         end do
       end do
-      form_tail => form_ptr
+      fl_tail => fl_ptr
 
       title = trim(title)//' -- optimized'
 
@@ -136,7 +140,7 @@ c dbg
      &       write(luout,'(2x,a)')
      &       'I will factor out the intermediate: '//
      &       trim(finlabels(iint))//' ...'
-        call factor_out(form_head,finlabels(iint),
+        call factor_out(fl_head,finlabels(iint),
      &       form_info,op_info)
       end do
       ! ----------------------------------------
@@ -146,7 +150,22 @@ c dbg
       if (iprint.gt.0)
      &     write(luout,'(2x,a)')
      &       'Now looking for the optimal factorization of terms ...'
-      call factorize(form_head,op_info,str_info,orb_info,f_opt%label)
+     
+      if (irt_sched.eq.0) then ! old scheduler
+        call factorize(fl_head,op_info,str_info,orb_info,f_opt%label)
+        fl_opt => fl_head
+      else ! new scheduler needs new factorization
+        allocate(fl_new)
+        call init_formula(fl_new)
+c dbg
+        print *,'testing new factorization'
+c dbg        
+        call factorize_new(fl_new,fl_head,
+     &       op_info,str_info,orb_info,f_opt%label)
+
+        fl_opt => fl_new
+
+      end if
 
       ! ----------------------------------------
       ! round three:
@@ -155,16 +174,21 @@ c dbg
 
       if (iprint.ge.10) then
         call write_title(luout,wst_around_double,'Optimized formula:')
-        call print_form_list(luout,form_head,op_info)
+        call print_form_list(luout,fl_opt,op_info)
       end if
 
       write(name,'(a,".fml")') trim(f_opt%label)
       call file_init(f_opt%fhand,name,ftyp_sq_unf,0)      
       f_opt%comment = trim(title)
-      call write_form_list(f_opt%fhand,form_head,title)
+      call write_form_list(f_opt%fhand,fl_opt,title)
 
-      call dealloc_formula_list(form_head)
-      deallocate(form_head)
+      call dealloc_formula_list(fl_head)
+      deallocate(fl_head)
       
+      if (irt_sched.gt.0) then
+        call dealloc_formula_list(fl_new)
+        deallocate(fl_new)
+      end if
+
       return
       end

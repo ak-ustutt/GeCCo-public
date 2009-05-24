@@ -33,16 +33,16 @@
      &     isim, ncat, nint, icnt, nlab, irank, idef,
      &     isym, ms, msc, sym_arr(8), extend, r12op,
      &     occ_def(ngastp,2,60),
-     &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext
+     &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext, trunc_type
       logical ::
-     &     needed, r12fix, set_tp, set_tpp
+     &     needed, r12fix, set_tp, set_tpp, truncate
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
       character(len_command_par) ::
      &     parameters(3)
-      character(12) ::
-     &     approx, F_appr, K_appr
+      character(20) ::
+     &     approx, F_appr, K_appr, Z_appr
 
       character(*), intent(in) ::
      &     env_type
@@ -56,13 +56,15 @@
 *     read input
 *----------------------------------------------------------------------*
       ! set approx string
-      approx(1:12) = ' '
-      F_appr(1:12) = ' '
-      K_appr(1:12) = ' '
+      approx(1:20) = ' '
+      F_appr(1:20) = ' '
+      K_appr(1:20) = ' '
+      Z_appr(1:20) = ' '
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','F_appr',str=F_appr)
       call get_argument_value('method.R12','K_appr',str=K_appr)
+      call get_argument_value('method.R12','Z_appr',str=Z_appr)
       call get_argument_value('method.R12','min_tp',ival=min_rank_tp)
       call get_argument_value('method.R12','min_tpp',ival=min_rank_tpp)
       call get_argument_value('method.R12','minexc',ival=min_rank)
@@ -71,6 +73,13 @@
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','T1ext',ival=t1ext)
+      call get_argument_value('method.R12','trunc',ival=trunc_type)
+      truncate = trunc_type.ge.0
+      if (is_keyword_set('method.truncate').gt.0) then
+        truncate = is_keyword_set('method.truncate').gt.0
+        call get_argument_value('method.truncate','trunc_type',
+     &       ival=trunc_type)
+      end if
 
       n_pp = 0  ! number of particle-particle interaction in R12
       set_tp = .false.
@@ -154,6 +163,9 @@
         ntpp_max=max_rank
         n_pp=2
       end select
+c dbg
+      print *,'n_pp = ',n_pp
+c dbg
 
       ! assemble approx string
       select case(trim(F_appr))
@@ -187,6 +199,29 @@
       case default
         call quit(0,'set_r12_general_targets',
      &       'K_appr unknown: "'//trim(K_appr)//'"')
+      end select
+
+      select case(trim(Z_appr))
+      case('direct')
+        write(luout,*) 'direct RI evaluation of Z intermediate'
+        approx(14:17) = 'DRCT'
+      case('none','J2K3')
+        write(luout,*) 'no approximations to Z intermediate made'
+        approx(14:17) = 'J2K3'
+      case default
+        if (Z_appr(1:1).ne.'J'.or.Z_appr(3:3).ne.'K'.or.
+     &      (Z_appr(2:2).ne.'0'.and.
+     &       Z_appr(2:2).ne.'1'.and.
+     &       Z_appr(2:2).ne.'2').or. 
+     &      (Z_appr(4:4).ne.'0'.and.
+     &       Z_appr(4:4).ne.'1'.and.
+     &       Z_appr(4:4).ne.'2'.and.
+     &       Z_appr(4:4).ne.'3')) then
+          call quit(0,'set_r12_general_targets',
+     &       'Z_appr unknown: "'//trim(Z_appr)//'"')
+        end if
+        write(luout,*) 'approximation to Z intermediate: ',trim(Z_appr)
+        approx(14:17) = Z_appr(1:4)
       end select
 
 *----------------------------------------------------------------------*
@@ -489,12 +524,64 @@ c      occ_def(IPART,2,16) = 2
 
       ! R12^{2} integrals
       call add_target(op_ff,ttype_op,.false.,tgt_info)
-      call set_dependency(op_ff,op_rttr,tgt_info)
-      call cloneop_parameters(-1,parameters,
+      if (is_keyword_set('method.CC').gt.0.and.(.not.truncate
+     &     .or.(truncate.and.trunc_type.gt.0)).or.
+     &     is_keyword_set('method.CCPT')) then
+        ndef = 5
+        occ_def = 0
+        ! 1
+        occ_def(IHOLE,1,1)  = 2
+        occ_def(IHOLE,2,2)  = 2
+        ! 2
+        occ_def(IHOLE,1,3)  = 1
+        occ_def(IPART,1,3)  = 1
+        occ_def(IHOLE,2,4)  = 2
+        ! 3
+        occ_def(IHOLE,1,5)  = 1
+        occ_def(IEXTR,1,5)  = 1
+        occ_def(IHOLE,2,6)  = 2
+        ! 4
+        occ_def(IHOLE,1,7)  = 2
+        occ_def(IHOLE,2,8)  = 1
+        occ_def(IPART,2,8)  = 1
+        ! 5
+        occ_def(IHOLE,1,9)  = 2
+        occ_def(IHOLE,2,10) = 1
+        occ_def(IEXTR,2,10) = 1
+c dbg
+        print *,'(2) : n_pp = ',n_pp
+c dbg
+        if (n_pp.ge.1) then
+          ndef = 8
+          ! 6
+          occ_def(IHOLE,1,11)  = 1
+          occ_def(IPART,1,11)  = 1
+          occ_def(IHOLE,2,12)  = 1
+          occ_def(IPART,2,12)  = 1
+          ! 7
+          occ_def(IHOLE,1,13)  = 1
+          occ_def(IEXTR,1,13)  = 1
+          occ_def(IHOLE,2,14)  = 1
+          occ_def(IPART,2,14)  = 1
+          ! 8
+          occ_def(IHOLE,1,15)  = 1
+          occ_def(IPART,1,15)  = 1
+          occ_def(IHOLE,2,16) = 1
+          occ_def(IEXTR,2,16) = 1
+        end if
+        call op_from_occ_parameters(-1,parameters,2,
+     &       occ_def,ndef,2,(/.true.,.true./),10)
+        call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
+     &                op_ff,1,1,
+     &                parameters,2,tgt_info)
+      else
+        call set_dependency(op_ff,op_rttr,tgt_info)
+        call cloneop_parameters(-1,parameters,
      &                        op_rttr,.false.) ! <- dagger=.false.
-      call set_rule(op_ff,ttype_op,CLONE_OP,
+        call set_rule(op_ff,ttype_op,CLONE_OP,
      &     op_ff,1,1,
      &     parameters,1,tgt_info)
+      end if
 
       ! {R12^2}BAR integrals
       call add_target(op_ffbar,ttype_op,.false.,tgt_info)
@@ -1379,6 +1466,25 @@ c     &              parameters,2,tgt_info)
      &              labels,5,1,
      &              parameters,2,tgt_info)
 
+      ! CABS approximation to Z2
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2-INT-CABS'
+      labels(2) = 'Z2-INT'
+      labels(3) = op_rint
+      labels(4) = op_g_z
+      labels(5) = op_ff
+      call add_target('Z2-INT-CABS',ttype_frm,.false.,tgt_info)
+      call set_dependency('Z2-INT-CABS','Z2-INT',tgt_info)
+      call set_dependency('Z2-INT-CABS',op_ff,tgt_info)
+      call set_dependency('Z2-INT-CABS',op_g_z,tgt_info)
+      call set_dependency('Z2-INT-CABS',op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_xcabs,ansatz,'Z '//approx)
+      call set_rule('Z2-INT-CABS',ttype_frm,DEF_R12INTM_CABS,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+
 *----------------------------------------------------------------------*
 *     Opt. Formulae
 *----------------------------------------------------------------------*
@@ -1405,6 +1511,7 @@ c     &              parameters,2,tgt_info)
       labels(2) = form_r12_xcabs
       ncat = 1
       nint = 0
+c      call add_target(fopt_r12_xcabs,ttype_frm,.true.,tgt_info)
       call add_target(fopt_r12_xcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(fopt_r12_xcabs,form_r12_xcabs,tgt_info)
       call set_dependency(fopt_r12_xcabs,mel_x_def,tgt_info)
@@ -1559,6 +1666,36 @@ c dbg
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
+      ! set Z2 (reformulated evaluation)
+      call add_target('Z2INT_R12_REF',ttype_frm,.false.,tgt_info)
+      call set_dependency('Z2INT_R12_REF','Z2INT_R12',tgt_info)
+      call set_dependency('Z2INT_R12_REF','Z2-INT-CABS',tgt_info)
+      call set_dependency('Z2INT_R12_REF',mel_ham,tgt_info)
+      call set_dependency('Z2INT_R12_REF',mel_rint,tgt_info)
+      call set_dependency('Z2INT_R12_REF',mel_ff,tgt_info)
+      call set_dependency('Z2INT_R12_REF',mel_gintz,tgt_info)
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12_REF'
+      labels(2) = 'Z2-INT-CABS'
+      ncat = 1
+      nint = 0
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('Z2INT_R12_REF',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12_REF'
+      call set_rule('Z2INT_R12_REF',ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
+      call add_target('Z2INT_R12_EVAL',ttype_frm,.false.,tgt_info)
+      if (approx(14:17).eq.'DRCT') then
+        call set_dependency('Z2INT_R12_EVAL','Z2INT_R12_DIR',tgt_info)
+      else
+        call set_dependency('Z2INT_R12_EVAL','Z2INT_R12_REF',tgt_info)
+      end if
 
 *----------------------------------------------------------------------*
 *     ME-lists
@@ -1605,6 +1742,27 @@ c dbg
       call set_rule(mel_gintx,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
+
+        ! special two-electron integral list 2
+        call add_target(mel_gintz,ttype_opme,.false.,tgt_info)
+        call set_dependency(mel_gintz,op_g_z,tgt_info)
+        ! (a) define
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = mel_gintz
+        labels(2) = op_g_z
+        call me_list_parameters(-1,parameters,
+     &       msc,0,1,0,0,.true.)
+c     &       0,0,1,0,0,.false.)
+        call set_rule(mel_gintz,ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+        ! (b) import
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = mel_gintz
+        call import_parameters(-1,parameters,'G_INT',env_type)
+        call set_rule(mel_gintz,ttype_opme,IMPORT,
+     &                labels,1,1,
+     &                parameters,1,tgt_info)
 
       ! special one-electron integral list
       call add_target('F-X-INT',ttype_opme,.false.,tgt_info)

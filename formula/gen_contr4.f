@@ -45,8 +45,8 @@
       include 'stdunit.h'
       include 'def_contraction.h'
 c      include 'def_operator.h'
-      include 'def_formula_item.h'
       include 'mdef_operator_info.h'
+      include 'def_formula_item.h'
       include 'ifc_operators.h'
       
       logical, intent(in) ::

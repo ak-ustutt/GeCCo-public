@@ -41,6 +41,7 @@ c dbg
 
       form_ptr => form_head
       nullify(form_ptr%prev)
+      ! we need init_formula here???
 c dbg
       nterms = 0
 c dbg
@@ -49,13 +50,13 @@ c dbg
 c dbg
         nterms = nterms+1
 c dbg
-        allocate(form_ptr%next)
-        form_ptr%next%prev => form_ptr
+c        allocate(form_ptr%next)
+c        form_ptr%next%prev => form_ptr
         form_ptr => form_ptr%next
-        nullify(form_ptr%next)
-        nullify(form_ptr%contr)
-        nullify(form_ptr%interm)
-        form_ptr%command = command_end_of_formula
+c        nullify(form_ptr%next)
+c        nullify(form_ptr%contr)
+c        nullify(form_ptr%interm)
+c        form_ptr%command = command_end_of_formula
       end do
 c dbg
       print *,'read ',nterms,' entries'

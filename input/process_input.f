@@ -128,6 +128,8 @@ c      end if
       if (force_batching.gt.2)
      &       call quit(0,'process_input',
      &       'illegal value for force_batching (>2)')          
+      call get_argument_value('calculate.routes','force_ooc_sort',
+     &     ival=force_ooc_sort)
       call get_argument_value('calculate.routes','use_tr',
      &     lval=use_tr)
 
