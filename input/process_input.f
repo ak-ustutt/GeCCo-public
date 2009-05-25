@@ -96,6 +96,7 @@ c      end if
           call get_argument_dimension(len,'orb_space.shell','def')
           allocate(iscr(len))
           call get_argument_value('orb_space.shell','def',iarr=iscr)
+          nfreeze = sum(iscr(1:len))
         else if (is_argument_set('orb_space.shell','nfreeze').gt.0) then
           call get_argument_value('orb_space.shell',
      &                            'nfreeze',ival=nfreeze)
@@ -109,7 +110,8 @@ c      end if
           call auto_freeze(iscr,nfreeze,orb_info)
         end if
 
-        call add_frozen_shell(iscr,len,orb_info)
+        if (nfreeze.gt.0) 
+     &       call add_frozen_shell(iscr,len,orb_info)
         deallocate(iscr)
 
       end if

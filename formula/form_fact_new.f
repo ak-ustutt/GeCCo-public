@@ -165,9 +165,9 @@ c dbg
       idx_intm = 0
 
 c dbg
-      print *,'now SETting'
-        call prt_contr2(luout,contr,op_info)
-        call wrt_occ_n(luout,occ_vtx,nvtx_full+njoined)
+c      print *,'now SETting'
+c        call prt_contr2(luout,contr,op_info)
+c        call wrt_occ_n(luout,occ_vtx,nvtx_full+njoined)
 c dbg
       ! call kernel again for optimal sequence --> set fl_fact now
       call form_fact_rec_new('SET',nlevel,ifact_best,fl_fact,
