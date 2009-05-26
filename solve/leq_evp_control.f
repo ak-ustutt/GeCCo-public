@@ -3,9 +3,11 @@
      &                   task,conv,xrsnrm,xeig,
      &                   use_s,
      &                   nrequest,irectrv,irecmvp,irecmet,
-     &                   me_opt,me_trv,me_mvp,me_met,me_rhs,me_dia,
+     &                   me_opt,me_scr,me_trv,me_mvp,me_met,me_rhs,
+     &                   me_dia,
      &                   me_special,nspecial,
 c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
+     &                   flist,depend,
      &                   opti_info,opti_stat,
      &                   orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -55,6 +57,10 @@ c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'ifc_memman.h'
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'def_dependency_info.h'
       
 * parameters
       integer, parameter ::
@@ -85,10 +91,17 @@ c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_dia(*), me_special(nspecial),
-     &     me_trv(*), me_mvp(*), me_rhs(*), me_met(*)
+     &     me_trv(*), me_mvp(*), me_rhs(*), me_scr(*)
+      type(me_list_array), intent(inout) ::
+     &     me_met(*)
 c      type(file_array), intent(in) ::
 c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
       
+      type(formula_item), intent(inout) ::
+     &     flist
+      type(dependency_info) ::
+     &     depend
+
       type(optimize_info), intent(in) ::
      &     opti_info
       type(optimize_status), intent(inout) ::
@@ -114,8 +127,6 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
       real(8), pointer ::
      &     xbuf1(:), xbuf2(:), xbuf3(:)
 
-      type(filinf) ::
-     &     ffscr(opti_info%nopt)
       character(60) ::
      &     fname
       logical ::
@@ -181,19 +192,14 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
       ifree = mem_setmark('leqevpc_temp')
       if (iter.ne.0.or.modestr(1:3).eq.'LEQ') then
         call leqevpc_mem(nincore,lenbuf,
-     &       ifree,opti_info%nwfpar,opti_info%nopt)
+     &                   ifree,opti_info%nwfpar,opti_info%nopt)
 c        if (nincore.le.1) then
-        do iopt = 1, opti_info%nopt
-          write(fname,'("scr",i2.2,".da")') iopt
-          call file_init(ffscr(iopt),fname,ftyp_da_unf,lblk_da)
-          call file_open(ffscr(iopt))
-        end do
+        if (iter.ne.0) then
+          do iopt = 1, opti_info%nopt
+            call file_open(opti_stat%ffscr(iopt)%fhand)
+          end do
+        end if
 c        end if
-      else
-        do iopt = 1, opti_info%nopt
-          write(fname,'("scr",i2.2,".da")') iopt
-          call file_init(ffscr(iopt),fname,ftyp_da_unf,lblk_da)
-        end do
       end if
 
       ! still, we assume this:
@@ -216,10 +222,12 @@ c        end if
         ! respective files:        
         if (modestr(1:3).eq.'LEQ') then
           call leqc_init(xrsnrm,iroute,
-     &       me_opt,me_trv,me_mvp,me_rhs,me_dia,
-     &       nincore,lenbuf,ffscr,
+     &       me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,
+     &       nincore,lenbuf,
      &       xbuf1,xbuf2,xbuf3,
-     &       opti_info,opti_stat)          
+     &       flist,depend,use_s,
+     &       opti_info,opti_stat,
+     &       orb_info,op_info,str_info,strmap_info)          
           opti_stat%nadd = opti_info%nroot ! ?? <-- check that for LEQ
         else if (modestr(1:3).eq.'EVP') then
           opti_stat%nadd = opti_info%nroot ! <-- check that for LEQ
@@ -235,7 +243,8 @@ c        end if
         end do
 
         do iopt = 1, opti_info%nopt
-          if (ffscr(iopt)%unit.gt.0) call file_close_delete(ffscr(iopt))
+          if (opti_stat%ffscr(iopt)%fhand%unit.gt.0) 
+     &             call file_close_delete(opti_stat%ffscr(iopt)%fhand)
         end do          
 
         iter = 1
@@ -257,22 +266,24 @@ c        end if
           call leqc_core(iter,
      &         task,iroute,xrsnrm,
      &         use_s,
-     &         me_opt,me_trv,me_mvp,me_rhs,me_dia,
+     &         me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,
      &         me_special,nspecial,
 c     &         ffopt,fftrv,ffmvp,ffrhs,ffdia,
-     &         nincore,lenbuf,ffscr(1),
+     &         nincore,lenbuf,
      &         xbuf1,xbuf2,xbuf3,
+     &         flist,depend,
      &         opti_info,opti_stat,
      &         orb_info,op_info,str_info,strmap_info)
         else
           call evpc_core(iter,
      &         task,iroute,xrsnrm,xeig,
      &         use_s,
-     &         me_opt,me_trv,me_mvp,me_dia,
+     &         me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,
      &         me_special,nspecial,
 c     &         ffopt,fftrv,ffmvp,ffdia,
-     &         nincore,lenbuf,ffscr,
+     &         nincore,lenbuf,
      &         xbuf1,xbuf2,xbuf3,
+     &         flist,depend,
      &         opti_info,opti_stat,
      &         orb_info,op_info,str_info,strmap_info)
         end if
@@ -330,7 +341,8 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
 *----------------------------------------------------------------------*
 
         do iopt = 1, opti_info%nopt
-          if (ffscr(iopt)%unit.gt.0) call file_close_delete(ffscr(iopt))
+          if (opti_stat%ffscr(iopt)%fhand%unit.gt.0) 
+     &             call file_close_delete(opti_stat%ffscr(iopt)%fhand)
         end do
 
         ! release all temporary memory
@@ -356,11 +368,12 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
 *----------------------------------------------------------------------*
 * clean up
 *----------------------------------------------------------------------*
-        call leqevpc_cleanup()
-
         do iopt = 1, opti_info%nopt
-          if (ffscr(iopt)%unit.gt.0) call file_close_delete(ffscr(iopt))
+          if (opti_stat%ffscr(iopt)%fhand%unit.gt.0) 
+     &             call file_close_delete(opti_stat%ffscr(iopt)%fhand)
         end do
+
+        call leqevpc_cleanup()
 
         ! release all temporary memory
         ifree = mem_flushmark('leqevpc_temp')
@@ -487,10 +500,12 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
 
         allocate(opti_stat%ffrsbsp(opti_info%nopt),
      &       opti_stat%ffvsbsp(opti_info%nopt),
-     &       opti_stat%ffssbsp(opti_info%nopt))
+     &       opti_stat%ffssbsp(opti_info%nopt),
+     &       opti_stat%ffscr(opti_info%nopt))
         do iopt = 1, opti_info%nopt
           opti_stat%ffrsbsp(iopt)%fhand => me_mvp(iopt)%mel%fhand
           opti_stat%ffvsbsp(iopt)%fhand => me_trv(iopt)%mel%fhand
+          opti_stat%ffscr(iopt)%fhand => me_scr(iopt)%mel%fhand
           if (use_s(iopt))
      &         opti_stat%ffssbsp(iopt)%fhand => me_met(iopt)%mel%fhand
         end do
@@ -545,7 +560,7 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
 
       if (iroute.ge.1) then
         deallocate(opti_stat%ffrsbsp,opti_stat%ffvsbsp,
-     &             opti_stat%ffssbsp)
+     &             opti_stat%ffssbsp,opti_stat%ffscr)
       end if
 
       return

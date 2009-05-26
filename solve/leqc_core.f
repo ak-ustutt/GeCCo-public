@@ -2,11 +2,12 @@
       subroutine leqc_core(iter,
      &       task,iroute,xrsnrm,
      &       use_s,
-     &       me_opt,me_trv,me_mvp,me_rhs,me_dia,
+     &       me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,
      &       me_special,nspecial,
 c     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
-     &       nincore,lenbuf,ffscr,
+     &       nincore,lenbuf,
      &       xbuf1,xbuf2,xbuf3,
+     &       flist,depend,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -25,6 +26,10 @@ c      include 'def_filinf.h'
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'def_orbinf.h'
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'def_dependency_info.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -42,12 +47,17 @@ c      include 'def_filinf.h'
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_trv(*), me_dia(*),
-     &     me_mvp(*), me_rhs(*),
+     &     me_mvp(*), me_rhs(*), me_scr(*),
      &     me_special(nspecial)
+      type(me_list_array), intent(inout) ::
+     &     me_met(*)
 c      type(file_array), intent(in) ::
 c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
-      type(filinf), intent(in) ::
-     &     ffscr
+
+      type(formula_item), intent(inout) ::
+     &     flist
+      type(dependency_info) ::
+     &     depend
 
       type(optimize_info), intent(in) ::
      &     opti_info
@@ -72,20 +82,21 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       integer ::
      &     idx, jdx, kdx, iroot, irhs,  nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
-     &     ndim_save, ndel, iopt, lenscr, ifree, restart_mode
+     &     ndim_save, ndel, iopt, lenscr, ifree, restart_mode,
+     &     nselect, irec, ioff_s
       real(8) ::
      &     cond, xdum, xnrm
       real(8), pointer ::
      &     gred(:), vred(:), mred(:), sred(:),
-     &     xmat1(:), xmat2(:), xvec(:)
+     &     xmat1(:), xmat2(:), xvec(:), xret(:)
       integer, pointer ::
      &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
      &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
      &     nwfpar(:),
-     &     ipiv(:), iconv(:), idxroot(:)
+     &     ipiv(:), iconv(:), idxroot(:), idxselect(:)
       type(filinf), pointer ::
-     &     ffrsbsp, ffvsbsp, ffssbsp
-      type(filinf) ::
+     &     ffrsbsp, ffvsbsp, ffssbsp, ffscr, ffmet
+      type(filinf), target ::
      &     fdum
 
       integer, external ::
@@ -109,6 +120,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       iord_rsbsp => opti_stat%iord_rsbsp
       iord_vsbsp => opti_stat%iord_vsbsp
       iord_ssbsp => opti_stat%iord_ssbsp
+      ffscr => opti_stat%ffscr(1)%fhand
       ffrsbsp => opti_stat%ffrsbsp(1)%fhand
       ffvsbsp => opti_stat%ffvsbsp(1)%fhand
       ffssbsp => opti_stat%ffssbsp(1)%fhand
@@ -343,13 +355,42 @@ c     &             iord_vsbsp,ndim_vsbsp,mxsbsp)
           call quit(1,'leqc_core','unknown preconditioner type')
         end select
 
+        if (use_s(iopt)) then
+          ! assign op. with list containing the scratch trial vector
+          call assign_me_list(me_scr(iopt)%mel%label,
+     &                        me_opt(iopt)%mel%op%name,op_info)
+
+          ! calculate metric * scratch trial vector
+          allocate(xret(depend%ntargets),idxselect(depend%ntargets))
+          nselect = 0
+          call select_formula_target(idxselect,nselect,
+     &                me_met(iopt)%mel%label,depend,op_info)
+          do iroot = 1, nnew
+            irec = ioptc_get_sbsp_rec(0,iord_ssbsp,ndim_ssbsp,mxsub)
+            if (iroot.eq.1) ioff_s = irec-1
+            call switch_mel_record(me_met(iopt)%mel,irec)
+            call switch_mel_record(me_scr(iopt)%mel,iroot)
+            call frm_sched(xret,flist,depend,idxselect,nselect,
+     &                  op_info,str_info,strmap_info,orb_info)
+            me_met(iopt)%mel%fhand%last_mod(irec) = -1
+          end do
+          deallocate(xret,idxselect)
+
+          ! reassign op. with list containing trial vector
+          call assign_me_list(me_trv(iopt)%mel%label,
+     &                        me_opt(iopt)%mel%op%name,op_info)
+          ffmet => me_met(iopt)%mel%fhand
+        else
+          ffmet => fdum
+        end if
+
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
         call optc_orthvec(nadd,.false.,
-     &                  opti_stat%ffvsbsp,
-     &                      iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
-     &                  ffscr,nnew,nopt,
-     &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
+     &                 opti_stat%ffvsbsp,
+     &                 iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
+     &                 use_s,ioff_s,ffmet,ffscr,nnew,nopt,
+     &                 nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 
         ! set nadd
         if (nadd.eq.0)

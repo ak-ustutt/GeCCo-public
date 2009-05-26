@@ -26,7 +26,7 @@
       ! the label must exist previously ...
       idx = idx_mel_list(label_mel,op_info)
       if (idx.lt.0)
-     &     call quit(1,'def_me_list',
+     &     call quit(1,'assign_me_list',
      &     'list does not already exist: "'//trim(label_mel)//'"')
       mel => op_info%mel_arr(idx)%mel
 
