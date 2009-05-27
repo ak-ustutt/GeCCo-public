@@ -7,7 +7,7 @@
 
       integer, intent(out) ::
      &     shell_def(*)
-      integer, intent(in) ::
+      integer, intent(inout) ::
      &     nfreeze
       type(orbinf), intent(in), target ::
      &     orb_info
@@ -19,6 +19,7 @@
 
       nfrz = nfreeze
       if (nfreeze.lt.0) nfrz = orb_info%n_freeze_rcmd
+      nfreeze = nfrz
 
       if (nfrz.gt.orb_info%n_bound_orbs)
      &     call quit(0,'auto_freeze',
