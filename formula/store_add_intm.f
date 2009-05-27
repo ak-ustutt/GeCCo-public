@@ -33,7 +33,7 @@
      &     op_res, op_add
 
 c dbg
-      print *,'call to store_add_intm'
+c      print *,'call to store_add_intm'
 c dbg      
 
       op_res => op_info%op_arr(contr%idx_res)%op

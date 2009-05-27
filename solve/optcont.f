@@ -402,7 +402,8 @@ c      implicit none
       ifree = mem_alloc_real(xbuf2,len2,'buffer_2')
       if (nbuf.eq.3)
      &     ifree = mem_alloc_real(xbuf3,len3,'buffer_3')
-
+      if (nbuf.ne.3) xbuf3 => null()
+      
       if (iprint.ge.5) then
         write(luout,*) ' allocated ',nbuf,' buffers'
         write(luout,*) ' # incore vectors: ',nincore

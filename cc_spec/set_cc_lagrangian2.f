@@ -40,6 +40,9 @@ c prelim
 
       ! local variables
 
+      logical ::
+     &     l_h0d
+
       character ::
      &     name*(form_maxlen_label*2)
 
@@ -116,6 +119,8 @@ c prelim
         write(trmode,'("ord",i1)') t1xmode
         call get_argument_value('method.CC','H0_T1ext',ival=t1xmode)
         write(trmode(6:),'(i1)') t1xmode
+        call get_argument_value('method.CC','H0d',lval=l_h0d)
+        if (l_h0d) trmode(7:7) = 'd'
         call t1x_truncation(flist_lag,trmode,
      &       idxtbar,idxham,idxtop,op_info)
       end if

@@ -66,7 +66,7 @@
      &     min_rank, max_rank, iprint, trunc_type, trunc_t1x, h0_t1x,
      &     occ(ngastp,2)
       logical ::
-     &     r12fix, truncate
+     &     r12fix, truncate, l_h0d
       integer ::
      &     extend
 
@@ -107,6 +107,7 @@
       end if
       call get_argument_value('method.R12','T1ext',ival=trunc_t1x)
       call get_argument_value('method.R12','H0_T1ext',ival=h0_t1x)
+      call get_argument_value('method.R12','H0d',lval=l_h0d)
       
       if (extend.gt.0) call quit(1,'set_r12_lagrangian',
      &     'do not use "extend" for CC (use "r12op" instead)!')
@@ -253,6 +254,7 @@ c      sbar_pnt%dagger = .true.
       if (trunc_t1x.gt.0.and.h0_t1x.ne.-1) then
         trmode = '        '
         write(trmode,'("ord",i1," ",i1)') trunc_t1x, h0_t1x
+        if (l_h0d) trmode(7:7) = 'd'
         call t1x_r12_truncation(flist_lag,trmode,
      &       idxr12,idxtbar,idxham,idxtop,op_info)
       end if

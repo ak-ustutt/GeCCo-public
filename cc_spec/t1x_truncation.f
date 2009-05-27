@@ -31,12 +31,12 @@
      &     idxtbar, idxtop, idxham
 
       logical ::
-     &     delete, diag
+     &     delete, diag, omit_fpx, special
       integer ::
      &     nvtx, ivtx,
-     &     idx_op, iblk_op, iblk_t1x, iblk_l1x,
-     &     nt1x, nl1x, nham, nblk_h, iblk,
-     &     ord_ham, n_ext, rank, h0_def,
+     &     idx_op, iblk_op, iblk_t1x, iblk_l1x, iblk_t1,
+     &     nt1, nt1x, nl1x, nham, nblk_h, iblk,
+     &     ord_ham, n_ext, rank, xrank, h0_def,
      &     max_pert, max_comm, max_t1x
       character*64 ::
      &     op_name
@@ -66,10 +66,12 @@
         write(luout,*) 'mode = ',trim(mode)
       endif
 
-      ! experimental version for CC2 project
+      ! experimental version for CCS project
+      special = .false.
       select case(mode(1:4))
       case('ord1')
-        max_pert = 1
+        special = .true.
+        max_pert = 2
         max_t1x  = 40
       case('ord2')
         max_pert = 2
@@ -104,8 +106,13 @@
       h0_def = 0
       if (mode(6:6).eq.'1') h0_def=1
       if (mode(6:6).eq.'2') h0_def=2
+      omit_fpx = (mode(7:7).eq.'d') 
 
-      ! obtain blocks of T1x, and L1x
+      ! obtain blocks of T1, T1x, and L1x
+      occ = 0
+      occ(IPART,1) = 1
+      occ(IHOLE,2) = 1
+      iblk_t1  = iblk_occ(occ,.false.,op_info%op_arr(idxtop)%op)
       occ = 0
       occ(IEXTR,1) = 1
       occ(IHOLE,2) = 1
@@ -120,12 +127,20 @@
       do iblk = 1, nblk_h
         n_ext = sum(op_h%ihpvca_occ(IEXTR,1:2,iblk))
         rank  = rank_occ('C',op_h%ihpvca_occ(1:,1:,iblk),1)
+        xrank  = rank_occ('X',op_h%ihpvca_occ(1:,1:,iblk),1)
         diag  = occ_is_diag_blk(op_h%ihpvca_occ(1:,1:,iblk),1)
         po_h(iblk) = 0
         if (n_ext.gt.0) po_h(iblk) = 1
         if (h0_def.eq.0.and.rank.gt.1) po_h(iblk) = 1
         if (h0_def.eq.2.and.rank.gt.1) po_h(iblk) = po_h(iblk)+1
         if (rank.eq.1.and.diag) po_h(iblk) = 0
+        if (.not.omit_fpx.and.rank.eq.1.and.xrank.eq.0) po_h(iblk) = 0
+c test
+        if (special) then
+          po_h(iblk) = 3
+          if (rank.le.1) po_h(iblk) = 0          
+        end if
+c test
       end do
 
       if (ntest.ge.100) then
@@ -153,6 +168,7 @@
           ! - number and perturbation order of T operators
           ! - perturbation order of H
           ! - perturbation order of TBAR
+          nt1   = 0
           nt1x  = 0
           nl1x  = 0
           nham    = 0
@@ -160,6 +176,7 @@
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
             iblk_op = vertex(ivtx)%iblk_op
+            if (idx_op.eq.idxtop.and.iblk_op.eq.iblk_t1 ) nt1  = nt1 +1
             if (idx_op.eq.idxtop.and.iblk_op.eq.iblk_t1x) nt1x = nt1x+1
             if (idx_op.eq.idxtbar.and.iblk_op.eq.iblk_l1x) nl1x = nl1x+1
             if (idx_op.eq.idxham) then
@@ -174,6 +191,10 @@
           delete = (ord_ham+nt1x+nl1x).gt.max_pert
           ! restrict max. T1
           delete = delete.or.(nt1x.gt.max_t1x)
+          ! special:
+          if (special) then
+            delete = delete.or.nt1+nt1x.gt.1
+          end if
 
           if (delete) then
             ! Print the deleted contraction.

@@ -683,6 +683,32 @@ c      end if
       call set_rule(solve_cc_pt,ttype_opme,EVAL,
      &       labels,1,0,
      &       parameters,0,tgt_info)
-        
+      labels(1) = mel_ccen0
+      if (explicit) labels(1) = mel_ccr12en0
+      call form_parameters(-1,parameters,2,
+     &     '>>> CC energy    :',0,'SCAL F20.12')
+      call set_rule(solve_cc_pt,ttype_opme,PRINT_MEL,
+     &     labels,1,0,
+     &     parameters,2,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     '>>> CC-PT energy :',0,'SCAL F20.12')
+      call set_rule(solve_cc_pt,ttype_opme,PRINT_MEL,
+     &     mel_dept0,1,0,
+     &     parameters,2,tgt_info)
+      call add_parameters(-1,parameters,2,(/1d0,1d0/),2)
+      labels(1) = mel_dlpt0
+      call set_dependency(solve_cc_pt,mel_dlpt0,tgt_info)
+      labels(2) = mel_dept0
+      labels(3) = mel_ccen0
+      if (explicit) labels(3) = mel_ccr12en0
+      call set_rule(solve_cc_pt,ttype_opme,ADD,
+     &     labels,3,1,
+     &     parameters,1,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     '>>> Total energy :',0,'SCAL F20.12')
+      call set_rule(solve_cc_pt,ttype_opme,PRINT_MEL,
+     &     mel_dlpt0,1,0,
+     &     parameters,2,tgt_info)
+
       return
       end

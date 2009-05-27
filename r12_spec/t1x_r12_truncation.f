@@ -31,7 +31,7 @@
      &     idxr12,idxtbar, idxtop, idxham
 
       logical ::
-     &     delete, diag
+     &     delete, diag, omit_fpx
       integer ::
      &     nvtx, ivtx,
      &     idx_op, iblk_op, iblk_t1x, iblk_l1x,
@@ -98,6 +98,7 @@
       h0_def = 0
       if (mode(6:6).eq.'1') h0_def=1
       if (mode(6:6).eq.'2') h0_def=2
+      omit_fpx = (mode(7:7).eq.'d') 
 
       ! obtain blocks of T1x, and L1x
       occ = 0
@@ -115,12 +116,13 @@
         n_ext = sum(op_h%ihpvca_occ(IEXTR,1:2,iblk))
         rank  = rank_occ('C',op_h%ihpvca_occ(1:,1:,iblk),1)
         xrank  = rank_occ('X',op_h%ihpvca_occ(1:,1:,iblk),1)
-c        diag  = occ_is_diag_blk(op_h%ihpvca_occ(1:,1:,iblk),1)
+        diag  = occ_is_diag_blk(op_h%ihpvca_occ(1:,1:,iblk),1)
         po_h(iblk) = 0
         if (n_ext.gt.0) po_h(iblk) = 1
         if (h0_def.eq.0.and.rank.gt.1) po_h(iblk) = 1
         if (h0_def.eq.2.and.rank.gt.1) po_h(iblk) = po_h(iblk)+1
-        if (rank.eq.1.and.xrank.eq.0) po_h(iblk) = 0
+        if (rank.eq.1.and.diag) po_h(iblk) = 0
+        if (.not.omit_fpx.and.rank.eq.1.and.xrank.eq.0) po_h(iblk) = 0
       end do
 
       if (ntest.ge.100) then

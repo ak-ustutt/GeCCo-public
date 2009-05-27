@@ -48,6 +48,7 @@
           write(luout,'(2x,i3," - ",i3," r=",i3," t=",i3)')
      &         inproj(1:4,idx)
         end do
+        call wrt_occ_n(luout,occ_vtx,proto%nvtx)
       end if
 
       ok = .true.

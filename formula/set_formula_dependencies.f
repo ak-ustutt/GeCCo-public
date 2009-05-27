@@ -17,7 +17,7 @@
 
       integer, parameter ::
      &     maxscr = 1024,
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula_item), intent(in), target ::
      &     flist

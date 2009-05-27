@@ -59,6 +59,8 @@
         do idx = 1, nopsin
           write(luout,*)trim(op_info%op_arr(idx_opsin(idx))%op%name)
         enddo
+        write(luout,*) 'max EXTR in J: ',max_ext_in_J
+        write(luout,*) 'max EXTR in K: ',max_ext_in_K
       endif
 
       ! Get indices of input operators.
@@ -70,17 +72,11 @@
         form_pnt => form_pnt%next
       enddo
 
-c dbg
-c      goto 100 ! Exchange parts only
-c dbg
+      if (.true.) then
 
       ! Add the G^{p'q}_{km}.FF_{p'l}^{ij} terms.
       call expand_op_product2(form_pnt,idx_shape,
      &     0.5d0,6,3,
-c     &     (/idx_shape,idx_opsin(3),idx_opsin(3),idx_shape,idx_shape,
-c     &     idx_opsin(4),idx_shape,idx_shape,idx_opsin(4),idx_shape/),
-c     &     (/        1,           2,           2,        1,        1,
-c     &                3,        1,        1,           3,        1/),
      &     (/idx_shape,idx_opsin(3),idx_opsin(3),
      &     idx_opsin(4),idx_opsin(4),idx_shape/),
      &     (/        1,           2,           2,
@@ -99,10 +95,6 @@ c     &                3,        1,        1,           3,        1/),
       ! Add the FF_{p'q}^{km}.G^{p'l}_{ij} terms.
       call expand_op_product2(form_pnt,idx_shape,
      &     0.5d0,6,3,
-c     &     (/idx_shape,idx_opsin(3),idx_opsin(3),idx_shape,idx_shape,
-c     &     idx_opsin(4),idx_shape,idx_shape,idx_opsin(4),idx_shape/),
-c     &     (/        1,           2,           2,        1,        1,
-c     &                3,        1,        1,           3,        1/),
      &     (/idx_shape,idx_opsin(4),idx_opsin(4),
      &     idx_opsin(3),idx_opsin(3),idx_shape/),
      &     (/        1,           2,           2,
@@ -144,18 +136,24 @@ c     &                3,        1,        1,           3,        1/),
      &           -1,-1,
      &           0,0,
      &           0,0,
-     &           (/2,3,1,idx_rg,2,5,1,idx_rr,3,5,1,idx_gr/),3,
+     &           (/2,4,1,idx_rg,2,5,1,idx_rr,4,5,1,idx_gr/),3,
+c     &           (/2,3,1,idx_rg,2,5,1,idx_rr,3,5,1,idx_gr/),3,
      &           op_info)
 
+            idx = 0
             do while(associated(form_pnt%next))
+              idx = idx+1
               form_pnt => form_pnt%next
             enddo
+c dbg
+            print *,' R.P.G.R',idx_rg,idx_rr,idx_gr,': ',idx,' terms'
+c dbg            
 
           end do
         end do
       end do
 
-      !  - R.G.R.R
+      !  - R.G.P.R
       do idx_rg = 1, 4
         if (idx_rg.eq.3) cycle
         do idx_rr = 1, 4
@@ -181,12 +179,18 @@ c     &                3,        1,        1,           3,        1/),
      &           -1,-1,
      &           0,0,
      &           0,0,
-     &           (/2,3,1,idx_rg,2,5,1,idx_rr,3,5,1,idx_gr/),3,
+c     &           (/2,3,1,idx_rg,2,5,1,idx_rr,3,5,1,idx_gr/),3,
+     &           (/2,4,1,idx_rg,2,5,1,idx_rr,4,5,1,idx_gr/),3,
      &           op_info)
 
+            idx = 0
             do while(associated(form_pnt%next))
+              idx = idx+1
               form_pnt => form_pnt%next
             enddo
+c dbg
+            print *,' R.G.P.R',idx_rg,idx_rr,idx_gr,': ',idx,' terms'
+c dbg            
 
           end do
         end do
@@ -221,16 +225,77 @@ c     &                3,        1,        1,           3,        1/),
      &           -1,-1,
      &           0,0,
      &           0,0,
-     &           (/2,3,1,idx_rg,2,5,1,idx_rr,3,5,1,idx_gr/),3,
+c     &           (/2,3,1,idx_rg,2,5,1,idx_rr,3,5,1,idx_gr/),3,
+     &           (/2,4,1,idx_rg,2,5,1,idx_rr,4,5,1,idx_gr/),3,
      &           op_info)
 
+            idx = 0
             do while(associated(form_pnt%next))
+              idx = idx+1
               form_pnt => form_pnt%next
             enddo
+c dbg
+            print *,' R.P.G.P.R',idx_rg,idx_rr,idx_gr,': ',idx,' terms'
+c dbg            
 
           end do
         end do
       end do
+
+      else
+
+        write(luout,*) 'DEBUG VERSION ACTIVE'
+        call warn('set_zint_contract0','DEBUG VERSION ACTIVE')
+
+      ! for debugging: J from R.Q.J.Q.R
+      do idx_rg = 2, 4
+        if (idx_rg.eq.3) cycle        
+        do idx_rr = 2, 4
+          if (idx_rr.eq.3) cycle
+          if (idx_rg.eq.2.and.idx_rr.eq.2) cycle
+          do idx_gr = 2, 4
+            if (idx_gr.eq.3) cycle
+            if (idx_gr.eq.2.and.idx_rr.eq.2) cycle
+
+            next = 0
+            if (idx_rg.eq.4) next = next+1
+            if (idx_rr.eq.4) next = next+1
+            if (idx_gr.eq.4) next = next+1
+
+c            if (next.gt.max_ext_in_J) cycle
+
+            call expand_op_product2(form_pnt,idx_shape,
+     &           1d0,6,4,
+     &           (/idx_shape,-idx_opsin(2),idx_opsin(3),
+     &           idx_opsin(3),idx_opsin(2),idx_shape/),
+     &           (/        1,            2,             3,
+     &           3,          4,        1/),
+     &           -1,-1,
+     &           0,0,
+     &           0,0,
+     &           (/2,4,1,idx_rg,2,5,1,idx_rr,4,5,1,idx_gr/),3,
+     &           op_info)
+
+            idx = 0
+            do while(associated(form_pnt%next))
+              idx = idx+1
+              form_pnt => form_pnt%next
+            enddo
+            print *,' R.G.R',idx_rg,idx_rr,idx_gr,': ',idx,' terms'
+c dbg
+c            goto 100
+c dbg
+
+          end do
+        end do
+      end do
+
+c dbg
+c 100  call warn('set_zint_contract0','heavy debugging!')
+c dbg
+
+      end if
+
 
       ! exchange terms
       !  - R.Q.K.Q.R
@@ -251,7 +316,7 @@ c     &                3,        1,        1,           3,        1/),
             if (next.gt.max_ext_in_K) cycle
 
             call expand_op_product2(form_pnt,idx_shape,
-     &           1d0,6,4,
+     &           1d0,6,4,  ! must be a "+" due to phase of G_Z
      &           (/idx_shape,-idx_opsin(2),idx_opsin(3),
      &           idx_opsin(3),idx_opsin(2),idx_shape/),
      &           (/        1,            2,             3,
@@ -265,11 +330,18 @@ c     &                3,        1,        1,           3,        1/),
             do while(associated(form_pnt%next))
               form_pnt => form_pnt%next
             enddo
+c dbg
+c            goto 200
+c dbg
 
           end do
         end do
       end do
       
+c dbg
+c 200  call warn('set_zint_contract0','heavy debugging!')
+c dbg
+
       if (ntest.ge.100) then
         write(luout,*)'formula before summing: Z-Int.'
         call print_form_list(luout,flist,op_info)

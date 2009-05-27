@@ -18,7 +18,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula_item), intent(inout) ::
      &     fl_item
