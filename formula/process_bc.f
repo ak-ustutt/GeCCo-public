@@ -119,6 +119,10 @@
      &     merge_stp1inv(2*contr%nvtx*contr%nvtx),
      &     merge_stp2(2*contr%nvtx*contr%nvtx),
      &     merge_stp2inv(2*contr%nvtx*contr%nvtx),
+     &     merge_stp1_0(2*contr%nvtx*contr%nvtx),
+     &     merge_stp1inv_0(2*contr%nvtx*contr%nvtx),
+     &     merge_stp2_0(2*contr%nvtx*contr%nvtx),
+     &     merge_stp2inv_0(2*contr%nvtx*contr%nvtx),
      &     iscale_new(ngastp)
 
       integer, pointer ::
@@ -132,7 +136,7 @@
       type(contraction) ::
      &     contr_dum
       type(reorder_info) ::
-     &     reo_info
+     &     reo_info0, reo_info
       type(contraction_info) ::
      &     cnt_info
 
@@ -165,6 +169,7 @@
       narc = contr%narc
 
       ! reset reo_info
+      call init_reo_info(reo_info0) ! FIX
       call init_reo_info(reo_info)
 
       ! extract BC
@@ -181,16 +186,28 @@
      &     contr,occ_vtx,irestr_vtx,info_vtx,
      &     .true.,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
-     &     .true.,reo_info,
+     &     .true.,reo_info,reo_info0, !FIX
      &     iarc,.true.,idx_intm,
      &     irst_res,njoined_res,orb_info,op_info) ! irst_res is dummy
 
       reo_before = .false.
       reo_op1op2 = .false.
       reo_other  = .false.
-      do ireo = 1, reo_info%nreo
+      do ireo = 1, reo_info0%nreo
         reo_before = reo_before.or.
-     &             reo_info%reo(ireo)%reo_before
+     &             reo_info0%reo(ireo)%reo_before
+        reo_op1op2 = reo_op1op2.or.
+     &       (     reo_info0%reo(ireo)%is_bc_result.and.
+     &        .not.reo_info0%reo(ireo)%reo_before)
+        reo_other  = reo_other.or.
+     &       (.not.reo_info0%reo(ireo)%is_bc_result.and.
+     &        .not.reo_info0%reo(ireo)%reo_before)
+      end do
+      if (reo_op1op2.or.reo_other)
+     &     call quit(1,'process_bc','trap1')
+      do ireo = 1, reo_info%nreo
+        if (reo_info%reo(ireo)%reo_before)
+     &     call quit(1,'process_bc','trap2')
         reo_op1op2 = reo_op1op2.or.
      &       (     reo_info%reo(ireo)%is_bc_result.and.
      &        .not.reo_info%reo(ireo)%reo_before)
@@ -340,13 +357,13 @@
           target = -1           ! unused here
           call new_formula_item(fl_pnt,command,target)
 
-          do ireo = 1, reo_info%nreo
-            if (reo_info%reo(ireo)%reo_before) then
-              idxs_reo = reo_info%reo(ireo)%idxsuper
-              idxop_reo = reo_info%reo(ireo)%idxop_new
+          do ireo = 1, reo_info0%nreo
+            if (reo_info0%reo(ireo)%reo_before) then
+              idxs_reo = reo_info0%reo(ireo)%idxsuper
+              idxop_reo = reo_info0%reo(ireo)%idxop_new
               iblkop_reo = 1
-              idxop_ori = reo_info%reo(ireo)%idxop_ori
-              iblkop_ori = reo_info%reo(ireo)%iblkop_ori
+              idxop_ori = reo_info0%reo(ireo)%idxop_ori
+              iblkop_ori = reo_info0%reo(ireo)%iblkop_ori
               exit
             end if
           end do
@@ -367,10 +384,11 @@
      &           iocc_reo,iocc_ori,
      &           irst_reo,irst_ori,
      &           nj_ret,mst_opreo,igamt_opreo,
-     &           merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &           merge_stp1_0,merge_stp1inv_0,
+     &                        merge_stp2_0,merge_stp2inv_0,
      &           occ_vtx,contr%svertex,info_vtx,
      &                       njoined_res,contr%nvtx,
-     &           reo_info,str_info,orb_info)
+     &           reo_info0,str_info,orb_info)
 
           ! FIX:
           if (nj_ret.gt.1) then
@@ -387,15 +405,23 @@
           command = command_reorder
           target = -1           ! unused here
           call new_formula_item(fl_pnt,command,target)
+c dbg
+          if (reo_info0%nreo.eq.2) then
+            print *,'(1)'
+            print *,'nreo = ',reo_info0%nreo
+            print *,'from_to: ',reo_info0%from_to
+            call wrt_occ_n(6,reo_info0%iocc_reo,reo_info0%nreo)
+          end if
+c dbg
 
           call store_reorder(fl_pnt,
      &       label_reo,label,
      &       iblkop_reo,iblkop_ori,
-     &       reo_info%sign_reo,reo_info%iocc_opreo0,
-     &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,
+     &       reo_info0%sign_reo,reo_info0%iocc_opreo0,
+     &       reo_info0%from_to,reo_info0%iocc_reo,reo_info0%nreo,
      &       iocc_reo,irst_reo,nj_ret,
      &       iocc_ori,irst_ori,nj_ret,
-     &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &       merge_stp1_0,merge_stp1inv_0,merge_stp2_0,merge_stp2inv_0,
      &       orb_info)
 
           fl_pnt => fl_pnt%next
@@ -454,6 +480,14 @@
      &       orb_info)
         if (reo_op1op2) then
           iblkop1op2tmp = 1
+c dbg
+          if (reo_info%nreo.eq.2) then
+            print *,'(2)'
+            print *,'nreo = ',reo_info%nreo
+            print *,'from_to: ',reo_info%from_to
+            call wrt_occ_n(6,reo_info%iocc_reo,reo_info%nreo)
+          end if
+c dbg
           call store_reorder(fl_pnt,
      &       label,label,
      &       iblkop1op2,iblkop1op2tmp,
@@ -519,6 +553,14 @@
           target = -1           ! unused here
           call new_formula_item(fl_pnt,command,target)
 
+c dbg
+          if (reo_info%nreo.eq.2) then
+            print *,'(3)'
+            print *,'nreo = ',reo_info%nreo
+            print *,'from_to: ',reo_info%from_to
+            call wrt_occ_n(6,reo_info%iocc_reo,reo_info%nreo)
+          end if
+c dbg
           call store_reorder(fl_pnt,
      &       label_reo,label,
      &       iblkop_reo,iblkop_ori,
@@ -534,6 +576,7 @@
       end if
 
       call dealloc_reo_info(reo_info)
+      call dealloc_reo_info(reo_info0) ! FIX
 
       return
       end

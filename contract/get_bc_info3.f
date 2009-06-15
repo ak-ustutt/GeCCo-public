@@ -11,7 +11,7 @@
      &     contr_in,occ_vtx_in,irestr_vtx_in,info_vtx,
      &     make_contr_red,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
-     &     set_reo, reo_info,
+     &     set_reo, reo_info, reo_info_bef, !FIX
      &     iarc_contr,update_idxintm,idxintm,
      &     irestr_res,njoined_res,orb_info,op_info)
 
@@ -28,13 +28,15 @@
 
       integer, parameter ::
      &     ntest = 00
+      logical, parameter ::
+     &     new_sign = .true. ! use the new sign evaluation route
 
       type(contraction), intent(in), target ::
      &     contr_in
       type(contraction), intent(out) ::
      &     contr_red
       type(reorder_info), intent(inout) ::
-     &     reo_info
+     &     reo_info, reo_info_bef
       type(orbinf), intent(in), target ::
      &     orb_info
       type(operator_info), intent(in) ::
@@ -82,7 +84,7 @@
      &     ld_mmap1, ld_mmap2, ld_mmap12, ngas,
      &     nvtx, ivtx, idx, iblk, idxnew_op1op2,
      &     ivtx1, ivtx2, isvtx1, isvtx2,
-     &     len_list, nvtx_red, sh_sign, ireo, jreo
+     &     len_list, nvtx_red, sh_sign, cnt_sign, ireo, jreo
 
       integer, pointer ::
      &     ireo_vtx_no(:), ireo_vtx_on(:),
@@ -120,25 +122,25 @@
         possible = .true.
         idxnew_op1op2 = idxintm
         call reorder_supvtx(possible,
-     &       .true.,set_reo,.true.,reo_info,
+     &       .true.,set_reo,.true.,reo_info_bef,
      &       contr,occ_vtx(1,1,njoined_res+1),idxnew_op1op2)
         if (contr%nxarc.gt.0)
      &       call reorder_supvtx_x(possible,
-     &         .true.,set_reo,.true.,reo_info,
+     &         .true.,set_reo,.true.,reo_info_bef,
      &         contr,occ_vtx(1,1,njoined_res+1),idxnew_op1op2)
 
         possible = .true.
-        if (reo_info%nreo.gt.0) idxintm = idxintm-1
+        if (reo_info_bef%nreo.gt.0) idxintm = idxintm-1
         ! report that REO is before contraction!
 
-        if (.not.set_reo.or.reo_info%nreo.gt.0) then
+        if (.not.set_reo.or.reo_info_bef%nreo.gt.0) then
           do ivtx = 1, nvtx
             call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
      &           occ_vtx(1,1,ivtx+njoined_res),1,
      &           orb_info)
           end do
         end if
-        if (set_reo) call tidy_reo_info(reo_info)
+        if (set_reo) call tidy_reo_info(reo_info_bef)
 
       end if
 
@@ -152,6 +154,11 @@
         ! iblkop fix:
         iblk_op(1) = (contr%vertex(ivtx1)%iblk_op-1)/njoined_op(1) + 1
         tra_op1   = contr%vertex(ivtx1)%dagger
+      else
+        write(luout,*) 'ivtx1 = ',ivtx1
+        write(luout,*) 'nvtx = ',nvtx
+        call prt_contr3(luout,contr_in,-1)        
+        call quit(1,'get_bc_info','ivtx1>nvtx?')
       end if
 
       isvtx2 = contr%svertex(ivtx2)
@@ -165,14 +172,19 @@
           ! iblkop fix:
           iblk_op(2) = (contr%vertex(ivtx2)%iblk_op-1)/njoined_op(2) + 1
           tra_op2   = contr%vertex(ivtx2)%dagger
+        else
+          write(luout,*) 'ivtx2 = ',ivtx2
+          write(luout,*) 'nvtx = ',nvtx
+          call prt_contr3(luout,contr_in,-1)        
+          call quit(1,'get_bc_info','ivtx2>nvtx?')
         end if
       else
         njoined_op(2) = 0
-        if (ivtx2.le.nvtx) then
+c        if (ivtx2.le.nvtx) then
           idx_op(2) = 0
           iblk_op(2) = 0
           tra_op2   = .false.
-        end if
+c        end if
       end if
 
 c     &     call quit(1,'get_bc_info3','I am confused ....')
@@ -251,7 +263,7 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
 
       if (update_idxintm) idxintm = idxintm-1
 
-      call reduce_contr2(sh_sign,iocc_op1op2,njoined_op1op2,
+      call reduce_contr2(sh_sign,cnt_sign,iocc_op1op2,njoined_op1op2,
      &     ireo_vtx_no,ireo_vtx_on,ireo_after_contr,
      &     ivtx_op1op2,nvtx_red,
      &     merge_map_op1op2,ld_mmap12,
@@ -366,12 +378,50 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
      &       'bc_sign, sh_sign -> bc_sign: ',
      &       bc_sign, dble(sh_sign), ' -> ', bc_sign*dble(sh_sign)
         bc_sign = bc_sign*dble(sh_sign)
+        if (dble(cnt_sign).ne.bc_sign) then
+          write(luout,*) 'OHA OHA OHA'
+          write(luout,*) 'bc_sign (old) = ',bc_sign
+          write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
+        end if
+
+        if (dble(cnt_sign).ne.bc_sign) then
+          ! here we cautiously exit, if the above test fails.
+          ! switch on the debug statement in sign_bc (old)
+          ! and in topo_contract/topo_merge_vtxs2 (new)
+          ! (+ in reduce_contr2) and try to figure out who
+          ! is wrong and who is right.
+          ! it might be, that this check does not influence the
+          ! result, as we pass this line during the optimization
+          ! in form_fact/form_fact_new, i.e. the presently
+          ! evaluated possible factorization may not be
+          ! used later on (so be careful with judging on
+          ! numerical evidence, there MUST be a difference, if
+          ! this contraction is actually considered, but signs
+          ! are wrong)
+          call quit(1,'get_bc_info3',
+     &       'inconsisteny for signs -- look at source code next'//
+     &       ' to this quit statement')
+        end if
+
       else
-        write(luout,*) 'setting self-contraction sign to +1'
-        write(luout,*) 'setting self-contraction sign to +1'
-        write(luout,*) 'setting self-contraction sign to +1'
+        if (.not.new_sign) then
+          write(luout,*) 'setting self-contraction sign to +1'
+          write(luout,*) 'setting self-contraction sign to +1'
+          write(luout,*) 'setting self-contraction sign to +1'
+        end if
         bc_sign = +1d0
+        if (dble(cnt_sign).ne.bc_sign) then
+          write(luout,*) 'setting self-contraction sign to +1'
+          write(luout,*)
+     &         'OHA OHA OHA --- the above assumption was wrong'
+          write(luout,*) 'bc_sign (old) = ',bc_sign
+          write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
+        end if
       end if
+
+
+      if (new_sign)
+     &     bc_sign = dble(cnt_sign)
 
       deallocate(arc_list)
       deallocate(ireo_vtx_no,ireo_vtx_on,ivtx_op1op2)

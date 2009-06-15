@@ -552,7 +552,7 @@ c dbg
         print *,'(2) : n_pp = ',n_pp
 c dbg
         if (n_pp.ge.1) then
-          ndef = 8
+          ndef = 10
           ! 6
           occ_def(IHOLE,1,11)  = 1
           occ_def(IPART,1,11)  = 1
@@ -568,6 +568,13 @@ c dbg
           occ_def(IPART,1,15)  = 1
           occ_def(IHOLE,2,16) = 1
           occ_def(IEXTR,2,16) = 1
+          ! 9
+          occ_def(IHOLE,1,17)  = 2
+          occ_def(IPART,2,18)  = 2
+          ! 10
+          occ_def(IHOLE,1,19)  = 2
+          occ_def(IPART,2,20)  = 1
+          occ_def(IEXTR,2,20)  = 1
         end if
         call op_from_occ_parameters(-1,parameters,2,
      &       occ_def,ndef,2,(/.true.,.true./),10)

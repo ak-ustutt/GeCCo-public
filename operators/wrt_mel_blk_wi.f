@@ -20,10 +20,10 @@
 
       ! for debugging it is sometimes convenient to have at most:
       integer, parameter ::
-     &     maxlines = 5 !-1 !75
+     &     maxlines = -1 !75
       ! set to -1 if you want the full output
       real(8), parameter ::
-     &     thrsh = -0.5d0
+     &     thrsh = 1d-12  !-0.5d0
       ! set < 0d0 if you want the full output
 
       integer, intent(in) ::

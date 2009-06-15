@@ -121,6 +121,7 @@
         call unique_list(list_reo,lenlist)
 
         call topo_merge_vtxs(ireo,nvtx_new,nvtx_int,
+     &                     sh_sign,
      &                     topo_b,xlines_b,nvtx_b,nj_b,
      &                     list_reo,lenlist)
 

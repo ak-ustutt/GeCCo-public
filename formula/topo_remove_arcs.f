@@ -1,4 +1,11 @@
+*----------------------------------------------------------------------*
       subroutine topo_remove_arcs(topo,nvtx,list,nlist)
+*----------------------------------------------------------------------*
+*     carry out contraction: remove all arcs from the list
+*       (i.e. zero the respective entries in topo)
+*       at the same time, get the sign associated with this
+*       event
+*----------------------------------------------------------------------*
 
       implicit none
 

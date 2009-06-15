@@ -93,6 +93,13 @@
       lenmap = len_merge_map(merge2inv,nj_out)
       allocate(fl_item%reo%merge_stp2inv(lenmap))
       fl_item%reo%merge_stp2inv = merge2inv(1:lenmap)
+c dbg
+        print *,'merge maps stored:'
+        print *,' 1:  ',fl_item%reo%merge_stp1
+        print *,' 1i: ',fl_item%reo%merge_stp1inv
+        print *,' 2:  ',fl_item%reo%merge_stp2
+        print *,' 2i: ',fl_item%reo%merge_stp2inv
+c dbg
 
       return
       end

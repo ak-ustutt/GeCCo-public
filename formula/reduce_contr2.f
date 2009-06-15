@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine reduce_contr2(sh_sign,iocc_op1op2,njoined_op1op2,
+      subroutine reduce_contr2(sh_sign,new_sign,
+     &     iocc_op1op2,njoined_op1op2,
      &     ireo_vtx_no,ireo_vtx_on,ireo0,
      &     ivtx_op1op2,nvtx_red,
      &     mergemap,ld_mmap, 
@@ -29,7 +30,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       type(contraction), intent(in) ::
      &     contr
@@ -41,7 +42,7 @@
      &     njoined_res, idxnew_op1op2, isvtx1, isvtx2, nlist,
      &     arc_list(nlist), ld_mmap
       integer, intent(out) ::
-     &     sh_sign,
+     &     sh_sign, new_sign,
      &     nvtx_red,
      &     njoined_op1op2,
      &     iocc_op1op2(ngastp,2,*),
@@ -57,7 +58,8 @@
      &     svertex_new(:), svertex_reo(:)
 
       integer ::
-     &     nvtx, nvtx_new, nvtx_op1op2, nvtx_cnt, ivtx, idx
+     &     nvtx, nvtx_new, nvtx_op1op2, nvtx_cnt, ivtx, idx,
+     &     merge_sign, cnt_sign
 
       integer, external ::
      &     idxlist
@@ -88,7 +90,13 @@
       call set_cnt_vtx_list(vtx_list,contr,arc_list,nlist)
 
       ! carry out contraction (formally): remove arcs
-      call topo_remove_arcs(topo,nvtx,vtx_list,nlist)
+      call topo_contract(cnt_sign,
+     &     topo,xlines,nvtx,njoined_res,
+     &     svertex,isvtx1,isvtx2,
+     &     vtx_list,nlist)
+
+      if (ntest.ge.100)
+     &     write(luout,*) 'cnt_sign = ',cnt_sign
 
       if (ntest.ge.1000) then
         write(luout,*) 'after removing contracted arcs:'
@@ -134,9 +142,14 @@
       if (ntest.ge.1000)
      &     write(luout,*) 'updated vtx(reo): ',vtx_list_reo(1:nvtx_cnt)
 
+c dbg
+c      print *,'isvtx1, isvtx2: ',isvtx1, isvtx2
+c dbg
       ! merge (=symmetrize) contracted vertices, if possible
-      call topo_merge_vtxs(ireo2,nvtx_new,nvtx_op1op2,
+      call topo_merge_vtxs2(ireo2,nvtx_new,nvtx_op1op2,
+     &                     merge_sign,
      &                     topo,xlines,nvtx,njoined_res,
+     &                     svertex_reo,isvtx1,isvtx2,
      &                     vtx_list_reo,nvtx_cnt)
 
       do ivtx = 1, nvtx_cnt
@@ -144,6 +157,9 @@
         vtx_list_new(ivtx) = idx
       end do
       call unique_list(vtx_list_new,nvtx_cnt)
+
+      if (ntest.ge.100)
+     &     write(luout,*) 'merge_sign = ',merge_sign
 
       if (ntest.ge.1000) then
         write(luout,*) 'nvtx, nvtx_new, nvtx_cnt, nvtx_op1op2: ',
@@ -219,6 +235,11 @@ c dbg
           write(luout,*) 'no reduced contraction requested'
         end if
       end if
+
+      new_sign = sh_sign*cnt_sign*merge_sign
+
+      if (ntest.ge.100)
+     &     write(luout,*) 'new_sign = ',new_sign
 
       nvtx_red = nvtx_new
       ! new -> old reo; idx_old = ireo_vtx_no(idx_new)

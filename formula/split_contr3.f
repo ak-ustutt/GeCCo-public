@@ -145,6 +145,7 @@ c      ! resort list
 c      call unique_list(list_reo,lenlist)
 c
 c      call topo_merge_vtxs(ireo2,nvtx_rem,nvtx_test,
+c     &                     merge_sign,
 c     &                     topo,xlines,nvtx,nj,
 c     &                     list_reo,lenlist)
 

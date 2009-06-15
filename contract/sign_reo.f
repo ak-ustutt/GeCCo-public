@@ -58,8 +58,8 @@
      &       = occ_reo(1:ngastp,1:2,ireo)
       end do
 c dbg
-c      print *,'initial occ_k_from'
-c      call wrt_occ_n(luout,occ_k_from,njoined)
+      print *,'initial occ_k_from'
+      call wrt_occ_n(luout,occ_k_from,njoined)
 c dbg
 
       sign_reo = 1
@@ -69,8 +69,8 @@ c dbg
      &       occ_k_from(1:ngastp,1:2,from_to(1,ireo)) -
      &       occ_reo(1:ngastp,1:2,ireo)
 c dbg
-c        print *,'updated occ_k_from'
-c        call wrt_occ_n(luout,occ_k_from,njoined)
+        print *,'updated occ_k_from'
+        call wrt_occ_n(luout,occ_k_from,njoined)
 c dbg
         ! count number of CA-op's on passive vertices between reo-vertices:
         nencl = 0
@@ -87,31 +87,31 @@ c dbg
      &       occ_reo(1,1,ireo),from_to(1,ireo),from_to(2,ireo),
      &       occ_op0,occ_k_from,occ_k_to,nencl,njoined)
 c dbg
-c        print *,'sign_reo(1) = ',sign_reo
+        print *,'sign_reo(1) = ',sign_reo
 c dbg
         sign_reo = sign_reo*sign_hpvx(2,
      &       occ_op0(1,1,from_to(1,ireo)),.false.,
      &       occ_reo(1,1,ireo),.false.)
 c dbg
-c        print *,'sign_reo(2a) = ',sign_reo
+        print *,'sign_reo(2a) = ',sign_reo
 c dbg
         sign_reo = sign_reo*sign_hpvx(2,
      &       occ_op0(1,1,from_to(2,ireo)),.false.,
      &       occ_reo(1,1,ireo),.false.)
 c dbg
-c        print *,'sign_reo(2b) = ',sign_reo
+        print *,'sign_reo(2b) = ',sign_reo
 c dbg
         occ_k_to(1:ngastp,1:2,from_to(2,ireo)) =
      &       occ_k_to(1:ngastp,1:2,from_to(2,ireo)) +
      &       occ_reo(1:ngastp,1:2,ireo)
 c dbg
-c        print *,'updated occ_k_to'
-c        call wrt_occ_n(luout,occ_k_to,njoined)
+        print *,'updated occ_k_to'
+        call wrt_occ_n(luout,occ_k_to,njoined)
 c dbg
 
       end do
 c dbg
-c      print *,'sign_reo(final) = ',sign_reo
+      print *,'sign_reo(final) = ',sign_reo
 c dbg
 
       return

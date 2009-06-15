@@ -63,6 +63,13 @@
      &       reo%merge_stp1,reo%merge_stp1inv,
      &       reo%merge_stp2,reo%merge_stp2inv
 
+c dbg
+c        print *,'merge maps read:'
+c        print *,' 1:  ',reo%merge_stp1
+c        print *,' 1i: ',reo%merge_stp1inv
+c        print *,' 2:  ',reo%merge_stp2
+c        print *,' 2i: ',reo%merge_stp2inv
+c dbg
       else
 
         ngas        = reo%ngas
@@ -93,6 +100,13 @@
      &       reo%merge_stp1,reo%merge_stp1inv,
      &       reo%merge_stp2,reo%merge_stp2inv
         
+c dbg
+c        print *,'merge maps written:'
+c        print *,' 1:  ',reo%merge_stp1
+c        print *,' 1i: ',reo%merge_stp1inv
+c        print *,' 2:  ',reo%merge_stp2
+c        print *,' 2i: ',reo%merge_stp2inv
+c dbg
 
       end if
 

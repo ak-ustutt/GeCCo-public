@@ -27,7 +27,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(reorder_info), intent(inout) ::
      &     reo_info
@@ -67,10 +67,10 @@ c     &     reo_op1op2, reo_other
       if (abs(mode).ne.1.and.mode.ne.2)
      &     call quit(1,'get_reo_info2','invalid mode')
 c dbg
-      if (reo_info%nreo.gt.0) print *,'nreo = ',reo_info%nreo
+c      if (reo_info%nreo.gt.0) print *,'nreo = ',reo_info%nreo
 c dbg
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'get_reo_info')
+        call write_title(luout,wst_dbg_subr,'get_reo_info2')
         write(luout,*) 'nreo = ',reo_info%nreo
         if (abs(mode).eq.1) then
           reo => reo_info%reo
@@ -237,6 +237,14 @@ c dbg
           write(luout,*) 'is_op1op2:'
           write(luout,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
         end if
+c patch
+c        print *,'redefining is_op1op2:'
+        is_op1op2 = 0
+        do ivtx = 1, reo_info%nvtx_contr
+          if (svertex(ivtx).eq.idxsuper) is_op1op2 = 1
+        end do
+c        write(luout,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
+c patch
 
         reo_info%sign_reo = sign_reo(
      &       iocc_op1op2tmp,reo_info%iocc_opreo0,
@@ -285,11 +293,6 @@ c dbg
      &       max(reo_info%ncblk_reo+reo_info%ncblk_reo0,
      &           reo_info%nablk_reo+reo_info%nablk_reo0)*
      &           2*(njoined_op1op2+nreo_op1op2))
-c dbg
-c        print *,'??',njoined_op1op2,nreo_op1op2
-c        print *,'len_map (2) = ',len_map,
-c     &       reo_info%ncblk_reo,reo_info%nablk_reo
-c dbg
         allocate(reo_info%map_reo1c(len_map),
      &           reo_info%map_reo1a(len_map),
      &           reo_info%map_reo2c(len_map),
@@ -300,13 +303,11 @@ c dbg
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,
      &       reo_info%iocc_reo,nreo_op1op2,.false.,
      &       iocc_op1op2tmp,merge_stp1,njoined_op1op2,hpvxblkseq)
-c     &       iocc_op1op2,merge_stp1,njoined_op1op2,hpvxblkseq)
         call set_mapping_info(reo_info%map_reo1c,reo_info%map_reo1a,
      &       2,
      &       reo_info%iocc_reo,nreo_op1op2,.false.,
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,
      &       iocc_op1op2tmp,merge_stp1inv,njoined_op1op2,hpvxblkseq)
-c     &       iocc_op1op2,merge_stp1inv,njoined_op1op2,hpvxblkseq)
         call set_mapping_info(reo_info%map_reo2c,reo_info%map_reo2a,
      &       1,
      &       reo_info%iocc_opreo0,njoined_op1op2,.false.,

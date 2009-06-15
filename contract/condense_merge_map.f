@@ -91,6 +91,10 @@
           end if
           idx = idx + ivtx + 1
         end do
+c dbg
+c          print *,'raw map looks like: '
+c          print *,mmap_out(1:idx-1)
+c dbg
         
       end if
 

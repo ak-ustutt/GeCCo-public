@@ -33,7 +33,8 @@
 
       integer ::
      &     idx, idx_shape, nops ,nvtx, idx_temp, ndef, next,
-     &     idx_rg, idx_rr, idx_gr
+     &     idx_rg, idx_rr, idx_gr, icase,
+     &     prj(8)
       real(8) ::
      &     fac
       character ::
@@ -72,43 +73,94 @@
         form_pnt => form_pnt%next
       enddo
 
+c      if (.false.) then
       if (.true.) then
 
       ! Add the G^{p'q}_{km}.FF_{p'l}^{ij} terms.
-      call expand_op_product2(form_pnt,idx_shape,
-     &     0.5d0,6,3,
+      do idx_rg = 1, 4
+        if (idx_rg.eq.3) cycle
+
+        do icase = 1, 3
+          select case (icase)
+          case(1)!"6"
+            fac = 0.5d0 !0.5d0
+            prj = (/3,5,1,-1,3,4,1,idx_rg/)
+          case(2)!"4+8"
+            fac = 0.5d0 ! ???
+            prj = (/2,5,1,-1,3,4,1,idx_rg/)
+          case(3)!"2"
+            fac = 0.5d0
+            prj = (/4,5,1,-1,3,4,1,idx_rg/)
+          end select
+
+          call expand_op_product2(form_pnt,idx_shape,
+     &     fac,6,3,
      &     (/idx_shape,idx_opsin(3),idx_opsin(3),
      &     idx_opsin(4),idx_opsin(4),idx_shape/),
      &     (/        1,           2,           2,
      &                3,        3,        1/),
      &     -1,-1,
      &     0,0,
-     &     (/2,5/),1,
-     &     (/2,4,1,0/),1,
+     &     0,0,
+     &     prj,2,
      &     op_info)
 
-      form_pnt => flist
-      do while(associated(form_pnt%next))
-        form_pnt => form_pnt%next
-      enddo
+          idx = 0
+          do while(associated(form_pnt%next))
+            idx = idx+1
+            form_pnt => form_pnt%next
+          enddo
+c dbg
+          print *,' G.RR',idx_rg,icase,': ',idx,' terms'
+c dbg            
 
-      ! Add the FF_{p'q}^{km}.G^{p'l}_{ij} terms.
-      call expand_op_product2(form_pnt,idx_shape,
-     &     0.5d0,6,3,
+        end do
+      end do
+
+      do idx_rg = 1, 4
+        if (idx_rg.eq.3) cycle
+
+        do icase = 1, 4
+          select case (icase)
+          case(1)!"7"
+            fac = 0.5d0
+            prj = (/2,5,1,-1,3,5,1,idx_rg/)
+          case(2)!"5"
+            fac = 0.5d0 !-0.5d0
+            prj = (/4,5,1,-1,3,5,1,idx_rg/)
+          case(3)!"1"
+            fac = 0.5d0
+            prj = (/2,3,1,-1,3,5,1,idx_rg/)
+          case(4)!"3"
+            fac = -0.5d0 ! for some reason ...
+            prj = (/3,4,1, 1,3,5,1,idx_rg/)
+          end select
+
+
+          ! Add the FF_{p'q}^{km}.G^{p'l}_{ij} terms.
+          call expand_op_product2(form_pnt,idx_shape,
+     &     fac,6,3,
      &     (/idx_shape,idx_opsin(4),idx_opsin(4),
      &     idx_opsin(3),idx_opsin(3),idx_shape/),
      &     (/        1,           2,           2,
      &                3,        3,        1/),
      &     -1,-1,
      &     0,0,
-     &     (/2,4/),1,
-     &     (/3,4,1,0/),1,
+     &     0,0,
+     &     prj,2,
      &     op_info)
+          
+          idx = 0
+          do while(associated(form_pnt%next))
+            idx = idx+1
+            form_pnt => form_pnt%next
+          enddo
+c dbg
+          print *,' RR.G',idx_rg,icase,': ',idx,' terms'
+c dbg            
 
-      form_pnt => flist
-      do while(associated(form_pnt%next))
-        form_pnt => form_pnt%next
-      enddo
+        end do
+      end do
 
       !  - R.P.G.R
       do idx_rg = 1, 4

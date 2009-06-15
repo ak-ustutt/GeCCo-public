@@ -87,6 +87,9 @@
      &       sum(occ_k_tomove(1:ngastp,1:2,ivtx))+
      &       sum(occ_k_moved(1:ngastp,1:2,ivtx))
       end do
+c dbg
+      print *,'effective nenclosed: ',nenclosed
+c dbg
 
       ! elements not yet moved at lower index:
       nnym_lc = sum(occ_k_tomove(1:ngastp,1,ivtx_l))

@@ -141,7 +141,7 @@ c dbg
      &     contr,occ_vtx,irestr_vtx,info_vtx,
      &     make_red,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
-     &     .false.,reo_dum,
+     &     .false.,reo_dum,reo_dum,
      &     iarc,.false.,-nlevel,
      &     irst_res,njoined_res,orb_info,op_info)
 

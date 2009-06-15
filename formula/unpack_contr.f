@@ -64,8 +64,8 @@
       ! unpack vertices
       do ivtx = 1, nvtx
         avtx = abs(vtx(ivtx))
-        iadj    = avtx/(base**4)
-        avtx = mod(avtx,(base**4))
+        iadj    = avtx/(base**6)
+        avtx = mod(avtx,(base**6))
         idx_op  = sign(avtx/(base*base),vtx(ivtx))
         iblk_op = mod(avtx,base*base)
         vertex(ivtx)%idx_op = idx_op

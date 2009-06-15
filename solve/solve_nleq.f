@@ -201,6 +201,7 @@
       do iopt = 1, nopt
 c        if (.not.file_exists(me_opt(iopt)%mel%fhand)) then
           call zeroop(me_opt(iopt)%mel)
+c dbg DBGDBG!!!
 c        else
 c          call warn('solve_nleq','debug version of restart active')
 c        end if

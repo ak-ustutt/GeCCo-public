@@ -426,7 +426,7 @@ c          new = .false.!cur_contr%nvtx.ge.4
      &         cur_contr,occ_vtx,irestr_vtx,info_vtx,
      &         make_contr_red,
      &         cur_contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
-     &         set_reo,reo_info,
+     &         set_reo,reo_info, reo_info,
      &         iarc,.false.,-ninter,
      &         irst_res,njoined_res,orb_info,op_info)
           if (.not.possible) then

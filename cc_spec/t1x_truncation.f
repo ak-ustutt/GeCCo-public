@@ -135,6 +135,10 @@
         if (h0_def.eq.2.and.rank.gt.1) po_h(iblk) = po_h(iblk)+1
         if (rank.eq.1.and.diag) po_h(iblk) = 0
         if (.not.omit_fpx.and.rank.eq.1.and.xrank.eq.0) po_h(iblk) = 0
+c fusk
+c        call warn('t1x_truncation','PFUSCH!!!!')
+c        if (rank.eq.1) po_h(iblk) = 0
+c fusk
 c test
         if (special) then
           po_h(iblk) = 3

@@ -1,6 +1,7 @@
-      subroutine topo_merge_vtxs(ireo,nvtx_new,nvtx_bcres,
+      subroutine topo_merge_vtxs2(ireo,nvtx_new,nvtx_bcres,
      &                           merge_sign,
      &                           topo,xlines,nvtx,nj,
+     &                           svertex,isvtx1,isvtx2,
      &                           vtx_list,nlist)
       
       implicit none
@@ -10,7 +11,8 @@
 
       integer, intent(in) ::
      &     nvtx, nj, nlist,
-     &     vtx_list(nlist)
+     &     vtx_list(nlist),
+     &     svertex(nvtx), isvtx1, isvtx2
       integer(8), intent(inout) ::
      &     topo(nvtx,nvtx), xlines(nvtx,nj)
       integer, intent(out) ::
@@ -21,9 +23,9 @@
       integer ::
      &     idx, jdx, kdx, jdxnd, ii, ivtx, ij,
      &     n_zero_vtx_res, n_zero_vtx, kdx_v, jdx_v,
-     &     n_enclosed
+     &     n_enclosed, isvtx_j, isvtx_k, ipass
       logical ::
-     &     merged(nvtx)
+     &     merged(nvtx), reversed
 
       integer ::
      &     occ_j(ngastp,2), occ_k(ngastp,2), occ_dum(ngastp,2)
@@ -90,8 +92,9 @@ c        print *,'present list: ',idx,jdxnd
 c dbg
         ! only one candidate? not much to do then
         if (jdxnd.eq.idx) cycle
+
         ! loop over pairs of vertices in contiguous list and try to merge
-        do jdx = idx, jdxnd
+        do jdx = idx, jdxnd           
 c dbg
 c          print *,'jdx =',jdx
 c          print *,'merged',merged
@@ -99,38 +102,68 @@ c          print *,'iord  ',iord
 c          print *,'ireo  ',ireo
 c dbg
           if (merged(jdx)) cycle
-          do kdx = jdx+1, jdxnd
+
+          ! get supervertex number of vertex on which we merge
+          ! we need to first carry out all merges with vertices
+          ! having the same supervertex number (for sign-consistency)
+          jdx_v = vtx_list(jdx)
+          isvtx_j = svertex(jdx_v)
+
+          do ipass = 1, 2
+
+           do kdx = jdx+1, jdxnd
             if (merged(kdx)) cycle
-            if (may_merge(vtx_list(jdx),vtx_list(kdx))) then
+            kdx_v = vtx_list(kdx)
+            isvtx_k = svertex(kdx_v)
+
+            if (ipass.eq.1.and.isvtx_k.ne.isvtx_j) cycle
+            if (ipass.eq.2.and.isvtx_k.eq.isvtx_j) cycle
+
+            if (may_merge(jdx_v,kdx_v)) then
               merged(kdx) = .true.
-              jdx_v = vtx_list(jdx)
-              kdx_v = vtx_list(kdx)
+c              jdx_v = vtx_list(jdx)
+c              kdx_v = vtx_list(kdx)
+
+              ! reversed sequence of super-vertices?
+              reversed = isvtx1.ne.isvtx2.and.
+     &                   isvtx_j.eq.isvtx2 .and.
+     &                   isvtx_k.eq.isvtx1
+c dbg
+c              print *,'isvtx1,isvtx2: ',isvtx1,isvtx2
+c              print *,'svertex:       ',svertex(jdx_v),svertex(kdx_v)
+c              print *,'  -> reversed = ',reversed
+c dbg
 
               ! hande sign change upon merge
               call topo_get_cnt_i0_j0(occ_dum,occ_j,occ_k,n_enclosed,
      &             jdx_v,kdx_v,
      &             topo,xlines,nvtx,nj)
 c dbg
-        print *,'idx = ',jdx_v,kdx_v
-        print *,'0,I0,J0:'
-        call wrt_occ(6,occ_dum)
-        call wrt_occ(6,occ_j)
-        call wrt_occ(6,occ_k)
-        print *,'nenclosed = ',n_enclosed
+c        print *,'idx = ',jdx_v,kdx_v
+c        print *,'0,I0,J0:'
+c        call wrt_occ(6,occ_dum)
+c        call wrt_occ(6,occ_j)
+c        call wrt_occ(6,occ_k)
+c        print *,'nenclosed = ',n_enclosed
 c dbg
               ! get the sign for approaching 
               ! {I0C I0A}{}{J0C J0A} -> {I0C J0C I0A J0A}{}{}
               merge_sign = merge_sign *
-     &             sign_merge(occ_j,occ_k,n_enclosed,.false.) 
+     &             sign_merge(occ_j,occ_k,n_enclosed,reversed) 
 c dbg
-              print *,'after sign_merge: ',merge_sign
+c              print *,'after sign_merge: ',merge_sign
 c dbg
               ! get the sign for HPVX reordering
               ! {I0C J0C I0A J0A} -> {IJC IJA}
-              merge_sign = merge_sign *
+              if (.not.reversed) then
+                merge_sign = merge_sign *
      &             sign_hpvx(2,occ_j,.false.,occ_k,.false.)
+              else
+                merge_sign = merge_sign *
+     &             sign_hpvx(2,occ_k,.false.,occ_j,.false.)
+              end if
 c dbg
-              print *,'after hpvx: ',merge_sign
+c              print *,'after hpvx: ',merge_sign
 c dbg
 
               iord(kdx_v) = iord(jdx_v)
@@ -172,8 +205,9 @@ c dbg
               xlines(kdx_v,1:nj) = 0
 
             end if
-          end do
-        end do
+           end do ! kdx
+          end do ! ipass
+        end do ! jdx
 
       end do
 
