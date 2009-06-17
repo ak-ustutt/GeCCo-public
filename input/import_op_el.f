@@ -175,7 +175,7 @@ c     &                                str_info,orb_info)
         case ('H_INT')
           call import_hamint_dalton(mel_target,str_info,orb_info)
         case ('XDIPLEN','YDIPLEN','ZDIPLEN')
-          call import_propint_dalton(mel_target,list_type,
+          call import_propint_dalton(mel_target,list_type,1,
      &         str_info,orb_info)
         case ('XDIPVEL','YDIPVEL','ZDIPVEL',
      &        'XANGMOM','YANGMOM','ZANGMOM')

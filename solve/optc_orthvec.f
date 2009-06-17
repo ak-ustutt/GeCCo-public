@@ -140,7 +140,7 @@ c dbg
           ii = inew+nold
           if (nincore.ge.2.and.use_s(iopt)) then
 c dbg
-            print *,'loading metric record',inew+ioff_snew
+c            print *,'loading metric record',inew+ioff_snew
 c dbgend
             call vec_from_da(ffsnew(iopt),inew+ioff_snew,xbuf1,
      &                       nwfpar(iopt))
@@ -190,7 +190,7 @@ c dbgend
             if (nincore.ge.2) then
               if (use_s(iopt)) then
 c dbg       
-                print *,'loading metric record',inew+ioff_snew
+c                print *,'loading metric record',inew+ioff_snew
 c dbgend
                 call vec_from_da(ffsnew(iopt),inew+ioff_snew,xbuf2,
      &                           nwfpar(iopt))
@@ -224,7 +224,7 @@ c dbgend
      &                     nwfpar(iopt))
           if (use_s(iopt)) then
 c dbg       
-            print *,'loading metric record',inew+ioff_snew
+c            print *,'loading metric record',inew+ioff_snew
 c dbgend
             call vec_from_da(ffsnew(iopt),inew+ioff_snew,xbuf2,
      &                       nwfpar(iopt))
@@ -251,7 +251,7 @@ c dbg
           if (nincore.ge.2) then
             if (use_s(iopt)) then
 c dbg       
-              print *,'loading metric record',jnew+ioff_snew
+c              print *,'loading metric record',jnew+ioff_snew
 c dbgend
               call vec_from_da(ffsnew(iopt),jnew+ioff_snew,xbuf2,
      &                         nwfpar(iopt))

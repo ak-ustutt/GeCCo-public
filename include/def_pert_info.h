@@ -9,7 +9,7 @@
       character(len=6*maxpop), parameter ::
      &     dalton_int_names = 'DIPLENDIPLENDIPVELANGMOM'
       integer, parameter ::
-     &     pert_op_sign(maxpop) = (/2,1,3,3/)
+     &     pert_op_sign(maxpop) = (/2,1,4,4/)
 
 *----------------------------------------------------------------------*
 *     pert_op_info and pert_component_info definitions

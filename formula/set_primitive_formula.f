@@ -98,10 +98,9 @@ c dbg
      &                       opsh%dagger,op,
      &                       opsh%blk_version(iblk_opsh))
 c dbg
-          print *,'result: iblk_op = ',iblk_op
-
-          print *,'op blks: ',op%blk_version(:)
-          print *,'version: ',opsh%blk_version(iblk_opsh)
+c          print *,'result: iblk_op = ',iblk_op
+c          print *,'op blks: ',op%blk_version(:)
+c          print *,'version: ',opsh%blk_version(iblk_opsh)
 c dbg
           if (iblk_op .lt. 1) cycle
         else

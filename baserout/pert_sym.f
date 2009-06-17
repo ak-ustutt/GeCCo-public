@@ -21,7 +21,7 @@
 
       integer ::
      &     isym, gamma, jsym, nao_blk, nao_full, ifree, luaoprop,
-     &     luerror, len_blk(8)
+     &     luerror, len_blk(8), psign
 
       real(8) ::
      &     norm(orb_info%nsym)
@@ -37,6 +37,17 @@
 
       logical ::
      &     irrep_found
+
+      select case(trim(int_name))
+      case ('XDIPLEN','YDIPLEN','ZDIPLEN')
+        psign = 1
+      case ('XDIPVEL','YDIPVEL','ZDIPVEL',
+     &      'XANGMOM','YANGMOM','ZANGMOM')
+        psign = -1
+      case default
+        call quit(1,'pert_sym','DALTON: cannot handle list_type "'
+     &       //trim(int_name)//'"')
+      end select
 
       ! buffer for AO-matrix as read from AOPROPER
       nao_full = (orb_info%nbast+orb_info%nxbast+1)*
@@ -80,7 +91,7 @@
      &      orb_info%nbas(1:orb_info%nsym)+
      &      orb_info%nxbas(1:orb_info%nsym)
         call reo_full2sym(ao_blk,ao_full,orb_info%nbast+orb_info%nxbast,
-     &       len_blk,orb_info%nsym,gamma,dble(1))
+     &       len_blk,orb_info%nsym,gamma,dble(psign))
 
         ! calculate norm
         do isym = 1,nao_blk
