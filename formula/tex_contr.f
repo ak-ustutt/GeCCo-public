@@ -127,7 +127,11 @@ c dbg
       if (abs(contr%fac-1d0).gt.1d-12) then
         call real2rat(p,q,contr%fac)
         ipos = len_trim(str)+1
-        write(str(ipos:),'("\frac{",i6,"}{",i6,"}")') p,q
+        if (q.ne.1) then
+          write(str(ipos:),'("\frac{",i6,"}{",i6,"}")') p,q
+        else
+          write(str(ipos:),'(i6)') p
+        end if
         lencnt = lencnt+2
       end if
 

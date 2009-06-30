@@ -26,27 +26,7 @@
       idx = 0
       form_ptr => form_head
       do
-        select case(form_ptr%command)
-        case(command_end_of_formula)
-          write(luout,*) '[END]'
-        case(command_set_target_init)
-          write(luout,*) '[INIT TARGET]',form_ptr%target
-        case(command_set_target_update)
-          write(luout,*) '[SET TARGET]',form_ptr%target
-        case(command_new_intermediate)
-          write(luout,*) '[NEW INTERMEDIATE]',form_ptr%target
-        case(command_del_intermediate)
-          write(luout,*) '[DELETE INTERMEDIATE]',form_ptr%target
-        case(command_add_contribution)
-          idx = idx+1
-          write(luout,*) '[ADD]',form_ptr%target,'( term #',idx,')'
-          call prt_contr2(luout,form_ptr%contr,op_info)
-        case(command_symmetrise)
-          write(luout,*) '[SYMMETRISE TARGET]',form_ptr%target
-        case default
-          write(luout,*) 'unknown command ',form_ptr%command,
-     &                   form_ptr%target
-        end select
+        call print_form_item(luout,idx,form_ptr,op_info)
 
         if (.not.associated(form_ptr%next)) exit
         form_ptr => form_ptr%next

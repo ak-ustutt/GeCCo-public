@@ -75,6 +75,7 @@
             case (vtyp_log)
               if (.not.(present(lval).or.present(larr)))
      &             call quit(1,'get_argument_value',
+     &             trim(context)//'->'//trim(argkey)//
      &             'no l-value array present')
               if (allocated(curarg%val%lval)) then
                 if (present(lval)) lval = curarg%val%lval(1)
@@ -84,6 +85,7 @@
             case (vtyp_int)
               if (.not.(present(ival).or.present(iarr)))
      &             call quit(1,'get_argument_value',
+     &             trim(context)//'->'//trim(argkey)//
      &             'no i-value array present')
               if (allocated(curarg%val%ival)) then
                 if (present(ival)) ival = curarg%val%ival(1)
@@ -93,6 +95,7 @@
             case (vtyp_rl8)
               if (.not.(present(xval).or.present(xarr)))
      &             call quit(1,'get_argument_value',
+     &             trim(context)//'->'//trim(argkey)//
      &             'no r-value array present')
               if (allocated(curarg%val%xval)) then
                 if (present(xval)) xval = curarg%val%xval(1)
@@ -102,6 +105,7 @@
             case (vtyp_str)
               if (.not.(present(str)))
      &             call quit(1,'get_argument_value',
+     &             trim(context)//'->'//trim(argkey)//
      &             'no r-value array present')
               if (allocated(curarg%val%cval)) then
                 do idx = 1, dim

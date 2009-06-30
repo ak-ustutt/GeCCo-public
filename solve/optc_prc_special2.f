@@ -722,6 +722,9 @@ c      end do
       integer ::
      &     occ_shift(ngastp,2)
 
+      reo_info%nvtx_contr = 2
+      allocate(reo_info%nca_vtx(2))
+      reo_info%nca_vtx(2) = 0
       reo_info%nreo = 1
       allocate(reo_info%reo(1))
       reo_info%reo(1)%idxsuper = 1          ! dummy
@@ -729,9 +732,13 @@ c      end do
       if (iway==1) then
         reo_info%reo(1)%from = 1
         reo_info%reo(1)%to   = 2
+        reo_info%reo(1)%from_vtx = 1
+        reo_info%reo(1)%to_vtx   = 2
       else
         reo_info%reo(1)%from = 2
         reo_info%reo(1)%to   = 1
+        reo_info%reo(1)%from_vtx = 2
+        reo_info%reo(1)%to_vtx   = 1
       end if
       occ_shift = 0
       occ_shift(IPART,1) = np

@@ -226,6 +226,8 @@ c dbg
      &     maxlen_cnt_batch*maxlen_exl_batch
       idxend    = idxop1op2scr + maxlen_exl_batch*maxlen_exs_batch
 
+      cnt_maxscr = max(cnt_maxscr,idxend)
+
       if (idxend.gt.lenscr)
      &     call quit(1,'contr_blk1blk2_blocked_mm',
      &                 'error in setting up batch lengthes')

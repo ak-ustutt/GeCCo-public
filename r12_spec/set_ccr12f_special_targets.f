@@ -24,15 +24,16 @@
      &     orb_info
 
       integer ::
-     &     min_rank, max_rank, ansatz, nop,
+     &     min_rank, max_rank, ansatz, nop, fix_new,
      &     isim, ncat, nint, icnt, ndef, extend, r12op,
      &     isym, ms, msc, msc_s, sym_arr(8), nlabel, ncnt,
-     &     ninproj, navoid, nconnect,
+     &     ninproj, navoid, nconnect, nreplace,
      &     connect(20), idx_sv(20), iblkmin(20),
      &     iblkmax(20),
      &     occ_def(ngastp,2,20)
       logical ::
-     &     needed, r12fix, set_tp, set_tpp, screen
+     &     needed, r12fix, set_tp, set_tpp, screen,
+     &     fixed_gem
       character(8) ::
      &     approx
       character(len_target_name) ::
@@ -66,6 +67,7 @@
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','fixed',lval=r12fix)
+      call get_argument_value('method.R12','fix_new',ival=fix_new)
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','screen',lval=screen)
@@ -265,9 +267,30 @@ c      call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
         labels(9) = trim(form_r12_cint)//'^+'
 c        labels(10) = form_r12_xpint
         call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
-        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
+c        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
         nint = 7
+      end if      
+      if (r12op.gt.0.and.max_rank.gt.2) then
+        if (.not.screen) then
+          call set_dependency(form_ccr12lg0,'Vpx_formal',tgt_info)
+          call set_dependency(form_ccr12lg0,'Z2INT_R12',tgt_info)
+          call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
+          labels(10) = 'Vpx_formal'
+          labels(11) = 'Vpx_formal^+'
+          labels(12)  = 'Z2INT_R12'
+          labels(13)  = 'Z2INT_R12^+'
+          labels(14) = form_r12_xhint
+          nint = 12
+        else
+          call set_dependency(form_ccr12lg0,'Z2INT_R12',tgt_info)
+          call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
+          labels(10)  = 'Z2INT_R12'
+          labels(11)  = 'Z2INT_R12^+'
+          labels(12) = form_r12_xhint
+          nint = 10
+        end if
       end if
+ 
       call form_parameters(-1,
      &     parameters,2,title_ccr12lg0,nint,'---')
       call set_rule(form_ccr12lg0,ttype_frm,FACTOR_OUT,
@@ -311,11 +334,13 @@ c        labels(10) = form_r12_xpint
         labels(2) = form_ccr12lg0
         labels(3) = op_r12
         labels(4) = op_rint
+        labels(5) = op_r12//'^+'
+        labels(6) = op_rint//'^+'
         call set_dependency(form_ccr12lg0,op_rint,tgt_info)
         call form_parameters(-1,
-     &       parameters,2,title_ccr12lg0,1,'---')
+     &       parameters,2,title_ccr12lg0,2,'---')
         call set_rule(form_ccr12lg0,ttype_frm,REPLACE,
-     &              labels,4,1,
+     &              labels,6,1,
      &              parameters,2,tgt_info)
       end if
       call set_rule(form_ccr12lg0,ttype_frm,TEX_FORMULA,
@@ -414,26 +439,71 @@ c      end if
 
       end if
       
+      call add_target(form_ccr12en0,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_ccr12en0,form_ccr12lg0,tgt_info)
+      call set_dependency(form_ccr12en0,op_ccr12en,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_ccr12en0
       labels(2) = form_ccr12lg0
       labels(3) = op_ccr12en
       labels(4) = op_tbar
       nlabel = 4
-      if (set_tp) then
+      ! test - fix_new: replace L' -> L or T^+ only now
+      if (set_tp.and.fix_new.eq.0) then
         labels(nlabel+1) = op_cexbar
         nlabel = nlabel+1
       end if
-      if (set_tpp) then
+      if (set_tpp.and.fix_new.eq.0) then
         labels(nlabel+1) = op_cexxbar
         nlabel = nlabel+1
       end if
-      call add_target(form_ccr12en0,ttype_frm,.false.,tgt_info)
-      call set_dependency(form_ccr12en0,form_ccr12lg0,tgt_info)
-      call set_dependency(form_ccr12en0,op_ccr12en,tgt_info)
       call set_rule(form_ccr12en0,ttype_frm,INVARIANT,
      &              labels,nlabel,1,
      &              title_ccr12en0,1,tgt_info)
+      if ((set_tp.or.set_tpp).and.fix_new.gt.0) then
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = form_ccr12en0
+        labels(2) = form_ccr12en0
+        nlabel = 2
+        nreplace = 0
+        if (set_tp) then
+          labels(nlabel+1) = op_cexbar
+          if (fix_new.eq.1) then
+            labels(nlabel+2) = op_tbar
+          else
+            labels(nlabel+2) = op_top//'^+'
+          end if
+          labels(nlabel+3) = op_cex
+          labels(nlabel+4) = op_top
+          nlabel = nlabel+4
+          nreplace = nreplace+2
+        end if
+        if (set_tpp) then
+          labels(nlabel+1) = op_cexxbar
+          if (fix_new.eq.1) then
+            labels(nlabel+2) = op_tbar
+          else
+            labels(nlabel+2) = op_top//'^+'
+          end if
+          labels(nlabel+3) = op_cexx
+          labels(nlabel+4) = op_top
+          nlabel = nlabel+4
+          nreplace = nreplace+1
+        end if
+        call form_parameters(-1,
+     &       parameters,2,title_ccr12en0,nreplace,'---')
+        call set_rule(form_ccr12en0,ttype_frm,REPLACE,
+     &              labels,nlabel,1,
+     &              parameters,2,tgt_info)        
+        if (fix_new.gt.1) then
+          labels(1) = form_ccr12en0
+          labels(2) = form_ccr12en0
+          labels(3) = op_ccr12en
+          call set_rule(form_ccr12en0,ttype_frm,SUM_HERMIT,
+     &              labels,3,1,
+     &              title_ccr12en0,1,tgt_info)
+        end if
+      end if
 
 
       labels(1:10)(1:len_target_name) = ' '
@@ -448,6 +518,30 @@ c      end if
       call set_rule(form_ccr12rs_t,ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              title_ccr12rs_t,1,tgt_info)
+      if ((set_tp.or.set_tpp).and.fix_new.gt.0) then
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = form_ccr12rs_t
+        labels(2) = form_ccr12rs_t
+        nlabel = 2
+        nreplace = 0
+        if (set_tp) then
+          labels(nlabel+1) = op_cex
+          labels(nlabel+2) = op_top
+          nlabel = nlabel+2
+          nreplace = nreplace+1
+        end if
+        if (set_tpp) then
+          labels(nlabel+1) = op_cexx
+          labels(nlabel+2) = op_top
+          nlabel = nlabel+2
+          nreplace = nreplace+1
+        end if
+        call form_parameters(-1,
+     &       parameters,2,title_ccr12rs_t,nreplace,'---')
+        call set_rule(form_ccr12rs_t,ttype_frm,REPLACE,
+     &              labels,nlabel,1,
+     &              parameters,2,tgt_info)        
+      end if
 
       call add_target(op_r_t,ttype_frm,.false.,tgt_info)
       ndef = 1
@@ -456,14 +550,6 @@ c      end if
       call set_rule(op_r_t,ttype_op,DEF_R12GEMINAL,
      &              op_r_t,1,1,
      &              parameters,1,tgt_info)
-c      occ_def(IPART,1,1) = 1
-c      occ_def(IEXTR,1,1) = 1
-c      occ_def(IHOLE,2,1) = 2
-c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,ndef,1,(/.true.,.true./),ndef)
-c      call set_rule(op_r_t,ttype_op,DEF_OP_FROM_OCC,
-c     &              op_r_t,1,1,
-c     &              parameters,2,tgt_info)
 
       if (extend.gt.0) then
         labels(1:10)(1:len_target_name) = ' '
@@ -533,16 +619,17 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
 *----------------------------------------------------------------------*
 
       ! CC ground state:
+      fixed_gem =  r12fix.or.fix_new.gt.0
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = fopt_ccr12_0
       labels(2) = form_ccr12en0
       labels(3) = form_ccr12rs_t
       ncat = 2
-      if(set_tp.and..not.r12fix)then
+      if(set_tp.and..not.fixed_gem)then
         labels(1+ncat+1) = form_ccr12rs_c
         ncat = ncat+1
       endif
-      if(set_tpp.and..not.r12fix)then
+      if(set_tpp.and..not.fixed_gem)then
         labels(1+ncat+1) = form_ccr12rs_cpp
         ncat = ncat+1
       endif
@@ -550,19 +637,19 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
       call add_target(fopt_ccr12_0,ttype_frm,.false.,tgt_info)
       call set_dependency(fopt_ccr12_0,form_ccr12en0,tgt_info)
       call set_dependency(fopt_ccr12_0,form_ccr12rs_t,tgt_info)
-      if(set_tp.and..not.r12fix)
+      if(set_tp.and..not.fixed_gem)
      &     call set_dependency(fopt_ccr12_0,form_ccr12rs_c,tgt_info)
-      if(set_tpp.and..not.r12fix)
+      if(set_tpp.and..not.fixed_gem)
      &     call set_dependency(fopt_ccr12_0,form_ccr12rs_cpp,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_omgdef,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_topdef,tgt_info)
-      if(set_tp.and..not.r12fix)
+      if(set_tp.and..not.fixed_gem)
      &     call set_dependency(fopt_ccr12_0,mel_cex_def,tgt_info)
-      if(set_tpp.and..not.r12fix)
+      if(set_tpp.and..not.fixed_gem)
      &     call set_dependency(fopt_ccr12_0,mel_cexx_def,tgt_info)
-      if(set_tp.and..not.r12fix)
+      if(set_tp.and..not.fixed_gem)
      &     call set_dependency(fopt_ccr12_0,mel_omgcexdef,tgt_info)
-      if(set_tpp.and..not.r12fix)
+      if(set_tpp.and..not.fixed_gem)
      &     call set_dependency(fopt_ccr12_0,mel_omgcexxdef,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_ham,tgt_info)
       if (max_rank.ge.2) then
@@ -571,8 +658,13 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
         call set_dependency(fopt_ccr12_0,mel_b_def,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_bh_def,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_x_def,tgt_info)      
-c        call set_dependency(fopt_ccr12_0,mel_xh_def,tgt_info)      
+        call set_dependency(fopt_ccr12_0,mel_xh_def,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_c_def,tgt_info)      
+      end if
+      if (max_rank.ge.2) then
+        call set_dependency(fopt_ccr12_0,'DEF-Z2LIST',tgt_info)
+        if (.not.screen)
+     &       call set_dependency(fopt_ccr12_0,'Vpx-INTER',tgt_info)
       end if
       call set_dependency(fopt_ccr12_0,mel_ccr12en0def,tgt_info)      
       if (isim.eq.1) then
@@ -807,7 +899,8 @@ c        call set_dependency(fopt_ccr12_0,mel_xh_def,tgt_info)
       needed = is_keyword_set('calculate.skip_E').eq.0
 
       ! totally symmetric dia for use below:
-      if (set_tp.and..not.set_tpp.and..not.r12fix) then
+      fixed_gem =  r12fix.or.fix_new.gt.0
+      if (set_tp.and..not.set_tpp.and..not.fixed_gem) then
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
         call add_target(solve_ccr12_gs,ttype_gen,needed,tgt_info)
@@ -815,6 +908,8 @@ c        call set_dependency(fopt_ccr12_0,mel_xh_def,tgt_info)
 c        call set_dependency(solve_ccr12_gs,mel_diar12,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        if (max_rank.ge.3)
+     &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
         call set_dependency(solve_ccr12_gs,me_xprc,tgt_info)
         labels(1:20)(1:len_target_name) = ' '
@@ -835,13 +930,15 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
      &       labels,11,4,
      &       parameters,2,tgt_info)
         
-      else if (.not.set_tp.and.set_tpp.and..not.r12fix) then
+      else if (.not.set_tp.and.set_tpp.and..not.fixed_gem) then
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
         call add_target(solve_ccr12_gs,ttype_gen,needed,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        if (max_rank.ge.3)
+     &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
         call set_dependency(solve_ccr12_gs,me_xprc,tgt_info)
         labels(1:20)(1:len_target_name) = ' '
@@ -862,13 +959,15 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
      &       labels,11,4,
      &       parameters,2,tgt_info)
 
-      else if (set_tp.and.set_tpp.and..not.r12fix) then
+      else if (set_tp.and.set_tpp.and..not.fixed_gem) then
         call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
         call add_target(solve_ccr12_gs,ttype_gen,needed,tgt_info)
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        if (max_rank.ge.3)
+     &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
         call set_dependency(solve_ccr12_gs,me_xprc,tgt_info)
         labels(1:20)(1:len_target_name) = ' '
@@ -899,6 +998,8 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         if (max_rank.ge.2) 
      &    call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        if (max_rank.ge.3)
+     &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call solve_parameters(-1,parameters,2, 1,1,'DIA')
 c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         labels(1:20)(1:len_target_name) = ' '

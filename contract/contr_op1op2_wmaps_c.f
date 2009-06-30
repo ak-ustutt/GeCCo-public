@@ -618,24 +618,6 @@ c          end if
         end if
       end if
 
-      if (reo_op1op2) then
-        lblk_op1op2tmp =
-     &       max_dis_blk(0,me_op1op2tmp,iblkop1op2tmp,orb_info)
-        ifree = mem_alloc_real(xbf12tmp,lblk_op1op2tmp,'xbf12tmp')
-      end if
-
-      if (irt_contr.gt.2) then
-        ! preliminary: a wild guess
-        lenblock = len_str_block 
-        lenscr = max(3*lenblock*lenblock,
-     &        (max_dis_blk(0,me_op1op2tmp,iblkop1op2tmp,orb_info)
-     &         + max_dis_blk(0,me_op1,iblkop1,orb_info)
-     &         + max_dis_blk(0,me_op2,iblkop2,orb_info))*lenblock)
-        ! but do at most request 90 per cent of remaining core
-        lenscr = (ifree*9)/10
-        ifree = mem_alloc_real(xscr,lenscr,'contr_scr')
-      end if
-
       graphs => str_info%g
 
       ndis_op1 => me_op1%off_op_gmox(iblkop1)%ndis
@@ -759,6 +741,24 @@ c dbg
      &     cinfo_op1op2_0a(1,2),nablk_op1op2_0,
      &     cinfo_op1op2a(1,2),nablk_op1op2,map_info_reo2a,
      &     str_info,strmap_info,orb_info)
+      end if
+
+      if (reo_op1op2) then
+        lblk_op1op2tmp =
+     &       max_dis_blk(0,me_op1op2tmp,iblkop1op2tmp,orb_info)
+        ifree = mem_alloc_real(xbf12tmp,lblk_op1op2tmp,'xbf12tmp')
+      end if
+
+      if (irt_contr.gt.2) then
+        ! preliminary: a wild guess
+        lenblock = len_str_block 
+        lenscr = max(3*lenblock*lenblock,
+     &        (max_dis_blk(0,me_op1op2tmp,iblkop1op2tmp,orb_info)
+     &         + max_dis_blk(0,me_op1,iblkop1,orb_info)
+     &         + max_dis_blk(0,me_op2,iblkop2,orb_info))*lenblock)
+        ! but do at most request 90 per cent of remaining core
+        lenscr = (ifree*9)/10
+        ifree = mem_alloc_real(xscr,lenscr,'contr_scr')
       end if
 
       ! minimum Ms(A) for ...

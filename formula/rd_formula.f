@@ -18,26 +18,34 @@
       type(formula_item), intent(inout) ::
      &     form
       integer ::
-     &     lu
+     &     lu, command, target
 
       rd_formula = .true.
       lu = ffform%unit
 
       ! read command record
-      read(lu,end=100) form%command, form%target
+      read(lu,end=100) command, target
+
+c dbg
+c      print *,'read: ',command,target
+c dbg
+      if (command.eq.command_end_of_formula) goto 100
+      call new_formula_item(form,command,target)
 
       select case(form%command)
       case(command_add_contribution)
-        if (.not.associated(form%contr)) then
-          allocate(form%contr)
-          call init_contr(form%contr)
-        end if
         form%contr%idx_res = form%target
         call rw_contr_kernel(+1,lu,form%contr)
       case(command_new_intermediate)
-        call quit(1,'rd_formula',
-     &       'command "new intermediate" not yet implemented')
-c        call rw_opdef_kernel(+1,lu,form%interm)
+        call rw_opdef_kernel(+1,lu,form%interm,
+     &                       form%parent1,form%parent2)
+      case(command_reorder)
+        call rw_reo_kernel(+1,lu,form%reo)
+      case(command_add_bc_reo,command_bc_reo)
+        call rw_bcontr_kernel(+1,lu,form%bcontr)
+        call rw_reo_kernel(+1,lu,form%reo)
+      case(command_add_intm,command_add_bc,command_bc)
+        call rw_bcontr_kernel(+1,lu,form%bcontr)
       end select
 
       return

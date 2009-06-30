@@ -24,9 +24,9 @@
       integer, parameter ::
      &     ndef_max = 52, maximum_order = 10
       integer ::
-     &     idx, jdx, idx_t, n_ap,
+     &     idx, jdx, idx_t, n_ap, idum,
      &     ncadiff, min_rank, max_rank, min_xrank, max_xrank,
-     &     iformal, ansatz,
+     &     iformal, ansatz, hermitian,
      &     ndim1, ndim2, ndef, njoined, iorder, spec,
      &     hpvx_constr(2,ngastp),
      &     hpvxca_constr(2,ngastp,2), 
@@ -95,7 +95,7 @@
         call xop_parameters(+1,rule%parameters,
      &                      dagger,min_rank,max_rank,ncadiff,iformal)
         call set_xop(op_pnt,trim(rule%labels(1)),dagger,
-     &       min_rank,max_rank,ncadiff,iformal,orb_info)
+     &       min_rank,max_rank,0,ncadiff,iformal,orb_info)
       case(DEF_DENSITY)
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',
@@ -170,6 +170,13 @@ c        op_pnt%dagger = op_pnt%dagger.xor.dagger
         deallocate(ifreq_temp)
         call set_pert_order(op_pnt,iorder,spec,ifreq)
         deallocate(ifreq)
+      case(SET_HERMIT)
+        if (rule%n_parameter_strings.lt.1)
+     &      call quit(1,'process_operators',
+     &      'no parameters provided for '//SET_HERMIT)
+        call opt_parameters(+1,rule%parameters,
+     &                      hermitian,idum)
+        call set_hermitian(op_pnt,hermitian)
       case default
         call quit(1,'process_operators','unknown command: '//
      &       trim(rule%command))

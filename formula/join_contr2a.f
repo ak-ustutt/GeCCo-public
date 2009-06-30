@@ -13,8 +13,8 @@
       include 'opdim.h'
       include 'stdunit.h'
       include 'def_contraction.h'
-      include 'def_formula_item.h'
       include 'mdef_operator_info.h'
+      include 'def_formula_item.h'
       include 'ifc_operators.h'
 
       integer, parameter ::

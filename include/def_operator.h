@@ -36,7 +36,7 @@
 *                       
 *----------------------------------------------------------------------*
 	logical ::
-     &     dagger               ! daggered operator:
+     &     dagger               ! daggered operator: OBSOLETE!!!
                                 ! C <-> A are to be interchanged
         integer ::
      &     type,                ! 1: operator, 2: density, 3: intermed.
@@ -44,6 +44,9 @@
      &                          !      vertices
      &     n_occ_cls,           ! number of occupation classes
      &     ngas,nspin           ! info from orb_info<-for convenience 
+
+        integer ::
+     &     hermitian            ! 1(-1): (Anti-)Hermitian, 0: not Hermitian
 
         integer ::
      &     order,               ! perturbation order

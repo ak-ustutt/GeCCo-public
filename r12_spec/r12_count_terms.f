@@ -18,9 +18,9 @@
       include 'stdunit.h'
       include 'opdim.h'
       include 'def_contraction.h'
+      include 'mdef_operator_info.h'
       include 'def_formula_item.h'
       include 'def_formula_item_list.h'
-      include 'mdef_operator_info.h'
 
       integer, parameter ::
      &     ntest = 00

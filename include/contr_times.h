@@ -8,11 +8,11 @@
      &     cnt_used_reo
       integer(8) ::
      &     mm_call, mm_dim1, mm_dim1sq, mm_dim2, mm_dim2sq,
-     &     mm_cnt, mm_cntsq
+     &     mm_cnt, mm_cntsq, cnt_maxscr
       common/contr_times/ cnt_op1op2, cnt_kernel, cnt_dloop,
      &     cnt_wr, cnt_rd, cnt_coll1, cnt_coll2, cnt_dgemm, cnt_scatt,
      &     cnt_reo
      &     ,cnt_test,
      &     mm_call, mm_dim1, mm_dim1sq, mm_dim2, mm_dim2sq,
-     &     mm_cnt, mm_cntsq,
+     &     mm_cnt, mm_cntsq, cnt_maxscr,
      &     cnt_used_reo

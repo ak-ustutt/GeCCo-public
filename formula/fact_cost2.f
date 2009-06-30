@@ -128,22 +128,6 @@ c dbg
       ! restriction on result:
       call set_restr_prel(irst_res,contr,op_info,ihpvgas,ngas)
 
-      if (.false.) then
-        ! old
-      call get_bc_info2(bc_sign,
-     &     idxop,idar2,
-     &     iocc_ex1,iocc_ex2,iocc_cnt,
-     &     iocc_op1,iocc_op2,iocc_op1op2,
-     &     irst_op1,irst_op2,irst_op1op2,
-     &     tra_op1,tra_op2,tra_op1op2,
-     &     mst_op,mst_op1op2,
-     &     igamt_op,igamt_op1op2,
-     &     njoined_op, njoined_op1op2, njoined_cnt,
-     &     merge_op1,merge_op2,merge_op1op2,merge_op2op1,
-     &     contr,njoined_res,occ_vtx,irestr_vtx,info_vtx,iarc,
-     &     irst_res,orb_info)
-      else
-
       call get_bc_info3(bc_sign,possible,
      &     idxop,idar2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
@@ -158,9 +142,8 @@ c dbg
      &     make_red,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     .false.,reo_dum,
-     &     iarc,nlevel,-nlevel,
+     &     iarc,.false.,-nlevel,
      &     irst_res,njoined_res,orb_info,op_info)
-      end if
 
       ! count particle, hole, (active) spaces involved:
       ! in intermediate

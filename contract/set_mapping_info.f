@@ -110,6 +110,7 @@
             ! set counters for contributions to zero
             if (ica.eq.1) map_info_c(idx_base) = 0
             if (ica.eq.2) map_info_a(idx_base) = 0
+
             icount = 0
             ! number of iocc1 vertices contribution contribution to
             ! current iocc12 vertex
@@ -128,13 +129,14 @@
               if (ica.eq.2) map_info_a(idx_base+icount)
      &             = idxseq1(hpvx,ica1,ivtx)
             end do
-            
+
             ! the same for iocc2 contributions
             idx_base = idx_base+icount+1
 
             ! set counters for contributions to zero
             if (ica.eq.1) map_info_c(idx_base) = 0
             if (ica.eq.2) map_info_a(idx_base) = 0
+
             icount = 0
             ! number of iocc1 vertices contribution contribution to
             ! current iocc12 vertex
@@ -153,7 +155,7 @@
               if (ica.eq.2) map_info_a(idx_base+icount)
      &             = idxseq2(hpvx,ica2,ivtx)
             end do
-
+            
             ! increment base address of map
             idx_base = idx_base+icount+1
 

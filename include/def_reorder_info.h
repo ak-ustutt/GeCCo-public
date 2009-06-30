@@ -3,9 +3,10 @@
       type reorder_list
 
       logical ::
-     &     is_bc_result
+     &     is_bc_result, reo_before
       integer ::
-     &     idxsuper, to, from, to_vtx, from_vtx
+     &     idxsuper, to, from, to_vtx, from_vtx,
+     &     idxop_ori, iblkop_ori, idxop_new, iblkop_new
       integer ::
      &     occ_shift(ngastp,2)
 

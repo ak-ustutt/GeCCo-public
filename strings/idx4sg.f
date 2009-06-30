@@ -26,6 +26,9 @@
      &     idx4sg_sb, idxssg, idxssd, lensubspc
 *----------------------------------------------------------------------*
 
+c dbg
+c      print *,'entered'
+c dbg
       nm = 0
       ig = 1
       nn = 0
@@ -53,6 +56,11 @@
         idx = idx4sg_sb(len,idx,nm,ig,
      &       idorb(nn+1),idspn(nn+1),idgam(nn+1),iy4sg(ioff),
      &       iooff,nelmax_sg,msmax_sg,ngam)
+c dbg
+c        print *,'ispc = ',ispc
+c        print *,'ioff,nelmax_sg,msmax_sg,len,iooff,idx = ',
+c     &           ioff,nelmax_sg,msmax_sg,len,iooff,idx
+c dbg
         nn = nn+len
         lenprev = len
         if (nn.eq.nel) exit
@@ -60,6 +68,10 @@
 
       idx_sg = idxssd(idspc,iyssg,nel,nspc)
       idx4sg = idx + ioff_dgm(idx_sg,ig,(nelmax-nm)/2+1)
+c dbg
+c      print *,'idx_sg = ',idx_sg
+c      print *,'ioff2 = ',ioff_dgm(idx_sg,ig,(nelmax-nm)/2+1)
+c dbg
 
       return
       end

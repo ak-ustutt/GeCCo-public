@@ -48,6 +48,7 @@
           write(luout,'(2x,i3," - ",i3," r=",i3," t=",i3)')
      &         inproj(1:4,idx)
         end do
+        call wrt_occ_n(luout,occ_vtx,proto%nvtx)
       end if
 
       ok = .true.
@@ -73,6 +74,7 @@
         if (rank.le.0.or.type.lt.0.or.(rank.eq.2.and.type.gt.nproj))
      &       call quit(1,'set_inproj','watch your input')
         if (rank.eq.1) then
+          ! NOTE: type2 does not work properly ...
           type2 = type/(ngastp+1)
           type = mod(type,ngastp+1)
         end if

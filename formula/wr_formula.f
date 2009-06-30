@@ -29,9 +29,15 @@
       case(command_add_contribution)
         call rw_contr_kernel(-1,lu,form%contr)
       case(command_new_intermediate)
-        call quit(1,'wr_formula',
-     &       'command "new intermediate" not yet implemented')
-c        call rw_opdef_kernel(-1,lu,form%interm)
+        call rw_opdef_kernel(-1,lu,form%interm,
+     &                       form%parent1,form%parent2)
+      case(command_reorder)
+        call rw_reo_kernel(-1,lu,form%reo)
+      case(command_add_bc_reo,command_bc_reo)
+        call rw_bcontr_kernel(-1,lu,form%bcontr)
+        call rw_reo_kernel(-1,lu,form%reo)
+      case(command_add_intm,command_add_bc,command_bc)
+        call rw_bcontr_kernel(-1,lu,form%bcontr)
       end select
 
       return

@@ -32,17 +32,17 @@
      &     min_rank_tp, min_rank_tpp,
      &     isim, ncat, nint, icnt, nlab, irank, idef,
      &     isym, ms, msc, sym_arr(8), extend, r12op,
-     &     occ_def(ngastp,2,20),
-     &     ntp_min, ntp_max, ntpp_min, ntpp_max
+     &     occ_def(ngastp,2,60),
+     &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext, trunc_type
       logical ::
-     &     needed, r12fix, set_tp, set_tpp
+     &     needed, r12fix, set_tp, set_tpp, truncate
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
       character(len_command_par) ::
      &     parameters(3)
-      character(12) ::
-     &     approx, F_appr, K_appr
+      character(20) ::
+     &     approx, F_appr, K_appr, Z_appr
 
       character(*), intent(in) ::
      &     env_type
@@ -56,13 +56,15 @@
 *     read input
 *----------------------------------------------------------------------*
       ! set approx string
-      approx(1:12) = ' '
-      F_appr(1:12) = ' '
-      K_appr(1:12) = ' '
+      approx(1:20) = ' '
+      F_appr(1:20) = ' '
+      K_appr(1:20) = ' '
+      Z_appr(1:20) = ' '
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','F_appr',str=F_appr)
       call get_argument_value('method.R12','K_appr',str=K_appr)
+      call get_argument_value('method.R12','Z_appr',str=Z_appr)
       call get_argument_value('method.R12','min_tp',ival=min_rank_tp)
       call get_argument_value('method.R12','min_tpp',ival=min_rank_tpp)
       call get_argument_value('method.R12','minexc',ival=min_rank)
@@ -70,6 +72,14 @@
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','r12op',ival=r12op)
+      call get_argument_value('method.R12','T1ext',ival=t1ext)
+      call get_argument_value('method.R12','trunc',ival=trunc_type)
+      truncate = trunc_type.ge.0
+      if (is_keyword_set('method.truncate').gt.0) then
+        truncate = is_keyword_set('method.truncate').gt.0
+        call get_argument_value('method.truncate','trunc_type',
+     &       ival=trunc_type)
+      end if
 
       n_pp = 0  ! number of particle-particle interaction in R12
       set_tp = .false.
@@ -153,6 +163,9 @@
         ntpp_max=max_rank
         n_pp=2
       end select
+c dbg
+      print *,'n_pp = ',n_pp
+c dbg
 
       ! assemble approx string
       select case(trim(F_appr))
@@ -186,6 +199,29 @@
       case default
         call quit(0,'set_r12_general_targets',
      &       'K_appr unknown: "'//trim(K_appr)//'"')
+      end select
+
+      select case(trim(Z_appr))
+      case('direct')
+        write(luout,*) 'direct RI evaluation of Z intermediate'
+        approx(14:17) = 'DRCT'
+      case('none','J2K3')
+        write(luout,*) 'no approximations to Z intermediate made'
+        approx(14:17) = 'J2K3'
+      case default
+        if (Z_appr(1:1).ne.'J'.or.Z_appr(3:3).ne.'K'.or.
+     &      (Z_appr(2:2).ne.'0'.and.
+     &       Z_appr(2:2).ne.'1'.and.
+     &       Z_appr(2:2).ne.'2').or. 
+     &      (Z_appr(4:4).ne.'0'.and.
+     &       Z_appr(4:4).ne.'1'.and.
+     &       Z_appr(4:4).ne.'2'.and.
+     &       Z_appr(4:4).ne.'3')) then
+          call quit(0,'set_r12_general_targets',
+     &       'Z_appr unknown: "'//trim(Z_appr)//'"')
+        end if
+        write(luout,*) 'approximation to Z intermediate: ',trim(Z_appr)
+        approx(14:17) = Z_appr(1:4)
       end select
 
 *----------------------------------------------------------------------*
@@ -439,43 +475,113 @@ c     &              parameters,1,tgt_info)
       occ_def(IPART,1,5) = 2
       occ_def(IHOLE,2,6) = 2
       ! n_pp == 1:
-      occ_def(IHOLE,1,7) = 2
-      occ_def(IHOLE,2,8) = 1
-      occ_def(IPART,2,8) = 1
+      if (n_pp.ge.1) then
+        occ_def(IHOLE,1,7) = 2
+        occ_def(IHOLE,2,8) = 1
+        occ_def(IPART,2,8) = 1
 
-      occ_def(IHOLE,1,9) = 1
-      occ_def(IPART,1,9) = 1
-      occ_def(IHOLE,2,10) = 1
-      occ_def(IPART,2,10) = 1
+        occ_def(IHOLE,1,9) = 1
+        occ_def(IPART,1,9) = 1
+        occ_def(IHOLE,2,10) = 1
+        occ_def(IPART,2,10) = 1
 
-      occ_def(IPART,1,11) = 2
-      occ_def(IHOLE,2,12) = 1
-      occ_def(IPART,2,12) = 1
+        occ_def(IPART,1,11) = 2
+        occ_def(IHOLE,2,12) = 1
+        occ_def(IPART,2,12) = 1
+      end if
       ! n_pp == 2:
-      occ_def(IHOLE,1,13) = 2
-      occ_def(IPART,2,14) = 2
-
+      if (n_pp.ge.2) then
+        occ_def(IHOLE,1,13) = 2
+        occ_def(IPART,2,14) = 2
+        
 c      occ_def(IHOLE,1,15) = 1
 c      occ_def(IPART,1,15) = 1
 c      occ_def(IPART,2,16) = 2
 
-      occ_def(IPART,1,17) = 2
-      occ_def(IPART,2,18) = 2
+        occ_def(IPART,1,17) = 2
+        occ_def(IPART,2,18) = 2
+      end if
+
+      ndef = 3*(n_pp+1)
+
+      if (t1ext.gt.0) then        
+        occ_def(IPART,1,2*ndef+1) = 1
+        occ_def(IEXTR,1,2*ndef+1) = 1
+        occ_def(IHOLE,2,2*ndef+2) = 2
+        ndef = ndef+1
+      end if
+      if (t1ext.ge.4) then        
+        occ_def(IEXTR,1,2*ndef+1) = 2
+        occ_def(IHOLE,2,2*ndef+2) = 2
+        ndef = ndef+1
+      end if
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,3*(n_pp+1),2,(/.true.,.true./),3*(n_pp+1))
+     &     occ_def,ndef,2,(/.true.,.true./),3*(n_pp+1))
       call set_rule(op_gr,ttype_op,DEF_OP_FROM_OCC,
      &              op_gr,1,1,
      &              parameters,2,tgt_info)
 
       ! R12^{2} integrals
       call add_target(op_ff,ttype_op,.false.,tgt_info)
-      call set_dependency(op_ff,op_rttr,tgt_info)
-      call cloneop_parameters(-1,parameters,
+      if (is_keyword_set('method.CC').gt.0.and.(.not.truncate
+     &     .or.(truncate.and.trunc_type.gt.0)).or.
+     &     is_keyword_set('method.CCPT')) then
+        ndef = 5
+        occ_def = 0
+        ! 1
+        occ_def(IHOLE,1,1)  = 2
+        occ_def(IHOLE,2,2)  = 2
+        ! 2
+        occ_def(IHOLE,1,3)  = 1
+        occ_def(IPART,1,3)  = 1
+        occ_def(IHOLE,2,4)  = 2
+        ! 3
+        occ_def(IHOLE,1,5)  = 1
+        occ_def(IEXTR,1,5)  = 1
+        occ_def(IHOLE,2,6)  = 2
+        ! 4
+        occ_def(IHOLE,1,7)  = 2
+        occ_def(IHOLE,2,8)  = 1
+        occ_def(IPART,2,8)  = 1
+        ! 5
+        occ_def(IHOLE,1,9)  = 2
+        occ_def(IHOLE,2,10) = 1
+        occ_def(IEXTR,2,10) = 1
+c dbg
+        print *,'(2) : n_pp = ',n_pp
+c dbg
+        if (n_pp.ge.1) then
+          ndef = 8
+          ! 6
+          occ_def(IHOLE,1,11)  = 1
+          occ_def(IPART,1,11)  = 1
+          occ_def(IHOLE,2,12)  = 1
+          occ_def(IPART,2,12)  = 1
+          ! 7
+          occ_def(IHOLE,1,13)  = 1
+          occ_def(IEXTR,1,13)  = 1
+          occ_def(IHOLE,2,14)  = 1
+          occ_def(IPART,2,14)  = 1
+          ! 8
+          occ_def(IHOLE,1,15)  = 1
+          occ_def(IPART,1,15)  = 1
+          occ_def(IHOLE,2,16) = 1
+          occ_def(IEXTR,2,16) = 1
+        end if
+        call op_from_occ_parameters(-1,parameters,2,
+     &       occ_def,ndef,2,(/.true.,.true./),10)
+        call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
+     &                op_ff,1,1,
+     &                parameters,2,tgt_info)
+      else
+        call set_dependency(op_ff,op_rttr,tgt_info)
+        call cloneop_parameters(-1,parameters,
      &                        op_rttr,.false.) ! <- dagger=.false.
-      call set_rule(op_ff,ttype_op,CLONE_OP,
+        call set_rule(op_ff,ttype_op,CLONE_OP,
      &     op_ff,1,1,
      &     parameters,1,tgt_info)
+      end if
 
       ! {R12^2}BAR integrals
       call add_target(op_ffbar,ttype_op,.false.,tgt_info)
@@ -564,6 +670,7 @@ c      occ_def(IPART,2,16) = 2
 
         occ_def(IPART,1,6) = 2
         occ_def(IHOLE,2,6) = 2
+
       end if
       ! for n_pp >= 1
       if (n_pp.ge.1) then
@@ -599,6 +706,23 @@ c      occ_def(IPART,2,16) = 2
 
         occ_def(IPART,1,14) = 2
         occ_def(IPART,2,14) = 2
+      end if
+      if (t1ext.gt.0) then
+        occ_def(IEXTR,1,ndef+1) = 1
+        occ_def(IHOLE,2,ndef+1) = 1
+
+c        occ_def(IHOLE,1,ndef+2) = 1
+c        occ_def(IEXTR,1,ndef+2) = 1
+c        occ_def(IHOLE,2,ndef+2) = 2
+        occ_def(IPART,1,ndef+2) = 1
+        occ_def(IEXTR,1,ndef+2) = 1
+        occ_def(IHOLE,2,ndef+2) = 2
+        ndef = ndef+2
+      end if
+      if (t1ext.ge.4) then
+        occ_def(IEXTR,1,ndef+1) = 2
+        occ_def(IHOLE,2,ndef+1) = 2
+        ndef = ndef+1
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,(/.true.,.true./),ndef)
@@ -760,6 +884,202 @@ c      occ_def(IPART,2,16) = 2
      &              op_c_inter,1,1,
      &              parameters,2,tgt_info)
 
+      ! P intermediate
+      call add_target(op_p_inter,ttype_op,.false.,tgt_info)
+      call set_dependency(op_p_inter,op_b_inter,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &                        op_p_inter,.false.) ! <- dagger=.false.
+      call set_rule(op_p_inter,ttype_op,CLONE_OP,
+     &              op_p_inter,1,1,
+     &              parameters,1,tgt_info)
+
+      ! V-X operator
+      call add_target('Vpx',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 2
+      occ_def(IEXTR,1,1) = 1
+      occ_def(IPART,2,1) = 1
+      occ_def(IHOLE,1,2) = 1
+      occ_def(IEXTR,1,2) = 1
+      occ_def(IHOLE,2,2) = 1
+      occ_def(IPART,2,2) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+      call set_rule('Vpx',ttype_op,DEF_OP_FROM_OCC,
+     &              'Vpx',1,1,
+     &              parameters,2,tgt_info)
+      
+      call add_target('G.R-X',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 1
+      occ_def(IHOLE,1,1) = 1
+      occ_def(IEXTR,1,1) = 1
+      occ_def(IHOLE,2,2) = 1
+      occ_def(IPART,2,2) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,2,(/.true.,.true./),ndef)
+      call set_rule('G.R-X',ttype_op,DEF_OP_FROM_OCC,
+     &              'G.R-X',1,1,
+     &              parameters,2,tgt_info)
+
+      ! Z2 intermediate (for R^+ R couplings)
+      call add_target('Z2-INT',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ! 1
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IPART,2,1) = 2
+      ndef = 1
+      if (max_rank.gt.3) then
+        occ_def(IHOLE,1,2) = 1
+        occ_def(IPART,1,2) = 1
+        occ_def(IPART,2,2) = 2
+        ndef = 2   
+      end if
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/.true.,.true./),6)
+      call set_rule('Z2-INT',ttype_op,DEF_OP_FROM_OCC,
+     &              'Z2-INT',1,1,
+     &              parameters,2,tgt_info)
+      
+        ! Non-anti-symmetrised Hamiltonian integrals.
+        call add_target(op_g_z,ttype_op,.false.,tgt_info)
+        occ_def = 0
+        ! 1
+        occ_def(IHOLE,1,1) = 1
+        occ_def(IHOLE,2,1) = 1
+        occ_def(IHOLE,1,2) = 1
+        occ_def(IHOLE,2,2) = 1
+        ! 2
+        occ_def(IHOLE,1,3) = 1
+        occ_def(IPART,2,3) = 1
+        occ_def(IHOLE,1,4) = 1
+        occ_def(IHOLE,2,4) = 1
+        ! 3
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IEXTR,2,5) = 1
+        occ_def(IHOLE,1,6) = 1
+        occ_def(IHOLE,2,6) = 1
+        ! 4
+        occ_def(IHOLE,1,7) = 1
+        occ_def(IHOLE,2,7) = 1
+        occ_def(IHOLE,1,8) = 1
+        occ_def(IPART,2,8) = 1
+        ! 5
+        occ_def(IHOLE,1,9) = 1
+        occ_def(IPART,2,9) = 1
+        occ_def(IHOLE,1,10) = 1
+        occ_def(IPART,2,10) = 1
+        ! 6
+        occ_def(IHOLE,1,11) = 1
+        occ_def(IEXTR,2,11) = 1
+        occ_def(IHOLE,1,12) = 1
+        occ_def(IPART,2,12) = 1
+        ! 7
+        occ_def(IHOLE,1,13) = 1
+        occ_def(IHOLE,2,13) = 1
+        occ_def(IPART,1,14) = 1
+        occ_def(IHOLE,2,14) = 1
+        ! 8
+        occ_def(IHOLE,1,15) = 1
+        occ_def(IPART,2,15) = 1
+        occ_def(IPART,1,16) = 1
+        occ_def(IHOLE,2,16) = 1
+        ! 9
+        occ_def(IHOLE,1,17) = 1
+        occ_def(IEXTR,2,17) = 1
+        occ_def(IPART,1,18) = 1
+        occ_def(IHOLE,2,18) = 1
+        ! 10
+        occ_def(IHOLE,1,19) = 1
+        occ_def(IHOLE,2,19) = 1
+        occ_def(IPART,1,20) = 1
+        occ_def(IPART,2,20) = 1
+        ! 11
+        occ_def(IHOLE,1,21) = 1
+        occ_def(IPART,2,21) = 1
+        occ_def(IPART,1,22) = 1
+        occ_def(IPART,2,22) = 1
+        ! 12
+        occ_def(IHOLE,1,23) = 1
+        occ_def(IEXTR,2,23) = 1
+        occ_def(IPART,1,24) = 1
+        occ_def(IPART,2,24) = 1
+        ! 13
+        occ_def(IHOLE,1,25) = 1
+        occ_def(IHOLE,2,25) = 1
+        occ_def(IHOLE,1,26) = 1
+        occ_def(IEXTR,2,26) = 1
+        ! 14
+        occ_def(IHOLE,1,27) = 1
+        occ_def(IPART,2,27) = 1
+        occ_def(IHOLE,1,28) = 1
+        occ_def(IEXTR,2,28) = 1
+        ! 15
+        occ_def(IHOLE,1,29) = 1
+        occ_def(IEXTR,2,29) = 1
+        occ_def(IHOLE,1,30) = 1
+        occ_def(IEXTR,2,30) = 1
+        ! 16
+        occ_def(IHOLE,1,31) = 1
+        occ_def(IHOLE,2,31) = 1
+        occ_def(IPART,1,32) = 1
+        occ_def(IEXTR,2,32) = 1
+        ! 17
+        occ_def(IHOLE,1,33) = 1
+        occ_def(IPART,2,33) = 1
+        occ_def(IPART,1,34) = 1
+        occ_def(IEXTR,2,34) = 1
+        ! 18
+        occ_def(IHOLE,1,35) = 1
+        occ_def(IEXTR,2,35) = 1
+        occ_def(IPART,1,36) = 1
+        occ_def(IEXTR,2,36) = 1
+        ! 19
+        occ_def(IHOLE,1,37) = 1
+        occ_def(IHOLE,2,37) = 1
+        occ_def(IEXTR,1,38) = 1
+        occ_def(IHOLE,2,38) = 1
+        ! 20
+        occ_def(IHOLE,1,39) = 1
+        occ_def(IPART,2,39) = 1
+        occ_def(IEXTR,1,40) = 1
+        occ_def(IHOLE,2,40) = 1
+        ! 21
+        occ_def(IHOLE,1,41) = 1
+        occ_def(IEXTR,2,41) = 1
+        occ_def(IEXTR,1,42) = 1
+        occ_def(IHOLE,2,42) = 1
+        ! 22
+        occ_def(IHOLE,1,43) = 1
+        occ_def(IHOLE,2,43) = 1
+        occ_def(IEXTR,1,44) = 1
+        occ_def(IPART,2,44) = 1
+        ! 23
+        occ_def(IHOLE,1,45) = 1
+        occ_def(IPART,2,45) = 1
+        occ_def(IEXTR,1,46) = 1
+        occ_def(IPART,2,46) = 1
+        ! 24
+        occ_def(IHOLE,1,47) = 1
+        occ_def(IEXTR,2,47) = 1
+        occ_def(IEXTR,1,48) = 1
+        occ_def(IPART,2,48) = 1
+        ! 25
+        occ_def(IHOLE,1,49) = 1
+        occ_def(IHOLE,2,49) = 1
+        occ_def(IEXTR,1,50) = 1
+        occ_def(IEXTR,2,50) = 1
+        ! 26
+        occ_def(IHOLE,1,51) = 1
+        occ_def(IPART,2,51) = 1
+        occ_def(IEXTR,1,52) = 1
+        occ_def(IEXTR,2,52) = 1
+        call op_from_occ_parameters(-1,parameters,2,
+     &       occ_def,26,2,(/.true.,.true./),52)
+        call set_rule(op_g_z,ttype_op,DEF_OP_FROM_OCC,
+     &                op_g_z,1,1,
+     &                parameters,2,tgt_info)
+
 c      ! Z^{ijp}_{klm} intermediate (needed for CC)
 cc      call add_target(op_z_inter,ttype_op,.false.,tgt_info)
 cc dbg
@@ -813,6 +1133,41 @@ c     &              parameters,2,tgt_info)
       call form_parameters(-1,
      &     parameters,2,title_r12_vcabs,ansatz,'V '//approx)
       call set_rule(form_r12_vcabs,ttype_frm,DEF_R12INTM_CABS,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      ! formal definition of Vpx
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Vpx_formal'
+      labels(2) = 'Vpx'
+      labels(3) = op_r12
+      labels(4) = op_ham
+      call add_target('Vpx_formal',ttype_frm,.false.,tgt_info)
+      call set_dependency('Vpx_formal','Vpx',tgt_info)
+      call set_dependency('Vpx_formal',op_ham,tgt_info)
+      call set_dependency('Vpx_formal',op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_vint,0,'V')
+      call set_rule('Vpx_formal',ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,4,1,
+     &              parameters,2,tgt_info)
+
+      ! CABS approximation to V
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Vpx_CABS'
+      labels(2) = 'Vpx'
+      labels(3) = op_g_x !op_ham
+      labels(4) = op_rint
+      labels(5) = 'G.R-X'   
+      ! F12: op_gr
+      call add_target('Vpx_CABS',ttype_frm,.false.,tgt_info)
+      call set_dependency('Vpx_CABS',op_v_inter,tgt_info)
+      call set_dependency('Vpx_CABS','G.R-X',tgt_info)
+      call set_dependency('Vpx_CABS',op_g_x,tgt_info)
+      call set_dependency('Vpx_CABS',op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_vcabs,ansatz,'V '//approx)
+      call set_rule('Vpx_CABS',ttype_frm,DEF_R12INTM_CABS,
      &              labels,5,1,
      &              parameters,2,tgt_info)
 
@@ -908,14 +1263,16 @@ c dbg
       labels(2) = form_r12_xpint
       labels(3) = op_r12
       labels(4) = op_rint
+      labels(5) = op_r12//'^+'
+      labels(6) = op_rint//'^+'
       call add_target(form_r12_xpcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_xcabs,op_xp_inter,tgt_info)
       call set_dependency(form_r12_xcabs,op_r12,tgt_info)
       call set_dependency(form_r12_xcabs,op_rint,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_xpcabs,1,'---')
+     &     parameters,2,title_r12_xpcabs,2,'---')
       call set_rule(form_r12_xpcabs,ttype_frm,REPLACE,
-     &              labels,4,1,
+     &              labels,6,1,
      &              parameters,2,tgt_info)
 
       ! formal definition of B
@@ -1092,22 +1449,41 @@ c     &              parameters,2,tgt_info)
      &              labels,nlab,1,
      &              parameters,2,tgt_info)
 
-c      ! Formal definition of Z.
-c      labels(1:10)(1:len_target_name) = ' '
-c      labels(1) = form_r12_zint
-c      labels(2) = op_z_inter
-c      labels(3) = op_r12
-c      labels(4) = op_ham
-c      labels(5) = op_r12
-c      call add_target(form_r12_zint,ttype_frm,.true.,tgt_info)
-c      call set_dependency(form_r12_zint,op_b_inter,tgt_info)
-c      call set_dependency(form_r12_zint,op_ham,tgt_info)
-c      call set_dependency(form_r12_zint,op_r12,tgt_info)
-c      call form_parameters(-1,
-c     &     parameters,2,title_r12_zint,0,'Z')
-c      call set_rule(form_r12_zint,ttype_frm,DEF_R12INTM_FORMAL,
-c     &              labels,5,1,
-c     &              parameters,2,tgt_info)
+      ! Formal definition of Z2
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12'
+      labels(2) = 'Z2-INT'
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      call add_target('Z2INT_R12',ttype_frm,.false.,tgt_info)
+      call set_dependency('Z2INT_R12','Z2-INT',tgt_info)
+      call set_dependency('Z2INT_R12',op_ham,tgt_info)
+      call set_dependency('Z2INT_R12',op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_zint,0,'Z')
+      call set_rule('Z2INT_R12',ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      ! CABS approximation to Z2
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2-INT-CABS'
+      labels(2) = 'Z2-INT'
+      labels(3) = op_rint
+      labels(4) = op_g_z
+      labels(5) = op_ff
+      call add_target('Z2-INT-CABS',ttype_frm,.false.,tgt_info)
+      call set_dependency('Z2-INT-CABS','Z2-INT',tgt_info)
+      call set_dependency('Z2-INT-CABS',op_ff,tgt_info)
+      call set_dependency('Z2-INT-CABS',op_g_z,tgt_info)
+      call set_dependency('Z2-INT-CABS',op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_xcabs,ansatz,'Z '//approx)
+      call set_rule('Z2-INT-CABS',ttype_frm,DEF_R12INTM_CABS,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae
@@ -1135,6 +1511,7 @@ c     &              parameters,2,tgt_info)
       labels(2) = form_r12_xcabs
       ncat = 1
       nint = 0
+c      call add_target(fopt_r12_xcabs,ttype_frm,.true.,tgt_info)
       call add_target(fopt_r12_xcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(fopt_r12_xcabs,form_r12_xcabs,tgt_info)
       call set_dependency(fopt_r12_xcabs,mel_x_def,tgt_info)
@@ -1254,6 +1631,72 @@ c dbg
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
+      ! set Z2 (direct evaluation)
+      call add_target('Z2INT_R12_DIR',ttype_frm,.false.,tgt_info)
+      call set_dependency('Z2INT_R12_DIR','Z2INT_R12',tgt_info)
+      call set_dependency('Z2INT_R12_DIR',mel_ham,tgt_info)
+      call set_dependency('Z2INT_R12_DIR',mel_rint,tgt_info)      
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12_DIR'
+      labels(2) = 'Z2INT_R12'
+      labels(3) = op_r12
+      labels(4) = op_rint
+      labels(5) = op_r12//'^+'
+      labels(6) = op_rint//'^+'
+      nint = 2
+      call form_parameters(-1,
+     &     parameters,2,'Z2 direct',nint,'---')
+      call set_rule('Z2INT_R12_DIR',ttype_frm,REPLACE,
+     &     labels,2+nint*2,1,
+     &     parameters,2,tgt_info)
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12_DIR'
+      labels(2) = 'Z2INT_R12_DIR'
+      ncat = 1
+      nint = 0
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('Z2INT_R12_DIR',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12_DIR'
+      call set_rule('Z2INT_R12_DIR',ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
+      ! set Z2 (reformulated evaluation)
+      call add_target('Z2INT_R12_REF',ttype_frm,.false.,tgt_info)
+      call set_dependency('Z2INT_R12_REF','Z2INT_R12',tgt_info)
+      call set_dependency('Z2INT_R12_REF','Z2-INT-CABS',tgt_info)
+      call set_dependency('Z2INT_R12_REF',mel_ham,tgt_info)
+      call set_dependency('Z2INT_R12_REF',mel_rint,tgt_info)
+      call set_dependency('Z2INT_R12_REF',mel_ff,tgt_info)
+      call set_dependency('Z2INT_R12_REF',mel_gintz,tgt_info)
+
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12_REF'
+      labels(2) = 'Z2-INT-CABS'
+      ncat = 1
+      nint = 0
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('Z2INT_R12_REF',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2INT_R12_REF'
+      call set_rule('Z2INT_R12_REF',ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
+      call add_target('Z2INT_R12_EVAL',ttype_frm,.false.,tgt_info)
+      if (approx(14:17).eq.'DRCT') then
+        call set_dependency('Z2INT_R12_EVAL','Z2INT_R12_DIR',tgt_info)
+      else
+        call set_dependency('Z2INT_R12_EVAL','Z2INT_R12_REF',tgt_info)
+      end if
+
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -1299,6 +1742,27 @@ c dbg
       call set_rule(mel_gintx,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
+
+        ! special two-electron integral list 2
+        call add_target(mel_gintz,ttype_opme,.false.,tgt_info)
+        call set_dependency(mel_gintz,op_g_z,tgt_info)
+        ! (a) define
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = mel_gintz
+        labels(2) = op_g_z
+        call me_list_parameters(-1,parameters,
+     &       msc,0,1,0,0,.true.)
+c     &       0,0,1,0,0,.false.)
+        call set_rule(mel_gintz,ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+        ! (b) import
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = mel_gintz
+        call import_parameters(-1,parameters,'G_INT',env_type)
+        call set_rule(mel_gintz,ttype_opme,IMPORT,
+     &                labels,1,1,
+     &                parameters,1,tgt_info)
 
       ! special one-electron integral list
       call add_target('F-X-INT',ttype_opme,.false.,tgt_info)
@@ -1437,6 +1901,25 @@ c dbg
       labels(1) = mel_gr
       call import_parameters(-1,parameters,'FG_INT',env_type)
       call set_rule(mel_gr,ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
+      call add_target('G.R-X-INT',ttype_opme,.false.,tgt_info)
+      call set_dependency('G.R-X-INT','G.R-X',tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'G.R-X-INT'
+      labels(2) = 'G.R-X'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('G.R-X-INT',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'G.R-X-INT'
+      call import_parameters(-1,parameters,'FG_INT',env_type)
+      call set_rule('G.R-X-INT',ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
@@ -1664,6 +2147,44 @@ c     &              parameters,1,tgt_info)
      &                labels,4,1,
      &                parameters,1,tgt_info)
       end if
+
+
+      call add_target('Vpx-INTER',ttype_opme,.false.,tgt_info)
+      call set_dependency('Vpx-INTER','Vpx',tgt_info)
+      call set_dependency('Vpx-INTER','Vpx_CABS',tgt_info)
+      call set_dependency('Vpx-INTER','G.R-X-INT',tgt_info)
+      call set_dependency('Vpx-INTER',mel_gintx,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Vpx-INTER'
+      labels(2) = 'Vpx'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('Vpx-INTER',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      labels(1) = 'Vpx_OPT'
+      labels(2) = 'Vpx_CABS'
+      call opt_parameters(-1,parameters,1,0)
+      call set_rule('Vpx-INTER',ttype_frm,OPTIMIZE,
+     &     labels,2,1,
+     &     parameters,1,tgt_info)
+      labels(1) = 'Vpx_OPT'
+      call set_rule('Vpx-INTER',ttype_opme,EVAL,
+     &     labels,1,0,
+     &     parameters,0,tgt_info)
+
+      ! Z2-list
+      call add_target('DEF-Z2LIST',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF-Z2LIST','Z2-INT',tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'Z2LIST'
+      labels(2) = 'Z2-INT'
+      call me_list_parameters(-1,parameters,
+     &       msc,0,1,0,0,.false.)
+      call set_rule('DEF-Z2LIST',ttype_opme,DEF_ME_LIST,
+     &       labels,2,1,
+     &       parameters,1,tgt_info)
+
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*

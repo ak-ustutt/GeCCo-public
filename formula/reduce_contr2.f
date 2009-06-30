@@ -66,6 +66,7 @@
         call write_title(luout,wst_dbg_subr,'reduce_contr2')
         write(luout,*) 'contraction on entry:'
         call prt_contr3(luout,contr,-1)
+        write(luout,*) 'idxnew_op1op2:  ',idxnew_op1op2
       end if
 
       nvtx = contr%nvtx

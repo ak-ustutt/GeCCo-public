@@ -50,25 +50,25 @@
      &     call get_argument_value('method.R12','ansatz',ival=ansatz)
 
       call add_target(op_hhat,ttype_op,.false.,tgt_info)
-      if (ansatz.gt.1) then
-        call hop_parameters(-1,parameters,
-     &                   0,2,2,.true.) ! 1-external at most
-        call set_rule(op_hhat,ttype_op,DEF_HAMILTONIAN,
-     &              op_hhat,1,1,
-     &              parameters,1,tgt_info)
-c        call set_dependency(op_hhat,op_ham,tgt_info)
-c        call cloneop_parameters(-1,parameters,
-c     &       op_ham,.false.)
-c        call set_rule(op_hhat,ttype_op,CLONE_OP,
-c     &       op_hhat,1,1,
-c     &       parameters,1,tgt_info)
-      else
+C      if (ansatz.gt.1) then
+C        call hop_parameters(-1,parameters,
+C     &                   0,2,2,.true.) ! 1-external at most
+C        call set_rule(op_hhat,ttype_op,DEF_HAMILTONIAN,
+C     &              op_hhat,1,1,
+C     &              parameters,1,tgt_info)
+Cc        call set_dependency(op_hhat,op_ham,tgt_info)
+Cc        call cloneop_parameters(-1,parameters,
+Cc     &       op_ham,.false.)
+Cc        call set_rule(op_hhat,ttype_op,CLONE_OP,
+Cc     &       op_hhat,1,1,
+Cc     &       parameters,1,tgt_info)
+C      else
         call hop_parameters(-1,parameters,
      &                   0,2,1,.false.)  ! avoid any X blocks
         call set_rule(op_hhat,ttype_op,DEF_HAMILTONIAN,
      &              op_hhat,1,1,
      &              parameters,1,tgt_info)
-      end if
+C      end if
 
       call get_argument_value('method.CC','minexc',ival=min_rank)
       call get_argument_value('method.CC','maxexc',ival=max_rank)
@@ -76,10 +76,12 @@ c     &       parameters,1,tgt_info)
         call get_argument_value('method.ECC','minexc',ival=min_rank)
         call get_argument_value('method.ECC','maxexc',ival=max_rank)
       end if
-      if (is_keyword_set('method.R12').gt.0) then
+      call get_argument_value('method.CC','T1ext',ival=t1ext_mode)
+      if (t1ext_mode.eq.0.and.is_keyword_set('method.R12').gt.0) then
         call get_argument_value('method.R12','T1ext',ival=t1ext_mode)
-      else
-        t1ext_mode = 0
+      end if
+      if (t1ext_mode.eq.0.and.is_keyword_set('method.ECC').gt.0) then
+        call get_argument_value('method.ECC','T1ext',ival=t1ext_mode)
       end if
 
       ! T operator
@@ -91,9 +93,9 @@ c     &       parameters,1,tgt_info)
      &              op_top,1,1,
      &              parameters,1,tgt_info)
       else
-        if (min_rank.ne.1.or.max_rank.gt.2.or..not.explicit)
+        if (min_rank.ne.1.or.max_rank.gt.2)
      &       call quit(1,'set_ccmp_general_targets',
-     &       'experimental T1ext option is for CCSD with R12 only')
+     &       'experimental T1ext option is for CCSD only')
         occ_def = 0
         ! 1 -- T1
         occ_def(IPART,1,1) = 1

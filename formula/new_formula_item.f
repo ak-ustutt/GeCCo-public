@@ -25,12 +25,26 @@
      &     command_del_intermediate,
      &     command_symmetrise,
      &     command_internal)
-      ! nothing to do
+        ! nothing to do
       case(command_add_contribution)
         allocate(form_pnt%contr)
         call init_contr(form_pnt%contr)
       case(command_new_intermediate)
-        allocate(form_pnt%interm)
+        allocate(form_pnt%interm,form_pnt%parent1,form_pnt%parent2)
+        call init_operator_0(form_pnt%interm)
+        form_pnt%parent1(1:len_opname) = ' '
+        form_pnt%parent2(1:len_opname) = ' '
+      case(command_reorder)
+        allocate(form_pnt%reo)
+        call init_reorder(form_pnt%reo)
+      case(command_add_bc_reo,command_bc_reo)
+        allocate(form_pnt%bcontr)
+        call init_bcontr(form_pnt%bcontr)
+        allocate(form_pnt%reo)
+        call init_reorder(form_pnt%reo)
+      case(command_add_intm,command_add_bc,command_bc)
+        allocate(form_pnt%bcontr)
+        call init_bcontr(form_pnt%bcontr)
       case default
         call quit(1,'new_formula_item','unknown mode')
       end select
@@ -39,11 +53,8 @@
       form_pnt%target = target
       
       allocate(form_pnt%next)
+      call init_fl_item_0(form_pnt%next)
       form_pnt%next%prev => form_pnt
-      form_pnt%next%next => null()
-      form_pnt%next%contr => null()
-      form_pnt%next%interm => null()
-      form_pnt%next%command = command_end_of_formula
       
       return
       end

@@ -104,7 +104,8 @@
       logical ::
      &     symmetrise
       integer ::
-     &     idx_intm, idx_op(nlabels), nop, iop, iop1, iop2, nder, nopen
+     &     idx_intm, idx_op(nlabels), nop, iop, iop1, iop2, nder, nopen,
+     &     njoined_intm, max_x_J, max_x_K
       integer, pointer ::
      &     occ_def(:,:,:)
       character ::
@@ -295,9 +296,28 @@ c     &       op_info,orb_info)
      &       op_info,orb_info)
 
       case('Z')
-        call set_zint_contract2(flist,ansatz,
+        njoined_intm = op_info%op_arr(idx_intm)%op%njoined
+        if (approx(14:14).eq.'J') then
+          read(approx(15:15),'(i)') max_x_J
+        else
+          max_x_J = 2
+        end if
+        if (approx(16:16).eq.'K') then
+          read(approx(17:17),'(i)') max_x_K
+        else
+          max_x_K = 2
+        end if
+        if (njoined_intm.eq.3) then
+          call set_zint_contract2(flist,ansatz,
      &       idx_op,4,
      &       op_info,orb_info)
+        else if (njoined_intm.eq.1) then
+          call set_zint_contract0(flist,ansatz,
+     &       idx_op,4,max_x_J,max_x_K,
+     &       op_info,orb_info)
+        else
+          call quit(1,'set_r12intm_cabs3','unknown njoined case for Z')
+        end if
 
       end select
 

@@ -34,7 +34,7 @@
      &     occ_def(ngastp,2,60), ndef
       logical ::
      &     needed, explicit, r12fix, set_tp, set_tpp, gbc4pt,
-     &     R2_coupling, set_R2_R2, set_Rhxhh
+     &     R2_coupling, set_R2_R2, set_Rhxhh, screen
       character(len=8) ::
      &     mode
       character(len_target_name) ::
@@ -61,7 +61,8 @@
 
       call get_argument_value('method.CC','maxexc',ival=max_rank)
       min_rank_pt = max_rank+1
-      call get_argument_value('method.CCPT','maxexc',ival=max_rank_pt)      
+      call get_argument_value('method.CCPT','maxexc',ival=max_rank_pt)
+      max_rank_pt = max(min_rank_pt,max_rank_pt)
       call get_argument_value('method.CCPT','extern',ival=max_extern)      
       call get_argument_value('method.CCPT','GBC',lval=gbc4pt)
       call get_argument_value('method.CCPT','R2_coupling',
@@ -81,6 +82,8 @@
         call get_argument_value('method.R12','min_tp',ival=min_rank_tp)
         call get_argument_value('method.R12','min_tpp',
      &                                               ival=min_rank_tpp)
+        call get_argument_value('method.R12','screen',lval=screen)
+
         if (r12op.gt.0) then
           set_tp  = .false.
           set_tpp = .false.
@@ -236,35 +239,6 @@ c     &     parameters,2,tgt_info)
      &              op_etapt,1,1,
      &              parameters,1,tgt_info)
 
-      ! V-X operator
-      call add_target('Vpx',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 2
-      occ_def(IEXTR,1,1) = 1
-      occ_def(IPART,2,1) = 1
-      occ_def(IHOLE,1,2) = 1
-      occ_def(IEXTR,1,2) = 1
-      occ_def(IHOLE,2,2) = 1
-      occ_def(IPART,2,2) = 1
-      call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
-      call set_rule('Vpx',ttype_op,DEF_OP_FROM_OCC,
-     &              'Vpx',1,1,
-     &              parameters,2,tgt_info)
-      
-      call add_target('G.R-X',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 1
-      occ_def(IHOLE,1,1) = 1
-      occ_def(IEXTR,1,1) = 1
-      occ_def(IHOLE,2,2) = 1
-      occ_def(IPART,2,2) = 1
-      call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),ndef)
-      call set_rule('G.R-X',ttype_op,DEF_OP_FROM_OCC,
-     &              'G.R-X',1,1,
-     &              parameters,2,tgt_info)
-
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
@@ -337,11 +311,22 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
           labels(7) = form_r12_xint
           nint = 5
           if (r12op.gt.0) then
-            call set_dependency(form_ptdl0,'Vpx_formal',tgt_info)
-            labels(8) = 'Vpx_formal'
-            labels(9) = 'Vpx_formal^+'
-            labels(10) = form_r12_xhint
-            nint = 8
+            if (.not.screen) then
+              call set_dependency(form_ptdl0,'Vpx_formal',tgt_info)
+              call set_dependency(form_ptdl0,'Z2INT_R12',tgt_info)
+              labels(8) = 'Vpx_formal'
+              labels(9) = 'Vpx_formal^+'
+              labels(10)  = 'Z2INT_R12'
+              labels(11)  = 'Z2INT_R12^+'
+              labels(12) = form_r12_xhint
+              nint = 10
+            else
+              call set_dependency(form_ptdl0,'Z2INT_R12',tgt_info)
+              labels(8)  = 'Z2INT_R12'
+              labels(9)  = 'Z2INT_R12^+'
+              labels(10) = form_r12_xhint
+              nint = 8
+            end if
           end if
         else
           labels(3) = form_r12_vint ! the intermediates to be factored
@@ -364,6 +349,19 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
         call set_rule(form_ptdl0,ttype_frm,FACTOR_OUT,
      &       labels,nint+2,1,
      &       parameters,2,tgt_info)
+        ! screen all remaining R12 terms
+        ! (argument: would vanish in standard approximation)
+        if (screen) then        
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = form_ptdl0
+          labels(2) = form_ptdl0
+          labels(3) = op_ccr12lg
+          labels(4) = op_r12
+          labels(5) = op_r12//'^+'
+          call set_rule(form_ptdl0,ttype_frm,INVARIANT,
+     &         labels,5,1,
+     &              title_ccr12lg0,1,tgt_info)
+        end if
         ! there remain a few unprocessed R12 contributions
         ! for ansatz > 1
         ! as a first resort we replace r12 by the actual integrals
@@ -374,7 +372,9 @@ c      call set_dependency(form_ptdl0,op_tbar,tgt_info)
           labels(2) = form_ptdl0
           labels(3) = op_r12
           labels(4) = op_rint
-          nint = 1
+          labels(5) = op_r12//'^+'
+          labels(6) = op_rint//'^+'
+          nint = 2
 c          if (r12op.gt.0.and.set_R2_R2) then
 c            labels(5) = 'R12VV'
 c            labels(6) = op_rint
@@ -393,6 +393,9 @@ c dbg
      &       labels,1,0,
      &       parameters,2,tgt_info)
 c dbg
+        call set_rule(form_ptdl0,ttype_frm,TEX_FORMULA,
+     &              labels,5,1,
+     &              'pt_lag.tex',1,tgt_info)
 
       end if
 
@@ -407,6 +410,15 @@ c dbg
       call set_rule(form_ptde0,ttype_frm,INVARIANT,
      &              labels,4,1,
      &              title_ptde0,1,tgt_info)
+      labels(1) = form_ptde0
+      labels(2) = form_ptde0
+      labels(3) = op_dept
+      call set_rule(form_ptde0,ttype_frm,SUM_HERMIT,
+     &              labels,3,1,
+     &              title_ptde0,1,tgt_info)
+      call set_rule(form_ptde0,ttype_frm,TEX_FORMULA,
+     &              labels,5,1,
+     &              'pt_en.tex',1,tgt_info)
 
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = form_h0_tpt
@@ -423,6 +435,9 @@ c dbg
       call set_rule(form_h0_tpt,ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              title_h0_tpt,1,tgt_info)
+c      call set_rule(form_h0_tpt,ttype_frm,TEX_FORMULA,
+c     &              labels,5,1,
+c     &              'pt_leq.tex',1,tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = form_h0_tpt
       labels(2) = form_etapt
@@ -433,41 +448,6 @@ c dbg
       call set_rule(form_h0_tpt,ttype_frm,LEQ_SPLIT,
      &              labels,6,2,
      &              title_h0_tpt,1,tgt_info)
-
-      ! formal definition of Vpx
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = 'Vpx_formal'
-      labels(2) = 'Vpx'
-      labels(3) = op_r12
-      labels(4) = op_ham
-      call add_target('Vpx_formal',ttype_frm,.false.,tgt_info)
-      call set_dependency('Vpx_formal','Vpx',tgt_info)
-      call set_dependency('Vpx_formal',op_ham,tgt_info)
-      call set_dependency('Vpx_formal',op_r12,tgt_info)
-      call form_parameters(-1,
-     &     parameters,2,title_r12_vint,0,'V')
-      call set_rule('Vpx_formal',ttype_frm,DEF_R12INTM_FORMAL,
-     &              labels,4,1,
-     &              parameters,2,tgt_info)
-
-      ! CABS approximation to V
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = 'Vpx_CABS'
-      labels(2) = 'Vpx'
-      labels(3) = op_g_x !op_ham
-      labels(4) = op_rint
-      labels(5) = 'G.R-X'   
-      ! F12: op_gr
-      call add_target('Vpx_CABS',ttype_frm,.false.,tgt_info)
-      call set_dependency('Vpx_CABS',op_v_inter,tgt_info)
-      call set_dependency('Vpx_CABS','G.R-X',tgt_info)
-      call set_dependency('Vpx_CABS',op_g_x,tgt_info)
-      call set_dependency('Vpx_CABS',op_rint,tgt_info)
-      call form_parameters(-1,
-     &     parameters,2,title_r12_vcabs,ansatz,'V '//approx)
-      call set_rule('Vpx_CABS',ttype_frm,DEF_R12INTM_CABS,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
@@ -521,7 +501,10 @@ c dbg
       call set_dependency(fopt_ptde0,mel_ham,tgt_info)
       call set_dependency(fopt_ptde0,mel_tptdef,tgt_info)      
       call set_dependency(fopt_ptde0,mel_etaptdef,tgt_info)      
-      call set_dependency(fopt_ptde0,'Vpx-INTER',tgt_info)
+      if (.not.screen.and.explicit)
+     &     call set_dependency(fopt_ptde0,'Vpx-INTER',tgt_info)
+      if (explicit)
+     &     call set_dependency(fopt_ptde0,'DEF-Z2LIST',tgt_info)
       if (set_Rhxhh)
      &     call set_dependency(fopt_ptde0,'R12hxhh-INT',tgt_info)
       if (isim.eq.1) then
@@ -622,25 +605,6 @@ c dbg
      &              labels,2,1,
      &              parameters,0,tgt_info)
 
-      call add_target('G.R-X-INT',ttype_opme,.false.,tgt_info)
-      call set_dependency('G.R-X-INT','G.R-X',tgt_info)
-      ! (a) define
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = 'G.R-X-INT'
-      labels(2) = 'G.R-X'
-      call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0,.false.)
-      call set_rule('G.R-X-INT',ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      ! (b) import
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = 'G.R-X-INT'
-      call import_parameters(-1,parameters,'FG_INT',env_type)
-      call set_rule('G.R-X-INT',ttype_opme,IMPORT,
-     &              labels,1,1,
-     &              parameters,1,tgt_info)
-
       ! quick-fix:
 c      call add_target('R12hxhh-INT',ttype_opme,.false.,tgt_info)
       call add_target('R12hxhh-INT',ttype_opme,set_Rhxhh,tgt_info)
@@ -662,28 +626,6 @@ c      call add_target('R12hxhh-INT',ttype_opme,.false.,tgt_info)
      &              labels,1,1,
      &              parameters,1,tgt_info)
       
-      call add_target('Vpx-INTER',ttype_opme,.false.,tgt_info)
-      call set_dependency('Vpx-INTER','Vpx',tgt_info)
-      call set_dependency('Vpx-INTER','Vpx_CABS',tgt_info)
-      call set_dependency('Vpx-INTER','G.R-X-INT',tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = 'Vpx-INTER'
-      labels(2) = 'Vpx'
-      call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0,.false.)
-      call set_rule('Vpx-INTER',ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-      labels(1) = 'Vpx_OPT'
-      labels(2) = 'Vpx_CABS'
-      call opt_parameters(-1,parameters,1,0)
-      call set_rule('Vpx-INTER',ttype_frm,OPTIMIZE,
-     &     labels,2,1,
-     &     parameters,1,tgt_info)
-      labels(1) = 'Vpx_OPT'
-      call set_rule('Vpx-INTER',ttype_opme,EVAL,
-     &     labels,1,0,
-     &     parameters,0,tgt_info)
 
 *----------------------------------------------------------------------*
 *     "phony" targets 
@@ -733,11 +675,40 @@ c     &       parameters,2,tgt_info)
 c      else
 c        call quit(1,'set_cc_pt_targets','trap 1')
 c      end if
+      if (explicit.and.r12op.ge.1) then
+        call set_dependency(solve_cc_pt,'Z2INT_R12_EVAL',tgt_info)
+      end if
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = fopt_ptde0
       call set_rule(solve_cc_pt,ttype_opme,EVAL,
      &       labels,1,0,
      &       parameters,0,tgt_info)
-        
+      labels(1) = mel_ccen0
+      if (explicit) labels(1) = mel_ccr12en0
+      call form_parameters(-1,parameters,2,
+     &     '>>> CC energy    :',0,'SCAL F20.12')
+      call set_rule(solve_cc_pt,ttype_opme,PRINT_MEL,
+     &     labels,1,0,
+     &     parameters,2,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     '>>> CC-PT energy :',0,'SCAL F20.12')
+      call set_rule(solve_cc_pt,ttype_opme,PRINT_MEL,
+     &     mel_dept0,1,0,
+     &     parameters,2,tgt_info)
+      call add_parameters(-1,parameters,2,(/1d0,1d0/),2)
+      labels(1) = mel_dlpt0
+      call set_dependency(solve_cc_pt,mel_dlpt0,tgt_info)
+      labels(2) = mel_dept0
+      labels(3) = mel_ccen0
+      if (explicit) labels(3) = mel_ccr12en0
+      call set_rule(solve_cc_pt,ttype_opme,ADD,
+     &     labels,3,1,
+     &     parameters,1,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     '>>> Total energy :',0,'SCAL F20.12')
+      call set_rule(solve_cc_pt,ttype_opme,PRINT_MEL,
+     &     mel_dlpt0,1,0,
+     &     parameters,2,tgt_info)
+
       return
       end

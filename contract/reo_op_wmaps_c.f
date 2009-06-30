@@ -263,6 +263,12 @@
      &     occ_opori_blk1,njoined_opori)
       call get_num_subblk(ncblk_opreo,nablk_opreo,
      &     occ_opreo_blk2,njoined_opreo)
+c dbg
+      call wrt_occ_n(luout,occ_opori_blk1,njoined_opori)
+      call wrt_occ_n(luout,occ_opreo_blk2,njoined_opreo)
+      print *,'nblk (ORI): ',ncblk_opori,nablk_opori
+      print *,'nblk (REO): ',ncblk_opreo,nablk_opreo
+c dbg
 
       allocate(
      &       gm_dis_c(ncblk_opori), gm_dis_a(nablk_opori),
@@ -304,8 +310,11 @@
       call sum_occ(nc_opreo,cinfo_opreoc,ncblk_opreo)
       call sum_occ(na_opreo,cinfo_opreoa,nablk_opreo)
 
-      if (nc_opori.ne.nc_opreo .or. na_opori.ne.na_opreo)
-     &     call quit(1,'reo_op_wmaps_c','inconsistent particle numbers')
+      if (nc_opori.ne.nc_opreo .or. na_opori.ne.na_opreo) then
+        write(luout,*) 'NC (ORI/REO): ',nc_opori,nc_opreo
+        write(luout,*) 'NA (ORI/REO): ',na_opori,na_opreo
+        call quit(1,'reo_op_wmaps_c','inconsistent particle numbers')
+      end if
 
       msa_max = na_opori
       msc_max = nc_opori

@@ -18,6 +18,14 @@
      &                        'b','d','c',
      &                        'v','x','w',
      &                        'Q','S','R'/)
+      character, parameter ::
+     &     enumchar(26)   = (/'a','b','c','d',
+     &                        'e','f','g','h','i',
+     &                        'j','k','l','m',
+     &                        'n','o','p','q',
+     &                        'r','s','t','u',
+     &                        'v','w','x','y',
+     &                        'z'/)
 
       character, intent(out) ::
      &     str*(*)
@@ -110,7 +118,8 @@ c            do hpvx = 1, ngastp
 
               do iidx = idx0+1, idx0+nidx
                 ipos = len_trim(str)+1
-                write(str(ipos:),'(a,"_{",i2,"}")') charidx,iidx
+c                write(str(ipos:),'(a,"_{",i2,"}")') charidx,iidx
+                write(str(ipos:),'("\idx",a,a)') charidx,enumchar(iidx)
               end do
             end do
           end do

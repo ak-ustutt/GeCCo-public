@@ -35,8 +35,8 @@
       include 'stdunit.h'
       include 'def_contraction.h'
 c      include 'def_operator.h'
-      include 'def_formula_item.h'
       include 'mdef_operator_info.h'
+      include 'def_formula_item.h'
       include 'ifc_operators.h'
       
       type(formula_item), intent(in), target ::
@@ -480,17 +480,21 @@ c dbg
 
                     ! store contraction in formula list
                     ! and advance formula pointer
-                    form_pnt%command = command_add_contribution
-                    form_pnt%target  = proto_new%idx_res
-                    allocate(form_pnt%contr,form_pnt%next)
-                    call init_contr(form_pnt%contr)
+                    call new_formula_item(form_pnt,
+     &                   command_add_contribution,
+     &                   proto_new%idx_res)
+
+c                    form_pnt%command = command_add_contribution
+c                    form_pnt%target  = proto_new%idx_res
+c                    allocate(form_pnt%contr,form_pnt%next)
+c                    call init_contr(form_pnt%contr)
                     call copy_contr(proto_new,form_pnt%contr)
-                    form_pnt%next%prev => form_pnt
+c                    form_pnt%next%prev => form_pnt
                     form_pnt => form_pnt%next
-                    form_pnt%next => null()
-                    form_pnt%contr => null()
-                    form_pnt%interm => null()
-                    form_pnt%command = command_end_of_formula
+c                    form_pnt%next => null()
+c                    form_pnt%contr => null()
+c                    form_pnt%interm => null()
+c                    form_pnt%command = command_end_of_formula
 
                   end if
                 end if

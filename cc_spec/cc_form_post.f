@@ -65,10 +65,10 @@
       do iblk = 0, nblk_tbar
         if (iblk.eq.0) then
           call collect_terms_w_op(fpl_pnt,form_pnt,1,idxtbar,-1,0)          
-          fpl_pnt => fpl_pnt%next
+          if (associated(fpl_pnt%next)) fpl_pnt => fpl_pnt%next
         else
           call collect_terms_w_op(fpl_pnt,form_pnt,1,idxtbar,iblk,1)
-          fpl_pnt => fpl_pnt%next
+          if (associated(fpl_pnt%next)) fpl_pnt => fpl_pnt%next
         end if
 
         call cc_count_terms(fpl_pnt,idxtop,n_commu)

@@ -32,8 +32,9 @@
       isave = 0
       ! loop backward through list and deallocate
       do
-        if (associated(current%interm)) deallocate(current%interm)
-        if (associated(current%contr)) deallocate(current%contr)
+        call dealloc_fl_item(current)
+c        if (associated(current%interm)) deallocate(current%interm)
+c        if (associated(current%contr)) deallocate(current%contr)
         if (.not.associated(current%prev)) exit
         current => current%prev
         deallocate(current%next)

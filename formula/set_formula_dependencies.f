@@ -30,7 +30,7 @@
      &     sorted
       integer ::
      &     ipass, iptr, iptr_last, itarget, nlist, maxlist,
-     &     nvtx, ivtx
+     &     nvtx, ivtx, idx_op
       integer ::
      &     idxscr(maxscr)
 
@@ -41,11 +41,13 @@
       integer, pointer ::
      &     op2list(:), idxlist(:), depends_on_idxlist(:,:)
 
+      integer, external ::
+     &     idx_oplist2
+
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
      &       'this is set_formula_dependencies')
       end if
-
 
       op2list => op_info%op2list 
       do ipass = 1, 2
@@ -100,18 +102,38 @@
               iptr = iptr+1
               idxscr(iptr) = vertex(ivtx)%idx_op
             end do
-            ! if we have a decent number of indices collected
-            ! --> process then
-            if (iptr-iptr_last.gt.128) then
-              sorted = .true.
-              nlist = iptr
-              call unique_list(idxscr,nlist)
-              iptr = nlist
-              iptr_last = iptr
+          ! --> adaptieren fuer neue flists
+          case(command_add_intm,command_bc,command_add_bc,
+     &         command_bc_reo,command_add_bc_reo)
+            nvtx = fl_ptr%bcontr%n_operands
+            if (iptr+nvtx.gt.maxscr)
+     &           call quit(1,'set_formula_dependencies',
+     &           'increase maxscr')
+            idx_op = idx_oplist2(fl_ptr%bcontr%label_op1,op_info)
+            if (idx_op.gt.0) then
+              sorted = .false.
+              iptr = iptr+1
+              idxscr(iptr) = idx_op
             end if
-
-
+            if (nvtx.gt.1) then
+              idx_op = idx_oplist2(fl_ptr%bcontr%label_op2,op_info)
+              if (idx_op.gt.0) then
+                sorted = .false.
+                iptr = iptr+1
+                idxscr(iptr) = idx_op                
+              end if
+            end if
           end select
+
+          ! if we have a decent number of indices collected
+          ! --> process then
+          if (iptr-iptr_last.gt.128) then
+            sorted = .true.
+            nlist = iptr
+            call unique_list(idxscr,nlist)
+            iptr = nlist
+            iptr_last = iptr
+          end if
 
           if (.not.associated(fl_ptr%next)) exit
           fl_ptr => fl_ptr%next

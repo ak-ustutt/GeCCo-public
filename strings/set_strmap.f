@@ -9,7 +9,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'ifc_memman.h'
@@ -45,6 +45,10 @@
         write(luout,*) '=================='
         write(luout,*) 'this is set_strmap'
         write(luout,*) '=================='
+        write(luout,*) ' iocc1, iocc2, iocc12: ',
+     &                   iocc1, iocc2, iocc12
+        write(luout,*) ' ityp1, ityp2, ityp12: ',
+     &                   ityp1, ityp2, ityp12
       end if
 
       ifree = mem_setmark('set_strmap')
@@ -115,7 +119,7 @@
         end do
       end do
 
-      if (ntest.ge.100) then
+      if (ntest.ge.150) then
         write(luout,*) 'the ms offset array'
         call wrtimat2(strmap_info%offsets(idxgrgr)%msms,
      &       iocc2+1,iocc1+1,iocc2+1,iocc1+1)

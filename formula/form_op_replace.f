@@ -56,8 +56,14 @@
 
       ! Get the required operators.
       idxin = idx_oplist2(trim(opin),op_info)
-      opin_pnt => op_info%op_arr(idxin)%op
       idxout = idx_oplist2(trim(opout),op_info)
+      if (idxin.le.0.or.idxout.le.0) then
+        write(luout,*) 'opin:  "',trim(opin) ,'" -> ',idxin
+        write(luout,*) 'opout: "',trim(opout),'" -> ',idxout
+        call quit(1,'form_op_replace','error')
+      end if
+        
+      opin_pnt => op_info%op_arr(idxin)%op
       opout_pnt => op_info%op_arr(idxout)%op
       ! Allocate a temporary array.
       njoined = opout_pnt%njoined

@@ -63,10 +63,10 @@
      &     idxham,idxtbar,idxtop,idxlcc,idxrba,idxcbar,idxr12,idxc12,
      &     idxcpp12, idxcppbar,
      &     iblk_xxhp, iblk_pxhp, iblk_xxpp, iblk_pxpp,
-     &     min_rank, max_rank, iprint, trunc_type,
+     &     min_rank, max_rank, iprint, trunc_type, trunc_t1x, h0_t1x,
      &     occ(ngastp,2)
       logical ::
-     &     r12fix, truncate, opt
+     &     r12fix, truncate, opt, l_h0d
       integer ::
      &     extend
 
@@ -75,6 +75,9 @@
 
       integer, external::
      &     idx_oplist2, max_rank_op, iblk_occ
+
+      character(len=8) ::
+     &     trmode
 
       ! for timings:
       real(8) ::
@@ -103,6 +106,9 @@
      &     call get_argument_value('method.truncate','trunc_type',
      &                              ival=trunc_type)
       end if
+      call get_argument_value('method.R12','T1ext',ival=trunc_t1x)
+      call get_argument_value('method.R12','H0_T1ext',ival=h0_t1x)
+      call get_argument_value('method.R12','H0d',lval=l_h0d)
       
       if (extend.gt.0) call quit(1,'set_r12_lagrangian',
      &     'do not use "extend" for CC (use "r12op" instead)!')
@@ -121,6 +127,10 @@ c        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
 c     &     'I expect > 6 labels')c
 c      end if
 
+      idxcbar = -1
+      idxc12  = -1
+      idxcppbar = -1
+      idxcpp12  = -1
       do ilabel = 1, nlabels
         idx = idx_oplist2(label(ilabel),op_info)
         if (idx.le.0)
@@ -246,10 +256,15 @@ c      sbar_pnt%dagger = .true.
 
       ! Produce truncated expansions if required.
       if (truncate)
-     &     call r12_truncation(flist_lag,trunc_type,
-     &     idxr12,idxham,idxtbar,idxtop,op_info)
-c      if(truncate)
-c     &     call truncate_form(flist_lag,trunc_type,op_info,form_info)
+     &     call r12_truncation(flist_lag,trunc_type,h0_t1x,
+     &     idxr12,idxham,idxtbar,idxtop,idxcbar,idxc12,op_info)
+      if (trunc_t1x.gt.0.and.h0_t1x.ne.-1) then
+        trmode = '        '
+        write(trmode,'("ord",i1," ",i1)') trunc_t1x, h0_t1x
+        if (l_h0d) trmode(7:7) = 'd'
+        call t1x_r12_truncation(flist_lag,trmode,
+     &       idxr12,idxtbar,idxham,idxtop,op_info)
+      end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)
       call sum_terms(flist_lag,op_info)

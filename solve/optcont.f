@@ -158,7 +158,7 @@
       if (imacit.ne.0) then
         ifree = mem_setmark('optc_temp')
         call optc_mem(nincore,lenbuf,
-     &       ifree,opti_info%nwfpar,opti_info%nopt)
+     &       ifree,opti_info%nwfpar,opti_info%nopt,opti_info%max_incore)
         if (nincore.le.1) then
           call file_init(ffscr,'optscr.da',ftyp_da_unf,lblk_da)
           call file_open(ffscr)
@@ -195,10 +195,6 @@
           write(luout,*) 'macro iteration part entered'
         end if
 
-c dbg
-c              print *,'xbuf2 (1)',xbuf2(1:)
-        xbuf2 = 0d0
-c dbg
         call optc_macit(imacit,imicit,imicit_tot,
      &       task,iroute,opti_info%nopt,
      &       me_opt,me_grd,me_dia,
@@ -337,18 +333,20 @@ c          call optc_prepnext()
       contains
 
 *----------------------------------------------------------------------*
-      subroutine optc_mem(nincore,lenbuf,mem_free,nwfpar,nopt)
+      subroutine optc_mem(nincore,lenbuf,mem_free,nwfpar,nopt,
+     &                    max_incore)
 *----------------------------------------------------------------------*
 *
 *     get memory for buffers
 *
 *     internal subroutine: variable of main routine are global!
+*     max_incore --> for checking only
 *
 *----------------------------------------------------------------------*
 c      implicit none
 
       integer, intent(in) ::
-     &     mem_free, nopt, nwfpar(nopt)
+     &     mem_free, nopt, nwfpar(nopt), max_incore
       integer, intent(out) ::
      &     nincore, lenbuf
 
@@ -363,6 +361,10 @@ c      implicit none
         nmax_per_vec = max(nmax_per_vec,nwfpar(iopt))
       end do
       nincore = min(3,mem_free/nmax_per_vec)
+      if (max_incore.gt.0) then
+        nincore = min(nincore,max_incore)
+        write(luout,*) ' restricting nincore to ',nincore
+      end if
 
       if (nincore.eq.3) then
         nbuf = 3
@@ -400,7 +402,8 @@ c      implicit none
       ifree = mem_alloc_real(xbuf2,len2,'buffer_2')
       if (nbuf.eq.3)
      &     ifree = mem_alloc_real(xbuf3,len3,'buffer_3')
-
+      if (nbuf.ne.3) xbuf3 => null()
+      
       if (iprint.ge.5) then
         write(luout,*) ' allocated ',nbuf,' buffers'
         write(luout,*) ' # incore vectors: ',nincore

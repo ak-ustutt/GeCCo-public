@@ -101,10 +101,10 @@ c dbg
       end do
 
       ! current emergency exit
-      if (reo_other) then
-        call quit(1,'get_reo_info',
-     &       'reordering of operator other than OP1OP2 requested')
-      end if
+c      if (reo_other) then
+c        call quit(1,'get_reo_info',
+c     &       'reordering of operator other than OP1OP2 requested')
+c      end if
 
       if (reo_op1op2) reo_info%n_op_reo = 1
 

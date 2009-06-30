@@ -8,6 +8,7 @@
 
       implicit none
       include 'stdunit.h'
+      include 'ioparam.h'
       include 'ifc_input.h'
       include 'def_orbinf.h'
       include 'routes.h'
@@ -21,7 +22,7 @@
      &     current
 
       integer ::
-     &     icnt, len
+     &     icnt, len, nfreeze
       integer, allocatable ::
      &     iscr(:)
       character ::
@@ -75,6 +76,10 @@ c      if (icnt.le.0) then
 c        call quit(0,'process_input','no "method" block specified')
 c      end if
 
+      ! set file block-length
+      call get_argument_value('general','da_block',ival=lblk_da)
+      lblk_da = lblk_da*1024/nrecfc
+
       icnt = is_keyword_set('orb_space.shell')
 
       if (icnt.eq.1) then
@@ -87,11 +92,26 @@ c      end if
      &       call quit(0,'process_input','unexpected shell type: "'//
      &         trim(str)//'"')
 
-        call get_argument_dimension(len,'orb_space.shell','def')
-        allocate(iscr(len))
-        call get_argument_value('orb_space.shell','def',iarr=iscr)
- 
-        call add_frozen_shell(iscr,len,orb_info)
+        if (is_argument_set('orb_space.shell','def').gt.0) then
+          call get_argument_dimension(len,'orb_space.shell','def')
+          allocate(iscr(len))
+          call get_argument_value('orb_space.shell','def',iarr=iscr)
+          nfreeze = sum(iscr(1:len))
+        else if (is_argument_set('orb_space.shell','nfreeze').gt.0) then
+          call get_argument_value('orb_space.shell',
+     &                            'nfreeze',ival=nfreeze)
+          len = orb_info%nsym
+          allocate(iscr(len))
+          call auto_freeze(iscr,nfreeze,orb_info)
+        else
+          nfreeze = -1
+          len = orb_info%nsym
+          allocate(iscr(len))
+          call auto_freeze(iscr,nfreeze,orb_info)
+        end if
+
+        if (nfreeze.gt.0) 
+     &       call add_frozen_shell(iscr,len,orb_info)
         deallocate(iscr)
 
       end if
@@ -110,6 +130,8 @@ c      end if
       if (force_batching.gt.2)
      &       call quit(0,'process_input',
      &       'illegal value for force_batching (>2)')          
+      call get_argument_value('calculate.routes','force_ooc_sort',
+     &     ival=force_ooc_sort)
       call get_argument_value('calculate.routes','use_tr',
      &     lval=use_tr)
 

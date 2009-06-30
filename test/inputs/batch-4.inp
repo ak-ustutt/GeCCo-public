@@ -3,5 +3,5 @@ general
 calculate
   skip_E
   check contr_test=3
-  routes contract=3,str_block=20,cnt_block=6
+  routes contract=3,str_block=20,cnt_block=6,schedule=0
  

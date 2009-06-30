@@ -1421,7 +1421,7 @@ c     &     call quit(1,'memman_new_mem_buf_pnt','ID is already in use!')
 c      mem_buf_pnt%slot(idx_slot)%length = actual_len
       if (free_slc) then
         ! re-allocate memory for buffer slot
-        write(name_slot,'("slot",i4.4)') idx_slot
+        write(name_slot,'("sl",i6.6)') idx_slot
         call memman_section_stack(+1) !push
         ifree = memman_set_cursection(mem_buf_pnt%name)
         if (type.eq.mtyp_int) then
@@ -1530,7 +1530,7 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
       id_slot = mem_buf_pnt%slot_info(2*idx_slot-1)
       if (free_slc) then
         ! remove allocated memory
-        write(name_slot,'("slot",i4.4)') idx_slot
+        write(name_slot,'("sl",i6.6)') idx_slot
         ! switch to correct memory section and deallocate
         call memman_section_stack(+1) !push
         ifree = memman_set_cursection(mem_buf_pnt%name)
@@ -1607,6 +1607,9 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
         write(luout,*) ' ID buffer: ',id_buf
         write(luout,*) ' ID slot  : ',id_slot
         write(luout,*) ' ID slot(max): ',mem_buf_pnt%max_buf_slots
+        write(luout,*) ' modify set? ',present(modify)
+        call print_vbuffer_int(luout,id_buf,.true.)
+        call memman_map(luout,.true.)
         call quit(1,'memman_idx_buffer',
      &     'requested slot is out of range')
       end if
@@ -1648,11 +1651,13 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
       return
       end subroutine
 
-      subroutine print_vbuffer_int(luout,id_buf)
+      subroutine print_vbuffer_int(luout,id_buf,short)
       implicit none
 
       integer, intent(in) ::
      &     luout, id_buf
+      logical, intent(in) ::
+     &     short
 
       integer ::
      &     idx, irecmax, maxlen, length, unit 
@@ -1687,6 +1692,7 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
         write(luout,*) 'ID, status: ',
      &       mem_buf_pnt%slot_info(idx*2-1),
      &       mem_buf_pnt%slot_info(idx*2)
+        if (short) cycle
         irecmax = max(irecmax,mem_buf_pnt%slot_info(idx*2-1))
         if (mem_buf_pnt%slot_info(idx*2-1).gt.0) then
           length = mem_buf_pnt%slot(idx)%mem_slc%len
@@ -1701,7 +1707,8 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
       allocate(ibuf(maxlen))
       do idx = 1, irecmax
         read(unit,rec=idx,err=10) ibuf(1:maxlen)
-        write(luout,*) idx,'->'
+        write(luout,*) idx,'-> on disk'
+        if (short) cycle
         call wrtimat2(ibuf,1,maxlen,1,maxlen)
         cycle
  10     write(luout,*) idx,'-> empty record'

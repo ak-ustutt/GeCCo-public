@@ -39,6 +39,9 @@
 
       idx = idx_in
       nn = 0
+c dbg
+c      print *,'top: idx = ',idx
+c dbg
 
       i = 0
       do while(i.lt.nel)
@@ -46,6 +49,11 @@
         ispni = idspn(i)
         ia = ianum(ispni)
         idx = idx + iy4sg(ia,nn,nm,ig,idorb(i)-iorboff)
+c dbg
+c        print *,'ia,nn,nm,ig,idorb(i),iorboff: ',
+c     &           ia,nn,nm,ig,idorb(i),iorboff
+c        print *,'idx = ',idx
+c dbg
         nn = nn + (iabs(ispni))
         if ((iabs(ispni)).eq.1) nm = nm + ispni
         if ((iabs(ispni)).eq.1) ig = multd2h(ig,idgam(i))

@@ -12,7 +12,8 @@
      &     DEF_R12INT*10      = 'DEF_R12INT',
      &     DEF_R12INTERM*13   = 'DEF_R12INTERM',
      &     CLONE_OP*14        = 'CLONE_OPERATOR',
-     &     SET_ORDER*9        = 'SET_ORDER'
+     &     SET_ORDER*9        = 'SET_ORDER',
+     &     SET_HERMIT*13      = 'SET_HERMITIAN'
 ! formulae:
       character, parameter ::
      &     CHECK_FORMGEN*12         = 'CHECK_FORMGEN',
@@ -33,6 +34,7 @@
      &     FACTOR_OUT*10            = 'FACTOR_OUT',
      &     EXPAND*6                 = 'EXPAND',
      &     REPLACE*7                = 'REPLACE',
+     &     SUM_HERMIT*13            = 'SUM_HERMITIAN',
      &     INVARIANT*9              = 'INVARIANT',
      &     DERIVATIVE*10            = 'DERIVATIVE',
      &     LEQ_SPLIT*9              = 'LEQ_SPLIT',

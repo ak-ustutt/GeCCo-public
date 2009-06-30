@@ -25,7 +25,7 @@
 
       integer ::
      &     ndef,
-     &     ncat, nint, ncnt, icnt,
+     &     ncat, nint, ncntrtest, nfgentest, icnt,
      &     isym, ms, msc, sym_arr(8), 
      &     occ_def(ngastp,2,20)
       logical ::
@@ -54,30 +54,33 @@
 *----------------------------------------------------------------------*
 *     read input
 *----------------------------------------------------------------------*
-      ncnt = is_argument_set('calculate.check','contr_test')
-      allocate(testnr(ncnt))
-      do icnt = 1, ncnt
+      ncntrtest = is_argument_set('calculate.check','contr_test')
+      allocate(testnr(ncntrtest))
+      do icnt = 1, ncntrtest
         call get_argument_value('calculate.check','contr_test',
      &       argcount=icnt,ival=testnr(icnt))
       end do
+      nfgentest = is_argument_set('calculate.check','algebra_test')
 
 *----------------------------------------------------------------------*
 *     Operators:
 *----------------------------------------------------------------------*
-      ! adapt: better define test-operators here
       call add_target('TEST_RES',ttype_op,.false.,tgt_info)
       call set_rule('TEST_RES',ttype_op,DEF_SCALAR,
      &              'TEST_RES',1,1,
      &              parameters,0,tgt_info)
 
       occ_def = 0
-      ndef = 2
+      ndef = 3
       occ_def(IPART,1,1) = 1
       occ_def(IEXTR,1,1) = 1
       occ_def(IHOLE,2,1) = 1
       occ_def(IPART,2,1) = 1
       occ_def(IPART,1,2) = 2
       occ_def(IHOLE,2,2) = 2
+      occ_def(IPART,1,3) = 1
+      occ_def(IEXTR,1,3) = 1
+      occ_def(IHOLE,2,3) = 2
       call add_target('TEST_R',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,(/.true.,.true./),ndef)
@@ -100,6 +103,34 @@
      &              parameters,2,tgt_info)
 
       occ_def = 0
+      ndef = 1
+      occ_def(IPART,1,1) = 2
+      occ_def(IEXTR,1,1) = 1
+      occ_def(IHOLE,2,1) = 3
+      call add_target('TEST_RT',ttype_op,.false.,tgt_info)
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+      call set_rule('TEST_RT',ttype_op,DEF_OP_FROM_OCC,
+     &              'TEST_RT',1,1,
+     &              parameters,2,tgt_info)
+
+      occ_def = 0
+      ndef = 2
+      occ_def(IEXTR,1,1) = 1
+      occ_def(IPART,1,1) = 1
+      occ_def(IHOLE,2,1) = 2
+      occ_def(IEXTR,1,2) = 1
+      occ_def(IPART,1,2) = 1
+      occ_def(IHOLE,2,2) = 1
+      occ_def(IPART,2,2) = 1
+      call add_target('TEST_R3',ttype_op,.false.,tgt_info)
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+      call set_rule('TEST_R3',ttype_op,DEF_OP_FROM_OCC,
+     &              'TEST_R3',1,1,
+     &              parameters,2,tgt_info)
+
+      occ_def = 0
       ndef = 2
       occ_def(IHOLE,1,1) = 1
       occ_def(IPART,1,1) = 1
@@ -114,7 +145,7 @@
      &              parameters,2,tgt_info)
 
       occ_def = 0
-      ndef = 2
+      ndef = 3
       occ_def(IHOLE,1,1) = 1
       occ_def(IEXTR,1,1) = 1
       occ_def(IPART,2,1) = 2
@@ -122,6 +153,9 @@
       occ_def(IPART,1,2) = 1
       occ_def(IHOLE,2,2) = 1
       occ_def(IPART,2,2) = 1
+      occ_def(IHOLE,1,3) = 1
+      occ_def(IPART,1,3) = 1
+      occ_def(IPART,2,3) = 2
       call add_target('TEST_H',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,(/.true.,.true./),ndef)
@@ -260,6 +294,83 @@ c     &     0,0,
      &              labels,2,1,
      &              parameters,2,tgt_info)
 
+      ! formula generation test: RT = R.T
+      call add_target('FORM_TEST_RT',ttype_frm,.false.,tgt_info)
+      call set_dependency('FORM_TEST_RT','TEST_RT',tgt_info)
+      call set_dependency('FORM_TEST_RT','TEST_A',tgt_info)
+      call set_dependency('FORM_TEST_RT','TEST_R',tgt_info)
+      call set_dependency('FORM_TEST_RT','TEST_H',tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_RT'
+      labels(2) = 'TEST_RT'
+      labels(3) = 'TEST_RT'
+      labels(4) = 'TEST_R'
+      labels(5) = 'TEST_A'
+      labels(6) = 'TEST_RT'
+      call expand_parameters(-1,
+     &     parameters,3,
+     &     'formula test RT',4,
+     &     (/1,2,3,1/),
+     &     (/1,1,2,1/),
+     &     (/1,1,2,1/),
+     &     0,0,
+     &     0,0,
+     &     0,0)
+      call set_rule('FORM_TEST_RT',ttype_frm,EXPAND_OP_PRODUCT,
+     &     labels,6,1,
+     &     parameters,3,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule('FORM_TEST_RT',ttype_frm,PRINT_FORMULA,
+     &              labels,2,1,
+     &              parameters,2,tgt_info)
+
+      ! formula generation test: R+.H.RT + expand RT
+      needed = nfgentest.gt.0
+      call add_target('FORM_TEST_RHR',ttype_frm,needed,tgt_info)
+      call set_dependency('FORM_TEST_RHR','TEST_RES',tgt_info)
+      call set_dependency('FORM_TEST_RHR','TEST_RT',tgt_info)
+      call set_dependency('FORM_TEST_RHR','TEST_R',tgt_info)
+      call set_dependency('FORM_TEST_RHR','TEST_H',tgt_info)
+      call set_dependency('FORM_TEST_RHR','FORM_TEST_RT',tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_RHR'
+      labels(2) = 'TEST_RES'
+      labels(3) = 'TEST_R^+'
+      labels(4) = 'TEST_H'
+      labels(5) = 'TEST_RT'
+      call expand_parameters(-1,
+     &     parameters,3,
+     &     'formula test RHR',3,
+     &     (/1,2,3/),
+     &     (/3,3,1/),
+     &     (/3,3,1/),
+     &     0,0,
+     &     0,0,
+     &     0,0)
+      call set_rule('FORM_TEST_RHR',ttype_frm,EXPAND_OP_PRODUCT,
+     &     labels,5,1,
+     &     parameters,3,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule('FORM_TEST_RHR',ttype_frm,PRINT_FORMULA,
+     &              labels,2,1,
+     &              parameters,2,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_RHRX'
+      labels(2) = 'FORM_TEST_RHR'
+      labels(3) = 'FORM_TEST_RT'
+      call form_parameters(-1,
+     &     parameters,2,'Expanded',1,'---')
+      call set_rule('FORM_TEST_RHR',ttype_frm,EXPAND,
+     &              labels,3,1,
+     &              parameters,2,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule('FORM_TEST_RHR',ttype_frm,PRINT_FORMULA,
+     &              labels,2,1,
+     &              parameters,2,tgt_info)
+      
 *----------------------------------------------------------------------*
 *     Opt. Formulae
 *----------------------------------------------------------------------*
@@ -516,7 +627,7 @@ c     &     0,0,
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*
-      needed = idxlist(1,testnr,ncnt,1).gt.0
+      needed = idxlist(1,testnr,ncntrtest,1).gt.0
       
       call add_target('CONTR_TEST_I',ttype_gen,needed,tgt_info)
       call set_dependency('CONTR_TEST_I','FOPT_TEST_I',tgt_info)
@@ -643,7 +754,7 @@ c     &     0,0,
      &     parameters,0,tgt_info)
 
       ! test 2
-      needed = idxlist(2,testnr,ncnt,1).gt.0
+      needed = idxlist(2,testnr,ncntrtest,1).gt.0
       
       call add_target('CONTR_TEST_II',ttype_gen,needed,tgt_info)
       call set_dependency('CONTR_TEST_II','FOPT_TEST_II',tgt_info)
@@ -698,7 +809,7 @@ c     &     0,0,
      &     parameters,0,tgt_info)
 
       ! test 3
-      needed = idxlist(3,testnr,ncnt,1).gt.0
+      needed = idxlist(3,testnr,ncntrtest,1).gt.0
       
       call add_target('CONTR_TEST_III',ttype_gen,needed,tgt_info)
       call set_dependency('CONTR_TEST_III','FOPT_TEST_III',tgt_info)

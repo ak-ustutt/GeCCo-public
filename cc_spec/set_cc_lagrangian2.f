@@ -40,6 +40,9 @@ c prelim
 
       ! local variables
 
+      logical ::
+     &     l_h0d
+
       character ::
      &     name*(form_maxlen_label*2)
 
@@ -50,7 +53,7 @@ c prelim
 
       integer ::
      &     nterms,
-     &     idxham,idxtbar,idxtop,idxlcc
+     &     idxham,idxtbar,idxtop,idxlcc,t1xmode
 
       integer, external ::
      &     idx_oplist2
@@ -94,7 +97,7 @@ c prelim
       ! expand <0|(1+Tbar) e^{-T} H e^T|0> =
       ! <0| e^{-T} H e^T|0> +
       call expand_op_bch(flist_pnt,2,idxlcc,
-     &     1d0,-1,idxham,1d0,idxtop,1,2,op_info)
+     &     1d0,-1,idxham,1d0,idxtop,1,-1,op_info)
 
       ! advance pointer
       do while(associated(flist_pnt%next))
@@ -111,6 +114,16 @@ c prelim
       if (trim(trmode).ne.'no')
      &     call pert_truncation(flist_lag,trmode,
      &     idxtbar,idxham,idxtop,op_info)
+      call get_argument_value('method.CC','T1ext',ival=t1xmode)
+      if (t1xmode.gt.0) then
+        write(trmode,'("ord",i1)') t1xmode
+        call get_argument_value('method.CC','H0_T1ext',ival=t1xmode)
+        write(trmode(6:),'(i1)') t1xmode
+        call get_argument_value('method.CC','H0d',lval=l_h0d)
+        if (l_h0d) trmode(7:7) = 'd'
+        call t1x_truncation(flist_lag,trmode,
+     &       idxtbar,idxham,idxtop,op_info)
+      end if
 c prelim
 
       ! post_processing and term counting:

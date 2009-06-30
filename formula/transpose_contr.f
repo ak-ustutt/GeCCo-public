@@ -75,6 +75,9 @@
 
       ! update transposition info or block of operator
       do ivtx = 1, nvtx
+c dbg
+c        print *,'ivtx',ivtx
+c dbg
         if (vertex(ivtx)%dagger) then
           ! if the vertex was transpose, we know that iblk
           ! refers to the un-transpose operator, so we merely
@@ -91,23 +94,31 @@
           ! find out whether the transposed block exists:
           op => op_info%op_arr(vertex(ivtx)%idx_op)%op
           njoined = op%njoined
-          idxst = vertex(ivtx)%iblk_op
-          idxnd = idxst+njoined-1
+          idxnd = vertex(ivtx)%iblk_op
+          idxst = idxnd-njoined+1
+c          idxst = vertex(ivtx)%iblk_op
+c          idxnd = idxst+njoined-1
           occ => op%ihpvca_occ(1:ngastp,1:2,idxst:idxnd)
 c dbg
+c          print *,'idxst, idxnd: ',idxst,idxnd
 c          call wrt_occ_n(6,occ,op%njoined)
 c dbg
           ! ... but only if we have off-diagonal blocks
-          ! as we currently do not know the C/A symmetry
-          ! of the operator ...
-          if (.not.occ_is_diag_blk(occ,njoined)) then
+          ! or if we know that the operator is hermitian
+          if (.not.occ_is_diag_blk(occ,njoined).or.
+     &         abs(op%hermitian).eq.1)
+     &         then
             idx = iblk_occ(occ,.true.,op,
      &                     op%blk_version((idxst-1)/njoined+1))
+            ! we have to change the overall sign, if the
+            ! operator is anti-hermitian:
+            if (op%hermitian.eq.-1)
+     &           contr%fac = -contr%fac
           else
             idx = -1
           end if
 c dbg
-c          print *,'idx = ',idx
+c          print *,'idx = ',idx,occ_is_diag_blk(occ,njoined),op%hermitian
 c dbg
           if (idx.gt.0) then
             idx = (idx-1)*njoined+1

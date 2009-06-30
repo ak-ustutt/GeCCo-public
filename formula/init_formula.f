@@ -15,11 +15,12 @@
      &     form
 
       form%prev => null()
-      form%next => null()
-      form%contr => null()
-      form%interm => null()
-      form%command = command_end_of_formula
-      form%target = 0
+c      form%next => null()
+      call init_fl_item_0(form)
+c      form%contr => null()
+c      form%interm => null()
+c      form%command = command_end_of_formula
+c      form%target = 0
 
       return
       end

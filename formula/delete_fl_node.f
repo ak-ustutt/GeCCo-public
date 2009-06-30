@@ -17,14 +17,15 @@
      &     node
 
       if (associated(node%prev)) node%prev%next => node%next
-      if (associated(node%contr)) then
-        call dealloc_contr(node%contr)
-        deallocate(node%contr)
-      end if
-      if (associated(node%interm)) then
-c        call dealloc_op()
-        deallocate(node%interm)
-      end if
+      call dealloc_fl_item(node)
+c      if (associated(node%contr)) then
+c        call dealloc_contr(node%contr)
+c        deallocate(node%contr)
+c      end if
+c      if (associated(node%interm)) then
+c        call dealloc_operator(node%interm)
+c        deallocate(node%interm)
+c      end if
       if (associated(node%next)) node%next%prev => node%prev
       
       return

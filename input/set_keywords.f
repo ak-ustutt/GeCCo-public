@@ -23,11 +23,15 @@ c      use parse_input
      &     len=1,idef=(/50 000 000/))
       call argument_add('form_test','general',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('da_block',context='general',type=vtyp_int,
+     &     len=1,idef=(/32/))
 
       call keyword_add('orb_space')
       call keyword_add('shell',context='orb_space')
       call argument_add('def','orb_space.shell',type=vtyp_int,len=8)
       call argument_add('type','orb_space.shell',type=vtyp_str,len=8)
+      call argument_add('nfreeze','orb_space.shell',type=vtyp_int,
+     &     idef=(/0/))
       call keyword_add('open_shells',context='orb_space')
       call argument_add('treat','orb_space.open_shells',
      &     type=vtyp_str,len=4,cdef=(/'p','h',' ',' '/))
@@ -41,6 +45,10 @@ c      use parse_input
       call argument_add('minexc','method.CC',type=vtyp_int,idef=(/1/))
       call argument_add('truncate','method.CC',type=vtyp_str,
      &     len=8,cdef=(/'n','o',' ',' ',' ',' ',' ',' '/))
+      call argument_add('T1ext','method.CC',type=vtyp_int,idef=(/0/))
+      call argument_add('H0_T1ext','method.CC',type=vtyp_int,idef=(/0/))
+      call argument_add('H0d','method.CC',type=vtyp_log,
+     &                                                ldef=(/.false./))
 
       call keyword_add('CCPT',context='method')
       call argument_add('maxexc','method.CCPT',type=vtyp_int,idef=(/3/))
@@ -59,6 +67,11 @@ c      use parse_input
       call argument_add('minexc','method.ECC',type=vtyp_int,idef=(/1/))
       call argument_add('truncate','method.ECC',type=vtyp_str,
      &     len=8,cdef=(/'n','o',' ',' ',' ',' ',' ',' '/))
+      call argument_add('T1ext','method.ECC',type=vtyp_int,idef=(/0/))
+      call argument_add('H0_T1ext','method.ECC',
+     &                                       type=vtyp_int,idef=(/0/))
+      call argument_add('H0d','method.ECC',type=vtyp_log,
+     &                                                ldef=(/.false./))
 
       call keyword_add('R12',context='method')
       call argument_add('ansatz','method.R12',type=vtyp_int,idef=(/1/))
@@ -67,14 +80,23 @@ c      use parse_input
       call argument_add('min_tp','method.R12',type=vtyp_int,idef=(/1/))
       call argument_add('min_tpp','method.R12',type=vtyp_int,idef=(/2/))
       call argument_add('T1ext','method.R12',type=vtyp_int,idef=(/0/))
+      call argument_add('H0_T1ext','method.R12',
+     &                                        type=vtyp_int,idef=(/-1/))
+      call argument_add('H0d','method.R12',type=vtyp_log,
+     &                                                ldef=(/.false./))
       call argument_add('approx','method.R12',type=vtyp_str,len=8,
      &     cdef=(/'A',' ',' ',' ',' ',' ',' ',' '/))
       call argument_add('F_appr','method.R12',type=vtyp_str,len=8,
      &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
       call argument_add('K_appr','method.R12',type=vtyp_str,len=8,
      &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
+      call argument_add('Z_appr','method.R12',type=vtyp_str,len=8,
+     &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
+c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('fixed','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('fix_new','method.R12',type=vtyp_int,
+     &     idef=(/0/))
       call argument_add('extend','method.R12',type=vtyp_int,
      &     idef=(/0/))
       call argument_add('r12op','method.R12',type=vtyp_int,
@@ -99,6 +121,8 @@ c      use parse_input
       call keyword_add('formulae',context='calculate.check')
       call argument_add('contr_test','calculate.check',
      &     type=vtyp_int,idef=(/1/))
+      call argument_add('algebra_test','calculate.check',
+     &     type=vtyp_int,idef=(/1/))
 
       ! general
       call keyword_add('solve',context='calculate')
@@ -108,6 +132,8 @@ c      use parse_input
      &     idef=(/20/))
       call argument_add('maxsub','calculate.solve',type=vtyp_int,
      &     idef=(/8/))
+      call argument_add('check_incore','calculate.solve',type=vtyp_int,
+     &     idef=(/-1/))
       call argument_add('conv','calculate.solve',type=vtyp_rl8,
      &     xdef=(/1d-6/))
 
@@ -189,7 +215,8 @@ c      use parse_input
 
       call keyword_add('routes',context='calculate')
       call argument_add('schedule','calculate.routes',type=vtyp_int,
-     &     idef=(/0/))
+c     &     idef=(/0/))
+     &     idef=(/1/))
       call argument_add('contract','calculate.routes',type=vtyp_int,
      &     idef=(/3/))
       call argument_add('str_block','calculate.routes',type=vtyp_int,
@@ -199,6 +226,9 @@ c      use parse_input
       call argument_add('force_batching',
      &     'calculate.routes',type=vtyp_int,
      &     idef=(/-1/))
+      call argument_add('force_ooc_sort',
+     &     'calculate.routes',type=vtyp_int,
+     &     idef=(/0/))
       call argument_add('use_tr','calculate.routes',type=vtyp_log,
      &     ldef=(/.true./))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,

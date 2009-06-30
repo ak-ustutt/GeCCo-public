@@ -54,7 +54,8 @@
       integer, external ::
      &     iblk_occ
 
-      call quit(1,'inter_full_contr','should be obsolete')
+
+      call quit(1,'inter_full_contr','still in use?')
 
       if(ntest.ge.100)then
         write(luout,*) '==========================='
@@ -123,7 +124,7 @@ c        enddo
      &       +iocc_xdn(2,op_info%op_arr(idx_op(1))%
      &       op%ihpvca_occ(1:ngastp,1:2,iblk_off+nops))
 
-        if(iblk_occ(occ_temp,op_res%dagger,op_res).le.0)
+        if(iblk_occ(occ_temp,op_res%dagger,op_res,0).le.0)
      &       call quit(1,'inter_full_contr','intermed/result mismatch') 
 
         ! Loop over the vertices of the intermediate in order to determine
@@ -140,7 +141,7 @@ c        enddo
      &         op%ihpvca_occ(1:ngastp,1:2,iblk_off+ispc))
 
           op_spc => op_info%op_arr(idx_op(ispc))%op
-          idx_spc=iblk_occ(occ_temp,op_spc%dagger,op_spc)
+          idx_spc=iblk_occ(occ_temp,op_spc%dagger,op_spc,0)
           if(idx_spc.le.0)
      &         call quit(1,'inter_full_contr','unrecognised spacer blk')
 

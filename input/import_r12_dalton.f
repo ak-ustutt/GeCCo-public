@@ -61,6 +61,8 @@
      &     cpu0, sys0, wall0, cpu, sys, wall
 
 
+      call quit(1,'import_r12_dalton','obsolete!')
+
       ifree=mem_setmark('import_r12')
 
       op =>   oplist%op

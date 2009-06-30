@@ -85,7 +85,7 @@ c      include 'def_contraction_list.h'
         idx1 = idx_oplist2(label_replace(irepl1)(1:len1),op_info)
         if (idx1.le.0)
      &       call quit(1,'form_op_replace_drv',
-     &     'formula label 1 not on list: '//trim(label_replace(irepl1)))
+     &    'operator label 1 not on list: '//trim(label_replace(irepl1)))
         
         ! look for transposition label of second operator
         len2 = len_trim(label_replace(irepl2))
@@ -102,12 +102,8 @@ c dbg end fix
         idx2 = idx_oplist2(label_replace(irepl2)(1:len2),op_info)
         if (idx2.le.0)
      &       call quit(1,'form_op_replace_drv',
-     &     'formula label 2 not on list: '//trim(label_replace(irepl2)))
+     &    'operator label 2 not on list: '//trim(label_replace(irepl2)))
         
-        if (transpose1.or.transpose2)
-     &       call quit(1,'form_op_rename',
-     &       'transpositions are not yet considered !')
-
         if (ntest.ge.100)
      &       write(luout,*)
      &       'now replacing: ',
@@ -116,9 +112,9 @@ c dbg end fix
      &       label_replace(irepl2)(1:len2),
      &       ' transpose: ',transpose2
 
-        call form_op_replace(label_replace(irepl1)(1:len1),
-     &                       label_replace(irepl2)(1:len2),.false.,
-     &                       flist,op_info)
+        call op_replace(idx1,transpose1,
+     &                  idx2,transpose2,
+     &                  .false.,flist,op_info)
 
       end do
 
