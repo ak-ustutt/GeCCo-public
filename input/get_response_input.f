@@ -40,7 +40,7 @@
      &     pert_sym
 
       do icnt = 1,ncnt
-        call get_argument_value('calculate.experimental','order',
+        call get_argument_value('calculate.response','order',
      &       keycount=icnt,ival=maxord(icnt))
       end do
       ncmp = ncnt*maxval(maxord)
@@ -49,7 +49,7 @@
       cmp(:)%freq = 0d0
       if (maxval(maxord).gt.maximum_order) then
         write(pert_ord,'(i1)') maximum_order
-        call quit(1,'set_experimental_targets',
+        call quit(1,'get_response_input',
      &        'maxord must not exceed '//pert_ord)
       end if
       pert(1:len_command_par) = ' '
@@ -58,12 +58,12 @@
       npop = 0
       do icnt = 1,ncnt
         pos = (icnt-1)*maxval(maxord) + 1
-        call get_argument_value('calculate.experimental','comp',
+        call get_argument_value('calculate.response','comp',
      &       keycount=icnt,str=pert(pos:len_command_par))
-        call get_argument_value('calculate.experimental','pert',
+        call get_argument_value('calculate.response','pert',
      &       keycount=icnt,str=pertop(pos:len_command_par))
 
-        call get_argument_value('calculate.experimental','freq',
+        call get_argument_value('calculate.response','freq',
      &       keycount=icnt,xarr=cmp(pos+1:ncmp)%freq)
         cmp(pos+maxord(icnt):ncmp)%freq = 0d0
         if (maxord(icnt).gt.0)
@@ -82,7 +82,7 @@
           if (pert(idx:idx).ne.'X' .and.
      &          pert(idx:idx).ne.'Y' .and.
      &          pert(idx:idx).ne.'Z')
-     &          call quit(1,'set_experimental_targets',
+     &          call quit(1,'get_response_input',
      &          'comp must contain X,Y,Z')
           skip = .false.
           do ipop = 1,len(pert_ops)
@@ -93,7 +93,7 @@
               exit
             end if
           end do
-          if (.not.skip) call quit(1,'set_experimental_targets',
+          if (.not.skip) call quit(1,'get_response_input',
      &          'perturbation operator "'//pertop(idx:idx)//
      &          '" is currently not allowed.')
           skip = .false.

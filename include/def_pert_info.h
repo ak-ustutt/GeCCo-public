@@ -2,27 +2,30 @@
 *     parameters
 *----------------------------------------------------------------------*
       integer, parameter ::
-     &     maxpop = 4, maxcmp = 99, maximum_order = 9
+     &     maxpop = 6, maxcmp = 99, maximum_order = 9
 
       character(len=maxpop), parameter ::
-     &     pert_ops = 'urpl'
+     &     pert_ops = 'drpvam'          ! d: dipole     r: position
+                                        ! p: momentum   v: dipole velocity
+                                        ! a: angular momentum
+                                        ! m: magnetic moment
       character(len=6*maxpop), parameter ::
-     &     dalton_int_names = 'DIPLENDIPLENDIPVELANGMOM'
+     &     dalton_int_names = 'DIPLENDIPLENDIPVELDIPVELANGMOMANGMOM'
       integer, parameter ::
-     &     pert_op_sign(maxpop) = (/2,1,4,4/)
+     &     pert_op_sign(maxpop) = (/2,1,4,3,3,8/)
 
 *----------------------------------------------------------------------*
 *     pert_op_info and pert_component_info definitions
 *----------------------------------------------------------------------*
       type pert_op_info
         character(len=1) ::
-     &       name,           ! e.g. r, p (momentum), l (ang. mom.)
+     &       name,           ! one of pert_ops
      &       comp            ! directional component
         character(len=8) ::
      &       int_name        ! name of dalton integral list
         integer ::
      &       isym,           ! irrep
-     &       sign            ! 1=+, 2=-, 3=i, 4=-i
+     &       sign            ! 1=+, 2=-, 3=i, 4=-i,5=1/2,...,8=-i/2
       end type pert_op_info
 
       type pert_component_info

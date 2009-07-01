@@ -38,10 +38,10 @@
 
       integer ::
      &     idx, last1, last2, last3, last4, last5, iostatus,
-     &     icnt, ncnt, npop, ncmp, glob_sign
+     &     icnt, ncnt, npop, ncmp, glob_sign, temp_sign
 
       real(8) ::
-     &     abssum, value, nucmom
+     &     abssum, value, nucmom, fac
 
       type(pert_op_info) ::
      &     pop(3*maxpop)
@@ -58,21 +58,24 @@
       logical ::
      &     closeit, file_exists, got_nucmom
 
-      ncnt = is_keyword_set('calculate.experimental')
+      ncnt = is_keyword_set('calculate.response')
       allocate(maxord(ncnt),freq(ncnt,maximum_order))
 
       do icnt = 1,ncnt
-        call get_argument_value('calculate.experimental','order',
+        call get_argument_value('calculate.response','order',
      &       keycount=icnt,ival=maxord(icnt))
       end do
 
       call get_response_input(ncnt,maxord,ncmp,cmp,npop,pop,orb_info)
 
-      ! find out global sign
+      ! find out global sign and factor
       glob_sign = 1
+      fac = 1d0
       do idx = 1, order
-        glob_sign = multsign(glob_sign,
-     &                       pop(cmp(ifreq(idx))%pop_idx)%sign)
+        temp_sign = pop(cmp(ifreq(idx))%pop_idx)%sign
+        fac = fac * 1d0/real((temp_sign+3)/4)
+        temp_sign = mod(temp_sign-1,4)+1
+        glob_sign = multsign(glob_sign,temp_sign)
       end do
 
       if (order.gt.0) then
@@ -139,15 +142,16 @@
 
       ! flip sign if - or -i
       if (glob_sign.eq.2.or.glob_sign.eq.4) value = -value
+      value = fac * value
 
       last4 = 28
-      if (abs(value).lt.100000d0) then
+      if (abs(value).lt.100000d0.and.abs(value).gt.1d-1) then
         write(part4(1:last4),'(" = >>",f19.12," << ")') value
-      else if (abs(value).lt.10000000d0) then
+      else if (abs(value).lt.10000000d0.and.abs(value).gt.1d-1) then
         write(part4(1:last4),'(" = >>",f19.10," << ")') value
-      else if (abs(value).lt.1000000000d0) then
+      else if (abs(value).lt.1000000000d0.and.abs(value).gt.1d-1) then
         write(part4(1:last4),'(" = >>",f19.8," << ")') value
-      else if (abs(value).lt.100000000000d0) then
+      else if (abs(value).lt.100000000000d0.and.abs(value).gt.1d-1) then
         write(part4(1:last4),'(" = >>",f19.6," << ")') value
       else
         write(part4(1:last4),'(" = >>",E19.10," << ")') value
@@ -166,7 +170,7 @@
 
       ! try to recognize property and print as such
       property = '    '
-      if (all(pop(cmp(ifreq(1:order))%pop_idx)%name.eq.'u')) then
+      if (all(pop(cmp(ifreq(1:order))%pop_idx)%name.eq.'d')) then
         if (mod(order,2).eq.0.and.order.gt.0) value = -value
         property = 'elec'
       end if
@@ -205,13 +209,13 @@
       end if
 
       last4 = 28
-      if (abs(value).lt.100000d0) then
+      if (abs(value).lt.100000d0.and.abs(value).gt.1d-1) then
         write(part4(1:last4),'(": >>>",f19.12," <<<")') value
-      else if (abs(value).lt.10000000d0) then
+      else if (abs(value).lt.10000000d0.and.abs(value).gt.1d-1) then
         write(part4(1:last4),'(": >>>",f19.10," <<<")') value
-      else if (abs(value).lt.1000000000d0) then
+      else if (abs(value).lt.1000000000d0.and.abs(value).gt.1d-1) then
         write(part4(1:last4),'(": >>>",f19.8," <<<")') value
-      else if (abs(value).lt.100000000000d0) then
+      else if (abs(value).lt.100000000000d0.and.abs(value).gt.1d-1) then
         write(part4(1:last4),'(": >>>",f19.6," <<<")') value
       else
         write(part4(1:last4),'(": >>>",E19.10," <<<")') value
