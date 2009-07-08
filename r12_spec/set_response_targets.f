@@ -76,8 +76,8 @@
      &     medef_xprc*12 = 'DEF-XPRCLIST'
 
       logical ::
-     &     setr12, r12fix, set_zero, treat_bv,
-     &     truncate, half, userules, opt, screen
+     &     setr12, r12fix, set_zero, treat_bv, file_exists,
+     &     truncate, half, userules, opt, screen, restart
 
       real(8) ::
      &     freqsum
@@ -164,11 +164,21 @@
       if (.not.userules.and..not.all(abs(cmp(1:ncmp)%freq).lt.1d-12))
      &       call quit(1,'set_response_targets',
      &       'no-rules option only supported for static response')
+      ! restart after CC equations? Require mel file for T(0) amplitudes
+      call get_argument_value('calculate.response','restart',
+     &     keycount=1,lval=restart)
+      if (restart) then
+        inquire(file='ME_T(0)_list.da',exist=file_exists)
+        if (.not.file_exists)
+     &        call quit(1,'set_response_targets',
+     &                  'restart option requires file ME_T(0)_list.da')
+      end if
 
       if (ntest.ge.100) then
         write(luout,*) 'keywords processed:'
         write(luout,*) 'maxexc      : ',maxexc
         write(luout,*) 'userules    : ',userules
+        write(luout,*) 'restart     : ',restart
         write(luout,*) 'BX_3C       : ',treat_bv
         write(luout,*) 'trunc_type  : ',trunc_type
         write(luout,*) 'ncnt        : ',ncnt
@@ -183,6 +193,8 @@
       end if
 
       if (iprlvl.gt.0) then
+        if (restart)
+     &        write(luout,*) 'Restart calculation using T(0) amplitudes'
         if (.not.userules)
      &        write(luout,*) 'No 2n+1 and 2n+2 rules will be used'
         method(1:6) = 'CCSDTQ'
@@ -1154,6 +1166,9 @@
           call form_parameters(-1,parameters,2,'stdout',1,'stdout')
           call set_rule('RESP_LAGF',ttype_frm,PRINT_FORMULA,
      &                  labels,2,1,parameters,2,tgt_info)
+c          call set_rule('RESP_LAGF',ttype_frm,TEX_FORMULA,
+c     &                  labels,5,1,
+c     &                  'ccr12_lag0.tex',1,tgt_info)
         end if
       end if
 
@@ -2878,9 +2893,11 @@
         labels(8)= mel_ham
         ilabels = 8
       end if
-      call set_rule('SOLVE_T(0)',ttype_opme,SOLVENLEQ,
-     &     labels,ilabels,2,
-     &     parameters,2,tgt_info)
+      if (.not.restart) then
+        call set_rule('SOLVE_T(0)',ttype_opme,SOLVENLEQ,
+     &       labels,ilabels,2,
+     &       parameters,2,tgt_info)
+      end if
 
       if (ntest.ge.100)
      &  write(luout,*) 'define solvers for linear equations'
@@ -3095,6 +3112,7 @@
      &                                         tgt_info)
             labels(1:20)(1:len_target_name) = ' '
             labels(1) = trim(optname)
+            if (restart.and.ord.eq.0) cycle
             call set_rule(trim(evalname),ttype_opme,EVAL,
      &           labels,1,0,
      &           parameters,0,tgt_info)

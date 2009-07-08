@@ -250,6 +250,8 @@ c     &     idef=(/0/))
      &     type=vtyp_log,ldef=(/.true./)) ! treat BX intermed. as in approx.3C
       call argument_add('rules','calculate.response',
      &     type=vtyp_log,ldef=(/.true./)) ! use 2n+1 / 2n+2 rules
+      call argument_add('restart','calculate.response',
+     &     type=vtyp_log,ldef=(/.false./)) ! restart using mel-file of T(0)
 
       call keyword_add('experimental',context='calculate')
       ! set additional experimental keyword in this subroutine:
