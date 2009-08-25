@@ -251,7 +251,7 @@ c     &     idef=(/0/))
       call argument_add('rules','calculate.response',
      &     type=vtyp_log,ldef=(/.true./)) ! use 2n+1 / 2n+2 rules
       call argument_add('restart','calculate.response',
-     &     type=vtyp_log,ldef=(/.false./)) ! restart using mel-file of T(0)
+     &     type=vtyp_int,idef=(/0/)) ! restart calc. at given prop. order
 
       call keyword_add('experimental',context='calculate')
       ! set additional experimental keyword in this subroutine:

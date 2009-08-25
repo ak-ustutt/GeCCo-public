@@ -40,7 +40,7 @@
      &     ord, op_par, len_op_exp, side, x_max_ord,
      &     digit, ilabels, ord2, op_par2, x_max_ord2,
      &     ncnt, icnt, pos,
-     &     spec, trunc_type, ipop, npop, ncmp
+     &     spec, trunc_type, ipop, npop, ncmp, restart
 
       character(len_target_name) ::
      &     mel_dia1,
@@ -77,7 +77,7 @@
 
       logical ::
      &     setr12, r12fix, set_zero, treat_bv, file_exists,
-     &     truncate, half, userules, opt, screen, restart
+     &     truncate, half, userules, opt, screen
 
       real(8) ::
      &     freqsum
@@ -164,15 +164,48 @@
       if (.not.userules.and..not.all(abs(cmp(1:ncmp)%freq).lt.1d-12))
      &       call quit(1,'set_response_targets',
      &       'no-rules option only supported for static response')
-      ! restart after CC equations? Require mel file for T(0) amplitudes
+      ! restart calculation? Requires amplitude mel files
       call get_argument_value('calculate.response','restart',
-     &     keycount=1,lval=restart)
-      if (restart) then
-        inquire(file='ME_T(0)_list.da',exist=file_exists)
-        if (.not.file_exists)
-     &        call quit(1,'set_response_targets',
-     &                  'restart option requires file ME_T(0)_list.da')
-      end if
+     &     keycount=1,ival=restart)
+      melname(1:len_short) = ' '
+      do op_par = 1,2
+        if (op_par.eq.1) then
+          melname(1:11) = 'ME_T(n)'
+          x_max_ord = int((real(restart-1)-1)/2+0.6)
+        else
+          melname(1:11) = 'ME_L(n)'
+          x_max_ord = int((real(restart-1)-2)/2+0.6)
+        end if
+        if (.not.userules.and.restart.gt.0) 
+     &          call quit(1,'set_response_targets',
+     &          'restart option currently only with rules=T')
+        if (restart.lt.op_par) cycle
+        do ord = 0,x_max_ord
+          write(melname(6:6),'(i1)') ord
+          melname(8:len_short) = ' '
+          allocate(ifreq(ord),ifreqnew(ord))
+          ifreq = 0
+          set_zero = ord.eq.0
+          do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+            set_zero = .false.
+            call redundant_comb(ifreq,ifreqnew,cmp(1:ncmp)%redun,ord,
+     &                          maxord,ncnt)
+            do digit = 1,ord
+              write(melname(6+2*digit:7+2*digit),'(i2.2)')
+     &                             ifreqnew(digit)
+            end do
+            inquire(file=trim(melname)//'_list.da',exist=file_exists)
+            if (file_exists) then
+              write(luout,*) 'Restart calculation using ',
+     &                       trim(melname)//'_list.da'
+            else
+              call quit(1,'set_response_targets','Restart requires '//
+     &                    'file '//trim(melname)//'_list.da')
+            end if
+          end do
+          deallocate(ifreq,ifreqnew)
+        end do
+      end do
 
       if (ntest.ge.100) then
         write(luout,*) 'keywords processed:'
@@ -193,8 +226,6 @@
       end if
 
       if (iprlvl.gt.0) then
-        if (restart)
-     &        write(luout,*) 'Restart calculation using T(0) amplitudes'
         if (.not.userules)
      &        write(luout,*) 'No 2n+1 and 2n+2 rules will be used'
         method(1:6) = 'CCSDTQ'
@@ -2893,11 +2924,10 @@ c     &                  'ccr12_lag0.tex',1,tgt_info)
         labels(8)= mel_ham
         ilabels = 8
       end if
-      if (.not.restart) then
-        call set_rule('SOLVE_T(0)',ttype_opme,SOLVENLEQ,
+      if (restart.eq.0) 
+     &       call set_rule('SOLVE_T(0)',ttype_opme,SOLVENLEQ,
      &       labels,ilabels,2,
      &       parameters,2,tgt_info)
-      end if
 
       if (ntest.ge.100)
      &  write(luout,*) 'define solvers for linear equations'
@@ -2913,6 +2943,7 @@ c     &                  'ccr12_lag0.tex',1,tgt_info)
           optname(1:8) = 'OPT_L(n)'
           solvename(1:10) = 'SOLVE_L(n)'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
+          x_max_ord2 = int((real(restart-1)-2)/2+0.6)
         else
           op_parent = 'T'
           defmelname(1:11) = 'DEF_ME_T(n)'
@@ -2921,6 +2952,7 @@ c     &                  'ccr12_lag0.tex',1,tgt_info)
           optname(1:8) = 'OPT_T(n)'
           solvename(1:10) = 'SOLVE_T(n)'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
+          x_max_ord2 = int((real(restart-1)-1)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
         do ord = op_par-1,x_max_ord
@@ -3015,9 +3047,10 @@ c     &                  'ccr12_lag0.tex',1,tgt_info)
               labels(9)= mel_ham
               ilabels = 9
             end if
-            call set_rule(trim(solvename),ttype_opme,SOLVELEQ,
-     &           labels,ilabels,1,
-     &           parameters,2,tgt_info)
+            if (ord.gt.x_max_ord2.or.op_par+restart.le.2)
+     &            call set_rule(trim(solvename),ttype_opme,SOLVELEQ,
+     &            labels,ilabels,1,
+     &            parameters,2,tgt_info)
           end do
           deallocate(ifreq,ifreqnew)
         end do
@@ -3112,7 +3145,7 @@ c     &                  'ccr12_lag0.tex',1,tgt_info)
      &                                         tgt_info)
             labels(1:20)(1:len_target_name) = ' '
             labels(1) = trim(optname)
-            if (restart.and.ord.eq.0) cycle
+            if (restart.gt.ord) cycle
             call set_rule(trim(evalname),ttype_opme,EVAL,
      &           labels,1,0,
      &           parameters,0,tgt_info)
