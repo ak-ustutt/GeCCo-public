@@ -42,7 +42,7 @@
      &     iblk_last, idx, ider, ivtx, iarc, jvtx, jarc, il, ierr,
      &     idx_0, ipcr_0, ipcr_res, ipcr_mlt, ipcr_der,
      &     ixarc, jxarc, nxarc_raw,
-     &     nder_actually, nder_arcs
+     &     nder_actually, nder_arcs, der_blk_version
       integer, pointer ::
      &     iocc(:,:,:),
      &     iocc2(:,:,:)
@@ -206,6 +206,10 @@
             cur_conder%contr%svertex(jvtx) = contr%svertex(ivtx)
           end if
         end do
+        ! block version of derivative
+        der_blk_version = op_arr(contr%vertex(ivtxder(ider))%idx_op)%op%
+     &              blk_version((contr%vertex(ivtxder(ider))%iblk_op-1)/
+     &              njoined_der+1)
         ! add info on new operator to contract derivative with
         ! (if any)
         if (idxmlt.ne.0) then
@@ -228,7 +232,8 @@ c            call wrt_occ_n(luout,iocc,1)
             call quit(1,'contr_deriv',
      &           'QUICK FIX is not prepared for this')
           end if
-          idx = iblk_occ(iocc,.false.,op_arr(idxmlt)%op)
+          idx = iblk_occ(iocc,.false.,op_arr(idxmlt)%op,
+     &                   der_blk_version)
           if (idx.lt.0)
      &         call quit(1,'contr_dervi2','idx<0??')
           cur_conder%contr%vertex(ivtxder(ider))%iblk_op = idx
@@ -348,7 +353,8 @@ c          call wrt_occ_n(luout,iocc2,1)
         else        
           ! ... and the corresponding block in the target operator
           cur_conder%contr%iblk_res = iblk_occ(iocc,.false.,
-     &                                          op_arr(idxres)%op)
+     &                                          op_arr(idxres)%op,
+     &                                          der_blk_version)
 cc fix - need to reconsider this:
 c          ! currently we give the absolute index of first occupation
 c          ! when njoined_res > 1

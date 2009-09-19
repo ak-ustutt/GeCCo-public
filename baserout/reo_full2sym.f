@@ -48,7 +48,8 @@
             icr_min = min(icdx_tot,irdx_tot)
 
             fac = 1d0
-            if (icdx_tot.lt.irdx_tot) fac = psign
+            if (icdx_tot.gt.irdx_tot) fac = psign ! sign consistent to DALTON
+                                      ! see DALTON/pdpack/linextra.F line 109
 
             xblk(ioff_blk + (icdx-1)*nrow+irdx) =
      &           fac*xfull(icr_max*(icr_max-1)/2+icr_min)

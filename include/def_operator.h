@@ -54,6 +54,9 @@
         integer, pointer ::
      &     ifreq(:)             ! frequency index
 
+        integer, pointer ::
+     &     blk_version(:)       ! block version (in case of similar blocks)
+
         logical ::
      &       formal                   ! formal operator only?
         logical, pointer ::

@@ -57,7 +57,8 @@
 
       ! easy game
       if (pcr1.eq.pcr2) then
-        iblk_corresp = iblk_occ(occ_blk1(1,1,idxblk1),dag2,op2)
+        iblk_corresp = iblk_occ(occ_blk1(1,1,idxblk1),dag2,op2,
+     &                          op1%blk_version(iblk1))
         idx_next_poss = -1
       else if (abs(pcr1-pcr2).eq.1) then
         if (pcr1-pcr2.eq.+1) ica = 1
@@ -82,7 +83,8 @@
      &           occ_blk1(1:ngastp,1:2,idxblk1:idxblk1-1+nj1)
             occ_scr(igastp,ica,ij) =
      &           occ_scr(igastp,ica,ij) - 1
-            iblk_corresp = iblk_occ(occ_scr,dag2,op2)
+            iblk_corresp = iblk_occ(occ_scr,dag2,op2,
+     &                          op1%blk_version(iblk1))
             exit this_loop
           end do
         end do this_loop

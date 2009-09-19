@@ -21,6 +21,8 @@ c      use parse_input
      &     len=256)
       call argument_add('memmax',context='general',type=vtyp_int,
      &     len=1,idef=(/50 000 000/))
+      call argument_add('form_test','general',type=vtyp_log,
+     &     ldef=(/.false./))
       call argument_add('da_block',context='general',type=vtyp_int,
      &     len=1,idef=(/32/))
 
@@ -104,6 +106,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('trunc','method.R12',type=vtyp_int,
      &     idef=(/0/))
       call argument_add('screen','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
+      call argument_add('opt','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
 
       ! Truncations
@@ -229,6 +233,23 @@ c     &     idef=(/0/))
      &     ldef=(/.true./))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
+
+      ! special keywords for response theory
+      call keyword_add('response',context='calculate')
+      call argument_add('maxexc','calculate.response',type=vtyp_int,
+     &                  idef=(/2/)) ! maximum excitations
+      call argument_add('order','calculate.response',type=vtyp_int,
+     &                  idef=(/0/)) ! perturbation order
+      call argument_add('pert','calculate.response',
+     &                  type=vtyp_str,len=1,cdef=(/'d'/)) ! pert. op.
+      call argument_add('comp','calculate.response',
+     &                  type=vtyp_str,len=1,cdef=(/'Z'/)) ! cartesian components
+      call argument_add('freq','calculate.response',
+     &                  type=vtyp_rl8,xdef=(/0d0/)) ! frequencies
+      call argument_add('BX_3C','calculate.response',
+     &     type=vtyp_log,ldef=(/.true./)) ! treat BX intermed. as in approx.3C
+      call argument_add('rules','calculate.response',
+     &     type=vtyp_log,ldef=(/.true./)) ! use 2n+1 / 2n+2 rules
 
       call keyword_add('experimental',context='calculate')
       ! set additional experimental keyword in this subroutine:

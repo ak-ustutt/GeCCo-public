@@ -87,10 +87,10 @@
      &     xeig(nroots,2), xresnrm(nroots*nopt), xlist(2*nroots)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:), me_met(:),
-     &     me_special(:)
+     &     me_special(:), me_scr(:)
       type(file_array), pointer ::
      &     ffdia(:), ff_trv(:),
-     &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:)
+     &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:)
       type(dependency_info) ::
      &     depend
       type(optimize_info) ::
@@ -132,9 +132,10 @@
       form_mvp => form_info%form_arr(idx)%form
 
       allocate(me_opt(nopt),me_dia(nopt),me_trv(nopt),me_mvp(nopt),
-     &         me_met(nopt),me_special(nspecial))
+     &         me_met(nopt),me_special(nspecial),me_scr(nopt))
       allocate(ffopt(nopt),ffdia(nopt),
-     &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt),ffspecial(nspecial))
+     &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt),ffspecial(nspecial),
+     &     ff_scr(nopt))
       do iopt = 1, nopt
         ! pointer array for operators:
         ierr = 1
@@ -190,6 +191,19 @@
       use_s_t = .false.
 
       do iopt = 1, nopt
+
+        ! get a ME-list for trial-vectors
+        write(fname,'("scr_",i3.3)') iopt
+        call define_me_list(fname,me_opt(iopt)%mel%op%name,
+     &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
+     &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
+     &       me_opt(iopt)%mel%mst,.false.,
+     &       1,nvectors,
+     &       op_info,orb_info,str_info,strmap_info)
+        idxmel = idx_mel_list(fname,op_info)
+        me_scr(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+        ff_scr(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+
         ! get a ME-list for trial-vectors
         write(fname,'("trv_",i3.3)') iopt
         call define_me_list(fname,me_opt(iopt)%mel%op%name,
@@ -254,6 +268,7 @@
       do iopt = 1, nopt
         ! open result vector file(s)
         call file_open(ffopt(iopt)%fhand)
+        call file_open(ff_scr(iopt)%fhand)
         call file_open(ff_trv(iopt)%fhand)
         ! open corresponding matrix vector products ...
         call file_open(ff_mvp(iopt)%fhand)
@@ -312,9 +327,10 @@ c dbg
      &       task,conv,xresnrm,xeig,
      &       use_s,
      &       nrequest,irectrv,irecmvp,irecmet,
-     &       me_opt,me_trv,me_mvp,me_met,me_dia,me_dia,
+     &       me_opt,me_scr,me_trv,me_mvp,me_met,me_dia,me_dia,
      &       me_special,nspecial,
 c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
+     &       fl_mvp,depend,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 
@@ -395,6 +411,7 @@ c dbg
       do iopt = 1, nopt
 
         ! remove the temporary lists
+        call del_me_list(me_scr(iopt)%mel%label,op_info)
         call del_me_list(me_trv(iopt)%mel%label,op_info)
         call del_me_list(me_mvp(iopt)%mel%label,op_info)
         if (use_s(iopt))
@@ -442,8 +459,8 @@ c dbg
 
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
-      deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special)
-      deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial)
+      deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special,me_scr)
+      deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial,ff_scr)
 
       ifree = mem_flushmark()
 

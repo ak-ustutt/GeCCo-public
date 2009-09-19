@@ -111,8 +111,18 @@ c          print *,'Raw grad:'
 c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
 c     &     str_info,orb_info)
 c dbg
+          if (ntest.ge.100) then
+            write(luout,*) 'gradient vector before:'
+            write(luout,*) xbuf1(1:nwfpar)
+          end if
+
           call vec_from_da(ffdia,1,xbuf2,nwfpar)
           xbuf1(1:nwfpar) = xbuf1(1:nwfpar)/xbuf2(1:nwfpar)
+
+          if (ntest.ge.100) then
+            write(luout,*) 'gradient vector afterwards:'
+            write(luout,*) xbuf1(1:nwfpar)
+          end if
 c dbg
 c          print *,'Precond. grad:'
 c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
@@ -138,6 +148,12 @@ c          print *,'Precond. grad:'
 c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,1,
 c     &         str_info,orb_info)
 c dbg
+        case(optinf_prc_mixed)
+          call vec_from_da(ffdia,1,xbuf2,nwfpar)
+          call optc_prc_mixed(me_grd,me_special,nspecial,
+     &                           me_amp%op%name,0d0,
+     &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
+     &                          orb_info,op_info,str_info,strmap_info)
         end select
 c dbg
 c          print *,'|g/d|:' ,dnrm2(nwfpar,xbuf1,1)
@@ -195,6 +211,9 @@ c        endif
         if (typ_prc.eq.optinf_prc_blocked)
      &        call quit(1,'optc_diis_sbsp_add',
      &       '(2): blocked preconditioning for nincore==3, only')
+        if (typ_prc.eq.optinf_prc_mixed)
+     &        call quit(1,'optc_diis_sbsp_add',
+     &       '(2b): blocked preconditioning for nincore==3, only')
 
         ! prelim. w/o damping
         ! add D^-1|gradient(n)> to subspace

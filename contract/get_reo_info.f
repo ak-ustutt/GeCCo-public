@@ -64,7 +64,7 @@
      &     imltlist, sign_reo
 
 c dbg
-      if (reo_info%nreo.gt.0) print *,'nreo = ',reo_info%nreo
+c      if (reo_info%nreo.gt.0) print *,'nreo = ',reo_info%nreo
 c dbg
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'get_reo_info')

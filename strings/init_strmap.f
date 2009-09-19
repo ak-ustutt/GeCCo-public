@@ -14,7 +14,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     initial_ngraph = 10
+     &     initial_ngraph = 14
 
       type(strinf), intent(in) ::
      &     str_info

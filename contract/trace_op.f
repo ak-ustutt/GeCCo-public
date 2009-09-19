@@ -277,8 +277,8 @@ c dbg mh igam_op_tr_a(2) --> igam_op_tr_a(3)
      &       trim(trop%name)
         write(luout,*) 'lenop, lentrop: ',
      &                  lenop, lentrop
-        call quit(1,'trace_op',
-     &     'zero length for operator?')
+        call warn('trace_op','zero length for operator?')
+        return
       end if
 
       ifree = mem_setmark('trace_op')

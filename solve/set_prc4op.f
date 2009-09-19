@@ -130,7 +130,7 @@
         open_close_b = me_ham%fhand%unit.le.0
         occ_test = 0
         occ_test(IPART,1:2) = 1
-        use_b1 = iblk_occ(occ_test,.false.,me_b%op).gt.0
+        use_b1 = iblk_occ(occ_test,.false.,me_b%op,1).gt.0
       end if
 
       if (use_x) then
@@ -146,7 +146,7 @@
         open_close_x = me_ham%fhand%unit.le.0
         occ_test = 0
         occ_test(IPART,1:2) = 1
-        use_x1 = iblk_occ(occ_test,.false.,me_x%op).gt.0
+        use_x1 = iblk_occ(occ_test,.false.,me_x%op,1).gt.0
       end if
 
       h1dia => xdummy

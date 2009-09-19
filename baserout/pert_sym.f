@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      integer function pert_sym(pertdir,orb_info)
+      integer function pert_sym(int_name,orb_info)
 *----------------------------------------------------------------------*
 *     determines IRREP of a given perturbation direction
 *     matthias, 2008
@@ -13,15 +13,15 @@
       include 'def_orbinf.h'
       include 'ifc_memman.h'
 
-      character(len=1), intent(in) ::
-     &     pertdir
+      character(len=8), intent(in) ::
+     &     int_name
 
       type(orbinf), intent(in) ::
      &     orb_info
 
       integer ::
      &     isym, gamma, jsym, nao_blk, nao_full, ifree, luaoprop,
-     &     luerror, len_blk(8)
+     &     luerror, len_blk(8), psign
 
       real(8) ::
      &     norm(orb_info%nsym)
@@ -35,18 +35,25 @@
       type(filinf) ::
      &     ffaoprop
 
-      character(len=8) ::
-     &     label
-
       logical ::
      &     irrep_found
+
+      select case(trim(int_name))
+      case ('XDIPLEN','YDIPLEN','ZDIPLEN')
+        psign = 1
+      case ('XDIPVEL','YDIPVEL','ZDIPVEL',
+     &      'XANGMOM','YANGMOM','ZANGMOM')
+        psign = -1
+      case default
+        call quit(1,'pert_sym','DALTON: cannot handle list_type "'
+     &       //trim(int_name)//'"')
+      end select
 
       ! buffer for AO-matrix as read from AOPROPER
       nao_full = (orb_info%nbast+orb_info%nxbast+1)*
      &           (orb_info%nbast+orb_info%nxbast)/2
       ifree = mem_alloc_real(ao_full,nao_full,'ao_full')
 
-      label = pertdir//'DIPLEN '
       luerror = luout
 
       ! open files
@@ -56,7 +63,7 @@
       luaoprop = ffaoprop%unit
       rewind luaoprop
 
-      call mollab(label,luaoprop,luerror)
+      call mollab(int_name,luaoprop,luerror)
 
       ! read matrix in upper triangular form
       read (luaoprop) ao_full(1:nao_full)
@@ -84,7 +91,7 @@
      &      orb_info%nbas(1:orb_info%nsym)+
      &      orb_info%nxbas(1:orb_info%nsym)
         call reo_full2sym(ao_blk,ao_full,orb_info%nbast+orb_info%nxbast,
-     &       len_blk,orb_info%nsym,gamma,dble(1))
+     &       len_blk,orb_info%nsym,gamma,dble(psign))
 
         ! calculate norm
         do isym = 1,nao_blk
@@ -108,12 +115,12 @@
         else if (norm(gamma).gt.1d-12) then
           write(irr1,'(i1)') pert_sym
           write(irr2,'(i1)') gamma
-          call quit(1,'pert_sym','cannot tell if '//pertdir//
+          call quit(1,'pert_sym','cannot tell if '//int_name//
      &       ' belongs to irrep '//irr1//' or '//irr2)
         end if
       end do
       if (.not.irrep_found) call quit(1,'pert_sym',
-     &       'no irrep found for '//pertdir)
+     &       'no irrep found for '//int_name)
 
       return
       end

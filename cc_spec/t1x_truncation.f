@@ -112,12 +112,12 @@
       occ = 0
       occ(IPART,1) = 1
       occ(IHOLE,2) = 1
-      iblk_t1  = iblk_occ(occ,.false.,op_info%op_arr(idxtop)%op)
+      iblk_t1  = iblk_occ(occ,.false.,op_info%op_arr(idxtop)%op,1)
       occ = 0
       occ(IEXTR,1) = 1
       occ(IHOLE,2) = 1
-      iblk_t1x = iblk_occ(occ,.false.,op_info%op_arr(idxtop)%op)
-      iblk_l1x = iblk_occ(occ,.true., op_info%op_arr(idxtbar)%op)
+      iblk_t1x = iblk_occ(occ,.false.,op_info%op_arr(idxtop)%op,1)
+      iblk_l1x = iblk_occ(occ,.true., op_info%op_arr(idxtbar)%op,1)
 
       ! set up perturbation order of Hamiltonian elements
       op_h => op_info%op_arr(idxham)%op

@@ -1,7 +1,8 @@
       integer, parameter ::
      &       optinf_prc_direct = 0, ! future: diagonal not on file
      &       optinf_prc_file   = 1, ! the usual case
-     &       optinf_prc_blocked = 2 ! as used for R12
+     &       optinf_prc_blocked = 2,! as used for R12
+     &       optinf_prc_mixed = 3   ! both 1 and 2
 
       ! input variables to control optimization
       type optimize_info

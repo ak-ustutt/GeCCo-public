@@ -54,7 +54,8 @@
      &           op%ica_occ(2,nblk),
      &           op%igasca_restr(2,orb_info%ngas,2,2,
      &                             orb_info%nspin,nblkt),
-     &           op%formal_blk(nblk))
+     &           op%formal_blk(nblk),op%blk_version(nblk))
+      op%blk_version(1:nblk) = 1
 
       call mem_popmark()
 

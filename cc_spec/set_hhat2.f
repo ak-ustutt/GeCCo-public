@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine set_hhat2(formula_hhat,
      &     title,name_hhat,name_h,name_t,
-     &     op_info)
+     &     iblkmax_t,op_info)
 *----------------------------------------------------------------------*
 *     generate the formula for Hhat = e^{-T1}He^{T1}
 *----------------------------------------------------------------------*
@@ -18,12 +18,16 @@
       include 'def_formula_item.h'
       include 'def_formula.h'
 c      include 'par_formnames_gen.h'
+      include 'ifc_input.h'
 
       type(formula), intent(inout), target ::
      &     formula_hhat
 
       character*(*), intent(in) ::
      &     name_hhat, name_t, name_h, title
+
+      integer, intent(in) ::
+     &     iblkmax_t
 
       type(operator_info), intent(in) ::
      &     op_info
@@ -72,7 +76,9 @@ c      include 'par_formnames_gen.h'
 
       ! expand e^{-T1} H e^T1 
       call expand_op_bch(form_pnt,4,idxhhat,
-     &     1d0,-1,idxham,1d0,idxtop,1,1,op_info)
+     &     1d0,-1,idxham,1d0,idxtop,1,iblkmax_t,op_info)
+
+      call r12_hhat_truncation(form_pnt,idxham,idxtop,op_info)
 
       ! reorder
       call reorder_formula(form_hhat,op_info)

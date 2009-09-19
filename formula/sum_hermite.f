@@ -113,7 +113,8 @@
         iblk_tgt = fl_tgt_current%contr%iblk_res
         iblk_tgt_trp =
      &       iblk_occ(occ_tgt(1:,1:,(iblk_tgt-1)*njoined_tgt+1),
-     &                          .true.,op_tgt)
+     &                          .true.,op_tgt,
+     &                op_tgt%blk_version(iblk_tgt))
         ! is this a diagonal block?
         diag = iblk_tgt .eq. iblk_tgt_trp
 

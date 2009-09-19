@@ -108,7 +108,8 @@ c dbg
           if (.not.occ_is_diag_blk(occ,njoined).or.
      &         abs(op%hermitian).eq.1)
      &         then
-            idx = iblk_occ(occ,.true.,op)
+            idx = iblk_occ(occ,.true.,op,
+     &                     op%blk_version((idxst-1)/njoined+1))
             ! we have to change the overall sign, if the
             ! operator is anti-hermitian:
             if (op%hermitian.eq.-1)

@@ -105,6 +105,10 @@
         op_clone%formal_blk = op_template%formal_blk
       end if
 
+      if (associated(op_template%blk_version)) then
+        op_clone%blk_version = op_template%blk_version
+      end if
+
       if (ntest.ge.100) then
         write(luout,*) 'Clone operator produced the following:'
         call print_op_occ(luout,op_clone)

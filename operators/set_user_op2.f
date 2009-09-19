@@ -38,7 +38,7 @@
      &     inv_hole = .false.
 
       integer ::
-     &     ifree, ipass, irank, na, nc, ica, igas, igasl, idiff, imaxr,
+     &     idx, irank, na, nc, ica, igas, igasl, idiff, imaxr,
      &     iocc, igastp, iprint, nx, iblk, ijoin, ioff_blk, gasst, gasnd
       integer ::
      &     hpvxprint(ngastp)
@@ -169,6 +169,12 @@ c        end do
         ! mask restriction currently unused
         op%igasca_restr(1:2,1:ngas,1:2,2,1:nspin,
      &                  ioff_blk+1:ioff_blk+njoined) = 0
+        ! distinguish similar blocks by increasing version number
+        do idx = 1, iblk-1
+          if (all(op%ihpvca_occ(:,:,(idx-1)*njoined+1:idx*njoined)-
+     &        op%ihpvca_occ(:,:,(iblk-1)*njoined+1:iblk*njoined).eq.0))
+     &        op%blk_version(iblk) = op%blk_version(iblk) + 1
+        end do
 
       end do
 

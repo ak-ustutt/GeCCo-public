@@ -105,7 +105,8 @@ c          write(luout,*) '[ADD]'
                 ! Locate the formal block's counterpart in the actual 
                 ! operator. 
                 idx_blk_out =
-     &               iblk_occ(occ_temp,dagout,opout_pnt)
+     &               iblk_occ(occ_temp,dagout,opout_pnt,
+     &                        opin_pnt%blk_version(idx_form_blk))
 
                 if (idx_blk_out.le.0) then
                   call quit(1,'form_op_replace',
@@ -162,7 +163,9 @@ c          write(luout,*) '[ADD]'
             ! Locate the formal block's counterpart in the actual 
             ! operator. 
             idx_blk_out =
-     &           iblk_occ(occ_temp,.false.,opout_pnt)
+     &           iblk_occ(occ_temp,.false.,opout_pnt,
+     &                    opin_pnt%blk_version((idx_form_blk-1)/
+     &                    njoined+1))
 
             ! Replace the old indices with the new.
             do idx = 1,njoined

@@ -93,6 +93,7 @@
       real(8) ::
      &     de, cpu, sys, wall, cpu0, sys0, wall0
 
+      call quit(1,'leq_control','should be obsolete')
 
       iprint = max(ntest,iprlvl)
       call atim_csw(cpu0,sys0,wall0)

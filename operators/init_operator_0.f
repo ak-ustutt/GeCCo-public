@@ -35,6 +35,7 @@
       op%ica_occ => null()
       op%igasca_restr => null()
       op%formal_blk => null()
+      op%blk_version => null()
 
       return
       end

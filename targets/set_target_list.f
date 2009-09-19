@@ -49,6 +49,10 @@
 
       call set_r12_test_targets(tgt_info,orb_info,env_type)
 
+      ! response section
+      if (is_keyword_set('calculate.response').gt.0)
+     &    call set_response_targets(tgt_info,orb_info,env_type)
+
       ! experimental section
       if (is_keyword_set('calculate.experimental').gt.0) then
         call set_experimental_targets(tgt_info,orb_info,env_type)

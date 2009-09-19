@@ -49,7 +49,8 @@
       fpl_pnt => fpl_terms
 
       do
-        if (fpl_pnt%item%command.ne.command_add_contribution) exit
+        if (.not.associated(fpl_pnt).or.
+     &      fpl_pnt%item%command.ne.command_add_contribution) exit
 
         cur_contr => fpl_pnt%item%contr
         nvtx = cur_contr%nvtx

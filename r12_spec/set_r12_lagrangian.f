@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -66,7 +66,7 @@
      &     min_rank, max_rank, iprint, trunc_type, trunc_t1x, h0_t1x,
      &     occ(ngastp,2)
       logical ::
-     &     r12fix, truncate, l_h0d
+     &     r12fix, truncate, opt, l_h0d
       integer ::
      &     extend
 
@@ -98,6 +98,7 @@
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       call get_argument_value('method.R12','trunc',ival=trunc_type)
+      call get_argument_value('method.R12','opt',lval=opt)
       truncate = trunc_type.ge.0
       if (is_keyword_set('method.truncate').gt.0) then
         truncate = is_keyword_set('method.truncate').gt.0
@@ -245,6 +246,12 @@ c      sbar_pnt%dagger = .true.
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'after replacing S')
         call print_form_list(luout,flist_lag,op_info)
+      end if
+
+      ! delete redundant operator blocks (if more than one block version)
+      if (opt) then
+        call r12_opt_truncation(flist_lag,idxtop,idxc12,op_info)
+        call r12_opt_truncation(flist_lag,idxtbar,idxcbar,op_info)
       end if
 
       ! Produce truncated expansions if required.

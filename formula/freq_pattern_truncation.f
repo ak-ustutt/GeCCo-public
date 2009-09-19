@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine freq_pattern_truncation(flist,order,freq_idx,dir,
-     &                                   idx_tgt,op_info)
+      subroutine freq_pattern_truncation(flist,order,freq_idx,ncomps,
+     &                                   pop_idx,idx_tgt,op_info)
 *----------------------------------------------------------------------*
 *     truncate formula to terms of specific frequency pattern
 *     matthias, 2008
@@ -21,25 +21,21 @@
       include 'def_formula.h'
       include 'def_del_list.h'
       include 'par_opnames_gen.h'
+      include 'def_pert_info.h'
 
       type(formula_item), intent(inout), target::
      &     flist
       type(operator_info), intent(in) ::
      &     op_info
       integer, intent(in) ::
-     &     order, idx_tgt, freq_idx(*)
-      character(*), intent(in) ::
-     &     dir
-
-      integer, parameter ::
-     &     maximum_idx = 99
+     &     order, idx_tgt, freq_idx(*), ncomps, pop_idx(*)
 
       logical ::
      &     delete, recognized, multiply
       integer ::
      &     nvtx, ivtx, op_ord, idx_op, t_max_ord, l_max_ord, op_spec,
-     &     count_freq(maximum_idx), ii, jj, op_ifreq, njoker(3),
-     &     pattern(maximum_idx), factor
+     &     count_freq(maxcmp), ii, jj, op_ifreq,
+     &     njoker(3*maxpop), pattern(maxcmp), factor
 
       type(cntr_vtx), pointer ::
      &     vertex(:)
@@ -57,9 +53,9 @@
       endif
 
       ! determine frequency index pattern
-      if (maxval(freq_idx(1:order)).gt.maximum_idx)
+      if (maxval(freq_idx(1:order)).gt.maxcmp)
      &   call quit(1,'freq_pattern_truncation',
-     &       'increase maximum_idx or request fewer pert.op.components')
+     &       'increase maxcmp or request fewer pert.op.components')
       pattern = 0
       do ii = 1,order
         pattern(freq_idx(ii)) = pattern(freq_idx(ii)) + 1
@@ -68,7 +64,7 @@
       if (ntest.ge.100) then
          write(luout,*)'pattern: ',
      &                     pattern(1:maxval(freq_idx(1:order)))
-         write(luout,*)'dir: ',dir(1:maxval(freq_idx(1:order)))
+         write(luout,*)'pop_idx: ',pop_idx(1:maxval(freq_idx(1:order)))
       end if
 
       form_pnt => flist
@@ -90,7 +86,7 @@
 
           nvtx = form_pnt%contr%nvtx
           vertex => form_pnt%contr%vertex
-          allocate(structure(maximum_idx,nvtx))
+          allocate(structure(maxcmp,nvtx))
 
           ! delete term if frequency pattern does not match freq_idx
           njoker = 0
@@ -130,11 +126,14 @@ c
                   if ((.not.recognized).and.ntest.ge.100)
      &                 write(luout,*)'non-matching vertex no.',ivtx
                 end do
-              else if (op_spec.ge.4.and.op_spec.le.6) then
-                ! can belong to any frequency index in X,Y, or Z direction
+              else if (op_spec.ge.4) then
+                if (op_spec.gt.3*maxpop+3)
+     &                call quit(1,'freq_pattern_truncation',
+     &                            'maxpop too small')
+                ! can belong to any frequency index associated to pert op
                 njoker(op_spec-3) = njoker(op_spec-3) + 1
-                if (ntest.ge.100) write(luout,*)'collected joker in ',
-     &                                          op_spec-3, ' direction'
+                if (ntest.ge.100) write(luout,*)'collected joker assoc',
+     &                             'iated with pert. op no. ',op_spec-3
               end if
             end if
           end do
@@ -151,20 +150,11 @@ c
             do jj = 1, nvtx
               if (sum(structure(:,jj)).eq.0) ivtx = jj
             end do
-            if (count_freq(ii).lt.pattern(ii)) then
-              if (dir(ii:ii).eq.'X'.and.njoker(1).gt.0) then
-                count_freq(ii) = count_freq(ii) + 1
-                njoker(1) = njoker(1) - 1
-                structure(ii,ivtx) = structure(ii,ivtx)+1
-              else if (dir(ii:ii).eq.'Y'.and.njoker(2).gt.0) then
-                count_freq(ii) = count_freq(ii) + 1
-                njoker(2) = njoker(2) - 1
-                structure(ii,ivtx) = structure(ii,ivtx)+1
-              else if (dir(ii:ii).eq.'Z'.and.njoker(3).gt.0) then
-                count_freq(ii) = count_freq(ii) + 1
-                njoker(3) = njoker(3) - 1
-                structure(ii,ivtx) = structure(ii,ivtx)+1
-              end if
+            if (count_freq(ii).lt.pattern(ii).and.
+     &          njoker(pop_idx(ii)).gt.0) then
+              count_freq(ii) = count_freq(ii) + 1
+              njoker(pop_idx(ii)) = njoker(pop_idx(ii)) - 1
+              structure(ii,ivtx) = structure(ii,ivtx)+1
             end if
           end do
           if (.not.(all(count_freq-pattern.eq.0).and.
@@ -178,7 +168,7 @@ c
           else
             ! multiply with factor to correct for omitted ("redundant") terms
             factor = 1
-            do ii = 1,maximum_idx
+            do ii = 1,maxcmp
               factor = factor * factorial(sum(structure(ii,:)))
               do jj = 1,nvtx
                 factor = factor / factorial(structure(ii,jj))

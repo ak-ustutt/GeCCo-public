@@ -15,6 +15,7 @@
       include 'def_orbinf.h'
       include 'def_strmapinf.h'
       include 'par_actions.h'     
+      include 'ifc_input.h'
 
       type(action), intent(in) ::
      &     rule
@@ -32,13 +33,13 @@
       integer, parameter ::
      &     maxfac = 20, maximum_order = 10
       real(8) ::
-     &     fac(maxfac)
+     &     fac(maxfac), freq
       integer ::
      &     idxblk(maxfac),
      &     idx, jdx, ioff, nfac, nblk, nspecial, imode,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank
       logical ::
-     &     ms_fix
+     &     ms_fix, form_test
       type(me_list), pointer ::
      &     mel_pnt
       character(len_command_par) ::
@@ -47,9 +48,9 @@
      &     label_met(:)
 
       integer ::
-     &     idx_formlist, order, dummy
+     &     idx_formlist, order, dummy, loopdum
       integer, allocatable ::
-     &     ifreq_dum(:), ifreq(:)
+     &     ifreq_temp(:), ifreq(:)
 
       integer, external ::
      &     idx_mel_list
@@ -60,6 +61,10 @@
       if (rule%n_labels.lt.1)
      &     call quit(1,'process_me_lists',
      &               'at least one label expected')
+
+      ! form_test = true skips time consuming steps
+      call get_argument_value('general','form_test',lval=form_test)
+      loop:do loopdum = 1,1
 
       select case(trim(rule%command))
       case(DEF_ME_LIST)
@@ -118,6 +123,7 @@ c dbg
 
       case(IMPORT)
 
+        if (form_test) exit loop
         call import_parameters(+1,rule%parameters,
      &       list_type,env_type)
 
@@ -127,6 +133,7 @@ c dbg
 
       case(PRECONDITIONER)
 
+        if (form_test) exit loop
         if (rule%n_labels.lt.2)
      &     call quit(1,'process_me_lists',
      &       'at least two labels expected for '
@@ -147,6 +154,7 @@ c dbg
 
       case(EVAL)
 
+        if (form_test) exit loop
         call evaluate(rule%labels(1),
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
@@ -184,6 +192,7 @@ c dbg
 
       case(SOLVENLEQ)
 
+        if (form_test) exit loop
         call solve_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,
      &       nopt,nroots,mode)
@@ -209,11 +218,12 @@ c dbg
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(SOLVELEQ)
+        if (form_test) exit loop
         call solve_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,
      &       nopt,nroots,mode)
 
-        if (rule%n_labels.ne.5*nopt+1)
+        if (rule%n_labels.lt.5*nopt+1)
      &       call quit(1,'process_me_lists',
      &       'incorrect number of labels to be passed for '//
      &       trim(SOLVELEQ))
@@ -234,6 +244,7 @@ c dbg
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(SOLVEEVP)
+        if (form_test) exit loop
         call solve_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,
      &       nopt,nroots,mode)
@@ -264,25 +275,27 @@ c dbg
      &       call quit(1,'process_me_lists','Label not on list: "'//
      &       trim(rule%labels(1))//'"')
         mel_pnt => op_info%mel_arr(idx)%mel
-
-        call set_frequency(mel_pnt)
+        call freq_parameters(+1,rule%parameters,freq)
+        call set_frequency(mel_pnt,freq)
 
       case(PRINT_RES)
+        if (form_test) exit loop
         idx = idx_mel_list(rule%labels(1),op_info)
         if(idx.lt.0)
      &       call quit(1,'process_me_lists','Label not on list: "'//
      &       trim(rule%labels(1))//'"')
         mel_pnt => op_info%mel_arr(idx)%mel
-        allocate(ifreq_dum(maximum_order))
+        allocate(ifreq_temp(maximum_order))
         call ord_parameters(+1,rule%parameters,
-     &                      order,dummy,ifreq_dum)
+     &                      order,dummy,ifreq_temp)
         allocate(ifreq(order))
-        ifreq = ifreq_dum(1:order)
-        deallocate(ifreq_dum)
-        call print_result(order,ifreq,mel_pnt,.false.)
+        ifreq = ifreq_temp(1:order)
+        deallocate(ifreq_temp)
+        call print_result(order,ifreq,mel_pnt,.false.,orb_info)
         deallocate(ifreq)
 
       case(PRINT_MEL)
+        if (form_test) exit loop
         idx = idx_mel_list(rule%labels(1),op_info)
         mel_pnt => op_info%mel_arr(idx)%mel
         call form_parameters(+1,rule%parameters,
@@ -293,6 +306,8 @@ c dbg
         call quit(1,'process_me_lists','unknown command: '//
      &       trim(rule%command))
       end select
+
+      end do loop
 
       return
       end
