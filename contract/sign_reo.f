@@ -58,8 +58,8 @@
      &       = occ_reo(1:ngastp,1:2,ireo)
       end do
 c dbg
-      print *,'initial occ_k_from'
-      call wrt_occ_n(luout,occ_k_from,njoined)
+c      print *,'initial occ_k_from'
+c      call wrt_occ_n(luout,occ_k_from,njoined)
 c dbg
 
       sign_reo = 1
@@ -69,8 +69,8 @@ c dbg
      &       occ_k_from(1:ngastp,1:2,from_to(1,ireo)) -
      &       occ_reo(1:ngastp,1:2,ireo)
 c dbg
-        print *,'updated occ_k_from'
-        call wrt_occ_n(luout,occ_k_from,njoined)
+c        print *,'updated occ_k_from'
+c        call wrt_occ_n(luout,occ_k_from,njoined)
 c dbg
         ! count number of CA-op's on passive vertices between reo-vertices:
         nencl = 0
@@ -80,38 +80,38 @@ c dbg
           nencl = nencl + nca_vtx(ivtx)
         end do
 c dbg
-        if (mod(nencl,2).ne.0) write(luout,*) 'ODD nencl appeared!'
+c        if (mod(nencl,2).ne.0) write(luout,*) 'ODD nencl appeared!'
 c dbg
 
         sign_reo = sign_reo*sign_shift(
      &       occ_reo(1,1,ireo),from_to(1,ireo),from_to(2,ireo),
      &       occ_op0,occ_k_from,occ_k_to,nencl,njoined)
 c dbg
-        print *,'sign_reo(1) = ',sign_reo
+c        print *,'sign_reo(1) = ',sign_reo
 c dbg
         sign_reo = sign_reo*sign_hpvx(2,
      &       occ_op0(1,1,from_to(1,ireo)),.false.,
      &       occ_reo(1,1,ireo),.false.)
 c dbg
-        print *,'sign_reo(2a) = ',sign_reo
+c        print *,'sign_reo(2a) = ',sign_reo
 c dbg
         sign_reo = sign_reo*sign_hpvx(2,
      &       occ_op0(1,1,from_to(2,ireo)),.false.,
      &       occ_reo(1,1,ireo),.false.)
 c dbg
-        print *,'sign_reo(2b) = ',sign_reo
+c        print *,'sign_reo(2b) = ',sign_reo
 c dbg
         occ_k_to(1:ngastp,1:2,from_to(2,ireo)) =
      &       occ_k_to(1:ngastp,1:2,from_to(2,ireo)) +
      &       occ_reo(1:ngastp,1:2,ireo)
 c dbg
-        print *,'updated occ_k_to'
-        call wrt_occ_n(luout,occ_k_to,njoined)
+c        print *,'updated occ_k_to'
+c        call wrt_occ_n(luout,occ_k_to,njoined)
 c dbg
 
       end do
 c dbg
-      print *,'sign_reo(final) = ',sign_reo
+c      print *,'sign_reo(final) = ',sign_reo
 c dbg
 
       return

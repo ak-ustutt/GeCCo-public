@@ -241,9 +241,12 @@ c patch
 c        print *,'redefining is_op1op2:'
         is_op1op2 = 0
         do ivtx = 1, reo_info%nvtx_contr
-          if (svertex(ivtx).eq.idxsuper) is_op1op2 = 1
+          if (svertex(ivtx).eq.idxsuper) is_op1op2(ivtx) = 1
         end do
 c        write(luout,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
+c        write(luout,'(1x,20i3)') reo_info%nca_vtx(1:reo_info%nvtx_contr)
+c        write(luout,*) ' idxsuper = ',idxsuper
+c        write(luout,'(1x,20i3)') svertex(1:reo_info%nvtx_contr)
 c patch
 
         reo_info%sign_reo = sign_reo(

@@ -42,7 +42,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       logical, intent(in) ::
      &     update
@@ -256,6 +256,7 @@ c dbg
      &     call quit(1,'contr_op1op2_wmaps_c',
      &     'reo_info is not consistent')
       if (ntest.ge.10) write(luout,*) 'reo_op1op2: ',reo_op1op2
+      if (ntest.ge.10) write(luout,*) 'reo_sign: ',reo_info%sign_reo
       if (ntest.ge.10 .and. reo_op1op2) then
         write(luout,*) 'op1op2tmp: ',trim(op1op2tmp%name),
      &       ' block ',iblkop1op2tmp

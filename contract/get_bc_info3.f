@@ -29,6 +29,7 @@
       integer, parameter ::
      &     ntest = 00
       logical, parameter ::
+c     &     new_sign = .false. ! use the old sign evaluation route
      &     new_sign = .true. ! use the new sign evaluation route
 
       type(contraction), intent(in), target ::
@@ -119,6 +120,7 @@
       irestr_vtx = irestr_vtx_in
 
       if (.true..and.update_idxintm) then
+c      if (.false..and.update_idxintm) then
         possible = .true.
         idxnew_op1op2 = idxintm
         call reorder_supvtx(possible,
@@ -364,6 +366,10 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
 
       ! calculate sign
       if (.not.self) then
+        ! the following routines are obsolete will be removed soon
+        ! the actual contraction sign is now delivered on cnt_sign
+        ! here, we only compare to the old code
+        !
         ! we must evaluate the contraction sign for the old ordering ...
         call sign_bc(bc_sign,
      &         isvtx1,isvtx2,contr%svertex,nvtx,
