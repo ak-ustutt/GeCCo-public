@@ -21,7 +21,7 @@
       include 'par_opnames_gen.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       real(8), intent(inout), target ::
      &     xret_blk(*)

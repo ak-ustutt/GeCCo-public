@@ -14,7 +14,7 @@
       include 'opdim.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       logical ::
      &     first

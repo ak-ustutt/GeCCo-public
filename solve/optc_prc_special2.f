@@ -146,7 +146,7 @@ c      include 'ifc_input.h'
         allocate(f_dia(2*orb_info%ntoob))
 
         ! xtract diagonal
-        call onedia_from_op(f_dia,me_fmat,.false.,orb_info)
+        call onedia_from_op(f_dia,xdum,me_fmat,.false.,orb_info)
         
       else
         allocate(xmat(1),f_dia(1))

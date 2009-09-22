@@ -36,7 +36,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     idxprqs(4), igam(4), idss(4), igtp(4),

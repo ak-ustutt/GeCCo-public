@@ -60,7 +60,11 @@ c dbg
      &   call quit(0,'read_fock_from_sirifc',
      &               'No sensible fock matrix found!')
 
-      eref = emcscf
+      if (nactel.eq.0) then
+        eref = emcscf
+      else
+        eref = emy + potnuc    ! core energy
+      end if
 
       return
       end

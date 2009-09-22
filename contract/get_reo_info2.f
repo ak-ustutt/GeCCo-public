@@ -27,7 +27,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(reorder_info), intent(inout) ::
      &     reo_info

@@ -2,7 +2,7 @@
         integer ::
      &     nsym, ngas, nspin
         integer ::
-     &      ntoob,caborb,nbast,nxbast
+     &      ntoob,caborb,nbast,nxbast,nactel,lsym
         integer, allocatable ::
      &     igassh(:,:),
      &     nbas(:), ntoobs(:), ireots(:), ireost(:),

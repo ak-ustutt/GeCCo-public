@@ -7,7 +7,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'opdim.h'
       include 'stdunit.h'
@@ -34,7 +34,7 @@
       integer ::
      &     ngas, nsym, igas, nspin, ispin,
      &     idxstr, idxsym, iocc_cls, ihpv_c, ihpv_a, igc, iga,
-     &     ihpv_o, ihpv_i,
+     &     ihpv_o, ihpv_i, iblknd,
      &     ms, idxms, isym, isymoff, imo_off, lena, lenc, igas_i,igas_o,
      &     mosto, mondo, mosti, mondi, imo_o, imo_i, imo, jmo
 
@@ -84,6 +84,7 @@
         if (iextr.gt.0.and.max(hop%ihpvca_occ(iextr,1,iocc_cls),
      &                         hop%ihpvca_occ(iextr,2,iocc_cls)).gt.0)
      &       cycle
+        iblknd = iocc_cls
 
         ! offset for reordered operator
         idxstr = hlist%off_op_occ(iocc_cls)
@@ -179,7 +180,7 @@
       if (ntest.ge.100) then
         write(luout,*) 'reordered operator:'
         ! caution: blocks 1-5 will not always work
-        call wrt_mel_buf(luout,5,h1str,hlist,1,5,
+        call wrt_mel_buf(luout,5,h1str,hlist,1,iblknd,
      &       str_info,orb_info)
       end if
 

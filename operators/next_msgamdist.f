@@ -159,7 +159,7 @@ c dbg
           msdis(2) = msdis(2)-2
           ! max. value for X:
           msdis(4) = ihpvdis(4)
-        else if (msdis(3).gt.ihpvdis(3)) then
+        else if (msdis(3).gt.-ihpvdis(3)) then
           ! else enter a new Ms block given by V
           msdis(3) = msdis(3)-2
           ! X, P start with maximum Ms

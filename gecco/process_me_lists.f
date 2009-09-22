@@ -143,6 +143,8 @@ c dbg
         if (rule%n_labels.eq.2) then
           mode(1:len(mode)) = ' '
           mode = 'dia-F'
+          ! very quick and dirty now:
+          if (rule%n_parameter_strings.eq.2) mode(5:5) = 'H'
         else
           mode(1:len(mode)) = ' '
           mode = 'dia-R12'

@@ -16,7 +16,7 @@ c      include 'def_contraction_list.h'
       include 'mdef_formula_info.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       character(len=*), intent(in) ::
      &     name_output

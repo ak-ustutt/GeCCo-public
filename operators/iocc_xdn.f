@@ -28,10 +28,12 @@
       if(ixdn.eq.1)then
         iscr(ihole,2)=iocc(ihole,2)
         iscr(ipart,1)=iocc(ipart,1)
+        iscr(ivale,1)=iocc(ivale,1) ! treat val. like particle for now
         iscr(iextr,1)=iocc(iextr,1)
       elseif(ixdn.eq.2)then
         iscr(ihole,1)=iocc(ihole,1)
         iscr(ipart,2)=iocc(ipart,2)
+        iscr(ivale,2)=iocc(ivale,2)
         iscr(iextr,2)=iocc(iextr,2)
       elseif(ixdn.eq.3)then
         iscr(ivale,1:2)=iocc(ivale,1:2)

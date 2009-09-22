@@ -88,9 +88,9 @@ c     &     iocc_equal_n
       call wrt_occ_n(luout,occ_vtx (1,1,njoined_res+1),nvtx)
       call wrt_occ_n(luout,occ_vtx2(1,1,njoined_res+1),nvtx)
 
-      if (.not.iocc_equal_n(occ_vtx (1:,1:,njoined_res+1),.false.,
-     &                      occ_vtx2(1:,1:,njoined_res+1),.false.,
-     &                      nvtx))
+      if (.not.iocc_equal_n(occ_vtx (1:ngastp,1:2,njoined_res+1),
+     &                     .false.,occ_vtx2(1:ngastp,1:2,njoined_res+1),
+     &                     .false.,nvtx))
      &     call quit(1,'check_xarcs','vertices are not consistent!')
         
       deallocate(occ_vtx, occ_vtx2)

@@ -88,7 +88,8 @@
       logical, external ::
      &     iocc_equal_n, next_msgamdist2
       integer, external ::
-     &     ielprd, idx_msgmdst2, idx_str_blk3, std_spsign_msdis
+     &     ielprd, idx_msgmdst2, idx_str_blk3, std_spsign_msdis,
+     &     msa2idxms4op
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'sym_ab_blk')
@@ -98,8 +99,8 @@
 
       if (mel%mst.ne.0) then
         call quit(1,'sym_ab_blk',
-     &       'I should only be called if the total '//
-     &       'Ms-projection equals 0')
+     &       'Pioneering open shell? Deactivate '//
+     &       'this quit call and good luck!')
       end if
 
       ms_fix = mel%fix_vertex_ms
@@ -178,9 +179,11 @@ c dbg
         msa2 = -msa
         msc2 = msa2 + mel%mst 
 
-        idxmsa = idxmsa+1
+cmh        idxmsa = idxmsa+1     ! also for msa_max.ne.msc_max:
+        idxmsa = msa2idxms4op(msa,mel%mst,msa_max,msc_max)
         idxmsc = (msc_max-msc)/2 + 1
-        idxmsa2 = (msa_max-msa2)/2 + 1
+cmh        idxmsa2 = (msa_max-msa2)/2 + 1
+        idxmsa2 = msa2idxms4op(msa2,mel%mst,msa_max,msc_max)
         idxmsc2 = (msc_max-msc2)/2 + 1
 
         ! Loop over Irrep of annihilator string.

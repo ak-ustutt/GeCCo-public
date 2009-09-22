@@ -9,7 +9,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       include 'opdim.h'
       include 'stdunit.h'
@@ -46,6 +46,8 @@ c     &     offsets(*), nblk
      &     hpvx_occ(:,:,:), idx_graph(:,:,:), idx_gas(:), 
      &     cinfo(:,:), ms_dis(:), gm_dis(:), idxms_dis(:), lstr(:),
      &     occ_blk_pnt(:,:,:), graph_blk_pnt(:,:,:)
+      integer, allocatable ::
+     &     map(:)
       type(graph), pointer ::
      &     graphs(:)
 
@@ -217,9 +219,14 @@ c            offsets(nblk) = x2_off
                 ! Length of the block required in x2dia
                 len1 = lstr(1)
 
+                ! use map string index --> matrix element index
+                allocate(map(len1))
+                call set_map_diag(map,len1,ms,isym,mel,iocc_cls,
+     &                            str_info,orb_info)
                 do idx = 1, len1
-                  x2dia(x2_off+idx) = curblk((idx-1)*len1+idx)
+                  x2dia(x2_off+map(idx)) = curblk((idx-1)*len1+idx)
                 enddo
+                deallocate(map)
 
               else if (nasub.eq.2) then
                 len1 = lstr(1)
@@ -238,7 +245,7 @@ c            offsets(nblk) = x2_off
                 ioff = mostnd(1,gm_dis(1),igas)-1
 c dbg
 c                print *,'igas,ioff: ',igas,ioff
-c                print *,'igas,ioff: ',jgas,joff
+c                print *,'jgas,joff: ',jgas,joff
 c dbg    
 
                 do jdx = 1, len2
