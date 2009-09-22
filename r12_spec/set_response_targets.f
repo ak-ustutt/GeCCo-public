@@ -40,7 +40,7 @@
      &     ord, op_par, len_op_exp, side, x_max_ord,
      &     digit, ilabels, ord2, op_par2, x_max_ord2,
      &     ncnt, icnt, pos,
-     &     spec, trunc_type, ipop, npop, ncmp
+     &     spec, trunc_type, ipop, npop, ncmp, restart
 
       character(len_target_name) ::
      &     mel_dia1,
@@ -76,7 +76,7 @@
      &     medef_xprc*12 = 'DEF-XPRCLIST'
 
       logical ::
-     &     setr12, r12fix, set_zero, treat_bv,
+     &     setr12, r12fix, set_zero, treat_bv, file_exists,
      &     truncate, half, userules, opt, screen
 
       real(8) ::
@@ -164,11 +164,54 @@
       if (.not.userules.and..not.all(abs(cmp(1:ncmp)%freq).lt.1d-12))
      &       call quit(1,'set_response_targets',
      &       'no-rules option only supported for static response')
+      ! restart calculation? Requires amplitude mel files
+      call get_argument_value('calculate.response','restart',
+     &     keycount=1,ival=restart)
+      melname(1:len_short) = ' '
+      do op_par = 1,2
+        if (op_par.eq.1) then
+          melname(1:11) = 'ME_T(n)'
+          x_max_ord = int((real(restart-1)-1)/2+0.6)
+        else
+          melname(1:11) = 'ME_L(n)'
+          x_max_ord = int((real(restart-1)-2)/2+0.6)
+        end if
+        if (.not.userules.and.restart.gt.0) 
+     &          call quit(1,'set_response_targets',
+     &          'restart option currently only with rules=T')
+        if (restart.lt.op_par) cycle
+        do ord = 0,x_max_ord
+          write(melname(6:6),'(i1)') ord
+          melname(8:len_short) = ' '
+          allocate(ifreq(ord),ifreqnew(ord))
+          ifreq = 0
+          set_zero = ord.eq.0
+          do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
+            set_zero = .false.
+            call redundant_comb(ifreq,ifreqnew,cmp(1:ncmp)%redun,ord,
+     &                          maxord,ncnt)
+            do digit = 1,ord
+              write(melname(6+2*digit:7+2*digit),'(i2.2)')
+     &                             ifreqnew(digit)
+            end do
+            inquire(file=trim(melname)//'_list.da',exist=file_exists)
+            if (file_exists) then
+              write(luout,*) 'Restart calculation using ',
+     &                       trim(melname)//'_list.da'
+            else
+              call quit(1,'set_response_targets','Restart requires '//
+     &                    'file '//trim(melname)//'_list.da')
+            end if
+          end do
+          deallocate(ifreq,ifreqnew)
+        end do
+      end do
 
       if (ntest.ge.100) then
         write(luout,*) 'keywords processed:'
         write(luout,*) 'maxexc      : ',maxexc
         write(luout,*) 'userules    : ',userules
+        write(luout,*) 'restart     : ',restart
         write(luout,*) 'BX_3C       : ',treat_bv
         write(luout,*) 'trunc_type  : ',trunc_type
         write(luout,*) 'ncnt        : ',ncnt
@@ -525,8 +568,8 @@
         end do
       end do
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'defining residuals'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'defining residuals'
 
       ! define residuals O(n)_L(0) and O(n)_T(0)
       ! following (2n+1) and (2n+2) rules regarding the maximum order
@@ -627,8 +670,8 @@
         end do
       end do
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'defining lagrangians'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'defining lagrangians'
 
       ! define scalar response lagrangian LRESP(n) of order n
       lagname(1:len_short) = ' '
@@ -666,8 +709,8 @@
         deallocate(ifreq, ifreqnew)
       end do
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'defining other operators'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'defining other operators'
 
       ! Diagonal Preconditioner
       do op_par = 1,2
@@ -760,8 +803,8 @@
         end do
       end if
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'operators defined'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'operators defined'
 
 *----------------------------------------------------------------------*
 *     Formulae 
@@ -814,9 +857,9 @@
      &                labels,ilabels,1,
      &                parameters,2,tgt_info)
       end if
-      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-      call set_rule('RESP_LAG',ttype_frm,PRINT_FORMULA,
-     &              labels,2,1,parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c      call set_rule('RESP_LAG',ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,parameters,2,tgt_info)
 
       ! perturbation expansion of H: Hnew=H+V(1)
       labels(1:20)(1:len_target_name) = ' '
@@ -867,8 +910,8 @@
      &                parameters,2,tgt_info)
       end do
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'frequency expansion of perturbation operators'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'frequency expansion of perturbation operators'
 
       ! frequency expansion of V(1): V(1)=V(1)X+V(1)Y+V(1)Z
       labels(1:20)(1:len_target_name) = ' '
@@ -940,8 +983,8 @@
      &                parameters,2,tgt_info)
       end if
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'frequency expansion of L and T operators'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'frequency expansion of L and T operators'
 
       ! frequency expansion of X(n), n>0: X(1) = X(1)1+X(1)2+..., ...
       ! following the (2n+1) and (2n+2) rules regarding the maximum order
@@ -1027,8 +1070,8 @@
      &              labels,3,1,
      &              parameters,2,tgt_info)
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'factoring out special intermediates'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'factoring out special intermediates'
 
       ! R12: define BV-intermediate and factor out special intermediates
       if (setr12) then
@@ -1076,11 +1119,11 @@
      &                    labels,6,1,
      &                    parameters,2,tgt_info)
             end if
-            call form_parameters(-1,
-     &           parameters,2,'stdout',0,'---')
-            call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
-     &                    labels,1,0,
-     &                    parameters,2,tgt_info)
+c            call form_parameters(-1,
+c     &           parameters,2,'stdout',0,'---')
+c            call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
+c     &                    labels,1,0,
+c     &                    parameters,2,tgt_info)
             formname(2:9) = pop(ipop)%name//pop(ipop)%comp//'_form '
             opname(1:5) = pop(ipop)%name//'(1)'//pop(ipop)%comp
             opname2(2:3) = pop(ipop)%name//pop(ipop)%comp
@@ -1151,9 +1194,12 @@
           call set_rule('RESP_LAGF',ttype_frm,REPLACE,
      &                labels,6,1,
      &                parameters,2,tgt_info)
-          call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-          call set_rule('RESP_LAGF',ttype_frm,PRINT_FORMULA,
-     &                  labels,2,1,parameters,2,tgt_info)
+c          call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c          call set_rule('RESP_LAGF',ttype_frm,PRINT_FORMULA,
+c     &                  labels,2,1,parameters,2,tgt_info)
+c          call set_rule('RESP_LAGF',ttype_frm,TEX_FORMULA,
+c     &                  labels,5,1,
+c     &                  'ccr12_lag0.tex',1,tgt_info)
         end if
       end if
 
@@ -1230,15 +1276,15 @@
           call set_rule(trim(formname),ttype_frm,EXPAND,
      &                  labels,ilabels,1,
      &                  parameters,2,tgt_info)
-          call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-          call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
-     &                  labels,2,1,parameters,2,tgt_info)
+c          call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c          call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
+c     &                  labels,2,1,parameters,2,tgt_info)
         end do
         deallocate(ifreq,ifreqnew)
       end do
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'expanding left and right residuals'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'expanding left and right residuals'
 
       ! expand left and right residuals RESS_LAG(n)_X
       ! with X(1)=X(1)1+X(1)2+..., X(2)=X(2)12+X(2)13+...
@@ -1396,8 +1442,8 @@
      &                parameters,2,tgt_info)
       end do
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'extracting terms according to frequency pattern'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'extracting terms according to frequency pattern'
 
       ! extract terms of F_LAG(n) with correct freq. pattern
       formname(1:len_short) = ' '
@@ -1700,9 +1746,9 @@
         call set_rule(form_ccr12_s0,ttype_frm,FACTOR_OUT,
      &                labels,nint+2,1,
      &                parameters,2,tgt_info)
-        call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-        call set_rule(form_ccr12_s0,ttype_frm,PRINT_FORMULA,
-     &                labels,2,1,parameters,2,tgt_info)
+c        call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c        call set_rule(form_ccr12_s0,ttype_frm,PRINT_FORMULA,
+c     &                labels,2,1,parameters,2,tgt_info)
         ! (c) SF_X: derivation wrt L or T:
         opname(1:len_short) = ' '
         opname(1:3) = 'S_X'
@@ -1732,9 +1778,9 @@
           call set_rule(trim(formname),ttype_frm,DERIVATIVE,
      &                  labels,5,1,
      &                  parameters,2,tgt_info)
-          call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-          call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
-     &                  labels,2,1,parameters,2,tgt_info)
+c          call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c          call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
+c     &                  labels,2,1,parameters,2,tgt_info)
         end do
         ! (d) derivation wrt T or L and replace with T(n)w or L(n)w
         formname(1:len_short) = ' '
@@ -1799,9 +1845,9 @@
               call set_rule(trim(formname),ttype_frm,DERIVATIVE,
      &                    labels,5,1,
      &                    parameters,2,tgt_info)
-              call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-              call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
-     &                      labels,2,1,parameters,2,tgt_info)
+c              call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c              call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
+c     &                      labels,2,1,parameters,2,tgt_info)
             end do
             deallocate(ifreq,ifreqnew)
           end do
@@ -1849,11 +1895,11 @@
           call set_rule(trim(formname),ttype_frm,DEF_R12INTM_CABS,
      &                  labels,5,1,
      &                  parameters,2,tgt_info)
-          call form_parameters(-1,
-     &         parameters,2,'stdout',0,'---')
-          call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
-     &                  labels,1,0,
-     &                  parameters,2,tgt_info)
+c          call form_parameters(-1,
+c     &         parameters,2,'stdout',0,'---')
+c          call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
+c     &                  labels,1,0,
+c     &                  parameters,2,tgt_info)
           ! RBRV(V)V_F:
           call add_target(trim(formname2),ttype_frm,.false.,tgt_info)
           call set_dependency(trim(formname2),trim(opname3),tgt_info)
@@ -1870,11 +1916,11 @@
           call set_rule(trim(formname2),ttype_frm,DEF_R12INTM_CABS,
      &                  labels,5,1,
      &                  parameters,2,tgt_info)
-          call form_parameters(-1,
-     &         parameters,2,'stdout',0,'---')
-          call set_rule(trim(formname2),ttype_frm,PRINT_FORMULA,
-     &                  labels,1,0,
-     &                  parameters,2,tgt_info)
+c          call form_parameters(-1,
+c     &         parameters,2,'stdout',0,'---')
+c          call set_rule(trim(formname2),ttype_frm,PRINT_FORMULA,
+c     &                  labels,1,0,
+c     &                  parameters,2,tgt_info)
           ! BV_CABS_V:
           if (orb_info%ngas.eq.4) opname3(6:6) = 'h'
           call add_target(trim(formname3),ttype_frm,.false.,tgt_info)
@@ -1900,16 +1946,16 @@
           call set_rule(trim(formname3),ttype_frm,DEF_R12INTM_CABS,
      &                  labels,7,1,
      &                  parameters,2,tgt_info)
-          call form_parameters(-1,
-     &         parameters,2,'stdout',0,'---')
-          call set_rule(trim(formname3),ttype_frm,PRINT_FORMULA,
-     &                  labels,1,0,
-     &                  parameters,2,tgt_info)
+c          call form_parameters(-1,
+c     &         parameters,2,'stdout',0,'---')
+c          call set_rule(trim(formname3),ttype_frm,PRINT_FORMULA,
+c     &                  labels,1,0,
+c     &                  parameters,2,tgt_info)
         end do
       end if
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'formulae defined'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'formulae defined'
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
@@ -2252,8 +2298,8 @@
         end do
       end if
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'opt. formulae defined'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'opt. formulae defined'
 
 *----------------------------------------------------------------------*
 *     ME-lists
@@ -2427,8 +2473,8 @@
         end do
       end if
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'ME_V and ME_BV lists defined'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'ME_V and ME_BV lists defined'
 
       ! ME_Y(n)1,..., ME_O(n)SX1,... (X=T,L; n=0,..,x_max_ord, S=L,R)
       ! not for ME_O(0)SL because of non-linear CC-equations
@@ -2559,8 +2605,8 @@
         end do
       end do
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'ME_L, ME_T, ME_O-lists defined'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'ME_L, ME_T, ME_O-lists defined'
 
       ! ME_O(0)_L
       call add_target('DEF_ME_O(0)_L',ttype_opme,.false.,tgt_info)
@@ -2808,8 +2854,8 @@
         end do
       end if
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'me-lists defined'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'me-lists defined'
 
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
@@ -2878,12 +2924,13 @@
         labels(8)= mel_ham
         ilabels = 8
       end if
-      call set_rule('SOLVE_T(0)',ttype_opme,SOLVENLEQ,
-     &     labels,ilabels,2,
-     &     parameters,2,tgt_info)
+      if (restart.eq.0) 
+     &       call set_rule('SOLVE_T(0)',ttype_opme,SOLVENLEQ,
+     &       labels,ilabels,2,
+     &       parameters,2,tgt_info)
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'define solvers for linear equations'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'define solvers for linear equations'
 
       ! solve linear equations for X(n)w 
       ! (X=T,L, n=0,...,x_max_ord, not for T(0))
@@ -2896,6 +2943,7 @@
           optname(1:8) = 'OPT_L(n)'
           solvename(1:10) = 'SOLVE_L(n)'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
+          x_max_ord2 = int((real(restart-1)-2)/2+0.6)
         else
           op_parent = 'T'
           defmelname(1:11) = 'DEF_ME_T(n)'
@@ -2904,6 +2952,7 @@
           optname(1:8) = 'OPT_T(n)'
           solvename(1:10) = 'SOLVE_T(n)'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
+          x_max_ord2 = int((real(restart-1)-1)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
         do ord = op_par-1,x_max_ord
@@ -2998,16 +3047,17 @@
               labels(9)= mel_ham
               ilabels = 9
             end if
-            call set_rule(trim(solvename),ttype_opme,SOLVELEQ,
-     &           labels,ilabels,1,
-     &           parameters,2,tgt_info)
+            if (ord.gt.x_max_ord2.or.op_par+restart.le.2)
+     &            call set_rule(trim(solvename),ttype_opme,SOLVELEQ,
+     &            labels,ilabels,1,
+     &            parameters,2,tgt_info)
           end do
           deallocate(ifreq,ifreqnew)
         end do
       end do
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'define evaluaters'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'define evaluaters'
 
       ! evaluate RESP_LAG(n)
       optname(1:len_short) = ' '
@@ -3095,6 +3145,7 @@
      &                                         tgt_info)
             labels(1:20)(1:len_target_name) = ' '
             labels(1) = trim(optname)
+            if (restart.gt.ord) cycle
             call set_rule(trim(evalname),ttype_opme,EVAL,
      &           labels,1,0,
      &           parameters,0,tgt_info)
@@ -3108,8 +3159,8 @@
         deallocate(ifreq,ifreqnew)
       end do
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'define dependency hubs'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'define dependency hubs'
 
       ! hub for DEF_ME_Y(n)w-dependencies
       defmelname(1:len_short) = ' '
@@ -3244,8 +3295,8 @@
         end do
       end do
 
-      if (ntest.ge.100)
-     &  write(luout,*) 'phony targets processed'
+c      if (ntest.ge.100)
+c     &  write(luout,*) 'phony targets processed'
 
 *----------------------------------------------------------------------*
 *     deallocate arrays

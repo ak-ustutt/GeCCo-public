@@ -7,6 +7,7 @@
 *     driver routine for setting up a diagonal preconditioner
 *
 *     mode_str: '' or 'dia-F'  -- the usual choice: diagonal using F
+*               'dia-H'        -- add. use zero- and 2-el. part of H
 *               'dia-R12'      -- diagonal precond. for R12
 *               'dia-R12noX'   -- R12: but do not use X
 *----------------------------------------------------------------------*
@@ -39,6 +40,7 @@
 
       logical ::
      &     use_h, use_b1, use_x1, use_b, use_x, too_few,
+     &     use_id, use_h2,
      &     open_close_b,
      &     open_close_x,
      &     open_close_ham,
@@ -48,7 +50,7 @@
      &     idxprc, idxham, idx_b, idx_x, x2nblk, b2nblk,
      &     occ_test(ngastp,2)
       real(8) ::
-     &     cpu, sys, wall, cpu0, sys0, wall0
+     &     cpu, sys, wall, cpu0, sys0, wall0, ecore
 
       type(me_list), pointer ::
      &     me_ham, me_prc, me_b, me_x
@@ -59,7 +61,7 @@
       integer, pointer ::
      &     b2off(:), x2off(:)
       real(8), pointer ::
-     &     h1dia(:), b1dia(:), x1dia(:), b2dia(:), x2dia(:)
+     &     h1dia(:), b1dia(:), x1dia(:), b2dia(:), x2dia(:), h2dia(:)
 
       integer, external ::
      &     idx_mel_list, ndisblk_mel, iblk_occ
@@ -71,9 +73,18 @@
       too_few = .false.
       use_b1 = .false.
       use_x1 = .false.
+      use_id = .false.
+      use_h2 = .false.
       select case(trim(mode_str))
       case('','dia-F')
         use_h = .true.
+        use_b = .false.
+        use_x = .false.
+        if (nlabel_inp.lt.1) too_few = .true.
+      case('dia-H')
+        use_h = .true.
+        use_id = .true.
+        use_h2 = .true.
         use_b = .false.
         use_x = .false.
         if (nlabel_inp.lt.1) too_few = .true.
@@ -152,12 +163,16 @@
       h1dia => xdummy
       b2dia => xdummy
       x2dia => xdummy
+      h2dia => xdummy
       ! this assumption is probably not too bad:
 c      if (use_h)
 c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
       if (use_h)
      &     ifree = mem_alloc_real(h1dia,
      &     2*(orb_info%ntoob+orb_info%caborb),'h1dia')
+      if (use_h2) 
+     &     ifree = mem_alloc_real(h2dia,
+     &     4*(orb_info%ntoob+orb_info%caborb)**2,'h2dia')
       if (use_b1)
      &     ifree = mem_alloc_real(b1dia,2*orb_info%ntoob,'b1dia')
       if (use_x1)
@@ -195,13 +210,16 @@ c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
 
       ! extract the fock-matrix diagonal
       if (use_h)
-     &     call onedia_from_op(h1dia,me_ham,.true.,orb_info)
+     &     call onedia_from_op(h1dia,ecore,me_ham,.true.,orb_info)
+      ! also two-electron part
+      if (use_h2)
+     &     call twodia_from_op(h2dia,me_ham,orb_info,str_info)
       ! diagonal of partial trace of B/X (for R12):
       if (use_b1)
-     &     call onedia_from_op(b1dia,me_b,.false.,orb_info)
+     &     call onedia_from_op(b1dia,ecore,me_b,.false.,orb_info)
       if (use_x1)
-     &     call onedia_from_op(x1dia,me_x,.false.,orb_info)
-
+     &     call onedia_from_op(x1dia,ecore,me_x,.false.,orb_info)
+      if (.not.use_id) ecore = 0d0
 
       ! Extract the diagonal elements of the B-matrix for R12.
       if (use_b)
@@ -215,8 +233,10 @@ c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
      &                         orb_info,str_info)
 
       ! set up preconditioner
-      if (.not.use_b.and..not.use_x) then
+      if (.not.use_b.and..not.use_x.and..not.use_h2) then
         call dia4op(me_prc,h1dia,str_info,orb_info)
+      else if (.not.use_b.and..not.use_x) then
+        call dia4op_ev(me_prc,ecore,h1dia,h2dia,str_info,orb_info)
       else
         call dia4op_r12(me_prc,h1dia,b2dia,b2off,x2dia,x2off,use_x,
      &       str_info,orb_info)

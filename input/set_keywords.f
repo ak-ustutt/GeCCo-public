@@ -28,10 +28,13 @@ c      use parse_input
 
       call keyword_add('orb_space')
       call keyword_add('shell',context='orb_space')
-      call argument_add('def','orb_space.shell',type=vtyp_int,len=8)
+      call argument_add('def','orb_space.shell',type=vtyp_int,len=8,
+     &     idef=(/-1,-1,-1,-1,-1,-1,-1,-1/))
       call argument_add('type','orb_space.shell',type=vtyp_str,len=8)
       call argument_add('nfreeze','orb_space.shell',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('nactel','orb_space.shell',type=vtyp_int,
+     &     idef=(/-1/))
       call keyword_add('open_shells',context='orb_space')
       call argument_add('treat','orb_space.open_shells',
      &     type=vtyp_str,len=4,cdef=(/'p','h',' ',' '/))
@@ -250,6 +253,8 @@ c     &     idef=(/0/))
      &     type=vtyp_log,ldef=(/.true./)) ! treat BX intermed. as in approx.3C
       call argument_add('rules','calculate.response',
      &     type=vtyp_log,ldef=(/.true./)) ! use 2n+1 / 2n+2 rules
+      call argument_add('restart','calculate.response',
+     &     type=vtyp_int,idef=(/0/)) ! restart calc. at given prop. order
 
       call keyword_add('experimental',context='calculate')
       ! set additional experimental keyword in this subroutine:

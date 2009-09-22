@@ -22,11 +22,13 @@
      &     current
 
       integer ::
-     &     icnt, len, nfreeze
+     &     icnt, len, nfreeze, ncnt, ncnt2, nactel
       integer, allocatable ::
      &     iscr(:)
       character ::
      &     str*256
+      logical ::
+     &     allowed(3)
 
       if (.not.associated(history_pointer)) then
         ! advance to first keyword
@@ -80,41 +82,76 @@ c      end if
       call get_argument_value('general','da_block',ival=lblk_da)
       lblk_da = lblk_da*1024/nrecfc
 
-      icnt = is_keyword_set('orb_space.shell')
+      ncnt = is_keyword_set('orb_space.shell')
 
-      if (icnt.eq.1) then
-        icnt = is_argument_set('orb_space.shell','type')
-        if (icnt.ne.1)
+      allowed(1:3) = .true.
+      do icnt = 1, ncnt
+        ncnt2 = is_argument_set('orb_space.shell','type',keycount=icnt)
+        if (ncnt2.ne.1)
      &       call quit(0,'process_input','single shell? frozen?')
-        call get_argument_value('orb_space.shell','type',str=str)
+        call get_argument_value('orb_space.shell','type',keycount=icnt,
+     &                          str=str)
 
-        if (str(1:6).ne.'frozen')
-     &       call quit(0,'process_input','unexpected shell type: "'//
+        select case(str(1:6))
+        case('frozen')
+          if (.not.allowed(1)) cycle
+          allowed(1) = .false.
+
+          if (is_argument_set('orb_space.shell','def',
+     &                        keycount=icnt).gt.0) then
+            call get_argument_dimension(len,'orb_space.shell','def',
+     &                                  keycount=icnt)
+            allocate(iscr(len))
+            call get_argument_value('orb_space.shell','def',
+     &                              keycount=icnt,iarr=iscr)
+            nfreeze = sum(iscr(1:len))
+          else if (is_argument_set('orb_space.shell',
+     &                             'nfreeze',keycount=icnt).gt.0) then
+            call get_argument_value('orb_space.shell',
+     &                             'nfreeze',keycount=icnt,ival=nfreeze)
+            len = orb_info%nsym
+            allocate(iscr(len))
+            call auto_freeze(iscr,nfreeze,orb_info)
+          else
+            nfreeze = -1
+            len = orb_info%nsym
+            allocate(iscr(len))
+            call auto_freeze(iscr,nfreeze,orb_info)
+          end if
+
+          if (nfreeze.gt.0) 
+     &         call add_frozen_shell(iscr,len,orb_info)
+          deallocate(iscr)
+
+        case('occorb')
+          if (.not.allowed(2)) cycle
+          allowed(2) = .false.
+cmh       Change of inactive orbitals currently leads to wrong Fock Op.
+          call quit(0,'process_input','core Fock op. would be wrong!')
+          call get_argument_dimension(len,'orb_space.shell','def',
+     &                                keycount=icnt)
+          allocate(iscr(len))
+          call get_argument_value('orb_space.shell','def',
+     &                            keycount=icnt,iarr=iscr)
+          call modify_actspc(iscr,len,-1,orb_info,1)
+          deallocate(iscr)
+        case('actorb')
+          if (.not.allowed(3)) cycle
+          allowed(3) = .false.
+          call get_argument_dimension(len,'orb_space.shell','def',
+     &                                keycount=icnt)
+          allocate(iscr(len))
+          call get_argument_value('orb_space.shell','def',
+     &                            keycount=icnt,iarr=iscr)
+          call get_argument_value('orb_space.shell','nactel',
+     &                            keycount=icnt,ival=nactel)
+          call modify_actspc(iscr,len,nactel,orb_info,2)
+          deallocate(iscr)
+        case default
+          call quit(0,'process_input','unexpected shell type: "'//
      &         trim(str)//'"')
-
-        if (is_argument_set('orb_space.shell','def').gt.0) then
-          call get_argument_dimension(len,'orb_space.shell','def')
-          allocate(iscr(len))
-          call get_argument_value('orb_space.shell','def',iarr=iscr)
-          nfreeze = sum(iscr(1:len))
-        else if (is_argument_set('orb_space.shell','nfreeze').gt.0) then
-          call get_argument_value('orb_space.shell',
-     &                            'nfreeze',ival=nfreeze)
-          len = orb_info%nsym
-          allocate(iscr(len))
-          call auto_freeze(iscr,nfreeze,orb_info)
-        else
-          nfreeze = -1
-          len = orb_info%nsym
-          allocate(iscr(len))
-          call auto_freeze(iscr,nfreeze,orb_info)
-        end if
-
-        if (nfreeze.gt.0) 
-     &       call add_frozen_shell(iscr,len,orb_info)
-        deallocate(iscr)
-
-      end if
+        end select
+      end do
 
       ! set routes for core routines
       call get_argument_value('calculate.routes','schedule',

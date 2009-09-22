@@ -165,6 +165,7 @@ c dbg
 
         msc_max = ca_occ(1,iblk)
         msa_max = ca_occ(2,iblk)
+        nexc = min(ca_occ(1,iblk),ca_occ(2,iblk))
 
         ! set HPVX and OCC info
         call condense_occ(occ_csub, occ_asub,
@@ -188,11 +189,11 @@ c dbg
           mel%off_op_gmox(iblk)%maxd = 0
         else
           mel%off_op_gmox(iblk)%
-     &       d_gam_ms(1:mel%off_op_gmox(iblk)%maxd,1:ngam,1:msa_max)=-1
+     &       d_gam_ms(1:mel%off_op_gmox(iblk)%maxd,1:ngam,1:nexc+1)=-1
           mel%off_op_gmox(iblk)%
-     &       did(1:mel%off_op_gmox(iblk)%maxd,1:ngam,1:msa_max) = 0
+     &       did(1:mel%off_op_gmox(iblk)%maxd,1:ngam,1:nexc+1) = 0
           mel%off_op_gmox(iblk)%
-     &       ndis(1:ngam,1:msa_max) = 0
+     &       ndis(1:ngam,1:nexc+1) = 0
         end if
 
         ! loop over Ms of A-string (fixes Ms of C-string)

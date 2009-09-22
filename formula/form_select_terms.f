@@ -20,7 +20,7 @@
       include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     ninclude, ninclude_or, nexclude,

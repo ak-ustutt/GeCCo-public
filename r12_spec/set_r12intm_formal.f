@@ -26,7 +26,7 @@ c      include 'ifc_operators.h'
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula), intent(inout), target ::
      &     form_out

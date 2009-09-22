@@ -55,7 +55,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       type(formula), intent(inout), target ::
      &     form_out

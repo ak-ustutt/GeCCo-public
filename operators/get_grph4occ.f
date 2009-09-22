@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine get_grph4occ(idx_gr,iocc,irst,njoined,
-     &     str_info,orb_info,error_exit)
-! error_exit -> error_handling
+     &     str_info,orb_info,allow_new_g)
+! allow_new_g -> error_handling
 *----------------------------------------------------------------------*
 *     get graphs for each HPV/CA from occupation + restriction
 *----------------------------------------------------------------------*
@@ -21,7 +21,7 @@
      &     iocc(ngastp,2,njoined),
      &     irst(2,orb_info%ngas,2,2,orb_info%nspin,njoined)
       logical, intent(in) ::
-     &     error_exit
+     &     allow_new_g
 
       integer, intent(out) ::
      &     idx_gr(ngastp,2,njoined)
@@ -75,22 +75,15 @@ c dbg
                                  ! we wanted
           end do gr4typ
           if (idxgraph.le.0) then
-            if (error_exit) then
-              write(luout,*) 'ERROR: string not in list'
-              write(luout,*) 'Operator was'
-              call wrt_occ_n(luout,iocc,njoined)
-              do ii = 1, njoined
-                call wrt_rstr(luout,irst(1,1,1,1,1,ii),ngas)
-              end do
-              write(luout,*) 'C/A, GAS-TYP, VTX: ',ica,igastp,ijoin
-              call quit(1,'get_grph4occ','string not in list')
-            else
+            if (.not.allow_new_g) then
               idx_gr(1:ngastp,1:2,1:njoined) = -1
               exit outer_loop
             end if
-c           call add_graph(iocc(igastp,ica,ijoin),igastp,ica,
-c     irst(1,1,1,1,ii),str_info,orb_info)
-c
+           ! add required graph (needed e.g. in case of CASSCF)
+           call add_graph(iocc(igastp,ica,ijoin),igastp,ica,
+     &              irst(1,1,1,1,1,ijoin),str_info,orb_info)
+           idxgraph = str_info%ngraph
+
           end if
             
           idx_gr(igastp,ica,ijoin) = idxgraph

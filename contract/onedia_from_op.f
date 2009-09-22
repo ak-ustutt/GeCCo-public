@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine onedia_from_op(x1dia,mel,wcabs,orb_info)
+      subroutine onedia_from_op(x1dia,const,mel,wcabs,orb_info)
 *----------------------------------------------------------------------*
 *     extract the diagonal of the rank-one part of ME-list mel
 *----------------------------------------------------------------------*
@@ -20,6 +20,8 @@
 
       real(8), intent(out) ::
      &     x1dia(*)
+      real(8), intent(out) ::
+     &     const
       logical, intent(in) ::
      &     wcabs
       type(orbinf), intent(in), target ::
@@ -77,6 +79,10 @@
       mostnd => orb_info%mostnd
       ihpvgas => orb_info%ihpvgas
       iad_gas => orb_info%iad_gas
+
+      ! extract constant element (e.g. core energy)
+      call get_vec(ffop,const,1,1)
+c      print *,'core energy: ',const
 
       do iocc_cls = 1, op%n_occ_cls
         ! 1-electron operators only ....

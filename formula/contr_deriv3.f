@@ -98,6 +98,7 @@
      &     op_res0%ihpvca_occ,njoined_0)
       ipcr_der   = rank_occ('C-A',
      &     op_der%ihpvca_occ(1,1,1),njoined_der)
+      if (idxder.lt.0) ipcr_der = -ipcr_der ! allow der. wrt. daggered op.
       ipcr_res   = rank_occ('C-A',
      &     op_res%ihpvca_occ(1,1,1),njoined_res)
       ipcr_mlt = 0
@@ -130,7 +131,7 @@
       if (ipcr_0-ipcr_der+ipcr_mlt.ne.ipcr_res) then
         write(luout,*) ipcr_0,' - ',ipcr_der,' + ',ipcr_mlt,
      &       ' != ',ipcr_res
-        call quit(1,'contr_deriv2',
+        call quit(1,'contr_deriv3',
      &     'particle creation ranks do not match')
       end if
 

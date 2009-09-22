@@ -57,7 +57,7 @@ c     &     first, first_str
      &     len, ii, nstr,
      &     int_disk, int_nonr, int_ordr, ioff, istr,
      &     idxst, idxnd, nblk, nblkmax, ifree, luerr, nbuff,
-     &     len_op, idum, ipass
+     &     len_op, idum, ipass, iblk, iblkst
 
       integer ::
      &     idxprqs(4),idss(4),igam(4),igtp(4), 
@@ -122,13 +122,15 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
         call quit(1,'get_h2','not even 1 record fits into memory?')
       end if
 
-      ! not completely elegant yet
-      ! we should not imply the knowledge that the first 4 blocks
-      ! are one-electron integrals
+cmh   determine number of first 2-el. block
+      do iblk = hlist%op%n_occ_cls,1,-1
+        if (hlist%op%ica_occ(1,iblk).eq.2) iblkst = iblk
+      end do
       len_op = hlist%len_op
-      nblk = min((len_op-hlist%off_op_occ(6)-1)/ffham%reclen+1,nblkmax)
+      nblk = min((len_op-hlist%off_op_occ(iblkst)-1)
+     &                      / ffham%reclen+1,nblkmax)
 
-      nbuff = min(len_op-hlist%off_op_occ(6),nblk*ffham%reclen)
+      nbuff = min(len_op-hlist%off_op_occ(iblkst),nblk*ffham%reclen)
 
       write(luout,*) 'number of incore-blocks in geth2: ',nblk
       write(luout,'(x,a,f9.2,a)') 'size of buffer in geth2:   ',
@@ -150,7 +152,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
 
       ! loop over batches of final integral file
       ipass = 0
-      idxst = hlist%off_op_occ(6) + 1
+      idxst = hlist%off_op_occ(iblkst) + 1
       do while(idxst.le.len_op)
         ipass = ipass+1
         idxnd = min(len_op,idxst-1+nbuff)
@@ -269,7 +271,7 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
       write(luout,*) '2-el. integrals on disk: ',int_disk
       write(luout,*) '   thereof nonredundant: ',int_nonr
       write(luout,*) '    integrals reordered: ',!int_ordr,
-     &     hlist%len_op-hlist%off_op_occ(6)
+     &     hlist%len_op-hlist%off_op_occ(iblkst)
 
       if (closeit)
      &     call file_close_keep(ffham)

@@ -16,7 +16,7 @@
 
       include 'stdunit.h'
 
-      integer, parameter :: ntest = 100, maxn = 100
+      integer, parameter :: ntest = 00, maxn = 100
 
       integer, intent(in) ::
      &     ndim

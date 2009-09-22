@@ -108,11 +108,18 @@
       end do
 
       ! index and offset array from ngas_hpv:
-      idx = 1
+c      idx = 1
+cmh adapted for use of valence space
+      orb_info%ioff_gas(1:ngas) = 0
+      orb_info%idx_gas(1:ngas) = 0
       do igastp = 1, ngastp
-        orb_info%ioff_gas(igastp) = idx-1
-        orb_info%idx_gas(igastp) = idx
-        idx = idx+orb_info%ngas_hpv(igastp)
+        do idx = ngas,1,-1
+          orb_info%ioff_gas(orb_info%ihpvgas(idx,1)) = idx-1
+          orb_info%idx_gas(orb_info%ihpvgas(idx,1)) = idx
+        end do
+c        orb_info%ioff_gas(igastp) = idx-1
+c        orb_info%idx_gas(igastp) = idx
+c        idx = idx+orb_info%ngas_hpv(igastp)
       end do
 
       if (iprint.ge.100) then

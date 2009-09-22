@@ -20,7 +20,7 @@ c     &                      title,
       include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer, intent(in) ::
      &     nterms, idxterms(nterms)
@@ -48,7 +48,7 @@ c     &                      title,
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
-     &       'here speaks form_del_terms')
+     &       'here speaks form_mod_factorization')
         write(luout,*) ' f_input  = ',trim(f_input%label)
         write(luout,*) ' f_output = ',trim(f_output%label)
       end if
@@ -63,7 +63,7 @@ c     &                      title,
       fl_pnt => flist
 
       if (.not.associated(fl_pnt))
-     &     call quit(1,'form_del_terms',
+     &     call quit(1,'form_mod_factorization',
      &     'empty formula list? something is buggy')
 
       idx = 0
@@ -126,7 +126,7 @@ c dbg
 
         fl_pnt => fl_pnt_next
         if (.not.associated(fl_pnt))
-     &       call quit(1,'form_del_terms',
+     &       call quit(1,'form_mod_factorization',
      &       'unexpected end of formula list')
 
       end do fl_loop

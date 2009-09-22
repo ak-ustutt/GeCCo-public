@@ -8,6 +8,7 @@
       include 'def_orbinf.h'
       include 'ifc_baserout.h'
       include 'par_dalton.h'
+      include 'ifc_input.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -39,6 +40,8 @@
      &     nfro(mxsym),nrhf(mxsym),
      &     muld2h(mxsym,mxsym), nas1(mxsym), nas2(mxsym), nas3(mxsym),
      &     auxbas(mxsym),linind(mxsym),totbas(mxsym)
+      integer ::
+     &     inactorb(mxsym),cas(mxsym),actel
       real(8) ::
      &     potnuc,emy,eactiv,emcscf
 
@@ -172,6 +175,8 @@
       ngas = 2
       if (n_frozen.gt.0) ngas = ngas+1
       if(logaux) ngas=ngas+1
+      orb_info%nactel = nactel
+      orb_info%lsym = lsym
       if (n_act.gt.0) then
         ! test whether this can be treated as a simple
         ! high spin open shell case:
@@ -182,13 +187,15 @@
           nspin = 2
         else
           write(luout,*) 'valence shell is not high-spin ...'
-          call quit(1,'read_env_dalton',
-     &     'not adapted to non-high-spin open shell cases')
+c let pass to enable CAS calculations
+          ngas = ngas+1
+c          call quit(1,'read_env_dalton',
+c     &     'not adapted to non-high-spin open shell cases')
         end if
       end if
-      if (n_as1.gt.0.or.n_as2.gt.0.or.n_as3.gt.0)
-     &     call quit(1,'read_env_dalton',
-     &     'not adapted to RAS orbital spaces')
+c      if (n_as1.gt.0.or.n_as2.gt.0.or.n_as3.gt.0)
+c     &     call quit(1,'read_env_dalton',
+c     &     'not adapted to RAS orbital spaces')
 
       nbast  = sum(nbas(1:nsym))
       nxbast = sum(auxbas(1:nsym))
@@ -229,7 +236,7 @@
           orb_info%igassh(1:nsym,4) = linind(1:nsym)
         endif  
       else
-        if (nspin.eq.1) then
+        if (nspin.eq.1.and.n_act.eq.0) then
           if(logaux)then
             orb_info%iad_gas(1:ngas) = (/2,2,2/)
             orb_info%ihpvgas(1:ngas,1) = (/1,2,4/)
@@ -241,6 +248,21 @@
           orb_info%igassh(1:nsym,2) = norb(1:nsym)-nrhf(1:nsym)
           if(logaux)then
             orb_info%igassh(1:nsym,3) = linind(1:nsym)
+          endif
+        else if (nspin.eq.1) then
+          if(logaux)then
+            orb_info%iad_gas(1:ngas) = (/2,2,2,2/)
+            orb_info%ihpvgas(1:ngas,1) = (/1,3,2,4/)
+          else
+            orb_info%iad_gas(1:ngas) = (/2,2,2/)
+            orb_info%ihpvgas(1:ngas,1) = (/1,3,2/)
+          endif
+          orb_info%igassh(1:nsym,1) = nrhf(1:nsym)
+          orb_info%igassh(1:nsym,2) = nash(1:nsym)
+          orb_info%igassh(1:nsym,3) 
+     &                  = norb(1:nsym)-nrhf(1:nsym)-nash(1:nsym)
+          if(logaux)then
+            orb_info%igassh(1:nsym,4) = linind(1:nsym)
           endif
         else
           if(logaux)then
