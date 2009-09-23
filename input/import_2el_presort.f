@@ -70,6 +70,13 @@
       integer, parameter ::
      &     n_idx_sim = 16 ! more seems to give cache problems
 
+      ! block look-up cache
+      integer, parameter ::
+     &     max_cache = 16
+      integer ::
+     &     len_cache,
+     &     cache_tab(3,max_cache), cache_stat(3)
+
       integer, pointer ::
      &     igamorb(:), igasorb(:), hpvxgas(:,:),
      &     reost(:), reord(:)
@@ -161,6 +168,9 @@ c dbg
 
       spfac(1:6) = (/fac_aa,fac_aa,fac_ab,fac_ab,fac_abx,fac_abx/)
 
+      len_cache = 0
+      cache_stat(1:3) = 0
+
       idxrec = 0
       last_bin = 0
       idxbin_prev = 0
@@ -207,6 +217,7 @@ c dbg
      &                   .true.,.true.,.true.,.true.,set_abx,
      &                   set_ccaa,set_ca)
 
+            
             ! get indices on operator list
             call idx4so(idxlist,
 c            call idx4so_ori(idxlist,
@@ -214,6 +225,7 @@ c            call idx4so_ori(idxlist,
      &                idxval,idxspin,idxperm,n_so,
      &                fac_ccaa.lt.0d0,set_pq_rs,
      &                oplist,occ_hash,
+     &                cache_tab,len_cache,max_cache,cache_stat,
      &                str_info,orb_info)
 
             if (incore) then
@@ -294,7 +306,6 @@ c dbg
           end do ! loop over record
 
         end do ! loop over input file records
-
         ! empty buffers
         if (.not.incore) then
 
@@ -349,6 +360,14 @@ c dbg
 
       end do ! passes over input file
 
+c dbg
+      print *,'cache statistics:'
+      print *,'max. length = ',max_cache
+      print *,'used length = ',len_cache
+      print *,'hits   = ',cache_stat(1)
+      print *,'misses = ',cache_stat(2)
+      print *,'misses (crit) = ',cache_stat(3)
+c dbg
       if (.not.incore) then
         ! last record on chain file
         idx_wr = -1

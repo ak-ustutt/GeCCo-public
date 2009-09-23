@@ -4,6 +4,7 @@
      &                  idxval,idxspin,idxperm,n_so,
      &                  antiherm,pq_rs,
      &                  me,occ_hash,
+     &                  cache_tab,len_cache,max_cache,cache_stat,
      &                  str_info,orb_info)
 *----------------------------------------------------------------------*
 *     input: list of spin-orbital indices
@@ -45,12 +46,14 @@
      &     antiherm,pq_rs
 
       logical ::
-     &     reopr, reoqs, sgn_change
+     &     reopr, reoqs, sgn_change, equal
       integer ::
      &     ii, i0, ipm, iind, nind, igraph, nstr, istr, jstr,
      &     gamt, mst, gama, idxmsa, idis,
      &     ip, iq, ir, is, ips, iqs, irs, iss, iscr, len, nj, nspin,
      &     igastp, jgastp, idx, isgn
+c test
+     &     ,s11,s21,s31,s12,s22,s32
       integer ::
      &     hpvx,
      &     hpvx_p, hpvx_q, hpvx_r, hpvx_s,
@@ -62,7 +65,8 @@
      &     idxraw(6,n_so), string(3,2,4),
      &     idgam(4), idspc(4), strseq(4),
      &     string_list(3,2,4*n_so), idxlenstr(2,4*n_so),
-     &     occ(ngastp,2,2)
+     &     occ(ngastp,2,2), strl(2,2)
+c      integer(2) :: string(3,2,4), string_list(3,2,4*n_so)
 
       integer ::
      &     nsym
@@ -76,14 +80,16 @@
      &     graphs(:), curgraph
 
       ! block look-up cache
-      integer, parameter ::
-     &     max_cache = 32
+c      integer, parameter ::
+      integer ::
+     &     max_cache
       integer ::
      &     len_cache, idx_cache,
-     &     cache_tab1(max_cache), cache_tab2(2,max_cache)
+c     &     cache_tab1(max_cache), cache_tab2(2,max_cache)
+     &     cache_tab(3,max_cache), cache_stat(2)
       
       integer, external ::
-     &     idx4sg, iblk_occ
+     &     idx4sg, iblk_occ, search_list6
       logical, external ::
      &     allow_sbsp_dis, list_cmp
 
@@ -103,8 +109,9 @@
       nstr = 0
 
       ihash_last = -1
-      idx_cache = 0
-      len_cache = 0
+      idx_cache = len_cache
+c      idx_cache = 0
+c      len_cache = 0
 
       do ii = 1, n_so
 
@@ -230,9 +237,13 @@ Cc dbg
 C
        ioff = -1
         do idx = 1, len_cache
-          if (ihash_blk.eq.cache_tab1(idx)) then
-            iblk   = cache_tab2(1,idx)
-            ioff   = cache_tab2(2,idx)
+c          if (ihash_blk.eq.cache_tab1(idx)) then
+c            iblk   = cache_tab2(1,idx)
+c            ioff   = cache_tab2(2,idx)
+          if (ihash_blk.eq.cache_tab(1,idx)) then
+            iblk   = cache_tab(2,idx)
+            ioff   = cache_tab(3,idx)
+            cache_stat(1) = cache_stat(1)+1 ! hit
 Cc dbg
 C            print *,'found: ',idx,'->iblk,ioff = ',iblk,ioff
 Cc dbg
@@ -276,6 +287,7 @@ C          end if
             off_d_gam_ms => me%off_op_gmox(iblk)%d_gam_ms
             idis = get_dis()    ! local function
             idxraw(2,ii) = off_d_gam_ms(idis,gama,idxmsa)
+            cache_stat(3) = cache_stat(3)+1 ! critical miss
           else
             off_gam_ms   => me%off_op_gmo(iblk)%gam_ms
             idxraw(2,ii) = off_gam_ms(gama,idxmsa)
@@ -284,11 +296,20 @@ C          end if
           ! put to cache
           idx_cache = mod(idx_cache,max_cache)+1
           if (len_cache.lt.max_cache) len_cache = len_cache+1
-          cache_tab1(idx_cache) = ihash_blk
-          cache_tab2(1,idx_cache) = iblk
-          cache_tab2(2,idx_cache) = idxraw(2,ii)
+c          cache_tab1(idx_cache) = ihash_blk
+c          cache_tab2(1,idx_cache) = iblk
+c          cache_tab2(2,idx_cache) = idxraw(2,ii)
+          cache_stat(2) = cache_stat(2)+1 ! miss
+
+          cache_tab(1,idx_cache) = ihash_blk
+          cache_tab(2,idx_cache) = iblk
+          cache_tab(3,idx_cache) = idxraw(2,ii)
 
         end if
+
+c dbg   POINT 2
+c        cycle
+c dbg
 
         ! cut into individual strings
         if (.not.pq_rs) then
@@ -336,6 +357,9 @@ C          end if
           string(1:3,2,nind) = (/iss,0,igraph/)
         end if
 
+c dbg   POINT 3
+c        cycle
+c dbg
 
         ! get ordering array for actual sequence of strings
         idx = 0
@@ -348,6 +372,9 @@ C          end if
           end do
         end do
 
+c dbg   POINT 4
+c        cycle
+c dbg
         if (ntest.ge.1000) then
           write(luout,*) 'strseq = ',strseq(1:4)
           write(luout,*) 'extracted strings:'
@@ -361,18 +388,69 @@ C          end if
         do iind = 1, nind
           ! search string list for identical string
           jstr = -1 
-          search: do istr = 1, nstr
-            if (string_list(1,1,istr).eq.string(1,1,iind).and.
-     &          string_list(2,1,istr).eq.string(2,1,iind).and.
-     &          string_list(3,1,istr).eq.string(3,1,iind).and.
-     &          string_list(1,2,istr).eq.string(1,2,iind).and.
-     &          string_list(2,2,istr).eq.string(2,2,iind).and.
-     &          string_list(3,2,istr).eq.string(3,2,iind)
-     &         ) then
-              jstr = istr
-              exit search
-            end if
+c test
+          s11=string(1,1,iind)
+          s21=string(2,1,iind)
+          s31=string(3,1,iind)
+          s12=string(1,2,iind)
+          s22=string(2,2,iind)
+          s32=string(3,2,iind)
+c test          
+c          search: do istr = 1, nstr
+c            if (string_list(1,1,istr).eq.s11.and.
+c     &          string_list(2,1,istr).eq.s21.and.
+c     &          string_list(3,1,istr).eq.s31.and.
+c     &          string_list(1,2,istr).eq.s12.and.
+c     &          string_list(2,2,istr).eq.s22.and.
+c     &          string_list(3,2,istr).eq.s32
+cc            if (string_list(1,1,istr).eq.string(1,1,iind).and.
+cc     &          string_list(2,1,istr).eq.string(2,1,iind).and.
+cc     &          string_list(3,1,istr).eq.string(3,1,iind).and.
+cc     &          string_list(1,2,istr).eq.string(1,2,iind).and.
+cc     &          string_list(2,2,istr).eq.string(2,2,iind).and.
+cc     &          string_list(3,2,istr).eq.string(3,2,iind)
+c     &         ) then
+c              jstr = istr
+c              exit search
+c            end if
+c          end do search
+c          jstr = search_list6(string(1,1,iind),string_list,nstr)
+c          search: do istr = 1, nstr
+c            if (string_list(1,1,istr).ne.s11) cycle
+c            if (string_list(2,1,istr).ne.s21) cycle
+c            if (string_list(3,1,istr).ne.s31) cycle
+c            if (string_list(1,2,istr).ne.s12) cycle
+c            if (string_list(2,2,istr).ne.s22) cycle
+c            if (string_list(3,2,istr).ne.s32) cycle
+cc            if (string_list(1,1,istr).eq.string(1,1,iind).and.
+cc     &          string_list(2,1,istr).eq.string(2,1,iind).and.
+cc     &          string_list(3,1,istr).eq.string(3,1,iind).and.
+cc     &          string_list(1,2,istr).eq.string(1,2,iind).and.
+cc     &          string_list(2,2,istr).eq.string(2,2,iind).and.
+cc     &          string_list(3,2,istr).eq.string(3,2,iind)
+cc     &         ) then
+c            jstr = istr
+c            exit search
+c          end do search
+c          jstr = 1
+          istr = 1
+c          search: do while (istr .lt. nstr)
+          search: do while (istr .le. nstr)
+c          search: do istr = 1, nstr
+c            istr = istr+1
+            equal =           string_list(1,1,istr).eq.s11
+            equal = equal.and.string_list(2,1,istr).eq.s21
+            equal = equal.and.string_list(3,1,istr).eq.s31
+            equal = equal.and.string_list(1,2,istr).eq.s12
+            equal = equal.and.string_list(2,2,istr).eq.s22
+            equal = equal.and.string_list(3,2,istr).eq.s32
+            if (equal) exit search
+            istr = istr+1
           end do search
+
+          if (istr.gt.nstr) jstr=-1
+          if (istr.le.nstr) jstr=istr
+
           if (jstr.gt.0) then
             ! string already on list
             idxraw(2+strseq(iind),ii) = jstr
@@ -385,6 +463,10 @@ C          end if
         end do
 
       end do
+
+c dbg POINT 1
+c      return
+c dbg
 
       ! post-processing for ab strings
       do istr = 1, nstr
@@ -441,9 +523,15 @@ C          end if
           gamt = multd2h(gamt,idgam(2))
         end if
 
+c test
+        strl(1:2,1:2) = string_list(1:2,1:2,istr)
+c test
         idxlenstr(1,istr) =
-     &       idx4sg(len,idspc,string_list(1:,1,istr),
-     &             string_list(1:,2,istr),idgam,
+c     &       idx4sg(len,idspc,string_list(1:,1,istr),
+c     &             string_list(1:,2,istr),idgam,
+c test:
+     &       idx4sg(len,idspc,strl(1:,1),
+     &             strl(1:,2),idgam,
      &             curgraph%y4sg,curgraph%yinf,
      &             curgraph%yssg,curgraph%wssg,
      &             curgraph%ioffstr_dgm,curgraph%ndis,
@@ -574,3 +662,36 @@ c     &     idx_msgmdst2
 
       end
 
+      pure integer function search_list6(tgt,list,len)
+
+      implicit none
+
+      integer, intent(in) ::
+     &     len, tgt(len), list(6*len)
+
+      integer ::
+     &     idx, ii
+      logical ::
+     &     equal
+
+      idx = 0
+      search_list6 = -1
+      do ii = 1, len
+        idx = idx+1
+        equal = tgt(1).eq.list(idx)
+        idx = idx+1
+        equal = equal.and.tgt(2).eq.list(idx)
+        idx = idx+1
+        equal = equal.and.tgt(3).eq.list(idx)
+        idx = idx+1
+        equal = equal.and.tgt(4).eq.list(idx)
+        idx = idx+1
+        equal = equal.and.tgt(5).eq.list(idx)
+        idx = idx+1
+        equal = equal.and.tgt(6).eq.list(idx)
+c        if (equal) search_list6 = ii
+        if (equal) exit
+      end do
+
+      return
+      end
