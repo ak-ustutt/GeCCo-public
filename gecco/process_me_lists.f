@@ -302,7 +302,7 @@ c dbg
         mel_pnt => op_info%mel_arr(idx)%mel
         call form_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,title,imode,mode)
-        call print_list(title,mel_pnt,mode,str_info,orb_info)
+        call print_list(title,mel_pnt,mode,orb_info,str_info)
 
       case default
         call quit(1,'process_me_lists','unknown command: '//

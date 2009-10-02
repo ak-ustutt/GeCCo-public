@@ -69,7 +69,7 @@
         iord(idx) = idx
       end do
 
-      merged(1:nlist) = .false.
+      merged(1:nvtx) = .false.
       nvtx_new = nvtx
       nvtx_bcres = nlist
 

@@ -47,7 +47,7 @@
         ntrapo = mod(ntrapo + nj0c*(n_enclosed+ni0a),2)
       else
         ! n(J0(A)) * { n(enclosed) + n(I0(A))}
-        ntrapo = mod(ntrapo + nj0a*(n_enclosed+ni0a),2)
+        ntrapo = mod(nj0a*(n_enclosed+ni0a),2)
 
         ! n(J0(C)) * { n(enclosed) + n(I0(A)) + n(I0(C))}
         ntrapo = mod(ntrapo + nj0c*(n_enclosed+ni0a+ni0c),2)

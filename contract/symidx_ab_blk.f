@@ -253,7 +253,7 @@ c test
      &             d_gam_ms(idxdis_1,igama,idxmsa)
 
             ioff_1 = mel%off_op_gmox(iblk)%
-     &             d_gam_ms(idxdis_1,igama,idxmsa) - ioff0_1
+     &             d_gam_ms(idxdis_1,igama,idxmsa) !- ioff0_1
 
             if (.not.list_in_bounds(idxlist_in,nlist,
      &                              ioff_1+1,ioff_1+lenc*lena)) cycle
@@ -268,7 +268,7 @@ c test
      &                .false.,mel,ngam)
 
             ioff_2 = mel%off_op_gmox(iblk)%
-     &             d_gam_ms(idxdis_2,igama,idxmsa2) - ioff0_1
+     &             d_gam_ms(idxdis_2,igama,idxmsa2) !- ioff0_1
 
             if (msa.eq.0.and.idxdis_1.gt.idxdis_2) cycle distr_loop
             if (ntest.ge.1000) then

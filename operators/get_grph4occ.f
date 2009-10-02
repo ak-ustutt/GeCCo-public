@@ -80,7 +80,7 @@ c dbg
               exit outer_loop
             end if
            ! add required graph (needed e.g. in case of CASSCF)
-           call add_graph(iocc(igastp,ica,ijoin),igastp,ica,
+           call add_graph(igastp,iocc(igastp,ica,ijoin),ica,
      &              irst(1,1,1,1,1,ijoin),str_info,orb_info)
            idxgraph = str_info%ngraph
 
