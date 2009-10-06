@@ -9,6 +9,6 @@
      &     iextr = 4,        ! external space is always 4
      &     ngastp = 4,       ! number of GAS types (2,3,4)
 c     &     pack_base = 256   ! make 2*ngastp fit into integer(8)
-c     &     pack_base = 10    ! better choice for debugging
-     &     pack_base = 10
+     &     pack_base = 100    ! better choice for debugging
+c     &     pack_base = 10
 

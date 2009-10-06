@@ -24,7 +24,7 @@
 
       integer, parameter ::
      &     ntest = 00,
-     &     nlistmax = 40
+     &     nlistmax = 120
 
       real(8), intent(in) ::
      &     ecore, xdia1(*), xdia2(*)
@@ -438,9 +438,6 @@ c     &                   iloop,jloop,ica,ihpv,jca,jhpv
 c                  write(luout,'(a,2i4)') 'len:',
 c     &                   nstr(nloop+1-iloop),nstr(nloop+1-jloop)
 c dbgend
-                  if (orb_info%ngas_hpv(ihpv).ne.1.or.
-     &                orb_info%ngas_hpv(jhpv).ne.1)
-     &               call quit(1,'dia4op_ev','adapt for frozen shells!')
                   ! loop over all possible spin combinations ++/+-/-+/--
                   do jms = -1, 1, 2
                    if (abs(msdst(jhpv,jca)-jms).gt.iocc2(jhpv,jca))

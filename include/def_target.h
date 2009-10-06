@@ -1,7 +1,7 @@
       integer, parameter ::
      &     len_target_name = 32,
      &     len_command_name = 32,
-     &     len_command_par  = 512,
+     &     len_command_par  = 1024,
      &     len_str_batch = 32
 
       integer, parameter ::
