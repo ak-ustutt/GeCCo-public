@@ -55,7 +55,7 @@
      &     istr, idx1, idx2, icmp, ngraph, maxbuf,
      &     asign, csign, gsign, imap
       real(8) ::
-     &     fac_off, fac_dia, value
+     &     fac_off, fac_dia, value, relfac2
 
       type(graph), pointer ::
      &     graphs(:)
@@ -168,6 +168,18 @@ c dbg
       idxmsa = 0
       msc_max = ca_occ(1,iblk)
       msa_max = ca_occ(2,iblk)
+
+cmh   explanation for the following sign correction
+cmh   (relevant for Nc-Na>0 only):
+      ! on entry: relfac = (-1)^S (predefined by "mel%absym=msc")
+      ! Total sign should be: (-1)^[(N-Np)/2-S-Na], Np = # of pairs
+      ! The analysis from below leads to: (-1)^[(N/2)*(Nc-Na)/2+Np/2]
+      ! Therefore we need a correction of (-1)^[(N/2+1)*(Nc-Na)/2]:
+      if (mod(((msc_max+msa_max)/2+1)*(msc_max-msa_max)/2,2).ne.0) then
+        relfac2 = -relfac
+      else
+        relfac2 = relfac
+      end if
 
       idxmsa = 0
       msa_loop : do msa = msa_max, 0, -2
@@ -342,14 +354,14 @@ c                print *,'idx1, idx2, c,a: ',idx1, idx2, csign,asign
 c dbg
 
                 value = prefac*(                 buffer_in(idx1) +
-     &                  dble(csign*asign)*relfac*buffer_in(idx2))
+     &                  dble(csign*asign)*relfac2*buffer_in(idx2))
 c dbg
 c                print *,'1,2,val: ',buffer_in(idx1),buffer_in(idx2),
 c     &               value
 c dbg
 
                 buffer_out(idx1) = value
-                buffer_out(idx2) = dble(csign*asign)*relfac*value
+                buffer_out(idx2) = dble(csign*asign)*relfac2*value
 
               end do idxc_loop
             end do idxa_loop

@@ -440,7 +440,7 @@ c dbg
       if (ngastp_a.gt.0) idx_str_blk3 = idx_str_blk3 + idxa(1)*ldima(1)
 
 c      idx_str_blk3 = idxc(1)*ldimc(1)+idxa(1)*ldima(1) + 1
-      if ((ngastp_c*ngastp_a).le.1) return
+cmh      if ((ngastp_c*ngastp_a).le.1) return
 
       do idx = 2, ngastp_c
         idx_str_blk3 = idx_str_blk3+idxc(idx)*ldimc(idx)
