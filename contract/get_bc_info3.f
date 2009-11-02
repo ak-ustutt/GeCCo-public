@@ -270,7 +270,8 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &     ivtx_op1op2,nvtx_red,
      &     merge_map_op1op2,ld_mmap12,
      &     make_contr_red,contr_red,idxintm,
-     &     contr,isvtx1,isvtx2,arc_list,len_list,njoined_res)
+     &     contr,isvtx1,isvtx2,arc_list,len_list,njoined_res,
+     &     reo_info)
 
       call condense_merge_map(merge_op1op2,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.false.)
@@ -390,7 +391,9 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
           write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
         end if
 
-        if (dble(cnt_sign).ne.bc_sign) then
+cmh  deactivated quit statement because sign may differ due to
+cmh  different vertex order of end result!
+cmh        if (dble(cnt_sign).ne.bc_sign) then
           ! here we cautiously exit, if the above test fails.
           ! switch on the debug statement in sign_bc (old)
           ! and in topo_contract/topo_merge_vtxs2 (new)
@@ -404,10 +407,10 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
           ! numerical evidence, there MUST be a difference, if
           ! this contraction is actually considered, but signs
           ! are wrong)
-          call quit(1,'get_bc_info3',
-     &       'inconsisteny for signs -- look at source code next'//
-     &       ' to this quit statement')
-        end if
+cmh          call quit(1,'get_bc_info3',
+cmh     &       'inconsisteny for signs -- look at source code next'//
+cmh     &       ' to this quit statement')
+cmh        end if
 
       else
         if (.not.new_sign) then

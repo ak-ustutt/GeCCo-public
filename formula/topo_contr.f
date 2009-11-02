@@ -35,7 +35,7 @@
      &     fix_vtx(*)
 
       logical ::
-     &     ok, new
+     &     ok, new, idag, jdag
       integer ::
      &     nvtx, ivtx, jvtx, kvtx, lvtx, narc, iarc, jarc, idx, nsame,
      &     idx_op, iblk_op, jdx_op, jblk_op, maxblk, ibase, icpack,
@@ -103,14 +103,20 @@ c      maxop  = maxop_in_contr(contr)
       do ivtx = 1, nvtx
         idx_op = contr%vertex(ivtx)%idx_op
         iblk_op = contr%vertex(ivtx)%iblk_op
+        idag = contr%vertex(ivtx)%dagger
         idx = idx_op*(maxblk+1) + iblk_op
         eqv_map(ivtx) = idx
+cmh     do we need to distinguish Op^+ from Op in eqv_map???
+c        if (idag) eqv_map(ivtx)=eqv_map(ivtx)+1000
+cmhend
         do jvtx = 1, ivtx-1
           if (neqv(jvtx).lt.0) cycle
           jdx_op = contr%vertex(jvtx)%idx_op
           jblk_op = contr%vertex(jvtx)%iblk_op
+          jdag = contr%vertex(jvtx)%dagger
           ! vertices identical ...
           if (idx_op.eq.jdx_op.and.
+     &        idag.eq.jdag.and.
      &        iblk_op.eq.jblk_op) then
             ! ... and commuting? ...
             ok = .true.

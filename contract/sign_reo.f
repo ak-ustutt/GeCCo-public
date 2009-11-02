@@ -37,7 +37,11 @@
       do ireo = 1, nreo
         do jreo = ireo+1,nreo
           if (from_to(1,ireo).eq.from_to(1,jreo) .or.
-     &        from_to(2,ireo).eq.from_to(2,jreo)) then
+     &        (from_to(2,ireo).eq.from_to(2,jreo).and.
+     &         .not.(sum(occ_reo(1:ngastp,1,ireo)).eq.0.and.
+     &               sum(occ_reo(1:ngastp,2,jreo)).eq.0).and.
+     &         .not.(sum(occ_reo(1:ngastp,2,ireo)).eq.0.and.
+     &               sum(occ_reo(1:ngastp,1,jreo)).eq.0))) then
             error = .true.
           end if
         end do

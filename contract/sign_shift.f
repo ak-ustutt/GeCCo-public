@@ -88,7 +88,7 @@
      &       sum(occ_k_moved(1:ngastp,1:2,ivtx))
       end do
 c dbg
-      print *,'effective nenclosed: ',nenclosed
+c      print *,'effective nenclosed: ',nenclosed
 c dbg
 
       ! elements not yet moved at lower index:

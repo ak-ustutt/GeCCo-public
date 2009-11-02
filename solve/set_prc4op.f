@@ -81,6 +81,12 @@
         use_b = .false.
         use_x = .false.
         if (nlabel_inp.lt.1) too_few = .true.
+      case('dia-F+id')
+        use_h = .true.
+        use_id = .true.
+        use_b = .false.
+        use_x = .false.
+        if (nlabel_inp.lt.1) too_few = .true.
       case('dia-H')
         use_h = .true.
         use_id = .true.
@@ -234,7 +240,7 @@ c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
 
       ! set up preconditioner
       if (.not.use_b.and..not.use_x.and..not.use_h2) then
-        call dia4op(me_prc,h1dia,str_info,orb_info)
+        call dia4op(me_prc,ecore,h1dia,str_info,orb_info)
       else if (.not.use_b.and..not.use_x) then
         call dia4op_ev(me_prc,ecore,h1dia,h2dia,str_info,orb_info)
       else

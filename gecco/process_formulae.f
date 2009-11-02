@@ -400,6 +400,16 @@ c dbg end fix
      &       rule%parameters,rule%n_parameter_strings,
      &       title,idum,strdum)
         call class_formula_drv(form_pnt,title,op_info,idum)
+      case(SELECT_HERMIT)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,nint,strdum)
+        ioff = rule%n_update
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_select_hermitian(form_pnt,form0_pnt,
+     &       title,rule%labels(ioff+2),
+     &       op_info)
       case default
         call quit(1,'process_formulae','unknown command: '//
      &       trim(rule%command))

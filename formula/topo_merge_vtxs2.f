@@ -265,6 +265,22 @@ c dbg
         may_merge = .false.
         return
       end if
+
+      ! (and unless order of external lines would get messed up)
+      ! (besides, there is no need to merge zero vtx with far away vtx)
+      if (may_merge.and.zero_i8vec(xlines(ivtx1,1),nj,nvtx)
+     &    .and..not.zero_i8vec(xlines(ivtx2,1),nj,nvtx)
+     &    .and.ivtx2-ivtx1.gt.1) then
+        do ij = nj, 2, -1
+          if (xlines(ivtx2,ij).gt.0) then
+            if (.not.all(xlines(ivtx1+1:ivtx2-1,1:ij-1).eq.0)) then
+              may_merge = .false.
+              return
+            end if
+          end if
+        end do
+      end if
+
 c dbg
 c      print *,'b) ',may_merge
 c dbg
