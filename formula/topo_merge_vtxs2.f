@@ -268,6 +268,7 @@ c dbg
 
       ! (and unless order of external lines would get messed up)
       ! (besides, there is no need to merge zero vtx with far away vtx)
+cmh   this section is not crucial any more, but helps to avoid reorderings
       if (may_merge.and.zero_i8vec(xlines(ivtx1,1),nj,nvtx)
      &    .and..not.zero_i8vec(xlines(ivtx2,1),nj,nvtx)
      &    .and.ivtx2-ivtx1.gt.1) then

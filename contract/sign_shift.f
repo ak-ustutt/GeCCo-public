@@ -31,7 +31,7 @@
       integer ::
      &     ivtx_l, ivtx_h, ivtx, nshift_c, nshift_a,
      &     nenclosed, n_1c, n_1a, n_2c, n_2a,
-     &     n_lc, n_la, n_hc, n_ha, nnym_la, nnym_lc, sign0
+     &     n_lc, n_la, n_hc, n_ha, nnym_la, nnym_lc, sign0, nnym_hc
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_func,'sign_shift')
@@ -94,6 +94,8 @@ c dbg
       ! elements not yet moved at lower index:
       nnym_lc = sum(occ_k_tomove(1:ngastp,1,ivtx_l))
       nnym_la = sum(occ_k_tomove(1:ngastp,2,ivtx_l))
+      ! elements not yet moved at higher index:
+      nnym_hc = sum(occ_k_tomove(1:ngastp,1,ivtx_h))
 
       !--------------------------------------------------------!
       ! count the elements passed by KC and KA to verify the   !
@@ -109,7 +111,8 @@ c dbg
       !                |---------------------------+           !
       !--------------------------------------------------------!
       sign0 = mod(nshift_c*(n_la + nnym_lc + nnym_la + nenclosed + n_hc)
-     &         +  nshift_a*(n_hc + n_ha +    nnym_la + nenclosed)  , 2)
+cmh     &         +  nshift_a*(n_hc + n_ha +    nnym_la + nenclosed)  , 2)
+     &       + nshift_a*(n_hc + n_ha + nnym_hc + nnym_la + nenclosed),2)
 
       if (ntest.ge.100) then
         write(luout,*) 'nshift_c, nshift_a: ',nshift_c,nshift_a

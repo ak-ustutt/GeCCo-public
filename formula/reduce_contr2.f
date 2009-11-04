@@ -204,7 +204,7 @@ c dbg
 
       ! if final contraction, resort if xlines is not diagonal
       xlines_tmp = xlines_new
-      if (contr%narc.eq.nlist)
+      if (contr%narc.eq.nlist.and.njoined_res.gt.1)
      &     call set_final_reo(reo_info,xlines_new,xlines_tmp,op1op2,
      &                     idxnew_op1op2,njoined_res)
 

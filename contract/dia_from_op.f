@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -163,9 +163,9 @@
             ioffout = meout%off_op_occ(iblkout)
             call get_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
             buffer_out(1:lenblkout) = 0d0    ! reset output buffer
-c            call dia_from_blk(buffer_out,buffer_inp,
-c     &                        meinp,meout,i_occ_cls,iblkout,
-c     &                        str_info,orb_info)
+            call dia_from_blk(buffer_out,buffer_inp,
+     &                        meinp,meout,i_occ_cls,iblkout,
+     &                        str_info,orb_info)
             call put_vec(ffout,buffer_out,ioffout+1,ioffout+lenblkout)
 
             cycle ! there should be not more than one matching block
