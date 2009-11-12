@@ -90,7 +90,7 @@
      &     idxop_reo, idxop_ori, iblkop_reo, iblkop_ori,
      &     ireo, idxs_reo
       integer ::
-     &     iocc_cnt(ngastp,2,contr%nvtx),
+     &     iocc_cnt(ngastp,2,contr%nvtx*2),
      &     iocc_ex1(ngastp,2,contr%nvtx),
      &     iocc_ex2(ngastp,2,contr%nvtx),
      &     irst_res(2,orb_info%ngas,2,2,contr%nvtx),
@@ -372,6 +372,10 @@
             label_reo = op_arr(idxop_reo)%op%name
           else
             write(label_reo,'("_STIN",i4.4)') abs(idxop_reo)
+c dbg
+            print *,'reo_before:'
+            print *,'generated label_reo: ',trim(label_reo)
+c dbg
           end if
 
           if (idxop_ori.gt.0) then
@@ -405,14 +409,6 @@
           command = command_reorder
           target = -1           ! unused here
           call new_formula_item(fl_pnt,command,target)
-c dbg
-          if (reo_info0%nreo.eq.2) then
-            print *,'(1)'
-            print *,'nreo = ',reo_info0%nreo
-            print *,'from_to: ',reo_info0%from_to
-            call wrt_occ_n(6,reo_info0%iocc_reo,reo_info0%nreo)
-          end if
-c dbg
 
           call store_reorder(fl_pnt,
      &       label_reo,label,
@@ -440,6 +436,12 @@ c dbg
           label2 = '---'
         else
           write(label2,'("_STIN",i4.4)') abs(idxop(2))
+c dbg
+          if (reo_before.and.idxop_reo.ne.idxop(2)) then
+            print *,'problem? reo, 2: ',idxop_reo, idxop(2)
+            stop 'problem'
+          end if
+c dbg
         end if
 
         ! not in final level? result is new intermediate

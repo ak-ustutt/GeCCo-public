@@ -66,9 +66,6 @@ c     &     reo_op1op2, reo_other
 
       if (abs(mode).ne.1.and.mode.ne.2)
      &     call quit(1,'get_reo_info2','invalid mode')
-c dbg
-c      if (reo_info%nreo.gt.0) print *,'nreo = ',reo_info%nreo
-c dbg
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'get_reo_info2')
         write(luout,*) 'nreo = ',reo_info%nreo
@@ -103,10 +100,6 @@ c        call quit(1,'get_reo_info',
 c     &       'reordering of operator other than OP1OP2 requested')
 c      end if
 
-c dbg
-c      print *,'occ_vtx'
-c      call wrt_occ_n(6,occ_vtx,nj_res+nvtx)
-c dbg
       if (abs(mode).eq.1) then
       jvtx = 0
       do ivtx = 1, nvtx

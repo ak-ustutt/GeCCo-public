@@ -40,13 +40,11 @@
      &     igamdst(ngastp,2,mel%op%njoined),
      &     lexlscr(nel,3),idorb(nel), idspn(nel), idspc(nel),
      &     nelc(mel%op%njoined), nela(mel%op%njoined)
-      character ::
-     &     spnstr*(nel+1+mel%op%njoined),fmtstr*256
 
       integer(8) ::
-     &     lenbuf
+     &     lenbuf, nel8
       integer(2) ::
-     &     spins(nindex,maxlen), indices(nindex,maxlen)
+     &     spins(nel,maxlen), indices(nel,maxlen)
       real(8) ::
      &     val(maxlen)
 
@@ -60,8 +58,8 @@
       idx_occ = (iblk-1)*njoined+1
       op => mel%op
 
-          if(nindex.ne.nel) call quit(1,'wrt_mel_blk_seq',
-     &                                'wrong no of spins')
+c          if(nindex.ne.nel) call quit(1,'wrt_mel_blk_seq',
+c     &                                'wrong no of spins')
 
       do ijoin = 1, njoined
         nelc(ijoin) = sum(op%ihpvca_occ(1:ngastp,1,idx_occ-1+ijoin))
@@ -74,8 +72,6 @@
       call did2msgm(msdst,igamdst,did,
      &     op%ihpvca_occ(1,1,idx_occ),orb_info%nsym,njoined)
  
-      spnstr(1:nel+1+njoined) = ' '  
-
       ! loop over all possible index tuples:
       first = .true.
       idxstr = 0
@@ -130,17 +126,29 @@ c          iadd = iadd+1
         if(idxbuf.lt.maxlen)cycle
 
         lenbuf = idxbuf
+c        nel8   = nel
+        nel8   = nindex
         write(luwrt) lenbuf,
-     &       indices(1:nel,1:lenbuf), spins(1:nel,1:lenbuf),
+c        write(luwrt) nel8,lenbuf,
+     &       indices(1:nel8,1:lenbuf), spins(1:nel8,1:lenbuf),
      &       val(1:lenbuf)
+c dbg
+        print *,'nel8 = ',nel8
+c dbg
         idxbuf = 0
 
       end do
 
       if(idxbuf.gt.0)then
         lenbuf = idxbuf
+        nel8 = nindex
+c        nel8 = nel
+c dbg
+c        print *,'nel8* = ',nel8
+c dbg
         write(luwrt) lenbuf,
-     &       indices(1:nel,1:lenbuf), spins(1:nel,1:lenbuf),
+c        write(luwrt) nel8,lenbuf,
+     &       indices(1:nel8,1:lenbuf), spins(1:nel8,1:lenbuf),
      &       val(1:lenbuf)
       endif
 

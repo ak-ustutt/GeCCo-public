@@ -18,7 +18,7 @@
       include 'ifc_input.h'
 
       logical ::
-     &     l_infile,l_exit,one_more
+     &     l_infile,l_exit,one_more, do_stat
       character(256) ::
      &     name_infile, host
       character(32) ::
@@ -30,15 +30,15 @@
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
       type(filinf) ::
-     &     ffinput, ffwarn
+     &     ffinput, ffwarn, ffstat
       type(orbinf) ::
      &     orb_info
 
       ! a few settings
       luout = 6      ! output unit
 
-      iprlvl = 1     ! print level
-c      iprlvl = 10    ! print level
+c      iprlvl = 1     ! print level
+      iprlvl = 10    ! print level
 
       call hostname(host)
       call datum(date)
@@ -93,7 +93,18 @@ c      iprlvl = 10    ! print level
       call mem_init(memmax)
 
       ifree = mem_register(4000,'input')
-      
+
+      ! open statistics file, if requested
+      call get_argument_value('general','statistics',lval=do_stat)
+      if (do_stat) then
+        call file_init(ffstat,'STATISTICS',ftyp_sq_frm,idum)
+        call file_open(ffstat)
+        lustat = ffstat%unit
+      else
+        lustat = -1
+      end if
+
+
       ! loop over calculations
       do
       
@@ -116,6 +127,8 @@ c      iprlvl = 10    ! print level
       else
         call file_close_delete(ffwarn)
       end if
+
+      if (lustat.gt.0) call file_close_keep(ffstat)
 
       call atim_csw(cpu,sys,wall)
       call prtim(luout,'total time in GeCCo run',

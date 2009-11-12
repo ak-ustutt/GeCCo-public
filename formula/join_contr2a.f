@@ -18,7 +18,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 50
 
       type(formula_item), intent(out), target ::
      &     fl_abc
@@ -100,16 +100,25 @@
       else
         allocate(occ_vtx(ngastp,2,nvtx_b+njoined))
         call occvtx4contr(0,occ_vtx,contr_b,op_info)
-        call svmap4contr(svmap,contr_b,occ_vtx,njoined)
+c dbg
+c        print *,'opres: ',trim(opres%name)
+c        print *,'njoined = ',njoined
+c        print *,'call in join_contr2a'
+c dbg
+c        call svmap4contr(svmap,contr_b,occ_vtx,njoined)
+        call svmap4contr2(svmap,contr_b)
         deallocate(occ_vtx)
       end if
-      ! largest index = number of super vertices
-      nsuper = ifndmax(svmap,1,nvtx_b,1)
+      ! largest index = number of super vertices (at least 1)
+c      nsuper = ifndmax(svmap,1,nvtx_b,1)
+      nsuper = max(1,ifndmax(svmap,1,nvtx_b,1))
 
       if (nsuper.ne.nproto_ac) then
         write(luout,*) 'joining: AC, B'
         call prt_contr2(luout,contr_ac,op_info)
         call prt_contr2(luout,contr_b,op_info)
+        write(luout,*) 'nsuper, nproto_ac: ',nsuper, nproto_ac
+        write(luout,*) 'svmap: ',svmap
         call quit(1,'join_contr2a','incompatible contractions !')
       end if
 

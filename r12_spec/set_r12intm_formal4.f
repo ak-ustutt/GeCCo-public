@@ -22,7 +22,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 100
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -44,7 +44,7 @@
      &     opdum_g     = '_G_'
 
       logical ::
-     &     def_fpp, def_fhh, def_g, unknown, def_fp3f, def_gppph
+     &     def_fpp, def_fhh, def_g, unknown, def_fp3f, def_gppph,def_gpx
       integer ::
      &     idx, nfact, 
      &     idx_intm, idx_r, idx_f, idx_g, idx_h, idx_rpl,
@@ -52,7 +52,9 @@
       integer ::
      &     avoid(20), connect(20),
      &     project(20), project2(20), project3(20),
-     &     navoid, nconnect, nproject, nproject2, nproject3
+     &     project4(20), project5(20), project6(20),
+     &     navoid, nconnect, nproject, nproject2, nproject3,
+     &     nproject4, nproject5, nproject6
       integer ::
      &     idx_prod(20), idx_supv(20)
       integer, pointer ::
@@ -131,6 +133,7 @@
       def_fp3f = .false.
       def_g   = .false.
       def_gppph = .false.
+      def_gpx   = .false.
       idx_g   = -99
       idx_f   = -99
       nconnect = 0
@@ -285,9 +288,20 @@ c        else if (njoined_int.eq.2) then
           unknown = .true.
         end if
       case('P')
-        def_g = .true.
+        def_gpx = .true.
         idx_rpl = 3
-        if(njoined_int.eq.2)then
+        if (njoined_int.eq.1) then
+          idx_prod(1:5) = (/idx_intm,-idx_r,idx_g,
+     &                      idx_r,idx_intm/)
+          idx_supv(1:5) = (/       1,     2,    3,
+     &                          4,       1/)
+          nvtx = 5
+          nfact = 4
+          connect(1:4) = (/2,3,3,4/)
+          nconnect = 2
+          avoid(:) = 0
+          navoid = 0
+        else if (njoined_int.eq.2) then
           idx_prod(1:7) = (/idx_intm,-idx_r,idx_g,idx_intm,idx_intm,
      &                      idx_r,idx_intm/)
           idx_supv(1:7) = (/       1,     2,    3,       1,       1,
@@ -360,15 +374,29 @@ c          connect(1:6) = (/2,3,2,4,3,4/)
 c          nconnect = 3
 c          project(1:4)  =  (/3,5,1,IPART/)
 c          nproject = 1
-          calls = 3
-          connect(1:2) = (/2,3/)
-          nconnect = 1
-          project(1:12)  =  (/3,5,1,IPART,2,4,1,IPART,3,4,1,IEXTR/)
+COLD:
+c          calls = 3
+c          connect(1:2) = (/2,3/)
+c          nconnect = 1
+c          project(1:12)  =  (/3,5,1,IPART,2,4,1,IPART,3,4,1,IEXTR/)
+c          nproject = 3
+c          project2(1:12)  = (/3,5,1,IPART,2,4,1,IEXTR,3,4,1,IPART/)
+c          nproject2 = 3
+c          project3(1:12)  = (/3,5,1,IPART,2,4,1,IEXTR,3,4,1,IEXTR/)
+c          nproject3 = 3
+c          navoid = 0
+          calls = 5
+          nconnect = 0
+          project(1:12)  =  (/2,4,1,IEXTR,2,3,1,IPART,3,4,1,IPART/)
           nproject = 3
-          project2(1:12)  = (/3,5,1,IPART,2,4,1,IEXTR,3,4,1,IPART/)
+          project2(1:12)  = (/2,4,1,IEXTR,2,3,1,IEXTR,3,4,1,IPART/)
           nproject2 = 3
-          project3(1:12)  = (/3,5,1,IPART,2,4,1,IEXTR,3,4,1,IEXTR/)
+          project3(1:12)  = (/2,4,1,IEXTR,2,3,1,IPART,3,4,1,IEXTR/)
           nproject3 = 3
+          project4(1:12)  = (/2,4,1,IEXTR,2,3,1,IEXTR,3,4,1,IEXTR/)
+          nproject4 = 3
+          project5(1:12)  = (/2,4,1,IPART,2,3,1,IEXTR,3,4,1,IEXTR/)
+          nproject5 = 3
           navoid = 0
         else
           unknown = .true.
@@ -500,8 +528,8 @@ c dbg
         call add_operator(opdum_g,op_info)
         idx_g = idx_oplist2(opdum_g,op_info)
         op_g => op_info%op_arr(idx_g)%op
-        allocate(occ_def(ngastp,2,4))
-        ndef = 4
+        allocate(occ_def(ngastp,2,8))
+        ndef = 8
         occ_def = 0
         ! 1
         occ_def(IHOLE,1,1) = 1
@@ -521,6 +549,61 @@ c dbg
         occ_def(IEXTR,1,4) = 1
         occ_def(IPART,2,4) = 1
         occ_def(IEXTR,2,4) = 1
+        ! 5
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IPART,1,5) = 1
+        occ_def(IHOLE,2,5) = 1
+        occ_def(IPART,2,5) = 1
+        ! 6
+        occ_def(IHOLE,1,6) = 1
+        occ_def(IPART,1,6) = 1
+        occ_def(IHOLE,2,6) = 1
+        occ_def(IEXTR,2,6) = 1
+        ! 7
+        occ_def(IHOLE,1,7) = 1
+        occ_def(IEXTR,1,7) = 1
+        occ_def(IHOLE,2,7) = 1
+        occ_def(IPART,2,7) = 1
+        ! 8
+        occ_def(IHOLE,1,8) = 1
+        occ_def(IEXTR,1,8) = 1
+        occ_def(IHOLE,2,8) = 1
+        occ_def(IEXTR,2,8) = 1
+        call set_uop2(op_g,opdum_g,
+     &       occ_def,ndef,1,(/.true.,.true./),orb_info)
+        deallocate(occ_def)
+        idx_prod(idx_rpl) = idx_g
+      else if (def_gpx) then
+        call add_operator(opdum_g,op_info)
+        idx_g = idx_oplist2(opdum_g,op_info)
+        op_g => op_info%op_arr(idx_g)%op
+        allocate(occ_def(ngastp,2,6))
+        ndef = 6
+        occ_def = 0
+        ! 1
+        occ_def(IPART,1,1) = 1
+        occ_def(IEXTR,1,1) = 1
+        occ_def(IPART,2,1) = 2
+        ! 2
+        occ_def(IPART,1,2) = 2
+        occ_def(IPART,2,2) = 1
+        occ_def(IEXTR,2,2) = 1
+        ! 3
+        occ_def(IPART,1,3) = 1
+        occ_def(IEXTR,1,3) = 1
+        occ_def(IPART,2,3) = 1
+        occ_def(IEXTR,2,3) = 1
+        ! 4
+        occ_def(IPART,1,4) = 1
+        occ_def(IEXTR,1,4) = 1
+        occ_def(IEXTR,2,4) = 2
+        ! 5
+        occ_def(IEXTR,1,5) = 2
+        occ_def(IPART,2,5) = 1
+        occ_def(IEXTR,2,5) = 1
+        ! 6
+        occ_def(IEXTR,1,6) = 2
+        occ_def(IEXTR,2,6) = 2
         call set_uop2(op_g,opdum_g,
      &       occ_def,ndef,1,(/.true.,.true./),orb_info)
         deallocate(occ_def)
@@ -572,6 +655,32 @@ c dbg
      &     project3,nproject3,
      &     op_info)
       end if
+      if (calls.ge.4) then
+        do while(associated(flist_pnt%next))
+          flist_pnt => flist_pnt%next
+        end do        
+        call expand_op_product2(flist_pnt,idx_intm,
+     &     1d0,nvtx,nfact,
+     &     idx_prod,idx_supv,
+     &     -1,-1,
+     &     connect,nconnect,
+     &     avoid,navoid,
+     &     project4,nproject4,
+     &     op_info)
+      end if
+      if (calls.ge.5) then
+        do while(associated(flist_pnt%next))
+          flist_pnt => flist_pnt%next
+        end do        
+        call expand_op_product2(flist_pnt,idx_intm,
+     &     1d0,nvtx,nfact,
+     &     idx_prod,idx_supv,
+     &     -1,-1,
+     &     connect,nconnect,
+     &     avoid,navoid,
+     &     project5,nproject5,
+     &     op_info)
+      end if
       if (calls.gt.1)
      &     call reorder_formula(flist_scr,op_info)
 
@@ -585,7 +694,7 @@ c dbg
         op   => op_info%op_arr(idx_h)%op
         call form_op_replace(opdum_f,op%name,.true.,flist_scr,op_info)
       end if
-      if (def_g.or.def_gppph) then
+      if (def_g.or.def_gppph.or.def_gpx) then
         op   => op_info%op_arr(idx_h)%op
         call form_op_replace(opdum_g,op%name,.true.,flist_scr,op_info)
       end if
@@ -603,7 +712,8 @@ c dbg
       end if
 
       call dealloc_formula_list(flist_scr)
-      if (def_g.or.def_gppph) call del_operator(opdum_g,op_info)
+      if (def_g.or.def_gppph.or.def_gpx)
+     &     call del_operator(opdum_g,op_info)
       if (def_fhh.or.def_fpp.or.def_fp3f)
      &     call del_operator(opdum_f,op_info)
 

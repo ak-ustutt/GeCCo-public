@@ -15,6 +15,7 @@
      &'|       andreas koehn (university of mainz, germany)        |',
      &'|   contributing authors:                                   |',
      &'|       jeppe olsen (university of aarhus, denmark)         |',
+     &'|       matthias hanauer (university of mainz, germany)     |',
      &'|       gareth richings (university of mainz, germany)      |',
      &'|                                                           |',
      &'*-----------------------------------------------------------*' 

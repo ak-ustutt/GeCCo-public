@@ -88,6 +88,9 @@ c another patch
       if (is_keyword_set('method.ECC').gt.0)
      &     iformal = min(6,max(t1ext_mode+1,4))
 c patch end
+c dbg
+      print *,'effective iformal = ',iformal
+c dbg
       call hop_parameters(-1,parameters,
      &                   0,2,iformal,
      &                   explicit.or.extern.gt.0.or.t1ext_mode.gt.0)

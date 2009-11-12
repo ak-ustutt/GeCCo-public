@@ -1,5 +1,5 @@
       subroutine op_replace(idx_opin,dagin,idx_opout,dagout,
-     &     strict,form,op_info)
+     &     strict,leave,form,op_info)
 *-----------------------------------------------------------------------
 *     Routine which loops over a formula, form, replacing the operator, 
 *     opin, with opout. This is useful for replacing formal 
@@ -24,7 +24,7 @@
       integer, intent(in) ::
      &     idx_opin, idx_opout
       logical, intent(in) ::
-     &     strict, dagin, dagout
+     &     strict, leave, dagin, dagout
       type(formula_item), target, intent(inout) ::
      &     form
       type(operator_info), intent(in) ::
@@ -36,11 +36,12 @@
      &     form_pnt, form_pnt_next
       integer ::
      &     idxin, idxout, idx, idx_form_op, idx_form_blk, idx_blk_out,
-     &     ieqvfac, nvtx, narc, nxarc, nfac, njoined, idx_join
+     &     ieqvfac, nvtx, narc, nxarc, nfac, njoined, idx_join, ij, jdx,
+     &     isuper
       integer, allocatable ::
      &     occ_temp(:,:,:), vtx_chng_idx(:)
       integer, pointer ::
-     &     ivtx_reo(:), occ_vtx(:,:,:)
+     &     ivtx_reo(:), occ_vtx(:,:,:), vtx_where(:)
       logical ::
      &     reo, change, remove, dag_form_op
       logical, pointer ::
@@ -48,6 +49,8 @@
 
       integer, external ::
      &     idx_oplist2, iblk_occ
+      logical, external ::
+     &     opblk_restr_cmp
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'form_op_replace')
@@ -85,13 +88,19 @@
         case(command_add_contribution)
           ! The necessary contractions are here.
 c          write(luout,*) '[ADD]'
+c dbg
+          if (njoined.gt.1) then
+            print *,'es wird spannend!'
+            call prt_contr2(luout,form_pnt%contr,op_info)
+          end if
+c dbg
 
           change = .false.
           remove = .false.
           ! Loop over the contraction's vertices.
           nvtx = form_pnt%contr%nvtx
 
-          if (njoined.eq.1) then
+          if (.true.) then
             ! simplified version for single vertex operators
             ! allows for several instances of the operator
             do idx = 1,nvtx
@@ -101,11 +110,52 @@ c          write(luout,*) '[ADD]'
 
               ! If the index of the operator vertex equals that of the
               ! intermediate operator...
+c dbg
+              print *,'idx_form_op,idxin: ',idx_form_op,idxin
+              print *,'dag_form_op,dagin: ',dag_form_op,dagin
+c dbg
+              if (njoined.gt.1.and.(dagin.or.dagout)) then
+                write(luout,*) 'njoined.gt.1.and.(dagin.or.dagout)'
+                call quit(1,'op_replace','not yet tested for this')
+              end if
+
               if (idx_form_op.eq.idxin.and.dag_form_op.eq.dagin) then
                 idx_form_blk = form_pnt%contr%vertex(idx)%iblk_op
 
                 occ_temp(1:ngastp,1:2,1)=
      &             opin_pnt%ihpvca_occ(1:ngastp,1:2,idx_form_blk)
+
+                ! if necessary, look for further vertices of super-vertex
+                if (njoined.gt.1) then
+                  isuper = form_pnt%contr%svertex(idx)
+                  if (form_pnt%contr%joined(0,isuper).ne.njoined) then
+                    write(luout,*) 'njoined,joined(0):',
+     &                   njoined,form_pnt%contr%joined(0,isuper)
+                    call quit(1,'op_replace','inconsistency')
+                  end if
+                  vtx_where => form_pnt%contr%joined(1:njoined,isuper)
+                  if (.not.dagin) then
+                    do ij = 2, njoined
+                      occ_temp(1:ngastp,1:2,ij) =
+     &                     opin_pnt%ihpvca_occ(1:ngastp,1:2,
+     &                                              idx_form_blk-1+ij)
+                    end do
+                    idx_form_blk = (idx_form_blk-1)/njoined + 1
+                  else
+                    do ij = 2, njoined
+                      occ_temp(1:ngastp,1:2,ij) =
+     &                     opin_pnt%ihpvca_occ(1:ngastp,1:2,
+     &                                              idx_form_blk+1-ij)
+                    end do
+                    idx_form_blk = (idx_form_blk-njoined)/njoined + 1
+                  end if
+                end if
+c dbg
+                if (njoined.gt.1) then
+                  print *,'extracted: offs = ',idx_form_blk
+                  call wrt_occ_n(6,occ_temp,njoined)
+                end if
+c dbg
 
                 ! apply the change directly:
                 ! Locate the formal block's counterpart in the actual 
@@ -113,6 +163,13 @@ c          write(luout,*) '[ADD]'
                 idx_blk_out =
      &               iblk_occ(occ_temp,dagin.xor.dagout,opout_pnt,
      &                        opin_pnt%blk_version(idx_form_blk))
+
+                ! new: also check the restrictions
+                if (idx_blk_out.gt.0) then
+                  if(.not.opblk_restr_cmp(opin_pnt,idx_form_blk,dagin,
+     &                                    opout_pnt,idx_blk_out,dagout))
+     &                 idx_blk_out = -1
+                end if
 
                 if (idx_blk_out.le.0.and.strict) then
                   write(luout,*) trim(opin_pnt%name),
@@ -123,15 +180,45 @@ c          write(luout,*) '[ADD]'
      &                 ' that corresponds to the present block of '//
      &                 trim(opin_pnt%name)//'!')
                 else if (idx_blk_out.le.0) then
-                  ! not strict: remove that term
-                  remove = .true.
+                  ! not strict: remove that term if requested, 
+                  !             else leave it as is
+                  remove = .not.leave
                 end if
 
-                form_pnt%contr%vertex(idx)%idx_op = idxout
-                form_pnt%contr%vertex(idx)%iblk_op =
-     &               idx_blk_out
-                form_pnt%contr%vertex(idx)%dagger =
-     &               dagout
+                if (idx_blk_out.gt.0) then
+                  if (njoined.eq.1) then
+                    form_pnt%contr%vertex(idx)%idx_op = idxout
+                    form_pnt%contr%vertex(idx)%iblk_op =
+     &                   idx_blk_out
+                    form_pnt%contr%vertex(idx)%dagger =
+     &                   dagout
+                  else if (.not.dagout) then
+                    do ij = 1, njoined
+                      jdx = vtx_where(ij)
+                      form_pnt%contr%vertex(jdx)%idx_op = idxout
+                      form_pnt%contr%vertex(jdx)%iblk_op =
+     &                     (idx_blk_out-1)*njoined+ij
+                      form_pnt%contr%vertex(jdx)%dagger =
+     &                     dagout
+                    end do
+                  else
+                    do ij = 1, njoined
+                      jdx = vtx_where(ij)
+                      form_pnt%contr%vertex(jdx)%idx_op = idxout
+                      form_pnt%contr%vertex(jdx)%iblk_op =
+     &                     (idx_blk_out)*njoined-ij+1
+                      form_pnt%contr%vertex(jdx)%dagger =
+     &                     dagout
+                    end do
+                  end if
+c dbg
+                  if (njoined.gt.1) then
+                    print *,'alles neu!'
+                    call prt_contr2(luout,form_pnt%contr,op_info)
+                  end if
+c dbg
+
+                end if
               end if
 
             end do
@@ -218,8 +305,9 @@ c          write(luout,*) '[ADD]'
           end if ! .not.remove
 
         case default
-          write(luout,*) 'command = ',form_pnt%command
-          call quit(1,'form_op_replace','command undefined here')
+          ! just ignore unknown commands
+c          write(luout,*) 'command = ',form_pnt%command
+c          call quit(1,'form_op_replace','command undefined here')
         end select
 
         if(.not.associated(form_pnt_next))exit

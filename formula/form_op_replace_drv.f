@@ -27,7 +27,7 @@ c      include 'def_contraction_list.h'
       include 'mdef_formula_info.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     nreplace
@@ -114,7 +114,8 @@ c dbg end fix
 
         call op_replace(idx1,transpose1,
      &                  idx2,transpose2,
-     &                  .false.,flist,op_info)
+     &                  .false.,.true.,flist,op_info)
+c     &                  .false.,.false.,flist,op_info)
 
       end do
 

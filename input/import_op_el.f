@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'def_graph.h'
@@ -224,6 +224,9 @@ c     &                                str_info,orb_info)
         if (ntest.ge.100) ipri = 3
         if (ntest.ge.500) ipri = 4
         if (ntest.ge.1000) ipri = 5
+c dbg
+        if (trim(list_type).eq.'FG_INT') ipri = 5
+c dbg
         call wrt_mel_file(luout,ipri,mel_target,
      &       1,mel_target%op%n_occ_cls,
      &       str_info,orb_info)

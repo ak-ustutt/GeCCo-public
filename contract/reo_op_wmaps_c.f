@@ -38,7 +38,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       logical, intent(in) ::
      &     update

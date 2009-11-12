@@ -74,7 +74,8 @@
      &     first1, first2, first3, first4, first5,
      &     ms_fix1, ms_fix2, ms_fix12, ms_fix_tmp,
      &     reject, fix_success1, fix_success2, fix_success12,
-     &     reo_op1op2, nonzero, use_tr_here
+     &     reo_op1op2, nonzero, use_tr_here,
+     &     tra_op1_, tra_op2_
       integer ::
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
@@ -200,7 +201,7 @@ c dbg
      &     ielsum, ielprd, idx_msgmdst2, get_lenmap, idxlist,
      &     max_dis_blk
       logical, external ::
-     &     next_dist, next_msgamdist2, msa2idxms4op
+     &     next_dist, next_msgamdist2, msa2idxms4op, list_cmp
       real(8), external ::
      &     ddot
 
@@ -671,6 +672,26 @@ c dbg
       call sum_occ(nc_cnt,cinfo_cntc,ncblk_cnt)
       call sum_occ(na_cnt,cinfo_cnta,nablk_cnt)
 
+      tra_op1_ = tra_op1
+c     a) incorrect for cases with X 
+c     b) no impact on run-time (needs to be re-checked)
+c      ! decide, whether we might use the transposed operator
+c      if (op1%hermitian.eq.1.and.ncblk_op1.eq.nablk_op1) then
+c        tra_op1_ = tra_op1.xor.
+c     &       (list_cmp(cinfo_op1c,cinfo_op1a,ncblk_op1).and.
+c     &        na_cnt.gt.nc_cnt)
+c      end if
+      tra_op2_ = tra_op2
+c      if (op2%hermitian.eq.1.and.ncblk_op2.eq.nablk_op2) then
+c        tra_op2_ = tra_op2.xor.
+c     &       (list_cmp(cinfo_op2c,cinfo_op2a,ncblk_op2).and.
+c     &        nc_cnt.gt.na_cnt)
+c      end if
+cc dbg
+c      if (tra_op1.neqv.tra_op1_) write(lustat,*) 'it happened 1'
+c      if (tra_op2.neqv.tra_op2_) write(lustat,*) 'it happened 2'
+cc dbg
+
       ! set up maps (if necessary)
       call strmap_man_c(lenmap,
      &     cinfo_ex1c(1,2),ncblk_ex1,
@@ -931,14 +952,14 @@ c dbg
               if (.not.next_dist(igam12i_raw,3,igambnd,+1)) exit
             end if
 
-            if (.not.tra_op1) then
+            if (.not.tra_op1_) then
               igam12i_a(1) = igam12i_raw(1)
               igam12i_c(1) = multd2h(igam12i_a(1),igamtop1)
             else
               igam12i_c(1) = igam12i_raw(1)
               igam12i_a(1) = multd2h(igam12i_c(1),igamtop1)
             end if
-            if (.not.tra_op2) then
+            if (.not.tra_op2_) then
               igam12i_a(2) = igam12i_raw(2)
               igam12i_c(2) = multd2h(igam12i_a(2),igamtop2)
             else
@@ -1396,7 +1417,7 @@ c dbg
      &                              gmop1dis_c,ncblk_op1,
      &                     cinfo_op1a,idxmsop1dis_a,
      &                              gmop1dis_a,nablk_op1,
-     &                     tra_op1,me_op1,nsym)
+     &                     tra_op1_,me_op1,nsym)
 c     &                     .false.,me_op1,nsym)
 c     &                   idx_msgmdst3(
 c     &                     iblkop1,idxms,igam12i_a(1),
@@ -1518,7 +1539,7 @@ c dbg
      &                              gmop2dis_c,ncblk_op2,
      &                     cinfo_op2a,idxmsop2dis_a,
      &                              gmop2dis_a,nablk_op2,
-     &                     tra_op2,me_op2,nsym)
+     &                     tra_op2_,me_op2,nsym)
 c     &                     .false.,me_op2,nsym)
 c     &                  idx_msgmdst3(
 c     &                     iblkop2,idxms,igam12i_a(2),
@@ -1670,7 +1691,7 @@ c dbg
      &                     xfac*casign*fac_scal,
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
-     &                   tra_op1, tra_op2, tra_op1op2,
+     &                   tra_op1_, tra_op2_, tra_op1op2,
      &                   ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &                   ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
      &                   ncblk_cnt,nablk_cnt,
@@ -1698,7 +1719,7 @@ c dbg
      &                     xfac*casign*fac_scal,
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
-     &                   tra_op1, tra_op2, tra_op1op2,
+     &                   tra_op1_, tra_op2_, tra_op1op2,
      &                   xscr,lenscr,len_str_block,len_cnt_block,
      &                   ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &                   ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
@@ -1852,6 +1873,10 @@ c          fac_ab = +1
       end if
 
 c dbg
+c      print *,'HALLO: ',trim(op1op2%name),
+c     &     trim(op1op2%name).eq.'Z-INT',iblkop1op2
+      if (trim(op1op2%name).eq.'Z-INT' .and. iblkop1op2.eq.2)
+     &     print *,'iiii ',xop1op2(1),xop1op2(4)
 c      print *,'type_xret ',type_xret
 c      print *,'xret' ,xret
 c dbg

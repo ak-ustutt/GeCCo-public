@@ -159,15 +159,12 @@ c     &       0,0,.false.,op_info)
         occ(IHOLE,1) = 2
         iblk_pphp = iblk_occ(occ,.false.,op_info%op_arr(idxr12x)%op,1)
 c dbg
-        print *,'iblk_pphp : ',iblk_pphp,idxr12x
-        print *,'set to 1'
-        iblk_pphp = 1
+!        print *,'iblk_pphp : ',iblk_pphp,idxr12x
+!        print *,'set to 1'
+!        iblk_pphp = 1
 c dbg
 
         if (.not.bar) then
-c dbg
-          print *,'call'
-c dbg
           call expand_op_product2(fl_t_r_pnt,idxsop,
      &         1d0,4,3,
      &         (/idxsop,idxr12x,idxc12,idxsop/),
@@ -280,7 +277,7 @@ c     &         0,0,
 c     &         op_info)
 c        end if
       end if
-      if(r12op.eq.2.or.r12op.ge.3)then
+      if(r12op.eq.2.or.r12op.ge.3.and.idxcpp12.gt.0)then
         do while(associated(fl_t_r_pnt%next))
           fl_t_r_pnt => fl_t_r_pnt%next
         enddo

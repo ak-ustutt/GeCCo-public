@@ -27,13 +27,13 @@
      &     min_rank, max_rank, ansatz, nop, fix_new,
      &     isim, ncat, nint, icnt, ndef, extend, r12op,
      &     isym, ms, msc, msc_s, sym_arr(8), nlabel, ncnt,
-     &     ninproj, navoid, nconnect, nreplace,
+     &     ninproj, navoid, nconnect, nreplace, trunc_type,
      &     connect(20), idx_sv(20), iblkmin(20),
      &     iblkmax(20),
      &     occ_def(ngastp,2,20)
       logical ::
      &     needed, r12fix, set_tp, set_tpp, screen,
-     &     fixed_gem
+     &     fixed_gem, pf12_trunc
       character(8) ::
      &     approx
       character(len_target_name) ::
@@ -71,6 +71,12 @@
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','screen',lval=screen)
+      call get_argument_value('method.R12','trunc',ival=trunc_type)
+      pf12_trunc = trunc_type.eq.0
+c dbg
+      print *,'trunc_Type= ',trunc_type
+      print *,'pf12_trunc = ',pf12_trunc
+c dbg
 
       call get_argument_value('calculate.routes','simtraf',ival=isim)
 
@@ -269,7 +275,14 @@ c        labels(10) = form_r12_xpint
         call set_dependency(form_ccr12lg0,form_r12_cint,tgt_info)
 c        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
         nint = 7
-      end if      
+      end if
+      if (.not.pf12_trunc) then
+        call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
+        call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
+        labels(2+nint+1) = form_r12_pint 
+        labels(2+nint+2) = form_r12_zint 
+        nint = nint+2
+      end if
       if (r12op.gt.0.and.max_rank.gt.2) then
         if (.not.screen) then
           call set_dependency(form_ccr12lg0,'Vpx_formal',tgt_info)
@@ -343,6 +356,13 @@ c        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
      &              labels,6,1,
      &              parameters,2,tgt_info)
       end if
+c dbg
+      call form_parameters(-2,parameters,2,
+     &       'stdout',0,'---')
+      call set_rule(form_ccr12lg0,ttype_frm,PRINT_FORMULA,
+     &              labels,1,0,
+     &              parameters,2,tgt_info)
+c dbg
       call set_rule(form_ccr12lg0,ttype_frm,TEX_FORMULA,
      &              labels,5,1,
      &              'ccr12f_lag.tex',1,tgt_info)
@@ -652,6 +672,10 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
       if(set_tpp.and..not.fixed_gem)
      &     call set_dependency(fopt_ccr12_0,mel_omgcexxdef,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_ham,tgt_info)
+      if (.not.pf12_trunc) then
+        call set_dependency(fopt_ccr12_0,mel_p_def,tgt_info)      
+        call set_dependency(fopt_ccr12_0,mel_z_def,tgt_info)      
+      end if
       if (max_rank.ge.2) then
         call set_dependency(fopt_ccr12_0,mel_rint,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_v_def,tgt_info)      
@@ -937,6 +961,8 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        if (.not.pf12_trunc)
+     &    call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
         if (max_rank.ge.3)
      &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
@@ -966,6 +992,8 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        if (.not.pf12_trunc)
+     &    call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
         if (max_rank.ge.3)
      &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
@@ -998,6 +1026,8 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         if (max_rank.ge.2) 
      &    call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        if (.not.pf12_trunc)
+     &    call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
         if (max_rank.ge.3)
      &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call solve_parameters(-1,parameters,2, 1,1,'DIA')

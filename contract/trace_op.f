@@ -160,6 +160,9 @@ c dbg mh igam_op_tr_a(2) --> igam_op_tr_a(3)
      &     next_msgamdist_diag
       real(8), external ::
      &     ddot
+c dbg
+      real(8) xold
+c dbg
 
       if (ntest.gt.0) then
         call write_title(luout,wst_dbg_subr,
@@ -385,6 +388,12 @@ c dbg
       call sum_occ(nc_cnt,cinfo_cntc,ncblk_cnt)
       call sum_occ(na_cnt,cinfo_cnta,nablk_cnt)
 
+c dbg
+c      print *,'map(C):'
+c      call print_mapinfo(luout,map_info_c,ncblk_op)
+c      print *,'map(A):'
+c      call print_mapinfo(luout,map_info_a,nablk_op)
+c dbg
       ! set up maps (if necessary)
       call strmap_man_c(lenmap,
      &     cinfo_cntc(1,2),ncblk_cnt,
@@ -452,6 +461,9 @@ c dbg
       igambnd(2,2) = nsym
       ! loop Ms-cases of (Op(A),TrOp(A))
       first1 = .true.
+c dbg
+      xold = xtrop(1)
+c dbg
       ms_loop: do
         if (first1) then
           first1 = .false.
@@ -506,6 +518,10 @@ c dbg
 
           igamc_a = multd2h(igam_op_tr_a(1),igam_op_tr_a(2))
           igamc_c = multd2h(igam_op_tr_c(1),igam_op_tr_c(2))
+c dbg
+c          print *,'msc_c, msc_a:     ',msc_c, msc_a
+c          print *,'igamc_c, igamc_a: ',igamc_c, igamc_a
+c dbg
 
           ! loop over distributions of current Ms and IRREP 
           ! of Aex and Cex (=trOP(A),trOP(C)) over ngastypes
@@ -526,6 +542,12 @@ c dbg
      &           cinfo_tropc,ncblk_trop)
             call ms2idxms(idxmstropdis_a,mstropdis_a,
      &           cinfo_tropa,nablk_trop)
+c dbg
+c            print *,'mstropdis_c: ',mstropdis_c(1:ncblk_trop)
+c            print *,'mstropdis_a: ',mstropdis_a(1:nablk_trop)
+c            print *,'gmtropdis_c: ',gmtropdis_c(1:ncblk_trop)
+c            print *,'gmtropdis_a: ',gmtropdis_a(1:nablk_trop)
+c dbg
 
             call set_len_str(lstrtroptmp,ncblk_trop,nablk_trop,
      &           graphs,
@@ -698,7 +720,10 @@ c     &                     .false.,me_op,nsym)
      &                   map_info_c, map_info_a,
      &                   map_tropcntc, map_tropcnta
      &                   )
-
+c dbg
+c              print *,'after blk: ',xtropblk(1),xtropblk(1)-xold
+c              xold = xtropblk(1)
+c dbg
             end do cac_loop
                   
             ! if necessary, reorder trop block:
@@ -737,6 +762,10 @@ c     &                     .false.,me_op,nsym)
      &         iblktrop,iblktrop,str_info,orb_info)
         end if
       end if
+c dbg
+      if (trim(trop%name).eq.'Z-INT' .and. iblktrop.eq.2)
+     &     print *,'jjjj ',xtrop(1),xtrop(4)
+c dbg
 
       if (type_xret.eq.2) then
         xret(1) = xtrop(1)

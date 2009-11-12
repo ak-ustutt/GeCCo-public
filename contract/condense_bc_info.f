@@ -56,7 +56,7 @@
      &     merge_map1(*), merge_map2(*), merge_map12(*), merge_map21(*)
 
       logical ::
-     &     ok
+     &     ok, equal
       integer ::
      &     ijoin, ngas, nspin
       integer ::
@@ -100,8 +100,15 @@ c     &     irst_op1,ihpvgas,ngas)
       
         ok = .true.
         do ijoin = 1, njoined_cnt
-          ok = ok.and.irestr_equal(irst_cnt(1,1,1,1,ijoin),.false.,
+          equal = irestr_equal(irst_cnt(1,1,1,1,ijoin),.false.,
      &         irst_cnt_dagger(1,1,1,1,ijoin),.true.,ngas)
+          ok = ok.and.equal
+c patch
+c          ! use the maximum overlap of restrictions
+c          if (.not.equal) then
+c            
+c          end if
+c end patch
         end do
         if (.not.ok) then
           write(luout,*) 'generated restrictions: CNT != CNT^+'
@@ -109,6 +116,32 @@ c     &     irst_op1,ihpvgas,ngas)
             if (njoined_cnt.gt.1) write(luout,*) 'pair # ',ijoin
             call wrt_rstr(luout,irst_cnt(1,1,1,1,ijoin),ngas)
             call wrt_rstr(luout,irst_cnt_dagger(1,1,1,1,ijoin),ngas)
+          end do
+          write(luout,*) 'OP1 is'
+          do ijoin = 1, njoined_op1
+            call wrt_occ_rstr(luout,ijoin,iocc_op1(:,:,ijoin),
+     &                                    irst_op1(:,:,:,:,ijoin),
+     &                                    ngas,nspin)
+          end do
+          if (.not.self) then
+            write(luout,*) 'OP2 is'
+            do ijoin = 1, njoined_op2
+             call wrt_occ_rstr(luout,ijoin,iocc_op2(:,:,ijoin),
+     &                                    irst_op2(:,:,:,:,ijoin),
+     &                                    ngas,nspin)
+            end do
+          end if
+          write(luout,*) 'OP1OP2TMP is'
+          do ijoin = 1, njoined_op1op2
+            call wrt_occ_rstr(luout,ijoin,iocc_op1op2tmp(:,:,ijoin),
+     &                                    irst_op1op2tmp(:,:,:,:,ijoin),
+     &                                    ngas,nspin)
+          end do
+          write(luout,*) 'OP1OP2 is'
+          do ijoin = 1, njoined_op1op2
+            call wrt_occ_rstr(luout,ijoin,iocc_op1op2(:,:,ijoin),
+     &                                    irst_op1op2(:,:,:,:,ijoin),
+     &                                    ngas,nspin)
           end do
           call quit(1,'condense_bc_info','problem with restrictions !')
         end if

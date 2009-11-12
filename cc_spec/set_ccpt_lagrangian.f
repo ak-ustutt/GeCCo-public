@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 1000
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -67,8 +67,8 @@
      &     nterms, ilabel, idx, ndef, rank_tpt,
      &     idxham,idxtbar,idxtop,idxtpt,idxtptbar,idxlcc,
      &     idxr12,idxc12,idxcpp12,idxc12_pt,idxcpp12_pt,idxr12x,
-     &     idx_f_temp,idx_h_temp,
-     &     idxsop,idxspt,r12op,trunc_type,iprint
+     &     idx_f_temp,idx_h_temp,r12op_loc,
+     &     idxsop,idxspt,r12op,trunc_type,iprint, iblk_t2, occ(ngastp,2)
       integer, allocatable ::
      &     occ_def(:,:,:)
 
@@ -76,7 +76,7 @@
      &     f_temp_pnt, h_temp_pnt, sop_pnt, spt_pnt
 
       integer, external ::
-     &     idx_oplist2, max_rank_op
+     &     idx_oplist2, max_rank_op, iblk_occ
 
       ! for timings:
       real(8) ::
@@ -121,6 +121,8 @@
           if (ilabel.eq.12) idxr12x = idx
         else
           if (ilabel.eq.10) idxr12x = idx
+          idxcpp12 = -1
+          idxcpp12_pt = -1
         end if
       end do
 
@@ -190,7 +192,8 @@ c        deallocate(occ_def)
 
         call set_t_r(flist_t_r,.false.,.false.,
      &               idxsop,idxtop,
-     &               idxr12,-1,idxc12,idxcpp12,
+     &               idxr12,idxr12x,idxc12,idxcpp12,
+c     &               idxr12,-1,idxc12,idxcpp12,
      &               r12op,r12fix,op_info)
 
 c        if (ntest.ge.1000) then
@@ -218,10 +221,14 @@ c        end if
 
         set_rhxhh = mode(1:3).eq.'hhs'
 
+c dbg tmp
+        r12op_loc = r12op
+        if (rank_tpt.ge.2) r12op_loc=4
+c dbg
         call set_t_r(flist_t_r_pt,.false.,set_rhxhh,
      &               idxspt,idxtpt,
      &               idxr12,idxr12x,idxc12_pt,idxcpp12_pt,
-     &               r12op,r12fix,op_info)
+     &               r12op_loc,r12fix,op_info)
 
 
 c        if (ntest.ge.1000) then
@@ -282,13 +289,18 @@ c        end if
         do while(associated(flist_pnt%next))
           flist_pnt => flist_pnt%next
         end do
-        ! select T2-type ops: ??
-        call quit(1,'set_ccpt_lagrangian','not yet settled')
+
+        ! select T2 ops
+        occ = 0
+        occ(IPART,1) = 2
+        occ(IHOLE,2) = 2
+        iblk_t2 = iblk_occ(occ,.false.,op_info%op_arr(idxsop)%op,1)
+
         call expand_op_product2(flist_pnt,idxlcc,
      &       1d0,6,5,
      &       (/idxlcc,-idxspt,idx_h_temp,idxsop,idxsop,idxlcc/),
      &       (/1,2,3,4,5,1/),
-     &       -1,-1,
+     &       (/1,1,1,iblk_t2,iblk_t2,1/),(/0,0,0,iblk_t2,iblk_t2,0/),
      &       (/3,4,3,5/),2,
      &       0,0,
      &       0,0,

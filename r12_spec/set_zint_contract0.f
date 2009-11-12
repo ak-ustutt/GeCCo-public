@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -73,28 +73,55 @@
         form_pnt => form_pnt%next
       enddo
 
-c      if (.false.) then
-      if (.true.) then
-
       ! Add the G^{p'q}_{km}.FF_{p'l}^{ij} terms.
-      do idx_rg = 1, 4
-        if (idx_rg.eq.3) cycle
+      ! due to the formal shifting of commuting operators, the
+      ! terms are somewhat tricky and thus "hand taylored" for
+      ! each kind of Z
+      
+      ! special for Z0:
+      call set_ffg_for_z0()
+        
+      ! settings for Z1
+      call set_ffg_for_z1()
 
-        do icase = 1, 3
-          select case (icase)
-          case(1)!"6"
-            fac = 0.5d0 !0.5d0
-            prj = (/3,5,1,-1,3,4,1,idx_rg/)
-          case(2)!"4+8"
-            fac = 0.5d0 ! ???
-            prj = (/2,5,1,-1,3,4,1,idx_rg/)
-          case(3)!"2"
-            fac = 0.5d0
-            prj = (/4,5,1,-1,3,4,1,idx_rg/)
-          end select
+      ! settings for Z2
+      call set_ffg_for_z2()
 
-          call expand_op_product2(form_pnt,idx_shape,
-     &     fac,6,3,
+      ! remove the projected terms
+      !  - R.P.G.R - R.G.P.R + R.P.G.P.R
+      call set_fjf_for_zn()
+
+      ! and finally: the exchange terms
+      !  - R.Q.K.Q.R
+      if (max_ext_in_K.gt.0)
+     &     call set_fkf_for_zn()
+
+      if (ntest.ge.100) then
+        write(luout,*)'formula before summing: Z-Int.'
+        call print_form_list(luout,flist,op_info)
+      end if
+
+      ! we have set the fjf terms in by straight-forward
+      ! expansion of the projector terms; some of them cancel
+      ! so we have to ....
+      call sum_terms(flist,op_info)
+
+      if (ntest.ge.100) then
+        write(luout,*)'Final formula: Z-Int.'
+        call print_form_list(luout,flist,op_info)
+      end if
+
+      return
+
+      ! some embedded subroutines follow
+      contains
+
+      subroutine set_ffg_for_z0()
+
+      implicit none
+
+        call expand_op_product3(form_pnt,idx_shape,
+     &    -0.5d0,6,3,
      &     (/idx_shape,idx_opsin(3),idx_opsin(3),
      &     idx_opsin(4),idx_opsin(4),idx_shape/),
      &     (/        1,           2,           2,
@@ -102,44 +129,38 @@ c      if (.false.) then
      &     -1,-1,
      &     0,0,
      &     0,0,
-     &     prj,2,
+     &     (/'1,,,','6,,,',
+     &       '2,,H,H','3,,H,[HPX],','4,,H[HPX],','5,,,HH',
+     &       '3,4,,[HPX]','2,4,,H'/),8,
      &     op_info)
-
-          idx = 0
-          do while(associated(form_pnt%next))
-            idx = idx+1
-            form_pnt => form_pnt%next
-          enddo
-c dbg
-          print *,' G.RR',idx_rg,icase,': ',idx,' terms'
-c dbg            
-
-        end do
-      end do
-
-      do idx_rg = 1, 4
-        if (idx_rg.eq.3) cycle
-
-        do icase = 1, 4
-          select case (icase)
-          case(1)!"7"
-            fac = 0.5d0
-            prj = (/2,5,1,-1,3,5,1,idx_rg/)
-          case(2)!"5"
-            fac = 0.5d0 !-0.5d0
-            prj = (/4,5,1,-1,3,5,1,idx_rg/)
-          case(3)!"1"
-            fac = 0.5d0
-            prj = (/2,3,1,-1,3,5,1,idx_rg/)
-          case(4)!"3"
-            fac = -0.5d0 ! for some reason ...
-            prj = (/3,4,1, 1,3,5,1,idx_rg/)
-          end select
-
-
-          ! Add the FF_{p'q}^{km}.G^{p'l}_{ij} terms.
-          call expand_op_product2(form_pnt,idx_shape,
-     &     fac,6,3,
+        idx = 0
+        do while(associated(form_pnt%next))
+          idx = idx+1
+          form_pnt => form_pnt%next
+        enddo
+        call expand_op_product3(form_pnt,idx_shape,
+     &     0.5d0,6,3,
+     &     (/idx_shape,idx_opsin(3),idx_opsin(3),
+     &     idx_opsin(4),idx_opsin(4),idx_shape/),
+     &     (/        1,           2,           2,
+     &                3,        3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+c     &     (/'2,,H,H','3,,H,[HPX],','4,,H[HPX],','5,,,HH',
+c     &       '3,4,,[HPX]','2,3,,H'/),6,
+c  the above gives problems with trace_op, so we use instead:
+     &     (/'1,,,','6,,,',
+     &       '3,,H,H','2,,H,[HPX],','4,,H[HPX],','5,,,HH',
+     &       '2,4,,[HPX]','2,3,H,'/),8,
+     &     op_info)
+        idx = 0
+        do while(associated(form_pnt%next))
+          idx = idx+1
+          form_pnt => form_pnt%next
+        enddo
+        call expand_op_product3(form_pnt,idx_shape,
+     &    -0.5d0,6,3,
      &     (/idx_shape,idx_opsin(4),idx_opsin(4),
      &     idx_opsin(3),idx_opsin(3),idx_shape/),
      &     (/        1,           2,           2,
@@ -147,22 +168,180 @@ c dbg
      &     -1,-1,
      &     0,0,
      &     0,0,
-     &     prj,2,
+     &     (/'1,,,','6,,,',
+     &       '2,,HH,','3,,,H[HPX]','4,,H,H','5,,[HPX],H',
+     &       '3,5,,[HPX]','3,4,,H'/),8,
      &     op_info)
-          
-          idx = 0
-          do while(associated(form_pnt%next))
-            idx = idx+1
-            form_pnt => form_pnt%next
-          enddo
+        idx = 0
+        do while(associated(form_pnt%next))
+          idx = idx+1
+          form_pnt => form_pnt%next
+        enddo
+        call expand_op_product3(form_pnt,idx_shape,
+     &     0.5d0,6,3,
+     &     (/idx_shape,idx_opsin(4),idx_opsin(4),
+     &     idx_opsin(3),idx_opsin(3),idx_shape/),
+     &     (/        1,           2,           2,
+     &                3,        3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/'1,,,','6,,,',
+     &       '2,,HH,','3,,,H[HPX]','4,,H,H','5,,[HPX],H',
+     &       '3,5,,[HPX]','2,3,H,'/),8,
+     &     op_info)
+        idx = 0
+        do while(associated(form_pnt%next))
+          idx = idx+1
+          form_pnt => form_pnt%next
+        enddo
+
+      end subroutine
+
+      subroutine set_ffg_for_z1()
+
+      implicit none
+
 c dbg
-          print *,' RR.G',idx_rg,icase,': ',idx,' terms'
-c dbg            
+      print *,'call for Z #1'
+c dbg
+      ! G.FF terms
+      call expand_op_product3(form_pnt,idx_shape,
+     &     0.5d0,6,3,
+     &     (/idx_shape,idx_opsin(3),idx_opsin(3),
+     &     idx_opsin(4),idx_opsin(4),idx_shape/),
+     &     (/        1,           2,           2,
+     &                3,        3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/'1,,,','6,,P,H',
+     &       '2,,H,P','3,,H,[HPX],','4,,H[HPX],','5,,,H[HP]',
+     &       '3,4,,[HPX]'/),7,
+     &     op_info)
+      idx = 0
+      do while(associated(form_pnt%next))
+        idx = idx+1
+        form_pnt => form_pnt%next
+      enddo
+      
+      ! FF.G terms
+      call expand_op_product3(form_pnt,idx_shape,
+     &     0.5d0,6,3,
+     &     (/idx_shape,idx_opsin(4),idx_opsin(4),
+     &     idx_opsin(3),idx_opsin(3),idx_shape/),
+     &     (/        1,           2,           2,
+     &                3,        3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/'1,,,','6,,P,H',
+     &       '2,,H[HP],','3,,,H[HPX]','4,,H,P','5,,[HPX],H',
+     &       '3,5,,[HPX]'/),7,
+     &     op_info)
+      idx = 0
+      do while(associated(form_pnt%next))
+        idx = idx+1
+        form_pnt => form_pnt%next
+      enddo
+      
+      ! one FF.G terms is missing: here, due to the
+      ! shifting of indices a normal ordered contraction
+      ! becomes anti-normal order - so we have to enforce
+      ! it (and reverse the sign!)
+      call expand_op_product3(form_pnt,idx_shape,
+     &     -0.5d0,6,3,
+     &     (/idx_shape,idx_opsin(4),idx_opsin(4),
+     &     idx_opsin(3),idx_opsin(3),idx_shape/),
+     &     (/        1,           2,           2,
+     &                3,        3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/'1,,,','6,,P,H',
+     &       '2,,H[HP],','3,,,H[HPX]','4,,H,P','5,,[HPX],H',
+     &       '3,5,,[HPX]','3,4,,H'/),8,
+     &     op_info)
+        idx = 0
+        do while(associated(form_pnt%next))
+          idx = idx+1
+          form_pnt => form_pnt%next
+        enddo
 
-        end do
-      end do
+      end subroutine
 
-      !  - R.P.G.R
+      subroutine set_ffg_for_z2()
+
+      implicit none
+
+c dbg
+      print *,'call for Z #2'
+c dbg
+      ! G.FF terms
+      call expand_op_product3(form_pnt,idx_shape,
+     &     0.5d0,6,3,
+     &     (/idx_shape,idx_opsin(3),idx_opsin(3),
+     &     idx_opsin(4),idx_opsin(4),idx_shape/),
+     &     (/        1,           2,           2,
+     &                3,        3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/'1,,,','6,,PP,HH',
+     &       '2,,H,P','3,,H,[HPX],','4,,H[HPX],','5,,,H[HP]',
+     &       '3,4,,[HPX]'/),7,
+     &     op_info)
+        idx = 0
+        do while(associated(form_pnt%next))
+          idx = idx+1
+          form_pnt => form_pnt%next
+        enddo
+        
+        ! FF.G terms
+        call expand_op_product3(form_pnt,idx_shape,
+     &     0.5d0,6,3,
+     &     (/idx_shape,idx_opsin(4),idx_opsin(4),
+     &     idx_opsin(3),idx_opsin(3),idx_shape/),
+     &     (/        1,           2,           2,
+     &                3,        3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/'1,,,','6,,PP,HH',
+     &       '2,,HH,','3,,,[HP][HPX]','4,,H,P','5,,[HPX],[HP]',
+     &       '3,5,,[HPX]'/),7,
+     &     op_info)
+        idx = 0
+        do while(associated(form_pnt%next))
+          idx = idx+1
+          form_pnt => form_pnt%next
+        enddo
+        
+        call expand_op_product3(form_pnt,idx_shape,
+     &     -0.5d0,6,3,
+     &     (/idx_shape,idx_opsin(4),idx_opsin(4),
+     &     idx_opsin(3),idx_opsin(3),idx_shape/),
+     &     (/        1,           2,           2,
+     &                3,        3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/'1,,,','6,,PP,HH',
+     &       '2,,HH,','3,,,H[HPX]','4,,H,P','5,,[HPX],P',
+     &       '3,5,,[HPX]','3,4,,H'/),8,
+     &     op_info)
+        idx = 0
+        do while(associated(form_pnt%next))
+          idx = idx+1
+          form_pnt => form_pnt%next
+        enddo
+
+      end subroutine
+
+      subroutine set_fjf_for_zn()
+
+      implicit none
+
       do idx_rg = 1, 4
         if (idx_rg.eq.3) cycle
         do idx_rr = 1, 4
@@ -187,7 +366,7 @@ c dbg
      &           3,          4,        1/),
      &           -1,-1,
      &           0,0,
-     &           0,0,
+     &           (/3,4/),1,
      &           (/2,4,1,idx_rg,2,5,1,idx_rr,4,5,1,idx_gr/),3,
 c     &           (/2,3,1,idx_rg,2,5,1,idx_rr,3,5,1,idx_gr/),3,
      &           op_info)
@@ -230,7 +409,7 @@ c dbg
      &           3,          4,        1/),
      &           -1,-1,
      &           0,0,
-     &           0,0,
+     &           (/3,4/),1,
 c     &           (/2,3,1,idx_rg,2,5,1,idx_rr,3,5,1,idx_gr/),3,
      &           (/2,4,1,idx_rg,2,5,1,idx_rr,4,5,1,idx_gr/),3,
      &           op_info)
@@ -276,7 +455,7 @@ c dbg
      &           3,          4,        1/),
      &           -1,-1,
      &           0,0,
-     &           0,0,
+     &           (/3,4/),1,
 c     &           (/2,3,1,idx_rg,2,5,1,idx_rr,3,5,1,idx_gr/),3,
      &           (/2,4,1,idx_rg,2,5,1,idx_rr,4,5,1,idx_gr/),3,
      &           op_info)
@@ -294,63 +473,12 @@ c dbg
         end do
       end do
 
-      else
+      end subroutine
 
-        write(luout,*) 'DEBUG VERSION ACTIVE'
-        call warn('set_zint_contract0','DEBUG VERSION ACTIVE')
+      subroutine set_fkf_for_zn()
 
-      ! for debugging: J from R.Q.J.Q.R
-      do idx_rg = 2, 4
-        if (idx_rg.eq.3) cycle        
-        do idx_rr = 2, 4
-          if (idx_rr.eq.3) cycle
-          if (idx_rg.eq.2.and.idx_rr.eq.2) cycle
-          do idx_gr = 2, 4
-            if (idx_gr.eq.3) cycle
-            if (idx_gr.eq.2.and.idx_rr.eq.2) cycle
+      implicit none
 
-            next = 0
-            if (idx_rg.eq.4) next = next+1
-            if (idx_rr.eq.4) next = next+1
-            if (idx_gr.eq.4) next = next+1
-
-c            if (next.gt.max_ext_in_J) cycle
-
-            call expand_op_product2(form_pnt,idx_shape,
-     &           1d0,6,4,
-     &           (/idx_shape,-idx_opsin(2),idx_opsin(3),
-     &           idx_opsin(3),idx_opsin(2),idx_shape/),
-     &           (/        1,            2,             3,
-     &           3,          4,        1/),
-     &           -1,-1,
-     &           0,0,
-     &           0,0,
-     &           (/2,4,1,idx_rg,2,5,1,idx_rr,4,5,1,idx_gr/),3,
-     &           op_info)
-
-            idx = 0
-            do while(associated(form_pnt%next))
-              idx = idx+1
-              form_pnt => form_pnt%next
-            enddo
-            print *,' R.G.R',idx_rg,idx_rr,idx_gr,': ',idx,' terms'
-c dbg
-c            goto 100
-c dbg
-
-          end do
-        end do
-      end do
-
-c dbg
-c 100  call warn('set_zint_contract0','heavy debugging!')
-c dbg
-
-      end if
-
-
-      ! exchange terms
-      !  - R.Q.K.Q.R
       do idx_rg = 2, 4
         if (idx_rg.eq.3) cycle        
         do idx_rr = 2, 4
@@ -375,39 +503,18 @@ c dbg
      &           3,          4,        1/),
      &           -1,-1,
      &           0,0,
-     &           0,0,
+     &           (/3,4/),1,
      &           (/2,4,1,idx_rg,2,5,1,idx_rr,3,5,1,idx_gr/),3,
      &           op_info)
 
             do while(associated(form_pnt%next))
               form_pnt => form_pnt%next
             enddo
-c dbg
-c            goto 200
-c dbg
 
           end do
         end do
       end do
-      
-c dbg
-c 200  call warn('set_zint_contract0','heavy debugging!')
-c dbg
 
-      if (ntest.ge.100) then
-        write(luout,*)'formula before summing: Z-Int.'
-        call print_form_list(luout,flist,op_info)
-      end if
+      end subroutine
 
-      call sum_terms(flist,op_info)
-
-      if (ntest.ge.100) then
-        write(luout,*)'Final formula: Z-Int.'
-        call print_form_list(luout,flist,op_info)
-      end if
-c dbg
-c      stop 'test ex'
-c dbg
-
-      return
       end

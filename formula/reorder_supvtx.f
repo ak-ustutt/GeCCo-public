@@ -55,6 +55,8 @@
      &     iarc_shift, iarc_sum, narc_new,
      &     maxreo, idx, idxsuper, ica, ica_vtx, hpvx,
      &     iblk, ivtx, idxnew, ireo
+      logical ::
+     &     renamed(contr%nvtx)
       logical, pointer ::
      &     reo_generated(:)
 
@@ -313,6 +315,7 @@ c dbg
         contr%narc = narc_new
 
         ! a quickie: new intermediate
+        renamed = .false.
         idxnew = idxop12-1
         do ireo = 1, reo_info%nreo
           if (.not.reo_generated(ireo)) cycle
@@ -320,8 +323,10 @@ c dbg
           idxsuper = reo_info%reo(idx)%idxsuper
           iblk = 0
           do ivtx = 1, contr%nvtx
+            if (renamed(ivtx)) cycle ! do not rename twice
             if (svertex(ivtx).ne.idxsuper) cycle
             if (vertex(ivtx)%idx_op.ne.idxop12) then
+              renamed(ivtx) = .true.
               vertex(ivtx)%idx_op = idxnew
               iblk = iblk+1
               vertex(ivtx)%iblk_op = iblk

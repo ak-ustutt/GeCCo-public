@@ -111,26 +111,26 @@ c dbg
      &             jdx_v,kdx_v,
      &             topo,xlines,nvtx,nj)
 c dbg
-        print *,'idx = ',jdx_v,kdx_v
-        print *,'0,I0,J0:'
-        call wrt_occ(6,occ_dum)
-        call wrt_occ(6,occ_j)
-        call wrt_occ(6,occ_k)
-        print *,'nenclosed = ',n_enclosed
+c        print *,'idx = ',jdx_v,kdx_v
+c        print *,'0,I0,J0:'
+c        call wrt_occ(6,occ_dum)
+c        call wrt_occ(6,occ_j)
+c        call wrt_occ(6,occ_k)
+c        print *,'nenclosed = ',n_enclosed
 c dbg
               ! get the sign for approaching 
               ! {I0C I0A}{}{J0C J0A} -> {I0C J0C I0A J0A}{}{}
               merge_sign = merge_sign *
      &             sign_merge(occ_j,occ_k,n_enclosed,.false.) 
 c dbg
-              print *,'after sign_merge: ',merge_sign
+c              print *,'after sign_merge: ',merge_sign
 c dbg
               ! get the sign for HPVX reordering
               ! {I0C J0C I0A J0A} -> {IJC IJA}
               merge_sign = merge_sign *
      &             sign_hpvx(2,occ_j,.false.,occ_k,.false.)
 c dbg
-              print *,'after hpvx: ',merge_sign
+c              print *,'after hpvx: ',merge_sign
 c dbg
 
               iord(kdx_v) = iord(jdx_v)

@@ -87,7 +87,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -278,7 +278,6 @@ c          end if
         end if
 
       case('P')
-
 c        call set_pint_contract(flist,ansatz,
 c     &       idx_op,6,
 c     &       op_info,orb_info)
@@ -312,6 +311,7 @@ c     &       op_info,orb_info)
      &       idx_op,4,
      &       op_info,orb_info)
         else if (njoined_intm.eq.1) then
+c          call set_zint_contract0old(flist,ansatz,
           call set_zint_contract0(flist,ansatz,
      &       idx_op,4,max_x_J,max_x_K,
      &       op_info,orb_info)

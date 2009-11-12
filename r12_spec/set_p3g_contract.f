@@ -55,6 +55,8 @@
      &     idx_oplist2
 
 
+      call quit(1,'set_p3g_contract','obsolete?')
+
       if(ntest.ge.100)then
         write(luout,*)'Test Contraction'
         write(luout,*)'Shape: ',trim(shape)

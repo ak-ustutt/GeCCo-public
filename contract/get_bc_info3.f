@@ -459,6 +459,18 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
         call wrt_occ_n(luout,iocc_ex1,njoined_op(1))
         call wrt_occ_n(luout,iocc_ex2,njoined_op(2))
         call wrt_occ_n(luout,iocc_cnt,njoined_cnt)
+        write(luout,*) 'op1 incl. restrictions:'
+        do idx = 1, njoined_op(1)
+          call wrt_occ_rstr(luout,idx,iocc_op1(1,1,idx),
+     &                                irestr_op1(1,1,1,1,idx),
+     &          orb_info%ngas,orb_info%nspin)
+        end do
+        write(luout,*) 'op1op2 incl. restrictions:'
+        do idx = 1, njoined_op1op2
+          call wrt_occ_rstr(luout,idx,iocc_op1op2(1,1,idx),
+     &                                irestr_op1op2(1,1,1,1,idx),
+     &          orb_info%ngas,orb_info%nspin)
+        end do
       end if
 
       return

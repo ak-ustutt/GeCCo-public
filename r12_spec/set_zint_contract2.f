@@ -71,6 +71,15 @@
 c dbg
 c      goto 100 ! Exchange parts only
 c dbg
+c dbg
+c      call warn('set_zint_contract2','HEAVY DEBUGGING!')
+c      goto 60
+c dbg
+c 60   call warn('HEAVY','DEBUGGING!')
+c      idx_prj = 2
+c      idx_prj2 = 1
+c dbg
+c dbg
 
       ! Add the G^{p'q}_{km}.FF_{p'l}^{ij} terms.
       idx_prj = 1
@@ -109,7 +118,8 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
-      do idx = 1, 2 ! Full
+
+      do idx = 1, 2             ! Full
 c      do idx = 1, 1 ! SA
         idx_prj  = 1
         idx_prj2 = 2*idx
@@ -176,6 +186,10 @@ c      do idx = 1,2 ! SA
         form_pnt => form_pnt%next
       enddo
 
+c dbg
+c      call warn('HEAVY','DEBUGGING!')
+c      goto 200
+c dbg
 c dbg
 c      print *,'skipping all R.G.R type terms'
 c      goto 200 ! skip the rest
@@ -584,7 +598,7 @@ c dbg
       enddo
 
       ! Add the F_{kl}^{p"q"}.G_{p"m}^{r"s}.F_{r"q"}^{ij}.
-      idx_prj = 4
+ 110  idx_prj = 4
       call expand_op_product2(form_pnt,idx_shape,
      &     1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -603,7 +617,7 @@ c dbg
       enddo
 
       ! Add the F_{ij}^{p"b}.G_{p"m}^{pr"}.R_{r"b}^{ij}.
-      idx_prj = 4
+ 120  idx_prj = 4
       idx_prj2= 2
       call expand_op_product2(form_pnt,idx_shape,
      &     1d0,10,4,
@@ -623,7 +637,7 @@ c dbg
       enddo
 
       ! Add the F_{ij}^{aq"}.G_{am}^{pb}.F_{bq"}^{ij}.
-      idx_prj = 4
+ 130  idx_prj = 4
       idx_prj2= 2
       call expand_op_product2(form_pnt,idx_shape,
      &     1d0,10,4,
@@ -645,7 +659,7 @@ c dbg
       ! Add the F_{ij}^{p"q"}.G_{p"m}^{pa}.R_{aq"}^{ij}.
       idx_prj = 4
       idx_prj2= 2
-      call expand_op_product2(form_pnt,idx_shape,
+ 140  call expand_op_product2(form_pnt,idx_shape,
      &     1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
      &       idx_opsin(3),idx_shape,idx_shape,idx_opsin(2),idx_shape/),
@@ -666,7 +680,7 @@ c dbg
       ! Add the F_{ij}^{aq"}.G_{am}^{pr"}.R_{r"q"}^{ij}.
       idx_prj = 4
       idx_prj2= 2
-      call expand_op_product2(form_pnt,idx_shape,
+ 150  call expand_op_product2(form_pnt,idx_shape,
      &     1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
      &       idx_opsin(3),idx_shape,idx_shape,idx_opsin(2),idx_shape/),

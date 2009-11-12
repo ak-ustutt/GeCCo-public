@@ -53,11 +53,11 @@
      &     depend_info
 
       logical ::
-     &     update, reo, skip, call_sti_remover
+     &     update, reo, skip, call_sti_remover, measure
       integer ::
      &     idxopres, idxres, nres, type_xret,
      &     idxme_res, nblk_res, ifree,
-     &     iterm, icmd, iprint
+     &     iterm, icmd, icmd_pfi, iprint
       real(8) ::
      &     xret_last
 
@@ -79,7 +79,8 @@
      &     cur_form
 
       real(8) ::
-     &     cpu, sys, wall, cpu0, sys0, wall0
+     &     cpu, sys, wall, cpu0, sys0, wall0,
+     &     cpus,syss,walls,cpus0,syss0,walls0
 
       integer, external ::
      &     idxlist, idx_oplist2
@@ -104,14 +105,18 @@
       nres  = 0
       idxres = 0
       iterm = 0
-      icmd = 0 ! only for ntest.ge.100
+      icmd = 0
+      icmd_pfi = 0 ! only for ntest.ge.100
       nullify(xret_blk)
       xret_last = 0d0
 
 
       ! loop over entries
       main_loop: do 
-      
+
+        if (lustat.gt.0) call atim_csw(cpus0,syss0,walls0)
+        measure = .false.
+
         if (nres.eq.0 .and.
      &      cur_form%command.ne.command_set_target_init)
      &     call quit(1,'frm_sched2','first command must define target')
@@ -120,7 +125,7 @@
         call_sti_remover = .false.
 
         if (ntest.ge.100)
-     &       call print_form_item(luout,icmd,cur_form,op_info)
+     &       call print_form_item(luout,icmd_pfi,cur_form,op_info)
 
         select case(cur_form%command)
         case(command_end_of_formula,command_set_target_init)
@@ -200,6 +205,9 @@
      &           call file_open(ffres)
             call zeroop(me_res)
  
+            if (lustat.gt.0) write(lustat,*) 'NEW TARGET: ',
+     &           trim(me_res%label)
+
             if (associated(xret_blk))
      &           ifree = mem_dealloc('xret_blk')
             ifree = mem_alloc_real(xret_blk,nblk_res,'xret_blk')
@@ -217,6 +225,7 @@
 
         case(command_reorder)
 
+          measure = .true.
           update = .false.
           call fs_reo_drv(xret_blk,type_xret,idxopres,me_res,
      &         cur_form,update,
@@ -229,6 +238,8 @@ c     &       'to come [REORDER]')
 
         case(command_add_intm)
 
+          measure = .true.
+          icmd = icmd+1
           update = .true.
 
           call fs_add_drv(xret_blk,type_xret,idxopres,me_res,
@@ -240,6 +251,8 @@ c     &       'to come [REORDER]')
         case(command_bc,command_add_bc,
      &       command_bc_reo,command_add_bc_reo)
 
+          measure = .true.
+          icmd = icmd+1
           update = (cur_form%command.eq.command_add_bc.or.
      &              cur_form%command.eq.command_add_bc_reo)
           reo    = (cur_form%command.eq.command_bc_reo.or.
@@ -254,6 +267,7 @@ c     &       'to come [REORDER]')
 
         case(command_symmetrise)
           
+          measure = .true.
           call symmetrise(1d0,me_res,me_res,
      &         xret_blk,
      &         op_info,str_info,orb_info)
@@ -283,6 +297,12 @@ c     &       'to come [REORDER]')
             write(luout,*) 'xret after term ',iterm
             write(luout,'(x,4f19.10)') xret_blk(1:nblk_res)
           end if
+        end if
+
+        if (lustat.gt.0.and.measure) then
+          call atim_csw(cpus,syss,walls)
+          write(lustat,'(i5,3f18.4)')
+     &         icmd,cpus-cpus0,syss-syss0,walls-walls0
         end if
 
         if (.not.associated(cur_form%next))

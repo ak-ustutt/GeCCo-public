@@ -21,7 +21,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest =  00
 
       type(contraction), intent(inout) ::
      &     proto

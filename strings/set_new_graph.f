@@ -30,7 +30,7 @@
      &     iwscr(:)
 
 c dbg
-      print *,'set_new_graph: ',igraph
+c      print *,'set_new_graph: ',igraph
 c dbg
 
       call mem_pushmark()

@@ -48,6 +48,8 @@
      &     idx_oplist2
 
 
+      call quit(1,'set_p3f_contract','obsolete?')
+
       if(ntest.ge.100)then
         write(luout,*)'P3F-intermediate contraction'
         write(luout,*)'Constituent operators: '

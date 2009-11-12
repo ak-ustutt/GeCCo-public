@@ -34,7 +34,7 @@
      &     occ_def(ngastp,2,60), ndef
       logical ::
      &     needed, explicit, r12fix, set_tp, set_tpp, gbc4pt,
-     &     R2_coupling, set_R2_R2, set_Rhxhh, screen
+     &     R2_coupling, set_R2_R2, set_Rhxhh, set_RT2T2, screen
       character(len=8) ::
      &     mode
       character(len_target_name) ::
@@ -71,6 +71,8 @@
      &     lval=set_R2_R2)
       call get_argument_value('method.CCPT','hh_scatter',
      &     lval=set_Rhxhh)
+      call get_argument_value('method.CCPT','RT2T2',
+     &     lval=set_RT2T2)
 
       if (explicit) then
         approx(1:12) = ' '
@@ -97,6 +99,7 @@
           ! T' operators (singly p-connected to R12)
           set_tp = .true.
           ntp_min=max(min_rank_pt-1,min_rank_tp)
+          if (set_RT2T2) ntp_min=max(min_rank_pt-2,min_rank_tp)
           ntp_max=max_rank_pt-1
 c          n_pp=1
         case(2)
