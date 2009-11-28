@@ -114,6 +114,10 @@ c dbg
           idxbuf = idxbuf + nstr
         end do
 
+c dbg
+c        print *,'call to mem_iput in set_flipmap: ',
+c     &       strmap_info%idx_last, lenbuf
+c dbg
         lenbuf = idxbuf
         call mem_iput(strmap_info%ffstrmap,buffer,
      &       strmap_info%idx_last+1,strmap_info%idx_last+lenbuf)

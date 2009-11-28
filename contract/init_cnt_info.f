@@ -66,9 +66,13 @@
      &     cnt_info%map_info_2a(
      &                     max(1,cnt_info%nablk_op2*2*(nj_op2+nj_cnt))),
      &     cnt_info%map_info_12c(
-     &               max(1,cnt_info%ncblk_op1op2tmp*2*(nj_op1+nj_op2))),
+     &               max(1,max(cnt_info%ncblk_op1op2tmp,
+     &                         cnt_info%ncblk_op1op2)
+     &                                             *2*(nj_op1+nj_op2))),
      &     cnt_info%map_info_12a(
-     &               max(1,cnt_info%nablk_op1op2tmp*2*(nj_op1+nj_op2)))
+     &               max(1,max(cnt_info%nablk_op1op2tmp,
+     &                         cnt_info%nablk_op1op2)
+     &                                             *2*(nj_op1+nj_op2)))
      &     )
 
       return

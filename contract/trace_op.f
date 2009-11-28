@@ -690,6 +690,7 @@ c     &                     .false.,me_op,nsym)
      &                   ncblk_cnt,ncblk_trop,ncblk_op,
      &                   cinfo_cntc,cinfo_tropc,lstrcnt,lstrtroptmp,
      &                   cinfo_cntc(1,2),cinfo_tropc(1,2),
+     &                                   cinfo_opc(1,2),
      &                   idxmsc_dis_a,idxmstropdis_c,
      &                   gmc_dis_a,gmtropdis_c,map_info_c,
      &                   strmap_info,nsym,str_info%ngraph)
@@ -703,6 +704,7 @@ c     &                     .false.,me_op,nsym)
      &                     lstrcnt(ncblk_cnt+1),
      &                             lstrtroptmp(ncblk_trop+1),
      &                   cinfo_cnta(1,2),cinfo_tropa(1,2),
+     &                                   cinfo_opa(1,2),
      &                   idxmsc_dis_a,idxmstropdis_a,
      &                   gmc_dis_a,gmtropdis_a,map_info_a,
      &                   strmap_info,nsym,str_info%ngraph)

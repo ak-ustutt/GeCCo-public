@@ -66,6 +66,9 @@ c          print *,'fetching from: ',ioff+1,
 c     &                              ioff+ilen
 c          print *,'fetching map: ',ioffmap+1,ioffmap+ilen
 c dbg
+c dbg
+c          print *,'call to mem_iget in get_flipmap_blk ',ioff,ilen
+c dbg
           call mem_iget(strmap_info%ffstrmap,
      &         strmap(ioffmap+1),ioff+1,ioff+ilen)          
 

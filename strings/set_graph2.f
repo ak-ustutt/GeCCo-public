@@ -20,7 +20,7 @@
       include 'def_strinf.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     ipass, igraph, ngas, ngam,
@@ -47,6 +47,9 @@
         write(luout,*) 'here speaks set_graph'
         write(luout,*) '====================='
         write(luout,*) ' ipass = ',ipass
+        write(luout,*) ' setting: '
+        write(luout,*) '   ihpv =', str_info%ispc_typ(igraph)
+        write(luout,*) '   occ  =', str_info%ispc_occ(igraph)
       end if
 
       iprint = max(ntest,iprlvl)

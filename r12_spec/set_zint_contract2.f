@@ -73,12 +73,7 @@ c      goto 100 ! Exchange parts only
 c dbg
 c dbg
 c      call warn('set_zint_contract2','HEAVY DEBUGGING!')
-c      goto 60
-c dbg
-c 60   call warn('HEAVY','DEBUGGING!')
-c      idx_prj = 2
-c      idx_prj2 = 1
-c dbg
+c      goto 50
 c dbg
 
       ! Add the G^{p'q}_{km}.FF_{p'l}^{ij} terms.
@@ -117,7 +112,6 @@ c dbg
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
       enddo
-
 
       do idx = 1, 2             ! Full
 c      do idx = 1, 1 ! SA
@@ -164,8 +158,8 @@ c      do idx = 1,2 ! SA
         idx_prj2 = 2*idx-min(idx,2)
         call expand_op_product2(form_pnt,idx_shape,
      &      0.5d0,10,3,
-     &      (/idx_shape,idx_opsin(4),idx_shape,idx_shape,idx_opsin(3),
-     &      idx_opsin(4),idx_opsin(3),idx_shape,idx_shape,idx_shape/),
+     &      (/idx_shape,-idx_opsin(4),idx_shape,idx_shape,idx_opsin(3),
+     &      -idx_opsin(4),idx_opsin(3),idx_shape,idx_shape,idx_shape/),
      &      (/        1,            2,        1,        1,           3,
      &                 2,           3,        1,        1,        1/),
      &      -1,-1,
@@ -196,9 +190,13 @@ c      goto 200 ! skip the rest
 c dbg
 
 
+c dbg
+c 50   call warn('HEAVY','DEBUG')
+c dbg
       ! Add the F_{lm}^{pq}.G_{pm}^{nk}.R_{nq}^{ij}.
       idx_prj  = 2
       idx_prj2 = 1
+      ! #1
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -215,6 +213,9 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      idx_prj  = 2
+      idx_prj2 = 1
+      ! #2
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -231,6 +232,9 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #3
+      idx_prj  = 2
+      idx_prj2 = 1
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -247,6 +251,9 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #4
+      idx_prj  = 2
+      idx_prj2 = 1
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -263,6 +270,9 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #5
+      idx_prj  = 2
+      idx_prj2 = 1
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -279,6 +289,9 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #6
+      idx_prj  = 2
+      idx_prj2 = 1
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -295,6 +308,9 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #7
+      idx_prj  = 2
+      idx_prj2 = 1
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -311,6 +327,9 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #8
+      idx_prj  = 2
+      idx_prj2 = 1
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -336,6 +355,7 @@ c dbg
       idx_prj  = 4
       idx_prj2 = 2
       idx_prj3 = 1
+      ! #9
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -353,6 +373,7 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #10
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -370,6 +391,7 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #11
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -387,6 +409,7 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #12
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -408,6 +431,7 @@ c dbg
       idx_prj  = 4
       idx_prj2 = 2
       idx_prj3 = 1
+      ! #13
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -425,6 +449,7 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #14
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -442,6 +467,7 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #15
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -459,6 +485,7 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+      ! #16
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -479,6 +506,7 @@ c dbg
       ! Add the F_{ij}^{p"q"}.G_{p"m}^{np}.R_{nq"}^{ij}.
       idx_prj = 4
       idx_prj2= 1
+      ! #17
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -498,6 +526,7 @@ c dbg
 
       idx_prj = 4
       idx_prj2= 1
+      ! #18
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -519,6 +548,7 @@ c dbg
       ! Add the F_{ij}^{p"o}.G_{p"m}^{r"p}.R_{r"o}^{ij}.
       idx_prj = 4
       idx_prj2= 1
+      ! #19
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -539,6 +569,7 @@ c     &     (/2,6,1,idx_prj,2,9,1,idx_prj,5,9,1,idx_prj2/),3,
       ! Add the F_{lm}^{oq"}.G_{on}^{hk}.F_{hq"}^{ij}.
       idx_prj = 4
       idx_prj2= 1
+      ! #20
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -557,6 +588,7 @@ c     &     (/2,6,1,idx_prj,2,9,1,idx_prj,5,9,1,idx_prj2/),3,
 
       ! Add the F_{lm}^{oq"}.G_{on}^{bk}.F_{bq"}^{ij}.
       idx_prj3 = 2
+      ! #21
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -574,6 +606,7 @@ c     &     (/2,6,1,idx_prj,2,9,1,idx_prj,5,9,1,idx_prj2/),3,
       enddo
 
       ! Add the F_{lm}^{aq"}.G_{an}^{ok}.R_{oq"}^{ij}.
+      ! #22
       call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,10,4,
      &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,idx_opsin(3),
@@ -587,8 +620,13 @@ c     &     (/2,6,1,idx_prj,2,9,1,idx_prj,5,9,1,idx_prj2/),3,
      &     op_info)
 
 c dbg
+c      call warn('HEAVY','DEBUG')
+c      goto 200
+c dbg
+c dbg
 c      goto 200 ! Only Coulomb terms needed.
 c dbg
+
 
       ! EXCHANGE TYPE TERMS
 

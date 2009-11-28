@@ -43,7 +43,7 @@
       include 'multd2h.h'
       
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 100
       logical, parameter ::
      &     formal = .false., exact = .false.
 
@@ -318,13 +318,13 @@
      &         iocc_op1,iocc_ex1,njoined_op(1),
      &            iocc_op2,iocc_ex2,njoined_op(2),
      &         iocc_cnt,njoined_cnt,
-     &         iocc_op1op2,njoined_op1op2,iocc_op1op2,njoined_op1op2)
+     &         iocc_op1op2,njoined_op1op2,iocc_op1op2tmp,njoined_op1op2)
 
           call condense_bc_info(
      &         cnt_info,idxop(2).eq.0,
-     &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2,
+     &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
-     &         irst_op1, irst_op2, irst_op1op2, irst_op1op2,
+     &         irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
      &         merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &         str_info,orb_info)

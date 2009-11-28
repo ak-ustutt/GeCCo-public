@@ -42,7 +42,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       logical, intent(in) ::
      &     update
@@ -1199,6 +1199,7 @@ c                  ifree = mem_alloc_int(map_ex1ex2c,lenmap,'strmap_c')
      &                 ncblk_ex1,ncblk_ex2,ncblk_op1op2tmp,
      &                 cinfo_ex1c,cinfo_ex2c,lstrex1,lstrex2,
      &                 cinfo_ex1c(1,2),cinfo_ex2c(1,2),
+     &                                 cinfo_op1op2tmpc(1,2),
      &                 idxmsex1dis_c,idxmsex2dis_c,
      &                 gmex1dis_c,gmex2dis_c,map_info_12c,
      &                 strmap_info,nsym,str_info%ngraph)
@@ -1216,6 +1217,7 @@ c                  ifree = mem_alloc_int(map_ex1ex2a,lenmap,'strmap_a')
      &                 cinfo_ex2a,cinfo_ex1a,
      &                  lstrex2(ncblk_ex2+1),lstrex1(ncblk_ex1+1),
      &                 cinfo_ex2a(1,2),cinfo_ex1a(1,2),
+     &                                 cinfo_op1op2tmpa(1,2),
      &                 idxmsex2dis_a,idxmsex1dis_a,
      &                 gmex2dis_a,gmex1dis_a,map_info_12a,
      &                 strmap_info,nsym,str_info%ngraph)
@@ -1577,6 +1579,7 @@ c                    ifree = mem_alloc_int(map_ex1cntc,lenmap,'strmap_c')
      &                   ncblk_cnt,ncblk_ex1,ncblk_op1,
      &                   cinfo_cntc,cinfo_ex1c,lstrcnt,lstrex1,
      &                   cinfo_cntc(1,2),cinfo_ex1c(1,2),
+     &                                   cinfo_op1c(1,2),
      &                   idxmsc_dis_c,idxmsex1dis_c,
      &                   gmc_dis_c,gmex1dis_c,map_info_1c,
      &                   strmap_info,nsym,str_info%ngraph)
@@ -1590,6 +1593,7 @@ c                    ifree = mem_alloc_int(map_ex1cntc,lenmap,'strmap_c')
      &                     lstrcnt(ncblk_cnt+1),
      &                             lstrex1(ncblk_ex1+1),
      &                   cinfo_cnta(1,2),cinfo_ex1a(1,2),
+     &                                   cinfo_op1a(1,2),
      &                   idxmsc_dis_a,idxmsex1dis_a,
      &                   gmc_dis_a,gmex1dis_a,map_info_1a,
      &                   strmap_info,nsym,str_info%ngraph)
@@ -1607,6 +1611,7 @@ c dbg
      &                   cinfo_cnta,cinfo_ex2c,
      &                     lstrcnt(ncblk_cnt+1),lstrex2,
      &                   cinfo_cnta(1,2),cinfo_ex2c(1,2),
+     &                                   cinfo_op2c(1,2),
      &                   idxmsc_dis_a,idxmsex2dis_c,
      &                   gmc_dis_a,gmex2dis_c,map_info_2c,
      &                   strmap_info,nsym,str_info%ngraph)
@@ -1619,6 +1624,7 @@ c                    ifree = mem_alloc_int(map_ex2cnta,lenmap,'strmap_a')
      &                   cinfo_cntc,cinfo_ex2a,
      &                       lstrcnt,lstrex2(ncblk_ex2+1),
      &                   cinfo_cntc(1,2),cinfo_ex2a(1,2),
+     &                                   cinfo_op2a(1,2),
      &                   idxmsc_dis_c,idxmsex2dis_a,
      &                   gmc_dis_c,gmex2dis_a,map_info_2a,
      &                   strmap_info,nsym,str_info%ngraph)                    

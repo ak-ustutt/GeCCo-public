@@ -18,16 +18,15 @@
         idx2 = 0
         idx_minf = idx_minf+1
         nsplit = map_info(idx_minf)
-        write(luout,*) 'idx12, nsplit1: ',idx12,nsplit
-        write(luout,*) 'indices: ',
-     &         map_info(idx_minf+1:idx_minf+nsplit)
+        write(luout,'("vtx",i4,": vtxs from op1: ",10i4)')
+     &       idx12,map_info(idx_minf+1:idx_minf+nsplit)
+     &         
         idx_minf = idx_minf+nsplit
 
         idx_minf = idx_minf+1
         nsplit = map_info(idx_minf)
-        write(luout,*) 'idx12, nsplit2: ',idx12,nsplit
-        write(luout,*) 'indices: ',
-     &         map_info(idx_minf+1:idx_minf+nsplit)
+        write(luout,'(3x,4x,2x,"vtxs from op2: ",10i4)')
+     &       idx12,map_info(idx_minf+1:idx_minf+nsplit)
         idx_minf = idx_minf+nsplit
       end do
 

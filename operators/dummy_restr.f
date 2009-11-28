@@ -28,6 +28,8 @@
      &     iocc_sum(ngastp)
       integer, pointer ::
      &     ihpvgas(:,:), iad_gas(:)
+
+c      call warn('dummy_restr','I should be obsolete soon ...!')
       
       ngas = orb_info%ngas
       ihpvgas => orb_info%ihpvgas

@@ -114,11 +114,6 @@ c dbg
               print *,'idx_form_op,idxin: ',idx_form_op,idxin
               print *,'dag_form_op,dagin: ',dag_form_op,dagin
 c dbg
-              if (njoined.gt.1.and.(dagin.or.dagout)) then
-                write(luout,*) 'njoined.gt.1.and.(dagin.or.dagout)'
-                call quit(1,'op_replace','not yet tested for this')
-              end if
-
               if (idx_form_op.eq.idxin.and.dag_form_op.eq.dagin) then
                 idx_form_blk = form_pnt%contr%vertex(idx)%iblk_op
 
@@ -142,10 +137,10 @@ c dbg
                     end do
                     idx_form_blk = (idx_form_blk-1)/njoined + 1
                   else
-                    do ij = 2, njoined
+                    do ij = 1, njoined
                       occ_temp(1:ngastp,1:2,ij) =
      &                     opin_pnt%ihpvca_occ(1:ngastp,1:2,
-     &                                              idx_form_blk+1-ij)
+     &                                        idx_form_blk-njoined+ij)
                     end do
                     idx_form_blk = (idx_form_blk-njoined)/njoined + 1
                   end if
@@ -163,6 +158,10 @@ c dbg
                 idx_blk_out =
      &               iblk_occ(occ_temp,dagin.xor.dagout,opout_pnt,
      &                        opin_pnt%blk_version(idx_form_blk))
+c dbg
+                if (njoined.gt.1)
+     &               write(luout,*) 'idx_blk_out = ',idx_blk_out
+c dbg
 
                 ! new: also check the restrictions
                 if (idx_blk_out.gt.0) then
@@ -216,6 +215,7 @@ c dbg
                     print *,'alles neu!'
                     call prt_contr2(luout,form_pnt%contr,op_info)
                   end if
+
 c dbg
 
                 end if

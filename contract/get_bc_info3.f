@@ -286,17 +286,28 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &       = op_info%op_arr(idx)%op%igasca_restr(:,:,:,:,1,
      &          (iblk-1)*njoined_op1op2+1:
      &          (iblk-1)*njoined_op1op2+njoined_op1op2)
+c dbg
+c        print *,'fetching restr op1op2 from op_info!'
+c        do idx = 1, njoined_op1op2
+c          call wrt_occ_rstr(luout,idx,iocc_op1op2(1,1,idx),
+c     &                                irestr_op1op2(1,1,1,1,idx),
+c     &          orb_info%ngas,orb_info%nspin)
+c        end do
+c dbg
       else
-        call dummy_restr(irestr_op1op2,
-     &       iocc_op1op2,njoined_op1op2,orb_info)
-      end if
+
+c        call dummy_restr(irestr_op1op2,
+c     &       iocc_op1op2,njoined_op1op2,orb_info)
+c moved      end if
 
       if (.not.self) call special_restr(irestr_op1op2,
      &     iocc_op1op2,njoined_op1op2,
      &     merge_op1op2,
      &     iocc_op1,iocc_ex1,irestr_op1,njoined_op(1),
      &     iocc_op2,iocc_ex2,irestr_op2,njoined_op(2),
-     &     orb_info%nspin,orb_info%ngas)
+     &     orb_info%ihpvgas,orb_info%nspin,orb_info%ngas)
+c moved here
+      end if
 
       mst_op1op2 = mst_op(1) + mst_op(2)
       gamt_op1op2 = multd2h(gamt_op(1),gamt_op(2))
@@ -463,6 +474,12 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
         do idx = 1, njoined_op(1)
           call wrt_occ_rstr(luout,idx,iocc_op1(1,1,idx),
      &                                irestr_op1(1,1,1,1,idx),
+     &          orb_info%ngas,orb_info%nspin)
+        end do
+        write(luout,*) 'op2 incl. restrictions:'
+        do idx = 1, njoined_op(2)
+          call wrt_occ_rstr(luout,idx,iocc_op2(1,1,idx),
+     &                                irestr_op2(1,1,1,1,idx),
      &          orb_info%ngas,orb_info%nspin)
         end do
         write(luout,*) 'op1op2 incl. restrictions:'

@@ -760,7 +760,7 @@ c      occ_def(IPART,2,16) = 2
       end if      
       call add_target('G.R-Ccore',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.false.,.true./),3*(n_pp+1))
+     &     occ_def,ndef,2,(/.false.,.true./),2*ndef)
       call set_rule('G.R-Ccore',ttype_op,DEF_OP_FROM_OCC,
      &              'G.R-Ccore',1,1,
      &              parameters,2,tgt_info)
@@ -819,11 +819,11 @@ c dbg
           occ_def(IPART,2,20)  = 1
           occ_def(IEXTR,2,20)  = 1
         end if
-        call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,ndef,2,(/.true.,.true./),10)
-c check for conflicts!!!
 c        call op_from_occ_parameters(-1,parameters,2,
-c     &       occ_def,ndef,2,(/.true.,.false./),10)
+c     &       occ_def,ndef,2,(/.true.,.true./),10)
+c check for conflicts!!!
+        call op_from_occ_parameters(-1,parameters,2,
+     &       occ_def,ndef,2,(/.true.,.false./),10)
         call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
      &                op_ff,1,1,
      &                parameters,2,tgt_info)
@@ -3077,7 +3077,7 @@ c     &     parameters,0,tgt_info)
       call set_dependency('EVAL_PZ',mel_p_def,tgt_info)
       call set_dependency('EVAL_PZ',mel_z_def,tgt_info)
 c dbg
-      if (.true.) then
+      if (.false.) then
 c dbg
       if (pz_eval) then
         call set_dependency('EVAL_PZ',mel_rint,tgt_info)

@@ -24,11 +24,13 @@
 
       integer, pointer ::
      &     new_idx_strmap(:), new_maxlen_blk(:),
-     &     new_idx_flipmap(:), new_maxlen_blk_flip(:)
+     &     new_idx_flipmap(:), new_maxlen_blk_flip(:),
+     &     new_idx_fcmap(:), new_maxlen_blk_fc(:)
       type(strmap_offsets), pointer ::
      &     new_offsets(:)
       type(flpmap_offsets), pointer ::
-     &     new_offsets_flip(:)
+     &     new_offsets_flip(:),
+     &     new_offsets_fc(:)
 
       ! everything OK?
       if (str_info%ngraph.le.strmap_info%mxgraph) return
@@ -41,9 +43,11 @@ c dbg
       ngraph_old = strmap_info%mxgraph
       strmap_info%mxgraph = ngraph
       allocate(new_idx_strmap(ngraph*ngraph))
+      allocate(new_idx_fcmap(ngraph*ngraph))
       allocate(new_idx_flipmap(ngraph))
 
       new_idx_strmap(1:ngraph*ngraph) = -1
+      new_idx_fcmap (1:ngraph*ngraph) = -1
       new_idx_flipmap(1:ngraph) = -1
 
       allocate(new_offsets(ngraph*ngraph))
@@ -51,6 +55,13 @@ c dbg
       do idx = 1, ngraph*ngraph
         nullify(new_offsets(idx)%msms)
         nullify(new_offsets(idx)%msmsgmgm)
+      end do
+
+      allocate(new_offsets_fc(ngraph*ngraph))
+      allocate(new_maxlen_blk_fc(ngraph*ngraph))
+      do idx = 1, ngraph*ngraph
+        nullify(new_offsets_fc(idx)%ms)
+        nullify(new_offsets_fc(idx)%msgm)
       end do
 
       allocate(new_offsets_flip(ngraph))
@@ -76,6 +87,22 @@ c dbg
       end do
 
       do igraph = 1, ngraph_old
+        idx_old = (igraph-1)*ngraph_old
+        idx_new = (igraph-1)*ngraph
+        do jgraph = 1, ngraph_old
+          idx_new = idx_new+1
+          idx_old = idx_old+1
+          new_idx_fcmap(idx_new) = strmap_info%idx_fcmap(idx_old)
+          new_maxlen_blk_fc(idx_new) =
+     &                            strmap_info%maxlen_blk_fc(idx_old)
+          new_offsets_fc(idx_new)%ms =>
+     &         strmap_info%offsets_fc(idx_old)%ms
+          new_offsets_fc(idx_new)%msgm =>
+     &         strmap_info%offsets_fc(idx_old)%msgm
+        end do
+      end do
+
+      do igraph = 1, ngraph_old
         new_idx_flipmap(igraph) = strmap_info%idx_flipmap(igraph)
         new_maxlen_blk_flip(igraph) =
      &                            strmap_info%maxlen_blk_flip(igraph)
@@ -89,6 +116,11 @@ c dbg
 
       strmap_info%idx_strmap => new_idx_strmap
       strmap_info%offsets    => new_offsets
+
+      deallocate(strmap_info%idx_fcmap,strmap_info%offsets_fc)
+
+      strmap_info%idx_fcmap  => new_idx_fcmap
+      strmap_info%offsets_fc => new_offsets_fc
 
       deallocate(strmap_info%idx_flipmap,strmap_info%offsets_flip)
 

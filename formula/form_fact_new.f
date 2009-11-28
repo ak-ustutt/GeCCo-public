@@ -165,7 +165,7 @@ c dbg
       idx_intm = 0
 
 c dbg
-      print *,'now SETting'
+c      print *,'now SETting'
 c        call prt_contr2(luout,contr,op_info)
 c        call wrt_occ_n(luout,occ_vtx,nvtx_full+njoined)
 c dbg

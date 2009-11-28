@@ -454,6 +454,7 @@ c dbg
      &                 ncblk_i0,ncblk_k,ncblk_opori,
      &                 cinfo_i0_c,cinfo_k_c,lstr_i0,lstr_k,
      &                 cinfo_i0_c(1,2),cinfo_k_c(1,2),
+     &                                 cinfo_opori_c(1,2),
      &                 idxms_i0_dis_c,idxms_k_dis_c,
      &                 gm_i0_dis_c,gm_k_dis_c,map_info_to_ori_c,
      &                 strmap_info,nsym,ngraph)
@@ -462,6 +463,7 @@ c dbg
      &                 cinfo_k_a,cinfo_i0_a,
      &                    lstr_k(ncblk_k+1),lstr_i0(ncblk_i0+1),
      &                 cinfo_k_a(1,2),cinfo_i0_a(1,2),
+     &                                cinfo_opori_a(1,2),
      &                 idxms_k_dis_a,idxms_i0_dis_a,
      &                 gm_k_dis_a,gm_i0_dis_a,map_info_to_ori_a,
      &                 strmap_info,nsym,ngraph)
@@ -470,6 +472,7 @@ c dbg
      &                 ncblk_i0,ncblk_k,ncblk_opreo,
      &                 cinfo_i0_c,cinfo_k_c,lstr_i0,lstr_k,
      &                 cinfo_i0_c(1,2),cinfo_k_c(1,2),
+     &                                 cinfo_opreo_c(1,2),
      &                 idxms_i0_dis_c,idxms_k_dis_c,
      &                 gm_i0_dis_c,gm_k_dis_c,map_info_to_reo_c,
      &                 strmap_info,nsym,ngraph)
@@ -478,6 +481,7 @@ c dbg
      &                 cinfo_k_a,cinfo_i0_a,
      &                   lstr_k(ncblk_k+1),lstr_i0(ncblk_i0+1),
      &                 cinfo_k_a(1,2),cinfo_i0_a(1,2),
+     &                                cinfo_opreo_a(1,2),
      &                 idxms_k_dis_a,idxms_i0_dis_a,
      &                 gm_k_dis_a,gm_i0_dis_a,map_info_to_reo_a,
      &                 strmap_info,nsym,ngraph)
