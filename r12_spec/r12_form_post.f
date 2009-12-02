@@ -93,7 +93,7 @@ c          write(luout,'("??",x,"L",i2,3x,i6,x,15(i4))')
           write(luout,'(3x,"L",i1,x,i6,x,10(i4),5(i5))')
      &       iblk,sum(n_commu(1:15)),n_commu(1:15)
         end if
-        nterms = nterms + sum(n_commu(0:4))
+        nterms = nterms + sum(n_commu(1:15))
 
       end do
       ! loop over Cbar blocks
