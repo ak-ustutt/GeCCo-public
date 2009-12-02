@@ -199,27 +199,26 @@
 
             ! get ms, graph, hpvx strings of input operator,
             ! assuming that output operator represents the diagonal elements
-            call quit(1,'diag','I had to comment out some lines')
-c            call diag_condensed_occ(occ_csub2,occ_asub2,
-c     &                              occ_csub,occ_asub,
-c     &                              hpvx_occ(1,1,iblkoff+1),
-c     &                              njout,hpvxseq)
-c            call diag_condensed_occ(hpvx_csub2,hpvx_asub2,
-c     &                              hpvx_csub,hpvx_asub,
-c     &                              hpvx_occ(1,1,iblkoff+1),
-c     &                              njout,hpvxseq)
-c            call diag_condensed_occ(graph_csub2,graph_asub2,
-c     &                              graph_csub,graph_asub,
-c     &                              hpvx_occ(1,1,iblkoff+1),
-c     &                              njout,hpvxseq)
-c            call diag_condensed_occ(msdis_c2,msdis_a2,
-c     &                              msdis_c,msdis_a,
-c     &                              hpvx_occ(1,1,iblkoff+1),
-c     &                              njout,hpvxseq)
-c            call diag_condensed_occ(gamdis_c2,gamdis_a2,
-c     &                              gamdis_c,gamdis_a,
-c     &                              hpvx_occ(1,1,iblkoff+1),
-c     &                              njout,hpvxseq)
+            call diag_condensed_occ(occ_csub2,occ_asub2,
+     &                              occ_csub,occ_asub,
+     &                              hpvx_occ(1,1,iblkoff+1),
+     &                              njout,hpvxseq)
+            call diag_condensed_occ(hpvx_csub2,hpvx_asub2,
+     &                              hpvx_csub,hpvx_asub,
+     &                              hpvx_occ(1,1,iblkoff+1),
+     &                              njout,hpvxseq)
+            call diag_condensed_occ(graph_csub2,graph_asub2,
+     &                              graph_csub,graph_asub,
+     &                              hpvx_occ(1,1,iblkoff+1),
+     &                              njout,hpvxseq)
+            call diag_condensed_occ(msdis_c2,msdis_a2,
+     &                              msdis_c,msdis_a,
+     &                              hpvx_occ(1,1,iblkoff+1),
+     &                              njout,hpvxseq)
+            call diag_condensed_occ(gamdis_c2,gamdis_a2,
+     &                              gamdis_c,gamdis_a,
+     &                              hpvx_occ(1,1,iblkoff+1),
+     &                              njout,hpvxseq)
 
             call ms2idxms(idxmsdis_c2,msdis_c2,occ_csub2,ncablk2)
             call ms2idxms(idxmsdis_a2,msdis_a2,occ_asub2,ncablk2)
@@ -303,11 +302,10 @@ c     &                              njout,hpvxseq)
                 end do
 
                 ! find indices for corresponding diagonal element of input mel
-                call quit(1,'diag','more commenting out')
-c                call diag_condensed_occ(istr_csub2,istr_asub2,
-c     &                                  istr_csub,istr_asub,
-c     &                                  hpvx_occ(1,1,iblkoff+1),
-c     &                                  njout,hpvxseq)
+                call diag_condensed_occ(istr_csub2,istr_asub3,
+     &                                  istr_csub,istr_asub,
+     &                                  hpvx_occ(1,1,iblkoff+1),
+     &                                  njout,hpvxseq)
 
 
                 idx1 = ioff_1 + idx_str_blk3(istr_csub,istr_asub,
