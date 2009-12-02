@@ -181,7 +181,7 @@
    C2     95    2   7  18   6  32  21   1   8   0   0    0    0    0    0    0
  ------------------------------------------------------------------------------
  wrote          178  entries
- Number of generated terms:          145
+ Number of generated terms:          177
  @ CC-R12 Lagrangian                   cpu/sys/wall:      0.21 /     0.00 /     0.21 s
  Rule: FACTOR_OUT
  read          178  entries
