@@ -47,7 +47,8 @@
      &     MODIFY_FACTORIZATION*20  = 'MODIFY_FACTORIZATION',
      &     EXTRACT_ORDER*13         = 'EXTRACT_ORDER',
      &     EXTRACT_FREQ*12          = 'EXTRACT_FREQ',
-     &     CLASS_FORMULA*13         = 'CLASS_FORMULA'
+     &     CLASS_FORMULA*13         = 'CLASS_FORMULA',
+     &     SELECT_HERMIT*16         = 'SELECT_HERMITIAN'
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',
@@ -67,4 +68,6 @@
      &     UNITY*9            = 'ADD_UNITY',
      &     SET_FREQ*8         = 'SET_FREQ',
      &     PRINT_RES*9        = 'PRINT_RES',
-     &     PRINT_MEL*9        = 'PRINT_MEL'
+     &     PRINT_MEL*9        = 'PRINT_MEL',
+     &     SET_MEL*7          = 'SET_MEL',
+     &     EXTRACT_DIAG*12    = 'EXTRACT_DIAG'

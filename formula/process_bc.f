@@ -256,17 +256,18 @@
         call wrt_occ_n(luout,iocc_op1op2,njoined_op1op2)
       end if
 
-      ! check whether intermediate can be addressed by
-      ! the available graphs (preliminary fix)
-      possible = possible.and.
-     &     check_grph4occ(iocc_op1op2,irst_op1op2,njoined_op1op2,
-     &     str_info,orb_info)
-      possible = possible.and.
-     &     check_grph4occ(iocc_op1,irst_op1,njoined_op(1),
-     &     str_info,orb_info)
-      if (njoined_op(2).gt.0) possible = possible.and.
-     &     check_grph4occ(iocc_op2,irst_op2,njoined_op(2),
-     &     str_info,orb_info)
+cmh: allow even if no graph exists --> will be created later (get_reo_info)
+c      ! check whether intermediate can be addressed by
+c      ! the available graphs (preliminary fix)
+c      possible = possible.and.
+c     &     check_grph4occ(iocc_op1op2,irst_op1op2,njoined_op1op2,
+c     &     str_info,orb_info)
+c      possible = possible.and.
+c     &     check_grph4occ(iocc_op1,irst_op1,njoined_op(1),
+c     &     str_info,orb_info)
+c      if (njoined_op(2).gt.0) possible = possible.and.
+c     &     check_grph4occ(iocc_op2,irst_op2,njoined_op(2),
+c     &     str_info,orb_info)
 
       if (mode.eq.'FIND') then
         ! count particle, hole, (active) spaces involved:

@@ -23,7 +23,8 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 00,
+     &     nlistmax = 120
 
       real(8), intent(in) ::
      &     ecore, xdia1(*), xdia2(*)
@@ -45,13 +46,17 @@
      &     maxstrbuf, nstrbuf, nloop,
      &     istr, nouter, n_inner1, n_inner2, lenblk,
      &     iouter, ioffbuf, ioffbuf0, ioff_inner1, ioff_inner2,
-     &     idxbuf, idx_inner1, x2_off, idxms2, ms2
+     &     idxbuf, idx_inner1, x2_off, idxms2, ms2,
+     &     ijoff, iincr, jincr, ni, nj, ilen, jlen, jhpv, iloop,
+     %     jloop, jca, iorb, jorb, jdxms2, ims, jms, ioff, joff,
+     &     kloop, jhpvdx, maxca, ii, jj, iofft
 
       integer ::
      &     msdst(ngastp,2), igamdst(ngastp,2),
-     &     ioff_xsum(2*ngastp), nstr(2*ngastp), nincr(2*ngastp)
+     &     ioff_xsum(2*ngastp), nstr(2*ngastp), nincr(2*ngastp),
+     &     iocc2(ngastp,2)
       real(8) ::
-     &     xsum_outer, xsum_i1, fac,
+     &     xsum_outer, xsum_i1, fac, val,
      &     cpu, sys, wall, cpu0, sys0, wall0
 
       ! some pointers for easy typing and efficency
@@ -65,6 +70,8 @@
      &     idxorb(:),idxspn(:),idxdss(:),idxspn2(:)
       real(8), pointer ::
      &     buffer(:), xsum(:)
+      integer, allocatable ::
+     &     list(:,:,:,:)
 
       type(filinf), pointer ::
      &     ffdia
@@ -130,6 +137,7 @@ c        end if
      &     write(luout,*)'allocating result buffer of size: ',maxbuff
         
       ifree = mem_alloc_real(buffer,maxbuff,'buffer')
+      allocate(list(orb_info%ntoob,2,0:nlistmax,2*ngastp))
       ! loop over operator elements
       occ_cls: do iblk = 1, op%n_occ_cls
 
@@ -137,8 +145,10 @@ c        end if
 
         ! buffer: start from new
         idxbuf = 0
+        buffer(1:maxbuff) = 0d0
 
         iocc => op%ihpvca_occ(1:ngastp,1:2,iblk)
+        iocc2 = iocc
         idx_graph => me_dia%idx_graph(1:ngastp,1:2,iblk)
 
         if (ntest.ge.100) then
@@ -243,10 +253,11 @@ c     &             cycle distr_loop
               ! strings for HPV/CA
               nloop = 0
               istr = 0
+              list(1:orb_info%ntoob,1:2,0:nlistmax,1:2*ngastp) = 0
               ! sequence: from outer to inner loop
               do ihpvdx = ngastp, 1, -1
                 ihpv = hpvxseq(ihpvdx)
-                do ica = 1, 2                  
+                do ica = 2, 1, -1 
                   if (iocc(ihpv,ica).eq.0) cycle
                   fac = 1d0
                   if (ica.eq.2) fac = -1d0
@@ -273,10 +284,11 @@ c dbg
                                 
                     istr = istr+1
 c dbg
-c          write(luout,'(x,a,4i2,x,4i2)') 'idxorb / idxspn: ',
-c     &       idxorb(1:4), idxspn(1:4)
+c          print *,'istr: ',istr
+c          write(luout,'(x,a,8i3)') 'idxorb / idxspn: ',
+c     &       idxorb(1:nidx), idxspn(1:nidx)
 c dbgend
-                    xsum(istr) = ecore
+                    xsum(istr) = 0d0
                     idxspn2 = idxspn
                     pair = .false.
                     do idx = 1, nidx
@@ -288,11 +300,23 @@ c dbgend
                         idxspn2(idx) = 1
                         pair = .true.
                       end if
+
+                      ! update list orbital --> string indices
+                      list(idxorb(idx),(idxspn2(idx)+3)/2,0,nloop)
+     &                  = list(idxorb(idx),(idxspn2(idx)+3)/2,0,nloop)+1
+                      if (list(idxorb(idx),(idxspn2(idx)+3)/2,0,nloop)
+     &                    .gt.nlistmax) call quit(1,'dia4op_ev',
+     &                    'Increase parameter nlistmax')
+                      list(idxorb(idx),(idxspn2(idx)+3)/2,
+     &                     list(idxorb(idx),(idxspn2(idx)+3)/2,0,nloop),
+     &                     nloop) = istr - ioff_xsum(nloop)
+
                       ! need to patch for UHF:
                       xsum(istr) = xsum(istr) + fac*xdia1(idxorb(idx))
+c dbg
+c          print *,'added ',fac*xdia1(idxorb(idx))
+c dbgend
 
-                      ! CAUTION: no two-electron integrals between
-                      ! creation and annihilation strings are included!
                       do jdx = 1, idx-1
                         ms2 = idxspn2(idx) + idxspn2(jdx)
                         idxms2 = (2 - ms2)/2 + 1
@@ -303,14 +327,20 @@ c dbg
 c                 write(luout,'(x,a,2i4,x,i4)') 'orb/idxms: ',
 c     &               idxorb(jdx),idxorb(idx),idxms2
 c                 print *,'added element ',x2_off
-c     &                     + (idxorb(jdx)-1)*orb_info%ntoob+idxorb(idx)
+c     &                     + (idxorb(jdx)-1)*orb_info%ntoob+idxorb(idx),
+c     &                   xdia2(x2_off
+c     &                     + (idxorb(jdx)-1)*orb_info%ntoob+idxorb(idx))
 c dbgend
                       end do
                     end do
                   end do str_loop
                   nstr(nloop) = istr-ioff_xsum(nloop)
                   ! do not consider empty strings
-                  if (nstr(nloop).eq.0) nloop = nloop-1
+                  if (nstr(nloop).eq.0) then
+                    nloop = nloop-1
+                    iocc2(ihpv,ica) = 0
+                  end if
+     
                 end do
               end do
 c dbg
@@ -332,6 +362,7 @@ c dbg
               end if
 
               ! more than one loop:
+
               ! setup block-length information
               nouter = nloop-2
               n_inner2 = nstr(nloop)
@@ -382,6 +413,111 @@ c dbg
                   ioffbuf = ioffbuf+n_inner2
                 end do
               end do
+
+              ! add two-electron integrals between separate strings:
+
+              ! sequence: from inner to outer loop
+              jloop = 0
+              do jhpvdx = 1, ngastp
+               jhpv = hpvxseq(jhpvdx)
+               do jca = 1, 2
+                if (iocc2(jhpv,jca).eq.0) cycle
+                jloop = jloop + 1
+                iloop = 0
+                do ihpvdx = 1, jhpvdx
+                 ihpv = hpvxseq(ihpvdx)
+                 maxca = 2
+                 if (ihpvdx.eq.jhpvdx) maxca = jca - 1
+                 do ica = 1, maxca
+                  fac = 1d0 - 2d0*abs(jca-ica)
+                  if (iocc2(ihpv,ica).eq.0) cycle
+                  iloop = iloop + 1
+c dbg
+c                  write(luout,'(a,6i4)') 'in loop:',
+c     &                   iloop,jloop,ica,ihpv,jca,jhpv
+c                  write(luout,'(a,2i4)') 'len:',
+c     &                   nstr(nloop+1-iloop),nstr(nloop+1-jloop)
+c dbgend
+                  ! loop over all possible spin combinations ++/+-/-+/--
+                  do jms = -1, 1, 2
+                   if (abs(msdst(jhpv,jca)-jms).gt.iocc2(jhpv,jca))
+     &                  cycle
+                   do ims = -1, 1, 2
+                    if (abs(msdst(ihpv,ica)-ims).gt.iocc2(ihpv,ica))
+     &                   cycle
+c dbg
+c                    write(luout,'(a,2i4)') 'ims, jms: ',ims,jms
+c dbgend
+                    idxms2 = (2 - ims - jms)/2 + 1
+                    x2_off = (idxms2 - 1) * orb_info%ntoob**2
+                    ioff = sum(orb_info%igassh(1:nsym,
+     &                          1:orb_info%ioff_gas(ihpv)))
+                    joff = sum(orb_info%igassh(1:nsym,
+     &                          1:orb_info%ioff_gas(jhpv)))
+                    ilen = 1
+                    nj = 1
+                    ni = 1
+                    do kloop = 1, iloop-1
+                      ilen = ilen*nstr(nloop+1-kloop) !reverse loop order
+                    end do
+                    jlen = ilen
+                    do kloop = iloop, jloop-1
+                      jlen = jlen*nstr(nloop+1-kloop)
+                    end do
+                    do kloop = jloop+1, nloop
+                      nj = nj*nstr(nloop+1-kloop)
+                    end do
+                    do kloop = iloop+1, jloop-1
+                      ni = ni*nstr(nloop+1-kloop)
+                    end do
+                    iincr = nstr(nloop+1-iloop)*ilen
+                    jincr = nstr(nloop+1-jloop)*jlen
+                    !loop over diagonal elements of hamiltonian
+                    do jorb = 1, orb_info%norb_hpv(jhpv,1)
+                     do iorb = 1, orb_info%norb_hpv(ihpv,1)
+                      val = fac*xdia2(x2_off
+     &                     + (min(ioff+iorb,joff+jorb)-1)*orb_info%ntoob
+     &                     + max(ioff+iorb,joff+jorb))
+c dbg
+c                      write(luout,'(2i4,E19.10)')
+c     &                  ioff+iorb,joff+jorb,val
+c                      write(luout,'(a,20i4)') 'list i: ',
+c     &                  list(ioff+iorb,(ims+3)/2,
+c     &                  1:list(ioff+iorb,(ims+3)/2,0,
+c     &                  nloop+1-iloop),nloop+1-iloop)
+c                      write(luout,'(a,20i4)') 'list j: ',
+c     &                  list(joff+jorb,(jms+3)/2,
+c     &                  1:list(joff+jorb,(jms+3)/2,0,
+c     &                  nloop+1-jloop),nloop+1-jloop)
+c dbgend
+                      !loop over matching string indices
+                      do idx = 1, list(ioff+iorb,(ims+3)/2,0,
+     &                    nloop+1-iloop)
+                       do jdx = 1, list(joff+jorb,(jms+3)/2,0,
+     &                     nloop+1-jloop)
+                        ijoff = (list(ioff+iorb,(ims+3)/2,idx,
+     &                      nloop+1-iloop)-1)*ilen +
+     &                      (list(joff+jorb,(jms+3)/2,jdx,
+     &                      nloop+1-jloop)-1)*jlen
+                        !loop over corresponding buffer elements
+                        do ii = 0, ni-1
+                         do jj = 0, nj-1
+                          iofft = ioffbuf0 + ijoff + ii*iincr + jj*jincr
+                          buffer(iofft+1:iofft+ilen) =
+     &                        buffer(iofft+1:iofft+ilen) + val
+                         end do
+                        end do
+                       end do
+                      end do
+                     end do
+                    end do
+                   end do
+                  end do
+                 end do
+                end do
+               end do
+              end do
+
               ioffbuf0 = ioffbuf
 
             end do distr_loop
@@ -389,6 +525,9 @@ c dbg
           end do igama_loop
         end do msa_loop
 
+        ! add core energy
+        buffer(1:me_dia%len_op_occ(iblk))
+     &     = buffer(1:me_dia%len_op_occ(iblk)) + ecore
 c dbg
 c        if (ntest.ge.100)
 c     &       print *,'final buffer: ',
@@ -406,6 +545,7 @@ c dbg
       if (open_close_ffdia) call file_close_keep(ffdia)
 
       ifree = mem_flushmark()
+      deallocate(list)
 
       call atim_csw(cpu,sys,wall)
 

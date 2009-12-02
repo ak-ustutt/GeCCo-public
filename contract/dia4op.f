@@ -1,7 +1,8 @@
 *------------------------------------------------------------------------*
-      subroutine dia4op(me_dia,xdia,str_info,orb_info)
+      subroutine dia4op(me_dia,ecore,xdia,str_info,orb_info)
 *------------------------------------------------------------------------*
 *     set up diagonal hamiltonian
+*     ecore contains the core energy
 *     xdia contains the diagonal one-electron Hamiltonian (Fock matrix)
 *     andreas, spring 2007
 *------------------------------------------------------------------------*
@@ -24,7 +25,7 @@
      &     ntest = 00
 
       real(8), intent(in) ::
-     &     xdia(*)
+     &     ecore, xdia(*)
       type(me_list), intent(in) ::
      &     me_dia
       type(strinf), intent(in), target ::
@@ -135,6 +136,7 @@ c        end if
 
         ! buffer: start from new
         idxbuf = 0
+        buffer(1:maxbuff) = 0d0
 
         iocc => op%ihpvca_occ(1:ngastp,1:2,iblk)
         idx_graph => me_dia%idx_graph(1:ngastp,1:2,iblk)
@@ -356,6 +358,9 @@ c dbg
           end do igama_loop
         end do msa_loop
 
+        ! add core energy
+        buffer(1:me_dia%len_op_occ(iblk))
+     &     = buffer(1:me_dia%len_op_occ(iblk)) + ecore
 c dbg
 c        if (ntest.ge.100)
 c     &       print *,'final buffer: ',

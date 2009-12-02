@@ -305,7 +305,7 @@ c??          iblkres = (cur_contr%iblk_res-1)/njoined_res + 1
 
           ! special: unit operator
           if (ops(idxop(1))%op%name.eq.op_unity) then
-            call add_unity(fac,me_res,iblkres,orb_info)
+            call add_unity(fac,me_res,iblkres,orb_info,str_info)
           else
             idxmel = op2list(idxop(1))
             if (mel_arr(idxmel)%mel%fhand%unit.le.0)

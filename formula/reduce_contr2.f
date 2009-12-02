@@ -5,7 +5,8 @@
      &     ivtx_op1op2,nvtx_red,
      &     mergemap,ld_mmap, 
      &     make_contr_red,contr_red,idxnew_op1op2,
-     &     contr,isvtx1,isvtx2,arc_list,nlist,njoined_res)
+     &     contr,isvtx1,isvtx2,arc_list,nlist,njoined_res,
+     &     reo_info)
 *----------------------------------------------------------------------*
 *     new version of reduce_contr using the topo-representation of
 *     contractions for much more straight-forward processing
@@ -36,6 +37,8 @@
      &     contr
       type(contraction), intent(out) ::
      &     contr_red
+      type(reorder_info), intent(inout) ::
+     &     reo_info
       logical, intent(in) ::
      &     make_contr_red
       integer, intent(in) ::
@@ -51,7 +54,8 @@
 
       integer(8), pointer ::
      &     vtx(:), topo(:,:), xlines(:,:), scr(:),
-     &     vtx_new(:), topo_new(:,:), xlines_new(:,:), op1op2(:)
+     &     vtx_new(:), topo_new(:,:), xlines_new(:,:), op1op2(:),
+     &     xlines_tmp(:,:)
       integer, pointer ::
      &     svertex(:), vtx_list(:),vtx_list_reo(:),vtx_list_new(:),
      &     ireo2(:),
@@ -174,6 +178,7 @@ c dbg
       ! store in new topo array
       allocate(topo_new(nvtx_new,nvtx_new),
      &         xlines_new(nvtx_new,njoined_res),
+     &         xlines_tmp(nvtx_new,njoined_res),
      &         vtx_new(nvtx_new),svertex_new(nvtx_new))
 
       call topo_reo(svertex_new,vtx_new,topo_new,xlines_new,nvtx_new,
@@ -196,10 +201,17 @@ c dbg
      &     svertex_new,topo_new,xlines_new,vtx_list_new,
      &     njoined_res,nvtx_new,nvtx_op1op2)
 
+
+      ! if final contraction, resort if xlines is not diagonal
+      xlines_tmp = xlines_new
+      if (contr%narc.eq.nlist.and.njoined_res.gt.1)
+     &     call set_final_reo(reo_info,xlines_new,xlines_tmp,op1op2,
+     &                     idxnew_op1op2,njoined_res)
+
       ! extract merge-map for binary contraction result
       call mergemap_bcres(mergemap,
      &     ld_mmap,
-     &     svertex_reo,isvtx1,isvtx2,xlines_new,
+     &     svertex_reo,isvtx1,isvtx2,xlines_tmp,
      &     ireo2,vtx_list_new,njoined_res,nvtx_new,nvtx,nvtx_op1op2)
 
 c dbg
@@ -261,7 +273,7 @@ c dbg
       deallocate(vtx, topo, xlines, scr, ireo2,
      &     vtx_list,vtx_list_reo,vtx_list_new, svertex,
      &     topo_new,xlines_new,vtx_new,svertex_new,svertex_reo,
-     &     op1op2)
+     &     op1op2,xlines_tmp)
 
       return
       end

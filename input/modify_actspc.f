@@ -32,7 +32,7 @@
         if (mode.eq.1) then
           write(luout,*) ' modify_actspc: change inactive orbitals'
         else
-          write(luout,*) ' modify_actspc: change cas orbitals'
+          write(luout,*) ' modify_actspc: change active orbitals'
         end if
         write(luout,*) '------------------'
       end if
@@ -47,7 +47,7 @@
 
       if (mode.ne.1.and.mode.ne.2)
      &     call quit(0,'modify_actspc',
-     &     'mode must be 1 (inact) or 2 (cas)')
+     &     'mode must be 1 (inact) or 2 (act)')
 
       if (nactel.ge.0.and.nactel.ne.orb_info%nactel) then
         orb_info%nactel = nactel

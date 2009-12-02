@@ -51,7 +51,7 @@
 
       case('LIST')
 
-        write(luout,'(x,a)') message
+        write(luout,'(x,a)') trim(message)
 
         call wrt_mel_file(luout,5,
      &       mel,

@@ -154,7 +154,8 @@ c dbg
       logical, external ::
      &     next_msgamdist2, check_ms, check_gm
       integer, external ::
-     &     get_lenmap, ielprd, idx_msgmdst2, idxlist
+     &     get_lenmap, ielprd, idx_msgmdst2, idxlist,
+     &     msa2idxms4op
 
 c dbg
 c      print *,'gm_op_c/a: ',gm_op_c,gm_op_a
@@ -175,7 +176,10 @@ c dbg
       call sum_occ(ms_i0_c_max,cinfo_i0_c,ncblk_i0)
       call sum_occ(ms_i0_a_max,cinfo_i0_a,nablk_i0)
 
-      idxms_op_a = (ms_k_a_max+ms_i0_a_max - ms_op_a)/2 + 1
+cmh      idxms_op_a = (ms_k_a_max+ms_i0_a_max - ms_op_a)/2 + 1
+      ! also for msa_max.ne.msc_max:
+      idxms_op_a = msa2idxms4op(ms_op_a,ms_op_c-ms_op_a,
+     &             ms_k_a_max+ms_i0_a_max,ms_k_c_max+ms_i0_c_max)
 
       do ms_k_a = ms_k_a_max, -ms_k_a_max, -2
         ms_i0_a = ms_op_a - ms_k_a

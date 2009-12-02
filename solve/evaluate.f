@@ -32,7 +32,7 @@
       include 'par_opnames_gen.h'
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 000
 
       character(*) ::
      &     label_form

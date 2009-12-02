@@ -26,7 +26,7 @@
      &     svertex_new(nvtx_new)
 
       integer ::
-     &     dim_error, iidx, jjdx, idx, jdx, ilist
+     &     dim_error, iidx, jjdx, idx, jdx, ilist, nvtx1
 
       integer(8) ::
      &     xlines_scr_u(nvtx_new,nlist),
@@ -93,11 +93,11 @@
       if (ntest.ge.100) then
         write(luout,*) 'xlines_scr_u:'
         do idx = 1, nvtx_new
-          write(luout,'(1x,8i8.8)') xlines_scr_u(idx,1:nj)
+          write(luout,'(1x,8i8.8)') xlines_scr_u(idx,1:nlist)
         end do
         write(luout,*) 'xlines_scr_l:'
         do idx = 1, nvtx_new
-          write(luout,'(1x,8i8.8)') xlines_scr_l(idx,1:nj)
+          write(luout,'(1x,8i8.8)') xlines_scr_l(idx,1:nlist)
         end do
       end if
   
@@ -132,11 +132,44 @@
           end if
         else
           call quit(1,'topo_remove_vtxs',
-     &         'new case occurred (for nj=0)')
+     &         'new case occurred (for nj=1)')
         end if
+      ! allow 2nd derivations where operand has no external lines
+      else if (nj.eq.2.and.nlist.eq.1.and.nj_new.eq.3.and.
+     &         all(xlines(vtx_list(1),1:nj).eq.0)) then
+
+        ! choose lowest number of vertices belonging to first supervertex
+        ! somewhat arbitrary, could be more sophisticated
+        do nvtx1 = nvtx,1,-1
+          if (xlines(nvtx1,1).ne.0) exit
+        end do
+        if (.not.all(xlines(1:nvtx1,2).eq.0).or.
+     &      .not.all(xlines(nvtx1+1:nvtx,1).eq.0))
+     &    call quit(1,'topo_remove_vtxs',
+     &       'new case occurred (complicated supervertex structure)')
+        if (nvtx1.gt.vtx_list(1)) then
+          do idx = 3,2,-1
+            xlines_new(1:nvtx_new,idx) = xlines_new(1:nvtx_new,idx-1)
+          end do
+          xlines_new(1:nvtx_new,1) = 0
+          xlines_new(1:nvtx_new,1) = xlines_scr_u(1:nvtx_new,1)
+          xlines_new(1:nvtx_new,2) = xlines_new(1:nvtx_new,2)
+     &                             + xlines_scr_l(1:nvtx_new,1)
+        else if (nvtx1+1.lt.vtx_list(1).or.nvtx1.eq.0) then
+          if (all(xlines(nvtx1+1:vtx_list(1)-1,1:nj).eq.0).and.
+     &        nvtx1.gt.0) call quit(1,'topo_remove_vtxs',
+     &       'new case occurred (multiple possibilities(2))')
+          xlines_new(1:nvtx_new,2) = xlines_new(1:nvtx_new,2)
+     &                             + xlines_scr_u(1:nvtx_new,1)
+          xlines_new(1:nvtx_new,3) = xlines_scr_l(1:nvtx_new,1)
+        else
+          call quit(1,'topo_remove_vtxs',
+     &       'new case occurred (multiple possibilities(1))')
+        end if
+
       else
           call quit(1,'topo_remove_vtxs',
-     &       'new case occurred (nj>0)')
+     &       'new case occurred')
       end if
 
       if (dim_error.gt.0) then

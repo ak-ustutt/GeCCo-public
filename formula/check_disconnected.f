@@ -58,6 +58,11 @@ c dbg
         if (.not.connected(ivtx)) then
           nvtx_nc = nvtx_nc+1
           narc_new = narc_new + nvtx-nvtx_nc
+          ! exclude dummy arcs within supervertex
+          do jvtx = 1, ivtx-1
+            if (contr%svertex(ivtx).eq.contr%svertex(jvtx)) 
+     &           narc_new = narc_new - 1
+          end do
         end if
       end do
 c dbg
@@ -80,6 +85,8 @@ c dbg
           do jvtx = 1, nvtx
             if (ivtx.eq.jvtx) cycle
             if (jvtx.lt.ivtx.and..not.connected(jvtx)) cycle
+            ! exclude dummy arcs within supervertex
+            if (contr%svertex(ivtx).eq.contr%svertex(jvtx)) cycle
             iarc = iarc+1
 c dbg
 c            if (iarc.gt.narc+narc_new) stop 'cd: oha!'

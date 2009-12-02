@@ -90,7 +90,10 @@
 
         call zeroop(mel_pnt)
 
-        call add_unity(1d0,mel_pnt,1,orb_info)
+        do idx = 1, mel_pnt%op%n_occ_cls
+          jdx = (idx-1)*mel_pnt%op%njoined+1
+          call add_unity(1d0,mel_pnt,jdx,orb_info,str_info)
+        end do
 c dbg
 c        write(luout,*)'writing unity'
 c        call wrt_mel_file(luout,5,mel_pnt,1,1,
@@ -145,6 +148,7 @@ c dbg
           mode = 'dia-F'
           ! very quick and dirty now:
           if (rule%n_parameter_strings.eq.2) mode(5:5) = 'H'
+          if (rule%n_parameter_strings.eq.3) mode(5:8) = 'F+id'
         else
           mode(1:len(mode)) = ' '
           mode = 'dia-R12'
@@ -302,7 +306,33 @@ c dbg
         mel_pnt => op_info%mel_arr(idx)%mel
         call form_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,title,imode,mode)
-        call print_list(title,mel_pnt,mode,str_info,orb_info)
+        call print_list(title,mel_pnt,mode,orb_info,str_info)
+
+      case(SET_MEL)
+        if (form_test) exit loop
+        idx = idx_mel_list(rule%labels(1),op_info)
+        if(idx.lt.0)
+     &       call quit(1,'process_me_lists','Label not on list: "'//
+     &       trim(rule%labels(1))//'"')
+
+        mel_pnt => op_info%mel_arr(idx)%mel
+
+        call zeroop(mel_pnt)
+        call scale_parameters(+1,rule%parameters,imode,
+     &       nblk,idxblk,fac,maxfac)
+c        call diag_guess(mel_pnt,fac,idxblk,nblk,1,imode,
+c     &       op_info,str_info,strmap_info,orb_info)
+      call set_list(mel_pnt,idxblk,fac,nblk)
+
+      case(EXTRACT_DIAG)
+        if (form_test) exit loop
+        if (rule%n_labels.ne.2)
+     &     call quit(1,'process_me_lists',
+     &       'two labels expected for '
+     &       //trim(EXTRACT_DIAG))
+
+        call dia_from_op(rule%labels(1),rule%labels(2),
+     &       op_info,str_info,orb_info)
 
       case default
         call quit(1,'process_me_lists','unknown command: '//

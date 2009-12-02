@@ -30,8 +30,9 @@
       integer, intent(out) ::
      &     maxbuffer
       integer, intent(in) ::
-     &     n1, n2, n12,
-     &     igraph1r(n1), igraph2r(n2), igraph12r(n12), map_info(*)
+     &     n1, n2, n12, igraph12r(n12), map_info(*)
+      integer, intent(in), target ::
+     &     igraph1r(n1), igraph2r(n2)
       type(strinf), intent(in) ::
      &     str_info
       type(strmapinf), intent(inout) ::
@@ -47,7 +48,7 @@
       logical ::
      &     error, is_one_map, is_fc_map
       integer, pointer ::
-     &     idx_strmap(:), idx_fcmap(:)
+     &     idx_strmap(:), idx_fcmap(:), igraph1tmp(:), igraph2tmp(:)
       integer, external ::
      &     ifndmax
 
@@ -81,25 +82,40 @@
         idx12 = idx12+1
         idx1 = 0
         idx2 = 0
+        nsplit = 0
+        igraph1tmp => igraph1r
+        igraph2tmp => igraph2r
         idx_minf = idx_minf+1
-        nsplit = map_info(idx_minf)
-        if (nsplit.gt.1) then
+        nsplit = nsplit + map_info(idx_minf)
+        !  we allow nsplit=2 --> both indices from same occ.cls.
+        !  but only if the other occ.cls. gives nsplit=0
+        if (nsplit.gt.2) then
           error = .true.
           exit
         end if
         if (nsplit.eq.1) then
           idx_minf = idx_minf+1
           idx1 = map_info(idx_minf)
+        else if (nsplit.eq.2) then
+          idx_minf = idx_minf+2
+          idx1 = map_info(idx_minf-1)
+          idx2 = map_info(idx_minf)
+          igraph2tmp => igraph1r
         end if
         idx_minf = idx_minf+1
-        nsplit = map_info(idx_minf)
-        if (nsplit.gt.1) then
+        nsplit = nsplit + map_info(idx_minf)
+        if (nsplit.gt.2) then
           error = .true.
           exit
         end if
-        if (nsplit.eq.1) then
+        if (map_info(idx_minf).eq.1) then
           idx_minf = idx_minf+1
           idx2 = map_info(idx_minf)
+        else if (map_info(idx_minf).eq.2) then
+          idx_minf = idx_minf+2
+          idx1 = map_info(idx_minf-1)
+          idx2 = map_info(idx_minf)
+          igraph1tmp => igraph2r
         end if
 
 c        if ((idx1.gt.0.and.idx1.lt.idx1mx) .or.
@@ -114,8 +130,10 @@ c        idx2mx = max(idx2,idx2mx)
         
         is_fc_map = .false.
         if (is_one_map) then
-          if (idx1.ne.0) is_fc_map = igraph1r(idx1).ne.igraph12r(idx12)
-          if (idx2.ne.0) is_fc_map = igraph2r(idx2).ne.igraph12r(idx12)
+          if (idx1.ne.0) is_fc_map = 
+     &          igraph1tmp(idx1).ne.igraph12r(idx12)
+          if (idx2.ne.0) is_fc_map = 
+     &          igraph2tmp(idx2).ne.igraph12r(idx12)
         end if
 
         ! do not consider trivial maps
@@ -123,12 +141,12 @@ c        idx2mx = max(idx2,idx2mx)
           ! set buffer space for trivial map
           if (idx1.gt.0) then
             maxstr = ifndmax(
-     &           str_info%g(igraph1r(idx1))%lenstr_gm,1,
-     &           (str_info%ispc_occ(igraph1r(idx1))+1)*orb_info%nsym,1)
+     &          str_info%g(igraph1tmp(idx1))%lenstr_gm,1,
+     &          (str_info%ispc_occ(igraph1tmp(idx1))+1)*orb_info%nsym,1)
           else if (idx2.gt.0) then
             maxstr = ifndmax(
-     &           str_info%g(igraph2r(idx2))%lenstr_gm,1,
-     &           (str_info%ispc_occ(igraph2r(idx2))+1)*orb_info%nsym,1)
+     &          str_info%g(igraph2tmp(idx2))%lenstr_gm,1,
+     &          (str_info%ispc_occ(igraph2tmp(idx2))+1)*orb_info%nsym,1)
           else
             maxstr = 1
           end if
@@ -139,14 +157,14 @@ c        idx2mx = max(idx2,idx2mx)
         if (ntest.ge.100) then
           if (.not.is_fc_map) then
             write(luout,*) 'need map for: ',
-     &         igraph1r(idx1),igraph2r(idx2)
+     &         igraph1tmp(idx1),igraph2tmp(idx2)
           else
             if (idx1.gt.0) then
               write(luout,*) 'need fc map for: ',
-     &             igraph1r(idx1),igraph12r(idx12)
+     &             igraph1tmp(idx1),igraph12r(idx12)
             else
               write(luout,*) 'need fc map for: ',
-     &             igraph2r(idx2),igraph12r(idx12)
+     &             igraph2tmp(idx2),igraph12r(idx12)
             end if
           end if
         end if
@@ -154,11 +172,11 @@ c        idx2mx = max(idx2,idx2mx)
         ! process fc-map
         if (is_fc_map) then
           if (idx1.gt.0) then
-            idxmap = (igraph1r(idx1)-1)*mxgraph + igraph12r(idx12)
-            idxgr  = igraph1r(idx1)
+            idxmap = (igraph1tmp(idx1)-1)*mxgraph + igraph12r(idx12)
+            idxgr  = igraph1tmp(idx1)
           else
-            idxmap = (igraph2r(idx2)-1)*mxgraph + igraph12r(idx12)
-            idxgr  = igraph2r(idx2)
+            idxmap = (igraph2tmp(idx2)-1)*mxgraph + igraph12r(idx12)
+            idxgr  = igraph2tmp(idx2)
           end if
           if (idx_fcmap(idxmap).gt.-1) then
             ! check that offsets are set
@@ -215,7 +233,7 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
         end if
 
         ! does primitive map exist?
-        idxmap = mxgraph*(igraph2r(idx2)-1)+igraph1r(idx1)
+        idxmap = mxgraph*(igraph2tmp(idx2)-1)+igraph1tmp(idx1)
         if (idx_strmap(idxmap).gt.-1) then
           ! check that offsets are set
           if (.not.associated(strmap_info%offsets))
@@ -237,8 +255,8 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
         idx_strmap(idxmap) = strmap_info%idx_last+1
           
         ! get memory for offset arrays
-        iocc1 = str_info%ispc_occ(igraph1r(idx1))
-        iocc2 = str_info%ispc_occ(igraph2r(idx2))
+        iocc1 = str_info%ispc_occ(igraph1tmp(idx1))
+        iocc2 = str_info%ispc_occ(igraph2tmp(idx2))
         nsym = orb_info%nsym
         call mem_pushmark()
         ifree = mem_gotomark(strmaps)
@@ -253,15 +271,15 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
 
         ! set primitive map
         call set_strmap(
-     &         str_info%g(igraph1r(idx1)),
-     &         str_info%ispc_typ(igraph1r(idx1)),
-     &         str_info%ispc_occ(igraph1r(idx1)),
-     &         str_info%igas_restr(1,1,1,1,igraph1r(idx1)),
+     &         str_info%g(igraph1tmp(idx1)),
+     &         str_info%ispc_typ(igraph1tmp(idx1)),
+     &         str_info%ispc_occ(igraph1tmp(idx1)),
+     &         str_info%igas_restr(1,1,1,1,igraph1tmp(idx1)),
 C               ! ADAPT FOR OPEN SHELL  ^^^
-     &         str_info%g(igraph2r(idx2)),
-     &         str_info%ispc_typ(igraph2r(idx2)),
-     &         str_info%ispc_occ(igraph2r(idx2)),
-     &         str_info%igas_restr(1,1,1,1,igraph2r(idx2)),
+     &         str_info%g(igraph2tmp(idx2)),
+     &         str_info%ispc_typ(igraph2tmp(idx2)),
+     &         str_info%ispc_occ(igraph2tmp(idx2)),
+     &         str_info%igas_restr(1,1,1,1,igraph2tmp(idx2)),
 C               ! ADAPT FOR OPEN SHELL  ^^^
      &         str_info%g(igraph12r(idx12)),
      &         str_info%ispc_typ(igraph12r(idx12)),

@@ -45,6 +45,8 @@
       ! and finally: the inactive fock matrix in symmetry-blocked
       ! upper triangular form
       read (lusir,err=16) fock(1:nfock)
+      ! first element must be negative
+      if (fock(1).ge.0d0) goto 16
       goto 1
       ! on error try next record
  16   write(luout,*) 'Trying new DALTON format ...'

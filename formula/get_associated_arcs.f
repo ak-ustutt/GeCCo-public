@@ -44,6 +44,7 @@ c dbg end fix
       arc => contr%arc
       svertex => contr%svertex
       joined => contr%joined
+      len_list = 0
 
       ! super vertex? find further primitive vertices ...
       ! and further contractions between the supervertices
