@@ -27,7 +27,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       logical, parameter ::
 c     &     new_sign = .false. ! use the old sign evaluation route
      &     new_sign = .true. ! use the new sign evaluation route
@@ -125,23 +125,28 @@ c      if (.false..and.update_idxintm) then
         idxnew_op1op2 = idxintm
         call reorder_supvtx(possible,
      &       .true.,set_reo,.true.,reo_info_bef,
-     &       contr,occ_vtx(1,1,njoined_res+1),idxnew_op1op2)
+     &       contr,occ_vtx(1,1,njoined_res+1),
+     &             irestr_vtx(1,1,1,1,njoined_res+1),idxnew_op1op2,
+     &       orb_info)
         if (contr%nxarc.gt.0)
      &       call reorder_supvtx_x(possible,
      &         .true.,set_reo,.true.,reo_info_bef,
-     &         contr,occ_vtx(1,1,njoined_res+1),idxnew_op1op2)
+     &         contr,occ_vtx(1,1,njoined_res+1),
+     &               irestr_vtx(1,1,1,1,njoined_res+1),idxnew_op1op2,
+     &         orb_info)
 
         possible = .true.
         if (reo_info_bef%nreo.gt.0) idxintm = idxintm-1
         ! report that REO is before contraction!
 
-        if (.not.set_reo.or.reo_info_bef%nreo.gt.0) then
-          do ivtx = 1, nvtx
-            call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
-     &           occ_vtx(1,1,ivtx+njoined_res),1,
-     &           orb_info)
-          end do
-        end if
+c        ! to be commented out
+c        if (reo_info_bef%nreo.gt.0) then
+c          do ivtx = 1, nvtx
+c            call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
+c     &           occ_vtx(1,1,ivtx+njoined_res),1,
+c     &           orb_info)
+c          end do
+c        end if
         if (set_reo) call tidy_reo_info(reo_info_bef)
 
       end if
@@ -297,17 +302,13 @@ c        end do
 c dbg
       else
 
-c        call dummy_restr(irestr_op1op2,
-c     &       iocc_op1op2,njoined_op1op2,orb_info)
-c moved      end if
-
-      if (.not.self) call special_restr(irestr_op1op2,
+        call special_restr(irestr_op1op2,
      &     iocc_op1op2,njoined_op1op2,
      &     merge_op1op2,
      &     iocc_op1,iocc_ex1,irestr_op1,njoined_op(1),
      &     iocc_op2,iocc_ex2,irestr_op2,njoined_op(2),
      &     orb_info%ihpvgas,orb_info%nspin,orb_info%ngas)
-c moved here
+
       end if
 
       mst_op1op2 = mst_op(1) + mst_op(2)
@@ -352,11 +353,15 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
         idxnew_op1op2 = idxintm
         call reorder_supvtx(possible,
      &       .true.,set_reo,.false.,reo_info,
-     &       contr_red,occ_vtx_red(1,1,njoined_res+1),idxnew_op1op2)
+     &       contr_red,occ_vtx_red(1,1,njoined_res+1),
+     &              irestr_vtx_red(1,1,1,1,njoined_res+1),idxnew_op1op2,
+     &       orb_info)
         if (contr%nxarc.gt.0)
      &       call reorder_supvtx_x(possible,
      &         .true.,set_reo,.false.,reo_info,
-     &         contr_red,occ_vtx_red(1,1,njoined_res+1),idxnew_op1op2)
+     &         contr_red,occ_vtx_red(1,1,njoined_res+1),
+     &              irestr_vtx_red(1,1,1,1,njoined_res+1),idxnew_op1op2,
+     &         orb_info)
         ! FIX - unclear, whether 2x reo to same vertex works
         do ireo = 1, reo_info%nreo
           do jreo = ireo+1, reo_info%nreo
@@ -365,13 +370,14 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
      &           possible = .false.
           end do
         end do
-        if (.not.set_reo.or.reo_info%nreo.gt.0) then
-          do ivtx = 1, nvtx
-            call dummy_restr(irestr_vtx_red(1,1,1,1,ivtx+njoined_res),
-     &           occ_vtx_red(1,1,ivtx+njoined_res),1,
-     &           orb_info)
-          end do
-        end if
+c        ! to be commented out
+c        if (reo_info%nreo.gt.0) then
+c          do ivtx = 1, nvtx
+c            call dummy_restr(irestr_vtx_red(1,1,1,1,ivtx+njoined_res),
+c     &           occ_vtx_red(1,1,ivtx+njoined_res),1,
+c     &           orb_info)
+c          end do
+c        end if
         if (set_reo) call tidy_reo_info(reo_info)
 
       end if

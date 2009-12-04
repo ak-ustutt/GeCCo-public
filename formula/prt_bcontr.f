@@ -42,7 +42,13 @@
 
       if (bcontr%n_cnt.gt.0) then
         write(luout,*) 'contracted by'
-        call wrt_occ_n(luout,bcontr%occ_cnt,bcontr%n_cnt)
+c        call wrt_occ_n(luout,bcontr%occ_cnt,bcontr%n_cnt)
+        do ij = 1, bcontr%n_cnt
+          call wrt_occ_rstr(luout,ij,
+     &         bcontr%occ_cnt(1:,1:,ij),
+     &         bcontr%rst_cnt(1:,1:,1:,1:,1:,ij),
+     &         bcontr%ngas,bcontr%nspin)
+        end do
       end if
 
       if (.not.bcontr%tra_res) write(luout,'(x,"==> ",a,i4)')

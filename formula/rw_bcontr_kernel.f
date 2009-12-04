@@ -38,13 +38,16 @@
         allocate(bcontr%occ_op1(ngastp,2,nj_op1))
         allocate(bcontr%rst_op1(2,ngas,2,2,nspin,nj_op1))
         allocate(bcontr%occ_ex1(ngastp,2,nj_op1))
+        allocate(bcontr%rst_ex1(2,ngas,2,2,nspin,nj_op1))
         if (n_operands.eq.2) then
           allocate(bcontr%occ_op2(ngastp,2,nj_op2))
           allocate(bcontr%rst_op2(2,ngas,2,2,nspin,nj_op2))
           allocate(bcontr%occ_ex2(ngastp,2,nj_op2))
+          allocate(bcontr%rst_ex2(2,ngas,2,2,nspin,nj_op2))
         end if
         if (nj_cnt.gt.0) then
           allocate(bcontr%occ_cnt(ngastp,2,nj_cnt))
+          allocate(bcontr%rst_cnt(2,ngas,2,2,nspin,nj_cnt))
           allocate(bcontr%merge_op1(len_m1))
           if (n_operands.eq.2) then
             allocate(bcontr%merge_op2(len_m2))
@@ -79,12 +82,13 @@
         if (nj_cnt.gt.0)
      &       read(lu,end=100)
      &       bcontr%occ_ex1,bcontr%occ_cnt,
+     &       bcontr%rst_ex1,bcontr%rst_cnt,
      &       bcontr%merge_op1(1:len_m1),
      &       bcontr%merge_op1op2(1:len_m12),
      &       bcontr%merge_op2op1(1:len_m21)
         if (nj_cnt.gt.0.and.n_operands.eq.2)
      &       read(lu,end=100)
-     &       bcontr%occ_ex2,bcontr%merge_op2(1:len_m2)
+     &       bcontr%occ_ex2,bcontr%rst_ex2,bcontr%merge_op2(1:len_m2)
 
       else
 
@@ -134,12 +138,13 @@
         if (nj_cnt.gt.0)
      &       write(lu,err=200)
      &       bcontr%occ_ex1,bcontr%occ_cnt,
+     &       bcontr%rst_ex1,bcontr%rst_cnt,
      &       bcontr%merge_op1(1:len_m1),
      &       bcontr%merge_op1op2(1:len_m12),
      &       bcontr%merge_op2op1(1:len_m21)
         if (nj_cnt.gt.0.and.n_operands.eq.2)
      &       write(lu,err=200)
-     &       bcontr%occ_ex2,bcontr%merge_op2(1:len_m2)
+     &       bcontr%occ_ex2,bcontr%rst_ex2,bcontr%merge_op2(1:len_m2)
 
       end if
 

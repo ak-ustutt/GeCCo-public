@@ -569,6 +569,7 @@ c            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
      &       iblkop(1),iblkop(2),iblkop1op2,iblkop1op2,
      &       idoffop1,idoffop2,idoffop1op2,
      &       iocc_ex1,iocc_ex2,iocc_cnt,
+     &       idum, idum, idum, 0,
      &       iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
      &       irst_op1,irst_op2,irst_op1op2, irst_op1op2tmp,
      &       merge_op1, merge_op2, merge_op1op2, merge_op2op1,

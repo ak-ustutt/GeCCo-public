@@ -5,7 +5,7 @@
      &     irst_op1op2,irst_op1op2tmp,
      &     njoined_op1op2,mst,gamt,
      &     merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
-     &     occ_vtx,svertex,info_vtx,nj_res,nvtx,
+     &     occ_vtx,rst_vtx,svertex,info_vtx,nj_res,nvtx,
      &     reo_info,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     process raw reordering info from reduce_contr:
@@ -39,26 +39,32 @@ c      logical, intent(out) ::
 c     &     reo_op1op2, reo_other
       integer, intent(in) ::
      &     mode, nj_res,idxsuper,nvtx,
-     &     occ_vtx(ngastp,2,*),svertex(*),
-     &     info_vtx(2,*)
+     &     occ_vtx(ngastp,2,*),rst_vtx(2,orb_info%ngas,2,2,*),
+     &     svertex(*),info_vtx(2,*)
       integer, intent(inout) ::
      &     njoined_op1op2,gamt,mst,
+     &     merge_stp1(*), merge_stp1inv(*),
+     &     merge_stp2(*), merge_stp2inv(*)
+      integer, intent(inout), target ::
      &     iocc_op1op2(ngastp,2,*),
      &     iocc_op1op2tmp(ngastp,2,*),
      &     irst_op1op2(2,orb_info%ngas,2,2,*),
-     &     irst_op1op2tmp(2,orb_info%ngas,2,2,*),
-     &     merge_stp1(*), merge_stp1inv(*),
-     &     merge_stp2(*), merge_stp2inv(*)
+     &     irst_op1op2tmp(2,orb_info%ngas,2,2,*)
       
       integer ::
      &     nreo, ireo, idx, nreo_op1op2, ireo_op1op2, nmap, len_map,
-     &     ivtx, jvtx, idxsuper_old1, idxsuper_old2
+     &     ivtx, jvtx, idxsuper_old1, idxsuper_old2, ivtx1, ivtx2,
+     &     ngas, ij
+      integer ::
+     &     rst_shift(2,orb_info%ngas,2,2)
       type(reorder_list), pointer ::
      &     reo(:)
       integer, pointer ::
      &     merge_map_stp1(:,:,:), merge_map_stp2(:,:,:),
-     &     igrph(:,:,:), irst(:,:,:,:,:),
-     &     from_to_vtx(:,:), is_op1op2(:)
+     &     igrph(:,:,:), irst0(:,:,:,:,:), irst_reo(:,:,:,:,:),
+     &     from_to_vtx(:,:), is_op1op2(:),
+     &     occ_shift(:,:), 
+     &     occ_target(:,:,:), rst_target(:,:,:,:,:)
 
       integer, external ::
      &     imltlist, sign_reo
@@ -83,6 +89,7 @@ c     &     reo_op1op2, reo_other
 
       if (reo_info%nreo.eq.0) call quit(1,'get_reo_info2','nothing?')
 
+      ngas = orb_info%ngas
       nreo = reo_info%nreo
       reo => reo_info%reo
 
@@ -120,6 +127,8 @@ c dbg
           jvtx = jvtx+1
           iocc_op1op2(1:ngastp,1:2,jvtx) =
      &         occ_vtx(1:ngastp,1:2,nj_res+ivtx)
+          irst_op1op2(1:2,1:ngas,1:2,1:2,jvtx) =
+     &         rst_vtx(1:2,1:ngas,1:2,1:2,nj_res+ivtx)
 c dbg
 c          print *,'stored: ',ivtx,' as ',jvtx
 c dbg
@@ -132,7 +141,7 @@ c dbg
 
       iocc_op1op2tmp(1:ngastp,1:2,1:njoined_op1op2)
      &     = iocc_op1op2(1:ngastp,1:2,1:njoined_op1op2)
-      irst_op1op2tmp(1:2,1:orb_info%ngas,1:2,1:2,1:njoined_op1op2)
+      irst_op1op2tmp(1:2,1:ngas,1:2,1:2,1:njoined_op1op2)
      &     = irst_op1op2(1:2,1:ngastp,1:2,1:2,1:njoined_op1op2)
 
 
@@ -155,27 +164,68 @@ c dbg
           if (reo(ireo)%idxsuper.ne.idxsuper) cycle
           nreo_op1op2 = nreo_op1op2+1
 
+          ! shift direction and target depends on mode
           if (mode.eq.-1) then
-            ! update op1op2, part I: remove shift occupation
-            iocc_op1op2(1:ngastp,1:2,reo(ireo)%from) 
-     &         = iocc_op1op2(1:ngastp,1:2,reo(ireo)%from)
-     &         - reo(ireo)%occ_shift
-
-            ! update op1op2, part II: add shift occupation
-            iocc_op1op2(1:ngastp,1:2,reo(ireo)%to) 
-     &         = iocc_op1op2(1:ngastp,1:2,reo(ireo)%to)
-     &         + reo(ireo)%occ_shift
+            ivtx1 = reo(ireo)%from
+            ivtx2 = reo(ireo)%to
+            occ_target!(1:ngastp,1:2,1:njoined_op1op2)
+     &           => iocc_op1op2(1:ngastp,1:2,1:njoined_op1op2)
+            rst_target!(1:2,1:ngas,1:2,1:2,1:njoined_op1op2)
+     &           =>
+     &      irst_op1op2(1:2,1:ngas,1:2,1:2,1:njoined_op1op2)
           else
-            ! update op1op2, part I: remove shift occupation
-            iocc_op1op2tmp(1:ngastp,1:2,reo(ireo)%from) 
-     &         = iocc_op1op2tmp(1:ngastp,1:2,reo(ireo)%from)
-     &         + reo(ireo)%occ_shift
-
-            ! update op1op2, part II: add shift occupation
-            iocc_op1op2tmp(1:ngastp,1:2,reo(ireo)%to) 
-     &         = iocc_op1op2tmp(1:ngastp,1:2,reo(ireo)%to)
-     &         - reo(ireo)%occ_shift
+            ivtx1 = reo(ireo)%to
+            ivtx2 = reo(ireo)%from
+            occ_target!(1:ngastp,1:2,1:njoined_op1op2)
+     &           => iocc_op1op2tmp(1:ngastp,1:2,1:njoined_op1op2)
+            rst_target!(1:2,1:ngas,1:2,1:2,1:njoined_op1op2)
+     &           =>
+     &      irst_op1op2tmp(1:2,1:ngas,1:2,1:2,1:njoined_op1op2)
           end if
+          occ_shift => reo(ireo)%occ_shift
+          
+          ! handle restrictions first ...
+          call fit_restr(rst_shift,occ_shift,
+     &         rst_target(1,1,1,1,ivtx1),orb_info%ihpvgas,
+     &                                   ngas)
+
+          rst_target(1:2,1:ngas,1:2,1:2,ivtx1)
+     &         = rst_target(1:2,1:ngas,1:2,1:2,ivtx1)
+     &         - rst_shift
+          rst_target(1:2,1:ngas,1:2,1:2,ivtx2)
+     &         = rst_target(1:2,1:ngas,1:2,1:2,ivtx2)
+     &         + rst_shift
+
+          ! ... and adapt now occupations
+          occ_target(1:ngastp,1:2,ivtx1) 
+     &         = occ_target(1:ngastp,1:2,ivtx1)
+     &         - occ_shift
+          occ_target(1:ngastp,1:2,ivtx2) 
+     &         = occ_target(1:ngastp,1:2,ivtx2)
+     &         + occ_shift
+          
+          
+c          if (mode.eq.-1) then
+c            ! update op1op2, part I: remove shift occupation
+c            iocc_op1op2(1:ngastp,1:2,reo(ireo)%from) 
+c     &         = iocc_op1op2(1:ngastp,1:2,reo(ireo)%from)
+c     &         - reo(ireo)%occ_shift
+c
+c            ! update op1op2, part II: add shift occupation
+c            iocc_op1op2(1:ngastp,1:2,reo(ireo)%to) 
+c     &         = iocc_op1op2(1:ngastp,1:2,reo(ireo)%to)
+c     &         + reo(ireo)%occ_shift
+c          else
+c            ! update op1op2, part I: remove shift occupation
+c            iocc_op1op2tmp(1:ngastp,1:2,reo(ireo)%from) 
+c     &         = iocc_op1op2tmp(1:ngastp,1:2,reo(ireo)%from)
+c     &         + reo(ireo)%occ_shift
+c
+c            ! update op1op2, part II: add shift occupation
+c            iocc_op1op2tmp(1:ngastp,1:2,reo(ireo)%to) 
+c     &         = iocc_op1op2tmp(1:ngastp,1:2,reo(ireo)%to)
+c     &         - reo(ireo)%occ_shift
+c          end if
             
           ! update mapping info
           nmap = njoined_op1op2
@@ -248,10 +298,11 @@ c patch
      &       reo_info%from_to,nreo_op1op2,
      &       from_to_vtx,reo_info%nca_vtx,is_op1op2,reo_info%nvtx_contr)
 
-        call dummy_restr(irst_op1op2,
-     &       iocc_op1op2,njoined_op1op2,orb_info)
-        call dummy_restr(irst_op1op2tmp,
-     &       iocc_op1op2tmp,njoined_op1op2,orb_info)
+c        ! to be commented out ...
+c        call dummy_restr(irst_op1op2,
+c     &       iocc_op1op2,njoined_op1op2,orb_info)
+c        call dummy_restr(irst_op1op2tmp,
+c     &       iocc_op1op2tmp,njoined_op1op2,orb_info)
 
         ! transform merge-map to condensed representation
         ! length of map: 1 entry for each target vertex
@@ -317,12 +368,47 @@ c patch
 
         allocate(
      &       igrph(ngastp,2,max(njoined_op1op2,nreo_op1op2)),
-     &       irst(2,orb_info%ngas,2,2,max(njoined_op1op2,nreo_op1op2)))
+     &       irst0(2,ngas,2,2,max(njoined_op1op2,nreo_op1op2)),
+     &       irst_reo(2,ngas,2,2,max(njoined_op1op2,nreo_op1op2)))
 
-        call dummy_restr(irst,
-     &       reo_info%iocc_opreo0,njoined_op1op2,orb_info)
+c        call dummy_restr(irst,
+c     &       reo_info%iocc_opreo0,njoined_op1op2,orb_info)
+
+c        call fit_restr2(irst,
+c     &       reo_info%iocc_opreo0,njoined_op1op2,
+c     &       irst_op1op2,njoined_op1op2,orb_info%ihpvgas,ngas)
+
+c dbg
+        print *,'new call to fit_restr3'
+c dbg
+        call fit_restr3(irst0,irst_reo,
+     &       iocc_op1op2tmp, reo_info%iocc_opreo0,reo_info%iocc_reo,
+     &       irst_op1op2tmp, merge_stp1inv,
+     &       njoined_op1op2,nreo_op1op2,
+     &       orb_info%ihpvgas,ngas,orb_info%nspin)
+c dbg
+        print *,'OP1OP2TMP'
+         do ij = 1, njoined_op1op2
+            call wrt_occ_rstr(luout,ij,iocc_op1op2tmp(:,:,ij),
+     &                                 irst_op1op2tmp(:,:,:,:,ij),
+     &                                 ngas,orb_info%nspin)
+          end do
+        print *,'OP0'
+         do ij = 1, njoined_op1op2
+            call wrt_occ_rstr(luout,ij,reo_info%iocc_opreo0(:,:,ij),
+     &                                    irst0(:,:,:,:,ij),
+     &                                    ngas,orb_info%nspin)
+          end do
+        print *,'REO'
+         do ij = 1, nreo_op1op2
+            call wrt_occ_rstr(luout,ij,reo_info%iocc_reo(:,:,ij),
+     &                                    irst_reo(:,:,:,:,ij),
+     &                                    ngas,orb_info%nspin)
+          end do
+c dbg
+
         call get_grph4occ(igrph,
-     &       reo_info%iocc_opreo0,irst,njoined_op1op2,
+     &       reo_info%iocc_opreo0,irst0,njoined_op1op2,
      &       str_info,orb_info,.true.)
         call condense_occ(reo_info%cinfo_opreo0c,reo_info%cinfo_opreo0a,
      &       reo_info%cinfo_opreo0c(1,3),reo_info%cinfo_opreo0a(1,3),
@@ -332,9 +418,10 @@ c patch
      &       reo_info%cinfo_opreo0c(1,3),reo_info%cinfo_opreo0a(1,3),
      &       igrph,njoined_op1op2,hpvxblkseq)
 
-        call dummy_restr(irst,
-     &       reo_info%iocc_reo,nreo_op1op2,orb_info)
-        call get_grph4occ(igrph,reo_info%iocc_reo,irst,nreo_op1op2,
+c        call dummy_restr(irst,
+c     &       reo_info%iocc_reo,nreo_op1op2,orb_info)
+
+        call get_grph4occ(igrph,reo_info%iocc_reo,irst_reo,nreo_op1op2,
      &       str_info,orb_info,.true.)
         call condense_occ(reo_info%cinfo_reo_c,reo_info%cinfo_reo_a,
      &       reo_info%cinfo_reo_c(1,3),reo_info%cinfo_reo_a(1,3),
@@ -344,7 +431,7 @@ c patch
      &       reo_info%cinfo_reo_c(1,3),reo_info%cinfo_reo_a(1,3),
      &       igrph,nreo_op1op2,hpvxblkseq)
 
-        deallocate(igrph,irst)
+        deallocate(igrph,irst0,irst_reo)
 
       end if
 

@@ -302,7 +302,7 @@
                 end do
 
                 ! find indices for corresponding diagonal element of input mel
-                call diag_condensed_occ(istr_csub2,istr_asub3,
+                call diag_condensed_occ(istr_csub2,istr_asub2,
      &                                  istr_csub,istr_asub,
      &                                  hpvx_occ(1,1,iblkoff+1),
      &                                  njout,hpvxseq)

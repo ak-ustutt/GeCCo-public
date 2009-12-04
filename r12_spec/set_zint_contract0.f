@@ -77,7 +77,11 @@
       ! due to the formal shifting of commuting operators, the
       ! terms are somewhat tricky and thus "hand taylored" for
       ! each kind of Z
-      
+
+c dbg
+c      call warn('zint0','debug!!!')
+c      goto 99
+c dbg      
       ! special for Z0:
       call set_ffg_for_z0()
         
@@ -89,12 +93,21 @@
 
       ! remove the projected terms
       !  - R.P.G.R - R.G.P.R + R.P.G.P.R
+c dbg
+c 99   print *,'jumped'
+c dbg
       call set_fjf_for_zn()
+c dbg
+c      goto 999
+c dbg
 
       ! and finally: the exchange terms
       !  - R.Q.K.Q.R
       if (max_ext_in_K.gt.0)
      &     call set_fkf_for_zn()
+c dbg
+c 999  print *,'and jumped'
+c dbg
 
       if (ntest.ge.100) then
         write(luout,*)'formula before summing: Z-Int.'

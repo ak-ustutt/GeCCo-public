@@ -234,6 +234,7 @@ c      possible = .true.
      &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
      &         irst_op1, irst_op2, irst_op1op2, irst_op1op2,
+     &         idum,idum,idum,0,
      &         merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &         str_info,orb_info)
