@@ -88,12 +88,6 @@
         case(command_add_contribution)
           ! The necessary contractions are here.
 c          write(luout,*) '[ADD]'
-c dbg
-          if (njoined.gt.1) then
-            print *,'es wird spannend!'
-            call prt_contr2(luout,form_pnt%contr,op_info)
-          end if
-c dbg
 
           change = .false.
           remove = .false.
@@ -110,10 +104,6 @@ c dbg
 
               ! If the index of the operator vertex equals that of the
               ! intermediate operator...
-c dbg
-              print *,'idx_form_op,idxin: ',idx_form_op,idxin
-              print *,'dag_form_op,dagin: ',dag_form_op,dagin
-c dbg
               if (idx_form_op.eq.idxin.and.dag_form_op.eq.dagin) then
                 idx_form_blk = form_pnt%contr%vertex(idx)%iblk_op
 
@@ -145,12 +135,6 @@ c dbg
                     idx_form_blk = (idx_form_blk-njoined)/njoined + 1
                   end if
                 end if
-c dbg
-                if (njoined.gt.1) then
-                  print *,'extracted: offs = ',idx_form_blk
-                  call wrt_occ_n(6,occ_temp,njoined)
-                end if
-c dbg
 
                 ! apply the change directly:
                 ! Locate the formal block's counterpart in the actual 
@@ -158,10 +142,6 @@ c dbg
                 idx_blk_out =
      &               iblk_occ(occ_temp,dagin.xor.dagout,opout_pnt,
      &                        opin_pnt%blk_version(idx_form_blk))
-c dbg
-                if (njoined.gt.1)
-     &               write(luout,*) 'idx_blk_out = ',idx_blk_out
-c dbg
 
                 ! new: also check the restrictions
                 if (idx_blk_out.gt.0) then
@@ -210,13 +190,6 @@ c dbg
      &                     dagout
                     end do
                   end if
-c dbg
-                  if (njoined.gt.1) then
-                    print *,'alles neu!'
-                    call prt_contr2(luout,form_pnt%contr,op_info)
-                  end if
-
-c dbg
 
                 end if
               end if

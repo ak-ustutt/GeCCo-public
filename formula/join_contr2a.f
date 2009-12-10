@@ -18,7 +18,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 50
+     &     ntest = 0
 
       type(formula_item), intent(out), target ::
      &     fl_abc

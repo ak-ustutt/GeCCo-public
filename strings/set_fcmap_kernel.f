@@ -17,7 +17,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       integer, intent(out) ::
      &     strmap(*)

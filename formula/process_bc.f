@@ -90,7 +90,7 @@
      &     idxop_reo, idxop_ori, iblkop_reo, iblkop_ori,
      &     ireo, idxs_reo, mode_rst_cnt
       integer ::
-     &     iocc_cnt(ngastp,2,contr%nvtx*2),
+     &     iocc_cnt(ngastp,2,contr%nvtx*(contr%nvtx+1)/2),
      &     iocc_ex1(ngastp,2,contr%nvtx),
      &     iocc_ex2(ngastp,2,contr%nvtx),
      &     irst_res(2,orb_info%ngas,2,2,contr%nvtx),
@@ -104,7 +104,7 @@
      &     irst_op1op2tmp(2,orb_info%ngas,2,2,contr%nvtx),
      &     irst_ex1(2,orb_info%ngas,2,2,contr%nvtx),
      &     irst_ex2(2,orb_info%ngas,2,2,contr%nvtx),
-     &     irst_cnt(2,orb_info%ngas,2,2,contr%nvtx*2),
+     &     irst_cnt(2,orb_info%ngas,2,2,contr%nvtx*(contr%nvtx+1)/2),
      &     igr_op1op2(ngastp,2,contr%nvtx),
      &     irst_ori(2,orb_info%ngas,2,2,contr%nvtx),
      &     irst_reo(2,orb_info%ngas,2,2,contr%nvtx), 
@@ -144,7 +144,7 @@
      &     cnt_info
 
       logical ::
-     &     tra_op1, tra_op2, tra_op1op2,
+     &     tra_op1, tra_op2, tra_op1op2, tra_reo, tra_ori,
      &     reo_op1op2, reo_other, reo_before
       real(8) ::
      &     flops, xmemtot, xmemblk, bc_sign
@@ -382,8 +382,10 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
               idxs_reo = reo_info0%reo(ireo)%idxsuper
               idxop_reo = reo_info0%reo(ireo)%idxop_new
               iblkop_reo = 1
+              tra_reo = reo_info0%reo(ireo)%dagger_new
               idxop_ori = reo_info0%reo(ireo)%idxop_ori
               iblkop_ori = reo_info0%reo(ireo)%iblkop_ori
+              tra_ori = reo_info0%reo(ireo)%dagger_ori
               exit
             end if
           end do
@@ -392,10 +394,6 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
             label_reo = op_arr(idxop_reo)%op%name
           else
             write(label_reo,'("_STIN",i4.4)') abs(idxop_reo)
-c dbg
-            print *,'reo_before:'
-            print *,'generated label_reo: ',trim(label_reo)
-c dbg
           end if
 
           if (idxop_ori.gt.0) then
@@ -416,7 +414,9 @@ c dbg
      &           reo_info0,str_info,orb_info)
 
           ! FIX:
-          if (nj_ret.gt.1) then
+          if (nj_ret.gt.1.and..not.tra_ori) then
+            iblkop_ori = (iblkop_ori-1)/nj_ret + 1
+          else if (nj_ret.gt.1.and.tra_ori) then
             iblkop_ori = (iblkop_ori-1)/nj_ret + 1
           end if
 
@@ -434,6 +434,7 @@ c dbg
           call store_reorder(fl_pnt,
      &       label_reo,label,
      &       iblkop_reo,iblkop_ori,
+     &       tra_reo, tra_ori,
      &       reo_info0%sign_reo,reo_info0%iocc_opreo0,
      &       reo_info0%from_to,reo_info0%iocc_reo,reo_info0%nreo,
      &       iocc_reo,irst_reo,nj_ret,
@@ -457,12 +458,6 @@ c dbg
           label2 = '---'
         else
           write(label2,'("_STIN",i4.4)') abs(idxop(2))
-c dbg
-          if (reo_before.and.idxop_reo.ne.idxop(2)) then
-            print *,'problem? reo, 2: ',idxop_reo, idxop(2)
-            stop 'problem'
-          end if
-c dbg
         end if
 
         ! not in final level? result is new intermediate
@@ -504,17 +499,10 @@ c dbg
      &       orb_info)
         if (reo_op1op2) then
           iblkop1op2tmp = 1
-c dbg
-          if (reo_info%nreo.eq.2) then
-            print *,'(2)'
-            print *,'nreo = ',reo_info%nreo
-            print *,'from_to: ',reo_info%from_to
-            call wrt_occ_n(6,reo_info%iocc_reo,reo_info%nreo)
-          end if
-c dbg
           call store_reorder(fl_pnt,
      &       label,label,
      &       iblkop1op2,iblkop1op2tmp,
+     &       tra_op1op2,tra_op1op2,
      &       reo_info%sign_reo,reo_info%iocc_opreo0,
      &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,
      &       iocc_op1op2,irst_op1op2,njoined_op1op2,
@@ -534,8 +522,10 @@ c dbg
               idxs_reo = reo_info%reo(ireo)%idxsuper
               idxop_reo = reo_info%reo(ireo)%idxop_new
               iblkop_reo = 1
+              tra_reo = reo_info%reo(ireo)%dagger_new
               idxop_ori = reo_info%reo(ireo)%idxop_ori
               iblkop_ori = reo_info%reo(ireo)%iblkop_ori
+              tra_ori = reo_info%reo(ireo)%dagger_ori
               exit
             end if
           end do
@@ -563,7 +553,9 @@ c dbg
      &           reo_info,str_info,orb_info)
 
           ! FIX:
-          if (nj_ret.gt.1) then
+          if (nj_ret.gt.1.and..not.tra_ori) then
+            iblkop_ori = (iblkop_ori-1)/nj_ret + 1
+          else if (nj_ret.gt.1.and.tra_ori) then
             iblkop_ori = (iblkop_ori-1)/nj_ret + 1
           end if
 
@@ -578,17 +570,10 @@ c dbg
           target = -1           ! unused here
           call new_formula_item(fl_pnt,command,target)
 
-c dbg
-          if (reo_info%nreo.eq.2) then
-            print *,'(3)'
-            print *,'nreo = ',reo_info%nreo
-            print *,'from_to: ',reo_info%from_to
-            call wrt_occ_n(6,reo_info%iocc_reo,reo_info%nreo)
-          end if
-c dbg
           call store_reorder(fl_pnt,
      &       label_reo,label,
      &       iblkop_reo,iblkop_ori,
+     &       tra_reo, tra_ori,
      &       reo_info%sign_reo,reo_info%iocc_opreo0,
      &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,
      &       iocc_reo,irst_reo,nj_ret,

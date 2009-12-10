@@ -118,6 +118,8 @@ c
       integer ::
      &     iblk_out, iblk_in,
      &     nj_out, nj_in
+      logical ::
+     &     tra_out, tra_in
       integer ::
      &     nreo,sign,
      &     ngas, nspin

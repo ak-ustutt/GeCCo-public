@@ -7,6 +7,8 @@
       integer ::
      &     idxsuper, to, from, to_vtx, from_vtx,
      &     idxop_ori, iblkop_ori, idxop_new, iblkop_new
+      logical ::
+     &     dagger_ori, dagger_new
       integer ::
      &     occ_shift(ngastp,2)
 

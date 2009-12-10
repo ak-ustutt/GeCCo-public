@@ -55,6 +55,7 @@
         read(lu,end=100) 
      &       lenlab1,reo%label_in (1:lenlab1),
      &       lenlab2,reo%label_out(1:lenlab2),
+     &       reo%tra_in,reo%tra_out,
      &       reo%sign,
      &       reo%iblk_in,reo%iblk_out,
      &       reo%occ_opin, reo%rst_opin,
@@ -92,6 +93,7 @@ c dbg
         write(lu,err=200) 
      &       lenlab1,reo%label_in (1:lenlab1),
      &       lenlab2,reo%label_out(1:lenlab2),
+     &       reo%tra_in,reo%tra_out,
      &       reo%sign,
      &       reo%iblk_in,reo%iblk_out,
      &       reo%occ_opin, reo%rst_opin,

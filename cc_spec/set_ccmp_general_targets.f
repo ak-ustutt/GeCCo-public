@@ -111,7 +111,7 @@ C      end if
           ndef = 3
         end if
         call op_from_occ_parameters(-1,parameters,2,
-     &                       occ_def,ndef,1,(/.true.,.true./),ndef)
+     &                       occ_def,ndef,1,(/     0      0/),ndef)
         call set_rule(op_top,ttype_op,DEF_OP_FROM_OCC,
      &                op_top,1,1,
      &                parameters,2,tgt_info)

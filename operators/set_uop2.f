@@ -20,8 +20,10 @@
      &     name*(*)
       integer, intent(in) ::
      &     occ_def(ngastp,2,ndef*njoined), ndef, njoined
-      logical, intent(in) ::
-     &     freeze(2)
+c      logical, intent(in) ::
+c     &     freeze(2)
+      integer, intent(in) ::
+     &     freeze(2,njoined)
 
       type(orbinf) ::
      &     orb_info

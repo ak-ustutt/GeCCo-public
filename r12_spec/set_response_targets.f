@@ -390,7 +390,7 @@
           ! RBRV(V)V:
           call add_target(trim(opname3),ttype_op,.false.,tgt_info)
           call op_from_occ_parameters(-1,parameters,2,
-     &         occ_def,ndef,1,(/.false.,.true./),ndef)
+     &         occ_def,ndef,1,(/      2,     0/),ndef)
           call set_rule(trim(opname3),ttype_op,DEF_OP_FROM_OCC,
      &                  trim(opname3),1,1,
      &                  parameters,2,tgt_info)
@@ -498,7 +498,7 @@
         end do
         ndef = ndef + maxexc - 2
         call op_from_occ_parameters(-1,parameters,2,
-     &                occ_def,ndef,1,(/.true.,.true./),ndef)
+     &                occ_def,ndef,1,(/     0,     0/),ndef)
         call set_rule(op_top,ttype_op,DEF_OP_FROM_OCC,
      &                op_top,1,1,
      &                parameters,2,tgt_info)
@@ -737,7 +737,7 @@ c     &  write(luout,*) 'defining other operators'
         occ_def(IPART,1,1) = 1
         occ_def(IPART,2,1) = 1
         call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,ndef,1,(/.true.,.true./),ndef)
+     &       occ_def,ndef,1,(/     0,     0/),ndef)
         call set_rule(op_bprc,ttype_op,DEF_OP_FROM_OCC,
      &                op_bprc,1,1,
      &                parameters,2,tgt_info)
@@ -748,7 +748,7 @@ c     &  write(luout,*) 'defining other operators'
         occ_def(IPART,1,1) = 1
         occ_def(IPART,2,1) = 1
         call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,ndef,1,(/.true.,.true./),ndef)
+     &       occ_def,ndef,1,(/     0,     0/),ndef)
         call set_rule(op_xprc,ttype_op,DEF_OP_FROM_OCC,
      &                op_xprc,1,1,
      &                parameters,2,tgt_info)

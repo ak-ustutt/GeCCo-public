@@ -83,7 +83,7 @@
       occ_def(IHOLE,2,3) = 2
       call add_target('TEST_R',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/     0,     0/),ndef)
       call set_rule('TEST_R',ttype_op,DEF_OP_FROM_OCC,
      &              'TEST_R',1,1,
      &              parameters,2,tgt_info)
@@ -97,7 +97,7 @@
       occ_def(IHOLE,2,4) = 2
       call add_target('TEST_R2',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),ndef)
+     &     occ_def,ndef,2,(/  0,   0,  0,   0/),ndef)
       call set_rule('TEST_R2',ttype_op,DEF_OP_FROM_OCC,
      &              'TEST_R2',1,1,
      &              parameters,2,tgt_info)
@@ -109,7 +109,7 @@
       occ_def(IHOLE,2,1) = 3
       call add_target('TEST_RT',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/     0,     0/),ndef)
       call set_rule('TEST_RT',ttype_op,DEF_OP_FROM_OCC,
      &              'TEST_RT',1,1,
      &              parameters,2,tgt_info)
@@ -125,7 +125,7 @@
       occ_def(IPART,2,2) = 1
       call add_target('TEST_R3',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/     0,     0/),ndef)
       call set_rule('TEST_R3',ttype_op,DEF_OP_FROM_OCC,
      &              'TEST_R3',1,1,
      &              parameters,2,tgt_info)
@@ -139,7 +139,7 @@
       occ_def(IHOLE,2,4) = 2
       call add_target('TEST_H2',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),ndef)
+     &     occ_def,ndef,2,(/  0,   0,  0,   0/),ndef)
       call set_rule('TEST_H2',ttype_op,DEF_OP_FROM_OCC,
      &              'TEST_H2',1,1,
      &              parameters,2,tgt_info)
@@ -158,7 +158,7 @@
       occ_def(IPART,2,3) = 2
       call add_target('TEST_H',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/     0,     0/),ndef)
       call set_rule('TEST_H',ttype_op,DEF_OP_FROM_OCC,
      &              'TEST_H',1,1,
      &              parameters,2,tgt_info)
@@ -172,7 +172,7 @@
       occ_def(IHOLE,2,2) = 2
       call add_target('TEST_A',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/     0,     0/),ndef)
       call set_rule('TEST_A',ttype_op,DEF_OP_FROM_OCC,
      &              'TEST_A',1,1,
      &              parameters,2,tgt_info)
@@ -185,7 +185,7 @@
       occ_def(IHOLE,2,2) = 2
       call add_target('TEST_B',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/     0,     0/),ndef)
       call set_rule('TEST_B',ttype_op,DEF_OP_FROM_OCC,
      &              'TEST_B',1,1,
      &              parameters,2,tgt_info)

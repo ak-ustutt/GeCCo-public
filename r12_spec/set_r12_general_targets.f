@@ -166,7 +166,7 @@ c        min_rank = 2  ! 1 is a possibility
         endif
 
         call op_from_occ_parameters(-1,parameters,2,
-     &                        occ_def,ndef,1,(/.true.,.true./),ndef)
+     &                        occ_def,ndef,1,(/     0,     0/),ndef)
         call set_rule(op_r12,ttype_op,DEF_OP_FROM_OCC,
      &                op_r12,1,1,
      &                parameters,2,tgt_info)
@@ -250,7 +250,7 @@ c     &              parameters,1,tgt_info)
       ndef = 16
       call set_gxx(occ_def)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+     &     occ_def,ndef,1,(/      2,     0/),ndef)
       call set_rule(op_g_x,ttype_op,DEF_OP_FROM_OCC,
      &              op_g_x,1,1,
      &              parameters,2,tgt_info)
@@ -262,7 +262,7 @@ c     &              parameters,1,tgt_info)
       ndef = 16
       call set_gxx(occ_def)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.false./),ndef)
+     &     occ_def,ndef,1,(/      2,      2/),ndef)
       call set_rule('G-XX',ttype_op,DEF_OP_FROM_OCC,
      &              'G-XX',1,1,
      &              parameters,2,tgt_info)
@@ -309,7 +309,7 @@ c      min_rank = 2
       occ_def(IHOLE,2,9) = 1
       occ_def(IEXTR,2,9) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.false./),ndef)
+     &     occ_def,ndef,1,(/     0,      2/),ndef)
       call set_rule('G-Acore',ttype_op,DEF_OP_FROM_OCC,
      &              'G-Acore',1,1,
      &              parameters,2,tgt_info)
@@ -325,7 +325,7 @@ c      min_rank = 2
       occ_def(IHOLE,2,1) = 1
       occ_def(IEXTR,2,1) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.false./),ndef)
+     &     occ_def,ndef,1,(/     0,      2/),ndef)
       call set_rule('H-ext',ttype_op,DEF_OP_FROM_OCC,
      &              'H-ext',1,1,
      &              parameters,2,tgt_info)
@@ -386,7 +386,7 @@ c      min_rank = 2
       occ_def(IEXTR,1,12) = 1
       occ_def(IPART,2,12) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.false./),ndef)
+     &     occ_def,ndef,1,(/      2,      2/),ndef)
       call set_rule('G-CAcore',ttype_op,DEF_OP_FROM_OCC,
      &              'G-CAcore',1,1,
      &              parameters,2,tgt_info)
@@ -401,7 +401,7 @@ c      min_rank = 2
       occ_def(IHOLE,1,2) = 1
       occ_def(IEXTR,2,2) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+     &     occ_def,ndef,1,(/      2,     0/),ndef)
       call set_rule('F-X',ttype_op,DEF_OP_FROM_OCC,
      &              'F-X',1,1,
      &              parameters,2,tgt_info)
@@ -443,7 +443,7 @@ c      min_rank = 2
       occ_def(IEXTR,1,2) = 1
       occ_def(IHOLE,2,2) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+     &     occ_def,ndef,1,(/      2,     0/),ndef)
       call set_rule(op_rintbreve,ttype_op,DEF_OP_FROM_OCC,
      &              op_rintbreve,1,1,
      &              parameters,2,tgt_info)
@@ -495,7 +495,7 @@ c      min_rank = 2
       occ_def(IPART,2,14) = 2
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,7,2,(/.true.,.true./),14)
+     &     occ_def,7,2,(/   0,0,  0,  0/),14)
       call set_rule(op_gr,ttype_op,DEF_OP_FROM_OCC,
      &              op_gr,1,1,
      &              parameters,2,tgt_info)
@@ -503,7 +503,7 @@ c      min_rank = 2
       ! extended variant (formal)
       call add_target(op_gr_x,ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,7,2,(/.false.,.true./),14)
+     &     occ_def,7,2,(/   2, 0,   2,     0/),14)
       call set_rule(op_gr_x,ttype_op,DEF_OP_FROM_OCC,
      &              op_gr_x,1,1,
      &              parameters,2,tgt_info)
@@ -531,7 +531,7 @@ c      min_rank = 2
       occ_def(IPART,2,10) = 2
       call add_target('G.R-Ccore',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.false.,.true./),2*ndef)
+     &     occ_def,ndef,2,(/  2, 0, 2, 0/),2*ndef)
       call set_rule('G.R-Ccore',ttype_op,DEF_OP_FROM_OCC,
      &              'G.R-Ccore',1,1,
      &              parameters,2,tgt_info)
@@ -574,7 +574,7 @@ c     &              parameters,1,tgt_info)
       if (is_keyword_set('method.CC').gt.0) ndef = 5
       
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),10)
+     &     occ_def,ndef,2,(/  0,   0,  0,   0/),10)
       call set_rule(op_v_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_v_inter,1,1,
      &              parameters,2,tgt_info)
@@ -582,7 +582,7 @@ c     &              parameters,1,tgt_info)
       ! extended variant (formal)
       call add_target(op_v_x,ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,5,2,(/.false.,.true./),10)
+     &     occ_def,5,2,(/  2, 0,  2,  0/),10)
       call set_rule(op_v_x,ttype_op,DEF_OP_FROM_OCC,
      &              op_v_x,1,1,
      &              parameters,2,tgt_info)
@@ -604,7 +604,7 @@ c     &              parameters,1,tgt_info)
 
       call add_target('V-Ccore',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.false.,.true./),2*ndef)
+     &     occ_def,ndef,2,(/  2, 0,  2,  0/),2*ndef)
       call set_rule('V-Ccore',ttype_op,DEF_OP_FROM_OCC,
      &              'V-Ccore',1,1,
      &              parameters,2,tgt_info)
@@ -637,7 +637,7 @@ c      occ_def(IEXTR,1,9) = 1
 c      occ_def(IHOLE,2,10) = 2
 c
 c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,5,2,(/.true.,.true./),10)
+c     &     occ_def,5,2,(/     0,     0/),10)
 c      call set_rule(op_v_test,ttype_op,DEF_OP_FROM_OCC,
 c     &              op_v_test,1,1,
 c     &              parameters,2,tgt_info)
@@ -686,8 +686,8 @@ c        ! 5
         occ_def(IHOLE,2,10) = 1
         occ_def(IEXTR,2,10) = 1
         call op_from_occ_parameters(-1,parameters,2,
-c     &       occ_def,5,2,(/.true.,.false./),10)
-     &       occ_def,5,2,(/.false.,.true./),10)
+c     &       occ_def,5,2,(/     0,      2/),10)
+     &       occ_def,5,2,(/      2,     0/),10)
         call set_rule('R.R-X',ttype_op,DEF_OP_FROM_OCC,
      &                'R.R-X',1,1,
      &                parameters,2,tgt_info)
@@ -739,7 +739,7 @@ c      occ_def(IPART,1,5) = 1
 c      occ_def(IPART,1,6) = 1
 c      occ_def(IHOLE,2,6) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,1,1,(/.true.,.true./),6)
+     &     occ_def,1,1,(/     0,     0/),6)
       call set_rule(op_c_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_c_inter,1,1,
      &              parameters,2,tgt_info)
@@ -752,7 +752,7 @@ c      occ_def(IHOLE,2,6) = 2
       occ_def(IHOLE,2,2) = 2
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,1,2,(/.true.,.true./),2)
+     &     occ_def,1,2,(/     0,     0/),2)
       call set_rule(op_p_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_p_inter,1,1,
      &              parameters,2,tgt_info)
@@ -801,7 +801,7 @@ c      occ_def(IPART,1,11) = 1
 c      occ_def(IPART,2,11) = 1
 c      occ_def(IHOLE,2,12) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,2,3,(/.true.,.true./),6)
+     &     occ_def,2,3,(/ 0,0,0,0,0,0/),6)
       call set_rule(op_z_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_z_inter,1,1,
      &              parameters,2,tgt_info)
@@ -942,7 +942,7 @@ c      occ_def(IHOLE,2,12) = 2
         occ_def(IEXTR,1,52) = 1
         occ_def(IEXTR,2,52) = 1
         call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,26,2,(/.false.,.false./),52)
+     &       occ_def,26,2,(/2,2,2,2/),52)
         call set_rule(op_g_z,ttype_op,DEF_OP_FROM_OCC,
      &                op_g_z,1,1,
      &                parameters,2,tgt_info)
@@ -955,7 +955,7 @@ c dbg - test
       occ_def(IHOLE,1,2) = 1
       occ_def(IPART,2,2) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),6)
+     &     occ_def,ndef,1,(/     0,     0/),6)
       call set_rule('Z0',ttype_op,DEF_OP_FROM_OCC,
      &              'Z0',1,1,
      &              parameters,2,tgt_info)      

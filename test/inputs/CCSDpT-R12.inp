@@ -1,0 +1,10 @@
+general
+ memmax=30000000
+method
+  CC maxexc=2
+  R12 maxexc=2,ansatz=3,approx=C,r12op=1,fixed=T,min_tp=2,screen=T
+  CCPT
+calculate
+  solve non_linear method=diis,maxiter=25,conv=1d-10,maxsub=8
+  routes contract=3,simtraf=0
+ 

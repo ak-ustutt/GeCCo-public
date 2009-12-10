@@ -103,7 +103,9 @@
      &     cinfo_troptmpa(:,:),
      &     cinfo_cntc(:,:),cinfo_cnta(:,:),
      &     map_info_c(:),
-     &     map_info_a(:)
+     &     map_info_a(:),
+     &     dmap_troptmpc(:), dmap_troptmpa(:),
+     &     dmap_opc(:), dmap_opa(:)
 
       real(8) ::
      &     xnrm
@@ -252,9 +254,16 @@ c dbg
      &       idxmsc_dis_c(ncblk_cnt), idxmsc_dis_a(nablk_cnt),
      &       lstrcnt(ncblk_cnt+nablk_cnt),
      &       lstrop(ncblk_op+nablk_op),
-     &       lstrtroptmp(ncblk_troptmp+nablk_troptmp)
-     &       )
+     &       lstrtroptmp(ncblk_troptmp+nablk_troptmp),
+     &       dmap_troptmpc(ncblk_trop),dmap_troptmpa(nablk_trop),
+     &       dmap_opc(ncblk_op),dmap_opa(nablk_op))
       
+      call set_dis_tra_map(dmap_troptmpc,dmap_troptmpa,
+     &     cinfo_troptmpc(1,3),cinfo_troptmpa(1,3),
+     &                                ncblk_troptmp,nablk_troptmp)
+      call set_dis_tra_map(dmap_opc,dmap_opa,
+     &     cinfo_opc(1,3),cinfo_opa(1,3),ncblk_op,nablk_op)
+
       idxst_op = me_op%off_op_occ(iblkop) + 1
       lenop    = me_op%len_op_occ(iblkop)
       if (iblktrop.gt.0) then
@@ -573,7 +582,8 @@ c dbg
      &                              gmtropdis_c,ncblk_troptmp,
      &                   cinfo_troptmpa,idxmstropdis_a,
      &                              gmtropdis_a,nablk_troptmp,
-     &                   tra_trop,me_troptmp,nsym)
+     &                   tra_trop,dmap_troptmpc,dmap_troptmpa,
+     &                              me_troptmp,nsym)
               idxdis_trop = idxdis
 
               ! relevant for case w/o reordering
@@ -667,7 +677,7 @@ c dbg
      &                              gmopdis_c,ncblk_op,
      &                     cinfo_opa,idxmsopdis_a,
      &                              gmopdis_a,nablk_op,
-     &                     tra_op,me_op,nsym)
+     &                     tra_op,dmap_opc,dmap_opa,me_op,nsym)
 c     &                     .false.,me_op,nsym)
                 idxop =   d_gam_ms_op(idxdis,igam_op_tr_a(1),idxms) + 1
      &                     - idxst_op+1
@@ -792,7 +802,9 @@ c dbg
      &     idxmstropdis_c, idxmstropdis_a,
      &     idxmsc_dis_c , idxmsc_dis_a ,
      &     lstrcnt,
-     &     lstrop,lstrtroptmp
+     &     lstrop,lstrtroptmp,
+     &     dmap_troptmpc,dmap_troptmpa,
+     &     dmap_opc,dmap_opa
      &     )
 
       ifree = mem_flushmark()

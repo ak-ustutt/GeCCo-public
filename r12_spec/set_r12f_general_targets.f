@@ -265,7 +265,7 @@ c          occ_def(IHOLE,2,(idef-1)*2+1) = irank
 c          occ_def(IPART,1,(idef-1)*2+2) = 1
 c        end do
 c        call op_from_occ_parameters(-1,parameters,2,
-c     &       occ_def,ndef,2,(/.true.,.true./),ndef)
+c     &       occ_def,ndef,2,(/  0, 0,  0, 0/),ndef)
 c        call set_rule(op_cex,ttype_op,DEF_OP_FROM_OCC,
 c     &       op_cex,1,1,
 c     &       parameters,2,tgt_info)
@@ -336,7 +336,7 @@ c     &              parameters,1,tgt_info)
       ndef = 16
       call set_gxx(occ_def)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+     &     occ_def,ndef,1,(/      2,     0/),ndef)
       call set_rule(op_g_x,ttype_op,DEF_OP_FROM_OCC,
      &              op_g_x,1,1,
      &              parameters,2,tgt_info)
@@ -348,7 +348,7 @@ c     &              parameters,1,tgt_info)
       ndef = 16
       call set_gxx(occ_def)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.false./),ndef)
+     &     occ_def,ndef,1,(/      2,      2/),ndef)
       call set_rule('G-XX',ttype_op,DEF_OP_FROM_OCC,
      &              'G-XX',1,1,
      &              parameters,2,tgt_info)
@@ -395,7 +395,7 @@ c      min_rank = 2
       occ_def(IHOLE,2,9) = 1
       occ_def(IEXTR,2,9) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.false./),ndef)
+     &     occ_def,ndef,1,(/     0,      2/),ndef)
       call set_rule('G-Acore',ttype_op,DEF_OP_FROM_OCC,
      &              'G-Acore',1,1,
      &              parameters,2,tgt_info)
@@ -411,7 +411,7 @@ c      min_rank = 2
       occ_def(IHOLE,2,1) = 1
       occ_def(IEXTR,2,1) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.false./),ndef)
+     &     occ_def,ndef,1,(/     0,      2/),ndef)
       call set_rule('H-ext',ttype_op,DEF_OP_FROM_OCC,
      &              'H-ext',1,1,
      &              parameters,2,tgt_info)
@@ -472,7 +472,7 @@ c      min_rank = 2
       occ_def(IEXTR,1,12) = 1
       occ_def(IPART,2,12) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.false./),ndef)
+     &     occ_def,ndef,1,(/      2,      2/),ndef)
       call set_rule('G-CAcore',ttype_op,DEF_OP_FROM_OCC,
      &              'G-CAcore',1,1,
      &              parameters,2,tgt_info)
@@ -486,7 +486,7 @@ c      min_rank = 2
       occ_def(IHOLE,1,2) = 1
       occ_def(IEXTR,2,2) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+     &     occ_def,ndef,1,(/      2,     0/),ndef)
       call set_rule('F-X',ttype_op,DEF_OP_FROM_OCC,
      &              'F-X',1,1,
      &              parameters,2,tgt_info)
@@ -557,7 +557,7 @@ c     &              parameters,1,tgt_info)
         occ_def(IPART,2,6) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+     &     occ_def,ndef,1,(/      2,     0/),ndef)
       call set_rule(op_rintbreve,ttype_op,DEF_OP_FROM_OCC,
      &              op_rintbreve,1,1,
      &              parameters,2,tgt_info)
@@ -614,7 +614,7 @@ c     &              parameters,1,tgt_info)
         occ_def(IPART,2,18) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),ndef)
+     &     occ_def,ndef,2,(/ 0, 0, 0, 0/),ndef)
       call set_rule(op_rttr,ttype_op,DEF_OP_FROM_OCC,
      &              op_rttr,1,1,
      &              parameters,2,tgt_info)
@@ -695,7 +695,7 @@ c      occ_def(IPART,2,16) = 2
       end if
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),3*(n_pp+1))
+     &     occ_def,ndef,2,(/ 0, 0, 0, 0/),3*(n_pp+1))
       call set_rule(op_gr,ttype_op,DEF_OP_FROM_OCC,
      &              op_gr,1,1,
      &              parameters,2,tgt_info)
@@ -703,7 +703,7 @@ c      occ_def(IPART,2,16) = 2
       ! extended variant
       call add_target(op_gr_x,ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.false.,.true./),3*(n_pp+1))
+     &     occ_def,ndef,2,(/ 2, 0, 2, 0/),3*(n_pp+1))
       call set_rule(op_gr_x,ttype_op,DEF_OP_FROM_OCC,
      &              op_gr_x,1,1,
      &              parameters,2,tgt_info)
@@ -760,7 +760,7 @@ c      occ_def(IPART,2,16) = 2
       end if      
       call add_target('G.R-Ccore',ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.false.,.true./),2*ndef)
+     &     occ_def,ndef,2,(/ 2, 0, 2, 0/),2*ndef)
       call set_rule('G.R-Ccore',ttype_op,DEF_OP_FROM_OCC,
      &              'G.R-Ccore',1,1,
      &              parameters,2,tgt_info)
@@ -812,18 +812,25 @@ c dbg
           occ_def(IHOLE,2,16) = 1
           occ_def(IEXTR,2,16) = 1
           ! 9
-          occ_def(IHOLE,1,17)  = 2
-          occ_def(IPART,2,18)  = 2
+          occ_def(IPART,1,17)  = 2
+          occ_def(IHOLE,2,18)  = 2
           ! 10
-          occ_def(IHOLE,1,19)  = 2
-          occ_def(IPART,2,20)  = 1
-          occ_def(IEXTR,2,20)  = 1
+          occ_def(IPART,1,19)  = 1
+          occ_def(IEXTR,1,19)  = 1
+          occ_def(IHOLE,2,20)  = 2
+C          ! 9
+C          occ_def(IHOLE,1,17)  = 2
+C          occ_def(IPART,2,18)  = 2
+C          ! 10
+C          occ_def(IHOLE,1,19)  = 2
+C          occ_def(IPART,2,20)  = 1
+C          occ_def(IEXTR,2,20)  = 1
         end if
 c        call op_from_occ_parameters(-1,parameters,2,
-c     &       occ_def,ndef,2,(/.true.,.true./),10)
+c     &       occ_def,ndef,2,(/0,0,0,0/),10)
 c check for conflicts!!!
         call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,ndef,2,(/.true.,.false./),10)
+     &       occ_def,ndef,2,(/1,0,1,0/),10)
         call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
      &                op_ff,1,1,
      &                parameters,2,tgt_info)
@@ -896,7 +903,7 @@ c check for conflicts!!!
         occ_def(IPART,2,20) = 1
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.false.,.true./),ndef*2)
+     &     occ_def,ndef,2,(/2,0,2,0/),ndef*2)
       call set_rule('FF-X',ttype_op,DEF_OP_FROM_OCC,
      &              'FF-X',1,1,
      &              parameters,2,tgt_info)
@@ -1003,7 +1010,7 @@ c check for conflicts!!!
         end if
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/0,0/),ndef)
       call set_rule(op_v_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_v_inter,1,1,
      &              parameters,2,tgt_info)
@@ -1074,7 +1081,7 @@ c check for conflicts!!!
         end if
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+     &     occ_def,ndef,1,(/2,0/),ndef)
       call set_rule(op_v_x,ttype_op,DEF_OP_FROM_OCC,
      &              op_v_x,1,1,
      &              parameters,2,tgt_info)
@@ -1133,7 +1140,7 @@ c check for conflicts!!!
         end if
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+     &     occ_def,ndef,1,(/2,0/),ndef)
       call set_rule('V-Ccore',ttype_op,DEF_OP_FROM_OCC,
      &              'V-Ccore',1,1,
      &              parameters,2,tgt_info)
@@ -1197,7 +1204,7 @@ c check for conflicts!!!
       end if
       call add_target(op_b_inter,ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/0,0/),ndef)
       call set_rule(op_b_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_b_inter,1,1,
      &              parameters,2,tgt_info)
@@ -1241,7 +1248,7 @@ c check for conflicts!!!
       occ_def(IPART,2,4) = 1
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/0,0/),ndef)
       call set_rule(op_xp_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_xp_inter,1,1,
      &              parameters,2,tgt_info)
@@ -1267,7 +1274,7 @@ c check for conflicts!!!
       occ_def(IPART,2,8) = 1
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),ndef*2)
+     &     occ_def,ndef,2,(/0,0,0,0/),ndef*2)
       call set_rule(op_xh_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_xh_inter,1,1,
      &              parameters,2,tgt_info)
@@ -1287,7 +1294,7 @@ c check for conflicts!!!
       occ_def(IPART,2,3) = 2
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,n_pp+1,1,(/.true.,.true./),6)
+     &     occ_def,n_pp+1,1,(/0,0/),6)
       call set_rule(op_c_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_c_inter,1,1,
      &              parameters,2,tgt_info)
@@ -1312,7 +1319,7 @@ c check for conflicts!!!
       occ_def(IHOLE,2,2) = 1
       occ_def(IPART,2,2) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/0,0/),ndef)
       call set_rule('Vpx',ttype_op,DEF_OP_FROM_OCC,
      &              'Vpx',1,1,
      &              parameters,2,tgt_info)
@@ -1325,7 +1332,7 @@ c check for conflicts!!!
       occ_def(IHOLE,2,2) = 1
       occ_def(IPART,2,2) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),ndef)
+     &     occ_def,ndef,2,(/0,0,0,0/),ndef)
       call set_rule('G.R-X',ttype_op,DEF_OP_FROM_OCC,
      &              'G.R-X',1,1,
      &              parameters,2,tgt_info)
@@ -1341,7 +1348,7 @@ c      occ_def(IPART,2,1) = 1
       occ_def(IHOLE,1,2) = 1
       occ_def(IPART,2,2) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),6)
+     &     occ_def,ndef,1,(/0,0/),6)
       call set_rule(op_z_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_z_inter,1,1,
      &              parameters,2,tgt_info)
@@ -1361,146 +1368,17 @@ c      occ_def(IPART,2,1) = 1
         ndef = 2   
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),6)
+     &     occ_def,ndef,1,(/0,0/),6)
       call set_rule('Z2-INT',ttype_op,DEF_OP_FROM_OCC,
      &              'Z2-INT',1,1,
      &              parameters,2,tgt_info)
       
         ! Non-anti-symmetrised Hamiltonian integrals.
         call add_target(op_g_z,ttype_op,.false.,tgt_info)
-        occ_def = 0
-        ! 1
-        occ_def(IHOLE,1,1) = 1
-        occ_def(IHOLE,2,1) = 1
-        occ_def(IHOLE,1,2) = 1
-        occ_def(IHOLE,2,2) = 1
-        ! 2
-        occ_def(IHOLE,1,3) = 1
-        occ_def(IPART,2,3) = 1
-        occ_def(IHOLE,1,4) = 1
-        occ_def(IHOLE,2,4) = 1
-        ! 3
-        occ_def(IHOLE,1,5) = 1
-        occ_def(IEXTR,2,5) = 1
-        occ_def(IHOLE,1,6) = 1
-        occ_def(IHOLE,2,6) = 1
-        ! 4
-        occ_def(IHOLE,1,7) = 1
-        occ_def(IHOLE,2,7) = 1
-        occ_def(IHOLE,1,8) = 1
-        occ_def(IPART,2,8) = 1
-        ! 5
-        occ_def(IHOLE,1,9) = 1
-        occ_def(IPART,2,9) = 1
-        occ_def(IHOLE,1,10) = 1
-        occ_def(IPART,2,10) = 1
-        ! 6
-        occ_def(IHOLE,1,11) = 1
-        occ_def(IEXTR,2,11) = 1
-        occ_def(IHOLE,1,12) = 1
-        occ_def(IPART,2,12) = 1
-        ! 7
-        occ_def(IHOLE,1,13) = 1
-        occ_def(IHOLE,2,13) = 1
-        occ_def(IPART,1,14) = 1
-        occ_def(IHOLE,2,14) = 1
-        ! 8
-        occ_def(IHOLE,1,15) = 1
-        occ_def(IPART,2,15) = 1
-        occ_def(IPART,1,16) = 1
-        occ_def(IHOLE,2,16) = 1
-        ! 9
-        occ_def(IHOLE,1,17) = 1
-        occ_def(IEXTR,2,17) = 1
-        occ_def(IPART,1,18) = 1
-        occ_def(IHOLE,2,18) = 1
-        ! 10
-        occ_def(IHOLE,1,19) = 1
-        occ_def(IHOLE,2,19) = 1
-        occ_def(IPART,1,20) = 1
-        occ_def(IPART,2,20) = 1
-        ! 11
-        occ_def(IHOLE,1,21) = 1
-        occ_def(IPART,2,21) = 1
-        occ_def(IPART,1,22) = 1
-        occ_def(IPART,2,22) = 1
-        ! 12
-        occ_def(IHOLE,1,23) = 1
-        occ_def(IEXTR,2,23) = 1
-        occ_def(IPART,1,24) = 1
-        occ_def(IPART,2,24) = 1
-        ! 13
-        occ_def(IHOLE,1,25) = 1
-        occ_def(IHOLE,2,25) = 1
-        occ_def(IHOLE,1,26) = 1
-        occ_def(IEXTR,2,26) = 1
-        ! 14
-        occ_def(IHOLE,1,27) = 1
-        occ_def(IPART,2,27) = 1
-        occ_def(IHOLE,1,28) = 1
-        occ_def(IEXTR,2,28) = 1
-        ! 15
-        occ_def(IHOLE,1,29) = 1
-        occ_def(IEXTR,2,29) = 1
-        occ_def(IHOLE,1,30) = 1
-        occ_def(IEXTR,2,30) = 1
-        ! 16
-        occ_def(IHOLE,1,31) = 1
-        occ_def(IHOLE,2,31) = 1
-        occ_def(IPART,1,32) = 1
-        occ_def(IEXTR,2,32) = 1
-        ! 17
-        occ_def(IHOLE,1,33) = 1
-        occ_def(IPART,2,33) = 1
-        occ_def(IPART,1,34) = 1
-        occ_def(IEXTR,2,34) = 1
-        ! 18
-        occ_def(IHOLE,1,35) = 1
-        occ_def(IEXTR,2,35) = 1
-        occ_def(IPART,1,36) = 1
-        occ_def(IEXTR,2,36) = 1
-        ! 19
-        occ_def(IHOLE,1,37) = 1
-        occ_def(IHOLE,2,37) = 1
-        occ_def(IEXTR,1,38) = 1
-        occ_def(IHOLE,2,38) = 1
-        ! 20
-        occ_def(IHOLE,1,39) = 1
-        occ_def(IPART,2,39) = 1
-        occ_def(IEXTR,1,40) = 1
-        occ_def(IHOLE,2,40) = 1
-        ! 21
-        occ_def(IHOLE,1,41) = 1
-        occ_def(IEXTR,2,41) = 1
-        occ_def(IEXTR,1,42) = 1
-        occ_def(IHOLE,2,42) = 1
-        ! 22
-        occ_def(IHOLE,1,43) = 1
-        occ_def(IHOLE,2,43) = 1
-        occ_def(IEXTR,1,44) = 1
-        occ_def(IPART,2,44) = 1
-        ! 23
-        occ_def(IHOLE,1,45) = 1
-        occ_def(IPART,2,45) = 1
-        occ_def(IEXTR,1,46) = 1
-        occ_def(IPART,2,46) = 1
-        ! 24
-        occ_def(IHOLE,1,47) = 1
-        occ_def(IEXTR,2,47) = 1
-        occ_def(IEXTR,1,48) = 1
-        occ_def(IPART,2,48) = 1
-        ! 25
-        occ_def(IHOLE,1,49) = 1
-        occ_def(IHOLE,2,49) = 1
-        occ_def(IEXTR,1,50) = 1
-        occ_def(IEXTR,2,50) = 1
-        ! 26
-        occ_def(IHOLE,1,51) = 1
-        occ_def(IPART,2,51) = 1
-        occ_def(IEXTR,1,52) = 1
-        occ_def(IEXTR,2,52) = 1
+c        call set_g_z_old(ndef,occ_def)
+        call set_g_z(ndef,occ_def)
         call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,26,2,(/.false.,.false./),52)
+     &       occ_def,ndef,2,(/1,1,0,0/),2*ndef)
         call set_rule(op_g_z,ttype_op,DEF_OP_FROM_OCC,
      &                op_g_z,1,1,
      &                parameters,2,tgt_info)
@@ -3185,6 +3063,304 @@ c dbg
       end do
 
       end subroutine set_gxx
+
+      subroutine set_g_z(ndef,occ_def)
+
+      implicit none
+
+      integer, intent(out) ::
+     &     ndef,occ_def(ngastp,2,*)
+
+      ndef = 25
+      occ_def(1:ngastp,1:2,1:2*ndef) = 0
+      ! set (H,[HPX])(H,H) part
+      ! 1
+      occ_def(IHOLE,1,1) = 1
+      occ_def(IHOLE,2,1) = 1
+      occ_def(IHOLE,1,2) = 1
+      occ_def(IHOLE,2,2) = 1
+      ! 2
+      occ_def(IHOLE,1,3) = 1
+      occ_def(IPART,2,3) = 1
+      occ_def(IHOLE,1,4) = 1
+      occ_def(IHOLE,2,4) = 1
+      ! 3
+      occ_def(IHOLE,1,5) = 1
+      occ_def(IEXTR,2,5) = 1
+      occ_def(IHOLE,1,6) = 1
+      occ_def(IHOLE,2,6) = 1
+      
+      ! set (H,[HPX])(H,P) part
+      ! 4
+      occ_def(IHOLE,1,7) = 1
+      occ_def(IHOLE,2,7) = 1
+      occ_def(IHOLE,1,8) = 1
+      occ_def(IPART,2,8) = 1
+      ! 5
+      occ_def(IHOLE,1,9) = 1
+      occ_def(IPART,2,9) = 1
+      occ_def(IHOLE,1,10) = 1
+      occ_def(IPART,2,10) = 1
+      ! 6
+      occ_def(IHOLE,1,11) = 1
+      occ_def(IEXTR,2,11) = 1
+      occ_def(IHOLE,1,12) = 1
+      occ_def(IPART,2,12) = 1
+
+      ! set (H,[HPX])(P,H) part
+      ! 7
+      occ_def(IHOLE,1,13) = 1
+      occ_def(IHOLE,2,13) = 1
+      occ_def(IPART,1,14) = 1
+      occ_def(IHOLE,2,14) = 1
+      ! 8
+      occ_def(IHOLE,1,15) = 1
+      occ_def(IPART,2,15) = 1
+      occ_def(IPART,1,16) = 1
+      occ_def(IHOLE,2,16) = 1
+      ! 9
+      occ_def(IHOLE,1,17) = 1
+      occ_def(IEXTR,2,17) = 1
+      occ_def(IPART,1,18) = 1
+      occ_def(IHOLE,2,18) = 1
+
+      ! set (P,[HPX])(H,H)
+      ! 10
+      occ_def(IPART,1,19) = 1
+      occ_def(IHOLE,2,19) = 1
+      occ_def(IHOLE,1,20) = 1
+      occ_def(IHOLE,2,20) = 1
+      ! 11
+      occ_def(IPART,1,21) = 1
+      occ_def(IPART,2,21) = 1
+      occ_def(IHOLE,1,22) = 1
+      occ_def(IHOLE,2,22) = 1
+      ! 12
+      occ_def(IPART,1,23) = 1
+      occ_def(IEXTR,2,23) = 1
+      occ_def(IHOLE,1,24) = 1
+      occ_def(IHOLE,2,24) = 1
+      ! set (X,[HP])(H,H)
+      ! 13
+      occ_def(IEXTR,1,25) = 1
+      occ_def(IHOLE,2,25) = 1
+      occ_def(IHOLE,1,26) = 1
+      occ_def(IHOLE,2,26) = 1
+      ! 14
+      occ_def(IEXTR,1,27) = 1
+      occ_def(IPART,2,27) = 1
+      occ_def(IHOLE,1,28) = 1
+      occ_def(IHOLE,2,28) = 1
+
+      ! set (P,[HPX])(H,P)
+      ! 15
+      occ_def(IPART,1,29) = 1
+      occ_def(IHOLE,2,29) = 1
+      occ_def(IHOLE,1,30) = 1
+      occ_def(IPART,2,30) = 1
+      ! 16
+      occ_def(IPART,1,31) = 1
+      occ_def(IPART,2,31) = 1
+      occ_def(IHOLE,1,32) = 1
+      occ_def(IPART,2,32) = 1
+      ! 17
+      occ_def(IPART,1,33) = 1
+      occ_def(IEXTR,2,33) = 1
+      occ_def(IHOLE,1,34) = 1
+      occ_def(IPART,2,34) = 1
+      ! set (X,[HP])(H,P)
+      ! 18
+      occ_def(IEXTR,1,35) = 1
+      occ_def(IHOLE,2,35) = 1
+      occ_def(IHOLE,1,36) = 1
+      occ_def(IPART,2,36) = 1
+      ! 19
+      occ_def(IEXTR,1,37) = 1
+      occ_def(IPART,2,37) = 1
+      occ_def(IHOLE,1,38) = 1
+      occ_def(IPART,2,38) = 1
+
+      ! set (P,[HP])(H,X)
+      ! 20
+      occ_def(IPART,1,39) = 1
+      occ_def(IHOLE,2,39) = 1
+      occ_def(IHOLE,1,40) = 1
+      occ_def(IEXTR,2,40) = 1
+      ! 21
+      occ_def(IPART,1,41) = 1
+      occ_def(IPART,2,41) = 1
+      occ_def(IHOLE,1,42) = 1
+      occ_def(IEXTR,2,42) = 1
+
+      ! set (X,X)(H,H)
+      ! 22
+      occ_def(IEXTR,1,43) = 1
+      occ_def(IEXTR,2,43) = 1
+      occ_def(IHOLE,1,44) = 1
+      occ_def(IHOLE,2,44) = 1
+
+      ! set (X,X)(H,P)
+      ! 23
+      occ_def(IEXTR,1,45) = 1
+      occ_def(IEXTR,2,45) = 1
+      occ_def(IHOLE,1,46) = 1
+      occ_def(IPART,2,46) = 1
+
+      ! set (X,[HP])(H,X)
+      ! 24
+      occ_def(IEXTR,1,47) = 1
+      occ_def(IHOLE,2,47) = 1
+      occ_def(IHOLE,1,48) = 1
+      occ_def(IEXTR,2,48) = 1
+      ! 25
+      occ_def(IEXTR,1,49) = 1
+      occ_def(IPART,2,49) = 1
+      occ_def(IHOLE,1,50) = 1
+      occ_def(IEXTR,2,50) = 1
+
+      end subroutine
+
+      subroutine set_g_z_old(ndef,occ_def)
+
+      implicit none
+
+      integer, intent(out) ::
+     &     ndef,occ_def(ngastp,2,*)
+
+      ndef = 26
+        occ_def(1:ngastp,1:2,1:ndef) = 0
+        ! 1
+        occ_def(IHOLE,1,1) = 1
+        occ_def(IHOLE,2,1) = 1
+        occ_def(IHOLE,1,2) = 1
+        occ_def(IHOLE,2,2) = 1
+        ! 2
+        occ_def(IHOLE,1,3) = 1
+        occ_def(IPART,2,3) = 1
+        occ_def(IHOLE,1,4) = 1
+        occ_def(IHOLE,2,4) = 1
+        ! 3
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IEXTR,2,5) = 1
+        occ_def(IHOLE,1,6) = 1
+        occ_def(IHOLE,2,6) = 1
+        ! 4
+        occ_def(IHOLE,1,7) = 1
+        occ_def(IHOLE,2,7) = 1
+        occ_def(IHOLE,1,8) = 1
+        occ_def(IPART,2,8) = 1
+        ! 5
+        occ_def(IHOLE,1,9) = 1
+        occ_def(IPART,2,9) = 1
+        occ_def(IHOLE,1,10) = 1
+        occ_def(IPART,2,10) = 1
+        ! 6
+        occ_def(IHOLE,1,11) = 1
+        occ_def(IEXTR,2,11) = 1
+        occ_def(IHOLE,1,12) = 1
+        occ_def(IPART,2,12) = 1
+        ! 7
+        occ_def(IHOLE,1,13) = 1
+        occ_def(IHOLE,2,13) = 1
+        occ_def(IPART,1,14) = 1
+        occ_def(IHOLE,2,14) = 1
+        ! 8
+        occ_def(IHOLE,1,15) = 1
+        occ_def(IPART,2,15) = 1
+        occ_def(IPART,1,16) = 1
+        occ_def(IHOLE,2,16) = 1
+        ! 9
+        occ_def(IHOLE,1,17) = 1
+        occ_def(IEXTR,2,17) = 1
+        occ_def(IPART,1,18) = 1
+        occ_def(IHOLE,2,18) = 1
+        ! 10
+        occ_def(IHOLE,1,19) = 1
+        occ_def(IHOLE,2,19) = 1
+        occ_def(IPART,1,20) = 1
+        occ_def(IPART,2,20) = 1
+        ! 11
+        occ_def(IHOLE,1,21) = 1
+        occ_def(IPART,2,21) = 1
+        occ_def(IPART,1,22) = 1
+        occ_def(IPART,2,22) = 1
+        ! 12
+        occ_def(IHOLE,1,23) = 1
+        occ_def(IEXTR,2,23) = 1
+        occ_def(IPART,1,24) = 1
+        occ_def(IPART,2,24) = 1
+        ! 13
+        occ_def(IHOLE,1,25) = 1
+        occ_def(IHOLE,2,25) = 1
+        occ_def(IHOLE,1,26) = 1
+        occ_def(IEXTR,2,26) = 1
+        ! 14
+        occ_def(IHOLE,1,27) = 1
+        occ_def(IPART,2,27) = 1
+        occ_def(IHOLE,1,28) = 1
+        occ_def(IEXTR,2,28) = 1
+        ! 15
+        occ_def(IHOLE,1,29) = 1
+        occ_def(IEXTR,2,29) = 1
+        occ_def(IHOLE,1,30) = 1
+        occ_def(IEXTR,2,30) = 1
+        ! 16
+        occ_def(IHOLE,1,31) = 1
+        occ_def(IHOLE,2,31) = 1
+        occ_def(IPART,1,32) = 1
+        occ_def(IEXTR,2,32) = 1
+        ! 17
+        occ_def(IHOLE,1,33) = 1
+        occ_def(IPART,2,33) = 1
+        occ_def(IPART,1,34) = 1
+        occ_def(IEXTR,2,34) = 1
+        ! 18
+        occ_def(IHOLE,1,35) = 1
+        occ_def(IEXTR,2,35) = 1
+        occ_def(IPART,1,36) = 1
+        occ_def(IEXTR,2,36) = 1
+        ! 19
+        occ_def(IHOLE,1,37) = 1
+        occ_def(IHOLE,2,37) = 1
+        occ_def(IEXTR,1,38) = 1
+        occ_def(IHOLE,2,38) = 1
+        ! 20
+        occ_def(IHOLE,1,39) = 1
+        occ_def(IPART,2,39) = 1
+        occ_def(IEXTR,1,40) = 1
+        occ_def(IHOLE,2,40) = 1
+        ! 21
+        occ_def(IHOLE,1,41) = 1
+        occ_def(IEXTR,2,41) = 1
+        occ_def(IEXTR,1,42) = 1
+        occ_def(IHOLE,2,42) = 1
+        ! 22
+        occ_def(IHOLE,1,43) = 1
+        occ_def(IHOLE,2,43) = 1
+        occ_def(IEXTR,1,44) = 1
+        occ_def(IPART,2,44) = 1
+        ! 23
+        occ_def(IHOLE,1,45) = 1
+        occ_def(IPART,2,45) = 1
+        occ_def(IEXTR,1,46) = 1
+        occ_def(IPART,2,46) = 1
+        ! 24
+        occ_def(IHOLE,1,47) = 1
+        occ_def(IEXTR,2,47) = 1
+        occ_def(IEXTR,1,48) = 1
+        occ_def(IPART,2,48) = 1
+        ! 25
+        occ_def(IHOLE,1,49) = 1
+        occ_def(IHOLE,2,49) = 1
+        occ_def(IEXTR,1,50) = 1
+        occ_def(IEXTR,2,50) = 1
+        ! 26
+        occ_def(IHOLE,1,51) = 1
+        occ_def(IPART,2,51) = 1
+        occ_def(IEXTR,1,52) = 1
+        occ_def(IEXTR,2,52) = 1
+
+      end subroutine
 
       end
 

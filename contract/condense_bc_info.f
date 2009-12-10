@@ -29,7 +29,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       include 'opdim.h'
       include 'stdunit.h'
@@ -109,18 +109,18 @@
      &       ihpvgas,ngas,nspin)
 
 c test
-          write(luout,*) 'EX1 before'
-          do ijoin = 1, njoined_op1
-            call wrt_occ_rstr(luout,ijoin,iocc_ex1(:,:,ijoin),
-     &                                    irst_ex1(:,:,:,:,ijoin),
-     &                                    ngas,nspin)
-          end do
-          write(luout,*) 'EX2 before'
-          do ijoin = 1, njoined_op2
-            call wrt_occ_rstr(luout,ijoin,iocc_ex2(:,:,ijoin),
-     &                                    irst_ex2(:,:,:,:,ijoin),
-     &                                    ngas,nspin)
-          end do
+C          write(luout,*) 'EX1 before'
+C          do ijoin = 1, njoined_op1
+C            call wrt_occ_rstr(luout,ijoin,iocc_ex1(:,:,ijoin),
+C     &                                    irst_ex1(:,:,:,:,ijoin),
+C     &                                    ngas,nspin)
+C          end do
+C          write(luout,*) 'EX2 before'
+C          do ijoin = 1, njoined_op2
+C            call wrt_occ_rstr(luout,ijoin,iocc_ex2(:,:,ijoin),
+C     &                                    irst_ex2(:,:,:,:,ijoin),
+C     &                                    ngas,nspin)
+C          end do
 
           call fit_restr3(irst_ex2,irst_ex1,
      &       iocc_op1op2tmp,iocc_ex2,iocc_ex1,
@@ -128,18 +128,18 @@ c test
      &       njoined_op1op2,njoined_op2,
      &       ihpvgas,ngas,nspin)
 
-          write(luout,*) 'EX1 after'
-          do ijoin = 1, njoined_op1
-            call wrt_occ_rstr(luout,ijoin,iocc_ex1(:,:,ijoin),
-     &                                    irst_ex1(:,:,:,:,ijoin),
-     &                                    ngas,nspin)
-          end do
-          write(luout,*) 'EX2 after'
-          do ijoin = 1, njoined_op2
-            call wrt_occ_rstr(luout,ijoin,iocc_ex2(:,:,ijoin),
-     &                                    irst_ex2(:,:,:,:,ijoin),
-     &                                    ngas,nspin)
-          end do
+C          write(luout,*) 'EX1 after'
+C          do ijoin = 1, njoined_op1
+C            call wrt_occ_rstr(luout,ijoin,iocc_ex1(:,:,ijoin),
+C     &                                    irst_ex1(:,:,:,:,ijoin),
+C     &                                    ngas,nspin)
+C          end do
+C          write(luout,*) 'EX2 after'
+C          do ijoin = 1, njoined_op2
+C            call wrt_occ_rstr(luout,ijoin,iocc_ex2(:,:,ijoin),
+C     &                                    irst_ex2(:,:,:,:,ijoin),
+C     &                                    ngas,nspin)
+C          end do
 c test end
 
       

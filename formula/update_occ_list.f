@@ -7,7 +7,7 @@
       include 'def_occ_list.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character(len=15) ::
      &     i_am = 'update_occ_list'
 
@@ -68,9 +68,6 @@
       else
         n_occ_new = nraw
       end if
-c dbg
-      print *,'newpair, n_occ_new: ',newpair,n_occ_new
-c dbg
 
       ! re-allocate, if necessary
       if (newpair.and.n_vtx_inf+1.gt.olist%max_vtx_inf) then

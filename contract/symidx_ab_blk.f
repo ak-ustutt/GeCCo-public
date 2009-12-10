@@ -242,7 +242,7 @@ c test
      &                iblk,idxmsa,igama,
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
-     &                .false.,mel,ngam)
+     &                .false.,-1,-1,mel,ngam)
 c            print *,'idxdis_1: ',idxdis_1,idxdis_1_x
             if (idxdis_1.ne.idxdis_1_x) print *,'!!!OHA!!!'
 c test
@@ -265,7 +265,7 @@ c test
      &                iblk,idxmsa2,igama,
      &                occ_csub,idxmsdis_c2,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a2,gamdis_a,nablk,
-     &                .false.,mel,ngam)
+     &                .false.,-1,-1,mel,ngam)
 
             ioff_2 = mel%off_op_gmox(iblk)%
      &             d_gam_ms(idxdis_2,igama,idxmsa2) !- ioff0_1

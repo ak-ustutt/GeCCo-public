@@ -78,7 +78,8 @@
      &     hpvx_occ(:,:,:), ca_occ(:,:), idx_graph(:,:,:),
      &     ldim_opin_c(:), ldim_opin_a(:),
      &     ldim_opout_c(:), ldim_opout_a(:),
-     &     istr_csub(:), istr_asub(:)
+     &     istr_csub(:), istr_asub(:),
+     &     dis_map_c(:), dis_map_a(:)
 
       real(8), external ::
      &     ddot
@@ -189,7 +190,8 @@
      &         len_str(ncblk+nablk),
      &         istr_csub(ncblk),istr_asub(nablk),
      &         ldim_opin_c(ncblk),ldim_opin_a(nablk),
-     &         ldim_opout_c(ncblk),ldim_opout_a(nablk))
+     &         ldim_opout_c(ncblk),ldim_opout_a(nablk),
+     &         dis_map_c(ncblk),dis_map_a(nablk))
 
       ! set HPVX and OCC info
       call condense_occ(occ_csub, occ_asub,
@@ -199,6 +201,10 @@
       call condense_occ(graph_csub, graph_asub,
      &                  hpvx_csub,hpvx_asub,
      &                  idx_graph(1,1,iblkoff+1),njoined,hpvxblkseq)
+
+      ! set map as some complicated changes in the sequence may happen
+      call set_dis_tra_map(dis_map_c,dis_map_a,
+     &     hpvx_csub,hpvx_asub,ncblk,nablk)
 
       ! Loop over Ms of annihilator string of output array
       idxmsa = 0
@@ -260,7 +266,7 @@
      &                iblk_in,idxmsa,igama,
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
-     &                .true.,me_in,ngam)
+     &                .true.,dis_map_c,dis_map_a,me_in,ngam)
 
             ioff_in = me_in%off_op_gmox(iblk_in)%
      &             d_gam_ms(idxdis_in,igamc,idxmsc) - ioff0_in
@@ -332,7 +338,8 @@
      &         len_str,
      &         istr_csub,istr_asub,
      &         ldim_opin_c,ldim_opin_a,
-     &         ldim_opout_c,ldim_opout_a)
+     &         ldim_opout_c,ldim_opout_a,
+     &         dis_map_c, dis_map_a)
 
       ifree = mem_flushmark('add_transp')
 

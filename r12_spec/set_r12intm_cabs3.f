@@ -87,7 +87,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -284,15 +284,15 @@ c     &       op_info,orb_info)
         call set_pint_contract2(flist,ansatz,
      &       idx_op,6,
      &       op_info,orb_info)
-      case('PF')
-        call set_p3f_contract(flist,
-     &       idx_op,3,
-     &       op_info,orb_info)
-
-      case('PG')
-        call set_p3g_contract2(flist,
-     &       idx_op,3,
-     &       op_info,orb_info)
+c      case('PF')
+c        call set_p3f_contract(flist,
+c     &       idx_op,3,
+c     &       op_info,orb_info)
+c
+c      case('PG')
+c        call set_p3g_contract2(flist,
+c     &       idx_op,3,
+c     &       op_info,orb_info)
 
       case('Z')
         njoined_intm = op_info%op_arr(idx_intm)%op%njoined

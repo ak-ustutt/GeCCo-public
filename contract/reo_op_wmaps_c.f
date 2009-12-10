@@ -74,7 +74,7 @@
      &     idxopori, idxopreo,
      &     lenopori, lenopreo,
      &     msa_max, msc_max, msa, msc, igama, igamc,
-     &     idxms, idxdis, lenmap
+     &     idxms, idxms_tra, idxdis, idxdis_tra, lenmap
       integer ::
      &     ncblk_opori, nablk_opori, 
      &     ncblk_opreo, nablk_opreo, 
@@ -88,7 +88,8 @@
      &     cinfo_oporic(:,:),cinfo_oporia(:,:),
      &     cinfo_opreoc(:,:),cinfo_opreoa(:,:),
      &     occ_opori_blk1(:,:,:), graph_opori_blk1(:,:,:),
-     &     occ_opreo_blk2(:,:,:), graph_opreo_blk2(:,:,:)
+     &     occ_opreo_blk2(:,:,:), graph_opreo_blk2(:,:,:),
+     &     dis_map_ca(:), dis_map_ac(:)
 
       real(8) ::
      &     xnrm
@@ -121,7 +122,7 @@
      &     graphs(:)
 
       integer, external ::
-     &     idxlist, max_dis_blk
+     &     idxlist, max_dis_blk, idx_msgmdst2, msa2idxms4op
       logical, external ::
      &     next_msgamdist2
       real(8), external ::
@@ -163,6 +164,11 @@
         write(luout,*) 'opreo: ',trim(opreo%name),
      &       ' block ',iblkopreo
       end if
+
+      if (tra_opreo) call quit(1,'reo_op_wmaps_c',
+     &     'savety trap for tra_opreo==.true. (does it work?)')
+      ! in fact, a few things in connection with complicated operators
+      !  (including a dis_map) need to be fixed
 
       ! flag whether any block block was non-zero
       nonzero = .true. ! not used currently
@@ -245,36 +251,61 @@
         end if
       end if
 
-      occ_opori_blk1 => opori%ihpvca_occ(1:ngastp,1:2,
+      if (.not.tra_opori) then
+        occ_opori_blk1 => opori%ihpvca_occ(1:ngastp,1:2,
      &                       njoined_opori*(iblkopori-1)+1:
      &                       njoined_opori*(iblkopori-1)+njoined_opori)
-      occ_opreo_blk2 => opreo%ihpvca_occ(1:ngastp,1:2,
-     &                       njoined_opreo*(iblkopreo-1)+1:
-     &                       njoined_opreo*(iblkopreo-1)+njoined_opreo)
+        graph_opori_blk1 => me_opori%idx_graph(1:ngastp,1:2,
+     &                       njoined_opori*(iblkopori-1)+1:
+     &                       njoined_opori*(iblkopori-1)+njoined_opori)
+      else
+        allocate(occ_opori_blk1(ngastp,2,njoined_opori),
+     &         graph_opori_blk1(ngastp,2,njoined_opori) )
+        occ_opori_blk1 = iocc_dagger_n(
+     &                       opori%ihpvca_occ(1:ngastp,1:2,
+     &                       njoined_opori*(iblkopori-1)+1:
+     &                       njoined_opori*(iblkopori-1)+njoined_opori),
+     &                          njoined_opori)
+        graph_opori_blk1 = iocc_dagger_n(
+     &                     me_opori%idx_graph(1:ngastp,1:2,
+     &                       njoined_opori*(iblkopori-1)+1:
+     &                       njoined_opori*(iblkopori-1)+njoined_opori),
+     &                          njoined_opori)
+      end if
 
-      graph_opori_blk1 => me_opori%idx_graph(1:ngastp,1:2,
-     &                       njoined_opori*(iblkopori-1)+1:
-     &                       njoined_opori*(iblkopori-1)+njoined_opori)
-      graph_opreo_blk2 => me_opreo%idx_graph(1:ngastp,1:2,
+      if (.not.tra_opreo) then
+        occ_opreo_blk2 => opreo%ihpvca_occ(1:ngastp,1:2,
      &                       njoined_opreo*(iblkopreo-1)+1:
      &                       njoined_opreo*(iblkopreo-1)+njoined_opreo)
+        graph_opreo_blk2 => me_opreo%idx_graph(1:ngastp,1:2,
+     &                       njoined_opreo*(iblkopreo-1)+1:
+     &                       njoined_opreo*(iblkopreo-1)+njoined_opreo)
+      else
+        allocate(occ_opreo_blk2(ngastp,2,njoined_opreo),
+     &         graph_opreo_blk2(ngastp,2,njoined_opreo) )
+        occ_opreo_blk2 = iocc_dagger_n(
+     &                     opreo%ihpvca_occ(1:ngastp,1:2,
+     &                       njoined_opreo*(iblkopreo-1)+1:
+     &                       njoined_opreo*(iblkopreo-1)+njoined_opreo),
+     &                          njoined_opreo)
+        graph_opreo_blk2 = iocc_dagger_n(
+     &                     me_opreo%idx_graph(1:ngastp,1:2,
+     &                       njoined_opreo*(iblkopreo-1)+1:
+     &                       njoined_opreo*(iblkopreo-1)+njoined_opreo),
+     &                          njoined_opreo)
+      end if
 
       call get_num_subblk(ncblk_opori,nablk_opori,
      &     occ_opori_blk1,njoined_opori)
       call get_num_subblk(ncblk_opreo,nablk_opreo,
      &     occ_opreo_blk2,njoined_opreo)
-c dbg
-      call wrt_occ_n(luout,occ_opori_blk1,njoined_opori)
-      call wrt_occ_n(luout,occ_opreo_blk2,njoined_opreo)
-      print *,'nblk (ORI): ',ncblk_opori,nablk_opori
-      print *,'nblk (REO): ',ncblk_opreo,nablk_opreo
-c dbg
 
       allocate(
      &       gm_dis_c(ncblk_opori), gm_dis_a(nablk_opori),
      &       ms_dis_c(ncblk_opori), ms_dis_a(nablk_opori),
      &       idxms_dis_c(ncblk_opori), idxms_dis_a(nablk_opori),
-     &       lstropori(ncblk_opori+nablk_opori) )
+     &       lstropori(ncblk_opori+nablk_opori),
+     &       dis_map_ca(ncblk_opori), dis_map_ac(nablk_opori))
       
       graphs => str_info%g
 
@@ -296,6 +327,10 @@ c dbg
       call condense_occ(cinfo_oporic(1,2), cinfo_oporia(1,2),
      &                  cinfo_oporic(1,3), cinfo_oporia(1,3),
      &                  graph_opori_blk1,njoined_opori,hpvxblkseq)
+
+      call set_dis_tra_map(dis_map_ca,dis_map_ac,
+     &     cinfo_oporic(1,3),cinfo_oporia(1,3),ncblk_opori,nablk_opori)
+
       ! and the same for OPREO
       call condense_occ(cinfo_opreoc(1,1), cinfo_opreoa(1,1),
      &                  cinfo_opreoc(1,3), cinfo_opreoa(1,3),
@@ -364,10 +399,22 @@ c dbg
           
           igamc = multd2h(igama,igamtopori)
 
-          idxopori = gam_ms_opori(igama,idxms) + 1
-     &             - idxst_opori+1
-          idxopreo = gam_ms_opreo(igama,idxms) + 1
+          if (.not.tra_opori) then
+            idxopori = gam_ms_opori(igama,idxms) + 1
+     &           - idxst_opori+1
+          else
+            idxms_tra = msa2idxms4op(msc,mstopori,msa_max,msc_max)
+            idxopori = gam_ms_opori(igamc,idxms_tra) + 1
+     &           - idxst_opori+1
+          end if
+          if (.not.tra_opori) then
+            idxopreo = gam_ms_opreo(igama,idxms) + 1
      &             - idxst_opreo+1
+          else
+            idxms_tra = msa2idxms4op(msc,mstopreo,msa_max,msc_max)
+            idxopreo = gam_ms_opreo(igamc,idxms_tra) + 1
+     &             - idxst_opreo+1            
+          end if
 
           ! LOWER incore requirements:
           !  load here Opori, Opreo, OporiOpreo block
@@ -411,9 +458,25 @@ c dbg
      &             cycle
             idxdis = idxdis + 1
               
-            idxopori = d_gam_ms_opori(idxdis,igama,idxms)+1
-     &               - idxst_opori+1
-                
+            if (.not.tra_opori) then
+              idxopori = d_gam_ms_opori(idxdis,igama,idxms)+1
+     &                   - idxst_opori+1
+            else
+              ! if we transpose, the sequence is different
+              ! should be changed in order to pass sequentially
+              ! through ORI list
+              idxdis_tra =
+     &             idx_msgmdst2(
+     &                   iblkopori,idxms,igama,
+     &                   cinfo_oporic,idxms_dis_c,
+     &                              gm_dis_c,ncblk_opori,
+     &                   cinfo_oporia,idxms_dis_a,
+     &                              gm_dis_a,nablk_opori,
+     &                   tra_opori,dis_map_ca,dis_map_ac,me_opori,ngam)
+              idxopori = d_gam_ms_opori(idxdis_tra,igama,idxms)+1
+     &                   - idxst_opori+1
+            end if
+
 c dbg
 c          write(luout,*) 'input block '
 c          write(luout,'(x,5g15.8)')    xbf12tmp(1:lblk_oporiopreotmp)
@@ -473,8 +536,12 @@ c dbg
      &     idxms_dis_c, idxms_dis_a,
      &     lstropori,
      &     cinfo_oporic, cinfo_oporia,
-     &     cinfo_opreoa, cinfo_opreoc
+     &     cinfo_opreoa, cinfo_opreoc,
+     &     dis_map_ca, dis_map_ac
      &     )
+
+      if (tra_opori) deallocate(occ_opori_blk1,graph_opori_blk1)
+      if (tra_opreo) deallocate(occ_opreo_blk2,graph_opreo_blk2)
 
       ifree = mem_flushmark()
 

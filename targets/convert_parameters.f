@@ -76,8 +76,8 @@
      &     rw, n_par_str, nmax
       integer, intent(inout) ::
      &     occ_def(*), ndef, njoined
-      logical, intent(inout) ::
-     &     freeze(2)
+      integer, intent(inout) ::
+     &     freeze(2,*)
       character(*), intent(inout) ::
      &     parameters(n_par_str)
 
@@ -86,8 +86,8 @@
       if (rw.lt.0) then
         parameters(1)(1:len(parameters(1))) = ' '
         parameters(2)(1:len(parameters(2))) = ' '
-        write(parameters(1),'(2(i5,x),2(l2))')
-     &        njoined, ndef, freeze(1:2)
+        write(parameters(1),'(2(i5,x),10(i2))')
+     &        njoined, ndef, freeze(1:2,1:njoined)
 c        if (2*ngastp*ndef*njoined.gt.120)
 c        if (2*ngastp*ndef*njoined.gt.240)
         if (2*ngastp*ndef*njoined.gt.480)
@@ -98,8 +98,8 @@ c        write(parameters(2),'(480(i1))')
         write(parameters(2),'(480(i2))')
      &        occ_def(1:2*ngastp*ndef*njoined)        
       else
-        read(parameters(1),'(2(i5,x),2(l2))')
-     &       njoined, ndef, freeze(1:2)
+        read(parameters(1),'(2(i5,x),10(i2))')
+     &       njoined, ndef, freeze(1:2,1:njoined)
         if (ndef*njoined.gt.nmax)
      &       call quit(1,'op_from_occ_parameters','nmax too small')
 c        read(parameters(2),'(120(i2))')

@@ -27,7 +27,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       logical, parameter ::
 c     &     new_sign = .false. ! use the old sign evaluation route
      &     new_sign = .true. ! use the new sign evaluation route
@@ -436,13 +436,13 @@ cmh        end if
           write(luout,*) 'setting self-contraction sign to +1'
         end if
         bc_sign = +1d0
-        if (dble(cnt_sign).ne.bc_sign) then
-          write(luout,*) 'setting self-contraction sign to +1'
-          write(luout,*)
-     &         'OHA OHA OHA --- the above assumption was wrong'
-          write(luout,*) 'bc_sign (old) = ',bc_sign
-          write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
-        end if
+c        if (dble(cnt_sign).ne.bc_sign) then
+c          write(luout,*) 'setting self-contraction sign to +1'
+c          write(luout,*)
+c     &         'OHA OHA OHA --- the above assumption was wrong'
+c          write(luout,*) 'bc_sign (old) = ',bc_sign
+c          write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
+c        end if
       end if
 
 

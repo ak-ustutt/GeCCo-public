@@ -27,7 +27,7 @@
       type(contraction), intent(in) ::
      &     contr
       integer, intent(inout) ::
-     &     iocc_cnt(ngastp,2,len_list)
+     &     iocc_cnt(ngastp,2,2*len_list)
       integer, intent(out) ::
      &     iocc_ex(ngastp,2,njoined), merge_map(ld_map,2,njoined)
 

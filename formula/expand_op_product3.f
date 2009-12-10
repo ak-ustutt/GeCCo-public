@@ -74,7 +74,7 @@
       include 'ifc_baserout.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
       character, parameter ::
      &     i_am = 'expand_op_product3'
 
@@ -463,13 +463,13 @@ c          proto0%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
             do iop = 1, nops
               if (iop.eq.num_res) cycle
               ioff = (iblk_op(iop)-1)*ops(iop)%op%njoined
-              if (.not.proto0%vertex(iop)%dagger) then
+              if (idx_op(iop).gt.0) then
                 do ivtx = 1, joined(0,iop)
                   proto0%vertex(joined(ivtx,iop))%iblk_op = ioff+ivtx
                 end do
               else
                 ioff = ioff+ops(iop)%op%njoined+1
-                do ivtx = 1, joined(0,iop)
+                do ivtx = 1, joined(0,iop) 
                   proto0%vertex(joined(ivtx,iop))%iblk_op = ioff-ivtx
                 end do
               end if

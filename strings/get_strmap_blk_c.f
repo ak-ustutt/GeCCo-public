@@ -172,10 +172,9 @@ c dbg
 
           ! offset of string map
           ioff = strmap_info%idx_fcmap(idxgrgr)-1
-          ! plus offset of current ms/ms block
-          ioff = ioff + offsets_fc(idxgrgr)%ms(idxmsms)
-          ! plus offset of gam/gam block
-          ioff = ioff + offsets_fc(idxgrgr)%msgm(idxgmgm)
+          ! plus offset of ms/gam block
+          ioff = ioff +
+     &         offsets_fc(idxgrgr)%msgm((idxmsms-1)*nsym+idxgmgm)
 c dbg
 c          print *,'fetching 2: ioff, len = ',ioff,ilen
 c dbg

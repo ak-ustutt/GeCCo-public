@@ -113,6 +113,10 @@ c dbg
         form_pnt => form_pnt%next
       enddo
 
+c dbg
+c 50   call warn('HEAVY','DEBUGGING !')
+c dbg
+
       do idx = 1, 2             ! Full
 c      do idx = 1, 1 ! SA
         idx_prj  = 1
@@ -151,6 +155,9 @@ c      do idx = 1, 1 ! SA
           form_pnt => form_pnt%next
         enddo
       enddo
+c dbg
+c 50   call warn('HEAVY','DEBUGGING !')
+c dbg
 
       do idx = 1,3 ! Full
 c      do idx = 1,2 ! SA
@@ -175,15 +182,17 @@ c      do idx = 1,2 ! SA
         enddo
       enddo
 
+c dbg
+c        ! terminates after first loop
+c        call warn('HEAVY','DEBUGGING !')
+c        goto 200
+c dbg
+
       ! Point to the formula and move to the end of the list.
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
       enddo
 
-c dbg
-c      call warn('HEAVY','DEBUGGING!')
-c      goto 200
-c dbg
 c dbg
 c      print *,'skipping all R.G.R type terms'
 c      goto 200 ! skip the rest

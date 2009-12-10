@@ -146,7 +146,7 @@ c      occ_def(IPART,1,1) = 2
 c      occ_def(IHOLE,2,1) = 1
 c      occ_def(IPART,2,1) = 1
 c      call op_from_occ_parameters(-1,parameters,2,
-c     &                         occ_def,ndef,1,(/.true.,.true./),ndef)
+c     &                         occ_def,ndef,1,(/     0,     0/),ndef)
 c      call set_rule('R12VV',ttype_op,DEF_OP_FROM_OCC,
 c     &     'R12VV',1,1,
 c     &     parameters,2,tgt_info)
@@ -159,7 +159,7 @@ c     &     parameters,2,tgt_info)
       occ_def(IEXTR,1,1) = 1
       occ_def(IHOLE,2,1) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &                         occ_def,ndef,1,(/.true.,.true./),ndef)
+     &                         occ_def,ndef,1,(/     0,     0/),ndef)
       call set_rule('R12hxhh',ttype_op,DEF_OP_FROM_OCC,
      &     'R12hxhh',1,1,
      &     parameters,2,tgt_info)
@@ -194,7 +194,7 @@ c     &     parameters,2,tgt_info)
         if (max_extern.gt.2)
      &       call quit(1,'set_cc_pt_targets','extern>2 not allowed!')
         call op_from_occ_parameters(-1,parameters,2,
-     &                         occ_def,ndef,1,(/.true.,.true./),ndef)
+     &                         occ_def,ndef,1,(/     0,     0/),ndef)
         call set_rule(op_tpt,ttype_op,DEF_OP_FROM_OCC,
      &                op_tpt,1,1,
      &                parameters,2,tgt_info)

@@ -22,7 +22,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(formula), intent(inout), target ::
      &     form_out
@@ -480,7 +480,7 @@ c dbg
         occ_def(IHOLE,1,1) = 1
         occ_def(IHOLE,2,1) = 1
         call set_uop2(op_f,opdum_f,
-     &       occ_def,ndef,1,(/.true.,.true./),orb_info)
+     &       occ_def,ndef,1,(/0,0/),orb_info)
         deallocate(occ_def)
         idx_prod(idx_rpl) = idx_f
       else if (def_fpp) then
@@ -499,7 +499,7 @@ c dbg
         occ_def(IEXTR,1,4) = 1
         occ_def(IEXTR,2,4) = 1
         call set_uop2(op_f,opdum_f,
-     &       occ_def,ndef,1,(/.true.,.true./),orb_info)
+     &       occ_def,ndef,1,(/0,0/),orb_info)
         deallocate(occ_def)
         idx_prod(idx_rpl) = idx_f
       elseif(def_fp3f)then
@@ -514,7 +514,7 @@ c dbg
         occ_def(IHOLE,1,2) = 1
         occ_def(IPART,2,2) = 1
         call set_uop2(op_f,opdum_f,
-     &       occ_def,ndef,1,(/.true.,.true./),orb_info)
+     &       occ_def,ndef,1,(/0,0/),orb_info)
         deallocate(occ_def)
         idx_prod(idx_rpl) = idx_f
       else if (def_g) then
@@ -570,7 +570,7 @@ c dbg
         occ_def(IHOLE,2,8) = 1
         occ_def(IEXTR,2,8) = 1
         call set_uop2(op_g,opdum_g,
-     &       occ_def,ndef,1,(/.true.,.true./),orb_info)
+     &       occ_def,ndef,1,(/0,0/),orb_info)
         deallocate(occ_def)
         idx_prod(idx_rpl) = idx_g
       else if (def_gpx) then
@@ -605,7 +605,7 @@ c dbg
         occ_def(IEXTR,1,6) = 2
         occ_def(IEXTR,2,6) = 2
         call set_uop2(op_g,opdum_g,
-     &       occ_def,ndef,1,(/.true.,.true./),orb_info)
+     &       occ_def,ndef,1,(/0,0/),orb_info)
         deallocate(occ_def)
         idx_prod(idx_rpl) = idx_g
       end if

@@ -379,7 +379,7 @@ c     &       reo_info%iocc_opreo0,njoined_op1op2,
 c     &       irst_op1op2,njoined_op1op2,orb_info%ihpvgas,ngas)
 
 c dbg
-        print *,'new call to fit_restr3'
+c        print *,'new call to fit_restr3'
 c dbg
         call fit_restr3(irst0,irst_reo,
      &       iocc_op1op2tmp, reo_info%iocc_opreo0,reo_info%iocc_reo,
@@ -387,24 +387,24 @@ c dbg
      &       njoined_op1op2,nreo_op1op2,
      &       orb_info%ihpvgas,ngas,orb_info%nspin)
 c dbg
-        print *,'OP1OP2TMP'
-         do ij = 1, njoined_op1op2
-            call wrt_occ_rstr(luout,ij,iocc_op1op2tmp(:,:,ij),
-     &                                 irst_op1op2tmp(:,:,:,:,ij),
-     &                                 ngas,orb_info%nspin)
-          end do
-        print *,'OP0'
-         do ij = 1, njoined_op1op2
-            call wrt_occ_rstr(luout,ij,reo_info%iocc_opreo0(:,:,ij),
-     &                                    irst0(:,:,:,:,ij),
-     &                                    ngas,orb_info%nspin)
-          end do
-        print *,'REO'
-         do ij = 1, nreo_op1op2
-            call wrt_occ_rstr(luout,ij,reo_info%iocc_reo(:,:,ij),
-     &                                    irst_reo(:,:,:,:,ij),
-     &                                    ngas,orb_info%nspin)
-          end do
+c        print *,'OP1OP2TMP'
+c         do ij = 1, njoined_op1op2
+c            call wrt_occ_rstr(luout,ij,iocc_op1op2tmp(:,:,ij),
+c     &                                 irst_op1op2tmp(:,:,:,:,ij),
+c     &                                 ngas,orb_info%nspin)
+c          end do
+c        print *,'OP0'
+c         do ij = 1, njoined_op1op2
+c            call wrt_occ_rstr(luout,ij,reo_info%iocc_opreo0(:,:,ij),
+c     &                                    irst0(:,:,:,:,ij),
+c     &                                    ngas,orb_info%nspin)
+c          end do
+c        print *,'REO'
+c         do ij = 1, nreo_op1op2
+c            call wrt_occ_rstr(luout,ij,reo_info%iocc_reo(:,:,ij),
+c     &                                    irst_reo(:,:,:,:,ij),
+c     &                                    ngas,orb_info%nspin)
+c          end do
 c dbg
 
         call get_grph4occ(igrph,

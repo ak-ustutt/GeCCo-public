@@ -219,18 +219,18 @@ c dbg
           ! update super-vertex occupation
           if (modify_contr) then
 c dbg
-            print *,'vtx # 1:'
-            call wrt_occ_rstr(6,ivtx1,occ_vtx(1,1,ivtx1),
-     &                        rstr_vtx(1,1,1,1,ivtx1),ngas,nspin)
-            print *,'vtx # 2:'
-            call wrt_occ_rstr(6,ivtx2,occ_vtx(1,1,ivtx2),
-     &                        rstr_vtx(1,1,1,1,ivtx2),ngas,nspin)
-            print *,'occ_shr'
-            call wrt_occ_rstr(6,0,occ_shr,
-     &                        rstr_shr,ngas,nspin)
-            print *,'occ_shl'
-            call wrt_occ_rstr(6,0,occ_shl,
-     &                        rstr_shl,ngas,nspin)
+c            print *,'vtx # 1:'
+c            call wrt_occ_rstr(6,ivtx1,occ_vtx(1,1,ivtx1),
+c     &                        rstr_vtx(1,1,1,1,ivtx1),ngas,nspin)
+c            print *,'vtx # 2:'
+c            call wrt_occ_rstr(6,ivtx2,occ_vtx(1,1,ivtx2),
+c     &                        rstr_vtx(1,1,1,1,ivtx2),ngas,nspin)
+c            print *,'occ_shr'
+c            call wrt_occ_rstr(6,0,occ_shr,
+c     &                        rstr_shr,ngas,nspin)
+c            print *,'occ_shl'
+c            call wrt_occ_rstr(6,0,occ_shl,
+c     &                        rstr_shl,ngas,nspin)
 c dbg
             call fit_restr(rstr_shr,occ_shr,
      &           rstr_vtx(:,:,:,:,ivtx1),hpvxgas,ngas)
@@ -251,12 +251,12 @@ c     &           rstr_vtx(1:2,1:ngas,1:2,1:2,1:nspin,ivtx2)
             occ_vtx(1:ngastp,1:2,ivtx2) =
      &           occ_vtx(1:ngastp,1:2,ivtx2) - occ_shl + occ_shr
 c dbg
-            print *,'new vtx # 1:'
-            call wrt_occ_rstr(6,ivtx1,occ_vtx(1,1,ivtx1),
-     &                        rstr_vtx(1,1,1,1,ivtx1),ngas,nspin)
-            print *,'new vtx # 2:'
-            call wrt_occ_rstr(6,ivtx2,occ_vtx(1,1,ivtx2),
-     &                        rstr_vtx(1,1,1,1,ivtx2),ngas,nspin)
+c            print *,'new vtx # 1:'
+c            call wrt_occ_rstr(6,ivtx1,occ_vtx(1,1,ivtx1),
+c     &                        rstr_vtx(1,1,1,1,ivtx1),ngas,nspin)
+c            print *,'new vtx # 2:'
+c            call wrt_occ_rstr(6,ivtx2,occ_vtx(1,1,ivtx2),
+c     &                        rstr_vtx(1,1,1,1,ivtx2),ngas,nspin)
 c dbg
           end if
 
@@ -275,6 +275,8 @@ c dbg
      &             vertex(ivtx1)%idx_op
               reo_info%reo(idx)%iblkop_ori =
      &             vertex(ivtx1)%iblk_op
+              reo_info%reo(idx)%dagger_ori =
+     &             vertex(ivtx1)%dagger
               ! flag whether this is the result vertex of prev. binary contr.
               reo_info%reo(idx)%is_bc_result =
      &             idxop12.eq.vertex(ivtx1)%idx_op
@@ -304,6 +306,8 @@ c dbg
      &             vertex(ivtx1)%idx_op
               reo_info%reo(idx)%iblkop_ori =
      &             vertex(ivtx1)%iblk_op
+              reo_info%reo(idx)%dagger_ori =
+     &             vertex(ivtx1)%dagger
               ! flag whether this is the result vertex of prev. binary contr.
               reo_info%reo(idx)%is_bc_result =
      &             idxop12.eq.vertex(ivtx1)%idx_op
@@ -343,6 +347,7 @@ c dbg
         do ireo = 1, reo_info%nreo          
           if (.not.reo_generated(ireo)) cycle
           reo_info%reo(ireo)%idxop_new = idxop12 ! default
+          reo_info%reo(ireo)%dagger_new = .false. ! default
           idxsuper = reo_info%reo(idx)%idxsuper
           iblk = 0
           do ivtx = 1, contr%nvtx
@@ -353,6 +358,7 @@ c dbg
               vertex(ivtx)%idx_op = idxnew
               iblk = iblk+1
               vertex(ivtx)%iblk_op = iblk
+              vertex(ivtx)%dagger = .false.
             end if
           end do
           if (iblk.ne.0) reo_info%reo(ireo)%idxop_new = idxnew
