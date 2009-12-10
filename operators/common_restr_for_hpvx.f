@@ -31,10 +31,6 @@
 
       ! simple version, maybe some more logic will be neccessary
       do igas = 1, ngas
-c dbg
-        print *,'>> igas, hpvxgas, hpvx: ',igas,hpvxgas(igas),hpvx,
-     &       hpvxgas(igas).ne.hpvx
-c dbg
         if (hpvxgas(igas).ne.hpvx) cycle
         rst_res(1,igas) = max(rst1(1,igas),rst2(1,igas))
         rst_res(2,igas) = min(rst1(2,igas),rst2(2,igas))

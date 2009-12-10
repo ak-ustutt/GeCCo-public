@@ -45,7 +45,7 @@
           nreo_new = nreo_new-1
           reo_info%reo(jreo)%idxsuper = -1 ! mark as deleted
 c dbg
-          print *,'merging: ',ireo,jreo
+c          print *,'merging: ',ireo,jreo
 c dbg
 
         end do
@@ -68,7 +68,7 @@ c dbg
       reo_info%nreo = nreo_new
 
 c dbg
-      print *,'tidy_reo: ',nreo,' -> ',nreo_new
+c      print *,'tidy_reo: ',nreo,' -> ',nreo_new
 c dbg
 
       return

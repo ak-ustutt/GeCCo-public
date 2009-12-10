@@ -260,12 +260,10 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       labels(4) = form_r12_vint//'^+'
       labels(5) = form_r12_bint
       labels(6) = form_r12_bhint
-c      labels(6) = form_r12_xhint
       labels(7) = form_r12_xint
       nint = 5
       call set_dependency(form_ccr12lg0,form_r12_vint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_xint,tgt_info)
-c      call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bint,tgt_info)
       call set_dependency(form_ccr12lg0,form_r12_bhint,tgt_info)
       if (ansatz.ne.1) then
@@ -277,11 +275,18 @@ c        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
         nint = 7
       end if
       if (.not.pf12_trunc) then
+        call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
         call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
         call set_dependency(form_ccr12lg0,form_r12_zint,tgt_info)
-        labels(2+nint+1) = form_r12_pint 
-        labels(2+nint+2) = form_r12_zint 
-        nint = nint+2
+        labels(2+nint+1) = form_r12_xhint
+        labels(2+nint+2) = form_r12_pint 
+        labels(2+nint+3) = form_r12_zint 
+        nint = nint+3
+        if (.not.screen) then
+          call set_dependency(form_ccr12lg0,'Vpx_formal',tgt_info)
+          labels(2+nint+1) = 'Vpx_formal'
+          nint = nint+1
+        end if
       end if
       if (r12op.gt.0.and.max_rank.gt.2) then
         if (.not.screen) then
@@ -932,6 +937,8 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
 c        call set_dependency(solve_ccr12_gs,mel_diar12,tgt_info)
         call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+        if (.not.pf12_trunc)
+     &       call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
         if (max_rank.ge.3)
      &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
