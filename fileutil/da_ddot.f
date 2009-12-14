@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      real(8) function da_ddot(ffvec1,idxvec1,ffvec2,idxvec2,
+      real(8) function da_ddot(ffvec1,idxvec1,ist0_1,
+     &                         ffvec2,idxvec2,ist0_2,
      &                         lenvec,xbuf1,xbuf2,lenbuf)
 *----------------------------------------------------------------------*
 *
@@ -20,8 +21,8 @@
       type(filinf), intent(in) ::
      &     ffvec1, ffvec2      
       integer, intent(in) ::
-     &     idxvec1,
-     &     idxvec2,lenvec,lenbuf
+     &     idxvec1,ist0_1,
+     &     idxvec2,ist0_2,lenvec,lenbuf
       real(8), intent(inout) ::
      &     xbuf1(lenbuf), xbuf2(lenbuf)
 
@@ -75,8 +76,8 @@
         write(luout,*) 'nrecs,nrecbuf,nbatch: ',nrecs,nrecbuf,nbatch
       end if
       
-      irecst1 = (idxvec1-1)*nrecs+1
-      irecst2 = (idxvec2-1)*nrecs+1
+      irecst1 = (idxvec1-1)*nrecs+ist0_1
+      irecst2 = (idxvec2-1)*nrecs+ist0_2
       res = 0d0
       do ibatch = 1, nbatch
         if (ibatch.eq.nbatch) lenbat = len_lbat

@@ -23,12 +23,14 @@
       integer ::
      &     idx, jdx, kdx, jdxnd, ii, ivtx, ij,
      &     n_zero_vtx_res, n_zero_vtx, kdx_v, jdx_v,
-     &     n_enclosed, isvtx_j, isvtx_k, ipass
+     &     n_enclosed, isvtx_j, isvtx_k, ipass,
+     &     iv_to, iv_fr
       logical ::
-     &     merged(nvtx), reversed
+     &     merged(nvtx), reversed, right_sh
 
       integer ::
-     &     occ_j(ngastp,2), occ_k(ngastp,2), occ_dum(ngastp,2)
+     &     occ_j(ngastp,2), occ_k(ngastp,2), occ_dum(ngastp,2),
+     &     occ_fr(ngastp,2), occ_to(ngastp,2)
 
       logical, external ::
      &     zero_i8vec
@@ -94,14 +96,14 @@ c dbg
         if (jdxnd.eq.idx) cycle
 
         ! loop over pairs of vertices in contiguous list and try to merge
-        do jdx = idx, jdxnd           
+        jloop: do jdx = idx, jdxnd           
 c dbg
 c          print *,'jdx =',jdx
 c          print *,'merged',merged
 c          print *,'iord  ',iord
 c          print *,'ireo  ',ireo
 c dbg
-          if (merged(jdx)) cycle
+          if (merged(jdx)) cycle jloop
 
           ! get supervertex number of vertex on which we merge
           ! we need to first carry out all merges with vertices
@@ -112,6 +114,7 @@ c dbg
           do ipass = 1, 2
 
            do kdx = jdx+1, jdxnd
+            if (merged(jdx)) cycle jloop
             if (merged(kdx)) cycle
             kdx_v = vtx_list(kdx)
             isvtx_k = svertex(kdx_v)
@@ -119,8 +122,16 @@ c dbg
             if (ipass.eq.1.and.isvtx_k.ne.isvtx_j) cycle
             if (ipass.eq.2.and.isvtx_k.eq.isvtx_j) cycle
 
-            if (may_merge(jdx_v,kdx_v)) then
-              merged(kdx) = .true.
+            if (may_merge(jdx_v,kdx_v,right_sh)) then
+              if (.not.right_sh) then
+                iv_fr = kdx_v ! shift from right
+                iv_to = jdx_v ! to left
+                merged(kdx) = .true.
+              else
+                iv_fr = jdx_v ! shift from left
+                iv_to = kdx_v ! to right
+                merged(jdx) = .true.
+              end if
 c              jdx_v = vtx_list(jdx)
 c              kdx_v = vtx_list(kdx)
 
@@ -132,6 +143,7 @@ c dbg
 c              print *,'isvtx1,isvtx2: ',isvtx1,isvtx2
 c              print *,'svertex:       ',svertex(jdx_v),svertex(kdx_v)
 c              print *,'  -> reversed = ',reversed
+c              if (right_sh) print *,'Performing left -> right merge!'
 c dbg
 
               ! hande sign change upon merge
@@ -146,10 +158,22 @@ c        call wrt_occ(6,occ_j)
 c        call wrt_occ(6,occ_k)
 c        print *,'nenclosed = ',n_enclosed
 c dbg
+
+              if (.not.right_sh) then
+                occ_fr = occ_k
+                occ_to = occ_j
+              else
+                ! switch and transpose for correct approach
+                occ_fr(1:ngastp,1) = occ_j(1:ngastp,2)
+                occ_fr(1:ngastp,2) = occ_j(1:ngastp,1)
+                occ_to(1:ngastp,1) = occ_k(1:ngastp,2)
+                occ_to(1:ngastp,2) = occ_k(1:ngastp,1)
+              end if
+
               ! get the sign for approaching 
               ! {I0C I0A}{}{J0C J0A} -> {I0C J0C I0A J0A}{}{}
               merge_sign = merge_sign *
-     &             sign_merge(occ_j,occ_k,n_enclosed,reversed) 
+     &             sign_merge(occ_to,occ_fr,n_enclosed,reversed) 
 c dbg
 c              print *,'after sign_merge: ',merge_sign
 c dbg
@@ -166,16 +190,24 @@ c dbg
 c              print *,'after hpvx: ',merge_sign
 c dbg
 
-              iord(kdx_v) = iord(jdx_v)
-              ireo(kdx_v) = ireo(jdx_v)
+              ! also change position of already merged vtxs
+              do ii = 1, nvtx
+                if (ii.eq.iv_fr) cycle
+                if (iord(ii).eq.iord(iv_fr)) then
+                  iord(ii) = iord(iv_to)
+                  ireo(ii) = ireo(iv_to)
+                end if
+              end do
+              iord(iv_fr) = iord(iv_to)
+              ireo(iv_fr) = ireo(iv_to)
 
 c dbg
-c              print *,'modified in iord: ',vtx_list(kdx)
+c              print *,'modified in iord: ',iv_fr
 c              print *,'iord  ',iord
 c              print *,'ireo  ',ireo
 c dbg
               do ii = 1, nvtx
-                if (ireo(ii).gt.kdx_v)
+                if (ireo(ii).gt.iv_fr)
      &               iord(ii) = iord(ii)-1
               end do
 c dbg
@@ -188,26 +220,26 @@ c dbg
      &             n_zero_vtx = n_zero_vtx-1
 
               ! add column topo(:,kdx) to topo(:,jdx)
-              topo(1:nvtx,jdx_v) = topo(1:nvtx,jdx_v) 
-     &                           + topo(1:nvtx,kdx_v)
+              topo(1:nvtx,iv_to) = topo(1:nvtx,iv_to) 
+     &                           + topo(1:nvtx,iv_fr)
               ! zero column topo(:,kdx)
-              topo(1:nvtx,kdx_v) = 0
+              topo(1:nvtx,iv_fr) = 0
               ! add row topo(kdx,:) to topo(jdx,:)
-              topo(jdx_v,1:nvtx) = topo(jdx_v,1:nvtx) 
-     &                           + topo(kdx_v,1:nvtx)
+              topo(iv_to,1:nvtx) = topo(iv_to,1:nvtx) 
+     &                           + topo(iv_fr,1:nvtx)
               ! zero row topo(kdx,:)
-              topo(kdx_v,1:nvtx) = 0
+              topo(iv_fr,1:nvtx) = 0
 
               ! add xlines(kdx,:) to xlines(jdx,:)
-              xlines(jdx_v,1:nj) = xlines(jdx_v,1:nj) 
-     &                           + xlines(kdx_v,1:nj)
+              xlines(iv_to,1:nj) = xlines(iv_to,1:nj) 
+     &                           + xlines(iv_fr,1:nj)
               ! zero xlines(kdx,:)
-              xlines(kdx_v,1:nj) = 0
+              xlines(iv_fr,1:nj) = 0
 
             end if
            end do ! kdx
           end do ! ipass
-        end do ! jdx
+        end do jloop ! jdx
 
       end do
 
@@ -217,12 +249,14 @@ c dbg
 
       contains
 
-      logical function may_merge(ivtx1,ivtx2)
+      logical function may_merge(ivtx1,ivtx2,right_shift)
 
       implicit none
 
       integer, intent(in) ::
      &     ivtx1, ivtx2
+      logical, intent(out) ::
+     &     right_shift
 
       integer ::
      &     icnt, ij, idx1, idx2, iel, jvtx, num1, num2
@@ -237,6 +271,8 @@ c dbg
      &     imltlist, occ_p_el, idxmax
       logical, external ::
      &     zero_i8vec, zero_ivec
+
+      right_shift = .false.
 
 c dbg
 c      print *,'may_merge>',ivtx1,ivtx2
@@ -266,21 +302,9 @@ c dbg
         return
       end if
 
-      ! (and unless order of external lines would get messed up)
-      ! (besides, there is no need to merge zero vtx with far away vtx)
-cmh   this section is not crucial any more, but helps to avoid reorderings
-      if (may_merge.and.zero_i8vec(xlines(ivtx1,1),nj,nvtx)
-     &    .and..not.zero_i8vec(xlines(ivtx2,1),nj,nvtx)
-     &    .and.ivtx2-ivtx1.gt.1) then
-        do ij = nj, 2, -1
-          if (xlines(ivtx2,ij).gt.0) then
-            if (.not.all(xlines(ivtx1+1:ivtx2-1,1:ij-1).eq.0)) then
-              may_merge = .false.
-              return
-            end if
-          end if
-        end do
-      end if
+      ! do not shift non-zero vertex to zero vertex
+      right_shift = may_merge.and.
+     &              .not.zero_i8vec(xlines(ivtx2,1),nj,nvtx)
 
 c dbg
 c      print *,'b) ',may_merge
@@ -307,6 +331,29 @@ c dbg
 c dbg
 c        print *,'c) ',may_merge
 c dbg
+
+        ! do right-shift if advantageous vertex order is obtained
+        ! --> less reordering steps later on
+        if (may_merge.and.ivtx2-ivtx1.gt.1) then
+          ! right-shift if enclosed vtxs belong to higher result vtx ...
+          do ij = idx1-1, 1, -1
+            if (sum(xlines(ivtx1+1:ivtx2-1,ij)).gt.0) then
+              right_shift = .true.
+              cycle
+            end if
+          end do
+          ! but not if there are some belonging to even lower vertices
+          ! --> not trivially clear if a right-shift would be better
+          if (right_shift) then
+            do ij = idx1+1, nj
+              if (sum(xlines(ivtx1+1:ivtx2-1,ij)).gt.0) then
+                right_shift = .false.
+                cycle
+              end if
+            end do
+          end if
+        end if
+
       end if
 
       ! exit, if these tests failed

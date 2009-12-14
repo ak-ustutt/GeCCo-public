@@ -103,7 +103,7 @@
 
         else
           xmat(iioff+ii) = xmat(iioff+ii) +
-     &         da_ddot(ff_sbsp,jrec,ff_sbsp,irec,
+     &         da_ddot(ff_sbsp,jrec,1,ff_sbsp,irec,1,
      &         nwfpar,xbuf1,xbuf2,lenbuf)
 
         end if

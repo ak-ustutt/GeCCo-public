@@ -1,4 +1,4 @@
-      subroutine inv_op(label_inp,label_inv,
+      subroutine inv_op(label_inp,label_inv,mode,
      &     op_info,orb_info,str_info)
 *----------------------------------------------------------------------*
 *     Wrapper subroutine used in the inversion of the matrix 
@@ -29,6 +29,8 @@
      &     orb_info
       type(strinf), intent(in) ::
      &     str_info
+      character(len=*), intent(in) ::
+     &     mode
 
       type(me_list), pointer ::
      &     me_inp, me_inv
@@ -125,8 +127,14 @@
       ! (or that any off-diagonal block is zero)
 
       ! Call the actual inversion routine.
-      call invert(me_inp,me_inv,nocc_cls,
-     &     op_info,orb_info)
+      if (mode(1:7).ne.'invsqrt') then
+        call invert(me_inp,me_inv,nocc_cls,
+     &       op_info,orb_info)
+      else
+        write(luout,*) 'Calculating square root of inverse'
+        call invsqrt(me_inp,me_inv,nocc_cls,
+     &       op_info,orb_info,str_info)
+      end if
 
       if(ntest.ge.1000)then
         call wrt_mel_file(luout,5,me_inv,1,

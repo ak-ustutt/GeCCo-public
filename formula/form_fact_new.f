@@ -121,7 +121,8 @@ c dbg
       call vtxinf4contr(irestr_vtx,info_vtx,contr,op_info,ngas)
 
       ! add 0-contractions, if necessary
-      if (nvtx_full.ne.njoined) call check_disconnected(contr)
+cmh      if (nvtx_full.ne.njoined) call check_disconnected(contr)
+      call check_disconnected(contr)
       
       found = .false.
       costmin = huge(costmin)

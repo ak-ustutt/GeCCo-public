@@ -473,10 +473,11 @@ c dbg
                     end if
 
                     ! ensure canonical order
-                    call canon_contr(proto_new,reo,ivtx_reo2)
+cmh                    call canon_contr(proto_new,reo,ivtx_reo2)
+                    call canon_contr(proto_new,.false.,ivtx_reo2)
                     
                     ! reorder ol_map as well
-                    call perm_mult(ol_map_reo,ol_map,ivtx_reo2,nvtx)
+cmh                    call perm_mult(ol_map_reo,ol_map,ivtx_reo2,nvtx)
 
                     ! apply prefactor from equivalent permutation of vertices
                     proto_new%fac = proto_new%fac/dble(ieqvfac)
@@ -496,7 +497,8 @@ c     &                     occ_vtx(1:ngastp,1:2,ivtx_reo2(kvtx))
 c                    end do
 c dbg
                     call proto2contr(form_pnt%contr,proto_new,
-     &                   ol_map_reo,occ_test,op_info)
+cmh     &                   ol_map_reo,occ_test,op_info)
+     &                   ol_map,occ_test,op_info)
 
                     form_pnt => form_pnt%next
 

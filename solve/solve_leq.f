@@ -266,6 +266,12 @@
 
       end do
 
+      ! write information to opti_info about signs which occur
+      ! in trv*mvp or trv*met or trv*rhs multiplication
+      ! relevant when trv is njoined=1 op. but mvp (met) are njoined=2 op's
+      call set_opti_info_signs(opti_info,2,nopt,
+     &                         me_trv,me_mvp,me_met,me_rhs,use_s)
+
       ! read formula
       call read_form_list(form_rhs_mvp%fhand,fl_rhs_mvp)
 

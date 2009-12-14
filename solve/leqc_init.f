@@ -73,17 +73,17 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     zero_vec(opti_stat%ndim_vsbsp)
       integer ::
      &     idx, jdx, kdx, iroot, irhs,  nred, nadd, nnew, irecscr,
-     &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
+     &     imet, idamp, nopt, nroot, mxsub, lenmat, job, nsec,
      &     ndim_save, ndel, iopt, lenscr, ifree, restart_mode, nselect
       real(8) ::
      &     cond, xdum, xnrm
       real(8), pointer ::
      &     gred(:), vred(:), mred(:),
-     &     xmat1(:), xmat2(:), xvec(:), xret(:)
+     &     xmat1(:), xmat2(:), xvec(:), xret(:), signsec(:)
       integer, pointer ::
      &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
      &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
-     &     nwfpar(:),
+     &     nwfpar(:), nwfpsec(:), idstsec(:), nsec_arr(:),
      &     ipiv(:), iconv(:), idxroot(:), idxselect(:)
       type(filinf), pointer ::
      &     ffvsbsp, ffscr, ffmet
@@ -193,10 +193,16 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       end do
 
       ! orthogonalize initial subspace
+      nsec_arr => opti_info%nsec(1:nopt)
+      nsec = sum(nsec_arr)
+      nwfpsec => opti_info%nwfpsec(1:nsec)
+      idstsec => opti_info%idstsec(1:nsec)
+      signsec => opti_info%signsec(1:nsec)
       call optc_orthvec(nadd,.false.,
      &                  opti_stat%ffvsbsp,
      &                  iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  use_s,0,ffmet,ffscr,nroot,nopt,
+     &                 nsec_arr,nwfpsec,idstsec,signsec,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 
       ! set nadd

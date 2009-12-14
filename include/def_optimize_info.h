@@ -24,9 +24,13 @@
      &       shift            ! shift linear equations by value
         integer, pointer ::   ! # of wave-function parameters (wfp's)
      &       nwfpar(:),                     ! dimension: nopt
-     &       typ_prc(:)       ! type of preconditioner
+     &       typ_prc(:),      ! type of preconditioner
+     &       nsec(:),         ! # of sections in wfp list
+     &       nwfpsec(:),      ! # of wfp's in section, dim=sum(nsec)
+     &       idstsec(:)       ! first idx in section, dim=sum(nsec)
         real(8), pointer ::
-     &       thrgrd(:)        ! dimension: nopt
+     &       thrgrd(:),       ! dimension: nopt
+     &       signsec(:)       ! contraction sign of section, dim=sum(nsec)
       end type optimize_info
 
       integer, parameter ::

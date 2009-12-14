@@ -48,7 +48,8 @@
      &     EXTRACT_ORDER*13         = 'EXTRACT_ORDER',
      &     EXTRACT_FREQ*12          = 'EXTRACT_FREQ',
      &     CLASS_FORMULA*13         = 'CLASS_FORMULA',
-     &     SELECT_HERMIT*16         = 'SELECT_HERMITIAN'
+     &     SELECT_HERMIT*16         = 'SELECT_HERMITIAN',
+     &     SELECT_LINE*11           = 'SELECT_LINE'
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',
@@ -70,4 +71,5 @@
      &     PRINT_RES*9        = 'PRINT_RES',
      &     PRINT_MEL*9        = 'PRINT_MEL',
      &     SET_MEL*7          = 'SET_MEL',
-     &     EXTRACT_DIAG*12    = 'EXTRACT_DIAG'
+     &     EXTRACT_DIAG*12    = 'EXTRACT_DIAG',
+     &     REORDER_MEL*11     = 'REORDER_MEL'
