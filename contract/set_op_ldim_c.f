@@ -52,13 +52,15 @@
           hpvx = hpvxseq(idx_hpvx)        
           
           ioff = nc
-          do idx = 1, na
+c          do idx = 1, na
+          do idx = na, 1, -1
             if (hpvxa(idx).ne.hpvx) cycle
             ldima(idx) = ldim
             ldim = ldim * nstr(ioff+idx)
           end do
 
-          do idx = 1, nc
+c          do idx = 1, nc
+          do idx = nc, 1, -1
             if (hpvxc(idx).ne.hpvx) cycle
             ldimc(idx) = ldim
             ldim = ldim * nstr(idx)

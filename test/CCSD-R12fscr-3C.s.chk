@@ -1,0 +1,27 @@
+title
+  CH2/DZ DALTON(special) enviroment: CCSD-R12(scr)/3C energy 
+molecule
+  CH2-DZ-R12-DALTON
+input
+  CCSD-R12SCR-3C.inp
+check
+  label Number of terms in Lagrangian
+  find Number of generated terms:
+  compare int 5
+check
+  label Factorization of CC equations
+  find next target: CC-R12-OPT
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
+check
+  label Number of iterations
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+check
+  label Final energy
+  find final energy: [ ]*
+  compare real 4 1e-12
+end
+

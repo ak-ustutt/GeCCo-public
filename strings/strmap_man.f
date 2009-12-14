@@ -126,6 +126,7 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
      &         str_info%g(igraph12(hpvx,ica12)),
      &         str_info%ispc_typ(igraph12(hpvx,ica12)),
      &         str_info%ispc_occ(igraph12(hpvx,ica12)),
+     &         str_info%igas_restr(1,1,1,1,igraph12(hpvx,ica12)),
      &         idxmap,strmap_info,orb_info)
 
         end do

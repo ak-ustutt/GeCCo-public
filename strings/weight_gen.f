@@ -64,8 +64,13 @@
       ! number of distributions = vertex weight(nelmax,nspc)
       ndis = iwssg(nelmax,nspc)
 
-      if (ndis.le.0)
-     &     call quit(1,'weight_gen','ndis.le.0')
+      if (ndis.le.0) then
+        write(luout,*) 'found zero distributions (or less?)'
+        write(luout,*) ' number of electrons: ',nelmax
+        write(luout,*) ' check restriction array: '
+        write(luout,'(x,10(2i3,x))') mnmxspc(1:2,1:nspc)
+        call quit(1,'weight_gen','ndis.le.0')
+      end if
 
       if (iprint.ge.50) then
         write(luout,*) ' Number of subspace distributions: ', ndis

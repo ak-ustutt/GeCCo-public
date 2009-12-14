@@ -1,0 +1,11 @@
+general
+ memmax=75000000
+orb_space
+ shell type=frozen
+method
+ CC maxexc=2
+ R12 ansatz=3,maxexc=2,approx=C,trunc=-1,fixed=T,screen=T
+calculate
+ solve maxiter=30,conv=1d-8
+ routes contract=3,simtraf=0
+ 

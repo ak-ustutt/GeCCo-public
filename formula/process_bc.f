@@ -43,7 +43,7 @@
       include 'multd2h.h'
       
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 00
       logical, parameter ::
      &     formal = .false., exact = .false.
 
@@ -88,9 +88,9 @@
      &     nvtx, narc, ngas, nsym, idum, target, command,
      &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt,
      &     idxop_reo, idxop_ori, iblkop_reo, iblkop_ori,
-     &     ireo, idxs_reo
+     &     ireo, idxs_reo, mode_rst_cnt
       integer ::
-     &     iocc_cnt(ngastp,2,contr%nvtx),
+     &     iocc_cnt(ngastp,2,contr%nvtx*(contr%nvtx+1)/2),
      &     iocc_ex1(ngastp,2,contr%nvtx),
      &     iocc_ex2(ngastp,2,contr%nvtx),
      &     irst_res(2,orb_info%ngas,2,2,contr%nvtx),
@@ -102,6 +102,9 @@
      &     irst_op1op2(2,orb_info%ngas,2,2,contr%nvtx),
      &     iocc_op1op2tmp(ngastp,2,contr%nvtx),
      &     irst_op1op2tmp(2,orb_info%ngas,2,2,contr%nvtx),
+     &     irst_ex1(2,orb_info%ngas,2,2,contr%nvtx),
+     &     irst_ex2(2,orb_info%ngas,2,2,contr%nvtx),
+     &     irst_cnt(2,orb_info%ngas,2,2,contr%nvtx*(contr%nvtx+1)/2),
      &     igr_op1op2(ngastp,2,contr%nvtx),
      &     irst_ori(2,orb_info%ngas,2,2,contr%nvtx),
      &     irst_reo(2,orb_info%ngas,2,2,contr%nvtx), 
@@ -141,7 +144,7 @@
      &     cnt_info
 
       logical ::
-     &     tra_op1, tra_op2, tra_op1op2,
+     &     tra_op1, tra_op2, tra_op1op2, tra_reo, tra_ori,
      &     reo_op1op2, reo_other, reo_before
       real(8) ::
      &     flops, xmemtot, xmemblk, bc_sign
@@ -232,7 +235,8 @@
      &           irst_op1op2,irst_op1op2tmp,
      &           njoined_op1op2,mst_op1op2,igamt_op1op2,
      &           merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
-     &           occ_vtx_red,contr_red%svertex,info_vtx_red,
+     &           occ_vtx_red,irestr_vtx_red,
+     &                       contr_red%svertex,info_vtx_red,
      &                       njoined_res,contr_red%nvtx,
      &           reo_info,str_info,orb_info)
       end if
@@ -268,6 +272,18 @@ c     &     str_info,orb_info)
 c      if (njoined_op(2).gt.0) possible = possible.and.
 c     &     check_grph4occ(iocc_op2,irst_op2,njoined_op(2),
 c     &     str_info,orb_info)
+
+      ! process restrictions:
+      call ex1ex2cnt_restr(
+     &         irst_ex1, irst_ex2, irst_cnt,
+     &         -1,
+     &         idxop(2).eq.0,
+     &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
+     &         iocc_ex1,iocc_ex2,iocc_cnt,
+     &         irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
+     &         merge_op1, merge_op2, merge_op1op2, merge_op2op1,
+     &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
+     &         str_info,orb_info)
 
       if (mode.eq.'FIND') then
         ! count particle, hole, (active) spaces involved:
@@ -319,13 +335,16 @@ c     &     str_info,orb_info)
      &         iocc_op1,iocc_ex1,njoined_op(1),
      &            iocc_op2,iocc_ex2,njoined_op(2),
      &         iocc_cnt,njoined_cnt,
-     &         iocc_op1op2,njoined_op1op2,iocc_op1op2,njoined_op1op2)
+     &         iocc_op1op2,njoined_op1op2,iocc_op1op2tmp,njoined_op1op2)
 
+c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
+          mode_rst_cnt = 2 ! use as set before
           call condense_bc_info(
      &         cnt_info,idxop(2).eq.0,
-     &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2,
+     &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
-     &         irst_op1, irst_op2, irst_op1op2, irst_op1op2,
+     &         irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
+     &         irst_ex1, irst_ex2, irst_cnt, mode_rst_cnt,
      &         merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &         str_info,orb_info)
@@ -363,8 +382,10 @@ c     &     str_info,orb_info)
               idxs_reo = reo_info0%reo(ireo)%idxsuper
               idxop_reo = reo_info0%reo(ireo)%idxop_new
               iblkop_reo = 1
+              tra_reo = reo_info0%reo(ireo)%dagger_new
               idxop_ori = reo_info0%reo(ireo)%idxop_ori
               iblkop_ori = reo_info0%reo(ireo)%iblkop_ori
+              tra_ori = reo_info0%reo(ireo)%dagger_ori
               exit
             end if
           end do
@@ -387,12 +408,15 @@ c     &     str_info,orb_info)
      &           nj_ret,mst_opreo,igamt_opreo,
      &           merge_stp1_0,merge_stp1inv_0,
      &                        merge_stp2_0,merge_stp2inv_0,
-     &           occ_vtx,contr%svertex,info_vtx,
+     &           occ_vtx,irestr_vtx,
+     &                   contr%svertex,info_vtx,
      &                       njoined_res,contr%nvtx,
      &           reo_info0,str_info,orb_info)
 
           ! FIX:
-          if (nj_ret.gt.1) then
+          if (nj_ret.gt.1.and..not.tra_ori) then
+            iblkop_ori = (iblkop_ori-1)/nj_ret + 1
+          else if (nj_ret.gt.1.and.tra_ori) then
             iblkop_ori = (iblkop_ori-1)/nj_ret + 1
           end if
 
@@ -406,18 +430,11 @@ c     &     str_info,orb_info)
           command = command_reorder
           target = -1           ! unused here
           call new_formula_item(fl_pnt,command,target)
-c dbg
-          if (reo_info0%nreo.eq.2) then
-            print *,'(1)'
-            print *,'nreo = ',reo_info0%nreo
-            print *,'from_to: ',reo_info0%from_to
-            call wrt_occ_n(6,reo_info0%iocc_reo,reo_info0%nreo)
-          end if
-c dbg
 
           call store_reorder(fl_pnt,
      &       label_reo,label,
      &       iblkop_reo,iblkop_ori,
+     &       tra_reo, tra_ori,
      &       reo_info0%sign_reo,reo_info0%iocc_opreo0,
      &       reo_info0%from_to,reo_info0%iocc_reo,reo_info0%nreo,
      &       iocc_reo,irst_reo,nj_ret,
@@ -475,23 +492,17 @@ c dbg
      &       njoined_op1op2,njoined_op(1),njoined_op(2),
      &       iocc_op1op2tmp,iocc_op1,iocc_op2,
      &       irst_op1op2tmp,irst_op1,irst_op2,
-     &       iocc_ex1,iocc_ex2,iocc_cnt,njoined_cnt,
+     &       iocc_ex1,iocc_ex2,iocc_cnt,
+     &       irst_ex1,irst_ex2,irst_cnt,njoined_cnt,
      &       merge_op1,merge_op2,
      &       merge_op1op2,merge_op2op1,
      &       orb_info)
         if (reo_op1op2) then
           iblkop1op2tmp = 1
-c dbg
-          if (reo_info%nreo.eq.2) then
-            print *,'(2)'
-            print *,'nreo = ',reo_info%nreo
-            print *,'from_to: ',reo_info%from_to
-            call wrt_occ_n(6,reo_info%iocc_reo,reo_info%nreo)
-          end if
-c dbg
           call store_reorder(fl_pnt,
      &       label,label,
      &       iblkop1op2,iblkop1op2tmp,
+     &       tra_op1op2,tra_op1op2,
      &       reo_info%sign_reo,reo_info%iocc_opreo0,
      &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,
      &       iocc_op1op2,irst_op1op2,njoined_op1op2,
@@ -511,8 +522,10 @@ c dbg
               idxs_reo = reo_info%reo(ireo)%idxsuper
               idxop_reo = reo_info%reo(ireo)%idxop_new
               iblkop_reo = 1
+              tra_reo = reo_info%reo(ireo)%dagger_new
               idxop_ori = reo_info%reo(ireo)%idxop_ori
               iblkop_ori = reo_info%reo(ireo)%iblkop_ori
+              tra_ori = reo_info%reo(ireo)%dagger_ori
               exit
             end if
           end do
@@ -534,12 +547,15 @@ c dbg
      &           irst_reo,irst_ori,
      &           nj_ret,mst_opreo,igamt_opreo,
      &           merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
-     &           occ_vtx_red,contr_red%svertex,info_vtx_red,
+     &           occ_vtx_red,irestr_vtx_red,
+     &                       contr_red%svertex,info_vtx_red,
      &                       njoined_res,contr_red%nvtx,
      &           reo_info,str_info,orb_info)
 
           ! FIX:
-          if (nj_ret.gt.1) then
+          if (nj_ret.gt.1.and..not.tra_ori) then
+            iblkop_ori = (iblkop_ori-1)/nj_ret + 1
+          else if (nj_ret.gt.1.and.tra_ori) then
             iblkop_ori = (iblkop_ori-1)/nj_ret + 1
           end if
 
@@ -554,17 +570,10 @@ c dbg
           target = -1           ! unused here
           call new_formula_item(fl_pnt,command,target)
 
-c dbg
-          if (reo_info%nreo.eq.2) then
-            print *,'(3)'
-            print *,'nreo = ',reo_info%nreo
-            print *,'from_to: ',reo_info%from_to
-            call wrt_occ_n(6,reo_info%iocc_reo,reo_info%nreo)
-          end if
-c dbg
           call store_reorder(fl_pnt,
      &       label_reo,label,
      &       iblkop_reo,iblkop_ori,
+     &       tra_reo, tra_ori,
      &       reo_info%sign_reo,reo_info%iocc_opreo0,
      &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,
      &       iocc_reo,irst_reo,nj_ret,

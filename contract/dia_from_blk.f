@@ -261,7 +261,7 @@
      &                iblkinp,idxmsca,igamca,
      &                occ_csub2,idxmsdis_c2,gamdis_c2,ncablk2,
      &                occ_asub2,idxmsdis_a2,gamdis_a2,ncablk2,
-     &                .false.,meinp,ngam)
+     &                .false.,-1,-1,meinp,ngam)
 
             ioff_2 = meinp%off_op_gmox(iblkinp)%
      &             d_gam_ms(idxdis_2,igamca,idxmsca) - ioffinp

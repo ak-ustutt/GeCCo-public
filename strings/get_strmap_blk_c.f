@@ -2,7 +2,7 @@
       subroutine get_strmap_blk_c(strmap,
      &     n1,n2,n12,
      &     iocc1,iocc2,lstr1,lstr2,
-     &     igrph1,igrph2,
+     &     igrph1,igrph2,igrph12,
      &     idxms1,idxms2,igam1,igam2,map_info,
      &     strmap_info,nsym,ngraph)
 *----------------------------------------------------------------------*
@@ -24,16 +24,20 @@
       integer, intent(in), target ::
      &     iocc1(n1), iocc2(n2), lstr1(n1), lstr2(n2),
      &     igrph1(n1), igrph2(n2), idxms1(n1), idxms2(n2),
-     &     igam1(n1), igam2(n2)
+     &     igam1(n1), igam2(n2), igrph12(*)
       type(strmapinf), intent(in), target ::
      &     strmap_info
 
       type(strmap_offsets), pointer ::
      &     offsets(:)
+      type(flpmap_offsets), pointer ::
+     &     offsets_fc(:)
+      logical ::
+     &     is_one_map, is_fc_map
       integer, pointer ::
      &     curmap(:)
       integer ::
-     &     ioffmap, hpvx_idx, hpvx, idx, idxmap, idx_minf, idxbuf,
+     &     ioffmap, hpvx_idx, hpvx, idx, idx_minf, idxbuf,
      &     idxgrgr, idxmsms, idxgmgm, ioff, ilen, idx1, idx2, idx12,
      &     nsplit, mxgraph
       integer, pointer ::
@@ -47,6 +51,7 @@
      &     call quit(1,'get_strmap_blk_c',
      &     'you forgot to update the maps after adding a graph')
       offsets => strmap_info%offsets
+      offsets_fc => strmap_info%offsets_fc
       if (n1.lt.0.or.n2.lt.0.or.n12.lt.0) then
         write(luout,*) 'n1, n2, n12: ',n1, n2, n12
         call quit(1,'get_strmap_blk_c',
@@ -111,8 +116,23 @@ c dbg
 c dbg
 c        print *,'idx1/idx2:',idx1,idx2
 c dbg
+        if (idx1.eq.0.and.idx2.eq.0) then
+          write(luout,*) 'n1,n2,n12: ',n1,n2,n12
+          write(luout,*) 'map_info:  ',map_info(1:2*(n1+n2)*n12)
+          write(luout,*) 'last index:',idx_minf
+          write(luout,*) 'last idx12:',idx12
+          call quit(1,'get_strmap_blk_c','buggy map_info?')
+        end if
 
-        if (idx1.gt.0.and.idx2.gt.0) then
+        is_one_map = idx1.eq.0.or.idx2.eq.0
+        
+        is_fc_map = .false.
+        if (is_one_map) then
+          if (idx1.ne.0) is_fc_map = igrph1tmp(idx1).ne.igrph12(idx12)
+          if (idx2.ne.0) is_fc_map = igrph2tmp(idx2).ne.igrph12(idx12)
+        end if
+
+        if (.not.is_one_map) then
           ! get map from file
           idxgrgr = (igrph2tmp(idx2)-1)*mxgraph+igrph1tmp(idx1)
           idxmsms = (idxms2tmp(idx2)-1)*(iocc1tmp(idx1)+1)
@@ -121,8 +141,8 @@ c dbg
      &                                                 +igam1tmp(idx1)
           ! length of map
           ilen = lstr1tmp(idx1)*lstr2tmp(idx2)
-          ! have a look at the buffering table
-          idxmap = idxgrgr*nsym*nsym+idxgmgm
+c          ! have a look at the buffering table
+c          idxmap = idxgrgr*nsym*nsym+idxgmgm
           ! offset of string map
           ioff = strmap_info%idx_strmap(idxgrgr)-1
           ! plus offset of current ms/ms block
@@ -130,13 +150,40 @@ c dbg
           ! plus offset of gam/gam block
           ioff = ioff + offsets(idxgrgr)%msmsgmgm(idxgmgm)
 c dbg
-c          print *,'fetching: ioff, len = ',ioff,ilen
+c          print *,'fetching 1: ioff, len = ',ioff,ilen
 c dbg
           call mem_iget(strmap_info%ffstrmap,
      &                  strmap(ioffmap+1),ioff+1,ioff+ilen)          
 
           ioffmap = ioffmap+ilen
-        else if (idx1.gt.0.or.idx2.gt.0) then
+        else if (is_fc_map) then
+          ! get map from file
+          if (idx1.gt.0) then
+            idxgrgr = (igrph1tmp(idx1)-1)*mxgraph+igrph12(idx12)
+            idxmsms =  idxms1tmp(idx1)
+            idxgmgm =  igam1tmp(idx1)
+            ilen = lstr1tmp(idx1)
+          else
+            idxgrgr = (igrph2tmp(idx2)-1)*mxgraph+igrph12(idx12)
+            idxmsms =  idxms2tmp(idx2)
+            idxgmgm =  igam2tmp(idx2)
+            ilen = lstr2tmp(idx2)
+          end if
+
+          ! offset of string map
+          ioff = strmap_info%idx_fcmap(idxgrgr)-1
+          ! plus offset of ms/gam block
+          ioff = ioff +
+     &         offsets_fc(idxgrgr)%msgm((idxmsms-1)*nsym+idxgmgm)
+c dbg
+c          print *,'fetching 2: ioff, len = ',ioff,ilen
+c dbg
+          call mem_iget(strmap_info%ffstrmap,
+     &                  strmap(ioffmap+1),ioff+1,ioff+ilen)          
+
+          ioffmap = ioffmap+ilen
+          
+        else 
           ! set trivial map
           if (idx1.gt.0) ilen = lstr1tmp(idx1)
           if (idx2.gt.0) ilen = lstr2tmp(idx2)
@@ -148,12 +195,6 @@ c dbg
             curmap(idx) = idx
           end do
           ioffmap = ioffmap+ilen
-        else
-          write(luout,*) 'n1,n2,n12: ',n1,n2,n12
-          write(luout,*) 'map_info:  ',map_info(1:2*(n1+n2)*n12)
-          write(luout,*) 'last index:',idx_minf
-          write(luout,*) 'last idx12:',idx12
-          call quit(1,'get_strmap_blk_c','buggy map_info?')
         end if
       end do
 c dbg

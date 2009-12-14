@@ -4,6 +4,7 @@
      &     iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
+     &     irst_ex1_io, irst_ex2_io, irst_cnt_io, mode_rst,
      &     merge_map1, merge_map2, merge_map12, merge_map21,
      &     njoined_op1, njoined_op2, njoined_op1op2, njoined_cnt,
      &     str_info,orb_info)
@@ -20,8 +21,15 @@
 *      OP2 -> EX2/CNT :  map_info_2c/a
 *      EX1/EX2 -> OP1OP2 : map_info_12c/a
 *
+*     mode_rst:  0 -- ignore rst_cnt_io
+*                    1 -- return rst_cnt on rst_cnt_io
+*                    2 -- set rst_cnt to rst_cnt_io
+*
 *----------------------------------------------------------------------*
       implicit none
+
+      integer, parameter ::
+     &     ntest = 00
 
       include 'opdim.h'
       include 'stdunit.h'
@@ -41,6 +49,7 @@
       logical, intent(in) ::
      &     self
       integer, intent(in) ::
+     &     mode_rst,
      &     njoined_op1, njoined_op2, njoined_op1op2, njoined_cnt,
      &     iocc_op1(ngastp,2,njoined_op1),
      &     iocc_op2(ngastp,2,njoined_op2),
@@ -55,90 +64,174 @@
      &     irst_op1op2tmp(2,orb_info%ngas,2,2,njoined_op1op2),
      &     merge_map1(*), merge_map2(*), merge_map12(*), merge_map21(*)
 
+      integer, intent(inout) ::
+     &     irst_ex1_io(2,orb_info%ngas,2,2,njoined_op1),
+     &     irst_ex2_io(2,orb_info%ngas,2,2,njoined_op2),
+     &     irst_cnt_io(2,orb_info%ngas,2,2,njoined_cnt)
+
       logical ::
-     &     ok
+     &     ok, equal
       integer ::
-     &     ijoin, ngas, nspin
+     &     ijoin, ngas, nspin, ii
       integer ::
      &     irst_ex1(2,orb_info%ngas,2,2,njoined_op1),
      &     irst_ex2(2,orb_info%ngas,2,2,njoined_op2),
      &     irst_cnt(2,orb_info%ngas,2,2,njoined_cnt),
+     &     irst_common(2,orb_info%ngas,2,2),
      &     irst_cnt_dagger(2,orb_info%ngas,2,2,njoined_cnt),
      &     iocc_cnt_dagger(ngastp,2,njoined_cnt)
       integer, pointer ::
      &     igrph(:,:,:), ihpvgas(:,:)
       logical, external ::
-     &     irestr_equal
+     &     irestr_equal, common_restr
 
       ngas = orb_info%ngas
       nspin = orb_info%nspin
       ihpvgas => orb_info%ihpvgas
-      ! preliminary treatment of restrictions for EX, CNT:
-c      call fit_restr(irst_ex1,iocc_ex1,
-c     &     irst_op1,ihpvgas,ngas)
-c      call fit_restr(irst_ex2,iocc_ex2,
-c     &     irst_op2,ihpvgas,ngas)
-c      call fit_restr(irst_cnt,iocc_cnt,
-c     &     irst_op1,ihpvgas,ngas)
-      ! QUICK FIX FOR FROZEN-CORE-R12
-      do ijoin = 1, njoined_cnt
-        iocc_cnt_dagger(1:ngastp,1:2,ijoin) =
-     &       iocc_dagger(iocc_cnt(1:ngastp,1:2,ijoin))
-      end do
 
-      call fit_restr3(irst_ex1,irst_cnt,
+      if (mode_rst.ne.2) then
+
+        do ijoin = 1, njoined_cnt
+          iocc_cnt_dagger(1:ngastp,1:2,ijoin) =
+     &         iocc_dagger(iocc_cnt(1:ngastp,1:2,ijoin))
+        end do
+
+        call fit_restr3(irst_ex1,irst_cnt,
      &     iocc_op1,iocc_ex1,iocc_cnt,
      &     irst_op1,merge_map1,
      &     njoined_op1,njoined_cnt,
      &     ihpvgas,ngas,nspin)
-      if (.not.self) then
-        call fit_restr3(irst_ex2,irst_cnt_dagger,
+        if (.not.self) then
+          call fit_restr3(irst_ex2,irst_cnt_dagger,
      &       iocc_op2,iocc_ex2,iocc_cnt_dagger,
      &       irst_op2,merge_map2,
      &       njoined_op2,njoined_cnt,
      &       ihpvgas,ngas,nspin)
-      
-        ok = .true.
-        do ijoin = 1, njoined_cnt
-          ok = ok.and.irestr_equal(irst_cnt(1,1,1,1,ijoin),.false.,
-     &         irst_cnt_dagger(1,1,1,1,ijoin),.true.,ngas)
-        end do
-        if (.not.ok) then
-          write(luout,*) 'generated restrictions: CNT != CNT^+'
-          do ijoin = 1, njoined_cnt
-            if (njoined_cnt.gt.1) write(luout,*) 'pair # ',ijoin
-            call wrt_rstr(luout,irst_cnt(1,1,1,1,ijoin),ngas)
-            call wrt_rstr(luout,irst_cnt_dagger(1,1,1,1,ijoin),ngas)
-          end do
-          call quit(1,'condense_bc_info','problem with restrictions !')
-        end if
-      end if
 
-c      if (njoined_op1.eq.1) then
-c        call fit_restr(irst_ex1,iocc_ex1,
-c     &       irst_op1,ihpvgas,ngas)
-c      else
-c        call dummy_restr(irst_ex1,
-c     &       iocc_ex1,njoined_op1,orb_info)
-c      end if
-c      if (njoined_op2.eq.1) then
-c        call fit_restr(irst_ex2,iocc_ex2,
-c     &       irst_op2,ihpvgas,ngas)
-c      else
-c        call dummy_restr(irst_ex2,
-c     &       iocc_ex2,njoined_op2,orb_info)
-c      end if
-c      if (njoined_cnt.eq.1.and.njoined_op1.eq.1) then
-c        call fit_restr(irst_cnt,iocc_cnt,
-c     &     irst_op1,ihpvgas,ngas)
-c      else if (njoined_cnt.eq.1.and.njoined_op2.eq.1) then
-c        call fit_restr(irst_cnt,iocc_cnt,
-c     &     irst_op2,ihpvgas,ngas)
-c      else
-c        call dummy_restr(irst_cnt,
-c     &       iocc_cnt,njoined_cnt,orb_info)
-c      end if
-      ! end of preliminary code
+c test
+C          write(luout,*) 'EX1 before'
+C          do ijoin = 1, njoined_op1
+C            call wrt_occ_rstr(luout,ijoin,iocc_ex1(:,:,ijoin),
+C     &                                    irst_ex1(:,:,:,:,ijoin),
+C     &                                    ngas,nspin)
+C          end do
+C          write(luout,*) 'EX2 before'
+C          do ijoin = 1, njoined_op2
+C            call wrt_occ_rstr(luout,ijoin,iocc_ex2(:,:,ijoin),
+C     &                                    irst_ex2(:,:,:,:,ijoin),
+C     &                                    ngas,nspin)
+C          end do
+
+          call fit_restr3(irst_ex2,irst_ex1,
+     &       iocc_op1op2tmp,iocc_ex2,iocc_ex1,
+     &       irst_op1op2tmp,merge_map12,
+     &       njoined_op1op2,njoined_op2,
+     &       ihpvgas,ngas,nspin)
+
+C          write(luout,*) 'EX1 after'
+C          do ijoin = 1, njoined_op1
+C            call wrt_occ_rstr(luout,ijoin,iocc_ex1(:,:,ijoin),
+C     &                                    irst_ex1(:,:,:,:,ijoin),
+C     &                                    ngas,nspin)
+C          end do
+C          write(luout,*) 'EX2 after'
+C          do ijoin = 1, njoined_op2
+C            call wrt_occ_rstr(luout,ijoin,iocc_ex2(:,:,ijoin),
+C     &                                    irst_ex2(:,:,:,:,ijoin),
+C     &                                    ngas,nspin)
+C          end do
+c test end
+
+      
+          ok = .true.
+          do ijoin = 1, njoined_cnt
+            equal = irestr_equal(irst_cnt(1,1,1,1,ijoin),.false.,
+     &         irst_cnt_dagger(1,1,1,1,ijoin),.true.,ngas)
+            ok = ok.and.equal
+c patch
+            ! use the maximum overlap of restrictions
+            if (.not.equal) then
+              if (.not.common_restr(irst_common,
+     &           irst_cnt(1,1,1,1,ijoin),.false.,
+     &           irst_cnt_dagger(1,1,1,1,ijoin),.true.,
+     &           ihpvgas,ngas,nspin)) then
+                do ii = 1, njoined_cnt
+                  call wrt_occ_rstr(luout,ii,iocc_cnt(:,:,ii),
+     &                                     irst_cnt(:,:,:,:,ijoin),
+     &                                     ngas,nspin)
+                  call wrt_occ_rstr(luout,ii,iocc_cnt_dagger(:,:,ii),
+     &                                   irst_cnt_dagger(:,:,:,:,ijoin),
+     &                                     ngas,nspin)
+                end do
+                call quit(1,'condense_bc_info',
+     &             'cannot merge restrictions')
+              end if
+              ! set irst_cnt to maximum common restriction
+              irst_cnt(:,:,:,:,ijoin) = irst_common(:,:,:,:)
+              ! irst_cnt_dagger is not used further!
+            end if
+c end patch
+          end do
+          if (ntest.ge.100) then
+            write(luout,*) 'generated restrictions: CNT'
+            do ijoin = 1, njoined_cnt
+              if (njoined_cnt.gt.1) write(luout,*) 'pair # ',ijoin
+              call wrt_rstr(luout,irst_cnt(1,1,1,1,ijoin),ngas)
+              call wrt_rstr(luout,irst_cnt_dagger(1,1,1,1,ijoin),ngas)
+            end do
+            write(luout,*) 'OP1 is'
+            do ijoin = 1, njoined_op1
+              call wrt_occ_rstr(luout,ijoin,iocc_op1(:,:,ijoin),
+     &                                    irst_op1(:,:,:,:,ijoin),
+     &                                    ngas,nspin)
+            end do
+            write(luout,*) 'EX1 is'
+            do ijoin = 1, njoined_op1
+              call wrt_occ_rstr(luout,ijoin,iocc_ex1(:,:,ijoin),
+     &                                    irst_ex1(:,:,:,:,ijoin),
+     &                                    ngas,nspin)
+            end do
+            if (.not.self) then
+              write(luout,*) 'OP2 is'
+              do ijoin = 1, njoined_op2
+                call wrt_occ_rstr(luout,ijoin,iocc_op2(:,:,ijoin),
+     &                                    irst_op2(:,:,:,:,ijoin),
+     &                                    ngas,nspin)
+              end do
+              write(luout,*) 'EX2 is'
+              do ijoin = 1, njoined_op2
+                call wrt_occ_rstr(luout,ijoin,iocc_ex2(:,:,ijoin),
+     &                                    irst_ex2(:,:,:,:,ijoin),
+     &                                    ngas,nspin)
+              end do
+            end if
+            write(luout,*) 'OP1OP2TMP is'
+            do ijoin = 1, njoined_op1op2
+              call wrt_occ_rstr(luout,ijoin,iocc_op1op2tmp(:,:,ijoin),
+     &                                    irst_op1op2tmp(:,:,:,:,ijoin),
+     &                                    ngas,nspin)
+            end do
+            write(luout,*) 'OP1OP2 is'
+            do ijoin = 1, njoined_op1op2
+              call wrt_occ_rstr(luout,ijoin,iocc_op1op2(:,:,ijoin),
+     &                                    irst_op1op2(:,:,:,:,ijoin),
+     &                                    ngas,nspin)
+            end do
+c          call quit(1,'condense_bc_info','problem with restrictions !')
+          end if
+        end if                  ! .not.self
+      end if                    ! mode_cnt_rstr.ne.2
+
+      if (mode_rst.eq.1) then ! return what has been set
+        irst_ex1_io = irst_ex1
+        irst_ex2_io = irst_ex2
+        irst_cnt_io = irst_cnt
+      end if
+      if (mode_rst.eq.2) then ! set to input restrictions
+        irst_ex1 = irst_ex1_io
+        irst_ex2 = irst_ex2_io
+        irst_cnt = irst_cnt_io
+      end if
 
       allocate(igrph(ngastp,2,
      &     max(njoined_op1,njoined_op2,njoined_op1op2,njoined_cnt)))

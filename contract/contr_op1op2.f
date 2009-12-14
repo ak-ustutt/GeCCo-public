@@ -6,6 +6,7 @@
      &     iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
      &     idoffop1,idoffop2,idoffop1op2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
+     &     irst_ex1,irst_ex2,irst_cnt,mode_rst,
      &     iocc_op1, iocc_op2, iocc_op1op2,iocc_op1op2tmp,
      &     irst_op1,irst_op2,irst_op1op2,irst_op1op2tmp,
      &     merge_op1, merge_op2, merge_op1op2, merge_op2op1,
@@ -16,6 +17,8 @@
      &     str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for contraction routines
+*     mode_rst = 0  ->  for use in frm_sched1
+*     mode_rst = 2  ->  for use in frm_sched2
 *----------------------------------------------------------------------*
       implicit none
 
@@ -42,7 +45,7 @@
       real(8), intent(inout) ::
      &     xret
       integer, intent(in) ::
-     &     type_xret,
+     &     type_xret, mode_rst,
      &     iblkop1, iblkop2, iblkop1op2, iblkop1op2tmp,
      &     idoffop1, idoffop2, idoffop1op2,
      &     njoined_op1, njoined_op2, njoined_op1op2, njoined_cnt,
@@ -55,6 +58,7 @@
      &     iocc_op1op2tmp(ngastp,2,njoined_op1op2),
      &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*),
      &     irst_op1(*), irst_op2(*), irst_op1op2(*), irst_op1op2tmp(*),
+     &     irst_ex1(*), irst_ex2(*), irst_cnt(*), 
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2
       type(me_list), intent(in) ::
@@ -71,6 +75,8 @@
       type(contraction_info) ::
      &     cnt_info
       
+      integer ::
+     &     idum
       real(8) ::
      &     cpu, sys, cpu0, sys0
 
@@ -80,6 +86,10 @@ c      print *,'op2 ',trim(me_op2%op%name)
 c      print *,'op1op2 ',trim(me_op1op2%op%name)
 c      print *,'op1op2tmp ',trim(me_op1op2tmp%op%name)
 c dbg
+
+      if (mode_rst.ne.0.and.mode_rst.ne.2)
+     &     call quit(1,'contr_op1op2',
+     &     'illegal value for mode_rst (must be 0 or 2)')
 
       call atim_cs(cpu0,sys0)
       select case (irt_contr)
@@ -115,6 +125,7 @@ c dbg
      &       iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2tmp,
      &       iocc_ex1,iocc_ex2,iocc_cnt,
      &       irst_op1, irst_op2, irst_op1op2, irst_op1op2tmp,
+     &       irst_ex1, irst_ex2, irst_cnt, mode_rst,
      &       merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &       njoined_op1, njoined_op2,njoined_op1op2, njoined_cnt,
      &       str_info,orb_info)
@@ -122,8 +133,8 @@ c dbg
 c        print *,'bef. call to contr'
 c        print *,'iblkop1op2,iblkop1op2tmp: ',iblkop1op2,iblkop1op2tmp
 c        print *,'iocc_op1op2:'
-cc        call wrt_occ(6,iocc_op1op2)
 c        call wrt_occ_n(6,iocc_op1op2,njoined_op1op2)
+c        call wrt_occ_n(6,iocc_op1op2tmp,njoined_op1op2)
 c dbg
         if (.not.self) then
           call contr_op1op2_wmaps_c(xfac,bc_sign,

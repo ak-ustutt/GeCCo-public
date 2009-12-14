@@ -384,7 +384,7 @@ c     &     loop(nocc_cls)
      &                iocc_cls,idxmsa,igama,
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
-     &                .false.,mel_inp,ngam)
+     &                .false.,-1,-1,mel_inp,ngam)
               if (lenca.ne.mel_inp%len_op_gmox(iocc_cls)%
      &             d_gam_ms(idxdis,igama,idxmsa))
      &           call quit(1,'invsqrt','inconsistency!')
@@ -493,7 +493,7 @@ c dbgend
      &                iocc_cls,idxmsa,igama,
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
-     &                .false.,mel_inp,ngam)
+     &                .false.,-1,-1,mel_inp,ngam)
 
               call set_op_ldim_c(ldim_opin_c,ldim_opin_a,
      &             hpvx_csub,hpvx_asub,

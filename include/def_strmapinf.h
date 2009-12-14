@@ -24,6 +24,14 @@
         type(strmap_offsets), pointer ::
      &       offsets(:)
 
+        ! info for frozen-core-maps
+        integer, pointer ::
+     &     idx_fcmap(:)
+        integer, pointer ::
+     &     maxlen_blk_fc(:)
+        type(flpmap_offsets), pointer ::
+     &     offsets_fc(:)
+
         ! info for flip-maps
         integer, pointer ::
      &     idx_flipmap(:)
@@ -31,4 +39,5 @@
      &     maxlen_blk_flip(:)
         type(flpmap_offsets), pointer ::
      &     offsets_flip(:)
+
       end type strmapinf

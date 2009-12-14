@@ -22,7 +22,7 @@
       type(operator), pointer ::
      &     op_pnt
       integer, parameter ::
-     &     ndef_max = 52, maximum_order = 10
+     &     ndef_max = 52, maximum_order = 10, nj_max = 10
       integer ::
      &     idx, jdx, idx_t, n_ap, idum,
      &     ncadiff, min_rank, max_rank, min_xrank, max_xrank,
@@ -31,7 +31,7 @@
      &     hpvx_constr(2,ngastp),
      &     hpvxca_constr(2,ngastp,2), 
      &     gas_constr(2,orb_info%ngas,2,2),
-     &     occ_def(2,ngastp,ndef_max)
+     &     occ_def(2,ngastp,ndef_max), nact(2,nj_max)
       character*(len_opname) ::
      &     name_template
       logical ::
@@ -74,9 +74,11 @@
       case(DEF_OP_FROM_OCC)
         call op_from_occ_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       occ_def,ndef,njoined,freeze,ndef_max)
+     &       occ_def,ndef,njoined,nact,ndef_max)
+        if (njoined.gt.nj_max)
+     &       call quit(1,'process_operators','nj_max too small')
         call set_uop2(op_pnt,trim(rule%labels(1)),
-     &       occ_def,ndef,njoined,freeze,orb_info)
+     &       occ_def,ndef,njoined,nact,orb_info)
       case(DEF_SCALAR)
         call set_hop(op_pnt,trim(rule%labels(1)),.false.,
      &       0,0,1,.false.,orb_info)

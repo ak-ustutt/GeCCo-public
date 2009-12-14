@@ -67,7 +67,7 @@
      &     nvtx, narc, ngas, nsym, idum,
      &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt
       integer ::
-     &     iocc_cnt(ngastp,2,contr%nvtx),
+     &     iocc_cnt(ngastp,2,2*contr%nvtx),
      &     iocc_ex1(ngastp,2,contr%nvtx),
      &     iocc_ex2(ngastp,2,contr%nvtx),
      &     irst_res(2,orb_info%ngas,2,2,contr%nvtx),
@@ -144,6 +144,10 @@ c dbg
      &     .false.,reo_dum,reo_dum,
      &     iarc,.false.,-nlevel,
      &     irst_res,njoined_res,orb_info,op_info)
+c dbg
+      print *,'iocc_op1op2 fresh from get_bc_info3'
+      call wrt_occ_n(6,iocc_op1op2,njoined_op1op2)
+c dbg
 
       ! count particle, hole, (active) spaces involved:
       ! in intermediate
@@ -230,6 +234,7 @@ c      possible = .true.
      &         iocc_op1, iocc_op2, iocc_op1op2, iocc_op1op2,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
      &         irst_op1, irst_op2, irst_op1op2, irst_op1op2,
+     &         idum,idum,idum,0,
      &         merge_op1, merge_op2, merge_op1op2, merge_op2op1,
      &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &         str_info,orb_info)

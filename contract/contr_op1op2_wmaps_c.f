@@ -74,7 +74,8 @@
      &     first1, first2, first3, first4, first5,
      &     ms_fix1, ms_fix2, ms_fix12, ms_fix_tmp,
      &     reject, fix_success1, fix_success2, fix_success12,
-     &     reo_op1op2, nonzero, use_tr_here
+     &     reo_op1op2, nonzero, use_tr_here,
+     &     tra_op1_, tra_op2_
       integer ::
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
@@ -123,7 +124,11 @@
      &     map_info_2c(:),
      &     map_info_2a(:),
      &     map_info_12c(:),
-     &     map_info_12a(:)
+     &     map_info_12a(:),
+     &     dmap_op1c(:),dmap_op1a(:),
+     &     dmap_op2c(:),dmap_op2a(:),
+     &     dmap_op1op2tmpc(:),dmap_op1op2tmpa(:)
+          
 
       real(8) ::
      &     xnrm, fac_scal, fac_scal0, fac_ab
@@ -200,7 +205,7 @@ c dbg
      &     ielsum, ielprd, idx_msgmdst2, get_lenmap, idxlist,
      &     max_dis_blk
       logical, external ::
-     &     next_dist, next_msgamdist2, msa2idxms4op
+     &     next_dist, next_msgamdist2, msa2idxms4op, list_cmp
       real(8), external ::
      &     ddot
 
@@ -359,7 +364,19 @@ c dbg
      &       lstrop2(ncblk_op2+nablk_op2),
      &       lstrop1op2tmp(ncblk_op1op2tmp+nablk_op1op2tmp)
      &       )
-      
+      allocate(dmap_op1c(ncblk_op1),dmap_op1a(nablk_op1),
+     &         dmap_op2c(ncblk_op2),dmap_op2a(nablk_op2),
+     &         dmap_op1op2tmpc(ncblk_op1op2tmp),
+     &         dmap_op1op2tmpa(nablk_op1op2tmp))
+
+      call set_dis_tra_map(dmap_op1c,dmap_op1a,
+     &     cinfo_op1c(1,3),cinfo_op1a(1,3),ncblk_op1,nablk_op1)
+      call set_dis_tra_map(dmap_op2c,dmap_op2a,
+     &     cinfo_op2c(1,3),cinfo_op2a(1,3),ncblk_op2,nablk_op2)
+      call set_dis_tra_map(dmap_op1op2tmpc,dmap_op1op2tmpa,
+     &     cinfo_op1op2tmpc(1,3),cinfo_op1op2tmpa(1,3),
+     &     ncblk_op1op2tmp,nablk_op1op2tmp)
+
       idxst_op1 = me_op1%off_op_occ(iblkop1) + 1
       lenop1    = me_op1%len_op_occ(iblkop1)
       idxst_op2 = me_op2%off_op_occ(iblkop2) + 1
@@ -671,6 +688,26 @@ c dbg
       call sum_occ(nc_cnt,cinfo_cntc,ncblk_cnt)
       call sum_occ(na_cnt,cinfo_cnta,nablk_cnt)
 
+      tra_op1_ = tra_op1
+c     a) incorrect for cases with X 
+c     b) no impact on run-time (needs to be re-checked)
+c      ! decide, whether we might use the transposed operator
+c      if (op1%hermitian.eq.1.and.ncblk_op1.eq.nablk_op1) then
+c        tra_op1_ = tra_op1.xor.
+c     &       (list_cmp(cinfo_op1c,cinfo_op1a,ncblk_op1).and.
+c     &        na_cnt.gt.nc_cnt)
+c      end if
+      tra_op2_ = tra_op2
+c      if (op2%hermitian.eq.1.and.ncblk_op2.eq.nablk_op2) then
+c        tra_op2_ = tra_op2.xor.
+c     &       (list_cmp(cinfo_op2c,cinfo_op2a,ncblk_op2).and.
+c     &        nc_cnt.gt.na_cnt)
+c      end if
+cc dbg
+c      if (tra_op1.neqv.tra_op1_) write(lustat,*) 'it happened 1'
+c      if (tra_op2.neqv.tra_op2_) write(lustat,*) 'it happened 2'
+cc dbg
+
       ! set up maps (if necessary)
       call strmap_man_c(lenmap,
      &     cinfo_ex1c(1,2),ncblk_ex1,
@@ -931,14 +968,14 @@ c dbg
               if (.not.next_dist(igam12i_raw,3,igambnd,+1)) exit
             end if
 
-            if (.not.tra_op1) then
+            if (.not.tra_op1_) then
               igam12i_a(1) = igam12i_raw(1)
               igam12i_c(1) = multd2h(igam12i_a(1),igamtop1)
             else
               igam12i_c(1) = igam12i_raw(1)
               igam12i_a(1) = multd2h(igam12i_c(1),igamtop1)
             end if
-            if (.not.tra_op2) then
+            if (.not.tra_op2_) then
               igam12i_a(2) = igam12i_raw(2)
               igam12i_c(2) = multd2h(igam12i_a(2),igamtop2)
             else
@@ -1178,6 +1215,7 @@ c                  ifree = mem_alloc_int(map_ex1ex2c,lenmap,'strmap_c')
      &                 ncblk_ex1,ncblk_ex2,ncblk_op1op2tmp,
      &                 cinfo_ex1c,cinfo_ex2c,lstrex1,lstrex2,
      &                 cinfo_ex1c(1,2),cinfo_ex2c(1,2),
+     &                                 cinfo_op1op2tmpc(1,2),
      &                 idxmsex1dis_c,idxmsex2dis_c,
      &                 gmex1dis_c,gmex2dis_c,map_info_12c,
      &                 strmap_info,nsym,str_info%ngraph)
@@ -1195,6 +1233,7 @@ c                  ifree = mem_alloc_int(map_ex1ex2a,lenmap,'strmap_a')
      &                 cinfo_ex2a,cinfo_ex1a,
      &                  lstrex2(ncblk_ex2+1),lstrex1(ncblk_ex1+1),
      &                 cinfo_ex2a(1,2),cinfo_ex1a(1,2),
+     &                                 cinfo_op1op2tmpa(1,2),
      &                 idxmsex2dis_a,idxmsex1dis_a,
      &                 gmex2dis_a,gmex1dis_a,map_info_12a,
      &                 strmap_info,nsym,str_info%ngraph)
@@ -1233,17 +1272,8 @@ c dbg
      &                              gmi_dis_c,ncblk_op1op2tmp,
      &                   cinfo_op1op2tmpa,idxmsi_dis_a,
      &                              gmi_dis_a,nablk_op1op2tmp,
-     &                   tra_op1op2,me_op1op2tmp,nsym)
-c     &                   .false.,me_op1op2tmp,nsym)
-c     &                  idx_msgmdst3(
-c     &                   iblkop1op2tmp,idxms,igam12i_a(3),
-c     &                   cinfo_op1op2tmpc,idxmsi_dis_c,
-c     &                              gmi_dis_c,ncblk_op1op2tmp,
-c     &                   cinfo_op1op2tmpa,idxmsi_dis_a,
-c     &                              gmi_dis_a,nablk_op1op2tmp,
-c     &                   tra_op1op2,me_op1op2tmp,nsym,
-c     &                   ms_fix_tmp,reject)
-c                    if(reject) cycle caex2_loop 
+     &                   tra_op1op2,dmap_op1op2tmpc,dmap_op1op2tmpa,
+     &                              me_op1op2tmp,nsym)
 
                     idxdis_op1op2 = idxdis
 
@@ -1396,17 +1426,7 @@ c dbg
      &                              gmop1dis_c,ncblk_op1,
      &                     cinfo_op1a,idxmsop1dis_a,
      &                              gmop1dis_a,nablk_op1,
-     &                     tra_op1,me_op1,nsym)
-c     &                     .false.,me_op1,nsym)
-c     &                   idx_msgmdst3(
-c     &                     iblkop1,idxms,igam12i_a(1),
-c     &                     cinfo_op1c,idxmsop1dis_c,
-c     &                              gmop1dis_c,ncblk_op1,
-c     &                     cinfo_op1a,idxmsop1dis_a,
-c     &                              gmop1dis_a,nablk_op1,
-c     &                     tra_op1,me_op1,nsym,
-c     &                     ms_fix1,reject)
-c                      if(reject) cycle caex2_loop 
+     &                     tra_op1_,dmap_op1c,dmap_op1a,me_op1,nsym)
 
                       idxop1 = 
      &                     d_gam_ms_op1(idxdis,igam12i_raw(1),idxms) + 1
@@ -1518,19 +1538,7 @@ c dbg
      &                              gmop2dis_c,ncblk_op2,
      &                     cinfo_op2a,idxmsop2dis_a,
      &                              gmop2dis_a,nablk_op2,
-     &                     tra_op2,me_op2,nsym)
-c     &                     .false.,me_op2,nsym)
-c     &                  idx_msgmdst3(
-c     &                     iblkop2,idxms,igam12i_a(2),
-c     &                     cinfo_op2c,idxmsop2dis_c,
-c     &                              gmop2dis_c,ncblk_op2,
-c     &                     cinfo_op2a,idxmsop2dis_a,
-c     &                              gmop2dis_a,nablk_op2,
-c     &                     tra_op2,me_op2,nsym,
-c     &                     ms_fix2,reject)
-c                      if(reject) cycle cac_loop 
-
-
+     &                     tra_op2_,dmap_op2c,dmap_op2a,me_op2,nsym)
 
                       idxop2 = 
      &                     d_gam_ms_op2(idxdis,igam12i_raw(2),idxms)+1
@@ -1556,6 +1564,7 @@ c                    ifree = mem_alloc_int(map_ex1cntc,lenmap,'strmap_c')
      &                   ncblk_cnt,ncblk_ex1,ncblk_op1,
      &                   cinfo_cntc,cinfo_ex1c,lstrcnt,lstrex1,
      &                   cinfo_cntc(1,2),cinfo_ex1c(1,2),
+     &                                   cinfo_op1c(1,2),
      &                   idxmsc_dis_c,idxmsex1dis_c,
      &                   gmc_dis_c,gmex1dis_c,map_info_1c,
      &                   strmap_info,nsym,str_info%ngraph)
@@ -1569,6 +1578,7 @@ c                    ifree = mem_alloc_int(map_ex1cntc,lenmap,'strmap_c')
      &                     lstrcnt(ncblk_cnt+1),
      &                             lstrex1(ncblk_ex1+1),
      &                   cinfo_cnta(1,2),cinfo_ex1a(1,2),
+     &                                   cinfo_op1a(1,2),
      &                   idxmsc_dis_a,idxmsex1dis_a,
      &                   gmc_dis_a,gmex1dis_a,map_info_1a,
      &                   strmap_info,nsym,str_info%ngraph)
@@ -1586,6 +1596,7 @@ c dbg
      &                   cinfo_cnta,cinfo_ex2c,
      &                     lstrcnt(ncblk_cnt+1),lstrex2,
      &                   cinfo_cnta(1,2),cinfo_ex2c(1,2),
+     &                                   cinfo_op2c(1,2),
      &                   idxmsc_dis_a,idxmsex2dis_c,
      &                   gmc_dis_a,gmex2dis_c,map_info_2c,
      &                   strmap_info,nsym,str_info%ngraph)
@@ -1598,6 +1609,7 @@ c                    ifree = mem_alloc_int(map_ex2cnta,lenmap,'strmap_a')
      &                   cinfo_cntc,cinfo_ex2a,
      &                       lstrcnt,lstrex2(ncblk_ex2+1),
      &                   cinfo_cntc(1,2),cinfo_ex2a(1,2),
+     &                                   cinfo_op2a(1,2),
      &                   idxmsc_dis_c,idxmsex2dis_a,
      &                   gmc_dis_c,gmex2dis_a,map_info_2a,
      &                   strmap_info,nsym,str_info%ngraph)                    
@@ -1670,7 +1682,7 @@ c dbg
      &                     xfac*casign*fac_scal,
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
-     &                   tra_op1, tra_op2, tra_op1op2,
+     &                   tra_op1_, tra_op2_, tra_op1op2,
      &                   ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &                   ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
      &                   ncblk_cnt,nablk_cnt,
@@ -1698,7 +1710,7 @@ c dbg
      &                     xfac*casign*fac_scal,
      &                   xop1op2blk,
      &                                 xop1(idxop1),xop2(idxop2),
-     &                   tra_op1, tra_op2, tra_op1op2,
+     &                   tra_op1_, tra_op2_, tra_op1op2,
      &                   xscr,lenscr,len_str_block,len_cnt_block,
      &                   ncblk_op1,nablk_op1,ncblk_ex1,nablk_ex1,
      &                   ncblk_op2,nablk_op2,ncblk_ex2,nablk_ex2,
@@ -1852,6 +1864,10 @@ c          fac_ab = +1
       end if
 
 c dbg
+c      print *,'HALLO: ',trim(op1op2%name),
+c     &     trim(op1op2%name).eq.'Z-INT',iblkop1op2
+c      if (trim(op1op2%name).eq.'Z-INT' .and. iblkop1op2.eq.2)
+c     &     print *,'iiii ',xop1op2(1),xop1op2(4)
 c      print *,'type_xret ',type_xret
 c      print *,'xret' ,xret
 c dbg
@@ -1893,6 +1909,9 @@ c dbg
      &     lstrex1,lstrex2,lstrcnt,
      &     lstrop1,lstrop2,lstrop1op2tmp
      &     )
+      deallocate(dmap_op1c,dmap_op1a,
+     &           dmap_op2c,dmap_op2a,
+     &           dmap_op1op2tmpc,dmap_op1op2tmpa)
 
       ifree = mem_flushmark()
 

@@ -27,7 +27,7 @@
       type(contraction), intent(in) ::
      &     contr
       integer, intent(inout) ::
-     &     iocc_cnt(ngastp,2,len_list)
+     &     iocc_cnt(ngastp,2,2*len_list)
       integer, intent(out) ::
      &     iocc_ex(ngastp,2,njoined), merge_map(ld_map,2,njoined)
 
@@ -117,6 +117,8 @@
         idx = imltlist(isupvtx_op,contr%svertex,ivtx,1)
 c dbg
 c        print *,'idx, ivtx: ',idx,ivtx
+c        print *,'ex before'
+c        call wrt_occ_n(6,iocc_ex,njoined)
 c dbg
         if (iop1or2.eq.1) then
           iocc_ex(1:ngastp,1:2,idx) = iocc_ex(1:ngastp,1:2,idx)
@@ -125,6 +127,10 @@ c dbg
           iocc_ex(1:ngastp,1:2,idx) = iocc_ex(1:ngastp,1:2,idx)
      &                     - iocc_dagger(iocc_cnt(1:ngastp,1:2,ilist))
         end if
+c dbg
+c        print *,'ex is now'
+c        call wrt_occ_n(6,iocc_ex,njoined)
+c dbg
 
         if (set_map) then
 c dbg

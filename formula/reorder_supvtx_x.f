@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine reorder_supvtx_x(possible,
      &     modify_contr,set_reord_list,reo_before,reo_info,
-     &     contr,occ_vtx,idxop12)
+     &     contr,occ_vtx,rstr_vtx,idxop12,orb_info)
 *----------------------------------------------------------------------*
 *     analoguous to reorder_supvtx_x but now for external arcs
 *     (awaiting a more elegant general routine)
@@ -19,6 +19,7 @@
       include 'stdunit.h'
       include 'def_contraction.h'
       include 'def_reorder_info.h'
+      include 'def_orbinf.h'
       include 'ifc_operators.h'
 
       integer, parameter ::
@@ -34,8 +35,12 @@
      &     contr
       type(reorder_info), intent(inout) ::
      &     reo_info
+      type(orbinf), intent(in), target ::
+     &     orb_info
       integer, intent(inout) ::
      &     occ_vtx(ngastp,2,contr%nvtx)
+      integer, intent(inout) ::
+     &     rstr_vtx(2,orb_info%ngas,2,2,contr%nvtx)
 
 
       type(cntr_arc), pointer ::
@@ -43,15 +48,18 @@
       type(cntr_vtx), pointer ::
      &     vertex(:)
       integer, pointer ::
-     &     svertex(:) !, occ_shift(:,:)
+     &     svertex(:), hpvxgas(:,:)
       integer ::
      &     occ_shr(ngastp,2), occ_shl(ngastp,2),
-     &     cnt_shr(ngastp,2), cnt_shl(ngastp,2)
+     &     cnt_shr(ngastp,2), cnt_shl(ngastp,2),
+     &     rstr_shr(2,orb_info%ngas,2,2), rstr_shl(2,orb_info%ngas,2,2)
       integer ::
      &     nxarc, ixarc, jxarc, ivtx1, ivtx2, 
      &     ixarc_shift, ixarc_sum, nxarc_new,
      &     maxreo, idx, idxsuper, ica, ica_vtx, hpvx,
-     &     iblk, ivtx, idxnew, ireo
+     &     iblk, ivtx, idxnew, ireo, ngas, nspin
+      logical ::
+     &     renamed(contr%nvtx)
       logical, pointer ::
      &     reo_generated(:)
 
@@ -71,6 +79,12 @@ c dbg
       end if
 
       possible = .true.
+
+      if (orb_info%nspin.gt.1)
+     &     call quit(1,'reorder_supvtx_x','adapt for nspin>1')
+      nspin = orb_info%nspin
+      ngas = orb_info%ngas
+      hpvxgas => orb_info%ihpvgas
 
       maxreo = 2*contr%nvtx
       if (set_reord_list) then
@@ -204,10 +218,46 @@ c dbg
 
           ! update super-vertex occupation
           if (modify_contr) then
+c dbg
+c            print *,'vtx # 1:'
+c            call wrt_occ_rstr(6,ivtx1,occ_vtx(1,1,ivtx1),
+c     &                        rstr_vtx(1,1,1,1,ivtx1),ngas,nspin)
+c            print *,'vtx # 2:'
+c            call wrt_occ_rstr(6,ivtx2,occ_vtx(1,1,ivtx2),
+c     &                        rstr_vtx(1,1,1,1,ivtx2),ngas,nspin)
+c            print *,'occ_shr'
+c            call wrt_occ_rstr(6,0,occ_shr,
+c     &                        rstr_shr,ngas,nspin)
+c            print *,'occ_shl'
+c            call wrt_occ_rstr(6,0,occ_shl,
+c     &                        rstr_shl,ngas,nspin)
+c dbg
+            call fit_restr(rstr_shr,occ_shr,
+     &           rstr_vtx(:,:,:,:,ivtx1),hpvxgas,ngas)
+            call fit_restr(rstr_shl,occ_shl,
+     &           rstr_vtx(:,:,:,:,ivtx2),hpvxgas,ngas)
+c            rstr_vtx(1:2,1:ngas,1:2,1:2,1:nspin,ivtx1) =
+c     &           rstr_vtx(1:2,1:ngas,1:2,1:2,1:nspin,ivtx1)
+            rstr_vtx(1:2,1:ngas,1:2,1:2,ivtx1) =
+     &           rstr_vtx(1:2,1:ngas,1:2,1:2,ivtx1)
+     &           + rstr_shl - rstr_shr
+c            rstr_vtx(1:2,1:ngas,1:2,1:2,1:nspin,ivtx2) =
+c     &           rstr_vtx(1:2,1:ngas,1:2,1:2,1:nspin,ivtx2)
+            rstr_vtx(1:2,1:ngas,1:2,1:2,ivtx2) =
+     &           rstr_vtx(1:2,1:ngas,1:2,1:2,ivtx2)
+     &           - rstr_shl + rstr_shr
             occ_vtx(1:ngastp,1:2,ivtx1) =
      &           occ_vtx(1:ngastp,1:2,ivtx1) + occ_shl - occ_shr
             occ_vtx(1:ngastp,1:2,ivtx2) =
      &           occ_vtx(1:ngastp,1:2,ivtx2) - occ_shl + occ_shr
+c dbg
+c            print *,'new vtx # 1:'
+c            call wrt_occ_rstr(6,ivtx1,occ_vtx(1,1,ivtx1),
+c     &                        rstr_vtx(1,1,1,1,ivtx1),ngas,nspin)
+c            print *,'new vtx # 2:'
+c            call wrt_occ_rstr(6,ivtx2,occ_vtx(1,1,ivtx2),
+c     &                        rstr_vtx(1,1,1,1,ivtx2),ngas,nspin)
+c dbg
           end if
 
           if (set_reord_list) then
@@ -225,6 +275,8 @@ c dbg
      &             vertex(ivtx1)%idx_op
               reo_info%reo(idx)%iblkop_ori =
      &             vertex(ivtx1)%iblk_op
+              reo_info%reo(idx)%dagger_ori =
+     &             vertex(ivtx1)%dagger
               ! flag whether this is the result vertex of prev. binary contr.
               reo_info%reo(idx)%is_bc_result =
      &             idxop12.eq.vertex(ivtx1)%idx_op
@@ -254,6 +306,8 @@ c dbg
      &             vertex(ivtx1)%idx_op
               reo_info%reo(idx)%iblkop_ori =
      &             vertex(ivtx1)%iblk_op
+              reo_info%reo(idx)%dagger_ori =
+     &             vertex(ivtx1)%dagger
               ! flag whether this is the result vertex of prev. binary contr.
               reo_info%reo(idx)%is_bc_result =
      &             idxop12.eq.vertex(ivtx1)%idx_op
@@ -288,18 +342,23 @@ c dbg
         contr%nxarc = nxarc_new
 
         ! a quickie: new intermediate
+        renamed = .false.
         idxnew = idxop12-1
         do ireo = 1, reo_info%nreo          
           if (.not.reo_generated(ireo)) cycle
           reo_info%reo(ireo)%idxop_new = idxop12 ! default
+          reo_info%reo(ireo)%dagger_new = .false. ! default
           idxsuper = reo_info%reo(idx)%idxsuper
           iblk = 0
           do ivtx = 1, contr%nvtx
+            if (renamed(ivtx)) cycle ! do not rename twice
             if (svertex(ivtx).ne.idxsuper) cycle
             if (vertex(ivtx)%idx_op.ne.idxop12) then
+              renamed(ivtx) = .true.
               vertex(ivtx)%idx_op = idxnew
               iblk = iblk+1
               vertex(ivtx)%iblk_op = iblk
+              vertex(ivtx)%dagger = .false.
             end if
           end do
           if (iblk.ne.0) reo_info%reo(ireo)%idxop_new = idxnew

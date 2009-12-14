@@ -70,6 +70,7 @@ c      iblk_op   = contr%vertex(1)%iblk_op
      &     nj_res,nj_op,idummy,
      &     occ_res,occ_op,idummy,
      &     rst_res,rst_op,idummy,
+     &     idummy,idummy,idummy,
      &     idummy,idummy,idummy,0,
      &     idummy,idummy,
      &     idummy,idummy,

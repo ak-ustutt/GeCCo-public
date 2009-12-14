@@ -49,6 +49,8 @@
      &     idx_oplist2
 
 
+      call quit(1,'set_zint_contract','obsolete?')
+
       if(ntest.ge.100)then
         write(luout,*)'Z-Intermediate Contraction'
         write(luout,*)'Constituent operators: '

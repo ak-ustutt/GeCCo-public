@@ -1,0 +1,3902 @@
+ run starts at 2009-12-10 16:19:38.941   host: dhcppc1
+
+ Version compiled 10 Dec 2009 at 16:16:43 on dhcppc1                             
+
+ compiled with: ifort
+ level 1 optimization: -g -assume byterecl -traceback -I../include -mod i686-linux-
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal author:                                       |
+        |       andreas koehn (university of mainz, germany)        |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       matthias hanauer (university of mainz, germany)     |
+        |       gareth richings (university of mainz, germany)      |
+        |                                                           |
+
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ raw data from section "SIR IPH "
+ potnuc =    2.14693787982525     
+ emy    =   -27.2722697088377     
+ eactiv =   0.000000000000000E+000
+ emcscf =   -25.1253318290124     
+ istate =            1
+ ispin  =            1
+ nactel =            0
+ lsym   =            1
+ nsym   =            4
+ mctype =            0
+ nrhf   =    3   0   0   0   0   0   0   0
+ nfro   =    0   0   0   0   0   0   0   0
+ nish   =    3   0   0   0   0   0   0   0
+ nash   =    0   0   0   0   0   0   0   0
+ norb   =   10   4   4   1   0   0   0   0
+ cabs   =   26  13  13   5   0   0   0   0
+ nbas   =   10   4   4   1   0   0   0   0
+ abas   =   26  13  13   5   0   0   0   0
+ tbas   =   36  17  17   6   0   0   0   0
+ nas1   =    0   0   0   0   0   0   0   0
+ nas2   =    0   0   0   0   0   0   0   0
+ nas3   =    0   0   0   0   0   0   0   0
+ nnorbt,n2orbt:   76 133
+ sym_bound_orbs:    1   1   1
+ n_freeze_rcmd:    1
+ Reading input file ....
+ Memory set to     30000000 r8-words = (  228.88 Mb)
+ ************
+  set_orbinf
+ ************
+ ihpvgas:              1           2           4
+ ngas_hpv:             1           1           0           1
+ nactt_hpv:            3          16           0          57
+ ioff_gas:             0           1           0           2
+ idx_gas:              1           2           0           3
+ gas_reo:           1           2           3
+ igamorb:
+
+<  1>        1       1       1       1       1       1       1       1       1       1
+        2       2       2       2       3       3       3       3       4       1
+        1       1       1       1       1       1       1       1       1       1
+        1       1       1       1       1       1       1       1       1       1
+        1       1       1       1       1       2       2       2       2       2
+        2       2       2       2       2       2       2       2       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       4       4       4       4       4
+ igasorb:
+
+<  1>        1       1       1       2       2       2       2       2       2       2
+        2       2       2       2       2       2       2       2       2       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3
+ mostnd:
+     1      1   3    4   3    4   3    4   3
+     2      4  10   11  14   15  18   19  19
+     3     20  45   46  58   59  71   72  76
+ ireost:
+
+<  1>        1       2       3       4       5       6       7       8       9      10
+       11      12      13      14      15      16      17      18      19
+ ireots:
+
+<  1>        1       2       3       4       5       6       7       8       9      10
+       11      12      13      14      15      16      17      18      19
+ iad_gas:
+
+<  1>        2
+
+<  2>        2
+
+<  3>        2
+ setting general targets ...
+ effective iformal =            4
+ setting general targets for MP/CC ...
+ setting general targets for R12 ...
+ n_pp =            1
+ no approximations wrt. Fock made
+ no approximations wrt. Xchange made
+ no approximations to Z intermediate made
+ (2) : n_pp =            1
+ setting special targets for CC-R12 ...
+ trunc_Type=            0
+ pf12_trunc =  T
+ setting special targets for CCPT (R12) ...
+ My next target: Z-INT
+ Rule: DEF_OP_FROM_OCC
+ My next target: R.R
+ Rule: DEF_OP_FROM_OCC
+ My next target: R12-INT
+ Rule: DEF_R12INT
+ My next target: G_Z
+ Rule: DEF_OP_FROM_OCC
+ My next target: ZINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ call for Z #1
+ call for Z #2
+  R.P.G.R           1           1           1 :            5  terms
+  R.P.G.R           1           1           2 :            5  terms
+  R.P.G.R           1           1           4 :            5  terms
+  R.P.G.R           1           2           1 :            5  terms
+  R.P.G.R           1           2           2 :            5  terms
+  R.P.G.R           1           2           4 :            5  terms
+  R.P.G.R           1           4           1 :            5  terms
+  R.P.G.R           1           4           2 :            5  terms
+  R.P.G.R           1           4           4 :            5  terms
+  R.P.G.R           2           1           1 :            5  terms
+  R.P.G.R           2           1           2 :            5  terms
+  R.P.G.R           2           1           4 :            5  terms
+  R.P.G.R           2           2           1 :            5  terms
+  R.P.G.R           2           2           2 :            5  terms
+  R.P.G.R           2           2           4 :            5  terms
+  R.P.G.R           4           1           1 :            5  terms
+  R.P.G.R           4           1           2 :            5  terms
+  R.P.G.R           4           1           4 :            5  terms
+  R.G.P.R           1           1           1 :            5  terms
+  R.G.P.R           1           1           2 :            5  terms
+  R.G.P.R           1           1           4 :            5  terms
+  R.G.P.R           1           2           1 :            5  terms
+  R.G.P.R           1           2           2 :            5  terms
+  R.G.P.R           1           4           1 :            5  terms
+  R.G.P.R           2           1           1 :            5  terms
+  R.G.P.R           2           1           2 :            5  terms
+  R.G.P.R           2           1           4 :            5  terms
+  R.G.P.R           2           2           1 :            5  terms
+  R.G.P.R           2           2           2 :            5  terms
+  R.G.P.R           2           4           1 :            5  terms
+  R.G.P.R           4           1           1 :            5  terms
+  R.G.P.R           4           1           2 :            5  terms
+  R.G.P.R           4           1           4 :            5  terms
+  R.G.P.R           4           2           1 :            5  terms
+  R.G.P.R           4           2           2 :            5  terms
+  R.G.P.R           4           4           1 :            5  terms
+  R.P.G.P.R           1           1           1 :            5  terms
+  R.P.G.P.R           1           1           2 :            5  terms
+  R.P.G.P.R           1           1           4 :            5  terms
+  R.P.G.P.R           1           2           1 :            5  terms
+  R.P.G.P.R           1           2           2 :            5  terms
+  R.P.G.P.R           1           4           1 :            5  terms
+  R.P.G.P.R           2           1           1 :            5  terms
+  R.P.G.P.R           2           1           2 :            5  terms
+  R.P.G.P.R           2           1           4 :            5  terms
+  R.P.G.P.R           2           2           1 :            5  terms
+  R.P.G.P.R           2           2           2 :            5  terms
+  R.P.G.P.R           4           1           1 :            5  terms
+  R.P.G.P.R           4           1           2 :            5  terms
+  R.P.G.P.R           4           1           4 :            5  terms
+ wrote          169  entries
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ Rule: SET_HERMITIAN
+ My next target: H0
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ in-core sort active -- allocating 26.3     Mb
+ cache statistics:
+ max. length =           16
+ used length =           16
+ hits   =      3936772
+ misses =        60647
+ misses (crit) =        38700
+ @ time in 2int import                 cpu/sys/wall:     24.60 /     0.43 /    25.27 s
+ My next target: T
+ Rule: DEF_EXCITATION
+ My next target: DIA
+ Rule: CLONE_OPERATOR
+ My next target: DIAG1SxxM00
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: T12'
+ Rule: DEF_EXCITATION
+ My next target: T12BAR'
+ Rule: CLONE_OPERATOR
+ My next target: L(CCR12)
+ Rule: DEF_SCALAR
+ My next target: R12
+ Rule: DEF_R12GEMINAL
+ My next target: TBAR
+ Rule: CLONE_OPERATOR
+ My next target: V
+ Rule: DEF_OP_FROM_OCC
+ My next target: VINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ wrote           24  entries
+ My next target: B
+ Rule: DEF_OP_FROM_OCC
+ My next target: X
+ Rule: CLONE_OPERATOR
+ My next target: XINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ wrote           16  entries
+ My next target: BINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ wrote           36  entries
+ My next target: Bh
+ Rule: CLONE_OPERATOR
+ My next target: BhINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ wrote           10  entries
+ My next target: C-INT
+ Rule: DEF_OP_FROM_OCC
+ My next target: CINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ wrote            4  entries
+ My next target: Lg0_CCR12
+ Rule: DEF_CCR12_LAGRANGIAN
+  ------------------------------------------
+     L    number of   n-fold commutators
+   class    terms    0    1    2    3    4
+  ------------------------------------------
+       0       29    12    9    7    1    0
+       1       22     5   10    6    1    0
+       2       52     5   20   19    7    1
+  ------------------------------------------
+ wrote          104  entries
+ Number of generated terms:          103
+ @ CC-R12 Lagrangian                   cpu/sys/wall:      0.51 /     0.02 /     0.52 s
+ Rule: FACTOR_OUT
+ read          104  entries
+ read           23  entries
+ read           23  entries
+ read           36  entries
+ read            9  entries
+ read           15  entries
+ read            3  entries
+ read            3  entries
+ wrote           88  entries
+ Rule: INVARIANT
+ read           87  entries
+ wrote           67  entries
+ Rule: REPLACE
+ read           66  entries
+ wrote           67  entries
+ Rule: PRINT_FORMULA
+ read           66  entries
+ [INIT TARGET]          10
+ [CONTR]          10 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ v01 H           1    0  0  0  0
+                      0  0  0  0
+ [CONTR]          10 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ v01 V           1    0  0  0  0
+                      0  0  0  0
+ [CONTR]          10 ( term #           3 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 H           3    1  0  0  0
+                      0  1  0  0
+ v02 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #           4 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #           5 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.500000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    2
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 T           1    0  1  0  0
+                      1  0  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #           6 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ v01 V^+         1    0  0  0  0
+                      0  0  0  0
+ [CONTR]          10 ( term #           7 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ v01 Bh          1    0  0  0  0
+                      0  0  0  0
+ [CONTR]          10 ( term #           8 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ v01 B           1    0  0  0  0
+                      0  0  0  0
+ [CONTR]          10 ( term #           9 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 V^+         3    1  0  0  0
+                      0  1  0  0
+ v02 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          10 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 C-INT^+     1    2  0  0  0
+                      0  2  0  0
+ v02 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          11 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 V^+         6    2  0  0  0
+                      0  2  0  0
+ v02 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          12 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.500000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    2
+ v01 V^+         6    2  0  0  0
+                      0  2  0  0
+ v02 T           1    0  1  0  0
+                      1  0  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          13 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v02 H           4    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          14 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v02 V           3    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          15 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v02 H           2    1  0  0  0
+                      1  0  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          16 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v02 H           5    0  1  0  0
+                      0  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          17 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    2
+ v01 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v02 H          10    1  1  0  0
+                      1  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          18 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    2
+ v01 H           3    1  0  0  0
+                      0  1  0  0
+ v02 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          19 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v02 H           7    2  0  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       2  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          20 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v02 H          11    1  1  0  0
+                      0  2  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       1  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          21 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v02 V           2    1  0  0  0
+                      1  0  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          22 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 H           3    1  0  0  0
+                      0  1  0  0
+ v02 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          23 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v02 H           7    2  0  0  0
+                      1  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      2   4       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          24 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v02 H          11    1  1  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          25 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    3
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 T           1    0  1  0  0
+                      1  0  0  0
+ v03 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  1  0  0
+  c      3   4       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          26 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       2  0  0  0
+                     0  1  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          27 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  2  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          28 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    5
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        1    1  0  0  0
+                      0  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+ v05 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      1   5       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          29 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H          12    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          30 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 C-INT       1    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          31 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 V           6    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          32 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H           9    1  1  0  0
+                      2  0  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       2  0  0  0
+                     0  1  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          33 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H          13    0  2  0  0
+                      1  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  2  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          34 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H           2    1  0  0  0
+                      1  0  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       1  0  0  0
+                     0  2  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          35 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H           5    0  1  0  0
+                      0  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          36 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H           6    2  0  0  0
+                      2  0  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  2  0  0
+  c      2   3       2  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          37 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H          10    1  1  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          38 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H          14    0  2  0  0
+                      0  2  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  2  0  0
+  c      1   3       2  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          39 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 V           5    1  1  0  0
+                      2  0  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       2  0  0  0
+                     0  1  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          40 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.500000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H           6    2  0  0  0
+                      2  0  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       2  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       0  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          41 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H          10    1  1  0  0
+                      1  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          42 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.500000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H          14    0  2  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  2  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          43 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 V           2    1  0  0  0
+                      1  0  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       1  0  0  0
+                     0  2  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          44 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 V           4    2  0  0  0
+                      2  0  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  2  0  0
+  c      2   3       2  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          45 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 H           3    1  0  0  0
+                      0  1  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      2   4       1  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          46 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 H           3    1  0  0  0
+                      0  1  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  1  0  0
+  c      2   4       2  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          47 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H           7    2  0  0  0
+                      1  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  2  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          48 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H           7    2  0  0  0
+                      1  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  2  0  0
+  c      2   4       2  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          49 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H           7    2  0  0  0
+                      1  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       1  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          50 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H          11    1  1  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+  c      1   4       2  0  0  0
+                     0  1  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          51 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H          11    1  1  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          52 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H          11    1  1  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       2  0  0  0
+                     0  0  0  0
+  c      2   4       0  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          53 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       1  0  0  0
+                     0  2  0  0
+  c      1   4       1  0  0  0
+                     0  2  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          54 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       2  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  2  0  0
+  c      1   4       0  0  0  0
+                     0  2  0  0
+  c      2   4       2  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          55 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       2  0  0  0
+                     0  1  0  0
+  c      1   4       2  0  0  0
+                     0  1  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          56 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.500000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          57 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.500000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 V           4    2  0  0  0
+                      2  0  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       2  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       0  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          58 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.500000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    7
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H           7    2  0  0  0
+                      1  1  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+ v05 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      1   5       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          59 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.500000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    7
+ v01 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v02 H          11    1  1  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+ v05 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      1   5       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          60 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    5
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+ v05 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       1  0  0  0
+                     0  1  0  0
+  c      1   5       1  0  0  0
+                     0  0  0  0
+  c      2   5       1  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          61 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.500000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    6
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+ v05 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       0  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      1   5       2  0  0  0
+                     0  0  0  0
+  c      2   5       0  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          62 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    6
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+ v05 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      1   5       1  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          63 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    5
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+ v05 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  1  0  0
+  c      1   5       0  0  0  0
+                     0  1  0  0
+  c      2   5       2  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          64 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.500000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    6
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+ v05 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      1   5       0  0  0  0
+                     0  2  0  0
+  c      2   5       2  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          65 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:   0.250000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 TBAR        2    2  0  0  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      1  0  0  0
+ v04 T           1    0  1  0  0
+                      1  0  0  0
+ v05 T           1    0  1  0  0
+                      1  0  0  0
+ v06 T           1    0  1  0  0
+                      1  0  0  0
+  c      1   3       1  0  0  0
+                     0  0  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      1   5       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       0  0  0  0
+                     0  1  0  0
+  c      2   6       1  0  0  0
+                     0  0  0  0
+ [END]
+ Rule: TEX_FORMULA
+ read           66  entries
+ A TeX formatted version of formula Lg0_CCR12
+ is written to file: ccr12f_lag.tex
+ My next target: E(CCR12)
+ Rule: DEF_SCALAR
+ My next target: E0_CCR12
+ Rule: INVARIANT
+ read           66  entries
+ wrote           14  entries
+ My next target: OMG
+ Rule: CLONE_OPERATOR
+ My next target: OMG_T_CCR12
+ Rule: DERIVATIVE
+ My next target: DEF-O0
+ Rule: DEF_ME_LIST
+ My next target: DEF-T0
+ Rule: DEF_ME_LIST
+ My next target: R12-GEM
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ in-core sort active -- allocating 1.93     Mb
+ cache statistics:
+ max. length =           16
+ used length =           16
+ hits   =       420575
+ misses =         2881
+ misses (crit) =         1643
+ @ time in 2int import                 cpu/sys/wall:      5.25 /     0.07 /     5.35 s
+ My next target: DEF-V-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-B-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-Bh-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-X-INTER
+ Rule: DEF_ME_LIST
+ My next target: Xh
+ Rule: DEF_OP_FROM_OCC
+ My next target: DEF-Xh-INTER
+ Rule: DEF_ME_LIST
+ My next target: DEF-C-INTER
+ Rule: DEF_ME_LIST
+ My next target: Z2-INT
+ Rule: DEF_OP_FROM_OCC
+ My next target: DEF-Z2LIST
+ Rule: DEF_ME_LIST
+ My next target: DEF-E0(CCR12)
+ Rule: DEF_ME_LIST
+ My next target: CC-R12-OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           21
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10                  
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25                  
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+ ----------------------------------------
+ Number of lists defined:           13
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- E0_CCR12
+ read           13  entries
+  -- OMG_T_CCR12
+ read           54  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   38 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.242E+06(  21.8%)
+  term #   56 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.741E+05(   6.7%)
+  term #   42 - H^ 1 P^ 4 V^ 0 X^ 0 - flops:  0.689E+05(   6.2%)
+  term #   52 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.673E+05(   6.1%)
+  term #   54 - H^ 4 P^ 2 V^ 0 X^ 0 - flops:  0.531E+05(   4.8%)
+ Formally most expensive contractions: 
+  term #   38 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   51 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   37 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   56 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   52 - H^ 3 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   42 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.526E-01
+  term #   41 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+  term #   47 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+  term #   46 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+  term #   45 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+ wrote          154  entries
+ My next target: TTR_COM
+ Rule: DEF_R12INT
+ My next target: TTR-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ in-core sort active -- allocating .865     Mb
+ cache statistics:
+ max. length =           16
+ used length =           16
+ hits   =       191239
+ misses =         1373
+ misses (crit) =         1034
+ @ time in 2int import                 cpu/sys/wall:      1.25 /     0.01 /     1.25 s
+ My next target: RSQ-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ in-core sort active -- allocating .371     Mb
+ cache statistics:
+ max. length =           16
+ used length =           16
+ hits   =        10822
+ misses =          248
+ misses (crit) =          113
+ @ time in 2int import                 cpu/sys/wall:      0.11 /     0.00 /     0.11 s
+ My next target: G.R12
+ Rule: DEF_OP_FROM_OCC
+ My next target: G
+ Rule: DEF_OP_FROM_OCC
+ My next target: VINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ wrote           57  entries
+ Rule: REPLACE
+ read           56  entries
+ wrote           57  entries
+ My next target: G.R-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ in-core sort active -- allocating .125     Mb
+ cache statistics:
+ max. length =           16
+ used length =           16
+ hits   =        27828
+ misses =          978
+ misses (crit) =          521
+ @ time in 2int import                 cpu/sys/wall:      0.22 /     0.00 /     0.22 s
+ My next target: VINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           24
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10           RSQ-INT
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25                  
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+   22 TTR_COM   1  10           TTR-INT
+   23   G.R12   2   6           G.R-INT
+   24       G   1  16                  
+ ----------------------------------------
+ Number of lists defined:           16
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   14         TTR-INT  1  0       113361  TTR_COM               TTR-INT_list.da
+   15         RSQ-INT  1  0        48627      R.R               RSQ-INT_list.da
+   16         G.R-INT  1  0        16323    G.R12               G.R-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- VINT_R12_CABS
+ read           56  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   54 - H^ 1 P^ 5 V^ 0 X^ 0 - flops:  0.565E+06(  20.2%)
+  term #   55 - H^ 2 P^ 3 V^ 0 X^ 1 - flops:  0.537E+06(  19.2%)
+  term #   34 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.242E+06(   8.7%)
+  term #   35 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.230E+06(   8.2%)
+  term #   53 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.145E+06(   5.2%)
+ Formally most expensive contractions: 
+  term #   54 - H^ 1 P^ 5 V^ 0 X^ 0
+  term #   55 - H^ 2 P^ 3 V^ 0 X^ 1
+  term #   53 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   50 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   34 - H^ 2 P^ 4 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   53 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.526E-01
+  term #   54 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.526E-01
+  term #   52 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.526E-01
+  term #   55 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.526E-01
+  term #   35 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+ wrote           57  entries
+ My next target: X'
+ Rule: DEF_OP_FROM_OCC
+ My next target: XINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ wrote           37  entries
+ My next target: XINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           25
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10           RSQ-INT
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25                  
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+   22 TTR_COM   1  10           TTR-INT
+   23   G.R12   2   6           G.R-INT
+   24       G   1  16                  
+   25      X'   1   4                  
+ ----------------------------------------
+ Number of lists defined:           16
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   14         TTR-INT  1  0       113361  TTR_COM               TTR-INT_list.da
+   15         RSQ-INT  1  0        48627      R.R               RSQ-INT_list.da
+   16         G.R-INT  1  0        16323    G.R12               G.R-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- XINT_R12_CABS
+ read           36  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   34 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.145E+06(  17.2%)
+  term #   35 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.138E+06(  16.4%)
+  term #   30 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.620E+05(   7.4%)
+  term #   26 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.620E+05(   7.4%)
+  term #   31 - H^ 4 P^ 1 V^ 0 X^ 1 - flops:  0.590E+05(   7.0%)
+ Formally most expensive contractions: 
+  term #   34 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   35 - H^ 3 P^ 2 V^ 0 X^ 1
+  term #   33 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   30 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   26 - H^ 3 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   34 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   35 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   33 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   32 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   24 - H^ 3 P^ 1 V^ 0 X^ 0 - Mb:     0.577E-02
+ wrote           37  entries
+ My next target: XhINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ wrote           22  entries
+ My next target: XhINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           25
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10           RSQ-INT
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25                  
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+   22 TTR_COM   1  10           TTR-INT
+   23   G.R12   2   6           G.R-INT
+   24       G   1  16                  
+   25      X'   1   4                  
+ ----------------------------------------
+ Number of lists defined:           16
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   14         TTR-INT  1  0       113361  TTR_COM               TTR-INT_list.da
+   15         RSQ-INT  1  0        48627      R.R               RSQ-INT_list.da
+   16         G.R-INT  1  0        16323    G.R12               G.R-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- XhINT_R12_CABS
+ read           21  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   19 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.145E+06(  22.5%)
+  term #   20 - H^ 3 P^ 2 V^ 0 X^ 1 - flops:  0.138E+06(  21.4%)
+  term #   11 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.620E+05(   9.6%)
+  term #   15 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.620E+05(   9.6%)
+  term #   16 - H^ 4 P^ 1 V^ 0 X^ 1 - flops:  0.590E+05(   9.2%)
+ Formally most expensive contractions: 
+  term #   19 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   20 - H^ 3 P^ 2 V^ 0 X^ 1
+  term #   11 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   18 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   15 - H^ 3 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   20 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   19 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   18 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   17 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   12 - H^ 3 P^ 1 V^ 0 X^ 0 - Mb:     0.577E-02
+ wrote           22  entries
+ My next target: RTTR_COM
+ Rule: DEF_OP_FROM_OCC
+ My next target: R12+BAR
+ Rule: DEF_R12INT
+ My next target: R12TLD
+ Rule: CLONE_OPERATOR
+ My next target: R.RBAR
+ Rule: CLONE_OPERATOR
+ My next target: R12BRV
+ Rule: DEF_OP_FROM_OCC
+ My next target: R12BAR+-GEM
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ in-core sort active -- allocating .865     Mb
+ cache statistics:
+ max. length =           16
+ used length =           16
+ hits   =       191885
+ misses =         1345
+ misses (crit) =         1028
+ @ time in 2int import                 cpu/sys/wall:      1.26 /     0.02 /     1.29 s
+ My next target: R12TLD-GEM
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ in-core sort active -- allocating 1.93     Mb
+ cache statistics:
+ max. length =           16
+ used length =           16
+ hits   =       421127
+ misses =         2329
+ misses (crit) =         1349
+ @ time in 2int import                 cpu/sys/wall:      2.88 /     0.09 /     2.97 s
+ My next target: RSQBAR-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ in-core sort active -- allocating .422E-01 Mb
+ cache statistics:
+ max. length =           16
+ used length =           16
+ hits   =         9316
+ misses =          170
+ misses (crit) =           94
+ @ time in 2int import                 cpu/sys/wall:      0.10 /     0.00 /     0.11 s
+ My next target: F-X
+ Rule: DEF_OP_FROM_OCC
+ My next target: F-X-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ My next target: R12BRV-GEM
+ Rule: DEF_ME_LIST
+ Rule: DEF_R12INTM_CABS
+ relevant call
+ wrote            8  entries
+ Rule: PRINT_FORMULA
+ read            7  entries
+ [INIT TARGET]          30
+ [CONTR]          30 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: R12BRV  (          30 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 F-X         1    1  0  0  0
+                      0  1  0  0
+ v02 R12-INT     9    0  1  0  1
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  x      2   1       0  0  0  1
+                     2  0  0  0
+  x      1   1       1  0  0  0
+                     0  0  0  0
+ [CONTR]          30 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: R12BRV  (          30 )           4
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 F-X         1    1  0  0  0
+                      0  1  0  0
+ v02 R12-INT    10    0  1  0  1
+                      1  1  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  x      2   1       0  0  0  1
+                     1  1  0  0
+  x      1   1       1  0  0  0
+                     0  0  0  0
+ [CONTR]          30 ( term #           3 )
+ +++ contraction info +++
+  name (index) and block of result: R12BRV  (          30 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 F-X         2    1  0  0  0
+                      0  0  0  1
+ v02 R12-INT     9    0  1  0  1
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  0  1
+  x      2   1       0  1  0  0
+                     2  0  0  0
+  x      1   1       1  0  0  0
+                     0  0  0  0
+ [CONTR]          30 ( term #           4 )
+ +++ contraction info +++
+  name (index) and block of result: R12BRV  (          30 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 F-X         2    1  0  0  0
+                      0  0  0  1
+ v02 R12-INT    11    0  0  0  2
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  0  1
+  x      2   1       0  0  0  1
+                     2  0  0  0
+  x      1   1       1  0  0  0
+                     0  0  0  0
+ [CONTR]          30 ( term #           5 )
+ +++ contraction info +++
+  name (index) and block of result: R12BRV  (          30 )           3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 F-X         2    1  0  0  0
+                      0  0  0  1
+ v02 R12-INT    10    0  1  0  1
+                      1  1  0  0
+  c      1   2       0  0  0  0
+                     0  0  0  1
+  x      2   1       0  1  0  0
+                     1  1  0  0
+  x      1   1       1  0  0  0
+                     0  0  0  0
+ [CONTR]          30 ( term #           6 )
+ +++ contraction info +++
+  name (index) and block of result: R12BRV  (          30 )           4
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 F-X         2    1  0  0  0
+                      0  0  0  1
+ v02 R12-INT    12    0  0  0  2
+                      1  1  0  0
+  c      1   2       0  0  0  0
+                     0  0  0  1
+  x      2   1       0  0  0  1
+                     1  1  0  0
+  x      1   1       1  0  0  0
+                     0  0  0  0
+ [END]
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           31
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10           RSQ-INT
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25                  
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+   22 TTR_COM   1  10           TTR-INT
+   23   G.R12   2   6           G.R-INT
+   24       G   1  16                  
+   25      X'   1   4                  
+   26RTTR_COM   2   4                  
+   27 R12+BAR   1  10       R12BAR+-GEM
+   28  R12TLD   1  12        R12TLD-GEM
+   29  R.RBAR   2   4        RSQBAR-INT
+   30  R12BRV   1   4        R12BRV-GEM
+   31     F-X   1   2           F-X-INT
+ ----------------------------------------
+ Number of lists defined:           21
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   14         TTR-INT  1  0       113361  TTR_COM               TTR-INT_list.da
+   15         RSQ-INT  1  0        48627      R.R               RSQ-INT_list.da
+   16         G.R-INT  1  0        16323    G.R12               G.R-INT_list.da
+   17     R12BAR+-GEM  1  0       113361  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       253332   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         5535   R.RBAR            RSQBAR-INT_list.da
+   20         F-X-INT  1  0          198      F-X               F-X-INT_list.da
+   21      R12BRV-GEM  1  0        22518   R12BRV            R12BRV-GEM_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- BBRV_FRM
+ read            7  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    6 - H^ 2 P^ 1 V^ 0 X^ 2 - flops:  0.170E+06(  45.5%)
+  term #    4 - H^ 3 P^ 0 V^ 0 X^ 2 - flops:  0.730E+05(  19.5%)
+  term #    2 - H^ 2 P^ 2 V^ 0 X^ 1 - flops:  0.459E+05(  12.2%)
+  term #    5 - H^ 2 P^ 2 V^ 0 X^ 1 - flops:  0.459E+05(  12.2%)
+  term #    1 - H^ 3 P^ 1 V^ 0 X^ 1 - flops:  0.197E+05(   5.2%)
+ Formally most expensive contractions: 
+  term #    6 - H^ 2 P^ 1 V^ 0 X^ 2
+  term #    2 - H^ 2 P^ 2 V^ 0 X^ 1
+  term #    5 - H^ 2 P^ 2 V^ 0 X^ 1
+  term #    4 - H^ 3 P^ 0 V^ 0 X^ 2
+  term #    1 - H^ 3 P^ 1 V^ 0 X^ 1
+ Largest intermediates occur in: 
+  term #    2 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.500E-01
+  term #    6 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.500E-01
+  term #    1 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.214E-01
+  term #    4 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.214E-01
+  term #    5 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+ wrote            8  entries
+ Rule: EVALUATE
+ read            7  entries
+ @ time for target                     cpu/sys/wall:      0.11 /     0.01 /     0.12 s
+ @ formula evaluation                  cpu/sys/wall:      0.11 /     0.01 /     0.12 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.2723352991E-02
+ My next target: BINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ wrote           80  entries
+ My next target: RTTR-INT
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ in-core sort active -- allocating .422E-01 Mb
+ cache statistics:
+ max. length =           16
+ used length =           16
+ hits   =         9267
+ misses =          219
+ misses (crit) =          113
+ @ time in 2int import                 cpu/sys/wall:      0.10 /     0.00 /     0.11 s
+ My next target: BINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           31
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10           RSQ-INT
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25                  
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+   22 TTR_COM   1  10           TTR-INT
+   23   G.R12   2   6           G.R-INT
+   24       G   1  16                  
+   25      X'   1   4                  
+   26RTTR_COM   2   4          RTTR-INT
+   27 R12+BAR   1  10       R12BAR+-GEM
+   28  R12TLD   1  12        R12TLD-GEM
+   29  R.RBAR   2   4        RSQBAR-INT
+   30  R12BRV   1   4        R12BRV-GEM
+   31     F-X   1   2           F-X-INT
+ ----------------------------------------
+ Number of lists defined:           22
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   14         TTR-INT  1  0       113361  TTR_COM               TTR-INT_list.da
+   15         RSQ-INT  1  0        48627      R.R               RSQ-INT_list.da
+   16         G.R-INT  1  0        16323    G.R12               G.R-INT_list.da
+   17     R12BAR+-GEM  1  0       113361  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       253332   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         5535   R.RBAR            RSQBAR-INT_list.da
+   20         F-X-INT  1  0          198      F-X               F-X-INT_list.da
+   21      R12BRV-GEM  1  0        22518   R12BRV            R12BRV-GEM_list.da
+   22        RTTR-INT  1  0         5535 RTTR_COM              RTTR-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- BINT_R12_CABS
+ read           79  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   56 - H^ 2 P^ 2 V^ 0 X^ 2 - flops:  0.183E+07(  26.1%)
+  term #   54 - H^ 3 P^ 1 V^ 0 X^ 2 - flops:  0.785E+06(  11.2%)
+  term #   52 - H^ 3 P^ 1 V^ 0 X^ 2 - flops:  0.785E+06(  11.2%)
+  term #   50 - H^ 1 P^ 2 V^ 0 X^ 2 - flops:  0.611E+06(   8.7%)
+  term #   55 - H^ 2 P^ 3 V^ 0 X^ 1 - flops:  0.321E+06(   4.6%)
+ Formally most expensive contractions: 
+  term #   56 - H^ 2 P^ 2 V^ 0 X^ 2
+  term #   55 - H^ 2 P^ 3 V^ 0 X^ 1
+  term #   41 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   77 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   52 - H^ 3 P^ 1 V^ 0 X^ 2
+ Largest intermediates occur in: 
+  term #   40 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   39 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   70 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   69 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+  term #   56 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+ wrote           80  entries
+ My next target: BhINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ wrote           22  entries
+ My next target: BhINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           31
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10           RSQ-INT
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25                  
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+   22 TTR_COM   1  10           TTR-INT
+   23   G.R12   2   6           G.R-INT
+   24       G   1  16                  
+   25      X'   1   4                  
+   26RTTR_COM   2   4          RTTR-INT
+   27 R12+BAR   1  10       R12BAR+-GEM
+   28  R12TLD   1  12        R12TLD-GEM
+   29  R.RBAR   2   4        RSQBAR-INT
+   30  R12BRV   1   4        R12BRV-GEM
+   31     F-X   1   2           F-X-INT
+ ----------------------------------------
+ Number of lists defined:           22
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   14         TTR-INT  1  0       113361  TTR_COM               TTR-INT_list.da
+   15         RSQ-INT  1  0        48627      R.R               RSQ-INT_list.da
+   16         G.R-INT  1  0        16323    G.R12               G.R-INT_list.da
+   17     R12BAR+-GEM  1  0       113361  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       253332   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         5535   R.RBAR            RSQBAR-INT_list.da
+   20         F-X-INT  1  0          198      F-X               F-X-INT_list.da
+   21      R12BRV-GEM  1  0        22518   R12BRV            R12BRV-GEM_list.da
+   22        RTTR-INT  1  0         5535 RTTR_COM              RTTR-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- BhINT_R12_CABS
+ read           21  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   19 - H^ 1 P^ 4 V^ 0 X^ 0 - flops:  0.689E+05(  21.5%)
+  term #   20 - H^ 2 P^ 2 V^ 0 X^ 1 - flops:  0.655E+05(  20.4%)
+  term #   15 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.295E+05(   9.2%)
+  term #   11 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.295E+05(   9.2%)
+  term #   12 - H^ 3 P^ 1 V^ 0 X^ 1 - flops:  0.281E+05(   8.8%)
+ Formally most expensive contractions: 
+  term #   19 - H^ 1 P^ 4 V^ 0 X^ 0
+  term #   20 - H^ 2 P^ 2 V^ 0 X^ 1
+  term #   11 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #   18 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #   15 - H^ 2 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   19 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.526E-01
+  term #   20 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.500E-01
+  term #   11 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+  term #   15 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+  term #   16 - H^ 3 P^ 0 V^ 0 X^ 1 - Mb:     0.214E-01
+ wrote           56  entries
+ My next target: CINT_R12_CABS
+ Rule: DEF_R12INTM_CABS
+ wrote            4  entries
+ My next target: CINT_R12_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           31
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10           RSQ-INT
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25                  
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+   22 TTR_COM   1  10           TTR-INT
+   23   G.R12   2   6           G.R-INT
+   24       G   1  16                  
+   25      X'   1   4                  
+   26RTTR_COM   2   4          RTTR-INT
+   27 R12+BAR   1  10       R12BAR+-GEM
+   28  R12TLD   1  12        R12TLD-GEM
+   29  R.RBAR   2   4        RSQBAR-INT
+   30  R12BRV   1   4        R12BRV-GEM
+   31     F-X   1   2           F-X-INT
+ ----------------------------------------
+ Number of lists defined:           22
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   14         TTR-INT  1  0       113361  TTR_COM               TTR-INT_list.da
+   15         RSQ-INT  1  0        48627      R.R               RSQ-INT_list.da
+   16         G.R-INT  1  0        16323    G.R12               G.R-INT_list.da
+   17     R12BAR+-GEM  1  0       113361  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       253332   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         5535   R.RBAR            RSQBAR-INT_list.da
+   20         F-X-INT  1  0          198      F-X               F-X-INT_list.da
+   21      R12BRV-GEM  1  0        22518   R12BRV            R12BRV-GEM_list.da
+   22        RTTR-INT  1  0         5535 RTTR_COM              RTTR-INT_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- CINT_R12_CABS
+ read            3  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    2 - H^ 1 P^ 3 V^ 0 X^ 1 - flops:  0.107E+06(  70.0%)
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 1 - flops:  0.459E+05(  30.0%)
+ Formally most expensive contractions: 
+  term #    2 - H^ 1 P^ 3 V^ 0 X^ 1
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 1
+ Largest intermediates occur in: 
+  term #    2 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.526E-01
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+ wrote            4  entries
+ My next target: EVAL-R12-INTER
+ Rule: EVALUATE
+ read           56  entries
+ @ time for target                     cpu/sys/wall:      0.25 /     0.04 /     0.29 s
+ @ formula evaluation                  cpu/sys/wall:      0.25 /     0.04 /     0.29 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.1535461384    
+ Rule: EVALUATE
+ read           36  entries
+ @ time for target                     cpu/sys/wall:      0.15 /     0.01 /     0.16 s
+ @ formula evaluation                  cpu/sys/wall:      0.15 /     0.01 /     0.16 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.7546907729E-02
+ Rule: EVALUATE
+ read           21  entries
+ @ time for target                     cpu/sys/wall:      0.11 /     0.01 /     0.11 s
+ @ formula evaluation                  cpu/sys/wall:      0.11 /     0.01 /     0.11 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.5177412209E-02
+ Rule: EVALUATE
+ read            3  entries
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
+ @ formula evaluation                  cpu/sys/wall:      0.02 /     0.01 /     0.04 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.4197280683E-01
+ Rule: EVALUATE
+ read           79  entries
+ @ time for target                     cpu/sys/wall:      0.70 /     0.07 /     0.77 s
+ @ formula evaluation                  cpu/sys/wall:      0.70 /     0.07 /     0.77 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.7599641273E-01
+ Rule: EVALUATE
+ read           55  entries
+ @ time for target                     cpu/sys/wall:      0.14 /     0.01 /     0.15 s
+ @ formula evaluation                  cpu/sys/wall:      0.14 /     0.01 /     0.15 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.2556607666E-01
+ My next target: SOLVE-CCR12-GS
+ Rule: SOLVE_NLEQ
+ read          153  entries
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         25
+ Threshold for residual:      0.10E-09
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.15 /     0.03 /     0.19 s
+ @ formula evaluation                  cpu/sys/wall:      0.16 /     0.04 /     0.20 s
+>>>  1        -25.186368032013 0.3682    
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.24 /     0.02 /     0.26 s
+ @ formula evaluation                  cpu/sys/wall:      0.25 /     0.02 /     0.27 s
+>>>  2        -25.242512600064 0.9698E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.03 s
+ @ time for target                     cpu/sys/wall:      0.22 /     0.04 /     0.25 s
+ @ formula evaluation                  cpu/sys/wall:      0.23 /     0.04 /     0.28 s
+>>>  3        -25.262799617733 0.2825E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.19 /     0.05 /     0.25 s
+ @ formula evaluation                  cpu/sys/wall:      0.20 /     0.06 /     0.27 s
+>>>  4        -25.266383146919 0.8067E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.22 /     0.05 /     0.26 s
+ @ formula evaluation                  cpu/sys/wall:      0.23 /     0.06 /     0.28 s
+>>>  5        -25.267187669715 0.3001E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.21 /     0.05 /     0.26 s
+ @ formula evaluation                  cpu/sys/wall:      0.21 /     0.05 /     0.27 s
+>>>  6        -25.267102200511 0.1150E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.23 /     0.03 /     0.26 s
+ @ formula evaluation                  cpu/sys/wall:      0.24 /     0.03 /     0.27 s
+>>>  7        -25.267099636759 0.3488E-03
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.23 /     0.02 /     0.25 s
+ @ formula evaluation                  cpu/sys/wall:      0.24 /     0.03 /     0.27 s
+>>>  8        -25.267116391147 0.7281E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.02 s
+ @ time for target                     cpu/sys/wall:      0.22 /     0.03 /     0.25 s
+ @ formula evaluation                  cpu/sys/wall:      0.23 /     0.03 /     0.27 s
+>>>  9        -25.267110463986 0.1550E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.22 /     0.04 /     0.25 s
+ @ formula evaluation                  cpu/sys/wall:      0.22 /     0.05 /     0.26 s
+>>> 10        -25.267111470387 0.3265E-05
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.20 /     0.05 /     0.25 s
+ @ formula evaluation                  cpu/sys/wall:      0.21 /     0.05 /     0.26 s
+>>> 11        -25.267111386090 0.7555E-06
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.20 /     0.05 /     0.25 s
+ @ formula evaluation                  cpu/sys/wall:      0.21 /     0.05 /     0.27 s
+>>> 12        -25.267111357894 0.1978E-06
+ @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.23 /     0.01 /     0.25 s
+ @ formula evaluation                  cpu/sys/wall:      0.24 /     0.01 /     0.26 s
+>>> 13        -25.267111355906 0.4715E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.21 /     0.05 /     0.26 s
+ @ formula evaluation                  cpu/sys/wall:      0.22 /     0.06 /     0.27 s
+>>> 14        -25.267111355606 0.1558E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.19 /     0.06 /     0.25 s
+ @ formula evaluation                  cpu/sys/wall:      0.20 /     0.06 /     0.26 s
+>>> 15        -25.267111355405 0.3183E-08
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.22 /     0.03 /     0.28 s
+ @ formula evaluation                  cpu/sys/wall:      0.22 /     0.04 /     0.30 s
+>>> 16        -25.267111355428 0.7007E-09
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.22 /     0.03 /     0.25 s
+ @ formula evaluation                  cpu/sys/wall:      0.23 /     0.04 /     0.26 s
+>>> 17        -25.267111355431 0.1479E-09
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.23 /     0.03 /     0.26 s
+ @ formula evaluation                  cpu/sys/wall:      0.23 /     0.04 /     0.27 s
+>>> 18        -25.267111355432 0.5210E-10
+ CONVERGED IN    18 ITERATIONS
+>>> final energy:        -25.267111355432 <<<
+ My next target: T(pt)
+ Rule: DEF_EXCITATION
+ My next target: DIA_PT
+ Rule: CLONE_OPERATOR
+ My next target: DIA_PTG1SxxM00
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: T12'(pt)
+ Rule: DEF_EXCITATION
+ My next target: DL(PT)
+ Rule: DEF_SCALAR
+ My next target: XhINT_R12
+ Rule: DEF_R12INTM_FORMAL
+ wrote           10  entries
+ Rule: PRINT_FORMULA
+ read            9  entries
+ [INIT TARGET]          20
+ [CONTR]          20 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: Xh  (          20 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 R12^+       1    2  0  0  0
+                      0  1  0  1
+ v02 R12         1    0  1  0  1
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  1
+  x      1   1       1  0  0  0
+                     0  0  0  0
+  x      2   2       0  0  0  0
+                     1  0  0  0
+ [CONTR]          20 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: Xh  (          20 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 R12^+       3    2  0  0  0
+                      0  0  0  2
+ v02 R12         3    0  0  0  2
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  2
+  x      1   1       1  0  0  0
+                     0  0  0  0
+  x      2   2       0  0  0  0
+                     1  0  0  0
+ [CONTR]          20 ( term #           3 )
+ +++ contraction info +++
+  name (index) and block of result: Xh  (          20 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 R12^+       1    2  0  0  0
+                      0  1  0  1
+ v02 R12         2    0  1  0  1
+                      1  1  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  1
+  x      1   1       2  0  0  0
+                     0  0  0  0
+  x      2   2       0  0  0  0
+                     1  1  0  0
+ [CONTR]          20 ( term #           4 )
+ +++ contraction info +++
+  name (index) and block of result: Xh  (          20 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 R12^+       3    2  0  0  0
+                      0  0  0  2
+ v02 R12         4    0  0  0  2
+                      1  1  0  0
+  c      1   2       0  0  0  0
+                     0  0  0  2
+  x      1   1       2  0  0  0
+                     0  0  0  0
+  x      2   2       0  0  0  0
+                     1  1  0  0
+ [CONTR]          20 ( term #           5 )
+ +++ contraction info +++
+  name (index) and block of result: Xh  (          20 )           3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 R12^+       2    1  1  0  0
+                      0  1  0  1
+ v02 R12         1    0  1  0  1
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  1
+  x      1   1       1  1  0  0
+                     0  0  0  0
+  x      2   2       0  0  0  0
+                     2  0  0  0
+ [CONTR]          20 ( term #           6 )
+ +++ contraction info +++
+  name (index) and block of result: Xh  (          20 )           3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 R12^+       4    1  1  0  0
+                      0  0  0  2
+ v02 R12         3    0  0  0  2
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  0  2
+  x      1   1       1  1  0  0
+                     0  0  0  0
+  x      2   2       0  0  0  0
+                     2  0  0  0
+ [CONTR]          20 ( term #           7 )
+ +++ contraction info +++
+  name (index) and block of result: Xh  (          20 )           4
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 R12^+       2    1  1  0  0
+                      0  1  0  1
+ v02 R12         2    0  1  0  1
+                      1  1  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  1
+  x      1   1       1  1  0  0
+                     0  0  0  0
+  x      2   2       0  0  0  0
+                     1  1  0  0
+ [CONTR]          20 ( term #           8 )
+ +++ contraction info +++
+  name (index) and block of result: Xh  (          20 )           4
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 R12^+       4    1  1  0  0
+                      0  0  0  2
+ v02 R12         4    0  0  0  2
+                      1  1  0  0
+  c      1   2       0  0  0  0
+                     0  0  0  2
+  x      1   1       1  1  0  0
+                     0  0  0  0
+  x      2   2       0  0  0  0
+                     1  1  0  0
+ [END]
+ My next target: Z2INT_R12
+ Rule: DEF_R12INTM_FORMAL
+ wrote           12  entries
+ My next target: DLg0_CCPT
+ Rule: DEF_CCPT_LAGRANGIAN
+  T + CR
+ --------
+ [INIT TARGET]          37
+ [CONTR]          37 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: _S_  (          37 )           3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ v01 T           1    0  1  0  0
+                      1  0  0  0
+  x      1   1       0  1  0  0
+                     1  0  0  0
+ [CONTR]          37 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: _S_  (          37 )           4
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ v01 T           2    0  2  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     2  0  0  0
+ [CONTR]          37 ( term #           3 )
+ +++ contraction info +++
+  name (index) and block of result: _S_  (          37 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ v01 R12         1    0  1  0  1
+                      2  0  0  0
+  x      1   1       0  1  0  1
+                     2  0  0  0
+ [CONTR]          37 ( term #           4 )
+ +++ contraction info +++
+  name (index) and block of result: _S_  (          37 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ v01 R12         3    0  0  0  2
+                      2  0  0  0
+  x      1   1       0  0  0  2
+                     2  0  0  0
+ [END]
+  T + CR (PT)
+ -------------
+ [INIT TARGET]          38
+ [CONTR]          38 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: _SP  (          38 )           3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ v01 T(pt)       1    0  3  0  0
+                      3  0  0  0
+  x      1   1       0  3  0  0
+                     3  0  0  0
+ [CONTR]          38 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: _SP  (          38 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 R12         2    0  1  0  1
+                      1  1  0  0
+ v02 T12'(pt)    1    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  x      1   1       0  1  0  1
+                     1  0  0  0
+  x      2   1       0  1  0  0
+                     2  0  0  0
+ [CONTR]          38 ( term #           3 )
+ +++ contraction info +++
+  name (index) and block of result: _SP  (          38 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 R12         4    0  0  0  2
+                      1  1  0  0
+ v02 T12'(pt)    1    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  x      1   1       0  0  0  2
+                     1  0  0  0
+  x      2   1       0  1  0  0
+                     2  0  0  0
+ [END]
+ wrote          129  entries
+ Number of generated terms:         1024
+ @ CCPT Lagrangian                     cpu/sys/wall:      0.19 /     0.00 /     0.19 s
+ Rule: FACTOR_OUT
+ read          128  entries
+ read           23  entries
+ read           23  entries
+ read           36  entries
+ read            9  entries
+ read           15  entries
+ read           11  entries
+ read           11  entries
+ read            9  entries
+ read            3  entries
+ read            3  entries
+ wrote           84  entries
+ Rule: INVARIANT
+ read           83  entries
+ wrote           35  entries
+ Rule: REPLACE
+ read           34  entries
+ wrote           35  entries
+ Rule: PRINT_FORMULA
+ read           34  entries
+ [INIT TARGET]          10
+ [CONTR]          10 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    2
+ v01 H           3    1  0  0  0
+                      0  1  0  0
+ v02 X           2    1  0  0  0
+                      0  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 H           3    1  0  0  0
+                      0  1  0  0
+ v02 X           6    2  0  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       2  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #           3 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    3    5
+ v01 Xh          3    2  0  0  0
+                      0  0  0  0
+ v02 H           7    2  0  0  0
+                      1  1  0  0
+ v01 Xh          4    0  0  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      2   4       1  0  0  0
+                     0  1  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #           4 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 X           2    1  0  0  0
+                      0  1  0  0
+ v02 H           7    2  0  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       2  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #           5 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 Z2-INT      1    2  0  0  0
+                      0  2  0  0
+ v02 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #           6 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         1    1  0  0  0
+                      0  1  0  0
+ v02 V           9    2  0  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       2  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #           7 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    2
+ v01 T^+         1    1  0  0  0
+                      0  1  0  0
+ v02 V           7    1  0  0  0
+                      0  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #           8 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 V           8    0  1  0  0
+                      0  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #           9 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 V          10    1  1  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          10 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    2
+ v01 H           3    1  0  0  0
+                      0  1  0  0
+ v02 T^+         2    2  0  0  0
+                      0  2  0  0
+ v03 T(pt)       1    0  3  0  0
+                      3  0  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       2  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          11 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 H           7    2  0  0  0
+                      1  1  0  0
+ v03 T(pt)       1    0  3  0  0
+                      3  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       1  0  0  0
+                     0  2  0  0
+  c      2   3       2  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          12 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    2
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 T^+         1    1  0  0  0
+                      0  1  0  0
+ v03 T(pt)       1    0  3  0  0
+                      3  0  0  0
+  c      1   3       2  0  0  0
+                     0  2  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          13 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 H          11    1  1  0  0
+                      0  2  0  0
+ v03 T(pt)       1    0  3  0  0
+                      3  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          14 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    3    5
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 Xh          5    1  1  0  0
+                      0  0  0  0
+ v03 H           9    1  1  0  0
+                      2  0  0  0
+ v02 Xh          6    0  0  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          15 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 H           9    1  1  0  0
+                      2  0  0  0
+ v03 X           3    0  1  0  0
+                      1  0  0  0
+  c      1   2       2  0  0  0
+                     0  1  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          16 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 Z2-INT^+    1    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]          10 ( term #          17 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T(pt)^+     1    3  0  0  0
+                      0  3  0  0
+ v02 H           9    1  1  0  0
+                      2  0  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  2  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          18 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T(pt)^+     1    3  0  0  0
+                      0  3  0  0
+ v02 H          13    0  2  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  2  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          19 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 V^+         8    0  1  0  0
+                      0  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          20 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 V^+        10    1  1  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          21 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 Bh          4    0  1  0  0
+                      0  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          22 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 H           2    1  0  0  0
+                      1  0  0  0
+ v03 X           7    1  1  0  0
+                      1  1  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       1  0  0  0
+                     0  1  0  0
+  c      3   4       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          23 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 X           7    1  1  0  0
+                      1  1  0  0
+ v03 H           2    1  0  0  0
+                      1  0  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+  c      1   4       1  0  0  0
+                     0  1  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      3   4       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          24 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 H           2    1  0  0  0
+                      1  0  0  0
+ v03 X           4    0  1  0  0
+                      0  1  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          25 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 H           2    1  0  0  0
+                      1  0  0  0
+ v03 X           7    1  1  0  0
+                      1  1  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  1  0  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          26 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 B           4    0  1  0  0
+                      0  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          27 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 B           7    1  1  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          28 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 H           5    0  1  0  0
+                      0  1  0  0
+ v03 X           4    0  1  0  0
+                      0  1  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       2  0  0  0
+                     0  0  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          29 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 H           5    0  1  0  0
+                      0  1  0  0
+ v03 X           7    1  1  0  0
+                      1  1  0  0
+ v04 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       1  0  0  0
+                     0  1  0  0
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      3   4       1  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          30 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T(pt)^+     1    3  0  0  0
+                      0  3  0  0
+ v02 C-INT       2    0  2  0  0
+                      1  1  0  0
+ v03 T           2    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  2  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          31 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T(pt)^+     1    3  0  0  0
+                      0  3  0  0
+ v02 H           2    1  0  0  0
+                      1  0  0  0
+ v03 T(pt)       1    0  3  0  0
+                      3  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       2  0  0  0
+                     0  3  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]          10 ( term #          32 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T(pt)^+     1    3  0  0  0
+                      0  3  0  0
+ v02 H           5    0  1  0  0
+                      0  1  0  0
+ v03 T(pt)       1    0  3  0  0
+                      3  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       3  0  0  0
+                     0  2  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]          10 ( term #          33 )
+ +++ contraction info +++
+  name (index) and block of result: L(CCR12)  (          10 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ v01 T^+         2    2  0  0  0
+                      0  2  0  0
+ v02 C-INT^+     2    1  1  0  0
+                      0  2  0  0
+ v03 T(pt)       1    0  3  0  0
+                      3  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       1  0  0  0
+                     0  2  0  0
+ [END]
+ Rule: TEX_FORMULA
+ read           34  entries
+ A TeX formatted version of formula DLg0_CCPT
+ is written to file: pt_lag.tex
+ My next target: DE(PT)
+ Rule: DEF_SCALAR
+ My next target: DE0_CCPT
+ Rule: INVARIANT
+ read           34  entries
+ wrote           30  entries
+ Rule: SUM_HERMITIAN
+ read           29  entries
+ wrote           25  entries
+ Rule: TEX_FORMULA
+ read           24  entries
+ A TeX formatted version of formula DE0_CCPT
+ is written to file: pt_en.tex
+ My next target: H0.R
+ Rule: CLONE_OPERATOR
+ My next target: ETA(PT)
+ Rule: CLONE_OPERATOR
+ My next target: CCPT_H0_T
+ Rule: DERIVATIVE
+ Rule: LEQ_SPLIT
+ read            6  entries
+ wrote            4  entries
+ wrote            5  entries
+ My next target: DEF-DE0(PT)
+ Rule: DEF_ME_LIST
+ My next target: DEF-ETA(
+ Rule: DEF_ME_LIST
+ My next target: DEF-H0.T(p
+ Rule: DEF_ME_LIST
+ My next target: DEF-T(pt)0
+ Rule: DEF_ME_LIST
+ My next target: CCPT_H0_T_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           41
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10           RSQ-INT
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25                  
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+   22 TTR_COM   1  10           TTR-INT
+   23   G.R12   2   6           G.R-INT
+   24       G   1  16                  
+   25      X'   1   4                  
+   26RTTR_COM   2   4          RTTR-INT
+   27 R12+BAR   1  10       R12BAR+-GEM
+   28  R12TLD   1  12        R12TLD-GEM
+   29  R.RBAR   2   4        RSQBAR-INT
+   30  R12BRV   1   4        R12BRV-GEM
+   31     F-X   1   2           F-X-INT
+   32   T(pt)   1   1            T(pt)0
+   33  DIA_PT   1   1    DIA_PTG1SxxM00
+   34T12'(pt)   1   1                  
+   35  DL(PT)   1   1                  
+   36     _S_   1   4                  
+   37     _SP   1   3                  
+   38     _H_   1  45                  
+   39  DE(PT)   1   1           DE0(PT)
+   40    H0.R   1   1            H0.T(p
+   41 ETA(PT)   1   1          ETA(pt)0
+ ----------------------------------------
+ Number of lists defined:           27
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   14         TTR-INT  1  0       113361  TTR_COM               TTR-INT_list.da
+   15         RSQ-INT  1  0        48627      R.R               RSQ-INT_list.da
+   16         G.R-INT  1  0        16323    G.R12               G.R-INT_list.da
+   17     R12BAR+-GEM  1  0       113361  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       253332   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         5535   R.RBAR            RSQBAR-INT_list.da
+   20         F-X-INT  1  0          198      F-X               F-X-INT_list.da
+   21      R12BRV-GEM  1  0        22518   R12BRV            R12BRV-GEM_list.da
+   22        RTTR-INT  1  0         5535 RTTR_COM              RTTR-INT_list.da
+   23  DIA_PTG1SxxM00  1  0         9450   DIA_PT        DIA_PTG1SxxM00_list.da
+   24         DE0(PT)  1  0            1   DE(PT)               DE0(PT)_list.da
+   25        ETA(pt)0  1  0         9450  ETA(PT)              ETA(pt)0_list.da
+   26          H0.T(p  1  0         9450     H0.R                H0.T(p_list.da
+   27          T(pt)0  1  0         9450    T(pt)                T(pt)0_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- ETA_CCPT
+ read            4  entries
+  -- CCPT_H0_T
+ read            3  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    2 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.434E+06(  31.8%)
+  term #    3 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.434E+06(  31.8%)
+  term #    1 - H^ 4 P^ 3 V^ 0 X^ 0 - flops:  0.186E+06(  13.6%)
+  term #    4 - H^ 4 P^ 3 V^ 0 X^ 0 - flops:  0.165E+06(  12.1%)
+  term #    5 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.145E+06(  10.6%)
+ Formally most expensive contractions: 
+  term #    2 - H^ 3 P^ 4 V^ 0 X^ 0
+  term #    3 - H^ 3 P^ 4 V^ 0 X^ 0
+  term #    5 - H^ 3 P^ 4 V^ 0 X^ 0
+  term #    1 - H^ 4 P^ 3 V^ 0 X^ 0
+  term #    4 - H^ 4 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.140E+00
+  term #    2 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.140E+00
+  term #    3 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.140E+00
+  term #    4 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.140E+00
+  term #    5 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.140E+00
+ wrote            8  entries
+ My next target: DE0_CCPT_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           41
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10           RSQ-INT
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25                  
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+   22 TTR_COM   1  10           TTR-INT
+   23   G.R12   2   6           G.R-INT
+   24       G   1  16                  
+   25      X'   1   4                  
+   26RTTR_COM   2   4          RTTR-INT
+   27 R12+BAR   1  10       R12BAR+-GEM
+   28  R12TLD   1  12        R12TLD-GEM
+   29  R.RBAR   2   4        RSQBAR-INT
+   30  R12BRV   1   4        R12BRV-GEM
+   31     F-X   1   2           F-X-INT
+   32   T(pt)   1   1            T(pt)0
+   33  DIA_PT   1   1    DIA_PTG1SxxM00
+   34T12'(pt)   1   1                  
+   35  DL(PT)   1   1                  
+   36     _S_   1   4                  
+   37     _SP   1   3                  
+   38     _H_   1  45                  
+   39  DE(PT)   1   1           DE0(PT)
+   40    H0.R   1   1            H0.T(p
+   41 ETA(PT)   1   1          ETA(pt)0
+ ----------------------------------------
+ Number of lists defined:           27
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   14         TTR-INT  1  0       113361  TTR_COM               TTR-INT_list.da
+   15         RSQ-INT  1  0        48627      R.R               RSQ-INT_list.da
+   16         G.R-INT  1  0        16323    G.R12               G.R-INT_list.da
+   17     R12BAR+-GEM  1  0       113361  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       253332   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         5535   R.RBAR            RSQBAR-INT_list.da
+   20         F-X-INT  1  0          198      F-X               F-X-INT_list.da
+   21      R12BRV-GEM  1  0        22518   R12BRV            R12BRV-GEM_list.da
+   22        RTTR-INT  1  0         5535 RTTR_COM              RTTR-INT_list.da
+   23  DIA_PTG1SxxM00  1  0         9450   DIA_PT        DIA_PTG1SxxM00_list.da
+   24         DE0(PT)  1  0            1   DE(PT)               DE0(PT)_list.da
+   25        ETA(pt)0  1  0         9450  ETA(PT)              ETA(pt)0_list.da
+   26          H0.T(p  1  0         9450     H0.R                H0.T(p_list.da
+   27          T(pt)0  1  0         9450    T(pt)                T(pt)0_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- DE0_CCPT
+ read           24  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+ tidy_reo:            2  ->            2
+ tidy_reo:            2  ->            2
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   23 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.437E+06(  27.9%)
+  term #   13 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.437E+06(  27.9%)
+  term #   11 - H^ 4 P^ 3 V^ 0 X^ 0 - flops:  0.187E+06(  11.9%)
+  term #   10 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.621E+05(   4.0%)
+  term #   12 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.621E+05(   4.0%)
+ Formally most expensive contractions: 
+  term #   23 - H^ 3 P^ 4 V^ 0 X^ 0
+  term #   13 - H^ 3 P^ 4 V^ 0 X^ 0
+  term #   11 - H^ 4 P^ 3 V^ 0 X^ 0
+  term #   22 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   20 - H^ 3 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   18 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+  term #   23 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+  term #   17 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+  term #   13 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.225E-01
+  term #   15 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.135E-01
+ wrote           81  entries
+ My next target: Z2-INT-CABS
+ Rule: DEF_R12INTM_CABS
+ call for Z #1
+ call for Z #2
+  R.P.G.R           1           1           1 :            2  terms
+  R.P.G.R           1           1           2 :            2  terms
+  R.P.G.R           1           1           4 :            2  terms
+  R.P.G.R           1           2           1 :            2  terms
+  R.P.G.R           1           2           2 :            2  terms
+  R.P.G.R           1           2           4 :            2  terms
+  R.P.G.R           1           4           1 :            2  terms
+  R.P.G.R           1           4           2 :            2  terms
+  R.P.G.R           1           4           4 :            2  terms
+  R.P.G.R           2           1           1 :            2  terms
+  R.P.G.R           2           1           2 :            2  terms
+  R.P.G.R           2           1           4 :            2  terms
+  R.P.G.R           2           2           1 :            2  terms
+  R.P.G.R           2           2           2 :            2  terms
+  R.P.G.R           2           2           4 :            2  terms
+  R.P.G.R           4           1           1 :            2  terms
+  R.P.G.R           4           1           2 :            2  terms
+  R.P.G.R           4           1           4 :            2  terms
+  R.G.P.R           1           1           1 :            2  terms
+  R.G.P.R           1           1           2 :            2  terms
+  R.G.P.R           1           1           4 :            2  terms
+  R.G.P.R           1           2           1 :            2  terms
+  R.G.P.R           1           2           2 :            2  terms
+  R.G.P.R           1           4           1 :            2  terms
+  R.G.P.R           2           1           1 :            2  terms
+  R.G.P.R           2           1           2 :            2  terms
+  R.G.P.R           2           1           4 :            2  terms
+  R.G.P.R           2           2           1 :            2  terms
+  R.G.P.R           2           2           2 :            2  terms
+  R.G.P.R           2           4           1 :            2  terms
+  R.G.P.R           4           1           1 :            2  terms
+  R.G.P.R           4           1           2 :            2  terms
+  R.G.P.R           4           1           4 :            2  terms
+  R.G.P.R           4           2           1 :            2  terms
+  R.G.P.R           4           2           2 :            2  terms
+  R.G.P.R           4           4           1 :            2  terms
+  R.P.G.P.R           1           1           1 :            2  terms
+  R.P.G.P.R           1           1           2 :            2  terms
+  R.P.G.P.R           1           1           4 :            2  terms
+  R.P.G.P.R           1           2           1 :            2  terms
+  R.P.G.P.R           1           2           2 :            2  terms
+  R.P.G.P.R           1           4           1 :            2  terms
+  R.P.G.P.R           2           1           1 :            2  terms
+  R.P.G.P.R           2           1           2 :            2  terms
+  R.P.G.P.R           2           1           4 :            2  terms
+  R.P.G.P.R           2           2           1 :            2  terms
+  R.P.G.P.R           2           2           2 :            2  terms
+  R.P.G.P.R           4           1           1 :            2  terms
+  R.P.G.P.R           4           1           2 :            2  terms
+  R.P.G.P.R           4           1           4 :            2  terms
+ wrote           77  entries
+ My next target: G-Z
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ size of buffer:        21200           3       63600
+ read in finished
+ size of buffer:        84886           3      254658
+ read in finished
+ My next target: Z2INT_R12_REF
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           41
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   Z-INT   1   2                  
+    2     R.R   2  10           RSQ-INT
+    3 R12-INT   1  12           R12-GEM
+    4     G_Z   2  25               G-Z
+    5       H   1  46                H0
+    6       T   1   2                T0
+    7     DIA   1   2       DIAG1SxxM00
+    8    T12'   1   0                  
+    9 T12BAR'   1   0                  
+   10L(CCR12)   1   1                  
+   11     R12   1   4                  
+   12    TBAR   1   2                  
+   13       V   1  11           V-INTER
+   14       B   1   7           B-INTER
+   15       X   1   7           X-INTER
+   16      Bh   1   7          Bh-INTER
+   17   C-INT   1   2           C-INTER
+   18E(CCR12)   1   1         E0(CCR12)
+   19     OMG   1   2                O0
+   20      Xh   2   4          Xh-INTER
+   21  Z2-INT   1   1            Z2LIST
+   22 TTR_COM   1  10           TTR-INT
+   23   G.R12   2   6           G.R-INT
+   24       G   1  16                  
+   25      X'   1   4                  
+   26RTTR_COM   2   4          RTTR-INT
+   27 R12+BAR   1  10       R12BAR+-GEM
+   28  R12TLD   1  12        R12TLD-GEM
+   29  R.RBAR   2   4        RSQBAR-INT
+   30  R12BRV   1   4        R12BRV-GEM
+   31     F-X   1   2           F-X-INT
+   32   T(pt)   1   1            T(pt)0
+   33  DIA_PT   1   1    DIA_PTG1SxxM00
+   34T12'(pt)   1   1                  
+   35  DL(PT)   1   1                  
+   36     _S_   1   4                  
+   37     _SP   1   3                  
+   38     _H_   1  45                  
+   39  DE(PT)   1   1           DE0(PT)
+   40    H0.R   1   1            H0.T(p
+   41 ETA(PT)   1   1          ETA(pt)0
+ ----------------------------------------
+ Number of lists defined:           28
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0      3447860        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          978      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          978      OMG                    O0_list.da
+    4              T0  1  0          978        T                    T0_list.da
+    5         R12-GEM  1  0       253332  R12-INT               R12-GEM_list.da
+    6         V-INTER  1  0        16590        V               V-INTER_list.da
+    7         B-INTER  1  0         5685        B               B-INTER_list.da
+    8        Bh-INTER  1  0         5685       Bh              Bh-INTER_list.da
+    9         X-INTER  1  0         5685        X               X-INTER_list.da
+   10        Xh-INTER  1  0         5454       Xh              Xh-INTER_list.da
+   11         C-INTER  1  0        10788    C-INT               C-INTER_list.da
+   12          Z2LIST  1  0          936   Z2-INT                Z2LIST_list.da
+   13       E0(CCR12)  1  0            1 E(CCR12)             E0(CCR12)_list.da
+   14         TTR-INT  1  0       113361  TTR_COM               TTR-INT_list.da
+   15         RSQ-INT  1  0        48627      R.R               RSQ-INT_list.da
+   16         G.R-INT  1  0        16323    G.R12               G.R-INT_list.da
+   17     R12BAR+-GEM  1  0       113361  R12+BAR           R12BAR+-GEM_list.da
+   18      R12TLD-GEM  1  0       253332   R12TLD            R12TLD-GEM_list.da
+   19      RSQBAR-INT  1  0         5535   R.RBAR            RSQBAR-INT_list.da
+   20         F-X-INT  1  0          198      F-X               F-X-INT_list.da
+   21      R12BRV-GEM  1  0        22518   R12BRV            R12BRV-GEM_list.da
+   22        RTTR-INT  1  0         5535 RTTR_COM              RTTR-INT_list.da
+   23  DIA_PTG1SxxM00  1  0         9450   DIA_PT        DIA_PTG1SxxM00_list.da
+   24         DE0(PT)  1  0            1   DE(PT)               DE0(PT)_list.da
+   25        ETA(pt)0  1  0         9450  ETA(PT)              ETA(pt)0_list.da
+   26          H0.T(p  1  0         9450     H0.R                H0.T(p_list.da
+   27          T(pt)0  1  0         9450    T(pt)                T(pt)0_list.da
+   28             G-Z  1  0       990918      G_Z                   G-Z_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- Z2-INT-CABS
+ read           76  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+ tidy_reo:            2  ->            2
+ tidy_reo:            2  ->            2
+ tidy_reo:            2  ->            2
+ tidy_reo:            2  ->            2
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   74 - H^ 1 P^ 2 V^ 0 X^ 3 - flops:  0.134E+08(  23.4%)
+  term #   75 - H^ 2 P^ 1 V^ 0 X^ 3 - flops:  0.562E+07(   9.8%)
+  term #   72 - H^ 3 P^ 2 V^ 0 X^ 2 - flops:  0.454E+07(   7.9%)
+  term #   70 - H^ 1 P^ 3 V^ 0 X^ 2 - flops:  0.332E+07(   5.8%)
+  term #   68 - H^ 1 P^ 3 V^ 0 X^ 2 - flops:  0.332E+07(   5.8%)
+ Formally most expensive contractions: 
+  term #   72 - H^ 3 P^ 2 V^ 0 X^ 2
+  term #   66 - H^ 3 P^ 3 V^ 0 X^ 1
+  term #   64 - H^ 4 P^ 1 V^ 0 X^ 2
+  term #   60 - H^ 4 P^ 2 V^ 0 X^ 1
+  term #   36 - H^ 4 P^ 2 V^ 0 X^ 1
+ Largest intermediates occur in: 
+  term #   74 - H^ 0 P^ 2 V^ 0 X^ 2 - Mb:     0.260E+01
+  term #   72 - H^ 3 P^ 2 V^ 0 X^ 1 - Mb:     0.105E+01
+  term #   68 - H^ 0 P^ 3 V^ 0 X^ 1 - Mb:     0.455E+00
+  term #   70 - H^ 0 P^ 3 V^ 0 X^ 1 - Mb:     0.455E+00
+  term #   62 - H^ 0 P^ 3 V^ 0 X^ 1 - Mb:     0.455E+00
+ wrote          221  entries
+ Rule: EVALUATE
+ read          220  entries
+ @ time for target                     cpu/sys/wall:      6.67 /     0.61 /     7.30 s
+ @ formula evaluation                  cpu/sys/wall:      6.67 /     0.61 /     7.30 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.9442335919E-03
+ My next target: Z2INT_R12_EVAL
+ My next target: DL0(PT)
+ Rule: DEF_ME_LIST
+ My next target: SOLVE-CC-PT
+ Rule: SOLVE_LEQ
+ read            7  entries
+ @ time for target                     cpu/sys/wall:      0.15 /     0.00 /     0.15 s
+ @ formula evaluation                  cpu/sys/wall:      0.15 /     0.00 /     0.15 s
+ Optimization algorithm:      SUBSPACE
+ Max. number of iterations:         30
+ Threshold for residual:      0.10E-05
+ Number of parameters:            9450
+>>> |rhs|                      0.6702E-01
+ @ time for target                     cpu/sys/wall:      0.03 /     0.00 /     0.03 s
+ @ formula evaluation                  cpu/sys/wall:      0.03 /     0.00 /     0.03 s
+ CONVERGED IN     1 ITERATIONS
+>>> conv.                      0.8748E-13
+ Rule: EVALUATE
+ read           80  entries
+ @ time for target                     cpu/sys/wall:      0.26 /     0.03 /     0.29 s
+ @ formula evaluation                  cpu/sys/wall:      0.26 /     0.03 /     0.29 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> -.2312260360E-02
+ Rule: PRINT_MEL
+ >>> CC energy    :    -25.267111355432
+ Rule: PRINT_MEL
+ >>> CC-PT energy :     -0.002312260360
+ Rule: ADD
+ @ time for adding                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_MEL
+ >>> Total energy :    -25.269423615791
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:   27181400 real(8)-words (  207.38 Mb)
+   Largest memory block:       26312292 real(8)-words (  200.75 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:     58.13 /     2.64 /    61.44 s
+ run ends at 2009-12-10 16:20:40.384   host: dhcppc1

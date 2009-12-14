@@ -117,5 +117,9 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
 
       end do
 
+      if (ntest.ge.100) then
+        write(luout,*) 'leaving strmap_man_flip() ...'
+      end if
+
       return
       end

@@ -4,13 +4,11 @@
      &     merge_op1op2,
      &     iocc_op1,iocc_ex1,irestr_op1,njoined_op1,
      &     iocc_op2,iocc_ex2,irestr_op2,njoined_op2,
-     &     nspin,ngas)
+     &     hpvxgas,nspin,ngas)
 *----------------------------------------------------------------------*
-*     quick and dirty fix to pass restrictions in selected cases
-*     (that in fact only occur for fixed-geminal intermediates with
-*      frozen core orbitals)
-*     if the C or A part of OP1OP2 is exactly the C or A part of 
-*     OP1 and OP2 --> inherit their restriction
+*     more advanced (but simple) version to generate the restrictions
+*     on intermediates. so far, we are allowed to just add up 
+*     restrictions (works for simple frozen core stuff, w/o masking)
 *----------------------------------------------------------------------*
 
       implicit none
@@ -32,78 +30,113 @@
      &     irestr_op1(2,ngas,2,2,nspin,njoined_op1),
      &     iocc_op2(ngastp,2,njoined_op2),
      &     iocc_ex2(ngastp,2,njoined_op2),
-     &     irestr_op2(2,ngas,2,2,nspin,njoined_op2)
+     &     irestr_op2(2,ngas,2,2,nspin,njoined_op2),
+     &     hpvxgas(ngas,nspin)
 
       integer ::
-     &     ivtx12, ivtx1, ivtx2, idx, ica
+     &     ivtx12, ivtx1, ivtx2, idx, ica, ispin, hpvx, igas,
+     &     n1, n2, ii
+      integer ::
+     &     irestr_ex1(2,ngas,2,2,nspin,njoined_op1),
+     &     irestr_ex2(2,ngas,2,2,nspin,njoined_op2)
+
       logical, external ::
      &     list_cmp
      
+      call fit_restr2(irestr_ex1,
+     &     iocc_ex1,njoined_op1,irestr_op1,njoined_op1,hpvxgas,ngas)
+      call fit_restr2(irestr_ex2,
+     &     iocc_ex2,njoined_op2,irestr_op2,njoined_op2,hpvxgas,ngas)
+
+      irestr_op1op2 = 0
+ 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'special_restr')
-        print *,'on input: 12'
+        write(luout,*) 'on input: 12'
         do ivtx12 = 1, njoined_op1op2
-          call wrt_occ_rstr(luout,ivtx12,iocc_op1op2,irestr_op1op2,
+          call wrt_occ_rstr(luout,ivtx12,iocc_op1op2(:,:,ivtx12),
+     &         irestr_op1op2(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
-        print *,' 1'
+        write(luout,*) ' 1'
         do ivtx12 = 1, njoined_op1
-          call wrt_occ_rstr(luout,ivtx12,iocc_op1,irestr_op1,
+          call wrt_occ_rstr(luout,ivtx12,iocc_op1(:,:,ivtx12),
+     &         irestr_op1(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
-        print *,' 1ex'
+        write(luout,*) ' 1ex'
         do ivtx12 = 1, njoined_op1
-          call wrt_occ_rstr(luout,ivtx12,iocc_ex1,irestr_op1,
+          call wrt_occ_rstr(luout,ivtx12,iocc_ex1(:,:,ivtx12),
+     &         irestr_ex1(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
-        print *,' 2'
+        write(luout,*) ' 2'
         do ivtx12 = 1, njoined_op2
-          call wrt_occ_rstr(luout,ivtx12,iocc_op2,irestr_op2,
+          call wrt_occ_rstr(luout,ivtx12,iocc_op2(:,:,ivtx12),
+     &         irestr_op2(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
-        print *,' 2ex'
+        write(luout,*) ' 2ex'
         do ivtx12 = 1, njoined_op2
-          call wrt_occ_rstr(luout,ivtx12,iocc_ex2,irestr_op2,
+          call wrt_occ_rstr(luout,ivtx12,iocc_ex2(:,:,ivtx12),
+     &         irestr_ex2(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
+        write(luout,*) 'map:'
+        call print_mapinfo(luout,merge_op1op2,njoined_op1op2)
       end if
+
 
       idx = 1
       do ivtx12 = 1, njoined_op1op2
-        ivtx1 = merge_op1op2(idx)
-        ivtx2 = merge_op1op2(idx+ivtx1+1)
-        idx = idx + ivtx1 + ivtx2 + 2
-        if (ivtx1.gt.0) then
+        n1 = merge_op1op2(idx)
+        n2 = merge_op1op2(idx+n1+1)
+
+        do ii = 1, n1
+          ivtx1 = merge_op1op2(idx+ii)
           do ica = 1, 2
-            if (list_cmp(iocc_op1(1,ica,ivtx1),
-     &                  iocc_ex1(1,ica,ivtx1),ngastp) .and.
-     &          list_cmp(iocc_op1op2(1,ica,ivtx12),
-     &                  iocc_ex1(1,ica,ivtx1),ngastp))
-     &      then
-              irestr_op1op2(1:2,1:ngas,ica,1:2,1:nspin,ivtx12) =
-     &             irestr_op1(1:2,1:ngas,ica,1:2,1:nspin,ivtx1)
-            end if
+            do hpvx = 1, ngastp
+              if (iocc_ex1(hpvx,ica,ivtx1).eq.0) cycle
+              do ispin = 1, nspin
+                do igas = 1, ngas
+                  if (hpvxgas(igas,ispin).eq.hpvx) then
+                      irestr_op1op2(1:2,igas,ica,1:2,ispin,ivtx12) =
+     &                irestr_op1op2(1:2,igas,ica,1:2,ispin,ivtx12) +
+     &                   irestr_ex1(1:2,igas,ica,1:2,ispin,ivtx1)
+                  end if
+                end do
+              end do
+            end do
           end do
-        end if
-        if (ivtx2.gt.0) then
+        end do
+
+        do ii = 1, n2
+          ivtx2 = merge_op1op2(idx+n1+1+ii)
           do ica = 1, 2
-            if (list_cmp(iocc_op2(1,ica,ivtx2),
-     &                   iocc_ex2(1,ica,ivtx2),ngastp) .and.
-     &          list_cmp(iocc_op1op2(1,ica,ivtx12),
-     &                   iocc_ex2(1,ica,ivtx2),ngastp))
-     &      then
-              irestr_op1op2(1:2,1:ngas,ica,1:2,1:nspin,ivtx12) =
-     &             irestr_op2(1:2,1:ngas,ica,1:2,1:nspin,ivtx2)
-            end if
+            do hpvx = 1, ngastp
+              if (iocc_ex2(hpvx,ica,ivtx2).eq.0) cycle
+              do ispin = 1, nspin
+                do igas = 1, ngas
+                  if (hpvxgas(igas,ispin).eq.hpvx) then
+                      irestr_op1op2(1:2,igas,ica,1:2,ispin,ivtx12) =
+     &                irestr_op1op2(1:2,igas,ica,1:2,ispin,ivtx12) +
+     &                   irestr_ex2(1:2,igas,ica,1:2,ispin,ivtx2)
+                  end if
+                end do
+              end do
+            end do
           end do
-        end if
+        end do
+
+        idx = idx + n1 + n2 + 2
 
       end do
 
       if (ntest.ge.100) then
-        print *,'on output:'
+        write(luout,*) 'on output:'
         do ivtx12 = 1, njoined_op1op2
-          call wrt_occ_rstr(luout,ivtx12,iocc_op1op2,irestr_op1op2,
+          call wrt_occ_rstr(luout,ivtx12,iocc_op1op2(:,:,ivtx12),
+     &         irestr_op1op2(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
       end if

@@ -1,6 +1,7 @@
       subroutine store_reorder(fl_item,
      &     label_out,label_in,
      &     iblk_out,iblk_in,
+     &     tra_out,tra_in,
      &     sign_reo,occ_op0,
      &     from_to,occ_shift,nreo,
      &     occ_opout,rst_opout,nj_out,
@@ -29,6 +30,8 @@
       integer, intent(in) ::
      &     iblk_out, iblk_in,
      &     nreo, nj_out, nj_in
+      logical, intent(in) ::
+     &     tra_out, tra_in
       integer, intent(in) ::
      &     sign_reo,
      &     from_to(2,nreo),
@@ -62,6 +65,8 @@
       fl_item%reo%nj_out  = nj_out
       fl_item%reo%iblk_in   = iblk_in
       fl_item%reo%iblk_out  = iblk_out
+      fl_item%reo%tra_in   = tra_in
+      fl_item%reo%tra_out  = tra_out
       fl_item%reo%sign      = sign_reo
       allocate(fl_item%reo%from_to(2,nreo))
       fl_item%reo%from_to = from_to

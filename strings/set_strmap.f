@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine set_strmap(graph1,ityp1,iocc1,irestr1,
      &                      graph2,ityp2,iocc2,irestr2,
-     &                      graph12,ityp12,iocc12,
+     &                      graph12,ityp12,iocc12,irestr12,
      &                      idxgrgr,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     
@@ -9,7 +9,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       include 'stdunit.h'
       include 'ifc_memman.h'
@@ -24,7 +24,7 @@
       integer, intent(in) ::
      &     ityp1, iocc1, irestr1(*),
      &     ityp2, iocc2, irestr2(*),
-     &     ityp12, iocc12, idxgrgr
+     &     ityp12, iocc12, irestr12(*), idxgrgr
       type(strmapinf), intent(inout) ::
      &     strmap_info
       type(orbinf), intent(in), target ::
@@ -49,6 +49,15 @@
      &                   iocc1, iocc2, iocc12
         write(luout,*) ' ityp1, ityp2, ityp12: ',
      &                   ityp1, ityp2, ityp12
+        write(luout,*) ' restriction on 1:'
+        call wrt_srstr(luout,irestr1,orb_info%ngas_hpv(ityp1),
+     &                 orb_info%nspin)
+        write(luout,*) ' restriction on 2:'
+        call wrt_srstr(luout,irestr2,orb_info%ngas_hpv(ityp2),
+     &                 orb_info%nspin)
+        write(luout,*) ' restriction on 12:'
+        call wrt_srstr(luout,irestr12,orb_info%ngas_hpv(ityp12),
+     &                 orb_info%nspin)
       end if
 
       ifree = mem_setmark('set_strmap')
@@ -105,6 +114,7 @@
                   call set_strmap_kernel(buffer(idxbuf+idxmap+1),
      &                 iocc1,irestr1,idxms1,igam1,
      &                 iocc2,irestr2,idxms2,igam2,
+     &                 irestr12,
      &                 graph12%y4sg,graph12%yinf,
      &                 graph12%yssg,graph12%wssg,
      &                 graph12%ioffstr_dgm,graph12%ndis,
@@ -158,6 +168,10 @@
         end do
       end if
 
+c dbg
+c        print *,'call to mem_iput in set_strmap: ',
+c     &       strmap_info%idx_last, lenbuf
+c dbg
       call mem_iput(strmap_info%ffstrmap,buffer,
      &     strmap_info%idx_last+1,strmap_info%idx_last+lenbuf)
 

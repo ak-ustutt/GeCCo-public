@@ -39,6 +39,12 @@
       ihpvgas => orb_info%ihpvgas
 c dbg
 c      print *,'get_grph4occ: '
+c          do ijoin = 1, njoined
+c            call wrt_occ_rstr(luout,ijoin,iocc(:,:,ijoin),
+c     &                                    irst(:,:,:,:,1,ijoin),
+c     &                                    ngas,nspin)
+c          end do
+c
 c      call wrt_rstr(6,irst,ngas)
 c dbg
 
@@ -47,6 +53,10 @@ c dbg
         do igastp = 1, ngastp
           idx_gr(igastp,ica,ijoin) = 0
           if (iocc(igastp,ica,ijoin).eq.0) cycle
+c dbg
+c          print *,'igastp, ica, ijoin = ',igastp, ica, ijoin
+c          print *,'iocc = ',iocc(igastp,ica,ijoin)
+c dbg
           ! get graph type
           igtyp = 4*(iocc(igastp,ica,ijoin)-1) + igastp
           ! number of graphs with same type

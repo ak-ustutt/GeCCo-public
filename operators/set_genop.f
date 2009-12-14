@@ -268,16 +268,17 @@ c very quick fix:
           end if
 c dbg
 c          print *,'formal:',op%formal_blk(1:op%n_occ_cls)
-c dbg          
-          do iocc = 1, op%n_occ_cls
-            call wrt_occ_rstr(luout,iocc,
-     &           op%ihpvca_occ(1,1,iocc),
-     &           op%igasca_restr(1,1,1,1,1,iocc),ngas,nspin)
-c            write(luout,'(/x,a,i4)') 'Occupation Nr. ',iocc
-c            call wrt_occ(luout,op%ihpvca_occ(1,1,iocc))
-c            write(luout,'(/4x,6(2x,i2,x))') hpvxprint(1:ngas)
-c            call wrt_rstr(luout,op%igasca_restr(1,1,1,1,iocc),ngas)
-          end do
+c dbg        
+          call print_op_occ(luout,op)
+c          do iocc = 1, op%n_occ_cls
+c            call wrt_occ_rstr(luout,iocc,
+c     &           op%ihpvca_occ(1,1,iocc),
+c     &           op%igasca_restr(1,1,1,1,1,iocc),ngas,nspin)
+cc            write(luout,'(/x,a,i4)') 'Occupation Nr. ',iocc
+cc            call wrt_occ(luout,op%ihpvca_occ(1,1,iocc))
+cc            write(luout,'(/4x,6(2x,i2,x))') hpvxprint(1:ngas)
+cc            call wrt_rstr(luout,op%igasca_restr(1,1,1,1,iocc),ngas)
+c          end do
         end if
   
       end do

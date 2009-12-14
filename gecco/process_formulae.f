@@ -253,6 +253,9 @@ c        call quit(1,DEF_FORMULA,'not yet')
         ioff = rule%n_update
         
         jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
+        if (jdx.le.0)
+     &       call quit(1,'process_formulae',
+     &       'label not found: '//trim(rule%labels(ioff+1)))
         form0_pnt => form_info%form_arr(jdx)%form
         call form_op_replace_drv(form_pnt,form0_pnt,
      &       title,

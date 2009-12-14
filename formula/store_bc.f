@@ -7,7 +7,8 @@
      &       nj12,nj1,nj2,
      &       iocc12,iocc1,iocc2,
      &       irst12,irst1,irst2,
-     &       ex1,ex2,cnt,nj_cnt,
+     &       ex1,ex2,cnt,
+     &       irstex1,irstex2,irstcnt,nj_cnt,
      &       merge1,merge2,
      &       merge12,merge21,
      &       orb_info)
@@ -50,6 +51,9 @@
      &     irst12(2,orb_info%ngas,2,2,orb_info%nspin,nj12),
      &     irst1(2,orb_info%ngas,2,2,orb_info%nspin,nj1),
      &     irst2(2,orb_info%ngas,2,2,orb_info%nspin,nj2),
+     &     irstex1(2,orb_info%ngas,2,2,orb_info%nspin,nj1),
+     &     irstex2(2,orb_info%ngas,2,2,orb_info%nspin,nj2),
+     &     irstcnt(2,orb_info%ngas,2,2,orb_info%nspin,nj_cnt),
      &     merge1(*), merge2(*), merge12(*), merge21(*)
 
       integer ::
@@ -104,8 +108,12 @@
       if (nj_cnt.gt.0) then
         allocate(fl_item%bcontr%occ_cnt(ngastp,2,nj_cnt))
         fl_item%bcontr%occ_cnt = cnt
+        allocate(fl_item%bcontr%rst_cnt(2,ngas,2,2,nspin,nj_cnt))
+        fl_item%bcontr%rst_cnt = irstcnt
         allocate(fl_item%bcontr%occ_ex1(ngastp,2,nj1))
         fl_item%bcontr%occ_ex1 = ex1
+        allocate(fl_item%bcontr%rst_ex1(2,ngas,2,2,nspin,nj1))
+        fl_item%bcontr%rst_ex1 = irstex1
 
         lenmap = len_merge_map(merge1,nj1)
         allocate(fl_item%bcontr%merge_op1(lenmap))
@@ -114,6 +122,8 @@
         if (n_operands.eq.2) then
           allocate(fl_item%bcontr%occ_ex2(ngastp,2,nj2))
           fl_item%bcontr%occ_ex2 = ex2
+          allocate(fl_item%bcontr%rst_ex2(2,ngas,2,2,nspin,nj2))
+          fl_item%bcontr%rst_ex2 = irstex2
           lenmap = len_merge_map(merge2,nj2)
           allocate(fl_item%bcontr%merge_op2(lenmap))
           fl_item%bcontr%merge_op2 = merge2(1:lenmap)

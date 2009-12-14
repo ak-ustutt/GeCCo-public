@@ -112,8 +112,8 @@
       nj_opin = reo_inf0%nj_in
       nj_opout = reo_inf0%nj_out
 
-      tra_opin =  .false. !reo_inf0%tra_opin
-      tra_opout = .false. !reo_inf0%tra_opout
+      tra_opin =  reo_inf0%tra_in
+      tra_opout = reo_inf0%tra_out
 
       if (.not.update) then
         idxme = op2list(idx_opout)

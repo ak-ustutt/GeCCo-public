@@ -23,6 +23,8 @@ c      use parse_input
      &     len=1,idef=(/50 000 000/))
       call argument_add('form_test','general',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('statistics','general',type=vtyp_log,
+     &     ldef=(/.true./))
       call argument_add('da_block',context='general',type=vtyp_int,
      &     len=1,idef=(/32/))
 
@@ -61,6 +63,8 @@ c      use parse_input
       call argument_add('R2_coupling','method.CCPT',type=vtyp_log,
      &                                                 ldef=(/.true./))
       call argument_add('R2R2','method.CCPT',type=vtyp_log,
+     &                                                ldef=(/.false./))
+      call argument_add('RT2T2','method.CCPT',type=vtyp_log,
      &                                                ldef=(/.false./))
       call argument_add('hh_scatter','method.CCPT',type=vtyp_log,
      &                                                ldef=(/.false./))
@@ -113,7 +117,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('opt','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
 
-      ! Truncations
+      ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
       call argument_add('trunc_type','method.truncate',
      &     type=vtyp_int,idef=(/0/))

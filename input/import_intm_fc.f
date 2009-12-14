@@ -31,7 +31,7 @@
      &     op
 
       integer(8) ::
-     &     nindex,maxlen,lenbuf
+     &     nindex,maxlen,lenbuf,nel8
 
       integer ::
      &     lutemp, mst, njoined, idxstr, iblk, idx_occ,
@@ -123,9 +123,9 @@ c dbg
       idxbuf = maxlen+1 ! indicate that we have to read a buffer
       lenbuf = 0
 
-      if((trim(op%name).eq.op_p_inter.and.nindex.ne.4).or.
-     &     (trim(op%name).eq.op_z_inter.and.nindex.ne.6))
-     &     call quit(1,'import_intm_fc','wrong nindex')
+c      if((trim(op%name).eq.op_p_inter.and.nindex.ne.4).or.
+c     &     (trim(op%name).eq.op_z_inter.and.nindex.ne.6))
+c     &     call quit(1,'import_intm_fc','wrong nindex')
 
       ! Loop over blocks of the intermediate.
       blk_loop: do iblk = 1, op%n_occ_cls
@@ -142,7 +142,7 @@ c dbg
         mscmax = op%ica_occ(1,iblk)
         msamax = op%ica_occ(2,iblk)
         nel = msamax+op%ica_occ(1,iblk)
-        if(nel.ne.nindex) call quit(1,'import_intm_fc','nel!=nindex')
+        if(nel.gt.nindex) call quit(1,'import_intm_fc','nel>nindex')
 
         idxms = 0
         idxoff = 0
@@ -260,10 +260,13 @@ c dbg
 
           ! read next buffer, if necessary
           if (idxbuf.gt.lenbuf) then
-            read(lutemp)  lenbuf,indices(1:nindex,1:lenbuf),
-     &         spins(1:nindex,1:lenbuf),val(1:lenbuf)
+            nel8 = nindex
+            read(lutemp)  lenbuf,indices(1:nel8,1:lenbuf),
+     &         spins(1:nel8,1:lenbuf),val(1:lenbuf)
+c            read(lutemp)  nel8,lenbuf,indices(1:nel8,1:lenbuf),
+c     &         spins(1:nel8,1:lenbuf),val(1:lenbuf)
 c dbg
-c            print *,'read new block, length = ',lenbuf
+c            print *,'read new block, length = ',nel8,lenbuf
 c            print *,'idxstr = ',idxstr
 c dbg
             if (lenbuf.le.0)
@@ -276,13 +279,13 @@ c dbg
 
           match = .true.
           ! Check indices.
-          do jdx = 1, nindex
+          do jdx = 1, nel8
             match = match.and.idorb(jdx).eq.indices(jdx,idxbuf)
           enddo
           if(.not.match) cycle
 
           ! Check spins.
-          do jdx = 1, nindex
+          do jdx = 1, nel8
             match = match.and.idspn(jdx).eq.spins(jdx,idxbuf)
           enddo
           if(.not.match)cycle

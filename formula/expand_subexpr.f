@@ -117,6 +117,8 @@
           end do
           
           if (.not.success) then
+            call prt_contr2(luout,fl_tgt_current%contr,op_info)
+            write(luout,*) 'vertex:          ',ivtx
             write(luout,*) 'undefined block: ',iblk_intm
             call quit(1,'expand_subexpr','block not defined')
           end if

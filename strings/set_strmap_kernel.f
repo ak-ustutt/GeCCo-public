@@ -2,6 +2,7 @@
       subroutine set_strmap_kernel(strmap,
      &     iocc1,irestr1,idxms1,igam1,
      &     iocc2,irestr2,idxms2,igam2,
+     &     irestr12,
      &     g12y4sg,g12yinf,
      &     g12yssg,g12wssg,
      &     g_off_dgm, g_ndis,
@@ -27,8 +28,9 @@
       integer, intent(out) ::
      &     strmap(*)
       integer, intent(in) ::
-     &     iocc1, irestr1(2,ngas_cur,2), idxms1, igam1,
-     &     iocc2, irestr2(2,ngas_cur,2), idxms2, igam2,
+     &     iocc1, irestr1 (2,ngas_cur,2), idxms1, igam1,
+     &     iocc2, irestr2 (2,ngas_cur,2), idxms2, igam2,
+     &            irestr12(2,ngas_cur,2),
      &     nsym, ngas_cur,
      &     mostnd_cur(2,nsym),igamorb(*),
      &     g12y4sg(*),g12yinf(*),
@@ -49,7 +51,7 @@
       integer, external ::
      &     iordstr2, idx4sg
       logical, external ::
-     &     next_string
+     &     next_string, allow_sbsp_dis
 
       ms1 = iocc1-(idxms1-1)*2
       ms2 = iocc2-(idxms2-1)*2
@@ -85,10 +87,16 @@
           isgn12 = iordstr2(idorb12,idspn12,idss12,
      &         idorb1,idspn1,idss1,iocc1,
      &         idorb2,idspn2,idss2,iocc2)
+
+          if (isgn12.ne.0) then
+            if(.not.allow_sbsp_dis(idss12,iocc1+iocc2,
+     &                             ngas_cur,irestr12))
+     &           isgn12 = 0
+          end if
 c dbg
 c          print *,'idorb1:  ',idorb1(1:iocc1)
 c          print *,'idorb2:  ',idorb2(1:iocc2)
-c          print *,'idorb12: ',isgn12,idorb12(1:iocc1+iocc2)
+c          print *,'idorb12: ',isgn12,abs(isgn12)*idorb12(1:iocc1+iocc2)
 c dbg
 
           idxmap = idxmap+1

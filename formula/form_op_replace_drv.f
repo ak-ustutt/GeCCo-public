@@ -114,7 +114,8 @@ c dbg end fix
 
         call op_replace(idx1,transpose1,
      &                  idx2,transpose2,
-     &                  .false.,flist,op_info)
+     &                  .false.,.true.,flist,op_info)
+c     &                  .false.,.false.,flist,op_info)
 
       end do
 

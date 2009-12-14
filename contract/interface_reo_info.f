@@ -53,7 +53,7 @@
      &     nj_out,idum,idum,
      &     reord%merge_stp1,reord%merge_stp1inv,
      &     reord%merge_stp2,reord%merge_stp2inv,
-     &     idum,idum,idum,idum,idum,
+     &     idum,idum,idum,idum,idum,idum,
      &     reo_info,str_info,orb_info)
 
       return

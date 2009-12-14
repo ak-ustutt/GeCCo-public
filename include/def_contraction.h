@@ -105,6 +105,9 @@ c
      &     occ_ex1(:,:,:),
      &     occ_ex2(:,:,:),
      &     occ_cnt(:,:,:),
+     &     rst_ex1(:,:,:,:,:,:),
+     &     rst_ex2(:,:,:,:,:,:),
+     &     rst_cnt(:,:,:,:,:,:),
      &     merge_op1(:), merge_op2(:),
      &     merge_op1op2(:), merge_op2op1(:)
       end type binary_contr
@@ -115,6 +118,8 @@ c
       integer ::
      &     iblk_out, iblk_in,
      &     nj_out, nj_in
+      logical ::
+     &     tra_out, tra_in
       integer ::
      &     nreo,sign,
      &     ngas, nspin

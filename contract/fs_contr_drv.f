@@ -84,8 +84,10 @@
      &     iocc_op1(:,:,:), iocc_op2(:,:,:), iocc_res(:,:,:),
      &     irst_op1(:,:,:,:,:,:),irst_op2(:,:,:,:,:,:),
      &     irst_res(:,:,:,:,:,:),irst_tmp(:,:,:,:,:,:),
+     &     irst_cnt(:,:,:,:,:,:),
      &     iocc_ex1(:,:,:), iocc_ex2(:,:,:),
-     &     iocc_cnt(:,:,:), iocc_tmp(:,:,:)
+     &     iocc_cnt(:,:,:), iocc_tmp(:,:,:),
+     &     irst_ex1(:,:,:,:,:,:),irst_ex2(:,:,:,:,:,:)
       real(8), pointer ::
      &     xret_pnt(:)
 
@@ -177,27 +179,31 @@
 
       irst_res => bc_info%rst_res
       irst_op1 => bc_info%rst_op1
+      irst_ex1 => bc_info%rst_ex1
 
       if (.not.self) then
         iocc_op2 => bc_info%occ_op2
         irst_op2 => bc_info%rst_op2
         iocc_ex2 => bc_info%occ_ex2
+        irst_ex2 => bc_info%rst_ex2
       else 
         allocate(iocc_op2(ngastp,2,1),
      &           irst_op2(2,ngas,2,2,nspin,1),
-     &           iocc_ex2(ngastp,2,1))
+     &           iocc_ex2(ngastp,2,1),
+     &           irst_ex2(2,ngas,2,2,nspin,1))
         iocc_op2 = 0
         irst_op2 = 0
         iocc_ex2 = 0
+        irst_ex2 = 0
       end if
       iocc_cnt => bc_info%occ_cnt
+      irst_cnt => bc_info%rst_cnt
 
       merge_op1 => bc_info%merge_op1
       if (.not.self)
      &     merge_op2 => bc_info%merge_op2
       merge_op1op2 => bc_info%merge_op1op2
       merge_op2op1 => bc_info%merge_op2op1
-
 
       fact = bc_info%fact
 
@@ -256,6 +262,7 @@
      &       iblk_op1,iblk_op2,iblk_res,iblk_tmp,
      &       idoff_op1,idoff_op2,idoff_res,
      &       iocc_ex1,iocc_ex2,iocc_cnt,
+     &       irst_ex1,irst_ex2,irst_cnt,2,
      &       iocc_op1, iocc_op2, iocc_res, iocc_tmp,
      &       irst_op1,irst_op2,irst_res, irst_tmp,
      &       merge_op1, merge_op2, merge_op1op2, merge_op2op1,

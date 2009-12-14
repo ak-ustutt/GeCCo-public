@@ -9,6 +9,9 @@
 *                subspace within H/P/V/X, for C/A
 *     freeze(1): use settings on iadgas to enforce frozen C occupations
 *     freeze(2): use settings on iadgas to enforce frozen A occupations
+*       new: the array freeze(1:2,1:njoined) contains the max number
+*            of active electrons in frozen shells (0 = all frozen)
+*            per vertex -> allow for semi-frozen cores
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -31,15 +34,18 @@
      &     orb_info
       integer, intent(in) ::
      &     occ_def(ngastp,2,nblk*njoined), irestr(2,orb_info%ngas,2,2)
-      logical, intent(in) ::
-     &     freeze(2)
+c      logical, intent(in) ::
+c     &     freeze(2)
+      integer, intent(in) ::
+     &     freeze(2,njoined)
 
       logical, parameter ::
      &     inv_hole = .false.
 
       integer ::
-     &     idx, irank, na, nc, ica, igas, igasl, idiff, imaxr,
-     &     iocc, igastp, iprint, nx, iblk, ijoin, ioff_blk, gasst, gasnd
+     &     idx, irank, na, nc, ica, igas, igasl, idiff, imaxr, nact, 
+     &     iocc, igastp, iprint, nx, iblk, ijoin, ioff_blk, gasst,gasnd,
+     &     ispin
       integer ::
      &     hpvxprint(ngastp)
       integer, pointer ::
@@ -151,12 +157,19 @@ c        end do
         ! post-processing for frozen shells
         do ijoin = 1, njoined
          do ica = 1, 2
-          if (.not.freeze(ica)) cycle
+          nact = freeze(ica,ijoin)
+c          if (.not.freeze(ica)) cycle
           do igas = 1, ngas
             if (iad_gas(igas).ne.2) then
-              if (igas.eq.1) then                        
-                op%igasca_restr(1:2,igas,ica,1,1:nspin,ioff_blk+ijoin)=0
+              if (igas.eq.1) then
+                do ispin = 1, nspin
+                  imaxr = min(nact,
+     &          op%igasca_restr(2,igas,ica,1,ispin,ioff_blk+ijoin))
+                  op%igasca_restr(1:2,igas,ica,1,ispin,ioff_blk+ijoin)=
+     &               (/0,imaxr/)
+                end do
               else
+                call quit(1,'set_user_op2','ever accessed this part?')
                 op%igasca_restr(1,igas,ica,1,1:nspin,ioff_blk+ijoin) =
      &            op%igasca_restr(2,igas,ica,1,1:nspin,ioff_blk+ijoin) 
                 op%igasca_restr(1,igas-1,ica,1,1:nspin,ioff_blk+ijoin) =

@@ -35,14 +35,15 @@
      &     occ_def(ngastp,2,60),
      &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext, trunc_type
       logical ::
-     &     needed, r12fix, set_tp, set_tpp, truncate
+     &     needed, r12fix, set_tp, set_tpp, truncate, set_RT2T2,
+     &     pf12_trunc, frozen, pz_eval
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
       character(len_command_par) ::
      &     parameters(3)
       character(20) ::
-     &     approx, F_appr, K_appr, Z_appr
+     &     approx, F_appr, K_appr, Z_appr, shell_typ
 
       character(*), intent(in) ::
      &     env_type
@@ -70,6 +71,7 @@
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       call get_argument_value('method.R12','fixed',lval=r12fix)
+      call get_argument_value('method.R12','pz_eval',lval=pz_eval)
       call get_argument_value('method.R12','extend',ival=extend)
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','T1ext',ival=t1ext)
@@ -80,6 +82,18 @@
         call get_argument_value('method.truncate','trunc_type',
      &       ival=trunc_type)
       end if
+      pf12_trunc = truncate.and.trunc_type.eq.0
+      ! Frozen core?
+      frozen = .false.
+      shell_typ(1:) = ' '
+      if(is_keyword_set('orb_space.shell').gt.0)then
+        call get_argument_value('orb_space.shell','type',
+     &       str=shell_typ)
+        frozen = trim(shell_typ).eq.'frozen'
+      endif
+
+      call get_argument_value('method.CCPT','RT2T2',
+     &     lval=set_RT2T2)
 
       n_pp = 0  ! number of particle-particle interaction in R12
       set_tp = .false.
@@ -146,6 +160,7 @@
         ntp_min=min_rank_tp
         ntp_max=max_rank-1
         n_pp=1
+        if (set_RT2T2) n_pp=2
       case(2)
         ! T'' operators (doubly p-connected to R12)
         set_tpp = .true.
@@ -250,7 +265,7 @@ c          occ_def(IHOLE,2,(idef-1)*2+1) = irank
 c          occ_def(IPART,1,(idef-1)*2+2) = 1
 c        end do
 c        call op_from_occ_parameters(-1,parameters,2,
-c     &       occ_def,ndef,2,(/.true.,.true./),ndef)
+c     &       occ_def,ndef,2,(/  0, 0,  0, 0/),ndef)
 c        call set_rule(op_cex,ttype_op,DEF_OP_FROM_OCC,
 c     &       op_cex,1,1,
 c     &       parameters,2,tgt_info)
@@ -310,15 +325,158 @@ c     &     .false.,min_rank,2,0,2)
      &              op_rint,1,1,
      &              parameters,1,tgt_info)
       
-      ! (pq)_frozen/(pq)_ae block of 2e-Hamiltonian
+      ! (pq)_frozen/(pq)_ae block of 2e-Hamiltonian (formal)
       call add_target(op_g_x,ttype_op,.false.,tgt_info)
-c      min_rank = 2 
-      call r12int_parameters(-1,parameters,
-     &     2,2,2,0,2)
-      call set_rule(op_g_x,ttype_op,DEF_R12INT,
+cc      min_rank = 2 
+c      call r12int_parameters(-1,parameters,
+c     &     2,2,2,0,2)
+c      call set_rule(op_g_x,ttype_op,DEF_R12INT,
+c     &              op_g_x,1,1,
+c     &              parameters,1,tgt_info)
+      ndef = 16
+      call set_gxx(occ_def)
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/      2,     0/),ndef)
+      call set_rule(op_g_x,ttype_op,DEF_OP_FROM_OCC,
      &              op_g_x,1,1,
-     &              parameters,1,tgt_info)
-      
+     &              parameters,2,tgt_info)
+
+
+
+      ! ae/ae blocks of 2e-Hamilt. (formal)
+      call add_target('G-XX',ttype_op,.false.,tgt_info)
+      ndef = 16
+      call set_gxx(occ_def)
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/      2,      2/),ndef)
+      call set_rule('G-XX',ttype_op,DEF_OP_FROM_OCC,
+     &              'G-XX',1,1,
+     &              parameters,2,tgt_info)
+
+      ! (pq)_frozen/(iq)_ae block of 2e-Hamiltonian (actual)
+      call add_target('G-Acore',ttype_op,.false.,tgt_info)
+c      min_rank = 2 
+      occ_def = 0
+      ndef = 9
+      ! 1
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IHOLE,2,1) = 2
+      ! 2
+      occ_def(IHOLE,1,2) = 2
+      occ_def(IHOLE,2,2) = 1
+      occ_def(IPART,2,2) = 1
+      ! 3
+      occ_def(IHOLE,1,3) = 2
+      occ_def(IHOLE,2,3) = 1
+      occ_def(IEXTR,2,3) = 1
+      ! 4
+      occ_def(IHOLE,1,4) = 1
+      occ_def(IPART,1,4) = 1
+      occ_def(IHOLE,2,4) = 2
+      ! 5
+      occ_def(IHOLE,1,5) = 1
+      occ_def(IPART,1,5) = 1
+      occ_def(IHOLE,2,5) = 1
+      occ_def(IPART,2,5) = 1
+      ! 6
+      occ_def(IHOLE,1,6) = 1
+      occ_def(IPART,1,6) = 1
+      occ_def(IHOLE,2,6) = 1
+      occ_def(IEXTR,2,6) = 1
+      ! 7
+      occ_def(IPART,1,7) = 2
+      occ_def(IHOLE,2,7) = 2
+      ! 8
+      occ_def(IPART,1,8) = 2
+      occ_def(IHOLE,2,8) = 1
+      occ_def(IPART,2,8) = 1
+      ! 9
+      occ_def(IPART,1,9) = 2
+      occ_def(IHOLE,2,9) = 1
+      occ_def(IEXTR,2,9) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/     0,      2/),ndef)
+      call set_rule('G-Acore',ttype_op,DEF_OP_FROM_OCC,
+     &              'G-Acore',1,1,
+     &              parameters,2,tgt_info)
+
+      ! auxiliary HX|HX list
+      call add_target('H-ext',ttype_op,.false.,tgt_info)
+c      min_rank = 2 
+      occ_def = 0
+      ndef = 1
+      ! 1
+      occ_def(IHOLE,1,1) = 1
+      occ_def(IEXTR,1,1) = 1
+      occ_def(IHOLE,2,1) = 1
+      occ_def(IEXTR,2,1) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/     0,      2/),ndef)
+      call set_rule('H-ext',ttype_op,DEF_OP_FROM_OCC,
+     &              'H-ext',1,1,
+     &              parameters,2,tgt_info)
+
+      ! (jq)_ae/(ir)_ae block of 2e-Hamiltonian
+      call add_target('G-CAcore',ttype_op,.false.,tgt_info)
+c      min_rank = 2 
+      occ_def = 0
+      ndef = 12
+      ! 1
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IHOLE,2,1) = 2
+      ! 2
+      occ_def(IHOLE,1,2) = 2
+      occ_def(IHOLE,2,2) = 1
+      occ_def(IPART,2,2) = 1
+      ! 3
+      occ_def(IHOLE,1,3) = 2
+      occ_def(IHOLE,2,3) = 1
+      occ_def(IEXTR,2,3) = 1
+      ! 4
+      occ_def(IHOLE,1,4) = 1
+      occ_def(IPART,1,4) = 1
+      occ_def(IHOLE,2,4) = 2
+      ! 5
+      occ_def(IHOLE,1,5) = 1
+      occ_def(IPART,1,5) = 1
+      occ_def(IHOLE,2,5) = 1
+      occ_def(IPART,2,5) = 1
+      ! 6
+      occ_def(IHOLE,1,6) = 1
+      occ_def(IPART,1,6) = 1
+      occ_def(IHOLE,2,6) = 1
+      occ_def(IEXTR,2,6) = 1
+      ! 7
+      occ_def(IHOLE,1,7) = 1
+      occ_def(IEXTR,1,7) = 1
+      occ_def(IHOLE,2,7) = 2
+      ! 8
+      occ_def(IHOLE,1,8) = 1
+      occ_def(IEXTR,1,8) = 1
+      occ_def(IHOLE,2,8) = 1
+      occ_def(IPART,2,8) = 1
+      ! 9
+      occ_def(IHOLE,1,9) = 1
+      occ_def(IEXTR,1,9) = 1
+      occ_def(IHOLE,2,9) = 1
+      occ_def(IEXTR,2,9) = 1
+      ! 10
+      occ_def(IHOLE,1,10) = 2
+      occ_def(IPART,2,10) = 2
+      ! 11
+      occ_def(IHOLE,1,11) = 1
+      occ_def(IPART,1,11) = 1
+      occ_def(IPART,2,11) = 2
+      ! 12
+      occ_def(IHOLE,1,12) = 1
+      occ_def(IEXTR,1,12) = 1
+      occ_def(IPART,2,12) = 2
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/      2,      2/),ndef)
+      call set_rule('G-CAcore',ttype_op,DEF_OP_FROM_OCC,
+     &              'G-CAcore',1,1,
+     &              parameters,2,tgt_info)
+
       ! i,(a/x) block of Fock
       call add_target('F-X',ttype_op,.false.,tgt_info)
       occ_def = 0
@@ -328,7 +486,7 @@ c      min_rank = 2
       occ_def(IHOLE,1,2) = 1
       occ_def(IEXTR,2,2) = 1
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+     &     occ_def,ndef,1,(/      2,     0/),ndef)
       call set_rule('F-X',ttype_op,DEF_OP_FROM_OCC,
      &              'F-X',1,1,
      &              parameters,2,tgt_info)
@@ -399,7 +557,7 @@ c     &              parameters,1,tgt_info)
         occ_def(IPART,2,6) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.false.,.true./),ndef)
+     &     occ_def,ndef,1,(/      2,     0/),ndef)
       call set_rule(op_rintbreve,ttype_op,DEF_OP_FROM_OCC,
      &              op_rintbreve,1,1,
      &              parameters,2,tgt_info)
@@ -456,7 +614,7 @@ c     &              parameters,1,tgt_info)
         occ_def(IPART,2,18) = 2
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),ndef)
+     &     occ_def,ndef,2,(/ 0, 0, 0, 0/),ndef)
       call set_rule(op_rttr,ttype_op,DEF_OP_FROM_OCC,
      &              op_rttr,1,1,
      &              parameters,2,tgt_info)
@@ -474,6 +632,7 @@ c     &              parameters,1,tgt_info)
 
       occ_def(IPART,1,5) = 2
       occ_def(IHOLE,2,6) = 2
+
       ! n_pp == 1:
       if (n_pp.ge.1) then
         occ_def(IHOLE,1,7) = 2
@@ -515,80 +674,161 @@ c      occ_def(IPART,2,16) = 2
         occ_def(IHOLE,2,2*ndef+2) = 2
         ndef = ndef+1
       end if
+      if (.not.pf12_trunc) then        
+        occ_def(IHOLE,1,2*ndef+1) = 1
+        occ_def(IEXTR,1,2*ndef+1) = 1
+        occ_def(IHOLE,2,2*ndef+2) = 2
+        ndef = ndef+1
+        if (n_pp.ge.1) then
+          occ_def(IHOLE,1,2*ndef+1) = 1
+          occ_def(IEXTR,1,2*ndef+1) = 1
+          occ_def(IPART,2,2*ndef+2) = 1
+          occ_def(IHOLE,2,2*ndef+2) = 1
+          ndef = ndef+1
+        end if
+        if (n_pp.ge.2) then
+          occ_def(IHOLE,1,2*ndef+1) = 1
+          occ_def(IEXTR,1,2*ndef+1) = 1
+          occ_def(IPART,2,2*ndef+2) = 2
+          ndef = ndef+1
+        end if
+      end if
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),3*(n_pp+1))
+     &     occ_def,ndef,2,(/ 0, 0, 0, 0/),3*(n_pp+1))
       call set_rule(op_gr,ttype_op,DEF_OP_FROM_OCC,
      &              op_gr,1,1,
      &              parameters,2,tgt_info)
 
+      ! extended variant
+      call add_target(op_gr_x,ttype_op,.false.,tgt_info)
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,2,(/ 2, 0, 2, 0/),3*(n_pp+1))
+      call set_rule(op_gr_x,ttype_op,DEF_OP_FROM_OCC,
+     &              op_gr_x,1,1,
+     &              parameters,2,tgt_info)
+
+      ! core contributions (C part)
+      occ_def = 0
+      ndef = 2
+      ! n_pp == 0:
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IHOLE,2,2) = 2
+
+      occ_def(IHOLE,1,3) = 1
+      occ_def(IPART,1,3) = 1
+      occ_def(IHOLE,2,4) = 2
+
+      ! n_pp == 1:
+      if (n_pp.ge.1) then
+        ndef = 4
+        occ_def(IHOLE,1,5) = 2
+        occ_def(IHOLE,2,6) = 1
+        occ_def(IPART,2,6) = 1
+
+        occ_def(IHOLE,1,7) = 1
+        occ_def(IPART,1,7) = 1
+        occ_def(IHOLE,2,8) = 1
+        occ_def(IPART,2,8) = 1
+
+      end if
+      ! n_pp == 2:
+      if (n_pp.ge.2) then
+        ndef = 5
+        occ_def(IHOLE,1,9) = 2
+        occ_def(IPART,2,10) = 2
+        
+      end if
+      if (.not.pf12_trunc) then        
+        occ_def(IHOLE,1,2*ndef+1) = 1
+        occ_def(IEXTR,1,2*ndef+1) = 1
+        occ_def(IHOLE,2,2*ndef+2) = 2
+        ndef = ndef+1
+        if (n_pp.ge.1) then
+          occ_def(IHOLE,1,2*ndef+1) = 1
+          occ_def(IEXTR,1,2*ndef+1) = 1
+          occ_def(IPART,2,2*ndef+2) = 1
+          occ_def(IHOLE,2,2*ndef+2) = 1
+          ndef = ndef+1
+        end if
+        if (n_pp.ge.2) then
+          occ_def(IHOLE,1,2*ndef+1) = 1
+          occ_def(IEXTR,1,2*ndef+1) = 1
+          occ_def(IPART,2,2*ndef+2) = 2
+          ndef = ndef+1
+        end if
+      end if      
+      call add_target('G.R-Ccore',ttype_op,.false.,tgt_info)
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,2,(/ 2, 0, 2, 0/),2*ndef)
+      call set_rule('G.R-Ccore',ttype_op,DEF_OP_FROM_OCC,
+     &              'G.R-Ccore',1,1,
+     &              parameters,2,tgt_info)
+
       ! R12^{2} integrals
       call add_target(op_ff,ttype_op,.false.,tgt_info)
-      if (is_keyword_set('method.CC').gt.0.and.(.not.truncate
-     &     .or.(truncate.and.trunc_type.gt.0)).or.
-     &     is_keyword_set('method.CCPT')) then
-        ndef = 5
-        occ_def = 0
-        ! 1
-        occ_def(IHOLE,1,1)  = 2
-        occ_def(IHOLE,2,2)  = 2
-        ! 2
-        occ_def(IHOLE,1,3)  = 1
-        occ_def(IPART,1,3)  = 1
-        occ_def(IHOLE,2,4)  = 2
-        ! 3
-        occ_def(IHOLE,1,5)  = 1
-        occ_def(IEXTR,1,5)  = 1
-        occ_def(IHOLE,2,6)  = 2
-        ! 4
-        occ_def(IHOLE,1,7)  = 2
-        occ_def(IHOLE,2,8)  = 1
-        occ_def(IPART,2,8)  = 1
-        ! 5
-        occ_def(IHOLE,1,9)  = 2
-        occ_def(IHOLE,2,10) = 1
-        occ_def(IEXTR,2,10) = 1
-c dbg
-        print *,'(2) : n_pp = ',n_pp
-c dbg
-        if (n_pp.ge.1) then
-          ndef = 10
-          ! 6
-          occ_def(IHOLE,1,11)  = 1
-          occ_def(IPART,1,11)  = 1
-          occ_def(IHOLE,2,12)  = 1
-          occ_def(IPART,2,12)  = 1
-          ! 7
-          occ_def(IHOLE,1,13)  = 1
-          occ_def(IEXTR,1,13)  = 1
-          occ_def(IHOLE,2,14)  = 1
-          occ_def(IPART,2,14)  = 1
-          ! 8
-          occ_def(IHOLE,1,15)  = 1
-          occ_def(IPART,1,15)  = 1
-          occ_def(IHOLE,2,16) = 1
-          occ_def(IEXTR,2,16) = 1
-          ! 9
-          occ_def(IHOLE,1,17)  = 2
-          occ_def(IPART,2,18)  = 2
-          ! 10
-          occ_def(IHOLE,1,19)  = 2
-          occ_def(IPART,2,20)  = 1
-          occ_def(IEXTR,2,20)  = 1
-        end if
-        call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,ndef,2,(/.true.,.true./),10)
-        call set_rule(op_ff,ttype_op,DEF_OP_FROM_OCC,
-     &                op_ff,1,1,
-     &                parameters,2,tgt_info)
-      else
-        call set_dependency(op_ff,op_rttr,tgt_info)
-        call cloneop_parameters(-1,parameters,
+      call set_dependency(op_ff,op_rttr,tgt_info)
+      call cloneop_parameters(-1,parameters,
      &                        op_rttr,.false.) ! <- dagger=.false.
-        call set_rule(op_ff,ttype_op,CLONE_OP,
+      call set_rule(op_ff,ttype_op,CLONE_OP,
      &     op_ff,1,1,
      &     parameters,1,tgt_info)
+
+c      if (is_keyword_set('method.CC').gt.0.and.(.not.truncate
+c     &     .or.(truncate.and.trunc_type.gt.0)).or.
+c     &     is_keyword_set('method.CCPT')) then
+      call add_target('R.R-X',ttype_op,.false.,tgt_info)
+      ndef = 5
+      occ_def = 0
+      ! 1
+      occ_def(IHOLE,1,1)  = 2
+      occ_def(IHOLE,2,2)  = 2
+      ! 2
+      occ_def(IHOLE,1,3)  = 1
+      occ_def(IPART,1,3)  = 1
+      occ_def(IHOLE,2,4)  = 2
+        ! 3
+      occ_def(IHOLE,1,5)  = 1
+      occ_def(IEXTR,1,5)  = 1
+      occ_def(IHOLE,2,6)  = 2
+        ! 4
+      occ_def(IHOLE,1,7)  = 2
+      occ_def(IHOLE,2,8)  = 1
+      occ_def(IPART,2,8)  = 1
+        ! 5
+      occ_def(IHOLE,1,9)  = 2
+      occ_def(IHOLE,2,10) = 1
+      occ_def(IEXTR,2,10) = 1
+      if (n_pp.ge.1) then
+        ndef = 10
+        ! 6
+        occ_def(IHOLE,1,11)  = 1
+        occ_def(IPART,1,11)  = 1
+        occ_def(IHOLE,2,12)  = 1
+        occ_def(IPART,2,12)  = 1
+        ! 7
+        occ_def(IHOLE,1,13)  = 1
+        occ_def(IEXTR,1,13)  = 1
+        occ_def(IHOLE,2,14)  = 1
+        occ_def(IPART,2,14)  = 1
+        ! 8
+        occ_def(IHOLE,1,15)  = 1
+        occ_def(IPART,1,15)  = 1
+        occ_def(IHOLE,2,16) = 1
+        occ_def(IEXTR,2,16) = 1
+        ! 9
+        occ_def(IPART,1,17)  = 2
+        occ_def(IHOLE,2,18)  = 2
+        ! 10
+        occ_def(IPART,1,19)  = 1
+        occ_def(IEXTR,1,19)  = 1
+        occ_def(IHOLE,2,20)  = 2
       end if
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,2,(/1,0,1,0/),ndef)
+      call set_rule('R.R-X',ttype_op,DEF_OP_FROM_OCC,
+     &              'R.R-X',1,1,
+     &              parameters,2,tgt_info)
 
       ! {R12^2}BAR integrals
       call add_target(op_ffbar,ttype_op,.false.,tgt_info)
@@ -650,11 +890,20 @@ c dbg
         occ_def(IPART,2,20) = 1
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.false.,.true./),ndef*2)
+     &     occ_def,ndef,2,(/2,0,2,0/),ndef*2)
       call set_rule('FF-X',ttype_op,DEF_OP_FROM_OCC,
      &              'FF-X',1,1,
      &              parameters,2,tgt_info)
-            
+      
+      ! R12^{2}*G12 integrals
+      call add_target(op_ffg,ttype_op,.false.,tgt_info)
+      call set_dependency(op_ffg,op_rttr,tgt_info)
+      call cloneop_parameters(-1,parameters,
+     &     op_rttr,.false.)  
+      call set_rule(op_ffg,ttype_op,CLONE_OP,
+     &              op_ffg,1,1,
+     &              parameters,1,tgt_info)
+
       ! V^{ij}_{pq}
       call add_target(op_v_inter,ttype_op,.false.,tgt_info)
       occ_def = 0
@@ -717,24 +966,170 @@ c dbg
       if (t1ext.gt.0) then
         occ_def(IEXTR,1,ndef+1) = 1
         occ_def(IHOLE,2,ndef+1) = 1
-
-c        occ_def(IHOLE,1,ndef+2) = 1
-c        occ_def(IEXTR,1,ndef+2) = 1
-c        occ_def(IHOLE,2,ndef+2) = 2
-        occ_def(IPART,1,ndef+2) = 1
-        occ_def(IEXTR,1,ndef+2) = 1
-        occ_def(IHOLE,2,ndef+2) = 2
-        ndef = ndef+2
+        ndef = ndef+1
+        occ_def(IPART,1,ndef+1) = 1
+        occ_def(IEXTR,1,ndef+1) = 1
+        occ_def(IHOLE,2,ndef+1) = 2
+        ndef = ndef+1
       end if
       if (t1ext.ge.4) then
         occ_def(IEXTR,1,ndef+1) = 2
         occ_def(IHOLE,2,ndef+1) = 2
         ndef = ndef+1
       end if
+      if (.not.pf12_trunc.and..not.frozen) then
+        occ_def(IHOLE,1,ndef+1) = 1
+        occ_def(IEXTR,1,ndef+1) = 1
+        occ_def(IHOLE,2,ndef+1) = 2
+        ndef = ndef+1
+        if (n_pp.ge.1) then
+          occ_def(IHOLE,1,ndef+1) = 1
+          occ_def(IEXTR,1,ndef+1) = 1
+          occ_def(IPART,2,ndef+1) = 1
+          occ_def(IHOLE,2,ndef+1) = 1
+          ndef = ndef+1
+        end if
+        if (n_pp.ge.2) then
+          occ_def(IHOLE,1,ndef+1) = 1
+          occ_def(IEXTR,1,ndef+1) = 1
+          occ_def(IPART,2,ndef+1) = 2
+          ndef = ndef+1
+        end if
+      end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/0,0/),ndef)
       call set_rule(op_v_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_v_inter,1,1,
+     &              parameters,2,tgt_info)
+
+      ! extended variant (for formal expansion)
+      call add_target(op_v_x,ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ! for n_pp >= 0
+      if (n_pp.ge.0) then
+        ndef = 3
+        occ_def(IHOLE,1,1) = 2
+        occ_def(IHOLE,2,1) = 2
+
+        occ_def(IHOLE,1,2) = 1
+        occ_def(IPART,1,2) = 1
+        occ_def(IHOLE,2,2) = 2
+
+        occ_def(IPART,1,3) = 2
+        occ_def(IHOLE,2,3) = 2
+
+      end if
+      ! for n_pp >= 1
+      if (n_pp.ge.1) then
+        ndef = 6
+        occ_def(IHOLE,1,4) = 2
+        occ_def(IHOLE,2,4) = 1
+        occ_def(IPART,2,4) = 1
+
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IPART,1,5) = 1
+        occ_def(IHOLE,2,5) = 1
+        occ_def(IPART,2,5) = 1
+
+        occ_def(IPART,1,6) = 2
+        occ_def(IHOLE,2,6) = 1
+        occ_def(IPART,2,6) = 1
+      end if
+      ! for n_pp >= 2
+      if (n_pp.ge.2) then
+        ndef = 9
+        occ_def(IHOLE,1,7) = 2
+        occ_def(IPART,2,7) = 2
+
+        occ_def(IHOLE,1,8) = 1
+        occ_def(IPART,1,8) = 1
+        occ_def(IPART,2,8) = 2
+
+        occ_def(IPART,1,9) = 2
+        occ_def(IPART,2,9) = 2
+      end if
+      if (.not.pf12_trunc) then
+        occ_def(IHOLE,1,ndef+1) = 1
+        occ_def(IEXTR,1,ndef+1) = 1
+        occ_def(IHOLE,2,ndef+1) = 2
+        ndef = ndef+1
+        if (n_pp.ge.1) then
+          occ_def(IHOLE,1,ndef+1) = 1
+          occ_def(IEXTR,1,ndef+1) = 1
+          occ_def(IPART,2,ndef+1) = 1
+          occ_def(IHOLE,2,ndef+1) = 1
+          ndef = ndef+1
+        end if
+        if (n_pp.ge.2) then
+          occ_def(IHOLE,1,ndef+1) = 1
+          occ_def(IEXTR,1,ndef+1) = 1
+          occ_def(IPART,2,ndef+1) = 2
+          ndef = ndef+1
+        end if
+      end if
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/2,0/),ndef)
+      call set_rule(op_v_x,ttype_op,DEF_OP_FROM_OCC,
+     &              op_v_x,1,1,
+     &              parameters,2,tgt_info)
+
+      call add_target('V-Ccore',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ! for n_pp >= 0
+      if (n_pp.ge.0) then
+        ndef = 2
+        occ_def(IHOLE,1,1) = 2
+        occ_def(IHOLE,2,1) = 2
+
+        occ_def(IHOLE,1,2) = 1
+        occ_def(IPART,1,2) = 1
+        occ_def(IHOLE,2,2) = 2
+      end if
+      ! for n_pp >= 1
+      if (n_pp.ge.1) then
+        ndef = 4
+        occ_def(IHOLE,1,3) = 2
+        occ_def(IHOLE,2,3) = 1
+        occ_def(IPART,2,3) = 1
+
+        occ_def(IHOLE,1,4) = 1
+        occ_def(IPART,1,4) = 1
+        occ_def(IHOLE,2,4) = 1
+        occ_def(IPART,2,4) = 1
+      end if
+      ! for n_pp >= 2
+      if (n_pp.ge.2) then
+        ndef = 6
+        occ_def(IHOLE,1,5) = 2
+        occ_def(IPART,2,5) = 2
+
+        occ_def(IHOLE,1,6) = 1
+        occ_def(IPART,1,6) = 1
+        occ_def(IPART,2,6) = 2
+      end if
+      if (.not.pf12_trunc) then
+        occ_def(IHOLE,1,ndef+1) = 1
+        occ_def(IEXTR,1,ndef+1) = 1
+        occ_def(IHOLE,2,ndef+1) = 2
+        ndef = ndef+1
+        if (n_pp.ge.1) then
+          occ_def(IHOLE,1,ndef+1) = 1
+          occ_def(IEXTR,1,ndef+1) = 1
+          occ_def(IPART,2,ndef+1) = 1
+          occ_def(IHOLE,2,ndef+1) = 1
+          ndef = ndef+1
+        end if
+        if (n_pp.ge.2) then
+          occ_def(IHOLE,1,ndef+1) = 1
+          occ_def(IEXTR,1,ndef+1) = 1
+          occ_def(IPART,2,ndef+1) = 2
+          ndef = ndef+1
+        end if
+      end if
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/2,0/),ndef)
+      call set_rule('V-Ccore',ttype_op,DEF_OP_FROM_OCC,
+     &              'V-Ccore',1,1,
      &              parameters,2,tgt_info)
 
       ! V' intermediate
@@ -796,7 +1191,7 @@ c        occ_def(IHOLE,2,ndef+2) = 2
       end if
       call add_target(op_b_inter,ttype_op,.false.,tgt_info)
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/0,0/),ndef)
       call set_rule(op_b_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_b_inter,1,1,
      &              parameters,2,tgt_info)
@@ -840,7 +1235,7 @@ c        occ_def(IHOLE,2,ndef+2) = 2
       occ_def(IPART,2,4) = 1
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/0,0/),ndef)
       call set_rule(op_xp_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_xp_inter,1,1,
      &              parameters,2,tgt_info)
@@ -865,8 +1260,14 @@ c        occ_def(IHOLE,2,ndef+2) = 2
       occ_def(IHOLE,2,8) = 1
       occ_def(IPART,2,8) = 1
 
+      if (.not.pf12_trunc) then
+        occ_def(IHOLE,1,9) = 2
+        occ_def(IHOLE,2,10) = 2
+        ndef = 5
+      end if
+
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),ndef*2)
+     &     occ_def,ndef,2,(/0,0,0,0/),ndef*2)
       call set_rule(op_xh_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_xh_inter,1,1,
      &              parameters,2,tgt_info)
@@ -886,7 +1287,7 @@ c        occ_def(IHOLE,2,ndef+2) = 2
       occ_def(IPART,2,3) = 2
 
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,n_pp+1,1,(/.true.,.true./),6)
+     &     occ_def,n_pp+1,1,(/0,0/),6)
       call set_rule(op_c_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_c_inter,1,1,
      &              parameters,2,tgt_info)
@@ -895,39 +1296,62 @@ c        occ_def(IHOLE,2,ndef+2) = 2
       call add_target(op_p_inter,ttype_op,.false.,tgt_info)
       call set_dependency(op_p_inter,op_b_inter,tgt_info)
       call cloneop_parameters(-1,parameters,
-     &                        op_p_inter,.false.) ! <- dagger=.false.
+     &                        op_b_inter,.false.) ! <- dagger=.false.
       call set_rule(op_p_inter,ttype_op,CLONE_OP,
      &              op_p_inter,1,1,
      &              parameters,1,tgt_info)
 
-      ! V-X operator
+      ! Vpx operator
       call add_target('Vpx',ttype_op,.false.,tgt_info)
       occ_def = 0
-      ndef = 2
+      ndef = 3
       occ_def(IEXTR,1,1) = 1
       occ_def(IPART,2,1) = 1
       occ_def(IHOLE,1,2) = 1
       occ_def(IEXTR,1,2) = 1
       occ_def(IHOLE,2,2) = 1
       occ_def(IPART,2,2) = 1
+      occ_def(IHOLE,1,3) = 1
+      occ_def(IEXTR,1,3) = 1
+      occ_def(IHOLE,2,3) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),ndef)
+     &     occ_def,ndef,1,(/0,0/),ndef)
       call set_rule('Vpx',ttype_op,DEF_OP_FROM_OCC,
      &              'Vpx',1,1,
      &              parameters,2,tgt_info)
       
       call add_target('G.R-X',ttype_op,.false.,tgt_info)
       occ_def = 0
-      ndef = 1
+      ndef = 2
       occ_def(IHOLE,1,1) = 1
       occ_def(IEXTR,1,1) = 1
       occ_def(IHOLE,2,2) = 1
       occ_def(IPART,2,2) = 1
+      occ_def(IHOLE,1,3) = 1
+      occ_def(IEXTR,1,3) = 1
+      occ_def(IHOLE,2,4) = 2
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,2,(/.true.,.true./),ndef)
+     &     occ_def,ndef,2,(/0,0,0,0/),ndef)
       call set_rule('G.R-X',ttype_op,DEF_OP_FROM_OCC,
      &              'G.R-X',1,1,
      &              parameters,2,tgt_info)
+
+      ! Z intermediate
+      call add_target(op_z_inter,ttype_op,.false.,tgt_info)
+c      ndef = 1
+c      occ_def = 0
+c      occ_def(IHOLE,1,1) = 1
+c      occ_def(IPART,2,1) = 1
+      ndef = 2
+      occ_def = 0
+      occ_def(IHOLE,1,2) = 1
+      occ_def(IPART,2,2) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &     occ_def,ndef,1,(/0,0/),6)
+      call set_rule(op_z_inter,ttype_op,DEF_OP_FROM_OCC,
+     &              op_z_inter,1,1,
+     &              parameters,2,tgt_info)
+
 
       ! Z2 intermediate (for R^+ R couplings)
       call add_target('Z2-INT',ttype_op,.false.,tgt_info)
@@ -943,167 +1367,20 @@ c        occ_def(IHOLE,2,ndef+2) = 2
         ndef = 2   
       end if
       call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/.true.,.true./),6)
+     &     occ_def,ndef,1,(/0,0/),6)
       call set_rule('Z2-INT',ttype_op,DEF_OP_FROM_OCC,
      &              'Z2-INT',1,1,
      &              parameters,2,tgt_info)
       
         ! Non-anti-symmetrised Hamiltonian integrals.
         call add_target(op_g_z,ttype_op,.false.,tgt_info)
-        occ_def = 0
-        ! 1
-        occ_def(IHOLE,1,1) = 1
-        occ_def(IHOLE,2,1) = 1
-        occ_def(IHOLE,1,2) = 1
-        occ_def(IHOLE,2,2) = 1
-        ! 2
-        occ_def(IHOLE,1,3) = 1
-        occ_def(IPART,2,3) = 1
-        occ_def(IHOLE,1,4) = 1
-        occ_def(IHOLE,2,4) = 1
-        ! 3
-        occ_def(IHOLE,1,5) = 1
-        occ_def(IEXTR,2,5) = 1
-        occ_def(IHOLE,1,6) = 1
-        occ_def(IHOLE,2,6) = 1
-        ! 4
-        occ_def(IHOLE,1,7) = 1
-        occ_def(IHOLE,2,7) = 1
-        occ_def(IHOLE,1,8) = 1
-        occ_def(IPART,2,8) = 1
-        ! 5
-        occ_def(IHOLE,1,9) = 1
-        occ_def(IPART,2,9) = 1
-        occ_def(IHOLE,1,10) = 1
-        occ_def(IPART,2,10) = 1
-        ! 6
-        occ_def(IHOLE,1,11) = 1
-        occ_def(IEXTR,2,11) = 1
-        occ_def(IHOLE,1,12) = 1
-        occ_def(IPART,2,12) = 1
-        ! 7
-        occ_def(IHOLE,1,13) = 1
-        occ_def(IHOLE,2,13) = 1
-        occ_def(IPART,1,14) = 1
-        occ_def(IHOLE,2,14) = 1
-        ! 8
-        occ_def(IHOLE,1,15) = 1
-        occ_def(IPART,2,15) = 1
-        occ_def(IPART,1,16) = 1
-        occ_def(IHOLE,2,16) = 1
-        ! 9
-        occ_def(IHOLE,1,17) = 1
-        occ_def(IEXTR,2,17) = 1
-        occ_def(IPART,1,18) = 1
-        occ_def(IHOLE,2,18) = 1
-        ! 10
-        occ_def(IHOLE,1,19) = 1
-        occ_def(IHOLE,2,19) = 1
-        occ_def(IPART,1,20) = 1
-        occ_def(IPART,2,20) = 1
-        ! 11
-        occ_def(IHOLE,1,21) = 1
-        occ_def(IPART,2,21) = 1
-        occ_def(IPART,1,22) = 1
-        occ_def(IPART,2,22) = 1
-        ! 12
-        occ_def(IHOLE,1,23) = 1
-        occ_def(IEXTR,2,23) = 1
-        occ_def(IPART,1,24) = 1
-        occ_def(IPART,2,24) = 1
-        ! 13
-        occ_def(IHOLE,1,25) = 1
-        occ_def(IHOLE,2,25) = 1
-        occ_def(IHOLE,1,26) = 1
-        occ_def(IEXTR,2,26) = 1
-        ! 14
-        occ_def(IHOLE,1,27) = 1
-        occ_def(IPART,2,27) = 1
-        occ_def(IHOLE,1,28) = 1
-        occ_def(IEXTR,2,28) = 1
-        ! 15
-        occ_def(IHOLE,1,29) = 1
-        occ_def(IEXTR,2,29) = 1
-        occ_def(IHOLE,1,30) = 1
-        occ_def(IEXTR,2,30) = 1
-        ! 16
-        occ_def(IHOLE,1,31) = 1
-        occ_def(IHOLE,2,31) = 1
-        occ_def(IPART,1,32) = 1
-        occ_def(IEXTR,2,32) = 1
-        ! 17
-        occ_def(IHOLE,1,33) = 1
-        occ_def(IPART,2,33) = 1
-        occ_def(IPART,1,34) = 1
-        occ_def(IEXTR,2,34) = 1
-        ! 18
-        occ_def(IHOLE,1,35) = 1
-        occ_def(IEXTR,2,35) = 1
-        occ_def(IPART,1,36) = 1
-        occ_def(IEXTR,2,36) = 1
-        ! 19
-        occ_def(IHOLE,1,37) = 1
-        occ_def(IHOLE,2,37) = 1
-        occ_def(IEXTR,1,38) = 1
-        occ_def(IHOLE,2,38) = 1
-        ! 20
-        occ_def(IHOLE,1,39) = 1
-        occ_def(IPART,2,39) = 1
-        occ_def(IEXTR,1,40) = 1
-        occ_def(IHOLE,2,40) = 1
-        ! 21
-        occ_def(IHOLE,1,41) = 1
-        occ_def(IEXTR,2,41) = 1
-        occ_def(IEXTR,1,42) = 1
-        occ_def(IHOLE,2,42) = 1
-        ! 22
-        occ_def(IHOLE,1,43) = 1
-        occ_def(IHOLE,2,43) = 1
-        occ_def(IEXTR,1,44) = 1
-        occ_def(IPART,2,44) = 1
-        ! 23
-        occ_def(IHOLE,1,45) = 1
-        occ_def(IPART,2,45) = 1
-        occ_def(IEXTR,1,46) = 1
-        occ_def(IPART,2,46) = 1
-        ! 24
-        occ_def(IHOLE,1,47) = 1
-        occ_def(IEXTR,2,47) = 1
-        occ_def(IEXTR,1,48) = 1
-        occ_def(IPART,2,48) = 1
-        ! 25
-        occ_def(IHOLE,1,49) = 1
-        occ_def(IHOLE,2,49) = 1
-        occ_def(IEXTR,1,50) = 1
-        occ_def(IEXTR,2,50) = 1
-        ! 26
-        occ_def(IHOLE,1,51) = 1
-        occ_def(IPART,2,51) = 1
-        occ_def(IEXTR,1,52) = 1
-        occ_def(IEXTR,2,52) = 1
+c        call set_g_z_old(ndef,occ_def)
+        call set_g_z(ndef,occ_def)
         call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,26,2,(/.true.,.true./),52)
+     &       occ_def,ndef,2,(/1,1,0,0/),2*ndef)
         call set_rule(op_g_z,ttype_op,DEF_OP_FROM_OCC,
      &                op_g_z,1,1,
      &                parameters,2,tgt_info)
-
-c      ! Z^{ijp}_{klm} intermediate (needed for CC)
-cc      call add_target(op_z_inter,ttype_op,.false.,tgt_info)
-cc dbg
-c      call add_target(op_z_inter,ttype_op,.true.,tgt_info)
-cc dbg
-c      occ_def = 0
-c      occ_def(IHOLE,1,1) = 3
-c      occ_def(IHOLE,2,1) = 3
-c      occ_def(IHOLE,1,2) = 3
-c      occ_def(IHOLE,2,2) = 2
-c      occ_def(IPART,2,2) = 1
-c      ndef = 2
-c      call op_from_occ_parameters(-1,parameters,2,
-c     &     occ_def,ndef,1,(/.true.,.true./),ndef)
-c      call set_rule(op_z_inter,ttype_op,DEF_OP_FROM_OCC,
-c     &              op_z_inter,1,1,
-c     &              parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Formulae
@@ -1141,6 +1418,75 @@ c     &              parameters,2,tgt_info)
      &     parameters,2,title_r12_vcabs,ansatz,'V '//approx)
       call set_rule(form_r12_vcabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,5,1,
+     &              parameters,2,tgt_info)
+      ! replace formal G-X operator by H and 
+      ! additional G-Acore list (containing core contributions)
+      call set_dependency(form_r12_vcabs,op_ham,tgt_info)
+      nint = 1
+      labels(1) = form_r12_vcabs
+      labels(2) = form_r12_vcabs
+      labels(3) = op_g_x//'^+'
+      labels(4) = op_ham
+      if (frozen) then
+        call set_dependency(form_r12_vcabs,'G-Acore',tgt_info)
+        nint = 2
+        labels(5) = op_g_x//'^+'
+        labels(6) = 'G-Acore'
+      else if (t1ext.eq.1) then
+        call set_dependency(form_r12_vcabs,'H-ext',tgt_info)
+        nint = 2
+        labels(3) = op_g_x//'^+'
+        labels(4) = 'H-ext'        
+        labels(5) = op_g_x//'^+'
+        labels(6) = op_ham
+      end if
+      call form_parameters(-1,
+     &     parameters,2,title_r12_vcabs,nint,'---')
+      call set_rule(form_r12_vcabs,ttype_frm,REPLACE,
+     &              labels,2+nint*2,1,
+     &              parameters,2,tgt_info)
+
+      ! CABS approximation to V-Ccore
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'V-Ccore-CABS'
+      labels(2) = 'V-Ccore'
+      labels(3) = 'G-XX'
+      labels(4) = op_rint
+      labels(5) = op_gr_x   
+      call add_target('V-Ccore-CABS',ttype_frm,.false.,tgt_info)
+      call set_dependency('V-Ccore-CABS',op_v_inter,tgt_info)
+      call set_dependency('V-Ccore-CABS',op_gr,tgt_info)
+      call set_dependency('V-Ccore-CABS','G-XX',tgt_info)
+      call set_dependency('V-Ccore-CABS',op_rint,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,'V-Ccore-CABS',ansatz,'V '//approx)
+      call set_rule('V-Ccore-CABS',ttype_frm,DEF_R12INTM_CABS,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+      ! replace formal G-X operator by H and 
+      ! additional G-Acore list (containing core contributions)
+      call set_dependency('V-Ccore-CABS',op_gr_x,tgt_info)
+      call set_dependency('V-Ccore-CABS',op_ham,tgt_info)      
+      call set_dependency('V-Ccore-CABS',op_ham,tgt_info)
+      call set_dependency('V-Ccore-CABS','G-Acore',tgt_info)
+      call set_dependency('V-Ccore-CABS','G-CAcore',tgt_info)
+      nint = 5
+      labels(1) = 'V-Ccore-CABS'
+      labels(2) = 'V-Ccore-CABS'
+      labels(3) = op_gr_x
+      labels(4) = op_gr
+      labels(5) = op_gr_x
+      labels(6) = 'G.R-Ccore'
+      labels(7)  = 'G-XX^+'
+      labels(8)  = op_ham
+      labels(9)  = 'G-XX^+'
+      labels(10) = 'G-Acore'
+      labels(11) = 'G-XX^+'
+      labels(12) = 'G-CAcore'
+      call form_parameters(-1,
+     &     parameters,2,title_r12_vcabs,nint,'---')
+      call set_rule('V-Ccore-CABS',ttype_frm,REPLACE,
+     &              labels,2+nint*2,1,
      &              parameters,2,tgt_info)
 
       ! formal definition of Vpx
@@ -1412,8 +1758,6 @@ c      call set_rule(form_r12_bint,ttype_frm,DEF_R12INTM_FORMAL,
 c     &              labels,4,1,
 c     &              parameters,2,tgt_info)
 
-
-
       ! formal definition of C
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_cint
@@ -1456,6 +1800,120 @@ c     &              parameters,2,tgt_info)
      &              labels,nlab,1,
      &              parameters,2,tgt_info)
 
+      ! formal definition of P
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_pint
+      labels(2) = op_p_inter
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      call add_target(form_r12_pint,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_pint,op_p_inter,tgt_info)
+      call set_dependency(form_r12_pint,op_ham,tgt_info)
+      call set_dependency(form_r12_pint,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_pint,0,'P')
+      call set_rule(form_r12_pint,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      ! CABS approximation to P
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_pcabs
+      labels(2) = op_p_inter
+      labels(3) = op_rint
+      labels(4) = op_rint ! dummy, unused
+      labels(5) = op_gr_x
+      labels(6) = op_v_x
+      labels(7) = op_ffg
+      call add_target(form_r12_pcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_pcabs,op_p_inter,tgt_info)
+      call set_dependency(form_r12_pcabs,op_ffg,tgt_info)
+      call set_dependency(form_r12_pcabs,op_gr_x,tgt_info)
+c      call set_dependency(form_r12_pcabs,op_g_x,tgt_info)
+      call set_dependency(form_r12_pcabs,op_rint,tgt_info)
+      call set_dependency(form_r12_pcabs,op_v_x,tgt_info)
+      approx(12:12) = 'S'       ! set symmetrization flag
+      call form_parameters(-1,
+     &       parameters,2,title_r12_pcabs,ansatz,'P '//approx)
+      approx(12:12) = ' '       ! unset flag
+      call set_rule(form_r12_pcabs,ttype_frm,DEF_R12INTM_CABS,
+     &                labels,7,1,
+     &                parameters,2,tgt_info)
+      ! replace formal operators by G.R-X and V-X
+      call set_dependency(form_r12_pcabs,op_gr,tgt_info)
+      call set_dependency(form_r12_pcabs,op_v_inter,tgt_info)
+      nint = 2
+      labels(1) = form_r12_pcabs
+      labels(2) = form_r12_pcabs
+      labels(3) = op_gr_x
+      labels(4) = op_gr
+c      labels(3) = op_gr_x//'^+'
+c      labels(4) = op_gr//'^+'
+      labels(5) = op_v_x//'^+'
+      labels(6) = op_v_inter//'^+'
+      if (frozen) then
+        nint = 4
+        call set_dependency(form_r12_pcabs,'G.R-Ccore',tgt_info)
+        call set_dependency(form_r12_pcabs,'V-Ccore',tgt_info)
+c        labels(7) = op_gr_x//'^+'
+c        labels(8) = 'G.R-Ccore^+'
+        labels(7) = op_gr_x
+        labels(8) = 'G.R-Ccore'
+        labels(9) = op_v_x//'^+'
+        labels(10) = 'V-Ccore^+'        
+      end if
+      call form_parameters(-1,
+     &     parameters,2,title_r12_pcabs,nint,'---')
+      call set_rule(form_r12_pcabs,ttype_frm,REPLACE,
+     &              labels,2+nint*2,1,
+     &              parameters,2,tgt_info)
+c dbg
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule(form_r12_pcabs,ttype_frm,PRINT_FORMULA,
+     &              labels,2,1,
+     &              parameters,2,tgt_info)
+c dbg
+
+      ! formal definition of Z
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_zint
+      labels(2) = op_z_inter
+      labels(3) = op_r12
+      labels(4) = op_ham
+      labels(5) = op_r12
+      call add_target(form_r12_zint,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_zint,op_z_inter,tgt_info)
+      call set_dependency(form_r12_zint,op_r12,tgt_info)
+      call set_dependency(form_r12_zint,op_ham,tgt_info)
+      call set_dependency(form_r12_zint,op_r12,tgt_info)
+      call form_parameters(-1,
+     &     parameters,2,title_r12_zint,0,'Z')
+      call set_rule(form_r12_zint,ttype_frm,DEF_R12INTM_FORMAL,
+     &              labels,5,1,
+     &              parameters,2,tgt_info)
+
+      ! CABS approximation to Z.
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_r12_zcabs
+      labels(2) = op_z_inter
+      labels(3) = op_rint
+      labels(4) = op_g_z
+      labels(5) = 'R.R-X'
+c dbg
+      call add_target(form_r12_zcabs,ttype_frm,.true.,tgt_info)
+c      call add_target(form_r12_zcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_r12_zcabs,op_z_inter,tgt_info)
+      call set_dependency(form_r12_zcabs,'R.R-X',tgt_info)
+      call set_dependency(form_r12_zcabs,op_rint,tgt_info)
+      call set_dependency(form_r12_zcabs,op_g_z,tgt_info)
+      call form_parameters(-1,
+     &       parameters,2,title_r12_zcabs,ansatz,'Z '//approx)
+      call set_rule(form_r12_zcabs,ttype_frm,DEF_R12INTM_CABS,
+     &                labels,5,1,
+     &                parameters,2,tgt_info)
+
       ! Formal definition of Z2
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = 'Z2INT_R12'
@@ -1479,10 +1937,10 @@ c     &              parameters,2,tgt_info)
       labels(2) = 'Z2-INT'
       labels(3) = op_rint
       labels(4) = op_g_z
-      labels(5) = op_ff
+      labels(5) = 'R.R-X'
       call add_target('Z2-INT-CABS',ttype_frm,.false.,tgt_info)
       call set_dependency('Z2-INT-CABS','Z2-INT',tgt_info)
-      call set_dependency('Z2-INT-CABS',op_ff,tgt_info)
+      call set_dependency('Z2-INT-CABS','R.R-X',tgt_info)
       call set_dependency('Z2-INT-CABS',op_g_z,tgt_info)
       call set_dependency('Z2-INT-CABS',op_rint,tgt_info)
       call form_parameters(-1,
@@ -1505,10 +1963,33 @@ c     &              parameters,2,tgt_info)
       call set_dependency(fopt_r12_vcabs,form_r12_vcabs,tgt_info)
       call set_dependency(fopt_r12_vcabs,mel_gr,tgt_info)
       call set_dependency(fopt_r12_vcabs,mel_v_def,tgt_info)
-      call set_dependency(fopt_r12_vcabs,mel_gintx,tgt_info)
+c      call set_dependency(fopt_r12_vcabs,mel_gintx,tgt_info)
+      call set_dependency(fopt_r12_vcabs,mel_ham,tgt_info)
+      if (frozen)
+     &     call set_dependency(fopt_r12_vcabs,'G-Ac-INT',tgt_info)
+      if (.not.frozen.and.t1ext.eq.1)
+     &     call set_dependency(fopt_r12_vcabs,'H-ext-INT',tgt_info)
       call set_dependency(fopt_r12_vcabs,mel_rint,tgt_info)      
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_r12_vcabs,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+      ! set V-Ccore
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'V-Ccore-OPT'
+      labels(2) = 'V-Ccore-CABS'
+      ncat = 1
+      nint = 0
+      call add_target('V-Ccore-OPT',ttype_frm,.false.,tgt_info)
+      call set_dependency('V-Ccore-OPT','V-Ccore-CABS',tgt_info)
+      call set_dependency('V-Ccore-OPT','G-Ac-INT',tgt_info)
+      call set_dependency('V-Ccore-OPT','G-CAc-INT',tgt_info)
+      call set_dependency('V-Ccore-OPT','G.R-Cc-INT',tgt_info)
+      call set_dependency('V-Ccore-OPT','DEF-V-Cc-INTER',tgt_info)
+      call set_dependency('V-Ccore-OPT',mel_rint,tgt_info)      
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('V-Ccore-OPT',ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
@@ -1638,6 +2119,74 @@ c dbg
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
+      ! set P
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_r12_pcabs
+      labels(2) = form_r12_pcabs
+      ncat = 1
+      nint = 0
+      call add_target(fopt_r12_pcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_r12_pcabs,form_r12_pcabs,tgt_info)
+      call set_dependency(fopt_r12_pcabs,mel_p_def,tgt_info)
+      call set_dependency(fopt_r12_pcabs,mel_v_def,tgt_info)
+      call set_dependency(fopt_r12_pcabs,mel_rint,tgt_info)      
+      call set_dependency(fopt_r12_pcabs,mel_ffg,tgt_info)      
+      call set_dependency(fopt_r12_pcabs,mel_gr,tgt_info)      
+      if (frozen) then
+        call set_dependency(fopt_r12_pcabs,'G.R-Cc-INT',tgt_info)      
+        call set_dependency(fopt_r12_pcabs,'DEF-V-Cc-INTER',tgt_info)      
+      end if
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_r12_pcabs,ttype_frm,OPTIMIZE,
+     &                labels,ncat+nint+1,1,
+     &                parameters,1,tgt_info)
+
+      ! set Z
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_r12_zcabs
+      labels(2) = form_r12_zcabs
+      ncat = 1
+      nint = 0
+      call add_target(fopt_r12_zcabs,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_r12_zcabs,form_r12_zcabs,tgt_info)
+      call set_dependency(fopt_r12_zcabs,mel_z_def,tgt_info)
+      call set_dependency(fopt_r12_zcabs,mel_rint,tgt_info)      
+      call set_dependency(fopt_r12_zcabs,mel_gintz,tgt_info)      
+      call set_dependency(fopt_r12_zcabs,'R.R-INTX',tgt_info)      
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_r12_zcabs,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+      ! set Z (direct eval)
+      call add_target('ZINT_R12_DIR',ttype_frm,.false.,tgt_info)
+      call set_dependency('ZINT_R12_DIR',form_r12_zint,tgt_info)
+      call set_dependency('ZINT_R12_DIR',mel_z_def,tgt_info)
+      call set_dependency('ZINT_R12_DIR',mel_rint,tgt_info)
+      call set_dependency('ZINT_R12_DIR',mel_ham,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'ZINT_R12_DIR'
+      labels(2) = form_r12_zint
+      labels(3) = op_r12
+      labels(4) = op_rint
+      labels(5) = op_r12//'^+'
+      labels(6) = op_rint//'^+'
+      nint = 2
+      call form_parameters(-1,
+     &     parameters,2,'Z direct',nint,'---')
+      call set_rule('ZINT_R12_DIR',ttype_frm,REPLACE,
+     &     labels,2+nint*2,1,
+     &     parameters,2,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'ZINT_R12_DIR'
+      labels(2) = 'ZINT_R12_DIR'
+      ncat = 1
+      nint = 0
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('ZINT_R12_DIR',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
       ! set Z2 (direct evaluation)
       call add_target('Z2INT_R12_DIR',ttype_frm,.false.,tgt_info)
       call set_dependency('Z2INT_R12_DIR','Z2INT_R12',tgt_info)
@@ -1679,7 +2228,7 @@ c dbg
       call set_dependency('Z2INT_R12_REF','Z2-INT-CABS',tgt_info)
       call set_dependency('Z2INT_R12_REF',mel_ham,tgt_info)
       call set_dependency('Z2INT_R12_REF',mel_rint,tgt_info)
-      call set_dependency('Z2INT_R12_REF',mel_ff,tgt_info)
+      call set_dependency('Z2INT_R12_REF','R.R-INTX',tgt_info)
       call set_dependency('Z2INT_R12_REF',mel_gintz,tgt_info)
 
       labels(1:10)(1:len_target_name) = ' '
@@ -1730,7 +2279,7 @@ c dbg
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
-      ! special two-electron integral list
+      ! old special two-electron integral list
       call add_target(mel_gintx,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_gintx,op_g_x,tgt_info)
       ! (a) define
@@ -1747,6 +2296,66 @@ c dbg
       labels(1) = mel_gintx
       call import_parameters(-1,parameters,'G_INT',env_type)
       call set_rule(mel_gintx,ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
+      ! new special two-electron integral list
+      call add_target('G-Ac-INT',ttype_opme,.false.,tgt_info)
+      call set_dependency('G-Ac-INT','G-Acore',tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'G-Ac-INT'
+      labels(2) = 'G-Acore'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('G-Ac-INT',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'G-Ac-INT'
+      call import_parameters(-1,parameters,'G_INT',env_type)
+      call set_rule('G-Ac-INT',ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
+      ! new special two-electron integral list (extended list with HX|HX block)
+      call add_target('H-ext-INT',ttype_opme,.false.,tgt_info)
+      call set_dependency('H-ext-INT','H-ext',tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'H-ext-INT'
+      labels(2) = 'H-ext'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('H-ext-INT',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'H-ext-INT'
+      call import_parameters(-1,parameters,'G_INT',env_type)
+      call set_rule('H-ext-INT',ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
+      ! new additional two-electron integral list
+      call add_target('G-CAc-INT',ttype_opme,.false.,tgt_info)
+      call set_dependency('G-CAc-INT','G-CAcore',tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'G-CAc-INT'
+      labels(2) = 'G-CAcore'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('G-CAc-INT',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'G-CAc-INT'
+      call import_parameters(-1,parameters,'G_INT',env_type)
+      call set_rule('G-CAc-INT',ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
@@ -1851,6 +2460,26 @@ c     &       0,0,1,0,0,.false.)
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
+      ! R12^2 integrals II
+      call add_target('R.R-INTX',ttype_opme,.false.,tgt_info)
+      call set_dependency('R.R-INTX','R.R-X',tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'R.R-INTX'
+      labels(2) = 'R.R-X'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('R.R-INTX',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'R.R-INTX'
+      call import_parameters(-1,parameters,'FF_INT',env_type)
+      call set_rule('R.R-INTX',ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
       ! {R12^2}BAR integrals
       call add_target(mel_ffbar,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_ffbar,op_ffbar,tgt_info)
@@ -1927,6 +2556,45 @@ c     &       0,0,1,0,0,.false.)
       labels(1) = 'G.R-X-INT'
       call import_parameters(-1,parameters,'FG_INT',env_type)
       call set_rule('G.R-X-INT',ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
+      call add_target('G.R-Cc-INT',ttype_opme,.false.,tgt_info)
+      call set_dependency('G.R-Cc-INT','G.R-Ccore',tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'G.R-Cc-INT'
+      labels(2) = 'G.R-Ccore'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('G.R-Cc-INT',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'G.R-Cc-INT'
+      call import_parameters(-1,parameters,'FG_INT',env_type)
+      call set_rule('G.R-Cc-INT',ttype_opme,IMPORT,
+     &              labels,1,1,
+     &              parameters,1,tgt_info)
+
+      ! R12^2*G integrals
+      call add_target(mel_ffg,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_ffg,op_ffg,tgt_info)
+      ! (a) define
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_ffg
+      labels(2) = op_ffg
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule(mel_ffg,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      ! (b) import
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_ffg
+      call import_parameters(-1,parameters,'FFG_INT',env_type)
+      call set_rule(mel_ffg,ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
 
@@ -2060,6 +2728,18 @@ c     &              parameters,1,tgt_info)
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+      ! V-Ccore-list
+      call add_target('DEF-V-Cc-INTER',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF-V-Cc-INTER','V-Ccore',tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'V-Cc-INTER'
+      labels(2) = 'V-Ccore'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('DEF-V-Cc-INTER',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
       ! X-list
       call add_target(mel_x_def,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_x_def,op_x_inter,tgt_info)
@@ -2180,6 +2860,48 @@ c     &              parameters,1,tgt_info)
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
+      call add_target(mel_p_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_p_def,op_p_inter,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_p_inter
+      labels(2) = op_p_inter
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule(mel_p_def,ttype_opme,DEF_ME_LIST,
+     &       labels,2,1,
+     &       parameters,1,tgt_info)
+c      ! work-around for frozen core
+c      if (.not.pz_eval) then
+c        labels(1:10)(1:len_target_name) = ' '
+c        labels(1) = mel_p_def
+c        call import_parameters(-1,parameters,'P_LIST',env_type)
+c        call set_rule(mel_p_def,ttype_opme,IMPORT,
+c     &                labels,1,1,
+c     &                parameters,1,tgt_info)
+c      end if
+
+      ! Z-list
+      call add_target(mel_z_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_z_def,op_z_inter,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_z_inter
+      labels(2) = op_z_inter
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule(mel_z_def,ttype_opme,DEF_ME_LIST,
+     &     labels,2,1,
+     &     parameters,1,tgt_info)
+c      ! work-around for frozen core
+c      if (.not.pz_eval) then
+c        labels(1:10)(1:len_target_name) = ' '
+c        labels(1) = mel_z_def
+c        call import_parameters(-1,parameters,'Z_LIST',env_type)
+c        call set_rule(mel_z_def,ttype_opme,IMPORT,
+c     &                labels,1,1,
+c     &                parameters,1,tgt_info)
+c      end if
+      
+
       ! Z2-list
       call add_target('DEF-Z2LIST',ttype_opme,.false.,tgt_info)
       call set_dependency('DEF-Z2LIST','Z2-INT',tgt_info)
@@ -2199,7 +2921,7 @@ c     &              parameters,1,tgt_info)
       call add_target(eval_r12_inter,ttype_gen,.false.,tgt_info)
       call set_dependency(eval_r12_inter,mel_ham,tgt_info)
       call set_dependency(eval_r12_inter,mel_rint,tgt_info)
-      call set_dependency(eval_r12_inter,mel_gintx,tgt_info)
+c      call set_dependency(eval_r12_inter,mel_gintx,tgt_info)
       call set_dependency(eval_r12_inter,mel_ttr,tgt_info)
       call set_dependency(eval_r12_inter,mel_ff,tgt_info)
       call set_dependency(eval_r12_inter,mel_v_def,tgt_info)
@@ -2248,6 +2970,417 @@ c     &     parameters,0,tgt_info)
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
+      call add_target('EVAL_PZ',ttype_gen,pz_eval,tgt_info)
+      call set_dependency('EVAL_PZ',mel_p_def,tgt_info)
+      call set_dependency('EVAL_PZ',mel_z_def,tgt_info)
+c dbg
+      if (.true.) then
+c dbg
+c      if (pz_eval) then
+        call set_dependency('EVAL_PZ',mel_rint,tgt_info)
+        call set_dependency('EVAL_PZ','R.R-INTX',tgt_info)
+        call set_dependency('EVAL_PZ',mel_ffg,tgt_info)
+        call set_dependency('EVAL_PZ',mel_gr,tgt_info)
+        call set_dependency('EVAL_PZ',fopt_r12_pcabs,tgt_info)
+        call set_dependency('EVAL_PZ',eval_r12_inter,tgt_info)
+        if (frozen) then
+          call set_dependency('EVAL_PZ','V-Ccore-OPT',tgt_info)
+
+          labels(1) = 'V-Ccore-OPT'
+          call set_rule('EVAL_PZ',ttype_opme,EVAL,
+     &         labels,1,0,
+     &         parameters,0,tgt_info)
+        end if
+        if (approx(14:17).eq.'DRCT') then
+          call set_dependency('EVAL_PZ','ZINT_R12_DIR',tgt_info)
+        else
+          call set_dependency('EVAL_PZ',fopt_r12_zcabs,tgt_info)
+          call set_dependency('EVAL_PZ',mel_gintz,tgt_info)
+        end if
+
+        labels(1) = fopt_r12_pcabs
+        call set_rule('EVAL_PZ',ttype_opme,EVAL,
+     &         labels,1,0,
+     &         parameters,0,tgt_info)
+          
+        if (approx(14:17).eq.'DRCT') then
+          labels(1) = 'ZINT_R12_DIR'
+        else
+          labels(1) = fopt_r12_zcabs
+        end if
+        call set_rule('EVAL_PZ',ttype_opme,EVAL,
+     &         labels,1,0,
+     &         parameters,0,tgt_info)
+
+c      end if
+
+c dbg
+      else
+      if (pz_eval) then
+        call set_dependency('EVAL_PZ',mel_rint,tgt_info)
+        call set_dependency('EVAL_PZ',mel_ff,tgt_info)
+        if (approx(14:17).eq.'DRCT') then
+          call set_dependency('EVAL_PZ','ZINT_R12_DIR',tgt_info)
+          call set_dependency('EVAL_PZ',mel_ham,tgt_info)
+        else
+          call set_dependency('EVAL_PZ',fopt_r12_zcabs,tgt_info)
+          call set_dependency('EVAL_PZ',mel_gintz,tgt_info)
+        end if
+
+        if (approx(14:17).eq.'DRCT') then
+          labels(1) = 'ZINT_R12_DIR'
+        else
+          labels(1) = fopt_r12_zcabs
+        end if
+        call set_rule('EVAL_PZ',ttype_opme,EVAL,
+     &         labels,1,0,
+     &         parameters,0,tgt_info)
+
+      end if
+
+      end if
+c dbg
+
       return
 
+      contains
+
+      subroutine set_gxx(occ_def)
+
+      implicit none
+
+      integer, intent(out) ::
+     &     occ_def(ngastp,2,*)
+
+      integer ::
+     &     idxc, idxa, occ_c(ngastp), occ_a(ngastp)
+
+      occ_def(1:ngastp,1:2,1:4*4) = 0
+      ndef = 0
+      do idxc = 1, 4
+        occ_c = 0
+        if (idxc.eq.1) occ_c(IHOLE) = 2
+        if (idxc.eq.2) occ_c(IHOLE) = 1
+        if (idxc.eq.2) occ_c(IPART) = 1
+        if (idxc.eq.3) occ_c(IHOLE) = 1
+        if (idxc.eq.3) occ_c(IEXTR) = 1
+        if (idxc.eq.4) occ_c(IPART) = 2
+        do idxa = 1, 4
+          occ_a = 0
+          if (idxa.eq.1) occ_a(IHOLE) = 2
+          if (idxa.eq.2) occ_a(IHOLE) = 1
+          if (idxa.eq.2) occ_a(IPART) = 1
+          if (idxa.eq.3) occ_a(IHOLE) = 1
+          if (idxa.eq.3) occ_a(IEXTR) = 1
+          if (idxa.eq.4) occ_a(IPART) = 2
+
+          ndef = ndef+1
+          occ_def(1:ngastp,1,ndef) = occ_c(1:ngastp)
+          occ_def(1:ngastp,2,ndef) = occ_a(1:ngastp)
+          
+        end do
+      end do
+
+      end subroutine set_gxx
+
+      subroutine set_g_z(ndef,occ_def)
+
+      implicit none
+
+      integer, intent(out) ::
+     &     ndef,occ_def(ngastp,2,*)
+
+      ndef = 25
+      occ_def(1:ngastp,1:2,1:2*ndef) = 0
+      ! set (H,[HPX])(H,H) part
+      ! 1
+      occ_def(IHOLE,1,1) = 1
+      occ_def(IHOLE,2,1) = 1
+      occ_def(IHOLE,1,2) = 1
+      occ_def(IHOLE,2,2) = 1
+      ! 2
+      occ_def(IHOLE,1,3) = 1
+      occ_def(IPART,2,3) = 1
+      occ_def(IHOLE,1,4) = 1
+      occ_def(IHOLE,2,4) = 1
+      ! 3
+      occ_def(IHOLE,1,5) = 1
+      occ_def(IEXTR,2,5) = 1
+      occ_def(IHOLE,1,6) = 1
+      occ_def(IHOLE,2,6) = 1
+      
+      ! set (H,[HPX])(H,P) part
+      ! 4
+      occ_def(IHOLE,1,7) = 1
+      occ_def(IHOLE,2,7) = 1
+      occ_def(IHOLE,1,8) = 1
+      occ_def(IPART,2,8) = 1
+      ! 5
+      occ_def(IHOLE,1,9) = 1
+      occ_def(IPART,2,9) = 1
+      occ_def(IHOLE,1,10) = 1
+      occ_def(IPART,2,10) = 1
+      ! 6
+      occ_def(IHOLE,1,11) = 1
+      occ_def(IEXTR,2,11) = 1
+      occ_def(IHOLE,1,12) = 1
+      occ_def(IPART,2,12) = 1
+
+      ! set (H,[HPX])(P,H) part
+      ! 7
+      occ_def(IHOLE,1,13) = 1
+      occ_def(IHOLE,2,13) = 1
+      occ_def(IPART,1,14) = 1
+      occ_def(IHOLE,2,14) = 1
+      ! 8
+      occ_def(IHOLE,1,15) = 1
+      occ_def(IPART,2,15) = 1
+      occ_def(IPART,1,16) = 1
+      occ_def(IHOLE,2,16) = 1
+      ! 9
+      occ_def(IHOLE,1,17) = 1
+      occ_def(IEXTR,2,17) = 1
+      occ_def(IPART,1,18) = 1
+      occ_def(IHOLE,2,18) = 1
+
+      ! set (P,[HPX])(H,H)
+      ! 10
+      occ_def(IPART,1,19) = 1
+      occ_def(IHOLE,2,19) = 1
+      occ_def(IHOLE,1,20) = 1
+      occ_def(IHOLE,2,20) = 1
+      ! 11
+      occ_def(IPART,1,21) = 1
+      occ_def(IPART,2,21) = 1
+      occ_def(IHOLE,1,22) = 1
+      occ_def(IHOLE,2,22) = 1
+      ! 12
+      occ_def(IPART,1,23) = 1
+      occ_def(IEXTR,2,23) = 1
+      occ_def(IHOLE,1,24) = 1
+      occ_def(IHOLE,2,24) = 1
+      ! set (X,[HP])(H,H)
+      ! 13
+      occ_def(IEXTR,1,25) = 1
+      occ_def(IHOLE,2,25) = 1
+      occ_def(IHOLE,1,26) = 1
+      occ_def(IHOLE,2,26) = 1
+      ! 14
+      occ_def(IEXTR,1,27) = 1
+      occ_def(IPART,2,27) = 1
+      occ_def(IHOLE,1,28) = 1
+      occ_def(IHOLE,2,28) = 1
+
+      ! set (P,[HPX])(H,P)
+      ! 15
+      occ_def(IPART,1,29) = 1
+      occ_def(IHOLE,2,29) = 1
+      occ_def(IHOLE,1,30) = 1
+      occ_def(IPART,2,30) = 1
+      ! 16
+      occ_def(IPART,1,31) = 1
+      occ_def(IPART,2,31) = 1
+      occ_def(IHOLE,1,32) = 1
+      occ_def(IPART,2,32) = 1
+      ! 17
+      occ_def(IPART,1,33) = 1
+      occ_def(IEXTR,2,33) = 1
+      occ_def(IHOLE,1,34) = 1
+      occ_def(IPART,2,34) = 1
+      ! set (X,[HP])(H,P)
+      ! 18
+      occ_def(IEXTR,1,35) = 1
+      occ_def(IHOLE,2,35) = 1
+      occ_def(IHOLE,1,36) = 1
+      occ_def(IPART,2,36) = 1
+      ! 19
+      occ_def(IEXTR,1,37) = 1
+      occ_def(IPART,2,37) = 1
+      occ_def(IHOLE,1,38) = 1
+      occ_def(IPART,2,38) = 1
+
+      ! set (P,[HP])(H,X)
+      ! 20
+      occ_def(IPART,1,39) = 1
+      occ_def(IHOLE,2,39) = 1
+      occ_def(IHOLE,1,40) = 1
+      occ_def(IEXTR,2,40) = 1
+      ! 21
+      occ_def(IPART,1,41) = 1
+      occ_def(IPART,2,41) = 1
+      occ_def(IHOLE,1,42) = 1
+      occ_def(IEXTR,2,42) = 1
+
+      ! set (X,X)(H,H)
+      ! 22
+      occ_def(IEXTR,1,43) = 1
+      occ_def(IEXTR,2,43) = 1
+      occ_def(IHOLE,1,44) = 1
+      occ_def(IHOLE,2,44) = 1
+
+      ! set (X,X)(H,P)
+      ! 23
+      occ_def(IEXTR,1,45) = 1
+      occ_def(IEXTR,2,45) = 1
+      occ_def(IHOLE,1,46) = 1
+      occ_def(IPART,2,46) = 1
+
+      ! set (X,[HP])(H,X)
+      ! 24
+      occ_def(IEXTR,1,47) = 1
+      occ_def(IHOLE,2,47) = 1
+      occ_def(IHOLE,1,48) = 1
+      occ_def(IEXTR,2,48) = 1
+      ! 25
+      occ_def(IEXTR,1,49) = 1
+      occ_def(IPART,2,49) = 1
+      occ_def(IHOLE,1,50) = 1
+      occ_def(IEXTR,2,50) = 1
+
+      end subroutine
+
+      subroutine set_g_z_old(ndef,occ_def)
+
+      implicit none
+
+      integer, intent(out) ::
+     &     ndef,occ_def(ngastp,2,*)
+
+      ndef = 26
+        occ_def(1:ngastp,1:2,1:ndef) = 0
+        ! 1
+        occ_def(IHOLE,1,1) = 1
+        occ_def(IHOLE,2,1) = 1
+        occ_def(IHOLE,1,2) = 1
+        occ_def(IHOLE,2,2) = 1
+        ! 2
+        occ_def(IHOLE,1,3) = 1
+        occ_def(IPART,2,3) = 1
+        occ_def(IHOLE,1,4) = 1
+        occ_def(IHOLE,2,4) = 1
+        ! 3
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IEXTR,2,5) = 1
+        occ_def(IHOLE,1,6) = 1
+        occ_def(IHOLE,2,6) = 1
+        ! 4
+        occ_def(IHOLE,1,7) = 1
+        occ_def(IHOLE,2,7) = 1
+        occ_def(IHOLE,1,8) = 1
+        occ_def(IPART,2,8) = 1
+        ! 5
+        occ_def(IHOLE,1,9) = 1
+        occ_def(IPART,2,9) = 1
+        occ_def(IHOLE,1,10) = 1
+        occ_def(IPART,2,10) = 1
+        ! 6
+        occ_def(IHOLE,1,11) = 1
+        occ_def(IEXTR,2,11) = 1
+        occ_def(IHOLE,1,12) = 1
+        occ_def(IPART,2,12) = 1
+        ! 7
+        occ_def(IHOLE,1,13) = 1
+        occ_def(IHOLE,2,13) = 1
+        occ_def(IPART,1,14) = 1
+        occ_def(IHOLE,2,14) = 1
+        ! 8
+        occ_def(IHOLE,1,15) = 1
+        occ_def(IPART,2,15) = 1
+        occ_def(IPART,1,16) = 1
+        occ_def(IHOLE,2,16) = 1
+        ! 9
+        occ_def(IHOLE,1,17) = 1
+        occ_def(IEXTR,2,17) = 1
+        occ_def(IPART,1,18) = 1
+        occ_def(IHOLE,2,18) = 1
+        ! 10
+        occ_def(IHOLE,1,19) = 1
+        occ_def(IHOLE,2,19) = 1
+        occ_def(IPART,1,20) = 1
+        occ_def(IPART,2,20) = 1
+        ! 11
+        occ_def(IHOLE,1,21) = 1
+        occ_def(IPART,2,21) = 1
+        occ_def(IPART,1,22) = 1
+        occ_def(IPART,2,22) = 1
+        ! 12
+        occ_def(IHOLE,1,23) = 1
+        occ_def(IEXTR,2,23) = 1
+        occ_def(IPART,1,24) = 1
+        occ_def(IPART,2,24) = 1
+        ! 13
+        occ_def(IHOLE,1,25) = 1
+        occ_def(IHOLE,2,25) = 1
+        occ_def(IHOLE,1,26) = 1
+        occ_def(IEXTR,2,26) = 1
+        ! 14
+        occ_def(IHOLE,1,27) = 1
+        occ_def(IPART,2,27) = 1
+        occ_def(IHOLE,1,28) = 1
+        occ_def(IEXTR,2,28) = 1
+        ! 15
+        occ_def(IHOLE,1,29) = 1
+        occ_def(IEXTR,2,29) = 1
+        occ_def(IHOLE,1,30) = 1
+        occ_def(IEXTR,2,30) = 1
+        ! 16
+        occ_def(IHOLE,1,31) = 1
+        occ_def(IHOLE,2,31) = 1
+        occ_def(IPART,1,32) = 1
+        occ_def(IEXTR,2,32) = 1
+        ! 17
+        occ_def(IHOLE,1,33) = 1
+        occ_def(IPART,2,33) = 1
+        occ_def(IPART,1,34) = 1
+        occ_def(IEXTR,2,34) = 1
+        ! 18
+        occ_def(IHOLE,1,35) = 1
+        occ_def(IEXTR,2,35) = 1
+        occ_def(IPART,1,36) = 1
+        occ_def(IEXTR,2,36) = 1
+        ! 19
+        occ_def(IHOLE,1,37) = 1
+        occ_def(IHOLE,2,37) = 1
+        occ_def(IEXTR,1,38) = 1
+        occ_def(IHOLE,2,38) = 1
+        ! 20
+        occ_def(IHOLE,1,39) = 1
+        occ_def(IPART,2,39) = 1
+        occ_def(IEXTR,1,40) = 1
+        occ_def(IHOLE,2,40) = 1
+        ! 21
+        occ_def(IHOLE,1,41) = 1
+        occ_def(IEXTR,2,41) = 1
+        occ_def(IEXTR,1,42) = 1
+        occ_def(IHOLE,2,42) = 1
+        ! 22
+        occ_def(IHOLE,1,43) = 1
+        occ_def(IHOLE,2,43) = 1
+        occ_def(IEXTR,1,44) = 1
+        occ_def(IPART,2,44) = 1
+        ! 23
+        occ_def(IHOLE,1,45) = 1
+        occ_def(IPART,2,45) = 1
+        occ_def(IEXTR,1,46) = 1
+        occ_def(IPART,2,46) = 1
+        ! 24
+        occ_def(IHOLE,1,47) = 1
+        occ_def(IEXTR,2,47) = 1
+        occ_def(IEXTR,1,48) = 1
+        occ_def(IPART,2,48) = 1
+        ! 25
+        occ_def(IHOLE,1,49) = 1
+        occ_def(IHOLE,2,49) = 1
+        occ_def(IEXTR,1,50) = 1
+        occ_def(IEXTR,2,50) = 1
+        ! 26
+        occ_def(IHOLE,1,51) = 1
+        occ_def(IPART,2,51) = 1
+        occ_def(IEXTR,1,52) = 1
+        occ_def(IEXTR,2,52) = 1
+
+      end subroutine
+
       end
+
+

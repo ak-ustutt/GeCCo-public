@@ -206,7 +206,7 @@ c            offsets(nblk) = x2_off
               idxdis = idx_msgmdst2(iocc_cls,idxms,isym,
      &                              cinfo,idxms_dis,gm_dis,nasub,
      &                              cinfo,idxms_dis,gm_dis,nasub,
-     &                              .false.,mel,nsym)
+     &                              .false.,-1,-1,mel,nsym)
 
               ! Offset for the buffer array.
               idxcur =

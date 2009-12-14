@@ -31,7 +31,7 @@
 
 
       integer ::
-     &     idx, idx_shape, idx_temp, ndef, idx_prj
+     &     idx, idx_shape, idx_temp, ndef, idx_prj, nj_intm
       character ::
      &     name*(form_maxlen_label*2)
 
@@ -56,6 +56,7 @@
 
       ! Get indices of input operators.
       idx_shape = idx_opsin(1)
+      nj_intm = op_info%op_arr(idx_opsin(1))%op%njoined
 
       ! Point to the formula and move to the end of the list.
       form_pnt => flist
@@ -72,68 +73,118 @@
         form_pnt => form_pnt%next
       enddo
 
+      if (nj_intm.eq.1) then
       ! Add the (FG) contracted with F part.
-      idx_prj = 8
-      call expand_op_product2(form_pnt,idx_shape,
-     &     -1d0,7,3,
-     &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,
+        idx_prj = 8
+        call expand_op_product2(form_pnt,idx_shape,
+     &     -1d0,5,3,
+     &     (/idx_shape,-idx_opsin(2),
      &       idx_opsin(4),idx_opsin(4),idx_shape/),
-     &     (/        1,            2,        1,        1,
+     &     (/        1,            2,
      &                  3,           3,        1/),
      &     -1,-1,
      &     0,0,
      &     0,0,
-     &     (/2,5,2,idx_prj/),1,
+     &     (/2,3,2,idx_prj/),1,
      &     op_info)
 
       ! Move to the end of the list.
-      do while(associated(form_pnt%next))
-        form_pnt => form_pnt%next
-      enddo
+        do while(associated(form_pnt%next))
+          form_pnt => form_pnt%next
+        enddo
 
       ! Add the (FG) contracted with F part.
-      idx_prj = 10
-      call expand_op_product2(form_pnt,idx_shape,
-     &     -1d0,7,3,
-     &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,
+        idx_prj = 10
+        call expand_op_product2(form_pnt,idx_shape,
+     &     -1d0,5,3,
+     &     (/idx_shape,-idx_opsin(2),
      &       idx_opsin(4),idx_opsin(4),idx_shape/),
-     &     (/        1,            2,        1,        1,
+     &     (/        1,            2,
      &                  3,           3,        1/),
      &     -1,-1,
      &     0,0,
      &     0,0,
-     &     (/2,5,2,idx_prj/),1,
+     &     (/2,3,2,idx_prj/),1,
      &     op_info)
 
       ! Move to the end of the list.
-      do while(associated(form_pnt%next))
-        form_pnt => form_pnt%next
-      enddo
+        do while(associated(form_pnt%next))
+          form_pnt => form_pnt%next
+        enddo
 
       ! Add the V^{p"m}_{kl}.F^{ij}_{p"m}
 c      idx_prj = 9
-      if(ansatz.gt.1) idx_prj = 10
-      call expand_op_product2(form_pnt,idx_shape,
-     &     -1d0,7,3,
-     &     (/idx_shape,-idx_opsin(5),idx_shape,idx_shape,
-     &       -idx_opsin(5),idx_opsin(2),idx_shape/),
-     &     (/        1,            2,        1,        1,
-     &                   2,           3,        1/),
+        if(ansatz.gt.1) idx_prj = 10
+        call expand_op_product2(form_pnt,idx_shape,
+     &     -1d0,4,3,
+     &     (/idx_shape,-idx_opsin(5),idx_opsin(2),idx_shape/),
+     &     (/        1,            2,           3,        1/),
      &     -1,-1,
      &     0,0,
      &     0,0,
-     &     (/5,6,2,idx_prj/),1,
+     &     (/2,3,2,idx_prj/),1,
      &     op_info)
 
-      ! Move to the end of the list.
-      do while(associated(form_pnt%next))
-        form_pnt => form_pnt%next
-      enddo
+        ! Move to the end of the list.
+        do while(associated(form_pnt%next))
+          form_pnt => form_pnt%next
+        enddo
 
       ! Add the V^{pq}_{kl}.F^{ij}_{pq}
 c      idx_prj = 9
-      if(ansatz.gt.1) idx_prj = 8
-      call expand_op_product2(form_pnt,idx_shape,
+        if(ansatz.gt.1) idx_prj = 8
+        call expand_op_product2(form_pnt,idx_shape,
+     &     -1d0,4,3,
+     &     (/idx_shape,-idx_opsin(5),idx_opsin(2),idx_shape/),
+     &     (/        1,            2,           3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/2,3,2,idx_prj/),1,
+     &     op_info)
+      else
+      ! Add the (FG) contracted with F part.
+        idx_prj = 8
+        call expand_op_product2(form_pnt,idx_shape,
+     &     -1d0,7,3,
+     &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,
+     &       idx_opsin(4),idx_opsin(4),idx_shape/),
+     &     (/        1,            2,        1,        1,
+     &                  3,           3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/2,5,2,idx_prj/),1,
+     &     op_info)
+
+      ! Move to the end of the list.
+        do while(associated(form_pnt%next))
+          form_pnt => form_pnt%next
+        enddo
+
+      ! Add the (FG) contracted with F part.
+        idx_prj = 10
+        call expand_op_product2(form_pnt,idx_shape,
+     &     -1d0,7,3,
+     &     (/idx_shape,-idx_opsin(2),idx_shape,idx_shape,
+     &       idx_opsin(4),idx_opsin(4),idx_shape/),
+     &     (/        1,            2,        1,        1,
+     &                  3,           3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/2,5,2,idx_prj/),1,
+     &     op_info)
+
+      ! Move to the end of the list.
+        do while(associated(form_pnt%next))
+          form_pnt => form_pnt%next
+        enddo
+
+      ! Add the V^{p"m}_{kl}.F^{ij}_{p"m}
+c      idx_prj = 9
+        if(ansatz.gt.1) idx_prj = 10
+        call expand_op_product2(form_pnt,idx_shape,
      &     -1d0,7,3,
      &     (/idx_shape,-idx_opsin(5),idx_shape,idx_shape,
      &       -idx_opsin(5),idx_opsin(2),idx_shape/),
@@ -145,7 +196,28 @@ c      idx_prj = 9
      &     (/5,6,2,idx_prj/),1,
      &     op_info)
 
- 100  if(ntest.ge.100)then
+        ! Move to the end of the list.
+        do while(associated(form_pnt%next))
+          form_pnt => form_pnt%next
+        enddo
+
+      ! Add the V^{pq}_{kl}.F^{ij}_{pq}
+c      idx_prj = 9
+        if(ansatz.gt.1) idx_prj = 8
+        call expand_op_product2(form_pnt,idx_shape,
+     &     -1d0,7,3,
+     &     (/idx_shape,-idx_opsin(5),idx_shape,idx_shape,
+     &       -idx_opsin(5),idx_opsin(2),idx_shape/),
+     &     (/        1,            2,        1,        1,
+     &                   2,           3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/5,6,2,idx_prj/),1,
+     &     op_info)
+      end if
+
+      if(ntest.ge.100)then
         write(luout,*)'Final formula: P-Int.'
         call print_form_list(luout,flist,op_info)
       endif

@@ -41,14 +41,14 @@
      &     orb_info
 
       integer ::
-     &     ngraph, ica, hpvx, idxmap, idx1, idx2, idx12,
+     &     mxgraph, ica, hpvx, idxmap, idxgr, idx1, idx2, idx12,
      &     idx1mx, idx2mx,
      &     nsplit, idx_minf,
      &     iocc1, iocc2, nsym, ifree, lenoff, maxstr
       logical ::
-     &     error
+     &     error, is_one_map, is_fc_map
       integer, pointer ::
-     &     idx_strmap(:), igraph1tmp(:), igraph2tmp(:)
+     &     idx_strmap(:), idx_fcmap(:), igraph1tmp(:), igraph2tmp(:)
       integer, external ::
      &     ifndmax
 
@@ -62,11 +62,12 @@
 
       maxbuffer = 0
 
-      ngraph = strmap_info%mxgraph
-      if (ngraph.lt.str_info%ngraph)
+      mxgraph = strmap_info%mxgraph
+      if (mxgraph.lt.str_info%ngraph)
      &     call quit(1,'strmap_man_c',
      &     'you forgot to update the maps after adding a new graph')
       idx_strmap => strmap_info%idx_strmap
+      idx_fcmap => strmap_info%idx_fcmap
 
       if (strmap_info%ffstrmap%unit.le.0)
      &     call quit(1,'strmap_man',
@@ -125,8 +126,18 @@ c        end if
 c        idx1mx = max(idx1,idx1mx)
 c        idx2mx = max(idx2,idx2mx)
 
+        is_one_map = idx1.eq.0.or.idx2.eq.0
+        
+        is_fc_map = .false.
+        if (is_one_map) then
+          if (idx1.ne.0) is_fc_map = 
+     &          igraph1tmp(idx1).ne.igraph12r(idx12)
+          if (idx2.ne.0) is_fc_map = 
+     &          igraph2tmp(idx2).ne.igraph12r(idx12)
+        end if
+
         ! do not consider trivial maps
-        if (idx1.eq.0.or.idx2.eq.0) then
+        if (is_one_map.and..not.is_fc_map) then
           ! set buffer space for trivial map
           if (idx1.gt.0) then
             maxstr = ifndmax(
@@ -142,13 +153,87 @@ c        idx2mx = max(idx2,idx2mx)
           maxbuffer = maxbuffer + maxstr
           cycle
         end if
+
         if (ntest.ge.100) then
-          write(luout,*) 'need map for: ',
+          if (.not.is_fc_map) then
+            write(luout,*) 'need map for: ',
      &         igraph1tmp(idx1),igraph2tmp(idx2)
+          else
+            if (idx1.gt.0) then
+              write(luout,*) 'need fc map for: ',
+     &             igraph1tmp(idx1),igraph12r(idx12)
+            else
+              write(luout,*) 'need fc map for: ',
+     &             igraph2tmp(idx2),igraph12r(idx12)
+            end if
+          end if
+        end if
+
+        ! process fc-map
+        if (is_fc_map) then
+          if (idx1.gt.0) then
+            idxmap = (igraph1tmp(idx1)-1)*mxgraph + igraph12r(idx12)
+            idxgr  = igraph1tmp(idx1)
+          else
+            idxmap = (igraph2tmp(idx2)-1)*mxgraph + igraph12r(idx12)
+            idxgr  = igraph2tmp(idx2)
+          end if
+          if (idx_fcmap(idxmap).gt.-1) then
+            ! check that offsets are set
+            if (.not.associated(strmap_info%offsets_fc))
+     &         call quit(1,'strmap_man','offsets (fc) not initialized?')
+            if (.not.associated(strmap_info%offsets_fc(idxmap)%ms)
+     &           .or.
+     &         .not.associated(strmap_info%offsets_fc(idxmap)%msgm))
+     &         call quit(1,'strmap_man','offsets (fc) not initialized?')
+            if (ntest.ge.100) then
+              write(luout,*) 'I have this map already ...'
+            end if
+            maxbuffer = maxbuffer
+     &           + strmap_info%maxlen_blk_fc(idxmap)
+            cycle
+          end if
+
+          if (ntest.ge.100) then
+            write(luout,*) 'I will generate this fc map ...'
+          end if
+
+          idx_fcmap(idxmap) = strmap_info%idx_last + 1
+
+          ! get memory for offset arrays
+          iocc1 = str_info%ispc_occ(idxgr)
+          nsym = orb_info%nsym
+          call mem_pushmark()
+          ifree = mem_gotomark(strmaps)
+          lenoff = (iocc1+1)
+          ifree = mem_alloc_int(strmap_info%offsets_fc(idxmap)%ms,
+     &         lenoff,'m_off')
+          lenoff = lenoff*nsym
+          ifree = mem_alloc_int(strmap_info%offsets_fc(idxmap)%msgm,
+     &                          lenoff,'mg_off')
+
+          call mem_popmark()
+           
+          ! set primitive fc map
+          call set_fcmap(
+     &         str_info%g(idxgr),
+     &         str_info%ispc_typ(idxgr),
+     &         str_info%ispc_occ(idxgr),
+     &         str_info%igas_restr(1,1,1,1,idxgr),
+C               ! ADAPT FOR OPEN SHELL  ^^^
+     &         str_info%g(igraph12r(idx12)),
+     &         str_info%ispc_typ(igraph12r(idx12)),
+     &         str_info%ispc_occ(igraph12r(idx12)),
+     &         str_info%igas_restr(1,1,1,1,igraph12r(idx12)),
+     &         idxmap,strmap_info,orb_info)
+
+          maxbuffer = maxbuffer + strmap_info%maxlen_blk_fc(idxmap)
+
+          cycle
         end if
 
         ! does primitive map exist?
-        idxmap = ngraph*(igraph2tmp(idx2)-1)+igraph1tmp(idx1)
+        idxmap = mxgraph*(igraph2tmp(idx2)-1)+igraph1tmp(idx1)
         if (idx_strmap(idxmap).gt.-1) then
           ! check that offsets are set
           if (.not.associated(strmap_info%offsets))
@@ -199,6 +284,7 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
      &         str_info%g(igraph12r(idx12)),
      &         str_info%ispc_typ(igraph12r(idx12)),
      &         str_info%ispc_occ(igraph12r(idx12)),
+     &         str_info%igas_restr(1,1,1,1,igraph12r(idx12)),
      &         idxmap,strmap_info,orb_info)
 
         maxbuffer = maxbuffer + strmap_info%maxlen_blk(idxmap)
@@ -233,6 +319,10 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
         end do
         
         call quit(1,'strmap_man_c','Unsupported mapping type!')
+      end if
+
+      if (ntest.ge.100) then
+        write(luout,*) 'leaving strmap_man_c() ...'
       end if
 
       return

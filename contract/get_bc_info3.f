@@ -125,23 +125,28 @@ c      if (.false..and.update_idxintm) then
         idxnew_op1op2 = idxintm
         call reorder_supvtx(possible,
      &       .true.,set_reo,.true.,reo_info_bef,
-     &       contr,occ_vtx(1,1,njoined_res+1),idxnew_op1op2)
+     &       contr,occ_vtx(1,1,njoined_res+1),
+     &             irestr_vtx(1,1,1,1,njoined_res+1),idxnew_op1op2,
+     &       orb_info)
         if (contr%nxarc.gt.0)
      &       call reorder_supvtx_x(possible,
      &         .true.,set_reo,.true.,reo_info_bef,
-     &         contr,occ_vtx(1,1,njoined_res+1),idxnew_op1op2)
+     &         contr,occ_vtx(1,1,njoined_res+1),
+     &               irestr_vtx(1,1,1,1,njoined_res+1),idxnew_op1op2,
+     &         orb_info)
 
         possible = .true.
         if (reo_info_bef%nreo.gt.0) idxintm = idxintm-1
         ! report that REO is before contraction!
 
-        if (.not.set_reo.or.reo_info_bef%nreo.gt.0) then
-          do ivtx = 1, nvtx
-            call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
-     &           occ_vtx(1,1,ivtx+njoined_res),1,
-     &           orb_info)
-          end do
-        end if
+c        ! to be commented out
+c        if (reo_info_bef%nreo.gt.0) then
+c          do ivtx = 1, nvtx
+c            call dummy_restr(irestr_vtx(1,1,1,1,ivtx+njoined_res),
+c     &           occ_vtx(1,1,ivtx+njoined_res),1,
+c     &           orb_info)
+c          end do
+c        end if
         if (set_reo) call tidy_reo_info(reo_info_bef)
 
       end if
@@ -287,17 +292,24 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &       = op_info%op_arr(idx)%op%igasca_restr(:,:,:,:,1,
      &          (iblk-1)*njoined_op1op2+1:
      &          (iblk-1)*njoined_op1op2+njoined_op1op2)
+c dbg
+c        print *,'fetching restr op1op2 from op_info!'
+c        do idx = 1, njoined_op1op2
+c          call wrt_occ_rstr(luout,idx,iocc_op1op2(1,1,idx),
+c     &                                irestr_op1op2(1,1,1,1,idx),
+c     &          orb_info%ngas,orb_info%nspin)
+c        end do
+c dbg
       else
-        call dummy_restr(irestr_op1op2,
-     &       iocc_op1op2,njoined_op1op2,orb_info)
-      end if
 
-      if (.not.self) call special_restr(irestr_op1op2,
+        call special_restr(irestr_op1op2,
      &     iocc_op1op2,njoined_op1op2,
      &     merge_op1op2,
      &     iocc_op1,iocc_ex1,irestr_op1,njoined_op(1),
      &     iocc_op2,iocc_ex2,irestr_op2,njoined_op(2),
-     &     orb_info%nspin,orb_info%ngas)
+     &     orb_info%ihpvgas,orb_info%nspin,orb_info%ngas)
+
+      end if
 
       mst_op1op2 = mst_op(1) + mst_op(2)
       gamt_op1op2 = multd2h(gamt_op(1),gamt_op(2))
@@ -341,11 +353,15 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
         idxnew_op1op2 = idxintm
         call reorder_supvtx(possible,
      &       .true.,set_reo,.false.,reo_info,
-     &       contr_red,occ_vtx_red(1,1,njoined_res+1),idxnew_op1op2)
+     &       contr_red,occ_vtx_red(1,1,njoined_res+1),
+     &              irestr_vtx_red(1,1,1,1,njoined_res+1),idxnew_op1op2,
+     &       orb_info)
         if (contr%nxarc.gt.0)
      &       call reorder_supvtx_x(possible,
      &         .true.,set_reo,.false.,reo_info,
-     &         contr_red,occ_vtx_red(1,1,njoined_res+1),idxnew_op1op2)
+     &         contr_red,occ_vtx_red(1,1,njoined_res+1),
+     &              irestr_vtx_red(1,1,1,1,njoined_res+1),idxnew_op1op2,
+     &         orb_info)
         ! FIX - unclear, whether 2x reo to same vertex works
         do ireo = 1, reo_info%nreo
           do jreo = ireo+1, reo_info%nreo
@@ -354,13 +370,14 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
      &           possible = .false.
           end do
         end do
-        if (.not.set_reo.or.reo_info%nreo.gt.0) then
-          do ivtx = 1, nvtx
-            call dummy_restr(irestr_vtx_red(1,1,1,1,ivtx+njoined_res),
-     &           occ_vtx_red(1,1,ivtx+njoined_res),1,
-     &           orb_info)
-          end do
-        end if
+c        ! to be commented out
+c        if (reo_info%nreo.gt.0) then
+c          do ivtx = 1, nvtx
+c            call dummy_restr(irestr_vtx_red(1,1,1,1,ivtx+njoined_res),
+c     &           occ_vtx_red(1,1,ivtx+njoined_res),1,
+c     &           orb_info)
+c          end do
+c        end if
         if (set_reo) call tidy_reo_info(reo_info)
 
       end if
@@ -419,13 +436,13 @@ cmh        end if
           write(luout,*) 'setting self-contraction sign to +1'
         end if
         bc_sign = +1d0
-        if (dble(cnt_sign).ne.bc_sign) then
-          write(luout,*) 'setting self-contraction sign to +1'
-          write(luout,*)
-     &         'OHA OHA OHA --- the above assumption was wrong'
-          write(luout,*) 'bc_sign (old) = ',bc_sign
-          write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
-        end if
+c        if (dble(cnt_sign).ne.bc_sign) then
+c          write(luout,*) 'setting self-contraction sign to +1'
+c          write(luout,*)
+c     &         'OHA OHA OHA --- the above assumption was wrong'
+c          write(luout,*) 'bc_sign (old) = ',bc_sign
+c          write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
+c        end if
       end if
 
 
@@ -462,6 +479,24 @@ cmh        end if
         call wrt_occ_n(luout,iocc_ex1,njoined_op(1))
         call wrt_occ_n(luout,iocc_ex2,njoined_op(2))
         call wrt_occ_n(luout,iocc_cnt,njoined_cnt)
+        write(luout,*) 'op1 incl. restrictions:'
+        do idx = 1, njoined_op(1)
+          call wrt_occ_rstr(luout,idx,iocc_op1(1,1,idx),
+     &                                irestr_op1(1,1,1,1,idx),
+     &          orb_info%ngas,orb_info%nspin)
+        end do
+        write(luout,*) 'op2 incl. restrictions:'
+        do idx = 1, njoined_op(2)
+          call wrt_occ_rstr(luout,idx,iocc_op2(1,1,idx),
+     &                                irestr_op2(1,1,1,1,idx),
+     &          orb_info%ngas,orb_info%nspin)
+        end do
+        write(luout,*) 'op1op2 incl. restrictions:'
+        do idx = 1, njoined_op1op2
+          call wrt_occ_rstr(luout,idx,iocc_op1op2(1,1,idx),
+     &                                irestr_op1op2(1,1,1,1,idx),
+     &          orb_info%ngas,orb_info%nspin)
+        end do
       end if
 
       return
