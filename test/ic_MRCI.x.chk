@@ -1,0 +1,57 @@
+title
+  BeH2/3-21G; DALTON env.: preliminary test for ic-MRCI (2 act. el.)
+molecule
+  BeH2-MR-DALTON
+input
+  ic_MRCI.inp
+check
+  label CASSCF energy
+  find EVAL_E_REF
+  find -->
+  compare real 4 1e-10
+check
+  label Number of terms of density expression
+  find F_D
+  find wrote
+  compare int 2
+check
+  label Factor out densities
+  find FACTOR_OUT
+  find wrote
+  compare int 2
+  find term #
+  find term #
+  skip 6
+  compare str 2
+  find term #
+  skip 10
+  compare str 2
+  find term #
+  skip 6
+  compare str 2
+  find term #
+  skip 6
+  compare str 2
+  find term #
+  skip 10
+  compare str 2
+  find term #
+  skip 6
+  compare str 2
+  find term #
+  skip 6
+  compare str 2
+check
+  label Optimized Metric*vector formula
+  find FOPT_SC
+  find Largest intermediates occur in
+  skip 1
+  compare real 15 1e-10
+check
+  rewind
+  label Evaluate density
+  find EVAL_D
+  find -->
+  compare real 4 1e-10
+end
+

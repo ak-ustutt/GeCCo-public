@@ -36,7 +36,7 @@
 
       integer ::
      &     njinp, njout, idoff_in, idoff_out, idum, imode,
-     &     ij, ijinp, ijout
+     &     ij, ijinp, ijout, ngas
       real(8) ::
      &     xret_dum
       logical ::
@@ -51,14 +51,15 @@
      &     reo_info
 
       integer, pointer ::
-     &     iocc_inp(:,:,:), iocc_out(:,:,:)
+     &     iocc_inp(:,:,:), iocc_out(:,:,:),
+     &     irst_inp(:,:,:,:,:)
 
       integer, allocatable ::
      &     iocc(:,:,:), iocc_tmp(:,:,:),
      &     irst(:,:,:,:,:), irst_tmp(:,:,:,:,:),
      &     merge_stp1(:), merge_stp2(:), merge_stp1inv(:),
      &     merge_stp2inv(:), svertex(:),occ_vtx(:,:,:),
-     &     info_vtx(:,:)
+     &     info_vtx(:,:), irst_vtx(:,:,:,:,:)
 
       logical, external ::
      &     iocc_zero, iocc_equal
@@ -73,6 +74,8 @@
       njinp = opinp%njoined
       njout = opout%njoined
 
+      ngas = orb_info%ngas
+
       ! translate records to offset in file:
       ffin => meinp%fhand
       idoff_in = ffin%length_of_record*(ffin%current_record-1)
@@ -83,6 +86,8 @@
      &           (iblkinp-1)*njinp+1:iblkinp*njinp)
       iocc_out => opout%ihpvca_occ(1:ngastp,1:2,
      &           (iblkout-1)*njout+1:iblkout*njout)
+      irst_inp => opinp%igasca_restr(1:2,1:ngas,1:2,1:2,1,
+     &           (iblkinp-1)*njinp+1:iblkinp*njinp)
 
       call init_reo_info(reo_info)
 
@@ -105,17 +110,21 @@
 
       ! most arrays here are just dummies
       allocate(iocc(ngastp,2,njinp), iocc_tmp(ngastp,2,njinp),
-     &     irst(2,orb_info%ngas,2,2,njinp),
-     &     irst_tmp(2,orb_info%ngas,2,2,njinp),
+     &     irst(2,ngas,2,2,njinp),
+     &     irst_tmp(2,ngas,2,2,njinp),
      &     merge_stp1(2*njinp*njinp), merge_stp2(2*njinp*njinp),
      &     merge_stp1inv(2*njinp*njinp), merge_stp2inv(2*njinp*njinp),
      &     svertex(njinp),occ_vtx(ngastp,2,2*njinp),
-     &     info_vtx(2,2*njinp))
+     &     info_vtx(2,2*njinp),irst_vtx(2,ngas,2,2,2*njinp))
 
       iocc = iocc_inp
       iocc(1:ngastp,1:2,ito) = iocc(1:ngastp,1:2,ito)
      &       + iocc(1:ngastp,1:2,ifrom)
       iocc(1:ngastp,1:2,ifrom) = 0
+      irst = irst_inp
+      irst(1:2,1:ngas,1:2,1:2,ito) = irst(1:2,1:ngas,1:2,1:2,ito)
+     &       + irst(1:2,1:ngas,1:2,1:2,ifrom)
+      irst(1:2,1:ngas,1:2,1:2,ifrom) = 0
 
       ! now there should be a one-to-one correspondence to the output op.
       problem = .false.
@@ -145,6 +154,8 @@
       svertex = 1
       occ_vtx(1:ngastp,1:2,1:njinp) = iocc_inp
       occ_vtx(1:ngastp,1:2,njinp+1:2*njinp) = iocc
+      irst_vtx(1:2,1:ngas,1:2,1:2,1:njinp) = irst_inp
+      irst_vtx(1:2,1:ngas,1:2,1:2,njinp+1:2*njinp) = irst
 
       do imode = 1, 2
         call get_reo_info2(imode,1,
@@ -152,7 +163,7 @@
      &         irst,irst_tmp,
      &         njinp,idum,idum,
      &         merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
-     &         occ_vtx,svertex,info_vtx,njinp,njinp,
+     &         occ_vtx,irst_vtx,svertex,info_vtx,njinp,njinp,
      &         reo_info,str_info,orb_info)
       end do
 
@@ -167,10 +178,10 @@
 
       call dealloc_reo_info(reo_info)
 
-      deallocate(iocc, iocc_tmp,
-     &     irst, irst_tmp, merge_stp1, merge_stp2,
-     &     merge_stp1inv, merge_stp2inv,
-     &     svertex,occ_vtx, info_vtx)
+      deallocate(iocc,iocc_tmp,
+     &     irst,irst_tmp,merge_stp1,merge_stp2,
+     &     merge_stp1inv,merge_stp2inv,
+     &     svertex,occ_vtx,info_vtx,irst_vtx)
 
       return
       end

@@ -38,7 +38,7 @@
       type(contraction) ::
      &     proto
       logical ::
-     &     adj_intm, unique
+     &     adj_intm
       integer ::
      &     nvtx, narc, narc0, ivtx, jvtx, kvtx, iarc,
      &     iop_intm, iblk_intm, iblk, iadd
@@ -112,9 +112,7 @@ c     &       + intm%narc
         else
           allocate(occ_vtx(ngastp,2,intm%nvtx+njoined))
           call occvtx4contr(0,occ_vtx,intm,op_info)
-          call svmap4contr(svmap,intm,occ_vtx,njoined,unique)
-          if (.not.unique) call quit(1,'expand_term',
-     &         'from svmap4contr: something is strange (no unique map)')
+          call svmap4contr(svmap,intm,occ_vtx,njoined)
           deallocate(occ_vtx)
         end if
 

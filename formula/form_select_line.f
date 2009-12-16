@@ -12,6 +12,8 @@
 *     mode_str = 'keep'  : delete all other terms
 *     mode_str = 'no_ext': delete terms where a listed op has external
 *                          lines in the given space
+*     mode_str = 'ext'   : keep only terms where some listed op has
+*                          external lines in the given space
 *
 *     matthias, nov 2009 (adopted from form_invariant)
 *----------------------------------------------------------------------*
@@ -71,11 +73,12 @@
       if (trim(mode_str).eq.'delete'.or.
      &    trim(mode_str).eq.'no_ext') then
         del_mode = .true.
-      else if (trim(mode_str).eq.'keep') then
+      else if (trim(mode_str).eq.'keep'.or.
+     &         trim(mode_str).eq.'ext') then
         del_mode = .false.
       else
         call quit(1,'form_select_line',
-     &            'mode must be either "delete", "keep" or "no_ext"')
+     &            'mode must be "delete", "keep", "no_ext" or "ext"')
       end if
 
       same = trim(f_input%label).eq.trim(f_output%label)
@@ -147,7 +150,8 @@ c dbg
             end do
           end do cmp_loop
 
-          if (trim(mode_str).ne.'no_ext') then
+          if (trim(mode_str).eq.'delete'
+     &        .or.trim(mode_str).eq.'keep') then
             ! is there any contraction between two of these operators
             ! via a line of type igastp?
             do iarc = 1, contr%narc

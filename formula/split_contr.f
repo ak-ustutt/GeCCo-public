@@ -33,9 +33,6 @@
      &     nsvtx_rem, idx_svtx, idx_super,
      &     idxop, iblkop, njoined
 
-      logical ::
-     &     unique
-
       type(operator), pointer ::
      &     opres
       integer, pointer ::
@@ -62,9 +59,7 @@
         ! ... sometimes it is not ...
         allocate(occ_vtx(ngastp,2,nvtx_spl+njoined))
         call occvtx4contr(0,occ_vtx,contr_spl,op_info)
-        call svmap4contr(svmap,contr_spl,occ_vtx,njoined,unique)
-        if (.not.unique) call quit(1,'split_contr',
-     &         'from svmap4contr: something is strange (no unique map)')
+        call svmap4contr(svmap,contr_spl,occ_vtx,njoined)
         deallocate(occ_vtx)
       end if
       

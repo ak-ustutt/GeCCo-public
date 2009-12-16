@@ -53,6 +53,10 @@
       if (is_keyword_set('calculate.response').gt.0)
      &    call set_response_targets(tgt_info,orb_info,env_type)
 
+      ! multireference wave function
+      if (is_keyword_set('calculate.multiref').gt.0)
+     &    call set_ic_mrci_targets(tgt_info,orb_info,env_type)
+
       ! experimental section
       if (is_keyword_set('calculate.experimental').gt.0) then
         call set_experimental_targets(tgt_info,orb_info,env_type)

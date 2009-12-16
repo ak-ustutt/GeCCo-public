@@ -32,7 +32,7 @@
      &     op_info
  
       logical ::
-     &     reo, unique
+     &     reo
       integer ::
      &     nvtx_abc, nvtx_ac, nvtx_a, nvtx_b, nvtx_c,
      &     narc_abc, narc_abc0, narc_ac, narc_b, 
@@ -97,10 +97,7 @@
       else
         allocate(occ_vtx(ngastp,2,nvtx_b+njoined))
         call occvtx4contr(0,occ_vtx,contr_b,op_info)
-        call svmap4contr(svmap,contr_b,occ_vtx,njoined,unique)
-        ! ignore if not unique: necessary due to quick fix in svmap4contr
-c        if (.not.unique) call quit(1,'join_contr2',
-c     &         'from svmap4contr: something is strange (no unique map)')
+        call svmap4contr(svmap,contr_b,occ_vtx,njoined)
         deallocate(occ_vtx)
       end if
       ! largest index = number of super vertices

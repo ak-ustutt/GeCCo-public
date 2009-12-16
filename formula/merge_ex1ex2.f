@@ -42,6 +42,8 @@
       integer ::
      &     svmap(contr%nvtx), topomap(contr%nvtx,contr%nvtx),
      &     imvleft(contr%nvtx)
+      logical ::
+     &     ok
       integer, external ::
      &     idx_merge_vtx1vtx2, imltlist
       logical, external ::
@@ -64,7 +66,9 @@ c dbg
         svmap(1:contr%nvtx) = 1
       else
 c        call svmap4contr(svmap,contr,occ_vtx,njoined_res)
-        call svmap4contr2(svmap,contr)
+        call svmap4contr2(svmap,contr,ok)
+        if (.not.ok) call quit(1,'merge_ex1ex2',
+     &        'not prepared for non-unique svmap!')
       end if
 c dbg
 c      print *,'svmap : ',svmap(1:contr%nvtx)

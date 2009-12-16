@@ -134,9 +134,12 @@
           call quit(1,'topo_remove_vtxs',
      &         'new case occurred (for nj=1)')
         end if
-      ! allow 2nd derivations where operand has no external lines
-      else if (nj.eq.2.and.nlist.eq.1.and.nj_new.eq.3.and.
-     &         all(xlines(vtx_list(1),1:nj).eq.0)) then
+      ! allow 2nd derivations
+      ! if operand has open lines, they will be deleted
+      ! => reduces dimension of operator!
+      ! if you want to keep the open lines, insert a unit operator
+      ! prior to the first differentiation!
+      else if (nj.eq.2.and.nlist.eq.1.and.nj_new.eq.3) then
 
         ! choose lowest number of vertices belonging to first supervertex
         ! somewhat arbitrary, could be more sophisticated

@@ -260,6 +260,35 @@ c     &     idef=(/0/))
       call argument_add('restart','calculate.response',
      &     type=vtyp_int,idef=(/0/)) ! restart calc. at given prop. order
 
+      ! special keywords for multireference wave functions
+      call keyword_add('multiref',context='calculate')
+      call argument_add('cminh','calculate.multiref',type=vtyp_int,
+     &                  idef=(/0/))  ! min. number of holes for wf
+      call argument_add('cmaxh','calculate.multiref',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of holes for wf
+      call argument_add('cminp','calculate.multiref',type=vtyp_int,
+     &                  idef=(/0/))  ! min. number of particles for wf
+      call argument_add('cmaxp','calculate.multiref',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of particles for wf
+      call argument_add('cmaxexc','calculate.multiref',type=vtyp_int,
+     &                  idef=(/0/))  ! max. excitation for wf
+      call argument_add('minh','calculate.multiref',type=vtyp_int,
+     &                  idef=(/0/))  ! min. number of holes
+      call argument_add('maxh','calculate.multiref',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of holes
+      call argument_add('minp','calculate.multiref',type=vtyp_int,
+     &                  idef=(/0/))  ! min. number of particles
+      call argument_add('maxp','calculate.multiref',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of particles
+      call argument_add('maxv','calculate.multiref',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of valence ops
+      call argument_add('maxvv','calculate.multiref',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of val-val exc.
+      call argument_add('maxexc','calculate.multiref',type=vtyp_int,
+     &                  idef=(/0/))  ! max. excitation
+      call argument_add('minexc','calculate.multiref',type=vtyp_int,
+     &                  idef=(/0/))  ! min. excitation
+
       call keyword_add('experimental',context='calculate')
       ! set additional experimental keyword in this subroutine:
       call set_experimental_keywords()

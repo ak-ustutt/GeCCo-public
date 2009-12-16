@@ -108,16 +108,21 @@
         svmap(1:nvtx_b) = 1
         unique = .true.
       else
-        allocate(occ_vtx(ngastp,2,nvtx_b+njoined))
-        call occvtx4contr(0,occ_vtx,contr_b,op_info)
+c        allocate(occ_vtx(ngastp,2,nvtx_b+njoined))
+c        call occvtx4contr(0,occ_vtx,contr_b,op_info)
 c dbg
 c        print *,'opres: ',trim(opres%name)
 c        print *,'njoined = ',njoined
 c        print *,'call in join_contr2a'
 c dbg
-        call svmap4contr(svmap,contr_b,occ_vtx,njoined,unique)
-cmh        call svmap4contr2(svmap,contr_b)
-        deallocate(occ_vtx)
+        call svmap4contr2(svmap,contr_b,unique)
+
+        ! quick fix: middle zero vertex would not be accounted for
+        if (njoined.eq.3.and.svmap(3).eq.3.and.svmap(2).eq.0)
+     &          unique = .false.
+
+        if (.not.unique) call pseudo_svmap(svmap,contr_b,njoined)
+c        deallocate(occ_vtx)
       end if
       ! largest index = number of super vertices (at least 1)
 c      nsuper = ifndmax(svmap,1,nvtx_b,1)
