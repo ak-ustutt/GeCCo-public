@@ -13,7 +13,7 @@
       integer, parameter ::
      &     ntest = 00
       real(8), parameter ::
-     &     min_sv = 1d-15 ! singular value threshold for calc. of pseudo-inv.
+     &     min_sv = 1d-10 ! singular value threshold for calc. of pseudo-inv.
       integer, intent(in) ::
      &     ndim
       real(8), intent(inout), target ::
@@ -40,22 +40,25 @@
       ! A^(-1/2) = U D^(-1/2) U^+ = U D^(-1/4) [U D^(-1/4)]^+
       do idx = 1, ndim
         if (eigen_val(idx).gt.min_sv) then
-          eigen_vec(1:ndim,idx) = eigen_vec(1:ndim,idx)
-     &                         * (eigen_val(idx)**(-0.25d0))
+c          eigen_vec(1:ndim,idx) = eigen_vec(1:ndim,idx)
+c     &                         * (eigen_val(idx)**(-0.25d0))
+          mat(1:ndim,idx) = eigen_vec(1:ndim,idx)
+     &                         * (eigen_val(idx)**(-0.5d0))
         else
-          eigen_vec(1:ndim,idx) = 0d0
+c          eigen_vec(1:ndim,idx) = 0d0
+          mat(1:ndim,idx) = 0d0
         end if
       end do
 
-      if (ntest.ge.100) then
-        write(luout,*) 'U*s^(-0.25):'
-        call wrtmat2(eigen_vec,ndim,ndim,ndim,ndim)
-      end if
-
-      call dgemm('n','t',ndim,ndim,ndim,
-     &           1d0,eigen_vec,ndim,
-     &               eigen_vec,ndim,
-     &           0d0,mat,ndim)
+c      if (ntest.ge.100) then
+c        write(luout,*) 'U*s^(-0.25):'
+c        call wrtmat2(eigen_vec,ndim,ndim,ndim,ndim)
+c      end if
+c
+c      call dgemm('n','t',ndim,ndim,ndim,
+c     &           1d0,eigen_vec,ndim,
+c     &               eigen_vec,ndim,
+c     &           0d0,mat,ndim)
 
       deallocate(eigen_vec,eigen_val)
 

@@ -39,9 +39,9 @@
 
       if (divide) then
 
-        call da_diavec(ff_sbsp,isbsprec,0d0,
-     &       ffvec,irec,1d0,
-     &       ffdia,1,0d0,-1d0,
+        call da_diavec(ff_sbsp,isbsprec,1,0d0,
+     &       ffvec,irec,1,1d0,
+     &       ffdia,1,1,0d0,-1d0,
      &       nwfpar,xbuf1,xbuf2,lenbuf)
 
       else

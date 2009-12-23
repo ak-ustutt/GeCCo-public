@@ -217,9 +217,9 @@ c        endif
 
         ! prelim. w/o damping
         ! add D^-1|gradient(n)> to subspace
-        call da_diavec(ff_rsbsp,irecr,0d0,
-     &       ffgrd,1,1d0,
-     &       ffdia,1,0d0,-1d0,
+        call da_diavec(ff_rsbsp,irecr,1,0d0,
+     &       ffgrd,1,1,1d0,
+     &       ffdia,1,1,0d0,-1d0,
      &       nwfpar,xbuf1,xbuf2,lenbuf)
 
         ! add |vec(n)> - D^-1|gradient(n)> to subspace

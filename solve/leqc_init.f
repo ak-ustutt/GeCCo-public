@@ -153,9 +153,9 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
         call quit(1,'leqc_init','incore<2: do the programming')
 
         ! ... something using:
-            call da_diavec(ffscr,iroot,0d0,
-     &                     ffscr,iroot,1d0/xnrm,
-     &                      me_dia(iopt)%mel%fhand,1,0d0,-1d0,
+            call da_diavec(ffscr,iroot,1,0d0,
+     &                     ffscr,iroot,1,1d0/xnrm,
+     &                      me_dia(iopt)%mel%fhand,1,1,0d0,-1d0,
      &                      nwfpar(iopt),xbuf1,xbuf2,lenbuf)
 
       end if

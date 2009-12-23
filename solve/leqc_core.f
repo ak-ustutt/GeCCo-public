@@ -336,9 +336,9 @@ c              ! request (nroot-iroot+1)th-last root
 c              irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
 c     &             iord_vsbsp,ndim_vsbsp,mxsbsp)
               xnrm = xrsnrm(idxroot(iroot))
-              call da_diavec(ffscr,iroot,0d0,
-     &                       ffscr,iroot,1d0/xnrm,
-     &                        me_dia(1)%mel%fhand,1,
+              call da_diavec(ffscr,iroot,1,0d0,
+     &                       ffscr,iroot,1,1d0/xnrm,
+     &                        me_dia(1)%mel%fhand,1,1,
      &                        opti_info%shift,-1d0,
      &                        nwfpar,xbuf1,xbuf2,lenbuf)
             end do

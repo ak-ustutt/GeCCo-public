@@ -190,9 +190,9 @@ c dbg
       if (iroute.eq.0) then
         ! only for testing ...
         do iopt = 1, opti_info%nopt
-          call da_diavec(ffopt(iopt)%fhand,1,1d0,
-     &               ffgrd(iopt)%fhand,1,-1d0,
-     &               ffdia(iopt)%fhand,1,0d0,-1d0,
+          call da_diavec(ffopt(iopt)%fhand,1,1,1d0,
+     &               ffgrd(iopt)%fhand,1,1,-1d0,
+     &               ffdia(iopt)%fhand,1,1,0d0,-1d0,
      &               opti_info%nwfpar(iopt),xbuf1,xbuf2,lenbuf)
         end do
 
