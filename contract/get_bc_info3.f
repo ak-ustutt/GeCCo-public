@@ -80,7 +80,7 @@ c     &     new_sign = .false. ! use the old sign evaluation route
      &     contr, contr_pnt
 
       logical ::
-     &     self
+     &     self, ok
       integer ::
      &     ld_mmap1, ld_mmap2, ld_mmap12, ngas,
      &     nvtx, ivtx, idx, iblk, idxnew_op1op2,
@@ -97,6 +97,8 @@ c     &     new_sign = .false. ! use the old sign evaluation route
       integer ::
      &     occ_vtx(ngastp,2,contr_in%nvtx+njoined_res),
      &     irestr_vtx(2,orb_info%ngas,2,2,contr_in%nvtx+njoined_res)
+      integer, allocatable ::
+     &     svmap(:)
 
 
       integer, external ::
@@ -288,10 +290,29 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
       if (contr%narc.eq.len_list) then
         idx = contr%idx_res
         iblk = contr%iblk_res        
-        irestr_op1op2(:,:,:,:,1:njoined_op1op2)
-     &       = op_info%op_arr(idx)%op%igasca_restr(:,:,:,:,1,
-     &          (iblk-1)*njoined_op1op2+1:
-     &          (iblk-1)*njoined_op1op2+njoined_op1op2)
+        if (make_contr_red.and.reo_info%nreo.gt.0) then
+          ! since (in the case of zero vtxs) the vertex order need not be
+          ! the same as in the original operator, we need the svmap:
+          allocate(svmap(nvtx_red))
+          call svmap4contr2(svmap,contr_red,ok)
+          if (.not.ok) call quit(1,'get_bc_info3',
+     &        'final result should have unique svmap!')
+          do ivtx = 1, nvtx_red
+            if (svmap(ivtx).eq.0) then
+              irestr_op1op2(:,:,:,:,ivtx) = 0
+            else
+              irestr_op1op2(:,:,:,:,ivtx)
+     &         = op_info%op_arr(idx)%op%igasca_restr(:,:,:,:,1,
+     &            (iblk-1)*njoined_op1op2+svmap(ivtx))
+            end if
+          end do
+          deallocate(svmap)
+        else
+          irestr_op1op2(:,:,:,:,1:njoined_op1op2)
+     &         = op_info%op_arr(idx)%op%igasca_restr(:,:,:,:,1,
+     &            (iblk-1)*njoined_op1op2+1:
+     &            (iblk-1)*njoined_op1op2+njoined_op1op2)
+        end if
 c dbg
 c        print *,'fetching restr op1op2 from op_info!'
 c        do idx = 1, njoined_op1op2

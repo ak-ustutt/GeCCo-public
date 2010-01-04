@@ -34,14 +34,14 @@
      &     connect(maxterms*2), avoid(maxterms*2),
      &     inproj(maxterms*2), nconnect, navoid, ninproj,
      &     idx, jdx, ioff, ncat, nint, nrename, nop,
-     &     ansatz, ipos, idum, level, nterms, mode, nint2,
+     &     ansatz, ipos, idum, level, order, nterms, mode, nint2,
      &     ninclude, ninclude_or, nexclude,
      &     iblk_include(maxterms), iblk_include_or(maxterms),
      &     iblk_exclude(maxterms)
       type(formula), pointer ::
      &     form_pnt, form0_pnt
       character(len_command_par) ::
-     &     title, strdum, approx, typ_str
+     &     title, strdum, approx, typ_str, mode_str
       character(len=512) ::
      &     form_str
 
@@ -413,6 +413,20 @@ c dbg end fix
         call form_select_hermitian(form_pnt,form0_pnt,
      &       title,rule%labels(ioff+2),
      &       op_info)
+      case(SELECT_LINE)
+        call form_parameters(+1,
+     &       rule%parameters,rule%n_parameter_strings,
+     &       title,idx,mode_str)
+        ioff = rule%n_update
+
+        jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)
+        form0_pnt => form_info%form_arr(jdx)%form
+        call form_select_line(form_pnt,form0_pnt,
+     &       title,rule%labels(ioff+2),
+     &       rule%n_labels-ioff-2,rule%labels(ioff+3),
+     &       idx,mode_str,
+     &       op_info
+     &       )
       case default
         call quit(1,'process_formulae','unknown command: '//
      &       trim(rule%command))

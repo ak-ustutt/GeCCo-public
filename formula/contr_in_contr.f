@@ -85,6 +85,12 @@
      &                       vtx_a,topo_a,nvtx_a,
      &                       vtx_b,topo_b,nvtx_b)
 
+      ! also check that connecting contractions are contained in xlines of A
+      if (contr_in_contr)
+     &      call contr_in_xlines(vtxmap,contr_in_contr,
+     &                        xlines_a,nvtx_a,nj_a,
+     &                        topo_b,nvtx_b)
+
       if (ntest.ge.100) then
         write(luout,*) 'result (prel.): ',contr_in_contr
         write(luout,*) 'vtxmap: ',vtxmap

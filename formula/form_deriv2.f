@@ -167,7 +167,8 @@ c dbg
             call topo_contr2(ieqvfac,reo,ivtx_reo,
      &           cur_conder%contr,fix_vtx,op_info)
             ! ieqvfac is ignored
-            call canon_contr(cur_conder%contr,reo,ivtx_reo)
+cmh            call canon_contr(cur_conder%contr,reo,ivtx_reo)
+            call canon_contr(cur_conder%contr,.false.,ivtx_reo)
             deallocate(ivtx_reo,fix_vtx,occ_vtx)
 
             call wrt_contr(luderiv,cur_conder%contr)

@@ -250,6 +250,12 @@
 
       end do
 
+      ! write information to opti_info about signs which occur
+      ! in trv*mvp or trv*met  multiplication
+      ! relevant when trv is njoined=1 op. but mvp (met) are njoined=2 op's
+      call set_opti_info_signs(opti_info,3,nopt,
+     &                         me_trv,me_mvp,me_met,me_met,use_s)
+
       ! read formula
       call read_form_list(form_mvp%fhand,fl_mvp)
 
@@ -439,7 +445,7 @@ c dbg
       write(luout,'(">>>",66("-"))') 
       do iroot = 1, nroots
         if (xeig(iroot,2).eq.0d0) then
-          write(luout,'(">>>",3x,i2,x,f22.12,20x,"---",2x,x,g10.4)')
+          write(luout,'(">>>",2x,i3,x,f22.12,20x,"---",2x,x,g10.4)')
      &         iroot,xeig(iroot,1),xresnrm(iroot)
         else
           write(luout,

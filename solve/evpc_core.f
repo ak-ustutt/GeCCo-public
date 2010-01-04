@@ -83,18 +83,18 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       integer ::
      &     idx, jdx, kdx, iroot, nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
-     &     ndim_save, ndel, iopt, jopt, lenscr,
+     &     ndim_save, ndel, iopt, jopt, lenscr, ioff, nsec,
      &     ifree, restart_mode, ierr, nselect, irec, ioff_s
       real(8) ::
      &     cond, xdum, xnrm, xshf
       real(8), pointer ::
      &     gred(:), vred(:), mred(:), sred(:), eigr(:), eigi(:),
-     &     xmat1(:), xmat2(:), xmat3(:), xvec(:), xret(:)
+     &     xmat1(:), xmat2(:), xmat3(:), xvec(:), xret(:), signsec(:)
       integer, pointer ::
      &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
      &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
-     &     nwfpar(:), idxselect(:),
-     &     ipiv(:), iconv(:), idxroot(:)
+     &     nwfpar(:), idxselect(:), nwfpsec(:), idstsec(:),
+     &     ipiv(:), iconv(:), idxroot(:), nsec_arr(:)
       type(file_array), pointer ::
      &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:)
       type(filinf) ::
@@ -161,6 +161,11 @@ c dbg
       nred = ndim_vsbsp
       do iopt = 1, nopt
         init = iopt.eq.1
+        nsec = opti_info%nsec(iopt)
+        ioff = sum(opti_info%nsec(1:iopt))-nsec
+        nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
+        idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
+        signsec => opti_info%signsec(ioff+1:ioff+nsec)
         ! update reduced space:
         ! ffvsbsp and ffrsbsp point to ff_trv(iopt)%fhand ...
         if (.not.use_s(iopt)) then
@@ -170,6 +175,7 @@ c dbg
      &       opti_stat%nadd,opti_stat%ndel,
      &       iord_vsbsp,ffvsbsp(iopt)%fhand,
      &       iord_rsbsp,ffrsbsp(iopt)%fhand,fdum,
+     &       nsec,nwfpsec,idstsec,signsec,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)
         else
           call optc_update_redsp4
@@ -178,6 +184,7 @@ c dbg
      &       iord_vsbsp,ffvsbsp(iopt)%fhand,
      &       iord_rsbsp,ffrsbsp(iopt)%fhand,
      &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
+     &       nsec,nwfpsec,idstsec,signsec,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)
         end if
       end do ! iopt
@@ -415,9 +422,15 @@ c              xnrm = 1d0
 
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
+        nsec_arr => opti_info%nsec(1:nopt)
+        nsec = sum(nsec_arr)
+        nwfpsec => opti_info%nwfpsec(1:nsec)
+        idstsec => opti_info%idstsec(1:nsec)
+        signsec => opti_info%signsec(1:nsec)
         call optc_orthvec(nadd,nopt.gt.1,
      &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  use_s,ioff_s,ffmet,ffscr(1)%fhand,nnew,nopt,
+     &                  nsec_arr,nwfpsec,idstsec,signsec,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 
         ! set nadd

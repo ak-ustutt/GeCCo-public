@@ -1,0 +1,7 @@
+*.out
+*.res
+*.pyc
+run_OK
+run_failed
+setup_buggy
+

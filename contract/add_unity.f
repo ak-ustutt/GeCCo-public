@@ -34,20 +34,27 @@
      &     iblkout
 
       logical ::
-     &     bufout,closeit, first
+     &     bufout,closeit, first, ms_fix, fix_success
       integer ::
-     &     len_str, idum, ifree, lblk, nblkmax, nblk, nbuff,
-     &     ioffin, ioffout, idxst, idxnd, njoined, join_off,
-     &     idoffin, idoffout, idxmsa, msmax, msa, msc, igama, igamc,
-     &     idx, ngam, len_gam_ms, ioff, len_blk, ioff_blk,
-     &     igrph, idxms, igamstr, len(ngastp), idx1, idx2, idx3, idx4,
-     &     ihpv, ica, iblk, len_dst, ioff_fac(ngastp), ihpvdx,
-     &     ioff1, ioff2, ioff3, ioff4, len_c
-      integer ::
-     &     opout_temp(ngastp,2), msdst(ngastp,2), igamdst(ngastp,2),
+     &     ifree, nbuff, njoined, join_off, iblk,
+     &     idxmsa, msmax, msa, msc, igama, igamc,
+     &     idxc, ngam, len_blk, ioff_blk, lenc, lena, icmp,
+     &     ihpv, ica, ncblk, nablk, ioff_1, idx1, istr, idxdis_1,
      &     iocc(ngastp,2), idx_graph(ngastp,2)
+      integer, pointer ::
+     &     hpvx_csub(:),hpvx_asub(:),
+     &     occ_csub(:), occ_asub(:),
+     &     graph_csub(:), graph_asub(:),
+     &     msdis_c(:),  msdis_a(:),
+     &     idxmsdis_c(:),  idxmsdis_a(:),
+     &     gamdis_c(:), gamdis_a(:),
+     &     len_str(:), istr_csub(:),
+     &     ldim_op_c(:), ldim_op_a(:)
       real(8) ::
      &     xsign
+
+      type(graph), pointer ::
+     &     graphs(:)
       
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:)
@@ -58,8 +65,8 @@
      &     opout
 
       logical, external ::
-     &     iocc_equal, irestr_equal, occ_is_diag_blk,
-     &     next_msgamdist
+     &     occ_is_diag_blk, next_msgamdist2, idx_str_blk3,
+     &     ielprd
 
       ffout => mel_out%fhand
       opout => mel_out%op
@@ -80,8 +87,10 @@
       njoined = opout%njoined
 
       join_off=(iblkout-1)*njoined
+      ms_fix = mel_out%fix_vertex_ms
 
       if (ngastp.ne.4) call quit(1,'add_unity','only for ngastp=4')
+      ! handle njoined>1 operator only if occ can be merged to njoined=1
       iocc = 0
       idx_graph = 0
       do iblk = 1, njoined
@@ -99,6 +108,8 @@
       end do
 
       ! check whether the out operator is a diagonal block:
+      graphs => str_info%g
+
       if (.not.
      &     occ_is_diag_blk(iocc(1:ngastp,1:2),1))
      &     return ! else we just tacitly return
@@ -136,11 +147,38 @@
       endif  
 
       ! due to normal ordering, hole lines introduce sign flips:
-      xsign = dble(1-2*mod(iocc(1,1),2))
+      if (njoined.eq.1) then
+        xsign = dble(1-2*mod(iocc(1,1),2))
+      else if (.not.all(iocc(1:ngastp,1:2).eq.0)) then
+        ! here we have to think again ... have a look at dia_from_blk!
+        call quit(1,'add_unity','for njoined>1, think about the sign')
+      else
+        xsign = 1d0
+      end if
+
+      call get_num_subblk(ncblk,nablk,iocc(1,1),1)
+
+      allocate(hpvx_csub(ncblk),hpvx_asub(nablk),
+     &         occ_csub(ncblk), occ_asub(nablk),
+     &         graph_csub(ncblk), graph_asub(nablk),
+     &         msdis_c(ncblk),  msdis_a(nablk),
+     &         idxmsdis_c(ncblk),  idxmsdis_a(nablk),
+     &         gamdis_c(ncblk), gamdis_a(nablk),
+     &         len_str(ncblk+nablk),
+     &         istr_csub(ncblk),
+     &         ldim_op_c(ncblk),ldim_op_a(nablk))
+
+      ! set HPVX and OCC info
+      call condense_occ(occ_csub, occ_asub,
+     &                  hpvx_csub,hpvx_asub,
+     &                  iocc(1,1),1,hpvxblkseq)
+      ! do the same for the graph info
+      call condense_occ(graph_csub, graph_asub,
+     &                  hpvx_csub,hpvx_asub,
+     &                  idx_graph(1,1),1,hpvxblkseq)
 
       ! Loop over Ms of annihilator string.
       idxmsa = 0
-      ioff = 0
 c      msmax = 2
       msmax = opout%ica_occ(2,iblkout)
       msa_loop : do msa = msmax, -msmax, -2
@@ -153,85 +191,101 @@ c      msmax = 2
         igama_loop: do igama =1, ngam
           igamc = multd2h(igama,mel_out%gamt)
 
+          if (mel_out%len_op_gmo(iblkout)%
+     &         gam_ms(igama,idxmsa).le.0) cycle
 
+          ! loop over distributions of output operator
           first = .true.
-          distr_loop0: do
-            if (.not.next_msgamdist(first,
-     &         msa,msc,igama,igamc,iocc,ngam,
-     &         msdst,igamdst)) exit distr_loop0
-            first = .false.
+          idxdis_1 = 0
+          distr_loop: do
 
-            len(1:ngastp) = 1
-            ioff_fac(1:ngastp) = 1
-            len_dst = 1
-            do ihpvdx = 1, ngastp
-              ihpv = hpvxseq(ihpvdx)
-              if (iocc(ihpv,1).eq.0) cycle
-              igrph = idx_graph(ihpv,1)
-              igamstr = igamdst(ihpv,1)
-              idxms = (iocc(ihpv,1)-msdst(ihpv,1))/2+1
-              len(ihpv) = str_info%g(igrph)%lenstr_gm(igamstr,idxms)
-              igrph = idx_graph(ihpv,2)
-              igamstr = igamdst(ihpv,2)
-              idxms = (iocc(ihpv,2)-msdst(ihpv,2))/2+1
-              len_c = str_info%g(igrph)%lenstr_gm(igamstr,idxms)
-              ioff_fac(ihpv) = len_dst
-              len_dst = len_dst*len(ihpv)*len_c
-            end do
-            if (len_dst.eq.0) cycle distr_loop0
-            idxst = ioff + 1
-            ioff = ioff + len_dst
+            if (.not.next_msgamdist2(first,
+     &            msdis_c,msdis_a,gamdis_c,gamdis_a,
+     &            ncblk, nablk,
+     &            occ_csub,occ_asub,
+     &            msc,msa,igamc,igama,ngam,
+     &            ms_fix,fix_success)) exit
+            first = .false.
+            if(ms_fix.and..not.fix_success)cycle distr_loop
+
+            call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
+            call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
+c dbg
+c      print *,'ncblk,nablk:',ncblk,nablk
+c      write(luout,'(a,10i4)') 'len_str:',len_str(1:ncblk+nablk)
+c      write(luout,'(a,10i4)') 'graph_csub:',graph_csub(1:ncblk)
+c      write(luout,'(a,10i4)') 'idxmsdis_c:',idxmsdis_c(1:ncblk)
+c      write(luout,'(a,10i4)') 'gamdis_c:',gamdis_c(1:ncblk)
+c      write(luout,'(a,10i4)') 'hpvx_csub:',hpvx_csub(1:ncblk)
+c      write(luout,'(a,10i4)') 'graph_asub:',graph_asub(1:nablk)
+c      write(luout,'(a,10i4)') 'idxmsdis_a:',idxmsdis_a(1:nablk)
+c      write(luout,'(a,10i4)') 'gamdis_a:',gamdis_a(1:nablk)
+c      write(luout,'(a,10i4)') 'hpvx_asub:',hpvx_asub(1:nablk)
+c dbgend
+
+            call set_len_str(len_str,ncblk,nablk,
+     &                       graphs,
+     &                       graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
+     &                       graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
+     &                       hpvxseq,.false.)
+
+            lenc = ielprd(len_str,ncblk)
+            lena = ielprd(len_str(ncblk+1),nablk)
+
+            if (lenc.eq.0.or.lena.eq.0) cycle
+
+            idxdis_1 = idxdis_1+1
 
             ! ms-dst and gamma-dst should also be diagonal:
-            if (.not.occ_is_diag_blk(msdst(1:ngastp,1:2),1).or.
-     &          .not.occ_is_diag_blk(igamdst(1:ngastp,1:2),1))
-     &           cycle distr_loop0
+            if (nablk.ne.ncblk) cycle distr_loop
+            if (.not.all(msdis_c(1:ncblk)-msdis_a(1:ncblk).eq.0).or.
+     &          .not.all(gamdis_c(1:ncblk)-gamdis_a(1:ncblk).eq.0))
+     &           cycle distr_loop
+            if (lenc.ne.lena) call quit(1,'add_unity','inconsistency')
 
             if (ntest.ge.100) then
               write(luout,*) 'msc,msa,igamc,igama: ',
      &             msc,msa,igamc,igama
-              write(luout,*) 'current distribution (MS,GAMMA):'
-              call wrt_occ(luout,msdst)
-              call wrt_occ(luout,igamdst)
+              write(luout,*) 'idxdis: ',idxdis_1
             end if
 
-            ! add constant to diagonal elements only
-            do idx1 = 1, len(hpvxseq(4))
-              ioff1 = (idx1-1)*(len(hpvxseq(4))+1)
-     &                        *ioff_fac(hpvxseq(4))
-              do idx2 = 1, len(hpvxseq(3))
-                ioff2 = (idx2-1)*(len(hpvxseq(3))+1)
-     &                          *ioff_fac(hpvxseq(3))
-                do idx3 = 1, len(hpvxseq(2))
-                  ioff3 = (idx3-1)*(len(hpvxseq(2))+1)
-     &                            *ioff_fac(hpvxseq(2))
-                  do idx4 = 1, len(hpvxseq(1))
-                    ioff4 = (idx4-1)*(len(hpvxseq(1))+1)
-     &                              *ioff_fac(hpvxseq(1))
-                    buffer_out(ioff1+ioff2+ioff3+ioff4+idxst)=xsign*fac+
-     &                buffer_out(ioff1+ioff2+ioff3+ioff4+idxst)
-                  end do
-                end do
+            ioff_1 = mel_out%off_op_gmox(iblkout)%
+     &             d_gam_ms(idxdis_1,igama,idxmsa) - ioff_blk
+
+            call set_op_ldim_c(ldim_op_c,ldim_op_a,
+     &           hpvx_csub,hpvx_asub,
+     &           len_str,ncblk,nablk,.false.)
+
+            ! loop over diagonal me-list elements
+            idxc_loop: do idxc = 1, lenc
+              istr = idxc-1
+              do icmp = 1, ncblk
+                istr_csub(icmp) = mod(istr,len_str(icmp)) !+1
+                istr = istr/len_str(icmp)
               end do
-            end do
 
-          end do distr_loop0
+              idx1 = ioff_1 + idx_str_blk3(istr_csub,istr_csub,
+     &             ldim_op_c,ldim_op_a,
+     &             ncblk,nablk)
 
-c          len_gam_ms=int(sqrt(dble(mel_out%
-c     &         len_op_gmo(iblkout)%gam_ms(igama,idxmsa))))
-c
-c          ioff=mel_out%off_op_gmo(iblkout)%gam_ms(igama,idxmsa)-
-c     &         ioff_blk
-c          idx_loop: do idx =1,len_gam_ms
-c
-c            buffer_out((idx-1)*len_gam_ms+idx+ioff) = 1d0*fac+
-c     &         buffer_out((idx-1)*len_gam_ms+idx+ioff)
-c
-c          enddo idx_loop
-          
+              buffer_out(idx1)=xsign*fac + buffer_out(idx1)
+
+            end do idxc_loop
+
+          end do distr_loop
+
         enddo igama_loop
           
       enddo msa_loop
+
+      deallocate(hpvx_csub,hpvx_asub,
+     &         occ_csub, occ_asub,
+     &         graph_csub, graph_asub,
+     &         msdis_c,  msdis_a,
+     &         idxmsdis_c,  idxmsdis_a,
+     &         gamdis_c, gamdis_a,
+     &         len_str, istr_csub,
+     &         ldim_op_c,ldim_op_a)
 
       if(.not.bufout)then
         call put_vec(ffout,buffer_out,ioff_blk+1,ioff_blk+len_blk)

@@ -60,11 +60,12 @@
         mgdid = msgmdid2(occ_c,idxms_c,gam_c,nc,
      &                   occ_a,idxms_a,gam_a,na,nsym)
       else
-        if (na.eq.1.and.nc.eq.1) then
+        if (na.le.1.and.nc.le.1) then
           mgdid = msgmdid2(occ_a,idxms_a,gam_a,na,
      &                     occ_c,idxms_c,gam_c,nc,nsym)
         else
-          if (tra_map_c(1).lt.0.or.tra_map_a(1).lt.0)
+          if (nc.gt.0.and.tra_map_c(1).lt.0
+     &        .or.na.gt.0.and.tra_map_a(1).lt.0)
      &         call quit(1,'idx_msgmdst2','need to set tra_map_c/a')
           occ_c_tra = occ_c(tra_map_c(1:nc))
           occ_a_tra = occ_a(tra_map_a(1:na))

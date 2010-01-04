@@ -18,7 +18,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 000
 
       type(formula_item), intent(out), target ::
      &     fl_abc
@@ -35,13 +35,16 @@
      &     fl_abc_pnt
  
       logical ::
-     &     reo
+     &     reo, unique, done
       integer ::
      &     nvtx_abc, nvtx_ac, nvtx_a, nvtx_b, nvtx_c,
      &     narc_abc, narc_abc0, narc_ac, narc_b, 
      &     idx, ivtx_abc, iarc, ivtx, jvtx, jvtx_last,
      &     nproto_ac, nproto_b, idxsuper,
-     &     nsuper, njoined, isuper, njoined_abc
+     &     nsuper, njoined, isuper, njoined_abc,
+     &     occ_x(ngastp,2), occ_over(ngastp,2), icnt
+      integer(8) ::
+     &     base, overlap
       type(contraction) ::
      &     contr_abc
       type(operator), pointer ::
@@ -49,7 +52,9 @@
      
       integer, pointer ::
      &     ivtx_ac_reo(:), ivtx_b_reo(:),
-     &     occ_vtx(:,:,:), svmap(:), ivtx_old(:)
+     &     occ_vtx(:,:,:), svmap(:), ivtx_old(:), svtx(:)
+      integer(8), pointer ::
+     &     vtx(:), topo(:,:), xlines(:,:)
       logical, pointer ::
      &     fix_vtx(:)
 
@@ -57,7 +62,11 @@
      &     arc(:)
 
       integer, external ::
-     &     ifndmax, imltlist, idxlist
+     &     ifndmax, imltlist, idxlist, int8_expand
+      integer(8), external ::
+     &     int8_pack
+
+      base = pack_base
 
       if (ntest.ge.50) then
         call write_title(luout,wst_dbg_subr,'This is join_contr 2a')
@@ -97,17 +106,23 @@
       njoined = opres%njoined
       if (njoined.eq.1) then
         svmap(1:nvtx_b) = 1
+        unique = .true.
       else
-        allocate(occ_vtx(ngastp,2,nvtx_b+njoined))
-        call occvtx4contr(0,occ_vtx,contr_b,op_info)
+c        allocate(occ_vtx(ngastp,2,nvtx_b+njoined))
+c        call occvtx4contr(0,occ_vtx,contr_b,op_info)
 c dbg
 c        print *,'opres: ',trim(opres%name)
 c        print *,'njoined = ',njoined
 c        print *,'call in join_contr2a'
 c dbg
-c        call svmap4contr(svmap,contr_b,occ_vtx,njoined)
-        call svmap4contr2(svmap,contr_b)
-        deallocate(occ_vtx)
+        call svmap4contr2(svmap,contr_b,unique)
+
+        ! quick fix: middle zero vertex would not be accounted for
+        if (njoined.eq.3.and.svmap(3).eq.3.and.svmap(2).eq.0)
+     &          unique = .false.
+
+        if (.not.unique) call pseudo_svmap(svmap,contr_b,njoined)
+c        deallocate(occ_vtx)
       end if
       ! largest index = number of super vertices (at least 1)
 c      nsuper = ifndmax(svmap,1,nvtx_b,1)
@@ -205,15 +220,26 @@ c      nsuper = ifndmax(svmap,1,nvtx_b,1)
         contr_abc%arc(narc_abc)%occ_cnt =
      &       contr_b%arc(idx)%occ_cnt
       end do
+
+      if (.not.unique) then
+        allocate(svtx(nvtx_b),vtx(nvtx_b),topo(nvtx_b,nvtx_b),
+     &           xlines(nvtx_b,njoined))
+        call pack_contr(svtx,vtx,topo,xlines,contr_b,njoined)
+        if (ntest.ge.100) then
+          write(luout,*) 'no unique svmap! Using xlines instead:'
+          call prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx_b,njoined)
+        end if
+      end if
       ! add the external arcs from A and C
       ! which make gen_contr consider only special connections
       do idx = 1, narc_ac
         if (contr_ac%arc(idx)%link(1).le.0.or.
      &      contr_ac%arc(idx)%link(2).le.0) then
           narc_abc = narc_abc + 1
+          done = .false.
           if (contr_ac%arc(idx)%link(1).eq.0) then
             contr_abc%arc(narc_abc)%link(1) = 0
-          else if (contr_ac%arc(idx)%link(1).lt.0) then
+          else if (contr_ac%arc(idx)%link(1).lt.0.and.unique) then
             ! fix for unique re-substitutions:
             idxsuper = -contr_ac%arc(idx)%link(1)
             if (imltlist(idxsuper,svmap,nvtx_b,1).eq.1) then
@@ -222,13 +248,32 @@ c      nsuper = ifndmax(svmap,1,nvtx_b,1)
             else
               contr_abc%arc(narc_abc)%link(1) = 0
             end if
+          else if (contr_ac%arc(idx)%link(1).lt.0) then
+            idxsuper = -contr_ac%arc(idx)%link(1)
+            do ivtx = 1, nvtx_b
+              if (xlines(ivtx,idxsuper).eq.0) cycle
+              occ_x = 0
+              icnt = int8_expand(xlines(ivtx,idxsuper),base,occ_x)
+              occ_over = iocc_overlap(occ_x,.false.,
+     &                     contr_ac%arc(idx)%occ_cnt,.false.)
+              overlap = int8_pack(occ_over,ngastp*2,base)
+              if (overlap.ne.0) then
+                contr_abc%arc(narc_abc)%link(1) = ivtx_b_reo(ivtx)
+                contr_abc%arc(narc_abc)%link(2) =
+     &               ivtx_ac_reo(contr_ac%arc(idx)%link(2))
+                contr_abc%arc(narc_abc)%occ_cnt = occ_over
+                xlines(ivtx,idxsuper) = xlines(ivtx,idxsuper) - overlap
+                narc_abc = narc_abc + 1
+                done = .true.
+              end if
+            end do
           else
             contr_abc%arc(narc_abc)%link(1) = 
      &           ivtx_ac_reo(contr_ac%arc(idx)%link(1))
           end if
           if (contr_ac%arc(idx)%link(2).eq.0) then
             contr_abc%arc(narc_abc)%link(2) = 0
-          else if (contr_ac%arc(idx)%link(2).lt.0) then
+          else if (contr_ac%arc(idx)%link(2).lt.0.and.unique) then
             ! fix for unique re-substitutions:
             idxsuper = -contr_ac%arc(idx)%link(2)
             if (imltlist(idxsuper,svmap,nvtx_b,1).eq.1) then
@@ -237,14 +282,45 @@ c      nsuper = ifndmax(svmap,1,nvtx_b,1)
             else
               contr_abc%arc(narc_abc)%link(2) = 0
             end if
+          else if (contr_ac%arc(idx)%link(2).lt.0) then
+            idxsuper = -contr_ac%arc(idx)%link(2)
+            do ivtx = 1, nvtx_b
+              if (xlines(ivtx,idxsuper).eq.0) cycle
+              occ_x = 0
+              icnt = int8_expand(xlines(ivtx,idxsuper),base,occ_x)
+              occ_over = iocc_overlap(occ_x,.false.,
+     &                     contr_ac%arc(idx)%occ_cnt,.true.)
+              overlap = int8_pack(occ_over,ngastp*2,base)
+              if (overlap.ne.0) then
+                occ_over = iocc_overlap(occ_x,.true.,
+     &                     contr_ac%arc(idx)%occ_cnt,.false.)
+                contr_abc%arc(narc_abc)%link(1) = 
+     &               ivtx_ac_reo(contr_ac%arc(idx)%link(1))
+                contr_abc%arc(narc_abc)%link(2) = ivtx_b_reo(ivtx)
+                contr_abc%arc(narc_abc)%occ_cnt = occ_over
+                xlines(ivtx,idxsuper) = xlines(ivtx,idxsuper) - overlap
+                narc_abc = narc_abc + 1
+                done = .true.
+              end if
+            end do
           else
             contr_abc%arc(narc_abc)%link(2) =
      &           ivtx_ac_reo(contr_ac%arc(idx)%link(2))
           end if
-          contr_abc%arc(narc_abc)%occ_cnt =
+          if (unique.and..not.done) then
+            contr_abc%arc(narc_abc)%occ_cnt =
      &         contr_ac%arc(idx)%occ_cnt
+          else
+            narc_abc = narc_abc - 1
+          end if
         end if
       end do
+
+      if (.not.unique) then
+        if (.not.all(xlines.eq.0)) call quit(1,'join_contr2a','trap!')
+        deallocate(svtx,vtx,topo,xlines)
+      end if
+
       ! add [0] connections for any other intra-AC connection
       ! as these must not be generated
       narc_abc0 = narc_abc

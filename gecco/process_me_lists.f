@@ -35,7 +35,7 @@
       real(8) ::
      &     fac(maxfac), freq
       integer ::
-     &     idxblk(maxfac),
+     &     idxblk(maxfac), minblk, maxblk,
      &     idx, jdx, ioff, nfac, nblk, nspecial, imode,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank
       logical ::
@@ -87,10 +87,16 @@
      &       trim(rule%labels(1))//'"')
 
         mel_pnt => op_info%mel_arr(idx)%mel
+        call dens_parameters(+1,rule%parameters,
+     &               minblk,maxblk,imode)
 
-        call zeroop(mel_pnt)
+        if (imode.ne.1) then
+          call zeroop(mel_pnt)
+          minblk = 1
+          maxblk = mel_pnt%op%n_occ_cls
+        end if
 
-        do idx = 1, mel_pnt%op%n_occ_cls
+        do idx = minblk, maxblk
           jdx = (idx-1)*mel_pnt%op%njoined+1
           call add_unity(1d0,mel_pnt,jdx,orb_info,str_info)
         end do
@@ -169,8 +175,10 @@ c dbg
         if (rule%n_labels.ne.2)
      &     call quit(1,'process_me_lists','two labels expected for '
      &       //trim(INVERT))
+        call form_parameters(+1,rule%parameters,
+     &       rule%n_parameter_strings,title,imode,mode)
 
-        call inv_op(rule%labels(2),rule%labels(1),
+        call inv_op(rule%labels(2),rule%labels(1),mode,
      &       op_info,orb_info,str_info)
 
       case(ADD)
@@ -317,12 +325,12 @@ c dbg
 
         mel_pnt => op_info%mel_arr(idx)%mel
 
-        call zeroop(mel_pnt)
         call scale_parameters(+1,rule%parameters,imode,
      &       nblk,idxblk,fac,maxfac)
+        call zeroop(mel_pnt)
 c        call diag_guess(mel_pnt,fac,idxblk,nblk,1,imode,
 c     &       op_info,str_info,strmap_info,orb_info)
-      call set_list(mel_pnt,idxblk,fac,nblk)
+        call set_list(mel_pnt,idxblk,fac,nblk)
 
       case(EXTRACT_DIAG)
         if (form_test) exit loop
@@ -333,6 +341,18 @@ c     &       op_info,str_info,strmap_info,orb_info)
 
         call dia_from_op(rule%labels(1),rule%labels(2),
      &       op_info,str_info,orb_info)
+
+      case(REORDER_MEL)
+        if (form_test) exit loop
+        if (rule%n_labels.ne.2)
+     &     call quit(1,'process_me_lists',
+     &       'two labels expected for '
+     &       //trim(REORDER_MEL))
+        call form_parameters(+1,rule%parameters,
+     &       rule%n_parameter_strings,title,imode,mode)
+
+        call reo_mel(rule%labels(1),rule%labels(2),
+     &       op_info,str_info,strmap_info,orb_info,imode)
 
       case default
         call quit(1,'process_me_lists','unknown command: '//

@@ -61,7 +61,9 @@ c dbg
       allocate(topomap(nvtx,nvtx),eqv_map(nvtx),scr(nvtx),
      &     neqv(nvtx),idx_eqv(nvtx,nvtx),svmap(nvtx),svertex(nvtx))
 
-      call svmap4contr2(svmap,contr)
+      call svmap4contr2(svmap,contr,ok)
+      if (.not.ok) call quit(1,'topo_contr',
+     &        'not prepared for non-unique svmap!')
       svertex = contr%svertex
 
       topomap = 0

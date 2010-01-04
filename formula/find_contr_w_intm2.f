@@ -104,10 +104,11 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
 c        if (fl_tgt%contr%nvtx.le.4) then
 c         call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
 c        else
-          call split_contr3(contr_t0,contr_i,fl_tgt%contr,op_info)
+          call split_contr3(contr_t0,contr_i,fl_tgt%contr,op_info,
+     &                      success1)
 c        end if
 c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
-        if (ntest.ge.100) then
+        if (ntest.ge.100.and.success1) then
           write(luout,*) 'considering contraction:'
           call prt_contr2(luout,fl_tgt%contr,op_info)
           write(luout,*) 'split into T0 '

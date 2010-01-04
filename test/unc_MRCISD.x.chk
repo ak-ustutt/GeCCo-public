@@ -1,0 +1,24 @@
+title
+  BeH2/3-21G; DALTON env.: uncontracted MR-CISD, 2 valence electrons
+molecule
+  BeH2-MR-DALTON
+input
+  unc_MRCISD.inp
+check
+  label Number of terms in energy expression
+  find EXPAND_OP_PRODUCT
+  find wrote
+  compare int 2
+check
+  label Number of Iterations and residual
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+  find >>>
+  compare real 3 1e-12
+check
+  label Energy evaluation
+  find EVAL_E_REF
+  find 1 -->
+  compare real 4 1e-10
+end
+

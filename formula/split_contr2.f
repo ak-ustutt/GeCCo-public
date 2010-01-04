@@ -41,7 +41,7 @@
      &     op_info
 
       logical ::
-     &     success
+     &     success, ok
       integer ::
      &     nvtx, nvtx_spl, nvtx_rem, ivtx_spl_last, isupervtx_spl_last,
      &     narc, narc_spl, narc_rem,
@@ -79,8 +79,12 @@
 
       allocate(svmap_spl(nvtx_spl),svmap(nvtx),ivtx_new(nvtx),
      &     isupervtx_spl(nvtx))
-      call svmap4contr2(svmap,contr)
-      call svmap4contr2(svmap_spl,contr_spl)
+      call svmap4contr2(svmap,contr,ok)
+      if (.not.ok) call quit(1,'split_contr2',
+     &        'not prepared for non-unique svmap!')
+      call svmap4contr2(svmap_spl,contr_spl,ok)
+      if (.not.ok) call quit(1,'split_contr2',
+     &        'not prepared for non-unique svmap!')
 
       if (ntest.ge.100) then
         write(luout,*) 'svmap:     ',svmap(1:nvtx)

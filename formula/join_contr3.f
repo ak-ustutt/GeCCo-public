@@ -32,7 +32,7 @@
      &     op_info
  
       logical ::
-     &     reo
+     &     reo, ok
       integer ::
      &     nvtx_abc, nvtx_ac, nvtx_a, nvtx_b, nvtx_c,
      &     narc_abc, narc_abc0, narc_ac, narc_b, nxarc_b,
@@ -100,7 +100,9 @@
       allocate(svmap(nvtx_b))
       opres => op_info%op_arr(contr_b%idx_res)%op
       njoined = opres%njoined
-      call svmap4contr2(svmap,contr_b)
+      call svmap4contr2(svmap,contr_b,ok)
+      if (.not.ok) call quit(1,'join_contr3',
+     &        'not prepared for non-unique svmap!')
 
       ! largest index = number of super vertices
       nsuper = ifndmax(svmap,1,nvtx_b,1)

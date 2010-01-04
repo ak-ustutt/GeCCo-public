@@ -60,6 +60,7 @@
 
       ! initialize target list
       call init_target_info(tgt_info)
+      call set_command_prototypes(tgt_info,env_type)
       call set_target_list(tgt_info,orb_info,env_type)
 
       ! initialize basis info blocks and set memory blocks:
@@ -101,6 +102,8 @@ c     &       call quit(1,'do_calc','no rules for target?')
           write(luout,*)
      &       'Rule: ',trim(rule%command)
 
+          if (.not.rule%new) then 
+            ! old route:
           ! which type of target gets modified?
           select case (rule%type)
           case(ttype_op)
@@ -118,6 +121,12 @@ c     &       call quit(1,'do_calc','no rules for target?')
           case default
             call quit(1,'do_calc','unknown target type')
           end select
+
+          else
+            ! new route
+            call process_rule(rule,tgt_info,
+     &           form_info,op_info,str_info,strmap_info,orb_info)
+          end if
 
           do kdx = 1, rule%n_update
             ldx = idx_target(rule%labels,tgt_info)

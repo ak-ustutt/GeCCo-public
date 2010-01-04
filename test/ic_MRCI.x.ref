@@ -1,0 +1,1773 @@
+ run starts at 2009-12-16 16:53:43.395   host: tcwork15.Chemie.Uni-Mainz.DE
+
+ Version compiled 16 Dec 2009 at 16:53:40 on tcwork15.Chemie.Uni-Mainz.DE        
+
+ compiled with: ifort
+ level 1 optimization: -g -assume byterecl -i8 -traceback -DM_I686 -I../include -mo
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal author:                                       |
+        |       andreas koehn (university of mainz, germany)        |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       matthias hanauer (university of mainz, germany)     |
+        |       gareth richings (university of mainz, germany)      |
+        |                                                           |
+
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ raw data from section "SIR IPH "
+ potnuc =    3.03138261098390     
+ emy    =   -17.6683048406504     
+ eactiv =  -0.843958288369913     
+ emcscf =   -15.4808805180364     
+ istate =            1
+ ispin  =            1
+ nactel =            2
+ lsym   =            1
+ nsym   =            4
+ mctype =            1
+ nrhf   =    2   0   0   0   0   0   0   0
+ nfro   =    0   0   0   0   0   0   0   0
+ nish   =    2   0   0   0   0   0   0   0
+ nash   =    1   1   0   0   0   0   0   0
+ norb   =    7   4   2   0   0   0   0   0
+ nbas   =    7   4   2   0   0   0   0   0
+ nas1   =    0   0   0   0   0   0   0   0
+ nas2   =    1   1   0   0   0   0   0   0
+ nas3   =    0   0   0   0   0   0   0   0
+ nnorbt,n2orbt:   41  69
+ sym_bound_orbs:    1   1   2   1   3   2   1   1   3   2   1
+ n_freeze_rcmd:    1
+ valence shell is not high-spin ...
+ Reading input file ....
+ Memory set to   3000000000 r8-words = (22888.18 Mb)
+ ************
+  set_orbinf
+ ************
+ ihpvgas:                        1                     3                     2
+ ngas_hpv:                       1                     1                     1
+                     0
+ nactt_hpv:                      2                     9                     2
+                     0
+ ioff_gas:                       0                     2                     1
+                     0
+ idx_gas:                        1                     3                     2
+                     0
+ gas_reo:                     1                     2                     3
+ igamorb:
+
+<  1>        1       1       1       2       1       1       1       1       2       2
+        2       3       3
+ igasorb:
+
+<  1>        1       1       2       2       3       3       3       3       3       3
+        3       3       3
+ mostnd:
+     1      1   2    3   2    3   2    3   2
+     2      3   3    4   4    5   4    5   4
+     3      5   8    9  11   12  13   14  13
+ ireost:
+
+<  1>        1       2       3       5       6       7       8       4       9      10
+       11      12      13
+ ireots:
+
+<  1>        1       2       3       8       4       5       6       7       9      10
+       11      12      13
+ iad_gas:
+
+<  1>        2
+
+<  2>        2
+
+<  3>        2
+ setting general targets ...
+ effective iformal =                      1
+ setting targets for multiref. wave function
+ cminh   =                      0
+ cmaxh   =                      0
+ cminp   =                      0
+ cmaxp   =                      0
+ cmaxexc =                      0
+ nactel  =                      2
+ setting multireference targets #2...
+ minh    =                      0
+ maxh    =                      2
+ minp    =                      0
+ maxp    =                      2
+ maxv    =                      4
+ maxvv   =                      2
+ minexc  =                      2
+ maxexc  =                      2
+ define norm
+ give labelF_NORM
+ My next target: E_REF
+ Rule: DEF_HAMILTONIAN
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ Rule: SET_HERMITIAN
+ My next target: C0
+ Rule: DEF_OP_FROM_OCC
+ My next target: F_REF
+ Rule: EXPAND_OP_PRODUCT
+ wrote                      5  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: A_C0
+ Rule: CLONE_OPERATOR
+ My next target: F_A_C0
+ Rule: DERIVATIVE
+ My next target: H0
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ Trying new DALTON format ...
+ number of incore-blocks in geth2:                      4
+ size of buffer in geth2:        0.10Mb
+ passes over integral file:                      1
+ 
+ 2-el. integrals on disk:                   2724
+    thereof nonredundant:                   1408
+     integrals reordered:                  12593
+ My next target: DEF_ME_C0
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_A_C0
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_E_REF
+ Rule: DEF_ME_LIST
+ My next target: FOPT_A_C0
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                      4
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  46                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           ME_A_C0
+ ----------------------------------------
+ Number of lists defined:                      4
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        12732        H                    H0_list.da
+    2           ME_C0  1  0            2       C0                 ME_C0_list.da
+    3         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_A_C0
+ read                      4  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.160E+02(  57.1%)
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.800E+01(  28.6%)
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.400E+01(  14.3%)
+ Formally most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.610E-04
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.610E-04
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.610E-04
+ wrote                      5  entries
+ My next target: DIA_C0
+ Rule: CLONE_OPERATOR
+ My next target: DIAG1SxxM00C0
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: SOLVE_REF
+ Rule: SOLVE_EVP
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:        2
+idstsec:        1
+signsec:      1.0
+ read                      4  entries
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-04
+ Number of parameters:               2
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>>  1                         0.3310E-01
+ >>           -15.467047148043 0.3310E-01
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
+ @ formula evaluation                  cpu/sys/wall:      0.00 /     0.01 /     0.01 s
+ CONVERGED IN     2 ITERATIONS
+>>>  1                         0.6627E-15
+ >>           -15.480880518036 0.6627E-15
+  Results for ME_C0
+ -------------------
+>>>==================================================================
+>>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+>>>------------------------------------------------------------------
+>>>    1       -15.480880518036                    ---   0.6627E-15
+>>>==================================================================
+ Rule: PRINT_MEL
+ CI coefficients :
++=============================================================================+
+  block no.    1 len =            2
+ /  0  0  2  0\/
+ \  0  0  0  0/\
++=============================================================================+
+  Ms(A) =   0/2  IRREP(A) =  1  len =            2  norm =  1.00000    
++-----------------------------------------------------------------------------+
+ block contains only single distribution
+ index of first element:                     1
++.............................................................................+
+     1    3  3  22    11     0.3855608708    
+     2    4  4  22    11    -0.9226824020    
++-----------------------------------------------------------------------------+
+ norm (MS-Block) =    1.00000000000000     
+ total norm =    1.00000000000000     
+ My next target: FOPT_REF
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                      5
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  46                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           mvp_001
+    5  DIA_C0   1   1     DIAG1SxxM00C0
+ ----------------------------------------
+ Number of lists defined:                      5
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        12732        H                    H0_list.da
+    2           ME_C0  1  0            2       C0                 ME_C0_list.da
+    3         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG1SxxM00C0  1  0            2   DIA_C0         DIAG1SxxM00C0_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_REF
+ read                      4  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.240E+02(  54.5%)
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.120E+02(  27.3%)
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.800E+01(  18.2%)
+ Formally most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.610E-04
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.305E-04
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.305E-04
+ wrote                     11  entries
+ My next target: EVAL_E_REF
+ Rule: EVALUATE
+ read                     10  entries
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ formula evaluation                  cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> -15.48088052    
+ My next target: NORM
+ Rule: DEF_HAMILTONIAN
+ My next target: C
+ Rule: DEF_OP_FROM_OCC
+ My next target: 1
+ Rule: DEF_OP_FROM_OCC
+ Rule: SET_HERMITIAN
+ My next target: F_NORM
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     25  entries
+ @ Operator product                    cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Rule: SELECT_LINE
+ read                     24  entries
+ wrote                     16  entries
+ Rule: PRINT_FORMULA
+ read                     15  entries
+ [INIT TARGET]                     6
+ [CONTR]                     6 ( term #                     1 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         1    0  0  0  0
+                      0  0  0  0
+ v03 1           1    0  0  0  0
+                      0  0  0  0
+ v04 C           1    0  0  0  0
+                      0  0  0  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                     6 ( term #                     2 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    7
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         2    1  0  1  0
+                      0  0  2  0
+ v03 1           2    0  0  1  0
+                      0  0  1  0
+ v04 C           2    0  0  2  0
+                      1  0  1  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  c      2   5       0  0  0  0
+                     0  0  1  0
+  c      4   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                     3 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    6
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         2    1  0  1  0
+                      0  0  2  0
+ v03 1           3    0  0  2  0
+                      0  0  2  0
+ v04 C           2    0  0  2  0
+                      1  0  1  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  0  2  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+  c      1   5       0  0  0  0
+                     0  0  1  0
+  c      4   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                     4 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    3
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         3    2  0  0  0
+                      0  0  2  0
+ v03 1           1    0  0  0  0
+                      0  0  0  0
+ v04 C           3    0  0  2  0
+                      2  0  0  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+  c      2   4       2  0  0  0
+                     0  0  0  0
+  c      2   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                     6 ( term #                     5 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    6
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         3    2  0  0  0
+                      0  0  2  0
+ v03 1           2    0  0  1  0
+                      0  0  1  0
+ v04 C           3    0  0  2  0
+                      2  0  0  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  c      2   4       2  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  c      1   5       0  0  0  0
+                     0  0  1  0
+  c      2   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                     6 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    4
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         3    2  0  0  0
+                      0  0  2  0
+ v03 1           3    0  0  2  0
+                      0  0  2  0
+ v04 C           3    0  0  2  0
+                      2  0  0  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  2  0
+  c      2   4       2  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+  c      1   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                     6 ( term #                     7 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    5
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         4    0  0  2  0
+                      0  1  1  0
+ v03 1           2    0  0  1  0
+                      0  0  1  0
+ v04 C           4    0  1  1  0
+                      0  0  2  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  c      4   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                     6 ( term #                     8 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    5
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         5    1  0  1  0
+                      0  1  1  0
+ v03 1           1    0  0  0  0
+                      0  0  0  0
+ v04 C           5    0  1  1  0
+                      1  0  1  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  c      2   4       1  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  0  1  0
+  c      4   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                     9 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    6
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         5    1  0  1  0
+                      0  1  1  0
+ v03 1           2    0  0  1  0
+                      0  0  1  0
+ v04 C           5    0  1  1  0
+                      1  0  1  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      2   4       1  0  0  0
+                     0  1  0  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  c      1   5       0  0  0  0
+                     0  0  1  0
+  c      4   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                    10 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    4
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         6    2  0  0  0
+                      0  1  1  0
+ v03 1           1    0  0  0  0
+                      0  0  0  0
+ v04 C           6    0  1  1  0
+                      2  0  0  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  c      2   4       2  0  0  0
+                     0  1  0  0
+  c      1   5       0  0  0  0
+                     0  0  1  0
+  c      2   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                    11 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    4
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         6    2  0  0  0
+                      0  1  1  0
+ v03 1           2    0  0  1  0
+                      0  0  1  0
+ v04 C           6    0  1  1  0
+                      2  0  0  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      2   4       2  0  0  0
+                     0  1  0  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  c      1   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                     6 ( term #                    12 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    3
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         7    0  0  2  0
+                      0  2  0  0
+ v03 1           1    0  0  0  0
+                      0  0  0  0
+ v04 C           7    0  2  0  0
+                      0  0  2  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      2   4       0  0  0  0
+                     0  2  0  0
+  c      4   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                     6 ( term #                    13 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    4
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         8    1  0  1  0
+                      0  2  0  0
+ v03 1           1    0  0  0  0
+                      0  0  0  0
+ v04 C           8    0  2  0  0
+                      1  0  1  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      2   4       1  0  0  0
+                     0  2  0  0
+  c      1   5       0  0  0  0
+                     0  0  1  0
+  c      4   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                    14 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    2
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         9    2  0  0  0
+                      0  2  0  0
+ v03 1           1    0  0  0  0
+                      0  0  0  0
+ v04 C           9    0  2  0  0
+                      2  0  0  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      2   4       2  0  0  0
+                     0  2  0  0
+  c      1   5       0  0  0  0
+                     0  0  2  0
+ [END]
+ My next target: A_C
+ Rule: DEF_OP_FROM_OCC
+ My next target: SC
+ Rule: CLONE_OPERATOR
+ My next target: F_SC0
+ Rule: DERIVATIVE
+ Rule: PRINT_FORMULA
+ read                     15  entries
+ [INIT TARGET]                    10
+ [CONTR]                    10 ( term #                     1 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C           1    0  0  0  0
+                      0  0  0  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+ [CONTR]                    10 ( term #                     2 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    3
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           2    0  0  1  0
+                      0  0  1  0
+ v03 C           2    0  0  2  0
+                      1  0  1  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  1  0
+                     0  0  0  0
+  x      3   2       0  0  0  0
+                     1  0  0  0
+  x      4   2       0  0  1  0
+                     0  0  0  0
+ [CONTR]                    10 ( term #                     3 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    3
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           3    0  0  2  0
+                      0  0  2  0
+ v03 C           2    0  0  2  0
+                      1  0  1  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  2  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  2  0
+                     0  0  0  0
+  x      3   2       0  0  0  0
+                     1  0  0  0
+ [CONTR]                    10 ( term #                     4 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C           3    0  0  2  0
+                      2  0  0  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  2  0
+  x      3   2       0  0  0  0
+                     2  0  0  0
+  x      4   2       0  0  2  0
+                     0  0  0  0
+ [CONTR]                    10 ( term #                     5 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    3
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           2    0  0  1  0
+                      0  0  1  0
+ v03 C           3    0  0  2  0
+                      2  0  0  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  1  0
+                     0  0  0  0
+  x      3   2       0  0  0  0
+                     2  0  0  0
+  x      4   2       0  0  1  0
+                     0  0  0  0
+ [CONTR]                    10 ( term #                     6 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    2
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           3    0  0  2  0
+                      0  0  2  0
+ v03 C           3    0  0  2  0
+                      2  0  0  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  2  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+  x      2   2       0  0  2  0
+                     0  0  0  0
+  x      3   2       0  0  0  0
+                     2  0  0  0
+ [CONTR]                    10 ( term #                     7 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     4
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    2
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           2    0  0  1  0
+                      0  0  1  0
+ v03 C           4    0  1  1  0
+                      0  0  2  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+  x      1   1       0  0  0  0
+                     0  0  2  0
+  x      2   2       0  0  1  0
+                     0  0  0  0
+  x      3   2       0  1  0  0
+                     0  0  0  0
+ [CONTR]                    10 ( term #                     8 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     5
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    2
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C           5    0  1  1  0
+                      1  0  1  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      3   2       0  1  0  0
+                     1  0  0  0
+  x      4   2       0  0  1  0
+                     0  0  0  0
+ [CONTR]                    10 ( term #                     9 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     5
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    3
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           2    0  0  1  0
+                      0  0  1  0
+ v03 C           5    0  1  1  0
+                      1  0  1  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  1  0
+                     0  0  0  0
+  x      3   2       0  1  0  0
+                     1  0  0  0
+ [CONTR]                    10 ( term #                    10 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     6
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    2
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C           6    0  1  1  0
+                      2  0  0  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  x      3   2       0  1  0  0
+                     2  0  0  0
+  x      4   2       0  0  1  0
+                     0  0  0  0
+ [CONTR]                    10 ( term #                    11 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     6
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    2
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           2    0  0  1  0
+                      0  0  1  0
+ v03 C           6    0  1  1  0
+                      2  0  0  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+  x      2   2       0  0  1  0
+                     0  0  0  0
+  x      3   2       0  1  0  0
+                     2  0  0  0
+ [CONTR]                    10 ( term #                    12 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     7
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C           7    0  2  0  0
+                      0  0  2  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+  x      1   1       0  0  0  0
+                     0  0  2  0
+  x      3   2       0  2  0  0
+                     0  0  0  0
+ [CONTR]                    10 ( term #                    13 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     8
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    2
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C           8    0  2  0  0
+                      1  0  1  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      3   2       0  2  0  0
+                     1  0  0  0
+ [CONTR]                    10 ( term #                    14 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     9
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C           9    0  2  0  0
+                      2  0  0  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+  x      3   2       0  2  0  0
+                     2  0  0  0
+ [END]
+ My next target: D
+ Rule: DEF_OP_FROM_OCC
+ My next target: F_D
+ Rule: DERIVATIVE
+ Rule: SELECT_LINE
+ read                     15  entries
+ wrote                     14  entries
+ Rule: PRINT_FORMULA
+ read                     13  entries
+ [INIT TARGET]                    11
+ [CONTR]                    11 ( term #                     1 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    0
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           2    0  0  1  0
+                      0  0  1  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      1   2       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  1  0
+                     0  0  1  0
+  x      3   2       0  0  1  0
+                     0  0  0  0
+  x      3   3       0  0  1  0
+                     0  0  0  0
+ [CONTR]                    11 ( term #                     2 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           3    0  0  2  0
+                      0  0  2  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  2  0
+                     0  0  2  0
+  x      3   3       0  0  1  0
+                     0  0  0  0
+ [CONTR]                    11 ( term #                     3 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    0
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  x      1   2       0  0  0  0
+                     0  0  2  0
+  x      3   2       0  0  2  0
+                     0  0  0  0
+ [CONTR]                    11 ( term #                     4 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           2    0  0  1  0
+                      0  0  1  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  x      1   2       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  1  0
+                     0  0  1  0
+  x      3   2       0  0  1  0
+                     0  0  0  0
+ [CONTR]                    11 ( term #                     5 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           3    0  0  2  0
+                      0  0  2  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  2  0
+  x      2   2       0  0  2  0
+                     0  0  2  0
+ [CONTR]                    11 ( term #                     6 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     4
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    0
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           2    0  0  1  0
+                      0  0  1  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  x      1   1       0  0  0  0
+                     0  0  2  0
+  x      2   2       0  0  1  0
+                     0  0  1  0
+  x      3   3       0  0  2  0
+                     0  0  0  0
+ [CONTR]                    11 ( term #                     7 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     5
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    0
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      1   2       0  0  0  0
+                     0  0  1  0
+  x      3   2       0  0  1  0
+                     0  0  0  0
+  x      3   3       0  0  1  0
+                     0  0  0  0
+ [CONTR]                    11 ( term #                     8 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     5
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           2    0  0  1  0
+                      0  0  1  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  1  0
+                     0  0  1  0
+  x      3   3       0  0  1  0
+                     0  0  0  0
+ [CONTR]                    11 ( term #                     9 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     6
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  x      1   2       0  0  0  0
+                     0  0  1  0
+  x      3   2       0  0  1  0
+                     0  0  0  0
+ [CONTR]                    11 ( term #                    10 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     6
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           2    0  0  1  0
+                      0  0  1  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  2  0
+  x      2   2       0  0  1  0
+                     0  0  1  0
+ [CONTR]                    11 ( term #                    11 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     7
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    0
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  x      1   1       0  0  0  0
+                     0  0  2  0
+  x      3   3       0  0  2  0
+                     0  0  0  0
+ [CONTR]                    11 ( term #                    12 )
+ +++ contraction info +++
+  name (index) and block of result: D  (                    11 )
+                     8
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      3   3       0  0  1  0
+                     0  0  0  0
+ [END]
+ My next target: F_NORM_fact
+ Rule: FACTOR_OUT
+ read                     15  entries
+ read                     13  entries
+ wrote                     11  entries
+ Rule: PRINT_FORMULA
+ read                     10  entries
+ [INIT TARGET]                     6
+ [CONTR]                     6 ( term #                     1 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         1    0  0  0  0
+                      0  0  0  0
+ v03 1           1    0  0  0  0
+                      0  0  0  0
+ v04 C           1    0  0  0  0
+                      0  0  0  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                     6 ( term #                     2 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    3    5
+ v01 D           4    0  0  0  0
+                      0  0  1  0
+ v02 C^+         2    1  0  1  0
+                      0  0  2  0
+ v01 D           5    0  0  2  0
+                      0  0  2  0
+ v03 C           2    0  0  2  0
+                      1  0  1  0
+ v01 D           6    0  0  1  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  0  2  0
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+  c      4   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                     3 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    3    3
+ v01 C^+         3    2  0  0  0
+                      0  0  2  0
+ v02 D           7    0  0  0  0
+                      0  0  0  0
+ v02 D           8    0  0  2  0
+                      0  0  2  0
+ v03 C           3    0  0  2  0
+                      2  0  0  0
+ v02 D           9    0  0  0  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  2  0
+  c      1   4       2  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+ [CONTR]                     6 ( term #                     4 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    3    5
+ v01 D          10    0  0  0  0
+                      0  0  2  0
+ v02 C^+         4    0  0  2  0
+                      0  1  1  0
+ v01 D          11    0  0  1  0
+                      0  0  1  0
+ v03 C           4    0  1  1  0
+                      0  0  2  0
+ v01 D          12    0  0  2  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  c      4   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                     6 ( term #                     5 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    3    5
+ v01 D          13    0  0  0  0
+                      0  0  1  0
+ v02 C^+         5    1  0  1  0
+                      0  1  1  0
+ v01 D          14    0  0  1  0
+                      0  0  1  0
+ v03 C           5    0  1  1  0
+                      1  0  1  0
+ v01 D          15    0  0  1  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      2   4       1  0  0  0
+                     0  1  0  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  c      4   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                     6 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    3    3
+ v01 C^+         6    2  0  0  0
+                      0  1  1  0
+ v02 D          16    0  0  0  0
+                      0  0  0  0
+ v02 D          17    0  0  1  0
+                      0  0  1  0
+ v03 C           6    0  1  1  0
+                      2  0  0  0
+ v02 D          18    0  0  0  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  c      1   4       2  0  0  0
+                     0  1  0  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                     7 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    3    3
+ v01 D          19    0  0  0  0
+                      0  0  2  0
+ v02 C^+         7    0  0  2  0
+                      0  2  0  0
+ v03 C           7    0  2  0  0
+                      0  0  2  0
+ v01 D          20    0  0  0  0
+                      0  0  0  0
+ v01 D          21    0  0  2  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      2   3       0  0  0  0
+                     0  2  0  0
+  c      3   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                     6 ( term #                     8 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    3    3
+ v01 D          22    0  0  0  0
+                      0  0  1  0
+ v02 C^+         8    1  0  1  0
+                      0  2  0  0
+ v03 C           8    0  2  0  0
+                      1  0  1  0
+ v01 D          23    0  0  0  0
+                      0  0  0  0
+ v01 D          24    0  0  1  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      2   3       1  0  0  0
+                     0  2  0  0
+  c      3   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                     6 ( term #                     9 )
+ +++ contraction info +++
+  name (index) and block of result: NORM  (                     6 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    2
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 C^+         9    2  0  0  0
+                      0  2  0  0
+ v03 1           1    0  0  0  0
+                      0  0  0  0
+ v04 C           9    0  2  0  0
+                      2  0  0  0
+ v05 C0          1    0  0  2  0
+                      0  0  0  0
+  c      2   4       2  0  0  0
+                     0  2  0  0
+  c      1   5       0  0  0  0
+                     0  0  2  0
+ [END]
+ My next target: F_SC
+ Rule: DERIVATIVE
+ Rule: PRINT_FORMULA
+ read                     10  entries
+ [INIT TARGET]                    10
+ [CONTR]                    10 ( term #                     1 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C           1    0  0  0  0
+                      0  0  0  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+ [CONTR]                    10 ( term #                     2 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    2    2
+ v01 D           4    0  0  0  0
+                      0  0  1  0
+ v01 D           5    0  0  2  0
+                      0  0  2  0
+ v02 C           2    0  0  2  0
+                      1  0  1  0
+ v01 D           6    0  0  1  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  2  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  2  0
+                     0  0  0  0
+  x      3   2       0  0  0  0
+                     1  0  0  0
+ [CONTR]                    10 ( term #                     3 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     3
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    2    1
+ v01 D           7    0  0  0  0
+                      0  0  0  0
+ v01 D           8    0  0  2  0
+                      0  0  2  0
+ v02 C           3    0  0  2  0
+                      2  0  0  0
+ v01 D           9    0  0  0  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  2  0
+  x      2   2       0  0  2  0
+                     0  0  0  0
+  x      3   2       0  0  0  0
+                     2  0  0  0
+ [CONTR]                    10 ( term #                     4 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     4
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    2    2
+ v01 D          10    0  0  0  0
+                      0  0  2  0
+ v01 D          11    0  0  1  0
+                      0  0  1  0
+ v02 C           4    0  1  1  0
+                      0  0  2  0
+ v01 D          12    0  0  2  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+  x      1   1       0  0  0  0
+                     0  0  2  0
+  x      2   2       0  0  1  0
+                     0  0  0  0
+  x      3   2       0  1  0  0
+                     0  0  0  0
+ [CONTR]                    10 ( term #                     5 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     5
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    2    2
+ v01 D          13    0  0  0  0
+                      0  0  1  0
+ v01 D          14    0  0  1  0
+                      0  0  1  0
+ v02 C           5    0  1  1  0
+                      1  0  1  0
+ v01 D          15    0  0  1  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  1  0
+                     0  0  0  0
+  x      3   2       0  1  0  0
+                     1  0  0  0
+ [CONTR]                    10 ( term #                     6 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     6
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    2    1
+ v01 D          16    0  0  0  0
+                      0  0  0  0
+ v01 D          17    0  0  1  0
+                      0  0  1  0
+ v02 C           6    0  1  1  0
+                      2  0  0  0
+ v01 D          18    0  0  0  0
+                      0  0  0  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  0  1  0
+                     0  0  0  0
+  x      3   2       0  1  0  0
+                     2  0  0  0
+ [CONTR]                    10 ( term #                     7 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     7
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    2    1
+ v01 D          19    0  0  0  0
+                      0  0  2  0
+ v02 C           7    0  2  0  0
+                      0  0  2  0
+ v01 D          20    0  0  0  0
+                      0  0  0  0
+ v01 D          21    0  0  2  0
+                      0  0  0  0
+  c      2   4       0  0  0  0
+                     0  0  2  0
+  x      1   1       0  0  0  0
+                     0  0  2  0
+  x      2   2       0  2  0  0
+                     0  0  0  0
+ [CONTR]                    10 ( term #                     8 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     8
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    2    1
+ v01 D          22    0  0  0  0
+                      0  0  1  0
+ v02 C           8    0  2  0  0
+                      1  0  1  0
+ v01 D          23    0  0  0  0
+                      0  0  0  0
+ v01 D          24    0  0  1  0
+                      0  0  0  0
+  c      2   4       0  0  0  0
+                     0  0  1  0
+  x      1   1       0  0  0  0
+                     0  0  1  0
+  x      2   2       0  2  0  0
+                     1  0  0  0
+ [CONTR]                    10 ( term #                     9 )
+ +++ contraction info +++
+  name (index) and block of result: SC  (                    10 )
+                     9
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    1
+ v01 C0^+        1    0  0  0  0
+                      0  0  2  0
+ v02 1           1    0  0  0  0
+                      0  0  0  0
+ v03 C           9    0  2  0  0
+                      2  0  0  0
+ v04 C0          1    0  0  2  0
+                      0  0  0  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+  x      3   2       0  2  0  0
+                     2  0  0  0
+ [END]
+ My next target: DEF_ME_C
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_SC
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_1
+ Rule: DEF_ME_LIST
+ Rule: ADD_UNITY
+ My next target: DEF_ME_D
+ Rule: DEF_ME_LIST
+ My next target: FOPT_SC
+ Rule: ASSIGN_ME2OP
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                     11
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  46                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           mvp_001
+    5  DIA_C0   1   1     DIAG1SxxM00C0
+    6    NORM   1   1                  
+    7       C   1   9              ME_C
+    8       1   1   3              ME_1
+    9     A_C   2   9                  
+   10      SC   2   9             ME_SC
+   11       D   3   8              ME_D
+ ----------------------------------------
+ Number of lists defined:                      9
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        12732        H                    H0_list.da
+    2           ME_C0  1  0            2       C0                 ME_C0_list.da
+    3         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG1SxxM00C0  1  0            2   DIA_C0         DIAG1SxxM00C0_list.da
+    6            ME_C  1  0          903        C                  ME_C_list.da
+    7           ME_SC  1  0          903       SC                 ME_SC_list.da
+    8            ME_1  1  0           15        1                  ME_1_list.da
+    9            ME_D  1  0          285        D                  ME_D_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_SC
+ read                     10  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    9 - H^ 2 P^ 2 V^ 0 X^ 0 - flops:  0.476E+03(  33.0%)
+  term #    7 - H^ 0 P^ 2 V^ 0 X^ 0 - flops:  0.464E+03(  32.1%)
+  term #    8 - H^ 1 P^ 2 V^ 0 X^ 0 - flops:  0.232E+03(  16.1%)
+  term #    3 - H^ 2 P^ 0 V^ 0 X^ 0 - flops:  0.640E+02(   4.4%)
+  term #    4 - H^ 0 P^ 1 V^ 0 X^ 0 - flops:  0.640E+02(   4.4%)
+ Formally most expensive contractions: 
+  term #    9 - H^ 2 P^ 2 V^ 0 X^ 0
+  term #    8 - H^ 1 P^ 2 V^ 0 X^ 0
+  term #    6 - H^ 2 P^ 1 V^ 0 X^ 0
+  term #    7 - H^ 0 P^ 2 V^ 0 X^ 0
+  term #    5 - H^ 1 P^ 1 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    9 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.354E-02
+  term #    7 - H^ 0 P^ 2 V^ 0 X^ 0 - Mb:     0.177E-02
+  term #    8 - H^ 1 P^ 2 V^ 0 X^ 0 - Mb:     0.177E-02
+  term #    6 - H^ 2 P^ 1 V^ 0 X^ 0 - Mb:     0.488E-03
+  term #    3 - H^ 2 P^ 0 V^ 0 X^ 0 - Mb:     0.244E-03
+ wrote                     19  entries
+ My next target: FOPT_D
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                     11
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  46                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           mvp_001
+    5  DIA_C0   1   1     DIAG1SxxM00C0
+    6    NORM   1   1                  
+    7       C   1   9              ME_C
+    8       1   1   3              ME_1
+    9     A_C   2   9                  
+   10      SC   2   9             ME_SC
+   11       D   3   8              ME_D
+ ----------------------------------------
+ Number of lists defined:                      9
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        12732        H                    H0_list.da
+    2           ME_C0  1  0            2       C0                 ME_C0_list.da
+    3         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG1SxxM00C0  1  0            2   DIA_C0         DIAG1SxxM00C0_list.da
+    6            ME_C  1  0          903        C                  ME_C_list.da
+    7           ME_SC  1  0          903       SC                 ME_SC_list.da
+    8            ME_1  1  0           15        1                  ME_1_list.da
+    9            ME_D  1  0          285        D                  ME_D_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_D
+ read                     13  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    7 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.240E+02(  11.5%)
+  term #    6 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.240E+02(  11.5%)
+  term #   11 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.240E+02(  11.5%)
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.240E+02(  11.5%)
+  term #    5 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.240E+02(  11.5%)
+ Formally most expensive contractions: 
+  term #    8 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #    6 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #   11 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #   10 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #    9 - H^ 0 P^ 0 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.122E-03
+  term #    6 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.122E-03
+  term #   11 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.122E-03
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.122E-03
+  term #    5 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.122E-03
+ wrote                     38  entries
+ My next target: EVAL_D
+ Rule: EVALUATE
+ read                     37  entries
+ @ time for target                     cpu/sys/wall:      0.03 /     0.04 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.03 /     0.04 /     0.07 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 -->  5.046665778    
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory: 2700143705 real(8)-words (20600.46 Mb)
+   Largest memory block:     2698714293 real(8)-words (20589.56 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:      0.15 /     0.09 /     0.26 s
+ run ends at 2009-12-16 16:53:43.657   host: tcwork15.Chemie.Uni-Mainz.DE

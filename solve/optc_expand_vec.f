@@ -100,7 +100,7 @@
      &       nwfpar,xbuf1,xbuf2,lenbuf)
         
         if (getnrm)
-     &       xnrm = da_ddot(ffamp,irecamp,ffamp,irecamp,
+     &       xnrm = da_ddot(ffamp,irecamp,1,ffamp,irecamp,1,
      &       nwfpar,xbuf1,xbuf2,lenbuf)
 
       end if

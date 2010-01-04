@@ -134,9 +134,12 @@
           call quit(1,'topo_remove_vtxs',
      &         'new case occurred (for nj=1)')
         end if
-      ! allow 2nd derivations where operand has no external lines
-      else if (nj.eq.2.and.nlist.eq.1.and.nj_new.eq.3.and.
-     &         all(xlines(vtx_list(1),1:nj).eq.0)) then
+      ! allow 2nd derivations
+      ! if operand has open lines, they will be deleted
+      ! => reduces dimension of operator!
+      ! if you want to keep the open lines, insert a unit operator
+      ! prior to the first differentiation!
+      else if (nj.eq.2.and.nlist.eq.1.and.nj_new.eq.3) then
 
         ! choose lowest number of vertices belonging to first supervertex
         ! somewhat arbitrary, could be more sophisticated
@@ -147,25 +150,29 @@
      &      .not.all(xlines(nvtx1+1:nvtx,1).eq.0))
      &    call quit(1,'topo_remove_vtxs',
      &       'new case occurred (complicated supervertex structure)')
-        if (nvtx1.gt.vtx_list(1)) then
-          do idx = 3,2,-1
-            xlines_new(1:nvtx_new,idx) = xlines_new(1:nvtx_new,idx-1)
-          end do
-          xlines_new(1:nvtx_new,1) = 0
-          xlines_new(1:nvtx_new,1) = xlines_scr_u(1:nvtx_new,1)
-          xlines_new(1:nvtx_new,2) = xlines_new(1:nvtx_new,2)
-     &                             + xlines_scr_l(1:nvtx_new,1)
-        else if (nvtx1+1.lt.vtx_list(1).or.nvtx1.eq.0) then
-          if (all(xlines(nvtx1+1:vtx_list(1)-1,1:nj).eq.0).and.
-     &        nvtx1.gt.0) call quit(1,'topo_remove_vtxs',
-     &       'new case occurred (multiple possibilities(2))')
+c        if (nvtx1.gt.vtx_list(1)) then
+c          do idx = 3,2,-1
+c            xlines_new(1:nvtx_new,idx) = xlines_new(1:nvtx_new,idx-1)
+c          end do
+c          xlines_new(1:nvtx_new,1) = 0
+c          xlines_new(1:nvtx_new,1) = xlines_scr_u(1:nvtx_new,1)
+c          xlines_new(1:nvtx_new,2) = xlines_new(1:nvtx_new,2)
+c     &                             + xlines_scr_l(1:nvtx_new,1)
+c        else if (nvtx1+1.lt.vtx_list(1).or.nvtx1.eq.0) then
+c          if (all(xlines(nvtx1+1:vtx_list(1)-1,1:nj).eq.0).and.
+c     &        nvtx1.gt.0) call quit(1,'topo_remove_vtxs',
+c     &       'new case occurred (multiple possibilities(2))')
+c          xlines_new(1:nvtx_new,2) = xlines_new(1:nvtx_new,2)
+c     &                             + xlines_scr_u(1:nvtx_new,1)
+c          xlines_new(1:nvtx_new,3) = xlines_scr_l(1:nvtx_new,1)
+c        else
+c          call quit(1,'topo_remove_vtxs',
+c     &       'new case occurred (multiple possibilities(1))')
+          !preliminary: assume that derivation wrt lower vtx is done last
           xlines_new(1:nvtx_new,2) = xlines_new(1:nvtx_new,2)
      &                             + xlines_scr_u(1:nvtx_new,1)
           xlines_new(1:nvtx_new,3) = xlines_scr_l(1:nvtx_new,1)
-        else
-          call quit(1,'topo_remove_vtxs',
-     &       'new case occurred (multiple possibilities(1))')
-        end if
+c        end if
 
       else
           call quit(1,'topo_remove_vtxs',

@@ -2433,9 +2433,11 @@ c                             ! this entity this does not matter
      &              parameters,1,tgt_info)
       labels(1) = mel_b_inv   ! output
       labels(2) = mel_b_inter ! input
+      call form_parameters(-1,parameters,2,
+     &     '---',0,'inverse')
       call set_rule(mel_b_inv,ttype_opme,INVERT,
      &              labels,2,1,
-     &              parameters,1,tgt_info)
+     &              parameters,2,tgt_info)
 
       if(.not.r12fix)then
         ! diagonal of B(ij) for testing
@@ -2473,9 +2475,11 @@ c                             ! this entity this does not matter
      &                parameters,1,tgt_info)
         labels(1) = mel_x_inv   ! output
         labels(2) = mel_x_inter ! input
+      call form_parameters(-1,parameters,2,
+     &     '---',0,'inverse')
         call set_rule(mel_x_inv,ttype_opme,INVERT,
      &                labels,2,1,
-     &                parameters,1,tgt_info)
+     &                parameters,2,tgt_info)
       
       endif
 

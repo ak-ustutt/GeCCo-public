@@ -83,16 +83,16 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     idx, jdx, kdx, iroot, irhs,  nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
      &     ndim_save, ndel, iopt, lenscr, ifree, restart_mode,
-     &     nselect, irec, ioff_s
+     &     nselect, irec, ioff_s, ioff, nsec
       real(8) ::
      &     cond, xdum, xnrm
       real(8), pointer ::
      &     gred(:), vred(:), mred(:), sred(:),
-     &     xmat1(:), xmat2(:), xvec(:), xret(:)
+     &     xmat1(:), xmat2(:), xvec(:), xret(:), signsec(:)
       integer, pointer ::
      &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
      &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
-     &     nwfpar(:),
+     &     nwfpar(:), nwfpsec(:), idstsec(:), nsec_arr(:),
      &     ipiv(:), iconv(:), idxroot(:), idxselect(:)
       type(filinf), pointer ::
      &     ffrsbsp, ffvsbsp, ffssbsp, ffscr, ffmet
@@ -147,8 +147,14 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       if (ndim_vsbsp.ne.ndim_rsbsp)
      &     call quit(1,'leqc_core','subspace dimensions differ?')
       nred = ndim_vsbsp
-      ! update reduced space:
-      ! ffvsbsp and ffrsbsp point to ff_trv(iopt)%fhand ...
+
+        nsec = opti_info%nsec(iopt)
+        ioff = sum(opti_info%nsec(1:iopt))-nsec
+        nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
+        idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
+        signsec => opti_info%signsec(ioff+1:ioff+nsec)
+        ! update reduced space:
+        ! ffvsbsp and ffrsbsp point to ff_trv(iopt)%fhand ...
         if (.not.use_s(iopt)) then
           if (nopt.ne.1) call quit(1,'evpc_core','not this route')
           call optc_update_redsp3
@@ -156,6 +162,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &       opti_stat%nadd,opti_stat%ndel,
      &       iord_vsbsp,ffvsbsp,iord_rsbsp,ffrsbsp,
      &                              me_rhs(iopt)%mel%fhand,
+     &       nsec,nwfpsec,idstsec,signsec,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
         else
           call optc_update_redsp4
@@ -167,6 +174,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
 c     &       iord_vsbsp,ffvsbsp(iopt)%fhand,
 c     &       iord_rsbsp,ffrsbsp(iopt)%fhand,
 c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
+     &       nsec,nwfpsec,idstsec,signsec,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)
         end if
 
@@ -386,10 +394,16 @@ c     &             iord_vsbsp,ndim_vsbsp,mxsbsp)
 
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
+        nsec_arr => opti_info%nsec(1:nopt)
+        nsec = sum(nsec_arr)
+        nwfpsec => opti_info%nwfpsec(1:nsec)
+        idstsec => opti_info%idstsec(1:nsec)
+        signsec => opti_info%signsec(1:nsec)
         call optc_orthvec(nadd,.false.,
      &                 opti_stat%ffvsbsp,
      &                 iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                 use_s,ioff_s,ffmet,ffscr,nnew,nopt,
+     &                 nsec_arr,nwfpsec,idstsec,signsec,
      &                 nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 
         ! set nadd
