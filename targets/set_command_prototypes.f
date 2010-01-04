@@ -107,6 +107,8 @@
       call add_command_proto(DERIVATIVE,tgt_info)
       call add_command_proto(LEQ_SPLIT,tgt_info)
       call add_command_proto(OPTIMIZE,tgt_info)
+      call set_arg('_PROTO_',OPTIMIZE,'INTERM',1,tgt_info,
+     &     val_label=(/''/))
       call add_command_proto(PRINT_FORMULA,tgt_info)
       call set_arg('_PROTO_',PRINT_FORMULA,'OUTPUT',1,tgt_info,
      &     val_str='stdout')
@@ -158,9 +160,5 @@
       call add_command_proto(SET_MEL,tgt_info)
       call add_command_proto(EXTRACT_DIAG,tgt_info)
       call add_command_proto(REORDER_MEL,tgt_info)
-
-c dbg
-      print *,'ende'
-c dbg      
 
       end

@@ -581,7 +581,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
       case(OPTIMIZE)
 *----------------------------------------------------------------------*
-        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_arg('LABEL_OPT',rule,tgt_info,val_label=label)
         call get_form(form_pnt,trim(label),NEW)
         call get_arg('LABELS_IN',rule,tgt_info,
      &       val_label_list=label_list,ndim=ncat)
