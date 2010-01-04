@@ -99,6 +99,9 @@ c      use parse_input
      &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
       call argument_add('Z_appr','method.R12',type=vtyp_str,len=8,
      &     cdef=(/'n','o','n','e',' ',' ',' ',' '/))
+c     &     cdef=(/'J','2','K','1',' ',' ',' ',' '/))
+      call argument_add('Z2_appr','method.R12',type=vtyp_str,len=8,
+     &     cdef=(/'a','s','-','Z',' ',' ',' ',' '/))
 c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('fixed','method.R12',type=vtyp_log,
      &     ldef=(/.false./))

@@ -101,6 +101,12 @@
 
       call atim_csw(cpu0,sys0,wall0)
 
+      idxc12 = 0
+      idxc12_pt = 0
+      idxcpp12  = 0
+      idxcpp12_pt = 0
+      idxr12x   = 0
+ 
       do ilabel = 1, nlabels
         idx = idx_oplist2(label_op(ilabel),op_info)
         if (idx.le.0)
@@ -223,7 +229,7 @@ c        end if
 
 c dbg tmp
         r12op_loc = r12op
-        if (rank_tpt.ge.2) r12op_loc=4
+        if (rank_tpt.ge.2.and.idxc12_pt.gt.0) r12op_loc=4
 c dbg
         call set_t_r(flist_t_r_pt,.false.,set_rhxhh,
      &               idxspt,idxtpt,
