@@ -21,7 +21,7 @@
      &                       'operator list  '/)
 
       integer ::
-     &     itgt, idx, jdx
+     &     itgt, idx, jdx, ndim
       type(target), pointer ::
      &     tgt
 
@@ -54,12 +54,44 @@ c      if (long) then
           write(luout,'(4x,a)') 'rules:'
           do idx = 1, tgt%n_rules
             write(luout,'(6x,a)') trim(tgt%rules(idx)%command)
-            do jdx = 1, tgt%rules(idx)%n_labels
-              write(luout,'(10x,a)')trim(tgt%rules(idx)%labels(jdx))
-            end do
-            do jdx = 1, tgt%rules(idx)%n_parameter_strings
-              write(luout,'(10x,a)')trim(tgt%rules(idx)%parameters(jdx))
-            end do
+            if (.not.tgt%rules(idx)%new) then
+              do jdx = 1, tgt%rules(idx)%n_labels
+                write(luout,'(10x,a)')
+     &               trim(tgt%rules(idx)%labels(jdx))
+              end do
+              do jdx = 1, tgt%rules(idx)%n_parameter_strings
+                write(luout,'(10x,a)')
+     &               trim(tgt%rules(idx)%parameters(jdx))
+              end do
+            else
+              do jdx = 1, tgt%rules(idx)%n_arguments
+                write(luout,'(10x,a," =")')
+     &               trim(tgt%rules(idx)%arg(jdx)%arg_label)
+                ndim = tgt%rules(idx)%arg(jdx)%arg_dim
+                select case(tgt%rules(idx)%arg(jdx)%type)
+                case(aatype_label)
+                  write(luout,'(12x,a)')
+     &                 tgt%rules(idx)%arg(jdx)%val_label(1:ndim)
+                case(aatype_log)
+                  write(luout,'(12x,10l4)')
+     &                 tgt%rules(idx)%arg(jdx)%val_log(1:ndim)
+                case(aatype_int)
+                  write(luout,'(12x,10i6)')
+     &                 tgt%rules(idx)%arg(jdx)%val_int(1:ndim)
+                case(aatype_occ)
+                  call wrt_occ_n(luout,
+     &                 tgt%rules(idx)%arg(jdx)%val_occ,ndim)
+                case(aatype_restr)
+                case(aatype_rl8)
+                  write(luout,'(12x,5f12.7)')
+     &                 tgt%rules(idx)%arg(jdx)%val_rl8(1:ndim)
+                case(aatype_str)
+                  ndim = tgt%rules(idx)%arg(jdx)%n_str_batch
+                  write(luout,'(12x,2a)')
+     &                 tgt%rules(idx)%arg(jdx)%val_str(1:ndim)
+                end select
+              end do
+            end if
           end do
           
         end do

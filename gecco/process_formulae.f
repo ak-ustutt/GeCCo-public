@@ -34,7 +34,7 @@
      &     connect(maxterms*2), avoid(maxterms*2),
      &     inproj(maxterms*2), nconnect, navoid, ninproj,
      &     idx, jdx, ioff, ncat, nint, nrename, nop,
-     &     ansatz, ipos, idum, level, nterms, mode, nint2,
+     &     ansatz, ipos, idum, level, order, nterms, mode, nint2,
      &     ninclude, ninclude_or, nexclude,
      &     iblk_include(maxterms), iblk_include_or(maxterms),
      &     iblk_exclude(maxterms)

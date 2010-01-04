@@ -24,7 +24,7 @@
         integer ::
      &       type
         integer ::
-     &       arg_dim
+     &       arg_dim, n_str_batch
         character(len_target_name) ::
      &       arg_label
         character(len_target_name), pointer ::
@@ -36,7 +36,7 @@
         integer, pointer ::
      &       val_occ(:,:,:)
         integer, pointer ::
-     &       val_restr(:,:,:,:)
+     &       val_restr(:,:,:,:,:,:)
         real(8), pointer ::
      &       val_rl8(:)
         character(len=len_str_batch), pointer ::
