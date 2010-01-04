@@ -17,13 +17,17 @@
      &     env_type
 
       ! operators
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_GENERAL_OPERATOR,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_OP_FROM_OCC,tgt_info)
       call set_arg('_PROTO_',DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
      &     val_int=(/1/))
       call set_arg('_PROTO_',DEF_OP_FROM_OCC,'CORE',10,tgt_info,
      &     val_int=(/0,0,0,0,0,0,0,0,0,0/)) ! works up to njoined=5
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_SCALAR,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_HAMILTONIAN,tgt_info)
       call set_arg('_PROTO_',DEF_HAMILTONIAN,'MIN_RANK',1,tgt_info,
      &     val_int=(/0/))
@@ -33,6 +37,7 @@
      &     val_int=(/10/))
       call set_arg('_PROTO_',DEF_HAMILTONIAN,'SET_X',1,tgt_info,
      &     val_log=(/.false./))
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_EXCITATION,tgt_info)
       call set_arg('_PROTO_',DEF_EXCITATION,'MIN_RANK',1,tgt_info,
      &     val_int=(/1/))
@@ -42,8 +47,11 @@
      &     val_int=(/0/))
       call set_arg('_PROTO_',DEF_EXCITATION,'ADJOINT',1,tgt_info,
      &                                            val_log=(/.false./))
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_DENSITY,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_CC_HBAR_OP,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_R12GEMINAL,tgt_info)
       call set_arg('_PROTO_',DEF_R12GEMINAL,'MIN_RANK',1,tgt_info,
      &     val_int=(/2/))
@@ -53,27 +61,46 @@
      &     val_int=(/3/))
       call set_arg('_PROTO_',DEF_R12GEMINAL,'N_PART',1,tgt_info,
      &     val_int=(/0/))
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_R12COEFF,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_R12INT,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_R12INTERM,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(CLONE_OP,tgt_info)
       call set_arg('_PROTO_',CLONE_OP,'ADJOINT',1,tgt_info,
      &     val_log=(/.false./))
+*----------------------------------------------------------------------*
       call add_command_proto(SET_ORDER,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SET_HERMIT,tgt_info)
 ! formulae:
+*----------------------------------------------------------------------*
       call add_command_proto(CHECK_FORMGEN,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_CC_LAGRANGIAN,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_ECC_LAGRANGIAN,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_CCPT_LAGRANGIAN,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_HHAT,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_CC_HBAR,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_R12INTM_FORMAL,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_R12INTM_CABS,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_MPR12_LAGRANGIAN,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_CCR12_LAGRANGIAN,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_CCR12_METRIC,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SPLIT_R12EXC_FORMULA,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_EXP_FORMULA,tgt_info)
       call set_arg('_PROTO_',DEF_EXP_FORMULA,'SWITCH',1,tgt_info,
      &     val_int=(/0/))
@@ -81,7 +108,9 @@
      &     val_str='---')
       call set_arg('_PROTO_',DEF_EXP_FORMULA,'TITLE',1,tgt_info,
      &     val_str='My unnamed experimental formula')
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_FORMULA,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'BLK_MIN',1,tgt_info,
      &     val_int=(/-1/))
@@ -99,32 +128,52 @@
      &     val_int=(/0/))
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'N_INPROJ',1,tgt_info,
      &     val_int=(/0/))
+*----------------------------------------------------------------------*
       call add_command_proto(FACTOR_OUT,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(EXPAND,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(REPLACE,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SUM_HERMIT,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(INVARIANT,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DERIVATIVE,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(LEQ_SPLIT,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(OPTIMIZE,tgt_info)
       call set_arg('_PROTO_',OPTIMIZE,'INTERM',1,tgt_info,
      &     val_label=(/''/))
+*----------------------------------------------------------------------*
       call add_command_proto(PRINT_FORMULA,tgt_info)
       call set_arg('_PROTO_',PRINT_FORMULA,'OUTPUT',1,tgt_info,
      &     val_str='stdout')
+*----------------------------------------------------------------------*
       call add_command_proto(TEX_FORMULA,tgt_info)
       call set_arg('_PROTO_',TEX_FORMULA,'OUTPUT',1,tgt_info,
      &     val_str='stdout')
+*----------------------------------------------------------------------*
       call add_command_proto(KEEP_TERMS,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SELECT_TERMS,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEL_TERMS,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(MODIFY_FACTORIZATION,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(EXTRACT_ORDER,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(EXTRACT_FREQ,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(CLASS_FORMULA,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SELECT_HERMIT,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SELECT_LINE,tgt_info)
 !     ME-lists:
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_ME_LIST,tgt_info)
       call set_arg('_PROTO_',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &     val_int=(/0/))
@@ -134,31 +183,51 @@
      &     val_int=(/0/))
       call set_arg('_PROTO_',DEF_ME_LIST,'MS_FIX',1,tgt_info,
      &     val_log=(/.false./))
+*----------------------------------------------------------------------*
       call add_command_proto(RES_ME_LIST,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DELETE_ME_LIST,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(ASSIGN_ME2OP,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(IMPORT,tgt_info)
       call set_arg('_PROTO_',IMPORT,'ENV',1,tgt_info,
-     &     val_str=env_type)
+     &     val_str=trim(env_type))
+*----------------------------------------------------------------------*
       call add_command_proto(PRECONDITIONER,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(ADD,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SCALE,tgt_info)
       call set_arg('_PROTO_',SCALE,'LIST_SCAL',1,tgt_info,
      &     val_label=(/'-'/))
+*----------------------------------------------------------------------*
       call add_command_proto(INVERT,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(EVAL,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(EVALPROP,tgt_info)
       call set_arg('_PROTO_',EVALPROP,'ENV',1,tgt_info,
      &     val_str=env_type)
+*----------------------------------------------------------------------*
       call add_command_proto(SOLVENLEQ,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SOLVELEQ,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SOLVEEVP,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(UNITY,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SET_FREQ,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(PRINT_RES,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(PRINT_MEL,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(SET_MEL,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(EXTRACT_DIAG,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(REORDER_MEL,tgt_info)
 
       end

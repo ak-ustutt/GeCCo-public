@@ -155,6 +155,7 @@
         if (.not.present(val_str))
      &       call quit(1,'get_arg','val_str not present')
 
+        val_str(1:len(val_str)) = ' '
         idxst = 1
         do idx_str_batch = 1, arg%n_str_batch
           idxnd = idxst-1 + len(arg%val_str(idx_str_batch))

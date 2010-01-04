@@ -5,11 +5,13 @@
 *----------------------------------------------------------------------*
       implicit none
 
+      include 'opdim.h'
       include 'stdunit.h'
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
 
       include 'ifc_input.h'
+      include 'ifc_targets.h'
 
       include 'par_opnames_gen.h'
       include 'par_formnames_gen.h'
@@ -61,12 +63,14 @@
 *----------------------------------------------------------------------*
       ! Unit operator (purely formal)
       ! we use DEF_HAMILTONIAN with rank 0 to 0 and iformal=0
-      call add_target(op_unity,ttype_op,.false.,tgt_info)
-      call hop_parameters(-1,parameters,
-     &                   0,0,0,.false.)
-      call set_rule(op_unity,ttype_op,DEF_HAMILTONIAN,
-     &              op_unity,1,1,
-     &              parameters,1,tgt_info)
+      call add_target2(op_unity,.false.,tgt_info)
+      call set_rule2(op_unity,DEF_HAMILTONIAN,tgt_info)
+      call set_arg(op_unity,DEF_HAMILTONIAN,'LABEL',1,tgt_info,
+     &     val_label=(/op_unity/))
+      call set_arg(op_unity,DEF_HAMILTONIAN,'MIN_RANK',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg(op_unity,DEF_HAMILTONIAN,'MAX_RANK',1,tgt_info,
+     &     val_int=(/0/))
 
       ! Hamiltonian
       iformal = 1
@@ -77,7 +81,7 @@
       if (explicit.and.orb_info%caborb.gt.0.and.truncate
      &     .and.trunc_type.ne.1.or.extern.eq.1)
      &     iformal = 3
-      call add_target(op_ham,ttype_op,.false.,tgt_info)
+      call add_target2(op_ham,.false.,tgt_info)
 c patch for CCPT-R12 tests:
       if (explicit.and.
      &     (is_keyword_set('method.CCPT').gt.0.or.maxr12exc.ge.3))
@@ -88,42 +92,48 @@ c another patch
       if (is_keyword_set('method.ECC').gt.0)
      &     iformal = min(6,max(t1ext_mode+1,4))
 c patch end
-c dbg
-      print *,'effective iformal = ',iformal
-c dbg
-      call hop_parameters(-1,parameters,
-     &                   0,2,iformal,
-     &                   explicit.or.extern.gt.0.or.t1ext_mode.gt.0)
-      call set_rule(op_ham,ttype_op,DEF_HAMILTONIAN,
-     &              op_ham,1,1,
-     &              parameters,1,tgt_info)
-      call opt_parameters(-1,parameters,+1,0)
-      call set_rule(op_ham,ttype_op,SET_HERMIT,
-     &              op_ham,1,1,
-     &              parameters,1,tgt_info)
-      
+      call set_rule2(op_ham,DEF_HAMILTONIAN,tgt_info)
+      call set_arg(op_ham,DEF_HAMILTONIAN,'LABEL',1,tgt_info,
+     &     val_label=(/op_ham/))
+      call set_arg(op_ham,DEF_HAMILTONIAN,'MIN_RANK',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg(op_ham,DEF_HAMILTONIAN,'MAX_RANK',1,tgt_info,
+     &     val_int=(/2/))
+      call set_arg(op_ham,DEF_HAMILTONIAN,'FORMAL',1,tgt_info,
+     &     val_int=(/iformal/))
+      call set_arg(op_ham,DEF_HAMILTONIAN,'SET_X',1,tgt_info,
+     &     val_log=(/explicit.or.extern.gt.0.or.t1ext_mode.gt.0/))
+      call set_rule2(op_ham,SET_HERMIT,tgt_info)
+      call set_arg(op_ham,SET_HERMIT,'LABEL',1,tgt_info,
+     &     val_label=(/op_ham/))
+      call set_arg(op_ham,SET_HERMIT,'CA_SYMMETRY',1,tgt_info,
+     &     val_int=(/+1/))
 
       ! Fock-Operator
-      call add_target(op_fock,ttype_op,.false.,tgt_info)
-      call hop_parameters(-1,parameters,
-     &                   1,1,1,explicit)
-      call set_rule(op_fock,ttype_op,DEF_HAMILTONIAN,
-     &              op_fock,1,1,
-     &              parameters,1,tgt_info)
-      call opt_parameters(-1,parameters,+1,0)
-      call set_rule(op_fock,ttype_op,SET_HERMIT,
-     &              op_fock,1,1,
-     &              parameters,1,tgt_info)
-
+      call add_target2(op_fock,.false.,tgt_info)
+      call set_rule2(op_fock,DEF_HAMILTONIAN,tgt_info)
+      call set_arg(op_fock,DEF_HAMILTONIAN,'LABEL',1,tgt_info,
+     &     val_label=(/op_fock/))
+      call set_arg(op_fock,DEF_HAMILTONIAN,'MIN_RANK',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg(op_fock,DEF_HAMILTONIAN,'MAX_RANK',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg(op_fock,DEF_HAMILTONIAN,'FORMAL',1,tgt_info,
+     &     val_int=(/iformal/))
+      call set_arg(op_fock,DEF_HAMILTONIAN,'SET_X',1,tgt_info,
+     &     val_log=(/explicit.or.extern.gt.0.or.t1ext_mode.gt.0/))
+      call set_rule2(op_fock,SET_HERMIT,tgt_info)
+      call set_arg(op_fock,SET_HERMIT,'LABEL',1,tgt_info,
+     &     val_label=(/op_fock/))
+      call set_arg(op_fock,SET_HERMIT,'CA_SYMMETRY',1,tgt_info,
+     &     val_int=(/+1/))
 
 *----------------------------------------------------------------------*
 *     Formulae
 *----------------------------------------------------------------------*
       if (is_keyword_set('calculate.check.formulae')) then
-        call add_target(form_test,ttype_frm,.true.,tgt_info)
-        call set_rule(form_test,ttype_frm,CHECK_FORMGEN,
-     &                form_test,1,1,
-     &                parameters,0,tgt_info)
+        call add_target2(form_test,.true.,tgt_info)
+        call set_rule2(form_test,CHECK_FORMGEN,tgt_info)
       end if
       
 *----------------------------------------------------------------------*
@@ -135,24 +145,28 @@ c dbg
 *----------------------------------------------------------------------*
 
       ! Hamilton list:
-      call add_target(mel_ham,ttype_opme,.false.,tgt_info)
+      call add_target2(mel_ham,.false.,tgt_info)
       call set_dependency(mel_ham,op_ham,tgt_info)
       ! (a) define
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_ham
-      labels(2) = op_ham
-      call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0,.false.)
-      call set_rule(mel_ham,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
+      call set_rule2(mel_ham,DEF_ME_LIST,tgt_info)
+      call set_arg(mel_ham,DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/mel_ham/))
+      call set_arg(mel_ham,DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/op_ham/))
+      call set_arg(mel_ham,DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &     val_int=(/msc/))
+      call set_arg(mel_ham,DEF_ME_LIST,'CA_SYM',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg(mel_ham,DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg(mel_ham,DEF_ME_LIST,'MS',1,tgt_info,
+     &     val_int=(/0/))
       ! (b) import
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_ham
-      call import_parameters(-1,parameters,'H_INT',env_type)
-      call set_rule(mel_ham,ttype_opme,IMPORT,
-     &              labels,1,1,
-     &              parameters,1,tgt_info)
+      call set_rule2(mel_ham,IMPORT,tgt_info)
+      call set_arg(mel_ham,IMPORT,'LIST',1,tgt_info,
+     &     val_label=(/mel_ham/))
+      call set_arg(mel_ham,IMPORT,'TYPE',1,tgt_info,
+     &     val_str='H_INT')
      
 *----------------------------------------------------------------------*
 *     "phony" targets
