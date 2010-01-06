@@ -38,8 +38,8 @@
      &     NEW = 0, OLD = 1, ANY = 2
 
       integer, parameter ::
-     &     maxfac = 20, maximum_order = 10, max_occ = 250, max_nj = 20,
-     &     max_label = 200, maxterms = 50
+     &     maxfac = 20, max_occ = 250, max_nj = 20,
+     &     max_label = 200, maxterms = 50, max_pops = 100
       real(8) ::
      &     fac(maxfac), freq
       integer ::
@@ -48,7 +48,7 @@
      &     ninclude, ninclude_or, nexclude,
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
-     &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms
+     &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp
       integer ::
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -230,9 +230,9 @@ C*----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
         call get_arg('LABEL',rule,tgt_info,val_label=label)
         call get_op(op_pnt,trim(label),OLD)
-        allocate(ifreq(maximum_order))
         call get_arg('ORDER',rule,tgt_info,val_int=iorder)
-        call get_arg('FREQ',rule,tgt_info,val_int_list=ifreq)
+        allocate(ifreq(iorder))
+        call get_arg('IDX_FREQ',rule,tgt_info,val_int_list=ifreq)
         call get_arg('SPECIES',rule,tgt_info,val_int=spec)
         call set_pert_order(op_pnt,iorder,spec,ifreq)
         deallocate(ifreq)
@@ -402,7 +402,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
         call get_form(form_pnt,trim(label),NEW)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('OP_RES',rule,tgt_info,
      &               val_label=label)
         call get_arg('OPERATORS',rule,tgt_info,
@@ -470,7 +470,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
         call get_form(form_pnt,trim(label),NEW)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('INTERM',rule,tgt_info,
      &       val_label_list=label_list,ndim=nint)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
@@ -485,7 +485,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
         call get_form(form_pnt,trim(label),NEW)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('OP_RES',rule,tgt_info,val_label=label)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
         call form_sum_hermite(form_pnt,form0_pnt,
@@ -497,7 +497,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
         call get_form(form_pnt,trim(label),NEW)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('INTERM',rule,tgt_info,
      &       val_label_list=label_list,ndim=nint)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
@@ -510,9 +510,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(REPLACE)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('OP_LIST',rule,tgt_info,
      &               val_label_list=label_list,ndim=nop)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
@@ -525,9 +525,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(INVARIANT)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
         call get_arg('OP_RES',rule,tgt_info,
      &       val_label=label)
@@ -544,7 +544,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
         call get_form(form_pnt,trim(label),NEW)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('OP_RES',rule,tgt_info,
      &       val_label=label)
         call get_arg('OP_DERIV',rule,tgt_info,
@@ -595,23 +595,23 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*
         call get_arg('LABEL',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),OLD)
         call get_arg('OUTPUT',rule,tgt_info,val_str=title)
         call print_formula_drv(form_pnt,title,op_info)
 *----------------------------------------------------------------------*
       case(TEX_FORMULA)
 *----------------------------------------------------------------------*
         call get_arg('LABEL',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),OLD)
         call get_arg('OUTPUT',rule,tgt_info,val_str=title)
         call tex_formula_drv(form_pnt,title,op_info)
 *----------------------------------------------------------------------*
       case(SELECT_TERMS)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('OP_RES',rule,tgt_info,
      &       val_label=label)
         call get_arg('OP_INCL',rule,tgt_info,
@@ -637,9 +637,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(DEL_TERMS)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('TERMS',rule,tgt_info,
      &       val_int_list=idxterms,ndim=nterms)
         call form_del_terms(form_pnt,form0_pnt,
@@ -649,9 +649,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(KEEP_TERMS)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('TERMS',rule,tgt_info,
      &       val_int_list=idxterms,ndim=nterms)
         call form_del_terms(form_pnt,form0_pnt,
@@ -661,46 +661,82 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(MODIFY_FACTORIZATION)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
-        call get_form(form0_pnt,trim(label),NEW)
+        call get_form(form0_pnt,trim(label),OLD)
         call get_arg('MODIFY',rule,tgt_info,
      &       val_int_list=idxterms,ndim=nterms)
         call form_mod_factorization(form_pnt,form0_pnt,
      &       nterms,idxterms,
      &       op_info)
 *----------------------------------------------------------------------*
-C      case(EXTRACT_ORDER)
+      case(EXTRACT_ORDER)
 *----------------------------------------------------------------------*
-C        call form_extract_order(form_pnt,form0_pnt,
-C     &       title, rule%labels(3), nint, op_info)
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),ANY)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_form(form0_pnt,trim(label),OLD)
+        call get_arg('OP_RES',rule,tgt_info,val_label=label)
+        call get_arg('ORDER',rule,tgt_info,val_int=iorder)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call form_extract_order(form_pnt,form0_pnt,
+     &       title, label, iorder, op_info)
 *----------------------------------------------------------------------*
-C      case(EXTRACT_FREQ)
+      case(EXTRACT_FREQ)
 *----------------------------------------------------------------------*
-C        allocate(idxfreq(maximum_order),pop_idx(100))
-C        call form_extract_freq(form_pnt,form0_pnt,
-C     &       title, rule%labels(3), nint, idxfreq, nint2, pop_idx,
-C     &       op_info)
-C        deallocate(idxfreq,pop_idx)
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),ANY)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_form(form0_pnt,trim(label),OLD)
+        call get_arg('OP_RES',rule,tgt_info,val_label=label)
+        call get_arg('ORDER',rule,tgt_info,val_int=iorder)
+        allocate(ifreq(iorder),pop_idx(max_pops))
+        call get_arg('IDX_FREQ',rule,tgt_info,val_int_list=ifreq)
+        call get_arg('NCOMPONENTS',rule,tgt_info,val_int=ncmp)
+        call get_arg('IDX_POPS',rule,tgt_info,val_int_list=pop_idx)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call form_extract_freq(form_pnt,form0_pnt,
+     &       title, label, iorder, ifreq, ncmp, pop_idx,
+     &       op_info)
+        deallocate(ifreq,pop_idx)
 *----------------------------------------------------------------------*
-C      case(CLASS_FORMULA)
+      case(CLASS_FORMULA)
 *----------------------------------------------------------------------*
-C        call class_formula_drv(form_pnt,title,op_info,idum)
+        call get_arg('LABEL',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),OLD)
+        call get_arg('OUTPUT',rule,tgt_info,val_str=title)
+        call class_formula_drv(form_pnt,title,op_info,1)
 *----------------------------------------------------------------------*
-C      case(SELECT_HERMIT)
+      case(SELECT_HERMIT)
 *----------------------------------------------------------------------*
-C        call form_select_hermitian(form_pnt,form0_pnt,
-C     &       title,rule%labels(ioff+2),
-C     &       op_info)
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),ANY)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_form(form0_pnt,trim(label),OLD)
+        call get_arg('OP_RES',rule,tgt_info,val_label=label)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call form_select_hermitian(form_pnt,form0_pnt,
+     &       title,label,
+     &       op_info)
 *----------------------------------------------------------------------*
-C      case(SELECT_LINE)
+      case(SELECT_LINE)
 *----------------------------------------------------------------------*
-C        call form_select_line(form_pnt,form0_pnt,
-C     &       title,rule%labels(ioff+2),
-C     &       rule%n_labels-ioff-2,rule%labels(ioff+3),
-C     &       idx,mode_str,
-C     &       op_info
-C     &       )
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),ANY)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_form(form0_pnt,trim(label),OLD)
+        call get_arg('OP_RES',rule,tgt_info,val_label=label)
+        call get_arg('OP_INCL',rule,tgt_info,
+     &       val_label_list=label_list,ndim=ninclude)
+        call get_arg('IGAST',rule,tgt_info,val_int=idx)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call form_select_line(form_pnt,form0_pnt,
+     &       title,label,
+     &       ninclude,label_list,
+     &       idx,mode,
+     &       op_info
+     &       )
 
 *----------------------------------------------------------------------*
 *     subsection ME-LISTS
@@ -812,8 +848,8 @@ C     &       )
 *----------------------------------------------------------------------*
 
         call get_arg('LIST',rule,tgt_info,val_label=label)
-        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
-        call get_arg('BLOCK',rule,tgt_info,
+        call get_arg('VAL_LIST',rule,tgt_info,val_rl8_list=fac)
+        call get_arg('IDX_LIST',rule,tgt_info,
      &       val_int_list=idxblk,ndim=nblk)
 
         if (form_test) return
@@ -824,30 +860,27 @@ C     &       )
         call set_list(mel_pnt,idxblk,fac,nblk)
 
 *----------------------------------------------------------------------*
-c      case(EXTRACT_DIAG)
+      case(EXTRACT_DIAG)
 *----------------------------------------------------------------------*
-c        if (form_test) return
-c        if (rule%n_labels.ne.2)
-c     &     call quit(1,'process_me_lists',
-c     &       'two labels expected for '
-c     &       //trim(EXTRACT_DIAG))
-c
-c        call dia_from_op(rule%labels(1),rule%labels(2),
-c     &       op_info,str_info,orb_info)
-c
+        call get_arg('LIST_RES',rule,tgt_info,val_label=label)
+        call get_arg('LIST_IN',rule,tgt_info,val_label=label2)
+
+        if (form_test) return
+
+        call dia_from_op(label,label2,
+     &       op_info,str_info,orb_info)
+
 *----------------------------------------------------------------------*
-c      case(REORDER_MEL)
+      case(REORDER_MEL)
 *----------------------------------------------------------------------*
-c        if (form_test) return
-c        if (rule%n_labels.ne.2)
-c     &     call quit(1,'process_me_lists',
-c     &       'two labels expected for '
-c     &       //trim(REORDER_MEL))
-c        call form_parameters(+1,rule%parameters,
-c     &       rule%n_parameter_strings,title,imode,mode)
-c
-c        call reo_mel(rule%labels(1),rule%labels(2),
-c     &       op_info,str_info,strmap_info,orb_info,imode)
+        call get_arg('LIST_RES',rule,tgt_info,val_label=label)
+        call get_arg('LIST_IN',rule,tgt_info,val_label=label2)
+        call get_arg('FROMTO',rule,tgt_info,val_int=idx)
+
+        if (form_test) return
+
+        call reo_mel(label,label2,
+     &       op_info,str_info,strmap_info,orb_info,idx)
 
 *----------------------------------------------------------------------*
 *     subsection EVALUATE

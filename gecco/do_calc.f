@@ -122,17 +122,17 @@ c     &       call quit(1,'do_calc','no rules for target?')
             call quit(1,'do_calc','unknown target type')
           end select
 
-          else
-            ! new route
-            call process_rule(rule,tgt_info,
-     &           form_info,op_info,str_info,strmap_info,orb_info)
-          end if
-
           do kdx = 1, rule%n_update
             ldx = idx_target(rule%labels,tgt_info)
             if (ldx.le.0) cycle ! needs not necessarily be a def'd target
             call touch_target(ldx,.false.,tgt_info)
           end do
+
+          else
+            ! new route
+            call process_rule(rule,tgt_info,
+     &           form_info,op_info,str_info,strmap_info,orb_info)
+          end if
 
         end do
 

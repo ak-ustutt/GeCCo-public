@@ -97,8 +97,7 @@
         end if
 
         do idx = minblk, maxblk
-          jdx = (idx-1)*mel_pnt%op%njoined+1
-          call add_unity(1d0,mel_pnt,jdx,orb_info,str_info)
+          call add_unity(1d0,mel_pnt,idx,orb_info,str_info)
         end do
 c dbg
 c        write(luout,*)'writing unity'
