@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine invsqrt_mat(ndim,mat)
 *----------------------------------------------------------------------*
-*     calculates mat^(-0.5)
+*     calculates U*mat^(-0.5) using MAT = U*mat*U^+
 *     mat must be quadratic and symmetric (not checked so far)
 *
 *     matthias, dec 2009
@@ -50,11 +50,11 @@ c          eigen_vec(1:ndim,idx) = 0d0
         end if
       end do
 
-c      if (ntest.ge.100) then
-c        write(luout,*) 'U*s^(-0.25):'
-c        call wrtmat2(eigen_vec,ndim,ndim,ndim,ndim)
-c      end if
-c
+      if (ntest.ge.100) then
+        write(luout,*) 'U*s^(-0.5):'
+        call wrtmat2(mat,ndim,ndim,ndim,ndim)
+      end if
+
 c      call dgemm('n','t',ndim,ndim,ndim,
 c     &           1d0,eigen_vec,ndim,
 c     &               eigen_vec,ndim,

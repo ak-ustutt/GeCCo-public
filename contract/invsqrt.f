@@ -2,6 +2,10 @@
      &     op_info,orb_info,str_info)
 *----------------------------------------------------------------------*
 *     Routine to calculate S^(-0.5) of density matrices.
+*     The ME list is split into matrices that can either contain
+*     elements from a single distribution or from several distributions.
+*     The actual calculation is done by invsqrt_mat which is currently
+*     set up to calculate U*s^(-0.5), with S = U*s*U^+.
 *      
 *     works also for sums of density matrices of the structure:
 *       /0 0 0 0\
@@ -46,7 +50,7 @@
      &     graphs(:)
 
       logical ::
-     &     bufin, bufout, first, ms_fix, fix_success, onedis
+     &     bufin, bufout, first, ms_fix, fix_success, onedis, transp
 c      logical ::
 c     &     loop(nocc_cls)
       integer ::
@@ -58,7 +62,7 @@ c     &     loop(nocc_cls)
      &     ndis, ndim, off_col, off_line,
      &     idxa1, idxa2, idxc1, idxc2, icol, iline,
      &     msmax_sub, ms1, ms2, msc1, msc2, msa1, msa2,
-     &     gamc1, gamc2, gama1, gama2, igam, na1, na2, nc1, nc2
+     &     gamc1, gamc2, gama1, gama2, igam, na1, na2, nc1, nc2, ij
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:)
 
@@ -195,6 +199,26 @@ c     &     loop(nocc_cls)
         ! simple case: only single distributions:
         if (onedis) then
 
+          ! we also need to distinguish:
+          ! /0 0 0 0\     /0 0 0 0\
+          ! \0 0 x 0/     \0 0 0 0/ i.e. if creations come first,
+          ! /0 0 0 0\ and /0 0 x 0\ we need to transpose the
+          ! \0 0 0 0/     \0 0 x 0/ scratch matrix
+          ! /0 0 x 0\     /0 0 0 0\ (important if result is non-symmetric!)
+          ! \0 0 0 0/     \0 0 0 0/
+          transp = .false.
+          do ij = 1, njoined
+            if (sum(hpvx_occ(1:ngastp,1,iblkoff+ij)).gt.0) then
+              transp = .true.
+              exit
+            else if (sum(hpvx_occ(1:ngastp,2,iblkoff+ij)).gt.0) then
+              exit
+            end if
+          end do
+          if (transp.and.ntest.ge.100) then
+            write(luout,*) 'Using transposed scratch matrix!'
+          end if
+
           ! Loop over Ms of annihilator string.
           idxmsa = 0
           msmax = op_inp%ica_occ(1,iocc_cls)
@@ -228,11 +252,19 @@ c     &     loop(nocc_cls)
 
               ! single distribution can simply be read in as simple matrix
               allocate(scratch(ndim,ndim))
-              do idx = 1,ndim
-                do jdx = 1,ndim
-                  scratch(idx,jdx) = buffer_in(ioff+(idx-1)*ndim+jdx)
+              if (transp) then
+                do idx = 1,ndim
+                  do jdx = 1,ndim
+                    scratch(jdx,idx) = buffer_in(ioff+(idx-1)*ndim+jdx)
+                  enddo
                 enddo
-              enddo
+              else
+                do idx = 1,ndim
+                  do jdx = 1,ndim
+                    scratch(idx,jdx) = buffer_in(ioff+(idx-1)*ndim+jdx)
+                  enddo
+                enddo
+              end if
 
               if (ntest.ge.100) then
                 write(luout,*) 'scratch:'
@@ -248,11 +280,19 @@ c     &     loop(nocc_cls)
               end if
 
               ! write to output buffer
-              do idx = 1,ndim
-                do jdx = 1,ndim
-                  buffer_out((idx-1)*ndim+jdx+ioff) = scratch(idx,jdx)
+              if (transp) then
+                do idx = 1,ndim
+                  do jdx = 1,ndim
+                    buffer_out((idx-1)*ndim+jdx+ioff) = scratch(jdx,idx)
+                  enddo
                 enddo
-              enddo
+              else
+                do idx = 1,ndim
+                  do jdx = 1,ndim
+                    buffer_out((idx-1)*ndim+jdx+ioff) = scratch(idx,jdx)
+                  enddo
+                enddo
+              end if
 
               deallocate(scratch)
 

@@ -79,7 +79,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
 
 * local
       logical ::
-     &     zero_vec(opti_stat%ndim_vsbsp), init, conv
+     &     zero_vec(opti_stat%ndim_vsbsp), init, conv, trafo
       integer ::
      &     idx, jdx, kdx, iroot, nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
@@ -108,7 +108,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       integer, external ::
      &     ioptc_get_sbsp_rec
       real(8), external ::
-     &     dnrm2
+     &     dnrm2, ddot
 
       if (ntest.ge.100)
      &     call write_title(luout,wst_dbg_subr,'evpc_core entered')
@@ -258,8 +258,10 @@ c dbg
           if (opti_info%typ_prc(iopt).eq.optinf_prc_file
      &        .and.nspecial.gt.0) then
             ffspc => me_special(1)%mel%fhand
+            trafo = .true.
           else
             ffspc => ffscr(iopt)%fhand
+            trafo = .false.
           end if
           ! M.v ....
           idx = (iroot-1)*mxsub + 1
@@ -273,23 +275,54 @@ c dbg
           xvec(1:nred) = -eigr(iroot)*xvec(1:nred)
           if (.not.use_s(iopt)) then
           ! - eig * v
+cmh
+            ! a somewhat ugly quick fix for sign changes:
+            ! (more elegant way would be to pass *sec variables to
+            ! optc_expand_vec as has been done in other optc_* routines.
+            ! But this would also require modification of 
+            ! da_matvec, da_vecsum, da_sccpvec, get_vec_a, put_vec_a
+            nsec = opti_info%nsec(iopt)
+            if (nsec.gt.1) then
+              ioff = sum(opti_info%nsec(1:iopt))-nsec
+              nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
+              idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
+              signsec => opti_info%signsec(ioff+1:ioff+nsec)
+              do irec = 1, ndim_vsbsp
+                idx = iord_vsbsp(irec)
+                if (xvec(idx).eq.0d0) cycle
+                call vec_from_da(ffvsbsp(iopt)%fhand,irec,xbuf2,
+     &                           nwfpar(iopt))
+                do isec = 1, nsec
+                  xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1) = 
+     &               xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
+     &               +signsec(isec)*xvec(idx)*
+     &                xbuf2(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
+                end do
+              end do
+              if (.not.trafo) xrsnrm(iroot,iopt) 
+     &                    = sqrt(ddot(nwfpar(iopt),xbuf1,1,xbuf1,1))
+              call vec_to_da(ffspc,irecscr,xbuf1,nwfpar(iopt))
+            else
+cmhend
             call optc_expand_vec(xvec,ndim_vsbsp,
-     &                                      xrsnrm(iroot,iopt),.true.,
+     &                                    xrsnrm(iroot,iopt),.not.trafo,
      &       ffspc,irecscr,1d0,ffvsbsp(iopt)%fhand,
      &       iord_vsbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
+cmh
+            end if
+cmhend
           else
             ! - eig * S * v
             call optc_expand_vec(xvec,ndim_vsbsp,
-     &                                      xrsnrm(iroot,iopt),.true.,
+     &                                    xrsnrm(iroot,iopt),.not.trafo,
      &           ffspc,irecscr,1d0,ffssbsp(iopt)%fhand,
      &           iord_ssbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
           end if
 
           ! if requested, transform residual
-          if (opti_info%typ_prc(iopt).eq.optinf_prc_file
-     &        .and.nspecial.gt.0) then
+          if (trafo) then
             ! assign op. with list containing the scratch trial vector
             call assign_me_list(me_scr(iopt)%mel%label,
      &                          me_opt(iopt)%mel%op%name,op_info)
@@ -310,6 +343,8 @@ c dbg
      &             me_trv(iopt)%mel%fhand%current_record) = -1
             call frm_sched(xret,flist,depend,idxselect,nselect,
      &                  op_info,str_info,strmap_info,orb_info)
+            ! residual norm (nselect should be 1):
+            xrsnrm(iroot,iopt) = xret(idxselect(1))
             deallocate(xret,idxselect)
 
           end if
