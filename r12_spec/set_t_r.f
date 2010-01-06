@@ -82,7 +82,7 @@ c     &       0,0,.false.,op_info)
         endif
       end if
 
-      if(r12op.eq.1.or.r12op.ge.3)then
+      if((r12op.eq.1.or.r12op.ge.3).and.idxc12.gt.0)then
         do while(associated(fl_t_r_pnt%next))
           fl_t_r_pnt => fl_t_r_pnt%next
         enddo

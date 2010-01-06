@@ -34,7 +34,7 @@
      &     deallocate(tgt_info%act_array)
 
       if (tgt_info%nactions.gt.0) then
-        allocate(tgt_info%array(tgt_info%nactions))
+        allocate(tgt_info%act_array(tgt_info%nactions))
         call act_list2arr(tgt_info%act_list,
      &       tgt_info%act_array,tgt_info%nactions)
       end if

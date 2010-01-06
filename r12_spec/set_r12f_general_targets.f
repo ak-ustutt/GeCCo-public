@@ -43,7 +43,7 @@
       character(len_command_par) ::
      &     parameters(3)
       character(20) ::
-     &     approx, F_appr, K_appr, Z_appr, shell_typ
+     &     approx, approx2, F_appr, K_appr, Z_appr, Z2_appr, shell_typ
 
       character(*), intent(in) ::
      &     env_type
@@ -58,14 +58,17 @@
 *----------------------------------------------------------------------*
       ! set approx string
       approx(1:20) = ' '
+      approx2(1:20) = ' '
       F_appr(1:20) = ' '
       K_appr(1:20) = ' '
       Z_appr(1:20) = ' '
+      Z2_appr(1:20) = ' '
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','F_appr',str=F_appr)
       call get_argument_value('method.R12','K_appr',str=K_appr)
       call get_argument_value('method.R12','Z_appr',str=Z_appr)
+      call get_argument_value('method.R12','Z2_appr',str=Z2_appr)
       call get_argument_value('method.R12','min_tp',ival=min_rank_tp)
       call get_argument_value('method.R12','min_tpp',ival=min_rank_tpp)
       call get_argument_value('method.R12','minexc',ival=min_rank)
@@ -237,6 +240,33 @@ c dbg
         end if
         write(luout,*) 'approximation to Z intermediate: ',trim(Z_appr)
         approx(14:17) = Z_appr(1:4)
+      end select
+
+      approx2 = approx
+      select case(trim(Z2_appr))
+      case('as-Z')
+        ! do nothing, same as for Z
+      case('direct')
+        write(luout,*) 'direct RI evaluation of Z2 intermediate'
+        approx2(14:17) = 'DRCT'
+      case('none','J2K3')
+        write(luout,*) 'no approximations to Z2 intermediate made'
+        approx2(14:17) = 'J2K3'
+      case default
+        if (Z2_appr(1:1).ne.'J'.or.Z2_appr(3:3).ne.'K'.or.
+     &      (Z2_appr(2:2).ne.'0'.and.
+     &       Z2_appr(2:2).ne.'1'.and.
+     &       Z2_appr(2:2).ne.'2').or. 
+     &      (Z2_appr(4:4).ne.'0'.and.
+     &       Z2_appr(4:4).ne.'1'.and.
+     &       Z2_appr(4:4).ne.'2'.and.
+     &       Z2_appr(4:4).ne.'3')) then
+          call quit(0,'set_r12_general_targets',
+     &       'Z2_appr unknown: "'//trim(Z2_appr)//'"')
+        end if
+        write(luout,*) 'approximation to Z2 intermediate: ',
+     &      trim(Z2_appr)
+        approx2(14:17) = Z2_appr(1:4)
       end select
 
 *----------------------------------------------------------------------*
@@ -1944,7 +1974,7 @@ c      call add_target(form_r12_zcabs,ttype_frm,.false.,tgt_info)
       call set_dependency('Z2-INT-CABS',op_g_z,tgt_info)
       call set_dependency('Z2-INT-CABS',op_rint,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_r12_xcabs,ansatz,'Z '//approx)
+     &     parameters,2,title_r12_xcabs,ansatz,'Z '//approx2)
       call set_rule('Z2-INT-CABS',ttype_frm,DEF_R12INTM_CABS,
      &              labels,5,1,
      &              parameters,2,tgt_info)

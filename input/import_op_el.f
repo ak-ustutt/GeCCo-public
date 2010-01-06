@@ -213,7 +213,8 @@ c     &                                str_info,orb_info)
       case ('tmole','TMOLE')
         call quit(1,'import_op_el','type TMOLE not implemented')
       case default
-        call quit(1,'import_op_el','unknown type "'//trim(env_type),'"')
+        call quit(1,'import_op_el',
+     &                    'unknown type "'//trim(env_type)//'"')
       end select
 
       if (ntest.ge.10.and.(.not.mel_target%op%formal)) then
