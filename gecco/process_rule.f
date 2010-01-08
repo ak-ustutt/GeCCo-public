@@ -1015,6 +1015,9 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list(3*nopt+1:))
         call get_arg('LIST_SPC',rule,tgt_info,
      &       val_label_list=label_list(4*nopt+1:),ndim=nspecial)
+c dbg
+        print *,'nspecial = ',nspecial
+c dbg
         call get_arg('FORM',rule,tgt_info,
      &       val_label=label)
 
@@ -1025,7 +1028,7 @@ c          mode = 'dia-R12'
      &       label_list(  nopt+1:  nopt+nopt), ! precond.
      &       label_list(2*nopt+1:2*nopt+nopt), ! mvp-labels
      &       label_list(3*nopt+1:3*nopt+nopt), ! metric-labels
-     &       label_list(4*nopt+1),             ! formula
+     &       label,                            ! formula
      &       label_list(4*nopt+ioff+1:
      &                   4*nopt+ioff+nspecial),nspecial,
      &       op_info,form_info,str_info,strmap_info,orb_info)

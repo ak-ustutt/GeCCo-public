@@ -215,6 +215,8 @@
       call add_command_proto(SOLVELEQ,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(SOLVEEVP,tgt_info)
+      call set_arg('_PROTO_',SOLVEEVP,'LIST_SPC',0,tgt_info,
+     &     (/'-'/))
 *----------------------------------------------------------------------*
       call add_command_proto(UNITY,tgt_info)
 *----------------------------------------------------------------------*

@@ -10,7 +10,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -127,9 +127,6 @@ c dbg
 
       implicit none
 
-c dbg
-c      goto 60
-c dbg
         call expand_op_product3(form_pnt,idx_shape,
      &    -0.5d0,6,3,
      &     (/idx_shape,idx_opsin(3),idx_opsin(3),
@@ -141,7 +138,6 @@ c dbg
      &     0,0,
      &     (/'1,,,','6,,,',
      &       '3,,H,H','2,,H,[HPX],','4,,H[HPX],','5,,,HH',
-cc     &       '2,4,,H','3,4,,H'/),8,
      &       '2,4,,[HPX]','3,4,,H'/),8,
      &     op_info)
         idx = 0
@@ -163,7 +159,6 @@ c     &       '3,4,,[HPX]','2,3,,H'/),6,
 c  the above gives problems with trace_op, so we use instead:
      &     (/'1,,,','6,,,',
      &       '3,,H,H','2,,H,[HPX],','4,,H[HPX],','5,,,HH',
-cc     &       '2,4,,H','2,3,H,'/),8,
      &       '2,4,,[HPX]','2,3,H,'/),8,
      &     op_info)
         idx = 0
@@ -171,9 +166,6 @@ cc     &       '2,4,,H','2,3,H,'/),8,
           idx = idx+1
           form_pnt => form_pnt%next
         enddo
-c dbg
-c 60     call warn('z0','DEBUGGING !')
-c dbg
 
         ! term group #3
         call expand_op_product3(form_pnt,idx_shape,
@@ -209,8 +201,6 @@ c     &       '3,4,,[HPX]','3,5,,H'/),8,
      &     (/'1,,,','6,,,',
      &       '2,,HH,','3,,,H[HPX]','4,,H,H','5,,[HPX],H',
      &       '3,5,,[HPX]','2,3,H,'/),8,
-c     &       '2,,HH,','3,,,H[HPX]','5,,H,H','4,,[HPX],H',
-c     &       '3,4,,[HPX]','2,3,H,'/),8,
      &     op_info)
         idx = 0
         do while(associated(form_pnt%next))
@@ -227,9 +217,6 @@ c     &       '3,4,,[HPX]','2,3,H,'/),8,
 c dbg
       print *,'call for Z #1'
 c dbg
-c dbg
-c      goto 50
-c dbg
       ! G.FF terms
       call expand_op_product3(form_pnt,idx_shape,
      &     0.5d0,6,3,
@@ -241,7 +228,8 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/'1,,,','6,,P,H',
-     &       '3,,H,P','2,,H,[HPX],','4,,H[HPX],','5,,,H[HP]',
+c     &       '3,,H,P','2,,H,[HPX],','4,,H[HPX],','5,,,H[HP]',
+     &       '3,,H,P','2,,H,[HPX],','4,,H[HPX],','5,,,HH',
      &       '2,4,,[HPX]'/),7,
      &     op_info)
       idx = 0
@@ -249,15 +237,11 @@ c dbg
         idx = idx+1
         form_pnt => form_pnt%next
       enddo
-c dbg
-c 50   call warn('z1','DEBUGGING !')
-c dbg
       
       ! FF.G terms
       call expand_op_product3(form_pnt,idx_shape,
      &     0.5d0,6,3,
      &     (/idx_shape,-idx_opsin(4),-idx_opsin(4),
-c     &     idx_opsin(3),idx_opsin(3),idx_shape/),
      &    -idx_opsin(3),-idx_opsin(3),idx_shape/),
      &     (/        1,           2,           2,
      &                3,        3,        1/),
@@ -265,12 +249,8 @@ c     &     idx_opsin(3),idx_opsin(3),idx_shape/),
      &     0,0,
      &     0,0,
      &     (/'1,,,','6,,P,H',
-c     &       '2,,H[HP],','3,,,H[HPX]','5,,H,P','4,,[HPX],H',
-c     &       '3,4,,[HPX]'/),7,
      &       '2,,H[HP],','3,,,H[HPX]','4,,H,P','5,,[HPX],H',
      &       '3,5,,[HPX]'/),7,
-c     &       '2,,H[HP],','3,,,H[HPX]','4,,H,P','5,,[HPX],H',
-c     &       '3,5,,[HPX]'/),7,
      &     op_info)
       idx = 0
       do while(associated(form_pnt%next))
@@ -321,8 +301,6 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/'1,,,','6,,PP,HH',
-c     &       '2,,H,P','3,,H,[HPX],','4,,H[HPX],','5,,,H[HP]',
-c     &       '3,4,,[HPX]'/),7,
      &       '3,,H,P','2,,H,[HPX],','4,,H[HPX],','5,,,H[HP]',
      &       '2,4,,[HPX]'/),7,
      &     op_info)
@@ -345,8 +323,6 @@ c     &       '3,4,,[HPX]'/),7,
      &     (/'1,,,','6,,PP,HH',
      &       '2,,HH,','3,,,[HP][HPX]','5,,H,P','4,,[HPX],[HP]',
      &       '3,4,,[HPX]'/),7,
-c     &       '2,,HH,','3,,,[HP][HPX]','4,,H,P','5,,[HPX],[HP]',
-c     &       '3,5,,[HPX]'/),7,
      &     op_info)
         idx = 0
         do while(associated(form_pnt%next))
@@ -366,8 +342,6 @@ c     &       '3,5,,[HPX]'/),7,
      &     (/'1,,,','6,,PP,HH',
      &       '2,,HH,','3,,,[HP][HPX]','5,,H,P','4,,[HPX],[HP]',
      &       '3,4,,[HPX]','4,5,,H'/),8,
-c     &       '2,,HH,','3,,,[HP][HPX]','4,,H,P','5,,[HPX],[HP]',
-c     &       '3,5,,[HPX]'/),7,
      &     op_info)
         idx = 0
         do while(associated(form_pnt%next))
@@ -387,8 +361,6 @@ c     &       '3,5,,[HPX]'/),7,
      &     (/'1,,,','6,,PP,HH',
      &       '2,,HH,','3,,,H[HPX]','5,,H,P','4,,[HPX],P',
      &       '3,4,,[HPX]','3,5,,H'/),8,
-c     &       '2,,HH,','3,,,H[HPX]','4,,H,P','5,,[HPX],P',
-c     &       '3,5,,[HPX]','3,4,,H'/),8,
      &     op_info)
         idx = 0
         do while(associated(form_pnt%next))
