@@ -128,11 +128,11 @@ c     &       call quit(1,'do_calc','no rules for target?')
      &           form_info,op_info,str_info,strmap_info,orb_info)
           end if
 
-          do kdx = 1, rule%n_update
-            ldx = idx_target(rule%labels,tgt_info)
-            if (ldx.le.0) cycle ! needs not necessarily be a def'd target
-            call touch_target(ldx,.false.,tgt_info)
-          end do
+c          do kdx = 1, rule%n_update
+c            ldx = idx_target(rule%labels,tgt_info)
+c            if (ldx.le.0) cycle ! needs not necessarily be a def'd target
+c            call touch_target(ldx,.false.,tgt_info)
+c          end do
 
         end do
 
