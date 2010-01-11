@@ -85,6 +85,8 @@
         call get_argument_value('method.R12','min_tpp',
      &                                               ival=min_rank_tpp)
         call get_argument_value('method.R12','screen',lval=screen)
+        if (.not.screen)
+     &       call get_argument_value('method.CCPT','screen',lval=screen)
 
         if (r12op.gt.0) then
           set_tp  = .false.
