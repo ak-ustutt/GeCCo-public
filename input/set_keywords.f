@@ -68,6 +68,8 @@ c      use parse_input
      &                                                ldef=(/.false./))
       call argument_add('hh_scatter','method.CCPT',type=vtyp_log,
      &                                                ldef=(/.false./))
+      call argument_add('screen','method.CCPT',type=vtyp_log,
+     &                                                ldef=(/.false./))
 
       call keyword_add('ECC',context='method')
       call argument_add('maxexc','method.ECC',type=vtyp_int,idef=(/2/))
@@ -115,6 +117,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./))
       call argument_add('trunc','method.R12',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('f12x','method.R12',type=vtyp_str,len=8,
+     &     cdef=(/' ',' ',' ',' ',' ',' ',' ',' '/))
       call argument_add('screen','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
       call argument_add('opt','method.R12',type=vtyp_log,

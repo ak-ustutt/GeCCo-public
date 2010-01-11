@@ -12,6 +12,7 @@
       include 'opdim.h'
 
       include 'ifc_input.h'
+      include 'ifc_targets.h'
 
       include 'par_opnames_gen.h'
       include 'par_formnames_gen.h'
@@ -33,9 +34,9 @@
      &     occ_def(ngastp,2,20)
       logical ::
      &     needed, r12fix, set_tp, set_tpp, screen,
-     &     fixed_gem, pf12_trunc
+     &     fixed_gem, pf12_trunc, f12x_trunc
       character(8) ::
-     &     approx
+     &     approx, f12x_mode
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -60,7 +61,8 @@
 
       msc = +1  ! assuming closed shell
 
-      approx = '        '
+      approx    = '        '
+      f12x_mode = '        '
       ! read keyword values
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
@@ -72,6 +74,10 @@
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','screen',lval=screen)
       call get_argument_value('method.R12','trunc',ival=trunc_type)
+      call get_argument_value('method.R12','f12x',str=f12x_mode)
+      f12x_trunc = len_trim(f12x_mode).gt.0
+      if (f12x_trunc) trunc_type = 0
+      if (f12x_trunc) screen = .true.
       pf12_trunc = trunc_type.eq.0
 c dbg
       print *,'trunc_Type= ',trunc_type
@@ -251,6 +257,25 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
       call set_rule(form_ccr12lg0,ttype_frm,DEF_CCR12_LAGRANGIAN,
      &              labels,nlabel,1,
      &              parameters,2,tgt_info)
+      ! (a-I) apply additional truncation schemes
+      if (f12x_trunc) then
+        call set_rule2(form_ccr12lg0,SELECT_SPECIAL,tgt_info)
+        call set_arg(form_ccr12lg0,SELECT_SPECIAL,'LABEL_RES',
+     &       1,tgt_info,
+     &       val_label=(/form_ccr12lg0/))
+        call set_arg(form_ccr12lg0,SELECT_SPECIAL,'LABEL_IN',
+     &       1,tgt_info,
+     &       val_label=(/form_ccr12lg0/))
+        call set_arg(form_ccr12lg0,SELECT_SPECIAL,'OPERATORS',
+     &       4,tgt_info,
+     &       val_label=(/op_tbar,op_ham,op_top,op_r12/))
+        call set_arg(form_ccr12lg0,SELECT_SPECIAL,'TYPE',
+     &       1,tgt_info,
+     &       val_str='f12x')
+        call set_arg(form_ccr12lg0,SELECT_SPECIAL,'MODE',
+     &       1,tgt_info,
+     &       val_str=trim(f12x_mode))
+      end if
       ! (b) Factor out the R12 intermediates 
       ! (effectively removing all reference to the complete basis)
       labels(1:10)(1:len_target_name) = ' '

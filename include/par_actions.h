@@ -43,6 +43,7 @@
      &     TEX_FORMULA*11           = 'TEX_FORMULA',
      &     KEEP_TERMS*10            = 'KEEP_TERMS',
      &     SELECT_TERMS*12          = 'SELECT_TERMS',
+     &     SELECT_SPECIAL*14        = 'SELECT_SPECIAL',
      &     DEL_TERMS*9              = 'DEL_TERMS',
      &     MODIFY_FACTORIZATION*20  = 'MODIFY_FACTORIZATION',
      &     EXTRACT_ORDER*13         = 'EXTRACT_ORDER',
