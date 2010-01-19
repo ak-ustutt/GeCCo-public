@@ -366,22 +366,22 @@
       nablk_oporiopreo_0  = reo_info%nablk_reo0
       ncblk_reo12  = reo_info%ncblk_reo
       nablk_reo12  = reo_info%nablk_reo
-      call strmap_man_c(lenmap,
+      call strmap_man_c(2,lenmap,
      &     cinfo_op0c(1,2),ncblk_oporiopreo_0,
      &     cinfo_reo12c(1,2),ncblk_reo12,
      &     cinfo_oporic(1,2),ncblk_opori,map_info_reo1c,
      &     str_info,strmap_info,orb_info)
-      call strmap_man_c(lenmap,
+      call strmap_man_c(2,lenmap,
      &     cinfo_reo12a(1,2),nablk_reo12,
      &     cinfo_op0a(1,2),nablk_oporiopreo_0,
      &     cinfo_oporia(1,2),nablk_opori,map_info_reo1a,
      &     str_info,strmap_info,orb_info)
-      call strmap_man_c(lenmap,
+      call strmap_man_c(2,lenmap,
      &     cinfo_op0c(1,2),ncblk_oporiopreo_0,
      &     cinfo_reo12c(1,2),ncblk_reo12,
      &     cinfo_opreoc(1,2),ncblk_opreo,map_info_reo2c,
      &     str_info,strmap_info,orb_info)
-      call strmap_man_c(lenmap,
+      call strmap_man_c(2,lenmap,
      &     cinfo_reo12a(1,2),nablk_reo12,
      &     cinfo_op0a(1,2),nablk_oporiopreo_0,
      &     cinfo_opreoa(1,2),nablk_opreo,map_info_reo2a,

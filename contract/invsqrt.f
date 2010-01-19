@@ -31,9 +31,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
-      real, parameter ::
-     &     min_sv = 1d-15 ! singular value threshold for calc. of pseudo-inv. 
+     &     ntest = 100
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -364,7 +362,6 @@ c     &     loop(nocc_cls)
      &                       graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
      &                       graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
      &                       hpvxseq,.false.)
-            if (ielprd(len_str,ncblk+nablk).eq.0) cycle
             ndim = ndim + len_str(1)*len_str(3)
            end do
           end do
@@ -437,12 +434,12 @@ c     &     loop(nocc_cls)
      &               d_gam_ms(idxdis,igama,idxmsa)
 
 c dbg
-c              write(luout,'(a,4i4)') 'ms  : ',msa1,msc1,msa2,msc2
-c              write(luout,'(a,4i4)') 'gam : ',gama1,gamc1,gama2,gamc2
-c              write(luout,'(a,2i4)') 'msa, igama: ',msa,igama
-c              write(luout,'(a,2i4)') 'dist, len: ',idxdis, lenca
-c              write(luout,'(a,2i4)') 'off_line/col: ',off_line,off_col
-c              print *,'len1: ',len_str(1)*len_str(3)
+              write(luout,'(a,4i4)') 'ms  : ',msa1,msc1,msa2,msc2
+              write(luout,'(a,4i4)') 'gam : ',gama1,gamc1,gama2,gamc2
+              write(luout,'(a,2i4)') 'msa, igama: ',msa,igama
+              write(luout,'(a,2i4)') 'dist, len: ',idxdis, lenca
+              write(luout,'(a,2i4)') 'off_line/col: ',off_line,off_col
+              print *,'len1: ',len_str(1)*len_str(3)
 c dbgend
 
               ! copy all required elements of this distribution
@@ -454,10 +451,10 @@ c dbgend
                   istr_csub(1) = idxc1-1
                   iline = iline + 1
                   icol = off_col
-                  do idxa2 = 1, len_str(4)
-                    istr_asub(2) = idxa2-1
-                    do idxc2 = 1, len_str(2)
-                      istr_csub(2) = idxc2-1
+                  do idxc2 = 1, len_str(2)
+                    istr_csub(2) = idxc2-1
+                    do idxa2 = 1, len_str(4)
+                      istr_asub(2) = idxa2-1
                       icol = icol + 1
                       idx = ioff + idx_str_blk3(istr_csub,istr_asub,
      &                       ldim_opin_c,ldim_opin_a,ncblk,nablk)
@@ -551,10 +548,10 @@ c dbgend
                   istr_csub(1) = idxc1-1
                   iline = iline + 1
                   icol = off_col
-                  do idxa2 = 1, len_str(4)
-                    istr_asub(2) = idxa2-1
-                    do idxc2 = 1, len_str(2)
-                      istr_csub(2) = idxc2-1
+                  do idxc2 = 1, len_str(2)
+                    istr_csub(2) = idxc2-1
+                    do idxa2 = 1, len_str(4)
+                      istr_asub(2) = idxa2-1
                       icol = icol + 1
                       idx = ioff + idx_str_blk3(istr_csub,istr_asub,
      &                       ldim_opin_c,ldim_opin_a,ncblk,nablk)

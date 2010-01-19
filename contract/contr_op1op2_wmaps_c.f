@@ -709,37 +709,37 @@ c      if (tra_op2.neqv.tra_op2_) write(lustat,*) 'it happened 2'
 cc dbg
 
       ! set up maps (if necessary)
-      call strmap_man_c(lenmap,
+      call strmap_man_c(1,lenmap,
      &     cinfo_ex1c(1,2),ncblk_ex1,
      &     cinfo_ex2c(1,2),ncblk_ex2,
      &     cinfo_op1op2tmpc(1,2),ncblk_op1op2tmp,map_info_12c,
      &     str_info,strmap_info,orb_info)
       ifree = mem_alloc_int(map_ex1ex2c,lenmap,'exmap_c')
-      call strmap_man_c(lenmap,
+      call strmap_man_c(1,lenmap,
      &     cinfo_ex2a(1,2),nablk_ex2,
      &     cinfo_ex1a(1,2),nablk_ex1,
      &     cinfo_op1op2tmpa(1,2),nablk_op1op2tmp,map_info_12a,
      &     str_info,strmap_info,orb_info)
       ifree = mem_alloc_int(map_ex1ex2a,lenmap,'exmap_a')
-      call strmap_man_c(lenmap,
+      call strmap_man_c(1,lenmap,
      &     cinfo_cntc(1,2),ncblk_cnt,
      &     cinfo_ex1c(1,2),ncblk_ex1,
      &     cinfo_op1c(1,2),ncblk_op1,map_info_1c,
      &     str_info,strmap_info,orb_info)
       ifree = mem_alloc_int(map_ex1cntc,lenmap,'op1map_c')
-      call strmap_man_c(lenmap,
+      call strmap_man_c(1,lenmap,
      &     cinfo_cnta(1,2),nablk_cnt,
      &     cinfo_ex1a(1,2),nablk_ex1,
      &     cinfo_op1a(1,2),nablk_op1,map_info_1a,
      &     str_info,strmap_info,orb_info)
       ifree = mem_alloc_int(map_ex1cnta,lenmap,'op1map_a')
-      call strmap_man_c(lenmap,
+      call strmap_man_c(1,lenmap,
      &     cinfo_cnta(1,2),nablk_cnt,
      &     cinfo_ex2c(1,2),ncblk_ex2,
      &     cinfo_op2c(1,2),ncblk_op2,map_info_2c,
      &     str_info,strmap_info,orb_info)
       ifree = mem_alloc_int(map_ex2cntc,lenmap,'op2map_c')
-      call strmap_man_c(lenmap,
+      call strmap_man_c(1,lenmap,
      &     cinfo_cntc(1,2),ncblk_cnt,
      &     cinfo_ex2a(1,2),nablk_ex2,
      &     cinfo_op2a(1,2),nablk_op2,map_info_2a,
@@ -759,22 +759,22 @@ cc dbg
         nablk_op1op2_0  = reo_info%nablk_reo0
         ncblk_reo12  = reo_info%ncblk_reo
         nablk_reo12  = reo_info%nablk_reo
-        call strmap_man_c(lenmap,
+        call strmap_man_c(2,lenmap,
      &     cinfo_op1op2_0c(1,2),ncblk_op1op2_0,
      &     cinfo_reo12c(1,2),ncblk_reo12,
      &     cinfo_op1op2tmpc(1,2),ncblk_op1op2tmp,map_info_reo1c,
      &     str_info,strmap_info,orb_info)
-        call strmap_man_c(lenmap,
+        call strmap_man_c(2,lenmap,
      &     cinfo_reo12a(1,2),nablk_reo12,
      &     cinfo_op1op2_0a(1,2),nablk_op1op2_0,
      &     cinfo_op1op2tmpa(1,2),nablk_op1op2tmp,map_info_reo1a,
      &     str_info,strmap_info,orb_info)
-        call strmap_man_c(lenmap,
+        call strmap_man_c(2,lenmap,
      &     cinfo_op1op2_0c(1,2),ncblk_op1op2_0,
      &     cinfo_reo12c(1,2),ncblk_reo12,
      &     cinfo_op1op2c(1,2),ncblk_op1op2,map_info_reo2c,
      &     str_info,strmap_info,orb_info)
-        call strmap_man_c(lenmap,
+        call strmap_man_c(2,lenmap,
      &     cinfo_reo12a(1,2),nablk_reo12,
      &     cinfo_op1op2_0a(1,2),nablk_op1op2_0,
      &     cinfo_op1op2a(1,2),nablk_op1op2,map_info_reo2a,

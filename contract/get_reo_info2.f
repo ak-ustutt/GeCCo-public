@@ -54,7 +54,7 @@ c     &     reo_op1op2, reo_other
       integer ::
      &     nreo, ireo, idx, nreo_op1op2, ireo_op1op2, nmap, len_map,
      &     ivtx, jvtx, idxsuper_old1, idxsuper_old2, ivtx1, ivtx2,
-     &     ngas, ij
+     &     ngas, ij, streo, ndreo
       integer ::
      &     rst_shift(2,orb_info%ngas,2,2)
       type(reorder_list), pointer ::
@@ -75,6 +75,7 @@ c     &     reo_op1op2, reo_other
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'get_reo_info2')
         write(luout,*) 'nreo = ',reo_info%nreo
+        write(luout,*) 'mode:  ',mode
         if (abs(mode).eq.1) then
           reo => reo_info%reo
           do ireo = 1, reo_info%nreo
@@ -142,7 +143,7 @@ c dbg
       iocc_op1op2tmp(1:ngastp,1:2,1:njoined_op1op2)
      &     = iocc_op1op2(1:ngastp,1:2,1:njoined_op1op2)
       irst_op1op2tmp(1:2,1:ngas,1:2,1:2,1:njoined_op1op2)
-     &     = irst_op1op2(1:2,1:ngastp,1:2,1:2,1:njoined_op1op2)
+     &     = irst_op1op2(1:2,1:ngas,1:2,1:2,1:njoined_op1op2)
 
 
         ! make a merge-map for the primitive vertices in long form
@@ -159,10 +160,31 @@ c dbg
           merge_map_stp2(1,1,idx) = idx
         end do
 
+        ! mode=1: loop backwards over reorderings (to avoid negative occ.s)
         nreo_op1op2 = 0
         do ireo = 1, nreo
           if (reo(ireo)%idxsuper.ne.idxsuper) cycle
           nreo_op1op2 = nreo_op1op2+1
+
+          ! update mapping info
+          nmap = njoined_op1op2
+     &         - imltlist(0,merge_map_stp1(1,2,reo(ireo)%from),
+     &                    njoined_op1op2,1)+1
+          merge_map_stp1(nmap,2,reo(ireo)%from) = nreo_op1op2
+          nmap = njoined_op1op2
+     &         - imltlist(0,merge_map_stp2(1,2,reo(ireo)%to),
+     &                    njoined_op1op2,1)+1
+          merge_map_stp2(nmap,2,reo(ireo)%to) = nreo_op1op2
+        end do
+        if (mode.eq.1) then
+          streo = nreo
+          ndreo = 1
+        else
+          streo = 1
+          ndreo = nreo
+        end if
+        do ireo = streo, ndreo, -mode !mode=1: backwards loop
+          if (reo(ireo)%idxsuper.ne.idxsuper) cycle
 
           ! shift direction and target depends on mode
           if (mode.eq.-1) then
@@ -226,16 +248,6 @@ c            iocc_op1op2tmp(1:ngastp,1:2,reo(ireo)%to)
 c     &         = iocc_op1op2tmp(1:ngastp,1:2,reo(ireo)%to)
 c     &         - reo(ireo)%occ_shift
 c          end if
-            
-          ! update mapping info
-          nmap = njoined_op1op2
-     &         - imltlist(0,merge_map_stp1(1,2,reo(ireo)%from),
-     &                    njoined_op1op2,1)+1
-          merge_map_stp1(nmap,2,reo(ireo)%from) = nreo_op1op2
-          nmap = njoined_op1op2
-     &         - imltlist(0,merge_map_stp2(1,2,reo(ireo)%to),
-     &                    njoined_op1op2,1)+1
-          merge_map_stp2(nmap,2,reo(ireo)%to) = nreo_op1op2
         end do
 
         ! store shift occupations in iocc_reo array
