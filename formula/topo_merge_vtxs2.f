@@ -265,7 +265,7 @@ c dbg
 
       integer ::
      &     icnt, ij, idx1, idx2, iel, jvtx, num1, num2,
-     &     ivtx, iocc(ngastp,2), jocc(ngastp,2)
+     &     ivtx
       logical ::
      &     horiz, verti
 
@@ -273,15 +273,16 @@ c dbg
      &     cnt_line1(nvtx+nj), cnt_line2(nvtx+nj),
      &     ovl_line(nvtx+nj)
       integer(8) ::
-     &     base
+     &     ovl
       
       integer, external ::
-     &     imltlist, occ_p_el, idxmax, int8_expand
+     &     imltlist, occ_p_el, idxmax
       logical, external ::
      &     zero_i8vec, zero_ivec
+      integer(8), external ::
+     &     occ_overlap_p
 
       right_shift = .false.
-      base = pack_base
 
 c dbg
 c      print *,'may_merge>',ivtx1,ivtx2
@@ -416,17 +417,14 @@ cmh
                 do jvtx = 1, nvtx
                   if (ireo(jvtx).ne.ivtx2) cycle
                   if (svertex(ivtx).ne.svertex(jvtx)) cycle
-                  iocc = 0
-                  jocc = 0
                   if (num1.le.nvtx) then
-                   icnt = int8_expand(topo0(ivtx,num1),base,iocc)
-                   icnt = int8_expand(topo0(jvtx,num1),base,jocc)
+                    ovl = occ_overlap_p(topo0(ivtx,num1),
+     &                      topo0(jvtx,num1))
                   else
-                   icnt = int8_expand(xlines0(ivtx,num1-nvtx),base,iocc)
-                   icnt = int8_expand(xlines0(jvtx,num1-nvtx),base,jocc)
+                    ovl = occ_overlap_p(xlines0(ivtx,num1-nvtx),
+     &                      xlines0(jvtx,num1-nvtx))
                   end if
-                  if (iocc_nonzero(iocc_overlap(iocc,.false.,
-     &                jocc,.false.))) then
+                  if (ovl.ne.0) then
                     may_merge = .false.
                     exit ivtx_loop
                   end if

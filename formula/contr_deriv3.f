@@ -39,6 +39,8 @@
       type(operator_info), intent(in) ::
      &     op_info
 
+      logical ::
+     &     allowed
       integer ::
      &     nvtx, idx_0, ideriv, svtx_last, ij, ivtx, jvtx,
      &     nder_actually, nvtx_new,
@@ -58,10 +60,10 @@
       integer(8), pointer ::
      &     vtx(:), topo(:,:), xlines(:,:),
      &     vtx_new(:), topo_new(:,:), xlines_new(:,:),
-     &     occ_res_p(:)
+     &     occ_res_p(:), occ_mlt_p(:)
       integer, pointer ::
      &     svertex(:), svertex_new(:),
-     &     ivtxder(:,:), norder(:), iblkder(:),
+     &     ivtxder(:,:), norder(:), iblkder(:), occ_mlt(:,:,:),
      &     occ_res(:,:,:), neqv(:), idx_eqv(:,:)
       
       integer, external ::
@@ -72,7 +74,7 @@
 
       if (ntest.ge.100) then
         write(luout,*) '====================='
-        write(luout,*) ' contr_deriv at work'
+        write(luout,*) ' contr_deriv3 at work'
         write(luout,*) '====================='
         write(luout,*) ' Contraction on input:'
         call prt_contr2(luout,contr,op_info)
@@ -103,8 +105,9 @@
      &     op_res%ihpvca_occ(1,1,1),njoined_res)
       ipcr_mlt = 0
       if (idxmlt.gt.0) then
+        occ_mlt => op_mlt%ihpvca_occ
         ipcr_mlt   = rank_occ('C-A',
-     &       op_mlt%ihpvca_occ(1,1,1),njoined_mlt)
+     &       occ_mlt,njoined_mlt)
       end if
 
       if (ntest.ge.100) then
@@ -212,6 +215,8 @@
      &     topo_new(nvtx_new,nvtx_new),xlines_new(nvtx_new,njoined_res),
      &     occ_res_p(max(1,njoined_res)),
      &     occ_res(ngastp,2,max(1,njoined_res)) )
+      if (nderiv.gt.0.and.idxmlt.gt.0)
+     &     allocate(occ_mlt_p(njoined_mlt))
 
       cur_conder => conder
       nullify(cur_conder%prev)
@@ -226,6 +231,9 @@
             ! have to find the corresponding block
             iblkmlt = iblk_corresp(idx_mlt_poss,
      &           iblkder(ideriv),op_der,op_mlt,.false.)
+
+            if (iblkmlt.eq.0) call quit(1,'contr_deriv3',
+     &           'corresponding operator block not found')
 
             svertex_new= svertex
             vtx_new    = vtx
@@ -244,8 +252,14 @@
 
             ! if the new operator has not the full rank:
             ! check consequences (may only reduce rank of xlines)
-            if (ipcr_der.ne.ipcr_mlt)
-     &           call quit(1,'contr_deriv','debug IP/EA route')
+            if (ipcr_der.ne.ipcr_mlt) then
+              call pack_occ(occ_mlt_p,
+     &             occ_mlt(1:,1:,(iblkmlt-1)*njoined_mlt+1),njoined_mlt)
+              call topo_rank_change(allowed,xlines_new,topo_new,
+     &             occ_mlt_p,
+     &             ivtxder(1,ideriv),njoined_mlt,nvtx,njoined_res)
+              if (.not.allowed) cycle
+            end if
 
           else
             ! only one possibility anyway:
@@ -324,6 +338,8 @@
       if (nderiv.gt.0)
      &     deallocate(svertex_new,vtx_new,topo_new,xlines_new,
      &     occ_res_p,occ_res)
+      if (nderiv.gt.0.and.idxmlt.gt.0)
+     &     deallocate(occ_mlt_p)
 
       nderiv = nder_actually
 

@@ -47,12 +47,12 @@
       if (nj1.ne.nj2) return
 
       occ_blk1 => op1%ihpvca_occ
-      occ_blk2 => op1%ihpvca_occ
+      occ_blk2 => op2%ihpvca_occ
 
       ! get number of particles created/annihilated
       pcr1 = rank_occ('C-A',occ_blk1,nj1)
-      pcr2 = rank_occ('C-A',occ_blk1,nj2)
-      
+      pcr2 = rank_occ('C-A',occ_blk2,nj2)
+
       idxblk1 = (iblk1-1)*nj1+1
 
       ! easy game

@@ -634,6 +634,21 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       nexclude,label_list(ninclude+ninclude_or+1:),iblk_exclude,
      &       op_info)
 *----------------------------------------------------------------------*
+      case(SELECT_SPECIAL)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),OLD)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_form(form0_pnt,trim(label),OLD)
+        call get_arg('OPERATORS',rule,tgt_info,
+     &       val_label_list=label_list,ndim=nop)
+        call get_arg('TYPE',rule,tgt_info,val_str=form_str)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call form_select_special(form_pnt,form0_pnt,
+     &       label_list,nop,
+     &       form_str,mode,
+     &       op_info)
+*----------------------------------------------------------------------*
       case(DEL_TERMS)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
@@ -1048,6 +1063,9 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list(3*nopt+1:))
         call get_arg('LIST_SPC',rule,tgt_info,
      &       val_label_list=label_list(4*nopt+1:),ndim=nspecial)
+c dbg
+        print *,'nspecial = ',nspecial
+c dbg
         call get_arg('FORM',rule,tgt_info,
      &       val_label=label)
 
@@ -1058,7 +1076,7 @@ c          mode = 'dia-R12'
      &       label_list(  nopt+1:  nopt+nopt), ! precond.
      &       label_list(2*nopt+1:2*nopt+nopt), ! mvp-labels
      &       label_list(3*nopt+1:3*nopt+nopt), ! metric-labels
-     &       label_list(4*nopt+1),             ! formula
+     &       label,                            ! formula
      &       label_list(4*nopt+ioff+1:
      &                   4*nopt+ioff+nspecial),nspecial,
      &       op_info,form_info,str_info,strmap_info,orb_info)
