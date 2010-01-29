@@ -99,7 +99,7 @@
 
       ! loop over contributions
       len_form_str = len_trim(form_str)
-      do while(ipos.lt.len_form_str)
+      do while(ipos.le.len_form_str)
 
         jpos = index(trim(form_str(ipos:)),'+')+ipos-1
         if (jpos.eq.ipos-1)

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine strmap_man_c(
+      subroutine strmap_man_c(mode,
      &     maxbuffer,
      &     igraph1r,n1,
      &     igraph2r,n2,
@@ -11,6 +11,7 @@
 *     version for condensed contraction info
 *     maxbuffer returns the maximum number of integer words needed 
 *     for a MS/IRREP block
+*     mode = 1: for contraction; mode = 2: for reordering
 *----------------------------------------------------------------------*
       implicit none
 
@@ -30,7 +31,7 @@
       integer, intent(out) ::
      &     maxbuffer
       integer, intent(in) ::
-     &     n1, n2, n12, igraph12r(n12), map_info(*)
+     &     n1, n2, n12, igraph12r(n12), map_info(*), mode
       integer, intent(in), target ::
      &     igraph1r(n1), igraph2r(n2)
       type(strinf), intent(in) ::
@@ -89,7 +90,7 @@
         nsplit = nsplit + map_info(idx_minf)
         !  we allow nsplit=2 --> both indices from same occ.cls.
         !  but only if the other occ.cls. gives nsplit=0
-        if (nsplit.gt.2) then
+        if (nsplit.gt.2.or.nsplit.eq.2.and.mode.eq.1) then
           error = .true.
           exit
         end if
@@ -104,7 +105,7 @@
         end if
         idx_minf = idx_minf+1
         nsplit = nsplit + map_info(idx_minf)
-        if (nsplit.gt.2) then
+        if (nsplit.gt.2.or.map_info(idx_minf).eq.2.and.mode.eq.1) then
           error = .true.
           exit
         end if
@@ -296,6 +297,7 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
         write(luout,*) 'igraph2r: ',igraph2r
         write(luout,*) 'igraph12r: ',igraph12r
         write(luout,*) 'map_info: ',map_info(1:n12*2*(n1+n2))
+        write(luout,*) 'mode: ',mode
 
         idx_minf = 0
         idx12 = 0

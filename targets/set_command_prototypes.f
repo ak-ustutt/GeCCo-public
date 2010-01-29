@@ -140,6 +140,8 @@
       call add_command_proto(INVARIANT,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(DERIVATIVE,tgt_info)
+      call set_arg('_PROTO_',DERIVATIVE,'OP_MULT',1,tgt_info,
+     &     val_label=(/' '/))
 *----------------------------------------------------------------------*
       call add_command_proto(LEQ_SPLIT,tgt_info)
 *----------------------------------------------------------------------*
@@ -164,14 +166,26 @@
       call add_command_proto(MODIFY_FACTORIZATION,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(EXTRACT_ORDER,tgt_info)
+      call set_arg('_PROTO_',EXTRACT_ORDER,'TITLE',1,tgt_info,
+     &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(EXTRACT_FREQ,tgt_info)
+      call set_arg('_PROTO_',EXTRACT_FREQ,'TITLE',1,tgt_info,
+     &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(CLASS_FORMULA,tgt_info)
+      call set_arg('_PROTO_',CLASS_FORMULA,'OUTPUT',1,tgt_info,
+     &     val_str='stdout')
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_HERMIT,tgt_info)
+      call set_arg('_PROTO_',SELECT_HERMIT,'TITLE',1,tgt_info,
+     &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_LINE,tgt_info)
+      call set_arg('_PROTO_',SELECT_LINE,'MODE',1,tgt_info,
+     &     val_str='keep')
+      call set_arg('_PROTO_',SELECT_LINE,'TITLE',1,tgt_info,
+     &     val_str='---')
 !     ME-lists:
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_ME_LIST,tgt_info)
@@ -219,6 +233,14 @@
      &     (/'-'/))
 *----------------------------------------------------------------------*
       call add_command_proto(UNITY,tgt_info)
+      call set_arg('_PROTO_',UNITY,'FAC',1,tgt_info,
+     &     val_rl8=(/1d0/))
+      call set_arg('_PROTO_',UNITY,'INIT',1,tgt_info,
+     &     val_log=(/.false./))
+      call set_arg('_PROTO_',UNITY,'MIN_BLK',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg('_PROTO_',UNITY,'MAX_BLK',1,tgt_info,
+     &     val_int=(/0/))
 *----------------------------------------------------------------------*
       call add_command_proto(SET_FREQ,tgt_info)
 *----------------------------------------------------------------------*

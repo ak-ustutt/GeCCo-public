@@ -47,11 +47,16 @@
       ! start within restr-array
       idx1 = (iblk1-1)*nj
       idx2 = (iblk2-1)*nj
+      if (reverse) idx2 = iblk2*nj+1
 
       same = .true.
       cmp_loop: do ij = 1, nj
         idx1 = idx1+1
-        idx2 = idx2+1
+        if (.not.reverse) then
+          idx2 = idx2+1
+        else
+          idx2 = idx2-1
+        end if
         do ispin = 1, nspin
           do imsk = 1, 2
             do ica = 1, 2

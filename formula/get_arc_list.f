@@ -59,7 +59,7 @@
         idx_sv1 = svertex(arc(iarc)%link(1))
         idx_sv2 = svertex(arc(iarc)%link(2))
         idx = 0
-cmh  if there are still null arcs within a supervertix, try this:
+cmh  if there are still null arcs within a supervertex, try this:
 cmh        if (idx_sv1.eq.idx_sv2.and.
 cmh     &      sum(arc(iarc)%occ_cnt(1:ngastp,1:2)).eq.0) cycle
         do isvarc = 1, len_list

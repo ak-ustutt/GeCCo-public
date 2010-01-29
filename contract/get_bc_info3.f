@@ -103,6 +103,8 @@ c     &     new_sign = .false. ! use the old sign evaluation route
 
       integer, external ::
      &     imltlist
+      logical, external ::
+     &     allowed_contr
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'get_bc_info3')
@@ -387,10 +389,20 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
         do ireo = 1, reo_info%nreo
           do jreo = ireo+1, reo_info%nreo
             if (reo_info%reo(ireo)%from.eq.reo_info%reo(jreo)%from.or.
-     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to)
+     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to) then
+              ! only forbid if non-zero overlap:
+              if (iocc_nonzero(iocc_overlap(
+     &            reo_info%reo(ireo)%occ_shift,.false.,
+     &            reo_info%reo(jreo)%occ_shift,.false.)))
      &           possible = .false.
+            end if
           end do
         end do
+
+        ! another FIX: skip (currently?) impossible contractions
+        possible = possible.and.
+     &             allowed_contr(contr,arc_list(1:len_list),len_list)
+
 c        ! to be commented out
 c        if (reo_info%nreo.gt.0) then
 c          do ivtx = 1, nvtx

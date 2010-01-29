@@ -67,7 +67,7 @@
      &     reo_dummy
 
       logical ::
-     &     possible, found
+     &     possible, found, predef
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
 
@@ -131,10 +131,15 @@ cmh      if (nvtx_full.ne.njoined) call check_disconnected(contr)
       ncost_eval = 0
 
       idx_intm = 0
+
+      ! allow predefined contraction sequence:
+      predef = contr%nfac.gt.0
+      if (predef) ifact(4,1:contr%nfac) = contr%inffac(4,1:contr%nfac)
+
 c dbg
 c      print *,'now diving into the recursions, njoined = ',njoined
 c dbg
-      call form_fact_rec_new('FIND',nlevel,ifact,fl_fact,
+      call form_fact_rec_new('FIND',predef,nlevel,ifact,fl_fact,
      &     cost,iscale,
      &     contr,occ_vtx,irestr_vtx,info_vtx)
 
@@ -171,7 +176,7 @@ c        call prt_contr2(luout,contr,op_info)
 c        call wrt_occ_n(luout,occ_vtx,nvtx_full+njoined)
 c dbg
       ! call kernel again for optimal sequence --> set fl_fact now
-      call form_fact_rec_new('SET',nlevel,ifact_best,fl_fact,
+      call form_fact_rec_new('SET',.true.,nlevel,ifact_best,fl_fact,
      &     cost,iscale,
      &     contr,occ_vtx,irestr_vtx,info_vtx)
 
@@ -194,7 +199,7 @@ c dbg
 *----------------------------------------------------------------------*
 *     the recursive kernel:
 *----------------------------------------------------------------------*
-      recursive subroutine form_fact_rec_new(mode,
+      recursive subroutine form_fact_rec_new(mode,predef,
      &     nlevel,ifact,fl_in,
      &     cost_in,iscale_in,
      &     contr,occ_vtx,irestr_vtx,info_vtx)
@@ -217,6 +222,8 @@ c dbg
      &     info_vtx(2,contr%nvtx+njoined)
       real(8), intent(in) ::
      &     cost_in(3)
+      logical, intent(in) ::
+     &     predef
 
       logical ::
      &     possible, new
@@ -266,11 +273,12 @@ c dbg
      &     call quit(1,'form_fact_rec_new','emergency exit')
 
       if (orb_info%nsym.eq.0) call quit(1,'form_fact2_rc','buggy nsym!')
-      if (mode(1:4).eq.'FIND') then
+      if (mode(1:4).eq.'FIND'.and..not.predef) then
         ! get list of (non-redundant) arcs, ordered according to
         ! contractraction strength (descending)
         call get_arc_list(arc_list,len_list,contr,orb_info)
-      else if (mode(1:3).eq.'SET') then
+      else if (mode(1:3).eq.'SET'
+     &         .or.mode(1:4).eq.'FIND'.and.predef) then
         ! get arc form previously set ifact array
         len_list = 1
         arc_list(1) = ifact(4,nlevel)
@@ -344,7 +352,7 @@ c dbg
         if (contr_red%narc.gt.0) then
 
           ! add 0-contractions, if necessary          
-          call form_fact_rec_new(mode,nlevel+1,ifact,fl_pnt,
+          call form_fact_rec_new(mode,predef,nlevel+1,ifact,fl_pnt,
      &         cost,iscale,contr_red,occ_vtx_red,
      &                              irestr_vtx_red,info_vtx_red)
 

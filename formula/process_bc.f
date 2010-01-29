@@ -88,7 +88,7 @@
      &     nvtx, narc, ngas, nsym, idum, target, command,
      &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt,
      &     idxop_reo, idxop_ori, iblkop_reo, iblkop_ori,
-     &     ireo, idxs_reo, mode_rst_cnt
+     &     ireo, idxs_reo, mode_rst_cnt, nv_op1op2, nv_cnt
       integer ::
      &     iocc_cnt(ngastp,2,contr%nvtx*(contr%nvtx+1)/2),
      &     iocc_ex1(ngastp,2,contr%nvtx),
@@ -294,10 +294,13 @@ c     &     str_info,orb_info)
      &            + sum(iocc_ex2(ipart,1:2,1:njoined_op(2)))
         nx_op1op2 = sum(iocc_ex1(iextr,1:2,1:njoined_op(1)))
      &            + sum(iocc_ex2(iextr,1:2,1:njoined_op(2)))
+        nv_op1op2 = sum(iocc_ex1(ivale,1:2,1:njoined_op(1)))
+     &            + sum(iocc_ex2(ivale,1:2,1:njoined_op(2)))
         ! in contraction length
         nh_cnt = sum(iocc_cnt(ihole,1:2,1:njoined_cnt))
         np_cnt = sum(iocc_cnt(ipart,1:2,1:njoined_cnt))
         nx_cnt = sum(iocc_cnt(iextr,1:2,1:njoined_cnt))
+        nv_cnt = sum(iocc_cnt(ivale,1:2,1:njoined_cnt))
 
         if (ntest.ge.50) then
           write(luout,'(x,a,i2,a,i2,a)')
@@ -314,6 +317,7 @@ c     &     str_info,orb_info)
         iscale_new(IHOLE) = nh_op1op2+nh_cnt
         iscale_new(IPART) = np_op1op2+np_cnt
         iscale_new(IEXTR) = nx_op1op2+nx_cnt
+        iscale_new(IVALE) = nv_op1op2+nv_cnt
 
         if (scale_rank(iscale_new).gt.scale_rank(iscale(1,1)))
      &       iscale(1:ngastp,1) = iscale_new(1:ngastp)
@@ -322,6 +326,7 @@ c     &     str_info,orb_info)
         iscale_new(IHOLE) = nh_op1op2
         iscale_new(IPART) = np_op1op2
         iscale_new(IEXTR) = nx_op1op2
+        iscale_new(IVALE) = nv_op1op2
 
         if (scale_rank(iscale_new).gt.scale_rank(iscale(1,2)))
      &       iscale(1:ngastp,2) = iscale_new(1:ngastp)

@@ -3,5 +3,5 @@ general
 calculate
   skip_E
   check contr_test=3
-  routes contract=3,force_batching=1,schedule=0
+  routes contract=3,force_batching=1,schedule=1
  

@@ -45,9 +45,9 @@ c      include 'def_filinf.h'
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_dia(*),
-     &     me_trv(*), me_mvp(*), me_special(*), me_scr(*)
+     &     me_mvp(*), me_special(*), me_scr(*)
       type(me_list_array), intent(inout) ::
-     &     me_met(*)
+     &     me_met(*), me_trv(*)
 c      type(file_array), intent(in) ::
 c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
 
@@ -79,12 +79,13 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
 
 * local
       logical ::
-     &     zero_vec(opti_stat%ndim_vsbsp), init, conv
+     &     zero_vec(opti_stat%ndim_vsbsp), init, conv, trafo
       integer ::
      &     idx, jdx, kdx, iroot, nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
      &     ndim_save, ndel, iopt, jopt, lenscr, ioff, nsec,
-     &     ifree, restart_mode, ierr, nselect, irec, ioff_s
+     &     ifree, restart_mode, ierr, nselect, irec, ioff_s,
+     &     isec, stsec, ndsec
       real(8) ::
      &     cond, xdum, xnrm, xshf
       real(8), pointer ::
@@ -100,14 +101,14 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       type(filinf) ::
      &     fdum
       type(filinf), pointer ::
-     &     ffmet
+     &     ffmet, ffspc
       type(filinf), target ::
      &     fdum2
 
       integer, external ::
      &     ioptc_get_sbsp_rec
       real(8), external ::
-     &     dnrm2
+     &     dnrm2, ddot
 
       if (ntest.ge.100)
      &     call write_title(luout,wst_dbg_subr,'evpc_core entered')
@@ -254,30 +255,98 @@ c dbg
         ! assemble residual in full space
         
         do iopt = 1, nopt
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_file
+     &        .and.nspecial.gt.0) then
+            ffspc => me_special(1)%mel%fhand
+            trafo = .true.
+          else
+            ffspc => ffscr(iopt)%fhand
+            trafo = .false.
+          end if
           ! M.v ....
           idx = (iroot-1)*mxsub + 1
           xvec(1:nred) = vred(idx:idx+nred-1)
           call optc_expand_vec(xvec,ndim_rsbsp,
      &                                     xrsnrm(iroot,iopt),.false.,
-     &         ffscr(iopt)%fhand,irecscr,0d0,ffrsbsp(iopt)%fhand,
+     &         ffspc,irecscr,0d0,ffrsbsp(iopt)%fhand,
      &         iord_rsbsp,
      &         nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
 
           xvec(1:nred) = -eigr(iroot)*xvec(1:nred)
           if (.not.use_s(iopt)) then
           ! - eig * v
+cmh
+            ! a somewhat ugly quick fix for sign changes:
+            ! (more elegant way would be to pass *sec variables to
+            ! optc_expand_vec as has been done in other optc_* routines.
+            ! But this would also require modification of 
+            ! da_matvec, da_vecsum, da_sccpvec, get_vec_a, put_vec_a
+            nsec = opti_info%nsec(iopt)
+            if (nsec.gt.1) then
+              ioff = sum(opti_info%nsec(1:iopt))-nsec
+              nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
+              idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
+              signsec => opti_info%signsec(ioff+1:ioff+nsec)
+              do irec = 1, ndim_vsbsp
+                idx = iord_vsbsp(irec)
+                if (xvec(idx).eq.0d0) cycle
+                call vec_from_da(ffvsbsp(iopt)%fhand,irec,xbuf2,
+     &                           nwfpar(iopt))
+                do isec = 1, nsec
+                  xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1) = 
+     &               xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
+     &               +signsec(isec)*xvec(idx)*
+     &                xbuf2(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
+                end do
+              end do
+              if (.not.trafo) xrsnrm(iroot,iopt) 
+     &                    = sqrt(ddot(nwfpar(iopt),xbuf1,1,xbuf1,1))
+              call vec_to_da(ffspc,irecscr,xbuf1,nwfpar(iopt))
+            else
+cmhend
             call optc_expand_vec(xvec,ndim_vsbsp,
-     &                                      xrsnrm(iroot,iopt),.true.,
-     &       ffscr(iopt)%fhand,irecscr,1d0,ffvsbsp(iopt)%fhand,
+     &                                    xrsnrm(iroot,iopt),.not.trafo,
+     &       ffspc,irecscr,1d0,ffvsbsp(iopt)%fhand,
      &       iord_vsbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
+cmh
+            end if
+cmhend
           else
             ! - eig * S * v
             call optc_expand_vec(xvec,ndim_vsbsp,
-     &                                      xrsnrm(iroot,iopt),.true.,
-     &           ffscr(iopt)%fhand,irecscr,1d0,ffssbsp(iopt)%fhand,
+     &                                    xrsnrm(iroot,iopt),.not.trafo,
+     &           ffspc,irecscr,1d0,ffssbsp(iopt)%fhand,
      &           iord_ssbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
+          end if
+
+          ! if requested, transform residual
+          if (trafo) then
+            ! assign op. with list containing the scratch trial vector
+            call assign_me_list(me_scr(iopt)%mel%label,
+     &                          me_opt(iopt)%mel%op%name,op_info)
+            ! use daggered transformation matrix if requested
+            if (nspecial.eq.3)
+     &         call assign_me_list(me_special(3)%mel%label,
+     &                             me_special(3)%mel%op%name,op_info)
+
+            ! calculate transformed residual
+            allocate(xret(depend%ntargets),idxselect(depend%ntargets))
+            nselect = 0
+            call select_formula_target(idxselect,nselect,
+     &                  me_trv(iopt)%mel%label,depend,op_info)
+            call switch_mel_record(me_special(1)%mel,iroot)
+            call switch_mel_record(me_scr(iopt)%mel,iroot)
+            ! pretend that me_trv is not up to date
+            me_trv(iopt)%mel%fhand%last_mod(
+     &             me_trv(iopt)%mel%fhand%current_record) = -1
+            call frm_sched(xret,flist,depend,idxselect,nselect,
+     &                  op_info,str_info,strmap_info,orb_info)
+            ! residual norm (nselect should be 1):
+            xrsnrm(iroot,iopt) = xret(idxselect(1))
+            deallocate(xret,idxselect)
+
           end if
         end do
 
@@ -296,6 +365,11 @@ c dbg
       ! number of new directions
       nnew = irecscr-1
       if (nnew.gt.0) then
+        nsec_arr => opti_info%nsec(1:nopt)
+        nsec = sum(nsec_arr)
+        nwfpsec => opti_info%nwfpsec(1:nsec)
+        idstsec => opti_info%idstsec(1:nsec)
+        signsec => opti_info%signsec(1:nsec)
 
         ! reduced space exhausted?
         if (nred+nnew.gt.mxsub) then
@@ -321,9 +395,19 @@ c dbg
         end if
 
         ! divide new directions by preconditioner
+        stsec = 1
+        ndsec = 0
         do iopt = 1, nopt
+          if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)
+          ndsec = ndsec + nsec_arr(iopt)
+
           select case(opti_info%typ_prc(iopt))
           case(optinf_prc_file)
+            if (nspecial.gt.0) then
+              ffspc => me_special(1)%mel%fhand
+            else
+              ffspc => ffscr(iopt)%fhand
+            end if
             if (nincore.ge.2) then
               call vec_from_da(
      &             me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar(iopt))
@@ -338,12 +422,17 @@ c dbg
                 xnrm = sqrt(xnrm)
 c                xnrm = 1d0
                 xshf = -xeig(idxroot(iroot),1)
-                call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,xshf,nwfpar(iopt))
+                ! account for sign changes if necessary
+                do isec = stsec, ndsec
+                  call diavc(xbuf1(idstsec(isec)),xbuf1(idstsec(isec)),
+     &                       signsec(isec)/xnrm,xbuf2(idstsec(isec)),
+     &                       xshf,nwfpsec(isec))
+                end do
                 if (nopt.eq.1) then
                   xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
                   call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
                 end if
-                call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,
+                call vec_to_da(ffspc,iroot,xbuf1,
      &                         nwfpar(iopt))
               end do
             else
@@ -357,10 +446,14 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
                 end do
                 xnrm = sqrt(xnrm)
                 xshf = -xeig(idxroot(iroot),1)
-                call da_diavec(ffscr(iopt)%fhand,iroot,0d0,
-     &                     ffscr(iopt)%fhand,iroot,1d0/xnrm,
-     &                     me_dia(iopt)%mel%fhand,1,xshf,-1d0,
-     &                      nwfpar(iopt),xbuf1,xbuf2,lenbuf)
+                ! account for sign changes if necessary
+                do isec = stsec, ndsec
+                  call da_diavec(ffspc,iroot,idstsec(isec),0d0,
+     &                     ffscr(iopt)%fhand,iroot,idstsec(isec),
+     &                     signsec(isec)/xnrm,me_dia(iopt)%mel%fhand,
+     &                     1,idstsec(isec),xshf,-1d0,
+     &                     nwfpsec(isec),xbuf1,xbuf2,lenbuf)
+                end do
               end do
             end if
           case(optinf_prc_blocked)
@@ -376,7 +469,11 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
 c              xnrm = 1d0
               call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,
      &                         nwfpar(iopt))
-              call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
+              ! account for sign changes if necessary
+              do isec = stsec, ndsec
+                call dscal(nwfpsec(isec),signsec(isec)/xnrm,
+     &                     xbuf1(idstsec(isec)),1)
+              end do
               xshf = -xeig(idxroot(iroot),1)
               call optc_prc_special2(me_mvp(iopt)%mel,me_special,
      &                                                        nspecial,
@@ -389,6 +486,37 @@ c              xnrm = 1d0
           case default
             call quit(1,'evpc_core','unknown preconditioner type')
           end select
+
+          ! if requested, transform new subspace vectors
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_file
+     &        .and.nspecial.gt.0) then
+            ! use non-daggered transformation matrix if requested
+            if (nspecial.eq.3)
+     &         call assign_me_list(me_special(2)%mel%label,
+     &                             me_special(2)%mel%op%name,op_info)
+
+            ! calculate transformed vector
+            allocate(xret(depend%ntargets),idxselect(depend%ntargets))
+            nselect = 0
+            call select_formula_target(idxselect,nselect,
+     &                  me_trv(iopt)%mel%label,depend,op_info)
+            do iroot = 1, nnew
+              call switch_mel_record(me_special(1)%mel,iroot)
+              call switch_mel_record(me_scr(iopt)%mel,iroot)
+              ! pretend that me_trv is not up to date
+              me_trv(iopt)%mel%fhand%last_mod(
+     &               me_trv(iopt)%mel%fhand%current_record) = -1
+              call frm_sched(xret,flist,depend,idxselect,nselect,
+     &                    op_info,str_info,strmap_info,orb_info)
+              ! in reality me_trv is still up to date:
+              call touch_file_rec(me_trv(iopt)%mel%fhand)
+            end do
+            deallocate(xret,idxselect)
+
+            ! reassign op. with list containing trial vector
+            call assign_me_list(me_trv(iopt)%mel%label,
+     &                          me_opt(iopt)%mel%op%name,op_info)
+          end if
 
           if (use_s(iopt)) then
             ! assign op. with list containing the scratch trial vector
@@ -422,11 +550,6 @@ c              xnrm = 1d0
 
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
-        nsec_arr => opti_info%nsec(1:nopt)
-        nsec = sum(nsec_arr)
-        nwfpsec => opti_info%nwfpsec(1:nsec)
-        idstsec => opti_info%idstsec(1:nsec)
-        signsec => opti_info%signsec(1:nsec)
         call optc_orthvec(nadd,nopt.gt.1,
      &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  use_s,ioff_s,ffmet,ffscr(1)%fhand,nnew,nopt,

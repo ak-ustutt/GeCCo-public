@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine da_diavec(ffvecr,idxvecr,xfac1,
-     &                     ffvec1,idxvec1,xfac2,
-     &                     ffvec2,idxvec2,
+      subroutine da_diavec(ffvecr,idxvecr,ist0_r,xfac1,
+     &                     ffvec1,idxvec1,ist0_1,xfac2,
+     &                     ffvec2,idxvec2,ist0_2,
      &                     xshift,xpot,
      &                     lenvec,xbuf1,xbuf2,lenbuf)
 *----------------------------------------------------------------------*
@@ -27,9 +27,9 @@
       type(filinf), intent(in) ::
      &     ffvecr, ffvec1, ffvec2
       integer, intent(in) ::
-     &     idxvecr,
-     &     idxvec1,
-     &     idxvec2,lenvec, lenbuf
+     &     idxvecr,ist0_r,
+     &     idxvec1,ist0_1,
+     &     idxvec2,ist0_2,lenvec, lenbuf
       real(8), intent(in) ::
      &     xfac1, xfac2, xshift, xpot
       real(8), intent(inout) ::
@@ -80,9 +80,9 @@
         end if
       end if
       
-      irecst1 = (idxvec1-1)*nrecs+1
-      irecst2 = (idxvec2-1)*nrecs+1
-      irecstr = (idxvecr-1)*nrecs+1
+      irecst1 = (idxvec1-1)*nrecs+ist0_1
+      irecst2 = (idxvec2-1)*nrecs+ist0_2
+      irecstr = (idxvecr-1)*nrecs+ist0_r
       do ibatch = 1, nbatch
         if (ibatch.eq.nbatch) lenbat = len_lbat
 

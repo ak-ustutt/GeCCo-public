@@ -404,13 +404,13 @@ c      print *,'map(A):'
 c      call print_mapinfo(luout,map_info_a,nablk_op)
 c dbg
       ! set up maps (if necessary)
-      call strmap_man_c(lenmap,
+      call strmap_man_c(1,lenmap,
      &     cinfo_cntc(1,2),ncblk_cnt,
      &     cinfo_tropc(1,2),ncblk_trop,
      &     cinfo_opc(1,2),ncblk_op,map_info_c,
      &     str_info,strmap_info,orb_info)
       ifree = mem_alloc_int(map_tropcntc,lenmap,'opmap_c')
-      call strmap_man_c(lenmap,
+      call strmap_man_c(1,lenmap,
      &     cinfo_cnta(1,2),nablk_cnt,
      &     cinfo_tropa(1,2),nablk_trop,
      &     cinfo_opa(1,2),nablk_op,map_info_a,
@@ -430,22 +430,22 @@ c dbg
         nablk_trop_0  = reo_info%nablk_reo0
         ncblk_reo12  = reo_info%ncblk_reo
         nablk_reo12  = reo_info%nablk_reo
-        call strmap_man_c(lenmap,
+        call strmap_man_c(2,lenmap,
      &     cinfo_trop_0c(1,2),ncblk_trop_0,
      &     cinfo_reo12c(1,2),ncblk_reo12,
      &     cinfo_troptmpc(1,2),ncblk_troptmp,map_info_reo1c,
      &     str_info,strmap_info,orb_info)
-        call strmap_man_c(lenmap,
+        call strmap_man_c(2,lenmap,
      &     cinfo_reo12a(1,2),nablk_reo12,
      &     cinfo_trop_0a(1,2),nablk_trop_0,
      &     cinfo_troptmpa(1,2),nablk_troptmp,map_info_reo1a,
      &     str_info,strmap_info,orb_info)
-        call strmap_man_c(lenmap,
+        call strmap_man_c(2,lenmap,
      &     cinfo_trop_0c(1,2),ncblk_trop_0,
      &     cinfo_reo12c(1,2),ncblk_reo12,
      &     cinfo_tropc(1,2),ncblk_trop,map_info_reo2c,
      &     str_info,strmap_info,orb_info)
-        call strmap_man_c(lenmap,
+        call strmap_man_c(2,lenmap,
      &     cinfo_reo12a(1,2),nablk_reo12,
      &     cinfo_trop_0a(1,2),nablk_trop_0,
      &     cinfo_tropa(1,2),nablk_trop,map_info_reo2a,

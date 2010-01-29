@@ -8,6 +8,7 @@
 
       include 'stdunit.h'
       include 'opdim.h'
+      include 'ifc_operators.h'
 
       integer, intent(in) ::
      &     nvtx, nj, nlist,
@@ -20,6 +21,8 @@
       
       integer ::
      &     iord(nvtx)
+      integer(8) ::
+     &     topo0(nvtx,nvtx), xlines0(nvtx,nj)
       integer ::
      &     idx, jdx, kdx, jdxnd, ii, ivtx, ij,
      &     n_zero_vtx_res, n_zero_vtx, kdx_v, jdx_v,
@@ -74,6 +77,8 @@
       merged(1:nvtx) = .false.
       nvtx_new = nvtx
       nvtx_bcres = nlist
+      topo0 = topo
+      xlines0 = xlines
 
       ! loop over list
       do idx = 1, nlist
@@ -259,18 +264,23 @@ c dbg
      &     right_shift
 
       integer ::
-     &     icnt, ij, idx1, idx2, iel, jvtx, num1, num2
+     &     icnt, ij, idx1, idx2, iel, jvtx, num1, num2,
+     &     ivtx
       logical ::
      &     horiz, verti
 
       integer ::
      &     cnt_line1(nvtx+nj), cnt_line2(nvtx+nj),
      &     ovl_line(nvtx+nj)
+      integer(8) ::
+     &     ovl
       
       integer, external ::
      &     imltlist, occ_p_el, idxmax
       logical, external ::
      &     zero_i8vec, zero_ivec
+      integer(8), external ::
+     &     occ_overlap_p
 
       right_shift = .false.
 
@@ -399,6 +409,29 @@ c dbg
             num1 = idxmax(cnt_line1,nvtx+nj,1)
             num2 = idxmax(cnt_line2,nvtx+nj,1)
             may_merge = num1.eq.num2
+cmh
+            ! exception only if merging vtxs from different supervtxs
+            if (may_merge) then
+              ivtx_loop: do ivtx = 1, nvtx
+                if (ireo(ivtx).ne.ivtx1) cycle ivtx_loop
+                do jvtx = 1, nvtx
+                  if (ireo(jvtx).ne.ivtx2) cycle
+                  if (svertex(ivtx).ne.svertex(jvtx)) cycle
+                  if (num1.le.nvtx) then
+                    ovl = occ_overlap_p(topo0(ivtx,num1),
+     &                      topo0(jvtx,num1))
+                  else
+                    ovl = occ_overlap_p(xlines0(ivtx,num1-nvtx),
+     &                      xlines0(jvtx,num1-nvtx))
+                  end if
+                  if (ovl.ne.0) then
+                    may_merge = .false.
+                    exit ivtx_loop
+                  end if
+                end do
+              end do ivtx_loop
+            end if
+cmhend
           else
             may_merge = .false.
           end if

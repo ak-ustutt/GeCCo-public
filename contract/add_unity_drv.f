@@ -50,8 +50,6 @@
       if (init) call zeroop(mel_pnt)
 
       do idx = minblk, maxblk
-C???        jdx = (idx-1)*mel_pnt%op%njoined+1
-C???        call add_unity(fac,mel_pnt,jdx,orb_info,str_info)
         call add_unity(fac,mel_pnt,idx,orb_info,str_info)
       end do
 

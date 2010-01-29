@@ -111,8 +111,10 @@ c dbg
           call prt_contr2(luout,fl_pnt%contr,op_info)        
 c dbg
             fl_pnt%contr%nfac = nfac
-            fl_pnt%contr%inffac(4,1:nfac) = idxterms(jdx+1:jdx+nfac)
-            fl_pnt%contr%inffac(5,1:nfac) = idxterms(jdx+1:jdx+nfac)
+            if (nfac.gt.0) then
+              fl_pnt%contr%inffac(4,1:nfac) = idxterms(jdx+1:jdx+nfac)
+              fl_pnt%contr%inffac(5,1:nfac) = idxterms(jdx+1:jdx+nfac)
+            end if
             
             jdx = jdx+nfac+1
 

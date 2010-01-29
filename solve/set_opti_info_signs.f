@@ -38,7 +38,7 @@
       integer ::
      &     ifree, iopt, ioff, nsect, nwfpsec(maxsec), idstsec(maxsec),
      &     sign_cur, sign_old, iblk, ncblk, nablk, ncblk2, nablk2,
-     &     iocc_dag(ngastp,2)
+     &     iocc_dag(ngastp,2), switch_sign
       integer(8) ::
      &     base, topo_trv, topo1, topo2
       integer, pointer ::
@@ -176,6 +176,12 @@ c dbgend
      &                 graph_csec, graph_asec,
      &                 graph_csec2, graph_asec2)
 
+            ! for now, also check if there will be a sign change
+            ! when switching the two vertices
+            ! (important for calculation of new vector from residual!)
+            switch_sign = 1-2*mod(sum(iocc1(1:ngastp,1:2))
+     &                   *sum(iocc2(1:ngastp,1:2)),2)
+
             ! contraction sign: consider contraction occ1 - occ_trv
             ! the contraction is given by occ1
             iocc_dag(1:ngastp,1)=iocc_dag(1:ngastp,1)-iocc1(1:ngastp,2)
@@ -186,6 +192,10 @@ c dbgend
             ! now the contraction:
             sign_cur = sign_cur 
      &               * sign_contr(iocc1,iocc2,iocc_dag,0,.false.)
+
+            ! for now, sign must be the same as that given by switch_sign:
+            if (sign_cur.ne.switch_sign)
+     &          call quit(1,'set_opti_info_signs','need more sign maps')
 
             if (sign_cur.eq.sign_old) then
               ! same section: just add length of current block

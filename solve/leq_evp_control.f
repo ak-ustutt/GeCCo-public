@@ -91,9 +91,9 @@ c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_dia(*), me_special(nspecial),
-     &     me_trv(*), me_mvp(*), me_rhs(*), me_scr(*)
+     &     me_mvp(*), me_rhs(*), me_scr(*)
       type(me_list_array), intent(inout) ::
-     &     me_met(*)
+     &     me_met(*), me_trv(*)
 c      type(file_array), intent(in) ::
 c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
       

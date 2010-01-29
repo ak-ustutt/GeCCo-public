@@ -164,7 +164,7 @@
 
       call atim_csw(cpu,sys,wall)
 
-      call prtim(luout,'time for extracting diagonal ',
+      call prtim(luout,'time for reordering ME-list ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 
       return

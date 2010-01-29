@@ -23,7 +23,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       logical, parameter ::
      &     strict = .false.
 
@@ -74,7 +74,7 @@
 
       if (ntest.ge.100) then
         write(luout,*) '====================='
-        write(luout,*) ' contr_deriv at work'
+        write(luout,*) ' contr_deriv3 at work'
         write(luout,*) '====================='
         write(luout,*) ' Contraction on input:'
         call prt_contr2(luout,contr,op_info)

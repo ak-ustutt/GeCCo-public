@@ -375,55 +375,287 @@ c     &     0,0,
 *     Opt. Formulae
 *----------------------------------------------------------------------*
       ! test I
+      ! (1)
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = 'FOPT_TEST_I'
+      labels(1) = 'FORM_TEST_I'
+      call add_target('FOPT_TEST_I.1',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_I.1','FORM_TEST_I',tgt_info)
+      call modify_parameters(-1,parameters,2,(/1,0/),2) !just for safety
+      call set_rule('FOPT_TEST_I.1',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_I.1'
       labels(2) = 'FORM_TEST_I'
       ncat = 1
       nint = 0
-      call add_target('FOPT_TEST_I',ttype_frm,.false.,tgt_info)
-      call set_dependency('FOPT_TEST_I','FORM_TEST_I',tgt_info)
-      call set_dependency('FOPT_TEST_I','DEF-ME_TEST_RES',tgt_info)
-      call set_dependency('FOPT_TEST_I','ME_TEST_H',tgt_info)
-      call set_dependency('FOPT_TEST_I','ME_TEST_R',tgt_info)
-      call set_dependency('FOPT_TEST_I','ME_TEST_A',tgt_info)
+      call set_dependency('FOPT_TEST_I.1','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_I.1','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_I.1','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_I.1','ME_TEST_A',tgt_info)
       call opt_parameters(-1,parameters,ncat,nint)
-      call set_rule('FOPT_TEST_I',ttype_frm,OPTIMIZE,
+      call set_rule('FOPT_TEST_I.1',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      ! (2)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_I'
+      call add_target('FOPT_TEST_I.2',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_I.2','FORM_TEST_I',tgt_info)
+      call modify_parameters(-1,parameters,7,(/1,5,3,5,2,2,1/),7)
+      call set_rule('FOPT_TEST_I.2',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_I.2'
+      labels(2) = 'FORM_TEST_I'
+      ncat = 1
+      nint = 0
+      call set_dependency('FOPT_TEST_I.2','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_I.2','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_I.2','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_I.2','ME_TEST_A',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_I.2',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      ! (3)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_I'
+      call add_target('FOPT_TEST_I.3',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_I.3','FORM_TEST_I',tgt_info)
+      call modify_parameters(-1,parameters,7,(/1,5,3,6,5,2,1/),7)
+      call set_rule('FOPT_TEST_I.3',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_I.3'
+      labels(2) = 'FORM_TEST_I'
+      ncat = 1
+      nint = 0
+      call set_dependency('FOPT_TEST_I.3','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_I.3','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_I.3','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_I.3','ME_TEST_A',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_I.3',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      ! (4)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_I'
+      call add_target('FOPT_TEST_I.4',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_I.4','FORM_TEST_I',tgt_info)
+      call modify_parameters(-1,parameters,7,(/1,5,1,1,1,2,1/),7)
+      call set_rule('FOPT_TEST_I.4',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_I.4'
+      labels(2) = 'FORM_TEST_I'
+      ncat = 1
+      nint = 0
+      call set_dependency('FOPT_TEST_I.4','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_I.4','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_I.4','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_I.4','ME_TEST_A',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_I.4',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      ! (5)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_I'
+      call add_target('FOPT_TEST_I.5',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_I.5','FORM_TEST_I',tgt_info)
+      call modify_parameters(-1,parameters,7,(/1,5,7,5,1,1,1/),7)
+      call set_rule('FOPT_TEST_I.5',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_I.5'
+      labels(2) = 'FORM_TEST_I'
+      ncat = 1
+      nint = 0
+      call set_dependency('FOPT_TEST_I.5','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_I.5','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_I.5','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_I.5','ME_TEST_A',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_I.5',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      ! (6)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_I'
+      call add_target('FOPT_TEST_I.6',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_I.6','FORM_TEST_I',tgt_info)
+      call modify_parameters(-1,parameters,7,(/1,5,7,6,3,2,1/),7)
+      call set_rule('FOPT_TEST_I.6',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_I.6'
+      labels(2) = 'FORM_TEST_I'
+      ncat = 1
+      nint = 0
+      call set_dependency('FOPT_TEST_I.6','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_I.6','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_I.6','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_I.6','ME_TEST_A',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_I.6',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      ! (7)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_I'
+      call add_target('FOPT_TEST_I.7',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_I.7','FORM_TEST_I',tgt_info)
+      call modify_parameters(-1,parameters,7,(/1,5,5,6,4,3,1/),7)
+      call set_rule('FOPT_TEST_I.7',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_I.7'
+      labels(2) = 'FORM_TEST_I'
+      ncat = 1
+      nint = 0
+      call set_dependency('FOPT_TEST_I.7','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_I.7','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_I.7','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_I.7','ME_TEST_A',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_I.7',ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
       ! test II
+      ! (1)
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = 'FOPT_TEST_II'
+      labels(1) = 'FORM_TEST_II'
+      call add_target('FOPT_TEST_II.1',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_II.1','FORM_TEST_II',tgt_info)
+      call modify_parameters(-1,parameters,2,(/1,0/),2) !just for safety
+      call set_rule('FOPT_TEST_II.1',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_II.1'
       labels(2) = 'FORM_TEST_II'
       ncat = 1
       nint = 0
-      call add_target('FOPT_TEST_II',ttype_frm,.false.,tgt_info)
-      call set_dependency('FOPT_TEST_II','FORM_TEST_II',tgt_info)
-      call set_dependency('FOPT_TEST_II','DEF-ME_TEST_RES',tgt_info)
-      call set_dependency('FOPT_TEST_II','ME_TEST_H',tgt_info)
-      call set_dependency('FOPT_TEST_II','ME_TEST_R',tgt_info)
-      call set_dependency('FOPT_TEST_II','ME_TEST_A',tgt_info)
-      call set_dependency('FOPT_TEST_II','ME_TEST_B',tgt_info)
+      call set_dependency('FOPT_TEST_II.1','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_II.1','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_II.1','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_II.1','ME_TEST_A',tgt_info)
+      call set_dependency('FOPT_TEST_II.1','ME_TEST_B',tgt_info)
       call opt_parameters(-1,parameters,ncat,nint)
-      call set_rule('FOPT_TEST_II',ttype_frm,OPTIMIZE,
+      call set_rule('FOPT_TEST_II.1',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      ! (2)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_II'
+      call add_target('FOPT_TEST_II.2',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_II.2','FORM_TEST_II',tgt_info)
+      call modify_parameters(-1,parameters,7,(/1,5,3,4,6,2,1/),7)
+      call set_rule('FOPT_TEST_II.2',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_II.2'
+      labels(2) = 'FORM_TEST_II'
+      ncat = 1
+      nint = 0
+      call set_dependency('FOPT_TEST_II.2','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_II.2','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_II.2','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_II.2','ME_TEST_A',tgt_info)
+      call set_dependency('FOPT_TEST_II.2','ME_TEST_B',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_II.2',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      ! (3)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_II'
+      call add_target('FOPT_TEST_II.3',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_II.3','FORM_TEST_II',tgt_info)
+      call modify_parameters(-1,parameters,7,(/1,5,8,5,4,1,1/),7)
+      call set_rule('FOPT_TEST_II.3',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_II.3'
+      labels(2) = 'FORM_TEST_II'
+      ncat = 1
+      nint = 0
+      call set_dependency('FOPT_TEST_II.3','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_II.3','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_II.3','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_II.3','ME_TEST_A',tgt_info)
+      call set_dependency('FOPT_TEST_II.3','ME_TEST_B',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_II.3',ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
-      ! test II
+      ! test III
+      ! (1)
       labels(1:10)(1:len_target_name) = ' '
-      labels(1) = 'FOPT_TEST_III'
+      labels(1) = 'FORM_TEST_III'
+      call add_target('FOPT_TEST_III.1',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_III.1','FORM_TEST_III',tgt_info)
+      call modify_parameters(-1,parameters,4,(/1,2,1,1/),4)
+      call set_rule('FOPT_TEST_III.1',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_III.1'
       labels(2) = 'FORM_TEST_III'
       ncat = 1
       nint = 0
-      call add_target('FOPT_TEST_III',ttype_frm,.false.,tgt_info)
-      call set_dependency('FOPT_TEST_III','FORM_TEST_III',tgt_info)
-      call set_dependency('FOPT_TEST_III','DEF-ME_TEST_RES',tgt_info)
-      call set_dependency('FOPT_TEST_III','ME_TEST_H',tgt_info)
-      call set_dependency('FOPT_TEST_III','ME_TEST_R',tgt_info)
-      call set_dependency('FOPT_TEST_III','ME_TEST_A',tgt_info)
-      call set_dependency('FOPT_TEST_III','ME_TEST_B',tgt_info)
+      call set_dependency('FOPT_TEST_III.1','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_III.1','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_III.1','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_III.1','ME_TEST_A',tgt_info)
+      call set_dependency('FOPT_TEST_III.1','ME_TEST_B',tgt_info)
       call opt_parameters(-1,parameters,ncat,nint)
-      call set_rule('FOPT_TEST_III',ttype_frm,OPTIMIZE,
+      call set_rule('FOPT_TEST_III.1',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      ! (2)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_III'
+      call add_target('FOPT_TEST_III.2',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_III.2','FORM_TEST_III',tgt_info)
+      call modify_parameters(-1,parameters,4,(/1,2,2,2/),4)
+      call set_rule('FOPT_TEST_III.2',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_III.2'
+      labels(2) = 'FORM_TEST_III'
+      ncat = 1
+      nint = 0
+      call set_dependency('FOPT_TEST_III.2','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_III.2','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_III.2','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_III.2','ME_TEST_A',tgt_info)
+      call set_dependency('FOPT_TEST_III.2','ME_TEST_B',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_III.2',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+      ! (3)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'FORM_TEST_III'
+      call add_target('FOPT_TEST_III.3',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_TEST_III.3','FORM_TEST_III',tgt_info)
+      call modify_parameters(-1,parameters,4,(/1,2,3,1/),4)
+      call set_rule('FOPT_TEST_III.3',ttype_frm,MODIFY_FACTORIZATION,
+     &     labels,1,0,
+     &     parameters,1,tgt_info)
+      labels(1) = 'FOPT_TEST_III.3'
+      labels(2) = 'FORM_TEST_III'
+      ncat = 1
+      nint = 0
+      call set_dependency('FOPT_TEST_III.3','DEF-ME_TEST_RES',tgt_info)
+      call set_dependency('FOPT_TEST_III.3','ME_TEST_H',tgt_info)
+      call set_dependency('FOPT_TEST_III.3','ME_TEST_R',tgt_info)
+      call set_dependency('FOPT_TEST_III.3','ME_TEST_A',tgt_info)
+      call set_dependency('FOPT_TEST_III.3','ME_TEST_B',tgt_info)
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('FOPT_TEST_III.3',ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
 
@@ -630,8 +862,8 @@ c     &     0,0,
       needed = idxlist(1,testnr,ncntrtest,1).gt.0
       
       call add_target('CONTR_TEST_I',ttype_gen,needed,tgt_info)
-      call set_dependency('CONTR_TEST_I','FOPT_TEST_I',tgt_info)
-      labels(1) = 'FOPT_TEST_I'
+      call set_dependency('CONTR_TEST_I','FOPT_TEST_I.1',tgt_info)
+      labels(1) = 'FOPT_TEST_I.1'
       call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -645,11 +877,12 @@ c     &     0,0,
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
-      labels(1) = 'FOPT_TEST_I'
-      call modify_parameters(-1,parameters,7,(/1,5,3,5,2,2,1/),7)
-      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+      call set_dependency('CONTR_TEST_I','FOPT_TEST_I.2',tgt_info)
+      labels(1) = 'FOPT_TEST_I.2'
+c      call modify_parameters(-1,parameters,7,(/1,5,3,5,2,2,1/),7)
+c      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -663,11 +896,12 @@ c     &     0,0,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
-      labels(1) = 'FOPT_TEST_I'
-      call modify_parameters(-1,parameters,7,(/1,5,3,6,5,2,1/),7)
-      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+      call set_dependency('CONTR_TEST_I','FOPT_TEST_I.3',tgt_info)
+      labels(1) = 'FOPT_TEST_I.3'
+c      call modify_parameters(-1,parameters,7,(/1,5,3,6,5,2,1/),7)
+c      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -681,11 +915,12 @@ c     &     0,0,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
-      labels(1) = 'FOPT_TEST_I'
-      call modify_parameters(-1,parameters,7,(/1,5,1,1,1,2,1/),7)
-      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+      call set_dependency('CONTR_TEST_I','FOPT_TEST_I.4',tgt_info)
+      labels(1) = 'FOPT_TEST_I.4'
+c      call modify_parameters(-1,parameters,7,(/1,5,1,1,1,2,1/),7)
+c      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -699,11 +934,12 @@ c     &     0,0,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
-      labels(1) = 'FOPT_TEST_I'
-      call modify_parameters(-1,parameters,7,(/1,5,7,5,1,1,1/),7)
-      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+      call set_dependency('CONTR_TEST_I','FOPT_TEST_I.5',tgt_info)
+      labels(1) = 'FOPT_TEST_I.5'
+c      call modify_parameters(-1,parameters,7,(/1,5,7,5,1,1,1/),7)
+c      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -717,11 +953,12 @@ c     &     0,0,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
-      labels(1) = 'FOPT_TEST_I'
-      call modify_parameters(-1,parameters,7,(/1,5,7,6,3,2,1/),7)
-      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+      call set_dependency('CONTR_TEST_I','FOPT_TEST_I.6',tgt_info)
+      labels(1) = 'FOPT_TEST_I.6'
+c      call modify_parameters(-1,parameters,7,(/1,5,7,6,3,2,1/),7)
+c      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -735,11 +972,12 @@ c     &     0,0,
      &     labels,1,0,
      &     parameters,0,tgt_info)
       
-      labels(1) = 'FOPT_TEST_I'
-      call modify_parameters(-1,parameters,7,(/1,5,5,6,4,3,1/),7)
-      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+      call set_dependency('CONTR_TEST_I','FOPT_TEST_I.7',tgt_info)
+      labels(1) = 'FOPT_TEST_I.7'
+c      call modify_parameters(-1,parameters,7,(/1,5,5,6,4,3,1/),7)
+c      call set_rule('CONTR_TEST_I',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_I',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -757,8 +995,8 @@ c     &     0,0,
       needed = idxlist(2,testnr,ncntrtest,1).gt.0
       
       call add_target('CONTR_TEST_II',ttype_gen,needed,tgt_info)
-      call set_dependency('CONTR_TEST_II','FOPT_TEST_II',tgt_info)
-      labels(1) = 'FOPT_TEST_II'
+      call set_dependency('CONTR_TEST_II','FOPT_TEST_II.1',tgt_info)
+      labels(1) = 'FOPT_TEST_II.1'
       call set_rule('CONTR_TEST_II',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -771,12 +1009,13 @@ c     &     0,0,
       call set_rule('CONTR_TEST_II',ttype_opme,RES_ME_LIST,
      &     labels,1,0,
      &     parameters,0,tgt_info)
-      
-      labels(1) = 'FOPT_TEST_II'
-      call modify_parameters(-1,parameters,7,(/1,5,3,4,6,2,1/),7)
-      call set_rule('CONTR_TEST_II',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+
+      call set_dependency('CONTR_TEST_II','FOPT_TEST_II.2',tgt_info)
+      labels(1) = 'FOPT_TEST_II.2'
+c      call modify_parameters(-1,parameters,7,(/1,5,3,4,6,2,1/),7)
+c      call set_rule('CONTR_TEST_II',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_II',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -790,11 +1029,12 @@ c     &     0,0,
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
-      labels(1) = 'FOPT_TEST_II'
-      call modify_parameters(-1,parameters,7,(/1,5,8,5,4,1,1/),7)
-      call set_rule('CONTR_TEST_II',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+      call set_dependency('CONTR_TEST_II','FOPT_TEST_II.3',tgt_info)
+      labels(1) = 'FOPT_TEST_II.3'
+c      call modify_parameters(-1,parameters,7,(/1,5,8,5,4,1,1/),7)
+c      call set_rule('CONTR_TEST_II',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_II',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -812,12 +1052,12 @@ c     &     0,0,
       needed = idxlist(3,testnr,ncntrtest,1).gt.0
       
       call add_target('CONTR_TEST_III',ttype_gen,needed,tgt_info)
-      call set_dependency('CONTR_TEST_III','FOPT_TEST_III',tgt_info)
-      labels(1) = 'FOPT_TEST_III'
-      call modify_parameters(-1,parameters,4,(/1,2,1,1/),4)
-      call set_rule('CONTR_TEST_III',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+      call set_dependency('CONTR_TEST_III','FOPT_TEST_III.1',tgt_info)
+      labels(1) = 'FOPT_TEST_III.1'
+c      call modify_parameters(-1,parameters,4,(/1,2,1,1/),4)
+c      call set_rule('CONTR_TEST_III',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_III',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -831,11 +1071,12 @@ c     &     0,0,
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
-      labels(1) = 'FOPT_TEST_III'
-      call modify_parameters(-1,parameters,4,(/1,2,2,2/),4)
-      call set_rule('CONTR_TEST_III',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+      call set_dependency('CONTR_TEST_III','FOPT_TEST_III.2',tgt_info)
+      labels(1) = 'FOPT_TEST_III.2'
+c      call modify_parameters(-1,parameters,4,(/1,2,2,2/),4)
+c      call set_rule('CONTR_TEST_III',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_III',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
@@ -849,11 +1090,12 @@ c     &     0,0,
      &     labels,1,0,
      &     parameters,0,tgt_info)
 
-      labels(1) = 'FOPT_TEST_III'
-      call modify_parameters(-1,parameters,4,(/1,2,3,1/),4)
-      call set_rule('CONTR_TEST_III',ttype_frm,MODIFY_FACTORIZATION,
-     &     labels,1,0,
-     &     parameters,1,tgt_info)
+      call set_dependency('CONTR_TEST_III','FOPT_TEST_III.3',tgt_info)
+      labels(1) = 'FOPT_TEST_III.3'
+c      call modify_parameters(-1,parameters,4,(/1,2,3,1/),4)
+c      call set_rule('CONTR_TEST_III',ttype_frm,MODIFY_FACTORIZATION,
+c     &     labels,1,0,
+c     &     parameters,1,tgt_info)
       call set_rule('CONTR_TEST_III',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)

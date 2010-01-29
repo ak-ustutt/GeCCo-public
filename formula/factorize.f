@@ -177,6 +177,7 @@
       scale_rank = (sum(iscale(1:4))       )*100d0*100d0*100d0
      &           + (    iscale(2)+iscale(4))*100d0*100d0
      &           + (    iscale(4)          )*100d0
-     &           + (    iscale(1)          )
+cmh     &           + (    iscale(1)          )
+     &           + (    iscale(1)+iscale(3))
 
       end

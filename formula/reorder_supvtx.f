@@ -200,22 +200,27 @@ c dbg
                   occ_shr(hpvx,ica_vtx) = arc(iarc)%occ_cnt(hpvx,ica)
 
                 else if (contr%nsupvtx.eq.2) then
+                ! former treatment (outcommented by cmh) lead to problems
+                ! in case where 2 njoined=2 intermediates were involved
+                ! (leading to a njoined=2 result)
 c dbg
-c                  print *,'special case'
+c                  print *,'special case: just going ahead'
 c dbg
                   
-                  cnt_shl(hpvx,ica) = arc(jarc)%occ_cnt(hpvx,ica)
-                  occ_shl(hpvx,ica_vtx) = arc(jarc)%occ_cnt(hpvx,ica)
+cmh                  cnt_shr(hpvx,ica) = arc(iarc)%occ_cnt(hpvx,ica)
+cmh                  occ_shr(hpvx,ica_vtx) = arc(iarc)%occ_cnt(hpvx,ica)
 
-                  occ_shr(hpvx,ica_vtx) = occ_vtx(hpvx,ica_vtx,ivtx1)
-     &                 - arc(iarc)%occ_cnt(hpvx,ica)
+cmh                  occ_shr(hpvx,ica_vtx) = occ_vtx(hpvx,ica_vtx,ivtx1)
+cmh     &                 - arc(iarc)%occ_cnt(hpvx,ica)
 
                 else
 c dbg
 c                  print *,'skipping difficult reo'
 c dbg
                   possible = .false.
-                  return
+cmh               hm, effectively just going ahead because
+cmh               possible is set to true in get_bc_info3 anyways ...
+cmh                  return
 c                  call quit(1,'reorder_supvtx','not yet')
                   
                 end if
