@@ -60,7 +60,7 @@ c      include 'def_contraction_list.h'
         write(luout,*) ' f_input  = ',trim(f_input%label)
         write(luout,*) ' f_output = ',trim(f_output%label)
         do irepl = 1, nreplace
-          write(luout,*) irepl,trim(label_replace(2*(irepl-1)+1)),
+          write(luout,*) irepl,trim(label_replace(2*(irepl-1)+1)),' ',
      &                         trim(label_replace(2*(irepl-1)+2))
         end do
       end if

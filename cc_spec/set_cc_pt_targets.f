@@ -28,7 +28,7 @@
      &     max_rank, min_rank_pt, max_rank_pt, max_extern,
      &     min_rank_tp, min_rank_tpp, ntp_min, ntp_max,
      &     ntpp_min, ntpp_max,
-     &     ansatz,
+     &     ansatz, vring_mode,
      &     isim, ncat, nint, icnt, r12op,
      &     isym, ms, msc, sym_arr(8),
      &     occ_def(ngastp,2,60), ndef
@@ -87,6 +87,8 @@
         call get_argument_value('method.R12','screen',lval=screen)
         if (.not.screen)
      &       call get_argument_value('method.CCPT','screen',lval=screen)
+        call get_argument_value('method.R12','vring',ival=vring_mode)
+c        call get_argument_value('method.CCPT','vring',ival=vring_mode)
 
         if (r12op.gt.0) then
           set_tp  = .false.
