@@ -146,7 +146,7 @@
       call add_command_proto(LEQ_SPLIT,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(OPTIMIZE,tgt_info)
-      call set_arg('_PROTO_',OPTIMIZE,'INTERM',1,tgt_info,
+      call set_arg('_PROTO_',OPTIMIZE,'INTERM',0,tgt_info,
      &     val_label=(/''/))
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_FORMULA,tgt_info)
