@@ -32,10 +32,11 @@
      &     idxtbar, idxtop, idxr12, idxham
       integer ::
      &     trunc_e, trunc_t1, trunc_t2, ii,
-     &     idx_op, iblk_op, ivtx, nvtx, 
-     &     ntop, typ_tbar, ord_ham, nr12, nrdag
+     &     idx_op, iblk_op, ivtx, nvtx, max2t1,
+     &     ntop, nt1, typ_tbar, ord_ham, nr12, nrdag,
+     &     iblk_t1
       integer ::
-     &     idxop(nlabels)
+     &     idxop(nlabels), occ(ngastp,2)
 
 
       type(cntr_vtx), pointer ::
@@ -44,7 +45,7 @@
      &     form_pnt, form_pnt_next
 
       integer, external ::
-     &     idx_oplist2
+     &     idx_oplist2, iblk_occ
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'select_f12x')
@@ -75,16 +76,29 @@
       select case(trim(mode))
       case('F12a','f12a')
         trunc_e = 1
+        trunc_t1 = 1
+        trunc_t2 = 1
+        max2t1 = 1
+      case('F12b','f12b')
+        trunc_e = 999
+        trunc_t1 = 1
+        trunc_t2 = 1
+        max2t1 = 1
+      case('F12a-err','f12a-err') ! erroneous definition
+        trunc_e = 1
         trunc_t1 = 0
         trunc_t2 = 1
-      case('F12b','f12b')
+        max2t1 = 0
+      case('F12b-err','f12b-err') ! erroneous definition
         trunc_e = 999
         trunc_t1 = 0
         trunc_t2 = 1
+        max2t1 = 0
       case('F12b-S','f12b-S','f12b-s')
         trunc_e = 999
         trunc_t1 = 1
         trunc_t2 = 1
+        max2t1 = 0
       case default
         call quit(1,'select_f12x','mode?? "'//trim(mode)//'"')
       end select
@@ -93,6 +107,12 @@
       idxham  = idxop(2)
       idxtop  = idxop(3)
       idxr12  = idxop(4)
+
+      ! obtain blocks of T1, T1x, and L1x
+      occ = 0
+      occ(IPART,1) = 1
+      occ(IHOLE,2) = 1
+      iblk_t1  = iblk_occ(occ,.false.,op_info%op_arr(idxtop)%op,1)
 
       form_pnt => flist
       do 
@@ -117,10 +137,12 @@
           typ_tbar = 0
           nrdag = 0
           nr12  = 0
+          nt1 = 0
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
             iblk_op = vertex(ivtx)%iblk_op
             if (idx_op.eq.idxtop) then
+              if (iblk_op.eq.iblk_t1 ) nt1  = nt1 +1
               ntop = ntop+1
             end if
             if (idx_op.eq.idxtbar) then
@@ -150,7 +172,8 @@
             delete = delete.or.(nr12.gt.0.and.ntop.gt.0)
           else if (typ_tbar.eq.2) then
             delete = nr12.gt.trunc_t2
-            delete = delete.or.(nr12.gt.0.and.ntop.gt.0)
+            delete = delete.or.
+     &           (nr12.gt.0.and.((ntop-nt1).gt.0.or.nt1.gt.max2t1))
           else
             delete = .true.
           end if
