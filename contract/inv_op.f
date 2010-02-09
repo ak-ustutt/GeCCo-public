@@ -1,5 +1,5 @@
       subroutine inv_op(label_inp,label_inv,mode,
-     &     op_info,orb_info,str_info)
+     &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     Wrapper subroutine used in the inversion of the matrix 
 *     representation of an operator, op_inp.
@@ -18,6 +18,7 @@
       include 'mdef_operator_info.h'
       include 'def_graph.h'
       include 'def_strinf.h'
+      include 'def_strmapinf.h'
       include 'ifc_memman.h'
       include 'par_opnames_gen.h'
 
@@ -29,6 +30,8 @@
      &     orb_info
       type(strinf), intent(in) ::
      &     str_info
+      type(strmapinf), intent(in) ::
+     &     strmap_info
       character(len=*), intent(in) ::
      &     mode
 
@@ -132,8 +135,8 @@
      &       op_info,orb_info)
       else
         write(luout,*) 'Calculating square root of inverse'
-        call invsqrt(me_inp,me_inv,nocc_cls,
-     &       op_info,orb_info,str_info)
+        call invsqrt(me_inp,me_inv,nocc_cls,mode(8:11).eq.'half',
+     &       op_info,orb_info,str_info,strmap_info)
       end if
 
       if(ntest.ge.1000)then

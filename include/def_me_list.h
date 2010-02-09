@@ -74,6 +74,11 @@
                                 ! set up to be true for the non-antisym
                                 ! Hamiltonian elements needed for the F12 Z
                                 ! intermediate). May need later sophistication.
+
+        integer ::
+     &       diag_type,         ! type of diagonality: 0: no restriction
+     &                          ! 1: restr. to diagonal distr. (wrt transpos.)
+     &       msdiag, gamdiag    ! ms and symmetry for index tuples along diag.
 *----------------------------------------------------------------------*
 *       absym, casym imply that only triangles are saved
 *       convention: MS >= 0, index(alpha) >= index(beta)

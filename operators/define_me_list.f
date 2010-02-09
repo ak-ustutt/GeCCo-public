@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine define_me_list(label_mel,label_op,
      &     absym,casym,gamma,s2,ms,ms_fix,
-     &     rec_lo,rec_hi,
+     &     rec_lo,rec_hi,diag_type,gamdiag,msdiag,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     define a new ME-list with label "label_mel"
@@ -20,7 +20,8 @@
       include 'def_strmapinf.h'
 
       integer, intent(in) ::
-     &     absym, casym, gamma, s2, ms, rec_lo, rec_hi
+     &     absym, casym, gamma, s2, ms, rec_lo, rec_hi,
+     &     diag_type, gamdiag, msdiag
       logical, intent(in) ::
      &     ms_fix
       character(*), intent(in) ::
@@ -68,6 +69,14 @@
       mel%mst   = ms
       mel%s2    = s2
       mel%fix_vertex_ms = ms_fix
+      mel%diag_type = diag_type
+      if (diag_type.eq.1) then
+        mel%gamdiag = gamdiag
+        mel%msdiag = msdiag
+      else if (diag_type.ne.0) then
+        call quit(1,'define_me_list',
+     &            'requested diag_type not yet available')
+      end if
 
       if (abs(absym).gt.1.or.abs(casym).gt.1.or.
      &     gamma.le.0.or.gamma.gt.orb_info%nsym) then

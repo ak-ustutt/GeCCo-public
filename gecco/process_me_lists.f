@@ -76,7 +76,7 @@
 
         call define_me_list(rule%labels(1),rule%labels(2),
      &       absym,casym,gamma,s2,ms,ms_fix,
-     &       -1,-1,
+     &       -1,-1,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
 
       case(UNITY)
@@ -178,7 +178,7 @@ c dbg
      &       rule%n_parameter_strings,title,imode,mode)
 
         call inv_op(rule%labels(2),rule%labels(1),mode,
-     &       op_info,orb_info,str_info)
+     &       op_info,orb_info,str_info,strmap_info)
 
       case(ADD)
 

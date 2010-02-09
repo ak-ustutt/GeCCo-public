@@ -186,7 +186,8 @@
      &     cinfo_reo12c(:,:), cinfo_reo12a(:,:),
      &     cinfo_op1op2_0c(:,:), cinfo_op1op2_0a(:,:),
      &     map_info_reo1c(:), map_info_reo1a(:),
-     &     map_info_reo2c(:), map_info_reo2a(:)
+     &     map_info_reo2c(:), map_info_reo2a(:),
+     &     mapca(:), diag_idx(:), diag_ca(:)
 
 c dbg
       integer, pointer ::
@@ -205,7 +206,8 @@ c dbg
      &     ielsum, ielprd, idx_msgmdst2, get_lenmap, idxlist,
      &     max_dis_blk
       logical, external ::
-     &     next_dist, next_msgamdist2, msa2idxms4op, list_cmp
+     &     next_dist, next_msgamdist2, msa2idxms4op, list_cmp,
+     &     nondia_blk, nondia_distr
       real(8), external ::
      &     ddot
 
@@ -572,6 +574,17 @@ c          end if
         bufop1op2 = .true.
         xop1op2 => xret
         if (ntest.ge.100) write(luout,*) ' result is scalar '
+      end if
+
+      if (me_op1op2tmp%diag_type.ne.0) then
+        allocate(mapca(ncblk_op1op2tmp),diag_idx(ncblk_op1op2tmp),
+     &           diag_ca(ncblk_op1op2tmp))
+        if (nondia_blk(mapca,diag_idx,diag_ca,
+     &                 op1op2tmp%ihpvca_occ(1,1,
+     &                        (iblkop1op2tmp-1)*op1op2tmp%njoined+1),
+     &                 op1op2tmp%njoined,ncblk_op1op2tmp,
+     &                 nablk_op1op2tmp,me_op1op2tmp%diag_type))
+     &       call quit(1,'contr_op1op2_wmaps_c','non-diagonal block!')
       end if
 
       call atim_cs(cpu,sys)
@@ -1248,6 +1261,15 @@ c                  print *,'igam12i_a(3),idxms: ',igam12i_a(3),idxms
 c                  print *,'ndis_op1op2tmp(igam12i_a(3),idxms):',
 c     &                 ndis_op1op2tmp(igam12i_a(3),idxms)
 c dbg
+
+                  if (me_op1op2tmp%diag_type.ne.0) then
+                    ! skip non-diagonal distributions ...
+                    if (nondia_distr(mapca,diag_idx,diag_ca,
+     &                     msi_dis_c,msi_dis_a,gmi_dis_c,gmi_dis_a,
+     &                     ncblk_op1op2tmp,me_op1op2tmp%msdiag,
+     &                     me_op1op2tmp%gamdiag)) cycle caex2_loop
+                  end if
+
                   if (iblkop1op2tmp.gt.0.and.
      &                 ndis_op1op2tmp(igam12i_raw(3),idxms).gt.1) then
 
@@ -1264,7 +1286,7 @@ c                      print *,'msop1dis_a',msop1dis_a
                       enddo
                     endif
 c dbg
-                    
+
                     idxdis =
      &                  idx_msgmdst2(
      &                   iblkop1op2tmp,idxms,igam12i_raw(3),
@@ -1827,6 +1849,9 @@ c dbg
         end if
 
       end do ms_loop
+
+      if (me_op1op2tmp%diag_type.ne.0)
+     &         deallocate(mapca,diag_idx,diag_ca)
 
 c      if (use_tr_here.and..not.update) then
       if (use_tr_here) then

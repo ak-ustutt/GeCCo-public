@@ -75,13 +75,13 @@
      &     orb_info
 
       logical ::
-     &     conv, use_s_t, use_s(nopt)
+     &     conv, use_s_t, use_s(nopt), trafo
       character(len_opname) ::
      &     label
       integer ::
      &     iter, iprint, task, ifree, iopt, jopt, nintm, irequest,
      &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout,
-     &     idxlist(2*nroots)
+     &     idxlist(2*nroots), nselect
       real(8) ::
      &     xresmax, xdum,
      &     xeig(nroots,2), xresnrm(nroots*nopt), xlist(2*nroots)
@@ -91,6 +91,8 @@
       type(file_array), pointer ::
      &     ffdia(:), ff_trv(:),
      &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:)
+      type(me_list), pointer ::
+     &     me_pnt
       type(dependency_info) ::
      &     depend
       type(optimize_info) ::
@@ -103,9 +105,9 @@
      &     fl_mvp
 
       integer, pointer ::
-     &     irecmvp(:), irectrv(:), irecmet(:)
+     &     irecmvp(:), irectrv(:), irecmet(:), idxselect(:)
       real(8), pointer ::
-     &      xret(:)
+     &      xret(:), xbuf(:)
 
       character ::
      &     fname*256
@@ -198,7 +200,7 @@
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
-     &       1,nvectors,
+     &       1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
         me_scr(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -210,7 +212,7 @@
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
-     &       1,nvectors,
+     &       1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
         me_trv(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -223,7 +225,7 @@
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
-     &       1,nvectors,
+     &       1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
         me_mvp(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -241,7 +243,7 @@
      &         me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &         me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &         me_opt(iopt)%mel%mst,.false.,
-     &         1,nvectors,
+     &         1,nvectors,0,0,0,
      &         op_info,orb_info,str_info,strmap_info)
           idxmel = idx_mel_list(fname,op_info)
           me_met(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -301,12 +303,39 @@
           cycle
         end if
         call find_nmin_list(xlist,idxlist,2*nroots,me_dia(iopt)%mel)
+        ! transformed preconditioner => transformed initial guess vector
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_file
+     &      .and.nspecial.gt.0) then
+          me_pnt => me_special(1)%mel
+          trafo = .true.
+        else
+          me_pnt => me_trv(iopt)%mel
+          trafo = .false.
+        end if
         do iroot = 1, nroots
           
-          call switch_mel_record(me_trv(iopt)%mel,iroot)
-          call diag_guess(me_trv(iopt)%mel,
-     &         xlist,idxlist,2*nroots,iroot,me_trv(iopt)%mel%absym,
+          call switch_mel_record(me_pnt,iroot)
+          call diag_guess(me_pnt,
+     &         xlist,idxlist,2*nroots,iroot,me_pnt%absym,
      &         op_info,str_info,strmap_info,orb_info)
+
+          ! if requested, back-transformation of initial guess vector
+          if (trafo) then
+            ! use non-daggered transformation matrix if requested
+            if (nspecial.eq.3)
+     &         call assign_me_list(me_special(2)%mel%label,
+     &                             me_special(2)%mel%op%name,op_info)
+            ! do the transformation
+            allocate(idxselect(nout))
+            nselect = 0
+            call select_formula_target(idxselect,nselect,
+     &                  me_trv(iopt)%mel%label,depend,op_info)
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
+     &                  op_info,str_info,strmap_info,orb_info)
+            deallocate(idxselect)
+          end if
+
 c          if (me_trv(iopt)%mel%absym.ne.0)
 c     &         call sym_ab_list(
 c     &             1d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
@@ -373,6 +402,13 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
               ! enforce MS-combination symmetry of trial vectors
               ! (if requested)
 c              if (me_trv(iopt)%mel%absym.ne.0)
+c dbg
+c        write(luout,*) 'current trial vector (before):'
+c        call wrt_mel_file(luout,5,
+c     &       me_trv(iopt)%mel,
+c     &       1,me_trv(iopt)%mel%op%n_occ_cls,
+c     &       str_info,orb_info)
+c dbgend
               if (iter.gt.1.and.me_trv(iopt)%mel%absym.ne.0)
      &             call sym_ab_list(
      &             0.5d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
