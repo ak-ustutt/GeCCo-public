@@ -71,6 +71,7 @@
       mel%fix_vertex_ms = ms_fix
       mel%diag_type = diag_type
       if (diag_type.eq.1) then
+        write(luout,*) 'defining diagonal blocks only!'
         mel%gamdiag = gamdiag
         mel%msdiag = msdiag
       else if (diag_type.ne.0) then

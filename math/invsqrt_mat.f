@@ -30,6 +30,8 @@
       integer ::
      &     nrot, idx, lwrk, info
 
+      if (ndim.eq.0) return
+
       lwrk=max(1024,ndim**2)
       info = 0
 
