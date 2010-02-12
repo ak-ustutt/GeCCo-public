@@ -15,8 +15,6 @@
 
       integer, parameter ::
      &     ntest = 00
-      real(8), parameter ::
-     &     fac = 1/sqrt(2d0)
       integer, intent(in) ::
      &     mode, ndim, nsing, map(ndim)
       real(8), intent(inout), target ::
@@ -25,12 +23,13 @@
       logical, intent(in) ::
      &     half
       real(8) ::
-     &     sig
+     &     sig, fac
       real(8), pointer ::
      &     scr(:,:)
 
       integer ::
      &     icol, iline, ntrip, ising, itrip
+      fac = 1d0/sqrt(2d0)
 
       ntrip = ndim - nsing
       if (mode.lt.1.or.mode.gt.2.or.ntrip.lt.0

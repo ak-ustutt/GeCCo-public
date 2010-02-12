@@ -37,8 +37,8 @@
         end if
       end do
       nondia_distr = nondia_distr.or.
-     &               ms_diag.ne.msdiag.or.
-     &               gam_diag.ne.gamdiag
+     &               (msdiag.ne.999.and.ms_diag.ne.msdiag).or.
+     &               (gamdiag.ne.0.and.gam_diag.ne.gamdiag)
 
       return
       end

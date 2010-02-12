@@ -200,9 +200,9 @@
       call set_arg('_PROTO_',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
      &     val_int=(/0/))
       call set_arg('_PROTO_',DEF_ME_LIST,'DIAG_IRREP',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('_PROTO_',DEF_ME_LIST,'DIAG_MS',1,tgt_info,
      &     val_int=(/0/))
+      call set_arg('_PROTO_',DEF_ME_LIST,'DIAG_MS',1,tgt_info,
+     &     val_int=(/999/))
 *----------------------------------------------------------------------*
       call add_command_proto(RES_ME_LIST,tgt_info)
 *----------------------------------------------------------------------*

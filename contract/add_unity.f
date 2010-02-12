@@ -49,7 +49,8 @@
      &     idxmsdis_c(:),  idxmsdis_a(:),
      &     gamdis_c(:), gamdis_a(:),
      &     len_str(:), istr_csub(:),
-     &     ldim_op_c(:), ldim_op_a(:)
+     &     ldim_op_c(:), ldim_op_a(:),
+     &     mapca(:), diag_idx(:), diag_ca(:)
       real(8) ::
      &     xsign
 
@@ -66,7 +67,7 @@
 
       logical, external ::
      &     occ_is_diag_blk, next_msgamdist2, idx_str_blk3,
-     &     ielprd
+     &     ielprd, nondia_blk, nondia_distr
 
       ffout => mel_out%fhand
       opout => mel_out%op
@@ -177,6 +178,14 @@
      &                  hpvx_csub,hpvx_asub,
      &                  idx_graph(1,1),1,hpvxblkseq)
 
+      if (mel_out%diag_type.ne.0) then
+        allocate(mapca(ncblk),diag_idx(ncblk),diag_ca(ncblk))
+        if (nondia_blk(mapca,diag_idx,diag_ca,
+     &                 iocc(1,1),1,ncblk,
+     &                 nablk,mel_out%diag_type))
+     &       call quit(1,'add_unity','non-diagonal block!')
+      end if
+
       ! Loop over Ms of annihilator string.
       idxmsa = 0
 c      msmax = 2
@@ -207,6 +216,13 @@ c      msmax = 2
      &            ms_fix,fix_success)) exit
             first = .false.
             if(ms_fix.and..not.fix_success)cycle distr_loop
+            if (mel_out%diag_type.ne.0) then
+              ! skip non-diagonal distributions ...
+              if (nondia_distr(mapca,diag_idx,diag_ca,
+     &              msdis_c,msdis_a,gamdis_c,gamdis_a,
+     &              ncblk,mel_out%msdiag,
+     &              mel_out%gamdiag)) cycle distr_loop
+            end if
 
             call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
             call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
@@ -277,6 +293,8 @@ c dbgend
         enddo igama_loop
           
       enddo msa_loop
+
+      if (mel_out%diag_type.ne.0) deallocate(mapca,diag_idx,diag_ca)
 
       deallocate(hpvx_csub,hpvx_asub,
      &         occ_csub, occ_asub,
