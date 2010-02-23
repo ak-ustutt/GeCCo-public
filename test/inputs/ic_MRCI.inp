@@ -3,4 +3,4 @@ general
 calculate
  solve maxiter=50,conv=1d-5,maxsub=20
  routes contract=3,simtraf=0,schedule=1,use_tr=T
- multiref maxexc=2,minexc=2
+ multiref exc=2

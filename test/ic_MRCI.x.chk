@@ -1,5 +1,5 @@
 title
-  BeH2/3-21G; DALTON env.: preliminary test for ic-MRCI (2 act. el.)
+  BeH2/3-21G; DALTON env.: ic-MRCID (2 act. el.)
 molecule
   BeH2-MR-DALTON
 input
@@ -15,6 +15,7 @@ check
   find wrote
   compare int 2
 check
+  rewind
   label Factor out densities
   find FACTOR_OUT
   find wrote
@@ -42,15 +43,37 @@ check
   skip 6
   compare str 2
 check
-  label Optimized Metric*vector formula
-  find FOPT_SC
-  find Largest intermediates occur in
-  skip 1
-  compare real 15 1e-10
+  rewind
+  label Optimized orthogonalized Hessian formula
+  find FOPT_A_diag
+  find wrote
+  compare int 2
 check
   rewind
   label Evaluate density
   find EVAL_D
+  find -->
+  compare real 4 1e-10
+check
+  label Evaluate Hessian
+  find EVAL_A_diag
+  find -->
+  compare real 4 1e-10
+check
+  label Solve CI equations
+  find CONVERGED
+  skip 1
+  compare int 2
+  compare real 3 1e-10
+check
+  label Norm
+  find EVAL_NORM
+  find -->
+  compare real 4 1e-10
+check
+  rewind
+  label Final energy
+  find EVAL_E\(MR\)
   find -->
   compare real 4 1e-10
 end

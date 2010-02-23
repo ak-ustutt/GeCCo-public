@@ -291,10 +291,10 @@ c     &     idef=(/0/))
      &                  idef=(/-1/)) ! max. number of valence ops
       call argument_add('maxvv','calculate.multiref',type=vtyp_int,
      &                  idef=(/-1/)) ! max. number of val-val exc.
-      call argument_add('maxexc','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/))  ! max. excitation
-      call argument_add('minexc','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/))  ! min. excitation
+      call argument_add('exc','calculate.multiref',type=vtyp_int,
+     &                  idef=(/0/))  ! excitation (both min. and max.)
+      call argument_add('pure_vv','calculate.multiref',type=vtyp_log,
+     &                  ldef=(/.true./)) ! pure act.-act. excitations
 
       call keyword_add('experimental',context='calculate')
       ! set additional experimental keyword in this subroutine:
