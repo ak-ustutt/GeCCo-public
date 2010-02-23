@@ -213,6 +213,31 @@ c        else if (njoined_int.eq.2) then
         else
           unknown = .true.
         endif
+      case('VR')
+        def_g = .true.
+        idx_rpl = 2
+        if(njoined_int.eq.1)then
+          idx_prod(1:4) = (/idx_intm,idx_g,idx_r,idx_intm/)
+          idx_supv(1:4) = (/       1,    2,    3,       1/)
+          nvtx = 4
+          nfact = 3
+          nconnect = 0
+          project(1:8)=(/2,3,1,-IHOLE,1,3,1,IPART/) ! enforce the hole contraction
+                                      ! enforce that one particle line comes from R
+          nproject=2
+        else if (njoined_int.eq.2) then
+          idx_prod(1:6) =
+     &         (/idx_intm,idx_g,idx_intm,idx_intm,idx_r,idx_intm/)
+          idx_supv(1:6) =
+     &         (/       1,    2,    1,    1,    3,       1/)
+          nvtx = 6
+          nfact = 3
+          nconnect = 0
+          project(1:4)=(/2,5,1,-IHOLE/) ! enforce the hole contraction
+          nproject=1
+        else
+          unknown = .true.
+        endif
       case('V4')
         def_g = .true.
         idx_rpl = 2

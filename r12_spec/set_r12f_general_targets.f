@@ -12,6 +12,7 @@
       include 'def_orbinf.h'
 
       include 'ifc_input.h'
+      include 'ifc_targets.h'
 
       include 'par_opnames_gen.h'
       include 'par_formnames_gen.h'
@@ -29,10 +30,10 @@
 
       integer ::
      &     min_rank, max_rank, ansatz, n_pp, ndef,
-     &     min_rank_tp, min_rank_tpp,
+     &     min_rank_tp, min_rank_tpp, nblk, nj,
      &     isim, ncat, nint, icnt, nlab, irank, idef,
      &     isym, ms, msc, sym_arr(8), extend, r12op,
-     &     occ_def(ngastp,2,60),
+     &     occ_def(ngastp,2,60), vring_mode,
      &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext, trunc_type
       logical ::
      &     needed, r12fix, set_tp, set_tpp, truncate, set_RT2T2,
@@ -79,6 +80,7 @@
       call get_argument_value('method.R12','r12op',ival=r12op)
       call get_argument_value('method.R12','T1ext',ival=t1ext)
       call get_argument_value('method.R12','trunc',ival=trunc_type)
+      call get_argument_value('method.R12','vring',ival=vring_mode)
       truncate = trunc_type.ge.0
       if (is_keyword_set('method.truncate').gt.0) then
         truncate = is_keyword_set('method.truncate').gt.0
@@ -1163,13 +1165,77 @@ c     &     is_keyword_set('method.CCPT')) then
      &              parameters,2,tgt_info)
 
       ! V' intermediate
-      call add_target(op_vp_inter,ttype_op,.false.,tgt_info)
+      if (vring_mode.ge.2) then
+        nblk = 6
+        nj = 1
+        occ_def = 0
+        !
+        occ_def(IPART,1,1) = 1
+        occ_def(IHOLE,2,1) = 1
+        !
+        occ_def(IPART,1,2) = 1
+        occ_def(IPART,2,2) = 1
+        !
+        occ_def(IPART,1,3) = 2
+        occ_def(IHOLE,2,3) = 2
+        !
+        occ_def(IPART,1,4) = 1
+        occ_def(IHOLE,2,4) = 1
+        occ_def(IHOLE,1,4) = 1
+        occ_def(IPART,2,4) = 1
+        !
+        occ_def(IHOLE,1,5) = 1
+        occ_def(IPART,1,5) = 1
+        occ_def(IHOLE,2,5) = 2
+        !
+        occ_def(IPART,1,6) = 2
+        occ_def(IHOLE,2,6) = 1
+        occ_def(IPART,2,6) = 1
+      else
+        nblk = 1
+        nj = 1
+        occ_def = 0
+        !
+        occ_def(IPART,1,1) = 2
+        occ_def(IHOLE,2,1) = 2
+      end if
+      call add_target2(op_vp_inter,.false.,tgt_info)
       call set_dependency(op_vp_inter,op_v_inter,tgt_info)
-      call cloneop_parameters(-1,parameters,
-     &                        op_v_inter,.false.) ! <- dagger=.false.
-      call set_rule(op_vp_inter,ttype_op,CLONE_OP,
-     &              op_vp_inter,1,1,
-     &              parameters,1,tgt_info)
+      call set_rule2(op_vp_inter,DEF_OP_FROM_OCC,tgt_info)
+      call set_arg(op_vp_inter,DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/op_vp_inter/))
+      call set_arg(op_vp_inter,DEF_OP_FROM_OCC,'BLOCKS',1,tgt_info,
+     &     val_int=(/nblk/))
+      call set_arg(op_vp_inter,DEF_OP_FROM_OCC,'OCC',nblk*nj,tgt_info,
+     &     val_occ=occ_def(1:ngastp,1:2,1:nblk*nj))
+      
+      ! V' intermediate
+c      if () then
+c        nblk = 1
+c        occ_def = 0
+c        occ_def(IPART,1,1) = 2
+c        occ_def(IHOLE,2,1) = 2
+        nblk = 1
+        nj   = 2
+        occ_def = 0
+        occ_def(IPART,1,1) = 1
+        occ_def(IHOLE,2,1) = 1
+        occ_def(IPART,1,2) = 1
+        occ_def(IHOLE,2,2) = 1
+c      else
+c      end if
+      call add_target2('VR2',.false.,tgt_info)
+      call set_dependency('VR2',op_v_inter,tgt_info)
+      call set_rule2('VR2',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('VR2',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/'VR2'/))
+      call set_arg('VR2',DEF_OP_FROM_OCC,'BLOCKS',1,tgt_info,
+     &     val_int=(/nblk/))
+      call set_arg('VR2',DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+     &     val_int=(/nj/))
+      call set_arg('VR2',DEF_OP_FROM_OCC,'OCC',nblk*nj,tgt_info,
+     &     val_occ=occ_def(1:ngastp,1:2,1:nblk*nj))
+      
             
       ! B intermediate
       occ_def = 0
@@ -1518,6 +1584,73 @@ c        call set_g_z_old(ndef,occ_def)
       call set_rule('V-Ccore-CABS',ttype_frm,REPLACE,
      &              labels,2+nint*2,1,
      &              parameters,2,tgt_info)
+
+      ! formal definition of VR
+      call add_target2('Vring_formal',.false.,tgt_info)
+      call set_dependency('Vring_formal',op_vp_inter,tgt_info)
+      call set_dependency('Vring_formal','VR2',tgt_info)
+      call set_dependency('Vring_formal',op_ham,tgt_info)
+      call set_dependency('Vring_formal',op_r12,tgt_info)
+      call set_rule2('Vring_formal',DEF_R12INTM_FORMAL,tgt_info)
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,'LABEL',1,tgt_info,
+     &             val_label=(/'Vring_formal'/))
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
+     &                                              'INTERM',1,tgt_info,
+     &             val_label=(/op_vp_inter/))
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
+     &                                           'OPERATORS',2,tgt_info,
+     &             val_label=(/op_r12,op_ham/))
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
+     &                                           'ANSATZ',1,tgt_info,
+     &             val_int=(/ansatz/))
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
+     &                                           'MODE',1,tgt_info,
+     &             val_str='VR')
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
+     &                                           'TITLE',1,tgt_info,
+     &            val_str='V(ring) intermediate, formal definition')
+      ! do the same for non-symmetrized ia,jb
+      call set_rule2('Vring_formal',DEF_R12INTM_FORMAL,tgt_info)
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,'LABEL',1,tgt_info,
+     &             val_label=(/'Vring2_formal'/))
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
+     &                                              'INTERM',1,tgt_info,
+     &             val_label=(/'VR2'/))
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
+     &                                           'OPERATORS',2,tgt_info,
+     &             val_label=(/op_r12,op_ham/))
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
+     &                                           'ANSATZ',1,tgt_info,
+     &             val_int=(/ansatz/))
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
+     &                                           'MODE',1,tgt_info,
+     &             val_str='VR')
+      call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
+     &                                           'TITLE',1,tgt_info,
+     &            val_str='V(ring) intermediate, formal definition')
+
+      call add_target2('Vring_CABS',.false.,tgt_info)
+      call set_dependency('Vring_CABS',op_ham,tgt_info)
+      call set_dependency('Vring_CABS','Vring_formal',tgt_info)
+      call set_dependency('Vring_CABS',op_rint,tgt_info)
+      call set_rule2('Vring_CABS',REPLACE,tgt_info)
+      call set_arg('Vring_CABS',REPLACE,'LABEL_RES',1,tgt_info,
+     &            val_label=(/'Vring_CABS'/))
+      call set_arg('Vring_CABS',REPLACE,'LABEL_IN',1,tgt_info,
+     &            val_label=(/'Vring_formal'/))
+      call set_arg('Vring_CABS',REPLACE,'OP_LIST',2,tgt_info,
+     &            val_label=(/op_r12,op_rint/))
+      call set_arg('Vring_CABS',REPLACE,'TITLE',1,tgt_info,
+     &            val_str='V(ring) intermediate, for evaluation')
+      call set_rule2('Vring_CABS',REPLACE,tgt_info)
+      call set_arg('Vring_CABS',REPLACE,'LABEL_RES',1,tgt_info,
+     &            val_label=(/'Vring2_CABS'/))
+      call set_arg('Vring_CABS',REPLACE,'LABEL_IN',1,tgt_info,
+     &            val_label=(/'Vring2_formal'/))
+      call set_arg('Vring_CABS',REPLACE,'OP_LIST',2,tgt_info,
+     &            val_label=(/op_r12,op_rint/))
+      call set_arg('Vring_CABS',REPLACE,'TITLE',1,tgt_info,
+     &            val_str='V(ring) intermediate, for evaluation')
 
       ! formal definition of Vpx
       labels(1:10)(1:len_target_name) = ' '
@@ -2022,6 +2155,25 @@ c      call set_dependency(fopt_r12_vcabs,mel_gintx,tgt_info)
       call set_rule('V-Ccore-OPT',ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
+
+      call add_target2('Vring-EVAL',.false.,tgt_info)
+      call set_dependency('Vring-EVAL','Vring_CABS',tgt_info)
+      call set_dependency('Vring-EVAL',mel_vp_def,tgt_info)
+      call set_dependency('Vring-EVAL',mel_ham,tgt_info)
+      call set_dependency('Vring-EVAL',mel_rint,tgt_info)
+      call set_rule2('Vring-EVAL',OPTIMIZE,tgt_info)
+      call set_arg('Vring-EVAL',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &            val_label=(/'Vring-OPT'/))
+      if (vring_mode.ge.2) then
+        call set_arg('Vring-EVAL',OPTIMIZE,'LABELS_IN',2,tgt_info,
+     &            val_label=(/'Vring_CABS','Vring2_CABS'/))
+      else
+        call set_arg('Vring-EVAL',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &            val_label=(/'Vring_CABS'/))
+      end if
+      call set_rule2('Vring-EVAL',EVAL,tgt_info)
+      call set_arg('Vring-EVAL',EVAL,'FORM',1,tgt_info,
+     &            val_label=(/'Vring-OPT'/))
 
       ! set X
       labels(1:10)(1:len_target_name) = ' '
@@ -2767,6 +2919,26 @@ c     &              parameters,1,tgt_info)
       call me_list_parameters(-1,parameters,
      &     msc,0,1,0,0,.false.)
       call set_rule('DEF-V-Cc-INTER',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
+      ! V'-list
+      call add_target(mel_vp_def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_vp_def,op_vp_inter,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_vp_inter
+      labels(2) = op_vp_inter
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule(mel_vp_def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'VRnonsym'
+      labels(2) = 'VR2'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule(mel_vp_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
 

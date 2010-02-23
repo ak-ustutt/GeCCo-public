@@ -1,11 +1,9 @@
 *----------------------------------------------------------------------*
       subroutine set_ic_mrci_targets(tgt_info,orb_info,env_type)
 *----------------------------------------------------------------------*
-*     preliminary routine for multireference targets.
-*     installed in order to get some complicated factorizations
-*     (both FACTOR_OUT and OPTIMIZE) into the test suite
+*     contains targets for internally contracted MRCI
 *
-*     matthias, end of 2009
+*     matthias, 2009/2010
 *----------------------------------------------------------------------*
       implicit none
 
