@@ -114,6 +114,7 @@
      &       call quit(1,'fs_newintm_drv',
      &       'S2 handling is not implemented!!!!')
       end if
+      me_new%diag_type = 0
 
       ! make sure that all graphs exist to address the ME-list
       call update_graphs(str_info,me_new,orb_info)

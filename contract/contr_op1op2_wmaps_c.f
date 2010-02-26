@@ -186,7 +186,10 @@
      &     cinfo_reo12c(:,:), cinfo_reo12a(:,:),
      &     cinfo_op1op2_0c(:,:), cinfo_op1op2_0a(:,:),
      &     map_info_reo1c(:), map_info_reo1a(:),
-     &     map_info_reo2c(:), map_info_reo2a(:)
+     &     map_info_reo2c(:), map_info_reo2a(:),
+     &     mapca12(:), diag_idx12(:), diag_ca12(:),
+     &     mapca1(:), diag_idx1(:), diag_ca1(:),
+     &     mapca2(:), diag_idx2(:), diag_ca2(:)
 
 c dbg
       integer, pointer ::
@@ -205,7 +208,8 @@ c dbg
      &     ielsum, ielprd, idx_msgmdst2, get_lenmap, idxlist,
      &     max_dis_blk
       logical, external ::
-     &     next_dist, next_msgamdist2, msa2idxms4op, list_cmp
+     &     next_dist, next_msgamdist2, msa2idxms4op, list_cmp,
+     &     nondia_blk, nondia_distr
       real(8), external ::
      &     ddot
 
@@ -572,6 +576,37 @@ c          end if
         bufop1op2 = .true.
         xop1op2 => xret
         if (ntest.ge.100) write(luout,*) ' result is scalar '
+      end if
+
+      if (me_op1op2tmp%diag_type.ne.0) then
+        allocate(mapca12(ncblk_op1op2tmp),diag_idx12(ncblk_op1op2tmp),
+     &           diag_ca12(ncblk_op1op2tmp))
+        if (nondia_blk(mapca12,diag_idx12,diag_ca12,
+     &                 op1op2tmp%ihpvca_occ(1,1,
+     &                        (iblkop1op2tmp-1)*op1op2tmp%njoined+1),
+     &                 op1op2tmp%njoined,ncblk_op1op2tmp,
+     &                 nablk_op1op2tmp,me_op1op2tmp%diag_type))
+     &       call quit(1,'contr_op1op2_wmaps_c','non-diagonal block!')
+      end if
+      if (me_op1%diag_type.ne.0) then
+        allocate(mapca1(ncblk_op1),diag_idx1(ncblk_op1),
+     &           diag_ca1(ncblk_op1))
+        if (nondia_blk(mapca1,diag_idx1,diag_ca1,
+     &                 op1%ihpvca_occ(1,1,
+     &                        (iblkop1-1)*op1%njoined+1),
+     &                 op1%njoined,ncblk_op1,
+     &                 nablk_op1,me_op1%diag_type))
+     &       call quit(1,'contr_op1op2_wmaps_c','non-diagonal block!')
+      end if
+      if (me_op2%diag_type.ne.0) then
+        allocate(mapca2(ncblk_op2),diag_idx2(ncblk_op2),
+     &           diag_ca2(ncblk_op2))
+        if (nondia_blk(mapca2,diag_idx2,diag_ca2,
+     &                 op2%ihpvca_occ(1,1,
+     &                        (iblkop2-1)*op2%njoined+1),
+     &                 op2%njoined,ncblk_op2,
+     &                 nablk_op2,me_op2%diag_type))
+     &       call quit(1,'contr_op1op2_wmaps_c','non-diagonal block!')
       end if
 
       call atim_cs(cpu,sys)
@@ -1248,6 +1283,15 @@ c                  print *,'igam12i_a(3),idxms: ',igam12i_a(3),idxms
 c                  print *,'ndis_op1op2tmp(igam12i_a(3),idxms):',
 c     &                 ndis_op1op2tmp(igam12i_a(3),idxms)
 c dbg
+
+                  if (me_op1op2tmp%diag_type.ne.0) then
+                    ! skip non-diagonal distributions ...
+                    if (nondia_distr(mapca12,diag_idx12,diag_ca12,
+     &                     msi_dis_c,msi_dis_a,gmi_dis_c,gmi_dis_a,
+     &                     ncblk_op1op2tmp,me_op1op2tmp%msdiag,
+     &                     me_op1op2tmp%gamdiag)) cycle caex2_loop
+                  end if
+
                   if (iblkop1op2tmp.gt.0.and.
      &                 ndis_op1op2tmp(igam12i_raw(3),idxms).gt.1) then
 
@@ -1264,7 +1308,7 @@ c                      print *,'msop1dis_a',msop1dis_a
                       enddo
                     endif
 c dbg
-                    
+
                     idxdis =
      &                  idx_msgmdst2(
      &                   iblkop1op2tmp,idxms,igam12i_raw(3),
@@ -1410,6 +1454,14 @@ c                        endif
 c                      enddo
                     endif
 c dbg
+
+                    if (me_op1%diag_type.ne.0) then
+                      ! skip non-diagonal distributions ...
+                      if (nondia_distr(mapca1,diag_idx1,diag_ca1,
+     &                      msop1dis_c,msop1dis_a,gmop1dis_c,gmop1dis_a,
+     &                      ncblk_op1,me_op1%msdiag,
+     &                      me_op1%gamdiag)) cycle cac_loop
+                    end if
                     
                     ! get distribution index
                     idxms =
@@ -1522,6 +1574,14 @@ c                        endif
 c                      enddo
                     endif
 c dbg
+
+                    if (me_op2%diag_type.ne.0) then
+                      ! skip non-diagonal distributions ...
+                      if (nondia_distr(mapca2,diag_idx2,diag_ca2,
+     &                      msop2dis_c,msop2dis_a,gmop2dis_c,gmop2dis_a,
+     &                      ncblk_op2,me_op2%msdiag,
+     &                      me_op2%gamdiag)) cycle cac_loop
+                    end if
 
                     ! get distribution index
                     idxms =
@@ -1827,6 +1887,13 @@ c dbg
         end if
 
       end do ms_loop
+
+      if (me_op1op2tmp%diag_type.ne.0)
+     &         deallocate(mapca12,diag_idx12,diag_ca12)
+      if (me_op1%diag_type.ne.0)
+     &         deallocate(mapca1,diag_idx1,diag_ca1)
+      if (me_op2%diag_type.ne.0)
+     &         deallocate(mapca2,diag_idx2,diag_ca2)
 
 c      if (use_tr_here.and..not.update) then
       if (use_tr_here) then

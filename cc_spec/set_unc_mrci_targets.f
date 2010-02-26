@@ -193,9 +193,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_rule('F_FREF',ttype_frm,EXPAND_OP_PRODUCT,
      &              labels,7,1,
      &              parameters,3,tgt_info)
-c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-c      call set_rule('F_FREF',ttype_frm,PRINT_FORMULA,
-c     &                labels,2,1,parameters,2,tgt_info)
+      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+      call set_rule('F_FREF',ttype_frm,PRINT_FORMULA,
+     &                labels,2,1,parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae 

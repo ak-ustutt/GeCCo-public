@@ -48,7 +48,8 @@
      &     ninclude, ninclude_or, nexclude,
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
-     &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp
+     &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
+     &     dgam, dms
       integer ::
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -767,9 +768,12 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('S2',rule,tgt_info,val_int=s2)
         call get_arg('MS',rule,tgt_info,val_int=ms)
         call get_arg('MS_FIX',rule,tgt_info,val_log=ms_fix)
+        call get_arg('DIAG_TYPE',rule,tgt_info,val_int=imode)
+        call get_arg('DIAG_IRREP',rule,tgt_info,val_int=dgam)
+        call get_arg('DIAG_MS',rule,tgt_info,val_int=dms)
         call define_me_list(label,label2,
      &       absym,casym,gamma,s2,ms,ms_fix,
-     &       -1,-1,
+     &       -1,-1,imode,dgam,dms,
      &       op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
       case(UNITY)
@@ -939,7 +943,7 @@ c          mode = 'dia-R12'
         call get_arg('MODE',rule,tgt_info,val_str=mode)
 
         call inv_op(label,label2,mode,
-     &       op_info,orb_info,str_info)
+     &       op_info,orb_info,str_info,strmap_info)
 
 *----------------------------------------------------------------------*
       case(ADD)

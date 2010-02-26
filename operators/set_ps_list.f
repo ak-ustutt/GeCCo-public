@@ -47,6 +47,7 @@
       list%gamt  = gamt
       list%mst   = mst
       list%s2    = s2
+      list%diag_type = 0
 
       ! make sure that all graphs exist to address the ME-list
       call update_graphs(str_info,list,orb_info)

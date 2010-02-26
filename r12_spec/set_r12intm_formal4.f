@@ -222,6 +222,8 @@ c        else if (njoined_int.eq.2) then
           nvtx = 4
           nfact = 3
           nconnect = 0
+          navoid = 1
+          avoid(1:2) = (/3,4/) ! fix to avoid contributions from ph-geminals
           project(1:8)=(/2,3,1,-IHOLE,1,3,1,IPART/) ! enforce the hole contraction
                                       ! enforce that one particle line comes from R
           nproject=2

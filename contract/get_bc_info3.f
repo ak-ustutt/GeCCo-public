@@ -389,7 +389,9 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
         do ireo = 1, reo_info%nreo
           do jreo = ireo+1, reo_info%nreo
             if (reo_info%reo(ireo)%from.eq.reo_info%reo(jreo)%from.or.
-     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to) then
+     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to.or.
+     &          reo_info%reo(ireo)%from.eq.reo_info%reo(jreo)%to.or.
+     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%from) then
               ! only forbid if non-zero overlap:
               if (iocc_nonzero(iocc_overlap(
      &            reo_info%reo(ireo)%occ_shift,.false.,
@@ -398,10 +400,6 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
             end if
           end do
         end do
-
-        ! another FIX: skip (currently?) impossible contractions
-        possible = possible.and.
-     &             allowed_contr(contr,arc_list(1:len_list),len_list)
 
 c        ! to be commented out
 c        if (reo_info%nreo.gt.0) then
@@ -414,6 +412,10 @@ c        end if
         if (set_reo) call tidy_reo_info(reo_info)
 
       end if
+
+      ! another FIX: skip (currently?) impossible contractions
+      possible = possible.and.
+     &           allowed_contr(contr,arc_list(1:len_list),len_list)
 
       ! calculate sign
       if (.not.self) then
@@ -435,11 +437,11 @@ c        end if
      &       'bc_sign, sh_sign -> bc_sign: ',
      &       bc_sign, dble(sh_sign), ' -> ', bc_sign*dble(sh_sign)
         bc_sign = bc_sign*dble(sh_sign)
-        if (dble(cnt_sign).ne.bc_sign) then
-          write(luout,*) 'OHA OHA OHA'
-          write(luout,*) 'bc_sign (old) = ',bc_sign
-          write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
-        end if
+cmh        if (dble(cnt_sign).ne.bc_sign) then
+cmh          write(luout,*) 'OHA OHA OHA'
+cmh          write(luout,*) 'bc_sign (old) = ',bc_sign
+cmh          write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
+cmh        end if
 
 cmh  deactivated quit statement because sign may differ due to
 cmh  different vertex order of end result!

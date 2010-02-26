@@ -644,7 +644,7 @@ c      in_last_section = associated(cursection,mem_cursection)
      &     section
 
       if (.not.associated(mem_tail))
-     &     call quit(1,'memman_remsection','memman not initialized?')
+     &    call quit(1,'memman_set_cursection','memman not initialized?')
 
       mem_cursection =>  mem_tail
       
@@ -652,7 +652,7 @@ c      in_last_section = associated(cursection,mem_cursection)
         do
           if (trim(mem_cursection%name).eq.trim(name)) exit
           if (.not.associated(mem_cursection%prev))
-     &         call quit(1,'memman_remsection',
+     &         call quit(1,'memman_set_cursection',
      &         'could not find a node name: "'//trim(name)//'"')
           mem_cursection => mem_cursection%prev
         end do

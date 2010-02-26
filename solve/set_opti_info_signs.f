@@ -38,7 +38,7 @@
       integer ::
      &     ifree, iopt, ioff, nsect, nwfpsec(maxsec), idstsec(maxsec),
      &     sign_cur, sign_old, iblk, ncblk, nablk, ncblk2, nablk2,
-     &     iocc_dag(ngastp,2), switch_sign
+     &     iocc_dag(ngastp,2), switch_sign, iocc0(ngastp,2)
       integer(8) ::
      &     base, topo_trv, topo1, topo2
       integer, pointer ::
@@ -186,12 +186,12 @@ c dbgend
             ! the contraction is given by occ1
             iocc_dag(1:ngastp,1)=iocc_dag(1:ngastp,1)-iocc1(1:ngastp,2)
             iocc_dag(1:ngastp,2)=iocc_dag(1:ngastp,2)-iocc1(1:ngastp,1)
-            iocc2 = 0
+            iocc0 = 0
             ! get occ_trv in contraction form: KA^+ J0C J0A KC^+
             sign_cur = sign_hpvx(1,iocc1,.true.,iocc_dag,.false.)
             ! now the contraction:
             sign_cur = sign_cur 
-     &               * sign_contr(iocc1,iocc2,iocc_dag,0,.false.)
+     &               * sign_contr(iocc1,iocc0,iocc_dag,0,.false.)
 
             ! for now, sign must be the same as that given by switch_sign:
             if (sign_cur.ne.switch_sign)

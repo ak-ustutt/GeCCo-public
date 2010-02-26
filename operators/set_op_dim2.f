@@ -60,7 +60,7 @@
      &     mel
 
       logical ::
-     &     first, ms_fix, fix_success
+     &     first, ms_fix, fix_success, skip
       integer ::
      &     idxstr, idxstr_tot, idxdis, iblk, iblkoff, nexc,
      &     msa_max, msc_max, njoined, nblk,
@@ -76,7 +76,8 @@
      &     msdis_c(:),  msdis_a(:),
      &     idxmsdis_c(:),  idxmsdis_a(:),
      &     gamdis_c(:), gamdis_a(:),
-     &     len_str(:)
+     &     len_str(:),
+     &     mapca(:), diag_idx(:), diag_ca(:)
       integer, pointer ::
      &     hpvx_occ(:,:,:), idx_graph(:,:,:),
      &     ca_occ(:,:)
@@ -90,7 +91,7 @@ c     &     msd(ngastp,2), igamd(ngastp,2)
      &     msd(ngastp,2,mel%op%njoined), igamd(ngastp,2,mel%op%njoined)
 
       logical, external ::
-     &     next_msgamdist2
+     &     next_msgamdist2, nondia_blk, nondia_distr
       integer, external ::
      &     msgmdid2, msgmdid, msa2idxms4op
       
@@ -176,6 +177,15 @@ c dbg
      &                    hpvx_csub,hpvx_asub,
      &                    idx_graph(1,1,iblkoff+1),njoined,hpvxblkseq)
 
+        if (mel%diag_type.ne.0) then
+          ! skip non-diagonal blocks
+          allocate(mapca(ncsub),diag_idx(ncsub),diag_ca(ncsub))
+          if (nondia_blk(mapca,diag_idx,diag_ca,
+     &                   hpvx_occ(1,1,iblkoff+1),njoined,
+     &                   ncsub,nasub,mel%diag_type))
+     &             msa_max = -msa_max - 1 ! will skip msa_loop
+        end if
+
 c dbg
 c        print *,'graph_csub: ',graph_csub(1:ncsub)
 c        print *,'graph_asub: ',graph_asub(1:nasub)
@@ -257,6 +267,15 @@ c dbg
 
               call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncsub)
               call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nasub)
+
+              if (mel%diag_type.ne.0) then
+                ! skip non-diagonal distributions and those in which
+                ! the diagonal index tuple has wrong symmetry/ms
+                if (nondia_distr(mapca,diag_idx,diag_ca,
+     &                           msdis_c,msdis_a,gamdis_c,gamdis_a,
+     &                           ncsub,mel%msdiag,mel%gamdiag))
+     &                   cycle distr_loop
+              end if
 
 c dbg fix by mh ???
               if (associated(graphs)) then
@@ -411,6 +430,8 @@ c dbg
           end do igama_loop
 
         end do msa_loop
+
+        if (mel%diag_type.ne.0) deallocate(mapca,diag_idx,diag_ca)
 
         mel%len_op_occ(iblk) = idxstr - mel%off_op_occ(iblk)
 

@@ -330,19 +330,19 @@ c        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
           call set_dependency(form_ccr12lg0,'Vpx_formal',tgt_info)
           call set_dependency(form_ccr12lg0,'Z2INT_R12',tgt_info)
           call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
-          labels(10) = 'Vpx_formal'
-          labels(11) = 'Vpx_formal^+'
-          labels(12)  = 'Z2INT_R12'
-          labels(13)  = 'Z2INT_R12^+'
-          labels(14) = form_r12_xhint
-          nint = 12
+          labels(2+nint+1) = 'Vpx_formal'
+          labels(2+nint+2) = 'Vpx_formal^+'
+          labels(2+nint+3)  = 'Z2INT_R12'
+          labels(2+nint+4)  = 'Z2INT_R12^+'
+          labels(2+nint+5) = form_r12_xhint
+          nint = nint+5
         else
           call set_dependency(form_ccr12lg0,'Z2INT_R12',tgt_info)
           call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
-          labels(10)  = 'Z2INT_R12'
-          labels(11)  = 'Z2INT_R12^+'
-          labels(12) = form_r12_xhint
-          nint = 10
+          labels(2+nint+1)  = 'Z2INT_R12'
+          labels(2+nint+2)  = 'Z2INT_R12^+'
+          labels(2+nint+3) = form_r12_xhint
+          nint = nint+3
         end if
       end if
  

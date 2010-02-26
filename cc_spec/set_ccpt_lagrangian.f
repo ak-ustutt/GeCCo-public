@@ -237,10 +237,10 @@ c dbg
      &               r12op_loc,r12fix,op_info)
 
 
-c        if (ntest.ge.1000) then
+        if (ntest.ge.1000) then
           call write_title(luout,wst_title,'T + CR (PT)')
           call print_form_list(luout,flist_t_r_pt,op_info)
-c        end if
+        end if
 
 
       end if
