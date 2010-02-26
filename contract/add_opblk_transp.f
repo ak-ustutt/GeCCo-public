@@ -291,7 +291,7 @@
                 istr = idxa-1
                 do icmp = 1, nablk
                   istr_asub(icmp) = mod(istr,len_str(ncblk+icmp))
-                  istr = istr/len_str(icmp)
+                  istr = istr/len_str(ncblk+icmp)
                 end do
 
                 idx_in  = ioff_in + idx_str_blk3(istr_csub,istr_asub,

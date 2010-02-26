@@ -336,8 +336,8 @@ cmhend
             nselect = 0
             call select_formula_target(idxselect,nselect,
      &                  me_trv(iopt)%mel%label,depend,op_info)
-            call switch_mel_record(me_special(1)%mel,iroot)
-            call switch_mel_record(me_scr(iopt)%mel,iroot)
+            call switch_mel_record(me_special(1)%mel,irecscr)
+            call switch_mel_record(me_scr(iopt)%mel,irecscr)
             ! pretend that me_trv is not up to date
             me_trv(iopt)%mel%fhand%last_mod(
      &             me_trv(iopt)%mel%fhand%current_record) = -1
@@ -346,6 +346,20 @@ cmhend
             ! residual norm (nselect should be 1):
             xrsnrm(iroot,iopt) = xret(idxselect(1))
             deallocate(xret,idxselect)
+c dbg
+c            print *,'residual vector before transformation:'
+c            call vec_from_da(ffspc,
+c     &        irecscr,xbuf1,nwfpar(iopt))
+c            do idx = 1, nwfpar(iopt)
+c              print *,idx,xbuf1(idx)
+c            end do
+c            print *,'transformed residual vector:'
+c            call vec_from_da(me_scr(iopt)%mel%fhand,
+c     &        me_scr(iopt)%mel%fhand%current_record,xbuf1,nwfpar(iopt))
+c            do idx = 1, nwfpar(iopt)
+c              print *,idx,xbuf1(idx)
+c            end do
+c dbgend
 
           end if
         end do
@@ -405,8 +419,10 @@ cmhend
           case(optinf_prc_file)
             if (nspecial.gt.0) then
               ffspc => me_special(1)%mel%fhand
+              trafo = .true.
             else
               ffspc => ffscr(iopt)%fhand
+              trafo = .false.
             end if
             if (nincore.ge.2) then
               call vec_from_da(
@@ -488,8 +504,7 @@ c              xnrm = 1d0
           end select
 
           ! if requested, transform new subspace vectors
-          if (opti_info%typ_prc(iopt).eq.optinf_prc_file
-     &        .and.nspecial.gt.0) then
+          if (trafo) then
             ! use non-daggered transformation matrix if requested
             if (nspecial.eq.3)
      &         call assign_me_list(me_special(2)%mel%label,
@@ -512,6 +527,27 @@ c              xnrm = 1d0
               call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
             deallocate(xret,idxselect)
+c dbg
+c            print *,'back-transformed trial vector:'
+c            call vec_from_da(me_scr(iopt)%mel%fhand,
+c     &        me_scr(iopt)%mel%fhand%current_record,xbuf1,nwfpar(iopt))
+c            do idx = 1, nwfpar(iopt)
+c              print *,idx,xbuf1(idx)
+c            end do
+c            ! symmetrize!
+c            if (nspecial.eq.3) then
+c              call sym_ab_blk(xbuf2(2),xbuf1(2),0.5d0,dble(1),
+c     &                        me_scr(iopt)%mel,2,
+c     &                        str_info,strmap_info,orb_info)
+c              xbuf2(1) = 0d0
+c              print *,'back-transformed trial vector:'
+c              do idx = 1, nwfpar(iopt)
+c                print *,idx,xbuf2(idx)
+c              end do
+c              call vec_to_da(me_scr(iopt)%mel%fhand,
+c     &         me_scr(iopt)%mel%fhand%current_record,xbuf2,nwfpar(iopt))
+c            end if
+c dbgend 
 
             ! reassign op. with list containing trial vector
             call assign_me_list(me_trv(iopt)%mel%label,
@@ -555,6 +591,15 @@ c              xnrm = 1d0
      &                  use_s,ioff_s,ffmet,ffscr(1)%fhand,nnew,nopt,
      &                  nsec_arr,nwfpsec,idstsec,signsec,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
+c dbg
+c            print *,'orthogonalized trial vector:'
+c            print *,'ndim= ',ndim_vsbsp-1
+c            call vec_from_da(ffvsbsp(1)%fhand,
+c     &        ndim_vsbsp-1,xbuf1,nwfpar(1))
+c            do idx = 1, nwfpar(1)
+c              print *,idx,xbuf1(idx)
+c            end do
+c dbgend
 
         ! set nadd
         if (nadd.eq.0)

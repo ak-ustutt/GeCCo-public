@@ -137,7 +137,8 @@
      &     map_to_reo_c(:), map_to_reo_a(:)
 
       integer, pointer ::
-     &     ndis_opreo(:,:), d_gam_ms_opreo(:,:,:)
+     &     ndis_opreo(:,:), d_gam_ms_opreo(:,:,:),
+     &     mapca(:), diag_idx(:), diag_ca(:)
 
       type(graph), pointer ::
      &     graphs(:)
@@ -152,7 +153,7 @@ c dbg
      &     ms_fix
 
       logical, external ::
-     &     next_msgamdist2, check_ms, check_gm
+     &     next_msgamdist2, check_ms, check_gm, nondia_blk, nondia_distr
       integer, external ::
      &     get_lenmap, ielprd, idx_msgmdst2, idxlist,
      &     msa2idxms4op
@@ -171,6 +172,17 @@ c dbg
       opreo => me_opreo%op
 
       ms_fix = me_opreo%fix_vertex_ms
+
+      if (me_opreo%diag_type.ne.0) then
+        allocate(mapca(ncblk_opreo),diag_idx(ncblk_opreo),
+     &           diag_ca(ncblk_opreo))
+        if (nondia_blk(mapca,diag_idx,diag_ca,
+     &                 opreo%ihpvca_occ(1,1,
+     &                        (iblk_opreo-1)*opreo%njoined+1),
+     &                 opreo%njoined,ncblk_opreo,
+     &                 nablk_opreo,me_opreo%diag_type))
+     &       call quit(1,'reo_blk_wmaps_c','non-diagonal block!')
+      end if
 
       idxst_opreo = me_opreo%off_op_occ(iblk_opreo)
       ndis_opreo  => me_opreo%off_op_gmox(iblk_opreo)%ndis
@@ -495,6 +507,15 @@ c dbg
      &                 gm_k_dis_a,gm_i0_dis_a,map_info_to_reo_a,
      &                 strmap_info,nsym,ngraph)
 
+                if (me_opreo%diag_type.ne.0) then
+                  ! skip non-diagonal distributions ...
+                  if (nondia_distr(mapca,diag_idx,diag_ca,
+     &                   ms_ip_dis_c,ms_ip_dis_a,
+     &                   gm_ip_dis_c,gm_ip_dis_a,
+     &                   ncblk_opreo,me_opreo%msdiag,
+     &                   me_opreo%gamdiag)) cycle
+                end if
+
                 ! --> offset in xop_reo
                 if (ndis_opreo(gm_op_a,idxms_op_a).gt.1) then
                   idxdis =
@@ -684,6 +705,8 @@ c dbg
 
         end do
       end do
+
+      if (me_opreo%diag_type.ne.0) deallocate(mapca,diag_idx,diag_ca)
 
       return
       end

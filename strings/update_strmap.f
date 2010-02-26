@@ -112,19 +112,25 @@ c dbg
      &       strmap_info%offsets_flip(igraph)%msgm
       end do
 
-      deallocate(strmap_info%idx_strmap,strmap_info%offsets)
+      deallocate(strmap_info%idx_strmap,strmap_info%maxlen_blk,
+     &           strmap_info%offsets)
 
       strmap_info%idx_strmap => new_idx_strmap
+      strmap_info%maxlen_blk => new_maxlen_blk
       strmap_info%offsets    => new_offsets
 
-      deallocate(strmap_info%idx_fcmap,strmap_info%offsets_fc)
+      deallocate(strmap_info%idx_fcmap,strmap_info%maxlen_blk_fc,
+     &           strmap_info%offsets_fc)
 
       strmap_info%idx_fcmap  => new_idx_fcmap
+      strmap_info%maxlen_blk_fc => new_maxlen_blk_fc
       strmap_info%offsets_fc => new_offsets_fc
 
-      deallocate(strmap_info%idx_flipmap,strmap_info%offsets_flip)
+      deallocate(strmap_info%idx_flipmap,strmap_info%maxlen_blk_flip,
+     &           strmap_info%offsets_flip)
 
       strmap_info%idx_flipmap  => new_idx_flipmap
+      strmap_info%maxlen_blk_flip => new_maxlen_blk_flip
       strmap_info%offsets_flip => new_offsets_flip
 
       return

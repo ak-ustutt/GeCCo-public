@@ -197,6 +197,12 @@ c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
       if (iprlvl.ge.1)
      &     write(luout,*) 'set up diagonal'//
      &     ' from rank 1 part of ',trim(me_ham%op%name)
+      if (iprlvl.ge.1.and.use_id)
+     &     write(luout,*)
+     &     '     and from rank 0 part of ',trim(me_ham%op%name)
+      if (iprlvl.ge.1.and.use_h2)
+     &     write(luout,*)
+     &     '     and from rank 2 part of ',trim(me_ham%op%name)
       if (iprlvl.ge.1.and.use_b.and.use_x)
      &     write(luout,*) 
      &     '     and the diagonals of ',trim(me_b%op%name),
