@@ -34,7 +34,7 @@
      &     occ_def(ngastp,2,20)
       logical ::
      &     needed, r12fix, set_tp, set_tpp, screen,
-     &     fixed_gem, pf12_trunc, f12x_trunc
+     &     fixed_gem, pf12_trunc, f12x_trunc, pert
       character(8) ::
      &     approx, f12x_mode
       character(len_target_name) ::
@@ -75,6 +75,7 @@
       call get_argument_value('method.R12','screen',lval=screen)
       call get_argument_value('method.R12','trunc',ival=trunc_type)
       call get_argument_value('method.R12','vring',ival=vring_mode)
+      call get_argument_value('method.R12','pert',lval=pert)
       call get_argument_value('method.R12','f12x',str=f12x_mode)
       f12x_trunc = len_trim(f12x_mode).gt.0
       if (f12x_trunc) trunc_type = 0
@@ -93,6 +94,20 @@ c dbg
 *----------------------------------------------------------------------*
 *     Operators:
 *----------------------------------------------------------------------*
+      ! pertubational approach: define conventional L and E
+      ! Lagrange functional 
+      call add_target(op_cclg,ttype_op,.false.,tgt_info)
+      call set_rule(op_cclg,ttype_op,DEF_SCALAR,
+     &              op_cclg,1,1,
+     &              parameters,0,tgt_info)
+      
+      ! Energy 
+      call add_target(op_ccen,ttype_op,.false.,tgt_info)
+      call set_rule(op_ccen,ttype_op,DEF_SCALAR,
+     &              op_ccen,1,1,
+     &              parameters,0,tgt_info)
+
+
       ! Lagrange functional
       call add_target(op_ccr12lg,ttype_op,.false.,tgt_info)
       call set_rule(op_ccr12lg,ttype_op,DEF_SCALAR,
@@ -222,6 +237,53 @@ c dbg
 *----------------------------------------------------------------------*
 *     Formulae
 *----------------------------------------------------------------------*
+      ! perturbative: set conv. CC Lagrangian
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_cclg0
+      labels(2) = op_cclg
+      labels(3) = op_ham
+      labels(4) = op_tbar
+      labels(5) = op_top
+      call add_target(form_cclg0,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_cclg0,op_cclg,tgt_info)
+      call set_dependency(form_cclg0,op_ham,tgt_info)
+      call set_dependency(form_cclg0,op_tbar,tgt_info)
+      call set_dependency(form_cclg0,op_top,tgt_info)
+      call set_rule(form_cclg0,ttype_frm,DEF_CC_LAGRANGIAN,
+     &              labels,5,1,
+     &              title_cclg0,1,tgt_info)
+      call set_rule(form_cclg0,ttype_frm,TEX_FORMULA,
+     &              labels,5,1,
+     &              'cc_lag.tex',1,tgt_info)
+  
+      ! perturbative: define conv. E
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_ccen0
+      labels(2) = form_cclg0
+      labels(3) = op_ccen
+      labels(4) = op_tbar
+      call add_target(form_ccen0,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_ccen0,form_cclg0,tgt_info)
+      call set_dependency(form_ccen0,op_ccen,tgt_info)
+      call set_rule(form_ccen0,ttype_frm,INVARIANT,
+     &              labels,4,1,
+     &              title_ccen0,1,tgt_info)
+
+      ! perturbative: define conv. residual
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = form_ccrs0
+      labels(2) = form_cclg0
+      labels(3) = op_omg
+      labels(4) = op_tbar
+      labels(5) = ' '
+      call add_target(form_ccrs0,ttype_frm,.false.,tgt_info)
+      call set_dependency(form_ccrs0,form_cclg0,tgt_info)
+      call set_dependency(form_ccrs0,op_omg,tgt_info)
+      call set_rule(form_ccrs0,ttype_frm,DERIVATIVE,
+     &              labels,5,1,
+     &              title_ccrs0,1,tgt_info)
+
+      ! now R12 starts
       call add_target(form_ccr12lg0,ttype_frm,.false.,tgt_info)
       ! (a) set formal Lagrangian (in 'complete' basis)
       labels(1:10)(1:len_target_name) = ' '
@@ -322,7 +384,8 @@ c        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
         if (.not.screen) then
           call set_dependency(form_ccr12lg0,'Vpx_formal',tgt_info)
           labels(2+nint+1) = 'Vpx_formal'
-          nint = nint+1
+          labels(2+nint+2) = 'Vpx_formal^+'
+          nint = nint+2
         end if
       end if
       if (r12op.gt.0.and.max_rank.gt.2) then
@@ -398,6 +461,43 @@ c        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
      &              labels,6,1,
      &              parameters,2,tgt_info)
       end if
+      ! perturbative:
+      if (pert) then
+        ! replace L by T^+
+        call set_rule2(form_ccr12lg0,REPLACE,tgt_info)
+        call set_arg(form_ccr12lg0,REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/form_ccr12lg0/))
+        call set_arg(form_ccr12lg0,REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/form_ccr12lg0/))
+        call set_arg(form_ccr12lg0,REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/op_tbar,op_top//'^+'/))
+        call set_arg(form_ccr12lg0,REPLACE,'TITLE',1,tgt_info,
+     &       val_str='CCR12 Lagrangian for pert. eval.')
+        ! optional: factor out conv. energy, residual
+        ! take only part that does not involve conv. energy, residual
+        call set_dependency(form_ccr12lg0,form_ccen0,tgt_info)
+        call set_dependency(form_ccr12lg0,form_ccrs0,tgt_info)
+        call set_rule2(form_ccr12lg0,FACTOR_OUT,tgt_info)
+        call set_arg(form_ccr12lg0,FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/form_ccr12lg0/))
+        Call set_arg(form_ccr12lg0,FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/form_ccr12lg0/))
+        call set_arg(form_ccr12lg0,FACTOR_OUT,'INTERM',2,tgt_info,
+     &       val_label=(/form_ccen0,form_ccrs0/))
+        call set_arg(form_ccr12lg0,FACTOR_OUT,'TITLE',1,tgt_info,
+     &       val_str='CCR12 Lagrangian for pert. eval.')
+        Call set_rule2(form_ccr12lg0,INVARIANT,tgt_info)
+        call set_arg(form_ccr12lg0,INVARIANT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/form_ccr12lg0/))        
+        call set_arg(form_ccr12lg0,INVARIANT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/form_ccr12lg0/))
+        call set_arg(form_ccr12lg0,INVARIANT,'OP_RES',1,tgt_info,
+     &       val_label=(/op_ccr12lg/))        
+        call set_arg(form_ccr12lg0,INVARIANT,'OPERATORS',2,tgt_info,
+     &       val_label=(/op_ccen,op_omg/))  
+        call set_arg(form_ccr12lg0,INVARIANT,'TITLE',1,tgt_info,
+     &       val_str='CCR12 Lagrangian for pert. eval.')
+      end if      
 c dbg
       call form_parameters(-2,parameters,2,
      &       'stdout',0,'---')
@@ -679,6 +779,67 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
 *----------------------------------------------------------------------*
 *     Opt. Formulae
 *----------------------------------------------------------------------*
+      ! perturbative: set conv. E + residual opt. formula
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = fopt_ccrs0
+      labels(2) = form_ccen0
+      labels(3) = form_ccrs0
+      ncat = 2
+      nint = 0
+      call add_target(fopt_ccrs0,ttype_frm,.false.,tgt_info)
+      call set_dependency(fopt_ccrs0,form_ccen0,tgt_info)
+      call set_dependency(fopt_ccrs0,form_ccrs0,tgt_info)
+      call set_dependency(fopt_ccrs0,mel_omgdef,tgt_info)
+      call set_dependency(fopt_ccrs0,mel_topdef,tgt_info)
+      call set_dependency(fopt_ccrs0,mel_ham,tgt_info)
+      call set_dependency(fopt_ccrs0,mel_ccen0def,tgt_info)      
+      if (isim.eq.1) then
+        nint = 1
+        call set_dependency(fopt_ccrs0,form_cchhat,tgt_info)
+        call set_dependency(fopt_ccrs0,mel_hhatdef,tgt_info)
+        labels(4) = form_cchhat
+      else if (isim.eq.2) then
+        nint = 1
+        call set_dependency(fopt_ccrs0,form_cchbar,tgt_info)
+        call set_dependency(fopt_ccrs0,meldef_hbar,tgt_info)
+        labels(4) = form_cchbar
+      end if
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule(fopt_ccrs0,ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+      ! set opt. R12 pert. expr.
+      call add_target2('L_CCR12_PT-OPT',.false.,tgt_info)
+      call set_dependency('L_CCR12_PT-OPT',form_ccr12lg0,tgt_info)
+      call set_dependency('L_CCR12_PT-OPT',mel_ccr12lg0def,tgt_info)
+      call set_dependency('L_CCR12_PT-OPT',mel_topdef,tgt_info)
+      call set_dependency('L_CCR12_PT-OPT',mel_ham,tgt_info)
+        if (vring_mode.gt.0)
+     &       call set_dependency('L_CCR12_PT-OPT','Vring-EVAL',tgt_info)
+      if (.not.pf12_trunc) then
+        call set_dependency('L_CCR12_PT-OPT',mel_p_def,tgt_info)      
+        call set_dependency('L_CCR12_PT-OPT',mel_z_def,tgt_info)      
+      end if
+      if (max_rank.ge.2) then
+        call set_dependency('L_CCR12_PT-OPT',mel_rint,tgt_info)      
+        call set_dependency('L_CCR12_PT-OPT',mel_v_def,tgt_info)      
+        call set_dependency('L_CCR12_PT-OPT',mel_b_def,tgt_info)      
+        call set_dependency('L_CCR12_PT-OPT',mel_bh_def,tgt_info)      
+        call set_dependency('L_CCR12_PT-OPT',mel_x_def,tgt_info)      
+        call set_dependency('L_CCR12_PT-OPT',mel_xh_def,tgt_info)      
+        call set_dependency('L_CCR12_PT-OPT',mel_c_def,tgt_info)      
+      end if
+      if (max_rank.ge.2) then
+        call set_dependency('L_CCR12_PT-OPT','DEF-Z2LIST',tgt_info)
+        if (.not.screen)
+     &       call set_dependency('L_CCR12_PT-OPT','Vpx-INTER',tgt_info)
+      end if
+      call set_rule2('L_CCR12_PT-OPT',OPTIMIZE,tgt_info)
+      call set_arg('L_CCR12_PT-OPT',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &     val_label=(/'L_CCR12_PT-OPT'/))
+      call set_arg('L_CCR12_PT-OPT',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &     val_label=(/form_ccr12lg0/))      
 
       ! CC ground state:
       fixed_gem =  r12fix.or.fix_new.gt.0
@@ -772,17 +933,30 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
+      ! perturbative: E0 for conv. CC
+      call add_target(mel_ccen0def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_ccen0def,op_ccen,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = mel_ccen0
+      labels(2) = op_ccen
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule(mel_ccen0def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
       ! L0/E0:
-      call add_target(mel_ccr12lg0,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_ccr12lg0,op_ccr12lg,tgt_info)
+      call add_target(mel_ccr12lg0def,ttype_opme,.false.,tgt_info)
+      call set_dependency(mel_ccr12lg0def,op_ccr12lg,tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = mel_ccr12lg0
       labels(2) = op_ccr12lg
       call me_list_parameters(-1,parameters,
      &     msc,0,1,0,0,.false.)
-      call set_rule(mel_ccr12lg0,ttype_opme,DEF_ME_LIST,
+      call set_rule(mel_ccr12lg0def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
+
       call add_target(mel_ccr12en0def,ttype_opme,.false.,tgt_info)
       call set_dependency(mel_ccr12en0def,op_ccr12en,tgt_info)
       labels(1:20)(1:len_target_name) = ' '
@@ -1071,31 +1245,102 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
      &       parameters,2,tgt_info)
         
       else
-        call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
+        ! for present version of pertubation, we are correct here ...
 
-        call add_target(solve_ccr12_gs,ttype_gen,needed,tgt_info)
-        call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
-        call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
-        if (max_rank.ge.2) 
-     &    call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
-        if (vring_mode.gt.0)
+        ! switch pert/non-pert
+        if (.not.pert) then
+          call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
+
+          call add_target(solve_ccr12_gs,ttype_gen,needed,tgt_info)
+          call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
+          call set_dependency(solve_ccr12_gs,fopt_ccr12_0,tgt_info)
+          if (max_rank.ge.2) 
+     &       call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+          if (vring_mode.gt.0)
      &       call set_dependency(solve_ccr12_gs,'Vring-EVAL',tgt_info)
-        if (.not.pf12_trunc)
-     &    call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
-        if (max_rank.ge.3)
-     &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
-        call solve_parameters(-1,parameters,2, 1,1,'DIA')
+          if (.not.pf12_trunc)
+     &       call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
+          if (max_rank.ge.3)
+     &     call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
+          call solve_parameters(-1,parameters,2, 1,1,'DIA')
 c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = mel_top
-        labels(2) = mel_omg
-        labels(3) = mel_dia1
-        labels(4) = mel_ccr12en0
-        labels(5) = fopt_ccr12_0
-        labels(6) = mel_ham
-        call set_rule(solve_ccr12_gs,ttype_opme,SOLVENLEQ,
-     &       labels,6,2,
-     &       parameters,2,tgt_info)
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = mel_top
+          labels(2) = mel_omg
+          labels(3) = mel_dia1
+          labels(4) = mel_ccr12en0
+          labels(5) = fopt_ccr12_0
+          labels(6) = mel_ham
+          call set_rule(solve_ccr12_gs,ttype_opme,SOLVENLEQ,
+     &         labels,6,2,
+     &         parameters,2,tgt_info)
+   
+        else
+        ! perturbative case
+          call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
+
+          call add_target(solve_ccr12_gs,ttype_gen,needed,tgt_info)
+          call set_dependency(solve_ccr12_gs,mel_dia1,tgt_info)
+          call set_dependency(solve_ccr12_gs,fopt_ccrs0,tgt_info)
+          call set_dependency(solve_ccr12_gs,'L_CCR12_PT-OPT',tgt_info)
+          if (max_rank.ge.2) 
+     &       call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
+          if (vring_mode.gt.0)
+     &       call set_dependency(solve_ccr12_gs,'Vring-EVAL',tgt_info)
+          if (.not.pf12_trunc)
+     &       call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
+          if (max_rank.ge.3)
+     &     call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
+          call solve_parameters(-1,parameters,2, 1,1,'DIA')
+c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = mel_top
+          labels(2) = mel_omg
+          labels(3) = mel_dia1
+          labels(4) = mel_ccen0
+          labels(5) = fopt_ccrs0
+          labels(6) = mel_ham
+          ! solve conv. CC equations
+          call set_rule(solve_ccr12_gs,ttype_opme,SOLVENLEQ,
+     &         labels,6,2,
+     &         parameters,2,tgt_info)
+          ! now pert. R12 evaluation
+          call set_rule2(solve_ccr12_gs,EVAL,tgt_info)
+          call set_arg(solve_ccr12_gs,EVAL,'FORM',1,tgt_info,
+     &         val_label=(/'L_CCR12_PT-OPT'/))
+          call set_rule2(solve_ccr12_gs,PRINT_MEL,tgt_info)
+          call set_arg(solve_ccr12_gs,PRINT_MEL,'LIST',1,tgt_info,
+     &         val_label=(/mel_ccen0/))
+          call set_arg(solve_ccr12_gs,PRINT_MEL,'COMMENT',1,tgt_info,
+     &         val_str='>>> CC energy (conv) :')
+          call set_arg(solve_ccr12_gs,PRINT_MEL,'FORMAT',1,tgt_info,
+     &         val_str='SCAL F20.12')
+          call set_rule2(solve_ccr12_gs,PRINT_MEL,tgt_info)
+          call set_arg(solve_ccr12_gs,PRINT_MEL,'LIST',1,tgt_info,
+     &         val_label=(/mel_ccr12lg0/))
+          call set_arg(solve_ccr12_gs,PRINT_MEL,'COMMENT',1,tgt_info,
+     &         val_str='>>> F12 corr. (pert) :')
+          call set_arg(solve_ccr12_gs,PRINT_MEL,'FORMAT',1,tgt_info,
+     &         val_str='SCAL F20.12')
+          call set_dependency(solve_ccr12_gs,mel_ccr12en0def,tgt_info)
+          call set_rule2(solve_ccr12_gs,ADD,tgt_info)
+          call set_arg(solve_ccr12_gs,ADD,'LIST_SUM',1,tgt_info,
+     &         val_label=(/mel_ccr12en0/))
+          call set_arg(solve_ccr12_gs,ADD,'LISTS',2,tgt_info,
+     &         val_label=(/mel_ccr12lg0,mel_ccen0/))
+          call set_arg(solve_ccr12_gs,ADD,'FAC',2,tgt_info,
+     &         val_rl8=(/1d0,1d0/))
+          call set_rule2(solve_ccr12_gs,PRINT_MEL,tgt_info)
+          call set_arg(solve_ccr12_gs,PRINT_MEL,'LIST',1,tgt_info,
+     &         val_label=(/mel_ccr12en0/))
+          call set_arg(solve_ccr12_gs,PRINT_MEL,'COMMENT',1,tgt_info,
+     &         val_str='>>> CC-F12(pt) energy:')
+          call set_arg(solve_ccr12_gs,PRINT_MEL,'FORMAT',1,tgt_info,
+     &         val_str='SCAL F20.12')
+          
+
+        end if
+
       end if
 
       ncnt = is_keyword_set('calculate.check_S')
