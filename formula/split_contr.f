@@ -37,6 +37,7 @@
      &     opres
       integer, pointer ::
      &     ivtx4ivtx_t(:,:), svmap(:), occ_vtx(:,:,:)
+      call quit(1,'split_contr','call to obsolete routine')
 
       ! prefactor
       if (abs(contr_spl%fac).lt.1d-100)

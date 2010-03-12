@@ -56,6 +56,7 @@
 
       integer, external ::
      &     ifndmax, maxblk_in_contr
+      call quit(1,'split_contr2','call to obsolete routine')
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'split_contr2 at work')

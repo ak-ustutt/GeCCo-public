@@ -100,6 +100,8 @@
       integer, pointer ::
      &     occ_vtx(:,:,:), neqv(:), idx_eqv(:,:), iop_typ(:), ol_map(:),
      &     idx_op(:), svertex(:), joined(:,:)
+      logical, pointer ::
+     &     fix_vtx(:)
 
       integer, external ::
      &     vtx_type
@@ -169,7 +171,8 @@ c      ! currently, we expand primitive operators only
         proto%arc(ioff+iarc)%occ_cnt = 0
       end do
 
-      allocate(ol_map(nvtx),idx_op(nops))
+      allocate(ol_map(nvtx),idx_op(nops),fix_vtx(nvtx))
+      fix_vtx = .false.
 
       ! identify open-line vertices
       nopen = 0
@@ -265,6 +268,8 @@ c dbg*
       ! full machinery to decide whether a certain contribution
       ! is allowed or not, but we do not want to bother it too
       ! much with crappy combinations
+      ! extended to non-commuting op.s if explicitly declared as
+      ! exitation or deexcitation op.s
       do iop = 1, nops
         if (iop.eq.num_res) then
           iblk_max(iop) = 1 ! do not advance result blocks
@@ -288,9 +293,13 @@ c dbg*
         do jop = 1, iop-1
           if (neqv(jop).lt.0) cycle
           if (idx_op_vtx(iop).eq.idx_op_vtx(jop) .and.
-     &        iop_typ(iop).eq.iop_typ(jop) .and.
-     &       (iop_typ(iop).eq.vtxtyp_ph_ex .or.
-     &        iop_typ(iop).eq.vtxtyp_ph_dx) ) then
+     &        (iop_typ(iop).eq.iop_typ(jop) .and.
+     &         (iop_typ(iop).eq.vtxtyp_ph_ex .or.
+     &          iop_typ(iop).eq.vtxtyp_ph_dx) .or.
+               ! also op.s with valence indices if explicitly declared as
+     &         ops(iop)%op%species.eq.ops(jop)%op%species .and.
+     &         (ops(iop)%op%species.eq.1 .or.     ! excitation or
+     &          ops(iop)%op%species.eq.2))) then  ! deexcitation op.
             neqv(jop) = neqv(jop)+1
             neqv(iop) = -1
             idx_eqv(neqv(jop),jop) = iop
@@ -458,7 +467,7 @@ C??                proto%vertex(joined(ivtx,iop))%iblk_op = iblk_op(iop)
 
             ! generate contractions
             call gen_contr4(.false.,form_pnt,proto,
-     &           occ_vtx(1,1,1),ol_map,op_info)
+     &           fix_vtx,occ_vtx(1,1,1),ol_map,op_info)
 
             ! advance pointer
             nterms = 0
@@ -478,7 +487,7 @@ C??                proto%vertex(joined(ivtx,iop))%iblk_op = iblk_op(iop)
       end do
 
       call dealloc_contr(proto)
-      deallocate(neqv,idx_eqv,occ_vtx,iop_typ,ops,ol_map,idx_op)
+      deallocate(neqv,idx_eqv,occ_vtx,iop_typ,ops,ol_map,idx_op,fix_vtx)
 
       return
       end

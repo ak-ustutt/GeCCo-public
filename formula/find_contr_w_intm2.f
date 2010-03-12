@@ -131,7 +131,7 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
         iterm = 0
         do
           ! make target contractions that we need to find
-          call join_contr2a(fl_t0_i_pnt,nterms_gen,
+          call join_contr2a(1,fl_t0_i_pnt,nterms_gen,contr_rpl,
      &           contr_t0,fpl_intm_pnt%item%contr,
      &           idxop_tgt,iblk_tgt,op_info)
           iterm = iterm+nterms_gen
@@ -278,10 +278,17 @@ c dbg
           end do
         end if
 
+        allocate(fl_t0_i)
+        call init_formula(fl_t0_i)
+        fl_t0_i_pnt => fl_t0_i
+
         ! make new contraction
-        call join_contr2(contr_rpl,
+        call join_contr2a(0,fl_t0_i_pnt,nterms_gen,contr_rpl,
      &                  contr_t0,contr_int,
      &                  idxop_tgt,iblk_tgt,op_info)
+
+        call dealloc_formula_list(fl_t0_i)
+        deallocate(fl_t0_i)
 
         call dealloc_contr(contr_int)
 

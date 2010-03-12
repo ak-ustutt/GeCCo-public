@@ -62,12 +62,52 @@
      &     nvtx, narc, iarc, iblk_res, iop, jop
       integer ::
      &     iblk_min(nops), iblk_max(nops), iblk_op(nops),
-     &     occ_test(ngastp,2), occ_temp(ngastp,2)
+     &     occ_test(ngastp,2), occ_temp(ngastp,2),
+     &     idx_op_vtx(nops+2), idx_sv_vtx(nops+2),
+     &     iblk_min2(nops+2), iblk_max2(nops+2),
+     &     connect2(2,nconnect)
       integer, pointer ::
      &     occ_vtx(:,:,:), neqv(:), idx_eqv(:,:), iop_typ(:)
 
       integer, external ::
      &     vtx_type
+
+      ! passing arguments to expand_op_product2
+      if (force) call quit(1,'obsolete "force" feature?')
+      idx_op_vtx(2:nops+1) = idx_op(1:nops)
+      idx_op_vtx(1) = idx_res
+      idx_op_vtx(nops+2) = idx_res
+      do iop = 1,nops+1
+        idx_sv_vtx(iop) = iop
+      end do
+      idx_sv_vtx(nops+2) = 1
+      iblk_min2(2:nops+1) = iblk_min_in(1:nops)
+      iblk_max2(2:nops+1) = iblk_max_in(1:nops)
+      if (iblk_min2(2).lt.0) then
+        iblk_min2(1) = -1
+      else
+        iblk_min2(1) = 1
+        iblk_min2(nops+2) = 1
+      end if
+      if (iblk_max2(2).lt.0) then
+        iblk_max2(1) = -1
+      else
+        iblk_max2(1) = op_info%op_arr(idx_res)%op%n_occ_cls
+        iblk_max2(nops+2) = op_info%op_arr(idx_res)%op%n_occ_cls
+      end if
+      connect2(1:2,1:nconnect) = connect(1:2,1:nconnect) + 1
+      call expand_op_product2(form_list,idx_res,
+     &       fac,nops+2,nops+1,
+     &       idx_op_vtx,idx_sv_vtx,
+     &       iblk_min2,iblk_max2,
+     &       connect2,nconnect,
+     &       0,0,
+     &       0,0,
+     &       op_info)
+
+******OBSOLETE*********************************************************
+*     obsolete part of subroutine
+      if (.false.) then
 
       if (ntest.ge.100) then
         write(luout,*) '============================='
@@ -242,7 +282,7 @@ c     &               form_pnt%contr%arc(1)%occ_cnt+occ_temp
             endif  
 
             ! generate contractions
-            call gen_contr2(form_pnt,proto,fix_vtx,occ_vtx,op_info)
+            call gen_contr3(form_pnt,proto,fix_vtx,occ_vtx,1,op_info)
 
             ! advance pointer
             do while(form_pnt%command.ne.command_end_of_formula)
@@ -257,6 +297,8 @@ c     &               form_pnt%contr%arc(1)%occ_cnt+occ_temp
 
       call dealloc_contr(proto)
       deallocate(neqv,idx_eqv,occ_vtx,iop_typ)
+      end if
+***********************************************************************
 
       return
       end

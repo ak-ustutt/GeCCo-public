@@ -35,7 +35,8 @@
       do ivtx = 1, contr%nvtx
         if ((iop_intm.ge.0.and.
      &                contr%vertex(ivtx)%idx_op.ne.iop_intm).or.
-     &      (iop_intm.lt.0.and.ipos_intm(ivtx_intm).ne.ivtx)) then
+     &      (iop_intm.lt.0.and.
+     &       ipos_intm(svmap_intm(ivtx_intm)).ne.ivtx)) then
           ! keep this vertex
           ivtx_total = ivtx_total+1
           vtxmap(ivtx_total) = ivtx

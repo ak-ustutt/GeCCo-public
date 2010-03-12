@@ -55,7 +55,7 @@
 
       ! multireference wave function
       if (is_keyword_set('calculate.multiref').gt.0)
-     &    call set_ic_mrci_targets(tgt_info,orb_info,env_type)
+     &    call set_ic_mrci_targets(tgt_info,orb_info)
 
       ! experimental section
       if (is_keyword_set('calculate.experimental').gt.0) then

@@ -53,6 +53,7 @@
      &     fix_vtx(:)
       type(formula_item), pointer ::
      &     fl_input_pnt, fl_deriv_pnt
+      call quit(1,'form_deriv3','call to obsolete routine')
 
       if (fl_input%command.ne.command_set_target_init)
      &       call quit(1,'form_deriv',

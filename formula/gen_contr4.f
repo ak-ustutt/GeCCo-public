@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine gen_contr4(strict,
      &                      form_list,proto_main,
-     &                      occ_vtx,ol_map,op_info)
+     &                      fix_vtx_in,occ_vtx,ol_map,op_info)
 *----------------------------------------------------------------------*
 *     generate all contraction originating from a proto-contraction
 *     on input: proto_main - proto-contraction, i.e. a contraction with
@@ -49,17 +49,14 @@ c      include 'def_operator.h'
       include 'def_formula_item.h'
       include 'ifc_operators.h'
       
-      logical, intent(in) ::
-     &     strict
       type(formula_item), intent(in), target ::
      &     form_list
       type(contraction), intent(in) ::
      &     proto_main
-      integer ::
+      logical, intent(in) ::
+     &     strict, fix_vtx_in(proto_main%nvtx)
+      integer, intent(in) ::
      &     occ_vtx(ngastp,2,proto_main%nvtx),
-c dbg
-     &     occ_test(ngastp,2,proto_main%nvtx),
-c dbg
      &     ol_map(proto_main%nvtx)
       type(operator_info), intent(in) ::
      &     op_info
@@ -67,8 +64,10 @@ c dbg
       type(formula_item), pointer ::
      &     form_pnt
       integer ::
-     &     nvtx, ivtx, ij_tgt
-      integer ::
+     &     nvtx, ivtx, ij_tgt,
+c dbg
+     &     occ_test(ngastp,2,proto_main%nvtx),
+c dbg
      &     zero_occ(ngastp,2)
       logical ::
      &     fix_vtx(proto_main%nvtx)
@@ -107,7 +106,7 @@ c      print *,'the stripped proto:'
 c      call prt_contr3(luout,proto,occ_vtx)
 c dbg
       do ivtx = 1, nvtx
-        fix_vtx(ivtx) = ol_map(ivtx).ne.0
+        fix_vtx(ivtx) = fix_vtx_in(ivtx).or.ol_map(ivtx).ne.0
       end do
 
       ! call recursive kernel

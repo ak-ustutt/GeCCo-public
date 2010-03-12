@@ -44,7 +44,7 @@ c      include 'def_operator.h'
       type(contraction), intent(in) ::
      &     proto_main
       logical, intent(in) ::
-     &     fix_vtx
+     &     fix_vtx(*)
       integer ::
      &     nj_tgt,
      &     occ_vtx(ngastp,2,*)
@@ -62,6 +62,7 @@ c      include 'def_operator.h'
 
       type(contraction) ::
      &     proto
+      call quit(1,'gen_contr3','call to obsolete routine')
 
 c      integer, allocatable ::
 c     &     occ_ol_vtx(:,:,:)

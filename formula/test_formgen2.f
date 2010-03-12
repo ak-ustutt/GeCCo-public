@@ -32,6 +32,7 @@
 
       integer, external ::
      &     idx_oplist2
+      call quit(1,'test_formgen2','call to obsolete routine')
 
 
       write(luout,*) '-------------------'

@@ -32,13 +32,13 @@
      &     arc1(:), arc2(:)
 
       integer, pointer ::
-     &     scr(:)
+     &     scr(:), svtx1(:), svtx2(:)
       integer(8), pointer ::
      &     ivtx1(:),topo1(:,:),xlines1(:,:),
      &     ivtx2(:),topo2(:,:),xlines2(:,:)
 
       integer, external ::
-     &     list_cmp, i8list_cmp, njres_contr
+     &     list_cmp, i8list_cmp, njres_contr, idxlist
       logical, external ::
      &     iocc_zero
 
@@ -122,12 +122,14 @@ c dbg
       nvtx = contr1%nvtx        ! nvtx dto.
       allocate(ivtx1(nvtx),topo1(nvtx,nvtx),xlines1(nvtx,nj),
      &         ivtx2(nvtx),topo2(nvtx,nvtx),xlines2(nvtx,nj),
-     &         scr(nvtx))
+     &         scr(nvtx),svtx1(nvtx),svtx2(nvtx))
       call pack_contr(scr,ivtx1,topo1,xlines1,contr1,nj)
       call pack_contr(scr,ivtx2,topo2,xlines2,contr2,nj)
 
-      call topo_make_unique(scr,ivtx1,topo1,xlines1,nvtx,nj)
-      call topo_make_unique(scr,ivtx2,topo2,xlines2,nvtx,nj)
+      svtx1 = contr1%svertex
+      call topo_make_unique2(scr,ivtx1,svtx1,topo1,xlines1,nvtx,nj)
+      svtx2 = contr2%svertex
+      call topo_make_unique2(scr,ivtx2,svtx2,topo2,xlines2,nvtx,nj)
 
       cmp_contr = i8list_cmp(ivtx1,ivtx2,nvtx).eq.0
       if (ntest.ge.100) write(luout,*) 'cmp_contr > (1): ',cmp_contr
@@ -140,14 +142,14 @@ c dbg
 c dbg
 c      if (.not.cmp_contr.and.contr1%idx_res.eq.15) then
 c        print *,'topo1'
-c        call prt_contr_p(6,ivtx1,ivtx1,topo1,xlines1,nvtx,nj)
+c        call prt_contr_p(6,svtx1,ivtx1,topo1,xlines1,nvtx,nj)
 c        print *,'topo2'
-c        call prt_contr_p(6,ivtx2,ivtx2,topo2,xlines2,nvtx,nj)
+c        call prt_contr_p(6,svtx2,ivtx2,topo2,xlines2,nvtx,nj)
 c      end if
 c dbg
 
       deallocate(ivtx1,topo1,xlines1,
-     &           ivtx2,topo2,xlines2,scr)
+     &           ivtx2,topo2,xlines2,scr,svtx1,svtx2)
 
       return
       ! OLD:

@@ -64,6 +64,7 @@ c      include 'def_operator.h'
 
       type(contraction) ::
      &     proto
+      call quit(1,'gen_contr2','call to obsolete routine')
 
 c      integer, allocatable ::
 c     &     occ_ol_vtx(:,:,:)

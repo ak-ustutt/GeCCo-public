@@ -427,7 +427,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
         call set_experimental_formula(form_pnt,
-     &       title,label_list,nop,
+     &       title,label_list,nop+1,
      &       ansatz,mode,
      &       op_info,orb_info)
 *----------------------------------------------------------------------*
@@ -496,7 +496,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(EXPAND)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
         call get_form(form0_pnt,trim(label),OLD)
         call get_arg('INTERM',rule,tgt_info,
@@ -753,6 +753,20 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       idx,mode,
      &       op_info
      &       )
+*----------------------------------------------------------------------*
+      case(DEF_CUMULANTS)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),NEW)
+        call get_arg('OP_RES',rule,tgt_info,
+     &               val_label=label_list(1))
+        call get_arg('OPERATORS',rule,tgt_info,
+     &               val_label_list=label_list(2:),ndim=nop)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call get_arg('LEVEL',rule,tgt_info,val_int=level)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call set_cumulants(form_pnt,
+     &       title,label_list,nop+1,mode,level,op_info)
 
 *----------------------------------------------------------------------*
 *     subsection ME-LISTS
@@ -855,7 +869,8 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
 
         call get_arg('LIST',rule,tgt_info,val_label=label)
-        call get_arg('COMMENT',rule,tgt_info,val_label=mode)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
 
         if (form_test) return
 
@@ -953,9 +968,10 @@ c          mode = 'dia-R12'
         call get_arg('LISTS',rule,tgt_info,
      &       val_label_list=label_list,ndim=nfac)
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+        call get_arg('REPLACE',rule,tgt_info,val_log=init)
         
         call add_op(label,fac,label_list,nfac,
-     &       op_info,orb_info,str_info)
+     &       op_info,orb_info,str_info,init)
 
 *----------------------------------------------------------------------*
       case(SCALE)

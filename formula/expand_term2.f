@@ -63,6 +63,7 @@
 
       integer, external ::
      &     vtx_in_contr, ifac, idxlist, ielsqsum
+      call quit(1,'expand_term2','call to obsolete routine')
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'Here speaks expand_term2')

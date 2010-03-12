@@ -60,6 +60,7 @@
       
       integer, external ::
      &     iblk_occ, ielsum, rank_occ, narc_w_vtx
+      call quit(1,'contr_deriv2','call to obsolete routine')
 
       if (ntest.ge.100) then
         write(luout,*) '====================='

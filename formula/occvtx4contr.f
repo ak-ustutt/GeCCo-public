@@ -22,8 +22,8 @@
       integer, intent(in) ::
      &     mode
       integer, intent(out) ::
-     &     occ_vtx(ngastp,2,contr%nvtx+1)
-
+     &     occ_vtx(ngastp,2,contr%nvtx+1) !CAUTION: correct last dimension
+                                          !should be contr%nvtx+njoined !
       logical ::
      &     dagger
       integer ::

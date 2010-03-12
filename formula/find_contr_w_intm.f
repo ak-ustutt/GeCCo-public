@@ -57,6 +57,7 @@
 
       logical, external ::
      &     contr_in_contr, cmp_contr
+      call quit(1,'find_contr_w_intm','call to obsolete routine')
 
       if (ntest.ge.100) then
         write(luout,*) '==========================='

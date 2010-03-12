@@ -6,9 +6,11 @@ input
   ic_MRCI.inp
 check
   label CASSCF energy
-  find EVAL_E_REF
-  find -->
-  compare real 4 1e-10
+  find CONVERGED
+  find >>>
+  find >>
+  compare real 2 1e-10
+  compare real 3 1e-10
 check
   label Number of terms of density expression
   find F_D
@@ -62,7 +64,7 @@ check
 check
   label Solve CI equations
   find CONVERGED
-  skip 1
+  find >>>
   compare int 2
   compare real 3 1e-10
 check

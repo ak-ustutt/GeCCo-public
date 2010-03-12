@@ -50,7 +50,8 @@
      &     EXTRACT_FREQ*12          = 'EXTRACT_FREQ',
      &     CLASS_FORMULA*13         = 'CLASS_FORMULA',
      &     SELECT_HERMIT*16         = 'SELECT_HERMITIAN',
-     &     SELECT_LINE*11           = 'SELECT_LINE'
+     &     SELECT_LINE*11           = 'SELECT_LINE',
+     &     DEF_CUMULANTS*13         = 'DEF_CUMULANTS'
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',

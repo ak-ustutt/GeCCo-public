@@ -16,6 +16,7 @@
       include 'def_formula_item.h'
       include 'def_formula_item_array.h'
       include 'def_formula_item_list.h'
+      include 'ifc_operators.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -38,10 +39,10 @@
       type(contraction) ::
      &     proto
       logical ::
-     &     adj_intm
+     &     adj_intm, ok
       integer ::
      &     nvtx, narc, narc0, ivtx, jvtx, kvtx, iarc,
-     &     iop_intm, iblk_intm, iblk, iadd
+     &     iop_intm, iblk_intm, iblk, iadd, nj_tgt, ieqvfac
       integer ::
      &     occ_temp(ngastp,2)
       type(contraction), pointer ::
@@ -55,12 +56,18 @@
       integer, pointer ::
      &     ivtx_term_reo(:), ivtx_intm_reo(:),
      &     occ_vtx(:,:,:), svmap(:), vtxmap(:),
-     &     ipos_vtx(:)
+     &     ipos_vtx(:), ol_map(:)
       logical, pointer ::
-     &     fix_vtx(:)
+     &     fix_vtx(:), fix_vtx_intm(:)
+      integer, pointer ::
+     &     svertex(:), neqv(:), idx_eqv(:,:)
+      integer(8), pointer ::
+     &     vtx(:), topo(:,:), xlines(:,:)
 
       integer, external ::
-     &     vtx_in_contr, ifac, idxlist, ielsqsum
+     &     vtx_in_contr, ifac, idxlist, ielsqsum, get_eqvfac
+
+      if (force) call quit(1,'expand_term','obsolete "force" feature?')
 
       if (ntest.ge.100) then
         write(luout,*) '========================='
@@ -110,10 +117,9 @@ c     &       + intm%narc
         if (njoined.eq.1) then
           svmap(1:intm%nvtx) = 1
         else
-          allocate(occ_vtx(ngastp,2,intm%nvtx+njoined))
-          call occvtx4contr(0,occ_vtx,intm,op_info)
-          call svmap4contr(svmap,intm,occ_vtx,njoined)
-          deallocate(occ_vtx)
+          call svmap4contr2(svmap,intm,ok)
+          if (.not.ok) call quit(1,'expand_term',
+     &             'cannot handle non-unique svmap yet')
         end if
 
         allocate(vtxmap(nvtx))
@@ -125,7 +131,7 @@ c     &       + intm%narc
         deallocate(svmap)
 
         ! assemble proto contraction
-        call resize_contr(proto,nvtx,narc,0,0)
+        call resize_contr(proto,nvtx+2,narc,0,0)
 
         if (term%nvtx.gt.0) allocate(ivtx_term_reo(term%nvtx))
         if (intm%nvtx.gt.0) allocate(ivtx_intm_reo(intm%nvtx))
@@ -136,19 +142,31 @@ c     &       + intm%narc
         proto%idx_res = term%idx_res
         proto%iblk_res = term%iblk_res
         proto%fac = term%fac*intm%fac
-        proto%nvtx = nvtx
+        proto%nvtx = nvtx+2
         proto%nfac = 0
+
+        ! result vertex: first and last vertex
+        if (op_info%op_arr(proto%idx_res)%op%njoined.ne.1)
+     &      call quit(1,'expand_term','nj>1 for res. not possible yet')
+        proto%vertex(1)%idx_op = proto%idx_res
+        proto%vertex(1)%iblk_op = proto%iblk_res ! dummy
+        proto%vertex(1)%dagger  =.false.
+        proto%svertex(1) = 1
+        proto%vertex(nvtx+2)%idx_op = proto%idx_res
+        proto%vertex(nvtx+2)%iblk_op = proto%iblk_res+1 ! dummy
+        proto%vertex(nvtx+2)%dagger  =.false.
+        proto%svertex(nvtx+2) = 1
 
         ! set vertices and reordering arrays
         do ivtx = 1, nvtx
           if (vtxmap(ivtx).gt.0) then
-            proto%vertex(ivtx) = term%vertex(vtxmap(ivtx))
-            proto%svertex(ivtx) = term%svertex(vtxmap(ivtx))
+            proto%vertex(ivtx+1) = term%vertex(vtxmap(ivtx))
+            proto%svertex(ivtx+1) = term%svertex(vtxmap(ivtx))+1
             ivtx_term_reo(vtxmap(ivtx)) = ivtx
           else
-            proto%vertex(ivtx) = intm%vertex(-vtxmap(ivtx))
-            proto%svertex(ivtx) =
-     &           term%nsupvtx + intm%svertex(-vtxmap(ivtx))
+            proto%vertex(ivtx+1) = intm%vertex(-vtxmap(ivtx))
+            proto%svertex(ivtx+1) =
+     &           term%nsupvtx + intm%svertex(-vtxmap(ivtx))+1
             ivtx_intm_reo(-vtxmap(ivtx)) = ivtx
           end if
         end do
@@ -164,14 +182,14 @@ c     &       + intm%narc
             narc = narc+1
             proto%arc(narc)%link(1)=0
             proto%arc(narc)%link(2)=
-     &           ivtx_term_reo(term%arc(iarc)%link(2))
+     &           ivtx_term_reo(term%arc(iarc)%link(2))+1
             proto%arc(narc)%occ_cnt = term%arc(iarc)%occ_cnt
           else if
      &       (idxlist(term%arc(iarc)%link(2),ipos_vtx,njoined,1).gt.0)
      &           then
             narc = narc+1
             proto%arc(narc)%link(1)=
-     &           ivtx_term_reo(term%arc(iarc)%link(1))
+     &           ivtx_term_reo(term%arc(iarc)%link(1))+1
             proto%arc(narc)%link(2)=0
             proto%arc(narc)%occ_cnt = term%arc(iarc)%occ_cnt
           else
@@ -180,7 +198,9 @@ c     &      .or.idxlist(term%arc(iarc)%link(2),ipos_vtx,njoined,1).gt.0)
 c     &      cycle  
           narc = narc+1
           proto%arc(narc)%link(1)=ivtx_term_reo(term%arc(iarc)%link(1))
+     &                            +1
           proto%arc(narc)%link(2)=ivtx_term_reo(term%arc(iarc)%link(2))
+     &                            +1
           proto%arc(narc)%occ_cnt = term%arc(iarc)%occ_cnt
           end if
         end do
@@ -188,7 +208,9 @@ c     &      cycle
         do iarc = 1, intm%narc
           narc = narc+1
           proto%arc(narc)%link(1)=ivtx_intm_reo(intm%arc(iarc)%link(1))
+     &                            +1
           proto%arc(narc)%link(2)=ivtx_intm_reo(intm%arc(iarc)%link(2))
+     &                            +1
           proto%arc(narc)%occ_cnt = intm%arc(iarc)%occ_cnt
         end do
         ! all new connections must be between term and intm; 
@@ -198,12 +220,12 @@ c     &      cycle
           kloop: do kvtx = jvtx+1, nvtx
             if (vtxmap(kvtx).lt.0) cycle kloop
             do iarc = 1, narc0
-              if (proto%arc(iarc)%link(1).eq.jvtx.and.
-     &            proto%arc(iarc)%link(2).eq.kvtx) cycle kloop
+              if (proto%arc(iarc)%link(1).eq.jvtx+1.and.
+     &            proto%arc(iarc)%link(2).eq.kvtx+1) cycle kloop
             end do
             narc = narc+1
-            proto%arc(narc)%link(1) = jvtx
-            proto%arc(narc)%link(2) = kvtx
+            proto%arc(narc)%link(1) = jvtx+1
+            proto%arc(narc)%link(2) = kvtx+1
             proto%arc(narc)%occ_cnt = 0
           end do kloop
         end do
@@ -216,17 +238,50 @@ c     &      cycle
         end if
         
         ! a bit of bureaucracy ...
-        allocate(occ_vtx(ngastp,2,proto%nvtx+1),fix_vtx(proto%nvtx))
+        allocate(occ_vtx(ngastp,2,nvtx+2),fix_vtx(nvtx+2),
+     &           ol_map(nvtx+2))
+        ol_map(1) = 1
+        ol_map(nvtx+2) = -1
+        ol_map(2:nvtx+1) = 0
         fix_vtx = .true.     ! "fix" all vertices -> ieqvfac will be 1
-        call occvtx4contr(0,occ_vtx,proto,op_info)
+
+        ! get info about equivalent operators of the intermediate,
+        ! "unfix" 2nd,3rd,... vertex of multivertex operators
+        ! and apply resulting correction factor to proto contraction
+        ! --> generates less (identical) terms
+        allocate(vtx(intm%nvtx),topo(intm%nvtx,intm%nvtx),
+     &           xlines(intm%nvtx,njoined),svertex(intm%nvtx),
+     &           neqv(intm%nvtx),idx_eqv(intm%nvtx,intm%nvtx),
+     &           fix_vtx_intm(intm%nvtx))
+        call pack_contr(svertex,vtx,topo,xlines,intm,njoined)
+        do ivtx = 1, intm%nvtx
+          fix_vtx_intm(ivtx) = 
+     &          idxlist(svertex(ivtx),svertex,intm%nvtx,1).eq.ivtx
+          fix_vtx(ivtx_intm_reo(ivtx)+1) = fix_vtx_intm(ivtx)
+        end do
+        call set_eqv_map(neqv,idx_eqv,
+     &                  vtx,svertex,topo,xlines,intm%nvtx,njoined)
+        ieqvfac = get_eqvfac(neqv,fix_vtx_intm,intm%nvtx)
+        proto%fac = proto%fac*dble(ieqvfac)
+        deallocate(vtx,topo,xlines,svertex,neqv,idx_eqv,fix_vtx_intm)
+
+        call occvtx4contr(1,occ_vtx,proto,op_info)
+
+        ! daggered excitation and deexcitation parts of result operator
+        occ_vtx(1:ngastp,1:2,1) = iocc_dagger(iocc_xdn(1,
+     &       op_info%op_arr(proto%idx_res)%op%ihpvca_occ(
+     &       1:ngastp,1:2,proto%iblk_res)))
+        occ_vtx(1:ngastp,1:2,nvtx+2) = iocc_dagger(iocc_xdn(2,
+     &       op_info%op_arr(proto%idx_res)%op%ihpvca_occ(
+     &       1:ngastp,1:2,proto%iblk_res)))
 
         if(force)then
           occ_temp(1:ngastp,1)=0
           occ_temp(1:ngastp,2)=occ_vtx(1:ngastp,2,2)
           if(ielsqsum(occ_temp,ngastp*2).ne.0)then
             narc=narc+1
-            proto%arc(narc)%link(1)=1
-            proto%arc(narc)%link(2)=nvtx
+            proto%arc(narc)%link(1)=2
+            proto%arc(narc)%link(2)=nvtx+1
             proto%arc(narc)%occ_cnt=occ_temp
             proto%narc=narc
             call prt_contr2(luout,proto,op_info)
@@ -234,9 +289,8 @@ c     &      cycle
         endif
 
         ! ... and go! get all possible connections
-        call gen_contr2(fl_expand_pnt,proto,fix_vtx,occ_vtx,op_info)
-c        call gen_contr3(fl_expand_pnt,proto,
-c     &       fix_vtx,occ_vtx,njoined,op_info)
+        call gen_contr4(.false.,fl_expand_pnt,proto,
+     &       fix_vtx,occ_vtx,ol_map,op_info)
         do
           if (fl_expand_pnt%command.eq.command_end_of_formula) exit
           nterms = nterms+1
@@ -245,7 +299,7 @@ c     &       fix_vtx,occ_vtx,njoined,op_info)
         if (ntest.ge.100) then
           write(luout,*) 'currently ',nterms,' terms'
         end if
-        deallocate(occ_vtx,fix_vtx)
+        deallocate(occ_vtx,fix_vtx,ol_map)
 
         deallocate(vtxmap)
         if (term%nvtx.gt.0) deallocate(ivtx_term_reo)

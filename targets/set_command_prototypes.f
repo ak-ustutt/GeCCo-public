@@ -73,6 +73,12 @@
      &     val_log=(/.false./))
 *----------------------------------------------------------------------*
       call add_command_proto(SET_ORDER,tgt_info)
+      call set_arg('_PROTO_',SET_ORDER,'ORDER',1,tgt_info,
+     &     val_int=(/-1/))
+      call set_arg('_PROTO_',SET_ORDER,'IDX_FREQ',0,tgt_info,
+     &     val_int=(/-1/))
+      call set_arg('_PROTO_',SET_ORDER,'SPECIES',1,tgt_info,
+     &     val_int=(/-1/))
 *----------------------------------------------------------------------*
       call add_command_proto(SET_HERMIT,tgt_info)
 ! formulae:
@@ -128,10 +134,14 @@
      &     val_int=(/0/))
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'N_INPROJ',1,tgt_info,
      &     val_int=(/0/))
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'TITLE',1,tgt_info,
+     &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(FACTOR_OUT,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(EXPAND,tgt_info)
+      call set_arg('_PROTO_',EXPAND,'TITLE',1,tgt_info,
+     &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(REPLACE,tgt_info)
 *----------------------------------------------------------------------*
@@ -161,6 +171,10 @@
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_TERMS,tgt_info)
 *----------------------------------------------------------------------*
+      call add_command_proto(SELECT_SPECIAL,tgt_info)
+      call set_arg('_PROTO_',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &     val_str='---')
+*----------------------------------------------------------------------*
       call add_command_proto(DEL_TERMS,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(MODIFY_FACTORIZATION,tgt_info)
@@ -186,6 +200,14 @@
      &     val_str='keep')
       call set_arg('_PROTO_',SELECT_LINE,'TITLE',1,tgt_info,
      &     val_str='---')
+*----------------------------------------------------------------------*
+      call add_command_proto(DEF_CUMULANTS,tgt_info)
+      call set_arg('_PROTO_',DEF_CUMULANTS,'MODE',1,tgt_info,
+     &     val_str='DENSITY')
+      call set_arg('_PROTO_',DEF_CUMULANTS,'TITLE',1,tgt_info,
+     &     val_str='---')
+      call set_arg('_PROTO_',DEF_CUMULANTS,'LEVEL',1,tgt_info,
+     &     val_int=(/0/))
 !     ME-lists:
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_ME_LIST,tgt_info)
@@ -217,6 +239,8 @@
       call add_command_proto(PRECONDITIONER,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(ADD,tgt_info)
+      call set_arg('_PROTO_',ADD,'REPLACE',1,tgt_info,
+     &     val_log=(/.false./))
 *----------------------------------------------------------------------*
       call add_command_proto(SCALE,tgt_info)
       call set_arg('_PROTO_',SCALE,'LIST_SCAL',1,tgt_info,
@@ -253,6 +277,10 @@
       call add_command_proto(PRINT_RES,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_MEL,tgt_info)
+      call set_arg('_PROTO_',PRINT_MEL,'MODE',1,tgt_info,
+     &     val_str='LIST')
+      call set_arg('_PROTO_',PRINT_MEL,'TITLE',1,tgt_info,
+     &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(SET_MEL,tgt_info)
 *----------------------------------------------------------------------*

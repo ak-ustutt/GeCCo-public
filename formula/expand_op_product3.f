@@ -120,6 +120,8 @@
      &     idx_op(:), svertex(:), joined(:,:), occ_list_raw(:,:,:),
      &     vtx_occrs(:,:), vtx_cntrq(:,:), occrs(:,:,:), cntrq(:,:,:),
      &     cnt_comb(:), cnt_comb_mnmx(:,:)
+      logical, pointer ::
+     &     fix_vtx(:)
 
       integer, external ::
      &     vtx_type
@@ -234,7 +236,8 @@ c      ! currently, we expand primitive operators only
         cnt_comb_mnmx(1:2,1) = 1
       end if
 
-      allocate(ol_map(nvtx),idx_op(nops))
+      allocate(ol_map(nvtx),idx_op(nops),fix_vtx(nvtx))
+      fix_vtx = .false.
 
       ! identify open-line vertices
       nopen = 0
@@ -562,7 +565,7 @@ c                end do
 
                 ! generate contractions
                 call gen_contr4(.false.,form_pnt,proto,
-     &               occ_vtx(1,1,1),ol_map,op_info)
+     &               fix_vtx,occ_vtx(1,1,1),ol_map,op_info)
 
                 ! advance pointer
                 nterms = 0
@@ -590,7 +593,7 @@ c                end do
       end do
 
       call dealloc_contr(proto0,proto)
-      deallocate(neqv,idx_eqv,occ_vtx,iop_typ,ops,ol_map,idx_op)
+      deallocate(neqv,idx_eqv,occ_vtx,iop_typ,ops,ol_map,idx_op,fix_vtx)
       deallocate(cnt_comb,cnt_comb_mnmx)
 
       if (ndescr.gt.0) then

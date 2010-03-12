@@ -322,7 +322,7 @@ c fix:
             else
               call add_opblk(xret_blk(iblkres),type_xret,fac,
      &             mel_arr(idxmel)%mel,me_res,
-     &             iblkop(1),iblkres,orb_info)
+     &             iblkop(1),iblkres,orb_info,.false.)
             end if
 
             if (type_xret.eq.2.and.iprint.ge.3)

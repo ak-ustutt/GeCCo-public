@@ -43,6 +43,7 @@
      &     fpa_intm_in_tgt(:)
       logical ::
      &     success
+      call quit(1,'factor_out_subexpr','call to obsolete routine')
 
       if (ntest.ge.100) then
         write(luout,*) '==================================='

@@ -211,7 +211,7 @@ c        iscr(ivtx+1:nvtx) = topo(ivtx,ivtx+1:nvtx)
         jhlp = ireo(ivtx)
         jvtx = ivtx-1
         do while (jvtx.ge.ist)
-          if (i8list_cmp(lscr,topo(1,jvtx),ind).le.0) exit
+          if (i8list_cmp(lscr,topo(1,jvtx),nvtx).le.0) exit
 c          jscr(1:jvtx) = topo(1:jvtx,jvtx)
 c          jscr(jvtx+1:nvtx) = topo(jvtx,jvtx+1:nvtx)
 c          if (i8list_cmp(iscr,topo(1,jvtx),nvtx).le.0) exit

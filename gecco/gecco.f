@@ -37,8 +37,8 @@
       ! a few settings
       luout = 6      ! output unit
 
-      iprlvl = 3     ! print level
-c      iprlvl = 10    ! print level
+c      iprlvl = 3     ! print level
+      iprlvl = 10    ! print level
 
       call hostname(host)
       call datum(date)

@@ -147,6 +147,10 @@ c              print *,'new terms:'
 c              call print_form_list(luout,fl_expand,op_info)
 c dbg
             end if
+
+            ! sum terms in expanded formula (saves time)
+            call sum_terms(fl_expand,op_info)
+
             ! and replace current term
             call replace_fl_node(fl_tgt_current,fl_expand)
             if (associated(fl_tgt_current%contr)) then

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_unc_mrci_targets(tgt_info,orb_info)
+      subroutine set_unc_mrci_targets(tgt_info,orb_info,calc)
 *----------------------------------------------------------------------*
 *     set targets for CASSCF or uncontracted CI coefficient optimization
 *
@@ -26,6 +26,8 @@
      &     tgt_info
       type(orbinf), intent(in) ::
      &     orb_info
+      logical, intent(in) ::
+     &     calc
 
       integer ::
      &     ndef, occ_def(ngastp,2,60),
@@ -350,7 +352,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &     parameters,2,tgt_info)
 
       ! Evaluate reference energy
-      call add_target('EVAL_E_REF',ttype_gen,.true.,tgt_info)
+      call add_target('EVAL_E_REF',ttype_gen,calc,tgt_info)
       call set_dependency('EVAL_E_REF','SOLVE_REF',tgt_info)
       call set_dependency('EVAL_E_REF','FOPT_REF',tgt_info)
       call set_rule('EVAL_E_REF',ttype_opme,EVAL,

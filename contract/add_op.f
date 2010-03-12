@@ -1,9 +1,10 @@
       subroutine add_op(label_res,fac,label_sum,nsum,
-     &     op_info,orb_info,str_info)
+     &     op_info,orb_info,str_info,replace)
 *----------------------------------------------------------------------*
 *     add nsum operator lists block by block
 *     the block structure of operator "label_res" is decisive for the
 *     blocks considered; they should be contained in all summands
+*     replace = true : only replace blocks by existing blks of op. list
 *----------------------------------------------------------------------*
 
       implicit none
@@ -32,6 +33,8 @@
      &     orb_info
       type(strinf), intent(in) ::
      &     str_info
+      logical, intent(in) ::
+     &     replace
 
       type(me_list), pointer ::
      &     me_res, me_current
@@ -96,7 +99,7 @@
       endif
 
       ! zero result file
-      call zeroop(me_res)
+      if (.not.replace) call zeroop(me_res)
 
       nblk    = me_res%op%n_occ_cls
       njoined = me_res%op%njoined
@@ -123,13 +126,14 @@
      &                        me_res%op%blk_version(iblk))
 
           if (iblk_sum.lt.1) then
+            if (replace) cycle
             call wrt_occ_n(luout,occ,njoined)
             call quit(1,'add_op',
      &           'block not found: '//trim(me_current%op%name))
           end if
 
           call add_opblk(xnorm2,1,fac(isum),me_current,me_res,
-     &         iblk_sum,iblk,orb_info)
+     &         iblk_sum,iblk,orb_info,replace)
 
         end do
 

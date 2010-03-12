@@ -45,8 +45,7 @@
 
       integer, external ::
      &     idx_oplist2, iblk_occ
-
-      call quit(1,'form_op_replace2','obsolete?')
+      call quit(1,'form_op_replace2','call to obsolete routine')
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'form_op_replace')

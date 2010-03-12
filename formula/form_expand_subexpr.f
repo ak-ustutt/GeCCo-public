@@ -52,6 +52,10 @@ c      include 'def_contraction_list.h'
       integer, external ::
      &     idx_formlist
 
+      ! for timings:
+      real(8) ::
+     &     cpu, wall, sys, cpu0, wall0, sys0
+
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
      &     'form_expand_subexpr reports')
@@ -70,6 +74,7 @@ c      include 'def_contraction_list.h'
 
       ! loop over intermediates
       do iintm = 1, nintm
+        call atim_csw(cpu0,sys0,wall0)
 
         ! look for transposition label
         len = len_trim(label_f_intm(iintm))
@@ -104,6 +109,9 @@ c      include 'def_contraction_list.h'
 
         call sum_terms(flist,op_info)
 
+        call atim_csw(cpu,sys,wall)
+        call prtim(luout,'expand',cpu-cpu0,sys-sys0,wall-wall0)
+
         call dealloc_formula_list(fl_intm)
 
       end do
@@ -122,6 +130,6 @@ c      include 'def_contraction_list.h'
       end if
 
       call dealloc_formula_list(flist)
-      
+
       return
       end

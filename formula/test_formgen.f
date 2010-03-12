@@ -29,6 +29,7 @@
 
       logical, external ::
      &     next_part_connection
+      call quit(1,'test_formgen','call to obsolete routine')
 
 c      write(luout,*) 'testing next_part_connection:'
 c      occ_min = 0

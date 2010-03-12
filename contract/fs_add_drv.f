@@ -110,7 +110,7 @@ c?        iblkop  = (iblkop-1)/njoined + 1
         else
           call add_opblk(xret_blk(iblk_res),type_xret,fact,
      &             me_op,me_tgt,
-     &             iblk_op,iblk_res,orb_info)
+     &             iblk_op,iblk_res,orb_info,.false.)
         end if
 
       end if

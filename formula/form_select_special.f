@@ -55,6 +55,8 @@
       select case(trim(type))
       case('F12x','f12x')
         call select_f12x(flist,labels,nlabels,mode,op_info)
+      case('MRCC')
+        call select_mrcc_lag(flist,labels,nlabels,mode,op_info)
       case default
         call quit(1,'form_select_special','unknown type: "'
      &       //trim(type)//'"')

@@ -36,6 +36,7 @@
 
       integer, external ::
      &     int_pack
+      call quit(1,'canon_contr2','call to obsolete routine')
 
       narc = contr%narc
       nvtx = contr%nvtx

@@ -64,6 +64,7 @@ c      include 'ifc_operators.h'
 
       integer, external ::
      &     idx_oplist2, idxlist
+      call quit(1,'set_r12intm_formal','call to obsolete routine')
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'set_r12_intm_formal')

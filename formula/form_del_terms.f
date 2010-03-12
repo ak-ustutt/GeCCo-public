@@ -75,14 +75,14 @@ c     &                      title,
 
           idx = idx+1
 c dbg          
-          print  *,'present term ',idx
-          call prt_contr2(luout,fl_pnt%contr,op_info)        
+c          print  *,'present term ',idx
+c          call prt_contr2(luout,fl_pnt%contr,op_info)        
 c dbg
 
           on_list = imltlist(idx,idxterms,nterms,1).gt.0
           delete = mode.lt.0.and.on_list .or. mode.gt.0.and..not.on_list
 c dbg
-          print *,'delete = ',delete
+c          print *,'delete = ',delete
 c dbg
 
           if (delete) then

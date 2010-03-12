@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_ic_mrci_targets(tgt_info,orb_info,env_type)
+      subroutine set_ic_mrci_targets(tgt_info,orb_info)
 *----------------------------------------------------------------------*
 *     contains targets for internally contracted MRCI
 *
@@ -27,8 +27,6 @@
      &     tgt_info
       type(orbinf), intent(in) ::
      &     orb_info
-      character(*), intent(in) ::
-     &     env_type
 
       integer ::
      &     min_rank, max_rank, ndef, occ_def(ngastp,2,60),
@@ -38,15 +36,30 @@
      &     minp, maxp, maxv, maxvv, minexc, cbarc(2),
      &     nlabels
       logical ::
-     &     use_hessian, use_dens, pure_vv
+     &     use_hessian, use_dens, pure_vv, calc
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
       character(len_command_par) ::
      &     parameters(3)
 
+      ! get maximum excitation rank
+      call get_argument_value('calculate.multiref','exc',
+     &     ival=maxexc)
+      call get_argument_value('calculate.multiref','cmaxexc',
+     &     ival=cmaxexc)
+
       ! first set targets for CASSCF or uncontracted CI wave function
-        call set_unc_mrci_targets(tgt_info,orb_info)
+      call set_unc_mrci_targets(tgt_info,orb_info,
+     &                          .false..or.maxexc.eq.0)
+
+      ! if maxexc = 0: return because call of unc_mrci is sufficient
+      if (maxexc.eq.0) then
+        return
+      else if (cmaxexc.gt.0) then
+        call quit(1,'set_ic_mrci_targets',
+     &            'Warning: Only tested for CASSCF reference so far')
+      end if
 
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting multireference targets #2...'
@@ -71,24 +84,14 @@
      &     ival=maxvv)
       call get_argument_value('calculate.multiref','exc',
      &     ival=minexc) ! currently fixed to one excitation rank
-      call get_argument_value('calculate.multiref','exc',
-     &     ival=maxexc)
-      call get_argument_value('calculate.multiref','cmaxexc',
-     &     ival=cmaxexc)
       if (maxh.lt.0) maxh = maxexc
       if (maxp.lt.0) maxp = maxexc
       if (maxv.lt.0) maxv = 2*maxexc
       if (maxvv.lt.0) maxvv = maxexc
       call get_argument_value('calculate.multiref','pure_vv',
      &     lval=pure_vv)
-
-      ! if maxexc = 0: return because call of unc_mrci is sufficient
-      if (maxexc.eq.0) then
-        return
-      else if (cmaxexc.gt.0) then
-        call quit(1,'set_ic_mrci_targets',
-     &            'Warning: Only tested for CASSCF reference so far')
-      end if
+      call get_argument_value('calculate.multiref','calc',
+     &     lval=calc)
 
       if (ntest.ge.100) then
         print *,'minh    = ',minh
@@ -1088,7 +1091,7 @@ c     &     parameters,2,tgt_info)
 *----------------------------------------------------------------------*
 
       ! Evaluate norm
-      call add_target('EVAL_NORM',ttype_gen,.true.,tgt_info)
+      call add_target('EVAL_NORM',ttype_gen,calc,tgt_info)
       call set_dependency('EVAL_NORM','FOPT_NORM',tgt_info)
       call set_dependency('EVAL_NORM','SOLVE_ICCI',tgt_info)
       call set_rule('EVAL_NORM',ttype_opme,EVAL,
@@ -1188,7 +1191,7 @@ c     &     parameters,2,tgt_info)
      &     parameters,2,tgt_info)
 
       ! Evaluate multireference energy
-      call add_target('EVAL_E(MR)',ttype_gen,.true.,tgt_info)
+      call add_target('EVAL_E(MR)',ttype_gen,calc,tgt_info)
       call set_dependency('EVAL_E(MR)','SOLVE_ICCI',tgt_info)
       call set_dependency('EVAL_E(MR)','FOPT_E(MR)',tgt_info)
 c      call form_parameters(-1,parameters,2,

@@ -59,6 +59,7 @@
 
       integer, external ::
      &     ifndmax, imltlist, idxlist
+      call quit(1,'join_contr3','call to obsolete routine')
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'This is join_contr')

@@ -297,6 +297,8 @@ c     &     idef=(/0/))
      &                  idef=(/0/))  ! excitation (both min. and max.)
       call argument_add('pure_vv','calculate.multiref',type=vtyp_log,
      &                  ldef=(/.true./)) ! pure act.-act. excitations
+      call argument_add('calc','calculate.multiref',type=vtyp_log,
+     &                  ldef=(/.true./)) ! do the calc. (else set targ.)
 
       call keyword_add('experimental',context='calculate')
       ! set additional experimental keyword in this subroutine:

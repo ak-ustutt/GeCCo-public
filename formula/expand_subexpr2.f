@@ -44,6 +44,7 @@
 
       integer, external ::
      &     vtx_in_contr
+      call quit(1,'expand_subexpr2','call to obsolete routine')
 
       if (ntest.ge.100) then
         write(luout,*) '================================'

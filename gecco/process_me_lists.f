@@ -185,7 +185,7 @@ c dbg
         call add_parameters(+1,rule%parameters,nfac,fac,maxfac)
 
         call add_op(rule%labels(1),fac,rule%labels(2),nfac,
-     &       op_info,orb_info,str_info)
+     &       op_info,orb_info,str_info,.false.)
 
       case(SCALE)
 

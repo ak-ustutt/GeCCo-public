@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine add_opblk(xnorm2,type,fac,mel_in,mel_out,
-     &     iblkin,iblkout,orb_info)
+     &     iblkin,iblkout,orb_info,reset)
 *----------------------------------------------------------------------*
 *
 *     add block from list mel_in to list mel_out
@@ -34,6 +34,8 @@
      &     orb_info
       integer, intent(in) ::
      &     iblkin, iblkout, type
+      logical, intent(in) ::
+     &     reset
 
       logical ::
      &     ok, bufin, bufout
@@ -219,20 +221,23 @@ c      end if
           if (bufin) then
             call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
      &                                    idoffout+ioffout+idxnd)
-            call daxpy(idxnd-idxst+1,fac,ffin%buffer(ioffin+idxst),1,
+            if (reset) buffer_out(1:lenbat) = 0d0
+            call daxpy(lenbat,fac,ffin%buffer(ioffin+idxst),1,
      &                                   buffer_out,1)
             call put_vec(ffout,buffer_out,idoffout+ioffout+idxst,
      &                                    idoffout+ioffout+idxnd)
           else if (bufout) then
             call get_vec(ffin,buffer_in,idoffin+ioffin+idxst,
      &                                  idoffin+ioffin+idxnd)
-            call daxpy(idxnd-idxst+1,fac,buffer_in,1,
+            if (reset) ffout%buffer(ioffout+idxst:ioffout+idxnd) = 0d0
+            call daxpy(lenbat,fac,buffer_in,1,
      &                               ffout%buffer(ioffout+idxst),1)
           else
             call get_vec(ffin,buffer_in,idoffin+ioffin+idxst,
      &                                  idoffin+ioffin+idxnd)
             call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
      &                                    idoffout+ioffout+idxnd)
+            if (reset) buffer_out(1:lenbat) = 0d0
             do idx = 1, lenbat
               buffer_out(idx) = buffer_out(idx)+fac*buffer_in(idx)
             end do
@@ -250,6 +255,7 @@ c     &              +buffer_out(1:lenbat)
         if (type.eq.2)
      &      xnorm2 = buffer_out(1)
       else
+        if (reset) ffout%buffer(ioffout+1:ioffout+len_op) = 0d0
         call daxpy(len_op,fac,ffin%buffer(ioffin+1),1,
      &                       ffout%buffer(ioffout+1),1)
         if (type.eq.1) then

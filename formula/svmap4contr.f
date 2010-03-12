@@ -35,6 +35,7 @@
      &     arc(:)
       integer, pointer ::
      &     occ_vtx(:,:,:), occ_res(:,:,:), occ_cnt(:,:)
+      call quit(1,'svmap4contr','call to obsolete routine')
       
       if (ntest.ge.100)
      &     call write_title(luout,wst_dbg_subr,'svmap4contr')
