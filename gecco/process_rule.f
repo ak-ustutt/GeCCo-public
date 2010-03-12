@@ -469,7 +469,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(FACTOR_OUT)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
         call get_form(form0_pnt,trim(label),OLD)
         call get_arg('INTERM',rule,tgt_info,
@@ -855,7 +855,8 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
 
         call get_arg('LIST',rule,tgt_info,val_label=label)
-        call get_arg('COMMENT',rule,tgt_info,val_label=mode)
+        call get_arg('COMMENT',rule,tgt_info,val_str=title)
+        call get_arg('FORMAT',rule,tgt_info,val_str=mode)
 
         if (form_test) return
 
