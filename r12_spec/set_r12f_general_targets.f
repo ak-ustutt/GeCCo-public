@@ -2076,6 +2076,9 @@ c      call add_target(form_r12_zcabs,ttype_frm,.false.,tgt_info)
       call set_rule(form_r12_zcabs,ttype_frm,DEF_R12INTM_CABS,
      &                labels,5,1,
      &                parameters,2,tgt_info)
+!      call set_rule(form_r12_zcabs,ttype_frm,TEX_FORMULA,
+!     &              labels,5,1,
+!     &              'ZINT.tex',1,tgt_info)
 
       ! Formal definition of Z2
       labels(1:10)(1:len_target_name) = ' '
