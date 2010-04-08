@@ -27,6 +27,8 @@ c work around for problem with interface file
 
       call file_open(ffinput)
 
+      call list_file(luout,ffinput%unit)
+
       call keyword_parse(ffinput%unit)
 
       call file_close_keep(ffinput)

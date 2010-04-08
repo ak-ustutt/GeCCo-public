@@ -37,7 +37,7 @@
      &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext, trunc_type
       logical ::
      &     needed, r12fix, set_tp, set_tpp, truncate, set_RT2T2,
-     &     pf12_trunc, frozen, pz_eval
+     &     pf12_trunc, frozen, pz_eval, use_CS
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -81,6 +81,7 @@
       call get_argument_value('method.R12','T1ext',ival=t1ext)
       call get_argument_value('method.R12','trunc',ival=trunc_type)
       call get_argument_value('method.R12','vring',ival=vring_mode)
+      call get_argument_value('method.R12','use_CS',lval=use_CS)
       truncate = trunc_type.ge.0
       if (is_keyword_set('method.truncate').gt.0) then
         truncate = is_keyword_set('method.truncate').gt.0
@@ -1165,7 +1166,7 @@ c     &     is_keyword_set('method.CCPT')) then
      &              parameters,2,tgt_info)
 
       ! V' intermediate
-      if (vring_mode.ge.2) then
+      if (vring_mode.eq.2) then
         nblk = 6
         nj = 1
         occ_def = 0
@@ -1191,13 +1192,21 @@ c     &     is_keyword_set('method.CCPT')) then
         occ_def(IPART,1,6) = 2
         occ_def(IHOLE,2,6) = 1
         occ_def(IPART,2,6) = 1
-      else
+      else if (vring_mode.eq.1) then
         nblk = 1
         nj = 1
         occ_def = 0
         !
         occ_def(IPART,1,1) = 2
         occ_def(IHOLE,2,1) = 2
+      else
+        nblk = 2
+        nj = 1
+        occ_def = 0
+        occ_def(IPART,1,1) = 1
+        occ_def(IHOLE,2,1) = 1
+        occ_def(IPART,1,2) = 2
+        occ_def(IHOLE,2,2) = 2
       end if
       call add_target2(op_vp_inter,.false.,tgt_info)
       call set_dependency(op_vp_inter,op_v_inter,tgt_info)
@@ -1387,6 +1396,25 @@ c      end if
       call set_rule(op_c_inter,ttype_op,DEF_OP_FROM_OCC,
      &              op_c_inter,1,1,
      &              parameters,2,tgt_info)
+
+      ! C1 intermediate f^k_x r^{ax}_{ik}
+      nblk = 1
+      nj   = 1
+      occ_def = 0
+      occ_def(IPART,1,1) = 1
+      occ_def(IHOLE,2,1) = 1
+      call add_target2('C1',.false.,tgt_info)
+      call set_dependency('C1',op_v_inter,tgt_info)
+      call set_rule2('C1',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('C1',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/'C1'/))
+      call set_arg('C1',DEF_OP_FROM_OCC,'BLOCKS',1,tgt_info,
+     &     val_int=(/nblk/))
+      call set_arg('C1',DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+     &     val_int=(/nj/))
+      call set_arg('C1',DEF_OP_FROM_OCC,'OCC',nblk*nj,tgt_info,
+     &     val_occ=occ_def(1:ngastp,1:2,1:nblk*nj))
+ 
 
       ! P intermediate
       call add_target(op_p_inter,ttype_op,.false.,tgt_info)
@@ -1963,6 +1991,44 @@ c     &              parameters,2,tgt_info)
      &              labels,nlab,1,
      &              parameters,2,tgt_info)
 
+      ! formal definition of C1
+      call add_target2('C1_formal',.false.,tgt_info)
+      call set_dependency('C1_formal','C1',tgt_info)
+      call set_dependency('C1_formal',op_ham,tgt_info)
+      call set_dependency('C1_formal',op_r12,tgt_info)
+      call set_rule2('C1_formal',DEF_R12INTM_FORMAL,tgt_info)
+      call set_arg('C1_formal',DEF_R12INTM_FORMAL,'LABEL',1,tgt_info,
+     &             val_label=(/'C1_formal'/))
+      call set_arg('C1_formal',DEF_R12INTM_FORMAL,
+     &                                              'INTERM',1,tgt_info,
+     &             val_label=(/'C1'/))
+      call set_arg('C1_formal',DEF_R12INTM_FORMAL,
+     &                                           'OPERATORS',2,tgt_info,
+     &             val_label=(/op_r12,op_ham/))
+      call set_arg('C1_formal',DEF_R12INTM_FORMAL,
+     &                                           'ANSATZ',1,tgt_info,
+     &             val_int=(/ansatz/))
+      call set_arg('C1_formal',DEF_R12INTM_FORMAL,
+     &                                           'MODE',1,tgt_info,
+     &             val_str='C1')
+      call set_arg('C1_formal',DEF_R12INTM_FORMAL,
+     &                                           'TITLE',1,tgt_info,
+     &            val_str='C1 intermediate, formal definition')
+
+      call add_target2('C1_CABS',.false.,tgt_info)
+      call set_dependency('C1_CABS',op_ham,tgt_info)
+      call set_dependency('C1_CABS','C1_formal',tgt_info)
+      call set_dependency('C1_CABS',op_rint,tgt_info)
+      call set_rule2('C1_CABS',REPLACE,tgt_info)
+      call set_arg('C1_CABS',REPLACE,'LABEL_RES',1,tgt_info,
+     &            val_label=(/'C1_CABS'/))
+      call set_arg('C1_CABS',REPLACE,'LABEL_IN',1,tgt_info,
+     &            val_label=(/'C1_formal'/))
+      call set_arg('C1_CABS',REPLACE,'OP_LIST',2,tgt_info,
+     &            val_label=(/op_r12,op_rint/))
+      call set_arg('C1_CABS',REPLACE,'TITLE',1,tgt_info,
+     &            val_str='C1 intermediate, for evaluation')
+
       ! formal definition of P
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_pint
@@ -2303,6 +2369,20 @@ c dbg
       call set_rule(fopt_r12_ccabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
+
+      call add_target2('C1-EVAL',.false.,tgt_info)
+      call set_dependency('C1-EVAL','C1_CABS',tgt_info)
+      call set_dependency('C1-EVAL','DEF-C1INT',tgt_info)
+      call set_dependency('C1-EVAL',mel_ham,tgt_info)
+      call set_dependency('C1-EVAL',mel_rint,tgt_info)
+      call set_rule2('C1-EVAL',OPTIMIZE,tgt_info)
+      call set_arg('C1-EVAL',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &            val_label=(/'C1-OPT'/))
+      call set_arg('C1-EVAL',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &            val_label=(/'C1_CABS'/))
+      call set_rule2('C1-EVAL',EVAL,tgt_info)
+      call set_arg('C1-EVAL',EVAL,'FORM',1,tgt_info,
+     &            val_label=(/'C1-OPT'/))
 
       ! set P
       labels(1:10)(1:len_target_name) = ' '
@@ -3014,6 +3094,18 @@ c     &              parameters,1,tgt_info)
       call me_list_parameters(-1,parameters,
      &     msc,0,1,0,0,.false.)
       call set_rule(mel_c_def,ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      
+      ! C1-list
+      call add_target('DEF-C1INT',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF-C1INT','C1',tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'C1INT'
+      labels(2) = 'C1'
+      call me_list_parameters(-1,parameters,
+     &     msc,0,1,0,0,.false.)
+      call set_rule('DEF-C1INT',ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
       

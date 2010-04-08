@@ -314,6 +314,19 @@ c        else if (njoined_int.eq.2) then
         else
           unknown = .true.
         end if
+      case('C1')
+        def_fp3f = .true.
+        idx_rpl = 2
+        if (njoined_int.eq.1) then
+          idx_prod(1:4) = (/idx_intm,idx_f,idx_r,idx_intm/)
+          idx_supv(1:4) = (/1       ,2    ,3    ,1       /)
+          nvtx     = 4
+          nfact    = 3
+          connect(1:2)  = (/2,3/)
+          nconnect = 1
+        else
+          unknown = .true.
+        end if
       case('P')
         def_gpx = .true.
         idx_rpl = 3
