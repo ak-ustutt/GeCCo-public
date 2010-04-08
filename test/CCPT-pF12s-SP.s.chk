@@ -1,0 +1,29 @@
+title
+  BH DALTON env: CCSD(T)-F12 energy ((F12*)-SP approx, frozen core)
+molecule
+  BH-R12-DALTON
+input
+  CCSDpT-R12-III.inp
+check
+  label Number of terms in Lagrangian
+  find DEF_CCR12_LAGRANGIAN
+  find Number of generated terms
+  compare int 5
+check
+  label Number of iterations
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+check
+  label CCSD energy
+  find CC energy [ ]*
+  compare real 5 1e-12
+check
+  label (T) energy
+  find CC-PT energy [ ]*
+  compare real 5 1e-12
+check
+  label Total CCSD(T) energy
+  find Total energy [ ]*
+  compare real 5 1e-12
+end
+

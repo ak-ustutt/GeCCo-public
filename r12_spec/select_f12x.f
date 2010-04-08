@@ -94,8 +94,8 @@
         trunc_t1 = 0
         trunc_t2 = 1
         max2t1 = 0
-      case('F12b-S','f12b-S','f12b-s')
-        trunc_e = 999
+      case('[F12]')
+        trunc_e = 2
         trunc_t1 = 1
         trunc_t2 = 1
         max2t1 = 0

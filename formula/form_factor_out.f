@@ -40,7 +40,7 @@ c      include 'def_contraction_list.h'
       logical ::
      &     same, transpose
       integer ::
-     &     iintm, idx, len
+     &     iintm, idx, len, nrpl
       character ::
      &     name*(form_maxlen_label*2)
 
@@ -100,7 +100,10 @@ c      include 'def_contraction_list.h'
         if (transpose)
      &       call transpose_formula(fl_intm,op_info)
 
-        call factor_out_subexpr2(flist,fl_intm,op_info)
+        call factor_out_subexpr2(flist,fl_intm,nrpl,op_info)
+
+        if (iprlvl.ge.2) write(luout,'(x,a40,": ",i4," replacements")')
+     &                  trim(label_f_intm(iintm)),nrpl 
 
         call dealloc_formula_list(fl_intm)
 

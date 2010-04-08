@@ -25,10 +25,11 @@
       integer ::
      &     iblk_cur
       logical ::
-     &     first, newline
+     &     very_first, first, newline
       integer ::
      &     length_count, length_term
 
+      very_first = .true.
       length_count = 0
       form_ptr => form_head
       do
@@ -37,14 +38,20 @@
           exit
         case(command_set_target_init)
           first = .true.
+          newline = .not.very_first
         case(command_set_target_update)
           first = .true.
+          newline = .not.very_first
         case(command_new_intermediate)
           first = .true.
+          newline = .not.very_first
         case(command_del_intermediate)
         case(command_add_contribution)
           if (.not.first) then
-            if (iblk_cur.ne.form_ptr%contr%iblk_res) first = .true.
+            if (iblk_cur.ne.form_ptr%contr%iblk_res) then
+              first = .true.
+              newline = .not.very_first
+            end if
           end if
           if (length_count.gt.max_count) then
             newline = .true.
@@ -57,6 +64,8 @@
           iblk_cur = form_ptr%contr%iblk_res
           first = .false.
         end select
+
+        very_first = .false.
 
         if (.not.associated(form_ptr%next)) exit
         form_ptr => form_ptr%next

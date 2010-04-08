@@ -42,7 +42,7 @@
       type(filinf), pointer ::
      &     ffintm
       integer ::
-     &     idx,narrays
+     &     idx,narrays,nrpl
       integer, external ::
      &     idx_formlist
 
@@ -155,7 +155,7 @@ c     temp_del%op_name = op_c12
         ffintm => form_info%form_arr(idx)%form%fhand
         call init_formula(fl_intm)
         call read_form_list(ffintm,fl_intm)
-        call factor_out_subexpr2(flist,fl_intm,op_info)
+        call factor_out_subexpr2(flist,fl_intm,nrpl,op_info)
 
         ! Now delete all terms including Z.
         allocate(del_list%del_cond_item(1))
@@ -186,7 +186,7 @@ c     temp_del%op_name = op_c12
         ffintm => form_info%form_arr(idx)%form%fhand
         call init_formula(fl_intm)
         call read_form_list(ffintm,fl_intm)
-        call factor_out_subexpr2(flist,fl_intm,op_info)
+        call factor_out_subexpr2(flist,fl_intm,nrpl,op_info)
 
         ! Now delete all terms including Z and with >=2 F12 terms.
         allocate(del_list%del_cond_item(2))

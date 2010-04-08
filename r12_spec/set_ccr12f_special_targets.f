@@ -34,7 +34,7 @@
      &     occ_def(ngastp,2,20)
       logical ::
      &     needed, r12fix, set_tp, set_tpp, screen,
-     &     fixed_gem, pf12_trunc, f12x_trunc, pert
+     &     fixed_gem, pf12_trunc, f12x_trunc, pert, use_CS
       character(8) ::
      &     approx, f12x_mode
       character(len_target_name) ::
@@ -75,6 +75,7 @@
       call get_argument_value('method.R12','screen',lval=screen)
       call get_argument_value('method.R12','trunc',ival=trunc_type)
       call get_argument_value('method.R12','vring',ival=vring_mode)
+      call get_argument_value('method.R12','use_CS',lval=use_CS)
       call get_argument_value('method.R12','pert',lval=pert)
       call get_argument_value('method.R12','f12x',str=f12x_mode)
       f12x_trunc = len_trim(f12x_mode).gt.0
@@ -366,13 +367,18 @@ c        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
         call set_dependency(form_ccr12lg0,'Vring_formal',tgt_info)
         labels(2+nint+1) = 'Vring_formal'
         labels(2+nint+2) = 'Vring_formal^+'
-        if (vring_mode.ge.2) then
+        if (vring_mode.eq.2) then
           labels(2+nint+3) = 'Vring2_formal^+'
           nint = nint+3
         else
           nint = nint+2
         end if
       end if
+      if (use_CS) then
+        call set_dependency(form_ccr12lg0,'C1_formal',tgt_info)
+        labels(2+nint+1) = 'C1_formal'
+        nint = nint+1
+      end if 
       if (.not.pf12_trunc) then
         call set_dependency(form_ccr12lg0,form_r12_xhint,tgt_info)
         call set_dependency(form_ccr12lg0,form_r12_pint,tgt_info)
@@ -815,8 +821,10 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
       call set_dependency('L_CCR12_PT-OPT',mel_ccr12lg0def,tgt_info)
       call set_dependency('L_CCR12_PT-OPT',mel_topdef,tgt_info)
       call set_dependency('L_CCR12_PT-OPT',mel_ham,tgt_info)
-        if (vring_mode.gt.0)
+      if (vring_mode.gt.0)
      &       call set_dependency('L_CCR12_PT-OPT','Vring-EVAL',tgt_info)
+      if (use_CS)
+     &       call set_dependency('L_CCR12_PT-OPT','C1-EVAL',tgt_info)
       if (.not.pf12_trunc) then
         call set_dependency('L_CCR12_PT-OPT',mel_p_def,tgt_info)      
         call set_dependency('L_CCR12_PT-OPT',mel_z_def,tgt_info)      
@@ -875,8 +883,10 @@ c     call set_dependency(form_r_t,op_top,tgt_info)
       if(set_tpp.and..not.fixed_gem)
      &     call set_dependency(fopt_ccr12_0,mel_omgcexxdef,tgt_info)
       call set_dependency(fopt_ccr12_0,mel_ham,tgt_info)
-        if (vring_mode.gt.0)
+      if (vring_mode.gt.0)
      &       call set_dependency(fopt_ccr12_0,'Vring-EVAL',tgt_info)
+      if (use_CS)
+     &       call set_dependency(fopt_ccr12_0,'C1-EVAL',tgt_info)
       if (.not.pf12_trunc) then
         call set_dependency(fopt_ccr12_0,mel_p_def,tgt_info)      
         call set_dependency(fopt_ccr12_0,mel_z_def,tgt_info)      
@@ -1152,6 +1162,8 @@ c        call set_dependency(solve_ccr12_gs,mel_diar12,tgt_info)
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
         if (vring_mode.gt.0)
      &       call set_dependency(solve_ccr12_gs,'Vring-EVAL',tgt_info)
+        if (use_CS)
+     &       call set_dependency(solve_ccr12_gs,'C1-EVAL',tgt_info)
         if (.not.pf12_trunc)
      &       call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
         if (max_rank.ge.3)
@@ -1185,6 +1197,8 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
         if (vring_mode.gt.0)
      &       call set_dependency(solve_ccr12_gs,'Vring-EVAL',tgt_info)
+        if (use_CS)
+     &       call set_dependency(solve_ccr12_gs,'C1-EVAL',tgt_info)
         if (.not.pf12_trunc)
      &    call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
         if (max_rank.ge.3)
@@ -1218,6 +1232,8 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
         call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
         if (vring_mode.gt.0)
      &       call set_dependency(solve_ccr12_gs,'Vring-EVAL',tgt_info)
+        if (use_CS)
+     &       call set_dependency(solve_ccr12_gs,'C1-EVAL',tgt_info)
         if (.not.pf12_trunc)
      &    call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
         if (max_rank.ge.3)
@@ -1258,6 +1274,8 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
      &       call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
           if (vring_mode.gt.0)
      &       call set_dependency(solve_ccr12_gs,'Vring-EVAL',tgt_info)
+          if (use_CS)
+     &       call set_dependency(solve_ccr12_gs,'C1-EVAL',tgt_info)
           if (.not.pf12_trunc)
      &       call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
           if (max_rank.ge.3)
@@ -1287,6 +1305,8 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
      &       call set_dependency(solve_ccr12_gs,eval_r12_inter,tgt_info)
           if (vring_mode.gt.0)
      &       call set_dependency(solve_ccr12_gs,'Vring-EVAL',tgt_info)
+          if (use_CS)
+     &       call set_dependency(solve_ccr12_gs,'C1-EVAL',tgt_info)
           if (.not.pf12_trunc)
      &       call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
           if (max_rank.ge.3)
