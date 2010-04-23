@@ -366,6 +366,13 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_rule('EVAL_FREF',ttype_opme,EVAL,
      &     'FOPT_FREF',1,0,
      &     parameters,0,tgt_info)
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'effective Fock operator:',0,'LIST')
+c      call set_rule('EVAL_FREF',ttype_opme,PRINT_MEL,
+c     &     'ME_FREF',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
 
       return
       end

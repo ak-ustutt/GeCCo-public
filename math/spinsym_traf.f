@@ -179,18 +179,21 @@
             else if (abs(map(icol)).gt.icol) then
               sig = dble(sign(1,map(icol)))
               ising = ising + 1
-              mat(1:ndim,icol) = fac*scr(1:ndim,ising)
-              mat(1:ndim,abs(map(icol))) = sig*fac*scr(1:ndim,ising)
-            else
-              sig = - dble(sign(1,map(icol)))
               itrip = itrip + 1
-              mat(1:ndim,icol) = fac*scr(1:ndim,nsing+itrip)
-              mat(1:ndim,abs(map(icol)))
-     &                             = sig*fac*scr(1:ndim,nsing+itrip)
+              mat(1:ndim,icol) = fac*scr(1:ndim,ising)
+     &                           + fac*scr(1:ndim,nsing+itrip)
+              mat(1:ndim,abs(map(icol))) = sig*fac*scr(1:ndim,ising)
+     &                           - sig*fac*scr(1:ndim,nsing+itrip)
             end if
           end do
           deallocate(scr)
         end if
+c dbg   can be used to set 1
+c        mat(1:ndim,1:ndim) = 0d0
+c        do iline = 1, ndim
+c          mat(iline,iline) = 1d0
+c        end do
+c dbgend
 
         if (ntest.ge.100) then
           write(luout,*) 'output matrix:'

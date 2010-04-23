@@ -254,7 +254,7 @@ c          end if
         allocate(reo_info%iocc_reo(ngastp,2,nreo_op1op2))
         allocate(reo_info%from_to(2,nreo_op1op2))
         allocate(from_to_vtx(2,nreo_op1op2),
-     &           is_op1op2(reo_info%nvtx_contr))
+     &           is_op1op2(max(reo_info%nvtx_contr,njoined_op1op2)))
         ! ... and the remainder of the operator during reo:
         allocate(reo_info%iocc_opreo0(ngastp,2,njoined_op1op2))
 
@@ -295,7 +295,7 @@ c          end if
 c patch
 c        print *,'redefining is_op1op2:'
         is_op1op2 = 0
-        do ivtx = 1, reo_info%nvtx_contr
+        do ivtx = 1, max(reo_info%nvtx_contr,njoined_op1op2)
           if (svertex(ivtx).eq.idxsuper) is_op1op2(ivtx) = 1
         end do
 c        write(luout,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
@@ -308,7 +308,8 @@ c patch
      &       iocc_op1op2tmp,reo_info%iocc_opreo0,
      &       njoined_op1op2,reo_info%iocc_reo,
      &       reo_info%from_to,nreo_op1op2,
-     &       from_to_vtx,reo_info%nca_vtx,is_op1op2,reo_info%nvtx_contr)
+     &       from_to_vtx,reo_info%nca_vtx,is_op1op2,
+     &       max(reo_info%nvtx_contr,njoined_op1op2))
 
 c        ! to be commented out ...
 c        call dummy_restr(irst_op1op2,

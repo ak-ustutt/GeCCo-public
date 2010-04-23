@@ -69,6 +69,12 @@
       case(command_reorder)
         write(luout,*) '[REORDER]',fl_item%target
         call prt_reorder(luout,fl_item%reo)
+      case(command_add_reo)
+        idx = idx+1
+        write(luout,*) '[REORDER][ADD]',
+     &       fl_item%target,'( term #',idx,')'
+        call prt_bcontr(luout,fl_item%bcontr)
+        call prt_reorder(luout,fl_item%reo)
       case(command_symmetrise)
         write(luout,*) '[SYMMETRISE]',fl_item%target
       case default

@@ -35,7 +35,8 @@
      &     command_add_bc_reo = 9,
      &     command_bc = 10,
      &     command_bc_reo = 11,
-     &     command_internal = 12
+     &     command_internal = 12,
+     &     command_add_reo = 13
 
 
       ! 0: target operator is op(target), initialize to 0

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine invsqrt_mat(ndim,mat,half)
+      subroutine invsqrt_mat(ndim,mat,half,icnt_sv,icnt_sv0)
 *----------------------------------------------------------------------*
 *     half = true: calculates U*mat^(-0.5) using MAT = U*mat*U^+
 *     half = false: calculates U*mat^(-0.5)*U^+
@@ -12,12 +12,14 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 10
       real(8), parameter ::
      &     min_sv = 1d-10, ! singular value threshold for calc. of pseudo-inv.
      &     warn_sv = 1d-5  ! give a warning for small singular values
       integer, intent(in) ::
      &     ndim
+      integer, intent(inout) ::
+     &     icnt_sv, icnt_sv0
       real(8), intent(inout), target ::
      &     mat(ndim,ndim)
       logical, intent(in) ::
@@ -28,7 +30,7 @@
      &     mat_tmp(:,:)
 
       integer ::
-     &     nrot, idx, lwrk, info
+     &     nrot, idx, lwrk, info, idx2
 
       if (ndim.eq.0) return
 
@@ -43,6 +45,14 @@
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
       end if
 
+      ! check if S is symmetric
+      do idx = 2, ndim
+        do idx2 = 1,idx-1
+          if (abs(mat(idx,idx2)-mat(idx2,idx)).gt.1d-12)
+     &        call quit(1,'invsqrt_mat','S must be symmetric!')
+        end do
+      end do
+
       ! calculate U and singular values:
       call dgesvd('O','N',ndim,ndim,
      &     mat,ndim,singval,
@@ -53,11 +63,19 @@
         write(luout,*) 'WARNING in invsqrt_mat: SVD in trouble'
       end if
 
-      if (ntest.ge.10) write(luout,*) 'singular values s: ',singval
+      if (ntest.ge.10) then
+        if (ntest.ge.100) write(luout,*) 'singular values:'
+        do idx = 1, ndim
+          write(luout,'(x,a,i8,x,f24.12)') 'sv #',icnt_sv+idx,
+     &                                     singval(idx)
+        end do
+      end if
       if (ntest.ge.100) then
         write(luout,*) 'eigenvector matrix U:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
       end if
+
+      icnt_sv = icnt_sv + ndim
 
       if (half) then
         mat_tmp => mat
@@ -76,12 +94,9 @@
           mat_tmp(1:ndim,idx) = mat(1:ndim,idx)
      &                         * (singval(idx)**expo)
         else
+          icnt_sv0 = icnt_sv0 + 1
           mat_tmp(1:ndim,idx) = 0d0
         end if
-c dbg   can be (mis)used to set a unit operator
-c        mat(1:ndim,idx) = 0d0
-c        mat(idx,idx)  =1d0
-c dbgend
       end do
 
       if (ntest.ge.100) then
@@ -100,7 +115,12 @@ c dbgend
           call wrtmat2(mat,ndim,ndim,ndim,ndim)
         end if
       end if
-
+c dbg  can be used to set 1
+c      mat(1:ndim,1:ndim) = 0d0
+c      do idx = 1, ndim
+c        mat(idx,idx) = 1d0
+c      end do
+c dbgend
 
       return
       end

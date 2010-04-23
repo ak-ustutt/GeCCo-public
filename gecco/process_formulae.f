@@ -202,7 +202,7 @@ c        call quit(1,DEF_FORMULA,'not yet')
      &       avoid,navoid,
      &       inproj,ninproj)
         ioff = rule%n_update
-        call form_expand_op_product(form_pnt,
+        call form_expand_op_product(.true.,form_pnt,1d0,
      &       title,rule%labels(ioff+1),rule%labels(ioff+2),nop,
      &       idx_sv,iblkmin,iblkmax,
      &       connect,nconnect,

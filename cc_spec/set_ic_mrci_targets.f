@@ -975,7 +975,11 @@ c     &                labels,1,0,parameters,2,tgt_info)
 
       ! inverted ME_D
       call add_target('DEF_ME_Dinv',ttype_opme,.false.,tgt_info)
-      call set_dependency('DEF_ME_Dinv','EVAL_D',tgt_info)
+      if (calc) then
+        call set_dependency('DEF_ME_Dinv','EVAL_D',tgt_info)
+      else
+        call set_dependency('DEF_ME_Dinv','EVAL_MRCC_D',tgt_info)
+      end if
       call set_dependency('DEF_ME_Dinv','DEF_ME_D',tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'ME_Dinv'
@@ -998,6 +1002,7 @@ c     &                labels,1,0,parameters,2,tgt_info)
       call set_rule('DEF_ME_Dinv',ttype_opme,INVERT,
      &              labels,2,1,
      &              parameters,2,tgt_info)
+c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Square root of inverse density matrix :',0,'LIST')
 c      labels(1) = 'DEF_ME_Dinv'
@@ -1005,6 +1010,7 @@ c      labels(2) = 'ME_Dinv'
 c      call set_rule('DEF_ME_Dinv',ttype_opme,PRINT_MEL,
 c     &     'ME_Dinv',1,0,
 c     &     parameters,2,tgt_info)
+c dbgend
 
       ! inverted ME_Ddag
       call add_target('DEF_ME_Dinvdag',ttype_opme,.false.,tgt_info)
@@ -1039,6 +1045,15 @@ c     &     parameters,2,tgt_info)
      &              REORDER_MEL,
      &              labels,2,1,
      &              parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'Reordered inverted Density matrix :',0,'LIST')
+c      labels(1) = 'DEF_ME_Dtr'
+c      labels(2) = 'ME_Dtr'
+c      call set_rule('DEF_ME_Dtr',ttype_opme,PRINT_MEL,
+c     &     'ME_Dtr',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
 
       ! reordered daggered inverted ME_D
       call add_target('DEF_ME_Dtrdag',ttype_opme,.false.,tgt_info)
@@ -1148,11 +1163,13 @@ c     &     parameters,2,tgt_info)
      &              EXTRACT_DIAG,
      &              labels,2,1,
      &              parameters,0,tgt_info)
+c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Preconditioner (b) :',0,'LIST')
 c      call set_rule('EVAL_A_diag',ttype_opme,PRINT_MEL,
 c     &     trim(dia_label)//'C',1,0,
 c     &     parameters,2,tgt_info)
+c dbgend
 
       ! SOLVE icCI eigenvalue equation
       call add_target('SOLVE_ICCI',ttype_gen,.false.,tgt_info)

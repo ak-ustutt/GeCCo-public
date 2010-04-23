@@ -37,7 +37,7 @@
       case(command_reorder)
         allocate(form_pnt%reo)
         call init_reorder(form_pnt%reo)
-      case(command_add_bc_reo,command_bc_reo)
+      case(command_add_bc_reo,command_bc_reo,command_add_reo)
         allocate(form_pnt%bcontr)
         call init_bcontr(form_pnt%bcontr)
         allocate(form_pnt%reo)

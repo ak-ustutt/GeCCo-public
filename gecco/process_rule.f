@@ -444,7 +444,12 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(EXPAND_OP_PRODUCT)
 *----------------------------------------------------------------------*
         call get_arg('LABEL',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_arg('NEW',rule,tgt_info,val_log=init)
+        if (init) then
+          call get_form(form_pnt,trim(label),NEW)
+        else
+          call get_form(form_pnt,trim(label),OLD)
+         end if
         call get_arg('OP_RES',rule,tgt_info,val_label=label)
         call get_arg('OPERATORS',rule,tgt_info,
      &               val_label_list=label_list,ndim=nop)
@@ -458,7 +463,8 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('N_AVOID',rule,tgt_info,val_int=navoid)
         call get_arg('INPROJ',rule,tgt_info,val_int_list=inproj)
         call get_arg('N_INPROJ',rule,tgt_info,val_int=ninproj)
-        call form_expand_op_product(form_pnt,
+        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
+        call form_expand_op_product(init,form_pnt,fac,
      &       title,label,label_list,nop,
      &       idx_sv,iblkmin,iblkmax,
      &       connect,nconnect,
@@ -469,7 +475,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(FACTOR_OUT)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
         call get_form(form0_pnt,trim(label),OLD)
         call get_arg('INTERM',rule,tgt_info,

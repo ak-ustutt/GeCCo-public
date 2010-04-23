@@ -5,6 +5,7 @@
 *         (if mode='no_tt', contractions involving more than one
 *          T operator are also excluded)
 *     2.) no pure T-T-contractions
+*     only if mode is not 'no_con':
 *     3.) connected terms (if mode='pre', contractions involving H
 *                          and ops other than T also count as connected)
 *
@@ -34,7 +35,7 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, pure_con, found, no_tt
+     &     delete, error, pure_con, found, no_tt, no_con
       integer ::
      &     idxtop, idxcum, idxham
       integer ::
@@ -60,6 +61,7 @@
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'select_mrcc_lag')
+        write(luout,*) 'mode = ',trim(mode)
       endif
 
       ! get operator indices
@@ -86,6 +88,7 @@
 
       pure_con = trim(mode).ne.'pre'
       no_tt = trim(mode).eq.'no_tt'
+      no_con = trim(mode).eq.'no_con'
 
       idxham  = idxop(1)
       idxtop  = idxop(2)
@@ -264,7 +267,7 @@ c dbgend
           end if
           if (ntop.gt.0) then
             ! rule 3: all T must be connected with H
-            delete = delete.or.any(.not.t_con)
+            delete = delete.or.(any(.not.t_con).and..not.no_con)
             deallocate(t_con)
           end if
 

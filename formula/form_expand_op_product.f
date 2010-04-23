@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine form_expand_op_product(form_res,
+      subroutine form_expand_op_product(init,form_res,fac,
      &     title,label_res,label,nlabels,
      &     idx_sv,iblkmin,iblkmax,
      &     connect,nconnect,
@@ -35,6 +35,10 @@
      &     
       character(*), intent(in) ::
      &     label_res, label(nlabels), title
+      logical, intent(in) ::
+     &     init
+      real(8), intent(in) ::
+     &     fac
 
       type(formula), intent(inout), target ::
      &     form_res
@@ -71,6 +75,7 @@
         write(luout,*) '===================================='
         write(luout,*) ' output from form_expand_op_product'
         write(luout,*) '===================================='
+        if (.not.init) write(luout,*) '(adding to existing formula)'
         write(luout,*) 'result op: ',trim(label_res)
         write(luout,*) 'nlabels = ',nlabels
         do ilabel = 1, nlabels
@@ -79,6 +84,7 @@
         write(luout,*) 'idx_sv  = ',idx_sv(1:nlabels)
         write(luout,*) 'iblkmin  = ',iblkmin(1:nlabels)
         write(luout,*) 'iblkmax  = ',iblkmax(1:nlabels)
+        write(luout,*) 'fac  = ',fac
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -106,11 +112,18 @@
       ! init formula
       call init_formula(flist_res)
       fl_pnt => flist_res
-      call new_formula_item(flist_res,
-     &     command_set_target_init,idxres)
-      fl_pnt => fl_pnt%next
+      if (init) then
+        call new_formula_item(flist_res,
+     &       command_set_target_init,idxres)
+        fl_pnt => fl_pnt%next
+      else
+        call read_form_list(form_res%fhand,flist_res)
+        do while(fl_pnt%command.ne.command_end_of_formula)
+          fl_pnt => fl_pnt%next
+        end do
+      end if
       call expand_op_product2(fl_pnt,idxres,
-     &     1d0,nvtx,nops,
+     &     fac,nvtx,nops,
      &     idxop,idx_sv,
      &     iblkmin,iblkmax,
      &     connect,nconnect,

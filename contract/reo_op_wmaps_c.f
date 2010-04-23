@@ -197,7 +197,7 @@
      &       trim(opreo%name),' '
         write(luout,*) 'lenopori, lenopreo: ',
      &                  lenopori, lenopreo
-        call quit(1,'reo_oporiopreo_wmaps_c',
+        call quit(1,'reo_op_wmaps_c',
      &     'zero length for operator?')
       end if
 

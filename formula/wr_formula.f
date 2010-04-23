@@ -33,7 +33,7 @@
      &                       form%parent1,form%parent2)
       case(command_reorder)
         call rw_reo_kernel(-1,lu,form%reo)
-      case(command_add_bc_reo,command_bc_reo)
+      case(command_add_bc_reo,command_bc_reo,command_add_reo)
         call rw_bcontr_kernel(-1,lu,form%bcontr)
         call rw_reo_kernel(-1,lu,form%reo)
       case(command_add_intm,command_add_bc,command_bc)

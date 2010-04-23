@@ -32,7 +32,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 10
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -68,7 +68,7 @@ c     &     loop(nocc_cls)
      &     msmax_sub, ms1, ms2, msc1, msc2, msa1, msa2,
      &     gamc1, gamc2, gama1, gama2, igam, na1, na2, nc1, nc2, ij,
      &     maxbuf, ngraph, ioff2, idxmsa2, ndis2, idxdis2, idx2, nel,
-     &     nsing, ising, itrip, ntrip
+     &     nsing, ising, itrip, ntrip, icnt_sv, icnt_sv0
       real(8) ::
      &     fac
       real(8), pointer ::
@@ -167,12 +167,15 @@ c     &     loop(nocc_cls)
         buffer_out => ffinv%buffer(1:)
       endif
 
+      icnt_sv  = 0 ! we will count the
+      icnt_sv0 = 0 ! number of singular values below threshold
+
       ! Loop over occupation class.
       iocc_loop: do iocc_cls = 1, nocc_cls
         if(op_inp%formal_blk(iocc_cls)) cycle iocc_loop
         iblkoff = (iocc_cls-1)*njoined
 
-        if (ntest.ge.100) write(luout,*) 'current occ_cls: ',iocc_cls
+        if (ntest.ge.10) write(luout,*) 'current occ_cls: ',iocc_cls
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
           ioff = mel_inp%off_op_gmo(iocc_cls)%gam_ms(1,1)
           buffer_out(ioff+1) = buffer_in(ioff+1)
@@ -273,17 +276,21 @@ c     &     loop(nocc_cls)
 
               igamc = multd2h(igama,mel_inp%gamt)
               ndis = mel_inp%off_op_gmox(iocc_cls)%ndis(igamc,idxmsc)
-              if (ntest.ge.100)
-     &           write(luout,*) 'MS(A), GAMMA(A): ',msa,igama,' len = ',
-     &             mel_inp%len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa),
-     &             ' ndis = ',ndis
-
 
               ndim = int(sqrt(dble(mel_inv%
      &           len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa))))
               if (ndim.gt.0.and.ndis.ne.1)
      &                call quit(1,'invsqrt','cannot handle this')
               if (ndim.eq.0) cycle igama_loop
+
+              if (ntest.ge.10)
+     &           write(luout,'(a,3i8)') 'msa, gama, ndim:',msa,igama,
+     &           int(sqrt(dble(mel_inp%len_op_gmo(iocc_cls)%
+     &                         gam_ms(igama,idxmsa))))
+              if (ntest.ge.100)
+     &           write(luout,*) ' len = ',
+     &             mel_inp%len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa),
+     &             ' ndis = ',ndis
 
               ioff = mel_inv%off_op_gmo(iocc_cls)%gam_ms(igama,idxmsa)
 
@@ -333,8 +340,8 @@ c dbgend
      &                            sing,trip,.false.)
 
                 ! calculate T^(-0.5) for both blocks
-                call invsqrt_mat(nsing,sing,half)
-                call invsqrt_mat(ntrip,trip,half)
+                call invsqrt_mat(nsing,sing,half,icnt_sv,icnt_sv0)
+                call invsqrt_mat(ntrip,trip,half,icnt_sv,icnt_sv0)
 
                 ! partial undo of pre-diagonalization: Upre*T^(-0.5)
                 call spinsym_traf(2,ndim,scratch,flipmap_c,nsing,
@@ -343,7 +350,7 @@ c dbgend
               else
 
                 ! calculate S^(-0.5)
-                call invsqrt_mat(ndim,scratch,half)
+                call invsqrt_mat(ndim,scratch,half,icnt_sv,icnt_sv0)
 
               end if
 
@@ -379,6 +386,7 @@ c dbgend
      &             istr_csub,istr_asub,
      &             istr_csub_flip,istr_asub_flip,
      &             ldim_opin_c,ldim_opin_a)
+          ifree = mem_flushmark('invsqrt_blk')
           cycle iocc_loop
         end if
 
@@ -454,7 +462,7 @@ c dbgend
 
           if (ndim.eq.0) cycle
 
-          if (ntest.ge.100) 
+          if (ntest.ge.10) 
      &       write(luout,'(a,3i8)'),'ms1, igam, ndim:',ms1,igam,ndim
 
           allocate(scratch(ndim,ndim),flmap(ndim,3))
@@ -670,8 +678,8 @@ c dbgend
      &                        sing,trip,.false.)
 
             ! calculate T^(-0.5) for both blocks
-            call invsqrt_mat(nsing,sing,half)
-            call invsqrt_mat(ntrip,trip,half)
+            call invsqrt_mat(nsing,sing,half,icnt_sv,icnt_sv0)
+            call invsqrt_mat(ntrip,trip,half,icnt_sv,icnt_sv0)
 
             ! partial undo of pre-diagonalization: Upre*T^(-0.5)
             call spinsym_traf(2,ndim,scratch,flmap(1:ndim,3),nsing,
@@ -680,7 +688,7 @@ c dbgend
           else
 
             ! calculate S^(-0.5)
-            call invsqrt_mat(ndim,scratch,half)
+            call invsqrt_mat(ndim,scratch,half,icnt_sv,icnt_sv0)
 
           end if
 
@@ -793,6 +801,9 @@ c dbgend
 
       enddo iocc_loop
 
+      if (ntest.ge.10) write(luout,'(i8,a,i8,a)') icnt_sv0,' out of ',
+     &        icnt_sv,' singular values were below threshold'
+ 
 
       if(.not.bufout)then
         call put_vec(ffinv,buffer_out,1,nbuff)

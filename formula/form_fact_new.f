@@ -18,8 +18,8 @@
       include 'def_formula_item.h'
       
       integer, parameter ::
-     &     maxcount = 10000, ! at most 10000 iterations
-     &     ndisconn = 3,     ! at most 3 extra levels for disconnected
+     &     maxcount = 1000000, ! at most 1000000 iterations
+     &     ndisconn = 4,     ! at most 4 extra levels for disconnected
      &     ntest = 000                                   ! vertices
 
       type(contraction), intent(inout) ::
@@ -41,7 +41,7 @@
       integer ::
      &     ngas, nsym, maxidx, iarc, ivtx, icount, njoined, ncost_eval,
      &     idx, narc_full, nvtx_full, nlevel, nlevel_best,
-     &     command, target, idx_intm
+     &     command, target, idx_intm, idum, nvtx_max
       integer, pointer ::
      &     ihpvgas(:,:),
      &     ifact(:,:), ifact_best(:,:), occ_vtx(:,:,:),
@@ -64,12 +64,21 @@
       type(operator), pointer ::
      &     op_res
       type(reorder_info) ::
-     &     reo_dummy
+     &     reo_info0
 
       logical ::
-     &     possible, found, predef
+     &     possible, found, predef, reo_add
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
+
+      integer(8), pointer ::
+     &     vtx(:), topo(:,:), xlines(:,:), op_res_p(:), xlines_dum(:,:)
+      integer, pointer ::
+     &     svertex(:),
+     &     iocc_ori(:,:,:), iocc_reo(:,:,:),
+     &     irst_ori(:,:,:,:,:), irst_reo(:,:,:,:,:),
+     &     merge_stp1(:), merge_stp1inv(:),
+     &     merge_stp2(:), merge_stp2inv(:)
 
       logical, external ::
      &     next_fact
@@ -98,23 +107,114 @@ c dbg
       narc_full = contr%narc
       nvtx_full = contr%nvtx
 
+      op_res => op_info%op_arr(contr%idx_res)%op
+      njoined = op_res%njoined
+
       ! if only 1 vertex is present, we need not bother too much
       if (contr%nsupvtx.eq.1.and.narc_full.eq.0) then
+
+        reo_add = .false.
+        if (nvtx_full.gt.1) then
+          ! we have to check whether reordering is necessary
+          call init_reo_info(reo_info0)
+          nvtx_max = max(nvtx_full,njoined)
+          allocate(svertex(nvtx_full),vtx(nvtx_full),op_res_p(njoined),
+     &             topo(nvtx_full,nvtx_full),xlines(nvtx_max,njoined),
+     &             xlines_dum(nvtx_max,nvtx_max))
+          xlines = 0
+          xlines_dum = 0
+          call pack_contr(svertex,vtx,topo,
+     &                    xlines(1:nvtx_full,1:njoined),contr,njoined)
+c dbg
+c          write(luout,*) 'checking for necessary reordering:'
+c          call prt_contr_p(luout,svertex,vtx,topo,
+c     &            xlines(1:nvtx_full,1:njoined),nvtx_full,njoined)
+c dbgend
+          op_res_p = 0
+          do idx = 1, njoined
+            do ivtx = 1, nvtx_full
+              op_res_p(idx) = op_res_p(idx) + xlines(ivtx,idx)
+            end do
+          end do
+
+          xlines_dum = 0
+          xlines_dum(1:nvtx_full,1:njoined)
+     &          = xlines(1:nvtx_full,1:njoined)
+          call set_final_reo(reo_info0,xlines,xlines_dum,op_res_p,
+     &                     contr%vertex(1)%idx_op,nvtx_full,njoined)
+
+          reo_add = (reo_info0%nreo.gt.0)
+          deallocate(svertex,vtx,topo,xlines,op_res_p,xlines_dum)
+        end if
+
+        if (reo_add) then
+          allocate(iocc_reo(ngastp,2,nvtx_max),
+     &             iocc_ori(ngastp,2,nvtx_max),
+     &             irst_reo(2,ngas,2,2,nvtx_max),
+     &             irst_ori(2,ngas,2,2,nvtx_max),
+     &             merge_stp1(2*nvtx_max*nvtx_max),
+     &             merge_stp1inv(2*nvtx_max*nvtx_max),
+     &             merge_stp2(2*nvtx_max*nvtx_max),
+     &             merge_stp2inv(2*nvtx_max*nvtx_max),
+     &             occ_vtx(ngastp,2,nvtx_max+njoined),
+     &             irestr_vtx(2,ngas,2,2,nvtx_max+njoined),
+     &             info_vtx(2,nvtx_max+njoined),
+     &             svertex(nvtx_max))
+          iocc_reo = 0
+          iocc_ori = 0
+          irst_reo = 0
+          irst_ori = 0
+          occ_vtx = 0
+          irestr_vtx = 0
+          svertex(1:nvtx_max) = 1
+
+          call occvtx4contr(0,occ_vtx,contr,op_info)
+
+          call vtxinf4contr(irestr_vtx,info_vtx,contr,op_info,ngas)
+
+          call get_reo_info2(-1,1,
+     &           iocc_reo,iocc_ori,
+     &           irst_reo,irst_ori,
+     &           ivtx,idx,idum, ! <-- dummies
+     &           merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &           occ_vtx,irestr_vtx,
+     &                   svertex,info_vtx,
+     &                       njoined,nvtx_max,
+     &           reo_info0,str_info,orb_info)
+
+          command = command_add_reo
+          target = contr%idx_res
+          call new_formula_item(fl_fact,command,target)
+          call store_add_intm(fl_fact,contr,op_info,orb_info)
+          call store_reorder(fl_fact,
+     &       op_res%name,op_info%op_arr(contr%vertex(1)%idx_op)%op%name,
+     &       contr%iblk_res,(contr%vertex(1)%iblk_op-1)/nvtx_full+1,
+     &       contr%dagger,contr%vertex(1)%dagger,
+     &       reo_info0%sign_reo,reo_info0%iocc_opreo0,
+     &       reo_info0%from_to,reo_info0%iocc_reo,reo_info0%nreo,
+     &       iocc_reo,irst_reo,nvtx_max,
+     &       iocc_ori,irst_ori,nvtx_max,
+     &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &       orb_info)
+          deallocate(iocc_reo,iocc_ori,irst_reo,irst_ori,
+     &             merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
+     &             occ_vtx,irestr_vtx,info_vtx,svertex)
+          return
+        else
           command = command_add_intm
           target = contr%idx_res
           call new_formula_item(fl_fact,command,target)
           call store_add_intm(fl_fact,contr,op_info,orb_info)
-        return
+          return
+        end if
+      else
+        allocate(occ_vtx(ngastp,2,nvtx_full+njoined),
+     &       irestr_vtx(2,orb_info%ngas,2,2,nvtx_full+njoined),
+     &       info_vtx(2,nvtx_full+njoined))
       end if
 
-      op_res => op_info%op_arr(contr%idx_res)%op
-      njoined = op_res%njoined
-
       allocate(ifact(ld_inffac,narc_full+ndisconn),
-     &     ifact_best(ld_inffac,narc_full+ndisconn),
-     &     occ_vtx(ngastp,2,nvtx_full+njoined),
-     &     irestr_vtx(2,orb_info%ngas,2,2,nvtx_full+njoined),
-     &     info_vtx(2,nvtx_full+njoined))
+     &     ifact_best(ld_inffac,narc_full+ndisconn))
 
       call occvtx4contr(0,occ_vtx,contr,op_info)
 
@@ -360,6 +460,9 @@ c dbg
             write(luout,*) 'back in level ',nlevel
             write(luout,*) ' current arc: ',iarc,narc
           end if
+
+          ! reset intermediate counter
+          idx_intm = 1 - nlevel
 
         else
 

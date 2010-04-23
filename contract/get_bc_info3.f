@@ -299,21 +299,32 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
           call svmap4contr2(svmap,contr_red,ok)
           if (.not.ok) call quit(1,'get_bc_info3',
      &        'final result should have unique svmap!')
+c dbg
+c        write(luout,*) 'op1op2 incl. restrictions (1):'
+c        do ivtx = 1, njoined_res
+c          call wrt_occ_rstr(luout,ivtx,iocc_op1op2(1,1,ivtx),
+c     &          op_info%op_arr(idx)%op%igasca_restr(1,1,1,1,1,
+c     &            (iblk-1)*njoined_res+ivtx),
+c     &          orb_info%ngas,orb_info%nspin)
+c        end do
+c dbgend
           do ivtx = 1, nvtx_red
             if (svmap(ivtx).eq.0) then
               irestr_op1op2(:,:,:,:,ivtx) = 0
             else
               irestr_op1op2(:,:,:,:,ivtx)
      &         = op_info%op_arr(idx)%op%igasca_restr(:,:,:,:,1,
-     &            (iblk-1)*njoined_op1op2+svmap(ivtx))
+     &            (iblk-1)*njoined_res+svmap(ivtx))
             end if
           end do
           deallocate(svmap)
         else
-          irestr_op1op2(:,:,:,:,1:njoined_op1op2)
+          if (njoined_op1op2.gt.njoined_res)
+     &         irestr_op1op2(:,:,:,:,njoined_res+1:njoined_op1op2) = 0
+          irestr_op1op2(:,:,:,:,1:njoined_res)
      &         = op_info%op_arr(idx)%op%igasca_restr(:,:,:,:,1,
-     &            (iblk-1)*njoined_op1op2+1:
-     &            (iblk-1)*njoined_op1op2+njoined_op1op2)
+     &            (iblk-1)*njoined_res+1:
+     &            (iblk-1)*njoined_res+njoined_res)
         end if
 c dbg
 c        print *,'fetching restr op1op2 from op_info!'
@@ -340,11 +351,11 @@ c dbg
       ! check that we arrived at the correct result 
       ! (after last contraction):
       if (contr%narc.eq.len_list) then
-        if (njoined_op1op2.ne.njoined_res) then
-          write(luout,*) 'njoined_op1op2, njoined_res: ',
-     &                    njoined_op1op2, njoined_res
-          call quit(1,'get_bc_info3','trap 1')
-        end if
+c        if (njoined_op1op2.ne.njoined_res) then
+c          write(luout,*) 'njoined_op1op2, njoined_res: ',
+c     &                    njoined_op1op2, njoined_res
+c          call quit(1,'get_bc_info3','trap 1')
+c        end if
         if (mst_op1op2.ne.info_vtx(1,1))
      &       call quit(1,'get_bc_info3','trap 2')
         if (gamt_op1op2.ne.info_vtx(2,1))
@@ -389,9 +400,7 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
         do ireo = 1, reo_info%nreo
           do jreo = ireo+1, reo_info%nreo
             if (reo_info%reo(ireo)%from.eq.reo_info%reo(jreo)%from.or.
-     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to.or.
-     &          reo_info%reo(ireo)%from.eq.reo_info%reo(jreo)%to.or.
-     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%from) then
+     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to) then
               ! only forbid if non-zero overlap:
               if (iocc_nonzero(iocc_overlap(
      &            reo_info%reo(ireo)%occ_shift,.false.,

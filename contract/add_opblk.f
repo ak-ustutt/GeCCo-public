@@ -43,7 +43,7 @@
      &     len_op, idum, ifree, lblk, nblkmax, nblk, nbuff,
      &     ioffin, ioffout, idx, idxst, idxnd, lenbat,
      &     idoffin, idoffout,
-     &     njoined_in, njoined_out, ijoin,
+     &     njoined_in, njoined_out, ijoin, ijoin_out,
      &     idx_in, idx_out
 
       integer, pointer ::
@@ -132,7 +132,38 @@ c     &     iocc_equal_n, iocc_equal,
         end do
         deallocate(occ_try)
       else
-        ok = .false.
+        ! ok if only differences are zero vertices
+        ok = .true.
+        ijoin_out = 0
+        in_loop: do ijoin = 1, njoined_in
+          if (iocc_zero(opin%ihpvca_occ(1:ngastp,1:2,idx_in-1+ijoin)))
+     &       cycle
+          ok = .false.
+          do while(ijoin_out.lt.njoined_out)
+            ijoin_out = ijoin_out + 1
+            if (iocc_zero(opout%ihpvca_occ(1:ngastp,1:2,
+     &                                     idx_out-1+ijoin_out))) cycle
+            if (iocc_equal_n(opin%ihpvca_occ(1:ngastp,1:2,
+     &                                       idx_in-1+ijoin),.false.,
+     &                   opout%ihpvca_occ(1:ngastp,1:2,
+     &                                    idx_out-1+ijoin_out),.false.,
+     &                   1)) then
+              ok = .true.
+              cycle in_loop
+            else
+              exit in_loop
+            end if
+          end do
+        end do in_loop
+        if (ok) then
+          do while(ijoin_out.lt.njoined_out)
+            ijoin_out = ijoin_out + 1
+            if (iocc_zero(opout%ihpvca_occ(1:ngastp,1:2,
+     &                                     idx_out-1+ijoin_out))) cycle
+            ok = .false.
+            exit
+          end do
+        end if
       end if
 
       if (.not.ok) then

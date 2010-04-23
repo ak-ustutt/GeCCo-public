@@ -34,7 +34,7 @@
      &     success, advance, adj_intm
       integer ::
      &     idxop_tgt, iblk_tgt, idxop_intm, iblk_intm, ivtx, nterms,
-     &     njoined
+     &     njoined, iterm
       type(formula_item), pointer ::
      &     fl_tgt_current, fl_tgt_current_next, fl_intm_pnt, fl_expand
       type(formula_item_list), pointer ::
@@ -67,6 +67,7 @@
 
       fl_tgt_current => fl_tgt
       ! loop over target items
+      iterm = 0
       tgt_loop: do
 
         ! new operator target ?
@@ -140,6 +141,10 @@ c dbg
      &         njoined,fl_tgt_current,fpl_intm_c2blk,force,op_info)
           
           if (nterms.gt.0) then
+c dbg
+            iterm = iterm + 1
+            if (mod(iterm,10).eq.0) print *,'insertion # ',iterm
+c dbgend
             if (ntest.ge.100) then
               write(luout,*) 'inserting ',nterms,' new terms'
 c dbg
@@ -147,9 +152,15 @@ c              print *,'new terms:'
 c              call print_form_list(luout,fl_expand,op_info)
 c dbg
             end if
+c dbg
+c            ! already remove forbidden terms
+c            call select_mrcc_lag(fl_expand,(/'H','T','CUM'/),3,
+c     &                           '---',op_info)
+            if (nterms.le.1) print *,' got',nterms,'term(s)'
+c dbgend
 
             ! sum terms in expanded formula (saves time)
-            call sum_terms(fl_expand,op_info)
+            if (nterms.gt.1) call sum_terms(fl_expand,op_info)
 
             ! and replace current term
             call replace_fl_node(fl_tgt_current,fl_expand)

@@ -136,14 +136,22 @@
      &     val_int=(/0/))
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'TITLE',1,tgt_info,
      &     val_str='---')
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.true./))
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/1d0/))
 *----------------------------------------------------------------------*
       call add_command_proto(FACTOR_OUT,tgt_info)
+      call set_arg('_PROTO_',FACTOR_OUT,'TITLE',1,tgt_info,
+     &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(EXPAND,tgt_info)
       call set_arg('_PROTO_',EXPAND,'TITLE',1,tgt_info,
      &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(REPLACE,tgt_info)
+      call set_arg('_PROTO_',REPLACE,'TITLE',1,tgt_info,
+     &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(SUM_HERMIT,tgt_info)
 *----------------------------------------------------------------------*

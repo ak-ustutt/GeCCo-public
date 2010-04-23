@@ -1806,8 +1806,17 @@ c dbg
 c dbg
 c          write(luout,*) 'input block '
 c          write(luout,'(x,5g15.8)')    xbf12tmp(1:lblk_op1op2tmp)
-c          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
-c     &         iblkop1op2,iblkop1op2,str_info,orb_info)
+c dbg
+c          print *,'gamma c/a:',igam12i_c(3),igam12i_a(3)
+c          print *,'msdis_c :',msi_dis_c
+c          print *,'msdis_a :',msi_dis_a
+c          print *,'gmdis_c :',gmi_dis_c
+c          print *,'gmdis_a :',gmi_dis_a
+c dbgend
+cc          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
+cc     &         iblkop1op2,iblkop1op2,str_info,orb_info)
+c          call wrt_mel_buf(luout,5,xop1op2blk,me_op1op2tmp,
+c     &         1,1,str_info,orb_info)
 c dbg
                     call atim_cs(cpu0,sys0)
                     cnt_used_reo = .true.

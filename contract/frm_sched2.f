@@ -223,18 +223,16 @@
           call fs_newintm_drv(cur_form,
      &         op_info,str_info,strmap_info,orb_info)
 
-        case(command_reorder)
+        case(command_reorder,command_add_reo)
 
           measure = .true.
-          update = .false.
+          update = cur_form%command.eq.command_add_reo
+          if (cur_form%command.eq.command_add_reo) icmd = icmd+1
           call fs_reo_drv(xret_blk,type_xret,idxopres,me_res,
      &         cur_form,update,
      &         op_info,str_info,strmap_info,orb_info)
 
-c          call quit(1,'frm_sched2',
-c     &       'to come [REORDER]')
-
-          call_sti_remover = .true.
+          call_sti_remover = cur_form%command.eq.command_reorder
 
         case(command_add_intm)
 

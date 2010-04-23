@@ -30,6 +30,9 @@
       logical, external ::
      &     cmp_contr
 
+      ! if first entry is an [END]: do nothing
+      if (fl_tgt%command.eq.command_end_of_formula) return
+
       if (ntest.ge.100) then
         write(luout,*) '====================='
         write(luout,*) ' info from sum_terms'
@@ -122,6 +125,9 @@
      &                                             exit tgt_loop
 
       end do tgt_loop
+c dbg
+c      print *,' sum_terms yields',iterm,' terms.'
+c dbgend
         
       return
       end

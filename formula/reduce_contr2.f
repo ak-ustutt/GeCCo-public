@@ -63,7 +63,7 @@
 
       integer ::
      &     nvtx, nvtx_new, nvtx_op1op2, nvtx_cnt, ivtx, idx,
-     &     merge_sign, cnt_sign
+     &     merge_sign, cnt_sign, nj_tmp
 
       integer, external ::
      &     idxlist
@@ -176,9 +176,14 @@ c dbg
      &     call quit(1,'reduce_contr2','testing?')
 
       ! store in new topo array
+      if (contr%narc.eq.nlist) then
+        nj_tmp = max(nvtx_new,njoined_res)
+      else
+        nj_tmp = njoined_res
+      end if
       allocate(topo_new(nvtx_new,nvtx_new),
      &         xlines_new(nvtx_new,njoined_res),
-     &         xlines_tmp(nvtx_new,njoined_res),
+     &         xlines_tmp(nvtx_new,nj_tmp),
      &         vtx_new(nvtx_new),svertex_new(nvtx_new))
 
       call topo_reo(svertex_new,vtx_new,topo_new,xlines_new,nvtx_new,
@@ -203,16 +208,21 @@ c dbg
 
 
       ! if final contraction, resort if xlines is not diagonal
-      xlines_tmp = xlines_new
-      if (contr%narc.eq.nlist.and.njoined_res.gt.1)
-     &     call set_final_reo(reo_info,xlines_new,xlines_tmp,op1op2,
-     &                     idxnew_op1op2,njoined_res)
+      xlines_tmp = 0
+      xlines_tmp(1:nvtx_new,1:njoined_res)
+     &    = xlines_new(1:nvtx_new,1:njoined_res)
+      if (contr%narc.eq.nlist.and.nvtx_new.gt.1) then
+        if (nvtx_new.ne.nvtx_op1op2) call quit(1,'reduce_contr2',
+     &        'contradicting opinions about whether final contraction')
+          call set_final_reo(reo_info,xlines_new,xlines_tmp,op1op2,
+     &                     idxnew_op1op2,nvtx_new,njoined_res)
+      end if
 
       ! extract merge-map for binary contraction result
       call mergemap_bcres(mergemap,
      &     ld_mmap,
      &     svertex_reo,isvtx1,isvtx2,xlines_tmp,
-     &     ireo2,vtx_list_new,njoined_res,nvtx_new,nvtx,nvtx_op1op2)
+     &     ireo2,vtx_list_new,nj_tmp,nvtx_new,nvtx,nvtx_op1op2)
 
 c dbg
 c      print *,'svertex_reo',svertex_reo
