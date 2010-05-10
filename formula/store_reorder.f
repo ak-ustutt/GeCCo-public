@@ -3,7 +3,7 @@
      &     iblk_out,iblk_in,
      &     tra_out,tra_in,
      &     sign_reo,occ_op0,
-     &     from_to,occ_shift,nreo,
+     &     from_to,occ_shift,nreo,nreo_i0,
      &     occ_opout,rst_opout,nj_out,
      &     occ_opin, rst_opin, nj_in,
      &     merge1,merge1inv,merge2,merge2inv,
@@ -29,12 +29,12 @@
      &     label_out, label_in
       integer, intent(in) ::
      &     iblk_out, iblk_in,
-     &     nreo, nj_out, nj_in
+     &     nreo, nj_out, nj_in, nreo_i0
       logical, intent(in) ::
      &     tra_out, tra_in
       integer, intent(in) ::
      &     sign_reo,
-     &     from_to(2,nreo),
+     &     from_to(2,nreo+nreo_i0),
      &     occ_shift(ngastp,2,nreo),
      &     occ_opin(ngastp,2,nj_in),
      &     rst_opin(2,orb_info%ngas,2,2,orb_info%nspin,nj_in),
@@ -59,6 +59,7 @@
       fl_item%reo%label_in  = label_in
       fl_item%reo%label_out = label_out
       fl_item%reo%nreo    = nreo
+      fl_item%reo%nreo_i0   = nreo_i0
       fl_item%reo%ngas      = ngas
       fl_item%reo%nspin     = nspin
       fl_item%reo%nj_in   = nj_in
@@ -68,7 +69,7 @@
       fl_item%reo%tra_in   = tra_in
       fl_item%reo%tra_out  = tra_out
       fl_item%reo%sign      = sign_reo
-      allocate(fl_item%reo%from_to(2,nreo))
+      allocate(fl_item%reo%from_to(2,nreo+nreo_i0))
       fl_item%reo%from_to = from_to
       allocate(fl_item%reo%occ_opin(ngastp,2,nj_in))
       fl_item%reo%occ_opin = occ_opin

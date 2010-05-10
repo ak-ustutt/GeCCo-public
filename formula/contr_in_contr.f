@@ -23,7 +23,7 @@
       integer ::
      &     nvtx_a, nvtx_b, narc_a, narc_b,
      &     nj_a, nj_b, lenlist, ivtx, jvtx, nvtx_int, nvtx_new,
-     &     sh_sign
+     &     sh_sign, nskip
 
       integer, pointer ::
      &     svertex_a(:), svertex_b(:),
@@ -81,19 +81,31 @@
      &       xlines_b,nvtx_b,nj_b)
       end if
 
-      call identify_vertices_i8(vtxmap,contr_in_contr,
-     &                       vtx_a,topo_a,nvtx_a,
-     &                       vtx_b,topo_b,nvtx_b)
+      nskip = 0
+      do
+        call identify_vertices_i8(vtxmap,contr_in_contr,nskip,
+     &                       svertex_a,vtx_a,topo_a,nvtx_a,
+     &                       svertex_b,vtx_b,topo_b,nvtx_b)
 
-      ! also check that connecting contractions are contained in xlines of A
-      if (contr_in_contr)
-     &      call contr_in_xlines(vtxmap,contr_in_contr,
+        ! also check that connecting contractions are contained in xlines of A
+        if (contr_in_contr) then
+          call contr_in_xlines(vtxmap,contr_in_contr,
      &                        xlines_a,nvtx_a,nj_a,
      &                        topo_b,nvtx_b)
+        else
+          exit
+        end if
+
+        if (contr_in_contr) exit
+        nskip = nskip + 1
+      end do
 
       if (ntest.ge.100) then
         write(luout,*) 'result (prel.): ',contr_in_contr
         write(luout,*) 'vtxmap: ',vtxmap
+c dbg
+        print *,'nskip: ',nskip
+c dbgend
       end if
 
       if (contr_in_contr.and.nvtx_a.gt.nj_a) then

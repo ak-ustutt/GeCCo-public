@@ -259,16 +259,19 @@ c          write(luout,*) '[ADD]'
 
             call update_svtx4contr(form_pnt%contr)
           
-            allocate(ivtx_reo(nvtx),fix_vtx(nvtx),
-     &           occ_vtx(ngastp,2,nvtx))
-            fix_vtx = .true.
-            call occvtx4contr(1,occ_vtx,form_pnt%contr,op_info)
-          
-            call topo_contr(ieqvfac,reo,ivtx_reo,form_pnt%contr,
-     &           occ_vtx,fix_vtx)
-          
-            call canon_contr(form_pnt%contr,reo,ivtx_reo)
-            deallocate(ivtx_reo,fix_vtx,occ_vtx)
+cmh            allocate(ivtx_reo(nvtx),fix_vtx(nvtx),
+cmh     &           occ_vtx(ngastp,2,nvtx))
+cmh            fix_vtx = .true.
+cmh            call occvtx4contr(1,occ_vtx,form_pnt%contr,op_info)
+cmh          
+cmh            call topo_contr(ieqvfac,reo,ivtx_reo,form_pnt%contr,
+cmh     &           occ_vtx,fix_vtx)
+cmh          
+cmh            call canon_contr(form_pnt%contr,reo,ivtx_reo)
+cmh            deallocate(ivtx_reo,fix_vtx,occ_vtx)
+            allocate(ivtx_reo(nvtx)) ! dummy
+            call canon_contr(form_pnt%contr,.false.,ivtx_reo)
+            deallocate(ivtx_reo)
           
             if(ntest.ge.100.and.change)then
               write(luout,*) 'Operator-replaced contraction'

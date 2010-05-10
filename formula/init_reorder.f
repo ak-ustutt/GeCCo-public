@@ -12,6 +12,7 @@
      &     reo
 
       reo%nreo = 0
+      reo%nreo_i0 = 0
       
       reo%occ_opin => null()
       reo%occ_opout => null()

@@ -156,7 +156,7 @@ c dbg
 c            ! already remove forbidden terms
 c            call select_mrcc_lag(fl_expand,(/'H','T','CUM'/),3,
 c     &                           '---',op_info)
-            if (nterms.le.1) print *,' got',nterms,'term(s)'
+c            if (nterms.le.1) print *,' got',nterms,'term(s)'
 c dbgend
 
             ! sum terms in expanded formula (saves time)

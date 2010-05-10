@@ -773,6 +773,22 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
         call set_cumulants(form_pnt,
      &       title,label_list,nop+1,mode,level,op_info)
+*----------------------------------------------------------------------*
+      case(INSERT)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),ANY)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_form(form0_pnt,trim(label),OLD)
+        call get_arg('OP_RES',rule,tgt_info,val_label=label)
+        call get_arg('OP_INS',rule,tgt_info,val_label=label2)
+        call get_arg('OP_INCL',rule,tgt_info,
+     &       val_label_list=label_list,ndim=ninclude)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call form_insert_op(form_pnt,form0_pnt,
+     &       title,label,label2,
+     &       ninclude,label_list,
+     &       op_info)
 
 *----------------------------------------------------------------------*
 *     subsection ME-LISTS

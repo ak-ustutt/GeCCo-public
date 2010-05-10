@@ -67,7 +67,7 @@
         iord(idx) = idx
       end do
 
-      merged(1:nlist) = .false.
+      merged(1:nvtx) = .false.
       nvtx_new = nvtx
       nvtx_bcres = nlist
 
@@ -81,7 +81,8 @@ c        ivtx1 = vtx_list(idx)
           if (vtx_list(jdx)-vtx_list(jdx-1).gt.1) exit
           ! FIX -- check for self-contractions:
           do kdx = idx+1, jdx-1
-            if (topo(kdx,jdx).gt.0) exit collect_list 
+            if (topo(vtx_list(kdx),vtx_list(jdx)).gt.0)
+     &            exit collect_list
           end do
           jdxnd = jdx
         end do collect_list

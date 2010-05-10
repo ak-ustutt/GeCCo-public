@@ -6,7 +6,7 @@
      &     njoined_op1op2,mst,gamt,
      &     merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
      &     occ_vtx,rst_vtx,svertex,info_vtx,nj_res,nvtx,
-     &     reo_info,str_info,orb_info)
+     &     reo_info,nreo_op1op2,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     process raw reordering info from reduce_contr:
 *
@@ -44,7 +44,7 @@ c     &     reo_op1op2, reo_other
       integer, intent(inout) ::
      &     njoined_op1op2,gamt,mst,
      &     merge_stp1(*), merge_stp1inv(*),
-     &     merge_stp2(*), merge_stp2inv(*)
+     &     merge_stp2(*), merge_stp2inv(*), nreo_op1op2
       integer, intent(inout), target ::
      &     iocc_op1op2(ngastp,2,*),
      &     iocc_op1op2tmp(ngastp,2,*),
@@ -52,9 +52,9 @@ c     &     reo_op1op2, reo_other
      &     irst_op1op2tmp(2,orb_info%ngas,2,2,*)
       
       integer ::
-     &     nreo, ireo, idx, nreo_op1op2, ireo_op1op2, nmap, len_map,
+     &     nreo, ireo, idx, ireo_op1op2, nmap, len_map,
      &     ivtx, jvtx, idxsuper_old1, idxsuper_old2, ivtx1, ivtx2,
-     &     ngas, ij, streo, ndreo
+     &     ngas, ij, streo, ndreo, nreo_i0, ireo_i0
       integer ::
      &     rst_shift(2,orb_info%ngas,2,2)
       type(reorder_list), pointer ::
@@ -81,6 +81,7 @@ c     &     reo_op1op2, reo_other
           do ireo = 1, reo_info%nreo
             write(luout,*) 'set # ',ireo
             write(luout,*) 'is_bc_result: ',reo(ireo)%is_bc_result
+            write(luout,*) 'shift_i0: ',reo(ireo)%shift_i0
             write(luout,*) 'idxsuper:  ',reo(ireo)%idxsuper
             write(luout,*) 'from/to:   ',reo(ireo)%from,reo(ireo)%to
             call wrt_occ(luout,reo(ireo)%occ_shift)
@@ -162,8 +163,15 @@ c dbg
 
         ! mode=1: loop backwards over reorderings (to avoid negative occ.s)
         nreo_op1op2 = 0
+        nreo_i0 = 0
         do ireo = 1, nreo
           if (reo(ireo)%idxsuper.ne.idxsuper) cycle
+          if (reo(ireo)%shift_i0) then
+            merge_map_stp2(2,1,reo(ireo)%to) = reo(ireo)%from
+            merge_map_stp2(1,1,reo(ireo)%from) = 0
+            nreo_i0 = nreo_i0 + 1
+            cycle
+          end if
           nreo_op1op2 = nreo_op1op2+1
 
           ! update mapping info
@@ -252,8 +260,8 @@ c          end if
 
         ! store shift occupations in iocc_reo array
         allocate(reo_info%iocc_reo(ngastp,2,nreo_op1op2))
-        allocate(reo_info%from_to(2,nreo_op1op2))
-        allocate(from_to_vtx(2,nreo_op1op2),
+        allocate(reo_info%from_to(2,nreo_op1op2+nreo_i0))
+        allocate(from_to_vtx(2,nreo_op1op2+nreo_i0),
      &           is_op1op2(max(reo_info%nvtx_contr,njoined_op1op2)))
         ! ... and the remainder of the operator during reo:
         allocate(reo_info%iocc_opreo0(ngastp,2,njoined_op1op2))
@@ -262,10 +270,21 @@ c          end if
      &       = iocc_op1op2tmp(1:ngastp,1:2,1:njoined_op1op2)
 
         ireo_op1op2 = 0
+        ireo_i0 = 0
         from_to_vtx = 0
         is_op1op2   = 0
         do ireo = 1, nreo
           if (reo(ireo)%idxsuper.ne.idxsuper) cycle
+          if (reo(ireo)%shift_i0) then
+            ireo_i0 = ireo_i0+1
+            reo_info%from_to(1,nreo_op1op2+ireo_i0) = reo(ireo)%from
+            reo_info%from_to(2,nreo_op1op2+ireo_i0) = reo(ireo)%to
+            from_to_vtx(1,nreo_op1op2+ireo_i0) = reo(ireo)%from_vtx
+            from_to_vtx(2,nreo_op1op2+ireo_i0) = reo(ireo)%to_vtx
+            is_op1op2(reo(ireo)%from_vtx) = 1
+            is_op1op2(reo(ireo)%to_vtx)   = 1
+            cycle
+          end if
           ireo_op1op2 = ireo_op1op2+1
           reo_info%iocc_reo(1:ngastp,1:2,ireo_op1op2) =
      &       reo(ireo)%occ_shift
@@ -307,7 +326,7 @@ c patch
         reo_info%sign_reo = sign_reo(
      &       iocc_op1op2tmp,reo_info%iocc_opreo0,
      &       njoined_op1op2,reo_info%iocc_reo,
-     &       reo_info%from_to,nreo_op1op2,
+     &       reo_info%from_to,nreo_op1op2,nreo_i0,
      &       from_to_vtx,reo_info%nca_vtx,is_op1op2,
      &       max(reo_info%nvtx_contr,njoined_op1op2))
 
@@ -337,7 +356,7 @@ c     &       iocc_op1op2tmp,njoined_op1op2,orb_info)
 
       if (mode.eq.2) then
 
-        nreo_op1op2 = reo_info%nreo
+c        nreo_op1op2 = reo_info%nreo
         ! transform to "condensed" info:        
 
         call get_num_subblk(reo_info%ncblk_reo,reo_info%nablk_reo,

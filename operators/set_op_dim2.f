@@ -277,17 +277,11 @@ c dbg
      &                   cycle distr_loop
               end if
 
-c dbg fix by mh ???
-              if (associated(graphs)) then
-c dbg original
               call set_len_str(len_str,ncsub,nasub,
      &                         graphs,
      &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
      &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
      &                         hpvxseq,.false.)
-c dbg resume fix
-              end if
-c dbg end fix
 
 c dbg
 c              print *,'current dis:'

@@ -216,6 +216,10 @@
      &     val_str='---')
       call set_arg('_PROTO_',DEF_CUMULANTS,'LEVEL',1,tgt_info,
      &     val_int=(/0/))
+*----------------------------------------------------------------------*
+      call add_command_proto(INSERT,tgt_info)
+      call set_arg('_PROTO_',INSERT,'TITLE',1,tgt_info,
+     &     val_str='---')
 !     ME-lists:
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_ME_LIST,tgt_info)

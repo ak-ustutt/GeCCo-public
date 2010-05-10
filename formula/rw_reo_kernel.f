@@ -19,7 +19,7 @@
      &     reo
 
       integer ::
-     &     nreo, nj_in, nj_out,
+     &     nreo, nj_in, nj_out, nreo_i0,
      &     ngas, nspin, 
      &     lenlab1, lenlab2, len_m1, len_m1i, len_m2, len_m2i
 
@@ -29,14 +29,14 @@
       if (irw.gt.0) then
 
         ! dimension record
-        read(lu,end=100) nj_out, nj_in, nreo, ngas, nspin,
+        read(lu,end=100) nj_out, nj_in, nreo, nreo_i0, ngas, nspin,
      &       len_m1, len_m1i, len_m2, len_m2i
 
         allocate(reo%occ_opin(ngastp,2,nj_in))
         allocate(reo%rst_opin(2,ngas,2,2,nspin,nj_in))
         allocate(reo%occ_opout(ngastp,2,nj_out))
         allocate(reo%rst_opout(2,ngas,2,2,nspin,nj_out))
-        allocate(reo%from_to(2,nreo))
+        allocate(reo%from_to(2,nreo+nreo_i0))
         allocate(reo%occ_shift(ngastp,2,nreo))
         allocate(reo%occ_op0(ngastp,2,nj_in))
         allocate(reo%merge_stp1(len_m1))
@@ -47,6 +47,7 @@
         reo%nj_out = nj_out
         reo%nj_in  = nj_in
         reo%nreo   = nreo
+        reo%nreo_i0 = nreo_i0
         reo%ngas = ngas
         reo%nspin = nspin
         reo%label_in (1:maxlen_bc_label) = ' '
@@ -78,6 +79,7 @@ c dbg
         nj_in       = reo%nj_in
         nj_out      = reo%nj_out
         nreo        = reo%nreo
+        nreo_i0     = reo%nreo_i0
 
         len_m1  = len_merge_map(reo%merge_stp1,nj_in)
         len_m1i = len_merge_map(reo%merge_stp1inv,nj_in)
@@ -85,7 +87,7 @@ c dbg
         len_m2i = len_merge_map(reo%merge_stp2inv,nj_out)
 
         ! dimension record
-        write(lu,err=200) nj_out, nj_in, nreo, ngas, nspin,
+        write(lu,err=200) nj_out, nj_in, nreo, nreo_i0, ngas, nspin,
      &       len_m1, len_m1i, len_m2, len_m2i
 
         lenlab1 = len_trim(reo%label_in)

@@ -1,21 +1,11 @@
 *----------------------------------------------------------------------*
-      subroutine form_select_line(f_output,f_input,
-     &                      title,label_opres,
+      subroutine form_insert_op(f_output,f_input,
+     &                      title,label_opres,label_opins,
      &                      ncmpnd,label_op,
-     &                      igastp,mode_str,
      &                      op_info)
 *----------------------------------------------------------------------*
-*     collect those contractions on ffoutput in which two operators
-*     on the list label_op(1:ncmpnd) are contracted via a line given
-*     by igastp.
-*     mode_str = 'delete': delete all these terms
-*     mode_str = 'keep'  : delete all other terms
-*     mode_str = 'no_ext': delete terms where a listed op has external
-*                          lines in the given space
-*     mode_str = 'ext'   : keep only terms where some listed op has
-*                          external lines in the given space
 *
-*     matthias, nov 2009 (adopted from form_invariant)
+*     matthias, may 10
 *----------------------------------------------------------------------*
       implicit none
 
@@ -30,10 +20,10 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     ncmpnd, igastp
+     &     ncmpnd
       character(*), intent(in) ::
-     &     title, mode_str,
-     &     label_opres, label_op(ncmpnd)
+     &     title,
+     &     label_opres, label_opins, label_op(ncmpnd)
       type(formula), intent(inout) ::
      &     f_input, f_output
       type(operator_info) ::
@@ -42,7 +32,8 @@
       logical ::
      &     ok, same, transpose, del_mode
       integer ::
-     &     nterms, iarc, idx, icmpnd, idxres, idxop(ncmpnd), len
+     &     nterms, iarc, idx, icmpnd, idxres, idxop(ncmpnd), len,
+     &     idxins, nvtx, iblk, nblk
       character ::
      &     name*(form_maxlen_label*2)
       logical, allocatable ::
@@ -60,26 +51,15 @@
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
-     &                   'here speaks form_select_line')
+     &                   'here speaks form_insert_op')
         write(luout,*) ' f_input  = ',trim(f_input%label)
         write(luout,*) ' f_output = ',trim(f_output%label)
         write(luout,*) ' op_res  = ',trim(label_opres)
+        write(luout,*) ' op_ins  = ',trim(label_opins)
         do icmpnd = 1, ncmpnd
           write(luout,*) 'compound # ',icmpnd
           write(luout,*) ' op  = ',trim(label_op(icmpnd))
         end do
-        write(luout,*) 'mode_str, igastp: ',trim(mode_str),igastp
-      end if
-
-      if (trim(mode_str).eq.'delete'.or.
-     &    trim(mode_str).eq.'no_ext') then
-        del_mode = .true.
-      else if (trim(mode_str).eq.'keep'.or.
-     &         trim(mode_str).eq.'ext') then
-        del_mode = .false.
-      else
-        call quit(1,'form_select_line',
-     &            'mode must be "delete", "keep", "no_ext" or "ext"')
       end if
 
       same = trim(f_input%label).eq.trim(f_output%label)
@@ -87,9 +67,16 @@
       ! get indices
       idxres = idx_oplist2(label_opres,op_info)
       if (idxres.lt.0)
-     &     call quit(1,'form_select_line',
+     &     call quit(1,'form_insert_op',
      &     'required operators are not yet defined? '//
      &       trim(label_opres))
+      idxins = idx_oplist2(label_opins,op_info)
+      if (idxins.lt.0)
+     &     call quit(1,'form_insert_op',
+     &     'required operators are not yet defined? '//
+     &       trim(label_opins))
+
+      nblk = op_info%op_arr(idxins)%op%n_occ_cls
 
       do icmpnd = 1, ncmpnd
 
@@ -101,7 +88,7 @@
         idxop(icmpnd) = idx_oplist2(label_op(icmpnd)(1:len),op_info)
 
         if (idxop(icmpnd).lt.0)
-     &     call quit(1,'form_select_line',
+     &     call quit(1,'form_insert_op',
      &     'required operators are not yet defined? '//
      &       label_op(icmpnd)(1:len))
 
@@ -111,6 +98,7 @@
 c dbg
 c      print *,idxop
 c      print *,idxres
+c      print *,idxins
 c dbg
 
       ! read in input formula
@@ -120,7 +108,7 @@ c dbg
       fl_pnt => flist
 
       if (.not.associated(fl_pnt))
-     &     call quit(1,'form_select_line',
+     &     call quit(1,'form_insert_op',
      &     'empty formula list? something is buggy')
 
       nterms = 0
@@ -134,66 +122,40 @@ c dbg
 
         if (fl_pnt%command.eq.command_add_contribution) then
 
-          ok = .true.
           contr => fl_pnt%contr
 
-          ! find which vertex belongs to an operator from the given list
-          allocate(vtxinlist(contr%nvtx))
-          vtxinlist = .false.
-          cmp_loop: do idx = 1, contr%nvtx
-            do icmpnd = 1, ncmpnd
-              if (contr%vertex(idx)%idx_op.eq.abs(idxop(icmpnd)).and.
-     &           (contr%vertex(idx)%dagger.eqv.(idxop(icmpnd).lt.0)))
-     &        then
-                vtxinlist(idx) = .true.
-                cycle cmp_loop
-              end if
-            end do
-          end do cmp_loop
+          nvtx = 0
+          do iblk = nblk, 1, -1
 
-          if (trim(mode_str).eq.'delete'
-     &        .or.trim(mode_str).eq.'keep') then
-            ! is there any contraction between two of these operators
-            ! via a line of type igastp?
-            do iarc = 1, contr%narc
-              if (vtxinlist(contr%arc(iarc)%link(1)).and.
-     &            vtxinlist(contr%arc(iarc)%link(2)).and.
-     &            sum(contr%arc(iarc)%occ_cnt(igastp,1:2)).gt.0) then
-                ok = .false.
-                exit
-              end if
-            end do
-          else
-            ! is there any open line of type igastp from a listed op?
-            do iarc = 1, contr%nxarc
-              if (vtxinlist(contr%xarc(iarc)%link(1)).and.
-     &            sum(contr%xarc(iarc)%occ_cnt(igastp,1:2)).gt.0) then
-                ok = .false.
-                exit
-              end if
-            end do
-          end if
-
-          deallocate(vtxinlist)
-
-          if (ok.eqv.del_mode) then
-            nterms = nterms+1
-            contr%idx_res = idxres ! not completely OK
-            if (ntest.ge.100) then
-              call prt_contr2(luout,contr,op_info)
+            if (contr%nvtx.ne.nvtx) then
+              nvtx = contr%nvtx
+              ! find which vertex belongs to an operator from the given list
+              allocate(vtxinlist(nvtx))
+              vtxinlist = .false.
+              cmp_loop: do idx = 1, nvtx
+                do icmpnd = 1, ncmpnd
+                 if (contr%vertex(idx)%idx_op.eq.abs(idxop(icmpnd)).and.
+     &              (contr%vertex(idx)%dagger.eqv.(idxop(icmpnd).lt.0)))
+     &           then
+                   vtxinlist(idx) = .true.
+                   cycle cmp_loop
+                 end if
+                end do
+              end do cmp_loop
             end if
-          else
-            ! deallocate contents and re-link the list
-            call delete_fl_node(fl_pnt)
-            ! deallocate the node itself
-            deallocate(fl_pnt)
-          end if
-        else 
+
+            ! insert operator if possible
+            call contr_insert(contr,op_info,nvtx,vtxinlist,idxins,iblk,
+     &                        idxres)
+
+            if (contr%nvtx.ne.nvtx.or.iblk.eq.1) deallocate(vtxinlist)
+          end do
+          nterms = nterms+1
         end if
 
         fl_pnt => fl_pnt_next
         if (.not.associated(fl_pnt))
-     &       call quit(1,'form_select_line',
+     &       call quit(1,'form_insert_op',
      &       'unexpected end of formula list')
 
       end do fl_loop

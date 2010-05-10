@@ -29,7 +29,7 @@
      &     op_info
 
       integer ::
-     &     nterms, nposs, idxop_tgt, iblk_tgt, iterm, iposs
+     &     nterms, nposs, idxop_tgt, iblk_tgt, iterm, iblk_int
       type(contraction) ::
      &     contr_rpl
       type(formula_item), pointer ::
@@ -42,6 +42,8 @@
      &     fpl_intm_in_tgt_pnt
       logical ::
      &     success
+      integer, pointer ::
+     &     iposs_blk(:)
 
       if (ntest.ge.100) then
         write(luout,*) '==================================='
@@ -63,6 +65,9 @@
       fl_tgt_current => fl_tgt
       ! loop over target items
       tgt_loop: do
+c dbg
+c        success = .false.
+c dbgend
 
         ! new operator target ?
         if (fl_tgt_current%command.eq.command_set_target_init) then
@@ -118,13 +123,17 @@
           ! present, as well
           ! -----------------------------------------------------
           fpl_intm_current => fpl_intm_start
-          iposs = 0
+          allocate(iposs_blk(op_info%op_arr(fpl_intm_current%item%
+     &                        contr%idx_res)%op%n_occ_cls))
+          iposs_blk = 0
           poss_loop: do
-            iposs = iposs+1
             fl_intm_pnt => fpl_intm_current%item
+            iblk_int = fl_intm_pnt%contr%iblk_res
+            iposs_blk(iblk_int) = iposs_blk(iblk_int) + 1
 
             if (ntest.ge.100) then
-              write(luout,*) 'poss. # ',iposs,' (starts with:)'
+              write(luout,'(x,2(a,i4))') 'poss. # ',iposs_blk(iblk_int),
+     &           ' of block ',iblk_int,' (starts with:)'
               call prt_contr2(luout,fl_intm_pnt%contr,op_info)
             end if
 
@@ -143,7 +152,7 @@
             ! the new contraction with the intermediate is on
             ! contr_rpl
             call find_contr_w_intm2(success,fpl_intm_in_tgt,contr_rpl,
-     &         fl_tgt_current,fpl_intm_c2blk,
+     &         fl_tgt_current,fpl_intm_c2blk,iposs_blk(iblk_int),
      &         op_info)
 
             if (ntest.ge.100.and..not.success) then
@@ -181,12 +190,17 @@
             fpl_intm_current => fpl_intm_current%next
 
           end do poss_loop
+          deallocate(iposs_blk)
 
         end if ! any possible replacement found for current term
 
         call dealloc_formula_plist(fpl_intm_start)
         deallocate(fpl_intm_start)
 
+c dbg
+c        ! if success: try again with same term!
+c        if (.not.success) then
+c dbgend
         ! advance to next item
         ! end of formula list?
         if (.not.associated(fl_tgt_current%next)) exit tgt_loop
@@ -194,6 +208,9 @@
         fl_tgt_current => fl_tgt_current%next
         if (fl_tgt_current%command.eq.command_end_of_formula)
      &                                             exit tgt_loop
+c dbg
+c        end if
+c dbgend
 
       end do tgt_loop
 

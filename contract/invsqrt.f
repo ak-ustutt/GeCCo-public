@@ -801,8 +801,8 @@ c dbgend
 
       enddo iocc_loop
 
-      if (ntest.ge.10) write(luout,'(i8,a,i8,a)') icnt_sv0,' out of ',
-     &        icnt_sv,' singular values were below threshold'
+      if (ntest.ge.10) write(luout,'(i8,a,i8,a)') icnt_sv-icnt_sv0,
+     &        ' out of ',icnt_sv,' singular values were above threshold'
  
 
       if(.not.bufout)then

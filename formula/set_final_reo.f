@@ -42,14 +42,16 @@
      &     scr(:), last_chance(:)
 
       logical, pointer ::
-     &     assign_ok(:,:)
+     &     assign_ok(:,:), scr_ok(:), merge_ok(:)
       integer, pointer ::
      &     must_assign(:)
 
+      logical ::
+     &     simple
       integer ::
      &     ivtx, idx, ij, occ_sh(ngastp,2), last,
      &     iocc_int(ngastp,2,max(nvtx,nj)), ivtxij(nj), nullij(0:nj+1),
-     &     idx2, icnt
+     &     idx2, icnt, merge_ij, merge_vtx
 
       integer(8), external ::
      &     occ_overlap_p
@@ -102,9 +104,13 @@ c        write(luout,'(a,5i2)') 'null-vector  : ',nullij(1:nj)
 
       ! get allowed assignments ivtx - ij 
       allocate(scr(max(nvtx,nj)),assign_ok(max(nvtx,nj),nj),
-     &         must_assign(nvtx),last_chance(nvtx+1))
+     &         must_assign(nvtx),last_chance(nvtx+1),
+     &         scr_ok(max(nvtx,nj)),merge_ok(max(nvtx,nj)))
       scr = 0
       assign_ok = .true.
+      scr_ok = .true.
+      merge_ij = 0
+      merge_vtx = 0
       must_assign = 0
       do ij = 1, nj
         do ivtx = 1, nvtx-1
@@ -124,12 +130,37 @@ c        write(luout,'(a,5i2)') 'null-vector  : ',nullij(1:nj)
           do idx = 1, max(nvtx,nj)
             if (icnt.eq.1) then
               if (ivtx.eq.idx) cycle
-              assign_ok(idx,ij) = assign_ok(idx,ij).and.scr(idx).ne.0
+              scr_ok(idx) = scr(idx).ne.0
             else
-              assign_ok(idx,ij) = assign_ok(idx,ij).and.ivtx.eq.idx
+              scr_ok(idx) = ivtx.eq.idx
             end if
           end do
+          ! special merge required?
+          simple = .false.
+          do idx = 1, max(nvtx,nj)
+            simple = simple.or.scr_ok(idx).and.assign_ok(idx,ij)
+          end do
+          if (simple) then
+            do idx = 1, max(nvtx,nj)
+              assign_ok(idx,ij) = assign_ok(idx,ij).and.scr_ok(idx)
+            end do
+          else
+            if (merge_ij.eq.ij) then
+              do idx = 1, max(nvtx,nj)
+                merge_ok(idx) = merge_ok(idx).and.scr_ok(idx)
+              end do
+              if (.not.any(merge_ok(1:max(nvtx,nj))))
+     &            call quit(1,'set_final_reo',
+     &            'need additional special merge (1)')
+            else if (merge_ij.ne.0) then
+              call quit(1,'set_final_reo',
+     &             'need additional special merge (2)')
+            end if
+            merge_ok(1:max(nvtx,nj)) = scr_ok(1:max(nvtx,nj))
+            merge_ij = ij
+          end if
           scr = 0
+          scr_ok = .true.
         end do
       end do
       do ivtx = 1, nvtx
@@ -159,6 +190,24 @@ c        write(luout,'(a,5i2)') 'null-vector  : ',nullij(1:nj)
           scr = 0
         end do
       end do
+
+      ! if special merge is required, a merged vtx may not be assigned
+      ! to a target vtx. In case of only one merge vtx we can prevent it:
+      if (merge_ij.ne.0) then
+        icnt = 0
+        do idx = 1, max(nvtx,nj)
+          if (merge_ok(idx)) icnt = icnt + 1
+        end do
+        if (icnt.eq.1) then
+          do idx = 1, max(nvtx,nj)
+            if (merge_ok(idx)) then
+              assign_ok(idx,1:nj) = .false.
+              exit
+            end if
+          end do
+        end if
+      end if
+
       last_chance = 0
       last_chance(1) = nj+1
       idx = 0
@@ -185,6 +234,10 @@ c        write(luout,'(a,5i2)') 'null-vector  : ',nullij(1:nj)
           write(luout,*) assign_ok(ivtx,1:nj)
         end do
         write(luout,'(a,6i2)') 'must_assign: ',must_assign
+        if (merge_ij.ne.0) then
+          write(luout,*) 'merge_ij: ',merge_ij
+          write(luout,*) 'merge_ok: ',merge_ok
+        end if
 c        write(luout,'(a,6i2)') 'last_chance: ',last_chance(2:nvtx+1)
       end if
 
@@ -225,8 +278,19 @@ c              exit
         last = ivtxij(ij)
       end do
 
+      ! find vtx which has to be merged (if necessary)
+      if (merge_ij.ne.0) then
+        do idx = 1, max(nvtx,nj)
+          if (idxlist(idx,ivtxij,nj,1).le.0.and.merge_ok(idx)) then
+            merge_vtx = idx
+            if (must_assign(idx).eq.1) exit
+          end if
+        end do
+      end if
+
       if (ntest.ge.100) then
         write(luout,'(a,5i2)') 'aim at order: ',ivtxij(1:nj)
+        if (merge_ij.ne.0) write(luout,*) 'merge_vtx:',merge_vtx
       end if
 
       ! check if assignment has worked
@@ -238,7 +302,7 @@ c              exit
       end do
       do ivtx = 1, nvtx
         if (must_assign(ivtx).eq.0) cycle
-        if (idxlist(ivtx,ivtxij,nj,1).le.0)
+        if (idxlist(ivtx,ivtxij,nj,1).le.0.and.ivtx.ne.merge_vtx)
      &      call quit(1,'set_final_reo','oops! messed up? (2)')
       end do
 
@@ -261,6 +325,8 @@ c              exit
             reo_info%reo(idx)%iblkop_ori = 1
             reo_info%reo(idx)%is_bc_result = .true.
             reo_info%reo(idx)%reo_before = .false.
+            reo_info%reo(idx)%shift_i0 = ij.eq.merge_ij.and.
+     &                                   ivtx.eq.merge_vtx
             reo_info%reo(idx)%to = ivtxij(ij)
             reo_info%reo(idx)%from = ivtx
             reo_info%reo(idx)%to_vtx   = ivtxij(ij)
@@ -268,8 +334,13 @@ c              exit
             call unpack_occ(occ_sh,xlines_pnt(ivtx,ij),1)
             reo_info%reo(idx)%occ_shift = occ_sh
             if (ntest.ge.100) then
-              write(luout,'(a,i2,a,i2)') 'Reorder from ',ivtx,
-     &                                   ' to ',ivtxij(ij)
+              if (reo_info%reo(idx)%shift_i0) then
+                write(luout,'(a,i2,a,i2)') 'Reorder i0 from ',ivtx,
+     &                                     ' to ',ivtxij(ij)
+              else
+                write(luout,'(a,i2,a,i2)') 'Reorder from ',ivtx,
+     &                                     ' to ',ivtxij(ij)
+              end if
               call wrt_occ(luout,occ_sh)
             end if
 
@@ -308,7 +379,8 @@ c              exit
           call quit(1,'set_final_reo','should be final contraction')
         end if
       end do
-      deallocate(int12,assign_ok,scr,must_assign,last_chance)
+      deallocate(int12,assign_ok,scr,must_assign,last_chance,
+     &           scr_ok,merge_ok)
 
       return
       end

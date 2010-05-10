@@ -12,6 +12,7 @@
      &     reo_info
 
       reo_info%nreo = 0
+      reo_info%nreo_i0 = 0
       reo_info%n_op_reo = 0
 
       reo_info%nca_vtx => null()

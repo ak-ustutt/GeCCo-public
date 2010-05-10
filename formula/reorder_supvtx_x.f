@@ -291,6 +291,7 @@ c dbg
               reo_info%reo(idx)%from_vtx = ivtx1
               ! shifted occupation
               reo_info%reo(idx)%occ_shift = occ_shr
+              reo_info%reo(idx)%shift_i0 = .false.
             end if
             if (iocc_nonzero(occ_shl)) then
               reo_info%nreo = reo_info%nreo+1
@@ -322,6 +323,7 @@ c dbg
               reo_info%reo(idx)%from_vtx = ivtx2
               ! shifted occupation
               reo_info%reo(idx)%occ_shift = occ_shl
+              reo_info%reo(idx)%shift_i0 = .false.
             end if
               
           end if

@@ -186,6 +186,32 @@
      &              '1',1,1,
      &              parameters,1,tgt_info)
 
+      ! define unit operator (scalar and non-valence blocks only)
+      call add_target('1ph',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do ip = 0, maxp
+        do ih = 0, maxh
+          ! not needed for pure inactive excitations
+c          if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
+          if (ip.eq.2.and.ih.eq.2) cycle
+          ndef = ndef + 1
+          occ_def(IHOLE,1,ndef) = ih
+          occ_def(IHOLE,2,ndef) = ih
+          occ_def(IPART,1,ndef) = ip
+          occ_def(IPART,2,ndef) = ip
+        end do
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('1ph',ttype_op,DEF_OP_FROM_OCC,
+     &              '1ph',1,1,
+     &              parameters,2,tgt_info)
+      call opt_parameters(-1,parameters,+1,0)
+      call set_rule('1ph',ttype_op,SET_HERMIT,
+     &              '1ph',1,1,
+     &              parameters,1,tgt_info)
+
       ! define scalar norm
       call add_target('NORM',ttype_op,.false.,tgt_info)
       call hop_parameters(-1,parameters,0,0,1,.false.)
@@ -449,55 +475,48 @@ c     &                labels,2,1,parameters,2,tgt_info)
       labels(3) = 'C0^+'
       labels(4) = 'Cdag'
       labels(5) = op_ham
-      labels(6) = '1'
-      labels(7) = 'C'
-      labels(8) = 'C0'
+      labels(6) = 'C'
+      labels(7) = 'C0'
       call add_target('F_E(MR)_diag',ttype_frm,.false.,tgt_info)
       call set_dependency('F_E(MR)_diag','E(MR)',tgt_info)
       call set_dependency('F_E(MR)_diag',op_ham,tgt_info)
-      call set_dependency('F_E(MR)_diag','1',tgt_info)
       call set_dependency('F_E(MR)_diag','C0',tgt_info)
       call set_dependency('F_E(MR)_diag','F_C',tgt_info)
       call set_dependency('F_E(MR)_diag','F_Cdag',tgt_info)
       call expand_parameters(-1,
      &     parameters,3,
-     &     'multireference energy expression',6,
-     &     (/2,3,4,5,6,7/),
-     &     (/-1,-1,-1,-1,-1,-1/),
-     &     (/-1,-1,-1,-1,-1,-1/),
+     &     'multireference energy expression',5,
+     &     (/2,3,4,5,6/),
+     &     (/-1,-1,-1,-1,-1/),
+     &     (/-1,-1,-1,-1,-1/),
      &     0,0,
-     &     (/1,4,3,4,4,6/),3,
+     &     0,0,
      &     0,0)
       call set_rule('F_E(MR)_diag',ttype_frm,EXPAND_OP_PRODUCT,
-     &              labels,8,1,
+     &              labels,7,1,
      &              parameters,3,tgt_info)
-      ! delete terms in which C^+ and C are contracted via hole/particle lines
-      labels(2) = 'F_E(MR)_diag'
-      labels(3) = 'E(MR)'
-      labels(4) = 'Cdag'
-      labels(5) = 'C'
-      call form_parameters(-1,
-     &       parameters,2,'energy expression',1,'delete')
-      call set_rule('F_E(MR)_diag',ttype_frm,SELECT_LINE,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
-      call form_parameters(-1,
-     &       parameters,2,'energy expression',2,'delete')
-      call set_rule('F_E(MR)_diag',ttype_frm,SELECT_LINE,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
-      ! and those in which either is contracted with 1 via valence lines
-      labels(5) = '1'
-      call form_parameters(-1,
-     &       parameters,2,'energy expression',3,'delete')
-      call set_rule('F_E(MR)_diag',ttype_frm,SELECT_LINE,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
-      labels(4) = '1'
-      labels(5) = 'C'
-      call set_rule('F_E(MR)_diag',ttype_frm,SELECT_LINE,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
+      ! insert (particle/hole) unit operator to allow for differentiation
+      call set_dependency('F_E(MR)_diag','1ph',tgt_info)
+      call set_rule2('F_E(MR)_diag',INSERT,tgt_info)
+      call set_arg('F_E(MR)_diag',INSERT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_E(MR)_diag'/))
+      call set_arg('F_E(MR)_diag',INSERT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_E(MR)_diag'/))
+      call set_arg('F_E(MR)_diag',INSERT,'OP_RES',1,tgt_info,
+     &     val_label=(/'E(MR)'/))
+      call set_arg('F_E(MR)_diag',INSERT,'OP_INS',1,tgt_info,
+     &     val_label=(/'1ph'/))
+      call set_arg('F_E(MR)_diag',INSERT,'OP_INCL',2,tgt_info,
+     &     val_label=(/'Cdag','C'/))
+      ! replace 1ph by 1
+      call set_dependency('F_E(MR)_diag','1',tgt_info)
+      call set_rule2('F_E(MR)_diag',REPLACE,tgt_info)
+      call set_arg('F_E(MR)_diag',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_E(MR)_diag'/))
+      call set_arg('F_E(MR)_diag',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_E(MR)_diag'/))
+      call set_arg('F_E(MR)_diag',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'1ph','1'/))
       ! expand C --> Dtr Ctr
       labels(2:20)(1:len_target_name) = ' '
       labels(2) = 'F_E(MR)_diag'

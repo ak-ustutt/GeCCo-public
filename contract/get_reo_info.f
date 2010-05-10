@@ -194,7 +194,7 @@ c      end if
         reo_info%sign_reo = sign_reo(
      &       iocc_op1op2tmp,reo_info%iocc_opreo0,
      &       njoined_op1op2,reo_info%iocc_reo,
-     &       reo_info%from_to,nreo_op1op2,
+     &       reo_info%from_to,nreo_op1op2,0,
      &       from_to_vtx,reo_info%nca_vtx,is_op1op2,reo_info%nvtx_contr)
 
         call dummy_restr(irst_op1op2,

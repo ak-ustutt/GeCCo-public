@@ -41,7 +41,7 @@
       integer ::
      &     ngas, nsym, maxidx, iarc, ivtx, icount, njoined, ncost_eval,
      &     idx, narc_full, nvtx_full, nlevel, nlevel_best,
-     &     command, target, idx_intm, idum, nvtx_max
+     &     command, target, idx_intm, idum, nvtx_max, nreo_op1op2
       integer, pointer ::
      &     ihpvgas(:,:),
      &     ifact(:,:), ifact_best(:,:), occ_vtx(:,:,:),
@@ -180,7 +180,7 @@ c dbgend
      &           occ_vtx,irestr_vtx,
      &                   svertex,info_vtx,
      &                       njoined,nvtx_max,
-     &           reo_info0,str_info,orb_info)
+     &           reo_info0,nreo_op1op2,str_info,orb_info)
 
           command = command_add_reo
           target = contr%idx_res
@@ -191,7 +191,8 @@ c dbgend
      &       contr%iblk_res,(contr%vertex(1)%iblk_op-1)/nvtx_full+1,
      &       contr%dagger,contr%vertex(1)%dagger,
      &       reo_info0%sign_reo,reo_info0%iocc_opreo0,
-     &       reo_info0%from_to,reo_info0%iocc_reo,reo_info0%nreo,
+     &       reo_info0%from_to,reo_info0%iocc_reo,nreo_op1op2,
+     &       reo_info0%nreo-nreo_op1op2,
      &       iocc_reo,irst_reo,nvtx_max,
      &       iocc_ori,irst_ori,nvtx_max,
      &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,

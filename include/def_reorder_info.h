@@ -3,7 +3,7 @@
       type reorder_list
 
       logical ::
-     &     is_bc_result, reo_before
+     &     is_bc_result, reo_before, shift_i0
       integer ::
      &     idxsuper, to, from, to_vtx, from_vtx,
      &     idxop_ori, iblkop_ori, idxop_new, iblkop_new
@@ -18,7 +18,7 @@
       
       ! raw info
       integer ::
-     &     nreo
+     &     nreo, nreo_i0
       type(reorder_list), pointer ::
      &     reo(:)
       ! keep info on number of CA on intervening vertices

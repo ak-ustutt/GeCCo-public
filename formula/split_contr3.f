@@ -46,7 +46,7 @@
      &     nxarc,nxarc_spl,nxarc_rem, nvtx_test,
      &     ivtx_spl, ivtx_rem, ivtx, ivtx1, ivtx2, nj, nj_spl,
      &     iarc, ixarc, iarc_rem, ixarc_rem, lenlist, jvtx, ij,
-     &     isuper_spl_last, sh_sign, icnt, occ_x(ngastp,2), ivtx3
+     &     isuper_spl_last, sh_sign, icnt, occ_x(ngastp,2), ivtx3, nskip
       integer(8) ::
      &     base
       integer, pointer ::
@@ -100,9 +100,24 @@
       call pack_contr(svertex_spl,vtx_spl,topo_spl,xlines_spl,
      &                                        contr_spl,nj_spl)
 
-      call identify_vertices_i8(vtxmap,success,
-     &                       vtx_spl,topo_spl,nvtx_spl,
-     &                       vtx,topo,nvtx)
+      nskip = 0
+      do
+        call identify_vertices_i8(vtxmap,success,nskip,
+     &                       svertex_spl,vtx_spl,topo_spl,nvtx_spl,
+     &                       svertex,vtx,topo,nvtx)
+
+        ! also check that connecting contractions are contained in xlines of A
+        if (success) then
+          call contr_in_xlines(vtxmap,success,
+     &                        xlines_spl,nvtx_spl,nj_spl,
+     &                        topo,nvtx)
+        else
+          exit
+        end if
+
+        if (success) exit
+        nskip = nskip + 1
+      end do
 
       if (.not.success) then
         call prt_contr_p(luout,svertex,vtx,topo,
@@ -413,14 +428,8 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
 
       call contr_clean_arcs(contr_rem%arc,contr_rem%narc)
       call arc_sort(contr_rem%arc,contr_rem%narc,contr_rem%nvtx)
-c dbg fix by mh
-      if (associated(contr_rem%xarc)) then
-c dbg original
       call contr_clean_arcs(contr_rem%xarc,contr_rem%nxarc)
       call arc_sort(contr_rem%xarc,contr_rem%nxarc,contr_rem%nvtx)
-c dbg resume fix
-      end if
-c dbg end fix
 
       deallocate(topo,topo_spl,vtx,vtx_spl,xlines,xlines_spl,ireo,ireo2,
      &       svertex,svertex_spl,list,ivtx_new,isupervtx_spl,vtxmap)

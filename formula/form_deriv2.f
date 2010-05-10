@@ -61,7 +61,7 @@ c dbg
      &     name*(form_maxlen_label*2)
 
       integer, pointer ::
-     &     ivtx_reo(:),occ_vtx(:,:,:)
+     &     ivtx_reo(:)
       logical, pointer ::
      &     fix_vtx(:)
 
@@ -159,17 +159,17 @@ c dbg
 
             ! enforce law and order
             nvtx = cur_conder%contr%nvtx
-            allocate(ivtx_reo(nvtx),fix_vtx(nvtx),
-     &           occ_vtx(ngastp,2,nvtx))
-            fix_vtx = .true.    ! "fix" all vertices -> ieqvfac will be 1
-            call occvtx4contr(1,occ_vtx,cur_conder%contr,op_info)
+cmh            allocate(ivtx_reo(nvtx),fix_vtx(nvtx))
+cmh            fix_vtx = .true.    ! "fix" all vertices -> ieqvfac will be 1
 
-            call topo_contr2(ieqvfac,reo,ivtx_reo,
-     &           cur_conder%contr,fix_vtx,op_info)
-            ! ieqvfac is ignored
+cmh            call topo_contr2(ieqvfac,reo,ivtx_reo,
+cmh     &           cur_conder%contr,fix_vtx,op_info)
+cmh            ! ieqvfac is ignored
 cmh            call canon_contr(cur_conder%contr,reo,ivtx_reo)
+cmh            deallocate(ivtx_reo,fix_vtx)
+            allocate(ivtx_reo(nvtx)) ! dummy
             call canon_contr(cur_conder%contr,.false.,ivtx_reo)
-            deallocate(ivtx_reo,fix_vtx,occ_vtx)
+            deallocate(ivtx_reo)
 
             call wrt_contr(luderiv,cur_conder%contr)
 

@@ -29,6 +29,8 @@
       write(luout,*) 'reorder: sign = ',reo%sign
       write(luout,'(3x,8(i3,"->",i3))') reo%from_to(1:2,1:reo%nreo)
       call wrt_occ_n(luout,reo%occ_shift,reo%nreo)
+      if (reo%nreo_i0.gt.0) write(luout,'(x,a,3x,8(i3,"->",i3))')
+     &       'merge: ',reo%from_to(1:2,reo%nreo+1:reo%nreo+reo%nreo_i0)
 
       if (.not.reo%tra_out) write(luout,'(x,"==> ",a,i4)')
      &     trim(reo%label_out),reo%iblk_out

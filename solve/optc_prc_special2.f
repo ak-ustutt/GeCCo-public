@@ -729,6 +729,7 @@ c      end do
       allocate(reo_info%reo(1))
       reo_info%reo(1)%idxsuper = 1          ! dummy
       reo_info%reo(1)%is_bc_result = .true. ! dummy
+      reo_info%reo(1)%shift_i0 = .false.
       if (iway==1) then
         reo_info%reo(1)%from = 1
         reo_info%reo(1)%to   = 2

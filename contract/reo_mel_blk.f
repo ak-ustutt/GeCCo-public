@@ -102,6 +102,7 @@
       reo_info%reo(1)%iblkop_ori = 1
       reo_info%reo(1)%is_bc_result = .true.
       reo_info%reo(1)%reo_before = .false.
+      reo_info%reo(1)%shift_i0 = .false.
       reo_info%reo(1)%to = ito
       reo_info%reo(1)%from = ifrom
       reo_info%reo(1)%to_vtx   = ito
@@ -164,7 +165,7 @@
      &         njinp,idum,idum,
      &         merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
      &         occ_vtx,irst_vtx,svertex,info_vtx,njinp,njinp,
-     &         reo_info,str_info,orb_info)
+     &         reo_info,reo_info%nreo,str_info,orb_info)
       end do
 
       call reo_op_wmaps_c(

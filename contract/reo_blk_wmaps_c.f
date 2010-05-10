@@ -451,6 +451,12 @@ c dbg
 c dbg
 c                write(*,'(a,10i4)') 'ireo_k_c1: ',ireo_k_c1
 c                write(*,'(a,10i4)') 'ireo_k_c2: ',ireo_k_c2
+c                write(*,'(a,10i4)') 'ireo_k_a1: ',ireo_k_a1
+c                write(*,'(a,10i4)') 'ireo_k_a2: ',ireo_k_a2
+c                write(*,'(a,10i4)') 'ireo_i0c1: ',ireo_i0c1
+c                write(*,'(a,10i4)') 'ireo_i0c2: ',ireo_i0c2
+c                write(*,'(a,10i4)') 'ireo_i0a1: ',ireo_i0a1
+c                write(*,'(a,10i4)') 'ireo_i0a2: ',ireo_i0a2
 c dbgend
 
                 nstr_k_c_tot  = ielprd(lstr_k,ncblk_k)
@@ -786,8 +792,8 @@ c                          first_element = .false.
 c                        end if
 c dbg
 c dbg
-c                        print *,'idx_opreo: ',idx_opreo
-c                        print *,'idx_opori: ',idx_opori
+c                        print *,'idx_opreo, idx_opori: ',
+c     &                          idx_opreo,idx_opori
 c dbgend
 
                         xop_reo(idx_opreo) = xop_reo(idx_opreo)

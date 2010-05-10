@@ -103,7 +103,9 @@ c dbgend
         do jvtx = ivtx+1, nvtx !upper right triangle
           if (connected(ivtx,jvtx).ne.0) then
             do kvtx = jvtx+1,nvtx
-              if (topo(jvtx,kvtx).ne.0.and.
+c              if (topo(jvtx,kvtx).ne.0.and.
+              if ((topo(jvtx,kvtx).ne.0.or.
+     &             max(vtxmap(jvtx),vtxmap(kvtx)).eq.0).and.
      &            connected(jvtx,kvtx).lt.connected(ivtx,jvtx))
      &             connected(jvtx,kvtx) = connected(ivtx,jvtx)
             end do
@@ -115,7 +117,9 @@ c dbgend
         do jvtx = ivtx-1, 1, -1 !lower left triangle
           if (connected(ivtx,jvtx).ne.0) then
             do kvtx = jvtx-1, 1, -1
-              if (topo(jvtx,kvtx).ne.0.and.
+c              if (topo(jvtx,kvtx).ne.0.and.
+              if ((topo(jvtx,kvtx).ne.0.or.
+     &             max(vtxmap(jvtx),vtxmap(kvtx)).eq.0).and.
      &            (connected(jvtx,kvtx).eq.0.or.
      &             connected(jvtx,kvtx).gt.connected(ivtx,jvtx)))
      &             connected(jvtx,kvtx) = connected(ivtx,jvtx)

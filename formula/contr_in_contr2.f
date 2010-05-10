@@ -42,6 +42,7 @@
 
 c      logical, external ::
 c     &     iocc_equal
+      call quit(1,'contr_in_contr2','call to obsolete routine')
 
       if (ntest.ge.100) then
         write(luout,*) '--------------------------'

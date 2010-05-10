@@ -88,7 +88,7 @@
      &     nvtx, narc, ngas, nsym, idum, target, command,
      &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt,
      &     idxop_reo, idxop_ori, iblkop_reo, iblkop_ori,
-     &     ireo, idxs_reo, mode_rst_cnt, nv_op1op2, nv_cnt
+     &     ireo, idxs_reo, mode_rst_cnt, nv_op1op2, nv_cnt, nreo_op1op2
       integer ::
      &     iocc_cnt(ngastp,2,contr%nvtx*(contr%nvtx+1)/2),
      &     iocc_ex1(ngastp,2,contr%nvtx),
@@ -238,7 +238,7 @@
      &           occ_vtx_red,irestr_vtx_red,
      &                       contr_red%svertex,info_vtx_red,
      &                       njoined_res,contr_red%nvtx,
-     &           reo_info,str_info,orb_info)
+     &           reo_info,nreo_op1op2,str_info,orb_info)
       end if
 
       if (ntest.ge.100) then
@@ -416,7 +416,7 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &           occ_vtx,irestr_vtx,
      &                   contr%svertex,info_vtx,
      &                       njoined_res,contr%nvtx,
-     &           reo_info0,str_info,orb_info)
+     &           reo_info0,idum,str_info,orb_info)
 
           ! FIX:
           if (nj_ret.gt.1.and..not.tra_ori) then
@@ -441,7 +441,7 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &       iblkop_reo,iblkop_ori,
      &       tra_reo, tra_ori,
      &       reo_info0%sign_reo,reo_info0%iocc_opreo0,
-     &       reo_info0%from_to,reo_info0%iocc_reo,reo_info0%nreo,
+     &       reo_info0%from_to,reo_info0%iocc_reo,reo_info0%nreo,0,
      &       iocc_reo,irst_reo,nj_ret,
      &       iocc_ori,irst_ori,nj_ret,
      &       merge_stp1_0,merge_stp1inv_0,merge_stp2_0,merge_stp2inv_0,
@@ -509,7 +509,8 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &       iblkop1op2,iblkop1op2tmp,
      &       tra_op1op2,tra_op1op2,
      &       reo_info%sign_reo,reo_info%iocc_opreo0,
-     &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,
+     &       reo_info%from_to,reo_info%iocc_reo,nreo_op1op2,
+     &       reo_info%nreo-nreo_op1op2,
      &       iocc_op1op2,irst_op1op2,njoined_op1op2,
      &       iocc_op1op2tmp,irst_op1op2tmp,njoined_op1op2,
      &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
@@ -555,7 +556,7 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &           occ_vtx_red,irestr_vtx_red,
      &                       contr_red%svertex,info_vtx_red,
      &                       njoined_res,contr_red%nvtx,
-     &           reo_info,str_info,orb_info)
+     &           reo_info,idum,str_info,orb_info)
 
           ! FIX:
           if (nj_ret.gt.1.and..not.tra_ori) then
@@ -580,7 +581,7 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &       iblkop_reo,iblkop_ori,
      &       tra_reo, tra_ori,
      &       reo_info%sign_reo,reo_info%iocc_opreo0,
-     &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,
+     &       reo_info%from_to,reo_info%iocc_reo,reo_info%nreo,0,
      &       iocc_reo,irst_reo,nj_ret,
      &       iocc_ori,irst_ori,nj_ret,
      &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,

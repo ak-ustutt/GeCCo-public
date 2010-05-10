@@ -30,6 +30,7 @@
 
       integer, external ::
      &     sign_shift, sign_hpvx
+      call quit(1,'sign_reo2','call to obsolete routine')
 
 
       ! savety check:

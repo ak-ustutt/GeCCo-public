@@ -121,7 +121,7 @@ c
       logical ::
      &     tra_out, tra_in
       integer ::
-     &     nreo,sign,
+     &     nreo,nreo_i0,sign,
      &     ngas, nspin
       integer, pointer ::
      &     from_to(:,:),

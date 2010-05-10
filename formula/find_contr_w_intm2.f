@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine find_contr_w_intm2(success,fpl_found,contr_rpl,
-     &                             fl_tgt,fpl_intm,
+     &                             fl_tgt,fpl_intm,iposs,
      &                             op_info)
 *----------------------------------------------------------------------*
 *
@@ -32,6 +32,8 @@
       
       logical, intent(out) ::
      &     success
+      integer, intent(in) ::
+     &     iposs
       type(formula_item), target, intent(in) ::
      &     fl_tgt
       type(formula_item_list), intent(out), target ::
@@ -44,8 +46,10 @@
      &     op_info
 
       integer ::
-     &     len_i_max, idxop_tgt, iblk_tgt, iterm, nfound,
+     &     idxop_tgt, iblk_tgt, iterm, nfound,
      &     idxop_current, iblk_current, njoined, idx, nterms_gen
+      integer, pointer ::
+     &     len_list(:), iterm_list(:)
       type(formula_item_list), pointer ::
      &     fpl_intm_pnt, fpl_found_pnt
       logical ::
@@ -81,23 +85,56 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
       success1 = .false.
       fpl_intm_pnt => fpl_intm
       ! loop intermediates and check whether I_i is contained in T
-      len_i_max = 0
       iterm = 0
+      allocate(len_list(iposs),iterm_list(iposs))
+      len_list = 0
+      iterm_list = 0
       do
         iterm = iterm+1
         if (contr_in_contr(fpl_intm_pnt%item%contr,
      &                     fl_tgt%contr,           op_info)) then
-          ! take I_i with longest contraction
-          if (fpl_intm_pnt%item%contr%nvtx.gt.len_i_max) then
-            len_i_max = fpl_intm_pnt%item%contr%nvtx
-            ! remember I_i
-            contr_i => fpl_intm_pnt%item%contr
-            success1 = .true.
-          end if
+c          ! take I_i with longest contraction
+c          if (fpl_intm_pnt%item%contr%nvtx.gt.len_i_max) then
+c            len_i_max = fpl_intm_pnt%item%contr%nvtx
+c            ! remember I_i
+c            contr_i => fpl_intm_pnt%item%contr
+c            success1 = .true.
+c          end if
+          ! create list of iposs terms with decreasing nvtx
+          do idx = 1, iposs
+            if (fpl_intm_pnt%item%contr%nvtx.gt.len_list(idx)) then
+              if (idx.gt.1) then
+                len_list(idx-1) = len_list(idx)
+                iterm_list(idx-1) = iterm_list(idx)
+              end if
+              if (idx.eq.iposs) then
+                len_list(idx) = fpl_intm_pnt%item%contr%nvtx
+                iterm_list(idx) = iterm
+              end if
+            else if (idx.gt.1) then
+              len_list(idx-1) = fpl_intm_pnt%item%contr%nvtx
+              iterm_list(idx-1) = iterm
+            end if
+          end do
         end if
         if (.not.associated(fpl_intm_pnt%next)) exit
         fpl_intm_pnt => fpl_intm_pnt%next
       end do
+
+      ! take I_i with iposs-th largest number of vertices
+      fpl_intm_pnt => fpl_intm
+      iterm = 0
+      do
+        iterm = iterm + 1
+        if (iterm.eq.iterm_list(1)) then
+          ! remember I_i
+          contr_i => fpl_intm_pnt%item%contr
+          success1 = .true.
+        end if
+        if (.not.associated(fpl_intm_pnt%next)) exit
+        fpl_intm_pnt => fpl_intm_pnt%next
+      end do
+      deallocate(len_list,iterm_list)
 
       if (success1) then
         ! get factor, vertices and arcs associated with T_0
