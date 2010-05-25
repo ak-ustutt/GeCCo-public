@@ -1,7 +1,7 @@
 title
-  BeH2/3-21G; DALTON env.: ic-MRCID (2 act. el.)
+  BeH2/3-21G; GAMESS env.: ic-MRCID (2 act. el.)
 molecule
-  BeH2-MR-DALTON
+  BeH2-MR-GAMESS
 input
   ic_MRCI.inp
 check
@@ -55,7 +55,7 @@ check
   label Evaluate density
   find EVAL_D
   find -->
-  compare real 4 1e-10
+  compare real 4 4e-9
 check
   label Evaluate Hessian
   find EVAL_A_diag

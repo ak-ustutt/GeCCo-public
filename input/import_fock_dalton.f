@@ -19,6 +19,7 @@
       include 'ifc_memman.h'
       include 'multd2h.h'
       include 'par_dalton.h'
+      include 'par_gamess.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -120,7 +121,12 @@
         call read_fock_from_sirifc(eref,xfock,nfock)
         call h1_sym2str_reo(eref,xfock,xh1reo,hlist,str_info,orb_info)
       else
-        call read_fock_from_file(eref,xfock,nfock,name)
+        select case(trim(name))
+        case (moints) ! this option is for GAMESS input
+          call read_fock_from_file_gms(eref,xfock,nfock)
+        case default
+          call read_fock_from_file(eref,xfock,nfock,name)
+        end select
         call h1_full2str_reo(eref,xfock,xh1reo,hlist,str_info,orb_info)
       end if
 

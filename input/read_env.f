@@ -18,6 +18,8 @@
       select case(trim(env_type))
       case ('dalton','DALTON','dalton_special','DALTON_SPECIAL')
         call read_env_dalton(orb_info)
+      case ('gamess','GAMESS')
+        call read_env_gamess(orb_info)
       case ('intern','INTERN')
         call quit(1,'read_env','type INTERN not implemented')
       case ('aces2','ACES2')

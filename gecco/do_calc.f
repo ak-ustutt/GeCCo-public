@@ -56,7 +56,7 @@
       ifree = mem_setmark('do_calc')
       
       ! set up orbital info
-      call set_orbinf(orb_info,.false.)!.true.)
+      call set_orbinf(orb_info,env_type,.false.)!.true.)
 
       ! initialize target list
       call init_target_info(tgt_info)

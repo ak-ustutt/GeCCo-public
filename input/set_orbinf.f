@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_orbinf(orb_info,hole_rv)
+      subroutine set_orbinf(orb_info,env_type,hole_rv)
 *----------------------------------------------------------------------*
 *     set up orbital info arrays
 *
@@ -23,6 +23,8 @@
 
       type(orbinf), intent(inout) ::
      &     orb_info
+      character, intent(in) ::
+     &     env_type*(*)
       logical, intent(in) ::
      &     hole_rv
 
@@ -200,6 +202,8 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
       end if
 
       ! generate symmetry ordering -> type ordering mapping
+      select case(trim(env_type))
+      case('dalton','DALTON','dalton_special','DALTON_SPECIAL')
         jdx = 0
         do isym = 1, nsym
           do igas = 1, ngas
@@ -226,6 +230,27 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
         do idx = ntoob+1, ntoob+caborb
           orb_info%ireost(idx) = idx
         end do
+      case ('gamess','GAMESS')
+        if (orb_info%n_bound_orbs.ne.ntoob.or.caborb.ne.0)
+     &        call quit(1,'set_orbinf','need full orb-sym list!')
+        ind = 0
+        do igas = 1, ngas
+          ist = ind + 1
+          ind = ind + sum(orb_info%igassh(1:nsym,igas))
+          do isym = 1, nsym
+            if (orb_info%igassh(isym,igas).eq.0) cycle
+            jdx = orb_info%mostnd(1,isym,igas)
+            do idx = ist, ind
+              if (orb_info%isym_bound_orbs(idx).eq.isym) then
+                orb_info%ireost(idx) = jdx
+                jdx = jdx + 1
+              end if
+            end do
+          end do
+        end do
+      case default
+        call quit(1,'set_orbinf','unknown type '//trim(env_type))
+      end select
 
         ! generate reverse mapping
         do idx = 1, ntoob+caborb

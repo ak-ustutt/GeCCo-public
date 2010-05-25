@@ -206,6 +206,15 @@ c     &                                str_info,orb_info)
           call quit(1,'import_op_el','DALTON: cannot handle list_type "'
      &         //trim(list_type)//'"')
         end select
+      case ('gamess','GAMESS')
+        ! what to import?
+        select case(trim(list_type))
+        case ('H_INT')
+          call import_hamint_gamess(mel_target,str_info,orb_info)
+        case default
+          call quit(1,'import_op_el','GAMESS: cannot handle list_type "'
+     &         //trim(list_type)//'"')
+        end select
       case ('intern','INTERN')
         call quit(1,'import_op_el','type INTERN not implemented')
       case ('aces2','ACES2')

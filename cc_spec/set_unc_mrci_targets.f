@@ -358,6 +358,13 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_rule('EVAL_E_REF',ttype_opme,EVAL,
      &     'FOPT_REF',1,0,
      &     parameters,0,tgt_info)
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'Hamiltonian :',0,'LIST')
+c      call set_rule('EVAL_E_REF',ttype_opme,PRINT_MEL,
+c     &     mel_ham,1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
 
       ! Evaluate Fock operator wrt reference function
       call add_target('EVAL_FREF',ttype_gen,.false.,tgt_info)
