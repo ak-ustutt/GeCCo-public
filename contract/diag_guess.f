@@ -63,8 +63,8 @@
             ! set a spin combination
             jroot = jroot+1
             nset = 2
-            idxset(1) = idxlist(idx)
-            idxset(2) = idxlist_ba(idx)
+            idxset(1) = abs(idxlist(idx))
+            idxset(2) = abs(idxlist_ba(idx))
             valset(1) = 1d0/sqrt(2d0)
             valset(2) = dble(isign)*dble(sign(1,idxlist_ba(idx)))
      &                  /sqrt(2d0)
@@ -75,14 +75,14 @@
             ! set a single element
             jroot = jroot+1
             nset = 1
-            idxset(1) = idxlist(idx)
+            idxset(1) = abs(idxlist(idx))
             valset(1) = 1d0
           end if
         else
           ! set a single element
           jroot = jroot+1
           nset = 1
-          idxset(1) = idxlist(idx)
+          idxset(1) = abs(idxlist(idx))
           valset(1) = 1d0
         end if
         if (jroot.eq.iroot) exit

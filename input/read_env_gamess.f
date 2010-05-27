@@ -152,8 +152,8 @@ c dbgend
         write(luout,'(x,a,8i4)') 'nrhf   = ',nrhf(1:8)
         write(luout,'(x,a,8i4)') 'nash   = ',nash(1:8)
         write(luout,'(x,a,8i4)') 'norb   = ',norb(1:8)
-        write(luout,'(x,a,16i4)')'sym_bound_orbs: ',
-     &       orb_info%isym_bound_orbs
+        write(luout,'(x,a)') 'sym_bound_orbs:'
+        write(luout,'(x,10i4)') orb_info%isym_bound_orbs
         write(luout,'(x,a,i4)')  'n_freeze_rcmd: ',
      &       orb_info%n_freeze_rcmd
       end if
