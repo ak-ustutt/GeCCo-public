@@ -10,6 +10,7 @@
       include 'stdunit.h'
       include 'opdim.h'
       include 'mdef_target_info.h'
+      include 'ifc_targets.h'
       include 'def_orbinf.h'
 
       include 'ifc_input.h'
@@ -32,7 +33,7 @@
       integer ::
      &     ndef, occ_def(ngastp,2,60),
      &     isym, msc, ip, ih, 
-     &     cminh, cmaxh, cminp, cmaxp, cmaxexc
+     &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot
       character(len_target_name) ::
      &     dia_label, labels(20)
       character(len_command_par) ::
@@ -57,6 +58,8 @@
      &     ival=cmaxp)
       call get_argument_value('calculate.multiref','cmaxexc',
      &     ival=cmaxexc)
+      call get_argument_value('calculate.multiref','ciroot',
+     &     ival=ciroot)
       if (cmaxh.lt.0) cmaxh = cmaxexc
       if (cmaxp.lt.0) cmaxp = cmaxexc
 
@@ -67,6 +70,7 @@
         write(luout,*) 'cmaxp   = ',cmaxp
         write(luout,*) 'cmaxexc = ',cmaxexc
         write(luout,*) 'nactel  = ',orb_info%nactel
+        write(luout,*) 'ciroot  = ',ciroot
       end if
 
 *----------------------------------------------------------------------*
@@ -251,17 +255,23 @@ c     &                labels,2,1,parameters,2,tgt_info)
 *----------------------------------------------------------------------*
 
       ! ME_C0
-      call add_target('DEF_ME_C0',ttype_opme,.false.,tgt_info)
+      call add_target2('DEF_ME_C0',.false.,tgt_info)
       call set_dependency('DEF_ME_C0','C0',tgt_info)
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'ME_C0'
-      labels(2) = 'C0'
-      call me_list_parameters(-1,parameters,
-     &     msc,0,orb_info%lsym,
-     &     0,0,.false.)
-      call set_rule('DEF_ME_C0',ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
+      call set_rule2('DEF_ME_C0',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_C0'/))
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'C0'/))
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/orb_info%lsym/))
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'MIN_REC',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'MAX_REC',1,tgt_info,
+     &             val_int=(/ciroot/))
 
       ! ME_A_C0
       call add_target('DEF_ME_A_C0',ttype_opme,.false.,tgt_info)
@@ -335,7 +345,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call me_list_label(dia_label,mel_dia,orb_info%lsym,
      &     0,0,0,.false.)
       call set_dependency('SOLVE_REF',trim(dia_label)//'C0',tgt_info)
-      call solve_parameters(-1,parameters,2,1,1,'DIA')
+      call solve_parameters(-1,parameters,2,1,ciroot,'DIA')
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'ME_C0'
       labels(2) = trim(dia_label)//'C0'

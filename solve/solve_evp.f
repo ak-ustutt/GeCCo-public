@@ -521,6 +521,13 @@ c dbg
       end do
       write(luout,'(">>>",66("="))') 
 
+      ! switch to last root if possible
+      ! (we assume that nroots has been chosen for this reason,
+      !  otherwise a new keyword must be set up for this purpose)
+      if (nroots.ge.me_opt(1)%mel%fhand%active_records(1).and.
+     &    nroots.le.me_opt(1)%mel%fhand%active_records(2))
+     &           call switch_mel_record(me_opt(1)%mel,nroots)
+
       call clean_formula_dependencies(depend)
 
       ! note that only the pointer array ffopt (but not the entries)
