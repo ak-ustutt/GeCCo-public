@@ -807,9 +807,11 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('DIAG_TYPE',rule,tgt_info,val_int=imode)
         call get_arg('DIAG_IRREP',rule,tgt_info,val_int=dgam)
         call get_arg('DIAG_MS',rule,tgt_info,val_int=dms)
+        call get_arg('MIN_REC',rule,tgt_info,val_int=min_rank)
+        call get_arg('MAX_REC',rule,tgt_info,val_int=max_rank)
         call define_me_list(label,label2,
      &       absym,casym,gamma,s2,ms,ms_fix,
-     &       -1,-1,imode,dgam,dms,
+     &       min_rank,max_rank,imode,dgam,dms,
      &       op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
       case(UNITY)

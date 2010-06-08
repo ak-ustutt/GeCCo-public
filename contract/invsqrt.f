@@ -74,6 +74,10 @@ c     &     loop(nocc_cls)
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:),
      &     sing(:,:), trip(:,:)
+c dbg
+c      integer, pointer ::
+c     &     matrix(:,:)
+c dbgend
 
       integer, pointer ::
      &     hpvx_csub(:),hpvx_asub(:),
@@ -467,6 +471,9 @@ c dbgend
 
           allocate(scratch(ndim,ndim),flmap(ndim,3))
           scratch = 0d0
+c dbg
+c          allocate(matrix(ndim,ndim))
+c dbgend
           flmap(1:ndim,3) = 1
 
           ! read in current Ms1/GAMMA block
@@ -612,6 +619,9 @@ c dbgend
                       idx = ioff + idx_str_blk3(istr_csub,istr_asub,
      &                       ldim_opin_c,ldim_opin_a,ncblk,nablk)
                       scratch(iline,icol) = buffer_in(idx)
+c dbg
+c                      matrix(iline,icol) = idx
+c dbgend
                       if (ms1.eq.0.and.iline.eq.icol) then
                         idx2 = ioff2 + idx_str_blk3(istr_csub_flip,
      &                         istr_asub_flip,
@@ -632,7 +642,7 @@ c dbgend
                         if (mod(idxcount(2,idspn,nel,1),4).ne.0)
      &                        flmap(icol,3) = -1
 c dbg
-c                        write(luout,'(i4,x,2i4,x,2i4)')idx,idorb,idspn
+c                        write(luout,'(i4,x,4i4,x,4i4)')idx,idorb,idspn
 c dbgend
                       end if
                     end do
@@ -646,6 +656,13 @@ c dbgend
             off_line = off_line + len_str(1)*len_str(3)
            end do
           end do
+c dbg
+c          print *,'index matrix:'
+c          write(*,'(5x,18i4)') (icol, icol=1,ndim)
+c          do iline = 1, ndim
+c            write(*,'(i4,x,18i4)') iline, matrix(iline,1:ndim)
+c          end do
+c dbgend
 
           if (ms1.eq.0) then
             ! here a splitting into "singlet" and "triplet" blocks is needed:
@@ -777,6 +794,9 @@ c dbgend
           end do
 
           deallocate(scratch,flmap)
+c dbg
+c          deallocate(matrix)
+c dbgend
 
          end do
         end do

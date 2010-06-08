@@ -1,5 +1,5 @@
 *------------------------------------------------------------------------*
-      subroutine find_nmin_list(xlist,idxlist,nlist,mel)
+      subroutine find_nmin_list(xlist,idxlist,nlist,mel,maxblk)
 *------------------------------------------------------------------------*
 *     search ME-list and return the nlist lowest values + indices
 *------------------------------------------------------------------------*
@@ -18,7 +18,7 @@
       type(me_list), intent(inout) ::
      &     mel
       integer, intent(in) ::
-     &     nlist
+     &     nlist, maxblk
       integer, intent(out) ::
      &     idxlist(nlist)
       real(8), intent(out) ::
@@ -28,7 +28,7 @@
      &     closeit, init
       integer ::
      &     ifree, len_op, nblk, nblkmax, nbuff, idxst, idxnd,
-     &     idum, iblk, idisc_off, kdx
+     &     idum, iblk, idisc_off, kdx, max_cls
 
       type(operator), pointer ::
      &     op
@@ -41,6 +41,9 @@
 
       ffop => mel%fhand
       op => mel%op
+
+      max_cls = maxblk
+      if (maxblk.le.0) max_cls = op%n_occ_cls
 
       if (.not.associated(ffop))
      &     call quit(1,'find_nmin_list','No file assigned to list: '//
@@ -66,7 +69,10 @@
 
       if (.not.ffop%buffered) then
 
-        len_op = mel%len_op
+        len_op = 0
+        do iblk = 1, max_cls
+          len_op = len_op + mel%len_op_occ(iblk)
+        end do
         nblk = min((len_op-1)/ffop%reclen + 1,nblkmax)
 
         nbuff = min(len_op,nblk*ffop%reclen)
@@ -101,7 +107,7 @@
 
         ! search remaining blocks on disc
         len_op = 0 ! look for largest block
-        do iblk = 1, op%n_occ_cls
+        do iblk = 1, max_cls
           if (ffop%incore(iblk).le.0) 
      &         len_op = max(len_op,mel%len_op_occ(iblk))
         end do
@@ -114,7 +120,7 @@
 
           buffer(1:nbuff) = 0d0
 
-          do iblk = 1, op%n_occ_cls
+          do iblk = 1, max_cls
             if (ffop%incore(iblk).le.0) then
               len_op = mel%len_op_occ(iblk)
               idxst = idisc_off+mel%off_op_occ(iblk)+1

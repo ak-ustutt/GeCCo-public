@@ -245,6 +245,8 @@ c     &     idef=(/0/))
       call argument_add('force_ooc_sort',
      &     'calculate.routes',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('maxbranch','calculate.routes',type=vtyp_int,
+     &     idef=(/-1/))
       call argument_add('use_tr','calculate.routes',type=vtyp_log,
      &     ldef=(/.true./))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,
@@ -299,6 +301,8 @@ c     &     idef=(/0/))
      &                  ldef=(/.true./)) ! pure act.-act. excitations
       call argument_add('calc','calculate.multiref',type=vtyp_log,
      &                  ldef=(/.true./)) ! do the calc. (else set targ.)
+      call argument_add('nroots','calculate.multiref',type=vtyp_int,
+     &                  idef=(/1/))  ! number of roots (for ic-MRCI)
 
       call keyword_add('experimental',context='calculate')
       ! set additional experimental keyword in this subroutine:

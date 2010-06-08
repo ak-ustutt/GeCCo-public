@@ -81,7 +81,7 @@
       integer ::
      &     iter, iprint, task, ifree, iopt, jopt, nintm, irequest,
      &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout,
-     &     idxlist(2*nroots), nselect
+     &     idxlist(2*nroots), nselect, iguess, maxblk
       real(8) ::
      &     xresmax, xdum,
      &     xeig(nroots,2), xresnrm(nroots*nopt), xlist(2*nroots)
@@ -194,12 +194,19 @@
 
       do iopt = 1, nopt
 
-        ! get a ME-list for trial-vectors
+        ! get a ME-list for scratch trial-vectors
+        ! in case of ab-sym braking trafo, get sym props from special list
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_file
+     &      .and.nspecial.eq.3) then
+          me_pnt => me_special(1)%mel
+        else
+          me_pnt => me_opt(iopt)%mel
+        end if
         write(fname,'("scr_",i3.3)') iopt
         call define_me_list(fname,me_opt(iopt)%mel%op%name,
-     &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
-     &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
-     &       me_opt(iopt)%mel%mst,.false.,
+     &       me_pnt%absym,me_pnt%casym,
+     &       me_pnt%gamt,me_pnt%s2,
+     &       me_pnt%mst,.false.,
      &       1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
@@ -302,21 +309,26 @@
           end do
           cycle
         end if
-        call find_nmin_list(xlist,idxlist,2*nroots,me_dia(iopt)%mel)
         ! transformed preconditioner => transformed initial guess vector
         if (opti_info%typ_prc(iopt).eq.optinf_prc_file
      &      .and.nspecial.gt.0) then
           me_pnt => me_special(1)%mel
           trafo = .true.
+          maxblk = 1
         else
           me_pnt => me_trv(iopt)%mel
           trafo = .false.
+          maxblk = -1
         end if
-        do iroot = 1, nroots
-          
+        call find_nmin_list(xlist,idxlist,2*nroots,me_dia(iopt)%mel,
+     &                      maxblk)
+        iroot = 0
+        do iguess = 1, 2*nroots
+          iroot = iroot + 1          
+
           call switch_mel_record(me_pnt,iroot)
           call diag_guess(me_pnt,
-     &         xlist,idxlist,2*nroots,iroot,me_pnt%absym,
+     &         xlist,idxlist,2*nroots,iguess,me_pnt%absym,
      &         op_info,str_info,strmap_info,orb_info)
 
           ! if requested, back-transformation of initial guess vector
@@ -333,8 +345,18 @@
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
      &                  op_info,str_info,strmap_info,orb_info)
+            ! guess vectors of wrong spin symmetry will be discarded
+            if (abs(xret(idxselect(1))).lt.1d-12) then
+              if (iprlvl.ge.5) write(luout,*)
+     &           'Discarding guess vector with wrong spin symmetry.'
+              me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
+              iroot = iroot - 1
+            else if (abs(xret(idxselect(1))).lt.1d0-1d-12) then
+              call warn('solve_evp','guess vector not normalized')
+            end if
             deallocate(idxselect)
           end if
+          if (iroot.eq.nroots) exit
 
 c          if (me_trv(iopt)%mel%absym.ne.0)
 c     &         call sym_ab_list(
@@ -350,6 +372,8 @@ c            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel)
 c          end if
 c dbg
         end do
+        if (iroot.ne.nroots) call quit(1,'solve_evp',
+     &        'Could not find enough guess vectors')
       end do
 
       ! start optimization loop

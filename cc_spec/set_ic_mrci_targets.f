@@ -34,7 +34,7 @@
      &     isym, ms, msc, sym_arr(8), maxexc, ip, ih, ivv, iv,
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, minh, maxh,
      &     minp, maxp, maxv, maxvv, minexc, cbarc(2),
-     &     nlabels
+     &     nlabels, nroots
       logical ::
      &     use_hessian, use_dens, pure_vv, calc
       character(len_target_name) ::
@@ -92,6 +92,8 @@
      &     lval=pure_vv)
       call get_argument_value('calculate.multiref','calc',
      &     lval=calc)
+      call get_argument_value('calculate.multiref','nroots',
+     &     ival=nroots)
 
       if (ntest.ge.100) then
         print *,'minh    = ',minh
@@ -103,6 +105,7 @@
         print *,'minexc  = ',minexc
         print *,'maxexc  = ',maxexc
         print *,'pure_vv = ',pure_vv
+        print *,'nroots  = ',nroots
       end if
 
 *----------------------------------------------------------------------*
@@ -865,30 +868,40 @@ c     &                labels,1,0,parameters,2,tgt_info)
 *----------------------------------------------------------------------*
 
       ! ME_C
-      call add_target('DEF_ME_C',ttype_opme,.false.,tgt_info)
+      call add_target2('DEF_ME_C',.false.,tgt_info)
       call set_dependency('DEF_ME_C','C',tgt_info)
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'ME_C'
-      labels(2) = 'C'
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,
-     &     0,0,.false.)
-      call set_rule('DEF_ME_C',ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
+      call set_rule2('DEF_ME_C',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_C',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_C'/))
+      call set_arg('DEF_ME_C',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'C'/))
+      call set_arg('DEF_ME_C',DEF_ME_LIST,'MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_C',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_C',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      call set_arg('DEF_ME_C',DEF_ME_LIST,'MIN_REC',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_C',DEF_ME_LIST,'MAX_REC',1,tgt_info,
+     &             val_int=(/nroots/))
 
       ! ME_Ctr
-      call add_target('DEF_ME_Ctr',ttype_opme,.false.,tgt_info)
+      call add_target2('DEF_ME_Ctr',.false.,tgt_info)
       call set_dependency('DEF_ME_Ctr','Ctr',tgt_info)
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'ME_Ctr'
-      labels(2) = 'Ctr'
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,
-     &     0,0,.false.)
-      call set_rule('DEF_ME_Ctr',ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
+      call set_rule2('DEF_ME_Ctr',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Ctr'/))
+      call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'Ctr'/))
+      call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'MIN_REC',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'MAX_REC',1,tgt_info,
+     &             val_int=(/nroots/))
 
       ! ME_A_C
       call add_target('DEF_ME_A_C',ttype_opme,.false.,tgt_info)
@@ -1207,7 +1220,7 @@ c dbgend
      &       labels,2,1,
      &       parameters,0,tgt_info)
       end if
-      call solve_parameters(-1,parameters,2,1,1,'DIA')
+      call solve_parameters(-1,parameters,2,1,nroots,'DIA')
       labels(1) = 'ME_C'
       labels(2) = trim(dia_label)//'C'
       labels(3) = 'A_C'

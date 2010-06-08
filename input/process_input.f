@@ -169,6 +169,8 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
      &       'illegal value for force_batching (>2)')          
       call get_argument_value('calculate.routes','force_ooc_sort',
      &     ival=force_ooc_sort)
+      call get_argument_value('calculate.routes','maxbranch',
+     &     ival=maxbranch)
       call get_argument_value('calculate.routes','use_tr',
      &     lval=use_tr)
 

@@ -9,6 +9,7 @@
 
       include 'opdim.h'
       include 'stdunit.h'
+      include 'routes.h'
       include 'def_contraction.h'
       include 'def_graph.h'
       include 'def_strinf.h'
@@ -330,7 +331,7 @@ c dbg
      &     possible, new
       integer ::
      &     narc, ivtx_new, iarc, idx_op_new, ilist, len_list,
-     &     iscale(ngastp,2)
+     &     iscale(ngastp,2), nlist
       real(8) ::
      &     cost(3)
       type(contraction) ::
@@ -387,7 +388,11 @@ c dbg
         call quit(1,'form_fact_new','unknown mode: "'//trim(MODE)//'"')
       end if
 
-      do ilist = 1, len_list
+      ! only try first maxbranch elements of arc_list (if maxbranch is set)
+      nlist = len_list
+      if (maxbranch.gt.0) nlist = min(len_list,maxbranch)
+
+      do ilist = 1, nlist
 
         iarc = arc_list(ilist)
 
