@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine add_unity_drv(label,fac,init,minblk_in,maxblk_in,
+      subroutine add_unity_drv(label,fac,ssign,init,minblk_in,maxblk_in,
      &     op_info,orb_info,str_info)
 *----------------------------------------------------------------------*
       implicit none
@@ -18,7 +18,7 @@
       logical, intent(in) ::
      &     init
       integer, intent(in) ::
-     &     minblk_in, maxblk_in
+     &     minblk_in, maxblk_in, ssign
       type(operator_info) ::
      &     op_info
       type(strinf) ::
@@ -50,7 +50,7 @@
       if (init) call zeroop(mel_pnt)
 
       do idx = minblk, maxblk
-        call add_unity(fac,mel_pnt,idx,orb_info,str_info)
+        call add_unity(fac,ssign,mel_pnt,idx,orb_info,str_info)
       end do
 
       end

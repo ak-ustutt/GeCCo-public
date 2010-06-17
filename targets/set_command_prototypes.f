@@ -287,6 +287,8 @@
      &     val_int=(/0/))
       call set_arg('_PROTO_',UNITY,'MAX_BLK',1,tgt_info,
      &     val_int=(/0/))
+      call set_arg('_PROTO_',UNITY,'MS_SYM_SIGN',1,tgt_info,
+     &     val_int=(/1/))
 *----------------------------------------------------------------------*
       call add_command_proto(SET_FREQ,tgt_info)
 *----------------------------------------------------------------------*

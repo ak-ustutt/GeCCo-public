@@ -93,7 +93,7 @@
       if (label_op.eq.op_unity) then
         call quit(1,'fs_add_drv',
      &       'add_unity still misses update of xret')
-        call add_unity(fact,me_tgt,iblk_res,orb_info,str_info)
+        call add_unity(fact,1,me_tgt,iblk_res,orb_info,str_info)
       else
         idxme = op2list(idx_op)
         me_op => mel_arr(idxme)%mel 

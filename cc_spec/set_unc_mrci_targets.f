@@ -123,6 +123,50 @@
       call set_rule('FREF',ttype_op,DEF_HAMILTONIAN,'FREF',
      &              1,1,parameters,1,tgt_info)
 
+      ! Spin operators
+      ! S+
+      call add_target('S+',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 3
+      occ_def(IHOLE,1,1) = 1
+      occ_def(IHOLE,2,1) = 1
+      occ_def(IPART,1,2) = 1
+      occ_def(IPART,2,2) = 1
+      occ_def(IVALE,1,3) = 1
+      occ_def(IVALE,2,3) = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('S+',ttype_op,DEF_OP_FROM_OCC,
+     &              'S+',1,1,
+     &              parameters,2,tgt_info)
+      ! S-
+      call add_target('S-',ttype_op,.false.,
+     &                tgt_info)
+      call set_dependency('S-','S+',tgt_info)
+      call cloneop_parameters(-1,parameters,'S+',.false.)
+      call set_rule('S-',ttype_op,CLONE_OP,'S-',1,1,
+     &              parameters,1,tgt_info)
+      ! Sz
+      call add_target('Sz',ttype_op,.false.,
+     &                tgt_info)
+      call set_dependency('Sz','S+',tgt_info)
+      call cloneop_parameters(-1,parameters,'S+',.false.)
+      call set_rule('Sz',ttype_op,CLONE_OP,'Sz',1,1,
+     &              parameters,1,tgt_info)
+      ! Sz_dum
+      call add_target('Sz_dum',ttype_op,.false.,
+     &                tgt_info)
+      call set_dependency('Sz_dum','S+',tgt_info)
+      call cloneop_parameters(-1,parameters,'S+',.false.)
+      call set_rule('Sz_dum',ttype_op,CLONE_OP,'Sz_dum',1,1,
+     &              parameters,1,tgt_info)
+
+      ! define scalar spin expectation value
+      call add_target('S(S+1)',ttype_op,.false.,tgt_info)
+      call hop_parameters(-1,parameters,0,0,1,.false.)
+      call set_rule('S(S+1)',ttype_op,DEF_HAMILTONIAN,'S(S+1)',
+     &              1,1,parameters,1,tgt_info)
+
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
@@ -203,6 +247,67 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_rule('F_FREF',ttype_frm,PRINT_FORMULA,
      &                labels,2,1,parameters,2,tgt_info)
 
+      ! expectation value of S^2
+      call add_target2('F_REF_S(S+1)',.true.,tgt_info)
+      call set_dependency('F_REF_S(S+1)','S(S+1)',tgt_info)
+      call set_dependency('F_REF_S(S+1)','C0',tgt_info)
+      call set_dependency('F_REF_S(S+1)','S+',tgt_info)
+      call set_dependency('F_REF_S(S+1)','S-',tgt_info)
+      call set_dependency('F_REF_S(S+1)','Sz',tgt_info)
+      call set_dependency('F_REF_S(S+1)','Sz_dum',tgt_info)
+      ! (a) 1/2*(S+S- + S-S+)
+      call set_rule2('F_REF_S(S+1)',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_REF_S(S+1)'/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'S(S+1)'/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'C0^+','S+','S-','C0'/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/2,3,4,5/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/0.5d0/))
+      call set_rule2('F_REF_S(S+1)',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_REF_S(S+1)'/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'S(S+1)'/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'C0^+','S-','S+','C0'/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/2,3,4,5/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/0.5d0/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      ! (b) + Sz^2 (Sz_dum is used to circumvent automatic "BCH" factor)
+      call set_rule2('F_REF_S(S+1)',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_REF_S(S+1)'/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'S(S+1)'/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'C0^+','Sz','Sz_dum','C0'/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/2,3,4,5/))
+      call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      call set_rule2('F_REF_S(S+1)',REPLACE,tgt_info)
+      call set_arg('F_REF_S(S+1)',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_REF_S(S+1)'/))
+      call set_arg('F_REF_S(S+1)',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_REF_S(S+1)'/))
+      call set_arg('F_REF_S(S+1)',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'Sz_dum','Sz'/))
+c dbg
+      call set_rule2('F_REF_S(S+1)',PRINT_FORMULA,tgt_info)
+      call set_arg('F_REF_S(S+1)',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_REF_S(S+1)'/))
+c dbgend
+
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -247,6 +352,22 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_dependency('FOPT_FREF','DEF_ME_FREF',tgt_info)
       call opt_parameters(-1,parameters,1,0)
       call set_rule('FOPT_FREF',ttype_frm,OPTIMIZE,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
+      ! spin expectation value expression
+      labels(1:20)(1:len_target_name)= ' '
+      labels(1) = 'FOPT_REF_S(S+1)'
+      labels(2) = 'F_REF_S(S+1)'
+      call add_target('FOPT_REF_S(S+1)',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_REF_S(S+1)','F_REF_S(S+1)',tgt_info)
+      call set_dependency('FOPT_REF_S(S+1)','DEF_ME_S(S+1)',tgt_info)
+      call set_dependency('FOPT_REF_S(S+1)','DEF_ME_C0',tgt_info)
+      call set_dependency('FOPT_REF_S(S+1)','DEF_ME_S+',tgt_info)
+      call set_dependency('FOPT_REF_S(S+1)','DEF_ME_S-',tgt_info)
+      call set_dependency('FOPT_REF_S(S+1)','DEF_ME_Sz',tgt_info)
+      call opt_parameters(-1,parameters,1,0)
+      call set_rule('FOPT_REF_S(S+1)',ttype_frm,OPTIMIZE,
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
@@ -335,6 +456,76 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+      ! ME_S+
+      call add_target2('DEF_ME_S+',.false.,tgt_info)
+      call set_dependency('DEF_ME_S+','S+',tgt_info)
+      call set_rule2('DEF_ME_S+',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_S+',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_S+'/))
+      call set_arg('DEF_ME_S+',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'S+'/))
+      call set_arg('DEF_ME_S+',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_S+',DEF_ME_LIST,'MS',1,tgt_info,
+     &     val_int=(/2/))
+      call set_rule2('DEF_ME_S+',UNITY,tgt_info)
+      call set_arg('DEF_ME_S+',UNITY,'LIST',1,tgt_info,
+     &             val_label=(/'ME_S+'/))
+      call set_arg('DEF_ME_S+',UNITY,'MS_SYM_SIGN',1,tgt_info,
+     &             val_int=(/-1/))
+      call set_arg('DEF_ME_S+',UNITY,'INIT',1,tgt_info,
+     &     val_log=(/.true./))
+      ! ME_S-
+      call add_target2('DEF_ME_S-',.false.,tgt_info)
+      call set_dependency('DEF_ME_S-','S-',tgt_info)
+      call set_rule2('DEF_ME_S-',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_S-',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_S-'/))
+      call set_arg('DEF_ME_S-',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'S-'/))
+      call set_arg('DEF_ME_S-',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_S-',DEF_ME_LIST,'MS',1,tgt_info,
+     &     val_int=(/-2/))
+      call set_rule2('DEF_ME_S-',UNITY,tgt_info)
+      call set_arg('DEF_ME_S-',UNITY,'LIST',1,tgt_info,
+     &             val_label=(/'ME_S-'/))
+      call set_arg('DEF_ME_S-',UNITY,'MS_SYM_SIGN',1,tgt_info,
+     &             val_int=(/-1/))
+      call set_arg('DEF_ME_S-',UNITY,'INIT',1,tgt_info,
+     &     val_log=(/.true./))
+      ! ME_Sz
+      call add_target2('DEF_ME_Sz',.false.,tgt_info)
+      call set_dependency('DEF_ME_Sz','Sz',tgt_info)
+      call set_rule2('DEF_ME_Sz',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_Sz',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_Sz'/))
+      call set_arg('DEF_ME_Sz',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'Sz'/))
+      call set_arg('DEF_ME_Sz',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_Sz',DEF_ME_LIST,'MS',1,tgt_info,
+     &     val_int=(/0/))
+      call set_rule2('DEF_ME_Sz',UNITY,tgt_info)
+      call set_arg('DEF_ME_Sz',UNITY,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Sz'/))
+      call set_arg('DEF_ME_Sz',UNITY,'MS_SYM_SIGN',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_Sz',UNITY,'INIT',1,tgt_info,
+     &     val_log=(/.true./))
+
+      ! ME_S(S+1)
+      call add_target('DEF_ME_S(S+1)',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF_ME_S(S+1)','S(S+1)',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'ME_S(S+1)'
+      labels(2) = 'S(S+1)'
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0,.false.)
+      call set_rule('DEF_ME_S(S+1)',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
@@ -390,6 +581,14 @@ c      call set_rule('EVAL_FREF',ttype_opme,PRINT_MEL,
 c     &     'ME_FREF',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
+
+      ! Evaluate spin expectation value
+      call add_target('EVAL_REF_S(S+1)',ttype_gen,.false.,tgt_info)
+      call set_dependency('EVAL_REF_S(S+1)','SOLVE_REF',tgt_info)
+      call set_dependency('EVAL_REF_S(S+1)','FOPT_REF_S(S+1)',tgt_info)
+      call set_rule('EVAL_REF_S(S+1)',ttype_opme,EVAL,
+     &     'FOPT_REF_S(S+1)',1,0,
+     &     parameters,0,tgt_info)
 
       return
       end

@@ -821,8 +821,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('INIT',rule,tgt_info,val_log=init)
         call get_arg('MIN_BLK',rule,tgt_info,val_int=minblk)
         call get_arg('MAX_BLK',rule,tgt_info,val_int=maxblk)
+        call get_arg('MS_SYM_SIGN',rule,tgt_info,val_int=imode)
 
-        call add_unity_drv(label,fac(1),init,minblk,maxblk,
+        call add_unity_drv(label,fac(1),imode,init,minblk,maxblk,
      &       op_info,orb_info,str_info)
 
 *----------------------------------------------------------------------*

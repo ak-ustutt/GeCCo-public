@@ -1,7 +1,10 @@
-      subroutine add_unity(fac,mel_out,iblkout,orb_info,str_info)
+      subroutine add_unity(fac,ssign,mel_out,iblkout,orb_info,str_info)
 *----------------------------------------------------------------------*
 *
 *     Add (antisymmetrised) unit operator
+*     ssign = 1: include sign flips for hole lines
+*           = 0: total Ms value as additional factor (for Sz operator)
+*           =-1: only spacial part is diagonal (for S+, S- operators)
 *
 *----------------------------------------------------------------------*
 
@@ -31,7 +34,7 @@
       type(orbinf), intent(in) ::
      &     orb_info
       integer, intent(in) ::
-     &     iblkout
+     &     iblkout, ssign
 
       logical ::
      &     bufout,closeit, first, ms_fix, fix_success
@@ -40,7 +43,7 @@
      &     idxmsa, msmax, msa, msc, igama, igamc,
      &     idxc, ngam, len_blk, ioff_blk, lenc, lena, icmp,
      &     ihpv, ica, ncblk, nablk, ioff_1, idx1, istr, idxdis_1,
-     &     iocc(ngastp,2), idx_graph(ngastp,2)
+     &     iocc(ngastp,2), idx_graph(ngastp,2), ms_sym_sign
       integer, pointer ::
      &     hpvx_csub(:),hpvx_asub(:),
      &     occ_csub(:), occ_asub(:),
@@ -52,7 +55,7 @@
      &     ldim_op_c(:), ldim_op_a(:),
      &     mapca(:), diag_idx(:), diag_ca(:)
       real(8) ::
-     &     xsign
+     &     xsign, totsign
 
       type(graph), pointer ::
      &     graphs(:)
@@ -68,14 +71,19 @@
       logical, external ::
      &     occ_is_diag_blk, next_msgamdist2, idx_str_blk3,
      &     ielprd, nondia_blk, nondia_distr
+      integer, external ::
+     &     msa2idxms4op
 
       ffout => mel_out%fhand
       opout => mel_out%op
+      ms_sym_sign = ssign
+      if (ssign.eq.0) ms_sym_sign = 1
 
       if (ntest.ge.100) then
         write(luout,*) '=========================='
         write(luout,*) ' add_unity messing around'
         write(luout,*) '=========================='
+        write(luout,*) ' mode = ',ssign
         write(luout,*) ' fac = ',fac
         write(luout,*) ' list = ',trim(mel_out%label)
         write(luout,*) ' ffout: ',trim(ffout%name),
@@ -148,14 +156,17 @@
       endif  
 
       ! due to normal ordering, hole lines introduce sign flips:
+      ! (for ssign.ne.1: maybe we will have to think about this again)
       if (njoined.eq.1) then
         xsign = dble(1-2*mod(iocc(1,1),2))
+        if (ssign.ne.1) xsign = 1d0 ! maybe we will have to rethink this
       else if (.not.all(iocc(1:ngastp,1:2).eq.0)) then
         ! here we have to think again ... have a look at dia_from_blk!
         call quit(1,'add_unity','for njoined>1, think about the sign')
       else
         xsign = 1d0
       end if
+      totsign = xsign
 
       call get_num_subblk(ncblk,nablk,iocc(1,1),1)
 
@@ -190,10 +201,15 @@
       idxmsa = 0
 c      msmax = 2
       msmax = opout%ica_occ(2,iblkout)
+      if (msmax.ne.opout%ica_occ(1,iblkout)) call quit(1,'add_unity',
+     &        'number of creators and annihilators must be the same')
+      if (ssign.eq.-1.and.msmax.ne.1) call quit(1,'add_unity',
+     &        'mode=-1 for one-particle operators only')
       msa_loop : do msa = msmax, -msmax, -2
 
-        idxmsa = idxmsa+1
+cmh        idxmsa = idxmsa+1
         msc = msa + mel_out%mst
+        idxmsa = msa2idxms4op(msa,mel_out%mst,msmax,msmax)
         ! Usually have mst=0 operators => Ms(c)=Ms(a)
       
         ! Loop over Irrep of annihilator string.
@@ -254,10 +270,13 @@ c dbgend
 
             ! ms-dst and gamma-dst should also be diagonal:
             if (nablk.ne.ncblk) cycle distr_loop
-            if (.not.all(msdis_c(1:ncblk)-msdis_a(1:ncblk).eq.0).or.
+            if (.not.all(msdis_c(1:ncblk)
+     &                   -ms_sym_sign*msdis_a(1:ncblk).eq.0).or.
      &          .not.all(gamdis_c(1:ncblk)-gamdis_a(1:ncblk).eq.0))
      &           cycle distr_loop
             if (lenc.ne.lena) call quit(1,'add_unity','inconsistency')
+            if (ssign.eq.0)
+     &               totsign = xsign*0.5d0*dble(sum(msdis_c(1:ncblk)))
 
             if (ntest.ge.100) then
               write(luout,*) 'msc,msa,igamc,igama: ',
@@ -284,7 +303,7 @@ c dbgend
      &             ldim_op_c,ldim_op_a,
      &             ncblk,nablk)
 
-              buffer_out(idx1)=xsign*fac + buffer_out(idx1)
+              buffer_out(idx1)=totsign*fac + buffer_out(idx1)
 
             end do idxc_loop
 
