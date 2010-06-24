@@ -397,6 +397,9 @@ c dbg
       mstop1 = me_op1%mst
       mstop2 = me_op2%mst
       mstop1op2 = me_op1op2%mst
+      if (tra_op1) mstop1 = -mstop1
+      if (tra_op2) mstop2 = -mstop2
+      if (tra_op1op2) mstop1op2 = -mstop1op2
       igamtop1 = me_op1%gamt
       igamtop2 = me_op2%gamt
       igamtop1op2 = me_op1op2%gamt

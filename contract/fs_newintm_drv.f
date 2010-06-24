@@ -38,7 +38,7 @@
      &     me_new, me_ma, me_pa
 
       integer ::
-     &     idx
+     &     idx, itra, itra1, itra2
 
       integer, external ::
      &     idx_oplist2, idx_mel_list
@@ -83,13 +83,21 @@
      &     'no list associated with "'//trim(fl_item%parent1)//'"')
       me_ma => op_info%mel_arr(idx)%mel
 
+      ! transpositions: sign change in mst
+      itra = 1
+      itra1 = 1
+      itra2 = 1
+      if (fl_item%tra) itra = -1
+      if (fl_item%tra1) itra1 = -1
+      if (fl_item%tra2) itra2 = -1
+
       if (len_trim(fl_item%parent2).eq.0.or.
      &        trim(fl_item%parent2).eq.'-'.or.
      &        trim(fl_item%parent2).eq.'---') then
         ! single parent only
         me_new%absym = me_ma%absym
         me_new%casym = me_ma%casym
-        me_new%mst   = me_ma%mst  
+        me_new%mst   = itra*itra1*me_ma%mst  
         me_new%gamt  = me_ma%gamt 
         me_new%s2    = me_ma%s2   
       else
@@ -104,10 +112,11 @@
         
         me_new%absym = me_ma%absym * me_pa%absym
         me_new%casym = 0 ! no general statement possible
-        me_new%mst   = me_ma%mst + me_pa%mst
-        if (me_ma%mst.ne.0.and.me_pa%mst.ne.0)
-     &       call quit(1,'fs_newintm_drv',
-     &       'MS handling is still not correct in general!!!!')
+cmh        me_new%mst   = me_ma%mst + me_pa%mst
+cmh        if (me_ma%mst.ne.0.and.me_pa%mst.ne.0)
+cmh     &       call quit(1,'fs_newintm_drv',
+cmh     &       'MS handling is still not correct in general!!!!')
+        me_new%mst = itra*(itra1*me_ma%mst + itra2*me_pa%mst)
         me_new%gamt = multd2h(me_ma%gamt,me_pa%gamt)
         me_new%s2    = me_ma%s2
         if (me_ma%s2.ne.0.or.me_pa%s2.ne.0)

@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine store_def_intm(fl_item,
      &     label,occ,rst,nj,nblk,
-     &     parent1,parent2,
+     &     parent1,parent2,tra_new,tra1,tra2,
      &     orb_info)
 *----------------------------------------------------------------------*
 *     write info for creating new intermediate on formula list item
@@ -34,6 +34,8 @@
      &     nj, nblk, 
      &     occ(ngastp,2,nj*nblk),
      &     rst(2,orb_info%ngas,2,2,orb_info%nspin,nj*nblk)
+      logical, intent(in) ::
+     &     tra_new, tra1, tra2
 
       if (ntest.ge.100) write(luout,*) 'storing def of intermediate'
 
@@ -51,6 +53,10 @@
 
       fl_item%parent1 = trim(parent1)
       fl_item%parent2 = trim(parent2)
+
+      fl_item%tra = tra_new
+      fl_item%tra1 = tra1
+      fl_item%tra2 = tra2
 
       return
       end

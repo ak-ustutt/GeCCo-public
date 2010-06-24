@@ -34,6 +34,9 @@
         call init_operator_0(form_pnt%interm)
         form_pnt%parent1(1:len_opname) = ' '
         form_pnt%parent2(1:len_opname) = ' '
+        form_pnt%tra = .false.
+        form_pnt%tra1 = .false.
+        form_pnt%tra2 = .false.
       case(command_reorder)
         allocate(form_pnt%reo)
         call init_reorder(form_pnt%reo)

@@ -8,6 +8,8 @@
      &       interm
 	character(len=len_opname), pointer ::
      &       parent1, parent2
+        logical ::
+     &       tra, tra1, tra2 ! interm./parents transposed?
         ! definition of contraction
         type(contraction), pointer ::
      &       contr

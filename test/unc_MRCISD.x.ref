@@ -1,6 +1,6 @@
- run starts at 2009-12-16 13:08:53.268   host: tcwork15.Chemie.Uni-Mainz.DE
+ run starts at 2010-06-24 10:19:40.119   host: tcwork15.Chemie.Uni-Mainz.DE
 
- Version compiled 16 Dec 2009 at 13:08:49 on tcwork15.Chemie.Uni-Mainz.DE        
+ Version compiled 24 Jun 2010 at 10:19:35 on tcwork15.Chemie.Uni-Mainz.DE        
 
  compiled with: ifort
  level 1 optimization: -g -assume byterecl -i8 -traceback -DM_I686 -I../include -mo
@@ -49,7 +49,7 @@
  n_freeze_rcmd:    1
  valence shell is not high-spin ...
  Reading input file ....
- Memory set to   3000000000 r8-words = (22888.18 Mb)
+ Memory set to     30000000 r8-words = (  228.88 Mb)
  ************
   set_orbinf
  ************
@@ -61,7 +61,7 @@
  ioff_gas:                       0                     2                     1
                      0
  idx_gas:                        1                     3                     2
-                     0
+       562949953421312
  gas_reo:                     1                     2                     3
  igamorb:
 
@@ -91,7 +91,6 @@
 
 <  3>        2
  setting general targets ...
- effective iformal =                      1
  setting targets for multiref. wave function
  cminh   =                      0
  cmaxh   =                      2
@@ -99,6 +98,7 @@
  cmaxp   =                      2
  cmaxexc =                      2
  nactel  =                      2
+ ciroot  =                      1
  My next target: E_REF
  Rule: DEF_HAMILTONIAN
  My next target: H
@@ -106,10 +106,42 @@
  Rule: SET_HERMITIAN
  My next target: C0
  Rule: DEF_OP_FROM_OCC
+ -------------
+  set_user_op
+ -------------
+ /  0  0  2  0\/  0  0  3  0\/  0  0  4  0\/  0  1  1  0\
+ \  0  0  0  0/\  1  0  0  0/\  2  0  0  0/\  0  0  0  0/
+ /  0  1  2  0\/  0  1  3  0\/  0  2  0  0\/  0  2  1  0\
+ \  1  0  0  0/\  2  0  0  0/\  0  0  0  0/\  1  0  0  0/
+ /  0  2  2  0\/
+ \  2  0  0  0/\
+ C   0  4   0  4   0  4
+ A   0  4   0  4   0  4
+ unmasked
+ Number of occupation classes for C0:    9
+ According to your wishes, I set the following:
+    1  /  0  0  2  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    2  /  0  0  3  0\   0  0   3  3   0  0      0  0   0  0   0  0
+       \  1  0  0  0/   1  1   0  0   0  0      0  0   0  0   0  0
+    3  /  0  0  4  0\   0  0   4  4   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    4  /  0  1  1  0\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    5  /  0  1  2  0\   0  0   2  2   1  1      0  0   0  0   0  0
+       \  1  0  0  0/   1  1   0  0   0  0      0  0   0  0   0  0
+    6  /  0  1  3  0\   0  0   3  3   1  1      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    7  /  0  2  0  0\   0  0   0  0   2  2      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    8  /  0  2  1  0\   0  0   1  1   2  2      0  0   0  0   0  0
+       \  1  0  0  0/   1  1   0  0   0  0      0  0   0  0   0  0
+    9  /  0  2  2  0\   0  0   2  2   2  2      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
  My next target: F_REF
  Rule: EXPAND_OP_PRODUCT
  wrote                    184  entries
- @ Operator product                    cpu/sys/wall:      0.06 /     0.01 /     0.05 s
+ @ Operator product                    cpu/sys/wall:      0.06 /     0.00 /     0.06 s
  My next target: A_C0
  Rule: CLONE_OPERATOR
  My next target: F_A_C0
@@ -164,23 +196,23 @@
   Summary
  ---------
  Most expensive contractions: 
-  term #  177 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.269E+05(  22.6%)
-  term #  148 - H^ 1 P^ 4 V^ 0 X^ 0 - flops:  0.673E+04(   5.7%)
-  term #  169 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.410E+04(   3.4%)
-  term #   86 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.371E+04(   3.1%)
-  term #  178 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.371E+04(   3.1%)
+  term #  177 - H^ 2 P^ 4 V^ 2 X^ 0 - flops:  0.269E+05(  22.6%)
+  term #  148 - H^ 1 P^ 4 V^ 1 X^ 0 - flops:  0.673E+04(   5.7%)
+  term #  169 - H^ 3 P^ 3 V^ 2 X^ 0 - flops:  0.410E+04(   3.4%)
+  term #   86 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.371E+04(   3.1%)
+  term #  178 - H^ 2 P^ 3 V^ 3 X^ 0 - flops:  0.371E+04(   3.1%)
  Formally most expensive contractions: 
-  term #  177 - H^ 2 P^ 4 V^ 0 X^ 0
-  term #  169 - H^ 3 P^ 3 V^ 0 X^ 0
-  term #  163 - H^ 4 P^ 2 V^ 0 X^ 0
-  term #  148 - H^ 1 P^ 4 V^ 0 X^ 0
-  term #   86 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #  177 - H^ 2 P^ 4 V^ 2 X^ 0
+  term #  178 - H^ 2 P^ 3 V^ 3 X^ 0
+  term #  169 - H^ 3 P^ 3 V^ 2 X^ 0
+  term #  117 - H^ 2 P^ 3 V^ 3 X^ 0
+  term #  179 - H^ 2 P^ 3 V^ 3 X^ 0
  Largest intermediates occur in: 
-  term #   89 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.708E-02
-  term #   28 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.708E-02
-  term #  143 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.708E-02
-  term #   86 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.708E-02
-  term #  182 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.708E-02
+  term #   89 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
+  term #   28 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
+  term #  143 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
+  term #   86 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
+  term #  182 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
  wrote                    184  entries
  My next target: DIA_C0
  Rule: CLONE_OPERATOR
@@ -188,7 +220,9 @@
  Rule: DEF_ME_LIST
  Rule: PRECONDITIONER
  set up diagonal from rank 1 part of H
- @ time for diagonal                   cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+      and from rank 0 part of H
+      and from rank 2 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
  My next target: SOLVE_REF
  Rule: SOLVE_EVP
  set_opti_info_signs:
@@ -199,59 +233,59 @@ idstsec:        1
 signsec:      1.0
  read                    183  entries
  Optimization algorithm:      DAVIDSON
- Max. number of iterations:        150
+ Max. number of iterations:         50
  Threshold for residual:      0.10E-04
  Number of parameters:            1147
- @ time for target                     cpu/sys/wall:      0.07 /     0.12 /     0.19 s
- @ formula evaluation                  cpu/sys/wall:      0.07 /     0.12 /     0.19 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.07 /     0.03 /     0.10 s
 >>>  1                         0.2724    
  >>           -15.467047148043 0.2724    
- @ time for target                     cpu/sys/wall:      0.11 /     0.15 /     0.26 s
- @ formula evaluation                  cpu/sys/wall:      0.11 /     0.15 /     0.26 s
+ @ time for target                     cpu/sys/wall:      0.11 /     0.05 /     0.16 s
+ @ formula evaluation                  cpu/sys/wall:      0.11 /     0.05 /     0.16 s
 >>>  2                         0.1209    
  >>           -15.525210404985 0.1209    
- @ time for target                     cpu/sys/wall:      0.14 /     0.16 /     0.29 s
- @ formula evaluation                  cpu/sys/wall:      0.14 /     0.16 /     0.29 s
+ @ time for target                     cpu/sys/wall:      0.13 /     0.06 /     0.19 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.06 /     0.19 s
 >>>  3                         0.4501E-01
  >>           -15.536964810089 0.4501E-01
- @ time for target                     cpu/sys/wall:      0.13 /     0.15 /     0.28 s
- @ formula evaluation                  cpu/sys/wall:      0.13 /     0.15 /     0.28 s
+ @ time for target                     cpu/sys/wall:      0.14 /     0.06 /     0.19 s
+ @ formula evaluation                  cpu/sys/wall:      0.14 /     0.06 /     0.19 s
 >>>  4                         0.2757E-01
  >>           -15.539712701402 0.2757E-01
- @ time for target                     cpu/sys/wall:      0.13 /     0.15 /     0.29 s
- @ formula evaluation                  cpu/sys/wall:      0.13 /     0.15 /     0.29 s
+ @ time for target                     cpu/sys/wall:      0.13 /     0.06 /     0.19 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.06 /     0.19 s
 >>>  5                         0.1629E-01
  >>           -15.540779402359 0.1629E-01
- @ time for target                     cpu/sys/wall:      0.14 /     0.14 /     0.28 s
- @ formula evaluation                  cpu/sys/wall:      0.14 /     0.14 /     0.28 s
+ @ time for target                     cpu/sys/wall:      0.14 /     0.06 /     0.19 s
+ @ formula evaluation                  cpu/sys/wall:      0.14 /     0.06 /     0.19 s
 >>>  6                         0.8094E-02
  >>           -15.541054535152 0.8094E-02
- @ time for target                     cpu/sys/wall:      0.14 /     0.15 /     0.29 s
- @ formula evaluation                  cpu/sys/wall:      0.14 /     0.15 /     0.29 s
+ @ time for target                     cpu/sys/wall:      0.13 /     0.06 /     0.20 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.06 /     0.20 s
 >>>  7                         0.4388E-02
  >>           -15.541134422410 0.4388E-02
- @ time for target                     cpu/sys/wall:      0.13 /     0.15 /     0.28 s
- @ formula evaluation                  cpu/sys/wall:      0.13 /     0.15 /     0.28 s
+ @ time for target                     cpu/sys/wall:      0.14 /     0.06 /     0.19 s
+ @ formula evaluation                  cpu/sys/wall:      0.14 /     0.06 /     0.19 s
 >>>  8                         0.1650E-02
  >>           -15.541155135784 0.1650E-02
- @ time for target                     cpu/sys/wall:      0.13 /     0.16 /     0.29 s
- @ formula evaluation                  cpu/sys/wall:      0.13 /     0.16 /     0.29 s
+ @ time for target                     cpu/sys/wall:      0.13 /     0.06 /     0.20 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.06 /     0.20 s
 >>>  9                         0.4391E-03
  >>           -15.541157205566 0.4391E-03
- @ time for target                     cpu/sys/wall:      0.14 /     0.15 /     0.28 s
- @ formula evaluation                  cpu/sys/wall:      0.14 /     0.15 /     0.28 s
+ @ time for target                     cpu/sys/wall:      0.14 /     0.06 /     0.19 s
+ @ formula evaluation                  cpu/sys/wall:      0.14 /     0.06 /     0.19 s
 >>> 10                         0.1358E-03
  >>           -15.541157361862 0.1358E-03
- @ time for target                     cpu/sys/wall:      0.13 /     0.16 /     0.29 s
- @ formula evaluation                  cpu/sys/wall:      0.13 /     0.16 /     0.29 s
+ @ time for target                     cpu/sys/wall:      0.13 /     0.06 /     0.19 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.06 /     0.19 s
 >>> 11                         0.4127E-04
  >>           -15.541157377567 0.4127E-04
- @ time for target                     cpu/sys/wall:      0.13 /     0.15 /     0.29 s
- @ formula evaluation                  cpu/sys/wall:      0.13 /     0.15 /     0.29 s
+ @ time for target                     cpu/sys/wall:      0.14 /     0.06 /     0.19 s
+ @ formula evaluation                  cpu/sys/wall:      0.14 /     0.06 /     0.19 s
 >>> 12                         0.1110E-04
  >>           -15.541157378825 0.1110E-04
- @ time for target                     cpu/sys/wall:      0.14 /     0.15 /     0.29 s
- @ formula evaluation                  cpu/sys/wall:      0.14 /     0.15 /     0.29 s
+ @ time for target                     cpu/sys/wall:      0.13 /     0.07 /     0.19 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.19 s
  CONVERGED IN    13 ITERATIONS
 >>> 12                         0.3173E-05
  >>           -15.541157378925 0.3173E-05
@@ -1519,12 +1553,64 @@ signsec:      1.0
 +-----------------------------------------------------------------------------+
  norm (MS-Block) =   1.550532997636126E-003
  total norm =    1.00000000000000     
- My next target: FOPT_REF
+ My next target: S(S+1)
+ Rule: DEF_HAMILTONIAN
+ My next target: S+
+ Rule: DEF_OP_FROM_OCC
+ -------------
+  set_user_op
+ -------------
+ /  1  0  0  0\/  0  1  0  0\/  0  0  1  0\/
+ \  1  0  0  0/\  0  1  0  0/\  0  0  1  0/\
+ C   0  1   0  1   0  1
+ A   0  1   0  1   0  1
+ unmasked
+ Number of occupation classes for S+:    3
+ According to your wishes, I set the following:
+    1  /  1  0  0  0\   1  1   0  0   0  0      0  0   0  0   0  0
+       \  1  0  0  0/   1  1   0  0   0  0      0  0   0  0   0  0
+    2  /  0  1  0  0\   0  0   0  0   1  1      0  0   0  0   0  0
+       \  0  1  0  0/   0  0   0  0   1  1      0  0   0  0   0  0
+    3  /  0  0  1  0\   0  0   1  1   0  0      0  0   0  0   0  0
+       \  0  0  1  0/   0  0   1  1   0  0      0  0   0  0   0  0
+ My next target: S-
+ Rule: CLONE_OPERATOR
+ My next target: Sz
+ Rule: CLONE_OPERATOR
+ My next target: Sz_dum
+ Rule: CLONE_OPERATOR
+ My next target: F_REF_S(S+1)
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     64  entries
+ @ Operator product                    cpu/sys/wall:      0.04 /     0.00 /     0.04 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     63  entries
+ wrote                    126  entries
+ @ Operator product                    cpu/sys/wall:      0.04 /     0.00 /     0.04 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    125  entries
+ wrote                    188  entries
+ @ Operator product                    cpu/sys/wall:      0.04 /     0.00 /     0.04 s
+ Rule: REPLACE
+ read                    187  entries
+ wrote                    188  entries
+ My next target: DEF_ME_S(S+1)
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_S+
+ Rule: DEF_ME_LIST
+ Rule: ADD_UNITY
+ My next target: DEF_ME_S-
+ Rule: DEF_ME_LIST
+ Rule: ADD_UNITY
+ My next target: DEF_ME_Sz
+ Rule: DEF_ME_LIST
+ Rule: ADD_UNITY
+ My next target: FOPT_REF_S(S+1)
  Rule: OPTIMIZE
  +======================+
  | Formula optimization |
  +======================+
- Number of operators defined:                      5
+ Number of operators defined:                     10
  ----------------------------------------
   idx     op  vtx blk   current list
  ----------------------------------------
@@ -1533,8 +1619,13 @@ signsec:      1.0
     3      C0   1   9             ME_C0
     4    A_C0   1   9           mvp_001
     5  DIA_C0   1   9     DIAG1SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   3             ME_S+
+    8      S-   1   3             ME_S-
+    9      Sz   1   3             ME_Sz
+   10  Sz_dum   1   3                  
  ----------------------------------------
- Number of lists defined:                      5
+ Number of lists defined:                      9
  ------------------------------------------------------------------------------
   idx           list  sym spn      length   op.             file
  ------------------------------------------------------------------------------
@@ -1543,6 +1634,80 @@ signsec:      1.0
     3         ME_A_C0  1  0         1147     A_C0               ME_A_C0_list.da
     4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
     5   DIAG1SxxM00C0  1  0         1147   DIA_C0         DIAG1SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           35       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           35       S-                 ME_S-_list.da
+    9           ME_Sz  1  0           70       Sz                 ME_Sz_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_REF_S(S+1)
+ read                    187  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #  181 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.416E+04(   3.5%)
+  term #   57 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.416E+04(   3.5%)
+  term #  119 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.416E+04(   3.5%)
+  term #   55 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.392E+04(   3.3%)
+  term #  117 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.392E+04(   3.3%)
+ Formally most expensive contractions: 
+  term #  122 - H^ 2 P^ 3 V^ 3 X^ 0
+  term #  120 - H^ 2 P^ 3 V^ 3 X^ 0
+  term #   60 - H^ 2 P^ 3 V^ 3 X^ 0
+  term #   58 - H^ 2 P^ 3 V^ 3 X^ 0
+  term #  182 - H^ 2 P^ 3 V^ 3 X^ 0
+ Largest intermediates occur in: 
+  term #  117 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
+  term #  115 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
+  term #  179 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
+  term #  114 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
+  term #  177 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
+ wrote                    932  entries
+ My next target: EVAL_REF_S(S+1)
+ Rule: EVALUATE
+ read                    931  entries
+ @ time for target                     cpu/sys/wall:      0.42 /     0.27 /     0.89 s
+ @ formula evaluation                  cpu/sys/wall:      0.42 /     0.27 /     0.89 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.2682798862E-10
+ My next target: FOPT_REF
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                     10
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  46                H0
+    3      C0   1   9             ME_C0
+    4    A_C0   1   9           mvp_001
+    5  DIA_C0   1   9     DIAG1SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   3             ME_S+
+    8      S-   1   3             ME_S-
+    9      Sz   1   3             ME_Sz
+   10  Sz_dum   1   3                  
+ ----------------------------------------
+ Number of lists defined:                      9
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        12732        H                    H0_list.da
+    2           ME_C0  1  0         1147       C0                 ME_C0_list.da
+    3         ME_A_C0  1  0         1147     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG1SxxM00C0  1  0         1147   DIA_C0         DIAG1SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           35       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           35       S-                 ME_S-_list.da
+    9           ME_Sz  1  0           70       Sz                 ME_Sz_list.da
  ------------------------------------------------------------------------------
  Reading in:
   -- F_REF
@@ -1554,37 +1719,37 @@ signsec:      1.0
   Summary
  ---------
  Most expensive contractions: 
-  term #  177 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.278E+05(  22.3%)
-  term #  148 - H^ 1 P^ 4 V^ 0 X^ 0 - flops:  0.696E+04(   5.6%)
-  term #  169 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.435E+04(   3.5%)
-  term #  178 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.378E+04(   3.0%)
-  term #  170 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.378E+04(   3.0%)
+  term #  177 - H^ 2 P^ 4 V^ 2 X^ 0 - flops:  0.278E+05(  22.3%)
+  term #  148 - H^ 1 P^ 4 V^ 1 X^ 0 - flops:  0.696E+04(   5.6%)
+  term #  169 - H^ 3 P^ 3 V^ 2 X^ 0 - flops:  0.435E+04(   3.5%)
+  term #  178 - H^ 2 P^ 3 V^ 3 X^ 0 - flops:  0.378E+04(   3.0%)
+  term #  170 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.378E+04(   3.0%)
  Formally most expensive contractions: 
-  term #  177 - H^ 2 P^ 4 V^ 0 X^ 0
-  term #  169 - H^ 3 P^ 3 V^ 0 X^ 0
-  term #  163 - H^ 4 P^ 2 V^ 0 X^ 0
-  term #  148 - H^ 1 P^ 4 V^ 0 X^ 0
-  term #   86 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #  177 - H^ 2 P^ 4 V^ 2 X^ 0
+  term #  178 - H^ 2 P^ 3 V^ 3 X^ 0
+  term #  169 - H^ 3 P^ 3 V^ 2 X^ 0
+  term #  117 - H^ 2 P^ 3 V^ 3 X^ 0
+  term #  179 - H^ 2 P^ 3 V^ 3 X^ 0
  Largest intermediates occur in: 
-  term #  177 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.708E-02
+  term #  177 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.708E-02
   term #  169 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.195E-02
-  term #  148 - H^ 1 P^ 2 V^ 0 X^ 0 - Mb:     0.177E-02
-  term #  140 - H^ 1 P^ 2 V^ 0 X^ 0 - Mb:     0.177E-02
-  term #  171 - H^ 1 P^ 2 V^ 0 X^ 0 - Mb:     0.977E-03
+  term #  148 - H^ 1 P^ 2 V^ 1 X^ 0 - Mb:     0.177E-02
+  term #  140 - H^ 1 P^ 2 V^ 1 X^ 0 - Mb:     0.177E-02
+  term #  171 - H^ 1 P^ 2 V^ 1 X^ 0 - Mb:     0.977E-03
  wrote                    548  entries
  My next target: EVAL_E_REF
  Rule: EVALUATE
  read                    547  entries
- @ time for target                     cpu/sys/wall:      0.45 /     0.57 /     1.12 s
- @ formula evaluation                  cpu/sys/wall:      0.45 /     0.57 /     1.12 s
+ @ time for target                     cpu/sys/wall:      0.28 /     0.20 /     0.57 s
+ @ formula evaluation                  cpu/sys/wall:      0.28 /     0.20 /     0.58 s
   norms/values of output operators
  ----------------------------------
 >>>    1 --> -15.54115738    
  ... all targets processed!
  +----------------------------------------------------------------------------+
-   Maximum allocated memory: 2700144844 real(8)-words (20600.47 Mb)
-   Largest memory block:     2698708697 real(8)-words (20589.51 Mb)
+   Maximum allocated memory:   27084114 real(8)-words (  206.64 Mb)
+   Largest memory block:       26249889 real(8)-words (  200.27 Mb)
    Name of largest block:    contr1.contr_scr
  +----------------------------------------------------------------------------+
- @ total time in GeCCo run             cpu/sys/wall:      2.46 /     2.63 /     5.29 s
- run ends at 2009-12-16 13:08:58.555   host: tcwork15.Chemie.Uni-Mainz.DE
+ @ total time in GeCCo run             cpu/sys/wall:      3.36 /     1.39 /     5.18 s
+ run ends at 2010-06-24 10:19:45.297   host: tcwork15.Chemie.Uni-Mainz.DE

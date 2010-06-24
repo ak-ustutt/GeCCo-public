@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine rw_opdef_kernel(irw,lu,op,lab_p1,lab_p2)
+      subroutine rw_opdef_kernel(irw,lu,op,lab_p1,lab_p2,tra,tra1,tra2)
 *----------------------------------------------------------------------*
 *     read/write contraction from/to lu 
 *----------------------------------------------------------------------*
@@ -19,6 +19,8 @@
      &     op
       character(len=*), intent(inout) ::
      &     lab_p1, lab_p2
+      logical, intent(inout) ::
+     &     tra, tra1, tra2
 
       integer ::
      &     nblk, nj, ngas, nspin, lenlab, lenp1lab, lenp2lab
@@ -40,9 +42,9 @@
         op%n_occ_cls = nblk
         op%njoined = nj
         
-        read(lu,end=100) lenlab,op%name(1:lenlab),
-     &       lenp1lab,lab_p1(1:lenp1lab),
-     &       lenp2lab,lab_p2(1:lenp2lab),
+        read(lu,end=100) lenlab,op%name(1:lenlab),tra,
+     &       lenp1lab,lab_p1(1:lenp1lab),tra1,
+     &       lenp2lab,lab_p2(1:lenp2lab),tra2,
      &       op%ihpvca_occ,op%igasca_restr
 
         call occ2caocc(op%ica_occ,op%ihpvca_occ,nj,nblk)
@@ -56,9 +58,9 @@
         lenlab = len_trim(op%name)
         lenp1lab = len_trim(lab_p1)
         lenp2lab = len_trim(lab_p2)
-        write(lu,err=200) lenlab,op%name(1:lenlab),
-     &       lenp1lab,lab_p1(1:lenp1lab),
-     &       lenp2lab,lab_p2(1:lenp2lab),
+        write(lu,err=200) lenlab,op%name(1:lenlab),tra,
+     &       lenp1lab,lab_p1(1:lenp1lab),tra1,
+     &       lenp2lab,lab_p2(1:lenp2lab),tra2,
      &       op%ihpvca_occ,op%igasca_restr
 
       end if

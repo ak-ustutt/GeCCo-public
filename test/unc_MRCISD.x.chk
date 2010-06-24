@@ -16,6 +16,12 @@ check
   find >>>
   compare real 3 1e-12
 check
+  label Spin evaluation
+  find EVAL_REF_S\(S\+1\)
+  find 1 -->
+  compare real 4 1e-10
+check
+  rewind
   label Energy evaluation
   find EVAL_E_REF
   find 1 -->

@@ -165,6 +165,7 @@ c dbgend
       if (nfroz.gt.0) ngas = ngas+1
       orb_info%nactel = nactel
       orb_info%lsym = lsym
+      orb_info%imult = ispin
       if (n_act.gt.0) then
         ! test whether this can be treated as a simple
         ! high spin open shell case:

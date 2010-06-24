@@ -1148,7 +1148,7 @@ c dbgend
       ! Evaluate density matrix
       call add_target('EVAL_D',ttype_gen,.false.,tgt_info)
       call set_dependency('EVAL_D','FOPT_D',tgt_info)
-      call set_dependency('EVAL_D','SOLVE_REF',tgt_info)
+      call set_dependency('EVAL_D','EVAL_REF_S(S+1)',tgt_info)
       call set_rule('EVAL_D',ttype_opme,EVAL,
      &     'FOPT_D',1,0,
      &     parameters,0,tgt_info)
@@ -1181,7 +1181,7 @@ c     &     parameters,2,tgt_info)
       ! Evaluate diagonal elements of Jacobian
       call add_target('EVAL_A_diag',ttype_gen,.false.,tgt_info)
       call set_dependency('EVAL_A_diag','FOPT_A_diag',tgt_info)
-      call set_dependency('EVAL_A_diag','SOLVE_REF',tgt_info)
+      call set_dependency('EVAL_A_diag','EVAL_REF_S(S+1)',tgt_info)
       call set_rule('EVAL_A_diag',ttype_opme,EVAL,
      &     'FOPT_A_diag',1,0,
      &     parameters,0,tgt_info)
@@ -1205,7 +1205,7 @@ c dbgend
 
       ! SOLVE icCI eigenvalue equation
       call add_target('SOLVE_ICCI',ttype_gen,.false.,tgt_info)
-      call set_dependency('SOLVE_ICCI','SOLVE_REF',tgt_info)
+      call set_dependency('SOLVE_ICCI','EVAL_REF_S(S+1)',tgt_info)
       call set_dependency('SOLVE_ICCI','FOPT_A_C',tgt_info)
       call me_list_label(dia_label,mel_dia,1,
      &     0,0,0,.false.)

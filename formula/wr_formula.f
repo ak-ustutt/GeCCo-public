@@ -30,7 +30,8 @@
         call rw_contr_kernel(-1,lu,form%contr)
       case(command_new_intermediate)
         call rw_opdef_kernel(-1,lu,form%interm,
-     &                       form%parent1,form%parent2)
+     &                       form%parent1,form%parent2,
+     &                       form%tra,form%tra1,form%tra2)
       case(command_reorder)
         call rw_reo_kernel(-1,lu,form%reo)
       case(command_add_bc_reo,command_bc_reo,command_add_reo)

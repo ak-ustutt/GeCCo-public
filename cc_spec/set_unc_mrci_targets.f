@@ -32,7 +32,7 @@
 
       integer ::
      &     ndef, occ_def(ngastp,2,60),
-     &     isym, msc, ip, ih, 
+     &     isym, msc, ims, ip, ih, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot
       character(len_target_name) ::
      &     dia_label, labels(20)
@@ -42,9 +42,14 @@
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting targets for multiref. wave function'
 
-      ! CAVEAT: should be adapted as soon as open-shell version
-      !         is up and running
-      msc = +1 ! assuming closed shell
+      if (mod(orb_info%imult-1,4).eq.0) then
+        msc = 1
+      else if (mod(orb_info%imult+1,4).eq.0) then
+        msc = -1
+      else
+        msc = 0
+      end if
+      ims = mod(orb_info%imult-1,2)
 
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations
@@ -248,7 +253,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &                labels,2,1,parameters,2,tgt_info)
 
       ! expectation value of S^2
-      call add_target2('F_REF_S(S+1)',.true.,tgt_info)
+      call add_target2('F_REF_S(S+1)',.false.,tgt_info)
       call set_dependency('F_REF_S(S+1)','S(S+1)',tgt_info)
       call set_dependency('F_REF_S(S+1)','C0',tgt_info)
       call set_dependency('F_REF_S(S+1)','S+',tgt_info)
@@ -303,9 +308,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_arg('F_REF_S(S+1)',REPLACE,'OP_LIST',2,tgt_info,
      &     val_label=(/'Sz_dum','Sz'/))
 c dbg
-      call set_rule2('F_REF_S(S+1)',PRINT_FORMULA,tgt_info)
-      call set_arg('F_REF_S(S+1)',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_REF_S(S+1)'/))
+c      call set_rule2('F_REF_S(S+1)',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_REF_S(S+1)',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_REF_S(S+1)'/))
 c dbgend
 
 *----------------------------------------------------------------------*
@@ -384,7 +389,7 @@ c dbgend
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'C0'/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'MS',1,tgt_info,
-     &             val_int=(/0/))
+     &             val_int=(/ims/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/orb_info%lsym/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'AB_SYM',1,tgt_info,
@@ -402,7 +407,7 @@ c dbgend
       labels(2) = 'A_C0'
       call me_list_parameters(-1,parameters,
      &     msc,0,orb_info%lsym,
-     &     0,0,.false.)
+     &     0,ims,.false.)
       call set_rule('DEF_ME_A_C0',ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
@@ -431,7 +436,7 @@ c dbgend
       labels(2) = op_dia//'_'//'C0'
       call me_list_parameters(-1,parameters,
      &     0,0,orb_info%lsym,
-     &     0,0,.false.)
+     &     0,ims,.false.)
       call set_rule(trim(dia_label)//'C0',ttype_opme,
      &              DEF_ME_LIST,
      &     labels,2,1,
@@ -442,6 +447,13 @@ c dbgend
      &              PRECONDITIONER,
      &              labels,2,1,
      &              parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'Preconditioner :',0,'LIST')
+c      call set_rule(trim(dia_label)//'C0',ttype_opme,PRINT_MEL,
+c     &     trim(dia_label)//'C0',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
 
       ! ME_FREF
       call add_target('DEF_ME_FREF',ttype_opme,.false.,tgt_info)
@@ -554,7 +566,7 @@ c dbgend
 
       ! Evaluate reference energy
       call add_target('EVAL_E_REF',ttype_gen,calc,tgt_info)
-      call set_dependency('EVAL_E_REF','SOLVE_REF',tgt_info)
+      call set_dependency('EVAL_E_REF','EVAL_REF_S(S+1)',tgt_info)
       call set_dependency('EVAL_E_REF','FOPT_REF',tgt_info)
       call set_rule('EVAL_E_REF',ttype_opme,EVAL,
      &     'FOPT_REF',1,0,
@@ -570,7 +582,7 @@ c dbgend
       ! Evaluate Fock operator wrt reference function
       call add_target('EVAL_FREF',ttype_gen,.false.,tgt_info)
       call set_dependency('EVAL_FREF','FOPT_FREF',tgt_info)
-      call set_dependency('EVAL_FREF','SOLVE_REF',tgt_info)
+      call set_dependency('EVAL_FREF','EVAL_REF_S(S+1)',tgt_info)
       call set_rule('EVAL_FREF',ttype_opme,EVAL,
      &     'FOPT_FREF',1,0,
      &     parameters,0,tgt_info)

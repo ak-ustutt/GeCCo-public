@@ -427,7 +427,7 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
 
           call store_def_intm(fl_pnt,
      &         label_reo,iocc_reo,irst_reo,nj_ret,1,
-     &         label,' ',
+     &         label,' ',tra_reo,tra_ori,.false.,
      &         orb_info)
           
           fl_pnt => fl_pnt%next
@@ -473,7 +473,7 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
           call new_formula_item(fl_pnt,command,target)
           call store_def_intm(fl_pnt,
      &         label,iocc_op1op2,irst_op1op2,njoined_op1op2,1,
-     &         label1,label2,
+     &         label1,label2,tra_op1op2,tra_op1,tra_op2,
      &         orb_info)
           fl_pnt => fl_pnt%next
           fact = bc_sign
@@ -567,7 +567,7 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
 
           call store_def_intm(fl_pnt,
      &         label_reo,iocc_reo,irst_reo,nj_ret,1,
-     &         label,' ',
+     &         label,' ',tra_reo,tra_ori,.false.,
      &         orb_info)
           
           fl_pnt => fl_pnt%next
