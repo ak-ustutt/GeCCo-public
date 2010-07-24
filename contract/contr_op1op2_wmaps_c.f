@@ -95,7 +95,7 @@
      &     msex1_a, msex1_c, msex2_a, msex2_c,
      &     igamc_ac, igamc_a, igamc_c,
      &     igamex1_a, igamex1_c, igamex2_a, igamex2_c,
-     &     idxms, idxdis, lenmap, lblk_op1op2tmp,
+     &     idxms, idxdis, lenmap, lbuf_op1op2, lblk_op1op2tmp,
      &     idxdis_op1op2, idx
       integer ::
      &     ncblk_op1, nablk_op1, ncblk_ex1, nablk_ex1, 
@@ -541,9 +541,15 @@ c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
           ! LOWER incore requirements:
           ! see above
           ! decide on buftyp12 here
-          lenscr = 2*ifree/3
-          call set_op_scratch(lenbuf,buftyp12,me_op1op2,iblkop1op2,
+          if (.not.reo_op1op2) then
+            lenscr = 2*ifree/3
+            call set_op_scratch(lenbuf,buftyp12,me_op1op2,iblkop1op2,
      &         lenscr,orb_info)
+          else
+            ! for reordered operators, we currently only can do:
+            buftyp12 = 0
+            lenbuf = lenop1op2
+          end if
 c dbg
 c          print *,'set_op_scratch12: ',lenbuf,buftyp12,lenscr
 c dbg
@@ -558,6 +564,12 @@ c          end if
           use_tr_here = use_tr_here.and.buftyp12.eq.0
 
           ifree = mem_alloc_real(xbf12,lenbuf,'xbf12')
+          lbuf_op1op2 = lenbuf
+c dbg
+          print *,'buftyp12: ',buftyp12
+          print *,'length of buffer: ',lenbuf
+          print *,'total length of operator block: ',lenop1op2
+c dbg
           xop1op2 => xbf12
           if (buftyp12.eq.0) then
             ioff_op1op2 = idxst_op1op2-1
@@ -1814,7 +1826,11 @@ c dbg
                     if (igam12i_a(3).ne.igam12i_raw(3))
      &                 call quit(1,'contr_op1op2_wmaps_c',
      &                           'check this case')
+c dbg
+c          print *,'lblk_op1op2tmp: ',lblk_op1op2tmp
+c dbg
                     call reo_blk_wmaps_c(xop1op2,xop1op2blk,
+     &                   lbuf_op1op2,lblk_op1op2tmp,
      &                   reo_info%sign_reo,
      &                   tra_op1op2, tra_op1op2,
      &                   ms12i_c(3),ms12i_a(3),
@@ -1946,14 +1962,26 @@ c dbg
 
       call atim_cs(cpu0,sys0)
       ! put result to disc
+c dbg
+       write(luout,*) 'put_vec called?'
+c dbg
       if (.not.bufop1op2.and.buftyp12.eq.0) then
+c dbg
+       write(luout,*) 'yes!'
+c dbg
         call put_vec(ffop1op2,xop1op2,idoffop1op2+idxst_op1op2,
      &                    idoffop1op2+idxst_op1op2-1+lenop1op2)
+c dbg
+       write(luout,*) 'done!'
+c dbg
       end if
       call atim_cs(cpu,sys)
       cnt_wr(1) = cnt_wr(1)+cpu-cpu0
       cnt_wr(2) = cnt_wr(2)+sys-sys0
 
+c dbg
+      write(luout,*) 'dealloc -2'
+c dbg
       deallocate(
      &     gmop1dis_c, gmop1dis_a,
      &     gmop2dis_c, gmop2dis_a,
@@ -1976,11 +2004,20 @@ c dbg
      &     lstrex1,lstrex2,lstrcnt,
      &     lstrop1,lstrop2,lstrop1op2tmp
      &     )
+c dbg
+      write(luout,*) 'dealloc -1'
+c dbg
       deallocate(dmap_op1c,dmap_op1a,
      &           dmap_op2c,dmap_op2a,
      &           dmap_op1op2tmpc,dmap_op1op2tmpa)
 
+c dbg
+      write(luout,*) 'flushing'
+c dbg
       ifree = mem_flushmark()
+c dbg
+      write(luout,*) 'ferdisch ...'
+c dbg
 
       if (ntest.ge.100) then
         if (type_xret.ne.0)

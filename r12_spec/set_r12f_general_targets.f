@@ -1679,6 +1679,31 @@ c        call set_g_z_old(ndef,occ_def)
      &            val_label=(/op_r12,op_rint/))
       call set_arg('Vring_CABS',REPLACE,'TITLE',1,tgt_info,
      &            val_str='V(ring) intermediate, for evaluation')
+      ! for some exceptional cases (no CABS) make sure
+      ! that R12 is removed 
+      call set_rule2('Vring_CABS',INVARIANT,tgt_info)
+      call set_arg('Vring_CABS',INVARIANT,'LABEL_RES',1,tgt_info,
+     &            val_label=(/'Vring_CABS'/))
+      call set_arg('Vring_CABS',INVARIANT,'LABEL_IN',1,tgt_info,
+     &            val_label=(/'Vring_CABS'/))
+      call set_arg('Vring_CABS',INVARIANT,'OP_RES',1,tgt_info,
+     &            val_label=(/op_vp_inter/))
+      call set_arg('Vring_CABS',INVARIANT,'OPERATORS',1,tgt_info,
+     &            val_label=(/op_r12/))
+      call set_arg('Vring_CABS',INVARIANT,'TITLE',1,tgt_info,
+     &            val_str='V(ring) intermediate, for evaluation')
+
+      call set_rule2('Vring_CABS',INVARIANT,tgt_info)
+      call set_arg('Vring_CABS',INVARIANT,'LABEL_RES',1,tgt_info,
+     &            val_label=(/'Vring2_CABS'/))
+      call set_arg('Vring_CABS',INVARIANT,'LABEL_IN',1,tgt_info,
+     &            val_label=(/'Vring2_CABS'/))
+      call set_arg('Vring_CABS',INVARIANT,'OP_RES',1,tgt_info,
+     &            val_label=(/'VR2'/))
+      call set_arg('Vring_CABS',INVARIANT,'OPERATORS',1,tgt_info,
+     &            val_label=(/op_r12/))
+      call set_arg('Vring_CABS',INVARIANT,'TITLE',1,tgt_info,
+     &            val_str='V(ring) intermediate, for evaluation')
 
       ! formal definition of Vpx
       labels(1:10)(1:len_target_name) = ' '
@@ -2028,6 +2053,19 @@ c     &              parameters,2,tgt_info)
      &            val_label=(/op_r12,op_rint/))
       call set_arg('C1_CABS',REPLACE,'TITLE',1,tgt_info,
      &            val_str='C1 intermediate, for evaluation')
+      ! for some exceptional cases (no CABS) make sure
+      ! that R12 is removed 
+      call set_rule2('C1_CABS',INVARIANT,tgt_info)
+      call set_arg('C1_CABS',INVARIANT,'LABEL_RES',1,tgt_info,
+     &            val_label=(/'C1_CABS'/))
+      call set_arg('C1_CABS',INVARIANT,'LABEL_IN',1,tgt_info,
+     &            val_label=(/'C1_CABS'/))
+      call set_arg('C1_CABS',INVARIANT,'OP_RES',1,tgt_info,
+     &            val_label=(/'C1'/))
+      call set_arg('C1_CABS',INVARIANT,'OPERATORS',1,tgt_info,
+     &            val_label=(/op_r12/))
+      call set_arg('C1_CABS',INVARIANT,'TITLE',1,tgt_info,
+     &            val_str='V(ring) intermediate, for evaluation')
 
       ! formal definition of P
       labels(1:10)(1:len_target_name) = ' '
@@ -2512,7 +2550,7 @@ c dbg
      &     parameters,0,tgt_info)
 
       call add_target('Z2INT_R12_EVAL',ttype_frm,.false.,tgt_info)
-      if (approx(14:17).eq.'DRCT') then
+      if (approx2(14:17).eq.'DRCT') then
         call set_dependency('Z2INT_R12_EVAL','Z2INT_R12_DIR',tgt_info)
       else
         call set_dependency('Z2INT_R12_EVAL','Z2INT_R12_REF',tgt_info)
