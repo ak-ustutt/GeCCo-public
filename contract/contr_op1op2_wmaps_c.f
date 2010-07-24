@@ -1962,26 +1962,14 @@ c dbg
 
       call atim_cs(cpu0,sys0)
       ! put result to disc
-c dbg
-       write(luout,*) 'put_vec called?'
-c dbg
       if (.not.bufop1op2.and.buftyp12.eq.0) then
-c dbg
-       write(luout,*) 'yes!'
-c dbg
         call put_vec(ffop1op2,xop1op2,idoffop1op2+idxst_op1op2,
      &                    idoffop1op2+idxst_op1op2-1+lenop1op2)
-c dbg
-       write(luout,*) 'done!'
-c dbg
       end if
       call atim_cs(cpu,sys)
       cnt_wr(1) = cnt_wr(1)+cpu-cpu0
       cnt_wr(2) = cnt_wr(2)+sys-sys0
 
-c dbg
-      write(luout,*) 'dealloc -2'
-c dbg
       deallocate(
      &     gmop1dis_c, gmop1dis_a,
      &     gmop2dis_c, gmop2dis_a,
@@ -2004,20 +1992,11 @@ c dbg
      &     lstrex1,lstrex2,lstrcnt,
      &     lstrop1,lstrop2,lstrop1op2tmp
      &     )
-c dbg
-      write(luout,*) 'dealloc -1'
-c dbg
       deallocate(dmap_op1c,dmap_op1a,
      &           dmap_op2c,dmap_op2a,
      &           dmap_op1op2tmpc,dmap_op1op2tmpa)
 
-c dbg
-      write(luout,*) 'flushing'
-c dbg
       ifree = mem_flushmark()
-c dbg
-      write(luout,*) 'ferdisch ...'
-c dbg
 
       if (ntest.ge.100) then
         if (type_xret.ne.0)
