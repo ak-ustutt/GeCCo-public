@@ -550,9 +550,6 @@ c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
             buftyp12 = 0
             lenbuf = lenop1op2
           end if
-c dbg
-c          print *,'set_op_scratch12: ',lenbuf,buftyp12,lenscr
-c dbg
           ! presently: only buftyp12=0/1
 c          if (buftyp12.gt.1) then
 c            call warn('contr_op1op2_wmaps_c','setting buftyp12 to 1')
@@ -565,11 +562,6 @@ c          end if
 
           ifree = mem_alloc_real(xbf12,lenbuf,'xbf12')
           lbuf_op1op2 = lenbuf
-c dbg
-          print *,'buftyp12: ',buftyp12
-          print *,'length of buffer: ',lenbuf
-          print *,'total length of operator block: ',lenop1op2
-c dbg
           xop1op2 => xbf12
           if (buftyp12.eq.0) then
             ioff_op1op2 = idxst_op1op2-1
