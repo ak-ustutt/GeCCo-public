@@ -18,34 +18,6 @@ check
   compare int 2
 check
   rewind
-  label Factor out densities
-  find FACTOR_OUT
-  find wrote
-  compare int 2
-  find term #
-  find term #
-  skip 6
-  compare str 2
-  find term #
-  skip 10
-  compare str 2
-  find term #
-  skip 6
-  compare str 2
-  find term #
-  skip 6
-  compare str 2
-  find term #
-  skip 10
-  compare str 2
-  find term #
-  skip 6
-  compare str 2
-  find term #
-  skip 6
-  compare str 2
-check
-  rewind
   label Optimized orthogonalized Hessian formula
   find FOPT_A_diag
   find wrote
@@ -53,6 +25,7 @@ check
 check
   rewind
   label Evaluate density
+  find EVAL_D
   find EVAL_D
   find -->
   compare real 4 4e-9

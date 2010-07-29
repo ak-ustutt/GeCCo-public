@@ -25,6 +25,8 @@
      &     val_int=(/1/))
       call set_arg('_PROTO_',DEF_OP_FROM_OCC,'CORE',10,tgt_info,
      &     val_int=(/0,0,0,0,0,0,0,0,0,0/)) ! works up to njoined=5
+      call set_arg('_PROTO_',DEF_OP_FROM_OCC,'FORMAL',1,tgt_info,
+     &     val_int=(/-1/))
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_SCALAR,tgt_info)
 *----------------------------------------------------------------------*

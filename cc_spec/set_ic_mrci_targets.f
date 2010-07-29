@@ -34,7 +34,7 @@
      &     isym, ms, msc, sym_arr(8), maxexc, ip, ih, ivv, iv,
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, minh, maxh,
      &     minp, maxp, maxv, maxvv, minexc, cbarc(2),
-     &     nlabels, nroots
+     &     nlabels, nroots, gno
       logical ::
      &     use_hessian, use_dens, pure_vv, calc
       character(len_target_name) ::
@@ -42,9 +42,11 @@
      &     labels(20)
       character(len_command_par) ::
      &     parameters(3)
+      character*4 ::
+     &     op_exc, op_deexc
 
       ! get maximum excitation rank
-      call get_argument_value('calculate.multiref','exc',
+      call get_argument_value('calculate.multiref','maxexc',
      &     ival=maxexc)
       call get_argument_value('calculate.multiref','cmaxexc',
      &     ival=cmaxexc)
@@ -68,6 +70,20 @@
       !         is up and running
       msc = +1 ! assuming closed shell
 
+      ! which normal ordering is used?
+      call get_argument_value('calculate.multiref','GNO',
+     &     ival=gno)
+      select case(gno)
+      case(0)
+      case(1)
+        write(luout,*) 'Using generalized normal order (GNO)'
+c        call set_gno_targets(tgt_info,orb_info,1)
+      case default
+        call quit(1,'set_ic_mrci_targets','unknown normal order')
+      end select
+cmh
+      call set_gno_targets(tgt_info,orb_info,1)
+cmh end
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations
       call get_argument_value('calculate.multiref','minh',
@@ -82,8 +98,10 @@
      &     ival=maxv)
       call get_argument_value('calculate.multiref','maxvv',
      &     ival=maxvv)
-      call get_argument_value('calculate.multiref','exc',
-     &     ival=minexc) ! currently fixed to one excitation rank
+      call get_argument_value('calculate.multiref','minexc',
+     &     ival=minexc)
+      ! minimum excitation: maxexc for GNO=0
+      if (gno.eq.0) minexc = maxexc
       if (maxh.lt.0) maxh = maxexc
       if (maxp.lt.0) maxp = maxexc
       if (maxv.lt.0) maxv = 2*maxexc
@@ -158,6 +176,39 @@
       call set_rule('Cdag',ttype_op,CLONE_OP,'Cdag',1,1,
      &              parameters,1,tgt_info)
 
+      if (gno.eq.1) then
+        ! subset of C for non-redundant valence-only metric
+        call add_target('c',ttype_op,.false.,tgt_info)
+        occ_def = 0
+        ndef = 0
+        do ip = 0, maxp
+          do ih = 0, maxh
+            do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
+              if (.not.pure_vv.and.ivv.gt.0.and.ip.eq.0.and.ih.eq.0)
+     &            cycle
+              if (abs(ih-ip)+2*ivv.gt.maxv) cycle
+              if (max(ip,ih).gt.0.and.ip.lt.minp) cycle
+              if (max(ip,ih).gt.0.and.ih.lt.minh) cycle
+              if ((max(ip,ih).gt.0.or.pure_vv).and.
+     &            max(ip,ih)+ivv.lt.minexc) cycle
+              ! exclude blocks with one or more hole-part. excitations
+              if (min(ih,ip).ge.1) cycle
+              if (max(ih,ip).eq.0.and.ivv.eq.0) cycle
+              ndef = ndef + 1
+              occ_def(IHOLE,2,ndef) = ih
+              occ_def(IPART,1,ndef) = ip
+              occ_def(IVALE,1,ndef) = max(ih-ip,0) + ivv
+              occ_def(IVALE,2,ndef) = max(ip-ih,0) + ivv
+            end do
+          end do
+        end do
+        call op_from_occ_parameters(-1,parameters,2,
+     &                occ_def,ndef,1,(/0,0/),ndef)
+        call set_rule('c',ttype_op,DEF_OP_FROM_OCC,
+     &                'c',1,1,
+     &                parameters,2,tgt_info)
+      end if
+
       ! define unit operator suited to connect C^+ and C
       call add_target('1',ttype_op,.false.,tgt_info)
       occ_def = 0
@@ -197,7 +248,7 @@
         do ih = 0, maxh
           ! not needed for pure inactive excitations
 c          if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
-          if (ip.eq.2.and.ih.eq.2) cycle
+          if (ip.ge.2.and.ih.ge.2) cycle
           ndef = ndef + 1
           occ_def(IHOLE,1,ndef) = ih
           occ_def(IHOLE,2,ndef) = ih
@@ -213,6 +264,25 @@ c          if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
       call opt_parameters(-1,parameters,+1,0)
       call set_rule('1ph',ttype_op,SET_HERMIT,
      &              '1ph',1,1,
+     &              parameters,1,tgt_info)
+
+      ! define unit operator (valence-only blocks)
+      call add_target('1v',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do iv = 1, maxexc
+        ndef = ndef + 1
+        occ_def(IVALE,1,ndef) = iv
+        occ_def(IVALE,2,ndef) = iv
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('1v',ttype_op,DEF_OP_FROM_OCC,
+     &              '1v',1,1,
+     &              parameters,2,tgt_info)
+      call opt_parameters(-1,parameters,+1,0)
+      call set_rule('1v',ttype_op,SET_HERMIT,
+     &              '1v',1,1,
      &              parameters,1,tgt_info)
 
       ! define scalar norm
@@ -364,34 +434,213 @@ c          if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
 *----------------------------------------------------------------------*
 
       ! multireference energy expression
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'F_E(MR)'
-      labels(2) = 'E(MR)'
-      labels(3) = 'C0^+'
-      labels(4) = 'C^+'
-      labels(5) = op_ham
-      labels(6) = 'C'
-      labels(7) = 'C0'
-      call add_target('F_E(MR)',ttype_frm,.false.,tgt_info)
-      call set_dependency('F_E(MR)','E(MR)',tgt_info)
-      call set_dependency('F_E(MR)',op_ham,tgt_info)
-      call set_dependency('F_E(MR)','C0',tgt_info)
-      call set_dependency('F_E(MR)','C',tgt_info)
-      call expand_parameters(-1,
-     &     parameters,3,
-     &     'multireference energy expression',5,
-     &     (/2,3,4,5,6/),
-     &     (/-1,-1,-1,-1,-1/),
-     &     (/-1,-1,-1,-1,-1/),
-     &     0,0,
-     &     0,0,
-     &     0,0)
-      call set_rule('F_E(MR)',ttype_frm,EXPAND_OP_PRODUCT,
-     &              labels,7,1,
-     &              parameters,3,tgt_info)
+c      labels(1:20)(1:len_target_name) = ' '
+c      labels(1) = 'F_E(MR)'
+c      labels(2) = 'E(MR)'
+c      labels(3) = 'C0^+'
+c      labels(4) = 'C^+'
+c      labels(5) = op_ham
+c      labels(6) = 'C'
+c      labels(7) = 'C0'
+c      call add_target('F_E(MR)',ttype_frm,.false.,tgt_info)
+c      call set_dependency('F_E(MR)','E(MR)',tgt_info)
+c      call set_dependency('F_E(MR)',op_ham,tgt_info)
+c      call set_dependency('F_E(MR)','C0',tgt_info)
+c      call set_dependency('F_E(MR)','C',tgt_info)
+c      call expand_parameters(-1,
+c     &     parameters,3,
+c     &     'multireference energy expression',5,
+c     &     (/2,3,4,5,6/),
+c     &     (/-1,-1,-1,-1,-1/),
+c     &     (/-1,-1,-1,-1,-1/),
+c     &     0,0,
+c     &     0,0,
+c     &     0,0)
+c      call set_rule('F_E(MR)',ttype_frm,EXPAND_OP_PRODUCT,
+c     &              labels,7,1,
+c     &              parameters,3,tgt_info)
 c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
 c      call set_rule('F_E(MR)',ttype_frm,PRINT_FORMULA,
 c     &                labels,2,1,parameters,2,tgt_info)
+      call add_target2('F_preE(MR)',.false.,tgt_info)
+      call set_dependency('F_preE(MR)','E(MR)',tgt_info)
+      call set_dependency('F_preE(MR)','C',tgt_info)
+      call set_dependency('F_preE(MR)','Cdag',tgt_info)
+      call set_dependency('F_preE(MR)',op_ham,tgt_info)
+      if (gno.eq.0) then
+        call set_dependency('F_preE(MR)','C0',tgt_info)
+        call set_rule2('F_preE(MR)',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'E(MR)'/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &       tgt_info,
+     &       val_label=(/'C0^+','Cdag',op_ham,'C','C0'/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &       val_int=(/2,3,4,5,6/))
+      else if (gno.eq.1) then
+        call set_dependency('F_preE(MR)','DENS',tgt_info)
+        call set_rule2('F_preE(MR)',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'E(MR)'/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'OPERATORS',3,
+     &       tgt_info,
+     &       val_label=(/'Cdag',op_ham,'C'/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+     &       val_int=(/2,3,4/))
+        call set_rule2('F_preE(MR)',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'E(MR)'/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &       tgt_info,
+     &       val_label=(/'DENS','Cdag',op_ham,'C','DENS'/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &       val_int=(/2,3,4,5,2/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'N_AVOID',1,
+     &       tgt_info,val_int=(/1/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+     &       val_int=(/1,5/))
+        call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &       val_log=(/.false./))
+        ! b) delete terms which are anyway forbidden by contraction rules
+        call set_rule2('F_preE(MR)',SELECT_SPECIAL,tgt_info)
+        call set_arg('F_preE(MR)',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',SELECT_SPECIAL,'OPERATORS',3,tgt_info,
+     &       val_label=(/op_ham,'C0','DENS'/)) ! C0 is dummy
+        call set_arg('F_preE(MR)',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &       val_str='MRCC')
+        call set_arg('F_preE(MR)',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &       val_str='no_con')
+        ! c) expand reduced densities in terms of cumulants
+        call set_dependency('F_preE(MR)','F_DENS',tgt_info)
+        call set_rule2('F_preE(MR)',EXPAND,tgt_info)
+        call set_arg('F_preE(MR)',EXPAND,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',EXPAND,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',EXPAND,'INTERM',1,tgt_info,
+     &       val_label=(/'F_DENS'/))
+        ! d) select only terms allowed according to contraction rules
+        call set_rule2('F_preE(MR)',SELECT_SPECIAL,tgt_info)
+        call set_arg('F_preE(MR)',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',SELECT_SPECIAL,'OPERATORS',3,tgt_info,
+     &       val_label=(/op_ham,'C0','CUM'/)) ! C0 is dummy
+        call set_arg('F_preE(MR)',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &       val_str='MRCC')
+        call set_arg('F_preE(MR)',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &       val_str='no_con')
+        ! e) factor out hole matrices by
+        !    a) inserting valence unity 1v 
+        !    b) replacing 1v with 1
+        !    c) factoring out HOLE
+        ! e1) Cdag - H contractions
+        call set_dependency('F_preE(MR)','1v',tgt_info)
+        call set_rule2('F_preE(MR)',INSERT,tgt_info)
+        call set_arg('F_preE(MR)',INSERT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',INSERT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',INSERT,'OP_RES',1,tgt_info,
+     &       val_label=(/'E(MR)'/))
+        call set_arg('F_preE(MR)',INSERT,'OP_INS',1,tgt_info,
+     &       val_label=(/'1v'/))
+        call set_arg('F_preE(MR)',INSERT,'OP_INCL',2,tgt_info,
+     &       val_label=(/'Cdag',op_ham/))
+        call set_dependency('F_preE(MR)','1',tgt_info)
+        call set_rule2('F_preE(MR)',REPLACE,tgt_info)
+        call set_arg('F_preE(MR)',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/'1v','1'/))
+        call set_dependency('F_preE(MR)','F_HOLE',tgt_info)
+        call set_rule2('F_preE(MR)',FACTOR_OUT,tgt_info)
+        call set_arg('F_preE(MR)',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',FACTOR_OUT,'INTERM',1,tgt_info,
+     &       val_label=(/'F_HOLE'/))
+        ! e2) Cdag - C contractions
+        call set_rule2('F_preE(MR)',INSERT,tgt_info)
+        call set_arg('F_preE(MR)',INSERT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',INSERT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',INSERT,'OP_RES',1,tgt_info,
+     &       val_label=(/'E(MR)'/))
+        call set_arg('F_preE(MR)',INSERT,'OP_INS',1,tgt_info,
+     &       val_label=(/'1v'/))
+        call set_arg('F_preE(MR)',INSERT,'OP_INCL',2,tgt_info,
+     &       val_label=(/'Cdag','C'/))
+        call set_rule2('F_preE(MR)',REPLACE,tgt_info)
+        call set_arg('F_preE(MR)',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/'1v','1'/))
+        call set_rule2('F_preE(MR)',FACTOR_OUT,tgt_info)
+        call set_arg('F_preE(MR)',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',FACTOR_OUT,'INTERM',1,tgt_info,
+     &       val_label=(/'F_HOLE'/))
+        ! e3) H - C contractions
+        call set_rule2('F_preE(MR)',INSERT,tgt_info)
+        call set_arg('F_preE(MR)',INSERT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',INSERT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',INSERT,'OP_RES',1,tgt_info,
+     &       val_label=(/'E(MR)'/))
+        call set_arg('F_preE(MR)',INSERT,'OP_INS',1,tgt_info,
+     &       val_label=(/'1v'/))
+        call set_arg('F_preE(MR)',INSERT,'OP_INCL',2,tgt_info,
+     &       val_label=(/op_ham,'C'/))
+        call set_rule2('F_preE(MR)',REPLACE,tgt_info)
+        call set_arg('F_preE(MR)',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/'1v','1'/))
+        call set_rule2('F_preE(MR)',FACTOR_OUT,tgt_info)
+        call set_arg('F_preE(MR)',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_preE(MR)',FACTOR_OUT,'INTERM',1,tgt_info,
+     &       val_label=(/'F_HOLE'/))
+      end if
+
+      ! replace Cdag by C^+
+      call add_target2('F_E(MR)',.false.,tgt_info)
+      call set_dependency('F_E(MR)','F_preE(MR)',tgt_info)
+      call set_dependency('F_E(MR)','F_E(MR)_diag',tgt_info)
+      call set_rule2('F_E(MR)',REPLACE,tgt_info)
+      call set_arg('F_E(MR)',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_E(MR)'/))
+      call set_arg('F_E(MR)',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_E(MR)'/))
+      call set_arg('F_E(MR)',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'Cdag','C^+'/))
+      call set_rule2('F_E(MR)',PRINT_FORMULA,tgt_info)
+      call set_arg('F_E(MR)',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_E(MR)'/))
 
       ! transformed C needed for generation of formula for effective H
       labels(1:20)(1:len_target_name) = ' '
@@ -413,7 +662,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &     (/-1,-1,-1,-1,-1/),
      &     (/-1,-1,-1,-1,-1/),
      &     0,0,
-     &     (/3,5,2,4/),2,
+     &     (/3,5,2,4,2,5,1,4/),4,
      &     0,0)
       call set_rule('F_C',ttype_frm,EXPAND_OP_PRODUCT,
      &              labels,7,1,
@@ -452,7 +701,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &     (/-1,-1,-1,-1,-1/),
      &     (/-1,-1,-1,-1,-1/),
      &     0,0,
-     &     (/1,3,2,4/),2,
+     &     (/1,3,2,4,2,5,1,4/),4,
      &     0,0)
       call set_rule('F_Cdag',ttype_frm,EXPAND_OP_PRODUCT,
      &              labels,7,1,
@@ -472,39 +721,40 @@ c      call set_rule('F_Cdag',ttype_frm,PRINT_FORMULA,
 c     &                labels,2,1,parameters,2,tgt_info)
 
       ! only diagonal terms of multireference energy expression (for PREC)
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'F_E(MR)_diag'
-      labels(2) = 'E(MR)'
-      labels(3) = 'C0^+'
-      labels(4) = 'Cdag'
-      labels(5) = op_ham
-      labels(6) = 'C'
-      labels(7) = 'C0'
-      call add_target('F_E(MR)_diag',ttype_frm,.false.,tgt_info)
+c      labels(1:20)(1:len_target_name) = ' '
+c      labels(1) = 'F_E(MR)_diag'
+c      labels(2) = 'E(MR)'
+c      labels(3) = 'C0^+'
+c      labels(4) = 'Cdag'
+c      labels(5) = op_ham
+c      labels(6) = 'C'
+c      labels(7) = 'C0'
+      call add_target2('F_E(MR)_diag',.false.,tgt_info)
       call set_dependency('F_E(MR)_diag','E(MR)',tgt_info)
-      call set_dependency('F_E(MR)_diag',op_ham,tgt_info)
-      call set_dependency('F_E(MR)_diag','C0',tgt_info)
+c      call set_dependency('F_E(MR)_diag',op_ham,tgt_info)
+c      call set_dependency('F_E(MR)_diag','C0',tgt_info)
+      call set_dependency('F_E(MR)_diag','F_preE(MR)',tgt_info)
       call set_dependency('F_E(MR)_diag','F_C',tgt_info)
       call set_dependency('F_E(MR)_diag','F_Cdag',tgt_info)
-      call expand_parameters(-1,
-     &     parameters,3,
-     &     'multireference energy expression',5,
-     &     (/2,3,4,5,6/),
-     &     (/-1,-1,-1,-1,-1/),
-     &     (/-1,-1,-1,-1,-1/),
-     &     0,0,
-     &     0,0,
-     &     0,0)
-      call set_rule('F_E(MR)_diag',ttype_frm,EXPAND_OP_PRODUCT,
-     &              labels,7,1,
-     &              parameters,3,tgt_info)
+c      call expand_parameters(-1,
+c     &     parameters,3,
+c     &     'multireference energy expression',5,
+c     &     (/2,3,4,5,6/),
+c     &     (/-1,-1,-1,-1,-1/),
+c     &     (/-1,-1,-1,-1,-1/),
+c     &     0,0,
+c     &     0,0,
+c     &     0,0)
+c      call set_rule('F_E(MR)_diag',ttype_frm,EXPAND_OP_PRODUCT,
+c     &              labels,7,1,
+c     &              parameters,3,tgt_info)
       ! insert (particle/hole) unit operator to allow for differentiation
       call set_dependency('F_E(MR)_diag','1ph',tgt_info)
       call set_rule2('F_E(MR)_diag',INSERT,tgt_info)
       call set_arg('F_E(MR)_diag',INSERT,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_E(MR)_diag'/))
       call set_arg('F_E(MR)_diag',INSERT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_E(MR)_diag'/))
+     &     val_label=(/'F_E(MR)'/))
       call set_arg('F_E(MR)_diag',INSERT,'OP_RES',1,tgt_info,
      &     val_label=(/'E(MR)'/))
       call set_arg('F_E(MR)_diag',INSERT,'OP_INS',1,tgt_info,
@@ -521,7 +771,8 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_arg('F_E(MR)_diag',REPLACE,'OP_LIST',2,tgt_info,
      &     val_label=(/'1ph','1'/))
       ! expand C --> Dtr Ctr
-      labels(2:20)(1:len_target_name) = ' '
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'F_E(MR)_diag'
       labels(2) = 'F_E(MR)_diag'
       labels(3) = 'F_C'
       labels(4) = 'F_Cdag'
@@ -595,66 +846,227 @@ c      call set_rule('F_A_diag',ttype_frm,PRINT_FORMULA,
 c     &                labels,2,1,parameters,2,tgt_info)
 
       ! expression for the norm
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'F_NORM'
-      labels(2) = 'NORM'
-      labels(3) = 'C0^+'
-      labels(4) = 'C^+'
-      labels(5) = '1' ! pure valence blocks only
-      labels(6) = 'C'
-      labels(7) = 'C0'
-      call add_target('F_NORM',ttype_frm,.false.,tgt_info)
+      ! a) set up norm expression
+      op_deexc = 'C^+ '
+      op_exc = 'C   '
+      if (gno.eq.1) then
+        op_deexc = 'c^+ '
+        op_exc = 'c    '
+      end if
+      call add_target2('F_NORM',.false.,tgt_info)
       call set_dependency('F_NORM','NORM',tgt_info)
-      call set_dependency('F_NORM','C0',tgt_info)
-      call set_dependency('F_NORM','C',tgt_info)
+      call set_dependency('F_NORM',op_exc,tgt_info)
+c      if (gno.eq.0) then
+c        call set_dependency('F_NORM','C0',tgt_info)
+c        call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
+c        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &       val_label=(/'F_NORM'/))
+c        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &       val_label=(/'NORM'/))
+c        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
+c     &       tgt_info,
+c     &       val_label=(/'C0^+','C^+','C','C0'/))
+c        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+c     &       val_int=(/2,3,4,5/))
+c      else if (gno.eq.1) then
+        call set_dependency('F_NORM','DENS',tgt_info)
+        call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_NORM'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'NORM'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',2,
+     &       tgt_info,
+     &       val_label=(/op_deexc,op_exc/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
+     &       val_int=(/2,3/))
+        call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_NORM'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'NORM'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &       tgt_info,
+     &       val_label=(/'DENS',op_deexc,op_exc,'DENS'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &       val_int=(/2,3,4,2/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+     &       val_int=(/1/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+     &       val_int=(/1,4/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &       val_log=(/.false./))
+        if (gno.eq.0)
+     &   call set_arg('F_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+     &       val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
+c      end if
+      ! b) insert unit operators to allow for differentiation
+      ! and for factoring out of hole densities
+      call set_dependency('F_NORM','1v',tgt_info)
+      call set_rule2('F_NORM',INSERT,tgt_info)
+      call set_arg('F_NORM',INSERT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_NORM'/))
+      call set_arg('F_NORM',INSERT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_NORM'/))
+      call set_arg('F_NORM',INSERT,'OP_RES',1,tgt_info,
+     &     val_label=(/'NORM'/))
+      call set_arg('F_NORM',INSERT,'OP_INS',1,tgt_info,
+     &     val_label=(/'1v'/))
+      call set_arg('F_NORM',INSERT,'OP_INCL',2,tgt_info,
+     &     val_label=(/op_deexc,op_exc/))
+      ! c) replace 1v by 1 (was used because we only needed valence blocks)
       call set_dependency('F_NORM','1',tgt_info)
-      call expand_parameters(-1,
-     &     parameters,3,
-     &     'multireference energy expression',5,
-     &     (/2,3,4,5,6/),
-     &     (/-1,-1,-1,-1,-1/),
-     &     (/0,0,maxexc+1,0,0/),
-     &     0,0,
-     &     (/1,3,3,5/),2,
-     &     0,0)
-      call set_rule('F_NORM',ttype_frm,EXPAND_OP_PRODUCT,
-     &              labels,7,1,
-     &              parameters,3,tgt_info)
-      ! delete terms in which C^+ and C are contracted via valence lines
-      labels(2:10)(1:len_target_name) = ' '
-      labels(2) = 'F_NORM'
-      labels(3) = 'NORM'
-      labels(4) = 'C^+'
-      labels(5) = 'C'
-      call form_parameters(-1,
-     &       parameters,2,'norm expression',3,'delete')
-      call set_rule('F_NORM',ttype_frm,SELECT_LINE,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
-      labels(3:10)(1:len_target_name) = ' '
+      call set_rule2('F_NORM',REPLACE,tgt_info)
+      call set_arg('F_NORM',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_NORM'/))
+      call set_arg('F_NORM',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_NORM'/))
+      call set_arg('F_NORM',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'1v','1'/))
+      if (gno.eq.1) then
+        ! d) expand reduced densities in terms of cumulants
+        call set_dependency('F_NORM','F_DENS',tgt_info)
+        call set_rule2('F_NORM',EXPAND,tgt_info)
+        call set_arg('F_NORM',EXPAND,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_NORM'/))
+        call set_arg('F_NORM',EXPAND,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_NORM'/))
+        call set_arg('F_NORM',EXPAND,'INTERM',1,tgt_info,
+     &       val_label=(/'F_DENS'/))
+c        call set_rule2('F_NORM',PRINT_FORMULA,tgt_info)
+c        call set_arg('F_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
+c       &     val_label=(/'F_NORM'/))
+        ! e) select only terms allowed according to contraction rules
+        call set_rule2('F_NORM',SELECT_SPECIAL,tgt_info)
+        call set_arg('F_NORM',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_NORM'/))
+        call set_arg('F_NORM',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_NORM'/))
+        call set_arg('F_NORM',SELECT_SPECIAL,'OPERATORS',3,tgt_info,
+     &       val_label=(/op_ham,'C0','CUM'/)) !op_ham and C0 are dummies
+        call set_arg('F_NORM',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &       val_str='MRCC')
+        ! f) factor out hole density
+        call set_dependency('F_NORM','F_HOLE',tgt_info)
+        call set_rule2('F_NORM',FACTOR_OUT,tgt_info)
+        call set_arg('F_NORM',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_NORM'/))
+        call set_arg('F_NORM',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_NORM'/))
+        call set_arg('F_NORM',FACTOR_OUT,'INTERM',1,tgt_info,
+     &       val_label=(/'F_HOLE'/))
+      end if
+      call set_rule2('F_NORM',PRINT_FORMULA,tgt_info)
+      call set_arg('F_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_NORM'/))
+c      labels(1:20)(1:len_target_name) = ' '
+c      labels(1) = 'F_NORM'
+c      labels(2) = 'NORM'
+c      labels(3) = 'C0^+'
+c      labels(4) = 'C^+'
+c      labels(5) = '1' ! pure valence blocks only
+c      labels(6) = 'C'
+c      labels(7) = 'C0'
+c      call add_target('F_NORM',ttype_frm,.false.,tgt_info)
+c      call set_dependency('F_NORM','NORM',tgt_info)
+c      call set_dependency('F_NORM','C0',tgt_info)
+c      call set_dependency('F_NORM','C',tgt_info)
+c      call set_dependency('F_NORM','1',tgt_info)
+c      call expand_parameters(-1,
+c     &     parameters,3,
+c     &     'multireference energy expression',5,
+c     &     (/2,3,4,5,6/),
+c     &     (/-1,-1,-1,-1,-1/),
+c     &     (/0,0,maxexc+1,0,0/),
+c     &     0,0,
+c     &     (/1,3,3,5/),2,
+c     &     0,0)
+c      call set_rule('F_NORM',ttype_frm,EXPAND_OP_PRODUCT,
+c     &              labels,7,1,
+c     &              parameters,3,tgt_info)
+c      ! delete terms in which C^+ and C are contracted via valence lines
+c      labels(2:10)(1:len_target_name) = ' '
+c      labels(2) = 'F_NORM'
+c      labels(3) = 'NORM'
+c      labels(4) = 'C^+'
+c      labels(5) = 'C'
+c      call form_parameters(-1,
+c     &       parameters,2,'norm expression',3,'delete')
+c      call set_rule('F_NORM',ttype_frm,SELECT_LINE,
+c     &              labels,5,1,
+c     &              parameters,2,tgt_info)
+c      labels(3:10)(1:len_target_name) = ' '
 c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
 c      call set_rule('F_NORM',ttype_frm,PRINT_FORMULA,
 c     &                labels,2,1,parameters,2,tgt_info)
 
       ! factor out reduced density matrices
-      if (use_dens) then
-        call add_target('F_NORM_fact',ttype_frm,.false.,tgt_info)
-        call set_dependency('F_NORM_fact','F_NORM',tgt_info)
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = 'F_NORM_fact'
-        labels(2) = 'F_NORM'
-        labels(3) = 'F_D'
-        call set_dependency('F_NORM_fact','F_D',tgt_info)
-        call form_parameters(-1,
-     &       parameters,2,'norm using density matrices',1,'---')
-        call set_rule('F_NORM_fact',ttype_frm,FACTOR_OUT,
-     &                labels,3,1,
-     &                parameters,2,tgt_info)
-        ! output needed for test suite (factoring out is checked)
-        call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-        call set_rule('F_NORM_fact',ttype_frm,PRINT_FORMULA,
-     &                  labels,2,1,parameters,2,tgt_info)
-      end if
+c      if (use_dens) then
+c        call add_target('F_NORM_fact',ttype_frm,.false.,tgt_info)
+c        call set_dependency('F_NORM_fact','F_NORM',tgt_info)
+c        labels(1:10)(1:len_target_name) = ' '
+c        labels(1) = 'F_NORM_fact'
+c        labels(2) = 'F_NORM'
+c        labels(3) = 'F_D'
+c        call set_dependency('F_NORM_fact','F_D',tgt_info)
+c        call form_parameters(-1,
+c     &       parameters,2,'norm using density matrices',1,'---')
+c        call set_rule('F_NORM_fact',ttype_frm,FACTOR_OUT,
+c     &                labels,3,1,
+c     &                parameters,2,tgt_info)
+c        ! output needed for test suite (factoring out is checked)
+c        call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c        call set_rule('F_NORM_fact',ttype_frm,PRINT_FORMULA,
+c     &                  labels,2,1,parameters,2,tgt_info)
+      ! a) set up norm expression
+      call add_target2('F_NORM_fact',.false.,tgt_info)
+      call set_dependency('F_NORM_fact','NORM',tgt_info)
+      call set_dependency('F_NORM_fact','C',tgt_info)
+      call set_dependency('F_NORM_fact','D',tgt_info)
+      call set_rule2('F_NORM_fact',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_NORM_fact'/))
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'NORM'/))
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &     tgt_info,
+     &     val_label=(/'D','C^+','D','C','D'/))
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &     val_int=(/2,3,2,4,2/))
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+     &     val_int=(/5/))
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'AVOID',10,tgt_info,
+     &     val_int=(/1,3,1,4,1,5,2,5,3,5/))
+c      call set_rule2('F_NORM_fact',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_NORM_fact'/))
+c      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'NORM'/))
+c      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'OPERATORS',2,
+c     &     tgt_info,
+c     &     val_label=(/'C^+','C'/))
+c      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
+c     &     val_int=(/2,3/))
+c      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+      ! no active lines between C^+ and C
+      call set_rule2('F_NORM_fact',SELECT_LINE,tgt_info)
+      call set_arg('F_NORM_fact',SELECT_LINE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_NORM_fact'/))
+      call set_arg('F_NORM_fact',SELECT_LINE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_NORM_fact'/))
+      call set_arg('F_NORM_fact',SELECT_LINE,'OP_RES',1,tgt_info,
+     &     val_label=(/'NORM'/))
+      call set_arg('F_NORM_fact',SELECT_LINE,'OP_INCL',2,tgt_info,
+     &     val_label=(/'C^+','C'/))
+      call set_arg('F_NORM_fact',SELECT_LINE,'IGAST',1,tgt_info,
+     &     val_int=(/3/))
+      call set_arg('F_NORM_fact',SELECT_LINE,'MODE',1,tgt_info,
+     &     val_str='delete')
+      call set_rule2('F_NORM_fact',PRINT_FORMULA,tgt_info)
+      call set_arg('F_NORM_fact',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_NORM_fact'/))
+c      end if
 
       ! metric times icCI coefficient vector
       labels(1:20)(1:len_target_name)= ' '
@@ -687,6 +1099,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
       labels(2) = 'F_NORM'
       labels(3) = 'SC'
       labels(4) = 'C^+'
+      if (gno.eq.1) labels(4) = 'c^+'
       labels(5) = ' '
       call add_target('F_SC0',ttype_frm,.false.,tgt_info)
       call set_dependency('F_SC0','F_NORM',tgt_info)
@@ -706,6 +1119,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
       labels(2) = 'F_SC0'
       labels(3) = 'D'
       labels(4) = 'C'
+      if (gno.eq.1) labels(4) = 'c'
       labels(5) = ' '
       call add_target('F_D',ttype_frm,.false.,tgt_info)
       call set_dependency('F_D','F_SC0',tgt_info)
@@ -721,12 +1135,26 @@ c     &                labels,2,1,parameters,2,tgt_info)
       labels(2) = 'F_D'
       labels(3) = 'D'
       labels(4) = '1'
-      labels(5) = 'C0'
+c      labels(5) = 'C0'
+      labels(5) = 'DENS'
+      if (gno.eq.1) then
+        labels(4) = 'HOLE'
+        labels(5) = 'CUM'
+      end if
       call form_parameters(-1,
      &       parameters,2,'D formula',3,'ext')
       call set_rule('F_D',ttype_frm,SELECT_LINE,
      &              labels,5,1,
      &              parameters,2,tgt_info)
+c dbg
+c      call set_rule2('F_D',KEEP_TERMS,tgt_info)
+c      call set_arg('F_D',KEEP_TERMS,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_D'/))
+c      call set_arg('F_D',KEEP_TERMS,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_D'/))
+c      call set_arg('F_D',KEEP_TERMS,'TERMS',2,tgt_info,
+c     &     val_int=(/6,9/))
+c dbgend
 c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
 c      call set_rule('F_D',ttype_frm,PRINT_FORMULA,
 c     &                labels,2,1,parameters,2,tgt_info)
@@ -822,14 +1250,19 @@ c     &                labels,1,0,parameters,2,tgt_info)
       ! norm
       labels(1:20)(1:len_target_name)= ' '
       labels(1) = 'FOPT_NORM'
-      labels(2) = 'F_NORM'
+      labels(2) = 'F_NORM_fact'
       call add_target('FOPT_NORM',ttype_frm,.false.,tgt_info)
-      call set_dependency('FOPT_NORM','F_NORM',tgt_info)
-      call set_dependency('FOPT_NORM','DEF_ME_C0',tgt_info)
+      call set_dependency('FOPT_NORM','F_NORM_fact',tgt_info)
+c      call set_dependency('FOPT_NORM','DEF_ME_C0',tgt_info)
+      call set_dependency('FOPT_NORM','DEF_ME_DENS',tgt_info)
       call set_dependency('FOPT_NORM','DEF_ME_C',tgt_info)
       call set_dependency('FOPT_NORM','DEF_ME_NORM',tgt_info)
       call set_dependency('FOPT_NORM','DEF_ME_1',tgt_info)
-      if (use_dens)
+c      if (gno.eq.1) then
+c        call set_dependency('FOPT_NORM','DEF_ME_HOLE',tgt_info)
+c        call set_dependency('FOPT_NORM','DEF_ME_CUM',tgt_info)
+c      end if
+      if (use_dens.or..true.)
      &        call set_dependency('FOPT_NORM','DEF_ME_D',tgt_info)
       call opt_parameters(-1,parameters,1,0)
       call set_rule('FOPT_NORM',ttype_frm,OPTIMIZE,
@@ -842,8 +1275,14 @@ c     &                labels,1,0,parameters,2,tgt_info)
       labels(2) = 'F_D'
       call add_target('FOPT_D',ttype_frm,.false.,tgt_info)
       call set_dependency('FOPT_D','F_D',tgt_info)
-      call set_dependency('FOPT_D','DEF_ME_C0',tgt_info)
-      call set_dependency('FOPT_D','DEF_ME_1',tgt_info)
+c      call set_dependency('FOPT_D','DEF_ME_C0',tgt_info)
+      if (gno.eq.0) then
+        call set_dependency('FOPT_D','DEF_ME_DENS',tgt_info)
+        call set_dependency('FOPT_D','DEF_ME_1',tgt_info)
+      else if (gno.eq.1) then
+        call set_dependency('FOPT_D','DEF_ME_CUM',tgt_info)
+        call set_dependency('FOPT_D','DEF_ME_HOLE',tgt_info)
+      end if
       call set_dependency('FOPT_D','DEF_ME_D',tgt_info)
       call opt_parameters(-1,parameters,1,0)
       call set_rule('FOPT_D',ttype_frm,OPTIMIZE,
@@ -1149,6 +1588,12 @@ c dbgend
       call add_target('EVAL_D',ttype_gen,.false.,tgt_info)
       call set_dependency('EVAL_D','FOPT_D',tgt_info)
       call set_dependency('EVAL_D','EVAL_REF_S(S+1)',tgt_info)
+      if (gno.eq.0) then
+        call set_dependency('EVAL_D','EVAL_DENS0',tgt_info)
+      else if (gno.eq.1) then
+        call set_dependency('EVAL_D','EVAL_HOLE',tgt_info)
+        call set_dependency('EVAL_D','EVAL_CUM',tgt_info)
+      end if
       call set_rule('EVAL_D',ttype_opme,EVAL,
      &     'FOPT_D',1,0,
      &     parameters,0,tgt_info)
@@ -1182,6 +1627,8 @@ c     &     parameters,2,tgt_info)
       call add_target('EVAL_A_diag',ttype_gen,.false.,tgt_info)
       call set_dependency('EVAL_A_diag','FOPT_A_diag',tgt_info)
       call set_dependency('EVAL_A_diag','EVAL_REF_S(S+1)',tgt_info)
+      if (gno.eq.1)
+     &   call set_dependency('EVAL_A_diag','H_GNO',tgt_info)
       call set_rule('EVAL_A_diag',ttype_opme,EVAL,
      &     'FOPT_A_diag',1,0,
      &     parameters,0,tgt_info)
@@ -1207,6 +1654,8 @@ c dbgend
       call add_target('SOLVE_ICCI',ttype_gen,.false.,tgt_info)
       call set_dependency('SOLVE_ICCI','EVAL_REF_S(S+1)',tgt_info)
       call set_dependency('SOLVE_ICCI','FOPT_A_C',tgt_info)
+      if (gno.eq.1)
+     &   call set_dependency('SOLVE_ICCI','H_GNO',tgt_info)
       call me_list_label(dia_label,mel_dia,1,
      &     0,0,0,.false.)
       if (use_hessian)
@@ -1243,6 +1692,8 @@ c dbgend
       call add_target('EVAL_E(MR)',ttype_gen,calc,tgt_info)
       call set_dependency('EVAL_E(MR)','SOLVE_ICCI',tgt_info)
       call set_dependency('EVAL_E(MR)','FOPT_E(MR)',tgt_info)
+      if (gno.eq.1)
+     &   call set_dependency('EVAL_E(MR)','H_GNO',tgt_info)
 c      call form_parameters(-1,parameters,2,
 c     &     'icCI coefficients :',0,'LIST')
 c      call set_rule('EVAL_E(MR)',ttype_opme,PRINT_MEL,

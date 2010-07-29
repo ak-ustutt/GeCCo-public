@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_user_op2(op,name,type,
-     &     occ_def,nblk,njoined,irestr,freeze,orb_info)
+     &     occ_def,nblk,njoined,irestr,freeze,min_formal,orb_info)
 *----------------------------------------------------------------------*
 *     set up occupations for a general operator described by
 *     occ_def:   user provided occupations
@@ -29,7 +29,7 @@
       character, intent(in) ::
      &     name*(*)
       integer, intent(in) ::
-     &     type, nblk, njoined
+     &     type, nblk, njoined, min_formal
       type(orbinf), intent(in), target ::
      &     orb_info
       integer, intent(in) ::
@@ -92,6 +92,8 @@ c     &     freeze(2)
       call init_operator(op,orb_info)
 
       op%formal_blk(1:nblk) = .false.
+      if (min_formal.gt.0.and.min_formal.le.nblk)
+     &   op%formal_blk(min_formal:nblk) = .true.
 
       ! this is basically all:
       op%ihpvca_occ = occ_def

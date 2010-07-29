@@ -78,7 +78,7 @@
         if (njoined.gt.nj_max)
      &       call quit(1,'process_operators','nj_max too small')
         call set_uop2(op_pnt,trim(rule%labels(1)),
-     &       occ_def,ndef,njoined,nact,orb_info)
+     &       occ_def,ndef,njoined,nact,-1,orb_info)
       case(DEF_SCALAR)
         call set_hop(op_pnt,trim(rule%labels(1)),.false.,
      &       0,0,1,.false.,orb_info)

@@ -37,6 +37,8 @@
       logical, external ::
      &     zero_i8vec
 
+      if (nvtx_new.eq.0) return
+
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'topo_remove_vtxs at work')
         write(luout,*) 'on entry:'

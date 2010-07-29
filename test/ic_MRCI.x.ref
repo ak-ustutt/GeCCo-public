@@ -1402,6 +1402,7 @@ signsec:      1.0
   term #    2 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.122E-03
   term #    7 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.122E-03
  wrote                     41  entries
+                 EVAL_DENS0   ! added manually to reference file
  My next target: EVAL_D
  Rule: EVALUATE
  read                     40  entries

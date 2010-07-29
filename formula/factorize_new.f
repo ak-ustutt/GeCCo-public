@@ -33,7 +33,7 @@
      &     label
 
       integer, parameter ::
-     &     max_stat = 3000
+     &     max_stat = 10000
       type(formula_item), pointer ::
      &     fl_ptr, fl_fact_ptr
       integer ::

@@ -87,6 +87,11 @@
       end do
 
       maxc = op_info%op_arr(idxd)%op%n_occ_cls-off
+      ! exclude formal classes
+      do idx = op_info%op_arr(idxd)%op%n_occ_cls, 1, -1
+        if (.not.op_info%op_arr(idxd)%op%formal_blk(idx)) exit
+        maxc = maxc - 1
+      end do
 
       ! initialize formula
       call init_formula(flist)

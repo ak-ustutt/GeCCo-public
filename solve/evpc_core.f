@@ -286,7 +286,7 @@ cmh
               ioff = sum(opti_info%nsec(1:iopt))-nsec
               nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
               idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
-              signsec => opti_info%signsec(ioff+1:ioff+nsec)
+              signsec => opti_info%signsec2(ioff+1:ioff+nsec)
               do irec = 1, ndim_vsbsp
                 idx = iord_vsbsp(irec)
                 if (xvec(idx).eq.0d0) cycle
@@ -383,7 +383,7 @@ c dbgend
         nsec = sum(nsec_arr)
         nwfpsec => opti_info%nwfpsec(1:nsec)
         idstsec => opti_info%idstsec(1:nsec)
-        signsec => opti_info%signsec(1:nsec)
+        signsec => opti_info%signsec2(1:nsec)
 
         ! reduced space exhausted?
         if (nred+nnew.gt.mxsub) then
@@ -583,6 +583,8 @@ c dbgend
             ffmet => fdum2
           end if
         end do
+
+        signsec => opti_info%signsec(1:nsec)
 
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace

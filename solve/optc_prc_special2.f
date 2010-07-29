@@ -300,7 +300,7 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
           idx = idx_oplist2('GRD_REO',op_info)
           op_grd_reo => op_info%op_arr(idx)%op
           call set_uop2(op_grd_reo,'GRD_REO',
-     &         occ_blk_reo,1,2,(/0,0/),orb_info)
+     &         occ_blk_reo,1,2,(/0,0/),-1,orb_info)
 c          call add_me_list('L_GRD_REO',op_info)
           call define_me_list('L_GRD_REO','GRD_REO',
      &         me_grd%absym,me_grd%casym,me_grd%gamt,

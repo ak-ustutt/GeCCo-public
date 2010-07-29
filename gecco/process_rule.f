@@ -130,8 +130,9 @@
         call get_arg('JOIN',  rule,tgt_info,val_int=njoined)
         call get_arg('OCC',   rule,tgt_info,val_occ=occ_def)
         call get_arg('CORE',  rule,tgt_info,val_int_list=nact)
+        call get_arg('FORMAL',rule,tgt_info,val_int=iformal)
         call set_uop2(op_pnt,trim(label),
-     &       occ_def,nblk,njoined,nact,orb_info)        
+     &       occ_def,nblk,njoined,nact,iformal,orb_info)        
         deallocate(occ_def,nact)
 *----------------------------------------------------------------------*
       case(DEF_SCALAR)

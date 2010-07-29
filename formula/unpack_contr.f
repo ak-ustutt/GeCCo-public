@@ -104,7 +104,9 @@
       end do
 
       ! store svertex
-      contr%svertex = svertex
+      do ivtx = 1, nvtx
+        contr%svertex(ivtx) = svertex(ivtx)
+      end do
 
       ! update other svertex info
       call update_svtx4contr(contr)
