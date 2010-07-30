@@ -17,7 +17,7 @@
       include 'stdunit.h'
       include 'def_contraction.h'
 
-      type(contraction), intent(in) ::
+      type(contraction), intent(inout) ::
      &     contr1, contr2
       logical, intent(in) ::
      &     ignore_fac
@@ -31,8 +31,6 @@
       type(cntr_arc), pointer ::
      &     arc1(:), arc2(:)
 
-      integer, pointer ::
-     &     scr(:), svtx1(:), svtx2(:)
       integer(8), pointer ::
      &     ivtx1(:),topo1(:,:),xlines1(:,:),
      &     ivtx2(:),topo2(:,:),xlines2(:,:)
@@ -120,16 +118,16 @@ c dbg
       ! NEW:
       nj = njres_contr(contr1)  ! idxres was already compared
       nvtx = contr1%nvtx        ! nvtx dto.
-      allocate(ivtx1(nvtx),topo1(nvtx,nvtx),xlines1(nvtx,nj),
-     &         ivtx2(nvtx),topo2(nvtx,nvtx),xlines2(nvtx,nj),
-     &         scr(nvtx),svtx1(nvtx),svtx2(nvtx))
-      call pack_contr(scr,ivtx1,topo1,xlines1,contr1,nj)
-      call pack_contr(scr,ivtx2,topo2,xlines2,contr2,nj)
 
-      svtx1 = contr1%svertex
-      call topo_make_unique2(scr,ivtx1,svtx1,topo1,xlines1,nvtx,nj)
-      svtx2 = contr2%svertex
-      call topo_make_unique2(scr,ivtx2,svtx2,topo2,xlines2,nvtx,nj)
+      ! if unique representation not found yet, do it now:
+      if (.not.contr1%unique_set) call topo_set_unique(contr1)
+      if (.not.contr2%unique_set) call topo_set_unique(contr2)
+      ivtx1 => contr1%vtx
+      ivtx2 => contr2%vtx
+      topo1 => contr1%topo
+      topo2 => contr2%topo
+      xlines1 => contr1%xlines
+      xlines2 => contr2%xlines
 
       cmp_contr = i8list_cmp(ivtx1,ivtx2,nvtx).eq.0
       if (ntest.ge.100) write(luout,*) 'cmp_contr > (1): ',cmp_contr
@@ -147,9 +145,6 @@ c        print *,'topo2'
 c        call prt_contr_p(6,svtx2,ivtx2,topo2,xlines2,nvtx,nj)
 c      end if
 c dbg
-
-      deallocate(ivtx1,topo1,xlines1,
-     &           ivtx2,topo2,xlines2,scr,svtx1,svtx2)
 
       return
       ! OLD:

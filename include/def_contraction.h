@@ -68,6 +68,10 @@ c
      &       svertex(:)   !  supervertex to which vertex belongs (nvtx)
         integer, pointer ::
      &       inffac(:,:) ! factorization info (4,nfac)
+        logical ::
+     &       unique_set  ! unique representation (topo etc.) defined?
+        integer(8), pointer ::
+     &       vtx(:), topo(:,:), xlines(:,:)
 *----------------------------------------------------------------------*
 *	factorization info organized as:
 *         ((vertex1,vertex2,intermediate1),

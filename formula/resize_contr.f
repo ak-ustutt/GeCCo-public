@@ -95,5 +95,14 @@ c fix for newly introduced dagger flag -- ensure that it is always def.'d
         contr%mxfac = nfac
       end if
 
+      ! unique representation will look different
+      if (contr%unique_set) then
+        deallocate(contr%vtx,contr%topo,contr%xlines)
+        contr%unique_set = .false.
+      end if
+      contr%vtx => null()
+      contr%topo => null()
+      contr%xlines => null()
+
       return
       end

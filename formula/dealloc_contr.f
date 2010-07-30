@@ -29,6 +29,11 @@
       if (contr%mxfac.gt.0) deallocate(contr%inffac)
       contr%inffac => null()
       contr%mxfac = 0
+      if (contr%unique_set)
+     &     deallocate(contr%vtx,contr%topo,contr%xlines)
+      contr%vtx => null()
+      contr%topo => null()
+      contr%xlines => null()
 
       return
       end

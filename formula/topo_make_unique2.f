@@ -257,7 +257,7 @@ c        if (neqv_blocks.le.1.or..not.changed) exit
         jvtx = ivtx-nj_sub
         do while (jvtx.ge.ist)
           if (i8mat_cmp(lscr,topo(1:nvtx,jvtx:jvtx+nj_sub-1),
-     &                   nvtx,nj_sub).le.0) exit
+     &                   nvtx,nj_sub).ge.0) exit
           topo(1:nvtx,jvtx+nj_sub:jvtx+2*nj_sub-1)
      &          = topo(1:nvtx,jvtx:jvtx+nj_sub-1)
           ireo_loc(jvtx+nj_sub:jvtx+2*nj_sub-1)

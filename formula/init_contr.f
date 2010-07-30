@@ -22,12 +22,16 @@
       contr%nxarc = 0
       contr%nfac = 0
       contr%dagger = .false.
+      contr%unique_set = .false.
       nullify(contr%vertex)
       nullify(contr%arc)
       nullify(contr%xarc)
       nullify(contr%joined)
       nullify(contr%svertex)
       nullify(contr%inffac)
+      nullify(contr%vtx)
+      nullify(contr%topo)
+      nullify(contr%xlines)
       
       return
       end
