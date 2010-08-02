@@ -394,11 +394,11 @@ c          end if
      &         parameters,2,tgt_info)
         end if
 c dbg
-        call form_parameters(-2,parameters,2,
-     &       'stdout',0,'---')
-        call set_rule(form_ptdl0,ttype_frm,PRINT_FORMULA,
-     &       labels,1,0,
-     &       parameters,2,tgt_info)
+c        call form_parameters(-2,parameters,2,
+c     &       'stdout',0,'---')
+c        call set_rule(form_ptdl0,ttype_frm,PRINT_FORMULA,
+c     &       labels,1,0,
+c     &       parameters,2,tgt_info)
 c dbg
         call set_rule(form_ptdl0,ttype_frm,TEX_FORMULA,
      &              labels,5,1,
@@ -423,6 +423,13 @@ c dbg
       call set_rule(form_ptde0,ttype_frm,SUM_HERMIT,
      &              labels,3,1,
      &              title_ptde0,1,tgt_info)
+
+      call form_parameters(-2,parameters,2,
+     &       'stdout',0,'---')
+      call set_rule(form_ptde0,ttype_frm,PRINT_FORMULA,
+     &       labels,1,0,
+     &       parameters,2,tgt_info)
+
       call set_rule(form_ptde0,ttype_frm,TEX_FORMULA,
      &              labels,5,1,
      &              'pt_en.tex',1,tgt_info)

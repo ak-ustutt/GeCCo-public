@@ -169,7 +169,9 @@
       case(aatype_str)
         if (arg_dim.gt.1)
      &       call quit(1,'set_arg',
-     &       'arg_dim can only be 1 for strings')
+     &       'arg_dim can only be 1 for strings ('//
+     &       trim(name_target)//','//trim(command)//
+     &       ','//trim(arg_label)//')')
         n_str_batch = len_trim(val_str)/len_str_batch + 1
         allocate(last_arg%val_str(n_str_batch))
         idxst = 1

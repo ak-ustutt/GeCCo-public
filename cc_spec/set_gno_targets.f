@@ -640,7 +640,7 @@ c dbg
 c      call set_rule2('H_GNO',PRINT_MEL,tgt_info)
 c      call set_arg('H_GNO',PRINT_MEL,'LIST',1,tgt_info,
 c     &             val_label=(/mel_ham/))
-c      call set_arg('H_GNO',PRINT_MEL,'TITLE',1,tgt_info,
+c      call set_arg('H_GNO',PRINT_MEL,'COMMENT',1,tgt_info,
 c     &             val_str='standard Hamiltonian:')
 c dbgend
       call set_rule2('H_GNO',ADD,tgt_info)
@@ -656,7 +656,7 @@ c dbg
       call set_rule2('H_GNO',PRINT_MEL,tgt_info)
       call set_arg('H_GNO',PRINT_MEL,'LIST',1,tgt_info,
      &             val_label=(/mel_ham/))
-      call set_arg('H_GNO',PRINT_MEL,'TITLE',1,tgt_info,
+      call set_arg('H_GNO',PRINT_MEL,'COMMENT',1,tgt_info,
      &             val_str='Normal ordered Hamiltonian:')
 c dbgend
 

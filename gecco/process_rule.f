@@ -895,8 +895,8 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
 
         call get_arg('LIST',rule,tgt_info,val_label=label)
-        call get_arg('MODE',rule,tgt_info,val_str=mode)
-        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call get_arg('COMMENT',rule,tgt_info,val_str=title)
+        call get_arg('FORMAT',rule,tgt_info,val_str=mode)
 
         if (form_test) return
 

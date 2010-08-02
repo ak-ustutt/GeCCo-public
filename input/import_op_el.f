@@ -11,6 +11,8 @@
 
       integer, parameter ::
      &     ntest = 000
+      logical, parameter ::
+     &     hard_restart = .false. ! currently for testing only
 
       include 'stdunit.h'
       include 'def_graph.h'
@@ -41,7 +43,7 @@
       real(8) ::
      &     xdum
       logical ::
-     &     anti
+     &     anti, list_exists
       type(me_list), pointer ::
      &     mel_target
 
@@ -60,6 +62,14 @@
       mel_target => op_info%mel_arr(idx_mel)%mel
 
       anti = .true.
+
+      ! hard restart
+      inquire(file=trim(mel_target%fhand%name),exist=list_exists)
+      if (list_exists.and.hard_restart) then
+        write(luout,*) 'found: ',trim(mel_target%fhand%name)
+        write(luout,*) 'trying a hard restart ... watch out!'
+        return
+      end if
 
       select case(trim(env_type))
       case ('dalton_special','DALTON_SPECIAL')

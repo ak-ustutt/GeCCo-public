@@ -1,11 +1,12 @@
 *----------------------------------------------------------------------*
-      subroutine factor_out_subexpr2(fl_tgt,fl_intm,op_info)
+      subroutine factor_out_subexpr2(fl_tgt,fl_intm,nrpl,op_info)
 *----------------------------------------------------------------------*
 *     input: a definition of an intermediate on fl_intm
 *            a target formula on fl_tgt
 *     find all occurences of the intermediate in fl_tgt and
 *     modify fl_tgt accordingly
-*     on output: a reduced formula on fl_tgt
+*     on output: a reduced formula on fl_tgt, 
+*                the number of replacements on nrpl (info)
 *----------------------------------------------------------------------*
       implicit none
 
@@ -24,6 +25,8 @@
      &     fl_intm
       type(formula_item), target, intent(inout) ::
      &     fl_tgt
+      integer, intent(out) ::
+     &     nrpl
       ! only for debug output:
       type(operator_info), intent(in) ::
      &     op_info
@@ -50,6 +53,8 @@
         write(luout,*) ' factor_out_subexpr messing around'
         write(luout,*) '==================================='
       end if
+
+      nrpl = 0   
 
       call init_contr(contr_rpl)
 
@@ -164,6 +169,7 @@ c dbgend
                 write(luout,*) 'SUCCESS'
                 write(luout,*) 'now modifying formula list'
               end if
+              nrpl = nrpl + 1  ! increment counter
               ! replace first node with new intermediate and delete
               ! all other nodes
               call copy_contr(contr_rpl,fpl_intm_in_tgt%item%contr)

@@ -36,8 +36,8 @@
      &     occ(:,:,:), occset(:,:,:,:), typset(:), idx0set(:,:,:,:),
      &     idxoff_cnt(:,:,:), idxoff_opn(:,:,:), occ_scr(:,:),
      &     arc_seq(:)
-      character ::
-     &     str*1024
+      character(len=1024) ::
+     &     str
 
       integer, external ::
      &     sign_global
@@ -104,14 +104,19 @@ c dbg
       lencnt = 0
 
       if (first) then
+        if (newline) then
+          write(str(ipos:),'("\\")')
+          ipos = ipos+2
+          lencnt = lencnt+2
+        end if
         nset = 1
         typset(1) = 1
         occset(1:ngastp,1:2,1:njres,1) = occ(1:ngastp,1:2,1:njres)
         lencnt = lencnt + max(sum(occ(1:ngastp,1,1:njres)),
      &                        sum(occ(1:ngastp,2,1:njres))) + 3
         idx0set(1:ngastp,1:2,1:njres,1) = 0
-        call tex_op(str,op%name,contr%dagger,
-     &       1,typset,occset,idx0set,njres)
+        call tex_op(str(ipos:),op%name,contr%dagger,
+     &       1,typset,occset,idx0set,njres,maxnj)
         ipos = len_trim(str)+1
         write(str(ipos:),'("&=")')
       else if (newline) then
@@ -124,7 +129,7 @@ c dbg
         lencnt = lencnt+1
       end if
 
-      if (abs(contr%fac-1d0).gt.1d-12) then
+      if (abs(abs(contr%fac)-1d0).gt.1d-12) then
         call real2rat(p,q,abs(contr%fac))
         ipos = len_trim(str)+1
         if (q.ne.1) then
@@ -166,15 +171,21 @@ c dbg
      &                      ) %op
         dagger = contr%vertex(contr%joined(1,isvtx))%dagger
 
+        ! reset collection arrays
+        occset = 0
+        idx0set = 0
+        typset = 0
+        nset = 0
+
         ! set up index info
         do idx = 1, nj
           ivtx = contr%joined(idx,isvtx)
           ! scan arcs for contributions
-          occset = 0
-          idx0set = 0
-          typset = 0
-          nset = 0
-          do iarc0 = 1, narc
+          !occset = 0 ! wrong?
+          !idx0set = 0
+          !typset = 0
+          !nset = 0
+          Do iarc0 = 1, narc
             iarc = arc_seq(iarc0)
             if (contr%arc(iarc)%link(1).eq.ivtx) then
               nset = nset+1
@@ -183,7 +194,7 @@ c dbg
               idx0set(1:ngastp,1:2,idx,nset) =
      &                                   idxoff_cnt(1:ngastp,1:2,iarc0)
             end if
-            if (contr%arc(iarc)%link(2).eq.ivtx) then
+            if (contr%arc(iarc)%link(2).Eq.ivtx) then
               nset = nset+1
               typset(nset) = 3
               occset(1:ngastp,1:2,idx,nset) =
@@ -209,7 +220,7 @@ c dbg
         ! generate operator symbol and indices
         ipos = len_trim(str)+1
         call tex_op(str(ipos:),op%name,dagger,
-     &       nset,typset,occset,idx0set,nj)
+     &       nset,typset,occset,idx0set,nj,maxnj)
 
         lencnt = lencnt + 1 + 
      &       max( sum(occset(1:ngastp,1,1:nj,1:nset)),

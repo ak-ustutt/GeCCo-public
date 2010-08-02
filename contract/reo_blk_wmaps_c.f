@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine reo_blk_wmaps_c(xop_reo,xop_ori,
+     &     len_reo,len_ori,
      &     sign_reo,
      &     tra_opreo,tra_opori,
      &     ms_op_c,ms_op_a,gm_op_c,gm_op_a,
@@ -50,9 +51,9 @@
       ! buffer with ALL distributions of current MS, IRREP
       real(8), intent(inout) ::
      &     xop_reo(*)
-      ! global sign factor
+      ! global sign factor, and lengthes of buffers
       integer, intent(in) ::
-     &     sign_reo
+     &     sign_reo, len_reo, len_ori
       ! transposed addressing?
       logical, intent(in) ::
      &     tra_opreo, tra_opori
@@ -796,6 +797,14 @@ c                        print *,'idx_opreo, idx_opori: ',
 c     &                          idx_opreo,idx_opori
 c dbgend
 
+c dbg
+c                        if (idx_opreo.lt.0.or.idx_opreo.gt.len_reo.or.
+c     &                      idx_opori.lt.0.or.idx_opori.gt.len_ori) then
+c                          print *,'RANGE dx_opreo/ori: ',
+c     &                            idx_opreo,idx_opori
+c                          print *,'max: ',len_reo,len_ori
+c                        end if
+c dbg
                         xop_reo(idx_opreo) = xop_reo(idx_opreo)
      &                       + dble(isgnt)*xop_ori(idx_opori)
 

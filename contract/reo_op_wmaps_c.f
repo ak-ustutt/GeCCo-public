@@ -191,15 +191,16 @@
       if (igamtopori.ne.igamtopreo)
      &     call quit(1,'reo_op_wmaps_c','inconsistent symmetries')
 
-      if (lenopori.le.0.or.lenopreo.le.0) then
-        write(luout,*)
-     &       trim(opori%name),' ',
-     &       trim(opreo%name),' '
-        write(luout,*) 'lenopori, lenopreo: ',
-     &                  lenopori, lenopreo
-        call quit(1,'reo_op_wmaps_c',
-     &     'zero length for operator?')
-      end if
+! just accept that in some strange cases this happens not being an error
+!      if (lenopori.le.0.or.lenopreo.le.0) then
+!        write(luout,*)
+!     &       trim(opori%name),' ',
+!     &       trim(opreo%name),' '
+!        write(luout,*) 'lenopori, lenopreo: ',
+!     &                  lenopori, lenopreo
+!        call quit(1,'reo_oporiopreo_wmaps_c',
+!     &     'zero length for operator?')
+!      end if
 
       ifree = mem_setmark('reo1')
 
@@ -484,6 +485,7 @@ c          call wrt_mel_buf(luout,5,xoporiopreo,me_oporiopreo,
 c     &         iblkoporiopreo,iblkoporiopreo,str_info,orb_info)
 c dbg
             call reo_blk_wmaps_c(xopreo,xopori(idxopori),
+     &                   lenopreo,lenopori-idxopori+1, ! just for checks
      &                   reo_info%sign_reo,
      &                   tra_opreo,tra_opori,
      &                   msc,msa,igamc,igama,

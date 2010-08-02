@@ -287,7 +287,7 @@ c
 
       call atim_csw(cpu,sys,wall)
 
-      if (iprlvl.ge.5) 
+      if (iprlvl.ge.1) 
      &     call prtim(luout,'time in 2int import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 

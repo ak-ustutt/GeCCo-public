@@ -21,6 +21,8 @@ c      use parse_input
      &     len=256)
       call argument_add('memmax',context='general',type=vtyp_int,
      &     len=1,idef=(/50 000 000/))
+      call argument_add('print',context='general',type=vtyp_int,
+     &     len=1,idef=(/3/))
       call argument_add('form_test','general',type=vtyp_log,
      &     ldef=(/.false./))
       call argument_add('statistics','general',type=vtyp_log,
@@ -123,6 +125,10 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./))
       call argument_add('vring','method.R12',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('use_CS','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
+      call argument_add('pert','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
       call argument_add('opt','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
 

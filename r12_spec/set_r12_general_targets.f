@@ -35,14 +35,15 @@
      &     connect(20), idx_sv(20), iblkmin(20),
      &     iblkmax(20)
       logical ::
-     &     needed, r12fix, extend, truncate, frozen, frozen_old, pz_eval
+     &     needed, r12fix, extend, truncate, frozen,frozen_old, pz_eval,
+     &     pf12_trunc
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
       character(len_command_par) ::
      &     parameters(3)
-      character(12) ::
-     &     approx, F_appr, K_appr, shell_typ
+      character(20) ::
+     &     approx, F_appr, K_appr, Z_appr, shell_typ
 
       character(*), intent(in) ::
      &     env_type
@@ -56,13 +57,15 @@
 *     read input
 *----------------------------------------------------------------------*
       ! set approx string
-      approx(1:12) = ' '
-      F_appr(1:12) = ' '
-      K_appr(1:12) = ' '
+      approx(1:20) = ' '
+      F_appr(1:20) = ' '
+      K_appr(1:20) = ' '
+      Z_appr(1:20) = ' '
       call get_argument_value('method.R12','ansatz',ival=ansatz)
       call get_argument_value('method.R12','approx',str=approx)
       call get_argument_value('method.R12','F_appr',str=F_appr)
       call get_argument_value('method.R12','K_appr',str=K_appr)
+      call get_argument_value('method.R12','Z_appr',str=Z_appr)
       call get_argument_value('method.R12','minexc',ival=min_rank)
       call get_argument_value('method.R12','maxexc',ival=max_rank)
       call get_argument_value('method.R12','fixed',lval=r12fix)
@@ -75,19 +78,39 @@
         call get_argument_value('method.truncate','trunc_type',
      &       ival=trunc_type)
       end if
+      pf12_trunc = truncate.and.trunc_type.eq.0
       ! Frozen core?
       frozen = .false.
-      shell_typ(1:12) = ' '
+      shell_typ(1:len(shell_typ)) = ' '
       if(is_keyword_set('orb_space.shell').gt.0)then
         call get_argument_value('orb_space.shell','type',
      &       str=shell_typ)
         frozen = trim(shell_typ).eq.'frozen'
       endif
-c dbg
-      print *,'unsetting frozen_old'
-      frozen_old = .false.
-      call warn('set_r12_general_targets','frozen_old set to F')
-c dbg
+
+      select case(trim(Z_appr))
+      case('direct')
+        write(luout,*) 'direct RI evaluation of Z intermediate'
+        approx(14:17) = 'DRCT'
+      case('none','J2K3')
+        write(luout,*) 'no approximations to Z intermediate made'
+        approx(14:17) = 'J2K3'
+      case default
+        if (Z_appr(1:1).ne.'J'.or.Z_appr(3:3).ne.'K'.or.
+     &      (Z_appr(2:2).ne.'0'.and.
+     &       Z_appr(2:2).ne.'1'.and.
+     &       Z_appr(2:2).ne.'2').or.
+     &      (Z_appr(4:4).ne.'0'.and.
+     &       Z_appr(4:4).ne.'1'.and.
+     &       Z_appr(4:4).ne.'2'.and.
+     &       Z_appr(4:4).ne.'3')) then
+          call quit(0,'set_r12_general_targets',
+     &       'Z_appr unknown: "'//trim(Z_appr)//'"')
+        end if
+        write(luout,*) 'approximation to Z intermediate: ',trim(Z_appr)
+        approx(14:17) = Z_appr(1:4)
+      end select
+
 
       ! actual processing moved to set_r12f_general_targets
       extend = mode.gt.0
@@ -571,7 +594,8 @@ c     &              parameters,1,tgt_info)
       occ_def(IHOLE,2,10) = 2
 
       ndef = 1
-      if (is_keyword_set('method.CC').gt.0) ndef = 5
+      if (is_keyword_set('method.CC').gt.0.and.pf12_trunc) ndef = 3
+      if (is_keyword_set('method.CC').gt.0.and..not.pf12_trunc) ndef = 5
       
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,2,(/  0,   0,  0,   0/),10)
@@ -1071,7 +1095,6 @@ c     &              parameters,2,tgt_info)
       ! F12: op_gr
       call add_target(form_r12_vcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_vcabs,op_v_inter,tgt_info)
-c      call set_dependency(form_r12_vcabs,op_unity,tgt_info)
       call set_dependency(form_r12_vcabs,op_gr,tgt_info)
       call set_dependency(form_r12_vcabs,op_g_x,tgt_info)
       call set_dependency(form_r12_vcabs,op_rint,tgt_info)
@@ -1314,7 +1337,7 @@ c     &     parameters,2,title_r12_cint,0,'fxr')
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_ccabs
       labels(2) = op_c_inter
-      if (approx.eq.'B') then
+      if (approx(1:1).eq.'B') then
         labels(3) = op_rint
         labels(4) = op_ham
         labels(5) = op_ttr
@@ -1717,6 +1740,37 @@ c        call set_dependency(fopt_r12_pcabs,mel_gintx,tgt_info)
      &                parameters,1,tgt_info)
 
       endif        
+
+      ! set Z (direct eval)
+      call add_target('ZINT_R12_DIR',ttype_frm,.false.,tgt_info)
+      call set_dependency('ZINT_R12_DIR',form_r12_zint,tgt_info)
+      call set_dependency('ZINT_R12_DIR',mel_z_def,tgt_info)
+      call set_dependency('ZINT_R12_DIR',mel_rint,tgt_info)
+      call set_dependency('ZINT_R12_DIR',mel_ham,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'ZINT_R12_DIR'
+      labels(2) = form_r12_zint
+      labels(3) = op_r12
+      labels(4) = op_rint
+      labels(5) = op_r12//'^+'
+      labels(6) = op_rint//'^+'
+      nint = 2
+      call form_parameters(-1,
+     &     parameters,2,'Z direct',nint,'---')
+      call set_rule('ZINT_R12_DIR',ttype_frm,REPLACE,
+     &     labels,2+nint*2,1,
+     &     parameters,2,tgt_info)
+      labels(1:10)(1:len_target_name) = ' '
+      labels(1) = 'ZINT_R12_DIR'
+      labels(2) = 'ZINT_R12_DIR'
+      ncat = 1
+      nint = 0
+      call opt_parameters(-1,parameters,ncat,nint)
+      call set_rule('ZINT_R12_DIR',ttype_frm,OPTIMIZE,
+     &              labels,ncat+nint+1,1,
+     &              parameters,1,tgt_info)
+
+
 c dbg - test
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = 'Z0TEST-OPT'

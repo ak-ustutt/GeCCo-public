@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine tex_op(str,name,dagger,nset,typset,occset,idx0set,nj)
+      subroutine tex_op(str,name,dagger,
+     &     nset,typset,occset,idx0set,nj,maxnj)
 *----------------------------------------------------------------------*
 *     print operator in TeX style on string str
 *----------------------------------------------------------------------*
@@ -34,9 +35,12 @@
       logical, intent(in) ::
      &     dagger
       integer, intent(in) ::
-     &     nset, nj, typset(nset), occset(ngastp,2,nj,nset),
-     &                             idx0set(ngastp,2,nj,nset)
+     &     nset, nj, maxnj, typset(nset), 
+     &     occset(ngastp,2,maxnj,nset),
+     &     idx0set(ngastp,2,maxnj,nset)
 
+      logical ::
+     &     idx_written
       character ::
      &     charidx
       integer ::
@@ -108,6 +112,7 @@ c      end if
         do ij = 1, nj
 c          do iset = 1, nset
 c            do hpvx = 1, ngastp
+          idx_written = .false.
           do hpvx = 1, ngastp
             do iset = 1, nset
               nidx = occset(hpvx,ica,ij,iset)
@@ -117,12 +122,17 @@ c            do hpvx = 1, ngastp
      &                          (hpvx-1)*3 + typset(iset))
 
               do iidx = idx0+1, idx0+nidx
+                idx_written = .true.
                 ipos = len_trim(str)+1
 c                write(str(ipos:),'(a,"_{",i2,"}")') charidx,iidx
                 write(str(ipos:),'("\idx",a,a)') charidx,enumchar(iidx)
               end do
             end do
           end do
+          if (ij.lt.nj.and.idx_written) then ! separator for supervertices
+            ipos = len_trim(str)+1
+            write(str(ipos:),'(",")')
+          end if
         end do
         ipos = len_trim(str)+1
         write(str(ipos:),'("}")')

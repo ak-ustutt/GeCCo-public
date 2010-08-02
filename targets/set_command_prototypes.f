@@ -297,9 +297,9 @@
       call add_command_proto(PRINT_RES,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_MEL,tgt_info)
-      call set_arg('_PROTO_',PRINT_MEL,'MODE',1,tgt_info,
+      call set_arg('_PROTO_',PRINT_MEL,'FORMAT',1,tgt_info,
      &     val_str='LIST')
-      call set_arg('_PROTO_',PRINT_MEL,'TITLE',1,tgt_info,
+      call set_arg('_PROTO_',PRINT_MEL,'COMMENT',1,tgt_info,
      &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(SET_MEL,tgt_info)

@@ -222,6 +222,8 @@ c        else if (njoined_int.eq.2) then
           nvtx = 4
           nfact = 3
           nconnect = 0
+          navoid = 1
+          avoid(1:2) = (/3,4/) ! fix to avoid contributions from ph-geminals
           project(1:8)=(/2,3,1,-IHOLE,1,3,1,IPART/) ! enforce the hole contraction
                                       ! enforce that one particle line comes from R
           nproject=2
@@ -301,6 +303,19 @@ c        else if (njoined_int.eq.2) then
         end if
       case('C','Cp')
         def_fpp = .true.
+        idx_rpl = 2
+        if (njoined_int.eq.1) then
+          idx_prod(1:4) = (/idx_intm,idx_f,idx_r,idx_intm/)
+          idx_supv(1:4) = (/1       ,2    ,3    ,1       /)
+          nvtx     = 4
+          nfact    = 3
+          connect(1:2)  = (/2,3/)
+          nconnect = 1
+        else
+          unknown = .true.
+        end if
+      case('C1')
+        def_fp3f = .true.
         idx_rpl = 2
         if (njoined_int.eq.1) then
           idx_prod(1:4) = (/idx_intm,idx_f,idx_r,idx_intm/)

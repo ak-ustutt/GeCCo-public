@@ -95,7 +95,7 @@
      &     msex1_a, msex1_c, msex2_a, msex2_c,
      &     igamc_ac, igamc_a, igamc_c,
      &     igamex1_a, igamex1_c, igamex2_a, igamex2_c,
-     &     idxms, idxdis, lenmap, lblk_op1op2tmp,
+     &     idxms, idxdis, lenmap, lbuf_op1op2, lblk_op1op2tmp,
      &     idxdis_op1op2, idx
       integer ::
      &     ncblk_op1, nablk_op1, ncblk_ex1, nablk_ex1, 
@@ -544,12 +544,15 @@ c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
           ! LOWER incore requirements:
           ! see above
           ! decide on buftyp12 here
-          lenscr = 2*ifree/3
-          call set_op_scratch(lenbuf,buftyp12,me_op1op2,iblkop1op2,
+          if (.not.reo_op1op2) then
+            lenscr = 2*ifree/3
+            call set_op_scratch(lenbuf,buftyp12,me_op1op2,iblkop1op2,
      &         lenscr,orb_info)
-c dbg
-c          print *,'set_op_scratch12: ',lenbuf,buftyp12,lenscr
-c dbg
+          else
+            ! for reordered operators, we currently only can do:
+            buftyp12 = 0
+            lenbuf = lenop1op2
+          end if
           ! presently: only buftyp12=0/1
 c          if (buftyp12.gt.1) then
 c            call warn('contr_op1op2_wmaps_c','setting buftyp12 to 1')
@@ -561,6 +564,7 @@ c          end if
           use_tr_here = use_tr_here.and.buftyp12.eq.0
 
           ifree = mem_alloc_real(xbf12,lenbuf,'xbf12')
+          lbuf_op1op2 = lenbuf
           xop1op2 => xbf12
           if (buftyp12.eq.0) then
             ioff_op1op2 = idxst_op1op2-1
@@ -1826,7 +1830,11 @@ c dbg
                     if (igam12i_a(3).ne.igam12i_raw(3))
      &                 call quit(1,'contr_op1op2_wmaps_c',
      &                           'check this case')
+c dbg
+c          print *,'lblk_op1op2tmp: ',lblk_op1op2tmp
+c dbg
                     call reo_blk_wmaps_c(xop1op2,xop1op2blk,
+     &                   lbuf_op1op2,lblk_op1op2tmp,
      &                   reo_info%sign_reo,
      &                   tra_op1op2, tra_op1op2,
      &                   ms12i_c(3),ms12i_a(3),
