@@ -23,12 +23,27 @@
      &     op_info
 
       integer ::
-     &     idxop_tgt, iblk_tgt, iterm, jterm
+     &     idxop_tgt, iblk_tgt, iterm, jterm, ivtx, iarc,
+     &     nvtx, nj, narc, nxarc, nsupvtx, sum_op1, sum_op,
+     &     sum_blk1, sum_blk, occ1(ngastp,2), occ(ngastp,2)
+      logical ::
+     &     unique_set
+
       type(formula_item), pointer ::
      &     fl_tgt_pnt, fl_tgt_pnt_next, fl_tgt_current
+      type(cntr_vtx), pointer ::
+     &     vtx1(:), vtx2(:)
+      type(cntr_arc), pointer ::
+     &     arc1(:), arc2(:)
 
+      integer(8), pointer ::
+     &     ivtx1(:),topo1(:,:),xlines1(:,:),
+     &     ivtx2(:),topo2(:,:),xlines2(:,:)
+
+      integer, external ::
+     &     i8list_cmp, njres_contr
       logical, external ::
-     &     cmp_contr
+     &     iocc_zero
 
       ! if first entry is an [END]: do nothing
       if (fl_tgt%command.eq.command_end_of_formula) return
@@ -65,7 +80,32 @@
           fl_tgt_current => fl_tgt_current%next
         end if
 
+        ! prepare some integers and checksums for comparison
         iblk_tgt = fl_tgt_current%contr%iblk_res
+        nvtx = fl_tgt_current%contr%nvtx
+        nj = njres_contr(fl_tgt_current%contr)
+        narc = fl_tgt_current%contr%narc
+        nxarc = fl_tgt_current%contr%nxarc
+        nsupvtx = fl_tgt_current%contr%nsupvtx
+        vtx1 => fl_tgt_current%contr%vertex
+        arc1 => fl_tgt_current%contr%arc
+        sum_op1  = 0
+        sum_blk1 = 0
+        do ivtx = 1, nvtx
+          sum_op1  = sum_op1  + vtx1(ivtx)%idx_op
+          sum_blk1 = sum_blk1 + vtx1(ivtx)%iblk_op
+        end do
+        occ1 = 0
+        do iarc = 1, narc
+          occ1 = occ1 + arc1(iarc)%occ_cnt
+        end do
+        unique_set = fl_tgt_current%contr%unique_set
+        if (unique_set) then
+          ivtx1 => fl_tgt_current%contr%vtx
+          topo1 => fl_tgt_current%contr%topo
+          xlines1 => fl_tgt_current%contr%xlines
+        end if
+
         iterm = iterm+1
         jterm = iterm+1
         if (ntest.ge.100) then
@@ -88,27 +128,64 @@
      &         'unexpected end of list (target, inner loop)')
           fl_tgt_pnt_next => fl_tgt_pnt%next
           
-          if (fl_tgt_pnt%contr%iblk_res.eq.iblk_tgt) then
+          if (fl_tgt_pnt%contr%iblk_res.eq.iblk_tgt.and.
+     &        fl_tgt_pnt%contr%nvtx.eq.nvtx.and.
+     &        fl_tgt_pnt%contr%narc.eq.narc.and.
+     &        fl_tgt_pnt%contr%nxarc.eq.nxarc.and.
+     &        fl_tgt_pnt%contr%nsupvtx.eq.nsupvtx) then
             if (fl_tgt_pnt%contr%idx_res.ne.idxop_tgt)
      &           call quit(1,'sum_terms',
      &           'suspicious change of operator target')
 
-            if (cmp_contr(fl_tgt_pnt%contr,
-     &                    fl_tgt_current%contr,.true.)) then
-              if (ntest.ge.100) then
-                write(luout,*) 'found equal term: # ',jterm
-                call prt_contr2(luout,fl_tgt_pnt%contr,
-     &               op_info)
-                write(luout,*) 'now summing and deleting'
+            ! pre-screen with checksums
+            vtx2 => fl_tgt_pnt%contr%vertex
+            sum_op  = sum_op1
+            sum_blk = sum_blk1
+            do ivtx = 1, fl_tgt_pnt%contr%nvtx
+              sum_op  = sum_op  - vtx2(ivtx)%idx_op
+              sum_blk = sum_blk - vtx2(ivtx)%iblk_op
+            end do
+            if (sum_op.eq.0.and.sum_blk.eq.0) then
+              arc2 => fl_tgt_pnt%contr%arc
+              occ = occ1
+              do iarc = 1, fl_tgt_pnt%contr%narc
+                occ = occ - arc2(iarc)%occ_cnt
+              end do
+              if (iocc_zero(occ)) then
+c dbg
+c                print *,'iterm,jterm: ',iterm,jterm
+c dbgend
+                if (.not.unique_set) then
+                  call topo_set_unique(fl_tgt_current%contr)
+                  unique_set = .true.
+                  ivtx1 => fl_tgt_current%contr%vtx
+                  topo1 => fl_tgt_current%contr%topo
+                  xlines1 => fl_tgt_current%contr%xlines
+                end if
+                if (.not.fl_tgt_pnt%contr%unique_set)
+     &                 call topo_set_unique(fl_tgt_pnt%contr)
+
+                ivtx2 => fl_tgt_pnt%contr%vtx
+                if (i8list_cmp(ivtx1,ivtx2,nvtx).eq.0) then
+                 topo2 => fl_tgt_pnt%contr%topo
+                 if (i8list_cmp(topo1,topo2,nvtx*nvtx).eq.0) then
+                  xlines2 => fl_tgt_pnt%contr%xlines
+                  if (i8list_cmp(xlines1,xlines2,nvtx*nj).eq.0) then
+
+                    if (ntest.ge.100) then
+                      write(luout,*) 'found equal term: # ',jterm
+                      call prt_contr2(luout,fl_tgt_pnt%contr,
+     &                     op_info)
+                      write(luout,*) 'now summing and deleting'
+                    end if
+                    fl_tgt_current%contr%fac =
+     &                   fl_tgt_current%contr%fac + fl_tgt_pnt%contr%fac
+                    call delete_fl_node(fl_tgt_pnt)
+                    deallocate(fl_tgt_pnt)
+                  end if
+                 end if
+                end if
               end if
-              fl_tgt_current%contr%fac =
-     &             fl_tgt_current%contr%fac + fl_tgt_pnt%contr%fac
-              call delete_fl_node(fl_tgt_pnt)
-              deallocate(fl_tgt_pnt)
-            else if (ntest.ge.1000) then              
-              write(luout,*) 'non-equiv term: # ',jterm
-              call prt_contr2(luout,fl_tgt_pnt%contr,
-     &               op_info)
             end if
           end if
 

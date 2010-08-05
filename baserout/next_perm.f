@@ -106,6 +106,7 @@
       integer ::
      &     ihlp, idx, jdx, kdx, imin, idxmin
 
+      succ = .false.
       main_loop : do idx = nel-1, 1, -1
 
         if (nel-idx.eq.1) then

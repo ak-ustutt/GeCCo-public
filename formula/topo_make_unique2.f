@@ -104,6 +104,10 @@ c      call idxsort(svtx,ireo,nvtx,+1)
 
       ! apply reordering to topo
       call reoi8mat(topo,ireo,nvtx,nvtx,3)
+c dbg
+c      print *,'before first sweep:'
+c      call prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx,nj)
+c dbg
 
       ! look for vertices with both equal entry on vtx and xlines
       final_sweep = 0
@@ -238,26 +242,30 @@ c        if (neqv_blocks.le.1.or..not.changed) exit
       integer ::
      &     ivtx, jvtx, ihlp(nj_sub), jhlp(nj_sub), ireo_loc(nvtx)
       integer(8) ::
-     &     lscr(nvtx,nj_sub), iscr(nvtx,nj_sub), jscr(nvtx,nj_sub)
+     &     lscr(nvtx,nj_sub), scr1(nvtx,nj_sub), scr2(nvtx,nj_sub)
 
       integer, external ::
      &     i8mat_cmp
       
       if (nvtx.eq.0) return
 
-      do ivtx = 1, nvtx
-        ireo_loc(ivtx) = ivtx
-      end do
-
       changed = .false.
       do ivtx = ist+nj_sub, ind-nj_sub+1, nj_sub
+
+        do jvtx = 1, nvtx
+          ireo_loc(jvtx) = jvtx
+        end do
+
         lscr(1:nvtx,1:nj_sub) = topo(1:nvtx,ivtx:ivtx+nj_sub-1)
         ihlp(1:nj_sub) = ireo_loc(ivtx:ivtx+nj_sub-1)
         jhlp(1:nj_sub) = ireo(ivtx:ivtx+nj_sub-1)
         jvtx = ivtx-nj_sub
         do while (jvtx.ge.ist)
-          if (i8mat_cmp(lscr,topo(1:nvtx,jvtx:jvtx+nj_sub-1),
-     &                   nvtx,nj_sub).ge.0) exit
+          scr1 = lscr
+          scr2 = topo(1:nvtx,jvtx:jvtx+nj_sub-1)
+          scr1(jvtx:jvtx+nj_sub-1,1:nj_sub) = 0
+          scr2(ivtx:ivtx+nj_sub-1,1:nj_sub) = 0
+          if (i8mat_cmp(scr1,scr2,nvtx,nj_sub).ge.0) exit
           topo(1:nvtx,jvtx+nj_sub:jvtx+2*nj_sub-1)
      &          = topo(1:nvtx,jvtx:jvtx+nj_sub-1)
           ireo_loc(jvtx+nj_sub:jvtx+2*nj_sub-1)
@@ -266,15 +274,19 @@ c        if (neqv_blocks.le.1.or..not.changed) exit
      &          = ireo(jvtx:jvtx+nj_sub-1)
           jvtx = jvtx-nj_sub
         end do
-        changed = changed.or.jvtx.ne.ivtx-nj_sub
-        topo(1:nvtx,jvtx+nj_sub:jvtx+2*nj_sub-1)
+        if (jvtx.ne.ivtx-nj_sub) then
+          changed = .true.
+          topo(1:nvtx,jvtx+nj_sub:jvtx+2*nj_sub-1)
      &          = lscr(1:nvtx,1:nj_sub)
-        ireo_loc(jvtx+nj_sub:jvtx+2*nj_sub-1) = ihlp(1:nj_sub)
-        ireo(jvtx+nj_sub:jvtx+2*nj_sub-1) = jhlp(1:nj_sub)
+          ireo_loc(jvtx+nj_sub:jvtx+2*nj_sub-1) = ihlp(1:nj_sub)
+          ireo(jvtx+nj_sub:jvtx+2*nj_sub-1) = jhlp(1:nj_sub)
+c dbg
+c          write(*,'(a,12i4)') 'ireo_loc: ',ireo_loc
+c dbgend
+          ! reorder rows as well
+          call reoi8mat(topo,ireo_loc,nvtx,nvtx,1)
+        end if
       end do
-
-      ! reorder rows as well
-      call reoi8mat(topo,ireo_loc,nvtx,nvtx,1)      
 
       return
       end
