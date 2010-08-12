@@ -155,7 +155,8 @@ c dbgend
         write(luout,*) 'vtxmap: ',vtxmap
       end if
 
-      deallocate(xlines_a,xlines_b,topo_a,topo_b,
+      deallocate(svertex_a,svertex_b,
+     &     xlines_a,xlines_b,topo_a,topo_b,
      &     list,ireo,vtxmap,vtx_a,vtx_b,list_reo)
 
       return

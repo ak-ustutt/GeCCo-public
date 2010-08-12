@@ -72,6 +72,8 @@ c
      &       unique_set  ! unique representation (topo etc.) defined?
         integer(8), pointer ::
      &       vtx(:), topo(:,:), xlines(:,:)
+        integer(8) ::
+     &       hash      ! for quick comparison
 *----------------------------------------------------------------------*
 *	factorization info organized as:
 *         ((vertex1,vertex2,intermediate1),

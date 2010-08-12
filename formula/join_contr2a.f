@@ -43,7 +43,7 @@
      &     reo, unique, done
       integer ::
      &     nvtx_abc, nvtx_ac, nvtx_a, nvtx_b, nvtx_c,
-     &     narc_abc, narc_abc0, narc_ac, narc_b, 
+     &     narc_abc, narc_abc0, narc_ac, narc_b, nxarc_ac,
      &     idx, ivtx_abc, iarc, ivtx, jvtx, jvtx_last,
      &     nproto_ac, nproto_b, idxsuper,
      &     nsuper, njoined, isuper, njoined_abc,
@@ -59,7 +59,7 @@
       integer(8), pointer ::
      &     vtx(:), topo(:,:), xlines(:,:)
       logical, pointer ::
-     &     fix_vtx(:)
+     &     fix_vtx(:), found(:)
 
       type(cntr_arc), pointer ::
      &     arc(:)
@@ -83,6 +83,7 @@
 
       nvtx_ac = contr_ac%nvtx
       narc_ac = contr_ac%narc
+      nxarc_ac = contr_ac%nxarc
 
       ! count proto-vertices in AC:
       nproto_ac = 0
@@ -179,8 +180,8 @@ c      nsuper = ifndmax(svmap,1,nvtx_b,1)
       ! make some assumptions about the number of arcs in the 
       ! proto contraction
       narc_abc = min(
-     &     narc_ac+narc_b+nvtx_ac*(nvtx_ac-1)+nvtx_b*(nvtx_b-1),
-     &     nvtx_abc*(nvtx_abc-1))
+     &     narc_ac+narc_b+nvtx_ac*(nvtx_ac-1)+nvtx_b*(nvtx_b-1)
+     &     +2*nvtx_ac,(nvtx_abc+2)*(nvtx_abc+1))
 
       if (ntest.ge.1000) then
         write(luout,*) 'nvtx_ac, nvtx_b, nvtx_abc: ',
@@ -259,6 +260,50 @@ c      nsuper = ifndmax(svmap,1,nvtx_b,1)
         contr_abc%arc(narc_abc)%occ_cnt =
      &       contr_b%arc(idx)%occ_cnt
       end do
+
+      ! external arcs from A and C
+      ! and [0] contractions to avoid unwanted external arcs
+      occ_x = 0
+      do idx = 1, njoined_abc
+        occ_x = occ_x + op_info%op_arr(idxop_abc)%op%ihpvca_occ(
+     &                   1:ngastp,1:2,ioff+idx)
+      end do
+      if (iocc_nonzero(occ_x)) then
+        allocate(found(nvtx_abc))
+        found = .false.
+        do idx = 1, nxarc_ac
+          ivtx = ivtx_ac_reo(contr_ac%xarc(idx)%link(1))
+          if (found(ivtx)) call quit(1,'join_contr2a',
+     &                'more than one external arc for one vertex?')
+          found(ivtx) = .true.
+          ! connect excitation part to first vertex ...
+          occ_x = iocc_xdn(1,contr_ac%xarc(idx)%occ_cnt)
+          narc_abc = narc_abc + 1
+          contr_abc%arc(narc_abc)%link(1) = 1
+          contr_abc%arc(narc_abc)%link(2) = 1 + ivtx
+          contr_abc%arc(narc_abc)%occ_cnt = iocc_dagger(occ_x)
+          ! ... and deexcitation part to last vertex
+          occ_x = iocc_xdn(2,contr_ac%xarc(idx)%occ_cnt)
+          narc_abc = narc_abc + 1
+          contr_abc%arc(narc_abc)%link(1) = 1 + ivtx
+          contr_abc%arc(narc_abc)%link(2) = nvtx_abc + 2
+          contr_abc%arc(narc_abc)%occ_cnt = occ_x
+        end do
+        do jvtx = 1, nvtx_ac
+          ivtx = ivtx_ac_reo(jvtx)
+          if (ivtx.ne.0.and..not.found(ivtx)) then
+            narc_abc = narc_abc + 1
+            contr_abc%arc(narc_abc)%link(1) = 1
+            contr_abc%arc(narc_abc)%link(2) = 1 + ivtx
+            contr_abc%arc(narc_abc)%occ_cnt = 0
+            narc_abc = narc_abc + 1
+            contr_abc%arc(narc_abc)%link(1) = 1 + ivtx
+            contr_abc%arc(narc_abc)%link(2) = nvtx_abc + 2
+            contr_abc%arc(narc_abc)%occ_cnt = 0
+          end if
+        end do
+        deallocate(found)
+      end if
 
       if (.not.unique) then
         allocate(svtx(nvtx_b),vtx(nvtx_b),topo(nvtx_b,nvtx_b),
@@ -383,6 +428,7 @@ c      nsuper = ifndmax(svmap,1,nvtx_b,1)
 
       ! preliminary setting
       contr_abc%narc = narc_abc
+      contr_abc%nxarc = 0
       contr_abc%nfac = 0
 
       if (ntest.ge.1000) then

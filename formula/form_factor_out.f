@@ -43,6 +43,8 @@ c      include 'def_contraction_list.h'
      &     iintm, idx, len, nrpl
       character ::
      &     name*(form_maxlen_label*2)
+      real(8) ::
+     &     cpu0, sys0, wall0, cpu, sys, wall
 
       type(filinf), pointer ::
      &     ffintm
@@ -50,7 +52,7 @@ c      include 'def_contraction_list.h'
      &     flist, fl_intm
 
       integer, external ::
-     &     idx_formlist
+     &     idx_formlist, form_count
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,
@@ -100,10 +102,19 @@ c      include 'def_contraction_list.h'
         if (transpose)
      &       call transpose_formula(fl_intm,op_info)
 
+        call atim_csw(cpu0,sys0,wall0)
         call factor_out_subexpr2(flist,fl_intm,nrpl,op_info)
+        call atim_csw(cpu,sys,wall)
 
-        if (iprlvl.ge.2) write(luout,'(x,a40,": ",i4," replacements")')
+        if (iprlvl.ge.2) write(luout,'(x,a40,": ",i6," replacements")')
      &                  trim(label_f_intm(iintm)),nrpl 
+        if (iprlvl.ge.2) then
+          len = form_count(flist)
+          write(luout,'(x,"formula reduced to ",i10," items")') len
+        end if
+        if (iprlvl.ge.2)
+     &     call prtim(luout,'factoring out',
+     &     cpu-cpu0,sys-sys0,wall-wall0)
 
         call dealloc_formula_list(fl_intm)
 
@@ -117,7 +128,7 @@ c      include 'def_contraction_list.h'
       f_output%comment = trim(title)
       call write_form_list(f_output%fhand,flist,title)
 
-      if (ntest.ge.100) then
+      if (ntest.ge.1000) then
         call write_title(luout,wst_around_double,'Factored formula:')
         call print_form_list(luout,flist,op_info)
       end if

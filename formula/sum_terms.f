@@ -27,7 +27,9 @@
      &     nvtx, nj, narc, nxarc, nsupvtx, sum_op1, sum_op,
      &     sum_blk1, sum_blk, occ1(ngastp,2), occ(ngastp,2)
       logical ::
-     &     unique_set
+     &     unique_set, ok
+      integer(8) ::
+     &     hash
 
       type(formula_item), pointer ::
      &     fl_tgt_pnt, fl_tgt_pnt_next, fl_tgt_current
@@ -104,10 +106,14 @@
           ivtx1 => fl_tgt_current%contr%vtx
           topo1 => fl_tgt_current%contr%topo
           xlines1 => fl_tgt_current%contr%xlines
+          hash = fl_tgt_current%contr%hash
         end if
 
         iterm = iterm+1
         jterm = iterm+1
+c dbg
+c        print *,'term: ',iterm
+c dbgend
         if (ntest.ge.100) then
           write(luout,*) 'current term: # ',iterm
           call prt_contr2(luout,fl_tgt_current%contr,op_info)
@@ -127,66 +133,88 @@
      &         call quit(1,'sum_terms',
      &         'unexpected end of list (target, inner loop)')
           fl_tgt_pnt_next => fl_tgt_pnt%next
-          
-          if (fl_tgt_pnt%contr%iblk_res.eq.iblk_tgt.and.
-     &        fl_tgt_pnt%contr%nvtx.eq.nvtx.and.
-     &        fl_tgt_pnt%contr%narc.eq.narc.and.
-     &        fl_tgt_pnt%contr%nxarc.eq.nxarc.and.
-     &        fl_tgt_pnt%contr%nsupvtx.eq.nsupvtx) then
-            if (fl_tgt_pnt%contr%idx_res.ne.idxop_tgt)
-     &           call quit(1,'sum_terms',
-     &           'suspicious change of operator target')
 
-            ! pre-screen with checksums
-            vtx2 => fl_tgt_pnt%contr%vertex
-            sum_op  = sum_op1
-            sum_blk = sum_blk1
-            do ivtx = 1, fl_tgt_pnt%contr%nvtx
-              sum_op  = sum_op  - vtx2(ivtx)%idx_op
-              sum_blk = sum_blk - vtx2(ivtx)%iblk_op
-            end do
-            if (sum_op.eq.0.and.sum_blk.eq.0) then
-              arc2 => fl_tgt_pnt%contr%arc
-              occ = occ1
-              do iarc = 1, fl_tgt_pnt%contr%narc
-                occ = occ - arc2(iarc)%occ_cnt
-              end do
-              if (iocc_zero(occ)) then
+          ! pre-screening
+          ok = .true.
+          if (unique_set.and.fl_tgt_pnt%contr%unique_set) then
+            ok = hash.eq.fl_tgt_pnt%contr%hash
 c dbg
-c                print *,'iterm,jterm: ',iterm,jterm
+c            if (ok) print*,jterm,' matches with hash (1): ',hash
 c dbgend
-                if (.not.unique_set) then
-                  call topo_set_unique(fl_tgt_current%contr)
-                  unique_set = .true.
-                  ivtx1 => fl_tgt_current%contr%vtx
-                  topo1 => fl_tgt_current%contr%topo
-                  xlines1 => fl_tgt_current%contr%xlines
-                end if
-                if (.not.fl_tgt_pnt%contr%unique_set)
-     &                 call topo_set_unique(fl_tgt_pnt%contr)
+          else
+            ok = fl_tgt_pnt%contr%iblk_res.eq.iblk_tgt.and.
+     &           fl_tgt_pnt%contr%nvtx.eq.nvtx.and.
+     &           fl_tgt_pnt%contr%narc.eq.narc.and.
+     &           fl_tgt_pnt%contr%nxarc.eq.nxarc.and.
+     &           fl_tgt_pnt%contr%nsupvtx.eq.nsupvtx
 
-                ivtx2 => fl_tgt_pnt%contr%vtx
-                if (i8list_cmp(ivtx1,ivtx2,nvtx).eq.0) then
-                 topo2 => fl_tgt_pnt%contr%topo
-                 if (i8list_cmp(topo1,topo2,nvtx*nvtx).eq.0) then
-                  xlines2 => fl_tgt_pnt%contr%xlines
-                  if (i8list_cmp(xlines1,xlines2,nvtx*nj).eq.0) then
-
-                    if (ntest.ge.100) then
-                      write(luout,*) 'found equal term: # ',jterm
-                      call prt_contr2(luout,fl_tgt_pnt%contr,
-     &                     op_info)
-                      write(luout,*) 'now summing and deleting'
-                    end if
-                    fl_tgt_current%contr%fac =
-     &                   fl_tgt_current%contr%fac + fl_tgt_pnt%contr%fac
-                    call delete_fl_node(fl_tgt_pnt)
-                    deallocate(fl_tgt_pnt)
-                  end if
-                 end if
-                end if
+            if (ok) then
+              ! pre-screen with checksums
+              vtx2 => fl_tgt_pnt%contr%vertex
+              sum_op  = sum_op1
+              sum_blk = sum_blk1
+              do ivtx = 1, fl_tgt_pnt%contr%nvtx
+                sum_op  = sum_op  - vtx2(ivtx)%idx_op
+                sum_blk = sum_blk - vtx2(ivtx)%iblk_op
+              end do
+              ok = sum_op.eq.0.and.sum_blk.eq.0
+              if (ok) then
+                arc2 => fl_tgt_pnt%contr%arc
+                occ = occ1
+                do iarc = 1, fl_tgt_pnt%contr%narc
+                  occ = occ - arc2(iarc)%occ_cnt
+                end do
+                ok = iocc_zero(occ)
               end if
             end if
+            if (ok) then
+              ! set unique vtx/topo/xlines if necessary and compare hash
+              if (.not.unique_set) then
+                call topo_set_unique(fl_tgt_current%contr)
+                unique_set = .true.
+                ivtx1 => fl_tgt_current%contr%vtx
+                topo1 => fl_tgt_current%contr%topo
+                xlines1 => fl_tgt_current%contr%xlines
+                hash = fl_tgt_current%contr%hash
+              end if
+              if (.not.fl_tgt_pnt%contr%unique_set)
+     &               call topo_set_unique(fl_tgt_pnt%contr)
+              ok = hash.eq.fl_tgt_pnt%contr%hash
+c dbg
+c              if (ok) print*,jterm,' matches with hash (2): ',hash
+c dbgend
+            end if
+          end if
+
+          ! now compare the unique vtx, topo, xlines
+          if (ok) then
+            ivtx2 => fl_tgt_pnt%contr%vtx
+            ok = i8list_cmp(ivtx1,ivtx2,nvtx).eq.0
+            if (ok) then
+              topo2 => fl_tgt_pnt%contr%topo
+              ok = i8list_cmp(topo1,topo2,nvtx*nvtx).eq.0
+              if (ok) then
+                xlines2 => fl_tgt_pnt%contr%xlines
+                ok = i8list_cmp(xlines1,xlines2,nvtx*nj).eq.0
+              end if
+            end if
+          end if
+
+          ! sum terms
+          if (ok) then
+c dbg
+c            print *,' -> summing!'
+c dbgend
+            if (ntest.ge.100) then
+              write(luout,*) 'found equal term: # ',jterm
+              call prt_contr2(luout,fl_tgt_pnt%contr,
+     &             op_info)
+              write(luout,*) 'now summing and deleting'
+            end if
+            fl_tgt_current%contr%fac =
+     &           fl_tgt_current%contr%fac + fl_tgt_pnt%contr%fac
+            call delete_fl_node(fl_tgt_pnt)
+            deallocate(fl_tgt_pnt)
           end if
 
           fl_tgt_pnt => fl_tgt_pnt_next

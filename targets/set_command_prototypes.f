@@ -118,6 +118,8 @@
      &     val_str='My unnamed experimental formula')
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_FORMULA,tgt_info)
+      call set_arg('_PROTO_',DEF_FORMULA,'TITLE',1,tgt_info,
+     &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'BLK_MIN',1,tgt_info,
