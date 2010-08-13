@@ -237,7 +237,8 @@ c dbg
 
       ! unpack updated contraction, if requested
       if (make_contr_red) then
-        call init_contr(contr_red)
+cmh        call init_contr(contr_red)
+cmh        contr_red is already initialized and possibly non-zero!
         ! copy header
         contr_red%idx_res  = contr%idx_res
         contr_red%iblk_res = contr%iblk_res

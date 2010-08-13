@@ -191,6 +191,17 @@
       if (igamtopori.ne.igamtopreo)
      &     call quit(1,'reo_op_wmaps_c','inconsistent symmetries')
 
+      if (me_opori%op%formal_blk(iblkopori).or.
+     &    me_opreo%op%formal_blk(iblkopreo)) then
+        write(luout,*) me_opori%op%formal_blk(iblkopori),
+     &                 me_opreo%op%formal_blk(iblkopreo)
+        write(luout,*) 'opori: ',trim(opori%name),
+     &       ' block ',iblkopori
+        write(luout,*) 'opreo: ',trim(opreo%name),
+     &       ' block ',iblkopreo
+        call quit(1,'reo_op_wmaps_c','called for formal block')
+      end if
+
 ! just accept that in some strange cases this happens not being an error
 !      if (lenopori.le.0.or.lenopreo.le.0) then
 !        write(luout,*)

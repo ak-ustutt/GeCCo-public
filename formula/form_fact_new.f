@@ -146,6 +146,7 @@ c dbgend
 
           reo_add = (reo_info0%nreo.gt.0)
           deallocate(svertex,vtx,topo,xlines,op_res_p,xlines_dum)
+          if (.not.reo_add) call dealloc_reo_info(reo_info0)
         end if
 
         if (reo_add) then
@@ -201,6 +202,7 @@ c dbgend
           deallocate(iocc_reo,iocc_ori,irst_reo,irst_ori,
      &             merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
      &             occ_vtx,irestr_vtx,info_vtx,svertex)
+          call dealloc_reo_info(reo_info0)
           return
         else
           command = command_add_intm

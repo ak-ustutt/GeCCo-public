@@ -125,6 +125,8 @@
      &       fac,idx_res,.false.,op_info) 
 
       end do
+      ! reorder according to result blocks
+      call reorder_formula(flist_lag,op_info)
 
       ! assign comment
       form%comment = trim(title)

@@ -54,7 +54,7 @@
           if (neqv(jvtx).lt.0) cycle
           ! vertices equivalent?
           if (vtx(ivtx).eq.vtx(jvtx).and. ! <-avoid too many calls to vtx_equiv
-     &        vtx_equiv(ivtx,jvtx,vtx,topo,xlines,nvtx,nj)) then
+     &        vtx_equiv(ivtx,jvtx,vtx,svertex,topo,xlines,nvtx,nj)) then
             neqv(jvtx) = neqv(jvtx)+1
             neqv(ivtx) = -1
             idx_eqv(neqv(jvtx),jvtx) = ivtx
