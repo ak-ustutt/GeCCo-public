@@ -195,6 +195,8 @@
           opti_info%typ_prc(iopt) = optinf_prc_blocked
         case('MIX')
           opti_info%typ_prc(iopt) = optinf_prc_mixed
+        case('TRF') 
+          opti_info%typ_prc(iopt) = optinf_prc_traf
         case default
           call quit(1,'set_opti_info','cannot interpret string: '//
      &         trim(prc_str))

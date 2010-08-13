@@ -34,9 +34,9 @@
       integer ::
      &     nvtx, ivtx,
      &     idx_op, iblk_op,
-     &     ntop, nt1, nham, ntbar,
-     &     ord_t, ord_tbar, ord_ham,
-     &     max_pert, max_comm, max_t1
+     &     ntop, nt1, nham, ntbar, ntmax,
+     &     ord_t, ord_this_t, ord_tbar, ord_ham,
+     &     max_pert, max_comm, max_t1, tb_trunc
       character*64 ::
      &     op_name
       logical ::
@@ -57,24 +57,39 @@ c     &     idx_oplist2
       ! experimental version for CC2 project
       select case(trim(mode))
       case('CC2')
+        tb_trunc = 1
         max_pert = 2
         max_comm = 4
         max_t1   = 4
       case('CC2-l')
+        tb_trunc = 1
         max_pert = 2
         max_comm = 1
         max_t1   = 4
       case('CC2-t1l')
+        tb_trunc = 1
         max_pert = 2
         max_comm = 4
         max_t1   = 1
       case('CC2-q')
+        tb_trunc = 1
         max_pert = 2
         max_comm = 2
         max_t1   = 4
       case('CC2-c')
+        tb_trunc = 1
         max_pert = 2
         max_comm = 3
+        max_t1   = 4
+      case('CC3')
+        tb_trunc = 2
+        max_pert = 4
+        max_comm = 4
+        max_t1   = 4
+      case('CCSDT-3')
+        tb_trunc = 2
+        max_pert = 100
+        max_comm = 4
         max_t1   = 4
       case default
         call quit(1,'pert_truncation','what do you mean: '//trim(mode))
@@ -99,6 +114,7 @@ c     &     idx_oplist2
           ! - perturbation order of H
           ! - perturbation order of TBAR
           ntop  = 0
+          ntmax = 0
           nt1   = 0
           ord_t = 0
           ntbar = 0
@@ -110,10 +126,12 @@ c     &     idx_oplist2
             iblk_op = vertex(ivtx)%iblk_op
             if (idx_op.eq.idxtop) then
               ntop = ntop+1
-              ord_t = ord_t
-     &              + op_info%op_arr(idx_op)%op%ica_occ(1,iblk_op)-1
-              if (op_info%op_arr(idx_op)%op%ica_occ(1,iblk_op).eq.1)
+              ord_this_t= op_info%op_arr(idx_op)%op%ica_occ(1,iblk_op)-1
+              ord_t = ord_t + ord_this_t
+              if (ord_this_t.eq.0)
      &             nt1 = nt1+1
+              if (ord_this_t.eq.tb_trunc)
+     &             ntmax = ntmax+1
             end if
             if (idx_op.eq.idxtbar) then
               ntbar = ntbar+1
@@ -132,10 +150,16 @@ c     &     idx_oplist2
 c          if (ntbar.gt.1)
 c     &         call quit(1,'pert_truncation','strange: ntbar.ne.1')
           ! restrict to second order (T1 counts 0 here)
-          delete = (ord_ham+ord_t+ord_tbar).gt.max_pert
-          ! avoid <0|TBAR2 [[F,T1],T2]|0>
+          delete = (ord_tbar.eq.tb_trunc.and.
+     &              ord_ham+ord_t+ord_tbar).gt.max_pert
+          ! avoid <0|TBARmax [[F,T1],Tmax]|0>
           delete = delete.or.
-     &         (ord_ham.eq.0.and.ord_tbar.gt.0.and.nt1.gt.0)
+C     &         (ord_ham.eq.0.and.ord_tbar.gt.0.and.nt1.gt.0)
+     &        (ord_tbar.eq.tb_trunc.and.
+     &      ord_ham.eq.0.and.ntmax.gt.0.and.nt1.gt.0)
+          ! avoid <0|TBARmax [H,Tmax] |0> and higher (CCSDT-3 etc.)
+          delete = delete.or.
+     &        (ord_tbar.eq.tb_trunc.and.ord_ham.ne.0.and.ntmax.gt.0)
           ! restrict max. commutators
           delete = delete.or.
      &         (ntop.gt.max_comm)

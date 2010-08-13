@@ -85,8 +85,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
      &     nwfpar(:), nwfpsec(:), idstsec(:), nsec_arr(:),
      &     ipiv(:), iconv(:), idxroot(:), idxselect(:)
-      type(filinf), pointer ::
-     &     ffvsbsp, ffscr, ffmet
+      type(file_array), pointer ::
+     &     ffvsbsp(:), ffscr(:), ffmet(:)
       type(filinf), target ::
      &     fdum
 
@@ -110,9 +110,11 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       iord_rsbsp => opti_stat%iord_rsbsp
       iord_vsbsp => opti_stat%iord_vsbsp
       iord_ssbsp => opti_stat%iord_ssbsp
-      ffscr => opti_stat%ffscr(1)%fhand
-      ffvsbsp => opti_stat%ffvsbsp(1)%fhand
+      ffscr => opti_stat%ffscr
+      ffvsbsp => opti_stat%ffvsbsp
       nwfpar => opti_info%nwfpar
+
+      allocate(ffmet(nopt))
 
       if (nopt.gt.1)
      &     call quit(1,'leqc_init','not yet adapted for nopt>1')
@@ -145,7 +147,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
             if (ntest.ge.100)
      &           write(luout,*) 'xbuf1 after division: ' //
      &                          ' norm = ', dnrm2(nwfpar(iopt),xbuf1,1)
-            call vec_to_da(ffscr,iroot,xbuf1,nwfpar(iopt))
+            call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar(iopt))
           end do
         end do
       else
@@ -153,8 +155,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
         call quit(1,'leqc_init','incore<2: do the programming')
 
         ! ... something using:
-            call da_diavec(ffscr,iroot,1,0d0,
-     &                     ffscr,iroot,1,1d0/xnrm,
+            call da_diavec(ffscr(iopt)%fhand,iroot,1,0d0,
+     &                     ffscr(iopt)%fhand,iroot,1,1d0/xnrm,
      &                      me_dia(iopt)%mel%fhand,1,1,0d0,-1d0,
      &                      nwfpar(iopt),xbuf1,xbuf2,lenbuf)
 
@@ -186,9 +188,9 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
           ! reassign op. with list containing trial vector
           call assign_me_list(me_trv(iopt)%mel%label,
      &                        me_opt(iopt)%mel%op%name,op_info)
-          ffmet => me_met(1)%mel%fhand
+          ffmet(1)%fhand => me_met(1)%mel%fhand
         else
-          ffmet => fdum
+          ffmet(1)%fhand => fdum
         end if
       end do
 
@@ -199,7 +201,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       idstsec => opti_info%idstsec(1:nsec)
       signsec => opti_info%signsec(1:nsec)
       call optc_orthvec(nadd,.false.,
-     &                  opti_stat%ffvsbsp,
+     &                  ffvsbsp,
      &                  iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  use_s,0,ffmet,ffscr,nroot,nopt,
      &                 nsec_arr,nwfpsec,idstsec,signsec,
@@ -218,6 +220,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       ! dto. for |Sv> subspace
       ndim_ssbsp = ndim_vsbsp
       iord_ssbsp = iord_vsbsp
+
+      deallocate(ffmet)
 
       return
       end

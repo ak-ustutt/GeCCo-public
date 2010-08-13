@@ -33,7 +33,7 @@
      &     iblkmax(20),
      &     occ_def(ngastp,2,20)
       logical ::
-     &     needed, r12fix, set_tp, set_tpp, screen,
+     &     needed, r12fix, set_tp, set_tpp, screen, xsp_opt1,
      &     fixed_gem, pf12_trunc, f12x_trunc, pert, use_CS
       character(8) ::
      &     approx, f12x_mode
@@ -78,6 +78,7 @@
       call get_argument_value('method.R12','use_CS',lval=use_CS)
       call get_argument_value('method.R12','pert',lval=pert)
       call get_argument_value('method.R12','f12x',str=f12x_mode)
+      call get_argument_value('method.R12','xsp1',lval=xsp_opt1)
       f12x_trunc = len_trim(f12x_mode).gt.0
       if (f12x_trunc) trunc_type = 0
       if (f12x_trunc) screen = .true.
@@ -299,8 +300,13 @@ c dbg
       if (set_tp) then
         call set_dependency(form_ccr12lg0,op_cex,tgt_info)
         call set_dependency(form_ccr12lg0,op_cexbar,tgt_info)
-        labels(nlabel+1) = op_cexbar
-        labels(nlabel+2) = op_cex
+        if (.not.xsp_opt1) then
+          labels(nlabel+1) = op_cexbar
+          labels(nlabel+2) = op_cex
+        else
+          labels(nlabel+1) = 'T12FBAR'
+          labels(nlabel+2) = 'T12FML'
+        end if
         nlabel = nlabel+2
       end if
       if (set_tpp) then
@@ -339,6 +345,28 @@ c      call set_dependency(form_ccr12lg0,op_rba,tgt_info)
         call set_arg(form_ccr12lg0,SELECT_SPECIAL,'MODE',
      &       1,tgt_info,
      &       val_str=trim(f12x_mode))
+      end if
+      ! special XSPopt with tildeT_1 only
+      if (xsp_opt1) then
+        ! process formula
+        call set_rule2(form_ccr12lg0,SELECT_SPECIAL,tgt_info)
+        call set_arg(form_ccr12lg0,SELECT_SPECIAL,'LABEL_RES',
+     &       1,tgt_info,
+     &       val_label=(/form_ccr12lg0/))
+        call set_arg(form_ccr12lg0,SELECT_SPECIAL,'LABEL_IN',
+     &       1,tgt_info,
+     &       val_label=(/form_ccr12lg0/))
+        call set_arg(form_ccr12lg0,SELECT_SPECIAL,'OPERATORS',
+     &       6,tgt_info,
+     &       val_label=(/op_tbar,'T12FBAR',op_cexbar,
+     &                   op_top, 'T12FML', op_cex/))
+        call set_arg(form_ccr12lg0,SELECT_SPECIAL,'TYPE',
+     &       1,tgt_info,
+     &       val_str='OPT1')
+        call set_arg(form_ccr12lg0,SELECT_SPECIAL,'MODE',
+     &       1,tgt_info,
+     &       val_str='unused')
+        ! replace remaining formal T12BAR and T12 by their actual def's
       end if
       ! (b) Factor out the R12 intermediates 
       ! (effectively removing all reference to the complete basis)
@@ -527,8 +555,13 @@ c dbg
       if (set_tp) then
         call set_dependency(form_ccr12_s0,op_cex,tgt_info)
         call set_dependency(form_ccr12_s0,op_cexbar,tgt_info)
-        labels(nlabel+1) = op_cexbar
-        labels(nlabel+2) = op_cex
+        if (.not.xsp_opt1) then
+          labels(nlabel+1) = op_cexbar
+          labels(nlabel+2) = op_cex
+        else
+          labels(nlabel+1) = 'T12FBAR'
+          labels(nlabel+2) = 'T12FML'
+        end if
         nlabel = nlabel+2
       end if
       if (set_tpp) then
@@ -547,6 +580,27 @@ c dbg
       call set_rule(form_ccr12_s0,ttype_frm,DEF_CCR12_METRIC,
      &              labels,nlabel,1,
      &              parameters,2,tgt_info)
+      if (xsp_opt1) then
+        ! process formula
+        call set_rule2(form_ccr12_s0,SELECT_SPECIAL,tgt_info)
+        call set_arg(form_ccr12_s0,SELECT_SPECIAL,'LABEL_RES',
+     &       1,tgt_info,
+     &       val_label=(/form_ccr12_s0/))
+        call set_arg(form_ccr12_s0,SELECT_SPECIAL,'LABEL_IN',
+     &       1,tgt_info,
+     &       val_label=(/form_ccr12_s0/))
+        call set_arg(form_ccr12_s0,SELECT_SPECIAL,'OPERATORS',
+     &       6,tgt_info,
+     &       val_label=(/op_tbar,'T12FBAR',op_cexbar,
+     &                   op_top, 'T12FML', op_cex/))
+        call set_arg(form_ccr12_s0,SELECT_SPECIAL,'TYPE',
+     &       1,tgt_info,
+     &       val_str='OPT1')
+        call set_arg(form_ccr12_s0,SELECT_SPECIAL,'MODE',
+     &       1,tgt_info,
+     &       val_str='unused')
+        ! replace remaining formal T12BAR and T12 by their actual def's
+      end if
       ! (b) Factor out the R12 intermediates 
       ! (effectively removing all reference to the complete basis)
       labels(1:10)(1:len_target_name) = ' '
@@ -560,22 +614,32 @@ c dbg
       call set_rule(form_ccr12_s0,ttype_frm,FACTOR_OUT,
      &              labels,nint+2,1,
      &              parameters,2,tgt_info)
-c      ! there remain a few unprocessed R12 contributions
-c      ! for ansatz > 1
-c      ! as a first resort we replace r12 by the actual integrals
-c      if (ansatz.gt.1) then
-c        labels(1:20)(1:len_target_name) = ' '
-c        labels(1) = form_ccr12_s0
-c        labels(2) = form_ccr12_s0
-c        labels(3) = op_r12
-c        labels(4) = op_rint
-c        call set_dependency(form_ccr12_s0,op_rint,tgt_info)
-c        call form_parameters(-1,
-c     &       parameters,2,title_ccr12lg0,1,'---')
-c        call set_rule(form_ccr12_s0,ttype_frm,REPLACE,
-c     &              labels,4,1,
-c     &              parameters,2,tgt_info)
-c      end if
+      ! there remain a few unprocessed R12 contributions
+      ! for ansatz > 1
+      ! as a first resort we replace r12 by the actual integrals
+      if (ansatz.gt.1) then
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = form_ccr12_s0
+        labels(2) = form_ccr12_s0
+        labels(3) = op_r12
+        labels(4) = op_rint
+        labels(5) = op_r12//'^+'
+        labels(6) = op_rint//'^+'
+        call set_dependency(form_ccr12_s0,op_rint,tgt_info)
+        call form_parameters(-1,
+     &       parameters,2,title_ccr12lg0,2,'---')
+        call set_rule(form_ccr12_s0,ttype_frm,REPLACE,
+     &              labels,6,1,
+     &              parameters,2,tgt_info)
+      end if
+c dbg
+      call form_parameters(-2,parameters,2,
+     &       'stdout',0,'---')
+      call set_rule(form_ccr12_s0,ttype_frm,PRINT_FORMULA,
+     &              labels,1,0,
+     &              parameters,2,tgt_info)
+c dbg
+
 
       ! formula for obtaining eigenvalues of R12 metric: S.VEC
       if (.not.r12fix) then

@@ -304,8 +304,7 @@
         end if
         call find_nmin_list(xlist,idxlist,2*nroots,me_dia(iopt)%mel)
         ! transformed preconditioner => transformed initial guess vector
-        if (opti_info%typ_prc(iopt).eq.optinf_prc_file
-     &      .and.nspecial.gt.0) then
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
           me_pnt => me_special(1)%mel
           trafo = .true.
         else

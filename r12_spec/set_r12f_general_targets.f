@@ -37,7 +37,7 @@
      &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext, trunc_type
       logical ::
      &     needed, r12fix, set_tp, set_tpp, truncate, set_RT2T2,
-     &     pf12_trunc, frozen, pz_eval, use_CS
+     &     pf12_trunc, frozen, pz_eval, use_CS, xsp_opt1
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -82,6 +82,7 @@
       call get_argument_value('method.R12','trunc',ival=trunc_type)
       call get_argument_value('method.R12','vring',ival=vring_mode)
       call get_argument_value('method.R12','use_CS',lval=use_CS)
+      call get_argument_value('method.R12','xsp1',lval=xsp_opt1)
       truncate = trunc_type.ge.0
       if (is_keyword_set('method.truncate').gt.0) then
         truncate = is_keyword_set('method.truncate').gt.0
@@ -302,11 +303,27 @@ c     &       occ_def,ndef,2,(/  0, 0,  0, 0/),ndef)
 c        call set_rule(op_cex,ttype_op,DEF_OP_FROM_OCC,
 c     &       op_cex,1,1,
 c     &       parameters,2,tgt_info)
-        call xop_parameters(-1,parameters,
+        if (.not.xsp_opt1) then
+          ! the usual route
+          call xop_parameters(-1,parameters,
      &       .false.,ntp_min,ntp_max,0,ntp_max+2)
-        call set_rule(op_cex,ttype_op,DEF_EXCITATION,
+          call set_rule(op_cex,ttype_op,DEF_EXCITATION,
      &                op_cex,1,1,
      &                parameters,1,tgt_info)
+        else
+          ! define formal op_cex for Lagrange-build
+          call xop_parameters(-1,parameters,
+     &       .false.,ntp_min,ntp_max,0,ntp_max+2)
+          call set_rule(op_cex,ttype_op,DEF_EXCITATION,
+     &                'T12FML',1,1,
+     &                parameters,1,tgt_info)
+          ! and the actual one with only ntp_max = 1
+          call xop_parameters(-1,parameters,
+     &       .false.,ntp_min,1,0,ntp_max+2)
+          call set_rule(op_cex,ttype_op,DEF_EXCITATION,
+     &                op_cex,1,1,
+     &                parameters,1,tgt_info)
+        end if
 
         ! The Lagrangian multipliers.
         call add_target(op_cexbar,ttype_op,.false.,tgt_info)
@@ -316,6 +333,14 @@ c     &       parameters,2,tgt_info)
         call set_rule(op_cexbar,ttype_op,CLONE_OP,
      &                op_cexbar,1,1,
      &                parameters,1,tgt_info)
+
+        if (xsp_opt1) then
+          call cloneop_parameters(-1,parameters,
+     &                          'T12FML',.true.) ! <- dagger=.true.
+          call set_rule(op_cexbar,ttype_op,CLONE_OP,
+     &                'T12FBAR',1,1,
+     &                parameters,1,tgt_info)
+        end if
 
         call add_target(op_diar12,ttype_op,.false.,tgt_info)
         call set_dependency(op_diar12,op_cex,tgt_info)
@@ -1787,11 +1812,11 @@ c        call set_g_z_old(ndef,occ_def)
      &              labels,4,1,
      &              parameters,2,tgt_info)
 c dbg
-      call form_parameters(-1,
-     &     parameters,2,'stdout',0,'---')
-      call set_rule(form_r12_xhint,ttype_frm,PRINT_FORMULA,
-     &              labels,2,1,
-     &              parameters,2,tgt_info)
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule(form_r12_xhint,ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,
+c     &              parameters,2,tgt_info)
 c dbg
 
       ! CABS approximation to Xh
@@ -2136,11 +2161,11 @@ c        labels(8) = 'G.R-Ccore^+'
      &              labels,2+nint*2,1,
      &              parameters,2,tgt_info)
 c dbg
-      call form_parameters(-1,
-     &     parameters,2,'stdout',0,'---')
-      call set_rule(form_r12_pcabs,ttype_frm,PRINT_FORMULA,
-     &              labels,2,1,
-     &              parameters,2,tgt_info)
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule(form_r12_pcabs,ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,
+c     &              parameters,2,tgt_info)
 c dbg
 
       ! formal definition of Z
