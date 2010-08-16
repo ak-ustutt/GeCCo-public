@@ -90,6 +90,8 @@ c      use parse_input
       call argument_add('minexc','method.R12',type=vtyp_int,idef=(/2/))
       call argument_add('min_tp','method.R12',type=vtyp_int,idef=(/1/))
       call argument_add('min_tpp','method.R12',type=vtyp_int,idef=(/2/))
+      call argument_add('RGRcouple','method.R12',
+     &                                         type=vtyp_int,idef=(/0/))
       call argument_add('T1ext','method.R12',type=vtyp_int,idef=(/0/))
       call argument_add('H0_T1ext','method.R12',
      &                                        type=vtyp_int,idef=(/-1/))

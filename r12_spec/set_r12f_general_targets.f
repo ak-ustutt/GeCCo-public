@@ -1509,11 +1509,16 @@ c      occ_def(IPART,2,1) = 1
       occ_def(IHOLE,1,1) = 2
       occ_def(IPART,2,1) = 2
       ndef = 1
-      if (max_rank.gt.3) then
+      if (max_rank.gt.3.or.(min_rank_tp.eq.1.and.max_rank.gt.2)) then
         occ_def(IHOLE,1,2) = 1
         occ_def(IPART,1,2) = 1
         occ_def(IPART,2,2) = 2
-        ndef = 2   
+        ! 3
+        occ_def(IHOLE,1,3) = 2
+        occ_def(IPART,1,3) = 1
+        occ_def(IHOLE,2,3) = 1
+        occ_def(IPART,2,3) = 2
+        ndef = 3   
       end if
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,(/0,0/),6)
@@ -2194,8 +2199,8 @@ c dbg
       labels(4) = op_g_z
       labels(5) = 'R.R-X'
 c dbg
-      call add_target(form_r12_zcabs,ttype_frm,.true.,tgt_info)
-c      call add_target(form_r12_zcabs,ttype_frm,.false.,tgt_info)
+c      call add_target(form_r12_zcabs,ttype_frm,.true.,tgt_info)
+      call add_target(form_r12_zcabs,ttype_frm,.false.,tgt_info)
       call set_dependency(form_r12_zcabs,op_z_inter,tgt_info)
       call set_dependency(form_r12_zcabs,'R.R-X',tgt_info)
       call set_dependency(form_r12_zcabs,op_rint,tgt_info)
@@ -2225,24 +2230,91 @@ c      call add_target(form_r12_zcabs,ttype_frm,.false.,tgt_info)
       call set_rule('Z2INT_R12',ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,5,1,
      &              parameters,2,tgt_info)
+c dbg
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule('Z2INT_R12',ttype_frm,PRINT_FORMULA,
+     &              labels,1,0,
+     &              parameters,2,tgt_info)
+c dbg
 
       ! CABS approximation to Z2
+c dbg
+      call add_target('Z2-INT-CABS',ttype_frm,.true.,tgt_info)
+c dbg
+cc dbg      call add_target('Z2-INT-CABS',ttype_frm,.false.,tgt_info)
+      call set_dependency('Z2-INT-CABS','Z2-INT',tgt_info)
+      call set_dependency('Z2-INT-CABS','R.R-X',tgt_info)
+      call set_dependency('Z2-INT-CABS',op_g_z,tgt_info)
+      call set_dependency('Z2-INT-CABS',op_rint,tgt_info)
+      ! define dummy operators for 'G-Z' and 'R.R-X'
+      call set_rule2('Z2-INT-CABS',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('Z2-INT-CABS',DEF_OP_FROM_OCC,'LABEL',
+     &              1,tgt_info,
+     &              val_label=(/'G-Zdum'/) )
+      call set_arg('Z2-INT-CABS',DEF_OP_FROM_OCC,'JOIN',
+     &              1,tgt_info,
+     &              val_int=(/2/) )
+      call set_arg('Z2-INT-CABS',DEF_OP_FROM_OCC,'CORE',
+     &              4,tgt_info,
+     &              val_int=(/1,1,0,0/) )
+      call set_arg('Z2-INT-CABS',DEF_OP_FROM_OCC,'DESCR',
+     &              1,tgt_info,
+     &              val_str='[HPX],[HPX],[HP],[HP]' )
+      call set_rule2('Z2-INT-CABS',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('Z2-INT-CABS',DEF_OP_FROM_OCC,'LABEL',
+     &              1,tgt_info,
+     &              val_label=(/'R.R-Xdum'/) )
+      call set_arg('Z2-INT-CABS',DEF_OP_FROM_OCC,'JOIN',
+     &              1,tgt_info,
+     &              val_int=(/2/) )
+      call set_arg('Z2-INT-CABS',DEF_OP_FROM_OCC,'CORE',
+     &              4,tgt_info,
+     &              val_int=(/1,0,1,0/) )
+      call set_arg('Z2-INT-CABS',DEF_OP_FROM_OCC,'DESCR',
+     &              1,tgt_info,
+     &              val_str='[HPX][HP],,,[HPX][HP]' )
+      
+      ! generate formula for dummy operators
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = 'Z2-INT-CABS'
       labels(2) = 'Z2-INT'
       labels(3) = op_rint
       labels(4) = op_g_z
       labels(5) = 'R.R-X'
-      call add_target('Z2-INT-CABS',ttype_frm,.false.,tgt_info)
-      call set_dependency('Z2-INT-CABS','Z2-INT',tgt_info)
-      call set_dependency('Z2-INT-CABS','R.R-X',tgt_info)
-      call set_dependency('Z2-INT-CABS',op_g_z,tgt_info)
-      call set_dependency('Z2-INT-CABS',op_rint,tgt_info)
       call form_parameters(-1,
      &     parameters,2,title_r12_xcabs,ansatz,'Z '//approx2)
-      call set_rule('Z2-INT-CABS',ttype_frm,DEF_R12INTM_CABS,
-     &              labels,5,1,
+      call set_rule2('Z2-INT-CABS',DEF_R12INTM_CABS,tgt_info)
+      call set_arg('Z2-INT-CABS',DEF_R12INTM_CABS,'LABEL',
+     &              1,tgt_info,
+     &              val_label=(/'Z2-INT-CABS'/) )
+      call set_arg('Z2-INT-CABS',DEF_R12INTM_CABS,'INTERM',
+     &              1,tgt_info,
+     &              val_label=(/'Z2-INT'/) )
+      call set_arg('Z2-INT-CABS',DEF_R12INTM_CABS,'OPERATORS',
+     &              3,tgt_info,
+     &              val_label=(/op_rint,op_g_z,'R.R-X'/) )
+C     &              val_label=(/op_rint,'G-Zdum','R.R-Xdum'/) )
+      call set_arg('Z2-INT-CABS',DEF_R12INTM_CABS,'ANSATZ',
+     &              1,tgt_info,
+     &              val_int=(/ansatz/) )
+      call set_arg('Z2-INT-CABS',DEF_R12INTM_CABS,'APPROX',
+     &              1,tgt_info,
+     &              val_str='Z '//approx2)
+      call set_arg('Z2-INT-CABS',DEF_R12INTM_CABS,'TITLE',
+     &              1,tgt_info,
+     &              val_str='Z2 CABS ')
+      
+      ! replace dummy operators by actual operators and their h.c.'s
+
+      ! remove dummy operators from list
+c dbg
+      call form_parameters(-1,
+     &     parameters,2,'stdout',0,'---')
+      call set_rule('Z2-INT-CABS',ttype_frm,PRINT_FORMULA,
+     &              labels,1,0,
      &              parameters,2,tgt_info)
+c dbg
 
 
 *----------------------------------------------------------------------*

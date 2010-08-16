@@ -26,7 +26,7 @@
 
       integer ::
      &     min_rank, max_rank, ansatz, nop, fix_new,
-     &     isim, ncat, nint, icnt, ndef, extend, r12op,
+     &     isim, ncat, nint, icnt, ndef, extend, r12op, RGRc,
      &     isym, ms, msc, msc_s, sym_arr(8), nlabel, ncnt,
      &     ninproj, navoid, nconnect, nreplace, trunc_type, vring_mode,
      &     connect(20), idx_sv(20), iblkmin(20),
@@ -79,6 +79,7 @@
       call get_argument_value('method.R12','pert',lval=pert)
       call get_argument_value('method.R12','f12x',str=f12x_mode)
       call get_argument_value('method.R12','xsp1',lval=xsp_opt1)
+      call get_argument_value('method.R12','RGRcouple',ival=RGRc)
       f12x_trunc = len_trim(f12x_mode).gt.0
       if (f12x_trunc) trunc_type = 0
       if (f12x_trunc) screen = .true.
@@ -1230,7 +1231,7 @@ c        call set_dependency(solve_ccr12_gs,mel_diar12,tgt_info)
      &       call set_dependency(solve_ccr12_gs,'C1-EVAL',tgt_info)
         if (.not.pf12_trunc)
      &       call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
-        if (max_rank.ge.3)
+        if (max_rank.ge.3.and.RGRc.ne.0)
      &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
         call set_dependency(solve_ccr12_gs,me_xprc,tgt_info)
@@ -1265,7 +1266,7 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
      &       call set_dependency(solve_ccr12_gs,'C1-EVAL',tgt_info)
         if (.not.pf12_trunc)
      &    call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
-        if (max_rank.ge.3)
+        if (max_rank.ge.3.and.RGRc.ne.0)
      &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
         call set_dependency(solve_ccr12_gs,me_xprc,tgt_info)
@@ -1300,7 +1301,7 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
      &       call set_dependency(solve_ccr12_gs,'C1-EVAL',tgt_info)
         if (.not.pf12_trunc)
      &    call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
-        if (max_rank.ge.3)
+        if (max_rank.ge.3.and.RGRc.ne.0)
      &    call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
         call set_dependency(solve_ccr12_gs,me_bprc,tgt_info)
         call set_dependency(solve_ccr12_gs,me_xprc,tgt_info)
@@ -1342,7 +1343,7 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
      &       call set_dependency(solve_ccr12_gs,'C1-EVAL',tgt_info)
           if (.not.pf12_trunc)
      &       call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
-          if (max_rank.ge.3)
+          if (max_rank.ge.3.and.RGRc.ne.0)
      &     call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
           call solve_parameters(-1,parameters,2, 1,1,'DIA')
 c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
@@ -1373,7 +1374,7 @@ c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')
      &       call set_dependency(solve_ccr12_gs,'C1-EVAL',tgt_info)
           if (.not.pf12_trunc)
      &       call set_dependency(solve_ccr12_gs,'EVAL_PZ',tgt_info)
-          if (max_rank.ge.3)
+          if (max_rank.ge.3.and.RGRc.ne.0)
      &     call set_dependency(solve_ccr12_gs,'Z2INT_R12_EVAL',tgt_info)
           call solve_parameters(-1,parameters,2, 1,1,'DIA')
 c        call solve_parameters(-1,parameters,2, 2,1,'DIA/DIA')

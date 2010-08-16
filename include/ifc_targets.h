@@ -29,7 +29,7 @@
         subroutine get_arg(arg_label,rule,tgt_info,
      &     val_label,val_label_list,val_log,val_log_list,
      &     val_int,val_int_list,val_occ,val_restr,
-     &     val_rl8,val_rl8_list,val_str,ndim)
+     &     val_rl8,val_rl8_list,val_str,ndim,success)
         import
         type(action), intent(in), target ::
      &       rule
@@ -61,6 +61,8 @@
      &       val_str
         integer, intent(out), optional ::
      &       ndim
+        logical, intent(out), optional ::
+     &       success
         end subroutine
 
       end interface

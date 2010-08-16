@@ -58,7 +58,7 @@
      &     iblk_include(maxterms), iblk_include_or(maxterms),
      &     iblk_exclude(maxterms)
       logical ::
-     &     dagger, explicit, ms_fix, form_test, init
+     &     dagger, explicit, ms_fix, form_test, init, arg_there
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -69,7 +69,7 @@
       type(me_list), pointer ::
      &     mel_pnt
       character(len=512) ::
-     &     title, title2, form_str, mode
+     &     title, title2, form_str, mode, strscr
       character(len_command_par) ::
      &     env_type, list_type
       character(len_command_par) ::
@@ -126,12 +126,19 @@
         allocate(occ_def(ngastp,2,max_occ),nact(2*max_nj))
         call get_arg('LABEL', rule,tgt_info,val_label=label)
         call get_op(op_pnt,trim(label),NEW)
-        call get_arg('BLOCKS',rule,tgt_info,val_int=nblk)
         call get_arg('JOIN',  rule,tgt_info,val_int=njoined)
-        call get_arg('OCC',   rule,tgt_info,val_occ=occ_def)
         call get_arg('CORE',  rule,tgt_info,val_int_list=nact)
-        call set_uop2(op_pnt,trim(label),
-     &       occ_def,nblk,njoined,nact,orb_info)        
+        call get_arg('DESCR', rule,tgt_info,val_str=strscr,
+     &                             success=arg_there)
+        if (.not.arg_there) then 
+          call get_arg('BLOCKS',rule,tgt_info,val_int=nblk)
+          call get_arg('OCC',   rule,tgt_info,val_occ=occ_def)
+          call set_uop2(op_pnt,trim(label),
+     &       occ_def,nblk,njoined,nact,orb_info)
+        else
+          call set_uop3(op_pnt,trim(label),
+     &       strscr,njoined,nact,orb_info)        
+        end if
         deallocate(occ_def,nact)
 *----------------------------------------------------------------------*
       case(DEF_SCALAR)

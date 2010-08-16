@@ -86,12 +86,13 @@
 
       ! settings for Z2
       call set_ffg_for_z2()
+      call set_ffg_for_z2_2()
 
       ! remove the projected terms
       !  - R.P.G.R - R.G.P.R + R.P.G.P.R
 c dbg
-c      call warn('zint0','debug!!!')
-c      goto 999
+c      if (ntest.ge.500) call warn('zint0','debug!!!')
+c      if (ntest.ge.500) goto 999
 c dbg
       call set_fjf_for_zn()
 
@@ -116,6 +117,9 @@ c dbg
       if (ntest.ge.100) then
         write(luout,*)'Final formula: Z-Int.'
         call print_form_list(luout,flist,op_info)
+c dbg
+c        if (ntest.ge.500) stop 'testing'
+c dbg
       end if
 
       return
@@ -215,7 +219,7 @@ c     &       '3,4,,[HPX]','3,5,,H'/),8,
       implicit none
 
 c dbg
-      print *,'call for Z #1'
+c      print *,'call for Z #1'
 c dbg
       ! G.FF terms
       call expand_op_product3(form_pnt,idx_shape,
@@ -288,7 +292,7 @@ c     &       '3,,H,P','2,,H,[HPX],','4,,H[HPX],','5,,,H[HP]',
       implicit none
 
 c dbg
-      print *,'call for Z #2'
+c      print *,'call for Z #2'
 c dbg
       ! G.FF terms
       call expand_op_product3(form_pnt,idx_shape,
@@ -368,6 +372,92 @@ c dbg
           form_pnt => form_pnt%next
         enddo
 
+      end subroutine
+
+      subroutine set_ffg_for_z2_2()
+
+      implicit none
+
+c dbg
+c      print *,'call for Z #2-2'
+c dbg
+      ! G.FF terms
+      call expand_op_product3(form_pnt,idx_shape,
+     &     0.5d0,6,3,
+     &     (/idx_shape,idx_opsin(3),idx_opsin(3),
+     &     idx_opsin(4),idx_opsin(4),idx_shape/),
+     &     (/        1,           2,           2,
+     &                3,        3,        1/),
+     &     -1,-1,
+     &     0,0,
+     &     0,0,
+     &     (/'1,,,P','6,,PP,H',
+     &       '2,4,,[HPX]','2,5,H,'/),4,
+     &     op_info)
+        idx = 0
+        do while(associated(form_pnt%next))
+          idx = idx+1
+          form_pnt => form_pnt%next
+        enddo
+        
+        ! FF.G terms
+!        call expand_op_product3(form_pnt,idx_shape,
+!     &     0.5d0,6,3,
+!     &     (/idx_shape,-idx_opsin(4),-idx_opsin(4),  ! with dagger??
+!     &     idx_opsin(3),idx_opsin(3),idx_shape/),
+!     &     (/        1,           2,           2,
+!     &                3,        3,        1/),
+!     &     -1,-1,
+!     &     0,0,
+!     &     0,0,
+!     &     (/'1,,,P','6,,PP,H',
+!     &       '2,,HH,','3,,,[HP][HPX]','5,,H,P','4,,[HPX],[HP]',
+!     &       '3,4,,[HPX]'/),7,
+!     &     op_info)
+!        idx = 0
+!        do while(associated(form_pnt%next))
+!          idx = idx+1
+!          form_pnt => form_pnt%next
+!        enddo
+!        ! enforce the self-contraction terms
+!        call expand_op_product3(form_pnt,idx_shape,
+!     &    -0.5d0,6,3, ! "-": anti-normal-order hole contraction
+!     &     (/idx_shape,-idx_opsin(4),-idx_opsin(4),
+!     &     idx_opsin(3),idx_opsin(3),idx_shape/),
+!     &     (/        1,           2,           2,
+!     &                3,        3,        1/),
+!     &     -1,-1,
+!     &     0,0,
+!     &     0,0,
+!     &     (/'1,,,P','6,,PP,H',
+!     &       '2,,HH,','3,,,[HP][HPX]','5,,H,P','4,,[HPX],[HP]',
+!     &       '3,4,,[HPX]','4,5,,H'/),8,
+!     &     op_info)
+!        idx = 0
+!        do while(associated(form_pnt%next))
+!          idx = idx+1
+!          form_pnt => form_pnt%next
+!        enddo
+!        
+!        call expand_op_product3(form_pnt,idx_shape,
+!     &     -0.5d0,6,3,
+!     &     (/idx_shape,idx_opsin(4),idx_opsin(4),
+!     &     idx_opsin(3),idx_opsin(3),idx_shape/),
+!     &     (/        1,           2,           2,
+!     &                3,        3,        1/),
+!     &     -1,-1,
+!     &     0,0,
+!     &     0,0,
+!     &     (/'1,,,P','6,,PP,H',
+!     &       '2,,HH,','3,,,H[HPX]','5,,H,P','4,,[HPX],P',
+!     &       '3,4,,[HPX]','3,5,,H'/),8,
+!     &     op_info)
+!        idx = 0
+!        do while(associated(form_pnt%next))
+!          idx = idx+1
+!          form_pnt => form_pnt%next
+!        enddo
+!
       end subroutine
 
       subroutine set_fjf_for_zn()

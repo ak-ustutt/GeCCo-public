@@ -2,7 +2,7 @@
       subroutine get_arg(arg_label,rule,tgt_info,
      &     val_label,val_label_list,val_log,val_log_list,
      &     val_int,val_int_list,val_occ,val_restr,
-     &     val_rl8,val_rl8_list,val_str,ndim)
+     &     val_rl8,val_rl8_list,val_str,ndim,success)
 *----------------------------------------------------------------------*
 *     get argument value from rule structure
 *----------------------------------------------------------------------*
@@ -42,6 +42,8 @@
      &     val_str
       integer, intent(out), optional ::
      &     ndim 
+      logical, intent(out), optional ::
+     &     success
 
       integer ::
      &     idx_arg, idx_cmd, arg_dim, arg_type, ntype,
@@ -54,6 +56,8 @@
       integer, external ::
      &     idx_command_arg, idx_action
      
+
+      if (present(success)) success = .true. ! think positive!
 
       idx_arg = idx_command_arg(arg_label,rule)
 
@@ -68,10 +72,14 @@
           idx_arg = -1
         end if
 
-        if (idx_arg.le.0)
-     &     call quit(1,'get_arg',
+        if (idx_arg.le.0.and.present(success)) then
+          success = .false.
+          return
+        else if (idx_arg.le.0) then
+          call quit(1,'get_arg',
      &     'argument is undefined: '//
      &     trim(rule%command)//':'//trim(arg_label))
+        end if
 
         ! default
         arg => proto_rule%arg(idx_arg)
