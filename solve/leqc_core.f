@@ -95,7 +95,9 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     nwfpar(:), nwfpsec(:), idstsec(:), nsec_arr(:),
      &     ipiv(:), iconv(:), idxroot(:), idxselect(:)
       type(filinf), pointer ::
-     &     ffrsbsp, ffvsbsp, ffssbsp, ffscr, ffmet
+     &     ffrsbsp, ffvsbsp, ffssbsp
+      type(file_array), pointer ::
+     &     ffscr(:), ffmet(:)
       type(filinf), target ::
      &     fdum
 
@@ -120,11 +122,16 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       iord_rsbsp => opti_stat%iord_rsbsp
       iord_vsbsp => opti_stat%iord_vsbsp
       iord_ssbsp => opti_stat%iord_ssbsp
-      ffscr => opti_stat%ffscr(1)%fhand
+      ffscr => opti_stat%ffscr
+      ! take care: there is currently some mess with 
+      ! the definition of the below variables 
+      ! (types filinf and file_array)
       ffrsbsp => opti_stat%ffrsbsp(1)%fhand
       ffvsbsp => opti_stat%ffvsbsp(1)%fhand
       ffssbsp => opti_stat%ffssbsp(1)%fhand
       nwfpar => opti_info%nwfpar
+
+      allocate(ffmet(nopt))
 
       if (nopt.gt.1)
      &     call quit(1,'leqc_core','not yet adapted for nopt>1')
@@ -253,13 +260,13 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
           call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,nwfpar)
         else
           call da_sccpvec(me_rhs(iopt)%mel%fhand,iroot,
-     &                    ffscr,iroot,
+     &                    ffscr(iopt)%fhand,iroot,
      &                    1d0,nwfpar,xbuf1,lenbuf)
         end if
 
         idx = (iroot-1)*mxsub + 1
         call optc_expand_vec(vred(idx),ndim_rsbsp,xrsnrm(iroot),.true.,
-     &       ffscr,irecscr,1d0,ffrsbsp,iord_rsbsp,
+     &       ffscr(iopt)%fhand,irecscr,1d0,ffrsbsp,iord_rsbsp,
      &       nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
         ! care for shift (incl. metric, if applicable)
@@ -267,14 +274,14 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
      &    call optc_expand_vec(
      &         opti_info%shift*vred(idx:idx-1+ndim_vsbsp),ndim_vsbsp,
      &                   xrsnrm(iroot),.true.,
-     &         ffscr,irecscr,1d0,ffvsbsp,iord_rsbsp,
+     &         ffscr(iopt)%fhand,irecscr,1d0,ffvsbsp,iord_rsbsp,
      &         nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
         if (opti_info%shift.ne.0d0 .and. use_s(iopt))
      &    call optc_expand_vec(
      &         opti_info%shift*vred(idx:idx-1+ndim_vsbsp),ndim_ssbsp,
      &                   xrsnrm(iroot),.true.,
-     &         ffscr,irecscr,1d0,ffssbsp,iord_rsbsp,
+     &         ffscr(iopt)%fhand,irecscr,1d0,ffssbsp,iord_rsbsp,
      &         nincore,nwfpar,lenbuf,xbuf1,xbuf2)
 
         ! not yet converged? increase record counter
@@ -305,7 +312,7 @@ c dbg
      &           iord_rsbsp,opti_stat%ffrsbsp,
      &           iord_ssbsp,opti_stat%ffssbsp,use_s,
      &           vred,gred,mred,sred,nred,nroot,nroot,mxsub,nopt,
-     &           ffscr,nnew,
+     &           ffscr(iopt)%fhand,nnew,
      &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
             ndim_vsbsp = nred
             ndim_rsbsp = nred
@@ -322,13 +329,13 @@ c dbg
           if (nincore.ge.2) then
             call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar)
             do iroot = 1, nnew
-              call vec_from_da(ffscr,iroot,xbuf1,nwfpar)
+              call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar)
               ! scale residual for numerical stability:
 c              xnrm = dnrm2(nwfpar,xbuf1,1)
               xnrm = xrsnrm(idxroot(iroot))
               call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
      &                   opti_info%shift,nwfpar)
-              call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
+              call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar)
             end do
           else
             do iroot = 1, nnew
@@ -336,8 +343,8 @@ c              ! request (nroot-iroot+1)th-last root
 c              irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
 c     &             iord_vsbsp,ndim_vsbsp,mxsbsp)
               xnrm = xrsnrm(idxroot(iroot))
-              call da_diavec(ffscr,iroot,1,0d0,
-     &                       ffscr,iroot,1,1d0/xnrm,
+              call da_diavec(ffscr(iopt)%fhand,iroot,1,0d0,
+     &                       ffscr(iopt)%fhand,iroot,1,1d0/xnrm,
      &                        me_dia(1)%mel%fhand,1,1,
      &                        opti_info%shift,-1d0,
      &                        nwfpar,xbuf1,xbuf2,lenbuf)
@@ -348,7 +355,7 @@ c     &             iord_vsbsp,ndim_vsbsp,mxsbsp)
      &         call quit(1,'leqc_core',
      &         'I need at least 3 incore vectors (prc_mixed)')
           do iroot = 1, nnew
-            call vec_from_da(ffscr,iroot,xbuf1,nwfpar)
+            call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar)
             call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar)
             xnrm = xrsnrm(idxroot(iroot))
             call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
@@ -357,7 +364,7 @@ c     &             iord_vsbsp,ndim_vsbsp,mxsbsp)
      &                         me_opt(iopt)%mel%op%name,opti_info%shift,
      &                         nincore,xbuf1,xbuf2,xbuf3,lenbuf,
      &                         orb_info,op_info,str_info,strmap_info)
-            call vec_to_da(ffscr,iroot,xbuf1,nwfpar)
+            call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar)
           end do
         case default
           call quit(1,'leqc_core','unknown preconditioner type')
@@ -387,9 +394,9 @@ c     &             iord_vsbsp,ndim_vsbsp,mxsbsp)
           ! reassign op. with list containing trial vector
           call assign_me_list(me_trv(iopt)%mel%label,
      &                        me_opt(iopt)%mel%op%name,op_info)
-          ffmet => me_met(iopt)%mel%fhand
+          ffmet(iopt)%fhand => me_met(iopt)%mel%fhand
         else
-          ffmet => fdum
+          ffmet(iopt)%fhand => fdum
         end if
 
         ! orthogonalize new directions to existing subspace
@@ -433,6 +440,8 @@ c     &             iord_vsbsp,ndim_vsbsp,mxsbsp)
         end do
 
       end if
+
+      deallocate(ffmet)
 
       return
       end

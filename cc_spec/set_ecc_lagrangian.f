@@ -13,7 +13,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -203,7 +203,11 @@ c quick'n'dirty:
       call del_operator(op_hb_temp,op_info)
 
       call atim_csw(cpu,sys,wall)
-      write(luout,*) 'Number of generated terms: ',nterms
+c      write(luout,*) 'Number of generated terms: ',nterms
       call prtim(luout,'ECC Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
+
+c dbg
+      if (ntest.ge.100) stop
+c dbg
 
       end

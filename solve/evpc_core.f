@@ -79,7 +79,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
 
 * local
       logical ::
-     &     zero_vec(opti_stat%ndim_vsbsp), init, conv, trafo
+     &     zero_vec(opti_stat%ndim_vsbsp), init, conv, trafo, getnewrec
       integer ::
      &     idx, jdx, kdx, iroot, nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
@@ -97,11 +97,11 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
      &     nwfpar(:), idxselect(:), nwfpsec(:), idstsec(:),
      &     ipiv(:), iconv(:), idxroot(:), nsec_arr(:)
       type(file_array), pointer ::
-     &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:)
+     &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:)
       type(filinf) ::
      &     fdum
       type(filinf), pointer ::
-     &     ffmet, ffspc
+     &     ffspc
       type(filinf), target ::
      &     fdum2
 
@@ -131,6 +131,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       ffvsbsp => opti_stat%ffvsbsp
       ffssbsp => opti_stat%ffssbsp
       nwfpar => opti_info%nwfpar
+
+      allocate(ffmet(nopt))
 
 c      if (nopt.gt.1)
 c     &     call quit(1,'evpc_core','not yet adapted for nopt>1')
@@ -255,8 +257,7 @@ c dbg
         ! assemble residual in full space
         
         do iopt = 1, nopt
-          if (opti_info%typ_prc(iopt).eq.optinf_prc_file
-     &        .and.nspecial.gt.0) then
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
             ffspc => me_special(1)%mel%fhand
             trafo = .true.
           else
@@ -397,7 +398,7 @@ c dbgend
      &           iord_rsbsp,ffrsbsp,
      &           iord_ssbsp,ffssbsp,use_s,
      &           vred,xdum,mred,sred,nred,nroot,0,mxsub,nopt,
-     &           ffscr(1)%fhand,nnew,
+     &           ffscr(1)%fhand,nnew,  ! only scratch
      &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
             ndim_vsbsp = nred
             ndim_rsbsp = nred
@@ -416,8 +417,8 @@ c dbgend
           ndsec = ndsec + nsec_arr(iopt)
 
           select case(opti_info%typ_prc(iopt))
-          case(optinf_prc_file)
-            if (nspecial.gt.0) then
+          case(optinf_prc_file,optinf_prc_traf)
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
               ffspc => me_special(1)%mel%fhand
               trafo = .true.
             else
@@ -554,35 +555,44 @@ c dbgend
      &                          me_opt(iopt)%mel%op%name,op_info)
           end if
 
-          if (use_s(iopt)) then
-            ! assign op. with list containing the scratch trial vector
-            call assign_me_list(me_scr(iopt)%mel%label,
+        end do ! iopt
+
+        do iroot = 1, nnew
+          getnewrec = .true.
+          do iopt = 1, nopt
+
+            if (use_s(iopt)) then
+              ! assign op. with list containing the scratch trial vector
+              call assign_me_list(me_scr(iopt)%mel%label,
      &                          me_opt(iopt)%mel%op%name,op_info)
 
-            ! calculate metric * scratch trial vector
-            allocate(xret(depend%ntargets),idxselect(depend%ntargets))
-            nselect = 0
-            call select_formula_target(idxselect,nselect,
+              ! calculate metric * scratch trial vector
+              allocate(xret(depend%ntargets),idxselect(depend%ntargets))
+              nselect = 0
+              call select_formula_target(idxselect,nselect,
      &                  me_met(iopt)%mel%label,depend,op_info)
-            do iroot = 1, nnew
-              irec = ioptc_get_sbsp_rec(0,iord_ssbsp,ndim_ssbsp,mxsub)
-              if (iroot.eq.1) ioff_s = irec-1
+              if (getnewrec) then
+                irec = ioptc_get_sbsp_rec(0,iord_ssbsp,ndim_ssbsp,mxsub)
+                if (iroot.eq.1) ioff_s = irec-1
+                getnewrec = .false.
+              end if
               call switch_mel_record(me_met(iopt)%mel,irec)
               call switch_mel_record(me_scr(iopt)%mel,iroot)
               call frm_sched(xret,flist,depend,idxselect,nselect,
      &                    op_info,str_info,strmap_info,orb_info)
               me_met(iopt)%mel%fhand%last_mod(irec) = -1
-            end do
-            deallocate(xret,idxselect)
 
-            ! reassign op. with list containing trial vector
-            call assign_me_list(me_trv(iopt)%mel%label,
+              ! reassign op. with list containing trial vector
+              call assign_me_list(me_trv(iopt)%mel%label,
      &                          me_opt(iopt)%mel%op%name,op_info)
-            ffmet => me_met(1)%mel%fhand
-          else
-            ffmet => fdum2
-          end if
-        end do
+              ffmet(iopt)%fhand => me_met(iopt)%mel%fhand
+              deallocate(xret,idxselect)
+            else
+              ffmet(iopt)%fhand => fdum2
+            end if
+
+          end do ! iopt
+        end do ! iroot
 
         signsec => opti_info%signsec(1:nsec)
 
@@ -590,7 +600,7 @@ c dbgend
         ! and add linear independent ones to subspace
         call optc_orthvec(nadd,nopt.gt.1,
      &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
-     &                  use_s,ioff_s,ffmet,ffscr(1)%fhand,nnew,nopt,
+     &                  use_s,ioff_s,ffmet,ffscr,nnew,nopt,
      &                  nsec_arr,nwfpsec,idstsec,signsec,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 c dbg
@@ -633,6 +643,8 @@ c dbgend
         end do
 
       end if
+    
+      deallocate(ffmet)
 
       return
       end

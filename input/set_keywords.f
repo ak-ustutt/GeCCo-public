@@ -119,6 +119,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./))
       call argument_add('trunc','method.R12',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('xsp1','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
       call argument_add('f12x','method.R12',type=vtyp_str,len=8,
      &     cdef=(/' ',' ',' ',' ',' ',' ',' ',' '/))
       call argument_add('screen','method.R12',type=vtyp_log,

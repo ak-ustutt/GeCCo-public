@@ -15,6 +15,9 @@
       integer, parameter ::
      &     ntest = 00
 
+      logical, parameter ::
+     &     new_trunc = .true.
+
       include 'stdunit.h'
       include 'opdim.h'
       include 'def_contraction.h'
@@ -222,10 +225,25 @@ c      sbar_pnt%dagger = .true.
       call expand_op_bch(flist_pnt,4,idxlcc,
      &     1d0,idx_sbar,idxham,1d0,idx_sop,1,-1,op_info)
 
-      ! insert here procedure to produce approx. expansions      
-      ! ...
-      if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'raw formula')
+      ! first round to produce approx. expansions      
+      trmode = '        '
+      call get_argument_value('method.CC','truncate',str=trmode)
+      if (trim(trmode).ne.'no')
+     &     call pert_truncation(flist_lag,trmode,
+     &     idx_sbar,idxham,idx_sop,op_info)
+
+      if (ntest.ge.500) then
+        call write_title(luout,wst_title,'raw formula 1')
+        call print_form_list(luout,flist_lag,op_info)
+      end if
+
+      ! second round:
+      if (new_trunc.and.truncate)
+     &     call r12_truncation2(flist_lag,trunc_type,h0_t1x,
+     &     idxham,idx_sbar,idx_sop,op_info)
+
+      if (ntest.ge.500) then
+        call write_title(luout,wst_title,'raw formula 2')
         call print_form_list(luout,flist_lag,op_info)
       end if
 
@@ -255,7 +273,7 @@ c      sbar_pnt%dagger = .true.
       end if
 
       ! Produce truncated expansions if required.
-      if (truncate)
+      if (.not.new_trunc.and.truncate)
      &     call r12_truncation(flist_lag,trunc_type,h0_t1x,
      &     idxr12,idxham,idxtbar,idxtop,idxcbar,idxc12,op_info)
       if (trunc_t1x.gt.0.and.h0_t1x.ne.-1) then

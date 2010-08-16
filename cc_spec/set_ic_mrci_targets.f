@@ -1669,7 +1669,7 @@ c dbgend
      &       labels,2,1,
      &       parameters,0,tgt_info)
       end if
-      call solve_parameters(-1,parameters,2,1,nroots,'DIA')
+      call solve_parameters(-1,parameters,2,1,nroots,'TRF')
       labels(1) = 'ME_C'
       labels(2) = trim(dia_label)//'C'
       labels(3) = 'A_C'

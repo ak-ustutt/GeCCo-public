@@ -41,11 +41,11 @@
         call prt_contr_p(luout,-1,vtx,topo,xlines,nvtx,nj)
       end if
 c test - symmetrize topo
-      do idx = 1, nvtx
-        do jdx = 1, idx-1
-          topo(jdx,idx) = topo(idx,jdx)
-        end do
-      end do
+c      do idx = 1, nvtx
+c        do jdx = 1, idx-1
+c          topo(jdx,idx) = topo(idx,jdx)
+c        end do
+c      end do
 c test
 
       do idx = 1, nvtx

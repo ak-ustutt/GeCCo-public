@@ -196,7 +196,7 @@
 
         ! get a ME-list for scratch trial-vectors
         ! in case of ab-sym braking trafo, get sym props from special list
-        if (opti_info%typ_prc(iopt).eq.optinf_prc_file
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
      &      .and.nspecial.eq.3) then
           me_pnt => me_special(1)%mel
         else
@@ -310,8 +310,7 @@
           cycle
         end if
         ! transformed preconditioner => transformed initial guess vector
-        if (opti_info%typ_prc(iopt).eq.optinf_prc_file
-     &      .and.nspecial.gt.0) then
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
           me_pnt => me_special(1)%mel
           trafo = .true.
           maxblk = 1
