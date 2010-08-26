@@ -59,7 +59,7 @@
      &     maxreo, idx, idxsuper, ica, ica_vtx, hpvx,
      &     iblk, ivtx, idxnew, ireo, ngas, nspin
       logical ::
-     &     renamed(contr%nvtx)
+     &     renamed(contr%nvtx), update_int
       logical, pointer ::
      &     reo_generated(:)
 
@@ -97,6 +97,7 @@ c     &       'call reorder_supvtx first')
           reo_info%nreo = 0
           allocate(reo_info%reo(maxreo))
         end if
+        update_int = reo_before.and.reo_info%nreo.eq.0
 
       end if
       allocate(reo_generated(maxreo))
@@ -355,7 +356,7 @@ c dbg
           do ivtx = 1, contr%nvtx
             if (renamed(ivtx)) cycle ! do not rename twice
             if (svertex(ivtx).ne.idxsuper) cycle
-            if (vertex(ivtx)%idx_op.ne.idxop12) then
+            if (update_int.or.vertex(ivtx)%idx_op.ne.idxop12) then
               renamed(ivtx) = .true.
               vertex(ivtx)%idx_op = idxnew
               iblk = iblk+1

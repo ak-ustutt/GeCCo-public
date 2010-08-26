@@ -365,6 +365,8 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &           str_info,ngas,nsym)
           end if
           call dealloc_cnt_info(cnt_info)
+          if (flops.eq.0d0) call quit(1,'process_bc',
+     &        'operator with zero length?')
           cost(1) = cost(1)+flops
           cost(2) = max(cost(2),xmemtot)
           cost(3) = max(cost(3),xmemblk)

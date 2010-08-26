@@ -384,7 +384,7 @@ c dbg
           do ivtx = 1, contr%nvtx
             if (renamed(ivtx)) cycle ! do not rename twice
             if (svertex(ivtx).ne.idxsuper) cycle
-            if (vertex(ivtx)%idx_op.ne.idxop12) then
+            if (reo_before.or.vertex(ivtx)%idx_op.ne.idxop12) then
               renamed(ivtx) = .true.
               vertex(ivtx)%idx_op = idxnew
               iblk = iblk+1

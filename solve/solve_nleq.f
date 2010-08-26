@@ -184,7 +184,17 @@
 
       do iopt = 1, nopt
         ! open result vector file(s)
-        call file_open(ffopt(iopt)%fhand)
+cmh     if file already open, use as initial guess!
+        if (ffopt(iopt)%fhand%unit.gt.0) then
+c dbg
+          print *,'iopt = ',iopt
+c dbgend
+          call warn('solve_nleq','using existing amplitudes!')
+        else
+          call file_open(ffopt(iopt)%fhand)
+          ! get initial amplitudes
+          call zeroop(me_opt(iopt)%mel)
+        end if
         ! open corresponding residuals ...
         call file_open(ffgrd(iopt)%fhand)
         ! ... and corresponding preconditioner(s)
@@ -197,19 +207,25 @@
      &       call file_open(ffspecial(idx)%fhand)
       end do
       
-      ! get initial amplitudes
-      do iopt = 1, nopt
-c        if (.not.file_exists(me_opt(iopt)%mel%fhand)) then
-          call zeroop(me_opt(iopt)%mel)
-c dbg DBGDBG!!!
-c        else
-c          call warn('solve_nleq','debug version of restart active')
-c        end if
-      end do
+cmh      ! get initial amplitudes
+cmh      do iopt = 1, nopt
+cmhc        if (.not.file_exists(me_opt(iopt)%mel%fhand)) then
+cmh          call zeroop(me_opt(iopt)%mel)
+cmhc dbg DBGDBG!!!
+cmhc        else
+cmhc          call warn('solve_nleq','debug version of restart active')
+cmhc        end if
+cmh      end do
 
       ! use mode_str to set special preconditioning, e.g. for R12
 
       call set_opti_info(opti_info,1,nopt,1,me_opt,mode_str)
+
+      ! write information to opti_info about signs which might occur
+      ! in preconditioning step
+      ! relevant when amp is njoined=1 op. but grd is njoined=2 op.
+      call set_opti_info_signs(opti_info,1,nopt,
+     &                         me_opt,me_grd,me_grd,me_grd,.false.)
 
       ! read formula
       call read_form_list(form_en_res%fhand,fl_en_res)
@@ -252,8 +268,32 @@ c dbg
      &       me_special, nspecial,! <- R12: pass B, X, H here
 c     &       ffopt,ffgrd,ffdia,ffmet, ! <- R12: pass X here (metric)
 c     &       ff_trv,ff_h_trv,
+     &       fl_en_res,depend,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
+c dbg
+        ! quick and dirty (for experimental use):
+        ! do C0 optimization if requested
+        if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
+     &      nspecial.ge.7.and.imacit.gt.1.and..not.conv) then
+          call solve_evp('DIA',1,1,
+     &                 'ME_C0','DIAG1SxxM00C0','A_C0',
+     &                 'C0','FOPT_OMG_C0','-',0,
+     &                 op_info,form_info,str_info,strmap_info,orb_info)
+          print *,'current C0 vector: '
+          call wrt_mel_file(luout,1000,me_special(7)%mel,
+     &       1,me_special(7)%mel%op%n_occ_cls,
+     &       str_info,orb_info)
+        end if
+
+        if (opti_info%typ_prc(1).eq.optinf_prc_traf
+     &      .and.nopt.ge.2) then
+          print *,'current C0 vector: '
+          call wrt_mel_file(luout,1000,me_opt(2)%mel,
+     &       1,me_opt(2)%mel%op%n_occ_cls,
+     &       str_info,orb_info)
+        end if
+c dbgend
 
         if (ntest.ge.1000) then
           do iopt = 1, nopt
@@ -270,6 +310,11 @@ c     &       ff_trv,ff_h_trv,
         do iopt = 1, nopt
           call touch_file_rec(ffopt(iopt)%fhand)
         end do
+c dbg
+        if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
+     &      nspecial.ge.6)
+     &      call touch_file_rec(me_special(6)%mel%fhand)
+c dbgend
 
         ! 1 - get energy
         ! 2 - get residual

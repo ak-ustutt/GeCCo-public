@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine reo_mel(label_out,label_inp,op_info,
-     &                      str_info,strmap_info,orb_info,fromto)
+     &                      str_info,strmap_info,orb_info,fromto,dag)
 *----------------------------------------------------------------------*
 *     wrapper for reo_mel_blk
 *     reorder vertices of input op according to instruction on fromto
@@ -37,6 +37,8 @@
      &     orb_info
       integer, intent(in) ::
      &     fromto
+      logical, intent(in) ::
+     &     dag
 
       logical ::
      &     open_close_inp,
@@ -47,7 +49,7 @@
      &     lenblkinp, lenblkout, ioffinp, ioffout,
      &     ifrom, ito
       real(8) ::
-     &     cpu, sys, wall, cpu0, sys0, wall0
+     &     cpu, sys, wall, cpu0, sys0, wall0, xdum
       real(8), pointer ::
      &     buffer_inp(:), buffer_out(:)
 
@@ -107,12 +109,15 @@
         write(luout,*) ' input list = ',trim(meinp%label)
         write(luout,*) ' ffinp: ',trim(ffinp%name)
         write(luout,*) ' opinp: ',opinp%name(1:len_trim(opinp%name))
+        write(luout,*) ' adj. : ',dag
         write(luout,*) ' output list = ',trim(meout%label)
         write(luout,*) ' ffout: ',trim(ffout%name)
         write(luout,*) ' opout: ',opout%name(1:len_trim(opout%name))
         write(luout,*) ' reorder from ',ifrom,' to ',ito
       end if
 
+      if (dag.and.iprlvl.ge.2) write(luout,*)
+     &         ' Input list will be overwritten by its adjoint.'
 
       njinp = opinp%njoined
       njout = opout%njoined
@@ -123,6 +128,12 @@
       ! loop over occupation classes
       ! we assume that the corresponding blocks are in the same order
       do i_occ_cls = 1, opinp%n_occ_cls
+        if (dag) then
+          ! transpose input operator
+          call add_opblk_transp(xdum,0,1d0,meinp,meinp,dag,.false.,
+     &                          i_occ_cls,i_occ_cls,
+     &                          op_info,str_info,orb_info,.true.)
+        end if
         iblkinp = (i_occ_cls-1)*njinp+1
         iblkout = (i_occ_cls-1)*njout+1
         iocc_inp => opinp%ihpvca_occ(1:ngastp,1:2,

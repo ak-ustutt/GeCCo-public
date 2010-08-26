@@ -936,11 +936,12 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LIST_RES',rule,tgt_info,val_label=label)
         call get_arg('LIST_IN',rule,tgt_info,val_label=label2)
         call get_arg('FROMTO',rule,tgt_info,val_int=idx)
+        call get_arg('ADJOINT',rule,tgt_info,val_log=dagger)
 
         if (form_test) return
 
         call reo_mel(label,label2,
-     &       op_info,str_info,strmap_info,orb_info,idx)
+     &       op_info,str_info,strmap_info,orb_info,idx,dagger)
 
 *----------------------------------------------------------------------*
 *     subsection EVALUATE

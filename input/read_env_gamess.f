@@ -67,8 +67,11 @@ c dbgend
      &                          eerd,e1,e2,ven,vee,epot,ekin,
      &                          estate,statn
       ispin = 2*nint(s2)+1
-      if (nint(sz).ne.0) call quit(1,'read_env_gamess',
+      if (nint(sz).ne.0) then
+        print *,'sz = ',sz
+        call warn('read_env_gamess',
      &           'can we deal with Sz.ne.0?')
+      end if
       nstate = nint(statn)
 
       ! read number of orbital parameters

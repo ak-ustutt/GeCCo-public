@@ -245,10 +245,11 @@ c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
      &                         orb_info,str_info)
 
       ! set up preconditioner
-      if (.not.use_b.and..not.use_x.and..not.use_h2) then
-        call dia4op(me_prc,ecore,h1dia,str_info,orb_info)
-      else if (.not.use_b.and..not.use_x) then
-        call dia4op_ev(me_prc,ecore,h1dia,h2dia,str_info,orb_info)
+cmh      if (.not.use_b.and..not.use_x.and..not.use_h2) then
+cmh        call dia4op(me_prc,ecore,h1dia,str_info,orb_info)
+      if (.not.use_b.and..not.use_x) then
+        call dia4op_ev(me_prc,ecore,h1dia,h2dia,use_h2,
+     &                 str_info,orb_info)
       else
         call dia4op_r12(me_prc,h1dia,b2dia,b2off,x2dia,x2off,use_x,
      &       str_info,orb_info)

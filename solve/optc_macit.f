@@ -8,6 +8,7 @@ c     &       ffopt,ffgrd,ffdia,ffmet,
 c     &       ff_trv,ff_h_trv,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
+     &       flist,depend,energy,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -27,6 +28,10 @@ c      include 'mdef_me_list.h'
       include 'def_optimize_status.h'
       include 'ifc_memman.h'
       include 'def_orbinf.h'
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'def_dependency_info.h'
 
       integer, intent(inout) ::
      &     task
@@ -42,13 +47,18 @@ c      include 'mdef_me_list.h'
       type(filinf), intent(in) ::
      &     ffscr
 
+      type(formula_item), intent(inout) ::
+     &     flist
+      type(dependency_info) ::
+     &     depend
+
       type(optimize_info), intent(in) ::
      &     opti_info
       type(optimize_status), intent(inout) ::
      &     opti_stat
 
       real(8), intent(inout) ::
-     &     xbuf1(*), xbuf2(*), xbuf3(*)
+     &     xbuf1(*), xbuf2(*), xbuf3(*), energy
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -63,13 +73,13 @@ c      include 'mdef_me_list.h'
       type(file_array), pointer ::
      &     ffopt(:), ffgrd(:), ffdia(:)
       logical ::
-     &     accept, shift, init
+     &     accept, shift, init, normalize
       integer ::
      &     irecr, irecv, klsmat,
      &     imet, idamp,
      &     ndim_save, ndel, iopt, lenscr, ifree
       real(8) ::
-     &     xdum
+     &     xnrm
       real(8), pointer ::
      &     xscr(:), xscr2(:), vec(:)
       integer, pointer ::
@@ -118,6 +128,7 @@ c dbg
      &             opti_info%typ_prc(iopt),
      &             nincore,opti_info%nwfpar(iopt),
      &             lenbuf,xbuf1,xbuf2,xbuf3,
+     &             flist,depend,energy,iopt,opti_info,
      &             orb_info,op_info,str_info,strmap_info)
 
               shift = ndim_save.eq.opti_stat%ndim_rsbsp.and.iopt.eq.1
@@ -210,10 +221,16 @@ c dbg
      &       xscr,ivec)
 
         do iopt = 1, opti_info%nopt
-          call optc_expand_vec(vec,opti_stat%ndim_vsbsp,xdum,.false.,
+          normalize = opti_info%typ_prc(iopt).eq.optinf_prc_norm
+          call optc_expand_vec(vec,opti_stat%ndim_vsbsp,xnrm,normalize,
      &         ffopt(iopt)%fhand,1,0d0,
      &         opti_stat%ffvsbsp(iopt)%fhand,opti_stat%iord_vsbsp,
      &         nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2)
+          if (normalize) then
+            call dscal(opti_info%nwfpar(iopt),1d0/xnrm,xbuf1,1)
+            call vec_to_da(ffopt(iopt)%fhand,1,xbuf1,
+     &                     opti_info%nwfpar(iopt))
+          end if
         end do
 
 * do ASSJ step for current subspace
@@ -243,7 +260,7 @@ c dbg
           if (nincore.ge.2)
      &         call vec_from_da(ffopt(1)%fhand,1,
      &                          xbuf1,opti_info%nwfpar(1))
-          call optc_expand_vec(vec,opti_stat%ndim_vsbsp,xdum,.false.,
+          call optc_expand_vec(vec,opti_stat%ndim_vsbsp,xnrm,.false.,
      &         ffopt(1)%fhand,1,1d0,
      &       opti_stat%ffvsbsp(1)%fhand,opti_stat%iord_vsbsp,
      &       nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
@@ -255,7 +272,7 @@ c dbg
           if (nincore.ge.2)
      &         call vec_from_da(ffgrd(1)%fhand,1,
      &                          xbuf1,opti_info%nwfpar(1))
-          call optc_expand_vec(vec,opti_stat%ndim_rsbsp,xdum,.false.,
+          call optc_expand_vec(vec,opti_stat%ndim_rsbsp,xnrm,.false.,
      &         ffgrd(1)%fhand,1,1d0,
      &       opti_stat%ffrsbsp(1)%fhand,opti_stat%iord_rsbsp,
      &       nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)

@@ -12,10 +12,10 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 0
       real(8), parameter ::
      &     min_sv = 1d-10, ! singular value threshold for calc. of pseudo-inv.
-     &     warn_sv = 1d-5  ! give a warning for small singular values
+     &     warn_sv = 1d-10!5  ! give a warning for small singular values
       integer, intent(in) ::
      &     ndim
       integer, intent(inout) ::

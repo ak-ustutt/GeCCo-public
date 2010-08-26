@@ -311,6 +311,8 @@ c     &     idef=(/0/))
      &                  idef=(/0/))  ! min. excitation (for GNO=1)
       call argument_add('pure_vv','calculate.multiref',type=vtyp_log,
      &                  ldef=(/.true./)) ! pure act.-act. excitations
+      call argument_add('optref','calculate.multiref',type=vtyp_int,
+     &                  idef=(/0/)) ! optimize reference fct.
       call argument_add('calc','calculate.multiref',type=vtyp_log,
      &                  ldef=(/.true./)) ! do the calc. (else set targ.)
       call argument_add('nroots','calculate.multiref',type=vtyp_int,

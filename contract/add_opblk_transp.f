@@ -1,7 +1,7 @@
       subroutine add_opblk_transp(xnorm2,type,fac,
      &     me_in,me_out,tra_in,tra_out,
      &     iblk_in,iblk_out,
-     &     op_info,str_info,orb_info)
+     &     op_info,str_info,orb_info,reset)
 *----------------------------------------------------------------------*
 *
 *     Routine to add a transposed list:
@@ -34,7 +34,7 @@
       type(strinf), intent(in) ::
      &     str_info
       logical, intent(in) ::
-     &     tra_in, tra_out
+     &     tra_in, tra_out, reset
       type(me_list), intent(inout) ::
      &     me_in, me_out
       integer, intent(in) ::
@@ -172,6 +172,7 @@
       else
         buffer_out => ffout%buffer(ioff0_out+1:)
       endif
+      if (reset) buffer_out(1:nbuff) = 0d0
 
       hpvx_occ => op_out%ihpvca_occ
       idx_graph => me_out%idx_graph

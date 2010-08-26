@@ -5,6 +5,7 @@
      &                   me_opt,me_grd,me_dia,
      &                   me_trv,me_h_trv,
      &                   me_special,nspecial,
+     &                   flist,depend,
      &                   opti_info,opti_stat,
      &                   orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -61,6 +62,10 @@
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_strmapinf.h'
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'def_dependency_info.h'
       
 * parameters
       integer, parameter ::
@@ -73,6 +78,11 @@
      &     task
       logical, intent(out) ::
      &     conv
+
+      type(formula_item), intent(inout) ::
+     &     flist
+      type(dependency_info) ::
+     &     depend
 
       type(orbinf),intent(in) ::
      &     orb_info
@@ -202,6 +212,7 @@
      &       me_special,nspecial,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
+     &       flist,depend,energy,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 

@@ -106,7 +106,7 @@ c?        iblkop  = (iblkop-1)/njoined + 1
           call add_opblk_transp(xret_blk(iblk_res),type_xret,fact,
      &             me_op,me_tgt,tra_op,tra_res,
      &             iblk_op,iblk_res,
-     &             op_info,str_info,orb_info)
+     &             op_info,str_info,orb_info,.false.)
         else
           call add_opblk(xret_blk(iblk_res),type_xret,fact,
      &             me_op,me_tgt,

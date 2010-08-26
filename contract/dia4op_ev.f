@@ -1,5 +1,6 @@
 *------------------------------------------------------------------------*
-      subroutine dia4op_ev(me_dia,ecore,xdia1,xdia2,str_info,orb_info)
+      subroutine dia4op_ev(me_dia,ecore,xdia1,xdia2,use2,
+     &                     str_info,orb_info)
 *------------------------------------------------------------------------*
 *     set up diagonal hamiltonian
 *     ecore contains the core energy
@@ -28,6 +29,8 @@
 
       real(8), intent(in) ::
      &     ecore, xdia1(*), xdia2(*)
+      logical, intent(in) ::
+     &     use2
       type(me_list), intent(in) ::
      &     me_dia
       type(strinf), intent(in), target ::
@@ -317,6 +320,7 @@ c dbg
 c          print *,'added ',fac*xdia1(idxorb(idx))
 c dbgend
 
+                      if (use2) then
                       do jdx = 1, idx-1
                         ms2 = idxspn2(idx) + idxspn2(jdx)
                         idxms2 = (2 - ms2)/2 + 1
@@ -332,6 +336,7 @@ c     &                   xdia2(x2_off
 c     &                     + (idxorb(jdx)-1)*orb_info%ntoob+idxorb(idx))
 c dbgend
                       end do
+                      end if
                     end do
                   end do str_loop
                   nstr(nloop) = istr-ioff_xsum(nloop)
@@ -414,6 +419,7 @@ c dbg
                 end do
               end do
 
+              if (use2) then
               ! add two-electron integrals between separate strings:
 
               ! sequence: from inner to outer loop
@@ -517,6 +523,7 @@ c dbgend
                 end do
                end do
               end do
+              end if
 
               ioffbuf0 = ioffbuf
 

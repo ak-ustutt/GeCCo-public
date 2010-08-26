@@ -29,7 +29,7 @@
       real(8), pointer ::
      &     buffer(:)
 
-      call quit(1,'list_copy','not yet debugged (*might* work)')
+cmh      call quit(1,'list_copy','not yet debugged (*might* work)')
 
       ifree = mem_setmark('list_copy')
 

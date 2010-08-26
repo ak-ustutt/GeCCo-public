@@ -3,7 +3,8 @@
      &       optinf_prc_file   = 1, ! the usual case
      &       optinf_prc_blocked = 2,! as used for R12
      &       optinf_prc_mixed = 3,  ! both 1 and 2
-     &       optinf_prc_traf = 4    ! via transformation to orth. basis 
+     &       optinf_prc_traf = 4,   ! via transformation to orth. basis 
+     &       optinf_prc_norm = 5    ! like usual, but normal. to 1
 
       ! input variables to control optimization
       type optimize_info

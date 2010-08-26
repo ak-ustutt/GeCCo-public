@@ -32,7 +32,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 5
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -821,7 +821,7 @@ c dbgend
 
       enddo iocc_loop
 
-      if (ntest.ge.10) write(luout,'(i8,a,i8,a)') icnt_sv-icnt_sv0,
+      if (ntest.ge.5) write(luout,'(i8,a,i8,a)') icnt_sv-icnt_sv0,
      &        ' out of ',icnt_sv,' singular values were above threshold'
  
 

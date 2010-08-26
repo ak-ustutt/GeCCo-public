@@ -294,7 +294,7 @@ c          if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
       ! define density matrix
       call add_target('D',ttype_op,.false.,tgt_info)
       occ_def = 0
-      ndef = 1
+      ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
@@ -319,17 +319,10 @@ c          if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
      &              'D',1,1,
      &              parameters,2,tgt_info)
 
-      ! define daggered density matrix
-      call add_target('Ddag',ttype_op,.false.,tgt_info)
-      call set_dependency('Ddag','D',tgt_info)
-      call cloneop_parameters(-1,parameters,'D',.true.)
-      call set_rule('Ddag',ttype_op,CLONE_OP,'Ddag',1,1,
-     &              parameters,1,tgt_info)
-
       ! define transposed density matrix (e.g. for S^(-1/2))
       call add_target('Dtr',ttype_op,.false.,tgt_info)
       occ_def = 0
-      ndef = 1
+      ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
@@ -667,6 +660,18 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_rule('F_C',ttype_frm,EXPAND_OP_PRODUCT,
      &              labels,7,1,
      &              parameters,3,tgt_info)
+      call set_rule2('F_C',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_C',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_C'/))
+      call set_arg('F_C',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'C'/))
+      call set_arg('F_C',EXPAND_OP_PRODUCT,'OPERATORS',3,
+     &     tgt_info,
+     &     val_label=(/'C','Ctr','C'/))
+      call set_arg('F_C',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+     &     val_int=(/1,2,1/))
+      call set_arg('F_C',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
       ! delete terms with active open lines from the Ctr operator
       labels(2:20)(1:len_target_name) = ' '
       labels(2) = 'F_C'
@@ -706,6 +711,18 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_rule('F_Cdag',ttype_frm,EXPAND_OP_PRODUCT,
      &              labels,7,1,
      &              parameters,3,tgt_info)
+      call set_rule2('F_Cdag',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_Cdag',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_Cdag'/))
+      call set_arg('F_Cdag',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'Cdag'/))
+      call set_arg('F_Cdag',EXPAND_OP_PRODUCT,'OPERATORS',3,
+     &     tgt_info,
+     &     val_label=(/'Cdag','Ctr^+','Cdag'/))
+      call set_arg('F_Cdag',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+     &     val_int=(/1,2,1/))
+      call set_arg('F_Cdag',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
       ! delete terms with active open lines from the C operator
       labels(2:20)(1:len_target_name) = ' '
       labels(2) = 'F_Cdag'
@@ -1037,18 +1054,18 @@ c     &                  labels,2,1,parameters,2,tgt_info)
      &     val_int=(/5/))
       call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'AVOID',10,tgt_info,
      &     val_int=(/1,3,1,4,1,5,2,5,3,5/))
-c      call set_rule2('F_NORM_fact',EXPAND_OP_PRODUCT,tgt_info)
-c      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_NORM_fact'/))
-c      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-c     &     val_label=(/'NORM'/))
-c      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'OPERATORS',2,
-c     &     tgt_info,
-c     &     val_label=(/'C^+','C'/))
-c      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
-c     &     val_int=(/2,3/))
-c      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-c     &     val_log=(/.false./))
+      call set_rule2('F_NORM_fact',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_NORM_fact'/))
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'NORM'/))
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'OPERATORS',2,
+     &     tgt_info,
+     &     val_label=(/'C^+','C'/))
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
+     &     val_int=(/2,3/))
+      call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
       ! no active lines between C^+ and C
       call set_rule2('F_NORM_fact',SELECT_LINE,tgt_info)
       call set_arg('F_NORM_fact',SELECT_LINE,'LABEL_RES',1,tgt_info,
@@ -1129,23 +1146,23 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_rule('F_D',ttype_frm,DERIVATIVE,
      &              labels,5,1,
      &              parameters,2,tgt_info)
-      ! delete terms which do not have any open lines (valence space)
-      ! => scalar occupation class is excluded in the definition
-      labels(2:20)(1:len_target_name) = ' '
-      labels(2) = 'F_D'
-      labels(3) = 'D'
-      labels(4) = '1'
-c      labels(5) = 'C0'
-      labels(5) = 'DENS'
-      if (gno.eq.1) then
-        labels(4) = 'HOLE'
-        labels(5) = 'CUM'
-      end if
-      call form_parameters(-1,
-     &       parameters,2,'D formula',3,'ext')
-      call set_rule('F_D',ttype_frm,SELECT_LINE,
-     &              labels,5,1,
-     &              parameters,2,tgt_info)
+c      ! delete terms which do not have any open lines (valence space)
+c      ! => scalar occupation class is excluded in the definition
+c      labels(2:20)(1:len_target_name) = ' '
+c      labels(2) = 'F_D'
+c      labels(3) = 'D'
+c      labels(4) = '1'
+cc      labels(5) = 'C0'
+c      labels(5) = 'DENS'
+c      if (gno.eq.1) then
+c        labels(4) = 'HOLE'
+c        labels(5) = 'CUM'
+c      end if
+c      call form_parameters(-1,
+c     &       parameters,2,'D formula',3,'ext')
+c      call set_rule('F_D',ttype_frm,SELECT_LINE,
+c     &              labels,5,1,
+c     &              parameters,2,tgt_info)
 c dbg
 c      call set_rule2('F_D',KEEP_TERMS,tgt_info)
 c      call set_arg('F_D',KEEP_TERMS,'LABEL_RES',1,tgt_info,
@@ -1158,30 +1175,6 @@ c dbgend
 c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
 c      call set_rule('F_D',ttype_frm,PRINT_FORMULA,
 c     &                labels,2,1,parameters,2,tgt_info)
-
-      ! daggered density
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'F_Ddag'
-      call add_target('F_Ddag',ttype_frm,.false.,tgt_info)
-      call set_dependency('F_Ddag','Ddag',tgt_info)
-      call set_dependency('F_Ddag','D',tgt_info)
-      call def_form_parameters(-1,
-     &     parameters,2,'Ddag=D','adjoint of density matrix')
-      call set_rule('F_Ddag',ttype_frm,DEF_FORMULA,
-     &              labels,1,1,
-     &              parameters,2,tgt_info)
-      labels(2) = 'F_Ddag'
-      labels(3) = 'D'
-      labels(4) = 'D^+'
-      call form_parameters(-1,
-     &     parameters,2,'adjoint of density matrix',1,
-     &     '---')
-      call set_rule('F_Ddag',ttype_frm,REPLACE,
-     &            labels,4,1,
-     &            parameters,2,tgt_info)
-c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-c      call set_rule('F_Ddag',ttype_frm,PRINT_FORMULA,
-c     &                labels,1,0,parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
@@ -1286,19 +1279,6 @@ c      call set_dependency('FOPT_D','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_D','DEF_ME_D',tgt_info)
       call opt_parameters(-1,parameters,1,0)
       call set_rule('FOPT_D',ttype_frm,OPTIMIZE,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-
-      ! daggered density matrix
-      labels(1:20)(1:len_target_name)= ' '
-      labels(1) = 'FOPT_Ddag'
-      labels(2) = 'F_Ddag'
-      call add_target('FOPT_Ddag',ttype_frm,.false.,tgt_info)
-      call set_dependency('FOPT_Ddag','F_Ddag',tgt_info)
-      call set_dependency('FOPT_Ddag','DEF_ME_D',tgt_info)
-      call set_dependency('FOPT_Ddag','DEF_ME_Dinvdag',tgt_info)
-      call opt_parameters(-1,parameters,1,0)
-      call set_rule('FOPT_Ddag',ttype_frm,OPTIMIZE,
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
@@ -1483,19 +1463,6 @@ c     &     'ME_Dinv',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
 
-      ! inverted ME_Ddag
-      call add_target('DEF_ME_Dinvdag',ttype_opme,.false.,tgt_info)
-      call set_dependency('DEF_ME_Dinvdag','Ddag',tgt_info)
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'ME_Dinvdag'
-      labels(2) = 'Ddag'
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,
-     &     0,0,.false.)
-      call set_rule('DEF_ME_Dinvdag',ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-
       ! reordered inverted ME_D
       call add_target('DEF_ME_Dtr',ttype_opme,.false.,tgt_info)
       call set_dependency('DEF_ME_Dtr','Dtr',tgt_info)
@@ -1538,14 +1505,25 @@ c dbgend
       call set_rule('DEF_ME_Dtrdag',ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
-      call set_dependency('DEF_ME_Dtrdag','EVAL_Dinvdag',tgt_info)
-      labels(2) = 'ME_Dinvdag'
-      call form_parameters(-1,parameters,2,
-     &     '---',13,'---')
-      call set_rule('DEF_ME_Dtrdag',ttype_opme,
-     &              REORDER_MEL,
-     &              labels,2,1,
-     &              parameters,2,tgt_info)
+      call set_dependency('DEF_ME_Dtrdag','DEF_ME_Dinv',tgt_info)
+      call set_rule2('DEF_ME_Dtrdag',REORDER_MEL,tgt_info)
+      call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'LIST_RES',1,tgt_info,
+     &             val_label=(/'ME_Dtrdag'/))
+      call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'LIST_IN',1,tgt_info,
+     &             val_label=(/'ME_Dinv'/))
+      call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'FROMTO',1,tgt_info,
+     &             val_int=(/13/))
+      call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'ADJOINT',1,tgt_info,
+     &             val_log=(/.true./))
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'Reordered transposed inverted Density matrix :',0,'LIST')
+c      labels(1) = 'DEF_ME_Dtrdag'
+c      labels(2) = 'ME_Dtrdag'
+c      call set_rule('DEF_ME_Dtrdag',ttype_opme,PRINT_MEL,
+c     &     'ME_Dtrdag',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
 
       ! Diagonal Preconditioner
       call me_list_label(dia_label,mel_dia,1,
@@ -1597,31 +1575,18 @@ c dbgend
       call set_rule('EVAL_D',ttype_opme,EVAL,
      &     'FOPT_D',1,0,
      &     parameters,0,tgt_info)
-      ! fix: set first element (zero occ) to 1 (had not been defined in F_D)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = 'ME_D'
-      call dens_parameters(-1,parameters,1,1,1)
-      call set_rule('EVAL_D',ttype_opme,UNITY,
-     &     labels,1,1,
-     &     parameters,1,tgt_info)
+c      ! fix: set first element (zero occ) to 1 (had not been defined in F_D)
+c      labels(1:10)(1:len_target_name) = ' '
+c      labels(1) = 'ME_D'
+c      call dens_parameters(-1,parameters,1,1,1)
+c      call set_rule('EVAL_D',ttype_opme,UNITY,
+c     &     labels,1,1,
+c     &     parameters,1,tgt_info)
 c      call form_parameters(-1,parameters,2,
 c     &     'Density matrix :',0,'LIST')
 c      call set_rule('EVAL_D',ttype_opme,PRINT_MEL,
 c     &     'ME_D',1,0,
 c     &     parameters,2,tgt_info)
-
-      ! Calculate adjoint of ME_Dinv
-      call add_target('EVAL_Dinvdag',ttype_gen,.false.,tgt_info)
-      call set_dependency('EVAL_Dinvdag','FOPT_Ddag',tgt_info)
-      call set_dependency('EVAL_Dinvdag','DEF_ME_Dinv',tgt_info)
-      labels(1) = 'ME_Dinv'
-      labels(2) = 'D'
-      call set_rule('EVAL_Dinvdag',ttype_opme,ASSIGN_ME2OP,
-     &     labels,2,1,
-     &     parameters,0,tgt_info)
-      call set_rule('EVAL_Dinvdag',ttype_opme,EVAL,
-     &     'FOPT_Ddag',1,0,
-     &     parameters,0,tgt_info)
 
       ! Evaluate diagonal elements of Jacobian
       call add_target('EVAL_A_diag',ttype_gen,.false.,tgt_info)

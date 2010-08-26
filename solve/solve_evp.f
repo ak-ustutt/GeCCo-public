@@ -75,7 +75,7 @@
      &     orb_info
 
       logical ::
-     &     conv, use_s_t, use_s(nopt), trafo
+     &     conv, use_s_t, use_s(nopt), trafo, init(nopt)
       character(len_opname) ::
      &     label
       integer ::
@@ -280,9 +280,19 @@
       ifree = mem_alloc_int(irecmvp,nroots,'recmvp')
       ifree = mem_alloc_int(irecmet,nroots,'recmet')
 
+      init = .true.
       do iopt = 1, nopt
         ! open result vector file(s)
-        call file_open(ffopt(iopt)%fhand)
+cmh     if file already open, use as initial guess!
+        if (ffopt(iopt)%fhand%unit.gt.0) then
+c dbg
+          print *,'iopt = ',iopt
+c dbgend
+          call warn('solve_evp','using existing amplitudes!')
+          init(iopt) = .false.
+        else
+          call file_open(ffopt(iopt)%fhand)
+        end if
         call file_open(ff_scr(iopt)%fhand)
         call file_open(ff_trv(iopt)%fhand)
         ! open corresponding matrix vector products ...
@@ -301,6 +311,14 @@
 
       ! get initial amplitudes
       do iopt = 1, nopt
+        if (.not.init(iopt)) then
+          do iroot = 1, nroots
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            call switch_mel_record(me_opt(iopt)%mel,iroot)
+            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel)
+          end do
+          cycle
+        end if
         ! preliminary solution: set only component 1, rest is zero
         if (iopt.gt.1) then
           do iroot = 1, nroots          
@@ -486,6 +504,9 @@ c dbg
         ! the list containing the solution vector
         call assign_me_list(label_opt(iopt),
      &                      me_opt(iopt)%mel%op%name,op_info)
+
+        ! solution vector has been updated (if we had some iteration)
+        if (iter.gt.1) call touch_file_rec(me_opt(iopt)%mel%fhand)
 
       end do
 

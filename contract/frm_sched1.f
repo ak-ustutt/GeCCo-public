@@ -318,7 +318,7 @@ c fix:
               call add_opblk_transp(xret_blk(iblkres),type_xret,fac,
      &             mel_arr(idxmel)%mel,me_res,tra_op1,tra_op1op2,
      &             iblkop(1),iblkres,
-     &             op_info,str_info,orb_info)
+     &             op_info,str_info,orb_info,.false.)
             else
               call add_opblk(xret_blk(iblkres),type_xret,fac,
      &             mel_arr(idxmel)%mel,me_res,

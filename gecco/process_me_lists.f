@@ -351,7 +351,7 @@ c     &       op_info,str_info,strmap_info,orb_info)
      &       rule%n_parameter_strings,title,imode,mode)
 
         call reo_mel(rule%labels(1),rule%labels(2),
-     &       op_info,str_info,strmap_info,orb_info,imode)
+     &       op_info,str_info,strmap_info,orb_info,imode,.false.)
 
       case default
         call quit(1,'process_me_lists','unknown command: '//

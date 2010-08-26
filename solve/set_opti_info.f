@@ -197,6 +197,8 @@
           opti_info%typ_prc(iopt) = optinf_prc_mixed
         case('TRF') 
           opti_info%typ_prc(iopt) = optinf_prc_traf
+        case('NRM')
+          opti_info%typ_prc(iopt) = optinf_prc_norm
         case default
           call quit(1,'set_opti_info','cannot interpret string: '//
      &         trim(prc_str))

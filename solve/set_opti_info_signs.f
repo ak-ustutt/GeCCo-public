@@ -56,8 +56,8 @@
       integer(8), external ::
      &     int8_pack
 
-      if (mode.ne.2.and.mode.ne.3) call quit(1,'set_opti_info_signs',
-     &                             'only for LEQ and EVP solvers yet')
+c      if (mode.ne.2.and.mode.ne.3) call quit(1,'set_opti_info_signs',
+c     &                             'only for LEQ and EVP solvers yet')
 
       base = pack_base
       ifree = mem_alloc_int (opti_info%nsec,nopt,'nsec')
