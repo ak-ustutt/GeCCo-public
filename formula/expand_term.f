@@ -42,7 +42,8 @@
      &     adj_intm, ok
       integer ::
      &     nvtx, narc, narc0, ivtx, jvtx, kvtx, iarc,
-     &     iop_intm, iblk_intm, iblk, iadd, nj_tgt, ieqvfac
+     &     iop_intm, iblk_intm, iblk, iadd, nj_tgt, ieqvfac,
+     &     idx, ioff
       integer ::
      &     occ_temp(ngastp,2)
       type(contraction), pointer ::
@@ -58,7 +59,7 @@
      &     occ_vtx(:,:,:), svmap(:), vtxmap(:),
      &     ipos_vtx(:), ol_map(:)
       logical, pointer ::
-     &     fix_vtx(:), fix_vtx_intm(:)
+     &     fix_vtx(:), fix_vtx_intm(:), found(:)
       integer, pointer ::
      &     svertex(:), neqv(:), idx_eqv(:,:)
       integer(8), pointer ::
@@ -107,8 +108,7 @@ c      njoined = op_intm%njoined
         nvtx = term%nvtx-njoined + intm%nvtx
 c        narc = max(term%narc,(term%nvtx-njoined)*(term%nvtx-njoined-1))
 c     &       + intm%narc
-        narc = max(term%narc,(term%nvtx+intm%nvtx-njoined)**2)
-     &       + intm%narc 
+        narc = max(term%narc,(nvtx+2)*(nvtx+1)) 
 
         ! make a map: which vertex goes where ...
 
@@ -146,8 +146,10 @@ c     &       + intm%narc
         proto%nfac = 0
 
         ! result vertex: first and last vertex
-        if (op_info%op_arr(proto%idx_res)%op%njoined.ne.1)
-     &      call quit(1,'expand_term','nj>1 for res. not possible yet')
+        nj_tgt = op_info%op_arr(proto%idx_res)%op%njoined
+        ioff = (proto%iblk_res-1)*nj_tgt 
+        if (nj_tgt.ne.1)
+     &      call quit(1,'expand_term','nj>1 for res. not debugged yet')
         proto%vertex(1)%idx_op = proto%idx_res
         proto%vertex(1)%iblk_op = proto%iblk_res ! dummy
         proto%vertex(1)%dagger  =.false.
@@ -229,6 +231,56 @@ c     &      cycle
             proto%arc(narc)%occ_cnt = 0
           end do kloop
         end do
+
+        ! external arcs from term (not from intermediate, though
+        ! this can be a problem if the intermediate is an nj<>0 op.)
+        ! and [0] contractions to avoid unwanted external arcs
+        occ_temp = 0
+        do idx = 1, nj_tgt
+          occ_temp = occ_temp 
+     &             + op_info%op_arr(proto%idx_res)%op%ihpvca_occ(
+     &                     1:ngastp,1:2,ioff+idx)
+        end do
+        if (iocc_nonzero(occ_temp)) then
+          allocate(found(nvtx))
+          found = .false.
+          do idx = 1, term%nxarc
+            ! ignore open lines of intermediate for now
+            ! might be problematic for njoined.gt.1 !!!
+            if (idxlist(term%xarc(idx)%link(1),ipos_vtx,njoined,1)
+     &          .gt.0) cycle
+            ivtx = ivtx_term_reo(term%xarc(idx)%link(1))
+            if (found(ivtx)) call quit(1,'expand_term',
+     &                  'more than one external arc for one vertex?')
+            found(ivtx) = .true.
+            ! connect excitation part to first vertex ...
+            occ_temp = iocc_xdn(1,term%xarc(idx)%occ_cnt)
+            narc = narc + 1
+            proto%arc(narc)%link(1) = 1
+            proto%arc(narc)%link(2) = 1 + ivtx
+            proto%arc(narc)%occ_cnt = iocc_dagger(occ_temp)
+            ! ... and deexcitation part to last vertex
+            occ_temp = iocc_xdn(2,term%xarc(idx)%occ_cnt)
+            narc = narc + 1
+            proto%arc(narc)%link(1) = 1 + ivtx
+            proto%arc(narc)%link(2) = nvtx + 2
+            proto%arc(narc)%occ_cnt = occ_temp
+          end do
+          do jvtx = 1, term%nvtx
+            ivtx = ivtx_term_reo(jvtx)
+            if (ivtx.ne.0.and..not.found(ivtx)) then
+              narc = narc + 1
+              proto%arc(narc)%link(1) = 1
+              proto%arc(narc)%link(2) = 1 + ivtx
+              proto%arc(narc)%occ_cnt = 0
+              narc = narc + 1
+              proto%arc(narc)%link(1) = 1 + ivtx
+              proto%arc(narc)%link(2) = nvtx + 2
+              proto%arc(narc)%occ_cnt = 0
+            end if
+          end do
+          deallocate(found)
+        end if
 
         proto%narc = narc
 

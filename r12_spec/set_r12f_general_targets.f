@@ -2090,7 +2090,7 @@ c     &              parameters,2,tgt_info)
       call set_arg('C1_CABS',INVARIANT,'OPERATORS',1,tgt_info,
      &            val_label=(/op_r12/))
       call set_arg('C1_CABS',INVARIANT,'TITLE',1,tgt_info,
-     &            val_str='V(ring) intermediate, for evaluation')
+     &            val_str='C1 intermediate, for evaluation')
 
       ! formal definition of P
       labels(1:10)(1:len_target_name) = ' '

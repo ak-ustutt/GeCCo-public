@@ -576,7 +576,7 @@ c dbg
       call set_dependency(form_ccr12_s0,op_tbar,tgt_info)
       call set_dependency(form_ccr12_s0,op_top,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_ccr12lg0,ansatz,'---')
+     &     parameters,2,'---',ansatz,'---')
       call set_rule(form_ccr12_s0,ttype_frm,DEF_CCR12_METRIC,
      &              labels,nlabel,1,
      &              parameters,2,tgt_info)
@@ -610,7 +610,7 @@ c dbg
       nint = 1
       call set_dependency(form_ccr12_s0,form_r12_xint,tgt_info)
       call form_parameters(-1,
-     &     parameters,2,title_ccr12lg0,nint,'---')
+     &     parameters,2,'---',nint,'---')
       call set_rule(form_ccr12_s0,ttype_frm,FACTOR_OUT,
      &              labels,nint+2,1,
      &              parameters,2,tgt_info)

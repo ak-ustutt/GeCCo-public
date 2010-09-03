@@ -176,7 +176,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
      &                 'Max. number of iterations: ',opti_info%maxmacit
         write(luout,'(x,a,e10.2)')
      &                 'Threshold for residual:    ',opti_info%thrgrd(1)
-        write(luout,'(x,a,i10)')
+        write(luout,'(x,a,3i10)')
      &                 'Number of parameters:      ',
      &       opti_info%nwfpar(1:opti_info%nopt)
       end if
@@ -223,6 +223,7 @@ c        end if
         if (modestr(1:3).eq.'LEQ') then
           call leqc_init(xrsnrm,iroute,
      &       me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,
+     &       me_special,nspecial,
      &       nincore,lenbuf,
      &       xbuf1,xbuf2,xbuf3,
      &       flist,depend,use_s,

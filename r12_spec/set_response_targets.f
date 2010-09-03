@@ -36,11 +36,12 @@
 
       integer ::
      &     isim, ncat, nint, ndef, occ_def(ngastp,2,60),
-     &     msc, sym, r12op, ansatz, maxexc, t1ext_mode,
+     &     msc, sym, r12op, ansatz, t1ext_mode, maxexc,
      &     ord, op_par, len_op_exp, side, x_max_ord,
      &     digit, ilabels, ord2, op_par2, x_max_ord2,
      &     ncnt, icnt, pos,
-     &     spec, trunc_type, ipop, npop, ncmp, restart
+     &     spec, trunc_type, ipop, npop, ncmp, restart,
+     &     ntcex, itcex, itcex2
 
       character(len_target_name) ::
      &     mel_dia1,
@@ -53,7 +54,9 @@
      &     opname2, melname2, defmelname2, hubname, optname,
      &     solvename, evalname, lagname, formname3, formname4,
      &     defmelname3, opname3, opname4, defmelname4, melname3,
-     &     defmelname5, formname5, optname2, melname4, evalname2
+     &     defmelname5, formname5, optname2, melname4, evalname2,
+     &     form_lg0, op_lg, solve_gs, opname5, defmelname6, formname6,
+     &     optname3, evalname3, melname5
 
       character(len_long) ::
      &     opexp, method
@@ -62,7 +65,7 @@
      &     op_name*4, op_parent*1, lagf_name*12, op_exp*50,
      &     pert_ord*1, lag_name*11, res_name*9, leftright*1,
      &     res_lag_name*15,resl_lag_name*16, resr_lag_name*16,
-     &     lresp_name*8, approx_str*12
+     &     lresp_name*8, approx_str*12, op_name2*4, op_parent2*1
 
       character(len=8) ::
      &     approx
@@ -77,7 +80,7 @@
 
       logical ::
      &     setr12, r12fix, set_zero, treat_bv, file_exists,
-     &     truncate, half, userules, opt, screen
+     &     truncate, half, userules, screen, xsp_opt1, use_CS
 
       real(8) ::
      &     freqsum
@@ -114,14 +117,23 @@
 
       ! set r12 targets
       setr12 = is_keyword_set('method.R12').gt.0
+      form_lg0(1:len_short) = ' '
+      op_lg(1:len_short) = ' '
+      solve_gs(1:len_short) = ' '
       if (setr12) then
         call get_argument_value('method.R12','ansatz',ival=ansatz)
         call get_argument_value('method.R12','approx',str=approx)
         call get_argument_value('method.R12','fixed',lval=r12fix)
         call get_argument_value('method.R12','r12op',ival=r12op)
-        call get_argument_value('method.R12','T1ext',ival=t1ext_mode)
+        call get_argument_value('method.R12','maxexc',ival=maxexc)
+        call get_argument_value('method.R12','use_CS',lval=use_CS)
+        call get_argument_value('method.CC','T1ext',ival=t1ext_mode)
+        if (t1ext_mode.eq.0)
+     &     call get_argument_value('method.R12','T1ext',ival=t1ext_mode)
         call get_argument_value('method.R12','trunc',ival=trunc_type)
-        call get_argument_value('method.R12','opt',lval=opt)
+        call get_argument_value('method.R12','xsp1',lval=xsp_opt1)
+        ! xsp1 only has an effect if maxexc.ge.3
+        xsp_opt1 = xsp_opt1.and.maxexc.ge.3
         call get_argument_value('method.R12','screen',lval=screen)
         truncate = trunc_type.ge.0
         if (is_keyword_set('method.truncate').gt.0) then
@@ -132,13 +144,17 @@
         end if
         call get_argument_value('calculate.response','BX_3C',
      &       keycount=1,lval=treat_bv)
-        if (r12op.le.1.and.r12fix.and..not.(opt.and.r12op.ne.1)) then
-          call set_r12f_general_targets(tgt_info,orb_info,env_type)
-        else
-          call quit(1,'set_response_targets','wrong r12 method')
-        end if
+        if (r12op.eq.0.and..not.r12fix)
+     &     call quit(1,'set_response_targets',
+     &     'no response implemented for this r12 method so far')
+        form_lg0 = form_ccr12lg0
+        op_lg = op_ccr12lg
+        solve_gs = solve_ccr12_gs
       else
         t1ext_mode = 0
+        form_lg0 = form_cclg0
+        op_lg = op_cclg
+        solve_gs = solve_cc_gs
       end if
 
       if (iprlvl.gt.0)
@@ -155,9 +171,6 @@
       allocate(eval_dipmom(npop))
       evaluate = .true.
 
-      ! maximum excitation
-      call get_argument_value('calculate.response','maxexc',
-     &     keycount=1,ival=maxexc)
       ! use 2n+1 / 2n+2 rules?
       call get_argument_value('calculate.response','rules',
      &     keycount=1,lval=userules)
@@ -209,13 +222,10 @@
 
       if (ntest.ge.100) then
         write(luout,*) 'keywords processed:'
-        write(luout,*) 'maxexc      : ',maxexc
         write(luout,*) 'userules    : ',userules
         write(luout,*) 'restart     : ',restart
         write(luout,*) 'BX_3C       : ',treat_bv
-        write(luout,*) 'trunc_type  : ',trunc_type
         write(luout,*) 'ncnt        : ',ncnt
-        write(luout,*) 'maxord      : ',maxord
         write(luout,*) 'freq        : ',cmp(1:ncmp)%freq
         write(luout,*) 'redun       : ',cmp(1:ncmp)%redun
         write(luout,*) 'pop_idx     : ',cmp(1:ncmp)%pop_idx
@@ -223,33 +233,13 @@
         write(luout,*) 'pop%comp    : ',pop(1:npop)%comp
         write(luout,*) 'pop%int_name: ',pop(1:npop)%int_name
         write(luout,*) 'pop%isym    : ',pop(1:npop)%isym
+        write(luout,*) 'Lagrangian  : ',trim(form_lg0)
       end if
 
       if (iprlvl.gt.0) then
         if (.not.userules)
      &        write(luout,*) 'No 2n+1 and 2n+2 rules will be used'
-        method(1:6) = 'CCSDTQ'
-        do ord = 5,maxexc
-          write(method(ord+2:ord+2),'(i1)') ord
-        end do
-        pos = maxexc + 3
-        method(pos:len_long) = ' '
         if (setr12.and.trunc_type.ne.2) then
-          if (r12op.eq.0) then
-            method(pos:pos+2) = '-SP'
-            pos = pos+3
-          else
-            method(pos:pos+3) = '-XSP'
-            pos = pos+4
-            if (opt) then
-              method(pos:pos+2) = 'opt'
-              pos = pos+3
-            end if
-          end if
-          if (screen) then
-            method(pos:pos+7) = '(screen)'
-            pos = pos+8
-          end if
           if (treat_bv.and.maxval(maxord).gt.0) then
             write(luout,*) 'BX intermediate will be evaluated '
      &                     //'in approximation C'
@@ -258,9 +248,11 @@
      &                         //'special treatment'
           end if
         end if
-        if (t1ext_mode.eq.1) method(pos:pos+3) = '-T1x'
-        write(luout,*) 'Method to be used: '//trim(method)
       end if
+
+      ntcex = 1
+      if (setr12.and..not.r12fix) ntcex = 2
+      
 
 *----------------------------------------------------------------------*
 *     Operators:
@@ -270,8 +262,14 @@
       call set_rule(op_ham,ttype_op,SET_ORDER,op_ham,
      &              1,1,parameters,1,tgt_info)
 
+      ! define op_top as T(0)
+      call ord_parameters(-1,parameters,0,1,-1)
+      call set_rule(op_top,ttype_op,SET_ORDER,op_top,
+     &              1,1,parameters,1,tgt_info)
+
       if (setr12) then
-        ! set order of R12, V, B, Bh, X, R12-INT, C-INT, Xh to zero
+        ! set order of R12, V, B, Bh, X, R12-INT, C-INT, Xh,
+        ! U, C1, Z2-INT to zero
         call ord_parameters(-1,parameters,0,3,-1)
         call set_rule(op_r12,ttype_op,SET_ORDER,op_r12,
      &                1,1,parameters,1,tgt_info)
@@ -289,12 +287,16 @@
      &                1,1,parameters,1,tgt_info)
         call set_rule(op_c_inter,ttype_op,SET_ORDER,op_c_inter,
      &                1,1,parameters,1,tgt_info)
-        if (opt) then
-          ! set operator block version of T12 and T12BAR to 2
-          call ord_parameters(-1,parameters,1,-1,2)
+        call set_rule(op_vp_inter,ttype_op,SET_ORDER,op_vp_inter,
+     &                1,1,parameters,1,tgt_info)
+        call set_rule('C1',ttype_op,SET_ORDER,'C1',
+     &                1,1,parameters,1,tgt_info)
+        call set_rule('Z2-INT',ttype_op,SET_ORDER,'Z2-INT',
+     &                1,1,parameters,1,tgt_info)
+        if (.not.r12fix) then
+          ! define op_cex as T12'(0)
+          call ord_parameters(-1,parameters,0,1,-1)
           call set_rule(op_cex,ttype_op,SET_ORDER,op_cex,
-     &                  1,1,parameters,1,tgt_info)
-          call set_rule(op_cexbar,ttype_op,SET_ORDER,op_cexbar,
      &                  1,1,parameters,1,tgt_info)
         end if
         ! BV
@@ -319,6 +321,42 @@
         call ord_parameters(-1,parameters,1,3,-1)
         call set_rule('CV',ttype_op,SET_ORDER,'CV',
      &                1,1,parameters,1,tgt_info)
+        ! DV  (= C1 with perturbation)
+        call add_target('DV',ttype_op,.false.,tgt_info)
+        call set_dependency('DV','C1',tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &       'C1',.false.)
+        call set_rule('DV',ttype_op,CLONE_OP,
+     &                'DV',1,1,
+     &                parameters,1,tgt_info)
+        call ord_parameters(-1,parameters,1,3,-1)
+        call set_rule('DV',ttype_op,SET_ORDER,'DV',
+     &                1,1,parameters,1,tgt_info)
+
+        ! Bnew
+        call add_target('Bnew',ttype_op,.false.,tgt_info)
+        call set_dependency('Bnew',op_b_inter,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &       op_b_inter,.false.)
+        call set_rule('Bnew',ttype_op,CLONE_OP,
+     &                'Bnew',1,1,
+     &                parameters,1,tgt_info)
+        ! Cnew
+        call add_target('Cnew',ttype_op,.false.,tgt_info)
+        call set_dependency('Cnew',op_c_inter,tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &       op_c_inter,.false.)
+        call set_rule('Cnew',ttype_op,CLONE_OP,
+     &                'Cnew',1,1,
+     &                parameters,1,tgt_info)
+        ! Dnew
+        call add_target('Dnew',ttype_op,.false.,tgt_info)
+        call set_dependency('Dnew','C1',tgt_info)
+        call cloneop_parameters(-1,parameters,
+     &       'C1',.false.)
+        call set_rule('Dnew',ttype_op,CLONE_OP,
+     &                'Dnew',1,1,
+     &                parameters,1,tgt_info)
 
         ! define direction components BVX, BVY, BVZ, CVX, CVY, CVZ
         ! and RDGB(V)X, RDGB(V)Y, RDGB(V)Z,
@@ -331,6 +369,8 @@
         opname3(1:7) = 'RBRV(V)'
         opname4(1:len_short) = ' '
         opname4(1:2) = 'CV'
+        opname5(1:len_short) = ' '
+        opname5(1:2) = 'DV'
         occ_def = 0
         ndef = 2
         ! 1
@@ -359,7 +399,8 @@
           opname2(6:8) = pop(ipop)%name//')'//pop(ipop)%comp
           opname3(6:8) = pop(ipop)%name//')'//pop(ipop)%comp
           opname4(2:3) = pop(ipop)%name//pop(ipop)%comp
-          ! BVV and CVV:
+          opname5(2:3) = pop(ipop)%name//pop(ipop)%comp
+          ! BVV and CVV and DVV (=C1VV):
           call add_target(trim(opname),ttype_op,.false.,tgt_info)
           call set_dependency(trim(opname),op_b_inter,tgt_info)
           call cloneop_parameters(-1,parameters,
@@ -374,10 +415,19 @@
           call set_rule(trim(opname4),ttype_op,CLONE_OP,
      &                  trim(opname4),1,1,
      &                  parameters,1,tgt_info)
+          call add_target(trim(opname5),ttype_op,.false.,tgt_info)
+          call set_dependency(trim(opname5),'C1',tgt_info)
+          call cloneop_parameters(-1,parameters,
+     &         'C1',.false.)
+          call set_rule(trim(opname5),ttype_op,CLONE_OP,
+     &                  trim(opname5),1,1,
+     &                  parameters,1,tgt_info)
           call ord_parameters(-1,parameters,1,ipop+3,0)
           call set_rule(trim(opname),ttype_op,SET_ORDER,trim(opname),
      &                  1,1,parameters,1,tgt_info)
           call set_rule(trim(opname4),ttype_op,SET_ORDER,trim(opname4),
+     &                  1,1,parameters,1,tgt_info)
+          call set_rule(trim(opname5),ttype_op,SET_ORDER,trim(opname5),
      &                  1,1,parameters,1,tgt_info)
           ! RDGB(V)V:
           call add_target(trim(opname2),ttype_op,.false.,tgt_info)
@@ -455,77 +505,66 @@
       ! Hnew will be used as sum of H(0) and V(1)
       call add_target('Hnew',ttype_op,.false.,tgt_info)
       call set_dependency('Hnew',op_ham,tgt_info)
-      call cloneop_parameters(-1,parameters,op_ham,.true.)
+      call cloneop_parameters(-1,parameters,op_ham,.false.)
       call set_rule('Hnew',ttype_op,CLONE_OP,'Hnew',1,1,
      &              parameters,1,tgt_info)
 
-      ! define scalar response lagrangian
-      call add_target('LRESP',ttype_op,.false.,tgt_info)
-      call hop_parameters(-1,parameters,0,0,1,.false.)
-      call set_rule('LRESP',ttype_op,DEF_HAMILTONIAN,'LRESP',
-     &              1,1,parameters,1,tgt_info)
-
-      ! define excitation operator T
-      call add_target('T',ttype_op,.false.,tgt_info)
-      if (t1ext_mode.eq.0.and..not.opt) then
-        call xop_parameters(-1,parameters,
-     &                   .false.,1,maxexc,0,1)
-        call set_rule(op_top,ttype_op,DEF_EXCITATION,
-     &              op_top,1,1,
+      ! Tnew will be used as sum of T, T(1), T(2), ...
+      call add_target('Tnew',ttype_op,.false.,tgt_info)
+      call set_dependency('Tnew',op_top,tgt_info)
+      call cloneop_parameters(-1,parameters,op_top,.false.)
+      call set_rule('Tnew',ttype_op,CLONE_OP,'Tnew',1,1,
      &              parameters,1,tgt_info)
-      else
-        occ_def = 0
-        ! T1
-        occ_def(IPART,1,1) = 1
-        occ_def(IHOLE,2,1) = 1
-        ndef = 2
-        if (t1ext_mode.gt.0) then
-          ! T1'
-          occ_def(IEXTR,1,ndef) = 1
-          occ_def(IHOLE,2,ndef) = 1
-          ndef = ndef + 1
-        end if
-        if (opt) then
-          ! another T1
-          occ_def(IPART,1,ndef) = 1
-          occ_def(IHOLE,2,ndef) = 1
-          ndef = ndef + 1
-        end if
-        ! T2,T3,...
-        do nint = 2,maxexc
-          occ_def(IPART,1,nint+ndef-2) = nint
-          occ_def(IHOLE,2,nint+ndef-2) = nint
-        end do
-        ndef = ndef + maxexc - 2
-        call op_from_occ_parameters(-1,parameters,2,
-     &                occ_def,ndef,1,(/     0,     0/),ndef)
-        call set_rule(op_top,ttype_op,DEF_OP_FROM_OCC,
-     &                op_top,1,1,
-     &                parameters,2,tgt_info)
+
+      if (setr12.and..not.r12fix) then
+        ! tnew will be used as sum of T12', t(1), t(2), ...
+        call add_target('Wnew',ttype_op,.false.,tgt_info)
+        call set_dependency('Wnew',op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,op_cex,.false.)
+        call set_rule('Wnew',ttype_op,CLONE_OP,'Wnew',1,1,
+     &                parameters,1,tgt_info)
       end if
 
       ! define deexcitation operator L
       call add_target('L',ttype_op,.false.,tgt_info)
-      call set_dependency('L','T',tgt_info)
-      call cloneop_parameters(-1,parameters,'T',.true.)
+      call set_dependency('L',op_tbar,tgt_info)
+      call cloneop_parameters(-1,parameters,op_tbar,.false.)
       call set_rule('L',ttype_op,CLONE_OP,'L',1,1,
      &              parameters,1,tgt_info)
 
-      ! define operators T(0), T(1), T(2), ...
+      if (setr12.and..not.r12fix) then
+        ! define excitation operator t
+        call add_target('W',ttype_op,.false.,tgt_info)
+        call set_dependency('W',op_cex,tgt_info)
+        call cloneop_parameters(-1,parameters,op_cex,.false.)
+        call set_rule('W',ttype_op,CLONE_OP,'W',1,1,
+     &                parameters,1,tgt_info)
+        ! define deexcitation operator l
+        call add_target('Y',ttype_op,.false.,tgt_info)
+        call set_dependency('Y',op_cexbar,tgt_info)
+        call cloneop_parameters(-1,parameters,op_cexbar,.false.)
+        call set_rule('Y',ttype_op,CLONE_OP,'Y',1,1,
+     &                parameters,1,tgt_info)
+      end if
+
+      ! define operators T(1), T(2), ...
       ! and L(0), L(1), L(2), ...
       ! following (2n+1) and (2n+2) rules regarding the maximum order
       do op_par = 1,2
+       do itcex = 1, ntcex
         if (op_par.eq.1.) then
           op_parent = 'T'
-          op_name = 'T(x)'
+          if (itcex.eq.2) op_parent = 'W'
+          op_name = op_parent//'(x)'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         else
           op_parent = 'L'
-          op_name = 'L(x)'
+          if (itcex.eq.2) op_parent = 'Y'
+          op_name = op_parent//'(x)'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
-        do ord=0,x_max_ord
+        do ord=2-op_par,x_max_ord
           write(op_name(3:3),'(i1)') ord
           call add_target(op_name,ttype_op,.false.,tgt_info)
           call set_dependency(op_name,op_parent,tgt_info)
@@ -566,6 +605,7 @@
             deallocate(ifreq, ifreqnew)
           end if
         end do
+       end do
       end do
 
 c      if (ntest.ge.100)
@@ -574,17 +614,26 @@ c     &  write(luout,*) 'defining residuals'
       ! define residuals O(n)_L(0) and O(n)_T(0)
       ! following (2n+1) and (2n+2) rules regarding the maximum order
       do op_par = 1,2
+       do itcex = 1, ntcex
         if (op_par.eq.1) then
           op_parent = 'T'
           res_name = 'O(x)_L'
+          if (itcex.eq.2) then
+            op_parent = 'W'
+            res_name = 'O(x)_Y'
+          end if
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         else
           op_parent = 'L'
           res_name = 'O(x)_T'
+          if (itcex.eq.2) then
+            op_parent = 'Y'
+            res_name = 'O(x)_W'
+          end if
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
-        do ord=0,x_max_ord
+        do ord=2-op_par,x_max_ord
           write(res_name(3:3),'(i1)') ord
           call add_target(res_name,ttype_op,.false.,tgt_info)
           call set_dependency(res_name,op_parent,tgt_info)
@@ -592,6 +641,7 @@ c     &  write(luout,*) 'defining residuals'
           call set_rule(res_name,ttype_op,CLONE_OP,res_name,1,1,
      &                  parameters,1,tgt_info)
         end do
+       end do
       end do
 
       ! define left and right residuals
@@ -602,13 +652,22 @@ c     &  write(luout,*) 'defining residuals'
       opname2(1:len_short) = ' '
       opname2(1:5) = 'SX(n)'
       do op_par = 1,2
+       do itcex = 1, ntcex
         if (op_par.eq.1) then
           op_parent = 'L'
           opname(6:6) = 'T'
+          if (itcex.eq.2) then
+            op_parent = 'Y'
+            opname(6:6) = 'W'
+          end if
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           op_parent = 'T'
           opname(6:6) = 'L'
+          if (itcex.eq.2) then
+            op_parent = 'W'
+            opname(6:6) = 'Y'
+          end if
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
@@ -652,8 +711,9 @@ c     &  write(luout,*) 'defining residuals'
               call set_rule(trim(opname),ttype_op,CLONE_OP,
      &                      trim(opname),1,1,
      &                      parameters,1,tgt_info)
-              if (setr12.and.side.eq.1.and.
-     &            (ord.gt.0.or.opt.and.op_par.eq.1)) then
+              if (setr12.and.side.eq.1.and.r12op.gt.0.and.
+     &            (ord.gt.0.or.op_par.eq.1).and.
+     &            (r12fix.or.xsp_opt1.or.itcex.eq.2)) then
                 ! SX(n)w: X(n)w vector times Metric
                 opname2(6:len_short-1) = opname(7:len_short)
                 call add_target(trim(opname2),ttype_op,.false.,tgt_info)
@@ -668,6 +728,7 @@ c     &  write(luout,*) 'defining residuals'
             deallocate(ifreq, ifreqnew)
           end do
         end do
+       end do
       end do
 
 c      if (ntest.ge.100)
@@ -682,8 +743,8 @@ c     &  write(luout,*) 'defining lagrangians'
         ! is this one necessary (without frequency indices)???
         if (ord.gt.0) then
           call add_target(trim(lagname),ttype_op,.false.,tgt_info)
-          call set_dependency(trim(lagname),'LRESP',tgt_info)
-          call cloneop_parameters(-1,parameters,'LRESP',.false.)
+          call set_dependency(trim(lagname),trim(op_lg),tgt_info)
+          call cloneop_parameters(-1,parameters,trim(op_lg),.false.)
           call set_rule(trim(lagname),ttype_op,CLONE_OP,
      &                  trim(lagname),1,1,
      &                  parameters,1,tgt_info)
@@ -700,8 +761,8 @@ c     &  write(luout,*) 'defining lagrangians'
           end do
           if (idx_target(trim(lagname),tgt_info).gt.0) cycle
           call add_target(trim(lagname),ttype_op,.false.,tgt_info)
-          call set_dependency(trim(lagname),'LRESP',tgt_info)
-          call cloneop_parameters(-1,parameters,'LRESP',.false.)
+          call set_dependency(trim(lagname),trim(op_lg),tgt_info)
+          call cloneop_parameters(-1,parameters,trim(op_lg),.false.)
           call set_rule(trim(lagname),ttype_op,CLONE_OP,
      &                  trim(lagname),1,1,
      &                  parameters,1,tgt_info)
@@ -721,77 +782,32 @@ c     &  write(luout,*) 'defining other operators'
         end if
         call add_target(op_dia//'_'//op_parent,ttype_op,.false.,
      &                  tgt_info)
-        call set_dependency(op_dia//'_'//op_parent,'T(0)',tgt_info)
+        call set_dependency(op_dia//'_'//op_parent,op_top,tgt_info)
         call cloneop_parameters(-1,parameters,
-     &                          'T(0)',op_par.eq.1)
+     &                          op_top,op_par.eq.1)
         call set_rule(op_dia//'_'//op_parent,ttype_op,CLONE_OP,
      &                op_dia//'_'//op_parent,1,1,
      &                parameters,1,tgt_info)
       end do
 
-      if (opt) then
-        ! B-Matrix for Preconditioner
-        call add_target(op_bprc,ttype_op,.false.,tgt_info)
-        occ_def=0
-        ndef = 1
-        occ_def(IPART,1,1) = 1
-        occ_def(IPART,2,1) = 1
-        call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,ndef,1,(/     0,     0/),ndef)
-        call set_rule(op_bprc,ttype_op,DEF_OP_FROM_OCC,
-     &                op_bprc,1,1,
-     &                parameters,2,tgt_info)
-        ! X-Matrix for Preconditioner
-        call add_target(op_xprc,ttype_op,.false.,tgt_info)
-        occ_def=0
-        ndef = 1
-        occ_def(IPART,1,1) = 1
-        occ_def(IPART,2,1) = 1
-        call op_from_occ_parameters(-1,parameters,2,
-     &       occ_def,ndef,1,(/     0,     0/),ndef)
-        call set_rule(op_xprc,ttype_op,DEF_OP_FROM_OCC,
-     &                op_xprc,1,1,
-     &                parameters,2,tgt_info)
-      end if
-
-      ! T1 transformed Hamiltonian
-      call add_target(op_hhat,ttype_op,.false.,tgt_info)
-      if (.not.setr12) then
-        call set_dependency(op_hhat,op_ham,tgt_info)
-        call cloneop_parameters(-1,parameters,
-     &                          op_ham,.false.)
-        call set_rule(op_hhat,ttype_op,CLONE_OP,
-     &                op_hhat,1,1,
-     &                parameters,1,tgt_info)
-      else
-        call define_r12_hhat(tgt_info,screen)
-      end if
-
-      ! Hbar intermediate
-      call add_target(op_hbar,ttype_op,.false.,tgt_info)
-      call xop_parameters(-1,parameters,
-     &                    .false.,1,2,0,1)
-      call set_rule(op_hbar,ttype_op,DEF_CC_HBAR_OP,
-     &              op_hbar,1,1,
-     &              parameters,1,tgt_info)
-
       if (setr12) then
-        ! prototype formula for metric:
-        call add_target(op_ccr12s0,ttype_op,.false.,tgt_info)
-        call set_rule(op_ccr12s0,ttype_op,DEF_SCALAR,
-     &                op_ccr12s0,1,1,
-     &                parameters,0,tgt_info)
-
         ! S_X: L and T vectors times Metric
         opname(1:len_short) = ' '
         opname(1:3) = 'S_X'
         do op_par = 1,2
-          if (op_par.eq.1) then
+         do itcex = 1, ntcex
+          if (op_par.eq.1.and.itcex.eq.1) then
             op_parent = 'T'
             opname(3:3) = 'L'
-          else
+          else if (op_par.eq.2.and.itcex.eq.1) then
             op_parent = 'L'
             opname(3:3) = 'T'
+          else if (op_par.eq.1.and.itcex.eq.2) then
+            op_parent = 'W'
+            opname(3:3) = 'Y'
+          else if (op_par.eq.2.and.itcex.eq.2) then
+            op_parent = 'Y'
+            opname(3:3) = 'W'
           end if
           call add_target(trim(opname),ttype_op,.false.,tgt_info)
           call set_dependency(trim(opname),op_parent,tgt_info)
@@ -800,6 +816,7 @@ c     &  write(luout,*) 'defining other operators'
           call set_rule(trim(opname),ttype_op,CLONE_OP,
      &                  trim(opname),1,1,
      &                  parameters,1,tgt_info)
+         end do
         end do
       end if
 
@@ -809,57 +826,6 @@ c     &  write(luout,*) 'operators defined'
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
-
-      if (.not.setr12) then
-        ! define response lagrangian
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = 'RESP_LAG'
-        labels(2) = 'LRESP'
-        labels(3) = 'Hnew'
-        labels(4) = 'L'
-        labels(5) = 'T'
-        call add_target('RESP_LAG',ttype_frm,.false.,tgt_info)
-        call set_dependency('RESP_LAG','LRESP',tgt_info)
-        call set_dependency('RESP_LAG','Hnew',tgt_info)
-        call set_dependency('RESP_LAG','L',tgt_info)
-        call set_dependency('RESP_LAG','T',tgt_info)
-        call set_rule('RESP_LAG',ttype_frm,DEF_CC_LAGRANGIAN,
-     &                labels,5,1,
-     &                'conventional CC lagrangian',1,tgt_info)
-      else
-        ! define r12 response lagrangian
-        call add_target('RESP_LAG',ttype_frm,.false.,tgt_info)
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = 'RESP_LAG'
-        labels(2) = 'LRESP'
-        labels(3) = 'Hnew'
-        labels(4) = op_r12
-        labels(5) = op_r12
-        labels(6) = 'L'
-        labels(7) = 'T'
-        ilabels = 7
-        if (r12op.eq.1) then
-          labels(8) = op_cexbar
-          labels(9) = op_cex
-          call set_dependency('RESP_LAG',op_cex,tgt_info)
-          call set_dependency('RESP_LAG',op_cexbar,tgt_info)
-          ilabels = 9
-        end if
-        call set_dependency('RESP_LAG','LRESP',tgt_info)
-        call set_dependency('RESP_LAG','L',tgt_info)
-        call set_dependency('RESP_LAG','Hnew',tgt_info)
-        call set_dependency('RESP_LAG','T',tgt_info)
-        call set_dependency('RESP_LAG',op_r12,tgt_info)
-        call form_parameters(-1,
-     &       parameters,2,'r12 response lagrange functional',
-     &                    ansatz,'---')
-        call set_rule('RESP_LAG',ttype_frm,DEF_CCR12_LAGRANGIAN,
-     &                labels,ilabels,1,
-     &                parameters,2,tgt_info)
-      end if
-c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-c      call set_rule('RESP_LAG',ttype_frm,PRINT_FORMULA,
-c     &              labels,2,1,parameters,2,tgt_info)
 
       ! perturbation expansion of H: Hnew=H+V(1)
       labels(1:20)(1:len_target_name) = ' '
@@ -874,28 +840,91 @@ c     &              labels,2,1,parameters,2,tgt_info)
      &              labels,1,1,
      &              parameters,2,tgt_info)
 
+      if (setr12) then
+        ! perturbation expansion of B: Bnew=B+BV
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = 'B_FORM'
+        call add_target('B_FORM',ttype_frm,.false.,tgt_info)
+        call set_dependency('B_FORM','Bnew',tgt_info)
+        call set_dependency('B_FORM',op_b_inter,tgt_info)
+        call set_dependency('B_FORM','BV',tgt_info)
+        call def_form_parameters(-1,
+     &       parameters,2,'Bnew='//op_b_inter//'+BV','pert exp of B')
+        call set_rule('B_FORM',ttype_frm,DEF_FORMULA,
+     &                labels,1,1,
+     &                parameters,2,tgt_info)
+        ! perturbation expansion of C: Cnew=C+CV
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = 'C_FORM'
+        call add_target('C_FORM',ttype_frm,.false.,tgt_info)
+        call set_dependency('C_FORM','Cnew',tgt_info)
+        call set_dependency('C_FORM',op_c_inter,tgt_info)
+        call set_dependency('C_FORM','CV',tgt_info)
+        call def_form_parameters(-1,
+     &       parameters,2,'Cnew='//op_c_inter//'+CV','pert exp of C')
+        call set_rule('C_FORM',ttype_frm,DEF_FORMULA,
+     &                labels,1,1,
+     &                parameters,2,tgt_info)
+        ! perturbation expansion of C1: Dnew=C1+DV
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = 'C1_FORM'
+        call add_target('C1_FORM',ttype_frm,.false.,tgt_info)
+        call set_dependency('C1_FORM','Dnew',tgt_info)
+        call set_dependency('C1_FORM','C1',tgt_info)
+        call set_dependency('C1_FORM','DV',tgt_info)
+        call def_form_parameters(-1,
+     &       parameters,2,'Dnew=C1+DV','pert exp of C1')
+        call set_rule('C1_FORM',ttype_frm,DEF_FORMULA,
+     &                labels,1,1,
+     &                parameters,2,tgt_info)
+      end if
+
       ! perturbation expansion of T and L: T=T(0)+T(1)+T(2)+.../L=...
       ! following the (2n+1) and (2n+2) rules regarding the maximum order
       do op_par = 1,2
-        len_op_exp = 6
-        if (op_par.eq.1) then
+       do itcex = 1, ntcex
+        if (op_par.eq.1.and.itcex.eq.1) then
+          len_op_exp = 6
           op_parent = 'T'
-          op_exp(1:len_op_exp) = 'T=T(0)'
+          op_exp(1:len_op_exp) = 'Tnew=T'
           op_name = 'T(x)'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
-        else
+        else if (op_par.eq.2.and.itcex.eq.1) then
+          len_op_exp = len(op_tbar)+5
           op_parent = 'L'
-          op_exp(1:len_op_exp) = 'L=L(0)'
+          op_exp(1:len_op_exp) = op_tbar//'=L(0)'
           op_name = 'L(x)'
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
+        else if (op_par.eq.1.and.itcex.eq.2) then
+          len_op_exp = 5+len(op_cex)
+          op_parent = 'W'
+          op_exp(1:len_op_exp) = 'Wnew='//op_cex
+          op_name = 'W(x)'
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
+        else if (op_par.eq.2.and.itcex.eq.2) then
+          len_op_exp = len(op_cexbar)+5
+          op_parent = 'Y'
+          op_exp(1:len_op_exp) = op_cexbar//'=Y(0)'
+          op_name = 'Y(x)'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = op_parent//'_FORM'
         call add_target(op_parent//'_FORM',ttype_frm,.false.,tgt_info)
-        call set_dependency(op_parent//'_FORM',op_parent,tgt_info)
-        call set_dependency(op_parent//'_FORM',
-     &                      op_parent//'(0)',tgt_info)
+        if (op_par.eq.1.and.itcex.eq.1) then
+          call set_dependency(op_parent//'_FORM','Tnew',tgt_info)
+          call set_dependency(op_parent//'_FORM',op_top,tgt_info)
+        else if (op_par.eq.2.and.itcex.eq.1) then
+          call set_dependency(op_parent//'_FORM',op_tbar,tgt_info)
+          call set_dependency(op_parent//'_FORM','L(0)',tgt_info)
+        else if (op_par.eq.1.and.itcex.eq.2) then
+          call set_dependency(op_parent//'_FORM','Wnew',tgt_info)
+          call set_dependency(op_parent//'_FORM',op_cex,tgt_info)
+        else if (op_par.eq.2.and.itcex.eq.2) then
+          call set_dependency(op_parent//'_FORM',op_cexbar,tgt_info)
+          call set_dependency(op_parent//'_FORM','Y(0)',tgt_info)
+        end if
         do ord=1,x_max_ord
           write(op_name(3:3),'(i1)') ord
           call set_dependency(op_parent//'_FORM',op_name,tgt_info)
@@ -908,6 +937,7 @@ c     &              labels,2,1,parameters,2,tgt_info)
         call set_rule(op_parent//'_FORM',ttype_frm,DEF_FORMULA,
      &                labels,1,1,
      &                parameters,2,tgt_info)
+       end do
       end do
 
 c      if (ntest.ge.100)
@@ -981,6 +1011,28 @@ c     &  write(luout,*) 'frequency expansion of perturbation operators'
         call set_rule('CV_F',ttype_frm,DEF_FORMULA,
      &                labels,1,1,
      &                parameters,2,tgt_info)
+        ! frequency expansion of DV: DV=DVX+DVY+DVZ
+        labels(1:20)(1:len_target_name) = ' '
+        labels(1) = 'DV_F'
+        call add_target('DV_F',ttype_frm,.false.,tgt_info)
+        opname(1:len_short) = ' '
+        opname(1:2) = 'DV'
+        opexp(1:len_long) = ' '
+        opexp(1:2) = 'DV'
+        len_op_exp = 2
+        do ipop = 1,npop
+          opname(2:3) = pop(ipop)%name//pop(ipop)%comp
+          call set_dependency('DV_F',trim(opname),tgt_info)
+          opexp(len_op_exp+1:len_op_exp+4) = '+'//opname(1:3)
+          len_op_exp = len_op_exp + 4
+        end do
+        opexp(3:3) = '='
+        call def_form_parameters(-1,
+     &       parameters,2,trim(opexp),
+     &       'expansion of DV')
+        call set_rule('DV_F',ttype_frm,DEF_FORMULA,
+     &                labels,1,1,
+     &                parameters,2,tgt_info)
       end if
 
 c      if (ntest.ge.100)
@@ -991,12 +1043,15 @@ c     &  write(luout,*) 'frequency expansion of L and T operators'
       formname(1:len_short) = ' '
       formname(1:6) = 'X(n)_F'
       do ord=1,maxval(maxord)
+       do itcex = 1, ntcex
         do op_par = 1,2
           if (op_par.eq.1) then
             op_name = 'T(x)'
+            if (itcex.eq.2) op_name = 'W(x)'
             x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
           else
             op_name = 'L(x)'
+            if (itcex.eq.2) op_name = 'Y(x)'
             x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
           end if
           if (.not.userules) x_max_ord = maxval(maxord)
@@ -1052,168 +1107,176 @@ c     &  write(luout,*) 'frequency expansion of L and T operators'
             deallocate(ifreq,ifreqnew)
           end do
         end do
+       end do
       end do
 
-      ! expand response lagrangian with Hnew=H+V(1)
+      ! perturbation expansion of response lagrangian
+      call add_target('RESP_LAGF',ttype_frm,.false.,tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'RESP_LAGF'
-      labels(2) = 'RESP_LAG'
+      labels(2) = trim(form_lg0)
+      if (setr12) then
+        ! expand Bh intermediate for getting correct "BVh" terms
+        labels(3) = form_r12_bhcabs
+        call set_dependency('RESP_LAGF',form_r12_bhcabs,tgt_info)
+        call form_parameters(-1,parameters,2,'---',1,'---')
+        call set_rule('RESP_LAGF',ttype_frm,EXPAND,
+     &                labels,3,1,
+     &                parameters,2,tgt_info)
+        labels(2) = 'RESP_LAGF'
+      end if
+      labels(3) = op_ham
+      labels(4) = 'Hnew'
+      labels(5) = op_top
+      labels(6) = 'Tnew'
+      nint = 2
+      call set_dependency('RESP_LAGF',trim(form_lg0),tgt_info)
+      call set_dependency('RESP_LAGF','Hnew',tgt_info)
+      call set_dependency('RESP_LAGF','Tnew',tgt_info)
+      if (setr12) then
+        call set_dependency('RESP_LAGF','Bnew',tgt_info)
+        call set_dependency('RESP_LAGF','Cnew',tgt_info) 
+        labels(7) = op_b_inter
+        labels(8) = 'Bnew'
+        labels(9) = op_c_inter
+        labels(10) = 'Cnew'
+        labels(11) = op_c_inter//'^+'
+        labels(12) = 'Cnew^+'
+        nint = 5
+        if (.not.r12fix) then
+          call set_dependency('RESP_LAGF','Wnew',tgt_info)
+          labels(13) = op_cex
+          labels(14) = 'Wnew'
+          nint = nint + 1
+        end if
+        if (use_CS) then
+          nint = nint + 1
+          call set_dependency('RESP_LAGF','Dnew',tgt_info)
+          labels(2*nint+1) = 'C1'
+          labels(2*nint+2) = 'Dnew'
+        end if
+      end if
+      call form_parameters(-1,
+     &     parameters,2,'---',nint,'---')
+      call set_rule('RESP_LAGF',ttype_frm,REPLACE,
+     &            labels,2*nint+2,1,
+     &            parameters,2,tgt_info)
+      labels(2) = 'RESP_LAGF'
       labels(3) = 'H_FORM'
-      call add_target('RESP_LAGF',ttype_frm,.false.,tgt_info)
-      call set_dependency('RESP_LAGF','RESP_LAG',tgt_info)
+      labels(4) = 'T_FORM'
+      labels(5) = 'L_FORM'
+      nint = 3
       call set_dependency('RESP_LAGF','H_FORM',tgt_info)
       call set_dependency('RESP_LAGF','T_FORM',tgt_info)
       call set_dependency('RESP_LAGF','L_FORM',tgt_info)
-      call form_parameters(-1,
-     &     parameters,2,'full response lagrangian',1,'---')
-      call set_rule('RESP_LAGF',ttype_frm,EXPAND,
-     &              labels,3,1,
-     &              parameters,2,tgt_info)
-
-c      if (ntest.ge.100)
-c     &  write(luout,*) 'factoring out special intermediates'
-
-      ! R12: define BV-intermediate and factor out special intermediates
       if (setr12) then
-        ! define BV- and CV-intermediates
-        do op_par = 1,2
-          if (op_par.eq.1) then
-            op_parent = 'B'
-          else
-            op_parent = 'C'
-          end if
-          formname(1:len_short) = ' '
-          formname(1:9) = op_parent//'V_formal'
-          opname(1:len_short) = ' '
-          opname(1:4) = 'V(1)'
-          opname2(1:len_short) = ' '
-          opname2(1:2) = op_parent//'V'
-          do ipop = 1,npop+1
-            call add_target(trim(formname),ttype_frm,.false.,tgt_info)
-            call set_dependency(trim(formname),trim(opname),tgt_info)
-            call set_dependency(trim(formname),trim(opname2),tgt_info)
-            call set_dependency(trim(formname),op_r12,tgt_info)
-            labels(1) = trim(formname)
-            labels(2) = trim(opname2)
-            labels(3) = op_r12
-            labels(4) = trim(opname)
-            call form_parameters(-1,
-     &           parameters,2,trim(formname),0,op_parent//'p')
-            call set_rule(trim(formname),ttype_frm,DEF_R12INTM_FORMAL,
-     &                    labels,4,1,
-     &                    parameters,2,tgt_info)
-            ! replace r12 by the actual integrals
-            if (ipop.gt.1) then
-              labels(1:20)(1:len_target_name) = ' '
-              labels(1) = trim(formname)
-              labels(2) = trim(formname)
-              labels(3) = op_r12
-              labels(4) = op_rint
-              labels(5) = op_r12//'^+'
-              labels(6) = op_rint//'^+'
-              call set_dependency(trim(formname),op_rint,tgt_info)
-              call form_parameters(-1,
-     &             parameters,2,op_parent//'V-intermediate formula',2,
-     &             '---')
-              call set_rule(trim(formname),ttype_frm,REPLACE,
-     &                    labels,6,1,
-     &                    parameters,2,tgt_info)
-            end if
-c            call form_parameters(-1,
-c     &           parameters,2,'stdout',0,'---')
-c            call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
-c     &                    labels,1,0,
-c     &                    parameters,2,tgt_info)
-            formname(2:9) = pop(ipop)%name//pop(ipop)%comp//'_form '
-            opname(1:5) = pop(ipop)%name//'(1)'//pop(ipop)%comp
-            opname2(2:3) = pop(ipop)%name//pop(ipop)%comp
-          end do
-        end do
-
-        ! R12: factor out special intermediates
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = 'RESP_LAGF' ! output formula (itself)
-        labels(2) = 'RESP_LAGF' ! input formula
-        labels(3) = form_r12_vint    ! the intermediates to be factored
-        labels(4) = form_r12_vint//'^+'
-        labels(5) = form_r12_bint
-        labels(6) = form_r12_bhint
-        labels(7) = form_r12_xint
-        labels(8) = form_r12_xhint
-        labels(9) = 'BV_formal'
-        nint = 7
-        call set_dependency('RESP_LAGF',form_r12_vint,tgt_info)
-        call set_dependency('RESP_LAGF',form_r12_xint,tgt_info)
-        call set_dependency('RESP_LAGF',form_r12_bint,tgt_info)
-        call set_dependency('RESP_LAGF',form_r12_bhint,tgt_info)
-        call set_dependency('RESP_LAGF',form_r12_xhint,tgt_info)
-        call set_dependency('RESP_LAGF','BV_formal',tgt_info)
-        if (ansatz.ne.1) then
-          labels(10) = form_r12_cint
-          labels(11) = trim(form_r12_cint)//'^+'
-          labels(12) = 'CV_formal'
-          labels(13) = 'CV_formal^+'
-          call set_dependency('RESP_LAGF',form_r12_cint,tgt_info)
-          call set_dependency('RESP_LAGF','CV_formal',tgt_info)
-          nint = 11
-        else
-          call quit(1,'set_my_response_targets',
-     &              'Currently not adapted for ansatz 1')
+        call set_dependency('RESP_LAGF','B_FORM',tgt_info)
+        call set_dependency('RESP_LAGF','C_FORM',tgt_info)
+        labels(6) = 'B_FORM'
+        labels(7) = 'C_FORM'
+        labels(8) = 'C_FORM^+'
+        nint = 6
+        if (.not.r12fix) then
+          call set_dependency('RESP_LAGF','W_FORM',tgt_info)
+          call set_dependency('RESP_LAGF','Y_FORM',tgt_info)
+          labels(9) = 'W_FORM'
+          labels(10) = 'Y_FORM'
+          nint = nint + 2
         end if
-        call form_parameters(-1,
-     &       parameters,2,'r12 response lag., factored out',nint,'---')
-        call set_rule('RESP_LAGF',ttype_frm,FACTOR_OUT,
-     &                labels,nint+2,1,
-     &                parameters,2,tgt_info)
-
-        ! screen all remaining R12 terms
-        if (screen) then
-          labels(1:20)(1:len_target_name) = ' '
-          labels(1) = 'RESP_LAGF'
-          labels(2) = 'RESP_LAGF'
-          labels(3) = 'LRESP'
-          labels(4) = op_r12
-          labels(5) = op_r12//'^+'
-          call set_rule('RESP_LAGF',ttype_frm,INVARIANT,
-     &                labels,5,1,
-     &                title_ccr12lg0,1,tgt_info)
-        end if
-
-        ! replace r12 by the actual integrals
-        if (ansatz.gt.1) then
-          labels(1:20)(1:len_target_name) = ' '
-          labels(1) = 'RESP_LAGF'
-          labels(2) = 'RESP_LAGF'
-          labels(3) = op_r12
-          labels(4) = op_rint
-          labels(5) = op_r12//'^+'
-          labels(6) = op_rint//'^+'
-          call set_dependency('RESP_LAGF',op_rint,tgt_info)
-          call form_parameters(-1,
-     &         parameters,2,'complete r12 response lag.',2,'---')
-          call set_rule('RESP_LAGF',ttype_frm,REPLACE,
-     &                labels,6,1,
-     &                parameters,2,tgt_info)
-c          call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-c          call set_rule('RESP_LAGF',ttype_frm,PRINT_FORMULA,
-c     &                  labels,2,1,parameters,2,tgt_info)
-c          call set_rule('RESP_LAGF',ttype_frm,TEX_FORMULA,
-c     &                  labels,5,1,
-c     &                  'ccr12_lag0.tex',1,tgt_info)
+        if (use_CS) then
+          nint = nint + 1
+          call set_dependency('RESP_LAGF','C1_FORM',tgt_info)
+          labels(nint+2) = 'C1_FORM'
         end if
       end if
-
-      ! expand response lagrangian with T=T(0)+T(1)+...,L=...
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'RESP_LAGF'
-      labels(2) = 'RESP_LAGF'
-      labels(3) = 'T_FORM'
-      labels(4) = 'L_FORM'
       call form_parameters(-1,
-     &     parameters,2,'full response lagrangian',2,'---')
+     &     parameters,2,'full response lagrangian',nint,'---')
       call set_rule('RESP_LAGF',ttype_frm,EXPAND,
-     &              labels,4,1,
+     &              labels,nint+2,1,
      &              parameters,2,tgt_info)
+      if (setr12) then
+        ! factor out Bh intermediate again
+        labels(3) = form_r12_bhcabs
+        labels(4) = form_r12_xhcabs
+        call set_dependency('RESP_LAGF',form_r12_xhcabs,tgt_info)
+        call form_parameters(-1,parameters,2,'---',2,'---')
+        call set_rule('RESP_LAGF',ttype_frm,FACTOR_OUT,
+     &                labels,4,1,
+     &                parameters,2,tgt_info)
+      end if
+c dbg
+c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c      call set_rule('RESP_LAGF',ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,parameters,2,tgt_info)
+c dbgend
+
+      if (setr12) then
+        ! define CV intermediates
+        op_parent = 'C'
+        formname(1:len_short) = ' '
+        formname(1:1) = op_parent
+        opname(1:len_short) = ' '
+        opname2(1:len_short) = ' '
+        opname2(1:1) = op_parent
+        do ipop = 1,npop
+          formname(2:9) = pop(ipop)%name//pop(ipop)%comp//'_form '
+          opname(1:5) = pop(ipop)%name//'(1)'//pop(ipop)%comp
+          opname2(2:3) = pop(ipop)%name//pop(ipop)%comp
+          call add_target(trim(formname),ttype_frm,.false.,tgt_info)
+          call set_dependency(trim(formname),trim(opname),tgt_info)
+          call set_dependency(trim(formname),trim(opname2),tgt_info)
+          call set_dependency(trim(formname),op_rint,tgt_info)
+          labels(1) = trim(formname)
+          labels(2) = trim(opname2)
+          labels(3) = op_rint
+          labels(4) = trim(opname)
+          nint = 4
+          if (approx(1:1).eq.'B') then
+            labels(5) = op_ttr
+            labels(6) = op_rintbar
+            labels(7) = op_rinttilde
+            nint = 7
+          end if
+          call form_parameters(-1,
+     &         parameters,2,trim(formname),ansatz,
+     &         op_parent//' '//approx)
+          call set_rule(trim(formname),ttype_frm,DEF_R12INTM_CABS,
+     &                  labels,nint,1,
+     &                  parameters,2,tgt_info)
+        end do
+        ! define DV intermediates: copy from C1_CABS
+        op_parent = 'D'
+        formname(1:len_short) = ' '
+        formname(1:1) = op_parent
+        opname(1:len_short) = ' '
+        opname2(1:len_short) = ' '
+        opname2(1:1) = op_parent
+        do ipop = 1,npop
+          formname(2:9) = pop(ipop)%name//pop(ipop)%comp//'_form '
+          opname(1:5) = pop(ipop)%name//'(1)'//pop(ipop)%comp
+          opname2(2:3) = pop(ipop)%name//pop(ipop)%comp
+          call add_target(trim(formname),ttype_frm,.false.,tgt_info)
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = trim(formname)
+          labels(2) = 'C1_CABS'
+          labels(3) = trim(opname2)
+          call set_dependency(trim(formname),trim(opname),tgt_info)
+          call set_dependency(trim(formname),trim(opname2),tgt_info)
+          call set_dependency(trim(formname),'C1_CABS',tgt_info)
+          call set_rule(trim(formname),ttype_frm,INVARIANT,
+     &                  labels,3,1,
+     &                  trim(formname),1,tgt_info)
+          labels(2) = trim(formname)
+          labels(3) = op_ham
+          labels(4) = trim(opname)
+          call form_parameters(-1,
+     &         parameters,2,op_parent//'V-intermediate formula',1,
+     &         '---')
+          call set_rule(trim(formname),ttype_frm,REPLACE,
+     &                labels,4,1,
+     &                parameters,2,tgt_info)
+        end do
+      end if
 
       ! expand RESP_LAG(n) with X(1)=X(1)1+X(1)2+..., X(2)=X(2)12+X(2)13+...
       ! and V(1)=V(1)X+V(1)Y+V(1)Z / BV=BVX+BVY+BVZ / CV=CVX+CVY+CVZ
@@ -1252,13 +1315,21 @@ c     &                  'ccr12_lag0.tex',1,tgt_info)
             ilabels = 6
             call set_dependency(trim(formname),'BV_F',tgt_info)
             call set_dependency(trim(formname),'CV_F',tgt_info)
+            if (use_CS) then
+              ilabels = 7
+              labels(7) = 'DV_F'
+              call set_dependency(trim(formname),'DV_F',tgt_info)
+            end if
           end if
           do op_par = 1,2
+           do itcex = 1, ntcex
             if (op_par.eq.1) then
               formname2(1:1) = 'T'
+              if (itcex.eq.2) formname2(1:1) = 'W'
               x_max_ord = int((real(ord)-1)/2+0.6)
             else
               formname2(1:1) = 'L'
+              if (itcex.eq.2) formname2(1:1) = 'Y'
               x_max_ord = int((real(ord)-2)/2+0.6)
             end if
             if (.not.userules) x_max_ord = ord
@@ -1269,6 +1340,7 @@ c     &                  'ccr12_lag0.tex',1,tgt_info)
               call set_dependency(trim(formname),trim(formname2),
      &                            tgt_info)
             end do
+           end do
           end do
           call form_parameters(-1,
      &         parameters,2,'full response lagrangian with freqs',
@@ -1294,13 +1366,16 @@ c     &  write(luout,*) 'expanding left and right residuals'
       formname(1:7) = 'RF(n)SX'
       resl_lag_name = 'RESS_LAG(n)_X'
       do op_par2 = 1,2
+       do itcex2 = 1, ntcex
         if (op_par2.eq.1) then
           formname(7:7) = 'T'
-          resl_lag_name(13:13) = 'T'
+          if (itcex2.eq.2) formname(7:7) = 'W'
+          resl_lag_name(13:13) = formname(7:7)
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           formname(7:7) = 'L'
-          resl_lag_name(13:13) = 'L'
+          if (itcex2.eq.2) formname(7:7) = 'Y'
+          resl_lag_name(13:13) = formname(7:7)
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
@@ -1347,13 +1422,21 @@ c     &  write(luout,*) 'expanding left and right residuals'
                 ilabels = 6
                 call set_dependency(trim(formname),'BV_F',tgt_info)
                 call set_dependency(trim(formname),'CV_F',tgt_info)
+                if (use_CS) then
+                  ilabels = 7
+                  labels(7) = 'DV_F'
+                  call set_dependency(trim(formname),'DV_F',tgt_info)
+                end if
               end if
               do op_par = 1,2
+               do itcex = 1, ntcex
                 if (op_par.eq.1) then
                   formname2(1:1) = 'T'
+                  if (itcex.eq.2) formname2(1:1) = 'W'
                   x_max_ord2 = int((real(maxval(maxord))-1)/2+0.6)
                 else
                   formname2(1:1) = 'L'
+                  if (itcex.eq.2) formname2(1:1) = 'Y'
                   x_max_ord2 = int((real(maxval(maxord))-2)/2+0.6)
                 end if
                 if (.not.userules) x_max_ord2 = maxval(maxord)
@@ -1364,6 +1447,7 @@ c     &  write(luout,*) 'expanding left and right residuals'
                   call set_dependency(trim(formname),
      &                                trim(formname2),tgt_info)
                 end do
+               end do
               end do
               call form_parameters(-1,
      &             parameters,2,'left and right residuals with freqs',
@@ -1375,6 +1459,7 @@ c     &  write(luout,*) 'expanding left and right residuals'
             deallocate(ifreq,ifreqnew)
           end do
         end do
+       end do
       end do
 
       ! extract lagrangian of orders 0 to maxord
@@ -1385,7 +1470,7 @@ c     &  write(luout,*) 'expanding left and right residuals'
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = lagf_name
         labels(2) = 'RESP_LAGF'
-        labels(3) = 'LRESP'
+        labels(3) = trim(op_lg)
         call add_target(lagf_name,ttype_frm,.false.,tgt_info)
         call set_dependency(lagf_name,'RESP_LAGF',tgt_info)
         call form_parameters(-1,
@@ -1395,26 +1480,6 @@ c     &  write(luout,*) 'expanding left and right residuals'
      &                labels,3,1,
      &                parameters,2,tgt_info)
       end do
-
-      if (.not.userules) then
-        ! extract terms obeying (2n+1) and (2n+2) rules for NLEQ-solver
-        lagf_name = 'RESP_LAGF(0)'
-        lag_name = 'CCEQ_LAG(0)'
-        lresp_name = 'LRESP(0)'
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = lag_name
-        labels(2) = lagf_name
-        labels(3) = lresp_name
-        call add_target(lag_name,ttype_frm,.false.,tgt_info)
-        call set_dependency(lag_name,lagf_name,tgt_info)
-        call set_dependency(lag_name,lresp_name,tgt_info)
-        call form_parameters(-1,
-     &       parameters,2,'lagrangian of pert order 0 for CC-equations',
-     &       -1,'---')
-        call set_rule(lag_name,ttype_frm,EXTRACT_ORDER,
-     &                labels,3,1,
-     &                parameters,2,tgt_info)
-      end if
 
       ! extract terms obeying (2n+1) and (2n+2) rules if userules
       lagf_name = 'RESP_LAGF(n)'
@@ -1505,11 +1570,14 @@ c     &  write(luout,*) 'extracting terms according to frequency pattern'
       opname(1:len_short) = ' '
       opname(1:6) = 'O(n)SX'
       do op_par = 1,2
+       do itcex = 1, ntcex
         if (op_par.eq.1) then
           op_parent = 'T'
+          if (itcex.eq.2) op_parent = 'W'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           op_parent = 'L'
+          if (itcex.eq.2) op_parent = 'Y'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
@@ -1569,6 +1637,7 @@ c     &  write(luout,*) 'extracting terms according to frequency pattern'
             deallocate(ifreq,ifreqnew)
           end do
         end do
+       end do
       end do
 
       ! derivatives dLAG(n)/dL(0) and dLAG(n)/dT(0)
@@ -1576,20 +1645,30 @@ c     &  write(luout,*) 'extracting terms according to frequency pattern'
       lagf_name = 'RESP_LAGF(n)'
       res_lag_name = 'RES_LAG(n)_X'
       res_name = 'O(n)_X'
-      op_name = 'X(0)'
       do op_par = 1,2
-        if (op_par.eq.1) then
+       do itcex = 1, ntcex
+        opname(1:len_short) = ' '
+        if (op_par.eq.1.and.itcex.eq.1) then
           op_parent = 'T'
+          opname = op_top
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
-        else
+        else if (op_par.eq.2.and.itcex.eq.1) then
           op_parent = 'L'
+          opname = 'L(0)'
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
+        else if (op_par.eq.1.and.itcex.eq.2) then
+          op_parent = 'W'
+          opname = op_cex
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
+        else if (op_par.eq.2.and.itcex.eq.2) then
+          op_parent = 'Y'
+          opname = 'Y(0)'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
         res_lag_name(12:12) = op_parent
         res_name(6:6) = op_parent
-        op_name(1:1) = op_parent
-        do ord=0,x_max_ord
+        do ord=op_par-1,x_max_ord
           write(lagf_name(11:11),'(i1)') ord
           write(res_lag_name(9:9),'(i1)') ord
           write(res_name(3:3),'(i1)') ord
@@ -1597,18 +1676,19 @@ c     &  write(luout,*) 'extracting terms according to frequency pattern'
           labels(1) = res_lag_name
           labels(2) = lagf_name
           labels(3) = res_name
-          labels(4) = op_name
+          labels(4) = trim(opname)
           labels(5) = ' '
           call add_target(res_lag_name,ttype_frm,.false.,tgt_info)
           call set_dependency(res_lag_name,lagf_name,tgt_info)
           call set_dependency(res_lag_name,res_name,tgt_info)
-          call set_dependency(res_lag_name,op_name,tgt_info)
+          call set_dependency(res_lag_name,trim(opname),tgt_info)
           call form_parameters(-1,
      &         parameters,2,'residual',1,'---')
           call set_rule(res_lag_name,ttype_frm,DERIVATIVE,
      &                  labels,5,1,
      &                  parameters,2,tgt_info)
         end do
+       end do
       end do
 
       ! split residuals in left (containing Y(n)) and right part
@@ -1620,13 +1700,18 @@ c     &  write(luout,*) 'extracting terms according to frequency pattern'
       opname(1:len_short) = ' '
       opname(1:6) = 'O(0)LT'
       do op_par = 1,2
+       do itcex = 1, ntcex
         if (op_par.eq.1) then
           op_parent = 'T'
+          if (itcex.eq.2) op_parent = 'W'
           op_name = 'L(n)'
+          op_name2 = 'Y(n)'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           op_parent = 'L'
+          if (itcex.eq.2) op_parent = 'Y'
           op_name = 'T(n)'
+          op_name2 = 'W(n)'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
@@ -1636,6 +1721,7 @@ c     &  write(luout,*) 'extracting terms according to frequency pattern'
         opname(6:6) = op_parent
         do ord = op_par-1,x_max_ord
           write(op_name(3:3),'(i1)') ord
+          write(op_name2(3:3),'(i1)') ord
           write(resl_lag_name(10:10),'(i1)') ord
           write(resr_lag_name(10:10),'(i1)') ord
           write(res_lag_name(9:9),'(i1)') ord
@@ -1648,6 +1734,7 @@ c     &  write(luout,*) 'extracting terms according to frequency pattern'
           opname(5:5) = 'R'
           labels(5) = opname
           labels(6) = op_name
+          nint = 6
           call add_target(resl_lag_name,ttype_frm,.false.,tgt_info)
           call add_target(resr_lag_name,ttype_frm,.false.,tgt_info)
           call set_joined_targets(resl_lag_name,resr_lag_name,tgt_info)
@@ -1656,36 +1743,31 @@ c     &  write(luout,*) 'extracting terms according to frequency pattern'
           opname(5:5) = 'L'
           call set_dependency(resl_lag_name,trim(opname),tgt_info)
           call set_dependency(resl_lag_name,op_name,tgt_info)
+          if (ntcex.gt.1) then
+            labels(7) = op_name2
+            nint = 7
+            call set_dependency(resl_lag_name,op_name2,tgt_info)
+          end if
+          call form_parameters(-1,
+     &         parameters,2,'split residual',nint-5,'---')
           call set_rule(resl_lag_name,ttype_frm,LEQ_SPLIT,
-     &                  labels,6,2,
-     &                  'split residual',1,tgt_info)
+     &                  labels,nint,2,
+     &                  parameters,2,tgt_info)
         end do
+       end do
       end do
 
-      ! FORM_CCHHAT
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = form_cchhat
-      labels(2) = op_hhat
-      labels(3) = op_ham
-      labels(4) = 'T(0)'
-      call add_target(form_cchhat,ttype_frm,.false.,tgt_info)
-      call set_dependency(form_cchhat,op_hhat,tgt_info)
-      call set_dependency(form_cchhat,op_ham,tgt_info)
-      call set_dependency(form_cchhat,'T(0)',tgt_info)
-      call set_rule(form_cchhat,ttype_frm,DEF_HHAT,
-     &              labels,4,1,
-     &              title_cchhat,1,tgt_info)
       if (t1ext_mode.gt.0) then
         ! define a Hhat including T1' for linear equations
         labels(1:20)(1:len_target_name) = ' '
         labels(1) = form_cchhat//'_LEQ'
         labels(2) = op_hhat
         labels(3) = op_ham
-        labels(4) = 'T(0)'
+        labels(4) = op_top
         call add_target(form_cchhat//'_LEQ',ttype_frm,.false.,tgt_info)
         call set_dependency(form_cchhat//'_LEQ',op_hhat,tgt_info)
         call set_dependency(form_cchhat//'_LEQ',op_ham,tgt_info)
-        call set_dependency(form_cchhat//'_LEQ','T(0)',tgt_info)
+        call set_dependency(form_cchhat//'_LEQ',op_top,tgt_info)
         call form_parameters(-1,
      &             parameters,2,title_cchhat,2,'---')
         call set_rule(form_cchhat//'_LEQ',ttype_frm,DEF_HHAT,
@@ -1693,94 +1775,50 @@ c     &  write(luout,*) 'extracting terms according to frequency pattern'
      &                parameters,2,tgt_info)
       end if
 
-      ! FORM_CCHBAR
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = form_cchbar
-      labels(2) = op_hbar
-      labels(3) = op_ham
-      labels(4) = 'T(0)'
-      call add_target(form_cchbar,ttype_frm,.false.,tgt_info)
-      call set_dependency(form_cchbar,op_hbar,tgt_info)
-      call set_dependency(form_cchbar,op_ham,tgt_info)
-      call set_dependency(form_cchbar,'T(0)',tgt_info)
-      call set_rule(form_cchbar,ttype_frm,DEF_CC_HBAR,
-     &              labels,4,1,
-     &              title_cchbar,1,tgt_info)
-
       if (setr12) then
-        ! formal Metric (in 'complete' basis)
-        ! (a) Define
-        call add_target(form_ccr12_s0,ttype_frm,.false.,tgt_info)
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = form_ccr12_s0
-        labels(2) = op_ccr12s0
-        labels(3) = op_r12
-        labels(4) = 'L'
-        labels(5) = 'T'
-        ilabels = 5
-        if (r12op.eq.1) then
-          call set_dependency(form_ccr12_s0,op_cex,tgt_info)
-          call set_dependency(form_ccr12_s0,op_cexbar,tgt_info)
-          labels(ilabels+1) = op_cexbar
-          labels(ilabels+2) = op_cex
-          ilabels = ilabels+2
-        end if
-        call set_dependency(form_ccr12_s0,op_ccr12s0,tgt_info)
-        call set_dependency(form_ccr12_s0,op_r12,tgt_info)
-        call set_dependency(form_ccr12_s0,'L',tgt_info)
-        call set_dependency(form_ccr12_s0,'T',tgt_info)
-        call form_parameters(-1,
-     &       parameters,2,title_ccr12lg0,ansatz,'---')
-        call set_rule(form_ccr12_s0,ttype_frm,DEF_CCR12_METRIC,
-     &                labels,ilabels,1,
-     &                parameters,2,tgt_info)
-        ! (b) Factor out the R12 intermediates 
-        labels(1:10)(1:len_target_name) = ' '
-        labels(1) = form_ccr12_s0 ! output formula (itself)
-        labels(2) = form_ccr12_s0 ! input formula
-        labels(3) = form_r12_xint
-        nint = 1
-        call set_dependency(form_ccr12_s0,form_r12_xint,tgt_info)
-        call form_parameters(-1,
-     &       parameters,2,title_ccr12lg0,nint,'---')
-        call set_rule(form_ccr12_s0,ttype_frm,FACTOR_OUT,
-     &                labels,nint+2,1,
-     &                parameters,2,tgt_info)
-c        call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-c        call set_rule(form_ccr12_s0,ttype_frm,PRINT_FORMULA,
-c     &                labels,2,1,parameters,2,tgt_info)
-        ! (c) SF_X: derivation wrt L or T:
+        ! (c) SF_X: differentiation wrt L or T:
         opname(1:len_short) = ' '
         opname(1:3) = 'S_X'
+        opname2(1:len_short) = ' '
         formname(1:len_short) = ' '
         formname(1:4) = 'SF_X'
         do op_par = 1,2
-          if (op_par.eq.1) then
+         do itcex = 1, ntcex
+          if (op_par.eq.1.and.itcex.eq.1) then
             op_parent = 'T'
-          else
+            opname2 = op_top
+          else if (op_par.eq.2.and.itcex.eq.1) then
             op_parent = 'L'
+            opname2 = op_tbar
+          else if (op_par.eq.1.and.itcex.eq.2) then
+            op_parent = 'W'
+            opname2 = op_cex
+          else if (op_par.eq.2.and.itcex.eq.2) then
+            op_parent = 'Y'
+            opname2 = op_cexbar
           end if
           opname(3:3) = op_parent
           formname(4:4) = op_parent
           call add_target(trim(formname),ttype_frm,.false.,tgt_info)
           call set_dependency(trim(formname),form_ccr12_s0,tgt_info)
           call set_dependency(trim(formname),trim(opname),tgt_info)
-          call set_dependency(trim(formname),op_parent,tgt_info)
+          call set_dependency(trim(formname),trim(opname2),tgt_info)
           labels(1:10)(1:len_target_name) = ' '
           labels(1) = trim(formname)
           labels(2) = form_ccr12_s0
           labels(3) = trim(opname)
-          labels(4) = op_parent
+          labels(4) = trim(opname2)
           labels(5) = ' '
           call form_parameters(-1,
      &           parameters,2,
-     &           'derivation of metric wrt '//op_parent,1,'-')
+     &           'derivation of metric wrt '//trim(opname2),1,'-')
           call set_rule(trim(formname),ttype_frm,DERIVATIVE,
      &                  labels,5,1,
      &                  parameters,2,tgt_info)
 c          call form_parameters(-1,parameters,2,'stdout',1,'stdout')
 c          call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
 c     &                  labels,2,1,parameters,2,tgt_info)
+         end do
         end do
         ! (d) derivation wrt T or L and replace with T(n)w or L(n)w
         formname(1:len_short) = ' '
@@ -1791,20 +1829,32 @@ c     &                  labels,2,1,parameters,2,tgt_info)
         opname(1:4) = 'X(n)'
         opname2(1:len_short) = ' '
         opname2(1:5) = 'SX(n)'
+        opname3(1:len_short) = ' '
+        opname4(1:len_short) = opname(1:len_short)
+        opname5(1:len_short) = ' '
         do op_par = 1,2
+         do itcex = 1, ntcex
           if (op_par.eq.1) then
-            op_parent = 'L'
+            opname(1:1) = 'L'
+            opname4(1:1) = 'Y'
+            opname3 = op_tbar
+            opname5 = op_cexbar
             formname2(4:4) = 'T'
+            if (itcex.eq.2) formname2(4:4) = 'W'
             x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
           else
-            op_parent = 'T'
+            opname(1:1) = 'T'
+            opname4(1:1) = 'W'
+            opname3 = op_top
+            opname5 = op_cex
             formname2(4:4) = 'L'
+            if (itcex.eq.2) formname2(4:4) = 'Y'
             x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
           end if
           if (.not.userules) x_max_ord = maxval(maxord)
-          opname(1:1) = op_parent
           do ord = op_par-1,x_max_ord
             write(opname(3:3),'(i1)') ord
+            write(opname4(3:3),'(i1)') ord
             allocate(ifreq(ord),ifreqnew(ord))
             ifreq = 0
             set_zero = ord.eq.0
@@ -1814,36 +1864,66 @@ c     &                  labels,2,1,parameters,2,tgt_info)
      &                            maxord,ncnt)
               formname(7:len_short) = ' '
               opname(5:len_short) = ' '
+              opname4(5:len_short) = ' '
               opname2(6:len_short) = ' '
               do digit = 1,ord
                 write(opname(3+2*digit:4+2*digit),'(i2.2)') 
      &                                          ifreqnew(digit)
+                write(opname4(3+2*digit:4+2*digit),'(i2.2)')
+     &                                          ifreqnew(digit)
               end do
               formname(3:len_short) = opname(1:len_short-2)
               opname2(2:len_short) = opname(1:len_short-1)
+              if (itcex.eq.2) then
+                formname(3:len_short) = opname4(1:len_short-2)
+                opname2(2:len_short) = opname4(1:len_short-1)
+              end if
               if (idx_target(trim(formname),tgt_info).gt.0) cycle
-              if (ord.eq.0.and..not.(opt.and.op_par.eq.1)) cycle
+              if (r12op.eq.0.or.(ord.eq.0.and.op_par.eq.2)) cycle
+              if (.not.r12fix.and..not.xsp_opt1.and.itcex.eq.1) cycle
+              call add_target(trim(formname),ttype_frm,.false.,
+     &                      tgt_info)
               labels(1:20)(1:len_target_name) = ' '
               labels(1) = trim(formname)
               labels(2) = trim(formname2)
               labels(3) = trim(opname2)
-              labels(4) = op_parent
-              labels(5) = trim(opname)
-              call add_target(trim(formname),ttype_frm,.false.,
+              labels(4) = trim(opname3)
+              nint = 1
+              if (itcex.eq.2) then
+                labels(5) = trim(opname5)
+                nint = 2
+                call set_dependency(trim(formname),trim(opname3),
      &                      tgt_info)
+              end if
               call set_dependency(trim(formname),trim(formname2),
-     &                      tgt_info)
-              call set_dependency(trim(formname),trim(opname),
      &                      tgt_info)
               call set_dependency(trim(formname),trim(opname2),
      &                      tgt_info)
-              call set_dependency(trim(formname),op_parent,
+              call set_dependency(trim(formname),trim(opname3),
+     &                      tgt_info)
+              call select_parameters(-1,
+     &             parameters,3,
+     &             0,nint,0,0,0,0)
+              call set_rule(trim(formname),ttype_frm,SELECT_TERMS,
+     &                    labels,3+nint,1,
+     &                    parameters,3,tgt_info)
+              labels(2) = trim(formname)
+              labels(3) = trim(opname3)
+              labels(4) = trim(opname)
+              nint = 1
+              if (itcex.eq.2) then
+                labels(5) = trim(opname5)
+                labels(6) = trim(opname4)
+                nint = 2
+                call set_dependency(trim(formname),trim(opname4),
+     &                      tgt_info)
+              end if
+              call set_dependency(trim(formname),trim(opname),
      &                      tgt_info)
               call form_parameters(-1,
-     &             parameters,2,
-     &             'vector to solve times Metric',1,'-')
-              call set_rule(trim(formname),ttype_frm,DERIVATIVE,
-     &                    labels,5,1,
+     &             parameters,2,'---',nint,'---')
+              call set_rule(trim(formname),ttype_frm,REPLACE,
+     &                    labels,2*nint+2,1,
      &                    parameters,2,tgt_info)
 c              call form_parameters(-1,parameters,2,'stdout',1,'stdout')
 c              call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
@@ -1851,6 +1931,7 @@ c     &                      labels,2,1,parameters,2,tgt_info)
             end do
             deallocate(ifreq,ifreqnew)
           end do
+         end do
         end do
       end if
 
@@ -1975,25 +2056,38 @@ c     &  write(luout,*) 'formulae defined'
       defmelname2(1:len_short) = ' '
       optname(1:len_short) = ' '
       formname3(1:len_short) = ' '
-      formname3(1:6) = 'SFX(n)'
+      formname3(1:6) = 'SFY(n)'
       defmelname3(1:len_short) = ' '
-      defmelname3(1:12) = 'DEF_ME_SX(n)'
+      defmelname3(1:12) = 'DEF_ME_SY(n)'
+      formname4(1:len_short) = formname(1:len_short)
+      formname5(1:len_short) = formname2(1:len_short)
+      formname6(1:len_short) = formname3(1:len_short)
+      defmelname4(1:len_short) = defmelname(1:len_short)
+      defmelname5(1:len_short) = ' '
+      defmelname6(1:len_short) = defmelname3(1:len_short)
       do op_par = 1,2
         if (op_par.eq.1) then
           op_parent = 'T'
+          op_parent2 = 'W'
           optname(1:8) = 'OPT_L(n)'
           defmelname2(1:11) = 'DEF_ME_L(n)'
+          defmelname5(1:11) = 'DEF_ME_Y(n)'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         else
           op_parent = 'L'
+          op_parent2 = 'Y'
           optname(1:8) = 'OPT_T(n)'
           defmelname2(1:11) = 'DEF_ME_T(n)'
+          defmelname5(1:11) = 'DEF_ME_W(n)'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
         formname(6:6) = op_parent
         formname2(6:6) = op_parent
         defmelname(13:13) = op_parent
+        formname4(6:6) = op_parent2
+        formname5(6:6) = op_parent2
+        defmelname4(13:13) = op_parent2
         do ord = op_par-1,x_max_ord
           write(optname(7:7),'(i1)') ord
           optname(9:len_short) = ' '
@@ -2005,6 +2099,14 @@ c     &  write(luout,*) 'formulae defined'
           defmelname2(12:len_short) = ' '
           write(defmelname(10:10),'(i1)') ord
           defmelname(14:len_short) = ' '
+          write(formname4(3:3),'(i1)') ord
+          formname4(7:len_short) = ' '
+          write(formname5(3:3),'(i1)') ord
+          formname5(7:len_short) = ' '
+          write(defmelname5(10:10),'(i1)') ord
+          defmelname5(12:len_short) = ' '
+          write(defmelname4(10:10),'(i1)') ord
+          defmelname4(14:len_short) = ' '
           allocate(ifreq(ord),ifreqnew(ord))
           ifreq = 0
           set_zero = ord.eq.0
@@ -2026,24 +2128,69 @@ c     &  write(luout,*) 'formulae defined'
             end do
             formname3(3:len_short-2) =  optname(5:len_short)
             defmelname3(9:len_short) = optname(5:len_short-4)
+            defmelname5(12:len_short) = defmelname2(12:len_short)
+            formname4(7:len_short) = formname(7:len_short)
+            formname5(7:len_short) = formname2(7:len_short)
+            formname6(3:len_short-5) = defmelname5(8:len_short)
+            defmelname4(14:len_short) = defmelname(14:len_short)
+            defmelname6(9:len_short) = defmelname5(8:len_short-1)
             if (idx_target(trim(optname),tgt_info).gt.0) cycle
             labels(1:20)(1:len_target_name) = ' '
+            call add_target(trim(optname),ttype_frm,.false.,tgt_info)
+            call set_dependency(trim(optname),trim(formname),tgt_info)
+            call set_dependency(trim(optname),trim(formname2),
+     &                    tgt_info)
+            call set_dependency(trim(optname),trim(defmelname2),
+     &                          tgt_info)
+            defmelname(12:12) = 'L'
+            call set_dependency(trim(optname),trim(defmelname),
+     &                    tgt_info)
+            defmelname(12:12) = 'R'
+            call set_dependency(trim(optname),trim(defmelname),
+     &                    tgt_info)
             labels(1) = trim(optname)
             labels(2) = trim(formname)
             labels(3) = trim(formname2)
             ncat = 2  ! 2 formulae pasted into final formula
             nint = 0  ! no intermediate to factor out so far ...
-            call add_target(trim(optname),ttype_frm,.false.,tgt_info)
+            if (ntcex.gt.1) then
+              call set_dependency(trim(optname),trim(formname4),
+     &                    tgt_info)
+              call set_dependency(trim(optname),trim(formname5),
+     &                    tgt_info)
+              call set_dependency(trim(optname),trim(defmelname5),
+     &                            tgt_info)
+              defmelname4(12:12) = 'L'
+              call set_dependency(trim(optname),trim(defmelname4),
+     &                      tgt_info)
+              defmelname4(12:12) = 'R'
+              call set_dependency(trim(optname),trim(defmelname4),
+     &                      tgt_info)
+              labels(4) = trim(formname4)
+              labels(5) = trim(formname5)
+              ncat = 4
+            end if
             call get_argument_value('calculate.routes','simtraf',
      &                              ival=isim)
-            if (setr12.and.(ord.gt.0.or.opt.and.op_par.eq.1)) then
+            if (setr12.and.r12op.gt.0.and.
+     &          (ord.gt.0.or.op_par.eq.1)) then
               ! add vector times Metric term:
-              ncat = ncat + 1
-              labels(ncat+1) = trim(formname3)
-              call set_dependency(trim(optname),trim(formname3),
-     &                            tgt_info)
-              call set_dependency(trim(optname),trim(defmelname3),
-     &                            tgt_info)
+              if (r12fix.or.xsp_opt1) then
+                ncat = ncat + 1
+                labels(ncat+1) = trim(formname3)
+                call set_dependency(trim(optname),trim(formname3),
+     &                              tgt_info)
+                call set_dependency(trim(optname),trim(defmelname3),
+     &                              tgt_info)
+              end if
+              if (.not.r12fix) then
+                ncat = ncat + 1
+                labels(ncat+1) = trim(formname6)
+                call set_dependency(trim(optname),trim(formname6),
+     &                              tgt_info)
+                call set_dependency(trim(optname),trim(defmelname6),
+     &                              tgt_info)
+              end if
             end if
             if (isim.eq.1) then
               nint = 1
@@ -2062,9 +2209,6 @@ c     &  write(luout,*) 'formulae defined'
               call set_dependency(trim(optname),meldef_hbar,tgt_info)
               labels(ncat+nint+1) = form_cchbar
             end if
-            call set_dependency(trim(optname),trim(formname),tgt_info)
-            call set_dependency(trim(optname),trim(formname2),
-     &                    tgt_info)
             call set_dependency(trim(optname),mel_ham,tgt_info)
             if (ord.gt.0)
      &         call set_dependency(trim(optname),'HUB_DEFME_V(1)',
@@ -2075,14 +2219,6 @@ c     &  write(luout,*) 'formulae defined'
               call set_dependency(trim(optname),'HUB_DEFME_CV',
      &                             tgt_info)
             end if
-            call set_dependency(trim(optname),trim(defmelname2),
-     &                          tgt_info)
-            defmelname(12:12) = 'L'
-            call set_dependency(trim(optname),trim(defmelname),
-     &                    tgt_info)
-            defmelname(12:12) = 'R'
-            call set_dependency(trim(optname),trim(defmelname),
-     &                    tgt_info)
             call opt_parameters(-1,parameters,ncat,nint)
             call set_rule(trim(optname),ttype_frm,OPTIMIZE,
      &                    labels,ncat+nint+1,1,
@@ -2091,56 +2227,6 @@ c     &  write(luout,*) 'formulae defined'
           deallocate(ifreq,ifreqnew)
         end do
       end do
-
-      ! OPT_T(0): for non-linear CC-equations
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'OPT_T(0)'
-      labels(2) = 'RES_LAG(0)_L'
-      if (userules) then
-        labels(3) = 'RESP_LAG(0)'
-      else
-        labels(3) = 'CCEQ_LAG(0)'
-      end if
-      ncat = 2  ! 2 formulae pasted into final formula
-      nint = 0  ! no intermediate to factor out so far ...
-      call add_target('OPT_T(0)',ttype_frm,.false.,tgt_info)
-      call get_argument_value('calculate.routes','simtraf',
-     &                        ival=isim)
-      if (isim.eq.1) then
-        nint = 1
-        call set_dependency('OPT_T(0)',form_cchhat,tgt_info)
-        call set_dependency('OPT_T(0)',mel_hhatdef,tgt_info)
-        labels(4) = form_cchhat
-      else if (isim.eq.2) then
-        nint = 1
-        call set_dependency('OPT_T(0)',form_cchbar,tgt_info)
-        call set_dependency('OPT_T(0)',meldef_hbar,tgt_info)
-        labels(4) = form_cchbar
-      end if
-      call set_dependency('OPT_T(0)','RES_LAG(0)_L',tgt_info)
-      if (userules) then
-        call set_dependency('OPT_T(0)','RESP_LAG(0)',tgt_info)
-        call set_dependency('OPT_T(0)','DEF_ME_LRESP(0)',tgt_info)
-      else
-        call set_dependency('OPT_T(0)','CCEQ_LAG(0)',tgt_info)
-        call set_dependency('OPT_T(0)','DEF_ME_LCCEQ(0)',tgt_info)
-      end if
-      call set_dependency('OPT_T(0)','DEF_ME_O(0)_L',tgt_info)
-      call set_dependency('OPT_T(0)','DEF_ME_T(0)',tgt_info)
-      call set_dependency('OPT_T(0)',mel_ham,tgt_info)
-      ! r12 dependencies
-      if (setr12) then
-        call set_dependency('OPT_T(0)',mel_x_def,tgt_info)
-        call set_dependency('OPT_T(0)',mel_bh_def,tgt_info)
-        call set_dependency('OPT_T(0)',mel_b_def,tgt_info)
-        call set_dependency('OPT_T(0)',mel_v_def,tgt_info)
-        call set_dependency('OPT_T(0)',mel_c_def,tgt_info)
-        call set_dependency('OPT_T(0)',mel_rint,tgt_info)
-      end if 
-      call opt_parameters(-1,parameters,ncat,nint)
-      call set_rule('OPT_T(0)',ttype_frm,OPTIMIZE,
-     &              labels,ncat+nint+1,1,
-     &              parameters,1,tgt_info)
 
       ! OPT_LRESP(n): for evaluation of LRESP(n)
       optname(1:len_short) =  ' '
@@ -2210,6 +2296,8 @@ c     &  write(luout,*) 'formulae defined'
         optname(1:6) = 'OPT_BV'
         optname2(1:len_short) = ' '
         optname2(1:6) = 'OPT_CV'
+        optname3(1:len_short) = ' '
+        optname3(1:6) = 'OPT_DV'
         defmelname(1:len_short) = ' '
         defmelname(1:9) = 'DEF_ME_BV'
         defmelname2(1:len_short) = ' '
@@ -2224,26 +2312,33 @@ c     &  write(luout,*) 'formulae defined'
         formname4(1:8) = 'BV_CABS_'
         formname5(1:len_short) = ' '
         formname5(1:8) = 'CV__form'
+        formname6(1:len_short) = ' '
+        formname6(1:8) = 'DV__form'
         defmelname3(1:len_short) = ' '
         defmelname3(1:14) = 'DEF_ME_RDGB(V)'
         defmelname4(1:len_short) = ' '
         defmelname4(1:14) = 'DEF_ME_RBRV(V)'
         defmelname5(1:len_short) = ' '
         defmelname5(1:9) = 'DEF_ME_CV'
+        defmelname6(1:len_short) = ' '
+        defmelname6(1:9) = 'DEF_ME_DV'
         do ipop = 1,npop
           optname(6:7) = pop(ipop)%name//pop(ipop)%comp
           optname2(6:7) = pop(ipop)%name//pop(ipop)%comp
+          optname3(6:7) = pop(ipop)%name//pop(ipop)%comp
           defmelname(9:10) = pop(ipop)%name//pop(ipop)%comp
           defmelname2(8:12) = pop(ipop)%name//'(1)'//pop(ipop)%comp
           if (orb_info%ngas.eq.4) defmelname2(13:13) = 'h'
           defmelname3(13:15) = pop(ipop)%name//')'//pop(ipop)%comp
           defmelname4(13:15) = pop(ipop)%name//')'//pop(ipop)%comp
           defmelname5(9:10) = pop(ipop)%name//pop(ipop)%comp
+          defmelname6(9:10) = pop(ipop)%name//pop(ipop)%comp
           formname(2:3) = pop(ipop)%name//pop(ipop)%comp
           formname2(6:8) = pop(ipop)%name//')'//pop(ipop)%comp
           formname3(6:8) = pop(ipop)%name//')'//pop(ipop)%comp
           formname4(2:9) = pop(ipop)%name//'_CABS_'//pop(ipop)%comp
           formname5(2:3) = pop(ipop)%name//pop(ipop)%comp
+          formname6(2:3) = pop(ipop)%name//pop(ipop)%comp
           labels(1:20)(1:len_target_name) = ' '
           ! OPT_BV
           labels(1) = trim(optname)
@@ -2293,6 +2388,20 @@ c     &  write(luout,*) 'formulae defined'
           call set_dependency(trim(optname2),trim(formname5),tgt_info)
           call opt_parameters(-1,parameters,ncat,0)
           call set_rule(trim(optname2),ttype_frm,OPTIMIZE,
+     &                  labels,ncat+1,1,
+     &                  parameters,1,tgt_info)
+          ! OPT_DV
+          labels(1) = trim(optname3)
+          call add_target(trim(optname3),ttype_frm,.false.,tgt_info)
+          call set_dependency(trim(optname3),trim(defmelname6),tgt_info)
+          call set_dependency(trim(optname3),mel_rint,tgt_info)
+          labels(2) = trim(formname6)
+          ncat = 1
+          call set_dependency(trim(optname3),defmelname2(1:12),
+     &                        tgt_info)
+          call set_dependency(trim(optname3),trim(formname6),tgt_info)
+          call opt_parameters(-1,parameters,ncat,0)
+          call set_rule(trim(optname3),ttype_frm,OPTIMIZE,
      &                  labels,ncat+1,1,
      &                  parameters,1,tgt_info)
         end do
@@ -2413,6 +2522,12 @@ c     &  write(luout,*) 'opt. formulae defined'
         melname4(1:5) = 'ME_CV'
         defmelname4(1:len_short) = ' '
         defmelname4(1:9) = 'DEF_ME_CV'
+        opname5(1:len_short) = ' '
+        opname5(1:2) = 'DV'
+        melname5(1:len_short) = ' '
+        melname5(1:5) = 'ME_DV'
+        defmelname5(1:len_short) = ' '
+        defmelname5(1:9) = 'DEF_ME_DV'
         do ipop = 1,npop
           opname(2:3) = pop(ipop)%name//pop(ipop)%comp
           melname(5:6) = pop(ipop)%name//pop(ipop)%comp
@@ -2426,6 +2541,9 @@ c     &  write(luout,*) 'opt. formulae defined'
           opname4(2:3) = pop(ipop)%name//pop(ipop)%comp
           melname4(5:6) = pop(ipop)%name//pop(ipop)%comp
           defmelname4(9:10) = pop(ipop)%name//pop(ipop)%comp
+          opname5(2:3) = pop(ipop)%name//pop(ipop)%comp
+          melname5(5:6) = pop(ipop)%name//pop(ipop)%comp
+          defmelname5(9:10) = pop(ipop)%name//pop(ipop)%comp
           ! DEF_ME_BVV:
           call add_target(trim(defmelname),ttype_opme,.false.,tgt_info)
           call set_dependency(trim(defmelname),trim(opname),tgt_info)
@@ -2446,6 +2564,17 @@ c     &  write(luout,*) 'opt. formulae defined'
           call me_list_parameters(-1,parameters,msc,0,
      &         pop(ipop)%isym,0,0,.false.)
           call set_rule(trim(defmelname4),ttype_opme,DEF_ME_LIST,
+     &                  labels,2,1,
+     &                  parameters,1,tgt_info)
+          ! DEF_ME_DVV:
+          call add_target(trim(defmelname5),ttype_opme,.false.,tgt_info)
+          call set_dependency(trim(defmelname5),trim(opname5),tgt_info)
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = trim(melname5)
+          labels(2) = trim(opname5)
+          call me_list_parameters(-1,parameters,msc,0,
+     &         pop(ipop)%isym,0,0,.false.)
+          call set_rule(trim(defmelname5),ttype_opme,DEF_ME_LIST,
      &                  labels,2,1,
      &                  parameters,1,tgt_info)
           ! DEF_ME_RDGB(V)V:
@@ -2493,17 +2622,26 @@ c     &  write(luout,*) 'ME_V and ME_BV lists defined'
       hubname(1:len_short) = ' '
       hubname(1:14) = 'HUB_DEFME_Y(n)'
       do op_par = 1,2
-        if (op_par.eq.1) then
+       do itcex = 1, ntcex
+        if (op_par.eq.1.and.itcex.eq.1) then
           opname2(6:6) = 'T'
           opname(1:1) = 'L'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
-        else
+        else if (op_par.eq.2.and.itcex.eq.1) then
           opname2(6:6) = 'L'
           opname(1:1) = 'T'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
+        else if (op_par.eq.1.and.itcex.eq.2) then
+          opname2(6:6) = 'W'
+          opname(1:1) = 'Y'
+          x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
+        else if (op_par.eq.2.and.itcex.eq.2) then
+          opname2(6:6) = 'Y'
+          opname(1:1) = 'W'
+          x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
-        do ord = 0,x_max_ord
+        do ord = op_par-1,x_max_ord
           write(opname(3:3),'(i1)') ord
           opname(5:len_short) = ' '
           write(opname2(3:3),'(i1)') ord
@@ -2532,12 +2670,13 @@ c     &  write(luout,*) 'ME_V and ME_BV lists defined'
      &                          tgt_info)
             ! (a) T(n) depends on T(n-1), L(n) depends on both L(n-1) and T(n)
             hubname(11:14) = opname(1:4)
-            if (op_name(1:1).eq.'L') then
+            if (op_name(1:1).eq.'L'.or.op_name(1:1).eq.'Y') then
               hubname(11:11) = 'T'
               call set_dependency(trim(defmelname),trim(hubname),
      &                            tgt_info)
               hubname(11:14) = opname(1:4)
             end if
+            hubname(11:11) = 'L'
             if (ord.gt.0) then
               write(hubname(13:13),'(i1)') ord-1
               call set_dependency(trim(defmelname),trim(hubname),
@@ -2603,22 +2742,11 @@ c     &  write(luout,*) 'ME_V and ME_BV lists defined'
             deallocate(ifreq,ifreqnew)
           end do
         end do
+       end do
       end do
 
 c      if (ntest.ge.100)
 c     &  write(luout,*) 'ME_L, ME_T, ME_O-lists defined'
-
-      ! ME_O(0)_L
-      call add_target('DEF_ME_O(0)_L',ttype_opme,.false.,tgt_info)
-      call set_dependency('DEF_ME_O(0)_L','O(0)_L',tgt_info)
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'ME_O(0)_L'
-      labels(2) = 'O(0)_L'
-      call me_list_parameters(-1,parameters,
-     &     msc,0,1,0,0,.false.)
-      call set_rule('DEF_ME_O(0)_L',ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
 
       ! ME_LRESP(n)
       defmelname(1:len_short) = ' '
@@ -2677,27 +2805,6 @@ c     &  write(luout,*) 'ME_L, ME_T, ME_O-lists defined'
         deallocate(ifreq,ifreqnew)
       end do
 
-      if (.not.userules) then
-        ! ME_LCCEQ(n)
-        defmelname(1:len_short) = ' '
-        defmelname(1:15) = 'DEF_ME_LCCEQ(0)'
-        melname(1:len_short) = ' '
-        melname(1:11) = 'ME_LCCEQ(0)'
-        lagname(1:len_short) = ' '
-        lagname(1:8) = 'LRESP(0)'
-        call add_target(trim(defmelname),ttype_opme,.false.,
-     &                                              tgt_info)
-        call set_dependency(trim(defmelname),trim(lagname),tgt_info)
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = trim(melname)
-        labels(2) = trim(lagname)
-        call me_list_parameters(-1,parameters,
-     &       msc,0,1,0,0,.false.)
-        call set_rule(trim(defmelname),ttype_opme,DEF_ME_LIST,
-     &                labels,2,1,
-     &                parameters,1,tgt_info)
-      end if
-
       ! Diagonal Preconditioner: one for each possible irrep
       do sym = 1,maxsym
         do op_par = 1,2
@@ -2731,75 +2838,7 @@ c     &  write(luout,*) 'ME_L, ME_T, ME_O-lists defined'
         end do
       end do
 
-      if (opt) then
-        ! B-Matrix for Preconditioner (total symmetric)
-        call add_target(me_bprc,ttype_opme,.false.,tgt_info)
-        call set_dependency(me_bprc,op_bprc,tgt_info)
-        call set_dependency(me_bprc,eval_r12_inter,tgt_info)
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = me_bprc
-        labels(2) = op_bprc
-        call me_list_parameters(-1,parameters,
-     &         msc,0,1,0,0,.false.)
-        call set_rule(me_bprc,ttype_opme,DEF_ME_LIST,
-     &                labels,2,1,
-     &                parameters,1,tgt_info)
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = me_bprc
-        labels(2) = mel_b_inter
-        labels(3) = mel_bh_inter
-        call add_parameters(-1,parameters,
-     &       2,(/1d0,1d0/),2)
-        call set_rule(me_bprc,ttype_opme,ADD,
-     &                labels,3,1,
-     &                parameters,1,tgt_info)
-        ! X-Matrix for Preconditioner (total symmetric)
-        call add_target(me_xprc,ttype_opme,.false.,tgt_info)
-        call set_dependency(me_xprc,op_xprc,tgt_info)
-        call set_dependency(me_bprc,eval_r12_inter,tgt_info)
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = me_xprc
-        labels(2) = op_xprc
-        call me_list_parameters(-1,parameters,
-     &         msc,0,1,0,0,.false.)
-        call set_rule(me_xprc,ttype_opme,DEF_ME_LIST,
-     &                labels,2,1,
-     &                parameters,1,tgt_info)
-        labels(1:20)(1:len_target_name) = ' '
-        labels(1) = me_xprc
-        labels(2) = mel_x_inter
-        call add_parameters(-1,parameters,
-     &       1,(/1d0/),2)
-        call set_rule(me_xprc,ttype_opme,ADD,
-     &                labels,2,1,
-     &                parameters,1,tgt_info)
-      end if
-
-      ! HHat definition
-      call add_target(mel_hhatdef,ttype_opme,.false.,tgt_info)
-      call set_dependency(mel_hhatdef,op_hhat,tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_hhat
-      labels(2) = op_hhat
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0,.false.)
-      call set_rule(mel_hhatdef,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-
-      ! Hbar definition
-      call add_target(meldef_hbar,ttype_opme,.false.,tgt_info)
-      call set_dependency(meldef_hbar,op_hbar,tgt_info)
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_hbar
-      labels(2) = op_hbar
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,0,0,.false.)
-      call set_rule(meldef_hbar,ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
-
-      if (setr12) then
+      if (setr12.and.r12op.gt.0) then
         ! ME_SX(n)w: ME for vector times Metric
         defmelname(1:len_short) = ' '
         defmelname(1:12) = 'DEF_ME_SX(n)'
@@ -2808,11 +2847,14 @@ c     &  write(luout,*) 'ME_L, ME_T, ME_O-lists defined'
         opname(1:len_short) = ' '
         opname(1:5) = 'SX(n)'
         do op_par = 1,2
+         do itcex = 1, ntcex
           if (op_par.eq.1) then
             opname(2:2) = 'L'
+            if (itcex.eq.2) opname(2:2) = 'Y'
             x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
           else
             opname(2:2) = 'T'
+            if (itcex.eq.2) opname(2:2) = 'W'
             x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
           end if
           if (.not.userules) x_max_ord = maxval(maxord)
@@ -2821,7 +2863,7 @@ c     &  write(luout,*) 'ME_L, ME_T, ME_O-lists defined'
             opname(6:len_short) = ' '
             allocate(ifreq(ord),ifreqnew(ord))
             ifreq = 0
-            set_zero = ord.eq.0.and.opt
+            set_zero = ord.eq.0
             do while (next_comb(ifreq,ord,maxord,ncnt).or.set_zero)
               set_zero = .false.
               call redundant_comb(ifreq,ifreqnew,cmp(1:ncmp)%redun,ord,
@@ -2836,6 +2878,7 @@ c     &  write(luout,*) 'ME_L, ME_T, ME_O-lists defined'
               melname(4:len_short) = opname(1:len_short-3)
               defmelname(8:len_short) = opname(1:len_short-7)
               if (idx_target(trim(defmelname),tgt_info).gt.0) cycle
+              if (.not.r12fix.and..not.xsp_opt1.and.itcex.eq.1) cycle
               call add_target(trim(defmelname),ttype_opme,.false.,
      &                        tgt_info)
               call set_dependency(trim(defmelname),trim(opname),
@@ -2851,6 +2894,7 @@ c     &  write(luout,*) 'ME_L, ME_T, ME_O-lists defined'
             end do
             deallocate(ifreq,ifreqnew)
           end do
+         end do
         end do
       end if
 
@@ -2894,40 +2938,23 @@ c     &  write(luout,*) 'me-lists defined'
      &         labels,1,0,
      &         parameters,0,tgt_info)
         end do
+        ! evaluate DV-Intermediate
+        optname(1:len_short) = ' '
+        optname(1:6) = 'OPT_DV'
+        evalname(1:len_short) = ' '
+        evalname(1:7) = 'EVAL_DV'
+        do ipop = 1,npop
+          optname(6:7) = pop(ipop)%name//pop(ipop)%comp
+          evalname(7:8) = pop(ipop)%name//pop(ipop)%comp
+          call add_target(trim(evalname),ttype_gen,.false.,tgt_info)
+          call set_dependency(trim(evalname),trim(optname),tgt_info)
+          labels(1:10)(1:len_target_name) = ' '
+          labels(1) = trim(optname)
+          call set_rule(trim(evalname),ttype_opme,EVAL,
+     &         labels,1,0,
+     &         parameters,0,tgt_info)
+        end do
       end if
-
-      ! solve CC-equations 
-      call add_target('SOLVE_T(0)',ttype_gen,.false.,tgt_info)
-      if (setr12)
-     &       call set_dependency('SOLVE_T(0)',eval_r12_inter,tgt_info)
-      call set_dependency('SOLVE_T(0)','OPT_T(0)',tgt_info)
-      call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
-      call set_dependency('SOLVE_T(0)',trim(mel_dia1)//'T',tgt_info)
-      call solve_parameters(-1,parameters,2, 1,1,'DIA')
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'ME_T(0)'
-      labels(2) = 'ME_O(0)_L'
-      labels(3) = trim(mel_dia1)//'T'
-      if (userules) then
-        labels(4) = 'ME_LRESP(0)'
-      else
-        labels(4) = 'ME_LCCEQ(0)'
-      end if
-      labels(5) = 'OPT_T(0)'
-      ilabels = 5
-      if (opt) then
-        call set_dependency('SOLVE_T(0)',me_bprc,tgt_info)
-        call set_dependency('SOLVE_T(0)',me_xprc,tgt_info)
-        call solve_parameters(-1,parameters,2,1,1,'MIX')
-        labels(6) = me_bprc
-        labels(7)= me_xprc
-        labels(8)= mel_ham
-        ilabels = 8
-      end if
-      if (restart.eq.0) 
-     &       call set_rule('SOLVE_T(0)',ttype_opme,SOLVENLEQ,
-     &       labels,ilabels,2,
-     &       parameters,2,tgt_info)
 
 c      if (ntest.ge.100)
 c     &  write(luout,*) 'define solvers for linear equations'
@@ -2940,6 +2967,9 @@ c     &  write(luout,*) 'define solvers for linear equations'
           defmelname(1:11) = 'DEF_ME_L(n)'
           melname(1:7) = 'ME_L(n)'
           opname(1:6) = 'O(n)LT'
+          defmelname2(1:11) = 'DEF_ME_Y(n)'
+          melname2(1:7) = 'ME_Y(n)'
+          opname3(1:6) = 'O(n)LW'
           optname(1:8) = 'OPT_L(n)'
           solvename(1:10) = 'SOLVE_L(n)'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
@@ -2949,6 +2979,9 @@ c     &  write(luout,*) 'define solvers for linear equations'
           defmelname(1:11) = 'DEF_ME_T(n)'
           melname(1:7) = 'ME_T(n)'
           opname(1:6) = 'O(n)LL'
+          defmelname2(1:11) = 'DEF_ME_W(n)'
+          melname2(1:7) = 'ME_W(n)'
+          opname3(1:6) = 'O(n)LY'
           optname(1:8) = 'OPT_T(n)'
           solvename(1:10) = 'SOLVE_T(n)'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
@@ -2960,6 +2993,9 @@ c     &  write(luout,*) 'define solvers for linear equations'
           write(defmelname(10:10),'(i1)') ord
           write(melname(6:6),'(i1)') ord
           write(opname(3:3),'(i1)') ord
+          write(defmelname2(10:10),'(i1)') ord
+          write(melname2(6:6),'(i1)') ord
+          write(opname3(3:3),'(i1)') ord
           write(optname(7:7),'(i1)') ord
           allocate(ifreq(ord),ifreqnew(ord))
           ifreq = 0
@@ -2973,6 +3009,9 @@ c     &  write(luout,*) 'define solvers for linear equations'
             defmelname(12:len_short) = ' '
             opname(7:len_short) = ' '
             melname(8:len_short) = ' '
+            defmelname2(12:len_short) = ' '
+            opname3(7:len_short) = ' '
+            melname2(8:len_short) = ' '
             optname(9:len_short) = ' '
             do digit = 1,ord
               write(solvename(9+2*digit:10+2*digit),'(i2.2)')
@@ -2987,6 +3026,9 @@ c     &  write(luout,*) 'define solvers for linear equations'
      &                                   ifreqnew(digit)
               sym = multd2h(sym,pop(cmp(ifreqnew(digit))%pop_idx)%isym)
             end do
+            defmelname2(12:len_short) = defmelname(12:len_short)
+            melname2(8:len_short) = melname(8:len_short)
+            opname3(7:len_short) = opname(7:len_short)
             if (idx_target(trim(solvename),tgt_info).gt.0) cycle
             call add_target(trim(solvename),ttype_gen,.false.,
      &                          tgt_info)
@@ -2998,6 +3040,8 @@ c     &  write(luout,*) 'define solvers for linear equations'
      &              'HUB_EVAL_BV',tgt_info)
               call set_dependency(trim(solvename),
      &              'HUB_EVAL_CV',tgt_info)
+              if (use_CS) call set_dependency(trim(solvename),
+     &              'HUB_EVAL_DV',tgt_info)
             end if
             call set_dependency(trim(solvename),trim(defmelname),
      &                          tgt_info)
@@ -3023,10 +3067,18 @@ c     &  write(luout,*) 'define solvers for linear equations'
      &                            tgt_info)
             end if
             ! SOLVE_Y(n)w
-            if (setr12.and.(ord.gt.0.or.opt.and.op_par.eq.1)) then  ! Metric
-              opname2(1:len_short-2) = 'S'//melname(4:len_short)
+            if (setr12.and.r12op.gt.0.and.
+     &          (ord.gt.0.or.op_par.eq.1)) then  ! Metric
+              if (r12fix.or.xsp_opt1) then
+                opname2(1:len_short-2) = 'S'//melname(4:len_short)
+              else
+                ! no metric required for primary amplitudes
+                opname2(1:len_short-3) = melname(4:len_short)
+              end if
+              opname4(1:len_short-2) = 'S'//melname2(4:len_short)
             else                           ! identity
               opname2(1:len_short-3) = melname(4:len_short)
+              opname4(1:len_short-3) = melname2(4:len_short)
             end if
             labels(1:20)(1:len_target_name) = ' '
             labels(1) = trim(melname)
@@ -3038,14 +3090,30 @@ c     &  write(luout,*) 'define solvers for linear equations'
             opname(5:5) = 'L'
             labels(6) = trim(optname)
             ilabels = 6
-            if (opt) then
+            if (setr12.and..not.r12fix) then
+              call set_dependency(trim(solvename),trim(defmelname2),
+     &                          tgt_info)
               call set_dependency(trim(solvename),me_bprc,tgt_info)
               call set_dependency(trim(solvename),me_xprc,tgt_info)
-              call solve_parameters(-1,parameters,2,1,1,'MIX')
-              labels(7) = me_bprc
-              labels(8)= me_xprc
-              labels(9)= mel_ham
-              ilabels = 9
+              call solve_parameters(-1,parameters,2,2,1,'DIA/BLK')
+              labels(2) = trim(melname2)
+              labels(3) = trim(mel_dia1)//op_parent
+              labels(4) = trim(mel_dia1)//op_parent !dummy
+              labels(5) = trim(opname)
+              labels(6) = trim(opname3)
+              labels(7) = trim(opname2)
+              labels(8) = trim(opname4)
+              opname(5:5) = 'R'
+              opname3(5:5) = 'R'
+              labels(9) = trim(opname)
+              labels(10) = trim(opname3)
+              opname(5:5) = 'L'
+              opname3(5:5) = 'L'
+              labels(11) = trim(optname)
+              labels(12) = me_bprc
+              labels(13)= me_xprc
+              labels(14)= mel_ham
+              ilabels = 14
             end if
             if (ord.gt.x_max_ord2.or.op_par+restart.le.2)
      &            call set_rule(trim(solvename),ttype_opme,SOLVELEQ,
@@ -3124,6 +3192,8 @@ c     &  write(luout,*) 'define evaluaters'
      &              'HUB_EVAL_BV',tgt_info)
               call set_dependency(trim(evalname),
      &              'HUB_EVAL_CV',tgt_info)
+              if (use_CS) call set_dependency(trim(evalname),
+     &              'HUB_EVAL_DV',tgt_info)
             end if
             ! first solve T(k), L(k) using (2n+1) and (2n+2) rules
             hubname(11:11) = 'T'
@@ -3170,9 +3240,11 @@ c     &  write(luout,*) 'define dependency hubs'
       do op_par = 1,2
         if (op_par.eq.1) then
           op_parent = 'T'
+          op_parent2 = 'W'
           x_max_ord = int((real(maxval(maxord))-1)/2+0.6)
         else
           op_parent = 'L'
+          op_parent2 = 'Y'
           x_max_ord = int((real(maxval(maxord))-2)/2+0.6)
         end if
         if (.not.userules) x_max_ord = maxval(maxord)
@@ -3194,8 +3266,19 @@ c     &  write(luout,*) 'define dependency hubs'
               write(defmelname(10+2*digit:11+2*digit),'(i2.2)')
      &                                     ifreqnew(digit)
             end do
-            call set_dependency(trim(hubname),trim(defmelname),
+            if (ord.eq.0.and.op_par.eq.1) then
+              call set_dependency(trim(hubname),trim(mel_topdef),
      &                                     tgt_info)
+            else
+              call set_dependency(trim(hubname),trim(defmelname),
+     &                                     tgt_info)
+              if (ntcex.gt.1) then
+                defmelname(8:8) = op_parent2
+                call set_dependency(trim(hubname),trim(defmelname),
+     &                                     tgt_info)
+                defmelname(8:8) = op_parent
+              end if
+            end if
           end do
           deallocate(ifreq,ifreqnew)
         end do
@@ -3217,22 +3300,32 @@ c     &  write(luout,*) 'define dependency hubs'
         defmelname(1:9) = 'DEF_ME_BV'
         defmelname2(1:len_short) = ' '
         defmelname2(1:9) = 'DEF_ME_CV'
+        defmelname3(1:len_short) = ' '
+        defmelname3(1:9) = 'DEF_ME_DV'
         evalname(1:len_short) = ' '
         evalname(1:7) = 'EVAL_BV'
         evalname2(1:len_short) = ' '
         evalname2(1:7) = 'EVAL_CV'
+        evalname3(1:len_short) = ' '
+        evalname3(1:7) = 'EVAL_DV'
         call add_target('HUB_DEFME_BV',ttype_gen,.false.,tgt_info)
         call add_target('HUB_DEFME_CV',ttype_gen,.false.,tgt_info)
+        call add_target('HUB_DEFME_DV',ttype_gen,.false.,tgt_info)
         call add_target('HUB_EVAL_BV',ttype_gen,.false.,tgt_info)
         call add_target('HUB_EVAL_CV',ttype_gen,.false.,tgt_info)
+        call add_target('HUB_EVAL_DV',ttype_gen,.false.,tgt_info)
         do ipop = 1,npop
           defmelname(9:10) = pop(ipop)%name//pop(ipop)%comp
           defmelname2(9:10) = pop(ipop)%name//pop(ipop)%comp
+          defmelname3(9:10) = pop(ipop)%name//pop(ipop)%comp
           evalname(7:8) = pop(ipop)%name//pop(ipop)%comp
           evalname2(7:8) = pop(ipop)%name//pop(ipop)%comp
+          evalname3(7:8) = pop(ipop)%name//pop(ipop)%comp
           call set_dependency('HUB_DEFME_CV',trim(defmelname2),
      &                                      tgt_info)
           call set_dependency('HUB_EVAL_CV',trim(evalname2),
+     &                                      tgt_info)
+          call set_dependency('HUB_EVAL_DV',trim(evalname3),
      &                                      tgt_info)
           if (pop(ipop)%isym.ne.1.and.
      &        r12op.eq.0) cycle
@@ -3287,9 +3380,15 @@ c     &  write(luout,*) 'define dependency hubs'
               x_max_ord2 = int((real(maxord(icnt))-2)/2+0.6)
             end if
             if (.not.userules) x_max_ord2 = maxval(maxord)
-            if ((evaluate(icnt).or.ord.eq.0).and.ord.le.x_max_ord2)
-     &        call set_dependency(trim(hubname),trim(solvename),
+            if ((evaluate(icnt).or.ord.eq.0).and.ord.le.x_max_ord2) then
+              if (ord.eq.0.and.op_par.eq.1) then
+                call set_dependency(trim(hubname),trim(solve_gs),
      &                                     tgt_info)
+              else
+                call set_dependency(trim(hubname),trim(solvename),
+     &                                     tgt_info)
+              end if
+            end if
           end do
           deallocate(ifreq,ifreqnew)
         end do

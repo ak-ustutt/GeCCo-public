@@ -266,11 +266,11 @@ c      sbar_pnt%dagger = .true.
         call print_form_list(luout,flist_lag,op_info)
       end if
 
-      ! delete redundant operator blocks (if more than one block version)
-      if (opt) then
-        call r12_opt_truncation(flist_lag,idxtop,idxc12,op_info)
-        call r12_opt_truncation(flist_lag,idxtbar,idxcbar,op_info)
-      end if
+c      ! delete redundant operator blocks (if more than one block version)
+c      if (opt) then
+c        call r12_opt_truncation(flist_lag,idxtop,idxc12,op_info)
+c        call r12_opt_truncation(flist_lag,idxtbar,idxcbar,op_info)
+c      end if
 
       ! Produce truncated expansions if required.
       if (.not.new_trunc.and.truncate)

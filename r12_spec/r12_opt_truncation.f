@@ -41,6 +41,8 @@
       type(formula_item), pointer ::
      &     form_pnt, form_pnt_next
 
+      call quit(1,'r12_opt_truncation','call to obsolete routine')
+
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'r12_opt_truncation')
       endif

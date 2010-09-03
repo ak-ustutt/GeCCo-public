@@ -204,11 +204,11 @@
         call print_form_list(luout,flist_metric,op_info)
       end if
 
-      ! delete redundant operator blocks (if more than one block version)
-      if (opt) then
-        call r12_opt_truncation(flist_metric,idxtop,idxc12,op_info)
-        call r12_opt_truncation(flist_metric,idxtbar,idxcbar,op_info)
-      end if
+c      ! delete redundant operator blocks (if more than one block version)
+c      if (opt) then
+c        call r12_opt_truncation(flist_metric,idxtop,idxc12,op_info)
+c        call r12_opt_truncation(flist_metric,idxtbar,idxcbar,op_info)
+c      end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)
       call sum_terms(flist_metric,op_info)

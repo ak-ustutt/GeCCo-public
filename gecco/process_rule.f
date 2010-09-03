@@ -574,16 +574,14 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_form(form_pnt,trim(label),NEW)
         call get_arg('LABEL_RAW',rule,tgt_info,val_label=label_list(3))
         call get_form(form_pnt,trim(label),OLD)
-        call get_arg('OP_TRF',rule,tgt_info,
-     &       val_label_list=label_list(4:),ndim=nop)
-        call get_arg('OP_RHS',rule,tgt_info,
-     &       val_label_list=label_list(4+nop:),ndim=nop)
+        call get_arg('OP_TRF',rule,tgt_info,val_label=label_list(4))
+        call get_arg('OP_RHS',rule,tgt_info,val_label=label_list(5))
         call get_arg('OP_RAW',rule,tgt_info,
-     &       val_label_list=label_list(4+2*nop:),ndim=nop)
+     &       val_label_list=label_list(6:),ndim=nop)
         call get_arg('TITLE_TRF',rule,tgt_info,val_str=title)
         call get_arg('TITLE_RHS',rule,tgt_info,val_str=title2)
         call leq_post(label_list(1),label_list(2),label_list(3),
-     &       label_list(4:),label_list(4+nop:),label_list(4+2*nop:),nop,
+     &       label_list(4),label_list(5),label_list(6:),nop,
      &       title,title2,
      &       op_info,form_info)
 *----------------------------------------------------------------------*

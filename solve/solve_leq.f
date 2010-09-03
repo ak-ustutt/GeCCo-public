@@ -86,7 +86,7 @@
      &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout, idxrhs,
      &     nselect
       real(8) ::
-     &     energy, xresnrm, xdum
+     &     energy, xresnrm(nroots,nopt), xdum, xresmax
       type(me_list_array), pointer ::
      &     me_opt(:), me_trv(:), me_mvp(:), me_rhs(:), me_dia(:),
      &     me_met(:), me_special(:), me_scr(:)
@@ -114,6 +114,8 @@
 
       integer, external ::
      &     idx_formlist, idx_mel_list, idx_oplist2, idx_xret
+      real(8), external ::
+     &     fndmnx
 
       ifree = mem_setmark('solve_leq')
 
@@ -123,8 +125,8 @@
         write(luout,*) 'nroots = ',nroots
       end if
 
-      if (nopt.gt.1)
-     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
+c      if (nopt.gt.1)
+c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
 
       idx = idx_formlist(label_form,form_info)
       if (idx.le.0)
@@ -223,7 +225,7 @@
         ! get a ME list for matrix-vector products
         ! (have same symmtry properties as result!)
         write(fname,'("mvp_",i3.3)') iopt
-        call define_me_list(fname,label_op_mvp,
+        call define_me_list(fname,label_op_mvp(iopt),
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
@@ -235,7 +237,7 @@
 
         ! get a ME list for RHS
         write(fname,'("rhs_",i3.3)') iopt
-        call define_me_list(fname,label_op_rhs,
+        call define_me_list(fname,label_op_rhs(iopt),
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
@@ -324,6 +326,8 @@
 
           call touch_file_rec(me_rhs(iopt)%mel%fhand)
 
+          ! store norm of RHS
+          xresnrm(iroot,iopt) = xret(idxselect(1))
         end do
       end do
 
@@ -355,13 +359,16 @@ c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 
-        if (conv) then
-          write(luout,'(">>> conv.",21x,x,g10.4)') xresnrm
-        else if (iter.eq.1) then
-          write(luout,'(">>> |rhs|",21x,x,g10.4)') xresnrm
-        else
-          write(luout,'(">>>",i3,24x,x,g10.4)')iter-1,xresnrm
-        end if
+        do iopt = 1, nopt
+          xresmax = fndmnx(xresnrm(1:nroots,iopt),nroots,2)
+          if (conv) then
+            write(luout,'(">>> conv.",21x,x,g10.4)') xresmax
+          else if (iter.eq.1) then
+            write(luout,'(">>> |rhs|",21x,x,g10.4)') xresmax
+          else
+            write(luout,'(">>>",i3,24x,x,g10.4)')iter-1,xresmax
+          end if
+        end do
 c dbg
 c        if(iter.gt.1)print *,'>>> resnorm = ',xresnrm
 c dbg

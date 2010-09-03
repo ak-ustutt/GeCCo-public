@@ -8,8 +8,8 @@
 *     split formula labelled "label_f_raw" into transformation
 *     ("label_f_traf") and right-hand side part ("label_f_rhs")
 *     reorder formulae
-*     label_traf(nx) :  operator associated with Ax-trafo
-*     label_rhs(nx)  :  operator associated with rhs
+*     label_traf :  operator associated with Ax-trafo
+*     label_rhs  :  operator associated with rhs
 *     label_x(nx): operators associated with variable x
 *               (bx may be larger than one in case of coupled equations)
 *----------------------------------------------------------------------*
@@ -30,7 +30,7 @@
      &     nx
       character(*), intent(in) ::
      &     label_f_raw, label_f_traf, label_f_rhs,
-     &     label_traf, label_rhs, label_x
+     &     label_traf, label_rhs, label_x(nx)
 c     &     label_f_raw(nx), label_f_traf(nx), label_f_rhs(nx),
 c     &     label_traf(nx), label_rhs(nx), label_x(nx)
       type(operator_info), intent(in) ::
@@ -41,7 +41,7 @@ c     &     label_traf(nx), label_rhs(nx), label_x(nx)
      &     title_traf*(*), title_rhs*(*)
 
       integer ::
-     &     idx, idx_traf, idx_rhs, idx_x
+     &     idx, idx_traf, idx_rhs, idx_x(nx), ix
       type(formula), pointer ::
      &     form_traf, form_rhs, form_raw
       type(formula_item) ::
@@ -53,8 +53,8 @@ c     &     label_traf(nx), label_rhs(nx), label_x(nx)
       if (ntest.ge.100)
      &     call write_title(luout,wst_dbg_subr,'leq_post at work')
 
-      if (nx.gt.1)
-     &     call quit(1,'leq_post','under construction')
+c      if (nx.gt.1)
+c     &     call quit(1,'leq_post','under construction')
 
       ! check labels
       ! this one must exist:
@@ -81,13 +81,17 @@ c     &     label_traf(nx), label_rhs(nx), label_x(nx)
       ! operator labels (must exist)
       idx_traf = idx_oplist2(label_traf,op_info)
       idx_rhs  = idx_oplist2(label_rhs,op_info)
-      idx_x    = idx_oplist2(label_x,op_info)
+      do ix = 1, nx
+        idx_x(ix)    = idx_oplist2(label_x(ix),op_info)
+      end do
 
-      if (idx_traf.le.0.or.idx_rhs.le.0.or.idx_x.le.0) then
+      if (idx_traf.le.0.or.idx_rhs.le.0.or.any(idx_x(1:nx).le.0)) then
         write(luout,*) 'labels: "',trim(label_traf),'" "',
-     &                             trim(label_rhs), '" "',
-     &                             trim(label_x),   '"'
-        write(luout,*) 'indices: ',idx_traf,idx_rhs,idx_x
+     &                             trim(label_rhs), '" "'
+        do ix = 1, nx
+          write(luout,*)'"', trim(label_x(ix)),'"'
+        end do
+        write(luout,*) 'indices: ',idx_traf,idx_rhs,idx_x(1:nx)
         call quit(1,'leq_post',
      &       'one or more of the above labels was not defined')
       end if
@@ -102,7 +106,7 @@ c     &     label_traf(nx), label_rhs(nx), label_x(nx)
 
       ! sort into traf and rhs list
       call extract_rhs(fl_rhs,fl_traf,fl_raw,
-     &       idx_traf,idx_rhs,idx_x,op_info)
+     &       idx_traf,idx_rhs,idx_x,nx,op_info)
 
       ! reorder new lists
       call reorder_formula(fl_rhs,op_info)

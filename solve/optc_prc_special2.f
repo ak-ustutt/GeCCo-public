@@ -224,7 +224,8 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
           iblk_b = 1
         else if (njoined.eq.1) then
           if (name_opt.eq.op_cex.or.
-     &        name_opt.eq.op_rp) then
+     &        name_opt.eq.op_rp.or.
+     &        name_opt(1:1).eq.'W') then  !for response
             mode = 1
             nidx_p = occ_blk(IPART,1,1)
             occ_b = 0
@@ -232,7 +233,8 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
             occ_b(IPART,2) = 1
           else if (
      &        name_opt.eq.op_cexbar.or.
-     &        name_opt.eq.op_lp) then
+     &        name_opt.eq.op_lp.or.
+     &        name_opt(1:1).eq.'Y') then  !for response
             mode = 1
             nidx_p = occ_blk(IPART,2,1)
             occ_b = 0

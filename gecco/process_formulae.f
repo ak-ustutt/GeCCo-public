@@ -295,11 +295,12 @@ c        call quit(1,DEF_FORMULA,'not yet')
       case(LEQ_SPLIT)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
-     &       title,idum,strdum)
+     &       title,nop,strdum)
+        if (rule%n_parameter_strings.eq.1) nop = 1
         call leq_post(rule%labels(1),rule%labels(2),rule%labels(3),
      &       rule%labels(4),
      &       rule%labels(5),
-     &       rule%labels(6),1,
+     &       rule%labels(6:),nop,
      &       title,title,
      &       op_info,form_info)
       case(OPTIMIZE)

@@ -262,8 +262,6 @@ c     &     idef=(/0/))
 
       ! special keywords for response theory
       call keyword_add('response',context='calculate')
-      call argument_add('maxexc','calculate.response',type=vtyp_int,
-     &                  idef=(/2/)) ! maximum excitations
       call argument_add('order','calculate.response',type=vtyp_int,
      &                  idef=(/0/)) ! perturbation order
       call argument_add('pert','calculate.response',

@@ -19,7 +19,7 @@ check
   find CONVERGED IN .* ITERATIONS
   compare int 3
   find conv. [ ]*
-  compare real 3 1e-12
+  compare real 3 1e-9
 check
   label BX Intermediate
   find EVAL_BdX
@@ -39,10 +39,10 @@ check
   find CONVERGED IN .* ITERATIONS
   compare int 3
   find conv. [ ]*
-  compare real 3 1e-12
+  compare real 3 1e-9
 check
   label Static polarizability alpha_xx
   find Polarizability
-  compare real 4 1e-12
+  compare real 4 1e-8
 end
 

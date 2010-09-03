@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine leqc_init(xrsnrm,iroute,
      &       me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,
+     &       me_special,nspecial,
      &       nincore,lenbuf,
      &       xbuf1,xbuf2,xbuf3,
      &       flist,depend,use_s,
@@ -30,14 +31,13 @@ c      include 'def_filinf.h'
       integer, parameter ::
      &     ntest = 00
 
-      real(8), intent(inout) ::
-     &     xrsnrm(*)
       integer, intent(in) ::
-     &     iroute, nincore, lenbuf
+     &     iroute, nincore, lenbuf, nspecial
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_dia(*), 
-     &     me_trv(*), me_mvp(*), me_rhs(*), me_scr(*)
+     &     me_trv(*), me_mvp(*), me_rhs(*), me_scr(*),
+     &     me_special(nspecial)
       type(me_list_array), intent(inout) ::
      &     me_met(*)
 c      type(file_array), intent(in) ::
@@ -63,6 +63,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     strmap_info
 
       real(8), intent(inout) ::
+     &     xrsnrm(opti_info%nroot,opti_info%nopt)
+      real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
 
       logical, intent(in) ::
@@ -73,7 +75,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     zero_vec(opti_stat%ndim_vsbsp)
       integer ::
      &     idx, jdx, kdx, iroot, irhs,  nred, nadd, nnew, irecscr,
-     &     imet, idamp, nopt, nroot, mxsub, lenmat, job, nsec,
+     &     imet, idamp, nopt, nroot, mxsub, lenmat, job, nsec, jopt,
      &     ndim_save, ndel, iopt, lenscr, ifree, restart_mode, nselect
       real(8) ::
      &     cond, xdum, xnrm
@@ -116,13 +118,15 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
 
       allocate(ffmet(nopt))
 
-      if (nopt.gt.1)
-     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
+c      if (nopt.gt.1)
+c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
       if (nroot.gt.mxsub)
      &     call quit(1,'leqc_init','?? nroot>mxsub ??')
 
       if (nincore.ge.2) then
         do iopt = 1, nopt
+         select case(opti_info%typ_prc(iopt))
+         case(optinf_prc_file,optinf_prc_mixed)
           ! read diagonal pre-conditioner
           if (ntest.ge.100) then
             write(luout,*) 'current ME-list: ',
@@ -139,8 +143,13 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
             if (ntest.ge.100)
      &           write(luout,*) 'xbuf1 norm = ',
      &                          dnrm2(nwfpar(iopt),xbuf1,1) 
-            xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
-            xrsnrm(iroot) = xnrm
+c            xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
+c            xrsnrm(iroot,iopt) = xnrm
+            xnrm = 0d0
+            do jopt = 1, nopt
+              xnrm = xnrm+xrsnrm(iroot,jopt)**2
+            end do
+            xnrm = sqrt(xnrm)
             ! %shift is for shifted LEQ
             call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,opti_info%shift,
      &                 nwfpar(iopt))
@@ -149,6 +158,32 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &                          ' norm = ', dnrm2(nwfpar(iopt),xbuf1,1)
             call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar(iopt))
           end do
+         case(optinf_prc_blocked)
+          if (nincore.lt.3)
+     &         call quit(1,'leqc_init',
+     &         'I need at least 3 incore vectors (prc_blocked)')
+          do iroot = 1, nroot
+            call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,
+     &                       nwfpar(iopt))
+c            xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
+c            xrsnrm(iroot,iopt) = xnrm
+            xnrm = 0d0
+            do jopt = 1, nopt
+              xnrm = xnrm+xrsnrm(iroot,jopt)**2
+            end do
+            xnrm = sqrt(xnrm)
+            call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
+            call optc_prc_special2(me_rhs(iopt)%mel,me_special,
+     &                                                      nspecial,
+     &                         me_opt(iopt)%mel%op%name,
+     &                         opti_info%shift,
+     &                         nincore,xbuf1,xbuf2,xbuf3,lenbuf,
+     &                         orb_info,op_info,str_info,strmap_info)
+            call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar(iopt))
+          end do
+         case default
+           call quit(1,'leqc_init','unknown preconditioner type')
+         end select
         end do
       else
 
@@ -188,9 +223,9 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
           ! reassign op. with list containing trial vector
           call assign_me_list(me_trv(iopt)%mel%label,
      &                        me_opt(iopt)%mel%op%name,op_info)
-          ffmet(1)%fhand => me_met(1)%mel%fhand
+          ffmet(iopt)%fhand => me_met(iopt)%mel%fhand
         else
-          ffmet(1)%fhand => fdum
+          ffmet(iopt)%fhand => fdum
         end if
       end do
 

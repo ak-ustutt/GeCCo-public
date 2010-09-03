@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine extract_rhs(fl_rhs,fl_traf,fl_raw,
-     &     idx_traf,idx_rhs,idx_x,op_info)
+     &     idx_traf,idx_rhs,idx_x,nx,op_info)
 *----------------------------------------------------------------------*
 *     sort formula into rhs and transformation contributions
 *----------------------------------------------------------------------*
@@ -17,9 +17,14 @@
       type(formula_item), intent(inout), target ::
      &     fl_rhs, fl_traf, fl_raw
       integer, intent(in) ::
-     &     idx_traf, idx_rhs, idx_x
+     &     idx_traf, idx_rhs, idx_x(nx), nx
       type(operator_info), intent(in) ::
      &     op_info
+
+      integer ::
+     &     ix
+      logical ::
+     &     found
 
       type(formula_item), pointer ::
      &     fl_rhs_pnt, fl_traf_pnt, fl_raw_pnt
@@ -52,7 +57,13 @@
      &       call quit(1,'extract_rhs',
      &       'raw formula must not contain other commands than [ADD]')
         
-        if (vtx_in_contr(idx_x,.false.,fl_raw_pnt%contr).gt.0) then
+        found = .true.
+        do ix = 1, nx
+          if (vtx_in_contr(idx_x(ix),.false.,fl_raw_pnt%contr).gt.0)
+     &       exit
+          found = ix.ne.nx
+        end do
+        if (found) then
           call new_formula_item(fl_traf_pnt,
      &         command_add_contribution,idx_traf)
           call copy_contr(fl_raw_pnt%contr,fl_traf_pnt%contr)
