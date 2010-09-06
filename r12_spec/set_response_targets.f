@@ -2033,6 +2033,52 @@ c          call set_rule(trim(formname3),ttype_frm,PRINT_FORMULA,
 c     &                  labels,1,0,
 c     &                  parameters,2,tgt_info)
         end do
+      else if (setr12.and..not.treat_bv) then
+        ! define BV-intermediate with RI approximation
+        op_parent = 'B'
+        formname(1:len_short) = ' '
+        formname(1:1) = 'B'
+        opname(1:len_short) = ' '
+        opname2(1:len_short) = ' '
+        opname2(1:1) = 'B'
+        do ipop = 1,npop
+          formname(2:9) = pop(ipop)%name//pop(ipop)%comp//'_form '
+          opname(1:5) = pop(ipop)%name//'(1)'//pop(ipop)%comp
+          opname2(2:3) = pop(ipop)%name//pop(ipop)%comp
+          call add_target(trim(formname),ttype_frm,.false.,tgt_info)
+          call set_dependency(trim(formname),trim(opname),tgt_info)
+          call set_dependency(trim(formname),trim(opname2),tgt_info)
+          call set_dependency(trim(formname),op_r12,tgt_info)
+          labels(1) = trim(formname)
+          labels(2) = trim(opname2)
+          labels(3) = op_r12
+          labels(4) = trim(opname)
+          call form_parameters(-1,
+     &         parameters,2,trim(formname),0,'B')
+          call set_rule(trim(formname),ttype_frm,DEF_R12INTM_FORMAL,
+     &                  labels,4,1,
+     &                  parameters,2,tgt_info)
+          ! replace r12 by the actual integrals
+          labels(1:20)(1:len_target_name) = ' '
+          labels(1) = trim(formname)
+          labels(2) = trim(formname)
+          labels(3) = op_r12
+          labels(4) = op_rint
+          labels(5) = op_r12//'^+'
+          labels(6) = op_rint//'^+'
+          call set_dependency(trim(formname),op_rint,tgt_info)
+          call form_parameters(-1,
+     &         parameters,2,'BV-intermediate formula',2,
+     &         '---')
+          call set_rule(trim(formname),ttype_frm,REPLACE,
+     &                labels,6,1,
+     &                parameters,2,tgt_info)
+c          call form_parameters(-1,
+c     &         parameters,2,'stdout',0,'---')
+c          call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,
+c     &                  labels,1,0,
+c     &                  parameters,2,tgt_info)
+        end do
       end if
 
 c      if (ntest.ge.100)

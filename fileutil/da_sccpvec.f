@@ -75,7 +75,8 @@
       nrec_lbat = mod(nrecs,nrecbuf)
       len_lbat = len_rest
       if (nrec_lbat.gt.0) then
-        if (nrec_lbat.eq.1.and.lenbat+len_rest.le.lenbuf) then
+        if (nbatch.gt.1.and.  !we will need at least one batch
+     &      nrec_lbat.eq.1.and.lenbat+len_rest.le.lenbuf) then
           len_lbat = lenbat+len_rest
           nrec_lbat = nrecbuf+1
         else

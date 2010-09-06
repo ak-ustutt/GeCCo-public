@@ -65,14 +65,14 @@ c      include 'opdim.h'
         call get_cmox(cmox,ffcmox_dalton%unit)
         call file_close_keep(ffcmox_dalton)
       else
-        ! too dangerous: doesn't work for canonical aux. bas.!
-        call quit(0,'import_cmox_dalton_special',
-     &            'CMOX file is missing!')
-c        ! else read from AUXBAS
-c        call file_init(ffcmox_dalton,auxbas_file,ftyp_sq_frm,0)
-c        call file_open(ffcmox_dalton)
-c        call get_auxbas(cmox,ffcmox_dalton%unit)
-c        call file_close_keep(ffcmox_dalton)
+        ! dangerous: doesn't work for canonical aux. bas.!
+        call warn('import_cmox_dalton_special',
+     &       'No CMOX file found. Make sure CAN_AUX has not been used!')
+        ! else read from AUXBAS
+        call file_init(ffcmox_dalton,auxbas_file,ftyp_sq_frm,0)
+        call file_open(ffcmox_dalton)
+        call get_auxbas(cmox,ffcmox_dalton%unit)
+        call file_close_keep(ffcmox_dalton)
       end if
 
       if (ntest.ge.100) then
