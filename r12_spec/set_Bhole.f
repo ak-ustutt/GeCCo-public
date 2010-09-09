@@ -85,7 +85,7 @@
      &     (/2,3, 2,4, 3,4/),3,
      &     0,0,
      &     0,0, 
-     &     op_info)
+     &     .false.,op_info)
         do while(associated(flist_pnt%next))
           flist_pnt => flist_pnt%next
         end do
@@ -97,7 +97,7 @@
      &     (/2,3, 2,4, 3,4/),3,
      &     0,0,
      &     (/2,4,2,idx_prj/),1, ! def. of projector
-     &     op_info)
+     &     .false.,op_info)
         ! try terms that are contracted by the projector/F only
         do while(associated(flist_pnt%next))
           flist_pnt => flist_pnt%next
@@ -110,7 +110,7 @@
      &     (/2,3, 3,4/),2,
      &     (/2,4/),1,
      &     0,0,
-     &     op_info)
+     &     .false.,op_info)
         do while(associated(flist_pnt%next))
           flist_pnt => flist_pnt%next
         end do
@@ -122,7 +122,7 @@
      &     (/2,3, 3,4/),2,
      &     0,0,
      &     (/2,4,2,idx_prj/),1,            ! def. of projector
-     &     op_info)
+     &     .false.,op_info)
       else
         call quit(1,'set_Bhole','njoined>1 needed? not available yet!')
       end if

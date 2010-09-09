@@ -76,7 +76,7 @@
      &       (/2,3,1,IPART,      ! force P contraction
      &         2,4,1,IPART,      ! force P contraction
      &         3,4,1,IEXTR/),3,  ! force X contraction
-     &       op_info)
+     &       .false.,op_info)
       else if (njoined_intm.eq.2) then
         call quit(1,'set_RVR2_contrib','unchecked route')
         call expand_op_product2(flist_pnt,idx_intm,
@@ -87,7 +87,7 @@
      &       0,0,
      &       (/2,7, 1,6/),2,    ! avoid cross contrib. to external lines
      &       0,0,
-     &       op_info)
+     &       .false.,op_info)
       else
         call quit(1,'set_RVR2_contrib','unexpected: njoined_intm>2')
       end if

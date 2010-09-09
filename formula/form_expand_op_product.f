@@ -129,7 +129,7 @@
      &     connect,nconnect,
      &     avoid,navoid,
      &     inproj,ninproj,
-     &     op_info)
+     &     .false.,op_info)
 
       if(ntest.ge.10)then
         call write_title(luout,wst_title,'Generated formula')

@@ -665,7 +665,7 @@ c dbg
      &     connect,nconnect,
      &     avoid,navoid,
      &     project,nproject,
-     &     op_info)
+     &     .false.,op_info)
 
       ! quick fix:
       if (calls.ge.2) then
@@ -679,7 +679,7 @@ c dbg
      &     connect,nconnect,
      &     avoid,navoid,
      &     project2,nproject2,
-     &     op_info)
+     &     .false.,op_info)
       end if
       ! quick fix II:
       if (calls.ge.3) then
@@ -693,7 +693,7 @@ c dbg
      &     connect,nconnect,
      &     avoid,navoid,
      &     project3,nproject3,
-     &     op_info)
+     &     .false.,op_info)
       end if
       if (calls.ge.4) then
         do while(associated(flist_pnt%next))
@@ -706,7 +706,7 @@ c dbg
      &     connect,nconnect,
      &     avoid,navoid,
      &     project4,nproject4,
-     &     op_info)
+     &     .false.,op_info)
       end if
       if (calls.ge.5) then
         do while(associated(flist_pnt%next))
@@ -719,7 +719,7 @@ c dbg
      &     connect,nconnect,
      &     avoid,navoid,
      &     project5,nproject5,
-     &     op_info)
+     &     .false.,op_info)
       end if
       if (calls.gt.1)
      &     call reorder_formula(flist_scr,op_info)

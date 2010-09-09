@@ -20,6 +20,7 @@
      &     DEF_CC_LAGRANGIAN*17     = 'DEF_CC_LAGRANGIAN',
      &     DEF_ECC_LAGRANGIAN*18    = 'DEF_ECC_LAGRANGIAN',
      &     DEF_CCPT_LAGRANGIAN*19   = 'DEF_CCPT_LAGRANGIAN',
+     &     DEF_MRCC_LAGRANGIAN*19   = 'DEF_MRCC_LAGRANGIAN',
      &     DEF_HHAT*8               = 'DEF_HHAT',
      &     DEF_CC_HBAR*11           = 'DEF_CC_HBAR',
      &     DEF_R12INTM_FORMAL*18    = 'DEF_R12INTM_FORMAL',

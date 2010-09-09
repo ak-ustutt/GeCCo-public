@@ -135,7 +135,7 @@
      &       0,0,
      &       0,0,  
      &       (/2,3,1,idx_prj/),1,
-     &       op_info)
+     &       .false.,op_info)
         else if(njoined_c.eq.2) then
           call expand_op_product2(flist_pnt,idx_intm,
      &       fac,6,3,
@@ -145,7 +145,7 @@
      &       0,0,
      &       0,0,  
      &       (/2,5,1,idx_prj/),1,
-     &       op_info)
+     &       .false.,op_info)
         else
           write(luout,*) 'njoined(C) = ',njoined_c
           call quit(1,'set_C_fr','I am quite confused ...')

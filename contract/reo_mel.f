@@ -116,8 +116,8 @@
         write(luout,*) ' reorder from ',ifrom,' to ',ito
       end if
 
-      if (dag.and.iprlvl.ge.2) write(luout,*)
-     &         ' Input list will be overwritten by its adjoint.'
+      if (dag.and.max(iprlvl,ntest).ge.3) write(luout,*)
+     &         'Input list will be overwritten by its adjoint.'
 
       njinp = opinp%njoined
       njout = opout%njoined
@@ -165,6 +165,8 @@
         end if
 
       end do
+
+      call touch_file_rec(ffout)
 
       if (open_close_inp)
      &     call file_close_keep(meinp%fhand)

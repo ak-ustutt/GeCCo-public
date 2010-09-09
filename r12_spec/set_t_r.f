@@ -69,7 +69,7 @@ c     &       0,0,.false.,op_info)
      &         -1,-1,
      &         (/2,3/),1,
      &         0,0,
-     &         0,0,op_info)
+     &         0,0,.false.,op_info)
         else
           call expand_op_product2(fl_t_r_pnt,idxsop,
      &         1d0,3,2,
@@ -78,7 +78,7 @@ c     &       0,0,.false.,op_info)
      &         -1,-1,
      &         0,0,
      &         0,0,
-     &         0,0,op_info)
+     &         0,0,.false.,op_info)
         endif
       end if
 
@@ -110,7 +110,7 @@ c     &       0,0,.false.,op_info)
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
         else
           call expand_op_product2(fl_t_r_pnt,idxsop,
      &         1d0,4,3,
@@ -120,7 +120,7 @@ c     &       0,0,.false.,op_info)
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
         end if
         do while(associated(fl_t_r_pnt%next))
           fl_t_r_pnt => fl_t_r_pnt%next
@@ -134,7 +134,7 @@ c     &       0,0,.false.,op_info)
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
         else
           call expand_op_product2(fl_t_r_pnt,idxsop,
      &         1d0,4,3,
@@ -144,7 +144,7 @@ c     &       0,0,.false.,op_info)
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
         end if
       end if
       if((r12op.eq.1.or.r12op.ge.3).and.set_r_r)then
@@ -174,7 +174,7 @@ c     &         (/1,iblk_pphp,1,1/),(/0,iblk_pphp,0,0/),
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
         else
           call expand_op_product2(fl_t_r_pnt,idxsop,
      &         1d0,4,3,
@@ -184,7 +184,7 @@ c     &         (/1,iblk_pphp,1,1/),(/0,iblk_pphp,0,0/),
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
         end if
 
 c        
@@ -216,7 +216,7 @@ cc     &         (/1,iblk_pphp,1,1/),(/0,iblk_pphp,0,0/),
 cc     &         (/2,3/),1,
 cc     &         0,0,
 cc     &         0,0,
-cc     &         op_info)
+cc     &         .false.,op_info)
 cc        else
 cc          call expand_op_product2(fl_t_r_pnt,idxsop,
 cc     &         1d0,4,3,
@@ -226,7 +226,7 @@ cc     &         (/1,1,iblk_pphp,1/),(/0,0,iblk_pphp,0/),
 cc     &         (/2,3/),1,
 cc     &         0,0,
 cc     &         0,0,
-cc     &         op_info)
+cc     &         .false.,op_info)
 cc        end if
 c        do while(associated(fl_t_r_pnt%next))
 c          fl_t_r_pnt => fl_t_r_pnt%next
@@ -240,7 +240,7 @@ c     &         (/1,iblk_pxhp,1,1/),(/0,iblk_pxhp,0,0/),
 c     &         (/2,3/),1,
 c     &         0,0,
 c     &         0,0,
-c     &         op_info)
+c     &         .false.,op_info)
 c        else
 c          call expand_op_product2(fl_t_r_pnt,idxsop,
 c     &         1d0,4,3,
@@ -250,7 +250,7 @@ c     &         (/1,1,iblk_pxhp,1/),(/0,0,iblk_pxhp,0/),
 c     &         (/2,3/),1,
 c     &         0,0,
 c     &         0,0,
-c     &         op_info)
+c     &         .false.,op_info)
 c        end if
 c        do while(associated(fl_t_r_pnt%next))
 c          fl_t_r_pnt => fl_t_r_pnt%next
@@ -264,7 +264,7 @@ c     &         (/1,iblk_xxhp,1,1/),(/0,iblk_xxhp,0,0/),
 c     &         (/2,3/),1,
 c     &         0,0,
 c     &         0,0,
-c     &         op_info)
+c     &         .false.,op_info)
 c        else
 c          call expand_op_product2(fl_t_r_pnt,idxsop,
 c     &         1d0,4,3,
@@ -274,7 +274,7 @@ c     &         (/1,1,iblk_xxhp,1/),(/0,0,iblk_xxhp,0/),
 c     &         (/2,3/),1,
 c     &         0,0,
 c     &         0,0,
-c     &         op_info)
+c     &         .false.,op_info)
 c        end if
       end if
       if(r12op.eq.2.or.r12op.ge.3.and.idxcpp12.gt.0)then
@@ -302,7 +302,7 @@ c        end if
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
         else
           call expand_op_product2(fl_t_r_pnt,idxsop,
      &         1d0,4,3,
@@ -312,7 +312,7 @@ c        end if
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
         end if
         do while(associated(fl_t_r_pnt%next))
           fl_t_r_pnt => fl_t_r_pnt%next
@@ -326,7 +326,7 @@ c        end if
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
         else
           call expand_op_product2(fl_t_r_pnt,idxsop,
      &         1d0,4,3,
@@ -336,7 +336,7 @@ c        end if
      &         (/2,3/),1,
      &         0,0,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
         end if
       end if
       ! if BAR: no non-linear terms for projection (currently ...)
@@ -364,7 +364,7 @@ c        end if
      &       (/2,3,2,4/),2,
      &       0,0,
      &       0,0,
-     &       op_info)
+     &       .false.,op_info)
 
         do while(associated(fl_t_r_pnt%next))
           fl_t_r_pnt => fl_t_r_pnt%next
@@ -377,7 +377,7 @@ c        end if
      &       (/2,3,2,4/),2,
      &       0,0,
      &       0,0,
-     &       op_info)
+     &       .false.,op_info)
       endif
 
       end

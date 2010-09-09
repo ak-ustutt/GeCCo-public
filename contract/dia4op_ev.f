@@ -25,7 +25,7 @@
 
       integer, parameter ::
      &     ntest = 00,
-     &     nlistmax = 120
+     &     nlistmax = 120 000  ! we need some better solution for this
 
       real(8), intent(in) ::
      &     ecore, xdia1(*), xdia2(*)

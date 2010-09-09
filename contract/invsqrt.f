@@ -5,7 +5,8 @@
 *     The ME list is split into matrices that can either contain
 *     elements from a single distribution or from several distributions.
 *     half = true: only makes a half transform U*s^(-0.5)
-*     half = false: full transform U*s^(-0.5)*U^+
+*     half = false: also does half transform and in addition
+*                   returns projector matrix U*1s*U^+ on input list
 *      
 *     works also for sums of density matrices of the structure:
 *       /0 0 0 0\
@@ -72,8 +73,8 @@ c     &     loop(nocc_cls)
       real(8) ::
      &     fac
       real(8), pointer ::
-     &     buffer_in(:), buffer_out(:), scratch(:,:),
-     &     sing(:,:), trip(:,:)
+     &     buffer_in(:), buffer_out(:), scratch(:,:), scratch2(:,:),
+     &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:)
 c dbg
 c      integer, pointer ::
 c     &     matrix(:,:)
@@ -174,6 +175,9 @@ c dbgend
       icnt_sv  = 0 ! we will count the
       icnt_sv0 = 0 ! number of singular values below threshold
 
+      if (.not.half.and.max(iprlvl,ntest).ge.3) write(luout,*)
+     &         'Input list will be overwritten by projector.'
+
       ! Loop over occupation class.
       iocc_loop: do iocc_cls = 1, nocc_cls
         if(op_inp%formal_blk(iocc_cls)) cycle iocc_loop
@@ -183,6 +187,7 @@ c dbgend
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
           ioff = mel_inp%off_op_gmo(iocc_cls)%gam_ms(1,1)
           buffer_out(ioff+1) = buffer_in(ioff+1)
+          if (.not.half) buffer_in(ioff+1) = 1d0
           cycle
         end if 
 
@@ -304,6 +309,7 @@ c dbgend
 
               ! single distribution can simply be read in as simple matrix
               allocate(scratch(ndim,ndim))
+              if (.not.half) allocate(scratch2(ndim,ndim))
               if (transp) then
                 do idx = 1,ndim
                   do jdx = 1,ndim
@@ -340,21 +346,30 @@ c dbgend
 
                 ! do the pre-diagonalization
                 allocate(sing(nsing,nsing),trip(ntrip,ntrip))
+                if (.not.half) allocate(sing2(nsing,nsing),
+     &                                  trip2(ntrip,ntrip))
                 call spinsym_traf(1,ndim,scratch,flipmap_c,nsing,
      &                            sing,trip,.false.)
 
                 ! calculate T^(-0.5) for both blocks
-                call invsqrt_mat(nsing,sing,half,icnt_sv,icnt_sv0)
-                call invsqrt_mat(ntrip,trip,half,icnt_sv,icnt_sv0)
+                call invsqrt_mat(nsing,sing,sing2,half,icnt_sv,icnt_sv0)
+                call invsqrt_mat(ntrip,trip,trip2,half,icnt_sv,icnt_sv0)
 
                 ! partial undo of pre-diagonalization: Upre*T^(-0.5)
                 call spinsym_traf(2,ndim,scratch,flipmap_c,nsing,
-     &                            sing,trip,half)
+     &                            sing,trip,.true.)
+                if (.not.half) then
+                  ! full undo of pre-diagonalization for projector
+                  call spinsym_traf(2,ndim,scratch2,flipmap_c,nsing,
+     &                              sing2,trip2,.false.)
+                  deallocate(sing2,trip2)
+                end if
                 deallocate(sing,trip)
               else
 
                 ! calculate S^(-0.5)
-                call invsqrt_mat(ndim,scratch,half,icnt_sv,icnt_sv0)
+                call invsqrt_mat(ndim,scratch,scratch2,
+     &                           half,icnt_sv,icnt_sv0)
 
               end if
 
@@ -374,6 +389,27 @@ c dbgend
               end if
 
               deallocate(scratch)
+
+              if (.not.half) then
+                ! write projector to input buffer
+                if (transp) then
+                  do idx = 1,ndim
+                    do jdx = 1,ndim
+                      buffer_in((idx-1)*ndim+jdx+ioff) 
+     &                       = scratch2(jdx,idx)
+                    enddo
+                  enddo
+                else
+                  do idx = 1,ndim
+                    do jdx = 1,ndim
+                      buffer_in((idx-1)*ndim+jdx+ioff) 
+     &                       = scratch2(idx,jdx)
+                    enddo
+                  enddo
+                end if
+
+                deallocate(scratch2)
+              end if
 
             enddo igama_loop
           enddo msa_loop
@@ -471,6 +507,7 @@ c dbgend
 
           allocate(scratch(ndim,ndim),flmap(ndim,3))
           scratch = 0d0
+          if (.not.half) allocate(scratch2(ndim,ndim))
 c dbg
 c          allocate(matrix(ndim,ndim))
 c dbgend
@@ -691,21 +728,30 @@ c dbgend
 
             ! do the pre-diagonalization
             allocate(sing(nsing,nsing),trip(ntrip,ntrip))
+            if (.not.half) allocate(sing2(nsing,nsing),
+     &                              trip2(ntrip,ntrip))
             call spinsym_traf(1,ndim,scratch,flmap(1:ndim,3),nsing,
      &                        sing,trip,.false.)
 
             ! calculate T^(-0.5) for both blocks
-            call invsqrt_mat(nsing,sing,half,icnt_sv,icnt_sv0)
-            call invsqrt_mat(ntrip,trip,half,icnt_sv,icnt_sv0)
+            call invsqrt_mat(nsing,sing,sing2,half,icnt_sv,icnt_sv0)
+            call invsqrt_mat(ntrip,trip,trip2,half,icnt_sv,icnt_sv0)
 
             ! partial undo of pre-diagonalization: Upre*T^(-0.5)
             call spinsym_traf(2,ndim,scratch,flmap(1:ndim,3),nsing,
-     &                        sing,trip,half)
+     &                        sing,trip,.true.)
+            if (.not.half) then
+              ! full undo of pre-diagonalization for projector
+              call spinsym_traf(2,ndim,scratch2,flipmap_c,nsing,
+     &                          sing2,trip2,.false.)
+              deallocate(sing2,trip2)
+            end if
             deallocate(sing,trip)
           else
 
             ! calculate S^(-0.5)
-            call invsqrt_mat(ndim,scratch,half,icnt_sv,icnt_sv0)
+            call invsqrt_mat(ndim,scratch,scratch2,
+     &                       half,icnt_sv,icnt_sv0)
 
           end if
 
@@ -781,6 +827,8 @@ c dbgend
                       idx = ioff + idx_str_blk3(istr_csub,istr_asub,
      &                       ldim_opin_c,ldim_opin_a,ncblk,nablk)
                       buffer_out(idx) = scratch(iline,icol)
+                      if (.not.half) ! copy projector to input buffer
+     &                   buffer_in(idx) = scratch2(iline,icol)
                     end do
                   end do
                 end do
@@ -794,6 +842,7 @@ c dbgend
           end do
 
           deallocate(scratch,flmap)
+          if (.not.half) deallocate(scratch2)
 c dbg
 c          deallocate(matrix)
 c dbgend
@@ -828,6 +877,10 @@ c dbgend
       if(.not.bufout)then
         call put_vec(ffinv,buffer_out,1,nbuff)
       endif  
+      if(.not.bufin.and..not.half)then
+        ! return projector matrix on input list
+        call put_vec(ffinp,buffer_in,1,nbuff)
+      endif
 
       ifree = mem_flushmark('invsqrt')
 

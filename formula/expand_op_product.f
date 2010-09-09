@@ -103,7 +103,7 @@
      &       connect2,nconnect,
      &       0,0,
      &       0,0,
-     &       op_info)
+     &       .false.,op_info)
 
 ******OBSOLETE*********************************************************
 *     obsolete part of subroutine

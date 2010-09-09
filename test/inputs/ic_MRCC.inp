@@ -1,0 +1,10 @@
+general
+ memmax=30000000,print=0
+orb_space
+ shell type=frozen,def=(1,0,0,0)
+method
+ MRCC maxcom_res=2
+calculate
+ solve maxiter=80,conv=1d-8,maxsub=8
+ routes contract=3,simtraf=0,schedule=1,use_tr=T,maxbranch=-1
+ multiref maxexc=2,minexc=2,calc=F,pure_vv=F,maxh=0,optref=-1,update_prc=F

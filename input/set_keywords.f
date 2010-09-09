@@ -134,6 +134,10 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('opt','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
 
+      call keyword_add('MRCC',context='method')
+      call argument_add('maxcom_res','method.MRCC',type=vtyp_int,
+     &     idef=(/4/))
+
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
       call argument_add('trunc_type','method.truncate',
@@ -311,6 +315,8 @@ c     &     idef=(/0/))
      &                  ldef=(/.true./)) ! pure act.-act. excitations
       call argument_add('optref','calculate.multiref',type=vtyp_int,
      &                  idef=(/0/)) ! optimize reference fct.
+      call argument_add('update_prc','calculate.multiref',type=vtyp_log,
+     &                  ldef=(/.true./)) ! update precond. in each it.
       call argument_add('calc','calculate.multiref',type=vtyp_log,
      &                  ldef=(/.true./)) ! do the calc. (else set targ.)
       call argument_add('nroots','calculate.multiref',type=vtyp_int,

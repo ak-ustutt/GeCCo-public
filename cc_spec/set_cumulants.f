@@ -112,7 +112,7 @@
      &       0,0,
      &       0,0,
      &       0,0,
-     &       op_info)
+     &       .false.,op_info)
         do while(flist_pnt%command.ne.command_end_of_formula)
           flist_pnt => flist_pnt%next
         end do
@@ -202,7 +202,7 @@ c dbgend
      &         0,0,
      &         avoid,nn**2,
      &         0,0,
-     &         op_info)
+     &         .false.,op_info)
 
           do while(flist_pnt%command.ne.command_end_of_formula)
             flist_pnt => flist_pnt%next

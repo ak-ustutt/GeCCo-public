@@ -587,9 +587,9 @@ c dbgend
       call set_arg('EVAL_DENS0',EVAL,'FORM',1,tgt_info,
      &             val_label=(/'FOPT_DENS0'/))
 c dbg
-      call set_rule2('EVAL_DENS0',PRINT_MEL,tgt_info)
-      call set_arg('EVAL_DENS0',PRINT_MEL,'LIST',1,tgt_info,
-     &             val_label=(/'ME_DENS'/))
+c      call set_rule2('EVAL_DENS0',PRINT_MEL,tgt_info)
+c      call set_arg('EVAL_DENS0',PRINT_MEL,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_DENS'/))
 c dbgend
 
       ! evaluate cumulants

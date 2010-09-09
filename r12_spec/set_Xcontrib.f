@@ -120,7 +120,7 @@ c     &         'unused route. how did you get here?')
      &       0,0,
      &       0,0, 
      &       (/2,3,1,0/),1,     ! def. of projector
-     &       op_info)
+     &       .false.,op_info)
           else if (njoined_intm.eq.2) then
             call expand_op_product2(flist_pnt,idx_intm,
      &       1d0,7,3,
@@ -130,7 +130,7 @@ c     &         'unused route. how did you get here?')
      &       0,0,
      &       (/2,7, 1,5, 1,6/),3, ! avoid cross contrib. to external lines
      &       (/4,5,1,0/),1,     ! def. of projector
-     &       op_info)
+     &       .false.,op_info)
           else
             call quit(1,'set_Xcontrib','not prepared for this case !')
           end if
@@ -154,7 +154,7 @@ c     &         'unused route. how did you get here?')
      &           0,0,
      &           0,0,
      &           0,0,
-     &           op_info)
+     &           .false.,op_info)
           else
             call quit(1,'set_Xcontrib','not prepared for this case !')
           end if
@@ -182,7 +182,7 @@ c     &       -1, -1,
 c     &       (/2,3/),1, ! force additional contraction
 c     &       0,0,
 c     &       (/2,3,2,idx_prj/),1, ! def. of projector
-c     &       op_info)
+c     &       .false.,op_info)
 c          ! this gives the terms with ONLY the projector as contraction
 c          do while(associated(flist_pnt%next))
 c            flist_pnt => flist_pnt%next
@@ -195,7 +195,7 @@ c          end do
      &       0,0,      
      &       0,0,
      &       (/2,3,2,idx_prj/),1, ! def. of projector
-     &       op_info)
+     &       .false.,op_info)
         else if (njoined_intm.eq.2) then
           call expand_op_product2(flist_pnt,idx_intm,
      &       -1d0,6,3,
@@ -205,7 +205,7 @@ c          end do
      &       0,0,
      &       (/2,6, 1,5/),2,    ! avoid cross contrib. to external lines
      &       (/2,5,2,idx_prj/),1, ! def. of projector
-     &       op_info)
+     &       .false.,op_info)
         else
           call quit(1,'set_Xcontrib','unexpected: njoined_intm>2')
         end if
@@ -261,7 +261,7 @@ c          end do
      &       0,0,
      &       (/2,7, 1,5, 1,6/),3,  ! avoid cross contrib. to external lines
      &       0,0,
-     &       op_info)
+     &       .false.,op_info)
 
         ! F -> H replacement:
         op_pnt => op_info%op_arr(idx_2)%op

@@ -302,7 +302,7 @@ c test
      &     connect,nconnect,
      &     avoid,navoid,
      &     -1,0,
-     &     op_info)
+     &     .false.,op_info)
 
       if (ntest.ge.1000) then
         write(luout,*) 'intermediate formula'

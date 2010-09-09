@@ -88,7 +88,7 @@ c dbg
      &     (/3,7/),1,
      &     0,0,
      &     (/3,5,1,idx_prj,2,6,1,idx_prj,4,6,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       form_pnt => flist
       do while(associated(form_pnt%next))
@@ -106,7 +106,7 @@ c dbg
      &     (/3,7,2,4/),2,
      &     0,0,
      &     (/2,6,1,idx_prj,4,6,1,idx_prj/),2,
-     &     op_info)
+     &     .false.,op_info)
 
       form_pnt => flist
       do while(associated(form_pnt%next))
@@ -131,7 +131,7 @@ c      do idx = 1, 1 ! SA
      &       (/3,7/),1,
      &       0,0,
      &       (/3,5,1,idx_prj,2,6,1,idx_prj2,4,6,1,idx_prj/),3,
-     &       op_info)
+     &       .false.,op_info)
 
         form_pnt => flist
         do while(associated(form_pnt%next))
@@ -148,7 +148,7 @@ c      do idx = 1, 1 ! SA
      &       (/3,7,2,4/),2,
      &       0,0,
      &       (/2,6,1,idx_prj2,4,6,1,idx_prj/),2,
-     &       op_info)
+     &       .false.,op_info)
 
         form_pnt => flist
         do while(associated(form_pnt%next))
@@ -173,7 +173,7 @@ c      do idx = 1,2 ! SA
      &      (/5,8/),1,
      &      0,0,
      &      (/6,7,1,idx_prj2,6,9,1,idx_prj,7,9,1,idx_prj/),3,
-     &      op_info)
+     &      .false.,op_info)
 
         ! Point to the formula and move to the end of the list.
         form_pnt => flist
@@ -216,7 +216,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj,6,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -235,7 +235,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj,6,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -254,7 +254,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj2,6,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -273,7 +273,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj,6,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -292,7 +292,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj2,6,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -311,7 +311,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj,6,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -330,7 +330,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj2,6,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -349,7 +349,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj2,6,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
 c dbg
 c      goto 200 ! SA
@@ -375,7 +375,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj2,6,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Move to the end of the list.
       do while(associated(form_pnt%next))
@@ -393,7 +393,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj2,6,9,1,idx_prj3/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Move to the end of the list.
       do while(associated(form_pnt%next))
@@ -411,7 +411,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj3,6,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Move to the end of the list.
       do while(associated(form_pnt%next))
@@ -429,7 +429,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj3,6,9,1,idx_prj3/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Point to the formula and move to the end of the list.
       do while(associated(form_pnt%next))
@@ -451,7 +451,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj2,6,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Move to the end of the list.
       do while(associated(form_pnt%next))
@@ -469,7 +469,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj3,2,9,1,idx_prj2,6,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Move to the end of the list.
       do while(associated(form_pnt%next))
@@ -487,7 +487,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj3,6,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Move to the end of the list.
       do while(associated(form_pnt%next))
@@ -505,7 +505,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj3,2,9,1,idx_prj3,6,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Point to the formula and move to the end of the list.
       do while(associated(form_pnt%next))
@@ -526,7 +526,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj,6,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Point to the formula and move to the end of the list.
       do while(associated(form_pnt%next))
@@ -546,7 +546,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj,6,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Extra terms from my derivation.
       ! Point to the formula and move to the end of the list.
@@ -569,7 +569,7 @@ c dbg
      &     0,0,
 c     &     (/2,6,1,idx_prj,2,9,1,idx_prj,5,9,1,idx_prj2/),3,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj2,6,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -589,7 +589,7 @@ c     &     (/2,6,1,idx_prj,2,9,1,idx_prj,5,9,1,idx_prj2/),3,
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj,6,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -608,7 +608,7 @@ c     &     (/2,6,1,idx_prj,2,9,1,idx_prj,5,9,1,idx_prj2/),3,
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj,6,9,1,idx_prj3/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       do while(associated(form_pnt%next))
         form_pnt => form_pnt%next
@@ -626,7 +626,7 @@ c     &     (/2,6,1,idx_prj,2,9,1,idx_prj,5,9,1,idx_prj2/),3,
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj3,2,9,1,idx_prj,6,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
 c dbg
 c      call warn('HEAVY','DEBUG')
@@ -656,7 +656,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj,5,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Point to the formula and move to the end of the list.
       do while(associated(form_pnt%next))
@@ -676,7 +676,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj2,5,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Point to the formula and move to the end of the list.
       do while(associated(form_pnt%next))
@@ -696,7 +696,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj,5,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
       ! Point to the formula and move to the end of the list.
       do while(associated(form_pnt%next))
@@ -716,7 +716,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj,2,9,1,idx_prj,5,9,1,idx_prj2/),3,
-     &     op_info)
+     &     .false.,op_info)
 
 c dbg
       ! Point to the formula and move to the end of the list.
@@ -737,7 +737,7 @@ c dbg
      &     0,0,
      &     0,0,
      &     (/2,6,1,idx_prj2,2,9,1,idx_prj,5,9,1,idx_prj/),3,
-     &     op_info)
+     &     .false.,op_info)
 c dbg
 
  200  if(ntest.ge.100)then

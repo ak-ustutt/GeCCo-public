@@ -58,7 +58,7 @@
      &     0,0,
      &     0,0,
      &     0,0,
-     &     op_info)
+     &     .false.,op_info)
       else if (njoined_intm.eq.2.and.njoined_op.eq.2) then
         ! generate the appropriate self-contraction
         call expand_op_product2(flist_pnt,idx_intm,
@@ -71,7 +71,7 @@
      &     0,0,
      &     0,0,
      &     0,0,
-     &     op_info)
+     &     .false.,op_info)
       else
         call quit(1,'set_1contrib','not prepared for this case!')        
       end if

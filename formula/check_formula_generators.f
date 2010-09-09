@@ -141,7 +141,7 @@
      &     -1,-1,
      &     (/2,7,2,8,3,7,3,8/),4,
      &     0,0,
-     &     op_info)
+     &     .false.,op_info)
 
 c      write(luout,*) 'expansion 1 (result: r)'
 c      call print_form_list(luout,form_r,op_info)
@@ -157,7 +157,7 @@ c     &                            5     ,6     ,7     ,8,     1     /),
 c     &     -1,-1,
 c     &     (/1,6, 2,5, 3,6, 4,7, 5,6, 2,8, 3,9/),7,
 c     &     0,0,
-c     &     op_info)
+c     &     .false.,op_info)
 c
 c      write(luout,*) 'expansion 2 (result: c)'
 c      call print_form_list(luout,form_c,op_info)
@@ -182,7 +182,7 @@ cc     &     (/1     ,2     ,1     ,1  , 3     ,1/),
 cc     &     -1,-1,
 cc     &     (/2,5/),1,
 cc     &     0,0,
-cc     &     op_info)
+cc     &     .false.,op_info)
 c      call expand_op_product2(form_r2,idxopr2,
 c     &     1d0,8,5,
 c     &     (/idxopr2,idxopb,idxopb,idxopr2,
@@ -191,7 +191,7 @@ c     &     (/1     ,2     ,4,1     ,1  , 3,5     ,1/),
 c     &     -1,-1,
 c     &     (/2,6,2,7,3,6,3,7/),4,
 c     &     0,0,
-c     &     op_info)
+c     &     .false.,op_info)
 c
 c      write(luout,*) 'expansion 3 (result: r2)'
 c      call print_form_list(luout,form_r2,op_info)

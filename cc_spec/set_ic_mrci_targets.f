@@ -1418,7 +1418,7 @@ c      call set_dependency('FOPT_D','DEF_ME_C0',tgt_info)
       labels(1) = 'ME_D'
       labels(2) = 'D'
       call me_list_parameters(-1,parameters,
-     &     0,0,1,
+     &     msc,0,1,
      &     0,0,.false.)
       call set_rule('DEF_ME_D',ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
@@ -1446,10 +1446,15 @@ c      call set_dependency('FOPT_D','DEF_ME_C0',tgt_info)
       call set_rule('DEF_ME_Dinv',ttype_opme,ASSIGN_ME2OP,
      &     labels,2,1,
      &     parameters,0,tgt_info)
-      call form_parameters(-1,parameters,2,
-     &     '---',0,'invsqrthalf')
+      if (calc) then
+        call form_parameters(-1,parameters,2,
+     &       '---',0,'invsqrthalf')
+      else !for MRCC, we also need the projector matrix
+        call form_parameters(-1,parameters,2,
+     &       '---',0,'invsqrt')
+      end if
       labels(1) = 'ME_Dinv'   ! output
-      labels(2) = 'ME_D'      ! input
+      labels(2) = 'ME_D'      ! input (may be projector on output)
       call set_rule('DEF_ME_Dinv',ttype_opme,INVERT,
      &              labels,2,1,
      &              parameters,2,tgt_info)
@@ -1486,8 +1491,6 @@ c dbgend
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Reordered inverted Density matrix :',0,'LIST')
-c      labels(1) = 'DEF_ME_Dtr'
-c      labels(2) = 'ME_Dtr'
 c      call set_rule('DEF_ME_Dtr',ttype_opme,PRINT_MEL,
 c     &     'ME_Dtr',1,0,
 c     &     parameters,2,tgt_info)

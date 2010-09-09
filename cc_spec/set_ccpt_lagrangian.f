@@ -272,7 +272,7 @@ c dbg
      &     (/3,4/),1,
      &     0,0,
      &     0,0,
-     &     op_info)
+     &     .false.,op_info)
 
       ! set <0|T(pt)^+[H,T]|0>
       ! advance pointer
@@ -287,7 +287,7 @@ c dbg
      &     (/3,4/),1,
      &     0,0,
      &     0,0,
-     &     op_info)
+     &     .false.,op_info)
 
       if (rank_tpt.gt.3) then
         ! set 1/2<0|T(pt)^+[[H,T2],T2]|0>
@@ -310,7 +310,7 @@ c dbg
      &       (/3,4,3,5/),2,
      &       0,0,
      &       0,0,
-     &       op_info)
+     &       .false.,op_info)
 
       end if
 
@@ -326,7 +326,7 @@ c dbg
      &     (/3,4/),1,
      &     0,0,
      &     0,0,
-     &     op_info)
+     &     .false.,op_info)
 
       if (ntest.ge.100) then
         call write_title(luout,wst_title,'raw formula')

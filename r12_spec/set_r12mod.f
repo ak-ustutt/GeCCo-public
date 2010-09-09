@@ -80,7 +80,7 @@ c dbg
      &       0,0,
      &       0,0,
      &       iproj,nproj,
-     &       op_info)
+     &       .false.,op_info)
 
       if (trim(type).eq.'RV') then
         ! add X contraction contributions
@@ -100,7 +100,7 @@ c dbg
      &       0,0,
      &       0,0,
      &       iproj,nproj,
-     &       op_info)
+     &       .false.,op_info)
       end if
 
       if (trim(type).eq.'RB') then
@@ -128,7 +128,7 @@ c dbg
      &       0,0,
      &       0,0,
      &       (/2,3,1,0/),1,     ! one-particle RI
-     &       op_info)
+     &       .false.,op_info)
       
       end if
 

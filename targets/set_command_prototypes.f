@@ -93,6 +93,8 @@
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_CCPT_LAGRANGIAN,tgt_info)
 *----------------------------------------------------------------------*
+      call add_command_proto(DEF_MRCC_LAGRANGIAN,tgt_info)
+*----------------------------------------------------------------------*
       call add_command_proto(DEF_HHAT,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_CC_HBAR,tgt_info)

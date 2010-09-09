@@ -76,7 +76,7 @@
      &       0,0,
      &       0,0,
      &       (/2,3,2,7/),1,  ! force P1P2 contraction
-     &       op_info)
+     &       .false.,op_info)
       else if (njoined_intm.eq.2) then
         call expand_op_product2(flist_pnt,idx_intm,
      &       -1d0,6,3,
@@ -86,7 +86,7 @@
      &       0,0,
      &       (/2,6, 1,5/),2,    ! avoid cross contrib. to external lines
      &       0,0,
-     &       op_info)
+     &       .false.,op_info)
       else
         call quit(1,'set_RC_contrib','unexpected: njoined_intm>2')
       end if

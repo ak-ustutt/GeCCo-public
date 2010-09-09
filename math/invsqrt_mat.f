@@ -1,9 +1,10 @@
 *----------------------------------------------------------------------*
-      subroutine invsqrt_mat(ndim,mat,half,icnt_sv,icnt_sv0)
+      subroutine invsqrt_mat(ndim,mat,mat2,half,icnt_sv,icnt_sv0)
 *----------------------------------------------------------------------*
 *     half = true: calculates U*mat^(-0.5) using MAT = U*mat*U^+
-*     half = false: calculates U*mat^(-0.5)*U^+
-*     mat must be quadratic and symmetric (not checked so far)
+*     half = false: calculates both U*mat^(-0.5) and U*1s*U^+
+*                   which is a projector matrix for eliminating
+*                   linear redundancies
 *
 *     matthias, dec 2009
 *----------------------------------------------------------------------*
@@ -21,7 +22,7 @@
       integer, intent(inout) ::
      &     icnt_sv, icnt_sv0
       real(8), intent(inout), target ::
-     &     mat(ndim,ndim)
+     &     mat(ndim,ndim), mat2(ndim,ndim)
       logical, intent(in) ::
      &     half
       real(8) ::
@@ -77,13 +78,14 @@
 
       icnt_sv = icnt_sv + ndim
 
-      if (half) then
-        mat_tmp => mat
-        expo = -0.5d0
-      else
-        allocate(mat_tmp(ndim,ndim))
-        expo = -0.25d0
-      end if
+c      if (half) then
+c        mat_tmp => mat
+       expo = -0.5d0
+c      else
+       if (.not.half) allocate(mat_tmp(ndim,ndim))
+cmh        expo = -0.25d0
+c        expo = 0d0  ! to obtain matrix to project out lin. dep.
+c      end if
 
       ! square root of (pseudo) inverse:
       ! A^(-1/2) = U D^(-1/2) U^+ = U D^(-1/4) [U D^(-1/4)]^+
@@ -91,28 +93,30 @@
         if (singval(idx).gt.min_sv) then
           if (singval(idx).lt.warn_sv)
      &         call warn('invsqrt_mat','small singular values!')
-          mat_tmp(1:ndim,idx) = mat(1:ndim,idx)
+          if (.not.half) mat_tmp(1:ndim,idx) = mat(1:ndim,idx)
+          mat(1:ndim,idx) = mat(1:ndim,idx)
      &                         * (singval(idx)**expo)
         else
           icnt_sv0 = icnt_sv0 + 1
-          mat_tmp(1:ndim,idx) = 0d0
+          mat(1:ndim,idx) = 0d0
+          if (.not.half) mat_tmp(1:ndim,idx) = 0d0
         end if
       end do
 
       if (ntest.ge.100) then
         write(luout,'(a,f5.2,a)') 'U*s^(',expo,')'
-        call wrtmat2(mat_tmp,ndim,ndim,ndim,ndim)
+        call wrtmat2(mat,ndim,ndim,ndim,ndim)
       end if
 
       if (.not.half) then
         call dgemm('n','t',ndim,ndim,ndim,
      &             1d0,mat_tmp,ndim,
      &                 mat_tmp,ndim,
-     &             0d0,mat,ndim)
+     &             0d0,mat2,ndim)
         deallocate(mat_tmp)
         if (ntest.ge.100) then
-          write(luout,*) 'U*s^(-0.5)*U^+'
-          call wrtmat2(mat,ndim,ndim,ndim,ndim)
+          write(luout,*) 'U*1s*U^+ projector:'
+          call wrtmat2(mat2,ndim,ndim,ndim,ndim)
         end if
       end if
 c dbg  can be used to set 1

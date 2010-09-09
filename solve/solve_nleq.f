@@ -271,28 +271,31 @@ c     &       ff_trv,ff_h_trv,
      &       fl_en_res,depend,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
-c dbg
+
         ! quick and dirty (for experimental use):
         ! do C0 optimization if requested
         if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
-     &      nspecial.ge.7.and.imacit.gt.1.and..not.conv) then
+     &      nspecial.ge.8.and.imacit.gt.1.and..not.conv) then
           call solve_evp('DIA',1,1,
      &                 'ME_C0','DIAG1SxxM00C0','A_C0',
      &                 'C0','FOPT_OMG_C0','-',0,
      &                 op_info,form_info,str_info,strmap_info,orb_info)
-          print *,'current C0 vector: '
-          call wrt_mel_file(luout,1000,me_special(7)%mel,
-     &       1,me_special(7)%mel%op%n_occ_cls,
-     &       str_info,orb_info)
+c dbg
+c          print *,'current C0 vector: '
+c          call wrt_mel_file(luout,1000,me_special(8)%mel,
+c     &       1,me_special(8)%mel%op%n_occ_cls,
+c     &       str_info,orb_info)
+c dbgend
         end if
 
-        if (opti_info%typ_prc(1).eq.optinf_prc_traf
-     &      .and.nopt.ge.2) then
-          print *,'current C0 vector: '
-          call wrt_mel_file(luout,1000,me_opt(2)%mel,
-     &       1,me_opt(2)%mel%op%n_occ_cls,
-     &       str_info,orb_info)
-        end if
+c dbg
+c        if (opti_info%typ_prc(1).eq.optinf_prc_traf
+c     &      .and.nopt.ge.2) then
+c          print *,'current C0 vector: '
+c          call wrt_mel_file(luout,1000,me_opt(2)%mel,
+c     &       1,me_opt(2)%mel%op%n_occ_cls,
+c     &       str_info,orb_info)
+c        end if
 c dbgend
 
         if (ntest.ge.1000) then
@@ -308,12 +311,13 @@ c dbgend
 
         ! here?
         do iopt = 1, nopt
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_norm) cycle
           call touch_file_rec(ffopt(iopt)%fhand)
         end do
 c dbg
         if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
-     &      nspecial.ge.6)
-     &      call touch_file_rec(me_special(6)%mel%fhand)
+     &      nspecial.ge.7)
+     &      call touch_file_rec(me_special(7)%mel%fhand)
 c dbgend
 
         ! 1 - get energy
@@ -380,12 +384,12 @@ c test
       do iopt = 1, nopt
         ! open result vector file(s)
 c dbg - for R12:
-        if (iopt.eq.2) then
-          write(luout,*) ' iopt = ',iopt
-          call wrt_mel_file(luout,1000,me_opt(iopt)%mel,
-     &       1,me_opt(iopt)%mel%op%n_occ_cls,
-     &       str_info,orb_info)        
-        end if
+c        if (iopt.eq.2) then
+c          write(luout,*) ' iopt = ',iopt
+c          call wrt_mel_file(luout,1000,me_opt(iopt)%mel,
+c     &       1,me_opt(iopt)%mel%op%n_occ_cls,
+c     &       str_info,orb_info)        
+c        end if
 c dbg
         call file_close_keep(ffopt(iopt)%fhand)
         ! open corresponding residuals ...

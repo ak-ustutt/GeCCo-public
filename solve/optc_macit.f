@@ -77,13 +77,15 @@ c      include 'mdef_me_list.h'
       integer ::
      &     irecr, irecv, klsmat,
      &     imet, idamp,
-     &     ndim_save, ndel, iopt, lenscr, ifree
+     &     ndim_save, ndel, iopt, lenscr, ifree, nselect, idx
       real(8) ::
      &     xnrm
       real(8), pointer ::
-     &     xscr(:), xscr2(:), vec(:)
+     &     xscr(:), xscr2(:), vec(:), xret(:)
       integer, pointer ::
-     &     ivec(:)
+     &     ivec(:), idxselect(:)
+      integer, external ::
+     &     idx_mel_list
 
       ! set file arrays for calls to "old" routines
       allocate(ffopt(nopt),ffgrd(nopt),ffdia(nopt))
@@ -230,6 +232,43 @@ c dbg
             call dscal(opti_info%nwfpar(iopt),1d0/xnrm,xbuf1,1)
             call vec_to_da(ffopt(iopt)%fhand,1,xbuf1,
      &                     opti_info%nwfpar(iopt))
+          end if
+          call touch_file_rec(ffopt(iopt)%fhand)
+        end do
+
+        ! project out linear dependencies if required
+        do iopt = 1, opti_info%nopt
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_traf.and.
+     &        nspecial.ge.6) then
+
+cmh   comment this in, if you wish to use optimization algorithm "1a"
+c          ! update metric, trafo matrices and projector if not up to date
+c          idx = idx_mel_list('ME_C0',op_info)  ! quick & dirty
+c          if (nspecial.ge.6.and.
+c     &        op_info%mel_arr(idx)%mel%fhand%last_mod(1).gt.
+c     &        me_special(2)%mel%fhand%last_mod(1))
+c     &        call update_metric(me_dia(iopt)%mel,me_special,nspecial,
+c     &          flist,depend,orb_info,op_info,str_info,strmap_info)
+
+          ! put new vector to special list for transformation
+          call list_copy(me_opt(iopt)%mel,me_special(1)%mel)
+
+          ! use projection matrix
+          call assign_me_list(me_special(4)%mel%label,
+     &                           me_special(2)%mel%op%name,op_info)
+
+          ! calculate transformed vector
+          allocate(xret(depend%ntargets),idxselect(depend%ntargets))
+          nselect = 0
+          call select_formula_target(idxselect,nselect,
+     &                me_opt(iopt)%mel%label,depend,op_info)
+          ! pretend that vector is not up to date
+          ffopt(iopt)%fhand%last_mod(
+     &           ffopt(iopt)%fhand%current_record) = -1
+          call frm_sched(xret,flist,depend,idxselect,nselect,
+     &                op_info,str_info,strmap_info,orb_info)
+          deallocate(xret,idxselect)
+
           end if
         end do
 

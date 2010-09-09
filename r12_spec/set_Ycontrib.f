@@ -90,7 +90,7 @@ c     &       -1, -1,
 c     &       (/2,3/),1,   ! force additional "normal" contractions
 c     &       0,0,
 c     &       (/2,3,2,idx_prj/),1, ! def. of projector
-c     &       op_info)
+c     &       .false.,op_info)
 c        flist_pnt => flist
 c        do while(associated(flist_pnt%next))
 c          flist_pnt => flist_pnt%next
@@ -104,7 +104,7 @@ c        end do
      &       0,0,
      &       0,0,
      &       (/2,3,2,idx_prj/),1, ! def. of projector
-     &       op_info)
+     &       .false.,op_info)
       else if (njoined_intm.eq.2) then
         call expand_op_product2(flist_pnt,idx_intm,
      &       -1d0,6,3,
@@ -114,7 +114,7 @@ c        end do
      &       0,0,
      &       (/2,6, 1,5/),2,    ! avoid cross contrib. to external lines
      &       (/2,5,2,idx_prj/),1, ! def. of projector
-     &       op_info)
+     &       .false.,op_info)
       else
           call quit(1,'set_Ycontrib','unexpected: njoined_intm>2')
       end if

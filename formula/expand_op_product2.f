@@ -6,7 +6,7 @@
      &                             connect,nconnect,
      &                             avoid,navoid,
      &                             inproj,ninproj,
-     &                             op_info)
+     &                             fix_in,op_info)
 *----------------------------------------------------------------------*
 *     given a list of operator indices and a result operator generate 
 *     all contractions arising from
@@ -72,6 +72,8 @@
      &     form_list
       real(8), intent(in) ::
      &     fac
+      logical, intent(in) ::
+     &     fix_in
       integer, intent(in) ::
      &     nvtx, nops, nconnect, navoid, ninproj,
      &     idx_res, idx_op_vtx(nvtx), idx_sv_vtx(nvtx),
@@ -172,7 +174,7 @@ c      ! currently, we expand primitive operators only
       end do
 
       allocate(ol_map(nvtx),idx_op(nops),fix_vtx(nvtx))
-      fix_vtx = .false.
+      fix_vtx = fix_in
 
       ! identify open-line vertices
       nopen = 0

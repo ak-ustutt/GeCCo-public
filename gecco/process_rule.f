@@ -297,6 +297,22 @@ C*----------------------------------------------------------------------*
      &       title,label_list,nop,ansatz,mode,
      &       op_info,orb_info)
 *----------------------------------------------------------------------*
+      case(DEF_MRCC_LAGRANGIAN)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),NEW)
+        call get_arg('OP_RES',rule,tgt_info,
+     &               val_label=label_list(1))
+        call get_arg('OPERATORS',rule,tgt_info,
+     &               val_label_list=label_list(2:),ndim=nop)
+        call get_arg('MAXCOM_RES',rule,tgt_info,val_int=ansatz)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call set_mrcc_lagrangian(form_pnt,
+     &       title,label_list,nop+1,
+     &       ansatz,mode,
+     &       op_info,orb_info)
+*----------------------------------------------------------------------*
       case(DEF_CC_HBAR)
 *----------------------------------------------------------------------*
         call get_arg('LABEL',rule,tgt_info,val_label=label)

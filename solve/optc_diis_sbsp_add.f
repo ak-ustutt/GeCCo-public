@@ -89,7 +89,7 @@
      &     ffamp, ffgrd, ffdia
 
       integer, external ::
-     &     ioptc_get_sbsp_rec, idx_oplist2
+     &     ioptc_get_sbsp_rec, idx_oplist2, idx_mel_list
       real(8), external ::
      &     dnrm2
 
@@ -191,45 +191,13 @@ c dbg
           nopt = opti_info%nopt
 
           ! update me lists for transformation matrices if required
-          if (nspecial.ge.5.and.me_special(4)%mel%fhand%last_mod(1).gt.
-     &          me_special(5)%mel%fhand%last_mod(1)) then
-            ! get half-transform of square root of inverted metric
-            call inv_op(trim(me_special(4)%mel%label),
-     &                  trim(me_special(5)%mel%label),
-     &                   'invsqrthalf',
-     &                   op_info,orb_info,str_info,strmap_info)
-            call touch_file_rec(me_special(5)%mel%fhand)
-            ! reorder to transformation matrix ...
-            call reo_mel(trim(me_special(2)%mel%label),
-     &                   trim(me_special(5)%mel%label),
-     &                   op_info,str_info,strmap_info,orb_info,
-     &                   13,.false.)  ! dirty: reo vtx. 1 --> 3
-            ! ... and to adjoint of transformation matrix
-            call reo_mel(trim(me_special(3)%mel%label),
-     &                   trim(me_special(5)%mel%label),
-     &                   op_info,str_info,strmap_info,orb_info,
-     &                   13,.true.)   ! dirty: reo vtx. 1 --> 3
-
-            ! update preconditioner if requested
-            if (nspecial.ge.6) then
-              call assign_me_list(me_special(2)%mel%label,
-     &                           me_special(2)%mel%op%name,op_info)
-              allocate(xret(depend%ntargets),idxselect(depend%ntargets))
-              nselect = 0
-              call select_formula_target(idxselect,nselect,
-     &                    me_special(6)%mel%label,depend,op_info)
-              ! pretend it's not up to date
-              me_special(6)%mel%fhand%last_mod(
-     &               me_special(6)%mel%fhand%current_record) = -1
-              call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                    op_info,str_info,strmap_info,orb_info)
-              deallocate(xret,idxselect)
-
-              ! put diagonal of Jacobian to preconditioner
-              call dia_from_op(trim(me_dia%label),
-     &                         trim(me_special(6)%mel%label),
-     &                         op_info,str_info,orb_info)
-            end if
+          idx = idx_mel_list('ME_C0',op_info)  ! quick & dirty
+          
+          if (nspecial.ge.6.and.
+     &        op_info%mel_arr(idx)%mel%fhand%last_mod(1).gt.
+     &        me_special(2)%mel%fhand%last_mod(1)) then
+            call update_metric(me_dia,me_special,nspecial,
+     &          flist,depend,orb_info,op_info,str_info,strmap_info)
           else if (nspecial.ge.5.and.iprlvl.ge.10) then
             write(luout,*) ' Metric is already up to date!'
           end if

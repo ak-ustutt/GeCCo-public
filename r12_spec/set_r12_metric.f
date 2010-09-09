@@ -186,7 +186,7 @@
      &     0,0,
      &     0,0,
      &     0,0,
-     &     op_info)
+     &     .false.,op_info)
 
       ! replace S by T+CR
       call expand_subexpr(flist_metric,flist_t_cr,.false.,op_info)
