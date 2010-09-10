@@ -1,4 +1,4 @@
-      subroutine r12_truncation2(flist,trunc_type,trunc_t1x,
+      subroutine r12_truncation2(flist,trunc_type,trunc_t1x,RGRc,
      &     idxham,idxsbar,idxsop,op_info)
 *----------------------------------------------------------------------*
 *     new routine for truncated R12 expansions
@@ -28,7 +28,7 @@
      &     op_info
       integer, intent(in) ::
      &     trunc_type, idxsbar, idxsop, idxham, 
-     &     trunc_t1x
+     &     trunc_t1x, RGRc
 
       logical ::
      &     delete
@@ -141,9 +141,11 @@ c     &     idx_oplist2
             ! for the off-diagonal, it looks that we better keep
             ! all the terms; however, for T1' we previously defined
             ! to omit these terms, so for compatibility:
-            if (offd_xx.and.t1x_involved) then
+            ! (well, for RGRc==0 we drop the offd_xx terms)
+            if (offd_xx.and.(t1x_involved.or.RGRc.eq.0)) then
               delete = delete.or.ord_ham+ntop.gt.0
             end if
+            
           else if (trunc_type.eq.1) then
             ! linearized R12:
             delete = delete.or.ntx.gt.1

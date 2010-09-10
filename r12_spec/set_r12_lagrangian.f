@@ -62,7 +62,7 @@
 
       integer ::
      &     nterms, idx_sop, idx_sbar, ndef, idxrint, ilabel, idx,
-     &     idx_scr,idx_scrbar, r12op,
+     &     idx_scr,idx_scrbar, r12op, RGRc,
      &     idxham,idxtbar,idxtop,idxlcc,idxrba,idxcbar,idxr12,idxc12,
      &     idxcpp12, idxcppbar,
      &     iblk_xxhp, iblk_pxhp, iblk_xxpp, iblk_pxpp,
@@ -112,6 +112,7 @@
       call get_argument_value('method.R12','T1ext',ival=trunc_t1x)
       call get_argument_value('method.R12','H0_T1ext',ival=h0_t1x)
       call get_argument_value('method.R12','H0d',lval=l_h0d)
+      call get_argument_value('method.R12','RGRcouple',ival=RGRc)
       
       if (extend.gt.0) call quit(1,'set_r12_lagrangian',
      &     'do not use "extend" for CC (use "r12op" instead)!')
@@ -239,8 +240,9 @@ c      sbar_pnt%dagger = .true.
 
       ! second round:
       if (new_trunc.and.truncate)
-     &     call r12_truncation2(flist_lag,trunc_type,h0_t1x,
-     &     idxham,idx_sbar,idx_sop,op_info)
+     &     call r12_truncation2(
+     &       flist_lag,trunc_type,h0_t1x,RGRc,
+     &       idxham,idx_sbar,idx_sop,op_info)
 
       if (ntest.ge.500) then
         call write_title(luout,wst_title,'raw formula 2')

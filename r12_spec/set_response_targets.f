@@ -269,7 +269,7 @@
 
       if (setr12) then
         ! set order of R12, V, B, Bh, X, R12-INT, C-INT, Xh,
-        ! U, C1, Z2-INT to zero
+        ! U, C1 to zero
         call ord_parameters(-1,parameters,0,3,-1)
         call set_rule(op_r12,ttype_op,SET_ORDER,op_r12,
      &                1,1,parameters,1,tgt_info)
@@ -290,8 +290,6 @@
         call set_rule(op_vp_inter,ttype_op,SET_ORDER,op_vp_inter,
      &                1,1,parameters,1,tgt_info)
         call set_rule('C1',ttype_op,SET_ORDER,'C1',
-     &                1,1,parameters,1,tgt_info)
-        call set_rule('Z2-INT',ttype_op,SET_ORDER,'Z2-INT',
      &                1,1,parameters,1,tgt_info)
         if (.not.r12fix) then
           ! define op_cex as T12'(0)

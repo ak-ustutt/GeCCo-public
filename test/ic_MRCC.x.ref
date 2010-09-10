@@ -1,6 +1,6 @@
- run starts at 2010-09-09 14:04:37.030   host: tcwork15.Chemie.Uni-Mainz.DE
+ run starts at 2010-09-10 19:07:28.949   host: tcwork15.Chemie.Uni-Mainz.DE
 
- Version compiled 9 Sep 2010 at 13:47:25 on tcwork15.Chemie.Uni-Mainz.DE         
+ Version compiled 10 Sep 2010 at 18:52:15 on tcwork15.Chemie.Uni-Mainz.DE        
 
  compiled with: ifort
  level 1 optimization: -g -assume byterecl -i8 -traceback -DM_I686 -I../include -mo
@@ -26,10 +26,10 @@
  Reading data from environment ....
  Environment type: DALTON
  raw data from section "SIR IPH "
- potnuc =    3.03138261098390     
- emy    =   -14.6715924401603     
- eactiv =   -3.84072621202744     
- emcscf =   -15.4809360412038     
+ potnuc =    2.91824270954175     
+ emy    =   -14.7654620117821     
+ eactiv =   -3.63856045587399     
+ emcscf =   -15.4857797581143     
  istate =            1
  ispin  =            1
  nactel =            4
@@ -59,9 +59,8 @@
  method
   MRCC maxcom_res=2
  calculate
-  solve maxiter=60,conv=1d-8,maxsub=8
+  solve maxiter=80,conv=1d-8,maxsub=8
   routes contract=3,simtraf=0,schedule=1,use_tr=T,maxbranch=-1
- ! multiref maxexc=2,calc=T,pure_vv=F,GNO=1,maxcum=6,minexc=0,maxh=0
   multiref maxexc=2,minexc=2,calc=F,pure_vv=F,maxh=0,optref=-1,update_prc=F
  +-----------------------------------------------------------------------------+
 I keyword hist
@@ -84,7 +83,7 @@ I     MRCC
 I   calculate
 I     solve
          maxiter 2  1
-  >                     60
+  >                     80
          conv 4  1
   >   1.000000000000000E-008
          maxsub 2  1
@@ -212,90 +211,15 @@ A     multiref
  My next target: E(MR)
  Rule: DEF_HAMILTONIAN
  My next target: F_MRCC_LAG
- Rule: DEF_EXP_FORMULA
-nl,nh,n,k:     0     1     0     0
-iblk_min:    1   1   1
-iblk_max:    1   1  -1
- # of generated terms:                      1
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0     4     0     0
-iblk_min:    1   4   1
-iblk_max:    1   4  -1
- # of generated terms:                      0
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0     4     1     0
-iblk_min:    1   4   1   1
-iblk_max:    1   4  -1  -1
- # of generated terms:                      1
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0     4     1     1
-iblk_min:    1   1   4   1
-iblk_max:    1  -1   4  -1
- # of generated terms:                      0
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0     5     0     0
-iblk_min:    1   5   1
-iblk_max:    1   5  -1
- # of generated terms:                      1
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0    12     0     0
-iblk_min:    1  12   1
-iblk_max:    1  12  -1
- # of generated terms:                      0
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0    12     1     0
-iblk_min:    1  12   1   1
-iblk_max:    1  12  -1  -1
- # of generated terms:                      1
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0    12     1     1
-iblk_min:    1   1  12   1
-iblk_max:    1  -1  12  -1
- # of generated terms:                      0
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0    12     2     0
-iblk_min:    1  12   1   1   1
-iblk_max:    1  12  -1  -1  -1
- # of generated terms:                      2
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0    12     2     1
-iblk_min:    1   1  12   1   1
-iblk_max:    1  -1  12  -1  -1
- # of generated terms:                      0
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0    12     2     2
-iblk_min:    1   1   1  12   1
-iblk_max:    1  -1  -1  12  -1
- # of generated terms:                      0
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0    13     0     0
-iblk_min:    1  13   1
-iblk_max:    1  13  -1
- # of generated terms:                      0
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0    13     1     0
-iblk_min:    1  13   1   1
-iblk_max:    1  13  -1  -1
- # of generated terms:                      2
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0    13     1     1
-iblk_min:    1   1  13   1
-iblk_max:    1  -1  13  -1
- # of generated terms:                      0
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
-nl,nh,n,k:     0    14     0     0
-iblk_min:    1  14   1
-iblk_max:    1  14  -1
- # of generated terms:                      1
- @ time in expand_op_product2          cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: DEF_MRCC_LAGRANGIAN
  wrote                    148  entries
  total # of initially generated terms:                    249
      8 out of     78 calls (of exp_op_pr2) lead to zero terms
- @ set_exp                             cpu/sys/wall:      0.06 /     0.01 /     0.07 s
+ @ time for formula generation         cpu/sys/wall:      0.06 /     0.01 /     0.07 s
  Rule: EXPAND_OP_PRODUCT
  read                    147  entries
  wrote                    149  entries
- @ Operator product                    cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  Rule: PRINT_FORMULA
  read                    148  entries
  [INIT TARGET]                     1
@@ -5409,7 +5333,7 @@ iblk_max:    1  14  -1
  Rule: EXPAND_OP_PRODUCT
  read                      4  entries
  wrote                      7  entries
- @ Operator product                    cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  Rule: SELECT_LINE
  read                      6  entries
  wrote                      4  entries
@@ -5529,7 +5453,7 @@ iblk_max:    1  14  -1
  Rule: EXPAND_OP_PRODUCT
  read                      1  entries
  wrote                      5  entries
- @ Operator product                    cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  Rule: INSERT
  read                      4  entries
  wrote                      5  entries
@@ -5881,7 +5805,7 @@ iblk_max:    1  14  -1
  My next target: DIAG1SxxM00C0
  Rule: DEF_ME_LIST
  Rule: PRECONDITIONER
- @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for diagonal                   cpu/sys/wall:      0.27 /     0.19 /     0.46 s
  My next target: SOLVE_REF
  Rule: SOLVE_EVP
  set_opti_info_signs:
@@ -5893,24 +5817,24 @@ signsec :      1.0
 signsec2:      1.0
  read                      4  entries
  Optimization algorithm:      DAVIDSON
- Max. number of iterations:         60
+ Max. number of iterations:         80
  Threshold for residual:      0.10E-07
  Number of parameters:               5
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>>  1                         0.5319E-01
+>>>  1                         0.7395E-01
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+>>>  2                         0.1732E-01
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>>  2                         0.1743E-01
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>>  3                         0.2772E-02
+>>>  3                         0.2466E-02
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  CONVERGED IN     4 ITERATIONS
->>>  3                         0.1438E-13
+>>>  3                         0.1074E-13
   Results for ME_C0
  -------------------
 >>>==================================================================
 >>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
 >>>------------------------------------------------------------------
->>>    1       -15.480936041204                    ---   0.1438E-13
+>>>    1       -15.485779758114                    ---   0.1074E-13
 >>>==================================================================
  Rule: PRINT_MEL
  CI coefficients :
@@ -5924,11 +5848,11 @@ signsec2:      1.0
  block contains only single distribution
  index of first element:                     1
 +.............................................................................+
-     1    2  2  3  3  2222    1111     0.3748458693    
-     2    2  2  4  4  2222    1111    -0.9270453806    
-     3    2  3  4  4  -+22    1111     0.3615784320E-11
-     4    2  3  4  4  +-22    1111    -0.3615784320E-11
-     5    3  3  4  4  2222    1111     0.8799809975E-02
+     1    2  2  3  3  2222    1111     0.8638507138    
+     2    2  2  4  4  2222    1111    -0.5028315225    
+     3    2  3  4  4  -+22    1111    -0.3910789609E-11
+     4    2  3  4  4  +-22    1111     0.3910789609E-11
+     5    3  3  4  4  2222    1111    -0.3037110814E-01
 +-----------------------------------------------------------------------------+
  norm (MS-Block) =    1.00000000000000     
  total norm =    1.00000000000000     
@@ -6071,287 +5995,10 @@ signsec2:      1.0
  Rule: EVALUATE
  read                      5  entries
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- Rule: PRINT_MEL
- ---
-+=============================================================================+
-  block no.    1 len =           10
- /  0  0  0  0\/  0  0  1  0\/
- \  0  0  1  0/\  0  0  0  0/\
-+=============================================================================+
-  Ms(A) =   1/2  IRREP(A) =  1  len =            4  norm =  1.00976    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                     1
-+.............................................................................+
-     1    2   2   + +   1 1     0.9999225633    
-     2    2   3   + +   1 1     0.3320177936E-11
-     3    3   2   + +   1 1     0.3320177936E-11
-     4    3   3   + +   1 1     0.1405868624    
-+-----------------------------------------------------------------------------+
-  Ms(A) =   1/2  IRREP(A) =  2  len =            1  norm = 0.859491    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                     5
-+.............................................................................+
-     5    4   4   + +   1 1     0.8594905743    
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =    1.32602181196654     
-  Ms(A) =  -1/2  IRREP(A) =  1  len =            4  norm =  1.00976    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                     6
-+.............................................................................+
-     6    2   2   - -   1 1     0.9999225633    
-     7    2   3   - -   1 1     0.3320177936E-11
-     8    3   2   - -   1 1     0.3320177936E-11
-     9    3   3   - -   1 1     0.1405868624    
-+-----------------------------------------------------------------------------+
-  Ms(A) =  -1/2  IRREP(A) =  2  len =            1  norm = 0.859491    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                    10
-+.............................................................................+
-    10    4   4   - -   1 1     0.8594905743    
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =    1.32602181196654     
-+=============================================================================+
-  block no.    2 len =           51
- /  0  0  0  0\/  0  0  2  0\/
- \  0  0  2  0/\  0  0  0  0/\
-+=============================================================================+
-  Ms(A) =   2/2  IRREP(A) =  1  len =            1  norm = 0.140509    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                    11
-+.............................................................................+
-    11    2  3   2  3   ++ ++   11 11     0.1405094257    
-+-----------------------------------------------------------------------------+
-  Ms(A) =   2/2  IRREP(A) =  2  len =            4  norm = 0.859413    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                    12
-+.............................................................................+
-    12    2  4   2  4   ++ ++   11 11     0.8594131376    
-    13    2  4   3  4   ++ ++   11 11     0.3320177936E-11
-    14    3  4   2  4   ++ ++   11 11     0.3320177936E-11
-    15    3  4   3  4   ++ ++   11 11     0.7743665560E-04
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =   0.870823659423089     
-  Ms(A) =   0/2  IRREP(A) =  1  len =           25  norm =  1.42811    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                    16
-+.............................................................................+
-    16    2  2   2  2   22 22   11 11     0.9999225633    
-    17    2  2   2  3   22 -+   11 11    -0.3351996151E-11
-    18    2  2   2  3   22 +-   11 11     0.3351996151E-11
-    19    2  2   3  3   22 22   11 11    -0.8157823187E-02
-    20    2  2   4  4   22 22   11 11     0.3298572420E-02
-    21    2  3   2  2   -+ 22   11 11    -0.3351996151E-11
-    22    2  3   2  3   -+ -+   11 11     0.1405094257    
-    25    2  3   4  4   -+ 22   11 11    -0.1355361816E-11
-    26    2  3   2  2   +- 22   11 11     0.3351996151E-11
-    28    2  3   2  3   +- +-   11 11     0.1405094257    
-    30    2  3   4  4   +- 22   11 11     0.1355361816E-11
-    31    3  3   2  2   22 22   11 11    -0.8157823187E-02
-    34    3  3   3  3   22 22   11 11     0.1405868624    
-    35    3  3   4  4   22 22   11 11    -0.3474991316    
-    36    4  4   2  2   22 22   11 11     0.3298572420E-02
-    37    4  4   2  3   22 -+   11 11    -0.1355361816E-11
-    38    4  4   2  3   22 +-   11 11     0.1355361816E-11
-    39    4  4   3  3   22 22   11 11    -0.3474991316    
-    40    4  4   4  4   22 22   11 11     0.8594905743    
-+-----------------------------------------------------------------------------+
-  Ms(A) =   0/2  IRREP(A) =  2  len =           16  norm =  1.21539    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                    41
-+.............................................................................+
-    41    2  4   2  4   -+ -+   11 11     0.8594131376    
-    42    2  4   3  4   -+ -+   11 11     0.3320177936E-11
-    45    3  4   2  4   -+ -+   11 11     0.3320177936E-11
-    46    3  4   3  4   -+ -+   11 11     0.7743665560E-04
-    51    2  4   2  4   +- +-   11 11     0.8594131376    
-    52    2  4   3  4   +- +-   11 11     0.3320177936E-11
-    55    3  4   2  4   +- +-   11 11     0.3320177936E-11
-    56    3  4   3  4   +- +-   11 11     0.7743665560E-04
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =    1.87527803048562     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =            1  norm = 0.140509    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                    57
-+.............................................................................+
-    57    2  3   2  3   -- --   11 11     0.1405094257    
-+-----------------------------------------------------------------------------+
-  Ms(A) =  -2/2  IRREP(A) =  2  len =            4  norm = 0.859413    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                    58
-+.............................................................................+
-    58    2  4   2  4   -- --   11 11     0.8594131376    
-    59    2  4   3  4   -- --   11 11     0.3320177936E-11
-    60    3  4   2  4   -- --   11 11     0.3320177936E-11
-    61    3  4   3  4   -- --   11 11     0.7743665560E-04
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =   0.870823659423089     
-+=============================================================================+
-  block no.    3 len =           84
- /  0  0  0  0\/  0  0  3  0\/
- \  0  0  3  0/\  0  0  0  0/\
-+=============================================================================+
-  Ms(A) =   3/2  IRREP(A) =  2  len =            1  norm =  0.00000    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                    62
-+.............................................................................+
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =   0.000000000000000E+000
-  Ms(A) =   1/2  IRREP(A) =  1  len =           16  norm =  1.00976    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                    63
-+.............................................................................+
-    63    2  2  3   2  2  3   22+ 22+   111 111     0.1405094257    
-    65    2  2  3   2  4  4   22+ +22   111 111    -0.1355361816E-11
-    66    2  2  3   3  4  4   22+ +22   111 111     0.3298572420E-02
-    68    2  3  3   2  3  3   +22 +22   111 111     0.1405094257    
-    69    2  3  3   2  4  4   +22 +22   111 111    -0.3474991316    
-    70    2  3  3   3  4  4   +22 +22   111 111    -0.1355361816E-11
-    71    2  4  4   2  2  3   +22 22+   111 111    -0.1355361816E-11
-    72    2  4  4   2  3  3   +22 +22   111 111    -0.3474991316    
-    73    2  4  4   2  4  4   +22 +22   111 111     0.8594131376    
-    74    2  4  4   3  4  4   +22 +22   111 111     0.3320177936E-11
-    75    3  4  4   2  2  3   +22 22+   111 111     0.3298572420E-02
-    76    3  4  4   2  3  3   +22 +22   111 111    -0.1355361816E-11
-    77    3  4  4   2  4  4   +22 +22   111 111     0.3320177936E-11
-    78    3  4  4   3  4  4   +22 +22   111 111     0.7743665560E-04
-+-----------------------------------------------------------------------------+
-  Ms(A) =   1/2  IRREP(A) =  2  len =           25  norm = 0.859491    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                    79
-+.............................................................................+
-    79    2  2  4   2  2  4   22+ 22+   111 111     0.8594131376    
-    80    2  2  4   2  3  4   22+ -++   111 111    -0.3351996151E-11
-    81    2  2  4   2  3  4   22+ +-+   111 111     0.3351996151E-11
-    82    2  2  4   3  3  4   22+ 22+   111 111    -0.8157823187E-02
-    84    2  3  4   2  2  4   -++ 22+   111 111    -0.3351996151E-11
-    89    2  3  4   2  2  4   +-+ 22+   111 111     0.3351996151E-11
-    94    3  3  4   2  2  4   22+ 22+   111 111    -0.8157823187E-02
-    97    3  3  4   3  3  4   22+ 22+   111 111     0.7743665560E-04
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =    1.32602181196654     
-  Ms(A) =  -1/2  IRREP(A) =  1  len =           16  norm =  1.00976    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                   104
-+.............................................................................+
-   104    2  2  3   2  2  3   22- 22-   111 111     0.1405094257    
-   106    2  2  3   2  4  4   22- -22   111 111    -0.1355361816E-11
-   107    2  2  3   3  4  4   22- -22   111 111     0.3298572420E-02
-   109    2  3  3   2  3  3   -22 -22   111 111     0.1405094257    
-   110    2  3  3   2  4  4   -22 -22   111 111    -0.3474991316    
-   111    2  3  3   3  4  4   -22 -22   111 111    -0.1355361816E-11
-   112    2  4  4   2  2  3   -22 22-   111 111    -0.1355361816E-11
-   113    2  4  4   2  3  3   -22 -22   111 111    -0.3474991316    
-   114    2  4  4   2  4  4   -22 -22   111 111     0.8594131376    
-   115    2  4  4   3  4  4   -22 -22   111 111     0.3320177936E-11
-   116    3  4  4   2  2  3   -22 22-   111 111     0.3298572420E-02
-   117    3  4  4   2  3  3   -22 -22   111 111    -0.1355361816E-11
-   118    3  4  4   2  4  4   -22 -22   111 111     0.3320177936E-11
-   119    3  4  4   3  4  4   -22 -22   111 111     0.7743665560E-04
-+-----------------------------------------------------------------------------+
-  Ms(A) =  -1/2  IRREP(A) =  2  len =           25  norm = 0.859491    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                   120
-+.............................................................................+
-   126    2  2  4   2  2  4   22- 22-   111 111     0.8594131376    
-   127    2  2  4   2  3  4   22- -+-   111 111    -0.3351996151E-11
-   128    2  2  4   2  3  4   22- +--   111 111     0.3351996151E-11
-   129    2  2  4   3  3  4   22- 22-   111 111    -0.8157823187E-02
-   131    2  3  4   2  2  4   -+- 22-   111 111    -0.3351996151E-11
-   136    2  3  4   2  2  4   +-- 22-   111 111     0.3351996151E-11
-   141    3  3  4   2  2  4   22- 22-   111 111    -0.8157823187E-02
-   144    3  3  4   3  3  4   22- 22-   111 111     0.7743665560E-04
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =    1.32602181196654     
-  Ms(A) =  -3/2  IRREP(A) =  2  len =            1  norm =  0.00000    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                   145
-+.............................................................................+
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =   0.000000000000000E+000
-+=============================================================================+
-  block no.    4 len =           51
- /  0  0  0  0\/  0  0  4  0\/
- \  0  0  4  0/\  0  0  0  0/\
-+=============================================================================+
- norm (MS-Block) =   0.000000000000000E+000
-  Ms(A) =   2/2  IRREP(A) =  1  len =            1  norm =  0.00000    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                   146
-+.............................................................................+
-+-----------------------------------------------------------------------------+
-  Ms(A) =   2/2  IRREP(A) =  2  len =            4  norm =  0.00000    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                   147
-+.............................................................................+
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =   0.000000000000000E+000
-  Ms(A) =   0/2  IRREP(A) =  1  len =           25  norm =  1.00000    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                   151
-+.............................................................................+
-   151    2  2  3  3   2  2  3  3   2222 2222   1111 1111     0.1405094257    
-   152    2  2  3  3   2  2  4  4   2222 2222   1111 1111    -0.3474991316    
-   153    2  2  3  3   2  3  4  4   2222 -+22   1111 1111     0.1355361816E-11
-   154    2  2  3  3   2  3  4  4   2222 +-22   1111 1111    -0.1355361816E-11
-   155    2  2  3  3   3  3  4  4   2222 2222   1111 1111     0.3298572420E-02
-   156    2  2  4  4   2  2  3  3   2222 2222   1111 1111    -0.3474991316    
-   157    2  2  4  4   2  2  4  4   2222 2222   1111 1111     0.8594131376    
-   158    2  2  4  4   2  3  4  4   2222 -+22   1111 1111    -0.3351996151E-11
-   159    2  2  4  4   2  3  4  4   2222 +-22   1111 1111     0.3351996151E-11
-   160    2  2  4  4   3  3  4  4   2222 2222   1111 1111    -0.8157823187E-02
-   161    2  3  4  4   2  2  3  3   -+22 2222   1111 1111     0.1355361816E-11
-   162    2  3  4  4   2  2  4  4   -+22 2222   1111 1111    -0.3351996151E-11
-   166    2  3  4  4   2  2  3  3   +-22 2222   1111 1111    -0.1355361816E-11
-   167    2  3  4  4   2  2  4  4   +-22 2222   1111 1111     0.3351996151E-11
-   171    3  3  4  4   2  2  3  3   2222 2222   1111 1111     0.3298572420E-02
-   172    3  3  4  4   2  2  4  4   2222 2222   1111 1111    -0.8157823187E-02
-   175    3  3  4  4   3  3  4  4   2222 2222   1111 1111     0.7743665560E-04
-+-----------------------------------------------------------------------------+
-  Ms(A) =   0/2  IRREP(A) =  2  len =           16  norm =  0.00000    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                   176
-+.............................................................................+
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =    1.00000000000000     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =            1  norm =  0.00000    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                   192
-+.............................................................................+
-+-----------------------------------------------------------------------------+
-  Ms(A) =  -2/2  IRREP(A) =  2  len =            4  norm =  0.00000    
-+-----------------------------------------------------------------------------+
- block contains only single distribution
- index of first element:                   193
-+.............................................................................+
-+-----------------------------------------------------------------------------+
- norm (MS-Block) =   0.000000000000000E+000
- norm (MS-Block) =   0.000000000000000E+000
- total norm =    3.61478502355094     
  My next target: EVAL_MRCC_D
  Rule: EVALUATE
  read                      4  entries
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
  My next target: DEF_ME_Dinv
  Rule: DEF_ME_LIST
  Rule: ASSIGN_ME2OP
@@ -6363,7 +6010,7 @@ signsec2:      1.0
  My next target: DEF_ME_Dtr
  Rule: DEF_ME_LIST
  Rule: REORDER_MEL
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  My next target: DEF_ME_OMG
  Rule: DEF_ME_LIST
  My next target: DEF_ME_E(MR)
@@ -6405,11 +6052,11 @@ signsec2:      1.0
  read                      6  entries
  wrote                      4  entries
  My next target: F_E(MRCC)tr
- Rule: DEF_EXP_FORMULA
+ Rule: DEF_MRCC_LAGRANGIAN
  wrote                     37  entries
  total # of initially generated terms:                     59
      0 out of     25 calls (of exp_op_pr2) lead to zero terms
- @ set_exp                             cpu/sys/wall:      0.02 /     0.00 /     0.02 s
+ @ time for formula generation         cpu/sys/wall:      0.01 /     0.00 /     0.02 s
  Rule: INSERT
  read                     36  entries
  wrote                     37  entries
@@ -6422,7 +6069,7 @@ signsec2:      1.0
  insertion #                     10
  insertion #                     20
  insertion #                     30
- @ expand                              cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ expand                              cpu/sys/wall:      0.02 /     0.00 /     0.01 s
  read                      3  entries
  insertion #                     10
  insertion #                     20
@@ -6566,7 +6213,7 @@ signsec2:      1.0
  My next target: F_FREF
  Rule: EXPAND_OP_PRODUCT
  wrote                     13  entries
- @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ Operator product                    cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  Rule: PRINT_FORMULA
  read                     12  entries
  [INIT TARGET]                    29
@@ -6859,13 +6506,13 @@ signsec2:      1.0
  My next target: EVAL_FREF
  Rule: EVALUATE
  read                     34  entries
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.03 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.02 /     0.03 s
  My next target: DIA_T
  Rule: CLONE_OPERATOR
  My next target: DIAG1SxxM00_T
  Rule: DEF_ME_LIST
  Rule: PRECONDITIONER
- @ time for diagonal                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for diagonal                   cpu/sys/wall:      5.08 /     0.20 /     5.30 s
  My next target: FOPT_Atr
  Rule: OPTIMIZE
  +======================+
@@ -6960,17 +6607,17 @@ signsec2:      1.0
  My next target: EVAL_Atr
  Rule: EVALUATE
  read                    201  entries
- @ time for target                     cpu/sys/wall:      0.84 /     0.16 /     1.11 s
+ @ time for target                     cpu/sys/wall:      0.85 /     0.20 /     1.17 s
  Rule: EXTRACT_DIAG
  @ time for extracting diagonal        cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  My next target: DEF_ME_Dtrdag
  Rule: DEF_ME_LIST
  Rule: REORDER_MEL
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  My next target: DEF_ME_Dproj
  Rule: DEF_ME_LIST
  Rule: REORDER_MEL
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  My next target: SOLVE_MRCC
  Rule: SOLVE_NLEQ
  iopt =                      2
@@ -6986,261 +6633,133 @@ signsec :      1.0     1.0
 signsec2:      1.0     1.0
  read                    957  entries
  Optimization algorithm:          DIIS
- Max. number of iterations:         60
+ Max. number of iterations:         80
  Threshold for residual:      0.10E-07
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.04 s
+ @ time for target                     cpu/sys/wall:      0.54 /     0.35 /     1.08 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.02 /     0.03 s
+>>>  1        -15.485779758114 0.2330     0.9137E-14
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.93 /     0.51 /     1.64 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.02 /     0.04 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+>>>  2        -15.539640543093 0.8286E-01 0.3044E-01
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+      35 out of      105 singular values were above threshold
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.50 /     1.63 s
  @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.51 /     0.21 /     0.92 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.00 /     0.02 s
->>>  1        -15.480936041204 0.2429     0.6704E-14
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+>>>  3        -15.539438319668 0.4537E-01 0.1587E-01
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+      35 out of      105 singular values were above threshold
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.51 /     1.63 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>>  4        -15.543276195557 0.2702E-01 0.7848E-02
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+      35 out of      105 singular values were above threshold
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.93 /     0.50 /     1.63 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.04 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>>  5        -15.546192169476 0.1614E-01 0.2454E-02
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+      35 out of      105 singular values were above threshold
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.93 /     0.51 /     1.92 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.04 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+>>>  6        -15.548805099509 0.8089E-02 0.1527E-02
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+      35 out of      105 singular values were above threshold
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.50 /     1.63 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>>  7        -15.549591198657 0.4176E-02 0.9780E-03
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+      35 out of      105 singular values were above threshold
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
  @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.90 /     0.36 /     1.47 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>>  2        -15.536124527301 0.7563E-01 0.2249E-01
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.90 /     0.36 /     1.46 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>>  3        -15.535377057023 0.6679E-01 0.1959E-01
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.01 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.90 /     0.37 /     1.47 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>>  4        -15.534567880680 0.6302E-01 0.1666E-01
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.90 /     0.36 /     1.47 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>>  5        -15.534049793456 0.5926E-01 0.1441E-01
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.51 /     1.63 s
  @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.47 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.00 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>>  6        -15.532193116681 0.4492E-01 0.8493E-02
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+>>>  8        -15.549840831501 0.1740E-02 0.8402E-03
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
  @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
  @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.36 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
->>>  7        -15.532268780056 0.4484E-01 0.8600E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.50 /     1.63 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>>  8        -15.532278118154 0.4169E-01 0.8405E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.49 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>>  9        -15.532196879598 0.4195E-01 0.7564E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 10        -15.527226455112 0.4613E-01 0.3156E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.01 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 11        -15.527997876459 0.4198E-01 0.2749E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 12        -15.529599546859 0.2814E-01 0.1896E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 13        -15.529592150205 0.2811E-01 0.2921E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 14        -15.532202475135 0.1845E-01 0.1244E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.89 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 15        -15.531978311225 0.1538E-01 0.1326E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.01 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.90 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 16        -15.532154925456 0.1401E-01 0.1723E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.90 /     0.37 /     1.47 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 17        -15.532311046985 0.1570E-01 0.9116E-03
+>>>  9        -15.550024189842 0.9888E-03 0.4491E-03
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
@@ -7252,123 +6771,11 @@ signsec2:      1.0     1.0
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
  @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 18        -15.532948045316 0.1181E-01 0.1047E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.36 /     1.47 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
->>> 19        -15.533299395137 0.1061E-01 0.8813E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.49 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 20        -15.533948630585 0.1413E-01 0.4142E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.92 /     0.37 /     1.49 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 21        -15.533132505321 0.1132E-01 0.1015E-02
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.49 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 22        -15.534469589150 0.1674E-01 0.3850E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 23        -15.534230465952 0.1005E-01 0.4263E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.00 s
->>> 24        -15.534259081854 0.1135E-01 0.3924E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.90 /     0.36 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.50 /     1.63 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
->>> 25        -15.534203311648 0.1016E-01 0.5272E-03
+>>> 10        -15.550043497599 0.4941E-03 0.2624E-03
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
@@ -7380,11 +6787,43 @@ signsec2:      1.0     1.0
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
  @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
+ @ time for target                     cpu/sys/wall:      0.93 /     0.51 /     1.64 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>> 11        -15.550084995261 0.2864E-03 0.1640E-03
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+      35 out of      105 singular values were above threshold
+ @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.50 /     1.62 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>> 12        -15.550132630017 0.1125E-03 0.3913E-04
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+      35 out of      105 singular values were above threshold
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 26        -15.533539070960 0.1031E-01 0.9137E-03
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.50 /     1.62 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>> 13        -15.550129397032 0.5082E-04 0.1792E-04
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
@@ -7392,15 +6831,31 @@ signsec2:      1.0     1.0
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.50 /     1.62 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+>>> 14        -15.550134439253 0.3311E-04 0.8245E-05
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+      35 out of      105 singular values were above threshold
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
  @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.49 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.50 /     1.63 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 27        -15.534346755976 0.5863E-02 0.6526E-03
+>>> 15        -15.550133927038 0.1568E-04 0.4766E-05
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
@@ -7408,63 +6863,31 @@ signsec2:      1.0     1.0
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.01 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.90 /     0.37 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 28        -15.533760727716 0.6894E-02 0.4938E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.38 /     1.48 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 29        -15.533444961093 0.1007E-01 0.1250E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.50 /     1.62 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.04 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.49 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 30        -15.533628025787 0.7754E-02 0.2651E-03
+>>> 16        -15.550131925097 0.8167E-05 0.6145E-06
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
  @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.92 /     0.39 /     1.52 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
+ @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.50 /     1.62 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 31        -15.533750347637 0.5671E-02 0.4613E-03
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>> 17        -15.550130856396 0.3589E-05 0.5649E-06
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
@@ -7472,179 +6895,51 @@ signsec2:      1.0     1.0
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.92 /     0.39 /     1.52 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 32        -15.533703837414 0.5632E-02 0.2847E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.94 /     0.39 /     1.62 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 33        -15.533683213362 0.5884E-02 0.2768E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.94 /     0.40 /     2.24 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 34        -15.533683301196 0.5490E-02 0.3994E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.01 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.92 /     0.39 /     1.53 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
->>> 35        -15.533596477369 0.6401E-02 0.4992E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
  @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.94 /     0.39 /     1.60 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
+ @ time for target                     cpu/sys/wall:      0.93 /     0.51 /     1.65 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 36        -15.533903760905 0.3110E-02 0.3492E-03
+>>> 18        -15.550130187877 0.1045E-05 0.2075E-06
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
  @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.94 /     0.40 /     1.58 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 37        -15.534172290034 0.7265E-03 0.1361E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.96 /     0.40 /     1.84 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 38        -15.534098813436 0.8628E-03 0.1918E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.92 /     0.38 /     1.50 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 39        -15.534138481000 0.5166E-03 0.1410E-03
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.92 /     0.39 /     1.50 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.00 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 40        -15.534170005426 0.4317E-03 0.2638E-04
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.94 /     0.51 /     1.69 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.02 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.93 /     0.38 /     1.53 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
->>> 41        -15.534154753796 0.2321E-03 0.2236E-04
+>>> 19        -15.550130170883 0.4481E-06 0.1102E-06
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
  @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.94 /     0.39 /     1.72 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.06 s
+ @ time for target                     cpu/sys/wall:      0.93 /     0.50 /     1.65 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
->>> 42        -15.534137004087 0.8732E-04 0.1600E-04
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>> 20        -15.550130108365 0.3120E-06 0.1031E-06
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
@@ -7652,187 +6947,43 @@ signsec2:      1.0     1.0
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
  @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.91 /     0.37 /     1.50 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.49 /     1.62 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.02 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 43        -15.534131883146 0.5288E-04 0.6368E-05
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>> 21        -15.550130099136 0.1260E-06 0.4139E-07
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
  @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
  @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.97 /     0.40 /     1.80 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 44        -15.534129840676 0.5524E-04 0.3217E-05
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.49 /     1.62 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.92 /     0.39 /     1.52 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 45        -15.534131774764 0.3148E-04 0.1876E-05
+>>> 22        -15.550130112028 0.2343E-07 0.8672E-08
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
  @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.13 s
- @ time for target                     cpu/sys/wall:      0.95 /     0.40 /     1.71 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 46        -15.534133396759 0.1272E-04 0.6483E-06
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.10 s
- @ time for target                     cpu/sys/wall:      0.92 /     0.38 /     1.53 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 47        -15.534134318336 0.2686E-05 0.6519E-07
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      1.02 /     0.44 /     2.62 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 48        -15.534134573590 0.4983E-06 0.5826E-07
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.01 /     0.10 s
- @ time for target                     cpu/sys/wall:      1.05 /     0.45 /     2.62 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.01 s
->>> 49        -15.534134608786 0.6316E-06 0.4356E-07
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.95 /     0.40 /     2.24 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 50        -15.534134558128 0.1202E-06 0.5064E-08
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      1.39 /     0.57 /     8.16 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.21 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
->>> 51        -15.534134572996 0.1369E-06 0.9290E-08
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.35 s
- @ time for target                     cpu/sys/wall:      0.95 /     0.41 /     1.70 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.93 /     0.50 /     1.83 s
  @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 52        -15.534134561740 0.2899E-07 0.3334E-08
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.05 s
- @ time for target                     cpu/sys/wall:      1.00 /     0.44 /     2.34 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
->>> 53        -15.534134560133 0.1593E-07 0.1587E-08
- Calculating square root of inverse
- Input list will be overwritten by projector.
-      35 out of      105 singular values were above threshold
- @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.02 /     0.05 s
- @ time for target                     cpu/sys/wall:      0.94 /     0.40 /     1.70 s
- @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
->>> 54        -15.534134560881 0.7340E-08 0.1143E-08
+>>> 23        -15.550130111934 0.1267E-07 0.4643E-08
  Calculating square root of inverse
  Input list will be overwritten by projector.
       35 out of      105 singular values were above threshold
@@ -7841,10 +6992,26 @@ signsec2:      1.0     1.0
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.01 s
+ @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.05 s
+ @ time for target                     cpu/sys/wall:      0.92 /     0.49 /     1.62 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.04 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>> 24        -15.550130112172 0.5204E-08 0.2071E-08
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+      35 out of      105 singular values were above threshold
+ @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.01 s
- CONVERGED IN    54 ITERATIONS
->>> final energy:        -15.534134560881 <<<
+ CONVERGED IN    24 ITERATIONS
+>>> final energy:        -15.550130112172 <<<
  Rule: PRINT_MEL
  final CI coefficients :
 +=============================================================================+
@@ -7857,11 +7024,11 @@ signsec2:      1.0     1.0
  block contains only single distribution
  index of first element:                     1
 +.............................................................................+
-     1    2  2  3  3  2222    1111     0.4261277985    
-     2    2  2  4  4  2222    1111    -0.9031699788    
-     3    2  3  4  4  -+22    1111    -0.3665906631E-01
-     4    2  3  4  4  +-22    1111     0.3665906631E-01
-     5    3  3  4  4  2222    1111     0.3363689117E-02
+     1    2  2  3  3  2222    1111     0.8998668960    
+     2    2  2  4  4  2222    1111    -0.4286940104    
+     3    2  3  4  4  -+22    1111     0.3972431294E-01
+     4    2  3  4  4  +-22    1111    -0.3972431294E-01
+     5    3  3  4  4  2222    1111    -0.5748889334E-01
 +-----------------------------------------------------------------------------+
  norm (MS-Block) =    1.00000000000000     
  total norm =    1.00000000000000     
@@ -7872,5 +7039,5 @@ signsec2:      1.0     1.0
    Name of largest block:    contr1.contr_scr
  +----------------------------------------------------------------------------+
  There were    1 warnings, see file WARNINGS
- @ total time in GeCCo run             cpu/sys/wall:     59.10 /    22.75 /   106.21 s
- run ends at 2010-09-09 14:06:23.246   host: tcwork15.Chemie.Uni-Mainz.DE
+ @ total time in GeCCo run             cpu/sys/wall:     34.29 /    13.72 /    54.02 s
+ run ends at 2010-09-10 19:08:22.969   host: tcwork15.Chemie.Uni-Mainz.DE
