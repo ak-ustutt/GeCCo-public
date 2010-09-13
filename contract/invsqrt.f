@@ -742,7 +742,7 @@ c dbgend
      &                        sing,trip,.true.)
             if (.not.half) then
               ! full undo of pre-diagonalization for projector
-              call spinsym_traf(2,ndim,scratch2,flipmap_c,nsing,
+              call spinsym_traf(2,ndim,scratch2,flmap(1:ndim,3),nsing,
      &                          sing2,trip2,.false.)
               deallocate(sing2,trip2)
             end if

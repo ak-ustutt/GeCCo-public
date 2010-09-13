@@ -77,13 +77,14 @@ c      include 'mdef_me_list.h'
       integer ::
      &     irecr, irecv, klsmat,
      &     imet, idamp,
-     &     ndim_save, ndel, iopt, lenscr, ifree, nselect, idx
+     &     ndim_save, ndel, iopt, lenscr, ifree,
+     &     nselect, idx, nsec, isec, stsec, ndsec, ioff
       real(8) ::
      &     xnrm
       real(8), pointer ::
-     &     xscr(:), xscr2(:), vec(:), xret(:)
+     &     xscr(:), xscr2(:), vec(:), xret(:), signsec(:)
       integer, pointer ::
-     &     ivec(:), idxselect(:)
+     &     ivec(:), idxselect(:), nwfpsec(:), idstsec(:), nsec_arr(:)
       integer, external ::
      &     idx_mel_list
 
@@ -257,7 +258,7 @@ c     &          flist,depend,orb_info,op_info,str_info,strmap_info)
           call assign_me_list(me_special(4)%mel%label,
      &                           me_special(2)%mel%op%name,op_info)
 
-          ! calculate transformed vector
+          ! calculate projected vector
           allocate(xret(depend%ntargets),idxselect(depend%ntargets))
           nselect = 0
           call select_formula_target(idxselect,nselect,
@@ -268,6 +269,25 @@ c     &          flist,depend,orb_info,op_info,str_info,strmap_info)
           call frm_sched(xret,flist,depend,idxselect,nselect,
      &                op_info,str_info,strmap_info,orb_info)
           deallocate(xret,idxselect)
+
+          ! Since formally we get a transposed vector, we need to
+          ! account for sign changes when reordering
+          nsec = opti_info%nsec(iopt)
+          if (nsec.gt.1) then
+            ioff = sum(opti_info%nsec(1:iopt))-nsec
+            nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
+            idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
+            signsec => opti_info%signsec2(ioff+1:ioff+nsec)
+            call vec_from_da(ffopt(iopt)%fhand,1,xbuf1,
+     &                       opti_info%nwfpar(iopt))
+            do isec = 1, nsec
+              xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1) =
+     &           signsec(isec)
+     &           *xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
+            end do
+            call vec_to_da(ffopt(iopt)%fhand,1,xbuf1,
+     &                     opti_info%nwfpar(iopt))
+          end if
 
           end if
         end do

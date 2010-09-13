@@ -2071,6 +2071,14 @@ c     &                  parameters,2,tgt_info)
           call set_rule(trim(formname),ttype_frm,REPLACE,
      &                labels,6,1,
      &                parameters,2,tgt_info)
+          ! Fix: remove blocks of R12 which might not be defined in R12-INT
+          labels(3:20)(1:len_target_name) = ' '
+          labels(3) = trim(opname2)
+          labels(4) = op_r12
+          labels(5) = op_r12//'^+'
+          call set_rule(trim(formname),ttype_frm,INVARIANT,
+     &                labels,5,1,
+     &                '---',1,tgt_info)
 c          call form_parameters(-1,
 c     &         parameters,2,'stdout',0,'---')
 c          call set_rule(trim(formname),ttype_frm,PRINT_FORMULA,

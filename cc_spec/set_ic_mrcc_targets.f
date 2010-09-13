@@ -33,9 +33,9 @@
      &     minh, maxh,
      &     minp, maxp, maxv, maxvv, minexc, maxcom,
      &     n_t_cls, i_cls,
-     &     n_tred_cls, len_form, optref
+     &     n_tred_cls, len_form, optref, idef
       logical ::
-     &     pure_vv, update_prc
+     &     pure_vv, update_prc, skip
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -224,8 +224,15 @@ c     &             val_int=(/1/))
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
-            ! exclude blocks with one or more hole-part. excitations
-            if (min(ih,ip).ge.1) cycle
+c            ! exclude blocks with one or more hole-part. excitations
+c            if (min(ih,ip).ge.1) cycle
+            ! if same valence structure already exists, skip block
+            skip = .false.
+            do idef = 1, ndef
+              skip = skip.or.(occ_def(IVALE,1,idef).eq.max(ip-ih,0)+ivv
+     &                 .and.occ_def(IVALE,2,idef).eq.max(ih-ip,0)+ivv)
+            end do
+            if (skip) cycle
             ndef = ndef + 1
             occ_def(IHOLE,1,ndef) = ih
             occ_def(IPART,2,ndef) = ip
