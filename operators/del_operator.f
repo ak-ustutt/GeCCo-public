@@ -35,6 +35,8 @@
       if (associated(list_pnt%next)) list_pnt%next%prev => list_pnt%prev
       op => list_pnt%op
       call dealloc_operator(op)
+      deallocate(list_pnt%op)
+      deallocate(list_pnt)
 
       ! decrement counter
       op_info%nops = op_info%nops-1

@@ -111,7 +111,7 @@ c dbg
           end if
         end if
 
-        call read_form_list(cur_ffile,fl_ptr)
+        call read_form_list(cur_ffile,fl_ptr,icat.eq.1)
 c dbg
 c        print *,'raw formula'
 c        call print_form_list(luout,form_ptr,op_info)

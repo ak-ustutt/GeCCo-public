@@ -8,7 +8,7 @@
      &     typ_prc,
      &     nincore,nwfpar,
      &     lenbuf,xbuf1,xbuf2,xbuf3,
-     &     flist,depend,energy,iopt,opti_info,
+     &     flist,depend,energy,xngrd,iopt,opti_info,
      &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
@@ -54,7 +54,7 @@
      &     nincore, nwfpar, 
      &     lenbuf, typ_prc
       real(8), intent(inout) ::
-     &     xbuf1(*), xbuf2(*), xbuf3(*), energy
+     &     xbuf1(*), xbuf2(*), xbuf3(*), energy, xngrd(*)
 
       type(formula_item), intent(inout) ::
      &     flist
@@ -243,6 +243,12 @@ c dbgend
             write(luout,*) 'transformed gradient vector:'
             write(luout,*) xbuf1(1:nwfpar)
           end if
+
+          ! use transformed residual's norm for convergence criterion
+          xngrd(iopt) = xret(idxselect(1))
+          write(luout,'(x,a,i1,a,x,g10.4)')
+     &       'Norm of transformed residual for vector ',
+     &       iopt,':',xngrd(iopt)
 
           call vec_from_da(ffdia,1,xbuf2,nwfpar)
 

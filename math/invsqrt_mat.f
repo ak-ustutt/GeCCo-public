@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine invsqrt_mat(ndim,mat,mat2,half,icnt_sv,icnt_sv0)
+      subroutine invsqrt_mat(ndim,mat,mat2,half,icnt_sv,icnt_sv0,
+     &                       xmax,xmin)
 *----------------------------------------------------------------------*
 *     half = true: calculates U*mat^(-0.5) using MAT = U*mat*U^+
 *     half = false: calculates both U*mat^(-0.5) and U*1s*U^+
@@ -11,18 +12,19 @@
       implicit none
 
       include 'stdunit.h'
+      include 'routes.h'
+      include 'def_filinf.h'
 
       integer, parameter ::
      &     ntest = 0
       real(8), parameter ::
-     &     min_sv = 1d-10, ! singular value threshold for calc. of pseudo-inv.
-     &     warn_sv = 1d-10!5  ! give a warning for small singular values
+     &     warn_sv = 1d-12!5  ! give a warning for small singular values
       integer, intent(in) ::
      &     ndim
       integer, intent(inout) ::
      &     icnt_sv, icnt_sv0
       real(8), intent(inout), target ::
-     &     mat(ndim,ndim), mat2(ndim,ndim)
+     &     mat(ndim,ndim), mat2(ndim,ndim), xmax, xmin
       logical, intent(in) ::
      &     half
       real(8) ::
@@ -30,13 +32,35 @@
       real(8), pointer ::
      &     mat_tmp(:,:)
 
+      type(filinf) ::
+     &     ffsv
       integer ::
-     &     nrot, idx, lwrk, info, idx2
+     &     nrot, idx, lwrk, info, idx2, luinp, iostatus
+      logical ::
+     &     l_exist, sv_above, read_file
 
       if (ndim.eq.0) return
 
       lwrk=max(1024,ndim**2)
       info = 0
+
+      if (sv_fix) then
+        inquire(file='SINGVALS',exist=l_exist)
+        call file_init(ffsv,'SINGVALS',ftyp_sq_frm,0)
+        call file_open(ffsv)
+        luinp = ffsv%unit
+        read_file = l_exist
+        if (l_exist) then
+          do idx = 1, icnt_sv + 1
+            read(luinp,*,iostat=iostatus) idx2, sv_above
+          end do
+          read_file = iostatus.ge.0
+          rewind luinp
+          do idx = 1, icnt_sv
+            read(luinp,*) idx2, sv_above
+          end do
+        end if
+      end if
 
       if (ntest.ge.100) then
         write(luout,'(x,a)') '-------------------'
@@ -76,7 +100,7 @@
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
       end if
 
-      icnt_sv = icnt_sv + ndim
+c      icnt_sv = icnt_sv + ndim
 
 c      if (half) then
 c        mat_tmp => mat
@@ -90,17 +114,27 @@ c      end if
       ! square root of (pseudo) inverse:
       ! A^(-1/2) = U D^(-1/2) U^+ = U D^(-1/4) [U D^(-1/4)]^+
       do idx = 1, ndim
-        if (singval(idx).gt.min_sv) then
+        icnt_sv = icnt_sv + 1
+        sv_above = .false.
+        if (sv_fix.and.read_file) read(luinp,*) idx2, sv_above
+        if (.not.(sv_fix.and.read_file)
+     &      .and.singval(idx).gt.sv_thresh.or.
+     &      sv_above) then
+          sv_above = .true.
+          if (abs(singval(idx)).lt.abs(xmin)) xmin = singval(idx)
           if (singval(idx).lt.warn_sv)
      &         call warn('invsqrt_mat','small singular values!')
           if (.not.half) mat_tmp(1:ndim,idx) = mat(1:ndim,idx)
           mat(1:ndim,idx) = mat(1:ndim,idx)
      &                         * (singval(idx)**expo)
         else
+          sv_above = .false.
           icnt_sv0 = icnt_sv0 + 1
+          if (abs(singval(idx)).gt.abs(xmax)) xmax = singval(idx)
           mat(1:ndim,idx) = 0d0
           if (.not.half) mat_tmp(1:ndim,idx) = 0d0
         end if
+        if (sv_fix.and..not.read_file) write(luinp,*) icnt_sv, sv_above
       end do
 
       if (ntest.ge.100) then
@@ -125,6 +159,8 @@ c      do idx = 1, ndim
 c        mat(idx,idx) = 1d0
 c      end do
 c dbgend
+
+      if (sv_fix) call file_close_keep(ffsv)
 
       return
       end

@@ -96,7 +96,7 @@
       integer, intent(inout) ::
      &     imacit, imicit, imicit_tot
 
-      real(8), intent(in) ::
+      real(8), intent(inout) ::
      &     energy, xngrd(*)
 
       integer, intent(in) ::
@@ -212,7 +212,7 @@
      &       me_special,nspecial,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
-     &       flist,depend,energy,
+     &       flist,depend,energy,xngrd,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 

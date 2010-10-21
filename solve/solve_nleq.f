@@ -39,6 +39,9 @@
       include 'mdef_formula_info.h'
       include 'def_dependency_info.h'
       include 'ifc_memman.h'
+c dbg
+      include 'ifc_input.h'
+c dbgend
 
       integer, parameter ::
      &     ntest = 000
@@ -186,10 +189,9 @@
         ! open result vector file(s)
 cmh     if file already open, use as initial guess!
         if (ffopt(iopt)%fhand%unit.gt.0) then
-c dbg
-          print *,'iopt = ',iopt
-c dbgend
-          call warn('solve_nleq','using existing amplitudes!')
+          write(luout,'(x,a,i1,a)')
+     &         'Using existing amplitudes as initial guess for vector ',
+     &         iopt,'!'
         else
           call file_open(ffopt(iopt)%fhand)
           ! get initial amplitudes
@@ -228,7 +230,7 @@ cmh      end do
      &                         me_opt,me_grd,me_grd,me_grd,.false.)
 
       ! read formula
-      call read_form_list(form_en_res%fhand,fl_en_res)
+      call read_form_list(form_en_res%fhand,fl_en_res,.true.)
 
       ! set dependency info for submitted formula list
       call set_formula_dependencies(depend,fl_en_res,op_info)
@@ -276,7 +278,9 @@ c     &       ff_trv,ff_h_trv,
         ! do C0 optimization if requested
         if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
      &      nspecial.ge.8.and.imacit.gt.1.and..not.conv) then
-          call solve_evp('DIA',1,1,
+          call get_argument_value('calculate.multiref','ciroot',
+     &       ival=idx)
+          call solve_evp('DIA',1,idx,
      &                 'ME_C0','DIAG1SxxM00C0','A_C0',
      &                 'C0','FOPT_OMG_C0','-',0,
      &                 op_info,form_info,str_info,strmap_info,orb_info)
@@ -406,6 +410,7 @@ c dbg
 
       deallocate(ffopt,ffdia,ffgrd,ffspecial,
      &     me_opt,me_dia,me_grd,me_special,me_trv,me_h_trv,xret)
+      call dealloc_formula_list(fl_en_res)
       ifree = mem_flushmark()
 
       return

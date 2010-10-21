@@ -1,10 +1,9 @@
 *----------------------------------------------------------------------*
       subroutine set_ic_mrcc_targets(tgt_info,orb_info)
 *----------------------------------------------------------------------*
-*     set targets for CASSCF or uncontracted CI coefficient optimization
-*     and internally contracted CI or CC methods
+*     set targets for internally contracted MRCC
 *
-*     matthias 09/2009
+*     matthias 2010
 *----------------------------------------------------------------------*
       implicit none
 
@@ -31,11 +30,11 @@
      &     icnt,
      &     msc, maxexc, ip, ih, ivv, iv, ivv2,
      &     minh, maxh,
-     &     minp, maxp, maxv, maxvv, minexc, maxcom,
+     &     minp, maxp, maxv, maxvv, minexc, maxcom, maxcom_en,
      &     n_t_cls, i_cls,
-     &     n_tred_cls, len_form, optref, idef
+     &     n_tred_cls, len_form, optref, idef, ciroot
       logical ::
-     &     pure_vv, update_prc, skip
+     &     pure_vv, update_prc, skip, ci_init
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -52,7 +51,7 @@
       end if
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting experimental targets ...'
+     &     write(luout,*) 'setting multireference targets #3...'
 
       ! CAVEAT: should be adapted as soon as open-shell version
       !         is up and running
@@ -82,15 +81,21 @@
       if (maxvv.lt.0) maxvv = maxexc
       call get_argument_value('calculate.multiref','pure_vv',
      &     lval=pure_vv)
+      call get_argument_value('calculate.multiref','ciroot',
+     &     ival=ciroot)
       call get_argument_value('calculate.multiref','optref',
      &     ival=optref)
       call get_argument_value('calculate.multiref','update_prc',
      &     lval=update_prc)
+      call get_argument_value('calculate.multiref','ci_init',
+     &     lval=ci_init)
       if (.not.update_prc.and.optref.ne.-1)
      &      call warn('set_ic_mrcc_targets',
      &                'update_prc=F works only for optref=-1')
       call get_argument_value('method.MRCC','maxcom_res',
      &     ival=maxcom)
+      call get_argument_value('method.MRCC','maxcom_en',
+     &     ival=maxcom_en)
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -422,8 +427,10 @@ c            if (min(ih,ip).ge.1) cycle
      &     tgt_info,val_label=(/'L','H','T','C0'/))
       call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'MAXCOM_RES',1,
      &     tgt_info,val_int=(/maxcom/))
+      call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'MAXCOM_EN',1,
+     &     tgt_info,val_int=(/maxcom_en/))
       call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'MODE',1,tgt_info,
-     &     val_str='EMAX4')
+     &     val_str='---')
         call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'TITLE',1,
      &     tgt_info,val_str='ic-MRCC Lagrangian')
       if (optref.eq.-1) then
@@ -730,6 +737,7 @@ c dbgend
       call add_target2('F_E(MRCC)tr',.false.,tgt_info)
       call set_dependency('F_E(MRCC)tr','E(MR)',tgt_info)
       call set_dependency('F_E(MRCC)tr','H',tgt_info)
+c      call set_dependency('F_E(MRCC)tr','FREF',tgt_info)
       call set_dependency('F_E(MRCC)tr','C0',tgt_info)
       call set_dependency('F_E(MRCC)tr','T',tgt_info)
       call set_dependency('F_E(MRCC)tr','L',tgt_info)
@@ -740,8 +748,11 @@ c dbgend
      &     tgt_info,val_label=(/'E(MR)'/))
       call set_arg('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
      &     tgt_info,val_label=(/'L','H','T','C0'/))
+c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
       call set_arg('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,'MAXCOM_RES',1,
      &     tgt_info,val_int=(/1/))
+      call set_arg('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,'MAXCOM_EN',1,
+     &     tgt_info,val_int=(/0/))
       call set_arg('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,'MODE',1,tgt_info,
      &     val_str='NOSCAL')
       call set_arg('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,'TITLE',1,tgt_info,
@@ -817,6 +828,14 @@ c dbgend
       call set_arg('F_Atr',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'Ttr'/))
 c dbg
+c      call set_rule2('F_Atr',KEEP_TERMS,tgt_info)
+c      call set_arg('F_Atr',KEEP_TERMS,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_Atr'/))
+c      call set_arg('F_Atr',KEEP_TERMS,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_Atr'/))
+c      call set_arg('F_Atr',KEEP_TERMS,'TERMS',2,tgt_info,
+c     &     val_int=(/1,7/))
+c
 c      call set_rule2('F_Atr',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_Atr',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_Atr'/))
@@ -855,9 +874,9 @@ c dbgend
       call set_arg('F_MRCC_D',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'Tred'/))
 c dbg
-c      call set_rule2('F_MRCC_D',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_MRCC_D',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_MRCC_D'/))
+      call set_rule2('F_MRCC_D',PRINT_FORMULA,tgt_info)
+      call set_arg('F_MRCC_D',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_MRCC_D'/))
 c dbgend
 
       ! HT intermediate
@@ -878,6 +897,8 @@ c dbgend
         call set_arg(f_ht,DEF_MRCC_LAGRANGIAN,'OPERATORS',4,tgt_info,
      &       val_label=(/'T  ','H  ','T  ',op_ht/))
         call set_arg(f_ht,DEF_MRCC_LAGRANGIAN,'MAXCOM_RES',1,tgt_info,
+     &       val_int=(/icnt/))
+        call set_arg(f_ht,DEF_MRCC_LAGRANGIAN,'MAXCOM_EN',1,tgt_info,
      &       val_int=(/icnt/))
         call set_arg(f_ht,DEF_MRCC_LAGRANGIAN,'MODE',1,tgt_info,
      &       val_str='HBAR')
@@ -1016,6 +1037,7 @@ c      call set_dependency('FOPT_OMG','DEF_ME_HT2',tgt_info)
      &             val_label=(/'D'/))
         call set_dependency('FOPT_OMG','F_Atr',tgt_info)
         call set_dependency('FOPT_OMG','DEF_ME_A(CC)',tgt_info)
+c        call set_dependency('FOPT_OMG','DEF_ME_FREF',tgt_info)
         if (optref.eq.-1) then
           call set_dependency('FOPT_OMG','F_OMG_C0',tgt_info)
           call set_dependency('FOPT_OMG','DEF_ME_A_C0',tgt_info)
@@ -1249,6 +1271,7 @@ c dbgend
       ! Evaluate diagonal elements of Jacobian
       call add_target('EVAL_Atr',ttype_gen,.false.,tgt_info)
       call set_dependency('EVAL_Atr','FOPT_Atr',tgt_info)
+c      call set_dependency('EVAL_Atr','EVAL_FREF',tgt_info)
       call set_rule('EVAL_Atr',ttype_opme,EVAL,
      &     'FOPT_Atr',1,0,
      &     parameters,0,tgt_info)
@@ -1299,6 +1322,23 @@ c dbgend
       do icnt = 1, max(1,optref)
       call set_rule2('SOLVE_MRCC',SOLVENLEQ,tgt_info)
       if (optref.eq.-1) then
+        if (.not.ci_init) then
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_OPT',1,tgt_info,
+     &         val_label=(/'ME_T'/))
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'MODE',1,tgt_info,
+     &         val_str='TRF')
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_RESID',1,tgt_info,
+     &         val_label=(/'ME_OMG'/))
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_PRC',1,tgt_info,
+     &         val_label=(/trim(dia_label)/))
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_E',1,tgt_info,
+     &       val_label=(/'ME_E(MR)'/))
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',3,tgt_info,
+     &       val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag'/))
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM',1,tgt_info,
+     &         val_label=(/'FOPT_OMG'/))
+          call set_rule2('SOLVE_MRCC',SOLVENLEQ,tgt_info)
+        end if
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_OPT',2,tgt_info,
      &       val_label=(/'ME_T','ME_C0'/))
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'MODE',1,tgt_info,
@@ -1347,7 +1387,7 @@ c dbgend
         call set_arg('SOLVE_MRCC',SOLVEEVP,'MODE',1,tgt_info,
      &       val_str='DIA')
         call set_arg('SOLVE_MRCC',SOLVEEVP,'N_ROOTS',1,tgt_info,
-     &       val_int=(/1/))
+     &       val_int=(/ciroot/))
         call set_arg('SOLVE_MRCC',SOLVEEVP,'OP_MVP',1,tgt_info,
      &       val_label=(/'A_C0'/))
         call set_arg('SOLVE_MRCC',SOLVEEVP,'LIST_PRC',1,tgt_info,
@@ -1357,11 +1397,11 @@ c dbgend
         call set_arg('SOLVE_MRCC',SOLVEEVP,'FORM',1,tgt_info,
      &       val_label=(/'FOPT_OMG_C0'/))
 c dbg
-c        call form_parameters(-1,parameters,2,
-c     &       'CI coefficients :',0,'LIST')
-c        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
-c     &       'ME_C0',1,0,
-c     &       parameters,2,tgt_info)
+        call form_parameters(-1,parameters,2,
+     &       'CI coefficients :',0,'LIST')
+        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+     &       'ME_C0',1,0,
+     &       parameters,2,tgt_info)
 c dbgend
       end if
       end do

@@ -313,11 +313,12 @@ C*----------------------------------------------------------------------*
         call get_arg('OPERATORS',rule,tgt_info,
      &               val_label_list=label_list(2:),ndim=nop)
         call get_arg('MAXCOM_RES',rule,tgt_info,val_int=ansatz)
+        call get_arg('MAXCOM_EN',rule,tgt_info,val_int=nint)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
         call set_mrcc_lagrangian(form_pnt,
      &       title,label_list,nop+1,
-     &       ansatz,mode,
+     &       ansatz,nint,mode,
      &       op_info,orb_info)
 *----------------------------------------------------------------------*
       case(DEF_CC_HBAR)
@@ -1005,6 +1006,7 @@ c          mode = 'dia-R12'
         call get_arg('LIST',rule,tgt_info,val_label=label2)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
 
+        if (form_test) return
         call inv_op(label,label2,mode,
      &       op_info,orb_info,str_info,strmap_info)
 

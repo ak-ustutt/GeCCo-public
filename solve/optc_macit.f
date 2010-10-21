@@ -8,7 +8,7 @@ c     &       ffopt,ffgrd,ffdia,ffmet,
 c     &       ff_trv,ff_h_trv,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
-     &       flist,depend,energy,
+     &       flist,depend,energy,xngrd,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -58,7 +58,7 @@ c      include 'mdef_me_list.h'
      &     opti_stat
 
       real(8), intent(inout) ::
-     &     xbuf1(*), xbuf2(*), xbuf3(*), energy
+     &     xbuf1(*), xbuf2(*), xbuf3(*), energy, xngrd(*)
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -131,7 +131,7 @@ c dbg
      &             opti_info%typ_prc(iopt),
      &             nincore,opti_info%nwfpar(iopt),
      &             lenbuf,xbuf1,xbuf2,xbuf3,
-     &             flist,depend,energy,iopt,opti_info,
+     &             flist,depend,energy,xngrd,iopt,opti_info,
      &             orb_info,op_info,str_info,strmap_info)
 
               shift = ndim_save.eq.opti_stat%ndim_rsbsp.and.iopt.eq.1

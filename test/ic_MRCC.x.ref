@@ -6182,7 +6182,7 @@ signsec2:      1.0
  read                    138  entries
  read                     11  entries
  read                      3  entries
- read                      5  entries
+ read                      4  entries    ! changed manually (10/21/10)
  read                      4  entries
  testing new factorization
   Formula factorization
@@ -6207,7 +6207,7 @@ signsec2:      1.0
   term #  123 - H^ 0 P^ 2 V^ 4 X^ 0 - Mb:     0.122E-01
   term #  129 - H^ 0 P^ 1 V^ 5 X^ 0 - Mb:     0.610E-02
   term #  126 - H^ 0 P^ 1 V^ 5 X^ 0 - Mb:     0.610E-02
- wrote                    958  entries
+ wrote                    957  entries    ! changed manually (10/21/10)
  My next target: FREF
  Rule: DEF_HAMILTONIAN
  My next target: F_FREF

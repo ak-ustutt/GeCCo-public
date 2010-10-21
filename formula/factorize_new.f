@@ -33,7 +33,7 @@
      &     label
 
       integer, parameter ::
-     &     max_stat = 10000
+     &     max_stat = 1000000
       type(formula_item), pointer ::
      &     fl_ptr, fl_fact_ptr
       integer ::
@@ -82,12 +82,12 @@
             end do
           else
             if (iterm.eq.max_stat+1)
-     &           call warn('factorize','max_stat exceeded')
+     &           call warn('factorize_new','max_stat exceeded')
             call form_fact_new(fl_fact_ptr,fl_ptr%contr,
      &         op_info,str_info,orb_info,
      &         iscale_stat(1,1,max_stat),
      &           time_stat(max_stat),mem_stat(max_stat))
-            scale_stat(max_stat) = scale_rank(iscale_stat(1,1,iterm))
+            scale_stat(max_stat) = scale_rank(iscale_stat(1,1,max_stat))
             ! advance fl_fact_ptr
             do while(fl_fact_ptr%command.ne.command_end_of_formula)
               fl_fact_ptr => fl_fact_ptr%next
@@ -106,7 +106,7 @@
         fl_ptr => fl_ptr%next
       end do
 
-      nterms = iterm
+      nterms = min(iterm,max_stat)
       allocate(ireo_t(nterms),ireo_m(nterms),ireo_s(nterms))
 
       do iterm = 1, nterms
@@ -180,7 +180,7 @@
      &     mem_stat,time_stat,scale_stat,iscale_stat)
 
       call atim_csw(cpu,sys,wall)
-      if (iprlvl.ge.5) 
+      if (iprlvl.ge.3) 
      &     call prtim(luout,'factorization',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 

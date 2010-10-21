@@ -34,6 +34,8 @@
      &     ndef, occ_def(ngastp,2,60),
      &     isym, msc, ims, ip, ih, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot
+      logical ::
+     &     ci_init, l_exist
       character(len_target_name) ::
      &     dia_label, labels(20)
       character(len_command_par) ::
@@ -65,6 +67,8 @@
      &     ival=cmaxexc)
       call get_argument_value('calculate.multiref','ciroot',
      &     ival=ciroot)
+      call get_argument_value('calculate.multiref','ci_init',
+     &     lval=ci_init)
       if (cmaxh.lt.0) cmaxh = cmaxexc
       if (cmaxp.lt.0) cmaxp = cmaxexc
 
@@ -76,6 +80,7 @@
         write(luout,*) 'cmaxexc = ',cmaxexc
         write(luout,*) 'nactel  = ',orb_info%nactel
         write(luout,*) 'ciroot  = ',ciroot
+        write(luout,*) 'ci_init = ',ci_init
       end if
 
 *----------------------------------------------------------------------*
@@ -555,9 +560,15 @@ c dbgend
       labels(3) = 'A_C0'
       labels(4) = 'C0'
       labels(5) = 'FOPT_A_C0'
-      call set_rule('SOLVE_REF',ttype_opme,SOLVEEVP,
+      if (ci_init) then
+        call set_rule('SOLVE_REF',ttype_opme,SOLVEEVP,
      &     labels,5,1,
      &     parameters,2,tgt_info)
+      else
+        inquire(file='ME_C0_list.da',exist=l_exist)
+        if (.not.l_exist) call quit(1,'set_unc_mrci_targets',
+     &           'File for CASSCF coefficients not found!')
+      end if
       call form_parameters(-1,parameters,2,
      &     'CI coefficients :',0,'LIST')
       call set_rule('SOLVE_REF',ttype_opme,PRINT_MEL,

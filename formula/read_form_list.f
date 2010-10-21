@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine read_form_list(ffform,form_head)
+      subroutine read_form_list(ffform,form_head,init)
 *----------------------------------------------------------------------*
 *     read formula from file ffform to linked list 
 *----------------------------------------------------------------------*
@@ -16,6 +16,8 @@
      &     ffform
       type(formula_item), intent(in), target ::
      &     form_head
+      logical, intent(in) ::
+     &     init
 
       type(formula_item), pointer ::
      &     form_ptr
@@ -40,7 +42,7 @@ c dbg
       read(ffform%unit)
 
       form_ptr => form_head
-      nullify(form_ptr%prev)
+      if (init) nullify(form_ptr%prev)
       ! we need init_formula here???
 c dbg
       nterms = 0

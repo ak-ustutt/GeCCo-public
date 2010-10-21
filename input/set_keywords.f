@@ -139,6 +139,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call keyword_add('MRCC',context='method')
       call argument_add('maxcom_res','method.MRCC',type=vtyp_int,
      &     idef=(/4/))
+      call argument_add('maxcom_en','method.MRCC',type=vtyp_int,
+     &     idef=(/4/))
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
@@ -265,6 +267,10 @@ c     &     idef=(/0/))
      &     ldef=(/.true./))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('sv_thresh','calculate.routes',type=vtyp_rl8,
+     &     xdef=(/1d-14/))
+      call argument_add('sv_fix','calculate.routes',type=vtyp_log,
+     &     ldef=(/.false./))
 
       ! special keywords for response theory
       call keyword_add('response',context='calculate')
@@ -327,6 +333,8 @@ c     &     idef=(/0/))
      &                  idef=(/0/))  ! 1 for generalized normal order
       call argument_add('maxcum','calculate.multiref',type=vtyp_int,
      &                  idef=(/4/))  ! max. cumulant rank
+      call argument_add('ci_init','calculate.multiref',type=vtyp_log,
+     &                  ldef=(/.true./)) ! init. CI coeff. by CASSCF
 
       call keyword_add('experimental',context='calculate')
       ! set additional experimental keyword in this subroutine:

@@ -49,6 +49,15 @@
         cnt_info%cinfo_ex2a => null()
       end if
 
+      if (associated(cnt_info%cinfo_cntc)) then
+        deallocate(cnt_info%cinfo_cntc)
+        cnt_info%cinfo_cntc => null()
+      end if
+      if (associated(cnt_info%cinfo_cnta)) then
+        deallocate(cnt_info%cinfo_cnta)
+        cnt_info%cinfo_cnta => null()
+      end if
+
       if (associated(cnt_info%cinfo_op1op2c)) then
         deallocate(cnt_info%cinfo_op1op2c)
         cnt_info%cinfo_op1op2c => null()

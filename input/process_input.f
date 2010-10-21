@@ -175,6 +175,10 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
      &     ival=maxbranch)
       call get_argument_value('calculate.routes','use_tr',
      &     lval=use_tr)
+      call get_argument_value('calculate.routes','sv_fix',
+     &     lval=sv_fix)
+      call get_argument_value('calculate.routes','sv_thresh',
+     &     xval=sv_thresh)
 
       return
 

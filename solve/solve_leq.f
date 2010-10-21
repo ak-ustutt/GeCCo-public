@@ -275,7 +275,7 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
      &                         me_trv,me_mvp,me_met,me_rhs,use_s)
 
       ! read formula
-      call read_form_list(form_rhs_mvp%fhand,fl_rhs_mvp)
+      call read_form_list(form_rhs_mvp%fhand,fl_rhs_mvp,.true.)
 
       ! set dependency info for submitted formula list
       call set_formula_dependencies(depend,fl_rhs_mvp,op_info)
@@ -461,6 +461,7 @@ c dbg
      &           me_scr)
       deallocate(ff_trv,ff_rhs,ff_mvp,ffdia,ffopt,ff_met,ffspecial,
      &     xret,idxselect,ff_scr)
+      call dealloc_formula_list(fl_rhs_mvp)
 
       ifree = mem_flushmark()
 

@@ -266,7 +266,7 @@
      &                         me_trv,me_mvp,me_met,me_met,use_s)
 
       ! read formula
-      call read_form_list(form_mvp%fhand,fl_mvp)
+      call read_form_list(form_mvp%fhand,fl_mvp,.true.)
 
       ! set dependency info for submitted formula list
       call set_formula_dependencies(depend,fl_mvp,op_info)
@@ -554,6 +554,7 @@ c dbg
       ! is deallocated:
       deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special,me_scr)
       deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial,ff_scr)
+      call dealloc_formula_list(fl_mvp)
 
       ifree = mem_flushmark()
 

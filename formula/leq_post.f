@@ -102,7 +102,7 @@ c     &     call quit(1,'leq_post','under construction')
       call init_formula(fl_traf)
 
       ! read raw list
-      call read_form_list(form_raw%fhand,fl_raw)
+      call read_form_list(form_raw%fhand,fl_raw,.true.)
 
       ! sort into traf and rhs list
       call extract_rhs(fl_rhs,fl_traf,fl_raw,

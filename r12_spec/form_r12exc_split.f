@@ -83,7 +83,7 @@
 
       ! read in input formula
       call init_formula(flist)
-      call read_form_list(f_input%fhand,flist)
+      call read_form_list(f_input%fhand,flist,.true.)
 
       call r12exc_split_terms(flist,
      &     mode,idxop_res,

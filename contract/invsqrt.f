@@ -71,7 +71,7 @@ c     &     loop(nocc_cls)
      &     maxbuf, ngraph, ioff2, idxmsa2, ndis2, idxdis2, idx2, nel,
      &     nsing, ising, itrip, ntrip, icnt_sv, icnt_sv0
       real(8) ::
-     &     fac
+     &     fac, xmax, xmin
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:), scratch2(:,:),
      &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:)
@@ -174,6 +174,8 @@ c dbgend
 
       icnt_sv  = 0 ! we will count the
       icnt_sv0 = 0 ! number of singular values below threshold
+      xmax = 0d0   ! largest excluded singular value
+      xmin = 1234567890d0   ! smallest included singular value
 
       if (.not.half.and.max(iprlvl,ntest).ge.3) write(luout,*)
      &         'Input list will be overwritten by projector.'
@@ -352,8 +354,10 @@ c dbgend
      &                            sing,trip,.false.)
 
                 ! calculate T^(-0.5) for both blocks
-                call invsqrt_mat(nsing,sing,sing2,half,icnt_sv,icnt_sv0)
-                call invsqrt_mat(ntrip,trip,trip2,half,icnt_sv,icnt_sv0)
+                call invsqrt_mat(nsing,sing,sing2,half,icnt_sv,icnt_sv0,
+     &                           xmax,xmin)
+                call invsqrt_mat(ntrip,trip,trip2,half,icnt_sv,icnt_sv0,
+     &                           xmax,xmin)
 
                 ! partial undo of pre-diagonalization: Upre*T^(-0.5)
                 call spinsym_traf(2,ndim,scratch,flipmap_c,nsing,
@@ -369,7 +373,7 @@ c dbgend
 
                 ! calculate S^(-0.5)
                 call invsqrt_mat(ndim,scratch,scratch2,
-     &                           half,icnt_sv,icnt_sv0)
+     &                           half,icnt_sv,icnt_sv0,xmax,xmin)
 
               end if
 
@@ -734,8 +738,10 @@ c dbgend
      &                        sing,trip,.false.)
 
             ! calculate T^(-0.5) for both blocks
-            call invsqrt_mat(nsing,sing,sing2,half,icnt_sv,icnt_sv0)
-            call invsqrt_mat(ntrip,trip,trip2,half,icnt_sv,icnt_sv0)
+            call invsqrt_mat(nsing,sing,sing2,half,icnt_sv,icnt_sv0,
+     &                       xmax,xmin)
+            call invsqrt_mat(ntrip,trip,trip2,half,icnt_sv,icnt_sv0,
+     &                       xmax,xmin)
 
             ! partial undo of pre-diagonalization: Upre*T^(-0.5)
             call spinsym_traf(2,ndim,scratch,flmap(1:ndim,3),nsing,
@@ -751,7 +757,7 @@ c dbgend
 
             ! calculate S^(-0.5)
             call invsqrt_mat(ndim,scratch,scratch2,
-     &                       half,icnt_sv,icnt_sv0)
+     &                       half,icnt_sv,icnt_sv0,xmax,xmin)
 
           end if
 
@@ -870,8 +876,14 @@ c dbgend
 
       enddo iocc_loop
 
-      if (ntest.ge.5) write(luout,'(i8,a,i8,a)') icnt_sv-icnt_sv0,
-     &        ' out of ',icnt_sv,' singular values were above threshold'
+      if (ntest.ge.5) then
+        write(luout,'(x,i8,a,i8,a)') icnt_sv-icnt_sv0,
+     &        ' out of ',icnt_sv,' singular values were included'
+        write(luout,'(x,a,E19.10)') 
+     &        'The  largest excluded singular value is ',xmax
+        write(luout,'(x,a,E19.10)')
+     &        'The smallest included singular value is ',xmin
+      end if
  
 
       if(.not.bufout)then

@@ -33,6 +33,14 @@
         deallocate(op%igasca_restr)
         op%igasca_restr => null()
       end if
+      if (associated(op%ifreq)) then
+        deallocate(op%ifreq)
+        op%ifreq => null()
+      end if
+      if (associated(op%blk_version)) then
+        deallocate(op%blk_version)
+        op%blk_version => null()
+      end if
       if (associated(op%formal_blk)) then
         deallocate(op%formal_blk)
         op%formal_blk => null()

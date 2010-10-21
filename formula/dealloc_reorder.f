@@ -23,5 +23,17 @@
       if (associated(reo%merge_stp2))   deallocate(reo%merge_stp2)
       if (associated(reo%merge_stp2inv))deallocate(reo%merge_stp2inv)
 
+      reo%occ_opin => null()
+      reo%occ_opout => null()
+      reo%rst_opin => null()
+      reo%rst_opout => null()
+      reo%occ_shift => null()
+      reo%occ_op0 => null()
+      reo%from_to => null()
+      reo%merge_stp1 => null()
+      reo%merge_stp1inv => null()
+      reo%merge_stp2 => null()
+      reo%merge_stp2inv => null()
+
       return
       end

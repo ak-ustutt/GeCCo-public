@@ -171,6 +171,7 @@ c dbg
 
       case(INVERT)
 
+        if (form_test) exit loop
         if (rule%n_labels.ne.2)
      &     call quit(1,'process_me_lists','two labels expected for '
      &       //trim(INVERT))

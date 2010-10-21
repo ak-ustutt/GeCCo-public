@@ -78,7 +78,7 @@
       f_eval => form_info%form_arr(idx)%form
 
       ! read formula
-      call read_form_list(f_eval%fhand,fl_eval)
+      call read_form_list(f_eval%fhand,fl_eval,.true.)
 
       ! set dependency info for submitted formula list
       call set_formula_dependencies(depend,fl_eval,op_info)
@@ -128,6 +128,8 @@ c dbg
         end do
       end if
 
+      deallocate(xret)
+      call dealloc_formula_list(fl_eval)
       call clean_formula_dependencies(depend)
 
       ifree = mem_flushmark()

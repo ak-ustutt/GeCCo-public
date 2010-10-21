@@ -134,6 +134,8 @@
 
       end if
 
+      call touch_file_rec(ffop)
+
       if (closeit)
      &     call file_close_keep(ffop)
 

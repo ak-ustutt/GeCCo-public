@@ -36,7 +36,9 @@
      &     minp, maxp, maxv, maxvv, minexc, cbarc(2),
      &     nlabels, nroots, gno
       logical ::
-     &     use_hessian, use_dens, pure_vv, calc
+     &     use_hessian, use_dens, pure_vv, calc, sv_fix, l_exist
+      real(8) ::
+     &     sv_thresh
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -63,9 +65,6 @@
      &            'Warning: Only tested for CASSCF reference so far')
       end if
 
-      if (iprlvl.gt.0)
-     &     write(luout,*) 'setting multireference targets #2...'
-
       ! CAVEAT: should be adapted as soon as open-shell version
       !         is up and running
       msc = +1 ! assuming closed shell
@@ -84,6 +83,10 @@ c        call set_gno_targets(tgt_info,orb_info,1)
 cmh
       call set_gno_targets(tgt_info,orb_info,1)
 cmh end
+
+      if (iprlvl.gt.0)
+     &     write(luout,*) 'setting multireference targets #2...'
+
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations
       call get_argument_value('calculate.multiref','minh',
@@ -112,6 +115,10 @@ cmh end
      &     lval=calc)
       call get_argument_value('calculate.multiref','nroots',
      &     ival=nroots)
+      call get_argument_value('calculate.routes','sv_fix',
+     &     lval=sv_fix)
+      call get_argument_value('calculate.routes','sv_thresh',
+     &     xval=sv_thresh)
 
       if (ntest.ge.100) then
         print *,'minh    = ',minh
@@ -124,6 +131,14 @@ cmh end
         print *,'maxexc  = ',maxexc
         print *,'pure_vv = ',pure_vv
         print *,'nroots  = ',nroots
+        print *,'sv_fix  = ',sv_fix
+        print *,'sv_thr. = ',sv_thresh
+      end if
+
+      if (sv_fix) then
+        inquire(file='SINGVALS',exist=l_exist)
+        if (l_exist) write(luout,*)
+     &     'Using existing SINGVALS file for singular value selection!'
       end if
 
 *----------------------------------------------------------------------*
