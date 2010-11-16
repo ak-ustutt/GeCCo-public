@@ -6,7 +6,7 @@
 *     we resort to a batch algorithm
 *
 *     andreas, january 2007
-*
+*     matthias, spring 2010
 *----------------------------------------------------------------------*
       implicit none
 
@@ -152,12 +152,12 @@ cmh   determine number of first 2-el. block
         read (lumo2) energy
         do
 c dbg
-          print *,'energy: ',energy
-          print *,'nlabmx,nintmx: ',nlabmx,nintmx
+c          print *,'energy: ',energy
+c          print *,'nlabmx,nintmx: ',nlabmx,nintmx
 c dbgend
           read(lumo2) len_,ibuf(1:nlabmx),xbuf(1:nintmx)
 c dbg
-          print *,'read ',len_,' integrals:'
+c          print *,'read ',len_,' integrals:'
 c          do ii = 1, abs(len_)
 c            if (orb_info%ntoob.gt.mxao) then
 c              istr = ii

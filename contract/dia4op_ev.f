@@ -23,9 +23,16 @@
       include 'hpvxseq.h'
       include 'multd2h.h'
 
+
+      type spinorb_list
+        integer ::
+     &     length
+        integer, pointer ::
+     &     list(:)
+      end type spinorb_list
+
       integer, parameter ::
-     &     ntest = 00,
-     &     nlistmax = 120 000  ! we need some better solution for this
+     &     ntest = 00
 
       real(8), intent(in) ::
      &     ecore, xdia1(*), xdia2(*)
@@ -52,7 +59,7 @@
      &     idxbuf, idx_inner1, x2_off, idxms2, ms2,
      &     ijoff, iincr, jincr, ni, nj, ilen, jlen, jhpv, iloop,
      %     jloop, jca, iorb, jorb, jdxms2, ims, jms, ioff, joff,
-     &     kloop, jhpvdx, maxca, ii, jj, iofft
+     &     kloop, jhpvdx, maxca, ii, jj, iofft, ispn, nlistmax
 
       integer ::
      &     msdst(ngastp,2), igamdst(ngastp,2),
@@ -73,13 +80,16 @@
      &     idxorb(:),idxspn(:),idxdss(:),idxspn2(:)
       real(8), pointer ::
      &     buffer(:), xsum(:)
-      integer, allocatable ::
-     &     list(:,:,:,:)
 
       type(filinf), pointer ::
      &     ffdia
       type(operator), pointer ::
      &     op
+
+      type(spinorb_list), pointer ::
+     &     solist(:,:,:)
+      integer, pointer ::
+     &     intbuf(:)
 
       real(8), external ::
      &     dnrm2
@@ -140,7 +150,14 @@ c        end if
      &     write(luout,*)'allocating result buffer of size: ',maxbuff
         
       ifree = mem_alloc_real(buffer,maxbuff,'buffer')
-      allocate(list(orb_info%ntoob,2,0:nlistmax,2*ngastp))
+      allocate(solist(orb_info%ntoob,2,2*ngastp))
+      do iorb = 1, orb_info%ntoob
+        do ispn = 1, 2
+          do iloop = 1, 2*ngastp
+            solist(iorb,ispn,iloop)%list => null()
+          end do
+        end do
+      end do
       ! loop over operator elements
       occ_cls: do iblk = 1, op%n_occ_cls
 
@@ -208,6 +225,11 @@ c        end if
         ! buffer for orbital energy sums
         ifree = mem_alloc_real(xsum,maxstrbuf,'xsum')
 
+        ! just a rough estimate of the optimal maximum list length
+        ! if too large => needs much time & memory even for small cases
+        !    too small => takes too long for larger cases
+        nlistmax = max(1,maxstrbuf/orb_info%ntoob)
+
         idxms = 0
         msa_loop: do msa = msamax, -msamax, -2
 
@@ -256,7 +278,15 @@ c     &             cycle distr_loop
               ! strings for HPV/CA
               nloop = 0
               istr = 0
-              list(1:orb_info%ntoob,1:2,0:nlistmax,1:2*ngastp) = 0
+              do iorb = 1, orb_info%ntoob
+                do ispn = 1, 2
+                  do iloop = 1, 2*ngastp
+                    if (associated(solist(iorb,ispn,iloop)%list))
+     &                  deallocate(solist(iorb,ispn,iloop)%list)
+                  end do
+                end do
+              end do
+              solist(1:orb_info%ntoob,1:2,1:2*ngastp)%length = 0
               ! sequence: from outer to inner loop
               do ihpvdx = ngastp, 1, -1
                 ihpv = hpvxseq(ihpvdx)
@@ -305,14 +335,22 @@ c dbgend
                       end if
 
                       ! update list orbital --> string indices
-                      list(idxorb(idx),(idxspn2(idx)+3)/2,0,nloop)
-     &                  = list(idxorb(idx),(idxspn2(idx)+3)/2,0,nloop)+1
-                      if (list(idxorb(idx),(idxspn2(idx)+3)/2,0,nloop)
-     &                    .gt.nlistmax) call quit(1,'dia4op_ev',
-     &                    'Increase parameter nlistmax')
-                      list(idxorb(idx),(idxspn2(idx)+3)/2,
-     &                     list(idxorb(idx),(idxspn2(idx)+3)/2,0,nloop),
-     &                     nloop) = istr - ioff_xsum(nloop)
+                      iorb = idxorb(idx)
+                      ispn = (idxspn2(idx)+3)/2
+                      ilen = solist(iorb,ispn,nloop)%length
+                      if (mod(ilen,nlistmax).eq.0) then
+                        allocate(intbuf(ilen+nlistmax))
+                        if (ilen.gt.0) intbuf(1:ilen) = 
+     &                      solist(iorb,ispn,nloop)%list(1:ilen)
+                        if (associated(solist(iorb,ispn,nloop)%list))
+     &                      deallocate(solist(iorb,ispn,nloop)%list)
+                        solist(iorb,ispn,nloop)%list => intbuf
+                        intbuf => null()
+                      end if
+                      ilen = ilen + 1
+                      solist(iorb,ispn,nloop)%length = ilen
+                      solist(iorb,ispn,nloop)%list(ilen)
+     &                     = istr - ioff_xsum(nloop)
 
                       ! need to patch for UHF:
                       xsum(istr) = xsum(istr) + fac*xdia1(idxorb(idx))
@@ -497,14 +535,14 @@ c     &                  1:list(joff+jorb,(jms+3)/2,0,
 c     &                  nloop+1-jloop),nloop+1-jloop)
 c dbgend
                       !loop over matching string indices
-                      do idx = 1, list(ioff+iorb,(ims+3)/2,0,
-     &                    nloop+1-iloop)
-                       do jdx = 1, list(joff+jorb,(jms+3)/2,0,
-     &                     nloop+1-jloop)
-                        ijoff = (list(ioff+iorb,(ims+3)/2,idx,
-     &                      nloop+1-iloop)-1)*ilen +
-     &                      (list(joff+jorb,(jms+3)/2,jdx,
-     &                      nloop+1-jloop)-1)*jlen
+                      do idx = 1, solist(ioff+iorb,(ims+3)/2,
+     &                    nloop+1-iloop)%length
+                       do jdx = 1, solist(joff+jorb,(jms+3)/2,
+     &                     nloop+1-jloop)%length
+                        ijoff = (solist(ioff+iorb,(ims+3)/2,
+     &                      nloop+1-iloop)%list(idx)-1)*ilen +
+     &                      (solist(joff+jorb,(jms+3)/2,
+     &                      nloop+1-jloop)%list(jdx)-1)*jlen
                         !loop over corresponding buffer elements
                         do ii = 0, ni-1
                          do jj = 0, nj-1
@@ -552,11 +590,19 @@ c dbg
       if (open_close_ffdia) call file_close_keep(ffdia)
 
       ifree = mem_flushmark()
-      deallocate(list)
+      do iorb = 1, orb_info%ntoob
+        do ispn = 1, 2
+          do iloop = 1, 2*ngastp
+            if (associated(solist(iorb,ispn,iloop)%list))
+     &          deallocate(solist(iorb,ispn,iloop)%list)
+          end do
+        end do
+      end do
+      deallocate(solist)
 
       call atim_csw(cpu,sys,wall)
 
-      if (iprlvl.ge.5)
+      if (iprlvl.ge.0)
      &     call prtim(luout,'time in dia4op_ev ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 

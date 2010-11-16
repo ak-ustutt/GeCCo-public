@@ -33,7 +33,7 @@
       integer ::
      &     ndef, occ_def(ngastp,2,60),
      &     isym, msc, ims, ip, ih, 
-     &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot
+     &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, cmaxv
       logical ::
      &     ci_init, l_exist
       character(len_target_name) ::
@@ -71,12 +71,14 @@
      &     lval=ci_init)
       if (cmaxh.lt.0) cmaxh = cmaxexc
       if (cmaxp.lt.0) cmaxp = cmaxexc
+      cmaxv = orb_info%norb_hpv(IVALE,1)*2
 
       if (ntest.ge.100) then
         write(luout,*) 'cminh   = ',cminh
         write(luout,*) 'cmaxh   = ',cmaxh
         write(luout,*) 'cminp   = ',cminp
         write(luout,*) 'cmaxp   = ',cmaxp
+        write(luout,*) 'cmaxv   = ',cmaxv
         write(luout,*) 'cmaxexc = ',cmaxexc
         write(luout,*) 'nactel  = ',orb_info%nactel
         write(luout,*) 'ciroot  = ',ciroot
@@ -99,7 +101,8 @@
       ndef = 0
       do ip = cminp, cmaxp
         do ih = cminh, cmaxh
-          if (orb_info%nactel+ih-ip.lt.0) cycle
+          if (orb_info%nactel+ih-ip.lt.0.or.
+     &        orb_info%nactel+ih-ip.gt.cmaxv) cycle
           ndef = ndef + 1
           occ_def(IHOLE,2,ndef) = ih
           occ_def(IPART,1,ndef) = ip

@@ -101,23 +101,23 @@ c dbg
         ! only one candidate? not much to do then
         if (jdxnd.eq.idx) cycle
 
-        ! loop over pairs of vertices in contiguous list and try to merge
-        jloop: do jdx = idx, jdxnd           
-c dbg
-c          print *,'jdx =',jdx
-c          print *,'merged',merged
-c          print *,'iord  ',iord
-c          print *,'ireo  ',ireo
-c dbg
-          if (merged(jdx)) cycle jloop
+        ! we need to first carry out all merges with vertices
+        ! having the same supervertex number (for sign-consistency)
+        do ipass = 1, 2
 
-          ! get supervertex number of vertex on which we merge
-          ! we need to first carry out all merges with vertices
-          ! having the same supervertex number (for sign-consistency)
-          jdx_v = vtx_list(jdx)
-          isvtx_j = svertex(jdx_v)
+          ! loop over pairs of vertices in contiguous list and try to merge
+          jloop: do jdx = idx, jdxnd           
+c dbg
+c           print *,'jdx =',jdx
+c           print *,'merged',merged
+c           print *,'iord  ',iord
+c           print *,'ireo  ',ireo
+c dbg
+           if (merged(jdx)) cycle jloop
 
-          do ipass = 1, 2
+           ! get supervertex number of vertex on which we merge
+           jdx_v = vtx_list(jdx)
+           isvtx_j = svertex(jdx_v)
 
            do kdx = jdx+1, jdxnd
             if (merged(jdx)) cycle jloop
@@ -244,8 +244,8 @@ c dbg
 
             end if
            end do ! kdx
-          end do ! ipass
-        end do jloop ! jdx
+          end do jloop ! jdx
+        end do !ipass
 
       end do
 

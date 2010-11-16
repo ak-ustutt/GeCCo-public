@@ -189,7 +189,9 @@ c dbgend
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
           ioff = mel_inp%off_op_gmo(iocc_cls)%gam_ms(1,1)
           buffer_out(ioff+1) = buffer_in(ioff+1)
-          if (.not.half) buffer_in(ioff+1) = 1d0
+          call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
+     &                     half,icnt_sv,icnt_sv0,xmax,xmin)
+c          if (.not.half) buffer_in(ioff+1) = 1d0
           cycle
         end if 
 

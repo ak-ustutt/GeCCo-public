@@ -322,6 +322,20 @@ c dbg
         if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
      &      nspecial.ge.7)
      &      call touch_file_rec(me_special(7)%mel%fhand)
+        if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
+     &      nspecial.ge.6.and.nopt.eq.1) then
+          ! very dirty trick: prevent calc. of Res.#2
+            call touch_file_rec(op_info%mel_arr(
+     &           idx_mel_list('ME_A_C0',op_info))%mel%fhand)
+          ! also delete information that Res.#2 depends on energy
+          if (imacit.eq.1) then
+            do idx = 1, depend%ndepend
+              if (depend%depends_on_idxlist(idx,3).eq.
+     &            depend%idxlist(1))
+     &           depend%depends_on_idxlist(idx,3) = 0
+            end do
+          end if
+        end if
 c dbgend
 
         ! 1 - get energy
@@ -395,7 +409,15 @@ c     &       1,me_opt(iopt)%mel%op%n_occ_cls,
 c     &       str_info,orb_info)        
 c        end if
 c dbg
+c dbg
+        ! very dirty: don't close file if needed for following opt.
+        if (opti_info%typ_prc(1).ne.optinf_prc_traf.or.
+     &      nspecial.lt.6.or.nopt.ne.1) then
+c dbgend
         call file_close_keep(ffopt(iopt)%fhand)
+c dbg
+        end if
+c dbgend
         ! open corresponding residuals ...
         call file_close_keep(ffgrd(iopt)%fhand)
         ! ... and corresponding preconditioner(s)

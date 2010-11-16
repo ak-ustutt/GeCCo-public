@@ -111,6 +111,9 @@
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
+c dbg
+c            if (ih.gt.ip) cycle
+c dbgend
 cmh         no blocks which can be modeled by a contraction of two operators
 c            if (ip.ge.1.and.ih.ge.1) cycle
 cmh end
@@ -141,6 +144,9 @@ c            if (max(ip,ih)+ivv.eq.1.and.(ip.ne.1.or.ih.ne.1)) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
+c dbg
+c            if (ih.gt.ip) cycle
+c dbgend
 cmh         no blocks which can be modeled by a contraction of two operators
 c            if (ip.ge.1.and.ih.ge.1) cycle
 cmh end
@@ -229,6 +235,9 @@ c     &             val_int=(/1/))
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
+c dbg
+c            if (ih.gt.ip) cycle
+c dbgend
 c            ! exclude blocks with one or more hole-part. excitations
 c            if (min(ih,ip).ge.1) cycle
             ! if same valence structure already exists, skip block
@@ -279,6 +288,9 @@ c            if (min(ih,ip).ge.1) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
+c dbg
+c            if (ih.gt.ip) cycle
+c dbgend
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
             occ_def(IPART,1,ndef*2) = ip
@@ -304,6 +316,9 @@ c            if (min(ih,ip).ge.1) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
             if (abs(ih-ip).eq.0.and.ivv.eq.0) cycle ! no conv. blocks (for PREC)
+c dbg
+c            if (ih.gt.ip) cycle
+c dbgend
             ndef = ndef + 1
             occ_def(IHOLE,1,3*ndef-1) = ih
             occ_def(IHOLE,2,3*ndef-1) = ih
@@ -1333,8 +1348,18 @@ c dbgend
      &         val_label=(/trim(dia_label)/))
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_E',1,tgt_info,
      &       val_label=(/'ME_E(MR)'/))
-          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',3,tgt_info,
-     &       val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag'/))
+c          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',3,tgt_info,
+c     &       val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag'/))
+          if (update_prc) then
+            call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
+     &         val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
+     &                     'ME_D','ME_Dinv',
+     &                     'ME_A(CC)'/))
+          else
+            call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',6,tgt_info,
+     &         val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
+     &                     'ME_D','ME_Dinv'/))
+          end if
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM',1,tgt_info,
      &         val_label=(/'FOPT_OMG'/))
           call set_rule2('SOLVE_MRCC',SOLVENLEQ,tgt_info)

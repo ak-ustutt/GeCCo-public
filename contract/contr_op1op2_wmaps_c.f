@@ -131,7 +131,7 @@
           
 
       real(8) ::
-     &     xnrm, fac_scal, fac_scal0, fac_ab
+     &     xnrm, fac_scal, fac_scal0, fac_ab, xret_last
       real(8) ::
      &     cpu, sys, cpu0, sys0, cpu00, sys00
 
@@ -867,6 +867,10 @@ cc dbg
       ! loop Ms-cases of (Op1(A),Op2(A),Op1Op2(A))
       first1 = .true.
       idxms_op1op2_last = -1
+      if (type_xret.ne.0.and.buftyp12.ne.0) then
+        xret(1) = 0d0
+        xret_last = 0d0
+      end if
       ms_loop: do
         if (first1) then
           first1 = .false.
@@ -1877,6 +1881,13 @@ c dbg
      &           msa2idxms4op(ms12i_a(3),mstop1op2,na_op1op2,nc_op1op2)
               ioff_op1op2 = gam_ms_op1op2(igam12i_raw(3),idxms)
               lenblock = len_gam_ms_op1op2(igam12i_raw(3),idxms)
+              if (type_xret.ne.0) then
+                if (idxms_op1op2_last.eq.idxms.and.
+     &              igam_op1op2_last.eq.igam12i_raw(3))
+     &              xret(1) = xret(1) - xret_last ! no double counting
+                xret_last = ddot(lenblock,xop1op2,1,xop1op2,1)
+                xret(1) = xret(1) + xret_last
+              end if
 c dbg
 c          print *,'punching GAM blk for op1op2, ',igam12i_a(3),idxms
 c dbg
@@ -1899,6 +1910,8 @@ c dbg
           do isym = 2, nsym
             lenblock = lenblock + len_gam_ms_op1op2(isym,idxms)
           end do
+          if (type_xret.ne.0)
+     &       xret(1) = xret(1) + ddot(lenblock,xop1op2,1,xop1op2,1)
 c dbg
 c          print *,'punching MS blk for op1op2 ',lenblock
 c dbg
@@ -1958,9 +1971,9 @@ c     &     print *,'iiii ',xop1op2(1),xop1op2(4)
 c      print *,'type_xret ',type_xret
 c      print *,'xret' ,xret
 c dbg
-      if (type_xret.eq.2) then
+      if (type_xret.eq.2.and.buftyp12.eq.0) then
         xret(1) = xop1op2(1)
-      else if (type_xret.eq.1) then
+      else if (type_xret.eq.1.and.buftyp12.eq.0) then
         xret(1) = ddot(lenop1op2,xop1op2,1,xop1op2,1)
       end if
 
