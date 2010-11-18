@@ -8,7 +8,7 @@ c     &       ffopt,ffgrd,ffdia,ffmet,
 c     &       ff_trv,ff_h_trv,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
-     &       flist,depend,energy,xngrd,
+     &       fspc,nspcfrm,energy,xngrd,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -31,14 +31,13 @@ c      include 'mdef_me_list.h'
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
-      include 'def_dependency_info.h'
 
       integer, intent(inout) ::
      &     task
       integer, intent(inout) ::
      &     imacit, imicit, imicit_tot
       integer, intent(in) ::
-     &     iroute, nincore, lenbuf, nopt, nspecial
+     &     iroute, nincore, lenbuf, nopt, nspecial, nspcfrm
 
       type(me_list_array), intent(in) ::
      &     me_opt(nopt), me_grd(nopt), me_dia(nopt),
@@ -47,10 +46,8 @@ c      include 'mdef_me_list.h'
       type(filinf), intent(in) ::
      &     ffscr
 
-      type(formula_item), intent(inout) ::
-     &     flist
-      type(dependency_info) ::
-     &     depend
+      type(formula_item), intent(in) ::
+     &     fspc(nspcfrm)
 
       type(optimize_info), intent(in) ::
      &     opti_info
@@ -77,16 +74,13 @@ c      include 'mdef_me_list.h'
       integer ::
      &     irecr, irecv, klsmat,
      &     imet, idamp,
-     &     ndim_save, ndel, iopt, lenscr, ifree,
-     &     nselect, idx, nsec, isec, stsec, ndsec, ioff
+     &     ndim_save, ndel, iopt, lenscr, ifree
       real(8) ::
      &     xnrm
       real(8), pointer ::
-     &     xscr(:), xscr2(:), vec(:), xret(:), signsec(:)
+     &     xscr(:), xscr2(:), vec(:)
       integer, pointer ::
-     &     ivec(:), idxselect(:), nwfpsec(:), idstsec(:), nsec_arr(:)
-      integer, external ::
-     &     idx_mel_list
+     &     ivec(:)
 
       ! set file arrays for calls to "old" routines
       allocate(ffopt(nopt),ffgrd(nopt),ffdia(nopt))
@@ -131,7 +125,7 @@ c dbg
      &             opti_info%typ_prc(iopt),
      &             nincore,opti_info%nwfpar(iopt),
      &             lenbuf,xbuf1,xbuf2,xbuf3,
-     &             flist,depend,energy,xngrd,iopt,opti_info,
+     &             fspc,nspcfrm,energy,xngrd,iopt,opti_info,
      &             orb_info,op_info,str_info,strmap_info)
 
               shift = ndim_save.eq.opti_stat%ndim_rsbsp.and.iopt.eq.1
@@ -239,57 +233,15 @@ c dbg
 
         ! project out linear dependencies if required
         do iopt = 1, opti_info%nopt
-          if (opti_info%typ_prc(iopt).eq.optinf_prc_traf.and.
-     &        nspecial.ge.6) then
+         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf.and.
+     &        opti_info%optref.ne.0.and.nspecial.ge.4) then
 
-cmh   comment this in, if you wish to use optimization algorithm "1a"
-c          ! update metric, trafo matrices and projector if not up to date
-c          idx = idx_mel_list('ME_C0',op_info)  ! quick & dirty
-c          if (nspecial.ge.6.and.
-c     &        op_info%mel_arr(idx)%mel%fhand%last_mod(1).gt.
-c     &        me_special(2)%mel%fhand%last_mod(1))
-c     &        call update_metric(me_dia(iopt)%mel,me_special,nspecial,
-c     &          flist,depend,orb_info,op_info,str_info,strmap_info)
+         call optc_project(me_opt(iopt)%mel,me_dia(iopt)%mel,
+     &        me_special,nspecial,
+     &        opti_info%nwfpar(iopt),xbuf1,fspc,nspcfrm,iopt,opti_info,
+     &        orb_info,op_info,str_info,strmap_info)
 
-          ! put new vector to special list for transformation
-          call list_copy(me_opt(iopt)%mel,me_special(1)%mel)
-
-          ! use projection matrix
-          call assign_me_list(me_special(4)%mel%label,
-     &                           me_special(2)%mel%op%name,op_info)
-
-          ! calculate projected vector
-          allocate(xret(depend%ntargets),idxselect(depend%ntargets))
-          nselect = 0
-          call select_formula_target(idxselect,nselect,
-     &                me_opt(iopt)%mel%label,depend,op_info)
-          ! pretend that vector is not up to date
-          ffopt(iopt)%fhand%last_mod(
-     &           ffopt(iopt)%fhand%current_record) = -1
-          call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                op_info,str_info,strmap_info,orb_info)
-          deallocate(xret,idxselect)
-
-          ! Since formally we get a transposed vector, we need to
-          ! account for sign changes when reordering
-          nsec = opti_info%nsec(iopt)
-          if (nsec.gt.1) then
-            ioff = sum(opti_info%nsec(1:iopt))-nsec
-            nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
-            idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
-            signsec => opti_info%signsec2(ioff+1:ioff+nsec)
-            call vec_from_da(ffopt(iopt)%fhand,1,xbuf1,
-     &                       opti_info%nwfpar(iopt))
-            do isec = 1, nsec
-              xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1) =
-     &           signsec(isec)
-     &           *xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
-            end do
-            call vec_to_da(ffopt(iopt)%fhand,1,xbuf1,
-     &                     opti_info%nwfpar(iopt))
-          end if
-
-          end if
+         end if
         end do
 
 * do ASSJ step for current subspace

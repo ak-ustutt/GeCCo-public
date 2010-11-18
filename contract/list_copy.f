@@ -107,6 +107,8 @@ cmh      call quit(1,'list_copy','not yet debugged (*might* work)')
         
       end if
 
+      call touch_file_rec(ffop_tgt)
+
       if (close_src)
      &     call file_close_keep(ffop_src)
       if (close_tgt)

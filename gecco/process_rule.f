@@ -49,7 +49,7 @@
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
-     &     dgam, dms
+     &     dgam, dms, nspcfrm
       integer ::
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -1069,6 +1069,8 @@ c          mode = 'dia-R12'
      &       val_label=label)
         call get_arg('FORM',rule,tgt_info,
      &       val_label=label2)
+        call get_arg('FORM_SPC',rule,tgt_info,
+     &       val_label_list=label_list(3*nopt+nspecial+1:),ndim=nspcfrm)
 
         if (form_test) return
 
@@ -1080,7 +1082,10 @@ c          mode = 'dia-R12'
      &       label2,                           ! formula
      &       label_list(3*nopt+1:
      &                  3*nopt+nspecial),
-     &          nspecial,                       ! specials
+     &          nspecial,
+     &       label_list(3*nopt+nspecial+1:
+     &                  3*nopt+nspecial+nspcfrm),
+     &          nspcfrm,                       ! specials
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
 *----------------------------------------------------------------------*

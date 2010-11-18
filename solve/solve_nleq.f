@@ -3,6 +3,7 @@
      &     nopt,label_opt,label_res,label_prc,label_en,
      &     label_form,
      &     label_special,nspecial,           !<- eg. for R12
+     &     label_spcfrm,nspcfrm,             !<- eg. for MRCC
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -47,13 +48,14 @@ c dbgend
      &     ntest = 000
 
       integer, intent(in) ::
-     &     nopt, nspecial
+     &     nopt, nspecial, nspcfrm
       character(*), intent(in) ::
      &     mode_str,
      &     label_opt(nopt),
      &     label_res(nopt),
      &     label_prc(nopt),
      &     label_special(nspecial),
+     &     label_spcfrm(nspcfrm),
      &     label_en,
      &     label_form
       type(formula_info) ::
@@ -73,7 +75,7 @@ c dbgend
      &     label
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
-     &     idx, idxmel, ierr, nout, idx_en_xret, idx_res_xret(nopt)
+     &     idx, idxmel, ierr, nout, idx_en_xret, idx_res_xret(nopt), jdx
       real(8) ::
      &     energy, xresnrm(nopt), xdum
       real(8), pointer ::
@@ -95,7 +97,7 @@ c dbgend
       type(formula), pointer ::
      &     form_en_res
       type(formula_item) ::
-     &     fl_en_res
+     &     fl_en_res, fl_spc(nspcfrm)
 
       integer, external ::
      &     idx_formlist, idx_mel_list, idx_xret
@@ -182,6 +184,17 @@ c dbgend
      &       'no file associated to list '//trim(label))
       end if
 
+      ! special formulae
+      do jdx = 1, nspcfrm
+        idx = idx_formlist(label_spcfrm(jdx),form_info)
+        if (idx.le.0)
+     &       call quit(1,'solve_nleq',
+     &       'did not find formula '//trim(label_spcfrm(jdx)))
+        ! read formula
+        call read_form_list(form_info%form_arr(idx)%form%fhand,
+     &                      fl_spc(jdx),.true.)
+      end do
+
       ! for safety reasons, we allocate the two guys
       allocate(me_trv(1),me_h_trv(1))
 
@@ -235,6 +248,13 @@ cmh      end do
       ! set dependency info for submitted formula list
       call set_formula_dependencies(depend,fl_en_res,op_info)
 
+      if (opti_info%skip_resx) then
+        ! exclude residuals which are not needed from dependency info
+        ! (these residuals are also defined as up to date)
+        idxmel = idx_mel_list(label_res(nopt),op_info)
+        call trunc_formula_dependencies(depend,idxmel,op_info)
+      end if
+
       ! number of info values returned on xret
       nout = depend%ntargets
       allocate(xret(nout))
@@ -270,24 +290,26 @@ c dbg
      &       me_special, nspecial,! <- R12: pass B, X, H here
 c     &       ffopt,ffgrd,ffdia,ffmet, ! <- R12: pass X here (metric)
 c     &       ff_trv,ff_h_trv,
-     &       fl_en_res,depend,
+     &       fl_spc,nspcfrm,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 
         ! quick and dirty (for experimental use):
         ! do C0 optimization if requested
-        if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
-     &      nspecial.ge.8.and.imacit.gt.1.and..not.conv) then
-          call get_argument_value('calculate.multiref','ciroot',
+        if (opti_info%optref.eq.-3.and.
+     &      (imacit.gt.1.or.opti_info%skip_resx)
+     &      .and..not.conv.and.nspcfrm.gt.1) then
+          call get_argument_value('method.MR','ciroot',
      &       ival=idx)
           call solve_evp('DIA',1,idx,
      &                 'ME_C0','DIAG1SxxM00C0','A_C0',
      &                 'C0','FOPT_OMG_C0','-',0,
      &                 op_info,form_info,str_info,strmap_info,orb_info)
 c dbg
+c          idx = idx_mel_list('ME_C0',op_info)
 c          print *,'current C0 vector: '
-c          call wrt_mel_file(luout,1000,me_special(8)%mel,
-c     &       1,me_special(8)%mel%op%n_occ_cls,
+c          call wrt_mel_file(luout,1000,op_info%mel_arr(idx)%mel,
+c     &       1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
 c     &       str_info,orb_info)
 c dbgend
         end if
@@ -315,27 +337,28 @@ c dbgend
 
         ! here?
         do iopt = 1, nopt
-          if (opti_info%typ_prc(iopt).eq.optinf_prc_norm) cycle
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_norm.and.
+     &        opti_info%optref.ne.0) cycle !no unneeded metric update
           call touch_file_rec(ffopt(iopt)%fhand)
         end do
 c dbg
-        if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
-     &      nspecial.ge.7)
-     &      call touch_file_rec(me_special(7)%mel%fhand)
-        if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
-     &      nspecial.ge.6.and.nopt.eq.1) then
-          ! very dirty trick: prevent calc. of Res.#2
-            call touch_file_rec(op_info%mel_arr(
-     &           idx_mel_list('ME_A_C0',op_info))%mel%fhand)
-          ! also delete information that Res.#2 depends on energy
-          if (imacit.eq.1) then
-            do idx = 1, depend%ndepend
-              if (depend%depends_on_idxlist(idx,3).eq.
-     &            depend%idxlist(1))
-     &           depend%depends_on_idxlist(idx,3) = 0
-            end do
-          end if
-        end if
+c        if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
+c     &      nspecial.ge.7)
+c     &      call touch_file_rec(me_special(7)%mel%fhand)
+c        if (opti_info%typ_prc(1).eq.optinf_prc_traf.and.
+c     &      nspecial.ge.6.and.nopt.eq.1) then
+c          ! very dirty trick: prevent calc. of Res.#2
+c            call touch_file_rec(op_info%mel_arr(
+c     &           idx_mel_list('ME_A_C0',op_info))%mel%fhand)
+c          ! also delete information that Res.#2 depends on energy
+c          if (imacit.eq.1) then
+c            do idx = 1, depend%ndepend
+c              if (depend%depends_on_idxlist(idx,3).eq.
+c     &            depend%idxlist(1))
+c     &           depend%depends_on_idxlist(idx,3) = 0
+c            end do
+c          end if
+c        end if
 c dbgend
 
         ! 1 - get energy
@@ -412,7 +435,7 @@ c dbg
 c dbg
         ! very dirty: don't close file if needed for following opt.
         if (opti_info%typ_prc(1).ne.optinf_prc_traf.or.
-     &      nspecial.lt.6.or.nopt.ne.1) then
+     &      opti_info%optref.eq.0.or.nopt.ne.1) then
 c dbgend
         call file_close_keep(ffopt(iopt)%fhand)
 c dbg
@@ -433,6 +456,9 @@ c dbgend
       deallocate(ffopt,ffdia,ffgrd,ffspecial,
      &     me_opt,me_dia,me_grd,me_special,me_trv,me_h_trv,xret)
       call dealloc_formula_list(fl_en_res)
+      do jdx = 1, nspcfrm
+        call dealloc_formula_list(fl_spc(jdx))
+      end do
       ifree = mem_flushmark()
 
       return

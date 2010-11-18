@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine invsqrt_mat(ndim,mat,mat2,half,icnt_sv,icnt_sv0,
-     &                       xmax,xmin)
+     &                       xmax,xmin,bins)
 *----------------------------------------------------------------------*
 *     half = true: calculates U*mat^(-0.5) using MAT = U*mat*U^+
 *     half = false: calculates both U*mat^(-0.5) and U*1s*U^+
@@ -16,13 +16,13 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 0
       real(8), parameter ::
      &     warn_sv = 1d-12!5  ! give a warning for small singular values
       integer, intent(in) ::
      &     ndim
       integer, intent(inout) ::
-     &     icnt_sv, icnt_sv0
+     &     icnt_sv, icnt_sv0, bins(17)
       real(8), intent(inout), target ::
      &     mat(ndim,ndim), mat2(ndim,ndim), xmax, xmin
       logical, intent(in) ::
@@ -117,6 +117,18 @@ c      end if
         icnt_sv = icnt_sv + 1
         sv_above = .false.
         if (sv_fix.and.read_file) read(luinp,*) idx2, sv_above
+
+        ! binning of singular value
+        dum1 = singval(idx)
+        do idx2 = 1, 17
+          if (dum1.ge.1d0) then
+            bins(idx2) = bins(idx2) + 1
+            exit
+          end if
+          dum1 = dum1*10d0
+          if (idx2.eq.17) bins(idx2) = bins(idx2) + 1
+        end do
+
         if (.not.(sv_fix.and.read_file)
      &      .and.singval(idx).gt.sv_thresh.or.
      &      sv_above) then

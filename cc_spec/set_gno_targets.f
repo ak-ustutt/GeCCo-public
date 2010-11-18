@@ -40,9 +40,9 @@
 
       ! first set targets for CASSCF or uncontracted CI wave function
       ! (if not done already)
-      if (.not.is_keyword_set('calculate.multiref').gt.0) then
-        call set_ic_mrci_targets(tgt_info,orb_info)
-      end if
+      if (.not.is_keyword_set('method.MR').gt.0)
+     &      call quit(1,'set_gno_targets',
+     &      'generalized normal order requires MR wave function')
 
       if (iprlvl.gt.0)
      &     write(luout,*) 
@@ -54,13 +54,13 @@
 
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations
-      call get_argument_value('calculate.multiref','maxexc',
+      call get_argument_value('method.MR','maxexc',
      &     ival=maxexc)
-      call get_argument_value('calculate.multiref','maxcum',
+      call get_argument_value('method.MR','maxcum',
      &     ival=maxcum)
-      call get_argument_value('calculate.multiref','GNO',
+      call get_argument_value('method.MR','GNO',
      &     ival=gno)
-      call get_argument_value('calculate.multiref','pure_vv',
+      call get_argument_value('method.MR','pure_vv',
      &     lval=pure_vv)
       ioff = 0
       if (gno.eq.0) then

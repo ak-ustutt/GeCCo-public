@@ -35,7 +35,7 @@
      &     isym, msc, ims, ip, ih, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, cmaxv
       logical ::
-     &     ci_init, l_exist
+     &     oldref, l_exist
       character(len_target_name) ::
      &     dia_label, labels(20)
       character(len_command_par) ::
@@ -55,20 +55,20 @@
 
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations
-      call get_argument_value('calculate.multiref','cminh',
+      call get_argument_value('method.MR','cminh',
      &     ival=cminh)
-      call get_argument_value('calculate.multiref','cmaxh',
+      call get_argument_value('method.MR','cmaxh',
      &     ival=cmaxh)
-      call get_argument_value('calculate.multiref','cminp',
+      call get_argument_value('method.MR','cminp',
      &     ival=cminp)
-      call get_argument_value('calculate.multiref','cmaxp',
+      call get_argument_value('method.MR','cmaxp',
      &     ival=cmaxp)
-      call get_argument_value('calculate.multiref','cmaxexc',
+      call get_argument_value('method.MR','cmaxexc',
      &     ival=cmaxexc)
-      call get_argument_value('calculate.multiref','ciroot',
+      call get_argument_value('method.MR','ciroot',
      &     ival=ciroot)
-      call get_argument_value('calculate.multiref','ci_init',
-     &     lval=ci_init)
+      call get_argument_value('method.MR','oldref',
+     &     lval=oldref)
       if (cmaxh.lt.0) cmaxh = cmaxexc
       if (cmaxp.lt.0) cmaxp = cmaxexc
       cmaxv = orb_info%norb_hpv(IVALE,1)*2
@@ -82,7 +82,7 @@
         write(luout,*) 'cmaxexc = ',cmaxexc
         write(luout,*) 'nactel  = ',orb_info%nactel
         write(luout,*) 'ciroot  = ',ciroot
-        write(luout,*) 'ci_init = ',ci_init
+        write(luout,*) 'oldref  = ',oldref
       end if
 
 *----------------------------------------------------------------------*
@@ -563,7 +563,7 @@ c dbgend
       labels(3) = 'A_C0'
       labels(4) = 'C0'
       labels(5) = 'FOPT_A_C0'
-      if (ci_init) then
+      if (.not.oldref) then
         call set_rule('SOLVE_REF',ttype_opme,SOLVEEVP,
      &     labels,5,1,
      &     parameters,2,tgt_info)

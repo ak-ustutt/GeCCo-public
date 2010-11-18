@@ -279,6 +279,8 @@
       call add_command_proto(SOLVENLEQ,tgt_info)
       call set_arg('_PROTO_',SOLVENLEQ,'LIST_SPC',0,tgt_info,
      &     (/'-'/))
+      call set_arg('_PROTO_',SOLVENLEQ,'FORM_SPC',0,tgt_info,
+     &     (/'-'/))
 *----------------------------------------------------------------------*
       call add_command_proto(SOLVELEQ,tgt_info)
 *----------------------------------------------------------------------*

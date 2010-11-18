@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine update_metric(me_dia,me_special,nspecial,
-     &     flist,depend,orb_info,op_info,str_info,strmap_info)
+     &     fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,prcupdate)
 *----------------------------------------------------------------------*
 *
 *     update metric, transformation matrices, and preconditioner
@@ -25,14 +25,16 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nspecial
+     &     nspecial, nspcfrm
+      logical, intent(in) ::
+     &     prcupdate
       type(me_list_array), intent(inout) ::
      &     me_special(nspecial)
       type(me_list), intent(in) ::
      &     me_dia
 
-      type(formula_item), intent(inout) ::
-     &     flist
+      type(formula_item), intent(in) ::
+     &     fspc(nspcfrm)
       type(dependency_info) ::
      &     depend
 
@@ -45,25 +47,17 @@
       type(operator_info), intent(inout) ::
      &     op_info
 
+      real(8) ::
+     &     xdum
 
-      integer ::
-     &     nselect
-
-      integer, pointer ::
-     &     idxselect(:)
-      real(8), pointer ::
-     &     xret(:)
-
-      allocate(xret(depend%ntargets),idxselect(depend%ntargets))
+      if (nspcfrm.lt.2) call quit(1,'update_metric',
+     &      'No formula for metric passed.')
+      if (nspecial.lt.6) call quit(1,'update_metric',
+     &      'Not enough special lists passed.')
 
       ! calculate metric (if not up to date)
-        nselect = 0
-        call select_formula_target(idxselect,nselect,
-     &              'ME_DENS',depend,op_info)
-        call select_formula_target(idxselect,nselect,
-     &              me_special(5)%mel%label,depend,op_info)
-        call frm_sched(xret,flist,depend,idxselect,nselect,
-     &              op_info,str_info,strmap_info,orb_info)
+      call evaluate2(fspc(2),
+     &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
 
       ! get half-transform of square root of inverted metric
       ! and projector matrix
@@ -94,21 +88,23 @@ c     &             op_info,orb_info,str_info,strmap_info)
      &             13,.false.)  ! dirty: reo vtx. 1 --> 3
 
       ! update preconditioner if requested
-      if (nspecial.ge.7) then
+      if (prcupdate) then
+        if (nspcfrm.lt.3) call quit(1,'update_metric',
+     &        'No formula for Jacobian passed.')
+        if (nspecial.lt.7) call quit(1,'update_metric',
+     &        'Special list for Jacobian missing.')
+
         call assign_me_list(me_special(2)%mel%label,
      &                     me_special(2)%mel%op%name,op_info)
-        nselect = 0
-        call select_formula_target(idxselect,nselect,
-     &              me_special(7)%mel%label,depend,op_info)
-        call frm_sched(xret,flist,depend,idxselect,nselect,
-     &              op_info,str_info,strmap_info,orb_info)
+
+        call evaluate2(fspc(3),
+     &              op_info,str_info,strmap_info,orb_info,xdum,.false.)
 
         ! put diagonal of Jacobian to preconditioner
         call dia_from_op(trim(me_dia%label),
      &                   trim(me_special(7)%mel%label),
      &                   op_info,str_info,orb_info)
       end if
-      deallocate(xret,idxselect)
 
       return
       end

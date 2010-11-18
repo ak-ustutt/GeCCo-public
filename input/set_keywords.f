@@ -136,6 +136,49 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('opt','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
 
+      ! special keywords for multireference wave functions
+      call keyword_add('MR',context='method')
+      call argument_add('cminh','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! min. number of holes for wf
+      call argument_add('cmaxh','method.MR',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of holes for wf
+      call argument_add('cminp','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! min. number of particles for wf
+      call argument_add('cmaxp','method.MR',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of particles for wf
+      call argument_add('cmaxexc','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! max. excitation for wf
+      call argument_add('ciroot','method.MR',type=vtyp_int,
+     &                  idef=(/1/))  ! root to be taken for wf
+      call argument_add('minh','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! min. number of holes
+      call argument_add('maxh','method.MR',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of holes
+      call argument_add('minp','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! min. number of particles
+      call argument_add('maxp','method.MR',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of particles
+      call argument_add('maxv','method.MR',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of valence ops
+      call argument_add('maxvv','method.MR',type=vtyp_int,
+     &                  idef=(/-1/)) ! max. number of val-val exc.
+      call argument_add('maxexc','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! max. excitation
+      call argument_add('minexc','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! min. excitation (for GNO=1)
+      call argument_add('pure_vv','method.MR',type=vtyp_log,
+     &                  ldef=(/.true./)) ! pure act.-act. excitations
+      call argument_add('GNO','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! 1 for generalized normal order
+      call argument_add('maxcum','method.MR',type=vtyp_int,
+     &                  idef=(/4/))  ! max. cumulant rank
+      call argument_add('oldref','method.MR',type=vtyp_log,
+     &                  ldef=(/.false./)) ! use existing CASSCF coeff.
+
+      call keyword_add('MRCI',context='method')
+      call argument_add('nroots','method.MRCI',type=vtyp_int,
+     &                  idef=(/1/))  ! number of roots (for ic-MRCI)
+
       call keyword_add('MRCC',context='method')
       call argument_add('maxcom_res','method.MRCC',type=vtyp_int,
      &     idef=(/4/))
@@ -189,6 +232,15 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('method','calculate.solve.non_linear',
      &     type=vtyp_str,len=8,
      &     cdef=(/'d','i','i','s',' ',' ',' ',' '/))
+      call argument_add('optref','calculate.solve.non_linear',
+     &     type=vtyp_int,
+     &     idef=(/0/)) ! optimize reference fct.
+      call argument_add('update_prc','calculate.solve.non_linear',
+     &     type=vtyp_log,
+     &     ldef=(/.true./)) ! update precond. when metric is updated
+      call argument_add('preopt','calculate.solve.non_linear',
+     &     type=vtyp_log,
+     &     ldef=(/.false./)) ! 
 
       call keyword_add('linear',context='calculate.solve')
       call argument_add('maxiter','calculate.solve.linear',
@@ -273,68 +325,21 @@ c     &     idef=(/0/))
      &     ldef=(/.false./))
 
       ! special keywords for response theory
-      call keyword_add('response',context='calculate')
-      call argument_add('order','calculate.response',type=vtyp_int,
+      call keyword_add('response',context='method')
+      call argument_add('order','method.response',type=vtyp_int,
      &                  idef=(/0/)) ! perturbation order
-      call argument_add('pert','calculate.response',
+      call argument_add('pert','method.response',
      &                  type=vtyp_str,len=1,cdef=(/'d'/)) ! pert. op.
-      call argument_add('comp','calculate.response',
+      call argument_add('comp','method.response',
      &                  type=vtyp_str,len=1,cdef=(/'Z'/)) ! cartesian components
-      call argument_add('freq','calculate.response',
+      call argument_add('freq','method.response',
      &                  type=vtyp_rl8,xdef=(/0d0/)) ! frequencies
-      call argument_add('BX_3C','calculate.response',
+      call argument_add('BX_3C','method.response',
      &     type=vtyp_log,ldef=(/.true./)) ! treat BX intermed. as in approx.3C
-      call argument_add('rules','calculate.response',
+      call argument_add('rules','method.response',
      &     type=vtyp_log,ldef=(/.true./)) ! use 2n+1 / 2n+2 rules
-      call argument_add('restart','calculate.response',
+      call argument_add('restart','method.response',
      &     type=vtyp_int,idef=(/0/)) ! restart calc. at given prop. order
-
-      ! special keywords for multireference wave functions
-      call keyword_add('multiref',context='calculate')
-      call argument_add('cminh','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/))  ! min. number of holes for wf
-      call argument_add('cmaxh','calculate.multiref',type=vtyp_int,
-     &                  idef=(/-1/)) ! max. number of holes for wf
-      call argument_add('cminp','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/))  ! min. number of particles for wf
-      call argument_add('cmaxp','calculate.multiref',type=vtyp_int,
-     &                  idef=(/-1/)) ! max. number of particles for wf
-      call argument_add('cmaxexc','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/))  ! max. excitation for wf
-      call argument_add('ciroot','calculate.multiref',type=vtyp_int,
-     &                  idef=(/1/))  ! root to be taken for wf
-      call argument_add('minh','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/))  ! min. number of holes
-      call argument_add('maxh','calculate.multiref',type=vtyp_int,
-     &                  idef=(/-1/)) ! max. number of holes
-      call argument_add('minp','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/))  ! min. number of particles
-      call argument_add('maxp','calculate.multiref',type=vtyp_int,
-     &                  idef=(/-1/)) ! max. number of particles
-      call argument_add('maxv','calculate.multiref',type=vtyp_int,
-     &                  idef=(/-1/)) ! max. number of valence ops
-      call argument_add('maxvv','calculate.multiref',type=vtyp_int,
-     &                  idef=(/-1/)) ! max. number of val-val exc.
-      call argument_add('maxexc','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/))  ! max. excitation
-      call argument_add('minexc','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/))  ! min. excitation (for GNO=1)
-      call argument_add('pure_vv','calculate.multiref',type=vtyp_log,
-     &                  ldef=(/.true./)) ! pure act.-act. excitations
-      call argument_add('optref','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/)) ! optimize reference fct.
-      call argument_add('update_prc','calculate.multiref',type=vtyp_log,
-     &                  ldef=(/.true./)) ! update precond. in each it.
-      call argument_add('calc','calculate.multiref',type=vtyp_log,
-     &                  ldef=(/.true./)) ! do the calc. (else set targ.)
-      call argument_add('nroots','calculate.multiref',type=vtyp_int,
-     &                  idef=(/1/))  ! number of roots (for ic-MRCI)
-      call argument_add('GNO','calculate.multiref',type=vtyp_int,
-     &                  idef=(/0/))  ! 1 for generalized normal order
-      call argument_add('maxcum','calculate.multiref',type=vtyp_int,
-     &                  idef=(/4/))  ! max. cumulant rank
-      call argument_add('ci_init','calculate.multiref',type=vtyp_log,
-     &                  ldef=(/.true./)) ! init. CI coeff. by CASSCF
 
       call keyword_add('experimental',context='calculate')
       ! set additional experimental keyword in this subroutine:

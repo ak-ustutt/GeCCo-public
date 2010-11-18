@@ -228,7 +228,10 @@ c dbg
      &       rule%labels(3*nopt+2),             ! formula
      &       rule%labels(3*nopt+ioff+1:
      &                   3*nopt+ioff+nspecial),
-     &          nspecial,                       ! specials
+     &          nspecial,
+     &       rule%labels(3*nopt+ioff+1:
+     &                   3*nopt+ioff),
+     &          0,                              ! specials
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(SOLVELEQ)

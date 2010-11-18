@@ -25,6 +25,7 @@
       isave = 0
       do while(associated(current%next))
         current => current%next
+        isave = isave+1
         if (isave.gt.10 000 000)
      &       call quit(1,'dealloc_formula_list','infinite loop (1)?')
       end do

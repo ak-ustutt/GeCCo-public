@@ -8,7 +8,7 @@
      &     typ_prc,
      &     nincore,nwfpar,
      &     lenbuf,xbuf1,xbuf2,xbuf3,
-     &     flist,depend,energy,xngrd,iopt,opti_info,
+     &     fspc,nspcfrm,energy,xngrd,iopt,opti_info,
      &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
@@ -32,13 +32,12 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
-      include 'def_dependency_info.h'
 
       integer, parameter ::
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nspecial, iopt
+     &     nspecial, iopt, nspcfrm
       logical, intent(in) ::
      &     get_new_rec
       type(me_list_array), intent(inout) ::
@@ -56,10 +55,8 @@
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*), energy, xngrd(*)
 
-      type(formula_item), intent(inout) ::
-     &     flist
-      type(dependency_info) ::
-     &     depend
+      type(formula_item), intent(in) ::
+     &     fspc(nspcfrm)
 
       type(optimize_info), intent(in) ::
      &     opti_info
@@ -75,15 +72,17 @@
 
       integer ::
      &     irecr, irecv, inum, idx_inv, idx, len, iblk,
-     &     nopt, nsec, isec, stsec, ndsec, nselect
+     &     nopt, nsec, isec, stsec, ndsec
       character(len_opname) ::
      &     op_grd_name, op_trf_name, op_amp_name
 
       integer, pointer ::
-     &     nwfpsec(:), idstsec(:), nsec_arr(:), idxselect(:)
+     &     nwfpsec(:), idstsec(:), nsec_arr(:)
 
       real(8), pointer ::
-     &     signsec(:), xret(:)
+     &     signsec(:)
+      real(8) ::
+     &     xdum
 
       type(filinf), pointer ::
      &     ffamp, ffgrd, ffdia
@@ -188,130 +187,10 @@ c dbg
 
         case(optinf_prc_traf)
 
-          nopt = opti_info%nopt
-
-          ! update me lists for transformation matrices if required
-          idx = idx_mel_list('ME_C0',op_info)  ! quick & dirty
-          
-          if (nspecial.ge.6.and.
-     &        op_info%mel_arr(idx)%mel%fhand%last_mod(1).gt.
-     &        me_special(2)%mel%fhand%last_mod(1)) then
-            call update_metric(me_dia,me_special,nspecial,
-     &          flist,depend,orb_info,op_info,str_info,strmap_info)
-          else if (nspecial.ge.5.and.iprlvl.ge.10) then
-            write(luout,*) ' Metric is already up to date!'
-          end if
-
-c dbg
-c          call vec_from_da(me_dia%fhand,1,xbuf1,nwfpar)
-c          print *,'Preconditioner:'
-c          call wrt_mel_buf(luout,5,xbuf1,me_dia,1,
-c     &         me_dia%op%n_occ_cls,
-c     &         str_info,orb_info)
-c dbgend
-
-          ! Transform residual into orthogonal basis:
-
-          op_grd_name = trim(me_grd%op%name)
-          op_trf_name = trim(me_special(1)%mel%op%name)
-          op_amp_name = trim(me_amp%op%name)
-          ! assign op. to be transformed with list of gradient
-          call assign_me_list(me_grd%label,
-     &                        trim(op_trf_name),op_info)
-          ! assign op. with list containing special vector
-          call assign_me_list(me_special(1)%mel%label,
-     &                        trim(op_amp_name),op_info)
-          ! use daggered transformation matrix if requested
-          if (nspecial.ge.3)
-     &       call assign_me_list(me_special(3)%mel%label,
-     &                           me_special(3)%mel%op%name,op_info)
-
-          ! calculate transformed residual
-          allocate(xret(depend%ntargets),idxselect(depend%ntargets))
-          nselect = 0
-          call select_formula_target(idxselect,nselect,
-     &                me_amp%label,depend,op_info)
-          ! pretend that me_amp is not up to date
-          me_amp%fhand%last_mod(
-     &           me_amp%fhand%current_record) = -1
-          call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                op_info,str_info,strmap_info,orb_info)
-
-          call vec_from_da(me_special(1)%mel%fhand,1,xbuf1,nwfpar)
-
-          if (ntest.ge.100) then
-            write(luout,*) 'transformed gradient vector:'
-            write(luout,*) xbuf1(1:nwfpar)
-          end if
-
-          ! use transformed residual's norm for convergence criterion
-          xngrd(iopt) = xret(idxselect(1))
-          write(luout,'(x,a,i1,a,x,g10.4)')
-     &       'Norm of transformed residual for vector ',
-     &       iopt,':',xngrd(iopt)
-
-          call vec_from_da(ffdia,1,xbuf2,nwfpar)
-
-          nsec_arr => opti_info%nsec(1:nopt)
-          nsec = sum(nsec_arr)
-          nwfpsec => opti_info%nwfpsec(1:nsec)
-          idstsec => opti_info%idstsec(1:nsec)
-          signsec => opti_info%signsec2(1:nsec)
-          stsec = 1
-          ndsec = 0
-          if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)
-          ndsec = ndsec + nsec_arr(iopt)
-
-          ! Divide by precond., account for sign changes if necessary
-
-          do isec = stsec, ndsec
-            call diavc(xbuf1(idstsec(isec)),xbuf1(idstsec(isec)),
-     &                 signsec(isec),xbuf2(idstsec(isec)),
-     &                 0d0,nwfpsec(isec))
-          end do
-
-          ! put new vector to special list for transformation
-          call vec_to_da(me_special(1)%mel%fhand,1,xbuf1,nwfpar)
-          ! get current trial vector (list will be overwritten)
-          call vec_from_da(ffamp,1,xbuf2,nwfpar)
-
-          ! Transform new vector into original basis
-
-          ! assign op. with its proper list
-          call assign_me_list(me_amp%label,
-     &                        trim(op_amp_name),op_info)
-          ! assign op. to be transformed with special list
-          call assign_me_list(me_special(1)%mel%label,
-     &                        trim(op_trf_name),op_info)
-          ! use non-daggered transformation matrix if requested
-          if (nspecial.ge.3)
-     &       call assign_me_list(me_special(2)%mel%label,
-     &                           me_special(2)%mel%op%name,op_info)
-          ! assign gradient list to its proper op.
-          call assign_me_list(me_grd%label,
-     &                        trim(op_grd_name),op_info)
-
-          ! calculate transformed vector
-          nselect = 0
-          call select_formula_target(idxselect,nselect,
-     &                me_amp%label,depend,op_info)
-          ! pretend that me_trv is not up to date
-          me_amp%fhand%last_mod(
-     &           me_amp%fhand%current_record) = -1
-          call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                op_info,str_info,strmap_info,orb_info)
-          deallocate(xret,idxselect)
-
-          call vec_from_da(ffamp,1,xbuf1,nwfpar)
-c dbg
-c          ! vector could be put back to list here:
-c          call vec_to_da(ffamp,1,xbuf2,nwfpar)
-c dbgend
-
-          if (ntest.ge.100) then
-            write(luout,*) 'gradient vector afterwards:'
-            write(luout,*) xbuf1(1:nwfpar)
-          end if
+          call optc_prc_traf(me_amp,me_grd,me_dia,me_special,nspecial,
+     &                       nwfpar,xbuf1,xbuf2,
+     &                       fspc,nspcfrm,xngrd,iopt,opti_info,
+     &                       orb_info,op_info,str_info,strmap_info)
 
         end select
 c dbg

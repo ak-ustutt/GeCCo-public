@@ -106,6 +106,16 @@
         call get_argument_value('calculate.solve.non_linear','tr_ini',
      &       xval=opti_info%trini)
 
+        call get_argument_value('calculate.solve.non_linear','optref',
+     &       ival=opti_info%optref)
+        call get_argument_value('calculate.solve.non_linear',
+     &       'update_prc',
+     &       lval=opti_info%update_prc)
+        call get_argument_value('calculate.solve.non_linear',
+     &       'preopt',
+     &       lval=opti_info%skip_resx)
+        opti_info%skip_resx = opti_info%skip_resx.and.nopt.eq.1
+
       else if (mode.eq.2) then
 
         if (is_argument_set('calculate.solve.linear','maxiter'))

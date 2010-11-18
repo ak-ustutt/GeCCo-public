@@ -42,8 +42,8 @@ c dbg
       read(ffform%unit)
 
       form_ptr => form_head
-      if (init) nullify(form_ptr%prev)
-      ! we need init_formula here???
+      ! we need init_formula here??? -->yes!
+      if (init) call init_formula(form_ptr)
 c dbg
       nterms = 0
 c dbg
