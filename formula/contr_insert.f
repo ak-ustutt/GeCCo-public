@@ -2,6 +2,10 @@
       subroutine contr_insert
      &     (contr,op_info,nvtx,vtxinlist,idxins,iblkins,idxres)
 *----------------------------------------------------------------------*
+*     inserts block iblkins of operator idxins between the vertices
+*     indicated by vtxinlist (as often as possible).
+*
+*     matthias, May 2010
 *----------------------------------------------------------------------*
 
       implicit none
@@ -29,7 +33,7 @@
      &     ok
       integer ::
      &     iins, jins, nvtx_new, nins, ivtx, jvtx,
-     &     njoined_res, njoined_ins, ins_cur
+     &     njoined_res, njoined_ins, ins_cur, ieqvfac
       type(operator_array), pointer ::
      &     op_arr(:)
 
@@ -47,12 +51,15 @@
      &     occ_sum_x(:), occ_sum_d(:), occ_tmp(:)
       integer, pointer ::
      &     svertex(:), svertex_new(:),
-     &     occ_ins(:,:,:), insert(:), ins_at_vtx(:)
+     &     occ_ins(:,:,:), insert(:), ins_at_vtx(:),
+     &     neqv(:), idx_eqv(:,:)
       logical, pointer ::
      &     vil_new(:) !vtxinlist_new
       
       integer(8), external ::
      &     pack_vtx, int8_pack, occ_overlap_p
+      integer, external ::
+     &     ifac
       logical, external ::
      &     occ_bound_p
 
@@ -66,6 +73,7 @@
         call prt_contr2(luout,contr,op_info)
         write(luout,*) 'vtxinlist = ',vtxinlist
         write(luout,*) 'idxins = ',idxins
+        write(luout,*) 'iblkins= ',iblkins
       end if
 
       op_arr => op_info%op_arr
@@ -242,7 +250,7 @@ c dbgend
           topo_new(1:nvtx_new,jvtx) = topo_new(1:nvtx_new,jvtx-1)
         end do
         topo_new(1:nvtx_new,ins_cur+1) = 0
-        do jins = 1, nins
+        do jins = iins, nins
           if (insert(jins).ge.ins_cur) insert(jins) = insert(jins) + 1
           if (ins_at_vtx(jins).gt.ins_cur)
      &           ins_at_vtx(jins) = ins_at_vtx(jins) + 1
@@ -339,6 +347,21 @@ c dbgend
           call prt_contr_p(luout,svertex_new,vtx_new,topo_new,
      &         xlines_new,nvtx_new,njoined_res)
         end if
+
+        ! for insertion of more than one identical vertices,
+        ! we have to divide by a permutation factor
+        allocate(neqv(nvtx_new),idx_eqv(nvtx_new,nvtx_new))
+        call set_eqv_map(neqv,idx_eqv,vtx_new,svertex_new,
+     &                   topo_new,xlines_new,nvtx_new,njoined_res)
+        ieqvfac = 1
+        do iins = 1, nins
+          if (neqv(insert(iins)).lt.0) cycle
+          ieqvfac = ieqvfac*ifac(neqv(insert(iins)))
+        end do
+        deallocate(neqv,idx_eqv)
+        if (ntest.ge.100)
+     &       write(luout,*) 'Divide contraction factor by ',ieqvfac
+        contr%fac = contr%fac/dble(ieqvfac)
 
         ! set result
         call unpack_contr(contr,

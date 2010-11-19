@@ -1681,7 +1681,9 @@ signsec:      1.0
   term #  118 - H^ 2 P^ 4 V^ 2 X^ 0 - Mb:     0.103E+00
   term #  119 - H^ 2 P^ 4 V^ 2 X^ 0 - Mb:     0.103E+00
   term #  117 - H^ 2 P^ 4 V^ 2 X^ 0 - Mb:     0.103E+00
- wrote                   1055  entries !manually changed (no scalar 1's anymore)
+ wrote                   1201  entries ! changed manually on (11/19/10)
+                                       ! since now we use only one-particle
+                                       ! unit operators
  My next target: FREF
  Rule: DEF_HAMILTONIAN
  Number of occupation classes for FREF:   10

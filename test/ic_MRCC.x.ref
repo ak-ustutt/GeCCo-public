@@ -6605,7 +6605,9 @@ signsec2:      1.0
   term #   22 - H^ 0 P^ 4 V^ 4 X^ 0 - Mb:     0.642E+00
   term #   21 - H^ 0 P^ 4 V^ 4 X^ 0 - Mb:     0.642E+00
   term #   20 - H^ 0 P^ 4 V^ 4 X^ 0 - Mb:     0.642E+00
- wrote                    202  entries
+ wrote                    208  entries ! changed manually on (11/19/10)
+                                       ! since now we use only one-particle
+                                       ! unit operators
  My next target: EVAL_Atr
  Rule: EVALUATE
  read                    201  entries

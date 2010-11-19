@@ -239,10 +239,14 @@ cmh end
       do ip = 0, maxp
         do ih = 0, maxh
            do iv = 0, maxexc
-            ! not needed for pure inactive excitations
-            if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
+            ! no scalar block needed
+            if (ip+ih+iv.eq.0) cycle
+c            ! not needed for pure inactive excitations
+c            if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
             ! only pure active or pure non-active occ. classes needed for now
             if (iv.gt.0.and.ih+ip.gt.0) cycle
+            ! actually we only need the one-particle blocks!
+            if (ih+ip.gt.1) cycle
             ndef = ndef + 1
             occ_def(IHOLE,1,ndef) = ih
             occ_def(IHOLE,2,ndef) = ih
@@ -269,9 +273,13 @@ cmh end
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
-          ! not needed for pure inactive excitations
+          !no scalar block needed
+          if (ip+ih.eq.0) cycle
+c          ! not needed for pure inactive excitations
 c          if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
-          if (ip.ge.2.and.ih.ge.2) cycle
+c          if (ip.ge.2.and.ih.ge.2) cycle
+          ! actually we only need the one-particle blocks!
+          if (ip+ih.gt.1) cycle
           ndef = ndef + 1
           occ_def(IHOLE,1,ndef) = ih
           occ_def(IHOLE,2,ndef) = ih
