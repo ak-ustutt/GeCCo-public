@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_mrcc_lagrangian(form_lag,
-     &     title,label,nlabels,max_n,approx,
+     &     title,label,nlabels,max_n,max_n_en,approx,
      &     op_info,orb_info)
 *----------------------------------------------------------------------*
 *     lagrangian for internally contracted MRCC
@@ -25,7 +25,7 @@
       type(formula), intent(inout), target ::
      &     form_lag
       integer, intent(in) ::
-     &     max_n, nlabels
+     &     max_n, max_n_en, nlabels
       character(*), intent(in) ::
      &     label(nlabels), title, approx
 
@@ -96,7 +96,7 @@
       if (approx(1:4).eq.'EMAX') then
         read(approx(5:5),'(i1)') max_n0
       else
-        max_n0 = max_n
+        max_n0 = max_n_en
       end if
       set_scalar = .not.approx(1:6).eq.'NOSCAL'
       sym = approx(1:3).eq.'SYM'

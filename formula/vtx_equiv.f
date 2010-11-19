@@ -39,16 +39,12 @@
         if (idx.eq.ivtx) cycle
         iidx = iidx+1
         vtx1(iidx) = vtx(idx)
-        if (svtx(idx).gt.svtx(ivtx)) then
-          svtx1(iidx) = svtx(idx) - 1
-        else
-          svtx1(iidx) = svtx(idx)
-        end if
-        xlines1(iidx,1:nj) = xlines(iidx,1:nj)
-        xlines1(iidx,nj+1) = topo(iidx,ivtx)
+        svtx1(iidx) = svtx(idx)
+        xlines1(iidx,1:nj) = xlines(idx,1:nj)
+        xlines1(iidx,nj+1) = topo(idx,ivtx)
         jjdx = 0
         do jdx = 1, nvtx
-          if (idx.eq.ivtx) cycle
+          if (jdx.eq.ivtx) cycle
           jjdx = jjdx+1
           topo1(jjdx,iidx) = topo(jdx,idx)
         end do
@@ -60,16 +56,12 @@
         if (idx.eq.jvtx) cycle
         iidx = iidx+1
         vtx2(iidx) = vtx(idx)
-        if (svtx(idx).gt.svtx(jvtx)) then
-          svtx2(iidx) = svtx(idx) - 1
-        else
-          svtx2(iidx) = svtx(idx)
-        end if
-        xlines2(iidx,1:nj) = xlines(iidx,1:nj)
-        xlines2(iidx,nj+1) = topo(iidx,jvtx)
+        svtx2(iidx) = svtx(idx)
+        xlines2(iidx,1:nj) = xlines(idx,1:nj)
+        xlines2(iidx,nj+1) = topo(idx,jvtx)
         jjdx = 0
         do jdx = 1, nvtx
-          if (idx.eq.jvtx) cycle
+          if (jdx.eq.jvtx) cycle
           jjdx = jjdx+1
           topo2(jjdx,iidx) = topo(jdx,idx)
         end do

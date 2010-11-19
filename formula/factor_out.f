@@ -50,7 +50,7 @@
       fintm_head => form_head
       ! read Intm definition
       call read_form_list(form_info%form_arr(idx_intm)%form%fhand,
-     &     fintm_head)
+     &     fintm_head,.true.)
 
       form_ptr => form_head
       ! advance form_ptr to end of list

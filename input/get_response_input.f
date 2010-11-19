@@ -40,7 +40,7 @@
      &     pert_sym
 
       do icnt = 1,ncnt
-        call get_argument_value('calculate.response','order',
+        call get_argument_value('method.response','order',
      &       keycount=icnt,ival=maxord(icnt))
       end do
       ncmp = ncnt*maxval(maxord)
@@ -58,12 +58,12 @@
       npop = 0
       do icnt = 1,ncnt
         pos = (icnt-1)*maxval(maxord) + 1
-        call get_argument_value('calculate.response','comp',
+        call get_argument_value('method.response','comp',
      &       keycount=icnt,str=pert(pos:len_command_par))
-        call get_argument_value('calculate.response','pert',
+        call get_argument_value('method.response','pert',
      &       keycount=icnt,str=pertop(pos:len_command_par))
 
-        call get_argument_value('calculate.response','freq',
+        call get_argument_value('method.response','freq',
      &       keycount=icnt,xarr=cmp(pos+1:ncmp)%freq)
         cmp(pos+maxord(icnt):ncmp)%freq = 0d0
         if (maxord(icnt).gt.0)

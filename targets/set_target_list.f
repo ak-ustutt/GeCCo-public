@@ -50,11 +50,11 @@
       call set_r12_test_targets(tgt_info,orb_info,env_type)
 
       ! response section
-      if (is_keyword_set('calculate.response').gt.0)
+      if (is_keyword_set('method.response').gt.0)
      &    call set_response_targets(tgt_info,orb_info,env_type)
 
       ! multireference wave function
-      if (is_keyword_set('calculate.multiref').gt.0)
+      if (is_keyword_set('method.MR').gt.0)
      &    call set_ic_mrci_targets(tgt_info,orb_info)
 
       ! multireference coupled cluster

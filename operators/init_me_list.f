@@ -55,7 +55,6 @@
         allocate(mel%len_op_occ(nblk),
      &           mel%idx_graph(ngastp,2,nblkt),
      &           mel%off_op_occ(nblk),
-     &           mel%len_op_occ(nblk),
      &           mel%off_op_gmo(nblk),
      &           mel%len_op_gmo(nblk),
      &           mel%off_op_gmox(nblk),

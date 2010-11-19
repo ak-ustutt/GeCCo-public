@@ -117,7 +117,7 @@
      &       command_set_target_init,idxres)
         fl_pnt => fl_pnt%next
       else
-        call read_form_list(form_res%fhand,flist_res)
+        call read_form_list(form_res%fhand,flist_res,.true.)
         do while(fl_pnt%command.ne.command_end_of_formula)
           fl_pnt => fl_pnt%next
         end do

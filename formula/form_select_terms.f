@@ -92,7 +92,7 @@
 
       ! read in input formula
       call init_formula(flist)
-      call read_form_list(f_input%fhand,flist)
+      call read_form_list(f_input%fhand,flist,.true.)
 
       call select_terms(flist,
      &     idxop_res,

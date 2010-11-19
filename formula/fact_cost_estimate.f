@@ -59,9 +59,9 @@
      &                           cnt_info%nablk_op1op2,str_info%g,nsym)
 
       ! use these for FLOP and MEM estimates
-      flops = xlen_ex1*xlen_ex2*xlen_cnt*dble(nsym)
-      xmemtot = xlen_o12*dble(nsym)
-      xmemblk = xlen_o12
+      flops = xlen_ex1*xlen_ex2*xlen_cnt/(dble(nsym)**2)
+      xmemtot = xlen_o12
+      xmemblk = xlen_o12/dble(nsym)
 
       return
       end
@@ -92,7 +92,8 @@
         lenstr => grph(cnt_grph(iblk))%lenstr_gm
         do ims = 1, nms
           do isym = 1, nsym
-            lenmax = max(lenstr(isym,ims),lenmax)
+cmh            lenmax = max(lenstr(isym,ims),lenmax)
+            lenmax = lenmax + lenstr(isym,ims)
           end do
         end do
         xlen = xlen*dble(lenmax)

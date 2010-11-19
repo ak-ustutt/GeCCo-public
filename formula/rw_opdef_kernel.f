@@ -12,6 +12,8 @@
       include 'opdim.h'
       include 'stdunit.h'
       include 'def_operator.h'
+      include 'ifc_memman.h'
+      include 'par_globalmarks.h'
 
       integer, intent(in) ::
      &     lu, irw
@@ -23,7 +25,7 @@
      &     tra, tra1, tra2
 
       integer ::
-     &     nblk, nj, ngas, nspin, lenlab, lenp1lab, lenp2lab
+     &     nblk, nj, ngas, nspin, lenlab, lenp1lab, lenp2lab, ifree
       
 
       if (irw.gt.0) then
@@ -31,6 +33,9 @@
         ! dimension record
         read(lu,end=100) nblk, nj, ngas, nspin
 
+        ! allocate in operator section:
+        call mem_pushmark()
+        ifree = mem_gotomark(operator_def)
         allocate(op%ihpvca_occ(ngastp,2,nblk*nj),
      &           op%ica_occ(2,nblk),
      &           op%igasca_restr(2,ngas,2,2,nspin,nblk*nj),
@@ -47,9 +52,17 @@
      &       lenp2lab,lab_p2(1:lenp2lab),tra2,
      &       op%ihpvca_occ,op%igasca_restr
 
+        ifree = mem_register(2*ngastp*nblk*nj
+     &                      +2*nblk
+     &                      +8*ngas*nblk*nj*nspin
+     &                      +nblk,
+     &       trim(op%name))
+
         call occ2caocc(op%ica_occ,op%ihpvca_occ,nj,nblk)
 
         op%formal_blk = .false.
+
+        call mem_popmark()
 
       else
 

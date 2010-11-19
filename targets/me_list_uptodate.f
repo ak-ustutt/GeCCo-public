@@ -27,7 +27,7 @@
       integer ::
      &     irec, idx, jdx, mxidx
       integer(8) ::
-     &     time_res
+     &     time_res, time_int
 
       idx = depend_info%idxlist(idx_res)
       irec = op_info%mel_arr(idx)%mel%fhand%current_record
@@ -55,8 +55,14 @@
      &     trim(op_info%mel_arr(jdx)%mel%label),' time mark',
      &       op_info%mel_arr(jdx)%mel%fhand%last_mod(irec)
 
-        uptodate = uptodate.and.
-     &       op_info%mel_arr(jdx)%mel%fhand%last_mod(irec).le.time_res
+        time_int = op_info%mel_arr(jdx)%mel%fhand%last_mod(irec)
+cmh   following should be commented in, but currently not possible
+cmh   due to dirty tricks in evpc_core
+c        if (time_int.lt.0) call quit(1,'me_list_uptodate',
+c     &        'trying to use list never created: '//
+c     &        trim(op_info%mel_arr(jdx)%mel%label))
+
+        uptodate = uptodate.and.time_int.le.time_res
         if (.not.uptodate) exit
       end do
 

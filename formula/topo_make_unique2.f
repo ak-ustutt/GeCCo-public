@@ -35,7 +35,7 @@
      &     vtx0(nvtx)
       integer ::
      &     idx, jdx, sweep, neqv_blocks, svtx0(nvtx), nj_sub, tmp, tmp2,
-     &     min_idx, final_sweep, final_block
+     &     min_idx, final_sweep, final_block, kdx
       logical ::
      &     changed
 
@@ -85,20 +85,25 @@ c      call idxsort(svtx,ireo,nvtx,+1)
           if (idx.lt.min_idx) cycle
           jdx = idx
           nj_sub = 1
-          do while(jdx.lt.nvtx.and.(vtx(jdx+1).eq.vtx(idx).or.
+          vtx_loop: do while(jdx.lt.nvtx.and.(vtx(jdx+1).eq.vtx(idx).or.
      &             svtx(jdx+1).eq.svtx(jdx)))
             if (svtx(jdx+1).eq.svtx(jdx)) then
               nj_sub = nj_sub + 1
               jdx = jdx+1
             else
+              ! check if all other vertices match
+              do kdx = 2, nj_sub
+                if (vtx(jdx+kdx).ne.vtx(idx-1+kdx)) exit vtx_loop
+              end do
               jdx = jdx+nj_sub
             end if
-          end do
+          end do vtx_loop
           if (idx+nj_sub-1.ne.jdx) then
             ! sort such that xlines(,nj:1) give ascending seq
             call topo_sort_xlines2(xlines,ireo,idx,jdx,nvtx,nj,nj_sub)
-            min_idx = jdx+1
+c            min_idx = jdx+1
           end if
+          min_idx = jdx+1
         end do
       end if
 
@@ -156,7 +161,7 @@ c        if (neqv_blocks.le.1.or..not.changed) exit
           write(luout,*) 'max_sweep = ',max_sweep
           write(luout,*) 'neqv_blocks: ',neqv_blocks
           call prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx,nj)
-          call quit(1,'topo_make_unique2',
+          call warn('topo_make_unique2',
      &         'sort of topo matrix does not converge')
         end if
       end do

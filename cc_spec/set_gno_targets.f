@@ -28,7 +28,10 @@
      &     maxtop
 
       integer ::
-     &     ndef, occ_def(ngastp,2,60), msc, maxexc, iv, maxcum
+     &     ndef, occ_def(ngastp,2,60), msc, maxexc, iv, maxcum,
+     &     ioff, gno
+      logical ::
+     &     pure_vv
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -37,9 +40,9 @@
 
       ! first set targets for CASSCF or uncontracted CI wave function
       ! (if not done already)
-      if (.not.is_keyword_set('calculate.multiref').gt.0) then
-        call set_ic_mrci_targets(tgt_info,orb_info)
-      end if
+      if (.not.is_keyword_set('method.MR').gt.0)
+     &      call quit(1,'set_gno_targets',
+     &      'generalized normal order requires MR wave function')
 
       if (iprlvl.gt.0)
      &     write(luout,*) 
@@ -51,10 +54,19 @@
 
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations
-      call get_argument_value('calculate.multiref','maxexc',
+      call get_argument_value('method.MR','maxexc',
      &     ival=maxexc)
-      call get_argument_value('calculate.multiref','maxcum',
+      call get_argument_value('method.MR','maxcum',
      &     ival=maxcum)
+      call get_argument_value('method.MR','GNO',
+     &     ival=gno)
+      call get_argument_value('method.MR','pure_vv',
+     &     lval=pure_vv)
+      ioff = 0
+      if (gno.eq.0) then
+        ioff = 3
+        if (pure_vv) ioff = 2
+      end if
 
 c dbg
       print *,'maxcum  = ',maxcum
@@ -69,7 +81,7 @@ c      call add_target('DENS',ttype_op,.false.,tgt_info)
       call add_target2('DENS',.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do iv = 1, 2 + maxexc*(maxtop+1)
+      do iv = 1, 2 + maxexc*(maxtop+1) - ioff
             ndef = ndef + 1
             occ_def(IVALE,1,ndef*2) = iv
             occ_def(IVALE,2,ndef*2-1) = iv
@@ -95,7 +107,7 @@ c     &              parameters,2,tgt_info)
       call add_target('DENS_dag',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do iv = 1, 2 + maxexc*(maxtop+1)
+      do iv = 1, 2 + maxexc*(maxtop+1) - ioff
             ndef = ndef + 1
             occ_def(IVALE,1,ndef) = iv
             occ_def(IVALE,2,ndef) = iv

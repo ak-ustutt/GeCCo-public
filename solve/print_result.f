@@ -58,11 +58,11 @@
       logical ::
      &     closeit, file_exists, got_nucmom
 
-      ncnt = is_keyword_set('calculate.response')
+      ncnt = is_keyword_set('method.response')
       allocate(maxord(ncnt),freq(ncnt,maximum_order))
 
       do icnt = 1,ncnt
-        call get_argument_value('calculate.response','order',
+        call get_argument_value('method.response','order',
      &       keycount=icnt,ival=maxord(icnt))
       end do
 

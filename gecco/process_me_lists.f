@@ -171,6 +171,7 @@ c dbg
 
       case(INVERT)
 
+        if (form_test) exit loop
         if (rule%n_labels.ne.2)
      &     call quit(1,'process_me_lists','two labels expected for '
      &       //trim(INVERT))
@@ -227,7 +228,10 @@ c dbg
      &       rule%labels(3*nopt+2),             ! formula
      &       rule%labels(3*nopt+ioff+1:
      &                   3*nopt+ioff+nspecial),
-     &          nspecial,                       ! specials
+     &          nspecial,
+     &       rule%labels(3*nopt+ioff+1:
+     &                   3*nopt+ioff),
+     &          0,                              ! specials
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(SOLVELEQ)

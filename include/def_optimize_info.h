@@ -10,7 +10,9 @@
       type optimize_info
         logical ::
      &       variational,     ! variational energy
-     &       linear           ! linear
+     &       linear,          ! linear
+     &       update_prc,      ! allow updating of preconditioner
+     &       skip_resx        ! skip evaluation of not needed residuals
         integer ::
      &       nopt,            ! sets of operators descr. variables
      &                        ! to be optimized
@@ -20,7 +22,8 @@
      &       mode_leq,
      &       mode_nleq,
      &       maxmacit, maxmicit, micifac,
-     &       maxsbsp, max_incore
+     &       maxsbsp, max_incore,
+     &       optref           ! optimization route for relaxed reference
         real(8) ::
      &       trini,
      &       shift            ! shift linear equations by value

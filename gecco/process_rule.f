@@ -49,7 +49,7 @@
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
-     &     dgam, dms
+     &     dgam, dms, nspcfrm
       integer ::
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -313,11 +313,12 @@ C*----------------------------------------------------------------------*
         call get_arg('OPERATORS',rule,tgt_info,
      &               val_label_list=label_list(2:),ndim=nop)
         call get_arg('MAXCOM_RES',rule,tgt_info,val_int=ansatz)
+        call get_arg('MAXCOM_EN',rule,tgt_info,val_int=nint)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
         call set_mrcc_lagrangian(form_pnt,
      &       title,label_list,nop+1,
-     &       ansatz,mode,
+     &       ansatz,nint,mode,
      &       op_info,orb_info)
 *----------------------------------------------------------------------*
       case(DEF_CC_HBAR)
@@ -1005,6 +1006,7 @@ c          mode = 'dia-R12'
         call get_arg('LIST',rule,tgt_info,val_label=label2)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
 
+        if (form_test) return
         call inv_op(label,label2,mode,
      &       op_info,orb_info,str_info,strmap_info)
 
@@ -1067,6 +1069,8 @@ c          mode = 'dia-R12'
      &       val_label=label)
         call get_arg('FORM',rule,tgt_info,
      &       val_label=label2)
+        call get_arg('FORM_SPC',rule,tgt_info,
+     &       val_label_list=label_list(3*nopt+nspecial+1:),ndim=nspcfrm)
 
         if (form_test) return
 
@@ -1078,7 +1082,10 @@ c          mode = 'dia-R12'
      &       label2,                           ! formula
      &       label_list(3*nopt+1:
      &                  3*nopt+nspecial),
-     &          nspecial,                       ! specials
+     &          nspecial,
+     &       label_list(3*nopt+nspecial+1:
+     &                  3*nopt+nspecial+nspcfrm),
+     &          nspcfrm,                       ! specials
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
 *----------------------------------------------------------------------*

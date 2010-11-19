@@ -36,7 +36,10 @@
      &     minp, maxp, maxv, maxvv, minexc, cbarc(2),
      &     nlabels, nroots, gno
       logical ::
-     &     use_hessian, use_dens, pure_vv, calc
+     &     use_hessian, use_dens, pure_vv, sv_fix, l_exist,
+     &     l_icci, l_iccc
+      real(8) ::
+     &     sv_thresh
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -46,32 +49,36 @@
      &     op_exc, op_deexc
 
       ! get maximum excitation rank
-      call get_argument_value('calculate.multiref','maxexc',
+      call get_argument_value('method.MR','maxexc',
      &     ival=maxexc)
-      call get_argument_value('calculate.multiref','cmaxexc',
+      call get_argument_value('method.MR','cmaxexc',
      &     ival=cmaxexc)
 
       ! first set targets for CASSCF or uncontracted CI wave function
-      call set_unc_mrci_targets(tgt_info,orb_info,
-     &                          .false..or.maxexc.eq.0)
+      call set_unc_mrci_targets(tgt_info,orb_info,maxexc.eq.0)
+
+      ! icMRCI calculation?
+      l_icci = is_keyword_set('method.MRCI').gt.0
+      ! icMRCC calculation?
+      l_iccc = is_keyword_set('method.MRCC').gt.0
+      ! both at same time is not allowed
+      if (l_icci.and.l_iccc) call quit(1,'set_ic_mrci_targets',
+     &   'Now don''t be greedy, chose either icMRCI or icMRCC!')
 
       ! if maxexc = 0: return because call of unc_mrci is sufficient
-      if (maxexc.eq.0) then
+      if (maxexc.eq.0.or..not.(l_icci.or.l_iccc)) then
         return
       else if (cmaxexc.gt.0) then
         call quit(1,'set_ic_mrci_targets',
      &            'Warning: Only tested for CASSCF reference so far')
       end if
 
-      if (iprlvl.gt.0)
-     &     write(luout,*) 'setting multireference targets #2...'
-
       ! CAVEAT: should be adapted as soon as open-shell version
       !         is up and running
       msc = +1 ! assuming closed shell
 
       ! which normal ordering is used?
-      call get_argument_value('calculate.multiref','GNO',
+      call get_argument_value('method.MR','GNO',
      &     ival=gno)
       select case(gno)
       case(0)
@@ -84,21 +91,25 @@ c        call set_gno_targets(tgt_info,orb_info,1)
 cmh
       call set_gno_targets(tgt_info,orb_info,1)
 cmh end
+
+      if (iprlvl.gt.0)
+     &     write(luout,*) 'setting multireference targets #2...'
+
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations
-      call get_argument_value('calculate.multiref','minh',
+      call get_argument_value('method.MR','minh',
      &     ival=minh)
-      call get_argument_value('calculate.multiref','maxh',
+      call get_argument_value('method.MR','maxh',
      &     ival=maxh)
-      call get_argument_value('calculate.multiref','minp',
+      call get_argument_value('method.MR','minp',
      &     ival=minp)
-      call get_argument_value('calculate.multiref','maxp',
+      call get_argument_value('method.MR','maxp',
      &     ival=maxp)
-      call get_argument_value('calculate.multiref','maxv',
+      call get_argument_value('method.MR','maxv',
      &     ival=maxv)
-      call get_argument_value('calculate.multiref','maxvv',
+      call get_argument_value('method.MR','maxvv',
      &     ival=maxvv)
-      call get_argument_value('calculate.multiref','minexc',
+      call get_argument_value('method.MR','minexc',
      &     ival=minexc)
       ! minimum excitation: maxexc for GNO=0
       if (gno.eq.0) minexc = maxexc
@@ -106,12 +117,16 @@ cmh end
       if (maxp.lt.0) maxp = maxexc
       if (maxv.lt.0) maxv = 2*maxexc
       if (maxvv.lt.0) maxvv = maxexc
-      call get_argument_value('calculate.multiref','pure_vv',
+      call get_argument_value('method.MR','pure_vv',
      &     lval=pure_vv)
-      call get_argument_value('calculate.multiref','calc',
-     &     lval=calc)
-      call get_argument_value('calculate.multiref','nroots',
+
+      call get_argument_value('method.MRCI','nroots',
      &     ival=nroots)
+
+      call get_argument_value('calculate.routes','sv_fix',
+     &     lval=sv_fix)
+      call get_argument_value('calculate.routes','sv_thresh',
+     &     xval=sv_thresh)
 
       if (ntest.ge.100) then
         print *,'minh    = ',minh
@@ -124,6 +139,14 @@ cmh end
         print *,'maxexc  = ',maxexc
         print *,'pure_vv = ',pure_vv
         print *,'nroots  = ',nroots
+        print *,'sv_fix  = ',sv_fix
+        print *,'sv_thr. = ',sv_thresh
+      end if
+
+      if (sv_fix) then
+        inquire(file='SINGVALS',exist=l_exist)
+        if (l_exist) write(luout,*)
+     &     'Using existing SINGVALS file for singular value selection!'
       end if
 
 *----------------------------------------------------------------------*
@@ -1426,7 +1449,7 @@ c      call set_dependency('FOPT_D','DEF_ME_C0',tgt_info)
 
       ! inverted ME_D
       call add_target('DEF_ME_Dinv',ttype_opme,.false.,tgt_info)
-      if (calc) then
+      if (l_icci) then
         call set_dependency('DEF_ME_Dinv','EVAL_D',tgt_info)
       else
         call set_dependency('DEF_ME_Dinv','EVAL_MRCC_D',tgt_info)
@@ -1446,7 +1469,7 @@ c      call set_dependency('FOPT_D','DEF_ME_C0',tgt_info)
       call set_rule('DEF_ME_Dinv',ttype_opme,ASSIGN_ME2OP,
      &     labels,2,1,
      &     parameters,0,tgt_info)
-      if (calc) then
+      if (l_icci) then
         call form_parameters(-1,parameters,2,
      &       '---',0,'invsqrthalf')
       else !for MRCC, we also need the projector matrix
@@ -1558,7 +1581,7 @@ c dbgend
 *----------------------------------------------------------------------*
 
       ! Evaluate norm
-      call add_target('EVAL_NORM',ttype_gen,calc,tgt_info)
+      call add_target('EVAL_NORM',ttype_gen,l_icci,tgt_info)
       call set_dependency('EVAL_NORM','FOPT_NORM',tgt_info)
       call set_dependency('EVAL_NORM','SOLVE_ICCI',tgt_info)
       call set_rule('EVAL_NORM',ttype_opme,EVAL,
@@ -1657,7 +1680,7 @@ c dbgend
      &     parameters,2,tgt_info)
 
       ! Evaluate multireference energy
-      call add_target('EVAL_E(MR)',ttype_gen,calc,tgt_info)
+      call add_target('EVAL_E(MR)',ttype_gen,l_icci,tgt_info)
       call set_dependency('EVAL_E(MR)','SOLVE_ICCI',tgt_info)
       call set_dependency('EVAL_E(MR)','FOPT_E(MR)',tgt_info)
       if (gno.eq.1)

@@ -49,7 +49,7 @@ c      include 'def_contraction_list.h'
 
       ! read in input formula
       call init_formula(flist)
-      call read_form_list(f_input%fhand,flist)
+      call read_form_list(f_input%fhand,flist,.true.)
 
       ! print it ...
       call print_form_list(luprint,flist,op_info)

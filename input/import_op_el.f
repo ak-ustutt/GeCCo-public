@@ -63,6 +63,8 @@
 
       anti = .true.
 
+      call touch_file_rec(mel_target%fhand)
+
       ! hard restart
       inquire(file=trim(mel_target%fhand%name),exist=list_exists)
       if (list_exists.and.hard_restart) then

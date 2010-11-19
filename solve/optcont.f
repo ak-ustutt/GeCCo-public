@@ -5,7 +5,7 @@
      &                   me_opt,me_grd,me_dia,
      &                   me_trv,me_h_trv,
      &                   me_special,nspecial,
-     &                   flist,depend,
+     &                   fspc,nspcfrm,
      &                   opti_info,opti_stat,
      &                   orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -65,7 +65,6 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
-      include 'def_dependency_info.h'
       
 * parameters
       integer, parameter ::
@@ -78,11 +77,11 @@
      &     task
       logical, intent(out) ::
      &     conv
+      integer, intent(in) ::
+     &     nspcfrm
 
-      type(formula_item), intent(inout) ::
-     &     flist
-      type(dependency_info) ::
-     &     depend
+      type(formula_item), intent(in) ::
+     &     fspc(nspcfrm)
 
       type(orbinf),intent(in) ::
      &     orb_info
@@ -96,7 +95,7 @@
       integer, intent(inout) ::
      &     imacit, imicit, imicit_tot
 
-      real(8), intent(in) ::
+      real(8), intent(inout) ::
      &     energy, xngrd(*)
 
       integer, intent(in) ::
@@ -212,7 +211,7 @@
      &       me_special,nspecial,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
-     &       flist,depend,energy,
+     &       fspc,nspcfrm,energy,xngrd,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 

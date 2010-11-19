@@ -58,7 +58,7 @@
 
       ! read in input formula
       call init_formula(flist)
-      call read_form_list(f_input%fhand,flist)
+      call read_form_list(f_input%fhand,flist,.true.)
 
       call sum_hermite(flist,.true.,.false.,op_info)
 

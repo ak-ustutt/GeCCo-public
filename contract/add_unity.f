@@ -327,6 +327,9 @@ c dbgend
       if(.not.bufout)then
         call put_vec(ffout,buffer_out,ioff_blk+1,ioff_blk+len_blk)
       endif  
+
+      call touch_file_rec(ffout)
+
       if(closeit)
      &     call file_close_keep(ffout)
 

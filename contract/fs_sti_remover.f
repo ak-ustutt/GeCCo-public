@@ -45,7 +45,7 @@
      &     call quit(1,'fs_sti_remover','no bcontr?')
         is_bc  = .true.
         is_reo = .false.
-      case(command_reorder)
+      case(command_reorder,command_add_reo)
         if (.not.associated(fl_item%reo))
      &     call quit(1,'fs_sti_remover','no reo?')
         is_bc  = .false.

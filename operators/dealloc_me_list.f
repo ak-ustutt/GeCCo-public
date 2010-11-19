@@ -43,6 +43,17 @@
         deallocate(mel%len_op_occ)
         mel%len_op_occ => null()
       end if
+      if (associated(mel%idx_graph)) then
+        deallocate(mel%idx_graph)
+        mel%idx_graph => null()
+      end if
+      if (associated(mel%ld_op_gmox)) then
+        do iblk = 1, nblk
+          deallocate(mel%ld_op_gmox(iblk)%d_gam_ms)
+        end do
+        deallocate(mel%ld_op_gmox)
+        mel%ld_op_gmox => null()
+      end if
       if (associated(mel%off_op_gmo)) then
         do iblk = 1, nblk
           deallocate(mel%off_op_gmo(iblk)%gam_ms)

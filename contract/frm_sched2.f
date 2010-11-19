@@ -232,7 +232,7 @@
      &         cur_form,update,
      &         op_info,str_info,strmap_info,orb_info)
 
-          call_sti_remover = cur_form%command.eq.command_reorder
+          call_sti_remover = .true.!cur_form%command.eq.command_reorder
 
         case(command_add_intm)
 

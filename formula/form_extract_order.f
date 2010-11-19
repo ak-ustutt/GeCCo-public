@@ -59,7 +59,7 @@
 
       ! read in input formula
       call init_formula(flist)
-      call read_form_list(f_input%fhand,flist)
+      call read_form_list(f_input%fhand,flist,.true.)
 
       ! extract terms of order
       idx_tgt = idx_oplist2(label, op_info)

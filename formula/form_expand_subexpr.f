@@ -70,7 +70,7 @@ c      include 'def_contraction_list.h'
 
       ! read in input formula
       call init_formula(flist)
-      call read_form_list(f_input%fhand,flist)
+      call read_form_list(f_input%fhand,flist,.true.)
 
       ! loop over intermediates
       do iintm = 1, nintm
@@ -100,7 +100,7 @@ c      include 'def_contraction_list.h'
      &       trim(form_info%form_arr(idx)%form%label))
 
         call init_formula(fl_intm)
-        call read_form_list(ffintm,fl_intm)
+        call read_form_list(ffintm,fl_intm,.true.)
 
         if (transpose)
      &       call transpose_formula(fl_intm,op_info)

@@ -112,7 +112,7 @@
 *----------------------------------------------------------------------*
 
       ! skip this section if not requested
-      ncnt = is_keyword_set('calculate.response')
+      ncnt = is_keyword_set('method.response')
       if (ncnt.eq.0) return
 
       ! set r12 targets
@@ -142,7 +142,7 @@
      &       call get_argument_value('method.truncate','trunc_type',
      &                                ival=trunc_type)
         end if
-        call get_argument_value('calculate.response','BX_3C',
+        call get_argument_value('method.response','BX_3C',
      &       keycount=1,lval=treat_bv)
         if (r12op.eq.0.and..not.r12fix)
      &     call quit(1,'set_response_targets',
@@ -172,13 +172,13 @@
       evaluate = .true.
 
       ! use 2n+1 / 2n+2 rules?
-      call get_argument_value('calculate.response','rules',
+      call get_argument_value('method.response','rules',
      &     keycount=1,lval=userules)
       if (.not.userules.and..not.all(abs(cmp(1:ncmp)%freq).lt.1d-12))
      &       call quit(1,'set_response_targets',
      &       'no-rules option only supported for static response')
       ! restart calculation? Requires amplitude mel files
-      call get_argument_value('calculate.response','restart',
+      call get_argument_value('method.response','restart',
      &     keycount=1,ival=restart)
       melname(1:len_short) = ' '
       do op_par = 1,2
