@@ -3,9 +3,9 @@
      &       ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:)
         integer ::
      &       ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
-     &       mxdim_sbsp, nadd, ndel
+     &       mxdim_sbsp, nadd, ndel, mode_2nd
         real(8) ::
-     &       energy_last, xngrd_last, crate_last, trrad
+     &       energy_last, xngrd_last, crate_last, trrad, gamma
         real(8), pointer ::
      &       sbspmat(:)
         integer, pointer ::

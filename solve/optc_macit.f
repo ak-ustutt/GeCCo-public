@@ -156,6 +156,9 @@ c dbg
      &           opti_stat%ffvsbsp(1)%fhand,
      &           nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
 
+            if (nincore.ge.2)
+     &         call vec_from_da(ffopt(1)%fhand,1,
+     &                          xbuf1,opti_info%nwfpar(1))
             klsmat = opti_stat%mxdim_sbsp**2 + 1
             ! if incore: xbuf1 remains unchanged
             shift = ndim_save.eq.opti_stat%ndim_vsbsp
@@ -174,6 +177,9 @@ c dbg
      &           opti_stat%ffrsbsp(1)%fhand,
      &           nincore,opti_info%nwfpar(1),lenbuf,xbuf2,xbuf1)
 
+            if (nincore.ge.2)
+     &         call vec_from_da(ffgrd(1)%fhand,1,
+     &                          xbuf2,opti_info%nwfpar(1))
             shift = ndim_save.eq.opti_stat%ndim_rsbsp
             call optc_update_redsp2(
      &           opti_stat%sbspmat,opti_stat%ndim_vsbsp,
@@ -305,6 +311,7 @@ c     &          flist,depend,orb_info,op_info,str_info,strmap_info)
 
         imet = 0
         idamp = 1
+        klsmat = opti_stat%mxdim_sbsp**2 + 1
         call optc_assj_step(imet,
      &       opti_stat%sbspmat,opti_stat%sbspmat(klsmat),
      &       vec,opti_stat%ndim_vsbsp,opti_stat%mxdim_sbsp,ndel,

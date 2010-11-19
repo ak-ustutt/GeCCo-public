@@ -86,17 +86,18 @@
      &         opti_info%thrgrd(2:nopt) = opti_info%thrgrd(1)
         end if
 
+        str(1:16) = ' '
         call get_argument_value('calculate.solve.non_linear','method',
      &       str=str)
         call uppcas(str)
-        select case(trim(str(1:4)))
+        select case(trim(str))
         case('PERT') 
           opti_info%mode_nleq = mode_nleq_pert
           opti_info%norder = 1
         case('DIIS') 
           opti_info%mode_nleq = mode_nleq_diis
           opti_info%norder = 1
-        case('ASSJ','RLE ') 
+        case('ASSJ','RLE') 
           opti_info%mode_nleq = mode_nleq_assj
           opti_info%norder = 1
         case default

@@ -222,6 +222,10 @@
 *======================================================================*
 * micro-iteration
 *======================================================================*
+        if (ntest.ge.10) then
+          write(luout,*) 'micro iteration part entered'
+        end if
+
         call optc_micit()
 
       end if
@@ -498,13 +502,13 @@ c      include 'stdunit.h'
       opti_stat%trrad = opti_info%trini
       opti_stat%energy_last = 0d0
 
-c* init 2nd-order solver
-c      if (norder.eq.2) then
-c        ! begin with Newton-eigenvector method ...
-c        i2nd_mode = 2
-c        ! ... and a gamma of 1
-c        gamma = 1d0 
-c      end if
+* init 2nd-order solver
+      if (opti_info%norder.eq.2) then
+        ! begin with Newton-eigenvector method ...
+        opti_stat%mode_2nd = 2
+        ! ... and a gamma of 1
+        opti_stat%gamma = 1d0 
+      end if
 
       return
       end subroutine
