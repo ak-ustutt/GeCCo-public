@@ -75,5 +75,9 @@
      &                                             *2*(nj_op1+nj_op2)))
      &     )
 
+      cnt_info%diag_type1 = 0
+      cnt_info%diag_type2 = 0
+      cnt_info%diag_type12 = 0
+
       return
       end

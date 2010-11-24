@@ -516,6 +516,15 @@ c     &     val_label=(/'F_HT2','F_HT1','F_HT0to2','F_HT0to1'/))
      &     val_label=(/'OMG'/))
       call set_arg('F_OMG',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'L'/))
+      call set_rule2('F_OMG',SELECT_SPECIAL,tgt_info)
+      call set_arg('F_OMG',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_OMG'/))
+      call set_arg('F_OMG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_OMG'/))
+      call set_arg('F_OMG',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+     &     val_label=(/'H','T'/))
+      call set_arg('F_OMG',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &     val_str='MRCC2')
 c dbg
 c      call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -546,6 +555,15 @@ c dbgend
      &     val_label=(/'L'/))
       call set_arg('F_OMG_C0',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='Residual for Reference function')
+      call set_rule2('F_OMG_C0',SELECT_SPECIAL,tgt_info)
+      call set_arg('F_OMG_C0',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_OMG_C0'/))
+      call set_arg('F_OMG_C0',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_OMG_C0'/))
+      call set_arg('F_OMG_C0',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+     &     val_label=(/'H','T'/))
+      call set_arg('F_OMG_C0',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &     val_str='MRCC2')
 c dbg
 c      call set_rule2('F_OMG_C0',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_OMG_C0',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -568,6 +586,15 @@ c dbgend
      &     val_label=(/'L','E(MR)'/))
       call set_arg('F_MRCC_E',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='MRCC energy expression')
+      call set_rule2('F_MRCC_E',SELECT_SPECIAL,tgt_info)
+      call set_arg('F_MRCC_E',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_MRCC_E'/))
+      call set_arg('F_MRCC_E',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_MRCC_E'/))
+      call set_arg('F_MRCC_E',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+     &     val_label=(/'H','T'/))
+      call set_arg('F_MRCC_E',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &     val_str='MRCC2')
       call set_rule2('F_MRCC_E',PRINT_FORMULA,tgt_info)
       call set_arg('F_MRCC_E',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_MRCC_E'/))
@@ -1267,6 +1294,7 @@ c dbgend
       ! evaluate valence-only metric
       call add_target2('EVAL_MRCC_D',.false.,tgt_info)
       call set_dependency('EVAL_MRCC_D','FOPT_MRCC_D',tgt_info)
+      call set_dependency('EVAL_MRCC_D','EVAL_REF_S(S+1)',tgt_info)
 c      call set_dependency('EVAL_MRCC_D','EVAL_DENS0',tgt_info)
       call set_rule2('EVAL_MRCC_D',EVAL,tgt_info)
       call set_arg('EVAL_MRCC_D',EVAL,'FORM',1,tgt_info,

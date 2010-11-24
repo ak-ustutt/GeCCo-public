@@ -26,7 +26,8 @@ c     &     merge_op1, merge_op2, merge_op1op2, merge_op2op1
      &     ncblk_op1op2tmp, nablk_op1op2tmp,
      &     ncblk_ex1, nablk_ex1,
      &     ncblk_ex2, nablk_ex2,
-     &     ncblk_cnt, nablk_cnt
+     &     ncblk_cnt, nablk_cnt,
+     &     diag_type1, diag_type2, diag_type12
 
       integer, pointer ::
      &     cinfo_op1c(:,:), cinfo_op1a(:,:),

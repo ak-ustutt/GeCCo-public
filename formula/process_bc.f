@@ -360,6 +360,7 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &         igamt_op(1),igamt_op(2),igamt_op1op2,
      &         str_info,ngas,nsym)          
           else
+            call diag_type2cnt_info(cnt_info,idxop,contr_red,op_info)
             call fact_cost_estimate(flops,xmemtot,xmemblk,
      &           cnt_info,
      &           str_info,ngas,nsym)

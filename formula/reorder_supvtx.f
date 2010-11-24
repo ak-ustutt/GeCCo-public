@@ -217,9 +217,10 @@ cmh     &                 - arc(iarc)%occ_cnt(hpvx,ica)
 c dbg
 c                  print *,'skipping difficult reo'
 c dbg
-                  possible = .false.
-cmh               hm, effectively just going ahead because
-cmh               possible is set to true in get_bc_info3 anyways ...
+cmh                  possible = .false.
+cmh               go ahead for now, maybe it will become possible after
+cmh               some other contractions. If it remains not allowed,
+cmh               this will be checked by allowed_contr
 cmh                  return
 c                  call quit(1,'reorder_supvtx','not yet')
                   
