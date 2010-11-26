@@ -37,7 +37,7 @@
      &     nlabels, nroots, gno
       logical ::
      &     use_hessian, use_dens, pure_vv, sv_fix, l_exist,
-     &     l_icci, l_iccc
+     &     l_icci, l_iccc, singrm
       real(8) ::
      &     sv_thresh
       character(len_target_name) ::
@@ -128,6 +128,9 @@ cmh end
       call get_argument_value('calculate.routes','sv_thresh',
      &     xval=sv_thresh)
 
+      call get_argument_value('calculate.solve.non_linear','singrm',
+     &     lval=singrm)
+
       if (ntest.ge.100) then
         print *,'minh    = ',minh
         print *,'maxh    = ',maxh
@@ -141,6 +144,7 @@ cmh end
         print *,'nroots  = ',nroots
         print *,'sv_fix  = ',sv_fix
         print *,'sv_thr. = ',sv_thresh
+        print *,'singrm  = ',singrm
       end if
 
       if (sv_fix) then
@@ -1481,8 +1485,13 @@ c      call set_dependency('FOPT_D','DEF_ME_C0',tgt_info)
         call form_parameters(-1,parameters,2,
      &       '---',0,'invsqrthalf')
       else !for MRCC, we also need the projector matrix
-        call form_parameters(-1,parameters,2,
+        if (singrm) then
+          call form_parameters(-1,parameters,2,
+     &       '---',0,'invsqrt----sgrm')
+        else
+          call form_parameters(-1,parameters,2,
      &       '---',0,'invsqrt')
+        end if
       end if
       labels(1) = 'ME_Dinv'   ! output
       labels(2) = 'ME_D'      ! input (may be projector on output)

@@ -37,7 +37,7 @@
      &     n_t_cls, i_cls,
      &     n_tred_cls, len_form, optref, idef, ciroot
       logical ::
-     &     pure_vv, update_prc, skip, preopt
+     &     pure_vv, update_prc, skip, preopt, singrm
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -92,6 +92,8 @@
      &     lval=update_prc)
       call get_argument_value('calculate.solve.non_linear','preopt',
      &     lval=preopt)
+      call get_argument_value('calculate.solve.non_linear','singrm',
+     &     lval=singrm)
       call get_argument_value('method.MRCC','maxcom_res',
      &     ival=maxcom)
       call get_argument_value('method.MRCC','maxcom_en',
@@ -119,6 +121,7 @@
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
+            if (singrm.and.ivv.eq.0.and.ih+ip.eq.1) cycle
 c dbgend
 cmh         no blocks which can be modeled by a contraction of two operators
 c            if (ip.ge.1.and.ih.ge.1) cycle
@@ -152,6 +155,7 @@ c            if (max(ip,ih)+ivv.eq.1.and.(ip.ne.1.or.ih.ne.1)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
+            if (singrm.and.ivv.eq.0.and.ih+ip.eq.1) cycle
 c dbgend
 cmh         no blocks which can be modeled by a contraction of two operators
 c            if (ip.ge.1.and.ih.ge.1) cycle
@@ -243,6 +247,7 @@ c     &             val_int=(/1/))
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
+            if (singrm.and.ivv.eq.0.and.ih+ip.eq.1) cycle
 c dbgend
 c            ! exclude blocks with one or more hole-part. excitations
 c            if (min(ih,ip).ge.1) cycle
@@ -296,6 +301,7 @@ c            if (min(ih,ip).ge.1) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
+            if (singrm.and.ivv.eq.0.and.ih+ip.eq.1) cycle
 c dbgend
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
@@ -324,6 +330,7 @@ c dbgend
             if (abs(ih-ip).eq.0.and.ivv.eq.0) cycle ! no conv. blocks (for PREC)
 c dbg
 c            if (ih.gt.ip) cycle
+            if (singrm.and.ivv.eq.0.and.ih+ip.eq.1) cycle
 c dbgend
             ndef = ndef + 1
             occ_def(IHOLE,1,3*ndef-1) = ih

@@ -176,7 +176,7 @@ c dbg
         call write_title(luout,wst_around_double,'Optimized formula:')
         call print_form_list(luout,fl_opt,op_info)
       end if
-      if (lustat.gt.0) call print_form_list(lustat,fl_opt,op_info)
+cmh      if (lustat.gt.0) call print_form_list(lustat,fl_opt,op_info)
 
       write(name,'(a,".fml")') trim(f_opt%label)
       call file_init(f_opt%fhand,name,ftyp_sq_unf,0)      

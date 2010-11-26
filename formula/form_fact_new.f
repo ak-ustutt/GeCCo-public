@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine form_fact_new(fl_fact,contr,
-     &     op_info,str_info,orb_info,iscale_stat,cost_stat,mem_stat)
+     &     op_info,str_info,orb_info,iscale_stat,cost_stat,mem_stat,
+     &     iitem)
 *----------------------------------------------------------------------*
 *     find optimum factorization of a given contraction
 *     and write a sequence of unary/binary operations to fl_fact
@@ -35,7 +36,7 @@
       type(orbinf), intent(in), target ::
      &     orb_info
       integer, intent(inout) ::
-     &     iscale_stat(ngastp,2)
+     &     iscale_stat(ngastp,2), iitem
       real(8), intent(inout) ::
      &     cost_stat, mem_stat
 
@@ -199,6 +200,8 @@ c dbgend
      &       iocc_ori,irst_ori,nvtx_max,
      &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
      &       orb_info)
+          if (lustat.gt.0)
+     &       call print_form_item(lustat,iitem,fl_fact,op_info)
           deallocate(iocc_reo,iocc_ori,irst_reo,irst_ori,
      &             merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
      &             occ_vtx,irestr_vtx,info_vtx,svertex)
@@ -209,6 +212,8 @@ c dbgend
           target = contr%idx_res
           call new_formula_item(fl_fact,command,target)
           call store_add_intm(fl_fact,contr,op_info,orb_info)
+          if (lustat.gt.0)
+     &       call print_form_item(lustat,iitem,fl_fact,op_info)
           return
         end if
       else
@@ -244,7 +249,7 @@ c dbg
 c      print *,'now diving into the recursions, njoined = ',njoined
 c dbg
       call form_fact_rec_new('FIND',predef,nlevel,ifact,fl_fact,
-     &     cost,iscale,
+     &     cost,iscale,iitem,
      &     contr,occ_vtx,irestr_vtx,info_vtx)
 
       if (iprlvl.ge.10) then
@@ -281,7 +286,7 @@ c        call wrt_occ_n(luout,occ_vtx,nvtx_full+njoined)
 c dbg
       ! call kernel again for optimal sequence --> set fl_fact now
       call form_fact_rec_new('SET',.true.,nlevel,ifact_best,fl_fact,
-     &     cost,iscale,
+     &     cost,iscale,iitem,
      &     contr,occ_vtx,irestr_vtx,info_vtx)
 
       deallocate(ifact,ifact_best,
@@ -305,7 +310,7 @@ c dbg
 *----------------------------------------------------------------------*
       recursive subroutine form_fact_rec_new(mode,predef,
      &     nlevel,ifact,fl_in,
-     &     cost_in,iscale_in,
+     &     cost_in,iscale_in,iitem,
      &     contr,occ_vtx,irestr_vtx,info_vtx)
 *----------------------------------------------------------------------*
 
@@ -324,6 +329,8 @@ c dbg
      &     occ_vtx(ngastp,2,contr%nvtx+njoined),
      &     irestr_vtx(2,ngas,2,2,contr%nvtx+njoined),
      &     info_vtx(2,contr%nvtx+njoined)
+      integer, intent(inout) ::
+     &     iitem
       real(8), intent(in) ::
      &     cost_in(3)
       logical, intent(in) ::
@@ -415,7 +422,7 @@ c dbg
         ! 'FIND' -- get cost of contraction
         ! 'SET'  -- set fl_fact
         call process_bc(mode,fl_pnt,possible,cost,iscale,
-     &       iarc,njoined,nlevel,idx_intm,
+     &       iarc,njoined,nlevel,idx_intm,iitem,
      &       contr,occ_vtx,irestr_vtx,info_vtx,
      &       contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &       op_info,str_info,orb_info)
@@ -461,7 +468,7 @@ c dbg
 
           ! add 0-contractions, if necessary          
           call form_fact_rec_new(mode,predef,nlevel+1,ifact,fl_pnt,
-     &         cost,iscale,contr_red,occ_vtx_red,
+     &         cost,iscale,iitem,contr_red,occ_vtx_red,
      &                              irestr_vtx_red,info_vtx_red)
 
           if (ntest.ge.1000) then

@@ -12,7 +12,8 @@
      &       variational,     ! variational energy
      &       linear,          ! linear
      &       update_prc,      ! allow updating of preconditioner
-     &       skip_resx        ! skip evaluation of not needed residuals
+     &       skip_resx,       ! skip evaluation of not needed residuals
+     &       singrm           ! project out singles from doubles part
         integer ::
      &       nopt,            ! sets of operators descr. variables
      &                        ! to be optimized

@@ -242,7 +242,10 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.true./)) ! update precond. when metric is updated
       call argument_add('preopt','calculate.solve.non_linear',
      &     type=vtyp_log,
-     &     ldef=(/.false./)) ! 
+     &     ldef=(/.false./)) ! first one optimization with fixed metric
+      call argument_add('singrm','calculate.solve.non_linear',
+     &     type=vtyp_log,
+     &     ldef=(/.false./)) ! project out singles from doubles part
 
       call keyword_add('linear',context='calculate.solve')
       call argument_add('maxiter','calculate.solve.linear',

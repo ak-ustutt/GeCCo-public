@@ -81,7 +81,7 @@
      &      me_special(2)%mel%fhand%last_mod(1))
      &      call update_metric(me_dia,me_special,nspecial,
      &        fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
-     &        opti_info%update_prc)
+     &        opti_info%update_prc,opti_info%singrm)
       end if
 
       ! put new vector to special list for transformation

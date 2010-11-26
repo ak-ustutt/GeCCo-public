@@ -135,7 +135,8 @@
      &       op_info,orb_info)
       else
         write(luout,*) 'Calculating square root of inverse'
-        call invsqrt(me_inp,me_inv,nocc_cls,mode(8:11).eq.'half',
+        call invsqrt(me_inp,me_inv,nocc_cls,
+     &       mode(8:11).eq.'half',mode(12:15).eq.'sgrm',
      &       op_info,orb_info,str_info,strmap_info)
       end if
 

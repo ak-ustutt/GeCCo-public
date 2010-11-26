@@ -1,4 +1,4 @@
-      subroutine invsqrt(mel_inp,mel_inv,nocc_cls,half,
+      subroutine invsqrt(mel_inp,mel_inv,nocc_cls,half,sgrm,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     Routine to calculate S^(-0.5) of density matrices.
@@ -48,14 +48,14 @@
       integer, intent(in) ::
      &     nocc_cls
       logical, intent(in) ::
-     &     half
+     &     half,sgrm
 
       type(graph), pointer ::
      &     graphs(:)
 
       logical ::
      &     bufin, bufout, first, ms_fix, fix_success, onedis, transp,
-     &     logdum
+     &     logdum, sing_remove
 c      logical ::
 c     &     loop(nocc_cls)
       integer ::
@@ -70,12 +70,13 @@ c     &     loop(nocc_cls)
      &     gamc1, gamc2, gama1, gama2, igam, na1, na2, nc1, nc2, ij,
      &     maxbuf, ngraph, ioff2, idxmsa2, ndis2, idxdis2, idx2, nel,
      &     nsing, ising, itrip, ntrip, icnt_sv, icnt_sv0,
-     &     bins(17)
+     &     bins(17), nalph, nbeta
       real(8) ::
      &     fac, xmax, xmin
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:), scratch2(:,:),
-     &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:)
+     &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:),
+     &     palph(:), pbeta(:), proj_sing(:,:)
 c dbg
 c      integer, pointer ::
 c     &     matrix(:,:)
@@ -511,12 +512,87 @@ c dbgend
 
           if (ndim.eq.0) cycle
 
-          if (ntest.ge.10) 
+          if (ntest.ge.10)
      &       write(luout,'(a,3i8)'),'ms1, igam, ndim:',ms1,igam,ndim
+
+          ! remove singles only for one specific block for now
+          sing_remove = sgrm.and.ms1.eq.0.and.igam.eq.1
+     &                  .and.na1.eq.nc1.and.na1.eq.1
+          if (sing_remove) then
+            allocate(palph(ndim),pbeta(ndim),proj_sing(ndim,ndim))
+            palph = 0d0
+            pbeta = 0d0
+            nalph = 0
+            nbeta = 0
+            ! get pseudo-singles vectors that should be removed
+            iline = 0
+            do msa1 = na1, -na1, -2
+             msc1 = msa1 + ms1
+             if (abs(msc1).gt.nc1) cycle
+             msdis_c(1) = msc1
+             msdis_a(1) = msa1
+             do gama1 = 1, ngam
+              gamc1 = multd2h(gama1,igam)
+              gamdis_c(1) = gamc1
+              gamdis_a(1) = gama1
+              msdis_c(2) = msa1
+              msdis_a(2) = msc1
+              gamdis_c(2) = gama1
+              gamdis_a(2) = gamc1
+              call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
+              call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
+
+              call set_len_str(len_str,ncblk,nablk,
+     &                         graphs,
+     &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
+     &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
+     &                         hpvxseq,.false.)
+              if (len_str(1).ne.len_str(3)) call quit(1,'invsqrt',
+     &            'this should not happen.')
+              ! simple square matrix, the diagonal elements
+              ! contribute to the pseudo-singles component
+              do idxc1 = 1, len_str(1)
+               do idxa1 = 1, len_str(3)
+                iline = iline + 1
+                if (idxc1.ne.idxa1) cycle
+                if (msa1.eq.1) then
+                  palph(iline) = 1d0
+                  nalph = nalph + 1
+                else if (msa1.eq.-1) then
+                  pbeta(iline) = 1d0
+                  nbeta = nbeta + 1
+                else
+                  call quit(1,'invsqrt','this should not happen(2).')
+                end if
+               end do
+              end do
+             end do
+            end do
+            ! normalize vectors
+            if (nalph.gt.0) palph = palph/sqrt(dble(nalph))
+            if (nbeta.gt.0) pbeta = pbeta/sqrt(dble(nbeta))
+            ! get projector
+            proj_sing = 0d0
+            do idx = 1, ndim
+              proj_sing(idx,idx) = 1d0
+            end do
+            call dgemm('n','t',ndim,ndim,1,
+     &                 -1d0,palph,ndim,
+     &                 palph,ndim,
+     &                 1d0,proj_sing,ndim)
+            call dgemm('n','t',ndim,ndim,1,
+     &                 -1d0,pbeta,ndim,
+     &                 pbeta,ndim,
+     &                 1d0,proj_sing,ndim)
+            if (ntest.ge.100) then
+              write(luout,*) 'projector for removing singles:'
+              call wrtmat2(proj_sing,ndim,ndim,ndim,ndim)
+            end if
+          end if
 
           allocate(scratch(ndim,ndim),flmap(ndim,3))
           scratch = 0d0
-          if (.not.half) allocate(scratch2(ndim,ndim))
+          if (.not.half.or.sing_remove) allocate(scratch2(ndim,ndim))
 c dbg
 c          allocate(matrix(ndim,ndim))
 c dbgend
@@ -710,6 +786,27 @@ c            write(*,'(i4,x,18i4)') iline, matrix(iline,1:ndim)
 c          end do
 c dbgend
 
+          if (sing_remove) then
+            ! project out pseudo-singles components
+            if (ntest.ge.100) then
+              write(luout,*) 'matrix before removing singles:'
+              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
+            end if
+            call dgemm('n','n',ndim,ndim,ndim,
+     &             1d0,proj_sing,ndim,
+     &                 scratch,ndim,
+     &             0d0,scratch2,ndim)
+            call dgemm('n','n',ndim,ndim,ndim,
+     &             1d0,scratch2,ndim,
+     &                 proj_sing,ndim,
+     &             0d0,scratch,ndim)
+            if (ntest.ge.100) then
+              write(luout,*) 'matrix after removing singles:'
+              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
+            end if
+            deallocate(palph,pbeta,proj_sing)
+          end if
+
           if (ms1.eq.0) then
             ! here a splitting into "singlet" and "triplet" blocks is needed:
 
@@ -853,7 +950,7 @@ c dbgend
           end do
 
           deallocate(scratch,flmap)
-          if (.not.half) deallocate(scratch2)
+          if (.not.half.or.sing_remove) deallocate(scratch2)
 c dbg
 c          deallocate(matrix)
 c dbgend

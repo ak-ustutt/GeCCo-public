@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine process_bc(mode,fl_fact,possible,cost,iscale,
-     &     iarc,njoined_res,nlevel,idx_intm,
+     &     iarc,njoined_res,nlevel,idx_intm,iitem,
      &     contr,occ_vtx,irestr_vtx,info_vtx,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     op_info,str_info,orb_info)
@@ -52,7 +52,7 @@
       integer, intent(in) ::
      &     iarc, njoined_res, nlevel
       integer, intent(inout) ::
-     &     idx_intm
+     &     idx_intm, iitem
       type(contraction), intent(in) ::
      &     contr
       type(contraction), intent(out) ::
@@ -285,7 +285,7 @@ c     &     str_info,orb_info)
      &         njoined_op(1), njoined_op(2),njoined_op1op2, njoined_cnt,
      &         str_info,orb_info)
 
-      if (mode.eq.'FIND') then
+      if (mode.eq.'FIND'.or.lustat.gt.0) then
         ! count particle, hole, (active) spaces involved:
         ! in intermediate
         nh_op1op2 = sum(iocc_ex1(ihole,1:2,1:njoined_op(1)))
@@ -318,6 +318,8 @@ c     &     str_info,orb_info)
         iscale_new(IPART) = np_op1op2+np_cnt
         iscale_new(IEXTR) = nx_op1op2+nx_cnt
         iscale_new(IVALE) = nv_op1op2+nv_cnt
+      end if
+      if (mode.eq.'FIND') then
 
         if (scale_rank(iscale_new).gt.scale_rank(iscale(1,1)))
      &       iscale(1:ngastp,1) = iscale_new(1:ngastp)
@@ -432,6 +434,12 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &         label_reo,iocc_reo,irst_reo,nj_ret,1,
      &         label,' ',tra_reo,tra_ori,.false.,
      &         orb_info)
+          if (lustat.gt.0) then
+            call print_form_item(lustat,iitem,fl_pnt,op_info)
+            write(lustat,'(x,"Formal size of intermediate: '//
+     &          'H^",i2," P^",i2," V^",i2," X^",i2)')
+     &          nh_op1op2,np_op1op2,nv_op1op2,nx_op1op2
+          end if
           
           fl_pnt => fl_pnt%next
 
@@ -449,6 +457,8 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &       iocc_ori,irst_ori,nj_ret,
      &       merge_stp1_0,merge_stp1inv_0,merge_stp2_0,merge_stp2inv_0,
      &       orb_info)
+          if (lustat.gt.0)
+     &       call print_form_item(lustat,iitem,fl_pnt,op_info)
 
           fl_pnt => fl_pnt%next
 
@@ -478,6 +488,12 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &         label,iocc_op1op2,irst_op1op2,njoined_op1op2,1,
      &         label1,label2,tra_op1op2,tra_op1,tra_op2,
      &         orb_info)
+          if (lustat.gt.0) then
+            call print_form_item(lustat,iitem,fl_pnt,op_info)
+            write(lustat,'(x,"Formal size of intermediate: '//
+     &          'H^",i2," P^",i2," V^",i2," X^",i2)')
+     &          nh_op1op2,np_op1op2,nv_op1op2,nx_op1op2
+          end if
           fl_pnt => fl_pnt%next
           fact = bc_sign
           iblkop1op2 = 1
@@ -518,6 +534,13 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &       iocc_op1op2tmp,irst_op1op2tmp,njoined_op1op2,
      &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
      &       orb_info)
+        end if
+        if (lustat.gt.0) then
+          call print_form_item(lustat,iitem,fl_pnt,op_info)
+          write(lustat,'(x,"Formal scaling of contraction: '//
+     &          'H^",i2," P^",i2," V^",i2," X^",i2)')
+     &          iscale_new(IHOLE),iscale_new(IPART),
+     &          iscale_new(IVALE),iscale_new(IEXTR)
         end if
         if (reo_other) then
           fl_pnt => fl_pnt%next
@@ -572,6 +595,12 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &         label_reo,iocc_reo,irst_reo,nj_ret,1,
      &         label,' ',tra_reo,tra_ori,.false.,
      &         orb_info)
+          if (lustat.gt.0) then
+            call print_form_item(lustat,iitem,fl_pnt,op_info)
+            write(lustat,'(x,"Formal size of intermediate: '//
+     &          'H^",i2," P^",i2," V^",i2," X^",i2)')
+     &          nh_op1op2,np_op1op2,nv_op1op2,nx_op1op2
+          end if
           
           fl_pnt => fl_pnt%next
 
@@ -589,6 +618,8 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
      &       iocc_ori,irst_ori,nj_ret,
      &       merge_stp1,merge_stp1inv,merge_stp2,merge_stp2inv,
      &       orb_info)
+          if (lustat.gt.0)
+     &       call print_form_item(lustat,iitem,fl_pnt,op_info)
         end if
       else
         call quit(1,'process_bc','unknown mode: "'//trim(mode)//'"')

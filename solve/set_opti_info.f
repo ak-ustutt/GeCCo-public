@@ -115,6 +115,8 @@
      &       'preopt',
      &       lval=opti_info%skip_resx)
         opti_info%skip_resx = opti_info%skip_resx.and.nopt.eq.1
+        call get_argument_value('calculate.solve.non_linear','singrm',
+     &       lval=opti_info%singrm)
 
       else if (mode.eq.2) then
 

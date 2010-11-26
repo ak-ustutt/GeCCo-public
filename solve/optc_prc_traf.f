@@ -90,7 +90,7 @@
      &    me_special(2)%mel%fhand%last_mod(1)) then
         call update_metric(me_dia,me_special,nspecial,
      &      fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
-     &      opti_info%update_prc)
+     &      opti_info%update_prc,opti_info%singrm)
       else if (opti_info%optref.ne.0.and.iprlvl.ge.10) then
         write(luout,*) ' Metric is already up to date!'
       end if
