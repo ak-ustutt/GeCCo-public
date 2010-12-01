@@ -155,10 +155,10 @@
         write(luout,'(x,a,8i4)') 'nas2   = ',nas2(1:8)
         write(luout,'(x,a,8i4)') 'nas3   = ',nas3(1:8)
 
-        write(luout,'(x,a,2i4)') 'nnorbt,n2orbt: ',nnorbt,n2orbt
+        write(luout,'(x,a,2i8)') 'nnorbt,n2orbt: ',nnorbt,n2orbt
 
-        write(luout,'(x,a,16i4)')'sym_bound_orbs: ',
-     &       orb_info%isym_bound_orbs
+        write(luout,'(x,a)') 'sym_bound_orbs:'
+        write(luout,'(x,10i4)') orb_info%isym_bound_orbs
         write(luout,'(x,a,i4)')  'n_freeze_rcmd: ',
      &       orb_info%n_freeze_rcmd
       end if

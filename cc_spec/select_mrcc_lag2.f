@@ -31,19 +31,33 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, deldue2maxtt
+     &     delete, error, deldue2maxtt, check_fac, first
       integer ::
      &     idxtop, idxham
       integer ::
      &     ii, idx_op, ivtx, nvtx, iarc, vtx1, vtx2,
      &     ntt, ntop, nham, idx_op1, idx_op2, itop,
-     &     ntesting, itesting, maxcon_tt, ntt_save
+     &     ntesting, itesting, maxcon_tt, ntt_save, nj, ioff,
+     &     jvtx, kvtx, nhash, ham_vtx, kk, iterm, n_extra, idx
       integer ::
      &     idxop(nlabels), bins(maxtt+1,maxtop+1), binsum(maxtop+1)
+      integer(8) ::
+     &     hash_cur
+      real(8) ::
+     &     fac_tot, fac_cur
+
       integer, allocatable ::
      &     testing(:)
       logical, allocatable ::
      &     connected(:), bchpart(:)
+      integer, pointer ::
+     &     svtx1(:),svtx2(:),ireo(:),iperm(:), extra_term(:), itmp(:)
+      integer(8), pointer ::
+     &     ivtx1(:),topo1(:,:),xlines1(:,:),
+     &     ivtx2(:),topo2(:,:),xlines2(:,:), hash_list(:), i8tmp(:),
+     &     extra_hash(:)
+      real(8), pointer ::
+     &     extra_fac(:), r8tmp(:)
 
 
       type(contraction), pointer ::
@@ -54,7 +68,12 @@
      &     form_pnt, form_pnt_next
 
       integer, external ::
-     &     idx_oplist2
+     &     idx_oplist2, njres_contr, idxlist, i8mltlist, ifac,
+     &     i8common_entry
+      integer(8), external ::
+     &     topo_hash
+      logical, external ::
+     &     next_perm
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'select_mrcc_lag2')
@@ -91,6 +110,9 @@
 
       bins = 0
       deldue2maxtt = .false.
+      n_extra = 0
+      iterm = 0
+      allocate(extra_term(1),extra_hash(1),extra_fac(1))
 
       form_pnt => flist
       do 
@@ -103,8 +125,13 @@
           if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
         case(command_add_contribution)
 
+          iterm = iterm + 1
+c dbg
+c          print *,'current term: ',iterm
+c dbgend
           contr => form_pnt%contr
           nvtx = contr%nvtx
+          nj = njres_contr(contr)
           vertex => contr%vertex
 
           allocate(bchpart(nvtx),connected(nvtx),testing(nvtx))
@@ -118,11 +145,13 @@
           ! - vertex number of Hamiltonian
           ntop  = 0
           nham  = 0
+          ham_vtx = 0
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
             if (idx_op.eq.idxtop) then
               ntop = ntop+1
               bchpart(ivtx) = .true.
+              if (nham.eq.0) ham_vtx = ham_vtx + 1
             end if
             if (idx_op.eq.idxham) then
               nham = nham+1
@@ -130,6 +159,7 @@
               ntesting = ntesting + 1
               testing(ntesting) = ivtx
               connected(ivtx) = .true.
+              ham_vtx = ham_vtx + 1
             end if
           end do
           if (nham.gt.1) call warn('select_mrcc_lag2',
@@ -178,15 +208,166 @@
           end if
 
           delete = ntesting.ne.ntop+nham
-          if (delete) print *,'Deleting disconnected term!'
-
-          deallocate(bchpart,connected,testing)
+          if (delete) write(luout,'(x,a,i12)')
+     &       'Deleting disconnected term with number: ',iterm
 
           ! delete if more T-T connections than requested
           if (maxcon_tt.ge.0) then
             delete = delete.or.ntt_save.gt.maxcon_tt
             deldue2maxtt = deldue2maxtt.or.ntt_save.gt.maxcon_tt
+c            iterm = iterm - 1 ! do not count as term
           end if
+
+          ! factor checking
+          ! CAUTION: This procedure depends on a unique hash function!
+          ! CAUTION: Will only work if open lines are at
+          !          extreme ends of the diagram
+          check_fac = mode(1:9).eq.'CHECK_FAC'.and.
+     &                .not.delete.and.ntesting.gt.0
+          if (check_fac) then
+            fac_tot = 0d0
+            nhash = 0
+            allocate(ivtx1(nvtx),topo1(nvtx,nvtx),
+     &         xlines1(nvtx,nj),svtx1(nvtx),ireo(nvtx),
+     &         iperm(ntesting),ivtx2(nvtx),topo2(nvtx,nvtx),
+     &         xlines2(nvtx,nj),hash_list(1))
+            call pack_contr(svtx1,ivtx1,topo1,xlines1,contr,nj)
+c dbg
+c            write(luout,*) ' initial topology:'
+c            call prt_contr_p(luout,svtx1,ivtx1,topo1,xlines1,nvtx,nj)
+c dbgend
+            do ivtx = 1, nvtx
+              ireo(ivtx) = ivtx
+              if (ivtx.le.ntesting) iperm(ivtx) = ivtx
+            end do
+            first = .true.
+            perm_loop: do
+              ivtx2 = ivtx1
+              topo2 = topo1
+              xlines2 = xlines1
+              if (.not.first) then
+                ! get ireo
+                ioff = 0
+                do ivtx = 1, nvtx
+                  if (bchpart(ivtx)) then
+                    ireo(ivtx) = iperm(ivtx-ioff)+ioff
+                  else
+                    ioff = ioff+1
+                    ireo(ivtx) = ivtx
+                  end if
+                end do
+                ! is this reo allowed by the contractions?
+                ! order of contracted vertices must not be changed
+                idx = 0
+                do ivtx = 1, nvtx
+                  if (bchpart(ivtx)) idx = idx + 1
+                  do jvtx = ivtx+1, nvtx
+                    if (ireo(ivtx).gt.ireo(jvtx)) then
+                      if (topo1(ireo(ivtx),ireo(jvtx)).ne.0) then
+                        ! change ireo to replace op at pos. ivtx
+                        ioff = ntesting
+                        do kvtx = idx+1, ntesting
+                          do while(idxlist(ioff,
+     &                              iperm(1:kvtx-1),kvtx-1,1).gt.0)
+                            ioff = ioff - 1
+                          end do
+                          iperm(kvtx) = ioff
+                        end do
+                        if (.not.next_perm(iperm,ntesting))
+     &                     exit perm_loop
+c dbg
+c                        write(luout,'(x,a,14i4)') 'skip to perm:',iperm
+c dbgend
+                        cycle perm_loop
+                      end if
+                    end if
+                  end do
+                end do
+                ! reorder vtx, topo, xlines
+                call reoi8mat(ivtx2,ireo,nvtx,1,1)
+                call reoi8mat(topo2,ireo,nvtx,nvtx,3) !both rows and cols
+                call reoi8mat(xlines2,ireo,nvtx,nj,1)
+c dbg
+c                write(luout,'(x,a,14i4)') 'reordering array: ',
+c     &                                    ireo(1:nvtx)
+c                write(luout,*) ' reordered topology:'
+c                call prt_contr_p(luout,svtx1,ivtx2,topo2,xlines2,nvtx,
+c     &                           nj)
+c dbgend
+              end if
+              first = .false.
+              ! get hash value
+              hash_cur = topo_hash(ivtx2,topo2,xlines2,nvtx,nj)
+c dbg
+c              print *,'current hash value: ',hash_cur
+c dbgend
+              ! go ahead if we didn't have this term before
+              if (nhash.eq.0.or.
+     &            i8mltlist(hash_cur,hash_list,nhash,1).eq.0) then
+                ! store hash value
+                nhash = nhash + 1
+                allocate(i8tmp(nhash))
+                if (nhash.gt.1) i8tmp(1:nhash-1) = hash_list(1:nhash-1)
+                i8tmp(nhash) = hash_cur
+                deallocate(hash_list)
+                hash_list => i8tmp
+                i8tmp => null()
+                kk = idxlist(ham_vtx,iperm,ntesting,1)-1
+                fac_cur = 1d0/dble(ifac(kk)*ifac(ntop-kk))
+                if (mod(kk,2).ne.0) fac_cur = -fac_cur
+                fac_tot = fac_tot + fac_cur
+c dbg
+c                print *,'current factor contribution: ',fac_cur
+c dbgend
+              end if
+              if (.not.next_perm(iperm,ntesting)) exit perm_loop
+            end do perm_loop
+c dbg
+c            print *,'calculated factor: ',fac_tot
+c            print *,'existing factor  : ',contr%fac
+c dbgend
+
+            ! if factor does not match:
+            if (abs(fac_tot-contr%fac).gt.1d-12) then
+              ! if we already had an identical term:
+              ! add the factor and delete this term
+              ! else: correct the factor and create new "extra" term
+              idx = i8common_entry(extra_hash,hash_list,n_extra,nhash)
+              if (idx.gt.0) then
+                extra_fac(idx) = extra_fac(idx) + contr%fac
+                delete = .true.
+                write(luout,'(x,2(a,i12),a,e10.3)') 'added to term ',
+     &                 extra_term(idx),
+     &                 ': term ',iterm,' with factor ',contr%fac
+              else
+                n_extra = n_extra + 1
+                allocate(i8tmp(n_extra),itmp(n_extra),r8tmp(n_extra))
+                if (n_extra.gt.1) then
+                  i8tmp(1:n_extra-1) = extra_hash(1:n_extra-1)
+                  itmp(1:n_extra-1) = extra_term(1:n_extra-1)
+                  r8tmp(1:n_extra-1) = extra_fac(1:n_extra-1)
+                end if
+                i8tmp(n_extra) = hash_list(1) !arbitrary: first hash value
+                itmp(n_extra) = iterm
+                r8tmp(n_extra) = contr%fac-fac_tot ! factor difference
+                deallocate(extra_hash,extra_term,extra_fac)
+                extra_hash => i8tmp
+                extra_term => itmp
+                extra_fac  => r8tmp
+                i8tmp => null()
+                itmp  => null()
+                r8tmp => null()
+                contr%fac = fac_tot
+                write(luout,'(x,a,i12,a,e10.3)') 'term ',iterm,
+     &              ': new virtual term with factor ',extra_fac(n_extra)
+              end if
+            end if
+
+            deallocate(ivtx1,topo1,xlines1,svtx1,ireo,iperm,
+     &                 ivtx2,topo2,xlines2,hash_list)
+          end if
+
+          deallocate(bchpart,connected,testing)
 
           if (delete) then
             ! Undo binning count
@@ -232,6 +413,17 @@
      &                              ' T-T connections'
       end do
       write(luout,'(x,76("-"))')
+
+      do idx = 1, n_extra
+        if (abs(extra_fac(idx)).gt.1d-12) then
+          write(luout,'(x,a,i12,a,e10.3)')
+     &         'OH NO! Virtual term belonging to term ',
+     &         extra_term(idx),' has a factor ',extra_fac(idx)
+          call warn('select_mrcc_lag2',
+     &              'FATAL: We messed up the formula!')
+        end if
+      end do
+      deallocate(extra_hash,extra_term,extra_fac)
 
       return
       end

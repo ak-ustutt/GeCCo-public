@@ -42,14 +42,14 @@
       type(formula_item), target ::
      &     flist
       type(formula_item), pointer ::
-     &     flist_pnt, start_pnt
+     &     flist_pnt, start_pnt, start_pnt2
 
       integer ::
      &     ilabel, idx, idxham,idxtbar, idxt, idxen, idxd,
      &     nvtx, min_n, nn, ii, jj, iblk, mini, maxc, off, nl, nham,
      &     kk, iblk_l, iblk_ham, iterm, icall, icall0, nterm,
      &     lu(2), ho(2), hu(2), tto(2), tto_l(2), idxddag, ioff, idx_h,
-     &     max_n0
+     &     max_n0, nsumcalls
 
       logical ::
      &     next, set_zero, set_scalar, esym, sym
@@ -328,6 +328,7 @@ c            if (lu-ho+hu.gt.4*nn) cycle
                cycle
              end if
              start_pnt => flist_pnt
+             nsumcalls = 0
              ! must be in increasing order for next_perm
              do ii = 1, nn
                perm(ii) = dist(nn+1-ii)
@@ -346,6 +347,7 @@ c            if (lu-ho+hu.gt.4*nn) cycle
                 iblk_max(1) = op_info%op_arr(idxd)%op%n_occ_cls
                 jj = 0
                 tto_l = 0
+                start_pnt2 => flist_pnt
                 do ii = 3, nvtx-1
                  if (ii.eq.3+kk) then
                   iblk_min(ii) = iblk_ham
@@ -400,6 +402,14 @@ c dbg
 c                print *,'# of generated terms: ',iterm
 c                call prtim(luout,'time in expand_op_product2 ',
 c     &                     cpu1-cpu10,sys1-sys10,wall1-wall10)
+c dbgend
+                nsumcalls = nsumcalls + 1
+                call atim_csw(cpu10,sys10,wall10)
+                call sum_terms(start_pnt2,op_info)
+                call atim_csw(cpu1,sys1,wall1)
+c dbg
+c            call prtim(luout,'time in sum_terms (2) ',
+c     &                 cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 if (sym) then
                  idx_op_vtx(1+nham:nvtx-2) = -idxt
@@ -478,13 +488,15 @@ c dbgend
               if (mini.gt.0) imnmx(1,ii) = mini+1
              end do
 
-            call atim_csw(cpu10,sys10,wall10)
-            call sum_terms(start_pnt,op_info)
-            call atim_csw(cpu1,sys1,wall1)
+             if (nsumcalls.ne.1) then
+               call atim_csw(cpu10,sys10,wall10)
+               call sum_terms(start_pnt,op_info)
+               call atim_csw(cpu1,sys1,wall1)
 c dbg
-c            call prtim(luout,'time in sum_terms ',
-c     &                 cpu1-cpu10,sys1-sys10,wall1-wall10)
+c               call prtim(luout,'time in sum_terms ',
+c     &                    cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
+             end if
 
             end do
             deallocate(idx_op_vtx,idx_op,iblk_min,iblk_max,dist,imnmx,

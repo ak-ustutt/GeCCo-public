@@ -506,6 +506,17 @@ c      call set_arg('F_MRCC_LAG',FACTOR_OUT,'LABEL_IN',1,tgt_info,
 c     &     val_label=(/'F_MRCC_LAG'/))
 c      call set_arg('F_MRCC_LAG',FACTOR_OUT,'INTERM',4,tgt_info,
 c     &     val_label=(/'F_HT2','F_HT1','F_HT0to2','F_HT0to1'/))
+      call set_rule2('F_MRCC_LAG',SELECT_SPECIAL,tgt_info)
+      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_MRCC_LAG'/))
+      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_MRCC_LAG'/))
+      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+     &     val_label=(/'H','T'/))
+      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &     val_str='MRCC2')
+      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &     val_str='CHECK_FAC')
       call set_rule2('F_MRCC_LAG',PRINT_FORMULA,tgt_info)
       call set_arg('F_MRCC_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_MRCC_LAG'/))

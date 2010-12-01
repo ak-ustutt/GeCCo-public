@@ -27,6 +27,8 @@
 
       integer, external ::
      &     njres_contr
+      integer(8), external ::
+     &     topo_hash
 
       nj = njres_contr(contr)
       nvtx = contr%nvtx
@@ -43,27 +45,7 @@
       deallocate(scr,svtx)
 
       ! set hash value
-      hash = 0
-      ifac = 0
-      do idx = 1, nvtx
-        ifac = ifac + 1
-        hash = hash + contr%vtx(idx)/ifac + mod(contr%vtx(idx),ifac)
-      end do
-      do jdx = 1, nvtx
-        do idx = 1, nvtx
-          ifac = ifac + 1
-          hash = hash + contr%topo(idx,jdx)/ifac 
-     &                + mod(contr%topo(idx,jdx),ifac)
-        end do
-      end do
-      do jdx = 1, nj
-        do idx = 1, nvtx
-          ifac = ifac + 1
-          hash = hash + contr%xlines(idx,jdx)/ifac
-     &                + mod(contr%xlines(idx,jdx),ifac)
-        end do
-      end do
-      contr%hash = hash
+      contr%hash = topo_hash(contr%vtx,contr%topo,contr%xlines,nvtx,nj)
 
       return
       end
