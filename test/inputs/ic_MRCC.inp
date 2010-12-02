@@ -8,4 +8,4 @@ method
 calculate
  solve maxiter=50,conv=1d-8,maxsub=8
  solve non_linear optref=-1,update_prc=F
- routes contract=3,simtraf=0,schedule=1,use_tr=T,maxbranch=-1
+ routes contract=3,simtraf=0,schedule=1,use_tr=T,maxbranch=-1,sv_thresh=1d-12

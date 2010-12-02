@@ -287,7 +287,7 @@ c dbg*
         else if (iblk_max_in(iop).le.0) then
           iblk_max(iop) = ops(iop)%op%n_occ_cls
         else
-          iblk_max(iop) = iblk_max_in(iop)
+          iblk_max(iop) = min(iblk_max_in(iop),ops(iop)%op%n_occ_cls)
         end if
       end do
 
@@ -337,7 +337,7 @@ c dbg*
         iblk_res_max = op_res%n_occ_cls
         if (iblk_max_in(1).gt.0 .and.
      &      iblk_max_in(num_res).gt.0)
-     &       iblk_res_max = iblk_max_in(num_res)
+     &       iblk_res_max = min(iblk_max_in(num_res),op_res%n_occ_cls)
       end if
 
       do iblk_res = iblk_res_min, iblk_res_max

@@ -1045,6 +1045,115 @@ c dbgend
       call set_arg('F_TT',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_TT'/))
 
+c dbg
+c      ! transformed multireference CC energy
+c      ! a) set up
+c      call add_target2('F_NORMtr',.false.,tgt_info)
+c      call set_dependency('F_NORMtr','NORM',tgt_info)
+c      call set_dependency('F_NORMtr','T',tgt_info)
+c      call set_dependency('F_NORMtr','L',tgt_info)
+c      call set_dependency('F_NORMtr','DENS',tgt_info)
+c      call set_rule2('F_NORMtr',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_NORMtr'/))
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'NORM'/))
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'OPERATORS',2,
+c     &     tgt_info,
+c     &     val_label=(/'L','T'/))
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
+c     &     val_int=(/2,3/))
+c      call set_rule2('F_NORMtr',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_NORMtr'/))
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'NORM'/))
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'OPERATORS',4,
+c     &     tgt_info,
+c     &     val_label=(/'DENS','L','T','DENS'/))
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+c     &     val_int=(/2,3,4,2/))
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+c     &     val_int=(/1,4/))
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+c     &     val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
+c      call set_arg('F_NORMtr',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      ! f) insert 1 (particle/hole space) for later differentiation
+c      call set_dependency('F_NORMtr','1ph',tgt_info)
+c      call set_rule2('F_NORMtr',INSERT,tgt_info)
+c      call set_arg('F_NORMtr',INSERT,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_NORMtr'/))
+c      call set_arg('F_NORMtr',INSERT,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_NORMtr'/))
+c      call set_arg('F_NORMtr',INSERT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'NORM'/))
+c      call set_arg('F_NORMtr',INSERT,'OP_INS',1,tgt_info,
+c     &     val_label=(/'1ph'/))
+c      call set_arg('F_NORMtr',INSERT,'OP_INCL',2,tgt_info,
+c     &     val_label=(/'L','T'/))
+c      ! replace 1ph by 1
+c      call set_dependency('F_NORMtr','1',tgt_info)
+c      call set_rule2('F_NORMtr',REPLACE,tgt_info)
+c      call set_arg('F_NORMtr',REPLACE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_NORMtr'/))
+c      call set_arg('F_NORMtr',REPLACE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_NORMtr'/))
+c      call set_arg('F_NORMtr',REPLACE,'OP_LIST',2,tgt_info,
+c     &     val_label=(/'1ph','1'/))
+c      ! g) expand T and L
+c      call set_dependency('F_NORMtr','F_T',tgt_info)
+c      call set_dependency('F_NORMtr','F_L',tgt_info)
+c      call set_rule2('F_NORMtr',EXPAND,tgt_info)
+c      call set_arg('F_NORMtr',EXPAND,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_NORMtr'/))
+c      call set_arg('F_NORMtr',EXPAND,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_NORMtr'/))
+c      call set_arg('F_NORMtr',EXPAND,'INTERM',2,tgt_info,
+c     &     val_label=(/'F_T','F_L'/))
+cc dbg
+c      call set_rule2('F_NORMtr',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_NORMtr',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_NORMtr'/))
+cc dbgend
+c
+c      ! transformed Metric times vector
+c      call add_target2('F_S_Ttr',.false.,tgt_info)
+c      call set_dependency('F_S_Ttr','F_NORMtr',tgt_info)
+c      call set_dependency('F_S_Ttr','OMG',tgt_info)
+c      call set_rule2('F_S_Ttr',DERIVATIVE,tgt_info)
+c      call set_arg('F_S_Ttr',DERIVATIVE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_S_Ttr'/))
+c      call set_arg('F_S_Ttr',DERIVATIVE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_NORMtr'/))
+c      call set_arg('F_S_Ttr',DERIVATIVE,'OP_RES',1,tgt_info,
+c     &     val_label=(/'OMG'/))
+c      call set_arg('F_S_Ttr',DERIVATIVE,'OP_DERIV',1,tgt_info,
+c     &     val_label=(/'Ltr'/))
+c      call set_rule2('F_S_Ttr',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_S_Ttr',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_S_Ttr'/))
+c
+c      ! transformed Metric (should be unity)
+c      call add_target2('F_Str',.false.,tgt_info)
+c      call set_dependency('F_Str','F_S_Ttr',tgt_info)
+c      call set_dependency('F_Str','A(CC)',tgt_info)
+c      call set_rule2('F_Str',DERIVATIVE,tgt_info)
+c      call set_arg('F_Str',DERIVATIVE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_Str'/))
+c      call set_arg('F_Str',DERIVATIVE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_S_Ttr'/))
+c      call set_arg('F_Str',DERIVATIVE,'OP_RES',1,tgt_info,
+c     &     val_label=(/'A(CC)'/))
+c      call set_arg('F_Str',DERIVATIVE,'OP_DERIV',1,tgt_info,
+c     &     val_label=(/'Ttr'/))
+c      call set_rule2('F_Str',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_Str',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_Str'/))
+c dbgend
+
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -1083,6 +1192,11 @@ c dbgend
       call set_dependency('FOPT_Atr','DEF_ME_1',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_Dtr',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_C0',tgt_info)
+      call set_rule2('FOPT_Atr',ASSIGN_ME2OP,tgt_info)
+      call set_arg('FOPT_Atr',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &           val_label=(/'ME_Dtr'/))
+      call set_arg('FOPT_Atr',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+     &           val_label=(/'Dtr'/))
       call set_rule2('FOPT_Atr',OPTIMIZE,tgt_info)
       call set_arg('FOPT_Atr',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_Atr'/))
@@ -1144,6 +1258,20 @@ c      call set_dependency('FOPT_OMG_C0','DEF_ME_HT2',tgt_info)
      &             val_label=(/'FOPT_OMG_C0'/))
       call set_arg('FOPT_OMG_C0',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_OMG_C0'/))
+
+c dbg
+c      ! transformed metric
+c      call add_target2('FOPT_Str',.false.,tgt_info)
+c      call set_dependency('FOPT_Str','F_Str',tgt_info)
+c      call set_dependency('FOPT_Str','DEF_ME_A(CC)',tgt_info)
+c      call set_dependency('FOPT_Str','DEF_ME_1',tgt_info)
+c      call set_dependency('FOPT_Str','DEF_ME_Dtr',tgt_info)
+c      call set_rule2('FOPT_Str',OPTIMIZE,tgt_info)
+c      call set_arg('FOPT_Str',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+c     &             val_label=(/'FOPT_Str'/))
+c      call set_arg('FOPT_Str',OPTIMIZE,'LABELS_IN',1,tgt_info,
+c     &             val_label=(/'F_Str'/))
+c dbgend
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -1488,6 +1616,24 @@ c     &       'final T amplitudes :',0,'LIST')
 c        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
 c     &       'ME_T',1,0,
 c     &       parameters,2,tgt_info)
+c dbgend
+
+c dbg
+c      ! Evaluate transformed metric
+c      call add_target('EVAL_Str',ttype_gen,.false.,tgt_info)
+c      call set_dependency('EVAL_Str','FOPT_Str',tgt_info)
+c      call set_dependency('EVAL_Str','SOLVE_REF',tgt_info)
+c      call set_rule('EVAL_Str',ttype_opme,RES_ME_LIST,
+c     &     'ME_A(CC)',1,0,
+c     &     parameters,0,tgt_info)
+c      call set_rule('EVAL_Str',ttype_opme,EVAL,
+c     &     'FOPT_Str',1,0,
+c     &     parameters,0,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'transformed metric :',0,'LIST')
+c      call set_rule('EVAL_Str',ttype_opme,PRINT_MEL,
+c     &     'ME_A(CC)',1,0,
+c     &     parameters,2,tgt_info)
 c dbgend
 
       return

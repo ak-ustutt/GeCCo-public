@@ -55,7 +55,7 @@
 
       logical ::
      &     bufin, bufout, first, ms_fix, fix_success, onedis, transp,
-     &     logdum, sing_remove
+     &     logdum, sing_remove, normalize
 c      logical ::
 c     &     loop(nocc_cls)
       integer ::
@@ -76,7 +76,7 @@ c     &     loop(nocc_cls)
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:), scratch2(:,:),
      &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:),
-     &     palph(:), pbeta(:), proj_sing(:,:)
+     &     palph(:), pbeta(:), proj_sing(:,:), norm(:)
 c dbg
 c      integer, pointer ::
 c     &     matrix(:,:)
@@ -174,6 +174,10 @@ c dbgend
         buffer_out => ffinv%buffer(1:)
       endif
 
+      normalize = .false.
+c dbg
+      if (normalize) write(luout,*)  'Normalizing Metric!'
+c dbgend
       icnt_sv  = 0 ! we will count the
       icnt_sv0 = 0 ! number of singular values below threshold
       xmax = 0d0   ! largest excluded singular value
@@ -332,6 +336,16 @@ c          if (.not.half) buffer_in(ioff+1) = 1d0
                 enddo
               end if
 
+              ! normalization
+              if (normalize) then
+                allocate(norm(ndim))
+                do idx = 1, ndim
+                  norm(idx) = sqrt(abs(scratch(idx,idx)))
+                end do
+                call dmdiagm(ndim,scratch,norm,.true.,.true.)
+                call dmdiagm(ndim,scratch,norm,.false.,.true.)
+              end if
+
               if (msc.eq.0) then
                 ! here a splitting into "singlet" and "triplet" blocks is needed:
 
@@ -381,6 +395,16 @@ c dbgend
                 call invsqrt_mat(ndim,scratch,scratch2,
      &                           half,icnt_sv,icnt_sv0,xmax,xmin,bins)
 
+              end if
+
+              ! "undo" normalization
+              if (normalize) then ! X = N*X'
+                call dmdiagm(ndim,scratch,norm,.false.,.true.)
+                if (.not.half) then ! P = N*P'*N^-1
+                  call dmdiagm(ndim,scratch2,norm,.false.,.true.)
+                  call dmdiagm(ndim,scratch2,norm,.true.,.false.)
+                end if
+                deallocate(norm)
               end if
 
               ! write to output buffer
@@ -807,6 +831,16 @@ c dbgend
             deallocate(palph,pbeta,proj_sing)
           end if
 
+          ! normalization
+          if (normalize) then
+            allocate(norm(ndim))
+            do idx = 1, ndim
+              norm(idx) = sqrt(abs(scratch(idx,idx)))
+            end do
+            call dmdiagm(ndim,scratch,norm,.true.,.true.)
+            call dmdiagm(ndim,scratch,norm,.false.,.true.)
+          end if
+
           if (ms1.eq.0) then
             ! here a splitting into "singlet" and "triplet" blocks is needed:
 
@@ -861,6 +895,16 @@ c dbgend
             call invsqrt_mat(ndim,scratch,scratch2,
      &                       half,icnt_sv,icnt_sv0,xmax,xmin,bins)
 
+          end if
+
+          ! "undo" normalization
+          if (normalize) then ! X = N*X'
+            call dmdiagm(ndim,scratch,norm,.false.,.true.)
+            if (.not.half) then ! P = N*P'*N^-1
+              call dmdiagm(ndim,scratch2,norm,.false.,.true.)
+              call dmdiagm(ndim,scratch2,norm,.true.,.false.)
+            end if
+            deallocate(norm)
           end if
 
           ! write to output buffer

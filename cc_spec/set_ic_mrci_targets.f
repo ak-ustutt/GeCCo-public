@@ -34,10 +34,10 @@
      &     isym, ms, msc, sym_arr(8), maxexc, ip, ih, ivv, iv,
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, minh, maxh,
      &     minp, maxp, maxv, maxvv, minexc, cbarc(2),
-     &     nlabels, nroots, gno
+     &     nlabels, nroots, gno, idef
       logical ::
      &     use_hessian, use_dens, pure_vv, sv_fix, l_exist,
-     &     l_icci, l_iccc, singrm
+     &     l_icci, l_iccc, singrm, skip
       real(8) ::
      &     sv_thresh
       character(len_target_name) ::
@@ -112,7 +112,7 @@ cmh end
       call get_argument_value('method.MR','minexc',
      &     ival=minexc)
       ! minimum excitation: maxexc for GNO=0
-      if (gno.eq.0) minexc = maxexc
+      if (gno.eq.0.and.l_icci) minexc = maxexc
       if (maxh.lt.0) maxh = maxexc
       if (maxp.lt.0) maxp = maxexc
       if (maxv.lt.0) maxv = 2*maxexc
@@ -333,12 +333,19 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
       do ip = 0, maxp
         do ih = 0, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-            if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
+            if (ip.eq.ih.and.ivv.eq.0) cycle
             if (.not.pure_vv.and.ip.eq.0.and.ih.eq.0.and.ivv.gt.0) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).gt.0.and.ip.lt.minp) cycle
             if (max(ip,ih).gt.0.and.ih.lt.minh) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
+            ! skip if block already exists
+            skip = .false.
+            do idef = 1, ndef
+             skip = skip.or.(occ_def(IVALE,1,idef*3).eq.max(ip-ih,0)+ivv
+     &               .and.occ_def(IVALE,1,idef*3-1).eq.max(ih-ip,0)+ivv)
+            end do
+            if (skip) cycle
             ndef = ndef + 1
             occ_def(IVALE,1,ndef*3-1) = max(ih-ip,0) + ivv
             occ_def(IVALE,2,ndef*3-1) = max(ih-ip,0) + ivv
@@ -361,12 +368,19 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
       do ip = 0, maxp
         do ih = 0, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-            if (ip.eq.maxexc.and.ih.eq.maxexc) cycle
+            if (ip.eq.ih.and.ivv.eq.0) cycle
             if (.not.pure_vv.and.ip.eq.0.and.ih.eq.0.and.ivv.gt.0) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).gt.0.and.ip.lt.minp) cycle
             if (max(ip,ih).gt.0.and.ih.lt.minh) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
+            ! skip if block already exists
+            skip = .false.
+            do idef = 1, ndef
+             skip = skip.or.(occ_def(IVALE,1,idef*2).eq.max(ip-ih,0)+ivv
+     &               .and.occ_def(IVALE,1,idef*2-1).eq.max(ih-ip,0)+ivv)
+            end do
+            if (skip) cycle
             ndef = ndef + 1
             occ_def(IVALE,1,ndef*2-1) = max(ih-ip,0) + ivv
             occ_def(IVALE,2,ndef*2-1) = max(ih-ip,0) + ivv

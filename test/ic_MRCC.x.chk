@@ -35,7 +35,7 @@ check
   rewind
   label Number of singular values
   find INVERT
-  find singular values
+  find singular values were
   compare int 1
   compare int 4
 check
