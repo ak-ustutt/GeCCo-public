@@ -44,7 +44,7 @@
         if (right) then
           do idx = 1, ndim
             if (diag(idx).lt.thresh) then
-              mat(1:ndim,idx) = 0d0
+c              mat(1:ndim,idx) = 0d0
               cycle
             end if
             mat(1:ndim,idx) = mat(1:ndim,idx)/diag(idx)
@@ -52,7 +52,7 @@
         else
           do idx = 1, ndim
             if (diag(idx).lt.thresh) then
-              mat(idx,1:ndim) = 0d0
+c              mat(idx,1:ndim) = 0d0
               cycle
             end if
             mat(idx,1:ndim) = mat(idx,1:ndim)/diag(idx)
@@ -61,10 +61,12 @@
       else
         if (right) then
           do idx = 1, ndim
+            if (diag(idx).lt.thresh) cycle ! debug
             mat(1:ndim,idx) = mat(1:ndim,idx)*diag(idx)
           end do
         else
           do idx = 1, ndim
+            if (diag(idx).lt.thresh) cycle ! debug
             mat(idx,1:ndim) = mat(idx,1:ndim)*diag(idx)
           end do
         end if

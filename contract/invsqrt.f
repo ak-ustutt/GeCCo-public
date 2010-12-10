@@ -56,6 +56,8 @@
       logical ::
      &     bufin, bufout, first, ms_fix, fix_success, onedis, transp,
      &     logdum, sing_remove, normalize
+      logical, pointer ::
+     &     blk_used(:)
 c      logical ::
 c     &     loop(nocc_cls)
       integer ::
@@ -70,7 +72,8 @@ c     &     loop(nocc_cls)
      &     gamc1, gamc2, gama1, gama2, igam, na1, na2, nc1, nc2, ij,
      &     maxbuf, ngraph, ioff2, idxmsa2, ndis2, idxdis2, idx2, nel,
      &     nsing, ising, itrip, ntrip, icnt_sv, icnt_sv0,
-     &     bins(17), nalph, nbeta
+     &     bins(17), nalph, nbeta, nc1mx, na1mx, jocc_cls, jblkoff,
+     &     ncblk2, nablk2, len2(4), off_line2, off_col2, off_colmax
       real(8) ::
      &     fac, xmax, xmin
       real(8), pointer ::
@@ -99,7 +102,11 @@ c dbgend
      &     flipmap_c(:), flipmap_a(:),
      &     flmap(:,:),
      &     iocc(:,:,:), idx_g(:,:,:), msdst(:,:,:), igamdst(:,:,:),
-     &     idorb(:), idspn(:), idspc(:), lexlscr(:,:)
+     &     idorb(:), idspn(:), idspc(:), lexlscr(:,:),
+     &     hpvx_csub2(:),hpvx_asub2(:),
+     &     occ_csub2(:), occ_asub2(:),
+     &     graph_csub2(:), graph_asub2(:),
+     &     iocc2(:,:,:),idx_g2(:,:,:)
 
       type(filinf), pointer ::
      &     ffinp, ffinv
@@ -184,6 +191,8 @@ c dbgend
       xmin = 1234567890d0   ! smallest included singular value
       bins = 0 ! binning for singular values:
                ! >10E0,>10E-1,...,>10E-15,0
+      allocate(blk_used(nocc_cls))
+      blk_used(1:nocc_cls) = .false.
 
       if (.not.half.and.max(iprlvl,ntest).ge.3) write(luout,*)
      &         'Input list will be overwritten by projector.'
@@ -191,6 +200,8 @@ c dbgend
       ! Loop over occupation class.
       iocc_loop: do iocc_cls = 1, nocc_cls
         if(op_inp%formal_blk(iocc_cls)) cycle iocc_loop
+        if (blk_used(iocc_cls)) cycle iocc_loop
+        blk_used(iocc_cls) = .true.
         iblkoff = (iocc_cls-1)*njoined
 
         if (ntest.ge.10) write(luout,*) 'current occ_cls: ',iocc_cls
@@ -472,18 +483,19 @@ c dbgend
         ! i.e. the matrix must be resorted from A | C to A1/C1 | A2/C2
 
         ! determine number of c/a-operators of A1/C1 tuple
-        na1 = sum(hpvx_occ(1:ngastp,2,iblkoff+1))
-        nc1 = sum(hpvx_occ(1:ngastp,1,iblkoff+2))
+        na1mx = sum(hpvx_occ(1:ngastp,2,iblkoff+1))
+        nc1mx = sum(hpvx_occ(1:ngastp,1,iblkoff+2))
         na2 = sum(hpvx_occ(1:ngastp,2,iblkoff+2))
         nc2 = sum(hpvx_occ(1:ngastp,1,iblkoff+3))
-        msmax_sub = na1 + nc1
+        msmax_sub = na1mx + nc1mx
         ! must be symmetric and so on and so forth
-        if (njoined.ne.3.or.msmax_sub.ne.na2+nc2.or.na1.ne.nc2.or.
-     &      na2.ne.nc1)
+        if (njoined.ne.3.or.msmax_sub.ne.na2+nc2.or.na1mx.ne.nc2.or.
+     &      na2.ne.nc1mx)
      &     call quit(1,'invsqrt','too difficult operator!')
         msmax = op_inp%ica_occ(1,iocc_cls)
         mscmax = op_inp%ica_occ(2,iocc_cls)
-        if (msmax.ne.mscmax.or.msmax.ne.na1+na2.or.mscmax.ne.nc1+nc2)
+        if (msmax.ne.mscmax.or.msmax.ne.na1mx+na2
+     &      .or.mscmax.ne.nc1mx+nc2)
      &            call quit(1,'invsqrt','need part.cons.op')
 
         ! occupation and so on of A2/C2 vector
@@ -509,47 +521,50 @@ c dbgend
 
           ! First we need the dimension of the A1/C1 | A2/C2 block
           ndim = 0
-          do msa1 = na1, -na1, -2
-           msc1 = msa1 + ms1
-           if (abs(msc1).gt.nc1) cycle
-           msdis_c(1) = msc1
-           msdis_a(1) = msa1
-           do gama1 = 1, ngam
-            gamc1 = multd2h(gama1,igam)
-            gamdis_c(1) = gamc1
-            gamdis_a(1) = gama1
-            msdis_c(2) = msa1
-            msdis_a(2) = msc1
-            gamdis_c(2) = gama1
-            gamdis_a(2) = gamc1
-            call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
-            call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
+          sing_remove = .false.
+          ! loops over coupling blocks. Must be in correct order!
+          jocc_cls = iocc_cls
+          jblkoff = (jocc_cls-1)*njoined
+          na1 = na1mx
+          nc1 = nc1mx
+          blk_loop: do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
+           na2 = nc1mx
+           nc2 = na1mx
+           do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
+            ! exit if there is no block like this
+            if (na1.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+1)).or.
+     &         nc1.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+2)).or.
+     &         na2.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+2)).or.
+     &         nc2.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+3))) exit blk_loop
+            ! skip off-diagonal blocks
+            if (na1.ne.nc2) then
+              jocc_cls = jocc_cls + 1
+              jblkoff = (jocc_cls-1)*njoined
+              na2 = na2 - 1
+              nc2 = nc2 - 1
+              cycle
+            end if
+            ! exception for pure inactive block:
+            if (na1.eq.0.and.nc1.eq.0.and.igam.eq.1) then
+              ndim = ndim + 1
+              exit blk_loop
+            end if
+            call get_num_subblk(ncblk2,nablk2,
+     &           hpvx_occ(1,1,jblkoff+1),njoined)
+            allocate(hpvx_csub2(ncblk2),hpvx_asub2(nablk2),
+     &               occ_csub2(ncblk2), occ_asub2(nablk2),
+     &               graph_csub2(ncblk2), graph_asub2(nablk2))
+            ! set HPVX and OCC info
+            call condense_occ(occ_csub2, occ_asub2,
+     &                      hpvx_csub2,hpvx_asub2,
+     &                      hpvx_occ(1,1,jblkoff+1),njoined,hpvxblkseq)
+            ! do the same for the graph info
+            call condense_occ(graph_csub2, graph_asub2,
+     &                      hpvx_csub2,hpvx_asub2,
+     &                      idx_graph(1,1,jblkoff+1),njoined,hpvxblkseq)
 
-            call set_len_str(len_str,ncblk,nablk,
-     &                       graphs,
-     &                       graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
-     &                       graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
-     &                       hpvxseq,.false.)
-            ndim = ndim + len_str(1)*len_str(3)
-           end do
-          end do
-
-          if (ndim.eq.0) cycle
-
-          if (ntest.ge.10)
-     &       write(luout,'(a,3i8)'),'ms1, igam, ndim:',ms1,igam,ndim
-
-          ! remove singles only for one specific block for now
-          sing_remove = sgrm.and.ms1.eq.0.and.igam.eq.1
-     &                  .and.na1.eq.nc1.and.na1.eq.1
-          if (sing_remove) then
-            allocate(palph(ndim),pbeta(ndim),proj_sing(ndim,ndim))
-            palph = 0d0
-            pbeta = 0d0
-            nalph = 0
-            nbeta = 0
-            ! get pseudo-singles vectors that should be removed
-            iline = 0
+c           ! First we need the dimension of the A1/C1 | A2/C2 block
+c           ndim = 0
             do msa1 = na1, -na1, -2
              msc1 = msa1 + ms1
              if (abs(msc1).gt.nc1) cycle
@@ -557,62 +572,131 @@ c dbgend
              msdis_a(1) = msa1
              do gama1 = 1, ngam
               gamc1 = multd2h(gama1,igam)
-              gamdis_c(1) = gamc1
-              gamdis_a(1) = gama1
-              msdis_c(2) = msa1
-              msdis_a(2) = msc1
-              gamdis_c(2) = gama1
-              gamdis_a(2) = gamc1
-              call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
-              call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
+              if (nablk2.eq.1.and.na2.eq.0) then ! diag.: nablk2=ncblk2
+                if (msc1.ne.0.or.gamc1.ne.1) cycle
+                gamdis_c(1) = gama1
+                msdis_c(1) = msa1
+                gamdis_a(1) = gama1
+              else if (nablk2.eq.1.and.na1.eq.0) then
+                if (msa1.ne.0.or.gama1.ne.1) cycle
+                gamdis_a(1) = gamc1
+                msdis_a(1) = msc1
+                gamdis_c(1) = gamc1
+              else
+                gamdis_c(1) = gamc1
+                gamdis_a(1) = gama1
+                msdis_c(2) = msa1
+                msdis_a(2) = msc1
+                gamdis_c(2) = gama1
+                gamdis_a(2) = gamc1
+              end if
+              call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
+              call ms2idxms(idxmsdis_a,msdis_a,occ_asub2,nablk2)
 
-              call set_len_str(len_str,ncblk,nablk,
-     &                         graphs,
-     &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
-     &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
-     &                         hpvxseq,.false.)
-              if (len_str(1).ne.len_str(3)) call quit(1,'invsqrt',
-     &            'this should not happen.')
-              ! simple square matrix, the diagonal elements
-              ! contribute to the pseudo-singles component
-              do idxc1 = 1, len_str(1)
-               do idxa1 = 1, len_str(3)
-                iline = iline + 1
-                if (idxc1.ne.idxa1) cycle
-                if (msa1.eq.1) then
-                  palph(iline) = 1d0
-                  nalph = nalph + 1
-                else if (msa1.eq.-1) then
-                  pbeta(iline) = 1d0
-                  nbeta = nbeta + 1
-                else
-                  call quit(1,'invsqrt','this should not happen(2).')
-                end if
-               end do
-              end do
+              call set_len_str(len_str,ncblk2,nablk2,
+     &                       graphs,
+     &                       graph_csub2,idxmsdis_c,gamdis_c,hpvx_csub2,
+     &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
+     &                       hpvxseq,.false.)
+              if (nablk2.eq.1) then
+                ndim = ndim + len_str(1)
+              else
+                ndim = ndim + len_str(1)*len_str(3)
+              end if
              end do
             end do
-            ! normalize vectors
-            if (nalph.gt.0) palph = palph/sqrt(dble(nalph))
-            if (nbeta.gt.0) pbeta = pbeta/sqrt(dble(nbeta))
-            ! get projector
-            proj_sing = 0d0
-            do idx = 1, ndim
-              proj_sing(idx,idx) = 1d0
-            end do
-            call dgemm('n','t',ndim,ndim,1,
-     &                 -1d0,palph,ndim,
-     &                 palph,ndim,
-     &                 1d0,proj_sing,ndim)
-            call dgemm('n','t',ndim,ndim,1,
-     &                 -1d0,pbeta,ndim,
-     &                 pbeta,ndim,
-     &                 1d0,proj_sing,ndim)
-            if (ntest.ge.100) then
-              write(luout,*) 'projector for removing singles:'
-              call wrtmat2(proj_sing,ndim,ndim,ndim,ndim)
+
+            ! remove singles only for one specific block for now
+            if (sing_remove) call quit(1,'invsqrt','unexpected block')
+            if (sgrm.and.ms1.eq.0.and.igam.eq.1
+     &                    .and.na1.eq.nc1.and.na1.eq.1) then
+              sing_remove = .true.
+              allocate(palph(ndim),pbeta(ndim),proj_sing(ndim,ndim))
+              palph = 0d0
+              pbeta = 0d0
+              nalph = 0
+              nbeta = 0
+              ! get pseudo-singles vectors that should be removed
+              iline = 0
+              do msa1 = na1, -na1, -2
+               msc1 = msa1 + ms1
+               if (abs(msc1).gt.nc1) cycle
+               msdis_c(1) = msc1
+               msdis_a(1) = msa1
+               do gama1 = 1, ngam
+                gamc1 = multd2h(gama1,igam)
+                gamdis_c(1) = gamc1
+                gamdis_a(1) = gama1
+                msdis_c(2) = msa1
+                msdis_a(2) = msc1
+                gamdis_c(2) = gama1
+                gamdis_a(2) = gamc1
+                call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
+                call ms2idxms(idxmsdis_a,msdis_a,occ_asub2,nablk2)
+
+                call set_len_str(len_str,ncblk2,nablk2,
+     &                       graphs,
+     &                       graph_csub2,idxmsdis_c,gamdis_c,hpvx_csub2,
+     &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
+     &                       hpvxseq,.false.)
+                if (len_str(1).ne.len_str(3)) call quit(1,'invsqrt',
+     &              'this should not happen.')
+                ! simple square matrix, the diagonal elements
+                ! contribute to the pseudo-singles component
+                do idxc1 = 1, len_str(1)
+                 do idxa1 = 1, len_str(3)
+                  iline = iline + 1
+                  if (idxc1.ne.idxa1) cycle
+                  if (msa1.eq.1) then
+                    palph(iline) = 1d0
+                    nalph = nalph + 1
+                  else if (msa1.eq.-1) then
+                    pbeta(iline) = 1d0
+                    nbeta = nbeta + 1
+                  else
+                    call quit(1,'invsqrt','this should not happen(2).')
+                  end if
+                 end do
+                end do
+               end do
+              end do
+              ! normalize vectors
+              if (nalph.gt.0) palph = palph/sqrt(dble(nalph))
+              if (nbeta.gt.0) pbeta = pbeta/sqrt(dble(nbeta))
+              ! get projector
+              proj_sing = 0d0
+              do idx = 1, ndim
+                proj_sing(idx,idx) = 1d0
+              end do
+              call dgemm('n','t',ndim,ndim,1,
+     &                   -1d0,palph,ndim,
+     &                   palph,ndim,
+     &                   1d0,proj_sing,ndim)
+              call dgemm('n','t',ndim,ndim,1,
+     &                   -1d0,pbeta,ndim,
+     &                   pbeta,ndim,
+     &                   1d0,proj_sing,ndim)
+              if (ntest.ge.100) then
+                write(luout,*) 'projector for removing singles:'
+                call wrtmat2(proj_sing,ndim,ndim,ndim,ndim)
+              end if
             end if
-          end if
+
+            deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
+     &               occ_asub2,graph_csub2,graph_asub2)
+            jocc_cls = jocc_cls + 1
+            jblkoff = (jocc_cls-1)*njoined
+            na2 = na2 - 1
+            nc2 = nc2 - 1
+           end do
+           na1 = na1 - 1
+           nc1 = nc1 - 1
+          end do blk_loop
+
+          if (ndim.eq.0) cycle
+
+          if (ntest.ge.10)
+     &       write(luout,'(a,3i8)'),'ms1, igam, ndim:',ms1,igam,ndim
 
           allocate(scratch(ndim,ndim),flmap(ndim,3))
           scratch = 0d0
@@ -620,188 +704,321 @@ c dbgend
 c dbg
 c          allocate(matrix(ndim,ndim))
 c dbgend
+
           flmap(1:ndim,3) = 1
+          ! loops over coupling blocks. Must be in correct order!
+          jocc_cls = iocc_cls
+          jblkoff = (jocc_cls-1)*njoined
+          na1 = na1mx
+          nc1 = nc1mx
+          off_line2 = 0
+          do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
+           na2 = nc1mx
+           nc2 = na1mx
+           off_col2 = 0
+           do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
+            ! exit if there is no block like this
+            if (na1.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+1)).or.
+     &          nc1.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+2)).or.
+     &          na2.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+2)).or.
+     &          nc2.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+3))) exit
+            blk_used(jocc_cls) = .true.
+            ! exception for pure inactive block:
+            if (na1+nc1+na2+nc2.eq.0.and.igam.eq.1) then
+              ioff = mel_inp%off_op_gmox(jocc_cls)%
+     &                 d_gam_ms(1,1,1)
+              scratch(off_line2+1,off_col2+1) = buffer_in(ioff+1)
+              flmap(off_col2+1,1:2) = ioff+1
+              flmap(off_col2+1,3) = 1
+              exit
+            end if
+c dbg
+c            print *,'na1,nc1,na2,nc2,jocc_cls:',na1,nc1,na2,nc2,
+c     &          jocc_cls
+c            print *,'off_line2, off_col2: ',off_line2,off_col2
+c dbgend
+            msmax = op_inp%ica_occ(1,jocc_cls)
+            call get_num_subblk(ncblk2,nablk2,
+     &           hpvx_occ(1,1,jblkoff+1),njoined)
+            allocate(hpvx_csub2(ncblk2),hpvx_asub2(nablk2),
+     &               occ_csub2(ncblk2), occ_asub2(nablk2),
+     &               graph_csub2(ncblk2), graph_asub2(nablk2),
+     &               iocc2(ngastp,2,2),idx_g2(ngastp,2,2))
+            iocc2 = 0
+            idx_g2 = 0
+            iocc2(1:ngastp,2,1) = hpvx_occ(1:ngastp,2,jblkoff+2)
+            iocc2(1:ngastp,1,2) = hpvx_occ(1:ngastp,1,jblkoff+3)
+            idx_g2(1:ngastp,2,1) = idx_graph(1:ngastp,2,jblkoff+2)
+            idx_g2(1:ngastp,1,2) = idx_graph(1:ngastp,1,jblkoff+3)
+            ! set HPVX and OCC info
+            call condense_occ(occ_csub2, occ_asub2,
+     &                      hpvx_csub2,hpvx_asub2,
+     &                      hpvx_occ(1,1,jblkoff+1),njoined,hpvxblkseq)
+            ! do the same for the graph info
+            call condense_occ(graph_csub2, graph_asub2,
+     &                      hpvx_csub2,hpvx_asub2,
+     &                      idx_graph(1,1,jblkoff+1),njoined,hpvxblkseq)
 
-          ! read in current Ms1/GAMMA block
-          ! loop over Ms(A1)/GAMMA(A1) --> Ms(C1)/GAMMA(C1) already defined
-          off_line = 0
-          do msa1 = na1, -na1, -2
-           msc1 = msa1 + ms1
-           if (abs(msc1).gt.nc1) cycle
-           msdis_c(1) = msc1
-           msdis_a(1) = msa1
-           do gama1 = 1, ngam
-            gamc1 = multd2h(gama1,igam)
-            gamdis_c(1) = gamc1
-            gamdis_a(1) = gama1
-            ! loop over Ms(C2)/GAMMA(C2) --> Ms(A2)/GAMMA(A2) already defined
-            off_col = 0
-            do msc2 = nc2, -nc2, -2
-             msa2 = msc2 - ms2
-             if (abs(msa2).gt.na2) cycle
-             msdis_c(2) = msc2
-             msdis_a(2) = msa2
-             msa = msa1 + msa2
-             idxmsa = (msmax-msa)/2 + 1
-             idxmsa2 = msa2idxms4op(-msa,ms1+ms2,msmax,msmax)
-             do gamc2 = 1, ngam
-              gama2 = multd2h(gamc2,igam)
-              gamdis_c(2) = gamc2
-              gamdis_a(2) = gama2
-              igama = multd2h(gama1,gama2)
+            ! read in current Ms1/GAMMA block
+            ! loop over Ms(A1)/GAMMA(A1) --> Ms(C1)/GAMMA(C1) already defined
+            off_line = off_line2
+            off_colmax = 0
+            do msa1 = na1, -na1, -2
+             msc1 = msa1 + ms1
+             if (abs(msc1).gt.nc1) cycle
+             msdis_c(1) = msc1
+             msdis_a(1) = msa1
+c dbg
+c             print *,'msa1,msc1: ',msa1,msc1
+c dbgend
+             do gama1 = 1, ngam
+              gamc1 = multd2h(gama1,igam)
+              if (na1.eq.0.and.gama1.ne.1.or.
+     &            nc1.eq.0.and.gamc1.ne.1) cycle
+              gamdis_c(1) = gamc1
+              gamdis_a(1) = gama1
+              ! loop over Ms(C2)/GAMMA(C2) --> Ms(A2)/GAMMA(A2) already defined
+              off_col = off_col2
+c dbg
+c              print *,'gama1,gamc1: ',gama1,gamc1
+c dbgend
+              do msc2 = nc2, -nc2, -2
+               msa2 = msc2 - ms2
+               if (abs(msa2).gt.na2) cycle
+               msa = msa1 + msa2
+               idxmsa = (msmax-msa)/2 + 1
+               idxmsa2 = msa2idxms4op(-msa,ms1+ms2,msmax,msmax)
+c dbg
+c               print *,'msc2,msa2: ',msc2,msa2
+c dbgend
+               do gamc2 = 1, ngam
+                gama2 = multd2h(gamc2,igam)
+                if (na2.eq.0.and.gama2.ne.1.or.
+     &              nc2.eq.0.and.gamc2.ne.1) cycle
+                igama = multd2h(gama1,gama2)
+c dbg
+c                print *,'gamc2,gama2: ',gamc2,gama2
+c                print *,'off_line, off_col: ',off_line,off_col
+c dbgend
+                if (nablk2.eq.1.and.na1.eq.0) then
+                  msdis_a(1) = msa2
+                  gamdis_a(1) = gama2
+                else if (nablk2.eq.2) then
+                  msdis_a(2) = msa2
+                  gamdis_a(2) = gama2
+                end if
+                if (ncblk2.eq.1.and.nc1.eq.0) then
+                  msdis_c(1) = msc2
+                  gamdis_c(1) = gamc2
+                else if (ncblk2.eq.2) then
+                  msdis_c(2) = msc2
+                  gamdis_c(2) = gamc2
+                end if
 
-              ! determine the distribution in question
-              call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
-              call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
+                ! determine the distribution in question
+                call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
+                call ms2idxms(idxmsdis_a,msdis_a,occ_asub2,nablk2)
 
-              call set_len_str(len_str,ncblk,nablk,
-     &                         graphs,
-     &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
-     &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
-     &                         hpvxseq,.false.)
-              lenca = ielprd(len_str,ncblk+nablk)
-              if (lenca.eq.0) cycle
+                call set_len_str(len_str,ncblk2,nablk2,
+     &                       graphs,
+     &                       graph_csub2,idxmsdis_c,gamdis_c,hpvx_csub2,
+     &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
+     &                       hpvxseq,.false.)
+                lenca = ielprd(len_str,ncblk2+nablk2)
+                len2(1:4) = 1
+                if (ncblk2.eq.1.and.nc2.eq.0) len2(1) = len_str(1)
+                if (ncblk2.eq.1.and.nc1.eq.0) len2(2) = len_str(1)
+                if (ncblk2.eq.2) then
+                  len2(1) = len_str(1)
+                  len2(2) = len_str(2)
+                end if
+                if (nablk2.eq.1.and.na2.eq.0) len2(3) =len_str(ncblk2+1)
+                if (nablk2.eq.1.and.na1.eq.0) len2(4) =len_str(ncblk2+1)
+                if (nablk2.eq.2) then
+                  len2(3) = len_str(ncblk2+1)
+                  len2(4) = len_str(ncblk2+2)
+                end if
+                if (lenca.eq.0) cycle
 
-              ndis = mel_inp%off_op_gmox(iocc_cls)%ndis(igama,idxmsa)
-              idxdis = 1
-              if (ndis.gt.1)
-     &           idxdis =
-     &               idx_msgmdst2(
-     &                iocc_cls,idxmsa,igama,
-     &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
-     &                occ_asub,idxmsdis_a,gamdis_a,nablk,
-     &                .false.,-1,-1,mel_inp,ngam)
-              if (lenca.ne.mel_inp%len_op_gmox(iocc_cls)%
-     &             d_gam_ms(idxdis,igama,idxmsa))
-     &           call quit(1,'invsqrt','inconsistency!')
-
-              call set_op_ldim_c(ldim_opin_c,ldim_opin_a,
-     &             hpvx_csub,hpvx_asub,
-     &             len_str,ncblk,nablk,.false.)
-
-              ioff = mel_inp%off_op_gmox(iocc_cls)%
-     &               d_gam_ms(idxdis,igama,idxmsa)
-
-              ! now for spin-flipped counterpart:
-              msdis_c2(1:ncblk) = -msdis_c(1:ncblk)
-              msdis_a2(1:nablk) = -msdis_a(1:nablk)
-              call ms2idxms(idxmsdis_c2,msdis_c2,occ_csub,ncblk)
-              call ms2idxms(idxmsdis_a2,msdis_a2,occ_asub,nablk)
-
-              ndis2 = mel_inp%off_op_gmox(iocc_cls)%ndis(igama,idxmsa2)
-              idxdis2 = 1
-              if (ndis2.gt.1)
-     &             idxdis2 =
+                ndis = mel_inp%off_op_gmox(jocc_cls)%ndis(igama,idxmsa)
+                idxdis = 1
+                if (ndis.gt.1)
+     &             idxdis =
      &                 idx_msgmdst2(
-     &                  iocc_cls,idxmsa2,igama,
-     &                  occ_csub,idxmsdis_c2,gamdis_c,ncblk,
-     &                  occ_asub,idxmsdis_a2,gamdis_a,nablk,
+     &                  jocc_cls,idxmsa,igama,
+     &                  occ_csub2,idxmsdis_c,gamdis_c,ncblk2,
+     &                  occ_asub2,idxmsdis_a,gamdis_a,nablk2,
      &                  .false.,-1,-1,mel_inp,ngam)
+c dbg
+c                print *,'igama,idxmsa: ',igama,idxmsa
+c                print *,'lenca,ndis,idxdis,len:',lenca,ndis,idxdis,
+c     &           mel_inp%len_op_gmox(jocc_cls)%
+c     &               d_gam_ms(idxdis,igama,idxmsa)
+c dbgend
+                if (lenca.ne.mel_inp%len_op_gmox(jocc_cls)%
+     &               d_gam_ms(idxdis,igama,idxmsa))
+     &             call quit(1,'invsqrt','inconsistency!')
 
-              ioff2 = mel_inp%off_op_gmox(iocc_cls)%
-     &               d_gam_ms(idxdis2,igama,idxmsa2)
+                call set_op_ldim_c(ldim_opin_c,ldim_opin_a,
+     &               hpvx_csub2,hpvx_asub2,
+     &               len_str,ncblk2,nablk2,.false.)
 
-              call get_flipmap_blk(flipmap_c,
-     &            ncblk,occ_csub,len_str,graph_csub,idxmsdis_c,gamdis_c,
-     &            strmap_info,ngam,ngraph)
-              call get_flipmap_blk(flipmap_a,
-     &            nablk,occ_asub,len_str(ncblk+1),
-     &                                   graph_asub,idxmsdis_a,gamdis_a,
-     &            strmap_info,ngam,ngraph)
+                ioff = mel_inp%off_op_gmox(jocc_cls)%
+     &                 d_gam_ms(idxdis,igama,idxmsa)
 
-              ! assemble distribution of A2/C2 tuple
-              ! inelegant: we are currently using next_tupel_ca for setting up
-              ! final flipmap. But there should be a way to do this using
-              ! only the flipmaps from above. 
-              msdst = 0
-              igamdst = 1
-              do idx = 1, ngastp
-                if (iocc(idx,2,1).ne.0) then
-                  msdst(idx,2,1) = msdis_a(2)
-                  igamdst(idx,2,1) = gamdis_a(2)
-                end if
-                if (iocc(idx,1,2).ne.0) then
-                  msdst(idx,1,2) = msdis_c(2)
-                  igamdst(idx,1,2) = gamdis_c(2)
-                end if
-              end do
+                ! now for spin-flipped counterpart:
+                msdis_c2(1:ncblk2) = -msdis_c(1:ncblk2)
+                msdis_a2(1:nablk2) = -msdis_a(1:nablk2)
+                call ms2idxms(idxmsdis_c2,msdis_c2,occ_csub2,ncblk2)
+                call ms2idxms(idxmsdis_a2,msdis_a2,occ_asub2,nablk2)
+
+                ndis2 =mel_inp%off_op_gmox(jocc_cls)%ndis(igama,idxmsa2)
+                idxdis2 = 1
+                if (ndis2.gt.1)
+     &               idxdis2 =
+     &                   idx_msgmdst2(
+     &                    jocc_cls,idxmsa2,igama,
+     &                    occ_csub2,idxmsdis_c2,gamdis_c,ncblk2,
+     &                    occ_asub2,idxmsdis_a2,gamdis_a,nablk2,
+     &                    .false.,-1,-1,mel_inp,ngam)
+
+                ioff2 = mel_inp%off_op_gmox(jocc_cls)%
+     &                 d_gam_ms(idxdis2,igama,idxmsa2)
+
+                call get_flipmap_blk(flipmap_c,
+     &              ncblk2,occ_csub2,len_str,
+     &              graph_csub2,idxmsdis_c,gamdis_c,
+     &              strmap_info,ngam,ngraph)
+                call get_flipmap_blk(flipmap_a,
+     &              nablk2,occ_asub2,len_str(ncblk2+1),
+     &              graph_asub2,idxmsdis_a,gamdis_a,
+     &              strmap_info,ngam,ngraph)
+
+                ! assemble distribution of A2/C2 tuple
+                ! inelegant: we are currently using next_tupel_ca for setting up
+                ! final flipmap. But there should be a way to do this using
+                ! only the flipmaps from above. 
+                msdst = 0
+                igamdst = 1
+                do idx = 1, ngastp
+                  if (iocc2(idx,2,1).ne.0) then
+                    msdst(idx,2,1) = msdis_a(2)
+                    igamdst(idx,2,1) = gamdis_a(2)
+                  end if
+                  if (iocc2(idx,1,2).ne.0) then
+                    msdst(idx,1,2) = msdis_c(2)
+                    igamdst(idx,1,2) = gamdis_c(2)
+                  end if
+                end do
 
 c dbg
-c              write(luout,'(a,4i4)') 'ms  : ',msa1,msc1,msa2,msc2
-c              write(luout,'(a,4i4)') 'gam : ',gama1,gamc1,gama2,gamc2
-c              write(luout,'(a,2i4)') 'msa, igama: ',msa,igama
-c              write(luout,'(a,2i4)') 'dist, len: ',idxdis, lenca
-c              write(luout,'(a,1i4)') 'dist2: ',idxdis2
-c              write(luout,'(a,2i4)') 'off_line/col: ',off_line,off_col
-c              print *,'len1: ',len_str(1)*len_str(3)
-c              print *,'flipmap_c: len=',len_str(1:ncblk)
-c              print '(10i6)',flipmap_c(1:sum(len_str(1:ncblk)))
-c              print *,'flipmap_a:'
-c              print '(10i6)',
-c     &             flipmap_a(1:sum(len_str(ncblk+1:ncblk+nablk)))
+c                write(luout,'(a,4i4)') 'ms  : ',msa1,msc1,msa2,msc2
+c                write(luout,'(a,4i4)') 'gam : ',gama1,gamc1,gama2,gamc2
+c                write(luout,'(a,2i4)') 'msa, igama: ',msa,igama
+c                write(luout,'(a,2i4)') 'dist, len: ',idxdis, lenca
+c                write(luout,'(a,1i4)') 'dist2: ',idxdis2
+c                write(luout,'(a,2i4)') 'off_line/col: ',off_line,off_col
+c                print *,'len1: ',len_str(1)*len_str(3)
+c                print *,'flipmap_c: len=',len_str(1:ncblk2)
+c                print '(10i6)',flipmap_c(1:sum(len_str(1:ncblk2)))
+c                print *,'flipmap_a:'
+c                print '(10i6)',
+c     &               flipmap_a(1:sum(len_str(ncblk2+1:ncblk2+nablk2)))
 c dbgend
 
-              ! copy all required elements of this distribution
-              ! to their block in the A1/C1 | A2/C2 matrix
-              first = .true.
-              iline = off_line
-              do idxc1 = 1, len_str(1)
-                istr_csub(1) = idxc1-1
-                istr_csub_flip(1) = abs(flipmap_c(idxc1))-1
-                do idxa1 = 1, len_str(3)
-                  istr_asub(1) = idxa1-1
-                  istr_asub_flip(1) = abs(flipmap_a(idxa1))-1
-                  iline = iline + 1
-                  icol = off_col
-                  do idxa2 = 1, len_str(4)
-                    istr_asub(2) = idxa2-1
-                    istr_asub_flip(2) = 
-     &                       abs(flipmap_a(len_str(3)+idxa2))-1
-                    do idxc2 = 1, len_str(2)
-                      istr_csub(2) = idxc2-1
-                      istr_csub_flip(2) =
-     &                       abs(flipmap_c(len_str(1)+idxc2))-1
-                      icol = icol + 1
-                      idx = ioff + idx_str_blk3(istr_csub,istr_asub,
-     &                       ldim_opin_c,ldim_opin_a,ncblk,nablk)
-                      scratch(iline,icol) = buffer_in(idx)
-c dbg
-c                      matrix(iline,icol) = idx
-c dbgend
-                      if (ms1.eq.0.and.iline.eq.icol) then
-                        idx2 = ioff2 + idx_str_blk3(istr_csub_flip,
-     &                         istr_asub_flip,
-     &                         ldim_opin_c,ldim_opin_a,ncblk,nablk)
-                        flmap(icol,1) = idx
-                        flmap(icol,2) = idx2
-                        logdum = next_tupel_ca(idorb,idspn,idspc,
-     &                   nel,2,iocc,idx_g,
-     &                   msdst,igamdst,first,
-     &                   str_info%igas_restr,
-     &                   orb_info%mostnd,orb_info%igamorb,
-     &                   orb_info%nsym,orb_info%ngas,
-     &                   orb_info%ngas_hpv,orb_info%idx_gas,
-     &                   hpvxseq,lexlscr)
-                        first = .false.
-                        if (.not.logdum) call quit(1,'invsqrt',
-     &                       'no next tuple found!')
-                        if (mod(idxcount(2,idspn,nel,1),4).ne.0)
-     &                        flmap(icol,3) = -1
-c dbg
-c                        write(luout,'(i4,x,4i4,x,4i4)')idx,idorb,idspn
-c dbgend
+                ! copy all required elements of this distribution
+                ! to their block in the A1/C1 | A2/C2 matrix
+                first = .true.
+                iline = off_line
+                do idxc1 = 1, len2(1)
+                  if (nc1.ne.0) then
+                   istr_csub(1) = idxc1-1
+                   istr_csub_flip(1) = abs(flipmap_c(idxc1))-1
+                  end if
+                  do idxa1 = 1, len2(3)
+                    if (na1.ne.0) then
+                     istr_asub(1) = idxa1-1
+                     istr_asub_flip(1) = abs(flipmap_a(idxa1))-1
+                    end if
+                    iline = iline + 1
+                    icol = off_col
+                    do idxa2 = 1, len2(4)
+                      if (na1.eq.0.and.na2.ne.0) then
+                       istr_asub(1) = idxa2-1
+                       istr_asub_flip(1) = 
+     &                          abs(flipmap_a(len2(3)+idxa2))-1
+                      else if (na2.ne.0) then
+                       istr_asub(2) = idxa2-1
+                       istr_asub_flip(2) =
+     &                          abs(flipmap_a(len2(3)+idxa2))-1
                       end if
+                      do idxc2 = 1, len2(2)
+                        if (nc1.eq.0.and.nc2.ne.0) then
+                         istr_csub(1) = idxc2-1
+                         istr_csub_flip(1) =
+     &                          abs(flipmap_c(len2(1)+idxc2))-1
+                        else if (nc2.ne.0) then
+                         istr_csub(2) = idxc2-1
+                         istr_csub_flip(2) =
+     &                          abs(flipmap_c(len2(1)+idxc2))-1
+                        end if
+                        icol = icol + 1
+                        idx = ioff + idx_str_blk3(istr_csub,istr_asub,
+     &                         ldim_opin_c,ldim_opin_a,ncblk2,nablk2)
+                        scratch(iline,icol) = buffer_in(idx)
+c dbg
+c                        matrix(iline,icol) = idx
+c dbgend
+                        if (ms1.eq.0.and.iline.eq.icol) then
+                          idx2 = ioff2 + idx_str_blk3(istr_csub_flip,
+     &                           istr_asub_flip,
+     &                           ldim_opin_c,ldim_opin_a,ncblk2,nablk2)
+                          flmap(icol,1) = idx
+                          flmap(icol,2) = idx2
+                          logdum = next_tupel_ca(idorb,idspn,idspc,
+     &                     nel,2,iocc2,idx_g2,
+     &                     msdst,igamdst,first,
+     &                     str_info%igas_restr,
+     &                     orb_info%mostnd,orb_info%igamorb,
+     &                     orb_info%nsym,orb_info%ngas,
+     &                     orb_info%ngas_hpv,orb_info%idx_gas,
+     &                     hpvxseq,lexlscr)
+                          first = .false.
+                          if (.not.logdum) call quit(1,'invsqrt',
+     &                         'no next tuple found!')
+                          if (mod(idxcount(2,idspn,nel,1),4).ne.0)
+     &                          flmap(icol,3) = -1
+c dbg
+c                          write(luout,'(i4,x,4i4,x,4i4)')idx,idorb,idspn
+c dbgend
+                        end if
+                      end do
                     end do
                   end do
                 end do
-              end do
 
-              off_col = off_col + len_str(2)*len_str(4)
+                off_col = off_col + len2(2)*len2(4)
+                off_colmax = max(off_colmax,off_col)
+               end do
+              end do
+              off_line = off_line + len2(1)*len2(3)
              end do
             end do
-            off_line = off_line + len_str(1)*len_str(3)
+
+            deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
+     &              occ_asub2,graph_csub2,graph_asub2,
+     &              iocc2,idx_g2)
+            jocc_cls = jocc_cls + 1
+            jblkoff = (jocc_cls-1)*njoined
+            na2 = na2 - 1
+            nc2 = nc2 - 1
+            off_col2 = off_colmax
            end do
+           na1 = na1 - 1
+           nc1 = nc1 - 1
+           off_line2 = off_line
           end do
+
 c dbg
 c          print *,'index matrix:'
 c          write(*,'(5x,18i4)') (icol, icol=1,ndim)
@@ -812,6 +1029,8 @@ c dbgend
 
           if (sing_remove) then
             ! project out pseudo-singles components
+            if (max(iprlvl,ntest).ge.3) write(luout,*)
+     &           'Projecting out conventional singles.'
             if (ntest.ge.100) then
               write(luout,*) 'matrix before removing singles:'
               call wrtmat2(scratch,ndim,ndim,ndim,ndim)
@@ -908,89 +1127,179 @@ c dbgend
           end if
 
           ! write to output buffer
-          ! loop over Ms(A1)/GAMMA(A1) --> Ms(C1)/GAMMA(C1) already defined
-          off_line = 0
-          do msa1 = na1, -na1, -2
-           msc1 = msa1 + ms1
-           if (abs(msc1).gt.nc1) cycle
-           msdis_c(1) = msc1
-           msdis_a(1) = msa1
-           do gama1 = 1, ngam
-            gamc1 = multd2h(gama1,igam)
-            gamdis_c(1) = gamc1
-            gamdis_a(1) = gama1
-            ! loop over Ms(C2)/GAMMA(C2) --> Ms(A2)/GAMMA(A2) already defined
-            off_col = 0
-            do msc2 = nc2, -nc2, -2
-             msa2 = msc2 - ms2
-             if (abs(msa2).gt.na2) cycle
-             msdis_c(2) = msc2
-             msdis_a(2) = msa2
-             msa = msa1 + msa2
-             idxmsa = (msmax-msa)/2 + 1
-             do gamc2 = 1, ngam
-              gama2 = multd2h(gamc2,igam)
-              gamdis_c(2) = gamc2
-              gamdis_a(2) = gama2
-              igama = multd2h(gama1,gama2)
+          ! loops over coupling blocks. Must be in correct order!
+          jocc_cls = iocc_cls
+          jblkoff = (jocc_cls-1)*njoined
+          na1 = na1mx
+          nc1 = nc1mx
+          off_line2 = 0
+          do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
+           na2 = nc1mx
+           nc2 = na1mx
+           off_col2 = 0
+           do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
+            ! exit if there is no block like this
+            if (na1.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+1)).or.
+     &          nc1.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+2)).or.
+     &          na2.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+2)).or.
+     &          nc2.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+3))) exit
+            ! exception for pure inactive block:
+            if (na1+nc1+na2+nc2.eq.0.and.igam.eq.1) then
+              ioff = mel_inp%off_op_gmox(jocc_cls)%
+     &                 d_gam_ms(1,1,1)
+              buffer_out(ioff+1) = scratch(off_line2+1,off_col2+1)
+              if (.not.half) ! copy projector to input buffer
+     &           buffer_in(ioff+1) = scratch2(off_line2+1,off_col2+1)
+              exit
+            end if
+            msmax = op_inp%ica_occ(1,jocc_cls)
+            call get_num_subblk(ncblk2,nablk2,
+     &           hpvx_occ(1,1,jblkoff+1),njoined)
+            allocate(hpvx_csub2(ncblk2),hpvx_asub2(nablk2),
+     &               occ_csub2(ncblk2), occ_asub2(nablk2),
+     &               graph_csub2(ncblk2), graph_asub2(nablk2))
+            ! set HPVX and OCC info
+            call condense_occ(occ_csub2, occ_asub2,
+     &                      hpvx_csub2,hpvx_asub2,
+     &                      hpvx_occ(1,1,jblkoff+1),njoined,hpvxblkseq)
+            ! do the same for the graph info
+            call condense_occ(graph_csub2, graph_asub2,
+     &                      hpvx_csub2,hpvx_asub2,
+     &                      idx_graph(1,1,jblkoff+1),njoined,hpvxblkseq)
 
-              ! determine the distribution in question
-              call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
-              call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
+            ! loop over Ms(A1)/GAMMA(A1) --> Ms(C1)/GAMMA(C1) already defined
+            off_line = off_line2
+            off_colmax = 0
+            do msa1 = na1, -na1, -2
+             msc1 = msa1 + ms1
+             if (abs(msc1).gt.nc1) cycle
+             msdis_c(1) = msc1
+             msdis_a(1) = msa1
+             do gama1 = 1, ngam
+              gamc1 = multd2h(gama1,igam)
+              if (na1.eq.0.and.gama1.ne.1.or.
+     &            nc1.eq.0.and.gamc1.ne.1) cycle
+              gamdis_c(1) = gamc1
+              gamdis_a(1) = gama1
+              ! loop over Ms(C2)/GAMMA(C2) --> Ms(A2)/GAMMA(A2) already defined
+              off_col = off_col2
+              do msc2 = nc2, -nc2, -2
+               msa2 = msc2 - ms2
+               if (abs(msa2).gt.na2) cycle
+               msa = msa1 + msa2
+               idxmsa = (msmax-msa)/2 + 1
+               do gamc2 = 1, ngam
+                gama2 = multd2h(gamc2,igam)
+                if (na2.eq.0.and.gama2.ne.1.or.
+     &              nc2.eq.0.and.gamc2.ne.1) cycle
+                igama = multd2h(gama1,gama2)
+                if (nablk2.eq.1.and.na1.eq.0) then
+                  msdis_a(1) = msa2
+                  gamdis_a(1) = gama2
+                else if (nablk2.eq.2) then
+                  msdis_a(2) = msa2
+                  gamdis_a(2) = gama2
+                end if
+                if (ncblk2.eq.1.and.nc1.eq.0) then
+                  msdis_c(1) = msc2
+                  gamdis_c(1) = gamc2
+                else if (ncblk2.eq.2) then
+                  msdis_c(2) = msc2
+                  gamdis_c(2) = gamc2
+                end if
 
-              call set_len_str(len_str,ncblk,nablk,
-     &                         graphs,
-     &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
-     &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
-     &                         hpvxseq,.false.)
-              if (ielprd(len_str,ncblk+nablk).eq.0) cycle
+                ! determine the distribution in question
+                call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
+                call ms2idxms(idxmsdis_a,msdis_a,occ_asub2,nablk2)
 
-              ndis = mel_inp%off_op_gmox(iocc_cls)%ndis(igama,idxmsa)
-              idxdis = 1
-              if (ndis.gt.1)
-     &           idxdis =
-     &               idx_msgmdst2(
-     &                iocc_cls,idxmsa,igama,
-     &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
-     &                occ_asub,idxmsdis_a,gamdis_a,nablk,
-     &                .false.,-1,-1,mel_inp,ngam)
+                call set_len_str(len_str,ncblk2,nablk2,
+     &                       graphs,
+     &                       graph_csub2,idxmsdis_c,gamdis_c,hpvx_csub2,
+     &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
+     &                       hpvxseq,.false.)
+                len2(1:4) = 1
+                if (ncblk2.eq.1.and.nc2.eq.0) len2(1) = len_str(1)
+                if (ncblk2.eq.1.and.nc1.eq.0) len2(2) = len_str(1)
+                if (ncblk2.eq.2) then
+                  len2(1) = len_str(1)
+                  len2(2) = len_str(2)
+                end if
+                if (nablk2.eq.1.and.na2.eq.0) len2(3) =len_str(ncblk2+1)
+                if (nablk2.eq.1.and.na1.eq.0) len2(4) =len_str(ncblk2+1)
+                if (nablk2.eq.2) then
+                  len2(3) = len_str(ncblk2+1)
+                  len2(4) = len_str(ncblk2+2)
+                end if
+                if (ielprd(len_str,ncblk2+nablk2).eq.0) cycle
 
-              call set_op_ldim_c(ldim_opin_c,ldim_opin_a,
-     &             hpvx_csub,hpvx_asub,
-     &             len_str,ncblk,nablk,.false.)
+                ndis = mel_inp%off_op_gmox(jocc_cls)%ndis(igama,idxmsa)
+                idxdis = 1
+                if (ndis.gt.1)
+     &             idxdis =
+     &                 idx_msgmdst2(
+     &                  jocc_cls,idxmsa,igama,
+     &                  occ_csub2,idxmsdis_c,gamdis_c,ncblk2,
+     &                  occ_asub2,idxmsdis_a,gamdis_a,nablk2,
+     &                  .false.,-1,-1,mel_inp,ngam)
 
-              ioff = mel_inp%off_op_gmox(iocc_cls)%
-     &               d_gam_ms(idxdis,igama,idxmsa)
+                call set_op_ldim_c(ldim_opin_c,ldim_opin_a,
+     &               hpvx_csub2,hpvx_asub2,
+     &               len_str,ncblk2,nablk2,.false.)
 
-              ! copy all required elements of this distribution
-              ! to their block in the A1/C1 | A2/C2 matrix
-              iline = off_line
-              do idxc1 = 1, len_str(1)
-                istr_csub(1) = idxc1-1
-                do idxa1 = 1, len_str(3)
-                  istr_asub(1) = idxa1-1
-                  iline = iline + 1
-                  icol = off_col
-                  do idxa2 = 1, len_str(4)
-                    istr_asub(2) = idxa2-1
-                    do idxc2 = 1, len_str(2)
-                      istr_csub(2) = idxc2-1
-                      icol = icol + 1
-                      idx = ioff + idx_str_blk3(istr_csub,istr_asub,
-     &                       ldim_opin_c,ldim_opin_a,ncblk,nablk)
-                      buffer_out(idx) = scratch(iline,icol)
-                      if (.not.half) ! copy projector to input buffer
-     &                   buffer_in(idx) = scratch2(iline,icol)
+                ioff = mel_inp%off_op_gmox(jocc_cls)%
+     &                 d_gam_ms(idxdis,igama,idxmsa)
+
+                ! copy all required elements of this distribution
+                ! to their block in the A1/C1 | A2/C2 matrix
+                iline = off_line
+                do idxc1 = 1, len2(1)
+                  if (nc1.ne.0) istr_csub(1) = idxc1-1
+                  do idxa1 = 1, len2(3)
+                    if (na1.ne.0) istr_asub(1) = idxa1-1
+                    iline = iline + 1
+                    icol = off_col
+                    do idxa2 = 1, len2(4)
+                      if (na1.eq.0.and.na2.ne.0) then
+                       istr_asub(1) = idxa2-1
+                      else if (na2.ne.0) then
+                       istr_asub(2) = idxa2-1
+                      end if
+                      do idxc2 = 1, len2(2)
+                        if (nc1.eq.0.and.nc2.ne.0) then
+                         istr_csub(1) = idxc2-1
+                        else if (nc2.ne.0) then
+                         istr_csub(2) = idxc2-1
+                        end if
+                        icol = icol + 1
+                        idx = ioff + idx_str_blk3(istr_csub,istr_asub,
+     &                         ldim_opin_c,ldim_opin_a,ncblk2,nablk2)
+                        buffer_out(idx) = scratch(iline,icol)
+                        if (.not.half) ! copy projector to input buffer
+     &                     buffer_in(idx) = scratch2(iline,icol)
+                      end do
                     end do
                   end do
                 end do
-              end do
 
-              off_col = off_col + len_str(2)*len_str(4)
+                off_col = off_col + len2(2)*len2(4)
+                off_colmax = max(off_colmax,off_col)
+               end do
+              end do
+              off_line = off_line + len2(1)*len2(3)
              end do
             end do
-            off_line = off_line + len_str(1)*len_str(3)
+
+            deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
+     &              occ_asub2,graph_csub2,graph_asub2)
+            jocc_cls = jocc_cls + 1
+            jblkoff = (jocc_cls-1)*njoined
+            na2 = na2 - 1
+            nc2 = nc2 - 1
+            off_col2 = off_colmax
            end do
+           na1 = na1 - 1
+           nc1 = nc1 - 1
+           off_line2 = off_line
           end do
 
           deallocate(scratch,flmap)
@@ -1021,6 +1330,7 @@ c dbgend
         ifree = mem_flushmark('invsqrt_blk')
 
       enddo iocc_loop
+      deallocate(blk_used)
 
       if (ntest.ge.5) then
         write(luout,'(x,i8,a,i8,a)') icnt_sv-icnt_sv0,

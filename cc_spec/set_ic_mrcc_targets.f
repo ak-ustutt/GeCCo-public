@@ -31,13 +31,14 @@
       integer ::
      &     ndef, occ_def(ngastp,2,60),
      &     icnt,
-     &     msc, maxexc, ip, ih, ivv, iv, ivv2,
+     &     msc, maxexc, ip, ih, ivv, iv, ivv2, jvv,
      &     minh, maxh,
      &     minp, maxp, maxv, maxvv, minexc, maxcom, maxcom_en,
      &     n_t_cls, i_cls,
-     &     n_tred_cls, len_form, optref, idef, ciroot
+     &     n_tred_cls, len_form, optref, idef, ciroot,
+     &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD
       logical ::
-     &     pure_vv, update_prc, skip, preopt, singrm
+     &     pure_vv, update_prc, skip, preopt, singrm, first
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -121,7 +122,7 @@
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.ih+ip.eq.1) cycle
+            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
 c dbgend
 cmh         no blocks which can be modeled by a contraction of two operators
 c            if (ip.ge.1.and.ih.ge.1) cycle
@@ -136,6 +137,15 @@ c            if (max(ip,ih)+ivv.eq.1.and.(ip.ne.1.or.ih.ne.1)) cycle
           end do
         end do
       end do
+      if (singrm) then ! define conventional blocks separately
+        do ip = minp, maxp ! ih=ip
+          if (ip.lt.minh.or.ip.gt.maxh) cycle
+          if (ip.lt.minexc) cycle
+          ndef = ndef + 1 
+          occ_def(IHOLE,1,ndef) = ip
+          occ_def(IPART,2,ndef) = ip
+        end do
+      end if
       n_t_cls = ndef
       call op_from_occ_parameters(-1,parameters,2,
      &              occ_def,ndef,1,(/0,0/),ndef)
@@ -147,15 +157,17 @@ c            if (max(ip,ih)+ivv.eq.1.and.(ip.ne.1.or.ih.ne.1)) cycle
       call add_target('T',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
+      nsupT=0
       do ip = minp, maxp
         do ih = minh, maxh
+          first = .true.
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.ih+ip.eq.1) cycle
+            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
 c dbgend
 cmh         no blocks which can be modeled by a contraction of two operators
 c            if (ip.ge.1.and.ih.ge.1) cycle
@@ -167,9 +179,27 @@ c            if (max(ip,ih)+ivv.eq.1.and.(ip.ne.1.or.ih.ne.1)) cycle
             occ_def(IPART,1,ndef) = ip
             occ_def(IVALE,1,ndef) = max(ih-ip,0) + ivv
             occ_def(IVALE,2,ndef) = max(ip-ih,0) + ivv
+            if (first) then
+              nsupT = nsupT + 1
+              stndT(1,nsupT) = ndef
+              first = .false.
+            end if
+            stndT(2,nsupT) = ndef
           end do
         end do
       end do
+      if (singrm) then ! define conventional blocks separately
+        do ip = minp, maxp ! ih=ip
+          if (ip.lt.minh.or.ip.gt.maxh) cycle
+          if (ip.lt.minexc) cycle
+          ndef = ndef + 1
+          occ_def(IHOLE,2,ndef) = ip
+          occ_def(IPART,1,ndef) = ip
+          nsupT = nsupT + 1
+          stndT(1,nsupT) = ndef
+          stndT(2,nsupT) = ndef
+        end do
+      end if
       n_t_cls = ndef
       call op_from_occ_parameters(-1,parameters,2,
      &              occ_def,ndef,1,(/0,0/),ndef)
@@ -191,6 +221,49 @@ c      call set_arg('T',SET_ORDER,'LABEL',1,tgt_info,
 c     &     val_label=(/'T'/))
 c      call set_arg('T',SET_ORDER,'SPECIES',1,tgt_info,
 c     &             val_int=(/1/))
+
+      ! we need to set "super-block" information of metric
+      ! since metric is defined in set_ic_mrci_targets,
+      ! we just run over the same loops here:
+      ndef = 0
+      nsupD = 0
+      do ip = 0, maxp
+        do ih = 0, maxh
+          first = .true.
+          do ivv = min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv),0,-1
+           do jvv =min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv),0,-1
+            if (ip.eq.ih.and.ip.eq.maxexc) cycle
+            if (.not.pure_vv.and.ip.eq.0.and.ih.eq.0.and.
+     &          ivv+jvv.gt.0) cycle
+            if (abs(ih-ip)+2*ivv.gt.maxv.or.
+     &          abs(ih-ip)+2*jvv.gt.maxv) cycle
+            if (max(ip,ih).gt.0.and.ip.lt.minp) cycle
+            if (max(ip,ih).gt.0.and.ih.lt.minh) cycle
+            if (max(ip,ih)+ivv.lt.minexc.or.
+     &          max(ip,ih)+jvv.lt.minexc) cycle
+c dbg
+            if (singrm.and.max(ih,ip).eq.1.and.min(ivv,jvv).eq.0) cycle
+c dbgend
+c            ! skip if block already exists
+c            skip = .false.
+c            do idef = 1, ndef
+c             skip = skip.or.(occ_def(IVALE,1,idef*3).eq.max(ip-ih,0)+ivv
+c     &               .and.occ_def(IVALE,1,idef*3-1).eq.max(ih-ip,0)+ivv)
+c            end do
+c            if (skip) cycle
+            ndef = ndef + 1
+            if (first) then
+              nsupD = nsupD + 1
+              stndD(1,nsupD) = ndef
+              first = .false.
+            end if
+            stndD(2,nsupD) = ndef
+           end do
+          end do
+        end do
+      end do
+      if (nsupD.gt.nsupT) call quit(1,'set_ic_mrcc_targets',
+     &       'more super-blocks for metric than for T?')
 
       ! TT intermediate
       call add_target('TT',ttype_op,.false.,tgt_info)
@@ -242,27 +315,31 @@ c     &             val_int=(/1/))
       do ip = minp, maxp
         do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
+            if (ip.eq.ih.and.ip.eq.maxexc) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.ih+ip.eq.1) cycle
+            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
 c dbgend
 c            ! exclude blocks with one or more hole-part. excitations
 c            if (min(ih,ip).ge.1) cycle
-            ! if same valence structure already exists, skip block
-            skip = .false.
+            ! same valence structure already exists?
+            ivers = 1
             do idef = 1, ndef
-              skip = skip.or.(occ_def(IVALE,1,idef).eq.max(ip-ih,0)+ivv
+              if (occ_def(IVALE,1,idef).eq.max(ip-ih,0)+ivv
      &                 .and.occ_def(IVALE,2,idef).eq.max(ih-ip,0)+ivv)
+     &           ivers = ivers + 1
             end do
-            if (skip) cycle
+c            if (skip) cycle
             ndef = ndef + 1
             occ_def(IHOLE,1,ndef) = ih
             occ_def(IPART,2,ndef) = ip
             occ_def(IVALE,2,ndef) = max(ih-ip,0) + ivv
             occ_def(IVALE,1,ndef) = max(ip-ih,0) + ivv
+            ! distinguish ops with same valence part by blk_version
+            version(ndef) = ivers
           end do
         end do
       end do
@@ -277,6 +354,15 @@ c            if (min(ih,ip).ge.1) cycle
      &     val_label=(/'Lred'/))
       call set_arg('Lred',SET_ORDER,'SPECIES',1,tgt_info,
      &             val_int=(/1/))
+      call set_rule2('Lred',SET_ORDER,tgt_info)
+      call set_arg('Lred',SET_ORDER,'LABEL',1,tgt_info,
+     &     val_label=(/'Lred'/))
+      call set_arg('Lred',SET_ORDER,'SPECIES',1,tgt_info,
+     &             val_int=(/-1/))
+      call set_arg('Lred',SET_ORDER,'ORDER',1,tgt_info,
+     &             val_int=(/ndef/))
+      call set_arg('Lred',SET_ORDER,'IDX_FREQ',ndef,tgt_info,
+     &             val_int=version(1:ndef))
 
       ! subset of T operator
       call add_target2('Tred',.false.,tgt_info)
@@ -288,6 +374,53 @@ c            if (min(ih,ip).ge.1) cycle
      &     val_label=(/'Lred'/))
       call set_arg('Tred',CLONE_OP,'ADJOINT',1,tgt_info,
      &     val_log=(/.true./))
+
+      ! subset of Residual
+      call add_target('OMGred',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
+            if (ip.eq.ih.and.ip.eq.maxexc) cycle
+            if (abs(ih-ip)+2*ivv.gt.maxv) cycle
+            if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
+            if (max(ip,ih)+ivv.lt.minexc) cycle
+c dbg
+c            if (ih.gt.ip) cycle
+            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
+c dbgend
+            ! same valence structure already exists?
+            ivers = 1
+            do idef = 1, ndef
+              if (occ_def(IVALE,2,idef*2-1).eq.max(ip-ih,0)+ivv
+     &            .and.occ_def(IVALE,1,idef*2).eq.max(ih-ip,0)+ivv)
+     &           ivers = ivers + 1
+            end do
+            ndef = ndef + 1
+            occ_def(IHOLE,2,ndef*2) = ih
+            occ_def(IPART,1,ndef*2) = ip
+            occ_def(IVALE,1,ndef*2) = max(ih-ip,0) + ivv
+            occ_def(IVALE,2,ndef*2-1) = max(ip-ih,0) + ivv
+            ! distinguish ops with same valence part by blk_version
+            version(ndef) = ivers
+          end do
+        end do
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,2,(/0,0,0,0/),ndef)
+      call set_rule('OMGred',ttype_op,DEF_OP_FROM_OCC,
+     &              'OMGred',1,1,
+     &              parameters,2,tgt_info)
+      call set_rule2('OMGred',SET_ORDER,tgt_info)
+      call set_arg('OMGred',SET_ORDER,'LABEL',1,tgt_info,
+     &     val_label=(/'OMGred'/))
+      call set_arg('OMGred',SET_ORDER,'SPECIES',1,tgt_info,
+     &             val_int=(/-1/))
+      call set_arg('OMGred',SET_ORDER,'ORDER',1,tgt_info,
+     &             val_int=(/ndef/))
+      call set_arg('OMGred',SET_ORDER,'IDX_FREQ',ndef,tgt_info,
+     e             val_int=version(1:ndef))
 
       ! define Residual
       call add_target('OMG',ttype_op,.false.,tgt_info)
@@ -301,7 +434,7 @@ c            if (min(ih,ip).ge.1) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.ih+ip.eq.1) cycle
+            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
 c dbgend
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
@@ -311,6 +444,15 @@ c dbgend
           end do
         end do
       end do
+      if (singrm) then ! define conventional blocks separately
+        do ip = minp, maxp ! ih=ip
+          if (ip.lt.minh.or.ip.gt.maxh) cycle
+          if (ip.lt.minexc) cycle
+          ndef = ndef + 1
+          occ_def(IHOLE,2,ndef*2) = ip
+          occ_def(IPART,1,ndef*2) = ip
+        end do
+      end if
       call op_from_occ_parameters(-1,parameters,2,
      &              occ_def,ndef,2,(/0,0,0,0/),ndef)
       call set_rule('OMG',ttype_op,DEF_OP_FROM_OCC,
@@ -327,10 +469,10 @@ c dbgend
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
-            if (abs(ih-ip).eq.0.and.ivv.eq.0) cycle ! no conv. blocks (for PREC)
+            if (ip.eq.ih.and.ip.eq.maxexc) cycle ! no conv. blocks (for PREC)
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.ih+ip.eq.1) cycle
+            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
 c dbgend
             ndef = ndef + 1
             occ_def(IHOLE,1,3*ndef-1) = ih
@@ -434,6 +576,20 @@ c dbgend
         call set_arg(op_ht0to,CLONE_OP,'TEMPLATE',1,tgt_info,
      &       val_label=(/op_ham/))
       end do
+
+      ! define scalar unit operator
+      call add_target('1scal',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 1
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('1scal',ttype_op,DEF_OP_FROM_OCC,
+     &              '1scal',1,1,
+     &              parameters,2,tgt_info)
+      call opt_parameters(-1,parameters,+1,0)
+      call set_rule('1scal',ttype_op,SET_HERMIT,
+     &              '1scal',1,1,
+     &              parameters,1,tgt_info)
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
@@ -665,6 +821,18 @@ c dbgend
      &     val_label=(/'1v'/))
       call set_arg('F_MRCC_NORM',INSERT,'OP_INCL',2,tgt_info,
      &     val_label=(/'Lred','Tred'/))
+      call set_dependency('F_MRCC_NORM','1scal',tgt_info)
+      call set_rule2('F_MRCC_NORM',INSERT,tgt_info)
+      call set_arg('F_MRCC_NORM',INSERT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_MRCC_NORM'/))
+      call set_arg('F_MRCC_NORM',INSERT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_MRCC_NORM'/))
+      call set_arg('F_MRCC_NORM',INSERT,'OP_RES',1,tgt_info,
+     &     val_label=(/'NORM'/))
+      call set_arg('F_MRCC_NORM',INSERT,'OP_INS',1,tgt_info,
+     &     val_label=(/'1scal'/))
+      call set_arg('F_MRCC_NORM',INSERT,'OP_INCL',2,tgt_info,
+     &     val_label=(/'Lred','Tred'/))
       ! c) replace 1v by 1 (was used because we only needed valence blocks)
       call set_dependency('F_MRCC_NORM','1',tgt_info)
       call set_rule2('F_MRCC_NORM',REPLACE,tgt_info)
@@ -685,7 +853,7 @@ c dbgend
       call set_dependency('F_T','T',tgt_info)
       call set_dependency('F_T','Dtr',tgt_info)
       call set_dependency('F_T','Ttr',tgt_info)
-      do i_cls = 1, n_t_cls
+      do i_cls = 1, nsupD
         call set_rule2('F_T',EXPAND_OP_PRODUCT,tgt_info)
         call set_arg('F_T',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &       val_label=(/'F_T'/))
@@ -697,28 +865,36 @@ c dbgend
         call set_arg('F_T',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &       val_int=(/1,2,3,2,1/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MIN',5,tgt_info,
-     &       val_int=(/i_cls,1,i_cls,1,i_cls/))
+     &       val_int=(/stndT(1,i_cls),stndD(1,i_cls),stndT(1,i_cls),
+     &                 stndD(1,i_cls),stndT(1,i_cls)/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MAX',5,tgt_info,
-     &       val_int=(/i_cls,-1,i_cls,-1,i_cls/))
+     &       val_int=(/stndT(2,i_cls),stndD(2,i_cls),stndT(2,i_cls),
+     &                 stndD(2,i_cls),stndT(2,i_cls)/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &       val_int=(/2/))
-        call set_arg('F_T',EXPAND_OP_PRODUCT,'AVOID',4,tgt_info,
-     &       val_int=(/3,5,2,4/))
+     &       val_int=(/4/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'AVOID',8,tgt_info,
+     &       val_int=(/3,5,2,4,1,4,2,5/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &       val_log=(/i_cls.eq.1/))
       end do
-      call set_rule2('F_T',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_T',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_T'/))
-      call set_arg('F_T',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'T'/))
-      call set_arg('F_T',EXPAND_OP_PRODUCT,'OPERATORS',3,
-     &     tgt_info,
-     &     val_label=(/'T','Ttr','T'/))
-      call set_arg('F_T',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
-     &     val_int=(/1,2,1/))
-      call set_arg('F_T',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
+      do i_cls = nsupD+1, nsupT
+        call set_rule2('F_T',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_T'/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'T'/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'OPERATORS',3,
+     &       tgt_info,
+     &       val_label=(/'T','Ttr','T'/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+     &       val_int=(/1,2,1/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
+     &       val_int=(/stndT(1,i_cls),stndT(1,i_cls),stndT(1,i_cls)/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
+     &       val_int=(/stndT(2,i_cls),stndT(2,i_cls),stndT(2,i_cls)/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &       val_log=(/.false./))
+      end do
       ! no active open lines from Ttr
       call set_rule2('F_T',SELECT_LINE,tgt_info)
       call set_arg('F_T',SELECT_LINE,'LABEL_RES',1,tgt_info,
@@ -744,7 +920,7 @@ c dbgend
       call set_dependency('F_L','L',tgt_info)
       call set_dependency('F_L','Dtr',tgt_info)
       call set_dependency('F_L','Ltr',tgt_info)
-      do i_cls = 1, n_t_cls
+      do i_cls = 1, nsupD
         call set_rule2('F_L',EXPAND_OP_PRODUCT,tgt_info)
         call set_arg('F_L',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &       val_label=(/'F_L'/))
@@ -756,28 +932,36 @@ c dbgend
         call set_arg('F_L',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &       val_int=(/1,2,3,2,1/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MIN',5,tgt_info,
-     &       val_int=(/i_cls,1,i_cls,1,i_cls/))
+     &       val_int=(/stndT(1,i_cls),stndD(1,i_cls),stndT(1,i_cls),
+     &                 stndD(1,i_cls),stndT(1,i_cls)/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MAX',5,tgt_info,
-     &       val_int=(/i_cls,-1,i_cls,-1,i_cls/))
+     &       val_int=(/stndT(2,i_cls),stndD(2,i_cls),stndT(2,i_cls),
+     &                 stndD(2,i_cls),stndT(2,i_cls)/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &       val_int=(/2/))
-        call set_arg('F_L',EXPAND_OP_PRODUCT,'AVOID',4,tgt_info,
-     &       val_int=(/1,3,2,4/))
+     &       val_int=(/4/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'AVOID',8,tgt_info,
+     &       val_int=(/1,3,2,4,1,4,2,5/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &       val_log=(/i_cls.eq.1/))
       end do
-      call set_rule2('F_L',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_L',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_L'/))
-      call set_arg('F_L',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'L'/))
-      call set_arg('F_L',EXPAND_OP_PRODUCT,'OPERATORS',3,
-     &     tgt_info,
-     &     val_label=(/'L','Ltr','L'/))
-      call set_arg('F_L',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
-     &     val_int=(/1,2,1/))
-      call set_arg('F_L',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
+      do i_cls = nsupD+1, nsupT
+        call set_rule2('F_L',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_L'/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'L'/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'OPERATORS',3,
+     &       tgt_info,
+     &       val_label=(/'L','Ltr','L'/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+     &       val_int=(/1,2,1/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
+     &       val_int=(/stndT(1,i_cls),stndT(1,i_cls),stndT(1,i_cls)/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
+     &       val_int=(/stndT(2,i_cls),stndT(2,i_cls),stndT(2,i_cls)/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &       val_log=(/.false./))
+      end do
       ! no active open lines from Ttr
       call set_rule2('F_L',SELECT_LINE,tgt_info)
       call set_arg('F_L',SELECT_LINE,'LABEL_RES',1,tgt_info,
@@ -910,14 +1094,14 @@ c dbgend
       ! Metric times amplitudes
       call add_target2('F_MRCC_SC',.false.,tgt_info)
       call set_dependency('F_MRCC_SC','F_MRCC_NORM',tgt_info)
-      call set_dependency('F_MRCC_SC','OMG',tgt_info)
+      call set_dependency('F_MRCC_SC','OMGred',tgt_info)
       call set_rule2('F_MRCC_SC',DERIVATIVE,tgt_info)
       call set_arg('F_MRCC_SC',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_MRCC_SC'/))
       call set_arg('F_MRCC_SC',DERIVATIVE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_MRCC_NORM'/))
       call set_arg('F_MRCC_SC',DERIVATIVE,'OP_RES',1,tgt_info,
-     &     val_label=(/'OMG'/))
+     &     val_label=(/'OMGred'/))
       call set_arg('F_MRCC_SC',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'Lred'/))
 c dbg
@@ -1163,6 +1347,7 @@ c dbgend
       call set_dependency('FOPT_MRCC_D','F_DENS0',tgt_info)
       call set_dependency('FOPT_MRCC_D','F_MRCC_D',tgt_info)
       call set_dependency('FOPT_MRCC_D','DEF_ME_1',tgt_info)
+      call set_dependency('FOPT_MRCC_D','DEF_ME_1scal',tgt_info)
       call set_dependency('FOPT_MRCC_D','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_MRCC_D','DEF_ME_D',tgt_info)
       call set_dependency('FOPT_MRCC_D','DEF_ME_DENS',tgt_info)
@@ -1433,6 +1618,24 @@ c     &     'ME_Dproj',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
 
+      ! ME_1scal
+      call add_target2('DEF_ME_1scal',.false.,tgt_info)
+      call set_dependency('DEF_ME_1scal','1scal',tgt_info)
+      call set_rule2('DEF_ME_1scal',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_1scal',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_1scal'/))
+      call set_arg('DEF_ME_1scal',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'1scal'/))
+      call set_arg('DEF_ME_1scal',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_1scal',DEF_ME_LIST,'MS',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg('DEF_ME_1scal',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
+     &     val_int=(/1/))
+      call dens_parameters(-1,parameters,0,0,0)
+      call set_rule('DEF_ME_1scal',ttype_opme,UNITY,
+     &     'ME_1scal',1,1,
+     &     parameters,1,tgt_info)
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*

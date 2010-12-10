@@ -71,16 +71,10 @@
 
 
       integer ::
-     &     irecr, irecv, inum, idx_inv, idx, len, iblk,
-     &     nopt, nsec, isec, stsec, ndsec
+     &     irecr, irecv, inum, idx_inv
       character(len_opname) ::
      &     op_grd_name, op_trf_name, op_amp_name
 
-      integer, pointer ::
-     &     nwfpsec(:), idstsec(:), nsec_arr(:)
-
-      real(8), pointer ::
-     &     signsec(:)
       real(8) ::
      &     xdum
 

@@ -94,13 +94,10 @@
       occ_ins_x = int8_pack(iocc_ins_x,ngastp*2,base)
       occ_ins_d = int8_pack(iocc_ins_d,ngastp*2,base)
 
-      ! no inserting of scalars
-      if (occ_ins_x.eq.0.and.occ_ins_d.eq.0) return
-
       allocate(vtx(nvtx), topo(nvtx,nvtx), xlines(nvtx,njoined_res))
       allocate(svertex(nvtx))
       allocate(occ_sum_x(nvtx),occ_sum_d(nvtx),insert(nvtx),
-     &         ins_at_vtx(nvtx),occ_tmp(nvtx))
+     &         ins_at_vtx(nvtx))
 
       call pack_contr(svertex,vtx,topo,xlines,contr,njoined_res)
 
@@ -113,9 +110,25 @@
         call prt_contr_p(luout,svertex,vtx,topo,xlines,nvtx,njoined_res)
       end if
 
-      ! sum excitation (up) and deexcitation (down) arcs
       occ_sum_x(1:nvtx) = 0
       occ_sum_d(1:nvtx) = 0
+
+      ! scalar?
+      if (occ_ins_x.eq.0.and.occ_ins_d.eq.0) then
+        ! insert scalar only if it is our only hope...
+        if (.not.all(vtxinlist(1:nvtx))) then
+          deallocate(vtx,topo,xlines,svertex,occ_sum_x,occ_sum_d,
+     &               insert,ins_at_vtx)
+          return
+        end if
+        ! ...but insert not more than one
+        nins = 1
+        ins_at_vtx(1) = 1
+        insert(1) = 1
+      else
+      allocate(occ_tmp(nvtx))
+
+      ! sum excitation (up) and deexcitation (down) arcs
       do jvtx = 1, nvtx
         if (vtxinlist(jvtx)) then
           do ivtx = 1, jvtx-1
@@ -204,6 +217,7 @@ c dbgend
       if (nins.gt.nvtx) call quit(1,'contr_insert',
      &        'increase dimension of insert, ins_at_vtx')
       deallocate(occ_tmp)
+      end if
 c dbg
 c      print *,'nins: ',nins
 c      print *,'insert:     ',insert(1:nins)
