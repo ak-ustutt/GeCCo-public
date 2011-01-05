@@ -220,12 +220,14 @@ c dbg
         do iopt = 1, opti_info%nopt
           normalize = opti_info%typ_prc(iopt).eq.optinf_prc_norm
           call optc_expand_vec(vec,opti_stat%ndim_vsbsp,xnrm,normalize,
-     &         ffopt(iopt)%fhand,1,0d0,
+     &         ffopt(iopt)%fhand,
+     &         ffopt(iopt)%fhand%current_record,0d0,
      &         opti_stat%ffvsbsp(iopt)%fhand,opti_stat%iord_vsbsp,
      &         nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2)
           if (normalize) then
             call dscal(opti_info%nwfpar(iopt),1d0/xnrm,xbuf1,1)
-            call vec_to_da(ffopt(iopt)%fhand,1,xbuf1,
+            call vec_to_da(ffopt(iopt)%fhand,
+     &                     ffopt(iopt)%fhand%current_record,xbuf1,
      &                     opti_info%nwfpar(iopt))
           end if
           call touch_file_rec(ffopt(iopt)%fhand)

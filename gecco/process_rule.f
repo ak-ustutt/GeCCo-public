@@ -1032,12 +1032,24 @@ c          mode = 'dia-R12'
         call get_arg('LIST_SCAL',rule,tgt_info,val_label=label_list(2))
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
         call get_arg('NFAC',rule,tgt_info,val_int=nfac)
+        call get_arg('IDX_LIST',rule,tgt_info,val_int_list=idxblk)
 
         imode = 2
         if (len_trim(label_list(2)).eq.0.or.label_list(2)(1:1).eq.'-')
      &       imode = 1
         call scale_op(label,
-     &       imode,idxblk,fac,rule%labels(2:),nblk,
+     &       imode,idxblk,fac,label_list,nfac,
+     &       op_info,orb_info,str_info)
+
+*----------------------------------------------------------------------*
+      case(SCALE_COPY)
+*----------------------------------------------------------------------*
+
+        call get_arg('LIST_RES',rule,tgt_info,val_label=label)
+        call get_arg('LIST_INP',rule,tgt_info,val_label=label2)
+        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+
+        call scale_copy_op(label,label2,fac,nfac,
      &       op_info,orb_info,str_info)
 
 *----------------------------------------------------------------------*

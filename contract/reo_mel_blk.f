@@ -170,7 +170,7 @@
 c dbg
       if (trim(meout%label).ne.'ME_Dproj'
      &    .and.reo_info%sign_reo.ne.1d0) then
-        write(luout,*) 'setting sign_reo = +1 for block ',iblkinp
+        write(luout,*) 'setting sign_reo = +1 for block ',iblkout
         reo_info%sign_reo = 1d0
       end if
 c dbgend

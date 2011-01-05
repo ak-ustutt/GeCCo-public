@@ -77,7 +77,8 @@
       if (opti_info%optref.eq.-2) then
         ! update metric, trafo matrices and projector if not up to date
         idx = idx_mel_list('ME_C0',op_info)  ! quick & dirty
-        if (op_info%mel_arr(idx)%mel%fhand%last_mod(1).gt.
+        if (op_info%mel_arr(idx)%mel%fhand%last_mod(
+     &      op_info%mel_arr(idx)%mel%fhand%current_record).gt.
      &      me_special(2)%mel%fhand%last_mod(1))
      &      call update_metric(me_dia,me_special,nspecial,
      &        fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,

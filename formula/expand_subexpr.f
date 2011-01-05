@@ -143,7 +143,7 @@ c dbg
           if (nterms.gt.0) then
 c dbg
             iterm = iterm + 1
-            if (mod(iterm,10).eq.0) print *,'insertion # ',iterm
+c            if (mod(iterm,10).eq.0) print *,'insertion # ',iterm
 c dbgend
             if (ntest.ge.100) then
               write(luout,*) 'inserting ',nterms,' new terms'

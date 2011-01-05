@@ -660,26 +660,26 @@ c           ndim = 0
                 end do
                end do
               end do
-              ! normalize vectors
-              if (nalph.gt.0) palph = palph/sqrt(dble(nalph))
-              if (nbeta.gt.0) pbeta = pbeta/sqrt(dble(nbeta))
-              ! get projector
-              proj_sing = 0d0
-              do idx = 1, ndim
-                proj_sing(idx,idx) = 1d0
-              end do
-              call dgemm('n','t',ndim,ndim,1,
-     &                   -1d0,palph,ndim,
-     &                   palph,ndim,
-     &                   1d0,proj_sing,ndim)
-              call dgemm('n','t',ndim,ndim,1,
-     &                   -1d0,pbeta,ndim,
-     &                   pbeta,ndim,
-     &                   1d0,proj_sing,ndim)
-              if (ntest.ge.100) then
-                write(luout,*) 'projector for removing singles:'
-                call wrtmat2(proj_sing,ndim,ndim,ndim,ndim)
-              end if
+c              ! normalize vectors
+c              if (nalph.gt.0) palph = palph/sqrt(dble(nalph))
+c              if (nbeta.gt.0) pbeta = pbeta/sqrt(dble(nbeta))
+c              ! get projector
+c              proj_sing = 0d0
+c              do idx = 1, ndim
+c                proj_sing(idx,idx) = 1d0
+c              end do
+c              call dgemm('n','t',ndim,ndim,1,
+c     &                   -1d0,palph,ndim,
+c     &                   palph,ndim,
+c     &                   1d0,proj_sing,ndim)
+c              call dgemm('n','t',ndim,ndim,1,
+c     &                   -1d0,pbeta,ndim,
+c     &                   pbeta,ndim,
+c     &                   1d0,proj_sing,ndim)
+c              if (ntest.ge.100) then
+c                write(luout,*) 'projector for removing singles:'
+c                call wrtmat2(proj_sing,ndim,ndim,ndim,ndim)
+c              end if
             end if
 
             deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
@@ -1031,6 +1031,39 @@ c dbgend
             ! project out pseudo-singles components
             if (max(iprlvl,ntest).ge.3) write(luout,*)
      &           'Projecting out conventional singles.'
+            ! remove vanishing excitations from proj. vectors
+            do iline = 1, ndim
+              if (scratch(iline,iline).lt.1d-14) then
+                if (palph(iline).gt.1d-14) then
+                  palph(iline) = 0d0
+                  nalph = nalph - 1
+                end if
+                if (pbeta(iline).gt.1d-14) then
+                  pbeta(iline) = 0d0
+                  nbeta = nbeta - 1
+                end if
+              end if
+            end do
+            ! normalize vectors
+            if (nalph.gt.0) palph = palph/sqrt(dble(nalph))
+            if (nbeta.gt.0) pbeta = pbeta/sqrt(dble(nbeta))
+            ! get projector
+            proj_sing = 0d0
+            do idx = 1, ndim
+              proj_sing(idx,idx) = 1d0
+            end do
+            call dgemm('n','t',ndim,ndim,1,
+     &                 -1d0,palph,ndim,
+     &                 palph,ndim,
+     &                 1d0,proj_sing,ndim)
+            call dgemm('n','t',ndim,ndim,1,
+     &                 -1d0,pbeta,ndim,
+     &                 pbeta,ndim,
+     &                 1d0,proj_sing,ndim)
+            if (ntest.ge.100) then
+              write(luout,*) 'projector for removing singles:'
+              call wrtmat2(proj_sing,ndim,ndim,ndim,ndim)
+            end if
             if (ntest.ge.100) then
               write(luout,*) 'matrix before removing singles:'
               call wrtmat2(scratch,ndim,ndim,ndim,ndim)

@@ -167,8 +167,8 @@ cmh end
       call add_target('C',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
+      do ip = minp, maxp
+        do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
             if (.not.pure_vv.and.ivv.gt.0.and.ip.eq.0.and.ih.eq.0) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
@@ -208,8 +208,8 @@ cmh end
         call add_target('c',ttype_op,.false.,tgt_info)
         occ_def = 0
         ndef = 0
-        do ip = 0, maxp
-          do ih = 0, maxh
+        do ip = minp, maxp
+          do ih = minh, maxh
             do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
               if (.not.pure_vv.and.ivv.gt.0.and.ip.eq.0.and.ih.eq.0)
      &            cycle
@@ -305,7 +305,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
       call add_target('1v',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do iv = 1, maxexc
+      do iv = 1, maxexc !max(maxexc,orb_info%nactel)
         ndef = ndef + 1
         occ_def(IVALE,1,ndef) = iv
         occ_def(IVALE,2,ndef) = iv
@@ -330,8 +330,8 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
       call add_target('D',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
+      do ip = minp, maxp
+        do ih = minh, maxh
           do ivv = min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv),0,-1
            do jvv =min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv),0,-1
             if (ip.eq.ih.and.ip.eq.maxexc) cycle
@@ -373,8 +373,8 @@ c            if (skip) cycle
       call add_target('Dtr',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
+      do ip = minp, maxp
+        do ih = minh, maxh
           do ivv = min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv),0,-1
            do jvv =min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv),0,-1
             if (ip.eq.ih.and.ip.eq.maxexc) cycle
@@ -415,8 +415,8 @@ c            if (skip) cycle
       call add_target('A_C',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
+      do ip = minp, maxp
+        do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
             if (.not.pure_vv.and.ivv.gt.0.and.ip.eq.0.and.ih.eq.0) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
@@ -442,8 +442,8 @@ c            if (skip) cycle
       call add_target('A',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
+      do ip = minp, maxp
+        do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
             if (.not.pure_vv.and.ivv.gt.0.and.ip.eq.0.and.ih.eq.0) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
@@ -1681,11 +1681,11 @@ c     &     parameters,2,tgt_info)
      &              labels,2,1,
      &              parameters,0,tgt_info)
 c dbg
-c      call form_parameters(-1,parameters,2,
-c     &     'Preconditioner (b) :',0,'LIST')
-c      call set_rule('EVAL_A_diag',ttype_opme,PRINT_MEL,
-c     &     trim(dia_label)//'C',1,0,
-c     &     parameters,2,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'Preconditioner (b) :',0,'LIST')
+      call set_rule('EVAL_A_diag',ttype_opme,PRINT_MEL,
+     &     trim(dia_label)//'C',1,0,
+     &     parameters,2,tgt_info)
 c dbgend
 
       ! SOLVE icCI eigenvalue equation

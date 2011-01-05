@@ -2169,7 +2169,9 @@ signsec:      1.0
  @ formula evaluation                  cpu/sys/wall:     18.10 /     0.46 /    18.86 s
   norms/values of output operators
  ----------------------------------
->>>    1 -->  271.3055566    
+>>>    1 -->  271.3055607       ! changed manually on 01/05/2011
+                                ! (because in SVD decoupled
+                                !  blocks are now individually treated)
  Rule: EXTRACT_DIAG
  @ time for extracting diagonal        cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  My next target: Ddag

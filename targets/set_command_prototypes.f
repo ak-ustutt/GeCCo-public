@@ -267,6 +267,12 @@
       call add_command_proto(SCALE,tgt_info)
       call set_arg('_PROTO_',SCALE,'LIST_SCAL',1,tgt_info,
      &     val_label=(/'-'/))
+      call set_arg('_PROTO_',SCALE,'NFAC',1,tgt_info,
+     &     val_int=(/-1/))
+      call set_arg('_PROTO_',SCALE,'IDX_LIST',1,tgt_info,
+     &     val_int=(/0/))
+*----------------------------------------------------------------------*
+      call add_command_proto(SCALE_COPY,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(INVERT,tgt_info)
 *----------------------------------------------------------------------*

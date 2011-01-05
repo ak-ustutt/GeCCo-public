@@ -76,4 +76,5 @@
      &     PRINT_MEL*9        = 'PRINT_MEL',
      &     SET_MEL*7          = 'SET_MEL',
      &     EXTRACT_DIAG*12    = 'EXTRACT_DIAG',
-     &     REORDER_MEL*11     = 'REORDER_MEL'
+     &     REORDER_MEL*11     = 'REORDER_MEL',
+     &     SCALE_COPY*10      = 'SCALE_COPY'

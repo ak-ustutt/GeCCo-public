@@ -49,7 +49,7 @@
      &     lenblkinp, lenblkout, ioffinp, ioffout,
      &     ifrom, ito, ica, ij, j_occ_cls
       real(8) ::
-     &     cpu, sys, wall, cpu0, sys0, wall0, xdum
+     &     cpu, sys, wall, cpu0, sys0, wall0, xdum, tra_sign
       real(8), pointer ::
      &     buffer_inp(:), buffer_out(:)
 
@@ -155,6 +155,16 @@
      &                          i_occ_cls,i_occ_cls,
      &                          op_info,str_info,orb_info,.true.)
           else
+c dbg
+cmh         CAUTION: AD HOC FIX!!!
+cmh         (matters for icMRCCSD with singles and doubles)
+cmh         We need to understand why we need these sign changes!!!
+            tra_sign = 1d0
+            if (i_occ_cls.eq.11.and.j_occ_cls.eq.12) then
+              tra_sign = -1d0
+              print *,'changing sign for blocks ',i_occ_cls,j_occ_cls
+            end if
+c dbgend
             ! two non-diagonal blocks: transpose both blocks
             transposed(j_occ_cls) = .true.
             ! a) save first block
@@ -163,7 +173,8 @@
             ifree = mem_alloc_real(buffer_inp,lenblkinp,'buffer_inp')
             call get_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
             ! b) transpose second block --> first block
-            call add_opblk_transp(xdum,0,1d0,meinp,meinp,dag,.false.,
+            call add_opblk_transp(xdum,0,tra_sign,meinp,meinp,dag,
+     &                          .false.,
      &                          j_occ_cls,i_occ_cls,
      &                          op_info,str_info,orb_info,.true.)
             ! c) save transposed first block
@@ -172,7 +183,8 @@
             ! d) restore original first block
             call put_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
             ! e) transpose first block --> second block
-            call add_opblk_transp(xdum,0,1d0,meinp,meinp,dag,.false.,
+            call add_opblk_transp(xdum,0,tra_sign,meinp,meinp,dag,
+     &                          .false.,
      &                          i_occ_cls,j_occ_cls,
      &                          op_info,str_info,orb_info,.true.)
             ! f) restore transposed first block

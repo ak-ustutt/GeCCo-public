@@ -35,7 +35,7 @@
       type(filinf) ::
      &     ffsv
       integer ::
-     &     nrot, idx, lwrk, info, idx2, luinp, iostatus
+     &     idx, lwrk, info, idx2, luinp, iostatus
       logical ::
      &     l_exist, sv_above, read_file
 
@@ -79,10 +79,11 @@
       end do
 
       ! calculate U and singular values:
-      call dgesvd('O','N',ndim,ndim,
-     &     mat,ndim,singval,
-     &     dum1,1,dum2,1,
-     &     wrk,lwrk,info)
+      call svd_drv(ndim,mat,singval)
+c      call dgesvd('O','N',ndim,ndim,
+c     &     mat,ndim,singval,
+c     &     dum1,1,dum2,1,
+c     &     wrk,lwrk,info)
 
       if (info.ne.0) then
         write(luout,*) 'WARNING in invsqrt_mat: SVD in trouble'

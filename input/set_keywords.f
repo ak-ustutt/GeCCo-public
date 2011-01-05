@@ -174,6 +174,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/4/))  ! max. cumulant rank
       call argument_add('oldref','method.MR',type=vtyp_log,
      &                  ldef=(/.false./)) ! use existing CASSCF coeff.
+      call argument_add('cheap_prc','method.MR',type=vtyp_log,
+     &                  ldef=(/.false./)) ! try cheap preconditioner
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,

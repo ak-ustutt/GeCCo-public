@@ -25,8 +25,12 @@
      &     mxsym = 8
       integer ::
      &     ludict, iprint, ngas, idx, jdx, nspin, nsym, isym,
-     &     mxirrep, lsym, nactel, ispin, nstate,
+     &     mxirrep, lsym, nactel, ispin, nstate, igroup,
      &     nfro(mxsym), nrhf(mxsym), nash(mxsym), norb(mxsym)
+      logical ::
+     &     isgroup(8)
+      character(3) ::
+     &     groups(8), irreps(8)
 
       ! 64 bit version of GAMESS writes integer*8
       integer(8) ::
@@ -40,6 +44,10 @@
      &     orb_en(:)
       integer(8), pointer ::
      &     orb_sym(:)
+      character(len=8), pointer ::
+     &     orb_lab(:)
+
+      groups(1:8) = (/'C1','Ci','Cs','C2','C2v','C2h','D2','D2h'/)
 
       iprint = max(iprlvl,ntest)
 
@@ -81,9 +89,109 @@ c dbgend
       nactel = num1/1000 - 2*nocct !what if nfroz>0 ???
 
       ! read orbital energies and set up proposal for frozen core
-      allocate(orb_en(norbt),orb_sym(norbt))
+      allocate(orb_en(norbt),orb_sym(norbt),orb_lab(norbt))
       read (ludict,rec=ioda(17)) orb_en(1:norbt)
       read (ludict,rec=ioda(262)) orb_sym(1:norbt)
+      read (ludict,rec=ioda(324)) orb_lab(1:norbt)
+c      ! now get nsym (lowest possible 2^n number):
+c      mxirrep = maxval(orb_sym(1:norbt))
+c      nsym = mxsym
+c      do while (nsym/2.ge.mxirrep)
+c        nsym = nsym/2
+c      end do
+
+      ! For a strange (?) reason, GAMESS may mess up the irrep numbers
+      ! for the orbitals. So let's restore them by help of the labels.
+      ! First try to recognize point group
+      isgroup(1:8) = .true. ! stands for: C1,Ci,Cs,C2,C2v,C2h,D2,D2h
+      do idx = 1, norbt
+        select case(trim(orb_lab(idx)))
+        case('A') ! not Ci,Cs,C2v,C2h,D2h
+          isgroup(2:3) = .false.
+          isgroup(5:6) = .false.
+          isgroup(8) = .false.
+        case('AG','AU') ! not C1,Cs,C2,C2v,D2
+          isgroup(1) = .false.
+          isgroup(3:5) = .false.
+          isgroup(7) = .false.
+        case('A''','A''''') ! only Cs
+          isgroup(1:2) = .false.
+          isgroup(4:8) = .false.
+        case('B') ! only C2
+          isgroup(1:3) = .false.
+          isgroup(5:8) = .false.
+        case('A1','A2') ! only C2v
+          isgroup(1:4) = .false.
+          isgroup(6:8) = .false.
+        case('B1','B2') ! only C2v or D2
+          isgroup(1:4) = .false.
+          isgroup(6) = .false.
+          isgroup(8) = .false.
+        case('BU','BG') ! only C2h
+          isgroup(1:5) = .false.
+          isgroup(7:8) = .false.
+        case('B3') ! only D2
+          isgroup(1:6) = .false.
+          isgroup(8) = .false.
+        case('B1G','B2G','B3G','B1U','B2U','B3U') ! only D2h
+          isgroup(1:7) = .false.
+        case default
+          call quit(1,'read_env_gamess',
+     &              'unknown irrep label: '//trim(orb_lab(idx)))
+        end select
+      end do
+      isym = 0
+      do idx = 1, 8
+        if (isgroup(idx)) then
+          isym = isym + 1
+          igroup = idx
+        end if
+      end do
+      if (isym.ne.1) call quit(1,'read_env_gamess',
+     &       'Could not unambiguously identify point group!')
+
+      ! irrep numbers as in GAMESS manual (for $DET):
+      irreps(1:8) = '   '
+      select case(igroup)
+      case(1)
+        nsym = 1
+        irreps = (/'A  ','   ','   ','   ','   ','   ','   ','   '/)
+      case(2)
+        nsym = 2
+        irreps = (/'AG ','AU ','   ','   ','   ','   ','   ','   '/)
+      case(3)
+        nsym = 2
+        irreps = (/'A''','A''''','   ','   ','   ','   ','   ','   '/)
+      case(4)
+        nsym = 2
+        irreps = (/'A  ','B  ','   ','   ','   ','   ','   ','   '/)
+      case(5)
+        nsym = 4
+        irreps = (/'A1 ','A2 ','B1 ','B2 ','   ','   ','   ','   '/)
+      case(6)
+        nsym = 4
+        irreps = (/'AG ','BU ','BG ','AU ','   ','   ','   ','   '/)
+      case(7)
+        nsym = 4
+        irreps = (/'A  ','B1 ','B2 ','B3 ','   ','   ','   ','   '/)
+      case(8)
+        nsym = 8
+        irreps = (/'AG ','B1G','B2G','B3G','AU ','B1U','B2U','B3U'/)
+      case default
+        call quit(1,'read_env_gamess','impossible.')
+      end select
+
+      do idx = 1, norbt
+        do isym = 1, nsym
+          if (trim(orb_lab(idx)).eq.trim(irreps(isym))) then
+            orb_sym(idx) = isym
+            exit
+            if (isym.eq.nsym) call quit(1,'read_env_gamess',
+     &               'There must be an error in this routine')
+          end if
+        end do
+      end do
+      deallocate(orb_lab)
 c dbg
 c      print *,'   orbital  symmetry    energy'
 c      print *,'------------------------------'
@@ -95,12 +203,6 @@ c dbgend
       ! though irrep indices may differ from other codes
       ! (e.g. for C2v irrep order is A1 A2 B1 B2)
       ! the multiplication table should be the same as in multd2h.h.
-      ! now get nsym (lowest possible 2^n number):
-      mxirrep = maxval(orb_sym(1:norbt))
-      nsym = mxsym
-      do while (nsym/2.ge.mxirrep)
-        nsym = nsym/2
-      end do
 
       nfro = 0
       nrhf = 0
@@ -145,6 +247,7 @@ c dbgend
         write(luout,*) 'ispin = ',ispin
         write(luout,*) 'nactel= ',nactel
         write(luout,*) 'lsym  = ',lsym
+        write(luout,*) 'symm. = ',groups(igroup)
         write(luout,*) 'nsym  = ',nsym
         write(luout,*) 'nfroz = ',nfroz
         write(luout,*) 'nocct = ',nocct

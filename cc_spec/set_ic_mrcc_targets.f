@@ -38,7 +38,7 @@
      &     n_tred_cls, len_form, optref, idef, ciroot,
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD
       logical ::
-     &     pure_vv, update_prc, skip, preopt, singrm, first
+     &     pure_vv, update_prc, skip, preopt, singrm, first, cheap_prc
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -87,6 +87,8 @@
      &     lval=pure_vv)
       call get_argument_value('method.MR','ciroot',
      &     ival=ciroot)
+      call get_argument_value('method.MR','cheap_prc',
+     &     lval=cheap_prc)
       call get_argument_value('calculate.solve.non_linear','optref',
      &     ival=optref)
       call get_argument_value('calculate.solve.non_linear','update_prc',
@@ -227,8 +229,8 @@ c     &             val_int=(/1/))
       ! we just run over the same loops here:
       ndef = 0
       nsupD = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
+      do ip = minp, maxp
+        do ih = minh, maxh
           first = .true.
           do ivv = min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv),0,-1
            do jvv =min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv),0,-1
@@ -379,8 +381,8 @@ c            if (skip) cycle
       call add_target('OMGred',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
+      do ip = minp, maxp
+        do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
             if (ip.eq.ih.and.ip.eq.maxexc) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
@@ -426,8 +428,8 @@ c dbgend
       call add_target('OMG',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
+      do ip = minp, maxp
+        do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
@@ -459,12 +461,41 @@ c dbgend
      &              'OMG',1,1,
      &              parameters,2,tgt_info)
 
+      ! define transformed Residual (for preconditioner)
+      call add_target('OMGtr',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do ip = minp, maxp
+        do ih = minh, maxh
+          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
+            if (abs(ih-ip)+2*ivv.gt.maxv) cycle
+            if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
+            if (max(ip,ih)+ivv.lt.minexc) cycle
+            if (ip.eq.ih.and.ip.eq.maxexc) cycle ! no conv. blocks (for PREC)
+c dbg
+c            if (ih.gt.ip) cycle
+            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
+c dbgend
+            ndef = ndef + 1
+            occ_def(IHOLE,2,ndef*2) = ih
+            occ_def(IPART,1,ndef*2) = ip
+            occ_def(IVALE,1,ndef*2) = max(ih-ip,0) + ivv
+            occ_def(IVALE,2,ndef*2-1) = max(ip-ih,0) + ivv
+          end do
+        end do
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,2,(/0,0,0,0/),ndef)
+      call set_rule('OMGtr',ttype_op,DEF_OP_FROM_OCC,
+     &              'OMGtr',1,1,
+     &              parameters,2,tgt_info)
+
       ! define Jacobian (diagonal blocks only)
       call add_target('A(CC)',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
+      do ip = minp, maxp
+        do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
@@ -496,8 +527,8 @@ c dbgend
       call add_target('S',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
+      do ip = minp, maxp
+        do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
            do ivv2 = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
             if (abs(ih-ip)+2*max(ivv,ivv2).gt.maxv) cycle
@@ -590,6 +621,26 @@ c dbgend
       call set_rule('1scal',ttype_op,SET_HERMIT,
      &              '1scal',1,1,
      &              parameters,1,tgt_info)
+c dbg
+cmh    ****************************************************************
+cmh    Want to activate calculation of Heff?
+cmh    1.) comment in everything related to Heff and 1v in this routine
+cmh    2.) Extend definition of 1v in set_ic_mrci_targets up to nactel
+cmh    3.) new case in topo_remove_vtxs:
+cmh        xlines_new = xlines_new + xlines_scr_u 
+cmh    ****************************************************************
+c      ! define effective hamiltonian
+c      call add_target('Heff',ttype_op,.false.,tgt_info)
+c      occ_def = 0
+c      ndef = 1
+c      occ_def(IVALE,1,ndef) = orb_info%nactel
+c      occ_def(IVALE,2,ndef) = orb_info%nactel
+c      call op_from_occ_parameters(-1,parameters,2,
+c     &              occ_def,ndef,1,(/0,0/),ndef)
+c      call set_rule('Heff',ttype_op,DEF_OP_FROM_OCC,
+c     &              'Heff',1,1,
+c     &              parameters,2,tgt_info)
+c dbgend
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
@@ -705,30 +756,61 @@ c      call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_OMG'/))
 c dbgend
 
+      ! Lagrangian without Lambda...
+      call add_target2('F_E_C0',.false.,tgt_info)
+      call set_dependency('F_E_C0','F_MRCC_LAG',tgt_info)
+      call set_dependency('F_E_C0','L',tgt_info)
+      call set_rule2('F_E_C0',INVARIANT,tgt_info)
+      call set_arg('F_E_C0',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_E_C0'/))
+      call set_arg('F_E_C0',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_MRCC_LAG'/))
+      call set_arg('F_E_C0',INVARIANT,'OP_RES',1,tgt_info,
+     &     val_label=(/'NORM'/))
+      call set_arg('F_E_C0',INVARIANT,'OPERATORS',1,tgt_info,
+     &     val_label=(/'L'/))
+      call set_arg('F_E_C0',INVARIANT,'TITLE',1,tgt_info,
+     &     val_str='MRCC energy expression for C0 equations')
+c dbg
+c      ! insert unit operators to allow for double differentiation
+c      call set_dependency('F_E_C0','1v',tgt_info)
+c      call set_rule2('F_E_C0',INSERT,tgt_info)
+c      call set_arg('F_E_C0',INSERT,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_E_C0'/))
+c      call set_arg('F_E_C0',INSERT,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_E_C0'/))
+c      call set_arg('F_E_C0',INSERT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'NORM'/))
+c      call set_arg('F_E_C0',INSERT,'OP_INS',1,tgt_info,
+c     &     val_label=(/'1v'/))
+c      call set_arg('F_E_C0',INSERT,'OP_INCL',2,tgt_info,
+c     &     val_label=(/'C0^+','C0'/))
+c dbgend
+
       ! Residual for C0
       call add_target2('F_OMG_C0',.false.,tgt_info)
-      call set_dependency('F_OMG_C0','F_MRCC_LAG',tgt_info)
+      call set_dependency('F_OMG_C0','F_E_C0',tgt_info)
       call set_dependency('F_OMG_C0','A_C0',tgt_info)
       call set_rule2('F_OMG_C0',DERIVATIVE,tgt_info)
       call set_arg('F_OMG_C0',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_OMG_C0'/))
       call set_arg('F_OMG_C0',DERIVATIVE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_MRCC_LAG'/))
+     &     val_label=(/'F_E_C0'/))
       call set_arg('F_OMG_C0',DERIVATIVE,'OP_RES',1,tgt_info,
      &     val_label=(/'A_C0'/))
       call set_arg('F_OMG_C0',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'C0^+'/))
-      call set_rule2('F_OMG_C0',INVARIANT,tgt_info)
-      call set_arg('F_OMG_C0',INVARIANT,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_OMG_C0'/))
-      call set_arg('F_OMG_C0',INVARIANT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_OMG_C0'/))
-      call set_arg('F_OMG_C0',INVARIANT,'OP_RES',1,tgt_info,
-     &     val_label=(/'A_C0'/))
-      call set_arg('F_OMG_C0',INVARIANT,'OPERATORS',1,tgt_info,
-     &     val_label=(/'L'/))
-      call set_arg('F_OMG_C0',INVARIANT,'TITLE',1,tgt_info,
-     &     val_str='Residual for Reference function')
+c      call set_rule2('F_OMG_C0',INVARIANT,tgt_info)
+c      call set_arg('F_OMG_C0',INVARIANT,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_OMG_C0'/))
+c      call set_arg('F_OMG_C0',INVARIANT,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_OMG_C0'/))
+c      call set_arg('F_OMG_C0',INVARIANT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'A_C0'/))
+c      call set_arg('F_OMG_C0',INVARIANT,'OPERATORS',1,tgt_info,
+c     &     val_label=(/'L'/))
+c      call set_arg('F_OMG_C0',INVARIANT,'TITLE',1,tgt_info,
+c     &     val_str='Residual for Reference function')
       call set_rule2('F_OMG_C0',SELECT_SPECIAL,tgt_info)
       call set_arg('F_OMG_C0',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_OMG_C0'/))
@@ -1039,23 +1121,33 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
      &     val_label=(/'F_E(MRCC)tr'/))
       call set_arg('F_E(MRCC)tr',EXPAND,'INTERM',2,tgt_info,
      &     val_label=(/'F_T','F_L'/))
+      ! h) let only diagonal blocks of Jacobian survive
+      call set_rule2('F_E(MRCC)tr',SELECT_SPECIAL,tgt_info)
+      call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_E(MRCC)tr'/))
+      call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_E(MRCC)tr'/))
+      call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+     &     val_label=(/'Ltr','Ttr'/))
+      call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &     val_str='SAME')
 c dbg
-c      call set_rule2('F_E(MRCC)tr',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_E(MRCC)tr'/))
+      call set_rule2('F_E(MRCC)tr',PRINT_FORMULA,tgt_info)
+      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_E(MRCC)tr'/))
 c dbgend
 
       ! (transformed) Jacobian times vector
       call add_target2('F_A_Ttr',.false.,tgt_info)
       call set_dependency('F_A_Ttr','F_E(MRCC)tr',tgt_info)
-      call set_dependency('F_A_Ttr','OMG',tgt_info)
+      call set_dependency('F_A_Ttr','OMGtr',tgt_info)
       call set_rule2('F_A_Ttr',DERIVATIVE,tgt_info)
       call set_arg('F_A_Ttr',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_A_Ttr'/))
       call set_arg('F_A_Ttr',DERIVATIVE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_E(MRCC)tr'/))
       call set_arg('F_A_Ttr',DERIVATIVE,'OP_RES',1,tgt_info,
-     &     val_label=(/'OMG'/))
+     &     val_label=(/'OMGtr'/))
       call set_arg('F_A_Ttr',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'Ltr'/))
 c dbg
@@ -1086,9 +1178,9 @@ c     &     val_label=(/'F_Atr'/))
 c      call set_arg('F_Atr',KEEP_TERMS,'TERMS',2,tgt_info,
 c     &     val_int=(/1,7/))
 c
-c      call set_rule2('F_Atr',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_Atr',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_Atr'/))
+      call set_rule2('F_Atr',PRINT_FORMULA,tgt_info)
+      call set_arg('F_Atr',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_Atr'/))
 c dbgend
 
       ! Metric times amplitudes
@@ -1338,6 +1430,24 @@ c      call set_arg('F_Str',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_Str'/))
 c dbgend
 
+c dbg
+c      ! effective Hamiltonian
+c      call add_target2('F_Heff',.false.,tgt_info)
+c      call set_dependency('F_Heff','F_OMG_C0',tgt_info)
+c      call set_dependency('F_Heff','Heff',tgt_info)
+c      call set_rule2('F_Heff',DERIVATIVE,tgt_info)
+c      call set_arg('F_Heff',DERIVATIVE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_Heff'/))
+c      call set_arg('F_Heff',DERIVATIVE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_OMG_C0'/))
+c      call set_arg('F_Heff',DERIVATIVE,'OP_RES',1,tgt_info,
+c     &     val_label=(/'Heff'/))
+c      call set_arg('F_Heff',DERIVATIVE,'OP_DERIV',1,tgt_info,
+c     &     val_label=(/'C0'/))
+c      call set_rule2('F_Heff',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_Heff',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_Heff'/))
+c dbgend
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -1388,6 +1498,26 @@ c dbgend
       call set_arg('FOPT_Atr',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_Atr'/))
 
+      ! transformed Hessian times vector
+      call add_target2('FOPT_A_Ttr',.false.,tgt_info)
+      call set_dependency('FOPT_A_Ttr','F_A_Ttr',tgt_info)
+      call set_dependency('FOPT_A_Ttr',mel_ham,tgt_info)
+      call set_dependency('FOPT_A_Ttr','DEF_ME_OMGtr',tgt_info)
+      call set_dependency('FOPT_A_Ttr','DEF_ME_Ttr',tgt_info)
+      call set_dependency('FOPT_A_Ttr','DEF_ME_1',tgt_info)
+      call set_dependency('FOPT_A_Ttr','DEF_ME_Dtr',tgt_info)
+      call set_dependency('FOPT_A_Ttr','DEF_ME_C0',tgt_info)
+      call set_rule2('FOPT_A_Ttr',ASSIGN_ME2OP,tgt_info)
+      call set_arg('FOPT_A_Ttr',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &           val_label=(/'ME_Dtr'/))
+      call set_arg('FOPT_A_Ttr',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+     &           val_label=(/'Dtr'/))
+      call set_rule2('FOPT_A_Ttr',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_A_Ttr',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_A_Ttr'/))
+      call set_arg('FOPT_A_Ttr',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_A_Ttr'/))
+
       ! Residual
       call add_target2('FOPT_OMG',.false.,tgt_info)
       call set_dependency('FOPT_OMG','F_OMG',tgt_info)
@@ -1404,6 +1534,9 @@ c      call set_dependency('FOPT_OMG','DEF_ME_HT2',tgt_info)
       if (optref.eq.-1.or.optref.eq.-2) then
         call set_dependency('FOPT_OMG','F_OMG_C0',tgt_info)
         call set_dependency('FOPT_OMG','DEF_ME_A_C0',tgt_info)
+c dbg
+c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
+c dbgend
         call set_rule2('FOPT_OMG',ASSIGN_ME2OP,tgt_info)
         call set_arg('FOPT_OMG',ASSIGN_ME2OP,'LIST',1,tgt_info,
      &             val_label=(/'ME_A_C0'/))
@@ -1425,6 +1558,9 @@ c      call set_dependency('FOPT_OMG','DEF_ME_HT2',tgt_info)
       call add_target2('FOPT_OMG_C0',.false.,tgt_info)
       call set_dependency('FOPT_OMG_C0','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_OMG_C0','DEF_ME_T',tgt_info)
+c dbg
+c      call set_dependency('FOPT_OMG_C0','DEF_ME_1v',tgt_info)
+c dbgend
       if (.false..and.maxh.gt.0)
      &    call set_dependency('FOPT_OMG_C0','DEF_ME_TT',tgt_info)
 c      call set_dependency('FOPT_OMG_C0','DEF_ME_HT1',tgt_info)
@@ -1456,6 +1592,21 @@ c      call set_arg('FOPT_Str',OPTIMIZE,'LABEL_OPT',1,tgt_info,
 c     &             val_label=(/'FOPT_Str'/))
 c      call set_arg('FOPT_Str',OPTIMIZE,'LABELS_IN',1,tgt_info,
 c     &             val_label=(/'F_Str'/))
+c dbgend
+
+c dbg
+c      ! effective Hamiltonian
+c      call add_target2('FOPT_Heff',.false.,tgt_info)
+c      call set_dependency('FOPT_Heff','F_Heff',tgt_info)
+c      call set_dependency('FOPT_Heff','DEF_ME_1v',tgt_info)
+c      call set_dependency('FOPT_Heff','DEF_ME_Heff',tgt_info)
+c      call set_dependency('FOPT_Heff',mel_ham,tgt_info)
+c      call set_dependency('FOPT_Heff','DEF_ME_T',tgt_info)
+c      call set_rule2('FOPT_Heff',OPTIMIZE,tgt_info)
+c      call set_arg('FOPT_Heff',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+c     &             val_label=(/'FOPT_Heff'/))
+c      call set_arg('FOPT_Heff',OPTIMIZE,'LABELS_IN',1,tgt_info,
+c     &             val_label=(/'F_Heff'/))
 c dbgend
 *----------------------------------------------------------------------*
 *     ME-lists
@@ -1589,6 +1740,19 @@ c dbgend
       call set_arg('DEF_ME_OMG',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
 
+      ! ME for transformed Residual
+      call add_target2('DEF_ME_OMGtr',.false.,tgt_info)
+      call set_dependency('DEF_ME_OMGtr','OMGtr',tgt_info)
+      call set_rule2('DEF_ME_OMGtr',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_OMGtr',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_OMGtr'/))
+      call set_arg('DEF_ME_OMGtr',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'OMGtr'/))
+      call set_arg('DEF_ME_OMGtr',DEF_ME_LIST,'MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_OMGtr',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+
       ! reordered projector matrix ME_Dproj (to eliminate lin. dep.)
       call add_target('DEF_ME_Dproj',ttype_opme,.false.,tgt_info)
       call set_dependency('DEF_ME_Dproj','Dtr',tgt_info)
@@ -1636,6 +1800,46 @@ c dbgend
       call set_rule('DEF_ME_1scal',ttype_opme,UNITY,
      &     'ME_1scal',1,1,
      &     parameters,1,tgt_info)
+
+c dbg
+c      ! ME_Heff
+c      call add_target2('DEF_ME_Heff',.false.,tgt_info)
+c      call set_dependency('DEF_ME_Heff','Heff',tgt_info)
+c      call set_rule2('DEF_ME_Heff',DEF_ME_LIST,tgt_info)
+c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'LIST',1,tgt_info,
+c     &     val_label=(/'ME_Heff'/))
+c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+c     &     val_label=(/'Heff'/))
+c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'IRREP',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'MS',1,tgt_info,
+c     &     val_int=(/0/))
+c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'DIAG_IRREP',1,tgt_info,
+c     &     val_int=(/orb_info%lsym/))
+c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'DIAG_MS',1,tgt_info,
+c     &     val_int=(/mod(orb_info%imult-1,2)/))
+c
+c      ! ME_1v
+c      call add_target2('DEF_ME_1v',.false.,tgt_info)
+c      call set_dependency('DEF_ME_1v','1v',tgt_info)
+c      call set_rule2('DEF_ME_1v',DEF_ME_LIST,tgt_info)
+c      call set_arg('DEF_ME_1v',DEF_ME_LIST,'LIST',1,tgt_info,
+c     &     val_label=(/'ME_1v'/))
+c      call set_arg('DEF_ME_1v',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+c     &     val_label=(/'1v'/))
+c      call set_arg('DEF_ME_1v',DEF_ME_LIST,'IRREP',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg('DEF_ME_1v',DEF_ME_LIST,'MS',1,tgt_info,
+c     &     val_int=(/0/))
+c      call set_arg('DEF_ME_1v',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
+c     &     val_int=(/1/))
+c      call dens_parameters(-1,parameters,0,0,0)
+c      call set_rule('DEF_ME_1v',ttype_opme,UNITY,
+c     &     'ME_1v',1,1,
+c     &     parameters,1,tgt_info)
+c dbgend
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
@@ -1649,6 +1853,9 @@ c      call set_dependency('EVAL_MRCC_D','EVAL_DENS0',tgt_info)
       call set_arg('EVAL_MRCC_D',EVAL,'FORM',1,tgt_info,
      &             val_label=(/'FOPT_MRCC_D'/))
 c dbg
+c      call set_rule2('EVAL_MRCC_D',PRINT_MEL,tgt_info)
+c      call set_arg('EVAL_MRCC_D',PRINT_MEL,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_DENS'/))
 c      call set_rule2('EVAL_MRCC_D',PRINT_MEL,tgt_info)
 c      call set_arg('EVAL_MRCC_D',PRINT_MEL,'LIST',1,tgt_info,
 c     &             val_label=(/'ME_D'/))
@@ -1679,11 +1886,56 @@ c dbgend
      &              labels,2,1,
      &              parameters,0,tgt_info)
 c dbg
+      call form_parameters(-1,parameters,2,
+     &     'Preconditioner (b) :',0,'LIST')
+      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
+     &     trim(dia_label),1,0,
+     &     parameters,2,tgt_info)
+c dbgend
+
+      ! Evaluate approximation of diagonal elements of Jacobian
+      call add_target('EVAL_A_Ttr',ttype_gen,.false.,tgt_info)
+      call set_dependency('EVAL_A_Ttr','FOPT_A_Ttr',tgt_info)
+      ! (a) set all elements of right hand vector to one
+      call set_rule2('EVAL_A_Ttr',SET_MEL,tgt_info)
+      call set_arg('EVAL_A_Ttr',SET_MEL,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Ttr'/))
+      call set_arg('EVAL_A_Ttr',SET_MEL,'VAL_LIST',2,tgt_info,
+     &             val_rl8=(/1d0,1d0/))
+      call set_arg('EVAL_A_Ttr',SET_MEL,'IDX_LIST',2,tgt_info,
+     &             val_int=(/-1,-2/))
+c dbg
 c      call form_parameters(-1,parameters,2,
-c     &     'Preconditioner (b) :',0,'LIST')
-c      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
-c     &     trim(dia_label),1,0,
+c     &     'Ttr set to :',0,'LIST')
+c      call set_rule('EVAL_A_Ttr',ttype_opme,PRINT_MEL,
+c     &     'ME_Ttr',1,0,
 c     &     parameters,2,tgt_info)
+c dbgend
+      ! (b) evaluate
+      call set_rule('EVAL_A_Ttr',ttype_opme,EVAL,
+     &     'FOPT_A_Ttr',1,0,
+     &     parameters,0,tgt_info)
+      ! (c) scale back and copy onto preconditioner list
+      call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
+      dia_label = trim(dia_label)//'_T'
+      call set_dependency('EVAL_A_Ttr',trim(dia_label),tgt_info)
+      call set_rule2('EVAL_A_Ttr',SCALE_COPY,tgt_info)
+      call set_arg('EVAL_A_Ttr',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &             val_label=(/trim(dia_label)/))
+      call set_arg('EVAL_A_Ttr',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &             val_label=(/'ME_OMGtr'/))
+      call set_arg('EVAL_A_Ttr',SCALE_COPY,'FAC',2,tgt_info,
+     &             val_rl8=(/1d0,1d0/))
+      ! (d) free up Ttr list
+      call set_rule('EVAL_A_Ttr',ttype_opme,RES_ME_LIST,
+     &     'ME_Ttr',1,0,
+     &     parameters,0,tgt_info)
+c dbg
+      call form_parameters(-1,parameters,2,
+     &     'Preconditioner (b) :',0,'LIST')
+      call set_rule('EVAL_A_Ttr',ttype_opme,PRINT_MEL,
+     &     trim(dia_label),1,0,
+     &     parameters,2,tgt_info)
 c dbgend
 
       ! Solve MR coupled cluster equations
@@ -1693,7 +1945,11 @@ c dbgend
       call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
       dia_label = trim(dia_label)//'_T'
       call set_dependency('SOLVE_MRCC',trim(dia_label),tgt_info)
-      call set_dependency('SOLVE_MRCC','EVAL_Atr',tgt_info)
+      if (cheap_prc) then
+        call set_dependency('SOLVE_MRCC','EVAL_A_Ttr',tgt_info)
+      else
+        call set_dependency('SOLVE_MRCC','EVAL_Atr',tgt_info)
+      end if
       call set_dependency('SOLVE_MRCC','EVAL_MRCC_D',tgt_info)
       call set_dependency('SOLVE_MRCC','DEF_ME_Dtrdag',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_T',tgt_info)
@@ -1777,6 +2033,19 @@ c dbgend
       end if
       call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM',1,tgt_info,
      &     val_label=(/'FOPT_OMG'/))
+c dbg
+c      ! print effective Hamiltonian
+c      ! Evaluate transformed metric
+c      call set_dependency('SOLVE_MRCC','FOPT_Heff',tgt_info)
+c      call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
+c     &     'FOPT_Heff',1,0,
+c     &     parameters,0,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'effective Hamiltonian :',0,'LIST')
+c      call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+c     &     'ME_Heff',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
 
       if (optref.gt.0.and.icnt.ne.optref) then !not in last iteration
         call set_rule2('SOLVE_MRCC',SOLVEEVP,tgt_info)
@@ -1800,6 +2069,9 @@ c dbg
         call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
      &       'ME_C0',1,0,
      &       parameters,2,tgt_info)
+        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
+     &       'FOPT_REF_S(S+1)',1,0,
+     &       parameters,0,tgt_info)
 c dbgend
       end if
       end do
@@ -1810,6 +2082,9 @@ c dbg
         call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
      &       'ME_C0',1,0,
      &       parameters,2,tgt_info)
+        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
+     &       'FOPT_REF_S(S+1)',1,0,
+     &       parameters,0,tgt_info)
       end if
 c dbgend
 
@@ -1836,6 +2111,78 @@ c      call form_parameters(-1,parameters,2,
 c     &     'transformed metric :',0,'LIST')
 c      call set_rule('EVAL_Str',ttype_opme,PRINT_MEL,
 c     &     'ME_A(CC)',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
+
+c dbg
+c      call add_target2('PRINT_Heff',.false.,tgt_info)
+c      call set_dependency('PRINT_Heff','FOPT_Heff',tgt_info)
+c      call set_dependency('PRINT_Heff','SOLVE_REF',tgt_info)
+c      call set_rule2('PRINT_Heff',PRINT_MEL,tgt_info)
+c      call set_arg('PRINT_Heff',PRINT_MEL,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_T'/))
+c      call set_rule('PRINT_Heff',ttype_opme,EVAL,
+c     &     'FOPT_Heff',1,0,
+c     &     parameters,0,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'effective Hamiltonian :',0,'LIST')
+c      call set_rule('PRINT_Heff',ttype_opme,PRINT_MEL,
+c     &     'ME_Heff',1,0,
+c     &     parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'bare Hamiltonian :',0,'LIST')
+c      call set_rule('PRINT_Heff',ttype_opme,PRINT_MEL,
+c     &     mel_ham,1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
+
+c dbg
+c      ! Evaluate Residual
+c      call add_target('EVAL_OMG',ttype_gen,.false.,tgt_info)
+c      call set_dependency('EVAL_OMG','FOPT_OMG',tgt_info)
+c      call set_dependency('EVAL_OMG','SOLVE_REF',tgt_info)
+cc      call set_dependency('EVAL_OMG','PRINT_Heff',tgt_info)
+c      call set_rule('EVAL_OMG',ttype_opme,RES_ME_LIST,
+c     &     'ME_OMG',1,0,
+c     &     parameters,0,tgt_info)
+c      call set_rule('EVAL_OMG',ttype_opme,EVAL,
+c     &     'FOPT_OMG',1,0,
+c     &     parameters,0,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'Residual :',0,'LIST')
+c      call set_rule('EVAL_OMG',ttype_opme,PRINT_MEL,
+c     &     'ME_OMG',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
+
+c dbg
+c      ! Evaluate projected T
+c      call add_target('EVAL_Tproj',ttype_gen,.false.,tgt_info)
+c      call set_dependency('EVAL_Tproj','FOPT_T',tgt_info)
+c      call set_dependency('EVAL_Tproj','SOLVE_REF',tgt_info)
+c      call set_dependency('EVAL_Tproj','DEF_ME_Dproj',tgt_info)
+c      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
+c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
+c     &           val_label=(/'ME_T'/))
+c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+c     &           val_label=(/'Ttr'/))
+c      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
+c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
+c     &           val_label=(/'ME_Ttr'/))
+c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+c     &           val_label=(/'T'/))
+c      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
+c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
+c     &           val_label=(/'ME_Dproj'/))
+c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+c     &           val_label=(/'Dtr'/))
+c      call set_rule('EVAL_Tproj',ttype_opme,EVAL,
+c     &     'FOPT_T',1,0,
+c     &     parameters,0,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'projected T :',0,'LIST')
+c      call set_rule('EVAL_Tproj',ttype_opme,PRINT_MEL,
+c     &     'ME_Ttr',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
 

@@ -60,12 +60,14 @@
       select case(trim(type))
       case('F12x','f12x')
         call select_f12x(flist,labels,nlabels,mode,op_info)
-      case('MRCC2')
+      case('MRCC2','mrcc2')
         call select_mrcc_lag2(flist,labels,nlabels,mode,op_info)
-      case('MRCC')
+      case('MRCC','mrcc')
         call select_mrcc_lag(flist,labels,nlabels,mode,op_info)
       case('OPT1','opt1')
         call select_xsp_opt1(flist,labels,nlabels,mode,op_info)
+      case('SAME','same')
+        call select_same_blk(flist,labels,nlabels,mode,op_info)
       case default
         call quit(1,'form_select_special','unknown type: "'
      &       //trim(type)//'"')
