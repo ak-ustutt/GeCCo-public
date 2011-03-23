@@ -33,7 +33,7 @@
      &     ok
       integer ::
      &     iins, jins, nvtx_new, nins, ivtx, jvtx,
-     &     njoined_res, njoined_ins, ins_cur, ieqvfac
+     &     njoined_res, njoined_ins, ins_cur, ieqvfac, nins_old
       type(operator_array), pointer ::
      &     op_arr(:)
 
@@ -152,7 +152,11 @@ c dbgend
       ins_at_vtx(1:nvtx) = 0
       ! (first check excitation parts)
       do ivtx = nvtx, 1, -1
-        if (.not.vtxinlist(ivtx)) cycle
+       if (.not.vtxinlist(ivtx)) cycle
+       ! try to insert as many times as possible
+       nins_old = nins-1
+       do while (nins_old.lt.nins)
+        nins_old = nins
         ! op. to insert must be fully connected with one op. via exc. part ...
         if (occ_overlap_p(occ_sum_x(ivtx),occ_ins_x).eq.occ_ins_x) then
           ! ... and with (several) others via deexcitation part ...
@@ -181,10 +185,15 @@ c dbgend
             end if
           end if
         end if
+       end do
       end do
       ! (now check deexcitation parts)
       do ivtx = 1, nvtx
-        if (.not.vtxinlist(ivtx)) cycle
+       if (.not.vtxinlist(ivtx)) cycle
+       ! try to insert as many times as possible (CAUTION: not debugged)
+       nins_old = nins-1
+       do while (nins_old.lt.nins)
+        nins_old = nins
         ! ... or with one op. via deexc. part ...
         if (occ_overlap_p(occ_sum_d(ivtx),occ_ins_d).eq.occ_ins_d) then
           ! ... and with (several) others via excitation part.
@@ -213,6 +222,7 @@ c dbgend
             end if
           end if
         end if
+       end do
       end do
       if (nins.gt.nvtx) call quit(1,'contr_insert',
      &        'increase dimension of insert, ins_at_vtx')
@@ -282,7 +292,7 @@ c dbgend
         vtx_new(insert(iins)) = idxnew
 
         ! shift arcs from ins_at_vtx() to insert()
-        if (insert(iins).eq.ins_at_vtx(iins)+1) then
+        if (insert(iins).gt.ins_at_vtx(iins)) then
           ! deexcitation part
           do ivtx = insert(iins)+1, nvtx+iins
             if (vil_new(ivtx)) then
@@ -315,7 +325,7 @@ c              if (overlap.ne.0) exit
 c dbgend
             end if
           end do
-        else if (insert(iins).eq.ins_at_vtx(iins)-1) then
+        else if (insert(iins).lt.ins_at_vtx(iins)) then
           ! excitation part
           do ivtx = insert(iins)-1, 1, -1
             if (vil_new(ivtx)) then

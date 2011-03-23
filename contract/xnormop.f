@@ -19,9 +19,9 @@
      &     closeit
       integer ::
      &     ifree, len_op, nblk, nblkmax, nbuff, idxst, idxnd,
-     &     idum, iblk, idisc_off
+     &     idum, iblk, idisc_off, jblk
       real(8) ::
-     &     xnrm2
+     &     xnrm2, xnrm_cur
 
       type(operator), pointer ::
      &     op
@@ -45,6 +45,7 @@
         closeit = .false.
       end if
 
+      jblk = 0
       xnrm2 = 0d0
       idxst = 1
       ! assuming that only the first x blocks *in a row* are
@@ -52,16 +53,29 @@
       if (ffop%buffered) then
         do iblk = 1, op%n_occ_cls
           if (ffop%incore(iblk)) then
-            xnrm2 = xnrm2 +
-     &           ddot(mel%len_op_occ(iblk),
+c            xnrm2 = xnrm2 +
+            xnrm_cur =    ddot(mel%len_op_occ(iblk),
      &           ffop%buffer(mel%off_op_occ(iblk)+1),1,
      &           ffop%buffer(mel%off_op_occ(iblk)+1),1)
+            xnrm2 = xnrm2 + xnrm_cur
+c dbg
+            print *,'norm of block ','iblk',': ',sqrt(xnrm_cur)
+            jblk = iblk + 1
+c dbgend
           else
             ! start reading file from here
             idxst = mel%off_op_occ(iblk)+1
+c dbg
+            print *,'starting to read file from ',idxst
+            jblk = iblk - 1
+c dbgend
             exit
           end if
         end do
+c dbg
+      else
+        print *,'ME list not buffered!'
+c dbgend
       end if
 
       nblkmax = ifree/ffop%reclen
@@ -71,7 +85,11 @@
         call quit(1,'xnormop','not even 1 record fits into memory?')
       end if
 
-      len_op = mel%len_op
+      do while(jblk.le.op%n_occ_cls-1)
+       jblk = jblk + 1
+       idxst = mel%off_op_occ(jblk)+1
+
+      len_op = mel%len_op_occ(jblk) !mel%len_op
       nblk = min((len_op-1)/ffop%reclen + 1,nblkmax)
 
       nbuff = min(len_op,nblk*ffop%reclen)
@@ -83,11 +101,17 @@
 
       ! to be fixed: should synchronize with record boundaries
       idxst = idxst + idisc_off
-      do while(idxst.le.len_op+idisc_off)
-        idxnd = min(len_op,idxst-1+nbuff)
+      xnrm_cur = 0d0
+      do while(idxst.le.mel%off_op_occ(jblk)+len_op+idisc_off)
+        idxnd = min(mel%off_op_occ(jblk)+len_op+idisc_off,idxst-1+nbuff)
         call get_vec(ffop,buffer,idxst,idxnd)  
-        xnrm2 = xnrm2 + ddot(idxnd-idxst+1,buffer,1,buffer,1)
+        xnrm_cur = xnrm_cur + ddot(idxnd-idxst+1,buffer,1,buffer,1)
         idxst = idxnd+1
+      end do
+      xnrm2 = xnrm2 + xnrm_cur
+c dbg
+      print *,'norm of block ',jblk,': ',sqrt(xnrm_cur)
+c dbgend
       end do
       
       xnormop = sqrt(xnrm2)

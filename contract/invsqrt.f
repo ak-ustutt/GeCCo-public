@@ -33,7 +33,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 5
+     &     ntest = 10
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -73,13 +73,17 @@ c     &     loop(nocc_cls)
      &     maxbuf, ngraph, ioff2, idxmsa2, ndis2, idxdis2, idx2, nel,
      &     nsing, ising, itrip, ntrip, icnt_sv, icnt_sv0,
      &     bins(17), nalph, nbeta, nc1mx, na1mx, jocc_cls, jblkoff,
-     &     ncblk2, nablk2, len2(4), off_line2, off_col2, off_colmax
+     &     ncblk2, nablk2, len2(4), off_line2, off_col2, off_colmax,
+c dbg
+c     &     ipass,
+c dbgend
+     &     off_linmax, maxbuf_tmp
       real(8) ::
      &     fac, xmax, xmin
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:), scratch2(:,:),
      &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:),
-     &     palph(:), pbeta(:), proj_sing(:,:), norm(:)
+     &     palph(:), pbeta(:), proj_sing(:,:), norm(:), scratch3(:,:)
 c dbg
 c      integer, pointer ::
 c     &     matrix(:,:)
@@ -120,6 +124,9 @@ c dbgend
      &     next_tupel_ca
 
       if (ntest.ge.100) write(luout,*) 'entered invsqrt'
+c dbg
+c      ipass = 0
+c dbgend
 
       ffinp => mel_inp%fhand
       ffinv => mel_inv%fhand
@@ -261,11 +268,19 @@ c          if (.not.half) buffer_in(ioff+1) = 1d0
      &       maxbuf,
      &       graph_csub,ncblk,
      &       str_info,strmap_info,orb_info)
+c dbg
+c        print *,'maxbuf flipmap_c:',maxbuf
+        maxbuf = maxbuf + 5
+c dbgend
         ifree = mem_alloc_int(flipmap_c,maxbuf,'flipmap_c')
         call strmap_man_flip(
      &       maxbuf,
      &       graph_asub,nablk,
      &       str_info,strmap_info,orb_info)
+c dbg
+c        print *,'maxbuf flipmap_a:',maxbuf
+        maxbuf = maxbuf + 5
+c dbgend
         ifree = mem_alloc_int(flipmap_a,maxbuf,'flipmap_a')
 
         ! simple case: only single distributions:
@@ -538,10 +553,13 @@ c dbgend
      &         nc2.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+3))) exit blk_loop
             ! skip off-diagonal blocks
             if (na1.ne.nc2) then
-              jocc_cls = jocc_cls + 1
-              jblkoff = (jocc_cls-1)*njoined
               na2 = na2 - 1
               nc2 = nc2 - 1
+              jocc_cls = jocc_cls + 1
+              if (na2+nc2.lt.abs(ms1)) !jump to next line
+     &                  jocc_cls = jocc_cls + min(na1mx,nc1mx)
+     &                  -(na1mx+nc1mx-abs(ms1))/2
+              jblkoff = (jocc_cls-1)*njoined
               cycle
             end if
             ! exception for pure inactive block:
@@ -647,15 +665,17 @@ c           ndim = 0
                  do idxa1 = 1, len_str(3)
                   iline = iline + 1
                   if (idxc1.ne.idxa1) cycle
-                  if (msa1.eq.1) then
-                    palph(iline) = 1d0
-                    nalph = nalph + 1
-                  else if (msa1.eq.-1) then
-                    pbeta(iline) = 1d0
-                    nbeta = nbeta + 1
-                  else
-                    call quit(1,'invsqrt','this should not happen(2).')
-                  end if
+ctest
+                  palph(iline) = 1d0/2d0 !Nact=2 hard-coded
+ctest                  if (msa1.eq.1) then
+ctest                    palph(iline) = 1d0
+ctest                    nalph = nalph + 1
+ctest                  else if (msa1.eq.-1) then
+ctest                    pbeta(iline) = 1d0
+ctest                    nbeta = nbeta + 1
+ctest                  else
+ctest                    call quit(1,'invsqrt','this should not happen(2).')
+ctest                  end if
                  end do
                 end do
                end do
@@ -684,10 +704,13 @@ c              end if
 
             deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
      &               occ_asub2,graph_csub2,graph_asub2)
-            jocc_cls = jocc_cls + 1
-            jblkoff = (jocc_cls-1)*njoined
             na2 = na2 - 1
             nc2 = nc2 - 1
+            jocc_cls = jocc_cls + 1
+            if (na2+nc2.lt.abs(ms1)) !jump to next line
+     &                jocc_cls = jocc_cls + min(na1mx,nc1mx)
+     &                -(na1mx+nc1mx-abs(ms1))/2
+            jblkoff = (jocc_cls-1)*njoined
            end do
            na1 = na1 - 1
            nc1 = nc1 - 1
@@ -705,7 +728,7 @@ c dbg
 c          allocate(matrix(ndim,ndim))
 c dbgend
 
-          flmap(1:ndim,3) = 1
+          flmap(1:ndim,1:3) = 1
           ! loops over coupling blocks. Must be in correct order!
           jocc_cls = iocc_cls
           jblkoff = (jocc_cls-1)*njoined
@@ -716,6 +739,7 @@ c dbgend
            na2 = nc1mx
            nc2 = na1mx
            off_col2 = 0
+           off_linmax = 0
            do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
             ! exit if there is no block like this
             if (na1.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+1)).or.
@@ -885,6 +909,18 @@ c dbgend
                 ioff2 = mel_inp%off_op_gmox(jocc_cls)%
      &                 d_gam_ms(idxdis2,igama,idxmsa2)
 
+                ! set flip maps (if not existing yet)
+                call strmap_man_flip(
+     &               maxbuf_tmp,graph_csub2,ncblk2,
+     &               str_info,strmap_info,orb_info)
+                if (maxbuf_tmp.gt.maxbuf) call quit(1,'invsqrt',
+     &             'add more to maxbuf')
+                call strmap_man_flip(
+     &               maxbuf_tmp,graph_asub2,nablk2,
+     &               str_info,strmap_info,orb_info)
+                if (maxbuf_tmp.gt.maxbuf) call quit(1,'invsqrt',
+     &             'add more to maxbuf')
+
                 call get_flipmap_blk(flipmap_c,
      &              ncblk2,occ_csub2,len_str,
      &              graph_csub2,idxmsdis_c,gamdis_c,
@@ -946,7 +982,8 @@ c dbgend
                       if (na1.eq.0.and.na2.ne.0) then
                        istr_asub(1) = idxa2-1
                        istr_asub_flip(1) = 
-     &                          abs(flipmap_a(len2(3)+idxa2))-1
+     &                          abs(flipmap_a(idxa2))-1
+c     &                          abs(flipmap_a(len2(3)+idxa2))-1
                       else if (na2.ne.0) then
                        istr_asub(2) = idxa2-1
                        istr_asub_flip(2) =
@@ -956,7 +993,8 @@ c dbgend
                         if (nc1.eq.0.and.nc2.ne.0) then
                          istr_csub(1) = idxc2-1
                          istr_csub_flip(1) =
-     &                          abs(flipmap_c(len2(1)+idxc2))-1
+     &                          abs(flipmap_c(idxc2))-1
+c     &                          abs(flipmap_c(len2(1)+idxc2))-1
                         else if (nc2.ne.0) then
                          istr_csub(2) = idxc2-1
                          istr_csub_flip(2) =
@@ -1002,21 +1040,25 @@ c dbgend
                end do
               end do
               off_line = off_line + len2(1)*len2(3)
+              off_linmax = max(off_linmax,off_line)
              end do
             end do
 
             deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
      &              occ_asub2,graph_csub2,graph_asub2,
      &              iocc2,idx_g2)
-            jocc_cls = jocc_cls + 1
-            jblkoff = (jocc_cls-1)*njoined
             na2 = na2 - 1
             nc2 = nc2 - 1
+            jocc_cls = jocc_cls + 1
+            if (na2+nc2.lt.abs(ms1)) !jump to next line
+     &                jocc_cls = jocc_cls + min(na1mx,nc1mx)
+     &                -(na1mx+nc1mx-abs(ms1))/2
+            jblkoff = (jocc_cls-1)*njoined
             off_col2 = off_colmax
            end do
            na1 = na1 - 1
            nc1 = nc1 - 1
-           off_line2 = off_line
+           off_line2 = off_linmax
           end do
 
 c dbg
@@ -1029,37 +1071,78 @@ c dbgend
 
           if (sing_remove) then
             ! project out pseudo-singles components
+c dbg
+c           if (ipass.eq.0) then
+c dbgend
             if (max(iprlvl,ntest).ge.3) write(luout,*)
      &           'Projecting out conventional singles.'
+c dbg
+c           else
+c            if (max(iprlvl,ntest).ge.3) write(luout,*)
+c     &           'Projecting out triples (keep pseudo-doubles).'
+c           end if
+c           ipass = ipass+1
+c dbgend
+ctest
+            print *,'...with crazy new projector (CAS(2,2) only).'
+ctestend
             ! remove vanishing excitations from proj. vectors
             do iline = 1, ndim
-              if (scratch(iline,iline).lt.1d-14) then
-                if (palph(iline).gt.1d-14) then
-                  palph(iline) = 0d0
-                  nalph = nalph - 1
-                end if
-                if (pbeta(iline).gt.1d-14) then
-                  pbeta(iline) = 0d0
-                  nbeta = nbeta - 1
-                end if
-              end if
+ctest
+              pbeta(iline) = scratch(iline,iline) !=overlap with singles
+c              ! ad hoc: only spectator excitations (4-det. case)
+c              if (iline.eq.2.or.iline.eq.3
+c     &            .or.iline.eq.6.or.iline.eq.7) then
+c                palph(iline) = 0d0
+c                pbeta(iline) = scratch(1,2) !0d0
+c              end if
+ctest              if (scratch(iline,iline).lt.1d-14) then
+ctest                if (palph(iline).gt.1d-14) then
+ctest                  palph(iline) = 0d0
+ctest                  nalph = nalph - 1
+ctest                end if
+ctest                if (pbeta(iline).gt.1d-14) then
+ctest                  pbeta(iline) = 0d0
+ctest                  nbeta = nbeta - 1
+ctest                end if
+ctest              end if
             end do
-            ! normalize vectors
-            if (nalph.gt.0) palph = palph/sqrt(dble(nalph))
-            if (nbeta.gt.0) pbeta = pbeta/sqrt(dble(nbeta))
+ctest            ! normalize vectors
+ctest            if (nalph.gt.0) palph = palph/sqrt(dble(nalph))
+ctest            if (nbeta.gt.0) pbeta = pbeta/sqrt(dble(nbeta))
+c dbg
+            print *,'palph:',palph
+            print *,'pbeta:',pbeta
+c dbgend
             ! get projector
             proj_sing = 0d0
             do idx = 1, ndim
               proj_sing(idx,idx) = 1d0
             end do
+ctest
+c dbg
+c           if (ipass.eq.1) then
+c dbgend
             call dgemm('n','t',ndim,ndim,1,
      &                 -1d0,palph,ndim,
-     &                 palph,ndim,
-     &                 1d0,proj_sing,ndim)
-            call dgemm('n','t',ndim,ndim,1,
-     &                 -1d0,pbeta,ndim,
      &                 pbeta,ndim,
      &                 1d0,proj_sing,ndim)
+c dbg
+c           else
+c            call dgemm('n','t',ndim,ndim,1,
+c     &                 1d0,palph,ndim,
+c     &                 pbeta,ndim,
+c     &                 0d0,proj_sing,ndim)
+c           end if
+c dbgend
+ctest            call dgemm('n','t',ndim,ndim,1,
+ctest     &                 -1d0,palph,ndim,
+ctest     &                 palph,ndim,
+ctest     &                 1d0,proj_sing,ndim)
+ctest            call dgemm('n','t',ndim,ndim,1,
+ctest     &                 -1d0,pbeta,ndim,
+ctest     &                 pbeta,ndim,
+ctest     &                 1d0,proj_sing,ndim)
             if (ntest.ge.100) then
               write(luout,*) 'projector for removing singles:'
               call wrtmat2(proj_sing,ndim,ndim,ndim,ndim)
@@ -1068,10 +1151,12 @@ c dbgend
               write(luout,*) 'matrix before removing singles:'
               call wrtmat2(scratch,ndim,ndim,ndim,ndim)
             end if
-            call dgemm('n','n',ndim,ndim,ndim,
-     &             1d0,proj_sing,ndim,
-     &                 scratch,ndim,
-     &             0d0,scratch2,ndim)
+ctest
+            scratch2(1:ndim,1:ndim) = scratch(1:ndim,1:ndim)
+ctest            call dgemm('n','n',ndim,ndim,ndim,
+ctest     &             1d0,proj_sing,ndim,
+ctest     &                 scratch,ndim,
+ctest     &             0d0,scratch2,ndim)
             call dgemm('n','n',ndim,ndim,ndim,
      &             1d0,scratch2,ndim,
      &                 proj_sing,ndim,
@@ -1080,8 +1165,13 @@ c dbgend
               write(luout,*) 'matrix after removing singles:'
               call wrtmat2(scratch,ndim,ndim,ndim,ndim)
             end if
-            deallocate(palph,pbeta,proj_sing)
+c            deallocate(palph,pbeta,proj_sing)
+            deallocate(palph,pbeta)
           end if
+c dbg
+c          if (.not.sing_remove.and.iocc_cls.eq.8)
+c     &      scratch(1:ndim,1:ndim) = 0d0
+c dbgend
 
           ! normalization
           if (normalize) then
@@ -1096,6 +1186,12 @@ c dbgend
           if (ms1.eq.0) then
             ! here a splitting into "singlet" and "triplet" blocks is needed:
 
+c dbg
+c            write(luout,*) 'flmap:'
+c            do icol = 1, ndim
+c              write(luout,'(i4,2i6)') icol,flmap(icol,1:2)
+c            end do
+c dbgend
             do icol = 1, ndim
               idx = idxlist(flmap(icol,1),flmap(1:ndim,2),ndim,1)
               if (idx.eq.-1) call quit(1,'invsqrt','idx not found!')
@@ -1159,6 +1255,35 @@ c dbgend
             deallocate(norm)
           end if
 
+c not needed for symmetric projector
+          ! multiply trafo (and proj.) matrix with proj. for singles
+          if (sing_remove) then
+            if (ntest.ge.10)
+     &       write(luout,*) 'Multiplying X (&P) with singles projector'
+            allocate(scratch3(ndim,ndim))
+            call dgemm('n','n',ndim,ndim,ndim,
+     &                 1d0,proj_sing,ndim,
+     &                 scratch,ndim,
+     &                 0d0,scratch3,ndim)
+            scratch(1:ndim,1:ndim) = scratch3(1:ndim,1:ndim)
+            if (ntest.ge.100) then
+              write(luout,*) 'Trafo matrix:'
+              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
+            end if
+            if (.not.half) then
+              call dgemm('n','n',ndim,ndim,ndim,
+     &                   1d0,proj_sing,ndim,
+     &                   scratch2,ndim,
+     &                   0d0,scratch3,ndim)
+              scratch2(1:ndim,1:ndim) = scratch3(1:ndim,1:ndim)
+              if (ntest.ge.100) then
+                write(luout,*) 'Projector matrix:'
+                call wrtmat2(scratch2,ndim,ndim,ndim,ndim)
+              end if
+            end if
+            deallocate(scratch3,proj_sing)
+          end if
+
           ! write to output buffer
           ! loops over coupling blocks. Must be in correct order!
           jocc_cls = iocc_cls
@@ -1170,6 +1295,7 @@ c dbgend
            na2 = nc1mx
            nc2 = na1mx
            off_col2 = 0
+           off_linmax = 0
            do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
             ! exit if there is no block like this
             if (na1.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+1)).or.
@@ -1319,20 +1445,24 @@ c dbgend
                end do
               end do
               off_line = off_line + len2(1)*len2(3)
+              off_linmax = max(off_linmax,off_line)
              end do
             end do
 
             deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
      &              occ_asub2,graph_csub2,graph_asub2)
-            jocc_cls = jocc_cls + 1
-            jblkoff = (jocc_cls-1)*njoined
             na2 = na2 - 1
             nc2 = nc2 - 1
+            jocc_cls = jocc_cls + 1
+            if (na2+nc2.lt.abs(ms1)) !jump to next line
+     &                jocc_cls = jocc_cls + min(na1mx,nc1mx)
+     &                -(na1mx+nc1mx-abs(ms1))/2
+            jblkoff = (jocc_cls-1)*njoined
             off_col2 = off_colmax
            end do
            na1 = na1 - 1
            nc1 = nc1 - 1
-           off_line2 = off_line
+           off_line2 = off_linmax
           end do
 
           deallocate(scratch,flmap)

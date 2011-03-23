@@ -188,6 +188,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/4/))
       call argument_add('maxtt','method.MRCC',type=vtyp_int,
      &     idef=(/-1/))
+      call argument_add('G_level','method.MRCC',type=vtyp_int,
+     &     idef=(/-1/)) ! max. power in e^(-T) for sim. trans.
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')

@@ -155,8 +155,8 @@
             buffer(idx) = fac(ifac)*buffer(idx)
 c dbg
             if (buffer(idx).lt.-1d-14) then
-              write(luout,*) 'setting to threshold el.# ',idx
-              buffer(idx) = 0.1d0
+              write(luout,*) 'changing sign for el.# ',idx
+              buffer(idx) = abs(buffer(idx))
             end if
 c dbgend
             ifac = ifac + 1

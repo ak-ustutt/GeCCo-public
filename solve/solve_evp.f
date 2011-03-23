@@ -286,10 +286,10 @@
 cmh     if file already open, use as initial guess!
         if (ffopt(iopt)%fhand%unit.gt.0) then
 c dbg
-          print *,'iopt = ',iopt
+c          print *,'iopt = ',iopt
 c dbgend
-          call warn('solve_evp','using existing amplitudes!')
-          init(iopt) = .false.
+c          call warn('solve_evp','using existing amplitudes!')
+c          init(iopt) = .false.
         else
           call file_open(ffopt(iopt)%fhand)
         end if

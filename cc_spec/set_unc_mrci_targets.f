@@ -31,7 +31,7 @@
      &     calc
 
       integer ::
-     &     ndef, occ_def(ngastp,2,60),
+     &     ndef, occ_def(ngastp,2,124),!60),
      &     isym, msc, ims, ip, ih, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, cmaxv
       logical ::

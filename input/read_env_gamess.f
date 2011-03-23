@@ -144,10 +144,10 @@ c      end do
       do idx = 1, 8
         if (isgroup(idx)) then
           isym = isym + 1
-          igroup = idx
+          if (isym.eq.1) igroup = idx !try first possibility
         end if
       end do
-      if (isym.ne.1) call quit(1,'read_env_gamess',
+      if (isym.ne.1) call warn('read_env_gamess',
      &       'Could not unambiguously identify point group!')
 
       ! irrep numbers as in GAMESS manual (for $DET):

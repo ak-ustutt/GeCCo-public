@@ -208,6 +208,9 @@ cmh     if file already open, use as initial guess!
         else
           call file_open(ffopt(iopt)%fhand)
           ! get initial amplitudes
+c dbg
+c         print *,'using old file for iopt=',iopt
+c dbgend
           call zeroop(me_opt(iopt)%mel)
         end if
         ! open corresponding residuals ...
@@ -372,6 +375,10 @@ c dbgend
 c dbg
 c          print *,'xret : ',xret
 c dbg
+c dbg
+          xdum = xnormop(me_grd(1)%mel)
+          print *,'total norm of residual: ',xdum
+c dbgend
 
           if (ntest.ge.1000) then
             do iopt = 1, nopt

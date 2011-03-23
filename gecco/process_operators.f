@@ -22,7 +22,8 @@
       type(operator), pointer ::
      &     op_pnt
       integer, parameter ::
-     &     ndef_max = 52, maximum_order = 10, nj_max = 10
+     &     ndef_max = 124, maximum_order = 10, nj_max = 10
+c     &     ndef_max = 52, maximum_order = 10, nj_max = 10
       integer ::
      &     idx, jdx, idx_t, n_ap, idum,
      &     ncadiff, min_rank, max_rank, min_xrank, max_xrank,

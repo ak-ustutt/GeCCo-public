@@ -29,14 +29,15 @@
      &     orb_info
 
       integer ::
-     &     ndef, occ_def(ngastp,2,60),
+     &     ndef, occ_def(ngastp,2,124),!60),
      &     icnt,
      &     msc, maxexc, ip, ih, ivv, iv, ivv2, jvv,
      &     minh, maxh,
      &     minp, maxp, maxv, maxvv, minexc, maxcom, maxcom_en,
      &     n_t_cls, i_cls,
      &     n_tred_cls, len_form, optref, idef, ciroot,
-     &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD
+     &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
+     &     G_level
       logical ::
      &     pure_vv, update_prc, skip, preopt, singrm, first, cheap_prc
       character(len_target_name) ::
@@ -101,6 +102,8 @@
      &     ival=maxcom)
       call get_argument_value('method.MRCC','maxcom_en',
      &     ival=maxcom_en)
+      call get_argument_value('method.MRCC','G_level',
+     &     ival=G_level)
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en  = ', maxcom_en
@@ -124,7 +127,24 @@
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih*ip.eq.1.and.ivv.eq.0) cycle !Bdoub
+c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle !Btrip
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
+c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
+c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle !Atrip
+c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle !Atrip
+c            if (max(ip-ih,0)+ivv.gt.2) cycle !C
+c            if (ip.eq.0.and.ih.eq.1) cycle
+c           if (ih+ip.eq.1) cycle
+c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
+            if (abs(ip-ih)+ivv.gt.2) cycle !B,D trip
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+ivv.gt.1) cycle !B,D
+           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle !D
+c            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
 c dbgend
 cmh         no blocks which can be modeled by a contraction of two operators
 c            if (ip.ge.1.and.ih.ge.1) cycle
@@ -169,7 +189,24 @@ c            if (max(ip,ih)+ivv.eq.1.and.(ip.ne.1.or.ih.ne.1)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
+c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
+c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
+c            if (max(ip-ih,0)+ivv.gt.2) cycle
+c            if (ip.eq.0.and.ih.eq.1) cycle
+c           if (ih+ip.eq.1) cycle
+c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
+            if (abs(ip-ih)+ivv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+ivv.gt.1) cycle
+           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
+c            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
 c dbgend
 cmh         no blocks which can be modeled by a contraction of two operators
 c            if (ip.ge.1.and.ih.ge.1) cycle
@@ -244,7 +281,38 @@ c     &             val_int=(/1/))
             if (max(ip,ih)+ivv.lt.minexc.or.
      &          max(ip,ih)+jvv.lt.minexc) cycle
 c dbg
-            if (singrm.and.max(ih,ip).eq.1.and.min(ivv,jvv).eq.0) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih+ip.eq.1.and.jvv.gt.0.or.ih*ip.eq.1.and.jvv.eq.0) cycle
+c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
+c           if (ih*ip.eq.1.and.jvv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.jvv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.jvv.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
+c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.jvv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.jvv.gt.0) cycle
+c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
+c            if (ih.gt.0.and.max(ip,ih)+jvv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+jvv.ne.maxexc-1) cycle
+c            if (max(ip-ih,0)+ivv.gt.2) cycle
+c            if (max(ip-ih,0)+jvv.gt.2) cycle
+c            if (ip.eq.0.and.ih.eq.1) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih+ip.eq.1) cycle
+c           if (ih.ne.ip.and.max(ip,ih)+max(ivv,jvv).ge.maxexc) cycle
+            if (abs(ip-ih)+ivv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+ivv.gt.1) cycle
+            if (abs(ip-ih)+jvv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+jvv.gt.1) cycle
+           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
+           if (singrm.and.jvv.eq.0.and.ih.eq.ip) cycle
+c            if (singrm.and.max(ih,ip).eq.1.and.min(ivv,jvv).eq.0) cycle
 c dbgend
 c            ! skip if block already exists
 c            skip = .false.
@@ -274,6 +342,9 @@ c            if (skip) cycle
       do ip = minp, maxp
         do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
+c dbg
+c            exit
+c dbgend
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
@@ -323,7 +394,24 @@ c            if (skip) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
+c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
+c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
+c            if (max(ip-ih,0)+ivv.gt.2) cycle
+c            if (ip.eq.0.and.ih.eq.1) cycle
+c           if (ih+ip.eq.1) cycle
+c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
+            if (abs(ip-ih)+ivv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+ivv.gt.1) cycle
+           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
+c            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
 c dbgend
 c            ! exclude blocks with one or more hole-part. excitations
 c            if (min(ih,ip).ge.1) cycle
@@ -390,7 +478,24 @@ c            if (skip) cycle
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
+c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
+c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
+c            if (max(ip-ih,0)+ivv.gt.2) cycle
+c            if (ip.eq.0.and.ih.eq.1) cycle
+c           if (ih+ip.eq.1) cycle
+c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
+            if (abs(ip-ih)+ivv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+ivv.gt.1) cycle
+           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
+c            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
 c dbgend
             ! same valence structure already exists?
             ivers = 1
@@ -436,7 +541,24 @@ c dbgend
             if (max(ip,ih)+ivv.lt.minexc) cycle
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
+c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
+c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
+c            if (max(ip-ih,0)+ivv.gt.2) cycle
+c            if (ip.eq.0.and.ih.eq.1) cycle
+c           if (ih+ip.eq.1) cycle
+c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
+            if (abs(ip-ih)+ivv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+ivv.gt.1) cycle
+           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
+c            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
 c dbgend
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
@@ -474,7 +596,24 @@ c dbgend
             if (ip.eq.ih.and.ip.eq.maxexc) cycle ! no conv. blocks (for PREC)
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
+c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
+c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
+c            if (max(ip-ih,0)+ivv.gt.2) cycle
+c            if (ip.eq.0.and.ih.eq.1) cycle
+c           if (ih+ip.eq.1) cycle
+c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
+            if (abs(ip-ih)+ivv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+ivv.gt.1) cycle
+           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
+c            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
 c dbgend
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
@@ -503,7 +642,27 @@ c dbgend
             if (ip.eq.ih.and.ip.eq.maxexc) cycle ! no conv. blocks (for PREC)
 c dbg
 c            if (ih.gt.ip) cycle
-            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
+c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
+c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
+c            if (max(ip-ih,0)+ivv.gt.2) cycle
+c            if (ip.eq.0.and.ih.eq.1) cycle
+c           if (ih+ip.eq.1) cycle
+c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
+            if (abs(ip-ih)+ivv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+ivv.gt.1) cycle
+c dbg hybrid preconditioner
+c           if (ndef.ge.6) cycle
+c dbgend
+           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
+c            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
 c dbgend
             ndef = ndef + 1
             occ_def(IHOLE,1,3*ndef-1) = ih
@@ -531,6 +690,9 @@ c dbgend
         do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
            do ivv2 = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
+c dbg
+c            exit
+c dbgend
             if (abs(ih-ip)+2*max(ivv,ivv2).gt.maxv) cycle
             if (max(ip,ih).eq.0.and.
      &          (min(ivv,ivv2).eq.0.or..not.pure_vv)) cycle
@@ -722,8 +884,21 @@ c     &     val_label=(/'F_HT2','F_HT1','F_HT0to2','F_HT0to1'/))
      &     val_label=(/'H','T'/))
       call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='MRCC2')
-      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'MODE',1,tgt_info,
-     &     val_str='CHECK_FAC')
+      if (G_level.lt.0) ! approximation will change factors
+     &     call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &                  val_str='CHECK_FAC')
+c dbg
+c      ! h) let only diagonal blocks of Jacobian survive
+c      call set_rule2('F_MRCC_LAG',SELECT_SPECIAL,tgt_info)
+c      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+c     &     val_label=(/'L','T'/))
+c      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
+c     &     val_str='SAME')
+c dbgend
       call set_rule2('F_MRCC_LAG',PRINT_FORMULA,tgt_info)
       call set_arg('F_MRCC_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_MRCC_LAG'/))
@@ -975,7 +1150,7 @@ c dbgend
         call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
      &       val_int=(/stndT(2,i_cls),stndT(2,i_cls),stndT(2,i_cls)/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &       val_log=(/.false./))
+     &       val_log=(/i_cls.eq.1/))
       end do
       ! no active open lines from Ttr
       call set_rule2('F_T',SELECT_LINE,tgt_info)
@@ -1042,7 +1217,7 @@ c dbgend
         call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
      &       val_int=(/stndT(2,i_cls),stndT(2,i_cls),stndT(2,i_cls)/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &       val_log=(/.false./))
+     &       val_log=(/i_cls.eq.1/))
       end do
       ! no active open lines from Ttr
       call set_rule2('F_L',SELECT_LINE,tgt_info)
@@ -1089,6 +1264,17 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
      &     val_str='NOSCAL')
       call set_arg('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,'TITLE',1,tgt_info,
      &     val_str='Precursor for linearized Jacobian')
+      if (G_level.ge.0) then ! discard disconnected terms
+       call set_rule2('F_E(MRCC)tr',SELECT_SPECIAL,tgt_info)
+       call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &      val_label=(/'F_E(MRCC)tr'/))
+       call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &      val_label=(/'F_E(MRCC)tr'/))
+       call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+     &      val_label=(/'H','T'/))
+       call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &      val_str='MRCC2')
+      end if
       ! f) insert 1 (particle/hole space) for later differentiation
       call set_dependency('F_E(MRCC)tr','1ph',tgt_info)
       call set_rule2('F_E(MRCC)tr',INSERT,tgt_info)
@@ -1322,7 +1508,7 @@ c dbgend
      &     val_label=(/'F_TT'/))
 
 c dbg
-c      ! transformed multireference CC energy
+c      ! transformed multireference CC norm
 c      ! a) set up
 c      call add_target2('F_NORMtr',.false.,tgt_info)
 c      call set_dependency('F_NORMtr','NORM',tgt_info)
@@ -1387,8 +1573,10 @@ c      call set_arg('F_NORMtr',EXPAND,'LABEL_RES',1,tgt_info,
 c     &     val_label=(/'F_NORMtr'/))
 c      call set_arg('F_NORMtr',EXPAND,'LABEL_IN',1,tgt_info,
 c     &     val_label=(/'F_NORMtr'/))
-c      call set_arg('F_NORMtr',EXPAND,'INTERM',2,tgt_info,
-c     &     val_label=(/'F_T','F_L'/))
+c      call set_arg('F_NORMtr',EXPAND,'INTERM',1,tgt_info,
+c     &     val_label=(/'F_T'/))
+cctest      call set_arg('F_NORMtr',EXPAND,'INTERM',2,tgt_info,
+cctest     &     val_label=(/'F_T','F_L'/))
 cc dbg
 c      call set_rule2('F_NORMtr',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_NORMtr',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -1398,16 +1586,16 @@ c
 c      ! transformed Metric times vector
 c      call add_target2('F_S_Ttr',.false.,tgt_info)
 c      call set_dependency('F_S_Ttr','F_NORMtr',tgt_info)
-c      call set_dependency('F_S_Ttr','OMG',tgt_info)
+c      call set_dependency('F_S_Ttr','OMG',tgt_info) !tr',tgt_info)
 c      call set_rule2('F_S_Ttr',DERIVATIVE,tgt_info)
 c      call set_arg('F_S_Ttr',DERIVATIVE,'LABEL_RES',1,tgt_info,
 c     &     val_label=(/'F_S_Ttr'/))
 c      call set_arg('F_S_Ttr',DERIVATIVE,'LABEL_IN',1,tgt_info,
 c     &     val_label=(/'F_NORMtr'/))
 c      call set_arg('F_S_Ttr',DERIVATIVE,'OP_RES',1,tgt_info,
-c     &     val_label=(/'OMG'/))
+c     &     val_label=(/'OMG'/)) !tr'/))
 c      call set_arg('F_S_Ttr',DERIVATIVE,'OP_DERIV',1,tgt_info,
-c     &     val_label=(/'Ltr'/))
+c     &     val_label=(/'L'/)) !tr'/))
 c      call set_rule2('F_S_Ttr',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_S_Ttr',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_S_Ttr'/))
@@ -1592,6 +1780,25 @@ c      call set_arg('FOPT_Str',OPTIMIZE,'LABEL_OPT',1,tgt_info,
 c     &             val_label=(/'FOPT_Str'/))
 c      call set_arg('FOPT_Str',OPTIMIZE,'LABELS_IN',1,tgt_info,
 c     &             val_label=(/'F_Str'/))
+c
+c      ! transformed metric times vector
+c      call add_target2('FOPT_S_Ttr',.false.,tgt_info)
+c      call set_dependency('FOPT_S_Ttr','F_S_Ttr',tgt_info)
+c      call set_dependency('FOPT_S_Ttr','DEF_ME_OMG',tgt_info) !tr',tgt_info)
+c      call set_dependency('FOPT_S_Ttr','DEF_ME_Ttr',tgt_info)
+c      call set_dependency('FOPT_S_Ttr','DEF_ME_1',tgt_info)
+c      call set_dependency('FOPT_S_Ttr','DEF_ME_Dtr',tgt_info)
+c      call set_dependency('FOPT_S_Ttr','DEF_ME_C0',tgt_info)
+c      call set_rule2('FOPT_S_Ttr',ASSIGN_ME2OP,tgt_info)
+c      call set_arg('FOPT_S_Ttr',ASSIGN_ME2OP,'LIST',1,tgt_info,
+c     &           val_label=(/'ME_Dtr'/))
+c      call set_arg('FOPT_S_Ttr',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+c     &           val_label=(/'Dtr'/))
+c      call set_rule2('FOPT_S_Ttr',OPTIMIZE,tgt_info)
+c      call set_arg('FOPT_S_Ttr',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+c     &             val_label=(/'FOPT_S_Ttr'/))
+c      call set_arg('FOPT_S_Ttr',OPTIMIZE,'LABELS_IN',1,tgt_info,
+c     &             val_label=(/'F_S_Ttr'/))
 c dbgend
 
 c dbg
@@ -1863,6 +2070,9 @@ c dbgend
 
       ! Evaluate diagonal elements of Jacobian
       call add_target('EVAL_Atr',ttype_gen,.false.,tgt_info)
+c dbg hybrid preconditioner
+c      call set_dependency('EVAL_Atr','EVAL_A_Ttr',tgt_info)
+c dbgend
       call set_dependency('EVAL_Atr','FOPT_Atr',tgt_info)
 c      call set_dependency('EVAL_Atr','EVAL_FREF',tgt_info)
       call set_rule('EVAL_Atr',ttype_opme,EVAL,
@@ -1886,11 +2096,11 @@ c dbgend
      &              labels,2,1,
      &              parameters,0,tgt_info)
 c dbg
-      call form_parameters(-1,parameters,2,
-     &     'Preconditioner (b) :',0,'LIST')
-      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
-     &     trim(dia_label),1,0,
-     &     parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'Preconditioner (b) :',0,'LIST')
+c      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
+c     &     trim(dia_label),1,0,
+c     &     parameters,2,tgt_info)
 c dbgend
 
       ! Evaluate approximation of diagonal elements of Jacobian
@@ -1901,7 +2111,7 @@ c dbgend
       call set_arg('EVAL_A_Ttr',SET_MEL,'LIST',1,tgt_info,
      &             val_label=(/'ME_Ttr'/))
       call set_arg('EVAL_A_Ttr',SET_MEL,'VAL_LIST',2,tgt_info,
-     &             val_rl8=(/1d0,1d0/))
+     &             val_rl8=(/1d0,+1d0/))
       call set_arg('EVAL_A_Ttr',SET_MEL,'IDX_LIST',2,tgt_info,
      &             val_int=(/-1,-2/))
 c dbg
@@ -1925,17 +2135,17 @@ c dbgend
       call set_arg('EVAL_A_Ttr',SCALE_COPY,'LIST_INP',1,tgt_info,
      &             val_label=(/'ME_OMGtr'/))
       call set_arg('EVAL_A_Ttr',SCALE_COPY,'FAC',2,tgt_info,
-     &             val_rl8=(/1d0,1d0/))
+     &             val_rl8=(/1d0,+1d0/))
       ! (d) free up Ttr list
       call set_rule('EVAL_A_Ttr',ttype_opme,RES_ME_LIST,
      &     'ME_Ttr',1,0,
      &     parameters,0,tgt_info)
 c dbg
-      call form_parameters(-1,parameters,2,
-     &     'Preconditioner (b) :',0,'LIST')
-      call set_rule('EVAL_A_Ttr',ttype_opme,PRINT_MEL,
-     &     trim(dia_label),1,0,
-     &     parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'Preconditioner (b) :',0,'LIST')
+c      call set_rule('EVAL_A_Ttr',ttype_opme,PRINT_MEL,
+c     &     trim(dia_label),1,0,
+c     &     parameters,2,tgt_info)
 c dbgend
 
       ! Solve MR coupled cluster equations
@@ -1948,6 +2158,9 @@ c dbgend
       if (cheap_prc) then
         call set_dependency('SOLVE_MRCC','EVAL_A_Ttr',tgt_info)
       else
+c dbg hybrid preconditioner
+c        call warn('set_ic_mrcc_targets','Using hybrid preconditioner')
+c dbgend
         call set_dependency('SOLVE_MRCC','EVAL_Atr',tgt_info)
       end if
       call set_dependency('SOLVE_MRCC','EVAL_MRCC_D',tgt_info)
@@ -2112,6 +2325,73 @@ c     &     'transformed metric :',0,'LIST')
 c      call set_rule('EVAL_Str',ttype_opme,PRINT_MEL,
 c     &     'ME_A(CC)',1,0,
 c     &     parameters,2,tgt_info)
+c
+c      ! Evaluate metric times vector
+c      call add_target('EVAL_S_Ttr',ttype_gen,.false.,tgt_info)
+c      call set_dependency('EVAL_S_Ttr','FOPT_S_Ttr',tgt_info)
+c      ! (a) set all elements of right hand vector to one
+c      call set_rule2('EVAL_S_Ttr',SET_MEL,tgt_info)
+c      call set_arg('EVAL_S_Ttr',SET_MEL,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_Ttr'/))
+c      call set_arg('EVAL_S_Ttr',SET_MEL,'VAL_LIST',2,tgt_info,
+c     &             val_rl8=(/1d0,1d0/))
+c      call set_arg('EVAL_S_Ttr',SET_MEL,'IDX_LIST',2,tgt_info,
+c     &             val_int=(/-1,-2/))
+cc dbg
+cc      call form_parameters(-1,parameters,2,
+cc     &     'Ttr set to :',0,'LIST')
+cc      call set_rule('EVAL_S_Ttr',ttype_opme,PRINT_MEL,
+cc     &     'ME_Ttr',1,0,
+cc     &     parameters,2,tgt_info)
+cc dbgend
+c      ! (b) evaluate
+c      call set_rule2('EVAL_S_Ttr',ASSIGN_ME2OP,tgt_info)
+c      call set_arg('EVAL_S_Ttr',ASSIGN_ME2OP,'LIST',1,tgt_info,
+c     &           val_label=(/'ME_Dtr'/))
+c      call set_arg('EVAL_S_Ttr',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+c     &           val_label=(/'Dtr'/))
+c      call set_rule('EVAL_S_Ttr',ttype_opme,EVAL,
+c     &     'FOPT_S_Ttr',1,0,
+c     &     parameters,0,tgt_info)
+c      ! (c) scale back and copy onto vector list
+c      call set_dependency('EVAL_S_Ttr','DEF_ME_T',tgt_info)
+c      call set_rule2('EVAL_S_Ttr',SCALE_COPY,tgt_info)
+c      call set_arg('EVAL_S_Ttr',SCALE_COPY,'LIST_RES',1,tgt_info,
+c     &             val_label=(/'ME_Ttr'/)) !tr'/))
+c      call set_arg('EVAL_S_Ttr',SCALE_COPY,'LIST_INP',1,tgt_info,
+c     &             val_label=(/'ME_OMG'/)) !tr'/))
+c      call set_arg('EVAL_S_Ttr',SCALE_COPY,'FAC',2,tgt_info,
+c     &             val_rl8=(/1d0,1d0/))
+cc dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'Result of metric times vector :',0,'LIST')
+c      call set_rule('EVAL_S_Ttr',ttype_opme,PRINT_MEL,
+c     &     'ME_Ttr',1,0, !tr',1,0,
+c     &     parameters,2,tgt_info)
+cc dbgend
+c      ! (d) transformation
+c      call set_dependency('EVAL_S_Ttr','DEF_ME_Dtrdag',tgt_info)
+c      call set_dependency('EVAL_S_Ttr','FOPT_T',tgt_info)
+c      call set_rule2('EVAL_S_Ttr',ASSIGN_ME2OP,tgt_info)
+c      call set_arg('EVAL_S_Ttr',ASSIGN_ME2OP,'LIST',1,tgt_info,
+c     &           val_label=(/'ME_Dtrdag'/))
+c      call set_arg('EVAL_S_Ttr',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+c     &           val_label=(/'Dtr'/))
+c      call set_rule('EVAL_S_Ttr',ttype_opme,EVAL,
+c     &     'FOPT_T',1,0,
+c     &     parameters,0,tgt_info)
+cc dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'After transformation :',0,'LIST')
+c      call set_rule('EVAL_S_Ttr',ttype_opme,PRINT_MEL,
+c     &     'ME_T',1,0,
+c     &     parameters,2,tgt_info)
+cc dbgend
+c
+c      ! (d) free up Ttr list
+c      call set_rule('EVAL_S_Ttr',ttype_opme,RES_ME_LIST,
+c     &     'ME_Ttr',1,0,
+c     &     parameters,0,tgt_info)
 c dbgend
 
 c dbg

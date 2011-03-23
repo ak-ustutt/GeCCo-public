@@ -29,7 +29,7 @@
      &     orb_info
 
       integer ::
-     &     min_rank, max_rank, ndef, occ_def(ngastp,2,60),
+     &     min_rank, max_rank, ndef, occ_def(ngastp,2,124),!60),
      &     isim, ncat, nint, icnt,
      &     isym, ms, msc, sym_arr(8), maxexc, ip, ih, ivv, iv,
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, minh, maxh,
@@ -63,7 +63,7 @@
       l_iccc = is_keyword_set('method.MRCC').gt.0
       ! both at same time is not allowed
       if (l_icci.and.l_iccc) call quit(1,'set_ic_mrci_targets',
-     &   'Now don''t be greedy, chose either icMRCI or icMRCC!')
+     &   'Now don''t be greedy, choose either icMRCI or icMRCC!')
 
       ! if maxexc = 0: return because call of unc_mrci is sufficient
       if (maxexc.eq.0.or..not.(l_icci.or.l_iccc)) then
@@ -170,6 +170,9 @@ cmh end
       do ip = minp, maxp
         do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
+c dbg
+            if (l_iccc) exit
+c dbgend
             if (.not.pure_vv.and.ivv.gt.0.and.ip.eq.0.and.ih.eq.0) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).gt.0.and.ip.lt.minp) cycle
@@ -211,6 +214,9 @@ cmh end
         do ip = minp, maxp
           do ih = minh, maxh
             do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
+c dbg
+              if (l_iccc) exit
+c dbgend
               if (.not.pure_vv.and.ivv.gt.0.and.ip.eq.0.and.ih.eq.0)
      &            cycle
               if (abs(ih-ip)+2*ivv.gt.maxv) cycle
@@ -344,7 +350,40 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
             if (max(ip,ih)+ivv.lt.minexc.or.
      &          max(ip,ih)+jvv.lt.minexc) cycle
 c dbg
-            if (singrm.and.max(ih,ip).eq.1.and.min(ivv,jvv).eq.0) cycle
+            if (l_iccc) then
+c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih+ip.eq.1.and.jvv.gt.0.or.ih*ip.eq.1.and.jvv.eq.0) cycle
+c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
+c           if (ih*ip.eq.1.and.jvv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.jvv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.jvv.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
+c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.jvv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.jvv.gt.0) cycle
+c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
+c            if (ih.gt.0.and.max(ip,ih)+jvv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+jvv.ne.maxexc-1) cycle
+c            if (max(ip-ih,0)+ivv.gt.2) cycle
+c            if (max(ip-ih,0)+jvv.gt.2) cycle
+c            if (ip.eq.0.and.ih.eq.1) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih+ip.eq.1) cycle
+c           if (ih.ne.ip.and.max(ip,ih)+max(ivv,jvv).ge.maxexc) cycle
+            if (abs(ip-ih)+ivv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+ivv.gt.1) cycle
+            if (abs(ip-ih)+jvv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+jvv.gt.1) cycle
+           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
+           if (singrm.and.jvv.eq.0.and.ih.eq.ip) cycle
+c            if (singrm.and.max(ih,ip).eq.1.and.min(ivv,jvv).eq.0) cycle
+           end if
 c dbgend
 c            ! skip if block already exists
 c            skip = .false.
@@ -387,7 +426,40 @@ c            if (skip) cycle
             if (max(ip,ih)+ivv.lt.minexc.or.
      &          max(ip,ih)+jvv.lt.minexc) cycle
 c dbg
-            if (singrm.and.max(ih,ip).eq.1.and.min(ivv,jvv).eq.0) cycle
+            if (l_iccc) then
+c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih+ip.eq.1.and.jvv.gt.0.or.ih*ip.eq.1.and.jvv.eq.0) cycle
+c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
+c           if (ih*ip.eq.1.and.jvv.eq.0) cycle
+c           if (ih.eq.0.and.ip.eq.1.and.jvv.gt.0) cycle
+c           if (ih.eq.1.and.ip.eq.0.and.jvv.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
+c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
+c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.jvv.ne.1) cycle
+c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.jvv.gt.0) cycle
+c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
+c            if (ih.gt.0.and.max(ip,ih)+jvv.lt.maxexc) cycle
+c            if (ih.eq.0.and.max(ip,ih)+jvv.ne.maxexc-1) cycle
+c            if (max(ip-ih,0)+ivv.gt.2) cycle
+c            if (max(ip-ih,0)+jvv.gt.2) cycle
+c            if (ip.eq.0.and.ih.eq.1) cycle
+c           if (ih+ip.eq.1.and.ivv.gt.0) cycle
+c           if (ih+ip.eq.1) cycle
+c           if (ih.ne.ip.and.max(ip,ih)+max(ivv,jvv).ge.maxexc) cycle
+            if (abs(ip-ih)+ivv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+ivv.gt.1) cycle
+            if (abs(ip-ih)+jvv.gt.2) cycle
+            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
+     &          abs(ip-ih)+jvv.gt.1) cycle
+           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
+           if (singrm.and.jvv.eq.0.and.ih.eq.ip) cycle
+c            if (singrm.and.max(ih,ip).eq.1.and.min(ivv,jvv).eq.0) cycle
+           end if
 c dbgend
 c            ! skip if block already exists
 c            skip = .false.
@@ -418,6 +490,9 @@ c            if (skip) cycle
       do ip = minp, maxp
         do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
+c dbg
+            if (l_iccc) exit
+c dbgend
             if (.not.pure_vv.and.ivv.gt.0.and.ip.eq.0.and.ih.eq.0) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).gt.0.and.ip.lt.minp) cycle
@@ -445,6 +520,9 @@ c            if (skip) cycle
       do ip = minp, maxp
         do ih = minh, maxh
           do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
+c dbg
+            if (l_iccc) exit
+c dbgend
             if (.not.pure_vv.and.ivv.gt.0.and.ip.eq.0.and.ih.eq.0) cycle
             if (abs(ih-ip)+2*ivv.gt.maxv) cycle
             if (max(ip,ih).gt.0.and.ip.lt.minp) cycle
@@ -1681,11 +1759,11 @@ c     &     parameters,2,tgt_info)
      &              labels,2,1,
      &              parameters,0,tgt_info)
 c dbg
-      call form_parameters(-1,parameters,2,
-     &     'Preconditioner (b) :',0,'LIST')
-      call set_rule('EVAL_A_diag',ttype_opme,PRINT_MEL,
-     &     trim(dia_label)//'C',1,0,
-     &     parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'Preconditioner (b) :',0,'LIST')
+c      call set_rule('EVAL_A_diag',ttype_opme,PRINT_MEL,
+c     &     trim(dia_label)//'C',1,0,
+c     &     parameters,2,tgt_info)
 c dbgend
 
       ! SOLVE icCI eigenvalue equation

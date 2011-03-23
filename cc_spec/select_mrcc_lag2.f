@@ -109,7 +109,6 @@
       idxtop  = idxop(2)
 
       bins = 0
-      deldue2maxtt = .false.
       n_extra = 0
       iterm = 0
       allocate(extra_term(1),extra_hash(1),extra_fac(1))
@@ -137,6 +136,7 @@ c dbgend
           allocate(bchpart(nvtx),connected(nvtx),testing(nvtx))
           bchpart = .false.
           connected = .false.
+          deldue2maxtt = .false.
           testing = 0
           ntesting = 0
 

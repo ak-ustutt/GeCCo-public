@@ -49,7 +49,7 @@
      &     nvtx, min_n, nn, ii, jj, iblk, mini, maxc, off, nl, nham,
      &     kk, iblk_l, iblk_ham, iterm, icall, icall0, nterm,
      &     lu(2), ho(2), hu(2), tto(2), tto_l(2), idxddag, ioff, idx_h,
-     &     max_n0, nsumcalls
+     &     max_n0, nsumcalls, G_level
 
       logical ::
      &     next, set_zero, set_scalar, esym, sym
@@ -102,6 +102,10 @@
       sym = approx(1:3).eq.'SYM'
       esym = approx(1:4).eq.'ESYM'.or.sym
       if (.not.set_scalar) min_n = 1
+
+      call get_argument_value('method.MRCC','G_level',
+     &     ival=G_level)
+      if (G_level.lt.0) G_level = max(max_n,max_n0) ! no approximation
 
       call atim_csw(cpu0,sys0,wall0)
       nterm = 0
@@ -164,7 +168,7 @@
          idx_op(ii) = ii+1-ioff
        end do
        if (ioff.eq.1) idx_op(nn+2+nham) = 1
-       do kk = 0, nn ! 0 !no inactive lines on the left
+       do kk = 0, min(G_level,nn) !nn ! 0 !no inactive lines on the left
         idx_op_vtx(2:nn+1+nham) = idxt
         idx_op_vtx(2+kk:1+kk+nham) = idxham
         iblk_min = 1
@@ -337,7 +341,7 @@ c            if (lu-ho+hu.gt.4*nn) cycle
              next = .true.
              do while(next)
 
-              do kk = 0, nn
+              do kk = 0, min(G_level,nn) !nn
                 idx_op_vtx(2+nham:nvtx-1) = idxt
                 if (nham.eq.1) idx_op_vtx(3+kk) = idxham
                 iblk_min = 1 
