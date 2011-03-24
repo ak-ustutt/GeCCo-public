@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine update_metric(me_dia,me_special,nspecial,
      &     fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
-     &     prcupdate,singrm)
+     &     prcupdate)
 *----------------------------------------------------------------------*
 *
 *     update metric, transformation matrices, and preconditioner
@@ -28,7 +28,7 @@
       integer, intent(in) ::
      &     nspecial, nspcfrm
       logical, intent(in) ::
-     &     prcupdate, singrm
+     &     prcupdate
       type(me_list_array), intent(inout) ::
      &     me_special(nspecial)
       type(me_list), intent(in) ::
@@ -62,17 +62,10 @@
 
       ! get half-transform of square root of inverted metric
       ! and projector matrix
-      if (singrm) then
-        call inv_op(trim(me_special(5)%mel%label),
+      call inv_op(trim(me_special(5)%mel%label),
      &            trim(me_special(6)%mel%label),
-     &             'invsqrt----sgrm',
-     &             op_info,orb_info,str_info,strmap_info)
-      else
-        call inv_op(trim(me_special(5)%mel%label),
-     &            trim(me_special(6)%mel%label),
-     &             'invsqrt',
-     &             op_info,orb_info,str_info,strmap_info)
-      end if
+     &            'invsqrt',
+     &            op_info,orb_info,str_info,strmap_info)
       ! reorder to transformation matrix ...
       call reo_mel(trim(me_special(2)%mel%label),
      &             trim(me_special(6)%mel%label),

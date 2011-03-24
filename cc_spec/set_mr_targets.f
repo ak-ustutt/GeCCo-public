@@ -1,0 +1,84 @@
+*----------------------------------------------------------------------*
+      subroutine set_mr_targets(tgt_info,orb_info)
+*----------------------------------------------------------------------*
+*     calls target generators for multireference methods
+*
+*     matthias, march 2011
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'stdunit.h'
+      include 'ifc_input.h'
+      include 'mdef_target_info.h'
+      include 'def_orbinf.h'
+
+      integer, parameter ::
+     &     ntest = 100
+
+      type(target_info), intent(inout) ::
+     &     tgt_info
+      type(orbinf), intent(in) ::
+     &     orb_info
+
+      integer ::
+     &     maxexc, cmaxexc, maxh, maxp
+      logical ::
+     &     l_icci, l_iccc, use_met
+      integer, allocatable ::
+     &     excrestr(:,:,:)
+
+      ! get maximum excitation rank
+      call get_argument_value('method.MR','maxexc',
+     &     ival=maxexc)
+      call get_argument_value('method.MR','cmaxexc',
+     &     ival=cmaxexc)
+
+      ! first set targets for CASSCF or uncontracted CI wave function
+      call set_unc_mrci_targets(tgt_info,orb_info,maxexc.eq.0)
+
+      ! icMRCI calculation?
+      l_icci = is_keyword_set('method.MRCI').gt.0
+      ! icMRCC calculation?
+      l_iccc = is_keyword_set('method.MRCC').gt.0
+      ! both at same time is not allowed
+      if (l_icci.and.l_iccc) call quit(1,'set_mr_targets',
+     &   'Now don''t be greedy, choose either icMRCI or icMRCC!')
+
+      ! if maxexc = 0: return because call of unc_mrci is sufficient
+      if (maxexc.eq.0.or..not.(l_icci.or.l_iccc)) then
+        return
+      else if (cmaxexc.gt.0) then
+        call quit(1,'set_mr_targets',
+     &            'Warning: Only tested for CASSCF reference so far')
+      end if
+
+      ! set targets associated with generalized normal order
+      ! (includes reduced density matrices)
+      call set_gno_targets(tgt_info,orb_info,1)
+
+      ! get restrictions on excitation classes
+      call get_argument_value('method.MR','maxh',
+     &     ival=maxh)
+      call get_argument_value('method.MR','maxp',
+     &     ival=maxp)
+      if (max(maxh,maxp).gt.maxexc)
+     &     call quit(1,'set_mr_targets',
+     &               'maxh and maxp must not exceed maxexc')
+      if (maxh.lt.0) maxh = maxexc
+      if (maxp.lt.0) maxp = maxexc
+      allocate(excrestr(0:maxh,0:maxp,1:2))
+      call get_exc_restr(excrestr,maxh,maxp)
+
+      ! set targets common for internally contracted methods
+      call set_ic_mr_targets(tgt_info,orb_info,
+     &                       excrestr,maxh,maxp,use_met)
+
+      ! set icMRCI or icMRCC targets
+      if (l_icci) call set_ic_mrci_targets(tgt_info,orb_info,
+     &                       excrestr,maxh,maxp,use_met)
+      if (l_iccc) call set_ic_mrcc_targets(tgt_info,orb_info,
+     &                       excrestr,maxh,maxp)
+      deallocate(excrestr)
+
+      return
+      end

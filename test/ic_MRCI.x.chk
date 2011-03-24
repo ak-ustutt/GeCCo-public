@@ -12,11 +12,6 @@ check
   compare real 2 1e-10
   compare real 3 1e-10
 check
-  label Number of terms of density expression
-  find F_D
-  find wrote
-  compare int 2
-check
   rewind
   label Optimized orthogonalized Hessian formula
   find FOPT_A_diag
@@ -26,7 +21,7 @@ check
   rewind
   label Evaluate density
   find EVAL_D
-  find EVAL_D
+  find -->
   find -->
   compare real 4 4e-9
 check

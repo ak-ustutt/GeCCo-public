@@ -1,4 +1,4 @@
-      subroutine invsqrt(mel_inp,mel_inv,nocc_cls,half,sgrm,
+      subroutine invsqrt(mel_inp,mel_inv,nocc_cls,half,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     Routine to calculate S^(-0.5) of density matrices.
@@ -31,6 +31,7 @@
       include 'ifc_memman.h'
       include 'hpvxseq.h'
       include 'multd2h.h'
+      include 'ifc_input.h'
 
       integer, parameter ::
      &     ntest = 10
@@ -48,14 +49,14 @@
       integer, intent(in) ::
      &     nocc_cls
       logical, intent(in) ::
-     &     half,sgrm
+     &     half
 
       type(graph), pointer ::
      &     graphs(:)
 
       logical ::
      &     bufin, bufout, first, ms_fix, fix_success, onedis, transp,
-     &     logdum, sing_remove, normalize
+     &     logdum, sing_remove, normalize, sgrm
       logical, pointer ::
      &     blk_used(:)
 c      logical ::
@@ -127,6 +128,7 @@ c dbgend
 c dbg
 c      ipass = 0
 c dbgend
+      call get_argument_value('method.MR','project',lval=sgrm)
 
       ffinp => mel_inp%fhand
       ffinv => mel_inv%fhand

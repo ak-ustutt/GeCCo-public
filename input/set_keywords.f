@@ -163,11 +163,13 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('maxvv','method.MR',type=vtyp_int,
      &                  idef=(/-1/)) ! max. number of val-val exc.
       call argument_add('maxexc','method.MR',type=vtyp_int,
-     &                  idef=(/0/))  ! max. excitation
+     &                  idef=(/2/))  ! max. excitation
       call argument_add('minexc','method.MR',type=vtyp_int,
-     &                  idef=(/0/))  ! min. excitation (for GNO=1)
+     &                  idef=(/1/))  ! min. excitation
       call argument_add('pure_vv','method.MR',type=vtyp_log,
      &                  ldef=(/.true./)) ! pure act.-act. excitations
+      call argument_add('excrestr','method.MR',type=vtyp_int,len=6,
+     &                  idef=(/-1,-1,-1,-1,-1,-1/)) ! restr. exc. in T
       call argument_add('GNO','method.MR',type=vtyp_int,
      &                  idef=(/0/))  ! 1 for generalized normal order
       call argument_add('maxcum','method.MR',type=vtyp_int,
@@ -176,6 +178,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  ldef=(/.false./)) ! use existing CASSCF coeff.
       call argument_add('cheap_prc','method.MR',type=vtyp_log,
      &                  ldef=(/.false./)) ! try cheap preconditioner
+      call argument_add('project','method.MR',type=vtyp_log,
+     &     ldef=(/.false./)) ! project out singles from doubles a.s.o.
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,
@@ -247,9 +251,6 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('preopt','calculate.solve.non_linear',
      &     type=vtyp_log,
      &     ldef=(/.false./)) ! first one optimization with fixed metric
-      call argument_add('singrm','calculate.solve.non_linear',
-     &     type=vtyp_log,
-     &     ldef=(/.false./)) ! project out singles from doubles part
 
       call keyword_add('linear',context='calculate.solve')
       call argument_add('maxiter','calculate.solve.linear',

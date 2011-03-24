@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine set_ic_mrcc_targets(tgt_info,orb_info)
+      subroutine set_ic_mrcc_targets(tgt_info,orb_info,
+     &                               excrestr,maxh,maxp)
 *----------------------------------------------------------------------*
 *     set targets for internally contracted MRCC
 *
@@ -27,19 +28,20 @@
      &     tgt_info
       type(orbinf), intent(in) ::
      &     orb_info
+      integer, intent(in) ::
+     &     maxh, maxp, excrestr(0:maxh,0:maxp,1:2)
 
       integer ::
      &     ndef, occ_def(ngastp,2,124),!60),
      &     icnt,
-     &     msc, maxexc, ip, ih, ivv, iv, ivv2, jvv,
-     &     minh, maxh,
-     &     minp, maxp, maxv, maxvv, minexc, maxcom, maxcom_en,
+     &     msc, ip, ih, ivv, iv, ivv2, jvv,
+     &     maxcom, maxcom_en,
      &     n_t_cls, i_cls,
      &     n_tred_cls, len_form, optref, idef, ciroot,
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
-     &     G_level
+     &     G_level, iexc, jexc
       logical ::
-     &     pure_vv, update_prc, skip, preopt, singrm, first, cheap_prc
+     &     update_prc, skip, preopt, project, first, cheap_prc
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -49,43 +51,13 @@
      &     op_ht*3, f_ht*5, op_ht0to*6, f_ht0to*8, form_str*50,
      &     def_ht*10
 
-      ! first set targets for CASSCF or uncontracted CI wave function
-      ! (if not done already)
-      if (.not.is_keyword_set('method.MR').gt.0)
-     &      call quit(1,'set_ic_mrcc_targets',
-     &      'MRCC requires MR wave function')
-
-      if (iprlvl.gt.0)
-     &     write(luout,*) 'setting multireference targets #3...'
+      if (iprlvl.gt.0) write(luout,*) 'setting icMRCC targets'
 
       ! CAVEAT: should be adapted as soon as open-shell version
       !         is up and running
       msc = +1 ! assuming closed shell
 
-      ! get minimum and maximum numbers of excitations, holes, particles,
-      ! valence-valence excitations
-      call get_argument_value('method.MR','minh',
-     &     ival=minh)
-      call get_argument_value('method.MR','maxh',
-     &     ival=maxh)
-      call get_argument_value('method.MR','minp',
-     &     ival=minp)
-      call get_argument_value('method.MR','maxp',
-     &     ival=maxp)
-      call get_argument_value('method.MR','maxv',
-     &     ival=maxv)
-      call get_argument_value('method.MR','maxvv',
-     &     ival=maxvv)
-      call get_argument_value('method.MR','minexc',
-     &     ival=minexc)
-      call get_argument_value('method.MR','maxexc',
-     &     ival=maxexc)
-      if (maxh.lt.0) maxh = maxexc
-      if (maxp.lt.0) maxp = maxexc
-      if (maxv.lt.0) maxv = 2*maxexc
-      if (maxvv.lt.0) maxvv = maxexc
-      call get_argument_value('method.MR','pure_vv',
-     &     lval=pure_vv)
+      ! get some keywords
       call get_argument_value('method.MR','ciroot',
      &     ival=ciroot)
       call get_argument_value('method.MR','cheap_prc',
@@ -96,8 +68,8 @@
      &     lval=update_prc)
       call get_argument_value('calculate.solve.non_linear','preopt',
      &     lval=preopt)
-      call get_argument_value('calculate.solve.non_linear','singrm',
-     &     lval=singrm)
+      call get_argument_value('method.MR','project',
+     &     lval=project)
       call get_argument_value('method.MRCC','maxcom_res',
      &     ival=maxcom)
       call get_argument_value('method.MRCC','maxcom_en',
@@ -108,6 +80,7 @@
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en  = ', maxcom_en
         write(luout,*) 'maxcom_res = ', maxcom
+        write(luout,*) 'G_level    = ', G_level
         write(luout,*) 'preopt     = ', preopt
       end if
       
@@ -119,55 +92,17 @@
       call add_target('L',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = minp, maxp
-        do ih = minh, maxh
-          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-            if (abs(ih-ip)+2*ivv.gt.maxv) cycle
-            if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
-            if (max(ip,ih)+ivv.lt.minexc) cycle
-c dbg
-c            if (ih.gt.ip) cycle
-c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih*ip.eq.1.and.ivv.eq.0) cycle !Bdoub
-c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
-c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
-c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle !Btrip
-c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
-c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
-c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle !Atrip
-c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle !Atrip
-c            if (max(ip-ih,0)+ivv.gt.2) cycle !C
-c            if (ip.eq.0.and.ih.eq.1) cycle
-c           if (ih+ip.eq.1) cycle
-c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
-            if (abs(ip-ih)+ivv.gt.2) cycle !B,D trip
-            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
-     &          abs(ip-ih)+ivv.gt.1) cycle !B,D
-           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle !D
-c            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
-c dbgend
-cmh         no blocks which can be modeled by a contraction of two operators
-c            if (ip.ge.1.and.ih.ge.1) cycle
-cmh end
-c            ! only hole-particle singles
-c            if (max(ip,ih)+ivv.eq.1.and.(ip.ne.1.or.ih.ne.1)) cycle
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,1,ndef) = ih
             occ_def(IPART,2,ndef) = ip
-            occ_def(IVALE,2,ndef) = max(ih-ip,0) + ivv
-            occ_def(IVALE,1,ndef) = max(ip-ih,0) + ivv
+            occ_def(IVALE,2,ndef) = iexc - ip
+            occ_def(IVALE,1,ndef) = iexc - ih
           end do
         end do
       end do
-      if (singrm) then ! define conventional blocks separately
-        do ip = minp, maxp ! ih=ip
-          if (ip.lt.minh.or.ip.gt.maxh) cycle
-          if (ip.lt.minexc) cycle
-          ndef = ndef + 1 
-          occ_def(IHOLE,1,ndef) = ip
-          occ_def(IPART,2,ndef) = ip
-        end do
-      end if
       n_t_cls = ndef
       call op_from_occ_parameters(-1,parameters,2,
      &              occ_def,ndef,1,(/0,0/),ndef)
@@ -180,44 +115,15 @@ c            if (max(ip,ih)+ivv.eq.1.and.(ip.ne.1.or.ih.ne.1)) cycle
       occ_def = 0
       ndef = 0
       nsupT=0
-      do ip = minp, maxp
-        do ih = minh, maxh
+      do ip = 0, maxp
+        do ih = 0, maxh
           first = .true.
-          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-            if (abs(ih-ip)+2*ivv.gt.maxv) cycle
-            if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
-            if (max(ip,ih)+ivv.lt.minexc) cycle
-c dbg
-c            if (ih.gt.ip) cycle
-c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
-c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
-c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
-c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
-c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
-c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
-c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
-c            if (max(ip-ih,0)+ivv.gt.2) cycle
-c            if (ip.eq.0.and.ih.eq.1) cycle
-c           if (ih+ip.eq.1) cycle
-c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
-            if (abs(ip-ih)+ivv.gt.2) cycle
-            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
-     &          abs(ip-ih)+ivv.gt.1) cycle
-           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
-c            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
-c dbgend
-cmh         no blocks which can be modeled by a contraction of two operators
-c            if (ip.ge.1.and.ih.ge.1) cycle
-cmh end
-c            ! only hole-particle singles
-c            if (max(ip,ih)+ivv.eq.1.and.(ip.ne.1.or.ih.ne.1)) cycle
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef) = ih
             occ_def(IPART,1,ndef) = ip
-            occ_def(IVALE,1,ndef) = max(ih-ip,0) + ivv
-            occ_def(IVALE,2,ndef) = max(ip-ih,0) + ivv
+            occ_def(IVALE,1,ndef) = iexc - ip
+            occ_def(IVALE,2,ndef) = iexc - ih
             if (first) then
               nsupT = nsupT + 1
               stndT(1,nsupT) = ndef
@@ -227,18 +133,6 @@ c            if (max(ip,ih)+ivv.eq.1.and.(ip.ne.1.or.ih.ne.1)) cycle
           end do
         end do
       end do
-      if (singrm) then ! define conventional blocks separately
-        do ip = minp, maxp ! ih=ip
-          if (ip.lt.minh.or.ip.gt.maxh) cycle
-          if (ip.lt.minexc) cycle
-          ndef = ndef + 1
-          occ_def(IHOLE,2,ndef) = ip
-          occ_def(IPART,1,ndef) = ip
-          nsupT = nsupT + 1
-          stndT(1,nsupT) = ndef
-          stndT(2,nsupT) = ndef
-        end do
-      end if
       n_t_cls = ndef
       call op_from_occ_parameters(-1,parameters,2,
      &              occ_def,ndef,1,(/0,0/),ndef)
@@ -266,61 +160,14 @@ c     &             val_int=(/1/))
       ! we just run over the same loops here:
       ndef = 0
       nsupD = 0
-      do ip = minp, maxp
-        do ih = minh, maxh
+      do ip = 0, maxp
+        do ih = 0, maxh
           first = .true.
-          do ivv = min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv),0,-1
-           do jvv =min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv),0,-1
-            if (ip.eq.ih.and.ip.eq.maxexc) cycle
-            if (.not.pure_vv.and.ip.eq.0.and.ih.eq.0.and.
-     &          ivv+jvv.gt.0) cycle
-            if (abs(ih-ip)+2*ivv.gt.maxv.or.
-     &          abs(ih-ip)+2*jvv.gt.maxv) cycle
-            if (max(ip,ih).gt.0.and.ip.lt.minp) cycle
-            if (max(ip,ih).gt.0.and.ih.lt.minh) cycle
-            if (max(ip,ih)+ivv.lt.minexc.or.
-     &          max(ip,ih)+jvv.lt.minexc) cycle
-c dbg
-c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih+ip.eq.1.and.jvv.gt.0.or.ih*ip.eq.1.and.jvv.eq.0) cycle
-c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
-c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
-c           if (ih*ip.eq.1.and.jvv.eq.0) cycle
-c           if (ih.eq.0.and.ip.eq.1.and.jvv.gt.0) cycle
-c           if (ih.eq.1.and.ip.eq.0.and.jvv.eq.0) cycle
-c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
-c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
-c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
-c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.jvv.ne.1) cycle
-c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.jvv.gt.0) cycle
-c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
-c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
-c            if (ih.gt.0.and.max(ip,ih)+jvv.lt.maxexc) cycle
-c            if (ih.eq.0.and.max(ip,ih)+jvv.ne.maxexc-1) cycle
-c            if (max(ip-ih,0)+ivv.gt.2) cycle
-c            if (max(ip-ih,0)+jvv.gt.2) cycle
-c            if (ip.eq.0.and.ih.eq.1) cycle
-c           if (ih+ip.eq.1.and.ivv.gt.0) cycle
-c           if (ih+ip.eq.1) cycle
-c           if (ih.ne.ip.and.max(ip,ih)+max(ivv,jvv).ge.maxexc) cycle
-            if (abs(ip-ih)+ivv.gt.2) cycle
-            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
-     &          abs(ip-ih)+ivv.gt.1) cycle
-            if (abs(ip-ih)+jvv.gt.2) cycle
-            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
-     &          abs(ip-ih)+jvv.gt.1) cycle
-           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
-           if (singrm.and.jvv.eq.0.and.ih.eq.ip) cycle
-c            if (singrm.and.max(ih,ip).eq.1.and.min(ivv,jvv).eq.0) cycle
-c dbgend
-c            ! skip if block already exists
-c            skip = .false.
-c            do idef = 1, ndef
-c             skip = skip.or.(occ_def(IVALE,1,idef*3).eq.max(ip-ih,0)+ivv
-c     &               .and.occ_def(IVALE,1,idef*3-1).eq.max(ih-ip,0)+ivv)
-c            end do
-c            if (skip) cycle
+          do iexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
+            do jexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
+            if (project.and.iexc.ne.jexc) cycle
+            ! not for purely inactive excitation class
+            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
             ndef = ndef + 1
             if (first) then
               nsupD = nsupD + 1
@@ -339,21 +186,15 @@ c            if (skip) cycle
       call add_target('TT',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = minp, maxp
-        do ih = minh, maxh
-          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-c dbg
-c            exit
-c dbgend
-            if (abs(ih-ip)+2*ivv.gt.maxv) cycle
-            if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
-            if (max(ip,ih)+ivv.lt.minexc) cycle
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             if (ip.lt.1.or.ih.lt.1) cycle
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef) = ih
             occ_def(IPART,1,ndef) = ip
-            occ_def(IVALE,1,ndef) = max(ih-ip,0) + ivv
-            occ_def(IVALE,2,ndef) = max(ip-ih,0) + ivv
+            occ_def(IVALE,1,ndef) = iexc - ip
+            occ_def(IVALE,2,ndef) = iexc - ih
           end do
         end do
       end do
@@ -385,49 +226,23 @@ c dbgend
       call add_target('Lred',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = minp, maxp
-        do ih = minh, maxh
-          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-            if (ip.eq.ih.and.ip.eq.maxexc) cycle
-            if (abs(ih-ip)+2*ivv.gt.maxv) cycle
-            if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
-            if (max(ip,ih)+ivv.lt.minexc) cycle
-c dbg
-c            if (ih.gt.ip) cycle
-c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
-c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
-c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
-c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
-c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
-c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
-c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
-c            if (max(ip-ih,0)+ivv.gt.2) cycle
-c            if (ip.eq.0.and.ih.eq.1) cycle
-c           if (ih+ip.eq.1) cycle
-c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
-            if (abs(ip-ih)+ivv.gt.2) cycle
-            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
-     &          abs(ip-ih)+ivv.gt.1) cycle
-           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
-c            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
-c dbgend
-c            ! exclude blocks with one or more hole-part. excitations
-c            if (min(ih,ip).ge.1) cycle
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+            ! not for purely inactive excitation class
+            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
             ! same valence structure already exists?
             ivers = 1
             do idef = 1, ndef
-              if (occ_def(IVALE,1,idef).eq.max(ip-ih,0)+ivv
-     &                 .and.occ_def(IVALE,2,idef).eq.max(ih-ip,0)+ivv)
+              if (occ_def(IVALE,1,idef).eq.iexc-ih
+     &            .and.occ_def(IVALE,2,idef).eq.iexc-ip)
      &           ivers = ivers + 1
             end do
-c            if (skip) cycle
             ndef = ndef + 1
             occ_def(IHOLE,1,ndef) = ih
             occ_def(IPART,2,ndef) = ip
-            occ_def(IVALE,2,ndef) = max(ih-ip,0) + ivv
-            occ_def(IVALE,1,ndef) = max(ip-ih,0) + ivv
+            occ_def(IVALE,2,ndef) = iexc - ip
+            occ_def(IVALE,1,ndef) = iexc - ih
             ! distinguish ops with same valence part by blk_version
             version(ndef) = ivers
           end do
@@ -465,118 +280,21 @@ c            if (skip) cycle
       call set_arg('Tred',CLONE_OP,'ADJOINT',1,tgt_info,
      &     val_log=(/.true./))
 
-      ! subset of Residual
-      call add_target('OMGred',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 0
-      do ip = minp, maxp
-        do ih = minh, maxh
-          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-            if (ip.eq.ih.and.ip.eq.maxexc) cycle
-            if (abs(ih-ip)+2*ivv.gt.maxv) cycle
-            if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
-            if (max(ip,ih)+ivv.lt.minexc) cycle
-c dbg
-c            if (ih.gt.ip) cycle
-c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
-c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
-c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
-c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
-c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
-c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
-c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
-c            if (max(ip-ih,0)+ivv.gt.2) cycle
-c            if (ip.eq.0.and.ih.eq.1) cycle
-c           if (ih+ip.eq.1) cycle
-c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
-            if (abs(ip-ih)+ivv.gt.2) cycle
-            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
-     &          abs(ip-ih)+ivv.gt.1) cycle
-           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
-c            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
-c dbgend
-            ! same valence structure already exists?
-            ivers = 1
-            do idef = 1, ndef
-              if (occ_def(IVALE,2,idef*2-1).eq.max(ip-ih,0)+ivv
-     &            .and.occ_def(IVALE,1,idef*2).eq.max(ih-ip,0)+ivv)
-     &           ivers = ivers + 1
-            end do
-            ndef = ndef + 1
-            occ_def(IHOLE,2,ndef*2) = ih
-            occ_def(IPART,1,ndef*2) = ip
-            occ_def(IVALE,1,ndef*2) = max(ih-ip,0) + ivv
-            occ_def(IVALE,2,ndef*2-1) = max(ip-ih,0) + ivv
-            ! distinguish ops with same valence part by blk_version
-            version(ndef) = ivers
-          end do
-        end do
-      end do
-      call op_from_occ_parameters(-1,parameters,2,
-     &              occ_def,ndef,2,(/0,0,0,0/),ndef)
-      call set_rule('OMGred',ttype_op,DEF_OP_FROM_OCC,
-     &              'OMGred',1,1,
-     &              parameters,2,tgt_info)
-      call set_rule2('OMGred',SET_ORDER,tgt_info)
-      call set_arg('OMGred',SET_ORDER,'LABEL',1,tgt_info,
-     &     val_label=(/'OMGred'/))
-      call set_arg('OMGred',SET_ORDER,'SPECIES',1,tgt_info,
-     &             val_int=(/-1/))
-      call set_arg('OMGred',SET_ORDER,'ORDER',1,tgt_info,
-     &             val_int=(/ndef/))
-      call set_arg('OMGred',SET_ORDER,'IDX_FREQ',ndef,tgt_info,
-     e             val_int=version(1:ndef))
-
       ! define Residual
       call add_target('OMG',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = minp, maxp
-        do ih = minh, maxh
-          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-            if (abs(ih-ip)+2*ivv.gt.maxv) cycle
-            if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
-            if (max(ip,ih)+ivv.lt.minexc) cycle
-c dbg
-c            if (ih.gt.ip) cycle
-c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
-c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
-c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
-c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
-c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
-c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
-c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
-c            if (max(ip-ih,0)+ivv.gt.2) cycle
-c            if (ip.eq.0.and.ih.eq.1) cycle
-c           if (ih+ip.eq.1) cycle
-c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
-            if (abs(ip-ih)+ivv.gt.2) cycle
-            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
-     &          abs(ip-ih)+ivv.gt.1) cycle
-           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
-c            if (singrm.and.ivv.eq.0.and.(ih+ip.eq.1.or.ih.eq.ip)) cycle
-c dbgend
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
             occ_def(IPART,1,ndef*2) = ip
-            occ_def(IVALE,1,ndef*2) = max(ih-ip,0) + ivv
-            occ_def(IVALE,2,ndef*2-1) = max(ip-ih,0) + ivv
+            occ_def(IVALE,1,ndef*2) = iexc - ip
+            occ_def(IVALE,2,ndef*2-1) = iexc - ih
           end do
         end do
       end do
-      if (singrm) then ! define conventional blocks separately
-        do ip = minp, maxp ! ih=ip
-          if (ip.lt.minh.or.ip.gt.maxh) cycle
-          if (ip.lt.minexc) cycle
-          ndef = ndef + 1
-          occ_def(IHOLE,2,ndef*2) = ip
-          occ_def(IPART,1,ndef*2) = ip
-        end do
-      end if
       call op_from_occ_parameters(-1,parameters,2,
      &              occ_def,ndef,2,(/0,0,0,0/),ndef)
       call set_rule('OMG',ttype_op,DEF_OP_FROM_OCC,
@@ -587,39 +305,16 @@ c dbgend
       call add_target('OMGtr',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = minp, maxp
-        do ih = minh, maxh
-          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-            if (abs(ih-ip)+2*ivv.gt.maxv) cycle
-            if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
-            if (max(ip,ih)+ivv.lt.minexc) cycle
-            if (ip.eq.ih.and.ip.eq.maxexc) cycle ! no conv. blocks (for PREC)
-c dbg
-c            if (ih.gt.ip) cycle
-c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
-c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
-c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
-c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
-c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
-c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
-c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
-c            if (max(ip-ih,0)+ivv.gt.2) cycle
-c            if (ip.eq.0.and.ih.eq.1) cycle
-c           if (ih+ip.eq.1) cycle
-c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
-            if (abs(ip-ih)+ivv.gt.2) cycle
-            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
-     &          abs(ip-ih)+ivv.gt.1) cycle
-           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
-c            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
-c dbgend
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+            ! not for purely inactive excitation class
+            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
             occ_def(IPART,1,ndef*2) = ip
-            occ_def(IVALE,1,ndef*2) = max(ih-ip,0) + ivv
-            occ_def(IVALE,2,ndef*2-1) = max(ip-ih,0) + ivv
+            occ_def(IVALE,1,ndef*2) = iexc - ip
+            occ_def(IVALE,2,ndef*2-1) = iexc - ih
           end do
         end do
       end do
@@ -629,84 +324,25 @@ c dbgend
      &              'OMGtr',1,1,
      &              parameters,2,tgt_info)
 
-      ! define Jacobian (diagonal blocks only)
-      call add_target('A(CC)',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 0
-      do ip = minp, maxp
-        do ih = minh, maxh
-          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-            if (abs(ih-ip)+2*ivv.gt.maxv) cycle
-            if (max(ip,ih).eq.0.and.(ivv.eq.0.or..not.pure_vv)) cycle
-            if (max(ip,ih)+ivv.lt.minexc) cycle
-            if (ip.eq.ih.and.ip.eq.maxexc) cycle ! no conv. blocks (for PREC)
-c dbg
-c            if (ih.gt.ip) cycle
-c           if (ih+ip.eq.1.and.ivv.gt.0.or.ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih*ip.eq.1.and.ivv.eq.0) cycle
-c           if (ih.eq.0.and.ip.eq.1.and.ivv.gt.0) cycle
-c           if (ih.eq.1.and.ip.eq.0.and.ivv.eq.0) cycle
-c            if ((ih*ip.eq.1.or.ih*ip.eq.4).and.ivv.ne.1) cycle
-c            if (ih*ip.ne.1.and.ih*ip.ne.4.and.ivv.gt.0) cycle
-c            if (max(ih,ip).eq.3.and.ih*ip.eq.0) cycle
-c            if (ih.gt.0.and.max(ip,ih)+ivv.lt.maxexc) cycle
-c            if (ih.eq.0.and.max(ip,ih)+ivv.ne.maxexc-1) cycle
-c            if (max(ip-ih,0)+ivv.gt.2) cycle
-c            if (ip.eq.0.and.ih.eq.1) cycle
-c           if (ih+ip.eq.1) cycle
-c           if (ih.ne.ip.and.max(ip,ih)+ivv.ge.maxexc) cycle
-            if (abs(ip-ih)+ivv.gt.2) cycle
-            if ((ih.eq.1.or.ip.eq.1).and.max(ih,ip).lt.3.and.
-     &          abs(ip-ih)+ivv.gt.1) cycle
-c dbg hybrid preconditioner
-c           if (ndef.ge.6) cycle
-c dbgend
-           if (singrm.and.ivv.eq.0.and.ih.eq.ip) cycle
-c            if (singrm.and.ivv.eq.0.and.max(ih,ip).eq.1) cycle
-c dbgend
-            ndef = ndef + 1
-            occ_def(IHOLE,1,3*ndef-1) = ih
-            occ_def(IHOLE,2,3*ndef-1) = ih
-            occ_def(IPART,1,3*ndef-1) = ip
-            occ_def(IPART,2,3*ndef-1) = ip
-            occ_def(IVALE,1,3*ndef-1) = max(ih-ip,0) + ivv
-            occ_def(IVALE,2,3*ndef-1) = max(ih-ip,0) + ivv
-            occ_def(IVALE,2,3*ndef-2) = max(ip-ih,0) + ivv
-            occ_def(IVALE,1,3*ndef) = max(ip-ih,0) + ivv
-          end do
-        end do
-      end do
-      call op_from_occ_parameters(-1,parameters,2,
-     &              occ_def,ndef,3,(/0,0,0,0,0,0/),ndef)
-      call set_rule('A(CC)',ttype_op,DEF_OP_FROM_OCC,
-     &              'A(CC)',1,1,
-     &              parameters,2,tgt_info)
-
       ! Metric operator (for testing, also non-diagonal blocks)
       call add_target('S',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = minp, maxp
-        do ih = minh, maxh
-          do ivv = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-           do ivv2 = 0, min(max(max(maxp,maxh),maxexc)-max(ip,ih),maxvv)
-c dbg
-c            exit
-c dbgend
-            if (abs(ih-ip)+2*max(ivv,ivv2).gt.maxv) cycle
-            if (max(ip,ih).eq.0.and.
-     &          (min(ivv,ivv2).eq.0.or..not.pure_vv)) cycle
-            if (max(ip,ih)+min(ivv,ivv2).lt.minexc) cycle
-            if (abs(ih-ip).eq.0.and.min(ivv,ivv2).eq.0) cycle ! no conv. blocks
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+            do jexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+            ! not for purely inactive excitation class
+            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
             ndef = ndef + 1
             occ_def(IHOLE,1,3*ndef-1) = ih
             occ_def(IHOLE,2,3*ndef-1) = ih
             occ_def(IPART,1,3*ndef-1) = ip
             occ_def(IPART,2,3*ndef-1) = ip
-            occ_def(IVALE,1,3*ndef-1) = max(ih-ip,0) + ivv2
-            occ_def(IVALE,2,3*ndef-1) = max(ih-ip,0) + ivv
-            occ_def(IVALE,2,3*ndef-2) = max(ip-ih,0) + ivv2
-            occ_def(IVALE,1,3*ndef) = max(ip-ih,0) + ivv
+            occ_def(IVALE,1,3*ndef-1) = iexc - ip
+            occ_def(IVALE,2,3*ndef-1) = iexc - ip
+            occ_def(IVALE,2,3*ndef-2) = iexc - ih
+            occ_def(IVALE,1,3*ndef) = iexc - ih
            end do
           end do
         end do
@@ -803,6 +439,7 @@ c      call set_rule('Heff',ttype_op,DEF_OP_FROM_OCC,
 c     &              'Heff',1,1,
 c     &              parameters,2,tgt_info)
 c dbgend
+
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
@@ -1029,81 +666,6 @@ c dbgend
       call set_rule2('F_MRCC_E',PRINT_FORMULA,tgt_info)
       call set_arg('F_MRCC_E',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_MRCC_E'/))
-
-      ! multireference CC norm
-      ! a) set up using reduced densities
-      call add_target2('F_MRCC_NORM',.false.,tgt_info)
-      call set_dependency('F_MRCC_NORM','NORM',tgt_info)
-      call set_dependency('F_MRCC_NORM','Tred',tgt_info)
-      call set_dependency('F_MRCC_NORM','Lred',tgt_info)
-      call set_dependency('F_MRCC_NORM','DENS',tgt_info)
-      call set_rule2('F_MRCC_NORM',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_MRCC_NORM'/))
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'NORM'/))
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'OPERATORS',2,
-     &     tgt_info,
-     &     val_label=(/'Lred','Tred'/))
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
-     &     val_int=(/2,3/))
-      call set_rule2('F_MRCC_NORM',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_MRCC_NORM'/))
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'NORM'/))
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
-     &     tgt_info,
-     &     val_label=(/'DENS','Lred','Tred','DENS'/))
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
-     &     val_int=(/2,3,4,2/))
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
-     &     val_int=(/1,4/))
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
-     &     val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
-      call set_arg('F_MRCC_NORM',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      ! b) insert unit operators to allow for differentiation
-      call set_dependency('F_MRCC_NORM','1v',tgt_info)
-      call set_rule2('F_MRCC_NORM',INSERT,tgt_info)
-      call set_arg('F_MRCC_NORM',INSERT,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_MRCC_NORM'/))
-      call set_arg('F_MRCC_NORM',INSERT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_MRCC_NORM'/))
-      call set_arg('F_MRCC_NORM',INSERT,'OP_RES',1,tgt_info,
-     &     val_label=(/'NORM'/))
-      call set_arg('F_MRCC_NORM',INSERT,'OP_INS',1,tgt_info,
-     &     val_label=(/'1v'/))
-      call set_arg('F_MRCC_NORM',INSERT,'OP_INCL',2,tgt_info,
-     &     val_label=(/'Lred','Tred'/))
-      call set_dependency('F_MRCC_NORM','1scal',tgt_info)
-      call set_rule2('F_MRCC_NORM',INSERT,tgt_info)
-      call set_arg('F_MRCC_NORM',INSERT,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_MRCC_NORM'/))
-      call set_arg('F_MRCC_NORM',INSERT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_MRCC_NORM'/))
-      call set_arg('F_MRCC_NORM',INSERT,'OP_RES',1,tgt_info,
-     &     val_label=(/'NORM'/))
-      call set_arg('F_MRCC_NORM',INSERT,'OP_INS',1,tgt_info,
-     &     val_label=(/'1scal'/))
-      call set_arg('F_MRCC_NORM',INSERT,'OP_INCL',2,tgt_info,
-     &     val_label=(/'Lred','Tred'/))
-      ! c) replace 1v by 1 (was used because we only needed valence blocks)
-      call set_dependency('F_MRCC_NORM','1',tgt_info)
-      call set_rule2('F_MRCC_NORM',REPLACE,tgt_info)
-      call set_arg('F_MRCC_NORM',REPLACE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_MRCC_NORM'/))
-      call set_arg('F_MRCC_NORM',REPLACE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_MRCC_NORM'/))
-      call set_arg('F_MRCC_NORM',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'1v','1'/))
-c dbg
-c      call set_rule2('F_MRCC_NORM',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_MRCC_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_MRCC_NORM'/))
-c dbgend
 
       ! transformed excitation operator
       call add_target2('F_T',.false.,tgt_info)
@@ -1345,14 +907,14 @@ c dbgend
       ! (transformed) Jacobian
       call add_target2('F_Atr',.false.,tgt_info)
       call set_dependency('F_Atr','F_A_Ttr',tgt_info)
-      call set_dependency('F_Atr','A(CC)',tgt_info)
+      call set_dependency('F_Atr','A',tgt_info)
       call set_rule2('F_Atr',DERIVATIVE,tgt_info)
       call set_arg('F_Atr',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_Atr'/))
       call set_arg('F_Atr',DERIVATIVE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_A_Ttr'/))
       call set_arg('F_Atr',DERIVATIVE,'OP_RES',1,tgt_info,
-     &     val_label=(/'A(CC)'/))
+     &     val_label=(/'A'/))
       call set_arg('F_Atr',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'Ttr'/))
 c dbg
@@ -1367,44 +929,6 @@ c
       call set_rule2('F_Atr',PRINT_FORMULA,tgt_info)
       call set_arg('F_Atr',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_Atr'/))
-c dbgend
-
-      ! Metric times amplitudes
-      call add_target2('F_MRCC_SC',.false.,tgt_info)
-      call set_dependency('F_MRCC_SC','F_MRCC_NORM',tgt_info)
-      call set_dependency('F_MRCC_SC','OMGred',tgt_info)
-      call set_rule2('F_MRCC_SC',DERIVATIVE,tgt_info)
-      call set_arg('F_MRCC_SC',DERIVATIVE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_MRCC_SC'/))
-      call set_arg('F_MRCC_SC',DERIVATIVE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_MRCC_NORM'/))
-      call set_arg('F_MRCC_SC',DERIVATIVE,'OP_RES',1,tgt_info,
-     &     val_label=(/'OMGred'/))
-      call set_arg('F_MRCC_SC',DERIVATIVE,'OP_DERIV',1,tgt_info,
-     &     val_label=(/'Lred'/))
-c dbg
-c      call set_rule2('F_MRCC_SC',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_MRCC_SC',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_MRCC_SC'/))
-c dbgend
-
-      ! Metric (valence-only part)
-      call add_target2('F_MRCC_D',.false.,tgt_info)
-      call set_dependency('F_MRCC_D','F_MRCC_SC',tgt_info)
-      call set_dependency('F_MRCC_D','D',tgt_info)
-      call set_rule2('F_MRCC_D',DERIVATIVE,tgt_info)
-      call set_arg('F_MRCC_D',DERIVATIVE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_MRCC_D'/))
-      call set_arg('F_MRCC_D',DERIVATIVE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_MRCC_SC'/))
-      call set_arg('F_MRCC_D',DERIVATIVE,'OP_RES',1,tgt_info,
-     &     val_label=(/'D'/))
-      call set_arg('F_MRCC_D',DERIVATIVE,'OP_DERIV',1,tgt_info,
-     &     val_label=(/'Tred'/))
-c dbg
-      call set_rule2('F_MRCC_D',PRINT_FORMULA,tgt_info)
-      call set_arg('F_MRCC_D',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_MRCC_D'/))
 c dbgend
 
       ! HT intermediate
@@ -1603,14 +1127,14 @@ c
 c      ! transformed Metric (should be unity)
 c      call add_target2('F_Str',.false.,tgt_info)
 c      call set_dependency('F_Str','F_S_Ttr',tgt_info)
-c      call set_dependency('F_Str','A(CC)',tgt_info)
+c      call set_dependency('F_Str','A',tgt_info)
 c      call set_rule2('F_Str',DERIVATIVE,tgt_info)
 c      call set_arg('F_Str',DERIVATIVE,'LABEL_RES',1,tgt_info,
 c     &     val_label=(/'F_Str'/))
 c      call set_arg('F_Str',DERIVATIVE,'LABEL_IN',1,tgt_info,
 c     &     val_label=(/'F_S_Ttr'/))
 c      call set_arg('F_Str',DERIVATIVE,'OP_RES',1,tgt_info,
-c     &     val_label=(/'A(CC)'/))
+c     &     val_label=(/'A'/))
 c      call set_arg('F_Str',DERIVATIVE,'OP_DERIV',1,tgt_info,
 c     &     val_label=(/'Ttr'/))
 c      call set_rule2('F_Str',PRINT_FORMULA,tgt_info)
@@ -1640,21 +1164,6 @@ c dbgend
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
 
-      ! density matrix
-      call add_target2('FOPT_MRCC_D',.false.,tgt_info)
-      call set_dependency('FOPT_MRCC_D','F_DENS0',tgt_info)
-      call set_dependency('FOPT_MRCC_D','F_MRCC_D',tgt_info)
-      call set_dependency('FOPT_MRCC_D','DEF_ME_1',tgt_info)
-      call set_dependency('FOPT_MRCC_D','DEF_ME_1scal',tgt_info)
-      call set_dependency('FOPT_MRCC_D','DEF_ME_C0',tgt_info)
-      call set_dependency('FOPT_MRCC_D','DEF_ME_D',tgt_info)
-      call set_dependency('FOPT_MRCC_D','DEF_ME_DENS',tgt_info)
-      call set_rule2('FOPT_MRCC_D',OPTIMIZE,tgt_info)
-      call set_arg('FOPT_MRCC_D',OPTIMIZE,'LABEL_OPT',1,tgt_info,
-     &             val_label=(/'FOPT_MRCC_D'/))
-      call set_arg('FOPT_MRCC_D',OPTIMIZE,'LABELS_IN',2,tgt_info,
-     &             val_label=(/'F_DENS0','F_MRCC_D'/))
-
       ! transformation
       call add_target2('FOPT_T',.false.,tgt_info)
       call set_dependency('FOPT_T','F_T',tgt_info)
@@ -1671,7 +1180,7 @@ c dbgend
       call add_target2('FOPT_Atr',.false.,tgt_info)
       call set_dependency('FOPT_Atr','F_Atr',tgt_info)
       call set_dependency('FOPT_Atr',mel_ham,tgt_info)
-      call set_dependency('FOPT_Atr','DEF_ME_A(CC)',tgt_info)
+      call set_dependency('FOPT_Atr','DEF_ME_A',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_1',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_Dtr',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_C0',tgt_info)
@@ -1772,7 +1281,7 @@ c dbg
 c      ! transformed metric
 c      call add_target2('FOPT_Str',.false.,tgt_info)
 c      call set_dependency('FOPT_Str','F_Str',tgt_info)
-c      call set_dependency('FOPT_Str','DEF_ME_A(CC)',tgt_info)
+c      call set_dependency('FOPT_Str','DEF_ME_A',tgt_info)
 c      call set_dependency('FOPT_Str','DEF_ME_1',tgt_info)
 c      call set_dependency('FOPT_Str','DEF_ME_Dtr',tgt_info)
 c      call set_rule2('FOPT_Str',OPTIMIZE,tgt_info)
@@ -1818,25 +1327,6 @@ c dbgend
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
-
-      ! ME for Hessian
-      call add_target2('DEF_ME_A(CC)',.false.,tgt_info)
-      call set_dependency('DEF_ME_A(CC)','A(CC)',tgt_info)
-      call set_rule2('DEF_ME_A(CC)',DEF_ME_LIST,tgt_info)
-      call set_arg('DEF_ME_A(CC)',DEF_ME_LIST,'LIST',1,tgt_info,
-     &             val_label=(/'ME_A(CC)'/))
-      call set_arg('DEF_ME_A(CC)',DEF_ME_LIST,'OPERATOR',1,tgt_info,
-     &             val_label=(/'A(CC)'/))
-      call set_arg('DEF_ME_A(CC)',DEF_ME_LIST,'MS',1,tgt_info,
-     &             val_int=(/0/))
-      call set_arg('DEF_ME_A(CC)',DEF_ME_LIST,'IRREP',1,tgt_info,
-     &             val_int=(/1/))
-      call set_arg('DEF_ME_A(CC)',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('DEF_ME_A(CC)',DEF_ME_LIST,'DIAG_IRREP',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('DEF_ME_A(CC)',DEF_ME_LIST,'DIAG_MS',1,tgt_info,
-     &     val_int=(/0/))
 
       ! Diagonal Preconditioner
       call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
@@ -2051,23 +1541,6 @@ c dbgend
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
 
-      ! evaluate valence-only metric
-      call add_target2('EVAL_MRCC_D',.false.,tgt_info)
-      call set_dependency('EVAL_MRCC_D','FOPT_MRCC_D',tgt_info)
-      call set_dependency('EVAL_MRCC_D','EVAL_REF_S(S+1)',tgt_info)
-c      call set_dependency('EVAL_MRCC_D','EVAL_DENS0',tgt_info)
-      call set_rule2('EVAL_MRCC_D',EVAL,tgt_info)
-      call set_arg('EVAL_MRCC_D',EVAL,'FORM',1,tgt_info,
-     &             val_label=(/'FOPT_MRCC_D'/))
-c dbg
-c      call set_rule2('EVAL_MRCC_D',PRINT_MEL,tgt_info)
-c      call set_arg('EVAL_MRCC_D',PRINT_MEL,'LIST',1,tgt_info,
-c     &             val_label=(/'ME_DENS'/))
-c      call set_rule2('EVAL_MRCC_D',PRINT_MEL,tgt_info)
-c      call set_arg('EVAL_MRCC_D',PRINT_MEL,'LIST',1,tgt_info,
-c     &             val_label=(/'ME_D'/))
-c dbgend
-
       ! Evaluate diagonal elements of Jacobian
       call add_target('EVAL_Atr',ttype_gen,.false.,tgt_info)
 c dbg hybrid preconditioner
@@ -2082,14 +1555,14 @@ c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'transformed Jacobian :',0,'LIST')
 c      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
-c     &     'ME_A(CC)',1,0,
+c     &     'ME_A',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
       ! put diagonal elements to preconditioner
       call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
       dia_label = trim(dia_label)//'_T'
       labels(1) = trim(dia_label)
-      labels(2) = 'ME_A(CC)'
+      labels(2) = 'ME_A'
       call set_dependency('EVAL_Atr',trim(dia_label),tgt_info)
       call set_rule('EVAL_Atr',ttype_opme,
      &              EXTRACT_DIAG,
@@ -2163,7 +1636,7 @@ c        call warn('set_ic_mrcc_targets','Using hybrid preconditioner')
 c dbgend
         call set_dependency('SOLVE_MRCC','EVAL_Atr',tgt_info)
       end if
-      call set_dependency('SOLVE_MRCC','EVAL_MRCC_D',tgt_info)
+      call set_dependency('SOLVE_MRCC','EVAL_D',tgt_info)
       call set_dependency('SOLVE_MRCC','DEF_ME_Dtrdag',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_T',tgt_info)
       if (optref.ne.0) then
@@ -2223,7 +1696,7 @@ c dbgend
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
      &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
      &                 'ME_D','ME_Dinv',
-     &                 'ME_A(CC)'/))
+     &                 'ME_A'/))
       else if (optref.ne.0.and..not.update_prc) then
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',6,tgt_info,
      &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
@@ -2235,10 +1708,10 @@ c dbgend
       if (optref.ne.0) then
         if (update_prc) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',3,tgt_info,
-     &         val_label=(/'FOPT_T','FOPT_MRCC_D','FOPT_Atr'/))
+     &         val_label=(/'FOPT_T','FOPT_D','FOPT_Atr'/))
         else
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',2,tgt_info,
-     &         val_label=(/'FOPT_T','FOPT_MRCC_D'/))
+     &         val_label=(/'FOPT_T','FOPT_D'/))
         end if
       else
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',1,tgt_info,
@@ -2315,7 +1788,7 @@ c      call add_target('EVAL_Str',ttype_gen,.false.,tgt_info)
 c      call set_dependency('EVAL_Str','FOPT_Str',tgt_info)
 c      call set_dependency('EVAL_Str','SOLVE_REF',tgt_info)
 c      call set_rule('EVAL_Str',ttype_opme,RES_ME_LIST,
-c     &     'ME_A(CC)',1,0,
+c     &     'ME_A',1,0,
 c     &     parameters,0,tgt_info)
 c      call set_rule('EVAL_Str',ttype_opme,EVAL,
 c     &     'FOPT_Str',1,0,
@@ -2323,7 +1796,7 @@ c     &     parameters,0,tgt_info)
 c      call form_parameters(-1,parameters,2,
 c     &     'transformed metric :',0,'LIST')
 c      call set_rule('EVAL_Str',ttype_opme,PRINT_MEL,
-c     &     'ME_A(CC)',1,0,
+c     &     'ME_A',1,0,
 c     &     parameters,2,tgt_info)
 c
 c      ! Evaluate metric times vector
