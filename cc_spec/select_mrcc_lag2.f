@@ -207,7 +207,9 @@ c dbgend
             end do
           end if
 
-          delete = ntesting.ne.ntop+nham
+          ! delete discon. term (only if Hamiltonian was found at all)
+          delete = ntesting.ne.ntop+nham.and.nham.gt.0
+c          delete = ntesting.ne.ntop+nham 
           if (delete) write(luout,'(x,a,i12)')
      &       'Deleting disconnected term with number: ',iterm
 

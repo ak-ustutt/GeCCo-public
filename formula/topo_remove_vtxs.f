@@ -177,6 +177,9 @@ c     &       'new case occurred (multiple possibilities(1))')
 c        end if
 
       else
+c dbg modified
+c        xlines_new = xlines_new + xlines_scr_u
+c dbgend
           call quit(1,'topo_remove_vtxs',
      &       'new case occurred')
       end if

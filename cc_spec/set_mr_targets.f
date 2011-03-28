@@ -33,9 +33,6 @@
       call get_argument_value('method.MR','cmaxexc',
      &     ival=cmaxexc)
 
-      ! first set targets for CASSCF or uncontracted CI wave function
-      call set_unc_mrci_targets(tgt_info,orb_info,maxexc.eq.0)
-
       ! icMRCI calculation?
       l_icci = is_keyword_set('method.MRCI').gt.0
       ! icMRCC calculation?
@@ -44,13 +41,16 @@
       if (l_icci.and.l_iccc) call quit(1,'set_mr_targets',
      &   'Now don''t be greedy, choose either icMRCI or icMRCC!')
 
-      ! if maxexc = 0: return because call of unc_mrci is sufficient
-      if (maxexc.eq.0.or..not.(l_icci.or.l_iccc)) then
-        return
-      else if (cmaxexc.gt.0) then
-        call quit(1,'set_mr_targets',
+      if ((l_icci.or.l_iccc).and.cmaxexc.gt.0)
+     &            call quit(1,'set_mr_targets',
      &            'Warning: Only tested for CASSCF reference so far')
-      end if
+
+      ! first set targets for CASSCF or uncontracted CI wave function
+      call set_unc_mrci_targets(tgt_info,orb_info,
+     &                          .not.(l_icci.or.l_iccc))
+
+      ! if maxexc = 0: return because call of unc_mrci is sufficient
+      if (maxexc.eq.0.or..not.(l_icci.or.l_iccc)) return
 
       ! set targets associated with generalized normal order
       ! (includes reduced density matrices)

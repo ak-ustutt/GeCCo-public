@@ -174,6 +174,9 @@ c      ! currently, we expand primitive operators only
       end do
 
       allocate(ol_map(nvtx),idx_op(nops),fix_vtx(nvtx))
+c dbg modified
+c      fix_vtx = .true.
+c dbgend
       fix_vtx = fix_in
 
       ! identify open-line vertices

@@ -50,6 +50,8 @@
       character ::
      &     op_ht*3, f_ht*5, op_ht0to*6, f_ht0to*8, form_str*50,
      &     def_ht*10
+      real(8) ::
+     &     factor
 
       if (iprlvl.gt.0) write(luout,*) 'setting icMRCC targets'
 
@@ -439,6 +441,20 @@ c      call set_rule('Heff',ttype_op,DEF_OP_FROM_OCC,
 c     &              'Heff',1,1,
 c     &              parameters,2,tgt_info)
 c dbgend
+      ! define effective hamiltonian
+      call add_target('Heff',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do iv = 0, orb_info%nactel
+        ndef = ndef + 1
+        occ_def(IVALE,1,ndef) = iv
+        occ_def(IVALE,2,ndef) = iv
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('Heff',ttype_op,DEF_OP_FROM_OCC,
+     &              'Heff',1,1,
+     &              parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Formulae 
@@ -536,17 +552,122 @@ c     &     val_label=(/'L','T'/))
 c      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
 c     &     val_str='SAME')
 c dbgend
+c dbg modified
+c      ! expand -<Psi_0| L e^T Heff |Psi_0>
+c      call set_dependency('F_MRCC_LAG','Heff',tgt_info)
+c      factor = -1d0
+c      call set_rule2('F_MRCC_LAG',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'LABEL',1,
+c     &     tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+c     &     tgt_info,
+c     &     val_label=(/'NORM'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+c     &     tgt_info,
+c     &     val_label=(/'C0^+','L','T','Heff','C0'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,
+c     &     tgt_info,
+c     &     val_int=(/2,3,4,5,6/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c     &     val_rl8=(/factor/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      factor = factor/2d0
+c      call set_rule2('F_MRCC_LAG',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'LABEL',1,
+c     &     tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+c     &     tgt_info,
+c     &     val_label=(/'NORM'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+c     &     tgt_info,
+c     &     val_label=(/'C0^+','L','T','T','Heff','C0'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,
+c     &     tgt_info,
+c     &     val_int=(/2,3,4,5,6,7/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c     &     val_rl8=(/factor/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      factor = factor/3d0
+c      call set_rule2('F_MRCC_LAG',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'LABEL',1,
+c     &     tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+c     &     tgt_info,
+c     &     val_label=(/'NORM'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OPERATORS',7,
+c     &     tgt_info,
+c     &     val_label=(/'C0^+','L','T','T','T','Heff','C0'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'IDX_SV',7,
+c     &     tgt_info,
+c     &     val_int=(/2,3,4,5,6,7,8/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c     &     val_rl8=(/factor/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      factor = factor/4d0
+c      call set_rule2('F_MRCC_LAG',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'LABEL',1,
+c     &     tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+c     &     tgt_info,
+c     &     val_label=(/'NORM'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OPERATORS',8,
+c     &     tgt_info,
+c     &     val_label=(/'C0^+','L','T','T','T','T','Heff','C0'/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'IDX_SV',8,
+c     &     tgt_info,
+c     &     val_int=(/2,3,4,5,6,7,8,9/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c     &     val_rl8=(/factor/))
+c      call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      ! discard disconnected terms
+c      call set_rule2('F_MRCC_LAG',SELECT_SPECIAL,tgt_info)
+c      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+c     &     val_label=(/'Heff','T'/))
+c      call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
+c     &     val_str='MRCC2')
+c dbgend
       call set_rule2('F_MRCC_LAG',PRINT_FORMULA,tgt_info)
       call set_arg('F_MRCC_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_MRCC_LAG'/))
 
+      ! Factor out Heff from Lagrangian
+      call add_target2('F_MRCC_LAG2',.false.,tgt_info)
+      call set_dependency('F_MRCC_LAG2','F_MRCC_LAG',tgt_info)
+      call set_dependency('F_MRCC_LAG2','F_Heff',tgt_info)
+      call set_rule2('F_MRCC_LAG2',FACTOR_OUT,tgt_info)
+      call set_arg('F_MRCC_LAG2',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_MRCC_LAG2'/))
+      call set_arg('F_MRCC_LAG2',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_MRCC_LAG'/))
+      call set_arg('F_MRCC_LAG2',FACTOR_OUT,'INTERM',1,tgt_info,
+     &     val_label=(/'F_Heff'/))
+
       ! Residual
       call add_target2('F_OMG',.false.,tgt_info)
+c dbg modified
+c      call set_dependency('F_OMG','F_MRCC_LAG2',tgt_info)
+c dbgend
       call set_dependency('F_OMG','F_MRCC_LAG',tgt_info)
       call set_dependency('F_OMG','OMG',tgt_info)
       call set_rule2('F_OMG',DERIVATIVE,tgt_info)
       call set_arg('F_OMG',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_OMG'/))
+c dbg modified
+c      call set_arg('F_OMG',DERIVATIVE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG2'/))
+c dbgend
       call set_arg('F_OMG',DERIVATIVE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_MRCC_LAG'/))
       call set_arg('F_OMG',DERIVATIVE,'OP_RES',1,tgt_info,
@@ -563,9 +684,9 @@ c dbgend
       call set_arg('F_OMG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='MRCC2')
 c dbg
-c      call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_OMG'/))
+      call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
+      call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_OMG'/))
 c dbgend
 
       ! Lagrangian without Lambda...
@@ -640,12 +761,19 @@ c dbgend
 
       ! Energy
       call add_target2('F_MRCC_E',.false.,tgt_info)
+c dbg modified
+c      call set_dependency('F_MRCC_E','F_MRCC_LAG2',tgt_info)
+c dbgend
       call set_dependency('F_MRCC_E','F_MRCC_LAG',tgt_info)
       call set_dependency('F_MRCC_E','E(MR)',tgt_info)
       call set_dependency('F_MRCC_E','L',tgt_info)
       call set_rule2('F_MRCC_E',INVARIANT,tgt_info)
       call set_arg('F_MRCC_E',INVARIANT,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_MRCC_E'/))
+c dbg modified
+c      call set_arg('F_MRCC_E',INVARIANT,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG2'/))
+c dbgend
       call set_arg('F_MRCC_E',INVARIANT,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_MRCC_LAG'/))
       call set_arg('F_MRCC_E',INVARIANT,'OP_RES',1,tgt_info,
@@ -810,6 +938,40 @@ c      call set_dependency('F_E(MRCC)tr','FREF',tgt_info)
       call set_dependency('F_E(MRCC)tr','C0',tgt_info)
       call set_dependency('F_E(MRCC)tr','T',tgt_info)
       call set_dependency('F_E(MRCC)tr','L',tgt_info)
+c dbg modified
+c      call set_rule2('F_E(MRCC)tr',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'LABEL',1,
+c     &     tgt_info,
+c     &     val_label=(/'F_E(MRCC)tr'/))
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'OP_RES',1,
+c     &     tgt_info,
+c     &     val_label=(/'E(MR)'/))
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'OPERATORS',5,
+c     &     tgt_info,
+c     &     val_label=(/'C0^+','L','H','T','C0'/))
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'IDX_SV',5,
+c     &     tgt_info,
+c     &     val_int=(/2,3,4,5,6/))
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c     &     val_rl8=(/1d0/))
+c      call set_rule2('F_E(MRCC)tr',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'LABEL',1,
+c     &     tgt_info,
+c     &     val_label=(/'F_E(MRCC)tr'/))
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'OP_RES',1,
+c     &     tgt_info,
+c     &     val_label=(/'E(MR)'/))
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'OPERATORS',5,
+c     &     tgt_info,
+c     &     val_label=(/'C0^+','L','T','H','C0'/))
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'IDX_SV',5,
+c     &     tgt_info,
+c     &     val_int=(/2,3,4,5,6/))
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c     &     val_rl8=(/-1d0/))
+c      call set_arg('F_E(MRCC)tr',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c dbgend
       call set_rule2('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,tgt_info)
       call set_arg('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,'LABEL',1,tgt_info,
      &     val_label=(/'F_E(MRCC)tr'/))
@@ -1143,22 +1305,43 @@ c     &     val_label=(/'F_Str'/))
 c dbgend
 
 c dbg
-c      ! effective Hamiltonian
-c      call add_target2('F_Heff',.false.,tgt_info)
-c      call set_dependency('F_Heff','F_OMG_C0',tgt_info)
-c      call set_dependency('F_Heff','Heff',tgt_info)
-c      call set_rule2('F_Heff',DERIVATIVE,tgt_info)
-c      call set_arg('F_Heff',DERIVATIVE,'LABEL_RES',1,tgt_info,
-c     &     val_label=(/'F_Heff'/))
-c      call set_arg('F_Heff',DERIVATIVE,'LABEL_IN',1,tgt_info,
-c     &     val_label=(/'F_OMG_C0'/))
-c      call set_arg('F_Heff',DERIVATIVE,'OP_RES',1,tgt_info,
-c     &     val_label=(/'Heff'/))
-c      call set_arg('F_Heff',DERIVATIVE,'OP_DERIV',1,tgt_info,
-c     &     val_label=(/'C0'/))
-c      call set_rule2('F_Heff',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_Heff',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_Heff'/))
+      ! effective Hamiltonian
+      call add_target2('F_Heff',.false.,tgt_info)
+      call set_dependency('F_Heff','F_OMG_C0',tgt_info)
+      call set_dependency('F_Heff','Heff',tgt_info)
+      call set_rule2('F_Heff',DERIVATIVE,tgt_info)
+      call set_arg('F_Heff',DERIVATIVE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_Heff'/))
+      call set_arg('F_Heff',DERIVATIVE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_OMG_C0'/))
+      call set_arg('F_Heff',DERIVATIVE,'OP_RES',1,tgt_info,
+     &     val_label=(/'Heff'/))
+      call set_arg('F_Heff',DERIVATIVE,'OP_DERIV',1,tgt_info,
+     &     val_label=(/'C0'/))
+c dbg
+      call set_rule2('F_Heff',INVARIANT,tgt_info)
+      call set_arg('F_Heff',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_Heff'/))
+      call set_arg('F_Heff',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_Heff'/))
+      call set_arg('F_Heff',INVARIANT,'OP_RES',1,tgt_info,
+     &     val_label=(/'Heff'/))
+      call set_arg('F_Heff',INVARIANT,'OPERATORS',1,tgt_info,
+     &     val_label=(/'E(MR)'/))
+      call set_arg('F_Heff',INVARIANT,'TITLE',1,tgt_info,
+     &     val_str='Effective Hamiltonian in active space')
+      ! factor out from residual for C0 ...
+      call set_rule2('F_Heff',FACTOR_OUT,tgt_info)
+      call set_arg('F_Heff',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_OMG_C0'/))
+      call set_arg('F_Heff',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_OMG_C0'/))
+      call set_arg('F_Heff',FACTOR_OUT,'INTERM',1,tgt_info,
+     &     val_label=(/'F_Heff'/))
+c dbgend
+      call set_rule2('F_Heff',PRINT_FORMULA,tgt_info)
+      call set_arg('F_Heff',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_Heff'/))
 c dbgend
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
@@ -1221,6 +1404,10 @@ c dbgend
       call set_dependency('FOPT_OMG','F_MRCC_E',tgt_info)
       call set_dependency('FOPT_OMG','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_OMG','DEF_ME_T',tgt_info)
+c dbg modified
+c      call set_dependency('FOPT_OMG','F_Heff',tgt_info)
+c      call set_dependency('FOPT_OMG','DEF_ME_Heff',tgt_info)
+c dbgend
       if (.false..and.maxh.gt.0)
      &    call set_dependency('FOPT_OMG','DEF_ME_TT',tgt_info)
 c      call set_dependency('FOPT_OMG','DEF_ME_HT1',tgt_info)
@@ -1244,9 +1431,17 @@ c dbgend
       call set_arg('FOPT_OMG',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_OMG'/))
       if (optref.eq.-1.or.optref.eq.-2) then
+c dbg modified
+c        call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
+c     &             val_label=(/'F_Heff','F_MRCC_E','F_OMG','F_OMG_C0'/))
+c dbgend
         call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',3,tgt_info,
      &             val_label=(/'F_MRCC_E','F_OMG','F_OMG_C0'/))
       else
+c dbg modified
+c        call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',3,tgt_info,
+c     &             val_label=(/'F_Heff','F_MRCC_E','F_OMG'/))
+c dbgend
         call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',2,tgt_info,
      &             val_label=(/'F_MRCC_E','F_OMG'/))
       end if
@@ -1499,18 +1694,18 @@ c dbgend
      &     parameters,1,tgt_info)
 
 c dbg
-c      ! ME_Heff
-c      call add_target2('DEF_ME_Heff',.false.,tgt_info)
-c      call set_dependency('DEF_ME_Heff','Heff',tgt_info)
-c      call set_rule2('DEF_ME_Heff',DEF_ME_LIST,tgt_info)
-c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'LIST',1,tgt_info,
-c     &     val_label=(/'ME_Heff'/))
-c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'OPERATOR',1,tgt_info,
-c     &     val_label=(/'Heff'/))
-c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'IRREP',1,tgt_info,
-c     &     val_int=(/1/))
-c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'MS',1,tgt_info,
-c     &     val_int=(/0/))
+      ! ME_Heff
+      call add_target2('DEF_ME_Heff',.false.,tgt_info)
+      call set_dependency('DEF_ME_Heff','Heff',tgt_info)
+      call set_rule2('DEF_ME_Heff',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_Heff'/))
+      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'Heff'/))
+      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'MS',1,tgt_info,
+     &     val_int=(/0/))
 c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
 c     &     val_int=(/1/))
 c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'DIAG_IRREP',1,tgt_info,
