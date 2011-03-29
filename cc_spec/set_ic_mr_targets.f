@@ -41,7 +41,7 @@
      &     version(60), ivers
       logical ::
      &     sv_fix, l_exist,
-     &     l_icci, l_iccc, project, skip
+     &     l_icci, l_iccc, project, skip, Op_eqs
       real(8) ::
      &     sv_thresh
       character(len_target_name) ::
@@ -99,6 +99,12 @@
         inquire(file='SINGVALS',exist=l_exist)
         if (l_exist) write(luout,*)
      &     'Using existing SINGVALS file for singular value selection!'
+      end if
+
+      if (l_iccc) then
+        call get_argument_value('method.MRCC','Op_eqs',
+     &       lval=Op_eqs)
+        project = project.or.Op_eqs ! no off-diagonal metric blocks
       end if
 
 *----------------------------------------------------------------------*

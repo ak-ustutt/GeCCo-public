@@ -31,7 +31,7 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, deldue2maxtt, check_fac, first
+     &     delete, error, deldue2maxtt, check_fac, first, check
       integer ::
      &     idxtop, idxham
       integer ::
@@ -79,6 +79,7 @@
         call write_title(luout,wst_dbg_subr,'select_mrcc_lag2')
         write(luout,*) 'mode = ',trim(mode)
       endif
+      check = mode(1:5).eq.'CHECK'
 
       ! get operator indices
       error = .false.
@@ -210,7 +211,7 @@ c dbgend
           ! delete discon. term (only if Hamiltonian was found at all)
           delete = ntesting.ne.ntop+nham.and.nham.gt.0
 c          delete = ntesting.ne.ntop+nham 
-          if (delete) write(luout,'(x,a,i12)')
+          if (delete.and.check) write(luout,'(x,a,i12)')
      &       'Deleting disconnected term with number: ',iterm
 
           ! delete if more T-T connections than requested
@@ -396,25 +397,27 @@ c dbgend
 
       enddo
 
-      do itop = 0,maxtop
-        binsum(itop+1) = sum(bins(1:maxtt+1,itop+1))
-      end do
-      write(luout,'(x,76("-"))')
-      write(luout,'(x,a)') 'Number of terms with n-fold commutators'
-      write(luout,'(x,a)') '   n       0       1       2       3'//
-     &                 '       4       5       6       7       8'
-      write(luout,'(x,76("-"))')
-      write(luout,'(5x,9i8)') binsum(1:maxtop+1)
-      write(luout,'(x,76("-"))')
-      write(luout,'(x,a)') 'By number of T-T contractions'
-      do ii = 0, maxtt
-        if (maxval(bins(ii+1,1:maxtop+1)).eq.0) cycle
-        write(luout,'(x,i4,9i8)') ii, bins(ii+1,1:maxtop+1)
-        if (deldue2maxtt.and.maxcon_tt.ge.0.and.ii.ge.maxcon_tt)
-     &      write(luout,'(x,a,i4,a)') 'Truncated at ',maxcon_tt,
-     &                              ' T-T connections'
-      end do
-      write(luout,'(x,76("-"))')
+      if (check) then
+        do itop = 0,maxtop
+          binsum(itop+1) = sum(bins(1:maxtt+1,itop+1))
+        end do
+        write(luout,'(x,76("-"))')
+        write(luout,'(x,a)') 'Number of terms with n-fold commutators'
+        write(luout,'(x,a)') '   n       0       1       2       3'//
+     &                   '       4       5       6       7       8'
+        write(luout,'(x,76("-"))')
+        write(luout,'(5x,9i8)') binsum(1:maxtop+1)
+        write(luout,'(x,76("-"))')
+        write(luout,'(x,a)') 'By number of T-T contractions'
+        do ii = 0, maxtt
+          if (maxval(bins(ii+1,1:maxtop+1)).eq.0) cycle
+          write(luout,'(x,i4,9i8)') ii, bins(ii+1,1:maxtop+1)
+          if (deldue2maxtt.and.maxcon_tt.ge.0.and.ii.ge.maxcon_tt)
+     &        write(luout,'(x,a,i4,a)') 'Truncated at ',maxcon_tt,
+     &                                ' T-T connections'
+        end do
+        write(luout,'(x,76("-"))')
+      end if
 
       do idx = 1, n_extra
         if (abs(extra_fac(idx)).gt.1d-12) then

@@ -226,6 +226,8 @@
       call add_command_proto(INSERT,tgt_info)
       call set_arg('_PROTO_',INSERT,'TITLE',1,tgt_info,
      &     val_str='---')
+*----------------------------------------------------------------------*
+      call add_command_proto(DEF_MRCC_INTM,tgt_info)
 !     ME-lists:
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_ME_LIST,tgt_info)

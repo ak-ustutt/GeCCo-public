@@ -130,12 +130,6 @@
      &     avoid,navoid,
      &     inproj,ninproj,
      &     .false.,op_info)
-c dbg modified
-c      if (.not.init) then
-c        call sum_terms(flist_res,op_info)
-c        call del_zero_terms(flist_res,op_info,1d-12)
-c      end if
-c dbgend
 
       if(ntest.ge.10)then
         call write_title(luout,wst_title,'Generated formula')
