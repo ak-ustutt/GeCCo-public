@@ -39,7 +39,7 @@
      &     n_t_cls, i_cls,
      &     n_tred_cls, len_form, optref, idef, ciroot,
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
-     &     G_level, iexc, jexc
+     &     G_level, iexc, jexc!, maxexc
       logical ::
      &     update_prc, skip, preopt, project, first, cheap_prc, Op_eqs
       character(len_target_name) ::
@@ -60,6 +60,8 @@
       msc = +1 ! assuming closed shell
 
       ! get some keywords
+c      call get_argument_value('method.MR','maxexc',
+c     &     ival=maxexc)
       call get_argument_value('method.MR','ciroot',
      &     ival=ciroot)
       call get_argument_value('method.MR','cheap_prc',
@@ -329,34 +331,34 @@ c     &             val_int=(/1/))
      &              'OMGtr',1,1,
      &              parameters,2,tgt_info)
 
-      ! Metric operator (for testing, also non-diagonal blocks)
-      call add_target('S',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
-            do jexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
-            ! not for purely inactive excitation class
-            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
-            ndef = ndef + 1
-            occ_def(IHOLE,1,3*ndef-1) = ih
-            occ_def(IHOLE,2,3*ndef-1) = ih
-            occ_def(IPART,1,3*ndef-1) = ip
-            occ_def(IPART,2,3*ndef-1) = ip
-            occ_def(IVALE,1,3*ndef-1) = iexc - ip
-            occ_def(IVALE,2,3*ndef-1) = iexc - ip
-            occ_def(IVALE,2,3*ndef-2) = iexc - ih
-            occ_def(IVALE,1,3*ndef) = iexc - ih
-           end do
-          end do
-        end do
-      end do
-      call op_from_occ_parameters(-1,parameters,2,
-     &              occ_def,ndef,3,(/0,0,0,0,0,0/),ndef)
-      call set_rule('S',ttype_op,DEF_OP_FROM_OCC,
-     &              'S',1,1,
-     &              parameters,2,tgt_info)
+c      ! Metric operator (for testing, also non-diagonal blocks)
+c      call add_target('S',ttype_op,.false.,tgt_info)
+c      occ_def = 0
+c      ndef = 0
+c      do ip = 0, maxp
+c        do ih = 0, maxh
+c          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+c            do jexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+c            ! not for purely inactive excitation class
+c            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
+c            ndef = ndef + 1
+c            occ_def(IHOLE,1,3*ndef-1) = ih
+c            occ_def(IHOLE,2,3*ndef-1) = ih
+c            occ_def(IPART,1,3*ndef-1) = ip
+c            occ_def(IPART,2,3*ndef-1) = ip
+c            occ_def(IVALE,1,3*ndef-1) = iexc - ip
+c            occ_def(IVALE,2,3*ndef-1) = iexc - ip
+c            occ_def(IVALE,2,3*ndef-2) = iexc - ih
+c            occ_def(IVALE,1,3*ndef) = iexc - ih
+c           end do
+c          end do
+c        end do
+c      end do
+c      call op_from_occ_parameters(-1,parameters,2,
+c     &              occ_def,ndef,3,(/0,0,0,0,0,0/),ndef)
+c      call set_rule('S',ttype_op,DEF_OP_FROM_OCC,
+c     &              'S',1,1,
+c     &              parameters,2,tgt_info)
 
       ! Diagonal Preconditioner
       call add_target(op_dia//'_T',ttype_op,.false.,
@@ -448,6 +450,33 @@ c     &             val_int=(/1/))
      &     val_label=(/'Geff'/))
       call set_arg('Geff',CLONE_OP,'TEMPLATE',1,tgt_info,
      &     val_label=(/'T'/))
+c dbg
+c      call add_target('Geff',ttype_op,.false.,tgt_info)
+c      occ_def = 0
+c      ndef = 0
+c      do ip = 0, maxexc
+c        do ih = 0, min(maxexc,2) !only one hole orbital
+c          iv = 2 !CAS(2,2)
+c          if (max(ip,ih).eq.0) iv = -1
+c          if (ip.eq.ih+1) iv = 1
+c          if (ip.eq.ih+2) iv = 0
+c          if (ip.gt.ih+2) iv = -1
+c          do ivv = 0, iv
+c            ndef = ndef + 1
+c            occ_def(IHOLE,2,ndef) = ih
+c            occ_def(IPART,1,ndef) = ip
+c            occ_def(IVALE,1,ndef) = max(ih-ip,0) + ivv
+c            occ_def(IVALE,2,ndef) = max(ip-ih,0) + ivv
+c          end do
+c        end do
+c      end do
+c      call op_from_occ_parameters(-1,parameters,2,
+c     &              occ_def,ndef,1,(/0,0/),ndef)
+c      call set_rule('Geff',ttype_op,DEF_OP_FROM_OCC,
+c     &              'Geff',1,1,
+c     &              parameters,2,tgt_info)
+c dbgend
+
 
 *----------------------------------------------------------------------*
 *     Formulae 
@@ -560,8 +589,13 @@ c     &     val_label=(/'F_HT2','F_HT1','F_HT0to2','F_HT0to1'/))
      &       val_label=(/'F_MRCC_LAG'/))
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_MRCC_LAG'/))
-        call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
-     &       val_label=(/'H','T'/))
+        if (project) then !remove terms that are projected out
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',4,
+     &         tgt_info,val_label=(/'H','T','C0','L'/))
+        else
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,
+     &         tgt_info,val_label=(/'H','T'/))
+        end if
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCC2')
         if (G_level.lt.0) ! approximation will change factors
@@ -617,10 +651,12 @@ c dbgend
      &     val_label=(/'H','T'/))
       call set_arg('F_OMG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='MRCC2')
+      call set_arg('F_OMG',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &     val_str='CHECK')
 c dbg
-      call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
-      call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_OMG'/))
+c      call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_OMG'/))
 c dbgend
 
       ! Lagrangian without Lambda...
@@ -687,10 +723,12 @@ c     &     val_str='Residual for Reference function')
      &     val_label=(/'H','T'/))
       call set_arg('F_OMG_C0',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='MRCC2')
+      call set_arg('F_OMG_C0',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &     val_str='CHECK')
 c dbg
-      call set_rule2('F_OMG_C0',PRINT_FORMULA,tgt_info)
-      call set_arg('F_OMG_C0',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_OMG_C0'/))
+c      call set_rule2('F_OMG_C0',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_OMG_C0',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_OMG_C0'/))
 c dbgend
 
       ! Energy
@@ -718,6 +756,8 @@ c dbgend
      &     val_label=(/'H','T'/))
       call set_arg('F_MRCC_E',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='MRCC2')
+      call set_arg('F_MRCC_E',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &     val_str='CHECK')
       call set_rule2('F_MRCC_E',PRINT_FORMULA,tgt_info)
       call set_arg('F_MRCC_E',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_MRCC_E'/))
@@ -1345,7 +1385,7 @@ c dbgend
         end if
       else
         if (Op_eqs) then
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',5,tgt_info,
+          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
      &             val_label=(/'F_Heff','F_MRCC_E','F_Geff',
      &                         'F_OMG'/))
         else

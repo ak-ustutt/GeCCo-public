@@ -31,14 +31,16 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, deldue2maxtt, check_fac, first, check
+     &     delete, error, deldue2maxtt, check_fac, first, check, proj
       integer ::
-     &     idxtop, idxham
+     &     idxtop, idxham, idxc, idxl, nprojdel
       integer ::
      &     ii, idx_op, ivtx, nvtx, iarc, vtx1, vtx2,
      &     ntt, ntop, nham, idx_op1, idx_op2, itop,
      &     ntesting, itesting, maxcon_tt, ntt_save, nj, ioff,
-     &     jvtx, kvtx, nhash, ham_vtx, kk, iterm, n_extra, idx
+     &     jvtx, kvtx, nhash, ham_vtx, kk, iterm, n_extra, idx,
+     &     nopen(2), nclos(2), vtxc1, vtxc2, nvtxc, cnt(ngastp,2),
+     &     nvtxl, vtxl
       integer ::
      &     idxop(nlabels), bins(maxtt+1,maxtop+1), binsum(maxtop+1)
       integer(8) ::
@@ -87,7 +89,8 @@
         idxop(ii) = idx_oplist2(trim(labels(ii)),op_info)
         error = error.or.idxop(ii).le.0
       end do
-      error = nlabels.ne.2
+      error = nlabels.ne.2.and.nlabels.ne.4
+      proj = nlabels.eq.4
       
       if (error) then
         write(luout,*) 'Error for operator labels:'
@@ -99,7 +102,7 @@
           end if
         end do
         if (nlabels.ne.2)
-     &       call quit(1,'select_mrcc_lag2','need exactly 2 labels')
+     &       call quit(1,'select_mrcc_lag2','need 2 or 4 labels')
         call quit(1,'select_mrcc_lag2','Labels not on list!')
       end if
 
@@ -108,10 +111,15 @@
 
       idxham  = idxop(1)
       idxtop  = idxop(2)
+      if (proj) then
+        idxc    = idxop(3)
+        idxl    = idxop(4)
+      end if
 
       bins = 0
       n_extra = 0
       iterm = 0
+      nprojdel = 0
       allocate(extra_term(1),extra_hash(1),extra_fac(1))
 
       form_pnt => flist
@@ -146,6 +154,8 @@ c dbgend
           ! - vertex number of Hamiltonian
           ntop  = 0
           nham  = 0
+          nvtxc = 0
+          nvtxl = 0
           ham_vtx = 0
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
@@ -162,9 +172,21 @@ c dbgend
               connected(ivtx) = .true.
               ham_vtx = ham_vtx + 1
             end if
+            if (proj) then
+              if (idx_op.eq.idxc) then
+                nvtxc = nvtxc+1
+                if (nvtxc.eq.1) vtxc1 = ivtx
+                if (nvtxc.eq.2) vtxc2 = ivtx
+              else if (idx_op.eq.idxl) then
+                nvtxl = nvtxl+1
+                vtxl = ivtx
+              end if
+            end if
           end do
           if (nham.gt.1) call warn('select_mrcc_lag2',
      &       'More than one Hamiltonian? Are we completely crazy now?!')
+          if (proj.and.(nvtxc.gt.2.or.nvtxl.gt.1))
+     &          call quit(1,'set_mrcc_lag2','max. C0^+, C0, and L')
 
           ! number of T-T contractions
           ntt = 0
@@ -219,6 +241,35 @@ c          delete = ntesting.ne.ntop+nham
             delete = delete.or.ntt_save.gt.maxcon_tt
             deldue2maxtt = deldue2maxtt.or.ntt_save.gt.maxcon_tt
 c            iterm = iterm - 1 ! do not count as term
+          end if
+
+          ! delete if term will be projected out anyways
+          if (.not.delete.and.proj.and.nvtxc.eq.2.and.nvtxl.eq.1) then
+            nopen = 0
+            nclos = 0
+            ! get number of open and closed lines to C0^+ and C0
+            do iarc = 1, contr%narc
+              if (contr%arc(iarc)%link(1).eq.vtxc1) then
+                if (contr%arc(iarc)%link(2).eq.vtxl) then
+                  nopen(1) = nopen(1)
+     &                     + sum(contr%arc(iarc)%occ_cnt(1:ngastp,1:2))
+                else if (contr%arc(iarc)%link(2).ne.vtxc2) then
+                  nclos(1) = nclos(1)
+     &                     + sum(contr%arc(iarc)%occ_cnt(1:ngastp,1:2))
+                end if
+              else if (contr%arc(iarc)%link(2).eq.vtxc2) then
+                if (contr%arc(iarc)%link(1).eq.vtxl) then
+                  nopen(2) = nopen(2)
+     &                     + sum(contr%arc(iarc)%occ_cnt(1:ngastp,1:2))
+                else if (contr%arc(iarc)%link(1).ne.vtxc1) then
+                  nclos(2) = nclos(2)
+     &                     + sum(contr%arc(iarc)%occ_cnt(1:ngastp,1:2))
+                end if
+              end if
+            end do
+            ! delete if more open line pairs than closed line pairs
+            delete = minval(nopen(1:2)).gt.minval(nclos(1:2))
+            if (delete) nprojdel = nprojdel + 1
           end if
 
           ! factor checking
@@ -396,6 +447,10 @@ c dbgend
         form_pnt => form_pnt_next
 
       enddo
+
+      if (proj) write(luout,'(x,a,i12)')
+     &   'Number of terms deleted because they will be projected out:',
+     &       nprojdel
 
       if (check) then
         do itop = 0,maxtop

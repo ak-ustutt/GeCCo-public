@@ -67,7 +67,8 @@
       if (maxh.lt.0) maxh = maxexc
       if (maxp.lt.0) maxp = maxexc
       allocate(excrestr(0:maxh,0:maxp,1:2))
-      call get_exc_restr(excrestr,maxh,maxp)
+      call get_exc_restr(excrestr,maxh,maxp,
+     &                   orb_info%nactel,orb_info%nactorb)
 
       ! set targets common for internally contracted methods
       call set_ic_mr_targets(tgt_info,orb_info,

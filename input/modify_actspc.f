@@ -62,6 +62,7 @@
      &         - orb_info%igassh(idx,1) - orb_info%igassh(idx,2)
         end if
       end do
+      orb_info%nactorb = sum(ishell(1:nsym))
 
       if (iprint.ge.50) then
         write(luout,'(x,a,8i4)') 'inactive occupied orbitals: ',

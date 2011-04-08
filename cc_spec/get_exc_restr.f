@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine get_exc_restr(excrestr,maxh,maxp)
+      subroutine get_exc_restr(excrestr,maxh,maxp,nactel,nactorb)
 *----------------------------------------------------------------------*
 *     get the restrictions for the excitation classes from input
 *
@@ -14,7 +14,7 @@
      &     ntest = 100
 
       integer, intent(in) ::
-     &     maxh, maxp
+     &     maxh, maxp, nactel, nactorb
       integer, intent(out) ::
      &     excrestr(0:maxh,0:maxp,1:2)
 
@@ -69,6 +69,10 @@
           excrestr(ih,ip,1) = max(ih,ip)
           excrestr(ih,ip,2) = min(excrestr(ih,ip,2),(ih+ip+maxv)/2)
           excrestr(ih,ip,2) = min(excrestr(ih,ip,2),max(ih,ip)+maxvv)
+          ! cannot annihilate more active electrons than defined
+          excrestr(ih,ip,2) = min(excrestr(ih,ip,2),nactel+ih)
+          ! cannot in total create more act. el. than empty active orbs
+          if (ih-ip.gt.2*nactorb-nactel) excrestr(ih,ip,2) = 0
           if (excrestr(ih,ip,2).lt.excrestr(ih,ip,1)) then
             excrestr(ih,ip,1) = 1
             excrestr(ih,ip,2) = 0
