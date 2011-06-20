@@ -81,6 +81,9 @@ c      call add_target('DENS',ttype_op,.false.,tgt_info)
       call add_target2('DENS',.false.,tgt_info)
       occ_def = 0
       ndef = 0
+c dbg for calculating cumulants
+c      do iv = 1, maxcum
+c dbgend
       do iv = 1, 2 + maxexc*(maxtop+1) - ioff
             ndef = ndef + 1
             occ_def(IVALE,1,ndef*2) = iv
@@ -107,6 +110,9 @@ c     &              parameters,2,tgt_info)
       call add_target('DENS_dag',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
+c dbg for calculating cumulants
+c      do iv = 1, maxcum
+c dbgend
       do iv = 1, 2 + maxexc*(maxtop+1) - ioff
             ndef = ndef + 1
             occ_def(IVALE,1,ndef) = iv
@@ -154,6 +160,21 @@ c     &              parameters,2,tgt_info)
      &              'HOLE',1,1,
      &              parameters,2,tgt_info)
 
+      ! define central reduced densities
+      call add_target('CENT',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do iv = 2, maxcum
+            ndef = ndef + 1
+            occ_def(IVALE,1,ndef*2) = iv
+            occ_def(IVALE,2,ndef*2-1) = iv
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,2,(/0,0,0,0/),ndef)
+      call set_rule('CENT',ttype_op,DEF_OP_FROM_OCC,
+     &              'CENT',1,1,
+     &              parameters,2,tgt_info)
+
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
@@ -188,6 +209,7 @@ c     &              parameters,2,tgt_info)
       call set_arg('F_DENS0',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'DENS_dag'/))
       call set_rule2('F_DENS0',PRINT_FORMULA,tgt_info)
+c comment out for calculating cumulants:
       call set_arg('F_DENS0',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_DENS0'/))
 
@@ -236,16 +258,36 @@ c dbgend
       call add_target2('F_preCUM',.false.,tgt_info)
       call set_dependency('F_preCUM','preDENS',tgt_info)
       call set_dependency('F_preCUM','DENS_dag',tgt_info)
-      call set_dependency('F_preCUM','DENS',tgt_info)
+      call set_dependency('F_preCUM','CENT',tgt_info)
       call set_rule2('F_preCUM',DEF_CUMULANTS,tgt_info)
       call set_arg('F_preCUM',DEF_CUMULANTS,'LABEL',1,tgt_info,
      &     val_label=(/'F_preCUM'/))
       call set_arg('F_preCUM',DEF_CUMULANTS,'OP_RES',1,tgt_info,
      &     val_label=(/'preDENS'/))
       call set_arg('F_preCUM',DEF_CUMULANTS,'OPERATORS',2,tgt_info,
-     &     val_label=(/'DENS_dag','DENS'/))
+     &     val_label=(/'DENS_dag','CENT'/))
       call set_arg('F_preCUM',DEF_CUMULANTS,'MODE',1,tgt_info,
-     &     val_str='CUMULANT')
+     &     val_str='CUMULANT(CENT)')
+      ! exception: one-particle cumulant = one-particle RD
+      call set_rule2('F_preCUM',EXPAND_OP_PRODUCT,tgt_info)
+      call set_dependency('F_preCUM','DENS',tgt_info)
+      call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_preCUM'/))
+      call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'preDENS'/))
+      call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'OPERATORS',3,
+     &     tgt_info,
+     &     val_label=(/'DENS','DENS_dag','DENS'/))
+      call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+     &     val_int=(/1,2,1/))
+      call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+     &     val_int=(/1,3/))
+      call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
+     &     val_int=(/1,1,1/))
+      call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
 
       ! cumulant expression in terms of densities
       call add_target2('F_CUM',.false.,tgt_info)
@@ -264,230 +306,262 @@ c dbgend
       call set_arg('F_CUM',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_CUM'/))
 
-      ! define one-particle hole density
-      call add_target2('F_HOLE_1',.false.,tgt_info)
-      call set_dependency('F_HOLE_1','HOLE',tgt_info)
-      call set_dependency('F_HOLE_1','CUM',tgt_info)
-      call set_dependency('F_HOLE_1','1',tgt_info)
-      call set_rule2('F_HOLE_1',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE_1'/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'OPERATORS',3,
-     &     tgt_info,
-     &     val_label=(/'HOLE','1','HOLE'/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
-     &     val_int=(/1,2,1/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
-     &     val_int=(/1,-1,1/))
-      call set_rule2('F_HOLE_1',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE_1'/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'OPERATORS',4,
-     &     tgt_info,
-     &     val_label=(/'HOLE','CUM','CUM','HOLE'/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
-     &     val_int=(/1,2,2,1/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
-     &     val_int=(/2,3/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
-     &     val_int=(/2,1,1,2/))
-      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      call set_rule2('F_HOLE_1',PRINT_FORMULA,tgt_info)
-      call set_arg('F_HOLE_1',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE_1'/))
+c      ! define one-particle hole density
+c      call add_target2('F_HOLE_1',.false.,tgt_info)
+c      call set_dependency('F_HOLE_1','HOLE',tgt_info)
+c      call set_dependency('F_HOLE_1','CUM',tgt_info)
+c      call set_dependency('F_HOLE_1','1',tgt_info)
+c      call set_rule2('F_HOLE_1',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE_1'/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'OPERATORS',3,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','1','HOLE'/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+c     &     val_int=(/1,2,1/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
+c     &     val_int=(/1,-1,1/))
+c      call set_rule2('F_HOLE_1',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE_1'/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'OPERATORS',4,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','CUM','CUM','HOLE'/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+c     &     val_int=(/1,2,2,1/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+c     &     val_int=(/2,3/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+c     &     val_int=(/2,1,1,2/))
+c      call set_arg('F_HOLE_1',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      call set_rule2('F_HOLE_1',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_HOLE_1',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE_1'/))
+c
+c      ! define two-particle hole density
+c      call add_target2('F_HOLE_2',.false.,tgt_info)
+c      call set_dependency('F_HOLE_2','HOLE',tgt_info)
+c      call set_dependency('F_HOLE_2','CUM',tgt_info)
+c      call set_dependency('F_HOLE_2','1',tgt_info)
+c      call set_rule2('F_HOLE_2',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE_2'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OPERATORS',3,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','1','HOLE'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+c     &     val_int=(/1,2,1/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
+c     &     val_int=(/2,1,2/))
+c      call set_rule2('F_HOLE_2',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE_2'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OPERATORS',5,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','CUM','1','CUM','HOLE'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+c     &     val_int=(/1,2,3,2,1/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+c     &     val_int=(/3/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'AVOID',6,tgt_info,
+c     &     val_int=(/2,3,2,4,3,4/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'BLK_MIN',5,tgt_info,
+c     &     val_int=(/2,1,2,1,2/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      call set_rule2('F_HOLE_2',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE_2'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OPERATORS',6,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','CUM','CUM','CUM','CUM','HOLE'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+c     &     val_int=(/1,2,3,3,2,1/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+c     &     val_int=(/4/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'AVOID',8,tgt_info,
+c     &     val_int=(/2,4,2,5,3,4,3,5/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c     &     val_rl8=(/2d0/))
+c      call set_rule2('F_HOLE_2',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE_2'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OPERATORS',4,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','CUM','CUM','HOLE'/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+c     &     val_int=(/1,2,2,1/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+c     &     val_int=(/2,3/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'BLK_MIN',4,tgt_info,
+c     &     val_int=(/2,2,2,2/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+c     &     val_int=(/2,2,2,2/))
+c      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      call set_rule2('F_HOLE_2',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_HOLE_2',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE_2'/))
+c
+c      ! define hole density
+c      call add_target2('F_HOLE',.false.,tgt_info)
+c      call set_dependency('F_HOLE','HOLE',tgt_info)
+c      call set_dependency('F_HOLE','CUM',tgt_info)
+c      call set_dependency('F_HOLE','1',tgt_info)
+c      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',3,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','1','HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+c     &     val_int=(/1,2,1/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
+c     &     val_int=(/1,-1,1/))
+c      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',4,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','CUM','CUM','HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+c     &     val_int=(/1,2,2,1/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+c     &     val_int=(/2,3/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+c     &     val_int=(/2,1,1,2/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',3,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','1','HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+c     &     val_int=(/1,2,1/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
+c     &     val_int=(/2,1,2/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',5,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','CUM','1','CUM','HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+c     &     val_int=(/1,2,3,2,1/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+c     &     val_int=(/3/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'AVOID',6,tgt_info,
+c     &     val_int=(/2,3,2,4,3,4/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MIN',5,tgt_info,
+c     &     val_int=(/2,1,2,1,2/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',6,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','CUM','CUM','CUM','CUM','HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+c     &     val_int=(/1,2,3,3,2,1/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+c     &     val_int=(/4/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'AVOID',8,tgt_info,
+c     &     val_int=(/2,4,2,5,3,4,3,5/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c     &     val_rl8=(/2d0/))
+c      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',4,
+c     &     tgt_info,
+c     &     val_label=(/'HOLE','CUM','CUM','HOLE'/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+c     &     val_int=(/1,2,2,1/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+c     &     val_int=(/2,3/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MIN',4,tgt_info,
+c     &     val_int=(/2,2,2,2/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+c     &     val_int=(/2,2,2,2/))
+c      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &     val_log=(/.false./))
+c      call set_rule2('F_HOLE',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_HOLE',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HOLE'/))
 
-      ! define two-particle hole density
-      call add_target2('F_HOLE_2',.false.,tgt_info)
-      call set_dependency('F_HOLE_2','HOLE',tgt_info)
-      call set_dependency('F_HOLE_2','CUM',tgt_info)
-      call set_dependency('F_HOLE_2','1',tgt_info)
-      call set_rule2('F_HOLE_2',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE_2'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OPERATORS',3,
-     &     tgt_info,
-     &     val_label=(/'HOLE','1','HOLE'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
-     &     val_int=(/1,2,1/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
-     &     val_int=(/2,1,2/))
-      call set_rule2('F_HOLE_2',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE_2'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OPERATORS',5,
-     &     tgt_info,
-     &     val_label=(/'HOLE','CUM','1','CUM','HOLE'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
-     &     val_int=(/1,2,3,2,1/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/3/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'AVOID',6,tgt_info,
-     &     val_int=(/2,3,2,4,3,4/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'BLK_MIN',5,tgt_info,
-     &     val_int=(/2,1,2,1,2/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      call set_rule2('F_HOLE_2',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE_2'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OPERATORS',6,
-     &     tgt_info,
-     &     val_label=(/'HOLE','CUM','CUM','CUM','CUM','HOLE'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
-     &     val_int=(/1,2,3,3,2,1/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/4/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'AVOID',8,tgt_info,
-     &     val_int=(/2,4,2,5,3,4,3,5/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
-     &     val_rl8=(/2d0/))
-      call set_rule2('F_HOLE_2',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE_2'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'OPERATORS',4,
-     &     tgt_info,
-     &     val_label=(/'HOLE','CUM','CUM','HOLE'/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
-     &     val_int=(/1,2,2,1/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
-     &     val_int=(/2,3/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'BLK_MIN',4,tgt_info,
-     &     val_int=(/2,2,2,2/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
-     &     val_int=(/2,2,2,2/))
-      call set_arg('F_HOLE_2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      call set_rule2('F_HOLE_2',PRINT_FORMULA,tgt_info)
-      call set_arg('F_HOLE_2',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE_2'/))
+      ! precursor for central density expression in terms of densities
+      call add_target2('F_preCENT',.false.,tgt_info)
+      call set_dependency('F_preCENT','preDENS',tgt_info)
+      call set_dependency('F_preCENT','DENS_dag',tgt_info)
+      call set_dependency('F_preCENT','DENS',tgt_info)
+      call set_rule2('F_preCENT',DEF_CUMULANTS,tgt_info)
+      call set_arg('F_preCENT',DEF_CUMULANTS,'LABEL',1,tgt_info,
+     &     val_label=(/'F_preCENT'/))
+      call set_arg('F_preCENT',DEF_CUMULANTS,'OP_RES',1,tgt_info,
+     &     val_label=(/'preDENS'/))
+      call set_arg('F_preCENT',DEF_CUMULANTS,'OPERATORS',2,tgt_info,
+     &     val_label=(/'DENS_dag','DENS'/))
+      call set_arg('F_preCENT',DEF_CUMULANTS,'MODE',1,tgt_info,
+     &     val_str='CENTRAL')
 
-      ! define hole density
-      call add_target2('F_HOLE',.false.,tgt_info)
-      call set_dependency('F_HOLE','HOLE',tgt_info)
-      call set_dependency('F_HOLE','CUM',tgt_info)
-      call set_dependency('F_HOLE','1',tgt_info)
-      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',3,
-     &     tgt_info,
-     &     val_label=(/'HOLE','1','HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
-     &     val_int=(/1,2,1/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
-     &     val_int=(/1,-1,1/))
-      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',4,
-     &     tgt_info,
-     &     val_label=(/'HOLE','CUM','CUM','HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
-     &     val_int=(/1,2,2,1/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
-     &     val_int=(/2,3/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
-     &     val_int=(/2,1,1,2/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',3,
-     &     tgt_info,
-     &     val_label=(/'HOLE','1','HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
-     &     val_int=(/1,2,1/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
-     &     val_int=(/2,1,2/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',5,
-     &     tgt_info,
-     &     val_label=(/'HOLE','CUM','1','CUM','HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
-     &     val_int=(/1,2,3,2,1/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/3/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'AVOID',6,tgt_info,
-     &     val_int=(/2,3,2,4,3,4/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MIN',5,tgt_info,
-     &     val_int=(/2,1,2,1,2/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',6,
-     &     tgt_info,
-     &     val_label=(/'HOLE','CUM','CUM','CUM','CUM','HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
-     &     val_int=(/1,2,3,3,2,1/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/4/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'AVOID',8,tgt_info,
-     &     val_int=(/2,4,2,5,3,4,3,5/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
-     &     val_rl8=(/2d0/))
-      call set_rule2('F_HOLE',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'OPERATORS',4,
-     &     tgt_info,
-     &     val_label=(/'HOLE','CUM','CUM','HOLE'/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
-     &     val_int=(/1,2,2,1/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
-     &     val_int=(/2,3/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MIN',4,tgt_info,
-     &     val_int=(/2,2,2,2/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
-     &     val_int=(/2,2,2,2/))
-      call set_arg('F_HOLE',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      call set_rule2('F_HOLE',PRINT_FORMULA,tgt_info)
-      call set_arg('F_HOLE',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HOLE'/))
+      ! cumulant expression in terms of densities
+      call add_target2('F_CENT',.false.,tgt_info)
+      call set_dependency('F_CENT','F_preCENT',tgt_info)
+      call set_dependency('F_CENT','CENT',tgt_info)
+      call set_rule2('F_CENT',DERIVATIVE,tgt_info)
+      call set_arg('F_CENT',DERIVATIVE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_CENT'/))
+      call set_arg('F_CENT',DERIVATIVE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_preCENT'/))
+      call set_arg('F_CENT',DERIVATIVE,'OP_RES',1,tgt_info,
+     &     val_label=(/'CENT'/))
+      call set_arg('F_CENT',DERIVATIVE,'OP_DERIV',1,tgt_info,
+     &     val_label=(/'DENS_dag'/))
+      call set_rule2('F_CENT',PRINT_FORMULA,tgt_info)
+      call set_arg('F_CENT',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_CENT'/))
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
@@ -518,7 +592,7 @@ c dbgend
       ! cumulants in terms of reduced densities
       call add_target2('FOPT_CUM',.false.,tgt_info)
       call set_dependency('FOPT_CUM','F_CUM',tgt_info)
-      call set_dependency('FOPT_CUM','DEF_ME_DENS',tgt_info)
+      call set_dependency('FOPT_CUM','DEF_ME_CENT',tgt_info)
       call set_dependency('FOPT_CUM','DEF_ME_CUM',tgt_info)
       call set_rule2('FOPT_CUM',OPTIMIZE,tgt_info)
       call set_arg('FOPT_CUM',OPTIMIZE,'LABEL_OPT',1,tgt_info,
@@ -526,17 +600,28 @@ c dbgend
       call set_arg('FOPT_CUM',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_CUM'/))
 
-      ! hole densities
-      call add_target2('FOPT_HOLE',.false.,tgt_info)
-      call set_dependency('FOPT_HOLE','F_HOLE',tgt_info)
-      call set_dependency('FOPT_HOLE','DEF_ME_1',tgt_info)
-      call set_dependency('FOPT_HOLE','DEF_ME_CUM',tgt_info)
-      call set_dependency('FOPT_HOLE','DEF_ME_HOLE',tgt_info)
-      call set_rule2('FOPT_HOLE',OPTIMIZE,tgt_info)
-      call set_arg('FOPT_HOLE',OPTIMIZE,'LABEL_OPT',1,tgt_info,
-     &             val_label=(/'FOPT_HOLE'/))
-      call set_arg('FOPT_HOLE',OPTIMIZE,'LABELS_IN',1,tgt_info,
-     &             val_label=(/'F_HOLE'/))
+c      ! hole densities
+c      call add_target2('FOPT_HOLE',.false.,tgt_info)
+c      call set_dependency('FOPT_HOLE','F_HOLE',tgt_info)
+c      call set_dependency('FOPT_HOLE','DEF_ME_1',tgt_info)
+c      call set_dependency('FOPT_HOLE','DEF_ME_CUM',tgt_info)
+c      call set_dependency('FOPT_HOLE','DEF_ME_HOLE',tgt_info)
+c      call set_rule2('FOPT_HOLE',OPTIMIZE,tgt_info)
+c      call set_arg('FOPT_HOLE',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+c     &             val_label=(/'FOPT_HOLE'/))
+c      call set_arg('FOPT_HOLE',OPTIMIZE,'LABELS_IN',1,tgt_info,
+c     &             val_label=(/'F_HOLE'/))
+
+      ! central reduced densities in terms of reduced densities
+      call add_target2('FOPT_CENT',.false.,tgt_info)
+      call set_dependency('FOPT_CENT','F_CENT',tgt_info)
+      call set_dependency('FOPT_CENT','DEF_ME_DENS',tgt_info)
+      call set_dependency('FOPT_CENT','DEF_ME_CENT',tgt_info)
+      call set_rule2('FOPT_CENT',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_CENT',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_CENT'/))
+      call set_arg('FOPT_CENT',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_CENT'/))
 
 *----------------------------------------------------------------------*
 *     ME-lists
@@ -587,6 +672,21 @@ c dbgend
       call set_arg('DEF_ME_HOLE',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
 
+      ! ME for central reduced densities
+      call add_target2('DEF_ME_CENT',.false.,tgt_info)
+      call set_dependency('DEF_ME_CENT','CENT',tgt_info)
+      call set_rule2('DEF_ME_CENT',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_CENT',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_CENT'/))
+      call set_arg('DEF_ME_CENT',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'CENT'/))
+      call set_arg('DEF_ME_CENT',DEF_ME_LIST,'MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_CENT',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_CENT',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
@@ -604,10 +704,24 @@ c      call set_arg('EVAL_DENS0',PRINT_MEL,'LIST',1,tgt_info,
 c     &             val_label=(/'ME_DENS'/))
 c dbgend
 
+      ! evaluate central reduced densities
+      call add_target2('EVAL_CENT',.false.,tgt_info)
+      call set_dependency('EVAL_CENT','FOPT_CENT',tgt_info)
+      call set_dependency('EVAL_CENT','EVAL_DENS0',tgt_info)
+      call set_rule2('EVAL_CENT',EVAL,tgt_info)
+      call set_arg('EVAL_CENT',EVAL,'FORM',1,tgt_info,
+     &             val_label=(/'FOPT_CENT'/))
+c dbg
+c      call set_rule2('EVAL_CENT',PRINT_MEL,tgt_info)
+c      call set_arg('EVAL_CENT',PRINT_MEL,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_CENT'/))
+c dbgend
+
       ! evaluate cumulants
+c set true for calculating cumulants:
       call add_target2('EVAL_CUM',.false.,tgt_info)
       call set_dependency('EVAL_CUM','FOPT_CUM',tgt_info)
-      call set_dependency('EVAL_CUM','EVAL_DENS0',tgt_info)
+      call set_dependency('EVAL_CUM','EVAL_CENT',tgt_info)
       call set_rule2('EVAL_CUM',EVAL,tgt_info)
       call set_arg('EVAL_CUM',EVAL,'FORM',1,tgt_info,
      &             val_label=(/'FOPT_CUM'/))
@@ -617,18 +731,18 @@ c dbg
      &             val_label=(/'ME_CUM'/))
 c dbgend
 
-      ! evaluate hole densities
-      call add_target2('EVAL_HOLE',.false.,tgt_info)
-      call set_dependency('EVAL_HOLE','FOPT_HOLE',tgt_info)
-      call set_dependency('EVAL_HOLE','EVAL_CUM',tgt_info)
-      call set_rule2('EVAL_HOLE',EVAL,tgt_info)
-      call set_arg('EVAL_HOLE',EVAL,'FORM',1,tgt_info,
-     &             val_label=(/'FOPT_HOLE'/))
-c dbg
-      call set_rule2('EVAL_HOLE',PRINT_MEL,tgt_info)
-      call set_arg('EVAL_HOLE',PRINT_MEL,'LIST',1,tgt_info,
-     &             val_label=(/'ME_HOLE'/))
-c dbgend
+c      ! evaluate hole densities
+c      call add_target2('EVAL_HOLE',.false.,tgt_info)
+c      call set_dependency('EVAL_HOLE','FOPT_HOLE',tgt_info)
+c      call set_dependency('EVAL_HOLE','EVAL_CUM',tgt_info)
+c      call set_rule2('EVAL_HOLE',EVAL,tgt_info)
+c      call set_arg('EVAL_HOLE',EVAL,'FORM',1,tgt_info,
+c     &             val_label=(/'FOPT_HOLE'/))
+cc dbg
+c      call set_rule2('EVAL_HOLE',PRINT_MEL,tgt_info)
+c      call set_arg('EVAL_HOLE',PRINT_MEL,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_HOLE'/))
+cc dbgend
 
       ! evaluate reduced densities
       call add_target2('EVAL_DENS',.false.,tgt_info)

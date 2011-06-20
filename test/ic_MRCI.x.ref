@@ -2169,6 +2169,7 @@ signsec:      1.0
  @ formula evaluation                  cpu/sys/wall:     18.10 /     0.46 /    18.86 s
   norms/values of output operators
  ----------------------------------
+>>>    1 -->  271.3055566       ! changed back on 06/20/2011
 >>>    1 -->  271.3055607       ! changed manually on 01/05/2011
                                 ! (because in SVD decoupled
                                 !  blocks are now individually treated)

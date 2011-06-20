@@ -48,6 +48,9 @@
       ! first set targets for CASSCF or uncontracted CI wave function
       call set_unc_mrci_targets(tgt_info,orb_info,
      &                          .not.(l_icci.or.l_iccc))
+c dbg for calculating cumulants
+c      call set_gno_targets(tgt_info,orb_info,1)
+c dbgend
 
       ! if maxexc = 0: return because call of unc_mrci is sufficient
       if (maxexc.eq.0.or..not.(l_icci.or.l_iccc)) return

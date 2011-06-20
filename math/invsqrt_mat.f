@@ -79,11 +79,11 @@
       end do
 
       ! calculate U and singular values:
-      call svd_drv(ndim,mat,singval)
-c      call dgesvd('O','N',ndim,ndim,
-c     &     mat,ndim,singval,
-c     &     dum1,1,dum2,1,
-c     &     wrk,lwrk,info)
+c      call svd_drv(ndim,mat,singval)
+      call dgesvd('O','N',ndim,ndim,
+     &     mat,ndim,singval,
+     &     dum1,1,dum2,1,
+     &     wrk,lwrk,info)
 
       if (info.ne.0) then
         write(luout,*) 'WARNING in invsqrt_mat: SVD in trouble'
