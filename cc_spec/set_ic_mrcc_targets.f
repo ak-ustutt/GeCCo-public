@@ -35,13 +35,14 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     icnt,
      &     msc, ip, ih, ivv, iv, ivv2, jvv,
-     &     maxcom, maxcom_en,
+     &     maxcom, maxcom_en, maxcom_h1bar,
      &     n_t_cls, i_cls,
      &     n_tred_cls, len_form, optref, idef, ciroot,
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc!, maxexc
       logical ::
-     &     update_prc, skip, preopt, project, first, cheap_prc, Op_eqs
+     &     update_prc, skip, preopt, project, first, cheap_prc, Op_eqs,
+     &     h1bar, htt
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -80,8 +81,14 @@ c     &     ival=maxexc)
      &     ival=maxcom)
       call get_argument_value('method.MRCC','maxcom_en',
      &     ival=maxcom_en)
+      call get_argument_value('method.MRCC','maxcom_h1bar',
+     &     ival=maxcom_h1bar)
       call get_argument_value('method.MRCC','G_level',
      &     ival=G_level)
+      call get_argument_value('method.MRCC','H1bar',
+     &     lval=h1bar)
+      call get_argument_value('method.MRCC','HTT',
+     &     lval=htt)
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en  = ', maxcom_en
@@ -89,6 +96,8 @@ c     &     ival=maxexc)
         write(luout,*) 'G_level    = ', G_level
         write(luout,*) 'preopt     = ', preopt
         write(luout,*) 'Op_eqs     = ', Op_eqs
+        write(luout,*) 'H1bar      = ', h1bar
+        write(luout,*) 'HTT        = ', htt
       end if
       
 *----------------------------------------------------------------------*
@@ -477,6 +486,56 @@ c     &              'Geff',1,1,
 c     &              parameters,2,tgt_info)
 c dbgend
 
+      ! T1 transformed Hamiltonian
+      call add_target2('H1bar',.false.,tgt_info)
+      call set_dependency('H1bar','H',tgt_info)
+      call set_rule2('H1bar',CLONE_OP,tgt_info)
+      call set_arg('H1bar',CLONE_OP,'LABEL',1,tgt_info,
+     &     val_label=(/'H1bar'/))
+      call set_arg('H1bar',CLONE_OP,'TEMPLATE',1,tgt_info,
+     &     val_label=(/'H'/))
+
+      ! T1
+      call add_target('T1',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), min(excrestr(ih,ip,2),1)
+            ndef = ndef + 1
+            occ_def(IHOLE,2,ndef) = ih
+            occ_def(IPART,1,ndef) = ip
+            occ_def(IVALE,1,ndef) = iexc - ip
+            occ_def(IVALE,2,ndef) = iexc - ih
+          end do
+        end do
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('T1',ttype_op,DEF_OP_FROM_OCC,
+     &              'T1',1,1,
+     &              parameters,2,tgt_info)
+
+      ! T - T1
+      call add_target('T-T1',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = 2, excrestr(ih,ip,2)
+            ndef = ndef + 1
+            occ_def(IHOLE,2,ndef) = ih
+            occ_def(IPART,1,ndef) = ip
+            occ_def(IVALE,1,ndef) = iexc - ip
+            occ_def(IVALE,2,ndef) = iexc - ih
+          end do
+        end do
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('T-T1',ttype_op,DEF_OP_FROM_OCC,
+     &              'T-T1',1,1,
+     &              parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Formulae 
@@ -496,8 +555,15 @@ c dbgend
      &       tgt_info,val_label=(/'F_MRCC_LAG'/))
         call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'OP_RES',1,
      &       tgt_info,val_label=(/'NORM'/))
-        call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
-     &       tgt_info,val_label=(/'L','H','T','C0'/))
+        if (h1bar) then
+          call set_dependency('F_MRCC_LAG','H1bar',tgt_info)
+          call set_dependency('F_MRCC_LAG','T-T1',tgt_info)
+          call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
+     &         tgt_info,val_label=(/'L','H1bar','T-T1','C0'/))
+        else
+          call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
+     &         tgt_info,val_label=(/'L','H','T','C0'/))
+        end if
         call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'MAXCOM_RES',1,
      &       tgt_info,val_int=(/maxcom/))
         call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'MAXCOM_EN',1,
@@ -557,6 +623,36 @@ c dbgend
      &       val_rl8=(/-1d0/))
         call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &       val_log=(/.false./))
+      end if
+      if (h1bar) then
+        call set_rule2('F_MRCC_LAG',REPLACE,tgt_info)
+        call set_arg('F_MRCC_LAG',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+        call set_arg('F_MRCC_LAG',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+        call set_arg('F_MRCC_LAG',REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/'T-T1','T'/))
+        if (htt) then
+          call set_rule2('F_MRCC_LAG',SELECT_SPECIAL,tgt_info)
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_RES',1,
+     &         tgt_info,val_label=(/'F_MRCC_LAG'/))
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,
+     &         tgt_info,val_label=(/'F_MRCC_LAG'/))
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',3,
+     &         tgt_info,val_label=(/'H1bar','H','T'/))
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &         val_str='HTT')
+        end if
+c dbg
+c        call set_dependency('F_MRCC_LAG','F_H1bar',tgt_info)
+c        call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
+c        call set_arg('F_MRCC_LAG',EXPAND,'LABEL_RES',1,tgt_info,
+c     &       val_label=(/'F_MRCC_LAG'/))
+c        call set_arg('F_MRCC_LAG',EXPAND,'LABEL_IN',1,tgt_info,
+c     &       val_label=(/'F_MRCC_LAG'/))
+c        call set_arg('F_MRCC_LAG',EXPAND,'INTERM',1,tgt_info,
+c     &       val_label=(/'F_H1bar'/))
+c dbgend
       end if
       if (.false..and.maxh.gt.0) then
         ! replace T-T double contractions by TT intermediate
@@ -1285,6 +1381,50 @@ c dbg
       call set_arg('F_Geff',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_Geff'/))
 c dbgend
+
+      ! T1 transformed Hamiltonian
+      call add_target2('F_H1bar',.false.,tgt_info)
+      call set_dependency('F_H1bar','H1bar',tgt_info)
+      call set_dependency('F_H1bar','H',tgt_info)
+      call set_dependency('F_H1bar','T1',tgt_info)
+      call set_rule2('F_H1bar',DEF_MRCC_LAGRANGIAN,tgt_info)
+      call set_arg('F_H1bar',DEF_MRCC_LAGRANGIAN,'LABEL',1,tgt_info,
+     &     val_label=(/'F_H1bar'/))
+      call set_arg('F_H1bar',DEF_MRCC_LAGRANGIAN,'OP_RES',1,tgt_info,
+     &     val_label=(/'H1bar'/))
+      call set_arg('F_H1bar',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,tgt_info,
+     &     val_label=(/'T1','H','T1','H1bar'/))
+      call set_arg('F_H1bar',DEF_MRCC_LAGRANGIAN,'MAXCOM_RES',1,
+     &     tgt_info,val_int=(/0/)) !dummy only
+      call set_arg('F_H1bar',DEF_MRCC_LAGRANGIAN,'MAXCOM_EN',1,tgt_info,
+     &     val_int=(/maxcom_h1bar/))
+      call set_arg('F_H1bar',DEF_MRCC_LAGRANGIAN,'MODE',1,tgt_info,
+     &     val_str='HBAR_ALL')
+      call set_arg('F_H1bar',DEF_MRCC_LAGRANGIAN,'TITLE',1,tgt_info,
+     &     val_str='T1 transformed Hamiltonian')
+      call set_rule2('F_H1bar',SELECT_SPECIAL,tgt_info)
+      call set_arg('F_H1bar',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_H1bar'/))
+      call set_arg('F_H1bar',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_H1bar'/))
+      call set_arg('F_H1bar',SELECT_SPECIAL,'OPERATORS',2,
+     &     tgt_info,val_label=(/'H','T1'/))
+      call set_arg('F_H1bar',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &     val_str='MRCC2')
+      call set_arg('F_H1bar',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &     val_str='CHECK_FAC')
+      call set_dependency('F_H1bar','T',tgt_info)
+      call set_rule2('F_H1bar',REPLACE,tgt_info)
+      call set_arg('F_H1bar',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_H1bar'/))
+      call set_arg('F_H1bar',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_H1bar'/))
+      call set_arg('F_H1bar',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'T1','T'/))
+      call set_rule2('F_H1bar',PRINT_FORMULA,tgt_info)
+      call set_arg('F_H1bar',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_H1bar'/))
+
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -1379,6 +1519,11 @@ c dbgend
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',5,tgt_info,
      &             val_label=(/'F_Heff','F_MRCC_E','F_Geff',
      &                         'F_OMG','F_OMG_C0'/))
+        else if (h1bar) then
+          call set_dependency('FOPT_OMG','F_H1bar',tgt_info)
+          call set_dependency('FOPT_OMG','DEF_ME_H1bar',tgt_info)
+          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
+     &            val_label=(/'F_H1bar','F_MRCC_E','F_OMG','F_OMG_C0'/))
         else
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',3,tgt_info,
      &             val_label=(/'F_MRCC_E','F_OMG','F_OMG_C0'/))
@@ -1388,6 +1533,11 @@ c dbgend
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
      &             val_label=(/'F_Heff','F_MRCC_E','F_Geff',
      &                         'F_OMG'/))
+        else if (h1bar) then
+          call set_dependency('FOPT_OMG','F_H1bar',tgt_info)
+          call set_dependency('FOPT_OMG','DEF_ME_H1bar',tgt_info)
+          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',3,tgt_info,
+     &             val_label=(/'F_H1bar','F_MRCC_E','F_OMG'/))
         else
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',2,tgt_info,
      &             val_label=(/'F_MRCC_E','F_OMG'/))
@@ -1695,6 +1845,22 @@ c     &     parameters,1,tgt_info)
       call set_arg('DEF_ME_Geff',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
 c dbgend
+
+      ! ME for H1bar
+      call add_target2('DEF_ME_H1bar',.false.,tgt_info)
+      call set_dependency('DEF_ME_H1bar','H1bar',tgt_info)
+      call set_rule2('DEF_ME_H1bar',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_H1bar',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_H1bar'/))
+      call set_arg('DEF_ME_H1bar',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'H1bar'/))
+      call set_arg('DEF_ME_H1bar',DEF_ME_LIST,'MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_H1bar',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_H1bar',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*

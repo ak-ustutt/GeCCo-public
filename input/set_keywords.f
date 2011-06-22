@@ -196,6 +196,12 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/-1/)) ! max. power in e^(-T) for sim. trans.
       call argument_add('Op_eqs','method.MRCC',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('H1bar','method.MRCC',type=vtyp_log,
+     &     ldef=(/.false./))
+      call argument_add('HTT','method.MRCC',type=vtyp_log,
+     &     ldef=(/.false./))
+      call argument_add('maxcom_h1bar','method.MRCC',type=vtyp_int,
+     &     idef=(/8/))
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')

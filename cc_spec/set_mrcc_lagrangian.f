@@ -90,7 +90,7 @@
       end if
       if (approx(1:5).eq.'FIX_N') min_n = max_n
       if (approx(1:4).eq.'HBAR') then
-        min_n = max_n
+        if (approx(6:8).ne.'ALL') min_n = max_n
         ioff = 1
       end if
       if (approx(1:4).eq.'EMAX') then
