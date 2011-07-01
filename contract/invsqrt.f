@@ -51,12 +51,14 @@
       logical, intent(in) ::
      &     half
 
+      integer, parameter ::
+     &     maxrank = 5
       type(graph), pointer ::
      &     graphs(:)
 
       logical ::
      &     bufin, bufout, first, ms_fix, fix_success, onedis, transp,
-     &     logdum, sing_remove, normalize, sgrm
+     &     logdum, sgrm
       logical, pointer ::
      &     blk_used(:)
 c      logical ::
@@ -78,13 +80,15 @@ c     &     loop(nocc_cls)
 c dbg
 c     &     ipass,
 c dbgend
-     &     off_linmax, maxbuf_tmp
+     &     off_linmax, maxbuf_tmp,
+     &     rankdim(maxrank), rankoff(maxrank), nrank,
+     &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2
       real(8) ::
      &     fac, xmax, xmin
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:), scratch2(:,:),
      &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:),
-     &     palph(:), pbeta(:), proj_sing(:,:), norm(:), scratch3(:,:)
+     &     palph(:), pbeta(:), proj(:,:), norm(:), scratch3(:,:)
 c dbg
 c      integer, pointer ::
 c     &     matrix(:,:)
@@ -190,10 +194,6 @@ c dbgend
         buffer_out => ffinv%buffer(1:)
       endif
 
-      normalize = .false.
-c dbg
-      if (normalize) write(luout,*)  'Normalizing Metric!'
-c dbgend
       icnt_sv  = 0 ! we will count the
       icnt_sv0 = 0 ! number of singular values below threshold
       xmax = 0d0   ! largest excluded singular value
@@ -219,8 +219,7 @@ c dbgend
           buffer_out(ioff+1) = buffer_in(ioff+1)
           call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                     half,icnt_sv,icnt_sv0,xmax,xmin,bins)
-c          if (.not.half) buffer_in(ioff+1) = 1d0
-          cycle
+          cycle iocc_loop
         end if 
 
         ifree = mem_setmark('invsqrt_blk')
@@ -290,7 +289,7 @@ c dbgend
 
           ! we also need to distinguish:
           ! /0 0 0 0\     /0 0 0 0\
-          ! \0 0 x 0/     \0 0 0 0/ i.e. if creations come first,
+          ! \0 0 x 0/     \0 0 0 0/ i.e. if creators come first,
           ! /0 0 0 0\ and /0 0 x 0\ we need to transpose the
           ! \0 0 0 0/     \0 0 x 0/ scratch matrix
           ! /0 0 x 0\     /0 0 0 0\ (important if result is non-symmetric!)
@@ -364,16 +363,6 @@ c dbgend
                 enddo
               end if
 
-              ! normalization
-              if (normalize) then
-                allocate(norm(ndim))
-                do idx = 1, ndim
-                  norm(idx) = sqrt(abs(scratch(idx,idx)))
-                end do
-                call dmdiagm(ndim,scratch,norm,.true.,.true.)
-                call dmdiagm(ndim,scratch,norm,.false.,.true.)
-              end if
-
               if (msc.eq.0) then
                 ! here a splitting into "singlet" and "triplet" blocks is needed:
 
@@ -423,16 +412,6 @@ c dbgend
                 call invsqrt_mat(ndim,scratch,scratch2,
      &                           half,icnt_sv,icnt_sv0,xmax,xmin,bins)
 
-              end if
-
-              ! "undo" normalization
-              if (normalize) then ! X = N*X'
-                call dmdiagm(ndim,scratch,norm,.false.,.true.)
-                if (.not.half) then ! P = N*P'*N^-1
-                  call dmdiagm(ndim,scratch2,norm,.false.,.true.)
-                  call dmdiagm(ndim,scratch2,norm,.true.,.false.)
-                end if
-                deallocate(norm)
               end if
 
               ! write to output buffer
@@ -538,7 +517,7 @@ c dbgend
 
           ! First we need the dimension of the A1/C1 | A2/C2 block
           ndim = 0
-          sing_remove = .false.
+          nrank = 0
           ! loops over coupling blocks. Must be in correct order!
           jocc_cls = iocc_cls
           jblkoff = (jocc_cls-1)*njoined
@@ -547,7 +526,14 @@ c dbgend
           blk_loop: do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
            na2 = nc1mx
            nc2 = na1mx
+           rdim = 0
            do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
+            ! no off-diagonal blocks in SepO (separate orthog.)
+            if (sgrm.and.na1.ne.nc2) then
+              na2 = na2 - 1
+              nc2 = nc2 - 1
+              cycle
+            end if
             ! exit if there is no block like this
             if (na1.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+1)).or.
      &         nc1.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+2)).or.
@@ -565,8 +551,8 @@ c dbgend
               cycle
             end if
             ! exception for pure inactive block:
-            if (na1.eq.0.and.nc1.eq.0.and.igam.eq.1) then
-              ndim = ndim + 1
+            if (na1.eq.0.and.nc1.eq.0) then
+              if (igam.eq.1) ndim = ndim + 1
               exit blk_loop
             end if
             call get_num_subblk(ncblk2,nablk2,
@@ -619,90 +605,13 @@ c           ndim = 0
      &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
      &                       hpvxseq,.false.)
               if (nablk2.eq.1) then
-                ndim = ndim + len_str(1)
+                rdim = rdim + len_str(1)
               else
-                ndim = ndim + len_str(1)*len_str(3)
+                rdim = rdim + len_str(1)*len_str(3)
               end if
              end do
             end do
-
-            ! remove singles only for one specific block for now
-            if (sing_remove) call quit(1,'invsqrt','unexpected block')
-            if (sgrm.and.ms1.eq.0.and.igam.eq.1
-     &                    .and.na1.eq.nc1.and.na1.eq.1) then
-              sing_remove = .true.
-              allocate(palph(ndim),pbeta(ndim),proj_sing(ndim,ndim))
-              palph = 0d0
-              pbeta = 0d0
-              nalph = 0
-              nbeta = 0
-              ! get pseudo-singles vectors that should be removed
-              iline = 0
-              do msa1 = na1, -na1, -2
-               msc1 = msa1 + ms1
-               if (abs(msc1).gt.nc1) cycle
-               msdis_c(1) = msc1
-               msdis_a(1) = msa1
-               do gama1 = 1, ngam
-                gamc1 = multd2h(gama1,igam)
-                gamdis_c(1) = gamc1
-                gamdis_a(1) = gama1
-                msdis_c(2) = msa1
-                msdis_a(2) = msc1
-                gamdis_c(2) = gama1
-                gamdis_a(2) = gamc1
-                call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
-                call ms2idxms(idxmsdis_a,msdis_a,occ_asub2,nablk2)
-
-                call set_len_str(len_str,ncblk2,nablk2,
-     &                       graphs,
-     &                       graph_csub2,idxmsdis_c,gamdis_c,hpvx_csub2,
-     &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
-     &                       hpvxseq,.false.)
-                if (len_str(1).ne.len_str(3)) call quit(1,'invsqrt',
-     &              'this should not happen.')
-                ! simple square matrix, the diagonal elements
-                ! contribute to the pseudo-singles component
-                do idxc1 = 1, len_str(1)
-                 do idxa1 = 1, len_str(3)
-                  iline = iline + 1
-                  if (idxc1.ne.idxa1) cycle
-ctest
-                  palph(iline) = 1d0/2d0 !Nact=2 hard-coded
-ctest                  if (msa1.eq.1) then
-ctest                    palph(iline) = 1d0
-ctest                    nalph = nalph + 1
-ctest                  else if (msa1.eq.-1) then
-ctest                    pbeta(iline) = 1d0
-ctest                    nbeta = nbeta + 1
-ctest                  else
-ctest                    call quit(1,'invsqrt','this should not happen(2).')
-ctest                  end if
-                 end do
-                end do
-               end do
-              end do
-c              ! normalize vectors
-c              if (nalph.gt.0) palph = palph/sqrt(dble(nalph))
-c              if (nbeta.gt.0) pbeta = pbeta/sqrt(dble(nbeta))
-c              ! get projector
-c              proj_sing = 0d0
-c              do idx = 1, ndim
-c                proj_sing(idx,idx) = 1d0
-c              end do
-c              call dgemm('n','t',ndim,ndim,1,
-c     &                   -1d0,palph,ndim,
-c     &                   palph,ndim,
-c     &                   1d0,proj_sing,ndim)
-c              call dgemm('n','t',ndim,ndim,1,
-c     &                   -1d0,pbeta,ndim,
-c     &                   pbeta,ndim,
-c     &                   1d0,proj_sing,ndim)
-c              if (ntest.ge.100) then
-c                write(luout,*) 'projector for removing singles:'
-c                call wrtmat2(proj_sing,ndim,ndim,ndim,ndim)
-c              end if
-            end if
+            ndim = ndim + rdim
 
             deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
      &               occ_asub2,graph_csub2,graph_asub2)
@@ -716,16 +625,48 @@ c              end if
            end do
            na1 = na1 - 1
            nc1 = nc1 - 1
+           if (sgrm.and.rdim.gt.0) then
+             nrank = nrank + 1
+             if (nrank.gt.maxrank) call quit(1,'invsqrt',
+     &                                       'increase maxrank')
+             do idx = nrank, 2, -1
+               rankdim(idx) = rankdim(idx-1)
+               rankoff(idx) = rankoff(idx-1)
+             end do
+             rankdim(1) = rdim
+             rankoff(1) = 0
+             if (nrank.ge.2) rankoff(1) = rankoff(2) + rankdim(2)
+           end if
           end do blk_loop
 
           if (ndim.eq.0) cycle
+          if (.not.sgrm) then
+            nrank = 1
+            rankdim(1) = ndim
+            rankoff(1) = 0
+          else if (ndim.eq.rankoff(1)+rankdim(1)+1) then !inactive blk.
+             nrank = nrank + 1
+             if (nrank.gt.maxrank) call quit(1,'invsqrt',
+     &                                       'increase maxrank')
+             do idx = nrank, 2, -1
+               rankdim(idx) = rankdim(idx-1)
+               rankoff(idx) = rankoff(idx-1)
+             end do
+             rankdim(1) = 1
+             rankoff(1) = 0
+             if (nrank.ge.2) rankoff(1) = rankoff(2) + rankdim(2)
+          else if (ndim.ne.rankoff(1)+rankdim(1)) then
+            call quit(1,'invsqrt','dimensions don''t add up!')
+          end if
 
           if (ntest.ge.10)
-     &       write(luout,'(a,3i8)'),'ms1, igam, ndim:',ms1,igam,ndim
+     &       write(luout,'(a,3i8)') 'ms1, igam, ndim:',ms1,igam,ndim
+          if (ntest.ge.100)
+     &       write(luout,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
 
           allocate(scratch(ndim,ndim),flmap(ndim,3))
           scratch = 0d0
-          if (.not.half.or.sing_remove) allocate(scratch2(ndim,ndim))
+          if (.not.half) allocate(scratch2(ndim,ndim))
 c dbg
 c          allocate(matrix(ndim,ndim))
 c dbgend
@@ -743,6 +684,13 @@ c dbgend
            off_col2 = 0
            off_linmax = 0
            do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
+            ! no off-diagonal blocks in SepO (separate orthog.)
+            if (sgrm.and.na1.ne.nc2) then
+              na2 = na2 - 1
+              nc2 = nc2 - 1
+              off_col2 = off_colmax
+              cycle
+            end if
             ! exit if there is no block like this
             if (na1.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+1)).or.
      &          nc1.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+2)).or.
@@ -750,7 +698,8 @@ c dbgend
      &          nc2.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+3))) exit
             blk_used(jocc_cls) = .true.
             ! exception for pure inactive block:
-            if (na1+nc1+na2+nc2.eq.0.and.igam.eq.1) then
+            if (na1+nc1+na2+nc2.eq.0) then
+              if (igam.ne.1) exit
               ioff = mel_inp%off_op_gmox(jocc_cls)%
      &                 d_gam_ms(1,1,1)
               scratch(off_line2+1,off_col2+1) = buffer_in(ioff+1)
@@ -940,12 +889,12 @@ c dbgend
                 igamdst = 1
                 do idx = 1, ngastp
                   if (iocc2(idx,2,1).ne.0) then
-                    msdst(idx,2,1) = msdis_a(2)
-                    igamdst(idx,2,1) = gamdis_a(2)
+                    msdst(idx,2,1) = msdis_a(nablk2)
+                    igamdst(idx,2,1) = gamdis_a(nablk2)
                   end if
                   if (iocc2(idx,1,2).ne.0) then
-                    msdst(idx,1,2) = msdis_c(2)
-                    igamdst(idx,1,2) = gamdis_c(2)
+                    msdst(idx,1,2) = msdis_c(ncblk2)
+                    igamdst(idx,1,2) = gamdis_c(ncblk2)
                   end if
                 end do
 
@@ -1062,7 +1011,12 @@ c dbgend
            nc1 = nc1 - 1
            off_line2 = off_linmax
           end do
-
+c dbg
+c            if (ntest.ge.100) then
+c              write(luout,*) 'initial overlap matrix:'
+c              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
+c            end if
+c dbgend
 c dbg
 c          print *,'index matrix:'
 c          write(*,'(5x,18i4)') (icol, icol=1,ndim)
@@ -1071,156 +1025,91 @@ c            write(*,'(i4,x,18i4)') iline, matrix(iline,1:ndim)
 c          end do
 c dbgend
 
-          if (sing_remove) then
-            ! project out pseudo-singles components
-c dbg
-c           if (ipass.eq.0) then
-c dbgend
-            if (max(iprlvl,ntest).ge.3) write(luout,*)
-     &           'Projecting out conventional singles.'
-c dbg
-c           else
-c            if (max(iprlvl,ntest).ge.3) write(luout,*)
-c     &           'Projecting out triples (keep pseudo-doubles).'
-c           end if
-c           ipass = ipass+1
-c dbgend
-ctest
-            print *,'...with crazy new projector (CAS(2,2) only).'
-ctestend
-            ! remove vanishing excitations from proj. vectors
-            do iline = 1, ndim
-ctest
-              pbeta(iline) = scratch(iline,iline) !=overlap with singles
-c              ! ad hoc: only spectator excitations (4-det. case)
-c              if (iline.eq.2.or.iline.eq.3
-c     &            .or.iline.eq.6.or.iline.eq.7) then
-c                palph(iline) = 0d0
-c                pbeta(iline) = scratch(1,2) !0d0
-c              end if
-ctest              if (scratch(iline,iline).lt.1d-14) then
-ctest                if (palph(iline).gt.1d-14) then
-ctest                  palph(iline) = 0d0
-ctest                  nalph = nalph - 1
-ctest                end if
-ctest                if (pbeta(iline).gt.1d-14) then
-ctest                  pbeta(iline) = 0d0
-ctest                  nbeta = nbeta - 1
-ctest                end if
-ctest              end if
-            end do
-ctest            ! normalize vectors
-ctest            if (nalph.gt.0) palph = palph/sqrt(dble(nalph))
-ctest            if (nbeta.gt.0) pbeta = pbeta/sqrt(dble(nbeta))
-c dbg
-            print *,'palph:',palph
-            print *,'pbeta:',pbeta
-c dbgend
-            ! get projector
-            proj_sing = 0d0
-            do idx = 1, ndim
-              proj_sing(idx,idx) = 1d0
-            end do
-ctest
-c dbg
-c           if (ipass.eq.1) then
-c dbgend
-            call dgemm('n','t',ndim,ndim,1,
-     &                 -1d0,palph,ndim,
-     &                 pbeta,ndim,
-     &                 1d0,proj_sing,ndim)
-c dbg
-c           else
-c            call dgemm('n','t',ndim,ndim,1,
-c     &                 1d0,palph,ndim,
-c     &                 pbeta,ndim,
-c     &                 0d0,proj_sing,ndim)
-c           end if
-c dbgend
-ctest            call dgemm('n','t',ndim,ndim,1,
-ctest     &                 -1d0,palph,ndim,
-ctest     &                 palph,ndim,
-ctest     &                 1d0,proj_sing,ndim)
-ctest            call dgemm('n','t',ndim,ndim,1,
-ctest     &                 -1d0,pbeta,ndim,
-ctest     &                 pbeta,ndim,
-ctest     &                 1d0,proj_sing,ndim)
-            if (ntest.ge.100) then
-              write(luout,*) 'projector for removing singles:'
-              call wrtmat2(proj_sing,ndim,ndim,ndim,ndim)
-            end if
-            if (ntest.ge.100) then
-              write(luout,*) 'matrix before removing singles:'
-              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
-            end if
-ctest
-            scratch2(1:ndim,1:ndim) = scratch(1:ndim,1:ndim)
-ctest            call dgemm('n','n',ndim,ndim,ndim,
-ctest     &             1d0,proj_sing,ndim,
-ctest     &                 scratch,ndim,
-ctest     &             0d0,scratch2,ndim)
-            call dgemm('n','n',ndim,ndim,ndim,
-     &             1d0,scratch2,ndim,
-     &                 proj_sing,ndim,
-     &             0d0,scratch,ndim)
-            if (ntest.ge.100) then
-              write(luout,*) 'matrix after removing singles:'
-              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
-            end if
-c            deallocate(palph,pbeta,proj_sing)
-            deallocate(palph,pbeta)
-          end if
-c dbg
-c          if (.not.sing_remove.and.iocc_cls.eq.8)
-c     &      scratch(1:ndim,1:ndim) = 0d0
-c dbgend
+          ! loop over blocks that should be orthogonalized separately
+          do irank = 1, nrank
+           rdim = rankdim(irank)
+           idxst = rankoff(irank) + 1
+           idxnd = rankoff(irank) + rdim
 
-          ! normalization
-          if (normalize) then
-            allocate(norm(ndim))
-            do idx = 1, ndim
-              norm(idx) = sqrt(abs(scratch(idx,idx)))
-            end do
-            call dmdiagm(ndim,scratch,norm,.true.,.true.)
-            call dmdiagm(ndim,scratch,norm,.false.,.true.)
-          end if
+           ! build projector and apply to current block
+           if (irank.ge.2) then
+             if (ntest.ge.10)
+     &         write(luout,'(x,a,i8)') 'next rank:',irank
+             ! write tensors "p" on off-diagonal blocks of scratch
+             do jrank = 1, irank-1
+               rdim2 = rankdim(jrank)
+               idxst2 = rankoff(jrank) + 1
+               idxnd2 = rankoff(jrank) + rdim2
+               scratch(idxst:idxnd,idxst2:idxnd2) = 0d0
+               call get_vec2remove(scratch(idxst:idxnd,idxst2:idxnd2),
+     &                             scratch(idxst2:idxnd2,idxst2:idxnd2),
+     &                             rdim,rdim2,ms1,igam,irank-jrank,
+     &                             na1mx-nrank+irank,nc1mx-nrank+irank,
+     &                             orb_info,str_info,strmap_info)
+             end do
+             allocate(scratch3(rdim,rdim))
+             ! form outer product of these vectors
+             call dgemm('n','t',rdim,rdim,ndim-idxnd,
+     &                  1d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim,
+     &                  scratch(idxst:idxnd,idxnd+1:ndim),rdim,
+     &                  0d0,scratch3,rdim)
+             ! assemble projector: 1 - sum(p*p^T)*S
+             allocate(proj(rdim,rdim))
+             call dgemm('n','n',rdim,rdim,rdim,
+     &                  -1d0,scratch3,rdim,
+     &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &                  0d0,proj,rdim)
+             do idx = 1, rdim
+               proj(idx,idx) = proj(idx,idx) + 1d0
+             end do
+             if (ntest.ge.100) then
+               write(luout,*) 'Projector for removing lower-rank exc.:'
+               call wrtmat2(proj,rdim,rdim,rdim,rdim)
+             end if
+             ! Apply projector to current metric block
+             scratch3 = scratch(idxst:idxnd,idxst:idxnd)
+             call dgemm('n','n',rdim,rdim,rdim,
+     &                  1d0,scratch3,rdim,proj,rdim,
+     &                  0d0,scratch(idxst:idxnd,idxst:idxnd),rdim)
+             deallocate(scratch3)
+           end if
 
-          if (ms1.eq.0) then
+          ! core step: singular value decomposition
+          if (ms1.eq.0.and.rdim.gt.1) then
             ! here a splitting into "singlet" and "triplet" blocks is needed:
 
 c dbg
 c            write(luout,*) 'flmap:'
-c            do icol = 1, ndim
+c            do icol = idxst, idxnd
 c              write(luout,'(i4,2i6)') icol,flmap(icol,1:2)
 c            end do
 c dbgend
-            do icol = 1, ndim
-              idx = idxlist(flmap(icol,1),flmap(1:ndim,2),ndim,1)
+            do icol = idxst, idxnd
+              idx = idxlist(flmap(icol,1),flmap(idxst:idxnd,2),rdim,1)
               if (idx.eq.-1) call quit(1,'invsqrt','idx not found!')
               flmap(icol,3) = flmap(icol,3)*idx
             end do
 c dbg
 c            write(luout,*) 'flmap:'
-c            do icol = 1, ndim
+c            do icol = idxst, idxnd
 c              write(luout,'(i4,3i6)') icol,flmap(icol,1:3)
 c            end do
 c dbgend
-            nsing = ndim
-            do icol = 1, ndim
-              if (abs(flmap(icol,3)).eq.icol) nsing = nsing
+            nsing = rdim
+            do icol = idxst, idxnd
+              if (abs(flmap(icol,3)).eq.icol-idxst+1) nsing = nsing
      &                              + sign(1,flmap(icol,3))
             end do
             nsing = nsing/2
-            ntrip = ndim - nsing
-c dbg
-c            print *,'nsing: ',nsing
-c dbgend
+            ntrip = rdim - nsing
 
             ! do the pre-diagonalization
             allocate(sing(nsing,nsing),trip(ntrip,ntrip))
             if (.not.half) allocate(sing2(nsing,nsing),
      &                              trip2(ntrip,ntrip))
-            call spinsym_traf(1,ndim,scratch,flmap(1:ndim,3),nsing,
+            call spinsym_traf(1,rdim,
+     &                        scratch(idxst:idxnd,idxst:idxnd),
+     &                        flmap(idxst:idxnd,3),nsing,
      &                        sing,trip,.false.)
 
             ! calculate T^(-0.5) for both blocks
@@ -1230,61 +1119,64 @@ c dbgend
      &                       xmax,xmin,bins)
 
             ! partial undo of pre-diagonalization: Upre*T^(-0.5)
-            call spinsym_traf(2,ndim,scratch,flmap(1:ndim,3),nsing,
+            call spinsym_traf(2,rdim,
+     &                        scratch(idxst:idxnd,idxst:idxnd),
+     &                        flmap(idxst:idxnd,3),nsing,
      &                        sing,trip,.true.)
             if (.not.half) then
               ! full undo of pre-diagonalization for projector
-              call spinsym_traf(2,ndim,scratch2,flmap(1:ndim,3),nsing,
+              call spinsym_traf(2,rdim,
+     &                          scratch2(idxst:idxnd,idxst:idxnd),
+     &                          flmap(idxst:idxnd,3),nsing,
      &                          sing2,trip2,.false.)
               deallocate(sing2,trip2)
             end if
             deallocate(sing,trip)
+          else if (.not.half) then
+
+            ! calculate S^(-0.5)
+            call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
+     &                       scratch2(idxst:idxnd,idxst:idxnd),
+     &                       half,icnt_sv,icnt_sv0,xmax,xmin,bins)
+
           else
 
             ! calculate S^(-0.5)
-            call invsqrt_mat(ndim,scratch,scratch2,
+            call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
+     &                       scratch2, !dummy
      &                       half,icnt_sv,icnt_sv0,xmax,xmin,bins)
 
           end if
 
-          ! "undo" normalization
-          if (normalize) then ! X = N*X'
-            call dmdiagm(ndim,scratch,norm,.false.,.true.)
-            if (.not.half) then ! P = N*P'*N^-1
-              call dmdiagm(ndim,scratch2,norm,.false.,.true.)
-              call dmdiagm(ndim,scratch2,norm,.true.,.false.)
-            end if
-            deallocate(norm)
-          end if
+           ! apply projector again: X = Q*U*s^(-0.5)
+           if (irank.ge.2) then
+             allocate(scratch3(rdim,rdim))
+             call dgemm('n','n',rdim,rdim,rdim,
+     &                  1d0,proj,rdim,
+     &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &                  0d0,scratch3,rdim)
+             scratch(idxst:idxnd,idxst:idxnd) = scratch3
+             if (ntest.ge.100) then
+               write(luout,*) 'Trafo matrix:'
+               call wrtmat2(scratch(idxst:idxnd,idxst:idxnd),
+     &                      rdim,rdim,rdim,rdim)
+             end if
+             if (.not.half) then
+               call dgemm('n','n',rdim,rdim,rdim,
+     &                    1d0,proj,rdim,
+     &                    scratch2(idxst:idxnd,idxst:idxnd),rdim,
+     &                    0d0,scratch3,rdim)
+               scratch2(idxst:idxnd,idxst:idxnd) = scratch3
+               if (ntest.ge.100) then
+                 write(luout,*) 'Projector matrix:'
+                 call wrtmat2(scratch2(idxst:idxnd,idxst:idxnd),
+     &                        rdim,rdim,rdim,rdim)
+               end if
+             end if
+             deallocate(scratch3,proj)
+           end if
 
-c not needed for symmetric projector
-          ! multiply trafo (and proj.) matrix with proj. for singles
-          if (sing_remove) then
-            if (ntest.ge.10)
-     &       write(luout,*) 'Multiplying X (&P) with singles projector'
-            allocate(scratch3(ndim,ndim))
-            call dgemm('n','n',ndim,ndim,ndim,
-     &                 1d0,proj_sing,ndim,
-     &                 scratch,ndim,
-     &                 0d0,scratch3,ndim)
-            scratch(1:ndim,1:ndim) = scratch3(1:ndim,1:ndim)
-            if (ntest.ge.100) then
-              write(luout,*) 'Trafo matrix:'
-              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
-            end if
-            if (.not.half) then
-              call dgemm('n','n',ndim,ndim,ndim,
-     &                   1d0,proj_sing,ndim,
-     &                   scratch2,ndim,
-     &                   0d0,scratch3,ndim)
-              scratch2(1:ndim,1:ndim) = scratch3(1:ndim,1:ndim)
-              if (ntest.ge.100) then
-                write(luout,*) 'Projector matrix:'
-                call wrtmat2(scratch2,ndim,ndim,ndim,ndim)
-              end if
-            end if
-            deallocate(scratch3,proj_sing)
-          end if
+          end do
 
           ! write to output buffer
           ! loops over coupling blocks. Must be in correct order!
@@ -1299,13 +1191,21 @@ c not needed for symmetric projector
            off_col2 = 0
            off_linmax = 0
            do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
+            ! no off-diagonal blocks in SepO (separate orthog.)
+            if (sgrm.and.na1.ne.nc2) then
+              na2 = na2 - 1
+              nc2 = nc2 - 1
+              off_col2 = off_colmax
+              cycle
+            end if
             ! exit if there is no block like this
             if (na1.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+1)).or.
      &          nc1.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+2)).or.
      &          na2.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+2)).or.
      &          nc2.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+3))) exit
             ! exception for pure inactive block:
-            if (na1+nc1+na2+nc2.eq.0.and.igam.eq.1) then
+            if (na1+nc1+na2+nc2.eq.0) then
+              if (igam.ne.1) exit
               ioff = mel_inp%off_op_gmox(jocc_cls)%
      &                 d_gam_ms(1,1,1)
               buffer_out(ioff+1) = scratch(off_line2+1,off_col2+1)
@@ -1468,7 +1368,7 @@ c not needed for symmetric projector
           end do
 
           deallocate(scratch,flmap)
-          if (.not.half.or.sing_remove) deallocate(scratch2)
+          if (.not.half) deallocate(scratch2)
 c dbg
 c          deallocate(matrix)
 c dbgend

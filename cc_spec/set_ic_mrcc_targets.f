@@ -39,10 +39,10 @@
      &     n_t_cls, i_cls,
      &     n_tred_cls, len_form, optref, idef, ciroot,
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
-     &     G_level, iexc, jexc!, maxexc
+     &     G_level, iexc, jexc, maxtt
       logical ::
      &     update_prc, skip, preopt, project, first, cheap_prc, Op_eqs,
-     &     h1bar, htt
+     &     h1bar, htt, svdonly
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -67,6 +67,8 @@ c     &     ival=maxexc)
      &     ival=ciroot)
       call get_argument_value('method.MR','cheap_prc',
      &     lval=cheap_prc)
+      call get_argument_value('method.MR','svdonly',
+     &     lval=svdonly)
       call get_argument_value('calculate.solve.non_linear','optref',
      &     ival=optref)
       call get_argument_value('calculate.solve.non_linear','update_prc',
@@ -89,6 +91,8 @@ c     &     ival=maxexc)
      &     lval=h1bar)
       call get_argument_value('method.MRCC','HTT',
      &     lval=htt)
+      call get_argument_value('method.MRCC','maxtt',
+     &     ival=maxtt)
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en  = ', maxcom_en
@@ -98,6 +102,7 @@ c     &     ival=maxexc)
         write(luout,*) 'Op_eqs     = ', Op_eqs
         write(luout,*) 'H1bar      = ', h1bar
         write(luout,*) 'HTT        = ', htt
+        write(luout,*) 'maxtt      = ', maxtt
       end if
       
 *----------------------------------------------------------------------*
@@ -1402,17 +1407,19 @@ c dbgend
      &     val_str='HBAR_ALL')
       call set_arg('F_H1bar',DEF_MRCC_LAGRANGIAN,'TITLE',1,tgt_info,
      &     val_str='T1 transformed Hamiltonian')
-      call set_rule2('F_H1bar',SELECT_SPECIAL,tgt_info)
-      call set_arg('F_H1bar',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_H1bar'/))
-      call set_arg('F_H1bar',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_H1bar'/))
-      call set_arg('F_H1bar',SELECT_SPECIAL,'OPERATORS',2,
-     &     tgt_info,val_label=(/'H','T1'/))
-      call set_arg('F_H1bar',SELECT_SPECIAL,'TYPE',1,tgt_info,
-     &     val_str='MRCC2')
-      call set_arg('F_H1bar',SELECT_SPECIAL,'MODE',1,tgt_info,
-     &     val_str='CHECK_FAC')
+      if (maxtt.lt.0) then ! do not forbid T-T-contractions in H1bar!
+        call set_rule2('F_H1bar',SELECT_SPECIAL,tgt_info)
+        call set_arg('F_H1bar',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_H1bar'/))
+        call set_arg('F_H1bar',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_H1bar'/))
+        call set_arg('F_H1bar',SELECT_SPECIAL,'OPERATORS',2,
+     &       tgt_info,val_label=(/'H','T1'/))
+        call set_arg('F_H1bar',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &       val_str='MRCC2')
+        call set_arg('F_H1bar',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &       val_str='CHECK_FAC')
+      end if
       call set_dependency('F_H1bar','T',tgt_info)
       call set_rule2('F_H1bar',REPLACE,tgt_info)
       call set_arg('F_H1bar',REPLACE,'LABEL_RES',1,tgt_info,
@@ -1946,7 +1953,7 @@ c     &     parameters,2,tgt_info)
 c dbgend
 
       ! Solve MR coupled cluster equations
-      call add_target2('SOLVE_MRCC',.true.,tgt_info)
+      call add_target2('SOLVE_MRCC',.not.svdonly,tgt_info)
       call set_dependency('SOLVE_MRCC','EVAL_REF_S(S+1)',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_OMG',tgt_info)
       call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)

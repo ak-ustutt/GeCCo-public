@@ -41,7 +41,7 @@
      &     version(60), ivers
       logical ::
      &     sv_fix, l_exist,
-     &     l_icci, l_iccc, project, skip, Op_eqs
+     &     l_icci, l_iccc, project, skip, Op_eqs, svdonly
       real(8) ::
      &     sv_thresh
       character(len_target_name) ::
@@ -87,6 +87,8 @@
 
       call get_argument_value('method.MR','project',
      &     lval=project)
+      call get_argument_value('method.MR','svdonly',
+     &     lval=svdonly)
 
       if (ntest.ge.100) then
         print *,'gno     = ',gno
@@ -675,7 +677,7 @@ c dbgend
      &              parameters,1,tgt_info)
 
       ! inverted ME_D
-      call add_target('DEF_ME_Dinv',ttype_opme,.false.,tgt_info)
+      call add_target('DEF_ME_Dinv',ttype_opme,svdonly,tgt_info)
       call set_dependency('DEF_ME_Dinv','EVAL_D',tgt_info)
       call set_dependency('DEF_ME_Dinv','DEF_ME_D',tgt_info)
       labels(1:20)(1:len_target_name) = ' '

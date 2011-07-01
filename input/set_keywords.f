@@ -180,6 +180,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  ldef=(/.false./)) ! try cheap preconditioner
       call argument_add('project','method.MR',type=vtyp_log,
      &     ldef=(/.false./)) ! project out singles from doubles a.s.o.
+      call argument_add('svdonly','method.MR',type=vtyp_log,
+     &                  ldef=(/.false./)) ! stop after first SVD
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,

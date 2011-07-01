@@ -394,10 +394,13 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
      &              irestr_vtx_red(1,1,1,1,njoined_res+1),idxnew_op1op2,
      &         orb_info)
         ! FIX - unclear, whether 2x reo to same vertex works
+        ! also beware of consecutive reorderings (e.g. 1->2,2->3)
+        ! other way round is o.k. (e.g. 1->2,3->1)
         do ireo = 1, reo_info%nreo
           do jreo = ireo+1, reo_info%nreo
             if (reo_info%reo(ireo)%from.eq.reo_info%reo(jreo)%from.or.
-     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to) then
+     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to.or.
+     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%from) then
               ! only forbid if non-zero overlap:
               if (iocc_nonzero(iocc_overlap(
      &            reo_info%reo(ireo)%occ_shift,.false.,
