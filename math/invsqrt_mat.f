@@ -89,16 +89,10 @@ c      call svd_drv(ndim,mat,singval)
         write(luout,*) 'WARNING in invsqrt_mat: SVD in trouble'
       end if
 
-      if (ntest.ge.10) then
-        if (ntest.ge.100) write(luout,*) 'singular values:'
-        do idx = 1, ndim
-          write(luout,'(x,a,i8,x,f24.12)') 'sv #',icnt_sv+idx,
-     &                                     singval(idx)
-        end do
-      end if
       if (ntest.ge.100) then
         write(luout,*) 'eigenvector matrix U:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
+        write(luout,*) 'singular values:'
       end if
 
 c      icnt_sv = icnt_sv + ndim
@@ -147,6 +141,8 @@ c      end if
           mat(1:ndim,idx) = 0d0
           if (.not.half) mat_tmp(1:ndim,idx) = 0d0
         end if
+        if (ntest.ge.10) write(luout,'(x,a,i8,x,f24.12,3x,L1)') 'sv #',
+     &                 icnt_sv,singval(idx),sv_above
         if (sv_fix.and..not.read_file) write(luinp,*) icnt_sv, sv_above
       end do
 

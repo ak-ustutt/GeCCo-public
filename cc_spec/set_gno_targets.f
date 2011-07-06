@@ -50,7 +50,8 @@
 
       ! CAVEAT: should be adapted as soon as open-shell version
       !         is up and running
-      msc = +1 ! assuming closed shell
+      msc = +1
+      if (orb_info%ims.ne.0) msc = 0
 
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations

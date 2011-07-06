@@ -17,15 +17,39 @@
 
       type(target_info), intent(inout) ::
      &     tgt_info
-      type(orbinf), intent(in) ::
+      type(orbinf), intent(inout) ::
      &     orb_info
 
       integer ::
-     &     maxexc, cmaxexc, maxh, maxp
+     &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym
       logical ::
      &     l_icci, l_iccc, use_met
       integer, allocatable ::
      &     excrestr(:,:,:)
+
+      ! redefine spin/symmetry of reference state (if requested)
+      call get_argument_value('method.MR','mult',
+     &     ival=mult)
+      call get_argument_value('method.MR','ms',
+     &     ival=ms)
+      call get_argument_value('method.MR','sym',
+     &     ival=sym)
+      if (mult.gt.0.and.mult.ne.orb_info%imult) then
+        orb_info%imult = mult
+        if (ntest.ge.100) write(luout,*) 'spin mult. = ', mult
+      end if
+      if (sym.gt.0.and.sym.ne.orb_info%lsym) then
+        orb_info%lsym = sym
+        if (ntest.ge.100) write(luout,*) 'symmetry   = ', sym
+        if (sym.gt.orb_info%nsym) call quit(1,'set_mr_targets',
+     &           'impossible symmetry')
+      end if
+      orb_info%ims = ms
+      if (ntest.ge.100) write(luout,*) 'Ms         = ', ms
+      ! Ms possible?
+      if (ms.lt.1-orb_info%imult.or.ms.gt.orb_info%imult-1
+     &    .or.mod(orb_info%imult-ms,2).eq.0)
+     &   call quit(1,'set_mr_targets','impossible Ms')
 
       ! get maximum excitation rank
       call get_argument_value('method.MR','maxexc',

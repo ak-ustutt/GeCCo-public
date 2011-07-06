@@ -66,7 +66,8 @@
 
       ! CAVEAT: should be adapted as soon as open-shell version
       !         is up and running
-      msc = +1 ! assuming closed shell
+      msc = +1
+      if (orb_info%ims.ne.0) msc = 0
 
       ! which normal ordering is used?
       call get_argument_value('method.MR','GNO',

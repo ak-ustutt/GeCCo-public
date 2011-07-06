@@ -136,7 +136,8 @@ c dbg
           if (typ_prc.eq.optinf_prc_norm)
      &       xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - energy
 
-          xbuf1(1:nwfpar) = xbuf1(1:nwfpar)/xbuf2(1:nwfpar)
+c          xbuf1(1:nwfpar) = xbuf1(1:nwfpar)/xbuf2(1:nwfpar)
+          call diavc(xbuf1,xbuf1,1d0,xbuf2,0d0,nwfpar)
 
           if (ntest.ge.100) then
             write(luout,*) 'gradient vector afterwards:'

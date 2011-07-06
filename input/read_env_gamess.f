@@ -276,7 +276,7 @@ c dbgend
       if (n_act.gt.0) then
         ! test whether this can be treated as a simple
         ! high spin open shell case:
-        if (nactel.eq.n_act.and.ispin.eq.nactel+1) then
+        if (.false..and.nactel.eq.n_act.and.ispin.eq.nactel+1) then
           ! we should check the symmetry here ...
           write(luout,*) 'high-spin valence shell detected'
           ngas = ngas+1

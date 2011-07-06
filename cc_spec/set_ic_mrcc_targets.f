@@ -58,7 +58,8 @@
 
       ! CAVEAT: should be adapted as soon as open-shell version
       !         is up and running
-      msc = +1 ! assuming closed shell
+      msc = +1
+      if (orb_info%ims.ne.0) msc = 0
 
       ! get some keywords
 c      call get_argument_value('method.MR','maxexc',
@@ -2268,6 +2269,45 @@ c     &     'projected T :',0,'LIST')
 c      call set_rule('EVAL_Tproj',ttype_opme,PRINT_MEL,
 c     &     'ME_Ttr',1,0,
 c     &     parameters,2,tgt_info)
+c dbgend
+
+c dbg
+c      ! check of orthogonality: <C0|T^+ T|C0>
+c      call add_target2('F_CTTC',.false.,tgt_info)
+c      call set_dependency('F_CTTC','E(MR)',tgt_info)
+c      call set_dependency('F_CTTC','T',tgt_info)
+c      call set_dependency('F_CTTC','C0',tgt_info)
+c      call set_rule2('F_CTTC',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_CTTC',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_CTTC'/))
+c      call set_arg('F_CTTC',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'E(MR)'/))
+c      call set_arg('F_CTTC',EXPAND_OP_PRODUCT,'OPERATORS',4,
+c     &     tgt_info,
+c     &     val_label=(/'C0^+','T^+','T','C0'/))
+c      call set_arg('F_CTTC',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+c     &     val_int=(/2,3,4,5/))
+c      call set_rule2('F_CTTC',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_CTTC',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_CTTC'/))
+c      ! optimized CTTC
+c      call add_target2('FOPT_CTTC',.false.,tgt_info)
+c      call set_dependency('FOPT_CTTC','F_CTTC',tgt_info)
+c      call set_dependency('FOPT_CTTC','DEF_ME_T',tgt_info)
+c      call set_dependency('FOPT_CTTC','DEF_ME_C0',tgt_info)
+c      call set_dependency('FOPT_CTTC','DEF_ME_E(MR)',tgt_info)
+c      call set_rule2('FOPT_CTTC',OPTIMIZE,tgt_info)
+c      call set_arg('FOPT_CTTC',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+c     &             val_label=(/'FOPT_CTTC'/))
+c      call set_arg('FOPT_CTTC',OPTIMIZE,'LABELS_IN',1,tgt_info,
+c     &             val_label=(/'F_CTTC'/))
+c      ! evaluate CTTC
+c      call add_target2('EVAL_CTTC',.true.,tgt_info)
+c      call set_dependency('EVAL_CTTC','SOLVE_MRCC',tgt_info)
+c      call set_dependency('EVAL_CTTC','FOPT_CTTC',tgt_info)
+c      call set_rule2('EVAL_CTTC',EVAL,tgt_info)
+c      call set_arg('EVAL_CTTC',EVAL,'FORM',1,tgt_info,
+c     &             val_label=(/'FOPT_CTTC'/))
 c dbgend
 
       return

@@ -182,6 +182,12 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./)) ! project out singles from doubles a.s.o.
       call argument_add('svdonly','method.MR',type=vtyp_log,
      &                  ldef=(/.false./)) ! stop after first SVD
+      call argument_add('mult','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! spin multiplicity (0: interface)
+      call argument_add('ms','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! Ms
+      call argument_add('sym','method.MR',type=vtyp_int,
+     &                  idef=(/0/))  ! symmetry (0: read fr. interface)
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,

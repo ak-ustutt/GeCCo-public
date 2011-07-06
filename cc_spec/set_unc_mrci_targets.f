@@ -44,14 +44,14 @@
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting targets for multiref. wave function'
 
-      if (mod(orb_info%imult-1,4).eq.0) then
+      ims = orb_info%ims
+      if (ims.eq.0.and.mod(orb_info%imult-1,4).eq.0) then
         msc = 1
-      else if (mod(orb_info%imult+1,4).eq.0) then
+      else if (ims.eq.0.and.mod(orb_info%imult+1,4).eq.0) then
         msc = -1
       else
         msc = 0
       end if
-      ims = mod(orb_info%imult-1,2)
 
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations

@@ -33,7 +33,8 @@
         end if
         depend%depends_on_idxlist(1:depend%ndepend,idx) = 0
         ! we call it up to date
-        call touch_file_rec(op_info%mel_arr(idx)%mel%fhand)
+        call touch_file_rec(
+     &          op_info%mel_arr(depend%idxlist(idx))%mel%fhand)
       end do
 
       return
