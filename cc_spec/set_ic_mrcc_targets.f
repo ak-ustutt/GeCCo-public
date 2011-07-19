@@ -52,7 +52,7 @@
      &     op_ht*3, f_ht*5, op_ht0to*6, f_ht0to*8, form_str*50,
      &     def_ht*10
       real(8) ::
-     &     factor
+     &     factor, x_ansatz
 
       if (iprlvl.gt.0) write(luout,*) 'setting icMRCC targets'
 
@@ -94,6 +94,8 @@ c     &     ival=maxexc)
      &     lval=htt)
       call get_argument_value('method.MRCC','maxtt',
      &     ival=maxtt)
+      call get_argument_value('method.MRCC','x_ansatz',
+     &     xval=x_ansatz)
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en  = ', maxcom_en
@@ -104,7 +106,14 @@ c     &     ival=maxexc)
         write(luout,*) 'H1bar      = ', h1bar
         write(luout,*) 'HTT        = ', htt
         write(luout,*) 'maxtt      = ', maxtt
+        write(luout,*) 'x_ansatz   = ', x_ansatz
       end if
+
+      if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.x_ansatz.ne.1d0
+     &    .and.(maxcom_en.gt.2.or.maxcom.gt.2
+     &          .or.h1bar.and.maxcom_h1bar.gt.2))
+     &    call quit(1,'set_ic_mrcc_targets',
+     &      'x_ansatz.ne.0/0.5/1 currently works only with Ncom<=2')
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -692,11 +701,21 @@ c     &     val_label=(/'F_HT2','F_HT1','F_HT0to2','F_HT0to1'/))
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_MRCC_LAG'/))
         if (project) then !remove terms that are projected out
-          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',4,
+          if (h1bar) then
+            call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',4,
+     &         tgt_info,val_label=(/'H1bar','T','C0','L'/))
+          else
+            call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',4,
      &         tgt_info,val_label=(/'H','T','C0','L'/))
+          end if
         else
-          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,
+          if (h1bar) then
+            call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,
+     &         tgt_info,val_label=(/'H1bar','T'/))
+          else
+            call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,
      &         tgt_info,val_label=(/'H','T'/))
+          end if
         end if
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCC2')

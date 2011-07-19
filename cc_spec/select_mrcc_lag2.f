@@ -31,7 +31,8 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, deldue2maxtt, check_fac, first, check, proj
+     &     delete, error, deldue2maxtt, check_fac, first, check, proj,
+     &     alt_ansatz
       integer ::
      &     idxtop, idxham, idxc, idxl, nprojdel
       integer ::
@@ -40,18 +41,18 @@
      &     ntesting, itesting, maxcon_tt, ntt_save, nj, ioff,
      &     jvtx, kvtx, nhash, ham_vtx, kk, iterm, n_extra, idx,
      &     nopen(2), nclos(2), vtxc1, vtxc2, nvtxc, cnt(ngastp,2),
-     &     nvtxl, vtxl
+     &     nvtxl, vtxl, nfac_l, nfac_r
       integer ::
      &     idxop(nlabels), bins(maxtt+1,maxtop+1), binsum(maxtop+1)
       integer(8) ::
      &     hash_cur
       real(8) ::
-     &     fac_tot, fac_cur
+     &     fac_tot, fac_cur, x_ansatz, fac_l, fac_r, fac_alt
 
       integer, allocatable ::
      &     testing(:)
       logical, allocatable ::
-     &     connected(:), bchpart(:)
+     &     connected(:), bchpart(:), topo_loc(:,:)
       integer, pointer ::
      &     svtx1(:),svtx2(:),ireo(:),iperm(:), extra_term(:), itmp(:)
       integer(8), pointer ::
@@ -71,7 +72,7 @@
 
       integer, external ::
      &     idx_oplist2, njres_contr, idxlist, i8mltlist, ifac,
-     &     i8common_entry
+     &     i8common_entry, n_possible_reos
       integer(8), external ::
      &     topo_hash
       logical, external ::
@@ -108,6 +109,9 @@
 
       call get_argument_value('method.MRCC','maxtt',
      &     ival=maxcon_tt)
+      call get_argument_value('method.MRCC','x_ansatz',
+     &     xval=x_ansatz)
+      alt_ansatz = x_ansatz.eq.0d0.or.x_ansatz.eq.1d0
 
       idxham  = idxop(1)
       idxtop  = idxop(2)
@@ -280,12 +284,14 @@ c            iterm = iterm - 1 ! do not count as term
      &                .not.delete.and.ntesting.gt.0
           if (check_fac) then
             fac_tot = 0d0
+            fac_alt = 0d0
             nhash = 0
             allocate(ivtx1(nvtx),topo1(nvtx,nvtx),
      &         xlines1(nvtx,nj),svtx1(nvtx),ireo(nvtx),
      &         iperm(ntesting),ivtx2(nvtx),topo2(nvtx,nvtx),
      &         xlines2(nvtx,nj),hash_list(1))
             call pack_contr(svtx1,ivtx1,topo1,xlines1,contr,nj)
+            if (x_ansatz.ne.0.5d0) call isort(testing,ntesting,1)
 c dbg
 c            write(luout,*) ' initial topology:'
 c            call prt_contr_p(luout,svtx1,ivtx1,topo1,xlines1,nvtx,nj)
@@ -370,6 +376,54 @@ c dbgend
                 fac_cur = 1d0/dble(ifac(kk)*ifac(ntop-kk))
                 if (mod(kk,2).ne.0) fac_cur = -fac_cur
                 fac_tot = fac_tot + fac_cur
+                ! factor to be changed? Determine correct factor
+                if (alt_ansatz) then
+                  ! T's to the left of H
+                  allocate(topo_loc(kk,kk))
+                  do jvtx = 1, kk
+                    do ivtx = 1, kk
+                      topo_loc(ivtx,jvtx) = 
+     &                      topo2(testing(ivtx),testing(jvtx)).ne.0
+                    end do
+                  end do
+                  if (x_ansatz.eq.0d0) then ! {e^T}^-1 on left side
+                    nfac_l = n_possible_reos(topo_loc,kk)
+                    fac_l = 1d0/dble(nfac_l)
+                  else !x_ansatz=1d0: {e^-T} on left side
+                    if (any(topo_loc(1:kk,1:kk))) then
+                      fac_l = 0d0
+                    else
+                      fac_l = 1d0/dble(ifac(kk))
+                    end if
+                  end if
+                  if (mod(kk,2).ne.0) fac_l = -fac_l
+                  deallocate(topo_loc)
+                  ! T's to the right of H
+                  allocate(topo_loc(ntop-kk,ntop-kk))
+                  do jvtx = 1, ntop-kk
+                    do ivtx = 1, ntop-kk
+                      topo_loc(ivtx,jvtx) =
+     &                      topo2(testing(ivtx+kk+1),
+     &                            testing(jvtx+kk+1)).ne.0
+                    end do
+                  end do
+                  if (x_ansatz.eq.1d0) then ! {e^-T}^-1 on right side
+                    nfac_r = n_possible_reos(topo_loc,ntop-kk)
+                    fac_r = 1d0/dble(nfac_r)
+                  else !x_ansatz=0d0: {e^T} on right side
+                    if (any(topo_loc(1:ntop-kk,1:ntop-kk))) then
+                      fac_r = 0d0
+                    else
+                      fac_r = 1d0/dble(ifac(ntop-kk))
+                    end if
+                  end if
+                  deallocate(topo_loc)
+                  fac_alt = fac_alt + fac_l*fac_r
+c dbg
+c                  print *,'left side factor: ',fac_l
+c                  print *,'right side factor:',fac_r
+c dbgend
+                end if
 c dbg
 c                print *,'current factor contribution: ',fac_cur
 c dbgend
@@ -379,6 +433,7 @@ c dbgend
 c dbg
 c            print *,'calculated factor: ',fac_tot
 c            print *,'existing factor  : ',contr%fac
+c            print *,'factor changed to: ',fac_alt
 c dbgend
 
             ! if factor does not match:
@@ -415,6 +470,31 @@ c dbgend
                 write(luout,'(x,a,i12,a,e10.3)') 'term ',iterm,
      &              ': new virtual term with factor ',extra_fac(n_extra)
               end if
+            end if
+
+            ! modify factor?
+            if (.not.delete.and.alt_ansatz) then
+              contr%fac = fac_alt
+              delete = (abs(contr%fac).lt.1d-12)
+            else if (.not.delete.and.x_ansatz.ne.0.5d0.and.ntop.eq.2
+     &          .and.ntt.eq.1.
+     &          .and.abs(abs(contr%fac)-0.5d0).lt.1d-12) then
+              if (contr%fac.gt.0d0.and.ham_vtx.eq.1) then
+                contr%fac = x_ansatz
+              else if (contr%fac.gt.0d0) then
+                contr%fac = 1d0-x_ansatz
+              else if (ham_vtx.eq.1) then
+                contr%fac = x_ansatz-1d0
+              else if (ham_vtx.eq.3) then
+                contr%fac = -x_ansatz
+              else if (topo1(testing(2),testing(3)).ne.0) then
+                contr%fac = x_ansatz-1d0
+              else if (topo1(testing(2),testing(1)).ne.0) then
+                contr%fac = -x_ansatz
+              else
+                call quit(1,'select_mrcc_lag2','should not happen')
+              end if
+              delete = (abs(contr%fac).lt.1d-12)
             end if
 
             deallocate(ivtx1,topo1,xlines1,svtx1,ireo,iperm,
@@ -488,4 +568,80 @@ c dbgend
       return
       end
       
-      
+*----------------------------------------------------------------------*
+      integer function n_possible_reos(conmat,ndim)
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'stdunit.h'
+
+      integer, intent(in) ::
+     &     ndim
+      logical, intent(in) ::
+     &     conmat(ndim,ndim)
+
+      integer ::
+     &     ii, jj, kk, off, perm(ndim)
+      logical ::
+     &     first
+      integer, external ::
+     &     idxlist
+      logical, external ::
+     &     next_perm
+
+      n_possible_reos = 1
+      if (ndim.eq.1.and.conmat(1,1)) call quit(1,'n_possible_reos',
+     &       'a single element can never be connected!')
+      if (ndim.le.1) return
+
+c dbg
+c      write(luout,*) '-------------------------'
+c      write(luout,*) 'n_possible_reos in action'
+c      write(luout,*) 'input connectivity matrix:'
+c      do ii = 1, ndim
+c        write(luout,*) conmat(ii,1:ndim)
+c      end do
+c dbgend
+
+      do ii = 1, ndim
+        perm(ii) = ii
+      end do
+      first = .true.
+      n_possible_reos = 0
+      perm_loop: do
+        if (.not.first) then
+          ! is this permutation allowed by the connectivity?
+          ! order of contracted vertices must not be changed
+          do ii = 1, ndim
+            do jj = ii+1, ndim
+              if (perm(ii).gt.perm(jj)) then
+                if (conmat(perm(ii),perm(jj))) then
+                  ! change perm to replace op at pos. ii
+                  off = ndim
+                  do kk = ii+1, ndim
+                    do while(idxlist(off,perm(1:kk-1),kk-1,1).gt.0)
+                      off = off - 1
+                    end do
+                    perm(kk) = off
+                  end do
+                  if (.not.next_perm(perm,ndim))
+     &               exit perm_loop
+c dbg
+c                  write(luout,'(x,a,14i4)') 'skip to perm:',perm
+c dbge
+                  cycle perm_loop
+                end if
+              end if
+            end do
+          end do
+        end if
+        first = .false.
+        n_possible_reos = n_possible_reos + 1
+        if (.not.next_perm(perm,ndim)) exit perm_loop
+      end do perm_loop
+c dbg
+c      write(luout,*) 'number of possible reorderings:',n_possible_reos
+c dbgend
+
+      return
+      end

@@ -73,7 +73,7 @@
       ! check if S is symmetric
       do idx = 2, ndim
         do idx2 = 1,idx-1
-          if (abs(mat(idx,idx2)-mat(idx2,idx)).gt.1d-12)
+          if (abs(mat(idx,idx2)-mat(idx2,idx)).gt.1d-11)
      &        call quit(1,'invsqrt_mat','S must be symmetric!')
         end do
       end do

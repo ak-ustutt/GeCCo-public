@@ -210,6 +210,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./))
       call argument_add('maxcom_h1bar','method.MRCC',type=vtyp_int,
      &     idef=(/8/))
+      call argument_add('x_ansatz','method.MRCC',type=vtyp_rl8,
+     &     xdef=(/0.5d0/))
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
