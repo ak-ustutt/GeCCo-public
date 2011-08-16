@@ -511,7 +511,10 @@ c dbgend
       end if
 
       ! delete terms with factor zero (disconnected terms)
-      if (nterm.gt.0) call del_zero_terms(flist,op_info,1d-12)
+      ! quick fix: only for up to quadratic terms
+      ! otherwise, there will be terms missing for {e^T} or {e^-T}^-1
+      if (max(max_n,max_n_en).le.2.and.nterm.gt.0)
+     &   call del_zero_terms(flist,op_info,1d-12)
 
       if (ntest.ge.100) then
         call write_title(luout,wst_title,'Final formula')

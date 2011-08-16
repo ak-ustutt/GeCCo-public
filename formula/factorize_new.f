@@ -21,7 +21,7 @@
 
       type(operator_info), intent(inout) ::
      &     op_info
-      type(strinf), intent(in) ::
+      type(strinf), intent(inout) ::
      &     str_info
       type(orbinf), intent(in) ::
      &     orb_info

@@ -1,4 +1,4 @@
-*----------------------------------------------------------------------*
+
       subroutine set_ic_mr_targets(tgt_info,orb_info,
      &                             excrestr,maxh,maxp,use_met)
 *----------------------------------------------------------------------*
@@ -38,12 +38,12 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     msc, maxexc, ip, ih, iv,
      &     gno, idef, iexc, jexc,
-     &     version(60), ivers
+     &     version(60), ivers, prc_type
       logical ::
      &     sv_fix, l_exist,
      &     l_icci, l_iccc, project, skip, Op_eqs, svdonly
       real(8) ::
-     &     sv_thresh
+     &     sv_thresh, prc_shift
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -90,12 +90,22 @@
      &     lval=project)
       call get_argument_value('method.MR','svdonly',
      &     lval=svdonly)
+      call get_argument_value('method.MR','prc_type',
+     &     ival=prc_type)
+      call get_argument_value('method.MR','prc_shift',
+     &     xval=prc_shift)
+
+      if (.not.l_iccc.and.prc_type.ne.0.or.prc_type.gt.2
+     &    .or.prc_type.ne.2.and.prc_shift.ne.0d0)
+     &  call quit(1,'set_ic_mr_targets','Choose other preconditioner!')
 
       if (ntest.ge.100) then
         print *,'gno     = ',gno
         print *,'sv_thr. = ',sv_thresh
         print *,'sv_fix  = ',sv_fix
         print *,'project = ',project
+        print *,'prc_type= ',prc_type
+        print *,'prc_shift=',prc_shift
       end if
 
       if (sv_fix) then
@@ -695,18 +705,25 @@ c dbgend
       call set_rule('DEF_ME_Dinv',ttype_opme,ASSIGN_ME2OP,
      &     labels,2,1,
      &     parameters,0,tgt_info)
-      if (l_icci) then
-        call form_parameters(-1,parameters,2,
-     &       '---',0,'invsqrthalf')
-      else !for MRCC, we also need the projector matrix
-        call form_parameters(-1,parameters,2,
-     &       '---',0,'invsqrt')
+
+      call set_rule2('DEF_ME_Dinv',INVERT,tgt_info)
+      call set_arg('DEF_ME_Dinv',INVERT,'LIST_INV',1,tgt_info,
+     &     val_label=(/'ME_D'/))
+      if (prc_type.eq.2) then
+        call set_dependency('DEF_ME_Dinv','DEF_ME_Dunit',tgt_info)
+        call set_arg('DEF_ME_Dinv',INVERT,'LIST',2,tgt_info,
+     &       val_label=(/'ME_Dinv','ME_Dunit'/))
+      else
+        call set_arg('DEF_ME_Dinv',INVERT,'LIST',1,tgt_info,
+     &       val_label=(/'ME_Dinv'/))
       end if
-      labels(1) = 'ME_Dinv'   ! output
-      labels(2) = 'ME_D'      ! input (may be projector on output)
-      call set_rule('DEF_ME_Dinv',ttype_opme,INVERT,
-     &              labels,2,1,
-     &              parameters,2,tgt_info)
+      if (l_icci) then
+        call set_arg('DEF_ME_Dinv',INVERT,'MODE',1,tgt_info,
+     &       val_str='invsqrthalf')
+      else !for MRCC, we also need the projector matrix
+        call set_arg('DEF_ME_Dinv',INVERT,'MODE',1,tgt_info,
+     &       val_str='invsqrt')
+      end if
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Square root of inverse density matrix :',0,'LIST')
@@ -747,7 +764,7 @@ c dbgend
 
       ! reordered daggered inverted ME_D
       call add_target('DEF_ME_Dtrdag',ttype_opme,.false.,tgt_info)
-      call set_dependency('DEF_ME_Dtrdag','Dtr',tgt_info)
+      call set_dependency('DEF_ME_Dtrdag','DEF_ME_Dtr',tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'ME_Dtrdag'
       labels(2) = 'Dtr'
@@ -761,8 +778,14 @@ c dbgend
       call set_rule2('DEF_ME_Dtrdag',REORDER_MEL,tgt_info)
       call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'LIST_RES',1,tgt_info,
      &             val_label=(/'ME_Dtrdag'/))
-      call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'LIST_IN',1,tgt_info,
-     &             val_label=(/'ME_Dinv'/))
+      if (prc_type.eq.2) then
+        ! misuse ME_Dtrdag as intermediate in preconditioner calculation
+        call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'LIST_IN',1,tgt_info,
+     &               val_label=(/'ME_Dunit'/))
+      else
+        call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'LIST_IN',1,tgt_info,
+     &               val_label=(/'ME_Dinv'/))
+      end if
       call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'FROMTO',1,tgt_info,
      &             val_int=(/13/))
       call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'ADJOINT',1,tgt_info,
@@ -777,6 +800,49 @@ c     &     'ME_Dtrdag',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
 
+      ! ME_Dunit
+      call add_target('DEF_ME_Dunit',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF_ME_Dunit','D',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'ME_Dunit'
+      labels(2) = 'D'
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,
+     &     0,0,.false.)
+      call set_rule('DEF_ME_Dunit',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
+      ! reordered daggered inverted ME_D, squared element-wise
+      call add_target('DEF_ME_Dudag_2',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF_ME_Dudag_2','DEF_ME_Dtrdag',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'ME_Dudag_2'
+      labels(2) = 'Dtr'
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,
+     &     0,0,.false.)
+      call set_rule('DEF_ME_Dudag_2',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+      call set_rule2('DEF_ME_Dudag_2',SCALE_COPY,tgt_info)
+      call set_arg('DEF_ME_Dudag_2',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &             val_label=(/'ME_Dudag_2'/))
+      call set_arg('DEF_ME_Dudag_2',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &             val_label=(/'ME_Dtrdag'/))
+      call set_arg('DEF_ME_Dudag_2',SCALE_COPY,'FAC',1,tgt_info,
+     &             val_rl8=(/1d0/))
+      call set_arg('DEF_ME_Dudag_2',SCALE_COPY,'MODE',1,tgt_info,
+     &             val_str='square')
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'Dtrdag, squared element-wise :',0,'LIST')
+c      labels(1) = 'DEF_ME_Dudag_2'
+c      labels(2) = 'ME_Dudag_2'
+c      call set_rule('DEF_ME_Dudag_2',ttype_opme,PRINT_MEL,
+c     &     'ME_Dudag_2',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*

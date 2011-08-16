@@ -237,8 +237,9 @@ c dbgend
           ! delete discon. term (only if Hamiltonian was found at all)
           delete = ntesting.ne.ntop+nham.and.nham.gt.0
 c          delete = ntesting.ne.ntop+nham 
-          if (delete.and.check) write(luout,'(x,a,i12)')
-     &       'Deleting disconnected term with number: ',iterm
+          if (delete.and.check.and.abs(contr%fac).ge.1d-12) 
+     &       write(luout,'(x,a,i12)')
+     &       'Deleting nonzero disconnected term with number: ',iterm
 
           ! delete if more T-T connections than requested
           if (maxcon_tt.ge.0) then
@@ -475,7 +476,7 @@ c dbgend
             ! modify factor?
             if (.not.delete.and.alt_ansatz) then
               contr%fac = fac_alt
-              delete = (abs(contr%fac).lt.1d-12)
+c              delete = (abs(contr%fac).lt.1d-12)
             else if (.not.delete.and.x_ansatz.ne.0.5d0.and.ntop.eq.2
      &          .and.ntt.eq.1.
      &          .and.abs(abs(contr%fac)-0.5d0).lt.1d-12) then
@@ -494,8 +495,9 @@ c dbgend
               else
                 call quit(1,'select_mrcc_lag2','should not happen')
               end if
-              delete = (abs(contr%fac).lt.1d-12)
+c              delete = (abs(contr%fac).lt.1d-12)
             end if
+            delete = delete.or.abs(contr%fac).lt.1d-12
 
             deallocate(ivtx1,topo1,xlines1,svtx1,ireo,iperm,
      &                 ivtx2,topo2,xlines2,hash_list)

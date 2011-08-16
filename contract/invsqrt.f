@@ -1,4 +1,5 @@
       subroutine invsqrt(mel_inp,mel_inv,nocc_cls,half,
+     &     get_u,mel_u,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     Routine to calculate S^(-0.5) of density matrices.
@@ -7,6 +8,7 @@
 *     half = true: only makes a half transform U*s^(-0.5)
 *     half = false: also does half transform and in addition
 *                   returns projector matrix U*1s*U^+ on input list
+*     get_u= true: return unitary matrix U on mel_u
 *      
 *     works also for sums of density matrices of the structure:
 *       /0 0 0 0\
@@ -45,11 +47,11 @@
       type(strmapinf), intent(in) ::
      &     strmap_info
       type(me_list), intent(in) ::
-     &     mel_inp, mel_inv
+     &     mel_inp, mel_inv, mel_u
       integer, intent(in) ::
      &     nocc_cls
       logical, intent(in) ::
-     &     half
+     &     half, get_u
 
       integer, parameter ::
      &     maxrank = 5
@@ -58,7 +60,7 @@
 
       logical ::
      &     bufin, bufout, first, ms_fix, fix_success, onedis, transp,
-     &     logdum, sgrm
+     &     logdum, sgrm, bufu
       logical, pointer ::
      &     blk_used(:)
 c      logical ::
@@ -88,7 +90,8 @@ c dbgend
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:), scratch2(:,:),
      &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:),
-     &     palph(:), pbeta(:), proj(:,:), norm(:), scratch3(:,:)
+     &     palph(:), pbeta(:), proj(:,:), norm(:), scratch3(:,:),
+     &     scratch4(:,:), sing3(:,:), trip3(:,:), buffer_u(:)
 c dbg
 c      integer, pointer ::
 c     &     matrix(:,:)
@@ -118,9 +121,9 @@ c dbgend
      &     iocc2(:,:,:),idx_g2(:,:,:)
 
       type(filinf), pointer ::
-     &     ffinp, ffinv
+     &     ffinp, ffinv, ffu
       type(operator), pointer ::
-     &     op_inv, op_inp
+     &     op_inv, op_inp, op_u
 
       integer, external ::
      &     ielprd, idx_msgmdst2, idx_str_blk3, msa2idxms4op, idxcount,
@@ -136,8 +139,10 @@ c dbgend
 
       ffinp => mel_inp%fhand
       ffinv => mel_inv%fhand
+      ffu => mel_u%fhand
       op_inp => mel_inp%op
       op_inv => mel_inv%op
+      op_u => mel_u%op
       njoined = op_inp%njoined
 
       ngraph = str_info%ngraph
@@ -147,8 +152,10 @@ c dbgend
       graphs => str_info%g
 
       ms_fix = .false.
-      if(mel_inp%fix_vertex_ms.or.mel_inv%fix_vertex_ms)then
+      if(mel_inp%fix_vertex_ms.or.mel_inv%fix_vertex_ms
+     &   .or.mel_u%fix_vertex_ms)then
         ms_fix = mel_inp%fix_vertex_ms.and.mel_inv%fix_vertex_ms
+     &           .and.mel_u%fix_vertex_ms
         if(.not.ms_fix) call quit(1,'invsqrt',
      &                            'fix ms or not?')
       endif
@@ -158,6 +165,8 @@ c dbgend
       if(ffinp%buffered) bufin = .true.
       bufout = .false.
       if(ffinv%buffered) bufout = .true.
+      bufu = .false.
+      if (get_u.and.ffu%buffered) bufu = .true.
 
       ifree = mem_setmark('invsqrt')
 
@@ -194,6 +203,19 @@ c dbgend
         buffer_out => ffinv%buffer(1:)
       endif
 
+      if(get_u.and..not.bufu)then
+        nbuff = 0
+        do iocc_cls = 1, nocc_cls
+          nbuff = nbuff + mel_u%len_op_occ(iocc_cls)
+        enddo
+        ifree= mem_alloc_real(buffer_u,nbuff,'buffer_u')
+        buffer_u(1:nbuff) = 0d0
+      else if (get_u) then
+        if(ntest.ge.100)
+     &       write(luout,*)'Invert: output (2) not incore'
+        buffer_u => ffu%buffer(1:)
+      endif
+
       icnt_sv  = 0 ! we will count the
       icnt_sv0 = 0 ! number of singular values below threshold
       xmax = 0d0   ! largest excluded singular value
@@ -216,9 +238,15 @@ c dbgend
         if (ntest.ge.10) write(luout,*) 'current occ_cls: ',iocc_cls
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
           ioff = mel_inp%off_op_gmo(iocc_cls)%gam_ms(1,1)
-          buffer_out(ioff+1) = buffer_in(ioff+1)
-          call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
-     &                     half,icnt_sv,icnt_sv0,xmax,xmin,bins)
+          if (get_u) then
+            call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
+     &                       half,buffer_u(ioff+1),get_u,
+     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+          else
+            call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
+     &                       half,buffer_u,get_u, !buffer_u: dummy
+     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+          end if
           cycle iocc_loop
         end if 
 
@@ -349,6 +377,7 @@ c dbgend
               ! single distribution can simply be read in as simple matrix
               allocate(scratch(ndim,ndim))
               if (.not.half) allocate(scratch2(ndim,ndim))
+              if (get_u) allocate(scratch3(ndim,ndim))
               if (transp) then
                 do idx = 1,ndim
                   do jdx = 1,ndim
@@ -387,13 +416,17 @@ c dbgend
                 allocate(sing(nsing,nsing),trip(ntrip,ntrip))
                 if (.not.half) allocate(sing2(nsing,nsing),
      &                                  trip2(ntrip,ntrip))
+                if (get_u) allocate(sing3(nsing,nsing),
+     &                              trip3(ntrip,ntrip))
                 call spinsym_traf(1,ndim,scratch,flipmap_c,nsing,
      &                            sing,trip,.false.)
 
                 ! calculate T^(-0.5) for both blocks
-                call invsqrt_mat(nsing,sing,sing2,half,icnt_sv,icnt_sv0,
+                call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
+     &                           icnt_sv,icnt_sv0,
      &                           xmax,xmin,bins)
-                call invsqrt_mat(ntrip,trip,trip2,half,icnt_sv,icnt_sv0,
+                call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
+     &                           icnt_sv,icnt_sv0,
      &                           xmax,xmin,bins)
 
                 ! partial undo of pre-diagonalization: Upre*T^(-0.5)
@@ -405,12 +438,19 @@ c dbgend
      &                              sing2,trip2,.false.)
                   deallocate(sing2,trip2)
                 end if
+                if (get_u) then
+                  ! partial undo of pre-diagonalization: Upre*U
+                  call spinsym_traf(2,ndim,scratch3,flipmap_c,nsing,
+     &                              sing3,trip3,.true.)
+                  deallocate(sing3,trip3)
+                end if
                 deallocate(sing,trip)
               else
 
                 ! calculate S^(-0.5)
                 call invsqrt_mat(ndim,scratch,scratch2,
-     &                           half,icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                           half,scratch3,get_u,
+     &                           icnt_sv,icnt_sv0,xmax,xmin,bins)
 
               end if
 
@@ -450,6 +490,27 @@ c dbgend
                 end if
 
                 deallocate(scratch2)
+              end if
+
+              if (get_u) then
+                ! write unitary matrix to buffer
+                if (transp) then
+                  do idx = 1,ndim
+                    do jdx = 1,ndim
+                      buffer_u((idx-1)*ndim+jdx+ioff)
+     &                       = scratch3(jdx,idx)
+                    enddo
+                  enddo
+                else
+                  do idx = 1,ndim
+                    do jdx = 1,ndim
+                      buffer_u((idx-1)*ndim+jdx+ioff)
+     &                       = scratch3(idx,jdx)
+                    enddo
+                  enddo
+                end if
+
+                deallocate(scratch3)
               end if
 
             enddo igama_loop
@@ -667,6 +728,7 @@ c           ndim = 0
           allocate(scratch(ndim,ndim),flmap(ndim,3))
           scratch = 0d0
           if (.not.half) allocate(scratch2(ndim,ndim))
+          if (get_u) allocate(scratch3(ndim,ndim))
 c dbg
 c          allocate(matrix(ndim,ndim))
 c dbgend
@@ -965,7 +1027,7 @@ c dbgend
                           flmap(icol,1) = idx
                           flmap(icol,2) = idx2
                           logdum = next_tupel_ca(idorb,idspn,idspc,
-     &                     nel,2,iocc2,idx_g2,
+     &                     na2+nc2,2,iocc2,idx_g2,
      &                     msdst,igamdst,first,
      &                     str_info%igas_restr,
      &                     orb_info%mostnd,orb_info%igamorb,
@@ -975,10 +1037,10 @@ c dbgend
                           first = .false.
                           if (.not.logdum) call quit(1,'invsqrt',
      &                         'no next tuple found!')
-                          if (mod(idxcount(2,idspn,nel,1),4).ne.0)
+                          if (mod(idxcount(2,idspn,na2+nc2,1),4).ne.0)
      &                          flmap(icol,3) = -1
 c dbg
-c                          write(luout,'(i4,x,4i4,x,4i4)')idx,idorb,idspn
+c                          write(luout,'(i8,x,4i4,x,4i4)')idx,idorb,idspn
 c dbgend
                         end if
                       end do
@@ -1047,16 +1109,16 @@ c dbgend
      &                             na1mx-nrank+irank,nc1mx-nrank+irank,
      &                             orb_info,str_info,strmap_info)
              end do
-             allocate(scratch3(rdim,rdim))
+             allocate(scratch4(rdim,rdim))
              ! form outer product of these vectors
              call dgemm('n','t',rdim,rdim,ndim-idxnd,
      &                  1d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim,
      &                  scratch(idxst:idxnd,idxnd+1:ndim),rdim,
-     &                  0d0,scratch3,rdim)
+     &                  0d0,scratch4,rdim)
              ! assemble projector: 1 - sum(p*p^T)*S
              allocate(proj(rdim,rdim))
              call dgemm('n','n',rdim,rdim,rdim,
-     &                  -1d0,scratch3,rdim,
+     &                  -1d0,scratch4,rdim,
      &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
      &                  0d0,proj,rdim)
              do idx = 1, rdim
@@ -1067,11 +1129,18 @@ c dbgend
                call wrtmat2(proj,rdim,rdim,rdim,rdim)
              end if
              ! Apply projector to current metric block
-             scratch3 = scratch(idxst:idxnd,idxst:idxnd)
+             ! (a) Q^+*S
+             !     This step is not strictly necessary, but numerically
+             !     it helps to keep the matrix S*Q symmetric
+             call dgemm('t','n',rdim,rdim,rdim,
+     &                  1d0,proj,rdim,
+     &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &                  0d0,scratch4,rdim)
+             ! (b) (Q^+*S)*Q
              call dgemm('n','n',rdim,rdim,rdim,
-     &                  1d0,scratch3,rdim,proj,rdim,
+     &                  1d0,scratch4,rdim,proj,rdim,
      &                  0d0,scratch(idxst:idxnd,idxst:idxnd),rdim)
-             deallocate(scratch3)
+             deallocate(scratch4)
            end if
 
           ! core step: singular value decomposition
@@ -1107,15 +1176,19 @@ c dbgend
             allocate(sing(nsing,nsing),trip(ntrip,ntrip))
             if (.not.half) allocate(sing2(nsing,nsing),
      &                              trip2(ntrip,ntrip))
+            if (get_u) allocate(sing3(nsing,nsing),
+     &                          trip3(ntrip,ntrip))
             call spinsym_traf(1,rdim,
      &                        scratch(idxst:idxnd,idxst:idxnd),
      &                        flmap(idxst:idxnd,3),nsing,
      &                        sing,trip,.false.)
 
             ! calculate T^(-0.5) for both blocks
-            call invsqrt_mat(nsing,sing,sing2,half,icnt_sv,icnt_sv0,
+            call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
+     &                       icnt_sv,icnt_sv0,
      &                       xmax,xmin,bins)
-            call invsqrt_mat(ntrip,trip,trip2,half,icnt_sv,icnt_sv0,
+            call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
+     &                       icnt_sv,icnt_sv0,
      &                       xmax,xmin,bins)
 
             ! partial undo of pre-diagonalization: Upre*T^(-0.5)
@@ -1131,31 +1204,51 @@ c dbgend
      &                          sing2,trip2,.false.)
               deallocate(sing2,trip2)
             end if
+            if (get_u) then
+              ! partial undo of pre-diagonalization: Upre*U
+              call spinsym_traf(2,rdim,
+     &                          scratch3(idxst:idxnd,idxst:idxnd),
+     &                          flmap(idxst:idxnd,3),nsing,
+     &                          sing3,trip3,.true.)
+              deallocate(sing3,trip3)
+            end if
             deallocate(sing,trip)
-          else if (.not.half) then
 
+          else if (.not.half.and.get_u) then
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
      &                       scratch2(idxst:idxnd,idxst:idxnd),
-     &                       half,icnt_sv,icnt_sv0,xmax,xmin,bins)
-
-          else
-
+     &                       half,
+     &                       scratch3(idxst:idxnd,idxst:idxnd),get_u,
+     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+          else if (.not.half) then
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
-     &                       scratch2, !dummy
-     &                       half,icnt_sv,icnt_sv0,xmax,xmin,bins)
-
+     &                       scratch2(idxst:idxnd,idxst:idxnd),
+     &                       half,scratch3,get_u, !scratch3: dummy
+     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+          else if (get_u) then
+            ! calculate S^(-0.5)
+            call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
+     &                       scratch2,half, !scratch2: dummy
+     &                       scratch3(idxst:idxnd,idxst:idxnd),get_u,
+     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+          else
+            ! calculate S^(-0.5)
+            call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
+     &                       scratch2,half, !scratch2: dummy
+     &                       scratch3,get_u, !scratch3: dummy
+     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
           end if
 
            ! apply projector again: X = Q*U*s^(-0.5)
            if (irank.ge.2) then
-             allocate(scratch3(rdim,rdim))
+             allocate(scratch4(rdim,rdim))
              call dgemm('n','n',rdim,rdim,rdim,
      &                  1d0,proj,rdim,
      &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
-     &                  0d0,scratch3,rdim)
-             scratch(idxst:idxnd,idxst:idxnd) = scratch3
+     &                  0d0,scratch4,rdim)
+             scratch(idxst:idxnd,idxst:idxnd) = scratch4
              if (ntest.ge.100) then
                write(luout,*) 'Trafo matrix:'
                call wrtmat2(scratch(idxst:idxnd,idxst:idxnd),
@@ -1165,15 +1258,15 @@ c dbgend
                call dgemm('n','n',rdim,rdim,rdim,
      &                    1d0,proj,rdim,
      &                    scratch2(idxst:idxnd,idxst:idxnd),rdim,
-     &                    0d0,scratch3,rdim)
-               scratch2(idxst:idxnd,idxst:idxnd) = scratch3
+     &                    0d0,scratch4,rdim)
+               scratch2(idxst:idxnd,idxst:idxnd) = scratch4
                if (ntest.ge.100) then
                  write(luout,*) 'Projector matrix:'
                  call wrtmat2(scratch2(idxst:idxnd,idxst:idxnd),
      &                        rdim,rdim,rdim,rdim)
                end if
              end if
-             deallocate(scratch3,proj)
+             deallocate(scratch4,proj)
            end if
 
           end do
@@ -1211,6 +1304,8 @@ c dbgend
               buffer_out(ioff+1) = scratch(off_line2+1,off_col2+1)
               if (.not.half) ! copy projector to input buffer
      &           buffer_in(ioff+1) = scratch2(off_line2+1,off_col2+1)
+              if (get_u)
+     &           buffer_u(ioff+1) = scratch3(off_line2+1,off_col2+1)
               exit
             end if
             msmax = op_inp%ica_occ(1,jocc_cls)
@@ -1337,6 +1432,8 @@ c dbgend
                         buffer_out(idx) = scratch(iline,icol)
                         if (.not.half) ! copy projector to input buffer
      &                     buffer_in(idx) = scratch2(iline,icol)
+                        if (get_u)
+     &                     buffer_u(idx) = scratch3(iline,icol)
                       end do
                     end do
                   end do
@@ -1369,6 +1466,7 @@ c dbgend
 
           deallocate(scratch,flmap)
           if (.not.half) deallocate(scratch2)
+          if (get_u) deallocate(scratch3)
 c dbg
 c          deallocate(matrix)
 c dbgend
@@ -1422,6 +1520,7 @@ c dbgend
         ! return projector matrix on input list
         call put_vec(ffinp,buffer_in,1,nbuff)
       endif
+      if (.not.bufu.and.get_u) call put_vec(ffu,buffer_u,1,nbuff)
 
       ifree = mem_flushmark('invsqrt')
 

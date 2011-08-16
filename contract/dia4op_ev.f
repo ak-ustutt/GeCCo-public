@@ -1,5 +1,6 @@
 *------------------------------------------------------------------------*
       subroutine dia4op_ev(me_dia,ecore,xdia1,xdia2,use2,
+     &                     ddia1,use_shift,eps,
      &                     str_info,orb_info)
 *------------------------------------------------------------------------*
 *     set up diagonal hamiltonian
@@ -35,9 +36,9 @@
      &     ntest = 00
 
       real(8), intent(in) ::
-     &     ecore, xdia1(*), xdia2(*)
+     &     ecore, xdia1(*), xdia2(*), ddia1(*), eps
       logical, intent(in) ::
-     &     use2
+     &     use2, use_shift
       type(me_list), intent(in) ::
      &     me_dia
       type(strinf), intent(in), target ::
@@ -354,6 +355,17 @@ c dbgend
 
                       ! need to patch for UHF:
                       xsum(istr) = xsum(istr) + fac*xdia1(idxorb(idx))
+
+                      ! apply shift if requested
+                      if (use_shift.and.ddia1(idxorb(idx)).ne.0d0) then
+                        if (ica.eq.1) then
+                          xsum(istr) = xsum(istr)
+     &                               + ddia1(idxorb(idx))*eps
+                        else
+                          xsum(istr) = xsum(istr)
+     &                               + (ddia1(idxorb(idx))-1d0)*eps
+                        end if
+                      end if
 c dbg
 c          print *,'added ',fac*xdia1(idxorb(idx))
 c dbgend

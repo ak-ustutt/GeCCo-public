@@ -1,5 +1,5 @@
       subroutine twodia_from_op(x2dia,!offsets,nblk,
-     &                          mel,
+     &                          mel,max_occ,
      &                          orb_info,str_info)
 *-----------------------------------------------------------------------
 *     Routine to extract the diagonal part of a two-electron operator.
@@ -33,6 +33,8 @@ c     &     offsets(*), nblk
      &     orb_info
       type(strinf), intent(in), target ::
      &     str_info
+      integer, intent(in) ::
+     &     max_occ(ngastp)
 
       integer ::
      &     ifree, iocc_cls, nbuff, ioff_blk, ilen_blk, ms, idxms,
@@ -85,7 +87,11 @@ c     &     offsets(*), nblk
      &       op%ica_occ(2,iocc_cls)).ne.2  .or.
      &       op%formal_blk(iocc_cls)  .or. .not.
      &       occ_is_diag_blk(hpvx_occ(1,1,(iocc_cls-1)*njoined+1),
-     &       njoined))
+     &       njoined).or.
+     &       any(op%ihpvca_occ(1:ngastp,1,iocc_cls)
+     &           -max_occ(1:ngastp).gt.0).or.
+     &       any(op%ihpvca_occ(1:ngastp,2,iocc_cls)
+     &           -max_occ(1:ngastp).gt.0))
      &       loop(iocc_cls) = .true.          
       enddo
 

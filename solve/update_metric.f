@@ -63,7 +63,7 @@
       ! get half-transform of square root of inverted metric
       ! and projector matrix
       call inv_op(trim(me_special(5)%mel%label),
-     &            trim(me_special(6)%mel%label),
+     &            1,trim(me_special(6)%mel%label),
      &            'invsqrt',
      &            op_info,orb_info,str_info,strmap_info)
       ! reorder to transformation matrix ...
@@ -77,11 +77,6 @@
      &             op_info,str_info,strmap_info,orb_info,
      &             13,.true.)   ! dirty: reo vtx. 1 --> 3
 
-c      ! now get projection matrix
-c      call inv_op(trim(me_special(5)%mel%label),
-c     &            trim(me_special(6)%mel%label),
-c     &             'invsqrt',
-c     &             op_info,orb_info,str_info,strmap_info)
       ! reorder projector ...
       call reo_mel(trim(me_special(4)%mel%label),
      &             trim(me_special(5)%mel%label),

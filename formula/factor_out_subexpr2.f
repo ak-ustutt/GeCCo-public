@@ -31,8 +31,13 @@
       type(operator_info), intent(in) ::
      &     op_info
 
+      integer, parameter ::
+     &     nmod_max = 10
       integer ::
-     &     nterms, nposs, idxop_tgt, iblk_tgt, iterm, iblk_int
+     &     nterms, nposs, idxop_tgt, iblk_tgt, iterm, iblk_int,
+     &     nmod, idx, imod(nmod_max)
+      real(8) ::
+     &     xmod(nmod_max)
       type(contraction) ::
      &     contr_rpl
       type(formula_item), pointer ::
@@ -47,6 +52,8 @@
      &     success
       integer, pointer ::
      &     iposs_blk(:)
+      integer, external ::
+     &     idxlist
 
       if (ntest.ge.100) then
         write(luout,*) '==================================='
@@ -158,6 +165,7 @@ c dbgend
             ! contr_rpl
             call find_contr_w_intm2(success,fpl_intm_in_tgt,contr_rpl,
      &         fl_tgt_current,fpl_intm_c2blk,iposs_blk(iblk_int),
+     &         nmod_max,nmod,imod,xmod,
      &         op_info)
 
             if (ntest.ge.100.and..not.success) then
@@ -174,8 +182,15 @@ c dbgend
               ! all other nodes
               call copy_contr(contr_rpl,fpl_intm_in_tgt%item%contr)
               fpl_intm_in_tgt_pnt => fpl_intm_in_tgt
+              iterm = 1
               do while(associated(fpl_intm_in_tgt_pnt%next))
                 fpl_intm_in_tgt_pnt => fpl_intm_in_tgt_pnt%next
+                iterm = iterm + 1
+                idx = idxlist(iterm,imod,nmod,1)
+                if (idx.gt.0) then ! just change factor
+                  fpl_intm_in_tgt_pnt%item%contr%fac = xmod(idx)
+                  cycle
+                end if
                 call delete_fl_node(fpl_intm_in_tgt_pnt%item)
                 if (associated(fpl_intm_in_tgt_pnt%item%contr)) then
                   call dealloc_contr(fpl_intm_in_tgt_pnt%item%contr)

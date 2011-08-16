@@ -1,4 +1,4 @@
-      subroutine scale_copy_op(label_res,label_inp,fac,nfac,
+      subroutine scale_copy_op(label_res,label_inp,fac,nfac,mode,
      &     op_info,orb_info,str_info)
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
@@ -29,6 +29,8 @@
      &     orb_info
       type(strinf), intent(in) ::
      &     str_info
+      character(len=*), intent(in) ::
+     &     mode
 
       type(me_list), pointer ::
      &     me_res, me_inp
@@ -45,7 +47,7 @@
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
       real(8), pointer ::
-     &     buffer(:)
+     &     buffer(:), buf_in(:)
 
       integer, external ::
      &     idx_mel_list
@@ -122,10 +124,8 @@
      &            'not even 1 record fits into memory?')
       end if
 
-      len_op = me_inp%len_op
-      ! result list may be longer but not shorter
-      if (me_res%len_op.lt.len_op) call quit(1,'scale_copy_op',
-     &         'Result list shorter than input')
+      ! if one list is shorter, we will just end copying process there
+      len_op = min(me_inp%len_op,me_res%len_op)
 
       ! offset on file (if more than one instance of list exists)
       idisc_off_src =
@@ -141,6 +141,8 @@
         nbuff = min(len_op,nblk*ffop_src%reclen)
 
         ifree = mem_alloc_real(buffer,nbuff,'buffer')
+        if (trim(mode).eq.'mult') 
+     &          ifree = mem_alloc_real(buf_in,nbuff,'buf_in')
 
         ifac = 1
         idxst_src = idisc_off_src+1
@@ -150,18 +152,36 @@
           idxnd_tgt = min(idisc_off_tgt+len_op,idxst_tgt-1+nbuff)
           call get_vec(ffop_src,buffer,idxst_src,idxnd_src)
 
-          ! apply scaling factors (periodically)
-          do idx = 1, idxnd_src-idxst_src+1
-            buffer(idx) = fac(ifac)*buffer(idx)
+          select case(trim(mode))
+          case('square')
+            ! take square and apply scaling factors
+            do idx = 1, idxnd_src-idxst_src+1
+              buffer(idx) = fac(ifac)*(buffer(idx)**2)
+              ifac = ifac + 1
+              if (ifac.gt.nfac) ifac = 1
+            end do
+          case('mult')
+            ! multiply both lists element-wise
+            call get_vec(ffop_tgt,buf_in,idxst_tgt,idxnd_tgt)
+            do idx = 1, idxnd_src-idxst_src+1
+              buffer(idx) = fac(ifac)*buffer(idx)*buf_in(idx)
+              ifac = ifac + 1
+              if (ifac.gt.nfac) ifac = 1
+            end do
+          case default
+            ! apply scaling factors (periodically)
+            do idx = 1, idxnd_src-idxst_src+1
+              buffer(idx) = fac(ifac)*buffer(idx)
 c dbg
-            if (buffer(idx).lt.-1d-14) then
-              write(luout,*) 'changing sign for el.# ',idx
-              buffer(idx) = abs(buffer(idx))
-            end if
+              if (buffer(idx).lt.-1d-14) then
+                write(luout,*) 'changing sign for el.# ',idx
+                buffer(idx) = abs(buffer(idx))
+              end if
 c dbgend
-            ifac = ifac + 1
-            if (ifac.gt.nfac) ifac = 1
-          end do
+              ifac = ifac + 1
+              if (ifac.gt.nfac) ifac = 1
+            end do
+          end select
 
           call put_vec(ffop_tgt,buffer,idxst_tgt,idxnd_tgt)
           idxst_src = idxnd_src+1

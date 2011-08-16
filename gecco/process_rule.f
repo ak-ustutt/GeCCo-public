@@ -991,6 +991,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LIST_INP',rule,tgt_info,val_label_list=label_list,
      &       ndim=nop)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call get_arg('SHIFT',rule,tgt_info,val_rl8=fac(1))
 
         if (form_test) return
 
@@ -1000,7 +1001,7 @@ c          if (rule%n_parameter_strings.eq.2) mode(5:5) = 'H'
 c          if (rule%n_parameter_strings.eq.3) mode(5:8) = 'F+id'
 c          mode = 'dia-R12'
 
-        call set_prc4op(label,mode,
+        call set_prc4op(label,mode,fac(1),
      &       label_list,nop,
      &       op_info,str_info,orb_info)
 
@@ -1018,11 +1019,12 @@ c          mode = 'dia-R12'
       case(INVERT)
 *----------------------------------------------------------------------*
         call get_arg('LIST_INV',rule,tgt_info,val_label=label)
-        call get_arg('LIST',rule,tgt_info,val_label=label2)
+        call get_arg('LIST',rule,tgt_info,
+     &               val_label_list=label_list,ndim=nop)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
 
         if (form_test) return
-        call inv_op(label,label2,mode,
+        call inv_op(label,nop,label_list,mode,
      &       op_info,orb_info,str_info,strmap_info)
 
 *----------------------------------------------------------------------*
@@ -1063,8 +1065,9 @@ c          mode = 'dia-R12'
         call get_arg('LIST_RES',rule,tgt_info,val_label=label)
         call get_arg('LIST_INP',rule,tgt_info,val_label=label2)
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
 
-        call scale_copy_op(label,label2,fac,nfac,
+        call scale_copy_op(label,label2,fac,nfac,mode,
      &       op_info,orb_info,str_info)
 
 *----------------------------------------------------------------------*

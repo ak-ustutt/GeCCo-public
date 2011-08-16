@@ -33,7 +33,7 @@
      &     reo_info
       type(orbinf), intent(in) ::
      &     orb_info
-      type(strinf), intent(in) ::
+      type(strinf), intent(inout) ::
      &     str_info
 c      logical, intent(out) ::
 c     &     reo_op1op2, reo_other

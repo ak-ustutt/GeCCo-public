@@ -261,6 +261,8 @@
      &     val_str=trim(env_type))
 *----------------------------------------------------------------------*
       call add_command_proto(PRECONDITIONER,tgt_info)
+      call set_arg('_PROTO_',PRECONDITIONER,'SHIFT',1,tgt_info,
+     &     val_rl8=(/0d0/))
 *----------------------------------------------------------------------*
       call add_command_proto(ADD,tgt_info)
       call set_arg('_PROTO_',ADD,'REPLACE',1,tgt_info,
@@ -275,6 +277,8 @@
      &     val_int=(/0/))
 *----------------------------------------------------------------------*
       call add_command_proto(SCALE_COPY,tgt_info)
+      call set_arg('_PROTO_',SCALE_COPY,'MODE',1,tgt_info,
+     &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(INVERT,tgt_info)
 *----------------------------------------------------------------------*

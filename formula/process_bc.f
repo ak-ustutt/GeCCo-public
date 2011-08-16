@@ -71,7 +71,7 @@
      &     info_vtx_red(2,contr%nvtx+njoined_res)
       type(operator_info), intent(in) ::
      &     op_info
-      type(strinf), intent(in) ::
+      type(strinf), intent(inout) ::
      &     str_info
       real(8), intent(out) ::
      &     cost(3)

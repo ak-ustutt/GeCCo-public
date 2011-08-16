@@ -176,6 +176,13 @@ c     &       'new case occurred (multiple possibilities(1))')
           xlines_new(1:nvtx_new,3) = xlines_scr_l(1:nvtx_new,1)
 c        end if
 
+      else if (nj.eq.2.and.nlist.eq.1.and.nj_new.eq.2
+     &         .and.all(xlines_scr_u(1:nvtx_new,1).eq.0)) then
+        ! 2nd deriv. where operand is directly below the gap
+        ! -> no middle vertex required
+        xlines_new(1:nvtx_new,2) = xlines_new(1:nvtx_new,2)
+     &                           + xlines_scr_l(1:nvtx_new,1)
+
       else
 c dbg
 c        ! e.g. for effective Hamiltonian through double differentiation

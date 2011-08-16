@@ -96,22 +96,22 @@
       call evaluate2(fspc(1),
      &         op_info,str_info,strmap_info,orb_info,xdum,.false.)
 
-      ! Since formally we get a transposed vector, we need to
-      ! account for sign changes when reordering
-      nsec = opti_info%nsec(iopt)
-      if (nsec.gt.1) then
-        ioff = sum(opti_info%nsec(1:iopt))-nsec
-        nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
-        idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
-        signsec => opti_info%signsec2(ioff+1:ioff+nsec)
-        call vec_from_da(ffamp,1,xbuf1,nwfpar)
-        do isec = 1, nsec
-          xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1) =
-     &       signsec(isec)
-     &       *xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
-        end do
-        call vec_to_da(ffamp,1,xbuf1,nwfpar)
-      end if
+c      ! Since formally we get a transposed vector, we need to
+c      ! account for sign changes when reordering
+c      nsec = opti_info%nsec(iopt)
+c      if (nsec.gt.1) then
+c        ioff = sum(opti_info%nsec(1:iopt))-nsec
+c        nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
+c        idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
+c        signsec => opti_info%signsec2(ioff+1:ioff+nsec)
+c        call vec_from_da(ffamp,1,xbuf1,nwfpar)
+c        do isec = 1, nsec
+c          xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1) =
+c     &       signsec(isec)
+c     &       *xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
+c        end do
+c        call vec_to_da(ffamp,1,xbuf1,nwfpar)
+c      end if
 
       return
       end
