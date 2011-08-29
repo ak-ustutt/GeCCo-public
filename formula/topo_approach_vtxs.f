@@ -95,7 +95,7 @@ c dbg
         do ivtx = ivtxrp1-1, ivtxr+1, -1
           jvtx = ivtx+1
           do while(jvtx.le.ivtxrp1)
-            if (.not.may_commute(jvtx,ivtx)) exit
+            if (.not.may_commute(ivtx,jvtx)) exit
             jvtx = jvtx+1
           end do
           call shift_vtx(ivtx,jvtx-1)
@@ -139,7 +139,7 @@ c dbg
           do ivtx = ivtxrp1-1, ivtxr+1, -1
             jvtx = ivtx+1
             do while(jvtx.le.ivtxrp1)
-              if (.not.may_commute(jvtx,ivtx)) exit
+              if (.not.may_commute(ivtx,jvtx)) exit
               jvtx = jvtx+1
             end do
             call shift_vtx(ivtx,jvtx-1)
@@ -163,6 +163,9 @@ c dbg
      &     ij, jj, icnt, occ(ngastp,2)
       integer, external ::
      &     int8_expand
+
+      if (vtx1.ge.vtx2) call quit(1,'topo_approach_vtxs',
+     &     'may_commute: vtx1 must be smaller than vtx2')
 
       may_commute = topo(vtx1,vtx2).eq.0
       may_commute = may_commute.and.svertex(vtx1).ne.svertex(vtx2)

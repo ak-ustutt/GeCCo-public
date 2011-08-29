@@ -585,7 +585,9 @@ c dbgend
       call add_target('INT_P4',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
-      do ip = 2, maxp !only for blocks with at least two P lines
+c      does not work for higher excitations like this
+c      do ip = 2, maxp !only for blocks with at least two P lines
+      do ip = 2, 2
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ndef = ndef + 1
@@ -1911,7 +1913,7 @@ c dbgend
      &       val_str='dia-Fshift')
         call set_arg(trim(dia_label),PRECONDITIONER,'SHIFT',1,tgt_info,
      &       val_rl8=(/prc_shift/))
-      else
+      else if (prc_type.ge.0) then
         call set_rule2(trim(dia_label),PRECONDITIONER,tgt_info)
         call set_arg(trim(dia_label),PRECONDITIONER,'LIST_PRC',1,
      &       tgt_info,val_label=(/trim(dia_label)/))
@@ -2316,6 +2318,8 @@ c dbgend
       call set_dependency('SOLVE_MRCC','DEF_ME_Dtrdag',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_T',tgt_info)
       select case(prc_type)
+      case(-1) !do nothing: use old preconditioner file!
+        call warn('set_ic_mrcc_targets','Using old preconditioner file')
       case(0)
 c dbg hybrid preconditioner
 c        call warn('set_ic_mrcc_targets','Using hybrid preconditioner')
