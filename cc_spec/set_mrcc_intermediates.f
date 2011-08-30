@@ -42,7 +42,7 @@
      &     idx, idx_intm, idx_t, idx_h, idx_heff,
      &     nvtx, nn, ii, jj, iblk_int, iblk_h, mini, tmax,
      &     iterm, nterm, icall, icall0, nsumcalls,
-     &     iu(2), ho(2), hu(2), tto(2)
+     &     iu(2), ho(2), hu(2), tto(2), navoid
       character ::
      &     name*(form_maxlen_label*2)
       type(formula_item), target ::
@@ -58,7 +58,7 @@
 
       integer, allocatable ::
      &     idx_op(:), iblk_min(:), iblk_max(:),
-     &     idx_op_vtx(:), dist(:), imnmx(:,:), perm(:)
+     &     idx_op_vtx(:), dist(:), imnmx(:,:), perm(:), avoid(:)
 
       integer, external ::
      &     idx_oplist2, ifac
@@ -123,6 +123,7 @@
       flist_pnt => flist_scr
       call new_formula_item(flist_pnt,
      &     command_set_target_init,idx_intm)
+      start_pnt1 => flist_pnt
       flist_pnt => flist_pnt%next
 
       ! First part of intermediate
@@ -426,6 +427,80 @@ c dbgend
      &         (/label_op(3),label_op(1)/),2,'---',op_info)
           end if
         end do
+
+      case('Tred')
+        ! T(n)^red= [O(T^2)]^|| ...
+        iterm = 0
+        do nn = 2, max_n
+          fac = 1d0/dble(ifac(nn))
+          nvtx = nn+4
+          navoid = nn+3
+
+          allocate(idx_op(nvtx),idx_op_vtx(nvtx),avoid(2*navoid))
+
+          idx_op_vtx(1:nvtx) = idx_intm
+          idx_op_vtx(2:nvtx-1) = idx_h
+          idx_op_vtx(3:nvtx-2) = idx_t
+          do ii = 1, nvtx-2
+            idx_op(ii) = ii
+          end do
+          idx_op(nvtx-1) = 2
+          idx_op(nvtx) = 1
+          avoid(1:6) = (/1,nvtx-1,2,nvtx-1,2,nvtx/)
+          do idx = 1, nn
+            avoid(2*(2+idx)+1) = idx+2
+            avoid(2*(3+idx)) = nvtx
+          end do
+
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         fac,nvtx,nvtx-2,
+     &         idx_op_vtx,
+     &         idx_op,
+     &         -1,-1,
+     &         0,0,
+     &         avoid,navoid,
+     &         0,0,
+     &         .true.,op_info)
+
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+          end do
+          deallocate(idx_op_vtx,idx_op,avoid)
+        end do
+        ! no external lines from T
+        call select_line(start_pnt1,idx_intm,idx_t,1,3,'no_ext')
+
+        ! ... -O(T^2)
+        do nn = 2, max_n
+          fac = -1d0/dble(ifac(nn))
+          nvtx = nn+2
+          allocate(idx_op(nvtx),idx_op_vtx(nvtx))
+          idx_op_vtx(1:nvtx) = idx_intm
+          idx_op_vtx(2:nvtx-1) = idx_t
+          do ii = 1, nvtx-1
+            idx_op(ii) = ii
+          end do
+          idx_op(nvtx) = 1
+
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         fac,nvtx,nvtx-1,
+     &         idx_op_vtx,
+     &         idx_op,
+     &         -1,-1,
+     &         0,0,
+     &         0,0,
+     &         0,0,
+     &         .true.,op_info)
+
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+            iterm = iterm + 1
+          end do
+          deallocate(idx_op_vtx,idx_op)
+        end do
+        if (iterm.gt.0) call sum_terms(start_pnt1,op_info)
+        ! delete disconnected terms or modify prefactors if requested
+        call select_mrcc_wf(start_pnt1,label_op(1),op_info)
 
       case default
         call quit(1,'set_mrcc_intermediates',

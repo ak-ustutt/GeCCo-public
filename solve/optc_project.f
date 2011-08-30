@@ -55,10 +55,11 @@
 
 
       integer ::
-     &     idx, nsec, isec, stsec, ndsec, ioff
+     &     idx, nsec, isec, stsec, ndsec, ioff,
+     &     nblk, iblk, nj, iblkoff, jblk
 
       integer, pointer ::
-     &     nwfpsec(:), idstsec(:), nsec_arr(:)
+     &     nwfpsec(:), idstsec(:), nsec_arr(:), occ(:,:,:)
 
       real(8), pointer ::
      &     signsec(:)
@@ -69,7 +70,7 @@
      &     ffamp
 
       integer, external ::
-     &     idx_mel_list
+     &     idx_mel_list, iblk_occ
 
       ! pointers to file handle
       ffamp => me_amp%fhand
@@ -112,6 +113,47 @@ c     &       *xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
 c        end do
 c        call vec_to_da(ffamp,1,xbuf1,nwfpar)
 c      end if
+
+      ! Now add "redundant" T components?
+      if (opti_info%update_prc.and.nspecial.ge.8.and.nspcfrm.ge.4.or.
+     &    .not.opti_info%update_prc.and.nspecial.ge.7.and.nspcfrm.ge.3)
+     &   then
+        ! does T(3)red exist? If so, we need two steps
+        if (opti_info%update_prc.and.nspecial.eq.9.or.
+     &      .not.opti_info%update_prc.and.nspecial.eq.8) then
+          ! evaluate T(2)red (projector list is already assigned)
+          call evaluate2(fspc(nspcfrm-1),
+     &           op_info,str_info,strmap_info,orb_info,xdum,.false.)
+          ! Here we need to add this to T
+          nj = me_amp%op%njoined
+          nblk = me_special(nspecial-1)%mel%op%n_occ_cls
+          do iblk = 1, nblk
+           iblkoff = (iblk-1)*nj
+           occ => me_special(nspecial-1)%mel%op%ihpvca_occ(1:ngastp,1:2,
+     &                                          iblkoff+1:iblkoff+nj)
+           jblk = iblk_occ(occ,.false.,me_amp%op,
+     &                  me_special(nspecial-1)%mel%op%blk_version(iblk))
+           if (jblk.lt.1) call quit(1,'optc_project','blk not found(1)')
+           call add_opblk(xdum,0,1d0,me_special(nspecial-1)%mel,me_amp,
+     &                    iblk,jblk,orb_info,.false.)
+          end do
+        end if
+        ! Now evaluate T(3)red (or T(2)red if not done above)
+        call evaluate2(fspc(nspcfrm),
+     &         op_info,str_info,strmap_info,orb_info,xdum,.false.)
+        ! and add this to T as well
+        nblk = me_special(nspecial)%mel%op%n_occ_cls
+        do iblk = 1, nblk
+          iblkoff = (iblk-1)*nj
+          occ => me_special(nspecial)%mel%op%ihpvca_occ(1:ngastp,1:2,
+     &                                         iblkoff+1:iblkoff+nj)
+          jblk = iblk_occ(occ,.false.,me_amp%op,
+     &                    me_special(nspecial)%mel%op%blk_version(iblk))
+          if (jblk.lt.1) call quit(1,'optc_project','blk not found(2)')
+          call add_opblk(xdum,0,1d0,me_special(nspecial)%mel,me_amp,
+     &                   iblk,jblk,orb_info,.false.)
+        end do
+      end if
 
       return
       end

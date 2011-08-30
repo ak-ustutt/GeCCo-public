@@ -478,7 +478,7 @@ c dbgend
               contr%fac = fac_alt
 c              delete = (abs(contr%fac).lt.1d-12)
             else if (.not.delete.and.x_ansatz.ne.0.5d0.and.ntop.eq.2
-     &          .and.ntt.eq.1.
+     &          .and.ntt.eq.1
      &          .and.abs(abs(contr%fac)-0.5d0).lt.1d-12) then
               if (contr%fac.gt.0d0.and.ham_vtx.eq.1) then
                 contr%fac = x_ansatz

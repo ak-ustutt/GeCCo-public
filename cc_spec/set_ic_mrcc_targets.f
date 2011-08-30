@@ -39,10 +39,11 @@
      &     n_t_cls, i_cls,
      &     n_tred_cls, len_form, optref, idef, ciroot,
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
-     &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type
+     &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
+     &     tred, nremblk, remblk(60)
       logical ::
      &     update_prc, skip, preopt, project, first, Op_eqs,
-     &     h1bar, htt, svdonly, fact_tt
+     &     h1bar, htt, svdonly, fact_tt, ex_t3red
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -98,6 +99,8 @@ c     &     ival=maxexc)
      &     ival=maxtt)
       call get_argument_value('method.MRCC','x_ansatz',
      &     xval=x_ansatz)
+      call get_argument_value('method.MRCC','Tred_mode',
+     &     ival=tred)
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en  = ', maxcom_en
@@ -109,6 +112,7 @@ c     &     ival=maxexc)
         write(luout,*) 'HTT        = ', htt
         write(luout,*) 'maxtt      = ', maxtt
         write(luout,*) 'x_ansatz   = ', x_ansatz
+        write(luout,*) 'Tred_mode  = ', tred
       end if
 
       if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.x_ansatz.ne.1d0
@@ -116,6 +120,9 @@ c     &     ival=maxexc)
      &          .or.h1bar.and.maxcom_h1bar.gt.2))
      &    call quit(1,'set_ic_mrcc_targets',
      &      'x_ansatz.ne.0/0.5/1 currently works only with Ncom<=2')
+      if (tred.gt.0.and.(prc_type.eq.2.or.optref.eq.0))
+     &    call quit(1,'set_ic_mrcc_targets',
+     &     'Tred_mode > 0 not yet available for prc_type=2 or optref=0')
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -193,6 +200,7 @@ c     &             val_int=(/1/))
       ! we just run over the same loops here:
       ndef = 0
       nsupD = 0
+      nremblk = 0
       do ip = 0, maxp
         do ih = 0, maxh
           first = .true.
@@ -208,6 +216,10 @@ c     &             val_int=(/1/))
               first = .false.
             end if
             stndD(2,nsupD) = ndef
+            if (ip+ih.eq.1) then
+              nremblk = nremblk + 1
+              remblk(nremblk) = 2*(ndef-1)+1
+            end if
            end do
           end do
         end do
@@ -604,6 +616,48 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
      &              'INT_P4',1,1,
      &              parameters,2,tgt_info)
 
+      ! "redundant" parts of T amplitudes (in principle arbitrary)
+      call add_target('T(2)red',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do ip = 0, maxp
+        do ih = max(2-ip,0), min(2-ip,maxh)
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+            ! purely inactive excitations have no redundant component
+            if (max(iexc-ip,iexc-ih).eq.0) cycle
+            ndef = ndef + 1
+            occ_def(IHOLE,2,ndef) = ih
+            occ_def(IPART,1,ndef) = ip
+            occ_def(IVALE,1,ndef) = iexc - ip
+            occ_def(IVALE,2,ndef) = iexc - ih
+          end do
+        end do
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('T(2)red',ttype_op,DEF_OP_FROM_OCC,
+     &              'T(2)red',1,1,
+     &              parameters,2,tgt_info)
+      call add_target('T(3)red',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do ip = 0, maxp
+        do ih = max(3-ip,0), min(3-ip,maxh)
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+            ndef = ndef + 1
+            occ_def(IHOLE,2,ndef) = ih
+            occ_def(IPART,1,ndef) = ip
+            occ_def(IVALE,1,ndef) = iexc - ip
+            occ_def(IVALE,2,ndef) = iexc - ih
+          end do
+        end do
+      end do
+      ex_t3red = ndef.gt.0
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('T(3)red',ttype_op,DEF_OP_FROM_OCC,
+     &              'T(3)red',1,1,
+     &              parameters,2,tgt_info)
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
@@ -1681,6 +1735,67 @@ c dbg
      &     val_label=(/'F_OMG'/))
 c dbgend
 
+      ! "Redundant" part of T operator
+      call add_target2('F_T(2)red',.false.,tgt_info)
+      call set_dependency('F_T(2)red','T(2)red',tgt_info)
+      call set_dependency('F_T(2)red','Dtr',tgt_info)
+      call set_dependency('F_T(2)red','T',tgt_info)
+      call set_rule2('F_T(2)red',DEF_MRCC_INTM,tgt_info)
+      call set_arg('F_T(2)red',DEF_MRCC_INTM,'LABEL',1,tgt_info,
+     &     val_label=(/'F_T(2)red'/))
+      call set_arg('F_T(2)red',DEF_MRCC_INTM,'INTERM',1,tgt_info,
+     &     val_label=(/'T(2)red'/))
+      call set_arg('F_T(2)red',DEF_MRCC_INTM,'OPERATORS',2,tgt_info,
+     &     val_label=(/'T','Dtr'/))
+      call set_arg('F_T(2)red',DEF_MRCC_INTM,'MAXCOM',1,
+     &     tgt_info,val_int=(/2/))
+      call set_arg('F_T(2)red',DEF_MRCC_INTM,'MODE',1,tgt_info,
+     &     val_str='Tred')
+      call set_arg('F_T(2)red',DEF_MRCC_INTM,'TITLE',1,tgt_info,
+     &     val_str='Redundant part of T(2)')
+c dbg
+      call set_rule2('F_T(2)red',PRINT_FORMULA,tgt_info)
+      call set_arg('F_T(2)red',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_T(2)red'/))
+c dbgend
+      call add_target2('F_T(3)red',.false.,tgt_info)
+      call set_dependency('F_T(3)red','T(3)red',tgt_info)
+      call set_dependency('F_T(3)red','Dtr',tgt_info)
+      call set_dependency('F_T(3)red','T',tgt_info)
+      call set_rule2('F_T(3)red',DEF_MRCC_INTM,tgt_info)
+      call set_arg('F_T(3)red',DEF_MRCC_INTM,'LABEL',1,tgt_info,
+     &     val_label=(/'F_T(3)red'/))
+      call set_arg('F_T(3)red',DEF_MRCC_INTM,'INTERM',1,tgt_info,
+     &     val_label=(/'T(3)red'/))
+      call set_arg('F_T(3)red',DEF_MRCC_INTM,'OPERATORS',3,tgt_info,
+     &     val_label=(/'T','Dtr'/))
+      call set_arg('F_T(3)red',DEF_MRCC_INTM,'MAXCOM',1,
+     &     tgt_info,val_int=(/3/))
+      call set_arg('F_T(3)red',DEF_MRCC_INTM,'MODE',1,tgt_info,
+     &     val_str='Tred')
+      call set_arg('F_T(3)red',DEF_MRCC_INTM,'TITLE',1,tgt_info,
+     &     val_str='Redundant part of T(3)')
+      ! danger: double counting due to identical blocks in Dtr
+      ! remove the duplicates:
+      do i_cls = 1, nremblk
+        call set_rule2('F_T(3)red',SELECT_TERMS,tgt_info)
+        call set_arg('F_T(3)red',SELECT_TERMS,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_T(3)red'/))
+        call set_arg('F_T(3)red',SELECT_TERMS,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_T(3)red'/))
+        call set_arg('F_T(3)red',SELECT_TERMS,'OP_RES',1,tgt_info,
+     &       val_label=(/'T(3)red'/))
+        call set_arg('F_T(3)red',SELECT_TERMS,'OP_EXCL',1,tgt_info,
+     &       val_label=(/'Dtr'/))
+        call set_arg('F_T(3)red',SELECT_TERMS,'BLK_EXCL',1,tgt_info,
+     &       val_int=(/remblk(i_cls)/))
+      end do
+c dbg
+      call set_rule2('F_T(3)red',PRINT_FORMULA,tgt_info)
+      call set_arg('F_T(3)red',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_T(3)red'/))
+c dbgend
+
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -1879,6 +1994,28 @@ c     &             val_label=(/'FOPT_Heff'/))
 c      call set_arg('FOPT_Heff',OPTIMIZE,'LABELS_IN',1,tgt_info,
 c     &             val_label=(/'F_Heff'/))
 c dbgend
+
+      ! "redundant" T components
+      call add_target2('FOPT_T(2)red',.false.,tgt_info)
+      call set_dependency('FOPT_T(2)red','F_T(2)red',tgt_info)
+      call set_dependency('FOPT_T(2)red','DEF_ME_T(2)red',tgt_info)
+      call set_dependency('FOPT_T(2)red','DEF_ME_T',tgt_info)
+      call set_dependency('FOPT_T(2)red','DEF_ME_Dtr',tgt_info)
+      call set_rule2('FOPT_T(2)red',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_T(2)red',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_T(2)red'/))
+      call set_arg('FOPT_T(2)red',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_T(2)red'/))
+      call add_target2('FOPT_T(3)red',.false.,tgt_info)
+      call set_dependency('FOPT_T(3)red','F_T(3)red',tgt_info)
+      call set_dependency('FOPT_T(3)red','DEF_ME_T(3)red',tgt_info)
+      call set_dependency('FOPT_T(3)red','DEF_ME_T',tgt_info)
+      call set_dependency('FOPT_T(3)red','DEF_ME_Dtr',tgt_info)
+      call set_rule2('FOPT_T(3)red',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_T(3)red',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_T(3)red'/))
+      call set_arg('FOPT_T(3)red',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_T(3)red'/))
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -2173,6 +2310,35 @@ c dbgend
      &             val_int=(/1/))
       call set_arg('DEF_ME_INT_P4',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
+
+      ! ME for T(2)red
+      call add_target2('DEF_ME_T(2)red',.false.,tgt_info)
+      call set_dependency('DEF_ME_T(2)red','T',tgt_info)
+      call set_rule2('DEF_ME_T(2)red',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_T(2)red',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_T(2)red'/))
+      call set_arg('DEF_ME_T(2)red',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'T(2)red'/))
+      call set_arg('DEF_ME_T(2)red',DEF_ME_LIST,'MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_T(2)red',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_T(2)red',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      ! ME for T(3)red
+      call add_target2('DEF_ME_T(3)red',.false.,tgt_info)
+      call set_dependency('DEF_ME_T(3)red','T',tgt_info)
+      call set_rule2('DEF_ME_T(3)red',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_T(3)red',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_T(3)red'/))
+      call set_arg('DEF_ME_T(3)red',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'T(3)red'/))
+      call set_arg('DEF_ME_T(3)red',DEF_ME_LIST,'MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_T(3)red',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_T(3)red',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
@@ -2396,25 +2562,73 @@ c dbgend
       call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_E',1,tgt_info,
      &     val_label=(/'ME_E(MR)'/))
       if (optref.ne.0.and.update_prc) then
+        if (tred.eq.0) then
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
      &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
      &                 'ME_D','ME_Dinv',
      &                 'ME_A'/))
+        else if (ex_t3red) then
+        call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
+        call set_dependency('SOLVE_MRCC','FOPT_T(3)red',tgt_info)
+        call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',9,tgt_info,
+     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
+     &                 'ME_D','ME_Dinv',
+     &                 'ME_A','ME_T(2)red','ME_T(3)red'/))
+        else
+        call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
+        call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',8,tgt_info,
+     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
+     &                 'ME_D','ME_Dinv',
+     &                 'ME_A','ME_T(2)red'/))
+        end if
       else if (optref.ne.0.and..not.update_prc) then
+        if (tred.eq.0) then
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',6,tgt_info,
      &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
      &                 'ME_D','ME_Dinv'/))
+        else if (ex_t3red) then
+        call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
+        call set_dependency('SOLVE_MRCC','FOPT_T(3)red',tgt_info)
+        call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',8,tgt_info,
+     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
+     &                 'ME_D','ME_Dinv','ME_T(2)red','ME_T(3)red'/))
+        else
+        call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
+        call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
+     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
+     &                 'ME_D','ME_Dinv','ME_T(2)red'/))
+        end if
       else
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',3,tgt_info,
      &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag'/))
       end if
       if (optref.ne.0) then
         if (update_prc) then
+          if (tred.eq.0) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',3,tgt_info,
      &         val_label=(/'FOPT_T','FOPT_D','FOPT_Atr'/))
+          else if (ex_t3red) then
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',5,tgt_info,
+     &         val_label=(/'FOPT_T','FOPT_D','FOPT_Atr',
+     &                     'FOPT_T(2)red','FOPT_T(3)red'/))
+          else
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',4,tgt_info,
+     &         val_label=(/'FOPT_T','FOPT_D','FOPT_Atr',
+     &                     'FOPT_T(2)red'/))
+          end if
         else
+          if (tred.eq.0) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',2,tgt_info,
      &         val_label=(/'FOPT_T','FOPT_D'/))
+          else if (ex_t3red) then
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',4,tgt_info,
+     &         val_label=(/'FOPT_T','FOPT_D',
+     &                     'FOPT_T(2)red','FOPT_T(3)red'/))
+          else
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',3,tgt_info,
+     &         val_label=(/'FOPT_T','FOPT_D',
+     &                     'FOPT_T(2)red'/))
+          end if
         end if
       else
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',1,tgt_info,

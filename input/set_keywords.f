@@ -214,6 +214,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/8/))
       call argument_add('x_ansatz','method.MRCC',type=vtyp_rl8,
      &     xdef=(/0.5d0/))
+      call argument_add('Tred_mode','method.MRCC',type=vtyp_int,
+     &     idef=(/0/))
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')

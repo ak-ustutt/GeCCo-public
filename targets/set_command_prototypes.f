@@ -184,6 +184,18 @@
       call add_command_proto(KEEP_TERMS,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_TERMS,tgt_info)
+      call set_arg('_PROTO_',SELECT_TERMS,'OP_INCL',0,tgt_info,
+     &     val_label=(/''/))
+      call set_arg('_PROTO_',SELECT_TERMS,'BLK_INCL',0,tgt_info,
+     &     val_int=(/-1/))
+      call set_arg('_PROTO_',SELECT_TERMS,'OP_INCL_OR',0,tgt_info,
+     &     val_label=(/''/))
+      call set_arg('_PROTO_',SELECT_TERMS,'BLK_INCL_OR',0,tgt_info,
+     &     val_int=(/-1/))
+      call set_arg('_PROTO_',SELECT_TERMS,'OP_EXCL',0,tgt_info,
+     &     val_label=(/''/))
+      call set_arg('_PROTO_',SELECT_TERMS,'BLK_EXCL',0,tgt_info,
+     &     val_int=(/-1/))
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_SPECIAL,tgt_info)
       call set_arg('_PROTO_',SELECT_SPECIAL,'MODE',1,tgt_info,
