@@ -36,7 +36,7 @@
       integer ::
      &     ndef, occ_def(ngastp,2,124),!60),
      &     ncat, msc, ip, ih,
-     &     nlabels, nroots, gno, idef, iexc, jexc
+     &     nlabels, nroots, gno, idef, iexc, jexc, prc_type
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -52,6 +52,8 @@
 
       call get_argument_value('method.MR','GNO',
      &     ival=gno)
+      call get_argument_value('method.MR','prc_type',
+     &     ival=prc_type)
 
       call get_argument_value('method.MRCI','nroots',
      &     ival=nroots)
@@ -505,27 +507,41 @@ c      call set_rule('F_E(MR)_diag',ttype_frm,EXPAND_OP_PRODUCT,
 c     &              labels,7,1,
 c     &              parameters,3,tgt_info)
       ! insert (particle/hole) unit operator to allow for differentiation
-      call set_dependency('F_E(MR)_diag','1ph',tgt_info)
-      call set_rule2('F_E(MR)_diag',INSERT,tgt_info)
-      call set_arg('F_E(MR)_diag',INSERT,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_E(MR)_diag'/))
-      call set_arg('F_E(MR)_diag',INSERT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_E(MR)'/))
-      call set_arg('F_E(MR)_diag',INSERT,'OP_RES',1,tgt_info,
-     &     val_label=(/'E(MR)'/))
-      call set_arg('F_E(MR)_diag',INSERT,'OP_INS',1,tgt_info,
-     &     val_label=(/'1ph'/))
-      call set_arg('F_E(MR)_diag',INSERT,'OP_INCL',2,tgt_info,
-     &     val_label=(/'Cdag','C'/))
-      ! replace 1ph by 1
-      call set_dependency('F_E(MR)_diag','1',tgt_info)
-      call set_rule2('F_E(MR)_diag',REPLACE,tgt_info)
-      call set_arg('F_E(MR)_diag',REPLACE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_E(MR)_diag'/))
-      call set_arg('F_E(MR)_diag',REPLACE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_E(MR)_diag'/))
-      call set_arg('F_E(MR)_diag',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'1ph','1'/))
+      if (prc_type.lt.3) then
+        call set_dependency('F_E(MR)_diag','1ph',tgt_info)
+        call set_rule2('F_E(MR)_diag',INSERT,tgt_info)
+        call set_arg('F_E(MR)_diag',INSERT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)_diag'/))
+        call set_arg('F_E(MR)_diag',INSERT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_E(MR)_diag',INSERT,'OP_RES',1,tgt_info,
+     &       val_label=(/'E(MR)'/))
+        call set_arg('F_E(MR)_diag',INSERT,'OP_INS',1,tgt_info,
+     &       val_label=(/'1ph'/))
+        call set_arg('F_E(MR)_diag',INSERT,'OP_INCL',2,tgt_info,
+     &       val_label=(/'Cdag','C'/))
+        ! replace 1ph by 1
+        call set_dependency('F_E(MR)_diag','1',tgt_info)
+        call set_rule2('F_E(MR)_diag',REPLACE,tgt_info)
+        call set_arg('F_E(MR)_diag',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)_diag'/))
+        call set_arg('F_E(MR)_diag',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)_diag'/))
+        call set_arg('F_E(MR)_diag',REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/'1ph','1'/))
+      else
+        call set_rule2('F_E(MR)_diag',INVARIANT,tgt_info)
+        call set_arg('F_E(MR)_diag',INVARIANT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MR)_diag'/))
+        call set_arg('F_E(MR)_diag',INVARIANT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MR)'/))
+        call set_arg('F_E(MR)_diag',INVARIANT,'OP_RES',1,tgt_info,
+     &       val_label=(/'E(MR)'/))
+        call set_arg('F_E(MR)_diag',INVARIANT,'OPERATORS',0,tgt_info,
+     &       val_label=(/''/))
+        call set_arg('F_E(MR)_diag',INVARIANT,'TITLE',1,tgt_info,
+     &       val_str='---')
+      end if
       ! expand C --> Dtr Ctr
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'F_E(MR)_diag'
@@ -879,10 +895,17 @@ c      end if
       ! use effective Fock op. (needed only for pure inactive exc.)
       labels(1) = trim(dia_label)//'C'
       labels(2) = 'ME_FREF'
-      call set_rule(trim(dia_label)//'C',ttype_opme,
-     &              PRECONDITIONER,
-     &              labels,2,1,
-     &              parameters,3,tgt_info)
+      if (prc_type.ne.3) then
+        call set_rule(trim(dia_label)//'C',ttype_opme,
+     &                PRECONDITIONER,
+     &                labels,2,1,
+     &                parameters,3,tgt_info)
+      else ! no scalar part (taken care of by active part)
+        call set_rule(trim(dia_label)//'C',ttype_opme,
+     &                PRECONDITIONER,
+     &                labels,2,1,
+     &                parameters,0,tgt_info)
+      end if
 
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
@@ -906,15 +929,16 @@ c      end if
      &     'FOPT_A_diag',1,0,
      &     parameters,0,tgt_info)
       ! put diagonal elements to preconditioner
-      labels(1) = trim(dia_label)//'C'
-      labels(2) = 'ME_A'
-      call me_list_label(dia_label,mel_dia,1,
-     &     0,0,0,.false.)
+      call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
       call set_dependency('EVAL_A_diag',trim(dia_label)//'C',tgt_info)
-      call set_rule('EVAL_A_diag',ttype_opme,
-     &              EXTRACT_DIAG,
-     &              labels,2,1,
-     &              parameters,0,tgt_info)
+      call set_rule2('EVAL_A_diag',EXTRACT_DIAG,tgt_info)
+      call set_arg('EVAL_A_diag',EXTRACT_DIAG,'LIST_RES',1,tgt_info,
+     &             val_label=(/trim(dia_label)//'C'/))
+      call set_arg('EVAL_A_diag',EXTRACT_DIAG,'LIST_IN',1,tgt_info,
+     &             val_label=(/'ME_A'/))
+      if (prc_type.ge.3)
+     &  call set_arg('EVAL_A_diag',EXTRACT_DIAG,'EXTEND',1,tgt_info,
+     &               val_log=(/.true./))
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Preconditioner (b) :',0,'LIST')

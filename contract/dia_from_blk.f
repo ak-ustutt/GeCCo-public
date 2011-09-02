@@ -1,13 +1,16 @@
 *----------------------------------------------------------------------*
       subroutine dia_from_blk(buffer_out,buffer_inp,
      &     meinp,meout,iblkinp,iblkout,
-     &     str_info,orb_info)
+     &     iocc0,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     writes diagonal elements of buffer_inp (from meinp) to
 *     buffer_out (to meout) for a given pair of operator blocks.
 *     currently, the output block must be a single vertex block.
+*     extended version, which implicitly assumes the input list
+*     to be multiplied with unit tensors for additional lines,
+*     and only adds to the output buffer (instead of replacing)
 *     
-*     matthias, fall 2009 (adapted from symmetrise_blk1blk2)
+*     matthias, fall 2009
 *----------------------------------------------------------------------*
 
       implicit none
@@ -32,7 +35,7 @@
       type(me_list), intent(in), target ::
      &     meinp, meout
       integer, intent(in) ::
-     &     iblkinp, iblkout
+     &     iblkinp, iblkout, iocc0(ngastp,2)
       real(8), intent(inout) ::
      &     buffer_inp(*), buffer_out(*)
 
@@ -43,7 +46,8 @@
      &     ioff_1, ioff_2, ioffinp, ioffout, msa, msc, 
      &     igama, igamc, idxa, idxc, ngam, lena, lenc, iblkoff,
      &     ncblk, nablk, msc_max, msa_max, istr, idx1, idx2,
-     &     icmp, ncablk2, igamca, msca, msca_max, idxmsca
+     &     icmp, ncablk2, igamca, msca, msca_max, idxmsca,
+     &     ncblk0, nablk0
       real(8) ::
      &     fac
 
@@ -73,7 +77,13 @@
      &     msdis_c2(:),  msdis_a2(:),
      &     idxmsdis_c2(:),  idxmsdis_a2(:),
      &     gamdis_c2(:), gamdis_a2(:),
-     &     len_str2(:)
+     &     len_str2(:),
+     &     hpvx_csub0(:),hpvx_asub0(:),
+     &     occ_csub0(:), occ_asub0(:),
+     &     graph_csub0(:), graph_asub0(:),
+     &     msdis_c0(:),  msdis_a0(:),
+     &     gamdis_c0(:), gamdis_a0(:),
+     &     map_c0(:), map_a0(:)
 
       logical, external ::
      &     next_msgamdist2
@@ -112,11 +122,13 @@
       ! /e b c d\ --> \e 0 0 0/       --> \e f g h/
       ! \e b c d/     /e 0 0 0\            ^-------- e odd : -1 
       ! /  ...  \     \0 b c d/                      e even: +1
-      fac = dble(1-2*mod(hpvx_occ(1,2,iblkoff+1),2))
+      fac = dble(1-2*mod(iocc0(1,2),2)) ! not relevant for unit tensors
 
       call get_num_subblk(ncblk,nablk,
-     &     opout%ihpvca_occ(1,1,iblkoff+1),njout)
-      ncablk2 = ncblk+nablk
+     &     hpvx_occ(1,1,iblkoff+1),njout)
+      call get_num_subblk(ncblk0,nablk0,
+     &     iocc0,njout)
+      ncablk2 = ncblk0+nablk0
 
       allocate(hpvx_csub(ncblk),hpvx_asub(nablk),
      &         occ_csub(ncblk), occ_asub(nablk),
@@ -135,7 +147,13 @@
      &         msdis_c2(ncablk2),  msdis_a2(ncablk2),
      &         idxmsdis_c2(ncablk2),  idxmsdis_a2(ncablk2),
      &         gamdis_c2(ncablk2), gamdis_a2(ncablk2),
-     &         len_str2(2*ncablk2))
+     &         len_str2(2*ncablk2),
+     &         hpvx_csub0(ncblk0),hpvx_asub0(nablk0),
+     &         occ_csub0(ncblk0), occ_asub0(nablk0),
+     &         graph_csub0(ncblk0), graph_asub0(nablk0),
+     &         msdis_c0(ncblk0),  msdis_a0(nablk0),
+     &         gamdis_c0(ncblk0), gamdis_a0(nablk0),
+     &         map_c0(ncblk0), map_a0(nablk0))
 
       ! set HPVX and OCC info
       call condense_occ(occ_csub, occ_asub,
@@ -146,36 +164,61 @@
      &                  hpvx_csub,hpvx_asub,
      &                  idx_graph(1,1,iblkoff+1),njout,hpvxblkseq)
 
+      ! Now for non-redundant part
+      call condense_occ(occ_csub0, occ_asub0,
+     &                  hpvx_csub0,hpvx_asub0,
+     &                  iocc0,njout,hpvxblkseq)
+      ! use hpvx array to set up maps
+      idx2 = 1
+      do idx1 = 1, ncblk
+        if (idx2.gt.ncblk0) exit
+        if (hpvx_csub(idx1).eq.hpvx_csub0(idx2)) then
+          map_c0(idx2) = idx1
+          idx2 = idx2 + 1
+        end if
+      end do
+      idx2 = 1
+      do idx1 = 1, nablk
+        if (idx2.gt.nablk0) exit
+        if (hpvx_asub(idx1).eq.hpvx_asub0(idx2)) then
+          map_a0(idx2) = idx1
+          idx2 = idx2 + 1
+        end if
+      end do
+      if (idx2.ne.nablk0+1) call quit(1,'dia_from_blk',
+     &        'inconsistency (2)')
+
+      ! get non-redundant part of graph arrays
+      graph_csub0(1:ncblk0) = graph_csub(map_c0(1:ncblk0))
+      graph_asub0(1:nablk0) = graph_asub(map_a0(1:nablk0))
+
       ! Loop over Ms of annihilator string of output array
       idxmsa = 0
       msc_max = ca_occ(1,iblkout)
       msa_max = ca_occ(2,iblkout)
-      msca_max = msc_max + msa_max
+      msca_max = sum(iocc0(1:ngastp,1:2))
 
       idxmsa = 0
       msa_loop : do msa = msa_max, -msa_max, -2
 
         msc = msa + meout%mst
-        msca = msa + msc
 
         if (abs(msc).gt.msc_max) cycle msa_loop
         idxmsa = idxmsa+1
         idxmsc = (msc_max-msc)/2 + 1
-        idxmsca = (msca_max-msca)/2 + 1
 
         ! Loop over Irrep of annihilator string.
         igama_loop: do igama =1, ngam          
 
           igamc = multd2h(igama,meout%gamt)
-          igamca = multd2h(igama,igamc)
 
           if (ntest.ge.100)
      &         write(luout,*) 'MS(A), GAMMA(A): ',msa,igama,' len = ',
      &           meout%len_op_gmo(iblkout)%gam_ms(igama,idxmsa)
-          if (ntest.ge.1000)
-     &         write(luout,*) 'ms(A)2, gamma(A)2: ',msca,igamca,
-     &           ' len2 = ',
-     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
+c          if (ntest.ge.1000)
+c     &         write(luout,*) 'ms(A)2, gamma(A)2: ',msca,igamca,
+c     &           ' len2 = ',
+c     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
 
           if (meout%len_op_gmo(iblkout)%
      &         gam_ms(igama,idxmsa).le.0) cycle
@@ -197,27 +240,42 @@
             call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
             call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
 
+            ! get non-redundant part of gamdis and msdis arrays
+            gamdis_c0(1:ncblk0) = gamdis_c(map_c0(1:ncblk0))
+            gamdis_a0(1:nablk0) = gamdis_a(map_a0(1:nablk0))
+            msdis_c0(1:ncblk0) = msdis_c(map_c0(1:ncblk0))
+            msdis_a0(1:nablk0) = msdis_a(map_a0(1:nablk0))
+            msca = sum(msdis_c0(1:ncblk0)) + sum(msdis_a0(1:nablk0))
+            idxmsca = (msca_max-msca)/2 + 1
+            igamca = 1
+            do idx1 = 1, ncblk0
+               igamca = multd2h(igamca,gamdis_c0(idx1))
+            end do
+            do idx1 = 1, nablk0
+               igamca = multd2h(igamca,gamdis_a0(idx1))
+            end do   
+
             ! get ms, graph, hpvx strings of input operator,
             ! assuming that output operator represents the diagonal elements
             call diag_condensed_occ(occ_csub2,occ_asub2,
-     &                              occ_csub,occ_asub,
-     &                              hpvx_occ(1,1,iblkoff+1),
+     &                              occ_csub0,occ_asub0,
+     &                              iocc0,
      &                              njout,hpvxseq)
             call diag_condensed_occ(hpvx_csub2,hpvx_asub2,
-     &                              hpvx_csub,hpvx_asub,
-     &                              hpvx_occ(1,1,iblkoff+1),
+     &                              hpvx_csub0,hpvx_asub0,
+     &                              iocc0,
      &                              njout,hpvxseq)
             call diag_condensed_occ(graph_csub2,graph_asub2,
-     &                              graph_csub,graph_asub,
-     &                              hpvx_occ(1,1,iblkoff+1),
+     &                              graph_csub0,graph_asub0,
+     &                              iocc0,
      &                              njout,hpvxseq)
             call diag_condensed_occ(msdis_c2,msdis_a2,
-     &                              msdis_c,msdis_a,
-     &                              hpvx_occ(1,1,iblkoff+1),
+     &                              msdis_c0,msdis_a0,
+     &                              iocc0,
      &                              njout,hpvxseq)
             call diag_condensed_occ(gamdis_c2,gamdis_a2,
-     &                              gamdis_c,gamdis_a,
-     &                              hpvx_occ(1,1,iblkoff+1),
+     &                              gamdis_c0,gamdis_a0,
+     &                              iocc0,
      &                              njout,hpvxseq)
 
             call ms2idxms(idxmsdis_c2,msdis_c2,occ_csub2,ncablk2)
@@ -303,8 +361,9 @@
 
                 ! find indices for corresponding diagonal element of input mel
                 call diag_condensed_occ(istr_csub2,istr_asub2,
-     &                                  istr_csub,istr_asub,
-     &                                  hpvx_occ(1,1,iblkoff+1),
+     &                                  istr_csub(map_c0(1:ncblk0)),
+     &                                  istr_asub(map_a0(1:nablk0)),
+     &                                  iocc0,
      &                                  njout,hpvxseq)
 
 
@@ -315,8 +374,8 @@
      &               ldim_op_c2,ldim_op_a2,
      &               ncablk2,ncablk2)
 
-                ! write diagonal element of input operator to output list
-                buffer_out(idx1) = fac*buffer_inp(idx2)
+                ! add diagonal element of input operator to output list
+                buffer_out(idx1) = buffer_out(idx1)+fac*buffer_inp(idx2)
 
               end do idxa_loop
             end do idxc_loop
@@ -343,7 +402,13 @@
      &         msdis_c2,  msdis_a2,
      &         idxmsdis_c2,  idxmsdis_a2,
      &         gamdis_c2, gamdis_a2,
-     &         len_str2)
+     &         len_str2,
+     &         hpvx_csub0,hpvx_asub0,
+     &         occ_csub0, occ_asub0,
+     &         graph_csub0, graph_asub0,
+     &         msdis_c0,  msdis_a0,
+     &         gamdis_c0, gamdis_a0,
+     &         map_c0, map_a0)
 
       return
       end

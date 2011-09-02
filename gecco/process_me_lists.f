@@ -342,7 +342,7 @@ c     &       op_info,str_info,strmap_info,orb_info)
      &       'two labels expected for '
      &       //trim(EXTRACT_DIAG))
 
-        call dia_from_op(rule%labels(1),rule%labels(2),
+        call dia_from_op(rule%labels(1),rule%labels(2),.false.,
      &       op_info,str_info,orb_info)
 
       case(REORDER_MEL)

@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine set_hop(op,name,dagger,
-     &     min_rank,max_rank,iformal,explicit,orb_info)
+     &     min_rank,max_rank,iformal,explicit,
+     &     iexcl,nexcl,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for set_genop
 *     set up hamiltonian-like operator (minrank to maxrank)
@@ -21,7 +22,7 @@
       logical, intent(in) ::
      &     dagger, explicit
       integer, intent(in) ::
-     &     min_rank, max_rank, iformal
+     &     min_rank, max_rank, iformal, nexcl, iexcl(nexcl)
 
       type(orbinf) ::
      &     orb_info
@@ -52,8 +53,10 @@
       do ica = 1, 2
         do igastp = 1, ngastp
           if ((orb_info%nactt_hpv(igastp).gt.0
-     &         .or.igastp.eq.IEXTR.and.explicit)
-     &         .and.(igastp.ne.IEXTR.or.explicit)) then
+     &         .or.any(iexcl(1:nexcl).eq.igastp).and.explicit)
+     &         .and.(all(iexcl(1:nexcl).ne.igastp).or.explicit)) then
+c     &         .or.igastp.eq.IEXTR.and.explicit)
+c     &         .and.(igastp.ne.IEXTR.or.explicit)) then
             hpvx_mnmx(1,igastp,ica) = 0
             hpvx_mnmx(2,igastp,ica) = max_rank
           else

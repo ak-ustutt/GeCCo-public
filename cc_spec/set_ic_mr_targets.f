@@ -95,8 +95,8 @@
       call get_argument_value('method.MR','prc_shift',
      &     xval=prc_shift)
 
-      if (.not.l_iccc.and.prc_type.ne.0.or.prc_type.gt.2
-     &    .or.prc_type.ne.2.and.prc_shift.ne.0d0)
+      if (.not.l_iccc.and.prc_type.ne.0.and.prc_type.ne.3.or.
+     &    prc_type.gt.3.or.prc_type.ne.2.and.prc_shift.ne.0d0)
      &  call quit(1,'set_ic_mr_targets','Choose other preconditioner!')
 
       if (ntest.ge.100) then
@@ -273,38 +273,6 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
      &              'Dtr',1,1,
      &              parameters,2,tgt_info)
 
-      ! define Hessian / Jacobian (diagonal blocks only)
-      call add_target('A',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
-            ! not for purely inactive excitation class
-            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
-c    strictly, we should better use this: (but: does procedure C work?)
-c            if (ip.eq.ih.and.ip.eq.iexc) cycle
-c dbg hybrid preconditioner
-c           if (ndef.ge.6) cycle
-c dbgend
-            ndef = ndef + 1
-            occ_def(IHOLE,1,3*ndef-1) = ih
-            occ_def(IHOLE,2,3*ndef-1) = ih
-            occ_def(IPART,1,3*ndef-1) = ip
-            occ_def(IPART,2,3*ndef-1) = ip
-            occ_def(IVALE,1,3*ndef-1) = iexc - ip
-            occ_def(IVALE,2,3*ndef-1) = iexc - ip
-            occ_def(IVALE,2,3*ndef-2) = iexc - ih
-            occ_def(IVALE,1,3*ndef) = iexc - ih
-          end do
-        end do
-      end do
-      call op_from_occ_parameters(-1,parameters,2,
-     &              occ_def,ndef,3,(/0,0,0,0,0,0/),ndef)
-      call set_rule('A',ttype_op,DEF_OP_FROM_OCC,
-     &              'A',1,1,
-     &              parameters,2,tgt_info)
-
       ! subset of Residual
       call add_target('OMGred',ttype_op,.false.,tgt_info)
       occ_def = 0
@@ -313,7 +281,8 @@ c dbgend
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ! not for purely inactive excitation class
-            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
+            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)
+     &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
             ! same valence structure already exists?
             ivers = 1
             do idef = 1, ndef
@@ -345,6 +314,47 @@ c dbgend
      &             val_int=(/ndef/))
       call set_arg('OMGred',SET_ORDER,'IDX_FREQ',ndef,tgt_info,
      e             val_int=version(1:ndef))
+
+      ! define Hessian / Jacobian (diagonal blocks only)
+      call add_target('A',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      idef = 0
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+            ! not for purely inactive excitation class
+            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)
+     &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
+c    strictly, we should better use this: (but: does procedure C work?)
+c            if (ip.eq.ih.and.ip.eq.iexc) cycle
+c dbg hybrid preconditioner
+c           if (ndef.ge.6) cycle
+c dbgend
+            idef = idef + 1
+            ! for cheap precond.: only valence part needed
+            if (prc_type.ge.3.and.
+     &          (version(idef).ne.1.or.ip.eq.ih.and.ip.eq.iexc
+     &                                 .and..not.l_icci)) cycle
+            ndef = ndef + 1
+            if (prc_type.lt.3) then
+              occ_def(IHOLE,1,3*ndef-1) = ih
+              occ_def(IHOLE,2,3*ndef-1) = ih
+              occ_def(IPART,1,3*ndef-1) = ip
+              occ_def(IPART,2,3*ndef-1) = ip
+            end if
+            occ_def(IVALE,1,3*ndef-1) = iexc - ip
+            occ_def(IVALE,2,3*ndef-1) = iexc - ip
+            occ_def(IVALE,2,3*ndef-2) = iexc - ih
+            occ_def(IVALE,1,3*ndef) = iexc - ih
+          end do
+        end do
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,3,(/0,0,0,0,0,0/),ndef)
+      call set_rule('A',ttype_op,DEF_OP_FROM_OCC,
+     &              'A',1,1,
+     &              parameters,2,tgt_info)
 
 *----------------------------------------------------------------------*
 *     Formulae 
@@ -636,12 +646,14 @@ c dbgend
      &     val_int=(/1/))
       call set_arg('DEF_ME_A',DEF_ME_LIST,'MS',1,tgt_info,
      &     val_int=(/0/))
-      call set_arg('DEF_ME_A',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('DEF_ME_A',DEF_ME_LIST,'DIAG_IRREP',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('DEF_ME_A',DEF_ME_LIST,'DIAG_MS',1,tgt_info,
-     &     val_int=(/0/))
+      if (prc_type.lt.3) then
+        call set_arg('DEF_ME_A',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
+     &       val_int=(/1/))
+        call set_arg('DEF_ME_A',DEF_ME_LIST,'DIAG_IRREP',1,tgt_info,
+     &       val_int=(/1/))
+        call set_arg('DEF_ME_A',DEF_ME_LIST,'DIAG_MS',1,tgt_info,
+     &       val_int=(/0/))
+      end if
 
       ! ME_1
       call add_target2('DEF_ME_1',.false.,tgt_info)
@@ -843,6 +855,7 @@ c      call set_rule('DEF_ME_Dudag_2',ttype_opme,PRINT_MEL,
 c     &     'ME_Dudag_2',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
+
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*

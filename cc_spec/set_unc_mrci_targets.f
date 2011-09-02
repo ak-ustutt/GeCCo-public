@@ -131,10 +131,20 @@
      &              parameters,1,tgt_info)
 
       ! define Fock operator wrt reference function
-      call add_target('FREF',ttype_op,.false.,tgt_info)
-      call hop_parameters(-1,parameters,0,1,1,.false.)
-      call set_rule('FREF',ttype_op,DEF_HAMILTONIAN,'FREF',
-     &              1,1,parameters,1,tgt_info)
+      ! for all current methods, we only need the purely inactive part
+      ! (valence part might actually mess up something if prc_type=3)
+c      call add_target('FREF',ttype_op,.false.,tgt_info)
+c      call hop_parameters(-1,parameters,0,1,1,.false.)
+c      call set_rule('FREF',ttype_op,DEF_HAMILTONIAN,'FREF',
+c     &              1,1,parameters,1,tgt_info)
+      call add_target2('FREF',.false.,tgt_info)
+      call set_rule2('FREF',DEF_HAMILTONIAN,tgt_info)
+      call set_arg('FREF',DEF_HAMILTONIAN,'LABEL',1,tgt_info,
+     &     val_label=(/'FREF'/))
+      call set_arg('FREF',DEF_HAMILTONIAN,'MAX_RANK',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('FREF',DEF_HAMILTONIAN,'X_SPCS',2,tgt_info,
+     &     val_int=(/IVALE,IEXTR/))
 
       ! Spin operators
       ! S+

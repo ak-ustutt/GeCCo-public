@@ -82,7 +82,7 @@ c     &     ndef_max = 52, maximum_order = 10, nj_max = 10
      &       occ_def,ndef,njoined,nact,-1,orb_info)
       case(DEF_SCALAR)
         call set_hop(op_pnt,trim(rule%labels(1)),.false.,
-     &       0,0,1,.false.,orb_info)
+     &       0,0,1,.false.,IEXTR,1,orb_info)
       case(DEF_HAMILTONIAN)
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',
@@ -90,7 +90,7 @@ c     &     ndef_max = 52, maximum_order = 10, nj_max = 10
         call hop_parameters(+1,rule%parameters,
      &                      min_rank,max_rank,iformal,explicit)
         call set_hop(op_pnt,trim(rule%labels(1)),.false.,
-     &       min_rank,max_rank,iformal,explicit,orb_info)
+     &       min_rank,max_rank,iformal,explicit,IEXTR,1,orb_info)
       case(DEF_EXCITATION)
         if (rule%n_parameter_strings.lt.1)
      &       call quit(1,'process_operators',

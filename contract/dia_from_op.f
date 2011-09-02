@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine dia_from_op(label_out,label_inp,op_info,
+      subroutine dia_from_op(label_out,label_inp,extend,op_info,
      &                      str_info,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for dia_from_blk
@@ -23,9 +23,12 @@
       include 'def_orbinf.h'
       include 'ifc_memman.h'
       include 'par_opnames_gen.h'
+      include 'ifc_operators.h'
 
       character(*), intent(in) ::
      &     label_out, label_inp
+      logical, intent(in) ::
+     &     extend
       type(operator_info), intent(inout) ::
      &     op_info
       type(strinf), intent(in) ::
@@ -54,8 +57,7 @@
       integer, pointer ::
      &     iocc_inp(:,:,:), iocc_out(:,:)
       integer, external ::
-     &     idx_mel_list, ndisblk_mel, iblk_occ, occ_is_diag_blk,
-     &     iocc_equal
+     &     idx_mel_list, ndisblk_mel, iblk_occ, occ_is_diag_blk
 
       call atim_csw(cpu0,sys0,wall0)
 
@@ -100,6 +102,7 @@
         write(luout,*) ' output list = ',trim(meout%label)
         write(luout,*) ' ffout: ',trim(ffout%name)
         write(luout,*) ' opout: ',opout%name(1:len_trim(opout%name))
+        write(luout,*) ' extended mode? ',extend
       end if
 
       if (opout%njoined.ne.1.or.opinp%njoined.gt.3)
@@ -150,7 +153,16 @@
         ! is there a matching output block?
         do iblkout = 1, opout%n_occ_cls
           iocc_out => opout%ihpvca_occ(1:ngastp,1:2,iblkout)
-          if (iocc_equal(iocc_dia,.false.,iocc_out,.false.)) then
+          if (iocc_equal(iocc_dia,.false.,iocc_out,.false.).or.
+     &        extend.and. ! allow additional lines of different types only
+     &        iocc_bound('<=',iocc_dia,.false.,iocc_out,.false.).and.
+     &        iocc_zero(iocc_overlap(iocc_add(-1,iocc_dia,.false.,
+     &            1,iocc_out,.false.),.false.,iocc_dia,.false.)).and.
+     &        iocc_zero(iocc_overlap(iocc_add(-1,iocc_dia,.false.,
+     &            1,iocc_out,.false.),.false.,iocc_dia,.true.)).and.
+c           ad hoc: add scalar contrib. only to purely inactive blks
+     &        .not.(iocc_zero(iocc_dia).and.
+     &              any(iocc_out(IVALE,1:2).ne.0))) then
             if (ntest.ge.100) write(luout,'(a,i2)')
      &           'found matching output block: # ',iblkout
 
@@ -162,13 +174,17 @@
             ioffinp = meinp%off_op_occ(i_occ_cls)
             ioffout = meout%off_op_occ(iblkout)
             call get_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
-            buffer_out(1:lenblkout) = 0d0    ! reset output buffer
+            if (extend) then ! no reset of output, only add!
+              call get_vec(ffout,buffer_out,ioffout+1,ioffout+lenblkout)
+            else ! reset output buffer
+              buffer_out(1:lenblkout) = 0d0
+            end if
             call dia_from_blk(buffer_out,buffer_inp,
      &                        meinp,meout,i_occ_cls,iblkout,
-     &                        str_info,orb_info)
+     &                        iocc_dia,str_info,orb_info)
             call put_vec(ffout,buffer_out,ioffout+1,ioffout+lenblkout)
 
-            cycle ! there should be not more than one matching block
+            if (.not.extend) cycle ! not more than one matching block
           end if
         end do
       end do

@@ -39,6 +39,8 @@
      &     val_int=(/10/))
       call set_arg('_PROTO_',DEF_HAMILTONIAN,'SET_X',1,tgt_info,
      &     val_log=(/.false./))
+      call set_arg('_PROTO_',DEF_HAMILTONIAN,'X_SPCS',1,tgt_info,
+     &     val_int=(/IEXTR/))
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_EXCITATION,tgt_info)
       call set_arg('_PROTO_',DEF_EXCITATION,'MIN_RANK',1,tgt_info,
@@ -337,6 +339,8 @@
       call add_command_proto(SET_MEL,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(EXTRACT_DIAG,tgt_info)
+      call set_arg('_PROTO_',EXTRACT_DIAG,'EXTEND',1,tgt_info,
+     &     val_log=(/.false./))
 *----------------------------------------------------------------------*
       call add_command_proto(REORDER_MEL,tgt_info)
 

@@ -120,9 +120,9 @@ c     &     ival=maxexc)
      &          .or.h1bar.and.maxcom_h1bar.gt.2))
      &    call quit(1,'set_ic_mrcc_targets',
      &      'x_ansatz.ne.0/0.5/1 currently works only with Ncom<=2')
-      if (tred.gt.0.and.(prc_type.eq.2.or.optref.eq.0))
+      if (tred.gt.0.and.optref.eq.0)
      &    call quit(1,'set_ic_mrcc_targets',
-     &     'Tred_mode > 0 not yet available for prc_type=2 or optref=0')
+     &     'Tred_mode > 0 not yet available for optref=0')
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -353,11 +353,15 @@ c     &             val_int=(/1/))
       call add_target('OMGtr',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
+      icnt = 0
       do ip = 0, maxp
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
+            icnt = icnt + 1
+            ! for cheap precond.: only valence part needed eventually
+            if (prc_type.ge.3.and.version(icnt).ne.1) cycle
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
             occ_def(IPART,1,ndef*2) = ip
@@ -1204,27 +1208,29 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
      &      val_str='MRCC2')
       end if
       ! f) insert 1 (particle/hole space) for later differentiation
-      call set_dependency('F_E(MRCC)tr','1ph',tgt_info)
-      call set_rule2('F_E(MRCC)tr',INSERT,tgt_info)
-      call set_arg('F_E(MRCC)tr',INSERT,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_E(MRCC)tr'/))
-      call set_arg('F_E(MRCC)tr',INSERT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_E(MRCC)tr'/))
-      call set_arg('F_E(MRCC)tr',INSERT,'OP_RES',1,tgt_info,
-     &     val_label=(/'E(MR)'/))
-      call set_arg('F_E(MRCC)tr',INSERT,'OP_INS',1,tgt_info,
-     &     val_label=(/'1ph'/))
-      call set_arg('F_E(MRCC)tr',INSERT,'OP_INCL',2,tgt_info,
-     &     val_label=(/'L','T'/))
-      ! replace 1ph by 1
-      call set_dependency('F_E(MRCC)tr','1',tgt_info)
-      call set_rule2('F_E(MRCC)tr',REPLACE,tgt_info)
-      call set_arg('F_E(MRCC)tr',REPLACE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_E(MRCC)tr'/))
-      call set_arg('F_E(MRCC)tr',REPLACE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_E(MRCC)tr'/))
-      call set_arg('F_E(MRCC)tr',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'1ph','1'/))
+      if (prc_type.lt.3) then
+        call set_dependency('F_E(MRCC)tr','1ph',tgt_info)
+        call set_rule2('F_E(MRCC)tr',INSERT,tgt_info)
+        call set_arg('F_E(MRCC)tr',INSERT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MRCC)tr'/))
+        call set_arg('F_E(MRCC)tr',INSERT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MRCC)tr'/))
+        call set_arg('F_E(MRCC)tr',INSERT,'OP_RES',1,tgt_info,
+     &       val_label=(/'E(MR)'/))
+        call set_arg('F_E(MRCC)tr',INSERT,'OP_INS',1,tgt_info,
+     &       val_label=(/'1ph'/))
+        call set_arg('F_E(MRCC)tr',INSERT,'OP_INCL',2,tgt_info,
+     &       val_label=(/'L','T'/))
+        ! replace 1ph by 1
+        call set_dependency('F_E(MRCC)tr','1',tgt_info)
+        call set_rule2('F_E(MRCC)tr',REPLACE,tgt_info)
+        call set_arg('F_E(MRCC)tr',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MRCC)tr'/))
+        call set_arg('F_E(MRCC)tr',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MRCC)tr'/))
+        call set_arg('F_E(MRCC)tr',REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/'1ph','1'/))
+      end if
       ! g) expand T and L
       call set_dependency('F_E(MRCC)tr','F_T',tgt_info)
       call set_dependency('F_E(MRCC)tr','F_L',tgt_info)
@@ -2363,13 +2369,15 @@ c dbgend
       ! put diagonal elements to preconditioner
       call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
       dia_label = trim(dia_label)//'_T'
-      labels(1) = trim(dia_label)
-      labels(2) = 'ME_A'
       call set_dependency('EVAL_Atr',trim(dia_label),tgt_info)
-      call set_rule('EVAL_Atr',ttype_opme,
-     &              EXTRACT_DIAG,
-     &              labels,2,1,
-     &              parameters,0,tgt_info)
+      call set_rule2('EVAL_Atr',EXTRACT_DIAG,tgt_info)
+      call set_arg('EVAL_Atr',EXTRACT_DIAG,'LIST_RES',1,tgt_info,
+     &             val_label=(/trim(dia_label)/))
+      call set_arg('EVAL_Atr',EXTRACT_DIAG,'LIST_IN',1,tgt_info,
+     &             val_label=(/'ME_A'/))
+      if (prc_type.ge.3)
+     &  call set_arg('EVAL_Atr',EXTRACT_DIAG,'EXTEND',1,tgt_info,
+     &               val_log=(/.true./))
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Preconditioner (b) :',0,'LIST')
@@ -2486,7 +2494,7 @@ c dbgend
       select case(prc_type)
       case(-1) !do nothing: use old preconditioner file!
         call warn('set_ic_mrcc_targets','Using old preconditioner file')
-      case(0)
+      case(0,3)
 c dbg hybrid preconditioner
 c        call warn('set_ic_mrcc_targets','Using hybrid preconditioner')
 c dbgend

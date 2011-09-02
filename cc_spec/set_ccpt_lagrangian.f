@@ -154,7 +154,7 @@ c     &       occ_def,ndef,orb_info)
 c        deallocate(occ_def)
         if (mode(1:4).eq.'EXT ') then
           call set_hop(f_temp_pnt,op_f_temp,.false.,
-     &         1,1,2,.true.,orb_info)
+     &         1,1,2,.true.,IEXTR,1,orb_info)
         else if (mode(4:4).eq.'0') then
           ndef = 3
           allocate(occ_def(ngastp,2,ndef))
@@ -169,7 +169,7 @@ c        deallocate(occ_def)
           deallocate(occ_def)
         else
           call set_hop(f_temp_pnt,op_f_temp,.false.,
-     &         1,1,2,.false.,orb_info)
+     &         1,1,2,.false.,IEXTR,1,orb_info)
         end if
 
         idxsop = idxtop
@@ -177,7 +177,7 @@ c        deallocate(occ_def)
       else
 
         call set_hop(f_temp_pnt,op_f_temp,.false.,
-     &       1,1,2,.true.,orb_info)
+     &       1,1,2,.true.,IEXTR,1,orb_info)
 
         ! Definition of the S = T+R operator.
         call add_operator(op_sop,op_info)
@@ -251,10 +251,10 @@ c dbg
 
       if (mode(4:4).eq.'0') then
         call set_hop(h_temp_pnt,op_h_temp,.false.,
-     &       2,2,2,ansatz.ne.0,orb_info)
+     &       2,2,2,ansatz.ne.0,IEXTR,1,orb_info)
       else
         call set_hop(h_temp_pnt,op_h_temp,.false.,
-     &       1,2,2,ansatz.ne.0,orb_info)
+     &       1,2,2,ansatz.ne.0,IEXTR,1,orb_info)
       end if
 
       ! initialize formula

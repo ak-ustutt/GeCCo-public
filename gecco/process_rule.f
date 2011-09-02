@@ -147,7 +147,7 @@
         call get_arg('LABEL',rule,tgt_info,val_label=label)
         call get_op(op_pnt,trim(label),NEW)
         call set_hop(op_pnt,trim(label),.false.,
-     &       0,0,1,.false.,orb_info)
+     &       0,0,1,.false.,IEXTR,1,orb_info)
 *----------------------------------------------------------------------*
       case(DEF_HAMILTONIAN)
 *----------------------------------------------------------------------*
@@ -157,8 +157,11 @@
         call get_arg('MAX_RANK',rule,tgt_info,val_int=max_rank)
         call get_arg('FORMAL',rule,tgt_info,val_int=iformal)
         call get_arg('SET_X',rule,tgt_info,val_log=explicit)
+        call get_arg('X_SPCS',rule,tgt_info,
+     &       val_int_list=iblk_exclude,ndim=nexclude)
         call set_hop(op_pnt,trim(label),.false.,
-     &       min_rank,max_rank,iformal,explicit,orb_info)        
+     &       min_rank,max_rank,iformal,explicit,
+     &       iblk_exclude,nexclude,orb_info)        
 *----------------------------------------------------------------------*
       case(DEF_EXCITATION)
 *----------------------------------------------------------------------*
@@ -961,10 +964,11 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
         call get_arg('LIST_RES',rule,tgt_info,val_label=label)
         call get_arg('LIST_IN',rule,tgt_info,val_label=label2)
+        call get_arg('EXTEND',rule,tgt_info,val_log=explicit)
 
         if (form_test) return
 
-        call dia_from_op(label,label2,
+        call dia_from_op(label,label2,explicit,
      &       op_info,str_info,orb_info)
 
 *----------------------------------------------------------------------*
