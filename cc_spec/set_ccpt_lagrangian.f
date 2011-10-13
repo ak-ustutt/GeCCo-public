@@ -341,12 +341,12 @@ c dbg
      &     flist_lag,op_info)
 
       if (ansatz.gt.0) then
-        call expand_subexpr(flist_lag,flist_t_r,.false.,op_info)
+        call expand_subexpr(flist_lag,flist_t_r,0,op_info)
         if (ntest.ge.1000) then
           call write_title(luout,wst_title,'after R2 expansion')
           call print_form_list(luout,flist_lag,op_info)
         end if
-        call expand_subexpr(flist_lag,flist_t_r_pt,.false.,op_info)
+        call expand_subexpr(flist_lag,flist_t_r_pt,0,op_info)
         if (ntest.ge.1000) then
           call write_title(luout,wst_title,'after R3 expansion')
           call print_form_list(luout,flist_lag,op_info)
@@ -361,12 +361,12 @@ c dbg
         call transpose_formula(flist_t_r,op_info)
         call transpose_formula(flist_t_r_pt,op_info)
 
-        call expand_subexpr(flist_lag,flist_t_r,.false.,op_info)
+        call expand_subexpr(flist_lag,flist_t_r,0,op_info)
         if (ntest.ge.1000) then
           call write_title(luout,wst_title,'after R2^+ expansion')
           call print_form_list(luout,flist_lag,op_info)
         end if
-        call expand_subexpr(flist_lag,flist_t_r_pt,.false.,op_info)
+        call expand_subexpr(flist_lag,flist_t_r_pt,0,op_info)
         if (ntest.ge.1000) then
           call write_title(luout,wst_title,'after R3^+ expansion')
           call print_form_list(luout,flist_lag,op_info)

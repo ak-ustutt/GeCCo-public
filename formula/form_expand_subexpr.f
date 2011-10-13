@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine form_expand_subexpr(f_output,f_input,
-     &                      title,
+     &                      title,mode,
      &                      nintm,label_f_intm,
      &                      op_info,form_info)
 *----------------------------------------------------------------------*
@@ -26,7 +26,7 @@ c      include 'def_contraction_list.h'
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nintm
+     &     nintm, mode
       character(*), intent(in) ::
      &     title,
      &     label_f_intm(nintm)
@@ -105,7 +105,7 @@ c      include 'def_contraction_list.h'
         if (transpose)
      &       call transpose_formula(fl_intm,op_info)
 
-        call expand_subexpr(flist,fl_intm,.false.,op_info)
+        call expand_subexpr(flist,fl_intm,mode,op_info)
 
         call sum_terms(flist,op_info)
 

@@ -15,7 +15,8 @@ check
   rewind
   label Number of terms of Lagrangian
   find F_MRCC_LAG
-  find SELECT_SPECIAL
+  find F_MRCC_LAG
+  find EXPAND
   find wrote
   compare int 2
 check

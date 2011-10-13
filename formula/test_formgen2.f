@@ -131,7 +131,7 @@
       write(luout,*) ' insert B: R = e^{-A-DC} H e^{B+DC}'
       write(luout,*) '------------------------------------'
 
-      call expand_subexpr(form_bhb,form_a_dc,.false.,op_info)
+      call expand_subexpr(form_bhb,form_a_dc,0,op_info)
 
       call print_form_list(luout,form_bhb,op_info)
 

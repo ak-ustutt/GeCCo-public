@@ -242,7 +242,7 @@ c        call quit(1,DEF_FORMULA,'not yet')
         jdx = idx_formlist(trim(rule%labels(ioff+1)),form_info)        
         form0_pnt => form_info%form_arr(jdx)%form
         call form_expand_subexpr(form_pnt,form0_pnt,
-     &       title,
+     &       title,0,
      &       nint,rule%labels(ioff+2),
      &       op_info,form_info
      &       )

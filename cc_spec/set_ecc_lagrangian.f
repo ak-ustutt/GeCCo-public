@@ -151,7 +151,7 @@ c prelim
       end if
 
       ! replace Hbar by e^-T H e^T
-      call expand_subexpr(flist_lag,flist_hbar,.false.,op_info)
+      call expand_subexpr(flist_lag,flist_hbar,0,op_info)
       call sum_terms(flist_lag,op_info)
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'Expanded Lagrangian:')

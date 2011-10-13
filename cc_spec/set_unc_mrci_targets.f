@@ -266,9 +266,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_rule('F_FREF',ttype_frm,EXPAND_OP_PRODUCT,
      &              labels,7,1,
      &              parameters,3,tgt_info)
-      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-      call set_rule('F_FREF',ttype_frm,PRINT_FORMULA,
-     &                labels,2,1,parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c      call set_rule('F_FREF',ttype_frm,PRINT_FORMULA,
+c     &                labels,2,1,parameters,2,tgt_info)
 
       ! expectation value of S^2
       call add_target2('F_REF_S(S+1)',.false.,tgt_info)
@@ -331,6 +331,65 @@ c      call set_arg('F_REF_S(S+1)',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_REF_S(S+1)'/))
 c dbgend
 
+      ! expectation value of S^2 in operator form
+      call add_target2('F_REPL_H_S2',.false.,tgt_info)
+      call set_dependency('F_REPL_H_S2','S+',tgt_info)
+      call set_dependency('F_REPL_H_S2','S-',tgt_info)
+      call set_dependency('F_REPL_H_S2','Sz',tgt_info)
+      call set_dependency('F_REPL_H_S2','Sz_dum',tgt_info)
+      call set_dependency('F_REPL_H_S2','H',tgt_info)
+      ! (a) 1/2*(S+S- + S-S+)
+      call set_rule2('F_REPL_H_S2',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_REPL_H_S2'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'H','S+','S-','H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/1,2,3,1/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/0.5d0/))
+      call set_rule2('F_REPL_H_S2',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_REPL_H_S2'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'H','S-','S+','H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/1,2,3,1/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/0.5d0/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      ! (b) + Sz^2 (Sz_dum is used to circumvent automatic "BCH" factor)
+      call set_rule2('F_REPL_H_S2',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_REPL_H_S2'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'H','Sz','Sz_dum','H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/1,2,3,1/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      call set_rule2('F_REPL_H_S2',REPLACE,tgt_info)
+      call set_arg('F_REPL_H_S2',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_REPL_H_S2'/))
+      call set_arg('F_REPL_H_S2',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_REPL_H_S2'/))
+      call set_arg('F_REPL_H_S2',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'Sz_dum','Sz'/))
+c dbg
+c      call set_rule2('F_REPL_H_S2',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_REPL_H_S2',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_REPL_H_S2'/))
+c dbgend
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -582,11 +641,13 @@ c dbgend
         if (.not.l_exist) call quit(1,'set_unc_mrci_targets',
      &           'File for CASSCF coefficients not found!')
       end if
-      call form_parameters(-1,parameters,2,
-     &     'CI coefficients :',0,'LIST')
-      call set_rule('SOLVE_REF',ttype_opme,PRINT_MEL,
-     &     'ME_C0',1,0,
-     &     parameters,2,tgt_info)
+      if (cmaxexc.eq.0) then
+        call form_parameters(-1,parameters,2,
+     &       'CI coefficients :',0,'LIST')
+        call set_rule('SOLVE_REF',ttype_opme,PRINT_MEL,
+     &       'ME_C0',1,0,
+     &       parameters,2,tgt_info)
+      end if
 
       ! Evaluate reference energy
       call add_target('EVAL_E_REF',ttype_gen,calc,tgt_info)

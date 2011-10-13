@@ -536,8 +536,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('INTERM',rule,tgt_info,
      &       val_label_list=label_list,ndim=nint)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call get_arg('IMODE',rule,tgt_info,val_int=imode)
         call form_expand_subexpr(form_pnt,form0_pnt,
-     &       title,
+     &       title,imode,
      &       nint,label_list,
      &       op_info,form_info
      &       )
@@ -670,7 +671,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(SELECT_SPECIAL)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),OLD)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
         call get_form(form0_pnt,trim(label),OLD)
         call get_arg('OPERATORS',rule,tgt_info,

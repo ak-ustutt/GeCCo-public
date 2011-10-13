@@ -232,8 +232,8 @@ c     &     'not adapted to RAS orbital spaces')
           orb_info%ihpvgas(1:ngas,1) = (/1,1,2/)
         endif  
         orb_info%igassh(1:nsym,1) = nfro(1:nsym)
-        orb_info%igassh(1:nsym,2) = nrhf(1:nsym)-nfro(1:nsym)
-        orb_info%igassh(1:nsym,3) = norb(1:nsym)-nrhf(1:nsym)
+        orb_info%igassh(1:nsym,2) = nish(1:nsym)-nfro(1:nsym)
+        orb_info%igassh(1:nsym,3) = norb(1:nsym)-nish(1:nsym)
         if(logaux)then
           orb_info%igassh(1:nsym,4) = linind(1:nsym)
         endif  
@@ -246,8 +246,8 @@ c     &     'not adapted to RAS orbital spaces')
             orb_info%iad_gas(1:ngas) = (/2,2/)
             orb_info%ihpvgas(1:ngas,1) = (/1,2/)
           endif
-          orb_info%igassh(1:nsym,1) = nrhf(1:nsym)
-          orb_info%igassh(1:nsym,2) = norb(1:nsym)-nrhf(1:nsym)
+          orb_info%igassh(1:nsym,1) = nish(1:nsym)
+          orb_info%igassh(1:nsym,2) = norb(1:nsym)-nish(1:nsym)
           if(logaux)then
             orb_info%igassh(1:nsym,3) = linind(1:nsym)
           endif
@@ -259,10 +259,10 @@ c     &     'not adapted to RAS orbital spaces')
             orb_info%iad_gas(1:ngas) = (/2,2,2/)
             orb_info%ihpvgas(1:ngas,1) = (/1,3,2/)
           endif
-          orb_info%igassh(1:nsym,1) = nrhf(1:nsym)
+          orb_info%igassh(1:nsym,1) = nish(1:nsym)
           orb_info%igassh(1:nsym,2) = nash(1:nsym)
           orb_info%igassh(1:nsym,3) 
-     &                  = norb(1:nsym)-nrhf(1:nsym)-nash(1:nsym)
+     &                  = norb(1:nsym)-nish(1:nsym)-nash(1:nsym)
           if(logaux)then
             orb_info%igassh(1:nsym,4) = linind(1:nsym)
           endif
@@ -276,10 +276,10 @@ c     &     'not adapted to RAS orbital spaces')
             orb_info%ihpvgas(1:ngas,1) = (/1,1,2/)
             orb_info%ihpvgas(1:ngas,2) = (/1,2,2/)
           endif
-          orb_info%igassh(1:nsym,1) = nrhf(1:nsym)
+          orb_info%igassh(1:nsym,1) = nish(1:nsym)
           orb_info%igassh(1:nsym,2) = nash(1:nsym)
           orb_info%igassh(1:nsym,3) =
-     &         norb(1:nsym)-nrhf(1:nsym)-nash(1:nsym)
+     &         norb(1:nsym)-nish(1:nsym)-nash(1:nsym)
           if(logaux)then
             orb_info%igassh(1:nsym,4) = linind(1:nsym)
           endif

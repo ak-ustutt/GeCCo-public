@@ -190,7 +190,7 @@ c      include 'ifc_operators.h'
         call init_formula(flist)
         call set_primitive_formula(flist,idx_op(idx),
      &       1d0,idx_f,.true.,op_info)
-        call expand_subexpr(flist_scr,flist,.false.,op_info)
+        call expand_subexpr(flist_scr,flist,0,op_info)
         call dealloc_formula_list(flist)
       end if
       if (n_g.gt.0) then
@@ -198,7 +198,7 @@ c      include 'ifc_operators.h'
         call init_formula(flist)
         call set_primitive_formula(flist,idx_op(idx),
      &       1d0,idx_g,.true.,op_info)
-        call expand_subexpr(flist_scr,flist,.false.,op_info)
+        call expand_subexpr(flist_scr,flist,0,op_info)
         call dealloc_formula_list(flist)
       end if
 

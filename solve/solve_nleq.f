@@ -72,7 +72,7 @@ c dbgend
       logical ::
      &     conv
       character(len_opname) ::
-     &     label
+     &     label, dia_label
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
      &     idx, idxmel, ierr, nout, idx_en_xret, idx_res_xret(nopt), jdx
@@ -304,8 +304,11 @@ c     &       ff_trv,ff_h_trv,
      &      .and..not.conv.and.nspcfrm.gt.1) then
           call get_argument_value('method.MR','ciroot',
      &       ival=idx)
+          call me_list_label(dia_label,'DIA',orb_info%lsym,
+     &                       0,0,0,.false.)
+          dia_label = trim(dia_label)//'C0'
           call solve_evp('DIA',1,idx,
-     &                 'ME_C0','DIAG1SxxM00C0','A_C0',
+     &                 'ME_C0',trim(dia_label),'A_C0',
      &                 'C0','FOPT_OMG_C0','-',0,
      &                 op_info,form_info,str_info,strmap_info,orb_info)
 c dbg

@@ -523,6 +523,12 @@ signsec2:      1.0
     0      10      50      59       0       0       0       0       0       0
  ----------------------------------------------------------------------------
  wrote                    121  entries
+[manually added following 5 lines on 10/13/2011:]
+ Rule: EXPAND
+ read                    120  entries
+ read                     12  entries
+ @ expand                              cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ wrote                    143  entries
  Rule: PRINT_FORMULA
  read                    120  entries
  [INIT TARGET]                    11
@@ -5669,7 +5675,7 @@ signsec2:      1.0
   term #   15 - H^ 0 P^ 4 V^ 0 X^ 0 - Mb:     0.179E+00
   term #   31 - H^ 0 P^ 3 V^ 1 X^ 0 - Mb:     0.126E+00
   term #  112 - H^ 0 P^ 3 V^ 1 X^ 0 - Mb:     0.126E+00
- wrote                    807  entries
+ wrote                    899  entries [manually changed on 10/13/2011]
  My next target: FREF
  Rule: DEF_HAMILTONIAN
  My next target: F_FREF

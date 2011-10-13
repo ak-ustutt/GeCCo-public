@@ -70,6 +70,8 @@
         call select_same_blk(flist,labels,nlabels,mode,op_info)
       case('HTT','htt')
         call select_repl_htt(flist,labels,nlabels,mode,op_info)
+      case('FORMAL','formal')
+        call select_formal_blk(flist,mode,op_info)
       case default
         call quit(1,'form_select_special','unknown type: "'
      &       //trim(type)//'"')

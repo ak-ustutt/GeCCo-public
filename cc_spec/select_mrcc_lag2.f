@@ -109,6 +109,8 @@
 
       call get_argument_value('method.MRCC','maxtt',
      &     ival=maxcon_tt)
+      ! quick and dirty: overrule maxtt restriction if requested:
+      if (mode(10:10).eq.'X') maxcon_tt = -1
       call get_argument_value('method.MRCC','x_ansatz',
      &     xval=x_ansatz)
       alt_ansatz = x_ansatz.eq.0d0.or.x_ansatz.eq.1d0

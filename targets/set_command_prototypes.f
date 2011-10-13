@@ -156,6 +156,8 @@
       call add_command_proto(EXPAND,tgt_info)
       call set_arg('_PROTO_',EXPAND,'TITLE',1,tgt_info,
      &     val_str='---')
+      call set_arg('_PROTO_',EXPAND,'IMODE',1,tgt_info,
+     &     val_int=(/0/))
 *----------------------------------------------------------------------*
       call add_command_proto(REPLACE,tgt_info)
       call set_arg('_PROTO_',REPLACE,'TITLE',1,tgt_info,

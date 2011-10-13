@@ -1,9 +1,12 @@
 *----------------------------------------------------------------------*
-      subroutine expand_subexpr(fl_tgt,fl_intm,force,op_info)
+      subroutine expand_subexpr(fl_tgt,fl_intm,mode,op_info)
 *----------------------------------------------------------------------*
 *     input: a definition of an intermediate on fl_intm
 *            a target formula on fl_tgt
-*            whether to enforce all contractions, force.
+*     mode: if there are no terms for an intermediate block:
+*           mode=0: quit with error message
+*           mode=1: delete term
+*           mode=2: ignore (keep term)
 *     find all occurences of the intermediate vertex in fl_tgt and
 *     expand them by the definition given in fl_intm
 *     on output: an expanded formula on fl_tgt
@@ -25,8 +28,8 @@
      &     fl_intm
       type(formula_item), target, intent(inout) ::
      &     fl_tgt
-      logical, intent(in)::
-     &     force
+      integer, intent(in)::
+     &     mode
       ! only for debug output:
       type(operator_info), intent(in) ::
      &     op_info
@@ -117,13 +120,7 @@
             end if
           end do
           
-          if (.not.success) then
-            call prt_contr2(luout,fl_tgt_current%contr,op_info)
-            write(luout,*) 'vertex:          ',ivtx
-            write(luout,*) 'undefined block: ',iblk_intm
-            call quit(1,'expand_subexpr','block not defined')
-          end if
-
+          if (success) then
           ! ... and collect all terms
           allocate(fpl_intm_c2blk)
           call init_formula_plist(fpl_intm_c2blk)
@@ -138,9 +135,10 @@ c dbg
           allocate(fl_expand)
           call init_formula(fl_expand)
           call expand_term(fl_expand,nterms,
-     &         njoined,fl_tgt_current,fpl_intm_c2blk,force,op_info)
+     &         njoined,fl_tgt_current,fpl_intm_c2blk,.false.,op_info)
+          end if
           
-          if (nterms.gt.0) then
+          if (nterms.gt.0.and.success) then
 c dbg
             iterm = iterm + 1
 c            if (mod(iterm,10).eq.0) print *,'insertion # ',iterm
@@ -178,16 +176,24 @@ c dbg
             ! we re-visit the generated terms (for multiple expansions)
             advance = .false.
           else
-c            call quit(1,'expand_subexpr','strange event: no terms')
-            fl_tgt_current => fl_tgt_current%prev
-            fl_tgt_current_next => fl_tgt_current%next
-            call delete_fl_node(fl_tgt_current_next)
-            deallocate(fl_tgt_current_next)
+            select case(mode)
+            case(0)
+              call quit(1,'expand_subexpr',
+     &                  'no terms! block not defined?')
+            case(1)
+              fl_tgt_current => fl_tgt_current%prev
+              fl_tgt_current_next => fl_tgt_current%next
+              call delete_fl_node(fl_tgt_current_next)
+              deallocate(fl_tgt_current_next)
+            case default
+            end select
             advance = .true.
           end if
 
+          if (success) then
           call dealloc_formula_plist(fpl_intm_c2blk)
           deallocate(fpl_intm_c2blk)
+          end if
 
         end if
 

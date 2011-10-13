@@ -250,7 +250,7 @@ c      sbar_pnt%dagger = .true.
       end if
 
       ! replace S by T+CR
-      call expand_subexpr(flist_lag,flist_t_cr,.false.,op_info)
+      call expand_subexpr(flist_lag,flist_t_cr,0,op_info)
 
       ! sum up duplicate terms (due to S->T+CR replacement)
       call sum_terms(flist_lag,op_info)
@@ -261,7 +261,7 @@ c      sbar_pnt%dagger = .true.
       end if
 
       ! replace Sbar by Tbar + R^t CBAR
-      call expand_subexpr(flist_lag,flist_tbar_cbarr,.false.,op_info)
+      call expand_subexpr(flist_lag,flist_tbar_cbarr,0,op_info)
 
       if (ntest.ge.1000) then
         call write_title(luout,wst_title,'after replacing S')
