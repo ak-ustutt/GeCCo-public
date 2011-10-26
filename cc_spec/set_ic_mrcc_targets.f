@@ -40,10 +40,10 @@
      &     n_tred_cls, len_form, optref, idef, ciroot,
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
-     &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk
+     &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc
       logical ::
      &     update_prc, skip, preopt, project, first, Op_eqs,
-     &     h1bar, htt, svdonly, fact_tt, ex_t3red
+     &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -101,6 +101,9 @@ c     &     ival=maxexc)
      &     xval=x_ansatz)
       call get_argument_value('method.MRCC','Tred_mode',
      &     ival=tred)
+      call get_argument_value('method.MRCC','trunc_order',
+     &     ival=ntrunc)
+      trunc = ntrunc.ge.0
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en  = ', maxcom_en
@@ -113,6 +116,7 @@ c     &     ival=maxexc)
         write(luout,*) 'maxtt      = ', maxtt
         write(luout,*) 'x_ansatz   = ', x_ansatz
         write(luout,*) 'Tred_mode  = ', tred
+        write(luout,*) 'trunc      = ', trunc
       end if
 
       if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.x_ansatz.ne.1d0
@@ -902,6 +906,39 @@ c        end if
      &       val_label=(/'L','Geff'/))
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='SAME')
+      end if
+      if (trunc) then
+        ! apply perturbative truncation of Lagrangian
+        call set_rule2('F_MRCC_LAG',SELECT_SPECIAL,tgt_info)
+        call set_dependency('F_MRCC_LAG','FREF',tgt_info)
+        call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+        call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+        if (h1bar) then
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',3,
+     &       tgt_info,val_label=(/'H1bar','FREF','T'/))
+        else
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',3,
+     &       tgt_info,val_label=(/'H','FREF','T'/))
+        end if
+        call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &       val_str='MRCCtrunc')
+        ! expand effective Fock operator (if it was inserted)
+        call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
+        call set_arg('F_MRCC_LAG',EXPAND,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+        call set_arg('F_MRCC_LAG',EXPAND,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+        if (h1bar) then
+          call set_dependency('F_MRCC_LAG','F_FREFbar',tgt_info)
+          call set_arg('F_MRCC_LAG',EXPAND,'INTERM',1,tgt_info,
+     &         val_label=(/'F_FREFbar'/))
+        else
+          call set_dependency('F_MRCC_LAG','F_FREF',tgt_info)
+          call set_arg('F_MRCC_LAG',EXPAND,'INTERM',1,tgt_info,
+     &         val_label=(/'F_FREF'/))
+        end if
       end if
       if (.not.Op_eqs.and.h1bar) then
         ! expand formal part of H1bar (store H1bar blks. only up to P^2)
@@ -1720,6 +1757,28 @@ c      end if
      &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1barfull',REPLACE,'OP_LIST',2,tgt_info,
      &     val_label=(/'T1','T'/))
+      if (trunc) then
+        ! apply perturbative truncation of Lagrangian
+        call set_rule2('F_H1barfull',SELECT_SPECIAL,tgt_info)
+        call set_dependency('F_H1barfull','FREF',tgt_info)
+        call set_arg('F_H1barfull',SELECT_SPECIAL,'LABEL_RES',1,
+     &       tgt_info,val_label=(/'F_H1bar'/))
+        call set_arg('F_H1barfull',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_H1bar'/))
+        call set_arg('F_H1barfull',SELECT_SPECIAL,'OPERATORS',3,
+     &       tgt_info,val_label=(/'H','FREF','T'/))
+        call set_arg('F_H1barfull',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &       val_str='MRCCtrunc')
+        ! expand effective Fock operator (if it was inserted)
+        call set_rule2('F_H1barfull',EXPAND,tgt_info)
+        call set_arg('F_H1barfull',EXPAND,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_H1bar'/))
+        call set_arg('F_H1barfull',EXPAND,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_H1bar'/))
+        call set_dependency('F_H1barfull','F_FREF',tgt_info)
+        call set_arg('F_H1barfull',EXPAND,'INTERM',1,tgt_info,
+     &       val_label=(/'F_FREF'/))
+      end if
 c dbg
       if (fact_tt) then
         ! factor out TT intermediate
@@ -1955,6 +2014,18 @@ c      call set_rule2('F_MRCC_S(S+1)',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_MRCC_S(S+1)',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_MRCC_S(S+1)'/))
 c dbgend
+
+      ! formula for effective one-el. operator containing H1bar
+      call add_target2('F_FREFbar',.false.,tgt_info)
+      call set_dependency('F_FREFbar','F_FREF',tgt_info)
+      call set_dependency('F_FREFbar','H1bar',tgt_info)
+      call set_rule2('F_FREFbar',REPLACE,tgt_info)
+      call set_arg('F_FREFbar',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_FREFbar'/))
+      call set_arg('F_FREFbar',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_FREF'/))
+      call set_arg('F_FREFbar',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'H','H1bar'/))
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*

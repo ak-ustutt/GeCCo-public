@@ -216,6 +216,14 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     xdef=(/0.5d0/))
       call argument_add('Tred_mode','method.MRCC',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('trunc_order','method.MRCC',type=vtyp_int,
+     &     idef=(/-1/))
+      call argument_add('trunc_top','method.MRCC',type=vtyp_int,len=26,
+     &     idef=(/0,0,0,0,0,0,0,0,0,0,
+     &            0,0,0,0,0,0,0,0,0,0,
+     &            0,0,0,0,0,0/))
+      call argument_add('trunc_ham','method.MRCC',type=vtyp_int,len=5,
+     &     idef=(/0,0,0,0,0/))
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')

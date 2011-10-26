@@ -64,6 +64,8 @@
         call select_mrcc_lag2(flist,labels,nlabels,mode,op_info)
       case('MRCC','mrcc')
         call select_mrcc_lag(flist,labels,nlabels,mode,op_info)
+      case('MRCCtrunc','mrcctrunc')
+        call select_mrcc_trunc(flist,labels,nlabels,mode,op_info)
       case('OPT1','opt1')
         call select_xsp_opt1(flist,labels,nlabels,mode,op_info)
       case('SAME','same')
