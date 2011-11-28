@@ -443,6 +443,8 @@ c dbgend
             if (abs(fac_tot-contr%fac).gt.1d-12) then
               ! if we already had an identical term:
               ! add the factor and delete this term
+              ! else if the factor is zero and x=0.5:
+              ! just delete (as the correct term was probably before)
               ! else: correct the factor and create new "extra" term
               idx = i8common_entry(extra_hash,hash_list,n_extra,nhash)
               if (idx.gt.0) then
@@ -451,6 +453,11 @@ c dbgend
                 write(luout,'(x,2(a,i12),a,e10.3)') 'added to term ',
      &                 extra_term(idx),
      &                 ': term ',iterm,' with factor ',contr%fac
+              else if (abs(contr%fac).lt.1d-12.and.x_ansatz.eq.0.5d0)
+     &             then
+                delete = .true.
+                write(luout,'(x,a,i12,a)') 'Deleting term ',
+     &                iterm,' in good faith (term probably came before)'
               else
                 n_extra = n_extra + 1
                 allocate(i8tmp(n_extra),itmp(n_extra),r8tmp(n_extra))

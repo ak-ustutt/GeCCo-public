@@ -112,7 +112,7 @@ c dbg
         call write_title(luout,wst_title,
      &       'norms/values of output operators')
         do iout = 1, nout
-          write(luout,'(">>>",1x,i4," --> ",g16.10)') iout, xret(iout)
+          write(luout,'(">>>",1x,i4," --> ",g20.14)') iout, xret(iout)
         end do
       end if
 

@@ -2169,7 +2169,7 @@ signsec:      1.0
  @ formula evaluation                  cpu/sys/wall:     18.10 /     0.46 /    18.86 s
   norms/values of output operators
  ----------------------------------
->>>    1 -->  271.3055566       ! changed back on 06/20/2011
+>>>    1 -->  271.30555661697   ! changed back on 06/20/2011 | amended on 11/28/11
 >>>    1 -->  271.3055607       ! changed manually on 01/05/2011
                                 ! (because in SVD decoupled
                                 !  blocks are now individually treated)
@@ -2956,7 +2956,7 @@ signsec:      1.0    -1.0     1.0    -1.0     1.0    -1.0     1.0
  @ formula evaluation                  cpu/sys/wall:      1.61 /     0.96 /     3.21 s
   norms/values of output operators
  ----------------------------------
->>>    1 --> -15.54037453    
+>>>    1 --> -15.540374526042 [amended manually on 11/28/11]    
  ... all targets processed!
  +----------------------------------------------------------------------------+
    Maximum allocated memory:   27099806 real(8)-words (  206.76 Mb)

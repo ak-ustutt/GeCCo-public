@@ -1744,7 +1744,7 @@ signsec:      1.0
  @ formula evaluation                  cpu/sys/wall:      0.28 /     0.20 /     0.58 s
   norms/values of output operators
  ----------------------------------
->>>    1 --> -15.54115738    
+>>>    1 --> -15.541157378925 [amended manually on 11/28/11]    
  ... all targets processed!
  +----------------------------------------------------------------------------+
    Maximum allocated memory:   27084114 real(8)-words (  206.64 Mb)

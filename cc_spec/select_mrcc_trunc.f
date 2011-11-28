@@ -36,11 +36,11 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, replace
+     &     delete, error, replace, count_l
       integer ::
      &     idxtop, idxham, norder, len, idxfeff, iorder, iblk, 
      &     ihampart, nact, iblknew, idx_op, nrank, cgastp, agastp,
-     &     ivtx, ii, nvtx, nham, ham_vtx, iterm
+     &     ivtx, ii, nvtx, nham, ham_vtx, iterm, idxl
       integer ::
      &     idxop(nlabels), occ_ham(ngastp,2)
 
@@ -61,8 +61,10 @@
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'select_mrcc_trunc')
-c        write(luout,*) 'mode = ',trim(mode)
+        write(luout,*) 'mode = ',trim(mode)
       endif
+
+      count_l = trim(mode).eq.'COUNT_L'
 
       ! get operator indices
       error = .false.
@@ -70,7 +72,7 @@ c        write(luout,*) 'mode = ',trim(mode)
         idxop(ii) = idx_oplist2(trim(labels(ii)),op_info)
         error = error.or.idxop(ii).le.0
       end do
-      error = nlabels.ne.3
+      error = .not.count_l.and.nlabels.ne.3.or.count_l.and.nlabels.ne.4
       
       if (error) then
         write(luout,*) 'Error for operator labels:'
@@ -81,8 +83,8 @@ c        write(luout,*) 'mode = ',trim(mode)
             write(luout,'(a20," - OK")') trim(labels(ii))
           end if
         end do
-        if (nlabels.ne.3)
-     &       call quit(1,'select_mrcc_trunc','need 3 labels')
+        if (.not.count_l.and.nlabels.ne.3.or.count_l.and.nlabels.ne.4)
+     &       call quit(1,'select_mrcc_trunc','wrong number of labels')
         call quit(1,'select_mrcc_trunc','Labels not on list!')
       end if
 
@@ -104,6 +106,7 @@ c        write(luout,*) 'mode = ',trim(mode)
       idxham  = idxop(1)
       idxfeff  = idxop(2)
       idxtop = idxop(3)
+      if (count_l) idxl = idxop(4)
       op_ham => op_info%op_arr(idxham)%op
       op_feff => op_info%op_arr(idxfeff)%op
       iterm = 0
@@ -136,7 +139,7 @@ c dbgend
           replace = .false.
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
-            if (idx_op.eq.idxtop) then
+            if (idx_op.eq.idxtop.or.count_l.and.idx_op.eq.idxl) then
               iblk = vertex(ivtx)%iblk_op
               if (iblk.gt.len) call quit(1,'select_mrcc_trunc',
      &           'Please define perturbation order for all blocks of T')

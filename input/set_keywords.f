@@ -224,6 +224,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &            0,0,0,0,0,0/))
       call argument_add('trunc_ham','method.MRCC',type=vtyp_int,len=5,
      &     idef=(/0,0,0,0,0/))
+      call argument_add('Tfix','method.MRCC',type=vtyp_int,
+     &     idef=(/0/)) ! read in fixed T with max. rank Tfix
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
