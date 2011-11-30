@@ -44,7 +44,8 @@
      &     tfix
       logical ::
      &     update_prc, skip, preopt, project, first, Op_eqs,
-     &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist
+     &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
+     &     oldref
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -106,6 +107,8 @@
      &     ival=ntrunc)
       call get_argument_value('method.MRCC','Tfix',
      &     ival=tfix)
+      call get_argument_value('method.MR','oldref',
+     &     lval=oldref)
       trunc = ntrunc.ge.0
 
       if (ntest.ge.100) then
@@ -131,6 +134,9 @@
       if (tred.gt.0.and.optref.eq.0)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'Tred_mode > 0 not yet available for optref=0')
+      if (tfix.gt.0.and.(.not.oldref.or..not.project.or.optref.ne.0))
+     &    call quit(1,'set_ic_mrcc_targets',
+     &     'Tfix>0 only allowed with oldref=T,project=T,optref=0')
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -937,7 +943,33 @@ c        end if
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='SAME')
       end if
+      if (tfix.gt.0) then 
+        ! remove redundant (zero) part of residuals
+        call set_rule2('F_MRCC_LAG',SELECT_SPECIAL,tgt_info)
+        call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+        call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+        call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',3,tgt_info,
+     &       val_label=(/'L','T','Tfix'/))
+        call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &       val_str='MRCCrem0res')
+      end if
       if (.not.Op_eqs.and.h1bar) then
+        if (trunc) then
+          ! prescreening: remove terms with definitely too high order
+          call set_rule2('F_MRCC_LAG',SELECT_SPECIAL,tgt_info)
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_RES',1,
+     &         tgt_info,val_label=(/'F_MRCC_LAG'/))
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,
+     &         tgt_info,val_label=(/'F_MRCC_LAG'/))
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',4,
+     &       tgt_info,val_label=(/'H1bar','H1bar','T','L'/)) ! #2 is dummy
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &         val_str='COUNT_L/PRESCREEN')
+          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &         val_str='MRCCtrunc')
+        end if
         ! expand formal part of H1bar (store H1bar blks. only up to P^2)
         call set_dependency('F_MRCC_LAG','F_H1bar',tgt_info)
         call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
@@ -1106,17 +1138,19 @@ c     &     val_label=(/'F_MRCC_LAG'/))
      &     val_label=(/'OMG'/))
       call set_arg('F_OMG',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'L'/))
-      call set_rule2('F_OMG',SELECT_SPECIAL,tgt_info)
-      call set_arg('F_OMG',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_OMG'/))
-      call set_arg('F_OMG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_OMG'/))
-      call set_arg('F_OMG',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
-     &     val_label=(/'H','T'/))
-      call set_arg('F_OMG',SELECT_SPECIAL,'TYPE',1,tgt_info,
-     &     val_str='MRCC2')
-      call set_arg('F_OMG',SELECT_SPECIAL,'MODE',1,tgt_info,
-     &     val_str='CHECK    X')
+      if (tfix.eq.0) then ! tfix>0: contains both T and Tfix
+        call set_rule2('F_OMG',SELECT_SPECIAL,tgt_info)
+        call set_arg('F_OMG',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_OMG'/))
+        call set_arg('F_OMG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_OMG'/))
+        call set_arg('F_OMG',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+     &       val_label=(/'H','T'/))
+        call set_arg('F_OMG',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &       val_str='MRCC2')
+        call set_arg('F_OMG',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &       val_str='CHECK    X')
+      end if
 c dbg
 c      call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -1216,17 +1250,19 @@ c dbgend
       end if
       call set_arg('F_MRCC_E',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='MRCC energy expression')
-      call set_rule2('F_MRCC_E',SELECT_SPECIAL,tgt_info)
-      call set_arg('F_MRCC_E',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_MRCC_E'/))
-      call set_arg('F_MRCC_E',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_MRCC_E'/))
-      call set_arg('F_MRCC_E',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
-     &     val_label=(/'H','T'/))
-      call set_arg('F_MRCC_E',SELECT_SPECIAL,'TYPE',1,tgt_info,
-     &     val_str='MRCC2')
-      call set_arg('F_MRCC_E',SELECT_SPECIAL,'MODE',1,tgt_info,
-     &     val_str='CHECK    X')
+      if (tfix.ne.0) then
+        call set_rule2('F_MRCC_E',SELECT_SPECIAL,tgt_info)
+        call set_arg('F_MRCC_E',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_E'/))
+        call set_arg('F_MRCC_E',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_E'/))
+        call set_arg('F_MRCC_E',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+     &       val_label=(/'H','T'/))
+        call set_arg('F_MRCC_E',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &       val_str='MRCC2')
+        call set_arg('F_MRCC_E',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &       val_str='CHECK    X')
+      end if
       call set_rule2('F_MRCC_E',PRINT_FORMULA,tgt_info)
       call set_arg('F_MRCC_E',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_MRCC_E'/))
@@ -2174,9 +2210,9 @@ c dbgend
       call set_arg('F_Ecorrected',REPLACE,'OP_LIST',2,tgt_info,
      &     val_label=(/'L','T^+'/))
 c dbg
-c      call set_rule2('F_Ecorrected',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_Ecorrected',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_Ecorrected'/))
+      call set_rule2('F_Ecorrected',PRINT_FORMULA,tgt_info)
+      call set_arg('F_Ecorrected',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_Ecorrected'/))
 c dbgend
 *----------------------------------------------------------------------*
 *     Opt. Formulae 

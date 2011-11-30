@@ -36,7 +36,7 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, replace, count_l
+     &     delete, error, replace, count_l, prescreen
       integer ::
      &     idxtop, idxham, norder, len, idxfeff, iorder, iblk, 
      &     ihampart, nact, iblknew, idx_op, nrank, cgastp, agastp,
@@ -64,7 +64,8 @@
         write(luout,*) 'mode = ',trim(mode)
       endif
 
-      count_l = trim(mode).eq.'COUNT_L'
+      count_l = mode(1:7).eq.'COUNT_L'
+      prescreen = mode(9:17).eq.'PRESCREEN'
 
       ! get operator indices
       error = .false.
@@ -102,6 +103,9 @@
      &                        iarr=horder)
       if (horder(1).gt.horder(3)) call quit(1,'select_mrcc_trunc',
      &            'Order of F0 may not exceed order of Fdiff')
+
+      ! prescreen: assume minimum pert. order for all Hamiltonian blks
+      if (prescreen) horder(1:5) = minval(horder(1:5))
 
       idxham  = idxop(1)
       idxfeff  = idxop(2)
