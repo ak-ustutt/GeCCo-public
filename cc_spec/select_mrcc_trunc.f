@@ -36,7 +36,7 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, replace, count_l, prescreen
+     &     delete, error, replace, count_l, prescreen, h1bar
       integer ::
      &     idxtop, idxham, norder, len, idxfeff, iorder, iblk, 
      &     ihampart, nact, iblknew, idx_op, nrank, cgastp, agastp,
@@ -52,7 +52,7 @@
       type(cntr_vtx), pointer ::
      &     vertex(:)
       type(operator), pointer ::
-     &     op_ham, op_feff
+     &     op_ham, op_feff, op_top
       type(formula_item), pointer ::
      &     form_pnt, form_pnt_next
 
@@ -89,6 +89,15 @@
         call quit(1,'select_mrcc_trunc','Labels not on list!')
       end if
 
+      idxham  = idxop(1)
+      idxfeff  = idxop(2)
+      idxtop = idxop(3)
+      if (count_l) idxl = idxop(4)
+      op_ham => op_info%op_arr(idxham)%op
+      op_feff => op_info%op_arr(idxfeff)%op
+      op_top => op_info%op_arr(idxtop)%op
+      iterm = 0
+
       call get_argument_value('method.MRCC','trunc_order',
      &     ival=norder)
       if (is_argument_set('method.MRCC','trunc_top').gt.0) then
@@ -97,7 +106,9 @@
         call get_argument_value('method.MRCC','trunc_top',
      &                          iarr=torder)
       else
-        call quit(1,'select_mrcc_trunc','Please specify orders for T')
+        len = op_top%n_occ_cls 
+        allocate(torder(len),horder(5))
+        torder(1) = -1
       end if
       call get_argument_value('method.MRCC','trunc_ham',
      &                        iarr=horder)
@@ -107,13 +118,21 @@
       ! prescreen: assume minimum pert. order for all Hamiltonian blks
       if (prescreen) horder(1:5) = minval(horder(1:5))
 
-      idxham  = idxop(1)
-      idxfeff  = idxop(2)
-      idxtop = idxop(3)
-      if (count_l) idxl = idxop(4)
-      op_ham => op_info%op_arr(idxham)%op
-      op_feff => op_info%op_arr(idxfeff)%op
-      iterm = 0
+      ! default: automatically assign perturbation orders to blocks of T
+      if (torder(1).lt.0) then
+        call get_argument_value('method.MRCC','H1bar',
+     &       lval=h1bar)
+        do iblk = 1, op_top%n_occ_cls
+          nrank = op_top%ica_occ(1,iblk)
+          ! order assigned to T1: 0 if sequential exponential,
+          !                       1 if simultaneous exponential
+          if (nrank.eq.1.and..not.h1bar) then
+            torder(iblk) = 1
+          else
+            torder(iblk) = nrank - 1
+          end if
+        end do
+      end if
 
       form_pnt => flist
       do 

@@ -36,7 +36,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 5
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -60,9 +60,9 @@
 
       logical ::
      &     bufin, bufout, first, ms_fix, fix_success, onedis, transp,
-     &     logdum, sgrm, bufu
+     &     logdum, sgrm, bufu, svdonly
       logical, pointer ::
-     &     blk_used(:)
+     &     blk_used(:), blk_redundant(:)
 c      logical ::
 c     &     loop(nocc_cls)
       integer ::
@@ -84,7 +84,8 @@ c     &     ipass,
 c dbgend
      &     off_linmax, maxbuf_tmp,
      &     rankdim(maxrank), rankoff(maxrank), nrank,
-     &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2
+     &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2,
+     &     icnt_cur, ih, ip, iexc
       real(8) ::
      &     fac, xmax, xmin
       real(8), pointer ::
@@ -123,11 +124,11 @@ c dbgend
       type(filinf), pointer ::
      &     ffinp, ffinv, ffu
       type(operator), pointer ::
-     &     op_inv, op_inp, op_u
+     &     op_inv, op_inp, op_u, op_t
 
       integer, external ::
      &     ielprd, idx_msgmdst2, idx_str_blk3, msa2idxms4op, idxcount,
-     &     idxlist
+     &     idxlist, idx_oplist2
       logical, external ::
      &     next_tupel_ca
 
@@ -222,8 +223,9 @@ c dbgend
       xmin = 1234567890d0   ! smallest included singular value
       bins = 0 ! binning for singular values:
                ! >10E0,>10E-1,...,>10E-15,0
-      allocate(blk_used(nocc_cls))
+      allocate(blk_used(nocc_cls),blk_redundant(nocc_cls))
       blk_used(1:nocc_cls) = .false.
+      blk_redundant(1:nocc_cls) = .true.
 
       if (.not.half.and.max(iprlvl,ntest).ge.3) write(luout,*)
      &         'Input list will be overwritten by projector.'
@@ -237,7 +239,9 @@ c dbgend
 
         if (ntest.ge.10) write(luout,*) 'current occ_cls: ',iocc_cls
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
+          icnt_cur = icnt_sv - icnt_sv0
           ioff = mel_inp%off_op_gmo(iocc_cls)%gam_ms(1,1)
+          buffer_out(ioff+1) = buffer_in(ioff+1)
           if (get_u) then
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       half,buffer_u(ioff+1),get_u,
@@ -247,6 +251,8 @@ c dbgend
      &                       half,buffer_u,get_u, !buffer_u: dummy
      &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
           end if
+          if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
+     &       blk_redundant(iocc_cls) = .false.
           cycle iocc_loop
         end if 
 
@@ -314,6 +320,7 @@ c dbgend
 
         ! simple case: only single distributions:
         if (onedis) then
+          icnt_cur = icnt_sv - icnt_sv0
 
           ! we also need to distinguish:
           ! /0 0 0 0\     /0 0 0 0\
@@ -529,6 +536,8 @@ c dbgend
      &             istr_csub_flip,istr_asub_flip,
      &             ldim_opin_c,ldim_opin_a)
           ifree = mem_flushmark('invsqrt_blk')
+          if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
+     &       blk_redundant(iocc_cls) = .false.
           cycle iocc_loop
         end if
 
@@ -1089,6 +1098,7 @@ c dbgend
 
           ! loop over blocks that should be orthogonalized separately
           do irank = 1, nrank
+           icnt_cur = icnt_sv - icnt_sv0
            rdim = rankdim(irank)
            idxst = rankoff(irank) + 1
            idxnd = rankoff(irank) + rdim
@@ -1269,6 +1279,9 @@ c dbgend
              deallocate(scratch4,proj)
            end if
 
+           if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
+     &        blk_redundant(iocc_cls+min(na1mx,nc1mx)+irank-nrank)
+     &        = .false.
           end do
 
           ! write to output buffer
@@ -1512,6 +1525,52 @@ c dbgend
         write(luout,'(x,a)') '------------------------'
       end if
  
+      if (sgrm.and.any(blk_redundant(1:nocc_cls))) then
+        ! Print out which blocks are redundant
+        write(luout,'(x,a)') 'There are redundant blocks in the metric:'
+        write(luout,'(x,a,26i3)') 'Block #  :',(idx,idx=1,nocc_cls)
+        write(luout,'(x,a,26(2x,L1))') 'Redundant?',
+     &                               (blk_redundant(idx),idx=1,nocc_cls)
+        call get_argument_value('method.MR','svdonly',lval=svdonly)
+        if (svdonly) then
+          ! Excplicitly print restrictions for input file
+          ! (assuming name 'T' for cluster op., and
+          !  assuming that blocks are in same order, i.e.
+          !  reverse order within one excitation class)
+          write(luout,*)
+          write(luout,'(x,a)') 'Copy the following into the input file:'
+          op_t => op_info%op_arr(idx_oplist2('T',op_info))%op
+          if (is_keyword_set('method.MRCI').gt.0)
+     &       op_t => op_info%op_arr(idx_oplist2('C',op_info))%op
+          ih = 0
+          ip = 0
+          iexc = 0
+          first = .false.
+          do iocc_cls = 1, nocc_cls
+            if (ih.ne.op_t%ihpvca_occ(IHOLE,2,iocc_cls)) then
+              ih = op_t%ihpvca_occ(IHOLE,2,iocc_cls)
+              first = .true.
+            end if
+            if (ip.ne.op_t%ihpvca_occ(IPART,1,iocc_cls)) then
+              ip = op_t%ihpvca_occ(IPART,1,iocc_cls)
+              first = .true.
+            end if
+            iexc = op_t%ica_occ(1,iocc_cls)
+            if (blk_redundant(iocc_cls).and.first) then
+              first = .false.
+              write(luout,'(x,a,i1,a,i1,a,i1,a,i1,a,i1,a)')
+     &          'MR excrestr=(',ih,',',ih,',',ip,',',ip,',1,',iexc-1,')'
+            else if (.not.blk_redundant(iocc_cls).and..not.first) then
+              write(luout,'(x,a,i4)') 'Watch out: Non-redundant block:',
+     &                                iocc_cls
+              call warn('invsqrt',
+     &                  'non-redundant block beyond redundant one?')
+            end if
+          end do
+          write(luout,*)
+        end if
+      end if
+      deallocate(blk_redundant)
 
       if(.not.bufout)then
         call put_vec(ffinv,buffer_out,1,nbuff)

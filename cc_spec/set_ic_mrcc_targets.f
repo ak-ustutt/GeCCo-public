@@ -2198,8 +2198,8 @@ c dbgend
      &     val_label=(/'F_MRCC_LAG'/))
       call set_arg('F_Ecorrected',INVARIANT,'OP_RES',1,tgt_info,
      &     val_label=(/'E(MR)'/))
-      call set_arg('F_Ecorrected',INVARIANT,'OPERATORS',1,tgt_info,
-     &     val_label=(/'E(MR)'/))
+      call set_arg('F_Ecorrected',INVARIANT,'OPERATORS',2,tgt_info,
+     &     val_label=(/'E(MR)','L'/))
       call set_arg('F_Ecorrected',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='Energy + correction from MRCC Lagrangian')
       call set_rule2('F_Ecorrected',REPLACE,tgt_info)
@@ -3201,6 +3201,11 @@ c dbg
         call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
      &       'FOPT_Ecorrected',1,0,
      &       parameters,0,tgt_info)
+        call form_parameters(-1,parameters,2,
+     &       '>>> Total energy :',0,'SCAL F20.12')
+        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+     &       'ME_E(MR)',1,0,
+     &       parameters,2,tgt_info)
       end if
 c dbgend
 

@@ -17,7 +17,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 0
       real(8), parameter ::
      &     warn_sv = 1d-12!5  ! give a warning for small singular values
       integer, intent(in) ::

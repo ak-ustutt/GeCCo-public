@@ -1109,6 +1109,9 @@ c        ipst = first_nonblank(line)
                   call error_misspc(line,ipnd)
                   exit line_loop
                 end if
+                allowed_delim(1:n_allowed_after_arg) =
+     &               allowed_after_arg(1:n_allowed_after_arg)
+                n_allowed_delim = n_allowed_after_arg
                 
               else
 

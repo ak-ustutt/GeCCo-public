@@ -209,10 +209,10 @@ c dbgend
      &     val_label=(/'DENS'/))
       call set_arg('F_DENS0',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'DENS_dag'/))
-      call set_rule2('F_DENS0',PRINT_FORMULA,tgt_info)
 c comment out for calculating cumulants:
-      call set_arg('F_DENS0',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_DENS0'/))
+c      call set_rule2('F_DENS0',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_DENS0',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_DENS0'/))
 
       ! precursor for density expression in terms of cumulants
       call add_target2('F_preDENS',.false.,tgt_info)

@@ -24,7 +24,7 @@
       logical ::
      &     pure_vv, l_icci
       character ::
-     &     idx_str*1
+     &     idx_str*1, triples*1
 
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations
@@ -53,6 +53,9 @@
 
       call get_argument_value('method.MR','pure_vv',
      &     lval=pure_vv)
+
+      call get_argument_value('method.MR','triples',
+     &     str=triples(1:1))
 
       excrestr(0:maxh,0:maxp,1) = minexc
       excrestr(0:maxh,0:maxp,2) = maxexc
@@ -106,6 +109,54 @@
         ! else: forbid scalar operator
         if (.not.l_icci) excrestr(0,0,1) = 1
       end if
+
+      ! triples models: exclude certain triples blocks if requested
+      select case(triples)
+      case('F','f') ! do nothing
+      case('0','A','a','B','b','C','c','D','d','E','e')
+        ! exclude a_uvi^wxy, a_uvw^xya (5 active lines)
+        if (maxh.ge.1) then
+          if (excrestr(1,0,2).ge.3) excrestr(1,0,2) = 2
+        end if
+        if (maxp.ge.1) then
+          if (excrestr(0,1,2).ge.3) excrestr(0,1,2) = 2
+        end if
+        select case(triples)
+        case('0','A','a','B','b','C','c')
+          ! exclude a_uvi^wxa (4 active lines)
+          if (maxh.ge.1.and.maxp.ge.1) then
+            if (excrestr(1,1,2).ge.3) excrestr(1,1,2) = 2
+          end if
+        end select
+        select case(triples)
+        case('0','A','a','B','b','D','d')
+          ! exclude a_uij^vwx, a_uvw^xab (4 active lines)
+          if (maxh.ge.2) then
+            if (excrestr(2,0,2).ge.3) excrestr(2,0,2) = 2
+          end if
+          if (maxp.ge.2) then
+            if (excrestr(0,2,2).ge.3) excrestr(0,2,2) = 2
+          end if
+        end select
+        select case(triples)
+        case('0','A','a')
+          ! exclude a_uij^vwa, a_uvi^xab (3 active lines)
+          if (maxh.ge.2.and.maxp.ge.1) then
+            if (excrestr(2,1,2).ge.3) excrestr(2,1,2) = 2
+          end if
+          if (maxp.ge.2.and.maxh.ge.1) then
+            if (excrestr(1,2,2).ge.3) excrestr(1,2,2) = 2
+          end if
+        end select
+        if (triples.eq.'0') then
+          ! exclude a_uij^vab (2 active lines)
+          if (maxh.ge.2.and.maxp.ge.2) then
+            if (excrestr(2,2,2).ge.3) excrestr(2,2,2) = 2
+          end if
+        end if
+      case default
+        call quit(1,'get_exc_restr','unknown triples model: '//triples)
+      end select
 
       if (ntest.ge.100) then
         write(luout,'(40("-"))')

@@ -36,6 +36,8 @@
      &     icount(ngastp)
       integer, allocatable ::
      &     iadscr(:),koffs(:)
+      logical, pointer ::
+     &     assigned(:)
 
 
       iprint = max(ntest,iprlvl)
@@ -231,23 +233,32 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
           orb_info%ireost(idx) = idx
         end do
       case ('gamess','GAMESS')
+        ! (We loop over all orbitals to avoid errors when the active
+        !  space is modified such that orbitals must be reordered.
+        !  The DALTON inferface above also needs to be changed
+        !  if we want to use this nasty kind of tricks there as well)
         if (orb_info%n_bound_orbs.ne.ntoob.or.caborb.ne.0)
      &        call quit(1,'set_orbinf','need full orb-sym list!')
-        ind = 0
+        allocate(assigned(ntoob))
+        assigned = .false.
         do igas = 1, ngas
-          ist = ind + 1
-          ind = ind + sum(orb_info%igassh(1:nsym,igas))
           do isym = 1, nsym
             if (orb_info%igassh(isym,igas).eq.0) cycle
             jdx = orb_info%mostnd(1,isym,igas)
-            do idx = ist, ind
+            do idx = 1, ntoob
+              if (assigned(idx)) cycle
               if (orb_info%isym_bound_orbs(idx).eq.isym) then
                 orb_info%ireost(idx) = jdx
                 jdx = jdx + 1
+                assigned(idx) = .true.
+                if (jdx.gt.orb_info%mostnd(2,isym,igas)) exit
               end if
             end do
           end do
         end do
+        if (.not.all(assigned(1:ntoob)))
+     &    call quit(1,'set_orbinf','unable to assign all orbitals')
+        deallocate(assigned)
       case default
         call quit(1,'set_orbinf','unknown type '//trim(env_type))
       end select

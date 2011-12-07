@@ -1,4 +1,4 @@
-
+*----------------------------------------------------------------------*
       subroutine set_ic_mr_targets(tgt_info,orb_info,
      &                             excrestr,maxh,maxp,use_met)
 *----------------------------------------------------------------------*
@@ -490,9 +490,11 @@ c       &     val_label=(/'F_NORM'/))
         call set_arg('F_NORM',FACTOR_OUT,'INTERM',1,tgt_info,
      &       val_label=(/'F_HOLE'/))
       end if
-      call set_rule2('F_NORM',PRINT_FORMULA,tgt_info)
-      call set_arg('F_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_NORM'/))
+c dbg
+c      call set_rule2('F_NORM',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_NORM'/))
+c dbgend
 c      labels(1:20)(1:len_target_name) = ' '
 c      labels(1) = 'F_NORM'
 c      labels(2) = 'NORM'
@@ -598,9 +600,11 @@ c     &     val_label=(/'F_D'/))
 c      call set_arg('F_D',KEEP_TERMS,'TERMS',2,tgt_info,
 c     &     val_int=(/6,9/))
 c dbgend
-      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-      call set_rule('F_D',ttype_frm,PRINT_FORMULA,
-     &                labels,2,1,parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c      call set_rule('F_D',ttype_frm,PRINT_FORMULA,
+c     &                labels,2,1,parameters,2,tgt_info)
+c dbgend
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
@@ -701,6 +705,10 @@ c dbgend
 
       ! inverted ME_D
       call add_target('DEF_ME_Dinv',ttype_opme,svdonly,tgt_info)
+      if (l_iccc.and.svdonly)
+     &   call set_dependency('DEF_ME_Dinv','T',tgt_info)
+      if (l_icci.and.svdonly)
+     &   call set_dependency('DEF_ME_Dinv','C',tgt_info)
       call set_dependency('DEF_ME_Dinv','EVAL_D',tgt_info)
       call set_dependency('DEF_ME_Dinv','DEF_ME_D',tgt_info)
       labels(1:20)(1:len_target_name) = ' '

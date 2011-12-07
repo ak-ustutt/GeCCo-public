@@ -167,9 +167,11 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('minexc','method.MR',type=vtyp_int,
      &                  idef=(/1/))  ! min. excitation
       call argument_add('pure_vv','method.MR',type=vtyp_log,
-     &                  ldef=(/.true./)) ! pure act.-act. excitations
+     &                  ldef=(/.false./)) ! pure act.-act. excitations
       call argument_add('excrestr','method.MR',type=vtyp_int,len=6,
      &                  idef=(/-1,-1,-1,-1,-1,-1/)) ! restr. exc. in T
+      call argument_add('triples','method.MR',type=vtyp_str,len=1,
+     &                  cdef=(/'F'/)) ! triples model (F: full)
       call argument_add('GNO','method.MR',type=vtyp_int,
      &                  idef=(/0/))  ! 1 for generalized normal order
       call argument_add('maxcum','method.MR',type=vtyp_int,
@@ -177,11 +179,11 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('oldref','method.MR',type=vtyp_log,
      &                  ldef=(/.false./)) ! use existing CASSCF coeff.
       call argument_add('prc_type','method.MR',type=vtyp_int,
-     &                  idef=(/0/)) ! type of preconditioner
+     &                  idef=(/3/)) ! type of preconditioner
       call argument_add('prc_shift','method.MR',type=vtyp_rl8,
      &                  xdef=(/0d0/))
       call argument_add('project','method.MR',type=vtyp_log,
-     &     ldef=(/.false./)) ! project out singles from doubles a.s.o.
+     &     ldef=(/.true./)) ! project out singles from doubles a.s.o.
       call argument_add('svdonly','method.MR',type=vtyp_log,
      &                  ldef=(/.false./)) ! stop after first SVD
       call argument_add('mult','method.MR',type=vtyp_int,
@@ -211,7 +213,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('HTT','method.MRCC',type=vtyp_log,
      &     ldef=(/.false./))
       call argument_add('maxcom_h1bar','method.MRCC',type=vtyp_int,
-     &     idef=(/8/))
+     &     idef=(/4/))
       call argument_add('x_ansatz','method.MRCC',type=vtyp_rl8,
      &     xdef=(/0.5d0/))
       call argument_add('Tred_mode','method.MRCC',type=vtyp_int,
@@ -219,11 +221,11 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('trunc_order','method.MRCC',type=vtyp_int,
      &     idef=(/-1/))
       call argument_add('trunc_top','method.MRCC',type=vtyp_int,len=26,
-     &     idef=(/0,0,0,0,0,0,0,0,0,0,
+     &     idef=(/-1,0,0,0,0,0,0,0,0,0,
      &            0,0,0,0,0,0,0,0,0,0,
      &            0,0,0,0,0,0/))
       call argument_add('trunc_ham','method.MRCC',type=vtyp_int,len=5,
-     &     idef=(/0,0,0,0,0/))
+     &     idef=(/0,0,1,1,1/))
       call argument_add('Tfix','method.MRCC',type=vtyp_int,
      &     idef=(/0/)) ! read in fixed T with max. rank Tfix
 
@@ -279,7 +281,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/0/)) ! optimize reference fct.
       call argument_add('update_prc','calculate.solve.non_linear',
      &     type=vtyp_log,
-     &     ldef=(/.true./)) ! update precond. when metric is updated
+     &     ldef=(/.false./)) ! update precond. when metric is updated
       call argument_add('preopt','calculate.solve.non_linear',
      &     type=vtyp_log,
      &     ldef=(/.false./)) ! first one optimization with fixed metric
@@ -362,7 +364,7 @@ c     &     idef=(/0/))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
       call argument_add('sv_thresh','calculate.routes',type=vtyp_rl8,
-     &     xdef=(/1d-14/))
+     &     xdef=(/1d-12/))
       call argument_add('sv_fix','calculate.routes',type=vtyp_log,
      &     ldef=(/.false./))
 
