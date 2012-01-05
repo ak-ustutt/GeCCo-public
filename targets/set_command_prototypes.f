@@ -295,6 +295,8 @@
       call add_command_proto(SCALE_COPY,tgt_info)
       call set_arg('_PROTO_',SCALE_COPY,'MODE',1,tgt_info,
      &     val_str='---')
+      call set_arg('_PROTO_',SCALE_COPY,'LIST_SHAPE',0,tgt_info,
+     &     val_label=(/'-'/))
 *----------------------------------------------------------------------*
       call add_command_proto(INVERT,tgt_info)
 *----------------------------------------------------------------------*

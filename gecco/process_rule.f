@@ -1068,11 +1068,12 @@ c          mode = 'dia-R12'
 *----------------------------------------------------------------------*
 
         call get_arg('LIST_RES',rule,tgt_info,val_label=label)
-        call get_arg('LIST_INP',rule,tgt_info,val_label=label2)
+        call get_arg('LIST_INP',rule,tgt_info,val_label=label_list(1))
+        call get_arg('LIST_SHAPE',rule,tgt_info,val_label=label_list(2))
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
 
-        call scale_copy_op(label,label2,fac,nfac,mode,
+        call scale_copy_op(label,label_list,fac,nfac,mode,
      &       op_info,orb_info,str_info)
 
 *----------------------------------------------------------------------*

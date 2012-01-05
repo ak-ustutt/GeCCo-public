@@ -16,13 +16,14 @@
       include 'def_strinf.h'
       include 'ifc_memman.h'
       include 'par_opnames_gen.h'
+      include 'def_optimize_info.h'
 
       integer, intent(in) ::
      &     nfac
       real(8), intent(in) ::
      &     fac(nfac)
       character(*), intent(in) ::
-     &     label_res, label_inp
+     &     label_res, label_inp(1)
       type(operator_info), intent(inout) ::
      &     op_info
       type(orbinf), intent(in) ::
@@ -34,13 +35,17 @@
 
       type(me_list), pointer ::
      &     me_res, me_inp
+      type(me_list_array), pointer ::
+     &     me_vec(:), me_shape(:)
       type(filinf), pointer ::
      &     ffop_src, ffop_tgt
+      type(optimize_info) ::
+     &     opti_info
 
       integer ::
      &     idx_res, idx_inp, idx, idxnd_src, idxnd_tgt, len_op, nbuff,
      &     ipri, idxst_tgt, idxst_src, idisc_off_src, idisc_off_tgt,
-     &     ifac, nblkmax, ifree, nblk
+     &     ifac, nblkmax, ifree, nblk, idx_shape, isec
       logical ::
      &     open_close_res, open_close_inp,
      &     same
@@ -61,7 +66,7 @@
         write(luout,*) ' scale & copy       '
         write(luout,*) '===================='
         write(luout,*) 'Result: ',trim(label_res)
-        write(luout,*) 'Input:  ',trim(label_inp)
+        write(luout,*) 'Input:  ',trim(label_inp(1))
         write(luout,*) 'The factors (applied periodically): '
         do idx = 1, nfac
           write(luout,'(3x,f12.6)') fac(idx)
@@ -69,7 +74,8 @@
       endif
 
       idx_res = idx_mel_list(label_res,op_info)
-      idx_inp = idx_mel_list(label_inp,op_info)
+      idx_inp = idx_mel_list(label_inp(1),op_info)
+      idx_shape = idx_mel_list(label_inp(2),op_info)
 
       if (idx_res.lt.0) then
         write(luout,*) '"',trim(label_res),'"'
@@ -77,7 +83,7 @@
         call quit(1,'scale_copy_op','label not on list (1)')
       end if
       if (idx_inp.lt.0) then
-        write(luout,*) '"',trim(label_inp),'"'
+        write(luout,*) '"',trim(label_inp(1)),'"'
         write(luout,*) idx_inp
         call quit(1,'scale_copy_op','label not on list (2)')
       end if
@@ -141,7 +147,7 @@
         nbuff = min(len_op,nblk*ffop_src%reclen)
 
         ifree = mem_alloc_real(buffer,nbuff,'buffer')
-        if (trim(mode).eq.'mult') 
+        if (trim(mode).eq.'mult'.or.trim(mode).eq.'precond') 
      &          ifree = mem_alloc_real(buf_in,nbuff,'buf_in')
 
         ifac = 1
@@ -168,6 +174,33 @@
               ifac = ifac + 1
               if (ifac.gt.nfac) ifac = 1
             end do
+          case('precond')
+            ! divide lists element-wise
+            ! here, buf_in contains nominator !!!
+            ! take into account sign-changes due to formal contraction
+            if (nfac.ne.1) call quit(1,'scale_copy_op',
+     &          'for mode precond, only a single factor must be given')
+            call get_vec(ffop_tgt,buf_in,idxst_tgt,idxnd_tgt)
+            if (idx_shape.lt.0) then
+              ! no additional sign correction
+              call diavc(buffer,buf_in,
+     &             fac(1),buffer,
+     &             0d0,idxnd_src-idxst_src+1)
+            else
+              allocate(me_vec(1),me_shape(1))
+              me_vec(1)%mel => me_res
+              me_shape(1)%mel => op_info%mel_arr(idx_shape)%mel
+              ! put sign corrections on opti_info
+              call set_opti_info_signs(opti_info,1,1,
+     &                  me_vec,me_shape,me_shape,me_shape,.false.)
+              do isec = 1, opti_info%nsec(1)
+                call diavc(buffer(opti_info%idstsec(isec)),
+     &                     buf_in(opti_info%idstsec(isec)),
+     &                     fac(1)*opti_info%signsec(isec),
+     &                     buffer(opti_info%idstsec(isec)),
+     &                     0d0,opti_info%nwfpsec(isec))
+              end do
+            end if
           case default
             ! apply scaling factors (periodically)
             do idx = 1, idxnd_src-idxst_src+1

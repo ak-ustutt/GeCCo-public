@@ -41,11 +41,11 @@
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
-     &     tfix
+     &     tfix, maxit
       logical ::
      &     update_prc, skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref
+     &     oldref, solve
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -109,7 +109,13 @@
      &     ival=tfix)
       call get_argument_value('method.MR','oldref',
      &     lval=oldref)
+      call get_argument_value('calculate.solve','maxiter',
+     &     ival=maxit)
+      if (is_argument_set('calculate.solve.non_linear','maxiter'))
+     &     call get_argument_value('calculate.solve.non_linear',
+     &     'maxiter',ival=maxit)
       trunc = ntrunc.ge.0
+      solve = .not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en  = ', maxcom_en
@@ -1150,6 +1156,18 @@ c     &     val_label=(/'F_MRCC_LAG'/))
      &       val_str='MRCC2')
         call set_arg('F_OMG',SELECT_SPECIAL,'MODE',1,tgt_info,
      &       val_str='CHECK    X')
+      else if (maxit.eq.1) then ! T=0
+        call set_rule2('F_OMG',INVARIANT,tgt_info)
+        call set_arg('F_OMG',INVARIANT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_OMG'/))
+        call set_arg('F_OMG',INVARIANT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_OMG'/))
+        call set_arg('F_OMG',INVARIANT,'OP_RES',1,tgt_info,
+     &       val_label=(/'OMG'/))
+        call set_arg('F_OMG',INVARIANT,'OPERATORS',1,tgt_info,
+     &       val_label=(/'T'/))
+        call set_arg('F_OMG',INVARIANT,'TITLE',1,tgt_info,
+     &       val_str='Higher-order residual for first iteration')
       end if
 c dbg
 c      call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
@@ -1244,9 +1262,12 @@ c dbgend
       if (tfix.eq.0) then
         call set_arg('F_MRCC_E',INVARIANT,'OPERATORS',2,tgt_info,
      &       val_label=(/'L','E(MR)'/))
-      else
+      else if (maxit.gt.1) then
         call set_arg('F_MRCC_E',INVARIANT,'OPERATORS',3,tgt_info,
      &       val_label=(/'L','Tfix^+','E(MR)'/))
+      else
+        call set_arg('F_MRCC_E',INVARIANT,'OPERATORS',4,tgt_info,
+     &       val_label=(/'L','Tfix^+','E(MR)','T'/))
       end if
       call set_arg('F_MRCC_E',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='MRCC energy expression')
@@ -2969,7 +2990,7 @@ c     &     parameters,2,tgt_info)
 c dbgend
 
       ! Solve MR coupled cluster equations
-      call add_target2('SOLVE_MRCC',.not.svdonly,tgt_info)
+      call add_target2('SOLVE_MRCC',solve,tgt_info)
       call set_dependency('SOLVE_MRCC','EVAL_REF_S(S+1)',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_OMG',tgt_info)
       call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
@@ -3193,22 +3214,7 @@ c dbg
      &       'FOPT_MRCC_S(S+1)',1,0,
      &       parameters,0,tgt_info)
       end if
-      if (tfix.gt.0) then
-        call set_dependency('SOLVE_MRCC','FOPT_Ecorrected',tgt_info)
-        call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
-     &       'ME_E(MR)',1,0,
-     &       parameters,0,tgt_info)
-        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
-     &       'FOPT_Ecorrected',1,0,
-     &       parameters,0,tgt_info)
-        call form_parameters(-1,parameters,2,
-     &       '>>> Total energy :',0,'SCAL F20.12')
-        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
-     &       'ME_E(MR)',1,0,
-     &       parameters,2,tgt_info)
-      end if
 c dbgend
-
 c dbg
 c        call form_parameters(-1,parameters,2,
 c     &       'final T amplitudes :',0,'LIST')
@@ -3216,6 +3222,99 @@ c        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
 c     &       'ME_T',1,0,
 c     &       parameters,2,tgt_info)
 c dbgend
+
+      ! Non-iterative higher-order correction
+      call add_target2('EVAL_PERT_CORR',.not.svdonly.and.tfix.gt.0,
+     &                 tgt_info)
+      call set_dependency('EVAL_PERT_CORR','FOPT_Ecorrected',tgt_info)
+      if (maxit.gt.1) then
+        ! Use nonlinear solver
+        call set_dependency('EVAL_PERT_CORR','SOLVE_MRCC',tgt_info)
+      else
+        ! Do first iteration without solver (saves virtual memory)
+        call set_dependency('EVAL_PERT_CORR','FOPT_OMG',tgt_info)
+        call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
+        dia_label = trim(dia_label)//'_T'
+        call set_dependency('EVAL_PERT_CORR',trim(dia_label),tgt_info)
+        call set_dependency('EVAL_PERT_CORR','EVAL_D',tgt_info)
+        call set_dependency('EVAL_PERT_CORR','DEF_ME_Dtrdag',tgt_info)
+        call set_dependency('EVAL_PERT_CORR','FOPT_T',tgt_info)
+        select case(prc_type)
+        case(-1) !use old preconditioner file, but warn!
+          call warn('set_ic_mrcc_targets',
+     &       'Be sure you used prc_type=3 when creating precond. file!')
+        case(3)
+          call set_dependency('EVAL_PERT_CORR','EVAL_Atr',tgt_info)
+        case default
+          call quit(1,'set_ic_mrcc_targets',
+     &         'Non-iterative higher-order corr. should use prc_type=3')
+        end select
+        ! (a) evaluate residual
+        call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &       'FOPT_OMG',1,0,
+     &       parameters,0,tgt_info)
+        ! (b) transform residual
+        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Dtrdag'/))
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
+     &             tgt_info,val_label=(/'Dtr'/))
+        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Ttr'/))
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
+     &             tgt_info,val_label=(/'T'/))
+        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &             val_label=(/'ME_OMG'/))
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
+     &             tgt_info,val_label=(/'Ttr'/))
+        call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &       'FOPT_T',1,0,
+     &       parameters,0,tgt_info)
+        ! (c) preconditioning step
+        call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &               val_label=(/'ME_Ttr'/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &               val_label=(/trim(dia_label)/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_SHAPE',1,
+     &               tgt_info,val_label=(/'ME_OMG'/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'FAC',1,tgt_info,
+     &               val_rl8=(/-1d0/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'MODE',1,tgt_info,
+     &               val_str='precond')
+        ! (d) transform triples vector
+        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Dtr'/))
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
+     &             tgt_info,val_label=(/'Dtr'/))
+        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &             val_label=(/'ME_T'/))
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
+     &             tgt_info,val_label=(/'T'/))
+        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Ttr'/))
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
+     &             tgt_info,val_label=(/'Ttr'/))
+        call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &       'FOPT_T',1,0,
+     &       parameters,0,tgt_info)
+      end if
+      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
+     &     'ME_E(MR)',1,0,
+     &     parameters,0,tgt_info)
+      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &     'FOPT_Ecorrected',1,0,
+     &     parameters,0,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     '>>> Total energy :',0,'SCAL F20.12')
+      call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
+     &     'ME_E(MR)',1,0,
+     &     parameters,2,tgt_info)
 
 c dbg
 c      ! Evaluate transformed metric
