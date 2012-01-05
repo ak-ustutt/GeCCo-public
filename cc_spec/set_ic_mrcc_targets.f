@@ -3273,6 +3273,11 @@ c dbgend
      &       'FOPT_T',1,0,
      &       parameters,0,tgt_info)
         ! (c) preconditioning step
+        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &             val_label=(/'ME_OMG'/))
+        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
+     &             tgt_info,val_label=(/'OMG'/))
         call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
         call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
      &               val_label=(/'ME_Ttr'/))
