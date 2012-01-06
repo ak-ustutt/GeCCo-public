@@ -119,6 +119,10 @@
             else
               xmat(ii,jj) = 0d0
               do isec = 1, nsec
+c dbg  see evpc_core for explanation
+                  if (idstsec(isec).ne.1)
+     &             call quit(1,'**06**','bug in the code!')
+c dbgend
                 xmat(ii,jj) = xmat(ii,jj) + signsec(isec)
      &             * da_ddot(ff_vsbsp,irec,idstsec(isec),ff_wsbsp,jrec,
      &                   idstsec(isec),nwfpsec(isec),xbuf1,xbuf2,lenbuf)
@@ -156,6 +160,10 @@
             else
               xvec(ii,rhsrec) = 0d0
               do isec = 1, nsec
+c dbg  see evpc_core for explanation
+                  if (idstsec(isec).ne.1)
+     &             call quit(1,'**07**','bug in the code!')
+c dbgend
                 xvec(ii,rhsrec) = xvec(ii,rhsrec) + signsec(isec)
      &             * da_ddot(ff_vsbsp,irec,idstsec(isec),ff_rhs,rhsrec,
      &                  idstsec(isec),nwfpsec(isec),xbuf1,xbuf2,lenbuf)

@@ -45,14 +45,16 @@
       integer ::
      &     idx_res, idx_inp, idx, idxnd_src, idxnd_tgt, len_op, nbuff,
      &     ipri, idxst_tgt, idxst_src, idisc_off_src, idisc_off_tgt,
-     &     ifac, nblkmax, ifree, nblk, idx_shape, isec
+     &     ifac, nblkmax, ifree, nblk, idx_shape, isec, nsec
       logical ::
      &     open_close_res, open_close_inp,
      &     same
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
       real(8), pointer ::
-     &     buffer(:), buf_in(:)
+     &     buffer(:), buf_in(:), signsec(:)
+      integer, pointer ::
+     &     lensec(:), idstsec(:)
 
       integer, external ::
      &     idx_mel_list
@@ -67,11 +69,16 @@
         write(luout,*) '===================='
         write(luout,*) 'Result: ',trim(label_res)
         write(luout,*) 'Input:  ',trim(label_inp(1))
+        write(luout,*) 'mode:   ',trim(mode)
         write(luout,*) 'The factors (applied periodically): '
         do idx = 1, nfac
           write(luout,'(3x,f12.6)') fac(idx)
         end do
       endif
+
+      if (trim(mode).eq.'precond'.and.nfac.ne.1)
+     &    call quit(1,'scale_copy_op',
+     &    'for mode precond, only a single factor must be given')
 
       idx_res = idx_mel_list(label_res,op_info)
       idx_inp = idx_mel_list(label_inp(1),op_info)
@@ -118,18 +125,6 @@
         open_close_inp = .false.
       end if
 
-      ! record length hopefully the same
-      if (ffop_tgt%reclen.ne.ffop_src%reclen)
-     &   call quit(1,'scale_copy_op',
-     &             'not prepared for different reclen''s')
-      nblkmax = ifree/ffop_src%reclen
-      if (nblkmax.le.0) then
-        write(luout,*) 'free memory (words):  ',ifree
-        write(luout,*) 'block length (words): ',ffop_src%reclen
-        call quit(1,'scale_copy_op',
-     &            'not even 1 record fits into memory?')
-      end if
-
       ! if one list is shorter, we will just end copying process there
       len_op = min(me_inp%len_op,me_res%len_op)
 
@@ -138,6 +133,48 @@
      &     ffop_src%length_of_record*(ffop_src%current_record-1)
       idisc_off_tgt =
      &     ffop_tgt%length_of_record*(ffop_tgt%current_record-1)
+
+      ! is there a sign correction (due to formal contraction)?
+      if (idx_shape.ge.0) then
+        allocate(me_vec(1),me_shape(1))
+        me_vec(1)%mel => me_res
+        me_shape(1)%mel => op_info%mel_arr(idx_shape)%mel
+        ! put sign corrections on opti_info
+        call set_opti_info_signs(opti_info,1,1,
+     &            me_vec,me_shape,me_shape,me_shape,.false.)
+        deallocate(me_vec,me_shape)
+      else
+        ifree = mem_alloc_int(opti_info%nsec,1,'nsec')
+        ifree = mem_alloc_int(opti_info%nwfpsec,1,'nwfpsec')
+        ifree = mem_alloc_int(opti_info%idstsec,1,'idstsec')
+        ifree = mem_alloc_real(opti_info%signsec,1,'signsec')
+        opti_info%nwfpsec(1) = len_op
+        opti_info%idstsec(1) = 1
+        opti_info%signsec(1) = 1d0
+      end if
+      nsec = opti_info%nsec(1)
+      lensec => opti_info%nwfpsec(1:nsec)
+      idstsec => opti_info%idstsec(1:nsec)
+      signsec => opti_info%signsec(1:nsec)
+
+      ! record length hopefully the same
+      if (ffop_tgt%reclen.ne.ffop_src%reclen)
+     &   call quit(1,'scale_copy_op',
+     &             'not prepared for different reclen''s')
+      nblkmax = ifree/ffop_src%reclen
+      if (trim(mode).eq.'mult'.or.trim(mode).eq.'precond')
+     &      nblkmax = nblkmax/2
+      if (nblkmax.le.0) then
+        write(luout,*) 'free memory (words):  ',ifree
+        write(luout,*) 'block length (words): ',ffop_src%reclen
+        call quit(1,'scale_copy_op',
+     &            'not even 1 record fits into memory?')
+      end if
+
+      ! loop over sections
+      do isec = 1, nsec
+      ifree = mem_setmark('scale_copy_section')
+      len_op = lensec(isec)
 
       if (.not.ffop_src%buffered.and.
      &    .not.ffop_tgt%buffered) then
@@ -151,18 +188,20 @@
      &          ifree = mem_alloc_real(buf_in,nbuff,'buf_in')
 
         ifac = 1
-        idxst_src = idisc_off_src+1
-        idxst_tgt = idisc_off_tgt+1
-        do while(idxst_src.le.idisc_off_src+len_op)
-          idxnd_src = min(idisc_off_src+len_op,idxst_src-1+nbuff)
-          idxnd_tgt = min(idisc_off_tgt+len_op,idxst_tgt-1+nbuff)
+        idxst_src = idisc_off_src+idstsec(isec)
+        idxst_tgt = idisc_off_tgt+idstsec(isec)
+        do while(idxst_src.le.idisc_off_src+idstsec(isec)-1+len_op)
+          idxnd_src = min(idisc_off_src+idstsec(isec)-1+len_op,
+     &                    idxst_src-1+nbuff)
+          idxnd_tgt = min(idisc_off_tgt+idstsec(isec)-1+len_op,
+     &                    idxst_tgt-1+nbuff)
           call get_vec(ffop_src,buffer,idxst_src,idxnd_src)
 
           select case(trim(mode))
           case('square')
             ! take square and apply scaling factors
             do idx = 1, idxnd_src-idxst_src+1
-              buffer(idx) = fac(ifac)*(buffer(idx)**2)
+              buffer(idx) = signsec(isec)*fac(ifac)*(buffer(idx)**2)
               ifac = ifac + 1
               if (ifac.gt.nfac) ifac = 1
             end do
@@ -170,37 +209,18 @@
             ! multiply both lists element-wise
             call get_vec(ffop_tgt,buf_in,idxst_tgt,idxnd_tgt)
             do idx = 1, idxnd_src-idxst_src+1
-              buffer(idx) = fac(ifac)*buffer(idx)*buf_in(idx)
+              buffer(idx) = signsec(isec)*
+     &                      fac(ifac)*buffer(idx)*buf_in(idx)
               ifac = ifac + 1
               if (ifac.gt.nfac) ifac = 1
             end do
           case('precond')
             ! divide lists element-wise
             ! here, buf_in contains nominator !!!
-            ! take into account sign-changes due to formal contraction
-            if (nfac.ne.1) call quit(1,'scale_copy_op',
-     &          'for mode precond, only a single factor must be given')
             call get_vec(ffop_tgt,buf_in,idxst_tgt,idxnd_tgt)
-            if (idx_shape.lt.0) then
-              ! no additional sign correction
-              call diavc(buffer,buf_in,
-     &             fac(1),buffer,
-     &             0d0,idxnd_src-idxst_src+1)
-            else
-              allocate(me_vec(1),me_shape(1))
-              me_vec(1)%mel => me_res
-              me_shape(1)%mel => op_info%mel_arr(idx_shape)%mel
-              ! put sign corrections on opti_info
-              call set_opti_info_signs(opti_info,1,1,
-     &                  me_vec,me_shape,me_shape,me_shape,.false.)
-              do isec = 1, opti_info%nsec(1)
-                call diavc(buffer(opti_info%idstsec(isec)),
-     &                     buf_in(opti_info%idstsec(isec)),
-     &                     fac(1)*opti_info%signsec(isec),
-     &                     buffer(opti_info%idstsec(isec)),
-     &                     0d0,opti_info%nwfpsec(isec))
-              end do
-            end if
+            call diavc(buffer,buf_in,
+     &           signsec(isec)*fac(1),buffer,
+     &           0d0,idxnd_src-idxst_src+1)
           case default
             ! apply scaling factors (periodically)
             do idx = 1, idxnd_src-idxst_src+1
@@ -226,6 +246,9 @@ c dbgend
         call quit(1,'scale_copy_op','adapt for buffering')
 
       end if
+
+      ifree = mem_flushmark()
+      end do
 
       call touch_file_rec(ffop_tgt)
 
