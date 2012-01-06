@@ -40,12 +40,12 @@
       integer ::
      &     idxtop, idxham, norder, len, idxfeff, iorder, iblk, 
      &     ihampart, nact, iblknew, idx_op, nrank, cgastp, agastp,
-     &     ivtx, ii, nvtx, nham, ham_vtx, iterm, idxl
+     &     ivtx, ii, nvtx, nham, ham_vtx, iterm, idxl, t1ord
       integer ::
      &     idxop(nlabels), occ_ham(ngastp,2)
 
       integer(8), pointer ::
-     &     torder(:), horder(:)
+     &     torder(:), horder(:), lorder(:)
 
       type(contraction), pointer ::
      &     contr
@@ -102,12 +102,13 @@
      &     ival=norder)
       if (is_argument_set('method.MRCC','trunc_top').gt.0) then
         call get_argument_dimension(len,'method.MRCC','trunc_top')
-        allocate(torder(len),horder(5))
+        allocate(torder(len),horder(5),lorder(len))
         call get_argument_value('method.MRCC','trunc_top',
      &                          iarr=torder)
+        lorder(1:len) = torder(1:len)
       else
         len = op_top%n_occ_cls 
-        allocate(torder(len),horder(5))
+        allocate(torder(len),horder(5),lorder(len))
         torder(1) = -1
       end if
       call get_argument_value('method.MRCC','trunc_ham',
@@ -120,16 +121,25 @@
 
       ! default: automatically assign perturbation orders to blocks of T
       if (torder(1).lt.0) then
-        call get_argument_value('method.MRCC','H1bar',
-     &       lval=h1bar)
+        call get_argument_value('method.MRCC','T1ord',
+     &       ival=t1ord)
+        ! default order assigned to T1: 0 if sequential exponential,
+        !                               1 if simultaneous exponential
+        if (t1ord.lt.0) then
+          call get_argument_value('method.MRCC','H1bar',
+     &         lval=h1bar)
+          t1ord = 1
+          if (h1bar) t1ord = 0
+        end if
+
         do iblk = 1, op_top%n_occ_cls
           nrank = op_top%ica_occ(1,iblk)
-          ! order assigned to T1: 0 if sequential exponential,
-          !                       1 if simultaneous exponential
-          if (nrank.eq.1.and..not.h1bar) then
-            torder(iblk) = 1
+          if (nrank.eq.1) then
+            torder(iblk) = t1ord
+            lorder(iblk) = min(1,t1ord) ! Lambda_1 at most first order
           else
             torder(iblk) = nrank - 1
+            lorder(iblk) = nrank - 1
           end if
         end do
       end if
@@ -162,11 +172,16 @@ c dbgend
           replace = .false.
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
-            if (idx_op.eq.idxtop.or.count_l.and.idx_op.eq.idxl) then
+            if (idx_op.eq.idxtop) then
               iblk = vertex(ivtx)%iblk_op
               if (iblk.gt.len) call quit(1,'select_mrcc_trunc',
      &           'Please define perturbation order for all blocks of T')
               iorder = iorder + torder(iblk)
+            else if (count_l.and.idx_op.eq.idxl) then
+              iblk = vertex(ivtx)%iblk_op
+              if (iblk.gt.len) call quit(1,'select_mrcc_trunc',
+     &           'Please define perturbation order for all blocks of T')
+              iorder = iorder + lorder(iblk)
             else if (idx_op.eq.idxham) then
               nham = nham+1
               ham_vtx = ivtx
@@ -258,7 +273,7 @@ c dbgend
 
       enddo
 
-      deallocate(torder,horder)
+      deallocate(torder,horder,lorder)
 
       return
       end

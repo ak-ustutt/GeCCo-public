@@ -41,7 +41,7 @@
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
-     &     tfix, maxit
+     &     tfix, maxit, t1ord
       logical ::
      &     update_prc, skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
@@ -107,6 +107,8 @@
      &     ival=ntrunc)
       call get_argument_value('method.MRCC','Tfix',
      &     ival=tfix)
+      call get_argument_value('method.MRCC','T1ord',
+     &     ival=t1ord)
       call get_argument_value('method.MR','oldref',
      &     lval=oldref)
       call get_argument_value('calculate.solve','maxiter',
@@ -130,6 +132,7 @@
         write(luout,*) 'Tred_mode  = ', tred
         write(luout,*) 'trunc      = ', trunc
         if (tfix.gt.0) write(luout,*) 'Tfix       = ', tfix
+        if (tfix.ge.0) write(luout,*) 'T1ord      = ', t1ord
       end if
 
       if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.x_ansatz.ne.1d0
@@ -143,6 +146,9 @@
       if (tfix.gt.0.and.(.not.oldref.or..not.project.or.optref.ne.0))
      &    call quit(1,'set_ic_mrcc_targets',
      &     'Tfix>0 only allowed with oldref=T,project=T,optref=0')
+      if (t1ord.ge.0.and.tfix.eq.0)
+     &    call quit(1,'set_ic_mrcc_targets',
+     &     'Manually setting T1ord only enabled yet for Tfix>0')
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -767,6 +773,12 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
       call set_rule('Tfix',ttype_op,DEF_OP_FROM_OCC,
      &              'Tfix',1,1,
      &              parameters,2,tgt_info)
+
+      ! define fixed energy (e.g. E_icMRCCSD when doing a (T) calc.)
+      call add_target('E_fix',ttype_op,.false.,tgt_info)
+      call hop_parameters(-1,parameters,0,0,1,.false.)
+      call set_rule('E_fix',ttype_op,DEF_HAMILTONIAN,'E_fix',
+     &              1,1,parameters,1,tgt_info)
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
@@ -961,6 +973,17 @@ c        end if
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCCrem0res')
       end if
+      if (.not.Op_eqs.and.trunc.and.t1ord.ge.0) then
+        ! Factor out fixed part of energy (not to be truncated)
+        call set_dependency('F_MRCC_LAG','F_Efix',tgt_info)
+        call set_rule2('F_MRCC_LAG',FACTOR_OUT,tgt_info)
+        call set_arg('F_MRCC_LAG',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+        call set_arg('F_MRCC_LAG',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+        call set_arg('F_MRCC_LAG',FACTOR_OUT,'INTERM',1,tgt_info,
+     &       val_label=(/'F_Efix'/))
+      end if
       if (.not.Op_eqs.and.h1bar) then
         if (trunc) then
           ! prescreening: remove terms with definitely too high order
@@ -1019,6 +1042,16 @@ c        end if
      &       val_str='COUNT_L')
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCCtrunc')
+        if (t1ord.ge.0) then
+          ! expand fixed part of energy again (not necessary in principle)
+          call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
+          call set_arg('F_MRCC_LAG',EXPAND,'LABEL_RES',1,tgt_info,
+     &         val_label=(/'F_MRCC_LAG'/))
+          call set_arg('F_MRCC_LAG',EXPAND,'LABEL_IN',1,tgt_info,
+     &         val_label=(/'F_MRCC_LAG'/))
+          call set_arg('F_MRCC_LAG',EXPAND,'INTERM',1,tgt_info,
+     &         val_label=(/'F_Efix'/))
+        end if
         if (h1bar) then
           ! Factor out H1bar again (except the formal part)
           call set_rule2('F_MRCC_LAG',FACTOR_OUT,tgt_info)
@@ -1169,11 +1202,11 @@ c     &     val_label=(/'F_MRCC_LAG'/))
         call set_arg('F_OMG',INVARIANT,'TITLE',1,tgt_info,
      &       val_str='Higher-order residual for first iteration')
       end if
-c dbg
-c      call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_OMG'/))
-c dbgend
+      if (tfix.gt.0) then
+        call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
+        call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &       val_label=(/'F_OMG'/))
+      end if
 
       ! Lagrangian without Lambda...
       call add_target2('F_E_C0',.false.,tgt_info)
@@ -1923,7 +1956,7 @@ c      end if
      &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1barfull',REPLACE,'OP_LIST',2,tgt_info,
      &     val_label=(/'T1','T'/))
-      if (trunc) then
+      if (trunc.and.tfix.eq.0) then !tfix>0: no trunc. for fixed sol.
         ! apply perturbative truncation of Lagrangian
         call set_rule2('F_H1barfull',SELECT_SPECIAL,tgt_info)
         call set_dependency('F_H1barfull','FREF',tgt_info)
@@ -2234,6 +2267,91 @@ c dbg
       call set_rule2('F_Ecorrected',PRINT_FORMULA,tgt_info)
       call set_arg('F_Ecorrected',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_Ecorrected'/))
+c dbgend
+
+      ! Just the fixed part of the energy
+      call add_target2('F_Efix',.false.,tgt_info)
+      call set_dependency('F_Efix','E_fix',tgt_info)
+      call set_dependency('F_Efix','H',tgt_info)
+      call set_dependency('F_Efix','C0',tgt_info)
+      call set_dependency('F_Efix','T',tgt_info)
+      call set_dependency('F_Efix','Tfix',tgt_info)
+      call set_dependency('F_Efix','L',tgt_info)
+      call set_rule2('F_Efix',DEF_MRCC_LAGRANGIAN,tgt_info)
+      call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'LABEL',1,
+     &     tgt_info,val_label=(/'F_Efix'/))
+      call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'OP_RES',1,
+     &     tgt_info,val_label=(/'E_fix'/))
+      if (h1bar) then
+        call set_dependency('F_Efix','H1bar',tgt_info)
+        call set_dependency('F_Efix','T-T1',tgt_info)
+        call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
+     &       tgt_info,val_label=(/'L','H1bar','T-T1','C0'/))
+      else
+        call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
+     &       tgt_info,val_label=(/'L','H','T','C0'/))
+      end if
+      call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'MAXCOM_RES',1,
+     &     tgt_info,val_int=(/0/)) ! just the energy
+      call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'MAXCOM_EN',1,
+     &     tgt_info,val_int=(/maxcom_en/))
+      call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'MODE',1,tgt_info,
+     &     val_str='---')
+      call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'TITLE',1,
+     &     tgt_info,val_str='Energy equation')
+      if (h1bar) then
+        call set_rule2('F_Efix',REPLACE,tgt_info)
+        call set_arg('F_Efix',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_Efix'/))
+        call set_arg('F_Efix',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_Efix'/))
+        call set_arg('F_Efix',REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/'T-T1','T'/))
+      end if
+      ! only the fixed part
+      call set_rule2('F_Efix',REPLACE,tgt_info)
+      call set_arg('F_Efix',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_Efix'/))
+      call set_arg('F_Efix',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_Efix'/))
+      call set_arg('F_Efix',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'T','Tfix'/))
+      call set_rule2('F_Efix',INVARIANT,tgt_info)
+      call set_arg('F_Efix',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_Efix'/))
+      call set_arg('F_Efix',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_Efix'/))
+      call set_arg('F_Efix',INVARIANT,'OP_RES',1,tgt_info,
+     &     val_label=(/'E_fix'/))
+      call set_arg('F_Efix',INVARIANT,'OPERATORS',2,tgt_info,
+     &     val_label=(/'T','L'/))
+      call set_arg('F_Efix',INVARIANT,'TITLE',1,tgt_info,
+     &     val_str='Fixed part of energy')
+      call set_rule2('F_Efix',REPLACE,tgt_info)
+      call set_arg('F_Efix',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_Efix'/))
+      call set_arg('F_Efix',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_Efix'/))
+      call set_arg('F_Efix',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'Tfix','T'/))
+      call set_rule2('F_Efix',SELECT_SPECIAL,tgt_info)
+      call set_arg('F_Efix',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_Efix'/))
+      call set_arg('F_Efix',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_Efix'/))
+      if (h1bar) then
+        call set_arg('F_Efix',SELECT_SPECIAL,'OPERATORS',2,
+     &     tgt_info,val_label=(/'H1bar','T'/))
+      else
+        call set_arg('F_Efix',SELECT_SPECIAL,'OPERATORS',2,
+     &     tgt_info,val_label=(/'H','T'/))
+      end if
+      call set_arg('F_Efix',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &     val_str='MRCC2')
+c dbg
+c      call set_rule2('F_Efix',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_Efix',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_Efix'/))
 c dbgend
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
