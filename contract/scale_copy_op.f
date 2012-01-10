@@ -1,4 +1,4 @@
-      subroutine scale_copy_op(label_res,label_inp,fac,nfac,mode,
+      subroutine scale_copy_op(label_res,label_inp,fac,nfac,mode,nspc,
      &     op_info,orb_info,str_info)
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
@@ -19,7 +19,7 @@
       include 'def_optimize_info.h'
 
       integer, intent(in) ::
-     &     nfac
+     &     nfac, nspc
       real(8), intent(in) ::
      &     fac(nfac)
       character(*), intent(in) ::
@@ -82,7 +82,8 @@
 
       idx_res = idx_mel_list(label_res,op_info)
       idx_inp = idx_mel_list(label_inp(1),op_info)
-      idx_shape = idx_mel_list(label_inp(2),op_info)
+      idx_shape = -1
+      if (nspc.gt.0) idx_shape = idx_mel_list(label_inp(2),op_info)
 
       if (idx_res.lt.0) then
         write(luout,*) '"',trim(label_res),'"'
@@ -148,6 +149,7 @@
         ifree = mem_alloc_int(opti_info%nwfpsec,1,'nwfpsec')
         ifree = mem_alloc_int(opti_info%idstsec,1,'idstsec')
         ifree = mem_alloc_real(opti_info%signsec,1,'signsec')
+        opti_info%nsec(1) = 1
         opti_info%nwfpsec(1) = len_op
         opti_info%idstsec(1) = 1
         opti_info%signsec(1) = 1d0

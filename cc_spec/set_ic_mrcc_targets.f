@@ -2353,6 +2353,89 @@ c      call set_rule2('F_Efix',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_Efix',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_Efix'/))
 c dbgend
+
+      ! spin expectation value <C0| T^+ S^2 T |C0>
+      call add_target2('F_T_S2',.false.,tgt_info)
+      call set_dependency('F_T_S2','S(S+1)',tgt_info)
+      call set_dependency('F_T_S2','C0',tgt_info)
+      call set_dependency('F_T_S2','S+',tgt_info)
+      call set_dependency('F_T_S2','S-',tgt_info)
+      call set_dependency('F_T_S2','Sz',tgt_info)
+      call set_dependency('F_T_S2','Sz_dum',tgt_info)
+      call set_dependency('F_T_S2','T',tgt_info)
+      ! (a) 1/2*(S+S- + S-S+)
+      call set_rule2('F_T_S2',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_T_S2'/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'S(S+1)'/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &     tgt_info,
+     &     val_label=(/'C0^+','T^+','S+','S-','T','C0'/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &     val_int=(/2,3,4,5,6,7/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/0.5d0/))
+      call set_rule2('F_T_S2',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_T_S2'/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'S(S+1)'/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &     tgt_info,
+     &     val_label=(/'C0^+','T^+','S-','S+','T','C0'/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &     val_int=(/2,3,4,5,6,7/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/0.5d0/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      ! (b) + Sz^2 (Sz_dum is used to circumvent automatic "BCH" factor)
+      call set_rule2('F_T_S2',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_T_S2'/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'S(S+1)'/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &     tgt_info,
+     &     val_label=(/'C0^+','T^+','Sz','Sz_dum','T','C0'/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &     val_int=(/2,3,4,5,6,7/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      call set_rule2('F_T_S2',REPLACE,tgt_info)
+      call set_arg('F_T_S2',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_T_S2'/))
+      call set_arg('F_T_S2',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_T_S2'/))
+      call set_arg('F_T_S2',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'Sz_dum','Sz'/))
+c dbg
+c      call set_rule2('F_T_S2',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_T_S2',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_T_S2'/))
+c dbgend
+
+      ! norm <C0| T^+ T |C0>
+      call add_target2('F_T_NORM',.false.,tgt_info)
+      call set_dependency('F_T_NORM','NORM',tgt_info)
+      call set_dependency('F_T_NORM','C0',tgt_info)
+      call set_dependency('F_T_NORM','T',tgt_info)
+      call set_rule2('F_T_NORM',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_T_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_T_NORM'/))
+      call set_arg('F_T_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'NORM'/))
+      call set_arg('F_T_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'C0^+','T^+','T','C0'/))
+      call set_arg('F_T_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/2,3,4,5/))
+c dbg
+c      call set_rule2('F_T_NORM',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_T_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_T_NORM'/))
+c dbgend
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -2601,7 +2684,7 @@ c dbgend
       call set_dependency('FOPT_MRCC_S(S+1)','F_MRCC_S(S+1)',tgt_info)
       call set_dependency('FOPT_MRCC_S(S+1)','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_MRCC_S(S+1)','DEF_ME_T',tgt_info)
-      call set_dependency('FOPT_MRCC_S(S+1)','DEF_ME_E(MR)',tgt_info)
+      call set_dependency('FOPT_MRCC_S(S+1)','DEF_ME_S(S+1)',tgt_info)
       call set_dependency('FOPT_MRCC_S(S+1)','DEF_ME_S+',tgt_info)
       call set_dependency('FOPT_MRCC_S(S+1)','DEF_ME_S-',tgt_info)
       call set_dependency('FOPT_MRCC_S(S+1)','DEF_ME_Sz',tgt_info)
@@ -2610,6 +2693,33 @@ c dbgend
      &             val_label=(/'FOPT_MRCC_S(S+1)'/))
       call set_arg('FOPT_MRCC_S(S+1)',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_MRCC_S(S+1)'/))
+
+      ! Spin "expectation value" <C0| T^+ S^2 T |C0>
+      call add_target2('FOPT_T_S2',.false.,tgt_info)
+      call set_dependency('FOPT_T_S2','F_T_S2',tgt_info)
+      call set_dependency('FOPT_T_S2','DEF_ME_C0',tgt_info)
+      call set_dependency('FOPT_T_S2','DEF_ME_T',tgt_info)
+      call set_dependency('FOPT_T_S2','DEF_ME_S(S+1)',tgt_info)
+      call set_dependency('FOPT_T_S2','DEF_ME_S+',tgt_info)
+      call set_dependency('FOPT_T_S2','DEF_ME_S-',tgt_info)
+      call set_dependency('FOPT_T_S2','DEF_ME_Sz',tgt_info)
+      call set_rule2('FOPT_T_S2',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_T_S2',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_T_S2'/))
+      call set_arg('FOPT_T_S2',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_T_S2'/))
+
+      ! Norm <C0| T^+ T |C0>
+      call add_target2('FOPT_T_NORM',.false.,tgt_info)
+      call set_dependency('FOPT_T_NORM','F_T_NORM',tgt_info)
+      call set_dependency('FOPT_T_NORM','DEF_ME_C0',tgt_info)
+      call set_dependency('FOPT_T_NORM','DEF_ME_T',tgt_info)
+      call set_dependency('FOPT_T_NORM','DEF_ME_NORM',tgt_info)
+      call set_rule2('FOPT_T_NORM',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_T_NORM',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_T_NORM'/))
+      call set_arg('FOPT_T_NORM',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_T_NORM'/))
 
       ! Energy with Lagrangian based corrections
       call add_target2('FOPT_Ecorrected',.false.,tgt_info)
@@ -3309,6 +3419,11 @@ c dbg
         call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
      &       'FOPT_REF_S(S+1)',1,0,
      &       parameters,0,tgt_info)
+        call form_parameters(-1,parameters,2,
+     &       'Spin expectation value <C0| S^2 |C0> :',0,'SCAL F20.12')
+        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+     &       'S(S+1)',1,0,
+     &       parameters,2,tgt_info)
 c dbgend
       end if
       end do
@@ -3322,7 +3437,41 @@ c dbg
         call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
      &       'FOPT_REF_S(S+1)',1,0,
      &       parameters,0,tgt_info)
+        call form_parameters(-1,parameters,2,
+     &       'Spin expectation value <C0| S^2 |C0> :',0,'SCAL F20.12')
+        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+     &       'ME_S(S+1)',1,0,
+     &       parameters,2,tgt_info)
       end if
+      call set_dependency('SOLVE_MRCC','FOPT_T_S2',tgt_info)
+      call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
+     &     'ME_S(S+1)',1,0,
+     &     parameters,0,tgt_info)
+      call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
+     &     'FOPT_T_S2',1,0,
+     &     parameters,0,tgt_info)
+      call set_dependency('SOLVE_MRCC','FOPT_T_NORM',tgt_info)
+      call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
+     &     'ME_NORM',1,0,
+     &     parameters,0,tgt_info)
+      call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
+     &     'FOPT_T_NORM',1,0,
+     &     parameters,0,tgt_info)
+      call set_rule2('SOLVE_MRCC',SCALE_COPY,tgt_info)
+      call set_arg('SOLVE_MRCC',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &             val_label=(/'ME_S(S+1)'/))
+      call set_arg('SOLVE_MRCC',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &             val_label=(/'ME_NORM'/))
+      call set_arg('SOLVE_MRCC',SCALE_COPY,'FAC',1,tgt_info,
+     &             val_rl8=(/1d0/))
+      call set_arg('SOLVE_MRCC',SCALE_COPY,'MODE',1,tgt_info,
+     &             val_str='precond')
+      call form_parameters(-1,parameters,2,
+     &     'Spin expectation value <C0|T^+ S^2 T|C0>/<C0|T^+ T|C0> :',
+     &     0,'SCAL F20.12')
+      call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+     &     'ME_S(S+1)',1,0,
+     &     parameters,2,tgt_info)
       if (.not.h1bar.and.tfix.eq.0) then
         call set_dependency('SOLVE_MRCC','FOPT_MRCC_S(S+1)',tgt_info)
         call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
@@ -3331,6 +3480,12 @@ c dbg
         call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
      &       'FOPT_MRCC_S(S+1)',1,0,
      &       parameters,0,tgt_info)
+        call form_parameters(-1,parameters,2,
+     &       'Spin expectation value <C0| T^+ e^-T S^2 e^T |C0> :',
+     &       0,'SCAL F20.12')
+        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+     &       'ME_S(S+1)',1,0,
+     &       parameters,2,tgt_info)
       end if
 c dbgend
 c dbg
@@ -3437,6 +3592,37 @@ c dbgend
      &     '>>> Total energy :',0,'SCAL F20.12')
       call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
      &     'ME_E(MR)',1,0,
+     &     parameters,2,tgt_info)
+      ! Calculate and print <C0|T^+ S^2 T|C0>/<C0|S^2|C0>
+      call set_dependency('EVAL_PERT_CORR','FOPT_T_S2',tgt_info)
+      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
+     &     'ME_S(S+1)',1,0,
+     &     parameters,0,tgt_info)
+      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &     'FOPT_T_S2',1,0,
+     &     parameters,0,tgt_info)
+      call set_dependency('EVAL_PERT_CORR','FOPT_T_NORM',tgt_info)
+      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
+     &     'ME_NORM',1,0,
+     &     parameters,0,tgt_info)
+      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &     'FOPT_T_NORM',1,0,
+     &     parameters,0,tgt_info)
+      call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
+      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &             val_label=(/'ME_S(S+1)'/))
+      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &             val_label=(/'ME_NORM'/))
+      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'FAC',1,tgt_info,
+     &             val_rl8=(/1d0/))
+      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'MODE',1,tgt_info,
+     &             val_str='precond')
+      call form_parameters(-1,parameters,2,
+     &     'Spin expectation value '//
+     &                      '<C0|PT^+ S^2 PT|C0>/<C0|PT^+ PT|C0> :',
+     &     0,'SCAL F20.12')
+      call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
+     &     'ME_S(S+1)',1,0,
      &     parameters,2,tgt_info)
 
 c dbg

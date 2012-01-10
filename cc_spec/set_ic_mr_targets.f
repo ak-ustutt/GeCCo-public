@@ -864,6 +864,18 @@ c     &     'ME_Dudag_2',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
 
+      ! ME_NORM
+      call add_target('DEF_ME_NORM',ttype_opme,.false.,tgt_info)
+      call set_dependency('DEF_ME_NORM','NORM',tgt_info)
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'ME_NORM'
+      labels(2) = 'NORM'
+      call me_list_parameters(-1,parameters,
+     &     0,0,1,0,0,.false.)
+      call set_rule('DEF_ME_NORM',ttype_opme,DEF_ME_LIST,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
