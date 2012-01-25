@@ -61,8 +61,6 @@
 
       call atim_csw(cpu0,sys0,wall0)
 
-      ifree = mem_setmark('dia_from_op')
-
       idxout = idx_mel_list(label_out,op_info)
       if (idxout.lt.0) call quit(1,'dia_from_op',
      &                           'label not on list: '//trim(label_out))
@@ -167,6 +165,7 @@ c           ad hoc: add scalar contrib. only to purely inactive blks
      &           'found matching output block: # ',iblkout
 
             ! get the input, extract diagonal and write to output
+            ifree = mem_setmark('dia_from_op')
             lenblkinp = meinp%len_op_occ(i_occ_cls)
             lenblkout = meout%len_op_occ(iblkout)
             ifree = mem_alloc_real(buffer_inp,lenblkinp,'buffer_inp')
@@ -183,6 +182,7 @@ c           ad hoc: add scalar contrib. only to purely inactive blks
      &                        meinp,meout,i_occ_cls,iblkout,
      &                        iocc_dia,str_info,orb_info)
             call put_vec(ffout,buffer_out,ioffout+1,ioffout+lenblkout)
+            ifree = mem_flushmark('dia_from_op')
 
             if (.not.extend) cycle ! not more than one matching block
           end if
@@ -193,8 +193,6 @@ c           ad hoc: add scalar contrib. only to purely inactive blks
      &     call file_close_keep(meinp%fhand)
       if (open_close_out)
      &     call file_close_keep(meout%fhand)
-
-      ifree = mem_flushmark('dia_from_op')
 
       call atim_csw(cpu,sys,wall)
 

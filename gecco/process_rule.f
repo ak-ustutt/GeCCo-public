@@ -851,9 +851,10 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('DIAG_MS',rule,tgt_info,val_int=dms)
         call get_arg('MIN_REC',rule,tgt_info,val_int=min_rank)
         call get_arg('MAX_REC',rule,tgt_info,val_int=max_rank)
+        call get_arg('REC',rule,tgt_info,val_int=idx)
         call define_me_list(label,label2,
      &       absym,casym,gamma,s2,ms,ms_fix,
-     &       min_rank,max_rank,imode,dgam,dms,
+     &       idx,min_rank,max_rank,imode,dgam,dms,
      &       op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
       case(UNITY)
@@ -938,11 +939,14 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LIST',rule,tgt_info,val_label=label)
         call get_arg('COMMENT',rule,tgt_info,val_str=title)
         call get_arg('FORMAT',rule,tgt_info,val_str=mode)
+        call get_arg('CHECK_THRESH',rule,tgt_info,val_rl8=fac(1))
+        call get_arg('EXPECTED',rule,tgt_info,val_rl8=fac(2))
 
         if (form_test) return
 
         call get_mel(mel_pnt,label,OLD)
-        call print_list(title,mel_pnt,mode,orb_info,str_info)
+        call print_list(title,mel_pnt,mode,fac(1),fac(2),
+     &                  orb_info,str_info)
 
 *----------------------------------------------------------------------*
       case(SET_MEL)

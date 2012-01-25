@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine print_list(message,mel,mode,orb_info,str_info)
+      subroutine print_list(message,mel,mode,check,expected,
+     &                      orb_info,str_info)
 *----------------------------------------------------------------------*
 *     print list + message
 *     andreas, 2008
@@ -16,10 +17,15 @@
       include 'def_orbinf.h'
       include 'ifc_input.h'
 
+      real(8), parameter ::
+     &     thresh_warn = 1d-10
+
       type(me_list), intent(inout) ::
      &     mel
       character(len=*), intent(in) ::
      &     message, mode
+      real(8), intent(in) ::
+     &     check, expected
       type(orbinf), intent(in) ::
      &     orb_info
       type(strinf), intent(inout) ::
@@ -48,6 +54,19 @@
 
         write(luout,'(x,a,'//trim(mode(5:))//')')
      &       trim(message),value
+
+        ! check result (if requested)
+        if (check.gt.0) then
+          if (abs(value-expected).gt.check) then
+            write(luout,'(x,a,'//trim(mode(5:))//')')
+     &       'We had expected the result: ',expected
+            call quit(1,'print_list','Not the result we want!')
+          else if (abs(value-expected).gt.thresh_warn) then
+             write(luout,'(x,a,'//trim(mode(5:))//')')
+     &       'We had expected the result: ',expected
+            call warn('print_list','Deviation from expected result.')
+          end if
+        end if
 
       case('LIST')
 

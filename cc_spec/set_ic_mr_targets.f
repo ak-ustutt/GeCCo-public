@@ -230,7 +230,8 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
            do jexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
             if (project.and.iexc.ne.jexc) cycle
             ! not for purely inactive excitation class
-            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
+            if (ip.eq.ih.and.
+     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
             ndef = ndef + 1
             occ_def(IVALE,1,ndef*3-1) = iexc - ip
             occ_def(IVALE,2,ndef*3-1) = jexc - ip
@@ -257,7 +258,8 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
            do jexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
             if (project.and.iexc.ne.jexc) cycle
             ! not for purely inactive excitation class
-            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
+            if (ip.eq.ih.and.
+     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
             ndef = ndef + 1
             occ_def(IVALE,1,ndef*2-1) = iexc - ip
             occ_def(IVALE,2,ndef*2-1) = jexc - ip
@@ -281,7 +283,8 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ! not for purely inactive excitation class
-            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)
+            if (ip.eq.ih.and.
+     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))
      &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
             ! same valence structure already exists?
             ivers = 1
@@ -324,7 +327,8 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ! not for purely inactive excitation class
-            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)
+            if (ip.eq.ih.and.
+     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))
      &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
 c    strictly, we should better use this: (but: does procedure C work?)
 c            if (ip.eq.ih.and.ip.eq.iexc) cycle

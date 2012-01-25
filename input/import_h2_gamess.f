@@ -58,6 +58,8 @@ c     &     first, first_str
      &     int_disk, int_nonr, int_ordr, ioff, istr,
      &     idxst, idxnd, nblk, nblkmax, ifree, luerr, nbuff,
      &     len_op, idum, ipass, iblk, iblkst
+      character*6 ::
+     &     cmxao
 
       integer ::
      &     idxprqs(4),idss(4),igam(4),igtp(4), 
@@ -78,20 +80,39 @@ c     &     hop
 
       ffham => hlist%fhand
 
-      pack2 = orb_info%ntoob.le.mxao
-      if (pack2) then
-        nlabmx = (nintmx+1)/2
-      else
-        nlabmx = nintmx
-      end if
-
       call atim_csw(cpu0,sys0,wall0)
 
       call file_init(ffmo2,moints,ftyp_sq_unf,0)
       call file_open(ffmo2)
 
       lumo2 = ffmo2%unit
-      
+
+      ! Dirty fix for determining whether LABSIZ was 1 or 2 in gamess:
+      ! First let us assume that # of MOs was equal to # of AOs:
+      pack2 = orb_info%ntoob.le.mxao
+      if (pack2) then
+        nlabmx = (nintmx+1)/2
+      else
+        nlabmx = nintmx
+      end if
+      ! Now we need to check the first orbital index: If zero: LABSIZ=2
+      if (pack2) then
+        rewind lumo2
+        read (lumo2) energy
+        read(lumo2) len_,idxpq
+        if (len_.gt.0) then
+          ip = ishft(idxpq,-56)
+          if (ip.eq.0) then
+            pack2 = .false.
+            nlabmx = nintmx
+            write(cmxao,'(i6)') mxao
+            call warn('import_h2_gamess',
+     &          'We assume that the number of AOs'//
+     &          ' in the GAMESS run exceeded '//trim(cmxao))
+          end if
+        end if
+      end if
+
       ifree = mem_setmark('import_h2')
 
       ifree = mem_alloc_real(xbuf,nintmx,'mo2_xbuff')
@@ -159,7 +180,7 @@ c dbgend
 c dbg
 c          print *,'read ',len_,' integrals:'
 c          do ii = 1, abs(len_)
-c            if (orb_info%ntoob.gt.mxao) then
+c            if (.not.pack2) then
 c              istr = ii
 c            else
 c              istr = (ii+1)/2

@@ -265,6 +265,8 @@
      &     val_int=(/-1/))
       call set_arg('_PROTO_',DEF_ME_LIST,'MAX_REC',1,tgt_info,
      &     val_int=(/-1/))
+      call set_arg('_PROTO_',DEF_ME_LIST,'REC',1,tgt_info,
+     &     val_int=(/-1/))
 *----------------------------------------------------------------------*
       call add_command_proto(RES_ME_LIST,tgt_info)
 *----------------------------------------------------------------------*
@@ -339,6 +341,10 @@
      &     val_str='LIST')
       call set_arg('_PROTO_',PRINT_MEL,'COMMENT',1,tgt_info,
      &     val_str='---')
+      call set_arg('_PROTO_',PRINT_MEL,'CHECK_THRESH',1,tgt_info,
+     &     val_rl8=(/-1d0/))
+      call set_arg('_PROTO_',PRINT_MEL,'EXPECTED',1,tgt_info,
+     &     val_rl8=(/0d0/))
 *----------------------------------------------------------------------*
       call add_command_proto(SET_MEL,tgt_info)
 *----------------------------------------------------------------------*

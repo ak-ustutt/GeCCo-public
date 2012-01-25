@@ -475,6 +475,8 @@ c dbgend
      &             val_int=(/1/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'MAX_REC',1,tgt_info,
      &             val_int=(/ciroot/))
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'REC',1,tgt_info,
+     &             val_int=(/ciroot/))
 
       ! ME_A_C0
       call add_target('DEF_ME_A_C0',ttype_opme,.false.,tgt_info)
@@ -686,6 +688,17 @@ c dbgend
       call set_rule('EVAL_REF_S(S+1)',ttype_opme,EVAL,
      &     'FOPT_REF_S(S+1)',1,0,
      &     parameters,0,tgt_info)
+      call set_rule2('EVAL_REF_S(S+1)',PRINT_MEL,tgt_info)
+      call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'LIST',1,tgt_info,
+     &     val_label=(/'ME_S(S+1)'/))
+      call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'COMMENT',1,tgt_info,
+     &     val_str='Spin expectation value <C0| S^2 |C0> :')
+      call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'FORMAT',1,tgt_info,
+     &     val_str='SCAL F20.12')
+      call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'CHECK_THRESH',1,
+     &     tgt_info,val_rl8=(/1d-2/))
+      call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'EXPECTED',1,tgt_info,
+     &     val_rl8=(/(dble(orb_info%imult**2)-1d0)/4d0/))
 
       return
       end

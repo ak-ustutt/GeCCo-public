@@ -132,7 +132,7 @@
         write(luout,*) 'Tred_mode  = ', tred
         write(luout,*) 'trunc      = ', trunc
         if (tfix.gt.0) write(luout,*) 'Tfix       = ', tfix
-        if (tfix.ge.0) write(luout,*) 'T1ord      = ', t1ord
+        if (t1ord.ge.0) write(luout,*) 'T1ord      = ', t1ord
       end if
 
       if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.x_ansatz.ne.1d0
@@ -234,7 +234,8 @@ c     &             val_int=(/1/))
             do jexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
             if ((project.or.Op_eqs).and.iexc.ne.jexc) cycle
             ! not for purely inactive excitation class
-            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
+            if (ip.eq.ih.and.
+     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
             ndef = ndef + 1
             if (first) then
               nsupD = nsupD + 1
@@ -304,7 +305,8 @@ c     &             val_int=(/1/))
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ! not for purely inactive excitation class
-            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
+            if (ip.eq.ih.and.
+     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
             ! same valence structure already exists?
             ivers = 1
             do idef = 1, ndef
@@ -384,7 +386,8 @@ c     &             val_int=(/1/))
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ! not for purely inactive excitation class
-            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
+            if (ip.eq.ih.and.
+     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
             icnt = icnt + 1
             ! for cheap precond.: only valence part needed eventually
             if (prc_type.ge.3.and.version(icnt).ne.1) cycle
@@ -411,7 +414,8 @@ c        do ih = 0, maxh
 c          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
 c            do jexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
 c            ! not for purely inactive excitation class
-c            if (ip.eq.ih.and.ip.eq.excrestr(ih,ip,2)) cycle
+c            if (ip.eq.ih.and.
+c     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
 c            ndef = ndef + 1
 c            occ_def(IHOLE,1,3*ndef-1) = ih
 c            occ_def(IHOLE,2,3*ndef-1) = ih
@@ -3419,11 +3423,22 @@ c dbg
         call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
      &       'FOPT_REF_S(S+1)',1,0,
      &       parameters,0,tgt_info)
-        call form_parameters(-1,parameters,2,
-     &       'Spin expectation value <C0| S^2 |C0> :',0,'SCAL F20.12')
-        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
-     &       'S(S+1)',1,0,
-     &       parameters,2,tgt_info)
+        call set_rule2('SOLVE_MRCC',PRINT_MEL,tgt_info)
+        call set_arg('SOLVE_MRCC',PRINT_MEL,'LIST',1,tgt_info,
+     &       val_label=(/'ME_S(S+1)'/))
+        call set_arg('SOLVE_MRCC',PRINT_MEL,'COMMENT',1,tgt_info,
+     &       val_str='Spin expectation value <C0| S^2 |C0> :')
+        call set_arg('SOLVE_MRCC',PRINT_MEL,'FORMAT',1,tgt_info,
+     &       val_str='SCAL F20.12')
+        call set_arg('SOLVE_MRCC',PRINT_MEL,'CHECK_THRESH',1,tgt_info,
+     &       val_rl8=(/1d-2/))
+        call set_arg('SOLVE_MRCC',PRINT_MEL,'EXPECTED',1,tgt_info,
+     &       val_rl8=(/(dble(orb_info%imult**2)-1d0)/4d0/))
+c        call form_parameters(-1,parameters,2,
+c     &       'Spin expectation value <C0| S^2 |C0> :',0,'SCAL F20.12')
+c        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+c     &       'S(S+1)',1,0,
+c     &       parameters,2,tgt_info)
 c dbgend
       end if
       end do
