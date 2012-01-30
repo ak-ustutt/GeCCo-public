@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine get_vtx_in_contr(ivtx,idxop,adjop,njoined,contr)
+      subroutine get_vtx_in_contr(ivtx,idxop,adjop,njoined,vtxst,contr)
 *----------------------------------------------------------------------*
 *     return the first occurrence of operator idxop's vertices in contr
 *     version of vtx_in_contr for super-vertices
@@ -15,7 +15,7 @@
       type(contraction), intent(in) ::
      &     contr
       integer, intent(in) ::
-     &     idxop, njoined
+     &     idxop, njoined, vtxst
       integer, intent(out) ::
      &     ivtx(njoined)
       logical, intent(in) ::
@@ -28,7 +28,7 @@
 
       first = .true.
       ijoin = 0
-      do jvtx = 1, contr%nvtx
+      do jvtx = vtxst, contr%nvtx
         if (first.and.contr%vertex(jvtx)%idx_op.eq.idxop.and.
      &               (contr%vertex(jvtx)%dagger.eqv.adjop)) then
           ivtx(1) = jvtx

@@ -37,7 +37,7 @@
      &     success, advance, adj_intm
       integer ::
      &     idxop_tgt, iblk_tgt, idxop_intm, iblk_intm, ivtx, nterms,
-     &     njoined, iterm
+     &     njoined, iterm, ivtx_old
       type(formula_item), pointer ::
      &     fl_tgt_current, fl_tgt_current_next, fl_intm_pnt, fl_expand
       type(formula_item_list), pointer ::
@@ -71,6 +71,7 @@
       fl_tgt_current => fl_tgt
       ! loop over target items
       iterm = 0
+      ivtx_old = 0
       tgt_loop: do
 
         ! new operator target ?
@@ -94,7 +95,10 @@
         end if
 
         ! is intermediate vertex contained in terms?
-        ivtx = vtx_in_contr(idxop_intm,adj_intm,fl_tgt_current%contr)
+        ! If we had the same term before: search for next appearance
+        ivtx = vtx_in_contr(idxop_intm,adj_intm,ivtx_old+1,
+     &                      fl_tgt_current%contr)
+        ivtx_old = 0
         advance = .true.
 
         if (ntest.ge.100) then
@@ -134,7 +138,7 @@ c dbg
           ! generate new terms
           allocate(fl_expand)
           call init_formula(fl_expand)
-          call expand_term(fl_expand,nterms,
+          call expand_term(fl_expand,nterms,ivtx,
      &         njoined,fl_tgt_current,fpl_intm_c2blk,.false.,op_info)
           end if
           
@@ -176,6 +180,7 @@ c dbg
             ! we re-visit the generated terms (for multiple expansions)
             advance = .false.
           else
+            advance = .true.
             select case(mode)
             case(0)
               call quit(1,'expand_subexpr',
@@ -186,8 +191,10 @@ c dbg
               call delete_fl_node(fl_tgt_current_next)
               deallocate(fl_tgt_current_next)
             case default
+              ! check same term again
+              ivtx_old = ivtx
+              advance = .false.
             end select
-            advance = .true.
           end if
 
           if (success) then

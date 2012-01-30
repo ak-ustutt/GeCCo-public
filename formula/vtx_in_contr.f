@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      integer function vtx_in_contr(idxop,adj,contr)
+      integer function vtx_in_contr(idxop,adj,vtxst,contr)
 *----------------------------------------------------------------------*
 *     return the first place of operator idxop in contr
 *----------------------------------------------------------------------*
@@ -9,7 +9,7 @@
       type(contraction), intent(in) ::
      &     contr
       integer, intent(in) ::
-     &     idxop
+     &     idxop, vtxst
       logical, intent(in) ::
      &     adj
 
@@ -17,7 +17,7 @@
      &     jvtx, kvtx
 
       kvtx = 0
-      do jvtx = 1, contr%nvtx
+      do jvtx = vtxst, contr%nvtx
         if (contr%vertex(jvtx)%idx_op.eq.idxop .and.
      &     (contr%vertex(jvtx)%dagger.eqv.adj)) then
           kvtx = jvtx

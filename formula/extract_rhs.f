@@ -59,7 +59,7 @@
         
         found = .true.
         do ix = 1, nx
-          if (vtx_in_contr(idx_x(ix),.false.,fl_raw_pnt%contr).gt.0)
+          if (vtx_in_contr(idx_x(ix),.false.,1,fl_raw_pnt%contr).gt.0)
      &       exit
           found = ix.ne.nx
         end do
