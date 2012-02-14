@@ -242,8 +242,8 @@ c     &             2,2,2,.true.,orb_info)
       call set_primitive_formula(flist_b,idx_b,
      &     1d0,idx_opb,.true.,op_info)
 
-      call expand_subexpr(flist_adb,flist_a,.true.,op_info)
-      call expand_subexpr(flist_adb,flist_b,.true.,op_info)
+      call expand_subexpr(flist_adb,flist_a,0,op_info)
+      call expand_subexpr(flist_adb,flist_b,0,op_info)
 
       if (ntest.ge.1000) then
         write(luout,*) 'after replacement'
@@ -379,7 +379,7 @@ c     &             2,2,2,.true.,orb_info)
         call init_formula(flist)
         call set_primitive_formula(flist,idx_h,
      &       1d0,idx_f,.true.,op_info)
-        call expand_subexpr(flist_adb,flist,.false.,op_info)
+        call expand_subexpr(flist_adb,flist,0,op_info)
         call dealloc_formula_list(flist)
 
         if (ntest.ge.1000) then

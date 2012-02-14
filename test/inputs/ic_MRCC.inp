@@ -3,9 +3,9 @@ general
 orb_space
  shell type=frozen,def=(1,0,0,0)
 method
- MR maxexc=2,minexc=2,pure_vv=F,maxh=0
- MRCC maxcom_res=2
+ MR maxexc=2,minexc=1,pure_vv=F,maxh=0,prc_type=0
+ MRCC maxcom_res=2,H1bar=T,maxtt=0
 calculate
  solve maxiter=50,conv=1d-8,maxsub=8
- solve non_linear optref=-1,update_prc=F
- routes contract=3,simtraf=0,schedule=1,use_tr=T,maxbranch=-1
+ solve non_linear optref=-1
+ routes contract=3,simtraf=0,schedule=1,use_tr=T,maxbranch=4,sv_thresh=1d-12

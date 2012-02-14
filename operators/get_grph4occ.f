@@ -12,7 +12,7 @@
       include 'def_strinf.h'
       include 'def_orbinf.h'
 
-      type(strinf), intent(in) ::
+      type(strinf), intent(inout) ::
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info

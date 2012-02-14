@@ -2,6 +2,10 @@
       subroutine contr_insert
      &     (contr,op_info,nvtx,vtxinlist,idxins,iblkins,idxres)
 *----------------------------------------------------------------------*
+*     inserts block iblkins of operator idxins between the vertices
+*     indicated by vtxinlist (as often as possible).
+*
+*     matthias, May 2010
 *----------------------------------------------------------------------*
 
       implicit none
@@ -29,7 +33,7 @@
      &     ok
       integer ::
      &     iins, jins, nvtx_new, nins, ivtx, jvtx,
-     &     njoined_res, njoined_ins, ins_cur
+     &     njoined_res, njoined_ins, ins_cur, ieqvfac, nins_old
       type(operator_array), pointer ::
      &     op_arr(:)
 
@@ -47,12 +51,15 @@
      &     occ_sum_x(:), occ_sum_d(:), occ_tmp(:)
       integer, pointer ::
      &     svertex(:), svertex_new(:),
-     &     occ_ins(:,:,:), insert(:), ins_at_vtx(:)
+     &     occ_ins(:,:,:), insert(:), ins_at_vtx(:),
+     &     neqv(:), idx_eqv(:,:)
       logical, pointer ::
      &     vil_new(:) !vtxinlist_new
       
       integer(8), external ::
      &     pack_vtx, int8_pack, occ_overlap_p
+      integer, external ::
+     &     ifac
       logical, external ::
      &     occ_bound_p
 
@@ -66,6 +73,7 @@
         call prt_contr2(luout,contr,op_info)
         write(luout,*) 'vtxinlist = ',vtxinlist
         write(luout,*) 'idxins = ',idxins
+        write(luout,*) 'iblkins= ',iblkins
       end if
 
       op_arr => op_info%op_arr
@@ -86,13 +94,10 @@
       occ_ins_x = int8_pack(iocc_ins_x,ngastp*2,base)
       occ_ins_d = int8_pack(iocc_ins_d,ngastp*2,base)
 
-      ! no inserting of scalars
-      if (occ_ins_x.eq.0.and.occ_ins_d.eq.0) return
-
       allocate(vtx(nvtx), topo(nvtx,nvtx), xlines(nvtx,njoined_res))
       allocate(svertex(nvtx))
       allocate(occ_sum_x(nvtx),occ_sum_d(nvtx),insert(nvtx),
-     &         ins_at_vtx(nvtx),occ_tmp(nvtx))
+     &         ins_at_vtx(nvtx))
 
       call pack_contr(svertex,vtx,topo,xlines,contr,njoined_res)
 
@@ -105,9 +110,25 @@
         call prt_contr_p(luout,svertex,vtx,topo,xlines,nvtx,njoined_res)
       end if
 
-      ! sum excitation (up) and deexcitation (down) arcs
       occ_sum_x(1:nvtx) = 0
       occ_sum_d(1:nvtx) = 0
+
+      ! scalar?
+      if (occ_ins_x.eq.0.and.occ_ins_d.eq.0) then
+        ! insert scalar only if it is our only hope...
+        if (.not.all(vtxinlist(1:nvtx))) then
+          deallocate(vtx,topo,xlines,svertex,occ_sum_x,occ_sum_d,
+     &               insert,ins_at_vtx)
+          return
+        end if
+        ! ...but insert not more than one
+        nins = 1
+        ins_at_vtx(1) = 1
+        insert(1) = 1
+      else
+      allocate(occ_tmp(nvtx))
+
+      ! sum excitation (up) and deexcitation (down) arcs
       do jvtx = 1, nvtx
         if (vtxinlist(jvtx)) then
           do ivtx = 1, jvtx-1
@@ -131,7 +152,11 @@ c dbgend
       ins_at_vtx(1:nvtx) = 0
       ! (first check excitation parts)
       do ivtx = nvtx, 1, -1
-        if (.not.vtxinlist(ivtx)) cycle
+       if (.not.vtxinlist(ivtx)) cycle
+       ! try to insert as many times as possible
+       nins_old = nins-1
+       do while (nins_old.lt.nins)
+        nins_old = nins
         ! op. to insert must be fully connected with one op. via exc. part ...
         if (occ_overlap_p(occ_sum_x(ivtx),occ_ins_x).eq.occ_ins_x) then
           ! ... and with (several) others via deexcitation part ...
@@ -160,10 +185,15 @@ c dbgend
             end if
           end if
         end if
+       end do
       end do
       ! (now check deexcitation parts)
       do ivtx = 1, nvtx
-        if (.not.vtxinlist(ivtx)) cycle
+       if (.not.vtxinlist(ivtx)) cycle
+       ! try to insert as many times as possible (CAUTION: not debugged)
+       nins_old = nins-1
+       do while (nins_old.lt.nins)
+        nins_old = nins
         ! ... or with one op. via deexc. part ...
         if (occ_overlap_p(occ_sum_d(ivtx),occ_ins_d).eq.occ_ins_d) then
           ! ... and with (several) others via excitation part.
@@ -192,10 +222,12 @@ c dbgend
             end if
           end if
         end if
+       end do
       end do
       if (nins.gt.nvtx) call quit(1,'contr_insert',
      &        'increase dimension of insert, ins_at_vtx')
       deallocate(occ_tmp)
+      end if
 c dbg
 c      print *,'nins: ',nins
 c      print *,'insert:     ',insert(1:nins)
@@ -242,7 +274,7 @@ c dbgend
           topo_new(1:nvtx_new,jvtx) = topo_new(1:nvtx_new,jvtx-1)
         end do
         topo_new(1:nvtx_new,ins_cur+1) = 0
-        do jins = 1, nins
+        do jins = iins, nins
           if (insert(jins).ge.ins_cur) insert(jins) = insert(jins) + 1
           if (ins_at_vtx(jins).gt.ins_cur)
      &           ins_at_vtx(jins) = ins_at_vtx(jins) + 1
@@ -260,7 +292,7 @@ c dbgend
         vtx_new(insert(iins)) = idxnew
 
         ! shift arcs from ins_at_vtx() to insert()
-        if (insert(iins).eq.ins_at_vtx(iins)+1) then
+        if (insert(iins).gt.ins_at_vtx(iins)) then
           ! deexcitation part
           do ivtx = insert(iins)+1, nvtx+iins
             if (vil_new(ivtx)) then
@@ -293,7 +325,7 @@ c              if (overlap.ne.0) exit
 c dbgend
             end if
           end do
-        else if (insert(iins).eq.ins_at_vtx(iins)-1) then
+        else if (insert(iins).lt.ins_at_vtx(iins)) then
           ! excitation part
           do ivtx = insert(iins)-1, 1, -1
             if (vil_new(ivtx)) then
@@ -339,6 +371,21 @@ c dbgend
           call prt_contr_p(luout,svertex_new,vtx_new,topo_new,
      &         xlines_new,nvtx_new,njoined_res)
         end if
+
+        ! for insertion of more than one identical vertices,
+        ! we have to divide by a permutation factor
+        allocate(neqv(nvtx_new),idx_eqv(nvtx_new,nvtx_new))
+        call set_eqv_map(neqv,idx_eqv,vtx_new,svertex_new,
+     &                   topo_new,xlines_new,nvtx_new,njoined_res)
+        ieqvfac = 1
+        do iins = 1, nins
+          if (neqv(insert(iins)).lt.0) cycle
+          ieqvfac = ieqvfac*ifac(neqv(insert(iins)))
+        end do
+        deallocate(neqv,idx_eqv)
+        if (ntest.ge.100)
+     &       write(luout,*) 'Divide contraction factor by ',ieqvfac
+        contr%fac = contr%fac/dble(ieqvfac)
 
         ! set result
         call unpack_contr(contr,

@@ -85,9 +85,12 @@ c dbg
           ! new block -> remember the start item
           fl_intm_stblk => fl_intm_pnt
         else if (fl_intm_pnt%command.eq.command_add_contribution) then
-          if (iblk_intm.gt.fl_intm_pnt%contr%iblk_res)
-     &         call quit(1,'find_possible_subexpr',
+          if (iblk_intm.gt.fl_intm_pnt%contr%iblk_res) then
+            write(luout,*) 
+     &         'FOR AN EASY FIX: SEE COMMENT IN FORM_FACTOR_OUT!'
+            call quit(1,'find_possible_subexpr',
      &         'expected intermediate blocks in increasing sequence')
+          end if
           ! new block? remember the start item
           if (iblk_intm.ne.fl_intm_pnt%contr%iblk_res)
      &         fl_intm_stblk => fl_intm_pnt

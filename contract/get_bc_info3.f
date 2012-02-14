@@ -28,9 +28,6 @@
 
       integer, parameter ::
      &     ntest = 00
-      logical, parameter ::
-c     &     new_sign = .false. ! use the old sign evaluation route
-     &     new_sign = .true. ! use the new sign evaluation route
 
       type(contraction), intent(in), target ::
      &     contr_in
@@ -397,10 +394,13 @@ c        call reduce_fact_info(contr_red,contr,idx_contr+1,ireo_vtx_on)
      &              irestr_vtx_red(1,1,1,1,njoined_res+1),idxnew_op1op2,
      &         orb_info)
         ! FIX - unclear, whether 2x reo to same vertex works
+        ! also beware of consecutive reorderings (e.g. 1->2,2->3)
+        ! other way round is o.k. (e.g. 1->2,3->1)
         do ireo = 1, reo_info%nreo
           do jreo = ireo+1, reo_info%nreo
             if (reo_info%reo(ireo)%from.eq.reo_info%reo(jreo)%from.or.
-     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to) then
+     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%to.or.
+     &          reo_info%reo(ireo)%to  .eq.reo_info%reo(jreo)%from) then
               ! only forbid if non-zero overlap:
               if (iocc_nonzero(iocc_overlap(
      &            reo_info%reo(ireo)%occ_shift,.false.,
@@ -426,72 +426,7 @@ c        end if
       possible = possible.and.
      &           allowed_contr(contr,arc_list(1:len_list),len_list)
 
-      ! calculate sign
-      if (.not.self) then
-        ! the following routines are obsolete will be removed soon
-        ! the actual contraction sign is now delivered on cnt_sign
-        ! here, we only compare to the old code
-        !
-        ! we must evaluate the contraction sign for the old ordering ...
-        call sign_bc(bc_sign,
-     &         isvtx1,isvtx2,contr%svertex,nvtx,
-     &         occ_vtx(1,1,njoined_res+1),iocc_op1,iocc_op2,iocc_cnt,
-     &         njoined_op(1),njoined_op(2),njoined_op1op2,njoined_cnt,
-     &         merge_map_op1,merge_map_op2,merge_map_op1op2,
-     &         ld_mmap1,ld_mmap2,ld_mmap12)
-        ! ... and additionally consider a sign change due to the 
-        ! rearrangement of vertices:
-        if (ntest.ge.100)
-     &       write(luout,'(x,a,2f8.2,a,f8.2)')
-     &       'bc_sign, sh_sign -> bc_sign: ',
-     &       bc_sign, dble(sh_sign), ' -> ', bc_sign*dble(sh_sign)
-        bc_sign = bc_sign*dble(sh_sign)
-cmh        if (dble(cnt_sign).ne.bc_sign) then
-cmh          write(luout,*) 'OHA OHA OHA'
-cmh          write(luout,*) 'bc_sign (old) = ',bc_sign
-cmh          write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
-cmh        end if
-
-cmh  deactivated quit statement because sign may differ due to
-cmh  different vertex order of end result!
-cmh        if (dble(cnt_sign).ne.bc_sign) then
-          ! here we cautiously exit, if the above test fails.
-          ! switch on the debug statement in sign_bc (old)
-          ! and in topo_contract/topo_merge_vtxs2 (new)
-          ! (+ in reduce_contr2) and try to figure out who
-          ! is wrong and who is right.
-          ! it might be, that this check does not influence the
-          ! result, as we pass this line during the optimization
-          ! in form_fact/form_fact_new, i.e. the presently
-          ! evaluated possible factorization may not be
-          ! used later on (so be careful with judging on
-          ! numerical evidence, there MUST be a difference, if
-          ! this contraction is actually considered, but signs
-          ! are wrong)
-cmh          call quit(1,'get_bc_info3',
-cmh     &       'inconsisteny for signs -- look at source code next'//
-cmh     &       ' to this quit statement')
-cmh        end if
-
-      else
-        if (.not.new_sign) then
-          write(luout,*) 'setting self-contraction sign to +1'
-          write(luout,*) 'setting self-contraction sign to +1'
-          write(luout,*) 'setting self-contraction sign to +1'
-        end if
-        bc_sign = +1d0
-c        if (dble(cnt_sign).ne.bc_sign) then
-c          write(luout,*) 'setting self-contraction sign to +1'
-c          write(luout,*)
-c     &         'OHA OHA OHA --- the above assumption was wrong'
-c          write(luout,*) 'bc_sign (old) = ',bc_sign
-c          write(luout,*) 'cnt_sign(new) = ',dble(cnt_sign)
-c        end if
-      end if
-
-
-      if (new_sign)
-     &     bc_sign = dble(cnt_sign)
+      bc_sign = dble(cnt_sign)
 
       deallocate(arc_list)
       deallocate(ireo_vtx_no,ireo_vtx_on,ivtx_op1op2)

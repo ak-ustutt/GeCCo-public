@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine expand_term(fl_expand,nterms,
+      subroutine expand_term(fl_expand,nterms,vtxst,
      &                       njoined,f_term,fpl_intm,force,op_info)
 *----------------------------------------------------------------------*
 *     expand O1.O2...Int...On (on f_term as formula list) to
@@ -34,7 +34,7 @@
       logical, intent(in)::
      &     force
       integer, intent(in) ::
-     &     njoined
+     &     njoined, vtxst
 
       type(contraction) ::
      &     proto
@@ -85,7 +85,8 @@ c      njoined = op_intm%njoined
       allocate(ipos_vtx(njoined))
 
       term => f_term%contr
-      call get_vtx_in_contr(ipos_vtx,iop_intm,adj_intm,njoined,term)
+      call get_vtx_in_contr(ipos_vtx,iop_intm,adj_intm,njoined,vtxst,
+     &                      term)
 
       iblk = term%vertex(ipos_vtx(1))%iblk_op
       if (njoined.gt.1)

@@ -204,7 +204,7 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
-     &       1,nvectors,0,0,0,
+     &       -1,1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
         me_scr(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -216,7 +216,7 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
-     &       1,nvectors,0,0,0,
+     &       -1,1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
         me_trv(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -229,7 +229,7 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
-     &       1,nvectors,0,0,0,
+     &       -1,1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
         me_mvp(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -241,7 +241,7 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
-     &       1,nvectors,0,0,0,
+     &       -1,1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
         me_rhs(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -259,7 +259,7 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
      &         me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &         me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &         me_opt(iopt)%mel%mst,.false.,
-     &         1,nvectors,0,0,0,
+     &         -1,1,nvectors,0,0,0,
      &         op_info,orb_info,str_info,strmap_info)
           idxmel = idx_mel_list(fname,op_info)
           me_met(iopt)%mel   => op_info%mel_arr(idxmel)%mel

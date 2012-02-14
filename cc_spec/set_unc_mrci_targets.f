@@ -31,7 +31,7 @@
      &     calc
 
       integer ::
-     &     ndef, occ_def(ngastp,2,60),
+     &     ndef, occ_def(ngastp,2,124),!60),
      &     isym, msc, ims, ip, ih, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, cmaxv
       logical ::
@@ -44,14 +44,14 @@
       if (iprlvl.gt.0)
      &     write(luout,*) 'setting targets for multiref. wave function'
 
-      if (mod(orb_info%imult-1,4).eq.0) then
+      ims = orb_info%ims
+      if (ims.eq.0.and.mod(orb_info%imult-1,4).eq.0) then
         msc = 1
-      else if (mod(orb_info%imult+1,4).eq.0) then
+      else if (ims.eq.0.and.mod(orb_info%imult+1,4).eq.0) then
         msc = -1
       else
         msc = 0
       end if
-      ims = mod(orb_info%imult-1,2)
 
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations
@@ -131,10 +131,20 @@
      &              parameters,1,tgt_info)
 
       ! define Fock operator wrt reference function
-      call add_target('FREF',ttype_op,.false.,tgt_info)
-      call hop_parameters(-1,parameters,0,1,1,.false.)
-      call set_rule('FREF',ttype_op,DEF_HAMILTONIAN,'FREF',
-     &              1,1,parameters,1,tgt_info)
+      ! for all current methods, we only need the purely inactive part
+      ! (valence part might actually mess up something if prc_type=3)
+c      call add_target('FREF',ttype_op,.false.,tgt_info)
+c      call hop_parameters(-1,parameters,0,1,1,.false.)
+c      call set_rule('FREF',ttype_op,DEF_HAMILTONIAN,'FREF',
+c     &              1,1,parameters,1,tgt_info)
+      call add_target2('FREF',.false.,tgt_info)
+      call set_rule2('FREF',DEF_HAMILTONIAN,tgt_info)
+      call set_arg('FREF',DEF_HAMILTONIAN,'LABEL',1,tgt_info,
+     &     val_label=(/'FREF'/))
+      call set_arg('FREF',DEF_HAMILTONIAN,'MAX_RANK',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('FREF',DEF_HAMILTONIAN,'X_SPCS',2,tgt_info,
+     &     val_int=(/IVALE,IEXTR/))
 
       ! Spin operators
       ! S+
@@ -256,9 +266,9 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_rule('F_FREF',ttype_frm,EXPAND_OP_PRODUCT,
      &              labels,7,1,
      &              parameters,3,tgt_info)
-      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
-      call set_rule('F_FREF',ttype_frm,PRINT_FORMULA,
-     &                labels,2,1,parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
+c      call set_rule('F_FREF',ttype_frm,PRINT_FORMULA,
+c     &                labels,2,1,parameters,2,tgt_info)
 
       ! expectation value of S^2
       call add_target2('F_REF_S(S+1)',.false.,tgt_info)
@@ -321,6 +331,65 @@ c      call set_arg('F_REF_S(S+1)',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_REF_S(S+1)'/))
 c dbgend
 
+      ! expectation value of S^2 in operator form
+      call add_target2('F_REPL_H_S2',.false.,tgt_info)
+      call set_dependency('F_REPL_H_S2','S+',tgt_info)
+      call set_dependency('F_REPL_H_S2','S-',tgt_info)
+      call set_dependency('F_REPL_H_S2','Sz',tgt_info)
+      call set_dependency('F_REPL_H_S2','Sz_dum',tgt_info)
+      call set_dependency('F_REPL_H_S2','H',tgt_info)
+      ! (a) 1/2*(S+S- + S-S+)
+      call set_rule2('F_REPL_H_S2',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_REPL_H_S2'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'H','S+','S-','H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/1,2,3,1/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/0.5d0/))
+      call set_rule2('F_REPL_H_S2',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_REPL_H_S2'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'H','S-','S+','H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/1,2,3,1/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/0.5d0/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      ! (b) + Sz^2 (Sz_dum is used to circumvent automatic "BCH" factor)
+      call set_rule2('F_REPL_H_S2',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_REPL_H_S2'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'H','Sz','Sz_dum','H'/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/1,2,3,1/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      call set_rule2('F_REPL_H_S2',REPLACE,tgt_info)
+      call set_arg('F_REPL_H_S2',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_REPL_H_S2'/))
+      call set_arg('F_REPL_H_S2',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_REPL_H_S2'/))
+      call set_arg('F_REPL_H_S2',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'Sz_dum','Sz'/))
+c dbg
+c      call set_rule2('F_REPL_H_S2',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_REPL_H_S2',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_REPL_H_S2'/))
+c dbgend
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -405,6 +474,8 @@ c dbgend
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'MIN_REC',1,tgt_info,
      &             val_int=(/1/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'MAX_REC',1,tgt_info,
+     &             val_int=(/ciroot/))
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'REC',1,tgt_info,
      &             val_int=(/ciroot/))
 
       ! ME_A_C0
@@ -572,11 +643,13 @@ c dbgend
         if (.not.l_exist) call quit(1,'set_unc_mrci_targets',
      &           'File for CASSCF coefficients not found!')
       end if
-      call form_parameters(-1,parameters,2,
-     &     'CI coefficients :',0,'LIST')
-      call set_rule('SOLVE_REF',ttype_opme,PRINT_MEL,
-     &     'ME_C0',1,0,
-     &     parameters,2,tgt_info)
+      if (cmaxexc.eq.0) then
+        call form_parameters(-1,parameters,2,
+     &       'CI coefficients :',0,'LIST')
+        call set_rule('SOLVE_REF',ttype_opme,PRINT_MEL,
+     &       'ME_C0',1,0,
+     &       parameters,2,tgt_info)
+      end if
 
       ! Evaluate reference energy
       call add_target('EVAL_E_REF',ttype_gen,calc,tgt_info)
@@ -615,6 +688,17 @@ c dbgend
       call set_rule('EVAL_REF_S(S+1)',ttype_opme,EVAL,
      &     'FOPT_REF_S(S+1)',1,0,
      &     parameters,0,tgt_info)
+      call set_rule2('EVAL_REF_S(S+1)',PRINT_MEL,tgt_info)
+      call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'LIST',1,tgt_info,
+     &     val_label=(/'ME_S(S+1)'/))
+      call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'COMMENT',1,tgt_info,
+     &     val_str='Spin expectation value <C0| S^2 |C0> :')
+      call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'FORMAT',1,tgt_info,
+     &     val_str='SCAL F20.12')
+      call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'CHECK_THRESH',1,
+     &     tgt_info,val_rl8=(/1d-2/))
+      call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'EXPECTED',1,tgt_info,
+     &     val_rl8=(/(dble(orb_info%imult**2)-1d0)/4d0/))
 
       return
       end

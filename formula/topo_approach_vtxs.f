@@ -14,6 +14,8 @@
       implicit none
 
       include 'stdunit.h'
+      include 'opdim.h'
+      include 'ifc_operators.h'
 
       integer, intent(in) ::
      &     nvtx, nj, nlist,
@@ -93,7 +95,7 @@ c dbg
         do ivtx = ivtxrp1-1, ivtxr+1, -1
           jvtx = ivtx+1
           do while(jvtx.le.ivtxrp1)
-            if (.not.may_commute(jvtx,ivtx)) exit
+            if (.not.may_commute(ivtx,jvtx)) exit
             jvtx = jvtx+1
           end do
           call shift_vtx(ivtx,jvtx-1)
@@ -137,7 +139,7 @@ c dbg
           do ivtx = ivtxrp1-1, ivtxr+1, -1
             jvtx = ivtx+1
             do while(jvtx.le.ivtxrp1)
-              if (.not.may_commute(jvtx,ivtx)) exit
+              if (.not.may_commute(ivtx,jvtx)) exit
               jvtx = jvtx+1
             end do
             call shift_vtx(ivtx,jvtx-1)
@@ -154,27 +156,63 @@ c dbg
 
       contains
 
-      logical function may_commute(ivtx1,ivtx2)
-
-      implicit none
-
+      logical function may_commute(vtx1,vtx2)
       integer, intent(in) ::
-     &     ivtx1, ivtx2
-
-      integer(8) ::
-     &     scr(nj)
-
+     &     vtx1,vtx2
+      integer ::
+     &     ij, jj, icnt, occ(ngastp,2)
       integer, external ::
-     &     i8mltlist
+     &     int8_expand
 
-      may_commute = topo(ivtx1,ivtx2).eq.0 .and.     
-     &              svertex(ivtx1).ne.svertex(ivtx2)
-      call i8list_ovl(scr,xlines(ivtx1,1),xlines(ivtx2,1),nj,nvtx)
-      may_commute = may_commute .and.
-     &     i8mltlist(0,scr,nj,1).le.1
+      if (vtx1.ge.vtx2) call quit(1,'topo_approach_vtxs',
+     &     'may_commute: vtx1 must be smaller than vtx2')
+
+      may_commute = topo(vtx1,vtx2).eq.0
+      may_commute = may_commute.and.svertex(vtx1).ne.svertex(vtx2)
+
+      if (.not.may_commute) return
+
+      ! commute, unless vtx1 has open lines at bottom which are
+      ! supposed to be above open lines on top of vtx2
+      may_commute = .true.
+      do ij = 1, nj
+        occ = 0
+        icnt = int8_expand(xlines(vtx1,ij),pack_base,occ)
+        if (iocc_nonzero(iocc_xdn(2,occ))) then
+          do jj = ij+1, nj
+            occ = 0
+            icnt = int8_expand(xlines(vtx2,jj),pack_base,occ)
+            if (iocc_nonzero(iocc_xdn(1,occ))) then
+              may_commute = .false.
+              return
+            end if
+          end do
+        end if
+      end do
 
       return
       end function
+c      logical function may_commute(ivtx1,ivtx2)
+c
+c      implicit none
+c
+c      integer, intent(in) ::
+c     &     ivtx1, ivtx2
+c
+c      integer(8) ::
+c     &     scr(nj)
+c
+c      integer, external ::
+c     &     i8mltlist
+c
+c      may_commute = topo(ivtx1,ivtx2).eq.0 .and.     
+c     &              svertex(ivtx1).ne.svertex(ivtx2)
+c      call i8list_ovl(scr,xlines(ivtx1,1),xlines(ivtx2,1),nj,nvtx)
+c      may_commute = may_commute .and.
+c     &     i8mltlist(0,scr,nj,1).le.1
+c
+c      return
+c      end function
 
       subroutine shift_vtx(ivtx_old,ivtx_new)
 

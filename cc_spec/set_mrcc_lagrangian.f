@@ -42,14 +42,14 @@
       type(formula_item), target ::
      &     flist
       type(formula_item), pointer ::
-     &     flist_pnt, start_pnt
+     &     flist_pnt, start_pnt, start_pnt2
 
       integer ::
      &     ilabel, idx, idxham,idxtbar, idxt, idxen, idxd,
      &     nvtx, min_n, nn, ii, jj, iblk, mini, maxc, off, nl, nham,
      &     kk, iblk_l, iblk_ham, iterm, icall, icall0, nterm,
      &     lu(2), ho(2), hu(2), tto(2), tto_l(2), idxddag, ioff, idx_h,
-     &     max_n0
+     &     max_n0, nsumcalls, G_level
 
       logical ::
      &     next, set_zero, set_scalar, esym, sym
@@ -90,7 +90,7 @@
       end if
       if (approx(1:5).eq.'FIX_N') min_n = max_n
       if (approx(1:4).eq.'HBAR') then
-        min_n = max_n
+        if (approx(6:8).ne.'ALL') min_n = max_n
         ioff = 1
       end if
       if (approx(1:4).eq.'EMAX') then
@@ -102,6 +102,10 @@
       sym = approx(1:3).eq.'SYM'
       esym = approx(1:4).eq.'ESYM'.or.sym
       if (.not.set_scalar) min_n = 1
+
+      call get_argument_value('method.MRCC','G_level',
+     &     ival=G_level)
+      if (G_level.lt.0) G_level = max(max_n,max_n0) ! no approximation
 
       call atim_csw(cpu0,sys0,wall0)
       nterm = 0
@@ -164,7 +168,7 @@
          idx_op(ii) = ii+1-ioff
        end do
        if (ioff.eq.1) idx_op(nn+2+nham) = 1
-       do kk = 0, nn ! 0 !no inactive lines on the left
+       do kk = 0, min(G_level,nn) !nn ! 0 !no inactive lines on the left
         idx_op_vtx(2:nn+1+nham) = idxt
         idx_op_vtx(2+kk:1+kk+nham) = idxham
         iblk_min = 1
@@ -328,6 +332,7 @@ c            if (lu-ho+hu.gt.4*nn) cycle
                cycle
              end if
              start_pnt => flist_pnt
+             nsumcalls = 0
              ! must be in increasing order for next_perm
              do ii = 1, nn
                perm(ii) = dist(nn+1-ii)
@@ -336,7 +341,7 @@ c            if (lu-ho+hu.gt.4*nn) cycle
              next = .true.
              do while(next)
 
-              do kk = 0, nn
+              do kk = 0, min(G_level,nn) !nn
                 idx_op_vtx(2+nham:nvtx-1) = idxt
                 if (nham.eq.1) idx_op_vtx(3+kk) = idxham
                 iblk_min = 1 
@@ -346,6 +351,7 @@ c            if (lu-ho+hu.gt.4*nn) cycle
                 iblk_max(1) = op_info%op_arr(idxd)%op%n_occ_cls
                 jj = 0
                 tto_l = 0
+                start_pnt2 => flist_pnt
                 do ii = 3, nvtx-1
                  if (ii.eq.3+kk) then
                   iblk_min(ii) = iblk_ham
@@ -400,6 +406,14 @@ c dbg
 c                print *,'# of generated terms: ',iterm
 c                call prtim(luout,'time in expand_op_product2 ',
 c     &                     cpu1-cpu10,sys1-sys10,wall1-wall10)
+c dbgend
+                nsumcalls = nsumcalls + 1
+                call atim_csw(cpu10,sys10,wall10)
+                call sum_terms(start_pnt2,op_info)
+                call atim_csw(cpu1,sys1,wall1)
+c dbg
+c            call prtim(luout,'time in sum_terms (2) ',
+c     &                 cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 if (sym) then
                  idx_op_vtx(1+nham:nvtx-2) = -idxt
@@ -478,13 +492,15 @@ c dbgend
               if (mini.gt.0) imnmx(1,ii) = mini+1
              end do
 
-            call atim_csw(cpu10,sys10,wall10)
-            call sum_terms(start_pnt,op_info)
-            call atim_csw(cpu1,sys1,wall1)
+             if (nsumcalls.ne.1) then
+               call atim_csw(cpu10,sys10,wall10)
+               call sum_terms(start_pnt,op_info)
+               call atim_csw(cpu1,sys1,wall1)
 c dbg
-c            call prtim(luout,'time in sum_terms ',
-c     &                 cpu1-cpu10,sys1-sys10,wall1-wall10)
+c               call prtim(luout,'time in sum_terms ',
+c     &                    cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
+             end if
 
             end do
             deallocate(idx_op_vtx,idx_op,iblk_min,iblk_max,dist,imnmx,
@@ -495,7 +511,10 @@ c dbgend
       end if
 
       ! delete terms with factor zero (disconnected terms)
-      if (nterm.gt.0) call del_zero_terms(flist,op_info,1d-12)
+      ! quick fix: only for up to quadratic terms
+      ! otherwise, there will be terms missing for {e^T} or {e^-T}^-1
+      if (max(max_n,max_n_en).le.2.and.nterm.gt.0)
+     &   call del_zero_terms(flist,op_info,1d-12)
 
       if (ntest.ge.100) then
         call write_title(luout,wst_title,'Final formula')

@@ -299,7 +299,7 @@
 
         if (lustat.gt.0.and.measure) then
           call atim_csw(cpus,syss,walls)
-          write(lustat,'(i5,3f18.4)')
+          write(lustat,'(i8,3f18.4)')
      &         icmd,cpus-cpus0,syss-syss0,walls-walls0
         end if
 

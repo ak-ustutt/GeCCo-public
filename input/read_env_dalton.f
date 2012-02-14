@@ -155,10 +155,10 @@
         write(luout,'(x,a,8i4)') 'nas2   = ',nas2(1:8)
         write(luout,'(x,a,8i4)') 'nas3   = ',nas3(1:8)
 
-        write(luout,'(x,a,2i4)') 'nnorbt,n2orbt: ',nnorbt,n2orbt
+        write(luout,'(x,a,2i8)') 'nnorbt,n2orbt: ',nnorbt,n2orbt
 
-        write(luout,'(x,a,16i4)')'sym_bound_orbs: ',
-     &       orb_info%isym_bound_orbs
+        write(luout,'(x,a)') 'sym_bound_orbs:'
+        write(luout,'(x,10i4)') orb_info%isym_bound_orbs
         write(luout,'(x,a,i4)')  'n_freeze_rcmd: ',
      &       orb_info%n_freeze_rcmd
       end if
@@ -176,6 +176,7 @@
       if (n_frozen.gt.0) ngas = ngas+1
       if(logaux) ngas=ngas+1
       orb_info%nactel = nactel
+      orb_info%nactorb = n_act
       orb_info%lsym = lsym
       orb_info%imult = ispin
       if (n_act.gt.0) then
@@ -231,8 +232,8 @@ c     &     'not adapted to RAS orbital spaces')
           orb_info%ihpvgas(1:ngas,1) = (/1,1,2/)
         endif  
         orb_info%igassh(1:nsym,1) = nfro(1:nsym)
-        orb_info%igassh(1:nsym,2) = nrhf(1:nsym)-nfro(1:nsym)
-        orb_info%igassh(1:nsym,3) = norb(1:nsym)-nrhf(1:nsym)
+        orb_info%igassh(1:nsym,2) = nish(1:nsym)-nfro(1:nsym)
+        orb_info%igassh(1:nsym,3) = norb(1:nsym)-nish(1:nsym)
         if(logaux)then
           orb_info%igassh(1:nsym,4) = linind(1:nsym)
         endif  
@@ -245,8 +246,8 @@ c     &     'not adapted to RAS orbital spaces')
             orb_info%iad_gas(1:ngas) = (/2,2/)
             orb_info%ihpvgas(1:ngas,1) = (/1,2/)
           endif
-          orb_info%igassh(1:nsym,1) = nrhf(1:nsym)
-          orb_info%igassh(1:nsym,2) = norb(1:nsym)-nrhf(1:nsym)
+          orb_info%igassh(1:nsym,1) = nish(1:nsym)
+          orb_info%igassh(1:nsym,2) = norb(1:nsym)-nish(1:nsym)
           if(logaux)then
             orb_info%igassh(1:nsym,3) = linind(1:nsym)
           endif
@@ -258,10 +259,10 @@ c     &     'not adapted to RAS orbital spaces')
             orb_info%iad_gas(1:ngas) = (/2,2,2/)
             orb_info%ihpvgas(1:ngas,1) = (/1,3,2/)
           endif
-          orb_info%igassh(1:nsym,1) = nrhf(1:nsym)
+          orb_info%igassh(1:nsym,1) = nish(1:nsym)
           orb_info%igassh(1:nsym,2) = nash(1:nsym)
           orb_info%igassh(1:nsym,3) 
-     &                  = norb(1:nsym)-nrhf(1:nsym)-nash(1:nsym)
+     &                  = norb(1:nsym)-nish(1:nsym)-nash(1:nsym)
           if(logaux)then
             orb_info%igassh(1:nsym,4) = linind(1:nsym)
           endif
@@ -275,10 +276,10 @@ c     &     'not adapted to RAS orbital spaces')
             orb_info%ihpvgas(1:ngas,1) = (/1,1,2/)
             orb_info%ihpvgas(1:ngas,2) = (/1,2,2/)
           endif
-          orb_info%igassh(1:nsym,1) = nrhf(1:nsym)
+          orb_info%igassh(1:nsym,1) = nish(1:nsym)
           orb_info%igassh(1:nsym,2) = nash(1:nsym)
           orb_info%igassh(1:nsym,3) =
-     &         norb(1:nsym)-nrhf(1:nsym)-nash(1:nsym)
+     &         norb(1:nsym)-nish(1:nsym)-nash(1:nsym)
           if(logaux)then
             orb_info%igassh(1:nsym,4) = linind(1:nsym)
           endif

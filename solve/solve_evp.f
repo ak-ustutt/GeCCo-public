@@ -207,7 +207,7 @@
      &       me_pnt%absym,me_pnt%casym,
      &       me_pnt%gamt,me_pnt%s2,
      &       me_pnt%mst,.false.,
-     &       1,nvectors,0,0,0,
+     &       -1,1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
         me_scr(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -219,7 +219,7 @@
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
-     &       1,nvectors,0,0,0,
+     &       -1,1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
         me_trv(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -232,7 +232,7 @@
      &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &       me_opt(iopt)%mel%mst,.false.,
-     &       1,nvectors,0,0,0,
+     &       -1,1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
         me_mvp(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -250,7 +250,7 @@
      &         me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
      &         me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
      &         me_opt(iopt)%mel%mst,.false.,
-     &         1,nvectors,0,0,0,
+     &         -1,1,nvectors,0,0,0,
      &         op_info,orb_info,str_info,strmap_info)
           idxmel = idx_mel_list(fname,op_info)
           me_met(iopt)%mel   => op_info%mel_arr(idxmel)%mel
@@ -286,10 +286,10 @@
 cmh     if file already open, use as initial guess!
         if (ffopt(iopt)%fhand%unit.gt.0) then
 c dbg
-          print *,'iopt = ',iopt
+c          print *,'iopt = ',iopt
 c dbgend
-          call warn('solve_evp','using existing amplitudes!')
-          init(iopt) = .false.
+c          call warn('solve_evp','using existing amplitudes!')
+c          init(iopt) = .false.
         else
           call file_open(ffopt(iopt)%fhand)
         end if

@@ -167,6 +167,14 @@
      &         occ_vtx,irst_vtx,svertex,info_vtx,njinp,njinp,
      &         reo_info,reo_info%nreo,str_info,orb_info)
       end do
+c dbg
+c      if (trim(meout%label).ne.'ME_Dproj'
+c     &    .and.reo_info%sign_reo.ne.1d0) then
+      if (reo_info%sign_reo.ne.1d0) then
+        write(luout,*) 'setting sign_reo = +1 for block ',iblkout
+        reo_info%sign_reo = 1d0
+      end if
+c dbgend
 
       call reo_op_wmaps_c(
      &     .false.,xret_dum,0,

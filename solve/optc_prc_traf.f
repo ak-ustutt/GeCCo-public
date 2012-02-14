@@ -86,7 +86,8 @@
       idx = idx_mel_list('ME_C0',op_info)  ! quick & dirty
       
       if (opti_info%optref.ne.0.and.
-     &    op_info%mel_arr(idx)%mel%fhand%last_mod(1).gt.
+     &    op_info%mel_arr(idx)%mel%fhand%last_mod(
+     &    op_info%mel_arr(idx)%mel%fhand%current_record).gt.
      &    me_special(2)%mel%fhand%last_mod(1)) then
         call update_metric(me_dia,me_special,nspecial,
      &      fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
@@ -141,7 +142,7 @@ c dbgend
       nsec = sum(nsec_arr)
       nwfpsec => opti_info%nwfpsec(1:nsec)
       idstsec => opti_info%idstsec(1:nsec)
-      signsec => opti_info%signsec2(1:nsec)
+      signsec => opti_info%signsec(1:nsec)!2(1:nsec)
       stsec = 1
       ndsec = 0
       if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)

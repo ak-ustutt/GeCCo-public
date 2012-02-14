@@ -78,7 +78,7 @@ c      njoined = op_intm%njoined
       allocate(ipos_vtx(njoined))
 
       term => f_term%contr
-      call get_vtx_in_contr(ipos_vtx,iop_intm,adj_intm,njoined,term)
+      call get_vtx_in_contr(ipos_vtx,iop_intm,adj_intm,njoined,1,term)
 
       iblk = term%vertex(ipos_vtx(1))%iblk_op
       if (njoined.gt.1)

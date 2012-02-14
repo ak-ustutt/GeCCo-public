@@ -53,13 +53,9 @@
       if (is_keyword_set('method.response').gt.0)
      &    call set_response_targets(tgt_info,orb_info,env_type)
 
-      ! multireference wave function
+      ! multireference section
       if (is_keyword_set('method.MR').gt.0)
-     &    call set_ic_mrci_targets(tgt_info,orb_info)
-
-      ! multireference coupled cluster
-      if (is_keyword_set('method.MRCC').gt.0)
-     &    call set_ic_mrcc_targets(tgt_info,orb_info)
+     &    call set_mr_targets(tgt_info,orb_info)
 
       ! experimental section
       if (is_keyword_set('calculate.experimental').gt.0) then

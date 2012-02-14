@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine define_me_list(label_mel,label_op,
      &     absym,casym,gamma,s2,ms,ms_fix,
-     &     rec_lo,rec_hi,diag_type,gamdiag,msdiag,
+     &     rec,rec_lo,rec_hi,diag_type,gamdiag,msdiag,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     define a new ME-list with label "label_mel"
@@ -20,7 +20,7 @@
       include 'def_strmapinf.h'
 
       integer, intent(in) ::
-     &     absym, casym, gamma, s2, ms, rec_lo, rec_hi,
+     &     absym, casym, gamma, s2, ms, rec_lo, rec_hi, rec,
      &     diag_type, gamdiag, msdiag
       logical, intent(in) ::
      &     ms_fix
@@ -108,7 +108,7 @@ c dbg
       call set_op_dim2(2,mel,str_info,orb_info%nsym)
       
       ! initialize file
-      call init_mel_file(mel,-1,rec_lo,rec_hi,0)
+      call init_mel_file(mel,rec,rec_lo,rec_hi,0)
 
       ! update op_list array in order to set up the lookup-table
       call update_op_arr(op_info)

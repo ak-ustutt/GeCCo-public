@@ -1,5 +1,6 @@
 *------------------------------------------------------------------------*
       subroutine dia4op_ev(me_dia,ecore,xdia1,xdia2,use2,
+     &                     ddia1,use_shift,eps,
      &                     str_info,orb_info)
 *------------------------------------------------------------------------*
 *     set up diagonal hamiltonian
@@ -35,9 +36,9 @@
      &     ntest = 00
 
       real(8), intent(in) ::
-     &     ecore, xdia1(*), xdia2(*)
+     &     ecore, xdia1(*), xdia2(*), ddia1(*), eps
       logical, intent(in) ::
-     &     use2
+     &     use2, use_shift
       type(me_list), intent(in) ::
      &     me_dia
       type(strinf), intent(in), target ::
@@ -150,14 +151,16 @@ c        end if
      &     write(luout,*)'allocating result buffer of size: ',maxbuff
         
       ifree = mem_alloc_real(buffer,maxbuff,'buffer')
-      allocate(solist(orb_info%ntoob,2,2*ngastp))
-      do iorb = 1, orb_info%ntoob
-        do ispn = 1, 2
-          do iloop = 1, 2*ngastp
-            solist(iorb,ispn,iloop)%list => null()
+      if (use2) then
+        allocate(solist(orb_info%ntoob,2,2*ngastp))
+        do iorb = 1, orb_info%ntoob
+          do ispn = 1, 2
+            do iloop = 1, 2*ngastp
+              solist(iorb,ispn,iloop)%list => null()
+            end do
           end do
         end do
-      end do
+      end if
       ! loop over operator elements
       occ_cls: do iblk = 1, op%n_occ_cls
 
@@ -278,15 +281,17 @@ c     &             cycle distr_loop
               ! strings for HPV/CA
               nloop = 0
               istr = 0
-              do iorb = 1, orb_info%ntoob
-                do ispn = 1, 2
-                  do iloop = 1, 2*ngastp
-                    if (associated(solist(iorb,ispn,iloop)%list))
-     &                  deallocate(solist(iorb,ispn,iloop)%list)
+              if (use2) then
+                do iorb = 1, orb_info%ntoob
+                  do ispn = 1, 2
+                    do iloop = 1, 2*ngastp
+                      if (associated(solist(iorb,ispn,iloop)%list))
+     &                    deallocate(solist(iorb,ispn,iloop)%list)
+                    end do
                   end do
                 end do
-              end do
-              solist(1:orb_info%ntoob,1:2,1:2*ngastp)%length = 0
+                solist(1:orb_info%ntoob,1:2,1:2*ngastp)%length = 0
+              end if
               ! sequence: from outer to inner loop
               do ihpvdx = ngastp, 1, -1
                 ihpv = hpvxseq(ihpvdx)
@@ -335,25 +340,38 @@ c dbgend
                       end if
 
                       ! update list orbital --> string indices
-                      iorb = idxorb(idx)
-                      ispn = (idxspn2(idx)+3)/2
-                      ilen = solist(iorb,ispn,nloop)%length
-                      if (mod(ilen,nlistmax).eq.0) then
-                        allocate(intbuf(ilen+nlistmax))
-                        if (ilen.gt.0) intbuf(1:ilen) = 
-     &                      solist(iorb,ispn,nloop)%list(1:ilen)
-                        if (associated(solist(iorb,ispn,nloop)%list))
-     &                      deallocate(solist(iorb,ispn,nloop)%list)
-                        solist(iorb,ispn,nloop)%list => intbuf
-                        intbuf => null()
+                      if (use2) then
+                        iorb = idxorb(idx)
+                        ispn = (idxspn2(idx)+3)/2
+                        ilen = solist(iorb,ispn,nloop)%length
+                        if (mod(ilen,nlistmax).eq.0) then
+                          allocate(intbuf(ilen+nlistmax))
+                          if (ilen.gt.0) intbuf(1:ilen) = 
+     &                        solist(iorb,ispn,nloop)%list(1:ilen)
+                          if (associated(solist(iorb,ispn,nloop)%list))
+     &                        deallocate(solist(iorb,ispn,nloop)%list)
+                          solist(iorb,ispn,nloop)%list => intbuf
+                          intbuf => null()
+                        end if
+                        ilen = ilen + 1
+                        solist(iorb,ispn,nloop)%length = ilen
+                        solist(iorb,ispn,nloop)%list(ilen)
+     &                       = istr - ioff_xsum(nloop)
                       end if
-                      ilen = ilen + 1
-                      solist(iorb,ispn,nloop)%length = ilen
-                      solist(iorb,ispn,nloop)%list(ilen)
-     &                     = istr - ioff_xsum(nloop)
 
                       ! need to patch for UHF:
                       xsum(istr) = xsum(istr) + fac*xdia1(idxorb(idx))
+
+                      ! apply shift if requested
+                      if (use_shift.and.ddia1(idxorb(idx)).ne.0d0) then
+                        if (ica.eq.1) then
+                          xsum(istr) = xsum(istr)
+     &                               + ddia1(idxorb(idx))*eps
+                        else
+                          xsum(istr) = xsum(istr)
+     &                               + (ddia1(idxorb(idx))-1d0)*eps
+                        end if
+                      end if
 c dbg
 c          print *,'added ',fac*xdia1(idxorb(idx))
 c dbgend
@@ -590,15 +608,17 @@ c dbg
       if (open_close_ffdia) call file_close_keep(ffdia)
 
       ifree = mem_flushmark()
-      do iorb = 1, orb_info%ntoob
-        do ispn = 1, 2
-          do iloop = 1, 2*ngastp
-            if (associated(solist(iorb,ispn,iloop)%list))
-     &          deallocate(solist(iorb,ispn,iloop)%list)
+      if (use2) then
+        do iorb = 1, orb_info%ntoob
+          do ispn = 1, 2
+            do iloop = 1, 2*ngastp
+              if (associated(solist(iorb,ispn,iloop)%list))
+     &            deallocate(solist(iorb,ispn,iloop)%list)
+            end do
           end do
         end do
-      end do
-      deallocate(solist)
+        deallocate(solist)
+      end if
 
       call atim_csw(cpu,sys,wall)
 

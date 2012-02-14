@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine invsqrt_mat(ndim,mat,mat2,half,icnt_sv,icnt_sv0,
+      subroutine invsqrt_mat(ndim,mat,mat2,half,umat,get_u,
+     &                       icnt_sv,icnt_sv0,
      &                       xmax,xmin,bins)
 *----------------------------------------------------------------------*
 *     half = true: calculates U*mat^(-0.5) using MAT = U*mat*U^+
@@ -24,9 +25,9 @@
       integer, intent(inout) ::
      &     icnt_sv, icnt_sv0, bins(17)
       real(8), intent(inout), target ::
-     &     mat(ndim,ndim), mat2(ndim,ndim), xmax, xmin
+     &     mat(ndim,ndim), mat2(ndim,ndim), xmax, xmin, umat(ndim,ndim)
       logical, intent(in) ::
-     &     half
+     &     half, get_u
       real(8) ::
      &     singval(ndim),wrk(max(1024,ndim**2)),dum1,dum2,expo
       real(8), pointer ::
@@ -35,7 +36,7 @@
       type(filinf) ::
      &     ffsv
       integer ::
-     &     nrot, idx, lwrk, info, idx2, luinp, iostatus
+     &     idx, lwrk, info, idx2, luinp, iostatus
       logical ::
      &     l_exist, sv_above, read_file
 
@@ -73,12 +74,17 @@
       ! check if S is symmetric
       do idx = 2, ndim
         do idx2 = 1,idx-1
-          if (abs(mat(idx,idx2)-mat(idx2,idx)).gt.1d-12)
-     &        call quit(1,'invsqrt_mat','S must be symmetric!')
+          if (abs(mat(idx,idx2)-mat(idx2,idx)).gt.1d-10) then
+            write(luout,*) 'idx,idx2:',idx,idx2
+            write(luout,*) 'mat(idx,idx2): ',mat(idx,idx2)
+            write(luout,*) 'mat(idx2,idx): ',mat(idx2,idx)
+            call quit(1,'invsqrt_mat','S must be symmetric!')
+          end if
         end do
       end do
 
       ! calculate U and singular values:
+c      call svd_drv(ndim,mat,singval)
       call dgesvd('O','N',ndim,ndim,
      &     mat,ndim,singval,
      &     dum1,1,dum2,1,
@@ -88,17 +94,13 @@
         write(luout,*) 'WARNING in invsqrt_mat: SVD in trouble'
       end if
 
-      if (ntest.ge.10) then
-        if (ntest.ge.100) write(luout,*) 'singular values:'
-        do idx = 1, ndim
-          write(luout,'(x,a,i8,x,f24.12)') 'sv #',icnt_sv+idx,
-     &                                     singval(idx)
-        end do
-      end if
       if (ntest.ge.100) then
         write(luout,*) 'eigenvector matrix U:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
+        write(luout,*) 'singular values:'
       end if
+
+      if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
 
 c      icnt_sv = icnt_sv + ndim
 
@@ -137,15 +139,23 @@ c      end if
           if (singval(idx).lt.warn_sv)
      &         call warn('invsqrt_mat','small singular values!')
           if (.not.half) mat_tmp(1:ndim,idx) = mat(1:ndim,idx)
+c dbg
+c          if (get_u) umat(1:ndim,idx) = mat(1:ndim,idx)
+c dbgend
           mat(1:ndim,idx) = mat(1:ndim,idx)
      &                         * (singval(idx)**expo)
         else
           sv_above = .false.
           icnt_sv0 = icnt_sv0 + 1
           if (abs(singval(idx)).gt.abs(xmax)) xmax = singval(idx)
+c dbg
+c          if (get_u) umat(1:ndim,idx) = 0d0
+c dbgend
           mat(1:ndim,idx) = 0d0
           if (.not.half) mat_tmp(1:ndim,idx) = 0d0
         end if
+        if (ntest.ge.10) write(luout,'(x,a,i8,x,f24.12,3x,L1)') 'sv #',
+     &                 icnt_sv,singval(idx),sv_above
         if (sv_fix.and..not.read_file) write(luinp,*) icnt_sv, sv_above
       end do
 

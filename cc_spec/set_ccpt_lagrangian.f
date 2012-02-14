@@ -154,7 +154,7 @@ c     &       occ_def,ndef,orb_info)
 c        deallocate(occ_def)
         if (mode(1:4).eq.'EXT ') then
           call set_hop(f_temp_pnt,op_f_temp,.false.,
-     &         1,1,2,.true.,orb_info)
+     &         1,1,2,.true.,IEXTR,1,orb_info)
         else if (mode(4:4).eq.'0') then
           ndef = 3
           allocate(occ_def(ngastp,2,ndef))
@@ -169,7 +169,7 @@ c        deallocate(occ_def)
           deallocate(occ_def)
         else
           call set_hop(f_temp_pnt,op_f_temp,.false.,
-     &         1,1,2,.false.,orb_info)
+     &         1,1,2,.false.,IEXTR,1,orb_info)
         end if
 
         idxsop = idxtop
@@ -177,7 +177,7 @@ c        deallocate(occ_def)
       else
 
         call set_hop(f_temp_pnt,op_f_temp,.false.,
-     &       1,1,2,.true.,orb_info)
+     &       1,1,2,.true.,IEXTR,1,orb_info)
 
         ! Definition of the S = T+R operator.
         call add_operator(op_sop,op_info)
@@ -251,10 +251,10 @@ c dbg
 
       if (mode(4:4).eq.'0') then
         call set_hop(h_temp_pnt,op_h_temp,.false.,
-     &       2,2,2,ansatz.ne.0,orb_info)
+     &       2,2,2,ansatz.ne.0,IEXTR,1,orb_info)
       else
         call set_hop(h_temp_pnt,op_h_temp,.false.,
-     &       1,2,2,ansatz.ne.0,orb_info)
+     &       1,2,2,ansatz.ne.0,IEXTR,1,orb_info)
       end if
 
       ! initialize formula
@@ -341,12 +341,12 @@ c dbg
      &     flist_lag,op_info)
 
       if (ansatz.gt.0) then
-        call expand_subexpr(flist_lag,flist_t_r,.false.,op_info)
+        call expand_subexpr(flist_lag,flist_t_r,0,op_info)
         if (ntest.ge.1000) then
           call write_title(luout,wst_title,'after R2 expansion')
           call print_form_list(luout,flist_lag,op_info)
         end if
-        call expand_subexpr(flist_lag,flist_t_r_pt,.false.,op_info)
+        call expand_subexpr(flist_lag,flist_t_r_pt,0,op_info)
         if (ntest.ge.1000) then
           call write_title(luout,wst_title,'after R3 expansion')
           call print_form_list(luout,flist_lag,op_info)
@@ -361,12 +361,12 @@ c dbg
         call transpose_formula(flist_t_r,op_info)
         call transpose_formula(flist_t_r_pt,op_info)
 
-        call expand_subexpr(flist_lag,flist_t_r,.false.,op_info)
+        call expand_subexpr(flist_lag,flist_t_r,0,op_info)
         if (ntest.ge.1000) then
           call write_title(luout,wst_title,'after R2^+ expansion')
           call print_form_list(luout,flist_lag,op_info)
         end if
-        call expand_subexpr(flist_lag,flist_t_r_pt,.false.,op_info)
+        call expand_subexpr(flist_lag,flist_t_r_pt,0,op_info)
         if (ntest.ge.1000) then
           call write_title(luout,wst_title,'after R3^+ expansion')
           call print_form_list(luout,flist_lag,op_info)

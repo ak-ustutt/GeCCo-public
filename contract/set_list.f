@@ -27,7 +27,7 @@
      &     closeit, zero_buff
       integer ::
      &     ifree, len_op, nblk, nblkmax, nbuff, idxst, idxnd,
-     &     idum, iblk, idisc_off, iset
+     &     idum, iblk, idisc_off, iset, idx
 
       type(operator), pointer ::
      &     op
@@ -81,6 +81,10 @@
 
         buffer(1:nbuff) = 0d0
 
+        ! all elements set to the same value?
+        idx = 0
+        if (idxset(1).lt.0) idx = 1
+
         iset = 1
         idxst = idisc_off+1
         zero_buff = .false.
@@ -88,9 +92,15 @@
           if (zero_buff) buffer(1:nbuff) = 0d0
           zero_buff = .false.
           idxnd = min(idisc_off+len_op,idxst-1+nbuff)
-          do while (idxset(iset).le.idxnd-idisc_off.and.iset.le.nset)
-            buffer(idxset(iset)-idxst+idisc_off+1) = valset(iset)
+          do while (max(idxset(iset),idx).le.idxnd-idisc_off
+     &              .and.iset.le.nset)
+            buffer(max(idxset(iset),idx)-idxst+idisc_off+1)
+     &            = valset(iset)
             iset = iset+1
+            if (idx.gt.0) then
+              idx = idx+1
+              if (iset.gt.nset) iset = 1
+            end if
             zero_buff = .true.
           end do
           call put_vec(ffop,buffer,idxst,idxnd)  

@@ -47,9 +47,9 @@
      &     ifree, idxout, idxinp, iblkinp, iblkout, i_occ_cls,
      &     njinp, njout, 
      &     lenblkinp, lenblkout, ioffinp, ioffout,
-     &     ifrom, ito
+     &     ifrom, ito, ica, ij, j_occ_cls
       real(8) ::
-     &     cpu, sys, wall, cpu0, sys0, wall0, xdum
+     &     cpu, sys, wall, cpu0, sys0, wall0, xdum, tra_sign
       real(8), pointer ::
      &     buffer_inp(:), buffer_out(:)
 
@@ -61,10 +61,12 @@
      &     opinp, opout
       integer, pointer ::
      &     iocc_inp(:,:,:), iocc_out(:,:,:)
+      logical, pointer ::
+     &     transposed(:)
       integer, external ::
      &     idx_mel_list
       logical, external ::
-     &     iocc_zero
+     &     iocc_zero, iocc_equal_n
 
       call atim_csw(cpu0,sys0,wall0)
 
@@ -126,14 +128,82 @@
      &      call quit(1,'reo_mel','from/to index wrong')
 
       ! loop over occupation classes
-      ! we assume that the corresponding blocks are in the same order
-      do i_occ_cls = 1, opinp%n_occ_cls
-        if (dag) then
-          ! transpose input operator
-          call add_opblk_transp(xdum,0,1d0,meinp,meinp,dag,.false.,
+      ! transpose input operator if requested
+      if (dag) then
+        allocate(transposed(opinp%n_occ_cls))
+        transposed = .false.
+        do i_occ_cls = 1, opinp%n_occ_cls
+          if (transposed(i_occ_cls)) cycle
+          iblkinp = (i_occ_cls-1)*njinp+1
+          iocc_inp => opinp%ihpvca_occ(1:ngastp,1:2,
+     &                                iblkinp:iblkinp+njinp-1)
+          ! search corresponding block
+          do j_occ_cls = i_occ_cls, opinp%n_occ_cls
+            iblkout = (j_occ_cls-1)*njinp+1
+            iocc_out => opinp%ihpvca_occ(1:ngastp,1:2,
+     &                                iblkout:iblkout+njinp-1)
+            if (iocc_equal_n(iocc_inp,.true.,iocc_out,.false.,njinp))
+     &         exit
+            if (j_occ_cls.eq.opinp%n_occ_cls)
+     &         call quit(1,'reo_mel','no adjungate block found!')
+          end do
+
+          transposed(i_occ_cls) = .true.
+          if (i_occ_cls.eq.j_occ_cls) then
+            ! diagonal block: just transpose
+            call add_opblk_transp(xdum,0,1d0,meinp,meinp,dag,.false.,
      &                          i_occ_cls,i_occ_cls,
      &                          op_info,str_info,orb_info,.true.)
-        end if
+          else
+c dbg
+cmh         CAUTION: AD HOC FIX!!!
+cmh         (matters for icMRCCSD with singles and doubles)
+cmh         We need to understand why we need these sign changes!!!
+            tra_sign = 1d0
+            ! for icMRCCSD C
+            if (i_occ_cls.eq.2.and.j_occ_cls.eq.3.or.
+     &          i_occ_cls.eq.11.and.j_occ_cls.eq.12) then
+c            ! for icMRCCSDT C (when only one occupied orbital)
+c            if (i_occ_cls.eq.6.and.j_occ_cls.eq.8.or.
+c     &          i_occ_cls.eq.19.and.j_occ_cls.eq.21.or.
+c     &          i_occ_cls.eq.23.and.j_occ_cls.eq.25.or.
+c     &          i_occ_cls.eq.2.and.j_occ_cls.eq.4.or.
+c     &          i_occ_cls.eq.33.and.j_occ_cls.eq.34
+c     &          ) then
+              tra_sign = -1d0
+              print *,'changing sign for blocks ',i_occ_cls,j_occ_cls
+            end if
+c dbgend
+            ! two non-diagonal blocks: transpose both blocks
+            transposed(j_occ_cls) = .true.
+            ! a) save first block
+            lenblkinp = meinp%len_op_occ(i_occ_cls)
+            ioffinp = meinp%off_op_occ(i_occ_cls)
+            ifree = mem_alloc_real(buffer_inp,lenblkinp,'buffer_inp')
+            call get_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
+            ! b) transpose second block --> first block
+            call add_opblk_transp(xdum,0,tra_sign,meinp,meinp,dag,
+     &                          .false.,
+     &                          j_occ_cls,i_occ_cls,
+     &                          op_info,str_info,orb_info,.true.)
+            ! c) save transposed first block
+            ifree = mem_alloc_real(buffer_out,lenblkinp,'buffer_out')
+            call get_vec(ffinp,buffer_out,ioffinp+1,ioffinp+lenblkinp)
+            ! d) restore original first block
+            call put_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
+            ! e) transpose first block --> second block
+            call add_opblk_transp(xdum,0,tra_sign,meinp,meinp,dag,
+     &                          .false.,
+     &                          i_occ_cls,j_occ_cls,
+     &                          op_info,str_info,orb_info,.true.)
+            ! f) restore transposed first block
+            call put_vec(ffinp,buffer_out,ioffinp+1,ioffinp+lenblkinp)
+          end if
+        end do
+        deallocate(transposed)
+      end if
+      ! we assume that the corresponding blocks are in the same order
+      do i_occ_cls = 1, opinp%n_occ_cls
         iblkinp = (i_occ_cls-1)*njinp+1
         iblkout = (i_occ_cls-1)*njout+1
         iocc_inp => opinp%ihpvca_occ(1:ngastp,1:2,

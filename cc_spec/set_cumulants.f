@@ -4,6 +4,8 @@
 *----------------------------------------------------------------------*
 *     defines cumulants in terms of reduced densities (mode='CUMULANT')
 *     or reduced densities in terms of cumulants (default)
+*     mode='CENTRAL': define central RDs in terms of RDs
+*     mode='CUMULANT(CENT)': cumulants in terms of central RDs
 *
 *     matthias feb 2010
 *----------------------------------------------------------------------*
@@ -42,13 +44,13 @@
 
       integer ::
      &     ilabel, idx1, idxd, idxscal,
-     &     idx, nn, ii, jj, iblk, mini, maxc, off, max_n
+     &     idx, nn, ii, jj, iblk, mini, maxc, off, max_n, off2
 
       logical ::
-     &     cum
+     &     cum, central, inp_cent
 
       real(8) ::
-     &     fac
+     &     fac, fac2
 
       integer, allocatable ::
      &     idx_op(:), iblk_min(:), iblk_max(:), avoid(:,:),
@@ -72,6 +74,10 @@
       end if
 
       cum = mode(1:8).eq.'CUMULANT'
+      central = mode(1:7).eq.'CENTRAL'
+      inp_cent = mode(9:14).eq.'(CENT)'
+      off2 = 0
+      if (inp_cent) off2 = 1
 
       call atim_csw(cpu0,sys0,wall0)
 
@@ -92,6 +98,7 @@
         if (.not.op_info%op_arr(idxd)%op%formal_blk(idx)) exit
         maxc = maxc - 1
       end do
+      maxc = maxc + off2
 
       ! initialize formula
       call init_formula(flist)
@@ -123,10 +130,15 @@
       else
         max_n = op_info%op_arr(idx1)%op%n_occ_cls-off
       end if
+      if (central.and.max_n.gt.12) call quit(1,'set_cumulants',
+     &   'N!^2 too large. set ieqvfac in gen_contr4/topo_contr to real')
+
       do nn = 1, max_n
 
         if (cum) then
           fac = dble(((-1)**(nn-1))*ifac(nn-1))
+        else if (central) then
+          fac = dble((-1)**(nn-1))
         end if        
 
         allocate(idx_op(2*nn+1),iblk_min(2*nn+1),iblk_max(2*nn+1),
@@ -150,14 +162,18 @@
           end do
         end do
 
-        dist = 1
-        dist(1) = 0
-        imnmx(1,1:nn) = 1
+        dist = 1+off2
+        dist(1) = off2
+        imnmx(1,1:nn) = 1+off2
         imnmx(2,1:nn) = maxc
 
         do while(next_dist(dist,nn,imnmx,1))
+          if (central.and.nn.gt.1) then
+            if (dist(2).gt.1) exit !only one RD with rank larger than 1
+          end if
           iblk = sum(dist)
-          if (iblk.gt.op_info%op_arr(idx1)%op%n_occ_cls) then
+          if (iblk.gt.op_info%op_arr(idx1)%op%n_occ_cls.or.
+     &        (central.and.imltlist(1,dist,nn,1).lt.nn-1)) then
             mini = 0
             do ii = nn-1,1,-1
               if (mini.eq.0.and.dist(ii).eq.maxc) mini=dist(ii+1)
@@ -170,17 +186,25 @@
               iblk_min(ii) = iblk+off
               iblk_max(ii) = iblk+off
             else
-              iblk_min(ii) = dist(nn+1-abs(nn+1-ii))+off
-              iblk_max(ii) = dist(nn+1-abs(nn+1-ii))
+              iblk_min(ii) = dist(nn+1-abs(nn+1-ii))+off-off2
+              iblk_max(ii) = dist(nn+1-abs(nn+1-ii))-off2
             end if
           end do
+          fac2 = fac
+          if (central.and.iblk.eq.nn) fac2 = fac2*dble(nn-1)
 c dbg testing prefactor correction (need change in topo_contr)
-          fac = 1d0
+          fac2 = 1d0
           if (cum) then
-            fac = dble(((-1)**(nn-1))*ifac(nn-1))
+            fac2 = dble(((-1)**(nn-1))*ifac(nn-1))
+          else if (central) then
+            fac2 = dble((-1)**(nn-1))
+            if (iblk.eq.nn) then
+              fac2 = fac2*dble(nn-1)
+              if (nn.eq.1) fac2 = 1d-14 !otherwise: error in gen_contr4
+            end if
           end if
-          do ii = 1, maxc
-            fac = fac*ifac(imltlist(ii,dist,nn,1))
+          do ii = 1+off2, maxc
+            fac2 = fac2*ifac(imltlist(ii,dist,nn,1))
           end do
 c dbgend
 c dbg
@@ -190,12 +214,12 @@ c          print *,'idx_op    : ',idx_op
 c          print *,'iblk_min  : ',iblk_min
 c          print *,'iblk_max  : ',iblk_max
 c          print *,'avoid: ',avoid
-c          print *,'fac: ',fac
+c          print *,'fac: ',fac2
 c dbgend  
 
           ! expand <0|D D D ... 1 ... D D D|0>
           call expand_op_product2(flist_pnt,idxscal,
-     &         fac,2*nn+1,nn+1,
+     &         fac2,2*nn+1,nn+1,
      &         idx_op_vtx,
      &         idx_op,
      &         iblk_min,iblk_max,

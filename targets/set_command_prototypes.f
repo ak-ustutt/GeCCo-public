@@ -39,6 +39,8 @@
      &     val_int=(/10/))
       call set_arg('_PROTO_',DEF_HAMILTONIAN,'SET_X',1,tgt_info,
      &     val_log=(/.false./))
+      call set_arg('_PROTO_',DEF_HAMILTONIAN,'X_SPCS',1,tgt_info,
+     &     val_int=(/IEXTR/))
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_EXCITATION,tgt_info)
       call set_arg('_PROTO_',DEF_EXCITATION,'MIN_RANK',1,tgt_info,
@@ -154,6 +156,8 @@
       call add_command_proto(EXPAND,tgt_info)
       call set_arg('_PROTO_',EXPAND,'TITLE',1,tgt_info,
      &     val_str='---')
+      call set_arg('_PROTO_',EXPAND,'IMODE',1,tgt_info,
+     &     val_int=(/0/))
 *----------------------------------------------------------------------*
       call add_command_proto(REPLACE,tgt_info)
       call set_arg('_PROTO_',REPLACE,'TITLE',1,tgt_info,
@@ -184,6 +188,18 @@
       call add_command_proto(KEEP_TERMS,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_TERMS,tgt_info)
+      call set_arg('_PROTO_',SELECT_TERMS,'OP_INCL',0,tgt_info,
+     &     val_label=(/''/))
+      call set_arg('_PROTO_',SELECT_TERMS,'BLK_INCL',0,tgt_info,
+     &     val_int=(/-1/))
+      call set_arg('_PROTO_',SELECT_TERMS,'OP_INCL_OR',0,tgt_info,
+     &     val_label=(/''/))
+      call set_arg('_PROTO_',SELECT_TERMS,'BLK_INCL_OR',0,tgt_info,
+     &     val_int=(/-1/))
+      call set_arg('_PROTO_',SELECT_TERMS,'OP_EXCL',0,tgt_info,
+     &     val_label=(/''/))
+      call set_arg('_PROTO_',SELECT_TERMS,'BLK_EXCL',0,tgt_info,
+     &     val_int=(/-1/))
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_SPECIAL,tgt_info)
       call set_arg('_PROTO_',SELECT_SPECIAL,'MODE',1,tgt_info,
@@ -226,6 +242,8 @@
       call add_command_proto(INSERT,tgt_info)
       call set_arg('_PROTO_',INSERT,'TITLE',1,tgt_info,
      &     val_str='---')
+*----------------------------------------------------------------------*
+      call add_command_proto(DEF_MRCC_INTM,tgt_info)
 !     ME-lists:
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_ME_LIST,tgt_info)
@@ -247,6 +265,8 @@
      &     val_int=(/-1/))
       call set_arg('_PROTO_',DEF_ME_LIST,'MAX_REC',1,tgt_info,
      &     val_int=(/-1/))
+      call set_arg('_PROTO_',DEF_ME_LIST,'REC',1,tgt_info,
+     &     val_int=(/-1/))
 *----------------------------------------------------------------------*
       call add_command_proto(RES_ME_LIST,tgt_info)
 *----------------------------------------------------------------------*
@@ -259,6 +279,8 @@
      &     val_str=trim(env_type))
 *----------------------------------------------------------------------*
       call add_command_proto(PRECONDITIONER,tgt_info)
+      call set_arg('_PROTO_',PRECONDITIONER,'SHIFT',1,tgt_info,
+     &     val_rl8=(/0d0/))
 *----------------------------------------------------------------------*
       call add_command_proto(ADD,tgt_info)
       call set_arg('_PROTO_',ADD,'REPLACE',1,tgt_info,
@@ -267,6 +289,16 @@
       call add_command_proto(SCALE,tgt_info)
       call set_arg('_PROTO_',SCALE,'LIST_SCAL',1,tgt_info,
      &     val_label=(/'-'/))
+      call set_arg('_PROTO_',SCALE,'NFAC',1,tgt_info,
+     &     val_int=(/-1/))
+      call set_arg('_PROTO_',SCALE,'IDX_LIST',1,tgt_info,
+     &     val_int=(/0/))
+*----------------------------------------------------------------------*
+      call add_command_proto(SCALE_COPY,tgt_info)
+      call set_arg('_PROTO_',SCALE_COPY,'MODE',1,tgt_info,
+     &     val_str='---')
+      call set_arg('_PROTO_',SCALE_COPY,'LIST_SHAPE',0,tgt_info,
+     &     (/'-'/))
 *----------------------------------------------------------------------*
       call add_command_proto(INVERT,tgt_info)
 *----------------------------------------------------------------------*
@@ -309,10 +341,16 @@
      &     val_str='LIST')
       call set_arg('_PROTO_',PRINT_MEL,'COMMENT',1,tgt_info,
      &     val_str='---')
+      call set_arg('_PROTO_',PRINT_MEL,'CHECK_THRESH',1,tgt_info,
+     &     val_rl8=(/-1d0/))
+      call set_arg('_PROTO_',PRINT_MEL,'EXPECTED',1,tgt_info,
+     &     val_rl8=(/0d0/))
 *----------------------------------------------------------------------*
       call add_command_proto(SET_MEL,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(EXTRACT_DIAG,tgt_info)
+      call set_arg('_PROTO_',EXTRACT_DIAG,'EXTEND',1,tgt_info,
+     &     val_log=(/.false./))
 *----------------------------------------------------------------------*
       call add_command_proto(REORDER_MEL,tgt_info)
 

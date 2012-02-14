@@ -40,20 +40,14 @@
      &     op_info
       
       logical ::
-     &     ok, same, transpose, del_mode
+     &     same, transpose
       integer ::
-     &     nterms, iarc, idx, icmpnd, idxres, idxop(ncmpnd), len
+     &     icmpnd, idxres, idxop(ncmpnd), len
       character ::
      &     name*(form_maxlen_label*2)
-      logical, allocatable ::
-     &     vtxinlist(:)
 
       type(formula_item), target ::
      &     flist
-      type(formula_item), pointer ::
-     &     fl_pnt, fl_pnt_next
-      type(contraction), pointer ::
-     &     contr
 
       integer, external ::
      &     idx_oplist2
@@ -69,17 +63,6 @@
           write(luout,*) ' op  = ',trim(label_op(icmpnd))
         end do
         write(luout,*) 'mode_str, igastp: ',trim(mode_str),igastp
-      end if
-
-      if (trim(mode_str).eq.'delete'.or.
-     &    trim(mode_str).eq.'no_ext') then
-        del_mode = .true.
-      else if (trim(mode_str).eq.'keep'.or.
-     &         trim(mode_str).eq.'ext') then
-        del_mode = .false.
-      else
-        call quit(1,'form_select_line',
-     &            'mode must be "delete", "keep", "no_ext" or "ext"')
       end if
 
       same = trim(f_input%label).eq.trim(f_output%label)
@@ -117,86 +100,7 @@ c dbg
       call init_formula(flist)
       call read_form_list(f_input%fhand,flist,.true.)
 
-      fl_pnt => flist
-
-      if (.not.associated(fl_pnt))
-     &     call quit(1,'form_select_line',
-     &     'empty formula list? something is buggy')
-
-      nterms = 0
-      fl_loop: do
-
-        fl_pnt_next => fl_pnt%next
-        if (fl_pnt%command.eq.command_end_of_formula)
-     &       exit fl_loop
-
-        fl_pnt%target = idxres
-
-        if (fl_pnt%command.eq.command_add_contribution) then
-
-          ok = .true.
-          contr => fl_pnt%contr
-
-          ! find which vertex belongs to an operator from the given list
-          allocate(vtxinlist(contr%nvtx))
-          vtxinlist = .false.
-          cmp_loop: do idx = 1, contr%nvtx
-            do icmpnd = 1, ncmpnd
-              if (contr%vertex(idx)%idx_op.eq.abs(idxop(icmpnd)).and.
-     &           (contr%vertex(idx)%dagger.eqv.(idxop(icmpnd).lt.0)))
-     &        then
-                vtxinlist(idx) = .true.
-                cycle cmp_loop
-              end if
-            end do
-          end do cmp_loop
-
-          if (trim(mode_str).eq.'delete'
-     &        .or.trim(mode_str).eq.'keep') then
-            ! is there any contraction between two of these operators
-            ! via a line of type igastp?
-            do iarc = 1, contr%narc
-              if (vtxinlist(contr%arc(iarc)%link(1)).and.
-     &            vtxinlist(contr%arc(iarc)%link(2)).and.
-     &            sum(contr%arc(iarc)%occ_cnt(igastp,1:2)).gt.0) then
-                ok = .false.
-                exit
-              end if
-            end do
-          else
-            ! is there any open line of type igastp from a listed op?
-            do iarc = 1, contr%nxarc
-              if (vtxinlist(contr%xarc(iarc)%link(1)).and.
-     &            sum(contr%xarc(iarc)%occ_cnt(igastp,1:2)).gt.0) then
-                ok = .false.
-                exit
-              end if
-            end do
-          end if
-
-          deallocate(vtxinlist)
-
-          if (ok.eqv.del_mode) then
-            nterms = nterms+1
-            contr%idx_res = idxres ! not completely OK
-            if (ntest.ge.100) then
-              call prt_contr2(luout,contr,op_info)
-            end if
-          else
-            ! deallocate contents and re-link the list
-            call delete_fl_node(fl_pnt)
-            ! deallocate the node itself
-            deallocate(fl_pnt)
-          end if
-        else 
-        end if
-
-        fl_pnt => fl_pnt_next
-        if (.not.associated(fl_pnt))
-     &       call quit(1,'form_select_line',
-     &       'unexpected end of formula list')
-
-      end do fl_loop
+      call select_line(flist,idxres,idxop,ncmpnd,igastp,mode_str)
 
       ! write result
       if (.not.same) then
@@ -212,10 +116,6 @@ c      call tex_form_list(luout,flist,op_info)
 c dbg
 
       call dealloc_formula_list(flist)
-
-      if (ntest.ge.10) then
-        write(luout,*) 'generated terms: ',nterms
-      end if
       
       return
       end

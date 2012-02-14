@@ -76,7 +76,7 @@
 
         call define_me_list(rule%labels(1),rule%labels(2),
      &       absym,casym,gamma,s2,ms,ms_fix,
-     &       -1,-1,0,0,0,
+     &       -1,-1,-1,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
 
       case(UNITY)
@@ -159,7 +159,7 @@ c dbg
           mode = 'dia-R12'
         end if
 
-        call set_prc4op(rule%labels(1),mode,
+        call set_prc4op(rule%labels(1),mode,0d0,
      &       rule%labels(2:),rule%n_labels-1,
      &       op_info,str_info,orb_info)
 
@@ -178,7 +178,7 @@ c dbg
         call form_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,title,imode,mode)
 
-        call inv_op(rule%labels(2),rule%labels(1),mode,
+        call inv_op(rule%labels(2),1,rule%labels(1),mode,
      &       op_info,orb_info,str_info,strmap_info)
 
       case(ADD)
@@ -317,7 +317,7 @@ c dbg
         mel_pnt => op_info%mel_arr(idx)%mel
         call form_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,title,imode,mode)
-        call print_list(title,mel_pnt,mode,orb_info,str_info)
+        call print_list(title,mel_pnt,mode,-1d0,0d0,orb_info,str_info)
 
       case(SET_MEL)
         if (form_test) exit loop
@@ -342,7 +342,7 @@ c     &       op_info,str_info,strmap_info,orb_info)
      &       'two labels expected for '
      &       //trim(EXTRACT_DIAG))
 
-        call dia_from_op(rule%labels(1),rule%labels(2),
+        call dia_from_op(rule%labels(1),rule%labels(2),.false.,
      &       op_info,str_info,orb_info)
 
       case(REORDER_MEL)

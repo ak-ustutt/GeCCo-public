@@ -278,19 +278,19 @@ c      sbar_pnt%dagger = .true.
 
       ! Replace the formal elements of H, S and Sbar with actual
       ! Hamiltonian, T and CR terms.
-      call expand_subexpr(form_lag,form_h,.false.,op_info)
+      call expand_subexpr(form_lag,form_h,0,op_info)
       if(ntest.ge.1000)then
         call write_title(luout,wst_title,'After H replacement.')
         call print_form_list(luout,form_lag,op_info)
       endif
 
-      call expand_subexpr(form_lag,form_t_cr,.false.,op_info)
+      call expand_subexpr(form_lag,form_t_cr,0,op_info)
       if(ntest.ge.1000)then
         call write_title(luout,wst_title,'After S replacement.')
         call print_form_list(luout,form_lag,op_info)
       endif
 
-      call expand_subexpr(form_lag,form_tbar_cbarr,.false.,op_info)
+      call expand_subexpr(form_lag,form_tbar_cbarr,0,op_info)
       if(ntest.ge.1000)then
         call write_title(luout,wst_title,'After S+ replacement.')
         call print_form_list(luout,form_lag,op_info)

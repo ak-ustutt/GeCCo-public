@@ -87,17 +87,17 @@
       if (idx_res.lt.0) then
         write(luout,*) '"',trim(label_res),'"'
         write(luout,*) idx_res
-        call quit(1,'scale_op','label not on list')
+        call quit(1,'scale_op','label not on list (1)')
       end if
       if (idx_inp.lt.0) then
         write(luout,*) '"',trim(label_inp(1)),'"'
         write(luout,*) idx_inp
-        call quit(1,'scale_op','label not on list')
+        call quit(1,'scale_op','label not on list (2)')
       end if
-      if (idx_inp.lt.0) then
+      if (idx_fac.lt.0) then
         write(luout,*) '"',trim(label_inp(2)),'"'
         write(luout,*) idx_fac
-        call quit(1,'scale_op','label not on list')
+        call quit(1,'scale_op','label not on list (3)')
       end if
 
       same = idx_res.eq.idx_inp
@@ -129,6 +129,7 @@
       if (mode.eq.1) then
         idxnd = nblk
         if (nblk.lt.0) idxnd = me_inp%op%n_occ_cls
+        open_close_fac = .false.
       else
         idxnd = me_inp%op%n_occ_cls
         

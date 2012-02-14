@@ -328,7 +328,7 @@ c          call add_me_list('L_GRD_REO',op_info)
           call define_me_list('L_GRD_REO','GRD_REO',
      &         me_grd%absym,me_grd%casym,me_grd%gamt,
      &         me_grd%s2,me_grd%mst,.false.,
-     &         1,1,0,0,0,
+     &         -1,1,1,0,0,0,
      &         op_info,orb_info,str_info,strmap_info)
           idx = idx_mel_list('L_GRD_REO',op_info)
           me_grd_reo => op_info%mel_arr(idx)%mel

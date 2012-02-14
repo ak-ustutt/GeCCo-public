@@ -179,11 +179,15 @@
             else if (abs(map(icol)).gt.icol) then
               sig = dble(sign(1,map(icol)))
               ising = ising + 1
-              itrip = itrip + 1
               mat(1:ndim,icol) = fac*scr(1:ndim,ising)
-     &                           + fac*scr(1:ndim,nsing+itrip)
               mat(1:ndim,abs(map(icol))) = sig*fac*scr(1:ndim,ising)
-     &                           - sig*fac*scr(1:ndim,nsing+itrip)
+            else
+              sig = - dble(sign(1,map(icol)))
+              itrip = itrip + 1
+              mat(1:ndim,abs(map(icol))) = mat(1:ndim,abs(map(icol)))
+     &                           + fac*scr(1:ndim,nsing+itrip)
+              mat(1:ndim,icol) = mat(1:ndim,icol)
+     &                           + sig*fac*scr(1:ndim,nsing+itrip)
             end if
           end do
           deallocate(scr)

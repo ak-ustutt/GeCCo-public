@@ -152,7 +152,7 @@
         idx_g = idx_oplist2(opdum_g,op_info)
         op_g => op_info%op_arr(idx_g)%op
         call set_hop(op_g,opdum_g,.false.,
-     &       2,2,0,.true.,orb_info)
+     &       2,2,0,.true.,IEXTR,1,orb_info)
       end if
 
       ! set input array for expand_op_product:
@@ -193,7 +193,7 @@
         call init_formula(flist)
         call set_primitive_formula(flist,idx_op(idx),
      &       1d0,idx_f,.true.,op_info)
-        call expand_subexpr(flist_scr,flist,.false.,op_info)
+        call expand_subexpr(flist_scr,flist,0,op_info)
         call dealloc_formula_list(flist)
       end if
       if (n_g.gt.0) then
@@ -201,7 +201,7 @@
         call init_formula(flist)
         call set_primitive_formula(flist,idx_op(idx),
      &       1d0,idx_g,.true.,op_info)
-        call expand_subexpr(flist_scr,flist,.false.,op_info)
+        call expand_subexpr(flist_scr,flist,0,op_info)
         call dealloc_formula_list(flist)
       end if
 

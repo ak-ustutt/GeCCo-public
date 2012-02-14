@@ -91,7 +91,7 @@
         end if
 
         ! is intermediate vertex contained in terms?
-        ivtx = vtx_in_contr(idxop_intm,adj_intm,fl_tgt_current%contr)
+        ivtx = vtx_in_contr(idxop_intm,adj_intm,1,fl_tgt_current%contr)
         advance = .true.
 
         if (ntest.ge.100) then

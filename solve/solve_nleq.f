@@ -72,7 +72,7 @@ c dbgend
       logical ::
      &     conv
       character(len_opname) ::
-     &     label
+     &     label, dia_label
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
      &     idx, idxmel, ierr, nout, idx_en_xret, idx_res_xret(nopt), jdx
@@ -208,6 +208,9 @@ cmh     if file already open, use as initial guess!
         else
           call file_open(ffopt(iopt)%fhand)
           ! get initial amplitudes
+c dbg
+c         print *,'using old file for iopt=',iopt
+c dbgend
           call zeroop(me_opt(iopt)%mel)
         end if
         ! open corresponding residuals ...
@@ -301,8 +304,11 @@ c     &       ff_trv,ff_h_trv,
      &      .and..not.conv.and.nspcfrm.gt.1) then
           call get_argument_value('method.MR','ciroot',
      &       ival=idx)
+          call me_list_label(dia_label,'DIA',orb_info%lsym,
+     &                       0,0,0,.false.)
+          dia_label = trim(dia_label)//'C0'
           call solve_evp('DIA',1,idx,
-     &                 'ME_C0','DIAG1SxxM00C0','A_C0',
+     &                 'ME_C0',trim(dia_label),'A_C0',
      &                 'C0','FOPT_OMG_C0','-',0,
      &                 op_info,form_info,str_info,strmap_info,orb_info)
 c dbg
@@ -372,6 +378,10 @@ c dbgend
 c dbg
 c          print *,'xret : ',xret
 c dbg
+c dbg
+          xdum = xnormop(me_grd(1)%mel)
+          print *,'total norm of residual: ',xdum
+c dbgend
 
           if (ntest.ge.1000) then
             do iopt = 1, nopt

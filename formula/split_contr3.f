@@ -52,7 +52,7 @@
       integer, pointer ::
      &     ivtx_new(:), isupervtx_spl(:),
      &     vtxmap(:), ireo(:), ireo2(:), svertex(:), svertex_spl(:),
-     &     list(:)
+     &     list(:), ivtx_tmp(:)
       integer(8), pointer ::
      &     topo(:,:), topo_spl(:,:), vtx(:), vtx_spl(:),
      &     xlines(:,:), xlines_spl(:,:)
@@ -263,6 +263,25 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
       end do
 
       nvtx_rem = ivtx_rem
+
+      ! a bit awkward correction of ivtx_new:
+      ! since in topo_approach_vtxs, the interm. vertices are shifted
+      ! upwards (if possible), ivtx_new should be 
+      ! mainly a decreasing sequence when read backwards
+      allocate(ivtx_tmp(nvtx))
+      ivtx_tmp(1:nvtx) = ivtx_new(1:nvtx)
+      ivtx_rem = nvtx_rem
+      do ivtx = nvtx, 1, -1
+        if (ivtx_tmp(ireo2(ivtx)).eq.0) cycle
+        do jvtx = 1, ivtx
+          if (ivtx_tmp(ireo2(jvtx)).eq.ivtx_tmp(ireo2(ivtx))) then
+            ivtx_new(ireo2(jvtx)) = sign(ivtx_rem,ivtx_new(ireo2(ivtx)))
+            ivtx_tmp(ireo2(jvtx)) = 0
+          end if
+        end do
+        ivtx_rem = ivtx_rem - 1
+      end do
+      deallocate(ivtx_tmp)
      
       if (ntest.eq.100)
      &     write(luout, *) 'ivtx_new: ',ivtx_new

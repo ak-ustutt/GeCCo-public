@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine update_metric(me_dia,me_special,nspecial,
-     &     fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,prcupdate)
+     &     fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
+     &     prcupdate)
 *----------------------------------------------------------------------*
 *
 *     update metric, transformation matrices, and preconditioner
@@ -62,9 +63,9 @@
       ! get half-transform of square root of inverted metric
       ! and projector matrix
       call inv_op(trim(me_special(5)%mel%label),
-     &            trim(me_special(6)%mel%label),
-     &             'invsqrt',
-     &             op_info,orb_info,str_info,strmap_info)
+     &            1,trim(me_special(6)%mel%label),
+     &            'invsqrt',
+     &            op_info,orb_info,str_info,strmap_info)
       ! reorder to transformation matrix ...
       call reo_mel(trim(me_special(2)%mel%label),
      &             trim(me_special(6)%mel%label),
@@ -76,11 +77,6 @@
      &             op_info,str_info,strmap_info,orb_info,
      &             13,.true.)   ! dirty: reo vtx. 1 --> 3
 
-c      ! now get projection matrix
-c      call inv_op(trim(me_special(5)%mel%label),
-c     &            trim(me_special(6)%mel%label),
-c     &             'invsqrt',
-c     &             op_info,orb_info,str_info,strmap_info)
       ! reorder projector ...
       call reo_mel(trim(me_special(4)%mel%label),
      &             trim(me_special(5)%mel%label),
@@ -102,7 +98,7 @@ c     &             op_info,orb_info,str_info,strmap_info)
 
         ! put diagonal of Jacobian to preconditioner
         call dia_from_op(trim(me_dia%label),
-     &                   trim(me_special(7)%mel%label),
+     &                   trim(me_special(7)%mel%label),.false.,
      &                   op_info,str_info,orb_info)
       end if
 

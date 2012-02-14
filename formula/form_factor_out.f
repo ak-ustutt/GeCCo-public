@@ -98,6 +98,10 @@ c      include 'def_contraction_list.h'
 
         call init_formula(fl_intm)
         call read_form_list(ffintm,fl_intm,.true.)
+c dbg
+c        ! Can be used to bypass an error in find_possible_subexpr
+c        call reorder_formula(fl_intm,op_info)
+c dbgend
 
         if (transpose)
      &       call transpose_formula(fl_intm,op_info)

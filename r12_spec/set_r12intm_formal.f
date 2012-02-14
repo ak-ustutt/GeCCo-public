@@ -122,7 +122,8 @@ c      include 'ifc_operators.h'
       call add_operator(opdum_scal,op_info)
       idx_scalar = idx_oplist2(opdum_scal,op_info)
       op_scalar => op_info%op_arr(idx_scalar)%op
-      call set_hop(op_scalar,opdum_scal,.false.,0,0,1,.false.,orb_info)
+      call set_hop(op_scalar,opdum_scal,.false.,0,0,1,.false.,
+     &             IEXTR,1,orb_info)
 
       ! dummy operator: the co-variant counterpart of the intermediate:
       if (n_x.gt.0) then
@@ -148,7 +149,7 @@ c      include 'ifc_operators.h'
         idx_g = idx_oplist2(opdum_g,op_info)
         op_g => op_info%op_arr(idx_g)%op
         call set_hop(op_g,opdum_g,.false.,
-     &       2,2,0,.true.,orb_info)
+     &       2,2,0,.true.,IEXTR,1,orb_info)
       end if
 
       ! set input array for expand_op_product:
@@ -189,7 +190,7 @@ c      include 'ifc_operators.h'
         call init_formula(flist)
         call set_primitive_formula(flist,idx_op(idx),
      &       1d0,idx_f,.true.,op_info)
-        call expand_subexpr(flist_scr,flist,.false.,op_info)
+        call expand_subexpr(flist_scr,flist,0,op_info)
         call dealloc_formula_list(flist)
       end if
       if (n_g.gt.0) then
@@ -197,7 +198,7 @@ c      include 'ifc_operators.h'
         call init_formula(flist)
         call set_primitive_formula(flist,idx_op(idx),
      &       1d0,idx_g,.true.,op_info)
-        call expand_subexpr(flist_scr,flist,.false.,op_info)
+        call expand_subexpr(flist_scr,flist,0,op_info)
         call dealloc_formula_list(flist)
       end if
 

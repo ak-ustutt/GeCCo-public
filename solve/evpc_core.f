@@ -464,6 +464,16 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
                 xshf = -xeig(idxroot(iroot),1)
                 ! account for sign changes if necessary
                 do isec = stsec, ndsec
+c dbg
+                  ! This is buggy: When I (MH) programed this
+                  ! (use of *sec-arrays with da_* routines),
+                  ! I thought that the da_* routines loop over
+                  ! the elements of the files, but they actually
+                  ! seem to loop over the records/batches!
+                  ! For now, just intercept this bug:
+                  if (idstsec(isec).ne.1)
+     &             call quit(1,'**01**','bug in the code!')
+c dbgend
                   call da_diavec(ffspc,iroot,idstsec(isec),0d0,
      &                     ffscr(iopt)%fhand,iroot,idstsec(isec),
      &                     signsec(isec)/xnrm,me_dia(iopt)%mel%fhand,

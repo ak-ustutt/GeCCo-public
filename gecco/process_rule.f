@@ -147,7 +147,7 @@
         call get_arg('LABEL',rule,tgt_info,val_label=label)
         call get_op(op_pnt,trim(label),NEW)
         call set_hop(op_pnt,trim(label),.false.,
-     &       0,0,1,.false.,orb_info)
+     &       0,0,1,.false.,IEXTR,1,orb_info)
 *----------------------------------------------------------------------*
       case(DEF_HAMILTONIAN)
 *----------------------------------------------------------------------*
@@ -157,8 +157,11 @@
         call get_arg('MAX_RANK',rule,tgt_info,val_int=max_rank)
         call get_arg('FORMAL',rule,tgt_info,val_int=iformal)
         call get_arg('SET_X',rule,tgt_info,val_log=explicit)
+        call get_arg('X_SPCS',rule,tgt_info,
+     &       val_int_list=iblk_exclude,ndim=nexclude)
         call set_hop(op_pnt,trim(label),.false.,
-     &       min_rank,max_rank,iformal,explicit,orb_info)        
+     &       min_rank,max_rank,iformal,explicit,
+     &       iblk_exclude,nexclude,orb_info)        
 *----------------------------------------------------------------------*
       case(DEF_EXCITATION)
 *----------------------------------------------------------------------*
@@ -533,8 +536,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('INTERM',rule,tgt_info,
      &       val_label_list=label_list,ndim=nint)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call get_arg('IMODE',rule,tgt_info,val_int=imode)
         call form_expand_subexpr(form_pnt,form0_pnt,
-     &       title,
+     &       title,imode,
      &       nint,label_list,
      &       op_info,form_info
      &       )
@@ -667,7 +671,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(SELECT_SPECIAL)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),OLD)
+        call get_form(form_pnt,trim(label),ANY)
         call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
         call get_form(form0_pnt,trim(label),OLD)
         call get_arg('OPERATORS',rule,tgt_info,
@@ -812,6 +816,21 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       title,label,label2,
      &       ninclude,label_list,
      &       op_info)
+*----------------------------------------------------------------------*
+      case(DEF_MRCC_INTM)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),NEW)
+        call get_arg('INTERM',rule,tgt_info,
+     &               val_label=label)
+        call get_arg('OPERATORS',rule,tgt_info,
+     &               val_label_list=label_list,ndim=nop)
+        call get_arg('MAXCOM',rule,tgt_info,val_int=ansatz)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call set_mrcc_intermediates(form_pnt,
+     &         title,label,label_list,
+     &         nop,ansatz,mode,op_info)
 
 *----------------------------------------------------------------------*
 *     subsection ME-LISTS
@@ -832,9 +851,10 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('DIAG_MS',rule,tgt_info,val_int=dms)
         call get_arg('MIN_REC',rule,tgt_info,val_int=min_rank)
         call get_arg('MAX_REC',rule,tgt_info,val_int=max_rank)
+        call get_arg('REC',rule,tgt_info,val_int=idx)
         call define_me_list(label,label2,
      &       absym,casym,gamma,s2,ms,ms_fix,
-     &       min_rank,max_rank,imode,dgam,dms,
+     &       idx,min_rank,max_rank,imode,dgam,dms,
      &       op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
       case(UNITY)
@@ -919,11 +939,14 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LIST',rule,tgt_info,val_label=label)
         call get_arg('COMMENT',rule,tgt_info,val_str=title)
         call get_arg('FORMAT',rule,tgt_info,val_str=mode)
+        call get_arg('CHECK_THRESH',rule,tgt_info,val_rl8=fac(1))
+        call get_arg('EXPECTED',rule,tgt_info,val_rl8=fac(2))
 
         if (form_test) return
 
         call get_mel(mel_pnt,label,OLD)
-        call print_list(title,mel_pnt,mode,orb_info,str_info)
+        call print_list(title,mel_pnt,mode,fac(1),fac(2),
+     &                  orb_info,str_info)
 
 *----------------------------------------------------------------------*
       case(SET_MEL)
@@ -946,10 +969,11 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
         call get_arg('LIST_RES',rule,tgt_info,val_label=label)
         call get_arg('LIST_IN',rule,tgt_info,val_label=label2)
+        call get_arg('EXTEND',rule,tgt_info,val_log=explicit)
 
         if (form_test) return
 
-        call dia_from_op(label,label2,
+        call dia_from_op(label,label2,explicit,
      &       op_info,str_info,orb_info)
 
 *----------------------------------------------------------------------*
@@ -976,6 +1000,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LIST_INP',rule,tgt_info,val_label_list=label_list,
      &       ndim=nop)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call get_arg('SHIFT',rule,tgt_info,val_rl8=fac(1))
 
         if (form_test) return
 
@@ -985,7 +1010,7 @@ c          if (rule%n_parameter_strings.eq.2) mode(5:5) = 'H'
 c          if (rule%n_parameter_strings.eq.3) mode(5:8) = 'F+id'
 c          mode = 'dia-R12'
 
-        call set_prc4op(label,mode,
+        call set_prc4op(label,mode,fac(1),
      &       label_list,nop,
      &       op_info,str_info,orb_info)
 
@@ -1003,11 +1028,12 @@ c          mode = 'dia-R12'
       case(INVERT)
 *----------------------------------------------------------------------*
         call get_arg('LIST_INV',rule,tgt_info,val_label=label)
-        call get_arg('LIST',rule,tgt_info,val_label=label2)
+        call get_arg('LIST',rule,tgt_info,
+     &               val_label_list=label_list,ndim=nop)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
 
         if (form_test) return
-        call inv_op(label,label2,mode,
+        call inv_op(label,nop,label_list,mode,
      &       op_info,orb_info,str_info,strmap_info)
 
 *----------------------------------------------------------------------*
@@ -1032,12 +1058,27 @@ c          mode = 'dia-R12'
         call get_arg('LIST_SCAL',rule,tgt_info,val_label=label_list(2))
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
         call get_arg('NFAC',rule,tgt_info,val_int=nfac)
+        call get_arg('IDX_LIST',rule,tgt_info,val_int_list=idxblk)
 
         imode = 2
         if (len_trim(label_list(2)).eq.0.or.label_list(2)(1:1).eq.'-')
      &       imode = 1
         call scale_op(label,
-     &       imode,idxblk,fac,rule%labels(2:),nblk,
+     &       imode,idxblk,fac,label_list,nfac,
+     &       op_info,orb_info,str_info)
+
+*----------------------------------------------------------------------*
+      case(SCALE_COPY)
+*----------------------------------------------------------------------*
+
+        call get_arg('LIST_RES',rule,tgt_info,val_label=label)
+        call get_arg('LIST_INP',rule,tgt_info,val_label=label_list(1))
+        call get_arg('LIST_SHAPE',rule,tgt_info,
+     &               val_label_list=label_list(2:),ndim=nspcfrm)
+        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
+
+        call scale_copy_op(label,label_list,fac,nfac,mode,nspcfrm,
      &       op_info,orb_info,str_info)
 
 *----------------------------------------------------------------------*

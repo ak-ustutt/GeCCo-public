@@ -133,6 +133,10 @@ c dbgend
               smat(ii,jj) = smat(jj,ii)
             else if (use_s(iopt)) then
               do isec = stsec, ndsec
+c dbg  see evpc_core for explanation
+                  if (idstsec(isec).ne.1) 
+     &             call quit(1,'**02**','bug in the code!')
+c dbgend
                 smat(jj,ii) = smat(jj,ii) + signsec(isec)
      &              * da_ddot(ff_sbsp(iopt)%fhand,iold,idstsec(isec),
      &                        ffsnew(iopt)%fhand,inew+ioff_snew,
@@ -185,6 +189,10 @@ c dbgend
               smat(ii,jj) = smat(jj,ii)
             else if (use_s(iopt)) then
               do isec = stsec, ndsec
+c dbg  see evpc_core for explanation
+                  if (idstsec(isec).ne.1)
+     &             call quit(1,'**03**','bug in the code!')
+c dbgend
                 smat(jj,ii) = smat(jj,ii) + signsec(isec)
      &             * da_ddot(ff_sbsp(iopt)%fhand,iold,idstsec(isec),
      &                       ffsnew(iopt)%fhand,inew+ioff_snew,
@@ -231,6 +239,10 @@ c           print *,'|new|: ',sqrt(smat(nold+inew,nold+inew))
 c dbg
         else if (use_s(iopt)) then
           do isec = stsec, ndsec
+c dbg  see evpc_core for explanation
+                  if (idstsec(isec).ne.1)
+     &             call quit(1,'**04**','bug in the code!')
+c dbgend
             smat(nold+inew,nold+inew) = smat(nold+inew,nold+inew) +
      &         signsec(isec) * da_ddot(ffnew(iopt)%fhand,
      &                                 inew,idstsec(isec),
@@ -266,6 +278,10 @@ c dbgend
           else
             if (use_s(iopt)) then
               do isec = stsec, ndsec
+c dbg  see evpc_core for explanation
+                  if (idstsec(isec).ne.1)
+     &             call quit(1,'**05**','bug in the code!')
+c dbgend
                 smat(nold+inew,nold+jnew) = smat(nold+inew,nold+jnew) +
      &             signsec(isec) * da_ddot(ffnew(iopt)%fhand,
      &                              inew,idstsec(isec),

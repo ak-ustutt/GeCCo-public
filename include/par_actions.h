@@ -53,7 +53,8 @@
      &     SELECT_HERMIT*16         = 'SELECT_HERMITIAN',
      &     SELECT_LINE*11           = 'SELECT_LINE',
      &     DEF_CUMULANTS*13         = 'DEF_CUMULANTS',
-     &     INSERT*6                 = 'INSERT'
+     &     INSERT*6                 = 'INSERT',
+     &     DEF_MRCC_INTM*13         = 'DEF_MRCC_INTM'
 ! ME-lists:
       character, parameter ::
      &     DEF_ME_LIST*11     = 'DEF_ME_LIST',
@@ -76,4 +77,5 @@
      &     PRINT_MEL*9        = 'PRINT_MEL',
      &     SET_MEL*7          = 'SET_MEL',
      &     EXTRACT_DIAG*12    = 'EXTRACT_DIAG',
-     &     REORDER_MEL*11     = 'REORDER_MEL'
+     &     REORDER_MEL*11     = 'REORDER_MEL',
+     &     SCALE_COPY*10      = 'SCALE_COPY'

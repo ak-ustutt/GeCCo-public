@@ -58,6 +58,27 @@
      &                           cnt_info%cinfo_op1op2a(1:,2),
      &                           cnt_info%nablk_op1op2,str_info%g,nsym)
 
+      ! adjustments for operators defined as diagonal
+      ! this is a bit sloppy now:
+      ! a) the exponent 0.85d0 is guessed and shall take care of a
+      !    reduced length when only diagonal distributions appear
+      !    (for just diagonal elements we would choose 0.5d0)
+      ! b) for more than one diagonal operator: take into account only
+      !    one of them since we don't know how they are connected
+      if (cnt_info%diag_type12.eq.1) then
+        xlen_ex1 = xlen_ex1**0.85d0
+        xlen_ex2 = xlen_ex2**0.85d0
+        xlen_o12 = xlen_o12**0.85d0
+      else if (cnt_info%diag_type1.eq.1) then
+        xlen_ex1 = xlen_ex1**0.85d0
+      else if (cnt_info%diag_type2.eq.1) then
+        xlen_ex2 = xlen_ex2**0.85d0
+      end if
+      if (max(cnt_info%diag_type1,cnt_info%diag_type2,
+     &        cnt_info%diag_type12).gt.1)
+     &     call quit(1,'fact_cost_estimate',
+     &               'adapt me for diag_type>1')
+
       ! use these for FLOP and MEM estimates
       flops = xlen_ex1*xlen_ex2*xlen_cnt/(dble(nsym)**2)
       xmemtot = xlen_o12

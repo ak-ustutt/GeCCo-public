@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine find_contr_w_intm2(success,fpl_found,contr_rpl,
      &                             fl_tgt,fpl_intm,iposs,
+     &                             nmod_max,nmod,imod,xmod,
      &                             op_info)
 *----------------------------------------------------------------------*
 *
@@ -33,7 +34,11 @@
       logical, intent(out) ::
      &     success
       integer, intent(in) ::
-     &     iposs
+     &     iposs, nmod_max
+      integer, intent(out) ::
+     &     nmod, imod(nmod_max)
+      real(8), intent(out) ::
+     &     xmod(nmod_max)
       type(formula_item), target, intent(in) ::
      &     fl_tgt
       type(formula_item_list), intent(out), target ::
@@ -89,6 +94,7 @@ c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
       allocate(len_list(iposs),iterm_list(iposs))
       len_list = 0
       iterm_list = 0
+      nmod = 0
       do
         iterm = iterm+1
         if (contr_in_contr(fpl_intm_pnt%item%contr,
@@ -239,6 +245,17 @@ c              call prt_contr2(6,fl_t0_i_pnt%contr,op_info)
 c dbg
               if (cmp_contr(fl_tgt_pnt%contr,
      &                      fl_t0_i_pnt%contr,.false.)) then
+
+c      If you wish to factor out two identical intermediates in a term,
+c      e.g. 1/2*(a+b)(a+b), comment out the previous two lines
+c      and comment in the following three lines
+c      and the paragraph titled "would factor have to be changed?"
+c      Then factor out (a+b) twice. This should lead to
+c      1/2*aa+ab+1/2*bb --> 1/2*a(a+b)+1/2*b(a+b) --> 1/2*(a+b)(a+b)
+c              if (cmp_contr(fl_tgt_pnt%contr,
+c     &                      fl_t0_i_pnt%contr,.true.)
+c     &            .and.nmod.lt.nmod_max) then
+
 c dbg
 c                print *,'OK!'
 c dbg
@@ -250,6 +267,19 @@ c dbg
                   call new_formula_plist_entry(fpl_found_pnt)
                   fpl_found_pnt => fpl_found_pnt%next
                 end if
+c      Please don't delete, could be of use (see comment above)
+c                ! would factor have to be changed?
+c                if (abs(fl_tgt_pnt%contr%fac-fl_t0_i_pnt%contr%fac)
+c     &              .ge.1d-12) then
+c                  if (nfound.eq.1) call quit(1,'find_contr_w_intm2',
+c     &                 'factor change of leading term needed')
+c                  nmod = nmod + 1
+c                  if (nmod.eq.nmod_max) call warn('find_contr_w_intm2',
+c     &            'consider increasing nmod_max in factor_out_subexpr2')
+c                  imod(nmod) = nfound
+c                  xmod(nmod) = fl_tgt_pnt%contr%fac
+c     &                         - fl_t0_i_pnt%contr%fac
+c                end if
                 fpl_found_pnt%item => fl_tgt_pnt
                 ! all terms found? let's go
                 success2 =  nfound.eq.nterms_gen

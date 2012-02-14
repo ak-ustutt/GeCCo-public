@@ -1402,7 +1402,6 @@ signsec:      1.0
   term #    2 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.122E-03
   term #    7 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.122E-03
  wrote                     41  entries
-                 EVAL_DENS0   ! added manually to reference file
  My next target: EVAL_D
  Rule: EVALUATE
  read                     40  entries
@@ -1410,6 +1409,7 @@ signsec:      1.0
  @ formula evaluation                  cpu/sys/wall:      0.02 /     0.01 /     0.03 s
   norms/values of output operators
  ----------------------------------
+         -->  [added manually]
 >>>    1 -->  5.609709036    
  Rule: ADD_UNITY
  My next target: DEF_ME_Dinv
@@ -1681,7 +1681,9 @@ signsec:      1.0
   term #  118 - H^ 2 P^ 4 V^ 2 X^ 0 - Mb:     0.103E+00
   term #  119 - H^ 2 P^ 4 V^ 2 X^ 0 - Mb:     0.103E+00
   term #  117 - H^ 2 P^ 4 V^ 2 X^ 0 - Mb:     0.103E+00
- wrote                   1055  entries !manually changed (no scalar 1's anymore)
+ wrote                   1201  entries ! changed manually on (11/19/10)
+                                       ! since now we use only one-particle
+                                       ! unit operators
  My next target: FREF
  Rule: DEF_HAMILTONIAN
  Number of occupation classes for FREF:   10
@@ -2167,7 +2169,10 @@ signsec:      1.0
  @ formula evaluation                  cpu/sys/wall:     18.10 /     0.46 /    18.86 s
   norms/values of output operators
  ----------------------------------
->>>    1 -->  271.3055566    
+>>>    1 -->  271.30555661697   ! changed back on 06/20/2011 | amended on 11/28/11
+>>>    1 -->  271.3055607       ! changed manually on 01/05/2011
+                                ! (because in SVD decoupled
+                                !  blocks are now individually treated)
  Rule: EXTRACT_DIAG
  @ time for extracting diagonal        cpu/sys/wall:      0.00 /     0.01 /     0.00 s
  My next target: Ddag
@@ -2951,7 +2956,7 @@ signsec:      1.0    -1.0     1.0    -1.0     1.0    -1.0     1.0
  @ formula evaluation                  cpu/sys/wall:      1.61 /     0.96 /     3.21 s
   norms/values of output operators
  ----------------------------------
->>>    1 --> -15.54037453    
+>>>    1 --> -15.540374526042 [amended manually on 11/28/11]    
  ... all targets processed!
  +----------------------------------------------------------------------------+
    Maximum allocated memory:   27099806 real(8)-words (  206.76 Mb)
