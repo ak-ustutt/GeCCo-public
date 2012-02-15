@@ -62,6 +62,7 @@
      &     DELETE_ME_LIST*14  = 'DELETE_ME_LIST',
      &     ASSIGN_ME2OP*12    = 'ASSIGN_ME2OP',
      &     IMPORT*6           = 'IMPORT',
+     &     GETEST*6           = 'GETEST',
      &     PRECONDITIONER*14  = 'PRECONDITIONER',
      &     ADD*3              = 'ADD',
      &     SCALE*5            = 'SCALE',

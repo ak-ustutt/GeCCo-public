@@ -80,6 +80,7 @@
       end if
       pf12_trunc = truncate.and.trunc_type.eq.0
       ! Frozen core?
+      frozen_old = .false.
       frozen = .false.
       shell_typ(1:len(shell_typ)) = ' '
       if(is_keyword_set('orb_space.shell').gt.0)then
@@ -2669,11 +2670,11 @@ c      call add_target('EVAL_Z',ttype_gen,pz_eval,tgt_info)
      &         labels,1,0,
      &         parameters,0,tgt_info)
 c dbg -- test
-      call set_dependency('EVAL_Z','Z0TEST-OPT',tgt_info)
-      labels(1) = 'Z0TEST-OPT'
-      call set_rule('EVAL_Z',ttype_opme,EVAL,
-     &         labels,1,0,
-     &         parameters,0,tgt_info)
+c      call set_dependency('EVAL_Z','Z0TEST-OPT',tgt_info)
+c      labels(1) = 'Z0TEST-OPT'
+c      call set_rule('EVAL_Z',ttype_opme,EVAL,
+c     &         labels,1,0,
+c     &         parameters,0,tgt_info)
 c dbg
       
 
