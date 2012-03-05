@@ -35,7 +35,7 @@
      &     isym, msc, ims, ip, ih, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, cmaxv
       logical ::
-     &     oldref, l_exist
+     &     oldref, l_exist, writeF
       character(len_target_name) ::
      &     dia_label, labels(20)
       character(len_command_par) ::
@@ -69,6 +69,8 @@
      &     ival=ciroot)
       call get_argument_value('method.MR','oldref',
      &     lval=oldref)
+      call get_argument_value('method.MR','writeFock',
+     &     lval=writeF)
       if (cmaxh.lt.0) cmaxh = cmaxexc
       if (cmaxp.lt.0) cmaxp = cmaxexc
       cmaxv = orb_info%norb_hpv(IVALE,1)*2
@@ -143,8 +145,15 @@ c     &              1,1,parameters,1,tgt_info)
      &     val_label=(/'FREF'/))
       call set_arg('FREF',DEF_HAMILTONIAN,'MAX_RANK',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('FREF',DEF_HAMILTONIAN,'X_SPCS',2,tgt_info,
-     &     val_int=(/IVALE,IEXTR/))
+      if (writeF) then
+        if (.not.calc) call quit(1,'set_unc_mrci_targets',
+     &    'Please use writeFock=T only in pure CASSCF calculations')
+        call set_arg('FREF',DEF_HAMILTONIAN,'X_SPCS',1,tgt_info,
+     &       val_int=(/IEXTR/))
+      else
+        call set_arg('FREF',DEF_HAMILTONIAN,'X_SPCS',2,tgt_info,
+     &       val_int=(/IVALE,IEXTR/))
+      end if
 
       ! Spin operators
       ! S+
@@ -667,12 +676,19 @@ c     &     parameters,2,tgt_info)
 c dbgend
 
       ! Evaluate Fock operator wrt reference function
-      call add_target('EVAL_FREF',ttype_gen,.false.,tgt_info)
+      call add_target('EVAL_FREF',ttype_gen,writeF,tgt_info)
       call set_dependency('EVAL_FREF','FOPT_FREF',tgt_info)
       call set_dependency('EVAL_FREF','EVAL_REF_S(S+1)',tgt_info)
       call set_rule('EVAL_FREF',ttype_opme,EVAL,
      &     'FOPT_FREF',1,0,
      &     parameters,0,tgt_info)
+      if (writeF) then ! write to file 'FEFF'
+        call form_parameters(-1,parameters,2,
+     &       'effective Fock operator:',0,'FEFF')
+        call set_rule('EVAL_FREF',ttype_opme,PRINT_MEL,
+     &       'ME_FREF',1,0,
+     &       parameters,2,tgt_info)
+      end if
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'effective Fock operator:',0,'LIST')

@@ -192,6 +192,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/0/))  ! Ms
       call argument_add('sym','method.MR',type=vtyp_int,
      &                  idef=(/0/))  ! symmetry (0: read fr. interface)
+      call argument_add('writeFock','method.MR',type=vtyp_log,
+     &                  ldef=(/.false./))
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,

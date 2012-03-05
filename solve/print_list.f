@@ -35,6 +35,8 @@
      &     openit
       real(8) ::
      &     value
+      type(filinf) ::
+     &     ffout
 
       real(8), external ::
      &     xnormop
@@ -78,7 +80,19 @@
      &       str_info,orb_info)
 
       case default
-        call quit(0,'print_list','unknown mode: '//trim(mode))
+
+        write(luout,'(x,a)') trim(message)
+        write(luout,'(x,a,a)') 'Written to file named ',trim(mode)
+
+        call file_init(ffout,trim(mode),ftyp_sq_frm,0)
+        call file_open(ffout)
+        call wrt_mel_to_file(ffout%unit,
+     &       mel,
+     &       1,mel%op%n_occ_cls,
+     &       str_info,orb_info)
+        call file_close_keep(ffout)
+
+c        call quit(0,'print_list','unknown mode: '//trim(mode))
 
       end select
 
