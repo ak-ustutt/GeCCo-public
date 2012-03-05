@@ -1,12 +1,12 @@
 *----------------------------------------------------------------------*
       subroutine mod_op_for_ge_test(label_mel,
-     &     iRdef,norb,icase,splitF,
+     &     iRdef,norb,icase,icaseF,
      &     op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     modify operator elements (most likely the Hamiltonian)
 *     for generalized extensivity test
 *     iRdef(norb) defines system R, the rest is assumed system S
-*     splitF: F = Fock is part of E0, T = Fock is split into R/S
+*     icaseF: 0 = Fock is part of E0, else = Fock is also split into R/S
 *     case 1: set R and S to zero
 *     case 2: only R
 *     case 3: only S
@@ -31,9 +31,7 @@
       type(operator_info), intent(in) ::
      &     op_info
       integer, intent(in) ::
-     &     norb, iRdef(norb), icase
-      logical, intent(in) ::
-     &     splitF
+     &     norb, iRdef(norb), icase, icaseF
       type(strinf), intent(in) ::
      &     str_info
       type(strmapinf) ::
@@ -58,7 +56,7 @@
         call write_title(luout,wst_dbg_subr,'mod_op_for_ge_test')
         write(luout,*) 'Rdef:  ',iRdef(1:norb)
         write(luout,*) 'case:  ',icase
-        write(luout,*) 'splitF:',splitF
+        write(luout,*) 'icaseF:',icaseF
       end if
 
       if (icase.lt.1.and.icase.gt.4)
@@ -75,7 +73,7 @@
       call touch_file_rec(mel_target%fhand)
 
       call getest_mod_mel(mel_target,
-     &     iRdef,norb,icase,splitF,
+     &     iRdef,norb,icase,icaseF,
      &     str_info,orb_info)
 
       if (ntest.ge.10.and.(.not.mel_target%op%formal)) then

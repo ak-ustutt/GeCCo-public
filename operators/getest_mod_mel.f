@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine getest_mod_mel(mel,iRdef,norb,icase,splitF,
+      subroutine getest_mod_mel(mel,iRdef,norb,icase,icaseF,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
 *  
@@ -20,9 +20,7 @@
 
 
       integer, intent(in) ::
-     &     norb, iRdef(norb), icase
-      logical, intent(in) ::
-     &     splitF
+     &     norb, iRdef(norb), icase, icaseF
       type(me_list), intent(in) ::
      &     mel
       type(strinf), intent(in) ::
@@ -36,7 +34,7 @@
      &     idoff, idxoff, idxoff_blk, iblk, lenblk, lenprt, ifree, mmax,
      &     msamax, mscmax, idxms, ms, igam, idx_dis, ndis, nwarn, did,
      &     idum, nel, mst, lengblk,
-     &     idxoff0, njoined, idx_occ
+     &     idxoff0, njoined, idx_occ, icase_cur
       integer ::
      &     msd(ngastp,2,mel%op%njoined), igamd(ngastp,2,mel%op%njoined),
      &     scr(ngastp,2,2*mel%op%njoined), occ(ngastp,2,mel%op%njoined)
@@ -104,7 +102,12 @@
 
         ! if the Fock operator is not to be modifier, go to next blk
         if (max(mscmax,msamax).eq.0) cycle
-        if (max(mscmax,msamax).eq.1.and..not.splitF) cycle
+        if (max(mscmax,msamax).eq.1) then
+          if (icaseF.le.0) cycle
+          icase_cur = icaseF
+        else
+          icase_cur = icase
+        end if
 
         nel = msamax+op%ica_occ(1,iblk)
         idxms = 0
@@ -138,11 +141,11 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
 
             ndis = mel%off_op_gmox(iblk)%ndis(igam,idxms)
  
-            if (icase.eq.1) then ! most simple case: just ...
+            if (icase_cur.eq.1) then ! most simple case: just ...
               curblk(1:lengblk) = 0d0  ! ... set to zero
             else if (ndis.eq.1) then
               call getest_mod_mel_blk(curblk(idxoff_blk+1),mel,
-     &                   iRdef,norb,icase,
+     &                   iRdef,norb,icase_cur,
      &                   iblk,igam,idxms,1,
      &                   nel,str_info,orb_info)
               idxoff_blk = idxoff_blk+lenblk
@@ -158,7 +161,7 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
                 if (lenblk.eq.0) cycle
 
                    call getest_mod_mel_blk(curblk(idxoff_blk+1),mel,
-     &                     iRdef,norb,icase,
+     &                     iRdef,norb,icase_cur,
      &                     iblk,igam,idxms,idx_dis,
      &                     nel,str_info,orb_info)
                 idxoff_blk = idxoff_blk+lenblk

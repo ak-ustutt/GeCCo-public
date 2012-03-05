@@ -45,7 +45,7 @@
       integer ::
      &     nblk, njoined, min_rank, max_rank, min_xrank, max_xrank,
      &     ncadiff, iformal, n_ap, ansatz, hermitian, iorder, spec,
-     &     ninclude, ninclude_or, nexclude, norb, icase,
+     &     ninclude, ninclude_or, nexclude, norb, icase, icaseF,
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
@@ -58,7 +58,7 @@
      &     iblk_include(maxterms), iblk_include_or(maxterms),
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
-     &     dagger, explicit, ms_fix, form_test, init, arg_there, splitF
+     &     dagger, explicit, ms_fix, form_test, init, arg_there
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -922,12 +922,12 @@ c dbg
         if (norb.gt.maxterms) 
      &       call quit(1,'process_rule','norb.gt.maxterms')
         call get_arg('CASE',rule,tgt_info,val_int=icase)
-        call get_arg('SPLIT-FOCK',rule,tgt_info,val_log=splitF)
+        call get_arg('SPLIT-FOCK',rule,tgt_info,val_int=icaseF)
 
         if (form_test) return
 
         call mod_op_for_ge_test(label,
-     &       iRdef,norb,icase,splitF,
+     &       iRdef,norb,icase,icaseF,
      &       op_info,str_info,strmap_info,orb_info)
 
 *----------------------------------------------------------------------*

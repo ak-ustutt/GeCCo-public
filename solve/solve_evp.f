@@ -75,7 +75,7 @@
      &     orb_info
 
       logical ::
-     &     conv, use_s_t, use_s(nopt), trafo, init(nopt)
+     &     conv, use_s_t, use_s(nopt), trafo, init(nopt), home_in
       character(len_opname) ::
      &     label
       integer ::
@@ -87,10 +87,11 @@
      &     xeig(nroots,2), xresnrm(nroots*nopt), xlist(2*nroots)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:), me_met(:),
-     &     me_special(:), me_scr(:)
+     &     me_special(:), me_scr(:), me_home(:)
       type(file_array), pointer ::
      &     ffdia(:), ff_trv(:),
-     &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:)
+     &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:),
+     &     ffhome(:)
       type(me_list), pointer ::
      &     me_pnt
       type(dependency_info) ::
@@ -107,7 +108,7 @@
       integer, pointer ::
      &     irecmvp(:), irectrv(:), irecmet(:), idxselect(:)
       real(8), pointer ::
-     &      xret(:), xbuf(:)
+     &      xret(:), xbuf1(:), xbuf2(:), xoverlap(:)
 
       character ::
      &     fname*256
@@ -117,7 +118,7 @@
       integer, external ::
      &     idx_formlist, idx_mel_list, idx_xret
       real(8), external ::
-     &     fndmnx
+     &     fndmnx, da_ddot
 
       ifree = mem_setmark('solve_evp')
 
@@ -281,16 +282,49 @@
       ifree = mem_alloc_int(irecmet,nroots,'recmet')
 
       init = .true.
+      home_in = .false.
       do iopt = 1, nopt
         ! open result vector file(s)
 cmh     if file already open, use as initial guess!
-        if (ffopt(iopt)%fhand%unit.gt.0) then
+c        if (ffopt(iopt)%fhand%unit.gt.0) then
 c dbg
 c          print *,'iopt = ',iopt
 c dbgend
 c          call warn('solve_evp','using existing amplitudes!')
 c          init(iopt) = .false.
-        else
+        if (ffopt(iopt)%fhand%unit.gt.0.and.nroots.gt.1) then
+          ! copy this root so that we may home in on it later
+          if (nopt.ne.1) call quit(1,'solve_evp',
+     &         'homing in available only for one opt. vector yet')
+          home_in = .true.
+          allocate(me_home(1),ffhome(1))
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &        .and.nspecial.eq.3) then
+            me_pnt => me_special(1)%mel
+          else
+            me_pnt => me_opt(iopt)%mel
+          end if
+          call define_me_list('home',me_opt(iopt)%mel%op%name,
+     &         me_pnt%absym,me_pnt%casym,
+     &         me_pnt%gamt,me_pnt%s2,
+     &         me_pnt%mst,.false.,
+     &         -1,1,1,0,0,0,
+     &         op_info,orb_info,str_info,strmap_info)
+          idxmel = idx_mel_list('home',op_info)
+          me_home(1)%mel   => op_info%mel_arr(idxmel)%mel
+          ffhome(1)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+          call assign_me_list(me_trv(iopt)%mel%label,
+     &                        me_opt(iopt)%mel%op%name,op_info)
+          call file_open(ffhome(1)%fhand)
+          call list_copy(me_opt(iopt)%mel,me_home(1)%mel)
+c dbg
+c          print *,'preparing for homing in later. Saved vector:'
+c          call wrt_mel_file(luout,5,
+c     &         me_home(1)%mel,
+c     &         1,me_trv(iopt)%mel%op%n_occ_cls,
+c     &         str_info,orb_info)
+c dbgend
+        else if (ffopt(iopt)%fhand%unit.le.0) then
           call file_open(ffopt(iopt)%fhand)
         end if
         call file_open(ff_scr(iopt)%fhand)
@@ -505,8 +539,48 @@ c dbg
         call assign_me_list(label_opt(iopt),
      &                      me_opt(iopt)%mel%op%name,op_info)
 
-        ! solution vector has been updated (if we had some iteration)
-        if (iter.gt.1) call touch_file_rec(me_opt(iopt)%mel%fhand)
+
+c        ! solution vector has been updated (if we had some iteration)
+c        if (iter.gt.1) call touch_file_rec(me_opt(iopt)%mel%fhand)
+        ! solution vector has been updated
+        call touch_file_rec(me_opt(iopt)%mel%fhand)
+
+        if (home_in) then
+          ! home in on root with largest overlap with prior solution
+          ifree = mem_setmark('solve_evp.home_in')
+          ifree = mem_alloc_real(xoverlap,nroots,'xoverlap')
+          ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),'xbuf1')
+          ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
+          xresmax = 0d0
+          do iroot = 1, nroots
+            xoverlap(iroot) = da_ddot(ffhome(1)%fhand,1,1,
+     &                                ffopt(iopt)%fhand,iroot,1,
+     &                                opti_info%nwfpar(iopt),
+     &                                xbuf1,xbuf2,
+     &                                opti_info%nwfpar(iopt))
+            xoverlap(iroot) = abs(xoverlap(iroot))
+            if (xoverlap(iroot).gt.xresmax) then
+              idx = iroot
+              xresmax = xoverlap(iroot)
+            end if
+c dbg
+c            print *,'root / overlap: ',iroot,xoverlap(iroot)
+c dbgend
+          end do
+          if (idx.ne.nroots) then
+            write(luout,'(a,i4,a,f8.4)') 
+     &            'Homing in on root ',idx,' with overlap ',xresmax
+            ! For now we just overwrite the current record
+            ! and leave everything else unchanged (a bit dirty)
+            call switch_mel_record(me_opt(iopt)%mel,idx)
+            call list_copy(me_opt(iopt)%mel,me_home(1)%mel)
+            call switch_mel_record(me_opt(iopt)%mel,nroots)
+            call list_copy(me_home(1)%mel,me_opt(iopt)%mel)
+          end if
+          call del_me_list(me_home(1)%mel%label,op_info)
+          deallocate(me_home,ffhome)
+          ifree = mem_flushmark()
+        end if
 
       end do
 

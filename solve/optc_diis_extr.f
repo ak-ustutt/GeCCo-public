@@ -67,6 +67,8 @@
         call dspco(xscr,ncdim+1,kpiv,cond,xvec)
         if (ntest.ge.15) write(luout,*)'ncdim,condition number: ',
      &       ncdim,cond
+        if (cond.eq.0d0) call quit(1,'optc_diis_extr',
+     &       'condition number = 0. maxsub > # of parameters?')
         if (ntest.ge.30) then
           write(luout,*) 'Factorized matrix from dspco:'
           call prtrlt(xscr,ncdim+1)

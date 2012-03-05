@@ -148,7 +148,7 @@ c          print *,'Precond. grad:'
 c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
 c     &         str_info,orb_info)
 c dbg
-          call vec_from_da(ffamp,1,xbuf2,nwfpar)
+          call vec_from_da(ffamp,ffamp%current_record,xbuf2,nwfpar)
         case(optinf_prc_blocked)
           call vec_from_da(ffgrd,1,xbuf1,nwfpar)
 c dbg

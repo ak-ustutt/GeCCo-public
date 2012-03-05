@@ -70,7 +70,7 @@ c dbgend
      &     orb_info
 
       logical ::
-     &     conv
+     &     conv, restart
       character(len_opname) ::
      &     label, dia_label
       integer ::
@@ -207,11 +207,20 @@ cmh     if file already open, use as initial guess!
      &         iopt,'!'
         else
           call file_open(ffopt(iopt)%fhand)
-          ! get initial amplitudes
-c dbg
-c         print *,'using old file for iopt=',iopt
-c dbgend
-          call zeroop(me_opt(iopt)%mel)
+          ! hard restart? (just use old amplitude file as initial guess)
+          call get_argument_value('calculate.solve.non_linear',
+     &         'restart',lval=restart)
+          if (restart) then
+            inquire(file=trim(ffopt(iopt)%fhand%name),exist=restart)
+            if (.not.restart) call warn('solve_nleq',
+     &         'No amplitude file found for restart! Setting to zero.')
+          end if
+          if (restart) then
+            write(luout,'(x,a,i1,a)')
+     &         'Using old amplitude file for vector ',iopt,'!'
+          else
+            call zeroop(me_opt(iopt)%mel)
+          end if
         end if
         ! open corresponding residuals ...
         call file_open(ffgrd(iopt)%fhand)

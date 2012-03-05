@@ -48,8 +48,8 @@ c      use parse_input
      &            -1,-1,-1,-1,-1, -1,-1,-1,-1,-1/))
       call argument_add('case','orb_space.GEtest',type=vtyp_int,
      &     idef=(/1/))
-      call argument_add('splitF','orb_space.GEtest',type=vtyp_log,
-     &     ldef=(/.false./))
+      call argument_add('caseF','orb_space.GEtest',type=vtyp_int,
+     &     idef=(/0/))
 
       call keyword_add('method',required=.true.)
       call keyword_add('MP',context='method')
@@ -297,6 +297,9 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('preopt','calculate.solve.non_linear',
      &     type=vtyp_log,
      &     ldef=(/.false./)) ! first one optimization with fixed metric
+      call argument_add('restart','calculate.solve.non_linear',
+     &     type=vtyp_log,
+     &     ldef=(/.false./)) ! hard restart (use old amplitude file)
 
       call keyword_add('linear',context='calculate.solve')
       call argument_add('maxiter','calculate.solve.linear',

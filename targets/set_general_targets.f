@@ -29,9 +29,9 @@
      &     min_rank, max_rank,
      &     isim, ncat, nint, icnt, iformal, extern,
      &     isym, ms, msc, sym_arr(8),trunc_type,t1ext_mode,
-     &     maxr12exc, icase, norb
+     &     maxr12exc, icase, icaseF, norb
       logical ::
-     &     needed, explicit, truncate, splitF
+     &     needed, explicit, truncate
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(10)
@@ -175,7 +175,7 @@ c patch end
         allocate(iRsys(max(1,norb)))
         call get_argument_value('orb_space.GEtest','Rsys',iarr=iRsys)
         call get_argument_value('orb_space.GEtest','case',ival=icase)
-        call get_argument_value('orb_space.GEtest','splitF',lval=splitF)
+        call get_argument_value('orb_space.GEtest','caseF',ival=icaseF)
         call set_rule2(mel_ham,GETEST,tgt_info)
         call set_arg(mel_ham,GETEST,'LIST',1,tgt_info,
      &       val_label=(/mel_ham/))
@@ -184,7 +184,7 @@ c patch end
         call set_arg(mel_ham,GETEST,'CASE',1,tgt_info,
      &       val_int=(/icase/))
         call set_arg(mel_ham,GETEST,'SPLIT-FOCK',1,tgt_info,
-     &       val_log=(/splitF/)) 
+     &       val_int=(/icaseF/)) 
         deallocate(iRsys)
       end if
 *----------------------------------------------------------------------*
