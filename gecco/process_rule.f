@@ -45,7 +45,7 @@
       integer ::
      &     nblk, njoined, min_rank, max_rank, min_xrank, max_xrank,
      &     ncadiff, iformal, n_ap, ansatz, hermitian, iorder, spec,
-     &     ninclude, ninclude_or, nexclude,
+     &     ninclude, ninclude_or, nexclude, norb, icase,
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
@@ -56,9 +56,9 @@
      &     connect(maxterms*2), avoid(maxterms*2),
      &     inproj(maxterms*2), 
      &     iblk_include(maxterms), iblk_include_or(maxterms),
-     &     iblk_exclude(maxterms)
+     &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
-     &     dagger, explicit, ms_fix, form_test, init, arg_there
+     &     dagger, explicit, ms_fix, form_test, init, arg_there, splitF
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -906,6 +906,28 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 
         call import_op_el(label,
      &       list_type,env_type,
+     &       op_info,str_info,strmap_info,orb_info)
+*----------------------------------------------------------------------*
+      case(GETEST)
+*----------------------------------------------------------------------*
+
+        call get_arg('LIST',rule,tgt_info,val_label=label)
+        call get_arg('R-SYS',rule,tgt_info,val_int_list=iRdef,
+     &               ndim=norb)
+c dbg
+        print *,'norb = ',norb
+        print *,'iRdef = ',iRdef(1:norb)
+c dbg
+        ! trap, if we get so far ...
+        if (norb.gt.maxterms) 
+     &       call quit(1,'process_rule','norb.gt.maxterms')
+        call get_arg('CASE',rule,tgt_info,val_int=icase)
+        call get_arg('SPLIT-FOCK',rule,tgt_info,val_log=splitF)
+
+        if (form_test) return
+
+        call mod_op_for_ge_test(label,
+     &       iRdef,norb,icase,splitF,
      &       op_info,str_info,strmap_info,orb_info)
 
 *----------------------------------------------------------------------*

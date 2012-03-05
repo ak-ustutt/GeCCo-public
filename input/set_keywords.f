@@ -42,6 +42,14 @@ c      use parse_input
       call keyword_add('open_shells',context='orb_space')
       call argument_add('treat','orb_space.open_shells',
      &     type=vtyp_str,len=4,cdef=(/'p','h',' ',' '/))
+      call keyword_add('GEtest',context='orb_space')
+      call argument_add('Rsys','orb_space.GEtest',type=vtyp_int,len=20,
+     &     idef=(/-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,
+     &            -1,-1,-1,-1,-1, -1,-1,-1,-1,-1/))
+      call argument_add('case','orb_space.GEtest',type=vtyp_int,
+     &     idef=(/1/))
+      call argument_add('splitF','orb_space.GEtest',type=vtyp_log,
+     &     ldef=(/.false./))
 
       call keyword_add('method',required=.true.)
       call keyword_add('MP',context='method')
