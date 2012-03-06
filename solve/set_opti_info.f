@@ -66,11 +66,11 @@
      &       call quit(1,'set_opti_info',
      &       'nroot>1 not yet considered for non-linear equations!')
 
-        if (is_argument_set('calculate.solve.non_linear','maxiter'))
+        if(is_argument_set('calculate.solve.non_linear','maxiter').gt.0)
      &       call get_argument_value('calculate.solve.non_linear',
      &       'maxiter',
      &       ival=opti_info%maxmacit)
-        if (is_argument_set('calculate.solve.non_linear','maxsub'))
+        if (is_argument_set('calculate.solve.non_linear','maxsub').gt.0)
      &       call get_argument_value('calculate.solve.non_linear',
      &       'maxsub',
      &       ival=opti_info%maxsbsp)
@@ -79,7 +79,8 @@
      &       ival=opti_info%micifac)
         opti_info%maxmicit = opti_info%maxmacit*opti_info%micifac
 
-        if (is_argument_set('calculate.solve.non_linear','conv')) then
+        if (is_argument_set('calculate.solve.non_linear','conv').gt.0) 
+     &    then
           call get_argument_value('calculate.solve.non_linear','conv',
      &         xval=opti_info%thrgrd(1))
           if (nopt.gt.1)
@@ -119,11 +120,11 @@
 
       else if (mode.eq.2) then
 
-        if (is_argument_set('calculate.solve.linear','maxiter'))
+        if (is_argument_set('calculate.solve.linear','maxiter').gt.0)
      &       call get_argument_value('calculate.solve.linear',
      &       'maxiter',
      &       ival=opti_info%maxmacit)
-        if (is_argument_set('calculate.solve.linear','maxsub'))
+        if (is_argument_set('calculate.solve.linear','maxsub').gt.0)
      &       call get_argument_value('calculate.solve.linear',
      &       'maxsub',
      &       ival=opti_info%maxsbsp)
@@ -131,7 +132,7 @@
         ! here the interpretation is: maxsbsp = sbsp per root, so:
         opti_info%maxsbsp = opti_info%maxsbsp*nroot
 
-        if (is_argument_set('calculate.solve.linear','conv')) then
+        if (is_argument_set('calculate.solve.linear','conv').gt.0) then
           call get_argument_value('calculate.solve.linear','conv',
      &         xval=opti_info%thrgrd(1))
           if (nopt.gt.1)
@@ -162,11 +163,11 @@
  
       else if (mode.eq.3) then
 
-        if (is_argument_set('calculate.solve.eigen','maxiter'))
+        if (is_argument_set('calculate.solve.eigen','maxiter').gt.0)
      &       call get_argument_value('calculate.solve.eigen',
      &       'maxiter',
      &       ival=opti_info%maxmacit)
-        if (is_argument_set('calculate.solve.eigen','maxsub'))
+        if (is_argument_set('calculate.solve.eigen','maxsub').gt.0)
      &       call get_argument_value('calculate.solve.eigen',
      &       'maxsub',
      &       ival=opti_info%maxsbsp)
@@ -174,7 +175,7 @@
         ! here the interpretation is: maxsbsp = sbsp per root, so:
         opti_info%maxsbsp = opti_info%maxsbsp*nroot
 
-        if (is_argument_set('calculate.solve.eigen','conv')) then
+        if (is_argument_set('calculate.solve.eigen','conv').gt.0) then
           call get_argument_value('calculate.solve.eigen','conv',
      &         xval=opti_info%thrgrd(1))
           if (nopt.gt.1)

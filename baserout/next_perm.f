@@ -23,7 +23,7 @@
       end 
 
 *----------------------------------------------------------------------*
-      logical recursive function next_perm_rec(iperm,nel)
+      logical recursive function next_perm_rec(iperm,nel) result(lres)
 *----------------------------------------------------------------------*
 *     recursive kernel function
 *----------------------------------------------------------------------*
@@ -84,7 +84,8 @@
         end if
       end if
 
-      next_perm_rec = succ
+      !next_perm_rec = succ
+      lres = succ
 
       return
       end

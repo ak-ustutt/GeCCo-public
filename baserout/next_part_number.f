@@ -100,7 +100,7 @@
 
 *----------------------------------------------------------------------*
       logical recursive function nxtptn_rc(restrict,
-     &     ipart,inum,nsum,inummin)
+     &     ipart,inum,nsum,inummin) result(lres)
 *----------------------------------------------------------------------*
 *     recursive slave function for generating next partitioning of inum
 *----------------------------------------------------------------------*
@@ -157,7 +157,8 @@
         call quit(1,'next_part_number','illegal value of nsum')
       end if
 
-      nxtptn_rc = succ
+      !nxtptn_rc = succ
+      lres = succ
 
       return
       end

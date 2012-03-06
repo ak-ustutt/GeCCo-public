@@ -57,7 +57,9 @@
       integer, pointer ::
      &     iocc_inp(:,:,:), iocc_out(:,:)
       integer, external ::
-     &     idx_mel_list, ndisblk_mel, iblk_occ, occ_is_diag_blk
+     &     idx_mel_list, ndisblk_mel, iblk_occ
+      logical, external ::
+     &     occ_is_diag_blk
 
       call atim_csw(cpu0,sys0,wall0)
 

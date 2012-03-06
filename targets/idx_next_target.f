@@ -50,6 +50,7 @@
       contains
 
       recursive integer function next_target_rec(tgt_in,tgt_info)
+     &                           result(ires)
 
       type(target), intent(in) ::
      &     tgt_in
@@ -61,7 +62,7 @@
       integer ::
      &     idep, idx
 
-      next_target_rec = -1
+      ires = -1
 
       if (ntest.ge.1000) then
         write(luout,*) icycle+1, level, 'checking dependecies of ',
@@ -88,7 +89,7 @@
               write(luout,*) 'need to remake: ',
      &             trim(tgt_info%array(idx)%tgt%name)
             end if
-            next_target_rec = idx
+            ires = idx
             level = level-1
             return
           end if
@@ -102,7 +103,7 @@
      &             ' is more recent: remake ',
      &             trim(tgt_in%name)
             end if
-            next_target_rec = tgt_in%my_idx
+            ires = tgt_in%my_idx
             level = level-1
             return
           end if
@@ -120,11 +121,11 @@ c dbg
      &         ' target is still untouched, so I will make it!'
         end if
         if (tgt_in%last_mod.lt.0)
-     &       next_target_rec = tgt_in%my_idx
+     &       ires = tgt_in%my_idx
       end if
 
 c dbg
-c      print *,'returning: ',next_target_rec
+c      print *,'returning: ',ires
 c dbg
       level = level-1
       return

@@ -53,7 +53,7 @@
 
       real(8), external ::
      &     ddot
-      integer, external ::
+      logical, external ::
      &     list_in_bounds
 
       if (ntest.ge.100) then

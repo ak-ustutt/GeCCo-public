@@ -557,14 +557,18 @@ c        read(parameters(2),'(480(i1))')
       integer ::
      &     ii
 
+      if (nfac.gt.1) call quit(1,'scale_parameter','obsolete. needed?')
+
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
         if (nfac.gt.12) call quit(1,'scale_parameters','too much')
         write(parameters,'(2i2,12(i4,g20.14))')
-     &       imode,nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
+     &       imode,nfac,idxblk(1),fac(1)
+C     &       imode,nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
       else
         read(parameters,'(2i2,12(i4,g20.14))')
-     &       imode,nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
+     &       imode,nfac,idxblk(1),fac(1)
+C     &       imode,nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
         if (nfac.gt.maxfac)
      &       call quit(1,'scale_parameters','too much (>maxfac)')
       end if

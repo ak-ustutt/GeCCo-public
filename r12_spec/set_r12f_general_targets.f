@@ -2370,7 +2370,7 @@ c      call set_dependency(fopt_r12_vcabs,mel_gintx,tgt_info)
      &            val_label=(/'Vring-OPT'/))
       if (vring_mode.ge.2) then
         call set_arg('Vring-EVAL',OPTIMIZE,'LABELS_IN',2,tgt_info,
-     &            val_label=(/'Vring_CABS','Vring2_CABS'/))
+     &            val_label=(/'Vring_CABS ','Vring2_CABS'/))
       else
         call set_arg('Vring-EVAL',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &            val_label=(/'Vring_CABS'/))

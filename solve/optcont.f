@@ -69,8 +69,8 @@
 * parameters
       integer, parameter ::
      &     ntest = 00
-      character, parameter ::
-     &     name_alg*10(0:3) =
+      character(len=10), parameter ::
+     &     name_alg(0:3) =
      &     (/"Pert. Upd.","      DIIS","  ASSJ/RLE"," 2ND ORDER"/)
 
       integer, intent(out) ::

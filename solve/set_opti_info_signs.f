@@ -52,7 +52,9 @@
      &     op_trv, op_mvp, op_met, op_rhs
 
       integer, external ::
-     &     iocc_equal, sign_hpvx, sign_contr
+     &     sign_hpvx, sign_contr
+      logical, external ::
+     &     iocc_equal
       integer(8), external ::
      &     int8_pack
 

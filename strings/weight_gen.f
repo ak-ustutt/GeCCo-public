@@ -43,7 +43,9 @@
       integer ::
      &     ientry(-nelmax:nelmax,ngam), idss(nelmax)
       integer, external ::
-     &     idxssd, idxssg, next_ssd, lensubspc
+     &     idxssd, idxssg, lensubspc
+      logical, external ::
+     &     next_ssd
 
       iprint = max(ntest,iprlvl)
 

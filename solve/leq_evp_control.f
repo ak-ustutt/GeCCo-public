@@ -65,10 +65,10 @@ c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
 * parameters
       integer, parameter ::
      &     ntest = 00
-      character, parameter ::
-     &     name_alg_leq*10(0:1) =
+      character(len=10), parameter ::
+     &     name_alg_leq(0:1) =
      &     (/"  CONJGRAD","  SUBSPACE"/),
-     &     name_alg_evp*10(0:1) =
+     &     name_alg_evp(0:1) =
      &     (/"  xxxxxxxx","  DAVIDSON"/)
 
       integer, intent(out) ::

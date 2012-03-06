@@ -156,9 +156,9 @@ c dbg mh igam_op_tr_a(2) --> igam_op_tr_a(3)
 
       integer, external ::
      &     ielsum, ielprd, idx_msgmdst2, get_lenmap, idxlist,
-     &     max_dis_blk
+     &     max_dis_blk, msa2idxms4op
       logical, external ::
-     &     next_dist, next_msgamdist2, msa2idxms4op, 
+     &     next_dist, next_msgamdist2, 
      &     next_msgamdist_diag
       real(8), external ::
      &     ddot

@@ -51,8 +51,8 @@
 * parameters
       integer, parameter ::
      &     ntest = 0
-      character, parameter ::
-     &     name_alg*10(0:1) =
+      character(len=10), parameter ::
+     &     name_alg(0:1) =
      &     (/"  CONJGRAD","  SUBSPACE"/)
 
       integer, intent(out) ::

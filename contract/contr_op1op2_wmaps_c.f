@@ -206,9 +206,9 @@ c dbg
 
       integer, external ::
      &     ielsum, ielprd, idx_msgmdst2, get_lenmap, idxlist,
-     &     max_dis_blk
+     &     max_dis_blk, msa2idxms4op
       logical, external ::
-     &     next_dist, next_msgamdist2, msa2idxms4op, list_cmp,
+     &     next_dist, next_msgamdist2, list_cmp,
      &     nondia_blk, nondia_distr
       real(8), external ::
      &     ddot

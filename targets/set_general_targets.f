@@ -133,7 +133,7 @@ c patch end
 *----------------------------------------------------------------------*
 *     Formulae
 *----------------------------------------------------------------------*
-      if (is_keyword_set('calculate.check.formulae')) then
+      if (is_keyword_set('calculate.check.formulae').gt.0) then
         call add_target2(form_test,.true.,tgt_info)
         call set_rule2(form_test,CHECK_FORMGEN,tgt_info)
       end if
@@ -170,7 +170,7 @@ c patch end
       call set_arg(mel_ham,IMPORT,'TYPE',1,tgt_info,
      &     val_str='H_INT')
       ! (c) modify, if requested
-      if (is_keyword_set('orb_space.GEtest')) then
+      if (is_keyword_set('orb_space.GEtest').gt.0) then
         call get_argument_dimension(norb,'orb_space.GEtest','Rsys')
         allocate(iRsys(max(1,norb)))
         call get_argument_value('orb_space.GEtest','Rsys',iarr=iRsys)

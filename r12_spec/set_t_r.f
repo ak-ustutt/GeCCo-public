@@ -18,10 +18,10 @@
      &     flist_t_r
 
       logical, intent(in) ::
-     &     bar, set_r_r
+     &     bar, set_r_r, r12fix
       integer, intent(in) ::
      &     idxsop, idxtop, idxr12, idxr12x, idxc12, idxcpp12,
-     &     r12op,r12fix
+     &     r12op
 
       type(operator_info), intent(in) ::
      &     op_info

@@ -52,7 +52,7 @@
       ! incore !!
       if (ffop%buffered) then
         do iblk = 1, op%n_occ_cls
-          if (ffop%incore(iblk)) then
+          if (ffop%incore(iblk).gt.0) then
 c            xnrm2 = xnrm2 +
             xnrm_cur =    ddot(mel%len_op_occ(iblk),
      &           ffop%buffer(mel%off_op_occ(iblk)+1),1,

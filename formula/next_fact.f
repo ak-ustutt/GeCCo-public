@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       logical recursive function next_fact(iperm,imult,nel,nuniq,
-     &     iconn)
+     &     iconn) result(lres)
 *----------------------------------------------------------------------*
 *     generate next contraction sequence (factorization)
 *     comment on algorithm: "nicht schoen aber selten ...."
@@ -239,7 +239,7 @@ c            imult(1:idxmin+imlt2-1) = imult_next(1:idxmin+imlt2-1)
         stop 'programming error'
       end if
       
-      next_fact = succ
+      lres = succ
 
       if (ntest.ge.100) then
         write(luout,*) 'result: '

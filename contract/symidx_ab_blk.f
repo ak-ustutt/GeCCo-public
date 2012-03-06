@@ -82,10 +82,10 @@
       real(8), external ::
      &     ddot
       logical, external ::
-     &     iocc_equal_n, next_msgamdist2
+     &     iocc_equal_n, next_msgamdist2, list_in_bounds
       integer, external ::
      &     ielprd, idx_msgmdst2, idx_str_blk3, std_spsign_msdis,
-     &     list_in_bounds, idxlist
+     &     idxlist
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'symidx_ab_blk')

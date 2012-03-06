@@ -89,7 +89,9 @@
      &     xlenex1, xlenex2, xlencnt, xlenop1op2
 
       logical, external ::
-     &     next_dist, next_msgamdist2, idxlist
+     &     next_dist, next_msgamdist2
+      integer, external ::
+     &     idxlist
       logical, external ::
      &     zero_ivec
 

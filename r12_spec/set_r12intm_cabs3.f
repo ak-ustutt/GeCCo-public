@@ -299,12 +299,12 @@ c     &       op_info,orb_info)
       case('Z')
         njoined_intm = op_info%op_arr(idx_intm)%op%njoined
         if (approx(14:14).eq.'J') then
-          read(approx(15:15),'(i)') max_x_J
+          read(approx(15:15),'(i1)') max_x_J
         else
           max_x_J = 2
         end if
         if (approx(16:16).eq.'K') then
-          read(approx(17:17),'(i)') max_x_K
+          read(approx(17:17),'(i1)') max_x_K
         else
           max_x_K = 2
         end if

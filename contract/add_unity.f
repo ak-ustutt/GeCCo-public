@@ -69,10 +69,10 @@
      &     opout
 
       logical, external ::
-     &     occ_is_diag_blk, next_msgamdist2, idx_str_blk3,
-     &     ielprd, nondia_blk, nondia_distr
+     &     occ_is_diag_blk, next_msgamdist2, 
+     &     nondia_blk, nondia_distr
       integer, external ::
-     &     msa2idxms4op
+     &     msa2idxms4op, ielprd, idx_str_blk3
 
       ffout => mel_out%fhand
       opout => mel_out%op

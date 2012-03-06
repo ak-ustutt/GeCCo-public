@@ -106,7 +106,7 @@
      &         'nj>1 not yet available for output operator')
       iblkoff = (iblkout-1)*njout
       ms_fix = meout%fix_vertex_ms
-      if (ms_fix.ne.meinp%fix_vertex_ms) call quit(1,'dia_from_blk',
+      if (ms_fix.neqv.meinp%fix_vertex_ms) call quit(1,'dia_from_blk',
      &         'inconsistent ms_fix')
 
       ! Number of irreps in symmetry group.
