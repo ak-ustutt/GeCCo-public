@@ -20,8 +20,8 @@
       
       integer, intent(in) ::
      &     nops
-      character, intent(in) ::
-     &     ops*64(nops)
+      character(len=64), intent(in) ::
+     &     ops(nops)
       type(formula_item), target, intent(inout) ::
      &     form
       type(operator_info), intent(in) ::

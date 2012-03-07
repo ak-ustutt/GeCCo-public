@@ -36,9 +36,9 @@
      &     ivtx2(:),topo2(:,:),xlines2(:,:)
 
       integer, external ::
-     &     list_cmp, i8list_cmp, njres_contr, idxlist
+     &     i8list_cmp, njres_contr, idxlist
       logical, external ::
-     &     iocc_zero
+     &     list_cmp, iocc_zero
 
 c dbg
 c      if (contr1%idx_res.eq.15) print *,'comparing'

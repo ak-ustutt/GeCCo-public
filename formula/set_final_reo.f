@@ -213,7 +213,7 @@ c        write(luout,'(a,5i2)') 'null-vector  : ',nullij(1:nj)
       idx = 0
       last = nj
       do ivtx = nvtx, 1, -1
-        if (.not.must_assign(ivtx)) cycle
+        if (must_assign(ivtx).eq.0) cycle  ! replaced .not.must_... 
         idx = idx + 1
         do ij = last, 1, -1
           if (assign_ok(ivtx,ij)) then
@@ -248,7 +248,7 @@ c        write(luout,'(a,6i2)') 'last_chance: ',last_chance(2:nvtx+1)
      &      call quit(1,'set_final_reo','no possible reordering! (1)')
       end do
       do ivtx = 1, nvtx
-        if (.not.must_assign(ivtx)) cycle
+        if (must_assign(ivtx).eq.0) cycle  ! replaced .not.must_....
         if (.not.any(assign_ok(ivtx,1:nj)))
      &      call quit(1,'set_final_reo','no possible reordering! (2)')
       end do

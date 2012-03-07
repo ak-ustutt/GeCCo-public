@@ -295,7 +295,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &     val_label=(/'S(S+1)'/))
       call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &     tgt_info,
-     &     val_label=(/'C0^+','S+','S-','C0'/))
+     &     val_label=(/'C0^+','S+  ','S-  ','C0  '/))
       call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/2,3,4,5/))
       call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
@@ -307,7 +307,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &     val_label=(/'S(S+1)'/))
       call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &     tgt_info,
-     &     val_label=(/'C0^+','S-','S+','C0'/))
+     &     val_label=(/'C0^+','S-  ','S+  ','C0  '/))
       call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/2,3,4,5/))
       call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
@@ -322,7 +322,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &     val_label=(/'S(S+1)'/))
       call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &     tgt_info,
-     &     val_label=(/'C0^+','Sz','Sz_dum','C0'/))
+     &     val_label=(/'C0^+  ','Sz    ','Sz_dum','C0    '/))
       call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/2,3,4,5/))
       call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
@@ -333,7 +333,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_arg('F_REF_S(S+1)',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_REF_S(S+1)'/))
       call set_arg('F_REF_S(S+1)',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'Sz_dum','Sz'/))
+     &     val_label=(/'Sz_dum','Sz    '/))
 c dbg
 c      call set_rule2('F_REF_S(S+1)',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_REF_S(S+1)',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -355,7 +355,7 @@ c dbgend
      &     val_label=(/'H'/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &     tgt_info,
-     &     val_label=(/'H','S+','S-','H'/))
+     &     val_label=(/'H ','S+','S-','H '/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/1,2,3,1/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
@@ -367,7 +367,7 @@ c dbgend
      &     val_label=(/'H'/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &     tgt_info,
-     &     val_label=(/'H','S-','S+','H'/))
+     &     val_label=(/'H ','S-','S+','H '/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/1,2,3,1/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
@@ -382,7 +382,7 @@ c dbgend
      &     val_label=(/'H'/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &     tgt_info,
-     &     val_label=(/'H','Sz','Sz_dum','H'/))
+     &     val_label=(/'H     ','Sz    ','Sz_dum','H     '/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/1,2,3,1/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
@@ -393,7 +393,7 @@ c dbgend
       call set_arg('F_REPL_H_S2',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_REPL_H_S2'/))
       call set_arg('F_REPL_H_S2',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'Sz_dum','Sz'/))
+     &     val_label=(/'Sz_dum','Sz    '/))
 c dbg
 c      call set_rule2('F_REPL_H_S2',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_REPL_H_S2',PRINT_FORMULA,'LABEL',1,tgt_info,

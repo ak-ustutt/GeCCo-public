@@ -210,7 +210,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &       val_label=(/'E(MR)'/))
         call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'OPERATORS',5,
      &       tgt_info,
-     &       val_label=(/'C0^+','Cdag',op_ham,'C','C0'/))
+     &       val_label=(/'C0^+','Cdag',op_ham(1:4),'C   ','C0  '/))
         call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &       val_int=(/2,3,4,5,6/))
       else if (gno.eq.1) then
@@ -222,7 +222,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &       val_label=(/'E(MR)'/))
         call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'OPERATORS',3,
      &       tgt_info,
-     &       val_label=(/'Cdag',op_ham,'C'/))
+     &       val_label=(/'Cdag',op_ham(1:4),'C   '/))
         call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
      &       val_int=(/2,3,4/))
         call set_rule2('F_preE(MR)',EXPAND_OP_PRODUCT,tgt_info)
@@ -232,7 +232,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &       val_label=(/'E(MR)'/))
         call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'OPERATORS',5,
      &       tgt_info,
-     &       val_label=(/'DENS','Cdag',op_ham,'C','DENS'/))
+     &       val_label=(/'DENS','Cdag',op_ham(1:4),'C   ','DENS'/))
         call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &       val_int=(/2,3,4,5,2/))
         call set_arg('F_preE(MR)',EXPAND_OP_PRODUCT,'N_AVOID',1,
@@ -248,7 +248,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
         call set_arg('F_preE(MR)',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_E(MR)'/))
         call set_arg('F_preE(MR)',SELECT_SPECIAL,'OPERATORS',3,tgt_info,
-     &       val_label=(/op_ham,'C0','DENS'/)) ! C0 is dummy
+     &       val_label=(/op_ham(1:4),'C0  ','DENS'/)) ! C0 is dummy
         call set_arg('F_preE(MR)',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCC')
         call set_arg('F_preE(MR)',SELECT_SPECIAL,'MODE',1,tgt_info,
@@ -269,7 +269,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
         call set_arg('F_preE(MR)',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_E(MR)'/))
         call set_arg('F_preE(MR)',SELECT_SPECIAL,'OPERATORS',3,tgt_info,
-     &       val_label=(/op_ham,'C0','CUM'/)) ! C0 is dummy
+     &       val_label=(/op_ham(1:4),'C0  ','CUM '/)) ! C0 is dummy
         call set_arg('F_preE(MR)',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCC')
         call set_arg('F_preE(MR)',SELECT_SPECIAL,'MODE',1,tgt_info,
@@ -290,7 +290,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
         call set_arg('F_preE(MR)',INSERT,'OP_INS',1,tgt_info,
      &       val_label=(/'1v'/))
         call set_arg('F_preE(MR)',INSERT,'OP_INCL',2,tgt_info,
-     &       val_label=(/'Cdag',op_ham/))
+     &       val_label=(/'Cdag',op_ham(1:4)/))
         call set_dependency('F_preE(MR)','1',tgt_info)
         call set_rule2('F_preE(MR)',REPLACE,tgt_info)
         call set_arg('F_preE(MR)',REPLACE,'LABEL_RES',1,tgt_info,
@@ -298,7 +298,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
         call set_arg('F_preE(MR)',REPLACE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_E(MR)'/))
         call set_arg('F_preE(MR)',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'1v','1'/))
+     &       val_label=(/'1v','1 '/))
         call set_dependency('F_preE(MR)','F_HOLE',tgt_info)
         call set_rule2('F_preE(MR)',FACTOR_OUT,tgt_info)
         call set_arg('F_preE(MR)',FACTOR_OUT,'LABEL_RES',1,tgt_info,
@@ -318,14 +318,14 @@ c     &                labels,2,1,parameters,2,tgt_info)
         call set_arg('F_preE(MR)',INSERT,'OP_INS',1,tgt_info,
      &       val_label=(/'1v'/))
         call set_arg('F_preE(MR)',INSERT,'OP_INCL',2,tgt_info,
-     &       val_label=(/'Cdag','C'/))
+     &       val_label=(/'Cdag','C   '/))
         call set_rule2('F_preE(MR)',REPLACE,tgt_info)
         call set_arg('F_preE(MR)',REPLACE,'LABEL_RES',1,tgt_info,
      &       val_label=(/'F_E(MR)'/))
         call set_arg('F_preE(MR)',REPLACE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_E(MR)'/))
         call set_arg('F_preE(MR)',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'1v','1'/))
+     &       val_label=(/'1v','1 '/))
         call set_rule2('F_preE(MR)',FACTOR_OUT,tgt_info)
         call set_arg('F_preE(MR)',FACTOR_OUT,'LABEL_RES',1,tgt_info,
      &       val_label=(/'F_E(MR)'/))
@@ -351,7 +351,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
         call set_arg('F_preE(MR)',REPLACE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_E(MR)'/))
         call set_arg('F_preE(MR)',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'1v','1'/))
+     &       val_label=(/'1v','1 '/))
         call set_rule2('F_preE(MR)',FACTOR_OUT,tgt_info)
         call set_arg('F_preE(MR)',FACTOR_OUT,'LABEL_RES',1,tgt_info,
      &       val_label=(/'F_E(MR)'/))
@@ -371,7 +371,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_arg('F_E(MR)',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_E(MR)'/))
       call set_arg('F_E(MR)',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'Cdag','C^+'/))
+     &     val_label=(/'Cdag','C^+ '/))
       call set_rule2('F_E(MR)',PRINT_FORMULA,tgt_info)
       call set_arg('F_E(MR)',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_E(MR)'/))
@@ -408,7 +408,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &     val_label=(/'C'/))
       call set_arg('F_C',EXPAND_OP_PRODUCT,'OPERATORS',3,
      &     tgt_info,
-     &     val_label=(/'C','Ctr','C'/))
+     &     val_label=(/'C  ','Ctr','C  '/))
       call set_arg('F_C',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
      &     val_int=(/1,2,1/))
       call set_arg('F_C',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
@@ -459,7 +459,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &     val_label=(/'Cdag'/))
       call set_arg('F_Cdag',EXPAND_OP_PRODUCT,'OPERATORS',3,
      &     tgt_info,
-     &     val_label=(/'Cdag','Ctr^+','Cdag'/))
+     &     val_label=(/'Cdag ','Ctr^+','Cdag '/))
       call set_arg('F_Cdag',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
      &     val_int=(/1,2,1/))
       call set_arg('F_Cdag',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
@@ -519,7 +519,7 @@ c     &              parameters,3,tgt_info)
         call set_arg('F_E(MR)_diag',INSERT,'OP_INS',1,tgt_info,
      &       val_label=(/'1ph'/))
         call set_arg('F_E(MR)_diag',INSERT,'OP_INCL',2,tgt_info,
-     &       val_label=(/'Cdag','C'/))
+     &       val_label=(/'Cdag','C   '/))
         ! replace 1ph by 1
         call set_dependency('F_E(MR)_diag','1',tgt_info)
         call set_rule2('F_E(MR)_diag',REPLACE,tgt_info)
@@ -528,7 +528,7 @@ c     &              parameters,3,tgt_info)
         call set_arg('F_E(MR)_diag',REPLACE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_E(MR)_diag'/))
         call set_arg('F_E(MR)_diag',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'1ph','1'/))
+     &       val_label=(/'1ph','1  '/))
       else
         call set_rule2('F_E(MR)_diag',INVARIANT,tgt_info)
         call set_arg('F_E(MR)_diag',INVARIANT,'LABEL_RES',1,tgt_info,
@@ -647,7 +647,7 @@ c     &                  labels,2,1,parameters,2,tgt_info)
      &     val_label=(/'NORM'/))
       call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'OPERATORS',5,
      &     tgt_info,
-     &     val_label=(/'D','C^+','D','C','D'/))
+     &     val_label=(/'D  ','C^+','D  ','C  ','D  '/))
       call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &     val_int=(/2,3,2,4,2/))
       call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
@@ -661,7 +661,7 @@ c     &                  labels,2,1,parameters,2,tgt_info)
      &     val_label=(/'NORM'/))
       call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'OPERATORS',2,
      &     tgt_info,
-     &     val_label=(/'C^+','C'/))
+     &     val_label=(/'C^+','C  '/))
       call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
      &     val_int=(/2,3/))
       call set_arg('F_NORM_fact',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
@@ -675,7 +675,7 @@ c     &                  labels,2,1,parameters,2,tgt_info)
       call set_arg('F_NORM_fact',SELECT_LINE,'OP_RES',1,tgt_info,
      &     val_label=(/'NORM'/))
       call set_arg('F_NORM_fact',SELECT_LINE,'OP_INCL',2,tgt_info,
-     &     val_label=(/'C^+','C'/))
+     &     val_label=(/'C^+','C  '/))
       call set_arg('F_NORM_fact',SELECT_LINE,'IGAST',1,tgt_info,
      &     val_int=(/3/))
       call set_arg('F_NORM_fact',SELECT_LINE,'MODE',1,tgt_info,

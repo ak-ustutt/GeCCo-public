@@ -102,7 +102,8 @@
 c?        njoined = add_info%nj_op1
 c?        ! iblkop fix:
 c?        iblkop  = (iblkop-1)/njoined + 1
-        if (tra_op.xor.tra_res) then
+        if (.not.tra_op.and.     tra_res .or.
+     &           tra_op.and..not.tra_res) then
           call add_opblk_transp(xret_blk(iblk_res),type_xret,fact,
      &             me_op,me_tgt,tra_op,tra_res,
      &             iblk_op,iblk_res,

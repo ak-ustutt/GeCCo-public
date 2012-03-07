@@ -192,7 +192,7 @@ c dbgend
      &     val_label=(/'preDENS'/))
       call set_arg('F_preDENS0',EXPAND_OP_PRODUCT,'OPERATORS',3,
      &     tgt_info,
-     &     val_label=(/'C0^+','DENS_dag','C0'/))
+     &     val_label=(/'C0^+    ','DENS_dag','C0      '/))
       call set_arg('F_preDENS0',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
      &     val_int=(/2,3,4/))
 
@@ -225,7 +225,7 @@ c     &     val_label=(/'F_DENS0'/))
       call set_arg('F_preDENS',DEF_CUMULANTS,'OP_RES',1,tgt_info,
      &     val_label=(/'preDENS'/))
       call set_arg('F_preDENS',DEF_CUMULANTS,'OPERATORS',2,tgt_info,
-     &     val_label=(/'DENS_dag','CUM'/))
+     &     val_label=(/'DENS_dag','CUM     '/))
       call set_arg('F_preDENS',DEF_CUMULANTS,'LEVEL',1,tgt_info,
      &     val_int=(/4+2*maxexc/))
 
@@ -266,7 +266,7 @@ c dbgend
       call set_arg('F_preCUM',DEF_CUMULANTS,'OP_RES',1,tgt_info,
      &     val_label=(/'preDENS'/))
       call set_arg('F_preCUM',DEF_CUMULANTS,'OPERATORS',2,tgt_info,
-     &     val_label=(/'DENS_dag','CENT'/))
+     &     val_label=(/'DENS_dag','CENT    '/))
       call set_arg('F_preCUM',DEF_CUMULANTS,'MODE',1,tgt_info,
      &     val_str='CUMULANT(CENT)')
       ! exception: one-particle cumulant = one-particle RD
@@ -278,7 +278,7 @@ c dbgend
      &     val_label=(/'preDENS'/))
       call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'OPERATORS',3,
      &     tgt_info,
-     &     val_label=(/'DENS','DENS_dag','DENS'/))
+     &     val_label=(/'DENS    ','DENS_dag','DENS    '/))
       call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
      &     val_int=(/1,2,1/))
       call set_arg('F_preCUM',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
@@ -543,7 +543,7 @@ c     &     val_label=(/'F_HOLE'/))
       call set_arg('F_preCENT',DEF_CUMULANTS,'OP_RES',1,tgt_info,
      &     val_label=(/'preDENS'/))
       call set_arg('F_preCENT',DEF_CUMULANTS,'OPERATORS',2,tgt_info,
-     &     val_label=(/'DENS_dag','DENS'/))
+     &     val_label=(/'DENS_dag','DENS    '/))
       call set_arg('F_preCENT',DEF_CUMULANTS,'MODE',1,tgt_info,
      &     val_str='CENTRAL')
 

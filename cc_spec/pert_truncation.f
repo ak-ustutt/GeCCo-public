@@ -150,8 +150,11 @@ c     &     idx_oplist2
 c          if (ntbar.gt.1)
 c     &         call quit(1,'pert_truncation','strange: ntbar.ne.1')
           ! restrict to second order (T1 counts 0 here)
-          delete = (ord_tbar.eq.tb_trunc.and.
-     &              ord_ham+ord_t+ord_tbar).gt.max_pert
+          delete =  ord_tbar.eq.tb_trunc.and.
+     &             (ord_ham+ord_t+ord_tbar).gt.max_pert
+C this one was syntactically incorrect; does it still work?? 
+C          delete = (ord_tbar.eq.tb_trunc.and.
+C     &              ord_ham+ord_t+ord_tbar).gt.max_pert
           ! avoid <0|TBARmax [[F,T1],Tmax]|0>
           delete = delete.or.
 C     &         (ord_ham.eq.0.and.ord_tbar.gt.0.and.nt1.gt.0)

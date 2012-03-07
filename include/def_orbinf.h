@@ -3,7 +3,7 @@
      &     nsym, ngas, nspin
         integer ::
      &      ntoob,caborb,nbast,nxbast,nactel,nactorb,lsym,imult,ims
-        integer, allocatable ::
+        integer, pointer ::
      &     igassh(:,:),
      &     nbas(:), ntoobs(:), ireots(:), ireost(:),
      &     igamorb(:), igasorb(:),
@@ -14,7 +14,7 @@
      &     xreosym(:), xreotyp(:)
         integer ::
      &     n_bound_orbs, n_freeze_rcmd
-        integer, allocatable ::
+        integer, pointer ::
      &     isym_bound_orbs(:)
 
       end type orbinf

@@ -117,8 +117,8 @@ cmhend
           jblk_op = contr%vertex(jvtx)%iblk_op
           jdag = contr%vertex(jvtx)%dagger
           ! vertices identical ...
-          if (idx_op.eq.jdx_op.and.
-     &        idag.eq.jdag.and.
+          if ( idx_op.eq.jdx_op.and.
+     &        (idag.eqv.jdag).and.
      &        iblk_op.eq.jblk_op) then
             ! ... and commuting? ...
             ok = .true.
@@ -382,7 +382,7 @@ c dbg
 
       contains
 
-      logical function topo_cmp2(top1,top2,eqv,nel)
+      integer function topo_cmp2(top1,top2,eqv,nel)
 
       implicit none
 

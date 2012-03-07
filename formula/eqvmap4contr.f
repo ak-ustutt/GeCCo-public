@@ -96,7 +96,7 @@ c dbg
 
       contains
 
-      logical function topo_cmp(top1,top2,eqv,arc,nel)
+      integer function topo_cmp(top1,top2,eqv,arc,nel)
 
       implicit none
 

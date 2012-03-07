@@ -17,13 +17,14 @@
       character ::
      &     argstr*256
 
-      integer, external ::
-     &     iargc
+c      integer, external ::
+c     &     iargc
 
       l_exit = .false.
       l_infile = .false.
 
-      nargs = iargc()
+c      nargs = iargc()
+      nargs = command_argument_count()
 
       do iarg = 1, nargs
         call getarg(iarg,argstr)

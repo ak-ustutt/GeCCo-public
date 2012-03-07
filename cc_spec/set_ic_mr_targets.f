@@ -460,7 +460,7 @@ c      end if
       call set_arg('F_NORM',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_NORM'/))
       call set_arg('F_NORM',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'1v','1'/))
+     &     val_label=(/'1v','1 '/))
       if (gno.eq.1) then
         ! d) expand reduced densities in terms of cumulants
         call set_dependency('F_NORM','F_DENS',tgt_info)
@@ -628,14 +628,14 @@ c dbgend
       if (gno.eq.0) then
         call set_dependency('FOPT_D','F_DENS0',tgt_info)
         call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',2,tgt_info,
-     &               val_label=(/'F_DENS0','F_D'/))
+     &               val_label=(/'F_DENS0','F_D    '/))
       else if (gno.eq.1) then
         call set_dependency('FOPT_D','F_CUM',tgt_info)
         call set_dependency('FOPT_D','F_HOLE',tgt_info)
         call set_dependency('FOPT_D','DEF_ME_CUM',tgt_info)
         call set_dependency('FOPT_D','DEF_ME_HOLE',tgt_info)
         call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',3,tgt_info,
-     &               val_label=(/'F_HOLE','F_CUM','F_D'/))
+     &               val_label=(/'F_HOLE','F_CUM ','F_D   '/))
       end if
 
 *----------------------------------------------------------------------*
@@ -736,7 +736,7 @@ c dbgend
       if (prc_type.eq.2) then
         call set_dependency('DEF_ME_Dinv','DEF_ME_Dunit',tgt_info)
         call set_arg('DEF_ME_Dinv',INVERT,'LIST',2,tgt_info,
-     &       val_label=(/'ME_Dinv','ME_Dunit'/))
+     &       val_label=(/'ME_Dinv ','ME_Dunit'/))
       else
         call set_arg('DEF_ME_Dinv',INVERT,'LIST',1,tgt_info,
      &       val_label=(/'ME_Dinv'/))

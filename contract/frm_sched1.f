@@ -314,7 +314,8 @@ c fix:
             njoined = mel_arr(idxmel)%mel%op%njoined
             iblkop(1) = (iblkop(1)-1)/njoined + 1
 c fix:
-            if (tra_op1.xor.tra_op1op2) then
+            if (     tra_op1.and..not.tra_op1op2.or.
+     &          .not.tra_op1.and.     tra_op1op2) then
               call add_opblk_transp(xret_blk(iblkres),type_xret,fac,
      &             mel_arr(idxmel)%mel,me_res,tra_op1,tra_op1op2,
      &             iblkop(1),iblkres,

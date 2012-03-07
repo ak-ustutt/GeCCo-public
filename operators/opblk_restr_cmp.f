@@ -31,7 +31,9 @@
 
       opblk_restr_cmp = .false.
 
-      reverse = dag1.xor.dag2
+C      reverse = dag1.xor.dag2
+      reverse = dag1
+      if (dag2) reverse = .not.reverse
 
       nspin = op1%nspin
       ngas  = op1%ngas

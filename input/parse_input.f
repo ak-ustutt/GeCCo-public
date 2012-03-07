@@ -18,13 +18,13 @@
       type value
         integer ::
      &     type, len
-        logical, allocatable ::
+        logical, pointer ::
      &     lval(:)
-        integer, allocatable ::
+        integer, pointer ::
      &     ival(:)
-        real(8), allocatable ::
+        real(8), pointer ::
      &     xval(:)
-        character, allocatable ::
+        character, pointer ::
      &     cval(:)
       end type value
 
@@ -476,6 +476,10 @@ c      end function
         nullify(current%next)
       end if
 
+      nullify(current%val%lval)
+      nullify(current%val%ival)
+      nullify(current%val%xval)
+      nullify(current%val%cval)
 
       current%key = argkey
       current%status = -1
@@ -627,6 +631,11 @@ c      end function
 
       len_arg = check_array(str)
       current%val%len = len_arg
+
+      nullify(current%val%lval)
+      nullify(current%val%ival)
+      nullify(current%val%xval)
+      nullify(current%val%cval)
 
       ! allocate space for taking arguments
       if (iand(type_arg,vtyp_log).gt.0) then
@@ -841,13 +850,13 @@ c      end function
             
             write(luout,fmtstr) trim(curarg%key),
      &         curarg%val%type,curarg%val%len
-            if (allocated(curarg%val%ival))
+            if (associated(curarg%val%ival))
      &           write(luout,*) ' > ',curarg%val%ival
-            if (allocated(curarg%val%xval))
+            if (associated(curarg%val%xval))
      &           write(luout,*) ' > ',curarg%val%xval
-            if (allocated(curarg%val%cval))
+            if (associated(curarg%val%cval))
      &           write(luout,*) ' > ',curarg%val%cval
-            if (allocated(curarg%val%lval))
+            if (associated(curarg%val%lval))
      &           write(luout,*) ' > ',curarg%val%lval
 
             if (.not.associated(curarg%next)) exit arg_loop
@@ -1007,32 +1016,33 @@ c      end function
 
       integer, parameter ::
      &     maxlen  = 256,
-     &     n_delim = 9
+     &     n_delim = 8
       logical, parameter ::
      &     new_line_is_delim = .true.
       character, parameter ::
      &     delimiter(n_delim) = 
-     &     (/' ', ';', ',', '(', ')', '\\', '"', '!', '=' /)
+     &     (/' ', ';', ',', '(', ')', '"', '!', '=' /)
+cc     &     (/' ', ';', ',', '(', ')', '\\', '"', '!', '=' /)
       integer, parameter ::
      &     ispace =   1,
      &     isemicolon = 2,
      &     icomma =   3,
      &     iparen_o = 4,
      &     iparen_c = 5,
-     &     ibacksl  = 6,
-     &     iquote   = 7,
-     &     icomment = 8,
-     &     iequal   = 9
+cc     &     ibacksl  = 6,
+     &     iquote   = 6, !7,
+     &     icomment = 7, !8,
+     &     iequal   = 8  !9
       integer, parameter ::
      &     n_allowed_start = 1,
      &     allowed_start(n_allowed_start) = (/icomment/),
-     &     n_allowed_after_key = 7,
+     &     n_allowed_after_key = 6,
      &     allowed_after_key(n_allowed_after_key) = 
      &     (/ispace,iequal,isemicolon,
-     &     iparen_o,ibacksl,iquote,icomment/),
-     &     n_allowed_after_arg = 5,
+     &     iparen_o,iquote,icomment/),
+     &     n_allowed_after_arg = 4,
      &     allowed_after_arg(n_allowed_after_arg) = 
-     &     (/isemicolon,iequal,icomma,ibacksl,icomment/)
+     &     (/isemicolon,iequal,icomma,icomment/)
       character ::
      &     line*(maxlen)
 

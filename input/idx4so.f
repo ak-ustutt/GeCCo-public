@@ -86,7 +86,7 @@ c      integer, parameter ::
       integer ::
      &     len_cache, idx_cache,
 c     &     cache_tab1(max_cache), cache_tab2(2,max_cache)
-     &     cache_tab(3,max_cache), cache_stat(2)
+     &     cache_tab(3,max_cache), cache_stat(3)
       
       integer, external ::
      &     idx4sg, iblk_occ, search_list6
@@ -272,7 +272,9 @@ C          end if
 
         ! remember phase for reordered indices, if necessary
         idxraw(1,ii) = 1
-        if (reopr.xor.reoqs) idxraw(1,ii) = -1
+        if (reopr) idxraw(1,ii) = -1
+        if (reoqs) idxraw(1,ii) = -idxraw(1,ii)
+C        if (reopr.xor.reoqs) idxraw(1,ii) = -1
         if (sgn_change)      idxraw(1,ii) = -idxraw(1,ii)
 
         if (ioff.ge.0) then

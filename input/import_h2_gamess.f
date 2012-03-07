@@ -116,7 +116,9 @@ c     &     hop
       ifree = mem_setmark('import_h2')
 
       ifree = mem_alloc_real(xbuf,nintmx,'mo2_xbuff')
-      ifree = mem_alloc_int(ibuf,nlabmx,'mo2_ibuff')
+c      ifree = mem_alloc_int(ibuf,nlabmx,'mo2_ibuff')
+      ! i4/i8: compilers do not like this (might crash for 32 bit)
+      allocate(ibuf(nlabmx))
 
       if (ffham%unit.le.0) then
         call file_open(ffham)
@@ -326,6 +328,9 @@ c dbgend
 
       ! automatic deallocation:
       ifree = mem_flushmark('import_h2')
+
+      ! by hand:
+      deallocate(ibuf)
 
       call atim_csw(cpu,sys,wall)
 

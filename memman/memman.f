@@ -37,9 +37,9 @@
      &       name*(mem_maxname)
         integer ::
      &       type, len
-        real(8), allocatable ::
+        real(8), pointer ::
      &       xmem(:)
-        integer, allocatable ::
+        integer, pointer ::
      &       imem(:)
         type(mem_slice), pointer ::
      &       prev, next
@@ -220,6 +220,8 @@
       mem_cursection%tail => mem_cursection%head
       mem_curslice => mem_cursection%head
 
+      nullify(mem_curslice%xmem)
+      nullify(mem_curslice%imem)
       nullify(mem_curslice%prev)
       nullify(mem_curslice%next)
 
@@ -435,7 +437,7 @@ c      in_last_section = associated(cursection,mem_cursection)
       ! deallocate and register freed memory
       select case(slice%type)
       case(mtyp_int)
-        if (.not.allocated(slice%imem))
+        if (.not.associated(slice%imem))
      &       call quit(1,'memman_dealloc','slice was not allocated: '//
      &       trim(slice%name))        
         ! check paddings
@@ -451,7 +453,7 @@ c      in_last_section = associated(cursection,mem_cursection)
         mem_reg = (nalloc+2*npad)/irat
         if (mod(nalloc,irat).ne.0) mem_reg = mem_reg+1
       case(mtyp_rl8)
-        if (.not.allocated(slice%xmem))
+        if (.not.associated(slice%xmem))
      &       call quit(1,'memman_dealloc','slice was not allocated: '//
      &       trim(slice%name))
         ! check paddings

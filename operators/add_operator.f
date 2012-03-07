@@ -41,7 +41,7 @@
      &     //trim(label)//'"')
       list_pnt%op%name(1:len_opname) = ' '
       list_pnt%op%name = trim(label)
-      list_pnt%op%assoc_list(1:mxlen_melabel) = ' '
+      list_pnt%op%assoc_list(1:2*len_opname) = ' '
 
       ! init all pointers
       list_pnt%op%ihpvca_occ => null()

@@ -113,7 +113,7 @@
      &     lval=oldref)
       call get_argument_value('calculate.solve','maxiter',
      &     ival=maxit)
-      if (is_argument_set('calculate.solve.non_linear','maxiter'))
+      if (is_argument_set('calculate.solve.non_linear','maxiter').gt.0)
      &     call get_argument_value('calculate.solve.non_linear',
      &     'maxiter',ival=maxit)
       trunc = ntrunc.ge.0
@@ -805,10 +805,10 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
           call set_dependency('F_MRCC_LAG','H1bar',tgt_info)
           call set_dependency('F_MRCC_LAG','T-T1',tgt_info)
           call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
-     &         tgt_info,val_label=(/'L','H1bar','T-T1','C0'/))
+     &         tgt_info,val_label=(/'L    ','H1bar','T-T1 ','C0   '/))
         else
           call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
-     &         tgt_info,val_label=(/'L','H','T','C0'/))
+     &         tgt_info,val_label=(/'L ','H ','T ','C0'/))
         end if
         call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'MAXCOM_RES',1,
      &       tgt_info,val_int=(/maxcom/))
@@ -830,7 +830,7 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
      &       val_label=(/'NORM'/))
         call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OPERATORS',3,
      &       tgt_info,
-     &       val_label=(/'C0^+','Heff','C0'/))
+     &       val_label=(/'C0^+','Heff','C0  '/))
         call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'IDX_SV',3,
      &       tgt_info,
      &       val_int=(/2,3,4/))
@@ -843,7 +843,7 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
      &       val_label=(/'NORM'/))
         call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &       tgt_info,
-     &       val_label=(/'C0^+','L','Geff','C0'/))
+     &       val_label=(/'C0^+','L   ','Geff','C0  '/))
         call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'IDX_SV',4,
      &       tgt_info,
      &       val_int=(/2,3,4,5/))
@@ -861,7 +861,7 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
      &       val_label=(/'NORM'/))
         call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'OPERATORS',3,
      &       tgt_info,
-     &       val_label=(/'E(MR)','C0^+','C0'/))
+     &       val_label=(/'E(MR)','C0^+ ','C0   '/))
         call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'IDX_SV',3,
      &       tgt_info,
      &       val_int=(/2,3,4/))
@@ -877,7 +877,7 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
         call set_arg('F_MRCC_LAG',REPLACE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_MRCC_LAG'/))
         call set_arg('F_MRCC_LAG',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'T-T1','T'/))
+     &       val_label=(/'T-T1','T   '/))
         if (htt) then
           call set_rule2('F_MRCC_LAG',SELECT_SPECIAL,tgt_info)
           call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_RES',1,
@@ -885,7 +885,7 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
           call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,
      &         tgt_info,val_label=(/'F_MRCC_LAG'/))
           call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',3,
-     &         tgt_info,val_label=(/'H1bar','H','T'/))
+     &         tgt_info,val_label=(/'H1bar','H    ','T    '/))
           call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &         val_str='HTT')
         end if
@@ -942,7 +942,7 @@ c          end if
 c        else
           if (h1bar) then
             call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,
-     &         tgt_info,val_label=(/'H1bar','T'/))
+     &         tgt_info,val_label=(/'H1bar','T    '/))
           else
             call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,
      &         tgt_info,val_label=(/'H','T'/))
@@ -961,7 +961,7 @@ c        end if
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_MRCC_LAG'/))
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
-     &       val_label=(/'L','Geff'/))
+     &       val_label=(/'L   ','Geff'/))
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='SAME')
       end if
@@ -973,7 +973,7 @@ c        end if
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_MRCC_LAG'/))
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',3,tgt_info,
-     &       val_label=(/'L','T','Tfix'/))
+     &       val_label=(/'L   ','T   ','Tfix'/))
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCCrem0res')
       end if
@@ -997,7 +997,7 @@ c        end if
           call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'LABEL_IN',1,
      &         tgt_info,val_label=(/'F_MRCC_LAG'/))
           call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',4,
-     &       tgt_info,val_label=(/'H1bar','H1bar','T','L'/)) ! #2 is dummy
+     &       tgt_info,val_label=(/'H1bar','H1bar','T    ','L    '/)) ! #2 is dummy
           call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'MODE',1,tgt_info,
      &         val_str='COUNT_L/PRESCREEN')
           call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
@@ -1040,7 +1040,7 @@ c          call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',4,
 c     &       tgt_info,val_label=(/'H1bar','FREF','T','L'/))
 c        else
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'OPERATORS',4,
-     &     tgt_info,val_label=(/'H','FREF','T','L'/))
+     &     tgt_info,val_label=(/'H   ','FREF','T   ','L   '/))
 c        end if
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'MODE',1,tgt_info,
      &       val_str='COUNT_L')
@@ -1133,7 +1133,7 @@ c dbgend
         call set_arg('F_MRCC_LAG',REPLACE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_MRCC_LAG'/))
         call set_arg('F_MRCC_LAG',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'L','T^+'/))
+     &       val_label=(/'L  ','T^+'/))
         call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
         call set_arg('F_MRCC_LAG',EXPAND,'LABEL_RES',1,tgt_info,
      &       val_label=(/'F_MRCC_LAG'/))
@@ -1149,7 +1149,7 @@ c dbgend
         call set_arg('F_MRCC_LAG',REPLACE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_MRCC_LAG'/))
         call set_arg('F_MRCC_LAG',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'T^+','L'/))
+     &       val_label=(/'T^+','L  '/))
         if (h1bar) then
           ! we also need to replace fixed part of T in H1bar!
           call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
@@ -1298,13 +1298,13 @@ c dbgend
      &     val_label=(/'E(MR)'/))
       if (tfix.eq.0) then
         call set_arg('F_MRCC_E',INVARIANT,'OPERATORS',2,tgt_info,
-     &       val_label=(/'L','E(MR)'/))
+     &       val_label=(/'L    ','E(MR)'/))
       else if (maxit.gt.1) then
         call set_arg('F_MRCC_E',INVARIANT,'OPERATORS',3,tgt_info,
-     &       val_label=(/'L','Tfix^+','E(MR)'/))
+     &       val_label=(/'L     ','Tfix^+','E(MR) '/))
       else
         call set_arg('F_MRCC_E',INVARIANT,'OPERATORS',4,tgt_info,
-     &       val_label=(/'L','Tfix^+','E(MR)','T'/))
+     &       val_label=(/'L     ','Tfix^+','E(MR) ','T     '/))
       end if
       call set_arg('F_MRCC_E',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='MRCC energy expression')
@@ -1338,7 +1338,7 @@ c dbgend
      &       val_label=(/'T'/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'OPERATORS',5,
      &       tgt_info,
-     &       val_label=(/'T','Dtr','Ttr','Dtr','T'/))
+     &       val_label=(/'T  ','Dtr','Ttr','Dtr','T  '/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &       val_int=(/1,2,3,2,1/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MIN',5,tgt_info,
@@ -1362,7 +1362,7 @@ c dbgend
      &       val_label=(/'T'/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'OPERATORS',3,
      &       tgt_info,
-     &       val_label=(/'T','Ttr','T'/))
+     &       val_label=(/'T  ','Ttr','T  '/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
      &       val_int=(/1,2,1/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
@@ -1429,7 +1429,7 @@ c dbgend
      &       val_label=(/'L'/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'OPERATORS',5,
      &       tgt_info,
-     &       val_label=(/'L','Dtr^+','Ltr','Dtr^+','L'/))
+     &       val_label=(/'L    ','Dtr^+','Ltr  ','Dtr^+','L    '/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &       val_int=(/1,2,3,2,1/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MIN',5,tgt_info,
@@ -1453,7 +1453,7 @@ c dbgend
      &       val_label=(/'L'/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'OPERATORS',3,
      &       tgt_info,
-     &       val_label=(/'L','Ltr','L'/))
+     &       val_label=(/'L  ','Ltr','L  '/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
      &       val_int=(/1,2,1/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
@@ -1498,7 +1498,7 @@ c      call set_dependency('F_E(MRCC)tr','FREF',tgt_info)
       call set_arg('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,'OP_RES',1,
      &     tgt_info,val_label=(/'E(MR)'/))
       call set_arg('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
-     &     tgt_info,val_label=(/'L','H','T','C0'/))
+     &     tgt_info,val_label=(/'L ','H ','T ','C0'/))
 c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
       call set_arg('F_E(MRCC)tr',DEF_MRCC_LAGRANGIAN,'MAXCOM_RES',1,
      &     tgt_info,val_int=(/1/))
@@ -1541,7 +1541,7 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
         call set_arg('F_E(MRCC)tr',REPLACE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_E(MRCC)tr'/))
         call set_arg('F_E(MRCC)tr',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'1ph','1'/))
+     &       val_label=(/'1ph','1  '/))
       end if
       ! g) expand T and L
       call set_dependency('F_E(MRCC)tr','F_T',tgt_info)
@@ -1720,7 +1720,7 @@ c dbgend
      &         val_label=(/'TT'/))
           call set_arg('F_TT',EXPAND_OP_PRODUCT,'OPERATORS',3,
      &         tgt_info,
-     &         val_label=(/'TT','T','TT'/))
+     &         val_label=(/'TT','T ','TT'/))
           call set_arg('F_TT',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
      &         val_int=(/1,2,1/))
           call set_arg('F_TT',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
@@ -1737,7 +1737,7 @@ c dbgend
      &         val_label=(/'TT'/))
           call set_arg('F_TT',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &         tgt_info,
-     &         val_label=(/'TT','T','T','TT'/))
+     &         val_label=(/'TT','T ','T ','TT'/))
           call set_arg('F_TT',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &         val_int=(/1,2,3,1/))
           call set_arg('F_TT',EXPAND_OP_PRODUCT,'BLK_MIN',4,tgt_info,
@@ -1906,7 +1906,7 @@ c dbgend
       call set_arg('F_Geff',DEF_MRCC_INTM,'INTERM',1,tgt_info,
      &     val_label=(/'Geff'/))
       call set_arg('F_Geff',DEF_MRCC_INTM,'OPERATORS',3,tgt_info,
-     &     val_label=(/'T','H','Heff'/))
+     &     val_label=(/'T   ','H   ','Heff'/))
       call set_arg('F_Geff',DEF_MRCC_INTM,'MAXCOM',1,
      &     tgt_info,val_int=(/maxcom/))
       call set_arg('F_Geff',DEF_MRCC_INTM,'MODE',1,tgt_info,
@@ -1930,7 +1930,7 @@ c dbgend
       call set_arg('F_H1barfull',DEF_MRCC_LAGRANGIAN,'OP_RES',1,
      &     tgt_info,val_label=(/'H1bar'/))
       call set_arg('F_H1barfull',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
-     &     tgt_info,val_label=(/'T1','H','T1','H1bar'/))
+     &     tgt_info,val_label=(/'T1   ','H    ','T1   ','H1bar'/))
       call set_arg('F_H1barfull',DEF_MRCC_LAGRANGIAN,'MAXCOM_RES',1,
      &     tgt_info,val_int=(/0/)) !dummy only
       call set_arg('F_H1barfull',DEF_MRCC_LAGRANGIAN,'MAXCOM_EN',1,
@@ -1946,7 +1946,7 @@ c      if (maxtt.lt.0) then ! do not forbid T-T-contractions in H1bar!
         call set_arg('F_H1barfull',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_H1bar'/))
         call set_arg('F_H1barfull',SELECT_SPECIAL,'OPERATORS',2,
-     &       tgt_info,val_label=(/'H','T1'/))
+     &       tgt_info,val_label=(/'H ','T1'/))
         call set_arg('F_H1barfull',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCC2')
         call set_arg('F_H1barfull',SELECT_SPECIAL,'MODE',1,tgt_info,
@@ -1959,7 +1959,7 @@ c      end if
       call set_arg('F_H1barfull',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1barfull',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'T1','T'/))
+     &     val_label=(/'T1','T '/))
       if (trunc.and.tfix.eq.0) then !tfix>0: no trunc. for fixed sol.
         ! apply perturbative truncation of Lagrangian
         call set_rule2('F_H1barfull',SELECT_SPECIAL,tgt_info)
@@ -1969,7 +1969,7 @@ c      end if
         call set_arg('F_H1barfull',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_H1bar'/))
         call set_arg('F_H1barfull',SELECT_SPECIAL,'OPERATORS',3,
-     &       tgt_info,val_label=(/'H','FREF','T'/))
+     &       tgt_info,val_label=(/'H   ','FREF','T   '/))
         call set_arg('F_H1barfull',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCCtrunc')
         ! expand effective Fock operator (if it was inserted)
@@ -2054,7 +2054,7 @@ c        call set_arg('F_preP4int',REPLACE,'OP_LIST',2,tgt_info,
 c     &       val_label=(/'H1bar','H_P4'/))
 c      else
         call set_arg('F_preP4int',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'H','H_P4'/))
+     &       val_label=(/'H   ','H_P4'/))
 c      end if
       call set_rule2('F_preP4int',INVARIANT,tgt_info)
       call set_arg('F_preP4int',INVARIANT,'LABEL_RES',1,tgt_info,
@@ -2121,7 +2121,7 @@ c dbgend
       call set_arg('F_T(2)red',DEF_MRCC_INTM,'INTERM',1,tgt_info,
      &     val_label=(/'T(2)red'/))
       call set_arg('F_T(2)red',DEF_MRCC_INTM,'OPERATORS',2,tgt_info,
-     &     val_label=(/'T','Dtr'/))
+     &     val_label=(/'T  ','Dtr'/))
       call set_arg('F_T(2)red',DEF_MRCC_INTM,'MAXCOM',1,
      &     tgt_info,val_int=(/2/))
       call set_arg('F_T(2)red',DEF_MRCC_INTM,'MODE',1,tgt_info,
@@ -2143,7 +2143,7 @@ c dbgend
       call set_arg('F_T(3)red',DEF_MRCC_INTM,'INTERM',1,tgt_info,
      &     val_label=(/'T(3)red'/))
       call set_arg('F_T(3)red',DEF_MRCC_INTM,'OPERATORS',3,tgt_info,
-     &     val_label=(/'T','Dtr'/))
+     &     val_label=(/'T  ','Dtr'/))
       call set_arg('F_T(3)red',DEF_MRCC_INTM,'MAXCOM',1,
      &     tgt_info,val_int=(/3/))
       call set_arg('F_T(3)red',DEF_MRCC_INTM,'MODE',1,tgt_info,
@@ -2202,7 +2202,7 @@ c dbgend
       call set_arg('F_MRCC_S(S+1)',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_MRCC_S(S+1)'/))
       call set_arg('F_MRCC_S(S+1)',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'L','T^+'/))
+     &     val_label=(/'L  ','T^+'/))
 c      call set_rule2('F_MRCC_S(S+1)',SELECT_TERMS,tgt_info)
 c      call set_arg('F_MRCC_S(S+1)',SELECT_TERMS,'LABEL_RES',1,tgt_info,
 c     &     val_label=(/'F_MRCC_S(S+1)'/))
@@ -2257,7 +2257,7 @@ c dbgend
       call set_arg('F_Ecorrected',INVARIANT,'OP_RES',1,tgt_info,
      &     val_label=(/'E(MR)'/))
       call set_arg('F_Ecorrected',INVARIANT,'OPERATORS',2,tgt_info,
-     &     val_label=(/'E(MR)','L'/))
+     &     val_label=(/'E(MR)','L    '/))
       call set_arg('F_Ecorrected',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='Energy + correction from MRCC Lagrangian')
       call set_rule2('F_Ecorrected',REPLACE,tgt_info)
@@ -2266,7 +2266,7 @@ c dbgend
       call set_arg('F_Ecorrected',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_Ecorrected'/))
       call set_arg('F_Ecorrected',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'L','T^+'/))
+     &     val_label=(/'L  ','T^+'/))
 c dbg
       call set_rule2('F_Ecorrected',PRINT_FORMULA,tgt_info)
       call set_arg('F_Ecorrected',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -2290,10 +2290,10 @@ c dbgend
         call set_dependency('F_Efix','H1bar',tgt_info)
         call set_dependency('F_Efix','T-T1',tgt_info)
         call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
-     &       tgt_info,val_label=(/'L','H1bar','T-T1','C0'/))
+     &       tgt_info,val_label=(/'L    ','H1bar','T-T1 ','C0   '/))
       else
         call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'OPERATORS',4,
-     &       tgt_info,val_label=(/'L','H','T','C0'/))
+     &       tgt_info,val_label=(/'L ','H ','T ','C0'/))
       end if
       call set_arg('F_Efix',DEF_MRCC_LAGRANGIAN,'MAXCOM_RES',1,
      &     tgt_info,val_int=(/0/)) ! just the energy
@@ -2310,7 +2310,7 @@ c dbgend
         call set_arg('F_Efix',REPLACE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_Efix'/))
         call set_arg('F_Efix',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'T-T1','T'/))
+     &       val_label=(/'T-T1','T   '/))
       end if
       ! only the fixed part
       call set_rule2('F_Efix',REPLACE,tgt_info)
@@ -2319,7 +2319,7 @@ c dbgend
       call set_arg('F_Efix',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_Efix'/))
       call set_arg('F_Efix',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'T','Tfix'/))
+     &     val_label=(/'T   ','Tfix'/))
       call set_rule2('F_Efix',INVARIANT,tgt_info)
       call set_arg('F_Efix',INVARIANT,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_Efix'/))
@@ -2337,7 +2337,7 @@ c dbgend
       call set_arg('F_Efix',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_Efix'/))
       call set_arg('F_Efix',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'Tfix','T'/))
+     &     val_label=(/'Tfix','T   '/))
       call set_rule2('F_Efix',SELECT_SPECIAL,tgt_info)
       call set_arg('F_Efix',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_Efix'/))
@@ -2345,7 +2345,7 @@ c dbgend
      &     val_label=(/'F_Efix'/))
       if (h1bar) then
         call set_arg('F_Efix',SELECT_SPECIAL,'OPERATORS',2,
-     &     tgt_info,val_label=(/'H1bar','T'/))
+     &     tgt_info,val_label=(/'H1bar','T    '/))
       else
         call set_arg('F_Efix',SELECT_SPECIAL,'OPERATORS',2,
      &     tgt_info,val_label=(/'H','T'/))
@@ -2375,7 +2375,7 @@ c dbgend
      &     val_label=(/'S(S+1)'/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'OPERATORS',6,
      &     tgt_info,
-     &     val_label=(/'C0^+','T^+','S+','S-','T','C0'/))
+     &     val_label=(/'C0^+','T^+ ','S+  ','S-  ','T   ','C0  '/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &     val_int=(/2,3,4,5,6,7/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
@@ -2387,7 +2387,7 @@ c dbgend
      &     val_label=(/'S(S+1)'/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'OPERATORS',6,
      &     tgt_info,
-     &     val_label=(/'C0^+','T^+','S-','S+','T','C0'/))
+     &     val_label=(/'C0^+','T^+ ','S-  ','S+  ','T   ','C0  '/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &     val_int=(/2,3,4,5,6,7/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
@@ -2402,7 +2402,8 @@ c dbgend
      &     val_label=(/'S(S+1)'/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'OPERATORS',6,
      &     tgt_info,
-     &     val_label=(/'C0^+','T^+','Sz','Sz_dum','T','C0'/))
+     &     val_label=(/'C0^+  ','T^+   ','Sz    ','Sz_dum',
+     &                 'T     ','C0    '/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &     val_int=(/2,3,4,5,6,7/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
@@ -2413,7 +2414,7 @@ c dbgend
       call set_arg('F_T_S2',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_T_S2'/))
       call set_arg('F_T_S2',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'Sz_dum','Sz'/))
+     &     val_label=(/'Sz_dum','Sz    '/))
 c dbg
 c      call set_rule2('F_T_S2',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_T_S2',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -2432,7 +2433,7 @@ c dbgend
      &     val_label=(/'NORM'/))
       call set_arg('F_T_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &     tgt_info,
-     &     val_label=(/'C0^+','T^+','T','C0'/))
+     &     val_label=(/'C0^+','T^+ ','T   ','C0  '/))
       call set_arg('F_T_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/2,3,4,5/))
 c dbg
@@ -2537,52 +2538,53 @@ c dbgend
       if (optref.eq.-1.or.optref.eq.-2) then
         if (Op_eqs) then
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',5,tgt_info,
-     &             val_label=(/'F_Heff','F_MRCC_E','F_Geff',
-     &                         'F_OMG','F_OMG_C0'/))
+     &             val_label=(/'F_Heff  ','F_MRCC_E','F_Geff  ',
+     &                         'F_OMG   ','F_OMG_C0'/))
         else if (h1bar) then
           call set_dependency('FOPT_OMG','F_H1bar',tgt_info)
           call set_dependency('FOPT_OMG','DEF_ME_H1bar',tgt_info)
           if (maxp.ge.2.and.tfix.eq.0) then
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',5,tgt_info,
-     &            val_label=(/'F_P4int','F_H1bar',
-     &                        'F_MRCC_E','F_OMG','F_OMG_C0'/))
+     &            val_label=(/'F_P4int ','F_H1bar ',
+     &                        'F_MRCC_E','F_OMG   ','F_OMG_C0'/))
           else
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
-     &            val_label=(/'F_H1bar','F_MRCC_E','F_OMG','F_OMG_C0'/))
+     &            val_label=(/'F_H1bar ','F_MRCC_E','F_OMG   ',
+     &                        'F_OMG_C0'/))
           end if
         else
           if (maxp.ge.2.and.tfix.eq.0) then
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
-     &             val_label=(/'F_P4int',
-     &                         'F_MRCC_E','F_OMG','F_OMG_C0'/))
+     &             val_label=(/'F_P4int ',
+     &                         'F_MRCC_E','F_OMG   ','F_OMG_C0'/))
           else
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',3,tgt_info,
-     &             val_label=(/'F_MRCC_E','F_OMG','F_OMG_C0'/))
+     &             val_label=(/'F_MRCC_E','F_OMG   ','F_OMG_C0'/))
           end if
         end if
       else
         if (Op_eqs) then
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
-     &             val_label=(/'F_Heff','F_MRCC_E','F_Geff',
-     &                         'F_OMG'/))
+     &             val_label=(/'F_Heff  ','F_MRCC_E','F_Geff  ',
+     &                         'F_OMG   '/))
         else if (h1bar) then
           call set_dependency('FOPT_OMG','F_H1bar',tgt_info)
           call set_dependency('FOPT_OMG','DEF_ME_H1bar',tgt_info)
           if (maxp.ge.2.and.tfix.eq.0) then
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
-     &             val_label=(/'F_P4int',
-     &                         'F_H1bar','F_MRCC_E','F_OMG'/))
+     &             val_label=(/'F_P4int ',
+     &                         'F_H1bar ','F_MRCC_E','F_OMG   '/))
           else
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',3,tgt_info,
-     &             val_label=(/'F_H1bar','F_MRCC_E','F_OMG'/))
+     &             val_label=(/'F_H1bar ','F_MRCC_E','F_OMG   '/))
           end if
         else
           if (maxp.ge.2.and.tfix.eq.0) then
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',3,tgt_info,
-     &             val_label=(/'F_P4int','F_MRCC_E','F_OMG'/))
+     &             val_label=(/'F_P4int ','F_MRCC_E','F_OMG   '/))
           else
           call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',2,tgt_info,
-     &             val_label=(/'F_MRCC_E','F_OMG'/))
+     &             val_label=(/'F_MRCC_E','F_OMG   '/))
           end if
         end if
       end if
@@ -2776,7 +2778,7 @@ c dbgend
         call set_arg(trim(dia_label),PRECONDITIONER,'LIST_PRC',1,
      &       tgt_info,val_label=(/'ME_Ttr'/))
         call set_arg(trim(dia_label),PRECONDITIONER,'LIST_INP',2,
-     &       tgt_info,val_label=(/'ME_FREF','ME_DENS1'/))
+     &       tgt_info,val_label=(/'ME_FREF ','ME_DENS1'/))
         call set_arg(trim(dia_label),PRECONDITIONER,'MODE',1,tgt_info,
      &       val_str='dia-Fshift')
         call set_arg(trim(dia_label),PRECONDITIONER,'SHIFT',1,tgt_info,
@@ -2805,7 +2807,7 @@ c dbgend
       call set_arg('DEF_ME_T',DEF_ME_LIST,'LIST',1,tgt_info,
      &             val_label=(/'ME_T'/))
       call set_arg('DEF_ME_T',DEF_ME_LIST,'OPERATOR',1,tgt_info,
-     &             val_label=(/'T'/))
+     &             val_label=(/'T   '/))
       call set_arg('DEF_ME_T',DEF_ME_LIST,'MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_T',DEF_ME_LIST,'IRREP',1,tgt_info,
@@ -3280,7 +3282,7 @@ c dbgend
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_E',1,tgt_info,
      &       val_label=(/'ME_E(MR)'/))
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',3,tgt_info,
-     &       val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag'/))
+     &       val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag'/))
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',1,tgt_info,
      &       val_label=(/'FOPT_T'/))
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM',1,tgt_info,
@@ -3290,11 +3292,11 @@ c dbgend
       end if
       if (optref.eq.-1.or.optref.eq.-2) then
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_OPT',2,tgt_info,
-     &       val_label=(/'ME_T','ME_C0'/))
+     &       val_label=(/'ME_T ','ME_C0'/))
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'MODE',1,tgt_info,
      &       val_str='TRF/NRM')
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_RESID',2,tgt_info,
-     &       val_label=(/'ME_OMG','ME_A_C0'/))
+     &       val_label=(/'ME_OMG ','ME_A_C0'/))
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_PRC',2,tgt_info,
      &       val_label=(/trim(dia_label),trim(dia_label2)/))
       else
@@ -3312,56 +3314,65 @@ c dbgend
       if (optref.ne.0.and.update_prc) then
         if (tred.eq.0) then
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
-     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
-     &                 'ME_D','ME_Dinv',
-     &                 'ME_A'/))
+     &     val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
+     &                 'ME_Dproj ',
+     &                 'ME_D     ','ME_Dinv  ',
+     &                 'ME_A     '/))
         else if (ex_t3red) then
         call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
         call set_dependency('SOLVE_MRCC','FOPT_T(3)red',tgt_info)
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',9,tgt_info,
-     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
-     &                 'ME_D','ME_Dinv',
-     &                 'ME_A','ME_T(2)red','ME_T(3)red'/))
+     &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                 'ME_Dproj  ',
+     &                 'ME_D      ','ME_Dinv   ',
+     &                 'ME_A      ','ME_T(2)red','ME_T(3)red'/))
         else
         call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',8,tgt_info,
-     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
-     &                 'ME_D','ME_Dinv',
-     &                 'ME_A','ME_T(2)red'/))
+     &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                 'ME_Dproj  ',
+     &                 'ME_D      ','ME_Dinv   ',
+     &                 'ME_A      ','ME_T(2)red'/))
         end if
       else if (optref.ne.0.and..not.update_prc) then
         if (tred.eq.0) then
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',6,tgt_info,
-     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
-     &                 'ME_D','ME_Dinv'/))
+     &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                 'ME_Dproj  ',
+     &                 'ME_D      ','ME_Dinv   '/))
         else if (ex_t3red) then
         call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
         call set_dependency('SOLVE_MRCC','FOPT_T(3)red',tgt_info)
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',8,tgt_info,
-     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
-     &                 'ME_D','ME_Dinv','ME_T(2)red','ME_T(3)red'/))
+     &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                 'ME_Dproj  ',
+     &                 'ME_D      ','ME_Dinv   ','ME_T(2)red',
+     &                 'ME_T(3)red'/))
         else
         call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
-     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag','ME_Dproj',
-     &                 'ME_D','ME_Dinv','ME_T(2)red'/))
+     &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                 'ME_Dproj  ',
+     &                 'ME_D      ','ME_Dinv   ','ME_T(2)red'/))
         end if
       else
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',3,tgt_info,
-     &     val_label=(/'ME_Ttr','ME_Dtr','ME_Dtrdag'/))
+     &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag '/))
       end if
       if (optref.ne.0) then
         if (update_prc) then
           if (tred.eq.0) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',3,tgt_info,
-     &         val_label=(/'FOPT_T','FOPT_D','FOPT_Atr'/))
+     &         val_label=(/'FOPT_T  ','FOPT_D  ','FOPT_Atr'/))
           else if (ex_t3red) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',5,tgt_info,
-     &         val_label=(/'FOPT_T','FOPT_D','FOPT_Atr',
+     &         val_label=(/'FOPT_T      ','FOPT_D      ',
+     &                     'FOPT_Atr    ',
      &                     'FOPT_T(2)red','FOPT_T(3)red'/))
           else
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',4,tgt_info,
-     &         val_label=(/'FOPT_T','FOPT_D','FOPT_Atr',
+     &         val_label=(/'FOPT_T      ','FOPT_D      ',
+     &                     'FOPT_Atr    ',
      &                     'FOPT_T(2)red'/))
           end if
         else
@@ -3370,11 +3381,11 @@ c dbgend
      &         val_label=(/'FOPT_T','FOPT_D'/))
           else if (ex_t3red) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',4,tgt_info,
-     &         val_label=(/'FOPT_T','FOPT_D',
+     &         val_label=(/'FOPT_T      ','FOPT_D      ',
      &                     'FOPT_T(2)red','FOPT_T(3)red'/))
           else
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',3,tgt_info,
-     &         val_label=(/'FOPT_T','FOPT_D',
+     &         val_label=(/'FOPT_T      ','FOPT_D      ',
      &                     'FOPT_T(2)red'/))
           end if
         end if

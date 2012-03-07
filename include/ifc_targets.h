@@ -31,6 +31,7 @@
      &     val_int,val_int_list,val_occ,val_restr,
      &     val_rl8,val_rl8_list,val_str,ndim,success)
         import
+        implicit none
         type(action), intent(in), target ::
      &       rule
         type(target_info), intent(in) ::

@@ -25,7 +25,7 @@
      &     id   ! might be obsolete
         character(len_opname) ::
      &     name
-        character(2*len_opname) ::  
+        character(2*len_opname+2) ::  
      &     assoc_list     ! name of the currently associated ME-list
 *----------------------------------------------------------------------*
 *

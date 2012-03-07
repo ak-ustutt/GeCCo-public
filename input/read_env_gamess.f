@@ -47,7 +47,7 @@
       character(len=8), pointer ::
      &     orb_lab(:)
 
-      groups(1:8) = (/'C1','Ci','Cs','C2','C2v','C2h','D2','D2h'/)
+      groups(1:8) = (/'C1 ','Ci ','Cs ','C2 ','C2v','C2h','D2 ','D2h'/)
 
       iprint = max(iprlvl,ntest)
 
@@ -161,7 +161,7 @@ c      end do
         irreps = (/'AG ','AU ','   ','   ','   ','   ','   ','   '/)
       case(3)
         nsym = 2
-        irreps = (/'A''','A''''','   ','   ','   ','   ','   ','   '/)
+        irreps = (/"A' ","A''",'   ','   ','   ','   ','   ','   '/)
       case(4)
         nsym = 2
         irreps = (/'A  ','B  ','   ','   ','   ','   ','   ','   '/)

@@ -217,7 +217,9 @@
 
         ! remember phase for reordered indices, if necessary
         idxraw(1,ii) = 1
-        if (reopr.xor.reoqs) idxraw(1,ii) = -1
+        if (reopr) idxraw(1,ii) = -1
+        if (reoqs) idxraw(1,ii) = -idxraw(1,ii)
+C        if (reopr.xor.reoqs) idxraw(1,ii) = -1
         if (sgn_change)      idxraw(1,ii) = -idxraw(1,ii)
 
         ! MS(A), GAM(A)

@@ -43,7 +43,7 @@
       integer, pointer ::
      &     ivtx_reo(:), occ_vtx(:,:,:), vtx_where(:)
       logical ::
-     &     reo, change, remove, dag_form_op
+     &     reo, change, remove, dag_form_op, dagi_xor_dago
       logical, pointer ::
      &     fix_vtx(:)
 
@@ -65,6 +65,9 @@
       ! Allocate a temporary array.
       njoined = opout_pnt%njoined
       allocate(occ_temp(ngastp,2,njoined),vtx_chng_idx(njoined))
+
+      dagi_xor_dago = dagin
+      if (dagout) dagi_xor_dago=.not.dagi_xor_dago
 
       ! make sure that the operators match:
       if (opin_pnt%njoined.ne.njoined)
@@ -104,7 +107,7 @@ c          write(luout,*) '[ADD]'
 
               ! If the index of the operator vertex equals that of the
               ! intermediate operator...
-              if (idx_form_op.eq.idxin.and.dag_form_op.eq.dagin) then
+              if (idx_form_op.eq.idxin.and.(dag_form_op.eqv.dagin)) then
                 idx_form_blk = form_pnt%contr%vertex(idx)%iblk_op
 
                 occ_temp(1:ngastp,1:2,1)=
@@ -140,7 +143,7 @@ c          write(luout,*) '[ADD]'
                 ! Locate the formal block's counterpart in the actual 
                 ! operator. 
                 idx_blk_out =
-     &               iblk_occ(occ_temp,dagin.xor.dagout,opout_pnt,
+     &               iblk_occ(occ_temp,dagi_xor_dago,opout_pnt,
      &                        opin_pnt%blk_version(idx_form_blk))
 
                 ! new: also check the restrictions
