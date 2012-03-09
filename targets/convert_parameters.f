@@ -127,10 +127,10 @@ c        read(parameters(2),'(480(i1))')
 
       if (rw.lt.0) then
         parameters(1:len(parameters)) = ' '
-        write(parameters,'(8(i5,x),l)')
+        write(parameters,'(3(i5,x),l)')
      &        min_rank,max_rank,iformal,explicit
       else
-        read(parameters,'(8(i5,x),l)')
+        read(parameters,'(3(i5,x),l)')
      &       min_rank,max_rank,iformal,explicit
       end if
 

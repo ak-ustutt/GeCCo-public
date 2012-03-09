@@ -99,6 +99,9 @@
       last_arg%arg_dim = arg_dim
       last_arg%n_str_batch = 0
 
+      ! skip this for arg_dim=0 
+      if (arg_dim.gt.0) then
+
       ! determine type from given argument
       ntype = 0 ! should be 1 at the end of this section
       if (present(val_label)) then
@@ -132,12 +135,16 @@
       
       ! error conditions
       if (ntype.eq.0)
-     &     call quit(1,'set_arg','no optional argument given')
+     &     call quit(1,'set_arg','no optional argument given for '//
+     &               trim(name_target)//'.'//
+     &               trim(command)//'.'//
+     &               trim(arg_label))
       if (ntype.gt.1)
      &     call quit(1,'set_arg',
-     &                'more than one optional argument given')
-
-      last_arg%type = arg_type
+     &                'more than one optional argument given for '//
+     &               trim(name_target)//'.'//
+     &               trim(command)//'.'//
+     &               trim(arg_label))
 
       select case(arg_type)
       case(aatype_label)
@@ -183,6 +190,10 @@
         end do
         last_arg%n_str_batch = n_str_batch
       end select
+
+      end if ! skip above section for arg_dim==0
+
+      last_arg%type = arg_type
 
       rule%arg => new_arg
       rule%n_arguments = rule%n_arguments+1

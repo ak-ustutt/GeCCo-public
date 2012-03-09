@@ -19,6 +19,7 @@
       nullify(tgt_info%list%tgt)
       nullify(tgt_info%list%prev)
       nullify(tgt_info%list%next)
+      nullify(tgt_info%last_mod)
       ! initialize action list
       allocate(tgt_info%act_list)
       nullify(tgt_info%act_list%act)
