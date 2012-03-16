@@ -93,6 +93,8 @@ c dbgend
      &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:),
      &     palph(:), pbeta(:), proj(:,:), norm(:), scratch3(:,:),
      &     scratch4(:,:), sing3(:,:), trip3(:,:), buffer_u(:)
+      real(8), target ::
+     &     xdummy(1,1)
 c dbg
 c      integer, pointer ::
 c     &     matrix(:,:)
@@ -248,7 +250,7 @@ c dbgend
      &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
           else
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
-     &                       half,buffer_u,get_u, !buffer_u: dummy
+     &                       half,xdummy,get_u, !buffer_u: dummy
      &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
           end if
           if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
@@ -383,8 +385,16 @@ c dbgend
 
               ! single distribution can simply be read in as simple matrix
               allocate(scratch(ndim,ndim))
-              if (.not.half) allocate(scratch2(ndim,ndim))
-              if (get_u) allocate(scratch3(ndim,ndim))
+              if (.not.half) then
+                allocate(scratch2(ndim,ndim))
+              else
+                scratch2 => xdummy
+              end if
+              if (get_u) then
+                allocate(scratch3(ndim,ndim))
+              else
+                scratch3 => xdummy
+              end if
               if (transp) then
                 do idx = 1,ndim
                   do jdx = 1,ndim
@@ -421,10 +431,18 @@ c dbgend
 
                 ! do the pre-diagonalization
                 allocate(sing(nsing,nsing),trip(ntrip,ntrip))
-                if (.not.half) allocate(sing2(nsing,nsing),
-     &                                  trip2(ntrip,ntrip))
-                if (get_u) allocate(sing3(nsing,nsing),
-     &                              trip3(ntrip,ntrip))
+                if (.not.half) then
+                  allocate(sing2(nsing,nsing),trip2(ntrip,ntrip))
+                else
+                  sing2 => xdummy
+                  trip2 => xdummy
+                end if
+                if (get_u) then
+                  allocate(sing3(nsing,nsing),trip3(ntrip,ntrip))
+                else
+                  sing3 => xdummy
+                  trip3 => xdummy
+                end if
                 call spinsym_traf(1,ndim,scratch,flipmap_c,nsing,
      &                            sing,trip,.false.)
 
@@ -1184,10 +1202,18 @@ c dbgend
 
             ! do the pre-diagonalization
             allocate(sing(nsing,nsing),trip(ntrip,ntrip))
-            if (.not.half) allocate(sing2(nsing,nsing),
-     &                              trip2(ntrip,ntrip))
-            if (get_u) allocate(sing3(nsing,nsing),
-     &                          trip3(ntrip,ntrip))
+            if (.not.half) then
+              allocate(sing2(nsing,nsing),trip2(ntrip,ntrip))
+            else
+              sing2 => xdummy
+              trip2 => xdummy
+            end if
+            if (get_u) then
+              allocate(sing3(nsing,nsing),trip3(ntrip,ntrip))
+            else
+              sing3 => xdummy
+              trip3 => xdummy
+            end if
             call spinsym_traf(1,rdim,
      &                        scratch(idxst:idxnd,idxst:idxnd),
      &                        flmap(idxst:idxnd,3),nsing,
@@ -1235,19 +1261,19 @@ c dbgend
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
      &                       scratch2(idxst:idxnd,idxst:idxnd),
-     &                       half,scratch3,get_u, !scratch3: dummy
+     &                       half,xdummy,get_u, !scratch3: dummy
      &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
           else if (get_u) then
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
-     &                       scratch2,half, !scratch2: dummy
+     &                       xdummy,half, !scratch2: dummy
      &                       scratch3(idxst:idxnd,idxst:idxnd),get_u,
      &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
           else
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
-     &                       scratch2,half, !scratch2: dummy
-     &                       scratch3,get_u, !scratch3: dummy
+     &                       xdummy,half, !scratch2: dummy
+     &                       xdummy,get_u, !scratch3: dummy
      &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
           end if
 

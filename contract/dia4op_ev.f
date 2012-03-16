@@ -157,6 +157,7 @@ c        end if
           do ispn = 1, 2
             do iloop = 1, 2*ngastp
               solist(iorb,ispn,iloop)%list => null()
+              solist(iorb,ispn,iloop)%length = 0
             end do
           end do
         end do

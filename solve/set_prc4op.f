@@ -193,6 +193,7 @@
       b2dia => xdummy
       x2dia => xdummy
       h2dia => xdummy
+      d1dia => xdummy
       ! this assumption is probably not too bad:
 c      if (use_h)
 c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')

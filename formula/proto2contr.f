@@ -26,7 +26,7 @@
      &     proto
       integer, intent(in) ::
      &     ol_map(proto%nvtx), occ_vtx(ngastp,2,proto%nvtx)
-      type(operator_info) ::
+      type(operator_info), intent(in) ::
      &     op_info
 
       logical ::
