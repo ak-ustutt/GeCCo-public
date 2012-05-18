@@ -147,7 +147,7 @@ c      end do
           if (isym.eq.1) igroup = idx !try first possibility
         end if
       end do
-      if (isym.ne.1) call warn('read_env_gamess',
+      if (isym.ne.1.and.igroup.ne.1) call warn('read_env_gamess',
      &       'Could not unambiguously identify point group!')
 
       ! irrep numbers as in GAMESS manual (for $DET):

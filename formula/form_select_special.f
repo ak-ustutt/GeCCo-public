@@ -60,6 +60,8 @@
       select case(trim(type))
       case('F12x','f12x')
         call select_f12x(flist,labels,nlabels,mode,op_info)
+      case('MRCC3','mrcc3')
+        call select_mrcc_lag3(flist,labels,nlabels,mode,op_info)
       case('MRCC2','mrcc2')
         call select_mrcc_lag2(flist,labels,nlabels,mode,op_info)
       case('MRCC','mrcc')
@@ -76,6 +78,8 @@
         call select_repl_htt(flist,labels,nlabels,mode,op_info)
       case('FORMAL','formal')
         call select_formal_blk(flist,mode,op_info)
+      case('NONZERO','nonzero')
+        call del_zero_terms(flist,op_info,1d-12)
       case default
         call quit(1,'form_select_special','unknown type: "'
      &       //trim(type)//'"')

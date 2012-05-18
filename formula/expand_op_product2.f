@@ -95,7 +95,7 @@
       integer ::
      &     narc, iarc, iblk_res, iop, jop, ivtx, nopen, idx, ioff, inc,
      &     num_res, nvtx_res, njoined_res, iblk_res_min, iblk_res_max,
-     &     nterms
+     &     nterms, sv_open
       integer ::
      &     iblk_min(nops), iblk_max(nops), iblk_op(nops),
      &     occ_test(ngastp,2), occ_temp(ngastp,2)
@@ -178,10 +178,13 @@ c      ! currently, we expand primitive operators only
 
       ! identify open-line vertices
       nopen = 0
+      sv_open = 0
       do ivtx = 1, nvtx
         iop = idx_op_vtx(ivtx)
-        ! open line vertex?
-        if (iop.eq.idx_res) then
+        ! open line vertex? (Should have same supervtx number)
+        if (iop.eq.idx_res.and.sv_open.eq.0)
+     &     sv_open = idx_sv_vtx(ivtx)
+        if (iop.eq.idx_res.and.idx_sv_vtx(ivtx).eq.sv_open) then
           nopen = nopen+1
           idx = (nopen+1)/2
           if (mod(nopen+1,2).eq.1) idx = -idx

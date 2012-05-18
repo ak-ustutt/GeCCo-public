@@ -45,14 +45,14 @@
      &     narc, narc_spl, narc_rem,
      &     nxarc,nxarc_spl,nxarc_rem, nvtx_test,
      &     ivtx_spl, ivtx_rem, ivtx, ivtx1, ivtx2, nj, nj_spl,
-     &     iarc, ixarc, iarc_rem, ixarc_rem, lenlist, jvtx, ij,
+     &     iarc, ixarc, iarc_rem, ixarc_rem, lenlist, jvtx, ij, kvtx,
      &     isuper_spl_last, sh_sign, icnt, occ_x(ngastp,2), ivtx3, nskip
       integer(8) ::
      &     base
       integer, pointer ::
      &     ivtx_new(:), isupervtx_spl(:),
      &     vtxmap(:), ireo(:), ireo2(:), svertex(:), svertex_spl(:),
-     &     list(:), ivtx_tmp(:)
+     &     list(:), ivtx_tmp(:), isuper_tgt(:)
       integer(8), pointer ::
      &     topo(:,:), topo_spl(:,:), vtx(:), vtx_spl(:),
      &     xlines(:,:), xlines_spl(:,:)
@@ -84,7 +84,7 @@
       nxarc = contr%nxarc
       nxarc_spl = contr_spl%nxarc
 
-      allocate(ivtx_new(nvtx),isupervtx_spl(nvtx))
+      allocate(ivtx_new(nvtx),isupervtx_spl(nvtx),isuper_tgt(nvtx))
 
       nj = njres_contr(contr)
       nj_spl = njres_contr(contr_spl)
@@ -193,6 +193,59 @@ c              vtxmap(ivtx) = ij
      &       nvtx,nj,list,lenlist)
       end if
 
+      do ivtx = 1, nvtx
+        ireo2(ireo(ivtx)) = ivtx
+      end do
+
+      ! isuper_tgt: reordered copy of isupervtx_spl
+      isuper_tgt(1:nvtx) = isupervtx_spl(ireo2(1:nvtx))
+      ! allow reordering of neighbors
+      ivtx = 1
+      do while(ivtx.lt.nvtx) !ivtx = 1, nvtx
+        if (vtxmap(ireo2(ivtx)).gt.0) then
+          do jvtx = ivtx+1, nvtx
+            if (vtxmap(ireo2(jvtx)).le.0) then
+              ivtx = jvtx+1
+              exit
+            end if
+            if (isuper_tgt(jvtx).lt.isuper_tgt(jvtx-1)) then
+              ivtx_rem = isuper_tgt(jvtx)
+              isuper_tgt(jvtx) = isuper_tgt(jvtx-1)
+              kvtx = jvtx-1
+              do while(kvtx.gt.ivtx.and.isuper_tgt(kvtx-1).gt.ivtx_rem)
+                isuper_tgt(kvtx) = isuper_tgt(kvtx-1)
+                kvtx = kvtx-1
+              end do
+              isuper_tgt(kvtx) = ivtx_rem
+            end if
+            if (jvtx.eq.nvtx) ivtx=jvtx+1
+          end do
+        else
+          ivtx = ivtx+1
+        end if
+      end do
+      ! fill up zeros / try to add missing target vertices
+      ivtx_rem = nj_spl
+      do ivtx = nvtx, 1, -1
+        if (vtxmap(ireo2(ivtx)).gt.0) then
+          if (isuper_tgt(ivtx).eq.0) then
+              isuper_tgt(ivtx) = ivtx_rem
+              if (ivtx.gt.1.and.ivtx_rem.gt.1.and.
+     &            idxlist(ivtx_rem-1,isuper_tgt(1:ivtx-1),
+     &                    ivtx-1,1).le.0)
+     &           ivtx_rem = ivtx_rem-1
+          else
+            if (ivtx.gt.1.and.isuper_tgt(ivtx).gt.1.and.
+     &          idxlist(isuper_tgt(ivtx)-1,isuper_tgt(1:ivtx-1),
+     &                  ivtx-1,1).le.0) then
+              ivtx_rem = isuper_tgt(ivtx)-1
+            else
+              ivtx_rem = isuper_tgt(ivtx)
+            end if
+          end if
+        end if
+      end do
+
       if (sh_sign.ne.1) then
 c dbg
 c        print *,'sh_sign in split: ',sh_sign
@@ -230,14 +283,9 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
       if (ntest.eq.100)
      &     write(luout, *) 'ireo: ',ireo
       if (ntest.eq.100)
-     &     write(luout, *) 'isupervtx_spl: ',isupervtx_spl
-
-      do ivtx = 1, nvtx
-        ireo2(ireo(ivtx)) = ivtx
-      end do
-
-      if (ntest.eq.100)
      &     write(luout, *) 'ireo2: ',ireo2
+      if (ntest.eq.100)
+     &     write(luout, *) 'isupervtx_spl: ',isupervtx_spl
 
       ! use reo and vtxmap to build ivtx_new
       ! use xlines_spl to set isuper_spl 
@@ -247,11 +295,12 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
       do ivtx = 1, nvtx
         jvtx = ireo2(ivtx)
         if (vtxmap(jvtx).gt.0) then
-          if (isupervtx_spl(jvtx).gt.isuper_spl_last .and.
+          if (isuper_tgt(ivtx).gt.isuper_spl_last .and.
      &         isuper_spl_last.ne.0) then
             ivtx_rem = ivtx_rem+1
             ivtx_new(jvtx) = -ivtx_rem
-            isuper_spl_last = vtxmap(jvtx)
+            if (isuper_tgt(ivtx).ne.0)
+     &         isuper_spl_last = isuper_tgt(ivtx) !vtxmap(jvtx)
             ivtx_spl_last = ivtx_rem
           else
             ivtx_new(jvtx) = -ivtx_spl_last
@@ -263,6 +312,8 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
       end do
 
       nvtx_rem = ivtx_rem
+      if (ntest.eq.100)
+     &     write(luout, *) 'ivtx_new: ',ivtx_new
 
       ! a bit awkward correction of ivtx_new:
       ! since in topo_approach_vtxs, the interm. vertices are shifted
@@ -283,14 +334,11 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
       end do
       deallocate(ivtx_tmp)
      
-      if (ntest.eq.100)
-     &     write(luout, *) 'ivtx_new: ',ivtx_new
-      
-
       if (ntest.ge.100) then
         write(luout,*) 'nvtx_rem: ',nvtx_rem
         write(luout,*) 'ivtx_new (new): ',ivtx_new(1:nvtx)
         write(luout,*) 'isupervtx_spl: ',isupervtx_spl(1:nvtx)
+        write(luout,*) 'isuper_tgt: ',isuper_tgt(1:nvtx)
         write(luout,*) 'split_vtxs: ',split_vtxs
       end if
       
@@ -451,7 +499,8 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
       call arc_sort(contr_rem%xarc,contr_rem%nxarc,contr_rem%nvtx)
 
       deallocate(topo,topo_spl,vtx,vtx_spl,xlines,xlines_spl,ireo,ireo2,
-     &       svertex,svertex_spl,list,ivtx_new,isupervtx_spl,vtxmap)
+     &       svertex,svertex_spl,list,ivtx_new,isupervtx_spl,vtxmap,
+     &       isuper_tgt)
 
       if (ntest.ge.100) then
         write(luout,*) 'final contr_rem:'

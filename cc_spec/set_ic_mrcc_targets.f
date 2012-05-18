@@ -41,7 +41,7 @@
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
-     &     tfix, maxit, t1ord
+     &     tfix, maxit, t1ord, maxcum, cum_appr_mode
       logical ::
      &     update_prc, skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
@@ -55,7 +55,7 @@
      &     op_ht*3, f_ht*5, op_ht0to*6, f_ht0to*8, form_str*50,
      &     def_ht*10
       real(8) ::
-     &     factor, x_ansatz, prc_shift
+     &     x_ansatz, prc_shift
 
       if (iprlvl.gt.0) write(luout,*) 'setting icMRCC targets'
 
@@ -111,6 +111,10 @@
      &     ival=t1ord)
       call get_argument_value('method.MR','oldref',
      &     lval=oldref)
+      call get_argument_value('method.MR','maxcum',
+     &     ival=maxcum)
+      call get_argument_value('method.MR','cum_appr_mode',
+     &     ival=cum_appr_mode)
       call get_argument_value('calculate.solve','maxiter',
      &     ival=maxit)
       if (is_argument_set('calculate.solve.non_linear','maxiter').gt.0)
@@ -120,22 +124,24 @@
       solve = .not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
 
       if (ntest.ge.100) then
-        write(luout,*) 'maxcom_en  = ', maxcom_en
-        write(luout,*) 'maxcom_res = ', maxcom
-        write(luout,*) 'G_level    = ', G_level
-        write(luout,*) 'preopt     = ', preopt
-        write(luout,*) 'Op_eqs     = ', Op_eqs
-        write(luout,*) 'H1bar      = ', h1bar
-        write(luout,*) 'HTT        = ', htt
-        write(luout,*) 'maxtt      = ', maxtt
-        write(luout,*) 'x_ansatz   = ', x_ansatz
-        write(luout,*) 'Tred_mode  = ', tred
-        write(luout,*) 'trunc      = ', trunc
-        if (tfix.gt.0) write(luout,*) 'Tfix       = ', tfix
-        if (t1ord.ge.0) write(luout,*) 'T1ord      = ', t1ord
+        write(luout,*) 'maxcom_en    = ', maxcom_en
+        write(luout,*) 'maxcom_res   = ', maxcom
+        write(luout,*) 'G_level      = ', G_level
+        write(luout,*) 'preopt       = ', preopt
+        write(luout,*) 'Op_eqs       = ', Op_eqs
+        write(luout,*) 'H1bar        = ', h1bar
+        if (h1bar) write(luout,*) 'maxcom_h1bar = ', maxcom_h1bar
+        write(luout,*) 'HTT          = ', htt
+        write(luout,*) 'maxtt        = ', maxtt
+        write(luout,*) 'x_ansatz     = ', x_ansatz
+        write(luout,*) 'Tred_mode    = ', tred
+        write(luout,*) 'trunc        = ', trunc
+        if (tfix.gt.0) write(luout,*) 'Tfix         = ', tfix
+        if (t1ord.ge.0) write(luout,*) 'T1ord        = ', t1ord
       end if
 
-      if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.x_ansatz.ne.1d0
+      if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.abs(x_ansatz).ne.1d0
+     &    .and.x_ansatz.ne.-2d0.and.x_ansatz.ne.-3d0
      &    .and.(maxcom_en.gt.2.or.maxcom.gt.2
      &          .or.h1bar.and.maxcom_h1bar.gt.2))
      &    call quit(1,'set_ic_mrcc_targets',
@@ -1164,9 +1170,71 @@ c dbgend
      &         val_int=(/2/))
         end if
       end if
+c dbg
 c      call set_rule2('F_MRCC_LAG',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_MRCC_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_MRCC_LAG'/))
+c dbgend
+
+      ! Residual part of Lagrangian
+      call add_target2('F_LAG_L',.false.,tgt_info)
+      call set_dependency('F_LAG_L','F_MRCC_LAG',tgt_info)
+      call set_dependency('F_LAG_L','NORM',tgt_info)
+      call set_dependency('F_LAG_L','L',tgt_info)
+      call set_rule2('F_LAG_L',SELECT_TERMS,tgt_info)
+      call set_arg('F_LAG_L',SELECT_TERMS,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_LAG_L'/))
+      call set_arg('F_LAG_L',SELECT_TERMS,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_MRCC_LAG'/))
+      call set_arg('F_LAG_L',SELECT_TERMS,'OP_RES',1,tgt_info,
+     &     val_label=(/'NORM'/))
+      call set_arg('F_LAG_L',SELECT_TERMS,'OP_INCL',1,tgt_info,
+     &     val_label=(/'L'/))
+      ! Cumulant approximation?
+      if (maxcum.gt.0) then
+        ! Factor out reduced density matrices
+        call set_rule2('F_LAG_L',FACTOR_OUT,tgt_info)
+        call set_dependency('F_LAG_L','F_DENS0',tgt_info)
+        call set_arg('F_LAG_L',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_LAG_L'/))
+        call set_arg('F_LAG_L',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_LAG_L'/))
+        call set_arg('F_LAG_L',FACTOR_OUT,'INTERM',1,tgt_info,
+     &       val_label=(/'F_DENS0'/))
+        ! Expand density matrices in terms of cumulants
+        call set_rule2('F_LAG_L',EXPAND,tgt_info)
+        call set_arg('F_LAG_L',EXPAND,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_LAG_L'/))
+        call set_arg('F_LAG_L',EXPAND,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_LAG_L'/))
+        if (maxcom.le.2.and.cum_appr_mode.ge.2.and.
+     &      maxcum.ge.2.and.maxcum.le.4) then
+          call set_dependency('F_LAG_L','F_DENS_appr',tgt_info)
+          call set_arg('F_LAG_L',EXPAND,'INTERM',1,tgt_info,
+     &         val_label=(/'F_DENS_appr'/))
+        else
+          call set_dependency('F_LAG_L','F_DENS',tgt_info)
+          call set_arg('F_LAG_L',EXPAND,'INTERM',1,tgt_info,
+     &         val_label=(/'F_DENS'/))
+        end if
+        call set_arg('F_LAG_L',EXPAND,'IMODE',1,tgt_info,
+     &       val_int=(/2/)) ! keep low-rank RDMs
+c        ! Delete disconnected terms (cum. only connected to L)
+c        call set_rule2('F_LAG_L',SELECT_SPECIAL,tgt_info)
+c        call set_arg('F_LAG_L',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+c     &       val_label=(/'F_LAG_L'/))
+c        call set_arg('F_LAG_L',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+c     &       val_label=(/'F_LAG_L'/))
+c        call set_arg('F_LAG_L',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+c     &       val_label=(/'CUM','L'/))
+c        call set_arg('F_LAG_L',SELECT_SPECIAL,'TYPE',1,tgt_info,
+c     &       val_str='MRCC3')
+      end if
+c dbg
+c        call set_rule2('F_LAG_L',PRINT_FORMULA,tgt_info)
+c        call set_arg('F_LAG_L',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &       val_label=(/'F_LAG_L'/))
+c dbgend
 
       ! Residual
       call add_target2('F_OMG',.false.,tgt_info)
@@ -1175,8 +1243,14 @@ c     &     val_label=(/'F_MRCC_LAG'/))
       call set_rule2('F_OMG',DERIVATIVE,tgt_info)
       call set_arg('F_OMG',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_OMG'/))
-      call set_arg('F_OMG',DERIVATIVE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_MRCC_LAG'/))
+      if (maxcum.gt.0) then
+        call set_dependency('F_OMG','F_LAG_L',tgt_info)
+        call set_arg('F_OMG',DERIVATIVE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_LAG_L'/))
+      else
+        call set_arg('F_OMG',DERIVATIVE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+      end if
       call set_arg('F_OMG',DERIVATIVE,'OP_RES',1,tgt_info,
      &     val_label=(/'OMG'/))
       call set_arg('F_OMG',DERIVATIVE,'OP_DERIV',1,tgt_info,
@@ -2441,6 +2515,7 @@ c      call set_rule2('F_T_NORM',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_T_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_T_NORM'/))
 c dbgend
+
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -2521,9 +2596,7 @@ c      call set_dependency('FOPT_OMG','DEF_ME_HT2',tgt_info)
       if (optref.eq.-1.or.optref.eq.-2) then
         call set_dependency('FOPT_OMG','F_OMG_C0',tgt_info)
         call set_dependency('FOPT_OMG','DEF_ME_A_C0',tgt_info)
-c dbg
 c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
-c dbgend
         call set_rule2('FOPT_OMG',ASSIGN_ME2OP,tgt_info)
         call set_arg('FOPT_OMG',ASSIGN_ME2OP,'LIST',1,tgt_info,
      &             val_label=(/'ME_A_C0'/))
@@ -2535,67 +2608,110 @@ c dbgend
       call set_rule2('FOPT_OMG',OPTIMIZE,tgt_info)
       call set_arg('FOPT_OMG',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_OMG'/))
-      if (optref.eq.-1.or.optref.eq.-2) then
-        if (Op_eqs) then
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',5,tgt_info,
-     &             val_label=(/'F_Heff  ','F_MRCC_E','F_Geff  ',
-     &                         'F_OMG   ','F_OMG_C0'/))
-        else if (h1bar) then
-          call set_dependency('FOPT_OMG','F_H1bar',tgt_info)
-          call set_dependency('FOPT_OMG','DEF_ME_H1bar',tgt_info)
-          if (maxp.ge.2.and.tfix.eq.0) then
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',5,tgt_info,
-     &            val_label=(/'F_P4int ','F_H1bar ',
-     &                        'F_MRCC_E','F_OMG   ','F_OMG_C0'/))
-          else
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
-     &            val_label=(/'F_H1bar ','F_MRCC_E','F_OMG   ',
-     &                        'F_OMG_C0'/))
-          end if
-        else
-          if (maxp.ge.2.and.tfix.eq.0) then
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
-     &             val_label=(/'F_P4int ',
-     &                         'F_MRCC_E','F_OMG   ','F_OMG_C0'/))
-          else
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',3,tgt_info,
-     &             val_label=(/'F_MRCC_E','F_OMG   ','F_OMG_C0'/))
-          end if
+      labels(1:20)(1:len_target_name) = ' '
+      ndef = 0
+      if (maxcum.gt.0) then
+        call set_dependency('FOPT_OMG','F_DENS0',tgt_info)
+        call set_dependency('FOPT_OMG','DEF_ME_DENS',tgt_info)
+        labels(ndef+1) = 'F_DENS0'
+        ndef = ndef + 1
+        if (cum_appr_mode.eq.0) then
+          call set_dependency('FOPT_OMG','F_CENT',tgt_info)
+          call set_dependency('FOPT_OMG','DEF_ME_CENT',tgt_info)
+          call set_dependency('FOPT_OMG','F_CUM',tgt_info)
+          call set_dependency('FOPT_OMG','DEF_ME_CUM',tgt_info)
+          labels(ndef+1) = 'F_CENT'
+          labels(ndef+2) = 'F_CUM'
+          ndef = ndef + 2
         end if
-      else
-        if (Op_eqs) then
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
-     &             val_label=(/'F_Heff  ','F_MRCC_E','F_Geff  ',
-     &                         'F_OMG   '/))
-        else if (h1bar) then
-          call set_dependency('FOPT_OMG','F_H1bar',tgt_info)
-          call set_dependency('FOPT_OMG','DEF_ME_H1bar',tgt_info)
-          if (maxp.ge.2.and.tfix.eq.0) then
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',4,tgt_info,
-     &             val_label=(/'F_P4int ',
-     &                         'F_H1bar ','F_MRCC_E','F_OMG   '/))
-          else
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',3,tgt_info,
-     &             val_label=(/'F_H1bar ','F_MRCC_E','F_OMG   '/))
-          end if
-        else
-          if (maxp.ge.2.and.tfix.eq.0) then
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',3,tgt_info,
-     &             val_label=(/'F_P4int ','F_MRCC_E','F_OMG   '/))
-          else
-          call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',2,tgt_info,
-     &             val_label=(/'F_MRCC_E','F_OMG   '/))
-          end if
+        if (maxcom.le.2.and.cum_appr_mode.ge.2) then
+          select case(maxcum)
+          case(2)
+            call set_dependency('FOPT_OMG','F_D_INT08',tgt_info)
+            call set_dependency('FOPT_OMG','F_D_INT09',tgt_info)
+            call set_dependency('FOPT_OMG','F_D_INT10',tgt_info)
+            call set_dependency('FOPT_OMG','F_D_INT11',tgt_info)
+            call set_dependency('FOPT_OMG','F_D_INT12',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT08',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT09',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT10',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT11',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT12',tgt_info)
+            labels(ndef+1) = 'F_D_INT08'
+            labels(ndef+2) = 'F_D_INT09'
+            labels(ndef+3) = 'F_D_INT10'
+            labels(ndef+4) = 'F_D_INT11'
+            labels(ndef+5) = 'F_D_INT12'
+            ndef = ndef + 5
+          case(3)
+            call set_dependency('FOPT_OMG','F_D_INT04',tgt_info)
+            call set_dependency('FOPT_OMG','F_D_INT05',tgt_info)
+            call set_dependency('FOPT_OMG','F_D_INT06',tgt_info)
+            call set_dependency('FOPT_OMG','F_D_INT07',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT04',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT05',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT06',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT07',tgt_info)
+            labels(ndef+1) = 'F_D_INT04'
+            labels(ndef+2) = 'F_D_INT05'
+            labels(ndef+3) = 'F_D_INT06'
+            labels(ndef+4) = 'F_D_INT07'
+            ndef = ndef + 4
+          case(4)
+            call set_dependency('FOPT_OMG','F_D_INT01',tgt_info)
+            call set_dependency('FOPT_OMG','F_D_INT02',tgt_info)
+            call set_dependency('FOPT_OMG','F_D_INT03',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT01',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT02',tgt_info)
+            call set_dependency('FOPT_OMG','DEF_ME_D_INT03',tgt_info)
+            labels(ndef+1) = 'F_D_INT01'
+            labels(ndef+2) = 'F_D_INT02'
+            labels(ndef+3) = 'F_D_INT03'
+            ndef = ndef + 3
+            if (cum_appr_mode.eq.3) then
+              call set_dependency('FOPT_OMG','F_D_INT13',tgt_info)
+              call set_dependency('FOPT_OMG','DEF_ME_D_INT13',tgt_info)
+              labels(ndef+1) = 'F_D_INT13'
+              ndef = ndef + 1
+            end if
+          case default
+          end select
         end if
       end if
+      if (Op_eqs) then
+        labels(ndef+1) = 'F_Heff'
+        ndef = ndef + 1
+      end if
+      if (maxp.ge.2.and.tfix.eq.0) then
+        labels(ndef+1) = 'F_P4int'
+        ndef = ndef + 1
+      end if
+      if (h1bar) then
+        call set_dependency('FOPT_OMG','F_H1bar',tgt_info)
+        call set_dependency('FOPT_OMG','DEF_ME_H1bar',tgt_info)
+        labels(ndef+1) = 'F_H1bar'
+        ndef = ndef + 1
+      end if
+      labels(ndef+1) = 'F_MRCC_E'
+      ndef = ndef + 1
+      if (Op_eqs) then
+        labels(ndef+1) = 'F_Geff'
+        ndef = ndef + 1
+      end if
+      labels(ndef+1) = 'F_OMG'
+      ndef = ndef + 1
+      if (optref.eq.-1.or.optref.eq.-2) then
+        labels(ndef+1) = 'F_OMG_C0'
+        ndef = ndef + 1
+      end if
+      call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',ndef,tgt_info,
+     &             val_label=labels(1:ndef))
 
       ! Residual for C0
       call add_target2('FOPT_OMG_C0',.false.,tgt_info)
       call set_dependency('FOPT_OMG_C0','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_OMG_C0','DEF_ME_T',tgt_info)
-c dbg
 c      call set_dependency('FOPT_OMG_C0','DEF_ME_1v',tgt_info)
-c dbgend
       if (.false..and.maxh.gt.0)
      &    call set_dependency('FOPT_OMG_C0','DEF_ME_TT',tgt_info)
 c      call set_dependency('FOPT_OMG_C0','DEF_ME_HT1',tgt_info)
@@ -3498,7 +3614,7 @@ c dbg
       call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
      &     'ME_S(S+1)',1,0,
      &     parameters,2,tgt_info)
-      if (.not.h1bar.and.tfix.eq.0) then
+      if (.not.h1bar.and.tfix.eq.0.and.maxcum.le.0) then
         call set_dependency('SOLVE_MRCC','FOPT_MRCC_S(S+1)',tgt_info)
         call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
      &       'ME_S(S+1)',1,0,

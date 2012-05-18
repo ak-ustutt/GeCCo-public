@@ -32,7 +32,7 @@
 
       logical ::
      &     delete, error, deldue2maxtt, check_fac, first, check, proj,
-     &     alt_ansatz
+     &     alt_ansatz, set_t2t2, set_t2t3
       integer ::
      &     idxtop, idxham, idxc, idxl, nprojdel
       integer ::
@@ -41,7 +41,8 @@
      &     ntesting, itesting, maxcon_tt, ntt_save, nj, ioff,
      &     jvtx, kvtx, nhash, ham_vtx, kk, iterm, n_extra, idx,
      &     nopen(2), nclos(2), vtxc1, vtxc2, nvtxc, cnt(ngastp,2),
-     &     nvtxl, vtxl, nfac_l, nfac_r
+     &     nvtxl, vtxl, nfac_l, nfac_r, iblk1, iblk2, rank1, rank2,
+     &     ncon
       integer ::
      &     idxop(nlabels), bins(maxtt+1,maxtop+1), binsum(maxtop+1)
       integer(8) ::
@@ -52,7 +53,7 @@
       integer, allocatable ::
      &     testing(:)
       logical, allocatable ::
-     &     connected(:), bchpart(:), topo_loc(:,:)
+     &     connected(:), bchpart(:), topo_loc(:,:), t2cont2(:,:)
       integer, pointer ::
      &     svtx1(:),svtx2(:),ireo(:),iperm(:), extra_term(:), itmp(:)
       integer(8), pointer ::
@@ -113,7 +114,19 @@
       if (mode(10:10).eq.'X') maxcon_tt = -1
       call get_argument_value('method.MRCC','x_ansatz',
      &     xval=x_ansatz)
-      alt_ansatz = x_ansatz.eq.0d0.or.x_ansatz.eq.1d0
+      set_t2t2 = .false.
+      set_t2t3 = .false.
+      if (x_ansatz.eq.-1d0) then
+        set_t2t2 = .true.
+      else if (x_ansatz.eq.-2d0) then
+        set_t2t2 = .true.
+        set_t2t3 = .true.
+        x_ansatz = -1d0
+      else if (x_ansatz.eq.-3d0) then
+        set_t2t3 = .true.
+        x_ansatz = -1d0
+      end if
+      alt_ansatz = x_ansatz.eq.0d0.or.abs(x_ansatz).eq.1d0
 
       idxham  = idxop(1)
       idxtop  = idxop(2)
@@ -196,12 +209,34 @@ c dbgend
 
           ! number of T-T contractions
           ntt = 0
+          if (x_ansatz.eq.-1d0) then
+            allocate(t2cont2(nvtx,nvtx))
+            t2cont2(1:nvtx,1:nvtx) = .false.
+          end if
           do iarc = 1, contr%narc
             vtx1 = contr%arc(iarc)%link(1)
             vtx2 = contr%arc(iarc)%link(2)
             idx_op1 = vertex(vtx1)%idx_op
             idx_op2 = vertex(vtx2)%idx_op
-            if (idx_op1.eq.idxtop.and.idx_op2.eq.idxtop) ntt = ntt + 1
+            if (idx_op1.eq.idxtop.and.idx_op2.eq.idxtop) then
+              ntt = ntt + 1
+              if (x_ansatz.eq.-1d0) then
+                ! single connection between double excitations?
+                iblk1 = vertex(vtx1)%iblk_op
+                iblk2 = vertex(vtx2)%iblk_op
+                rank1 = op_info%op_arr(idxtop)%op%ica_occ(1,iblk1)
+                rank2 = op_info%op_arr(idxtop)%op%ica_occ(1,iblk2)
+                ncon = contr%arc(iarc)%occ_cnt(IVALE,2)
+                if (set_t2t2.and.ncon.eq.1.and.rank1.eq.2.and.rank2.eq.2
+     &              .or.set_t2t3.and.max(rank1,rank2).gt.2.and.
+     &                  min(rank1,rank2).gt.1.and.
+     &                  ncon.lt.min(rank1,rank2))
+     &             then
+                  t2cont2(vtx1,vtx2) = .true.
+                  t2cont2(vtx2,vtx1) = .true.
+                end if
+              end if
+            end if
           end do            
 
           ! increment binning
@@ -389,15 +424,19 @@ c dbgend
      &                      topo2(testing(ivtx),testing(jvtx)).ne.0
                     end do
                   end do
-                  if (x_ansatz.eq.0d0) then ! {e^T}^-1 on left side
-                    nfac_l = n_possible_reos(topo_loc,kk)
-                    fac_l = 1d0/dble(nfac_l)
-                  else !x_ansatz=1d0: {e^-T} on left side
-                    if (any(topo_loc(1:kk,1:kk))) then
-                      fac_l = 0d0
-                    else
-                      fac_l = 1d0/dble(ifac(kk))
-                    end if
+                  nfac_l = n_possible_reos(topo_loc,kk)
+                  fac_l = 1d0/dble(nfac_l)
+                  ! correct for x_ansatz=0d0: {e^T}^-1 on left side
+                  if (x_ansatz.eq.1d0) then ! {e^-T} on left side
+                    if (any(topo_loc(1:kk,1:kk))) fac_l = 0d0
+                  else if (x_ansatz.eq.-1d0) then ! no T2-T2 on left
+                    do jvtx = 1, kk
+                      do ivtx = 1, kk
+                        if (topo_loc(ivtx,jvtx).and.
+     &                      t2cont2(testing(iperm(ivtx)),
+     &                              testing(iperm(jvtx)))) fac_l = 0d0
+                      end do
+                    end do
                   end if
                   if (mod(kk,2).ne.0) fac_l = -fac_l
                   deallocate(topo_loc)
@@ -410,15 +449,20 @@ c dbgend
      &                            testing(jvtx+kk+1)).ne.0
                     end do
                   end do
-                  if (x_ansatz.eq.1d0) then ! {e^-T}^-1 on right side
-                    nfac_r = n_possible_reos(topo_loc,ntop-kk)
-                    fac_r = 1d0/dble(nfac_r)
-                  else !x_ansatz=0d0: {e^T} on right side
-                    if (any(topo_loc(1:ntop-kk,1:ntop-kk))) then
-                      fac_r = 0d0
-                    else
-                      fac_r = 1d0/dble(ifac(ntop-kk))
-                    end if
+                  nfac_r = n_possible_reos(topo_loc,ntop-kk)
+                  fac_r = 1d0/dble(nfac_r)
+                  ! correct for x_ansatz=1d0: {e^-T}^-1 on right side
+                  if (x_ansatz.eq.0d0) then ! {e^T} on right side
+                    if (any(topo_loc(1:ntop-kk,1:ntop-kk))) fac_r = 0d0
+                  else if (x_ansatz.eq.-1d0) then ! only T2-T2 on right
+                    do jvtx = 1, ntop-kk
+                      do ivtx = 1, ntop-kk
+                        if (topo_loc(ivtx,jvtx).and..not.
+     &                      t2cont2(testing(iperm(ivtx+kk+1)),
+     &                              testing(iperm(jvtx+kk+1))))
+     &                     fac_l = 0d0
+                      end do
+                    end do
                   end if
                   deallocate(topo_loc)
                   fac_alt = fac_alt + fac_l*fac_r
@@ -513,6 +557,7 @@ c              delete = (abs(contr%fac).lt.1d-12)
           end if
 
           deallocate(bchpart,connected,testing)
+          if (x_ansatz.eq.-1d0) deallocate(t2cont2)
 
           if (delete) then
             ! Undo binning count

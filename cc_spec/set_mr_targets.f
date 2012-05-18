@@ -21,7 +21,7 @@
      &     orb_info
 
       integer ::
-     &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym
+     &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym, maxtop, maxcum
       logical ::
      &     l_icci, l_iccc, use_met
       integer, allocatable ::
@@ -77,11 +77,21 @@ c      call set_gno_targets(tgt_info,orb_info,1)
 c dbgend
 
       ! if maxexc = 0: return because call of unc_mrci is sufficient
-      if (maxexc.eq.0.or..not.(l_icci.or.l_iccc)) return
+      if (maxexc.eq.0.or..not.(l_icci.or.l_iccc)) then
+        call get_argument_value('method.MR','maxcum',
+     &     ival=maxcum)
+        if (maxcum.gt.0) call set_gno_targets(tgt_info,orb_info,0)
+        return
+      end if
 
       ! set targets associated with generalized normal order
       ! (includes reduced density matrices)
-      call set_gno_targets(tgt_info,orb_info,1)
+      maxtop = 1
+      if (l_iccc) then
+        call get_argument_value('method.MRCC','maxcom_res',
+     &       ival=maxtop)
+      end if
+      call set_gno_targets(tgt_info,orb_info,maxtop)
 
       ! get restrictions on excitation classes
       call get_argument_value('method.MR','maxh',

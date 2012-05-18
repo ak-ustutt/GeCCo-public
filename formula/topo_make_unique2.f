@@ -32,7 +32,7 @@
      &     vtx(nvtx), topo(nvtx,nvtx), xlines(nvtx,nj)
 
       integer(8) ::
-     &     vtx0(nvtx)
+     &     vtx0(nvtx), nsvtxs(nvtx)
       integer ::
      &     idx, jdx, sweep, neqv_blocks, svtx0(nvtx), nj_sub, tmp, tmp2,
      &     min_idx, final_sweep, final_block, kdx
@@ -40,7 +40,7 @@
      &     changed
 
       integer, external ::
-     &     i8list_cmp, idxlist
+     &     i8list_cmp, idxlist, idxcount
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'topo_make_unique2')
@@ -50,8 +50,12 @@
 
       do idx = 1, nvtx
         ireo(idx) = idx
+        nsvtxs(idx) = idxcount(svtx(idx),svtx,nvtx,1)
       end do
       vtx0 = vtx
+      ! first pre-sort according to number of joint vertices
+      call idxsort8(nsvtxs,ireo,nvtx,+1)
+      call reoi8mat(vtx0,ireo,nvtx,1,1)
       call idxsort8(vtx0,ireo,nvtx,+1)
       svtx0 = svtx
       call reoivec(svtx0,ireo,nvtx)

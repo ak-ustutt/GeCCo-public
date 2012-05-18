@@ -826,11 +826,12 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('OPERATORS',rule,tgt_info,
      &               val_label_list=label_list,ndim=nop)
         call get_arg('MAXCOM',rule,tgt_info,val_int=ansatz)
+        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
         call set_mrcc_intermediates(form_pnt,
      &         title,label,label_list,
-     &         nop,ansatz,mode,op_info)
+     &         nop,ansatz,fac,mode,op_info)
 
 *----------------------------------------------------------------------*
 *     subsection ME-LISTS
@@ -1099,6 +1100,8 @@ c          mode = 'dia-R12'
      &               val_label_list=label_list(2:),ndim=nspcfrm)
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
+
+        if (form_test) return
 
         call scale_copy_op(label,label_list,fac,nfac,mode,nspcfrm,
      &       op_info,orb_info,str_info)

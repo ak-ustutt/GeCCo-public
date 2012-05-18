@@ -130,10 +130,13 @@ c dbgend
       if (ntest.ge.100) then
         write(luout,*) 'transformed gradient vector:'
         write(luout,*) xbuf1(1:nwfpar)
+c        call wrt_mel_buf(luout,5,xbuf1,me_grd,1,
+c     &       me_grd%op%n_occ_cls,
+c     &       str_info,orb_info)
       end if
 
-      write(luout,'(x,a,i1,a,x,g10.4)')
-     &   'Norm of transformed residual for vector ',
+      write(luout,'(a,i1,a,x,g10.4)')
+     &   '>>>> Norm of transformed residual for vector ',
      &   iopt,':',xngrd(iopt)
 
       call vec_from_da(ffdia,1,xbuf2,nwfpar)
@@ -190,6 +193,9 @@ c dbgend
       if (ntest.ge.100) then
         write(luout,*) 'gradient vector afterwards:'
         write(luout,*) xbuf1(1:nwfpar)
+c      call wrt_mel_buf(luout,5,xbuf1,me_amp,1,
+c     &     me_amp%op%n_occ_cls,
+c     &     str_info,orb_info)
       end if
 
 

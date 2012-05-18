@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_mrcc_intermediates(form_out,
-     &     title,label_int,label_op,nop,max_n,typ_str,op_info)
+     &     title,label_int,label_op,nop,max_n,fac_in,typ_str,op_info)
 *----------------------------------------------------------------------*
 *     set the formal definition of intermediates in MRCC
 *     label_int: label of intermediate
@@ -37,9 +37,11 @@
      &     typ_str
       type(operator_info), intent(inout) ::
      &     op_info
+      real(8), intent(in) ::
+     &     fac_in
 
       integer ::
-     &     idx, idx_intm, idx_t, idx_h, idx_heff,
+     &     idx, idx_intm, idx_t, idx_h, idx_heff, idx_op4, idx_op5,
      &     nvtx, nn, ii, jj, iblk_int, iblk_h, mini, tmax,
      &     iterm, nterm, icall, icall0, nsumcalls,
      &     iu(2), ho(2), hu(2), tto(2), navoid
@@ -82,7 +84,7 @@
 
       if (nop.lt.1)
      &     call quit(1,'set_mrcc_intermediates',
-     &                 'nop < 2 ?? too few! phew!')
+     &                 'nop < 1 ?? too few! phew!')
 
       ! get indices of operators on label_list
       idx_intm = idx_oplist2(label_int,op_info)
@@ -97,18 +99,39 @@
      &     'label not on list (2): '//label_op(1))
       op_t => op_info%op_arr(idx_t)%op
 
-      idx_h = idx_oplist2(label_op(2),op_info)
-      if (idx_h.lt.0)
-     &     call quit(1,'set_mrcc_intermediates',
-     &     'label not on list (3): '//label_op(2))
-      op_h => op_info%op_arr(idx_h)%op
+      if (trim(typ_str).ne.'D_INT') then
+        idx_h = idx_oplist2(label_op(2),op_info)
+        if (idx_h.lt.0)
+     &       call quit(1,'set_mrcc_intermediates',
+     &       'label not on list (3): '//label_op(2))
+        op_h => op_info%op_arr(idx_h)%op
+      end if
 
-      if (trim(typ_str).eq.'Geff') then
+      if (trim(typ_str).eq.'Geff'.or.trim(typ_str).eq.'D_INT2') then
         idx_heff = idx_oplist2(label_op(3),op_info)
         if (idx_heff.lt.0)
      &       call quit(1,'set_mrcc_intermediates',
      &       'label not on list (4): '//label_op(3))
         op_heff => op_info%op_arr(idx_heff)%op
+      end if
+      if (trim(typ_str).eq.'D_FORM') then
+        idx_heff = idx_oplist2(label_op(3),op_info)
+        if (idx_heff.lt.0.and.max_n.le.3)
+     &       call quit(1,'set_mrcc_intermediates',
+     &       'label not on list (4): '//label_op(3))
+      end if
+
+      if (trim(typ_str).eq.'D_FORM'.and.max_n.le.3) then
+        idx_op4 = idx_oplist2(label_op(4),op_info)
+        if (idx_op4.lt.0)
+     &       call quit(1,'set_mrcc_intermediates',
+     &       'label not on list (5): '//label_op(4))
+      end if
+      if (trim(typ_str).eq.'D_FORM'.and.max_n.le.2) then
+        idx_op5 = idx_oplist2(label_op(5),op_info)
+        if (idx_op5.lt.0)
+     &       call quit(1,'set_mrcc_intermediates',
+     &       'label not on list (6): '//label_op(5))
       end if
 
       if (ntest.ge.100) then
@@ -501,6 +524,230 @@ c dbgend
         if (iterm.gt.0) call sum_terms(start_pnt1,op_info)
         ! delete disconnected terms or modify prefactors if requested
         call select_mrcc_wf(start_pnt1,label_op(1),op_info)
+
+      case('D_INT','D_INT2')
+        ! gamma_2 (or gamma_4)
+        call expand_op_product2(flist_pnt,idx_intm,
+     &       1d0,6,2,
+     &       (/idx_intm,idx_t,idx_intm,idx_intm,idx_t,idx_intm/),
+     &       (/1,2,1,1,2,1/),
+     &       -1,-1,
+     &       0,0,
+     &       (/2,5/),1,
+     &       0,0,
+     &       .true.,op_info)
+
+        do while(flist_pnt%command.ne.command_end_of_formula)
+          flist_pnt => flist_pnt%next
+          iterm = iterm + 1
+        end do
+
+        ! + fac_in * (gamma_1)^2
+        if (trim(typ_str).eq.'D_INT') then
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         fac_in,8,3,
+     &         (/idx_intm,idx_t,idx_t,idx_intm,idx_intm,
+     &           idx_t,idx_t,idx_intm/),
+     &         (/1,2,3,1,1,3,2,1/),
+     &         -1,-1,
+     &         0,0,
+     &         (/2,6,2,7,3,6,3,7/),4,
+     &         0,0,
+     &         .true.,op_info)
+        else
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         fac_in,8,3,
+     &         (/idx_intm,idx_h,idx_heff,idx_intm,idx_intm,
+     &           idx_heff,idx_h,idx_intm/),
+     &         (/1,2,3,1,1,3,2,1/),
+     &         -1,-1,
+     &         0,0,
+     &         (/2,6,2,7,3,6,3,7/),4,
+     &         0,0,
+     &         .true.,op_info)
+        end if
+
+        do while(flist_pnt%command.ne.command_end_of_formula)
+          flist_pnt => flist_pnt%next
+          iterm = iterm + 1
+        end do
+
+      case('D_FORM') ! define cumulant approximation for RDMs
+
+        select case(max_n) !maximum cumulant rank
+        case(2)
+          ! gamma_3: D_INT08 * gamma_1
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         1d0,8,3,
+     &         (/idx_intm,idx_t,idx_intm,idx_intm,idx_intm,
+     &           idx_intm,idx_t,idx_intm/),
+     &         (/1,2,3,1,1,3,2,1/),
+     &         (/3,1,1/),(/3,1,1/),
+     &         0,0,
+     &         (/2,6,2,7,3,6,3,7/),4,
+     &         0,0,
+     &         .true.,op_info)
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+            iterm = iterm + 1
+          end do
+          ! gamma_4: 0.5* D_INT09 * D_INT10
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         0.5d0,8,3,
+     &         (/idx_intm,idx_h,idx_heff,idx_intm,idx_intm,
+     &           idx_heff,idx_h,idx_intm/),
+     &         (/1,2,3,1,1,3,2,1/),
+     &         (/4,1,1/),(/4,1,1/),
+     &         0,0,
+     &         (/2,6,2,7,3,6,3,7/),4,
+     &         0,0,
+     &         .true.,op_info)
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+            iterm = iterm + 1
+          end do
+          ! gamma_5: 0.5 * D_INT11 * D_INT12 * gamma_1
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         0.5d0,10,4,
+     &         (/idx_intm,idx_op4,idx_op5,idx_intm,idx_intm,idx_intm,
+     &           idx_intm,idx_op5,idx_op4,idx_intm/),
+     &         (/1,2,3,4,1,1,4,3,2,1/),
+     &         (/5,1,1,1/),(/5,1,1,1/),
+     &         0,0,
+     &         (/2,7,2,8,2,9,3,7,3,8,3,9,4,7,4,8,4,9/),9,
+     &         0,0,
+     &         .true.,op_info)
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+            iterm = iterm + 1
+          end do
+        case(3)
+          ! gamma_4: gamma_3 * gamma_1
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         1d0,8,3,
+     &         (/idx_intm,idx_intm,idx_intm,idx_intm,idx_intm,
+     &           idx_intm,idx_intm,idx_intm/),
+     &         (/1,2,3,1,1,3,2,1/),
+     &         (/4,3,1/),(/4,3,1/),
+     &         0,0,
+     &         (/2,6,2,7,3,6,3,7/),4,
+     &         0,0,
+     &         .true.,op_info)
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+            iterm = iterm + 1
+          end do
+          ! + 0.5 * D_INT04 * D_INT05
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         0.5d0,8,3,
+     &         (/idx_intm,idx_t,idx_h,idx_intm,idx_intm,
+     &           idx_h,idx_t,idx_intm/),
+     &         (/1,2,3,1,1,3,2,1/),
+     &         (/4,1,1/),(/4,1,1/),
+     &         0,0,
+     &         (/2,6,2,7,3,6,3,7/),4,
+     &         0,0,
+     &         .true.,op_info)
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+            iterm = iterm + 1
+          end do
+          ! gamma_5: gamma_3 * gamma_2
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         1d0,8,3,
+     &         (/idx_intm,idx_intm,idx_intm,idx_intm,idx_intm,
+     &           idx_intm,idx_intm,idx_intm/),
+     &         (/1,2,3,1,1,3,2,1/),
+     &         (/5,3,2/),(/5,3,2/),
+     &         0,0,
+     &         (/2,6,2,7,3,6,3,7/),4,
+     &         0,0,
+     &         .true.,op_info)
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+            iterm = iterm + 1
+          end do
+          ! -0.5 * D_INT06 * D_INT07 * gamma_1
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         -0.5d0,10,4,
+     &         (/idx_intm,idx_heff,idx_op4,idx_intm,idx_intm,idx_intm,
+     &           idx_intm,idx_op4,idx_heff,idx_intm/),
+     &         (/1,2,3,4,1,1,4,3,2,1/),
+     &         (/5,1,1,1/),(/5,1,1,1/),
+     &         0,0,
+     &         (/2,7,2,8,2,9,3,7,3,8,3,9,4,7,4,8,4,9/),9,
+     &         0,0,
+     &         .true.,op_info)
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+            iterm = iterm + 1
+          end do
+        case(4)
+          ! gamma_5: gamma_4 * gamma_1 or D_INT13 * gamma_1
+          if (idx_heff.ge.0) then
+            call expand_op_product2(flist_pnt,idx_intm,
+     &           1d0,8,3,
+     &           (/idx_intm,idx_intm,idx_intm,idx_intm,idx_intm,
+     &             idx_intm,idx_intm,idx_intm/),
+     &           (/1,2,3,1,1,3,2,1/),
+     &           (/5,4,1/),(/5,4,1/),
+     &           0,0,
+     &           (/2,6,2,7,3,6,3,7/),4,
+     &           0,0,
+     &           .true.,op_info)
+          else
+            call expand_op_product2(flist_pnt,idx_intm,
+     &           1d0,8,3,
+     &           (/idx_intm,idx_h,idx_intm,idx_intm,idx_intm,
+     &             idx_intm,idx_h,idx_intm/),
+     &           (/1,2,3,1,1,3,2,1/),
+     &           (/5,1,1/),(/5,1,1/),
+     &           0,0,
+     &           (/2,6,2,7,3,6,3,7/),4,
+     &           0,0,
+     &           .true.,op_info)
+          end if
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+            iterm = iterm + 1
+          end do
+          ! + gamma_3 * D_INT01
+          call expand_op_product2(flist_pnt,idx_intm,
+     &         1d0,8,3,
+     &         (/idx_intm,idx_intm,idx_t,idx_intm,idx_intm,
+     &           idx_t,idx_intm,idx_intm/),
+     &         (/1,2,3,1,1,3,2,1/),
+     &         (/5,3,1/),(/5,3,1/),
+     &         0,0,
+     &         (/2,6,2,7,3,6,3,7/),4,
+     &         0,0,
+     &         .true.,op_info)
+          do while(flist_pnt%command.ne.command_end_of_formula)
+            flist_pnt => flist_pnt%next
+            iterm = iterm + 1
+          end do
+          if (idx_heff.ge.0) then
+            ! - D_INT02 * D_INT03 * gamma_1
+            call expand_op_product2(flist_pnt,idx_intm,
+     &           -1d0,10,4,
+     &           (/idx_intm,idx_h,idx_heff,idx_intm,idx_intm,idx_intm,
+     &             idx_intm,idx_heff,idx_h,idx_intm/),
+     &           (/1,2,3,4,1,1,4,3,2,1/),
+     &           (/5,1,1,1/),(/5,1,1,1/),
+     &           0,0,
+     &           (/2,7,2,8,2,9,3,7,3,8,3,9,4,7,4,8,4,9/),9,
+     &           0,0,
+     &           .true.,op_info)
+            do while(flist_pnt%command.ne.command_end_of_formula)
+              flist_pnt => flist_pnt%next
+              iterm = iterm + 1
+            end do
+          end if
+
+        case default
+          write(luout,*) 'maxcum: ', max_n
+          call quit(1,'set_mrcc_intermediates','Not yet available')
+        end select
 
       case default
         call quit(1,'set_mrcc_intermediates',

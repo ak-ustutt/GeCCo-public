@@ -148,8 +148,10 @@ cmhend
 
       ieqvfac = 1
       ivtx_loop: do ivtx = 1, nvtx
-        if (fix_vtx(ivtx).or.neqv(ivtx).lt.0) cycle
+        if (neqv(ivtx).le.1) cycle
+c        if (fix_vtx(ivtx).or.neqv(ivtx).lt.0) cycle
         nsame = 1
+        if (fix_vtx(ivtx)) nsame = 0
         kvtx = ivtx
         do jvtx = 2, neqv(ivtx)
           lvtx = idx_eqv(jvtx,ivtx)
@@ -162,10 +164,11 @@ c          print *,'1: ',topomap(1:nvtx,ivtx)
 c          print *,'2: ',topomap(1:nvtx,kvtx)
 c          print *,'result -> ',itopo
 c dbg
-          if (itopo.lt.0) then
+          if (itopo.lt.0.or.itopo.gt.0.and.fix_vtx(kvtx)) then
             ieqvfac = ieqvfac*ifac(nsame)
             nsame = 1
-          else if (itopo.eq.0) then
+            if (fix_vtx(kvtx)) nsame = 0
+          else if (itopo.eq.0.and..not.fix_vtx(kvtx)) then
             nsame = nsame+1
           else if (itopo.gt.0) then
             ieqvfac = -1

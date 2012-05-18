@@ -442,8 +442,9 @@ c dbg
       end if
 
       if (me_op1%op%formal_blk(iblkop1).or.
-     &    me_op2%op%formal_blk(iblkop2).or.
-     &    me_op1op2%op%formal_blk(iblkop1op2)) then
+c     &    me_op2%op%formal_blk(iblkop2).or.
+c     &    me_op1op2%op%formal_blk(iblkop1op2)) then
+     &    me_op2%op%formal_blk(iblkop2)) then
         write(luout,*) me_op1%op%formal_blk(iblkop1),
      &                 me_op2%op%formal_blk(iblkop2),
      &                 me_op1op2%op%formal_blk(iblkop1op2)
@@ -459,6 +460,9 @@ c dbg
         end if
 
         call quit(1,'contr_op1op2_wmaps_c','called for formal block')
+      else if (me_op1op2%op%formal_blk(iblkop1op2)) then
+        ! do nothing for formal block
+        return
       end if
         
 c      ! we accept that certain non-totally symmetric operator blocks

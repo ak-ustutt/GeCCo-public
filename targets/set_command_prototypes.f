@@ -202,6 +202,8 @@
      &     val_int=(/-1/))
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_SPECIAL,tgt_info)
+      call set_arg('_PROTO_',SELECT_SPECIAL,'OPERATORS',0,tgt_info,
+     &     val_label=(/''/))
       call set_arg('_PROTO_',SELECT_SPECIAL,'MODE',1,tgt_info,
      &     val_str='---')
 *----------------------------------------------------------------------*
@@ -244,6 +246,10 @@
      &     val_str='---')
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_MRCC_INTM,tgt_info)
+      call set_arg('_PROTO_',DEF_MRCC_INTM,'FAC',1,tgt_info,
+     &     val_rl8=(/0d0/))
+      call set_arg('_PROTO_',DEF_MRCC_INTM,'MAXCOM',1,tgt_info,
+     &     val_int=(/0/))
 !     ME-lists:
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_ME_LIST,tgt_info)
