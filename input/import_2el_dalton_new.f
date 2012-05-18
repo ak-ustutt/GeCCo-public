@@ -59,6 +59,8 @@
      &     buffer(:)
       type(sort_buffer) ::
      &     sbuffer
+      real(8), target ::
+     &     xdummy(1)
 
       type(filinf) ::
      &     ffinp, ffpre, ffchain
@@ -173,7 +175,7 @@ c        fac_ccaa = -1d0
         ! get buffer
         ifree = mem_alloc_real(buffer,lenbuffer,'buffer')
       else
-        buffer => null()
+        buffer => xdummy
         call init_sort_buffer(sbuffer,nbin_per_pass,n_per_rec,maxchain)
       end if
 

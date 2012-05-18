@@ -90,6 +90,8 @@
      &     irst_ex1(:,:,:,:,:,:),irst_ex2(:,:,:,:,:,:)
       real(8), pointer ::
      &     xret_pnt(:)
+      integer, target ::
+     &     idummy(1)
 
       integer, external ::
      &     idx_oplist2
@@ -200,8 +202,11 @@
       irst_cnt => bc_info%rst_cnt
 
       merge_op1 => bc_info%merge_op1
-      if (.not.self)
-     &     merge_op2 => bc_info%merge_op2
+      if (.not.self) then
+        merge_op2 => bc_info%merge_op2
+      else
+        merge_op2 => idummy
+      end if
       merge_op1op2 => bc_info%merge_op1op2
       merge_op2op1 => bc_info%merge_op2op1
 

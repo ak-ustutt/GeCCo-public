@@ -8,6 +8,8 @@ from time to time (in case someone has changed the config stuff).
 Step II - configure
 -------
 Run
+- on dirac with ifort version 12
+FC=ifort CC=icc ./configure --with-blas='-L/share/apps/intel/composer_xe_2011_sp1.8.273/composer_xe_2011_sp1.8.273/mkl/lib/intel64/ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm' --with-lapack='-L/share/apps/intel/composer_xe_2011_sp1.8.273/composer_xe_2011_sp1.8.273/mkl/lib/intel64/ -lmkl_lapack95_lp64'
 - for xeon machines on our cluster
 FC=ifort CC=icc ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/em64t/ -lmkl -lmkl_lapack -lguide -lpthread'
 - for p4 machines on our cluster
