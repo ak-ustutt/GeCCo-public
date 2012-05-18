@@ -83,6 +83,11 @@ c-----------------------------------------------------------------------
       hpvx_mnmx(1:2,IHOLE,2) = (/0,max_h_rank/)
       hpvx_mnmx(1:2,IPART,2) = (/0,n_ap/)
 
+      ! add for active shells:
+      if (orb_info%nactt_hpv(IVALE).gt.0) then
+        hpvx_mnmx(1:2,IVALE,2) = (/0,max_h_rank/)
+      end if
+
 c      do ica=1,2
 c        do igastp=1,ngastp
 c          if(orb_info%nactt_hpv(igastp).gt.0.or.igastp.eq.iextr)then

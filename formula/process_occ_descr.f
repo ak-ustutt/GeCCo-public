@@ -37,7 +37,7 @@
       logical ::
      &     next
       integer ::
-     &     icnt, ilist, ijoin, kjoin
+     &     icnt, ilist, ijoin, kjoin, nlist_uniq
       integer ::
      &     nl_c(njoined), nl_a(njoined), 
      &     il_a(njoined), il_c(njoined), n_one(njoined),
@@ -118,6 +118,8 @@
 
           ! missing here:
           ! merge this list with previous entries
+          call unique_ntupel(occ_list,4*2*njoined,nlist,nlist_uniq)
+          nlist = nlist_uniq
 
           ! reset for next round
           nl_c = 1

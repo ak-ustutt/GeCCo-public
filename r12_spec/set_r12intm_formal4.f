@@ -519,6 +519,15 @@ c dbg
         occ_def = 0
         occ_def(IHOLE,1,1) = 1
         occ_def(IHOLE,2,1) = 1
+        if (orb_info%nactt_hpv(IVALE).gt.0) then
+          ndef = 4
+          occ_def(IHOLE,1,2) = 1
+          occ_def(IVALE,2,2) = 1
+          occ_def(IVALE,1,3) = 1
+          occ_def(IHOLE,2,3) = 1
+          occ_def(IVALE,1,4) = 1
+          occ_def(IVALE,2,4) = 1
+        end if
         call set_uop2(op_f,opdum_f,
      &       occ_def,ndef,1,(/0,0/),-1,orb_info)
         deallocate(occ_def)

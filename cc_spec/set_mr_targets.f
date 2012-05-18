@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_mr_targets(tgt_info,orb_info)
+      subroutine set_mr_targets(tgt_info,orb_info,env_type)
 *----------------------------------------------------------------------*
 *     calls target generators for multireference methods
 *
@@ -19,11 +19,13 @@
      &     tgt_info
       type(orbinf), intent(inout) ::
      &     orb_info
+      character(len=*), intent(in) ::
+     &     env_type
 
       integer ::
      &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym
       logical ::
-     &     l_icci, l_iccc, use_met
+     &     l_icci, l_iccc, use_met, fixed
       integer, allocatable ::
      &     excrestr(:,:,:)
 
@@ -68,6 +70,15 @@
       if ((l_icci.or.l_iccc).and.cmaxexc.gt.0)
      &            call quit(1,'set_mr_targets',
      &            'Warning: Only tested for CASSCF reference so far')
+
+      ! set R12 intermediates, if necessary
+      if (is_keyword_set('method.R12').gt.0) then
+        call get_argument_value('method.R12','fixed',lval=fixed)
+        if (.not.fixed) 
+     &      call warn('set_mr_targets', 
+     &           'MR + R12: fixed amplitudes are the only choice!')
+        call set_r12f_general_targets(tgt_info,orb_info,env_type)
+      end if
 
       ! first set targets for CASSCF or uncontracted CI wave function
       call set_unc_mrci_targets(tgt_info,orb_info,

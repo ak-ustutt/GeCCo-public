@@ -12,7 +12,7 @@
       logical ::
      &     brackets, allowed(4)
       integer ::
-     &     len_string, ipos, nset, iset, hpvx
+     &     len_string, ipos, nset, iset, hpvx, nlist_uniq
       
 
       len_string = len_trim(string)
@@ -88,5 +88,8 @@
         nlist = 1
       end if
 
+      ! remove duplicate entries
+      call unique_ntupel(occ_list,4,nlist,nlist_uniq)
+      nlist = nlist_uniq
 
       end
