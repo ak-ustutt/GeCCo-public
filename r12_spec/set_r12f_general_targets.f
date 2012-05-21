@@ -607,6 +607,19 @@ c     &              parameters,2,tgt_info)
       call set_arg('F-X',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
      &             val_str=descr)
 
+      ! for MR: averaged Fock:
+      call add_target2('Favg',.false.,tgt_info)
+      call set_rule2('Favg',DEF_HAMILTONIAN,tgt_info)
+      call set_arg('Favg',DEF_HAMILTONIAN,'LABEL',1,tgt_info,
+     &     val_label=(/'Favg'/))
+      call set_arg('Favg',DEF_HAMILTONIAN,'MIN_RANK',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('Favg',DEF_HAMILTONIAN,'MAX_RANK',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('Favg',DEF_HAMILTONIAN,'SET_X',1,tgt_info,
+     &     val_log=(/.true./))
+
+
       ! commutator integrals <ab|[T1+T2,r12]|ij>
       call add_target(op_ttr,ttype_op,.false.,tgt_info)
       call r12int_parameters(-1,parameters,
@@ -2231,6 +2244,9 @@ c dbg
         labels(11) = '-'
         labels(12) = op_rintbreve
         nlab = 12
+        if (active_orbs) 
+     &      call set_dependency(form_r12_bcabs,'Favg',tgt_info)
+        if (active_orbs) labels(7) = 'Favg'
       else if (approx(1:1).eq.'C') then
         call set_dependency(form_r12_bcabs,op_rdagbar,tgt_info)        
         call set_dependency(form_r12_bcabs,op_rinttilde,tgt_info)        
@@ -2283,7 +2299,10 @@ c dbg
       labels(5) = op_ff
       labels(6) = '-'
       labels(7) = op_ham
+      if (active_orbs) labels(7) = 'Favg'
       call add_target(form_r12_bhcabs,ttype_frm,.false.,tgt_info)
+      if (active_orbs) 
+     &      call set_dependency(form_r12_bhcabs,'Favg',tgt_info)
       call set_dependency(form_r12_bhcabs,op_x_inter,tgt_info)
       call set_dependency(form_r12_bhcabs,op_ff,tgt_info)
       call set_dependency(form_r12_bhcabs,op_rint,tgt_info)
@@ -2342,7 +2361,10 @@ c     &              parameters,2,tgt_info)
         labels(4) = op_ham
         nlab = 4
       end if
+      if (active_orbs) labels(4) = 'Favg'
       call add_target(form_r12_ccabs,ttype_frm,.false.,tgt_info)
+      if (active_orbs) 
+     &      call set_dependency(form_r12_ccabs,'Favg',tgt_info)
       call set_dependency(form_r12_ccabs,op_c_inter,tgt_info)
       call set_dependency(form_r12_ccabs,op_rint,tgt_info)
       call set_dependency(form_r12_ccabs,op_ham,tgt_info)
@@ -2380,13 +2402,19 @@ c     &              parameters,2,tgt_info)
       call set_dependency('C1_CABS',op_ham,tgt_info)
       call set_dependency('C1_CABS','C1_formal',tgt_info)
       call set_dependency('C1_CABS',op_rint,tgt_info)
+      if (active_orbs)
+     &    call set_dependency('C1_CABS','Favg',tgt_info)
       call set_rule2('C1_CABS',REPLACE,tgt_info)
       call set_arg('C1_CABS',REPLACE,'LABEL_RES',1,tgt_info,
      &            val_label=(/'C1_CABS'/))
       call set_arg('C1_CABS',REPLACE,'LABEL_IN',1,tgt_info,
      &            val_label=(/'C1_formal'/))
-      call set_arg('C1_CABS',REPLACE,'OP_LIST',2,tgt_info,
+      if (.not.active_orbs)
+     &   call set_arg('C1_CABS',REPLACE,'OP_LIST',2,tgt_info,
      &            val_label=(/op_r12,op_rint/))
+      if (active_orbs)
+     &   call set_arg('C1_CABS',REPLACE,'OP_LIST',4,tgt_info,
+     &            val_label=(/op_r12,op_rint,op_ham,'Favg'/))
       call set_arg('C1_CABS',REPLACE,'TITLE',1,tgt_info,
      &            val_str='C1 intermediate, for evaluation')
       ! for some exceptional cases (no CABS) make sure
@@ -2745,6 +2773,8 @@ c      call add_target(fopt_r12_xcabs,ttype_frm,.true.,tgt_info)
       call set_dependency(fopt_r12_bcabs,mel_b_def,tgt_info)
       call set_dependency(fopt_r12_bcabs,mel_rttr,tgt_info)
       call set_dependency(fopt_r12_bcabs,mel_ham,tgt_info)
+      if (active_orbs)
+     &    call set_dependency(fopt_r12_bcabs,'Favg-INT',tgt_info)
       call set_dependency(fopt_r12_bcabs,mel_rint,tgt_info)      
       if (approx(1:2).ne.'A '.and.approx(1:1).ne.'C') then
         call set_dependency(fopt_r12_bcabs,mel_x_def,tgt_info)
@@ -2782,6 +2812,8 @@ c      call add_target(fopt_r12_xcabs,ttype_frm,.true.,tgt_info)
       call set_dependency(fopt_r12_bhcabs,mel_ff,tgt_info)
       call set_dependency(fopt_r12_bhcabs,mel_rint,tgt_info)      
       call set_dependency(fopt_r12_bhcabs,mel_ham,tgt_info)
+      if (active_orbs)
+     &    call set_dependency(fopt_r12_bhcabs,'Favg-INT',tgt_info)
       call opt_parameters(-1,parameters,ncat,nint)
       call set_rule(fopt_r12_bhcabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
@@ -2807,6 +2839,8 @@ c dbg
       call set_dependency(fopt_r12_ccabs,form_r12_ccabs,tgt_info)
       call set_dependency(fopt_r12_ccabs,mel_c_def,tgt_info)
       call opt_parameters(-1,parameters,ncat,nint)
+      if (active_orbs)
+     &    call set_dependency(fopt_r12_ccabs,'Favg-INT',tgt_info)
       call set_rule(fopt_r12_ccabs,ttype_frm,OPTIMIZE,
      &              labels,ncat+nint+1,1,
      &              parameters,1,tgt_info)
@@ -3105,6 +3139,30 @@ c     &       0,0,1,0,0,.false.)
       call set_rule('F-X-INT',ttype_opme,IMPORT,
      &              labels,1,1,
      &              parameters,1,tgt_info)
+
+      ! for MR: import the averaged FOCK (as used for integrals)
+      call add_target2('Favg-INT',.false.,tgt_info)
+      call set_dependency('Favg-INT','Favg',tgt_info)
+      ! (a) define
+      call set_rule2('Favg-INT',DEF_ME_LIST,tgt_info)
+      call set_arg('Favg-INT',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'Favg-INT'/))
+      call set_arg('Favg-INT',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'Favg'/))
+      call set_arg('Favg-INT',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('Favg-INT',DEF_ME_LIST,'MS',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg('Favg-INT',DEF_ME_LIST,'ABSYM',1,tgt_info,
+     &     val_int=(/msc/))
+      ! (b) import
+      call set_rule2('Favg-INT',IMPORT,tgt_info)
+      call set_arg('Favg-INT',IMPORT,'LIST',1,tgt_info,
+     &     val_label=(/'Favg-INT'/))
+      call set_arg('Favg-INT',IMPORT,'TYPE',1,tgt_info,
+     &     val_str='F_INT')
+      call set_arg('Favg-INT',IMPORT,'ENV',1,tgt_info,
+     &     val_str=env_type)
 
       ! [T1+T2,R12] integrals
       call add_target(mel_ttr,ttype_opme,.false.,tgt_info)
