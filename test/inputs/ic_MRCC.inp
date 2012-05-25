@@ -4,7 +4,7 @@ orb_space
  shell type=frozen,def=(1,0,0,0)
 method
  MR maxexc=2,minexc=1,pure_vv=F,maxh=0,prc_type=0
- MRCC maxcom_res=2,H1bar=T,maxtt=0,h1bar_maxp=2
+ MRCC maxcom_res=2,H1bar=T,maxtt=0
 calculate
  solve maxiter=50,conv=1d-8,maxsub=8
  solve non_linear optref=-1
