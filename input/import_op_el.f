@@ -15,6 +15,7 @@
      &     hard_restart = .false. ! currently for testing only
 
       include 'stdunit.h'
+      include 'opdim.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
@@ -43,7 +44,7 @@
       real(8) ::
      &     xdum
       logical ::
-     &     anti, list_exists
+     &     anti, list_exists, act_orbs
       type(me_list), pointer ::
      &     mel_target
 
@@ -62,6 +63,7 @@
       mel_target => op_info%mel_arr(idx_mel)%mel
 
       anti = .true.
+      act_orbs = orb_info%nactt_hpv(IVALE).gt.0
 
       call touch_file_rec(mel_target%fhand)
 
@@ -96,8 +98,12 @@ c     &         call import_2el_dalton(mel_target,'MO_G',
           end if
           ! call after 2int import, as the above routine
           ! zeroes all blocks, including E0 and F:
+          if (trim(list_type).eq.'FI_INT'.or.
+     &        (trim(list_type).eq.'H_INT'.and.act_orbs))
+     &       call import_fock_dalton(mel_target,str_info,orb_info,
+     &         .true.,'MO_FI')
           if (trim(list_type).eq.'F_INT'.or.
-     &        trim(list_type).eq.'H_INT')
+     &        (trim(list_type).eq.'H_INT'.and..not.act_orbs))
      &       call import_fock_dalton(mel_target,str_info,orb_info,
      &         .true.,'MO_F')
         ! Get other integrals needed for R12 calculations.

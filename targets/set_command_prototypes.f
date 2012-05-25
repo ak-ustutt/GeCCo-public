@@ -285,6 +285,8 @@
      &     val_str=trim(env_type))
 *----------------------------------------------------------------------*
       call add_command_proto(PRECONDITIONER,tgt_info)
+      call set_arg('_PROTO_',PRECONDITIONER,'MODE',1,tgt_info,
+     &     val_str='dia-F')
       call set_arg('_PROTO_',PRECONDITIONER,'SHIFT',1,tgt_info,
      &     val_rl8=(/0d0/))
 *----------------------------------------------------------------------*

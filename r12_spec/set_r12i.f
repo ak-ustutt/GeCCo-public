@@ -65,6 +65,10 @@ c        hpvxca_mnmx(1:2,IHOLE,2)=2
         hpvxca_mnmx(1:2,IHOLE,2)=(/0,2/)
         hpvxca_mnmx(1:2,IPART,2)=(/0,n_ap/)
       end if
+
+      if (orb_info%nactt_hpv(IVALE).gt.0) then
+        hpvxca_mnmx(1:2,IVALE,2)=(/0,2/)
+      end if
       
       do igastp=1,ngastp
         if(igastp.eq.IEXTR)then
@@ -78,7 +82,7 @@ c dbg
           endif
 c dbg
         else
-          if(igastp.ne.IVALE)then
+          if(igastp.ne.IVALE.or.orb_info%nactt_hpv(IVALE).gt.0)then
             hpvxca_mnmx(1,igastp,1)=0
             hpvxca_mnmx(2,igastp,1)=max_rank
           endif
@@ -93,6 +97,8 @@ c dbg
         hpvx_mnmx(2,IPART) = 2+n_ap
       end if
       hpvx_mnmx(2,IEXTR) = hpvxca_mnmx(2,IEXTR,1)
+      if (orb_info%nactt_hpv(IVALE).gt.0) 
+     &   hpvx_mnmx(2,IVALE) = 4
 
       irestr(1,1:orb_info%ngas,1:2,1:2)=0
       irestr(2,1:orb_info%ngas,1:2,1:2)=max_rank
