@@ -165,7 +165,8 @@
 
       call file_close_keep(ffsir)
 
-      n_frozen = i4elsum(nfro,nsym)
+c     We will just ignore if orbitals were frozen within Dalton run
+c      n_frozen = i4elsum(nfro,nsym)
       n_act    = i4elsum(nash,nsym)
       n_as1    = i4elsum(nas1,nsym)
       n_as2    = i4elsum(nas2,nsym)
@@ -173,7 +174,7 @@
 
       nspin = 1
       ngas = 2
-      if (n_frozen.gt.0) ngas = ngas+1
+c      if (n_frozen.gt.0) ngas = ngas+1
       if(logaux) ngas=ngas+1
       orb_info%nactel = nactel
       orb_info%nactorb = n_act
@@ -220,24 +221,26 @@ c     &     'not adapted to RAS orbital spaces')
 
       orb_info%nbas(1:nsym) = nbas(1:nsym)
       orb_info%ntoobs(1:nsym) = norb(1:nsym)
-      if (n_frozen.gt.0) then
-        ! not sure whether DALTON's frozen orbitals are what we want
-        call quit(1,'read_env_dalton',
-     &       'check first what DALTON means by freezing orbitals!')
-        if(logaux)then
-          orb_info%iad_gas(1:ngas) = (/1,2,2,2/)
-          orb_info%ihpvgas(1:ngas,1) = (/1,1,2,4/)
-        else
-          orb_info%iad_gas(1:ngas) = (/1,2,2/)
-          orb_info%ihpvgas(1:ngas,1) = (/1,1,2/)
-        endif  
-        orb_info%igassh(1:nsym,1) = nfro(1:nsym)
-        orb_info%igassh(1:nsym,2) = nish(1:nsym)-nfro(1:nsym)
-        orb_info%igassh(1:nsym,3) = norb(1:nsym)-nish(1:nsym)
-        if(logaux)then
-          orb_info%igassh(1:nsym,4) = linind(1:nsym)
-        endif  
-      else
+      if (n_frozen.gt.0)
+     &   write(luout,*) 'We will just ignore DALTON''s frozen orbitals'
+c      if (n_frozen.gt.0) then
+c        ! not sure whether DALTON's frozen orbitals are what we want
+c        call quit(1,'read_env_dalton',
+c     &       'check first what DALTON means by freezing orbitals!')
+c        if(logaux)then
+c          orb_info%iad_gas(1:ngas) = (/1,2,2,2/)
+c          orb_info%ihpvgas(1:ngas,1) = (/1,1,2,4/)
+c        else
+c          orb_info%iad_gas(1:ngas) = (/1,2,2/)
+c          orb_info%ihpvgas(1:ngas,1) = (/1,1,2/)
+c        endif  
+c        orb_info%igassh(1:nsym,1) = nfro(1:nsym)
+c        orb_info%igassh(1:nsym,2) = nish(1:nsym)-nfro(1:nsym)
+c        orb_info%igassh(1:nsym,3) = norb(1:nsym)-nish(1:nsym)
+c        if(logaux)then
+c          orb_info%igassh(1:nsym,4) = linind(1:nsym)
+c        endif  
+c      else
         if (nspin.eq.1.and.n_act.eq.0) then
           if(logaux)then
             orb_info%iad_gas(1:ngas) = (/2,2,2/)
@@ -284,7 +287,7 @@ c     &     'not adapted to RAS orbital spaces')
             orb_info%igassh(1:nsym,4) = linind(1:nsym)
           endif
         end if
-      end if
+c      end if
       if(logaux)then
         orb_info%cab_orb(1:nsym)=linind(1:nsym)
         orb_info%nxbas(1:nsym)=auxbas(1:nsym)

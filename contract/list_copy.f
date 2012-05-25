@@ -1,7 +1,8 @@
 *------------------------------------------------------------------------*
-      subroutine list_copy(me_src,me_tgt)
+      subroutine list_copy(me_src,me_tgt,swap)
 *------------------------------------------------------------------------*
 *     cp ME list from me_src to me_tgt
+*     if swap=T: interchange the lists (i.e. also copy me_tgt to me_src)
 *------------------------------------------------------------------------*
       implicit none
 
@@ -14,6 +15,8 @@
 
       type(me_list), intent(inout) ::
      &     me_src, me_tgt
+      logical, intent(in) ::
+     &     swap
 
       logical ::
      &     close_src, close_tgt
@@ -27,7 +30,7 @@
       type(filinf), pointer ::
      &     ffop_src, ffop_tgt
       real(8), pointer ::
-     &     buffer(:)
+     &     buffer(:), buffer2(:)
 
 cmh      call quit(1,'list_copy','not yet debugged (*might* work)')
 
@@ -63,6 +66,7 @@ cmh      call quit(1,'list_copy','not yet debugged (*might* work)')
      &     'not prepared for different reclen''s: '//
      &     trim(ffop_src%name)//' '//trim(ffop_tgt%name))
       nblkmax = ifree/ffop_src%reclen
+      if (swap) nblkmax = nblkmax/2
       if (nblkmax.le.0) then
         write(luout,*) 'free memory (words):  ',ifree
         write(luout,*) 'block length (words): ',ffop_src%reclen
@@ -89,6 +93,7 @@ cmh      call quit(1,'list_copy','not yet debugged (*might* work)')
         nbuff = min(len_op,nblk*ffop_src%reclen)
 
         ifree = mem_alloc_real(buffer,nbuff,'buffer')
+        if (swap) ifree = mem_alloc_real(buffer2,nbuff,'buffer2')
 
         idxst_src = idisc_off_src+1
         idxst_tgt = idisc_off_tgt+1
@@ -96,6 +101,10 @@ cmh      call quit(1,'list_copy','not yet debugged (*might* work)')
           idxnd_src = min(idisc_off_src+len_op,idxst_src-1+nbuff)
           idxnd_tgt = min(idisc_off_tgt+len_op,idxst_tgt-1+nbuff)
           call get_vec(ffop_src,buffer,idxst_src,idxnd_src)  
+          if (swap) then ! also copy tgt to src
+            call get_vec(ffop_tgt,buffer2,idxst_tgt,idxnd_tgt)
+            call put_vec(ffop_src,buffer2,idxst_src,idxnd_src)
+          end if
           call put_vec(ffop_tgt,buffer,idxst_tgt,idxnd_tgt)  
           idxst_src = idxnd_src+1
           idxst_tgt = idxnd_tgt+1
@@ -108,6 +117,7 @@ cmh      call quit(1,'list_copy','not yet debugged (*might* work)')
       end if
 
       call touch_file_rec(ffop_tgt)
+      if (swap) call touch_file_rec(ffop_src)
 
       if (close_src)
      &     call file_close_keep(ffop_src)

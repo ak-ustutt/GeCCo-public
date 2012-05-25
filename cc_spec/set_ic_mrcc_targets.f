@@ -35,7 +35,7 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     icnt, maxexc,
      &     msc, ip, ih, ivv, iv, ivv2, jvv,
-     &     maxcom, maxcom_en, maxcom_h1bar,
+     &     maxcom, maxcom_en, maxcom_h1bar, h1bar_maxp,
      &     n_t_cls, i_cls,
      &     n_tred_cls, len_form, optref, idef, ciroot,
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
@@ -91,6 +91,10 @@
      &     ival=maxcom_en)
       call get_argument_value('method.MRCC','maxcom_h1bar',
      &     ival=maxcom_h1bar)
+      call get_argument_value('method.MRCC','h1bar_maxp',
+     &     ival=h1bar_maxp)
+      if (h1bar_maxp.lt.0.and.maxexc.le.2) h1bar_maxp = 2
+      if (h1bar_maxp.lt.0.and.maxexc.gt.2) h1bar_maxp = 3
       call get_argument_value('method.MRCC','G_level',
      &     ival=G_level)
       call get_argument_value('method.MRCC','H1bar',
@@ -131,6 +135,7 @@
         write(luout,*) 'Op_eqs       = ', Op_eqs
         write(luout,*) 'H1bar        = ', h1bar
         if (h1bar) write(luout,*) 'maxcom_h1bar = ', maxcom_h1bar
+        if (h1bar) write(luout,*) 'h1bar_maxp   = ', h1bar_maxp
         write(luout,*) 'HTT          = ', htt
         write(luout,*) 'maxtt        = ', maxtt
         write(luout,*) 'x_ansatz     = ', x_ansatz
@@ -155,6 +160,9 @@
       if (t1ord.ge.0.and.tfix.eq.0)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'Manually setting T1ord only enabled yet for Tfix>0')
+      if (h1bar_maxp.eq.0.or.h1bar_maxp.eq.1)
+     &    call quit(1,'set_ic_mrcc_targets',
+     &     'h1bar_maxp should be either -1 or one of 2,3,4')
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -595,13 +603,18 @@ c dbgend
      &            occ_def(igasreo(kblk),1,ndef) + 1
               occ_def(igasreo(lblk),2,ndef) = 
      &            occ_def(igasreo(lblk),2,ndef) + 1
-              ! in case of triple excitations: only formal block is P^4
-              if (first.and.iblk.eq.ngas.and.jblk.eq.ngas.and.
-     &            (maxexc.le.2.and.(kblk.eq.ngas.or.lblk.eq.ngas).or.
-     &             maxexc.gt.2.and.kblk.eq.ngas.and.lblk.eq.ngas)) then
-                first = .false.
-                call set_arg('H1bar',DEF_OP_FROM_OCC,'FORMAL',
-     &                       1,tgt_info,val_int=(/ndef/))
+              ! do formal blocks start here?
+              if (first) then
+                icnt = 0
+                if (iblk.eq.ngas) icnt = icnt + 1
+                if (jblk.eq.ngas) icnt = icnt + 1
+                if (kblk.eq.ngas) icnt = icnt + 1
+                if (lblk.eq.ngas) icnt = icnt + 1
+                if (icnt.gt.h1bar_maxp) then
+                  first = .false.
+                  call set_arg('H1bar',DEF_OP_FROM_OCC,'FORMAL',
+     &                         1,tgt_info,val_int=(/ndef/))
+                end if
               end if
              end if
              if (kblk.le.jblk.and.kblk.ne.lblk) then       
@@ -1009,17 +1022,19 @@ c        end if
           call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &         val_str='MRCCtrunc')
         end if
-        ! expand formal part of H1bar (store H1bar blks. only up to P^2)
         call set_dependency('F_MRCC_LAG','F_H1bar',tgt_info)
-        call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
-        call set_arg('F_MRCC_LAG',EXPAND,'LABEL_RES',1,tgt_info,
-     &       val_label=(/'F_MRCC_LAG'/))
-        call set_arg('F_MRCC_LAG',EXPAND,'LABEL_IN',1,tgt_info,
-     &       val_label=(/'F_MRCC_LAG'/))
-        call set_arg('F_MRCC_LAG',EXPAND,'INTERM',1,tgt_info,
-     &       val_label=(/'F_H1barformal'/))
-        call set_arg('F_MRCC_LAG',EXPAND,'IMODE',1,tgt_info,
-     &       val_int=(/2/))
+        if (h1bar_maxp.lt.4) then
+          ! expand formal part of H1bar (store H1bar blks. only up to P^2)
+          call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
+          call set_arg('F_MRCC_LAG',EXPAND,'LABEL_RES',1,tgt_info,
+     &         val_label=(/'F_MRCC_LAG'/))
+          call set_arg('F_MRCC_LAG',EXPAND,'LABEL_IN',1,tgt_info,
+     &         val_label=(/'F_MRCC_LAG'/))
+          call set_arg('F_MRCC_LAG',EXPAND,'INTERM',1,tgt_info,
+     &         val_label=(/'F_H1barformal'/))
+          call set_arg('F_MRCC_LAG',EXPAND,'IMODE',1,tgt_info,
+     &         val_int=(/2/))
+        end if
         if (trunc) then
           ! expand H1bar fully. Factor out again after truncation
           call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
@@ -2123,13 +2138,13 @@ c dbgend
      &     val_label=(/'F_preP4int'/))
       call set_arg('F_preP4int',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_OMG'/))
-c      if (h1bar) then
-c        call set_arg('F_preP4int',REPLACE,'OP_LIST',2,tgt_info,
-c     &       val_label=(/'H1bar','H_P4'/))
-c      else
+      if (h1bar.and.h1bar_maxp.ge.4) then
+        call set_arg('F_preP4int',REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/'H1bar','H_P4'/))
+      else
         call set_arg('F_preP4int',REPLACE,'OP_LIST',2,tgt_info,
      &       val_label=(/'H   ','H_P4'/))
-c      end if
+      end if
       call set_rule2('F_preP4int',INVARIANT,tgt_info)
       call set_arg('F_preP4int',INVARIANT,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_preP4int'/))
@@ -2137,13 +2152,13 @@ c      end if
      &     val_label=(/'F_preP4int'/))
       call set_arg('F_preP4int',INVARIANT,'OP_RES',1,tgt_info,
      &     val_label=(/'OMG'/))
-c      if (h1bar) then
-c        call set_arg('F_preP4int',INVARIANT,'OPERATORS',1,tgt_info,
-c     &       val_label=(/'H1bar'/))
-c      else
+      if (h1bar.and.h1bar_maxp.ge.4) then
+        call set_arg('F_preP4int',INVARIANT,'OPERATORS',1,tgt_info,
+     &       val_label=(/'H1bar'/))
+      else
         call set_arg('F_preP4int',INVARIANT,'OPERATORS',1,tgt_info,
      &       val_label=(/'H'/))
-c      end if
+      end if
       call set_arg('F_preP4int',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='Precursor for INT_P4')
 c dbg

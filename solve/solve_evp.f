@@ -2,7 +2,7 @@
       subroutine solve_evp(mode_str,
      &     nopt,nroots,label_opt,label_prc,label_op_mvp,label_op_met,
      &     label_form,
-     &     label_special,nspecial,
+     &     label_special,nspecial,thr_suggest,
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -29,6 +29,8 @@
 *     str_info: string information (to be passed to subroutines)
 *     strmap_info: string mappings (to be passed to subroutines)
 *     orb_info: orbital space information (to be passed)
+*
+*     thr_suggest: allows weaker convergence threshold
 *
 *----------------------------------------------------------------------*
       implicit none             ! for sure
@@ -63,6 +65,8 @@
      &     label_op_met(nopt),
      &     label_special(nspecial),
      &     label_form
+      real(8), intent(in) ::
+     &     thr_suggest
       type(formula_info) ::
      &     form_info
       type(operator_info) ::
@@ -194,6 +198,8 @@
       use_s_t = .false.
 
       do iopt = 1, nopt
+        ! weaker convergence threshold requested?
+        opti_info%thrgrd(iopt)=max(opti_info%thrgrd(iopt),thr_suggest)
 
         ! get a ME-list for scratch trial-vectors
         ! in case of ab-sym braking trafo, get sym props from special list
@@ -285,13 +291,12 @@
       home_in = .false.
       do iopt = 1, nopt
         ! open result vector file(s)
-cmh     if file already open, use as initial guess!
-c        if (ffopt(iopt)%fhand%unit.gt.0) then
-c dbg
-c          print *,'iopt = ',iopt
-c dbgend
-c          call warn('solve_evp','using existing amplitudes!')
-c          init(iopt) = .false.
+        ! if file already open, use as initial guess (if requested)!
+        if (ffopt(iopt)%fhand%unit.gt.0.and.opti_info%resume) then
+          write(luout,'(a,i4,a)')
+     &          'Using last vector as initial guess (iopt =',iopt,')'
+          init(iopt) = .false.
+        end if
         if (ffopt(iopt)%fhand%unit.gt.0.and.nroots.gt.1) then
           ! copy this root so that we may home in on it later
           if (nopt.ne.1) call quit(1,'solve_evp',
@@ -316,7 +321,7 @@ c          init(iopt) = .false.
           call assign_me_list(me_trv(iopt)%mel%label,
      &                        me_opt(iopt)%mel%op%name,op_info)
           call file_open(ffhome(1)%fhand)
-          call list_copy(me_opt(iopt)%mel,me_home(1)%mel)
+          call list_copy(me_opt(iopt)%mel,me_home(1)%mel,.false.)
 c dbg
 c          print *,'preparing for homing in later. Saved vector:'
 c          call wrt_mel_file(luout,5,
@@ -349,7 +354,7 @@ c dbgend
           do iroot = 1, nroots
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call switch_mel_record(me_opt(iopt)%mel,iroot)
-            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel)
+            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
           end do
           cycle
         end if
@@ -419,7 +424,7 @@ c dbg
 c          if (file_exists(me_opt(iopt)%mel%fhand)) then
 c            print *,' *** RESTARTING ***'
 c            call switch_mel_record(me_opt(iopt)%mel,iroot)
-c            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel)
+c            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
 c          end if
 c dbg
         end do
@@ -570,12 +575,14 @@ c dbgend
           if (idx.ne.nroots) then
             write(luout,'(a,i4,a,f8.4)') 
      &            'Homing in on root ',idx,' with overlap ',xresmax
-            ! For now we just overwrite the current record
+            ! Interchange this record and the current record
             ! and leave everything else unchanged (a bit dirty)
-            call switch_mel_record(me_opt(iopt)%mel,idx)
-            call list_copy(me_opt(iopt)%mel,me_home(1)%mel)
             call switch_mel_record(me_opt(iopt)%mel,nroots)
-            call list_copy(me_home(1)%mel,me_opt(iopt)%mel)
+            call list_copy(me_opt(iopt)%mel,me_home(1)%mel,.false.)
+            call switch_mel_record(me_opt(iopt)%mel,idx)
+            call list_copy(me_home(1)%mel,me_opt(iopt)%mel,.true.)
+            call switch_mel_record(me_opt(iopt)%mel,nroots)
+            call list_copy(me_home(1)%mel,me_opt(iopt)%mel,.false.)
           end if
           call del_me_list(me_home(1)%mel%label,op_info)
           deallocate(me_home,ffhome)

@@ -1219,7 +1219,7 @@ c dbg
      &       label_list(3*nopt+1:3*nopt+nopt), ! metric-labels
      &       label,                            ! formula
      &       label_list(4*nopt+ioff+1:
-     &                   4*nopt+ioff+nspecial),nspecial,
+     &                   4*nopt+ioff+nspecial),nspecial,0d0,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
 

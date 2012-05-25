@@ -87,7 +87,7 @@
       end if
 
       ! put new vector to special list for transformation
-      call list_copy(me_amp,me_special(1)%mel)
+      call list_copy(me_amp,me_special(1)%mel,.false.)
 
       ! use projection matrix
       call assign_me_list(me_special(4)%mel%label,

@@ -118,6 +118,10 @@
      &       lval=opti_info%skip_resx)
         opti_info%skip_resx = opti_info%skip_resx.and.nopt.eq.1
 
+        call get_argument_value('calculate.solve.non_linear',
+     &       'mic_ahead',
+     &       xval=opti_info%mic_ahead)
+
       else if (mode.eq.2) then
 
         if (is_argument_set('calculate.solve.linear','maxiter').gt.0)
@@ -192,6 +196,9 @@
         case default
           call quit(0,'set_opti','invalid method: '//trim(str))
         end select
+
+        call get_argument_value('calculate.solve.eigen','resume',
+     &       lval=opti_info%resume)
       
       else
         call quit(1,'set_opti_info','illegal value of mode')

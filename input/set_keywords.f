@@ -226,6 +226,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./))
       call argument_add('maxcom_h1bar','method.MRCC',type=vtyp_int,
      &     idef=(/4/))
+      call argument_add('h1bar_maxp','method.MRCC',type=vtyp_int,
+     &     idef=(/3/)) ! max. number of particle lines in H1bar
       call argument_add('x_ansatz','method.MRCC',type=vtyp_rl8,
      &     xdef=(/0.5d0/))
       call argument_add('Tred_mode','method.MRCC',type=vtyp_int,
@@ -302,6 +304,9 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('restart','calculate.solve.non_linear',
      &     type=vtyp_log,
      &     ldef=(/.false./)) ! hard restart (use old amplitude file)
+      call argument_add('mic_ahead','calculate.solve.non_linear',
+     &     type=vtyp_rl8,
+     &     xdef=(/1d-2/)) ! fac. by which micro it. conv.thr. is "ahead"
 
       call keyword_add('linear',context='calculate.solve')
       call argument_add('maxiter','calculate.solve.linear',
@@ -330,6 +335,9 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('method','calculate.solve.eigen',
      &     type=vtyp_str,len=8,
      &     cdef=(/'d','a','v','i','d','s','o','n'/))
+      call argument_add('resume','calculate.solve.eigen',
+     &     type=vtyp_log,
+     &     ldef=(/.true./)) ! resume with last vec. as initial guess
 
       call keyword_add('CC_solve_tbar',context='calculate')
       call keyword_add('CC_solve_sim',context='calculate')

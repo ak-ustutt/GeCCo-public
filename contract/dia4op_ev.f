@@ -53,7 +53,7 @@
      &     msa, msc, igama, igamc, igamstr, ms_str,
      &     idxms, igrph, ndis, idis, did, njoined,
      &     ncidx, naidx, maxidx, nidx, idx, ifree, jdx,
-     &     nblk, nblkmax, idum, maxbuff,
+     &     nblk, nblkmax, idum, maxbuff, len_blk,
      &     maxstrbuf, nstrbuf, nloop,
      &     istr, nouter, n_inner1, n_inner2, lenblk,
      &     iouter, ioffbuf, ioffbuf0, ioff_inner1, ioff_inner2,
@@ -590,8 +590,8 @@ c dbgend
         end do msa_loop
 
         ! add core energy
-        buffer(1:me_dia%len_op_occ(iblk))
-     &     = buffer(1:me_dia%len_op_occ(iblk)) + ecore
+        len_blk = me_dia%len_op_occ(iblk)
+        buffer(1:len_blk) = buffer(1:len_blk) + ecore
 c dbg
 c        if (ntest.ge.100)
 c     &       print *,'final buffer: ',
@@ -599,8 +599,7 @@ c     &       buffer(1:me_dia%len_op_occ(iblk))
 c dbg
         ! put buffer to disc
         call put_vec(ffdia,buffer,me_dia%off_op_occ(iblk)+1,
-     &                            me_dia%off_op_occ(iblk)
-     &                           +me_dia%len_op_occ(iblk))
+     &                            me_dia%off_op_occ(iblk)+len_blk)
         
         ifree = mem_flushmark()
 

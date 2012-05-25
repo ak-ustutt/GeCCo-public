@@ -77,7 +77,7 @@ c dbgend
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
      &     idx, idxmel, ierr, nout, idx_en_xret, idx_res_xret(nopt), jdx
       real(8) ::
-     &     energy, xresnrm(nopt), xdum
+     &     energy, xresnrm(nopt), xdum, thr_suggest
       real(8), pointer ::
      &     xret(:)
       type(dependency_info) ::
@@ -316,9 +316,11 @@ c     &       ff_trv,ff_h_trv,
           call me_list_label(dia_label,'DIA',orb_info%lsym,
      &                       0,0,0,.false.)
           dia_label = trim(dia_label)//'C0'
+          ! use weaker convergence threshold for micro-iterations
+          thr_suggest = min(xresnrm(1)*opti_info%mic_ahead,1d-4)
           call solve_evp('DIA',1,idx,
      &                 'ME_C0',trim(dia_label),'A_C0',
-     &                 'C0','FOPT_OMG_C0','-',0,
+     &                 'C0','FOPT_OMG_C0','-',0,thr_suggest,
      &                 op_info,form_info,str_info,strmap_info,orb_info)
 c dbg
 c          idx = idx_mel_list('ME_C0',op_info)

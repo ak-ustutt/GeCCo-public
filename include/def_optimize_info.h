@@ -12,7 +12,8 @@
      &       variational,     ! variational energy
      &       linear,          ! linear
      &       update_prc,      ! allow updating of preconditioner
-     &       skip_resx        ! skip evaluation of not needed residuals
+     &       skip_resx,       ! skip evaluation of not needed residuals
+     &       resume           ! use last eigenvec. as initial guess
         integer ::
      &       nopt,            ! sets of operators descr. variables
      &                        ! to be optimized
@@ -26,7 +27,8 @@
      &       optref           ! optimization route for relaxed reference
         real(8) ::
      &       trini,
-     &       shift            ! shift linear equations by value
+     &       shift,           ! shift linear equations by value
+     &       mic_ahead        ! control weaker conv. thr. for micro it.
         integer, pointer ::   ! # of wave-function parameters (wfp's)
      &       nwfpar(:),                     ! dimension: nopt
      &       typ_prc(:),      ! type of preconditioner
