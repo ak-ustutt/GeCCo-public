@@ -40,7 +40,7 @@
      &     ifree, ipass, irank, na, nc, ica, igas, igasl, idiff, imaxr,
      &     iocc, igastp, iprint, nx, iblk
       integer ::
-     &     hpvxprint(ngastp)
+     &     hpvxprint(orb_info%ngas)
       integer, pointer ::
      &     nspin, ngas, iad_gas(:), hpvxgas(:,:)
 

@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_ic_mrcc_targets(tgt_info,orb_info,
-     &                               excrestr,maxh,maxp)
+     &                               excrestr,maxh,maxp,execute)
 *----------------------------------------------------------------------*
 *     set targets for internally contracted MRCC
 *
@@ -30,6 +30,8 @@
      &     orb_info
       integer, intent(in) ::
      &     maxh, maxp, excrestr(0:maxh,0:maxp,1:2)
+      logical, intent(in) ::
+     &     execute
 
       integer ::
      &     ndef, occ_def(ngastp,2,124),!60),
@@ -45,7 +47,7 @@
       logical ::
      &     update_prc, skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve
+     &     oldref, solve, use_f12
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -125,7 +127,7 @@
      &     call get_argument_value('calculate.solve.non_linear',
      &     'maxiter',ival=maxit)
       trunc = ntrunc.ge.0
-      solve = .not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
+      solve = execute.and..not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en    = ', maxcom_en
@@ -1300,16 +1302,22 @@ c dbgend
         call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
      &       val_label=(/'F_OMG'/))
       end if
-
+      use_f12 = is_keyword_set('method.R12').gt.0
       ! Lagrangian without Lambda...
       call add_target2('F_E_C0',.false.,tgt_info)
-      call set_dependency('F_E_C0','F_MRCC_LAG',tgt_info)
       call set_dependency('F_E_C0','L',tgt_info)
       call set_rule2('F_E_C0',INVARIANT,tgt_info)
       call set_arg('F_E_C0',INVARIANT,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_E_C0'/))
-      call set_arg('F_E_C0',INVARIANT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_MRCC_LAG'/))
+      if (use_f12) then
+        call set_dependency('F_E_C0','F_MRCC_F12_LAG',tgt_info)
+        call set_arg('F_E_C0',INVARIANT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+      else
+        call set_dependency('F_E_C0','F_MRCC_LAG',tgt_info)
+        call set_arg('F_E_C0',INVARIANT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_LAG'/))
+      end if
       call set_arg('F_E_C0',INVARIANT,'OP_RES',1,tgt_info,
      &     val_label=(/'NORM'/))
       call set_arg('F_E_C0',INVARIANT,'OPERATORS',1,tgt_info,

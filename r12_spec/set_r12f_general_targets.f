@@ -91,7 +91,16 @@
         call get_argument_value('method.truncate','trunc_type',
      &       ival=trunc_type)
       end if
-      CC = is_keyword_set('method.CC').gt.0
+      CC = is_keyword_set('method.CC').gt.0.or.
+     &     is_keyword_set('method.MRCC').gt.0
+      ! new defaults for MRCC:
+      if (is_keyword_set('method.MRCC').gt.0) then
+        if (iprlvl.gt.0) 
+     &      write(luout,*) 'MRCC-F12: switching on (F12*) approx.'
+        vring_mode=2
+        use_CS=.true.
+      end if
+
       pf12_trunc = truncate.and.trunc_type.eq.0
       ! Frozen core?
       frozen = .false.
@@ -1530,7 +1539,8 @@ C     &     val_occ=occ_def(1:ngastp,1:2,1:nblk*nj))
       if (n_pp.ge.0) then
         ndef = 1
         descr = ',,'
-        if (active_orbs) descr = ',|V,V|VV,VV'
+        if (active_orbs) descr = ',|[HV],[HV]|[HV]V,[HV]V'
+c        if (active_orbs) descr = ',|V,V|VV,VV'
       end if
       if (n_pp.ge.1) then
         descr = ',|H,P|P,H|P,P|HP,HH|H[HP],HP'
@@ -2200,6 +2210,9 @@ c dbg
       labels(3) = op_r12
       labels(4) = op_ham
       call add_target(form_r12_bint,ttype_frm,.false.,tgt_info)
+      if (active_orbs)
+     &    call set_dependency(form_r12_bint,'Favg',tgt_info)
+      if (active_orbs) labels(4) = 'Favg'
       call set_dependency(form_r12_bint,op_b_inter,tgt_info)
       call set_dependency(form_r12_bint,op_ham,tgt_info)
       call set_dependency(form_r12_bint,op_r12,tgt_info)
@@ -2208,7 +2221,6 @@ c dbg
       call set_rule(form_r12_bint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
      &              parameters,2,tgt_info)
-
 
       ! CABS approximation to B
       labels(1:20)(1:len_target_name) = ' '
@@ -2281,6 +2293,9 @@ c dbg
       labels(3) = op_r12
       labels(4) = op_ham
       call add_target(form_r12_bhint,ttype_frm,.false.,tgt_info)
+      if (active_orbs)
+     &    call set_dependency(form_r12_bhint,'Favg',tgt_info)
+      if (active_orbs) labels(4) = 'Favg'
       call set_dependency(form_r12_bhint,op_bh_inter,tgt_info)
       call set_dependency(form_r12_bhint,op_r12,tgt_info)
       call set_dependency(form_r12_bhint,op_ham,tgt_info)

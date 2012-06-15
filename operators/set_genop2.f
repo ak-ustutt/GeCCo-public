@@ -60,7 +60,7 @@
       integer ::
      &     a_distr(ngastp), c_distr(ngastp), 
      &     a_distr_rv(ngastp), c_distr_rv(ngastp),
-     &     hpvxprint(ngastp)
+     &     hpvxprint(orb_info%ngas)
       integer ::
      &     n_occls_x012(0:2), idx_occls_x012(0:2)
       integer, pointer ::

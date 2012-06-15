@@ -60,6 +60,8 @@
       select case(trim(type))
       case('F12x','f12x')
         call select_f12x(flist,labels,nlabels,mode,op_info)
+      case('MRCC_F12','mrcc_f12')
+        call select_mrcc_f12(flist,labels,nlabels,mode,op_info)
       case('MRCC3','mrcc3')
         call select_mrcc_lag3(flist,labels,nlabels,mode,op_info)
       case('MRCC2','mrcc2')
