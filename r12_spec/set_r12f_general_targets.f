@@ -594,7 +594,7 @@ c     &              parameters,2,tgt_info)
       !call add_target('F-X',ttype_op,.false.,tgt_info)
       call add_target2('F-X',.false.,tgt_info)
       descr = 'H,[PX]'
-      ! no extension needed for V
+      if (active_orbs) descr = '[HV],[PX]'
       occ_def = 0
       ndef = 2
       occ_def(IHOLE,1,1) = 1

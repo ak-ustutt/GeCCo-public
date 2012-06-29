@@ -28,6 +28,8 @@
       type(formula_item), pointer ::
      &     flist_pnt
 
+      logical ::
+     &     new
       integer ::
      &     idx_1, idx_2, nproj, iproj(12)
 
@@ -39,6 +41,8 @@
         write(luout,*) 'type, nop: ',trim(type),nop
         call quit(1,'set_r12mod','misguided call?')
       end if
+
+      new = .false.
 
       if (trim(type).eq.'RB') then
         idx_1 = idx_op(1) ! R12
@@ -53,6 +57,7 @@
         nproj = 1
       end if
       if (trim(type).eq.'RV') then
+        new = .true.  ! use new descriptor based setup
         iproj(5:8) = (/2,3,1,IPART/) ! only P contraction
                                     ! (and X contraction, see below)
         iproj(1:4) = (/2,4,1,-IHOLE/) ! only H contribution to open line
@@ -60,6 +65,7 @@
         nproj = 3
       end if
 
+      if (new) goto 2308
       ! ------------------------------------
       ! contributions from usual R12-list
       ! ------------------------------------
@@ -83,7 +89,9 @@ c dbg
      &       .false.,op_info)
 
       if (trim(type).eq.'RV') then
+
         ! add X contraction contributions
+        iproj(1:4) = (/2,4,1,-IHOLE/) ! only H contribution to open line
         iproj(5:8) = (/2,3,1,IEXTR/)
         nproj = 2
         ! go to end of list
@@ -139,6 +147,48 @@ c dbg
       end if
 
       return
+
+ 2308 continue ! new part
+
+      ! go to end of list
+      flist_pnt => flist
+      do while(associated(flist_pnt%next))
+        flist_pnt => flist_pnt%next
+      end do
+      ! contraction over P, restrict R12 to PX part
+      call expand_op_product3(flist_pnt,idx_intm,
+     &       1d0,4,3,
+     &       (/idx_intm,idx_1,idx_2,idx_intm/),
+     &       (/1       ,2    ,3    ,1       /),
+     &       -1, -1,
+     &       0,0,
+     &       0,0,
+     &       (/'2,3,,P','3,,PX,[HPVX][HPVX]'/),2,
+     &       op_info)
+
+      ! go to end of list
+      flist_pnt => flist
+      do while(associated(flist_pnt%next))
+        flist_pnt => flist_pnt%next
+      end do
+      ! contraction over X, restrict R12 to PX and XX parts
+      call expand_op_product3(flist_pnt,idx_intm,
+     &       1d0,4,3,
+     &       (/idx_intm,idx_1,idx_2,idx_intm/),
+     &       (/1       ,2    ,3    ,1       /),
+     &       -1, -1,
+     &       0,0,
+     &       0,0,
+     &       (/'2,3,,X','3,,[PX]X,[HPVX][HPVX]'/),2,
+     &       op_info)
+
+
+      if (ntest.ge.100) then
+        write(luout,*) 'type: ',trim(type)
+        write(luout,*) 'result after expand_op_product'
+        call print_form_list(luout,flist,op_info)
+      end if
+
       end
 
       
