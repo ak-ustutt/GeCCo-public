@@ -40,18 +40,21 @@
         orb_info%imult = mult
         if (ntest.ge.100) write(luout,*) 'spin mult. = ', mult
       end if
+      if (ms.le.orb_info%imult.and.ms.ne.orb_info%ims) then
+        orb_info%ims = ms
+        if (ntest.ge.100) write(luout,*) '2Ms        = ', ms
+      end if
+      ! Ms possible?
+      if (orb_info%ims.lt.1-orb_info%imult
+     &    .or.orb_info%ims.gt.orb_info%imult-1
+     &    .or.mod(orb_info%imult-orb_info%ims,2).eq.0)
+     &   call quit(1,'set_mr_targets','impossible Ms')
       if (sym.gt.0.and.sym.ne.orb_info%lsym) then
         orb_info%lsym = sym
         if (ntest.ge.100) write(luout,*) 'symmetry   = ', sym
         if (sym.gt.orb_info%nsym) call quit(1,'set_mr_targets',
      &           'impossible symmetry')
       end if
-      orb_info%ims = ms
-      if (ntest.ge.100) write(luout,*) 'Ms         = ', ms
-      ! Ms possible?
-      if (ms.lt.1-orb_info%imult.or.ms.gt.orb_info%imult-1
-     &    .or.mod(orb_info%imult-ms,2).eq.0)
-     &   call quit(1,'set_mr_targets','impossible Ms')
 
       ! get maximum excitation rank
       call get_argument_value('method.MR','maxexc',

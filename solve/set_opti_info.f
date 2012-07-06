@@ -218,6 +218,8 @@
           opti_info%typ_prc(iopt) = optinf_prc_traf
         case('NRM')
           opti_info%typ_prc(iopt) = optinf_prc_norm
+        case('SPP')
+          opti_info%typ_prc(iopt) = optinf_prc_spinp
         case default
           call quit(1,'set_opti_info','cannot interpret string: '//
      &         trim(prc_str))

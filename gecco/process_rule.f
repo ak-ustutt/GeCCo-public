@@ -348,7 +348,7 @@ C*----------------------------------------------------------------------*
         call get_arg('TITLE',rule,tgt_info,val_str=title)
         call set_hhat2(form_pnt,
      &       title,label_list(1),
-     &             rule%labels(ioff+2),rule%labels(ioff+3),
+     &             label_list(2),label_list(3),
      &       nint,op_info)
 *----------------------------------------------------------------------*
       case(DEF_R12INTM_FORMAL)
@@ -1207,6 +1207,8 @@ c          mode = 'dia-R12'
 c dbg
         print *,'nspecial = ',nspecial
 c dbg
+        call get_arg('FORM_SPC',rule,tgt_info,
+     &       val_label_list=label_list(4*nopt+nspecial+1:),ndim=nspcfrm)
         call get_arg('FORM',rule,tgt_info,
      &       val_label=label)
 
@@ -1218,8 +1220,11 @@ c dbg
      &       label_list(2*nopt+1:2*nopt+nopt), ! mvp-labels
      &       label_list(3*nopt+1:3*nopt+nopt), ! metric-labels
      &       label,                            ! formula
-     &       label_list(4*nopt+ioff+1:
-     &                   4*nopt+ioff+nspecial),nspecial,0d0,
+     &       label_list(4*nopt+1:
+     &                   4*nopt+nspecial),nspecial,
+     &       label_list(4*nopt+nspecial+1:     ! spec. form.
+     &                  4*nopt+nspecial+nspcfrm),
+     &          nspcfrm,0d0,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
 

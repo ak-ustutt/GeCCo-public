@@ -47,7 +47,7 @@ c     &     freeze(2)
      &     iocc, igastp, iprint, nx, iblk, ijoin, ioff_blk, gasst,gasnd,
      &     ispin
       integer ::
-     &     hpvxprint(ngastp)
+     &     hpvxprint(orb_info%ngas)
       integer, pointer ::
      &     nspin, ngas, iad_gas(:), hpvxgas(:,:)
 

@@ -2,7 +2,7 @@
       subroutine solve_evp(mode_str,
      &     nopt,nroots,label_opt,label_prc,label_op_mvp,label_op_met,
      &     label_form,
-     &     label_special,nspecial,thr_suggest,
+     &     label_special,nspecial,label_spcfrm,nspcfrm,thr_suggest,
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -56,7 +56,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nopt, nroots, nspecial
+     &     nopt, nroots, nspecial, nspcfrm
       character(*), intent(in) ::
      &     mode_str,
      &     label_opt(nopt),
@@ -64,6 +64,7 @@
      &     label_op_mvp(nopt),
      &     label_op_met(nopt),
      &     label_special(nspecial),
+     &     label_spcfrm(nspcfrm),
      &     label_form
       real(8), intent(in) ::
      &     thr_suggest
@@ -85,7 +86,7 @@
       integer ::
      &     iter, iprint, task, ifree, iopt, jopt, nintm, irequest,
      &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout,
-     &     idxlist(2*nroots), nselect, iguess, maxblk
+     &     idxlist(2*nroots), nselect, iguess, maxblk, jdx
       real(8) ::
      &     xresmax, xdum,
      &     xeig(nroots,2), xresnrm(nroots*nopt), xlist(2*nroots)
@@ -107,7 +108,7 @@
       type(formula), pointer ::
      &     form_mvp
       type(formula_item) ::
-     &     fl_mvp
+     &     fl_mvp, fl_spc(nspcfrm)
 
       integer, pointer ::
      &     irecmvp(:), irectrv(:), irecmet(:), idxselect(:)
@@ -191,6 +192,17 @@
      &       call quit(1,'solve_evp',
      &       'no file associated with list '//trim(label))
       end if
+
+      ! special formulae
+      do jdx = 1, nspcfrm
+        idx = idx_formlist(label_spcfrm(jdx),form_info)
+        if (idx.le.0)
+     &       call quit(1,'solve_evp',
+     &       'did not find formula '//trim(label_spcfrm(jdx)))
+        ! read formula
+        call read_form_list(form_info%form_arr(idx)%form%fhand,
+     &                      fl_spc(jdx),.true.)
+      end do
 
       call set_opti_info(opti_info,3,nopt,nroots,me_opt,mode_str)
 
@@ -412,6 +424,19 @@ c dbgend
             end if
             deallocate(idxselect)
           end if
+
+          ! project out spin contaminations?
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
+            ifree = mem_setmark('solve_evp.spin_proj')
+            ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),'xbuf1')
+            ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
+            call spin_project(me_trv(iopt)%mel,me_special(1)%mel,
+     &                        fl_spc(1),opti_info%nwfpar(iopt),
+     &                        xbuf1,xbuf2,.true.,opti_info,orb_info,
+     &                        op_info,str_info,strmap_info)
+            ifree = mem_flushmark()
+          end if
+
           if (iroot.eq.nroots) exit
 
 c          if (me_trv(iopt)%mel%absym.ne.0)
@@ -446,6 +471,7 @@ c dbg
      &       me_special,nspecial,
 c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
      &       fl_mvp,depend,
+     &       fl_spc,nspcfrm,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 
@@ -523,6 +549,28 @@ c dbg
      &             0.5d0,me_mvp(iopt)%mel,me_mvp(iopt)%mel,
      &             xdum,.false.,
      &             op_info,str_info,strmap_info,orb_info)
+
+              ! project out spin contaminations?
+              if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
+                ifree = mem_setmark('solve_evp.spin_proj_res')
+                ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
+     &                                 'xbuf1')
+                ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),
+     &                                 'xbuf2')
+                ! assign op. with list containing the mvp vector
+                call assign_me_list(me_mvp(iopt)%mel%label,
+     &                              me_opt(iopt)%mel%op%name,op_info)
+                call spin_project(me_mvp(iopt)%mel,me_special(1)%mel,
+     &                           fl_spc(1),opti_info%nwfpar(iopt),
+     &                           xbuf1,xbuf2,.false.,opti_info,orb_info,
+     &                           op_info,str_info,strmap_info)
+                ! reassign lists to correct ops
+                call assign_me_list(me_trv(iopt)%mel%label,
+     &                              me_opt(iopt)%mel%op%name,op_info)
+                call assign_me_list(me_mvp(iopt)%mel%label,
+     &                              label_op_mvp(iopt),op_info)
+                ifree = mem_flushmark()
+              end if
             end do
 
           end do
@@ -572,6 +620,7 @@ c dbg
 c            print *,'root / overlap: ',iroot,xoverlap(iroot)
 c dbgend
           end do
+          ifree = mem_flushmark()
           if (idx.ne.nroots) then
             write(luout,'(a,i4,a,f8.4)') 
      &            'Homing in on root ',idx,' with overlap ',xresmax
@@ -586,7 +635,6 @@ c dbgend
           end if
           call del_me_list(me_home(1)%mel%label,op_info)
           deallocate(me_home,ffhome)
-          ifree = mem_flushmark()
         end if
 
       end do
@@ -636,6 +684,9 @@ c dbg
       deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special,me_scr)
       deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial,ff_scr)
       call dealloc_formula_list(fl_mvp)
+      do jdx = 1, nspcfrm
+        call dealloc_formula_list(fl_spc(jdx))
+      end do
 
       ifree = mem_flushmark()
 
