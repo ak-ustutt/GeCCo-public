@@ -149,10 +149,12 @@
       do iblk_ham = 1, op_info%op_arr(idx_h)%op%n_occ_cls
       ho(1) = op_info%op_arr(idx_h)%op%ihpvca_occ(1,2,iblk_ham)
       ho(2) = op_info%op_arr(idx_h)%op%ihpvca_occ(2,1,iblk_ham)
+     &      + op_info%op_arr(idx_h)%op%ihpvca_occ(4,1,iblk_ham)
       ! no upper inactive lines of H
       if (ho(1)+ho(2).gt.0.and.ioff.eq.0.and..not.esym) cycle
       hu(1) = op_info%op_arr(idx_h)%op%ihpvca_occ(1,1,iblk_ham)
       hu(2) = op_info%op_arr(idx_h)%op%ihpvca_occ(2,2,iblk_ham)
+     &      + op_info%op_arr(idx_h)%op%ihpvca_occ(4,2,iblk_ham)
       do nn = min_n, max_n0
        ! each T has at least one upper inactive line
        if (hu(1)+hu(2).lt.nn.and.ioff.eq.0.and..not.esym) cycle
@@ -281,13 +283,16 @@ c dbgend
       do nl = 1, op_info%op_arr(idxtbar)%op%n_occ_cls
         lu(1) = op_info%op_arr(idxtbar)%op%ihpvca_occ(1,1,nl)
         lu(2) = op_info%op_arr(idxtbar)%op%ihpvca_occ(2,2,nl)
+     &        + op_info%op_arr(idxtbar)%op%ihpvca_occ(4,2,nl)
         do iblk_ham = 1, op_info%op_arr(idxham)%op%n_occ_cls
           ho(1) = op_info%op_arr(idxham)%op%ihpvca_occ(1,2,iblk_ham)
           ho(2) = op_info%op_arr(idxham)%op%ihpvca_occ(2,1,iblk_ham)
+     &          + op_info%op_arr(idxham)%op%ihpvca_occ(4,1,iblk_ham)
           ! upper inactive lines of H must be connected to L
           if (ho(1).gt.lu(1).or.ho(2).gt.lu(2).and..not.sym) cycle
           hu(1) = op_info%op_arr(idxham)%op%ihpvca_occ(1,1,iblk_ham)
           hu(2) = op_info%op_arr(idxham)%op%ihpvca_occ(2,2,iblk_ham)
+     &          + op_info%op_arr(idxham)%op%ihpvca_occ(4,2,iblk_ham)
           do nn = min_n, max_n
             ! each T has at least one upper inactive line
             if (lu(1)+lu(2)-ho(1)-ho(2)+hu(1)+hu(2).lt.nn
@@ -321,6 +326,7 @@ c            if (lu-ho+hu.gt.4*nn) cycle
      &             + op_info%op_arr(idxt)%op%ihpvca_occ(1,2,dist(ii))
                tto(2) = tto(2)
      &             + op_info%op_arr(idxt)%op%ihpvca_occ(2,1,dist(ii))
+     &             + op_info%op_arr(idxt)%op%ihpvca_occ(4,1,dist(ii))
              end do
              if ((lu(1)+hu(1).ne.ho(1)+tto(1).or.
      &           lu(2)+hu(2).ne.ho(2)+tto(2)).and..not.sym) then
@@ -365,6 +371,7 @@ c            if (lu-ho+hu.gt.4*nn) cycle
      &               + op_info%op_arr(idxt)%op%ihpvca_occ(1,2,perm(jj))
                    tto_l(2) = tto_l(2)
      &               + op_info%op_arr(idxt)%op%ihpvca_occ(2,1,perm(jj))
+     &               + op_info%op_arr(idxt)%op%ihpvca_occ(4,1,perm(jj))
                   end if
                  end if
                 end do
@@ -439,6 +446,7 @@ c dbgend
      &                + op_info%op_arr(idxt)%op%ihpvca_occ(1,2,perm(jj))
                     tto_l(2) = tto_l(2)
      &                + op_info%op_arr(idxt)%op%ihpvca_occ(2,1,perm(jj))
+     &                + op_info%op_arr(idxt)%op%ihpvca_occ(4,1,perm(jj))
                    end if
                   end if
                  end do

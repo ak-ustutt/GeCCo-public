@@ -25,7 +25,7 @@
       integer ::
      &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym, maxtop, maxcum
       logical ::
-     &     l_icci, l_iccc, use_met, fixed
+     &     l_icci, l_iccc, use_met, fixed, use_f12
       integer, allocatable ::
      &     excrestr(:,:,:)
 
@@ -76,11 +76,14 @@
 
       ! set R12 intermediates, if necessary
       if (is_keyword_set('method.R12').gt.0) then
+        use_f12 = .true.
         call get_argument_value('method.R12','fixed',lval=fixed)
         if (.not.fixed) 
      &      call warn('set_mr_targets', 
      &           'MR + R12: fixed amplitudes are the only choice!')
         call set_r12f_general_targets(tgt_info,orb_info,env_type)
+      else
+        use_f12 = .false.
       end if
 
       ! first set targets for CASSCF or uncontracted CI wave function
@@ -129,6 +132,8 @@ c dbgend
       if (l_icci) call set_ic_mrci_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp,use_met)
       if (l_iccc) call set_ic_mrcc_targets(tgt_info,orb_info,
+     &                       excrestr,maxh,maxp,.not.use_f12)
+      if (use_f12) call set_ic_mrcc_f12_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp)
       deallocate(excrestr)
 

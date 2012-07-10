@@ -213,6 +213,10 @@ c      len_cache = 0
           hpvx_s = hpvxgas(gas_s,(iss+1)/2+1)
         end if
 
+        ! implement sign change for PV case
+        if (hpvx_p*hpvx_r.eq.6) sgn_change = .not.sgn_change
+        if (hpvx_q*hpvx_s.eq.6) sgn_change = .not.sgn_change
+
         ! get block of list
         ihash = (ngastp*(ngastp+1)/2)*
      &          (max(hpvx_p,hpvx_r)*(max(hpvx_p,hpvx_r)-1)/2+

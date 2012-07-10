@@ -23,10 +23,10 @@
 
       character(2) ::
      &     cdag
-      character(len_opname) ::
+      character(256) ::
      &     opstr
       integer ::
-     &     idx, idxph
+     &     idx, idxph, ipos
 
       ops => op_info%op_arr
       write(luout,*) '+++ contraction info +++'
@@ -44,6 +44,20 @@
       write(luout,'(x,a,3i5)')
      &     ' number of prim.vertices/sup.vertices/arcs: ',
      &     contr%nvtx,contr%nsupvtx,contr%narc
+      ipos = 1
+      opstr = ' '
+      do idx = 1, contr%nvtx
+        cdag = '  '
+        if (contr%vertex(idx)%dagger) then
+          idxph=2
+          cdag = '^+'
+        end if
+        write(opstr(ipos:),'(a)')
+     &       trim(ops(contr%vertex(idx)%idx_op)%op%name)//cdag 
+        ipos = ipos + len_trim(ops(contr%vertex(idx)%idx_op)%op%name)+3
+        if (ipos.gt.240) call quit(1,'prt_contr2','string too long!')
+      end do
+      write(luout,*) trim(opstr)
       do idx = 1, contr%nvtx
         if (contr%vertex(idx)%idx_op.eq.0) then
           write(luout,'(2x,"v",i2.2,x,"0")') contr%svertex(idx)

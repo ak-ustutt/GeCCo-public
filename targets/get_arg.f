@@ -96,6 +96,8 @@
 
       if (present(ndim)) ndim = arg_dim
 
+      if (arg_dim.eq.0) return
+
       select case(arg_type)
       case(aatype_label)
         if (present(val_label_list)) then
