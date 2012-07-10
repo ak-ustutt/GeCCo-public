@@ -180,6 +180,7 @@ c      if (n_frozen.gt.0) ngas = ngas+1
       orb_info%nactorb = n_act
       orb_info%lsym = lsym
       orb_info%imult = ispin
+      orb_info%ims = 1 - mod(ispin,2) ! assume low-spin case as default
       if (n_act.gt.0) then
         ! test whether this can be treated as a simple
         ! high spin open shell case:

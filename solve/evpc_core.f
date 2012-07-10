@@ -8,6 +8,7 @@ c     &       ffopt,fftrv,ffmvp,ffdia,
      &       nincore,lenbuf,
      &       xbuf1,xbuf2,xbuf3,
      &       flist,depend,
+     &       fspc,nspcfrm,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -39,7 +40,7 @@ c      include 'def_filinf.h'
       integer, intent(inout) ::
      &     iter
       integer, intent(in) ::
-     &     iroute, nincore, lenbuf, nspecial
+     &     iroute, nincore, lenbuf, nspecial, nspcfrm
       logical, intent(in) ::
      &     use_s(*)
 
@@ -55,6 +56,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
      &     flist
       type(dependency_info) ::
      &     depend
+      type(formula_item), intent(in) ::
+     &     fspc(nspcfrm)
 
       type(optimize_info), intent(in) ::
      &     opti_info
@@ -416,7 +419,7 @@ c dbgend
           ndsec = ndsec + nsec_arr(iopt)
 
           select case(opti_info%typ_prc(iopt))
-          case(optinf_prc_file,optinf_prc_traf)
+          case(optinf_prc_file,optinf_prc_traf,optinf_prc_spinp)
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
               ffspc => me_special(1)%mel%fhand
               trafo = .true.
@@ -481,6 +484,23 @@ c dbgend
      &                     nwfpsec(isec),xbuf1,xbuf2,lenbuf)
                 end do
               end do
+            end if
+
+            ! project out spin contaminations?
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then      
+              ! assign op. with list containing the scratch trial vector
+              call assign_me_list(me_scr(iopt)%mel%label,
+     &                            me_opt(iopt)%mel%op%name,op_info)
+              do iroot = 1, nnew
+                call switch_mel_record(me_scr(iopt)%mel,iroot)
+                call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
+     &                            fspc(1),opti_info%nwfpar(iopt),
+     &                            xbuf1,xbuf2,.true.,opti_info,orb_info,
+     &                            op_info,str_info,strmap_info)
+              end do
+              ! reassign op. with list containing trial vector
+              call assign_me_list(me_trv(iopt)%mel%label,
+     &                            me_opt(iopt)%mel%op%name,op_info)
             end if
           case(optinf_prc_blocked)
             if (nincore.lt.3)

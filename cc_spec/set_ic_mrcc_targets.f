@@ -35,7 +35,7 @@
 
       integer ::
      &     ndef, occ_def(ngastp,2,124),!60),
-     &     icnt, maxexc,
+     &     icnt, maxexc, maxv,
      &     msc, ip, ih, ivv, iv, ivv2, jvv,
      &     maxcom, maxcom_en, maxcom_h1bar, h1bar_maxp,
      &     n_t_cls, i_cls,
@@ -126,6 +126,9 @@
       if (is_argument_set('calculate.solve.non_linear','maxiter').gt.0)
      &     call get_argument_value('calculate.solve.non_linear',
      &     'maxiter',ival=maxit)
+      call get_argument_value('method.MR','maxv',
+     &     ival=maxv)
+      if (maxv.lt.0) maxv = 2*maxexc
       trunc = ntrunc.ge.0
       solve = execute.and..not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
 
@@ -3379,7 +3382,8 @@ c dbgend
 c dbg hybrid preconditioner
 c        call warn('set_ic_mrcc_targets','Using hybrid preconditioner')
 c dbgend
-        call set_dependency('SOLVE_MRCC','EVAL_Atr',tgt_info)
+        if (maxv.gt.0.or.prc_type.eq.0)
+     &     call set_dependency('SOLVE_MRCC','EVAL_Atr',tgt_info)
       case(1)
         call set_dependency('SOLVE_MRCC','EVAL_A_Ttr',tgt_info)
       case(2)

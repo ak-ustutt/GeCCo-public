@@ -8,6 +8,7 @@
      &                   me_special,nspecial,
 c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
      &                   flist,depend,
+     &                   fspc,nspcfrm,
      &                   opti_info,opti_stat,
      &                   orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -87,7 +88,7 @@ c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
      &     nrequest,irectrv(*),irecmvp(*),irecmet(*)
 
       integer, intent(in) ::
-     &     nspecial
+     &     nspecial, nspcfrm
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_dia(*), me_special(nspecial),
@@ -101,6 +102,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
      &     flist
       type(dependency_info) ::
      &     depend
+      type(formula_item), intent(in) ::
+     &     fspc(nspcfrm)
 
       type(optimize_info), intent(in) ::
      &     opti_info
@@ -285,6 +288,7 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
      &         nincore,lenbuf,
      &         xbuf1,xbuf2,xbuf3,
      &         flist,depend,
+     &         fspc,nspcfrm,
      &         opti_info,opti_stat,
      &         orb_info,op_info,str_info,strmap_info)
         end if
