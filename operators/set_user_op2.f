@@ -171,7 +171,7 @@ c          if (.not.freeze(ica)) cycle
      &               (/0,imaxr/)
                 end do
               else
-                call quit(1,'set_user_op2','ever accessed this part?')
+C                call quit(1,'set_user_op2','ever accessed this part?')
                 op%igasca_restr(1,igas,ica,1,1:nspin,ioff_blk+ijoin) =
      &            op%igasca_restr(2,igas,ica,1,1:nspin,ioff_blk+ijoin) 
                 op%igasca_restr(1,igas-1,ica,1,1:nspin,ioff_blk+ijoin) =

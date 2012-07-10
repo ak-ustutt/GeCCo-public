@@ -28,7 +28,7 @@
       character ::
      &     str*256
       logical ::
-     &     allowed(3)
+     &     allowed(4)
 
       if (.not.associated(history_pointer)) then
         ! advance to first keyword
@@ -86,15 +86,16 @@ c      end if
 
       ncnt = is_keyword_set('orb_space.shell')
 
-      allowed(1:3) = .true.
+      allowed(1:4) = .true.
       do icnt = 1, ncnt
         ncnt2 = is_argument_set('orb_space.shell','type',keycount=icnt)
         if (ncnt2.ne.1)
      &       call quit(0,'process_input','single shell? frozen?')
+        str(1:256) = ' '
         call get_argument_value('orb_space.shell','type',keycount=icnt,
      &                          str=str)
 
-        select case(str(1:6))
+        select case(trim(str))
         case('frozen')
           if (.not.allowed(1)) cycle
           allowed(1) = .false.
@@ -149,6 +150,38 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
      &                            keycount=icnt,ival=nactel)
           call modify_actspc(iscr,len,nactel,orb_info,2)
           deallocate(iscr)
+        case('deleted')
+          if (.not.allowed(4)) cycle
+          allowed(4) = .false.
+
+          if (is_argument_set('orb_space.shell','def',
+     &                        keycount=icnt).gt.0) then
+            call get_argument_dimension(len,'orb_space.shell','def',
+     &                                  keycount=icnt)
+            allocate(iscr(len))
+            call get_argument_value('orb_space.shell','def',
+     &                              keycount=icnt,iarr=iscr)
+            nfreeze = sum(iscr(1:len))
+          else if (is_argument_set('orb_space.shell',
+     &                             'nfreeze',keycount=icnt).gt.0) then
+            call get_argument_value('orb_space.shell',
+     &                             'nfreeze',keycount=icnt,ival=nfreeze)
+            call quit(1,'process_input','no automatic delete yet')
+            !len = orb_info%nsym
+            !allocate(iscr(len))
+            !call auto_freeze(iscr,nfreeze,orb_info)
+          else
+            call quit(1,'process_input','no automatic delete yet')
+            !nfreeze = -1
+            !len = orb_info%nsym
+            !allocate(iscr(len))
+            !call auto_freeze(iscr,nfreeze,orb_info)
+          end if
+
+          if (nfreeze.gt.0) 
+     &         call add_deleted_shell(iscr,len,orb_info)
+          deallocate(iscr)
+
         case default
           call quit(0,'process_input','unexpected shell type: "'//
      &         trim(str)//'"')
