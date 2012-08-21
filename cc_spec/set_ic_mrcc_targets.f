@@ -39,7 +39,7 @@
      &     msc, ip, ih, ivv, iv, ivv2, jvv,
      &     maxcom, maxcom_en, maxcom_h1bar, h1bar_maxp,
      &     n_t_cls, i_cls,
-     &     n_tred_cls, len_form, optref, idef, ciroot,
+     &     n_tred_cls, len_form, optref, idef, ciroot, maxroot,
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
@@ -71,6 +71,9 @@
      &     ival=maxexc)
       call get_argument_value('method.MR','ciroot',
      &     ival=ciroot)
+      call get_argument_value('method.MR','maxroot',
+     &     ival=maxroot)
+      if(maxroot.le.0) maxroot=ciroot
       call get_argument_value('method.MR','prc_type',
      &     ival=prc_type)
       call get_argument_value('method.MR','prc_shift',
@@ -1207,6 +1210,8 @@ c dbgend
      &     val_label=(/'NORM'/))
       call set_arg('F_LAG_L',SELECT_TERMS,'OP_INCL',1,tgt_info,
      &     val_label=(/'L'/))
+      call set_arg('F_LAG_L',SELECT_TERMS,'BLK_INCL',1,tgt_info,
+     &     val_int=(/0/))
       ! Cumulant approximation?
       if (maxcum.gt.0) then
         ! Factor out reduced density matrices
@@ -1661,9 +1666,9 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
       call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='SAME')
 c dbg
-c      call set_rule2('F_E(MRCC)tr',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_E(MRCC)tr'/))
+      call set_rule2('F_E(MRCC)tr',PRINT_FORMULA,tgt_info)
+      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_E(MRCC)tr'/))
 c dbgend
 
       ! (transformed) Jacobian times vector
@@ -2357,13 +2362,28 @@ c dbgend
      &     val_label=(/'E(MR)','L    '/))
       call set_arg('F_Ecorrected',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='Energy + correction from MRCC Lagrangian')
-      call set_rule2('F_Ecorrected',REPLACE,tgt_info)
-      call set_arg('F_Ecorrected',REPLACE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_Ecorrected'/))
-      call set_arg('F_Ecorrected',REPLACE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_Ecorrected'/))
-      call set_arg('F_Ecorrected',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'L  ','T^+'/))
+      ! preliminary: only (T) correction for F12
+      ! as our current Lagrangian neglect F12 contributions
+      if (orb_info%norb_hpv(IEXTR,1).gt.0) then
+        call set_rule2('F_Ecorrected',SELECT_TERMS,tgt_info)
+        call set_arg('F_Ecorrected',SELECT_TERMS,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_Ecorrected'/))
+        call set_arg('F_Ecorrected',SELECT_TERMS,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_Ecorrected'/))
+        call set_arg('F_Ecorrected',SELECT_TERMS,'OP_RES',1,tgt_info,
+     &       val_label=(/'E(MR)'/))
+        call set_arg('F_Ecorrected',SELECT_TERMS,'OP_INCL',1,tgt_info,
+     &       val_label=(/'T'/))
+        call set_arg('F_Ecorrected',SELECT_TERMS,'BLK_INCL',1,tgt_info,
+     &       val_int=(/0/))
+      end if
+c      call set_rule2('F_Ecorrected',REPLACE,tgt_info)
+c      call set_arg('F_Ecorrected',REPLACE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'F_Ecorrected'/))
+c      call set_arg('F_Ecorrected',REPLACE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_Ecorrected'/))
+c      call set_arg('F_Ecorrected',REPLACE,'OP_LIST',2,tgt_info,
+c     &     val_label=(/'L  ','T^+'/))
 c dbg
       call set_rule2('F_Ecorrected',PRINT_FORMULA,tgt_info)
       call set_arg('F_Ecorrected',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -3555,6 +3575,8 @@ c dbgend
         call set_arg('SOLVE_MRCC',SOLVEEVP,'MODE',1,tgt_info,
      &       val_str='DIA')
         call set_arg('SOLVE_MRCC',SOLVEEVP,'N_ROOTS',1,tgt_info,
+     &       val_int=(/maxroot/))
+        call set_arg('SOLVE_MRCC',SOLVEEVP,'TARG_ROOTS',1,tgt_info,
      &       val_int=(/ciroot/))
         call set_arg('SOLVE_MRCC',SOLVEEVP,'OP_MVP',1,tgt_info,
      &       val_label=(/'A_C0'/))

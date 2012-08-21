@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine solve_evp(mode_str,
-     &     nopt,nroots,label_opt,label_prc,label_op_mvp,label_op_met,
-     &     label_form,
+     &     nopt,nroots,targ_root,label_opt,label_prc,label_op_mvp,
+     &     label_op_met,label_form,
      &     label_special,nspecial,thr_suggest,
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
@@ -14,6 +14,7 @@
 *     nopt                  number of x operators to be solved for
 *                           in case of coupled equations
 *     nroots                number of roots per x operator
+*     targ_root             the target root per x operator
 *
 *     label_opt(nopt)       label of solution vectors
 *     label_prc(nopt)       label of preconditioners
@@ -56,7 +57,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nopt, nroots, nspecial
+     &     nopt, nroots, nspecial, targ_root
       character(*), intent(in) ::
      &     mode_str,
      &     label_opt(nopt),
@@ -130,6 +131,7 @@
         call write_title(luout,wst_dbg_subr,'entered solve_evp')
         write(luout,*) 'nopt   = ',nopt
         write(luout,*) 'nroots = ',nroots
+        write(luout,*) 'targ_root = ',targ_root
       end if
 
       idx = idx_formlist(label_form,form_info)
@@ -360,7 +362,7 @@ c dbgend
         end if
         ! preliminary solution: set only component 1, rest is zero
         if (iopt.gt.1) then
-          do iroot = 1, nroots          
+          do iroot = 1, nroots
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call zeroop(me_trv(iopt)%mel)
           end do
@@ -380,7 +382,7 @@ c dbgend
      &                      maxblk)
         iroot = 0
         do iguess = 1, 2*nroots
-          iroot = iroot + 1          
+          iroot = iroot + 1    
 
           call switch_mel_record(me_pnt,iroot)
           call diag_guess(me_pnt,
@@ -572,16 +574,16 @@ c dbg
 c            print *,'root / overlap: ',iroot,xoverlap(iroot)
 c dbgend
           end do
-          if (idx.ne.nroots) then
+          if (idx.ne.targ_root) then
             write(luout,'(a,i4,a,f8.4)') 
      &            'Homing in on root ',idx,' with overlap ',xresmax
             ! Interchange this record and the current record
             ! and leave everything else unchanged (a bit dirty)
-            call switch_mel_record(me_opt(iopt)%mel,nroots)
+            call switch_mel_record(me_opt(iopt)%mel,targ_root)
             call list_copy(me_opt(iopt)%mel,me_home(1)%mel,.false.)
             call switch_mel_record(me_opt(iopt)%mel,idx)
             call list_copy(me_home(1)%mel,me_opt(iopt)%mel,.true.)
-            call switch_mel_record(me_opt(iopt)%mel,nroots)
+            call switch_mel_record(me_opt(iopt)%mel,targ_root)
             call list_copy(me_home(1)%mel,me_opt(iopt)%mel,.false.)
           end if
           call del_me_list(me_home(1)%mel%label,op_info)
@@ -622,12 +624,16 @@ c dbg
       end do
       write(luout,'(">>>",66("="))') 
 
-      ! switch to last root if possible
-      ! (we assume that nroots has been chosen for this reason,
-      !  otherwise a new keyword must be set up for this purpose)
-      if (nroots.ge.me_opt(1)%mel%fhand%active_records(1).and.
-     &    nroots.le.me_opt(1)%mel%fhand%active_records(2))
-     &           call switch_mel_record(me_opt(1)%mel,nroots)
+      ! switch to target root if possible
+!      ! (we assume that nroots has been chosen for this reason,
+!      !  otherwise a new keyword must be set up for this purpose)
+!      if (nroots.ge.me_opt(1)%mel%fhand%active_records(1).and.
+!     &    nroots.le.me_opt(1)%mel%fhand%active_records(2))
+!     &           call switch_mel_record(me_opt(1)%mel,nroots)
+!
+      if (targ_root.ge.me_opt(1)%mel%fhand%active_records(1).and.
+     &    targ_root.le.me_opt(1)%mel%fhand%active_records(2))
+     &           call switch_mel_record(me_opt(1)%mel,targ_root)
 
       call clean_formula_dependencies(depend)
 

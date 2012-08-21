@@ -35,7 +35,7 @@
       real(8) ::
      &     fac(maxfac), freq
       integer ::
-     &     idxblk(maxfac), minblk, maxblk,
+     &     idxblk(maxfac), minblk, maxblk, targ_root,
      &     idx, jdx, ioff, nfac, nblk, nspecial, imode,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank
       logical ::
@@ -275,7 +275,7 @@ c dbg
         ioff = 0
         if (nspecial.gt.0) ioff=1
 
-        call solve_evp(mode,nopt,nroots,
+        call solve_evp(mode,nopt,nroots,targ_root,
      &       rule%labels(1:nopt),               ! to be opt.
      &       rule%labels(  nopt+1:  nopt+nopt), ! precond.
      &       rule%labels(2*nopt+1:2*nopt+nopt), ! mvp-labels

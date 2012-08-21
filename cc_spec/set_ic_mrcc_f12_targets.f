@@ -603,9 +603,9 @@ c        call set_arg('F_MRCC_E',SELECT_SPECIAL,'MODE',1,tgt_info,
 c     &       val_str='CHECK    X')
 c      end if
 c dbg
-c      call set_rule2('F_MRCC_F12_E',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_MRCC_F12_E',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_MRCC_F12_E'/))
+      call set_rule2('F_MRCC_F12_E',PRINT_FORMULA,tgt_info)
+      call set_arg('F_MRCC_F12_E',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_MRCC_F12_E'/))
 c dbgend
 
 
