@@ -1,8 +1,9 @@
+ run starts at 2012-07-10 15:05:16.639   host: pauli.chemie.uni-mainz.de
 
- Version compiled 13 Apr 2008 at 16:56:39 on paulchen                            
+ Version compiled Jul 10 CEST at 2012 on pauli.chemie.uni-mainz.de               
 
  compiled with: ifort
- level 1 optimization: -O2 -cm -w95 -fpp -assume byterecl -traceback -I../include -
+ level 1 optimization: -g -assume byterecl -i8 -traceback -DM_I686 -I../include -mo
  level 2 optimization: 
  level 3 optimization: 
 
@@ -16,11 +17,14 @@
         |       andreas koehn (university of mainz, germany)        |
         |   contributing authors:                                   |
         |       jeppe olsen (university of aarhus, denmark)         |
+        |       matthias hanauer (university of mainz, germany)     |
         |       gareth richings (university of mainz, germany)      |
         |                                                           |
+
         *-----------------------------------------------------------*
 
  Reading data from environment ....
+ Environment type: DALTON
  raw data from section "SIR IPH "
  potnuc =    6.04302693535581     
  emy    =   -44.8649356820350     
@@ -41,109 +45,79 @@
  nas1   =    0   0   0   0   0   0   0   0
  nas2   =    0   0   0   0   0   0   0   0
  nas3   =    0   0   0   0   0   0   0   0
- nnorbt,n2orbt:   41  69
+ nnorbt,n2orbt:       41      69
+ sym_bound_orbs:
+    1   1   2   1
+ n_freeze_rcmd:    1
  Reading input file ....
-I gecco keywords
+ Input file: CC-energy-I.inp
+ +-----------------------------------------------------------------------------+
+ general
+  memmax=30000000
+ orb_space
+  shell type=frozen,def=(1,0,0,0)
+  shell type=deleted,def=(2,1,0,0)
+ method
+   CC maxexc=3
+ calculate
+   solve non_linear method=diis,maxiter=25,conv=1d-10,maxsub=8
+   routes contract=3,simtraf=1
+ 
+ +-----------------------------------------------------------------------------+
+I keyword hist
 I   general
-       title 8 **
        memmax 2  1
-  >     50000000
+  >               30000000
 I   orb_space
 I     shell
-         def 2  8
-         type 8  8
-I     open_shells
-         treat 8  4
-  > ph  
+         type 8  6
+  > frozen
+         def 2  4
+  >                      1                     0                     0
+                     0
+I     shell
+         type 8  7
+  > deleted
+         def 2  4
+  >                      2                     1                     0
+                     0
 I   method
-I     MP
-         level 2  1
-  >            2
 I     CC
          maxexc 2  1
-  >            2
-         minexc 2  1
-  >            1
-I     R12
-         ansatz 2  1
-  >            1
-         maxexc 2  1
-  >            2
-         minexc 2  1
-  >            2
-         approx 8  8
-  > A       
-         F_appr 8  8
-  > none    
-         K_appr 8  8
-  > none    
+  >                      3
 I   calculate
-I     check
-I       formulae
 I     solve
-         maxiter 2  1
-  >           30
-         maxmic 2  1
-  >           20
-         maxsub 2  1
-  >            8
-         conv 4  1
-  >   1.000000000000000E-006
 I       non_linear
+           method 8  4
+  > diis
            maxiter 2  1
-  >           30
-           maxmic 2  1
-  >           20
-           maxsub 2  1
-  >            8
+  >                     25
            conv 4  1
-  >   1.000000000000000E-006
-           tr_ini 4  1
-  >    1.00000000000000     
-           method 8  8
-  > diis    
-I       linear
-           maxiter 2  1
-  >           30
+  >   1.000000000000000E-010
            maxsub 2  1
-  >            8
-           conv 4  1
-  >   1.000000000000000E-006
-           method 8  8
-  > subspace
-I       eigen
-           maxiter 2  1
-  >           30
-           maxsub 2  1
-  >            8
-           conv 4  1
-  >   1.000000000000000E-006
-           method 8  8
-  > davidson
-I     CC_solve_tbar
-I     CC_solve_sim
-I     properties
-I     excitation
-         sym 2  8
-  >            1           0           0           0           0           0
-           0           0
-I     ionization
-         sym 2  8
-  >            1           0           0           0           0           0
-           0           0
+  >                      8
 I     routes
-         schedule 2  1
-  >            0
          contract 2  1
-  >            2
-         str_block 2  1
-  >          200
+  >                      3
          simtraf 2  1
-  >            0
+  >                      1
+I keyword hist
+A   general
+A   orb_space
+A     shell
+A     shell
+A   method
+A     CC
+A   calculate
+A     solve
+A       non_linear
+A     routes
+ printlevel is set to                      3
  ------------------
   add_frozen_shell
  ------------------
-  shell to add:            1           0           0           0
+  shell to add:                      1                     0
+                     0                     0
   defined shells: 
    1     3   1   0   0
    2     4   3   2   0
@@ -151,226 +125,54 @@ I     routes
    1     1   0   0   0
    2     2   1   0   0
    3     4   3   2   0
+ -------------------
+  add_deleted_shell
+ -------------------
+  shell to add:                      2                     1
+                     0                     0
+  defined shells: 
+   1     1   0   0   0
+   2     2   1   0   0
+   3     4   3   2   0
+  new shell definition: 
+   1     1   0   0   0
+   2     2   1   0   0
+   3     2   2   2   0
+   4     2   1   0   0
  Memory set to     30000000 r8-words = (  228.88 Mb)
- ************
-  set_orbinf
- ************
- ihpvgas:              1           1           2          17
- ngas_hpv:             2           1           0           0
- nactt_hpv:            3           9           0           0
- ioff_gas:             0           2           3           3
- idx_gas:              1           3           4           4
- gas_reo:           1           2           3
- igamorb:
-
-<  1>        1       1       1       2       1       1       1       1       2       2
-        2       3       3
- igasorb:
-
-<  1>        1       2       2       2       3       3       3       3       3       3
-        3       3       3
- mostnd:
-     1      1   1    2   1    2   1    2   1
-     2      2   3    4   4    5   4    5   4
-     3      5   8    9  11   12  13   14  13
- ireost:
-
-<  1>        1       2       3       5       6       7       8       4       9      10
-       11      12      13
- ireots:
-
-<  1>        1       2       3       8       4       5       6       7       9      10
-       11      12      13
- iad_gas:
-
-<  1>        1
-
-<  2>        2
-
-<  3>        2
+ real-word/integer-word ratio =                      1
  setting general targets ...
  setting general targets for MP/CC ...
  setting special targets for CC ...
  setting targets for CC properties ...
  My next target: H
  Rule: DEF_HAMILTONIAN
+ Number of occupation classes for H:   14
+ Rule: SET_HERMITIAN
  My next target: H0
  Rule: DEF_ME_LIST
- set_new_graph:            1
- set_new_graph:            2
- set_new_graph:            3
- set_new_graph:            4
  Rule: IMPORT
- number of incore-blocks in geth2:            3
- size of buffer in geth2:        0.07Mb
- passes over integral file:            1
+ number of incore-blocks in geth2:                      1
+ size of buffer in geth2:        0.02Mb
+ passes over integral file:                      1
  
- 2-el. integrals on disk:         2724
-    thereof nonredundant:         1086
-     integrals reordered:         8808
- 
- imported list: H0
-  block no.    1 len =            1
-  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm =  38.8219    
- norm (MS-Block) =    38.8219087466791     
-  block no.    2 len =           10
-  Ms(A) =   1/2  IRREP(A) =  1  len =            4  norm = 0.974647    
-  Ms(A) =   1/2  IRREP(A) =  2  len =            1  norm = 0.569759    
- norm (MS-Block) =    1.12896548938274     
-  Ms(A) =  -1/2  IRREP(A) =  1  len =            4  norm = 0.974647    
-  Ms(A) =  -1/2  IRREP(A) =  2  len =            1  norm = 0.569759    
- norm (MS-Block) =    1.12896548938274     
-  block no.    3 len =           22
-  Ms(A) =   1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
-  Ms(A) =   1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
- norm (MS-Block) =   1.147185361293532E-009
-  Ms(A) =  -1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
-  Ms(A) =  -1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
- norm (MS-Block) =   1.147185361293532E-009
-  block no.    4 len =           22
-  Ms(A) =   1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
-  Ms(A) =   1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
- norm (MS-Block) =   1.147185361293532E-009
-  Ms(A) =  -1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
-  Ms(A) =  -1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
- norm (MS-Block) =   1.147185361293532E-009
-  block no.    5 len =           58
-  Ms(A) =   1/2  IRREP(A) =  1  len =           16  norm =  1.34394    
-  Ms(A) =   1/2  IRREP(A) =  2  len =            9  norm =  1.13870    
-  Ms(A) =   1/2  IRREP(A) =  3  len =            4  norm = 0.741359    
- norm (MS-Block) =    1.91113048814630     
-  Ms(A) =  -1/2  IRREP(A) =  1  len =           16  norm =  1.34394    
-  Ms(A) =  -1/2  IRREP(A) =  2  len =            9  norm =  1.13870    
-  Ms(A) =  -1/2  IRREP(A) =  3  len =            4  norm = 0.741359    
- norm (MS-Block) =    1.91113048814630     
-  block no.    6 len =           51
-  Ms(A) =   2/2  IRREP(A) =  1  len =            1  norm = 0.399088    
-  Ms(A) =   2/2  IRREP(A) =  2  len =            4  norm = 0.562555    
- norm (MS-Block) =   0.689739167749660     
-  Ms(A) =   0/2  IRREP(A) =  1  len =           25  norm =  1.19779    
-  Ms(A) =   0/2  IRREP(A) =  2  len =           16  norm = 0.990765    
- norm (MS-Block) =    1.55444796745539     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =            1  norm = 0.399088    
-  Ms(A) =  -2/2  IRREP(A) =  2  len =            4  norm = 0.562555    
- norm (MS-Block) =   0.689739167749660     
-  block no.    7 len =          252
-  Ms(A) =   2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
-  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
- norm (MS-Block) =   0.240188079659063     
-  Ms(A) =   0/2  IRREP(A) =  1  len =          110  norm = 0.407941    
-  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.365993    
- norm (MS-Block) =   0.548057473017485     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
-  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
- norm (MS-Block) =   0.240188079659063     
-  block no.    8 len =          309
-  Ms(A) =   2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
-  Ms(A) =   2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
- norm (MS-Block) =   9.848752690352781E-002
-  Ms(A) =   0/2  IRREP(A) =  1  len =          145  norm = 0.298403    
-  Ms(A) =   0/2  IRREP(A) =  2  len =           96  norm = 0.212607    
- norm (MS-Block) =   0.366396112634608     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
-  Ms(A) =  -2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
- norm (MS-Block) =   9.848752690352781E-002
-  block no.    9 len =          252
-  Ms(A) =   2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
-  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
- norm (MS-Block) =   0.240188079659063     
-  Ms(A) =   0/2  IRREP(A) =  1  len =          110  norm = 0.407941    
-  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.365993    
- norm (MS-Block) =   0.548057473017485     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
-  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
- norm (MS-Block) =   0.240188079659063     
-  block no.   10 len =         1446
-  Ms(A) =   2/2  IRREP(A) =  1  len =          121  norm =  1.20098    
-  Ms(A) =   2/2  IRREP(A) =  2  len =          100  norm =  1.18460    
-  Ms(A) =   2/2  IRREP(A) =  3  len =           16  norm = 0.880982    
-  Ms(A) =   2/2  IRREP(A) =  4  len =            4  norm = 0.601055    
- norm (MS-Block) =    1.99574961774712     
-  Ms(A) =   0/2  IRREP(A) =  1  len =          484  norm =  2.00491    
-  Ms(A) =   0/2  IRREP(A) =  2  len =          400  norm =  1.86579    
-  Ms(A) =   0/2  IRREP(A) =  3  len =           64  norm =  1.38201    
-  Ms(A) =   0/2  IRREP(A) =  4  len =           16  norm = 0.879564    
- norm (MS-Block) =    3.19129985578798     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =          121  norm =  1.20098    
-  Ms(A) =  -2/2  IRREP(A) =  2  len =          100  norm =  1.18460    
-  Ms(A) =  -2/2  IRREP(A) =  3  len =           16  norm = 0.880982    
-  Ms(A) =  -2/2  IRREP(A) =  4  len =            4  norm = 0.601055    
- norm (MS-Block) =    1.99574961774712     
-  block no.   11 len =         1842
-  Ms(A) =   2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
-  Ms(A) =   2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
-  Ms(A) =   2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
-  Ms(A) =   2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
- norm (MS-Block) =   0.436547327570825     
-  Ms(A) =   0/2  IRREP(A) =  1  len =          638  norm = 0.512571    
-  Ms(A) =   0/2  IRREP(A) =  2  len =          480  norm = 0.468936    
-  Ms(A) =   0/2  IRREP(A) =  3  len =          128  norm = 0.420683    
-  Ms(A) =   0/2  IRREP(A) =  4  len =           48  norm = 0.278522    
- norm (MS-Block) =   0.858591396129372     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
-  Ms(A) =  -2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
-  Ms(A) =  -2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
-  Ms(A) =  -2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
- norm (MS-Block) =   0.436547327570825     
-  block no.   12 len =          309
-  Ms(A) =   2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
-  Ms(A) =   2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
- norm (MS-Block) =   9.848752690352781E-002
-  Ms(A) =   0/2  IRREP(A) =  1  len =          145  norm = 0.298403    
-  Ms(A) =   0/2  IRREP(A) =  2  len =           96  norm = 0.212607    
- norm (MS-Block) =   0.366396112634608     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
-  Ms(A) =  -2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
- norm (MS-Block) =   9.848752690352781E-002
-  block no.   13 len =         1842
-  Ms(A) =   2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
-  Ms(A) =   2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
-  Ms(A) =   2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
-  Ms(A) =   2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
- norm (MS-Block) =   0.436547327570825     
-  Ms(A) =   0/2  IRREP(A) =  1  len =          638  norm = 0.512571    
-  Ms(A) =   0/2  IRREP(A) =  2  len =          480  norm = 0.468936    
-  Ms(A) =   0/2  IRREP(A) =  3  len =          128  norm = 0.420683    
-  Ms(A) =   0/2  IRREP(A) =  4  len =           48  norm = 0.278522    
- norm (MS-Block) =   0.858591396129372     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
-  Ms(A) =  -2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
-  Ms(A) =  -2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
-  Ms(A) =  -2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
- norm (MS-Block) =   0.436547327570825     
-  block no.   14 len =         2505
-  Ms(A) =   2/2  IRREP(A) =  1  len =          100  norm = 0.966895    
-  Ms(A) =   2/2  IRREP(A) =  2  len =          144  norm =  1.08057    
-  Ms(A) =   2/2  IRREP(A) =  3  len =           64  norm =  1.02475    
-  Ms(A) =   2/2  IRREP(A) =  4  len =           36  norm = 0.908939    
- norm (MS-Block) =    1.99469312434103     
-  Ms(A) =   0/2  IRREP(A) =  1  len =          841  norm =  2.12566    
-  Ms(A) =   0/2  IRREP(A) =  2  len =          576  norm =  1.72374    
-  Ms(A) =   0/2  IRREP(A) =  3  len =          256  norm =  1.56650    
-  Ms(A) =   0/2  IRREP(A) =  4  len =          144  norm =  1.32934    
- norm (MS-Block) =    3.42210214070217     
-  Ms(A) =  -2/2  IRREP(A) =  1  len =          100  norm = 0.966895    
-  Ms(A) =  -2/2  IRREP(A) =  2  len =          144  norm =  1.08057    
-  Ms(A) =  -2/2  IRREP(A) =  3  len =           64  norm =  1.02475    
-  Ms(A) =  -2/2  IRREP(A) =  4  len =           36  norm = 0.908939    
- norm (MS-Block) =    1.99469312434103     
- total norm =    39.5165358376116     
+ 2-el. integrals on disk:                   2724
+    thereof nonredundant:                    710
+     integrals reordered:                   2505
  My next target: T
  Rule: DEF_EXCITATION
+ Number of occupation classes for T:    3
  My next target: DIA
  Rule: CLONE_OPERATOR
  My next target: DIAG1SxxM00
  Rule: DEF_ME_LIST
- set_new_graph:            5
- set_new_graph:            6
  Rule: PRECONDITIONER
  set up diagonal from rank 1 part of H
+ @ time in dia4op_ev                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  My next target: L(CC)
  Rule: DEF_SCALAR
+ Number of occupation classes for L(CC):    1
  My next target: TBAR
  Rule: CLONE_OPERATOR
  My next target: Lg0_CC
@@ -379,22 +181,25 @@ I     routes
      L    number of   n-fold commutators
    class    terms    0    1    2    3    4
   ------------------------------------------
- nterms =            4
        0        4     1    2    1    0    0
- nterms =           15
        1       15     1    7    6    1    0
- nterms =           37
        2       37     1   10   18    7    1
- nterms =           47
        3       47     0    7   24   14    2
   ------------------------------------------
- Number of generated terms:          103
- @ CC Lagrangian                       cpu/sys/wall:      0.02 /     0.00 /     0.02 s
+ wrote                    104  entries
+ Number of generated terms:                    103
+ @ CC Lagrangian                       cpu/sys/wall:      0.05 /     0.00 /     0.05 s
+ Rule: TEX_FORMULA
+ read                    104  entries
+ A TeX formatted version of formula Lg0_CC
+ is written to file: cc_lag.tex
  My next target: E(CC)
  Rule: DEF_SCALAR
+ Number of occupation classes for E(CC):    1
  My next target: E0_CC
  Rule: INVARIANT
- read          104  entries
+ read                    104  entries
+ wrote                      6  entries
  My next target: OMG
  Rule: CLONE_OPERATOR
  My next target: OMG_CC
@@ -407,9 +212,11 @@ I     routes
  Rule: DEF_ME_LIST
  My next target: Hhat
  Rule: DEF_HAMILTONIAN
+ Number of occupation classes for Hhat:   14
  My next target: HT1TRF
  Rule: DEF_HHAT
- @ CC Hhat                             cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                     58  entries
+ @ CC Hhat                             cpu/sys/wall:      0.02 /     0.00 /     0.02 s
  My next target: DEF-Hhat
  Rule: DEF_ME_LIST
  My next target: OMG_CC_OPT
@@ -417,7 +224,7 @@ I     routes
  +======================+
  | Formula optimization |
  +======================+
- Number of operators defined:            8
+ Number of operators defined:                      8
  ----------------------------------------
   idx     op  vtx blk   current list
  ----------------------------------------
@@ -430,67 +237,378 @@ I     routes
     7     OMG   1   3                O0
     8    Hhat   1  14             H0hat
  ----------------------------------------
- Number of lists defined:            6
+ Number of lists defined:                      6
  ------------------------------------------------------------------------------
   idx           list  sym spn      length   op.             file
  ------------------------------------------------------------------------------
-    1              H0  1  0         8921        H                    H0_list.da
-    2     DIAG1SxxM00  1  0         2011      DIA           DIAG1SxxM00_list.da
-    3              O0  1  0         2011      OMG                    O0_list.da
-    4              T0  1  0         2011        T                    T0_list.da
+    1              H0  1  0         2564        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          530      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          530      OMG                    O0_list.da
+    4              T0  1  0          530        T                    T0_list.da
     5          E0(CC)  1  0            1    E(CC)                E0(CC)_list.da
-    6           H0hat  1  0         8921     Hhat                 H0hat_list.da
+    6           H0hat  1  0         2564     Hhat                 H0hat_list.da
  ------------------------------------------------------------------------------
  Reading in:
   -- E0_CC
- read            5  entries
+ read                      5  entries
   -- OMG_CC
- read          100  entries
+ read                    100  entries
   I will factor out the intermediate: HT1TRF ...
- read           58  entries
+ read                     58  entries
   Now looking for the optimal factorization of terms ...
+ testing new factorization
   Formula factorization
  -----------------------
   Summary
  ---------
- Most expensive contraction:  H^ 3 P^ 5 V^ 0 X^ 0
- Largest intermediate      :  H^ 3 P^ 3 V^ 0 X^ 0
+ Most expensive contractions: 
+  term #   93 - H^ 4 P^ 4 V^ 0 X^ 0 - flops:  0.344E+06(  22.0%)
+  term #   83 - H^ 4 P^ 4 V^ 0 X^ 0 - flops:  0.321E+06(  20.5%)
+  term #   94 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.107E+06(   6.8%)
+  term #   89 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.100E+06(   6.4%)
+  term #   84 - H^ 3 P^ 5 V^ 0 X^ 0 - flops:  0.653E+05(   4.2%)
+ Formally most expensive contractions: 
+  term #   84 - H^ 3 P^ 5 V^ 0 X^ 0
+  term #   93 - H^ 4 P^ 4 V^ 0 X^ 0
+  term #   83 - H^ 4 P^ 4 V^ 0 X^ 0
+  term #   95 - H^ 5 P^ 3 V^ 0 X^ 0
+  term #   91 - H^ 5 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   52 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.396E-01
+  term #   77 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.396E-01
+  term #   36 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.396E-01
+  term #   35 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.396E-01
+  term #   93 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.396E-01
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 0 P^ 0 V^ 0 X^ 0 - number of terms:               17
+ H^ 1 P^ 1 V^ 0 X^ 0 - number of terms:                1
+ H^ 2 P^ 1 V^ 0 X^ 0 - number of terms:                3
+ H^ 3 P^ 1 V^ 0 X^ 0 - number of terms:                2
+ H^ 4 P^ 1 V^ 0 X^ 0 - number of terms:                3
+ H^ 1 P^ 2 V^ 0 X^ 0 - number of terms:                2
+ H^ 2 P^ 2 V^ 0 X^ 0 - number of terms:                8
+ H^ 3 P^ 2 V^ 0 X^ 0 - number of terms:               14
+ H^ 4 P^ 2 V^ 0 X^ 0 - number of terms:                2
+ H^ 1 P^ 3 V^ 0 X^ 0 - number of terms:                2
+ H^ 2 P^ 3 V^ 0 X^ 0 - number of terms:               11
+ H^ 3 P^ 3 V^ 0 X^ 0 - number of terms:                4
+ H^ 4 P^ 3 V^ 0 X^ 0 - number of terms:                8
+ H^ 5 P^ 3 V^ 0 X^ 0 - number of terms:                4
+ H^ 1 P^ 4 V^ 0 X^ 0 - number of terms:                5
+ H^ 2 P^ 4 V^ 0 X^ 0 - number of terms:                1
+ H^ 3 P^ 4 V^ 0 X^ 0 - number of terms:                6
+ H^ 4 P^ 4 V^ 0 X^ 0 - number of terms:                2
+ H^ 3 P^ 5 V^ 0 X^ 0 - number of terms:                1
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      0.14 /     0.07 /     0.21 s
+ wrote                    190  entries
  My next target: SOLVE-CC-GS
  Rule: SOLVE_NLEQ
- read           99  entries
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:      530
+idstsec:        1
+signsec :      1.0
+signsec2:      1.0
+ read                    189  entries
  Optimization algorithm:          DIIS
  Max. number of iterations:         25
  Threshold for residual:      0.10E-09
->>>  1        -38.821908746679 0.3920    
->>>  2        -38.885227112091 0.1077    
->>>  3        -38.901861451707 0.3535E-01
->>>  4        -38.907553839214 0.1577E-01
->>>  5        -38.908837398881 0.1000E-01
->>>  6        -38.909217675615 0.6349E-02
->>>  7        -38.909447787818 0.3000E-02
->>>  8        -38.909549743905 0.9147E-03
->>>  9        -38.909567968638 0.2872E-03
->>> 10        -38.909570004489 0.8398E-04
->>> 11        -38.909570274819 0.2896E-04
->>> 12        -38.909570308998 0.9619E-05
->>> 13        -38.909570269552 0.3107E-05
->>> 14        -38.909570261976 0.1027E-05
->>> 15        -38.909570243295 0.3393E-06
->>> 16        -38.909570236422 0.1223E-06
->>> 17        -38.909570231835 0.6388E-07
->>> 18        -38.909570229300 0.4233E-07
->>> 19        -38.909570225846 0.2214E-07
->>> 20        -38.909570224418 0.8917E-08
->>> 21        -38.909570224150 0.2678E-08
->>> 22        -38.909570224151 0.8711E-09
->>> 23        -38.909570224164 0.2701E-09
->>> 24        -38.909570224170 0.8545E-10
- CONVERGED IN    24 ITERATIONS
->>> final energy:        -38.909570224170 <<<
+ @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.06 s
+ term #    58:    -38.82190875        -38.82190875    
+ term #    59:     0.000000000        -38.82190875    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.01 /     0.06 s
+ @ formula evaluation                  cpu/sys/wall:      0.07 /     0.03 /     0.12 s
+ ME list not buffered!
+ norm of block                      1 :   1.089815624252692E-009
+ norm of block                      2 :   0.214489686357932     
+ norm of block                      3 :   0.000000000000000E+000
+ total norm of residual:   0.214489686357932     
+>>>  1        -38.821908746679 0.2145    
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    58:    -38.82190875        -38.82190875    
+ term #    59:   -0.2393962394E-01    -38.84584837    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.11 /     0.06 /     0.20 s
+ ME list not buffered!
+ norm of block                      1 :   1.258594821922047E-002
+ norm of block                      2 :   6.135132074933154E-002
+ norm of block                      3 :   2.790875729866200E-002
+ total norm of residual:   6.856594916005959E-002
+>>>  2        -38.845848370621 0.6857E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.03 /     0.09 s
+ term #    58:    -38.82188836        -38.82188836    
+ term #    59:   -0.3183302506E-01    -38.85372138    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.05 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.14 /     0.08 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   3.199292936536713E-003
+ norm of block                      2 :   2.536159979788674E-002
+ norm of block                      3 :   1.101967797434864E-002
+ total norm of residual:   2.783665788596553E-002
+>>>  3        -38.853721382358 0.2784E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.02 /     0.09 s
+ term #    58:    -38.82188417        -38.82188417    
+ term #    59:   -0.3539948136E-01    -38.85728365    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.05 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   1.799289898314093E-003
+ norm of block                      2 :   1.393568303148564E-002
+ norm of block                      3 :   6.276744711077500E-003
+ total norm of residual:   1.538954937157847E-002
+>>>  4        -38.857283648108 0.1539E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    58:    -38.82188503        -38.82188503    
+ term #    59:   -0.3688974302E-01    -38.85877477    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   7.589556506655817E-004
+ norm of block                      2 :   8.428851612467791E-003
+ norm of block                      3 :   4.374425833383770E-003
+ total norm of residual:   9.526654951054614E-003
+>>>  5        -38.858774772101 0.9527E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    58:    -38.82188379        -38.82188379    
+ term #    59:   -0.3737267783E-01    -38.85925647    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   4.477530255289487E-004
+ norm of block                      2 :   4.353239333321440E-003
+ norm of block                      3 :   2.116494820990374E-003
+ total norm of residual:   4.861144494080206E-003
+>>>  6        -38.859256467423 0.4861E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    58:    -38.82188359        -38.82188359    
+ term #    59:   -0.3762899085E-01    -38.85951258    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   3.502278113728318E-004
+ norm of block                      2 :   1.000114510584614E-003
+ norm of block                      3 :   9.602744707192486E-004
+ total norm of residual:   1.430040423644044E-003
+>>>  7        -38.859512581736 0.1430E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.02 /     0.09 s
+ term #    58:    -38.82188418        -38.82188418    
+ term #    59:   -0.3768440835E-01    -38.85956859    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.05 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   9.571921345447839E-005
+ norm of block                      2 :   1.938546401710763E-004
+ norm of block                      3 :   2.874521406259510E-004
+ total norm of residual:   3.596811400263336E-004
+>>>  8        -38.859568589255 0.3597E-03
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    58:    -38.82188428        -38.82188428    
+ term #    59:   -0.3768734371E-01    -38.85957162    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   1.608405655997094E-005
+ norm of block                      2 :   3.735964694286453E-005
+ norm of block                      3 :   8.074923053221330E-005
+ total norm of residual:   9.041503374253841E-005
+>>>  9        -38.859571619048 0.9042E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    58:    -38.82188426        -38.82188426    
+ term #    59:   -0.3768609234E-01    -38.85957035    
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   3.059768700735366E-006
+ norm of block                      2 :   1.153256915639507E-005
+ norm of block                      3 :   2.721395441441444E-005
+ total norm of residual:   2.971467063116907E-005
+>>> 10        -38.859570354058 0.2971E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.03 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768643671E-01    -38.85957070    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   6.240484025987883E-007
+ norm of block                      2 :   2.519550904197644E-006
+ norm of block                      3 :   8.848258267638321E-006
+ total norm of residual:   9.221130491347532E-006
+>>> 11        -38.859570702039 0.9221E-05
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.03 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768641527E-01    -38.85957068    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.05 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.14 /     0.08 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   2.498454744696258E-007
+ norm of block                      2 :   1.150524888346136E-006
+ norm of block                      3 :   2.994168636182125E-006
+ total norm of residual:   3.217324369987205E-006
+>>> 12        -38.859570681401 0.3217E-05
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.02 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768642709E-01    -38.85957069    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.05 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   1.155038468004745E-007
+ norm of block                      2 :   4.194387973403286E-007
+ norm of block                      3 :   6.413531508000339E-007
+ total norm of residual:   7.749863917393258E-007
+>>> 13        -38.859570693245 0.7750E-06
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768642367E-01    -38.85957069    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.04 /     0.14 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.23 s
+ ME list not buffered!
+ norm of block                      1 :   2.580227494387048E-008
+ norm of block                      2 :   1.246153258356499E-007
+ norm of block                      3 :   1.647827299806969E-007
+ total norm of residual:   2.082020291094579E-007
+>>> 14        -38.859570689591 0.2082E-06
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.11 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768642885E-01    -38.85957069    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.05 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.08 /     0.24 s
+ ME list not buffered!
+ norm of block                      1 :   6.958438173255376E-009
+ norm of block                      2 :   3.637259802052894E-008
+ norm of block                      3 :   3.828534263197704E-008
+ total norm of residual:   5.326493414078237E-008
+>>> 15        -38.859570694758 0.5326E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.03 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768642835E-01    -38.85957069    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   1.735305463645296E-009
+ norm of block                      2 :   1.292502890518640E-008
+ norm of block                      3 :   1.088543878076746E-008
+ total norm of residual:   1.698706668915789E-008
+>>> 16        -38.859570694244 0.1699E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.03 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768642737E-01    -38.85957069    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   5.871946433351224E-010
+ norm of block                      2 :   4.091250836365062E-009
+ norm of block                      3 :   3.750873934270576E-009
+ total norm of residual:   5.581414357132941E-009
+>>> 17        -38.859570693272 0.5581E-08
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.03 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768642687E-01    -38.85957069    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   3.600648615511780E-010
+ norm of block                      2 :   1.191725969903553E-009
+ norm of block                      3 :   1.448381962183475E-009
+ total norm of residual:   1.909886855351616E-009
+>>> 18        -38.859570692770 0.1910E-08
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768642679E-01    -38.85957069    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.05 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.08 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   1.210754175122669E-010
+ norm of block                      2 :   4.739455251938307E-010
+ norm of block                      3 :   5.198649479808347E-010
+ total norm of residual:   7.138229344285190E-010
+>>> 19        -38.859570692683 0.7138E-09
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.02 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768642677E-01    -38.85957069    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.05 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   2.992354191515555E-011
+ norm of block                      2 :   2.354608413065526E-010
+ norm of block                      3 :   2.066694035318134E-010
+ total norm of residual:   3.147212552493605E-010
+>>> 20        -38.859570692663 0.3147E-09
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768642675E-01    -38.85957069    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   1.288020710856183E-011
+ norm of block                      2 :   9.414775238780984E-011
+ norm of block                      3 :   8.816776344331570E-011
+ total norm of residual:   1.296273641073993E-010
+>>> 21        -38.859570692646 0.1296E-09
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    58:    -38.82188427        -38.82188427    
+ term #    59:   -0.3768642674E-01    -38.85957069    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.04 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.07 /     0.22 s
+ ME list not buffered!
+ norm of block                      1 :   4.214256793229418E-012
+ norm of block                      2 :   2.694358363849525E-011
+ norm of block                      3 :   3.517199252718731E-011
+ total norm of residual:   4.450601889560994E-011
+>>> 22        -38.859570692641 0.4451E-10
+ CONVERGED IN    22 ITERATIONS
+>>> final energy:        -38.859570692641 <<<
  ... all targets processed!
  +----------------------------------------------------------------------------+
-   Maximum allocated memory:   27010126 real(8)-words (  206.07 Mb)
-   Largest memory block:       26948308 real(8)-words (  205.60 Mb)
+   Maximum allocated memory:   27083191 real(8)-words (  206.63 Mb)
+   Largest memory block:       26257755 real(8)-words (  200.33 Mb)
    Name of largest block:    contr1.contr_scr
  +----------------------------------------------------------------------------+
- @ total time in GeCCo run             cpu/sys/wall:      6.13 /     1.72 /     7.97 s
+ @ total time in GeCCo run             cpu/sys/wall:      3.08 /     1.63 /     5.17 s
+ run ends at 2012-07-10 15:05:21.805   host: pauli.chemie.uni-mainz.de

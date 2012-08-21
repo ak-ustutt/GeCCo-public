@@ -296,7 +296,8 @@ c dbg*
 
       do iop = 1, nops
         do jop = 1, iop-1
-          if (neqv(jop).lt.0) cycle
+          ! fix_in: don't assume that we need all permutations of commuting ops
+          if (fix_in.or.neqv(jop).lt.0) cycle
           if (idx_op_vtx(iop).eq.idx_op_vtx(jop) .and.
      &        (iop_typ(iop).eq.iop_typ(jop) .and.
      &         (iop_typ(iop).eq.vtxtyp_ph_ex .or.

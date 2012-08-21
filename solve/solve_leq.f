@@ -356,6 +356,7 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
      &       me_special,nspecial,
 c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
      &       fl_rhs_mvp,depend,
+     &       '-',0,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 

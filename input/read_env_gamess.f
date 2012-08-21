@@ -75,11 +75,6 @@ c dbgend
      &                          eerd,e1,e2,ven,vee,epot,ekin,
      &                          estate,statn
       ispin = 2*nint(s2)+1
-      if (nint(sz).ne.0) then
-        print *,'sz = ',sz
-        call warn('read_env_gamess',
-     &           'can we deal with Sz.ne.0?')
-      end if
       nstate = nint(statn)
 
       ! read number of orbital parameters
@@ -244,7 +239,8 @@ c dbgend
         write(luout,*) 'ecore = ',ecore
         write(luout,*) 'estate= ',estate(1:nstate)
         write(luout,*) 'nstate= ',nstate
-        write(luout,*) 'ispin = ',ispin
+        write(luout,*) 'mult  = ',ispin
+        write(luout,*) 'Ms    = ',sz
         write(luout,*) 'nactel= ',nactel
         write(luout,*) 'lsym  = ',lsym
         write(luout,*) 'symm. = ',groups(igroup)
@@ -273,6 +269,7 @@ c dbgend
       orb_info%nactorb = n_act
       orb_info%lsym = lsym
       orb_info%imult = ispin
+      orb_info%ims = nint(2*sz)
       if (n_act.gt.0) then
         ! test whether this can be treated as a simple
         ! high spin open shell case:

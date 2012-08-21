@@ -3,7 +3,7 @@ title
 molecule
   CH2-DZ-DALTON
 input
-  CC-energy-I.inp
+  CC-energy-II.inp
 check
   label Number of terms in Lagrangian
   find DEF_CC_LAGRANGIAN

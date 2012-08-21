@@ -35,7 +35,7 @@
       real(8) ::
      &     fac(maxfac), freq
       integer ::
-     &     idxblk(maxfac), minblk, maxblk, targ_root,
+     &     idxblk(maxfac), minblk, maxblk,
      &     idx, jdx, ioff, nfac, nblk, nspecial, imode,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank
       logical ::
@@ -275,14 +275,17 @@ c dbg
         ioff = 0
         if (nspecial.gt.0) ioff=1
 
-        call solve_evp(mode,nopt,nroots,targ_root,
+        call solve_evp(mode,nopt,nroots,nroots,
      &       rule%labels(1:nopt),               ! to be opt.
      &       rule%labels(  nopt+1:  nopt+nopt), ! precond.
      &       rule%labels(2*nopt+1:2*nopt+nopt), ! mvp-labels
      &       rule%labels(3*nopt+1:3*nopt+nopt), ! metric-labels
      &       rule%labels(4*nopt+1),             ! formula
      &       rule%labels(4*nopt+ioff+1:
-     &                   4*nopt+ioff+nspecial),nspecial,0d0,
+     &                   4*nopt+ioff+nspecial),nspecial,
+     &       rule%labels(3*nopt+ioff+1:         ! spec. form.
+     &                   3*nopt+ioff),
+     &          0,0d0,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(SET_FREQ)

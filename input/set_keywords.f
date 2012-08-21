@@ -201,11 +201,13 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('mult','method.MR',type=vtyp_int,
      &                  idef=(/0/))  ! spin multiplicity (0: interface)
       call argument_add('ms','method.MR',type=vtyp_int,
-     &                  idef=(/0/))  ! Ms
+     &                  idef=(/123456789/))  ! Ms
       call argument_add('sym','method.MR',type=vtyp_int,
      &                  idef=(/0/))  ! symmetry (0: read fr. interface)
       call argument_add('writeFock','method.MR',type=vtyp_log,
      &                  ldef=(/.false./))
+      call argument_add('spinproj','method.MR',type=vtyp_log,
+     &                  ldef=(/.false./)) ! enforce spin by projection
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,
