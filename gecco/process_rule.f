@@ -49,7 +49,7 @@
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
-     &     dgam, dms, nspcfrm
+     &     dgam, dms, nspcfrm, ndescr
       integer ::
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -73,7 +73,7 @@
       character(len_command_par) ::
      &     env_type, list_type
       character(len_command_par) ::
-     &     label, label2, label_list(max_label)
+     &     label, label2, label_list(max_label), descr(max_label)
 
       integer, allocatable ::
      &     ifreq(:), pop_idx(:) 
@@ -491,6 +491,8 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('N_AVOID',rule,tgt_info,val_int=navoid)
         call get_arg('INPROJ',rule,tgt_info,val_int_list=inproj)
         call get_arg('N_INPROJ',rule,tgt_info,val_int=ninproj)
+        call get_arg('DESCR',rule,tgt_info,val_label_list=descr)
+        call get_arg('N_DESCR',rule,tgt_info,val_int=ndescr)
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
         call form_expand_op_product(init,form_pnt,fac,
      &       title,label,label_list,nop,
@@ -498,6 +500,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       connect,nconnect,
      &       avoid,navoid,
      &       inproj,ninproj,
+     &       descr,ndescr,
      &       op_info,orb_info)
 *----------------------------------------------------------------------*
       case(FACTOR_OUT)
