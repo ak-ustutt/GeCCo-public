@@ -41,7 +41,7 @@
       character(len_command_par) ::
      &     parameters(3)
       character ::
-     &     op_dint*7, f_dint*9, defme_dint*14, me_dint*10
+     &     op_dint*7, f_dint*9, defme_dint*14, me_dint*10, triples*1
       real(8) ::
      &     factor
 
@@ -64,6 +64,17 @@
       ! valence-valence excitations
       call get_argument_value('method.MR','maxexc',
      &     ival=maxexc)
+      call get_argument_value('method.MR','triples',
+     &     str=triples(1:1))
+      ! special simplification: in case of approximate triples models,
+      ! no more effort than for the singles doubles model is needed:
+      if (maxexc.eq.3) then
+        select case(triples)
+        case ('0','A','a','B','b')
+          maxexc = 2  ! just pretending for this routine
+        case default
+        end select
+      end if
       call get_argument_value('method.MR','maxcum',
      &     ival=maxcum)
       call get_argument_value('method.MR','cum_appr_mode',

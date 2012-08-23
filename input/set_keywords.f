@@ -394,6 +394,8 @@ c     &     idef=(/0/))
      &     xdef=(/1d-12/))
       call argument_add('sv_fix','calculate.routes',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('Tikhonov','calculate.routes',type=vtyp_rl8,
+     &     xdef=(/0d0/))
 
       ! special keywords for response theory
       call keyword_add('response',context='method')

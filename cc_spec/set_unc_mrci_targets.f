@@ -792,6 +792,10 @@ c dbgend
      &     0,0,0,.false.)
       dia_label2 = trim(dia_label)//'C0'
       call set_dependency('SOLVE_REF',trim(dia_label2),tgt_info)
+      if (spinproj) then
+        call set_dependency('SOLVE_REF','DEF_ME_C0_sp',tgt_info)
+        call set_dependency('SOLVE_REF','FOPT_C0_sp',tgt_info)
+      end if
       if (.not.oldref) then
         call set_rule2('SOLVE_REF',SOLVEEVP,tgt_info)
         call set_arg('SOLVE_REF',SOLVEEVP,'LIST_OPT',1,tgt_info,
@@ -812,8 +816,6 @@ c dbgend
         else
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='SPP')
-          call set_dependency('SOLVE_REF','DEF_ME_C0_sp',tgt_info)
-          call set_dependency('SOLVE_REF','FOPT_C0_sp',tgt_info)
           call set_arg('SOLVE_REF',SOLVEEVP,'LIST_SPC',1,tgt_info,
      &         val_label=(/'ME_C0_sp'/))
           call set_arg('SOLVE_REF',SOLVEEVP,'FORM_SPC',1,tgt_info,

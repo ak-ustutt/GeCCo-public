@@ -43,7 +43,7 @@
      &     sv_fix, l_exist,
      &     l_icci, l_iccc, project, skip, Op_eqs, svdonly
       real(8) ::
-     &     sv_thresh, prc_shift
+     &     sv_thresh, prc_shift, tikhonov
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -85,6 +85,8 @@
      &     lval=sv_fix)
       call get_argument_value('calculate.routes','sv_thresh',
      &     xval=sv_thresh)
+      call get_argument_value('calculate.routes','Tikhonov',
+     &     xval=tikhonov)
 
       call get_argument_value('method.MR','project',
      &     lval=project)
@@ -102,6 +104,7 @@
       if (ntest.ge.100) then
         print *,'gno     = ',gno
         print *,'sv_thr. = ',sv_thresh
+        print *,'Tikhonov= ',tikhonov
         print *,'sv_fix  = ',sv_fix
         print *,'project = ',project
         print *,'prc_type= ',prc_type

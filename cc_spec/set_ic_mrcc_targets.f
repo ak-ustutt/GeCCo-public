@@ -47,7 +47,7 @@
       logical ::
      &     update_prc, skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, use_f12
+     &     oldref, solve, use_f12, restart
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -83,6 +83,8 @@
      &     lval=update_prc)
       call get_argument_value('calculate.solve.non_linear','preopt',
      &     lval=preopt)
+      call get_argument_value('calculate.solve.non_linear','restart',
+     &     lval=restart)
       call get_argument_value('method.MR','project',
      &     lval=project)
       call get_argument_value('method.MRCC','Op_eqs',
@@ -131,6 +133,7 @@
       if (maxv.lt.0) maxv = 2*maxexc
       trunc = ntrunc.ge.0
       solve = execute.and..not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
+      use_f12 = is_keyword_set('method.R12').gt.0
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en    = ', maxcom_en
@@ -179,7 +182,7 @@
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+          do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,1,ndef) = ih
             occ_def(IPART,2,ndef) = ip
@@ -203,7 +206,7 @@
       do ip = 0, maxp
         do ih = 0, maxh
           first = .true.
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+          do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef) = ih
             occ_def(IPART,1,ndef) = ip
@@ -381,7 +384,7 @@ c     &             val_int=(/1/))
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+          do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
             occ_def(IPART,1,ndef*2) = ip
@@ -673,7 +676,7 @@ c     &     val_label=(/'H'/))
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
-          do iexc = 2, excrestr(ih,ip,2)
+          do iexc = max(2,excrestr(ih,ip,1)), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef) = ih
             occ_def(IPART,1,ndef) = ip
@@ -1305,7 +1308,7 @@ c dbgend
         call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
      &       val_label=(/'F_OMG'/))
       end if
-      use_f12 = is_keyword_set('method.R12').gt.0
+
       ! Lagrangian without Lambda...
       call add_target2('F_E_C0',.false.,tgt_info)
       call set_dependency('F_E_C0','L',tgt_info)
@@ -3375,6 +3378,8 @@ c dbgend
       call set_dependency('SOLVE_MRCC','EVAL_D',tgt_info)
       call set_dependency('SOLVE_MRCC','DEF_ME_Dtrdag',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_T',tgt_info)
+      if (restart) ! project out redundant part (if sv_thr. changed)
+     &   call set_dependency('SOLVE_MRCC','EVAL_Tproj',tgt_info)
       select case(prc_type)
       case(-1) !do nothing: use old preconditioner file!
         call warn('set_ic_mrcc_targets','Using old preconditioner file')
@@ -3922,32 +3927,31 @@ c     &     'ME_OMG',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
 
+      ! Evaluate projected T (needed e.g. for restart)
+      call add_target('EVAL_Tproj',ttype_gen,.false.,tgt_info)
+      call set_dependency('EVAL_Tproj','DEF_ME_Dproj',tgt_info)
+      call set_dependency('EVAL_Tproj','FOPT_T',tgt_info)
+      call set_dependency('EVAL_Tproj','DEF_ME_T',tgt_info)
+      call set_dependency('EVAL_Tproj','DEF_ME_Ttr',tgt_info)
+      ! (a) first copy T list to Ttr
+      call set_rule2('EVAL_Tproj',SCALE_COPY,tgt_info)
+      call set_arg('EVAL_Tproj',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &             val_label=(/'ME_Ttr'/))
+      call set_arg('EVAL_Tproj',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &             val_label=(/'ME_T'/))
+      call set_arg('EVAL_Tproj',SCALE_COPY,'FAC',1,tgt_info,
+     &             val_rl8=(/1d0/))
+      ! (just for safety: should be already assigned this way)
+      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
+      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &           val_label=(/'ME_Dproj'/))
+      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+     &           val_label=(/'Dtr'/))
+      ! (b) evaluate projection
+      call set_rule2('EVAL_Tproj',EVAL,tgt_info)
+      call set_arg('EVAL_Tproj',EVAL,'FORM',1,tgt_info,
+     &             val_label=(/'FOPT_T'/))
 c dbg
-c      ! Evaluate projected T
-c      call add_target('EVAL_Tproj',ttype_gen,.false.,tgt_info)
-c      call set_dependency('EVAL_Tproj','FOPT_T',tgt_info)
-c      call set_dependency('EVAL_Tproj','SOLVE_REF',tgt_info)
-c      call set_dependency('EVAL_Tproj','DEF_ME_Dproj',tgt_info)
-c      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
-c     &           val_label=(/'ME_T'/))
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
-c     &           val_label=(/'Ttr'/))
-c      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
-c     &           val_label=(/'ME_Ttr'/))
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
-c     &           val_label=(/'T'/))
-c      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
-c     &           val_label=(/'ME_Dproj'/))
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
-c     &           val_label=(/'Dtr'/))
-c      call set_rule('EVAL_Tproj',ttype_opme,EVAL,
-c     &     'FOPT_T',1,0,
-c     &     parameters,0,tgt_info)
-c      call form_parameters(-1,parameters,2,
-c     &     'projected T :',0,'LIST')
 c      call set_rule('EVAL_Tproj',ttype_opme,PRINT_MEL,
 c     &     'ME_Ttr',1,0,
 c     &     parameters,2,tgt_info)

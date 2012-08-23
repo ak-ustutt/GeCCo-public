@@ -34,6 +34,7 @@
       include 'hpvxseq.h'
       include 'multd2h.h'
       include 'ifc_input.h'
+      include 'routes.h'
 
       integer, parameter ::
      &     ntest = 5
@@ -60,7 +61,7 @@
 
       logical ::
      &     bufin, bufout, first, ms_fix, fix_success, onedis, transp,
-     &     logdum, sgrm, bufu, svdonly
+     &     logdum, sgrm, bufu, svdonly, reg_tik
       logical, pointer ::
      &     blk_used(:), blk_redundant(:)
 c      logical ::
@@ -87,12 +88,13 @@ c dbgend
      &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2,
      &     icnt_cur, ih, ip, iexc
       real(8) ::
-     &     fac, xmax, xmin
+     &     fac, xmax, xmin, xdum, omega2
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:), scratch2(:,:),
      &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:),
      &     palph(:), pbeta(:), proj(:,:), norm(:), scratch3(:,:),
-     &     scratch4(:,:), sing3(:,:), trip3(:,:), buffer_u(:)
+     &     scratch4(:,:), sing3(:,:), trip3(:,:), buffer_u(:),
+     &     svs(:)
       real(8), target ::
      &     xdummy(1,1)
 c dbg
@@ -139,6 +141,9 @@ c dbg
 c      ipass = 0
 c dbgend
       call get_argument_value('method.MR','project',lval=sgrm)
+
+      reg_tik = tikhonov.ne.0d0
+      omega2 = tikhonov**2
 
       ffinp => mel_inp%fhand
       ffinv => mel_inv%fhand
@@ -240,6 +245,8 @@ c dbgend
         iblkoff = (iocc_cls-1)*njoined
 
         if (ntest.ge.10) write(luout,*) 'current occ_cls: ',iocc_cls
+        ! only one element? easy!
+        ! (also regularization is never needed in this case)
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
           icnt_cur = icnt_sv - icnt_sv0
           ioff = mel_inp%off_op_gmo(iocc_cls)%gam_ms(1,1)
@@ -247,11 +254,11 @@ c dbgend
           if (get_u) then
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       half,buffer_u(ioff+1),get_u,
-     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       xdum,icnt_sv,icnt_sv0,xmax,xmin,bins)
           else
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       half,xdummy,get_u, !buffer_u: dummy
-     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       xdum,icnt_sv,icnt_sv0,xmax,xmin,bins)
           end if
           if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
      &       blk_redundant(iocc_cls) = .false.
@@ -384,7 +391,7 @@ c dbgend
      &            strmap_info,ngam,ngraph)
 
               ! single distribution can simply be read in as simple matrix
-              allocate(scratch(ndim,ndim))
+              allocate(scratch(ndim,ndim),svs(ndim))
               if (.not.half) then
                 allocate(scratch2(ndim,ndim))
               else
@@ -448,9 +455,10 @@ c dbgend
 
                 ! calculate T^(-0.5) for both blocks
                 call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
-     &                           icnt_sv,icnt_sv0,
+     &                           svs,icnt_sv,icnt_sv0,
      &                           xmax,xmin,bins)
                 call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
+     &                           svs(nsing+min(1,ntrip)),!avoid segfault
      &                           icnt_sv,icnt_sv0,
      &                           xmax,xmin,bins)
 
@@ -474,10 +482,14 @@ c dbgend
 
                 ! calculate S^(-0.5)
                 call invsqrt_mat(ndim,scratch,scratch2,
-     &                           half,scratch3,get_u,
+     &                           half,scratch3,get_u,svs,
      &                           icnt_sv,icnt_sv0,xmax,xmin,bins)
 
               end if
+
+              ! Tikhonov regularization?
+              if (reg_tik)
+     &           call regular_tikhonov(ndim,ndim,scratch,svs,omega2)
 
               ! write to output buffer
               if (transp) then
@@ -494,7 +506,7 @@ c dbgend
                 enddo
               end if
 
-              deallocate(scratch)
+              deallocate(scratch,svs)
 
               if (.not.half) then
                 ! write projector to input buffer
@@ -752,8 +764,9 @@ c           ndim = 0
           if (ntest.ge.100)
      &       write(luout,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
 
-          allocate(scratch(ndim,ndim),flmap(ndim,3))
+          allocate(scratch(ndim,ndim),flmap(ndim,3),svs(ndim))
           scratch = 0d0
+          svs = 0d0
           if (.not.half) allocate(scratch2(ndim,ndim))
           if (get_u) allocate(scratch3(ndim,ndim))
 c dbg
@@ -1221,9 +1234,10 @@ c dbgend
 
             ! calculate T^(-0.5) for both blocks
             call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
-     &                       icnt_sv,icnt_sv0,
+     &                       svs(idxst),icnt_sv,icnt_sv0,
      &                       xmax,xmin,bins)
             call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
+     &                       svs(idxst-1+nsing+min(1,ntrip)),!avoid segfault
      &                       icnt_sv,icnt_sv0,
      &                       xmax,xmin,bins)
 
@@ -1256,25 +1270,25 @@ c dbgend
      &                       scratch2(idxst:idxnd,idxst:idxnd),
      &                       half,
      &                       scratch3(idxst:idxnd,idxst:idxnd),get_u,
-     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,bins)
           else if (.not.half) then
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
      &                       scratch2(idxst:idxnd,idxst:idxnd),
      &                       half,xdummy,get_u, !scratch3: dummy
-     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,bins)
           else if (get_u) then
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
      &                       xdummy,half, !scratch2: dummy
      &                       scratch3(idxst:idxnd,idxst:idxnd),get_u,
-     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,bins)
           else
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
      &                       xdummy,half, !scratch2: dummy
      &                       xdummy,get_u, !scratch3: dummy
-     &                       icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,bins)
           end if
 
            ! apply projector again: X = Q*U*s^(-0.5)
@@ -1305,10 +1319,16 @@ c dbgend
              deallocate(scratch4,proj)
            end if
 
+           ! assume exc. in T op. are ordered with increasing rank
            if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
-     &        blk_redundant(iocc_cls+min(na1mx,nc1mx)+irank-nrank)
+c     &        blk_redundant(iocc_cls+min(na1mx,nc1mx)+irank-nrank)
+     &        blk_redundant(iocc_cls+irank-1)
      &        = .false.
           end do
+
+          ! Tikhonov regularization?
+          if (reg_tik)
+     &       call regular_tikhonov(ndim,ndim,scratch,svs,omega2)
 
           ! write to output buffer
           ! loops over coupling blocks. Must be in correct order!
@@ -1503,7 +1523,7 @@ c dbgend
            off_line2 = off_linmax
           end do
 
-          deallocate(scratch,flmap)
+          deallocate(scratch,flmap,svs)
           if (.not.half) deallocate(scratch2)
           if (get_u) deallocate(scratch3)
 c dbg
@@ -1553,23 +1573,22 @@ c dbgend
  
       if (sgrm.and.any(blk_redundant(1:nocc_cls))) then
         ! Print out which blocks are redundant
-        write(luout,'(x,a)') 'There are redundant blocks in the metric:'
+c        write(luout,'(x,a)') 'There are redundant blocks in the metric:'
+        write(luout,'(x,a)') 'There are redundant blocks in T:'
         write(luout,'(x,a,26i3)') 'Block #  :',(idx,idx=1,nocc_cls)
         write(luout,'(x,a,26(2x,L1))') 'Redundant?',
      &                               (blk_redundant(idx),idx=1,nocc_cls)
         call get_argument_value('method.MR','svdonly',lval=svdonly)
         if (svdonly) then
           ! Excplicitly print restrictions for input file
-          ! (assuming name 'T' for cluster op., and
-          !  assuming that blocks are in same order, i.e.
-          !  reverse order within one excitation class)
+          ! (assuming name 'T' for cluster op.
           write(luout,*)
           write(luout,'(x,a)') 'Copy the following into the input file:'
           op_t => op_info%op_arr(idx_oplist2('T',op_info))%op
           if (is_keyword_set('method.MRCI').gt.0)
      &       op_t => op_info%op_arr(idx_oplist2('C',op_info))%op
-          ih = 0
-          ip = 0
+          ih = -1
+          ip = -1
           iexc = 0
           first = .false.
           do iocc_cls = 1, nocc_cls

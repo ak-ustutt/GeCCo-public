@@ -625,6 +625,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       ncat,label_list(1:),
      &       nint,label_list(ncat+1:),
      &       form_info,op_info,str_info,orb_info)
+
+        ! just in case that additional graphs were added:
+        call update_strmap(str_info,strmap_info)
 *----------------------------------------------------------------------*
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*
