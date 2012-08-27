@@ -142,6 +142,10 @@
      &     val_int=(/0/))
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'N_INPROJ',1,tgt_info,
      &     val_int=(/0/))
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'DESCR',0,tgt_info,
+     &     (/'-'/))
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'N_DESCR',1,tgt_info,
+     &     val_int=(/0/))
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'TITLE',1,tgt_info,
      &     val_str='---')
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,

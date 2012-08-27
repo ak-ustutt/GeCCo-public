@@ -143,6 +143,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./))
       call argument_add('opt','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('notrunc','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
 
       ! special keywords for multireference wave functions
       call keyword_add('MR',context='method')
