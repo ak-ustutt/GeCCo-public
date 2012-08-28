@@ -5,7 +5,7 @@
      &     connect,nconnect,
      &     avoid,navoid,
      &     inproj,ninproj,
-     &     op_info,orb_info)
+     &     fix_in,op_info,orb_info)
 *----------------------------------------------------------------------*
 *     Driver routine to set up the operator product
 *
@@ -36,7 +36,7 @@
       character(*), intent(in) ::
      &     label_res, label(nlabels), title
       logical, intent(in) ::
-     &     init
+     &     init, fix_in
       real(8), intent(in) ::
      &     fac
 
@@ -129,7 +129,7 @@
      &     connect,nconnect,
      &     avoid,navoid,
      &     inproj,ninproj,
-     &     .false.,op_info)
+     &     fix_in,op_info)
 
       if(ntest.ge.10)then
         call write_title(luout,wst_title,'Generated formula')

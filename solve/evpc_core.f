@@ -345,7 +345,7 @@ cmhend
             ! pretend that me_trv is not up to date
             call reset_file_rec(me_trv(iopt)%mel%fhand)
             call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                  op_info,str_info,strmap_info,orb_info)
+     &                  .true.,op_info,str_info,strmap_info,orb_info)
             ! residual norm (nselect should be 1):
             xrsnrm(iroot,iopt) = xret(idxselect(1))
             deallocate(xret,idxselect)
@@ -551,7 +551,7 @@ c              xnrm = 1d0
               ! pretend that me_trv is not up to date
               call reset_file_rec(me_trv(iopt)%mel%fhand)
               call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                    op_info,str_info,strmap_info,orb_info)
+     &                    .true.,op_info,str_info,strmap_info,orb_info)
               ! in reality me_trv is still up to date:
               call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
@@ -607,7 +607,7 @@ c dbgend
               call switch_mel_record(me_met(iopt)%mel,irec)
               call switch_mel_record(me_scr(iopt)%mel,iroot)
               call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                    op_info,str_info,strmap_info,orb_info)
+     &                    .true.,op_info,str_info,strmap_info,orb_info)
               call reset_file_rec(me_met(iopt)%mel%fhand)
 
               ! reassign op. with list containing trial vector

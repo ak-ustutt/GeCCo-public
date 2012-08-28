@@ -148,6 +148,8 @@
      &     val_log=(/.true./))
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
      &     val_rl8=(/1d0/))
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FIX_VTX',1,tgt_info,
+     &     val_log=(/.false./))
 *----------------------------------------------------------------------*
       call add_command_proto(FACTOR_OUT,tgt_info)
       call set_arg('_PROTO_',FACTOR_OUT,'TITLE',1,tgt_info,
@@ -311,6 +313,8 @@
       call add_command_proto(INVERT,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(EVAL,tgt_info)
+      call set_arg('_PROTO_',EVAL,'INIT',1,tgt_info,
+     &     val_log=(/.true./))
 *----------------------------------------------------------------------*
       call add_command_proto(EVALPROP,tgt_info)
       call set_arg('_PROTO_',EVALPROP,'ENV',1,tgt_info,

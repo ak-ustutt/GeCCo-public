@@ -166,7 +166,7 @@ c dbg
       case(EVAL)
 
         if (form_test) exit loop
-        call evaluate(rule%labels(1),
+        call evaluate(rule%labels(1),.true.,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(INVERT)

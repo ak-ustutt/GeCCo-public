@@ -412,7 +412,7 @@ c dbgend
      &                  me_trv(iopt)%mel%label,depend,op_info)
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
-     &                  op_info,str_info,strmap_info,orb_info)
+     &                  .true.,op_info,str_info,strmap_info,orb_info)
             ! guess vectors of wrong spin symmetry will be discarded
             if (abs(xret(idxselect(1))).lt.1d-12) then
               if (iprlvl.ge.5) write(luout,*)
@@ -533,7 +533,7 @@ c     &           str_info,orb_info)
 c dbg
 
             call frm_sched(xret,fl_mvp,depend,0,0,
-     &           op_info,str_info,strmap_info,orb_info)
+     &           .true.,op_info,str_info,strmap_info,orb_info)
 
 c dbg
 c            write(luout,*) 'output for request: ',irequest

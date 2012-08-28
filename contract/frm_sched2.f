@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine frm_sched2(xret,flist,depend_info,idxselect,nselect,
-     &         op_info,str_info,strmap_info,orb_info)
+     &         init,op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     schedule the evaluation of a formula
 *     
@@ -39,6 +39,8 @@
      &     xret(*)
       integer, intent(in) ::
      &     nselect, idxselect(nselect)
+      logical, intent(in) ::
+     &     init
       type(formula_item), intent(in), target ::
      &     flist
       type(operator_info), intent(inout) ::
@@ -172,7 +174,9 @@
           skip = nselect.gt.0.and.
      &           idxlist(idxres,idxselect,nselect,1).le.0
           ! check dependency
-          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
+c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
+          skip = skip.or.
+     &           (init.and.me_list_uptodate(idxres,depend_info,op_info))
 
           idxopres = cur_form%target      ! op index of result
 
@@ -203,7 +207,7 @@
             if (me_res%len_op.gt.1) type_xret = 1
             if (ffres%unit.le.0)
      &           call file_open(ffres)
-            call zeroop(me_res)
+            if (init) call zeroop(me_res)
  
             if (lustat.gt.0) write(lustat,*) 'NEW TARGET: ',
      &           trim(me_res%label)

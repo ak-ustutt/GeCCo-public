@@ -121,7 +121,7 @@ c dbgend
      &                       me_special(3)%mel%op%name,op_info)
 
       ! calculate transformed residual
-      call evaluate2(fspc(1),
+      call evaluate2(fspc(1),.true.,
      &            op_info,str_info,strmap_info,orb_info,
      &            xngrd(iopt),.true.) !get transformed res. norm
 
@@ -181,7 +181,7 @@ c     &       str_info,orb_info)
      &                    trim(op_grd_name),op_info)
 
       ! calculate transformed vector
-      call evaluate2(fspc(1),
+      call evaluate2(fspc(1),.true.,
      &            op_info,str_info,strmap_info,orb_info,xdum,.false.)
 
       call vec_from_da(ffamp,1,xbuf1,nwfpar)

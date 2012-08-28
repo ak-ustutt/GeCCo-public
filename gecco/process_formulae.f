@@ -208,7 +208,7 @@ c        call quit(1,DEF_FORMULA,'not yet')
      &       connect,nconnect,
      &       avoid,navoid,
      &       inproj,ninproj,
-     &       op_info,orb_info)
+     &       .false.,op_info,orb_info)
       case(FACTOR_OUT)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

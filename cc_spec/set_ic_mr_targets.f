@@ -76,7 +76,7 @@
       case(0)
       case(1)
         write(luout,*) 'Using generalized normal order (GNO)'
-        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
+c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
       case default
         call quit(1,'set_ic_mr_targets','unknown normal order')
       end select
@@ -100,6 +100,8 @@
       if (.not.l_iccc.and.prc_type.ne.0.and.prc_type.ne.3.or.
      &    prc_type.gt.3.or.prc_type.ne.2.and.prc_shift.ne.0d0)
      &  call quit(1,'set_ic_mr_targets','Choose other preconditioner!')
+      if (gno.gt.0.and.project) call quit(1,'set_ic_mr_targets',
+     &          'No seq. orth. (project=T) yet for GNO')
 
       if (ntest.ge.100) then
         print *,'gno     = ',gno
@@ -487,15 +489,15 @@ c       &     val_label=(/'F_NORM'/))
      &       val_label=(/op_ham,'C0','CUM'/)) !op_ham and C0 are dummies
         call set_arg('F_NORM',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCC')
-        ! f) factor out hole density
-        call set_dependency('F_NORM','F_HOLE',tgt_info)
-        call set_rule2('F_NORM',FACTOR_OUT,tgt_info)
-        call set_arg('F_NORM',FACTOR_OUT,'LABEL_RES',1,tgt_info,
-     &       val_label=(/'F_NORM'/))
-        call set_arg('F_NORM',FACTOR_OUT,'LABEL_IN',1,tgt_info,
-     &       val_label=(/'F_NORM'/))
-        call set_arg('F_NORM',FACTOR_OUT,'INTERM',1,tgt_info,
-     &       val_label=(/'F_HOLE'/))
+c        ! f) factor out hole density
+c        call set_dependency('F_NORM','F_HOLE',tgt_info)
+c        call set_rule2('F_NORM',FACTOR_OUT,tgt_info)
+c        call set_arg('F_NORM',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+c     &       val_label=(/'F_NORM'/))
+c        call set_arg('F_NORM',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+c     &       val_label=(/'F_NORM'/))
+c        call set_arg('F_NORM',FACTOR_OUT,'INTERM',1,tgt_info,
+c     &       val_label=(/'F_HOLE'/))
       end if
 c dbg
 c      call set_rule2('F_NORM',PRINT_FORMULA,tgt_info)
@@ -634,11 +636,14 @@ c dbgend
      &               val_label=(/'F_DENS0','F_D    '/))
       else if (gno.eq.1) then
         call set_dependency('FOPT_D','F_CUM',tgt_info)
-        call set_dependency('FOPT_D','F_HOLE',tgt_info)
+c        call set_dependency('FOPT_D','F_HOLE',tgt_info)
         call set_dependency('FOPT_D','DEF_ME_CUM',tgt_info)
-        call set_dependency('FOPT_D','DEF_ME_HOLE',tgt_info)
+c        call set_dependency('FOPT_D','DEF_ME_HOLE',tgt_info)
+        call set_dependency('FOPT_D','F_DENS0',tgt_info)
         call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',3,tgt_info,
-     &               val_label=(/'F_HOLE','F_CUM ','F_D   '/))
+     &               val_label=(/'F_DENS0','F_CUM ','F_D   '/))
+c        call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',3,tgt_info,
+c     &               val_label=(/'F_HOLE','F_CUM ','F_D   '/))
       end if
 
 *----------------------------------------------------------------------*
@@ -727,11 +732,11 @@ c dbgend
       call set_rule('DEF_ME_Dinv',ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
-      labels(1) = 'ME_D'
-      labels(2) = 'D'
-      call set_rule('DEF_ME_Dinv',ttype_opme,ASSIGN_ME2OP,
-     &     labels,2,1,
-     &     parameters,0,tgt_info)
+c      labels(1) = 'ME_D'
+c      labels(2) = 'D'
+c      call set_rule('DEF_ME_Dinv',ttype_opme,ASSIGN_ME2OP,
+c     &     labels,2,1,
+c     &     parameters,0,tgt_info)
 
       call set_rule2('DEF_ME_Dinv',INVERT,tgt_info)
       call set_arg('DEF_ME_Dinv',INVERT,'LIST_INV',1,tgt_info,
@@ -750,6 +755,29 @@ c dbgend
       else !for MRCC, we also need the projector matrix
         call set_arg('DEF_ME_Dinv',INVERT,'MODE',1,tgt_info,
      &       val_str='invsqrt')
+      end if
+      if (gno.gt.0.and.l_iccc) then
+        ! add terms needed for trafo to GNO basis
+        call set_dependency('DEF_ME_Dinv','FOPT_Dinv_GNO',tgt_info)
+        call set_rule2('DEF_ME_Dinv',EVAL,tgt_info)
+        call set_arg('DEF_ME_Dinv',EVAL,'FORM',1,tgt_info,
+     &               val_label=(/'FOPT_Dinv_GNO'/))
+        call set_arg('DEF_ME_Dinv',EVAL,'INIT',1,tgt_info,
+     &               val_log=(/.false./))
+      end if
+      labels(1) = 'ME_D'
+      labels(2) = 'D'
+      call set_rule('DEF_ME_Dinv',ttype_opme,ASSIGN_ME2OP,
+     &     labels,2,1,
+     &     parameters,0,tgt_info)
+      if (gno.gt.0.and.l_iccc) then
+        ! add terms needed for Projector using GNO basis
+        call set_dependency('DEF_ME_Dinv','FOPT_Dproj_GNO',tgt_info)
+        call set_rule2('DEF_ME_Dinv',EVAL,tgt_info)
+        call set_arg('DEF_ME_Dinv',EVAL,'FORM',1,tgt_info,
+     &               val_label=(/'FOPT_Dproj_GNO'/))
+        call set_arg('DEF_ME_Dinv',EVAL,'INIT',1,tgt_info,
+     &               val_log=(/.false./))
       end if
 c dbg
 c      call form_parameters(-1,parameters,2,
