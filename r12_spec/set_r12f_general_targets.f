@@ -97,7 +97,7 @@
       if (is_keyword_set('method.MRCC').gt.0) then
         if (iprlvl.gt.0) 
      &      write(luout,*) 'MRCC-F12: switching on (F12*) approx.'
-        vring_mode=2
+        vring_mode=3
         use_CS=.true.
       end if
 

@@ -33,7 +33,7 @@
       integer ::
      &     ndef, occ_def(ngastp,2,124),!60),
      &     isym, msc, ims, ip, ih, 
-     &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, cmaxv
+     &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, maxroot, cmaxv
       logical ::
      &     oldref, l_exist, writeF, spinproj
       character(len_target_name) ::
@@ -67,6 +67,9 @@
      &     ival=cmaxexc)
       call get_argument_value('method.MR','ciroot',
      &     ival=ciroot)
+      call get_argument_value('method.MR','maxroot',
+     &     ival=maxroot)
+      if(maxroot.le.0) maxroot=ciroot
       call get_argument_value('method.MR','oldref',
      &     lval=oldref)
       call get_argument_value('method.MR','writeFock',
@@ -86,6 +89,7 @@
         write(luout,*) 'cmaxexc = ',cmaxexc
         write(luout,*) 'nactel  = ',orb_info%nactel
         write(luout,*) 'ciroot  = ',ciroot
+        write(luout,*) 'maxroot  = ',maxroot
         write(luout,*) 'oldref  = ',oldref
         write(luout,*) 'spinproj= ',spinproj
       end if
@@ -623,7 +627,7 @@ c dbgend
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'MIN_REC',1,tgt_info,
      &             val_int=(/1/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'MAX_REC',1,tgt_info,
-     &             val_int=(/ciroot/))
+     &             val_int=(/maxroot/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'REC',1,tgt_info,
      &             val_int=(/ciroot/))
 
@@ -801,6 +805,8 @@ c dbgend
         call set_arg('SOLVE_REF',SOLVEEVP,'LIST_OPT',1,tgt_info,
      &       val_label=(/'ME_C0'/))
         call set_arg('SOLVE_REF',SOLVEEVP,'N_ROOTS',1,tgt_info,
+     &       val_int=(/maxroot/))
+        call set_arg('SOLVE_REF',SOLVEEVP,'TARG_ROOT',1,tgt_info,
      &       val_int=(/ciroot/))
         call set_arg('SOLVE_REF',SOLVEEVP,'OP_MVP',1,tgt_info,
      &       val_label=(/'A_C0'/))

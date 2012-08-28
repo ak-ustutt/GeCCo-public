@@ -49,7 +49,7 @@
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
-     &     dgam, dms, nspcfrm
+     &     dgam, dms, nspcfrm, ndescr, ntmp, targ_root
       integer ::
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -73,7 +73,7 @@
       character(len_command_par) ::
      &     env_type, list_type
       character(len_command_par) ::
-     &     label, label2, label_list(max_label)
+     &     label, label2, label_list(max_label), descr(max_label)
 
       integer, allocatable ::
      &     ifreq(:), pop_idx(:) 
@@ -491,6 +491,8 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('N_AVOID',rule,tgt_info,val_int=navoid)
         call get_arg('INPROJ',rule,tgt_info,val_int_list=inproj)
         call get_arg('N_INPROJ',rule,tgt_info,val_int=ninproj)
+        call get_arg('DESCR',rule,tgt_info,val_label_list=descr)
+        call get_arg('N_DESCR',rule,tgt_info,val_int=ndescr)
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
         call get_arg('FIX_VTX',rule,tgt_info,val_log=ms_fix)
         call form_expand_op_product(init,form_pnt,fac,
@@ -499,6 +501,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       connect,nconnect,
      &       avoid,navoid,
      &       inproj,ninproj,
+     &       descr,ndescr,
      &       ms_fix,op_info,orb_info)
 *----------------------------------------------------------------------*
       case(FACTOR_OUT)
@@ -655,16 +658,22 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('OP_INCL',rule,tgt_info,
      &       val_label_list=label_list,ndim=ninclude)
         call get_arg('BLK_INCL',rule,tgt_info,
-     &       val_int_list=iblk_include,ndim=ninclude)
+     &       val_int_list=iblk_include,ndim=ntmp)
+        if (ninclude.ne.ntmp) call quit(1,'process_rule',
+     &       'use same number of elements for OP_INCL, BLK_INCL')
         call get_arg('OP_INCL_OR',rule,tgt_info,
      &       val_label_list=label_list(ninclude+1:),ndim=ninclude_or)
         call get_arg('BLK_INCL_OR',rule,tgt_info,
-     &       val_int_list=iblk_include_or,ndim=ninclude_or)
+     &       val_int_list=iblk_include_or,ndim=ntmp)
+        if (ninclude_or.ne.ntmp) call quit(1,'process_rule',
+     &       'use same number of elements for OP_INCL_OR, BLK_INCL_OR')
         call get_arg('OP_EXCL',rule,tgt_info,
      &       val_label_list=label_list(ninclude+ninclude_or+1:),
      &                                                 ndim=nexclude)
         call get_arg('BLK_EXCL',rule,tgt_info,
-     &       val_int_list=iblk_exclude,ndim=nexclude)
+     &       val_int_list=iblk_exclude,ndim=ntmp)
+        if (nexclude.ne.ntmp) call quit(1,'process_rule',
+     &       'use same number of elements for OP_EXCL, BLK_EXCL')
         call form_select_terms(form_pnt,form0_pnt,
      &       label,
      &       ninclude,label_list,iblk_include,
@@ -1201,6 +1210,8 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list(1:),ndim=nopt)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
+        call get_arg('TARG_ROOT',rule,tgt_info,val_int=targ_root)
+        if (targ_root.le.0) targ_root=nroots
         call get_arg('LIST_PRC',rule,tgt_info,
      &       val_label_list=label_list(1*nopt+1:))
         call get_arg('OP_MVP',rule,tgt_info,
@@ -1219,7 +1230,7 @@ c dbg
 
         if (form_test) return
 
-        call solve_evp(mode,nopt,nroots,
+        call solve_evp(mode,nopt,nroots,targ_root,
      &       label_list(1:nopt),               ! to be opt.
      &       label_list(  nopt+1:  nopt+nopt), ! precond.
      &       label_list(2*nopt+1:2*nopt+nopt), ! mvp-labels

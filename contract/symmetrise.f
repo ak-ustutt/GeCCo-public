@@ -207,6 +207,8 @@
           joff = me_in%off_op_occ(jblk)
           lenblk = me_in%len_op_occ(iblk)
 
+          if (lenblk.eq.0) cycle
+
           if (ntest.ge.100) then
             write(luout,*) 'iblk, jblk: ',iblk, jblk
             write(luout,*) 'ioff, joff, lenblk: ',ioff, joff, lenblk

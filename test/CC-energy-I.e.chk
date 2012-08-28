@@ -1,5 +1,5 @@
 title
-  CH2/DZ DALTON enviroment: CCSDT energy
+  CH2/DZ DALTON enviroment: CCSDT energy (frozen core, del. virt.)
 molecule
   CH2-DZ-DALTON
 input

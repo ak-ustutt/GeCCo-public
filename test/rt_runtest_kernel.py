@@ -13,6 +13,7 @@ def runtest_kernel(commands,options,testname):
     print 'Next test:'
     for line in commands['title'][-1]:
         print line
+    print 'Output in: ' + testname
 
     if options.program.lstrip() == ' ':
         print 'the program to test was obviously not specified ...'

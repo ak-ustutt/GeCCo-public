@@ -75,7 +75,8 @@ c dbgend
      &     label, dia_label
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
-     &     idx, idxmel, ierr, nout, idx_en_xret, idx_res_xret(nopt), jdx
+     &     idx, idxmel, ierr, nout, idx_en_xret,
+     &     ndx, idx_res_xret(nopt), jdx
       real(8) ::
      &     energy, xresnrm(nopt), xdum, thr_suggest
       real(8), pointer ::
@@ -313,6 +314,9 @@ c     &       ff_trv,ff_h_trv,
      &      .and..not.conv.and.nspcfrm.gt.1) then
           call get_argument_value('method.MR','ciroot',
      &       ival=idx)
+          call get_argument_value('method.MR','maxroot',
+     &       ival=ndx)
+          if(ndx.le.0) ndx=idx
           call get_argument_value('method.MR','spinproj',
      &       lval=spinproj)
           call me_list_label(dia_label,'DIA',orb_info%lsym,
@@ -321,14 +325,14 @@ c     &       ff_trv,ff_h_trv,
           ! use weaker convergence threshold for micro-iterations
           thr_suggest = min(xresnrm(1)*opti_info%mic_ahead,1d-4)
           if (spinproj) then
-            call solve_evp('SPP',1,idx,
+            call solve_evp('SPP',1,ndx,idx,
      &                 'ME_C0',trim(dia_label),'A_C0',
      &                 'C0','FOPT_OMG_C0',
      &                 'ME_C0_sp',1,
      &                 'FOPT_C0_sp',1,thr_suggest,
      &                 op_info,form_info,str_info,strmap_info,orb_info)
           else
-            call solve_evp('DIA',1,idx,
+            call solve_evp('DIA',1,ndx,idx,
      &                 'ME_C0',trim(dia_label),'A_C0',
      &                 'C0','FOPT_OMG_C0','-',0,'-',0,thr_suggest,
      &                 op_info,form_info,str_info,strmap_info,orb_info)

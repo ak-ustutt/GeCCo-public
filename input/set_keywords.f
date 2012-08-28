@@ -143,6 +143,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./))
       call argument_add('opt','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('notrunc','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
 
       ! special keywords for multireference wave functions
       call keyword_add('MR',context='method')
@@ -156,6 +158,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/-1/)) ! max. number of particles for wf
       call argument_add('cmaxexc','method.MR',type=vtyp_int,
      &                  idef=(/0/))  ! max. excitation for wf
+      call argument_add('maxroot','method.MR',type=vtyp_int,
+     &                  idef=(/-1/))  ! max trial roots for wf
       call argument_add('ciroot','method.MR',type=vtyp_int,
      &                  idef=(/1/))  ! root to be taken for wf
       call argument_add('minh','method.MR',type=vtyp_int,

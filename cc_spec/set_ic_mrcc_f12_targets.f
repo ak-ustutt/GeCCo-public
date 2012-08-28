@@ -45,7 +45,7 @@
       logical ::
      &     update_prc, skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve
+     &     oldref, solve, notrunc
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -109,6 +109,7 @@ c      call get_argument_value('method.MR','maxcum',
 c     &     ival=maxcum)
 c      call get_argument_value('method.MR','cum_appr_mode',
 c     &     ival=cum_appr_mode)
+      call get_argument_value('method.R12','notrunc',lval=notrunc)
 c      call get_argument_value('calculate.solve','maxiter',
 c     &     ival=maxit)
 c      if (is_argument_set('calculate.solve.non_linear','maxiter').gt.0)
@@ -305,8 +306,10 @@ c dbgend
       call set_dependency('F_MRCC_F12_LAG','BhINT_R12',tgt_info)
       !call set_dependency('F_MRCC_F12_LAG','XhINT_R12',tgt_info)
       call set_dependency('F_MRCC_F12_LAG','XINT_R12',tgt_info)
+      if(.not.notrunc) then
       call set_dependency('F_MRCC_F12_LAG','CINT_R12',tgt_info)
       call set_dependency('F_MRCC_F12_LAG','C1_formal',tgt_info)
+      end if
       call set_dependency('F_MRCC_F12_LAG','Vring_formal',tgt_info)
 
       call set_rule2('F_MRCC_F12_LAG',FACTOR_OUT,tgt_info)
@@ -314,13 +317,31 @@ c dbgend
      &     val_label=(/'F_MRCC_F12_LAG'/))
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_MRCC_F12_LAG'/))
+      if(notrunc) then
+      call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',7,tgt_info,
+     &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',
+     &                 'VINT_R12','VINT_R12^+',
+     &                 'Vring_formal','Vring_formal^+'/))
+      else
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',10,tgt_info,
      &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',
      &                 'VINT_R12','VINT_R12^+',
      &                 'CINT_R12','CINT_R12^+',
      &                 'Vring_formal','Vring_formal^+',
      &                 'C1_formal'/))
+      end if
 
+      if(notrunc) then
+        call set_rule2('F_MRCC_F12_LAG',REPLACE,tgt_info)
+        call set_dependency('F_MRCC_F12_LAG','R12-INT',tgt_info)
+        call set_arg('F_MRCC_F12_LAG',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',REPLACE,'OP_LIST',4,tgt_info,
+     &       val_label=(/'R12      ','R12-INT  ',
+     &                   'R12^+    ','R12-INT^+'/))
+      else
         Call set_rule2('F_MRCC_F12_LAG',INVARIANT,tgt_info)
         call set_arg('F_MRCC_F12_LAG',INVARIANT,'LABEL_RES',1,tgt_info,
      &       val_label=(/'F_MRCC_F12_LAG'/))
@@ -332,6 +353,7 @@ c dbgend
      &       val_label=(/'R12  ','R12^+'/))
         call set_arg('F_MRCC_F12_LAG',INVARIANT,'TITLE',1,tgt_info,
      &       val_str='MRCC-R12 Lagrangian for pert. eval.')
+      end if
 
       ! precursor for combining P^4 contractions into one step
       call add_target2('F_preP4int_F12',.false.,tgt_info)
@@ -603,9 +625,9 @@ c        call set_arg('F_MRCC_E',SELECT_SPECIAL,'MODE',1,tgt_info,
 c     &       val_str='CHECK    X')
 c      end if
 c dbg
-c      call set_rule2('F_MRCC_F12_E',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_MRCC_F12_E',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_MRCC_F12_E'/))
+      call set_rule2('F_MRCC_F12_E',PRINT_FORMULA,tgt_info)
+      call set_arg('F_MRCC_F12_E',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_MRCC_F12_E'/))
 c dbgend
 
 
@@ -617,7 +639,8 @@ c dbgend
       call add_target2('FOPT_OMG_F12',.false.,tgt_info)
       call set_dependency('FOPT_OMG_F12','EVAL-R12-INTER',tgt_info)
       call set_dependency('FOPT_OMG_F12','Vring-EVAL',tgt_info)
-      call set_dependency('FOPT_OMG_F12','C1-EVAL',tgt_info)
+      if(.not.notrunc) 
+     &   call set_dependency('FOPT_OMG_F12','C1-EVAL',tgt_info)
       call set_dependency('FOPT_OMG_F12','F_OMG_F12',tgt_info)
       call set_dependency('FOPT_OMG_F12','F_MRCC_F12_E',tgt_info)
       call set_dependency('FOPT_OMG_F12','DEF_ME_C0',tgt_info)

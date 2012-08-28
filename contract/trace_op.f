@@ -289,7 +289,7 @@ c dbg
      &       trim(trop%name)
         write(luout,*) 'lenop, lentrop: ',
      &                  lenop, lentrop
-        call warn('trace_op','zero length for operator?')
+ctest        call warn('trace_op','zero length for operator?')
         return
       end if
 

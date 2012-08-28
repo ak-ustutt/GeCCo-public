@@ -5,6 +5,7 @@
      &     connect,nconnect,
      &     avoid,navoid,
      &     inproj,ninproj,
+     &     descr,ndescr,
      &     fix_in,op_info,orb_info)
 *----------------------------------------------------------------------*
 *     Driver routine to set up the operator product
@@ -29,11 +30,12 @@
       include 'def_formula.h'
 
       integer, intent(in) ::
-     &     nlabels, nconnect, navoid, ninproj,
+     &     nlabels, nconnect, navoid, ninproj, ndescr,
      &     idx_sv(nlabels), iblkmin(nlabels), iblkmax(nlabels),
      &     connect(nconnect*2), avoid(navoid*2), inproj(ninproj*4)
-     &     
-      character(*), intent(in) ::
+      character(len=*) ::
+     &     descr(ndescr)
+      character(len=*), intent(in) ::
      &     label_res, label(nlabels), title
       logical, intent(in) ::
      &     init, fix_in
@@ -87,6 +89,14 @@
         write(luout,*) 'fac  = ',fac
       end if
 
+      ! check for conflicts
+      if (ninproj.gt.0.and.ndescr.gt.0) then
+         write(luout,*) 'ninproj = ',ninproj
+         write(luout,*) 'ndescr  = ',ndescr
+         call quit(1,'form_expand_op_product',
+     &       'cannot use old "inproj" and new "descr" simultaneously!')
+      end if
+
       call atim_csw(cpu0,sys0,wall0)
 
       idxres = idx_oplist2(label_res,op_info)
@@ -122,7 +132,10 @@
           fl_pnt => fl_pnt%next
         end do
       end if
-      call expand_op_product2(fl_pnt,idxres,
+
+      if (ndescr.eq.0) then
+        ! old routine
+        call expand_op_product2(fl_pnt,idxres,
      &     fac,nvtx,nops,
      &     idxop,idx_sv,
      &     iblkmin,iblkmax,
@@ -130,6 +143,17 @@
      &     avoid,navoid,
      &     inproj,ninproj,
      &     fix_in,op_info)
+      else
+        ! new routine
+        call expand_op_product3(fl_pnt,idxres,
+     &     fac,nvtx,nops,
+     &     idxop,idx_sv,
+     &     iblkmin,iblkmax,
+     &     connect,nconnect,
+     &     avoid,navoid,
+     &     descr,ndescr,
+     &     op_info)
+      end if
 
       if(ntest.ge.10)then
         call write_title(luout,wst_title,'Generated formula')
