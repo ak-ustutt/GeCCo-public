@@ -1482,7 +1482,7 @@ C     &              parameters,2,tgt_info)
         occ_def(IHOLE,2,1) = 2
       else
         descr = 'P,H|PP,HH'
-        if (active_orbs) descr = 'P,[HV]|PP,[HV][HV]'
+        if (active_orbs) descr = 'P,[HV]|PP,[HV][HV]|VP,HH'
         nblk = 2
         nj = 1
         occ_def = 0
@@ -2031,7 +2031,7 @@ c        call set_g_z_old(ndef,occ_def)
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &     tgt_info,val_int=(/2/))
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'DESCR',2,tgt_info,
-     &     val_label=(/'2,3,H,X','2,,[HP][HP],[HVX][HV]'/))
+     &     val_label=(/'2,3,H,X','2,,[HP][HVP],[HVX][HV]'/))
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/1,2,3,1/))
 c dbg

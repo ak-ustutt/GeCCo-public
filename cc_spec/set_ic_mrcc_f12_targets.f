@@ -318,7 +318,7 @@ c dbgend
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_MRCC_F12_LAG'/))
       if(notrunc) then
-      call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',7,tgt_info,
+      call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',5,tgt_info,
      &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',
      &                 'VINT_R12','VINT_R12^+'/))
       else
