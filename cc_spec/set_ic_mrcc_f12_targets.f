@@ -309,8 +309,8 @@ c dbgend
       if(.not.notrunc) then
       call set_dependency('F_MRCC_F12_LAG','CINT_R12',tgt_info)
       call set_dependency('F_MRCC_F12_LAG','C1_formal',tgt_info)
-      end if
       call set_dependency('F_MRCC_F12_LAG','Vring_formal',tgt_info)
+      end if
 
       call set_rule2('F_MRCC_F12_LAG',FACTOR_OUT,tgt_info)
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'LABEL_RES',1,tgt_info,
@@ -320,8 +320,7 @@ c dbgend
       if(notrunc) then
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',7,tgt_info,
      &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',
-     &                 'VINT_R12','VINT_R12^+',
-     &                 'Vring_formal','Vring_formal^+'/))
+     &                 'VINT_R12','VINT_R12^+'/))
       else
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',10,tgt_info,
      &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',

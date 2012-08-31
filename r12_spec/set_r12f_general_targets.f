@@ -1710,9 +1710,9 @@ C     &              parameters,2,tgt_info)
       if (n_pp.eq.1) descr = 'PP,H[HP]'
       if (n_pp.eq.2) descr = 'PP,[HP][HP]'
       if (active_orbs) then
-        if (n_pp.eq.0) descr = 'PP,[HV][HV]'
-        if (n_pp.eq.1) descr = 'PP,[HV][HPV]'
-        if (n_pp.eq.2) descr = 'PP,[HPV][HPV]'
+        if (n_pp.eq.0) descr = 'P[PV],[HV][HV]'
+        if (n_pp.eq.1) descr = 'P[PV],[HV][HPV]'
+        if (n_pp.eq.2) descr = 'P[PV],[HPV][HPV]'
       end if
       ! n_pp == 0:
       occ_def(IPART,1,1) = 2
@@ -1974,6 +1974,7 @@ c        call set_g_z_old(ndef,occ_def)
 
       ! formal definition of VR
       call add_target2('Vring_formal',.false.,tgt_info)
+      if (.not.active_orbs) then
       call set_dependency('Vring_formal',op_vp_inter,tgt_info)
       call set_dependency('Vring_formal','VR2',tgt_info)
       call set_dependency('Vring_formal',op_ham,tgt_info)
@@ -2015,6 +2016,30 @@ c        call set_g_z_old(ndef,occ_def)
       call set_arg('Vring_formal',DEF_R12INTM_FORMAL,
      &                                           'TITLE',1,tgt_info,
      &            val_str='V(ring) intermediate, formal definition')
+      else
+      call set_dependency('Vring_formal','H',tgt_info)
+      call set_dependency('Vring_formal','R12',tgt_info)
+      call set_dependency('Vring_formal','U',tgt_info)
+      call set_rule2('Vring_formal',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'Vring_formal'/))
+      call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'U'/))
+      call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'U  ','H  ','R12','U  '/))
+      call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'N_DESCR',1,
+     &     tgt_info,val_int=(/2/))
+      call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'DESCR',2,tgt_info,
+     &     val_label=(/'2,3,H,X','2,,[HP][HP],[HVX][HV]'/))
+      call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/1,2,3,1/))
+c dbg
+      call set_rule2('Vring_formal',PRINT_FORMULA,tgt_info)
+      call set_arg('Vring_formal',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'Vring_formal'/))
+c dbgend
+      end if
 
       call add_target2('Vring_CABS',.false.,tgt_info)
       call set_dependency('Vring_CABS',op_ham,tgt_info)
@@ -2029,41 +2054,111 @@ c        call set_g_z_old(ndef,occ_def)
      &            val_label=(/op_r12,op_rint/))
       call set_arg('Vring_CABS',REPLACE,'TITLE',1,tgt_info,
      &            val_str='V(ring) intermediate, for evaluation')
-      call set_rule2('Vring_CABS',REPLACE,tgt_info)
-      call set_arg('Vring_CABS',REPLACE,'LABEL_RES',1,tgt_info,
-     &            val_label=(/'Vring2_CABS'/))
-      call set_arg('Vring_CABS',REPLACE,'LABEL_IN',1,tgt_info,
-     &            val_label=(/'Vring2_formal'/))
-      call set_arg('Vring_CABS',REPLACE,'OP_LIST',2,tgt_info,
-     &            val_label=(/op_r12,op_rint/))
-      call set_arg('Vring_CABS',REPLACE,'TITLE',1,tgt_info,
-     &            val_str='V(ring) intermediate, for evaluation')
-      ! for some exceptional cases (no CABS) make sure
-      ! that R12 is removed 
-      call set_rule2('Vring_CABS',INVARIANT,tgt_info)
-      call set_arg('Vring_CABS',INVARIANT,'LABEL_RES',1,tgt_info,
-     &            val_label=(/'Vring_CABS'/))
-      call set_arg('Vring_CABS',INVARIANT,'LABEL_IN',1,tgt_info,
-     &            val_label=(/'Vring_CABS'/))
-      call set_arg('Vring_CABS',INVARIANT,'OP_RES',1,tgt_info,
-     &            val_label=(/op_vp_inter/))
-      call set_arg('Vring_CABS',INVARIANT,'OPERATORS',1,tgt_info,
-     &            val_label=(/op_r12/))
-      call set_arg('Vring_CABS',INVARIANT,'TITLE',1,tgt_info,
-     &            val_str='V(ring) intermediate, for evaluation')
+      if(.not.active_orbs) then
+        call set_rule2('Vring_CABS',REPLACE,tgt_info)
+        call set_arg('Vring_CABS',REPLACE,'LABEL_RES',1,tgt_info,
+     &              val_label=(/'Vring2_CABS'/))
+        call set_arg('Vring_CABS',REPLACE,'LABEL_IN',1,tgt_info,
+     &              val_label=(/'Vring2_formal'/))
+        call set_arg('Vring_CABS',REPLACE,'OP_LIST',2,tgt_info,
+     &              val_label=(/op_r12,op_rint/))
+        call set_arg('Vring_CABS',REPLACE,'TITLE',1,tgt_info,
+     &              val_str='V(ring) intermediate, for evaluation')
+        ! for some exceptional cases (no CABS) make sure
+        ! that R12 is removed 
+        call set_rule2('Vring_CABS',INVARIANT,tgt_info)
+        call set_arg('Vring_CABS',INVARIANT,'LABEL_RES',1,tgt_info,
+     &              val_label=(/'Vring_CABS'/))
+        call set_arg('Vring_CABS',INVARIANT,'LABEL_IN',1,tgt_info,
+     &              val_label=(/'Vring_CABS'/))
+        call set_arg('Vring_CABS',INVARIANT,'OP_RES',1,tgt_info,
+     &              val_label=(/op_vp_inter/))
+        call set_arg('Vring_CABS',INVARIANT,'OPERATORS',1,tgt_info,
+     &              val_label=(/op_r12/))
+        call set_arg('Vring_CABS',INVARIANT,'TITLE',1,tgt_info,
+     &              val_str='V(ring) intermediate, for evaluation')
 
-      call set_rule2('Vring_CABS',INVARIANT,tgt_info)
-      call set_arg('Vring_CABS',INVARIANT,'LABEL_RES',1,tgt_info,
-     &            val_label=(/'Vring2_CABS'/))
-      call set_arg('Vring_CABS',INVARIANT,'LABEL_IN',1,tgt_info,
-     &            val_label=(/'Vring2_CABS'/))
-      call set_arg('Vring_CABS',INVARIANT,'OP_RES',1,tgt_info,
-     &            val_label=(/'VR2'/))
-      call set_arg('Vring_CABS',INVARIANT,'OPERATORS',1,tgt_info,
-     &            val_label=(/op_r12/))
-      call set_arg('Vring_CABS',INVARIANT,'TITLE',1,tgt_info,
-     &            val_str='V(ring) intermediate, for evaluation')
-
+        call set_rule2('Vring_CABS',INVARIANT,tgt_info)
+        call set_arg('Vring_CABS',INVARIANT,'LABEL_RES',1,tgt_info,
+     &              val_label=(/'Vring2_CABS'/))
+        call set_arg('Vring_CABS',INVARIANT,'LABEL_IN',1,tgt_info,
+     &              val_label=(/'Vring2_CABS'/))
+        call set_arg('Vring_CABS',INVARIANT,'OP_RES',1,tgt_info,
+     &              val_label=(/'VR2'/))
+        call set_arg('Vring_CABS',INVARIANT,'OPERATORS',1,tgt_info,
+     &              val_label=(/op_r12/))
+        call set_arg('Vring_CABS',INVARIANT,'TITLE',1,tgt_info,
+     &              val_str='V(ring) intermediate, for evaluation')
+      else
+      ! adding terms to U
+        call set_rule2('Vring_CABS',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'Vring_CABS'/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &       val_log=(/.false./))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'U'/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &       tgt_info,
+     &       val_label=(/'U   ','C0^+','H   ',
+     &                   'R12 ','C0  ','U   '/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_DESCR',1,
+     &       tgt_info,val_int=(/4/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'DESCR',4,tgt_info,
+     &       val_label=(/'3,4,,X','2,3,,V','4,5,,V',
+     &                   '3,,[HVP]V,[HVX][HV]'/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &       val_int=(/1,2,3,4,5,1/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_AVOID',1,
+     &       tgt_info,val_int=(/2/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'AVOID',4,
+     &       tgt_info,val_int=(/2,6,1,5/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_CONNECT',1,
+     &       tgt_info,val_int=(/1/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'CONNECT',2,
+     &       tgt_info,val_int=(/1,3/))
+      ! adding terms to U again
+        call set_rule2('Vring_CABS',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'Vring_CABS'/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &       val_log=(/.false./))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'U'/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &       tgt_info,
+     &       val_label=(/'U   ','C0^+','H   ',
+     &                   'R12 ','C0  ','U   '/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_DESCR',1,
+     &       tgt_info,val_int=(/4/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'DESCR',4,tgt_info,
+     &       val_label=(/'3,4,,X','2,3,,V','4,5,,V',
+     &                   '3,,[HVP]V,[HVX][HV]'/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &       val_int=(/1,2,3,4,5,1/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_AVOID',1,
+     &       tgt_info,val_int=(/3/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'AVOID',6,
+     &       tgt_info,val_int=(/2,6,1,5,1,3/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_CONNECT',1,
+     &       tgt_info,val_int=(/1/))
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'CONNECT',2,
+     &       tgt_info,val_int=(/3,6/))
+        call set_rule2('Vring_CABS',REPLACE,tgt_info)
+        call set_dependency('Vring_CABS','R12-INT',tgt_info)
+        call set_arg('Vring_CABS',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'Vring_CABS'/))
+        call set_arg('Vring_CABS',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'Vring_CABS'/))
+        call set_arg('Vring_CABS',REPLACE,'OP_LIST',4,tgt_info,
+     &       val_label=(/'R12      ','R12-INT  ',
+     &                   'R12^+    ','R12-INT^+'/))
+c dbg
+      call set_rule2('Vring_CABS',PRINT_FORMULA,tgt_info)
+      call set_arg('Vring_CABS',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'Vring_CABS'/))
+c dbgend
+      end if
       ! formal definition of Vpx
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = 'Vpx_formal'
@@ -2345,6 +2440,28 @@ c     &              labels,4,1,
 c     &              parameters,2,tgt_info)
 
       ! formal definition of C
+      if (active_orbs) then
+        call add_target2('CINT_R12',.false.,tgt_info)
+        call set_dependency(form_r12_cint,op_c_inter,tgt_info)
+        call set_dependency(form_r12_cint,op_r12,tgt_info)
+        call set_dependency(form_r12_cint,op_ham,tgt_info)
+        call set_rule2('CINT_R12',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'LABEL',1,
+     &       tgt_info,val_label=(/'CINT_R12'/))
+        call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &       tgt_info,val_label=(/'C-INT'/))
+        call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &       tgt_info,
+     &       val_label=(/'C-INT','H    ',
+     &                   'R12  ','C-INT'/))
+        call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'N_DESCR',1,
+     &       tgt_info,val_int=(/2/))
+        call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'DESCR',2,
+     &       tgt_info,
+     &       val_label=(/'2,3,,X','2,,[VP],X'/))
+        call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'IDX_SV',4,
+     &       tgt_info,val_int=(/1,2,3,1/))
+      else
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = form_r12_cint
       labels(2) = op_c_inter
@@ -2359,6 +2476,22 @@ c     &              parameters,2,tgt_info)
       call set_rule(form_r12_cint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
      &              parameters,2,tgt_info)
+      end if
+c        call set_rule2('CINT_R12',REPLACE,tgt_info)
+c        call set_dependency('CINT_R12','R12-INT',tgt_info)
+c        call set_arg('CINT_R12',REPLACE,'LABEL_RES',1,tgt_info,
+c     &       val_label=(/'CINT_R12'/))
+c        call set_arg('CINT_R12',REPLACE,'LABEL_IN',1,tgt_info,
+c     &       val_label=(/'CINT_R12'/))
+c        call set_arg('CINT_R12',REPLACE,'OP_LIST',4,tgt_info,
+c     &       val_label=(/'R12      ','R12-INT  ',
+c     &                   'R12^+    ','R12-INT^+'/))
+c
+c dbg
+      call set_rule2('CINT_R12',PRINT_FORMULA,tgt_info)
+      call set_arg('CINT_R12',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'CINT_R12'/))
+c dbgend
 
       ! CABS approximation to C
       labels(1:10)(1:len_target_name) = ' '
@@ -2376,18 +2509,62 @@ c     &              parameters,2,tgt_info)
         labels(4) = op_ham
         nlab = 4
       end if
+      ! adding terms to C_CABS
       if (active_orbs) labels(4) = 'Favg'
-      call add_target(form_r12_ccabs,ttype_frm,.false.,tgt_info)
-      if (active_orbs) 
-     &      call set_dependency(form_r12_ccabs,'Favg',tgt_info)
+      if (.not.active_orbs) then
+       call add_target(form_r12_ccabs,ttype_frm,.false.,tgt_info)
+      else
+       call add_target2(form_r12_ccabs,.false.,tgt_info)
+       call set_dependency(form_r12_ccabs,'Favg',tgt_info)
+      end if
       call set_dependency(form_r12_ccabs,op_c_inter,tgt_info)
       call set_dependency(form_r12_ccabs,op_rint,tgt_info)
       call set_dependency(form_r12_ccabs,op_ham,tgt_info)
-      call form_parameters(-1,
-     &     parameters,2,title_r12_ccabs,ansatz,'C '//approx)
-      call set_rule(form_r12_ccabs,ttype_frm,DEF_R12INTM_CABS,
-     &              labels,nlab,1,
-     &              parameters,2,tgt_info)
+      if (active_orbs) then
+c        call set_rule2('CINT_R12_CABS',EXPAND_OP_PRODUCT,tgt_info)
+c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'LABEL',1,
+c     &       tgt_info,val_label=(/'CINT_R12_CABS'/))
+c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'OP_RES',1,
+c     &       tgt_info,val_label=(/'C-INT'/))
+c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'OPERATORS',6,
+c     &       tgt_info,
+c     &       val_label=(/'C-INT','C0^+ ','H    ',
+c     &                   'R12  ','C0   ','C-INT'/))
+c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'N_DESCR',1,
+c     &       tgt_info,val_int=(/4/))
+c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'DESCR',4,
+c     &       tgt_info,
+c     &       val_label=(/'3,4,,X','3,,[VP]V,XV',
+c     &                   '2,3,,V','3,5,,V'/))
+c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'IDX_SV',6,
+c     &       tgt_info,val_int=(/1,2,3,4,5,1/))
+c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'N_AVOID',1,
+c     &       tgt_info,val_int=(/2/))
+c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'AVOID',4,
+c     &       tgt_info,val_int=(/2,6,1,5/))
+        call set_rule2('CINT_R12_CABS',REPLACE,tgt_info)
+        call set_dependency('CINT_R12_CABS','R12-INT',tgt_info)
+        call set_dependency('CINT_R12_CABS','CINT_R12',tgt_info)
+        call set_arg('CINT_R12_CABS',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'CINT_R12_CABS'/))
+        call set_arg('CINT_R12_CABS',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'CINT_R12'/))
+        call set_arg('CINT_R12_CABS',REPLACE,'OP_LIST',6,tgt_info,
+     &       val_label=(/'R12      ','R12-INT  ',
+     &                   'R12^+    ','R12-INT^+',
+     &                   'H        ','Favg     '/))
+      else
+        call form_parameters(-1,
+     &       parameters,2,title_r12_ccabs,ansatz,'C '//approx)
+        call set_rule(form_r12_ccabs,ttype_frm,DEF_R12INTM_CABS,
+     &                labels,nlab,1,
+     &                parameters,2,tgt_info)
+      end if
+c dbg
+      call set_rule2('CINT_R12_CABS',PRINT_FORMULA,tgt_info)
+      call set_arg('CINT_R12_CABS',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'CINT_R12_CABS'/))
+c dbgend
 
       ! formal definition of C1
       call add_target2('C1_formal',.false.,tgt_info)
@@ -2717,7 +2894,7 @@ c      call set_dependency(fopt_r12_vcabs,mel_gintx,tgt_info)
       call set_rule2('Vring-EVAL',OPTIMIZE,tgt_info)
       call set_arg('Vring-EVAL',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &            val_label=(/'Vring-OPT'/))
-      if (vring_mode.ge.2) then
+      if (vring_mode.eq.2) then
         call set_arg('Vring-EVAL',OPTIMIZE,'LABELS_IN',2,tgt_info,
      &            val_label=(/'Vring_CABS ','Vring2_CABS'/))
       else
@@ -3530,6 +3707,7 @@ c     &              parameters,1,tgt_info)
       call set_rule(mel_vp_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
+      if(.not.active_orbs) then
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = 'VRnonsym'
       labels(2) = 'VR2'
@@ -3538,6 +3716,7 @@ c     &              parameters,1,tgt_info)
       call set_rule(mel_vp_def,ttype_opme,DEF_ME_LIST,
      &              labels,2,1,
      &              parameters,1,tgt_info)
+      end if
 
       ! X-list
       call add_target(mel_x_def,ttype_opme,.false.,tgt_info)
