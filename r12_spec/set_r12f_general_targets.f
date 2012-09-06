@@ -201,7 +201,7 @@
         n_pp=2
       end select
 c dbg
-      print *,'n_pp = ',n_pp
+c      print *,'n_pp = ',n_pp
 c dbg
 
       ! assemble approx string
@@ -1883,6 +1883,13 @@ c        call set_g_z_old(ndef,occ_def)
       call set_rule(form_r12_vint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
      &              parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule(form_r12_vint,ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,
+c     &              parameters,2,tgt_info)
+c dbg
 
       ! CABS approximation to V
       labels(1:10)(1:len_target_name) = ' '
@@ -1928,6 +1935,13 @@ c        call set_g_z_old(ndef,occ_def)
       call set_rule(form_r12_vcabs,ttype_frm,REPLACE,
      &              labels,2+nint*2,1,
      &              parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule(form_r12_vcabs,ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,
+c     &              parameters,2,tgt_info)
+c dbg
 
       ! CABS approximation to V-Ccore
       labels(1:10)(1:len_target_name) = ' '
@@ -2035,9 +2049,9 @@ c        call set_g_z_old(ndef,occ_def)
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/1,2,3,1/))
 c dbg
-      call set_rule2('Vring_formal',PRINT_FORMULA,tgt_info)
-      call set_arg('Vring_formal',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'Vring_formal'/))
+c      call set_rule2('Vring_formal',PRINT_FORMULA,tgt_info)
+c      call set_arg('Vring_formal',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'Vring_formal'/))
 c dbgend
       end if
 
@@ -2154,9 +2168,9 @@ c dbgend
      &       val_label=(/'R12      ','R12-INT  ',
      &                   'R12^+    ','R12-INT^+'/))
 c dbg
-      call set_rule2('Vring_CABS',PRINT_FORMULA,tgt_info)
-      call set_arg('Vring_CABS',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'Vring_CABS'/))
+c      call set_rule2('Vring_CABS',PRINT_FORMULA,tgt_info)
+c      call set_arg('Vring_CABS',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'Vring_CABS'/))
 c dbgend
       end if
       ! formal definition of Vpx
@@ -2208,6 +2222,13 @@ c dbgend
       call set_rule(form_r12_xint,ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,4,1,
      &              parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule(form_r12_xint,ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,
+c     &              parameters,2,tgt_info)
+c dbg
 
       ! CABS approximation to X
       labels(1:10)(1:len_target_name) = ' '
@@ -2225,6 +2246,13 @@ c dbgend
       call set_rule(form_r12_xcabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,5,1,
      &              parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule(form_r12_xcabs,ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,
+c     &              parameters,2,tgt_info)
+c dbg
 
       ! formal definition of Xh
       labels(1:10)(1:len_target_name) = ' '
@@ -2488,9 +2516,9 @@ c     &       val_label=(/'R12      ','R12-INT  ',
 c     &                   'R12^+    ','R12-INT^+'/))
 c
 c dbg
-      call set_rule2('CINT_R12',PRINT_FORMULA,tgt_info)
-      call set_arg('CINT_R12',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'CINT_R12'/))
+c      call set_rule2('CINT_R12',PRINT_FORMULA,tgt_info)
+c      call set_arg('CINT_R12',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'CINT_R12'/))
 c dbgend
 
       ! CABS approximation to C
@@ -2561,9 +2589,9 @@ c     &       tgt_info,val_int=(/2,6,1,5/))
      &                parameters,2,tgt_info)
       end if
 c dbg
-      call set_rule2('CINT_R12_CABS',PRINT_FORMULA,tgt_info)
-      call set_arg('CINT_R12_CABS',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'CINT_R12_CABS'/))
+c      call set_rule2('CINT_R12_CABS',PRINT_FORMULA,tgt_info)
+c      call set_arg('CINT_R12_CABS',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'CINT_R12_CABS'/))
 c dbgend
 
       ! formal definition of C1
@@ -2757,11 +2785,11 @@ c      call add_target(form_r12_zcabs,ttype_frm,.true.,tgt_info)
      &              labels,5,1,
      &              parameters,2,tgt_info)
 c dbg
-      call form_parameters(-1,
-     &     parameters,2,'stdout',0,'---')
-      call set_rule('Z2INT_R12',ttype_frm,PRINT_FORMULA,
-     &              labels,1,0,
-     &              parameters,2,tgt_info)
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule('Z2INT_R12',ttype_frm,PRINT_FORMULA,
+c     &              labels,1,0,
+c     &              parameters,2,tgt_info)
 c dbg
 
       ! CABS approximation to Z2
@@ -2835,11 +2863,11 @@ C     &              val_label=(/op_rint,'G-Zdum','R.R-Xdum'/) )
 
       ! remove dummy operators from list
 c dbg
-      call form_parameters(-1,
-     &     parameters,2,'stdout',0,'---')
-      call set_rule('Z2-INT-CABS',ttype_frm,PRINT_FORMULA,
-     &              labels,1,0,
-     &              parameters,2,tgt_info)
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule('Z2-INT-CABS',ttype_frm,PRINT_FORMULA,
+c     &              labels,1,0,
+c     &              parameters,2,tgt_info)
 c dbg
 
 
