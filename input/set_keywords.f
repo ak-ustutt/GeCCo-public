@@ -417,6 +417,9 @@ c     &     idef=(/0/))
      &     type=vtyp_int,idef=(/0/)) ! restart calc. at given prop. order
 
       call keyword_add('experimental',context='calculate')
+      call argument_add('file','calculate.experimental',
+     &     type=vtyp_str,len=256)
+
       ! set additional experimental keyword in this subroutine:
       call set_experimental_keywords()
 

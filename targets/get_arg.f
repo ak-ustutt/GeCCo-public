@@ -83,6 +83,18 @@
 
         ! default
         arg => proto_rule%arg(idx_arg)
+
+        ! fix for new role of prototypes: 
+        if (.not.arg%def_provided) then
+          if (present(success)) then
+            success = .false.
+            return
+          else
+            call quit(1,'get_arg',
+     &     'argument is undefined: '//
+     &     trim(rule%command)//':'//trim(arg_label))
+         end if
+       end if
         
       else
 

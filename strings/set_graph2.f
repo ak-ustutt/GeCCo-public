@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine set_graph2(ipass,igraph,
      &     str_info,leny,iwscr,lenwscr,
-     &     ngas_hpv,nactt_hpv,
+     &     ngas_hpv,norb_hpv,
      &     igamorb,mostnd,idx_gas,ngas,ngam)
 *----------------------------------------------------------------------*
 *
@@ -24,7 +24,7 @@
 
       integer, intent(in) ::
      &     ipass, igraph, ngas, ngam,
-     &     ngas_hpv(ngastp), nactt_hpv(ngastp), igamorb(*),
+     &     ngas_hpv(ngastp), norb_hpv(ngastp), igamorb(*),
      &     mostnd(2,ngam,ngas), idx_gas(ngastp)
       type(strinf), intent(inout) ::
      &     str_info
@@ -50,6 +50,11 @@
         write(luout,*) ' setting: '
         write(luout,*) '   ihpv =', str_info%ispc_typ(igraph)
         write(luout,*) '   occ  =', str_info%ispc_occ(igraph)
+        ihpv = str_info%ispc_typ(igraph)
+        write(luout,*) '   restr = ', 
+     &              str_info%igas_restr(1:2,1:ngas_hpv(ihpv),1,1,igraph)
+        write(luout,*) '           ', 
+     &              str_info%igas_restr(1:2,1:ngas_hpv(ihpv),2,1,igraph)
       end if
 
       iprint = max(ntest,iprlvl)
@@ -57,7 +62,7 @@
       if (iprint.ge.5.and.ipass.eq.2) then
         write(luout,*) 'Number of strings'
         write(luout,*) '-----------------'
-        write(luout,*) '  Graph electr.  MS      length   '
+        write(luout,*) '  Graph space electr.  MS      length   '
       end if
 
       if (ipass.eq.1) then
@@ -79,10 +84,10 @@
      &         str_info%g(igraph)%yssg,
      &         str_info%g(igraph)%wssg,
      &         idum,
-     &         nactt_hpv(ihpv),igamorb,
+     &         norb_hpv(ihpv),igamorb,
      &         mostnd(1,1,idx_gas(ihpv)),
      &         str_info%igas_restr(1,1,1,1,igraph),
-c              !   ADAPT FOR OPEN-SHELL ^^^
+c              !   ADAPT FOR OPEN-SHELL ^^^  (ispin set to 1 here)
      &         nexc,ngam,ngas_hpv(ihpv),
      &         iwscr,iwscr(lenwscr(1)+1),iwscr(lenwscr(1)+lenwscr(2)+1))
         else
@@ -93,7 +98,7 @@ c              !   ADAPT FOR OPEN-SHELL ^^^
      &         str_info%g(igraph)%yssg,
      &         str_info%g(igraph)%wssg,
      &         str_info%g(igraph)%lenstr_dgm,
-     &         nactt_hpv(ihpv),igamorb,
+     &         norb_hpv(ihpv),igamorb,
      &         mostnd(1,1,idx_gas(ihpv)),
      &         str_info%igas_restr(1,1,1,1,igraph),
 c              !   ADAPT FOR OPEN-SHELL ^^^
@@ -139,6 +144,15 @@ C              end do lowest_dss
               ! loop over distributions, identify and mark the allowed ones
               ! and sum up lengths of allowed distr. to get offset arrays
               do idis = 1, ndis
+c dbg
+c               print '(x,a,i3,a,5i3)','idis=',idis,' idss=',idss(1:nexc)
+c               print *,'allowed? ',
+c     &                       allow_sbsp_dis(idss,nexc,ngas_hpv(ihpv),
+c     &                       str_info%igas_restr(1,1,1,1,igraph))
+c               print *,'masked? ',
+c     &                       allow_sbsp_dis(idss,nexc,ngas_hpv(ihpv),
+c     &                       str_info%igas_restr(1,1,2,1,igraph))
+c dbg
                 if (allow_sbsp_dis(idss,nexc,ngas_hpv(ihpv),
      &                       str_info%igas_restr(1,1,2,1,igraph))) then
                               ! ADAPT FOR OPEN SHELL  ^^^
@@ -150,6 +164,10 @@ C              end do lowest_dss
                   isum = isum + str_info%g(igraph)%lenstr_dgm(idx_dgm)
 c                  idx_dgm = idx_dgm+1
                   ndis_a=ndis_a+1
+c dbg
+c                  print *,' # str: ',
+c    &                      str_info%g(igraph)%lenstr_dgm(idx_dgm)
+c dbg
                 end if
 
                 idx_dgm = idx_dgm+1
@@ -165,10 +183,10 @@ c                  idx_dgm = idx_dgm+1
 
             if (iprint.gt.5) then
               if (ims.eq.1) then
-                write(luout,'(4x,3(i3,3x),i12)') igraph, nexc,
+                write(luout,'(4x,4(i3,3x),i12)') igraph, ihpv, nexc,
      &               -nexc+(ims-1)*2, isum_tot
               else
-                write(luout,'(10x,2(i3,3x),i12)')        nexc,
+                write(luout,'(10x,3(i3,3x),i12)')        ihpv, nexc,
      &               -nexc+(ims-1)*2, isum_tot
               end if
             end if

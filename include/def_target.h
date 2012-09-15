@@ -41,6 +41,8 @@
      &       val_rl8(:)
         character(len=len_str_batch), pointer ::
      &       val_str(:)
+        logical ::
+     &       required, def_provided
 
       end type action_arg
 
