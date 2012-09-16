@@ -81,4 +81,7 @@
         return
       end if
 
+      pt_handle_depend = no_error
+      return
+
       end function

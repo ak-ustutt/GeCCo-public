@@ -115,4 +115,7 @@
       cur_target = label
       mode = scan_for_rules
 
+      pt_handle_target = no_error
+      return
+
       end function

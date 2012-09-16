@@ -100,8 +100,9 @@
         ! check whether the argument label exists
         ! and get the type of expected argument
         idx_arg = idx_command_arg(label,cmd_pnt)
-        if (idx_arg.lt.0) then
+        if (idx_arg.le.0) then
           pt_handle_rules = error_unknown_arglab
+          return
         end if
         arg_pnt => cmd_pnt%arg(idx_arg)
         arg_type = arg_pnt%type 
@@ -181,7 +182,6 @@
         ! read in argument lists
         do idim = 1, ndim
           call get_word_list_entry(word,sep,wlist)
-
           select case(arg_type)
           case(aatype_label)
             list_label(idim) = word
@@ -228,9 +228,15 @@
 
         ! re-position the pointer on wlist
         if (ndim.gt.1) then
+          ! move up again
           if (.not.advance_word_list_entry(wlist,'u')) then
             call quit(1,i_am,'unexpected error while ascending')
           end if
+          ! and proceed by one
+          if (.not.advance_word_list_entry(wlist,' ')) then
+            call quit(1,i_am,'unexpected error after ascending')
+          end if
+          call get_word_list_entry(label,sep,wlist)
         end if
 
         if (sep.ne.','.and.sep.ne.')') then
@@ -238,6 +244,19 @@
           return
         end if
         if (.not.advance_word_list_entry(wlist,' ')) exit scan_arg
+
+        ! skip possible line-break
+        call get_word_list_entry(label,sep,wlist)
+        if (len_trim(label).eq.0.and.sep.eq.'E') then
+          if (.not.advance_word_list_entry(wlist,' ')) then
+            pt_handle_rules = error_unexp_eob
+            return
+          end if
+          call get_word_list_entry(label,sep,wlist)
+          ! now at the end?
+          if (len_trim(label).eq.0.and.sep.eq.')') exit scan_arg
+        end if
+
       end do scan_arg
 
       ! check whether all required targets were set

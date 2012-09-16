@@ -249,6 +249,12 @@
      &     val_int=(/0/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(REPLACE,tgt_info)
+      call set_arg('_PROTO_',REPLACE,'LABEL_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',REPLACE,'LABEL_IN',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',REPLACE,'OP_LIST',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',REPLACE,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
@@ -257,20 +263,36 @@
       call add_command_proto(INVARIANT,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(DERIVATIVE,tgt_info)
+      call set_arg('_PROTO_',DERIVATIVE,'LABEL_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',DERIVATIVE,'LABEL_IN',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',DERIVATIVE,'OP_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',DERIVATIVE,'OP_DERIV',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',DERIVATIVE,'OP_MULT',1,tgt_info,
      &     val_label=(/' '/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(LEQ_SPLIT,tgt_info)
 *----------------------------------------------------------------------*
       call add_command_proto(OPTIMIZE,tgt_info)
+      call set_arg('_PROTO_',OPTIMIZE,'LABEL_OPT',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',OPTIMIZE,'LABELS_IN',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',OPTIMIZE,'INTERM',0,tgt_info,
      &     val_label=(/''/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_FORMULA,tgt_info)
+      call set_arg('_PROTO_',PRINT_FORMULA,'LABEL',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',PRINT_FORMULA,'OUTPUT',1,tgt_info,
      &     val_str='stdout',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(TEX_FORMULA,tgt_info)
+      call set_arg('_PROTO_',TEX_FORMULA,'LABEL',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',TEX_FORMULA,'OUTPUT',1,tgt_info,
      &     val_str='stdout',def=.true.)
 *----------------------------------------------------------------------*
@@ -342,6 +364,14 @@
 !     ME-lists:
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_ME_LIST,tgt_info)
+      call set_arg('_PROTO_',DEF_ME_LIST,'LIST',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',DEF_ME_LIST,'OPERATOR',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',DEF_ME_LIST,'IRREP',0,tgt_info,
+     &     val_int=(/0/),req=.true.)
+      call set_arg('_PROTO_',DEF_ME_LIST,'MS',0,tgt_info,
+     &     val_int=(/0/),req=.true.)
       call set_arg('_PROTO_',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &     val_int=(/0/),def=.true.)
       call set_arg('_PROTO_',DEF_ME_LIST,'CA_SYM',1,tgt_info,
@@ -374,6 +404,10 @@
      &     val_str=trim(env_type),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRECONDITIONER,tgt_info)
+      call set_arg('_PROTO_',PRECONDITIONER,'LIST_PRC',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',PRECONDITIONER,'LIST_INP',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',PRECONDITIONER,'MODE',1,tgt_info,
      &     val_str='dia-F',def=.true.)
       call set_arg('_PROTO_',PRECONDITIONER,'SHIFT',1,tgt_info,
@@ -406,6 +440,18 @@
      &     val_str=env_type,def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SOLVENLEQ,tgt_info)
+      call set_arg('_PROTO_',SOLVENLEQ,'LIST_OPT',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SOLVENLEQ,'LIST_RESID',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SOLVENLEQ,'LIST_PRC',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SOLVENLEQ,'LIST_E',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SOLVENLEQ,'FORM',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SOLVENLEQ,'MODE',0,tgt_info,
+     &     val_str='',req=.true.)
       call set_arg('_PROTO_',SOLVENLEQ,'LIST_SPC',0,tgt_info,
      &     (/'-'/),def=.true.)
       call set_arg('_PROTO_',SOLVENLEQ,'FORM_SPC',0,tgt_info,

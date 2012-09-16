@@ -51,36 +51,34 @@
 
         end if
 
-! dbg 
-!         print *,'make new entry',branch,level
-! dbg
-        call new_word_list_entry(wlist_p,branch)
-        ! copy entry
-! dbg 
-!         print *,'and copy'
-! dbg
-        wlist_p%current%word = wlist%current%word
-        wlist_p%current%sep  = wlist%current%sep 
-        wlist_p%current%line = wlist%current%line
-        wlist_p%current%col  = wlist%current%col 
+        ! remove empty lines and empty entries that indicate 
+        ! ending lines after other seprators
+        if (.not.(len_trim(wlist%current%word).eq.0.and.
+     &                     wlist%current%sep.eq.'E')) then 
 
-! dbg
-!        print *,'separator is: ',wlist%current%sep
-! dbg
-        ! open new block?
-        if (wlist%current%sep.eq.char_block_open) then
-          branch = .true.
-          level = level+1
-        else if (wlist%current%sep.eq.char_block_close) then
-          branch = .false.
-          level = level-1
-          ! move parsed list pointer one level up
-          wlist_p%current => wlist_p%current%up
-        else
-          branch = .false.
+          call new_word_list_entry(wlist_p,branch)
+          ! copy entry
+          wlist_p%current%word = wlist%current%word
+          wlist_p%current%sep  = wlist%current%sep 
+          wlist_p%current%line = wlist%current%line
+          wlist_p%current%col  = wlist%current%col 
+
+          ! open new block?
+          if (wlist%current%sep.eq.char_block_open) then
+            branch = .true.
+            level = level+1
+          else if (wlist%current%sep.eq.char_block_close) then
+            branch = .false.
+            level = level-1
+            ! move parsed list pointer one level up
+            wlist_p%current => wlist_p%current%up
+          else
+            branch = .false.
+          end if
+
+          if (level.lt.0) exit main_lp ! error!
+ 
         end if
-
-        if (level.lt.0) exit main_lp ! error!
 
         ! advance original linear list
         if (.not.associated(wlist%current%next)) exit main_lp
