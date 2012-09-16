@@ -87,6 +87,15 @@
 
       call get_word_list_entry(word,sep,wlist)
 
+      ! overread a line-break after the "("
+      if (len_trim(word).eq.0.and.sep.eq.'E') then
+        if (.not.advance_word_list_entry(wlist,' ')) then
+          pt_handle_target = error_unexp_eob
+          return
+        end if
+        call get_word_list_entry(word,sep,wlist)
+      end if
+      
       ! register target 
       if (trim(word).eq.'required') then
         call add_target2(trim(label),.true.,tgt_info)

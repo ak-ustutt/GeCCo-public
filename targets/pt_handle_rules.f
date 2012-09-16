@@ -64,6 +64,7 @@
         error = error_exp_bob
       end if
 
+      pt_handle_rules = error
       if (error.ne.no_error) return
 
       ! if these tests are passed, we can register the rule
@@ -86,6 +87,15 @@
 
       scan_arg: do
         call get_word_list_entry(label,sep,wlist)
+        ! accept a line-break
+        if (len_trim(label).eq.0.and.sep.eq.'E') then
+          if (.not.advance_word_list_entry(wlist,' ')) then
+            pt_handle_rules = error_unexp_eob
+            return
+          end if
+          call get_word_list_entry(label,sep,wlist)
+        end if
+
         call uppcas(label)
         ! check whether the argument label exists
         ! and get the type of expected argument

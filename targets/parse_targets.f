@@ -8,7 +8,7 @@
       include 'par_parse_targets.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character(len=13), parameter ::
      &     i_am = 'parse_targets'
 
@@ -93,9 +93,6 @@
               ! check for rules 
               if (ntest.ge.100) write(luout,*) 'handle case: rules'
               error = pt_handle_rules(tgt_info,cur_target,wlist,mode)
-c dbg
-              print *,'error=',error
-c dbg
               if (error.ne.no_error) exit main_loop
               cycle main_loop
           end select

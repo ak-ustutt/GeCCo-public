@@ -152,6 +152,15 @@ c dbg
 
       end do lex_loop
 
+      ! if the last separator was not "E" add an empty record
+      ! we need this later for a correct interpretation of comments
+      if (wlist%current%sep.ne.'E') then
+        call new_word_list_entry(wlist,.false.)
+        wlist%current%sep = 'E'
+        wlist%current%line = lcnt
+        wlist%current%col  = istart
+      end if
+
       ! point to head of list again
 !      wlist%current => wlist%head
       
