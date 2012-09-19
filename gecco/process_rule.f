@@ -1098,8 +1098,8 @@ c          mode = 'dia-R12'
         call get_arg('LIST_RES',rule,tgt_info,val_label=label)
         call get_arg('LIST_INP',rule,tgt_info,val_label=label_list(1))
         call get_arg('LIST_SCAL',rule,tgt_info,val_label=label_list(2))
-        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
-        call get_arg('NFAC',rule,tgt_info,val_int=nfac)
+        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+        !call get_arg('NFAC',rule,tgt_info,val_int=nfac)
         call get_arg('IDX_LIST',rule,tgt_info,val_int_list=idxblk)
 
         imode = 2
@@ -1225,9 +1225,6 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list(3*nopt+1:))
         call get_arg('LIST_SPC',rule,tgt_info,
      &       val_label_list=label_list(4*nopt+1:),ndim=nspecial)
-c dbg
-        print *,'nspecial = ',nspecial
-c dbg
         call get_arg('FORM_SPC',rule,tgt_info,
      &       val_label_list=label_list(4*nopt+nspecial+1:),ndim=nspcfrm)
         call get_arg('FORM',rule,tgt_info,
