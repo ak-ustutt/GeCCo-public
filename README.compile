@@ -8,20 +8,16 @@ from time to time (in case someone has changed the config stuff).
 Step II - configure
 -------
 Run
-- on dirac with ifort version 12
-FC=ifort CC=icc ./configure --with-blas='-L/share/apps/intel/composer_xe_2011_sp1.8.273/composer_xe_2011_sp1.8.273/mkl/lib/intel64/ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm' --with-lapack='-L/share/apps/intel/composer_xe_2011_sp1.8.273/composer_xe_2011_sp1.8.273/mkl/lib/intel64/ -lmkl_lapack95_lp64'
-- for xeon machines on our cluster
+- ifort version 10 and higher (Linux or MAC OS)
+FC=ifort CC=icc ./configure --with-blas=-mkl
+- for xeon machines on our cluster with old ifort (9.1)
 FC=ifort CC=icc ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/em64t/ -lmkl -lmkl_lapack -lguide -lpthread'
-- for p4 machines on our cluster
-FC=ifort CC=icc ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/32/ -lmkl -lmkl_lapack -lguide -lpthread'
-- on a laptop installition this my rather read
-FC=ifort CC=icc ./configure --with-blas='-L/opt/intel/mkl/8.0/lib/32/ -lmkl -lmkl_lapack -lguide -lpthread'
-- for pgf90 the following seems to work OK:
 FC=pgf95 CC=pgcc ./configure --with-blas=-lacml
-- on a MAC with ifort 10 something like:
-FC=ifort CC=gcc ./configure --with-blas='-L/Library/Frameworks/Intel_MKL.framework/Versions/Current/Libraries/em64t  -I/Library/Frameworks/Intel_MKL.framework/Versions/Current/include -lmkl_intel_lp64 -lmkl_sequential -lmkl_lapack -lguide -lpthread'
+(presently, I am not sure wether pgf90 accepts all Fortran2003 specials
+that we are using)
 
-or whatever is appropriate on the present machine.
+or whatever is appropriate on your machine.
+(gfortran is unfortunately not running yet. I work on this.)
 
 
 Step III - compile
