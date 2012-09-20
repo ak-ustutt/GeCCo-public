@@ -224,6 +224,23 @@ c     &                                str_info,orb_info)
           call quit(1,'import_op_el','DALTON: cannot handle list_type "'
      &         //trim(list_type)//'"')
         end select
+      case ('dalton64','DALTON64')
+        ! what to import?
+        select case(trim(list_type))
+        case ('H_INT')
+          call import_hamint_dalton64(mel_target,str_info,orb_info)
+        case ('XDIPLEN','YDIPLEN','ZDIPLEN')
+          call import_propint_dalton(mel_target,list_type,1,
+     &         str_info,orb_info)
+        case ('XDIPVEL','YDIPVEL','ZDIPVEL',
+     &        'XANGMOM','YANGMOM','ZANGMOM')
+          call import_propint_dalton(mel_target,list_type,-1,
+     &         str_info,orb_info)
+
+        case default
+          call quit(1,'import_op_el','DALTON: cannot handle list_type "'
+     &         //trim(list_type)//'"')
+        end select
       case ('gamess','GAMESS')
         ! what to import?
         select case(trim(list_type))
