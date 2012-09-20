@@ -233,10 +233,6 @@ c dbg
           if (ipass.eq.2) then
             if (nel_left.gt.0) idss(nel_prev+1:nelmax) = ispc
             idis = idxssd(idss,iyssg,nelmax,nspc)
-c dbg
-            print '(x,a,5i3)','idss generated: ',idss(1:nspc),
-     &               allow_sbsp_dis(idss,nelmax,nspc,mnmxspc)
-c dbg
             if (allow_sbsp_dis(idss,nelmax,nspc,mnmxspc))
      &       ! store length per subspace distribution, IRREP, Ms
      &       call set_lenstr(lenstr,idis,iw4sg_scr,ndis,
