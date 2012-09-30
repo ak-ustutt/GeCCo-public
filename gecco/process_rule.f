@@ -614,7 +614,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_form(form_pnt,trim(label),OLD)
         call get_arg('OP_TRF',rule,tgt_info,val_label=label_list(4))
         call get_arg('OP_RHS',rule,tgt_info,val_label=label_list(5))
-        call get_arg('OP_RAW',rule,tgt_info,
+        call get_arg('OP_X',rule,tgt_info,
      &       val_label_list=label_list(6:),ndim=nop)
         call get_arg('TITLE_TRF',rule,tgt_info,val_str=title)
         call get_arg('TITLE_RHS',rule,tgt_info,val_str=title2)

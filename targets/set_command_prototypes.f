@@ -281,6 +281,8 @@
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',INVARIANT,'OP_RES',0,tgt_info,
      &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',INVARIANT,'OPERATORS',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
@@ -295,6 +297,8 @@
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',DERIVATIVE,'OP_MULT',1,tgt_info,
      &     val_label=(/' '/),def=.true.)
+      call set_arg('_PROTO_',DERIVATIVE,'TITLE',1,tgt_info,
+     &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(LEQ_SPLIT,tgt_info)
       call set_arg('_PROTO_',LEQ_SPLIT,'LABEL_TRF',0,tgt_info,
@@ -307,7 +311,7 @@
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',LEQ_SPLIT,'OP_RHS',0,tgt_info,
      &     val_label=(/''/),req=.true.)
-      call set_arg('_PROTO_',LEQ_SPLIT,'OP_RAW',0,tgt_info,
+      call set_arg('_PROTO_',LEQ_SPLIT,'OP_X',0,tgt_info,
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',LEQ_SPLIT,'TITLE_TRF',1,tgt_info,
      &     val_str='---',def=.true.)
