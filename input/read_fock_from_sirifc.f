@@ -37,6 +37,8 @@
       luerr = luout
       call mollab('SIR IPH ',lusir,luerr)
 
+      ! the following is also OK for 64 bit as the integers
+      ! are ignored
       read (lusir) potnuc,emy,eactiv,emcscf,istate,ispin,nactel,lsym
       ! overread a few records (depends on DALTON version)
       do irec = 1, nskip_in_sirifc-1

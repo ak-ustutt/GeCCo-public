@@ -15,6 +15,9 @@
       logical ::
      &     l_exist, ok
 
+      logical, external ::
+     &     is_dalton64
+
       ! we start with DALTON
       ! we need (at least): SIRIFC, MOTWOINT
       inquire(file='SIRIFC',exist=l_exist)
@@ -27,7 +30,13 @@
       else
         if (ok) inquire(file='MOTWOINT',exist=l_exist)
         ok = ok.and.l_exist
-        if (ok) env_type='DALTON '
+        if (ok) then
+          if (is_dalton64()) then
+            env_type='DALTON64 '
+          else
+            env_type='DALTON '
+          end if
+        end if
       end if
 
       ! try GAMESS

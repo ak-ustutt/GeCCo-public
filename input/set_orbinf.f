@@ -205,7 +205,8 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
 
       ! generate symmetry ordering -> type ordering mapping
       select case(trim(env_type))
-      case('dalton','DALTON','dalton_special','DALTON_SPECIAL')
+      case('dalton','DALTON','dalton_special','DALTON_SPECIAL',
+     &     'dalton64','DALTON64')
         jdx = 0
         do isym = 1, nsym
           do igas = 1, ngas
