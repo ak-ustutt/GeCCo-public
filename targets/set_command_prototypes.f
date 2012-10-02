@@ -418,7 +418,7 @@
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',DEF_ME_LIST,'IRREP',0,tgt_info,
      &     val_int=(/0/),req=.true.)
-      call set_arg('_PROTO_',DEF_ME_LIST,'MS',0,tgt_info,
+      call set_arg('_PROTO_',DEF_ME_LIST,'2MS',0,tgt_info,
      &     val_int=(/0/),req=.true.)
       call set_arg('_PROTO_',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &     val_int=(/0/),def=.true.)

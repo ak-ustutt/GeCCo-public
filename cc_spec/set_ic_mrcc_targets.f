@@ -131,9 +131,11 @@
      &     'maxiter',ival=maxit)
       call get_argument_value('method.MR','maxv',
      &     ival=maxv)
+      skip = (is_keyword_set('calculate.skip_E').gt.0)
       if (maxv.lt.0) maxv = 2*maxexc
       trunc = ntrunc.ge.0
       solve = execute.and..not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
+     &               .and..not.skip
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en    = ', maxcom_en
