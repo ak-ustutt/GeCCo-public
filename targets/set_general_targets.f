@@ -161,7 +161,7 @@ c patch end
      &     val_int=(/0/))
       call set_arg(mel_ham,DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg(mel_ham,DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg(mel_ham,DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/0/))
       ! (b) import
       call set_rule2(mel_ham,IMPORT,tgt_info)

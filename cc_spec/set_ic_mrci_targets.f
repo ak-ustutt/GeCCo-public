@@ -808,7 +808,7 @@ c      end if
      &             val_label=(/'ME_C'/))
       call set_arg('DEF_ME_C',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'C'/))
-      call set_arg('DEF_ME_C',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_C',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_C',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -827,7 +827,7 @@ c      end if
      &             val_label=(/'ME_Ctr'/))
       call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'Ctr'/))
-      call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))

@@ -2972,7 +2972,7 @@ c dbgend
      &             val_label=(/'ME_T'/))
       call set_arg('DEF_ME_T',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'T   '/))
-      call set_arg('DEF_ME_T',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_T',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_T',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -2987,7 +2987,7 @@ c dbgend
      &             val_label=(/'ME_Ttr'/))
       call set_arg('DEF_ME_Ttr',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'Ttr'/))
-      call set_arg('DEF_ME_Ttr',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_Ttr',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_Ttr',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -3007,7 +3007,7 @@ c dbgend
      &               val_label=(/op_ht0to/))
         call set_arg(def_ht,DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &               val_label=(/op_ht/))
-        call set_arg(def_ht,DEF_ME_LIST,'MS',1,tgt_info,
+        call set_arg(def_ht,DEF_ME_LIST,'2MS',1,tgt_info,
      &               val_int=(/0/))
         call set_arg(def_ht,DEF_ME_LIST,'IRREP',1,tgt_info,
      &               val_int=(/1/))
@@ -3021,7 +3021,7 @@ c dbgend
      &             val_label=(/'ME_TT'/))
       call set_arg('DEF_ME_TT',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'TT'/))
-      call set_arg('DEF_ME_TT',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_TT',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_TT',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -3034,7 +3034,7 @@ c dbgend
      &             val_label=(/'ME_OMG'/))
       call set_arg('DEF_ME_OMG',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'OMG'/))
-      call set_arg('DEF_ME_OMG',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_OMG',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_OMG',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -3049,7 +3049,7 @@ c dbgend
      &             val_label=(/'ME_OMGtr'/))
       call set_arg('DEF_ME_OMGtr',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'OMGtr'/))
-      call set_arg('DEF_ME_OMGtr',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_OMGtr',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_OMGtr',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -3093,7 +3093,7 @@ c dbgend
      &     val_label=(/'1scal'/))
       call set_arg('DEF_ME_1scal',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('DEF_ME_1scal',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_1scal',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/0/))
       call set_arg('DEF_ME_1scal',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
      &     val_int=(/1/))
@@ -3113,7 +3113,7 @@ c dbg
      &     val_label=(/'Heff'/))
       call set_arg('DEF_ME_Heff',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/0/))
 c      call set_arg('DEF_ME_Heff',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
 c     &     val_int=(/1/))
@@ -3132,7 +3132,7 @@ c      call set_arg('DEF_ME_1v',DEF_ME_LIST,'OPERATOR',1,tgt_info,
 c     &     val_label=(/'1v'/))
 c      call set_arg('DEF_ME_1v',DEF_ME_LIST,'IRREP',1,tgt_info,
 c     &     val_int=(/1/))
-c      call set_arg('DEF_ME_1v',DEF_ME_LIST,'MS',1,tgt_info,
+c      call set_arg('DEF_ME_1v',DEF_ME_LIST,'2MS',1,tgt_info,
 c     &     val_int=(/0/))
 c      call set_arg('DEF_ME_1v',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
 c     &     val_int=(/1/))
@@ -3149,7 +3149,7 @@ c     &     parameters,1,tgt_info)
      &             val_label=(/'ME_Geff'/))
       call set_arg('DEF_ME_Geff',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'Geff'/))
-      call set_arg('DEF_ME_Geff',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_Geff',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_Geff',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -3165,7 +3165,7 @@ c dbgend
      &             val_label=(/'ME_H1bar'/))
       call set_arg('DEF_ME_H1bar',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'H1bar'/))
-      call set_arg('DEF_ME_H1bar',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_H1bar',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_H1bar',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -3181,7 +3181,7 @@ c dbgend
      &             val_label=(/'ME_DENS1'/))
       call set_arg('DEF_ME_DENS1',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'DENS1'/))
-      call set_arg('DEF_ME_DENS1',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_DENS1',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_DENS1',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -3201,7 +3201,7 @@ c dbgend
      &             val_label=(/'ME_INT_P4'/))
       call set_arg('DEF_ME_INT_P4',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'INT_P4'/))
-      call set_arg('DEF_ME_INT_P4',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_INT_P4',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_INT_P4',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -3216,7 +3216,7 @@ c dbgend
      &             val_label=(/'ME_T(2)red'/))
       call set_arg('DEF_ME_T(2)red',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'T(2)red'/))
-      call set_arg('DEF_ME_T(2)red',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_T(2)red',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_T(2)red',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -3230,7 +3230,7 @@ c dbgend
      &             val_label=(/'ME_T(3)red'/))
       call set_arg('DEF_ME_T(3)red',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'T(3)red'/))
-      call set_arg('DEF_ME_T(3)red',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_T(3)red',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_T(3)red',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -3245,7 +3245,7 @@ c dbgend
      &             val_label=(/'ME_Tfix'/))
       call set_arg('DEF_ME_Tfix',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'Tfix'/))
-      call set_arg('DEF_ME_Tfix',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_Tfix',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_Tfix',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))

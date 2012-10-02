@@ -870,7 +870,7 @@ c     &             val_label=(/'F_HOLE'/))
      &             val_label=(/'ME_DENS'/))
       call set_arg('DEF_ME_DENS',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'DENS'/))
-      call set_arg('DEF_ME_DENS',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_DENS',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_DENS',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -885,7 +885,7 @@ c     &             val_label=(/'F_HOLE'/))
      &             val_label=(/'ME_CUM'/))
       call set_arg('DEF_ME_CUM',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'CUM'/))
-      call set_arg('DEF_ME_CUM',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_CUM',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_CUM',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -900,7 +900,7 @@ c     &             val_label=(/'F_HOLE'/))
      &             val_label=(/'ME_HOLE'/))
       call set_arg('DEF_ME_HOLE',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'HOLE'/))
-      call set_arg('DEF_ME_HOLE',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_HOLE',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_HOLE',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -915,7 +915,7 @@ c     &             val_label=(/'F_HOLE'/))
      &             val_label=(/'ME_CENT'/))
       call set_arg('DEF_ME_CENT',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'CENT'/))
-      call set_arg('DEF_ME_CENT',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_CENT',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_CENT',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -938,7 +938,7 @@ c     &             val_label=(/'F_HOLE'/))
      &                 val_label=(/me_dint/))
           call set_arg(defme_dint,DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &                 val_label=(/op_dint/))
-          call set_arg(defme_dint,DEF_ME_LIST,'MS',1,tgt_info,
+          call set_arg(defme_dint,DEF_ME_LIST,'2MS',1,tgt_info,
      &                 val_int=(/0/))
           call set_arg(defme_dint,DEF_ME_LIST,'IRREP',1,tgt_info,
      &                 val_int=(/1/))

@@ -228,7 +228,7 @@ c     &              title_cc_lip_a,1,tgt_info)
      &       val_int=(/0/))
         call set_arg(solve_cc_rhip,DEF_ME_LIST,'IRREP',1,tgt_info,
      &       val_int=(/isym/))
-        call set_arg(solve_cc_rhip,DEF_ME_LIST,'MS',1,tgt_info,
+        call set_arg(solve_cc_rhip,DEF_ME_LIST,'2MS',1,tgt_info,
      &       val_int=(/ms/))
 
         call set_rule2(solve_cc_rhip,PRECONDITIONER,tgt_info)

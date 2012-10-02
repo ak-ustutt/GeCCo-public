@@ -618,7 +618,7 @@ c dbgend
      &             val_label=(/'ME_C0'/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'C0'/))
-      call set_arg('DEF_ME_C0',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/ims/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/orb_info%lsym/))
@@ -639,7 +639,7 @@ c dbgend
      &             val_label=(/'ME_C0_sp'/))
       call set_arg('DEF_ME_C0_sp',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'C0_sp'/))
-      call set_arg('DEF_ME_C0_sp',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_C0_sp',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/ims/))
       call set_arg('DEF_ME_C0_sp',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/orb_info%lsym/))
@@ -725,7 +725,7 @@ c dbgend
      &     val_label=(/'S+'/))
       call set_arg('DEF_ME_S+',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('DEF_ME_S+',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_S+',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/2/))
       call set_rule2('DEF_ME_S+',UNITY,tgt_info)
       call set_arg('DEF_ME_S+',UNITY,'LIST',1,tgt_info,
@@ -744,7 +744,7 @@ c dbgend
      &     val_label=(/'S-'/))
       call set_arg('DEF_ME_S-',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('DEF_ME_S-',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_S-',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/-2/))
       call set_rule2('DEF_ME_S-',UNITY,tgt_info)
       call set_arg('DEF_ME_S-',UNITY,'LIST',1,tgt_info,
@@ -763,7 +763,7 @@ c dbgend
      &     val_label=(/'Sz'/))
       call set_arg('DEF_ME_Sz',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('DEF_ME_Sz',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_Sz',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/0/))
       call set_rule2('DEF_ME_Sz',UNITY,tgt_info)
       call set_arg('DEF_ME_Sz',UNITY,'LIST',1,tgt_info,

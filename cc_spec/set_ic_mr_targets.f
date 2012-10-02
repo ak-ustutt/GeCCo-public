@@ -652,7 +652,7 @@ c dbgend
      &     val_label=(/'A'/))
       call set_arg('DEF_ME_A',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('DEF_ME_A',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_A',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/0/))
       if (prc_type.lt.3) then
         call set_arg('DEF_ME_A',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
@@ -673,7 +673,7 @@ c dbgend
      &     val_label=(/'1'/))
       call set_arg('DEF_ME_1',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('DEF_ME_1',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_1',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/0/))
       call set_arg('DEF_ME_1',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,
      &     val_int=(/1/))

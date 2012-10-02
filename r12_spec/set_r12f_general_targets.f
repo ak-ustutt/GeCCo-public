@@ -3371,7 +3371,7 @@ c     &       0,0,1,0,0,.false.)
      &     val_label=(/'Favg'/))
       call set_arg('Favg-INT',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('Favg-INT',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('Favg-INT',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/0/))
       call set_arg('Favg-INT',DEF_ME_LIST,'ABSYM',1,tgt_info,
      &     val_int=(/msc/))
