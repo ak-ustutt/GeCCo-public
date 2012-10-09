@@ -386,7 +386,7 @@ c dbgend
         nsec = sum(nsec_arr)
         nwfpsec => opti_info%nwfpsec(1:nsec)
         idstsec => opti_info%idstsec(1:nsec)
-        signsec => opti_info%signsec2(1:nsec)
+        signsec => opti_info%signsec(1:nsec)!2(1:nsec)
 
         ! reduced space exhausted?
         if (nred+nnew.gt.mxsub) then
