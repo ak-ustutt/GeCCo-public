@@ -460,19 +460,21 @@ c     &              'S',1,1,
 c     &              parameters,2,tgt_info)
 
       ! Diagonal Preconditioner
-      call add_target(op_dia//'_T',ttype_op,.false.,
+      call add_target(trim(op_dia)//'_T',ttype_op,.false.,
      &                tgt_info)
-      call set_dependency(op_dia//'_T','T',tgt_info)
+      call set_dependency(trim(op_dia)//'_T','T',tgt_info)
       call cloneop_parameters(-1,parameters,'T',.false.)
-      call set_rule(op_dia//'_T',ttype_op,CLONE_OP,op_dia//'_T',1,1,
+      call set_rule(trim(op_dia)//'_T',ttype_op,CLONE_OP,
+     &              trim(op_dia)//'_T',1,1,
      &              parameters,1,tgt_info)
 
       ! Diagonal Preconditioner for L
-      call add_target(op_dia//'_L',ttype_op,.false.,
+      call add_target(trim(op_dia)//'_L',ttype_op,.false.,
      &                tgt_info)
-      call set_dependency(op_dia//'_L','L',tgt_info)
+      call set_dependency(trim(op_dia)//'_L','L',tgt_info)
       call cloneop_parameters(-1,parameters,'L',.false.)
-      call set_rule(op_dia//'_L',ttype_op,CLONE_OP,op_dia//'_L',1,1,
+      call set_rule(trim(op_dia)//'_L',ttype_op,CLONE_OP,
+     &              trim(op_dia)//'_L',1,1,
      &              parameters,1,tgt_info)
 
       ! C0 dagger operator (for testing)
@@ -2923,10 +2925,10 @@ c dbgend
       call add_target(trim(dia_label),ttype_opme,.false.,tgt_info)
       call set_dependency(trim(dia_label),'EVAL_FREF',tgt_info)
       call set_dependency(trim(dia_label),
-     &                    op_dia//'_'//'T',tgt_info)
+     &                    trim(op_dia)//'_'//'T',tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = trim(dia_label)
-      labels(2) = op_dia//'_'//'T'
+      labels(2) = trim(op_dia)//'_'//'T'
       call me_list_parameters(-1,parameters,
      &     0,0,1,
      &     0,0,.false.)
@@ -3367,7 +3369,7 @@ c dbgend
      &           val_label=(/'ME_Dtr'/))
       call set_arg('PREC_diag',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
      &           val_label=(/'Dtr'/))
-      labels(1) = op_dia//'_'//'T'
+      labels(1) = trim(op_dia)//'_'//'T'
       call set_rule2('PREC_diag',ASSIGN_ME2OP,tgt_info)
       call set_arg('PREC_diag',ASSIGN_ME2OP,'LIST',1,tgt_info,
      &           val_label=(/trim(dia_label)/))

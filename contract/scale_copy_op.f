@@ -228,10 +228,10 @@
             do idx = 1, idxnd_src-idxst_src+1
               buffer(idx) = fac(ifac)*buffer(idx)
 c dbg
-              if (buffer(idx).lt.-1d-14) then
-                write(luout,*) 'changing sign for el.# ',idx
-                buffer(idx) = abs(buffer(idx))
-              end if
+c              if (buffer(idx).lt.-1d-14) then
+c                write(luout,*) 'changing sign for el.# ',idx
+c                buffer(idx) = abs(buffer(idx))
+c              end if
 c dbgend
               ifac = ifac + 1
               if (ifac.gt.nfac) ifac = 1
