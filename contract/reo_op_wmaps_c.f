@@ -215,7 +215,7 @@
 
       ifree = mem_setmark('reo1')
 
-      if (ffopori%buffered.and.ffopori%incore(iblkopori).gt.0) then
+      if (ffopori%buffered.and.ffopori%incore(iblkopori).ge.0) then
         bufopori = .true.
         xopori => ffopori%buffer(idxst_opori:)
       else
@@ -230,7 +230,7 @@
         call get_vec(ffopori,xopori,idoffopori+idxst_opori,
      &                          idoffopori+idxst_opori-1+lenopori)
       end if
-      if (ffopreo%buffered.and.ffopreo%incore(iblkopreo).gt.0) then
+      if (ffopreo%buffered.and.ffopreo%incore(iblkopreo).ge.0) then
         bufopreo = .true.
         xopreo => ffopreo%buffer(idxst_opreo:)
       else

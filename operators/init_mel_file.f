@@ -100,19 +100,19 @@ c     &     trim(mel%label))
      &         op%n_occ_cls,trim(mel%label)//'_idxrec')
         nbuff = 0
         do iocc = 1, op%n_occ_cls
-          ! allocate buffer for 1-hamiltonian only
-          if (max(op%ica_occ(1,iocc),
-     &              op%ica_occ(2,iocc)).gt.1 .or.
-     &         iextr.gt.0.and.  ! R12: ignore currently
-     &         op%ihpvca_occ(iextr,1,iocc)+
-     &         op%ihpvca_occ(iextr,2,iocc).gt.0 ) then
-            fhand%incore(iocc) = -1
-            fhand%idxrec(iocc) = -1
-          else
+C          ! allocate buffer for 1-hamiltonian only
+C          if (max(op%ica_occ(1,iocc),
+C     &              op%ica_occ(2,iocc)).gt.1 .or.
+C     &         iextr.gt.0.and.  ! R12: ignore currently
+C     &         op%ihpvca_occ(iextr,1,iocc)+
+C     &         op%ihpvca_occ(iextr,2,iocc).gt.0 ) then
+C            fhand%incore(iocc) = -1
+C            fhand%idxrec(iocc) = -1
+C          else
             fhand%idxrec(iocc) = nbuff
             fhand%incore(iocc) = mel%len_op_occ(iocc)
             nbuff = nbuff + mel%len_op_occ(iocc)
-          end if
+C          end if
         end do
         fhand%nbuffer = nbuff
         ifree = mem_alloc_real(fhand%buffer,

@@ -133,19 +133,19 @@
      &     'Input and output list do not have compatible operators')
       end if
 
-      open_close_in  = ffin%unit.le.0
-      open_close_out = ffout%unit.le.0
-
-      if (open_close_in ) call file_open(ffin )
-      if (open_close_out.and..not.same) call file_open(ffout)
-
       ! Check whether files are buffered.
       bufin = ffin%buffered
       bufout = ffout%buffered
 
-      if (bufin.or.bufout)
-     &   call quit(1,'add_opblk_tranposed',
-     &               'buffered files are not yet debugged')
+      open_close_in  = ffin%unit.le.0.and..not.bufin
+      open_close_out = ffout%unit.le.0.and..not.bufout
+
+      if (open_close_in ) call file_open(ffin )
+      if (open_close_out.and..not.same) call file_open(ffout)
+
+c      if (bufin.or.bufout)
+c     &   call quit(1,'add_opblk_tranposed',
+c     &               'buffered files are not yet debugged')
       ifree = mem_setmark('add_transp')
 
       ! Number of irreps in symmetry group.
@@ -168,7 +168,8 @@
       if(.not.bufout.or.same)then
         nbuff = me_out%len_op_occ(iblk_out)
         ifree= mem_alloc_real(buffer_out,nbuff,'buffer_out')
-        call get_vec(ffout,buffer_out,ioff0_out+1,ioff0_out+nbuff)
+        if (.not.reset)
+     &    call get_vec(ffout,buffer_out,ioff0_out+1,ioff0_out+nbuff)
       else
         buffer_out => ffout%buffer(ioff0_out+1:)
       endif

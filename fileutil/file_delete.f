@@ -10,6 +10,10 @@
       type(filinf), intent(inout) ::
      &     fhand
 
+
+      ! buffered? ignore ...
+      if (fhand%buffered) return
+
       ! not open? 
       if (fhand%unit.le.0) call file_open(fhand)
 

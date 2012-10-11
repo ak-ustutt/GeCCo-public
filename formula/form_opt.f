@@ -157,9 +157,6 @@ c dbg
       else ! new scheduler needs new factorization
         allocate(fl_new)
         call init_formula(fl_new)
-c dbg
-        print *,'testing new factorization'
-c dbg        
         call factorize_new(fl_new,fl_head,
      &       op_info,str_info,orb_info,f_opt%label)
 
@@ -169,15 +166,16 @@ c dbg
 
       ! ----------------------------------------
       ! round three:
-      ! automatic intermediates (to come ...)
+      ! automatic intermediates 
       ! ----------------------------------------
+      if (irt_sched.gt.0.and.use_auto_opt)
+     &   call optimize(fl_opt,op_info,str_info,orb_info,f_opt%label)
 
       if (iprint.ge.10) then
         call write_title(luout,wst_around_double,'Optimized formula:')
         call print_form_list(luout,fl_opt,op_info)
       end if
 cmh      if (lustat.gt.0) call print_form_list(lustat,fl_opt,op_info)
-
       write(name,'(a,".fml")') trim(f_opt%label)
       call file_init(f_opt%fhand,name,ftyp_sq_unf,0)      
       f_opt%comment = trim(title)

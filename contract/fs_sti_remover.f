@@ -39,7 +39,7 @@
      &     idx_oplist2
 
       select case(fl_item%command)
-      case(command_add_intm,command_bc,command_add_bc,
+      case(command_add_intm,command_cp_intm,command_bc,command_add_bc,
      &       command_bc_reo,command_add_bc_reo)
         if (.not.associated(fl_item%bcontr))
      &     call quit(1,'fs_sti_remover','no bcontr?')

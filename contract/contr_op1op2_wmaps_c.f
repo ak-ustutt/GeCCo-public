@@ -223,10 +223,6 @@ c dbg
       op1op2 => me_op1op2%op
       op1op2tmp => me_op1op2tmp%op
 
-c dbg
-c      print *,'final name',trim(op1op2%name)
-c      print *,'temp name',trim(op1op2tmp%name)
-c dbg
 
       ffop1 => me_op1%fhand
       ffop2 => me_op2%fhand
@@ -492,18 +488,17 @@ c      end if
       !    about 1/6th of the available remaining core
       lenscr = ifree/6
 
-      if (ffop1%buffered.and.ffop1%incore(iblkop1).gt.0) then
+      if (ffop1%buffered.and.ffop1%incore(iblkop1).ge.0) then
+        buftyp1 = 0
         bufop1 = .true.
         xop1 => ffop1%buffer(idxst_op1:)
+        ioff_op1 = idxst_op1-1
       else
         bufop1 = .false.
         ! LOWER incore requirements:
         ! check for length of operator
         call set_op_scratch(lenbuf,buftyp1,me_op1,iblkop1,
      &       lenscr,orb_info)
-c dbg
-c        print *,'set_op_scratch1: ',lenbuf,buftyp1,lenscr
-c dbg
         ifree = mem_alloc_real(xbf1,lenbuf,'xbf1')
 c        ifree = mem_alloc_real(xbf1,lenop1,'xbf1')
         xop1 => xbf1
@@ -513,18 +508,17 @@ c        ifree = mem_alloc_real(xbf1,lenop1,'xbf1')
      &                          idoffop1+idxst_op1-1+lenop1)
         end if
       end if
-      if (ffop2%buffered.and.ffop2%incore(iblkop2).gt.0) then
+      if (ffop2%buffered.and.ffop2%incore(iblkop2).ge.0) then
+        buftyp2 = 0
         bufop2 = .true.
         xop2 => ffop2%buffer(idxst_op2:)
+        ioff_op2 = idxst_op2-1
       else
         bufop2 = .false.
         ! LOWER incore requirements:
         ! see above
         call set_op_scratch(lenbuf,buftyp2,me_op2,iblkop2,
      &       lenscr,orb_info)
-c dbg
-c        print *,'set_op_scratch2: ',lenbuf,buftyp2,lenscr
-c dbg
         ifree = mem_alloc_real(xbf2,lenbuf,'xbf2')
 c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
         xop2 => xbf2
@@ -540,9 +534,12 @@ c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
       ! get result vector as well (as we update)
       ! refers to reordered op1op2
       if (iblkop1op2.gt.0) then
-        if (ffop1op2%buffered.and.ffop1op2%incore(iblkop1op2).gt.0) then
+        if (ffop1op2%buffered.and.ffop1op2%incore(iblkop1op2).ge.0) then
+          buftyp12 = 0
           bufop1op2 = .true.
           xop1op2 => ffop1op2%buffer(idxst_op1op2:)
+          ioff_op1op2 = idxst_op1op2-1
+          if (.not.update) xop1op2(1:lenop1op2) = 0d0
         else
           bufop1op2 = .false.
           ! LOWER incore requirements:
@@ -1501,9 +1498,6 @@ c     &                     - idxst_op1+1-ioff_op1
      &                     - ioff_op1
                     end if
 
-c dbg
-c                    print *,'call ddot(1)'
-c dbg
                     xnrm = ddot(ielprd(lstrop1,
      &                   ncblk_op1+nablk_op1),
      &                   xop1(idxop1),1,xop1(idxop1),1)
@@ -1511,11 +1505,6 @@ c dbg
 
                     ! get Ms and IRREP distribution of op2
                     ! remember: CNT^+ !
-c dbg
-c                    print *,'msc_dis_a:  ',msc_dis_a
-c                    print *,'msex2dis_c: ',msex2dis_c
-c dbg
-
                     call merge_msgmdis(msop2dis_c,gmop2dis_c,
      &                                 ncblk_op2,
      &                                 msc_dis_a,gmc_dis_a,
@@ -1526,9 +1515,6 @@ c dbg
      &                                 msc_dis_c,gmc_dis_c,
      &                                 msex2dis_a,gmex2dis_a,
      &                                 map_info_2a)
-c dbg
-c                    print *,'msop2dis_c: ',msex2dis_c
-c dbg
 
                     call ms2idxms(idxmsop2dis_c,msop2dis_c,
      &                   cinfo_op2c,ncblk_op2)
@@ -1549,7 +1535,6 @@ c dbg
      &                             ncblk_op2+nablk_op2,1).gt.0)
      &                   cycle cac_loop
 
-c dbg
                     if(ms_fix2)then
                       iblkoff = (iblkop2-1)*op2%njoined
                       call condense_occ(dum2_c,dum2_a,
@@ -1588,7 +1573,6 @@ c                          cycle cac_loop
 c                        endif
 c                      enddo
                     endif
-c dbg
 
                     if (me_op2%diag_type.ne.0) then
                       ! skip non-diagonal distributions ...
@@ -1919,7 +1903,8 @@ c dbg
 c dbg
 c          print *,'punching MS blk for op1op2 ',lenblock
 c dbg
-          call put_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
+          if (.not.bufop1op2)
+     &       call put_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
      &                                 idoffop1op2+ioff_op1op2+lenblock)
         end if
 
@@ -1958,6 +1943,7 @@ c          fac_ab = +1
      &       str_info,strmap_info,orb_info)
       end if
 
+c      if (op1op2%name(1:3).eq.'_LT') then
       if (ntest.ge.1000) then
         if (iblkop1op2.gt.0
      &       ) then
@@ -1967,14 +1953,6 @@ c          fac_ab = +1
         end if
       end if
 
-c dbg
-c      print *,'HALLO: ',trim(op1op2%name),
-c     &     trim(op1op2%name).eq.'Z-INT',iblkop1op2
-c      if (trim(op1op2%name).eq.'Z-INT' .and. iblkop1op2.eq.2)
-c     &     print *,'iiii ',xop1op2(1),xop1op2(4)
-c      print *,'type_xret ',type_xret
-c      print *,'xret' ,xret
-c dbg
       if (type_xret.eq.2.and.buftyp12.eq.0) then
         xret(1) = xop1op2(1)
       else if (type_xret.eq.1.and.buftyp12.eq.0) then

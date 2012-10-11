@@ -204,33 +204,6 @@ c          write(luout,*) '[ADD]'
             ! more complicated operator?
             ! will not neccessarly work if more than one instance
             ! is present (which happens rarely)
-            idx_join = 0
-            do idx = 1,nvtx
-              ! Check the operator index of the vertex.
-              idx_form_op = form_pnt%contr%vertex(idx)%idx_op
-
-              ! If the index of the operator vertex equals that of the
-              ! intermediate operator...
-              if(idx_form_op.eq.idxin)then
-                idx_form_blk = form_pnt%contr%vertex(idx)%iblk_op
-
-                ! Keep a tally of the number of vertices of opin that have
-                ! been found, and store their indices within the 
-                ! contraction.
-                idx_join = idx_join+1
-                if(idx_join.gt.njoined)
-     &             call quit(1,'form_op_replace','idx_join gt njoined')
-                vtx_chng_idx(idx_join) = idx
-
-                ! Copy the flagged vertex to a temporary array.
-                occ_temp(1:ngastp,1:2,idx_join)=
-     &             opin_pnt%ihpvca_occ(1:ngastp,1:2,idx_form_blk)
-
-                ! Note that a change has to be made to the contraction.
-                change = .true.
-              endif
-            enddo
-            ! end of old route
           end if
 
           if (remove) then
