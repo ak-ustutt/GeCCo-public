@@ -39,13 +39,16 @@
       integer ::
      &     msmax, idxy, ispc, norb_spc, idx_spc, nel_prev, nel_left,ims,
      &     idx_csg, idx_psg, idxw, idxwp, leny, lenw, idis, nel_psg,
-     &     ispcp, iprint
+     &     ispcp, iprint, nelmax_spc
       integer ::
      &     ientry(-nelmax:nelmax,ngam), idss(nelmax)
       integer, external ::
      &     idxssd, idxssg, lensubspc
       logical, external ::
-     &     next_ssd
+     &     next_ssd, allow_sbsp_dis
+c dbg
+      integer idxww, imss
+c dbg
 
       iprint = max(ntest,iprlvl)
 
@@ -56,6 +59,7 @@
         write(luout,*)
         write(luout,*) ' Number of particles/holes: ', nelmax
         write(luout,*) ' Number of orbital spaces:  ', nspc
+        write(luout,*) ' Number of orbitals:        ', norb
       end if
       if (ntest.gt.50) write(luout,*) ' pass = ',ipass
 
@@ -88,21 +92,44 @@
       len_info=0
       len_wexit=0
 
+      ! initialize lenstr
+      if (ipass.eq.2) then
+        lenstr(1:ndis*ngam*(msmax+1)) = 0
+      end if
+ 
       !-----------------------
       ! loop over subspaces
       !-----------------------
       do ispc = 1, nspc
         norb_spc = mostnd(2,ngam,ispc)-mostnd(1,1,ispc)+1
-        if (norb_spc.le.0) cycle
         idx_spc = mostnd(1,1,ispc)
+        nelmax_spc = mnmxspc(2,ispc)
 
         if (ntest.ge.100) then
           write(luout,*) '===================================='
           write(luout,*) 'now in subspace: ',ispc
           write(luout,*) ' #orbitals: ',norb_spc
           write(luout,*) ' offset:    ',idx_spc
+          write(luout,*) ' max #elec.:',nelmax_spc
           write(luout,*) '===================================='
         end if
+c dbg
+c        if (ipass.eq.2) then
+c          print *,'>>>>>> watch at top of ispc-loop'
+c        write(luout,*) 'lengths per dis, IRREP, Ms'
+c        idxww=1
+c        do imss = 1, msmax+1
+c          write(luout,*) 'ms = ',-msmax+2*(imss-1)
+c          write(luout,*) ' row: distrib, col: IRREP'
+c          call iwrtma(lenstr(idxww),ndis,ngam,ndis,ngam)
+c          idxww = idxww+ndis*ngam
+c        end do
+c          print *,'<<<<<<< end of watch'
+c        end if
+c dbg
+
+        ! no orbitals in this subspace?
+        if (norb_spc.le.0) cycle
 
         !----------------------------------------------------
         ! loop over possible substrings in previous graphs
@@ -117,6 +144,8 @@
 
         ssd_loop: do
           nel_left = nelmax-nel_prev
+          if (ntest.ge.100) 
+     &        write(luout,*) 'ssd_loop: nel_left = ',nel_left
           if (nel_left.le.0) exit ssd_loop
 
           nel_psg = 0
@@ -204,11 +233,12 @@
           if (ipass.eq.2) then
             if (nel_left.gt.0) idss(nel_prev+1:nelmax) = ispc
             idis = idxssd(idss,iyssg,nelmax,nspc)
-            ! store length per subspace distribution, IRREP, Ms
-            call set_lenstr(lenstr,idis,iw4sg_scr,ndis,
+            if (allow_sbsp_dis(idss,nelmax,nspc,mnmxspc))
+     &       ! store length per subspace distribution, IRREP, Ms
+     &       call set_lenstr(lenstr,idis,iw4sg_scr,ndis,
      &           nel_left,norb_spc,ngam,msmax)
-            ! not last subspace? 
           end if
+          ! not last subspace? 
           if (ispc.lt.nspc) then
               ! keep weights for last orbital level (for ientry in next levels)
             if (ipass.eq.2) then
@@ -220,6 +250,21 @@
             len_wexit=len_wexit+(nel_left+1)*(2*msmax+1)*ngam
 
           end if
+
+c dbg
+c           if (ipass.eq.2) then
+c          print *,'>>>>>> watch at bot of ssd_loop'
+c        write(luout,*) 'lengths per dis, IRREP, Ms'
+c        idxww=1
+c        do imss = 1, msmax+1
+c          write(luout,*) 'ms = ',-msmax+2*(imss-1)
+c          write(luout,*) ' row: distrib, col: IRREP'
+c          call iwrtma(lenstr(idxww),ndis,ngam,ndis,ngam)
+c          idxww = idxww+ndis*ngam
+c        end do
+c          print *,'<<<<<<< end of watch'
+c          end if
+c dbg
 
           ! get next subspace distribution
           if (.not.next_ssd(idss,nel_prev,nelmax,ispc-1,mnmxspc))
@@ -239,6 +284,7 @@
         write(luout,*) 'len_info = ',len_info
         write(luout,*) 'len_wexit = ',len_wexit
         write(luout,*) 'ndis = ',ndis
+        write(luout,*) 'norb = ',norb
       end if
 
       ! exception: empty space
@@ -246,7 +292,7 @@
         lenstr(1:ndis*ngam*(msmax+1)) = 0
       end if
 
-      if (ipass.eq.2.and.iprint.ge.20) then
+      if (ipass.eq.2.and.(iprint.ge.20.or.ntest.ge.100)) then
         write(luout,*) 'lengths per dis, IRREP, Ms'
         idxw=1
         do ims = 1, msmax+1

@@ -50,7 +50,7 @@ AC_ARG_WITH(blas,
 case $with_blas in
 	yes | "") ;;
 	no) acx_blas_ok=disable ;;
-	-l* | */* | *.a | *.so | *.so.* | *.o) acx_blas_libs="$with_blas" ;;
+	-* | */* | *.a | *.so | *.so.* | *.o) acx_blas_libs="$with_blas" ;;
 	*) acx_blas_libs="-l$with_blas" ;;
 esac
 

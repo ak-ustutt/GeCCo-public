@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine set_arg(name_target,command,arg_label,arg_dim,tgt_info,
-     &     val_label,val_log,val_int,val_occ,val_restr,val_rl8,val_str)
+     &     val_label,val_log,val_int,val_occ,val_restr,val_rl8,val_str,
+     &     req,def)
 *----------------------------------------------------------------------*
 *     add a new argument to (latest) rule with label "command"
 *----------------------------------------------------------------------*
@@ -30,6 +31,8 @@
      &     val_rl8(arg_dim)
       character(len=*), intent(in), optional ::
      &     val_str
+      logical, intent(in), optional ::
+     &     req, def
 
       integer ::
      &     idx_tgt, idx_cmd, idx_arg,
@@ -98,9 +101,13 @@
       last_arg%arg_label = trim(arg_label)
       last_arg%arg_dim = arg_dim
       last_arg%n_str_batch = 0
+      last_arg%required = .false.
+      last_arg%def_provided = .false.
+      if (present(req)) last_arg%required = req
+      if (present(def)) last_arg%def_provided = def
 
-      ! skip this for arg_dim=0 
-      if (arg_dim.gt.0) then
+c      ! skip this for arg_dim=0 
+c      if (arg_dim.gt.0) then
 
       ! determine type from given argument
       ntype = 0 ! should be 1 at the end of this section
@@ -146,6 +153,8 @@
      &               trim(command)//'.'//
      &               trim(arg_label))
 
+      ! skip this for arg_dim=0 
+      if (arg_dim.gt.0) then
       select case(arg_type)
       case(aatype_label)
         allocate(last_arg%val_label(arg_dim))

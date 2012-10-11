@@ -11,11 +11,11 @@
 
       type(target_info), intent(inout), target ::
      &     tgt_info
-      character, intent(in) ::
-     &     name_target*(*), name_dependency*(*)
+      character(len=*), intent(in) ::
+     &     name_target, name_dependency
 
       integer ::
-     &     idx
+     &     idx, ii, jj
       type(target), pointer ::
      &     tgt
       character*(len_target_name), pointer ::
@@ -40,9 +40,15 @@
      &       tgt%depends_on(1:tgt%n_depends_on)
         deallocate (tgt%depends_on)
       end if
-      new_depends_on(tgt%n_depends_on+1)(1:len_target_name) = ' '
-      new_depends_on(tgt%n_depends_on+1) = trim(name_dependency)
+      !new_depends_on(tgt%n_depends_on+1)(1:len_target_name) = ' '
+      !do ii = 1, len_target_name
+      !  new_depends_on(tgt%n_depends_on+1)(ii:ii)=' '
+      !end do
+      !new_depends_on(tgt%n_depends_on+1) = trim(name_dependency)
       tgt%depends_on => new_depends_on
+      tgt%depends_on(tgt%n_depends_on+1)(1:len_target_name) = ' '
+      tgt%depends_on(tgt%n_depends_on+1) = trim(name_dependency)      
+
       tgt%n_depends_on = tgt%n_depends_on+1
 
       return

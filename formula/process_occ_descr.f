@@ -15,7 +15,7 @@
       include 'def_word_list.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       character(len=18) ::
      &     i_am = 'process_occ_descr'
       
@@ -34,6 +34,8 @@
 
       character(len=maxlen_word) ::
      &     cur_entry
+      character ::
+     &     sep
       logical ::
      &     next
       integer ::
@@ -45,7 +47,7 @@
      &     occ_list_a(4,maxlist,njoined)
 
       logical, external ::
-     &     next_word_list_entry, next_dist2
+     &     advance_word_list_entry, next_dist2
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,i_am)
@@ -54,7 +56,7 @@
       end if
 
       call init_word_list(wlist)
-      call lex_line(wlist,dstring,' ,|',' ')
+      call lex_line(wlist,dstring,0,' ,|',' ','"')
 
       if (ntest.ge.100) then
         write(luout,*) 'lex''ed string:'
@@ -68,16 +70,21 @@
 
       nlist = 0
 
+      ! move internal pointer in wlist to beginning
+      call reset_word_list_pointer(wlist)
+
       icnt = 0
       ijoin = 0
       main_lp: do 
-        next = next_word_list_entry(cur_entry,wlist)
+        call get_word_list_entry(cur_entry,sep,wlist)
+        next = advance_word_list_entry(wlist,' ')
         icnt = icnt+1
 
         if (mod(icnt,2).eq.1) ijoin = ijoin+1
 
         if (ntest.ge.100) then
           write(luout,*) 'ijoin,icnt: ',ijoin,icnt
+          write(luout,*) 'cur_entry: "',trim(cur_entry),'" sep=',sep
         end if
 
         if (mod(icnt,2).eq.1) then

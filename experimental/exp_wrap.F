@@ -82,9 +82,19 @@
       character(*), intent(in) ::
      &     env_type
 
+      character(len=256) ::
+     &     input_name
+
 #if defined(EXPERIMENTAL)
       call set_my_experimental_targets(tgt_info,orb_info,env_type)
 #endif
+      if (is_argument_set('calculate.experimental','file',1).gt.0) then
+        input_name(1:256) = ' '
+        call get_argument_value('calculate.experimental','file',1,1,
+     &        str=input_name)
+        call set_targets_from_file(tgt_info,input_name,
+     &                             orb_info,env_type)
+      end if
 
       return
       end

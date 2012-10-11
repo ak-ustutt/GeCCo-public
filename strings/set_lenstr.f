@@ -20,9 +20,19 @@
       do ims_cnt = 1, maxms+1
         ims = -maxms+2*(ims_cnt-1)
         do igam = 1, ngam
+c dbg
+c          print *,'for lenstr',idis,igam,ims_cnt
+c          print *,'  looking at iw4sg at ',nel,ims,igam,norb
+c          print *,'  value = ',iw4sg(nel,ims,igam,norb)
+c dbg
           lenstr(idis,igam,ims_cnt) = iw4sg(nel,ims,igam,norb)
         end do
       end do
+
+c dbg
+c      print *,'for idis = ',idis 
+c      print *,'lenstr = ',lenstr(idis,1:ngam,1:maxms+1)
+c dbg
 
       return
       end

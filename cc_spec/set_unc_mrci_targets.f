@@ -141,11 +141,12 @@
      &              parameters,1,tgt_info)
 
       ! Diagonal Preconditioner for reference
-      call add_target(op_dia//'_C0',ttype_op,.false.,
+      call add_target(trim(op_dia)//'_C0',ttype_op,.false.,
      &                tgt_info)
-      call set_dependency(op_dia//'_C0','C0',tgt_info)
+      call set_dependency(trim(op_dia)//'_C0','C0',tgt_info)
       call cloneop_parameters(-1,parameters,'C0',.false.)
-      call set_rule(op_dia//'_C0',ttype_op,CLONE_OP,op_dia//'_C0',1,1,
+      call set_rule(trim(op_dia)//'_C0',ttype_op,CLONE_OP,
+     &              trim(op_dia)//'_C0',1,1,
      &              parameters,1,tgt_info)
 
       ! define Fock operator wrt reference function
@@ -618,7 +619,7 @@ c dbgend
      &             val_label=(/'ME_C0'/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'C0'/))
-      call set_arg('DEF_ME_C0',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_C0',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/ims/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/orb_info%lsym/))
@@ -639,7 +640,7 @@ c dbgend
      &             val_label=(/'ME_C0_sp'/))
       call set_arg('DEF_ME_C0_sp',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'C0_sp'/))
-      call set_arg('DEF_ME_C0_sp',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_C0_sp',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/ims/))
       call set_arg('DEF_ME_C0_sp',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/orb_info%lsym/))
@@ -677,10 +678,10 @@ c dbgend
       call add_target(trim(dia_label)//'C0',ttype_opme,.false.,tgt_info)
       call set_dependency(trim(dia_label)//'C0',mel_ham,tgt_info)
       call set_dependency(trim(dia_label)//'C0',
-     &                    op_dia//'_'//'C0',tgt_info)
+     &                    trim(op_dia)//'_'//'C0',tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = trim(dia_label)//'C0'
-      labels(2) = op_dia//'_'//'C0'
+      labels(2) = trim(op_dia)//'_'//'C0'
       call me_list_parameters(-1,parameters,
      &     0,0,orb_info%lsym,
      &     0,ims,.false.)
@@ -725,7 +726,7 @@ c dbgend
      &     val_label=(/'S+'/))
       call set_arg('DEF_ME_S+',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('DEF_ME_S+',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_S+',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/2/))
       call set_rule2('DEF_ME_S+',UNITY,tgt_info)
       call set_arg('DEF_ME_S+',UNITY,'LIST',1,tgt_info,
@@ -744,7 +745,7 @@ c dbgend
      &     val_label=(/'S-'/))
       call set_arg('DEF_ME_S-',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('DEF_ME_S-',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_S-',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/-2/))
       call set_rule2('DEF_ME_S-',UNITY,tgt_info)
       call set_arg('DEF_ME_S-',UNITY,'LIST',1,tgt_info,
@@ -763,7 +764,7 @@ c dbgend
      &     val_label=(/'Sz'/))
       call set_arg('DEF_ME_Sz',DEF_ME_LIST,'IRREP',1,tgt_info,
      &     val_int=(/1/))
-      call set_arg('DEF_ME_Sz',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_Sz',DEF_ME_LIST,'2MS',1,tgt_info,
      &     val_int=(/0/))
       call set_rule2('DEF_ME_Sz',UNITY,tgt_info)
       call set_arg('DEF_ME_Sz',UNITY,'LIST',1,tgt_info,

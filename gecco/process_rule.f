@@ -485,14 +485,21 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('IDX_SV',rule,tgt_info,val_int_list=idx_sv)
         call get_arg('BLK_MIN',rule,tgt_info,val_int_list=iblkmin)
         call get_arg('BLK_MAX',rule,tgt_info,val_int_list=iblkmax)
-        call get_arg('CONNECT',rule,tgt_info,val_int_list=connect)
-        call get_arg('N_CONNECT',rule,tgt_info,val_int=nconnect)
-        call get_arg('AVOID',rule,tgt_info,val_int_list=avoid)
-        call get_arg('N_AVOID',rule,tgt_info,val_int=navoid)
-        call get_arg('INPROJ',rule,tgt_info,val_int_list=inproj)
-        call get_arg('N_INPROJ',rule,tgt_info,val_int=ninproj)
-        call get_arg('DESCR',rule,tgt_info,val_label_list=descr)
-        call get_arg('N_DESCR',rule,tgt_info,val_int=ndescr)
+        call get_arg('CONNECT',rule,tgt_info,val_int_list=connect,
+     &               ndim=nconnect)
+        nconnect = nconnect/2
+        !call get_arg('N_CONNECT',rule,tgt_info,val_int=nconnect)
+        call get_arg('AVOID',rule,tgt_info,val_int_list=avoid,
+     &               ndim=navoid)
+        navoid = navoid/2
+        !call get_arg('N_AVOID',rule,tgt_info,val_int=navoid)
+        call get_arg('INPROJ',rule,tgt_info,val_int_list=inproj,
+     &               ndim=ninproj)
+        ninproj = ninproj/4
+        !call get_arg('N_INPROJ',rule,tgt_info,val_int=ninproj)
+        call get_arg('DESCR',rule,tgt_info,val_label_list=descr,
+     &               ndim=ndescr)
+        !call get_arg('N_DESCR',rule,tgt_info,val_int=ndescr)
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
         call get_arg('FIX_VTX',rule,tgt_info,val_log=ms_fix)
         call form_expand_op_product(init,form_pnt,fac,
@@ -608,7 +615,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_form(form_pnt,trim(label),OLD)
         call get_arg('OP_TRF',rule,tgt_info,val_label=label_list(4))
         call get_arg('OP_RHS',rule,tgt_info,val_label=label_list(5))
-        call get_arg('OP_RAW',rule,tgt_info,
+        call get_arg('OP_X',rule,tgt_info,
      &       val_label_list=label_list(6:),ndim=nop)
         call get_arg('TITLE_TRF',rule,tgt_info,val_str=title)
         call get_arg('TITLE_RHS',rule,tgt_info,val_str=title2)
@@ -858,7 +865,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('CA_SYM',rule,tgt_info,val_int=casym)
         call get_arg('IRREP',rule,tgt_info,val_int=gamma)
         call get_arg('S2',rule,tgt_info,val_int=s2)
-        call get_arg('MS',rule,tgt_info,val_int=ms)
+        call get_arg('2MS',rule,tgt_info,val_int=ms)
         call get_arg('MS_FIX',rule,tgt_info,val_log=ms_fix)
         call get_arg('DIAG_TYPE',rule,tgt_info,val_int=imode)
         call get_arg('DIAG_IRREP',rule,tgt_info,val_int=dgam)
@@ -1093,8 +1100,8 @@ c          mode = 'dia-R12'
         call get_arg('LIST_RES',rule,tgt_info,val_label=label)
         call get_arg('LIST_INP',rule,tgt_info,val_label=label_list(1))
         call get_arg('LIST_SCAL',rule,tgt_info,val_label=label_list(2))
-        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
-        call get_arg('NFAC',rule,tgt_info,val_int=nfac)
+        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+        !call get_arg('NFAC',rule,tgt_info,val_int=nfac)
         call get_arg('IDX_LIST',rule,tgt_info,val_int_list=idxblk)
 
         imode = 2
@@ -1220,9 +1227,6 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list(3*nopt+1:))
         call get_arg('LIST_SPC',rule,tgt_info,
      &       val_label_list=label_list(4*nopt+1:),ndim=nspecial)
-c dbg
-        print *,'nspecial = ',nspecial
-c dbg
         call get_arg('FORM_SPC',rule,tgt_info,
      &       val_label_list=label_list(4*nopt+nspecial+1:),ndim=nspcfrm)
         call get_arg('FORM',rule,tgt_info,

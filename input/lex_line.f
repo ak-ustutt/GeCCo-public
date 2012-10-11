@@ -1,4 +1,4 @@
-      subroutine lex_line(wlist,line,sep_list,ws_list)
+      subroutine lex_line(wlist,line,lcnt,sep_list,ws_list,qu_list)
       !
       ! cut line into words (stored on wlist), where the
       ! separators are on sep_list and the whitespace (to be
@@ -11,12 +11,15 @@
      &     wlist      
 
       character(len=*), intent(in) ::
-     &     line, sep_list, ws_list
+     &     line, sep_list, ws_list, qu_list
+      integer, intent(in) ::
+     &     lcnt
 
       logical ::
      &     ws_is_sep
       integer ::
-     &     len_line, nsep, nws, idx, jdx, ipos, isep, istart, iend
+     &     len_line, nsep, nws, nqu,
+     &     idx, jdx, ipos, isep, istart, iend
 
       ! initialization
       len_line = len_trim(line)
@@ -24,6 +27,7 @@
 
       nsep = max(1,len_trim(sep_list))
       nws  = max(1,len_trim(ws_list))
+      nqu  = max(1,len_trim(qu_list))
 
       ws_is_sep = .false.
       do idx = 1, nws
@@ -50,13 +54,31 @@ c dbg
         end do
 
         istart = ipos
-        ! collect word until next separator is found
-        do while (.not.cmp_ch_list(line(ipos:ipos),sep_list,nsep))
-          ipos = ipos + 1
-          if (ipos.gt.len_line) exit
-        end do
-        isep = ipos ! isep.gt.len_line -> EOL
 
+        ! check for quote
+        if (cmp_ch_list(line(ipos:ipos),qu_list,nqu)) then
+ 
+          ipos = ipos+1 
+          istart = ipos ! ignore quote
+          ! collect word until next quote is found
+          do while (.not.cmp_ch_list(line(ipos:ipos),qu_list,nqu))
+            ipos = ipos + 1
+            if (ipos.gt.len_line) exit
+          end do
+          if (ipos.le.len_line) ipos = ipos+1
+          iend = ipos-1
+          isep = ipos
+ 
+        else
+
+          ! collect word until next separator is found
+          do while (.not.cmp_ch_list(line(ipos:ipos),sep_list,nsep))
+            ipos = ipos + 1
+            if (ipos.gt.len_line) exit
+          end do
+          isep = ipos ! isep.gt.len_line -> EOL
+
+        end if
 c dbg
 c        print *,'istart,isep,ipos: ',istart,isep,ipos
 c dbg
@@ -101,11 +123,15 @@ c          print *,'after check = ',isep
 c dbg
         end if
 
+        ! remove closing quote, if necessary:
+        if (cmp_ch_list(line(iend:iend),qu_list,nqu))
+     &      iend = iend-1
+
 c dbg
 c        print *,'iend = ',iend
 c        print *,'call to new_word_list_entry'
 c dbg
-        call new_word_list_entry(wlist)
+        call new_word_list_entry(wlist,.false.)
         ! put word to list
         if (iend.ge.istart)
      &       wlist%current%word = line(istart:iend)
@@ -113,6 +139,12 @@ c dbg
         ! put separator to list
         if (ipos.le.len_line)
      &       wlist%current%sep = line(isep:isep)
+        if (ipos.gt.len_line)
+     &       wlist%current%sep = 'E'
+
+        ! and also remember the position in the original file
+        wlist%current%line = lcnt
+        wlist%current%col  = istart
 
         if (isep.gt.len_line.or.ipos.gt.len_line) exit lex_loop
 
@@ -120,8 +152,17 @@ c dbg
 
       end do lex_loop
 
+      ! if the last separator was not "E" add an empty record
+      ! we need this later for a correct interpretation of comments
+      if (wlist%current%sep.ne.'E') then
+        call new_word_list_entry(wlist,.false.)
+        wlist%current%sep = 'E'
+        wlist%current%line = lcnt
+        wlist%current%col  = istart
+      end if
+
       ! point to head of list again
-      wlist%current => wlist%head
+!      wlist%current => wlist%head
       
       return
       

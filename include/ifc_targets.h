@@ -1,7 +1,8 @@
       interface
         subroutine set_arg(name_target,command,
      &                                      arg_label,arg_dim,tgt_info,
-     &     val_label,val_log,val_int,val_occ,val_restr,val_rl8,val_str)
+     &     val_label,val_log,val_int,val_occ,val_restr,val_rl8,val_str,
+     &     req,def)
         import
         implicit none
         type(target_info), intent(inout), target ::
@@ -24,6 +25,8 @@
      &       val_rl8(arg_dim)
         character(len=*), intent(in), optional ::
      &       val_str
+        logical, intent(in), optional ::
+     &       req, def
         end subroutine
 	  
         subroutine get_arg(arg_label,rule,tgt_info,

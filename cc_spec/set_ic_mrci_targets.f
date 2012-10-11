@@ -156,11 +156,12 @@
      &              parameters,1,tgt_info)
 
       ! Diagonal Preconditioner
-      call add_target(op_dia//'_C',ttype_op,.false.,
+      call add_target(trim(op_dia)//'_C',ttype_op,.false.,
      &                tgt_info)
-      call set_dependency(op_dia//'_C','C',tgt_info)
+      call set_dependency(trim(op_dia)//'_C','C',tgt_info)
       call cloneop_parameters(-1,parameters,'C',.false.)
-      call set_rule(op_dia//'_C',ttype_op,CLONE_OP,op_dia//'_C',1,1,
+      call set_rule(trim(op_dia)//'_C',ttype_op,CLONE_OP,
+     &              trim(op_dia)//'_C',1,1,
      &              parameters,1,tgt_info)
 
 *----------------------------------------------------------------------*
@@ -808,7 +809,7 @@ c      end if
      &             val_label=(/'ME_C'/))
       call set_arg('DEF_ME_C',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'C'/))
-      call set_arg('DEF_ME_C',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_C',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_C',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -827,7 +828,7 @@ c      end if
      &             val_label=(/'ME_Ctr'/))
       call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'OPERATOR',1,tgt_info,
      &             val_label=(/'Ctr'/))
-      call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'MS',1,tgt_info,
+      call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'2MS',1,tgt_info,
      &             val_int=(/0/))
       call set_arg('DEF_ME_Ctr',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
@@ -868,10 +869,10 @@ c      end if
       call add_target(trim(dia_label)//'C',ttype_opme,.false.,tgt_info)
       call set_dependency(trim(dia_label)//'C','EVAL_FREF',tgt_info)
       call set_dependency(trim(dia_label)//'C',
-     &                    op_dia//'_'//'C',tgt_info)
+     &                    trim(op_dia)//'_'//'C',tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = trim(dia_label)//'C'
-      labels(2) = op_dia//'_'//'C'
+      labels(2) = trim(op_dia)//'_'//'C'
       call me_list_parameters(-1,parameters,
      &     0,0,1,
      &     0,0,.false.)

@@ -56,7 +56,7 @@ c dbg
       ipass = 1
       call set_graph2(ipass,igraph,
      &     str_info,leny,idum,lenwscr,
-     &     orb_info%ngas_hpv,orb_info%nactt_hpv,
+     &     orb_info%ngas_hpv,orb_info%norb_hpv,!orb_info%nactt_hpv,
      &     orb_info%igamorb,orb_info%mostnd,orb_info%idx_gas,ngas,nsym)
 
       mem = 0
@@ -77,7 +77,7 @@ c dbg
       ipass = 2
       call set_graph2(ipass,igraph,
      &     str_info,leny,iwscr,lenwscr,
-     &     orb_info%ngas_hpv,orb_info%nactt_hpv,
+     &     orb_info%ngas_hpv,orb_info%norb_hpv,!orb_info%nactt_hpv,
      &     orb_info%igamorb,orb_info%mostnd,orb_info%idx_gas,ngas,nsym)
 
 c dbg
