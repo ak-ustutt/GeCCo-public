@@ -52,7 +52,7 @@
      &     max_n0, nsumcalls, G_level
 
       logical ::
-     &     next, set_zero, set_scalar, esym, sym
+     &     next, set_zero, set_scalar, esym, sym, pure_vv
 
       real(8) ::
      &     fac
@@ -106,6 +106,8 @@
       call get_argument_value('method.MRCC','G_level',
      &     ival=G_level)
       if (G_level.lt.0) G_level = max(max_n,max_n0) ! no approximation
+      call get_argument_value('method.MR','pure_vv',
+     &     lval=pure_vv)
 
       call atim_csw(cpu0,sys0,wall0)
       nterm = 0
@@ -156,10 +158,12 @@
       hu(2) = op_info%op_arr(idx_h)%op%ihpvca_occ(2,2,iblk_ham)
      &      + op_info%op_arr(idx_h)%op%ihpvca_occ(4,2,iblk_ham)
       do nn = min_n, max_n0
-       ! each T has at least one upper inactive line
-       if (hu(1)+hu(2).lt.nn.and.ioff.eq.0.and..not.esym) cycle
-       if (ioff.eq.1.and.ho(1)+ho(2)-hu(1)-hu(2)+4.lt.nn
-     &     .and..not.esym) cycle
+       if (.not.pure_vv) then
+        ! each T has at least one upper inactive line
+        if (hu(1)+hu(2).lt.nn.and.ioff.eq.0.and..not.esym) cycle
+        if (ioff.eq.1.and.ho(1)+ho(2)-hu(1)-hu(2)+4.lt.nn
+     &      .and..not.esym) cycle
+       end if
 
        allocate(idx_op(nn+2+nham),iblk_min(nn+2+nham),
      &          iblk_max(nn+2+nham),idx_op_vtx(nn+2+nham))
@@ -294,10 +298,12 @@ c dbgend
           hu(2) = op_info%op_arr(idxham)%op%ihpvca_occ(2,2,iblk_ham)
      &          + op_info%op_arr(idxham)%op%ihpvca_occ(4,2,iblk_ham)
           do nn = min_n, max_n
-            ! each T has at least one upper inactive line
-            if (lu(1)+lu(2)-ho(1)-ho(2)+hu(1)+hu(2).lt.nn
-     &          .and..not.sym) cycle
+            if (.not.pure_vv) then
+              ! each T has at least one upper inactive line
+              if (lu(1)+lu(2)-ho(1)-ho(2)+hu(1)+hu(2).lt.nn
+     &            .and..not.sym) cycle
 c            if (lu-ho+hu.gt.4*nn) cycle
+            end if
             nvtx = nn+3+nham
 
             allocate(idx_op(nvtx),iblk_min(nvtx),iblk_max(nvtx),

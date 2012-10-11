@@ -94,7 +94,7 @@
      &                       me_special(2)%mel%op%name,op_info)
 
       ! evaluate projected vector
-      call evaluate2(fspc(1),
+      call evaluate2(fspc(1),.true.,
      &         op_info,str_info,strmap_info,orb_info,xdum,.false.)
 
 c      ! Since formally we get a transposed vector, we need to
@@ -122,7 +122,7 @@ c      end if
         if (opti_info%update_prc.and.nspecial.eq.9.or.
      &      .not.opti_info%update_prc.and.nspecial.eq.8) then
           ! evaluate T(2)red (projector list is already assigned)
-          call evaluate2(fspc(nspcfrm-1),
+          call evaluate2(fspc(nspcfrm-1),.true.,
      &           op_info,str_info,strmap_info,orb_info,xdum,.false.)
           ! Here we need to add this to T
           nj = me_amp%op%njoined
@@ -139,7 +139,7 @@ c      end if
           end do
         end if
         ! Now evaluate T(3)red (or T(2)red if not done above)
-        call evaluate2(fspc(nspcfrm),
+        call evaluate2(fspc(nspcfrm),.true.,
      &         op_info,str_info,strmap_info,orb_info,xdum,.false.)
         ! and add this to T as well
         nblk = me_special(nspecial)%mel%op%n_occ_cls

@@ -397,7 +397,7 @@ c dbgend
         ! 2 - get residual
         if (iand(task,1).eq.1.or.iand(task,2).eq.2) then
           call frm_sched(xret,fl_en_res,depend,0,0,
-     &         op_info,str_info,strmap_info,orb_info)
+     &         .true.,op_info,str_info,strmap_info,orb_info)
           ! intermediates should be generated first, energy
           ! is expected to be the last "intermediate"
           energy =  xret(idx_en_xret)

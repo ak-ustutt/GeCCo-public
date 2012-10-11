@@ -452,7 +452,7 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
               call switch_mel_record(me_met(iopt)%mel,irec)
               call switch_mel_record(me_scr(iopt)%mel,iroot)
               call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                    op_info,str_info,strmap_info,orb_info)
+     &                    .true.,op_info,str_info,strmap_info,orb_info)
               me_met(iopt)%mel%fhand%last_mod(irec) = -1
               deallocate(xret,idxselect)
 

@@ -322,7 +322,7 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
           call switch_mel_record(me_rhs(iopt)%mel,iroot)
 
           call frm_sched(xret,fl_rhs_mvp,depend,idxselect,nselect,
-     &         op_info,str_info,strmap_info,orb_info)
+     &         .true.,op_info,str_info,strmap_info,orb_info)
 
           call touch_file_rec(me_rhs(iopt)%mel%fhand)
 
@@ -399,7 +399,7 @@ c dbg
             end if
 
             call frm_sched(xret,fl_rhs_mvp,depend,0,0,
-     &           op_info,str_info,strmap_info,orb_info)
+     &           .true.,op_info,str_info,strmap_info,orb_info)
 
             do iopt = 1, nopt
               call touch_file_rec(me_trv(iopt)%mel%fhand)

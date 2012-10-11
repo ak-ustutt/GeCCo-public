@@ -49,7 +49,7 @@
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
-     &     dgam, dms, nspcfrm, ndescr ,ntmp, targ_root
+     &     dgam, dms, nspcfrm, ndescr, ntmp, targ_root
       integer ::
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -501,6 +501,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &               ndim=ndescr)
         !call get_arg('N_DESCR',rule,tgt_info,val_int=ndescr)
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
+        call get_arg('FIX_VTX',rule,tgt_info,val_log=ms_fix)
         call form_expand_op_product(init,form_pnt,fac,
      &       title,label,label_list,nop,
      &       idx_sv,iblkmin,iblkmax,
@@ -508,7 +509,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       avoid,navoid,
      &       inproj,ninproj,
      &       descr,ndescr,
-     &       op_info,orb_info)
+     &       ms_fix,op_info,orb_info)
 *----------------------------------------------------------------------*
       case(FACTOR_OUT)
 *----------------------------------------------------------------------*
@@ -1061,9 +1062,10 @@ c          mode = 'dia-R12'
 *----------------------------------------------------------------------*
 
         call get_arg('FORM',rule,tgt_info,val_label=label)
+        call get_arg('INIT',rule,tgt_info,val_log=init)
 
         if (form_test) return
-        call evaluate(label,
+        call evaluate(label,init,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
 *----------------------------------------------------------------------*

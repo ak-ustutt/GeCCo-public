@@ -16,6 +16,7 @@
       include 'par_formnames_gen.h'
       include 'par_gen_targets.h'
       include 'par_actions.h'
+      include 'ifc_targets.h'
 
       type(target_info), intent(inout) ::
      &     tgt_info
@@ -23,12 +24,12 @@
      &     orb_info
 
       integer ::
-     &     min_rank, max_rank, t1ext_mode,
+     &     min_rank, max_rank, t1ext_mode, max_rank_guess,
      &     isim, ncat, nint, icnt, ansatz,
      &     isym, ms, msc, sym_arr(8),
      &     occ_def(ngastp,2,60), ndef
       logical ::
-     &     needed, explicit
+     &     l_exist, explicit
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(10)
@@ -83,6 +84,13 @@ C      end if
       if (t1ext_mode.eq.0.and.is_keyword_set('method.ECC').gt.0) then
         call get_argument_value('method.ECC','T1ext',ival=t1ext_mode)
       end if
+      call get_argument_value('method.CC','maxexc_guess',
+     &                        ival=max_rank_guess)
+      call get_argument_value('calculate.solve.non_linear','restart',
+     &     lval=l_exist)
+      if (max_rank_guess.gt.0.and..not.l_exist)
+     &   call quit(1,'set_ccmp_general_targets',
+     &             'Use of initial guess for T requires restart=T')
 
       ! T operator
       call add_target(op_top,ttype_op,.false.,tgt_info)
@@ -152,6 +160,16 @@ C      end if
       call set_rule(op_dia,ttype_op,CLONE_OP,
      &              op_dia,1,1,
      &              parameters,1,tgt_info)
+
+      if (max_rank_guess.gt.0) then
+        ! operator for initial guess
+        call add_target('Tguess',ttype_op,.false.,tgt_info)
+        call xop_parameters(-1,parameters,
+     &                   .false.,min_rank,max_rank_guess,0,1)
+        call set_rule('Tguess',ttype_op,DEF_EXCITATION,
+     &                'Tguess',1,1,
+     &                parameters,1,tgt_info)
+      end if
 
 *----------------------------------------------------------------------*
 *     Formulae
@@ -270,6 +288,40 @@ C      end if
      &              parameters,0,tgt_info)
       end do
       
+      if (max_rank_guess.gt.0) then
+        ! read in initial guess
+        call add_target('DEF_ME_Tguess',ttype_opme,.true.,tgt_info)
+        call set_dependency('DEF_ME_Tguess',mel_topdef,tgt_info)
+        call set_dependency('DEF_ME_Tguess','Tguess',tgt_info)
+        labels(1:10)(1:len_target_name) = ' '
+        labels(1) = 'ME_Tguess'
+        labels(2) = 'Tguess'
+        call me_list_parameters(-1,parameters,
+     &       msc,0,1,0,0,.false.)
+        call set_rule('DEF_ME_Tguess',ttype_opme,DEF_ME_LIST,
+     &                labels,2,1,
+     &                parameters,1,tgt_info)
+        inquire(file='ME_Tguess_list.da',exist=l_exist)
+        if (.not.l_exist) call quit(1,'set_ccmp_general_targets',
+     &           'Amplitude file for initial guess not found!')
+        ! first initialize T op with zeros
+        call set_rule2('DEF_ME_Tguess',UNITY,tgt_info)
+        call set_arg('DEF_ME_Tguess',UNITY,'LIST',1,tgt_info,
+     &               val_label=(/mel_top/))
+        call set_arg('DEF_ME_Tguess',UNITY,'FAC',1,tgt_info,
+     &               val_rl8=(/0d0/)) ! not needed since no diag. blks
+        call set_arg('DEF_ME_Tguess',UNITY,'INIT',1,tgt_info,
+     &               val_log=(/.true./))
+        ! now copy the initial guess
+        call set_rule2('DEF_ME_Tguess',SCALE_COPY,tgt_info)
+        call set_arg('DEF_ME_Tguess',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &               val_label=(/mel_top/))
+        call set_arg('DEF_ME_Tguess',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &               val_label=(/'ME_Tguess'/))
+        call set_arg('DEF_ME_Tguess',SCALE_COPY,'FAC',1,tgt_info,
+     &               val_rl8=(/1d0/))
+      end if
+
 *----------------------------------------------------------------------*
 *     "phony" targets
 *----------------------------------------------------------------------*

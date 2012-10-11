@@ -41,7 +41,7 @@
       character(len_command_par) ::
      &     parameters(3)
       character ::
-     &     op_dint*7, f_dint*9, defme_dint*14, me_dint*10
+     &     op_dint*7, f_dint*9, defme_dint*14, me_dint*10, triples*1
       real(8) ::
      &     factor
 
@@ -64,6 +64,17 @@
       ! valence-valence excitations
       call get_argument_value('method.MR','maxexc',
      &     ival=maxexc)
+      call get_argument_value('method.MR','triples',
+     &     str=triples(1:1))
+      ! special simplification: in case of approximate triples models,
+      ! no more effort than for the singles doubles model is needed:
+      if (maxexc.eq.3) then
+        select case(triples)
+        case ('0','A','a','B','b')
+          maxexc = 2  ! just pretending for this routine
+        case default
+        end select
+      end if
       call get_argument_value('method.MR','maxcum',
      &     ival=maxcum)
       call get_argument_value('method.MR','cum_appr_mode',
@@ -78,6 +89,16 @@
       if (gno.eq.0) then
         ioff = 2 !3
         if (pure_vv) ioff = 3 !2
+      else
+        ! densities should be defined in terms of cumulants
+        ! => forbid (for now) parallel use of cumulant approximations
+        if (maxcum.gt.0) call quit(1,'set_gno_targets',
+     &        'GNO=1 and cumul.approx. (maxcum>0) currently forbidden')
+        cum_appr_mode = 0
+        ioff = 2
+        if (pure_vv) call quit(1,'set_gno_targets',
+     &        'GNO=1 and pure_vv=T currently forbidden')
+        maxcum = ioff+2*maxexc-3
       end if
 
       if (ntest.ge.100) then
@@ -98,6 +119,8 @@ c      call add_target('DENS',ttype_op,.false.,tgt_info)
 c      do iv = 1, 2 + maxexc*(maxtop+1) - ioff
       if (maxtop.le.0) then
         nv = min(maxcum,orb_info%nactel)
+      else if (gno.gt.0) then
+        nv = maxcum
       else
         nv = min(ioff + (maxexc-1)*(maxtop+1),orb_info%nactel)
       end if
@@ -120,16 +143,21 @@ c     &              parameters,2,tgt_info)
      &     val_int=(/2/))
       call set_arg('DENS',DEF_OP_FROM_OCC,'OCC',ndef*2,tgt_info,
      &     val_occ=occ_def(1:ngastp,1:2,1:ndef*2))
-      call set_arg('DENS',DEF_OP_FROM_OCC,'FORMAL',1,tgt_info,
+      if (gno.eq.0) then
+        call set_arg('DENS',DEF_OP_FROM_OCC,'FORMAL',1,tgt_info,
 c     &     val_int=(/orb_info%nactel+1/))
-     &     val_int=(/max(maxcum,ioff+2*maxexc-3)+1/))
+     &       val_int=(/max(maxcum,ioff+2*maxexc-3)+1/))
+      else
+        call set_arg('DENS',DEF_OP_FROM_OCC,'FORMAL',1,tgt_info,
+     &       val_int=(/orb_info%nactel+1/))
+      end if
 
       ! define operator adjoint to reduced densities
       call add_target('DENS_dag',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
 c      do iv = 1, 2 + maxexc*(maxtop+1) - ioff
-      if (maxtop.le.0) then
+      if (maxtop.le.0.or.gno.gt.0) then
         nv = maxcum
       else
         nv = min(ioff + (maxexc-1)*(maxtop+1),orb_info%nactel)

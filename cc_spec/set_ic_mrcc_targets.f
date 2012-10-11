@@ -43,11 +43,11 @@
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
-     &     tfix, maxit, t1ord, maxcum, cum_appr_mode
+     &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno
       logical ::
      &     update_prc, skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, use_f12
+     &     oldref, solve, use_f12, restart
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -86,6 +86,8 @@
      &     lval=update_prc)
       call get_argument_value('calculate.solve.non_linear','preopt',
      &     lval=preopt)
+      call get_argument_value('calculate.solve.non_linear','restart',
+     &     lval=restart)
       call get_argument_value('method.MR','project',
      &     lval=project)
       call get_argument_value('method.MRCC','Op_eqs',
@@ -136,6 +138,9 @@
       trunc = ntrunc.ge.0
       solve = execute.and..not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
      &               .and..not.skip
+      use_f12 = is_keyword_set('method.R12').gt.0
+      call get_argument_value('method.MR','GNO',
+     &     ival=gno)
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en    = ', maxcom_en
@@ -173,6 +178,9 @@
       if (h1bar_maxp.eq.0.or.h1bar_maxp.eq.1)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'h1bar_maxp should be either -1 or one of 2,3,4')
+      if (gno.gt.0.and.(update_prc.or.tred.gt.0))
+     &    call quit(1,'set_ic_mrcc_targets',
+     &     'update_prc or tred!=0 not yet available for GNO')
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -184,7 +192,7 @@
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+          do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,1,ndef) = ih
             occ_def(IPART,2,ndef) = ip
@@ -208,7 +216,7 @@
       do ip = 0, maxp
         do ih = 0, maxh
           first = .true.
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+          do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef) = ih
             occ_def(IPART,1,ndef) = ip
@@ -386,7 +394,7 @@ c     &             val_int=(/1/))
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+          do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
             occ_def(IPART,1,ndef*2) = ip
@@ -429,6 +437,7 @@ c     &             val_int=(/1/))
      &              'OMGtr',1,1,
      &              parameters,2,tgt_info)
 
+c dbg
 c      ! Metric operator (for testing, also non-diagonal blocks)
 c      call add_target('S',ttype_op,.false.,tgt_info)
 c      occ_def = 0
@@ -445,9 +454,9 @@ c            occ_def(IHOLE,1,3*ndef-1) = ih
 c            occ_def(IHOLE,2,3*ndef-1) = ih
 c            occ_def(IPART,1,3*ndef-1) = ip
 c            occ_def(IPART,2,3*ndef-1) = ip
-c            occ_def(IVALE,1,3*ndef-1) = iexc - ip
+c            occ_def(IVALE,1,3*ndef-1) = jexc - ip
 c            occ_def(IVALE,2,3*ndef-1) = iexc - ip
-c            occ_def(IVALE,2,3*ndef-2) = iexc - ih
+c            occ_def(IVALE,2,3*ndef-2) = jexc - ih
 c            occ_def(IVALE,1,3*ndef) = iexc - ih
 c           end do
 c          end do
@@ -458,14 +467,15 @@ c     &              occ_def,ndef,3,(/0,0,0,0,0,0/),ndef)
 c      call set_rule('S',ttype_op,DEF_OP_FROM_OCC,
 c     &              'S',1,1,
 c     &              parameters,2,tgt_info)
+c dbgend
 
       ! Diagonal Preconditioner
       call add_target(trim(op_dia)//'_T',ttype_op,.false.,
      &                tgt_info)
       call set_dependency(trim(op_dia)//'_T','T',tgt_info)
       call cloneop_parameters(-1,parameters,'T',.false.)
-      call set_rule(trim(op_dia)//'_T',ttype_op,
-     &              CLONE_OP,trim(op_dia)//'_T',1,1,
+      call set_rule(trim(op_dia)//'_T',ttype_op,CLONE_OP,
+     &              trim(op_dia)//'_T',1,1,
      &              parameters,1,tgt_info)
 
       ! Diagonal Preconditioner for L
@@ -473,8 +483,8 @@ c     &              parameters,2,tgt_info)
      &                tgt_info)
       call set_dependency(trim(op_dia)//'_L','L',tgt_info)
       call cloneop_parameters(-1,parameters,'L',.false.)
-      call set_rule(trim(op_dia)//'_L',ttype_op,
-     &              CLONE_OP,trim(op_dia)//'_L',1,1,
+      call set_rule(trim(op_dia)//'_L',ttype_op,CLONE_OP,
+     &              trim(op_dia)//'_L',1,1,
      &              parameters,1,tgt_info)
 
       ! C0 dagger operator (for testing)
@@ -680,7 +690,7 @@ c     &     val_label=(/'H'/))
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
-          do iexc = 2, excrestr(ih,ip,2)
+          do iexc = max(2,excrestr(ih,ip,1)), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef) = ih
             occ_def(IPART,1,ndef) = ip
@@ -1314,7 +1324,7 @@ c dbgend
         call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
      &       val_label=(/'F_OMG'/))
       end if
-      use_f12 = is_keyword_set('method.R12').gt.0
+
       ! Lagrangian without Lambda...
       call add_target2('F_E_C0',.false.,tgt_info)
       call set_dependency('F_E_C0','L',tgt_info)
@@ -1450,12 +1460,10 @@ c dbgend
      &       val_label=(/'T  ','Dtr','Ttr','Dtr','T  '/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &       val_int=(/1,2,3,2,1/))
-        call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MIN',5,tgt_info,
-     &       val_int=(/stndT(1,i_cls),stndD(1,i_cls),stndT(1,i_cls),
-     &                 stndD(1,i_cls),stndT(1,i_cls)/))
-        call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MAX',5,tgt_info,
-     &       val_int=(/stndT(2,i_cls),stndD(2,i_cls),stndT(2,i_cls),
-     &                 stndD(2,i_cls),stndT(2,i_cls)/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
+     &       val_int=(/stndT(1,i_cls),stndD(1,i_cls),stndT(1,i_cls)/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
+     &       val_int=(/stndT(2,i_cls),stndD(2,i_cls),stndT(2,i_cls)/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
      &       val_int=(/4/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'AVOID',8,tgt_info,
@@ -1474,10 +1482,10 @@ c dbgend
      &       val_label=(/'T  ','Ttr','T  '/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
      &       val_int=(/1,2,1/))
-        call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
-     &       val_int=(/stndT(1,i_cls),stndT(1,i_cls),stndT(1,i_cls)/))
-        call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
-     &       val_int=(/stndT(2,i_cls),stndT(2,i_cls),stndT(2,i_cls)/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MIN',2,tgt_info,
+     &       val_int=(/stndT(1,i_cls),stndT(1,i_cls)/))
+        call set_arg('F_T',EXPAND_OP_PRODUCT,'BLK_MAX',2,tgt_info,
+     &       val_int=(/stndT(2,i_cls),stndT(2,i_cls)/))
         call set_arg('F_T',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &       val_log=(/i_cls.eq.1/))
       end do
@@ -1541,12 +1549,10 @@ c dbgend
      &       val_label=(/'L    ','Dtr^+','Ltr  ','Dtr^+','L    '/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &       val_int=(/1,2,3,2,1/))
-        call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MIN',5,tgt_info,
-     &       val_int=(/stndT(1,i_cls),stndD(1,i_cls),stndT(1,i_cls),
-     &                 stndD(1,i_cls),stndT(1,i_cls)/))
-        call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MAX',5,tgt_info,
-     &       val_int=(/stndT(2,i_cls),stndD(2,i_cls),stndT(2,i_cls),
-     &                 stndD(2,i_cls),stndT(2,i_cls)/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
+     &       val_int=(/stndT(1,i_cls),stndD(1,i_cls),stndT(1,i_cls)/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
+     &       val_int=(/stndT(2,i_cls),stndD(2,i_cls),stndT(2,i_cls)/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
      &       val_int=(/4/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'AVOID',8,tgt_info,
@@ -1565,10 +1571,10 @@ c dbgend
      &       val_label=(/'L  ','Ltr','L  '/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
      &       val_int=(/1,2,1/))
-        call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
-     &       val_int=(/stndT(1,i_cls),stndT(1,i_cls),stndT(1,i_cls)/))
-        call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
-     &       val_int=(/stndT(2,i_cls),stndT(2,i_cls),stndT(2,i_cls)/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MIN',2,tgt_info,
+     &       val_int=(/stndT(1,i_cls),stndT(1,i_cls)/))
+        call set_arg('F_L',EXPAND_OP_PRODUCT,'BLK_MAX',2,tgt_info,
+     &       val_int=(/stndT(2,i_cls),stndT(2,i_cls)/))
         call set_arg('F_L',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &       val_log=(/i_cls.eq.1/))
       end do
@@ -1934,10 +1940,10 @@ c      call set_arg('F_NORMtr',EXPAND,'LABEL_RES',1,tgt_info,
 c     &     val_label=(/'F_NORMtr'/))
 c      call set_arg('F_NORMtr',EXPAND,'LABEL_IN',1,tgt_info,
 c     &     val_label=(/'F_NORMtr'/))
-c      call set_arg('F_NORMtr',EXPAND,'INTERM',1,tgt_info,
-c     &     val_label=(/'F_T'/))
-cctest      call set_arg('F_NORMtr',EXPAND,'INTERM',2,tgt_info,
-cctest     &     val_label=(/'F_T','F_L'/))
+cc      call set_arg('F_NORMtr',EXPAND,'INTERM',1,tgt_info,
+cc     &     val_label=(/'F_T'/))
+c      call set_arg('F_NORMtr',EXPAND,'INTERM',2,tgt_info,
+c     &     val_label=(/'F_T','F_L'/))
 cc dbg
 c      call set_rule2('F_NORMtr',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_NORMtr',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -1947,16 +1953,19 @@ c
 c      ! transformed Metric times vector
 c      call add_target2('F_S_Ttr',.false.,tgt_info)
 c      call set_dependency('F_S_Ttr','F_NORMtr',tgt_info)
-c      call set_dependency('F_S_Ttr','OMG',tgt_info) !tr',tgt_info)
+cc      call set_dependency('F_S_Ttr','OMG',tgt_info) !tr',tgt_info)
+c      call set_dependency('F_S_Ttr','OMGtr',tgt_info)
 c      call set_rule2('F_S_Ttr',DERIVATIVE,tgt_info)
 c      call set_arg('F_S_Ttr',DERIVATIVE,'LABEL_RES',1,tgt_info,
 c     &     val_label=(/'F_S_Ttr'/))
 c      call set_arg('F_S_Ttr',DERIVATIVE,'LABEL_IN',1,tgt_info,
 c     &     val_label=(/'F_NORMtr'/))
 c      call set_arg('F_S_Ttr',DERIVATIVE,'OP_RES',1,tgt_info,
-c     &     val_label=(/'OMG'/)) !tr'/))
+cc     &     val_label=(/'OMG'/)) !tr'/))
+c     &     val_label=(/'OMGtr'/))
 c      call set_arg('F_S_Ttr',DERIVATIVE,'OP_DERIV',1,tgt_info,
-c     &     val_label=(/'L'/)) !tr'/))
+cc     &     val_label=(/'L'/)) !tr'/))
+c     &     val_label=(/'Ltr'/))
 c      call set_rule2('F_S_Ttr',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_S_Ttr',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_S_Ttr'/))
@@ -1964,14 +1973,14 @@ c
 c      ! transformed Metric (should be unity)
 c      call add_target2('F_Str',.false.,tgt_info)
 c      call set_dependency('F_Str','F_S_Ttr',tgt_info)
-c      call set_dependency('F_Str','A',tgt_info)
+c      call set_dependency('F_Str','S',tgt_info)
 c      call set_rule2('F_Str',DERIVATIVE,tgt_info)
 c      call set_arg('F_Str',DERIVATIVE,'LABEL_RES',1,tgt_info,
 c     &     val_label=(/'F_Str'/))
 c      call set_arg('F_Str',DERIVATIVE,'LABEL_IN',1,tgt_info,
 c     &     val_label=(/'F_S_Ttr'/))
 c      call set_arg('F_Str',DERIVATIVE,'OP_RES',1,tgt_info,
-c     &     val_label=(/'A'/))
+c     &     val_label=(/'S'/))
 c      call set_arg('F_Str',DERIVATIVE,'OP_DERIV',1,tgt_info,
 c     &     val_label=(/'Ttr'/))
 c      call set_rule2('F_Str',PRINT_FORMULA,tgt_info)
@@ -2566,6 +2575,116 @@ c      call set_arg('F_T_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_T_NORM'/))
 c dbgend
 
+      ! Formula to add transformation to GNO to Trafo matrix
+      call add_target2('F_Dinv_GNO',.false.,tgt_info)
+      call set_dependency('F_Dinv_GNO','D',tgt_info)
+      if (gno.gt.0) then
+        call set_dependency('F_Dinv_GNO','CUM',tgt_info)
+        do i_cls = 1, nsupD
+          call set_rule2('F_Dinv_GNO',EXPAND_OP_PRODUCT,tgt_info)
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'LABEL',1,
+     &         tgt_info,val_label=(/'F_Dinv_GNO'/))
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &         tgt_info,val_label=(/'D'/))
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'OPERATORS',11,
+     &         tgt_info,
+     &         val_label=(/'D  ','D  ','CUM','D  ','D  ','CUM',
+     &                     'D  ','D  ','D  ','D  ','D  '/))
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'IDX_SV',11,
+     &         tgt_info,val_int=(/1,2,3,1,1,3,2,1,1,2,1/))
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'BLK_MIN',3,
+     &         tgt_info,
+     &         val_int=(/stndD(1,i_cls),stndD(1,i_cls),1/))
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'BLK_MAX',3,
+     &         tgt_info,
+     &         val_int=(/stndD(2,i_cls),stndD(2,i_cls),-1/))
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'N_AVOID',1,
+     &         tgt_info,val_int=(/11/))
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'AVOID',22,
+     &         tgt_info,
+     &         val_int=(/2,7,2,8,2,10,5,8,5,10,7,10,
+     &                   3,4,5,6,3,6,3,8,3,10/))
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &         tgt_info,val_log=(/.true./))
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &         val_log=(/i_cls.eq.1/))
+        end do
+      end if
+c dbg
+c      call set_rule2('F_Dinv_GNO',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_Dinv_GNO',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_Dinv_GNO'/))
+c dbgend
+
+      ! Formula to add transformation to GNO to Projector
+      call add_target2('F_Dproj_GNO',.false.,tgt_info)
+      call set_dependency('F_Dproj_GNO','D',tgt_info)
+      if (gno.gt.0) then
+        call set_dependency('F_Dproj_GNO','CUM',tgt_info)
+        do i_cls = 1, nsupD
+          ! first multiply from left
+          call set_rule2('F_Dproj_GNO',EXPAND_OP_PRODUCT,tgt_info)
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'LABEL',1,
+     &         tgt_info,val_label=(/'F_Dproj_GNO'/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &         tgt_info,val_label=(/'D'/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'OPERATORS',11,
+     &         tgt_info,
+     &         val_label=(/'D  ','D  ','CUM','D  ','D  ','CUM',
+     &                     'D  ','D  ','D  ','D  ','D  '/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'IDX_SV',11,
+     &         tgt_info,val_int=(/1,2,3,1,1,3,2,1,1,2,1/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'BLK_MIN',3,
+     &         tgt_info,
+     &         val_int=(/stndD(1,i_cls),stndD(1,i_cls),1/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'BLK_MAX',3,
+     &         tgt_info,
+     &         val_int=(/stndD(2,i_cls),stndD(2,i_cls),-1/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'N_AVOID',1,
+     &         tgt_info,val_int=(/11/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'AVOID',22,
+     &         tgt_info,
+     &         val_int=(/2,7,2,8,2,10,5,8,5,10,7,10,
+     &                   3,4,5,6,3,6,3,8,3,10/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &         tgt_info,val_log=(/.true./))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &         val_log=(/i_cls.eq.1/))
+          ! now from right: will also lead to contributions from both
+          call set_rule2('F_Dproj_GNO',EXPAND_OP_PRODUCT,tgt_info)
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'LABEL',1,
+     &         tgt_info,val_label=(/'F_Dproj_GNO'/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &         tgt_info,val_label=(/'D'/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'OPERATORS',11,
+     &         tgt_info,
+     &         val_label=(/'D  ','D  ','D  ','D  ','D  ','CUM',
+     &                     'D  ','D  ','CUM','D  ','D  '/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'IDX_SV',11,
+     &         tgt_info,val_int=(/1,2,1,1,2,3,1,1,3,2,1/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'BLK_MIN',3,
+     &         tgt_info,
+     &         val_int=(/stndD(1,i_cls),stndD(1,i_cls),1/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'BLK_MAX',3,
+     &         tgt_info,
+     &         val_int=(/stndD(2,i_cls),stndD(2,i_cls),-1/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'N_AVOID',1,
+     &         tgt_info,val_int=(/11/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'AVOID',22,
+     &         tgt_info,
+     &         val_int=(/2,5,2,7,2,10,4,7,4,10,5,10,
+     &                   6,10,5,9,6,9,4,9,2,9/))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &         tgt_info,val_log=(/.true./))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &         val_log=(/.false./))
+        end do
+      end if
+c dbg
+c      call set_rule2('F_Dproj_GNO',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_Dproj_GNO',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_Dproj_GNO'/))
+c dbgend
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -2785,7 +2904,7 @@ c dbg
 c      ! transformed metric
 c      call add_target2('FOPT_Str',.false.,tgt_info)
 c      call set_dependency('FOPT_Str','F_Str',tgt_info)
-c      call set_dependency('FOPT_Str','DEF_ME_A',tgt_info)
+c      call set_dependency('FOPT_Str','DEF_ME_S',tgt_info)
 c      call set_dependency('FOPT_Str','DEF_ME_1',tgt_info)
 c      call set_dependency('FOPT_Str','DEF_ME_Dtr',tgt_info)
 c      call set_rule2('FOPT_Str',OPTIMIZE,tgt_info)
@@ -2915,6 +3034,30 @@ c dbgend
      &             val_label=(/'FOPT_Ecorrected'/))
       call set_arg('FOPT_Ecorrected',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_Ecorrected'/))
+
+      ! formula for modification of trafo matrix (add. trafo to GNO)
+      call add_target2('FOPT_Dinv_GNO',.false.,tgt_info)
+      call set_dependency('FOPT_Dinv_GNO','F_Dinv_GNO',tgt_info)
+      call set_dependency('FOPT_Dinv_GNO','DEF_ME_D',tgt_info)
+      if (gno.gt.0) call set_dependency('FOPT_Dinv_GNO','DEF_ME_CUM',
+     &                                  tgt_info)
+      call set_rule2('FOPT_Dinv_GNO',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_Dinv_GNO',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_Dinv_GNO'/))
+      call set_arg('FOPT_Dinv_GNO',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_Dinv_GNO'/))
+
+      ! formula for modification of Projector (add. trafo to GNO)
+      call add_target2('FOPT_Dproj_GNO',.false.,tgt_info)
+      call set_dependency('FOPT_Dproj_GNO','F_Dproj_GNO',tgt_info)
+      call set_dependency('FOPT_Dproj_GNO','DEF_ME_D',tgt_info)
+      if (gno.gt.0) call set_dependency('FOPT_Dproj_GNO','DEF_ME_CUM',
+     &                                  tgt_info)
+      call set_rule2('FOPT_Dproj_GNO',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_Dproj_GNO',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_Dproj_GNO'/))
+      call set_arg('FOPT_Dproj_GNO',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_Dproj_GNO'/))
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -3253,6 +3396,21 @@ c dbgend
      &             val_int=(/1/))
       call set_arg('DEF_ME_Tfix',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
+
+c dbg
+c      ! ME_S
+c      call add_target2('DEF_ME_S',.false.,tgt_info)
+c      call set_dependency('DEF_ME_S','S',tgt_info)
+c      call set_rule2('DEF_ME_S',DEF_ME_LIST,tgt_info)
+c      call set_arg('DEF_ME_S',DEF_ME_LIST,'LIST',1,tgt_info,
+c     &     val_label=(/'ME_S'/))
+c      call set_arg('DEF_ME_S',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+c     &     val_label=(/'S'/))
+c      call set_arg('DEF_ME_S',DEF_ME_LIST,'IRREP',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg('DEF_ME_S',DEF_ME_LIST,'MS',1,tgt_info,
+c     &     val_int=(/0/))
+c dbgend
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
@@ -3399,6 +3557,8 @@ c dbgend
       call set_dependency('SOLVE_MRCC','EVAL_D',tgt_info)
       call set_dependency('SOLVE_MRCC','DEF_ME_Dtrdag',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_T',tgt_info)
+      if (restart) ! project out redundant part (if sv_thr. changed)
+     &   call set_dependency('SOLVE_MRCC','EVAL_Tproj',tgt_info)
       select case(prc_type)
       case(-1) !do nothing: use old preconditioner file!
         call warn('set_ic_mrcc_targets','Using old preconditioner file')
@@ -3544,8 +3704,14 @@ c dbgend
           end if
         else
           if (tred.eq.0) then
-          call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',2,tgt_info,
-     &         val_label=(/'FOPT_T','FOPT_D'/))
+            if (gno.gt.0) then
+              call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',4,tgt_info,
+     &             val_label=(/'FOPT_T        ','FOPT_D        ',
+     &                         'FOPT_Dinv_GNO ','FOPT_Dproj_GNO'/))
+            else
+              call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',2,tgt_info,
+     &             val_label=(/'FOPT_T','FOPT_D'/))
+            end if
           else if (ex_t3red) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',4,tgt_info,
      &         val_label=(/'FOPT_T      ','FOPT_D      ',
@@ -3827,16 +3993,16 @@ c      ! Evaluate transformed metric
 c      call add_target('EVAL_Str',ttype_gen,.false.,tgt_info)
 c      call set_dependency('EVAL_Str','FOPT_Str',tgt_info)
 c      call set_dependency('EVAL_Str','SOLVE_REF',tgt_info)
-c      call set_rule('EVAL_Str',ttype_opme,RES_ME_LIST,
-c     &     'ME_A',1,0,
-c     &     parameters,0,tgt_info)
+cc      call set_rule('EVAL_Str',ttype_opme,RES_ME_LIST,
+cc     &     'ME_A',1,0,
+cc     &     parameters,0,tgt_info)
 c      call set_rule('EVAL_Str',ttype_opme,EVAL,
 c     &     'FOPT_Str',1,0,
 c     &     parameters,0,tgt_info)
 c      call form_parameters(-1,parameters,2,
 c     &     'transformed metric :',0,'LIST')
 c      call set_rule('EVAL_Str',ttype_opme,PRINT_MEL,
-c     &     'ME_A',1,0,
+c     &     'ME_S',1,0,
 c     &     parameters,2,tgt_info)
 c
 c      ! Evaluate metric times vector
@@ -3948,32 +4114,31 @@ c     &     'ME_OMG',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
 
+      ! Evaluate projected T (needed e.g. for restart)
+      call add_target('EVAL_Tproj',ttype_gen,.false.,tgt_info)
+      call set_dependency('EVAL_Tproj','DEF_ME_Dproj',tgt_info)
+      call set_dependency('EVAL_Tproj','FOPT_T',tgt_info)
+      call set_dependency('EVAL_Tproj','DEF_ME_T',tgt_info)
+      call set_dependency('EVAL_Tproj','DEF_ME_Ttr',tgt_info)
+      ! (a) first copy T list to Ttr
+      call set_rule2('EVAL_Tproj',SCALE_COPY,tgt_info)
+      call set_arg('EVAL_Tproj',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &             val_label=(/'ME_Ttr'/))
+      call set_arg('EVAL_Tproj',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &             val_label=(/'ME_T'/))
+      call set_arg('EVAL_Tproj',SCALE_COPY,'FAC',1,tgt_info,
+     &             val_rl8=(/1d0/))
+      ! (just for safety: should be already assigned this way)
+      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
+      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &           val_label=(/'ME_Dproj'/))
+      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+     &           val_label=(/'Dtr'/))
+      ! (b) evaluate projection
+      call set_rule2('EVAL_Tproj',EVAL,tgt_info)
+      call set_arg('EVAL_Tproj',EVAL,'FORM',1,tgt_info,
+     &             val_label=(/'FOPT_T'/))
 c dbg
-c      ! Evaluate projected T
-c      call add_target('EVAL_Tproj',ttype_gen,.false.,tgt_info)
-c      call set_dependency('EVAL_Tproj','FOPT_T',tgt_info)
-c      call set_dependency('EVAL_Tproj','SOLVE_REF',tgt_info)
-c      call set_dependency('EVAL_Tproj','DEF_ME_Dproj',tgt_info)
-c      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
-c     &           val_label=(/'ME_T'/))
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
-c     &           val_label=(/'Ttr'/))
-c      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
-c     &           val_label=(/'ME_Ttr'/))
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
-c     &           val_label=(/'T'/))
-c      call set_rule2('EVAL_Tproj',ASSIGN_ME2OP,tgt_info)
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'LIST',1,tgt_info,
-c     &           val_label=(/'ME_Dproj'/))
-c      call set_arg('EVAL_Tproj',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
-c     &           val_label=(/'Dtr'/))
-c      call set_rule('EVAL_Tproj',ttype_opme,EVAL,
-c     &     'FOPT_T',1,0,
-c     &     parameters,0,tgt_info)
-c      call form_parameters(-1,parameters,2,
-c     &     'projected T :',0,'LIST')
 c      call set_rule('EVAL_Tproj',ttype_opme,PRINT_MEL,
 c     &     'ME_Ttr',1,0,
 c     &     parameters,2,tgt_info)

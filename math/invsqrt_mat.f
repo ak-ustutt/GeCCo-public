@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine invsqrt_mat(ndim,mat,mat2,half,umat,get_u,
-     &                       icnt_sv,icnt_sv0,
+     &                       singval,icnt_sv,icnt_sv0,
      &                       xmax,xmin,bins)
 *----------------------------------------------------------------------*
 *     half = true: calculates U*mat^(-0.5) using MAT = U*mat*U^+
@@ -26,10 +26,12 @@
      &     icnt_sv, icnt_sv0, bins(17)
       real(8), intent(inout), target ::
      &     mat(ndim,ndim), mat2(ndim,ndim), xmax, xmin, umat(ndim,ndim)
+      real(8), intent(out) ::
+     &     singval(ndim)
       logical, intent(in) ::
      &     half, get_u
       real(8) ::
-     &     singval(ndim),wrk(max(1024,ndim**2)),dum1,dum2,expo
+     &     wrk(max(1024,ndim**2)),dum1,dum2,expo
       real(8), pointer ::
      &     mat_tmp(:,:)
 

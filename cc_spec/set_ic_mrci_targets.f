@@ -160,8 +160,8 @@
      &                tgt_info)
       call set_dependency(trim(op_dia)//'_C','C',tgt_info)
       call cloneop_parameters(-1,parameters,'C',.false.)
-      call set_rule(trim(op_dia)//'_C',ttype_op,
-     &              CLONE_OP,trim(op_dia)//'_C',1,1,
+      call set_rule(trim(op_dia)//'_C',ttype_op,CLONE_OP,
+     &              trim(op_dia)//'_C',1,1,
      &              parameters,1,tgt_info)
 
 *----------------------------------------------------------------------*

@@ -64,6 +64,8 @@ c      use parse_input
       call argument_add('H0_T1ext','method.CC',type=vtyp_int,idef=(/0/))
       call argument_add('H0d','method.CC',type=vtyp_log,
      &                                                ldef=(/.false./))
+      call argument_add('maxexc_guess','method.CC',type=vtyp_int,
+     &     idef=(/0/)) ! use T op with lower rank as initial guess
 
       call keyword_add('CCPT',context='method')
       call argument_add('maxexc','method.CCPT',type=vtyp_int,idef=(/3/))
@@ -401,6 +403,8 @@ c     &     ldef=(/.true./))
      &     xdef=(/1d-12/))
       call argument_add('sv_fix','calculate.routes',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('Tikhonov','calculate.routes',type=vtyp_rl8,
+     &     xdef=(/0d0/))
 
       ! special keywords for response theory
       call keyword_add('response',context='method')

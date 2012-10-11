@@ -6,7 +6,7 @@
      &     avoid,navoid,
      &     inproj,ninproj,
      &     descr,ndescr,
-     &     op_info,orb_info)
+     &     fix_in,op_info,orb_info)
 *----------------------------------------------------------------------*
 *     Driver routine to set up the operator product
 *
@@ -38,7 +38,7 @@
       character(len=*), intent(in) ::
      &     label_res, label(nlabels), title
       logical, intent(in) ::
-     &     init
+     &     init, fix_in
       real(8), intent(in) ::
      &     fac
 
@@ -142,7 +142,7 @@
      &     connect,nconnect,
      &     avoid,navoid,
      &     inproj,ninproj,
-     &     .false.,op_info)
+     &     fix_in,op_info)
       else
         ! new routine
         call expand_op_product3(fl_pnt,idxres,

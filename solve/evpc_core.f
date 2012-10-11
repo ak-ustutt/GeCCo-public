@@ -345,7 +345,7 @@ cmhend
             ! pretend that me_trv is not up to date
             call reset_file_rec(me_trv(iopt)%mel%fhand)
             call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                  op_info,str_info,strmap_info,orb_info)
+     &                  .true.,op_info,str_info,strmap_info,orb_info)
             ! residual norm (nselect should be 1):
             xrsnrm(iroot,iopt) = xret(idxselect(1))
             deallocate(xret,idxselect)
@@ -386,7 +386,7 @@ c dbgend
         nsec = sum(nsec_arr)
         nwfpsec => opti_info%nwfpsec(1:nsec)
         idstsec => opti_info%idstsec(1:nsec)
-        signsec => opti_info%signsec2(1:nsec)
+        signsec => opti_info%signsec(1:nsec)!2(1:nsec)
 
         ! reduced space exhausted?
         if (nred+nnew.gt.mxsub) then
@@ -495,8 +495,11 @@ c dbgend
                 call switch_mel_record(me_scr(iopt)%mel,iroot)
                 call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
      &                            fspc(1),opti_info%nwfpar(iopt),
-     &                            xbuf1,xbuf2,.true.,opti_info,orb_info,
+     &                            xbuf1,xbuf2,.true.,xnrm,
+     &                            opti_info,orb_info,
      &                            op_info,str_info,strmap_info)
+                if (xnrm.lt.1d-12) call warn('evpc_core',
+     &               'Nothing left after projection!')
               end do
               ! reassign op. with list containing trial vector
               call assign_me_list(me_trv(iopt)%mel%label,
@@ -551,7 +554,7 @@ c              xnrm = 1d0
               ! pretend that me_trv is not up to date
               call reset_file_rec(me_trv(iopt)%mel%fhand)
               call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                    op_info,str_info,strmap_info,orb_info)
+     &                    .true.,op_info,str_info,strmap_info,orb_info)
               ! in reality me_trv is still up to date:
               call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
@@ -607,7 +610,7 @@ c dbgend
               call switch_mel_record(me_met(iopt)%mel,irec)
               call switch_mel_record(me_scr(iopt)%mel,iroot)
               call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                    op_info,str_info,strmap_info,orb_info)
+     &                    .true.,op_info,str_info,strmap_info,orb_info)
               call reset_file_rec(me_met(iopt)%mel%fhand)
 
               ! reassign op. with list containing trial vector

@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine evaluate(
-     &     label_form,
+     &     label_form,init,
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -36,6 +36,8 @@
 
       character(*) ::
      &     label_form
+      logical ::
+     &     init
       type(formula_info) ::
      &     form_info
       type(operator_info) ::
@@ -88,7 +90,7 @@
 
       ! call the scheduler
       call frm_sched(xret,fl_eval,depend,0,0,
-     &               op_info,str_info,strmap_info,orb_info)
+     &               init,op_info,str_info,strmap_info,orb_info)
 
 c dbg
       call get_argument_value('method.R12','pz_eval',lval=pz_eval)

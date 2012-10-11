@@ -215,7 +215,7 @@ c            xrsnrm(iroot,iopt) = xnrm
             call switch_mel_record(me_met(iopt)%mel,iroot)
             call switch_mel_record(me_scr(iopt)%mel,iroot)
             call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                  op_info,str_info,strmap_info,orb_info)
+     &                  .true.,op_info,str_info,strmap_info,orb_info)
             me_met(iopt)%mel%fhand%last_mod(iroot) = -1
           end do
           deallocate(xret,idxselect)

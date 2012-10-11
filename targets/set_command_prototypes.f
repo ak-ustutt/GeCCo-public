@@ -231,6 +231,8 @@
      &     val_log=(/.true./),def=.true.)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
      &     val_rl8=(/1d0/),def=.true.)
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FIX_VTX',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(FACTOR_OUT,tgt_info)
       call set_arg('_PROTO_',FACTOR_OUT,'LABEL_RES',0,tgt_info,
@@ -520,6 +522,8 @@
       call add_command_proto(EVAL,tgt_info)
       call set_arg('_PROTO_',EVAL,'FORM',0,tgt_info,
      &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',EVAL,'INIT',1,tgt_info,
+     &     val_log=(/.true./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(EVALPROP,tgt_info)
       call set_arg('_PROTO_',EVALPROP,'DENS',0,tgt_info,

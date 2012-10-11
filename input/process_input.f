@@ -214,6 +214,8 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
      &     lval=sv_fix)
       call get_argument_value('calculate.routes','sv_thresh',
      &     xval=sv_thresh)
+      call get_argument_value('calculate.routes','Tikhonov',
+     &     xval=tikhonov)
 
       return
 
