@@ -87,10 +87,10 @@
       integer ::
      &     iter, iprint, task, ifree, iopt, jopt, nintm, irequest,
      &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout,
-     &     idxlist(2*nroots), nselect, iguess, maxblk, jdx
+     &     jdx
       real(8) ::
-     &     xresmax, xdum,
-     &     xeig(nroots,2), xresnrm(nroots*nopt), xlist(2*nroots)
+     &     xresmax, xdum, xnrm,
+     &     xeig(nroots,2), xresnrm(nroots*nopt)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:), me_met(:),
      &     me_special(:), me_scr(:), me_home(:)
@@ -112,7 +112,7 @@
      &     fl_mvp, fl_spc(nspcfrm)
 
       integer, pointer ::
-     &     irecmvp(:), irectrv(:), irecmet(:), idxselect(:)
+     &     irecmvp(:), irectrv(:), irecmet(:)
       real(8), pointer ::
      &      xret(:), xbuf1(:), xbuf2(:), xoverlap(:)
 
@@ -363,101 +363,10 @@ c dbgend
       end do
 
       ! get initial amplitudes
-      do iopt = 1, nopt
-        if (.not.init(iopt)) then
-          do iroot = 1, nroots
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            call switch_mel_record(me_opt(iopt)%mel,iroot)
-            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
-          end do
-          cycle
-        end if
-        ! preliminary solution: set only component 1, rest is zero
-        if (iopt.gt.1) then
-          do iroot = 1, nroots
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            call zeroop(me_trv(iopt)%mel)
-          end do
-          cycle
-        end if
-        ! transformed preconditioner => transformed initial guess vector
-        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
-          me_pnt => me_special(1)%mel
-          trafo = .true.
-          maxblk = 1
-        else
-          me_pnt => me_trv(iopt)%mel
-          trafo = .false.
-          maxblk = -1
-        end if
-        call find_nmin_list(xlist,idxlist,2*nroots,me_dia(iopt)%mel,
-     &                      maxblk)
-        iroot = 0
-        do iguess = 1, 2*nroots
-          iroot = iroot + 1    
-
-          call switch_mel_record(me_pnt,iroot)
-          call diag_guess(me_pnt,
-     &         xlist,idxlist,2*nroots,iguess,me_pnt%absym,
-     &         op_info,str_info,strmap_info,orb_info)
-
-          ! if requested, back-transformation of initial guess vector
-          if (trafo) then
-            ! use non-daggered transformation matrix if requested
-            if (nspecial.eq.3)
-     &         call assign_me_list(me_special(2)%mel%label,
-     &                             me_special(2)%mel%op%name,op_info)
-            ! do the transformation
-            allocate(idxselect(nout))
-            nselect = 0
-            call select_formula_target(idxselect,nselect,
-     &                  me_trv(iopt)%mel%label,depend,op_info)
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
-     &                  .true.,op_info,str_info,strmap_info,orb_info)
-            ! guess vectors of wrong spin symmetry will be discarded
-            if (abs(xret(idxselect(1))).lt.1d-12) then
-              if (iprlvl.ge.5) write(luout,*)
-     &           'Discarding guess vector with wrong spin symmetry.'
-              me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
-              iroot = iroot - 1
-            else if (abs(xret(idxselect(1))).lt.1d0-1d-12) then
-              call warn('solve_evp','guess vector not normalized')
-            end if
-            deallocate(idxselect)
-          end if
-
-          ! project out spin contaminations?
-          if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
-            ifree = mem_setmark('solve_evp.spin_proj')
-            ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),'xbuf1')
-            ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
-            call spin_project(me_trv(iopt)%mel,me_special(1)%mel,
-     &                        fl_spc(1),opti_info%nwfpar(iopt),
-     &                        xbuf1,xbuf2,.true.,opti_info,orb_info,
-     &                        op_info,str_info,strmap_info)
-            ifree = mem_flushmark()
-          end if
-
-          if (iroot.eq.nroots) exit
-
-c          if (me_trv(iopt)%mel%absym.ne.0)
-c     &         call sym_ab_list(
-c     &             1d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
-c     &             xdum,.false.,
-c     &             op_info,str_info,strmap_info,orb_info)
-
-c dbg
-c          if (file_exists(me_opt(iopt)%mel%fhand)) then
-c            print *,' *** RESTARTING ***'
-c            call switch_mel_record(me_opt(iopt)%mel,iroot)
-c            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
-c          end if
-c dbg
-        end do
-        if (iroot.ne.nroots) call quit(1,'solve_evp',
-     &        'Could not find enough guess vectors')
-      end do
+      call init_guess(nopt,init,nroots,
+     &                me_opt,me_trv,me_dia,me_special,nspecial,
+     &                fl_mvp,depend,fl_spc,nspcfrm,
+     &                opti_info,orb_info,op_info,str_info,strmap_info)
 
       ! start optimization loop
       iter = 0
@@ -564,7 +473,8 @@ c dbg
      &                              me_opt(iopt)%mel%op%name,op_info)
                 call spin_project(me_mvp(iopt)%mel,me_special(1)%mel,
      &                           fl_spc(1),opti_info%nwfpar(iopt),
-     &                           xbuf1,xbuf2,.false.,opti_info,orb_info,
+     &                           xbuf1,xbuf2,.false.,xnrm,
+     &                           opti_info,orb_info,
      &                           op_info,str_info,strmap_info)
                 ! reassign lists to correct ops
                 call assign_me_list(me_trv(iopt)%mel%label,

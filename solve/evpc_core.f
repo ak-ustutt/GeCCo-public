@@ -495,8 +495,11 @@ c dbgend
                 call switch_mel_record(me_scr(iopt)%mel,iroot)
                 call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
      &                            fspc(1),opti_info%nwfpar(iopt),
-     &                            xbuf1,xbuf2,.true.,opti_info,orb_info,
+     &                            xbuf1,xbuf2,.true.,xnrm,
+     &                            opti_info,orb_info,
      &                            op_info,str_info,strmap_info)
+                if (xnrm.lt.1d-12) call warn('evpc_core',
+     &               'Nothing left after projection!')
               end do
               ! reassign op. with list containing trial vector
               call assign_me_list(me_trv(iopt)%mel%label,

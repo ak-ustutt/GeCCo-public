@@ -1,5 +1,5 @@
 *------------------------------------------------------------------------*
-      subroutine find_nmin_list(xlist,idxlist,nlist,mel,maxblk)
+      subroutine find_nmin_list(xlist,idxlist,nlist,mel)
 *------------------------------------------------------------------------*
 *     search ME-list and return the nlist lowest values + indices
 *------------------------------------------------------------------------*
@@ -18,7 +18,7 @@
       type(me_list), intent(inout) ::
      &     mel
       integer, intent(in) ::
-     &     nlist, maxblk
+     &     nlist
       integer, intent(out) ::
      &     idxlist(nlist)
       real(8), intent(out) ::
@@ -42,8 +42,7 @@
       ffop => mel%fhand
       op => mel%op
 
-      max_cls = maxblk
-      if (maxblk.le.0) max_cls = op%n_occ_cls
+      max_cls = op%n_occ_cls
 
       if (.not.associated(ffop))
      &     call quit(1,'find_nmin_list','No file assigned to list: '//

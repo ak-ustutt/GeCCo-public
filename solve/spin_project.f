@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine spin_project(me_amp,me_special,fspc,
-     &     nwfpar,xbuf1,xbuf2,normalize,opti_info,
+     &     nwfpar,xbuf1,xbuf2,normalize,xret,opti_info,
      &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
@@ -35,6 +35,8 @@
 
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*)
+      real(8), intent(out) ::
+     &     xret
 
       logical, intent(in) ::
      &     normalize
@@ -58,7 +60,7 @@
      &     mult_min, mult, mult_max, ab_sym, imult, iblk
 
       real(8) ::
-     &     xret, ssp1, kkp1, fac1, fac2
+     &     ssp1, kkp1, fac1, fac2
 
       type(filinf), pointer ::
      &     ffamp, ffspc
