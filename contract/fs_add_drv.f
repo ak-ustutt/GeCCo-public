@@ -20,7 +20,7 @@
       include 'def_formula_item.h'
       include 'par_opnames_gen.h'
 
-      real(8), intent(inout) ::
+      real(8), intent(inout), target ::
      &     xret_blk(*)
       logical, intent(in) ::
      &     update
@@ -48,6 +48,8 @@
      &     fact
       logical ::
      &     tra_res, tra_op, copy_only
+      real(8), target ::
+     &     xret_dummy(1)
 
       integer, pointer ::
      &     op2list(:)
@@ -57,6 +59,8 @@
      &     me_op, me_res
       type(binary_contr), pointer ::
      &     add_info
+      real(8), pointer ::
+     &     xret_pnt(:)
 
       integer, external ::
      &     idx_oplist2
@@ -90,12 +94,14 @@
       if (update) then
         me_res => me_tgt
         type_xret_loc = type_xret
+        xret_pnt => xret_blk(iblk_res:iblk_res)
       else
         idxme = op2list(idx_res)
         me_res => mel_arr(idxme)%mel
         if (me_res%fhand%unit.lt.0)
      &       call file_open(me_res%fhand)
         type_xret_loc = 0
+        xret_pnt => xret_dummy
       end if
 
       iblk_res = add_info%iblk_res
@@ -120,12 +126,12 @@ c?        ! iblkop fix:
 c?        iblkop  = (iblkop-1)/njoined + 1
         if (.not.tra_op.and.     tra_res .or.
      &           tra_op.and..not.tra_res) then
-          call add_opblk_transp(xret_blk(iblk_res),type_xret_loc,fact,
+          call add_opblk_transp(xret_pnt,type_xret_loc,fact,
      &             me_op,me_res,tra_op,tra_res,
      &             iblk_op,iblk_res,
      &             op_info,str_info,orb_info,copy_only)
         else
-          call add_opblk(xret_blk(iblk_res),type_xret_loc,fact,
+          call add_opblk(xret_pnt,type_xret_loc,fact,
      &             me_op,me_res,
      &             iblk_op,iblk_res,orb_info,copy_only)
         end if
