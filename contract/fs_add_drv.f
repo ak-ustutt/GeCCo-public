@@ -43,7 +43,7 @@
       character(maxlen_bc_label) ::
      &     label_res, label_op
       integer ::
-     &     idx_res, idx_op, iblk_res, iblk_op, idxme
+     &     idx_res, idx_op, iblk_res, iblk_op, idxme, type_xret_loc
       real(8) ::
      &     fact
       logical ::
@@ -89,11 +89,13 @@
 
       if (update) then
         me_res => me_tgt
+        type_xret_loc = type_xret
       else
         idxme = op2list(idx_res)
         me_res => mel_arr(idxme)%mel
         if (me_res%fhand%unit.lt.0)
      &       call file_open(me_res%fhand)
+        type_xret_loc = 0
       end if
 
       iblk_res = add_info%iblk_res
@@ -118,12 +120,12 @@ c?        ! iblkop fix:
 c?        iblkop  = (iblkop-1)/njoined + 1
         if (.not.tra_op.and.     tra_res .or.
      &           tra_op.and..not.tra_res) then
-          call add_opblk_transp(xret_blk(iblk_res),type_xret,fact,
+          call add_opblk_transp(xret_blk(iblk_res),type_xret_loc,fact,
      &             me_op,me_res,tra_op,tra_res,
      &             iblk_op,iblk_res,
      &             op_info,str_info,orb_info,copy_only)
         else
-          call add_opblk(xret_blk(iblk_res),type_xret,fact,
+          call add_opblk(xret_blk(iblk_res),type_xret_loc,fact,
      &             me_op,me_res,
      &             iblk_op,iblk_res,orb_info,copy_only)
         end if
