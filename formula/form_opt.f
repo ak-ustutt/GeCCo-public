@@ -175,7 +175,11 @@ c dbg
         call write_title(luout,wst_around_double,'Optimized formula:')
         call print_form_list(luout,fl_opt,op_info)
       end if
-cmh      if (lustat.gt.0) call print_form_list(lustat,fl_opt,op_info)
+      if (use_auto_opt.and.lustat.gt.0) then
+        call write_title(lustat,wst_around_double,
+     &                 'Optimized formula (with auto-factorizations:')
+        call print_form_list(lustat,fl_opt,op_info)
+      end if
       write(name,'(a,".fml")') trim(f_opt%label)
       call file_init(f_opt%fhand,name,ftyp_sq_unf,0)      
       f_opt%comment = trim(title)
