@@ -6,8 +6,10 @@
         ! definition of temporary intermediate
         type(operator), pointer ::
      &       interm
+        integer ::
+     &       incore
 	character(len=len_opname), pointer ::
-     &       parent1, parent2
+     &       parent1, parent2, label
         logical ::
      &       tra, tra1, tra2 ! interm./parents transposed?
         ! definition of contraction
@@ -38,7 +40,8 @@
      &     command_bc = 10,
      &     command_bc_reo = 11,
      &     command_internal = 12,
-     &     command_add_reo = 13
+     &     command_add_reo = 13,
+     &     command_cp_intm = 14
 
 
       ! 0: target operator is op(target), initialize to 0

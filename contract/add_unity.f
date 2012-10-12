@@ -124,7 +124,7 @@
      &     return ! else we just tacitly return
 
       bufout = .false.
-      if(ffout%buffered) bufout = ffout%incore(iblkout).gt.0
+      if(ffout%buffered) bufout = ffout%incore(iblkout).ge.0
 
       ifree = mem_setmark('add_unity')
 

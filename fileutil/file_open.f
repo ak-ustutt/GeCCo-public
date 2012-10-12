@@ -16,6 +16,9 @@
       type(filinf), intent(inout) ::
      &     fhand
 
+
+      if (fhand%buffered) return
+
       if (fhand%unit.gt.0)
      &     call quit(1,'file_open',
      &     'file is already open: '//trim(fhand%name))

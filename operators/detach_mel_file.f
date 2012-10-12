@@ -23,6 +23,8 @@
      &     ffop
       type(operator), pointer ::
      &     op
+      integer ::
+     &     ifree
 
       op => mel%op
       ffop => mel%fhand
@@ -37,12 +39,20 @@
      &       trim(mel%label),' (operator: ',trim(op%name),')'
       end if
 
+
       if (remove) then
         call file_delete(ffop)
 
-        if (ffop%buffered)
-     &       call quit(1,'detach_file_from_op',
-     &       'buffering not yet considered!')
+        if (ffop%buffered) then
+          call mem_pushmark()
+          ifree = mem_gotomark(me_list_def)
+
+          ifree = mem_dealloc(trim(mel%label)//'_incore')
+          ifree = mem_dealloc(trim(mel%label)//'_idxrec')
+          ifree = mem_dealloc(trim(mel%label)//'_buffer')
+
+          call mem_popmark()
+        end if
 
         if (associated(ffop%last_mod))
      &       deallocate(ffop%last_mod)
@@ -55,3 +65,4 @@
       return
 
       end
+

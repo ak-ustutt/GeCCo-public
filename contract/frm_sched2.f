@@ -55,7 +55,7 @@
      &     depend_info
 
       logical ::
-     &     update, reo, skip, call_sti_remover, measure
+     &     update, add, reo, skip, call_sti_remover, measure
       integer ::
      &     idxopres, idxres, nres, type_xret,
      &     idxme_res, nblk_res, ifree,
@@ -227,10 +227,16 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
           call fs_newintm_drv(cur_form,
      &         op_info,str_info,strmap_info,orb_info)
 
+        case(command_del_intermediate)
+
+          call fs_delintm_drv(cur_form,op_info)
+
         case(command_reorder,command_add_reo)
 
           measure = .true.
-          update = cur_form%command.eq.command_add_reo
+          !update = cur_form%command.eq.command_add_reo
+          update = idx_oplist2(cur_form%reo%label_out,op_info)
+     &                 .eq.idxopres
           if (cur_form%command.eq.command_add_reo) icmd = icmd+1
           call fs_reo_drv(xret_blk,type_xret,idxopres,me_res,
      &         cur_form,update,
@@ -238,14 +244,16 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
 
           call_sti_remover = .true.!cur_form%command.eq.command_reorder
 
-        case(command_add_intm)
+        case(command_add_intm,command_cp_intm)
 
           measure = .true.
           icmd = icmd+1
-          update = .true.
+          !update = cur_form%command.eq.command_add_intm
+          update = idx_oplist2(cur_form%bcontr%label_res,op_info)
+     &                 .eq.idxopres
 
           call fs_add_drv(xret_blk,type_xret,idxopres,me_res,
-     &         cur_form,
+     &         cur_form,update,
      &         op_info,str_info,strmap_info,orb_info)
 
           call_sti_remover = .true.
@@ -255,14 +263,16 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
 
           measure = .true.
           icmd = icmd+1
-          update = (cur_form%command.eq.command_add_bc.or.
+          add    = (cur_form%command.eq.command_add_bc.or.
      &              cur_form%command.eq.command_add_bc_reo)
+          update = idx_oplist2(cur_form%bcontr%label_res,op_info)
+     &                 .eq.idxopres
           reo    = (cur_form%command.eq.command_bc_reo.or.
      &              cur_form%command.eq.command_add_bc_reo)
           
           call fs_contr_drv(xret_blk,
      &                             type_xret,idxopres,me_res,
-     &         cur_form,update,reo,
+     &         cur_form,update,add,reo,
      &         op_info,str_info,strmap_info,orb_info)
 
           call_sti_remover = .true.

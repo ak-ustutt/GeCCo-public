@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine rw_opdef_kernel(irw,lu,op,lab_p1,lab_p2,tra,tra1,tra2)
+      subroutine rw_opdef_kernel(irw,lu,op,incore,
+     &                           lab_p1,lab_p2,tra,tra1,tra2)
 *----------------------------------------------------------------------*
 *     read/write contraction from/to lu 
 *----------------------------------------------------------------------*
@@ -23,6 +24,8 @@
      &     lab_p1, lab_p2
       logical, intent(inout) ::
      &     tra, tra1, tra2
+      integer, intent(inout) ::
+     &     incore
 
       integer ::
      &     nblk, nj, ngas, nspin, lenlab, lenp1lab, lenp2lab, ifree
@@ -50,7 +53,7 @@
         read(lu,end=100) lenlab,op%name(1:lenlab),tra,
      &       lenp1lab,lab_p1(1:lenp1lab),tra1,
      &       lenp2lab,lab_p2(1:lenp2lab),tra2,
-     &       op%ihpvca_occ,op%igasca_restr
+     &       op%ihpvca_occ,op%igasca_restr,incore
 
         ifree = mem_register(2*ngastp*nblk*nj
      &                      +2*nblk
@@ -74,7 +77,7 @@
         write(lu,err=200) lenlab,op%name(1:lenlab),tra,
      &       lenp1lab,lab_p1(1:lenp1lab),tra1,
      &       lenp2lab,lab_p2(1:lenp2lab),tra2,
-     &       op%ihpvca_occ,op%igasca_restr
+     &       op%ihpvca_occ,op%igasca_restr,incore
 
       end if
 

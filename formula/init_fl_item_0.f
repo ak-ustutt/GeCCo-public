@@ -13,6 +13,10 @@
       fl_item%next => null()
       fl_item%contr => null()
       fl_item%interm => null()
+      fl_item%incore = 0
+      fl_item%parent1 => null()
+      fl_item%parent2 => null()
+      fl_item%label => null()
       fl_item%reo => null()
       fl_item%bcontr => null()
       fl_item%command = command_end_of_formula

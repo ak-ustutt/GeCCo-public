@@ -49,6 +49,30 @@ c        call wrt_occ_n(luout,bcontr%occ_cnt,bcontr%n_cnt)
      &         bcontr%rst_cnt(1:,1:,1:,1:,1:,ij),
      &         bcontr%ngas,bcontr%nspin)
         end do
+        write(luout,*) 'external indices of first operator'
+        do ij = 1, bcontr%nj_op1
+          call wrt_occ_rstr(luout,ij,
+     &         bcontr%occ_ex1(1:,1:,ij),
+     &         bcontr%rst_ex1(1:,1:,1:,1:,1:,ij),
+     &         bcontr%ngas,bcontr%nspin)
+        end do
+        if (bcontr%n_operands.eq.2) then
+          write(luout,*) 'external indices of second operator'
+          do ij = 1, bcontr%nj_op2
+            call wrt_occ_rstr(luout,ij,
+     &         bcontr%occ_ex2(1:,1:,ij),
+     &         bcontr%rst_ex2(1:,1:,1:,1:,1:,ij),
+     &         bcontr%ngas,bcontr%nspin)
+          end do
+        end if
+        write(luout,'(2x,a,6i3,/12x,6i3)') 'merge_op1 ',bcontr%merge_op1
+        if (bcontr%n_operands.eq.2) 
+     &     write(luout,'(2x,a,6i3,/12x,6i3)') 
+     &                                     'merge_op2 ',bcontr%merge_op2
+        write(luout,'(2x,a,6i3,/12x,6i3)')
+     &                               'merge_op1op2 ',bcontr%merge_op1op2
+        write(luout,'(2x,a,6i3,/12x,6i3)') 
+     &                               'merge_op2op1 ',bcontr%merge_op2op1
       end if
 
       if (.not.bcontr%tra_res) write(luout,'(x,"==> ",a,i4)')

@@ -8,6 +8,7 @@
       implicit none
 
       include 'opdim.h'
+      include 'ioparam.h'
       include 'stdunit.h'
       include 'multd2h.h'
       include 'mdef_operator_info.h'
@@ -38,7 +39,9 @@
      &     me_new, me_ma, me_pa
 
       integer ::
-     &     idx, itra, itra1, itra2
+     &     idx, itra, itra1, itra2, incore_
+      logical ::
+     &     small
 
       integer, external ::
      &     idx_oplist2, idx_mel_list
@@ -137,7 +140,10 @@ cmh     &       'MS handling is still not correct in general!!!!')
       call set_op_dim2(2,me_new,str_info,orb_info%nsym)
 
       ! initialize file
-      call init_mel_file(me_new,-1,-1,-1,0)
+      incore_ = fl_item%incore
+      small = me_new%len_op.lt.lblk_da*3/2
+      if (small.and.incore_.eq.0) incore_ = 1 
+      call init_mel_file(me_new,-1,-1,-1,incore_)
 
       ! update op_list array in order to set up the lookup-table
       call update_op_arr(op_info)

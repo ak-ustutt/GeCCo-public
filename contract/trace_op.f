@@ -295,7 +295,7 @@ ctest        call warn('trace_op','zero length for operator?')
 
       ifree = mem_setmark('trace_op')
 
-      if (ffop%buffered.and.ffop%incore(iblkop).gt.0) then
+      if (ffop%buffered.and.ffop%incore(iblkop).ge.0) then
         bufop = .true.
         xop => ffop%buffer(idxst_op:)
       else
@@ -316,9 +316,10 @@ ctest        call warn('trace_op','zero length for operator?')
       ! get result vector as well (as we update)
       ! refers to reordered trop
       if (iblktrop.gt.0) then
-        if (fftrop%buffered.and.fftrop%incore(iblktrop).gt.0) then
+        if (fftrop%buffered.and.fftrop%incore(iblktrop).ge.0) then
           buftrop = .true.
           xtrop => fftrop%buffer(idxst_trop:)
+          if (.not.update) xtrop(1:lentrop) = 0d0
         else
           buftrop = .false.
           ! LOWER incore requirements:

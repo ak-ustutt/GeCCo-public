@@ -188,6 +188,7 @@ c      end if
       if (opin%dagger.and..not.opout%dagger .or.
      &    .not.opin%dagger.and.opout%dagger)
      &     call quit(1,'add_opblk','cannot (yet) transpose on-the-fly!')
+      ! note: there is add_opblk_transp to do this
 
       len_op = mel_in%len_op_occ(iblkin)
       ! for the moment this must hold:
@@ -204,8 +205,8 @@ c      end if
       ! buffered data available?
       bufin = .false.
       bufout = .false.
-      if (ffin%buffered) bufin = ffin%incore(iblkin).gt.0
-      if (ffout%buffered) bufout = ffout%incore(iblkout).gt.0
+      if (ffin%buffered) bufin = ffin%incore(iblkin).ge.0
+      if (ffout%buffered) bufout = ffout%incore(iblkout).ge.0
 
       ifree = mem_setmark('add_opblk')
 
@@ -250,7 +251,8 @@ c      end if
           idxnd = min(len_op,idxst-1+nbuff)
           lenbat = idxnd-idxst+1
           if (bufin) then
-            call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
+            if (.not.reset)
+     &        call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
      &                                    idoffout+ioffout+idxnd)
             if (reset) buffer_out(1:lenbat) = 0d0
             call daxpy(lenbat,fac,ffin%buffer(ioffin+idxst),1,
@@ -266,7 +268,8 @@ c      end if
           else
             call get_vec(ffin,buffer_in,idoffin+ioffin+idxst,
      &                                  idoffin+ioffin+idxnd)
-            call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
+            if (.not.reset)
+     &       call get_vec(ffout,buffer_out,idoffout+ioffout+idxst,
      &                                    idoffout+ioffout+idxnd)
             if (reset) buffer_out(1:lenbat) = 0d0
             do idx = 1, lenbat

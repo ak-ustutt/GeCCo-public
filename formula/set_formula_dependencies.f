@@ -103,7 +103,8 @@
               idxscr(iptr) = vertex(ivtx)%idx_op
             end do
           ! --> adaptieren fuer neue flists
-          case(command_add_intm,command_bc,command_add_bc,
+          case(command_add_intm,command_cp_intm,
+     &         command_bc,command_add_bc,
      &         command_bc_reo,command_add_bc_reo)
             nvtx = fl_ptr%bcontr%n_operands
             if (iptr+nvtx.gt.maxscr)

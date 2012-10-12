@@ -34,7 +34,7 @@
       call set_arg('_PROTO_',DEF_OP_FROM_OCC,'FORMAL',1,tgt_info,
      &     val_int=(/-1/),def=.true.)
       call set_arg('_PROTO_',DEF_OP_FROM_OCC,'DESCR',0,tgt_info,
-     &     val_label=(/''/),req=.true.)
+     &     val_str='',req=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(DEF_SCALAR,tgt_info)
       call set_arg('_PROTO_',DEF_SCALAR,'LABEL',0,tgt_info,

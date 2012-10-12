@@ -1,10 +1,11 @@
 *----------------------------------------------------------------------*
       subroutine fs_contr_drv(xret_blk,type_xret,idx_tgt,me_tgt,
-     &         fl_item,update,reo,
+     &         fl_item,update,add,reo,
      &         op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     driver for [CONTR] operation in frm_schedX() (X>=2)
 *     if (update): [ADD] to target
+*     if (add):    [ADD] to target or other iterm
 *     if (reo):    [REORDER] result (on-the-fly in contr_op1op2)
 *----------------------------------------------------------------------*
       implicit none
@@ -30,7 +31,7 @@
       integer, intent(in) ::
      &     type_xret, idx_tgt
       logical, intent(in) ::
-     &     update, reo
+     &     update, reo, add
       type(me_list), intent(inout), target ::
      &     me_tgt
       type(formula_item), intent(in) ::
@@ -261,7 +262,7 @@
      &         write(luout,*) 'calling contraction kernel'
           ! do the contraction
       call contr_op1op2(fact,1d0,
-     &       update,self,xret_pnt,type_xret_loc,
+     &       add,self,xret_pnt,type_xret_loc,
      &       me_op1,me_op2,me_res, me_tmp,
      &       tra_op1, tra_op2, tra_res,
      &       iblk_op1,iblk_op2,iblk_res,iblk_tmp,

@@ -32,6 +32,8 @@
         call dealloc_reorder(fl_item%reo)
         deallocate(fl_item%reo)
       end if
+      if (associated(fl_item%label))
+     &  deallocate(fl_item%label)
       
       return
       end

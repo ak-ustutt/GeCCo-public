@@ -32,9 +32,11 @@
         write(luout,'(2x,"attribute parentage: ",a," ",a)')
      &                        trim(fl_item%parent1),
      &                        trim(fl_item%parent2)
+        write(luout,'(2x,"incore: ",i2)') fl_item%incore
         call print_op_occ(luout,fl_item%interm)
       case(command_del_intermediate)
         write(luout,*) '[DELETE INTERMEDIATE]',fl_item%target
+        write(luout,'(2x,a)') trim(fl_item%label)
       case(command_add_contribution)
         idx = idx+1
         write(luout,*) '[CONTR]',fl_item%target,'( term #',idx,')'
@@ -42,6 +44,11 @@
       case(command_add_intm)
         idx = idx+1
         write(luout,*) '[ADD]',
+     &       fl_item%target,'( term #',idx,')'
+        call prt_bcontr(luout,fl_item%bcontr)
+      case(command_cp_intm)
+        idx = idx+1
+        write(luout,*) '[COPY]',
      &       fl_item%target,'( term #',idx,')'
         call prt_bcontr(luout,fl_item%bcontr)
       case(command_add_bc)
