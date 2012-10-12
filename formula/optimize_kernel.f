@@ -401,6 +401,8 @@ c dbg
           ! if the list is non-empty
           ! rename first entry to _LTIN
           lti_cnt = lti_cnt+1
+          if (lti_cnt.ge.10000) 
+     &          call quit(1,i_am,'LTIN counter exceeded')
           write(label_new,'("_LTIN",i4.4)') lti_cnt
 
           if (ntest.ge.100) write(luout,*)'new interm: ',trim(label_new)
@@ -542,11 +544,15 @@ c dbg
             idx_rpl = 2
             fpl_marks_pnt => fpl_marks2
           end if
+
 c dbg
 c          print *,'idx_rpl = ',idx_rpl
 c dbg
           ! define new intermediate
           lti_cnt = lti_cnt+1
+          if (lti_cnt.gt.10000) 
+     &          call quit(1,i_am,'LTIN counter exceeded')
+
           write(label_new,'("_LTIN",i4.4)') lti_cnt
           if (ntest.ge.100) write(luout,*)'new interm: ',trim(label_new)
           
@@ -632,6 +638,7 @@ c dbg
                 if (.not.associated(fpl_marks2_pnt%next%next)) then
 c                  call quit(1,i_am,'damn! trapped in _STINs ...')
                    skip = .true.
+                   lti_cnt = lti_cnt-1 ! decrease counter again
                    exit
                 end if
                 fpl_marks2_pnt => fpl_marks2_pnt%next
@@ -674,7 +681,7 @@ c dbg
 c dbg
 c          if (nlist.gt.-1) print *,'now processing list of terms'
 c dbg
-          do ilist = 0, nlist
+          list_loop: do ilist = 0, nlist
 c dbg
             if (watch) print *,'  ilist = ',ilist,'/',nlist
 c dbg
@@ -795,7 +802,8 @@ c dbg
               fl_pnt_mark2 => fl_pnt_mark4
             else if (label_op(1:2).eq.'_L') then
               ! _LTI: find definition and add, make sure that defined before (relink)
-               call quit(1,i_am,'avoiding LTINs for first tests ...')
+               call warn(i_am,'avoiding LTINs presently ...')
+               cycle list_loop
             else
                call quit(1,i_am,'illegal operator name: '//
      &                   trim(label_op))
@@ -819,7 +827,7 @@ c dbg
               call delete_fl_node(fl_pnt_mark3)
               deallocate(fl_pnt_mark3)
             end if
-          end do ! ilist
+          end do list_loop
 
           if (.not.skip) then
 c dbg

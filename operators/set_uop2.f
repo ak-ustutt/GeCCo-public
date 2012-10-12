@@ -28,15 +28,29 @@ c     &     freeze(2)
       type(orbinf) ::
      &     orb_info
       integer ::
-     &     ncadiff,
+     &     ncadiff, 
      &     irestr(2,orb_info%ngas,2,2)
+
+      integer ::
+     &     ndef_loc
+      integer, pointer ::
+     &     occ_def_loc(:,:,:)
+
+      ndef_loc = ndef
+      allocate(occ_def_loc(ngastp,2,ndef*njoined))
+      occ_def_loc = occ_def
+
+      call remove_inactive_occ(occ_def_loc,ndef_loc,freeze,
+     &                                             njoined,orb_info)
 
       ncadiff = 0
       call set_restr_for_uop()
 
       call set_user_op2(op,name,optyp_operator,
-     &     occ_def,ndef,njoined,irestr,freeze,min_formal,orb_info)
+     &     occ_def_loc,ndef_loc,njoined,irestr,freeze,
+     &                              min_formal,orb_info)
 
+      deallocate(occ_def_loc)
       return
       
       contains

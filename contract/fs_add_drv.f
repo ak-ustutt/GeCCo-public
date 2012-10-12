@@ -91,6 +91,11 @@
       end if
       idx_op = idx_oplist2(label_op,op_info)
 
+      iblk_res = add_info%iblk_res
+      iblk_op  = add_info%iblk_op1
+      tra_res = add_info%tra_res
+      tra_op  = add_info%tra_op1
+
       if (update) then
         me_res => me_tgt
         type_xret_loc = type_xret
@@ -103,11 +108,6 @@
         type_xret_loc = 0
         xret_pnt => xret_dummy
       end if
-
-      iblk_res = add_info%iblk_res
-      iblk_op  = add_info%iblk_op1
-      tra_res = add_info%tra_res
-      tra_op  = add_info%tra_op1
 
       fact = add_info%fact
 

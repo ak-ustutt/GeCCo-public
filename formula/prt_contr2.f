@@ -33,7 +33,8 @@
       cdag = '  '
       if (contr%dagger) cdag = '^+'
       if (contr%idx_res.gt.0) then
-        write(luout,*) ' name (index) and block of result: ',
+        write(luout,'(x,a,a,a,i6,a,i4)') 
+     &     ' name (index) and block of result: ',
      &     trim(ops(contr%idx_res)%op%name)//cdag,
      &       '(',contr%idx_res,')', contr%iblk_res
       else

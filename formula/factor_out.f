@@ -51,6 +51,8 @@
       ! read Intm definition
       call read_form_list(form_info%form_arr(idx_intm)%form%fhand,
      &     fintm_head,.true.)
+      ! make sure that all terms are ordered according to result block:
+      call reorder_formula(fintm_head,op_info)
 
       form_ptr => form_head
       ! advance form_ptr to end of list
@@ -61,6 +63,11 @@
 
       ! factor out the sub-expressions
       call factor_out_subexpr2(form_link,fintm_head,nrpl,op_info)
+
+c dbg
+c      print *,'form after fact'
+c      call print_form_list(luout,form_link,op_info)
+c dbg
 
       ! remove [END] from Intm list (if any)
       if (fintm_tail%command.eq.command_end_of_formula) then

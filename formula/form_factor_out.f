@@ -101,6 +101,8 @@ c      include 'def_contraction_list.h'
 c dbg
 c        ! Can be used to bypass an error in find_possible_subexpr
 c        call reorder_formula(fl_intm,op_info)
+c        print *,'reordered intermediate'
+c        call print_form_list(luout,fl_intm,op_info)
 c dbgend
 
         if (transpose)
