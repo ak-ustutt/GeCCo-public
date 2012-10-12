@@ -753,6 +753,30 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
       call set_rule('INT_P4',ttype_op,DEF_OP_FROM_OCC,
      &              'INT_P4',1,1,
      &              parameters,2,tgt_info)
+ 
+      call add_target2('INT_HT2',.false.,tgt_info)
+      call set_rule2('INT_HT2',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('INT_HT2',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &             val_label=(/'INT_HT2'/))
+      call set_arg('INT_HT2',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &     val_str='H,[HV]|P,[HP]|V,[HPV]|P[HPV],[HV]P|V[HPV],HP')
+
+      call add_target2('INT_T2H',.false.,tgt_info)
+      call set_rule2('INT_T2H',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('INT_T2H',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &             val_label=(/'INT_T2H'/))
+      call set_arg('INT_T2H',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &     val_str='H,[HV]|P,[HP]|V,[HPV]|P[HPV],[HV]P|V[HPV],HP')
+      
+      call add_target2('INT_D',.false.,tgt_info)
+      call set_rule2('INT_D',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('INT_D',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &             val_label=(/'INT_D'/))
+      call set_arg('INT_D',DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+     &             val_int=(/2/))
+      call set_arg('INT_D',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &     val_str=',|,|,V|V,')
+      
 
       ! "redundant" parts of T amplitudes (in principle arbitrary)
       call add_target('T(2)red',ttype_op,.false.,tgt_info)
@@ -2228,6 +2252,101 @@ c      call set_arg('F_P4int',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_OMG'/))
 c dbgend
 
+      ! linear H(1+T2) transform, as suggested intermediate
+      call add_target2('F_INT_HT2',.false.,tgt_info)
+      call set_dependency('F_INT_HT2','H',tgt_info)
+      call set_dependency('F_INT_HT2','T',tgt_info)
+      call set_dependency('F_INT_HT2','INT_HT2',tgt_info)
+      call set_rule2('F_INT_HT2',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'F_INT_HT2'/))
+      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.true./))
+C      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+C     &             val_label=(/'INT_HT2'/))
+C      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'OPERATORS',3,tgt_info,
+C     &             val_label=(/'INT_HT2','H','INT_HT2'/))
+C      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+C     &             val_int=(/1,2,1/))
+C
+C      call set_rule2('F_INT_HT2',EXPAND_OP_PRODUCT,tgt_info)
+C      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+C     &             val_label=(/'F_INT_HT2'/))
+C      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+C     &             val_log=(/.false./))
+      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'INT_HT2'/))
+      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'OPERATORS',4,tgt_info,
+     &             val_label=(/'INT_HT2','H','T','INT_HT2'/))
+      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &             val_int=(/1,2,3,1/))
+      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
+     &             val_label=(/'3,,[VP][VP],[HV][HV]'/))
+      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
+     &             val_int=(/2,3/))
+
+c      call set_rule2('F_INT_HT2',EXPAND_OP_PRODUCT,tgt_info)
+c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c     &             val_label=(/'F_INT_HT2'/))
+c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c     &             val_log=(/.false./))
+c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c     &             val_label=(/'INT_HT2'/))
+c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'OPERATORS',4,tgt_info,
+c     &             val_label=(/'INT_HT2','T','H','INT_HT2'/))
+c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+c     &             val_int=(/1,2,3,1/))
+c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
+c     &             val_label=(/'2,,[VP][VP],[HV][HV]'/))
+c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
+c     &             val_int=(/2,3/))
+      call set_rule2('F_INT_HT2',PRINT_FORMULA,tgt_info)
+      call set_arg('F_INT_HT2',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &             val_label=(/'F_INT_HT2'/))
+
+      call add_target2('F_INT_T2H',.false.,tgt_info)
+      call set_dependency('F_INT_T2H','H',tgt_info)
+      call set_dependency('F_INT_T2H','T',tgt_info)
+      call set_dependency('F_INT_T2H','INT_T2H',tgt_info)
+      call set_rule2('F_INT_T2H',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'F_INT_T2H'/))
+      call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.true./))
+      call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'INT_T2H'/))
+      call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'OPERATORS',4,tgt_info,
+     &             val_label=(/'INT_T2H','T','H','INT_T2H'/))
+      call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &             val_int=(/1,2,3,1/))
+      call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
+     &             val_label=(/'2,,[VP][VP],[HV][HV]'/))
+      call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
+     &             val_int=(/2,3/))
+      call set_rule2('F_INT_T2H',PRINT_FORMULA,tgt_info)
+      call set_arg('F_INT_T2H',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &             val_label=(/'F_INT_T2H'/))
+
+      ! Norm and 1-density
+      call add_target2('F_INT_D',.false.,tgt_info)
+      call set_dependency('F_INT_D','C0',tgt_info)
+      call set_dependency('F_INT_D','INT_D',tgt_info)
+      call set_rule2('F_INT_D',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_INT_D',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'F_INT_D'/))
+      call set_arg('F_INT_D',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.true./))
+      call set_arg('F_INT_D',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'INT_D'/))
+      call set_arg('F_INT_D',EXPAND_OP_PRODUCT,'OPERATORS',6,tgt_info,
+     &             val_label=(/'INT_D','C0^+','INT_D',
+     &                                        'INT_D','C0','INT_D'/))
+      call set_arg('F_INT_D',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &             val_int=(/1,2,1,1,3,1/))
+      call set_rule2('F_INT_D',PRINT_FORMULA,tgt_info)
+      call set_arg('F_INT_D',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &             val_label=(/'F_INT_D'/))
+
       ! "Redundant" part of T operator
       call add_target2('F_T(2)red',.false.,tgt_info)
       call set_dependency('F_T(2)red','T(2)red',tgt_info)
@@ -2777,6 +2896,16 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       call set_rule2('FOPT_OMG',OPTIMIZE,tgt_info)
       call set_arg('FOPT_OMG',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_OMG'/))
+c dbg
+      call set_dependency('FOPT_OMG','F_INT_HT2',tgt_info)
+      call set_dependency('FOPT_OMG','DEF_ME_INT_HT2',tgt_info)
+      call set_dependency('FOPT_OMG','F_INT_T2H',tgt_info)
+      call set_dependency('FOPT_OMG','DEF_ME_INT_T2H',tgt_info)
+      call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
+      call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
+      call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',3,tgt_info,
+     &             val_label=(/'F_INT_HT2','F_INT_T2H','F_INT_D'/))
+c dbg
       labels(1:20)(1:len_target_name) = ' '
       ndef = 0
       if (maxcum.gt.0) then
@@ -3351,6 +3480,49 @@ c dbgend
       call set_arg('DEF_ME_INT_P4',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
       call set_arg('DEF_ME_INT_P4',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+
+      ! ME for INT_HT2
+      call add_target2('DEF_ME_INT_HT2',.false.,tgt_info)
+      call set_dependency('DEF_ME_INT_HT2','INT_HT2',tgt_info)
+      call set_rule2('DEF_ME_INT_HT2',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_INT_HT2',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_INT_HT2'/))
+      call set_arg('DEF_ME_INT_HT2',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'INT_HT2'/))
+      call set_arg('DEF_ME_INT_HT2',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_INT_HT2',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_INT_HT2',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      ! ME for INT_T2H
+      call add_target2('DEF_ME_INT_T2H',.false.,tgt_info)
+      call set_dependency('DEF_ME_INT_T2H','INT_T2H',tgt_info)
+      call set_rule2('DEF_ME_INT_T2H',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_INT_T2H',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_INT_T2H'/))
+      call set_arg('DEF_ME_INT_T2H',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'INT_T2H'/))
+      call set_arg('DEF_ME_INT_T2H',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_INT_T2H',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_INT_T2H',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      ! ME for INT_D
+      call add_target2('DEF_ME_INT_D',.false.,tgt_info)
+      call set_dependency('DEF_ME_INT_D','INT_D',tgt_info)
+      call set_rule2('DEF_ME_INT_D',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_INT_D',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_INT_D'/))
+      call set_arg('DEF_ME_INT_D',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'INT_D'/))
+      call set_arg('DEF_ME_INT_D',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_INT_D',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_INT_D',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
 
       ! ME for T(2)red
