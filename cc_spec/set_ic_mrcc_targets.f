@@ -2214,19 +2214,6 @@ c dbg
       call set_arg('F_P4int',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_P4int'/))
 c dbgend
-      ! now factor out from Residual equation
-      call set_rule2('F_P4int',FACTOR_OUT,tgt_info)
-      call set_arg('F_P4int',FACTOR_OUT,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_OMG'/))
-      call set_arg('F_P4int',FACTOR_OUT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_OMG'/))
-      call set_arg('F_P4int',FACTOR_OUT,'INTERM',1,tgt_info,
-     &     val_label=(/'F_P4int'/))
-c dbg
-c      call set_rule2('F_P4int',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_P4int',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_OMG'/))
-c dbgend
 
       ! "Redundant" part of T operator
       call add_target2('F_T(2)red',.false.,tgt_info)
@@ -2751,9 +2738,6 @@ c dbgend
         call set_dependency('FOPT_OMG','F_Geff',tgt_info)
         call set_dependency('FOPT_OMG','DEF_ME_Heff',tgt_info)
         call set_dependency('FOPT_OMG','DEF_ME_Geff',tgt_info)
-      else if (maxp.ge.2.and.tfix.eq.0) then
-        call set_dependency('FOPT_OMG','F_P4int',tgt_info)
-        call set_dependency('FOPT_OMG','DEF_ME_INT_P4',tgt_info)
       end if
       if (.false..and.maxh.gt.0)
      &    call set_dependency('FOPT_OMG','DEF_ME_TT',tgt_info)
@@ -2777,6 +2761,12 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       call set_rule2('FOPT_OMG',OPTIMIZE,tgt_info)
       call set_arg('FOPT_OMG',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_OMG'/))
+      if (maxp.ge.2.and.tfix.eq.0) then
+        call set_dependency('FOPT_OMG','F_P4int',tgt_info)
+        call set_dependency('FOPT_OMG','DEF_ME_INT_P4',tgt_info)
+        call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',1,tgt_info,
+     &             val_label=(/'F_P4int'/))
+      end if
       labels(1:20)(1:len_target_name) = ' '
       ndef = 0
       if (maxcum.gt.0) then
@@ -2849,10 +2839,6 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       end if
       if (Op_eqs) then
         labels(ndef+1) = 'F_Heff'
-        ndef = ndef + 1
-      end if
-      if (maxp.ge.2.and.tfix.eq.0) then
-        labels(ndef+1) = 'F_P4int'
         ndef = ndef + 1
       end if
       if (h1bar) then
