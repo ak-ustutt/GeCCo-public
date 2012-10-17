@@ -787,7 +787,8 @@ c dbg
               if (ilist.gt.0.and.fl_pnt_mark4%command.eq.command_bc_reo)
      &            fl_pnt_mark4%command = command_add_bc_reo
               ! if this is a REO rename here, too
-              if (fl_pnt_mark4%command.eq.command_bc_reo) then
+              if (fl_pnt_mark4%command.eq.command_bc_reo.or.
+     &            fl_pnt_mark4%command.eq.command_add_bc_reo) then
                 fl_pnt_mark4%reo%label_in  = label_new
                 fl_pnt_mark4%reo%label_out = label_new
               end if

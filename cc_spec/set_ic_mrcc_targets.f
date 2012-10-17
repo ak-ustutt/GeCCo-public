@@ -54,7 +54,7 @@
       character(len_command_par) ::
      &     parameters(3)
       character(len=64) ::
-     &     descr_h1, descr_h2pp, descr_h2ppp
+     &     descr, descr_h1, descr_h2pp, descr_h2ppp
       character ::
      &     op_ht*3, f_ht*5, op_ht0to*6, f_ht0to*8, form_str*50,
      &     def_ht*10
@@ -773,7 +773,15 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
      &             val_label=(/'INT_T2H'/))
       call set_arg('INT_T2H',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
      &     val_str='PV,PH|PP,H[HPV]|PP,V[PV]')
-      
+
+      descr = ',|,|,V|V,'
+      if (orb_info%nactel.ge.4) descr = ',|,|,V|V,|,VV|VV,'      
+      if (orb_info%nactel.ge.6) 
+     &       descr = trim(descr)//'|,VVV|VVV,|,VVVV|VVVV,|,VVVVV|VVVVV,' 
+c dbg
+      print *,'nactel: ',orb_info%nactel
+      print *,'descr = ',trim(descr)
+c dbg
       call add_target2('INT_D',.false.,tgt_info)
       call set_rule2('INT_D',DEF_OP_FROM_OCC,tgt_info)
       call set_arg('INT_D',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
@@ -781,7 +789,7 @@ c      do ip = 2, maxp !only for blocks with at least two P lines
       call set_arg('INT_D',DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
      &             val_int=(/2/))
       call set_arg('INT_D',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
-     &     val_str=',|,|,V|V,')
+     &     val_str=descr)
       
 
       ! "redundant" parts of T amplitudes (in principle arbitrary)
@@ -2888,20 +2896,20 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
      &             val_label=(/'FOPT_OMG'/))
       if (maxp.ge.2.and.tfix.eq.0) then
 c dbg
-c        call set_dependency('FOPT_OMG','F_INT_HT2',tgt_info)
-c        call set_dependency('FOPT_OMG','DEF_ME_INT_HT2',tgt_info)
-c        call set_dependency('FOPT_OMG','F_INT_T2H',tgt_info)
-c        call set_dependency('FOPT_OMG','DEF_ME_INT_T2H',tgt_info)
-c        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
-c        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
+        call set_dependency('FOPT_OMG','F_INT_HT2',tgt_info)
+        call set_dependency('FOPT_OMG','DEF_ME_INT_HT2',tgt_info)
+        call set_dependency('FOPT_OMG','F_INT_T2H',tgt_info)
+        call set_dependency('FOPT_OMG','DEF_ME_INT_T2H',tgt_info)
+        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
+        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
 c dbg
         call set_dependency('FOPT_OMG','F_P4int',tgt_info)
         call set_dependency('FOPT_OMG','DEF_ME_INT_P4',tgt_info)
-        call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',1,tgt_info,
-     &             val_label=(/'F_P4int'/))
-c        call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',4,tgt_info,
-c     &             val_label=(/'F_P4int','F_INT_HT2',
-c     &                         'F_INT_T2H','F_INT_D'/))
+c        call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',1,tgt_info,
+c     &             val_label=(/'F_P4int'/))
+        call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',4,tgt_info,
+     &             val_label=(/'F_P4int','F_INT_HT2',
+     &                         'F_INT_T2H','F_INT_D'/))
       end if
 
       labels(1:20)(1:len_target_name) = ' '

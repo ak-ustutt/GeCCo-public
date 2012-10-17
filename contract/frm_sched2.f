@@ -154,7 +154,7 @@
             end if
 
             call atim_csw(cpu,sys,wall)
-            call prtim(luout,'time for target',
+            call prtim(luout,'time for target '//trim(opres%name),
      &           cpu-cpu0,sys-sys0,wall-wall0)
 
           end if
