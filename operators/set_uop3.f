@@ -43,6 +43,8 @@ c     &     freeze(2)
       call process_occ_descr(occ_def,ndef,
      &                       occ_descr,njoined,maxlist)
 
+      call remove_inactive_occ(occ_def,ndef,freeze,njoined,orb_info)
+
       call set_restr_for_uop()
 
       call set_user_op2(op,name,optyp_operator,

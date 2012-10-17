@@ -183,6 +183,22 @@ c        end if
         xlines_new(1:nvtx_new,2) = xlines_new(1:nvtx_new,2)
      &                           + xlines_scr_l(1:nvtx_new,1)
 
+      else if (nj.eq.2.and.nlist.eq.1.and.nj_new.eq.2) then
+        ! here it is unclear which result vtx the upper lines belong to
+        ! put upper lines on upper result vertex if possible (no reo.)
+        if (vtx_list(1).eq.1.or.all(xlines_new(1:vtx_list(1)-1,2).eq.0))
+     &     then
+          xlines_new(1:nvtx_new,1) = xlines_new(1:nvtx_new,1)
+     &                             + xlines_scr_u(1:nvtx_new,1)
+        else ! has to be put to lower vertex
+          xlines_new(1:nvtx_new,2) = xlines_new(1:nvtx_new,2)
+     &                             + xlines_scr_u(1:nvtx_new,1)
+
+        end if
+        ! put lower lines on lower vertex in any case
+        xlines_new(1:nvtx_new,2) = xlines_new(1:nvtx_new,2)
+     &                           + xlines_scr_l(1:nvtx_new,1)
+
       else
 c dbg
 c        ! e.g. for effective Hamiltonian through double differentiation

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine dia_from_op(label_out,label_inp,extend,op_info,
+      subroutine dia_from_op(label_out,label_inp,extend,ext_act,op_info,
      &                      str_info,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for dia_from_blk
@@ -28,7 +28,7 @@
       character(*), intent(in) ::
      &     label_out, label_inp
       logical, intent(in) ::
-     &     extend
+     &     extend, ext_act
       type(operator_info), intent(inout) ::
      &     op_info
       type(strinf), intent(in) ::
@@ -103,6 +103,7 @@
         write(luout,*) ' ffout: ',trim(ffout%name)
         write(luout,*) ' opout: ',opout%name(1:len_trim(opout%name))
         write(luout,*) ' extended mode? ',extend
+        if (extend) write(luout,*) ' extend active? ',ext_act
       end if
 
       if (opout%njoined.ne.1.or.opinp%njoined.gt.3)
@@ -161,8 +162,8 @@
      &        iocc_zero(iocc_overlap(iocc_add(-1,iocc_dia,.false.,
      &            1,iocc_out,.false.),.false.,iocc_dia,.true.)).and.
 c           ad hoc: add scalar contrib. only to purely inactive blks
-     &        .not.(iocc_zero(iocc_dia).and.
-     &              any(iocc_out(IVALE,1:2).ne.0))) then
+     &        (ext_act.or..not.(iocc_zero(iocc_dia).and.
+     &              any(iocc_out(IVALE,1:2).ne.0)))) then
             if (ntest.ge.100) write(luout,'(a,i2)')
      &           'found matching output block: # ',iblkout
 
