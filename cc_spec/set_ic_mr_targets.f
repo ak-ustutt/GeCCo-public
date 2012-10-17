@@ -38,7 +38,7 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     msc, maxexc, ip, ih, iv,
      &     gno, idef, iexc, jexc,
-     &     version(60), ivers, prc_type
+     &     version(60), ivers, icnt, prc_type
       logical ::
      &     sv_fix, l_exist,
      &     l_icci, l_iccc, project, skip, Op_eqs, svdonly
@@ -237,6 +237,8 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
+            if (ip.eq.0.and.ih.eq.0.and.iexc.eq.0.and.jexc.eq.0)
+     &         cycle
             ndef = ndef + 1
             occ_def(IVALE,1,ndef*3-1) = iexc - ip
             occ_def(IVALE,2,ndef*3-1) = jexc - ip
@@ -265,6 +267,8 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
+            if (ip.eq.0.and.ih.eq.0.and.iexc.eq.0.and.jexc.eq.0)
+     &         cycle
             ndef = ndef + 1
             occ_def(IVALE,1,ndef*2-1) = iexc - ip
             occ_def(IVALE,2,ndef*2-1) = jexc - ip
@@ -280,8 +284,8 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
      &              'Dtr',1,1,
      &              parameters,2,tgt_info)
 
-      ! subset of Residual
-      call add_target('OMGred',ttype_op,.false.,tgt_info)
+      ! subset of exc. op. for non-redundant valence-only metric
+      call add_target('Ex',ttype_op,.false.,tgt_info)
       occ_def = 0
       ndef = 0
       do ip = 0, maxp
@@ -294,17 +298,56 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
             ! same valence structure already exists?
             ivers = 1
             do idef = 1, ndef
-              if (occ_def(IVALE,2,idef*2-1).eq.iexc-ih
-     &            .and.occ_def(IVALE,1,idef*2).eq.iexc-ip)
+              if (occ_def(IVALE,2,idef).eq.iexc-ih
+     &            .and.occ_def(IVALE,1,idef).eq.iexc-ip)
      &           ivers = ivers + 1
             end do
+            ndef = ndef + 1
+            occ_def(IHOLE,2,ndef) = ih
+            occ_def(IPART,1,ndef) = ip
+            occ_def(IVALE,1,ndef) = iexc - ip
+            occ_def(IVALE,2,ndef) = iexc - ih
+            ! distinguish ops with same valence part by blk_version
+            version(ndef) = ivers
+          end do
+        end do
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('Ex',ttype_op,DEF_OP_FROM_OCC,
+     &              'Ex',1,1,
+     &              parameters,2,tgt_info)
+      call set_rule2('Ex',SET_ORDER,tgt_info)
+      call set_arg('Ex',SET_ORDER,'LABEL',1,tgt_info,
+     &     val_label=(/'Ex'/))
+      call set_arg('Ex',SET_ORDER,'SPECIES',1,tgt_info,
+     &             val_int=(/1/))
+      call set_rule2('Ex',SET_ORDER,tgt_info)
+      call set_arg('Ex',SET_ORDER,'LABEL',1,tgt_info,
+     &     val_label=(/'Ex'/))
+      call set_arg('Ex',SET_ORDER,'SPECIES',1,tgt_info,
+     &             val_int=(/-1/))
+      call set_arg('Ex',SET_ORDER,'ORDER',1,tgt_info,
+     &             val_int=(/ndef/))
+      call set_arg('Ex',SET_ORDER,'IDX_FREQ',ndef,tgt_info,
+     &             val_int=version(1:ndef))
+
+      ! subset of Residual
+      call add_target('OMGred',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+            ! not for purely inactive excitation class
+            if (ip.eq.ih.and.
+     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))
+     &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
             occ_def(IPART,1,ndef*2) = ip
             occ_def(IVALE,1,ndef*2) = iexc - ip
             occ_def(IVALE,2,ndef*2-1) = iexc - ih
-            ! distinguish ops with same valence part by blk_version
-            version(ndef) = ivers
           end do
         end do
       end do
@@ -313,6 +356,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
       call set_rule('OMGred',ttype_op,DEF_OP_FROM_OCC,
      &              'OMGred',1,1,
      &              parameters,2,tgt_info)
+      ! distinguish ops with same valence part by blk_version
       call set_rule2('OMGred',SET_ORDER,tgt_info)
       call set_arg('OMGred',SET_ORDER,'LABEL',1,tgt_info,
      &     val_label=(/'OMGred'/))
@@ -322,6 +366,35 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
      &             val_int=(/ndef/))
       call set_arg('OMGred',SET_ORDER,'IDX_FREQ',ndef,tgt_info,
      e             val_int=version(1:ndef))
+
+      ! define transformed Residual (for preconditioner)
+      call add_target('OMGtr',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      icnt = 0
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+            ! not for purely inactive excitation class
+            if (ip.eq.ih.and.
+     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))
+     &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
+            icnt = icnt + 1
+            ! for cheap precond.: only valence part needed eventually
+            if (prc_type.ge.3.and.version(icnt).ne.1) cycle
+            ndef = ndef + 1
+            occ_def(IHOLE,2,ndef*2) = ih
+            occ_def(IPART,1,ndef*2) = ip
+            occ_def(IVALE,1,ndef*2) = iexc - ip
+            occ_def(IVALE,2,ndef*2-1) = iexc - ih
+          end do
+        end do
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,2,(/0,0,0,0/),ndef)
+      call set_rule('OMGtr',ttype_op,DEF_OP_FROM_OCC,
+     &              'OMGtr',1,1,
+     &              parameters,2,tgt_info)
 
       ! define Hessian / Jacobian (diagonal blocks only)
       call add_target('A',ttype_op,.false.,tgt_info)
@@ -371,64 +444,41 @@ c dbgend
 
       ! expression for the norm
       ! a) set up norm expression
-      op_deexc = 'C^+ '
-      op_exc = 'C   '
-      if (gno.eq.1) then
-        op_deexc = 'c^+ '
-        op_exc = 'c   '
-      end if
-      if (l_iccc) then
-        op_deexc = 'Lred'
-        op_exc = 'Tred'
-      end if
+        op_deexc = 'Ex^+'
+        op_exc = 'Ex  '
       call add_target2('F_NORM',.false.,tgt_info)
       call set_dependency('F_NORM','NORM',tgt_info)
       call set_dependency('F_NORM',op_exc,tgt_info)
-      if (l_iccc) call set_dependency('F_NORM',op_deexc,tgt_info)
-c      if (gno.eq.0) then
-c        call set_dependency('F_NORM','C0',tgt_info)
-c        call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
-c        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-c     &       val_label=(/'F_NORM'/))
-c        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-c     &       val_label=(/'NORM'/))
-c        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
-c     &       tgt_info,
-c     &       val_label=(/'C0^+','C^+','C','C0'/))
-c        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
-c     &       val_int=(/2,3,4,5/))
-c      else if (gno.eq.1) then
-        call set_dependency('F_NORM','DENS',tgt_info)
-        call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &       val_label=(/'F_NORM'/))
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &       val_label=(/'NORM'/))
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',2,
-     &       tgt_info,
-     &       val_label=(/op_deexc,op_exc/))
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
-     &       val_int=(/2,3/))
-        call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &       val_label=(/'F_NORM'/))
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &       val_label=(/'NORM'/))
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
-     &       tgt_info,
-     &       val_label=(/'DENS',op_deexc,op_exc,'DENS'/))
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
-     &       val_int=(/2,3,4,2/))
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &       val_int=(/1/))
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
-     &       val_int=(/1,4/))
-        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &       val_log=(/.false./))
-        if (gno.eq.0)
-     &   call set_arg('F_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
-     &       val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
-c      end if
+      call set_dependency('F_NORM','DENS',tgt_info)
+      call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_NORM'/))
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'NORM'/))
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',2,
+     &     tgt_info,
+     &     val_label=(/op_deexc,op_exc/))
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
+     &     val_int=(/2,3/))
+      call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_NORM'/))
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'NORM'/))
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'DENS',op_deexc,op_exc,'DENS'/))
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/2,3,4,2/))
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+     &     val_int=(/1,4/))
+      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      if (gno.eq.0)
+     & call set_arg('F_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+     &     val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
       ! b) insert unit operators to allow for differentiation
       ! and for factoring out of hole densities
       call set_dependency('F_NORM','1v',tgt_info)
@@ -550,9 +600,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
       labels(1) = 'F_SC0'
       labels(2) = 'F_NORM'
       labels(3) = 'OMGred'
-      labels(4) = 'C^+'
-      if (gno.eq.1) labels(4) = 'c^+'
-      if (l_iccc) labels(4) = 'Lred'
+      labels(4) = 'Ex^+'
       labels(5) = ' '
       call add_target('F_SC0',ttype_frm,.false.,tgt_info)
       call set_dependency('F_SC0','F_NORM',tgt_info)
@@ -571,9 +619,7 @@ c     &                labels,2,1,parameters,2,tgt_info)
       labels(1) = 'F_D'
       labels(2) = 'F_SC0'
       labels(3) = 'D'
-      labels(4) = 'C'
-      if (gno.eq.1) labels(4) = 'c'
-      if (l_iccc) labels(4) = 'Tred'
+      labels(4) = 'Ex'
       labels(5) = ' '
       call add_target('F_D',ttype_frm,.false.,tgt_info)
       call set_dependency('F_D','F_SC0',tgt_info)

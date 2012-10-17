@@ -38,9 +38,8 @@
      &     icnt, maxexc, maxv,
      &     msc, ip, ih, ivv, iv, ivv2, jvv,
      &     maxcom, maxcom_en, maxcom_h1bar, h1bar_maxp,
-     &     n_t_cls, i_cls,
-     &     n_tred_cls, len_form, optref, idef, ciroot, maxroot,
-     &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
+     &     i_cls, len_form, optref, idef, ciroot, maxroot,
+     &     stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
      &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno
@@ -195,7 +194,7 @@
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
-          do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,1,ndef) = ih
             occ_def(IPART,2,ndef) = ip
@@ -204,7 +203,6 @@
           end do
         end do
       end do
-      n_t_cls = ndef
       call op_from_occ_parameters(-1,parameters,2,
      &              occ_def,ndef,1,(/0,0/),ndef)
       call set_rule('L',ttype_op,DEF_OP_FROM_OCC,
@@ -219,7 +217,7 @@
       do ip = 0, maxp
         do ih = 0, maxh
           first = .true.
-          do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef) = ih
             occ_def(IPART,1,ndef) = ip
@@ -234,7 +232,6 @@
           end do
         end do
       end do
-      n_t_cls = ndef
       call op_from_occ_parameters(-1,parameters,2,
      &              occ_def,ndef,1,(/0,0/),ndef)
       call set_rule('T',ttype_op,DEF_OP_FROM_OCC,
@@ -332,65 +329,6 @@ c     &             val_int=(/1/))
       call set_arg('Ltr',CLONE_OP,'TEMPLATE',1,tgt_info,
      &     val_label=(/'L'/))
 
-      ! subset of L for non-redundant valence-only metric
-      call add_target('Lred',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
-            ! not for purely inactive excitation class
-            if (ip.eq.ih.and.
-     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
-            ! same valence structure already exists?
-            ivers = 1
-            do idef = 1, ndef
-              if (occ_def(IVALE,1,idef).eq.iexc-ih
-     &            .and.occ_def(IVALE,2,idef).eq.iexc-ip)
-     &           ivers = ivers + 1
-            end do
-            ndef = ndef + 1
-            occ_def(IHOLE,1,ndef) = ih
-            occ_def(IPART,2,ndef) = ip
-            occ_def(IVALE,2,ndef) = iexc - ip
-            occ_def(IVALE,1,ndef) = iexc - ih
-            ! distinguish ops with same valence part by blk_version
-            version(ndef) = ivers
-          end do
-        end do
-      end do
-      n_tred_cls = ndef
-      call op_from_occ_parameters(-1,parameters,2,
-     &              occ_def,ndef,1,(/0,0/),ndef)
-      call set_rule('Lred',ttype_op,DEF_OP_FROM_OCC,
-     &              'Lred',1,1,
-     &              parameters,2,tgt_info)
-      call set_rule2('Lred',SET_ORDER,tgt_info)
-      call set_arg('Lred',SET_ORDER,'LABEL',1,tgt_info,
-     &     val_label=(/'Lred'/))
-      call set_arg('Lred',SET_ORDER,'SPECIES',1,tgt_info,
-     &             val_int=(/1/))
-      call set_rule2('Lred',SET_ORDER,tgt_info)
-      call set_arg('Lred',SET_ORDER,'LABEL',1,tgt_info,
-     &     val_label=(/'Lred'/))
-      call set_arg('Lred',SET_ORDER,'SPECIES',1,tgt_info,
-     &             val_int=(/-1/))
-      call set_arg('Lred',SET_ORDER,'ORDER',1,tgt_info,
-     &             val_int=(/ndef/))
-      call set_arg('Lred',SET_ORDER,'IDX_FREQ',ndef,tgt_info,
-     &             val_int=version(1:ndef))
-
-      ! subset of T operator
-      call add_target2('Tred',.false.,tgt_info)
-      call set_dependency('Tred','Lred',tgt_info)
-      call set_rule2('Tred',CLONE_OP,tgt_info)
-      call set_arg('Tred',CLONE_OP,'LABEL',1,tgt_info,
-     &     val_label=(/'Tred'/))
-      call set_arg('Tred',CLONE_OP,'TEMPLATE',1,tgt_info,
-     &     val_label=(/'Lred'/))
-      call set_arg('Tred',CLONE_OP,'ADJOINT',1,tgt_info,
-     &     val_log=(/.true./))
-
       ! define Residual
       call add_target('OMG',ttype_op,.false.,tgt_info)
       occ_def = 0
@@ -410,34 +348,6 @@ c     &             val_int=(/1/))
      &              occ_def,ndef,2,(/0,0,0,0/),ndef)
       call set_rule('OMG',ttype_op,DEF_OP_FROM_OCC,
      &              'OMG',1,1,
-     &              parameters,2,tgt_info)
-
-      ! define transformed Residual (for preconditioner)
-      call add_target('OMGtr',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 0
-      icnt = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
-            ! not for purely inactive excitation class
-            if (ip.eq.ih.and.
-     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
-            icnt = icnt + 1
-            ! for cheap precond.: only valence part needed eventually
-            if (prc_type.ge.3.and.version(icnt).ne.1) cycle
-            ndef = ndef + 1
-            occ_def(IHOLE,2,ndef*2) = ih
-            occ_def(IPART,1,ndef*2) = ip
-            occ_def(IVALE,1,ndef*2) = iexc - ip
-            occ_def(IVALE,2,ndef*2-1) = iexc - ih
-          end do
-        end do
-      end do
-      call op_from_occ_parameters(-1,parameters,2,
-     &              occ_def,ndef,2,(/0,0,0,0/),ndef)
-      call set_rule('OMGtr',ttype_op,DEF_OP_FROM_OCC,
-     &              'OMGtr',1,1,
      &              parameters,2,tgt_info)
 
 c dbg

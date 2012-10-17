@@ -32,7 +32,7 @@
 
       integer ::
      &     ndef, occ_def(ngastp,2,124),!60),
-     &     isym, msc, ims, ip, ih, 
+     &     isym, msc, ims, ip, ih, cminexc, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, maxroot, cmaxv
       logical ::
      &     oldref, l_exist, writeF, spinproj
@@ -65,6 +65,8 @@
      &     ival=cmaxp)
       call get_argument_value('method.MR','cmaxexc',
      &     ival=cmaxexc)
+      call get_argument_value('method.MR','cminexc',
+     &     ival=cminexc)
       call get_argument_value('method.MR','ciroot',
      &     ival=ciroot)
       call get_argument_value('method.MR','maxroot',
@@ -86,6 +88,7 @@
         write(luout,*) 'cminp   = ',cminp
         write(luout,*) 'cmaxp   = ',cmaxp
         write(luout,*) 'cmaxv   = ',cmaxv
+        if (cminexc.gt.0) write(luout,*) 'cminexc = ',cminexc
         write(luout,*) 'cmaxexc = ',cmaxexc
         write(luout,*) 'nactel  = ',orb_info%nactel
         write(luout,*) 'ciroot  = ',ciroot
@@ -112,6 +115,7 @@
         do ih = cminh, cmaxh
           if (orb_info%nactel+ih-ip.lt.0.or.
      &        orb_info%nactel+ih-ip.gt.cmaxv) cycle
+          if (max(ih,ip).lt.cminexc) cycle
           ndef = ndef + 1
           occ_def(IHOLE,2,ndef) = ih
           occ_def(IPART,1,ndef) = ip
