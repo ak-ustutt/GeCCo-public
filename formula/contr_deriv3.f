@@ -230,7 +230,7 @@
           if (idxmlt.gt.0) then
             ! have to find the corresponding block
             iblkmlt = iblk_corresp(idx_mlt_poss,
-     &           iblkder(ideriv),op_der,op_mlt,.false.)
+     &           iblkder(ideriv),op_der,op_mlt,idxder.lt.0)
 
             if (iblkmlt.eq.0) call quit(1,'contr_deriv3',
      &           'corresponding operator block not found')
