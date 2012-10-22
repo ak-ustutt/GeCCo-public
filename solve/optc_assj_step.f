@@ -17,7 +17,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     ndim, mxdim, imet, idamp

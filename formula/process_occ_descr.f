@@ -15,7 +15,7 @@
       include 'def_word_list.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character(len=18) ::
      &     i_am = 'process_occ_descr'
       

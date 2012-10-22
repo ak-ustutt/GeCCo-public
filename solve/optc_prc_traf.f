@@ -141,10 +141,6 @@ c     &       me_grd%op%n_occ_cls,
 c     &       str_info,orb_info)
       end if
 
-c      write(luout,'(a,i1,a,x,g10.4)')
-c     &   '>>>> Norm of transformed residual for vector ',
-c     &   iopt,':',xngrd(iopt)
-
       call vec_from_da(ffdia,1,xbuf2,nwfpar)
 
       nsec_arr => opti_info%nsec(1:nopt)
