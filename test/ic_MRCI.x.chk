@@ -7,8 +7,7 @@ input
 check
   label CASSCF energy
   find CONVERGED
-  find ^.>>
-  find ^..>
+  find ... [ ]*1 [ ]*-15
   compare real 2 1e-10
   compare real 3 1e-10
 check

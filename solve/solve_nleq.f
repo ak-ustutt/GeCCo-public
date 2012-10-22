@@ -70,7 +70,7 @@ c dbgend
      &     orb_info
 
       logical ::
-     &     conv, restart, spinproj
+     &     conv, restart, spinproj, traf
       character(len_opname) ::
      &     label, dia_label
       integer ::
@@ -427,10 +427,6 @@ c dbgend
 c dbg
 c          print *,'xret : ',xret
 c dbg
-c dbg
-          xdum = xnormop(me_grd(1)%mel)
-          print *,'total norm of residual: ',xdum
-c dbgend
 
           if (ntest.ge.1000) then
             do iopt = 1, nopt
@@ -456,17 +452,18 @@ c test
 
           do iopt = 1, nopt
             xresnrm(iopt) = abs(xret(idx_res_xret(iopt)))
+            traf = traf.or.opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &                 .or.opti_info%typ_prc(iopt).eq.optinf_prc_invH0
           end do
         end if
 
+        ! report untransformed residual
+        if (traf) 
+     &   write(luout,'(x,"norm of untransformed residual ",3(x,g10.4))')
+     &   xresnrm(1:opti_info%nopt)
+
         ! another quick and dirty call to the linear solver
         ! for advanced preconditioning
-c dbg
-        print *,'optref = ',opti_info%optref
-        print *,'typprc(1) = ',opti_info%typ_prc(1),optinf_prc_invH0
-        print *,'conv = ',conv
-        print *,'nspcfrm = ',nspcfrm
-c dbg
         if (opti_info%optref.eq.-3.and.
      &      opti_info%typ_prc(1).eq.optinf_prc_invH0.and.
      &      .not.conv) then

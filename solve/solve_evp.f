@@ -392,12 +392,12 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
           if (iprlvl.gt.0) then
             do iroot = 1, nroots
               if (xeig(iroot,2).eq.0d0) then
-                write(luout,'("E >",3x,f24.12,x,3g10.4)')
+                write(luout,'(" E>",3x,f24.12,x,3g10.4)')
      &               xeig(iroot,1),(xresnrm(iroot+idx*nroots),
      &                              idx = 0, nopt-1)
               else
                 write(luout,
-     &               '("E >",3x,f24.12,x,g10.4," (img=",g24.12,")")')
+     &               '(" E>",3x,f24.12,x,g10.4," (img=",g24.12,")")')
      &               xeig(iroot,1),xresnrm(iroot),xeig(iroot,2)
               end if
             end do

@@ -27,10 +27,6 @@ c     &     nlines
       type(word_list) ::
      &    input_list, blocked_list
 
-c dbg
-      print *,'entered add_target3'
-      print *,' > ',string_arr(1)(1:40)
-c dbg
 c      if (.not.present(string_arr)) return
 
       call init_word_list(input_list)
