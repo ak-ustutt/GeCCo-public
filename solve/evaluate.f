@@ -90,7 +90,7 @@
 
       ! call the scheduler
       call frm_sched(xret,fl_eval,depend,0,0,
-     &               init,op_info,str_info,strmap_info,orb_info)
+     &               init,.false.,op_info,str_info,strmap_info,orb_info)
 
 c dbg
       call get_argument_value('method.R12','pz_eval',lval=pz_eval)

@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine frm_sched2(xret,flist,depend_info,idxselect,nselect,
-     &         init,op_info,str_info,strmap_info,orb_info)
+     &         init,no_skip,op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     schedule the evaluation of a formula
 *     
@@ -40,7 +40,7 @@
       integer, intent(in) ::
      &     nselect, idxselect(nselect)
       logical, intent(in) ::
-     &     init
+     &     init, no_skip
       type(formula_item), intent(in), target ::
      &     flist
       type(operator_info), intent(inout) ::
@@ -176,7 +176,8 @@
           ! check dependency
 c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
           skip = skip.or.
-     &           (init.and.me_list_uptodate(idxres,depend_info,op_info))
+     &           ((.not.no_skip).and.init
+     &             .and.me_list_uptodate(idxres,depend_info,op_info))
 
           idxopres = cur_form%target      ! op index of result
 

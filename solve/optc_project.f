@@ -1,15 +1,19 @@
 *----------------------------------------------------------------------*
-      subroutine optc_project(me_amp,me_dia,me_special,nspecial,
+      subroutine optc_project(me_amp,me_trf,me_dia,me_special,nspecial,
      &     nwfpar,xbuf1,fspc,nspcfrm,iopt,opti_info,
      &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
 *     projects out linear dependencies in me_amp
 *     fspc(1)         : transformation formula
+*     me_trf          : the list that is the result of fspc (if not 
+*                       identical to me_amp)
 *     me_special(1)   : transformed vector or vector to be transformed
 *     me_special(2,3) : transformation matrices
 *     me_special(4)   : projector
 *     higher fspc, me_special: for update of metric (if needed)
+*
+*     after projection, the vector resides on the list me_amp again
 *
 *     matthias, Nov. 2010
 *----------------------------------------------------------------------*
@@ -35,7 +39,7 @@
       type(me_list_array), intent(inout) ::
      &     me_special(nspecial)
       type(me_list), intent(in) ::
-     &     me_amp,me_dia
+     &     me_amp,me_dia,me_trf
       real(8), intent(inout) ::
      &     xbuf1(*)
 
@@ -57,6 +61,8 @@
       integer ::
      &     idx, nsec, isec, stsec, ndsec, ioff,
      &     nblk, iblk, nj, iblkoff, jblk
+      character(len_opname) ::
+     &     op_spc_name, op_trf_name, op_amp_name
 
       integer, pointer ::
      &     nwfpsec(:), idstsec(:), nsec_arr(:), occ(:,:,:)
@@ -66,14 +72,10 @@
       real(8) ::
      &     xdum
 
-      type(filinf), pointer ::
-     &     ffamp
-
       integer, external ::
      &     idx_mel_list, iblk_occ
 
-      ! pointers to file handle
-      ffamp => me_amp%fhand
+      real(8), external :: dnrm2
 
       if (opti_info%optref.eq.-2) then
         ! update metric, trafo matrices and projector if not up to date
@@ -86,16 +88,20 @@
      &        opti_info%update_prc)
       end if
 
+      call assign_me_list(me_special(1)%mel%label,
+     &                      me_special(1)%mel%op%name,op_info)
+
       ! put new vector to special list for transformation
       call list_copy(me_amp,me_special(1)%mel,.false.)
 
       ! use projection matrix
       call assign_me_list(me_special(4)%mel%label,
-     &                       me_special(2)%mel%op%name,op_info)
+     &                      me_special(2)%mel%op%name,op_info)
 
       ! evaluate projected vector
-      call evaluate2(fspc(1),.true.,
-     &         op_info,str_info,strmap_info,orb_info,xdum,.false.)
+      call evaluate2(fspc(1),.true.,.true.,
+     &         op_info,str_info,strmap_info,orb_info,xdum,.true.)
+
 
 c      ! Since formally we get a transposed vector, we need to
 c      ! account for sign changes when reordering
@@ -122,7 +128,7 @@ c      end if
         if (opti_info%update_prc.and.nspecial.eq.9.or.
      &      .not.opti_info%update_prc.and.nspecial.eq.8) then
           ! evaluate T(2)red (projector list is already assigned)
-          call evaluate2(fspc(nspcfrm-1),.true.,
+          call evaluate2(fspc(nspcfrm-1),.true.,.false.,
      &           op_info,str_info,strmap_info,orb_info,xdum,.false.)
           ! Here we need to add this to T
           nj = me_amp%op%njoined
@@ -139,7 +145,7 @@ c      end if
           end do
         end if
         ! Now evaluate T(3)red (or T(2)red if not done above)
-        call evaluate2(fspc(nspcfrm),.true.,
+        call evaluate2(fspc(nspcfrm),.true.,.false.,
      &         op_info,str_info,strmap_info,orb_info,xdum,.false.)
         ! and add this to T as well
         nblk = me_special(nspecial)%mel%op%n_occ_cls

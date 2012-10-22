@@ -82,6 +82,8 @@ c      include 'mdef_me_list.h'
       integer, pointer ::
      &     ivec(:)
 
+      real(8), external :: dnrm2
+
       ! set file arrays for calls to "old" routines
       allocate(ffopt(nopt),ffgrd(nopt),ffdia(nopt))
       do iopt = 1, nopt
@@ -153,6 +155,10 @@ c dbg
             if (nincore.ge.2)
      &         call vec_from_da(ffopt(1)%fhand,1,
      &                          xbuf1,opti_info%nwfpar(1))
+c dbg
+            print *,'amp: ',opti_info%nwfpar(1),
+     6              dnrm2(opti_info%nwfpar(1),xbuf1,1)
+c dbg
             klsmat = opti_stat%mxdim_sbsp**2 + 1
             ! if incore: xbuf1 remains unchanged
             shift = ndim_save.eq.opti_stat%ndim_vsbsp
@@ -163,6 +169,24 @@ c dbg
      &           nincore,opti_info%nwfpar(1),
      &           lenbuf,xbuf1,xbuf2,xbuf3)
 
+            ! add |gradient(n)>
+            ! project out linear dependencies if required
+            do iopt = 1, opti_info%nopt
+             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf.and.
+     &          opti_info%optref.ne.0.and.nspecial.ge.4) then
+
+Cc dbg
+C          print *,'call to projector' !HIERHIER
+Cc dbg
+C                call optc_project(me_grd(iopt)%mel,
+C     &               me_opt(iopt)%mel,me_dia(iopt)%mel,
+C     &            me_special,nspecial,
+C     &            opti_info%nwfpar(iopt),xbuf2,
+C     &            fspc,nspcfrm,iopt,opti_info,
+C     &            orb_info,op_info,str_info,strmap_info)
+
+              end if
+            end do
             ! add |gradient(n)>, on xbuf2 if incore, xbuf1 unused
             ndim_save = opti_stat%ndim_rsbsp
             call optc_sbsp_add(opti_stat%ndim_rsbsp,
@@ -241,11 +265,11 @@ c dbg
 
         ! project out linear dependencies if required
         do iopt = 1, opti_info%nopt
-         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf.and.
+         if ((opti_info%typ_prc(iopt).eq.optinf_prc_traf.or.
+     &        opti_info%typ_prc(iopt).eq.optinf_prc_invH0 ).and.
      &        opti_info%optref.ne.0.and.nspecial.ge.4) then
-
-         call optc_project(me_opt(iopt)%mel,me_dia(iopt)%mel,
-     &        me_special,nspecial,
+         call optc_project(me_opt(iopt)%mel,me_opt(iopt)%mel,
+     &        me_dia(iopt)%mel,me_special,nspecial,
      &        opti_info%nwfpar(iopt),xbuf1,fspc,nspcfrm,iopt,opti_info,
      &        orb_info,op_info,str_info,strmap_info)
 
@@ -299,11 +323,31 @@ c dbg
         end if
 
         ! make external step
-        call optc_pert_step(ffopt(1)%fhand,
-     &       ffgrd(1)%fhand,ffdia(1)%fhand,opti_stat%trrad,
-     &       nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2,xbuf3,ffscr)
+        do iopt = 1, opti_info%nopt
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_traf.and.
+     &       opti_info%optref.ne.0.and.nspecial.ge.4) then
+
+            if (nincore.lt.2) 
+     &              call quit(1,'opti_macit','need more memory')
+
+            call optc_prc_traf(
+     &              me_opt(iopt)%mel,me_grd(iopt)%mel,me_dia(iopt)%mel,
+     &              me_special,nspecial,
+     &              opti_info%nwfpar(iopt),xbuf1,xbuf2,
+     &              fspc,nspcfrm,xngrd,iopt,opti_info,
+     &              orb_info,op_info,str_info,strmap_info)
+
+          else
+            call optc_pert_step(ffopt(iopt)%fhand,
+     &         ffgrd(iopt)%fhand,ffdia(iopt)%fhand,opti_stat%trrad,
+     &         nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3,
+     &         ffscr)
+          end if
+        end do
+
 
       end if
+
 
       deallocate(ffopt,ffdia,ffgrd)
 

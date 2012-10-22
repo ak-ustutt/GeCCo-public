@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine evaluate2(fl_eval,init,
+      subroutine evaluate2(fl_eval,init,force,
      &                     op_info,str_info,strmap_info,orb_info,
      &                     xret_out,get_xret)
 *----------------------------------------------------------------------*
@@ -40,7 +40,7 @@
       type(orbinf) ::
      &     orb_info
       logical ::
-     &     get_xret, init
+     &     get_xret, init, force
       real(8) ::
      &     xret_out(*)
 
@@ -67,7 +67,7 @@
 
       ! call the scheduler
       call frm_sched(xret,fl_eval,depend,0,0,
-     &               init,op_info,str_info,strmap_info,orb_info)
+     &            init,force,op_info,str_info,strmap_info,orb_info)
 
       if (iprlvl.ge.20) then
         call write_title(luout,wst_title,

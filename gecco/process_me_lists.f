@@ -33,7 +33,7 @@
       integer, parameter ::
      &     maxfac = 20, maximum_order = 10
       real(8) ::
-     &     fac(maxfac), freq
+     &     fac(maxfac), freq, xdum
       integer ::
      &     idxblk(maxfac), minblk, maxblk,
      &     idx, jdx, ioff, nfac, nblk, nspecial, imode,
@@ -255,9 +255,12 @@ c dbg
      &       rule%labels(2*nopt+1:2*nopt+nopt), ! mvp-labels
      &       rule%labels(3*nopt+1:3*nopt+nopt), ! metric-labels
      &       rule%labels(4*nopt+1:4*nopt+nopt), ! rhs-labels
+     &       xdum,                              ! dummy
      &       rule%labels(5*nopt+1),             ! formula
      &       rule%labels(5*nopt+ioff+1:
      &                   5*nopt+ioff+nspecial),nspecial,
+     &       rule%labels(5*nopt+ioff+1:               ! dummy settings
+     &                   5*nopt+ioff+nspecial),0,0d0, ! dummy
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(SOLVEEVP)

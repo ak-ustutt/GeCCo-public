@@ -187,7 +187,7 @@ c           ad hoc: add scalar contrib. only to purely inactive blks
             call put_vec(ffout,buffer_out,ioffout+1,ioffout+lenblkout)
             ifree = mem_flushmark('dia_from_op')
 
-            if (.not.extend) cycle ! not more than one matching block
+            if (.not.extend) exit ! not more than one matching block
           end if
         end do
       end do

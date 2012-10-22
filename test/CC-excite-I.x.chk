@@ -44,7 +44,7 @@ check
   compare int 3
 check
   label Excitation energy
-  find ^[ ]*>> [ ]* [0-9]*\.[0-9][0-9]* [ ]*[0-9]*\.[0-9][0-9]*E-[0-9][0-9]*
+  find ^.[ ]*> [ ]* [0-9]*\.[0-9][0-9]* [ ]*[0-9]*\.[0-9][0-9]*E-[0-9][0-9]*
   compare real 2 1e-7
 end
 

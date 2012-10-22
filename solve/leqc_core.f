@@ -8,6 +8,7 @@ c     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
      &       nincore,lenbuf,
      &       xbuf1,xbuf2,xbuf3,
      &       flist,depend,
+     &       fspc,nspcfrm,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -39,7 +40,7 @@ c      include 'def_filinf.h'
       integer, intent(inout) ::
      &     iter
       integer, intent(in) ::
-     &     iroute, nincore, lenbuf, nspecial
+     &     iroute, nincore, lenbuf, nspecial, nspcfrm
       logical, intent(in) ::
      &     use_s(*)
 
@@ -56,6 +57,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     flist
       type(dependency_info) ::
      &     depend
+      type(formula_item), intent(in) ::
+     &     fspc(nspcfrm)
 
       type(optimize_info), intent(in) ::
      &     opti_info
@@ -78,12 +81,12 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
 
 * local
       logical ::
-     &     zero_vec(opti_stat%ndim_vsbsp), init, conv, getnewrec
+     &     zero_vec(opti_stat%ndim_vsbsp), init, conv, trafo, getnewrec
       integer ::
      &     idx, jdx, kdx, iroot, irhs,  nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
      &     ndim_save, ndel, iopt, lenscr, ifree, restart_mode,
-     &     nselect, irec, ioff_s, ioff, nsec, jopt
+     &     nselect, irec, ioff_s, ioff, nsec, jopt, isec, stsec, ndsec
       real(8) ::
      &     cond, xdum, xnrm
       real(8), pointer ::
@@ -96,6 +99,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     ipiv(:), iconv(:), idxroot(:), idxselect(:)
       type(file_array), pointer ::
      &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:)
+      type(filinf), pointer ::
+     &     ffspc
       type(filinf), target ::
      &     fdum
 
@@ -266,19 +271,27 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
       do iroot = 1, nroot
         ! assemble residual in full space
         do iopt = 1, nopt
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
+            ffspc => me_special(2)%mel%fhand
+            trafo = .true.
+          else
+            ffspc => ffscr(iopt)%fhand
+            trafo = .false.
+          end if
+
           if (nincore.ge.2) then
             call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,
      &                       nwfpar(iopt))
           else
             call da_sccpvec(me_rhs(iopt)%mel%fhand,iroot,
-     &                      ffscr(iopt)%fhand,iroot,
+     &                      ffspc,iroot,
      &                      1d0,nwfpar(iopt),xbuf1,lenbuf)
           end if
 
           idx = (iroot-1)*mxsub + 1
           call optc_expand_vec(vred(idx),ndim_rsbsp,
      &                                        xrsnrm(iroot,iopt),.true.,
-     &         ffscr(iopt)%fhand,irecscr,1d0,ffrsbsp(iopt)%fhand,
+     &         ffspc,irecscr,1d0,ffrsbsp(iopt)%fhand,
      &         iord_rsbsp,
      &         nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
 
@@ -287,7 +300,7 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
      &      call optc_expand_vec(
      &           opti_info%shift*vred(idx:idx-1+ndim_vsbsp),ndim_vsbsp,
      &                     xrsnrm(iroot,iopt),.true.,
-     &           ffscr(iopt)%fhand,irecscr,1d0,ffvsbsp(iopt)%fhand,
+     &           ffspc,irecscr,1d0,ffvsbsp(iopt)%fhand,
      &           iord_rsbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
 
@@ -298,6 +311,26 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
      &           ffscr(iopt)%fhand,irecscr,1d0,ffssbsp(iopt)%fhand,
      &           iord_rsbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
+
+C ?????
+c          ! fix the signs (if needed)
+c          if (.not.use_s(iopt).and.trafo)
+c     &         call optc_fix_signs(xrsnrm(iroot,iopt),xvec,
+c     &                      ffvsbsp(iopt)%fhand,ndim_vsbsp,iord_vsbsp,
+c     &                      ffspc(iopt)%fhand,irecscr,
+c     &                      opti_info,iopt,
+c     &                      nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
+
+          ! transform residual (if requested)
+          if (trafo) then
+            call optc_traf(me_scr(iopt)%mel,irecscr,xrsnrm(iroot,iopt),
+     &                     me_special(2)%mel,irecscr,
+     &                     fspc(1),'B',me_special,nspecial,
+     &                     nwfpar(iopt),xbuf1,
+     &                     orb_info,op_info,str_info,strmap_info)
+
+          end if
+
         end do
 
         ! not yet converged? increase record counter
@@ -312,13 +345,20 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
 
       end do
       
+
       ! number of new directions
       nnew = irecscr-1
-c dbg
-c      print *,'nnew = ',nnew
-c dbg
+      ! if this is the last iteration: no new directions, but 
+      ! assemble all vectors, converged or not
+      if (iter.ge.opti_info%maxmacit) nnew = 0
 
       if (nnew.gt.0) then
+        nsec_arr => opti_info%nsec(1:nopt)
+        nsec = sum(nsec_arr)
+        nwfpsec => opti_info%nwfpsec(1:nsec)
+        idstsec => opti_info%idstsec(1:nsec)
+        signsec => opti_info%signsec(1:nsec)!2(1:nsec)
+c        signsec => opti_info%signsec2(1:nsec)
 
         ! reduced space exhausted?
         if (nred+nnew.gt.mxsub) then
@@ -344,9 +384,21 @@ c dbg
         end if
 
         ! divide new directions by preconditioner
+        stsec = 1
+        ndsec = 0
         do iopt = 1, nopt
+          if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)
+          ndsec = ndsec + nsec_arr(iopt)
+
           select case(opti_info%typ_prc(iopt))
-          case(optinf_prc_file)
+          case(optinf_prc_file,optinf_prc_traf,optinf_prc_spinp)
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
+              ffspc => me_special(2)%mel%fhand
+              trafo = .true.
+            else
+              ffspc => ffscr(iopt)%fhand
+              trafo = .false.
+            end if
             if (nincore.ge.2) then
               call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,
      &                         nwfpar(iopt))
@@ -360,12 +412,25 @@ c                xnrm = dnrm2(nwfpar,xbuf1,1)
                   xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
                 end do
                 xnrm = sqrt(xnrm)
-                call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
-     &                     opti_info%shift,nwfpar(iopt))
+                ! account for sign changes if necessary
+                do isec = stsec, ndsec
+                  call diavc(xbuf1(idstsec(isec)),xbuf1(idstsec(isec)),
+     &                       signsec(isec)/xnrm,xbuf2(idstsec(isec)),
+     &                       opti_info%shift,nwfpsec(isec))
+                end do
+c                call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
+c     &                     opti_info%shift,nwfpar(iopt))
                 call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,
      &                         nwfpar(iopt))
               end do
             else
+              ! security trap
+              do isec = stsec, ndsec
+                if (idstsec(isec).ne.1) 
+     &               call quit(1,'leqc_core',
+     &               'not this route (only incore)')
+              end do
+
               do iroot = 1, nnew
 c                ! request (nroot-iroot+1)th-last root 
 c                irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
@@ -429,7 +494,19 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
           case default
             call quit(1,'leqc_core','unknown preconditioner type')
           end select
-        end do
+
+          ! if requested, transform new subspace vectors
+          if (trafo) then
+            do iroot = 1, nnew
+              call optc_traf(me_scr(iopt)%mel,iroot,xdum,
+     &                     me_special(2)%mel,iroot,
+     &                     fspc(1),'F',me_special,nspecial,
+     &                     nwfpar(iopt),xbuf1,
+     &                     orb_info,op_info,str_info,strmap_info)
+            end do
+          end if
+
+        end do ! iopt
 
         do iroot = 1, nnew
           getnewrec = .true.
@@ -452,7 +529,7 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
               call switch_mel_record(me_met(iopt)%mel,irec)
               call switch_mel_record(me_scr(iopt)%mel,iroot)
               call frm_sched(xret,flist,depend,idxselect,nselect,
-     &                    .true.,op_info,str_info,strmap_info,orb_info)
+     &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
               me_met(iopt)%mel%fhand%last_mod(irec) = -1
               deallocate(xret,idxselect)
 
@@ -496,7 +573,6 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
 
       else
         ! if all converged: assemble vectors 
-
         do iopt = 1, nopt
           do iroot = 1, nroot
 

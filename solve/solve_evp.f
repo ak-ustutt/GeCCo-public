@@ -388,16 +388,16 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
 
         if (iter.gt.1) then
           xresmax = fndmnx(xresnrm,nroots*nopt,2)
-          write(luout,'(">>>",i3,24x,x,g10.4)') iter-1,xresmax
+          write(luout,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
           if (iprlvl.gt.0) then
             do iroot = 1, nroots
               if (xeig(iroot,2).eq.0d0) then
-                write(luout,'(" >>",3x,f24.12,x,3g10.4)')
+                write(luout,'("E >",3x,f24.12,x,3g10.4)')
      &               xeig(iroot,1),(xresnrm(iroot+idx*nroots),
      &                              idx = 0, nopt-1)
               else
                 write(luout,
-     &               '(" >>",3x,f24.12,x,g10.4," (img=",g24.12,")")')
+     &               '("E >",3x,f24.12,x,g10.4," (img=",g24.12,")")')
      &               xeig(iroot,1),xresnrm(iroot),xeig(iroot,2)
               end if
             end do
@@ -444,7 +444,7 @@ c     &           str_info,orb_info)
 c dbg
 
             call frm_sched(xret,fl_mvp,depend,0,0,
-     &           .true.,op_info,str_info,strmap_info,orb_info)
+     &           .true.,.false.,op_info,str_info,strmap_info,orb_info)
 
 c dbg
 c            write(luout,*) 'output for request: ',irequest
@@ -559,18 +559,18 @@ c dbgend
       ! print results
       call write_title(luout,wst_title,
      &     'Results for '//trim(label_opt(1)))
-      write(luout,'(">>>",66("="))')
-      write(luout,'(">>>",2x,'//
+      write(luout,'("E>>",66("="))')
+      write(luout,'("E>>",2x,'//
      &     '"root     eigenvalue (real)       eigenvalue (img.)'//
      &     '  |residual|")')
-      write(luout,'(">>>",66("-"))') 
+      write(luout,'("E>>",66("-"))') 
       do iroot = 1, nroots
         if (xeig(iroot,2).eq.0d0) then
-          write(luout,'(">>>",2x,i3,x,f22.12,20x,"---",2x,x,g10.4)')
+          write(luout,'("E>>",2x,i3,x,f22.12,20x,"---",2x,x,g10.4)')
      &         iroot,xeig(iroot,1),xresnrm(iroot)
         else
           write(luout,
-     &         '(">>>",3x,i2,x,f22.12,x,g24.12,x,g10.4)')
+     &         '("E>>",3x,i2,x,f22.12,x,g24.12,x,g10.4)')
      &         iroot,xeig(iroot,1:2),xresnrm(iroot)
         end if
 c dbg
@@ -580,7 +580,7 @@ c     &           1,me_mvp(1)%mel%op%n_occ_cls,
 c     &           str_info,orb_info)
 c dbg
       end do
-      write(luout,'(">>>",66("="))') 
+      write(luout,'("E>>",66("="))') 
 
       ! switch to target root if possible
 !      ! (we assume that nroots has been chosen for this reason,

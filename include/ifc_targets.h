@@ -1,4 +1,12 @@
       interface
+        subroutine add_target3(string_arr,tgt_info)
+        import
+        implicit none
+        type(target_info), intent(inout) ::
+     &       tgt_info
+	character(len=*), intent(in), dimension(:) ::
+     &       string_arr
+        end subroutine
         subroutine set_arg(name_target,command,
      &                                      arg_label,arg_dim,tgt_info,
      &     val_label,val_log,val_int,val_occ,val_restr,val_rl8,val_str,

@@ -38,9 +38,8 @@
      &     icnt, maxexc, maxv,
      &     msc, ip, ih, ivv, iv, ivv2, jvv,
      &     maxcom, maxcom_en, maxcom_h1bar, h1bar_maxp,
-     &     n_t_cls, i_cls,
-     &     n_tred_cls, len_form, optref, idef, ciroot, maxroot,
-     &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
+     &     i_cls, len_form, optref, idef, ciroot, maxroot,
+     &     stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
      &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno
@@ -58,6 +57,8 @@
       character ::
      &     op_ht*3, f_ht*5, op_ht0to*6, f_ht0to*8, form_str*50,
      &     def_ht*10
+      character(len=3) ::
+     &     prc_mode_str
       real(8) ::
      &     x_ansatz, prc_shift
 
@@ -195,7 +196,7 @@
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
-          do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,1,ndef) = ih
             occ_def(IPART,2,ndef) = ip
@@ -204,7 +205,6 @@
           end do
         end do
       end do
-      n_t_cls = ndef
       call op_from_occ_parameters(-1,parameters,2,
      &              occ_def,ndef,1,(/0,0/),ndef)
       call set_rule('L',ttype_op,DEF_OP_FROM_OCC,
@@ -219,7 +219,7 @@
       do ip = 0, maxp
         do ih = 0, maxh
           first = .true.
-          do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef) = ih
             occ_def(IPART,1,ndef) = ip
@@ -234,7 +234,6 @@
           end do
         end do
       end do
-      n_t_cls = ndef
       call op_from_occ_parameters(-1,parameters,2,
      &              occ_def,ndef,1,(/0,0/),ndef)
       call set_rule('T',ttype_op,DEF_OP_FROM_OCC,
@@ -323,6 +322,15 @@ c     &             val_int=(/1/))
       call set_arg('Ttr',CLONE_OP,'TEMPLATE',1,tgt_info,
      &     val_label=(/'T'/))
 
+      ! generic T-shaped output operator for transformations
+      call add_target2('Tout',.false.,tgt_info)
+      call set_dependency('Tout','T',tgt_info)
+      call set_rule2('Tout',CLONE_OP,tgt_info)
+      call set_arg('Tout',CLONE_OP,'LABEL',1,tgt_info,
+     &     val_label=(/'Tout'/))
+      call set_arg('Tout',CLONE_OP,'TEMPLATE',1,tgt_info,
+     &     val_label=(/'T'/))
+
       ! transformed L
       call add_target2('Ltr',.false.,tgt_info)
       call set_dependency('Ltr','L',tgt_info)
@@ -331,65 +339,6 @@ c     &             val_int=(/1/))
      &     val_label=(/'Ltr'/))
       call set_arg('Ltr',CLONE_OP,'TEMPLATE',1,tgt_info,
      &     val_label=(/'L'/))
-
-      ! subset of L for non-redundant valence-only metric
-      call add_target('Lred',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
-            ! not for purely inactive excitation class
-            if (ip.eq.ih.and.
-     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
-            ! same valence structure already exists?
-            ivers = 1
-            do idef = 1, ndef
-              if (occ_def(IVALE,1,idef).eq.iexc-ih
-     &            .and.occ_def(IVALE,2,idef).eq.iexc-ip)
-     &           ivers = ivers + 1
-            end do
-            ndef = ndef + 1
-            occ_def(IHOLE,1,ndef) = ih
-            occ_def(IPART,2,ndef) = ip
-            occ_def(IVALE,2,ndef) = iexc - ip
-            occ_def(IVALE,1,ndef) = iexc - ih
-            ! distinguish ops with same valence part by blk_version
-            version(ndef) = ivers
-          end do
-        end do
-      end do
-      n_tred_cls = ndef
-      call op_from_occ_parameters(-1,parameters,2,
-     &              occ_def,ndef,1,(/0,0/),ndef)
-      call set_rule('Lred',ttype_op,DEF_OP_FROM_OCC,
-     &              'Lred',1,1,
-     &              parameters,2,tgt_info)
-      call set_rule2('Lred',SET_ORDER,tgt_info)
-      call set_arg('Lred',SET_ORDER,'LABEL',1,tgt_info,
-     &     val_label=(/'Lred'/))
-      call set_arg('Lred',SET_ORDER,'SPECIES',1,tgt_info,
-     &             val_int=(/1/))
-      call set_rule2('Lred',SET_ORDER,tgt_info)
-      call set_arg('Lred',SET_ORDER,'LABEL',1,tgt_info,
-     &     val_label=(/'Lred'/))
-      call set_arg('Lred',SET_ORDER,'SPECIES',1,tgt_info,
-     &             val_int=(/-1/))
-      call set_arg('Lred',SET_ORDER,'ORDER',1,tgt_info,
-     &             val_int=(/ndef/))
-      call set_arg('Lred',SET_ORDER,'IDX_FREQ',ndef,tgt_info,
-     &             val_int=version(1:ndef))
-
-      ! subset of T operator
-      call add_target2('Tred',.false.,tgt_info)
-      call set_dependency('Tred','Lred',tgt_info)
-      call set_rule2('Tred',CLONE_OP,tgt_info)
-      call set_arg('Tred',CLONE_OP,'LABEL',1,tgt_info,
-     &     val_label=(/'Tred'/))
-      call set_arg('Tred',CLONE_OP,'TEMPLATE',1,tgt_info,
-     &     val_label=(/'Lred'/))
-      call set_arg('Tred',CLONE_OP,'ADJOINT',1,tgt_info,
-     &     val_log=(/.true./))
 
       ! define Residual
       call add_target('OMG',ttype_op,.false.,tgt_info)
@@ -410,34 +359,6 @@ c     &             val_int=(/1/))
      &              occ_def,ndef,2,(/0,0,0,0/),ndef)
       call set_rule('OMG',ttype_op,DEF_OP_FROM_OCC,
      &              'OMG',1,1,
-     &              parameters,2,tgt_info)
-
-      ! define transformed Residual (for preconditioner)
-      call add_target('OMGtr',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 0
-      icnt = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
-            ! not for purely inactive excitation class
-            if (ip.eq.ih.and.
-     &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
-            icnt = icnt + 1
-            ! for cheap precond.: only valence part needed eventually
-            if (prc_type.ge.3.and.version(icnt).ne.1) cycle
-            ndef = ndef + 1
-            occ_def(IHOLE,2,ndef*2) = ih
-            occ_def(IPART,1,ndef*2) = ip
-            occ_def(IVALE,1,ndef*2) = iexc - ip
-            occ_def(IVALE,2,ndef*2-1) = iexc - ih
-          end do
-        end do
-      end do
-      call op_from_occ_parameters(-1,parameters,2,
-     &              occ_def,ndef,2,(/0,0,0,0/),ndef)
-      call set_rule('OMGtr',ttype_op,DEF_OP_FROM_OCC,
-     &              'OMGtr',1,1,
      &              parameters,2,tgt_info)
 
 c dbg
@@ -720,6 +641,20 @@ c     &     val_label=(/'H'/))
      &              'DENS1',1,1,
      &              parameters,2,tgt_info)
 
+      ! a number of operators needed for H0inversion
+      ! & Dyall type H0 (as also used for the diagonal preconditioner)
+      call add_target3((/
+     &     'target OPS_FOR_H0INV(           ',
+     &     '    depend (OMG,T)              ',
+     &     '    CLONE_OPERATOR(label=OMGprj,template=OMG) ',
+     &     '    CLONE_OPERATOR(label=DlT,template=T)      ',
+     &     '    CLONE_OPERATOR(label=H0_DlT,template=OMG) ',
+     &     '    CLONE_OPERATOR(label=S_DlT,template=OMG) ',
+     &     '    DEF_OP_FROM_OCC(label=D00,descr=",|,|,V|V,",join=2)',
+     &     '    DEF_OP_FROM_OCC(label=H0Dy,descr="H,H|P,P|V,V|VV,VV")',
+     &     ')'/),
+     &     tgt_info)
+    
       ! copies of selected PP blocks of Hamiltonian
       call add_target('H_PP',ttype_op,.false.,tgt_info)
       occ_def = 0
@@ -1616,6 +1551,8 @@ c dbgend
      &     val_int=(/3/))
       call set_arg('F_T',SELECT_LINE,'MODE',1,tgt_info,
      &     val_str='no_ext')
+
+
 c dbg
 c      do i_cls = 1, nsupD
 c        call set_rule2('F_T',EXPAND_OP_PRODUCT,tgt_info)
@@ -1710,6 +1647,72 @@ c      call set_rule2('F_L',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_L',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_L'/))
 c dbgend
+
+      ! generic version of the above
+      call add_target2('F_Ttr_GEN',.false.,tgt_info)
+      call set_dependency('F_Ttr_GEN','Tout',tgt_info)
+      call set_dependency('F_Ttr_GEN','Dtr',tgt_info)
+      call set_dependency('F_Ttr_GEN','Ttr',tgt_info)
+      do i_cls = 1, nsupD
+        call set_rule2('F_Ttr_GEN',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_Ttr_GEN'/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'Tout'/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &       tgt_info,
+     &       val_label=(/'Tout','Dtr ','Ttr ','Dtr ','Tout'/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &       val_int=(/1,2,3,2,1/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'BLK_MIN',3,tgt_info,
+     &       val_int=(/stndT(1,i_cls),stndD(1,i_cls),stndT(1,i_cls)/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'BLK_MAX',3,tgt_info,
+     &       val_int=(/stndT(2,i_cls),stndD(2,i_cls),stndT(2,i_cls)/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+     &       val_int=(/4/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'AVOID',8,tgt_info,
+     &       val_int=(/3,5,2,4,1,4,2,5/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &       val_log=(/i_cls.eq.1/))
+      end do
+      do i_cls = nsupD+1, nsupT
+        call set_rule2('F_Ttr_GEN',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_Ttr_GEN'/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'Tout'/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'OPERATORS',3,
+     &       tgt_info,
+     &       val_label=(/'Tout','Ttr ','Tout'/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'IDX_SV',3,tgt_info,
+     &       val_int=(/1,2,1/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'BLK_MIN',2,tgt_info,
+     &       val_int=(/stndT(1,i_cls),stndT(1,i_cls)/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'BLK_MAX',2,tgt_info,
+     &       val_int=(/stndT(2,i_cls),stndT(2,i_cls)/))
+        call set_arg('F_Ttr_GEN',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &       val_log=(/i_cls.eq.1/))
+      end do
+      ! no active open lines from Ttr
+      call set_rule2('F_Ttr_GEN',SELECT_LINE,tgt_info)
+      call set_arg('F_Ttr_GEN',SELECT_LINE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_Ttr_GEN'/))
+      call set_arg('F_Ttr_GEN',SELECT_LINE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_Ttr_GEN'/))
+      call set_arg('F_Ttr_GEN',SELECT_LINE,'OP_RES',1,tgt_info,
+     &     val_label=(/'Tout'/))
+      call set_arg('F_Ttr_GEN',SELECT_LINE,'OP_INCL',1,tgt_info,
+     &     val_label=(/'Ttr'/))
+      call set_arg('F_Ttr_GEN',SELECT_LINE,'IGAST',1,tgt_info,
+     &     val_int=(/3/))
+      call set_arg('F_Ttr_GEN',SELECT_LINE,'MODE',1,tgt_info,
+     &     val_str='no_ext')
+c dbg
+c      call set_rule2('F_Ttr_GEN',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_Ttr_GEN',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_Ttr_GEN'/))
+c dbgend
+
 
       ! transformed multireference CC energy
       ! a) set up
@@ -1838,6 +1841,7 @@ c     &     val_label=(/'F_Atr'/))
 c      call set_arg('F_Atr',KEEP_TERMS,'TERMS',2,tgt_info,
 c     &     val_int=(/1,7/))
 c
+c dbg
 c      call set_rule2('F_Atr',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_Atr',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_Atr'/))
@@ -2334,9 +2338,9 @@ c dbgend
       call set_arg('F_PPint',INVARIANT,'REORDER',1,tgt_info,
      &     val_log=(/.true./))
 c dbg
-      call set_rule2('F_PPint',PRINT_FORMULA,tgt_info)
-      call set_arg('F_PPint',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_PPint'/))
+c      call set_rule2('F_PPint',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_PPint',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_PPint'/))
 c dbgend
 
       call add_target2('F_prePP0int',.false.,tgt_info)
@@ -2396,10 +2400,86 @@ c dbgend
       call set_arg('F_PP0int',INVARIANT,'REORDER',1,tgt_info,
      &     val_log=(/.true./))
 c dbg
-      call set_rule2('F_PP0int',PRINT_FORMULA,tgt_info)
-      call set_arg('F_PP0int',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_PP0int'/))
+c      call set_rule2('F_PP0int',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_PP0int',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_PP0int'/))
 c dbgend
+
+      ! Formulae needed for preconditioning with non-diag. H0
+      ! the Dyall Hamiltonian itself:
+      !  - core Fock matrix
+      !  - two-electron active contribution to effective Fock for HH and PP part
+      !  - two-electron VVVV part
+      call add_target3((/
+     &     'target F_H0Dy(',
+     &     '    depend OPS_FOR_H0INV',
+     &     '    EXPAND_OP_PRODUCT(new=T,label=F_H0Dy,op_res=H0Dy,',
+     &     '       operators=(H0Dy,H,H0Dy),',
+     &     '       idx_sv=(1,2,1),',
+     &     '       descr="2,,[HPV],[HPV]",avoid=(1,3)',
+     &     '    )',
+     &     '    EXPAND_OP_PRODUCT(new=F,label=F_H0Dy,op_res=H0Dy,',
+     &     '       OPERATORS=(H0Dy,C00^+,H,C00,H0Dy),',
+     &     '       IDX_SV=(1,2,3,4,1),',
+     &     '       DESCR=("1,,H,","1,,,P","5,,P,","5,,,H",',
+     &     '                              "3,,[HPV]V,[HPV]V"),',
+     &     '       CONNECT=(2,3,3,4)',
+     &     '    )',
+     &     '    EXPAND_OP_PRODUCT(new=F,label=F_H0Dy,op_res=H0Dy,',
+     &     '       OPERATORS=(H0Dy,H,H0Dy),',
+     &     '       IDX_SV=(1,2,1),',
+     &     '       DESCR="2,,VV,VV",avoid=(1,3)',
+     &     '    )',
+     &     '    PRINT_FORMULA(label=F_H0Dy)',
+     &     ')'/),
+     &     tgt_info)
+
+      ! (a) the right-hand-side: projected OMG
+      ! (b) the transformation: <C0|tau [H0,T] |C0>
+      call add_target3((/
+     &     'target F_FOR_H0INV( ',
+     &     '    depend (OPS_FOR_H0INV,OMG,Dproj,C00)',
+     &     '    EXPAND_OP_PRODUCT(new=T,label=F_OMGprj,op_res=OMGprj,',
+     &     '       FAC=-1d0,',
+     &     '       OPERATORS=(OMGprj,OMG,OMGprj,',
+     &     '                OMGprj,OMG,OMGprj),',
+     &     '       IDX_SV=(1,2,1,1,2,1),AVOID=(2,5)',
+     &     '    )',
+     &     '    EXPAND_OP_PRODUCT(new=T,label=F_D00,op_res=D00,',
+     &     '       FAC=1d0,',
+     &     '       OPERATORS=(D00,C00^+,D00,',
+     &     '                D00,C00,D00),',
+     &     '       IDX_SV=(1,2,1,1,3,1)',
+     &     '    )',
+c     &     '    EXPAND_OP_PRODUCT(new=T,label=F_OMGprj,op_res=OMGprj,',
+c     &     '       FAC=-1d0,',
+c     &     '       OPERATORS=(OMGprj,OMG,Dproj^+,OMGprj,',
+c     &     '                OMGprj,Dproj^+,OMG,OMGprj),',
+c     &     '       IDX_SV=(1,2,3,1,1,3,2,1)',
+c     &     '    )',
+c     &     '    SELECT_LINE(label_res=F_OMGprj,label_in=F_OMGprj,',
+c     &     '        OP_RES=OMGprj,OP_INCL=OMG,IGAST=3,MODE=no_ext)',
+     &     '    PRINT_FORMULA(label=F_OMGprj)',
+     &     '    EXPAND_OP_PRODUCT(new=T,label=F_S_DlT,op_res=S_DlT,',
+     &     '       OPERATORS=(S_DlT,C00^+,S_DlT,       ',
+     &     '                  S_DlT,DlT,C00,S_DlT),',
+     &     '       IDX_SV=(1,2,1,1,3,4,1)',
+     &     '    )',
+     &     '    PRINT_FORMULA(label=F_S_DlT)',
+     &     '    EXPAND_OP_PRODUCT(new=T,label=F_H0_DlT,op_res=H0_DlT,',
+     &     '       OPERATORS=(H0_DlT,C00^+,H0_DlT,       ',
+     &     '                  H0_DlT,H0Dy,DlT,C00,H0_DlT),',
+     &     '       IDX_SV=(1,2,1,1,3,4,5,1),',
+     &     '       CONNECT=(5,6))',
+     &     '    EXPAND_OP_PRODUCT(new=F,label=F_H0_DlT,op_res=H0_DlT,',
+     &     '       FAC=-1d0,',
+     &     '       OPERATORS=(H0_DlT,C00^+,H0_DlT,       ',
+     &     '                  H0_DlT,DlT,H0Dy,C00,H0_DlT),',
+     &     '       IDX_SV=(1,2,1,1,3,4,5,1),',
+     &     '       CONNECT=(5,6))',
+     &     '    PRINT_FORMULA(label=F_H0_DlT)',
+     &     ')'/),
+     &     tgt_info)
 
       ! precursor for combining selected HH contractions into one step
       call add_target2('F_preHHint',.false.,tgt_info)
@@ -2464,9 +2544,9 @@ c dbgend
       call set_arg('F_HHint',INVARIANT,'REORDER',1,tgt_info,
      &     val_log=(/.true./))
 c dbg
-      call set_rule2('F_HHint',PRINT_FORMULA,tgt_info)
-      call set_arg('F_HHint',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_HHint'/))
+c      call set_rule2('F_HHint',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_HHint',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HHint'/))
 c dbgend
 
       ! linear H(1+T2) transform, as suggested intermediate
@@ -3037,6 +3117,18 @@ c dbgend
       call set_arg('FOPT_T',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_T'/))
 
+      ! transformation, generic form
+      call add_target2('FOPT_Ttr_GEN',.false.,tgt_info)
+      call set_dependency('FOPT_Ttr_GEN','F_Ttr_GEN',tgt_info)
+      call set_dependency('FOPT_Ttr_GEN','DEF_ME_Tout',tgt_info)
+      call set_dependency('FOPT_Ttr_GEN','DEF_ME_Ttr',tgt_info)
+      call set_dependency('FOPT_Ttr_GEN','DEF_ME_Dtr',tgt_info)
+      call set_rule2('FOPT_Ttr_GEN',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_Ttr_GEN',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_Ttr_GEN'/))
+      call set_arg('FOPT_Ttr_GEN',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_Ttr_GEN'/))
+
       ! transformed Hessian
       call add_target2('FOPT_Atr',.false.,tgt_info)
       call set_dependency('FOPT_Atr','F_Atr',tgt_info)
@@ -3075,6 +3167,22 @@ c dbgend
      &             val_label=(/'FOPT_A_Ttr'/))
       call set_arg('FOPT_A_Ttr',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_A_Ttr'/))
+
+      call add_target3((/
+     &   'target FOPT_H0Dy(',
+     &   '  depend (MELS_FOR_H0INV,F_H0Dy,DEF_ME_C00)',
+     &   '  OPTIMIZE(LABEL_OPT=FOPT_H0Dy,',
+     &   '           LABELS_IN=F_H0Dy,INTERM=F_D00))'
+     &     /),tgt_info)
+
+      ! extended preconditioner
+      call add_target3((/
+     &   'target FOPT_H0INV(',
+     &   '  depend (MELS_FOR_H0INV,DEF_ME_Dproj,',
+     &   '          DEF_ME_C0,F_FOR_H0INV,DEF_ME_C00)',
+     &   '  OPTIMIZE(LABEL_OPT=FOPT_H0INV,',
+     &   '      LABELS_IN=(F_OMGprj,F_H0_DlT,F_S_DlT),INTERM=F_D00))'
+     &     /),tgt_info)
 
       ! Residual
       call add_target2('FOPT_OMG',.false.,tgt_info)
@@ -3512,6 +3620,19 @@ c dbgend
       call set_arg('DEF_ME_Ttr',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
 
+      ! ME for Tout
+      call add_target2('DEF_ME_Tout',.false.,tgt_info)
+      call set_dependency('DEF_ME_Tout','Tout',tgt_info)
+      call set_rule2('DEF_ME_Tout',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_Tout',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Tout'/))
+      call set_arg('DEF_ME_Tout',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'Tout'/))
+      call set_arg('DEF_ME_Tout',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_Tout',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+
       ! ME-List for HT intermediates
       op_ht = 'HT '
       op_ht0to = 'ME_HT '
@@ -3576,10 +3697,12 @@ c dbgend
 
       ! reordered projector matrix ME_Dproj (to eliminate lin. dep.)
       call add_target('DEF_ME_Dproj',ttype_opme,.false.,tgt_info)
-      call set_dependency('DEF_ME_Dproj','Dtr',tgt_info)
+!      call set_dependency('DEF_ME_Dproj','Dtr',tgt_info)
+      call set_dependency('DEF_ME_Dproj','Dproj',tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'ME_Dproj'
-      labels(2) = 'Dtr'
+!      labels(2) = 'Dtr'
+      labels(2) = 'Dproj'
       call me_list_parameters(-1,parameters,
      &     msc,0,1,
      &     0,0,.false.)
@@ -3712,6 +3835,32 @@ c dbgend
      &             val_label=(/'ME_DENS'/))
       call set_arg('DEF_ME_DENS1',SCALE_COPY,'FAC',1,tgt_info,
      &             val_rl8=(/1d0/))
+
+      ! MEs for H0 Inversion
+      call add_target3((/
+     &     'target MAKE_H0Dy(',
+     &     '    depend (MELS_FOR_H0INV,FOPT_H0Dy)',
+     &     '    EVALUATE(form=FOPT_H0Dy)',
+     &     '    PRINT_MEL(list=ME_H0Dy)',
+     &     ')'
+     &     /),tgt_info)
+      call add_target3((/
+     &     'target MELS_FOR_H0INV(',
+     &     '    depend OPS_FOR_H0INV',
+     &     '    DEF_ME_LIST(LIST=ME_OMGprj,OPERATOR=OMGprj,',
+     &     '                  2MS=0,IRREP=1)',          
+     &     '    DEF_ME_LIST(LIST=ME_DlT,OPERATOR=DlT,',
+     &     '                  2MS=0,IRREP=1)',          
+     &     '    DEF_ME_LIST(LIST=ME_H0_DlT,OPERATOR=H0_DlT,',
+     &     '                  2MS=0,IRREP=1)',
+     &     '    DEF_ME_LIST(LIST=ME_S_DlT,OPERATOR=S_DlT,',
+     &     '                  2MS=0,IRREP=1)',
+     &     '    DEF_ME_LIST(LIST=ME_D00,OPERATOR=D00,',
+     &     '                  2MS=0,IRREP=1)',
+     &     '    DEF_ME_LIST(LIST=ME_H0Dy,OPERATOR=H0Dy,',
+     &     '                  2MS=0,IRREP=1)',
+     &     ')'/),
+     &     tgt_info)
 
       ! ME for Intermediate(s)
       call add_target2('DEF_ME_INT_PP',.false.,tgt_info)
@@ -4003,6 +4152,7 @@ c dbgend
       call set_dependency('SOLVE_MRCC','FOPT_T',tgt_info)
       if (restart) ! project out redundant part (if sv_thr. changed)
      &   call set_dependency('SOLVE_MRCC','EVAL_Tproj',tgt_info)
+      prc_mode_str = 'TRF'  ! use diagonal in orth. basis (for T part)
       select case(prc_type)
       case(-1) !do nothing: use old preconditioner file!
         call warn('set_ic_mrcc_targets','Using old preconditioner file')
@@ -4026,6 +4176,13 @@ c dbgend
      &               val_int=(/13/))
         call set_arg('SOLVE_MRCC',REORDER_MEL,'ADJOINT',1,tgt_info,
      &               val_log=(/.true./))
+      case(4)
+        if (maxv.gt.0.or.prc_type.eq.0)
+     &     call set_dependency('SOLVE_MRCC','EVAL_Atr',tgt_info)
+        call set_dependency('SOLVE_MRCC','FOPT_H0INV',tgt_info)
+        call set_dependency('SOLVE_MRCC','MAKE_H0Dy',tgt_info)
+        call set_dependency('SOLVE_MRCC','FOPT_Ttr_GEN',tgt_info)
+        prc_mode_str='IH0'
       case default
         call quit(1,'set_ic_mrcc_targets','unknown prc_type')
       end select
@@ -4037,6 +4194,7 @@ c dbgend
         if (optref.ne.-1.and.optref.ne.-2) 
      &     call set_dependency('SOLVE_MRCC','FOPT_OMG_C0',tgt_info)
         call set_dependency('SOLVE_MRCC','DEF_ME_Dproj',tgt_info)
+        call set_dependency('SOLVE_MRCC','DEF_ME_C00',tgt_info)
       end if
       do icnt = 1, max(1,optref)
       call set_rule2('SOLVE_MRCC',SOLVENLEQ,tgt_info)
@@ -4045,7 +4203,7 @@ c dbgend
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_OPT',1,tgt_info,
      &         val_label=(/'ME_T'/))
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'MODE',1,tgt_info,
-     &         val_str='TRF')
+     &         val_str=prc_mode_str)
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_RESID',1,tgt_info,
      &         val_label=(/'ME_OMG'/))
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_PRC',1,tgt_info,
@@ -4065,7 +4223,7 @@ c dbgend
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_OPT',2,tgt_info,
      &       val_label=(/'ME_T ','ME_C0'/))
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'MODE',1,tgt_info,
-     &       val_str='TRF/NRM')
+     &       val_str=prc_mode_str//'/NRM')
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_RESID',2,tgt_info,
      &       val_label=(/'ME_OMG ','ME_A_C0'/))
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_PRC',2,tgt_info,
@@ -4074,7 +4232,7 @@ c dbgend
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_OPT',1,tgt_info,
      &       val_label=(/'ME_T'/))
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'MODE',1,tgt_info,
-     &       val_str='TRF')
+     &       val_str=prc_mode_str)
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_RESID',1,tgt_info,
      &       val_label=(/'ME_OMG'/))
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_PRC',1,tgt_info,
@@ -4277,7 +4435,9 @@ c dbg
       call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
      &     'ME_S(S+1)',1,0,
      &     parameters,2,tgt_info)
-      if (.not.h1bar.and.tfix.eq.0.and.maxcum.le.0) then
+c dbg
+      if (.false.) then
+c dbg      if (.not.h1bar.and.tfix.eq.0.and.maxcum.le.0) then
         call set_dependency('SOLVE_MRCC','FOPT_MRCC_S(S+1)',tgt_info)
         call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
      &       'ME_S(S+1)',1,0,
