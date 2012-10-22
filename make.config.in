@@ -79,6 +79,9 @@ LAPACK95=@F90_LIBS_lapack95@
 LIBMPI_F90=@F90_LIBS_mpi_f90@
 
 #Fortran flags
+fopt:=@fopt@
+fopt_low:=@fopt_low@
+fopt_high:=@fopt_high@
 fcflags:=@fcflags@
 fmodule:=@fmodule@
 fdebug:=@fdebug@
@@ -117,7 +120,9 @@ fldflags:=$(fldflags) -L. -L$(libdir) $(LDFLAGS)
 cldflags:=$(cldflags) -L. -L$(libdir) $(LDFLAGS)
 
 # remove extra whitespace
-FCFLAGS:=$(strip  $(fcflags) $(FCFLAGS))
+LLO_FCFLAGS:=$(strip $(fopt_low) $(fcflags) $(FCFLAGS))
+HLO_FCFLAGS:=$(strip $(fopt_high) $(fcflags) $(FCFLAGS))
+FCFLAGS:=$(strip  $(fopt) $(fcflags) $(FCFLAGS))
 FLDFLAGS:=$(strip $(fldflags) $(FLDFLAGS))
 
 CFLAGS:=$(strip   $(cflags) $(CFLAGS))
