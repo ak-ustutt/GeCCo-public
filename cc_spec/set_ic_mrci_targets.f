@@ -582,12 +582,12 @@ c     &     val_label=(/'F_A_C'/))
       labels(1:20)(1:len_target_name)= ' '
       labels(1) = 'F_A_C_diag'
       labels(2) = 'F_E(MR)_diag'
-      labels(3) = 'A_C'
+      labels(3) = 'OMGtr'
       labels(4) = 'Ctr^+'
       labels(5) = ' '
       call add_target('F_A_C_diag',ttype_frm,.false.,tgt_info)
       call set_dependency('F_A_C_diag','F_E(MR)_diag',tgt_info)
-      call set_dependency('F_A_C_diag','A_C',tgt_info)
+      call set_dependency('F_A_C_diag','OMGtr',tgt_info)
       call set_dependency('F_A_C_diag','Ctr',tgt_info)
       call form_parameters(-1,
      &     parameters,2,'diag of Jacobian',1,'---')

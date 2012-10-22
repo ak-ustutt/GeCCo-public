@@ -21,12 +21,6 @@ check
   compare int 2
 check
   rewind
-  label Optimized Residual formula
-  find FOPT_OMG
-  find wrote
-  compare int 2
-check
-  rewind
   label Optimized orthogonalized Jacobian formula
   find FOPT_Atr
   find wrote

@@ -287,6 +287,8 @@
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
+      call set_arg('_PROTO_',INVARIANT,'REORDER',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(DERIVATIVE,tgt_info)
       call set_arg('_PROTO_',DERIVATIVE,'LABEL_RES',0,tgt_info,
@@ -647,6 +649,8 @@
       call set_arg('_PROTO_',EXTRACT_DIAG,'LIST_IN',0,tgt_info,
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',EXTRACT_DIAG,'EXTEND',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',EXTRACT_DIAG,'EXTEND_ACT',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(REORDER_MEL,tgt_info)

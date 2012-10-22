@@ -274,7 +274,7 @@ c        call quit(1,DEF_FORMULA,'not yet')
         call form_invariant(form_pnt,form0_pnt,
      &       title,rule%labels(ioff+2),
      &       rule%n_labels-ioff-2,rule%labels(ioff+3),
-     &       op_info
+     &       .false.,op_info
      &       )
       case(DERIVATIVE)
         call form_parameters(+1,

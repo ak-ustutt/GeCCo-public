@@ -121,7 +121,7 @@
 
         ! put diagonal of Jacobian to preconditioner
         call dia_from_op(trim(me_dia%label),
-     &                   trim(me_special(7)%mel%label),.false.,
+     &                   trim(me_special(7)%mel%label),.false.,.false.,
      &                   op_info,str_info,orb_info)
       end if
 
