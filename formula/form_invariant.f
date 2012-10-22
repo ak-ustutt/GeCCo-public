@@ -2,7 +2,7 @@
       subroutine form_invariant(f_output,f_input,
      &                      title,label_opres,
      &                      ncmpnd,label_op,
-     &                      op_info)
+     &                      reo,op_info)
 *----------------------------------------------------------------------*
 *     collect those contractions on ffoutput that do not depend on
 *     any operator on list label_op(1:ncmpnd)
@@ -28,6 +28,8 @@ c      include 'def_contraction_list.h'
       character(*), intent(in) ::
      &     title,
      &     label_opres, label_op(ncmpnd)
+      logical, intent(in) ::
+     &     reo
       type(formula), intent(inout) ::
      &     f_input, f_output
       type(operator_info) ::
@@ -147,6 +149,9 @@ c dbg
      &       'unexpected end of formula list')
 
       end do fl_loop
+
+      ! optional reordering
+      if (reo) call reorder_formula(flist,op_info)
 
       ! write result
       if (.not.same) then

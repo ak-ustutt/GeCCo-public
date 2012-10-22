@@ -58,7 +58,7 @@
      &     iblk_include(maxterms), iblk_include_or(maxterms),
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
-     &     dagger, explicit, ms_fix, form_test, init, arg_there
+     &     dagger, explicit, ms_fix, form_test, init, arg_there, reo
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -580,10 +580,11 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       val_label=label)
         call get_arg('OPERATORS',rule,tgt_info,
      &       val_label_list=label_list,ndim=nop)
+        call get_arg('REORDER',rule,tgt_info,val_log=reo)
         call form_invariant(form_pnt,form0_pnt,
      &       title,label,
      &       nop,label_list,
-     &       op_info
+     &       reo,op_info
      &       )
 *----------------------------------------------------------------------*
       case(DERIVATIVE)
@@ -1013,10 +1014,11 @@ c dbg
         call get_arg('LIST_RES',rule,tgt_info,val_label=label)
         call get_arg('LIST_IN',rule,tgt_info,val_label=label2)
         call get_arg('EXTEND',rule,tgt_info,val_log=explicit)
+        call get_arg('EXTEND_ACT',rule,tgt_info,val_log=init)
 
         if (form_test) return
 
-        call dia_from_op(label,label2,explicit,
+        call dia_from_op(label,label2,explicit,init,
      &       op_info,str_info,orb_info)
 
 *----------------------------------------------------------------------*
