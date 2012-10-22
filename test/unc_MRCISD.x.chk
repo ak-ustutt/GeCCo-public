@@ -13,7 +13,7 @@ check
   label Number of Iterations and residual
   find CONVERGED IN .* ITERATIONS
   compare int 3
-  find >>>
+  find ^.>>
   compare real 3 1e-12
 check
   label Spin evaluation

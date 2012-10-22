@@ -1,9 +1,9 @@
 *----------------------------------------------------------------------*
       subroutine solve_leq(mode_str,
      &     nopt,nroots,label_opt,label_prc,label_op_mvp,label_op_met,
-     &     label_op_rhs,
+     &     label_op_rhs,xrhsnorm,
      &     label_form,
-     &     label_special,nspecial,
+     &     label_special,nspecial,label_spcfrm,nspcfrm,thr_suggest,
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -23,6 +23,7 @@
 *     label_op_met(nopt)    label operators describing Sx-products
 *                           if S is unity, pass label of operator
 *                           associated with ME-list label_opt
+*     xrhsnorm              return the norm of the RHS (just in case)
 *
 *     the latter two are used to initilize temporary ME-lists
 *
@@ -56,7 +57,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nopt, nroots, nspecial
+     &     nopt, nroots, nspecial, nspcfrm
       character(*), intent(in) ::
      &     mode_str,
      &     label_opt(nopt),
@@ -65,7 +66,12 @@
      &     label_op_met(nopt),
      &     label_special(nspecial),
      &     label_op_rhs(nopt),
+     &     label_spcfrm(nspcfrm),
      &     label_form
+      real(8), intent(in) ::
+     &     thr_suggest
+      real(8), intent(out) ::
+     &     xrhsnorm
       type(formula_info) ::
      &     form_info
       type(operator_info) ::
@@ -84,7 +90,7 @@
       integer ::
      &     iter, iprint, task, ifree, iopt, jopt, nintm, irequest,
      &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout, idxrhs,
-     &     nselect
+     &     nselect, jdx
       real(8) ::
      &     energy, xresnrm(nroots,nopt), xdum, xresmax
       type(me_list_array), pointer ::
@@ -102,7 +108,7 @@
       type(formula), pointer ::
      &     form_rhs_mvp
       type(formula_item) ::
-     &     fl_rhs_mvp
+     &     fl_rhs_mvp, fl_spc(nspcfrm)
 
       integer, pointer ::
      &     irecmvp(:), irectrv(:), irecmet(:), idxselect(:)
@@ -191,12 +197,28 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
      &       'no file associated to list '//trim(label))
       end if
 
+      ! special formulae
+      do jdx = 1, nspcfrm
+        idx = idx_formlist(label_spcfrm(jdx),form_info)
+        if (idx.le.0)
+     &       call quit(1,'solve_leq',
+     &       'did not find formula '//trim(label_spcfrm(jdx)))
+        ! read formula
+c dbg
+        print *,'reading special form: ',trim(label_spcfrm(jdx))
+c dbg
+        call read_form_list(form_info%form_arr(idx)%form%fhand,
+     &                      fl_spc(jdx),.true.)
+      end do      
+
       call set_opti_info(opti_info,2,nopt,nroots,me_opt,mode_str)
 
       nvectors = opti_info%maxsbsp
       use_s_t = .false.
 
       do iopt = 1, nopt
+        ! weaker convergence threshold requested?
+        opti_info%thrgrd(iopt)=max(opti_info%thrgrd(iopt),thr_suggest)
 
         ! get a ME-list for scratch vectors
         write(fname,'("scr_",i3.3)') iopt
@@ -322,7 +344,7 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
           call switch_mel_record(me_rhs(iopt)%mel,iroot)
 
           call frm_sched(xret,fl_rhs_mvp,depend,idxselect,nselect,
-     &         .true.,op_info,str_info,strmap_info,orb_info)
+     &         .true.,.false.,op_info,str_info,strmap_info,orb_info)
 
           call touch_file_rec(me_rhs(iopt)%mel%fhand)
 
@@ -356,18 +378,19 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
      &       me_special,nspecial,
 c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
      &       fl_rhs_mvp,depend,
-     &       '-',0,
+     &       fl_spc,nspcfrm,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 
         do iopt = 1, nopt
           xresmax = fndmnx(xresnrm(1:nroots,iopt),nroots,2)
           if (conv) then
-            write(luout,'(">>> conv.",21x,x,g10.4)') xresmax
+            write(luout,'("L>> conv.",21x,x,g10.4)') xresmax
           else if (iter.eq.1) then
-            write(luout,'(">>> |rhs|",21x,x,g10.4)') xresmax
+            write(luout,'("L>> |rhs|",21x,x,g10.4)') xresmax
+            xrhsnorm = xresmax
           else
-            write(luout,'(">>>",i3,24x,x,g10.4)')iter-1,xresmax
+            write(luout,'("L>>",i3,24x,x,g10.4)')iter-1,xresmax
           end if
         end do
 c dbg
@@ -399,7 +422,7 @@ c dbg
             end if
 
             call frm_sched(xret,fl_rhs_mvp,depend,0,0,
-     &           .true.,op_info,str_info,strmap_info,orb_info)
+     &           .true.,.false.,op_info,str_info,strmap_info,orb_info)
 
             do iopt = 1, nopt
               call touch_file_rec(me_trv(iopt)%mel%fhand)
@@ -433,8 +456,14 @@ c dbg
 
         ! make sure that the operator is now associated with
         ! the list containing the solution vector
+c dbg
+        print *,'FINAL reassignment!!'
+c dbg
         call assign_me_list(label_opt(iopt),
      &                      me_opt(iopt)%mel%op%name,op_info)
+
+        ! close the output file
+        call file_close_keep(ffopt(iopt)%fhand)
 
       end do
 
@@ -463,6 +492,9 @@ c dbg
       deallocate(ff_trv,ff_rhs,ff_mvp,ffdia,ffopt,ff_met,ffspecial,
      &     xret,idxselect,ff_scr)
       call dealloc_formula_list(fl_rhs_mvp)
+      do jdx = 1, nspcfrm
+        call dealloc_formula_list(fl_spc(jdx))
+      end do
 
       ifree = mem_flushmark()
 

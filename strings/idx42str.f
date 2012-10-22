@@ -132,8 +132,10 @@
       iblk_ca = iblk_occ(iocc,.false.,hop,1)
       iblk_ac = iblk_occ(iocc,.true.,hop,1)
       if (iblk_ca.le.0.or.iblk_ac.lt.0) then
-        write(luout,*) iblk_ca, iblk_ac
-        call quit(1,'idx42str','something''s buggy!')
+        error = .true.
+        return
+!        write(luout,*) iblk_ca, iblk_ac
+!        call quit(1,'idx42str','something''s buggy!')
       end if
 
       error=.false.

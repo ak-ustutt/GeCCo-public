@@ -230,6 +230,7 @@ c        end if
      &       nincore,lenbuf,
      &       xbuf1,xbuf2,xbuf3,
      &       flist,depend,use_s,
+     &       fspc,nspcfrm,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)          
           opti_stat%nadd = opti_info%nroot ! ?? <-- check that for LEQ
@@ -276,6 +277,7 @@ c     &         ffopt,fftrv,ffmvp,ffrhs,ffdia,
      &         nincore,lenbuf,
      &         xbuf1,xbuf2,xbuf3,
      &         flist,depend,
+     &         fspc,nspcfrm,
      &         opti_info,opti_stat,
      &         orb_info,op_info,str_info,strmap_info)
         else
@@ -336,7 +338,7 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
       if (.not.lconv.and.
      &       (iter.gt.opti_info%maxmacit)) then
         write(luout,*) 'NO CONVERGENCE OBTAINED'
-        iter = iter - 1
+        !iter = iter - 1
         lexit = .true.
       end if
 

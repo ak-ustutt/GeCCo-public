@@ -5,13 +5,8 @@
       include 'stdunit.h'
       include 'def_word_list.h'
       include 'def_filinf.h'
+      include 'par_special_chars.h'
 
-      character(len=7), parameter ::
-     &    sep = ' ,;()"='
-      character(len=1), parameter ::
-     &    wspc = ' '
-      character(len=1), parameter ::
-     &    quot = '"'
 
       type(word_list), intent(inout) ::
      &     wlist

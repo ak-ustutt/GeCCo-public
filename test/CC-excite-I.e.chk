@@ -52,31 +52,31 @@ check
   rewind
   label 1A1 excitation energy
   find Results for RE0G1C\+1
-  find ^>>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  find ^.>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
   compare real 3 1e-7
   compare real 5 1e-10
 check
   label 1B1 excitation energies
   find Results for RE0G2C\+1
-  find ^>>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  find ^.>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
   compare real 3 1e-7
   compare real 5 1e-10
-  find ^>>> [ ]* 2 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  find ^.>> [ ]* 2 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
   compare real 3 1e-7
   compare real 5 1e-10
 check
   label 3A1 excitation energies
   find Results for RE0G1C-1
-  find ^>>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  find ^.>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
   compare real 3 1e-7
   compare real 5 1e-10
-  find ^>>> [ ]* 2 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  find ^.>> [ ]* 2 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
   compare real 3 1e-7
   compare real 5 1e-10
 check
   label 3A2 excitation energy
   find Results for RE0G4C-1
-  find ^>>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  find ^.>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
   compare real 3 1e-7
   compare real 5 1e-10
 end

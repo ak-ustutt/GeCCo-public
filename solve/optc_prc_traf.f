@@ -109,6 +109,12 @@ c dbgend
       op_grd_name = trim(me_grd%op%name)
       op_trf_name = trim(me_special(1)%mel%op%name)
       op_amp_name = trim(me_amp%op%name)
+
+c dbg
+c      call vec_from_da(me_grd%fhand,1,xbuf1,nwfpar)
+c        write(luout,*) 'untransformed gradient vector:'
+c        write(luout,*) xbuf1(1:nwfpar)
+c dbg
       ! assign op. to be transformed with list of gradient
       call assign_me_list(me_grd%label,
      &                    trim(op_trf_name),op_info)
@@ -121,7 +127,7 @@ c dbgend
      &                       me_special(3)%mel%op%name,op_info)
 
       ! calculate transformed residual
-      call evaluate2(fspc(1),.true.,
+      call evaluate2(fspc(1),.true.,.true.,
      &            op_info,str_info,strmap_info,orb_info,
      &            xngrd(iopt),.true.) !get transformed res. norm
 
@@ -135,9 +141,9 @@ c     &       me_grd%op%n_occ_cls,
 c     &       str_info,orb_info)
       end if
 
-      write(luout,'(a,i1,a,x,g10.4)')
-     &   '>>>> Norm of transformed residual for vector ',
-     &   iopt,':',xngrd(iopt)
+c      write(luout,'(a,i1,a,x,g10.4)')
+c     &   '>>>> Norm of transformed residual for vector ',
+c     &   iopt,':',xngrd(iopt)
 
       call vec_from_da(ffdia,1,xbuf2,nwfpar)
 
@@ -158,6 +164,10 @@ c     &       str_info,orb_info)
      &             signsec(isec),xbuf2(idstsec(isec)),
      &             0d0,nwfpsec(isec))
       end do
+c dbg
+c        write(luout,*) 'gradient vector / prc:'
+c        write(luout,*) xbuf1(1:nwfpar)
+c dbg
 
       ! put new vector to special list for transformation
       call vec_to_da(me_special(1)%mel%fhand,1,xbuf1,nwfpar)
@@ -181,7 +191,7 @@ c     &       str_info,orb_info)
      &                    trim(op_grd_name),op_info)
 
       ! calculate transformed vector
-      call evaluate2(fspc(1),.true.,
+      call evaluate2(fspc(1),.true.,.true.,
      &            op_info,str_info,strmap_info,orb_info,xdum,.false.)
 
       call vec_from_da(ffamp,1,xbuf1,nwfpar)

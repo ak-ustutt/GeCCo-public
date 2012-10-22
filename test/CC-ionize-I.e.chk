@@ -48,16 +48,16 @@ check
   rewind
   label 2A1 state
   find Results for RI0G1Sxx
-  find ^>>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  find ^.>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
   compare real 3 1e-7
   compare real 5 1e-10
 check
   label 2B1 state
   find Results for RI0G2Sxx
-  find ^>>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  find ^.>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
   compare real 3 1e-7
   compare real 5 1e-10
-  find ^>>> [ ]* 2 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  find ^.>> [ ]* 2 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
   compare real 3 1e-7
   compare real 5 1e-10
 end

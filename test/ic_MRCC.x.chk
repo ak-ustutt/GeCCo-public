@@ -7,8 +7,8 @@ input
 check
   label CASSCF energy
   find CONVERGED
-  find >>>
-  find >>>    1
+  find ^.>>
+  find ^.>>    1
   compare real 3 1e-10
   compare real 5 1e-10
 check
@@ -41,7 +41,7 @@ check
 check
   label CC eq.: first iteration
   find SOLVE_NLEQ
-  find >>>
+  find ^.>>
   compare int 2
   compare real 3 1e-10
   compare real 4 1e-6

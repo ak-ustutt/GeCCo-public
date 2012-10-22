@@ -61,7 +61,7 @@
       call get_argument_value('method.MR','GNO',ival=gno)
 
       ! calculate metric (if not up to date)
-      call evaluate2(fspc(2),.true.,
+      call evaluate2(fspc(2),.true.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
 
       ! get half-transform of square root of inverted metric
@@ -78,12 +78,12 @@
         ! apply GNO trafo to transformation matrix
         call assign_me_list(me_special(6)%mel%label,
      &                     me_special(5)%mel%op%name,op_info)
-        call evaluate2(fspc(3),.false.,
+        call evaluate2(fspc(3),.false.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
         ! apply GNO trafo to projector
         call assign_me_list(me_special(5)%mel%label,
      &                     me_special(5)%mel%op%name,op_info)
-        call evaluate2(fspc(4),.false.,
+        call evaluate2(fspc(4),.false.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
       end if
 
@@ -113,8 +113,10 @@
 
         call assign_me_list(me_special(2)%mel%label,
      &                     me_special(2)%mel%op%name,op_info)
+        call assign_me_list(me_special(7)%mel%label,
+     &                     me_special(7)%mel%op%name,op_info)
 
-        call evaluate2(fspc(3),.true.,
+        call evaluate2(fspc(3),.true.,.false.,
      &              op_info,str_info,strmap_info,orb_info,xdum,.false.)
 
         ! put diagonal of Jacobian to preconditioner

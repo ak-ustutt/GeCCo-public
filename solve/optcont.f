@@ -280,8 +280,8 @@
      &       (imacit.gt.opti_info%maxmacit.or.
      &       imicit_tot.gt.opti_info%maxmicit)) then
           write(luout,*) 'NO CONVERGENCE OBTAINED'
-          imacit = imacit - 1
-          imicit_tot = imicit_tot - 1
+c          imacit = imacit - 1
+c          imicit_tot = imicit_tot - 1
           imicit = 0
           lexit = .true.
         end if

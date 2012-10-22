@@ -118,7 +118,7 @@
      &                  me_trv(iopt)%mel%label,depend,op_info)
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
-     &                  .true.,op_info,str_info,strmap_info,orb_info)
+     &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
             ! guess vectors of wrong spin symmetry will be discarded
             if (abs(xret(idxselect(1))).lt.1d-12) then
               if (iprlvl.ge.5) write(luout,*)
