@@ -574,11 +574,13 @@ c dbgend
      &         iroot,xeig(iroot,1:2),xresnrm(iroot)
         end if
 c dbg
-c          call switch_mel_record(me_opt(1)%mel,iroot)
-c          call wrt_mel_file(luout,5,me_opt(1)%mel,
-c     &           1,me_mvp(1)%mel%op%n_occ_cls,
-c     &           str_info,orb_info)
-c dbg
+c         do iopt=1,nopt
+c           call switch_mel_record(me_opt(iopt)%mel,iroot)
+c           call wrt_mel_file(luout,5,me_opt(iopt)%mel,
+c    &             1,me_opt(iopt)%mel%op%n_occ_cls,
+c    &             str_info,orb_info)
+c         enddo
+c dbg     
       end do
       write(luout,'(">>>",66("="))') 
 

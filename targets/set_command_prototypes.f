@@ -405,6 +405,16 @@
      &     val_int=(/0/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(INSERT,tgt_info)
+      call set_arg('_PROTO_',INSERT,'LABEL_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',INSERT,'LABEL_IN',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',INSERT,'OP_INS',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',INSERT,'OP_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',INSERT,'OP_INCL',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',INSERT,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
