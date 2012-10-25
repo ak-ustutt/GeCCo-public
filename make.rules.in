@@ -187,6 +187,9 @@ $(inst_includedir):
 $(ARCH)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(mod_objs): $(ARCH)/%.o: %.f
+	$(FC) $(FCFLAGS) -c $< -o $@
+
 $(objs): $(ARCH)/%.o: %.f
 	$(FC) $(FCFLAGS) -c $< -o $@
 
