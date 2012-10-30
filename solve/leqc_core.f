@@ -44,7 +44,7 @@ c      include 'def_filinf.h'
       logical, intent(in) ::
      &     use_s(*)
 
-      type(me_list_array), intent(in) ::
+      type(me_list_array), intent(inout) ::
      &     me_opt(*), me_trv(*), me_dia(*),
      &     me_mvp(*), me_rhs(*), me_scr(*),
      &     me_special(nspecial)

@@ -789,8 +789,8 @@ c          end do
       if (orb_info%nactel.ge.6) 
      &       descr = trim(descr)//'|,VVV|VVV,|,VVVV|VVVV,|,VVVVV|VVVVV,' 
 c dbg
-      print *,'nactel: ',orb_info%nactel
-      print *,'descr = ',trim(descr)
+c      print *,'nactel: ',orb_info%nactel
+c      print *,'descr = ',trim(descr)
 c dbg
       call add_target2('INT_D',.false.,tgt_info)
       call set_rule2('INT_D',DEF_OP_FROM_OCC,tgt_info)
@@ -3240,16 +3240,16 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
           labels(ndef) = 'F_HHint'
         end if
 c dbg
-        call set_dependency('FOPT_OMG','F_INT_HT2',tgt_info)
-        call set_dependency('FOPT_OMG','DEF_ME_INT_HT2',tgt_info)
+!        call set_dependency('FOPT_OMG','F_INT_HT2',tgt_info)
+!        call set_dependency('FOPT_OMG','DEF_ME_INT_HT2',tgt_info)
 !        call set_dependency('FOPT_OMG','F_INT_T2H',tgt_info)
 !        call set_dependency('FOPT_OMG','DEF_ME_INT_T2H',tgt_info)
-        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
-        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
-        labels(ndef+1) = 'F_INT_HT2'
+!        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
+!        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
+c        labels(ndef+1) = 'F_INT_HT2'
 c        labels(ndef+2) = 'F_INT_T2H' 
-        labels(ndef+2) = 'F_INT_D'
-        ndef = ndef + 2!3
+!        labels(ndef+1) = 'F_INT_D'
+!        ndef = ndef + 1!3
 c dbg
         call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',ndef,tgt_info,
      &               val_label=labels(1:ndef))

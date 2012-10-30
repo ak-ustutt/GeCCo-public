@@ -456,9 +456,6 @@ c dbg
 
         ! make sure that the operator is now associated with
         ! the list containing the solution vector
-c dbg
-        print *,'FINAL reassignment!!'
-c dbg
         call assign_me_list(label_opt(iopt),
      &                      me_opt(iopt)%mel%op%name,op_info)
 

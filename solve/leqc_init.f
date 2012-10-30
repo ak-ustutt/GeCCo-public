@@ -35,7 +35,7 @@ c      include 'def_filinf.h'
       integer, intent(in) ::
      &     iroute, nincore, lenbuf, nspecial, nspcfrm
 
-      type(me_list_array), intent(in) ::
+      type(me_list_array), intent(inout) ::
      &     me_opt(*), me_dia(*), 
      &     me_trv(*), me_mvp(*), me_rhs(*), me_scr(*),
      &     me_special(nspecial)
@@ -99,15 +99,14 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       real(8), external ::
      &     dnrm2
 
-      if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'leqc_init entered')
+      trafo = .false.
 
       nopt = opti_info%nopt
       nroot = opti_info%nroot
       mxsub = opti_stat%mxdim_sbsp
-      mred => opti_stat%sbspmat(1:)
-      gred => opti_stat%sbspmat(mxsub**2+1:)
-      vred => opti_stat%sbspmat(2*mxsub**2+1:)
+c      mred => opti_stat%sbspmat(1:)
+c      gred => opti_stat%sbspmat(mxsub**2+1:)
+c      vred => opti_stat%sbspmat(2*mxsub**2+1:)
       ndim_rsbsp => opti_stat%ndim_rsbsp
       ndim_vsbsp => opti_stat%ndim_vsbsp
       ndim_ssbsp => opti_stat%ndim_ssbsp
@@ -117,6 +116,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       ffscr => opti_stat%ffscr
       ffvsbsp => opti_stat%ffvsbsp
       nwfpar => opti_info%nwfpar
+      zero_vec = .false.
 
       allocate(ffmet(nopt))
 
@@ -134,13 +134,16 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
         signsec => opti_info%signsec(1:nsec)!2(1:nsec)
 
         stsec = 1
-        ndsec = 0        
+        ndsec = 0
         do iopt = 1, nopt
           if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)
           ndsec = ndsec + nsec_arr(iopt)
 
-         select case(opti_info%typ_prc(iopt))
-         case(optinf_prc_file,optinf_prc_mixed,optinf_prc_traf)
+         !select case(opti_info%typ_prc(iopt))
+         if (opti_info%typ_prc(iopt).eq.optinf_prc_file.or.
+     &       opti_info%typ_prc(iopt).eq.optinf_prc_mixed.or.
+     &       opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
+         !case(optinf_prc_file,optinf_prc_mixed,optinf_prc_traf)
 
           trafo = opti_info%typ_prc(iopt).eq.optinf_prc_traf            
 
@@ -154,7 +157,6 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
      &        write(luout,*) 'xbuf2 norm = ',
      &                       dnrm2(nwfpar(iopt),xbuf2,1)
           do iroot = 1, nroot
-
             if (trafo) then
               ! the present version works only, if we do this for root
               ! number 1; this is, because we modify the norm below
@@ -206,8 +208,9 @@ c     &                 nwfpar(iopt))
             else
               call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar(iopt))
             end if
-          end do
-         case(optinf_prc_blocked)
+          end do ! iroot
+         !case(optinf_prc_blocked)
+         else if (opti_info%typ_prc(iopt).eq.optinf_prc_blocked) then
           if (nincore.lt.3)
      &         call quit(1,'leqc_init',
      &         'I need at least 3 incore vectors (prc_blocked)')
@@ -230,9 +233,11 @@ c            xrsnrm(iroot,iopt) = xnrm
      &                         orb_info,op_info,str_info,strmap_info)
             call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar(iopt))
           end do
-         case default
+         !case default
+         else
            call quit(1,'leqc_init','unknown preconditioner type')
-         end select
+         end if
+         !end select
         end do
       else
 
