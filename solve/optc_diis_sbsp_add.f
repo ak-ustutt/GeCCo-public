@@ -120,11 +120,6 @@ c dbg
         ! prelim. w/o damping
         case(optinf_prc_file,optinf_prc_norm)
           call vec_from_da(ffgrd,1,xbuf1,nwfpar)
-c dbg
-c          print *,'Raw grad:'
-c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
-c     &     str_info,orb_info)
-c dbg
           if (ntest.ge.100) then
             write(luout,*) 'gradient vector before:'
             write(luout,*) xbuf1(1:nwfpar)
@@ -136,40 +131,30 @@ c dbg
           if (typ_prc.eq.optinf_prc_norm)
      &       xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - energy
 
-c          xbuf1(1:nwfpar) = xbuf1(1:nwfpar)/xbuf2(1:nwfpar)
           call diavc(xbuf1,xbuf1,1d0,xbuf2,0d0,nwfpar)
 
           if (ntest.ge.100) then
             write(luout,*) 'gradient vector afterwards:'
             write(luout,*) xbuf1(1:nwfpar)
           end if
-c dbg
-c          print *,'Precond. grad:'
-c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,2,
-c     &         str_info,orb_info)
-c dbg
           call vec_from_da(ffamp,ffamp%current_record,xbuf2,nwfpar)
+        ! the preconditioning by solving a set of LEq's was done before,
+        ! so only load the (preconditioned) gradient here
+        case(optinf_prc_invH0)
+          call vec_from_da(ffgrd,1,xbuf1,nwfpar)
+          call vec_from_da(ffamp,ffamp%current_record,xbuf2,nwfpar)
+c dbg
+c          print *,'read gradient (already prec): ',dnrm2(nwfpar,xbuf1,1)
+c          print *,'read amplitude: ',dnrm2(nwfpar,xbuf2,1)
+c dbg
+
         case(optinf_prc_blocked)
           call vec_from_da(ffgrd,1,xbuf1,nwfpar)
-c dbg
-c          print *,'Raw grad:'
-c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,1,
-c     &     str_info,orb_info)
-c dbg
-c          call optc_prc_special(me_grd,me_special,nspecial,
-c     &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
-c     &                          orb_info,str_info)
-c          xbuf1(1:nwfpar) = xbuf3(1:nwfpar)
+
           call optc_prc_special2(me_grd,me_special,nspecial,
      &                           me_amp%op%name,0d0,
      &                          nincore,xbuf1,xbuf2,xbuf3,lenbuf,
      &                          orb_info,op_info,str_info,strmap_info)
-c          call mem_check('after prc_special2')
-c dbg
-c          print *,'Precond. grad:'
-c          call wrt_mel_buf(luout,5,xbuf1,me_grd,1,1,
-c     &         str_info,orb_info)
-c dbg
           call vec_from_da(ffamp,1,xbuf2,nwfpar)
         case(optinf_prc_mixed)
           call vec_from_da(ffgrd,1,xbuf1,nwfpar)
@@ -187,58 +172,18 @@ c dbg
      &                       fspc,nspcfrm,xngrd,iopt,opti_info,
      &                       orb_info,op_info,str_info,strmap_info)
 
+        case default
+          call quit(1,'optc_diis_subsp_add','unknown route')
         end select
-c dbg
-c          print *,'|g/d|:' ,dnrm2(nwfpar,xbuf1,1)
-c          print *,'g/d: ', xbuf1(1:nwfpar)
-c dbg
-c dbg
-c          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
-c          print *,'t before: ', xbuf2(1:nwfpar)
-c dbg
-        xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)
-c dbg
-c          print *,'t norm new:',dnrm2(nwfpar,xbuf2,1)
-c          print *,'t before new: ', xbuf2(1:nwfpar)
-c dbg
 
-c        else
-cc dbg
-c          print *,'prc name: ',trim(ffdia%name)
-c          print *,'g,d norm:',
-c     &         dnrm2(nwfpar,xbuf1,1),dnrm2(nwfpar,xbuf2,1)
-cc dbg
-c
-c          idx_inv = idx_oplist2(op_b_inv,op_info)
-c          op => op_info%op_arr(idx_inv)%op
-cc dbg
-c          print *,'g norm:',dnrm2(nwfpar,xbuf1,1)
-c          print *,'g: ',xbuf1(1:nwfpar)
-cc          print *,'g: ',xbuf1(1:20)
-cc          print *,'g: ',xbuf1(72:92)          
-cc dbg
-c          call op_vec_mult(1d0,ffdia,op,xbuf1,nwfpar,
-c     &         op_info,orb_info)
-cc dbg
-c          print *,'g/d norm:',dnrm2(nwfpar,xbuf1,1)
-c          print *,'g/d: ',xbuf1(1:nwfpar)
-c          print *,'g/d: ',xbuf1(1:20)
-c          print *,'g/d: ',xbuf1(72:92)
-cc dbg
-c          call vec_from_da(ffamp,1,xbuf2,nwfpar)
-cc dbg
-c          print *,'t norm:',dnrm2(nwfpar,xbuf2,1)
-c          print *,'t after: ',xbuf2(1:nwfpar)
-cc          print *,'t: ',xbuf2(72:92)
-cc dbg
-c          xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)
-c
-c        endif
+        xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)
 
         call vec_to_da(ff_rsbsp,irecr,xbuf1,nwfpar)
         call vec_to_da(ff_vsbsp,irecv,xbuf2,nwfpar)
 
       else
+
+        call quit(1,'optc_diis_sbsp_add','nincore<3 route not debugged')
         
         if (typ_prc.eq.optinf_prc_blocked)
      &        call quit(1,'optc_diis_sbsp_add',

@@ -27,7 +27,7 @@
      &     op_info
 
       logical ::
-     &     sorted
+     &     sorted, error
       integer ::
      &     ipass, iptr, iptr_last, itarget, nlist, maxlist,
      &     nvtx, ivtx, idx_op
@@ -49,6 +49,7 @@
      &       'this is set_formula_dependencies')
       end if
 
+      error = .false.
       op2list => op_info%op2list 
       do ipass = 1, 2
         if (ntest.ge.100) write(luout,*) 'pass: ',ipass
@@ -74,6 +75,12 @@
                 do iptr = 1, nlist
                   depends_on_idxlist(iptr,itarget) =
      &                 op2list(idxscr(iptr))
+                  ! safety trap
+                  if (depends_on_idxlist(iptr,itarget).le.0) then
+                    error = .true.
+                    write(luout,*) 'no list for operator '//
+     &                   trim(op_info%op_arr(idxscr(iptr))%op%name)
+                  end if
                 end do
               end if
             end if
@@ -153,7 +160,7 @@
         end if
 
       end do
-      if (ntest.ge.100) then
+      if (ntest.ge.100.or.error) then
         write(luout,*) 'targets: dependencies'
         idxlist => depend%idxlist
         depends_on_idxlist => depend%depends_on_idxlist
@@ -161,7 +168,8 @@
           write(luout,'(x,i3," :",20i4)') idxlist(itarget),
      &         depends_on_idxlist(1:depend%ndepend,itarget)
         end do
-        
+        if (error)
+     &       call quit(1,'set_formula_dependencies','undefined list')
       end if
 
       return

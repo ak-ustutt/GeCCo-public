@@ -759,8 +759,9 @@ c dbg
               end if
               ! find the contraction and relink
               fl_pnt_mark4 => find_fl_item(fl_pnt_mark3,
-     &                     command_list=(/command_bc,command_bc_reo/),
-     &                                nlist = 2,
+     &                     command_list=(/command_bc,command_bc_reo,
+     &                                    command_reorder/),
+     &                                nlist = 3,
      &                                label_res=label_op,
      &                                backward=.true. )
               if (.not.associated(fl_pnt_mark4)) then
@@ -787,7 +788,8 @@ c dbg
               if (ilist.gt.0.and.fl_pnt_mark4%command.eq.command_bc_reo)
      &            fl_pnt_mark4%command = command_add_bc_reo
               ! if this is a REO rename here, too
-              if (fl_pnt_mark4%command.eq.command_bc_reo) then
+              if (fl_pnt_mark4%command.eq.command_bc_reo.or.
+     &            fl_pnt_mark4%command.eq.command_add_bc_reo) then
                 fl_pnt_mark4%reo%label_in  = label_new
                 fl_pnt_mark4%reo%label_out = label_new
               end if

@@ -136,6 +136,11 @@
      &     val_label=(/'C0_sp'/))
       call set_arg('C0_sp',CLONE_OP,'TEMPLATE',1,tgt_info,
      &     val_label=(/'C0'/))
+
+      ! clone: keep copy of unmodified coefficients C00
+      call add_target3((/
+     &     'target C00(',
+     &     '  CLONE_OPERATOR(label=C00,template=C0))'/),tgt_info)
  
       ! define product Jacobian times C0
       call add_target('A_C0',ttype_op,.false.,tgt_info)
@@ -650,6 +655,30 @@ c dbgend
      &             val_int=(/orb_info%lsym/))
       call set_arg('DEF_ME_C0_sp',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
+
+      ! ME_C00
+      call add_target2('DEF_ME_C00',.false.,tgt_info)
+      call set_dependency('DEF_ME_C00','C00',tgt_info)
+      call set_dependency('DEF_ME_C00','SOLVE_REF',tgt_info)
+      call set_rule2('DEF_ME_C00',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_C00',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_C00'/))
+      call set_arg('DEF_ME_C00',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'C00'/))
+      call set_arg('DEF_ME_C00',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/ims/))
+      call set_arg('DEF_ME_C00',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/orb_info%lsym/))
+      call set_arg('DEF_ME_C00',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+        call set_rule2('DEF_ME_C00',SCALE_COPY,tgt_info)
+        call set_arg('DEF_ME_C00',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &       val_label=(/'ME_C00'/))
+        call set_arg('DEF_ME_C00',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &       val_label=(/'ME_C0'/))
+        call set_arg('DEF_ME_C00',SCALE_COPY,'FAC',1,tgt_info,
+     &       val_rl8=(/1d0/))
+
 
       ! ME_A_C0
       call add_target('DEF_ME_A_C0',ttype_opme,.false.,tgt_info)

@@ -98,7 +98,7 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
      &     xval=prc_shift)
 
       if (.not.l_iccc.and.prc_type.ne.0.and.prc_type.ne.3.or.
-     &    prc_type.gt.3.or.prc_type.ne.2.and.prc_shift.ne.0d0)
+     &    prc_type.gt.4.or.prc_type.ne.2.and.prc_shift.ne.0d0)
      &  call quit(1,'set_ic_mr_targets','Choose other preconditioner!')
       if (gno.gt.0.and.project) call quit(1,'set_ic_mr_targets',
      &          'No seq. orth. (project=T) yet for GNO')
@@ -284,6 +284,12 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
      &              'Dtr',1,1,
      &              parameters,2,tgt_info)
 
+      ! we explicitly define an operator for the projector onto
+      ! non-redundant excitation space 
+      call add_target3(
+     &     (/'target Dproj(CLONE_OPERATOR(label=Dproj,template=Dtr))'/),
+     &     tgt_info)
+
       ! subset of exc. op. for non-redundant valence-only metric
       call add_target('Ex',ttype_op,.false.,tgt_info)
       occ_def = 0
@@ -294,7 +300,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))
-     &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
+     &          .and..not.(l_icci.and.prc_type.ge.3)) cycle
             ! same valence structure already exists?
             ivers = 1
             do idef = 1, ndef
@@ -407,7 +413,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))
-     &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
+     &          .and..not.(l_icci.and.prc_type.ge.3)) cycle
 c    strictly, we should better use this: (but: does procedure C work?)
 c            if (ip.eq.ih.and.ip.eq.iexc) cycle
 c dbg hybrid preconditioner

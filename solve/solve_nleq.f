@@ -70,7 +70,7 @@ c dbgend
      &     orb_info
 
       logical ::
-     &     conv, restart, spinproj
+     &     conv, restart, spinproj, traf
       character(len_opname) ::
      &     label, dia_label
       integer ::
@@ -292,8 +292,11 @@ c dbg
       imicit = 0
       imicit_tot = 0
       task = 0
-      opt_loop: do while(task.lt.8)
+      opt_loop: do !while(task.lt.8)
 
+c dbg
+        print *,'at head of opt_loop'
+c dbg
         call optcont
      &       (imacit,imicit,imicit_tot,
      &       task,conv,
@@ -306,6 +309,26 @@ c     &       ff_trv,ff_h_trv,
      &       fl_spc,nspcfrm,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
+
+        if (imacit.gt.1) then
+          if (nopt.eq.1)
+     &       write(luout,'(">>>",i3,f24.12,x,g10.4)')
+     &       imacit-1,energy,xresnrm(1)
+          if (nopt.eq.2)
+     &       write(luout,'(">>>",i3,f24.12,2(x,g10.4))')
+     &       imacit-1,energy,xresnrm(1:2)
+          if (nopt.eq.3)
+     &       write(luout,'(">>>",i3,f24.12,3(x,g10.4))')
+     &       imacit-1,energy,xresnrm(1:3)
+          if (.not.conv.and.task.ge.8) then
+            write(luout,'(">>> NOT CONVERGED! <<<")')
+            exit opt_loop
+          else if (task.ge.8) then
+            write(luout,'(">>> final energy:",f24.12," <<<")')
+     &       energy
+             exit opt_loop
+          end if
+        end if
 
         ! quick and dirty (for experimental use):
         ! do C0 optimization if requested
@@ -397,17 +420,13 @@ c dbgend
         ! 2 - get residual
         if (iand(task,1).eq.1.or.iand(task,2).eq.2) then
           call frm_sched(xret,fl_en_res,depend,0,0,
-     &         .true.,op_info,str_info,strmap_info,orb_info)
+     &         .true.,.false.,op_info,str_info,strmap_info,orb_info)
           ! intermediates should be generated first, energy
           ! is expected to be the last "intermediate"
           energy =  xret(idx_en_xret)
 c dbg
 c          print *,'xret : ',xret
 c dbg
-c dbg
-          xdum = xnormop(me_grd(1)%mel)
-          print *,'total norm of residual: ',xdum
-c dbgend
 
           if (ntest.ge.1000) then
             do iopt = 1, nopt
@@ -433,24 +452,44 @@ c test
 
           do iopt = 1, nopt
             xresnrm(iopt) = abs(xret(idx_res_xret(iopt)))
+            traf = traf.or.opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &                 .or.opti_info%typ_prc(iopt).eq.optinf_prc_invH0
           end do
         end if
 
-        if (.not.conv.and.task.lt.8) then
-          if (nopt.eq.1)
-     &       write(luout,'(">>>",i3,f24.12,x,g10.4)')
-     &       imacit,energy,xresnrm(1)
-          if (nopt.eq.2)
-     &       write(luout,'(">>>",i3,f24.12,2(x,g10.4))')
-     &       imacit,energy,xresnrm(1:2)
-          if (nopt.eq.3)
-     &       write(luout,'(">>>",i3,f24.12,3(x,g10.4))')
-     &       imacit,energy,xresnrm(1:3)
-        else if (.not.conv) then
-          write(luout,'(">>> NOT CONVERGED! <<<")')
-        else
-          write(luout,'(">>> final energy:",f24.12," <<<")')
-     &       energy
+        ! report untransformed residual
+        if (traf) 
+     &   write(luout,'(x,"norm of untransformed residual ",3(x,g10.4))')
+     &   xresnrm(1:opti_info%nopt)
+
+        ! another quick and dirty call to the linear solver
+        ! for advanced preconditioning
+        if (opti_info%optref.eq.-3.and.
+     &      opti_info%typ_prc(1).eq.optinf_prc_invH0.and.
+     &      .not.conv) then
+          thr_suggest = min(xresnrm(1)*opti_info%mic_ahead,1d-4)
+
+          idx = idx_mel_list('ME_C0',op_info)
+          if (opti_info%optref.ne.0.and.
+     &         op_info%mel_arr(idx)%mel%fhand%last_mod(
+     &         op_info%mel_arr(idx)%mel%fhand%current_record).gt.
+     &         me_special(2)%mel%fhand%last_mod(1)) then
+            call update_metric(me_dia(1)%mel,me_special,nspecial,
+     &           fl_spc,nspcfrm,orb_info,op_info,str_info,strmap_info,
+     &           opti_info%update_prc)
+          end if
+
+          call solve_leq('TRF',
+     &                 1,1,'ME_DlT',label_prc(1),'H0_DlT','S_DlT',
+     &                 'OMGprj',xdum,'FOPT_H0INV',
+     &                    (/'ME_Tout','ME_Ttr','ME_Dtr','ME_Dtrdag'/),4,
+     &                 'FOPT_Ttr_GEN',1,  thr_suggest,
+     &                 op_info,form_info,str_info,strmap_info,orb_info)
+          ! overwrite the gradient with preconditioned gradient
+          call scale_copy_op(label_res(1),'ME_DlT',1d0,1,'--',0,
+     &                  op_info,orb_info,str_info)
+          ! get norm of projected gradient and report as gradient norm
+          xresnrm(1) = xdum
         end if
 
       end do opt_loop
@@ -470,7 +509,8 @@ c        end if
 c dbg
 c dbg
         ! very dirty: don't close file if needed for following opt.
-        if (opti_info%typ_prc(1).ne.optinf_prc_traf.or.
+        if ((opti_info%typ_prc(1).ne.optinf_prc_traf.and.
+     &       opti_info%typ_prc(1).ne.optinf_prc_invH0).or.
      &      opti_info%optref.eq.0.or.nopt.ne.1) then
 c dbgend
         call file_close_keep(ffopt(iopt)%fhand)

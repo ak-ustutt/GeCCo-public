@@ -19,6 +19,9 @@ m4_include([config/acx_f90_mpi.m4])
 AC_DEFUN([ACX_BUILD_FLAGS],[. ./config/$1.conf])
 
 AC_DEFUN([ACX_SUBST_BUILD_FLAGS],[
+AC_SUBST(fopt_high, $fopt_high)
+AC_SUBST(fopt_low, $fopt_low)
+AC_SUBST(fopt, $fopt)
 AC_SUBST(fcflags, $fcflags)
 AC_SUBST(fdebug, $fdebug)
 AC_SUBST(fmodule, $fmodule)

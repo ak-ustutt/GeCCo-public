@@ -28,7 +28,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 00
 
       logical ::
      &     init

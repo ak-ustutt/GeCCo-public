@@ -210,6 +210,7 @@ cmh   determine number of first 2-el. block
             call idx42str(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
      &           orb_info,str_info,hlist,hpvxseq,error)
+            if (error) cycle
             ! sign change if (CV and CP) xor (AV and AP)
             if ((igtp(1)*igtp(2).eq.6.and.igtp(3)*igtp(4).ne.6).or.
      &          (igtp(1)*igtp(2).ne.6.and.igtp(3)*igtp(4).eq.6))
@@ -247,6 +248,7 @@ cmh   determine number of first 2-el. block
             call idx42str(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
      &           orb_info,str_info,hlist,hpvxseq,error)
+            if (error) cycle
             ! sign change if (CV and CP) xor (AV and AP)
             if ((igtp(1)*igtp(2).eq.6.and.igtp(3)*igtp(4).ne.6).or.
      &          (igtp(1)*igtp(2).ne.6.and.igtp(3)*igtp(4).eq.6))

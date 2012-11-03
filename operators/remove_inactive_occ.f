@@ -48,10 +48,6 @@
           end if
         end do
       end do
-c dbg
-      print *,'active: ',active(1,1:ngastp,1)
-      print *,'        ',active(2,1:ngastp,1)
-c dbg
 
       allocate(delete(ndef))
       delete(1:ndef) = .false.
@@ -61,18 +57,10 @@ c dbg
           do ihpvx = 1, ngastp
             do ica = 1, 2
               if (occ(ihpvx,ica,ijoin,idef).eq.0) cycle
-c dbg
-         print *,' >> ',ica,ihpvx,ijoin,' -> ',occ(ica,ihpvx,ijoin,idef)
-         print *,' -----> ',.not.active(ica,ihpvx,ijoin)
-c dbg
               delete(idef)=delete(idef).or..not.active(ica,ihpvx,ijoin)
             end do        
           end do
         end do
-c dbg
-        call wrt_occ_n(6,occ(1,1,1,idef),njoined)
-        print *,'delete: ',delete(idef)
-c dbg
         if (delete(idef)) ndel = ndel+1
       end do
 
@@ -92,9 +80,6 @@ c dbg
       end if
 
       ndef = ndef-ndel
-c dbg
-      if (ndel.gt.0) print *,'removed occupations: ',ndel
-c dbg
 
       deallocate(delete)
       return

@@ -25,7 +25,7 @@
       character(len=16), parameter ::
      &     i_am = 'optk_move_bcontr'
       integer, parameter ::
-     &     ntest = 00
+     &     ntest =  00
       integer, parameter ::
      &     maxiter = 10 000
 
@@ -42,10 +42,14 @@
 
       type(binary_contr), pointer ::
      &     bcontr
+      type(reorder), pointer ::
+     &     reo
       character(len=len_opname) ::
      &     label_op
       integer ::
-     &     isave, iop
+     &     isave, iop, nop
+      logical ::
+     &     bc
 
 
       if (ntest.gt.0) then
@@ -72,14 +76,23 @@
         if (isave.gt.maxiter) 
      &       call quit(1,i_am,'too many iterations, infinite loop?')
         ! fetch pointer from list of unprocessed items
-        bcontr => loop_pnt%item%bcontr
+        if (loop_pnt%item%command.eq.command_reorder) then
+          reo => loop_pnt%item%reo
+          nop = 1
+          bc = .false.
+        else
+          bcontr => loop_pnt%item%bcontr
+          nop = 2
+          bc = .true.
+        end if
         ! does the present contraction depend on intermediates?
-        op_loop: do iop = 1, 2        
+        op_loop: do iop = 1, nop
           ! ---------------------
           ! for each intermediate
           ! ---------------------
-          if (iop.eq.1) label_op = bcontr%label_op1
-          if (iop.eq.2) label_op = bcontr%label_op2
+          if (.not.bc) label_op = reo%label_in
+          if (bc.and.iop.eq.1) label_op = bcontr%label_op1
+          if (bc.and.iop.eq.2) label_op = bcontr%label_op2
           if (label_op(1:5).eq.'_LTIN')
      &              call quit(1,i_am,'_LTINs not yet considered')
           if (label_op(1:5).ne.'_STIN') cycle op_loop
@@ -87,8 +100,9 @@
           ! find the previous contraction that gives the intermediate
           ! ---------------------------------------------------------
           fl_pnt => find_fl_item(loop_pnt%item,
-     &                 command_list=(/command_bc,command_bc_reo/),
-     &                           nlist=2,
+     &                 command_list=(/command_bc,command_bc_reo,
+     &                           command_reorder/),
+     &                           nlist=3,
      &                           label_res=label_op,
      &                           backward=.true.)
           if (associated(fl_pnt)) then
@@ -135,13 +149,14 @@
       loop_pnt => fpl_to_move
 
       do
-c dbg
-c        print *,'relink 1'
-c dbg
         if (ntest.ge.100) then
           if (loop_pnt%item%command.eq.command_new_intermediate) then
             write(luout,*) 'now moving: [NEW] '//
      &                      trim(loop_pnt%item%interm%name)
+          else if (loop_pnt%item%command.eq.command_reorder) then
+            write(luout,*) 'now moving: [REORDER] '//
+     &                  trim(loop_pnt%item%reo%label_in)//'->'//
+     &                  trim(loop_pnt%item%reo%label_out)
           else
             write(luout,*) 'now moving: [CONTR] '//
      &                  trim(loop_pnt%item%bcontr%label_op1)//'*'//

@@ -385,6 +385,16 @@
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_LINE,tgt_info)
+      call set_arg('_PROTO_',SELECT_LINE,'LABEL_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SELECT_LINE,'LABEL_IN',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SELECT_LINE,'OP_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SELECT_LINE,'OP_INCL',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SELECT_LINE,'IGAST',0,tgt_info,
+     &     val_int=(/1/),def=.true.)
       call set_arg('_PROTO_',SELECT_LINE,'MODE',1,tgt_info,
      &     val_str='keep',def=.true.)
       call set_arg('_PROTO_',SELECT_LINE,'TITLE',1,tgt_info,
@@ -581,6 +591,8 @@
       call set_arg('_PROTO_',SOLVELEQ,'N_ROOTS',0,tgt_info,
      &     val_int=(/0/),req=.true.)
       call set_arg('_PROTO_',SOLVELEQ,'LIST_SPC',0,tgt_info,
+     &     (/'-'/),def=.true.)
+      call set_arg('_PROTO_',SOLVELEQ,'FORM_SPC',0,tgt_info,
      &     (/'-'/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SOLVEEVP,tgt_info)
