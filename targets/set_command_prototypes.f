@@ -606,6 +606,8 @@
      &     val_int=(/-1/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(UNITY,tgt_info)
+      call set_arg('_PROTO_',UNITY,'LIST',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',UNITY,'FAC',1,tgt_info,
      &     val_rl8=(/1d0/),def=.true.)
       call set_arg('_PROTO_',UNITY,'INIT',1,tgt_info,

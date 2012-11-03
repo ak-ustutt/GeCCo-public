@@ -58,7 +58,7 @@
      &     op_ht*3, f_ht*5, op_ht0to*6, f_ht0to*8, form_str*50,
      &     def_ht*10
       real(8) ::
-     &     x_ansatz, prc_shift
+     &     x_ansatz, prc_shift, prc_min
 
       if (iprlvl.gt.0) write(luout,*) 'setting icMRCC targets'
 
@@ -79,6 +79,8 @@
      &     ival=prc_type)
       call get_argument_value('method.MR','prc_shift',
      &     xval=prc_shift)
+      call get_argument_value('method.MR','prc_min',
+     &     xval=prc_min)
       call get_argument_value('method.MR','svdonly',
      &     lval=svdonly)
       call get_argument_value('calculate.solve.non_linear','optref',
@@ -3302,7 +3304,8 @@ c dbgend
       if (tfix.gt.0) then
         call set_dependency('FOPT_Ecorrected','DEF_ME_Tfix',tgt_info)
         inquire(file='ME_Tfix_list.da',exist=l_exist)
-        if (.not.l_exist) call quit(1,'set_ic_mrcc_targets',
+        if (.not.l_exist.and..not.svdonly)
+     &           call quit(1,'set_ic_mrcc_targets',
      &           'File for fixed T amplitudes not found!')
       end if
       call set_rule2('FOPT_Ecorrected',OPTIMIZE,tgt_info)
@@ -3789,6 +3792,17 @@ c dbgend
       if (prc_type.ge.3)
      &  call set_arg('EVAL_Atr',EXTRACT_DIAG,'EXTEND',1,tgt_info,
      &               val_log=(/.true./))
+      if (prc_min.gt.0d0) then ! constrain prec. by a minimum value
+        call set_rule2('EVAL_Atr',SCALE_COPY,tgt_info)
+        call set_arg('EVAL_Atr',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &               val_label=(/trim(dia_label)/))
+        call set_arg('EVAL_Atr',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &               val_label=(/trim(dia_label)/))
+        call set_arg('EVAL_Atr',SCALE_COPY,'FAC',1,tgt_info,
+     &               val_rl8=(/prc_min/))
+        call set_arg('EVAL_Atr',SCALE_COPY,'MODE',1,tgt_info,
+     &               val_str='atleast')
+      end if
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Preconditioner (b) :',0,'LIST')
@@ -4095,7 +4109,7 @@ c dbgend
      &       val_str='DIA')
         call set_arg('SOLVE_MRCC',SOLVEEVP,'N_ROOTS',1,tgt_info,
      &       val_int=(/maxroot/))
-        call set_arg('SOLVE_MRCC',SOLVEEVP,'TARG_ROOTS',1,tgt_info,
+        call set_arg('SOLVE_MRCC',SOLVEEVP,'TARG_ROOT',1,tgt_info,
      &       val_int=(/ciroot/))
         call set_arg('SOLVE_MRCC',SOLVEEVP,'OP_MVP',1,tgt_info,
      &       val_label=(/'A_C0'/))

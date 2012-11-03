@@ -61,7 +61,7 @@
 
       logical ::
      &     bufin, bufout, first, ms_fix, fix_success, onedis, transp,
-     &     logdum, sgrm, bufu, svdonly, reg_tik
+     &     logdum, sgrm, bufu, svdonly, reg_tik, first2
       logical, pointer ::
      &     blk_used(:), blk_redundant(:)
 c      logical ::
@@ -1319,10 +1319,10 @@ c dbgend
              deallocate(scratch4,proj)
            end if
 
-           ! assume exc. in T op. are ordered with increasing rank
            if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
 c     &        blk_redundant(iocc_cls+min(na1mx,nc1mx)+irank-nrank)
-     &        blk_redundant(iocc_cls+irank-1)
+c     &        blk_redundant(iocc_cls+irank-1)
+     &        blk_redundant(iocc_cls+nrank-irank)
      &        = .false.
           end do
 
@@ -1573,8 +1573,8 @@ c dbgend
  
       if (sgrm.and.any(blk_redundant(1:nocc_cls))) then
         ! Print out which blocks are redundant
-c        write(luout,'(x,a)') 'There are redundant blocks in the metric:'
-        write(luout,'(x,a)') 'There are redundant blocks in T:'
+        write(luout,'(x,a)') 'There are redundant blocks in the metric:'
+c        write(luout,'(x,a)') 'There are redundant blocks in T:'
         write(luout,'(x,a,26i3)') 'Block #  :',(idx,idx=1,nocc_cls)
         write(luout,'(x,a,26(2x,L1))') 'Redundant?',
      &                               (blk_redundant(idx),idx=1,nocc_cls)
@@ -1592,20 +1592,36 @@ c        write(luout,'(x,a)') 'There are redundant blocks in the metric:'
           iexc = 0
           first = .false.
           do iocc_cls = 1, nocc_cls
+            first2 = .false.
             if (ih.ne.op_t%ihpvca_occ(IHOLE,2,iocc_cls)) then
               ih = op_t%ihpvca_occ(IHOLE,2,iocc_cls)
               first = .true.
+              first2 = .true.
             end if
             if (ip.ne.op_t%ihpvca_occ(IPART,1,iocc_cls)) then
               ip = op_t%ihpvca_occ(IPART,1,iocc_cls)
               first = .true.
+              first2 = .true.
+            end if
+            if (first2) then
+              ! how many blocks belong to this excitation class?
+              jocc_cls = nocc_cls
+              do while(op_t%ihpvca_occ(IHOLE,2,jocc_cls).ne.ih.or.
+     &                 op_t%ihpvca_occ(IPART,1,jocc_cls).ne.ip)
+                jocc_cls = jocc_cls - 1
+              end do
+              nrank = jocc_cls - iocc_cls
+              irank = 0
+            else
+              irank = irank + 1
             end if
             iexc = op_t%ica_occ(1,iocc_cls)
-            if (blk_redundant(iocc_cls).and.first) then
+            if (blk_redundant(iocc_cls+nrank-2*irank).and.first) then
               first = .false.
               write(luout,'(x,a,i1,a,i1,a,i1,a,i1,a,i1,a)')
      &          'MR excrestr=(',ih,',',ih,',',ip,',',ip,',1,',iexc-1,')'
-            else if (.not.blk_redundant(iocc_cls).and..not.first) then
+            else if (.not.blk_redundant(iocc_cls+nrank-2*irank).and.
+     &               .not.first) then
               write(luout,'(x,a,i4)') 'Watch out: Non-redundant block:',
      &                                iocc_cls
               call warn('invsqrt',
