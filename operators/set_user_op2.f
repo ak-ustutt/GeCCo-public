@@ -198,7 +198,7 @@ C                call quit(1,'set_user_op2','ever accessed this part?')
      &       'Number of occupation classes for ',
      &       trim(name),': ',op%n_occ_cls
 
-      if (iprint.ge.10) then
+      if (iprint.ge.5) then
         write(luout,*) 'According to your wishes, I set the following:'
         call print_op_occ(luout,op)
       end if

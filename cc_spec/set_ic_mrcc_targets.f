@@ -711,7 +711,7 @@ c     &     val_label=(/'H'/))
 c      does not work for higher excitations like this
 c      do ip = 2, maxp !only for blocks with at least two P lines
       do ip = 0, min(2,maxp)
-        do ih = 0, maxh
+        do ih = 0, min(2,maxh)
 c          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
 c            ! for perturbative triples we should not define HH
 c            if (trunc.and.iexc.gt.2) cycle
@@ -747,7 +747,7 @@ c          end do
 c      does not work for higher excitations like this
 c      do ip = 2, maxp !only for blocks with at least two P lines
       do ip = 0, min(min(2,maxp),h1bar_maxp-2)
-        do ih = 0, maxh
+        do ih = 0, min(2,maxh)
 c          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
 c            ! for perturbative triples we should not define PP
 c            if (trunc.and.iexc.gt.2) cycle
