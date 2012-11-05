@@ -4498,7 +4498,8 @@ c dbgend
         case(3)
           call set_dependency('EVAL_PERT_CORR','EVAL_Atr',tgt_info)
         case default
-          call quit(1,'set_ic_mrcc_targets',
+          if (.not.svdonly.and.tfix.gt.0)
+     &         call quit(1,'set_ic_mrcc_targets',
      &         'Non-iterative higher-order corr. should use prc_type=3')
         end select
         ! (a) evaluate residual
