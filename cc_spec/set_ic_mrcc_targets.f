@@ -2318,7 +2318,6 @@ c dbgend
       call add_target2('F_PPint',.false.,tgt_info)
       call set_dependency('F_PPint','F_prePPint',tgt_info)
       call set_dependency('F_PPint','INT_PP',tgt_info)
-      call set_dependency('F_PPint','F_OMG',tgt_info)
       call set_rule2('F_PPint',DERIVATIVE,tgt_info)
       call set_arg('F_PPint',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_PPint'/))
@@ -2380,7 +2379,6 @@ c dbgend
       call add_target2('F_PP0int',.false.,tgt_info)
       call set_dependency('F_PP0int','F_prePP0int',tgt_info)
       call set_dependency('F_PP0int','INT_PP0',tgt_info)
-      call set_dependency('F_PP0int','F_OMG',tgt_info)
       call set_rule2('F_PP0int',DERIVATIVE,tgt_info)
       call set_arg('F_PP0int',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_PP0int'/))
@@ -2524,7 +2522,6 @@ c dbgend
       call add_target2('F_HHint',.false.,tgt_info)
       call set_dependency('F_HHint','F_preHHint',tgt_info)
       call set_dependency('F_HHint','INT_HH',tgt_info)
-      call set_dependency('F_HHint','F_OMG',tgt_info)
       call set_rule2('F_HHint',DERIVATIVE,tgt_info)
       call set_arg('F_HHint',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_HHint'/))
