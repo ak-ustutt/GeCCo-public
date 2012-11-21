@@ -691,8 +691,53 @@ c dbg
       call set_rule2('F_MRCC_F12_E',PRINT_FORMULA,tgt_info)
       call set_arg('F_MRCC_F12_E',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_MRCC_F12_E'/))
-c dbgend
+c group the energy equation for different density matrices
+      call add_target2('F_1',.false.,tgt_info)
+      call set_dependency('F_1','C0',tgt_info)
+      call set_dependency('F_1','1scal',tgt_info)
+      call set_rule2('F_1',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_1',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_1'/))
+      call set_arg('F_1',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'1scal'/))
+      call set_arg('F_1',EXPAND_OP_PRODUCT,'OPERATORS',2,
+     &     tgt_info,
+     &     val_label=(/'C0^+','C0  '/))
+      call set_arg('F_1',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
+     &     val_int=(/1,2/))
 
+      call add_target2('FORM_E_F12',.true.,tgt_info)
+      call set_dependency('FORM_E_F12','F_MRCC_F12_E',tgt_info)
+c      call set_dependency('FORM_E_F12','F_DENS0',tgt_info)
+      call set_dependency('FORM_E_F12','F_1',tgt_info)
+      call set_rule2('FORM_E_F12',INVARIANT,tgt_info)
+      call set_arg('FORM_E_F12',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'FORM_E_F12'/))
+      call set_arg('FORM_E_F12',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_MRCC_F12_E'/))
+      call set_arg('FORM_E_F12',INVARIANT,'OP_RES',1,tgt_info,
+     &     val_label=(/'E(MR)'/))
+        call set_arg('FORM_E_F12',INVARIANT,'OPERATORS',1,tgt_info,
+     &       val_label=(/'H'/))
+      call set_arg('FORM_E_F12',INVARIANT,'TITLE',1,tgt_info,
+     &     val_str='F12 energy expression')
+      call set_rule2('FORM_E_F12',FACTOR_OUT,tgt_info)
+      call set_arg('FORM_E_F12',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'FORM_E_F12'/))
+      call set_arg('FORM_E_F12',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'FORM_E_F12'/))
+      call set_arg('FORM_E_F12',FACTOR_OUT,'INTERM',1,tgt_info,
+     &     val_label=(/'F_1    '/))
+
+      call set_rule2('FORM_E_F12',PRINT_FORMULA,tgt_info)
+      call set_arg('FORM_E_F12',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'FORM_E_F12'/))
+      call set_rule2('FORM_E_F12',TEX_FORMULA,tgt_info)
+      call set_arg('FORM_E_F12',TEX_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'FORM_E_F12'/))
+      call set_arg('FORM_E_F12',TEX_FORMULA,'OUTPUT',1,tgt_info,
+     &     val_str='formula.tex')
+c dbgend
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
