@@ -129,7 +129,7 @@
 
       ! F -> H replacement:
       op_pnt => op_info%op_arr(idx_h)%op
-      call form_op_replace(opf_pnt%name,op_pnt%name,.true.,
+      call form_op_replace(opf_pnt%name,op_pnt%name,.false.,
      &                     flist_pnt0,op_info)
       if (ntest.ge.100) then
         write(luout,*) 'result for Bhole'
