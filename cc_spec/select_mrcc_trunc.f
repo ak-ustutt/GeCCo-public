@@ -44,7 +44,7 @@
       integer ::
      &     idxop(nlabels), occ_ham(ngastp,2)
 
-      integer(8), pointer ::
+      integer, pointer ::
      &     torder(:), horder(:), lorder(:)
 
       type(contraction), pointer ::

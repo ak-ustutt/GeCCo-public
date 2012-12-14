@@ -10,6 +10,11 @@
      &       nelmnt,ivec(nelmnt)
         end function i4elsum
 
+        integer(8) function i8elsum(ivec,nelmnt)
+        integer(8), intent(in) ::
+     &       nelmnt,ivec(nelmnt)
+        end function i8elsum
+
         integer function ielsqsum(ivec,nelmnt)
         integer, intent(in) ::
      &       nelmnt,ivec(nelmnt)
