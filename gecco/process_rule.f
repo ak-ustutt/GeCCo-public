@@ -609,11 +609,11 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
       case(LEQ_SPLIT)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_TRF',rule,tgt_info,val_label=label_list(1))
-        call get_form(form_pnt,trim(label),NEW) ! pointer not used here
+        call get_form(form_pnt,trim(label_list(1)),ANY) ! pointer not used here
         call get_arg('LABEL_RHS',rule,tgt_info,val_label=label_list(2))
-        call get_form(form_pnt,trim(label),NEW)
+        call get_form(form_pnt,trim(label_list(2)),ANY)
         call get_arg('LABEL_RAW',rule,tgt_info,val_label=label_list(3))
-        call get_form(form_pnt,trim(label),OLD)
+        call get_form(form_pnt,trim(label_list(3)),OLD)
         call get_arg('OP_TRF',rule,tgt_info,val_label=label_list(4))
         call get_arg('OP_RHS',rule,tgt_info,val_label=label_list(5))
         call get_arg('OP_X',rule,tgt_info,
