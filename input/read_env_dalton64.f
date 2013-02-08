@@ -167,10 +167,10 @@
 
 c     We will just ignore if orbitals were frozen within Dalton run
 c      n_frozen = i4elsum(nfro,nsym)
-      n_act    = ielsum(nash,nsym)
-      n_as1    = ielsum(nas1,nsym)
-      n_as2    = ielsum(nas2,nsym)
-      n_as3    = ielsum(nas3,nsym)
+      n_act    = i8elsum(nash,nsym)
+      n_as1    = i8elsum(nas1,nsym)
+      n_as2    = i8elsum(nas2,nsym)
+      n_as3    = i8elsum(nas3,nsym)
 
       nspin = 1
       ngas = 2
