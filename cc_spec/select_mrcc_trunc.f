@@ -40,7 +40,8 @@
       integer ::
      &     idxtop, idxham, norder, len, idxfeff, iorder, iblk, 
      &     ihampart, nact, iblknew, idx_op, nrank, cgastp, agastp,
-     &     ivtx, ii, nvtx, nham, ham_vtx, iterm, idxl, t1ord
+     &     ivtx, ii, nvtx, nham, ham_vtx, iterm, idxl, t1ord,
+     &     lrank, trank, ntop, simp
       integer ::
      &     idxop(nlabels), occ_ham(ngastp,2)
 
@@ -144,6 +145,10 @@
         end do
       end if
 
+      ! special simplifications requested?
+      call get_argument_value('method.MRCC','simp',
+     &     ival=simp)
+
       form_pnt => flist
       do 
         form_pnt_next => form_pnt%next
@@ -170,6 +175,9 @@ c dbgend
           nham = 0
           ihampart = 0
           replace = .false.
+          ntop = 0
+          lrank = 0
+          trank = 0
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
             if (idx_op.eq.idxtop) then
@@ -177,11 +185,14 @@ c dbgend
               if (iblk.gt.len) call quit(1,'select_mrcc_trunc',
      &           'Please define perturbation order for all blocks of T')
               iorder = iorder + torder(iblk)
+              ntop = ntop + 1
+              trank = op_top%ica_occ(1,iblk)
             else if (count_l.and.idx_op.eq.idxl) then
               iblk = vertex(ivtx)%iblk_op
               if (iblk.gt.len) call quit(1,'select_mrcc_trunc',
      &           'Please define perturbation order for all blocks of T')
               iorder = iorder + lorder(iblk)
+              lrank = op_info%op_arr(idxl)%op%ica_occ(1,iblk)
             else if (idx_op.eq.idxham) then
               nham = nham+1
               ham_vtx = ivtx
@@ -231,6 +242,15 @@ c dbgend
           ! do we have to replace H by effective Fock operator?
           if (.not.delete.and.replace) then
             replace = replace.and.iorder-horder(1)+horder(3).gt.norder
+          end if
+          ! special simplifications requested (for (T))?
+          if (.not.delete.and.simp.eq.2) then
+            delete = lrank.eq.3.and.(ntop.ne.1.or.trank.eq.1)
+     &               .or.lrank.eq.0.and.ntop.eq.1.and.trank.eq.3
+          else if (.not.delete.and.simp.eq.1) then
+            delete = lrank.eq.3.and.
+     &               (ntop.eq.0.or.ntop.eq.1.and.trank.eq.1)
+     &               .or.lrank.eq.0.and.ntop.eq.1.and.trank.eq.3
           end if
 
           if (delete) then

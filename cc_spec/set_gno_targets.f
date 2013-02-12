@@ -32,7 +32,7 @@
 
       integer ::
      &     ndef, occ_def(ngastp,2,60), msc, maxexc, iv, maxcum,
-     &     ioff, gno, nv, cum_appr_mode, idef
+     &     ioff, gno, nv, cum_appr_mode, idef, maxmetric
       logical ::
      &     pure_vv
       character(len_target_name) ::
@@ -68,10 +68,14 @@
      &     str=triples(1:1))
       ! special simplification: in case of approximate triples models,
       ! no more effort than for the singles doubles model is needed:
+      maxmetric = 2*maxexc
       if (maxexc.eq.3) then
         select case(triples)
         case ('0','A','a','B','b')
           maxexc = 2  ! just pretending for this routine
+          maxmetric = 4
+        case ('C','c','D','d','E','e')
+          maxmetric = 5
         case default
         end select
       end if
@@ -146,7 +150,7 @@ c     &              parameters,2,tgt_info)
       if (gno.eq.0) then
         call set_arg('DENS',DEF_OP_FROM_OCC,'FORMAL',1,tgt_info,
 c     &     val_int=(/orb_info%nactel+1/))
-     &       val_int=(/max(maxcum,ioff+2*maxexc-3)+1/))
+     &       val_int=(/max(maxcum,ioff+maxmetric-3)+1/))
       else
         call set_arg('DENS',DEF_OP_FROM_OCC,'FORMAL',1,tgt_info,
      &       val_int=(/orb_info%nactel+1/))

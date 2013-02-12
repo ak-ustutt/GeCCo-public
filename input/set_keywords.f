@@ -256,6 +256,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/0/)) ! read in fixed T with max. rank Tfix
       call argument_add('T1ord','method.MRCC',type=vtyp_int,
      &     idef=(/-1/)) ! perturbation order of T1
+      call argument_add('simp','method.MRCC',type=vtyp_int,
+     &     idef=(/0/)) ! special simplifications for (T)
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
