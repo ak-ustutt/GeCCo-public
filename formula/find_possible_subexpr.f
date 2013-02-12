@@ -78,9 +78,13 @@ c dbg
      &         call quit(1,'find_possible_subexpr',
      &         'unexpected end of list (intermediate)')
           fl_intm_pnt => fl_intm_pnt%next
-          if (fl_intm_pnt%command.ne.command_add_contribution)
-     &         call quit(1,'find_possible_subexpr',
+          if (fl_intm_pnt%command.eq.command_end_of_formula) then
+            exit ! special case: ignore empty expression ...
+          else if (fl_intm_pnt%command.ne.command_add_contribution)
+     &    then
+            call quit(1,'find_possible_subexpr',
      &         'expected [ADD] (intermediate)')
+          end if
           iblk_intm = fl_intm_pnt%contr%iblk_res
           ! new block -> remember the start item
           fl_intm_stblk => fl_intm_pnt

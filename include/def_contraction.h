@@ -64,7 +64,8 @@ c
         type(cntr_arc), pointer ::
      &       xarc(:)   ! description of external arcs (optional [*])
         integer, pointer :: !  super-vertex info:
-     &       joined(:,:), !  vertices per supervertex (nvtx,nsupvtx)
+     &       joined(:,:), !  vertices per supervertex (0:nvtx,nsupvtx)
+     &                    !  0: number of vertices, 1-nvtx: vertex numbers
      &       svertex(:)   !  supervertex to which vertex belongs (nvtx)
         integer, pointer ::
      &       inffac(:,:) ! factorization info (4,nfac)

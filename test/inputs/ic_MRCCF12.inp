@@ -1,0 +1,12 @@
+general
+ memmax=30000000,print=0
+orb_space
+ shell type=frozen,def=(1,0,0,0)
+method
+ MR maxexc=2,minexc=1,pure_vv=F,maxh=0,prc_type=0
+ MRCC maxcom_res=2,maxcom_en=2
+ R12 notrunc=F,ansatz=3,approx=C,fixed=T
+calculate
+ solve maxiter=50,conv=1d-8,maxsub=8
+ solve non_linear optref=-3
+ routes contract=3,simtraf=0,schedule=1,use_tr=T,maxbranch=4,sv_thresh=1d-12,Tikhonov=9d-5
