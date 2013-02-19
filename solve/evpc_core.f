@@ -418,7 +418,8 @@ c dbgend
           ndsec = ndsec + nsec_arr(iopt)
 
           select case(opti_info%typ_prc(iopt))
-          case(optinf_prc_file,optinf_prc_traf,optinf_prc_spinp)
+          case(optinf_prc_file,optinf_prc_traf,optinf_prc_spinp,
+     &         optinf_prc_prj)
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
               ffspc => me_special(1)%mel%fhand
               trafo = .true.
@@ -485,18 +486,25 @@ c dbgend
               end do
             end if
 
-            ! project out spin contaminations?
-            if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then      
+            ! project out spin contaminations or other components?
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_prj) then      
               ! assign op. with list containing the scratch trial vector
               call assign_me_list(me_scr(iopt)%mel%label,
      &                            me_opt(iopt)%mel%op%name,op_info)
               do iroot = 1, nnew
                 call switch_mel_record(me_scr(iopt)%mel,iroot)
-                call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
-     &                            fspc(1),opti_info%nwfpar(iopt),
-     &                            xbuf1,xbuf2,.true.,xnrm,
-     &                            opti_info,orb_info,
-     &                            op_info,str_info,strmap_info)
+                if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
+                  call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
+     &                              fspc(1),opti_info%nwfpar(iopt),
+     &                              xbuf1,xbuf2,.true.,xnrm,
+     &                              opti_info,orb_info,
+     &                              op_info,str_info,strmap_info)
+                else
+                  call evaluate2(fspc(1),.false.,.false.,
+     &                           op_info,str_info,strmap_info,orb_info,
+     &                           xnrm,.false.)
+                end if
                 if (xnrm.lt.1d-12) call warn('evpc_core',
      &               'Nothing left after projection!')
               end do

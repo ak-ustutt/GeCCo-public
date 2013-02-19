@@ -172,6 +172,7 @@
 
         if (ntest.ge.100)
      &       write(luout,*) 'iblk, ioff, lenblk: ',iblk, ioff, lenblk
+        if (lenblk.eq.0) cycle
 
         call get_vec(ffin,buffer_in,ioff+1,ioff+lenblk)
 

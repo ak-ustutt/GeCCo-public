@@ -391,7 +391,7 @@ c        signsec => opti_info%signsec2(1:nsec)
           ndsec = ndsec + nsec_arr(iopt)
 
           select case(opti_info%typ_prc(iopt))
-          case(optinf_prc_file,optinf_prc_traf,optinf_prc_spinp)
+          case(optinf_prc_file,optinf_prc_traf)
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
               ffspc => me_special(2)%mel%fhand
               trafo = .true.
