@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine del_zero_terms(fl_tgt,op_info,thrsh)
+      subroutine del_zero_terms(fl_tgt,mode,op_info,thrsh)
 *----------------------------------------------------------------------*
 *     look for terms with factor below threshold and delete them
 *----------------------------------------------------------------------*
@@ -23,6 +23,8 @@
      &     op_info
       real(8) ::
      &     thrsh
+      character(len=*), intent(in) ::
+     &     mode
 
       integer ::
      &     idxop_tgt, iterm
@@ -36,6 +38,7 @@
         write(luout,*) '========================='
         write(luout,*) ' info from del_zero_terms'
         write(luout,*) '========================='
+        write(luout,*) ' mode = ',trim(mode)
       end if
 
       if (fl_tgt%command.ne.command_set_target_init) then
@@ -44,6 +47,10 @@
      &         'must start with [INIT] or [ADD]')
         idxop_tgt = fl_tgt%target
       end if
+
+      ! first sum identical terms?
+      if (trim(mode).eq.'sum'.or.trim(mode).eq.'SUM')
+     &   call sum_terms(fl_tgt,op_info)
 
       iterm = 0
       fl_tgt_current => fl_tgt

@@ -365,8 +365,14 @@
      &     val_int=(/-1/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_SPECIAL,tgt_info)
+      call set_arg('_PROTO_',SELECT_SPECIAL,'LABEL_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SELECT_SPECIAL,'LABEL_IN',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',SELECT_SPECIAL,'OPERATORS',0,tgt_info,
      &     val_label=(/''/),def=.true.)
+      call set_arg('_PROTO_',SELECT_SPECIAL,'TYPE',0,tgt_info,
+     &     val_str='',req=.true.)
       call set_arg('_PROTO_',SELECT_SPECIAL,'MODE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
