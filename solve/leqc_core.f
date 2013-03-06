@@ -551,6 +551,7 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
         idstsec => opti_info%idstsec(1:nsec)
         signsec => opti_info%signsec(1:nsec)
         call optc_orthvec(nadd,.false.,
+     &                 ffssbsp,iord_ssbsp,sred,
      &                 ffvsbsp,
      &                 iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                 use_s,ioff_s,ffmet,ffscr,nnew,nopt,

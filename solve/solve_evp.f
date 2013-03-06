@@ -492,6 +492,15 @@ c dbg
               end if
             end do
 
+            ! normalize initial trial vector?
+            if (iter.eq.1.and.init(1).and.
+     &          (opti_info%typ_prc(1).eq.optinf_prc_traf.or.
+     &           opti_info%typ_prc(1).eq.optinf_prc_prj))
+     &          call normalize_guess(ff_trv(1)%fhand,irectrv(irequest),
+     &                          ff_mvp,irecmvp(irequest),
+     &                          ff_met,irecmet(irequest),
+     &                          use_s,1,nopt,opti_info)
+
           end do
         end if
 

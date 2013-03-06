@@ -637,6 +637,7 @@ c dbgend
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
         call optc_orthvec(nadd,nopt.gt.1,
+     &                  ffssbsp,iord_ssbsp,sred,
      &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  use_s,ioff_s,ffmet,ffscr,nnew,nopt,
      &                  nsec_arr,nwfpsec,idstsec,signsec,

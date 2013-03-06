@@ -126,8 +126,9 @@
               me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
               iroot = iroot - 1
             else 
-              if (abs(xret(idxselect(1))).lt.1d0-1d-12)
-     &            call warn('init_guess','guess vector not normalized')
+c              guess vector will be normalized later (see solve_evp)
+c              if (abs(xret(idxselect(1))).lt.1d0-1d-12)
+c     &            call warn('init_guess','guess vector not normalized')
                 
               if (iroot.gt.1) then
                 ! Due to symmetrization we might get same guess twice

@@ -290,6 +290,7 @@ c            xrsnrm(iroot,iopt) = xnrm
       idstsec => opti_info%idstsec(1:nsec)
       signsec => opti_info%signsec(1:nsec)
       call optc_orthvec(nadd,.false.,
+     &                  opti_stat%ffssbsp,iord_ssbsp,1d0, !1d0:dummy
      &                  ffvsbsp,
      &                  iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  use_s,0,ffmet,ffscr,nroot,nopt,
