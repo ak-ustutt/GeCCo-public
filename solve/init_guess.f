@@ -50,11 +50,11 @@
 
       integer ::
      &     ifree, iopt, iroot, ntrials, nout,
-     &     idxlist(max(100,4*nroots)), nselect, iguess
+     &     idxlist(max(1000,4*nroots)), nselect, iguess
       logical ::
      &     trafo
       real(8) ::
-     &     xnrm, xretlast, xover, xlist(max(100,4*nroots))
+     &     xnrm, xretlast, xover, xlist(max(1000,4*nroots))
       type(me_list), pointer ::
      &     me_pnt
 
@@ -66,7 +66,7 @@
       real(8), external ::
      &     da_ddot
 
-      ntrials = max(100,4*nroots)
+      ntrials = max(1000,4*nroots)
       nout = depend%ntargets
       allocate(xret(nout))
 
@@ -126,8 +126,9 @@
               me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
               iroot = iroot - 1
             else 
-              if (abs(xret(idxselect(1))).lt.1d0-1d-12)
-     &            call warn('init_guess','guess vector not normalized')
+c              guess vector will be normalized later (see solve_evp)
+c              if (abs(xret(idxselect(1))).lt.1d0-1d-12)
+c     &            call warn('init_guess','guess vector not normalized')
                 
               if (iroot.gt.1) then
                 ! Due to symmetrization we might get same guess twice
@@ -154,20 +155,27 @@
             deallocate(idxselect)
           end if
 
-          ! project out spin contaminations?
-          if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
+          ! project out spin contaminations or other components?
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
+     &        opti_info%typ_prc(iopt).eq.optinf_prc_prj) then
             ifree = mem_setmark('init_guess.spin_proj')
             ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),'xbuf1')
             ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
-            call spin_project(me_trv(iopt)%mel,me_special(1)%mel,
-     &                        fl_spc(1),opti_info%nwfpar(iopt),
-     &                        xbuf1,xbuf2,.true.,xnrm,
-     &                        opti_info,orb_info,
-     &                        op_info,str_info,strmap_info)
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
+              call spin_project(me_trv(iopt)%mel,me_special(1)%mel,
+     &                          fl_spc(1),opti_info%nwfpar(iopt),
+     &                          xbuf1,xbuf2,.true.,xnrm,
+     &                          opti_info,orb_info,
+     &                          op_info,str_info,strmap_info)
+            else
+              call evaluate2(fl_spc(1),.false.,.false.,
+     &                       op_info,str_info,strmap_info,orb_info,
+     &                       xnrm,.false.)
+            end if
             ifree = mem_flushmark()
             if (xnrm.lt.1d-12) then
               if (iprlvl.ge.5) write(luout,*)
-     &           'Discarding guess vector with wrong spin symmetry.'
+     &           'Discarding guess vector due to projection.'
               me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
               iroot = iroot - 1
             end if

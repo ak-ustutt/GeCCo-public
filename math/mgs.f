@@ -7,7 +7,7 @@
 *     input:  smat(ndim,ndim) - overlap matrix of vectors <v_i|v_j>
 *     output: xmat(ndim,ndim) - orthogonalization matrix:
 *                               |w_i> = |v_j> x(j,i)
-*     scratch: xscr(ndim)
+*     scratch: xscr(2*ndim)   - both S*v and S^T*v needed if S asymm.
 *
 *     zero column vectors may be returned in case of linear dependency
 *
@@ -26,7 +26,7 @@
       real(8), intent(out) ::
      &     xmat(ndim,ndim)
       real(8), intent(inout) ::
-     &     xscr(ndim)
+     &     xscr(2*ndim)
 
       integer ::
      &     ii, jj
@@ -50,9 +50,11 @@
 
       ! loop over vectors
       do ii = 1, ndim
-        call dgemv('n',ndim,ndim,1d0,smat,ndim,xmat(1,ii),1,
+        call dgemv('t',ndim,ndim,1d0,smat,ndim,xmat(1,ii),1,
      &                 0d0,xscr,1)
-        xnorm = ddot(ndim,xmat(1,ii),1,xscr,1)
+        call dgemv('n',ndim,ndim,1d0,smat,ndim,xmat(1,ii),1,
+     &                 0d0,xscr(ndim+1),1)
+        xnorm = ddot(ndim,xmat(1,ii),1,xscr(ndim+1),1)
         if (xnorm.lt.epsilon(1d-6)) then
           xmat(1:ndim,ii) = 0d0
           cycle

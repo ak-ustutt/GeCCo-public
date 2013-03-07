@@ -462,7 +462,8 @@ c dbg
      &             op_info,str_info,strmap_info,orb_info)
 
               ! project out spin contaminations?
-              if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
+              if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
+     &            opti_info%typ_prc(iopt).eq.optinf_prc_prj) then
                 ifree = mem_setmark('solve_evp.spin_proj_res')
                 ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
      &                                 'xbuf1')
@@ -471,11 +472,17 @@ c dbg
                 ! assign op. with list containing the mvp vector
                 call assign_me_list(me_mvp(iopt)%mel%label,
      &                              me_opt(iopt)%mel%op%name,op_info)
-                call spin_project(me_mvp(iopt)%mel,me_special(1)%mel,
-     &                           fl_spc(1),opti_info%nwfpar(iopt),
-     &                           xbuf1,xbuf2,.false.,xnrm,
-     &                           opti_info,orb_info,
-     &                           op_info,str_info,strmap_info)
+                if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
+                  call spin_project(me_mvp(iopt)%mel,me_special(1)%mel,
+     &                             fl_spc(1),opti_info%nwfpar(iopt),
+     &                             xbuf1,xbuf2,.false.,xnrm,
+     &                             opti_info,orb_info,
+     &                             op_info,str_info,strmap_info)
+                else
+                  call evaluate2(fl_spc(1),.false.,.false.,
+     &                           op_info,str_info,strmap_info,orb_info,
+     &                           xnrm,.false.)
+                end if
                 ! reassign lists to correct ops
                 call assign_me_list(me_trv(iopt)%mel%label,
      &                              me_opt(iopt)%mel%op%name,op_info)
@@ -484,6 +491,15 @@ c dbg
                 ifree = mem_flushmark()
               end if
             end do
+
+            ! normalize initial trial vector?
+            if (iter.eq.1.and.init(1).and.
+     &          (opti_info%typ_prc(1).eq.optinf_prc_traf.or.
+     &           opti_info%typ_prc(1).eq.optinf_prc_prj))
+     &          call normalize_guess(ff_trv(1)%fhand,irectrv(irequest),
+     &                          ff_mvp,irecmvp(irequest),
+     &                          ff_met,irecmet(irequest),
+     &                          use_s,1,nopt,opti_info)
 
           end do
         end if

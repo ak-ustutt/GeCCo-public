@@ -42,6 +42,8 @@
      &     labels(20)
       character(len_command_par) ::
      &     parameters(3)
+      logical ::
+     &     skip
 
       if (iprlvl.gt.0) write(luout,*) 'setting icMRCI targets'
 
@@ -57,6 +59,7 @@
 
       call get_argument_value('method.MRCI','nroots',
      &     ival=nroots)
+      skip = (is_keyword_set('calculate.skip_E').gt.0)
 
       if (ntest.ge.100) then
         print *,'nroots  = ',nroots
@@ -900,7 +903,7 @@ c      end if
 *----------------------------------------------------------------------*
 
       ! Evaluate norm
-      call add_target('EVAL_NORM',ttype_gen,.true.,tgt_info)
+      call add_target('EVAL_NORM',ttype_gen,.not.skip,tgt_info)
       call set_dependency('EVAL_NORM','FOPT_NORM',tgt_info)
       call set_dependency('EVAL_NORM','SOLVE_ICCI',tgt_info)
       call set_rule('EVAL_NORM',ttype_opme,EVAL,
@@ -974,7 +977,7 @@ c dbgend
      &     parameters,2,tgt_info)
 
       ! Evaluate multireference energy
-      call add_target('EVAL_E(MR)',ttype_gen,.true.,tgt_info)
+      call add_target('EVAL_E(MR)',ttype_gen,.not.skip,tgt_info)
       call set_dependency('EVAL_E(MR)','SOLVE_ICCI',tgt_info)
       call set_dependency('EVAL_E(MR)','FOPT_E(MR)',tgt_info)
       if (gno.eq.1)

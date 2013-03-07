@@ -6,7 +6,8 @@
      &       optinf_prc_traf = 4,   ! via transformation to orth. basis 
      &       optinf_prc_norm = 5,   ! like usual, but normal. to 1
      &       optinf_prc_spinp = 6,  ! like 1, but with spin projection
-     &       optinf_prc_invH0 = 7   ! invert non-diagonal H0
+     &       optinf_prc_invH0 = 7,  ! invert non-diagonal H0
+     &       optinf_prc_prj = 8     ! apply (projection) formula
 
       ! input variables to control optimization
       type optimize_info

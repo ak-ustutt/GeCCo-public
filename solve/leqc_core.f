@@ -391,7 +391,7 @@ c        signsec => opti_info%signsec2(1:nsec)
           ndsec = ndsec + nsec_arr(iopt)
 
           select case(opti_info%typ_prc(iopt))
-          case(optinf_prc_file,optinf_prc_traf,optinf_prc_spinp)
+          case(optinf_prc_file,optinf_prc_traf)
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
               ffspc => me_special(2)%mel%fhand
               trafo = .true.
@@ -551,6 +551,7 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
         idstsec => opti_info%idstsec(1:nsec)
         signsec => opti_info%signsec(1:nsec)
         call optc_orthvec(nadd,.false.,
+     &                 ffssbsp,iord_ssbsp,sred,
      &                 ffvsbsp,
      &                 iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                 use_s,ioff_s,ffmet,ffscr,nnew,nopt,
