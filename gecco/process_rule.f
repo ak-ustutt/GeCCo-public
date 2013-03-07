@@ -1046,6 +1046,7 @@ c dbg
      &       ndim=nop)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('SHIFT',rule,tgt_info,val_rl8=fac(1))
+        call get_arg('THRES',rule,tgt_info,val_rl8=fac(2))
 
         if (form_test) return
 
@@ -1056,7 +1057,7 @@ c          if (rule%n_parameter_strings.eq.3) mode(5:8) = 'F+id'
 c          mode = 'dia-R12'
 
         call set_prc4op(label,mode,fac(1),
-     &       label_list,nop,
+     &       label_list,nop,fac(2),
      &       op_info,str_info,orb_info)
 
 *----------------------------------------------------------------------*

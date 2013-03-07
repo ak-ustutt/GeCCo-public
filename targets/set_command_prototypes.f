@@ -502,6 +502,8 @@
      &     val_str='dia-F',def=.true.)
       call set_arg('_PROTO_',PRECONDITIONER,'SHIFT',1,tgt_info,
      &     val_rl8=(/0d0/),def=.true.)
+      call set_arg('_PROTO_',PRECONDITIONER,'THRES',1,tgt_info,
+     &     val_rl8=(/-huge(1d1)/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(ADD,tgt_info)
       call set_arg('_PROTO_',ADD,'LIST_SUM',0,tgt_info,

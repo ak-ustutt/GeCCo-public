@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_prc4op(label_prc,mode_str,shift,
-     &                      label_inp,nlabel_inp,
+     &                      label_inp,nlabel_inp,prc_thres,
      &                      op_info,
      &                      str_info,orb_info)
 *----------------------------------------------------------------------*
@@ -32,7 +32,7 @@
      &     mode_str,
      &     label_prc, label_inp(nlabel_inp)
       real(8), intent(in) ::
-     &     shift
+     &     shift, prc_thres
       type(operator_info), intent(inout) ::
      &     op_info
       type(strinf), intent(in) ::
@@ -278,7 +278,7 @@ cmh      if (.not.use_b.and..not.use_x.and..not.use_h2) then
 cmh        call dia4op(me_prc,ecore,h1dia,str_info,orb_info)
       if (.not.use_b.and..not.use_x) then
         call dia4op_ev(me_prc,ecore,h1dia,h2dia,use_h2,
-     &                 d1dia,use_shift,shift,
+     &                 d1dia,use_shift,shift,prc_thres,
      &                 str_info,orb_info)
       else
         call dia4op_r12(me_prc,h1dia,b2dia,b2off,x2dia,x2off,use_x,
