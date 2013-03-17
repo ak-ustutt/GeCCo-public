@@ -3575,6 +3575,10 @@ c dbgend
      &       val_str='dia-Fshift')
         call set_arg(trim(dia_label),PRECONDITIONER,'SHIFT',1,tgt_info,
      &       val_rl8=(/prc_shift/))
+c dbg -test-
+        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
+     &       val_rl8=(/0.2d0/))
+c dbg
       else if (prc_type.ge.0) then
         call set_rule2(trim(dia_label),PRECONDITIONER,tgt_info)
         call set_arg(trim(dia_label),PRECONDITIONER,'LIST_PRC',1,
@@ -3583,6 +3587,10 @@ c dbgend
      &       tgt_info,val_label=(/'ME_FREF'/))
         call set_arg(trim(dia_label),PRECONDITIONER,'MODE',1,tgt_info,
      &       val_str='dia-F')
+c dbg -test-
+        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
+     &       val_rl8=(/0.2d0/))
+c dbg
       end if
 c dbg
 c      call form_parameters(-1,parameters,2,
