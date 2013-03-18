@@ -126,6 +126,12 @@ c dbgend
             iocc_trv => op_trv%ihpvca_occ(1:ngastp,1:2,iblk)
             iocc1 => op_mvp%ihpvca_occ(1:ngastp,1:2,iblk*2-1)
             iocc2 => op_mvp%ihpvca_occ(1:ngastp,1:2,iblk*2)
+c dbg
+c        print *, 'test'
+c        call wrt_occ(6,iocc1)
+c        call wrt_occ(6,iocc2)
+c        call wrt_occ(6,iocc_trv)
+c dbgend
             iocc_dag(1:ngastp,1) = iocc_trv(1:ngastp,2)
             iocc_dag(1:ngastp,2) = iocc_trv(1:ngastp,1)
             topo_trv = int8_pack(iocc_trv,ngastp*2,base)

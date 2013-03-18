@@ -460,6 +460,9 @@ c     &    me_op1op2%op%formal_blk(iblkop1op2)) then
         ! do nothing for formal block
         return
       end if
+
+      ! skip if result operator has zero length
+      if (lenop1op2.eq.0) return
         
 c      ! we accept that certain non-totally symmetric operator blocks
 c      ! may have zero length ...

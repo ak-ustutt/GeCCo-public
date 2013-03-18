@@ -60,7 +60,7 @@
       character(len=3) ::
      &     prc_mode_str
       real(8) ::
-     &     x_ansatz, prc_shift
+     &     x_ansatz, prc_shift, prc_min
 
       if (iprlvl.gt.0) write(luout,*) 'setting icMRCC targets'
 
@@ -81,6 +81,8 @@
      &     ival=prc_type)
       call get_argument_value('method.MR','prc_shift',
      &     xval=prc_shift)
+      call get_argument_value('method.MR','prc_min',
+     &     xval=prc_min)
       call get_argument_value('method.MR','svdonly',
      &     lval=svdonly)
       call get_argument_value('calculate.solve.non_linear','optref',
@@ -709,7 +711,7 @@ c     &     val_label=(/'H'/))
 c      does not work for higher excitations like this
 c      do ip = 2, maxp !only for blocks with at least two P lines
       do ip = 0, min(2,maxp)
-        do ih = 0, maxh
+        do ih = 0, min(2,maxh)
 c          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
 c            ! for perturbative triples we should not define HH
 c            if (trunc.and.iexc.gt.2) cycle
@@ -745,7 +747,7 @@ c          end do
 c      does not work for higher excitations like this
 c      do ip = 2, maxp !only for blocks with at least two P lines
       do ip = 0, min(min(2,maxp),h1bar_maxp-2)
-        do ih = 0, maxh
+        do ih = 0, min(2,maxh)
 c          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
 c            ! for perturbative triples we should not define PP
 c            if (trunc.and.iexc.gt.2) cycle
@@ -824,8 +826,8 @@ c     &     val_str=descr)
       if (orb_info%nactel.ge.6) 
      &       descr = trim(descr)//'|,VVV|VVV,|,VVVV|VVVV,|,VVVVV|VVVVV,' 
 c dbg
-      print *,'nactel: ',orb_info%nactel
-      print *,'descr = ',trim(descr)
+c      print *,'nactel: ',orb_info%nactel
+c      print *,'descr = ',trim(descr)
 c dbg
       call add_target2('INT_D',.false.,tgt_info)
       call set_rule2('INT_D',DEF_OP_FROM_OCC,tgt_info)
@@ -2351,7 +2353,6 @@ c dbgend
       call add_target2('F_PPint',.false.,tgt_info)
       call set_dependency('F_PPint','F_prePPint',tgt_info)
       call set_dependency('F_PPint','INT_PP',tgt_info)
-      call set_dependency('F_PPint','F_OMG',tgt_info)
       call set_rule2('F_PPint',DERIVATIVE,tgt_info)
       call set_arg('F_PPint',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_PPint'/))
@@ -2413,7 +2414,6 @@ c dbgend
       call add_target2('F_PP0int',.false.,tgt_info)
       call set_dependency('F_PP0int','F_prePP0int',tgt_info)
       call set_dependency('F_PP0int','INT_PP0',tgt_info)
-      call set_dependency('F_PP0int','F_OMG',tgt_info)
       call set_rule2('F_PP0int',DERIVATIVE,tgt_info)
       call set_arg('F_PP0int',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_PP0int'/))
@@ -2557,7 +2557,6 @@ c dbgend
       call add_target2('F_HHint',.false.,tgt_info)
       call set_dependency('F_HHint','F_preHHint',tgt_info)
       call set_dependency('F_HHint','INT_HH',tgt_info)
-      call set_dependency('F_HHint','F_OMG',tgt_info)
       call set_rule2('F_HHint',DERIVATIVE,tgt_info)
       call set_arg('F_HHint',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_HHint'/))
@@ -3281,16 +3280,16 @@ c dbg
           labels(ndef) = 'F_HHint'
         end if
 c dbg
-        call set_dependency('FOPT_OMG','F_INT_HT2',tgt_info)
-        call set_dependency('FOPT_OMG','DEF_ME_INT_HT2',tgt_info)
+!        call set_dependency('FOPT_OMG','F_INT_HT2',tgt_info)
+!        call set_dependency('FOPT_OMG','DEF_ME_INT_HT2',tgt_info)
 !        call set_dependency('FOPT_OMG','F_INT_T2H',tgt_info)
 !        call set_dependency('FOPT_OMG','DEF_ME_INT_T2H',tgt_info)
-        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
-        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
-        labels(ndef+1) = 'F_INT_HT2'
+!        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
+!        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
+c        labels(ndef+1) = 'F_INT_HT2'
 c        labels(ndef+2) = 'F_INT_T2H' 
-        labels(ndef+2) = 'F_INT_D'
-        ndef = ndef + 2!3
+!        labels(ndef+1) = 'F_INT_D'
+!        ndef = ndef + 1!3
 c dbg
         call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',ndef,tgt_info,
      &               val_label=labels(1:ndef))
@@ -3550,7 +3549,8 @@ c dbgend
       if (tfix.gt.0) then
         call set_dependency('FOPT_Ecorrected','DEF_ME_Tfix',tgt_info)
         inquire(file='ME_Tfix_list.da',exist=l_exist)
-        if (.not.l_exist) call quit(1,'set_ic_mrcc_targets',
+        if (.not.l_exist.and..not.svdonly)
+     &           call quit(1,'set_ic_mrcc_targets',
      &           'File for fixed T amplitudes not found!')
       end if
       call set_rule2('FOPT_Ecorrected',OPTIMIZE,tgt_info)
@@ -3616,6 +3616,10 @@ c dbgend
      &       val_str='dia-Fshift')
         call set_arg(trim(dia_label),PRECONDITIONER,'SHIFT',1,tgt_info,
      &       val_rl8=(/prc_shift/))
+c dbg -test-
+        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
+     &       val_rl8=(/0.2d0/))
+c dbg
       else if (prc_type.ge.0) then
         call set_rule2(trim(dia_label),PRECONDITIONER,tgt_info)
         call set_arg(trim(dia_label),PRECONDITIONER,'LIST_PRC',1,
@@ -3624,6 +3628,10 @@ c dbgend
      &       tgt_info,val_label=(/'ME_FREF'/))
         call set_arg(trim(dia_label),PRECONDITIONER,'MODE',1,tgt_info,
      &       val_str='dia-F')
+c dbg -test-
+        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
+     &       val_rl8=(/0.2d0/))
+c dbg
       end if
 c dbg
 c      call form_parameters(-1,parameters,2,
@@ -4078,6 +4086,17 @@ c dbgend
       if (prc_type.ge.3)
      &  call set_arg('EVAL_Atr',EXTRACT_DIAG,'EXTEND',1,tgt_info,
      &               val_log=(/.true./))
+      if (prc_min.gt.0d0) then ! constrain prec. by a minimum value
+        call set_rule2('EVAL_Atr',SCALE_COPY,tgt_info)
+        call set_arg('EVAL_Atr',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &               val_label=(/trim(dia_label)/))
+        call set_arg('EVAL_Atr',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &               val_label=(/trim(dia_label)/))
+        call set_arg('EVAL_Atr',SCALE_COPY,'FAC',1,tgt_info,
+     &               val_rl8=(/prc_min/))
+        call set_arg('EVAL_Atr',SCALE_COPY,'MODE',1,tgt_info,
+     &               val_str='atleast')
+      end if
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Preconditioner (b) :',0,'LIST')
@@ -4393,7 +4412,7 @@ c dbgend
      &       val_str='DIA')
         call set_arg('SOLVE_MRCC',SOLVEEVP,'N_ROOTS',1,tgt_info,
      &       val_int=(/maxroot/))
-        call set_arg('SOLVE_MRCC',SOLVEEVP,'TARG_ROOTS',1,tgt_info,
+        call set_arg('SOLVE_MRCC',SOLVEEVP,'TARG_ROOT',1,tgt_info,
      &       val_int=(/ciroot/))
         call set_arg('SOLVE_MRCC',SOLVEEVP,'OP_MVP',1,tgt_info,
      &       val_label=(/'A_C0'/))
@@ -4525,7 +4544,8 @@ c dbgend
         case(3)
           call set_dependency('EVAL_PERT_CORR','EVAL_Atr',tgt_info)
         case default
-          call quit(1,'set_ic_mrcc_targets',
+          if (.not.svdonly.and.tfix.gt.0)
+     &         call quit(1,'set_ic_mrcc_targets',
      &         'Non-iterative higher-order corr. should use prc_type=3')
         end select
         ! (a) evaluate residual

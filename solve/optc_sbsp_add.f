@@ -22,7 +22,7 @@
       logical, intent(in) ::
      &     divide
       integer, intent(inout) ::
-     &     ndim_sbsp,iord_sbsp
+     &     ndim_sbsp,iord_sbsp(mxdim_sbsp)
       integer, intent(in) ::
      &     mxdim_sbsp,irec,
      &     nincore, nwfpar, lenbuf

@@ -351,6 +351,12 @@
      &     val_str='stdout',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(KEEP_TERMS,tgt_info)
+      call set_arg('_PROTO_',KEEP_TERMS,'LABEL_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',KEEP_TERMS,'LABEL_IN',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',KEEP_TERMS,'TERMS',1,tgt_info,
+     &     val_int=(/-1/),req=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_TERMS,tgt_info)
       call set_arg('_PROTO_',SELECT_TERMS,'OP_INCL',0,tgt_info,
@@ -367,8 +373,14 @@
      &     val_int=(/-1/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SELECT_SPECIAL,tgt_info)
+      call set_arg('_PROTO_',SELECT_SPECIAL,'LABEL_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SELECT_SPECIAL,'LABEL_IN',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',SELECT_SPECIAL,'OPERATORS',0,tgt_info,
      &     val_label=(/''/),def=.true.)
+      call set_arg('_PROTO_',SELECT_SPECIAL,'TYPE',0,tgt_info,
+     &     val_str='',req=.true.)
       call set_arg('_PROTO_',SELECT_SPECIAL,'MODE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
@@ -423,6 +435,16 @@
      &     val_int=(/0/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(INSERT,tgt_info)
+      call set_arg('_PROTO_',INSERT,'LABEL_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',INSERT,'LABEL_IN',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',INSERT,'OP_INS',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',INSERT,'OP_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',INSERT,'OP_INCL',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',INSERT,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
@@ -494,6 +516,8 @@
      &     val_str='dia-F',def=.true.)
       call set_arg('_PROTO_',PRECONDITIONER,'SHIFT',1,tgt_info,
      &     val_rl8=(/0d0/),def=.true.)
+      call set_arg('_PROTO_',PRECONDITIONER,'THRES',1,tgt_info,
+     &     val_rl8=(/-huge(1d1)/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(ADD,tgt_info)
       call set_arg('_PROTO_',ADD,'LIST_SUM',0,tgt_info,
@@ -616,6 +640,8 @@
      &     val_int=(/-1/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(UNITY,tgt_info)
+      call set_arg('_PROTO_',UNITY,'LIST',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',UNITY,'FAC',1,tgt_info,
      &     val_rl8=(/1d0/),def=.true.)
       call set_arg('_PROTO_',UNITY,'INIT',1,tgt_info,

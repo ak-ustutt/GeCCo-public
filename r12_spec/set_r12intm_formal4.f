@@ -741,7 +741,7 @@ c dbg
       ! replace f and g by their actual operator
       if (def_fhh.or.def_fpp.or.def_fp3f) then
         op   => op_info%op_arr(idx_h)%op
-        call form_op_replace(opdum_f,op%name,.true.,flist_scr,op_info)
+        call form_op_replace(opdum_f,op%name,.false.,flist_scr,op_info)
       end if
       if (def_g.or.def_gppph.or.def_gpx) then
         op   => op_info%op_arr(idx_h)%op

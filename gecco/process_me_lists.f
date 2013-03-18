@@ -160,7 +160,7 @@ c dbg
         end if
 
         call set_prc4op(rule%labels(1),mode,0d0,
-     &       rule%labels(2:),rule%n_labels-1,
+     &       rule%labels(2:),rule%n_labels-1,-huge(1.d1),
      &       op_info,str_info,orb_info)
 
       case(EVAL)

@@ -97,8 +97,8 @@
       end if
 
       same = idx_res.eq.idx_inp
-      if (same) call quit(1,'scale_copy_op',
-     &       'copy means to have a second list...')
+c      if (same) call quit(1,'scale_copy_op',
+c     &       'copy means to have a second list...')
 
       ! Point to the relevant operators and their associated files.
       me_res => op_info%mel_arr(idx_res)%mel
@@ -223,6 +223,13 @@
             call diavc(buffer,buf_in,
      &           signsec(isec)*fac(1),buffer,
      &           0d0,idxnd_src-idxst_src+1)
+          case('atleast')
+            ! elements should be at least the given number(s)
+            do idx = 1, idxnd_src-idxst_src+1
+              buffer(idx) = max(buffer(idx),fac(ifac))
+              ifac = ifac + 1
+              if (ifac.gt.nfac) ifac = 1
+            end do
           case default
             ! apply scaling factors (periodically)
             do idx = 1, idxnd_src-idxst_src+1

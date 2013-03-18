@@ -310,24 +310,22 @@ c     &       ff_trv,ff_h_trv,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 
-        if (imacit.gt.1) then
-          if (nopt.eq.1)
-     &       write(luout,'(">>>",i3,f24.12,x,g10.4)')
-     &       imacit-1,energy,xresnrm(1)
-          if (nopt.eq.2)
-     &       write(luout,'(">>>",i3,f24.12,2(x,g10.4))')
-     &       imacit-1,energy,xresnrm(1:2)
-          if (nopt.eq.3)
-     &       write(luout,'(">>>",i3,f24.12,3(x,g10.4))')
-     &       imacit-1,energy,xresnrm(1:3)
-          if (.not.conv.and.task.ge.8) then
-            write(luout,'(">>> NOT CONVERGED! <<<")')
-            exit opt_loop
-          else if (task.ge.8) then
-            write(luout,'(">>> final energy:",f24.12," <<<")')
-     &       energy
-             exit opt_loop
-          end if
+        if (nopt.eq.1.and.imacit.gt.1)
+     &     write(luout,'(">>>",i3,f24.12,x,g10.4)')
+     &     imacit-1,energy,xresnrm(1)
+        if (nopt.eq.2.and.imacit.gt.1)
+     &     write(luout,'(">>>",i3,f24.12,2(x,g10.4))')
+     &     imacit-1,energy,xresnrm(1:2)
+        if (nopt.eq.3.and.imacit.gt.1)
+     &     write(luout,'(">>>",i3,f24.12,3(x,g10.4))')
+     &     imacit-1,energy,xresnrm(1:3)
+        if (.not.conv.and.task.ge.8) then
+          write(luout,'(">>> NOT CONVERGED! <<<")')
+          exit opt_loop
+        else if (task.ge.8) then
+          write(luout,'(">>> final energy:",f24.12," <<<")')
+     &     energy
+           exit opt_loop
         end if
 
         ! quick and dirty (for experimental use):

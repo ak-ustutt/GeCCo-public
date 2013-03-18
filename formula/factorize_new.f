@@ -49,6 +49,9 @@
       type(filinf) ::
      &     ffstat
 
+      logical, external ::
+     &     check_contr4zeroop
+
       real(8), external ::
      &     scale_rank
 
@@ -86,15 +89,16 @@
      &         call warn('factorize_new','max_stat exceeded')
           istat = min(iterm,max_stat)
 
-          call form_fact_new(fl_fact_ptr,fl_ptr%contr,
+          if (.not.check_contr4zeroop(fl_ptr%contr,op_info)) then 
+           call form_fact_new(fl_fact_ptr,fl_ptr%contr,
      &       op_info,str_info,orb_info,
      &       iscale_stat(1,1,istat),time_stat(istat),mem_stat(istat),
      &       iitem)
-          scale_stat(istat) = scale_rank(iscale_stat(1,1,istat))
+           scale_stat(istat) = scale_rank(iscale_stat(1,1,istat))
 
-          if (iprlvl.ge.3) then
-           ! binning
-           if (any(iscale_stat(1:4,1,istat)-binmx(1:4).gt.0)) then
+           if (iprlvl.ge.3) then
+            ! binning
+            if (any(iscale_stat(1:4,1,istat)-binmx(1:4).gt.0)) then
              ! resize binning matrix
              do ibin1 = 1, 4
               binmxtmp(ibin1) = 
@@ -110,12 +114,13 @@
              binmx = binmxtmp
              binning => tmp
              tmp => null()
-           end if
-           binning(iscale_stat(1,1,istat)+1,iscale_stat(2,1,istat)+1,
+            end if
+            binning(iscale_stat(1,1,istat)+1,iscale_stat(2,1,istat)+1,
      &             iscale_stat(3,1,istat)+1,iscale_stat(4,1,istat)+1) =
      &        binning(iscale_stat(1,1,istat)+1,iscale_stat(2,1,istat)+1,
      &             iscale_stat(3,1,istat)+1,iscale_stat(4,1,istat)+1)+1
 
+           end if
           end if
 
           ! advance fl_fact_ptr

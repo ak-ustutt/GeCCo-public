@@ -52,6 +52,7 @@
       ! get number of particles created/annihilated
       pcr1 = rank_occ('C-A',occ_blk1,nj1)
       pcr2 = rank_occ('C-A',occ_blk2,nj2)
+      if(dag2) pcr2=-pcr2
 
       idxblk1 = (iblk1-1)*nj1+1
 

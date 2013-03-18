@@ -50,17 +50,27 @@
       logical ::
      &     even1, even2
 
-      n1 = sum(arc1%occ_cnt(1:ngastp,1:2))
-      n2 = sum(arc2%occ_cnt(1:ngastp,1:2))
+c      n1 = sum(arc1%occ_cnt(1:ngastp,1:2))
+c      n2 = sum(arc2%occ_cnt(1:ngastp,1:2))
+c
+c      even1 = mod(n1,2).eq.0
+c      even2 = mod(n2,2).eq.0
+c
+c      correct_arc_seq = even1.or..not.even2
+c
+c      if (.not.correct_arc_seq.or.even1.neqv.even2) return
+c
+c      correct_arc_seq = n1.ge.n2
+c
+      n1=arc1%link(1)
+      n2=arc2%link(1)
 
-      even1 = mod(n1,2).eq.0
-      even2 = mod(n2,2).eq.0
-
-      correct_arc_seq = even1.or..not.even2
-
-      if (.not.correct_arc_seq.or.even1.neqv.even2) return
-
-      correct_arc_seq = n1.ge.n2
+      correct_arc_seq = n1.eq.1.or.n2.gt.1
+      if (n1.ne.1.and.n2.ne.1.or.n1.eq.1.and.n2.eq.1) then
+        n1=arc1%link(2)
+        n2=arc2%link(2)
+        correct_arc_seq = n1.ge.n2
+      end if
 
       return
 

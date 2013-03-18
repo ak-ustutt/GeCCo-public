@@ -117,7 +117,8 @@ c     &     call get_argument_value('calculate.solve.non_linear',
 c     &     'maxiter',ival=maxit)
 c      trunc = ntrunc.ge.0
 c      solve = .not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
-      solve = .not.svdonly
+      skip = (is_keyword_set('calculate.skip_E').gt.0)
+      solve = .not.svdonly.and..not.skip
       if (h1bar) call quit(1,'set_ic_mrcc_f12_targets',
      &                     'H1bar not available yet')
       if (optref.ne.0.and.optref.ne.-3)
@@ -354,76 +355,140 @@ c dbgend
      &       val_str='MRCC-R12 Lagrangian for pert. eval.')
       end if
 
-      ! precursor for combining P^4 contractions into one step
-      call add_target2('F_preP4int_F12',.false.,tgt_info)
-      call set_dependency('F_preP4int_F12','F_OMG',tgt_info)
-      call set_dependency('F_preP4int_F12','H_P4',tgt_info)
-      call set_rule2('F_preP4int_F12',REPLACE,tgt_info)
-      call set_arg('F_preP4int_F12',REPLACE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_preP4int_F12'/))
-      call set_arg('F_preP4int_F12',REPLACE,'LABEL_IN',1,tgt_info,
+      ! precursor for combining selected PP contractions into one step
+      call add_target2('F_prePPint_F12',.false.,tgt_info)
+      call set_dependency('F_prePPint_F12','F_OMG_F12',tgt_info)
+      call set_dependency('F_prePPint_F12','H_PP',tgt_info)
+      call set_rule2('F_prePPint_F12',REPLACE,tgt_info)
+      call set_arg('F_prePPint_F12',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_prePPint_F12'/))
+      call set_arg('F_prePPint_F12',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_OMG_F12'/))
-c      if (h1bar.and.h1bar_maxp.ge.4) then
-c        call set_arg('F_preP4int_F12',REPLACE,'OP_LIST',2,tgt_info,
-c     &       val_label=(/'H1bar','H_P4'/))
+c      if (h1bar) then
+c        call set_arg('F_prePPint_F12',REPLACE,'OP_LIST',2,tgt_info,
+c     &       val_label=(/'H1bar','H_PP '/))
 c      else
-        call set_arg('F_preP4int_F12',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'H   ','H_P4'/))
+        call set_arg('F_prePPint_F12',REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/'H   ','H_PP'/))
 c      end if
-      call set_rule2('F_preP4int_F12',INVARIANT,tgt_info)
-      call set_arg('F_preP4int_F12',INVARIANT,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_preP4int_F12'/))
-      call set_arg('F_preP4int_F12',INVARIANT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_preP4int_F12'/))
-      call set_arg('F_preP4int_F12',INVARIANT,'OP_RES',1,tgt_info,
+      call set_rule2('F_prePPint_F12',INVARIANT,tgt_info)
+      call set_arg('F_prePPint_F12',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_prePPint_F12'/))
+      call set_arg('F_prePPint_F12',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_prePPint_F12'/))
+      call set_arg('F_prePPint_F12',INVARIANT,'OP_RES',1,tgt_info,
      &     val_label=(/'OMG'/))
-c      if (h1bar.and.h1bar_maxp.ge.4) then
-c        call set_arg('F_preP4int_F12',INVARIANT,'OPERATORS',1,tgt_info,
-c     &       val_label=(/'H1bar'/))
+c      if (h1bar) then
+c        call set_arg('F_prePPint_F12',INVARIANT,'OPERATORS',2,tgt_info,
+c     &       val_label=(/'H1bar','H    '/))
 c      else
-        call set_arg('F_preP4int_F12',INVARIANT,'OPERATORS',1,tgt_info,
+        call set_arg('F_prePPint_F12',INVARIANT,'OPERATORS',1,tgt_info,
      &       val_label=(/'H'/))
 c      end if
-      call set_arg('F_preP4int_F12',INVARIANT,'TITLE',1,tgt_info,
-     &     val_str='Precursor for INT_P4')
+      call set_arg('F_prePPint_F12',INVARIANT,'TITLE',1,tgt_info,
+     &     val_str='Precursor for INT_PP')
+
 c dbg
-c      call set_rule2('F_preP4int_F12',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_preP4int_F12',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_preP4int_F12'/))
+c      call set_rule2('F_prePPint_F12',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_prePPint_F12',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_prePPint_F12'/))
 c dbgend
 
-      call add_target2('F_P4int_F12',.false.,tgt_info)
-      call set_dependency('F_P4int_F12','F_preP4int_F12',tgt_info)
-      call set_dependency('F_P4int_F12','INT_P4',tgt_info)
-      call set_dependency('F_P4int_F12','F_OMG_F12',tgt_info)
-      call set_rule2('F_P4int_F12',DERIVATIVE,tgt_info)
-      call set_arg('F_P4int_F12',DERIVATIVE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_P4int_F12'/))
-      call set_arg('F_P4int_F12',DERIVATIVE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_preP4int_F12'/))
-      call set_arg('F_P4int_F12',DERIVATIVE,'OP_RES',1,tgt_info,
-     &     val_label=(/'INT_P4'/))
-      call set_arg('F_P4int_F12',DERIVATIVE,'OP_DERIV',1,tgt_info,
-     &     val_label=(/'H_P4'/))
+      call add_target2('F_PPint_F12',.false.,tgt_info)
+      call set_dependency('F_PPint_F12','F_prePPint_F12',tgt_info)
+      call set_dependency('F_PPint_F12','INT_PP',tgt_info)
+      call set_rule2('F_PPint_F12',DERIVATIVE,tgt_info)
+      call set_arg('F_PPint_F12',DERIVATIVE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_PPint_F12'/))
+      call set_arg('F_PPint_F12',DERIVATIVE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_prePPint_F12'/))
+      call set_arg('F_PPint_F12',DERIVATIVE,'OP_RES',1,tgt_info,
+     &     val_label=(/'INT_PP'/))
+      call set_arg('F_PPint_F12',DERIVATIVE,'OP_DERIV',1,tgt_info,
+     &     val_label=(/'H_PP'/))
+      call set_rule2('F_PPint_F12',INVARIANT,tgt_info)
+      call set_arg('F_PPint_F12',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_PPint_F12'/))
+      call set_arg('F_PPint_F12',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_PPint_F12'/))
+      call set_arg('F_PPint_F12',INVARIANT,'OP_RES',1,tgt_info,
+     &     val_label=(/'INT_PP'/))
+      call set_arg('F_PPint_F12',INVARIANT,'OPERATORS',0,tgt_info,
+     &     val_label=(/'-'/))
+      call set_arg('F_PPint_F12',INVARIANT,'REORDER',1,tgt_info,
+     &     val_log=(/.true./))
 c dbg
-c      call set_rule2('F_P4int_F12',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_P4int_F12',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_P4int_F12'/))
-c dbgend
-      ! now factor out from Residual equation
-      call set_rule2('F_P4int_F12',FACTOR_OUT,tgt_info)
-      call set_arg('F_P4int_F12',FACTOR_OUT,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_OMG_F12'/))
-      call set_arg('F_P4int_F12',FACTOR_OUT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_OMG_F12'/))
-      call set_arg('F_P4int_F12',FACTOR_OUT,'INTERM',1,tgt_info,
-     &     val_label=(/'F_P4int_F12'/))
-c dbg
-c      call set_rule2('F_P4int_F12',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_P4int_F12',PRINT_FORMULA,'LABEL',1,tgt_info,
+c      call set_rule2('F_PPint_F12',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_PPint_F12',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_OMG_F12'/))
 c dbgend
 
+      ! precursor for combining selected HH contractions into one step
+      call add_target2('F_preHHint_F12',.false.,tgt_info)
+      call set_dependency('F_preHHint_F12','F_OMG_F12',tgt_info)
+      call set_dependency('F_preHHint_F12','H_HH',tgt_info)
+      call set_rule2('F_preHHint_F12',REPLACE,tgt_info)
+      call set_arg('F_preHHint_F12',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_preHHint_F12'/))
+      call set_arg('F_preHHint_F12',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_OMG_F12'/))
+c      if (h1bar) then
+c        call set_arg('F_preHHint_F12',REPLACE,'OP_LIST',2,tgt_info,
+c     &       val_label=(/'H1bar','H_HH '/))
+c      else 
+        call set_arg('F_preHHint_F12',REPLACE,'OP_LIST',2,tgt_info,
+     &       val_label=(/'H   ','H_HH'/))
+c      end if
+      call set_rule2('F_preHHint_F12',INVARIANT,tgt_info)
+      call set_arg('F_preHHint_F12',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_preHHint_F12'/))
+      call set_arg('F_preHHint_F12',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_preHHint_F12'/))
+      call set_arg('F_preHHint_F12',INVARIANT,'OP_RES',1,tgt_info,
+     &     val_label=(/'OMG'/))
+c      if (h1bar) then
+c        call set_arg('F_preHHint_F12',INVARIANT,'OPERATORS',2,tgt_info,
+c     &       val_label=(/'H    ','H1bar'/))
+c      else 
+        call set_arg('F_preHHint_F12',INVARIANT,'OPERATORS',1,tgt_info,
+     &       val_label=(/'H'/))
+c      end if
+      call set_arg('F_preHHint_F12',INVARIANT,'TITLE',1,tgt_info,
+     &     val_str='Precursor for INT_HH')
+c dbg
+c      call set_rule2('F_preHHint_F12',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_preHHint_F12',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_preHHint_F12'/))
+c dbgend   
+     
+      call add_target2('F_HHint_F12',.false.,tgt_info)
+      call set_dependency('F_HHint_F12','F_preHHint_F12',tgt_info)
+      call set_dependency('F_HHint_F12','INT_HH',tgt_info)
+      call set_rule2('F_HHint_F12',DERIVATIVE,tgt_info)
+      call set_arg('F_HHint_F12',DERIVATIVE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_HHint_F12'/))
+      call set_arg('F_HHint_F12',DERIVATIVE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_preHHint_F12'/))
+      call set_arg('F_HHint_F12',DERIVATIVE,'OP_RES',1,tgt_info,
+     &     val_label=(/'INT_HH'/))
+      call set_arg('F_HHint_F12',DERIVATIVE,'OP_DERIV',1,tgt_info,
+     &     val_label=(/'H_HH'/))
+      call set_rule2('F_HHint_F12',INVARIANT,tgt_info)
+      call set_arg('F_HHint_F12',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_HHint_F12'/))
+      call set_arg('F_HHint_F12',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_HHint_F12'/))
+      call set_arg('F_HHint_F12',INVARIANT,'OP_RES',1,tgt_info,
+     &     val_label=(/'INT_HH'/))
+      call set_arg('F_HHint_F12',INVARIANT,'OPERATORS',0,tgt_info,
+     &     val_label=(/'-'/))
+      call set_arg('F_HHint_F12',INVARIANT,'REORDER',1,tgt_info,
+     &     val_log=(/.true./))
+c dbg
+c      call set_rule2('F_HHint_F12',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_HHint_F12',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_HHint_F12'/))
+c dbgend
 
       ! Lagrangian without Lambda...
       call add_target2('F_E_F12_C0',.false.,tgt_info)
@@ -627,8 +692,53 @@ c dbg
       call set_rule2('F_MRCC_F12_E',PRINT_FORMULA,tgt_info)
       call set_arg('F_MRCC_F12_E',PRINT_FORMULA,'LABEL',1,tgt_info,
      &     val_label=(/'F_MRCC_F12_E'/))
-c dbgend
+c group the energy equation for different density matrices
+      call add_target2('F_1',.false.,tgt_info)
+      call set_dependency('F_1','C0',tgt_info)
+      call set_dependency('F_1','1scal',tgt_info)
+      call set_rule2('F_1',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_1',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_1'/))
+      call set_arg('F_1',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'1scal'/))
+      call set_arg('F_1',EXPAND_OP_PRODUCT,'OPERATORS',2,
+     &     tgt_info,
+     &     val_label=(/'C0^+','C0  '/))
+      call set_arg('F_1',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
+     &     val_int=(/1,2/))
 
+      call add_target2('FORM_E_F12',.false.,tgt_info)
+      call set_dependency('FORM_E_F12','F_MRCC_F12_E',tgt_info)
+c      call set_dependency('FORM_E_F12','F_DENS0',tgt_info)
+      call set_dependency('FORM_E_F12','F_1',tgt_info)
+      call set_rule2('FORM_E_F12',INVARIANT,tgt_info)
+      call set_arg('FORM_E_F12',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'FORM_E_F12'/))
+      call set_arg('FORM_E_F12',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_MRCC_F12_E'/))
+      call set_arg('FORM_E_F12',INVARIANT,'OP_RES',1,tgt_info,
+     &     val_label=(/'E(MR)'/))
+        call set_arg('FORM_E_F12',INVARIANT,'OPERATORS',1,tgt_info,
+     &       val_label=(/'H'/))
+      call set_arg('FORM_E_F12',INVARIANT,'TITLE',1,tgt_info,
+     &     val_str='F12 energy expression')
+      call set_rule2('FORM_E_F12',FACTOR_OUT,tgt_info)
+      call set_arg('FORM_E_F12',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'FORM_E_F12'/))
+      call set_arg('FORM_E_F12',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'FORM_E_F12'/))
+      call set_arg('FORM_E_F12',FACTOR_OUT,'INTERM',1,tgt_info,
+     &     val_label=(/'F_1    '/))
+
+      call set_rule2('FORM_E_F12',PRINT_FORMULA,tgt_info)
+      call set_arg('FORM_E_F12',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'FORM_E_F12'/))
+      call set_rule2('FORM_E_F12',TEX_FORMULA,tgt_info)
+      call set_arg('FORM_E_F12',TEX_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'FORM_E_F12'/))
+      call set_arg('FORM_E_F12',TEX_FORMULA,'OUTPUT',1,tgt_info,
+     &     val_str='formula.tex')
+c dbgend
 
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
@@ -644,11 +754,6 @@ c dbgend
       call set_dependency('FOPT_OMG_F12','F_MRCC_F12_E',tgt_info)
       call set_dependency('FOPT_OMG_F12','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_OMG_F12','DEF_ME_T',tgt_info)
-c      if (maxp.ge.2.and.tfix.eq.0) then
-      if (maxp.ge.2) then
-        call set_dependency('FOPT_OMG_F12','F_P4int_F12',tgt_info)
-        call set_dependency('FOPT_OMG_F12','DEF_ME_INT_P4',tgt_info)
-      end if
       call set_dependency('FOPT_OMG_F12','DEF_ME_OMG',tgt_info)
       call set_dependency('FOPT_OMG_F12','DEF_ME_E(MR)',tgt_info)
       call set_dependency('FOPT_OMG_F12',mel_ham,tgt_info)
@@ -667,13 +772,47 @@ c     &    call set_dependency('FOPT_OMG','DEF_ME_Tfix',tgt_info)
       call set_rule2('FOPT_OMG_F12',OPTIMIZE,tgt_info)
       call set_arg('FOPT_OMG_F12',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_OMG_F12'/))
+c      if ((maxp.ge.2.or.maxh.ge.2).and.tfix.eq.0) then
+      if (maxp.ge.2.or.maxh.ge.2) then
+        labels(1:20)(1:len_target_name) = ' '
+        ndef = 0
+c        if (maxp.ge.2.and.h1bar_maxp.lt.4) then
+c          call set_dependency('FOPT_OMG_F12','F_PP0int_F12',tgt_info)
+c          call set_dependency('FOPT_OMG_F12','DEF_ME_INT_PP0',tgt_info)
+c          ndef = ndef + 1
+c          labels(ndef) = 'F_PP0int'
+c        end if
+c        if (maxp.ge.2.and.(maxh.gt.0.or.h1bar_maxp.gt.2)) then
+        if (maxp.ge.2.and.maxh.gt.0) then
+          call set_dependency('FOPT_OMG_F12','F_PPint_F12',tgt_info)
+          call set_dependency('FOPT_OMG_F12','DEF_ME_INT_PP',tgt_info)
+          ndef = ndef + 1
+          labels(ndef) = 'F_PPint_F12'
+        end if
+        if (maxh.ge.2) then
+          call set_dependency('FOPT_OMG_F12','F_HHint_F12',tgt_info)
+          call set_dependency('FOPT_OMG_F12','DEF_ME_INT_HH',tgt_info)
+          ndef = ndef + 1
+          labels(ndef) = 'F_HHint_F12'
+        end if
+c dbg
+!        call set_dependency('FOPT_OMG','F_INT_HT2',tgt_info)
+!        call set_dependency('FOPT_OMG','DEF_ME_INT_HT2',tgt_info)
+!        call set_dependency('FOPT_OMG','F_INT_T2H',tgt_info)
+!        call set_dependency('FOPT_OMG','DEF_ME_INT_T2H',tgt_info)
+!        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
+!        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
+c        labels(ndef+1) = 'F_INT_HT2'
+c        labels(ndef+2) = 'F_INT_T2H' 
+!        labels(ndef+1) = 'F_INT_D'
+!        ndef = ndef + 1!3
+c dbg
+        call set_arg('FOPT_OMG_F12',OPTIMIZE,'INTERM',ndef,tgt_info,
+     &               val_label=labels(1:ndef))
+      end if
       labels(1:20)(1:len_target_name) = ' '
       ndef = 0
 c      if (maxp.ge.2.and.tfix.eq.0) then
-      if (maxp.ge.2) then
-        labels(ndef+1) = 'F_P4int_F12'
-        ndef = ndef + 1
-      end if
 c      if (h1bar) then
 c        call set_dependency('FOPT_OMG','F_H1bar',tgt_info)
 c        call set_dependency('FOPT_OMG','DEF_ME_H1bar',tgt_info)

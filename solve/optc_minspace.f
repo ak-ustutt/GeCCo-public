@@ -44,7 +44,7 @@
      &     xnrm
       real(8) ::
      &     smat(nroot,nroot), mscr(nred*nroot), vorth(nred*nroot),
-     &     vscr(nroot)
+     &     vscr(2*nroot)
 
       real(8), external ::
      &     dnrm2

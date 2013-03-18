@@ -35,7 +35,7 @@
      &     call quit(1,'init_me_list',
      &     'no operator referenced by ME-list "'//trim(mel%label)//'"')
 
-      if (mel%op%n_occ_cls.le.0.or.mel%op%n_occ_cls.ge.1000) then
+      if (mel%op%n_occ_cls.lt.0.or.mel%op%n_occ_cls.ge.1000) then
         write(luout,*) 'n_occ_cls = ',mel%op%n_occ_cls
         call quit(1,'init_me_list',
      &              'suspicious number of blocks (bug?)')

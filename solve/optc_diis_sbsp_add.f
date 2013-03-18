@@ -47,7 +47,8 @@
       type(filinf), intent(in) ::
      &     ff_rsbsp,ff_vsbsp
       integer, intent(inout) ::
-     &     ndim_rsbsp,ndim_vsbsp,iord_vsbsp,iord_rsbsp
+     &     ndim_rsbsp,ndim_vsbsp,
+     &     iord_vsbsp(mxdim_sbsp),iord_rsbsp(mxdim_sbsp)
       integer, intent(in) ::
      &     mxdim_sbsp,
      &     nincore, nwfpar, 

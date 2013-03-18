@@ -27,6 +27,7 @@ c      include 'def_filinf.h'
       include 'def_contraction.h'
       include 'def_contraction_list.h'
       include 'def_formula.h'
+      include 'def_formula_item.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -50,9 +51,6 @@ c      include 'def_filinf.h'
 
       logical ::
      &     reo, transpose
-c dbg
-     &     ,first
-c dbg
       integer ::
      &     idxder(ncmpnd), idxmlt(ncmpnd), idxres,
      &     luinput, luderiv, nvtx,
@@ -184,6 +182,9 @@ cmh            deallocate(ivtx_reo,fix_vtx)
         end do
 
       end do
+
+      ! add [END] mark:
+      write(luderiv) command_end_of_formula,idxres
 
       call file_close_keep(f_deriv%fhand)
       call file_close_keep(f_input%fhand)
