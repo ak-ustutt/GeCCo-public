@@ -53,9 +53,14 @@
           idxph=2
           cdag = '^+'
         end if
-        write(opstr(ipos:),'(a)')
+        if (contr%vertex(idx)%idx_op.eq.0) then
+          write(opstr(ipos:),'("0")')
+          ipos = ipos + 4
+        else
+          write(opstr(ipos:),'(a)')
      &       trim(ops(contr%vertex(idx)%idx_op)%op%name)//cdag 
-        ipos = ipos + len_trim(ops(contr%vertex(idx)%idx_op)%op%name)+3
+          ipos = ipos+len_trim(ops(contr%vertex(idx)%idx_op)%op%name)+3
+        end if
         if (ipos.gt.240) call quit(1,'prt_contr2','string too long!')
       end do
       write(luout,*) trim(opstr)

@@ -37,6 +37,7 @@
      &     REPLACE*7                = 'REPLACE',
      &     SUM_HERMIT*13            = 'SUM_HERMITIAN',
      &     INVARIANT*9              = 'INVARIANT',
+     &     REORDER_FORMULA*15       = 'REORDER_FORMULA',
      &     DERIVATIVE*10            = 'DERIVATIVE',
      &     LEQ_SPLIT*9              = 'LEQ_SPLIT',
      &     OPTIMIZE*8               = 'OPTIMIZE',

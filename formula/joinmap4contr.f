@@ -42,7 +42,7 @@
           vtxmap(ivtx_total) = ivtx
         else
           ! insert vertices of intermediate definition, which
-          ! contribution to current primitive vertex of intermediate
+          ! contribute to current primitive vertex of intermediate
           do jvtx = ivtx_intm, nvtx_intm
             if (svmap_intm(jvtx).le.ijoin) then
               ivtx_total = ivtx_total+1

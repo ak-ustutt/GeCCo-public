@@ -111,7 +111,7 @@ c      print *,'nsuper, nproto_ac: ',nsuper,nproto_ac
 c dbg
 
       if (nsuper.ne.nproto_ac) then
-        write(luout,*) 'joining: AC, B'
+        write(luout,*) 'join_contr2: joining: AC, B'
         call prt_contr2(luout,contr_ac,op_info)
         call prt_contr2(luout,contr_b,op_info)
         call quit(1,'join_contr2','incompatible contractions !')

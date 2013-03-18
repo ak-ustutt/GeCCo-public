@@ -769,12 +769,47 @@ c          end do
       descr_h2pp = 'HH,V[HP]|V[HV],[HVP][HVP]|[HV]P,[HV]P'
       descr_h2ppp = 'PP,[HV]P'
       descr = 'HV,PV'
- 
+
       call add_target2('INT_HT2',.false.,tgt_info)
       call set_rule2('INT_HT2',DEF_OP_FROM_OCC,tgt_info)
       call set_arg('INT_HT2',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
      &             val_label=(/'INT_HT2'/))
       call set_arg('INT_HT2',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &     val_str=descr)!_h1//'|'//descr_h2pp//'|'//descr_h2ppp)
+
+      ! distr: ,;[PV],H
+      ! ->  ,;,;[PV],H   ,;[PV],;,H   ,;,H;[PV],
+      ! distr: ,;[PV][PV],HH
+      ! ->  ,;,;[PV][PV],HH 
+      !     ,;[PV],;[PV],HH ,;,H;[PV][PV],H ,;[PV],H;[PV],H
+      !     ,;[PV],HH;[PV], ,;[PV][PV],H;,H
+      ! distr: V;[PV],
+      ! ->  ,V;,;[PV],
+      ! distr: ,V;[PV][PV],H
+      ! ->  ,V;,;[PV][PV],H  ,V;,H;[PV][PV]  ,V;[PV],;[PV],H
+      !     ,V;[PV][PV],H
+      ! distr: ,VV;[PV][PV]
+      ! ->  ,VV;,;[PV][PV],  ,VV;[PV],;[PV],
+c      descr=',;,;[PV],H|,;[PV],;,H|,;,H;[PV],|'//
+c     &      ',;[PV],;[PV],HH|,;,H;[PV][PV],H|,;[PV],H;[PV],H|'//
+c     &      ',;[PV],HH;[PV], ,;[PV][PV],H;,H|'//
+c     &      ',V;,;[PV],|'//
+c     &      ',V;,;[PV][PV],H|,V;,H;[PV][PV]|,V;[PV],;[PV],H|'//
+c     &      ',V;[PV][PV],H|'//
+c     &      ',VV;,;[PV][PV],|,VV;[PV],;[PV],'  
+c      call add_target2('INT_CTC',.false.,tgt_info)
+c      call set_rule2('INT_CTC',DEF_OP_FROM_OCC,tgt_info)
+c      call set_arg('INT_CTC',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+c     &             val_label=(/'INT_CTC'/))
+c      call set_arg('INT_CTC',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+c     &     val_str=descr)
+
+      descr = 'H,H|[PV],[PV]|H[HPV],HH|[PV][HPV]|H[PV]' 
+      call add_target2('INT_HT',.false.,tgt_info)
+      call set_rule2('INT_HT',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('INT_HT',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &             val_label=(/'INT_HT'/))
+      call set_arg('INT_HT',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
      &     val_str=descr)!_h1//'|'//descr_h2pp//'|'//descr_h2ppp)
 
       call add_target2('INT_T2H',.false.,tgt_info)
@@ -3221,7 +3256,13 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       if ((maxp.ge.2.or.maxh.ge.2).and.tfix.eq.0) then
         labels(1:20)(1:len_target_name) = ' '
         ndef = 0
+c dbg
+         print *,'POI: ',maxp,h1bar_maxp
+c dbg
         if (maxp.ge.2.and.h1bar_maxp.lt.4) then
+c dbg
+         print *,'went here'
+c dbg
           call set_dependency('FOPT_OMG','F_PP0int',tgt_info)
           call set_dependency('FOPT_OMG','DEF_ME_INT_PP0',tgt_info)
           ndef = ndef + 1

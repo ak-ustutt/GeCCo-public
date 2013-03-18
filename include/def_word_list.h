@@ -1,5 +1,5 @@
       integer, parameter ::
-     &     maxlen_word = 128
+     &     maxlen_word = 512
 
       type word_list_entry
         character(len=maxlen_word) ::
