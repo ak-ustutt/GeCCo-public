@@ -90,7 +90,18 @@
             write(luout,*) 'iblk, # terms: ',iblk_tgt,nfound
           end if
         end do tgt_loop
-        
+
+        ! let last fpl_reo element point to [END] of form
+        form_pnt => form
+        do while(associated(form_pnt%next))
+          form_pnt => form_pnt%next
+        end do
+        if (form_pnt%command.eq.command_end_of_formula) then
+          call new_formula_plist_entry(fpl_reo_pnt)
+          fpl_reo_pnt => fpl_reo_pnt%next
+          fpl_reo_pnt%item => form_pnt
+        end if       
+ 
         call relink_formula_list(form,fpl_reo)
 
         call dealloc_formula_plist(fpl_reo)        
