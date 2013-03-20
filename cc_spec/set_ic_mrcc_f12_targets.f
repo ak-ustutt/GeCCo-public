@@ -117,7 +117,8 @@ c     &     call get_argument_value('calculate.solve.non_linear',
 c     &     'maxiter',ival=maxit)
 c      trunc = ntrunc.ge.0
 c      solve = .not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
-      solve = .not.svdonly
+      skip = (is_keyword_set('calculate.skip_E').gt.0)
+      solve = .not.svdonly.and..not.skip
       if (h1bar) call quit(1,'set_ic_mrcc_f12_targets',
      &                     'H1bar not available yet')
       if (optref.ne.0.and.optref.ne.-3)
@@ -706,7 +707,7 @@ c group the energy equation for different density matrices
       call set_arg('F_1',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
      &     val_int=(/1,2/))
 
-      call add_target2('FORM_E_F12',.true.,tgt_info)
+      call add_target2('FORM_E_F12',.false.,tgt_info)
       call set_dependency('FORM_E_F12','F_MRCC_F12_E',tgt_info)
 c      call set_dependency('FORM_E_F12','F_DENS0',tgt_info)
       call set_dependency('FORM_E_F12','F_1',tgt_info)

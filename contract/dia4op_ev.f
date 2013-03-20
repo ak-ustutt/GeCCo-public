@@ -1,6 +1,6 @@
 *------------------------------------------------------------------------*
       subroutine dia4op_ev(me_dia,ecore,xdia1,xdia2,use2,
-     &                     ddia1,use_shift,eps,
+     &                     ddia1,use_shift,eps,prc_thres,
      &                     str_info,orb_info)
 *------------------------------------------------------------------------*
 *     set up diagonal hamiltonian
@@ -36,7 +36,7 @@
      &     ntest = 00
 
       real(8), intent(in) ::
-     &     ecore, xdia1(*), xdia2(*), ddia1(*), eps
+     &     ecore, xdia1(*), xdia2(*), ddia1(*), eps, prc_thres
       logical, intent(in) ::
      &     use2, use_shift
       type(me_list), intent(in) ::
@@ -47,7 +47,7 @@
      &     orb_info
 
       logical ::
-     &     first, first_str, open_close_ffdia, pair
+     &     first, first_str, open_close_ffdia, pair, warning
       integer ::
      &     iblk, msamax, mscmax, ica, ihpvdx, ihpv, nsym, ngas,
      &     msa, msc, igama, igamc, igamstr, ms_str,
@@ -65,7 +65,7 @@
       integer ::
      &     msdst(ngastp,2), igamdst(ngastp,2),
      &     ioff_xsum(2*ngastp), nstr(2*ngastp), nincr(2*ngastp),
-     &     iocc2(ngastp,2)
+     &     iocc2(ngastp,2), negpre_num, smapre_num, i
       real(8) ::
      &     xsum_outer, xsum_i1, fac, val,
      &     cpu, sys, wall, cpu0, sys0, wall0
@@ -98,6 +98,7 @@
      &     next_msgamdist, next_string
 
       ifree = mem_setmark('dia4op_ev')
+      warning = .false.
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'this is dia4op_ev')
@@ -598,12 +599,39 @@ c     &       print *,'final buffer: ',
 c     &       buffer(1:me_dia%len_op_occ(iblk))
 c dbg
         ! put buffer to disc
+
+! check and replace negative (and small) preconditioner to threshold
+        negpre_num = 0
+        smapre_num = 0
+        do i=1,len_blk
+          if (buffer(i).lt.prc_thres) then
+            smapre_num = smapre_num + 1
+            if (buffer(i).lt.0d0) negpre_num = negpre_num + 1
+            buffer(i)=prc_thres
+          end if
+        end do
+
+        if (smapre_num>0) then
+          write(luout,'(1x,a,i4,a,i9,a,g9.2)') 
+     &      'number of small preconditioner elements in block ',iblk,
+     &      ': ', smapre_num, '; set to ',prc_thres
+        end if
+        if (negpre_num>0) then
+          write(luout,'(1x,a,i9)') 
+     &    '     thereof negative: ',negpre_num
+          warning = .true.
+        end if
+
         call put_vec(ffdia,buffer,me_dia%off_op_occ(iblk)+1,
      &                            me_dia%off_op_occ(iblk)+len_blk)
         
         ifree = mem_flushmark()
 
       end do occ_cls
+
+
+      if (warning) call warn('dia4op_ev',
+     &             'negative preconditioner elements!')
 
       if (open_close_ffdia) call file_close_keep(ffdia)
 

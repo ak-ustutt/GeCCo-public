@@ -89,10 +89,6 @@ c      include 'def_contraction_list.h'
         if (transpose) idxop(icmpnd) = -idxop(icmpnd)
 
       end do
-c dbg
-c      print *,idxop
-c      print *,idxres
-c dbg
 
       ! read in input formula
       call init_formula(flist)
