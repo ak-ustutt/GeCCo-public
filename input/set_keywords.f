@@ -310,8 +310,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     type=vtyp_int,
      &     idef=(/0/)) ! optimize reference fct.
       call argument_add('update_prc','calculate.solve.non_linear',
-     &     type=vtyp_log,
-     &     ldef=(/.false./)) ! update precond. when metric is updated
+     &     type=vtyp_int,
+     &     idef=(/5/)) ! update precond. every i-th iteration (<=0: off)
       call argument_add('preopt','calculate.solve.non_linear',
      &     type=vtyp_log,
      &     ldef=(/.false./)) ! first one optimization with fixed metric

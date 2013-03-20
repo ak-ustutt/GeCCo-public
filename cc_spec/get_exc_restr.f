@@ -159,15 +159,17 @@
       end select
 
       if (ntest.ge.100) then
-        write(luout,'(40("-"))')
-        write(luout,'(x,a)') 'Excitation class restrictions:'
+        write(luout,'(x,39("="))')
+        write(luout,'(x,a)') 'min.-max. ranks in the cluster operator'
+        write(luout,'(x,a)') '(for each excitation class)'
+        write(luout,'(x,39("-"))')
         write(idx_str(1:1),'(i1)') maxp+1
         write(luout,'(x,a,'//idx_str//'i8)') 'n_h\n_p',(ip,ip=0,maxp)
         do ih = 0, maxh
           write(luout,'(x,i7,'//idx_str//'(i6,"-",i1))')
      &         ih,((excrestr(ih,ip,icnt),icnt=1,2),ip=0,maxp)
         end do
-        write(luout,'(40("-"))')
+        write(luout,'(x,39("="))')
       end if
 
       return

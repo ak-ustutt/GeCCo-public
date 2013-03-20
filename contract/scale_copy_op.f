@@ -48,7 +48,7 @@
      &     ifac, nblkmax, ifree, nblk, idx_shape, isec, nsec
       logical ::
      &     open_close_res, open_close_inp,
-     &     same
+     &     same, warning
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
       real(8), pointer ::
@@ -158,6 +158,7 @@ c     &       'copy means to have a second list...')
       lensec => opti_info%nwfpsec(1:nsec)
       idstsec => opti_info%idstsec(1:nsec)
       signsec => opti_info%signsec(1:nsec)
+      warning = .false.
 
       ! record length hopefully the same
       if (ffop_tgt%reclen.ne.ffop_src%reclen)
@@ -230,6 +231,18 @@ c     &       'copy means to have a second list...')
               ifac = ifac + 1
               if (ifac.gt.nfac) ifac = 1
             end do
+          case('atleastwarn')
+            ! warn if any element is below the given number(s)
+            do idx = 1, idxnd_src-idxst_src+1
+              if (buffer(idx).lt.fac(ifac)) then
+                warning = .true.
+                write(luout,'(a,i14,a,f20.12,a,f20.12)')
+     &               'Element',idx,' with value',buffer(idx),
+     &               ' is below',fac(ifac)
+              end if
+              ifac = ifac + 1
+              if (ifac.gt.nfac) ifac = 1
+            end do
           case default
             ! apply scaling factors (periodically)
             do idx = 1, idxnd_src-idxst_src+1
@@ -280,6 +293,9 @@ c dbgend
      &       1,me_res%op%n_occ_cls,
      &       str_info,orb_info)
       end if
+
+      if (warning) call warn('scale_copy_op',
+     &          'At least one element is below the recommended value.')
 
       ifree = mem_flushmark()
 

@@ -8,7 +8,7 @@
      &     typ_prc,
      &     nincore,nwfpar,
      &     lenbuf,xbuf1,xbuf2,xbuf3,
-     &     fspc,nspcfrm,energy,xngrd,iopt,opti_info,
+     &     fspc,nspcfrm,energy,xngrd,iopt,imacit,opti_info,
      &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
@@ -37,7 +37,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nspecial, iopt, nspcfrm
+     &     nspecial, iopt, nspcfrm, imacit
       logical, intent(in) ::
      &     get_new_rec
       type(me_list_array), intent(inout) ::
@@ -170,7 +170,7 @@ c dbg
 
           call optc_prc_traf(me_amp,me_grd,me_dia,me_special,nspecial,
      &                       nwfpar,xbuf1,xbuf2,
-     &                       fspc,nspcfrm,xngrd,iopt,opti_info,
+     &                       fspc,nspcfrm,xngrd,iopt,imacit,opti_info,
      &                       orb_info,op_info,str_info,strmap_info)
 
         case default

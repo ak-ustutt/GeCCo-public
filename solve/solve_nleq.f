@@ -474,7 +474,8 @@ c test
      &         me_special(2)%mel%fhand%last_mod(1)) then
             call update_metric(me_dia(1)%mel,me_special,nspecial,
      &           fl_spc,nspcfrm,orb_info,op_info,str_info,strmap_info,
-     &           opti_info%update_prc)
+     &           opti_info%update_prc.gt.0.and.
+     &           mod(imacit,max(opti_info%update_prc,1)).eq.0)
           end if
 
           call solve_leq('TRF',

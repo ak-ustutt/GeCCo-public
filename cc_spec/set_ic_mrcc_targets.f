@@ -42,9 +42,9 @@
      &     stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
-     &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno
+     &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno, update_prc
       logical ::
-     &     update_prc, skip, preopt, project, first, Op_eqs,
+     &     skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
      &     oldref, solve, use_f12, restart
       character(len_target_name) ::
@@ -88,7 +88,7 @@
       call get_argument_value('calculate.solve.non_linear','optref',
      &     ival=optref)
       call get_argument_value('calculate.solve.non_linear','update_prc',
-     &     lval=update_prc)
+     &     ival=update_prc)
       call get_argument_value('calculate.solve.non_linear','preopt',
      &     lval=preopt)
       call get_argument_value('calculate.solve.non_linear','restart',
@@ -184,7 +184,7 @@
       if (h1bar_maxp.eq.0.or.h1bar_maxp.eq.1)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'h1bar_maxp should be either -1 or one of 2,3,4')
-      if (gno.gt.0.and.(update_prc.or.tred.gt.0))
+      if (gno.gt.0.and.(update_prc.gt.0.or.tred.gt.0))
      &    call quit(1,'set_ic_mrcc_targets',
      &     'update_prc or tred!=0 not yet available for GNO')
       
@@ -3144,8 +3144,15 @@ c dbgend
       call set_rule2('FOPT_Atr',OPTIMIZE,tgt_info)
       call set_arg('FOPT_Atr',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_Atr'/))
-      call set_arg('FOPT_Atr',OPTIMIZE,'LABELS_IN',1,tgt_info,
-     &             val_label=(/'F_Atr'/))
+      if (update_prc.gt.0.and.prc_type.eq.3) then
+        call set_dependency('FOPT_Atr','F_FREF',tgt_info)
+        call set_dependency('FOPT_Atr','DEF_ME_FREF',tgt_info)
+        call set_arg('FOPT_Atr',OPTIMIZE,'LABELS_IN',2,tgt_info,
+     &               val_label=(/'F_FREF','F_Atr '/))
+      else
+        call set_arg('FOPT_Atr',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &               val_label=(/'F_Atr'/))
+      end if
 
       ! transformed Hessian times vector
       call add_target2('FOPT_A_Ttr',.false.,tgt_info)
@@ -4035,18 +4042,21 @@ c dbgend
       call set_arg('EVAL_Atr',EXTRACT_DIAG,'LIST_IN',1,tgt_info,
      &             val_label=(/'ME_A'/))
       if (prc_type.ge.3)
-     &  call set_arg('EVAL_Atr',EXTRACT_DIAG,'EXTEND',1,tgt_info,
-     &               val_log=(/.true./))
+     &   call set_arg('EVAL_Atr',EXTRACT_DIAG,'EXTEND',1,tgt_info,
+     &                val_log=(/.true./))
+      call set_rule2('EVAL_Atr',SCALE_COPY,tgt_info)
+      call set_arg('EVAL_Atr',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &             val_label=(/trim(dia_label)/))
+      call set_arg('EVAL_Atr',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &             val_label=(/trim(dia_label)/))
+      call set_arg('EVAL_Atr',SCALE_COPY,'FAC',1,tgt_info,
+     &             val_rl8=(/prc_min/))
       if (prc_min.gt.0d0) then ! constrain prec. by a minimum value
-        call set_rule2('EVAL_Atr',SCALE_COPY,tgt_info)
-        call set_arg('EVAL_Atr',SCALE_COPY,'LIST_RES',1,tgt_info,
-     &               val_label=(/trim(dia_label)/))
-        call set_arg('EVAL_Atr',SCALE_COPY,'LIST_INP',1,tgt_info,
-     &               val_label=(/trim(dia_label)/))
-        call set_arg('EVAL_Atr',SCALE_COPY,'FAC',1,tgt_info,
-     &               val_rl8=(/prc_min/))
         call set_arg('EVAL_Atr',SCALE_COPY,'MODE',1,tgt_info,
      &               val_str='atleast')
+      else ! give a warning for negative elements
+        call set_arg('EVAL_Atr',SCALE_COPY,'MODE',1,tgt_info,
+     &               val_str='atleastwarn')
       end if
 c dbg
 c      call form_parameters(-1,parameters,2,
@@ -4251,7 +4261,7 @@ c dbgend
       end if
       call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_E',1,tgt_info,
      &     val_label=(/'ME_E(MR)'/))
-      if (optref.ne.0.and.update_prc) then
+      if (optref.ne.0.and.update_prc.gt.0) then
         if (tred.eq.0) then
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
      &     val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
@@ -4274,7 +4284,7 @@ c dbgend
      &                 'ME_D      ','ME_Dinv   ',
      &                 'ME_A      ','ME_T(2)red'/))
         end if
-      else if (optref.ne.0.and..not.update_prc) then
+      else if (optref.ne.0.and.update_prc.eq.0) then
         if (tred.eq.0) then
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',6,tgt_info,
      &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
@@ -4300,7 +4310,7 @@ c dbgend
      &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag '/))
       end if
       if (optref.ne.0) then
-        if (update_prc) then
+        if (update_prc.gt.0) then
           if (tred.eq.0) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',3,tgt_info,
      &         val_label=(/'FOPT_T  ','FOPT_D  ','FOPT_Atr'/))
@@ -4355,7 +4365,8 @@ c     &     'ME_Heff',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
 
-      if (optref.gt.0.and.icnt.ne.optref) then !not in last iteration
+c      if (optref.gt.0.and.icnt.ne.optref) then !not in last iteration
+      if (optref.gt.0) then !yes: also in last iteration
         call set_rule2('SOLVE_MRCC',SOLVEEVP,tgt_info)
         call set_arg('SOLVE_MRCC',SOLVEEVP,'LIST_OPT',1,tgt_info,
      &       val_label=(/'ME_C0'/))
