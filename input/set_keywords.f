@@ -201,7 +201,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('prc_shift','method.MR',type=vtyp_rl8,
      &                  xdef=(/0d0/))
       call argument_add('prc_min','method.MR',type=vtyp_rl8,
-     &                  xdef=(/0d0/))
+     &                  xdef=(/0.2d0/))
       call argument_add('project','method.MR',type=vtyp_log,
      &     ldef=(/.true./)) ! project out singles from doubles a.s.o.
       call argument_add('svdonly','method.MR',type=vtyp_log,
@@ -310,8 +310,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     type=vtyp_int,
      &     idef=(/0/)) ! optimize reference fct.
       call argument_add('update_prc','calculate.solve.non_linear',
-     &     type=vtyp_log,
-     &     ldef=(/.false./)) ! update precond. when metric is updated
+     &     type=vtyp_int,
+     &     idef=(/5/)) ! update precond. every i-th iteration (<=0: off)
       call argument_add('preopt','calculate.solve.non_linear',
      &     type=vtyp_log,
      &     ldef=(/.false./)) ! first one optimization with fixed metric

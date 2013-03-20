@@ -14,7 +14,6 @@
         logical ::
      &       variational,     ! variational energy
      &       linear,          ! linear
-     &       update_prc,      ! allow updating of preconditioner
      &       skip_resx,       ! skip evaluation of not needed residuals
      &       resume           ! use last eigenvec. as initial guess
         integer ::
@@ -27,6 +26,7 @@
      &       mode_nleq,
      &       maxmacit, maxmicit, micifac,
      &       maxsbsp, max_incore,
+     &       update_prc,      ! allow updating of preconditioner
      &       optref           ! optimization route for relaxed reference
         real(8) ::
      &       trini,

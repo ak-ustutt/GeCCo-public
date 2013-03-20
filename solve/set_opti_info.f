@@ -112,7 +112,7 @@
      &       ival=opti_info%optref)
         call get_argument_value('calculate.solve.non_linear',
      &       'update_prc',
-     &       lval=opti_info%update_prc)
+     &       ival=opti_info%update_prc)
         call get_argument_value('calculate.solve.non_linear',
      &       'preopt',
      &       lval=opti_info%skip_resx)
