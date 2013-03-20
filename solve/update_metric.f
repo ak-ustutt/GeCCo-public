@@ -132,7 +132,7 @@
           if (prc_type.lt.3) call quit(1,'update_metric',
      &       'preconditioner update only for type 0 and 3')
           call set_prc4op(trim(dia_label),'dia-F',0d0,
-     &         (/'ME_FREF'/),1,
+     &         (/'ME_FREF'/),1,-huge(1d1),
      &         op_info,str_info,orb_info)
         end if
 
@@ -143,13 +143,8 @@
      &                   op_info,str_info,orb_info)
 
         ! restrict elements to minimum value?
-        if (prc_min.gt.0d0) then
-          call scale_copy_op(trim(dia_label),trim(dia_label),prc_min,1,
-     &                       'atleast',0,op_info,orb_info,str_info)
-        else
-          call scale_copy_op(trim(dia_label),trim(dia_label),prc_min,1,
-     &                       'atleastwarn',0,op_info,orb_info,str_info)
-        end if
+        call scale_copy_op(trim(dia_label),trim(dia_label),prc_min,1,
+     &                     'prc_thresh',0,op_info,orb_info,str_info)
       end if
 
       return

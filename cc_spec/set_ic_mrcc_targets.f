@@ -3583,8 +3583,8 @@ c dbgend
         call set_arg(trim(dia_label),PRECONDITIONER,'SHIFT',1,tgt_info,
      &       val_rl8=(/prc_shift/))
 c dbg -test-
-        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
-     &       val_rl8=(/0.2d0/))
+c        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
+c     &       val_rl8=(/0.2d0/))
 c dbg
       else if (prc_type.ge.0) then
         call set_rule2(trim(dia_label),PRECONDITIONER,tgt_info)
@@ -3595,8 +3595,8 @@ c dbg
         call set_arg(trim(dia_label),PRECONDITIONER,'MODE',1,tgt_info,
      &       val_str='dia-F')
 c dbg -test-
-        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
-     &       val_rl8=(/0.2d0/))
+c        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
+c     &       val_rl8=(/0.2d0/))
 c dbg
       end if
 c dbg
@@ -4059,13 +4059,9 @@ c dbgend
      &             val_label=(/trim(dia_label)/))
       call set_arg('EVAL_Atr',SCALE_COPY,'FAC',1,tgt_info,
      &             val_rl8=(/prc_min/))
-      if (prc_min.gt.0d0) then ! constrain prec. by a minimum value
-        call set_arg('EVAL_Atr',SCALE_COPY,'MODE',1,tgt_info,
-     &               val_str='atleast')
-      else ! give a warning for negative elements
-        call set_arg('EVAL_Atr',SCALE_COPY,'MODE',1,tgt_info,
-     &               val_str='atleastwarn')
-      end if
+      ! constrain prec. by a minimum value
+      call set_arg('EVAL_Atr',SCALE_COPY,'MODE',1,tgt_info,
+     &             val_str='prc_thresh')
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Preconditioner (b) :',0,'LIST')

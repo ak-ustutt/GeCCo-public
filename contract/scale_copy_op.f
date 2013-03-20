@@ -45,7 +45,8 @@
       integer ::
      &     idx_res, idx_inp, idx, idxnd_src, idxnd_tgt, len_op, nbuff,
      &     ipri, idxst_tgt, idxst_src, idisc_off_src, idisc_off_tgt,
-     &     ifac, nblkmax, ifree, nblk, idx_shape, isec, nsec
+     &     ifac, nblkmax, ifree, nblk, idx_shape, isec, nsec,
+     &     smapre_num, negpre_num
       logical ::
      &     open_close_res, open_close_inp,
      &     same, warning
@@ -193,6 +194,8 @@ c     &       'copy means to have a second list...')
         ifac = 1
         idxst_src = idisc_off_src+idstsec(isec)
         idxst_tgt = idisc_off_tgt+idstsec(isec)
+        negpre_num = 0
+        smapre_num = 0
         do while(idxst_src.le.idisc_off_src+idstsec(isec)-1+len_op)
           idxnd_src = min(idisc_off_src+idstsec(isec)-1+len_op,
      &                    idxst_src-1+nbuff)
@@ -224,21 +227,33 @@ c     &       'copy means to have a second list...')
             call diavc(buffer,buf_in,
      &           signsec(isec)*fac(1),buffer,
      &           0d0,idxnd_src-idxst_src+1)
-          case('atleast')
+c          case('atleast')
+c            ! elements should be at least the given number(s)
+c            do idx = 1, idxnd_src-idxst_src+1
+c              buffer(idx) = max(buffer(idx),fac(ifac))
+c              ifac = ifac + 1
+c              if (ifac.gt.nfac) ifac = 1
+c            end do
+c          case('atleastwarn')
+c            ! warn if any element is below the given number(s)
+c            do idx = 1, idxnd_src-idxst_src+1
+c              if (buffer(idx).lt.fac(ifac)) then
+c                warning = .true.
+c                write(luout,'(a,i14,a,f20.12,a,f20.12)')
+c     &               'Element',idx,' with value',buffer(idx),
+c     &               ' is below',fac(ifac)
+c              end if
+c              ifac = ifac + 1
+c              if (ifac.gt.nfac) ifac = 1
+c            end do
+          case('prc_thresh')
             ! elements should be at least the given number(s)
-            do idx = 1, idxnd_src-idxst_src+1
-              buffer(idx) = max(buffer(idx),fac(ifac))
-              ifac = ifac + 1
-              if (ifac.gt.nfac) ifac = 1
-            end do
-          case('atleastwarn')
-            ! warn if any element is below the given number(s)
+            ! trigger a warning if any element was negative
             do idx = 1, idxnd_src-idxst_src+1
               if (buffer(idx).lt.fac(ifac)) then
-                warning = .true.
-                write(luout,'(a,i14,a,f20.12,a,f20.12)')
-     &               'Element',idx,' with value',buffer(idx),
-     &               ' is below',fac(ifac)
+                smapre_num = smapre_num + 1
+                if (buffer(idx).lt.0d0) negpre_num = negpre_num + 1
+                buffer(idx) = fac(ifac)
               end if
               ifac = ifac + 1
               if (ifac.gt.nfac) ifac = 1
@@ -262,6 +277,21 @@ c dbgend
           idxst_src = idxnd_src+1
           idxst_tgt = idxnd_tgt+1
         end do
+
+        if (trim(mode).eq.'prc_thresh') then
+          if (smapre_num.gt.0) then
+            write(luout,'(1x,a,i9,a,g9.2)')
+     &           'number of small preconditioner elements: ',
+     &           smapre_num, '; set to ',fac(1:nfac)
+          end if
+          if (negpre_num.gt.0) then
+            write(luout,'(1x,a,i9)')
+     &           'number of negative preconditioner elements: ',
+     &           negpre_num
+            call warn('scale_copy_op',
+     &                'negative preconditioner elements!')
+          end if
+        end if
 
       else
 
