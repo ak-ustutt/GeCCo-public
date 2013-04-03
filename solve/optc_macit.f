@@ -267,7 +267,7 @@ C     &            orb_info,op_info,str_info,strmap_info)
         do iopt = 1, opti_info%nopt
          if ((opti_info%typ_prc(iopt).eq.optinf_prc_traf.or.
      &        opti_info%typ_prc(iopt).eq.optinf_prc_invH0 ).and.
-     &        opti_info%optref.ne.0.and.nspecial.ge.4) then
+     &        opti_info%optref.ne.0.and.nspecial.ge.5) then
          call optc_project(me_opt(iopt)%mel,me_opt(iopt)%mel,
      &        me_dia(iopt)%mel,me_special,nspecial,
      &        opti_info%nwfpar(iopt),xbuf1,fspc,nspcfrm,iopt,imacit,
@@ -324,8 +324,7 @@ C     &            orb_info,op_info,str_info,strmap_info)
 
         ! make external step
         do iopt = 1, opti_info%nopt
-          if (opti_info%typ_prc(iopt).eq.optinf_prc_traf.and.
-     &       opti_info%optref.ne.0.and.nspecial.ge.4) then
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
 
             if (nincore.lt.2) 
      &              call quit(1,'opti_macit','need more memory')

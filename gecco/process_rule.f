@@ -1013,12 +1013,11 @@ c dbg
 *----------------------------------------------------------------------*
         call get_arg('LIST_RES',rule,tgt_info,val_label=label)
         call get_arg('LIST_IN',rule,tgt_info,val_label=label2)
-        call get_arg('EXTEND',rule,tgt_info,val_log=explicit)
-        call get_arg('EXTEND_ACT',rule,tgt_info,val_log=init)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
 
         if (form_test) return
 
-        call dia_from_op(label,label2,explicit,init,
+        call dia_from_op(label,label2,mode,
      &       op_info,str_info,orb_info)
 
 *----------------------------------------------------------------------*
@@ -1028,10 +1027,11 @@ c dbg
         call get_arg('LIST_IN',rule,tgt_info,val_label=label2)
         call get_arg('FROMTO',rule,tgt_info,val_int=idx)
         call get_arg('ADJOINT',rule,tgt_info,val_log=dagger)
+        call get_arg('SEARCH',rule,tgt_info,val_log=init)
 
         if (form_test) return
 
-        call reo_mel(label,label2,
+        call reo_mel(label,label2,init,
      &       op_info,str_info,strmap_info,orb_info,idx,dagger)
 
 *----------------------------------------------------------------------*

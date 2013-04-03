@@ -348,7 +348,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))
-     &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
+     &          .and..not.(l_icci.and.prc_type.ge.3)) cycle
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
             occ_def(IPART,1,ndef*2) = ip
@@ -384,7 +384,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))
-     &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
+     &          .and..not.(l_icci.and.prc_type.ge.3)) cycle
             icnt = icnt + 1
             ! for cheap precond.: only valence part needed eventually
             if (prc_type.ge.3.and.version(icnt).ne.1) cycle

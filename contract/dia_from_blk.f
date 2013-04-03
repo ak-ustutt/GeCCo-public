@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine dia_from_blk(buffer_out,buffer_inp,
+      subroutine dia_from_blk(buffer_out,buffer_inp,reverse,
      &     meinp,meout,iblkinp,iblkout,
      &     iocc0,str_info,orb_info)
 *----------------------------------------------------------------------*
@@ -38,6 +38,8 @@
      &     iblkinp, iblkout, iocc0(ngastp,2)
       real(8), intent(inout) ::
      &     buffer_inp(*), buffer_out(*)
+      logical, intent(in) ::
+     &     reverse
 
       logical ::
      &     first, ms_fix, fix_success
@@ -375,7 +377,13 @@ c     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
      &               ncablk2,ncablk2)
 
                 ! add diagonal element of input operator to output list
-                buffer_out(idx1) = buffer_out(idx1)+fac*buffer_inp(idx2)
+                if (reverse) then
+                  ! note:this element might be overwritten several times
+                  buffer_inp(idx2) = fac*buffer_out(idx1)
+                else
+                  buffer_out(idx1)
+     &                    = buffer_out(idx1)+fac*buffer_inp(idx2)
+                end if
 
               end do idxa_loop
             end do idxc_loop

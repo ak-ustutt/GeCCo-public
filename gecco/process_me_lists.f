@@ -348,7 +348,7 @@ c     &       op_info,str_info,strmap_info,orb_info)
      &       'two labels expected for '
      &       //trim(EXTRACT_DIAG))
 
-        call dia_from_op(rule%labels(1),rule%labels(2),.false.,.false.,
+        call dia_from_op(rule%labels(1),rule%labels(2),'---',
      &       op_info,str_info,orb_info)
 
       case(REORDER_MEL)
@@ -360,7 +360,7 @@ c     &       op_info,str_info,strmap_info,orb_info)
         call form_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,title,imode,mode)
 
-        call reo_mel(rule%labels(1),rule%labels(2),
+        call reo_mel(rule%labels(1),rule%labels(2),.false.,
      &       op_info,str_info,strmap_info,orb_info,imode,.false.)
 
       case default

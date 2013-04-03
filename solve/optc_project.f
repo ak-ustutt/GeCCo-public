@@ -124,11 +124,11 @@ c      end if
       ! Now add "redundant" T components?
       if (opti_info%update_prc.gt.0.and.
      &    nspecial.ge.8.and.nspcfrm.ge.4.or.
-     &    opti_info%update_prc.eq.0.and.nspecial.ge.7.and.nspcfrm.ge.3)
+     &    opti_info%update_prc.le.0.and.nspecial.ge.7.and.nspcfrm.ge.3)
      &   then
         ! does T(3)red exist? If so, we need two steps
         if (opti_info%update_prc.gt.0.and.nspecial.eq.9.or.
-     &      opti_info%update_prc.eq.0.and.nspecial.eq.8) then
+     &      opti_info%update_prc.le.0.and.nspecial.eq.8) then
           ! evaluate T(2)red (projector list is already assigned)
           call evaluate2(fspc(nspcfrm-1),.true.,.false.,
      &           op_info,str_info,strmap_info,orb_info,xdum,.false.)

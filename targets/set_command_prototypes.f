@@ -674,10 +674,8 @@
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',EXTRACT_DIAG,'LIST_IN',0,tgt_info,
      &     val_label=(/''/),req=.true.)
-      call set_arg('_PROTO_',EXTRACT_DIAG,'EXTEND',1,tgt_info,
-     &     val_log=(/.false./),def=.true.)
-      call set_arg('_PROTO_',EXTRACT_DIAG,'EXTEND_ACT',1,tgt_info,
-     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',EXTRACT_DIAG,'MODE',1,tgt_info,
+     &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(REORDER_MEL,tgt_info)
       call set_arg('_PROTO_',REORDER_MEL,'LIST_RES',0,tgt_info,
@@ -686,7 +684,9 @@
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',REORDER_MEL,'FROMTO',0,tgt_info,
      &     val_int=(/1/),req=.true.)
-      call set_arg('_PROTO_',REORDER_MEL,'ADJOINT',0,tgt_info,
-     &     val_log=(/.false./),req=.true.)
+      call set_arg('_PROTO_',REORDER_MEL,'ADJOINT',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',REORDER_MEL,'SEARCH',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 
       end

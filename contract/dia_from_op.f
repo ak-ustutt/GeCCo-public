@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine dia_from_op(label_out,label_inp,extend,ext_act,op_info,
+      subroutine dia_from_op(label_out,label_inp,mode,op_info,
      &                      str_info,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for dia_from_blk
@@ -26,9 +26,7 @@
       include 'ifc_operators.h'
 
       character(*), intent(in) ::
-     &     label_out, label_inp
-      logical, intent(in) ::
-     &     extend, ext_act
+     &     label_out, label_inp, mode
       type(operator_info), intent(inout) ::
      &     op_info
       type(strinf), intent(in) ::
@@ -38,7 +36,7 @@
 
       logical ::
      &     first, ms_fix, fix_success, open_close_inp,
-     &     open_close_out
+     &     open_close_out, extend, ext_act, zero_dia, set_dia
       integer ::
      &     ifree, idxout, idxinp, iblkinp, iblkout, i_occ_cls,
      &     iocc_dia(ngastp,2), njoined, split_sign,
@@ -62,6 +60,25 @@
      &     occ_is_diag_blk
 
       call atim_csw(cpu0,sys0,wall0)
+
+      extend = .false.
+      ext_act = .false.
+      set_dia = .false.
+      zero_dia = .false.
+      select case(trim(mode))
+      case('extend')
+        extend = .true.
+      case('ext_act')
+        extend = .true.
+        ext_act = .true.
+      case('set_dia')
+        extend = .true.
+        set_dia = .true.
+      case('zero_dia')
+        extend = .true.
+        zero_dia = .true.
+        set_dia = .true.
+      end select
 
       idxout = idx_mel_list(label_out,op_info)
       if (idxout.lt.0) call quit(1,'dia_from_op',
@@ -102,8 +119,7 @@
         write(luout,*) ' output list = ',trim(meout%label)
         write(luout,*) ' ffout: ',trim(ffout%name)
         write(luout,*) ' opout: ',opout%name(1:len_trim(opout%name))
-        write(luout,*) ' extended mode? ',extend
-        if (extend) write(luout,*) ' extend active? ',ext_act
+        write(luout,*) ' mode: ',trim(mode)
       end if
 
       if (opout%njoined.ne.1.or.opinp%njoined.gt.3)
@@ -176,15 +192,19 @@ c           ad hoc: add scalar contrib. only to purely inactive blks
             ioffinp = meinp%off_op_occ(i_occ_cls)
             ioffout = meout%off_op_occ(iblkout)
             call get_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
-            if (extend) then ! no reset of output, only add!
+            if (extend.and..not.zero_dia) then ! no reset of output, only add!
               call get_vec(ffout,buffer_out,ioffout+1,ioffout+lenblkout)
             else ! reset output buffer
               buffer_out(1:lenblkout) = 0d0
             end if
-            call dia_from_blk(buffer_out,buffer_inp,
+            call dia_from_blk(buffer_out,buffer_inp,set_dia,
      &                        meinp,meout,i_occ_cls,iblkout,
      &                        iocc_dia,str_info,orb_info)
-            call put_vec(ffout,buffer_out,ioffout+1,ioffout+lenblkout)
+            if (set_dia) then
+              call put_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
+            else
+              call put_vec(ffout,buffer_out,ioffout+1,ioffout+lenblkout)
+            end if
             ifree = mem_flushmark('dia_from_op')
 
             if (.not.extend) exit ! not more than one matching block

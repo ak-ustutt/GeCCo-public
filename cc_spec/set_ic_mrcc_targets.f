@@ -42,11 +42,12 @@
      &     stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
-     &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno, update_prc
+     &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno, update_prc,
+     &     prc_iter
       logical ::
      &     skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, use_f12, restart
+     &     oldref, solve, use_f12, restart, spinproj
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -60,7 +61,7 @@
       character(len=3) ::
      &     prc_mode_str
       real(8) ::
-     &     x_ansatz, prc_shift, prc_min
+     &     x_ansatz, prc_shift, prc_min, prc_impfac
 
       if (iprlvl.gt.0) write(luout,*) 'setting icMRCC targets'
 
@@ -83,8 +84,14 @@
      &     xval=prc_shift)
       call get_argument_value('method.MR','prc_min',
      &     xval=prc_min)
+      call get_argument_value('method.MR','prc_impfac',
+     &     xval=prc_impfac)
+      call get_argument_value('method.MR','prc_iter',
+     &     ival=prc_iter)
       call get_argument_value('method.MR','svdonly',
      &     lval=svdonly)
+      call get_argument_value('method.MR','spinproj',
+     &     lval=spinproj)
       call get_argument_value('calculate.solve.non_linear','optref',
      &     ival=optref)
       call get_argument_value('calculate.solve.non_linear','update_prc',
@@ -187,6 +194,9 @@
       if (gno.gt.0.and.(update_prc.gt.0.or.tred.gt.0))
      &    call quit(1,'set_ic_mrcc_targets',
      &     'update_prc or tred!=0 not yet available for GNO')
+      if (prc_iter.gt.0.and.prc_type.ne.3)
+     &    call quit(1,'set_ic_mrcc_targets',
+     &     'prc_iter>0 only available for prc_type=3')
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -3634,6 +3644,12 @@ c dbgend
      &             val_int=(/0/))
       call set_arg('DEF_ME_Ttr',DEF_ME_LIST,'IRREP',1,tgt_info,
      &             val_int=(/1/))
+      call set_arg('DEF_ME_Ttr',DEF_ME_LIST,'MIN_REC',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_Ttr',DEF_ME_LIST,'MAX_REC',1,tgt_info,
+     &             val_int=(/max(1,prc_iter)/))
+      call set_arg('DEF_ME_Ttr',DEF_ME_LIST,'REC',1,tgt_info,
+     &             val_int=(/1/))
 
       ! ME for Tout
       call add_target2('DEF_ME_Tout',.false.,tgt_info)
@@ -4050,8 +4066,9 @@ c dbgend
       call set_arg('EVAL_Atr',EXTRACT_DIAG,'LIST_IN',1,tgt_info,
      &             val_label=(/'ME_A'/))
       if (prc_type.ge.3)
-     &   call set_arg('EVAL_Atr',EXTRACT_DIAG,'EXTEND',1,tgt_info,
-     &                val_log=(/.true./))
+     &   call set_arg('EVAL_Atr',EXTRACT_DIAG,'MODE',1,tgt_info,
+     &                val_str='extend')
+      ! constrain prec. by a minimum value
       call set_rule2('EVAL_Atr',SCALE_COPY,tgt_info)
       call set_arg('EVAL_Atr',SCALE_COPY,'LIST_RES',1,tgt_info,
      &             val_label=(/trim(dia_label)/))
@@ -4059,7 +4076,6 @@ c dbgend
      &             val_label=(/trim(dia_label)/))
       call set_arg('EVAL_Atr',SCALE_COPY,'FAC',1,tgt_info,
      &             val_rl8=(/prc_min/))
-      ! constrain prec. by a minimum value
       call set_arg('EVAL_Atr',SCALE_COPY,'MODE',1,tgt_info,
      &             val_str='prc_thresh')
 c dbg
@@ -4069,6 +4085,59 @@ c      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
 c     &     trim(dia_label),1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
+      if (prc_iter.ge.1) then
+        ! change sign of A ...
+        call set_rule2('EVAL_Atr',SCALE_COPY,tgt_info)
+        call set_arg('EVAL_Atr',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &               val_label=(/'ME_A'/))
+        call set_arg('EVAL_Atr',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &               val_label=(/'ME_A'/))
+        call set_arg('EVAL_Atr',SCALE_COPY,'FAC',1,tgt_info,
+     &               val_rl8=(/-1d0*prc_impfac/))
+        ! ... and zero the diagonal to get the off-diagonal part
+        call set_dependency('EVAL_Atr','DEF_ME_Ttr',tgt_info)
+        call set_rule2('EVAL_Atr',EXTRACT_DIAG,tgt_info)
+        call set_arg('EVAL_Atr',EXTRACT_DIAG,'LIST_RES',1,tgt_info,
+     &               val_label=(/'ME_Ttr'/)) !dummy: values not needed
+        call set_arg('EVAL_Atr',EXTRACT_DIAG,'LIST_IN',1,tgt_info,
+     &               val_label=(/'ME_A'/))
+        call set_arg('EVAL_Atr',EXTRACT_DIAG,'MODE',1,tgt_info,
+     &               val_str='zero_dia')
+        ! now reorder to a transformation matrix
+        call set_dependency('EVAL_Atr','Dtr',tgt_info)
+        call set_rule2('EVAL_Atr',DEF_ME_LIST,tgt_info)
+        call set_arg('EVAL_Atr',DEF_ME_LIST,'LIST',1,tgt_info,
+     &               val_label=(/'ME_Aoff'/))
+        call set_arg('EVAL_Atr',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &               val_label=(/'Dtr'/))
+        call set_arg('EVAL_Atr',DEF_ME_LIST,'2MS',1,tgt_info,
+     &               val_int=(/0/))
+        call set_arg('EVAL_Atr',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &               val_int=(/1/))
+        call set_dependency('EVAL_Atr','DEF_ME_Dtr',tgt_info)
+        ! reassignment needed?
+        call set_rule2('EVAL_Atr',ASSIGN_ME2OP,tgt_info)
+        call set_arg('EVAL_Atr',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Dtr'/))
+        call set_arg('EVAL_Atr',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+     &             val_label=(/'Dtr'/))
+        call set_rule2('EVAL_Atr',REORDER_MEL,tgt_info)
+        call set_arg('EVAL_Atr',REORDER_MEL,'LIST_RES',1,tgt_info,
+     &               val_label=(/'ME_Aoff'/))
+        call set_arg('EVAL_Atr',REORDER_MEL,'LIST_IN',1,tgt_info,
+     &               val_label=(/'ME_A'/))
+        call set_arg('EVAL_Atr',REORDER_MEL,'FROMTO',1,tgt_info,
+     &               val_int=(/13/))
+        call set_arg('EVAL_Atr',REORDER_MEL,'SEARCH',1,tgt_info,
+     &               val_log=(/.true./))
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'off-diagonal part of active Jacobian :',0,'LIST')
+c      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
+c     &     'ME_Aoff',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
+      end if
 
       ! Evaluate approximation of diagonal elements of Jacobian
       call add_target('EVAL_A_Ttr',ttype_gen,.false.,tgt_info)
@@ -4235,8 +4304,14 @@ c dbgend
      &         val_label=(/trim(dia_label)/))
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_E',1,tgt_info,
      &       val_label=(/'ME_E(MR)'/))
-          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',3,tgt_info,
-     &       val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag'/))
+          if (prc_iter.ge.1) then
+            call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',4,tgt_info,
+     &         val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
+     &                     'ME_Aoff  '/))
+          else
+            call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',3,tgt_info,
+     &         val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag'/))
+          end if
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',1,tgt_info,
      &       val_label=(/'FOPT_T'/))
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM',1,tgt_info,
@@ -4267,11 +4342,19 @@ c dbgend
      &     val_label=(/'ME_E(MR)'/))
       if (optref.ne.0.and.update_prc.gt.0) then
         if (tred.eq.0) then
-        call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
-     &     val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
-     &                 'ME_Dproj ',
-     &                 'ME_D     ','ME_Dinv  ',
-     &                 'ME_A     '/))
+         if (prc_iter.ge.1) then
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',8,tgt_info,
+     &       val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                   'ME_Dproj  ',
+     &                   'ME_D      ','ME_Dinv   ',
+     &                   'ME_A      ','ME_Aoff   '/))
+         else
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
+     &       val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
+     &                   'ME_Dproj ',
+     &                   'ME_D     ','ME_Dinv  ',
+     &                   'ME_A     '/))
+         end if
         else if (ex_t3red) then
         call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
         call set_dependency('SOLVE_MRCC','FOPT_T(3)red',tgt_info)
@@ -4288,12 +4371,20 @@ c dbgend
      &                 'ME_D      ','ME_Dinv   ',
      &                 'ME_A      ','ME_T(2)red'/))
         end if
-      else if (optref.ne.0.and.update_prc.eq.0) then
+      else if (optref.ne.0.and.update_prc.le.0) then
         if (tred.eq.0) then
-        call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',6,tgt_info,
-     &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
-     &                 'ME_Dproj  ',
-     &                 'ME_D      ','ME_Dinv   '/))
+         if (prc_iter.ge.1) then
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
+     &       val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                   'ME_Dproj  ',
+     &                   'ME_D      ','ME_Dinv   ',
+     &                   'ME_Aoff   '/))
+         else
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',6,tgt_info,
+     &       val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                   'ME_Dproj  ',
+     &                   'ME_D      ','ME_Dinv   '/))
+         end if
         else if (ex_t3red) then
         call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
         call set_dependency('SOLVE_MRCC','FOPT_T(3)red',tgt_info)
@@ -4310,8 +4401,14 @@ c dbgend
      &                 'ME_D      ','ME_Dinv   ','ME_T(2)red'/))
         end if
       else
+       if (prc_iter.ge.1) then
+        call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',4,tgt_info,
+     &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                 'ME_Aoff   '/))
+       else
         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',3,tgt_info,
      &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag '/))
+       end if
       end if
       if (optref.ne.0) then
         if (update_prc.gt.0) then
@@ -4374,8 +4471,6 @@ c      if (optref.gt.0.and.icnt.ne.optref) then !not in last iteration
         call set_rule2('SOLVE_MRCC',SOLVEEVP,tgt_info)
         call set_arg('SOLVE_MRCC',SOLVEEVP,'LIST_OPT',1,tgt_info,
      &       val_label=(/'ME_C0'/))
-        call set_arg('SOLVE_MRCC',SOLVEEVP,'MODE',1,tgt_info,
-     &       val_str='DIA')
         call set_arg('SOLVE_MRCC',SOLVEEVP,'N_ROOTS',1,tgt_info,
      &       val_int=(/maxroot/))
         call set_arg('SOLVE_MRCC',SOLVEEVP,'TARG_ROOT',1,tgt_info,
@@ -4388,6 +4483,19 @@ c      if (optref.gt.0.and.icnt.ne.optref) then !not in last iteration
      &     val_label=(/'C0'/))
         call set_arg('SOLVE_MRCC',SOLVEEVP,'FORM',1,tgt_info,
      &       val_label=(/'FOPT_OMG_C0'/))
+        if (.not.spinproj) then
+          call set_arg('SOLVE_MRCC',SOLVEEVP,'MODE',1,tgt_info,
+     &         val_str='DIA')
+        else
+          call set_dependency('SOLVE_MRCC','DEF_ME_C0_sp',tgt_info)
+          call set_dependency('SOLVE_MRCC','FOPT_C0_sp',tgt_info)
+          call set_arg('SOLVE_MRCC',SOLVEEVP,'MODE',1,tgt_info,
+     &         val_str='SPP')
+          call set_arg('SOLVE_MRCC',SOLVEEVP,'LIST_SPC',1,tgt_info,
+     &         val_label=(/'ME_C0_sp'/))
+          call set_arg('SOLVE_MRCC',SOLVEEVP,'FORM_SPC',1,tgt_info,
+     &         val_label=(/'FOPT_C0_sp'/))
+        end if
 c dbg
         call form_parameters(-1,parameters,2,
      &       'CI coefficients :',0,'LIST')
