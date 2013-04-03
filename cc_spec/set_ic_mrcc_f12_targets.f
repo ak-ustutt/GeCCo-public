@@ -1038,14 +1038,14 @@ cc dbg
         call set_rule('SOLVE_MRCC_F12',ttype_opme,PRINT_MEL,
      &       'ME_C0',1,0,
      &       parameters,2,tgt_info)
-c        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
-c     &       'FOPT_REF_S(S+1)',1,0,
-c     &       parameters,0,tgt_info)
-c        call form_parameters(-1,parameters,2,
-c     &       'Spin expectation value <C0| S^2 |C0> :',0,'SCAL F20.12')
-c        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
-c     &       'ME_S(S+1)',1,0,
-c     &       parameters,2,tgt_info)
+        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
+     &       'FOPT_REF_S(S+1)',1,0,
+     &       parameters,0,tgt_info)
+        call form_parameters(-1,parameters,2,
+     &       'Spin expectation value <C0| S^2 |C0> :',0,'SCAL F20.12')
+        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+     &       'ME_S(S+1)',1,0,
+     &       parameters,2,tgt_info)
       end if
 c      call set_dependency('SOLVE_MRCC','FOPT_T_S2',tgt_info)
 c      call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,

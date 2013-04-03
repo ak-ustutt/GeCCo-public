@@ -58,7 +58,7 @@
      &     nas1(1:mxsym), nas2(1:mxsym), nas3(1:mxsym)
 
       ! check for inconsistent input -> set to 64 bit then
-      if (ispin.eq.0.or.lsym.eq.0.or.nrhf(1).eq.0) then
+      if (ispin.eq.0.or.lsym.eq.0.or.norb(1).eq.0) then
         write(luout,*) 'Trying 64-bit read-in routines ...'
         is_dalton64 = .true.
       else
