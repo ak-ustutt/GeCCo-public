@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine optc_prc_traf(me_amp,me_grd,me_dia,me_special,nspecial,
      &     nwfpar,xbuf1,xbuf2,
-     &     fspc,nspcfrm,xngrd,iopt,opti_info,
+     &     fspc,nspcfrm,xngrd,iopt,imacit,opti_info,
      &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
@@ -33,7 +33,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nspecial, iopt, nspcfrm, nwfpar
+     &     nspecial, iopt, nspcfrm, nwfpar, imacit
       type(me_list_array), intent(inout) ::
      &     me_special(nspecial)
       type(me_list), intent(in) ::
@@ -91,7 +91,8 @@
      &    me_special(2)%mel%fhand%last_mod(1)) then
         call update_metric(me_dia,me_special,nspecial,
      &      fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
-     &      opti_info%update_prc)
+     &      opti_info%update_prc.gt.0.and.
+     &      mod(imacit,max(opti_info%update_prc,1)).eq.0)
       else if (opti_info%optref.ne.0.and.iprlvl.ge.10) then
         write(luout,*) ' Metric is already up to date!'
       end if

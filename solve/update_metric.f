@@ -50,9 +50,11 @@
      &     op_info
 
       real(8) ::
-     &     xdum
+     &     xdum, prc_min
       integer ::
-     &     gno
+     &     gno, prc_type
+      character(len_opname) ::
+     &     dia_label
 
       if (nspcfrm.lt.2) call quit(1,'update_metric',
      &      'No formula for metric passed.')
@@ -119,10 +121,30 @@
         call evaluate2(fspc(3),.true.,.false.,
      &              op_info,str_info,strmap_info,orb_info,xdum,.false.)
 
+        ! first add inactive elements?
+        call get_argument_value('method.MR','prc_type',
+     &       ival=prc_type)
+        call get_argument_value('method.MR','prc_min',
+     &       xval=prc_min)
+        call me_list_label(dia_label,'DIA',1,0,0,0,.false.)
+        dia_label = trim(dia_label)//'_T'
+        if (prc_type.gt.0) then
+          if (prc_type.lt.3) call quit(1,'update_metric',
+     &       'preconditioner update only for type 0 and 3')
+          call set_prc4op(trim(dia_label),'dia-F',0d0,
+     &         (/'ME_FREF'/),1,-huge(1d1),
+     &         op_info,str_info,orb_info)
+        end if
+
         ! put diagonal of Jacobian to preconditioner
         call dia_from_op(trim(me_dia%label),
-     &                   trim(me_special(7)%mel%label),.false.,.false.,
+     &                   trim(me_special(7)%mel%label),
+     &                   prc_type.ge.3,.false.,
      &                   op_info,str_info,orb_info)
+
+        ! restrict elements to minimum value?
+        call scale_copy_op(trim(dia_label),trim(dia_label),prc_min,1,
+     &                     'prc_thresh',0,op_info,orb_info,str_info)
       end if
 
       return

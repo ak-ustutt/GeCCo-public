@@ -611,16 +611,16 @@ c dbg
           end if
         end do
 
-        if (smapre_num>0) then
-          write(luout,'(1x,a,i4,a,i9,a,g9.2)') 
-     &      'number of small preconditioner elements in block ',iblk,
-     &      ': ', smapre_num, '; set to ',prc_thres
-        end if
-        if (negpre_num>0) then
-          write(luout,'(1x,a,i9)') 
-     &    '     thereof negative: ',negpre_num
-          warning = .true.
-        end if
+c        if (smapre_num>0) then
+c          write(luout,'(1x,a,i4,a,i9,a,g9.2)') 
+c     &      'number of small preconditioner elements in block ',iblk,
+c     &      ': ', smapre_num, '; set to ',prc_thres
+c        end if
+c        if (negpre_num>0) then
+c          write(luout,'(1x,a,i9)') 
+c     &    '     thereof negative: ',negpre_num
+c          warning = .true.
+c        end if
 
         call put_vec(ffdia,buffer,me_dia%off_op_occ(iblk)+1,
      &                            me_dia%off_op_occ(iblk)+len_blk)

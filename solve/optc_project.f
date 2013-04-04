@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine optc_project(me_amp,me_trf,me_dia,me_special,nspecial,
-     &     nwfpar,xbuf1,fspc,nspcfrm,iopt,opti_info,
+     &     nwfpar,xbuf1,fspc,nspcfrm,iopt,imacit,opti_info,
      &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
@@ -35,7 +35,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nspecial, nspcfrm, nwfpar, iopt
+     &     nspecial, nspcfrm, nwfpar, iopt, imacit
       type(me_list_array), intent(inout) ::
      &     me_special(nspecial)
       type(me_list), intent(in) ::
@@ -85,7 +85,8 @@
      &      me_special(2)%mel%fhand%last_mod(1))
      &      call update_metric(me_dia,me_special,nspecial,
      &        fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
-     &        opti_info%update_prc)
+     &        opti_info%update_prc.gt.0.and.
+     &        mod(imacit,max(opti_info%update_prc,1)).eq.0)
       end if
 
       call assign_me_list(me_special(1)%mel%label,
@@ -121,12 +122,13 @@ c        call vec_to_da(ffamp,1,xbuf1,nwfpar)
 c      end if
 
       ! Now add "redundant" T components?
-      if (opti_info%update_prc.and.nspecial.ge.8.and.nspcfrm.ge.4.or.
-     &    .not.opti_info%update_prc.and.nspecial.ge.7.and.nspcfrm.ge.3)
+      if (opti_info%update_prc.gt.0.and.
+     &    nspecial.ge.8.and.nspcfrm.ge.4.or.
+     &    opti_info%update_prc.eq.0.and.nspecial.ge.7.and.nspcfrm.ge.3)
      &   then
         ! does T(3)red exist? If so, we need two steps
-        if (opti_info%update_prc.and.nspecial.eq.9.or.
-     &      .not.opti_info%update_prc.and.nspecial.eq.8) then
+        if (opti_info%update_prc.gt.0.and.nspecial.eq.9.or.
+     &      opti_info%update_prc.eq.0.and.nspecial.eq.8) then
           ! evaluate T(2)red (projector list is already assigned)
           call evaluate2(fspc(nspcfrm-1),.true.,.false.,
      &           op_info,str_info,strmap_info,orb_info,xdum,.false.)

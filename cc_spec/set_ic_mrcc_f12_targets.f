@@ -41,9 +41,9 @@
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
-     &     tfix, maxit, t1ord, maxcum, cum_appr_mode
+     &     tfix, maxit, t1ord, maxcum, cum_appr_mode, update_prc
       logical ::
-     &     update_prc, skip, preopt, project, first, Op_eqs,
+     &     skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
      &     oldref, solve, notrunc
       character(len_target_name) ::
@@ -77,8 +77,8 @@ c     &     xval=prc_shift)
      &     lval=svdonly)
       call get_argument_value('calculate.solve.non_linear','optref',
      &     ival=optref)
-c      call get_argument_value('calculate.solve.non_linear','update_prc',
-c     &     lval=update_prc)
+      call get_argument_value('calculate.solve.non_linear','update_prc',
+     &     ival=update_prc)
 c      call get_argument_value('calculate.solve.non_linear','preopt',
 c     &     lval=preopt)
 c      call get_argument_value('method.MR','project',
@@ -928,13 +928,13 @@ c      else
 c      end if
       call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'LIST_E',1,tgt_info,
      &     val_label=(/'ME_E(MR)'/))
-c      if (optref.ne.0.and.update_prc) then
+      if (optref.ne.0.and.update_prc.gt.0) then
 c        if (tred.eq.0) then
-c        call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
-c     &     val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
-c     &                 'ME_Dproj ',
-c     &                 'ME_D     ','ME_Dinv  ',
-c     &                 'ME_A     '/))
+        call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'LIST_SPC',7,tgt_info,
+     &     val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
+     &                 'ME_Dproj ',
+     &                 'ME_D     ','ME_Dinv  ',
+     &                 'ME_A     '/))
 c        else if (ex_t3red) then
 c        call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
 c        call set_dependency('SOLVE_MRCC','FOPT_T(3)red',tgt_info)
@@ -951,8 +951,8 @@ c     &                 'ME_Dproj  ',
 c     &                 'ME_D      ','ME_Dinv   ',
 c     &                 'ME_A      ','ME_T(2)red'/))
 c        end if
-c      else if (optref.ne.0.and..not.update_prc) then
-      if (optref.ne.0) then
+      else if (optref.ne.0.and.update_prc.le.0) then
+cc      if (optref.ne.0) then
         call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'LIST_SPC',6,tgt_info,
      &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
      &                 'ME_Dproj  ',
@@ -962,10 +962,10 @@ c      else if (optref.ne.0.and..not.update_prc) then
      &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag '/))
       end if
       if (optref.ne.0) then
-c        if (update_prc) then
+        if (update_prc.gt.0) then
 c          if (tred.eq.0) then
-c          call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',3,tgt_info,
-c     &         val_label=(/'FOPT_T  ','FOPT_D  ','FOPT_Atr'/))
+          call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'FORM_SPC',3,tgt_info,
+     &         val_label=(/'FOPT_T  ','FOPT_D  ','FOPT_Atr'/))
 c          else if (ex_t3red) then
 c          call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',5,tgt_info,
 c     &         val_label=(/'FOPT_T      ','FOPT_D      ',
@@ -977,10 +977,10 @@ c     &         val_label=(/'FOPT_T      ','FOPT_D      ',
 c     &                     'FOPT_Atr    ',
 c     &                     'FOPT_T(2)red'/))
 c          end if
-c        else
+        else
           call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'FORM_SPC',2,tgt_info,
      &         val_label=(/'FOPT_T','FOPT_D'/))
-c        end if
+        end if
       else
         call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'FORM_SPC',1,tgt_info,
      &       val_label=(/'FOPT_T'/))
@@ -1038,14 +1038,14 @@ cc dbg
         call set_rule('SOLVE_MRCC_F12',ttype_opme,PRINT_MEL,
      &       'ME_C0',1,0,
      &       parameters,2,tgt_info)
-c        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
-c     &       'FOPT_REF_S(S+1)',1,0,
-c     &       parameters,0,tgt_info)
-c        call form_parameters(-1,parameters,2,
-c     &       'Spin expectation value <C0| S^2 |C0> :',0,'SCAL F20.12')
-c        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
-c     &       'ME_S(S+1)',1,0,
-c     &       parameters,2,tgt_info)
+        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
+     &       'FOPT_REF_S(S+1)',1,0,
+     &       parameters,0,tgt_info)
+        call form_parameters(-1,parameters,2,
+     &       'Spin expectation value <C0| S^2 |C0> :',0,'SCAL F20.12')
+        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+     &       'ME_S(S+1)',1,0,
+     &       parameters,2,tgt_info)
       end if
 c      call set_dependency('SOLVE_MRCC','FOPT_T_S2',tgt_info)
 c      call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,

@@ -127,7 +127,7 @@ c dbg
      &             opti_info%typ_prc(iopt),
      &             nincore,opti_info%nwfpar(iopt),
      &             lenbuf,xbuf1,xbuf2,xbuf3,
-     &             fspc,nspcfrm,energy,xngrd,iopt,opti_info,
+     &             fspc,nspcfrm,energy,xngrd,iopt,imacit,opti_info,
      &             orb_info,op_info,str_info,strmap_info)
 
               shift = ndim_save.eq.opti_stat%ndim_rsbsp.and.iopt.eq.1
@@ -270,8 +270,8 @@ C     &            orb_info,op_info,str_info,strmap_info)
      &        opti_info%optref.ne.0.and.nspecial.ge.4) then
          call optc_project(me_opt(iopt)%mel,me_opt(iopt)%mel,
      &        me_dia(iopt)%mel,me_special,nspecial,
-     &        opti_info%nwfpar(iopt),xbuf1,fspc,nspcfrm,iopt,opti_info,
-     &        orb_info,op_info,str_info,strmap_info)
+     &        opti_info%nwfpar(iopt),xbuf1,fspc,nspcfrm,iopt,imacit,
+     &        opti_info,orb_info,op_info,str_info,strmap_info)
 
          end if
         end do
@@ -334,7 +334,7 @@ C     &            orb_info,op_info,str_info,strmap_info)
      &              me_opt(iopt)%mel,me_grd(iopt)%mel,me_dia(iopt)%mel,
      &              me_special,nspecial,
      &              opti_info%nwfpar(iopt),xbuf1,xbuf2,
-     &              fspc,nspcfrm,xngrd,iopt,opti_info,
+     &              fspc,nspcfrm,xngrd,iopt,imacit,opti_info,
      &              orb_info,op_info,str_info,strmap_info)
 
           else

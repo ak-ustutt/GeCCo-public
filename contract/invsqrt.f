@@ -67,7 +67,7 @@
 c      logical ::
 c     &     loop(nocc_cls)
       integer ::
-     &     ifree, nbuff, idxmsa, iocc_cls,
+     &     ifree, nbuff, idxmsa, iocc_cls, iexc_cls,
      &     msmax, msa, igama, idx, jdx, ngam,
      &     ioff, njoined,
      &     idxdis, lenca, iblkoff, ncblk, nablk,
@@ -78,7 +78,7 @@ c     &     loop(nocc_cls)
      &     gamc1, gamc2, gama1, gama2, igam, na1, na2, nc1, nc2, ij,
      &     maxbuf, ngraph, ioff2, idxmsa2, ndis2, idxdis2, idx2, nel,
      &     nsing, ising, itrip, ntrip, icnt_sv, icnt_sv0,
-     &     bins(17), nalph, nbeta, nc1mx, na1mx, jocc_cls, jblkoff,
+     &     nalph, nbeta, nc1mx, na1mx, jocc_cls, jblkoff,
      &     ncblk2, nablk2, len2(4), off_line2, off_col2, off_colmax,
 c dbg
 c     &     ipass,
@@ -123,7 +123,8 @@ c dbgend
      &     hpvx_csub2(:),hpvx_asub2(:),
      &     occ_csub2(:), occ_asub2(:),
      &     graph_csub2(:), graph_asub2(:),
-     &     iocc2(:,:,:),idx_g2(:,:,:)
+     &     iocc2(:,:,:),idx_g2(:,:,:),
+     &     bins(:,:), ex2occ_cls(:)
 
       type(filinf), pointer ::
      &     ffinp, ffinv, ffu
@@ -228,11 +229,13 @@ c dbgend
       icnt_sv0 = 0 ! number of singular values below threshold
       xmax = 0d0   ! largest excluded singular value
       xmin = 1234567890d0   ! smallest included singular value
+      allocate(blk_used(nocc_cls),blk_redundant(nocc_cls),
+     &         bins(17,nocc_cls),ex2occ_cls(nocc_cls))
       bins = 0 ! binning for singular values:
                ! >10E0,>10E-1,...,>10E-15,0
-      allocate(blk_used(nocc_cls),blk_redundant(nocc_cls))
       blk_used(1:nocc_cls) = .false.
       blk_redundant(1:nocc_cls) = .true.
+      iexc_cls = 0
 
       if (.not.half.and.max(iprlvl,ntest).ge.3) write(luout,*)
      &         'Input list will be overwritten by projector.'
@@ -243,6 +246,8 @@ c dbgend
         if (blk_used(iocc_cls)) cycle iocc_loop
         blk_used(iocc_cls) = .true.
         iblkoff = (iocc_cls-1)*njoined
+        iexc_cls = iexc_cls + 1
+        ex2occ_cls(iexc_cls) = iocc_cls
 
         if (ntest.ge.10) write(luout,*) 'current occ_cls: ',iocc_cls
         ! only one element? easy!
@@ -254,11 +259,13 @@ c dbgend
           if (get_u) then
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       half,buffer_u(ioff+1),get_u,
-     &                       xdum,icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       xdum,icnt_sv,icnt_sv0,xmax,xmin,
+     &                       bins(1,iexc_cls))
           else
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       half,xdummy,get_u, !buffer_u: dummy
-     &                       xdum,icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       xdum,icnt_sv,icnt_sv0,xmax,xmin,
+     &                       bins(1,iexc_cls))
           end if
           if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
      &       blk_redundant(iocc_cls) = .false.
@@ -456,11 +463,11 @@ c dbgend
                 ! calculate T^(-0.5) for both blocks
                 call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
      &                           svs,icnt_sv,icnt_sv0,
-     &                           xmax,xmin,bins)
+     &                           xmax,xmin,bins(1,iexc_cls))
                 call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
      &                           svs(nsing+min(1,ntrip)),!avoid segfault
      &                           icnt_sv,icnt_sv0,
-     &                           xmax,xmin,bins)
+     &                           xmax,xmin,bins(1,iexc_cls))
 
                 ! partial undo of pre-diagonalization: Upre*T^(-0.5)
                 call spinsym_traf(2,ndim,scratch,flipmap_c,nsing,
@@ -483,7 +490,8 @@ c dbgend
                 ! calculate S^(-0.5)
                 call invsqrt_mat(ndim,scratch,scratch2,
      &                           half,scratch3,get_u,svs,
-     &                           icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                           icnt_sv,icnt_sv0,xmax,xmin,
+     &                           bins(1,iexc_cls))
 
               end if
 
@@ -1235,11 +1243,11 @@ c dbgend
             ! calculate T^(-0.5) for both blocks
             call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
      &                       svs(idxst),icnt_sv,icnt_sv0,
-     &                       xmax,xmin,bins)
+     &                       xmax,xmin,bins(1,iexc_cls))
             call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
      &                       svs(idxst-1+nsing+min(1,ntrip)),!avoid segfault
      &                       icnt_sv,icnt_sv0,
-     &                       xmax,xmin,bins)
+     &                       xmax,xmin,bins(1,iexc_cls))
 
             ! partial undo of pre-diagonalization: Upre*T^(-0.5)
             call spinsym_traf(2,rdim,
@@ -1270,25 +1278,29 @@ c dbgend
      &                       scratch2(idxst:idxnd,idxst:idxnd),
      &                       half,
      &                       scratch3(idxst:idxnd,idxst:idxnd),get_u,
-     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
+     &                       bins(1,iexc_cls))
           else if (.not.half) then
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
      &                       scratch2(idxst:idxnd,idxst:idxnd),
      &                       half,xdummy,get_u, !scratch3: dummy
-     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
+     &                       bins(1,iexc_cls))
           else if (get_u) then
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
      &                       xdummy,half, !scratch2: dummy
      &                       scratch3(idxst:idxnd,idxst:idxnd),get_u,
-     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
+     &                       bins(1,iexc_cls))
           else
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
      &                       xdummy,half, !scratch2: dummy
      &                       xdummy,get_u, !scratch3: dummy
-     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,bins)
+     &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
+     &                       bins(1,iexc_cls))
           end if
 
            ! apply projector again: X = Q*U*s^(-0.5)
@@ -1554,22 +1566,35 @@ c dbgend
       enddo iocc_loop
       deallocate(blk_used)
 
+      ! (assuming name 'T' for cluster op.
+      op_t => op_info%op_arr(idx_oplist2('T',op_info))%op
+      if (is_keyword_set('method.MRCI').gt.0)
+     &   op_t => op_info%op_arr(idx_oplist2('C',op_info))%op
+
       if (ntest.ge.5) then
+        write(luout,'(x,77("="))')
+        write(luout,'(x,a)')
+     &       'Singular value histogram (by excitation classes)'
+        write(luout,'(x,a,x,14i10)') 'n_h = ',
+     &       op_t%ihpvca_occ(IHOLE,2,ex2occ_cls(1:iexc_cls))
+        write(luout,'(x,a,x,14i10)') 'n_p = ',
+     &       op_t%ihpvca_occ(IPART,1,ex2occ_cls(1:iexc_cls))
+        write(luout,'(x,77("-"))')
+        write(luout,'(x,a,x,14i10)') ' 1E+00',bins(1,1:iexc_cls)
+        do idx = 2, 16
+          write(luout,'(x,a,i2.2,x,14i10)') ' 1E-',idx-1,
+     &                                      bins(idx,1:iexc_cls)
+        end do
+        write(luout,'(x,a,x,14i10)') '     0',bins(17,1:iexc_cls)
+        write(luout,'(x,77("="))')
         write(luout,'(x,i8,a,i8,a)') icnt_sv-icnt_sv0,
      &        ' out of ',icnt_sv,' singular values were included'
         write(luout,'(x,a,E19.10)') 
      &        'The  largest excluded singular value is ',xmax
         write(luout,'(x,a,E19.10)')
      &        'The smallest included singular value is ',xmin
-        write(luout,'(x,a)') 'Singular value histogram'
-        write(luout,'(x,a)') '------------------------'
-        write(luout,'(x,a,x,i16)') ' 1E+00',bins(1)
-        do idx = 2, 16
-          write(luout,'(x,a,i2.2,x,i16)') ' 1E-',idx-1,bins(idx)
-        end do
-        write(luout,'(x,a,x,i16)') '     0',bins(17)
-        write(luout,'(x,a)') '------------------------'
       end if
+      deallocate(bins,ex2occ_cls)
  
       if (sgrm.and.any(blk_redundant(1:nocc_cls))) then
         ! Print out which blocks are redundant
@@ -1581,12 +1606,8 @@ c        write(luout,'(x,a)') 'There are redundant blocks in T:'
         call get_argument_value('method.MR','svdonly',lval=svdonly)
         if (svdonly) then
           ! Excplicitly print restrictions for input file
-          ! (assuming name 'T' for cluster op.
           write(luout,*)
           write(luout,'(x,a)') 'Copy the following into the input file:'
-          op_t => op_info%op_arr(idx_oplist2('T',op_info))%op
-          if (is_keyword_set('method.MRCI').gt.0)
-     &       op_t => op_info%op_arr(idx_oplist2('C',op_info))%op
           ih = -1
           ip = -1
           iexc = 0
