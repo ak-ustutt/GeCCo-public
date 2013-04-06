@@ -29,6 +29,7 @@
       allocate(strmap_info%idx_strmap(ngraph*ngraph))
       allocate(strmap_info%idx_fcmap(ngraph*ngraph))
       allocate(strmap_info%idx_flipmap(ngraph))
+      allocate(strmap_info%idx_spprjmap(ngraph))
 
       strmap_info%idx_strmap(1:ngraph*ngraph) = -1
       strmap_info%idx_last = 0
@@ -53,6 +54,14 @@
       do idx = 1, ngraph
         nullify(strmap_info%offsets_flip(idx)%ms)
         nullify(strmap_info%offsets_flip(idx)%msgm)
+      end do
+
+      strmap_info%idx_spprjmap(1:ngraph) = -1
+      allocate(strmap_info%offsets_spprj(ngraph))
+      allocate(strmap_info%maxlen_blk_spprj(ngraph))
+      do idx = 1, ngraph
+        nullify(strmap_info%offsets_spprj(idx)%ms)
+        nullify(strmap_info%offsets_spprj(idx)%msgm)
       end do
 
       call file_init(strmap_info%ffstrmap,

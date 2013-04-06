@@ -507,6 +507,10 @@
       call set_arg('_PROTO_',IMPORT,'ENV',1,tgt_info,
      &     val_str=trim(env_type),def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(SPIN_PROJECT,tgt_info)
+      call set_arg('_PROTO_',SPIN_PROJECT,'LIST',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(PRECONDITIONER,tgt_info)
       call set_arg('_PROTO_',PRECONDITIONER,'LIST_PRC',0,tgt_info,
      &     val_label=(/''/),req=.true.)

@@ -231,6 +231,7 @@ c dbg*
         nvtx_res = joined(0,num_res)
         if (nvtx_res.ne.2*op_res%njoined) then
           write(luout,*) 'nvtx_res, njoined: ',nvtx_res,op_res%njoined
+          write(luout,*) 'nvtx_res must be 2 times njoined!'
           call quit(1,'expand_op_product','inconsistency')
         end if
         njoined_res = nvtx_res/2

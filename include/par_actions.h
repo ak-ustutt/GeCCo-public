@@ -80,4 +80,5 @@
      &     SET_MEL*7          = 'SET_MEL',
      &     EXTRACT_DIAG*12    = 'EXTRACT_DIAG',
      &     REORDER_MEL*11     = 'REORDER_MEL',
+     &     SPIN_PROJECT*12    = 'SPIN_PROJECT',
      &     SCALE_COPY*10      = 'SCALE_COPY'

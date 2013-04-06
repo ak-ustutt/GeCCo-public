@@ -273,7 +273,8 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
                 write(luout,*) 'block contains only single distribution'
                 if (level.ge.3) then
                   if (level.ge.5)
-     &                 write(luout,*) 'index of first element:',idxoff+1
+     &                 write(luout,*) 'index of first element:',
+     &                                 idxoff+idxoff_blk+1
                   write(luout,'("+",77("."),"+")')
                   if (level.ge.5) then
                     if (scalar) then
@@ -327,7 +328,8 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
 
                 if (level.ge.3) then
                   if (level.ge.5)
-     &                 write(luout,*) 'index of first element:',idxoff+1
+     &                 write(luout,*) 'index of first element:',
+     &                                 idxoff+idxoff_blk+1
                   write(luout,'("+",77("."),"+")')
                   if (level.ge.5) then
                     call wrt_mel_blk_wi(luout,curblk(idxoff_blk+1),
