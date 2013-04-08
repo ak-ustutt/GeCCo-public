@@ -65,8 +65,8 @@
       call factor_out_subexpr2(form_link,fintm_head,nrpl,op_info)
 
 c dbg
-c      print *,'form after fact'
-c      call print_form_list(luout,form_link,op_info)
+      print *,'form after fact'
+      call print_form_list(luout,form_link,op_info)
 c dbg
 
       ! remove [END] from Intm list (if any)

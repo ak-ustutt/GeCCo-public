@@ -46,6 +46,11 @@ c      end do
       deallocate(strmap_info%idx_flipmap)
       deallocate(strmap_info%offsets_flip)
       deallocate(strmap_info%maxlen_blk_flip)
+
+      deallocate(strmap_info%idx_spprjmap)
+      deallocate(strmap_info%offsets_spprj)
+      deallocate(strmap_info%maxlen_blk_spprj)
+
       call file_delete(strmap_info%ffstrmap)
 
       call mem_clean_vbuffer('bfstrmap')

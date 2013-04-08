@@ -25,18 +25,20 @@
       integer, pointer ::
      &     new_idx_strmap(:), new_maxlen_blk(:),
      &     new_idx_flipmap(:), new_maxlen_blk_flip(:),
-     &     new_idx_fcmap(:), new_maxlen_blk_fc(:)
+     &     new_idx_fcmap(:), new_maxlen_blk_fc(:),
+     &     new_idx_spprjmap(:), new_maxlen_blk_spprj(:)
       type(strmap_offsets), pointer ::
      &     new_offsets(:)
       type(flpmap_offsets), pointer ::
      &     new_offsets_flip(:),
+     &     new_offsets_spprj(:),
      &     new_offsets_fc(:)
 
       ! everything OK?
       if (str_info%ngraph.le.strmap_info%mxgraph) return
 
 c dbg
-      print *,'!!UPDATING STRMAP_INFO!!'
+c      print *,'!!UPDATING STRMAP_INFO!!'
 c dbg
 
       ngraph = str_info%ngraph
@@ -45,10 +47,12 @@ c dbg
       allocate(new_idx_strmap(ngraph*ngraph))
       allocate(new_idx_fcmap(ngraph*ngraph))
       allocate(new_idx_flipmap(ngraph))
+      allocate(new_idx_spprjmap(ngraph))
 
       new_idx_strmap(1:ngraph*ngraph) = -1
       new_idx_fcmap (1:ngraph*ngraph) = -1
       new_idx_flipmap(1:ngraph) = -1
+      new_idx_spprjmap(1:ngraph) = -1
 
       allocate(new_offsets(ngraph*ngraph))
       allocate(new_maxlen_blk(ngraph*ngraph))
@@ -69,6 +73,13 @@ c dbg
       do idx = 1, ngraph
         nullify(new_offsets_flip(idx)%ms)
         nullify(new_offsets_flip(idx)%msgm)
+      end do
+
+      allocate(new_offsets_spprj(ngraph))
+      allocate(new_maxlen_blk_spprj(ngraph))
+      do idx = 1, ngraph
+        nullify(new_offsets_spprj(idx)%ms)
+        nullify(new_offsets_spprj(idx)%msgm)
       end do
 
       do igraph = 1, ngraph_old
@@ -112,6 +123,16 @@ c dbg
      &       strmap_info%offsets_flip(igraph)%msgm
       end do
 
+      do igraph = 1, ngraph_old
+        new_idx_spprjmap(igraph) = strmap_info%idx_spprjmap(igraph)
+        new_maxlen_blk_spprj(igraph) =
+     &                            strmap_info%maxlen_blk_spprj(igraph)
+        new_offsets_spprj(igraph)%ms =>
+     &       strmap_info%offsets_spprj(igraph)%ms
+        new_offsets_spprj(igraph)%msgm =>
+     &       strmap_info%offsets_spprj(igraph)%msgm
+      end do
+
       deallocate(strmap_info%idx_strmap,strmap_info%maxlen_blk,
      &           strmap_info%offsets)
 
@@ -132,6 +153,13 @@ c dbg
       strmap_info%idx_flipmap  => new_idx_flipmap
       strmap_info%maxlen_blk_flip => new_maxlen_blk_flip
       strmap_info%offsets_flip => new_offsets_flip
+
+      deallocate(strmap_info%idx_spprjmap,strmap_info%maxlen_blk_spprj,
+     &           strmap_info%offsets_spprj)
+
+      strmap_info%idx_spprjmap  => new_idx_spprjmap
+      strmap_info%maxlen_blk_spprj => new_maxlen_blk_spprj
+      strmap_info%offsets_spprj => new_offsets_spprj
 
       return
       end

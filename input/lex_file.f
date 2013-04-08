@@ -17,7 +17,7 @@
 
       integer ::
      &     un, lcnt
-      character(len=256) ::
+      character(len=512) ::
      &     line
 
       call file_open(inp_file)

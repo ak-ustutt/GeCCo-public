@@ -587,6 +587,17 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       reo,op_info
      &       )
 *----------------------------------------------------------------------*
+      case(REORDER_FORMULA)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),ANY)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_form(form0_pnt,trim(label),OLD)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call form_reorder(form_pnt,form0_pnt,
+     &       title,op_info
+     &       )
+*----------------------------------------------------------------------*
       case(DERIVATIVE)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
@@ -1033,6 +1044,16 @@ c dbg
 
         call reo_mel(label,label2,init,
      &       op_info,str_info,strmap_info,orb_info,idx,dagger)
+
+*----------------------------------------------------------------------*
+      case(SPIN_PROJECT)
+*----------------------------------------------------------------------*
+        call get_arg('LIST',rule,tgt_info,val_label=label)
+
+        if (form_test) return
+
+        call spin_prj_list_drv(label,
+     &       op_info,str_info,strmap_info,orb_info)
 
 *----------------------------------------------------------------------*
 *     subsection EVALUATE

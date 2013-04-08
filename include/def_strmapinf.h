@@ -40,4 +40,12 @@
         type(flpmap_offsets), pointer ::
      &     offsets_flip(:)
 
+        ! info for spin-projection-maps
+        integer, pointer ::
+     &     idx_spprjmap(:)
+        integer, pointer ::
+     &     maxlen_blk_spprj(:)
+        type(flpmap_offsets), pointer ::
+     &     offsets_spprj(:)
+
       end type strmapinf

@@ -53,7 +53,7 @@
 
 *----------------------------------------------------------------------*
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting general targets for R12 ...'
+     &     write(luout,*) 'setting general targets for F12 (SP) ...'
 
       msc = +1  ! assuming closed shell
 *----------------------------------------------------------------------*

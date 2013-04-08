@@ -276,6 +276,14 @@
       call set_arg('_PROTO_',SUM_HERMIT,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(REORDER_FORMULA,tgt_info)
+      call set_arg('_PROTO_',REORDER_FORMULA,'LABEL_RES',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',REORDER_FORMULA,'LABEL_IN',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',REORDER_FORMULA,'TITLE',1,tgt_info,
+     &     val_str='---',def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(INVARIANT,tgt_info)
       call set_arg('_PROTO_',INVARIANT,'LABEL_RES',0,tgt_info,
      &     val_label=(/''/),req=.true.)
@@ -498,6 +506,10 @@
      &     val_str='-',req=.true.)
       call set_arg('_PROTO_',IMPORT,'ENV',1,tgt_info,
      &     val_str=trim(env_type),def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(SPIN_PROJECT,tgt_info)
+      call set_arg('_PROTO_',SPIN_PROJECT,'LIST',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRECONDITIONER,tgt_info)
       call set_arg('_PROTO_',PRECONDITIONER,'LIST_PRC',0,tgt_info,
