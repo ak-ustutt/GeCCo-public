@@ -929,7 +929,7 @@ c dbgend
                 idxdis = 1
                 if (ndis.gt.1)
      &             idxdis =
-     &                 idx_msgmdst2(
+     &                 idx_msgmdst2(.true.,
      &                  jocc_cls,idxmsa,igama,
      &                  occ_csub2,idxmsdis_c,gamdis_c,ncblk2,
      &                  occ_asub2,idxmsdis_a,gamdis_a,nablk2,
@@ -961,7 +961,7 @@ c dbgend
                 idxdis2 = 1
                 if (ndis2.gt.1)
      &               idxdis2 =
-     &                   idx_msgmdst2(
+     &                   idx_msgmdst2(.true.,
      &                    jocc_cls,idxmsa2,igama,
      &                    occ_csub2,idxmsdis_c2,gamdis_c,ncblk2,
      &                    occ_asub2,idxmsdis_a2,gamdis_a,nablk2,
@@ -1463,7 +1463,7 @@ c     &        blk_redundant(iocc_cls+irank-1)
                 idxdis = 1
                 if (ndis.gt.1)
      &             idxdis =
-     &                 idx_msgmdst2(
+     &                 idx_msgmdst2(.true.,
      &                  jocc_cls,idxmsa,igama,
      &                  occ_csub2,idxmsdis_c,gamdis_c,ncblk2,
      &                  occ_asub2,idxmsdis_a,gamdis_a,nablk2,

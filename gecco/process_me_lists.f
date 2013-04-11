@@ -73,9 +73,12 @@
 
         call me_list_parameters(+1,rule%parameters,
      &       absym,casym,gamma,s2,ms,ms_fix)
+        if (s2.gt.0) call quit(1,'process_me_lists',
+     &               'use new interface for S2 argument')
 
         call define_me_list(rule%labels(1),rule%labels(2),
-     &       absym,casym,gamma,s2,ms,ms_fix,
+c     &       absym,casym,gamma,s2,ms,ms_fix,
+     &       absym,casym,gamma,-1,ms,ms_fix,
      &       -1,-1,-1,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
 

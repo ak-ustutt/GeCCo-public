@@ -469,7 +469,7 @@
       call set_arg('_PROTO_',DEF_ME_LIST,'CA_SYM',1,tgt_info,
      &     val_int=(/0/),def=.true.)
       call set_arg('_PROTO_',DEF_ME_LIST,'S2',1,tgt_info,
-     &     val_int=(/0/),def=.true.)
+     &     val_int=(/-1/),def=.true.)
       call set_arg('_PROTO_',DEF_ME_LIST,'MS_FIX',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
       call set_arg('_PROTO_',DEF_ME_LIST,'DIAG_TYPE',1,tgt_info,

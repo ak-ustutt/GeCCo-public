@@ -317,7 +317,7 @@ c     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
             idxdis_2 = 1
             if (meinp%off_op_gmox(iblkinp)%ndis(igamca,idxmsca).gt.1)
      &           idxdis_2 =
-     &               idx_msgmdst2(
+     &               idx_msgmdst2(.true.,
      &                iblkinp,idxmsca,igamca,
      &                occ_csub2,idxmsdis_c2,gamdis_c2,ncablk2,
      &                occ_asub2,idxmsdis_a2,gamdis_a2,ncablk2,

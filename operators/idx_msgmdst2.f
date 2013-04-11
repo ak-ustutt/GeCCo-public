@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      integer function idx_msgmdst2(
+      integer function idx_msgmdst2(err,
      &     iblk,idxmsa_blk,gama_blk,
      &     occ_c,idxms_c,gam_c,nc,
      &     occ_a,idxms_a,gam_a,na,
@@ -33,7 +33,7 @@
      &     mel
 
       logical, intent(in) ::
-     &     dagger
+     &     dagger, err
 
       integer ::
      &     mgdid, idx, idx_end
@@ -93,7 +93,7 @@ c dbg
         end if
       end do
 
-      if (idx_msgmdst2.eq.-1) then
+      if (idx_msgmdst2.eq.-1.and.err) then
 c dbg
 c        print *,'nsym = ',nsym
 c dbg

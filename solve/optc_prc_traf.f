@@ -112,6 +112,7 @@ c      call vec_from_da(me_grd%fhand,1,xbuf1,nwfpar)
 c        write(luout,*) 'untransformed gradient vector:'
 c        write(luout,*) xbuf1(1:nwfpar)
 c dbg
+
       ! assign op. to be transformed with list of gradient
       call assign_me_list(me_grd%label,
      &                    trim(op_trf_name),op_info)

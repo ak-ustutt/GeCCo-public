@@ -478,7 +478,7 @@ c dbg
               ! should be changed in order to pass sequentially
               ! through ORI list
               idxdis_tra =
-     &             idx_msgmdst2(
+     &             idx_msgmdst2(.true.,
      &                   iblkopori,idxms,igama,
      &                   cinfo_oporic,idxms_dis_c,
      &                              gm_dis_c,ncblk_opori,

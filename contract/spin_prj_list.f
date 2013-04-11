@@ -27,7 +27,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -64,7 +64,7 @@
       real(8), external ::
      &     ddot
 
-      if (ntest.ge.100) then
+      if (ntest.ge.50) then
         call write_title(luout,wst_dbg_subr,'spin_prj_list')
         write(luout,*) 'IN:  ',trim(me_in%label)
         write(luout,*) 'OUT: ',trim(me_out%label)
@@ -187,9 +187,6 @@
         end if
 
       end do iocc_loop
-c dbg
-              stop 'baustelle'
-c dbg
 
       if (open_close_in ) call file_close_keep(ffin)
       if (open_close_out.and..not.same) call file_close_keep(ffout)

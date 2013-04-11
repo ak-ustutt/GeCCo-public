@@ -568,7 +568,7 @@ c dbgend
                 ! --> offset in xop_reo
                 if (ndis_opreo(gm_op_a,idxms_op_a).gt.1) then
                   idxdis =
-     &                 idx_msgmdst2(
+     &                 idx_msgmdst2(.true.,
      &                 iblk_opreo,idxms_op_a,gm_op_a,
      &                 cinfo_opreo_c,idxms_ip_dis_c,
      &                               gm_ip_dis_c,ncblk_opreo,

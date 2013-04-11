@@ -209,7 +209,7 @@ c            offsets(nblk) = x2_off
               if (idxlist(0,lstr,ncsub+nasub,1).gt.0)
      &             cycle distr_loop
               
-              idxdis = idx_msgmdst2(iocc_cls,idxms,isym,
+              idxdis = idx_msgmdst2(.true.,iocc_cls,idxms,isym,
      &                              cinfo,idxms_dis,gm_dis,nasub,
      &                              cinfo,idxms_dis,gm_dis,nasub,
      &                              .false.,-1,-1,mel,nsym)

@@ -43,11 +43,11 @@
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
      &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno, update_prc,
-     &     prc_iter
+     &     prc_iter, spinproj
       logical ::
      &     skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, use_f12, restart, spinproj
+     &     oldref, solve, use_f12, restart
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -64,11 +64,6 @@
      &     x_ansatz, prc_shift, prc_min, prc_impfac
 
       if (iprlvl.gt.0) write(luout,*) 'setting icMRCC targets'
-
-      ! CAVEAT: should be adapted as soon as open-shell version
-      !         is up and running
-      msc = +1
-      if (orb_info%ims.ne.0) msc = 0
 
       ! get some keywords
       call get_argument_value('method.MR','maxexc',
@@ -91,7 +86,7 @@
       call get_argument_value('method.MR','svdonly',
      &     lval=svdonly)
       call get_argument_value('method.MR','spinproj',
-     &     lval=spinproj)
+     &     ival=spinproj)
       call get_argument_value('calculate.solve.non_linear','optref',
      &     ival=optref)
       call get_argument_value('calculate.solve.non_linear','update_prc',
@@ -155,6 +150,10 @@
       call get_argument_value('method.MR','GNO',
      &     ival=gno)
 
+      ! enforce spinflip symmetry for cluster op. and related ops.
+      msc = +1
+      if (orb_info%ims.ne.0) msc = 0
+
       if (ntest.ge.100) then
         write(luout,*) 'maxcom_en    = ', maxcom_en
         write(luout,*) 'maxcom_res   = ', maxcom
@@ -171,6 +170,11 @@
         write(luout,*) 'trunc        = ', trunc
         if (tfix.gt.0) write(luout,*) 'Tfix         = ', tfix
         if (t1ord.ge.0) write(luout,*) 'T1ord        = ', t1ord
+        if (spinproj.eq.1) then
+          write(luout,*) 'Using spin adapted reference function.'
+        else
+          write(luout,*) 'Using full spin adaptation.'
+        end if
       end if
 
       if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.abs(x_ansatz).ne.1d0
@@ -2958,7 +2962,6 @@ c dbgend
       call set_dependency('F_T_S2','S+',tgt_info)
       call set_dependency('F_T_S2','S-',tgt_info)
       call set_dependency('F_T_S2','Sz',tgt_info)
-      call set_dependency('F_T_S2','Sz_dum',tgt_info)
       call set_dependency('F_T_S2','T',tgt_info)
       ! (a) 1/2*(S+S- + S-S+)
       call set_rule2('F_T_S2',EXPAND_OP_PRODUCT,tgt_info)
@@ -2987,7 +2990,7 @@ c dbgend
      &     val_rl8=(/0.5d0/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &     val_log=(/.false./))
-      ! (b) + Sz^2 (Sz_dum is used to circumvent automatic "BCH" factor)
+      ! (b) + Sz^2
       call set_rule2('F_T_S2',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &     val_label=(/'F_T_S2'/))
@@ -2995,19 +2998,14 @@ c dbgend
      &     val_label=(/'S(S+1)'/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'OPERATORS',6,
      &     tgt_info,
-     &     val_label=(/'C0^+  ','T^+   ','Sz    ','Sz_dum',
+     &     val_label=(/'C0^+  ','T^+   ','Sz    ','Sz    ',
      &                 'T     ','C0    '/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &     val_int=(/2,3,4,5,6,7/))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &     val_log=(/.false./))
-      call set_rule2('F_T_S2',REPLACE,tgt_info)
-      call set_arg('F_T_S2',REPLACE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_T_S2'/))
-      call set_arg('F_T_S2',REPLACE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_T_S2'/))
-      call set_arg('F_T_S2',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'Sz_dum','Sz    '/))
+      call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'FIX_VTX',1,tgt_info,
+     &     val_log=(/.true./))
 c dbg
 c      call set_rule2('F_T_S2',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_T_S2',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -3672,6 +3670,9 @@ c dbgend
      &             val_int=(/1/))
       call set_arg('DEF_ME_T',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
+      if (spinproj.ge.2)
+     &   call set_arg('DEF_ME_T',DEF_ME_LIST,'S2',1,tgt_info,
+     &               val_int=(/0/))
 
       ! ME for Ttr
       call add_target2('DEF_ME_Ttr',.false.,tgt_info)
@@ -3753,6 +3754,9 @@ c dbgend
      &             val_int=(/1/))
       call set_arg('DEF_ME_OMG',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
+      if (spinproj.ge.2)
+     &   call set_arg('DEF_ME_OMG',DEF_ME_LIST,'S2',1,tgt_info,
+     &               val_int=(/0/))
 
       ! ME for transformed Residual
       call add_target2('DEF_ME_OMGtr',.false.,tgt_info)
@@ -4524,7 +4528,7 @@ c      if (optref.gt.0.and.icnt.ne.optref) then !not in last iteration
      &     val_label=(/'C0'/))
         call set_arg('SOLVE_MRCC',SOLVEEVP,'FORM',1,tgt_info,
      &       val_label=(/'FOPT_OMG_C0'/))
-        if (.not.spinproj) then
+        if (spinproj.eq.0) then
           call set_arg('SOLVE_MRCC',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='DIA')
         else

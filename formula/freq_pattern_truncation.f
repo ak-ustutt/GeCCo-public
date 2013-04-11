@@ -46,7 +46,7 @@
      &     structure(:,:)
 
       integer, external ::
-     &     factorial
+     &     ifac
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'freq_pattern_truncation')
@@ -169,9 +169,9 @@ c
             ! multiply with factor to correct for omitted ("redundant") terms
             factor = 1
             do ii = 1,maxcmp
-              factor = factor * factorial(sum(structure(ii,:)))
+              factor = factor * ifac(sum(structure(ii,:)))
               do jj = 1,nvtx
-                factor = factor / factorial(structure(ii,jj))
+                factor = factor / ifac(structure(ii,jj))
               end do
             end do
             form_pnt%contr%fac = form_pnt%contr%fac * factor

@@ -19,7 +19,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       integer, parameter ::
      &     idspn_prm2(2,3) = (/(/+1,+1/),

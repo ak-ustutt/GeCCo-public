@@ -194,7 +194,7 @@
             idxdis_2 = 1
             if (mel%off_op_gmox(iblk_2)%ndis(igamc,idxmsc).gt.1)
      &           idxdis_2 =
-     &               idx_msgmdst2(
+     &               idx_msgmdst2(.true.,
      &                iblk_2,idxmsc,igamc,
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,

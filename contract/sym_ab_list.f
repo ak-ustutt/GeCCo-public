@@ -28,7 +28,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -67,7 +67,7 @@
       real(8), external ::
      &     ddot
 
-      if (ntest.ge.100) then
+      if (ntest.ge.50) then
         call write_title(luout,wst_dbg_subr,'sym_ab_list')
         write(luout,*) 'IN:  ',trim(me_in%label)
         write(luout,*) 'OUT: ',trim(me_out%label)

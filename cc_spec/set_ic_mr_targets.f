@@ -38,7 +38,7 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     msc, maxexc, ip, ih, iv,
      &     gno, idef, iexc, jexc,
-     &     version(60), ivers, icnt, prc_type
+     &     version(60), ivers, icnt, prc_type, spinproj
       logical ::
      &     sv_fix, l_exist,
      &     l_icci, l_iccc, project, skip, Op_eqs, svdonly
@@ -96,6 +96,8 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
      &     ival=prc_type)
       call get_argument_value('method.MR','prc_shift',
      &     xval=prc_shift)
+      call get_argument_value('method.MR','spinproj',
+     &     ival=spinproj)
 
       if (.not.l_iccc.and.prc_type.ne.0.and.prc_type.ne.3.or.
      &    prc_type.gt.4.or.prc_type.ne.2.and.prc_shift.ne.0d0)
@@ -755,17 +757,22 @@ c     &               val_label=(/'F_HOLE','F_CUM ','F_D   '/))
      &              parameters,1,tgt_info)
 
       ! ME_D
-      call add_target('DEF_ME_D',ttype_opme,.false.,tgt_info)
+      call add_target2('DEF_ME_D',.false.,tgt_info)
       call set_dependency('DEF_ME_D','D',tgt_info)
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'ME_D'
-      labels(2) = 'D'
-      call me_list_parameters(-1,parameters,
-     &     msc,0,1,
-     &     0,0,.false.)
-      call set_rule('DEF_ME_D',ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
+      call set_rule2('DEF_ME_D',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_D',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_D'/))
+      call set_arg('DEF_ME_D',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'D'/))
+      call set_arg('DEF_ME_D',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_D',DEF_ME_LIST,'2MS',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg('DEF_ME_D',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &     val_int=(/msc/))
+      if (spinproj.ge.2)
+     &   call set_arg('DEF_ME_D',DEF_ME_LIST,'S2',1,tgt_info,
+     &        val_int=(/0/))
 
       ! inverted ME_D
       call add_target('DEF_ME_Dinv',ttype_opme,svdonly,tgt_info)

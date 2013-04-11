@@ -26,7 +26,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -51,7 +51,8 @@
      &     msa, msc, igama, igamc, idxa, idxc, ngam, lena, lenc,
      &     iblkoff, ncblk, nablk, msc_max, msa_max,
      &     istr, istr_csub0, istr_asub0, icmp, ngraph, maxbuf,
-     &     imap, ld_spprj_c, ld_spprj_a, idx, nmap, idxmap
+     &     imap, ld_spprj_c, ld_spprj_a, idx, nmap, idxmap,
+     &     nel, nn, is2, ncoup, naa, nca
       real(8) ::
      &     fac_off, fac_dia, relfac2
 
@@ -72,11 +73,12 @@
      &     offsets(:), maps_c(:,:), maps_a(:,:), nmaps_c(:), nmaps_a(:),
      &     hpvx_occ(:,:,:), ca_occ(:,:), idx_graph(:,:,:),
      &     ldim_op_c(:,:), ldim_op_a(:,:),
-     &     istr_csub(:,:), istr_asub(:,:), idxel(:)
+     &     istr_csub(:,:), istr_asub(:,:), idxel(:),
+     &     branch(:), psign(:)
       integer, pointer ::
      &     spprjmap_c(:), spprjmap_a(:)
       real(8), pointer ::
-     &     value(:)
+     &     value(:), coeff(:,:), overl(:)
 
       real(8), external ::
      &     ddot
@@ -84,7 +86,10 @@
      &     iocc_equal_n, next_msgamdist2, list_cmp
       integer, external ::
      &     ielprd, idx_msgmdst2, idx_str_blk3, std_spsign_msdis,
-     &     msa2idxms4op
+     &     msa2idxms4op, ibico, idxcount
+      integer, parameter ::
+     &     popcnt_par(16) = (/+1,-1,-1,+1,-1,+1,+1,-1,
+     &                        -1,+1,+1,-1,+1,-1,-1,+1/)
 
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'spin_prj_blk')
@@ -123,17 +128,48 @@
 
       msc_max = ca_occ(1,iblk)
       msa_max = ca_occ(2,iblk)
+      nel = msc_max + msa_max
 
       if (msc_max.ne.msa_max) 
      &      call quit(1,'spin_prj_blk',
      &                  'only particle-conserving operators!')
 
-      ! number of spin component linear combinations:
-      if (msc_max.eq.1) nsplc = 2
-      if (msc_max.eq.2) nsplc = 6
-      if (msc_max.eq.3) nsplc = 20
-      if (msc_max.ge.4) 
-     &   call quit(1,'spin_prj_blk','not yet very general, max. 3-body')
+      ! just scalar? Delete if not singlet
+      if (msc_max.eq.0.and.msa_max.eq.0) then
+        if (s2.eq.0) then
+          buffer_out(1) = buffer_in(1)
+        else
+          buffer_out(1) = 0d0
+        end if
+        ifree = mem_flushmark('spin_prj_blk')
+        return
+      end if
+
+      ! walk through branching diagram to get number of coupling pathes
+      allocate(branch(0:nel)) ! maximum 2*S
+      branch(0) = 1
+      branch(1:nel) = 0
+      do nn = 1, nel
+        if (mod(nn,2).eq.0) branch(0) = branch(1)
+        branch(nn) = branch(nn-1) ! always = 1
+        do is2 = mod(nn+1,2)+1, nn-2, 2
+          branch(is2) = branch(is2-1) + branch(is2+1)
+        end do
+      end do
+      ncoup = branch(s2)
+      deallocate(branch)
+
+      ! get number of possible alpha/beta permutations
+      nsplc = 0
+      if (mod(mel%mst+msc_max-msa_max,2).ne.0)
+     &   call quit(1,'spin_prj_blk','impossible 2Ms value')
+      !loop over distributions
+      do naa = 0, msa_max
+        nca = (mel%mst+2*naa+msc_max-msa_max)/2
+        if (nca.lt.0.or.nca.gt.msc_max) cycle
+        ! add number of permutations
+        nsplc = nsplc + ibico(msc_max,nca) * ibico(msa_max,naa)
+      end do
 
       allocate(hpvx_csub(ncblk),hpvx_asub(nablk),
      &         occ_csub(ncblk), occ_asub(nablk),
@@ -147,7 +183,8 @@
      &         offsets(nsplc), maps_c(nsplc,ncblk), maps_a(nsplc,nablk),
      &         nmaps_c(ncblk), nmaps_a(nablk),
      &         istr_csub(ncblk,nsplc),istr_asub(nablk,nsplc),
-     &         ldim_op_c(ncblk,nsplc),ldim_op_a(nablk,nsplc))
+     &         ldim_op_c(ncblk,nsplc),ldim_op_a(nablk,nsplc),
+     &         coeff(nsplc,ncoup),overl(ncoup),psign(nsplc))
 
       ! set HPVX and OCC info
       call condense_occ(occ_csub, occ_asub,
@@ -175,6 +212,8 @@
         write(luout,*) 'hpvx_asub  = ',hpvx_asub(1:nablk)
         write(luout,*) 'graph_csub = ',graph_csub(1:ncblk)
         write(luout,*) 'graph_asub = ',graph_asub(1:nablk)
+        write(luout,*) 'ncoup      = ',ncoup
+        write(luout,*) 'nsplc      = ',nsplc
       end if
 
       ! our target distributions
@@ -195,7 +234,7 @@
           msdis_a_tgt(1:2) = (/1,-1/)
         else if (nablk.eq.2.and.ncblk.eq.2) then
           msdis_c_tgt(1:2) = (/1,-1/)
-          msdis_c_tgt(1:2) = (/1,-1/)
+          msdis_a_tgt(1:2) = (/1,-1/)
         end if
       case(3)
         if (nablk.eq.1.and.ncblk.eq.1) then
@@ -246,7 +285,7 @@
      &     str_info,strmap_info,orb_info)
       ifree = mem_alloc_int(spprjmap_a,maxbuf,'spprjmap_a')
 c dbg
-      print *,'maxbuf(A)=',maxbuf
+c      print *,'maxbuf(A)=',maxbuf
 c dbg
 
       ! Loop over Irrep of annihilator string.
@@ -323,7 +362,8 @@ C          if (.not.ok) cycle
      &            ldim_op_c,ldim_op_a,gsign,
      &            nsplc,mel,iblk,ioff0,igama,ngam,graphs,
      &            msdis_c,gamdis_c,hpvx_csub,occ_csub,graph_csub,ncblk,
-     &            msdis_a,gamdis_a,hpvx_asub,occ_asub,graph_asub,nablk) 
+     &            msdis_a,gamdis_a,hpvx_asub,occ_asub,graph_asub,nablk,
+     &            s2,mel%mst,ncoup,coeff) 
 
           call get_spprjmap_blk(spprjmap_c,
      &         ncblk,occ_csub,len_str,graph_csub,idxmsdis_c,gamdis_c,
@@ -386,9 +426,18 @@ C          if (.not.ok) cycle
      &             + idx_str_blk3(istr_csub(1,isplc),istr_asub(1,isplc),
      &                            ldim_op_c(1,isplc),ldim_op_a(1,isplc),
      &                            ncblk,nablk)
+                ! relative sign if index appears multiple times
+                psign(isplc) = popcnt_par(idxcount(idxel(isplc),idxel,
+     &                                             isplc,1))
 
+                ! asign and csign are not needed because the
+                ! alpha/beta strings are in the order in which they
+                ! are considered in set_spinprj_info.
+                ! exception is repeated indices, for which we assume
+                ! that the first appearance has the correct order
                 value(isplc) = buffer_in(idxel(isplc))*
-     &               dble(asign(isplc)*csign(isplc))
+     &               dble(psign(isplc))
+c     &               dble(asign(isplc)*csign(isplc))
 
               end do
 
@@ -399,32 +448,46 @@ c dbg
               if (nsplc.le.6) then
                 ! if any of these indices is zero, this means
                 ! that the element has been treated before
-                if (idxel(2).eq.0.or.idxel(3).eq.0.or.
-     &              idxel(4).eq.0.or.idxel(5).eq.0) cycle
-                print '(x,a,20i6)','idx = ',idxel(1:nsplc)
-                print '(x,a,20f12.6)','val = ',value(1:nsplc)
+                if (nsplc.eq.6.and.(idxel(2).eq.0.or.idxel(3).eq.0.or.
+     &              idxel(4).eq.0.or.idxel(5).eq.0)) cycle
+c                print '(x,a,20i6)','idx = ',idxel(1:nsplc)
+c                print '(x,a,20f12.6)','val = ',value(1:nsplc)
               else
                 ! I am not yet sure about, how to decide whether
                 ! we are on a element that has been spin projected
                 ! before; most likely elements 4,6,7,14,15,17,18 
                 ! could be good candidates
-                if (idxel(4).eq.0.or.idxel(6).eq.0.or.idxel(7).eq.0) 
+                ! elements 6 and 15 seem to work for the three-particle
+                ! density matrices in ic-MRCCSD
+                if (idxel(6).eq.0.or.idxel(15).eq.0) 
      &                cycle
-                print '(x,a,i6,x,9i6)','idx = ',idxel(1:10)
-                print '(x,a,6x,x,9i6,x,i6)','      ',idxel(11:20)
-                print '(x,a,f12.6)','val = ',value(1)
-                print '(x,a,3f12.6,x,3f12.6)', '      ',value(2:7)
-                print '(x,a,3f12.6,x,3f12.6)', '      ',value(8:13)
-                print '(x,a,3f12.6,x,3f12.6)', '      ',value(14:19)
-                print '(x,a,3f12.6,x,3f12.6)', '      ',value(20)
+c                print '(x,a,i6,x,9i6)','idx = ',idxel(1:10)
+c                print '(x,a,6x,x,9i6,x,i6)','      ',idxel(11:20)
+c                print '(x,a,f12.6)','val = ',value(1)
+c                print '(x,a,3f12.6,x,3f12.6)', '      ',value(2:7)
+c                print '(x,a,3f12.6,x,3f12.6)', '      ',value(8:13)
+c                print '(x,a,3f12.6,x,3f12.6)', '      ',value(14:19)
+c                print '(x,a,3f12.6,x,3f12.6)', '      ',value(20)
               end if
 c dbg
 
 
-              ! spin-adapt
-
+              ! spin-adapt: project onto the desired spin components
+              call dgemv('t',nsplc,ncoup,1d0,coeff,nsplc,
+     &                   value,1,0d0,overl,1)
+              call dgemv('n',nsplc,ncoup,1d0,coeff,nsplc,
+     &                   overl,1,0d0,value,1)
 
               ! distribute values
+              do isplc = 1, nsplc
+
+                if (csign(isplc)*asign(isplc).eq.0) cycle
+
+                buffer_out(idxel(isplc)) = value(isplc)*
+     &               dble(psign(isplc))
+c     &               dble(asign(isplc)*csign(isplc))
+
+              end do
 
 
             end do idxc_loop
@@ -446,7 +509,8 @@ c dbg
      &         maps_c, maps_a,
      &         nmaps_c, nmaps_a,
      &         istr_csub,istr_asub,
-     &         ldim_op_c,ldim_op_a)
+     &         ldim_op_c,ldim_op_a,
+     &         coeff,overl)
 
       ifree = mem_flushmark('spin_prj_blk')
 

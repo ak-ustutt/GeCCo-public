@@ -259,7 +259,7 @@ c test
             idxdis_1 = 1
             if (mel%off_op_gmox(iblk)%ndis(igama,idxmsa).gt.1)
      &           idxdis_1 =
-     &               idx_msgmdst2(
+     &               idx_msgmdst2(.true.,
      &                iblk,idxmsa,igama,
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
@@ -279,7 +279,7 @@ c test
             idxdis_2 = 1
             if (mel%off_op_gmox(iblk)%ndis(igama,idxmsa2).gt.1)
      &           idxdis_2 =
-     &               idx_msgmdst2(
+     &               idx_msgmdst2(.true.,
      &                iblk,idxmsa2,igama,
      &                occ_csub,idxmsdis_c2,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a2,gamdis_a,nablk,

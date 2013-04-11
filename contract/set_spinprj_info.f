@@ -2,7 +2,8 @@
      &           ldim_op_c,ldim_op_a,gsign,
      &           nsplc,mel,iblk,ioff0,igama,ngam,graphs,
      &           msdis_c,gamdis_c,hpvx_csub,occ_csub,graph_csub,ncblk,
-     &           msdis_a,gamdis_a,hpvx_asub,occ_asub,graph_asub,nablk)
+     &           msdis_a,gamdis_a,hpvx_asub,occ_asub,graph_asub,nablk,
+     &           s2,ms2,ncoup,coeff)
 
       implicit none
 
@@ -13,10 +14,11 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &    ntest = 100
+     &    ntest = 00
 
       integer, intent(in) ::
-     &    nsplc, iblk, ioff0, igama, ngam, ncblk, nablk
+     &    nsplc, iblk, ioff0, igama, ngam, ncblk, nablk,
+     &    s2, ms2, ncoup
       integer, intent(in) ::
      &    msdis_c(ncblk), gamdis_c(ncblk), hpvx_csub(ncblk), 
      &    occ_csub(ncblk), graph_csub(ncblk),
@@ -30,6 +32,8 @@
      &    gsign(nsplc), offsets(nsplc), 
      &    maps_c(nsplc,ncblk), maps_a(nsplc,nablk),
      &    ldim_op_c(ncblk,nsplc), ldim_op_a(nablk,nsplc)
+      real(8), intent(out) ::
+     &    coeff(nsplc,ncoup)
 
       integer ::
      &    isplc, idxmsa, idxdis, occ, msc, msa
@@ -79,6 +83,8 @@
           write(luout,*) 'msdiscmp_a = ',msdiscmp_a(1:nablk,isplc)
           write(luout,*) 'maps_c = ',maps_c(isplc,1:ncblk)
           write(luout,*) 'maps_a = ',maps_a(isplc,1:nablk)
+          write(luout,'(a,10f10.6)') 'coupling coefficients: ',
+     &                               coeff(isplc,1:ncoup)
         end if
 
         gsign(isplc)=
@@ -95,13 +101,17 @@
         idxdis = 1
         if (mel%off_op_gmox(iblk)%ndis(igama,idxmsa).gt.1)
      &           idxdis =
-     &               idx_msgmdst2(
+     &               idx_msgmdst2(.false., !don't give error
      &                iblk,idxmsa,igama,
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
      &                .false.,-1,-1,mel,ngam)
+        if (idxdis.lt.0) then
+          offsets(isplc) = 0
+        else
         offsets(isplc) = mel%off_op_gmox(iblk)%
      &             d_gam_ms(idxdis,igama,idxmsa) - ioff0
+        end if
 
         call set_len_str(len_str,ncblk,nablk,
      &                   graphs,
@@ -175,6 +185,10 @@
      &             spin_ref_a(ioff+1:ioff+len),len)
               ioff = ioff+len
             end do
+
+            ! Get genealogical coupling coefficients for this string
+            call get_genealogical_coeff(s2,ms2,npart,npart,ncoup,
+     &               coeff(idx_spc,1:ncoup),spin_dis_c,spin_dis_a)
 
           end if
           if (.not.next_dist2(spin_dis_c,npart,mind,maxd,-2)) exit cloop
