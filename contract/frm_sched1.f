@@ -182,7 +182,7 @@
 
             ! spin projections: either full or only spin-flip symmetry
             if (me_res%s2.ge.0) then
-              call spin_prj_list(1d0,me_res,me_res,
+              call spin_prj_list(1d0,me_res,me_res,-1,
      &             xret_blk,.true.,
      &             op_info,str_info,strmap_info,orb_info)
             ! in case of splin-flip symmetry exploitation:

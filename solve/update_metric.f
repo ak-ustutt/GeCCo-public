@@ -52,7 +52,7 @@
       real(8) ::
      &     xdum, prc_min, prc_impfac
       integer ::
-     &     gno, prc_type, prc_iter
+     &     gno, prc_type, prc_iter, spinproj
       character(len_opname) ::
      &     dia_label
 
@@ -61,10 +61,22 @@
       if (nspecial.lt.6) call quit(1,'update_metric',
      &      'Not enough special lists passed.')
       call get_argument_value('method.MR','GNO',ival=gno)
+      call get_argument_value('method.MR','spinproj',ival=spinproj)
 
       ! calculate metric (if not up to date)
       call evaluate2(fspc(2),.true.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
+
+      if (gno.gt.0) then
+        ! perform spin projection?
+        if (spinproj.ge.2)
+     &     call spin_prj_list(1d0,me_special(5)%mel,me_special(5)%mel,0,
+     &                        xdum,.false.,
+     &                        op_info,str_info,strmap_info,orb_info)
+        ! transform to GNO basis
+        call evaluate2(fspc(3),.false.,.false.,
+     &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
+      end if
 
       ! get half-transform of square root of inverted metric
       ! and projector matrix
@@ -75,17 +87,17 @@
 
       ! Trafo into GNO basis required?
       if (gno.gt.0) then
-        if (nspcfrm.lt.4) call quit(1,'update_metric',
+        if (nspcfrm.lt.5) call quit(1,'update_metric',
      &             'Not enough formulas for trafo into GNO basis given')
         ! apply GNO trafo to transformation matrix
         call assign_me_list(me_special(6)%mel%label,
      &                     me_special(5)%mel%op%name,op_info)
-        call evaluate2(fspc(3),.false.,.false.,
+        call evaluate2(fspc(4),.false.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
         ! apply GNO trafo to projector
         call assign_me_list(me_special(5)%mel%label,
      &                     me_special(5)%mel%op%name,op_info)
-        call evaluate2(fspc(4),.false.,.false.,
+        call evaluate2(fspc(5),.false.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
       end if
 

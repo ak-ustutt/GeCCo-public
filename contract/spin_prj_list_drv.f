@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine spin_prj_list_drv(label,op_info,
+      subroutine spin_prj_list_drv(label,s2,op_info,
      &                      str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 * driver for spin_prj_list
@@ -22,6 +22,8 @@
 
       character(len=*), intent(in) ::
      &     label
+      integer, intent(in) ::
+     &     s2
       type(operator_info), intent(inout) ::
      &     op_info
       type(strinf), intent(in) ::
@@ -46,11 +48,11 @@
       ifree = mem_setmark('spin_prj_mel')
 
       idx = idx_mel_list(label,op_info)
-      if (idx.lt.0) call quit(1,'spin_prj_mel_drv',
+      if (idx.lt.0) call quit(1,'spin_prj_list_drv',
      &                           'label not on list: '//trim(label))
       me => op_info%mel_arr(idx)%mel
 
-      call spin_prj_list(1.0,me,me,
+      call spin_prj_list(1.0,me,me,s2,
      &     xdum,.false.,
      &     op_info,str_info,strmap_info,orb_info)
 

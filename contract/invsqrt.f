@@ -86,7 +86,7 @@ c dbgend
      &     off_linmax, maxbuf_tmp,
      &     rankdim(maxrank), rankoff(maxrank), nrank,
      &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2,
-     &     icnt_cur, ih, ip, iexc
+     &     icnt_cur, ih, ip, iexc, tocc_cls
       real(8) ::
      &     fac, xmax, xmin, xdum, omega2
       real(8), pointer ::
@@ -135,7 +135,7 @@ c dbgend
      &     ielprd, idx_msgmdst2, idx_str_blk3, msa2idxms4op, idxcount,
      &     idxlist, idx_oplist2
       logical, external ::
-     &     next_tupel_ca
+     &     next_tupel_ca, occ_is_diag_blk
 
       if (ntest.ge.100) write(luout,*) 'entered invsqrt'
 c dbg
@@ -236,18 +236,21 @@ c dbgend
       blk_used(1:nocc_cls) = .false.
       blk_redundant(1:nocc_cls) = .true.
       iexc_cls = 0
+      tocc_cls = 0
 
       if (.not.half.and.max(iprlvl,ntest).ge.3) write(luout,*)
      &         'Input list will be overwritten by projector.'
 
       ! Loop over occupation class.
       iocc_loop: do iocc_cls = 1, nocc_cls
+        iblkoff = (iocc_cls-1)*njoined
+        if (occ_is_diag_blk(hpvx_occ(1,1,iblkoff+1),njoined))
+     &     tocc_cls = tocc_cls + 1 ! increment occ.cls of corresp. Op.
         if(op_inp%formal_blk(iocc_cls)) cycle iocc_loop
         if (blk_used(iocc_cls)) cycle iocc_loop
         blk_used(iocc_cls) = .true.
-        iblkoff = (iocc_cls-1)*njoined
         iexc_cls = iexc_cls + 1
-        ex2occ_cls(iexc_cls) = iocc_cls
+        ex2occ_cls(iexc_cls) = tocc_cls
 
         if (ntest.ge.10) write(luout,*) 'current occ_cls: ',iocc_cls
         ! only one element? easy!

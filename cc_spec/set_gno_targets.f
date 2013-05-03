@@ -32,7 +32,8 @@
 
       integer ::
      &     ndef, occ_def(ngastp,2,60), msc, maxexc, iv, maxcum,
-     &     ioff, gno, nv, cum_appr_mode, idef, maxmetric
+     &     ioff, gno, nv, cum_appr_mode, idef, maxmetric,
+     &     spinproj
       logical ::
      &     pure_vv
       character(len_target_name) ::
@@ -104,6 +105,8 @@
      &        'GNO=1 and pure_vv=T currently forbidden')
         maxcum = ioff+2*maxexc-3
       end if
+      call get_argument_value('method.MR','spinproj',
+     &     ival=spinproj)
 
       if (ntest.ge.100) then
         write(luout,*) 'maxcum       = ',maxcum
@@ -1073,6 +1076,48 @@ c dbg
       call set_arg('H_GNO',PRINT_MEL,'COMMENT',1,tgt_info,
      &             val_str='Normal ordered Hamiltonian:')
 c dbgend
+
+      ! Matrix Y for transformation to GNO basis
+      ! For now, it's simply minus the one-particle density matrix
+      call add_target2('Y_GNO',.false.,tgt_info)
+      call set_rule2('Y_GNO',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('Y_GNO',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &             val_label=(/'Y_GNO'/))
+      call set_arg('Y_GNO',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &             val_str=',V|V,')
+      call set_arg('Y_GNO',DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+     &             val_int=(/2/))
+      call set_rule2('Y_GNO',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('Y_GNO',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'F_Y_GNO'/))
+      call set_arg('Y_GNO',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'Y_GNO'/))
+      call set_arg('Y_GNO',EXPAND_OP_PRODUCT,'OPERATORS',6,tgt_info,
+     &             val_label=(/'Y_GNO','C0^+ ','Y_GNO',
+     &                         'Y_GNO','C0   ','Y_GNO'/))
+      call set_arg('Y_GNO',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &             val_int=(/1,2,1,1,3,1/))
+      call set_arg('Y_GNO',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/-1d0/))
+c dbg
+      call set_rule2('Y_GNO',PRINT_FORMULA,tgt_info)
+      call set_arg('Y_GNO',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_Y_GNO'/))
+c dbgend
+      call set_rule2('Y_GNO',DEF_ME_LIST,tgt_info)
+      call set_arg('Y_GNO',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Y_GNO'/))
+      call set_arg('Y_GNO',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'Y_GNO'/))
+      call set_arg('Y_GNO',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('Y_GNO',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('Y_GNO',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      if (spinproj.ge.2)
+     &   call set_arg('Y_GNO',DEF_ME_LIST,'S2',1,tgt_info,
+     &                val_int=(/0/))
 
       return
       end

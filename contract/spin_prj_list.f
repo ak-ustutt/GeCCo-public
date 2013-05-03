@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine spin_prj_list(fac,me_in,me_out,
+      subroutine spin_prj_list(fac,me_in,me_out,s2_in,
      &     xnorm2_blk,update_norm,
      &     op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
@@ -45,6 +45,8 @@
      &     xnorm2_blk(*)
       logical, intent(in) ::
      &     update_norm
+      integer, intent(in) ::
+     &     s2_in
 
       logical ::
      &     bufin, bufout, open_close_in, open_close_out, same
@@ -64,11 +66,14 @@
       real(8), external ::
      &     ddot
 
+      s2 = s2_in
+      if (s2.lt.0) s2 = me_out%s2
+
       if (ntest.ge.50) then
         call write_title(luout,wst_dbg_subr,'spin_prj_list')
         write(luout,*) 'IN:  ',trim(me_in%label)
         write(luout,*) 'OUT: ',trim(me_out%label)
-        write(luout,*) 's2 = ',me_out%s2
+        write(luout,*) 's2 = ',s2
       end if
       if (ntest.ge.1000) then
         write(luout,*) 'elements on input:'
@@ -78,7 +83,6 @@
      &       str_info,orb_info)
       end if
 
-      s2 = me_out%s2
       if (s2.ne.0)
      &     call quit(1,'spin_prj_list',
      &     'not a singlet case, list='//trim(me_out%label))

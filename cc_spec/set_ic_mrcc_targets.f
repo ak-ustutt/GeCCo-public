@@ -3037,7 +3037,7 @@ c dbgend
       call add_target2('F_Dinv_GNO',.false.,tgt_info)
       call set_dependency('F_Dinv_GNO','D',tgt_info)
       if (gno.gt.0) then
-        call set_dependency('F_Dinv_GNO','CUM',tgt_info)
+        call set_dependency('F_Dinv_GNO','Y_GNO',tgt_info)
         do i_cls = 1, nsupD
           call set_rule2('F_Dinv_GNO',EXPAND_OP_PRODUCT,tgt_info)
           call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'LABEL',1,
@@ -3046,8 +3046,8 @@ c dbgend
      &         tgt_info,val_label=(/'D'/))
           call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'OPERATORS',11,
      &         tgt_info,
-     &         val_label=(/'D  ','D  ','CUM','D  ','D  ','CUM',
-     &                     'D  ','D  ','D  ','D  ','D  '/))
+     &         val_label=(/'D    ','D    ','Y_GNO','D    ','D    ',
+     &             'Y_GNO','D    ','D    ','D    ','D    ','D    '/))
           call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'IDX_SV',11,
      &         tgt_info,val_int=(/1,2,3,1,1,3,2,1,1,2,1/))
           call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'BLK_MIN',3,
@@ -3064,6 +3064,8 @@ c dbgend
      &                   3,4,5,6,3,6,3,8,3,10/))
           call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'FIX_VTX',1,
      &         tgt_info,val_log=(/.true./))
+          call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'FAC',1,
+     &         tgt_info,val_rl8=(/-1d0/))
           call set_arg('F_Dinv_GNO',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &         val_log=(/i_cls.eq.1/))
         end do
@@ -3078,7 +3080,7 @@ c dbgend
       call add_target2('F_Dproj_GNO',.false.,tgt_info)
       call set_dependency('F_Dproj_GNO','D',tgt_info)
       if (gno.gt.0) then
-        call set_dependency('F_Dproj_GNO','CUM',tgt_info)
+        call set_dependency('F_Dproj_GNO','Y_GNO',tgt_info)
         do i_cls = 1, nsupD
           ! first multiply from left
           call set_rule2('F_Dproj_GNO',EXPAND_OP_PRODUCT,tgt_info)
@@ -3088,8 +3090,8 @@ c dbgend
      &         tgt_info,val_label=(/'D'/))
           call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'OPERATORS',11,
      &         tgt_info,
-     &         val_label=(/'D  ','D  ','CUM','D  ','D  ','CUM',
-     &                     'D  ','D  ','D  ','D  ','D  '/))
+     &         val_label=(/'D    ','D    ','Y_GNO','D    ','D    ',
+     &             'Y_GNO','D    ','D    ','D    ','D    ','D    '/))
           call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'IDX_SV',11,
      &         tgt_info,val_int=(/1,2,3,1,1,3,2,1,1,2,1/))
           call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'BLK_MIN',3,
@@ -3106,6 +3108,8 @@ c dbgend
      &                   3,4,5,6,3,6,3,8,3,10/))
           call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'FIX_VTX',1,
      &         tgt_info,val_log=(/.true./))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'FAC',1,
+     &         tgt_info,val_rl8=(/-1d0/))
           call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &         val_log=(/i_cls.eq.1/))
           ! now from right: will also lead to contributions from both
@@ -3116,8 +3120,8 @@ c dbgend
      &         tgt_info,val_label=(/'D'/))
           call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'OPERATORS',11,
      &         tgt_info,
-     &         val_label=(/'D  ','D  ','D  ','D  ','D  ','CUM',
-     &                     'D  ','D  ','CUM','D  ','D  '/))
+     &         val_label=(/'D    ','D    ','D    ','D    ','D    ',
+     &             'Y_GNO','D    ','D    ','Y_GNO','D    ','D    '/))
           call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'IDX_SV',11,
      &         tgt_info,val_int=(/1,2,1,1,2,3,1,1,3,2,1/))
           call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'BLK_MIN',3,
@@ -3134,6 +3138,8 @@ c dbgend
      &                   6,10,5,9,6,9,4,9,2,9/))
           call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'FIX_VTX',1,
      &         tgt_info,val_log=(/.true./))
+          call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'FAC',1,
+     &         tgt_info,val_rl8=(/-1d0/))
           call set_arg('F_Dproj_GNO',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &         val_log=(/.false./))
         end do
@@ -3142,6 +3148,76 @@ c dbg
 c      call set_rule2('F_Dproj_GNO',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_Dproj_GNO',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_Dproj_GNO'/))
+c dbgend
+
+      ! Formula to transform metric to GNO
+      call add_target2('F_D_GNO',.false.,tgt_info)
+      call set_dependency('F_D_GNO','D',tgt_info)
+      if (gno.gt.0) then
+        call set_dependency('F_D_GNO','Y_GNO',tgt_info)
+        do i_cls = 1, nsupD
+          ! first multiply from left with Y (on paper: Y^+)
+          call set_rule2('F_D_GNO',EXPAND_OP_PRODUCT,tgt_info)
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'LABEL',1,
+     &         tgt_info,val_label=(/'F_D_GNO'/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &         tgt_info,val_label=(/'D'/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'OPERATORS',11,
+     &         tgt_info,
+     &         val_label=(/'D    ','D    ','Y_GNO','D    ','D    ',
+     &             'Y_GNO','D    ','D    ','D    ','D    ','D    '/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'IDX_SV',11,
+     &         tgt_info,val_int=(/1,2,3,1,1,3,2,1,1,2,1/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'BLK_MIN',3,
+     &         tgt_info,
+     &         val_int=(/stndD(1,i_cls),stndD(1,i_cls),1/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'BLK_MAX',3,
+     &         tgt_info,
+     &         val_int=(/stndD(2,i_cls),stndD(2,i_cls),-1/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'N_AVOID',1,
+     &         tgt_info,val_int=(/11/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'AVOID',22,
+     &         tgt_info,
+     &         val_int=(/2,7,2,8,2,10,5,8,5,10,7,10,
+     &                   3,7,3,8,3,10,3,6,2,6/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &         tgt_info,val_log=(/.true./))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &         val_log=(/i_cls.eq.1/))
+          ! now from right: will also lead to contributions from both
+          call set_rule2('F_D_GNO',EXPAND_OP_PRODUCT,tgt_info)
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'LABEL',1,
+     &         tgt_info,val_label=(/'F_D_GNO'/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &         tgt_info,val_label=(/'D'/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'OPERATORS',11,
+     &         tgt_info,
+     &         val_label=(/'D    ','D    ','D    ','D    ','D    ',
+     &             'Y_GNO','D    ','D    ','Y_GNO','D    ','D    '/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'IDX_SV',11,
+     &         tgt_info,val_int=(/1,2,1,1,2,3,1,1,3,2,1/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'BLK_MIN',3,
+     &         tgt_info,
+     &         val_int=(/stndD(1,i_cls),stndD(1,i_cls),1/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'BLK_MAX',3,
+     &         tgt_info,
+     &         val_int=(/stndD(2,i_cls),stndD(2,i_cls),-1/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'N_AVOID',1,
+     &         tgt_info,val_int=(/11/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'AVOID',22,
+     &         tgt_info,
+     &         val_int=(/2,5,2,7,2,10,4,7,4,10,5,10,
+     &                   6,10,5,9,6,9,4,9,2,9/))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &         tgt_info,val_log=(/.true./))
+          call set_arg('F_D_GNO',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &         val_log=(/.false./))
+        end do
+      end if
+c dbg
+c      call set_rule2('F_D_GNO',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_D_GNO',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_D_GNO'/))
 c dbgend
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
@@ -3578,8 +3654,6 @@ c dbgend
       call add_target2('FOPT_Dinv_GNO',.false.,tgt_info)
       call set_dependency('FOPT_Dinv_GNO','F_Dinv_GNO',tgt_info)
       call set_dependency('FOPT_Dinv_GNO','DEF_ME_D',tgt_info)
-      if (gno.gt.0) call set_dependency('FOPT_Dinv_GNO','DEF_ME_CUM',
-     &                                  tgt_info)
       call set_rule2('FOPT_Dinv_GNO',OPTIMIZE,tgt_info)
       call set_arg('FOPT_Dinv_GNO',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_Dinv_GNO'/))
@@ -3590,13 +3664,21 @@ c dbgend
       call add_target2('FOPT_Dproj_GNO',.false.,tgt_info)
       call set_dependency('FOPT_Dproj_GNO','F_Dproj_GNO',tgt_info)
       call set_dependency('FOPT_Dproj_GNO','DEF_ME_D',tgt_info)
-      if (gno.gt.0) call set_dependency('FOPT_Dproj_GNO','DEF_ME_CUM',
-     &                                  tgt_info)
       call set_rule2('FOPT_Dproj_GNO',OPTIMIZE,tgt_info)
       call set_arg('FOPT_Dproj_GNO',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_Dproj_GNO'/))
       call set_arg('FOPT_Dproj_GNO',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_Dproj_GNO'/))
+
+      ! formula for transformation of metric to GNO
+      call add_target2('FOPT_D_GNO',.false.,tgt_info)
+      call set_dependency('FOPT_D_GNO','F_D_GNO',tgt_info)
+      call set_dependency('FOPT_D_GNO','DEF_ME_D',tgt_info)
+      call set_rule2('FOPT_D_GNO',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_D_GNO',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_D_GNO'/))
+      call set_arg('FOPT_D_GNO',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_D_GNO'/))
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -4474,8 +4556,9 @@ c dbgend
         else
           if (tred.eq.0) then
             if (gno.gt.0) then
-              call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',4,tgt_info,
+              call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',5,tgt_info,
      &             val_label=(/'FOPT_T        ','FOPT_D        ',
+     &                         'FOPT_D_GNO    ',
      &                         'FOPT_Dinv_GNO ','FOPT_Dproj_GNO'/))
             else
               call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',2,tgt_info,
