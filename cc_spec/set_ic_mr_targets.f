@@ -38,10 +38,10 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     msc, maxexc, ip, ih, iv,
      &     gno, idef, iexc, jexc,
-     &     version(60), ivers, icnt, prc_type, spinproj
+     &     version(60), ivers, icnt, prc_type, spinproj, project
       logical ::
      &     sv_fix, l_exist,
-     &     l_icci, l_iccc, project, skip, Op_eqs, svdonly
+     &     l_icci, l_iccc, skip, Op_eqs, svdonly
       real(8) ::
      &     sv_thresh, prc_shift, tikhonov
       character(len_target_name) ::
@@ -89,7 +89,7 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
      &     xval=tikhonov)
 
       call get_argument_value('method.MR','project',
-     &     lval=project)
+     &     ival=project)
       call get_argument_value('method.MR','svdonly',
      &     lval=svdonly)
       call get_argument_value('method.MR','prc_type',
@@ -102,8 +102,6 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
       if (.not.l_iccc.and.prc_type.ne.0.and.prc_type.ne.3.or.
      &    prc_type.gt.4.or.prc_type.ne.2.and.prc_shift.ne.0d0)
      &  call quit(1,'set_ic_mr_targets','Choose other preconditioner!')
-      if (gno.gt.0.and.project) call quit(1,'set_ic_mr_targets',
-     &          'No seq. orth. (project=T) yet for GNO')
 
       if (ntest.ge.100) then
         print *,'gno     = ',gno
@@ -124,7 +122,8 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
       if (l_iccc) then
         call get_argument_value('method.MRCC','Op_eqs',
      &       lval=Op_eqs)
-        project = project.or.Op_eqs ! no off-diagonal metric blocks
+        if (project.eq.0.and.Op_eqs) 
+     &     project=1 ! no off-diagonal metric blocks
       end if
 
 *----------------------------------------------------------------------*
@@ -235,7 +234,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
            do jexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
-            if (project.and.iexc.ne.jexc) cycle
+            if (project.eq.1.and.gno.eq.0.and.iexc.ne.jexc) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
@@ -265,7 +264,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
            do jexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
-            if (project.and.iexc.ne.jexc) cycle
+            if (project.eq.1.and.gno.eq.0.and.iexc.ne.jexc) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
@@ -800,8 +799,14 @@ c     &     labels,2,1,
 c     &     parameters,0,tgt_info)
 
       call set_rule2('DEF_ME_Dinv',INVERT,tgt_info)
-      call set_arg('DEF_ME_Dinv',INVERT,'LIST_INV',1,tgt_info,
-     &     val_label=(/'ME_D'/))
+      if (gno.eq.1.and.project.eq.1) then
+        call set_dependency('DEF_ME_Dinv','EVAL_GNOSO',tgt_info)
+        call set_arg('DEF_ME_Dinv',INVERT,'LIST_INV',2,tgt_info,
+     &       val_label=(/'ME_D    ','ME_GNOSO'/))
+      else
+        call set_arg('DEF_ME_Dinv',INVERT,'LIST_INV',1,tgt_info,
+     &       val_label=(/'ME_D'/))
+      end if
       if (prc_type.eq.2) then
         call set_dependency('DEF_ME_Dinv','DEF_ME_Dunit',tgt_info)
         call set_arg('DEF_ME_Dinv',INVERT,'LIST',2,tgt_info,
@@ -972,12 +977,62 @@ c dbgend
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+      ! List & form. needed for sequential orthogonalization within GNO
+      ! a) set up operator and list
+      call add_target2('DEF_ME_GNOSO',.false.,tgt_info)
+      call set_rule2('DEF_ME_GNOSO',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('DEF_ME_GNOSO',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &             val_label=(/'OP_GNOSO'/))
+      occ_def = 0
+      occ_def(IVALE,1:2,1:2) = 1
+      call set_arg('DEF_ME_GNOSO',DEF_OP_FROM_OCC,'BLOCKS',1,tgt_info,
+     &             val_int=(/2/))
+      call set_arg('DEF_ME_GNOSO',DEF_OP_FROM_OCC,'OCC',2,tgt_info,
+     &             val_occ=occ_def)
+      call set_rule2('DEF_ME_GNOSO',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_GNOSO',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'OP_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_GNOSO',DEF_ME_LIST,'2MS',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg('DEF_ME_GNOSO',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &     val_int=(/msc/))
+      ! b) formula: minus gamma_1 for both blocks
+      call set_dependency('DEF_ME_GNOSO','C0',tgt_info)
+      call set_rule2('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'OP_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'OP_GNOSO','C0^+    ','C0      ','OP_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/1,2,3,1/))
+      call set_arg('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/-1d0/))
+c dbg
+c      call set_rule2('DEF_ME_GNOSO',PRINT_FORMULA,tgt_info)
+c      call set_arg('DEF_ME_GNOSO',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_GNOSO'/))
+c dbgend
+      ! c) optimize
+      call set_dependency('DEF_ME_GNOSO','DEF_ME_C0',tgt_info)
+      call set_rule2('DEF_ME_GNOSO',OPTIMIZE,tgt_info)
+      call set_arg('DEF_ME_GNOSO',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_GNOSO'/))
+
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
 
       ! Evaluate density matrix
-      call add_target('EVAL_D',ttype_gen,.false.,tgt_info)
+      call add_target('EVAL_D',ttype_gen,.true.,tgt_info)
       call set_dependency('EVAL_D','FOPT_D',tgt_info)
       call set_dependency('EVAL_D','EVAL_REF_S(S+1)',tgt_info)
       call set_rule('EVAL_D',ttype_opme,EVAL,
@@ -1012,6 +1067,37 @@ c     &     'Density matrix :',0,'LIST')
 c      call set_rule('EVAL_D',ttype_opme,PRINT_MEL,
 c     &     'ME_D',1,0,
 c     &     parameters,2,tgt_info)
+
+      ! eval list needed for sequential orthogonalization within GNO
+      ! a) evaluate
+      call add_target2('EVAL_GNOSO',.false.,tgt_info)
+      call set_dependency('EVAL_GNOSO','DEF_ME_GNOSO',tgt_info)
+      call set_rule2('EVAL_GNOSO',EVAL,tgt_info)
+      call set_arg('EVAL_GNOSO',EVAL,'FORM',1,tgt_info,
+     &             val_label=(/'FOPT_GNOSO'/))
+      ! b) substract unity from second block (gives minus hole density)
+      call set_rule2('EVAL_GNOSO',UNITY,tgt_info)
+      call set_arg('EVAL_GNOSO',UNITY,'LIST',1,tgt_info,
+     &             val_label=(/'ME_GNOSO'/))
+      call set_arg('EVAL_GNOSO',UNITY,'FAC',1,tgt_info,
+     &             val_rl8=(/-1d0/))
+      call set_arg('EVAL_GNOSO',UNITY,'MIN_BLK',1,tgt_info,
+     &             val_int=(/2/))
+      call set_arg('EVAL_GNOSO',UNITY,'MAX_BLK',1,tgt_info,
+     &             val_int=(/2/))
+      ! c) invert
+      call set_rule2('EVAL_GNOSO',INVERT,tgt_info)
+      call set_arg('EVAL_GNOSO',INVERT,'LIST_INV',1,tgt_info,
+     &             val_label=(/'ME_GNOSO'/))
+      call set_arg('EVAL_GNOSO',INVERT,'LIST',1,tgt_info,
+     &             val_label=(/'ME_GNOSO'/))
+      call set_arg('EVAL_GNOSO',INVERT,'MODE',1,tgt_info,
+     &             val_str='pseudoinv')
+c dbg
+c      call set_rule2('EVAL_GNOSO',PRINT_MEL,tgt_info)
+c      call set_arg('EVAL_GNOSO',PRINT_MEL,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_GNOSO'/))
+c dbgend
 
       return
       end

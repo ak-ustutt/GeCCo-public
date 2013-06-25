@@ -181,7 +181,7 @@ c dbg
         call form_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,title,imode,mode)
 
-        call inv_op(rule%labels(2),1,rule%labels(1),mode,
+        call inv_op(1,rule%labels(2),1,rule%labels(1),mode,
      &       op_info,orb_info,str_info,strmap_info)
 
       case(ADD)

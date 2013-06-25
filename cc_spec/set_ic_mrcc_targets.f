@@ -43,9 +43,9 @@
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
      &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno, update_prc,
-     &     prc_iter, spinproj
+     &     prc_iter, spinproj, project
       logical ::
-     &     skip, preopt, project, first, Op_eqs,
+     &     skip, preopt, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
      &     oldref, solve, use_f12, restart
       character(len_target_name) ::
@@ -96,7 +96,7 @@
       call get_argument_value('calculate.solve.non_linear','restart',
      &     lval=restart)
       call get_argument_value('method.MR','project',
-     &     lval=project)
+     &     ival=project)
       call get_argument_value('method.MRCC','Op_eqs',
      &     lval=Op_eqs)
       call get_argument_value('method.MRCC','maxcom_res',
@@ -186,9 +186,9 @@
       if (tred.gt.0.and.optref.eq.0)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'Tred_mode > 0 not yet available for optref=0')
-      if (tfix.gt.0.and.(.not.oldref.or..not.project.or.optref.ne.0))
+      if (tfix.gt.0.and.(.not.oldref.or.project.ne.1.or.optref.ne.0))
      &    call quit(1,'set_ic_mrcc_targets',
-     &     'Tfix>0 only allowed with oldref=T,project=T,optref=0')
+     &     'Tfix>0 only allowed with oldref=T,project=1,optref=0')
       if (t1ord.ge.0.and.tfix.eq.0)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'Manually setting T1ord only enabled yet for Tfix>0')
@@ -282,7 +282,8 @@ c     &             val_int=(/1/))
           first = .true.
           do iexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
             do jexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
-            if ((project.or.Op_eqs).and.iexc.ne.jexc) cycle
+            if ((project.eq.1.and.gno.eq.0.or.Op_eqs)
+     &          .and.iexc.ne.jexc) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
@@ -4476,11 +4477,19 @@ c dbgend
      &                   'ME_D      ','ME_Dinv   ',
      &                   'ME_A      ','ME_Aoff   '/))
          else
+          if (gno.eq.1.and.project.eq.1) then
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',8,tgt_info,
+     &       val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
+     &                   'ME_Dproj ',
+     &                   'ME_D     ','ME_Dinv  ','ME_GNOSO ',
+     &                   'ME_A     '/))
+          else
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
      &       val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
      &                   'ME_Dproj ',
      &                   'ME_D     ','ME_Dinv  ',
      &                   'ME_A     '/))
+          end if
          end if
         else if (ex_t3red) then
         call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
@@ -4507,10 +4516,17 @@ c dbgend
      &                   'ME_D      ','ME_Dinv   ',
      &                   'ME_Aoff   '/))
          else
+          if (gno.eq.1.and.project.eq.1) then
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',7,tgt_info,
+     &       val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                   'ME_Dproj  ',
+     &                   'ME_D      ','ME_Dinv   ','ME_GNOSO  '/))
+          else
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',6,tgt_info,
      &       val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
      &                   'ME_Dproj  ',
      &                   'ME_D      ','ME_Dinv   '/))
+          end if
          end if
         else if (ex_t3red) then
         call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
@@ -4555,7 +4571,14 @@ c dbgend
           end if
         else
           if (tred.eq.0) then
-            if (gno.gt.0) then
+            if (gno.gt.0.and.project.eq.1) then
+              call set_dependency('SOLVE_MRCC','DEF_ME_GNOSO',tgt_info)
+              call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',6,tgt_info,
+     &             val_label=(/'FOPT_T        ','FOPT_D        ',
+     &                         'FOPT_D_GNO    ',
+     &                         'FOPT_Dinv_GNO ','FOPT_Dproj_GNO',
+     &                         'FOPT_GNOSO    '/))
+            else if (gno.gt.0) then
               call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',5,tgt_info,
      &             val_label=(/'FOPT_T        ','FOPT_D        ',
      &                         'FOPT_D_GNO    ',
@@ -5006,8 +5029,15 @@ c dbgend
       call set_arg('EVAL_Tproj',EVAL,'FORM',1,tgt_info,
      &             val_label=(/'FOPT_T'/))
 c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'T before projection :',0,'LIST')
 c      call set_rule('EVAL_Tproj',ttype_opme,PRINT_MEL,
 c     &     'ME_Ttr',1,0,
+c     &     parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'T after projection :',0,'LIST')
+c      call set_rule('EVAL_Tproj',ttype_opme,PRINT_MEL,
+c     &     'ME_T',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
 

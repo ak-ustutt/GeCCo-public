@@ -567,7 +567,7 @@
       call set_arg('_PROTO_',INVERT,'LIST',0,tgt_info,
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',INVERT,'MODE',0,tgt_info,
-     &     val_str='-',req=.true.)
+     &     val_str='-',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(EVAL,tgt_info)
       call set_arg('_PROTO_',EVAL,'FORM',0,tgt_info,

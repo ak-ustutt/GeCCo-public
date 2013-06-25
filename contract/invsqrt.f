@@ -1,5 +1,5 @@
       subroutine invsqrt(mel_inp,mel_inv,nocc_cls,half,
-     &     get_u,mel_u,
+     &     get_u,mel_u,pass_spc,mel_spc,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     Routine to calculate S^(-0.5) of density matrices.
@@ -48,11 +48,11 @@
       type(strmapinf), intent(in) ::
      &     strmap_info
       type(me_list), intent(in) ::
-     &     mel_inp, mel_inv, mel_u
+     &     mel_inp, mel_inv, mel_u, mel_spc
       integer, intent(in) ::
      &     nocc_cls
       logical, intent(in) ::
-     &     half, get_u
+     &     half, get_u, pass_spc
 
       integer, parameter ::
      &     maxrank = 5
@@ -86,7 +86,8 @@ c dbgend
      &     off_linmax, maxbuf_tmp,
      &     rankdim(maxrank), rankoff(maxrank), nrank,
      &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2,
-     &     icnt_cur, ih, ip, iexc, tocc_cls
+     &     icnt_cur, ih, ip, iexc, tocc_cls, gno, project,
+     &     krank, idxst3, idxnd3, rdim3
       real(8) ::
      &     fac, xmax, xmin, xdum, omega2
       real(8), pointer ::
@@ -141,7 +142,9 @@ c dbgend
 c dbg
 c      ipass = 0
 c dbgend
-      call get_argument_value('method.MR','project',lval=sgrm)
+      call get_argument_value('method.MR','project',ival=project)
+      call get_argument_value('method.MR','GNO',ival=gno)
+      sgrm = project.eq.1.and.gno.eq.0 ! only diagonal metric blocks
 
       reg_tik = tikhonov.ne.0d0
       omega2 = tikhonov**2
@@ -736,7 +739,7 @@ c           ndim = 0
            end do
            na1 = na1 - 1
            nc1 = nc1 - 1
-           if (sgrm.and.rdim.gt.0) then
+           if (project.gt.0.and.rdim.gt.0) then
              nrank = nrank + 1
              if (nrank.gt.maxrank) call quit(1,'invsqrt',
      &                                       'increase maxrank')
@@ -751,7 +754,7 @@ c           ndim = 0
           end do blk_loop
 
           if (ndim.eq.0) cycle
-          if (.not.sgrm) then
+          if (project.eq.0) then
             nrank = 1
             rankdim(1) = ndim
             rankoff(1) = 0
@@ -778,7 +781,11 @@ c           ndim = 0
           allocate(scratch(ndim,ndim),flmap(ndim,3),svs(ndim))
           scratch = 0d0
           svs = 0d0
-          if (.not.half) allocate(scratch2(ndim,ndim))
+          if (.not.half) then
+            allocate(scratch2(ndim,ndim))
+            ! initialize: important for off-dia. blks for GNO/seq.orth.
+            scratch2(1:ndim,1:ndim) = 0d0
+          end if
           if (get_u) allocate(scratch3(ndim,ndim))
 c dbg
 c          allocate(matrix(ndim,ndim))
@@ -1147,32 +1154,67 @@ c dbgend
 
            ! build projector and apply to current block
            if (irank.ge.2) then
-             if (ntest.ge.10)
-     &         write(luout,'(x,a,i8)') 'next rank:',irank
-             ! write tensors "p" on off-diagonal blocks of scratch
-             do jrank = 1, irank-1
-               rdim2 = rankdim(jrank)
-               idxst2 = rankoff(jrank) + 1
-               idxnd2 = rankoff(jrank) + rdim2
-               scratch(idxst:idxnd,idxst2:idxnd2) = 0d0
-               call get_vec2remove(scratch(idxst:idxnd,idxst2:idxnd2),
+            if (ntest.ge.10)
+     &        write(luout,'(x,a,i8)') 'next rank:',irank
+            select case(project)
+            case (1,2)
+             if (project.eq.1) then
+              ! write tensors "p" on off-diagonal blocks of scratch
+              do jrank = 1, irank-1
+                rdim2 = rankdim(jrank)
+                idxst2 = rankoff(jrank) + 1
+                idxnd2 = rankoff(jrank) + rdim2
+                scratch(idxst:idxnd,idxst2:idxnd2) = 0d0
+                call get_vec2remove(scratch(idxst:idxnd,idxst2:idxnd2),
      &                             scratch(idxst2:idxnd2,idxst2:idxnd2),
      &                             rdim,rdim2,ms1,igam,irank-jrank,
      &                             na1mx-nrank+irank,nc1mx-nrank+irank,
+     &                             gno,pass_spc,mel_spc,na1mx,nc1mx,
      &                             orb_info,str_info,strmap_info)
-             end do
-             allocate(scratch4(rdim,rdim))
-             ! form outer product of these vectors
-             call dgemm('n','t',rdim,rdim,ndim-idxnd,
-     &                  1d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim,
-     &                  scratch(idxst:idxnd,idxnd+1:ndim),rdim,
-     &                  0d0,scratch4,rdim)
-             ! assemble projector: 1 - sum(p*p^T)*S
+              end do
+             else ! if project.eq.2
+              ! multiply off-diagonal blocks with lower trafo matrices
+              do jrank = 1, irank-1
+               rdim2 = rankdim(jrank)
+               idxst2 = rankoff(jrank) + 1
+               idxnd2 = rankoff(jrank) + rdim2
+               call dgemm('t','n',rdim,rdim2,rdim2,
+     &                   1d0,scratch(idxst2:idxnd2,idxst:idxnd),rdim2,
+     &                   scratch(idxst2:idxnd2,idxst2:idxnd2),rdim2,
+     &                   0d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim)
+c dbg
+               ! transpose (only needed for double-check below)
+               do idx = 0, rdim2-1
+                 scratch(idxst2+idx,idxst:idxnd) 
+     &           = scratch(idxst:idxnd,idxst2+idx)
+               end do
+c dbgend
+              end do
+              ! singular value decompose off-diagonal block
+              ! and overwrite by nonredundant part of W^+ (left-hand)
+              call svd_get_left(rdim,ndim-idxnd,
+     &                          scratch(idxst:idxnd,idxnd+1:ndim))
+             end if
              allocate(proj(rdim,rdim))
-             call dgemm('n','n',rdim,rdim,rdim,
-     &                  -1d0,scratch4,rdim,
-     &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
-     &                  0d0,proj,rdim)
+             if (project.eq.1) then
+              allocate(scratch4(rdim,rdim))
+              ! form outer product of these vectors
+              call dgemm('n','t',rdim,rdim,ndim-idxnd,
+     &                   1d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim,
+     &                   scratch(idxst:idxnd,idxnd+1:ndim),rdim,
+     &                   0d0,scratch4,rdim)
+              ! assemble projector: 1 - sum(p*p^T)*S
+              call dgemm('n','n',rdim,rdim,rdim,
+     &                   -1d0,scratch4,rdim,
+     &                   scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &                   0d0,proj,rdim)
+             else ! if project.eq.2
+              ! form outer product -W^+ * W
+              call dgemm('n','t',rdim,rdim,ndim-idxnd,
+     &                   -1d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim,
+     &                   scratch(idxst:idxnd,idxnd+1:ndim),rdim,
+     &                   0d0,proj,rdim)
+             end if
              do idx = 1, rdim
                proj(idx,idx) = proj(idx,idx) + 1d0
              end do
@@ -1184,6 +1226,7 @@ c dbgend
              ! (a) Q^+*S
              !     This step is not strictly necessary, but numerically
              !     it helps to keep the matrix S*Q symmetric
+             if (project.eq.2) allocate(scratch4(rdim,rdim))
              call dgemm('t','n',rdim,rdim,rdim,
      &                  1d0,proj,rdim,
      &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
@@ -1193,6 +1236,66 @@ c dbgend
      &                  1d0,scratch4,rdim,proj,rdim,
      &                  0d0,scratch(idxst:idxnd,idxst:idxnd),rdim)
              deallocate(scratch4)
+c dbg
+             if (project.eq.2) then
+               ! check that off-diagonal blocks are projected out
+               call dgemm('t','t',rdim,ndim-idxnd,rdim,
+     &                    1d0,proj,rdim,
+     &                    scratch(idxnd+1:ndim,idxst:idxnd),ndim-idxnd,
+     &                    0d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim)
+               if (ntest.ge.100) then
+                 write(luout,*) 'Projected off-diagonal block:'
+                 call wrtmat2(scratch(idxst:idxnd,idxnd+1:ndim),
+     &                        rdim,ndim-idxnd,rdim,ndim-idxnd)
+               end if
+               if (any(abs(scratch(idxst:idxnd,idxnd+1:ndim)).gt.1d-12))
+     &           call warn('invsqrt','off-dia block not projected out?')
+             end if
+c dbgend
+             if (gno.eq.1.or.project.eq.2) then
+               ! zero off-diagonal blocks (assuming the projector works)
+               scratch(idxst:idxnd,idxnd+1:ndim) = 0d0
+               scratch(idxnd+1:ndim,idxst:idxnd) = 0d0
+             end if
+
+            case (3)
+             ! Gram-Schmidt step: substract lower-rank components from
+             ! the diagonal block and the blocks above
+             do jrank = irank, nrank ! target block: row j, column i
+              rdim2 = rankdim(jrank)
+              idxst2 = rankoff(jrank) + 1
+              idxnd2 = rankoff(jrank) + rdim2
+              do krank = 1, irank-1 ! input blocks: row k, columns j and i
+               rdim3 = rankdim(krank)
+               idxst3 = rankoff(krank) + 1
+               idxnd3 = rankoff(krank) + rdim3
+               call dgemm('t','n',rdim2,rdim,rdim3,
+     &                  -1d0,scratch(idxst3:idxnd3,idxst2:idxnd2),rdim3,
+     &                  scratch(idxst3:idxnd3,idxst:idxnd),rdim3,
+     &                  1d0,scratch(idxst2:idxnd2,idxst:idxnd),rdim2)
+              end do
+             end do
+             ! compute the blocks below (intermediately stored on the right)
+             ! for the formation of the trafo matrix
+             do jrank = 1, irank-1 ! target block: row i, column j
+              rdim2 = rankdim(jrank)
+              idxst2 = rankoff(jrank) + 1
+              idxnd2 = rankoff(jrank) + rdim2
+              scratch(idxst:idxnd,idxst2:idxnd2) = 0d0 !initialize
+              do krank = jrank, irank-1 ! input blocks: (k,i) and (j,k)
+               rdim3 = rankdim(krank)
+               idxst3 = rankoff(krank) + 1
+               idxnd3 = rankoff(krank) + rdim3
+               call dgemm('t','t',rdim,rdim2,rdim3,
+     &                  -1d0,scratch(idxst3:idxnd3,idxst:idxnd),rdim3,
+     &                  scratch(idxst2:idxnd2,idxst3:idxnd3),rdim2,
+     &                  1d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim)
+              end do
+             end do
+
+            case default
+              call quit(1,'invsqrt','unknown case for keyword project')
+            end select
            end if
 
           ! core step: singular value decomposition
@@ -1306,33 +1409,60 @@ c dbgend
      &                       bins(1,iexc_cls))
           end if
 
-           ! apply projector again: X = Q*U*s^(-0.5)
-           if (irank.ge.2) then
-             allocate(scratch4(rdim,rdim))
-             call dgemm('n','n',rdim,rdim,rdim,
-     &                  1d0,proj,rdim,
+           select case(project)
+           case (1,2)
+            ! apply projector again: X = Q*U*s^(-0.5)
+            if (irank.ge.2) then
+              allocate(scratch4(rdim,rdim))
+              call dgemm('n','n',rdim,rdim,rdim,
+     &                   1d0,proj,rdim,
+     &                   scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &                   0d0,scratch4,rdim)
+              scratch(idxst:idxnd,idxst:idxnd) = scratch4
+              if (ntest.ge.100) then
+                write(luout,*) 'Trafo matrix:'
+                call wrtmat2(scratch(idxst:idxnd,idxst:idxnd),
+     &                       rdim,rdim,rdim,rdim)
+              end if
+              if (.not.half) then
+                call dgemm('n','n',rdim,rdim,rdim,
+     &                     1d0,proj,rdim,
+     &                     scratch2(idxst:idxnd,idxst:idxnd),rdim,
+     &                     0d0,scratch4,rdim)
+                scratch2(idxst:idxnd,idxst:idxnd) = scratch4
+                if (ntest.ge.100) then
+                  write(luout,*) 'Projector matrix:'
+                  call wrtmat2(scratch2(idxst:idxnd,idxst:idxnd),
+     &                         rdim,rdim,rdim,rdim)
+                end if
+              end if
+              deallocate(scratch4,proj)
+            end if
+
+           case (3)
+            ! multiply off-diagonal blocks of trafo matrix with dia.blks
+            ! and set upper off-diagonal blocks to zero
+            do jrank = 1, irank-1 ! target: (j,i) input: (i,j) and (i,i)
+             rdim2 = rankdim(jrank)
+             idxst2 = rankoff(jrank) + 1
+             idxnd2 = rankoff(jrank) + rdim2
+             call dgemm('t','n',rdim2,rdim,rdim,
+     &                  1d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim,
      &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
-     &                  0d0,scratch4,rdim)
-             scratch(idxst:idxnd,idxst:idxnd) = scratch4
-             if (ntest.ge.100) then
-               write(luout,*) 'Trafo matrix:'
-               call wrtmat2(scratch(idxst:idxnd,idxst:idxnd),
-     &                      rdim,rdim,rdim,rdim)
-             end if
-             if (.not.half) then
-               call dgemm('n','n',rdim,rdim,rdim,
-     &                    1d0,proj,rdim,
-     &                    scratch2(idxst:idxnd,idxst:idxnd),rdim,
-     &                    0d0,scratch4,rdim)
-               scratch2(idxst:idxnd,idxst:idxnd) = scratch4
-               if (ntest.ge.100) then
-                 write(luout,*) 'Projector matrix:'
-                 call wrtmat2(scratch2(idxst:idxnd,idxst:idxnd),
-     &                        rdim,rdim,rdim,rdim)
-               end if
-             end if
-             deallocate(scratch4,proj)
-           end if
+     &                  0d0,scratch(idxst2:idxnd2,idxst:idxnd),rdim2)
+             scratch(idxst:idxnd,idxst2:idxnd2) = 0d0
+            end do
+            do jrank = irank+1, nrank ! target: (i,j) input: (i,i) and (j,i)
+             rdim2 = rankdim(jrank)
+             idxst2 = rankoff(jrank) + 1
+             idxnd2 = rankoff(jrank) + rdim2
+             call dgemm('t','t',rdim,rdim2,rdim,
+     &                  1d0,scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &                  scratch(idxst2:idxnd2,idxst:idxnd),rdim2,
+     &                  0d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim)
+            end do
+
+           end select
 
            if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
 c     &        blk_redundant(iocc_cls+min(na1mx,nc1mx)+irank-nrank)
@@ -1344,6 +1474,13 @@ c     &        blk_redundant(iocc_cls+irank-1)
           ! Tikhonov regularization?
           if (reg_tik)
      &       call regular_tikhonov(ndim,ndim,scratch,svs,omega2)
+
+c dbg
+c            if (ntest.ge.100) then
+c              write(luout,*) 'final transformation matrix:'
+c              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
+c            end if
+c dbgend
 
           ! write to output buffer
           ! loops over coupling blocks. Must be in correct order!
