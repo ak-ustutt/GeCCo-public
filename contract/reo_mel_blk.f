@@ -176,7 +176,7 @@ c     &    .and.reo_info%sign_reo.ne.1d0) then
       end if
 c dbgend
 
-      call reo_op_wmaps_c(
+      call reo_op_wmaps_c(1d0,
      &     .false.,xret_dum,0,
      &     meinp,meout,
      &     .false., .false.,

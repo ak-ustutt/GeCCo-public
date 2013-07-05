@@ -862,6 +862,7 @@ c dbgend
       ! cumulants in terms of reduced densities
       call add_target2('FOPT_CUM',.false.,tgt_info)
       call set_dependency('FOPT_CUM','F_CUM',tgt_info)
+      call set_dependency('FOPT_CUM','DEF_ME_DENS',tgt_info)
       call set_dependency('FOPT_CUM','DEF_ME_CENT',tgt_info)
       call set_dependency('FOPT_CUM','DEF_ME_CUM',tgt_info)
       call set_rule2('FOPT_CUM',OPTIMIZE,tgt_info)

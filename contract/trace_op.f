@@ -741,7 +741,7 @@ c dbg
                   
             ! if necessary, reorder trop block:
             if (reo_trop.and.nonzero) then
-              call reo_blk_wmaps_c(xtrop,xtropblk,
+              call reo_blk_wmaps_c(1d0,xtrop,xtropblk,
      &                  lentrop,lblk_troptmp,  ! just for checks
      &                  reo_info%sign_reo,
      &                  tra_trop,
