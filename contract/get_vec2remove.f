@@ -1,5 +1,6 @@
       subroutine get_vec2remove(pvecs,xmat,pdim,xdim,ms,igam,drank,
-     &                          na,nc,orb_info,str_info,strmap_info)
+     &                          na,nc,gno,pass_spc,mel_spc,na1mx,nc1mx,
+     &                          orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     given a (simple and purely active) high-rank operator (by na,nc),
 *     a difference of ranks to a low-rank operator (drank) and
@@ -29,11 +30,15 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     pdim,xdim,ms,igam,drank,na,nc
+     &     pdim,xdim,ms,igam,drank,na,nc,gno,na1mx,nc1mx
       real(8), intent(out) ::
      &     pvecs(pdim,xdim)
       real(8), intent(in) ::
      &     xmat(xdim,xdim)
+      logical, intent(in) ::
+     &     pass_spc
+      type(me_list), intent(in) ::
+     &     mel_spc
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -43,7 +48,7 @@
      &     strmap_info
 
       real(8) ::
-     &     facinv
+     &     facinv, invmat(xdim,xdim), xnew(xdim,xdim)
 
       integer, target ::
      &     occ1(ngastp,2), occ2(ngastp,2), occ12(ngastp,2),
@@ -60,7 +65,8 @@
      &     lenca12, lenca2, ioff12, ioff2, na2, nc2, nablk2, ncblk2,
      &     msc1, msa1, gama1, gamc1, nstra2, nstra12, istra2, istra12,
      &     nstrc1, nstrc2, nstrc12, istrc1, istrc2, istrc12,
-     &     idx2, idx12, isgnc, isgn, ielmap, nfac, ii
+     &     idx2, idx12, isgnc, isgn, ielmap, nfac, ii, nbuf, i_cls,
+     &     idxms, ioff, jj
 
       integer, pointer ::
      &     pgraph, pocc,
@@ -68,6 +74,9 @@
      &     occ_c2(:), occ_a2(:), graph_c2(:), graph_a2(:),
      &     hpvx_c2(:), hpvx_a2(:), idxmsdis_c2(:), idxmsdis_a2(:),
      &     len_str2(:)
+
+      real(8), pointer ::
+     &     buffer(:)
 
       integer, external ::
      &     ielprd, ifac
@@ -108,13 +117,79 @@
       else
         nablk2 = 0
       end if
-      ! determine factor Nfac = (Nact-na+drank)!/((Nact-na)!*drank!)
+
       nfac = 1
-      do ii = nact-na+drank, nact-na+1, -1
-        nfac = nfac*ii
-      end do
-      nfac = nfac/ifac(drank)
+      if (gno.eq.0) then
+        ! determine factor Nfac = (Nact-na+drank)!/((Nact-na)!*drank!)
+        ! only for particle-hole normal ordering
+        do ii = nact-na+drank, nact-na+1, -1
+          nfac = nfac*ii
+        end do
+        nfac = nfac/ifac(drank)
+        xnew = xmat ! use plain trafo matrix
+      else
+        ! GNO: premultiply trafo matrix
+        if (.not.pass_spc) call quit(1,'get_vec2remove',
+     &       'seq. orth. with GNO requires special matrix')
+        ! first read special matrix into buffer
+        nbuf = 0
+        do i_cls = 1, mel_spc%op%n_occ_cls
+          nbuf = nbuf + mel_spc%len_op_occ(i_cls)
+        end do
+        ifree = mem_setmark('premultiplication')
+        ifree = mem_alloc_real(buffer,nbuf,'buffer')
+        call get_vec(mel_spc%fhand,buffer,1,nbuf)
+        ! which block do we need?
+        if (na1mx.eq.1.and.nc1mx.eq.2) then
+          i_cls = 1
+        else if (na1mx.eq.2.and.nc1mx.eq.1) then
+          i_cls = 2
+        else if (na1mx.eq.1.and.nc1mx.eq.1) then
+          ! do nothing
+          xnew = xmat
+          i_cls = 0
+        else
+          call quit(1,'get_vec2remove',
+     &              'GNO with seq.orth. not prepared for this case yet')
+        end if
+        if (i_cls.gt.mel_spc%op%n_occ_cls)
+     &     call quit(1,'get_vec2remove','mel_spc has too few blocks')
+        if (i_cls.gt.0) then
+          ! read in relevant block. we implicitly assume matrix symmetry
+          if (ms.eq.1) then
+            idxms = 1
+          else if (ms.eq.-1) then
+            idxms = 2
+          else
+            call quit(1,'get_vec2remove','not prepared for this ms')
+          end if
+          if (int(sqrt(dble(mel_spc%len_op_gmo(i_cls)%gam_ms(
+     &                      igam,idxms)))).ne.xdim)
+     &       call quit(1,'get_vec2remove','dimensions do not match')
+          ioff = mel_spc%off_op_gmo(i_cls)%gam_ms(igam,idxms)
+          do ii = 1, xdim
+            do jj = 1, xdim
+              invmat(jj,ii) = buffer(ioff+(ii-1)*xdim+jj)
+            end do
+          end do
+          if (ntest.ge.100) then
+            write(luout,*) 'read-in matrix for premultiplication:'
+            call wrtmat2(invmat,xdim,xdim,xdim,xdim)
+          end if
+          ! premultiply the trafo matrix
+          call dgemm('n','n',xdim,xdim,xdim,
+     &               1d0,invmat,xdim,
+     &               xmat,xdim,
+     &               0d0,xnew,xdim)
+        end if
+        ifree = mem_flushmark()
+        if (ntest.ge.100) then
+          write(luout,*) '(modified) transformation matrix:'
+          call wrtmat2(xnew,xdim,xdim,xdim,xdim)
+        end if
+      end if
       facinv = 1d0/dble(nfac)
+
 c dbg
 c      print *,'nfac:',nfac
 c      print *,'ncblk2,nablk2:',ncblk2,nablk2
@@ -315,7 +390,7 @@ c dbgend
                     ! set elements of p vectors:
                     pvecs(ioff12+idx12,1:xdim)
      &                = pvecs(ioff12+idx12,1:xdim)
-     &                + dble(isgn)*facinv*xmat(ioff2+idx2,1:xdim)
+     &                + dble(isgn)*facinv*xnew(ioff2+idx2,1:xdim)
                   end do
                 end do
               end do

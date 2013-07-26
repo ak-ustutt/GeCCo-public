@@ -1049,10 +1049,11 @@ c dbg
       case(SPIN_PROJECT)
 *----------------------------------------------------------------------*
         call get_arg('LIST',rule,tgt_info,val_label=label)
+        call get_arg('S2',rule,tgt_info,val_int=s2)
 
         if (form_test) return
 
-        call spin_prj_list_drv(label,
+        call spin_prj_list_drv(label,s2,
      &       op_info,str_info,strmap_info,orb_info)
 
 *----------------------------------------------------------------------*
@@ -1095,13 +1096,14 @@ c          mode = 'dia-R12'
 *----------------------------------------------------------------------*
       case(INVERT)
 *----------------------------------------------------------------------*
-        call get_arg('LIST_INV',rule,tgt_info,val_label=label)
-        call get_arg('LIST',rule,tgt_info,
+        call get_arg('LIST_INV',rule,tgt_info,
      &               val_label_list=label_list,ndim=nop)
+        call get_arg('LIST',rule,tgt_info,
+     &               val_label_list=label_list(nop+1:),ndim=nop2)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
 
         if (form_test) return
-        call inv_op(label,nop,label_list,mode,
+        call inv_op(nop,label_list(1:),nop2,label_list(nop+1:),mode,
      &       op_info,orb_info,str_info,strmap_info)
 
 *----------------------------------------------------------------------*

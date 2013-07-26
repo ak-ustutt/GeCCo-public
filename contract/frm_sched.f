@@ -74,6 +74,8 @@ c stat
 
       select case (irt_sched)
       case (0)
+        if (.not.init) call quit(1,'frm_sched',
+     &                      'init option not (yet) for this scheduler')
         call frm_sched1(xret,flist,depend_info,idxselect,nselect,
      &         op_info,str_info,strmap_info,orb_info)
       case (1)

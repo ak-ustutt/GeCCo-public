@@ -510,6 +510,8 @@
       call add_command_proto(SPIN_PROJECT,tgt_info)
       call set_arg('_PROTO_',SPIN_PROJECT,'LIST',0,tgt_info,
      &     val_label=(/''/),req=.true.)
+      call set_arg('_PROTO_',SPIN_PROJECT,'S2',1,tgt_info,
+     &     val_int=(/-1/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRECONDITIONER,tgt_info)
       call set_arg('_PROTO_',PRECONDITIONER,'LIST_PRC',0,tgt_info,
@@ -565,7 +567,7 @@
       call set_arg('_PROTO_',INVERT,'LIST',0,tgt_info,
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',INVERT,'MODE',0,tgt_info,
-     &     val_str='-',req=.true.)
+     &     val_str='-',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(EVAL,tgt_info)
       call set_arg('_PROTO_',EVAL,'FORM',0,tgt_info,
