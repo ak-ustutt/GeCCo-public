@@ -174,6 +174,23 @@ c dbgend
 
       end do
 
+
+      ! regularization (to avoid numerical catastrophe for degeneracies)
+      do irec = 1, ndim
+        ii = iordv(irec)
+        do jrec = 1, ndim
+          jj = iordw(jrec)
+          ! is this a block of xmat that was updated?
+          if (ii.ne.jj.and.(ii.gt.ndim-nadd.or.jj.gt.ndim-nadd)) then
+            if (abs(xmat(ii,jj)).lt.1d-13.and.abs(xmat(ii,jj)).ne.0d0
+     &          .and.abs(xmat(ii,ii)/xmat(jj,jj)-1d0).lt.1d-13) then
+              xmat(ii,jj) = 0d0
+              call warn('optc_update_redsp3','Degeneracy? Regularized!')
+             end if
+            end if
+        end do
+      end do
+
       if (ntest.ge.20) then
         write(luout,*) 'updated subspace matrix:'
         call wrtmat2(xmat,ndim,ndim,mxdim,mxdim)

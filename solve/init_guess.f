@@ -49,12 +49,13 @@
      &     strmap_info
 
       integer ::
-     &     ifree, iopt, iroot, ntrials, nout,
+     &     ifree, iopt, iroot, ntrials, nout, jroot,
      &     idxlist(max(1000,4*nroots)), nselect, iguess
       logical ::
      &     trafo
       real(8) ::
-     &     xnrm, xretlast, xover, xlist(max(1000,4*nroots))
+     &     xnrm, xnrm2(nroots), xover, xlist(max(1000,4*nroots)),
+     &     fac1, fac2
       type(me_list), pointer ::
      &     me_pnt
 
@@ -142,15 +143,20 @@ c     &            call warn('init_guess','guess vector not normalized')
      &                            opti_info%nwfpar(iopt),
      &                            xbuf1,xbuf2,
      &                            opti_info%nwfpar(iopt))
-                if (abs(abs(xover)-xretlast).lt.1d-6) then
+c                if (abs(abs(xover)-xretlast).lt.1d-6) then
+                if (abs(xover**2/xnrm2(iroot-1)
+     &              -xret(idxselect(1))**2).lt.1d-6) then
                   if (iprlvl.ge.5) write(luout,*)
      &                'Discarding twin guess vector.'
                   me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
                   iroot = iroot - 1
+                else
+                  xnrm2(iroot) = xret(idxselect(1))**2
                 end if  
                 ifree = mem_flushmark()
+              else
+                xnrm2(iroot) = xret(idxselect(1))**2
               end if
-              xretlast = xret(idxselect(1))**2
             end if
             deallocate(idxselect)
           end if
@@ -170,14 +176,53 @@ c     &            call warn('init_guess','guess vector not normalized')
             else
               call evaluate2(fl_spc(1),.false.,.false.,
      &                       op_info,str_info,strmap_info,orb_info,
-     &                       xnrm,.false.)
+     &                       xnrm,.true.)
             end if
             ifree = mem_flushmark()
+            xnrm = xnrm**2 ! makes things easier below
             if (xnrm.lt.1d-12) then
               if (iprlvl.ge.5) write(luout,*)
      &           'Discarding guess vector due to projection.'
               me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
               iroot = iroot - 1
+            else if (iroot.gt.1) then
+              ! Gram-Schmidt orthogonalize to previous roots
+              ifree = mem_setmark('init_guess.check_guess')
+              ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
+     &                               'xbuf1')
+              ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),
+     &                               'xbuf2')
+              do jroot = 1, iroot-1
+                xover = da_ddot(me_trv(iopt)%mel%fhand,jroot,1,
+     &                          me_trv(iopt)%mel%fhand,iroot,1,
+     &                          opti_info%nwfpar(iopt),
+     &                          xbuf1,xbuf2,
+     &                          opti_info%nwfpar(iopt))
+                if (abs(xover**2/xnrm2(jroot)-xnrm).lt.1d-6) then
+                  if (iprlvl.ge.5) write(luout,*)
+     &                'Discarding redundant guess vector.'
+                  me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
+                  iroot = iroot - 1
+                  exit
+                else if (abs(xover).ge.1d-12) then
+                  ! remove this component using norm-conserving factors
+                  if (iprlvl.ge.5) write(luout,*)
+     &               'Removing overlap to root',jroot,'(',xover,')'
+                  fac1 = 1d0/sqrt(1d0-xover**2/(xnrm2(jroot)*xnrm))
+                  fac2 = -sign(1d0/sqrt((xnrm2(jroot)/xover)**2
+     &                             -xnrm2(jroot)/xnrm),xover)
+                  call da_vecsum(me_trv(iopt)%mel%fhand,iroot,
+     &                           me_trv(iopt)%mel%fhand,iroot,fac1,
+     &                           me_trv(iopt)%mel%fhand,jroot,fac2,
+     &                           opti_info%nwfpar(iopt),
+     &                           xbuf1,xbuf2,opti_info%nwfpar(iopt))
+c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
+                end if  
+                if (jroot.eq.iroot-1) xnrm2(iroot) = xnrm
+              end do
+              ifree = mem_flushmark()
+            else
+              xnrm2(iroot) = xnrm
             end if
           end if
 

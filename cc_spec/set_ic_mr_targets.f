@@ -456,7 +456,6 @@ c dbgend
       call add_target2('F_NORM',.false.,tgt_info)
       call set_dependency('F_NORM','NORM',tgt_info)
       call set_dependency('F_NORM',op_exc,tgt_info)
-      call set_dependency('F_NORM','DENS',tgt_info)
       call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &     val_label=(/'F_NORM'/))
@@ -467,27 +466,30 @@ c dbgend
      &     val_label=(/op_deexc,op_exc/))
       call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
      &     val_int=(/2,3/))
-      call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_NORM'/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'NORM'/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
-     &     tgt_info,
-     &     val_label=(/'DENS',op_deexc,op_exc,'DENS'/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
-     &     val_int=(/2,3,4,2/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
-     &     val_int=(/1,4/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-c      if (gno.eq.0)
-c     & call set_arg('F_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
-c     &     val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
-     &     val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
+      if (orb_info%nactel.gt.0) then
+        call set_dependency('F_NORM','DENS',tgt_info)
+        call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_NORM'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'NORM'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &       tgt_info,
+     &       val_label=(/'DENS',op_deexc,op_exc,'DENS'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &       val_int=(/2,3,4,2/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+     &       val_int=(/1/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+     &       val_int=(/1,4/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &       val_log=(/.false./))
+c        if (gno.eq.0)
+c       & call set_arg('F_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+c       &     val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+     &       val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
+      end if
       ! b) insert unit operators to allow for differentiation
       ! and for factoring out of hole densities
       call set_dependency('F_NORM','1v',tgt_info)
@@ -682,16 +684,20 @@ c dbgend
       call set_dependency('FOPT_D','DEF_ME_1',tgt_info)
       call set_dependency('FOPT_D','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_D','DEF_ME_D',tgt_info)
-      call set_dependency('FOPT_D','DEF_ME_DENS',tgt_info)
       if (l_iccc) call set_dependency('FOPT_D','DEF_ME_1scal',tgt_info)
       call set_rule2('FOPT_D',OPTIMIZE,tgt_info)
       call set_arg('FOPT_D',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_D'/))
-      if (gno.eq.0) then
+      if (orb_info%nactel.eq.0) then
+        call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &               val_label=(/'F_D'/))
+      else if (gno.eq.0) then
+        call set_dependency('FOPT_D','DEF_ME_DENS',tgt_info)
         call set_dependency('FOPT_D','F_DENS0',tgt_info)
         call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',2,tgt_info,
      &               val_label=(/'F_DENS0','F_D    '/))
       else if (gno.eq.1) then
+        call set_dependency('FOPT_D','DEF_ME_DENS',tgt_info)
         call set_dependency('FOPT_D','F_DENS0',tgt_info)
         call set_dependency('FOPT_D','Y_GNO',tgt_info)
         call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',3,tgt_info,
@@ -1032,7 +1038,7 @@ c dbgend
 *----------------------------------------------------------------------*
 
       ! Evaluate density matrix
-      call add_target('EVAL_D',ttype_gen,.true.,tgt_info)
+      call add_target('EVAL_D',ttype_gen,.false.,tgt_info)
       call set_dependency('EVAL_D','FOPT_D',tgt_info)
       call set_dependency('EVAL_D','EVAL_REF_S(S+1)',tgt_info)
       call set_rule('EVAL_D',ttype_opme,EVAL,

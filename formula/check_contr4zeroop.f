@@ -49,6 +49,9 @@
 
         ! look up info on that list
         idxmel = idx_mel_list(me_name,op_info)
+        if (idxmel.lt.1)
+     &     call quit(1,'check_contr4zeroop','no list associated with "'
+     &               //trim(op_info%op_arr(idxop)%op%name)//'"')
 
         ! is the length == 0 ??
         if (op_info%mel_arr(idxmel)%mel%len_op_occ(iblkop).eq.0)

@@ -403,7 +403,7 @@ c dbgend
      &     val_label=(/'F_preCUM'/))
       call set_arg('F_preCUM',DEF_CUMULANTS,'OP_RES',1,tgt_info,
      &     val_label=(/'preDENS'/))
-      if (maxtop.le.0) then
+      if (maxtop.le.0.and.maxcum.gt.1) then
         call set_dependency('F_preCUM','CENT',tgt_info)
         call set_arg('F_preCUM',DEF_CUMULANTS,'OPERATORS',2,tgt_info,
      &       val_label=(/'DENS_dag','CENT    '/))
@@ -863,7 +863,8 @@ c dbgend
       call add_target2('FOPT_CUM',.false.,tgt_info)
       call set_dependency('FOPT_CUM','F_CUM',tgt_info)
       call set_dependency('FOPT_CUM','DEF_ME_DENS',tgt_info)
-      call set_dependency('FOPT_CUM','DEF_ME_CENT',tgt_info)
+      if (maxcum.gt.1)
+     &   call set_dependency('FOPT_CUM','DEF_ME_CENT',tgt_info)
       call set_dependency('FOPT_CUM','DEF_ME_CUM',tgt_info)
       call set_rule2('FOPT_CUM',OPTIMIZE,tgt_info)
       call set_arg('FOPT_CUM',OPTIMIZE,'LABEL_OPT',1,tgt_info,
@@ -1015,7 +1016,11 @@ c dbgend
       ! evaluate and print out cumulants
       call add_target2('EVAL_CUM',maxtop.le.0,tgt_info)
       call set_dependency('EVAL_CUM','FOPT_CUM',tgt_info)
-      call set_dependency('EVAL_CUM','EVAL_CENT',tgt_info)
+      if (maxcum.gt.1) then
+        call set_dependency('EVAL_CUM','EVAL_CENT',tgt_info)
+      else
+        call set_dependency('EVAL_CUM','EVAL_DENS0',tgt_info)
+      end if
       call set_rule2('EVAL_CUM',EVAL,tgt_info)
       call set_arg('EVAL_CUM',EVAL,'FORM',1,tgt_info,
      &             val_label=(/'FOPT_CUM'/))

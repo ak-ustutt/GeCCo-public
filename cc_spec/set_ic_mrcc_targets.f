@@ -172,7 +172,7 @@
         if (t1ord.ge.0) write(luout,*) 'T1ord        = ', t1ord
         if (spinproj.eq.1) then
           write(luout,*) 'Using spin adapted reference function.'
-        else
+        else if (spinproj.eq.2) then
           write(luout,*) 'Using full spin adaptation.'
         end if
       end if

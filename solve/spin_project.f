@@ -113,9 +113,12 @@
         xret = da_ddot(ffamp,ffamp%current_record,1,
      &                 ffamp,ffamp%current_record,1,
      &                 nwfpar,xbuf1,xbuf2,nwfpar)
-        call da_sccpvec(ffamp,ffamp%current_record,
-     &                  ffamp,ffamp%current_record,
-     &                  1d0/sqrt(xret),nwfpar,xbuf1,nwfpar)
+        if (xret.ge.1d-12) then
+          call da_sccpvec(ffamp,ffamp%current_record,
+     &                    ffamp,ffamp%current_record,
+     &                    1d0/sqrt(xret),nwfpar,xbuf1,nwfpar)
+          xret = 1d0
+        end if
       end if
 c dbg
 c      print *,'vector after spin projection:'

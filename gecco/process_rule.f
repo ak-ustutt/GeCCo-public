@@ -38,7 +38,7 @@
      &     NEW = 0, OLD = 1, ANY = 2
 
       integer, parameter ::
-     &     maxfac = 20, max_occ = 250, max_nj = 20,
+     &     maxfac = 40, max_occ = 250, max_nj = 20,
      &     max_label = 200, maxterms = 50, max_pops = 100
       real(8) ::
      &     fac(maxfac), freq, xdum
