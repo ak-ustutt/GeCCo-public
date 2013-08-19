@@ -36,7 +36,7 @@ c     &     ndef_max = 52, maximum_order = 10, nj_max = 10
       character*(len_opname) ::
      &     name_template
       logical ::
-     &     dagger, explicit, freeze(2)
+     &     dagger, explicit, freeze(2), new
       integer, allocatable ::
      &     ifreq_temp(:), ifreq(:)
 
@@ -50,8 +50,10 @@ c     &     ndef_max = 52, maximum_order = 10, nj_max = 10
      &     call quit(1,'process_operators','exactly one label expected')
 
       ! allocate a new entry if necessary
+      new = .true.
       do idx = 1,rule%n_update
         jdx = idx_oplist2(trim(rule%labels(idx)),op_info)
+        new = new.and.jdx.le.0
         if (jdx.gt.0) cycle
         call add_operator(trim(rule%labels(idx)),op_info)
       end do
@@ -73,6 +75,8 @@ c     &     ndef_max = 52, maximum_order = 10, nj_max = 10
      &       gas_constr,iformal,freeze,
      &       orb_info)
       case(DEF_OP_FROM_OCC)
+        if (.not.new) call quit(0,'process_operators','operator does
+     & already exist: ' //trim(rule%labels(1)))
         call op_from_occ_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
      &       occ_def,ndef,njoined,nact,ndef_max)

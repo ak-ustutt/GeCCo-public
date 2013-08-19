@@ -29,7 +29,7 @@
       type(formula_item), intent(inout) ::
      &     fl_fact
 
-      type(operator_info), intent(in) ::
+      type(operator_info), intent(inout) ::
      &     op_info
       type(strinf), intent(inout) ::
      &     str_info
