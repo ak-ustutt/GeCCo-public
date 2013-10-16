@@ -357,7 +357,7 @@ c          call add_me_list('L_GRD_REO',op_info)
           me_grd%fhand%buffer => xbuf1
           ! we must resort
           idoff_grd = 0
-          call reo_op_wmaps_c(
+          call reo_op_wmaps_c(1d0,
      &         .false.,xdum,0,
      &         me_grd,me_grd_reo,
      &         .false.,.false.,
@@ -617,7 +617,7 @@ c test -- special insert
 
           ! we must sort back, as well
           idoff_grd = 0
-          call reo_op_wmaps_c(
+          call reo_op_wmaps_c(1d0,
      &         .false.,xdum,0,
      &         me_grd_reo,me_grd,
      &         .false.,.false.,

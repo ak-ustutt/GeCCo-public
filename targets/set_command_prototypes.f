@@ -560,8 +560,8 @@
      &     val_label=(/''/),req=.true.)
       call set_arg('_PROTO_',SCALE_COPY,'LIST_INP',0,tgt_info,
      &     val_label=(/''/),req=.true.)
-      call set_arg('_PROTO_',SCALE_COPY,'FAC',0,tgt_info,
-     &     val_rl8=(/0d0/),req=.true.)
+      call set_arg('_PROTO_',SCALE_COPY,'FAC',1,tgt_info,
+     &     val_rl8=(/1d0/),def=.true.)
       call set_arg('_PROTO_',SCALE_COPY,'MODE',1,tgt_info,
      &     val_str='---',def=.true.)
       call set_arg('_PROTO_',SCALE_COPY,'LIST_SHAPE',0,tgt_info,

@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine fs_reo_drv(xret_blk,type_xret,idx_tgt,me_tgt,
-     &         fl_item,update,
+     &         fl_item,update,add,
      &         op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     driver for [REORDER] and [REORDER][ADD] of list
@@ -28,7 +28,7 @@
       integer, intent(in) ::
      &     type_xret, idx_tgt
       logical, intent(in) ::
-     &     update
+     &     update, add
       type(me_list), intent(inout), target ::
      &     me_tgt
       type(formula_item), intent(in) ::
@@ -56,6 +56,8 @@
      &     reo_info
       real(8), target ::
      &     xret_dummy(1)
+      real(8) ::
+     &     fact
 
       type(operator), pointer ::
      &     op_tmp
@@ -93,6 +95,8 @@
       op2list => op_info%op2list
 
       reo_inf0 => fl_item%reo
+      fact = 1d0
+      if (add) fact = fl_item%bcontr%fact
 
       idx_opout = idx_oplist2(reo_inf0%label_out,op_info)
 
@@ -159,7 +163,7 @@ c      irst_opout => reo_inf0%rst_opout
       idoff_opout = ffop%length_of_record*(ffop%current_record-1)
       if (ffop%unit.le.0) call file_open(ffop)
 
-      call reo_op_wmaps_c(
+      call reo_op_wmaps_c(fact,
      &     update,xret_pnt,type_xret_loc,
      &     me_opin,me_opout,
      &     tra_opin, tra_opout,

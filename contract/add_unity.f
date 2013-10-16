@@ -242,6 +242,12 @@ cmh        idxmsa = idxmsa+1
 
             call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
             call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
+            call set_len_str(len_str,ncblk,nablk,
+     &                       graphs,
+     &                       graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
+     &                       graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
+     &                       hpvxseq,.false.)
+
 c dbg
 c      print *,'ncblk,nablk:',ncblk,nablk
 c      write(luout,'(a,10i4)') 'len_str:',len_str(1:ncblk+nablk)
@@ -254,12 +260,6 @@ c      write(luout,'(a,10i4)') 'idxmsdis_a:',idxmsdis_a(1:nablk)
 c      write(luout,'(a,10i4)') 'gamdis_a:',gamdis_a(1:nablk)
 c      write(luout,'(a,10i4)') 'hpvx_asub:',hpvx_asub(1:nablk)
 c dbgend
-
-            call set_len_str(len_str,ncblk,nablk,
-     &                       graphs,
-     &                       graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
-     &                       graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
-     &                       hpvxseq,.false.)
 
             lenc = ielprd(len_str,ncblk)
             lena = ielprd(len_str(ncblk+1),nablk)

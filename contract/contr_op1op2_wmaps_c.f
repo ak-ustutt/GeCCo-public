@@ -1828,7 +1828,7 @@ c dbg
 c dbg
 c          print *,'lblk_op1op2tmp: ',lblk_op1op2tmp
 c dbg
-                    call reo_blk_wmaps_c(xop1op2,xop1op2blk,
+                    call reo_blk_wmaps_c(1d0,xop1op2,xop1op2blk,
      &                   lbuf_op1op2,lblk_op1op2tmp,
      &                   reo_info%sign_reo,
      &                   tra_op1op2, tra_op1op2,

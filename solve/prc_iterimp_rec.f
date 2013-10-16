@@ -62,30 +62,15 @@
      &     op_info
 
       integer ::
-     &     nopt, nsec, isec, stsec, ndsec, irec_cur, ii
+     &     nopt, irec_cur, ii
       real(8) ::
      &     xdum, prc_impfac
-
-      integer, pointer ::
-     &     nwfpsec(:), idstsec(:), nsec_arr(:)
-
-      real(8), pointer ::
-     &     signsec(:)
 
       if (ntest.ge.100)
      &   write(luout,'(a,i4)') 'prc_iterimp entered on level ',ilevel
 
       nopt = opti_info%nopt
       irec_cur = me_v%fhand%current_record
-      nsec_arr => opti_info%nsec(1:nopt)
-      nsec = sum(nsec_arr)
-      nwfpsec => opti_info%nwfpsec(1:nsec)
-      idstsec => opti_info%idstsec(1:nsec)
-      signsec => opti_info%signsec(1:nsec)!2(1:nsec)
-      stsec = 1
-      ndsec = 0
-      if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)
-      ndsec = ndsec + nsec_arr(iopt)
 
       if (ilevel.le.0) then
 
@@ -93,12 +78,7 @@
      &     write(luout,*) 'Application of (A^-1)^(0)'
 
         ! Just perform ordinary preconditioning step
-        ! Divide by precond., account for sign changes if necessary
-        do isec = stsec, ndsec
-          call diavc(xbuf1(idstsec(isec)),xbuf1(idstsec(isec)),
-     &               signsec(isec),xbuf2(idstsec(isec)),
-     &               0d0,nwfpsec(isec))
-        end do
+        call diavc(xbuf1,xbuf1,1d0,xbuf2,0d0,opti_info%nwfpar(iopt))
 
         ! Store vector and return
         call vec_to_da(me_v%fhand,me_v%fhand%current_record,xbuf1,nbuf)
@@ -143,10 +123,8 @@
       ! for higher levels we manually compute 2 - A^(0)*(A^-1)^(n-1)
       if (ilevel.gt.1) then
         ! multiply with A^(0) (=undo last preconditioning step)
-        do isec = stsec, ndsec
-          do ii = idstsec(isec), idstsec(isec)-1+nwfpsec(isec)
-            xbuf1(ii) = signsec(isec)*xbuf1(ii)*xbuf2(ii)
-          end do
+        do ii = 1, opti_info%nwfpar(iopt)
+          xbuf1(ii) = xbuf1(ii)*xbuf2(ii)
         end do
         ! get original vector times two and substract the above
         call vec_from_da(me_v%fhand,irec_cur,xbuf2,nbuf)
@@ -157,6 +135,7 @@
       end if
 
       ! compute v = v - Aoff*v
+      ! would a sign correction be needed here???
       call evaluate2(fmvp,.false.,.true.,
      &               op_info,str_info,strmap_info,orb_info,
      &               xdum,.false.)

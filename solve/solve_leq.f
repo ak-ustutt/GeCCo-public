@@ -113,7 +113,7 @@
       integer, pointer ::
      &     irecmvp(:), irectrv(:), irecmet(:), idxselect(:)
       real(8), pointer ::
-     &      xret(:)
+     &      xret(:), xbuf1(:)
 
       character ::
      &     fname*256
@@ -350,6 +350,14 @@ c dbg
 
           ! store norm of RHS
           xresnrm(iroot,iopt) = xret(idxselect(1))
+
+          ! apply sign-fix (if needed)
+          ifree = mem_setmark('solve_leq.fix_sign')
+          ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),'xbuf1')
+          call optc_fix_signs2(me_rhs(iopt)%mel%fhand,
+     &                        iroot,opti_info,iopt,
+     &                        opti_info%nwfpar(iopt),xbuf1)
+          ifree = mem_flushmark()
         end do
       end do
 
@@ -426,6 +434,24 @@ c dbg
 
             do iopt = 1, nopt
               call touch_file_rec(me_trv(iopt)%mel%fhand)
+            end do
+
+            ! apply sign-fix (if needed)
+            do iopt = 1, nopt
+c             write(luout,*) 'Fixing signs of residual+metric,iopt=',iopt
+              ifree = mem_setmark('solve_leq.fix_sign')
+              ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
+     &                                         'xbuf1')
+              call optc_fix_signs2(me_mvp(iopt)%mel%fhand,
+     &                            irecmvp(irequest),
+     &                            opti_info,iopt,
+     &                            opti_info%nwfpar(iopt),xbuf1)
+              if (use_s(iopt))
+     &           call optc_fix_signs2(me_met(iopt)%mel%fhand,
+     &                            irecmet(irequest),
+     &                            opti_info,iopt,
+     &                            opti_info%nwfpar(iopt),xbuf1)
+              ifree = mem_flushmark()
             end do
 
             if (ntest.ge.1000) then

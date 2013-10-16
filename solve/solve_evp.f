@@ -446,6 +446,23 @@ c dbg
             call frm_sched(xret,fl_mvp,depend,0,0,
      &           .true.,.false.,op_info,str_info,strmap_info,orb_info)
 
+            ! apply sign-fix (if needed)
+            do iopt = 1, nopt
+c             write(luout,*) 'Fixing signs of residual+metric,iopt=',iopt
+              ifree = mem_setmark('solve_evp.fix_sign')
+              ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
+     &                                         'xbuf1')
+              call optc_fix_signs2(me_mvp(iopt)%mel%fhand,
+     &                            irecmvp(irequest),
+     &                            opti_info,iopt,
+     &                            opti_info%nwfpar(iopt),xbuf1)
+              if (use_s(iopt))
+     &           call optc_fix_signs2(me_met(iopt)%mel%fhand,
+     &                            irecmet(irequest),
+     &                            opti_info,iopt,
+     &                            opti_info%nwfpar(iopt),xbuf1)
+              ifree = mem_flushmark()
+            end do
 c dbg
 c            write(luout,*) 'output for request: ',irequest
 c            call wrt_mel_file(luout,5,me_mvp(1)%mel,
@@ -534,8 +551,8 @@ c        if (iter.gt.1) call touch_file_rec(me_opt(iopt)%mel%fhand)
           ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
           xresmax = 0d0
           do iroot = 1, nroots
-            xoverlap(iroot) = da_ddot(ffhome(1)%fhand,1,1,
-     &                                ffopt(iopt)%fhand,iroot,1,
+            xoverlap(iroot) = da_ddot(ffhome(1)%fhand,1,
+     &                                ffopt(iopt)%fhand,iroot,
      &                                opti_info%nwfpar(iopt),
      &                                xbuf1,xbuf2,
      &                                opti_info%nwfpar(iopt))

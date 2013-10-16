@@ -46,6 +46,8 @@
       xmat(1:ndim,1:ndim) = 0d0
       do ii = 1, ndim
         xmat(ii,ii) = 1d0
+        ! negative norms are suspicious
+        if (smat(ii,ii).lt.0d0) call warn('mgs','negative norm?!')
       end do
 
       ! loop over vectors
