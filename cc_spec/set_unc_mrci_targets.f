@@ -847,6 +847,15 @@ c dbgend
         inquire(file='ME_C0_list.da',exist=l_exist)
         if (.not.l_exist) call quit(1,'set_unc_mrci_targets',
      &           'File for CASSCF coefficients not found!')
+c dbg
+c        call set_rule2('SOLVE_REF',SET_MEL,tgt_info)
+c        call set_arg('SOLVE_REF',SET_MEL,'LIST',1,tgt_info,
+c     &       val_label=(/'ME_C0'/))
+c        call set_arg('SOLVE_REF',SET_MEL,'IDX_LIST',2,tgt_info,
+c     &       val_int=(/1,2/))
+c        call set_arg('SOLVE_REF',SET_MEL,'VAL_LIST',2,tgt_info,
+c     &       val_rl8=(/1d0,1d0/))
+c dbgend
       end if
       if (cmaxexc.eq.0) then
         call form_parameters(-1,parameters,2,

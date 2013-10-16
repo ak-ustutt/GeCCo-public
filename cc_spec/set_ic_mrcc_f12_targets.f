@@ -54,8 +54,16 @@
       character ::
      &     op_ht*3, f_ht*5, op_ht0to*6, f_ht0to*8, form_str*50,
      &     def_ht*10
+c dbg
+      character(20) :: Z2_appr
+c dbgend
       real(8) ::
      &     x_ansatz, prc_shift
+
+c dbg
+      Z2_appr(1:20) = ' '
+      call get_argument_value('method.R12','Z2_appr',str=Z2_appr)
+c dbgend
 
       if (iprlvl.gt.0) write(luout,*) 'setting icMRCC_F12 targets'
 
@@ -330,6 +338,12 @@ c dbgend
      &                 'Vring_formal','Vring_formal^+',
      &                 'C1_formal'/))
       end if
+c dbg
+c      if(trim(Z2_appr).eq."J2K3") then
+c      call set_dependency('F_MRCC_F12_LAG','Z2-INT-CABS',tgt_info)
+c      call set_dependency('F_MRCC_F12_LAG','Z2INT_R12_EVAL',tgt_info)
+c      end if
+c dbg end
 
       if(notrunc) then
         call set_rule2('F_MRCC_F12_LAG',REPLACE,tgt_info)

@@ -4773,6 +4773,118 @@ c dbgend
      &         call quit(1,'set_ic_mrcc_targets',
      &         'Non-iterative higher-order corr. should use prc_type=3')
         end select
+c dbg
+c      call add_target2('DEF_CHECK',.false.,tgt_info)
+c      call set_rule2('DEF_CHECK',DEF_SCALAR,tgt_info)
+c      call set_arg('DEF_CHECK',DEF_SCALAR,'LABEL',1,tgt_info,
+c     &     val_label=(/'CHECK'/))
+c      call set_rule2('DEF_CHECK',DEF_OP_FROM_OCC,tgt_info)
+c      call set_arg('DEF_CHECK',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+c     &     val_label=(/'L3'/))
+c           descr='VVP,HHH|VPP,VHH|VPP,HHH|PPP,VVH|PPP,HVH|PPP,HHH'
+c      call set_arg('DEF_CHECK',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+c     &     val_str=descr)
+c      call add_target2('DEF_CHECK_RES',.false.,tgt_info)
+c      call set_dependency('DEF_CHECK_RES','DEF_CHECK',tgt_info)
+c      call set_dependency('DEF_CHECK_RES','F_MRCC_LAG',tgt_info)
+c      call set_rule2('DEF_CHECK_RES',DERIVATIVE,tgt_info)
+c      call set_arg('DEF_CHECK_RES',DERIVATIVE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',DERIVATIVE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_arg('DEF_CHECK_RES',DERIVATIVE,'OP_RES',1,tgt_info,
+c     &     val_label=(/'CHECK'/))
+c      call set_arg('DEF_CHECK_RES',DERIVATIVE,'OP_DERIV',1,tgt_info,
+c     &     val_label=(/'L'/))
+c      call set_arg('DEF_CHECK_RES',DERIVATIVE,'OP_MULT',1,tgt_info,
+c     &     val_label=(/'L'/))
+c      call set_rule2('DEF_CHECK_RES',INVARIANT,tgt_info)
+c      call set_arg('DEF_CHECK_RES',INVARIANT,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',INVARIANT,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',INVARIANT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'CHECK'/))
+c      call set_arg('DEF_CHECK_RES',INVARIANT,'OPERATORS',1,tgt_info,
+c     &     val_label=(/'T'/))
+c      call set_rule2('DEF_CHECK_RES',REPLACE,tgt_info)
+c      call set_arg('DEF_CHECK_RES',REPLACE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',REPLACE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',REPLACE,'OP_LIST',2,tgt_info,
+c     &     val_label=(/'L   ','L3^+'/))
+c      call set_rule2('DEF_CHECK_RES',KEEP_TERMS,tgt_info)
+c      call set_arg('DEF_CHECK_RES',KEEP_TERMS,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',KEEP_TERMS,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',KEEP_TERMS,'TERMS',2,tgt_info,
+c     &     val_int=(/21/))
+c      call set_rule2('DEF_CHECK_RES',REPLACE,tgt_info)
+c      call set_arg('DEF_CHECK_RES',REPLACE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',REPLACE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',REPLACE,'OP_LIST',2,tgt_info,
+c     &     val_label=(/'H','1'/))
+c      call set_rule2('DEF_CHECK_RES',MODIFY_FACTORIZATION,tgt_info)
+c      call set_arg('DEF_CHECK_RES',MODIFY_FACTORIZATION,'LABEL_RES',1,
+c     &     tgt_info,val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',MODIFY_FACTORIZATION,'LABEL_IN',1,
+c     &     tgt_info,val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',MODIFY_FACTORIZATION,'MODIFY',9,
+c     &     tgt_info,val_int=(/1,7,4,3,6,2,1,1,1/))
+c      call set_rule2('DEF_CHECK_RES',PRINT_FORMULA,tgt_info)
+c      call set_arg('DEF_CHECK_RES',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call add_target2('DEF_ME_CHECK',.false.,tgt_info)
+c      call set_dependency('DEF_ME_CHECK','DEF_CHECK_RES',tgt_info)
+c      call set_rule2('DEF_ME_CHECK',DEF_ME_LIST,tgt_info)
+c      call set_arg('DEF_ME_CHECK',DEF_ME_LIST,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_CHECK'/))
+c      call set_arg('DEF_ME_CHECK',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+c     &             val_label=(/'CHECK   '/))
+c      call set_arg('DEF_ME_CHECK',DEF_ME_LIST,'2MS',1,tgt_info,
+c     &             val_int=(/0/))
+c      call set_arg('DEF_ME_CHECK',DEF_ME_LIST,'IRREP',1,tgt_info,
+c     &             val_int=(/1/))
+c      call set_arg('DEF_ME_CHECK',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+c     &             val_int=(/msc/))
+c      call add_target2('DEF_ME_L3',.false.,tgt_info)
+c      call set_dependency('DEF_ME_L3','DEF_CHECK_RES',tgt_info)
+c      call set_rule2('DEF_ME_L3',DEF_ME_LIST,tgt_info)
+c      call set_arg('DEF_ME_L3',DEF_ME_LIST,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_L3'/))
+c      call set_arg('DEF_ME_L3',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+c     &             val_label=(/'L3  '/))
+c      call set_arg('DEF_ME_L3',DEF_ME_LIST,'2MS',1,tgt_info,
+c     &             val_int=(/0/))
+c      call set_arg('DEF_ME_L3',DEF_ME_LIST,'IRREP',1,tgt_info,
+c     &             val_int=(/1/))
+c      call set_arg('DEF_ME_L3',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+c     &             val_int=(/msc/))
+c      call add_target2('CHECK_RES_OPT',.false.,tgt_info)
+c      call set_dependency('CHECK_RES_OPT','DEF_ME_CHECK',tgt_info)
+c      call set_dependency('CHECK_RES_OPT','DEF_ME_L3',tgt_info)
+c      call set_dependency('CHECK_RES_OPT','DEF_ME_T',tgt_info)
+c      call set_dependency('CHECK_RES_OPT','DEF_ME_Tfix',tgt_info)
+c      call set_dependency('CHECK_RES_OPT','DEF_ME_E(MR)',tgt_info)
+c      call set_rule2('CHECK_RES_OPT',OPTIMIZE,tgt_info)
+c      call set_arg('CHECK_RES_OPT',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+c     &             val_label=(/'CHECK_RES_OPT'/))
+c      call set_arg('CHECK_RES_OPT',OPTIMIZE,'LABELS_IN',1,tgt_info,
+c     &             val_label=(/'DEF_CHECK_RES'/))
+c      call add_target2('EVAL_RES',.true.,tgt_info)
+c      call set_dependency('EVAL_RES','FOPT_OMG',tgt_info)
+c      call set_dependency('EVAL_RES','DEF_ME_Dtrdag',tgt_info)
+c      call set_rule('EVAL_RES',ttype_opme,EVAL,
+c     &     'CHECK_RES_OPT',1,0,
+c     &     parameters,0,tgt_info)
+c      call set_rule2('EVAL_RES',PRINT_MEL,tgt_info)
+c      call set_arg('EVAL_RES',PRINT_MEL,'LIST',1,tgt_info,
+c     &           val_label=(/'ME_CHECK'/))
+c dbgend
         ! (a) evaluate residual
         call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
      &       'FOPT_OMG',1,0,

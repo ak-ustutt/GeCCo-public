@@ -1194,7 +1194,10 @@ C     &              parameters,2,tgt_info)
       ! for n_pp >= 1
       if (n_pp.ge.1) then
         descr = ',|[HP],[HP]|[HP][HP],H[HP]'
+c        descr = ',|[HP],H|[HP][HP],HH|[HP],P|[HP][HP],HP'
         if (active_orbs) descr = ',|[HPV],[HPV]|[HPV][HPV],[HV][HPV]'
+c        if (active_orbs) descr = ',|[HPV],[HV]|[HPV][HPV],[HV][HV]
+c     & |[HPV],P|[HPV][HPV],[HV]P'
         ndef = 11
         occ_def(IHOLE,1,7) = 1
         occ_def(IPART,2,7) = 1
@@ -1483,6 +1486,10 @@ C     &              parameters,2,tgt_info)
       else
         descr = 'P,H|PP,HH'
         if (active_orbs) descr = 'P,[HV]|PP,[HV][HV]|VP,HH'
+        if (n_pp.eq.1) then
+          descr = 'P,H|PP,HH'
+          if (active_orbs) descr = 'P,[HV]|PP,[HV][HPV]|VP,[PH]H'
+        end if
         nblk = 2
         nj = 1
         occ_def = 0
@@ -1544,50 +1551,55 @@ c        if (active_orbs) descr = ',|V,V|VV,VV'
       end if
       if (n_pp.ge.1) then
         descr = ',|H,P|P,H|P,P|HP,HH|H[HP],HP'
-        if (active_orbs) descr = '?'
-        ndef = 7
-        occ_def(IHOLE,1,2) = 1
-        occ_def(IPART,2,2) = 1
-
-        occ_def(IPART,1,3) = 1
-        occ_def(IHOLE,2,3) = 1
-
-        occ_def(IPART,1,4) = 1
-        occ_def(IPART,2,4) = 1
-
-        occ_def(IHOLE,1,5) = 1
-        occ_def(IPART,1,5) = 1
-        occ_def(IHOLE,2,5) = 2
-
-        occ_def(IHOLE,1,6) = 2
-        occ_def(IHOLE,2,6) = 1
-        occ_def(IPART,2,6) = 1
-
-        occ_def(IHOLE,1,7) = 1
-        occ_def(IPART,1,7) = 1
-        occ_def(IHOLE,2,7) = 1
-        occ_def(IPART,2,7) = 1
+c        descr = ',|P,P|HP,HP'  !for triples only
+c dbg
+c        if (active_orbs) descr = '?'
+        if (active_orbs) descr = ',|V,V|VV,VV|[HV],P|P,[HV]
+     &               |P,P|[HV]P,[HV]P'
+c dbgend
+c        ndef = 7
+c        occ_def(IHOLE,1,2) = 1
+c        occ_def(IPART,2,2) = 1
+c
+c        occ_def(IPART,1,3) = 1
+c        occ_def(IHOLE,2,3) = 1
+c
+c        occ_def(IPART,1,4) = 1
+c        occ_def(IPART,2,4) = 1
+c
+c        occ_def(IHOLE,1,5) = 1
+c        occ_def(IPART,1,5) = 1
+c        occ_def(IHOLE,2,5) = 2
+c
+c        occ_def(IHOLE,1,6) = 2
+c        occ_def(IHOLE,2,6) = 1
+c        occ_def(IPART,2,6) = 1
+c
+c        occ_def(IHOLE,1,7) = 1
+c        occ_def(IPART,1,7) = 1
+c        occ_def(IHOLE,2,7) = 1
+c        occ_def(IPART,2,7) = 1
       end if
       if (n_pp.ge.2) then
         descr = '[HP]P,HH|[HP][HP],[HP]P'
         if (active_orbs) descr = '?'
-        occ_def(IHOLE,1,ndef+1) = 2
-        occ_def(IPART,2,ndef+1) = 2
-
-        occ_def(IPART,1,ndef+2) = 2
-        occ_def(IHOLE,2,ndef+2) = 2
-
-        occ_def(IHOLE,1,ndef+3) = 1
-        occ_def(IPART,1,ndef+3) = 1
-        occ_def(IPART,2,ndef+3) = 2
-
-        occ_def(IPART,1,ndef+4) = 2
-        occ_def(IHOLE,2,ndef+4) = 1
-        occ_def(IPART,2,ndef+4) = 1
-
-        occ_def(IPART,1,ndef+5) = 2
-        occ_def(IPART,2,ndef+5) = 2
-        ndef = ndef + 5
+c        occ_def(IHOLE,1,ndef+1) = 2
+c        occ_def(IPART,2,ndef+1) = 2
+c
+c        occ_def(IPART,1,ndef+2) = 2
+c        occ_def(IHOLE,2,ndef+2) = 2
+c
+c        occ_def(IHOLE,1,ndef+3) = 1
+c        occ_def(IPART,1,ndef+3) = 1
+c        occ_def(IPART,2,ndef+3) = 2
+c
+c        occ_def(IPART,1,ndef+4) = 2
+c        occ_def(IHOLE,2,ndef+4) = 1
+c        occ_def(IPART,2,ndef+4) = 1
+c
+c        occ_def(IPART,1,ndef+5) = 2
+c        occ_def(IPART,2,ndef+5) = 2
+c        ndef = ndef + 5
       end if
       !call add_target(op_b_inter,ttype_op,.false.,tgt_info)
       call add_target2(op_b_inter,.false.,tgt_info)
@@ -1606,21 +1618,66 @@ C     &              parameters,2,tgt_info)
 
       ! Bhole intermediate
       call add_target(op_bh_inter,ttype_op,.false.,tgt_info)
+c      if (n_pp.eq.0) then
+c        descr=','
+c        if (active_orbs) descr=',|V,V'
       call set_dependency(op_bh_inter,op_b_inter,tgt_info)
       call cloneop_parameters(-1,parameters,
      &                        op_b_inter,.false.) ! <- dagger=.false.
       call set_rule(op_bh_inter,ttype_op,CLONE_OP,
      &              op_bh_inter,1,1,
      &              parameters,1,tgt_info)
+c      call set_rule2(op_bh_inter,DEF_OP_FROM_OCC,tgt_info)
+c      call set_arg(op_bh_inter,DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+c     &     val_label=(/op_bh_inter/))
+c      call set_arg(op_bh_inter,DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg(op_bh_inter,DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+c     &     val_str=descr)
+c      else if (n_pp.eq.1) then
+c      descr=',|P,P'
+c      if (active_orbs) descr=',|V,V|[HVP],P|P,[HV]'
+c      call set_rule2(op_bh_inter,DEF_OP_FROM_OCC,tgt_info)
+c      call set_arg(op_bh_inter,DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+c     &     val_label=(/op_bh_inter/))
+c      call set_arg(op_bh_inter,DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg(op_bh_inter,DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+c     &     val_str=descr)
+c      end if
 
       ! X intermediate
       call add_target(op_x_inter,ttype_op,.false.,tgt_info)
+c      if (n_pp.eq.0) then
       call set_dependency(op_x_inter,op_b_inter,tgt_info)
       call cloneop_parameters(-1,parameters,
      &                        op_b_inter,.false.) ! <- dagger=.false.
       call set_rule(op_x_inter,ttype_op,CLONE_OP,
      &              op_x_inter,1,1,
      &              parameters,1,tgt_info)
+c      descr=','
+c      if (active_orbs) descr='V,[HV]|H,V|V[HV],VV|VV,HV'
+c      call set_rule2(op_x_inter,DEF_OP_FROM_OCC,tgt_info)
+c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+c     &     val_label=(/op_x_inter/))
+c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+c     &     val_str=descr)
+c      else if (n_pp.eq.1) then
+c      descr=',|[HP],[HP]|HP,H[PH]|HH,HP'
+c      if (active_orbs) descr=',|[HP],[HP]|HP,H[PH]|HH,HP|'
+c      descr='H,P|P,[HP]|HH,HP|HP,[HP]H'
+c      if (active_orbs) descr='V,[HV]|H,V|V[HV],VV|VV,HV|[HVP],P|P,[HV]
+c     &          |[HV][HVP],[HV]P|[HV]P,V[HV]|[VP]V,HH|HH,VV'
+c      call set_rule2(op_x_inter,DEF_OP_FROM_OCC,tgt_info)
+c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+c     &     val_label=(/op_x_inter/))
+c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+c     &     val_int=(/1/))
+c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+c     &     val_str=descr)
+c      end if
 
       ! X' intermediate
       !call add_target(op_xp_inter,ttype_op,.false.,tgt_info)
@@ -1665,6 +1722,8 @@ C     &              parameters,2,tgt_info)
       if (.not.CC) descr = 'H,,,H'
       if (active_orbs.and..not.CC) 
      &   descr = 'H,,,H|H,,,V|V,,,H|HV,,,HV|HV,,,VV|VV,,,HV'
+c      if (active_orbs.and.n_pp.eq.1) 
+c     &   descr = 'H,,,[HV]|V,,,H|HV,,,[HV]V|VV,,,HV|H,,,P'
       occ_def = 0
       occ_def(IHOLE,1,1) = 1
       occ_def(IHOLE,2,2) = 1
@@ -1711,7 +1770,7 @@ C     &              parameters,2,tgt_info)
       if (n_pp.eq.2) descr = 'PP,[HP][HP]'
       if (active_orbs) then
         if (n_pp.eq.0) descr = 'P[PV],[HV][HV]'
-        if (n_pp.eq.1) descr = 'P[PV],[HV][HPV]'
+        if (n_pp.eq.1) descr = 'P[PV],[HV][HV]|P[PV],[HV]P'
         if (n_pp.eq.2) descr = 'P[PV],[HPV][HPV]'
       end if
       ! n_pp == 0:
@@ -1849,11 +1908,35 @@ c      occ_def(IPART,2,1) = 1
         occ_def(IPART,2,3) = 2
         ndef = 3   
       end if
+c dbg
+c      if (active_orbs) then
+c        occ_def(IHOLE,1,2) = 1
+c        occ_def(IPART,1,2) = 1
+c        occ_def(IPART,2,2) = 2
+c        ! 3
+c        occ_def(IHOLE,1,3) = 2
+c        occ_def(IPART,1,3) = 1
+c        occ_def(IHOLE,2,3) = 1
+c        occ_def(IPART,2,3) = 2
+c        ndef=3
+c      end if
+c dbgend
+      if (active_orbs) then
+      descr='[HV][HV],PP'
+      call set_rule2('Z2-INT',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('Z2-INT',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/'Z2-INT'/))
+      call set_arg('Z2-INT',DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('Z2-INT',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &     val_str=descr)
+      else
       call op_from_occ_parameters(-1,parameters,2,
      &     occ_def,ndef,1,(/0,0/),6)
       call set_rule('Z2-INT',ttype_op,DEF_OP_FROM_OCC,
      &              'Z2-INT',1,1,
      &              parameters,2,tgt_info)
+      end if
       
         ! Non-anti-symmetrised Hamiltonian integrals.
         call add_target(op_g_z,ttype_op,.false.,tgt_info)
@@ -3207,6 +3290,7 @@ c dbg
      &     parameters,0,tgt_info)
 
       call add_target('Z2INT_R12_EVAL',ttype_frm,.false.,tgt_info)
+      call set_dependency('Z2INT_R12_EVAL','DEF-Z2LIST',tgt_info)
       if (approx2(14:17).eq.'DRCT') then
         call set_dependency('Z2INT_R12_EVAL','Z2INT_R12_DIR',tgt_info)
       else
