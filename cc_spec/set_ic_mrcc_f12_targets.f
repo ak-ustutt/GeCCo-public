@@ -120,7 +120,7 @@ c      solve = .not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
       skip = (is_keyword_set('calculate.skip_E').gt.0)
       solve = .not.svdonly.and..not.skip
       if (h1bar) call quit(1,'set_ic_mrcc_f12_targets',
-     &                     'H1bar not available yet')
+     &                   'H1bar not yet available for F12 calculations')
       if (optref.ne.0.and.optref.ne.-3)
      &   call quit(1,'set_ic_mrcc_f12_targets','use optref=0 or -3')
       

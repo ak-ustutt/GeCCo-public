@@ -1,12 +1,14 @@
 *----------------------------------------------------------------------*
-      subroutine add_frozen_shell(ishell,len,orb_info)
+      subroutine add_frozen_shell(ishell,len,sh_type,orb_info)
 *----------------------------------------------------------------------*
 *     split the first shell
+*     extension: use to define further shells with other type
 *----------------------------------------------------------------------*
 
       implicit none
 
       include 'stdunit.h'
+      include 'opdim.h'
       include 'def_orbinf.h'
 
       integer, parameter ::
@@ -14,6 +16,8 @@
 
       integer, intent(in) ::
      &     len, ishell(len)
+      character(len=3), intent(in) ::
+     &     sh_type
       type(orbinf), intent(inout) ::
      &     orb_info
 
@@ -79,11 +83,27 @@
         orb_info%igassh(1:nsym,igas) = igassh_sv(1:nsym,igas-1)
       end do
 
-      orb_info%iad_gas(1) = 1
-      orb_info%iad_gas(2:ngas) = iad_gas_sv(1:ngas-1)
+      select case(sh_type)
+      case('frz')
+        orb_info%iad_gas(1) = 1
+        orb_info%iad_gas(2:ngas) = iad_gas_sv(1:ngas-1)
 
-      orb_info%ihpvgas(1,1:nspin) = 1
-      orb_info%ihpvgas(2:ngas,1:nspin) = ihpvgas_sv(1:ngas-1,1:nspin)
+        orb_info%ihpvgas(1,1:nspin) = 1
+        orb_info%ihpvgas(2:ngas,1:nspin) = ihpvgas_sv(1:ngas-1,1:nspin)
+      case('occ')
+        orb_info%iad_gas(1) = 0
+        orb_info%iad_gas(2:ngas) = iad_gas_sv(1:ngas-1)
+
+        orb_info%ihpvgas(1,1:nspin) = IVALE
+        orb_info%ihpvgas(2:ngas,1:nspin) = ihpvgas_sv(1:ngas-1,1:nspin)
+      case('cls')
+        orb_info%iad_gas(1) = 0
+        orb_info%iad_gas(2:ngas) = iad_gas_sv(1:ngas-1)
+
+        orb_info%ihpvgas(1,1:nspin) = IHOLE
+        orb_info%ihpvgas(2:ngas,1:nspin) = ihpvgas_sv(1:ngas-1,1:nspin)
+
+      end select
 
       if (iprint.ge.50) then
         write(luout,*) ' new shell definition: '
