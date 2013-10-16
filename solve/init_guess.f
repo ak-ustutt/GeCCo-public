@@ -138,8 +138,8 @@ c     &            call warn('init_guess','guess vector not normalized')
      &                                 'xbuf1')
                 ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),
      &                                 'xbuf2')
-                xover = da_ddot(me_trv(iopt)%mel%fhand,iroot-1,1,
-     &                            me_trv(iopt)%mel%fhand,iroot,1,
+                xover = da_ddot(me_trv(iopt)%mel%fhand,iroot-1,
+     &                            me_trv(iopt)%mel%fhand,iroot,
      &                            opti_info%nwfpar(iopt),
      &                            xbuf1,xbuf2,
      &                            opti_info%nwfpar(iopt))
@@ -193,8 +193,8 @@ c                if (abs(abs(xover)-xretlast).lt.1d-6) then
               ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),
      &                               'xbuf2')
               do jroot = 1, iroot-1
-                xover = da_ddot(me_trv(iopt)%mel%fhand,jroot,1,
-     &                          me_trv(iopt)%mel%fhand,iroot,1,
+                xover = da_ddot(me_trv(iopt)%mel%fhand,jroot,
+     &                          me_trv(iopt)%mel%fhand,iroot,
      &                          opti_info%nwfpar(iopt),
      &                          xbuf1,xbuf2,
      &                          opti_info%nwfpar(iopt))

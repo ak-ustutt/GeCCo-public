@@ -86,16 +86,16 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     idx, jdx, kdx, iroot, irhs,  nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
      &     ndim_save, ndel, iopt, lenscr, ifree, restart_mode,
-     &     nselect, irec, ioff_s, ioff, nsec, jopt, isec, stsec, ndsec
+     &     nselect, irec, ioff_s, ioff, jopt
       real(8) ::
      &     cond, xdum, xnrm
       real(8), pointer ::
      &     gred(:), vred(:), mred(:), sred(:),
-     &     xmat1(:), xmat2(:), xvec(:), xret(:), signsec(:)
+     &     xmat1(:), xmat2(:), xvec(:), xret(:)
       integer, pointer ::
      &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
      &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
-     &     nwfpar(:), nwfpsec(:), idstsec(:), nsec_arr(:),
+     &     nwfpar(:),
      &     ipiv(:), iconv(:), idxroot(:), idxselect(:)
       type(file_array), pointer ::
      &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:)
@@ -160,11 +160,6 @@ c      iopt = 1  ! preliminary
       nred = ndim_vsbsp
       do iopt = 1, nopt
         init = iopt.eq.1
-        nsec = opti_info%nsec(iopt)
-        ioff = sum(opti_info%nsec(1:iopt))-nsec
-        nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
-        idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
-        signsec => opti_info%signsec(ioff+1:ioff+nsec)
         ! update reduced space:
         ! ffvsbsp and ffrsbsp point to ff_trv(iopt)%fhand ...
         if (.not.use_s(iopt).and.nopt.eq.1) then
@@ -173,7 +168,6 @@ c      iopt = 1  ! preliminary
      &       opti_stat%nadd,opti_stat%ndel,
      &       iord_vsbsp,ffvsbsp(iopt)%fhand,
      &       iord_rsbsp,ffrsbsp(iopt)%fhand,me_rhs(iopt)%mel%fhand,
-     &       nsec,nwfpsec,idstsec,signsec,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)
         else if (.not.use_s(iopt)) then
           call optc_update_redsp4
@@ -182,7 +176,6 @@ c      iopt = 1  ! preliminary
      &       iord_vsbsp,ffvsbsp(iopt)%fhand,
      &       iord_rsbsp,ffrsbsp(iopt)%fhand,
      &       iord_vsbsp,ffvsbsp(iopt)%fhand,me_rhs(iopt)%mel%fhand,
-     &       nsec,nwfpsec,idstsec,signsec,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)
         else
           call optc_update_redsp4
@@ -194,7 +187,6 @@ c      iopt = 1  ! preliminary
 c     &       iord_vsbsp,ffvsbsp(iopt)%fhand,
 c     &       iord_rsbsp,ffrsbsp(iopt)%fhand,
 c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
-     &       nsec,nwfpsec,idstsec,signsec,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)
         end if
       end do
@@ -312,15 +304,6 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
      &           iord_rsbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
 
-C ?????
-c          ! fix the signs (if needed)
-c          if (.not.use_s(iopt).and.trafo)
-c     &         call optc_fix_signs(xrsnrm(iroot,iopt),xvec,
-c     &                      ffvsbsp(iopt)%fhand,ndim_vsbsp,iord_vsbsp,
-c     &                      ffspc(iopt)%fhand,irecscr,
-c     &                      opti_info,iopt,
-c     &                      nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
-
           ! transform residual (if requested)
           if (trafo) then
             call optc_traf(me_scr(iopt)%mel,irecscr,xrsnrm(iroot,iopt),
@@ -353,12 +336,6 @@ c     &                      nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
       if (iter.ge.opti_info%maxmacit) nnew = 0
 
       if (nnew.gt.0) then
-        nsec_arr => opti_info%nsec(1:nopt)
-        nsec = sum(nsec_arr)
-        nwfpsec => opti_info%nwfpsec(1:nsec)
-        idstsec => opti_info%idstsec(1:nsec)
-        signsec => opti_info%signsec(1:nsec)!2(1:nsec)
-c        signsec => opti_info%signsec2(1:nsec)
 
         ! reduced space exhausted?
         if (nred+nnew.gt.mxsub) then
@@ -384,11 +361,7 @@ c        signsec => opti_info%signsec2(1:nsec)
         end if
 
         ! divide new directions by preconditioner
-        stsec = 1
-        ndsec = 0
         do iopt = 1, nopt
-          if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)
-          ndsec = ndsec + nsec_arr(iopt)
 
           select case(opti_info%typ_prc(iopt))
           case(optinf_prc_file,optinf_prc_traf)
@@ -412,24 +385,12 @@ c                xnrm = dnrm2(nwfpar,xbuf1,1)
                   xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
                 end do
                 xnrm = sqrt(xnrm)
-                ! account for sign changes if necessary
-                do isec = stsec, ndsec
-                  call diavc(xbuf1(idstsec(isec)),xbuf1(idstsec(isec)),
-     &                       signsec(isec)/xnrm,xbuf2(idstsec(isec)),
-     &                       opti_info%shift,nwfpsec(isec))
-                end do
-c                call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
-c     &                     opti_info%shift,nwfpar(iopt))
+                call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
+     &                     opti_info%shift,nwfpar(iopt))
                 call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,
      &                         nwfpar(iopt))
               end do
             else
-              ! security trap
-              do isec = stsec, ndsec
-                if (idstsec(isec).ne.1) 
-     &               call quit(1,'leqc_core',
-     &               'not this route (only incore)')
-              end do
 
               do iroot = 1, nnew
 c                ! request (nroot-iroot+1)th-last root 
@@ -530,6 +491,10 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
               call switch_mel_record(me_scr(iopt)%mel,iroot)
               call frm_sched(xret,flist,depend,idxselect,nselect,
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
+              ! apply sign-fix (if needed)
+              call optc_fix_signs2(me_met(iopt)%mel%fhand,irec,
+     &                             opti_info,iopt,
+     &                             opti_info%nwfpar(iopt),xbuf1)
               me_met(iopt)%mel%fhand%last_mod(irec) = -1
               deallocate(xret,idxselect)
 
@@ -545,17 +510,11 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
 
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
-        nsec_arr => opti_info%nsec(1:nopt)
-        nsec = sum(nsec_arr)
-        nwfpsec => opti_info%nwfpsec(1:nsec)
-        idstsec => opti_info%idstsec(1:nsec)
-        signsec => opti_info%signsec(1:nsec)
         call optc_orthvec(nadd,.false.,
      &                 ffssbsp,iord_ssbsp,sred,
      &                 ffvsbsp,
      &                 iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                 use_s,ioff_s,ffmet,ffscr,nnew,nopt,
-     &                 nsec_arr,nwfpsec,idstsec,signsec,
      &                 nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 
         ! set nadd

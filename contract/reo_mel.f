@@ -155,25 +155,7 @@
      &                          i_occ_cls,i_occ_cls,
      &                          op_info,str_info,orb_info,.true.)
           else
-c dbg
-cmh         CAUTION: AD HOC FIX!!!
-cmh         (matters for icMRCCSD with singles and doubles)
-cmh         We need to understand why we need these sign changes!!!
             tra_sign = 1d0
-            ! for icMRCCSD C
-            if (i_occ_cls.eq.2.and.j_occ_cls.eq.3.or.
-     &          i_occ_cls.eq.11.and.j_occ_cls.eq.12) then
-c            ! for icMRCCSDT C (when only one occupied orbital)
-c            if (i_occ_cls.eq.6.and.j_occ_cls.eq.8.or.
-c     &          i_occ_cls.eq.19.and.j_occ_cls.eq.21.or.
-c     &          i_occ_cls.eq.23.and.j_occ_cls.eq.25.or.
-c     &          i_occ_cls.eq.2.and.j_occ_cls.eq.4.or.
-c     &          i_occ_cls.eq.33.and.j_occ_cls.eq.34
-c     &          ) then
-              tra_sign = -1d0
-              print *,'changing sign for blocks ',i_occ_cls,j_occ_cls
-            end if
-c dbgend
             ! two non-diagonal blocks: transpose both blocks
             transposed(j_occ_cls) = .true.
             ! a) save first block

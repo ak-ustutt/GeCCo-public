@@ -3,7 +3,6 @@
      &     xmat,smat,xvec,ndim,nrhs,mxdim,nadd,ndel,init,
      &     iordv,ff_vsbsp,iordw,ff_wsbsp,iordx,ff_xsbsp,
      &     ff_rhs,
-     &     nsec,nwfpsec,idstsec,signsec,
      &     nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
 *----------------------------------------------------------------------*
 *
@@ -36,15 +35,13 @@
      &     ff_vsbsp, ff_wsbsp, ff_xsbsp, ff_rhs
       integer, intent(in) ::
      &     ndim, nrhs, nadd, ndel, mxdim, nincore, nwfpar, lenbuf,
-     &     iordv(*), iordw(*), iordx(*), nsec, nwfpsec(*), idstsec(*)
-      real(8), intent(in) ::
-     &     signsec(*)
+     &     iordv(*), iordw(*), iordx(*)
       real(8), intent(inout) ::
      &     xmat(mxdim,*), smat(mxdim,*),
      &     xvec(mxdim,*), xbuf1(*), xbuf2(*), xbuf3(*)
       
       integer ::
-     &     ii, jj, irec, jrec, jrec_last, rhsrec, rhsrec_last, isec
+     &     ii, jj, irec, jrec, jrec_last, rhsrec, rhsrec_last
 
       real(8), external ::
      &     ddot, da_ddot
@@ -145,21 +142,12 @@ c dbg
               if (ii.eq.jj) print *,'cartesian scalar product: ',
      &          ddot(nwfpar,xbuf1,1,xbuf1,1)
 c dbgend
-              do isec = 1, nsec
-                xmat(ii,jj) = xmat(ii,jj) + signsec(isec)
-     &               * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                      xbuf2(idstsec(isec)),1)
-              end do
+              xmat(ii,jj) = xmat(ii,jj)
+     &                    + ddot(nwfpar,xbuf1,1,xbuf2,1)
             else
-              do isec = 1, nsec
-c dbg  see evpc_core for explanation
-                  if (idstsec(isec).ne.1)
-     &             call quit(1,'**08**','bug in the code!')
-c dbgend
-                xmat(ii,jj) = xmat(ii,jj) + signsec(isec)
-     &              * da_ddot(ff_vsbsp,irec,idstsec(isec),ff_wsbsp,jrec,
-     &                   idstsec(isec),nwfpsec(isec),xbuf1,xbuf2,lenbuf)
-              end do
+              xmat(ii,jj) = xmat(ii,jj)
+     &                    + da_ddot(ff_vsbsp,irec,ff_wsbsp,jrec,
+     &                              nwfpar,xbuf1,xbuf2,lenbuf)
             end if
           end if
 
@@ -180,21 +168,12 @@ c              if (jrec_last.ne.jrec) then
                 jrec_last = jrec
                 call vec_from_da(ff_xsbsp,jrec,xbuf2,nwfpar)
 c              end if
-              do isec = 1, nsec
-                smat(ii,jj) = smat(ii,jj) + signsec(isec)
-     &                * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                       xbuf2(idstsec(isec)),1)
-              end do
+              smat(ii,jj) = smat(ii,jj)
+     &              + ddot(nwfpar,xbuf1,1,xbuf2,1)
             else
-              do isec = 1, nsec
-c dbg  see evpc_core for explanation
-                  if (idstsec(isec).ne.1)
-     &             call quit(1,'**09**','bug in the code!')
-c dbgend
-                smat(ii,jj) = smat(ii,jj) + signsec(isec)
-     &              * da_ddot(ff_vsbsp,irec,idstsec(isec),ff_xsbsp,jrec,
-     &                   idstsec(isec),nwfpsec(isec),xbuf1,xbuf2,lenbuf)
-              end do
+              smat(ii,jj) = smat(ii,jj)
+     &            + da_ddot(ff_vsbsp,irec,ff_xsbsp,jrec,
+     &                      nwfpar,xbuf1,xbuf2,lenbuf)
             end if
           end if
 
@@ -210,29 +189,17 @@ c dbgend
                 rhsrec_last = rhsrec
                 call vec_from_da(ff_rhs,rhsrec,xbuf3,nwfpar)                
               end if
-              do isec = 1, nsec
-                xvec(ii,rhsrec) = xvec(ii,rhsrec) + signsec(isec)
-     &                  * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                         xbuf3(idstsec(isec)),1)
-              end do
+                xvec(ii,rhsrec) = xvec(ii,rhsrec)
+     &                  + ddot(nwfpar,xbuf1,1,xbuf3,1)
             else if (nincore.eq.2) then
               jrec_last = -1 ! signal that xbuf2 is destroyed
               call vec_from_da(ff_rhs,rhsrec,xbuf2,nwfpar)
-              do isec = 1, nsec
-                xvec(ii,rhsrec) = xvec(ii,rhsrec) + signsec(isec)
-     &                  * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                         xbuf2(idstsec(isec)),1)
-              end do
+              xvec(ii,rhsrec) = xvec(ii,rhsrec)
+     &                + ddot(nwfpar,xbuf1,1,xbuf2,1)
             else
-              do isec = 1, nsec
-c dbg  see evpc_core for explanation
-                  if (idstsec(isec).ne.1)
-     &             call quit(1,'**10**','bug in the code!')
-c dbgend
-                xvec(ii,rhsrec) = xvec(ii,rhsrec) + signsec(isec)
-     &              * da_ddot(ff_vsbsp,irec,idstsec(isec),ff_rhs,rhsrec,
-     &                   idstsec(isec),nwfpsec(isec),xbuf1,xbuf2,lenbuf)
-              end do
+              xvec(ii,rhsrec) = xvec(ii,rhsrec)
+     &            + da_ddot(ff_vsbsp,irec,ff_rhs,rhsrec,
+     &                      nwfpar,xbuf1,xbuf2,lenbuf)
             end if
           end do
         end if

@@ -32,13 +32,11 @@
      &     opti_info
       
       integer ::
-     &     ifree, nsec, isec, stsec, ndsec, nwfpar(nopt), ioff, jopt
+     &     ifree, nwfpar(nopt), ioff, jopt
       real(8) ::
      &     xnrm
       real(8), pointer ::
-     &     xbuf1(:), xbuf2(:), signsec(:)
-      integer, pointer ::
-     &     nwfpsec(:), idstsec(:)
+     &     xbuf1(:), xbuf2(:)
 
       real(8), external ::
      &     ddot, da_ddot
@@ -55,22 +53,12 @@
       ifree = mem_alloc_real(xbuf1,maxval(nwfpar(1:nopt)),'xbuf1')
       ifree = mem_alloc_real(xbuf2,nwfpar(iopt),'xbuf2')
       if (use_s(iopt)) then
-        nsec = opti_info%nsec(iopt)
-        ioff = sum(opti_info%nsec(1:iopt))-nsec
-        nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
-        idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
-        signsec => opti_info%signsec(ioff+1:ioff+nsec)
         call vec_from_da(ff_v,irecv,xbuf1,nwfpar(iopt))
         call vec_from_da(ff_met(iopt)%fhand,irecmet,xbuf2,nwfpar(iopt))
-        xnrm = 0d0
-        do isec = 1, nsec
-          xnrm = xnrm + signsec(isec)
-     &         * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                xbuf2(idstsec(isec)),1)
-        end do
+        xnrm = ddot(nwfpar(iopt),xbuf1,1,xbuf2,1)
       else
-        xnrm = da_ddot(ff_v,irecv,1,
-     &                 ff_v,irecv,1,
+        xnrm = da_ddot(ff_v,irecv,
+     &                 ff_v,irecv,
      &                 nwfpar(iopt),
      &                 xbuf1,xbuf2,
      &                 nwfpar(iopt))

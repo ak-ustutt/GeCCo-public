@@ -25,7 +25,7 @@
       integer ::
      &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym, maxtop, maxcum
       logical ::
-     &     l_icci, l_iccc, use_met, fixed, use_f12
+     &     l_icci, l_iccc, use_met, fixed, use_f12,response
       integer, allocatable ::
      &     excrestr(:,:,:)
 
@@ -85,6 +85,12 @@
       else
         use_f12 = .false.
       end if
+      ! set response targets, if necessary
+      if (is_keyword_set('calculate.excitation').gt.0) then
+        response=.true.
+      else
+        response=.false.
+      endif
 
       ! first set targets for CASSCF or uncontracted CI wave function
       call set_unc_mrci_targets(tgt_info,orb_info,
@@ -135,7 +141,8 @@ c dbgend
      &                       excrestr,maxh,maxp,.not.use_f12)
       if (use_f12) call set_ic_mrcc_f12_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp)
-      deallocate(excrestr)
+      if (response) call set_ic_mrcc_response_targets(tgt_info,orb_info)
+       deallocate(excrestr)
 
       return
       end

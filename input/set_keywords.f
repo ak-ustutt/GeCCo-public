@@ -263,6 +263,11 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('simp','method.MRCC',type=vtyp_int,
      &     idef=(/0/)) ! special simplifications for (T)
 
+      call keyword_add('excite',context='method.MRCC')
+      call argument_add('method','method.MRCC.excite',
+     &     type=vtyp_str,len=8,
+     &     cdef=(/'L','R',' ',' ',' ',' ',' ',' '/))
+
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
       call argument_add('trunc_type','method.truncate',

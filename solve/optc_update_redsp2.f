@@ -70,7 +70,7 @@
       if (nincore.ge.2) then
         xmat(ndim1,ndim1) = ddot(nwfpar,xbuf1,1,xbuf2,1)
       else
-        xmat(ndim1,ndim1) = da_ddot(ff_sbsp1,jrec1,1,ff_sbsp2,jrec2,1,
+        xmat(ndim1,ndim1) = da_ddot(ff_sbsp1,jrec1,ff_sbsp2,jrec2,
      &       nwfpar,xbuf1,xbuf2,lenbuf)
       end if
 
@@ -93,7 +93,7 @@
           ! and vector on disc
         else 
           xmat(ndim1,jj) =
-     &         da_ddot(ff_sbsp1,jrec1,1,ff_sbsp2,irec,1,
+     &         da_ddot(ff_sbsp1,jrec1,ff_sbsp2,irec,
      &         nwfpar,xbuf1,xbuf2,lenbuf)
         end if
 
@@ -124,7 +124,7 @@ c      if (nincore.gt.1.and.nincore.lt.3) the
           ! and vector on disc
         else 
           xmat(jj,ndim1) =
-     &         da_ddot(ff_sbsp2,jrec2,1,ff_sbsp1,irec,1,
+     &         da_ddot(ff_sbsp2,jrec2,ff_sbsp1,irec,
      &         nwfpar,xbuf1,xbuf2,lenbuf)
         end if
 

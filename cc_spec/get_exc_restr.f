@@ -112,6 +112,11 @@
 
       ! triples models: exclude certain triples blocks if requested
       select case(triples)
+      case('D','d','E','e','F','f')
+        if (maxexc.ge.3.and.gno.ne.0)
+     &     call quit(1,'get_exc_restr','GNO only for triples=a-c yet')
+      end select
+      select case(triples)
       case('F','f') ! do nothing
       case('0','A','a','B','b','C','c','D','d','E','e')
         ! exclude a_uvi^wxy, a_uvw^xya (5 active lines)

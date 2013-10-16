@@ -76,18 +76,17 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     zero_vec(opti_stat%ndim_vsbsp), trafo
       integer ::
      &     idx, jdx, kdx, iroot, irhs,  nred, nadd, nnew, irecscr,
-     &     imet, idamp, nopt, nroot, mxsub, lenmat, job, nsec, jopt,
-     &     ndim_save, ndel, iopt, lenscr, ifree, restart_mode, nselect,
-     &     isec, stsec, ndsec
+     &     imet, idamp, nopt, nroot, mxsub, lenmat, job, jopt,
+     &     ndim_save, ndel, iopt, lenscr, ifree, restart_mode, nselect
       real(8) ::
      &     cond, xdum, xnrm
       real(8), pointer ::
      &     gred(:), vred(:), mred(:),
-     &     xmat1(:), xmat2(:), xvec(:), xret(:), signsec(:)
+     &     xmat1(:), xmat2(:), xvec(:), xret(:)
       integer, pointer ::
      &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
      &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
-     &     nwfpar(:), nwfpsec(:), idstsec(:), nsec_arr(:),
+     &     nwfpar(:),
      &     ipiv(:), iconv(:), idxroot(:), idxselect(:)
       type(file_array), pointer ::
      &     ffvsbsp(:), ffscr(:), ffmet(:)
@@ -127,17 +126,7 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
 
       if (nincore.ge.2) then
 
-        nsec_arr => opti_info%nsec(1:nopt)
-        nsec = sum(nsec_arr)
-        nwfpsec => opti_info%nwfpsec(1:nsec)
-        idstsec => opti_info%idstsec(1:nsec)
-        signsec => opti_info%signsec(1:nsec)!2(1:nsec)
-
-        stsec = 1
-        ndsec = 0
         do iopt = 1, nopt
-          if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)
-          ndsec = ndsec + nsec_arr(iopt)
 
          !select case(opti_info%typ_prc(iopt))
          if (opti_info%typ_prc(iopt).eq.optinf_prc_file.or.
@@ -185,15 +174,9 @@ c            xrsnrm(iroot,iopt) = xnrm
               xnrm = xnrm+xrsnrm(iroot,jopt)**2
             end do
             xnrm = sqrt(xnrm)
-            ! account for sign changes if necessary
-            do isec = stsec, ndsec
-              call diavc(xbuf1(idstsec(isec)),xbuf1(idstsec(isec)),
-     &             signsec(isec)/xnrm,xbuf2(idstsec(isec)),
-     &             opti_info%shift,nwfpsec(isec))
-            end do
             ! %shift is for shifted LEQ
-c            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,opti_info%shift,
-c     &                 nwfpar(iopt))
+            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,opti_info%shift,
+     &                 nwfpar(iopt))
             if (ntest.ge.100)
      &           write(luout,*) 'xbuf1 after division: ' //
      &                          ' norm = ', dnrm2(nwfpar(iopt),xbuf1,1)
@@ -284,17 +267,11 @@ c            xrsnrm(iroot,iopt) = xnrm
       end do
 
       ! orthogonalize initial subspace
-      nsec_arr => opti_info%nsec(1:nopt)
-      nsec = sum(nsec_arr)
-      nwfpsec => opti_info%nwfpsec(1:nsec)
-      idstsec => opti_info%idstsec(1:nsec)
-      signsec => opti_info%signsec(1:nsec)
       call optc_orthvec(nadd,.false.,
      &                  opti_stat%ffssbsp,iord_ssbsp,1d0, !1d0:dummy
      &                  ffvsbsp,
      &                  iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  use_s,0,ffmet,ffscr,nroot,nopt,
-     &                 nsec_arr,nwfpsec,idstsec,signsec,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 
       ! set nadd

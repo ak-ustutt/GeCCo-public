@@ -3,7 +3,6 @@
      &     ff_ssbsp,iord_ssbsp,sred,
      &     ff_sbsp,iord_sbsp,ndim_sbsp,mxsbsp,zero_vec,
      &     use_s,ioff_snew,ffsnew,ffnew,nnew,nopt,
-     &     nsec_arr,nwfpsec,idstsec,signsec,
      &     nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 *----------------------------------------------------------------------*
 *     orthogonalize and add nnew new vectors (on ff_new) to subspace 
@@ -21,10 +20,9 @@
       integer, intent(out) ::
      &     nadd
       integer, intent(in) ::
-     &     nnew, mxsbsp, lenbuf, nincore, nopt, nwfpar(nopt), ioff_snew,
-     &     nsec_arr(nopt), nwfpsec(*), idstsec(*)
+     &     nnew, mxsbsp, lenbuf, nincore, nopt, nwfpar(nopt), ioff_snew
       real(8), intent(in) ::
-     &     signsec(*), sred(mxsbsp,ndim_sbsp)
+     &     sred(mxsbsp,ndim_sbsp)
       integer, intent(inout) ::
      &     ndim_sbsp, iord_sbsp(mxsbsp), iord_ssbsp(mxsbsp)
       type(file_array), intent(in) ::
@@ -38,7 +36,7 @@
 
       integer ::
      &     nold, inew, jnew, iold, ii, jj, idx, ivec, irec, iopt,
-     &     isec, stsec, ndsec, jold
+     &     jold
       real(8) ::
      &     xdum, xnorm, xnorm_
       logical ::
@@ -92,13 +90,7 @@
       end do
       if (any(use_s(1:nopt))) smat(1:nold,1:nold) = sred(1:nold,1:nold)
 
-      stsec = 1
-      ndsec = 0
-
       do iopt = 1, nopt
-
-      if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)
-      ndsec = ndsec + nsec_arr(iopt)
 
 c      ! 0) <old|old> (lower triangle in case of asymmetric metric)
 c      if (use_s(iopt)) then
@@ -116,11 +108,8 @@ c              ii = iord_ssbsp(iold)
 c              if (jj.le.ii) cycle ! only lower triangle
 c              call vec_from_da(ff_ssbsp(iopt)%fhand,iold,
 c     &                                             xbuf2,nwfpar(iopt))
-c              do isec = stsec, ndsec
-c                smat(jj,ii) = smat(jj,ii) + signsec(isec)
-c     &               * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-c     &                      xbuf2(idstsec(isec)),1)
-c              end do
+c              smat(jj,ii) = smat(jj,ii)
+c     &             + ddot(nwfpar(iopt),xbuf1,1,xbuf2,1)
 c            
 c          end do
 c
@@ -149,11 +138,8 @@ c dbgend
             if (nincore.ge.2.and.use_s(iopt)) then
               call vec_from_da(ff_sbsp(iopt)%fhand,iold,
      &                                             xbuf2,nwfpar(iopt))
-              do isec = stsec, ndsec
-                smat(jj,ii) = smat(jj,ii) + signsec(isec)
-     &               * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                      xbuf2(idstsec(isec)),1)
-              end do
+              smat(jj,ii) = smat(jj,ii)
+     &             + ddot(nwfpar(iopt),xbuf1,1,xbuf2,1)
 c              smat(ii,jj) = smat(jj,ii)
             else if (nincore.ge.2) then
               call vec_from_da(ff_sbsp(iopt)%fhand,iold,
@@ -162,22 +148,15 @@ c              smat(ii,jj) = smat(jj,ii)
      &                    + ddot(nwfpar(iopt),xbuf1,1,xbuf2,1)
               smat(ii,jj) = smat(jj,ii)
             else if (use_s(iopt)) then
-              do isec = stsec, ndsec
-c dbg  see evpc_core for explanation
-                  if (idstsec(isec).ne.1) 
-     &             call quit(1,'**02**','bug in the code!')
-c dbgend
-                smat(jj,ii) = smat(jj,ii) + signsec(isec)
-     &              * da_ddot(ff_sbsp(iopt)%fhand,iold,idstsec(isec),
-     &                        ffsnew(iopt)%fhand,inew+ioff_snew,
-     &                                                 idstsec(isec),
-     &                        nwfpsec(isec),xbuf1,xbuf2,lenbuf)
-              end do
+              smat(jj,ii) = smat(jj,ii)
+     &            + da_ddot(ff_sbsp(iopt)%fhand,iold,
+     &                      ffsnew(iopt)%fhand,inew+ioff_snew,
+     &                      nwfpar(iopt),xbuf1,xbuf2,lenbuf)
 c              smat(ii,jj) = smat(jj,ii)
             else
               smat(jj,ii) = smat(jj,ii) +
-     &            da_ddot(ff_sbsp(iopt)%fhand,iold,1,
-     &                    ffnew(iopt)%fhand,  inew,1,
+     &            da_ddot(ff_sbsp(iopt)%fhand,iold,
+     &                    ffnew(iopt)%fhand,  inew,
      &                    nwfpar(iopt),xbuf1,xbuf2,lenbuf)
               smat(ii,jj) = smat(jj,ii)
             end if
@@ -205,11 +184,8 @@ c               print *,'2 loading metric record',inew+ioff_snew
 c dbgend
               call vec_from_da(ffsnew(iopt)%fhand,inew+ioff_snew,xbuf2,
      &                         nwfpar(iopt))
-              do isec = stsec, ndsec
-                smat(jj,ii) = smat(jj,ii) + signsec(isec)
-     &                  * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                         xbuf2(idstsec(isec)),1)
-              end do
+              smat(jj,ii) = smat(jj,ii)
+     &                + ddot(nwfpar(iopt),xbuf1,1,xbuf2,1)
 c              smat(ii,jj) = smat(jj,ii)
             else if (nincore.ge.2) then
               call vec_from_da(ffnew(iopt)%fhand,inew,
@@ -218,22 +194,15 @@ c              smat(ii,jj) = smat(jj,ii)
      &             ddot(nwfpar(iopt),xbuf1,1,xbuf2,1)
               smat(ii,jj) = smat(jj,ii)
             else if (use_s(iopt)) then
-              do isec = stsec, ndsec
-c dbg  see evpc_core for explanation
-                  if (idstsec(isec).ne.1)
-     &             call quit(1,'**03**','bug in the code!')
-c dbgend
-                smat(jj,ii) = smat(jj,ii) + signsec(isec)
-     &             * da_ddot(ff_sbsp(iopt)%fhand,iold,idstsec(isec),
-     &                       ffsnew(iopt)%fhand,inew+ioff_snew,
-     &                                                idstsec(isec),
-     &                       nwfpsec(isec),xbuf1,xbuf2,lenbuf)
-              end do
+              smat(jj,ii) = smat(jj,ii)
+     &           + da_ddot(ff_sbsp(iopt)%fhand,iold,
+     &                     ffsnew(iopt)%fhand,inew+ioff_snew,
+     &                     nwfpar(iopt),xbuf1,xbuf2,lenbuf)
 c              smat(ii,jj) = smat(jj,ii)
             else
               smat(jj,ii) = smat(jj,ii) +
-     &            da_ddot(ff_sbsp(iopt)%fhand,iold,1,
-     &                    ffnew(iopt)%fhand,  inew,1,
+     &            da_ddot(ff_sbsp(iopt)%fhand,iold,
+     &                    ffnew(iopt)%fhand,  inew,
      &                    nwfpar(iopt),xbuf1,xbuf2,lenbuf)
               smat(ii,jj) = smat(jj,ii)
             end if
@@ -257,11 +226,8 @@ c              smat(ii,jj) = smat(jj,ii)
               ii = iord_ssbsp(iold)
               call vec_from_da(ff_ssbsp(iopt)%fhand,iold,
      &                                             xbuf2,nwfpar(iopt))
-              do isec = stsec, ndsec
-                smat(jj,ii) = smat(jj,ii) + signsec(isec)
-     &               * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                      xbuf2(idstsec(isec)),1)
-              end do
+              smat(jj,ii) = smat(jj,ii)
+     &             + ddot(nwfpar(iopt),xbuf1,1,xbuf2,1)
           end do
         end do
 
@@ -277,11 +243,8 @@ c              smat(ii,jj) = smat(jj,ii)
             ii = inew+nold
               call vec_from_da(ffnew(iopt)%fhand,inew,xbuf2,
      &                         nwfpar(iopt))
-              do isec = stsec, ndsec
-                smat(jj,ii) = smat(jj,ii) + signsec(isec)
-     &                  * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                         xbuf2(idstsec(isec)),1)
-              end do
+              smat(jj,ii) = smat(jj,ii)
+     &                + ddot(nwfpar(iopt),xbuf1,1,xbuf2,1)
           end do
         end do
 
@@ -298,11 +261,8 @@ c           print *,'3 loading metric record',inew+ioff_snew
 c dbgend
             call vec_from_da(ffsnew(iopt)%fhand,inew+ioff_snew,xbuf2,
      &                       nwfpar(iopt))
-            do isec = stsec, ndsec
-              smat(nold+inew,nold+inew) = smat(nold+inew,nold+inew) +
-     &        signsec(isec) * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                             xbuf2(idstsec(isec)),1)
-            end do
+            smat(nold+inew,nold+inew) = smat(nold+inew,nold+inew) +
+     &           ddot(nwfpar(iopt),xbuf1,1,xbuf2,1)
           else
             smat(nold+inew,nold+inew) = smat(nold+inew,nold+inew) +
      &           ddot(nwfpar(iopt),xbuf1,1,xbuf1,1)
@@ -311,22 +271,14 @@ c dbg
 c           print *,'|new|: ',sqrt(smat(nold+inew,nold+inew))
 c dbg
         else if (use_s(iopt)) then
-          do isec = stsec, ndsec
-c dbg  see evpc_core for explanation
-                  if (idstsec(isec).ne.1)
-     &             call quit(1,'**04**','bug in the code!')
-c dbgend
-            smat(nold+inew,nold+inew) = smat(nold+inew,nold+inew) +
-     &         signsec(isec) * da_ddot(ffnew(iopt)%fhand,
-     &                                 inew,idstsec(isec),
-     &                        ffsnew(iopt)%fhand,inew+ioff_snew,
-     &                                 idstsec(isec),
-     &                        nwfpsec(isec),xbuf1,xbuf2,lenbuf)
-          end do
+          smat(nold+inew,nold+inew) = smat(nold+inew,nold+inew) +
+     &         da_ddot(ffnew(iopt)%fhand,inew,
+     &                 ffsnew(iopt)%fhand,inew+ioff_snew,
+     &                 nwfpar(iopt),xbuf1,xbuf2,lenbuf)
         else
           smat(nold+inew,nold+inew) = smat(nold+inew,nold+inew) +
-     &         da_ddot(ffnew(iopt)%fhand,inew,1,
-     &                 ffnew(iopt)%fhand,inew,1,
+     &         da_ddot(ffnew(iopt)%fhand,inew,
+     &                 ffnew(iopt)%fhand,inew,
      &         nwfpar(iopt),xbuf1,xbuf2,lenbuf)
         end if
 
@@ -339,11 +291,8 @@ c             print *,'4 loading metric record',jnew+ioff_snew
 c dbgend
             call vec_from_da(ffsnew(iopt)%fhand,jnew+ioff_snew,xbuf2,
      &                         nwfpar(iopt))
-            do isec = stsec, ndsec
-              smat(nold+inew,nold+jnew) = smat(nold+inew,nold+jnew) +
-     &        signsec(isec) * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                             xbuf2(idstsec(isec)),1)
-            end do
+            smat(nold+inew,nold+jnew) = smat(nold+inew,nold+jnew) +
+     &           ddot(nwfpar(iopt),xbuf1,1,xbuf2,1)
 c            smat(nold+jnew,nold+inew) = smat(nold+inew,nold+jnew)
           else if (nincore.ge.2) then
             if (jnew.le.inew) cycle
@@ -354,22 +303,14 @@ c            smat(nold+jnew,nold+inew) = smat(nold+inew,nold+jnew)
           else
             if (jnew.le.inew) cycle ! revise this for asymmetric metric
             if (use_s(iopt)) then
-              do isec = stsec, ndsec
-c dbg  see evpc_core for explanation
-                  if (idstsec(isec).ne.1)
-     &             call quit(1,'**05**','bug in the code!')
-c dbgend
-                smat(nold+inew,nold+jnew) = smat(nold+inew,nold+jnew) +
-     &             signsec(isec) * da_ddot(ffnew(iopt)%fhand,
-     &                              inew,idstsec(isec),
-     &                           ffsnew(iopt)%fhand,jnew+ioff_snew,
-     &                                   idstsec(isec),
-     &                           nwfpsec(isec),xbuf1,xbuf2,lenbuf)
-              end do
+              smat(nold+inew,nold+jnew) = smat(nold+inew,nold+jnew) +
+     &           da_ddot(ffnew(iopt)%fhand,inew,
+     &                   ffsnew(iopt)%fhand,jnew+ioff_snew,
+     &                   nwfpar(iopt),xbuf1,xbuf2,lenbuf)
             else
               smat(nold+inew,nold+jnew) = smat(nold+inew,nold+jnew) +
-     &             da_ddot(ffnew(iopt)%fhand,inew,1,
-     &                     ffnew(iopt)%fhand,jnew,1,
+     &             da_ddot(ffnew(iopt)%fhand,inew,
+     &                     ffnew(iopt)%fhand,jnew,
      &             nwfpar(iopt),xbuf1,xbuf2,lenbuf)
             end if
             smat(nold+jnew,nold+inew) = smat(nold+inew,nold+jnew)
