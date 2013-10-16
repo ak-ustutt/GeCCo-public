@@ -38,7 +38,7 @@
       integer ::
      &     ifree, iopt, ioff, nsect, nwfpsec(maxsec), idstsec(maxsec),
      &     sign_cur, sign_old, iblk, ncblk, nablk, ncblk2, nablk2,
-     &     iocc_dag(ngastp,2), switch_sign, iocc0(ngastp,2), sign_old2
+     &     iocc_dag(ngastp,2), iocc0(ngastp,2)
       integer(8) ::
      &     base, topo_trv, topo1, topo2
       integer, pointer ::
@@ -47,7 +47,7 @@
      &     graph_asec(:), graph_csec2(:), graph_asec2(:),
      &     iocc3(:,:), iocc4(:,:)
       real(8) ::
-     &     signsec(maxsec), signsec2(maxsec)
+     &     signsec(maxsec)
       type(operator), pointer ::
      &     op_trv, op_mvp, op_met, op_rhs
 
@@ -73,7 +73,6 @@ c     &                             'only for LEQ and EVP solvers yet')
         nsec => opti_info%nsec(iopt)
         nsec = 0
         sign_old = 0
-        sign_old2 = 0
 
         if (op_trv%n_occ_cls.ne.op_mvp%n_occ_cls.or.
      &      use_s(iopt).and.op_trv%n_occ_cls.ne.op_met%n_occ_cls.or.
@@ -116,7 +115,6 @@ c dbgend
           nwfpsec(nsect) = me_trv(iopt)%mel%len_op
           idstsec(nsect) = 1
           signsec(nsect) = 1d0
-          signsec2(nsect) = 1d0
 
         else if (op_trv%njoined.eq.1.and.op_mvp%njoined.eq.2) then
           do iblk = 1, op_trv%n_occ_cls
@@ -186,12 +184,6 @@ c dbgend
      &                 graph_csec, graph_asec,
      &                 graph_csec2, graph_asec2)
 
-            ! for now, also check if there will be a sign change
-            ! when switching the two vertices
-            ! (important for calculation of new vector from residual!)
-            switch_sign = 1-2*mod(sum(iocc1(1:ngastp,1:2))
-     &                   *sum(iocc2(1:ngastp,1:2)),2)
-
             ! contraction sign: consider contraction occ1 - occ_trv
             ! the contraction is given by occ1
             iocc_dag(1:ngastp,1)=iocc_dag(1:ngastp,1)-iocc1(1:ngastp,2)
@@ -203,14 +195,7 @@ c dbgend
             sign_cur = sign_cur 
      &               * sign_contr(iocc1,iocc0,iocc_dag,0,.false.)
 
-            ! for now, sign must be the same as that given by switch_sign:
-c dbg
-c            print *,'sign_cur, switch_sign: ',sign_cur, switch_sign
-c dbgend
-c            if (sign_cur.ne.switch_sign)
-c     &          call quit(1,'set_opti_info_signs','need more sign maps')
-
-            if (sign_cur.eq.sign_old.and.switch_sign.eq.sign_old2) then
+            if (sign_cur.eq.sign_old) then
               ! same section: just add length of current block
               nwfpsec(nsect) = nwfpsec(nsect)
      &                       + me_trv(iopt)%mel%len_op_occ(iblk)
@@ -223,10 +208,8 @@ c     &          call quit(1,'set_opti_info_signs','need more sign maps')
               nwfpsec(nsect) = me_trv(iopt)%mel%len_op_occ(iblk)
               idstsec(nsect) = me_trv(iopt)%mel%off_op_occ(iblk) + 1
               signsec(nsect) = dble(sign_cur)
-              signsec2(nsect) = dble(switch_sign)
 c              signsec(nsect) = 1d0
               sign_old = sign_cur
-              sign_old2 = switch_sign
             end if
           end do
         else
@@ -238,12 +221,10 @@ c              signsec(nsect) = 1d0
       ifree = mem_alloc_int(opti_info%nwfpsec,nsect,'nwfpsec')
       ifree = mem_alloc_int(opti_info%idstsec,nsect,'idstsec')
       ifree = mem_alloc_real(opti_info%signsec,nsect,'signsec')
-      ifree = mem_alloc_real(opti_info%signsec2,nsect,'signsec2')
 
       opti_info%nwfpsec(1:nsect) = nwfpsec(1:nsect)
       opti_info%idstsec(1:nsect) = idstsec(1:nsect)
       opti_info%signsec(1:nsect) = signsec(1:nsect)
-      opti_info%signsec2(1:nsect) = signsec2(1:nsect)
 
 c dbg
       write(luout,*) 'set_opti_info_signs:'
@@ -252,7 +233,6 @@ c dbg
       write(luout,'(a,30i8)') 'nwfpsec: ',opti_info%nwfpsec(1:nsect)
       write(luout,'(a,30i8)') 'idstsec: ',opti_info%idstsec(1:nsect)
       write(luout,'(a,30f8.1)') 'signsec : ',opti_info%signsec(1:nsect)
-      write(luout,'(a,30f8.1)') 'signsec2: ',opti_info%signsec2(1:nsect)
 c dbgend
 
       return

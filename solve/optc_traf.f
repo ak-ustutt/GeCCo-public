@@ -63,17 +63,15 @@
 
 
       integer ::
-     &     idx, nsec, isec, stsec, ndsec, ioff,
+     &     idx, ioff,
      &     nblk, iblk, nj, iblkoff, jblk
       character(len_opname) ::
      &     op_in_name, op_out_name, op_trf_name,
      &     op_in_mel, op_out_mel, op_trf_mel
 
       integer, pointer ::
-     &     nwfpsec(:), idstsec(:), nsec_arr(:), occ(:,:,:)
+     &     occ(:,:,:)
 
-      real(8), pointer ::
-     &     signsec(:)
       real(8) ::
      &     xdum
 

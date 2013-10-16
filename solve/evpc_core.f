@@ -86,19 +86,18 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       integer ::
      &     idx, jdx, kdx, iroot, nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
-     &     ndim_save, ndel, iopt, jopt, lenscr, ioff, nsec,
-     &     ifree, restart_mode, ierr, nselect, irec, ioff_s,
-     &     isec, stsec, ndsec
+     &     ndim_save, ndel, iopt, jopt, lenscr, ioff,
+     &     ifree, restart_mode, ierr, nselect, irec, ioff_s
       real(8) ::
      &     cond, xdum, xnrm, xshf
       real(8), pointer ::
      &     gred(:), vred(:), mred(:), sred(:), eigr(:), eigi(:),
-     &     xmat1(:), xmat2(:), xmat3(:), xvec(:), xret(:), signsec(:)
+     &     xmat1(:), xmat2(:), xmat3(:), xvec(:), xret(:)
       integer, pointer ::
      &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
      &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
-     &     nwfpar(:), idxselect(:), nwfpsec(:), idstsec(:),
-     &     ipiv(:), iconv(:), idxroot(:), nsec_arr(:)
+     &     nwfpar(:), idxselect(:),
+     &     ipiv(:), iconv(:), idxroot(:)
       type(file_array), pointer ::
      &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:)
       type(filinf) ::
@@ -167,11 +166,6 @@ c dbg
       nred = ndim_vsbsp
       do iopt = 1, nopt
         init = iopt.eq.1
-        nsec = opti_info%nsec(iopt)
-        ioff = sum(opti_info%nsec(1:iopt))-nsec
-        nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
-        idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
-        signsec => opti_info%signsec(ioff+1:ioff+nsec)
         ! update reduced space:
         ! ffvsbsp and ffrsbsp point to ff_trv(iopt)%fhand ...
         if (.not.use_s(iopt)) then
@@ -181,7 +175,6 @@ c dbg
      &       opti_stat%nadd,opti_stat%ndel,
      &       iord_vsbsp,ffvsbsp(iopt)%fhand,
      &       iord_rsbsp,ffrsbsp(iopt)%fhand,fdum,
-     &       nsec,nwfpsec,idstsec,signsec,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)
         else
           call optc_update_redsp4
@@ -190,7 +183,6 @@ c dbg
      &       iord_vsbsp,ffvsbsp(iopt)%fhand,
      &       iord_rsbsp,ffrsbsp(iopt)%fhand,
      &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
-     &       nsec,nwfpsec,idstsec,signsec,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)
         end if
       end do ! iopt
@@ -278,43 +270,11 @@ c dbg
           xvec(1:nred) = -eigr(iroot)*xvec(1:nred)
           if (.not.use_s(iopt)) then
           ! - eig * v
-cmh
-            ! a somewhat ugly quick fix for sign changes:
-            ! (more elegant way would be to pass *sec variables to
-            ! optc_expand_vec as has been done in other optc_* routines.
-            ! But this would also require modification of 
-            ! da_matvec, da_vecsum, da_sccpvec, get_vec_a, put_vec_a
-            nsec = opti_info%nsec(iopt)
-            if (nsec.gt.1) then
-              ioff = sum(opti_info%nsec(1:iopt))-nsec
-              nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
-              idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
-              signsec => opti_info%signsec2(ioff+1:ioff+nsec)
-              do irec = 1, ndim_vsbsp
-                idx = iord_vsbsp(irec)
-                if (xvec(idx).eq.0d0) cycle
-                call vec_from_da(ffvsbsp(iopt)%fhand,irec,xbuf2,
-     &                           nwfpar(iopt))
-                do isec = 1, nsec
-                  xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1) = 
-     &               xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
-     &               +signsec(isec)*xvec(idx)*
-     &                xbuf2(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
-                end do
-              end do
-              if (.not.trafo) xrsnrm(iroot,iopt) 
-     &                    = sqrt(ddot(nwfpar(iopt),xbuf1,1,xbuf1,1))
-              call vec_to_da(ffspc,irecscr,xbuf1,nwfpar(iopt))
-            else
-cmhend
             call optc_expand_vec(xvec,ndim_vsbsp,
      &                                    xrsnrm(iroot,iopt),.not.trafo,
      &       ffspc,irecscr,1d0,ffvsbsp(iopt)%fhand,
      &       iord_vsbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
-cmh
-            end if
-cmhend
           else
             ! - eig * S * v
             call optc_expand_vec(xvec,ndim_vsbsp,
@@ -381,11 +341,6 @@ c dbgend
       ! number of new directions
       nnew = irecscr-1
       if (nnew.gt.0) then
-        nsec_arr => opti_info%nsec(1:nopt)
-        nsec = sum(nsec_arr)
-        nwfpsec => opti_info%nwfpsec(1:nsec)
-        idstsec => opti_info%idstsec(1:nsec)
-        signsec => opti_info%signsec(1:nsec)!2(1:nsec)
 
         ! reduced space exhausted?
         if (nred+nnew.gt.mxsub) then
@@ -411,11 +366,7 @@ c dbgend
         end if
 
         ! divide new directions by preconditioner
-        stsec = 1
-        ndsec = 0
         do iopt = 1, nopt
-          if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)
-          ndsec = ndsec + nsec_arr(iopt)
 
           select case(opti_info%typ_prc(iopt))
           case(optinf_prc_file,optinf_prc_traf,optinf_prc_spinp,
@@ -441,12 +392,7 @@ c dbgend
                 xnrm = sqrt(xnrm)
 c                xnrm = 1d0
                 xshf = -xeig(idxroot(iroot),1)
-                ! account for sign changes if necessary
-                do isec = stsec, ndsec
-                  call diavc(xbuf1(idstsec(isec)),xbuf1(idstsec(isec)),
-     &                       signsec(isec)/xnrm,xbuf2(idstsec(isec)),
-     &                       xshf,nwfpsec(isec))
-                end do
+                call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,xshf,nwfpar(iopt))
                 if (nopt.eq.1) then
                   xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
                   call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
@@ -465,24 +411,11 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
                 end do
                 xnrm = sqrt(xnrm)
                 xshf = -xeig(idxroot(iroot),1)
-                ! account for sign changes if necessary
-                do isec = stsec, ndsec
-c dbg
-                  ! This is buggy: When I (MH) programed this
-                  ! (use of *sec-arrays with da_* routines),
-                  ! I thought that the da_* routines loop over
-                  ! the elements of the files, but they actually
-                  ! seem to loop over the records/batches!
-                  ! For now, just intercept this bug:
-                  if (idstsec(isec).ne.1)
-     &             call quit(1,'**01**','bug in the code!')
-c dbgend
-                  call da_diavec(ffspc,iroot,idstsec(isec),0d0,
-     &                     ffscr(iopt)%fhand,iroot,idstsec(isec),
-     &                     signsec(isec)/xnrm,me_dia(iopt)%mel%fhand,
-     &                     1,idstsec(isec),xshf,-1d0,
-     &                     nwfpsec(isec),xbuf1,xbuf2,lenbuf)
-                end do
+                call da_diavec(ffspc,iroot,0d0,
+     &                   ffscr(iopt)%fhand,iroot,
+     &                   1d0/xnrm,me_dia(iopt)%mel%fhand,
+     &                   1,xshf,-1d0,
+     &                   nwfpar(iopt),xbuf1,xbuf2,lenbuf)
               end do
             end if
 
@@ -525,11 +458,7 @@ c dbgend
 c              xnrm = 1d0
               call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,
      &                         nwfpar(iopt))
-              ! account for sign changes if necessary
-              do isec = stsec, ndsec
-                call dscal(nwfpsec(isec),signsec(isec)/xnrm,
-     &                     xbuf1(idstsec(isec)),1)
-              end do
+              call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
               xshf = -xeig(idxroot(iroot),1)
               call optc_prc_special2(me_mvp(iopt)%mel,me_special,
      &                                                        nspecial,
@@ -618,6 +547,10 @@ c dbgend
               call switch_mel_record(me_scr(iopt)%mel,iroot)
               call frm_sched(xret,flist,depend,idxselect,nselect,
      &            .true.,.false.,op_info,str_info,strmap_info,orb_info)
+              ! apply sign-fix (if needed)
+              call optc_fix_signs2(me_met(iopt)%mel%fhand,irec,
+     &                             opti_info,iopt,
+     &                             opti_info%nwfpar(iopt),xbuf1)
               call reset_file_rec(me_met(iopt)%mel%fhand)
 
               ! reassign op. with list containing trial vector
@@ -632,21 +565,19 @@ c dbgend
           end do ! iopt
         end do ! iroot
 
-        signsec => opti_info%signsec(1:nsec)
-
         ! orthogonalize new directions to existing subspace
         ! and add linear independent ones to subspace
         call optc_orthvec(nadd,nopt.gt.1,
      &                  ffssbsp,iord_ssbsp,sred,
      &                  ffvsbsp,iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  use_s,ioff_s,ffmet,ffscr,nnew,nopt,
-     &                  nsec_arr,nwfpsec,idstsec,signsec,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
 c dbg
 c            print *,'orthogonalized trial vector:'
-c            print *,'ndim= ',ndim_vsbsp-1
+c            print *,'ndim= ',ndim_vsbsp!-1
 c            call vec_from_da(ffvsbsp(1)%fhand,
-c     &        ndim_vsbsp-1,xbuf1,nwfpar(1))
+cc     &        ndim_vsbsp-1,xbuf1,nwfpar(1))
+c     &        ndim_vsbsp,xbuf1,nwfpar(1))
 c            do idx = 1, nwfpar(1)
 c              print *,idx,xbuf1(idx)
 c            end do

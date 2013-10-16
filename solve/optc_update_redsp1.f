@@ -104,7 +104,7 @@
         else
           call quit(0,'optc_update_redsp1','nincore==0 not yet tested')
           xmat(iioff+ii) = xmat(iioff+ii) +
-     &         da_ddot(ff_sbsp,jrec,1,ff_sbsp,irec,1,
+     &         da_ddot(ff_sbsp,jrec,ff_sbsp,irec,
      &         nwfpar,xbuf1,xbuf2,lenbuf)
 
         end if

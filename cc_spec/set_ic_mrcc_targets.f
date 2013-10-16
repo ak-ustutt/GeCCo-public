@@ -4777,6 +4777,14 @@ c dbgend
         call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
      &       'FOPT_OMG',1,0,
      &       parameters,0,tgt_info)
+        ! (a2) apply sign correction
+        call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &               val_label=(/'ME_T'/))!OMG'/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &               val_label=(/'ME_OMG'/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_SHAPE',1,
+     &               tgt_info,val_label=(/'ME_OMG'/))
         ! (b) transform residual
         call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
         call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
@@ -4790,25 +4798,25 @@ c dbgend
      &             tgt_info,val_label=(/'T'/))
         call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
         call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
-     &             val_label=(/'ME_OMG'/))
+     &             val_label=(/'ME_T'/))!ME_OMG'/))
         call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
      &             tgt_info,val_label=(/'Ttr'/))
         call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
      &       'FOPT_T',1,0,
      &       parameters,0,tgt_info)
         ! (c) preconditioning step
-        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
-        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
-     &             val_label=(/'ME_OMG'/))
-        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
-     &             tgt_info,val_label=(/'OMG'/))
+c        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
+c        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_OMG'/))
+c        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
+c     &             tgt_info,val_label=(/'OMG'/))
         call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
         call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
      &               val_label=(/'ME_Ttr'/))
         call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
      &               val_label=(/trim(dia_label)/))
-        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_SHAPE',1,
-     &               tgt_info,val_label=(/'ME_OMG'/))
+c        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_SHAPE',1,
+c     &               tgt_info,val_label=(/'ME_OMG'/))
         call set_arg('EVAL_PERT_CORR',SCALE_COPY,'FAC',1,tgt_info,
      &               val_rl8=(/-1d0/))
         call set_arg('EVAL_PERT_CORR',SCALE_COPY,'MODE',1,tgt_info,
