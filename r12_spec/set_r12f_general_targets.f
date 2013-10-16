@@ -1554,8 +1554,7 @@ c        if (active_orbs) descr = ',|V,V|VV,VV'
 c        descr = ',|P,P|HP,HP'  !for triples only
 c dbg
 c        if (active_orbs) descr = '?'
-        if (active_orbs) descr = ',|V,V|VV,VV|[HV],P|P,[HV]
-     &               |P,P|[HV]P,[HV]P'
+        if (active_orbs) descr = ',|V,V|VV,VV|P,P|[HV]P,[HV]P'
 c dbgend
 c        ndef = 7
 c        occ_def(IHOLE,1,2) = 1
