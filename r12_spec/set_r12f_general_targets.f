@@ -1847,6 +1847,7 @@ C     &     val_occ=occ_def(1:ngastp,1:2,1:nblk*nj))
       
       !call add_target('G.R-X',ttype_op,.false.,tgt_info)
       call add_target2('G.R-X',.false.,tgt_info)
+
       occ_def = 0
       descr = 'HX,,,H[HP]'
       if (active_orbs) descr = '[HV]X,,,[HV][HVP]'
@@ -1889,12 +1890,14 @@ c      occ_def(IPART,2,1) = 1
 
 
       ! Z2 intermediate (for R^+ R couplings)
-      call add_target('Z2-INT',ttype_op,.false.,tgt_info)
+      call add_target2('Z2-INT',.false.,tgt_info)
       occ_def = 0
       ! 1
       occ_def(IHOLE,1,1) = 2
       occ_def(IPART,2,1) = 2
       ndef = 1
+      descr='HH,PP'
+      if (active_orbs) descr='[HV][HV],[PV]P|[HV][HV]V,[PV]PV'
       if (max_rank.gt.3.or.(min_rank_tp.eq.1.and.max_rank.gt.2)) then
         occ_def(IHOLE,1,2) = 1
         occ_def(IPART,1,2) = 1
@@ -1905,22 +1908,13 @@ c      occ_def(IPART,2,1) = 1
         occ_def(IHOLE,2,3) = 1
         occ_def(IPART,2,3) = 2
         ndef = 3   
+        descr='HH,PP|HP,PP|HP,HP'
       end if
-c dbg
-c      if (active_orbs) then
-c        occ_def(IHOLE,1,2) = 1
-c        occ_def(IPART,1,2) = 1
-c        occ_def(IPART,2,2) = 2
-c        ! 3
-c        occ_def(IHOLE,1,3) = 2
-c        occ_def(IPART,1,3) = 1
-c        occ_def(IHOLE,2,3) = 1
-c        occ_def(IPART,2,3) = 2
-c        ndef=3
-c      end if
-c dbgend
-      if (active_orbs) then
-      descr='[HV][HV],PP'
+c      call op_from_occ_parameters(-1,parameters,2,
+c     &     occ_def,ndef,1,(/0,0/),6)
+c      call set_rule('Z2-INT',ttype_op,DEF_OP_FROM_OCC,
+c     &              'Z2-INT',1,1,
+c     &              parameters,2,tgt_info)
       call set_rule2('Z2-INT',DEF_OP_FROM_OCC,tgt_info)
       call set_arg('Z2-INT',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
      &     val_label=(/'Z2-INT'/))
@@ -1928,14 +1922,7 @@ c dbgend
      &     val_int=(/1/))
       call set_arg('Z2-INT',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
      &     val_str=descr)
-      else
-      call op_from_occ_parameters(-1,parameters,2,
-     &     occ_def,ndef,1,(/0,0/),6)
-      call set_rule('Z2-INT',ttype_op,DEF_OP_FROM_OCC,
-     &              'Z2-INT',1,1,
-     &              parameters,2,tgt_info)
-      end if
-      
+
         ! Non-anti-symmetrised Hamiltonian integrals.
         call add_target(op_g_z,ttype_op,.false.,tgt_info)
 c        call set_g_z_old(ndef,occ_def)
@@ -2850,6 +2837,7 @@ c      call add_target(form_r12_zcabs,ttype_frm,.true.,tgt_info)
 !     &              'ZINT.tex',1,tgt_info)
 
       ! Formal definition of Z2
+      if (.not.active_orbs) then
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = 'Z2INT_R12'
       labels(2) = 'Z2-INT'
@@ -2865,6 +2853,9 @@ c      call add_target(form_r12_zcabs,ttype_frm,.true.,tgt_info)
       call set_rule('Z2INT_R12',ttype_frm,DEF_R12INTM_FORMAL,
      &              labels,5,1,
      &              parameters,2,tgt_info)
+      else
+        call set_z2int_formal(active_orbs,tgt_info)
+      end if
 c dbg
 c      call form_parameters(-1,
 c     &     parameters,2,'stdout',0,'---')
