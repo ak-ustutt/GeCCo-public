@@ -1647,7 +1647,7 @@ c      end if
 
       ! X intermediate
       call add_target(op_x_inter,ttype_op,.false.,tgt_info)
-c      if (n_pp.eq.0) then
+      if (n_pp.eq.0) then
       call set_dependency(op_x_inter,op_b_inter,tgt_info)
       call cloneop_parameters(-1,parameters,
      &                        op_b_inter,.false.) ! <- dagger=.false.
@@ -1663,20 +1663,18 @@ c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
 c     &     val_int=(/1/))
 c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
 c     &     val_str=descr)
-c      else if (n_pp.eq.1) then
-c      descr=',|[HP],[HP]|HP,H[PH]|HH,HP'
-c      if (active_orbs) descr=',|[HP],[HP]|HP,H[PH]|HH,HP|'
+      else if (n_pp.eq.1) then
+      descr=',|H,P|P,H|P,P|HP,HH|H[HP],HP'
 c      descr='H,P|P,[HP]|HH,HP|HP,[HP]H'
-c      if (active_orbs) descr='V,[HV]|H,V|V[HV],VV|VV,HV|[HVP],P|P,[HV]
-c     &          |[HV][HVP],[HV]P|[HV]P,V[HV]|[VP]V,HH|HH,VV'
-c      call set_rule2(op_x_inter,DEF_OP_FROM_OCC,tgt_info)
-c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
-c     &     val_label=(/op_x_inter/))
-c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
-c     &     val_int=(/1/))
-c      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
-c     &     val_str=descr)
-c      end if
+      if (active_orbs) descr=',|[HVP],[HVP]|[HV][HVP],[HV][HVP]'
+      call set_rule2(op_x_inter,DEF_OP_FROM_OCC,tgt_info)
+      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/op_x_inter/))
+      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg(op_x_inter,DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &     val_str=descr)
+      end if
 
       ! X' intermediate
       !call add_target(op_xp_inter,ttype_op,.false.,tgt_info)
@@ -1721,8 +1719,9 @@ C     &              parameters,2,tgt_info)
       if (.not.CC) descr = 'H,,,H'
       if (active_orbs.and..not.CC) 
      &   descr = 'H,,,H|H,,,V|V,,,H|HV,,,HV|HV,,,VV|VV,,,HV'
-c      if (active_orbs.and.n_pp.eq.1) 
-c     &   descr = 'H,,,[HV]|V,,,H|HV,,,[HV]V|VV,,,HV|H,,,P'
+      if (active_orbs.and.n_pp.eq.1) 
+     &   descr = 'H,,,[HV]|V,,,H|HV,,,[HV]V|VV,,,HV|[HV],,,P
+     &      |P,,,[HV]|P[HV],,,[HV][HV]|[HV][HV],,,P[HV]'
       occ_def = 0
       occ_def(IHOLE,1,1) = 1
       occ_def(IHOLE,2,2) = 1
