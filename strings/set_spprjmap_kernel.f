@@ -110,7 +110,7 @@
               cycle
             end if
           end if
-          if (iocc.eq.3.and.idspn(2).eq.2) then
+          if (iocc.eq.3.and.idspn(3).eq.2) then
             if (idspn_flipped(2).eq.idspn_flipped(3)) then
               idxmap = idxmap+1
               strmap(idxmap) = 0
