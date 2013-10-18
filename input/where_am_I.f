@@ -50,6 +50,13 @@
         end if
       end if
 
+      ! try MOLPRO fci interface
+      if (.not.ok) then
+        inquire(file='FCIDUMP',exist=l_exist)
+        ok = l_exist
+        if (ok) env_type='MOLPRO_DUMP'
+      end if
+
       ! future: try other possibilities here ...
       if (.not.ok) call quit(0,'where_am_I',
      &     'did not find proper environment')

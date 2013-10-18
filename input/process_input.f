@@ -28,7 +28,7 @@
       character ::
      &     str*256
       logical ::
-     &     allowed(4)
+     &     allowed(6)
 
       if (.not.associated(history_pointer)) then
         ! advance to first keyword
@@ -86,7 +86,7 @@ c      end if
 
       ncnt = is_keyword_set('orb_space.shell')
 
-      allowed(1:4) = .true.
+      allowed(1:6) = .true.
       do icnt = 1, ncnt
         ncnt2 = is_argument_set('orb_space.shell','type',keycount=icnt)
         if (ncnt2.ne.1)
@@ -123,9 +123,49 @@ c      end if
           end if
 
           if (nfreeze.gt.0) 
-     &         call add_frozen_shell(iscr,len,orb_info)
+     &         call add_frozen_shell(iscr,len,'frz',orb_info)
           deallocate(iscr)
 
+        case('occ')
+          if (.not.allowed(5)) cycle
+          allowed(5) = .false.
+          if (.not.allowed(1).or..not.allowed(6))
+     &      call quit(0,'process_input',
+     &                'type=occ must preceed closed and frozen')
+
+          if (is_argument_set('orb_space.shell','def',
+     &                        keycount=icnt).gt.0) then
+            call get_argument_dimension(len,'orb_space.shell','def',
+     &                                  keycount=icnt)
+            allocate(iscr(len))
+            call get_argument_value('orb_space.shell','def',
+     &                              keycount=icnt,iarr=iscr)
+          else 
+            call quit(0,'process_input',
+     &                'type=occ must be accompanied by a definition')
+          end if
+          call add_frozen_shell(iscr,len,'occ',orb_info)
+          deallocate(iscr)
+        case('closed')
+          if (.not.allowed(6)) cycle
+          allowed(6) = .false.
+          if (.not.allowed(1))
+     &      call quit(0,'process_input',
+     &                'type=closed must preceed frozen')
+
+          if (is_argument_set('orb_space.shell','def',
+     &                        keycount=icnt).gt.0) then
+            call get_argument_dimension(len,'orb_space.shell','def',
+     &                                  keycount=icnt)
+            allocate(iscr(len))
+            call get_argument_value('orb_space.shell','def',
+     &                              keycount=icnt,iarr=iscr)
+          else
+            call quit(0,'process_input',
+     &                'type=occ must be accompanied by a definition')
+          end if
+          call add_frozen_shell(iscr,len,'cls',orb_info)
+          deallocate(iscr)
         case('occorb')
           if (.not.allowed(2)) cycle
           allowed(2) = .false.

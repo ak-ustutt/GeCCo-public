@@ -509,8 +509,8 @@ c          proto0%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
                 ok = .true.
                 occ_temp = 0
                 do ivtx = 1, proto%nvtx
-                  call get_unconnected4vertex
-     &                 (occ_test,ivtx,proto,op_info)
+                  call get_unconnected4vertex2
+     &                 (occ_test,ivtx,proto,occ_vtx,op_info)
                   ok = ok.and.iocc_bound('>=',occ_test ,.false.,
      &                                        occ_temp,.false.)
                   if (ntest.ge.100) then
