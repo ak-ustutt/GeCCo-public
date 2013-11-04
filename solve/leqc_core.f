@@ -300,7 +300,7 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
      &      call optc_expand_vec(
      &           opti_info%shift*vred(idx:idx-1+ndim_vsbsp),ndim_ssbsp,
      &                     xrsnrm(iroot,iopt),.true.,
-     &           ffscr(iopt)%fhand,irecscr,1d0,ffssbsp(iopt)%fhand,
+     &           ffspc,irecscr,1d0,ffssbsp(iopt)%fhand,
      &           iord_rsbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
 
@@ -387,7 +387,7 @@ c                xnrm = dnrm2(nwfpar,xbuf1,1)
                 xnrm = sqrt(xnrm)
                 call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
      &                     opti_info%shift,nwfpar(iopt))
-                call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,
+                call vec_to_da(ffspc,iroot,xbuf1,
      &                         nwfpar(iopt))
               end do
             else
@@ -401,7 +401,7 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
                   xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
                 end do
                 xnrm = sqrt(xnrm)
-                call da_diavec(ffscr(iopt)%fhand,iroot,1,0d0,
+                call da_diavec(ffspc,iroot,1,0d0,
      &                         ffscr(iopt)%fhand,iroot,1,1d0/xnrm,
      &                          me_dia(iopt)%mel%fhand,1,1,
      &                          opti_info%shift,-1d0,

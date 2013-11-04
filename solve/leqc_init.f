@@ -152,12 +152,12 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
               ! => we have to switch around the loops
               if (iopt.ne.1)
      &             call quit(1,'leqc_init','route with trafo: problem')
-              call optc_traf(me_special(1)%mel,1,xrsnrm(iroot,iopt),
+              call optc_traf(me_special(2)%mel,1,xrsnrm(iroot,iopt),
      &                    me_rhs(iopt)%mel,iroot,
      &                    fspc(1),'B',me_special,nspecial,
      &                    nwfpar(iopt),xbuf1,
      &                    orb_info,op_info,str_info,strmap_info)
-              call vec_from_da(me_special(1)%mel%fhand,1,xbuf1,
+              call vec_from_da(me_special(2)%mel%fhand,1,xbuf1,
      &                       nwfpar(iopt))
             else
               call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,

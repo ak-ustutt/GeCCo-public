@@ -708,5 +708,9 @@
      &     val_log=(/.false./),def=.true.)
       call set_arg('_PROTO_',REORDER_MEL,'SEARCH',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(ORB_FLIP,tgt_info)
+      call set_arg('_PROTO_',ORB_FLIP,'LIST',0,tgt_info,
+     &     val_label=(/''/),req=.true.)
 
       end

@@ -99,6 +99,8 @@
       type(file_array), pointer ::
      &     ffdia(:), ff_rhs(:), ff_trv(:),
      &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:)
+      type(me_list), pointer ::
+     &     me_pnt
       type(dependency_info) ::
      &     depend
       type(optimize_info) ::
@@ -221,11 +223,18 @@ c dbg
         opti_info%thrgrd(iopt)=max(opti_info%thrgrd(iopt),thr_suggest)
 
         ! get a ME-list for scratch vectors
+        ! in case of ab-sym braking trafo, get sym props from special list
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &      .and.nspecial.eq.4) then
+          me_pnt => me_special(2)%mel
+        else
+          me_pnt => me_opt(iopt)%mel
+        end if
         write(fname,'("scr_",i3.3)') iopt
         call define_me_list(fname,me_opt(iopt)%mel%op%name,
-     &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
-     &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
-     &       me_opt(iopt)%mel%mst,.false.,
+     &       me_pnt%absym,me_pnt%casym,
+     &       me_pnt%gamt,me_pnt%s2,
+     &       me_pnt%mst,.false.,
      &       -1,1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)

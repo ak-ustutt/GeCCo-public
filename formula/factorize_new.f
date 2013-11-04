@@ -122,8 +122,8 @@
 
            end if
 c dbg
-           else
-             print*, "Formular contains operator with 0 length."
+c           else
+c             print*, "Formular contains operator with 0 length."
 c dbgend
           end if
 
