@@ -26,7 +26,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       type(orbinf), intent(in) ::
      &     orb_info

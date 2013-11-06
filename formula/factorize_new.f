@@ -122,8 +122,8 @@
 
            end if
 c dbg
-           else
-             print*, "Formula contains operator with 0 length."
+          else
+            print *, "Formula contains operator with 0 length."
 c dbgend
           end if
 

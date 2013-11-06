@@ -35,7 +35,8 @@
       mel => list_pnt%mel
 
       if (associated(mel%fhand%last_mod))
-     &     mel%fhand%last_mod = 0
+c     &     mel%fhand%last_mod = 0
+     &     mel%fhand%last_mod = -1
 
       call file_delete(mel%fhand)
 

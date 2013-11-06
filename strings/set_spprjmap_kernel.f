@@ -9,7 +9,8 @@
 *     core routine for setting up the (str)->(str_other_spins) mapping
 *
 *     get for -+ -> ++ +- --
-*     get for -++ -> +++ +-+ ++- --+ -+- +-- --- 
+*     get for +-+ -> +++ -++ ++- --+ -+- +-- ---
+*     (not for -++, because orbital pairing +22 would then be forbidden)
 *
 *     andreas, april 2013
 *      
@@ -27,7 +28,8 @@
      &                         (/-1,-1/)/)
       integer, parameter ::
      &     idspn_prm3(3,7) = (/(/+1,+1,+1/),
-     &                         (/+1,-1,+1/),
+c     &                         (/+1,-1,+1/),
+     &                         (/-1,+1,+1/),
      &                         (/+1,+1,-1/),
      &                         (/-1,-1,+1/),
      &                         (/-1,+1,-1/),
@@ -81,9 +83,10 @@
      &     nsym,ngas_cur))
 
         first = .false.
-
-        ! must be one of: -+, 22  or -++, 22+ 
-        if (idspn(1).ne.-1.and.idspn(1).ne.2) then
+        ! must be one of: -+, 22  or +-+, +22, 22+ ! not -++ !!! 
+c        if (idspn(1).ne.-1.and.idspn(1).ne.2) then
+        if (iocc.eq.2.and.idspn(1).ne.-1.and.idspn(1).ne.2.or.
+     &      iocc.eq.3.and.idspn(2).ne.-1.and.idspn(2).ne.2) then
           strmap(idxmap+1:idxmap+nmaps) = 0
           idxmap = idxmap+nmaps
           cycle

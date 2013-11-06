@@ -45,7 +45,7 @@
       logical ::
      &     skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, notrunc
+     &     oldref, solve, notrunc, restart
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -87,6 +87,8 @@ c     &     xval=prc_shift)
      &     ival=optref)
       call get_argument_value('calculate.solve.non_linear','update_prc',
      &     ival=update_prc)
+      call get_argument_value('calculate.solve.non_linear','restart',
+     &     lval=restart)
 c      call get_argument_value('calculate.solve.non_linear','preopt',
 c     &     lval=preopt)
 c      call get_argument_value('method.MR','project',
@@ -888,6 +890,8 @@ c     &               val_log=(/.true./))
 c      case default
 c        call quit(1,'set_ic_mrcc_targets','unknown prc_type')
 c      end select
+      if (restart) ! project out redundant part (if sv_thr. changed)
+     &   call set_dependency('SOLVE_MRCC_F12','EVAL_Tproj',tgt_info)
       if (optref.ne.0) then
         call me_list_label(dia_label2,mel_dia,orb_info%lsym,
      &                     0,0,0,.false.)

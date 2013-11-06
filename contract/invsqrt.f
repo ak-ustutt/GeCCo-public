@@ -1095,7 +1095,9 @@ c dbgend
                           first = .false.
                           if (.not.logdum) call quit(1,'invsqrt',
      &                         'no next tuple found!')
-                          if (mod(idxcount(2,idspn,na2+nc2,1),4).ne.0)
+c                          if (mod(idxcount(2,idspn,na2+nc2,1),4).ne.0)
+                          if (mod(na2+nc2
+     &                            -idxcount(2,idspn,na2+nc2,1),4).ne.0)
      &                          flmap(icol,3) = -1
 c dbg
 c                          write(luout,'(i8,x,4i4,x,4i4)')idx,idorb,idspn
