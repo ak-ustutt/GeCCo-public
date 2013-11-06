@@ -459,11 +459,14 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
           ! if requested, transform new subspace vectors
           if (trafo) then
             do iroot = 1, nnew
-              call optc_traf(me_scr(iopt)%mel,iroot,xdum,
+              call optc_traf(me_opt(iopt)%mel,iroot,xdum,
      &                     me_special(2)%mel,iroot,
      &                     fspc(1),'F',me_special,nspecial,
      &                     nwfpar(iopt),xbuf1,
      &                     orb_info,op_info,str_info,strmap_info)
+              ! copy to scr list
+              ! original list was used to ensure spin symmetry if needed
+              call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,.false.)
             end do
           end if
 

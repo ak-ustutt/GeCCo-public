@@ -3798,7 +3798,6 @@ c      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'MRCC_PT_LAG'/))
 c dbgend
 
-
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -5683,6 +5682,15 @@ c     &               tgt_info,val_label=(/'ME_OMG'/))
       call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
      &     'ME_E(MR)',1,0,
      &     parameters,2,tgt_info)
+c dbg
+c        call set_rule2('EVAL_PERT_CORR',PRINT_MEL,tgt_info)
+c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'LIST',1,tgt_info,
+c     &       val_label=(/'ME_T'/))
+c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'COMMENT',1,tgt_info,
+c     &       val_str='Final T amplitudes :')
+c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'FORMAT',1,tgt_info,
+c     &       val_str='LIST')
+c dbgend
 c dbg
 c      ! Calculate and print <C0|T^+ S^2 T|C0>/<C0|S^2|C0>
 c      call set_dependency('EVAL_PERT_CORR','FOPT_T_S2',tgt_info)

@@ -183,11 +183,14 @@ c            xrsnrm(iroot,iopt) = xnrm
             if (trafo) then
               call vec_to_da(me_special(2)%mel%fhand,1,
      &                       xbuf1,nwfpar(iopt))
-              call optc_traf(me_scr(iopt)%mel,iroot,xdum,
+              call optc_traf(me_opt(iopt)%mel,iroot,xdum,
      &                    me_special(2)%mel,1,
      &                    fspc(1),'F',me_special,nspecial,
      &                    nwfpar(iopt),xbuf1,
      &                    orb_info,op_info,str_info,strmap_info)
+              ! copy to scr list
+              ! original list was used to ensure spin symmetry if needed
+              call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,.false.)
             else
               call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar(iopt))
             end if

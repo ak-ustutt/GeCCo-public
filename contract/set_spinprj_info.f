@@ -62,14 +62,18 @@
       else if (occ.eq.2.and.ncblk.eq.2.and.nablk.eq.2) then
         call set_case((/+1,-1/),(/+1,-1/),2)
       else if (occ.eq.3) then
-        if (ncblk.eq.1.or.ncblk.eq.2.and.occ_csub(1).eq.2) then
+        if (ncblk.eq.1) then
+          setc3(1:3) = (/+1,-1,+1/)
+        else if (ncblk.eq.2.and.occ_csub(1).eq.2) then
           setc3(1:3) = (/-1,+1,+1/)
         else if (ncblk.eq.2) then ! occ_csub(1).eq.1
           setc3(1:3) = (/+1,-1,+1/)
         else ! ncblk.eq.3
           setc3(1:3) = (/+1,+1,-1/)
         end if
-        if (nablk.eq.1.or.nablk.eq.2.and.occ_asub(1).eq.2) then
+        if (nablk.eq.1) then
+          seta3(1:3) = (/+1,-1,+1/)
+        else if (nablk.eq.2.and.occ_asub(1).eq.2) then
           seta3(1:3) = (/-1,+1,+1/)
         else if (nablk.eq.2) then ! occ_asub(1).eq.1
           seta3(1:3) = (/+1,-1,+1/)
@@ -238,19 +242,19 @@ c        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
           end if
         end if
       case(3)
-        if (disref(1).eq.-1.and.disref(2).eq.+1
+        if (disref(1).eq.+1.and.disref(2).eq.-1
      &      .and.disref(3).eq.+1) then
           if (distgt(1).eq.+1) then
             if (distgt(2).eq.+1) then
               if (distgt(3).eq.+1) res = 1  ! +++
               if (distgt(3).eq.-1) res = 3  ! ++-
             else if (distgt(2).eq.-1) then
-              if (distgt(3).eq.+1) res = 2  ! +-+
+              if (distgt(3).eq.+1) res = 0  ! +-+
               if (distgt(3).eq.-1) res = 6  ! +--
             end if
           else if (distgt(1).eq.-1) then
             if (distgt(2).eq.+1) then
-              if (distgt(3).eq.+1) res = 0  ! -++
+              if (distgt(3).eq.+1) res = 2  ! -++
               if (distgt(3).eq.-1) res = 5  ! -+-
             else if (distgt(2).eq.-1) then
               if (distgt(3).eq.+1) res = 4  ! --+
