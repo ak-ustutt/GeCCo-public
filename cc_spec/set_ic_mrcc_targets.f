@@ -3347,13 +3347,7 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       if ((maxp.ge.2.or.maxh.ge.2).and.tfix.eq.0) then
         labels(1:20)(1:len_target_name) = ' '
         ndef = 0
-c dbg
-         print *,'POI: ',maxp,h1bar_maxp
-c dbg
         if (maxp.ge.2.and.h1bar_maxp.lt.4) then
-c dbg
-         print *,'went here'
-c dbg
           call set_dependency('FOPT_OMG','F_PP0int',tgt_info)
           call set_dependency('FOPT_OMG','DEF_ME_INT_PP0',tgt_info)
           ndef = ndef + 1
