@@ -330,15 +330,16 @@ c dbgend
      &     val_label=(/'F_MRCC_F12_LAG'/))
       if(notrunc) then
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',5,tgt_info,
-     &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',
-     &                 'VINT_R12','VINT_R12^+'/))
+     &     val_label=(/'BINT_R12  ','BhINT_R12 ','XINT_R12  ',
+     &                 'VINT_R12  ','VINT_R12^+'/))
       else
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',10,tgt_info,
-     &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',
-     &                 'VINT_R12','VINT_R12^+',
-     &                 'CINT_R12','CINT_R12^+',
-     &                 'Vring_formal','Vring_formal^+',
-     &                 'C1_formal'/))
+     &     val_label=(/'BINT_R12      ','BhINT_R12     ',
+     &                 'XINT_R12      ',
+     &                 'VINT_R12      ','VINT_R12^+    ',
+     &                 'CINT_R12      ','CINT_R12^+    ',
+     &                 'Vring_formal  ','Vring_formal^+',
+     &                 'C1_formal     '/))
       end if
 c dbg
 c      if(trim(Z2_appr).eq."J2K3") then

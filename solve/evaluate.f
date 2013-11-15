@@ -95,16 +95,17 @@
 c dbg
       call get_argument_value('method.R12','pz_eval',lval=pz_eval)
       if(pz_eval)then
+        call quit(1,'pz_eval','deactivated route')
         do iout = 1, nout
           idx = depend%idxlist(iout)
           if(trim(op_info%mel_arr(idx)%mel%op%name).eq.op_z_inter.or.
 c          if(trim(op_info%mel_arr(idx)%mel%op%name).eq.op_z_test.or.
      &     trim(op_info%mel_arr(idx)%mel%op%name).eq.op_p_inter)then
             print *,'EVALUATION OF P/Z'
-            call wrt_mel_seq(luout,
-     &           op_info%mel_arr(idx)%mel,
-     &           1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
-     &           str_info,orb_info)
+c            call wrt_mel_seq(luout,
+c     &           op_info%mel_arr(idx)%mel,
+c     &           1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
+c     &           str_info,orb_info)
           endif
         enddo
       endif

@@ -2114,7 +2114,8 @@ c dbg
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &     tgt_info,val_int=(/2/))
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'DESCR',2,tgt_info,
-     &     val_label=(/'2,3,H,X','2,,[HP][HVP],[HVX][HV]'/))
+     &     val_label=(/'2,3,H,X               ',
+     &                 '2,,[HP][HVP],[HVX][HV]'/))
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/1,2,3,1/))
 c dbg
@@ -2188,7 +2189,9 @@ c dbgend
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &       tgt_info,val_int=(/4/))
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'DESCR',4,tgt_info,
-     &       val_label=(/'3,4,,X','2,3,,V','4,5,,V',
+     &       val_label=(/'3,4,,X             ',
+     &                   '2,3,,V             ',
+     &                   '4,5,,V             ',
      &                   '3,,[HVP]V,[HVX][HV]'/))
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &       val_int=(/1,2,3,4,5,1/))
@@ -2215,7 +2218,9 @@ c dbgend
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &       tgt_info,val_int=(/4/))
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'DESCR',4,tgt_info,
-     &       val_label=(/'3,4,,X','2,3,,V','4,5,,V',
+     &       val_label=(/'3,4,,X             ',
+     &                   '2,3,,V             ',
+     &                   '4,5,,V             ',
      &                   '3,,[HVP]V,[HVX][HV]'/))
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &       val_int=(/1,2,3,4,5,1/))
@@ -2555,7 +2560,7 @@ c     &              parameters,2,tgt_info)
      &       tgt_info,val_int=(/2/))
         call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'DESCR',2,
      &       tgt_info,
-     &       val_label=(/'2,3,,X','2,,[VP],X'/))
+     &       val_label=(/'2,3,,X   ','2,,[VP],X'/))
         call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'IDX_SV',4,
      &       tgt_info,val_int=(/1,2,3,1/))
       else

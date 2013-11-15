@@ -763,7 +763,7 @@ c     &     val_label=(/'F_HOLE'/))
             call set_dependency(f_dint,'D_INT02',tgt_info)
             call set_dependency(f_dint,'D_INT03',tgt_info)
             call set_arg(f_dint,DEF_MRCC_INTM,'OPERATORS',3,tgt_info,
-     &           val_label=(/'DENS','D_INT02','D_INT03'/))
+     &           val_label=(/'DENS   ','D_INT02','D_INT03'/))
             call set_arg(f_dint,DEF_MRCC_INTM,'MODE',1,tgt_info,
      &           val_str='D_INT2')
           end if

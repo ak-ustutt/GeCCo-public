@@ -81,80 +81,85 @@
         end select
 
 
-      call add_target3((/
-     &      'target RSPNS_OP(',
-     &      'depend (OMG,D,L,DENS,C0,A_C0,T)',
-     &      'CLONE_OPERATOR(label=R_prime_q,template=T)',
-     &      'CLONE_OPERATOR(label=R_q,template=T)',
-     &      'CLONE_OPERATOR(label=R_mu,template=C0)',
+      call add_target3([character(len=80) ::
+     &      'target RSPNS_OP(                                  ',
+     &      'depend (OMG,D,L,DENS,C0,A_C0,T)                   ',
+     &      'CLONE_OPERATOR(label=R_prime_q,template=T)        ',
+     &      'CLONE_OPERATOR(label=R_q,template=T)              ',
+     &      'CLONE_OPERATOR(label=R_mu,template=C0)            ',
      &      'CLONE_OPERATOR(label=R_mu_x,adjoint=T,template=C0)',
-     &      'CLONE_OPERATOR(label=AR_rspns_q,template=OMG)',
-     &      'CLONE_OPERATOR(label=AR_rspns_mu,template=A_C0)',
-     &      'CLONE_OPERATOR(label=SR_rspns_q,template=OMG)',
-     &      'CLONE_OPERATOR(label=SR_rspns_mu,template=R_mu)',
-     &      'DEF_SCALAR(label=den12)',
-     &      ')'/),tgt_info)
+     &      'CLONE_OPERATOR(label=AR_rspns_q,template=OMG)     ',
+     &      'CLONE_OPERATOR(label=AR_rspns_mu,template=A_C0)   ',
+     &      'CLONE_OPERATOR(label=SR_rspns_q,template=OMG)     ',
+     &      'CLONE_OPERATOR(label=SR_rspns_mu,template=R_mu)   ',
+     &      'DEF_SCALAR(label=den12)                           ',
+     &      ')                                                 '],
+     &      tgt_info)
 
       if(lr_opt.eq.1) then
-      call add_target3((/
-     &      'target FORM_AR_RSPNS_Q(',
-     &      'depend (RSPNS_OP,F_OMG)',
-     &      'DERIVATIVE(label_res=F_AR_rspns_q,label_in=F_OMG,',
-     &      'op_res=AR_rspns_q,op_deriv=(T,C0,C0^+),',
-     &      'op_mult=(R_q,R_mu,R_mu_x))',
+      call add_target3([character(len=80) ::
+     &      'target FORM_AR_RSPNS_Q(                              ',
+     &      'depend (RSPNS_OP,F_OMG)                              ',
+     &      'DERIVATIVE(label_res=F_AR_rspns_q,label_in=F_OMG,    ',
+     &      'op_res=AR_rspns_q,op_deriv=(T,C0,C0^+),              ',
+     &      'op_mult=(R_q,R_mu,R_mu_x))                           ',
      &      'REPLACE(label_res=F_AR_rspns_q,label_in=F_AR_rspns_q,',
-     &      'op_list=(R_mu_x,R_mu^+)',
-     &      ')',
-     &      'PRINT_FORMULA(label=F_AR_rspns_q)',
-     &      ')'/),tgt_info)
+     &      'op_list=(R_mu_x,R_mu^+)                              ',
+     &      ')                                                    ',
+     &      'PRINT_FORMULA(label=F_AR_rspns_q)                    ',
+     &      ')                                                    '],
+     &      tgt_info)
    
        else
-      call add_target3((/
-     &      'target FORM_AR_RSPNS_Q(',
-     &      'depend (RSPNS_OP,H0)',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=T,op_res=den12,',
-     &                   'operators=(C0^+,L,H,R_mu),idx_sv=(1,2,3,4))',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &               'operators=(C0^+,L,H,T,R_mu),idx_sv=(1,2,3,4,5),',
-     &                        'connect=(3,4))',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &               'operators=(C0^+,L,T,H,R_mu),idx_sv=(1,2,3,4,5),',
-     &                        'connect=(3,4),fac=-1.0d0)',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &           'operators=(C0^+,L,H,T,T,R_mu),idx_sv=(1,2,3,4,5,6),',
-     &                        'fix_vtx=t,fac=0.5d0)',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &           'operators=(C0^+,L,T,H,T,R_mu),idx_sv=(1,2,3,4,5,6),',
-     &                        'fix_vtx=t,fac=-1.0d0)',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &           'operators=(C0^+,L,T,T,H,R_mu),idx_sv=(1,2,3,4,5,6),',
-     &                        'fix_vtx=t,fac=0.5d0)',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &           'operators=(C0^+,L,H,R_q,C0),idx_sv=(1,2,3,4,5),',
-     &                        'connect=(3,4))',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &           'operators=(C0^+,L,R_q,H,C0),idx_sv=(1,2,3,4,5),',
-     &                        'connect=(3,4),fac=-1.0d0)',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &           'operators=(C0^+,L,H,T,R_q,C0),idx_sv=(1,2,3,4,5,6))',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &           'operators=(C0^+,L,R_q,H,T,C0),idx_sv=(1,2,3,4,5,6),',
-     &                        'fac=-1.0d0)',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &           'operators=(C0^+,L,T,H,R_q,C0),idx_sv=(1,2,3,4,5,6),',
-     &                        'fac=-1.0d0)',
-     &      'EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
-     &           'operators=(C0^+,L,R_q,T,H,C0),idx_sv=(1,2,3,4,5,6))',
-     &   'SELECT_SPECIAL(label_res=F_AR_rspns_t,label_in=F_AR_rspns_t,',
-     &            'type=nonzero,mode=sum)',
-     &      'DERIVATIVE(label_res=F_AR_rspns_q,label_in=F_AR_rspns_t,',
-     &        'op_res=AR_rspns_q,op_deriv=L)',
-     &      'PRINT_FORMULA(label=F_AR_rspns_q)',
-     &      ')'/),tgt_info)
+      call add_target3([character(len=80) ::
+     &  '    target FORM_AR_RSPNS_Q(                                 ',
+     &  '    depend (RSPNS_OP,H0)                                    ',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=T,op_res=den12,',
+     &  '                 operators=(C0^+,L,H,R_mu),idx_sv=(1,2,3,4))',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '             operators=(C0^+,L,H,T,R_mu),idx_sv=(1,2,3,4,5),',
+     &  '                      connect=(3,4))                        ',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '             operators=(C0^+,L,T,H,R_mu),idx_sv=(1,2,3,4,5),',
+     &  '                      connect=(3,4),fac=-1.0d0)             ',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '         operators=(C0^+,L,H,T,T,R_mu),idx_sv=(1,2,3,4,5,6),',
+     &  '                      fix_vtx=t,fac=0.5d0)                  ',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '         operators=(C0^+,L,T,H,T,R_mu),idx_sv=(1,2,3,4,5,6),',
+     &  '                      fix_vtx=t,fac=-1.0d0)                 ',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '         operators=(C0^+,L,T,T,H,R_mu),idx_sv=(1,2,3,4,5,6),',
+     &  '                      fix_vtx=t,fac=0.5d0)                  ',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '         operators=(C0^+,L,H,R_q,C0),idx_sv=(1,2,3,4,5),    ',
+     &  '                      connect=(3,4))                        ',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '         operators=(C0^+,L,R_q,H,C0),idx_sv=(1,2,3,4,5),    ',
+     &  '                      connect=(3,4),fac=-1.0d0)             ',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '         operators=(C0^+,L,H,T,R_q,C0),idx_sv=(1,2,3,4,5,6))',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '         operators=(C0^+,L,R_q,H,T,C0),idx_sv=(1,2,3,4,5,6),',
+     &  '                      fac=-1.0d0)                           ',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '         operators=(C0^+,L,T,H,R_q,C0),idx_sv=(1,2,3,4,5,6),',
+     &  '                      fac=-1.0d0)                           ',
+     &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=F,op_res=den12,',
+     &  '         operators=(C0^+,L,R_q,T,H,C0),idx_sv=(1,2,3,4,5,6))',
+     &  'SELECT_SPECIAL(label_res=F_AR_rspns_t,label_in=F_AR_rspns_t,',
+     &  '          type=nonzero,mode=sum)                            ',
+     &  '    DERIVATIVE(label_res=F_AR_rspns_q,label_in=F_AR_rspns_t,',
+     &  '      op_res=AR_rspns_q,op_deriv=L)                         ',
+     &  '    PRINT_FORMULA(label=F_AR_rspns_q)                       ',
+     &  '    )                                                       '
+     &     ],tgt_info)
 
        endif
 
-      call add_target3((/
+      ! trying fortran2003 style:
+      !call add_target3((/
+      call add_target3([character(len=80) ::
      &      'target F_prePPrint(',
      &      'depend (FORM_AR_RSPNS_Q,DEF_ME_INT_PP,H_PP)',
      &      'CLONE_OPERATOR(label=INT_PPr,template=INT_PP)',
@@ -162,18 +167,23 @@
      &      'op_list=(H,H_PP))',
      &      'INVARIANT(label_res=F_prePPrint,label_in=F_prePPrint,',
      &      'op_res=AR_rspns_q,operators=H)',
-     &      ')'/),tgt_info)
+     &      ')'],tgt_info)
+C     !&      ')'/),tgt_info)
 
-      call add_target3((/
+      !call add_target3((/
+      call add_target3([character(len=80) ::
      &      'target F_PPrint(',
      &      'depend F_prePPrint',
      &      'DERIVATIVE(label_res=F_PPrint,label_in=F_prePPrint,',
      &      'op_res=INT_PPr,op_deriv=H_PP)',
      &      'PRINT_FORMULA(label=F_PPrint)',
-     &      ')'/),tgt_info)
+     &      ')'],tgt_info)
+C     !&      ')'/),tgt_info)
+ 
  
         if(lr_opt.eq.1) then
-      call add_target3((/
+      !call add_target3((/
+      call add_target3([character(len=80) ::
      &      'target FORM_AR_RSPNS_MU(',
      &      'depend(RSPNS_OP,F_OMG_C0,"E(MR)")',
      &      'DERIVATIVE(label_res=F_AR_rspns_mu,label_in=F_OMG_C0,',
@@ -183,9 +193,11 @@
      &      'op_res=AR_rspns_mu,operators=(AR_rspns_mu,"E(MR)",',
      &      'R_mu,AR_rspns_mu),idx_sv=(1,2,3,1),fac=-1d0)',
      &      'PRINT_FORMULA(label=F_AR_rspns_mu)',
-     &      ')'/),tgt_info)
+     &      ')'],tgt_info)
+C     !&      ')'/),tgt_info)
         else
-      call add_target3((/
+      !call add_target3((/
+      call add_target3([character(len=80) ::
      &      'target FORM_AR_RSPNS_MU(',
      &      'depend(RSPNS_OP,F_E_C0,"E(MR)")',
      &      'DERIVATIVE(label_res=F_AR_rspns_c,label_in=F_E_C0,',
@@ -204,11 +216,13 @@
      &      'op_res=AR_rspns_mu,operators=(AR_rspns_mu,"E(MR)",',
      &      'R_mu,AR_rspns_mu),idx_sv=(1,2,3,1),fac=-1d0)',
      &      'PRINT_FORMULA(label=F_AR_rspns_mu)',
-     &      ')'/),tgt_info)
+     &      ')'],tgt_info)
+C     !&      ')'/),tgt_info)
         endif 
 
         if(lr_opt.eq.1)then
-      call add_target3((/
+      !call add_target3((/
+      call add_target3([character(len=80) ::
      &      'target RSPNS_FORM(',
      &      'depend (Dtr,F_T,Ttr,RSPNS_OP,C0)',
      &      'EXPAND_OP_PRODUCT(label=F_den12,new=T,op_res=den12,',
@@ -257,11 +271,13 @@
      &      'op_list=(Ttr,R_prime_q)',
      &      ')',
      &      'PRINT_FORMULA(label=F_R_q)',
-     &      ')'/),tgt_info)
+     &      ')'],tgt_info)
+C     !&      ')'/),tgt_info)
  
          else 
 
-      call add_target3((/
+      !call add_target3((/
+      call add_target3([character(len=80) ::
      &      'target RSPNS_FORM(',
      &      'depend (Dtr,F_T,Ttr,RSPNS_OP,C0)',
      &      'EXPAND_OP_PRODUCT(label=F_den12,new=T,op_res=den12,',
@@ -281,7 +297,8 @@
      &      'op_list=(Ttr,R_prime_q)',
      &      ')',
      &      'PRINT_FORMULA(label=F_R_q)',
-     &      ')'/),tgt_info)
+     &      ')'],tgt_info)
+C     &      ')'/),tgt_info)
           endif
               
       do icnt = 1, ncnt 
@@ -367,7 +384,7 @@ c dbg
      &     trim(mel_dia1)
 
           write(string(12),'("LIST_RSPNS_",I1,"_",I2.2)') isym,msc+1
-          call add_target3((/
+          call add_target3([character(len=80) ::
      &        'target ', trim(string(12)), '(',
      &        'depend (RSPNS_OP,DEF_ME_C0,DEF_ME_Dtrdag,H0,DEF_ME_T,',
      &        'DIA_T,DIA_C0,"DEF_ME_E(MR)",F_prePPrint)',
@@ -376,7 +393,8 @@ c dbg
      &        trim(string(7)),trim(string(8)),trim(string(9)),
      &        trim(string(10)),string(11),
      &        'ASSIGN_ME2OP(list="ME_E(MR)",operator="E(MR)")',
-     &        ')'/),tgt_info)     
+     &        ')'],tgt_info)     
+C     !&        ')'/),tgt_info)     
 
  
         write(string(12),'("depend LIST_RSPNS_",I1,"_",I2.2)')isym,msc+1
@@ -386,7 +404,7 @@ c dbg
          write(string(18),'("PRECONDITIONER(list_prc=",a,
      &              ",list_inp=ME_FREF)")') trim(medef_label)
 
-         call add_target3((/
+         call add_target3([character(len=80) ::
      &        'target ', trim(string(13)), '(',
      &        'depend (EVAL_FREF,FOPT_Atr)',
      &        trim(string(12)),
@@ -397,7 +415,7 @@ c dbg
      &        string(17),            
 *    &        'EXTRACT_DIAG(list_res=',medef_label,',list_in=ME_A,',
 *    &        'mode=extend)',
-     &        ')'/),tgt_info)
+     &        ')'],tgt_info)
           
          write(string(13),'("DIAG_CAL_mu_",I1,"_",I2.2)') isym,msc+1
          write(string(17),'("EXTRACT_DIAG(list_res=",a,
@@ -407,12 +425,12 @@ c dbg
      &                     ",list_inp=H0,mode=dia-H)")') trim(dia_label)
          write(string(19),'("SCALE_COPY(list_res=",a,
      &            ",list_inp=""ME_E(MR)"",fac=-1d0)")') trim(mel_dia1)
-         call add_target3((/
+         call add_target3([character(len=80) ::
      &         'target',trim(string(13)),'(',
      &         trim(string(12)),
      &         trim(string(18)),
      &         trim(string(19)),string(17),                      ! trim(string(17)) FIXME 
-     &         ')'/),tgt_info)
+     &         ')'],tgt_info)
 
 
          write(string(13),'("RSPNS_OPT_",I1,"_",I2.2)') isym,msc+1
@@ -420,7 +438,7 @@ c dbg
      &   ",labels_in=(F_AR_rspns_q,F_AR_rspns_mu,F_SR_rspns_q,",
      &    "F_SR_rspns_mu,F_R_q),interm=F_PPrint)")') isym,msc+1
 
-           call add_target3((/
+           call add_target3([character(len=80) ::
      &     'target',trim(string(13)),'(',
      &     'depend (RSPNS_FORM,FORM_AR_RSPNS_Q,',
      &     'FORM_AR_RSPNS_MU,"DEF_ME_E(MR)",F_PPrint)',
@@ -428,7 +446,7 @@ c dbg
 C    &    'OPTIMIZE(label_opt=',trim(string(14)),'labels_in=(F_AR_rspns_q,',
 C    &     'F_AR_rspns_mu,F_SR_rspns_q,F_SR_rspns_mu,F_R_q),',
 C    &     'interm=F_PPrint)',
-     &     ')'/),tgt_info)
+     &     ')'],tgt_info)
 
        write(string(12),'("mode=""TRF DIA"",n_roots=",I1,")")')
      &                   sym_arr(isym)
@@ -444,7 +462,7 @@ C    &     'interm=F_PPrint)',
      &          ",list_spc=(",a,",ME_Dtr,ME_Dtrdag),")')
      &                     isym,msc+1,trim(me_label_lr)
 
-       call add_target3((/
+       call add_target3([character(len=80) ::
      &     'target', trim(string(13)), '(',
      &     'required',
      &     trim(string(14)),trim(string(15)),trim(string(16)),
@@ -455,11 +473,10 @@ C    &     'interm=F_PPrint)',
      &     'op_svp=(SR_rspns_q,SR_rspns_mu),',
      &     string(19),
      &     string(12),
-     &     ')'/),tgt_info)
+     &     ')'],tgt_info)
 
 
-        enddo
-      enddo
-C       stop 'checking response'
+        end do
+      end do
        
       end subroutine

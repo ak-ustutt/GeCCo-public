@@ -23,18 +23,18 @@
      &     ntest = 000
 
       integer, parameter ::
-     &     idspn_prm2(2,3) = (/(/+1,+1/),
-     &                         (/+1,-1/),
-     &                         (/-1,-1/)/)
+     &     idspn_prm2(6) = (/+1,+1,
+     &                       +1,-1,
+     &                       -1,-1/)
       integer, parameter ::
-     &     idspn_prm3(3,7) = (/(/+1,+1,+1/),
-c     &                         (/+1,-1,+1/),
-     &                         (/-1,+1,+1/),
-     &                         (/+1,+1,-1/),
-     &                         (/-1,-1,+1/),
-     &                         (/-1,+1,-1/),
-     &                         (/+1,-1,-1/),
-     &                         (/-1,-1,-1/)/)
+     &     idspn_prm3(21) = (/+1,+1,+1,
+c     &                        +1,-1,+1,
+     &                        -1,+1,+1,
+     &                        +1,+1,-1,
+     &                        -1,-1,+1,
+     &                        -1,+1,-1,
+     &                        +1,-1,-1,
+     &                        -1,-1,-1/)
 
       integer, intent(out) ::
      &     strmap(*)
@@ -99,9 +99,11 @@ c        if (idspn(1).ne.-1.and.idspn(1).ne.2) then
         do imaps = 1, nmaps
           ! flip spin indices
           if (iocc.eq.2) then
-            idspn_flipped(1:2) = idspn_prm2(1:2,imaps)
+            idspn_flipped(1:2) = 
+     &               idspn_prm2(((imaps-1)*2)+1:((imaps-1)*2)+2)
           else
-            idspn_flipped(1:3) = idspn_prm3(1:3,imaps)
+            idspn_flipped(1:3) = 
+     &               idspn_prm3(((imaps-1)*3)+1:((imaps-1)*3)+3)
           end if
 
           ! check for paired indices:

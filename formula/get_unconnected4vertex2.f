@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine get_unconnected4vertex2(iocc,ivtx,
-&                                        contr,occ_vtx,op_info)
+     &                                   contr,occ_vtx,op_info)
 *----------------------------------------------------------------------*
 *     return (in occupation form) the number of unconnected indices 
 *     of vertex #ivtx in contraction contr
