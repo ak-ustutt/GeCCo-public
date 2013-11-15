@@ -73,7 +73,7 @@
         end do
       else
         do jj = 1, nvec
-          xvec(ndim,jj) = da_ddot(ff_sbsp,jrec,1,ffvec,jj,1,
+          xvec(ndim,jj) = da_ddot(ff_sbsp,jrec,ffvec,jj,
      &         nwfpar,xbuf1,xbuf2,lenbuf)
         end do
       end if

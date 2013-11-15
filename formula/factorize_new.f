@@ -121,6 +121,10 @@
      &             iscale_stat(3,1,istat)+1,iscale_stat(4,1,istat)+1)+1
 
            end if
+c dbg
+          else
+            print *, "Formula contains operator with 0 length."
+c dbgend
           end if
 
           ! advance fl_fact_ptr

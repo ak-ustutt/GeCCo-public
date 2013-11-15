@@ -99,6 +99,8 @@
       type(file_array), pointer ::
      &     ffdia(:), ff_rhs(:), ff_trv(:),
      &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:)
+      type(me_list), pointer ::
+     &     me_pnt
       type(dependency_info) ::
      &     depend
       type(optimize_info) ::
@@ -113,7 +115,7 @@
       integer, pointer ::
      &     irecmvp(:), irectrv(:), irecmet(:), idxselect(:)
       real(8), pointer ::
-     &      xret(:)
+     &      xret(:), xbuf1(:)
 
       character ::
      &     fname*256
@@ -221,11 +223,18 @@ c dbg
         opti_info%thrgrd(iopt)=max(opti_info%thrgrd(iopt),thr_suggest)
 
         ! get a ME-list for scratch vectors
+        ! in case of ab-sym braking trafo, get sym props from special list
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &      .and.nspecial.eq.4) then
+          me_pnt => me_special(2)%mel
+        else
+          me_pnt => me_opt(iopt)%mel
+        end if
         write(fname,'("scr_",i3.3)') iopt
         call define_me_list(fname,me_opt(iopt)%mel%op%name,
-     &       me_opt(iopt)%mel%absym,me_opt(iopt)%mel%casym,
-     &       me_opt(iopt)%mel%gamt,me_opt(iopt)%mel%s2,
-     &       me_opt(iopt)%mel%mst,.false.,
+     &       me_pnt%absym,me_pnt%casym,
+     &       me_pnt%gamt,me_pnt%s2,
+     &       me_pnt%mst,.false.,
      &       -1,1,nvectors,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
         idxmel = idx_mel_list(fname,op_info)
@@ -350,6 +359,14 @@ c dbg
 
           ! store norm of RHS
           xresnrm(iroot,iopt) = xret(idxselect(1))
+
+          ! apply sign-fix (if needed)
+          ifree = mem_setmark('solve_leq.fix_sign')
+          ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),'xbuf1')
+          call optc_fix_signs2(me_rhs(iopt)%mel%fhand,
+     &                        iroot,opti_info,iopt,
+     &                        opti_info%nwfpar(iopt),xbuf1)
+          ifree = mem_flushmark()
         end do
       end do
 
@@ -426,6 +443,24 @@ c dbg
 
             do iopt = 1, nopt
               call touch_file_rec(me_trv(iopt)%mel%fhand)
+            end do
+
+            ! apply sign-fix (if needed)
+            do iopt = 1, nopt
+c             write(luout,*) 'Fixing signs of residual+metric,iopt=',iopt
+              ifree = mem_setmark('solve_leq.fix_sign')
+              ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
+     &                                         'xbuf1')
+              call optc_fix_signs2(me_mvp(iopt)%mel%fhand,
+     &                            irecmvp(irequest),
+     &                            opti_info,iopt,
+     &                            opti_info%nwfpar(iopt),xbuf1)
+              if (use_s(iopt))
+     &           call optc_fix_signs2(me_met(iopt)%mel%fhand,
+     &                            irecmet(irequest),
+     &                            opti_info,iopt,
+     &                            opti_info%nwfpar(iopt),xbuf1)
+              ifree = mem_flushmark()
             end do
 
             if (ntest.ge.1000) then

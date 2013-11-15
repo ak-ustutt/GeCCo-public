@@ -81,4 +81,5 @@
      &     EXTRACT_DIAG*12    = 'EXTRACT_DIAG',
      &     REORDER_MEL*11     = 'REORDER_MEL',
      &     SPIN_PROJECT*12    = 'SPIN_PROJECT',
-     &     SCALE_COPY*10      = 'SCALE_COPY'
+     &     SCALE_COPY*10      = 'SCALE_COPY',
+     &     ORB_FLIP*8         = 'ORB_FLIP'

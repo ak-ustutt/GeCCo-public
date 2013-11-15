@@ -26,7 +26,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -237,22 +237,44 @@
           msdis_a_tgt(1:2) = (/1,-1/)
         end if
       case(3)
-        if (nablk.eq.1.and.ncblk.eq.1) then
+        if (ncblk.eq.1) then
           msdis_c_tgt(1) = 1
-          msdis_a_tgt(1) = 1
-        else if (nablk.eq.2.and.ncblk.eq.2) then
-          if (occ_csub(1).eq.2.and.occ_asub(1).eq.1) then
+        else if (ncblk.eq.2) then
+          if (occ_csub(1).eq.2) then
             msdis_c_tgt(1:2) = (/0,1/)
-            msdis_a_tgt(1:2) = (/1,0/)
-          else if (occ_csub(1).eq.1.and.occ_asub(1).eq.2) then
+          else ! occ_csub(1).eq.1
             msdis_c_tgt(1:2) = (/1,0/)
-            msdis_a_tgt(1:2) = (/0,1/)
-          else
-            ok = .false.
           end if
-        else
-          ok = .false.
+        else ! ncblk.eq.3
+           msdis_c_tgt(1:3) = (/1,1,-1/)
         end if
+        if (nablk.eq.1) then
+          msdis_a_tgt(1) = 1
+        else if (nablk.eq.2) then
+          if (occ_asub(1).eq.2) then
+            msdis_a_tgt(1:2) = (/0,1/)
+          else ! occ_asub(1).eq.1
+            msdis_a_tgt(1:2) = (/1,0/)
+          end if
+        else ! nablk.eq.3
+           msdis_a_tgt(1:3) = (/1,1,-1/)
+        end if
+c        if (nablk.eq.1.and.ncblk.eq.1) then
+c          msdis_c_tgt(1) = 1
+c          msdis_a_tgt(1) = 1
+c        else if (nablk.eq.2.and.ncblk.eq.2) then
+c          if (occ_csub(1).eq.2.and.occ_asub(1).eq.1) then
+c            msdis_c_tgt(1:2) = (/0,1/)
+c            msdis_a_tgt(1:2) = (/1,0/)
+c          else if (occ_csub(1).eq.1.and.occ_asub(1).eq.2) then
+c            msdis_c_tgt(1:2) = (/1,0/)
+c            msdis_a_tgt(1:2) = (/0,1/)
+c          else
+c            ok = .false.
+c          end if
+c        else
+c          ok = .false.
+c        end if
       case default
         ok = .false.     
       end select

@@ -113,6 +113,12 @@ c        write(luout,*) 'untransformed gradient vector:'
 c        write(luout,*) xbuf1(1:nwfpar)
 c dbg
 
+      ! apply sign-fix
+c      write(luout,*) 'Fixing sign of residual for iopt =',iopt
+      call optc_fix_signs2(me_grd%fhand,1,
+     &                    opti_info,iopt,
+     &                    nwfpar,xbuf1)
+
       ! assign op. to be transformed with list of gradient
       call assign_me_list(me_grd%label,
      &                    trim(op_trf_name),op_info)

@@ -39,7 +39,8 @@
      &    isplc, idxmsa, idxdis, occ, msc, msa
       integer ::
      &    msdiscmp_c(ncblk,nsplc), msdiscmp_a(nablk,nsplc),
-     &    len_str(ncblk+nablk), idxmsdis_c(ncblk), idxmsdis_a(nablk)
+     &    len_str(ncblk+nablk), idxmsdis_c(ncblk), idxmsdis_a(nablk),
+     &    setc3(3), seta3(3)
 
       integer, external ::
      &    std_spsign_msdis, ielsum, idx_msgmdst2
@@ -60,14 +61,34 @@
         call set_case((/-1,+1/),(/+1,-1/),2)
       else if (occ.eq.2.and.ncblk.eq.2.and.nablk.eq.2) then
         call set_case((/+1,-1/),(/+1,-1/),2)
-      else if (occ.eq.3.and.ncblk.eq.1.and.nablk.eq.1) then
-        call set_case((/-1,+1,+1/),(/-1,+1,+1/),3)
-      else if (occ.eq.3.and.ncblk.eq.2.and.nablk.eq.2.and.
-     &         occ_csub(1).eq.2.and.occ_asub(1).eq.1) then
-        call set_case((/-1,+1,+1/),(/+1,-1,+1/),3)
-      else if (occ.eq.3.and.ncblk.eq.2.and.nablk.eq.2.and.
-     &         occ_csub(1).eq.1.and.occ_asub(1).eq.2) then
-        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
+      else if (occ.eq.3) then
+        if (ncblk.eq.1) then
+          setc3(1:3) = (/+1,-1,+1/)
+        else if (ncblk.eq.2.and.occ_csub(1).eq.2) then
+          setc3(1:3) = (/-1,+1,+1/)
+        else if (ncblk.eq.2) then ! occ_csub(1).eq.1
+          setc3(1:3) = (/+1,-1,+1/)
+        else ! ncblk.eq.3
+          setc3(1:3) = (/+1,+1,-1/)
+        end if
+        if (nablk.eq.1) then
+          seta3(1:3) = (/+1,-1,+1/)
+        else if (nablk.eq.2.and.occ_asub(1).eq.2) then
+          seta3(1:3) = (/-1,+1,+1/)
+        else if (nablk.eq.2) then ! occ_asub(1).eq.1
+          seta3(1:3) = (/+1,-1,+1/)
+        else ! nablk.eq.3
+          seta3(1:3) = (/+1,+1,-1/)
+        end if
+        call set_case(setc3,seta3,3)
+c      else if (occ.eq.3.and.ncblk.eq.1.and.nablk.eq.1) then
+c        call set_case((/-1,+1,+1/),(/-1,+1,+1/),3)
+c      else if (occ.eq.3.and.ncblk.eq.2.and.nablk.eq.2.and.
+c     &         occ_csub(1).eq.2.and.occ_asub(1).eq.1) then
+c        call set_case((/-1,+1,+1/),(/+1,-1,+1/),3)
+c      else if (occ.eq.3.and.ncblk.eq.2.and.nablk.eq.2.and.
+c     &         occ_csub(1).eq.1.and.occ_asub(1).eq.2) then
+c        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
       else
         write(luout,*) 'occ, ncblk, nablk = ',occ, ncblk, nablk
         write(luout,*) 'occ_csub: ',occ_csub(1:ncblk)
@@ -221,7 +242,26 @@
           end if
         end if
       case(3)
-        ! an idea is welcome ...
+        if (disref(1).eq.+1.and.disref(2).eq.-1
+     &      .and.disref(3).eq.+1) then
+          if (distgt(1).eq.+1) then
+            if (distgt(2).eq.+1) then
+              if (distgt(3).eq.+1) res = 1  ! +++
+              if (distgt(3).eq.-1) res = 3  ! ++-
+            else if (distgt(2).eq.-1) then
+              if (distgt(3).eq.+1) res = 0  ! +-+
+              if (distgt(3).eq.-1) res = 6  ! +--
+            end if
+          else if (distgt(1).eq.-1) then
+            if (distgt(2).eq.+1) then
+              if (distgt(3).eq.+1) res = 2  ! -++
+              if (distgt(3).eq.-1) res = 5  ! -+-
+            else if (distgt(2).eq.-1) then
+              if (distgt(3).eq.+1) res = 4  ! --+
+              if (distgt(3).eq.-1) res = 7  ! ---
+            end if
+          end if
+        end if
       end select
 c dbg
 c      print *,'tgt = ',distgt(1:npart)

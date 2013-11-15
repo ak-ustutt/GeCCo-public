@@ -43,7 +43,7 @@
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
      &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno, update_prc,
-     &     prc_iter, spinproj, project
+     &     prc_iter, spinproj, project, simp
       logical ::
      &     skip, preopt, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
@@ -128,6 +128,8 @@
      &     ival=tfix)
       call get_argument_value('method.MRCC','T1ord',
      &     ival=t1ord)
+      call get_argument_value('method.MRCC','simp',
+     &     ival=simp)
       call get_argument_value('method.MR','oldref',
      &     lval=oldref)
       call get_argument_value('method.MR','maxcum',
@@ -136,19 +138,23 @@
      &     ival=cum_appr_mode)
       call get_argument_value('calculate.solve','maxiter',
      &     ival=maxit)
-      if (is_argument_set('calculate.solve.non_linear','maxiter').gt.0)
-     &     call get_argument_value('calculate.solve.non_linear',
+      if (is_argument_set('calculate.solve.linear','maxiter').gt.0)
+     &     call get_argument_value('calculate.solve.linear',
      &     'maxiter',ival=maxit)
       call get_argument_value('method.MR','maxv',
      &     ival=maxv)
       skip = (is_keyword_set('calculate.skip_E').gt.0)
       if (maxv.lt.0) maxv = 2*maxexc
       trunc = ntrunc.ge.0
-      solve = execute.and..not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
+      solve = execute.and..not.svdonly.and.tfix.eq.0 !(tfix.eq.0.or.maxit.gt.1)
      &               .and..not.skip
       use_f12 = is_keyword_set('method.R12').gt.0
       call get_argument_value('method.MR','GNO',
      &     ival=gno)
+      if (tfix.ne.0) then
+        optref = 0
+        update_prc = 0
+      end if
 
       ! enforce spinflip symmetry for cluster op. and related ops.
       msc = +1
@@ -170,6 +176,7 @@
         write(luout,*) 'trunc        = ', trunc
         if (tfix.gt.0) write(luout,*) 'Tfix         = ', tfix
         if (t1ord.ge.0) write(luout,*) 'T1ord        = ', t1ord
+        if (simp.ge.0) write(luout,*) 'simp         = ', simp
         if (spinproj.eq.1) then
           write(luout,*) 'Using spin adapted reference function.'
         else if (spinproj.eq.2) then
@@ -186,12 +193,25 @@
       if (tred.gt.0.and.optref.eq.0)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'Tred_mode > 0 not yet available for optref=0')
-      if (tfix.gt.0.and.(.not.oldref.or.project.ne.1.or.optref.ne.0))
+      if (tfix.gt.0.and.(.not.oldref.or.project.eq.0))
      &    call quit(1,'set_ic_mrcc_targets',
-     &     'Tfix>0 only allowed with oldref=T,project=1,optref=0')
+     &     'Tfix>0 only allowed with oldref=T,project>0')
       if (t1ord.ge.0.and.tfix.eq.0)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'Manually setting T1ord only enabled yet for Tfix>0')
+      if (tfix.gt.0.and.gno.eq.1.or.project.eq.3) then
+        ! new (T) implementation
+        if (tfix.ne.2.or.ntrunc.ne.4.or.h1bar
+     &      .or.t1ord.ne.2.or.simp.lt.1.or.maxcom.gt.2
+     &      .or.maxcom_en.gt.4.or.maxcom.lt.2.or.maxcom_en.lt.2) 
+     &     call quit(1,'set_ic_mrcc_targets',
+     &     'New (T) implementation only works for '//
+     &     'Tfix=2,trunc_order=4,H1bar=F,T1ord=2,simp=1-2,'//
+     &     'maxcom_res=2,maxcom_en=2-4')
+        if (excrestr(0,0,1).lt.excrestr(0,0,2))
+     &     call quit(1,'set_ic_mrcc_targets',
+     &     'Implement missing terms for pure_vv in new (T)')
+      end if
       if (h1bar_maxp.eq.0.or.h1bar_maxp.eq.1)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'h1bar_maxp should be either -1 or one of 2,3,4')
@@ -919,11 +939,74 @@ c dbg
      &              'Tfix',1,1,
      &              parameters,2,tgt_info)
 
+      ! define fixed T2 operator
+      call add_target('T2fix',ttype_op,.false.,tgt_info)
+      occ_def = 0
+      ndef = 0
+      do ip = 0, maxp
+        do ih = 0, maxh
+          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+            if (iexc.ne.2) cycle ! just the doubles
+            ndef = ndef + 1
+            occ_def(IHOLE,2,ndef) = ih
+            occ_def(IPART,1,ndef) = ip
+            occ_def(IVALE,1,ndef) = iexc - ip
+            occ_def(IVALE,2,ndef) = iexc - ih
+          end do
+        end do
+      end do
+      call op_from_occ_parameters(-1,parameters,2,
+     &              occ_def,ndef,1,(/0,0/),ndef)
+      call set_rule('T2fix',ttype_op,DEF_OP_FROM_OCC,
+     &              'T2fix',1,1,
+     &              parameters,2,tgt_info)
+
       ! define fixed energy (e.g. E_icMRCCSD when doing a (T) calc.)
       call add_target('E_fix',ttype_op,.false.,tgt_info)
       call hop_parameters(-1,parameters,0,0,1,.false.)
       call set_rule('E_fix',ttype_op,DEF_HAMILTONIAN,'E_fix',
      &              1,1,parameters,1,tgt_info)
+
+      ! RHS operator
+      call add_target2('OMG_RHS',.false.,tgt_info)
+      call set_dependency('OMG_RHS','OMG',tgt_info)
+      call set_rule2('OMG_RHS',CLONE_OP,tgt_info)
+      call set_arg('OMG_RHS',CLONE_OP,'LABEL',1,tgt_info,
+     &     val_label=(/'OMG_RHS'/))
+      call set_arg('OMG_RHS',CLONE_OP,'TEMPLATE',1,tgt_info,
+     &     val_label=(/'OMG'/))
+
+      ! Dyall Hamiltonian (needed in this form for new (T) implement.)
+      call add_target2('DYALL_HAM',.false.,tgt_info)
+      call set_dependency('DYALL_HAM','EVAL_FREF',tgt_info)
+      call set_dependency('DYALL_HAM',mel_ham,tgt_info)
+      call set_rule2('DYALL_HAM',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('DYALL_HAM',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &             val_label=(/'Hdyall'/))
+      call set_arg('DYALL_HAM',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &             val_str='|,H|H,P|P,V|V,VV|VV')
+      call set_rule2('DYALL_HAM',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('DYALL_HAM',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &             val_label=(/'Hdact'/))
+      call set_arg('DYALL_HAM',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &             val_str='V|V,VV|VV')
+      call set_rule2('DYALL_HAM',DEF_FORMULA,tgt_info)
+      call set_arg('DYALL_HAM',DEF_FORMULA,'LABEL',1,tgt_info,
+     &             val_label=(/'F_Hdyall'/))
+      call set_arg('DYALL_HAM',DEF_FORMULA,'FORMULA',1,tgt_info,
+     &             val_str='Hdyall=FREF+Hdact')
+      call set_rule2('DYALL_HAM',REPLACE,tgt_info)
+      call set_arg('DYALL_HAM',REPLACE,'LABEL_RES',1,tgt_info,
+     &             val_label=(/'F_Hdyall'/))
+      call set_arg('DYALL_HAM',REPLACE,'LABEL_IN',1,tgt_info,
+     &             val_label=(/'F_Hdyall'/))
+      call set_arg('DYALL_HAM',REPLACE,'OP_LIST',2,tgt_info,
+     &             val_label=(/'Hdact','H    '/))
+c dbg
+c      call set_rule2('DYALL_HAM',PRINT_FORMULA,tgt_info)
+c      call set_arg('DYALL_HAM',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_Hdyall'/))
+c dbgend
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
@@ -1847,9 +1930,9 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
       call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='SAME')
 c dbg
-      call set_rule2('F_E(MRCC)tr',PRINT_FORMULA,tgt_info)
-      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_E(MRCC)tr'/))
+c      call set_rule2('F_E(MRCC)tr',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_E(MRCC)tr'/))
 c dbgend
 
       ! (transformed) Jacobian times vector
@@ -2868,9 +2951,9 @@ c     &     val_label=(/'F_Ecorrected'/))
 c      call set_arg('F_Ecorrected',REPLACE,'OP_LIST',2,tgt_info,
 c     &     val_label=(/'L  ','T^+'/))
 c dbg
-      call set_rule2('F_Ecorrected',PRINT_FORMULA,tgt_info)
-      call set_arg('F_Ecorrected',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_Ecorrected'/))
+c      call set_rule2('F_Ecorrected',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_Ecorrected',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_Ecorrected'/))
 c dbgend
 
       ! Just the fixed part of the energy
@@ -3222,6 +3305,501 @@ c      call set_rule2('F_D_GNO',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_D_GNO',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_D_GNO'/))
 c dbgend
+
+      ! linear equation for iterative (T)
+      call add_target2('MRCC_PT_LIN',.false.,tgt_info)
+      call set_dependency('MRCC_PT_LIN','OMG_RHS',tgt_info)
+      call set_rule2('MRCC_PT_LIN',LEQ_SPLIT,tgt_info)
+      call set_arg('MRCC_PT_LIN',LEQ_SPLIT,'LABEL_TRF',1,tgt_info,
+     &             val_label=(/'MRCC_PT_MVP'/))
+      call set_arg('MRCC_PT_LIN',LEQ_SPLIT,'LABEL_RHS',1,tgt_info,
+     &             val_label=(/'MRCC_PT_RHS'/))
+      if (gno.eq.0.and.project.lt.3) then
+        call set_dependency('MRCC_PT_LIN','F_OMG',tgt_info)
+        call set_arg('MRCC_PT_LIN',LEQ_SPLIT,'LABEL_RAW',1,tgt_info,
+     &               val_label=(/'F_OMG'/))
+      else
+        call set_dependency('MRCC_PT_LIN','MRCC_PT_LAG',tgt_info)
+        call set_arg('MRCC_PT_LIN',LEQ_SPLIT,'LABEL_RAW',1,tgt_info,
+     &               val_label=(/'F_OMG_PT'/))
+      end if
+      call set_arg('MRCC_PT_LIN',LEQ_SPLIT,'OP_TRF',1,tgt_info,
+     &             val_label=(/'OMG'/))
+      call set_arg('MRCC_PT_LIN',LEQ_SPLIT,'OP_RHS',1,tgt_info,
+     &             val_label=(/'OMG_RHS'/))
+      call set_arg('MRCC_PT_LIN',LEQ_SPLIT,'OP_X',1,tgt_info,
+     &             val_label=(/'T'/))
+c dbg
+c      call set_rule2('MRCC_PT_LIN',PRINT_FORMULA,tgt_info)
+c      call set_arg('MRCC_PT_LIN',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'MRCC_PT_MVP'/))
+c      call set_rule2('MRCC_PT_LIN',PRINT_FORMULA,tgt_info)
+c      call set_arg('MRCC_PT_LIN',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'MRCC_PT_RHS'/))
+c dbgend
+
+      ! Lagrangian / Residual / E for new (T) implementation
+      call add_target2('MRCC_PT_LAG',.false.,tgt_info)
+      call set_dependency('MRCC_PT_LAG','T',tgt_info)
+      call set_dependency('MRCC_PT_LAG','L',tgt_info)
+      call set_dependency('MRCC_PT_LAG','Tfix',tgt_info)
+      call set_dependency('MRCC_PT_LAG','T2fix',tgt_info)
+      call set_dependency('MRCC_PT_LAG','E(MR)',tgt_info)
+      call set_dependency('MRCC_PT_LAG','OMG',tgt_info)
+      call set_dependency('MRCC_PT_LAG','DYALL_HAM',tgt_info)
+      ! (a) ic-MRCCSD energy (only if not just a corr. to ic-MRCCSD-F12)
+      ! for pure_vv, one should also include terms with Tfix on the left
+      if (orb_info%norb_hpv(IEXTR,1).eq.0) then
+        call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &               val_label=(/'MRCC_PT_LAG'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &               tgt_info,val_label=(/'E(MR)'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',3,
+     &               tgt_info,val_label=(/'C0^+','H   ','C0  '/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',3,
+     &               tgt_info,val_int=(/2,3,4/))
+        call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &               val_label=(/'MRCC_PT_LAG'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &               tgt_info,val_label=(/'E(MR)'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &               tgt_info,val_label=(/'C0^+','H   ','Tfix','C0  '/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',4,
+     &               tgt_info,val_int=(/2,3,4,5/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'CONNECT',2,
+     &               tgt_info,val_int=(/2,3/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &               val_log=(/.false./))
+        call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &               val_label=(/'MRCC_PT_LAG'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &               tgt_info,val_label=(/'E(MR)'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &               tgt_info,val_label=(/'C0^+','H   ','Tfix',
+     &                                    'Tfix','C0  '/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,
+     &               tgt_info,val_int=(/2,3,4,5,6/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &               val_rl8=(/0.5d0/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &               tgt_info,val_log=(/.true./))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &               val_log=(/.false./))
+        if (maxcom_en.ge.3) then
+         call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,
+     &                tgt_info,val_label=(/'MRCC_PT_LAG'/))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &                tgt_info,val_label=(/'E(MR)'/))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &                tgt_info,val_label=(/'C0^+','H   ','Tfix',
+     &                                     'Tfix','Tfix','C0  '/))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,
+     &                tgt_info,val_int=(/2,3,4,5,6,7/))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &                val_rl8=(/1d0/6d0/))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &                tgt_info,val_log=(/.true./))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &                val_log=(/.false./))
+        end if
+        if (maxcom_en.ge.4) then
+         call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,
+     &                tgt_info,val_label=(/'MRCC_PT_LAG'/))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &                tgt_info,val_label=(/'E(MR)'/))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',7,
+     &                tgt_info,val_label=(/'C0^+','H   ','Tfix','Tfix',
+     &                                     'Tfix','Tfix','C0  '/))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',7,
+     &                tgt_info,val_int=(/2,3,4,5,6,7,8/))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &                val_rl8=(/1d0/24d0/))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &                tgt_info,val_log=(/.true./))
+         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &                val_log=(/.false./))
+        end if
+      end if
+      ! (b) direct energy contribution of triples
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &             tgt_info,val_label=(/'C0^+ ','H    ','T2fix',
+     &                                  'T    ','C0   '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &             val_int=(/2,3,4,5,6/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/0.5d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &             tgt_info,val_label=(/'C0^+ ','H    ','T    ',
+     &                                  'T2fix','C0   '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &             val_int=(/2,3,4,5,6/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/0.5d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &             tgt_info,val_label=(/'C0^+ ','T2fix','H    ',
+     &                                  'T    ','C0   '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &             val_int=(/2,3,4,5,6/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/-1d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &             tgt_info,val_label=(/'C0^+ ','T    ','H    ',
+     &                                  'T2fix','C0   '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &             val_int=(/2,3,4,5,6/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/-1d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &             tgt_info,val_label=(/'C0^+ ','T    ','T2fix',
+     &                                  'H    ','C0   '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &             val_int=(/2,3,4,5,6/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/0.5d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &             tgt_info,val_label=(/'C0^+ ','T2fix','T    ',
+     &                                  'H    ','C0   '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &             val_int=(/2,3,4,5,6/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/0.5d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      ! (c) triples correction from the singles and doubles residual terms
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &             tgt_info,val_label=(/'C0^+  ','Tfix^+','H     ',
+     &                                  'T     ','C0    '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &             val_int=(/2,3,4,5,6/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
+     &             val_int=(/3,4/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &             tgt_info,val_label=(/'C0^+  ','Tfix^+','T     ',
+     &                                  'H     ','C0    '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &             val_int=(/2,3,4,5,6/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
+     &             val_int=(/3,4/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/-1d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &             tgt_info,val_label=(/'C0^+  ','Tfix^+','Hdyall',
+     &                                  'T2fix ','T     ','C0    '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &             val_int=(/2,3,4,5,6,7/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/0.5d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &             tgt_info,val_label=(/'C0^+  ','Tfix^+','Hdyall',
+     &                                  'T     ','T2fix ','C0    '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &             val_int=(/2,3,4,5,6,7/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/0.5d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &             tgt_info,val_label=(/'C0^+  ','Tfix^+','T2fix ',
+     &                                  'Hdyall','T     ','C0    '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &             val_int=(/2,3,4,5,6,7/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/-1d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &             tgt_info,val_label=(/'C0^+  ','Tfix^+','T     ',
+     &                                  'Hdyall','T2fix ','C0    '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &             val_int=(/2,3,4,5,6,7/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/-1d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &             tgt_info,val_label=(/'C0^+  ','Tfix^+','T     ',
+     &                                  'T2fix ','Hdyall','C0    '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &             val_int=(/2,3,4,5,6,7/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/0.5d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &             tgt_info,val_label=(/'C0^+  ','Tfix^+','T2fix ',
+     &                                  'T     ','Hdyall','C0    '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &             val_int=(/2,3,4,5,6,7/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/0.5d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      ! (d) triples residual
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &             tgt_info,val_label=(/'C0^+ ','L    ','H    ',
+     &                                  'T2fix','C0   '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &             val_int=(/2,3,4,5,6/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
+     &             val_int=(/3,4/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &             val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &             val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &             tgt_info,val_label=(/'C0^+ ','L    ','T2fix',
+     &                                  'H    ','C0   '/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &             val_int=(/2,3,4,5,6/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
+     &             val_int=(/3,4/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &             val_rl8=(/-1d0/))
+      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &             val_log=(/.false./))
+      ! (e) optional contribution quadratic in T2
+      if (simp.lt.2) then
+        call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &               val_label=(/'MRCC_PT_LAG'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &               tgt_info,val_label=(/'E(MR)'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &               tgt_info,val_label=(/'C0^+  ','L     ','Hdyall',
+     &                                    'T2fix ','T2fix ','C0    '/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,
+     &               tgt_info,val_int=(/2,3,4,5,6,7/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &               val_rl8=(/0.5d0/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &               tgt_info,val_log=(/.true./))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &               val_log=(/.false./))
+        call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &               val_label=(/'MRCC_PT_LAG'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &               tgt_info,val_label=(/'E(MR)'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &               tgt_info,val_label=(/'C0^+  ','L     ','T2fix ',
+     &                                    'Hdyall','T2fix ','C0    '/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,
+     &               tgt_info,val_int=(/2,3,4,5,6,7/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &               val_rl8=(/-1d0/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &               tgt_info,val_log=(/.true./))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &               val_log=(/.false./))
+        call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &               val_label=(/'MRCC_PT_LAG'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &               tgt_info,val_label=(/'E(MR)'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &               tgt_info,val_label=(/'C0^+  ','L     ','T2fix ',
+     &                                    'T2fix ','Hdyall','C0    '/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,
+     &               tgt_info,val_int=(/2,3,4,5,6,7/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &               val_rl8=(/0.5d0/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &               tgt_info,val_log=(/.true./))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &               val_log=(/.false./))
+      end if
+      ! (f) triples contribution to residual (for iterative variant)
+      if (maxit.gt.1) then
+        call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &               val_label=(/'MRCC_PT_LAG'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &               tgt_info,val_label=(/'E(MR)'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &               tgt_info,val_label=(/'C0^+  ','L     ','Hdyall',
+     &                                    'T     ','C0    '/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,
+     &               tgt_info,val_int=(/2,3,4,5,6/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'CONNECT',2,
+     &               tgt_info,val_int=(/3,4/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &               val_log=(/.false./))
+        call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &               val_label=(/'MRCC_PT_LAG'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
+     &               tgt_info,val_label=(/'E(MR)'/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &               tgt_info,val_label=(/'C0^+  ','L     ','T     ',
+     &                                    'Hdyall','C0    '/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,
+     &               tgt_info,val_int=(/2,3,4,5,6/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'CONNECT',2,
+     &               tgt_info,val_int=(/3,4/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &               val_rl8=(/-1d0/))
+        call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &               val_log=(/.false./))
+      end if
+      ! (g) sum up (kills disconnected terms) and replace operators
+      call set_rule2('MRCC_PT_LAG',SELECT_SPECIAL,tgt_info)
+      call set_arg('MRCC_PT_LAG',SELECT_SPECIAL,'LABEL_RES',1,
+     &     tgt_info,val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &     val_str='nonzero')
+      call set_arg('MRCC_PT_LAG',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &     val_str='sum')
+      call set_rule2('MRCC_PT_LAG',REPLACE,tgt_info)
+      call set_arg('MRCC_PT_LAG',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'T2fix','Tfix '/))
+      call set_rule2('MRCC_PT_LAG',EXPAND,tgt_info)
+      call set_arg('MRCC_PT_LAG',EXPAND,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',EXPAND,'INTERM',1,tgt_info,
+     &     val_label=(/'F_Hdyall'/))
+c dbg
+c      call set_rule2('MRCC_PT_LAG',PRINT_FORMULA,tgt_info)
+c      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'MRCC_PT_LAG'/))
+c dbgend
+      ! (h) derive residual equation
+      call set_rule2('MRCC_PT_LAG',DERIVATIVE,tgt_info)
+      call set_arg('MRCC_PT_LAG',DERIVATIVE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_OMG_PT'/))
+      call set_arg('MRCC_PT_LAG',DERIVATIVE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',DERIVATIVE,'OP_RES',1,tgt_info,
+     &     val_label=(/'OMG'/))
+      call set_arg('MRCC_PT_LAG',DERIVATIVE,'OP_DERIV',1,tgt_info,
+     &     val_label=(/'L'/))
+c dbg
+c      call set_rule2('MRCC_PT_LAG',PRINT_FORMULA,tgt_info)
+c      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_OMG_PT'/))
+c dbgend
+      ! (i) delete Lambda-containing part from Lag. -> energy expression
+      call set_rule2('MRCC_PT_LAG',INVARIANT,tgt_info)
+      call set_arg('MRCC_PT_LAG',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',INVARIANT,'OP_RES',1,tgt_info,
+     &     val_label=(/'E(MR)'/))
+      call set_arg('MRCC_PT_LAG',INVARIANT,'OPERATORS',1,tgt_info,
+     &     val_label=(/'L'/))
+c dbg
+c      call set_rule2('MRCC_PT_LAG',PRINT_FORMULA,tgt_info)
+c      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'MRCC_PT_LAG'/))
+c dbgend
+
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -3349,13 +3927,7 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       if ((maxp.ge.2.or.maxh.ge.2).and.tfix.eq.0) then
         labels(1:20)(1:len_target_name) = ' '
         ndef = 0
-c dbg
-         print *,'POI: ',maxp,h1bar_maxp
-c dbg
         if (maxp.ge.2.and.h1bar_maxp.lt.4) then
-c dbg
-         print *,'went here'
-c dbg
           call set_dependency('FOPT_OMG','F_PP0int',tgt_info)
           call set_dependency('FOPT_OMG','DEF_ME_INT_PP0',tgt_info)
           ndef = ndef + 1
@@ -3622,7 +4194,6 @@ c dbgend
 
       ! Energy with Lagrangian based corrections
       call add_target2('FOPT_Ecorrected',.false.,tgt_info)
-      call set_dependency('FOPT_Ecorrected','F_Ecorrected',tgt_info)
       call set_dependency('FOPT_Ecorrected','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_Ecorrected','DEF_ME_T',tgt_info)
       call set_dependency('FOPT_Ecorrected','DEF_ME_E(MR)',tgt_info)
@@ -3650,8 +4221,15 @@ c dbgend
       call set_rule2('FOPT_Ecorrected',OPTIMIZE,tgt_info)
       call set_arg('FOPT_Ecorrected',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_Ecorrected'/))
-      call set_arg('FOPT_Ecorrected',OPTIMIZE,'LABELS_IN',1,tgt_info,
-     &             val_label=(/'F_Ecorrected'/))
+      if (gno.eq.0.and.project.lt.3) then
+        call set_dependency('FOPT_Ecorrected','F_Ecorrected',tgt_info)
+        call set_arg('FOPT_Ecorrected',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &               val_label=(/'F_Ecorrected'/))
+      else
+        call set_dependency('FOPT_Ecorrected','MRCC_PT_LAG',tgt_info)
+        call set_arg('FOPT_Ecorrected',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &               val_label=(/'MRCC_PT_LAG'/))
+      end if
 
       ! formula for modification of trafo matrix (add. trafo to GNO)
       call add_target2('FOPT_Dinv_GNO',.false.,tgt_info)
@@ -3682,6 +4260,71 @@ c dbgend
      &             val_label=(/'FOPT_D_GNO'/))
       call set_arg('FOPT_D_GNO',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_D_GNO'/))
+
+      ! optimized formula for iterative (T) correction
+      call add_target2('MRCC_PT_OPT',.false.,tgt_info)
+      call set_dependency('MRCC_PT_OPT','DEF_ME_C0',tgt_info)
+      call set_dependency('MRCC_PT_OPT','DEF_ME_T',tgt_info)
+      call set_dependency('MRCC_PT_OPT','DEF_ME_OMG',tgt_info)
+      call set_dependency('MRCC_PT_OPT',mel_ham,tgt_info)
+      call set_dependency('MRCC_PT_OPT','DEF_ME_Tfix',tgt_info)
+      call set_rule2('MRCC_PT_OPT',OPTIMIZE,tgt_info)
+      call set_arg('MRCC_PT_OPT',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'MRCC_PT_OPT'/))
+      labels(1:20)(1:len_target_name) = ' '
+      ndef = 0
+      if (h1bar) then
+        call set_dependency('MRCC_PT_OPT','F_H1bar',tgt_info)
+        call set_dependency('MRCC_PT_OPT','DEF_ME_H1bar',tgt_info)
+        labels(ndef+1) = 'F_H1bar'
+        ndef = ndef + 1
+      end if
+      if (maxit.gt.1) then
+        call set_dependency('MRCC_PT_OPT','MRCC_PT_LIN',tgt_info)
+        call set_dependency('MRCC_PT_OPT','DEF_ME_OMG_RHS',tgt_info)
+        labels(ndef+1) = 'MRCC_PT_MVP'
+        ndef = ndef + 1
+        labels(ndef+1) = 'MRCC_PT_RHS'
+        ndef = ndef + 1
+      else if (gno.eq.0.and.project.lt.3) then
+        call set_dependency('MRCC_PT_OPT','F_OMG',tgt_info)
+        labels(ndef+1) = 'F_OMG'
+        ndef = ndef + 1
+      else
+        call set_dependency('MRCC_PT_OPT','MRCC_PT_LAG',tgt_info)
+        labels(ndef+1) = 'F_OMG_PT'
+        ndef = ndef + 1
+      end if
+      call set_arg('MRCC_PT_OPT',OPTIMIZE,'LABELS_IN',ndef,tgt_info,
+     &             val_label=labels(1:ndef))
+
+      ! kill singles and doubles transformation for (T)
+      call add_target2('FOPT_T_PT',.false.,tgt_info)
+      call set_dependency('FOPT_T_PT','F_T',tgt_info)
+      call set_dependency('FOPT_T_PT','DEF_ME_T',tgt_info)
+      call set_dependency('FOPT_T_PT','DEF_ME_Ttr',tgt_info)
+      call set_dependency('FOPT_T_PT','DEF_ME_Dtr',tgt_info)
+      call set_rule2('FOPT_T_PT',SELECT_SPECIAL,tgt_info)
+      call set_arg('FOPT_T_PT',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &             val_label=(/'F_T_PT'/))
+      call set_arg('FOPT_T_PT',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &             val_label=(/'F_T'/))
+      call set_arg('FOPT_T_PT',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &             val_str='rank')
+      call set_arg('FOPT_T_PT',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &             val_str='33')
+      call set_arg('FOPT_T_PT',SELECT_SPECIAL,'OPERATORS',2,tgt_info,
+     &             val_label=(/'T  ','Ttr'/))
+c dbg
+c      call set_rule2('FOPT_T_PT',PRINT_FORMULA,tgt_info)
+c      call set_arg('FOPT_T_PT',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_T_PT'/))
+c dbgend
+      call set_rule2('FOPT_T_PT',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_T_PT',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_T_PT'/))
+      call set_arg('FOPT_T_PT',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_T_PT'/))
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -4150,6 +4793,24 @@ c dbgend
      &             val_int=(/1/))
       call set_arg('DEF_ME_Tfix',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
+
+      ! ME for Residual
+      call add_target2('DEF_ME_OMG_RHS',.false.,tgt_info)
+      call set_dependency('DEF_ME_OMG_RHS','OMG_RHS',tgt_info)
+      call set_rule2('DEF_ME_OMG_RHS',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_OMG_RHS',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_OMG_RHS'/))
+      call set_arg('DEF_ME_OMG_RHS',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'OMG_RHS'/))
+      call set_arg('DEF_ME_OMG_RHS',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_OMG_RHS',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_OMG_RHS',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      if (spinproj.ge.2)
+     &   call set_arg('DEF_ME_OMG_RHS',DEF_ME_LIST,'S2',1,tgt_info,
+     &               val_int=(/0/))
 
 c dbg
 c      ! ME_S
@@ -4749,21 +5410,64 @@ c     &       parameters,2,tgt_info)
 c dbgend
 
       ! Non-iterative higher-order correction
-      call add_target2('EVAL_PERT_CORR',.not.svdonly.and.tfix.gt.0,
+      call add_target2('EVAL_PERT_CORR',.not.svdonly.and.tfix.gt.0
+     &                 .and..not.skip,
      &                 tgt_info)
+      call set_dependency('EVAL_PERT_CORR','MRCC_PT_OPT',tgt_info)
+      call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
+      dia_label = trim(dia_label)//'_T'
+      call set_dependency('EVAL_PERT_CORR',trim(dia_label),tgt_info)
+      call set_dependency('EVAL_PERT_CORR','EVAL_D',tgt_info)
+      call set_dependency('EVAL_PERT_CORR','DEF_ME_Dtrdag',tgt_info)
+      call set_dependency('EVAL_PERT_CORR','FOPT_T',tgt_info)
       call set_dependency('EVAL_PERT_CORR','FOPT_Ecorrected',tgt_info)
+      if (gno.eq.1.or.project.eq.3)
+     &   call set_dependency('EVAL_PERT_CORR','FOPT_T_PT',tgt_info)
       if (maxit.gt.1) then
-        ! Use nonlinear solver
-        call set_dependency('EVAL_PERT_CORR','SOLVE_MRCC',tgt_info)
+c        call set_dependency('EVAL_PERT_CORR','EVAL_REF_S(S+1)',tgt_info)
+        if (restart) ! project out redundant part (if sv_thr. changed)
+     &     call set_dependency('EVAL_PERT_CORR','EVAL_Tproj',tgt_info)
+        select case(prc_type)
+        case(-1) !do nothing: use old preconditioner file!
+          call warn('set_ic_mrcc_targets',
+     &              'Using old preconditioner file')
+        case(0,3)
+          if (maxv.gt.0.or.prc_type.eq.0)
+     &       call set_dependency('EVAL_PERT_CORR','EVAL_Atr',tgt_info)
+        case default
+          call quit(1,'set_ic_mrcc_targets',
+     &                'this prc_type not enabled for (T)')
+        end select
+        ! Use linear solver
+        call set_rule2('EVAL_PERT_CORR',SOLVELEQ,tgt_info)
+        call set_arg('EVAL_PERT_CORR',SOLVELEQ,'LIST_OPT',1,tgt_info,
+     &               val_label=(/'ME_T'/))
+        call set_arg('EVAL_PERT_CORR',SOLVELEQ,'MODE',1,tgt_info,
+     &               val_str='TRF')
+        call set_arg('EVAL_PERT_CORR',SOLVELEQ,'OP_MVP',1,tgt_info,
+     &               val_label=(/'OMG'/))
+        call set_arg('EVAL_PERT_CORR',SOLVELEQ,'OP_RHS',1,tgt_info,
+     &               val_label=(/'OMG_RHS'/))
+        call set_arg('EVAL_PERT_CORR',SOLVELEQ,'OP_SVP',1,tgt_info,
+     &               val_label=(/'T'/))
+        call set_arg('EVAL_PERT_CORR',SOLVELEQ,'N_ROOTS',1,tgt_info,
+     &               val_int=(/1/))
+        call set_arg('EVAL_PERT_CORR',SOLVELEQ,'LIST_PRC',1,tgt_info,
+     &               val_label=(/trim(dia_label)/))
+        call set_arg('EVAL_PERT_CORR',SOLVELEQ,'FORM',1,tgt_info,
+     &               val_label=(/'MRCC_PT_OPT'/))
+        call set_arg('EVAL_PERT_CORR',SOLVELEQ,'LIST_SPC',4,tgt_info,
+     &               val_label=(/'ME_T     ','ME_Ttr   ',
+     &                           'ME_Dtr   ','ME_Dtrdag'/))
+        if (gno.eq.0.and.project.lt.3) then
+          call set_arg('EVAL_PERT_CORR',SOLVELEQ,'FORM_SPC',1,tgt_info,
+     &                 val_label=(/'FOPT_T'/))
+        else
+          call set_arg('EVAL_PERT_CORR',SOLVELEQ,'FORM_SPC',1,tgt_info,
+     &                 val_label=(/'FOPT_T_PT'/))
+        end if
       else
         ! Do first iteration without solver (saves virtual memory)
-        call set_dependency('EVAL_PERT_CORR','FOPT_OMG',tgt_info)
-        call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
-        dia_label = trim(dia_label)//'_T'
-        call set_dependency('EVAL_PERT_CORR',trim(dia_label),tgt_info)
-        call set_dependency('EVAL_PERT_CORR','EVAL_D',tgt_info)
-        call set_dependency('EVAL_PERT_CORR','DEF_ME_Dtrdag',tgt_info)
-        call set_dependency('EVAL_PERT_CORR','FOPT_T',tgt_info)
         select case(prc_type)
         case(-1) !use old preconditioner file, but warn!
           call warn('set_ic_mrcc_targets',
@@ -4775,10 +5479,130 @@ c dbgend
      &         call quit(1,'set_ic_mrcc_targets',
      &         'Non-iterative higher-order corr. should use prc_type=3')
         end select
+c dbg
+c      call add_target2('DEF_CHECK',.false.,tgt_info)
+c      call set_rule2('DEF_CHECK',DEF_SCALAR,tgt_info)
+c      call set_arg('DEF_CHECK',DEF_SCALAR,'LABEL',1,tgt_info,
+c     &     val_label=(/'CHECK'/))
+c      call set_rule2('DEF_CHECK',DEF_OP_FROM_OCC,tgt_info)
+c      call set_arg('DEF_CHECK',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+c     &     val_label=(/'L3'/))
+c           descr='VVP,HHH|VPP,VHH|VPP,HHH|PPP,VVH|PPP,HVH|PPP,HHH'
+c      call set_arg('DEF_CHECK',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+c     &     val_str=descr)
+c      call add_target2('DEF_CHECK_RES',.false.,tgt_info)
+c      call set_dependency('DEF_CHECK_RES','DEF_CHECK',tgt_info)
+c      call set_dependency('DEF_CHECK_RES','F_MRCC_LAG',tgt_info)
+c      call set_rule2('DEF_CHECK_RES',DERIVATIVE,tgt_info)
+c      call set_arg('DEF_CHECK_RES',DERIVATIVE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',DERIVATIVE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_arg('DEF_CHECK_RES',DERIVATIVE,'OP_RES',1,tgt_info,
+c     &     val_label=(/'CHECK'/))
+c      call set_arg('DEF_CHECK_RES',DERIVATIVE,'OP_DERIV',1,tgt_info,
+c     &     val_label=(/'L'/))
+c      call set_arg('DEF_CHECK_RES',DERIVATIVE,'OP_MULT',1,tgt_info,
+c     &     val_label=(/'L'/))
+c      call set_rule2('DEF_CHECK_RES',INVARIANT,tgt_info)
+c      call set_arg('DEF_CHECK_RES',INVARIANT,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',INVARIANT,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',INVARIANT,'OP_RES',1,tgt_info,
+c     &     val_label=(/'CHECK'/))
+c      call set_arg('DEF_CHECK_RES',INVARIANT,'OPERATORS',1,tgt_info,
+c     &     val_label=(/'T'/))
+c      call set_rule2('DEF_CHECK_RES',REPLACE,tgt_info)
+c      call set_arg('DEF_CHECK_RES',REPLACE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',REPLACE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',REPLACE,'OP_LIST',2,tgt_info,
+c     &     val_label=(/'L   ','L3^+'/))
+c      call set_rule2('DEF_CHECK_RES',KEEP_TERMS,tgt_info)
+c      call set_arg('DEF_CHECK_RES',KEEP_TERMS,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',KEEP_TERMS,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',KEEP_TERMS,'TERMS',2,tgt_info,
+c     &     val_int=(/21/))
+c      call set_rule2('DEF_CHECK_RES',REPLACE,tgt_info)
+c      call set_arg('DEF_CHECK_RES',REPLACE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',REPLACE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',REPLACE,'OP_LIST',2,tgt_info,
+c     &     val_label=(/'H','1'/))
+c      call set_rule2('DEF_CHECK_RES',MODIFY_FACTORIZATION,tgt_info)
+c      call set_arg('DEF_CHECK_RES',MODIFY_FACTORIZATION,'LABEL_RES',1,
+c     &     tgt_info,val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',MODIFY_FACTORIZATION,'LABEL_IN',1,
+c     &     tgt_info,val_label=(/'DEF_CHECK_RES'/))
+c      call set_arg('DEF_CHECK_RES',MODIFY_FACTORIZATION,'MODIFY',9,
+c     &     tgt_info,val_int=(/1,7,4,3,6,2,1,1,1/))
+c      call set_rule2('DEF_CHECK_RES',PRINT_FORMULA,tgt_info)
+c      call set_arg('DEF_CHECK_RES',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'DEF_CHECK_RES'/))
+c      call add_target2('DEF_ME_CHECK',.false.,tgt_info)
+c      call set_dependency('DEF_ME_CHECK','DEF_CHECK_RES',tgt_info)
+c      call set_rule2('DEF_ME_CHECK',DEF_ME_LIST,tgt_info)
+c      call set_arg('DEF_ME_CHECK',DEF_ME_LIST,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_CHECK'/))
+c      call set_arg('DEF_ME_CHECK',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+c     &             val_label=(/'CHECK   '/))
+c      call set_arg('DEF_ME_CHECK',DEF_ME_LIST,'2MS',1,tgt_info,
+c     &             val_int=(/0/))
+c      call set_arg('DEF_ME_CHECK',DEF_ME_LIST,'IRREP',1,tgt_info,
+c     &             val_int=(/1/))
+c      call set_arg('DEF_ME_CHECK',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+c     &             val_int=(/msc/))
+c      call add_target2('DEF_ME_L3',.false.,tgt_info)
+c      call set_dependency('DEF_ME_L3','DEF_CHECK_RES',tgt_info)
+c      call set_rule2('DEF_ME_L3',DEF_ME_LIST,tgt_info)
+c      call set_arg('DEF_ME_L3',DEF_ME_LIST,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_L3'/))
+c      call set_arg('DEF_ME_L3',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+c     &             val_label=(/'L3  '/))
+c      call set_arg('DEF_ME_L3',DEF_ME_LIST,'2MS',1,tgt_info,
+c     &             val_int=(/0/))
+c      call set_arg('DEF_ME_L3',DEF_ME_LIST,'IRREP',1,tgt_info,
+c     &             val_int=(/1/))
+c      call set_arg('DEF_ME_L3',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+c     &             val_int=(/msc/))
+c      call add_target2('CHECK_RES_OPT',.false.,tgt_info)
+c      call set_dependency('CHECK_RES_OPT','DEF_ME_CHECK',tgt_info)
+c      call set_dependency('CHECK_RES_OPT','DEF_ME_L3',tgt_info)
+c      call set_dependency('CHECK_RES_OPT','DEF_ME_T',tgt_info)
+c      call set_dependency('CHECK_RES_OPT','DEF_ME_Tfix',tgt_info)
+c      call set_dependency('CHECK_RES_OPT','DEF_ME_E(MR)',tgt_info)
+c      call set_rule2('CHECK_RES_OPT',OPTIMIZE,tgt_info)
+c      call set_arg('CHECK_RES_OPT',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+c     &             val_label=(/'CHECK_RES_OPT'/))
+c      call set_arg('CHECK_RES_OPT',OPTIMIZE,'LABELS_IN',1,tgt_info,
+c     &             val_label=(/'DEF_CHECK_RES'/))
+c      call add_target2('EVAL_RES',.true.,tgt_info)
+c      call set_dependency('EVAL_RES','FOPT_OMG',tgt_info)
+c      call set_dependency('EVAL_RES','DEF_ME_Dtrdag',tgt_info)
+c      call set_rule('EVAL_RES',ttype_opme,EVAL,
+c     &     'CHECK_RES_OPT',1,0,
+c     &     parameters,0,tgt_info)
+c      call set_rule2('EVAL_RES',PRINT_MEL,tgt_info)
+c      call set_arg('EVAL_RES',PRINT_MEL,'LIST',1,tgt_info,
+c     &           val_label=(/'ME_CHECK'/))
+c dbgend
         ! (a) evaluate residual
         call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
-     &       'FOPT_OMG',1,0,
+     &       'MRCC_PT_OPT',1,0,
      &       parameters,0,tgt_info)
+        ! (a2) apply sign correction
+        call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &               val_label=(/'ME_T'/))!OMG'/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &               val_label=(/'ME_OMG'/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_SHAPE',1,
+     &               tgt_info,val_label=(/'ME_OMG'/))
         ! (b) transform residual
         call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
         call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
@@ -4792,25 +5616,29 @@ c dbgend
      &             tgt_info,val_label=(/'T'/))
         call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
         call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
-     &             val_label=(/'ME_OMG'/))
+     &             val_label=(/'ME_T'/))!ME_OMG'/))
         call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
      &             tgt_info,val_label=(/'Ttr'/))
-        call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
-     &       'FOPT_T',1,0,
-     &       parameters,0,tgt_info)
+        if (gno.eq.0.and.project.lt.3) then
+          call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &         'FOPT_T',1,0,parameters,0,tgt_info)
+        else
+          call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &         'FOPT_T_PT',1,0,parameters,0,tgt_info)
+        end if
         ! (c) preconditioning step
-        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
-        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
-     &             val_label=(/'ME_OMG'/))
-        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
-     &             tgt_info,val_label=(/'OMG'/))
+c        call set_rule2('EVAL_PERT_CORR',ASSIGN_ME2OP,tgt_info)
+c        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_OMG'/))
+c        call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
+c     &             tgt_info,val_label=(/'OMG'/))
         call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
         call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
      &               val_label=(/'ME_Ttr'/))
         call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
      &               val_label=(/trim(dia_label)/))
-        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_SHAPE',1,
-     &               tgt_info,val_label=(/'ME_OMG'/))
+c        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_SHAPE',1,
+c     &               tgt_info,val_label=(/'ME_OMG'/))
         call set_arg('EVAL_PERT_CORR',SCALE_COPY,'FAC',1,tgt_info,
      &               val_rl8=(/-1d0/))
         call set_arg('EVAL_PERT_CORR',SCALE_COPY,'MODE',1,tgt_info,
@@ -4831,9 +5659,13 @@ c dbgend
      &             val_label=(/'ME_Ttr'/))
         call set_arg('EVAL_PERT_CORR',ASSIGN_ME2OP,'OPERATOR',1,
      &             tgt_info,val_label=(/'Ttr'/))
-        call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
-     &       'FOPT_T',1,0,
-     &       parameters,0,tgt_info)
+        if (gno.eq.0.and.project.lt.3) then
+          call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &         'FOPT_T',1,0,parameters,0,tgt_info)
+        else
+          call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &         'FOPT_T_PT',1,0,parameters,0,tgt_info)
+        end if
       end if
       call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
      &     'ME_E(MR)',1,0,
@@ -4846,6 +5678,15 @@ c dbgend
       call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
      &     'ME_E(MR)',1,0,
      &     parameters,2,tgt_info)
+c dbg
+c        call set_rule2('EVAL_PERT_CORR',PRINT_MEL,tgt_info)
+c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'LIST',1,tgt_info,
+c     &       val_label=(/'ME_T'/))
+c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'COMMENT',1,tgt_info,
+c     &       val_str='Final T amplitudes :')
+c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'FORMAT',1,tgt_info,
+c     &       val_str='LIST')
+c dbgend
 c dbg
 c      ! Calculate and print <C0|T^+ S^2 T|C0>/<C0|S^2|C0>
 c      call set_dependency('EVAL_PERT_CORR','FOPT_T_S2',tgt_info)

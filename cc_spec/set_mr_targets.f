@@ -11,6 +11,7 @@
       include 'ifc_input.h'
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
+      include 'opdim.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -126,6 +127,10 @@ c dbgend
      &               'maxh and maxp must not exceed maxexc')
       if (maxh.lt.0) maxh = maxexc
       if (maxp.lt.0) maxp = maxexc
+      ! additional restrictions from a small number of occupied
+      ! or virtual orbitals?
+      maxh = min(maxh,2*orb_info%nactt_hpv(IHOLE))
+      maxp = min(maxp,2*orb_info%nactt_hpv(IPART))
       allocate(excrestr(0:maxh,0:maxp,1:2))
       call get_exc_restr(excrestr,maxh,maxp,
      &                   orb_info%nactel,orb_info%nactorb)

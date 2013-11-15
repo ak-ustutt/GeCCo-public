@@ -59,16 +59,14 @@
 
 
       integer ::
-     &     idx, nsec, isec, stsec, ndsec, ioff,
+     &     idx, ioff,
      &     nblk, iblk, nj, iblkoff, jblk
       character(len_opname) ::
      &     op_spc_name, op_trf_name, op_amp_name
 
       integer, pointer ::
-     &     nwfpsec(:), idstsec(:), nsec_arr(:), occ(:,:,:)
+     &     occ(:,:,:)
 
-      real(8), pointer ::
-     &     signsec(:)
       real(8) ::
      &     xdum
 
@@ -103,23 +101,6 @@
       call evaluate2(fspc(1),.true.,.true.,
      &         op_info,str_info,strmap_info,orb_info,xdum,.true.)
 
-
-c      ! Since formally we get a transposed vector, we need to
-c      ! account for sign changes when reordering
-c      nsec = opti_info%nsec(iopt)
-c      if (nsec.gt.1) then
-c        ioff = sum(opti_info%nsec(1:iopt))-nsec
-c        nwfpsec => opti_info%nwfpsec(ioff+1:ioff+nsec)
-c        idstsec => opti_info%idstsec(ioff+1:ioff+nsec)
-c        signsec => opti_info%signsec2(ioff+1:ioff+nsec)
-c        call vec_from_da(ffamp,1,xbuf1,nwfpar)
-c        do isec = 1, nsec
-c          xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1) =
-c     &       signsec(isec)
-c     &       *xbuf1(idstsec(isec):idstsec(isec)+nwfpsec(isec)-1)
-c        end do
-c        call vec_to_da(ffamp,1,xbuf1,nwfpar)
-c      end if
 
 c      ! Now add "redundant" T components?
 c      if (opti_info%update_prc.gt.0.and.

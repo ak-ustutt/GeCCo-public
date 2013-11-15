@@ -82,6 +82,8 @@
         call select_formal_blk(flist,mode,op_info)
       case('NONZERO','nonzero')
         call del_zero_terms(flist,mode,op_info,1d-12)
+      case('RANK','rank')
+        call select_rank(flist,labels,nlabels,mode,op_info)
       case default
         call quit(1,'form_select_special','unknown type: "'
      &       //trim(type)//'"')

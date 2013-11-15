@@ -381,6 +381,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/1,0,0,0,0,0,0,0/))
       call argument_add('msc','calculate.excitation',
      &     type=vtyp_int,len=1,idef=(/0/))
+      call argument_add('mult','calculate.excitation',
+     &     type=vtyp_int,len=1,idef=(/0/))
       call keyword_add('normalize',context='calculate.excitation')
       call keyword_add('analyze',context='calculate.excitation')
 
