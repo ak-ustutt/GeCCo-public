@@ -479,7 +479,7 @@ c test
           end if
 
           call solve_leq('TRF',
-     &                 1,1,'ME_DlT',label_prc(1),'H0_DlT','S_DlT',
+     &                 1,1,'ME_DlT',label_prc(1),'H0_DlT','DlT',!'S_DlT',
      &                 'OMGprj',xdum,'FOPT_H0INV',
      &                    (/'ME_Tout','ME_Ttr','ME_Dtr','ME_Dtrdag'/),4,
      &                 'FOPT_Ttr_GEN',1,  thr_suggest,
