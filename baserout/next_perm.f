@@ -13,7 +13,7 @@
      &     iperm(nel)
       integer, parameter ::
      &     way = 2
-      integer, external ::
+      logical, external ::
      &     next_perm_rec, next_perm_iter
 
       if (way.eq.1) next_perm = next_perm_rec(iperm,nel)

@@ -140,7 +140,7 @@
 
       ! clone: keep copy of unmodified coefficients C00
       call add_target3((/
-     &     'target C00(',
+     &     'target C00(                             ',
      &     '  CLONE_OPERATOR(label=C00,template=C0))'/),tgt_info)
  
       ! define product Jacobian times C0
