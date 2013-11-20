@@ -3582,10 +3582,6 @@ c dbgend
      &       val_str='dia-Fshift')
         call set_arg(trim(dia_label),PRECONDITIONER,'SHIFT',1,tgt_info,
      &       val_rl8=(/prc_shift/))
-c dbg -test-
-c        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
-c     &       val_rl8=(/0.2d0/))
-c dbg
       else if (prc_type.ge.0) then
         call set_rule2(trim(dia_label),PRECONDITIONER,tgt_info)
         call set_arg(trim(dia_label),PRECONDITIONER,'LIST_PRC',1,
@@ -3594,10 +3590,6 @@ c dbg
      &       tgt_info,val_label=(/'ME_FREF'/))
         call set_arg(trim(dia_label),PRECONDITIONER,'MODE',1,tgt_info,
      &       val_str='dia-F')
-c dbg -test-
-c        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
-c     &       val_rl8=(/0.2d0/))
-c dbg
       end if
 c dbg
 c      call form_parameters(-1,parameters,2,
@@ -3856,7 +3848,7 @@ c dbgend
      &     'target MAKE_H0Dy(',
      &     '    depend (MELS_FOR_H0INV,FOPT_H0Dy)',
      &     '    EVALUATE(form=FOPT_H0Dy)',
-     &     '    PRINT_MEL(list=ME_H0Dy)',
+     &     '    PRINT_MEL(list=ME_H0Dy,comment="dbg H0Dy:")',
      &     ')'
      &     /),tgt_info)
       call add_target3((/

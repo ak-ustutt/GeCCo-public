@@ -403,7 +403,7 @@ c        signsec => opti_info%signsec2(1:nsec)
               call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,
      &                         nwfpar(iopt))
               do iroot = 1, nnew
-                call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,
+                call vec_from_da(ffspc,iroot,xbuf1,
      &                         nwfpar(iopt))
                 ! scale residual for numerical stability:
 c                xnrm = dnrm2(nwfpar,xbuf1,1)
@@ -420,7 +420,7 @@ c                xnrm = dnrm2(nwfpar,xbuf1,1)
                 end do
 c                call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
 c     &                     opti_info%shift,nwfpar(iopt))
-                call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,
+                call vec_to_da(ffspc,iroot,xbuf1,
      &                         nwfpar(iopt))
               end do
             else
