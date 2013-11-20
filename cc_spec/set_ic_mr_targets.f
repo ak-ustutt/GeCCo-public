@@ -41,7 +41,8 @@
      &     version(60), ivers, icnt, prc_type, spinproj, project
       logical ::
      &     sv_fix, l_exist,
-     &     l_icci, l_iccc, skip, Op_eqs, svdonly
+     &     l_icci, l_iccc, skip, Op_eqs, svdonly, prc_traf,
+     &     jac_fix
       real(8) ::
      &     sv_thresh, prc_shift, tikhonov
       character(len_target_name) ::
@@ -83,6 +84,8 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
 
       call get_argument_value('calculate.routes','sv_fix',
      &     lval=sv_fix)
+      call get_argument_value('calculate.routes','jac_fix',
+     &     lval=jac_fix)
       call get_argument_value('calculate.routes','sv_thresh',
      &     xval=sv_thresh)
       call get_argument_value('calculate.routes','Tikhonov',
@@ -98,10 +101,14 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
      &     xval=prc_shift)
       call get_argument_value('method.MR','spinproj',
      &     ival=spinproj)
+      call get_argument_value('method.MR','prc_traf',
+     &     lval=prc_traf)
 
       if (.not.l_iccc.and.prc_type.ne.0.and.prc_type.ne.3.or.
      &    prc_type.gt.4.or.prc_type.ne.2.and.prc_shift.ne.0d0)
      &  call quit(1,'set_ic_mr_targets','Choose other preconditioner!')
+      if (.not.l_iccc.and.prc_traf)
+     &  call quit(1,'set_ic_mr_targets','prc_traf only for MRCC yet')
 
       if (ntest.ge.100) then
         print *,'gno     = ',gno
@@ -117,6 +124,11 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
         inquire(file='SINGVALS',exist=l_exist)
         if (l_exist) write(luout,*)
      &     'Using existing SINGVALS file for singular value selection!'
+      end if
+      if (prc_traf.and.jac_fix) then
+        inquire(file='SINGVALS2',exist=l_exist)
+        if (l_exist) write(luout,*)
+     &     'Using existing SINGVALS2 file for singular value selection!'
       end if
 
       if (l_iccc) then
@@ -729,6 +741,33 @@ c dbgend
      &       val_int=(/0/))
       end if
 
+      ! ME_Auni
+      call add_target2('DEF_ME_Auni',.false.,tgt_info)
+      call set_dependency('DEF_ME_Auni','DEF_ME_A',tgt_info)
+      call set_rule2('DEF_ME_Auni',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_Auni',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_Auni'/))
+      call set_arg('DEF_ME_Auni',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'A'/))
+      call set_arg('DEF_ME_Auni',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_Auni',DEF_ME_LIST,'2MS',1,tgt_info,
+     &     val_int=(/0/))
+      if (prc_type.lt.3) then
+        call set_arg('DEF_ME_Auni',DEF_ME_LIST,'DIAG_TYPE',1,
+     &       tgt_info,val_int=(/1/))
+        call set_arg('DEF_ME_Auni',DEF_ME_LIST,'DIAG_IRREP',1,
+     &       tgt_info,val_int=(/1/))
+        call set_arg('DEF_ME_Auni',DEF_ME_LIST,'DIAG_MS',1,tgt_info,
+     &       val_int=(/0/))
+      end if
+      ! reassign operator to original list
+      labels(1) = 'ME_A'
+      labels(2) = 'A'
+      call set_rule('DEF_ME_Auni',ttype_opme,ASSIGN_ME2OP,
+     &     labels,2,1,
+     &     parameters,0,tgt_info)
+
       ! ME_1
       call add_target2('DEF_ME_1',.false.,tgt_info)
       call set_dependency('DEF_ME_1','1',tgt_info)
@@ -892,6 +931,8 @@ c dbgend
       ! reordered daggered inverted ME_D
       call add_target('DEF_ME_Dtrdag',ttype_opme,.false.,tgt_info)
       call set_dependency('DEF_ME_Dtrdag','DEF_ME_Dtr',tgt_info)
+      if (prc_traf)
+     &   call set_dependency('DEF_ME_Dtrdag','EVAL_Atr',tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'ME_Dtrdag'
       labels(2) = 'Dtr'
@@ -917,6 +958,12 @@ c dbgend
      &             val_int=(/13/))
       call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'ADJOINT',1,tgt_info,
      &             val_log=(/.true./))
+      ! reassign operator to original list
+      call set_rule2('DEF_ME_Dtrdag',ASSIGN_ME2OP,tgt_info)
+      call set_arg('DEF_ME_Dtrdag',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &           val_label=(/'ME_Dtr'/))
+      call set_arg('DEF_ME_Dtrdag',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+     &           val_label=(/'Dtr'/))
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Reordered transposed inverted Density matrix :',0,'LIST')

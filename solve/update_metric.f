@@ -52,9 +52,10 @@
       real(8) ::
      &     xdum, prc_min, prc_impfac
       integer ::
-     &     gno, prc_type, prc_iter, spinproj, idx_jac, project
-c      logical ::
-c     &     project
+     &     gno, prc_type, prc_iter, spinproj, idx_jac, project,
+     &     idx_jacuni
+      logical ::
+     &     prc_traf
       character(len_opname) ::
      &     dia_label
 
@@ -65,6 +66,7 @@ c     &     project
       call get_argument_value('method.MR','GNO',ival=gno)
       call get_argument_value('method.MR','spinproj',ival=spinproj)
       call get_argument_value('method.MR','project',ival=project)
+      call get_argument_value('method.MR','prc_traf',lval=prc_traf)
 
       ! calculate metric (if not up to date)
       call evaluate2(fspc(2),.true.,.false.,
@@ -133,11 +135,11 @@ c     &     project
      &             trim(me_special(6)%mel%label),.false.,
      &             op_info,str_info,strmap_info,orb_info,
      &             13,.false.)  ! dirty: reo vtx. 1 --> 3
-      ! ... and to adjoint of transformation matrix
-      call reo_mel(trim(me_special(3)%mel%label),
-     &             trim(me_special(6)%mel%label),.false.,
-     &             op_info,str_info,strmap_info,orb_info,
-     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
+c      ! ... and to adjoint of transformation matrix
+c      call reo_mel(trim(me_special(3)%mel%label),
+c     &             trim(me_special(6)%mel%label),.false.,
+c     &             op_info,str_info,strmap_info,orb_info,
+c     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
 
       ! reorder projector ...
       call reo_mel(trim(me_special(4)%mel%label),
@@ -146,7 +148,7 @@ c     &     project
      &             13,.false.)  ! dirty: reo vtx. 1 --> 3
 
       ! update preconditioner if requested
-      if (prcupdate) then
+      if (prcupdate.or.prc_traf) then
         idx_jac = 7
         if (gno.gt.0.and.project.eq.1) idx_jac = 8
         if (nspcfrm.lt.3) call quit(1,'update_metric',
@@ -161,7 +163,26 @@ c     &     project
 
         call evaluate2(fspc(3),.true.,.false.,
      &              op_info,str_info,strmap_info,orb_info,xdum,.false.)
+      end if
 
+      if (prc_traf) then
+        idx_jacuni = 8
+        if (gno.gt.0.and.project.eq.1) idx_jacuni = 9
+        if (nspecial.lt.idx_jacuni) call quit(1,'update_metric',
+     &        'Special list for unitary matrix missing.')
+        call inv_op(1,trim(me_special(idx_jac)%mel%label),
+     &              2,(/trim(me_special(idx_jacuni)%mel%label),
+     &                  trim(me_special(6)%mel%label)/),
+     &              'invdiagmult',
+     &              op_info,orb_info,str_info,strmap_info)
+        ! reorder (again) to transformation matrix
+        call reo_mel(trim(me_special(2)%mel%label),
+     &               trim(me_special(6)%mel%label),.false.,
+     &               op_info,str_info,strmap_info,orb_info,
+     &               13,.false.)  ! dirty: reo vtx. 1 --> 3
+      end if
+
+      if (prcupdate) then
         ! first add inactive elements?
         call get_argument_value('method.MR','prc_type',
      &       ival=prc_type)
@@ -215,6 +236,12 @@ c     &     project
      &                 13,.false.)  ! dirty: reo vtx. 1 --> 3
         end if
       end if
+
+      ! now reorder to adjoint of transformation matrix
+      call reo_mel(trim(me_special(3)%mel%label),
+     &             trim(me_special(6)%mel%label),.false.,
+     &             op_info,str_info,strmap_info,orb_info,
+     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
 
       return
       end

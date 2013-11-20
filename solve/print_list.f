@@ -79,6 +79,15 @@
      &       1,mel%op%n_occ_cls,
      &       str_info,orb_info)
 
+      case('BLKS')
+
+        write(luout,'(x,a)') trim(message)
+
+        call wrt_mel_file(luout,1,
+     &       mel,
+     &       1,mel%op%n_occ_cls,
+     &       str_info,orb_info)
+
       case default
 
         write(luout,'(x,a)') trim(message)
