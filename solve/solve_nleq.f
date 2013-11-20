@@ -481,7 +481,7 @@ c test
           call solve_leq('TRF',
      &                 1,1,'ME_DlT',label_prc(1),'H0_DlT','S_DlT',
      &                 'OMGprj',xdum,'FOPT_H0INV',
-     &                    (/'ME_Tout','ME_Ttr','ME_Dtr','ME_Dtrdag'/),4,
+     &            (/'ME_Tout  ','ME_Ttr   ','ME_Dtr   ','ME_Dtrdag'/),4,
      &                 'FOPT_Ttr_GEN',1,  thr_suggest,
      &                 op_info,form_info,str_info,strmap_info,orb_info)
           ! overwrite the gradient with preconditioned gradient

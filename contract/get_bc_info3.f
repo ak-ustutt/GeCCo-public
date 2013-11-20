@@ -106,6 +106,8 @@
       if (ntest.ge.100) then
         call write_title(luout,wst_dbg_subr,'get_bc_info3')
         call prt_contr3(luout,contr_in,-1)
+        write(luout,*) 'info_vtx: '
+        write(luout,'(x,2i4)') info_vtx(1:2,1:contr_in%nvtx+njoined_res)
       end if
 
       ngas = orb_info%ngas
@@ -355,8 +357,12 @@ c          call quit(1,'get_bc_info3','trap 1')
 c        end if
         if (mst_op1op2.ne.info_vtx(1,1))
      &       call quit(1,'get_bc_info3','trap 2')
-        if (gamt_op1op2.ne.info_vtx(2,1))
-     &       call quit(1,'get_bc_info3','trap 3')
+        if (gamt_op1op2.ne.info_vtx(2,1)) then
+          write(luout,*)'Inconsistency: '
+          write(luout,*)'gamt_op(1:2): ',gamt_op(1:2),' -> ',gamt_op1op2
+          write(luout,*)'info_vtx(2,1): ',info_vtx(2,1)
+          call quit(1,'get_bc_info3','trap 3')
+        end if
         tra_op1op2 = contr%dagger 
       else
         tra_op1op2 = .false.

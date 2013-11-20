@@ -690,16 +690,16 @@ c     &     val_label=(/'H'/))
       ! a number of operators needed for H0inversion
       ! & Dyall type H0 (as also used for the diagonal preconditioner)
       call add_target3((/
-     &     'target OPS_FOR_H0INV(           ',
-     &     '    depend (OMG,T)              ',
-     &     '    CLONE_OPERATOR(label=OMGprj,template=OMG) ',
-     &     '    CLONE_OPERATOR(label=DlT,template=T)      ',
-     &     '    CLONE_OPERATOR(label=H0_DlT,template=OMG) ',
-     &     '    CLONE_OPERATOR(label=S_DlT,template=OMG) ',
-     &     '    DEF_OP_FROM_OCC(label=D00,descr=",|,|,V|V,",join=2)',
+     &     'target OPS_FOR_H0INV(                                    ',
+     &     '    depend (OMG,T)                                       ',
+     &     '    CLONE_OPERATOR(label=OMGprj,template=OMG)            ',
+     &     '    CLONE_OPERATOR(label=DlT,template=T)                 ',
+     &     '    CLONE_OPERATOR(label=H0_DlT,template=OMG)            ',
+     &     '    CLONE_OPERATOR(label=S_DlT,template=OMG)             ',
+     &     '    DEF_OP_FROM_OCC(label=D00,descr=",|,|,V|V,",join=2)  ',
      &     '    DEF_OP_FROM_OCC(label=H0Dy,descr="H,H|P,P|V,V|VV,VV")',
-     &     ')'/),
-     &     tgt_info)
+     &     ')                                                        '
+     &     /),tgt_info)
     
       ! copies of selected PP blocks of Hamiltonian
       call add_target('H_PP',ttype_op,.false.,tgt_info)
@@ -2507,7 +2507,7 @@ c dbgend
       call set_arg('F_prePP0int',REPLACE,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_OMG'/))
       call set_arg('F_prePP0int',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'H   ','H_PP0'/))
+     &     val_label=(/'H    ','H_PP0'/))
       call set_rule2('F_prePP0int',INVARIANT,tgt_info)
       call set_arg('F_prePP0int',INVARIANT,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_prePP0int'/))
@@ -2564,7 +2564,7 @@ c dbgend
       !  - core Fock matrix
       !  - two-electron active contribution to effective Fock for HH and PP part
       !  - two-electron VVVV part
-      call add_target3((/
+      call add_target3([character(len=80) ::
      &     'target F_H0Dy(',
      &     '    depend OPS_FOR_H0INV',
      &     '    EXPAND_OP_PRODUCT(new=T,label=F_H0Dy,op_res=H0Dy,',
@@ -2585,12 +2585,12 @@ c dbgend
      &     '       DESCR="2,,VV,VV",avoid=(1,3)',
      &     '    )',
      &     '    PRINT_FORMULA(label=F_H0Dy)',
-     &     ')'/),
+     &     ')'],
      &     tgt_info)
 
       ! (a) the right-hand-side: projected OMG
       ! (b) the transformation: <C0|tau [H0,T] |C0>
-      call add_target3((/
+      call add_target3([character(len=80) ::
      &     'target F_FOR_H0INV( ',
      &     '    depend (OPS_FOR_H0INV,OMG,Dproj,C00)',
      &     '    EXPAND_OP_PRODUCT(new=T,label=F_OMGprj,op_res=OMGprj,',
@@ -2632,7 +2632,7 @@ c     &     '        OP_RES=OMGprj,OP_INCL=OMG,IGAST=3,MODE=no_ext)',
      &     '       IDX_SV=(1,2,1,1,3,4,5,1),',
      &     '       CONNECT=(5,6))',
      &     '    PRINT_FORMULA(label=F_H0_DlT)',
-     &     ')'/),
+     &     ')'],
      &     tgt_info)
 
       ! precursor for combining selected HH contractions into one step
@@ -2727,7 +2727,8 @@ C     &             val_log=(/.false./))
       call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
      &             val_label=(/'INT_HT2'/))
       call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'OPERATORS',4,tgt_info,
-     &             val_label=(/'INT_HT2','H','T','INT_HT2'/))
+     &             val_label=(/'INT_HT2','H      ',
+     &                         'T      ','INT_HT2'/))
       call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &             val_int=(/1,2,3,1/))
       call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
@@ -2766,7 +2767,8 @@ c     &             val_int=(/2,3/))
       call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
      &             val_label=(/'INT_T2H'/))
       call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'OPERATORS',4,tgt_info,
-     &             val_label=(/'INT_T2H','T','H','INT_T2H'/))
+     &             val_label=(/'INT_T2H','T      ',
+     &                         'H      ','INT_T2H'/))
       call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &             val_int=(/1,2,3,1/))
       call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
@@ -2789,8 +2791,8 @@ c     &             val_int=(/2,3/))
       call set_arg('F_INT_D',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
      &             val_label=(/'INT_D'/))
       call set_arg('F_INT_D',EXPAND_OP_PRODUCT,'OPERATORS',6,tgt_info,
-     &             val_label=(/'INT_D','C0^+','INT_D',
-     &                                        'INT_D','C0','INT_D'/))
+     &             val_label=(/'INT_D','C0^+ ','INT_D',
+     &                                 'INT_D','C0   ','INT_D'/))
       call set_arg('F_INT_D',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &             val_int=(/1,2,1,1,3,1/))
       call set_rule2('F_INT_D',PRINT_FORMULA,tgt_info)
@@ -3637,7 +3639,7 @@ c dbgend
      &             val_label=(/'E(MR)'/))
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
      &             tgt_info,val_label=(/'C0^+  ','Tfix^+','T     ',
-     &                                  'Hdyall','T2fix ','C0   '/))
+     &                                  'Hdyall','T2fix ','C0    '/))
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &             val_int=(/2,3,4,5,6,7/))
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
@@ -3727,7 +3729,7 @@ c dbgend
         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
      &               tgt_info,val_label=(/'E(MR)'/))
         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
-     &               tgt_info,val_label=(/'C0^+  ','L     ','T2fix',
+     &               tgt_info,val_label=(/'C0^+  ','L     ','T2fix ',
      &                                    'Hdyall','T2fix ','C0    '/))
         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,
      &               tgt_info,val_int=(/2,3,4,5,6,7/))
@@ -3743,7 +3745,7 @@ c dbgend
         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,
      &               tgt_info,val_label=(/'E(MR)'/))
         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',6,
-     &               tgt_info,val_label=(/'C0^+  ','L     ','T2fix',
+     &               tgt_info,val_label=(/'C0^+  ','L     ','T2fix ',
      &                                    'T2fix ','Hdyall','C0    '/))
         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',6,
      &               tgt_info,val_int=(/2,3,4,5,6,7/))
@@ -3923,21 +3925,21 @@ c     &           val_label=(/'Dtr'/))
       call set_arg('FOPT_A_Ttr',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_A_Ttr'/))
 
-      call add_target3((/
+      call add_target3([character(len=80) ::
      &   'target FOPT_H0Dy(',
      &   '  depend (MELS_FOR_H0INV,F_H0Dy,DEF_ME_C00)',
      &   '  OPTIMIZE(LABEL_OPT=FOPT_H0Dy,',
      &   '           LABELS_IN=F_H0Dy,INTERM=F_D00))'
-     &     /),tgt_info)
+     &     ],tgt_info)
 
       ! extended preconditioner
-      call add_target3((/
+      call add_target3([character(len=80) ::
      &   'target FOPT_H0INV(',
      &   '  depend (MELS_FOR_H0INV,DEF_ME_Dproj,',
      &   '          DEF_ME_C0,F_FOR_H0INV,DEF_ME_C00)',
      &   '  OPTIMIZE(LABEL_OPT=FOPT_H0INV,',
      &   '      LABELS_IN=(F_OMGprj,F_H0_DlT,F_S_DlT),INTERM=F_D00))'
-     &     /),tgt_info)
+     &     ],tgt_info)
 
       ! Residual
       call add_target2('FOPT_OMG',.false.,tgt_info)
@@ -3976,13 +3978,7 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       if ((maxp.ge.2.or.maxh.ge.2).and.tfix.eq.0) then
         labels(1:20)(1:len_target_name) = ' '
         ndef = 0
-c dbg
-c         print *,'POI: ',maxp,h1bar_maxp
-c dbg
         if (maxp.ge.2.and.h1bar_maxp.lt.4) then
-c dbg
-c         print *,'went here'
-c dbg
           call set_dependency('FOPT_OMG','F_PP0int',tgt_info)
           call set_dependency('FOPT_OMG','DEF_ME_INT_PP0',tgt_info)
           ndef = ndef + 1
@@ -4697,28 +4693,28 @@ c dbgend
 
       ! MEs for H0 Inversion
       call add_target3((/
-     &     'target MAKE_H0Dy(',
+     &     'target MAKE_H0Dy(                    ',
      &     '    depend (MELS_FOR_H0INV,FOPT_H0Dy)',
-     &     '    EVALUATE(form=FOPT_H0Dy)',
-     &     '    PRINT_MEL(list=ME_H0Dy)',
-     &     ')'
+     &     '    EVALUATE(form=FOPT_H0Dy)         ',
+     &     '    PRINT_MEL(list=ME_H0Dy)          ',
+     &     ')                                    '
      &     /),tgt_info)
       call add_target3((/
-     &     'target MELS_FOR_H0INV(',
-     &     '    depend OPS_FOR_H0INV',
+     &     'target MELS_FOR_H0INV(                         ',
+     &     '    depend OPS_FOR_H0INV                       ',
      &     '    DEF_ME_LIST(LIST=ME_OMGprj,OPERATOR=OMGprj,',
-     &     '                  2MS=0,IRREP=1)',          
-     &     '    DEF_ME_LIST(LIST=ME_DlT,OPERATOR=DlT,',
-     &     '                  2MS=0,IRREP=1)',          
+     &     '                  2MS=0,IRREP=1)               ',          
+     &     '    DEF_ME_LIST(LIST=ME_DlT,OPERATOR=DlT,      ',
+     &     '                  2MS=0,IRREP=1)               ',          
      &     '    DEF_ME_LIST(LIST=ME_H0_DlT,OPERATOR=H0_DlT,',
-     &     '                  2MS=0,IRREP=1)',
-     &     '    DEF_ME_LIST(LIST=ME_S_DlT,OPERATOR=S_DlT,',
-     &     '                  2MS=0,IRREP=1)',
-     &     '    DEF_ME_LIST(LIST=ME_D00,OPERATOR=D00,',
-     &     '                  2MS=0,IRREP=1)',
-     &     '    DEF_ME_LIST(LIST=ME_H0Dy,OPERATOR=H0Dy,',
-     &     '                  2MS=0,IRREP=1)',
-     &     ')'/),
+     &     '                  2MS=0,IRREP=1)               ',
+     &     '    DEF_ME_LIST(LIST=ME_S_DlT,OPERATOR=S_DlT,  ',
+     &     '                  2MS=0,IRREP=1)               ',
+     &     '    DEF_ME_LIST(LIST=ME_D00,OPERATOR=D00,      ',
+     &     '                  2MS=0,IRREP=1)               ',
+     &     '    DEF_ME_LIST(LIST=ME_H0Dy,OPERATOR=H0Dy,    ',
+     &     '                  2MS=0,IRREP=1)               ',
+     &     ')                                              '/),
      &     tgt_info)
 
       ! ME for Intermediate(s)

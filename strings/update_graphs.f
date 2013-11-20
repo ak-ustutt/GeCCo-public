@@ -33,7 +33,7 @@
      &     str_info
       type(orbinf), intent(in), target ::
      &     orb_info
-      type(me_list), intent(in) ::
+      type(me_list), intent(inout) ::
      &     mel
 
       type(operator), pointer ::
