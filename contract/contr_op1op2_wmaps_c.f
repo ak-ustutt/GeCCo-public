@@ -1325,7 +1325,7 @@ c                      print *,'msop1dis_a',msop1dis_a
 c dbg
 
                     idxdis =
-     &                  idx_msgmdst2(
+     &                  idx_msgmdst2(.true.,
      &                   iblkop1op2tmp,idxms,igam12i_raw(3),
      &                   cinfo_op1op2tmpc,idxmsi_dis_c,
      &                              gmi_dis_c,ncblk_op1op2tmp,
@@ -1487,7 +1487,7 @@ c dbg
 c                      print *,'here 2'
 c dbg
                       idxdis =
-     &                   idx_msgmdst2(
+     &                   idx_msgmdst2(.true.,
      &                     iblkop1,idxms,igam12i_raw(1),
      &                     cinfo_op1c,idxmsop1dis_c,
      &                              gmop1dis_c,ncblk_op1,
@@ -1594,7 +1594,7 @@ c dbg
 c                      print *,'here 3'
 c dbg
                       idxdis =
-     &                   idx_msgmdst2(
+     &                   idx_msgmdst2(.true.,
      &                     iblkop2,idxms,igam12i_raw(2),
      &                     cinfo_op2c,idxmsop2dis_c,
      &                              gmop2dis_c,ncblk_op2,
@@ -1828,7 +1828,7 @@ c dbg
 c dbg
 c          print *,'lblk_op1op2tmp: ',lblk_op1op2tmp
 c dbg
-                    call reo_blk_wmaps_c(xop1op2,xop1op2blk,
+                    call reo_blk_wmaps_c(1d0,xop1op2,xop1op2blk,
      &                   lbuf_op1op2,lblk_op1op2tmp,
      &                   reo_info%sign_reo,
      &                   tra_op1op2, tra_op1op2,

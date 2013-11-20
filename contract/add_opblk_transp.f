@@ -264,7 +264,7 @@ c     &               'buffered files are not yet debugged')
             idxdis_in = 1
             if (me_in%off_op_gmox(iblk_in)%ndis(igamc,idxmsc).gt.1)
      &           idxdis_in =
-     &               idx_msgmdst2(
+     &               idx_msgmdst2(.true.,
      &                iblk_in,idxmsa,igama,
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,

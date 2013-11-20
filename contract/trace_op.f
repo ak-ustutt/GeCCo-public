@@ -577,7 +577,7 @@ c dbg
             if (iblktroptmp.gt.0.and.
      &           ndis_troptmp(igam_op_tr_a(2),idxms).gt.1) then
               idxdis =
-     &             idx_msgmdst2(
+     &             idx_msgmdst2(.true.,
      &                   iblktroptmp,idxms,igam_op_tr_a(2),
      &                   cinfo_troptmpc,idxmstropdis_c,
      &                              gmtropdis_c,ncblk_troptmp,
@@ -672,7 +672,7 @@ c dbg
               idxms =  msa2idxms4op(ms_op_tr_a(1),mstop,na_op,nc_op)
               if (ndis_op(igam_op_tr_a(1),idxms).gt.1) then
                 idxdis =
-     &                idx_msgmdst2(
+     &                idx_msgmdst2(.true.,
      &                     iblkop,idxms,igam_op_tr_a(1),
      &                     cinfo_opc,idxmsopdis_c,
      &                              gmopdis_c,ncblk_op,
@@ -741,7 +741,7 @@ c dbg
                   
             ! if necessary, reorder trop block:
             if (reo_trop.and.nonzero) then
-              call reo_blk_wmaps_c(xtrop,xtropblk,
+              call reo_blk_wmaps_c(1d0,xtrop,xtropblk,
      &                  lentrop,lblk_troptmp,  ! just for checks
      &                  reo_info%sign_reo,
      &                  tra_trop,

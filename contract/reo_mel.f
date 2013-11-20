@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine reo_mel(label_out,label_inp,op_info,
+      subroutine reo_mel(label_out,label_inp,search,op_info,
      &                      str_info,strmap_info,orb_info,fromto,dag)
 *----------------------------------------------------------------------*
 *     wrapper for reo_mel_blk
@@ -38,7 +38,7 @@
       integer, intent(in) ::
      &     fromto
       logical, intent(in) ::
-     &     dag
+     &     dag, search
 
       logical ::
      &     open_close_inp,
@@ -60,7 +60,7 @@
       type(operator), pointer ::
      &     opinp, opout
       integer, pointer ::
-     &     iocc_inp(:,:,:), iocc_out(:,:,:)
+     &     iocc_inp(:,:,:), iocc_out(:,:,:), iocc_reo(:,:,:)
       logical, pointer ::
      &     transposed(:)
       integer, external ::
@@ -155,25 +155,7 @@
      &                          i_occ_cls,i_occ_cls,
      &                          op_info,str_info,orb_info,.true.)
           else
-c dbg
-cmh         CAUTION: AD HOC FIX!!!
-cmh         (matters for icMRCCSD with singles and doubles)
-cmh         We need to understand why we need these sign changes!!!
             tra_sign = 1d0
-            ! for icMRCCSD C
-            if (i_occ_cls.eq.2.and.j_occ_cls.eq.3.or.
-     &          i_occ_cls.eq.11.and.j_occ_cls.eq.12) then
-c            ! for icMRCCSDT C (when only one occupied orbital)
-c            if (i_occ_cls.eq.6.and.j_occ_cls.eq.8.or.
-c     &          i_occ_cls.eq.19.and.j_occ_cls.eq.21.or.
-c     &          i_occ_cls.eq.23.and.j_occ_cls.eq.25.or.
-c     &          i_occ_cls.eq.2.and.j_occ_cls.eq.4.or.
-c     &          i_occ_cls.eq.33.and.j_occ_cls.eq.34
-c     &          ) then
-              tra_sign = -1d0
-              print *,'changing sign for blocks ',i_occ_cls,j_occ_cls
-            end if
-c dbgend
             ! two non-diagonal blocks: transpose both blocks
             transposed(j_occ_cls) = .true.
             ! a) save first block
@@ -202,30 +184,53 @@ c dbgend
         end do
         deallocate(transposed)
       end if
-      ! we assume that the corresponding blocks are in the same order
+
+      allocate(iocc_reo(ngastp,2,njout))
       do i_occ_cls = 1, opinp%n_occ_cls
-        iblkinp = (i_occ_cls-1)*njinp+1
-        iblkout = (i_occ_cls-1)*njout+1
-        iocc_inp => opinp%ihpvca_occ(1:ngastp,1:2,
+       iblkinp = (i_occ_cls-1)*njinp+1
+       iocc_inp => opinp%ihpvca_occ(1:ngastp,1:2,
      &                                iblkinp:iblkinp+njinp-1)
+       ! does this block have to be reordered?
+       ! reorder, if from vertex is not zero
+       reorder = .not.iocc_zero(iocc_inp(1:ngastp,1:2,ifrom))
+       lenblkinp = meinp%len_op_occ(i_occ_cls)
+       ioffinp = meinp%off_op_occ(i_occ_cls)
+
+       if (search) then
+       ! search corresponding block
+       iocc_reo(1:ngastp,1:2,1:njout) = 0
+       do ij = 1, njinp
+         if (ij.eq.ifrom) then
+          if (ifrom.ge.ito) then
+            iocc_reo(1:ngastp,1:2,ito) = iocc_reo(1:ngastp,1:2,ito)
+     &                                 + iocc_inp(1:ngastp,1:2,ij)
+          else
+            iocc_reo(1:ngastp,1:2,ito-1) = iocc_reo(1:ngastp,1:2,ito-1)
+     &                                   + iocc_inp(1:ngastp,1:2,ij)
+          end if
+         else if (ij.gt.ifrom) then
+           iocc_reo(1:ngastp,1:2,ij-1) = iocc_reo(1:ngastp,1:2,ij-1)
+     &                                 + iocc_inp(1:ngastp,1:2,ij)
+         else
+           iocc_reo(1:ngastp,1:2,ij) = iocc_reo(1:ngastp,1:2,ij)
+     &                               + iocc_inp(1:ngastp,1:2,ij)
+         end if
+       end do
+       do j_occ_cls = 1, opout%n_occ_cls
+        iblkout = (j_occ_cls-1)*njout+1
         iocc_out => opout%ihpvca_occ(1:ngastp,1:2,
-     &                                iblkout:iblkout+njout-1)
+     &                            iblkout:iblkout+njout-1)
+        if (.not.iocc_equal_n(iocc_reo,.false.,iocc_out,.false.,
+     &                        njout)) cycle
 
-
-        ! does this block have to be reordered?
-        ! reorder, if from vertex is not zero
-        reorder = .not.iocc_zero(iocc_inp(1:ngastp,1:2,ifrom))
-
-        ! get the input, extract diagonal and write to output
-        lenblkinp = meinp%len_op_occ(i_occ_cls)
-        lenblkout = meout%len_op_occ(i_occ_cls)
+        ! get the input, reorder and write to output
+        lenblkout = meout%len_op_occ(j_occ_cls)
         if (lenblkinp.ne.lenblkout) call quit(1,'reo_mel',
      &           'input and output blocks should have same length')
-        ioffinp = meinp%off_op_occ(i_occ_cls)
-        ioffout = meout%off_op_occ(i_occ_cls)
+        ioffout = meout%off_op_occ(j_occ_cls)
         if (reorder) then
           if (ntest.ge.100) write(luout,*) 'reorder block no',i_occ_cls
-          call reo_mel_blk(meinp,meout,i_occ_cls,i_occ_cls,
+          call reo_mel_blk(meinp,meout,i_occ_cls,j_occ_cls,
      &                     str_info,strmap_info,orb_info,ifrom,ito,
      &                      idxinp)
         else
@@ -234,7 +239,32 @@ c dbgend
           call put_vec(ffout,buffer_inp,ioffout+1,ioffout+lenblkinp)
         end if
 
+       end do
+
+       else
+        iblkout = (i_occ_cls-1)*njout+1
+        iocc_out => opout%ihpvca_occ(1:ngastp,1:2,
+     &                                iblkout:iblkout+njout-1)
+        j_occ_cls = i_occ_cls
+        ! get the input, reorder and write to output
+        lenblkout = meout%len_op_occ(j_occ_cls)
+        if (lenblkinp.ne.lenblkout) call quit(1,'reo_mel',
+     &           'input and output blocks should have same length')
+        ioffout = meout%off_op_occ(j_occ_cls)
+        if (reorder) then
+          if (ntest.ge.100) write(luout,*) 'reorder block no',i_occ_cls
+          call reo_mel_blk(meinp,meout,i_occ_cls,j_occ_cls,
+     &                     str_info,strmap_info,orb_info,ifrom,ito,
+     &                      idxinp)
+        else
+          ifree = mem_alloc_real(buffer_inp,lenblkinp,'buffer_inp')
+          call get_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
+          call put_vec(ffout,buffer_inp,ioffout+1,ioffout+lenblkinp)
+        end if
+
+       end if
       end do
+      deallocate(iocc_reo)
 
       call touch_file_rec(ffout)
 

@@ -237,6 +237,9 @@ cmh        idxmsa2 = (msa_max-msa2)/2 + 1
             call ms2idxms(idxmsdis_c2,msdis_c2,occ_csub,ncblk)
             call ms2idxms(idxmsdis_a2,msdis_a2,occ_asub,nablk)
 
+            ! note: len_str is valid for flipped string, too
+            !   this is because string length does not change
+            !   under spin flip (length(aab-string)=length(bba-string))
             call set_len_str(len_str,ncblk,nablk,
      &                         graphs,
      &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
@@ -256,7 +259,7 @@ c test
             idxdis_1 = 1
             if (mel%off_op_gmox(iblk)%ndis(igama,idxmsa).gt.1)
      &           idxdis_1 =
-     &               idx_msgmdst2(
+     &               idx_msgmdst2(.true.,
      &                iblk,idxmsa,igama,
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
@@ -276,7 +279,7 @@ c test
             idxdis_2 = 1
             if (mel%off_op_gmox(iblk)%ndis(igama,idxmsa2).gt.1)
      &           idxdis_2 =
-     &               idx_msgmdst2(
+     &               idx_msgmdst2(.true.,
      &                iblk,idxmsa2,igama,
      &                occ_csub,idxmsdis_c2,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a2,gamdis_a,nablk,

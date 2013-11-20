@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine reo_op_wmaps_c(
+      subroutine reo_op_wmaps_c(fac,
      &     update,xret,type_xret,
      &     me_opori,me_opreo,
      &     tra_opori, tra_opreo,
@@ -44,6 +44,8 @@
      &     update
       real(8), intent(inout), target ::
      &     xret(1)
+      real(8), intent(in) ::
+     &     fac
       integer, intent(in) ::
      &     type_xret,
      &     iblkopori, iblkopreo, 
@@ -478,7 +480,7 @@ c dbg
               ! should be changed in order to pass sequentially
               ! through ORI list
               idxdis_tra =
-     &             idx_msgmdst2(
+     &             idx_msgmdst2(.true.,
      &                   iblkopori,idxms,igama,
      &                   cinfo_oporic,idxms_dis_c,
      &                              gm_dis_c,ncblk_opori,
@@ -495,7 +497,7 @@ c          write(luout,'(x,5g15.8)')    xbf12tmp(1:lblk_oporiopreotmp)
 c          call wrt_mel_buf(luout,5,xoporiopreo,me_oporiopreo,
 c     &         iblkoporiopreo,iblkoporiopreo,str_info,orb_info)
 c dbg
-            call reo_blk_wmaps_c(xopreo,xopori(idxopori),
+            call reo_blk_wmaps_c(fac,xopreo,xopori(idxopori),
      &                   lenopreo,lenopori-idxopori+1, ! just for checks
      &                   reo_info%sign_reo,
      &                   tra_opreo,tra_opori,

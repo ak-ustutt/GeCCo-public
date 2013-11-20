@@ -4,6 +4,7 @@
 *----------------------------------------------------------------------*
 *     reorder vertex ifrom to vertex ito and write result the list
 *     of meout
+*     Note that the reordering sign is ignored (i.e. set to 1).
 *     
 *     matthias, dec 2009
 *----------------------------------------------------------------------*
@@ -167,16 +168,15 @@
      &         occ_vtx,irst_vtx,svertex,info_vtx,njinp,njinp,
      &         reo_info,reo_info%nreo,str_info,orb_info)
       end do
-c dbg
-c      if (trim(meout%label).ne.'ME_Dproj'
-c     &    .and.reo_info%sign_reo.ne.1d0) then
+
+      ! Ignore reordering sign (we just want to change the shape, sign
+      ! changes shall be accounted separately in other steps if needed)
       if (reo_info%sign_reo.ne.1d0) then
-        write(luout,*) 'setting sign_reo = +1 for block ',iblkout
+c        write(luout,*) 'setting sign_reo = +1 for block ',iblkout
         reo_info%sign_reo = 1d0
       end if
-c dbgend
 
-      call reo_op_wmaps_c(
+      call reo_op_wmaps_c(1d0,
      &     .false.,xret_dum,0,
      &     meinp,meout,
      &     .false., .false.,

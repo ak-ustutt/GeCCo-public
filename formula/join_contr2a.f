@@ -44,9 +44,9 @@
       integer ::
      &     nvtx_abc, nvtx_ac, nvtx_a, nvtx_b, nvtx_c,
      &     narc_abc, narc_abc0, narc_ac, narc_b, nxarc_ac,
-     &     idx, ivtx_abc, iarc, ivtx, jvtx, jvtx_last,
+     &     idx, jdx, ivtx_abc, iarc, ivtx, jvtx, jvtx_last,
      &     nproto_ac, nproto_b, idxsuper,
-     &     nsuper, njoined, isuper, njoined_abc,
+     &     nsuper, nsuper_non0, njoined, isuper, njoined_abc,
      &     occ_x(ngastp,2), occ_over(ngastp,2), icnt, ioff
       integer(8) ::
      &     base, overlap
@@ -155,14 +155,43 @@ c        deallocate(occ_vtx)
 c      nsuper = ifndmax(svmap,1,nvtx_b,1)
       nsuper = max(1,ifndmax(svmap,1,nvtx_b,1))
 
-      if (nsuper.ne.nproto_ac) then
-        write(luout,*) 'joining: AC, B'
+      ! check for zero occupations in B
+      nsuper_non0 = nsuper
+c      if (nsuper.ne.nproto_ac) then
+cc dbg
+c        print *,'unique= ',unique
+c        print *,'svmap=',svmap
+cc dbg
+c        nsuper_non0 = 0
+c        ioff = (contr_b%iblk_res-1)*njoined
+c        do idx = 1, njoined
+c          if (iocc_nonzero(op_info%op_arr(
+c     &        contr_b%idx_res)%op%ihpvca_occ(1:ngastp,1:2,ioff+idx)))
+c     &    then
+c            nsuper_non0 = nsuper_non0+1
+c          else if (.not.unique) then
+c            do jdx = idx, nvtx_b
+c              svmap(jdx) = svmap(jdx)-1
+c            end do
+c          end if
+c        end do
+c      end if
+
+      if (nsuper.ne.nproto_ac.and.nsuper_non0.gt.nproto_ac) then
+        write(luout,*) 'join_contr2a: joining: AC, B'
         call prt_contr2(luout,contr_ac,op_info)
         call prt_contr2(luout,contr_b,op_info)
         write(luout,*) 'nsuper, nproto_ac: ',nsuper, nproto_ac
+        write(luout,*) 'nsuper_non0: ',nsuper_non0
         write(luout,*) 'svmap: ',svmap
+        write(luout,*) 'mode:  ',mode
         call quit(1,'join_contr2a','incompatible contractions !')
       end if
+
+      if (ntest.ge.50) write(luout,*) 'nsuper, nsuper_non0: ',
+     &                                 nsuper, nsuper_non0
+      if (ntest.ge.50) write(luout,*) 'svmap: ',
+     &                                 svmap
 
       nvtx_abc = nvtx_ac-nproto_ac+nvtx_b
 
@@ -403,7 +432,12 @@ c      nsuper = ifndmax(svmap,1,nvtx_b,1)
       end do
 
       if (.not.unique) then
-        if (.not.all(xlines.eq.0)) call quit(1,'join_contr2a','trap!')
+        if (.not.all(xlines.eq.0)) then
+          ! it seems, something did not work ...
+          write(luout,*) 'what I generated so far seems inconsistent:'
+          call prt_contr2(luout,contr_abc,op_info)
+          call quit(1,'join_contr2a','trap!')
+        end if
         deallocate(svtx,vtx,topo,xlines)
       end if
 

@@ -74,7 +74,7 @@ c dbgend
       read (ludict,rec=ioda(6)) potnuc,eelct,etot2,sz,s2,ecore,emcscf,
      &                          eerd,e1,e2,ven,vee,epot,ekin,
      &                          estate,statn
-      ispin = 2*nint(s2)+1
+      ispin = nint(2d0*s2)+1
       nstate = nint(statn)
 
       ! read number of orbital parameters

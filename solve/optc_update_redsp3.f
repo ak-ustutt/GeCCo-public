@@ -2,7 +2,6 @@
       subroutine optc_update_redsp3(
      &     xmat,xvec,ndim,nrhs,mxdim,nadd,ndel,
      &     iordv,ff_vsbsp,iordw,ff_wsbsp,ff_rhs,
-     &     nsec,nwfpsec,idstsec,signsec,
      &     nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
 *----------------------------------------------------------------------*
 *
@@ -30,14 +29,12 @@
      &     ff_vsbsp, ff_wsbsp, ff_rhs
       integer, intent(in) ::
      &     ndim, nrhs, nadd, ndel, mxdim, nincore, nwfpar, lenbuf,
-     &     iordv(*), iordw(*), nsec, nwfpsec(*), idstsec(*)
-      real(8), intent(in) ::
-     &     signsec(*)
+     &     iordv(*), iordw(*)
       real(8), intent(inout) ::
      &     xmat(mxdim,*), xvec(mxdim,*), xbuf1(*), xbuf2(*), xbuf3(*)
       
       integer ::
-     &     ii, jj, irec, jrec, jrec_last, rhsrec, rhsrec_last, isec
+     &     ii, jj, irec, jrec, jrec_last, rhsrec, rhsrec_last
 
       real(8), external ::
      &     ddot, da_ddot
@@ -110,23 +107,10 @@
                 jrec_last = jrec
                 call vec_from_da(ff_wsbsp,jrec,xbuf2,nwfpar)
               end if
-              xmat(ii,jj) = 0d0
-              do isec = 1, nsec
-                xmat(ii,jj) = xmat(ii,jj) + signsec(isec)
-     &                      * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                             xbuf2(idstsec(isec)),1)
-              end do
+              xmat(ii,jj) = ddot(nwfpar,xbuf1,1,xbuf2,1)
             else
-              xmat(ii,jj) = 0d0
-              do isec = 1, nsec
-c dbg  see evpc_core for explanation
-                  if (idstsec(isec).ne.1)
-     &             call quit(1,'**06**','bug in the code!')
-c dbgend
-                xmat(ii,jj) = xmat(ii,jj) + signsec(isec)
-     &             * da_ddot(ff_vsbsp,irec,idstsec(isec),ff_wsbsp,jrec,
-     &                   idstsec(isec),nwfpsec(isec),xbuf1,xbuf2,lenbuf)
-              end do
+              xmat(ii,jj) = da_ddot(ff_vsbsp,irec,ff_wsbsp,jrec,
+     &                              nwfpar,xbuf1,xbuf2,lenbuf)
             end if
           end if
 
@@ -142,36 +126,35 @@ c dbgend
                 rhsrec_last = rhsrec
                 call vec_from_da(ff_rhs,rhsrec,xbuf3,nwfpar)                
               end if
-              xvec(ii,rhsrec) = 0d0
-              do isec = 1, nsec
-                xvec(ii,rhsrec) = xvec(ii,rhsrec) + signsec(isec)
-     &                      * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                             xbuf3(idstsec(isec)),1)
-              end do
+              xvec(ii,rhsrec) = ddot(nwfpar,xbuf1,1,xbuf3,1)
             else if (nincore.eq.2) then
               jrec_last = -1 ! signal that xbuf2 is destroyed
               call vec_from_da(ff_rhs,rhsrec,xbuf2,nwfpar)
-              xvec(ii,rhsrec) = 0d0
-              do isec = 1, nsec
-                xvec(ii,rhsrec) = xvec(ii,rhsrec) + signsec(isec)
-     &                      * ddot(nwfpsec(isec),xbuf1(idstsec(isec)),1,
-     &                             xbuf2(idstsec(isec)),1)
-              end do
+              xvec(ii,rhsrec) = ddot(nwfpar,xbuf1,1,xbuf2,1)
             else
-              xvec(ii,rhsrec) = 0d0
-              do isec = 1, nsec
-c dbg  see evpc_core for explanation
-                  if (idstsec(isec).ne.1)
-     &             call quit(1,'**07**','bug in the code!')
-c dbgend
-                xvec(ii,rhsrec) = xvec(ii,rhsrec) + signsec(isec)
-     &             * da_ddot(ff_vsbsp,irec,idstsec(isec),ff_rhs,rhsrec,
-     &                  idstsec(isec),nwfpsec(isec),xbuf1,xbuf2,lenbuf)
-              end do
+              xvec(ii,rhsrec) = da_ddot(ff_vsbsp,irec,ff_rhs,rhsrec,
+     &                                  nwfpar,xbuf1,xbuf2,lenbuf)
             end if
           end do
         end if
 
+      end do
+
+
+      ! regularization (to avoid numerical catastrophe for degeneracies)
+      do irec = 1, ndim
+        ii = iordv(irec)
+        do jrec = 1, ndim
+          jj = iordw(jrec)
+          ! is this a block of xmat that was updated?
+          if (ii.ne.jj.and.(ii.gt.ndim-nadd.or.jj.gt.ndim-nadd)) then
+            if (abs(xmat(ii,jj)).lt.1d-13.and.abs(xmat(ii,jj)).ne.0d0
+     &          .and.abs(xmat(ii,ii)/xmat(jj,jj)-1d0).lt.1d-13) then
+              xmat(ii,jj) = 0d0
+              call warn('optc_update_redsp3','Degeneracy? Regularized!')
+             end if
+            end if
+        end do
       end do
 
       if (ntest.ge.20) then

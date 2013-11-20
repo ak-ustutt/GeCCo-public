@@ -180,9 +180,15 @@
           ! for previous target: assemble xret value
           if (idxres.gt.0.and..not.skip) then
 
+            ! spin projections: either full or only spin-flip symmetry
+            if (me_res%s2.ge.0) then
+              call spin_prj_list(1d0,me_res,me_res,-1,
+     &             xret_blk,.true.,
+     &             op_info,str_info,strmap_info,orb_info)
             ! in case of splin-flip symmetry exploitation:
             ! symmetrize final result here (if not scalar)
-            if (use_tr.and.me_res%absym.ne.0.and.type_xret.eq.1) then
+            else if (use_tr.and.me_res%absym.ne.0.and.type_xret.eq.1)
+     &      then
               call sym_ab_list(0.5d0,me_res,me_res,
      &             xret_blk,.true.,
      &             op_info,str_info,strmap_info,orb_info)

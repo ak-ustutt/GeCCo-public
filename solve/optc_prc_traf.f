@@ -28,6 +28,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
+      include 'ifc_input.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -57,17 +58,12 @@
 
 
       integer ::
-     &     idx, nopt, nsec, isec, stsec, ndsec
+     &     idx, nopt, prc_iter
       character(len_opname) ::
      &     op_grd_name, op_trf_name, op_amp_name
 
-      integer, pointer ::
-     &     nwfpsec(:), idstsec(:), nsec_arr(:)
-
-      real(8), pointer ::
-     &     signsec(:)
       real(8) ::
-     &     xdum
+     &     xdum, prc_impfac
 
       type(filinf), pointer ::
      &     ffamp, ffgrd, ffdia
@@ -116,6 +112,13 @@ c      call vec_from_da(me_grd%fhand,1,xbuf1,nwfpar)
 c        write(luout,*) 'untransformed gradient vector:'
 c        write(luout,*) xbuf1(1:nwfpar)
 c dbg
+
+      ! apply sign-fix
+c      write(luout,*) 'Fixing sign of residual for iopt =',iopt
+      call optc_fix_signs2(me_grd%fhand,1,
+     &                    opti_info,iopt,
+     &                    nwfpar,xbuf1)
+
       ! assign op. to be transformed with list of gradient
       call assign_me_list(me_grd%label,
      &                    trim(op_trf_name),op_info)
@@ -133,41 +136,40 @@ c dbg
      &            xngrd(iopt),.true.) !get transformed res. norm
 
       call vec_from_da(me_special(1)%mel%fhand,1,xbuf1,nwfpar)
+      call vec_from_da(ffdia,1,xbuf2,nwfpar)
 
       if (ntest.ge.100) then
         write(luout,*) 'transformed gradient vector:'
-        write(luout,*) xbuf1(1:nwfpar)
-c        call wrt_mel_buf(luout,5,xbuf1,me_grd,1,
-c     &       me_grd%op%n_occ_cls,
-c     &       str_info,orb_info)
+c        write(luout,*) xbuf1(1:nwfpar)
+        call wrt_mel_buf(luout,5,xbuf1,me_special(1)%mel,1,
+     &       me_special(1)%mel%op%n_occ_cls,
+     &       str_info,orb_info)
       end if
 
-      call vec_from_da(ffdia,1,xbuf2,nwfpar)
+      ! preconditioning step (optional: with iterative improvement)
+      ! CAUTION: relies on that Aoff is on last special list
+      call get_argument_value('method.MR','prc_iter',ival=prc_iter)
+      call get_argument_value('method.MR','prc_impfac',xval=prc_impfac)
+      if (prc_iter.ge.1) then
+        call assign_me_list(me_special(nspecial)%mel%label,
+     &                      me_special(nspecial)%mel%op%name,op_info)
+        write(luout,'(a,i4,a)') 'Trying to improve preconditioner in',
+     &                 prc_iter,' iteration(s)'
+      end if
+      call prc_iterimp_rec(prc_iter,prc_iter,prc_impfac,
+     &                     xbuf1,xbuf2,nwfpar,iopt,ffdia,
+     &                     me_special(1)%mel,me_special(nspecial)%mel,
+     &                     me_grd,fspc(1),opti_info,
+     &                     orb_info,op_info,str_info,strmap_info)
 
-      nsec_arr => opti_info%nsec(1:nopt)
-      nsec = sum(nsec_arr)
-      nwfpsec => opti_info%nwfpsec(1:nsec)
-      idstsec => opti_info%idstsec(1:nsec)
-      signsec => opti_info%signsec(1:nsec)!2(1:nsec)
-      stsec = 1
-      ndsec = 0
-      if (iopt.gt.1) stsec = stsec + nsec_arr(iopt-1)
-      ndsec = ndsec + nsec_arr(iopt)
-
-      ! Divide by precond., account for sign changes if necessary
-
-      do isec = stsec, ndsec
-        call diavc(xbuf1(idstsec(isec)),xbuf1(idstsec(isec)),
-     &             signsec(isec),xbuf2(idstsec(isec)),
-     &             0d0,nwfpsec(isec))
-      end do
-c dbg
-c        write(luout,*) 'gradient vector / prc:'
+      if (ntest.ge.100) then
+        write(luout,*) 'preconditioned gradient vector:'
 c        write(luout,*) xbuf1(1:nwfpar)
-c dbg
+        call wrt_mel_buf(luout,5,xbuf1,me_special(1)%mel,1,
+     &       me_special(1)%mel%op%n_occ_cls,
+     &       str_info,orb_info)
+      end if
 
-      ! put new vector to special list for transformation
-      call vec_to_da(me_special(1)%mel%fhand,1,xbuf1,nwfpar)
       ! get current trial vector (list will be overwritten)
       call vec_from_da(ffamp,1,xbuf2,nwfpar)
 

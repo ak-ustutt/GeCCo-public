@@ -73,9 +73,12 @@
 
         call me_list_parameters(+1,rule%parameters,
      &       absym,casym,gamma,s2,ms,ms_fix)
+        if (s2.gt.0) call quit(1,'process_me_lists',
+     &               'use new interface for S2 argument')
 
         call define_me_list(rule%labels(1),rule%labels(2),
-     &       absym,casym,gamma,s2,ms,ms_fix,
+c     &       absym,casym,gamma,s2,ms,ms_fix,
+     &       absym,casym,gamma,-1,ms,ms_fix,
      &       -1,-1,-1,0,0,0,
      &       op_info,orb_info,str_info,strmap_info)
 
@@ -178,7 +181,7 @@ c dbg
         call form_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,title,imode,mode)
 
-        call inv_op(rule%labels(2),1,rule%labels(1),mode,
+        call inv_op(1,rule%labels(2),1,rule%labels(1),mode,
      &       op_info,orb_info,str_info,strmap_info)
 
       case(ADD)
@@ -348,7 +351,7 @@ c     &       op_info,str_info,strmap_info,orb_info)
      &       'two labels expected for '
      &       //trim(EXTRACT_DIAG))
 
-        call dia_from_op(rule%labels(1),rule%labels(2),.false.,.false.,
+        call dia_from_op(rule%labels(1),rule%labels(2),'---',
      &       op_info,str_info,orb_info)
 
       case(REORDER_MEL)
@@ -360,7 +363,7 @@ c     &       op_info,str_info,strmap_info,orb_info)
         call form_parameters(+1,rule%parameters,
      &       rule%n_parameter_strings,title,imode,mode)
 
-        call reo_mel(rule%labels(1),rule%labels(2),
+        call reo_mel(rule%labels(1),rule%labels(2),.false.,
      &       op_info,str_info,strmap_info,orb_info,imode,.false.)
 
       case default

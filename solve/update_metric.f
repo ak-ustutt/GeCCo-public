@@ -50,9 +50,11 @@
      &     op_info
 
       real(8) ::
-     &     xdum, prc_min
+     &     xdum, prc_min, prc_impfac
       integer ::
-     &     gno, prc_type
+     &     gno, prc_type, prc_iter, spinproj, idx_jac, project
+c      logical ::
+c     &     project
       character(len_opname) ::
      &     dia_label
 
@@ -61,62 +63,101 @@
       if (nspecial.lt.6) call quit(1,'update_metric',
      &      'Not enough special lists passed.')
       call get_argument_value('method.MR','GNO',ival=gno)
+      call get_argument_value('method.MR','spinproj',ival=spinproj)
+      call get_argument_value('method.MR','project',ival=project)
 
       ! calculate metric (if not up to date)
       call evaluate2(fspc(2),.true.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
 
+      if (gno.gt.0) then
+        ! perform spin projection?
+        if (spinproj.ge.2)
+     &     call spin_prj_list(1d0,me_special(5)%mel,me_special(5)%mel,0,
+     &                        xdum,.false.,
+     &                        op_info,str_info,strmap_info,orb_info)
+        ! transform to GNO basis
+        call evaluate2(fspc(3),.false.,.false.,
+     &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
+
+        if (project.eq.1) then
+          if (nspecial.lt.7.or.nspcfrm.lt.6) call quit(1,
+     &         'update_metric','not enough arguments for GNO/seq.orth')
+          ! set up special matrices for sequential orthogonalization
+          ! (a) evaluate formula
+          call evaluate2(fspc(6),.true.,.false.,
+     &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
+          ! (b) substract unity from second block
+          call add_unity(-1d0,1,me_special(7)%mel,2,orb_info,str_info)
+          ! (c) invert
+          call inv_op(1,trim(me_special(7)%mel%label),
+     &                1,trim(me_special(7)%mel%label),
+     &                'pseudoinv',
+     &                op_info,orb_info,str_info,strmap_info)
+        end if
+      end if
+
       ! get half-transform of square root of inverted metric
       ! and projector matrix
-      call inv_op(trim(me_special(5)%mel%label),
-     &            1,trim(me_special(6)%mel%label),
-     &            'invsqrt',
-     &            op_info,orb_info,str_info,strmap_info)
+      if (gno.gt.0.and.project.eq.1) then
+        call inv_op(2,(/trim(me_special(5)%mel%label),
+     &                  trim(me_special(7)%mel%label)/),
+     &              1,trim(me_special(6)%mel%label),
+     &              'invsqrt',
+     &              op_info,orb_info,str_info,strmap_info)
+      else
+        call inv_op(1,trim(me_special(5)%mel%label),
+     &              1,trim(me_special(6)%mel%label),
+     &              'invsqrt',
+     &              op_info,orb_info,str_info,strmap_info)
+      end if
 
       ! Trafo into GNO basis required?
       if (gno.gt.0) then
-        if (nspcfrm.lt.4) call quit(1,'update_metric',
+        if (nspcfrm.lt.5) call quit(1,'update_metric',
      &             'Not enough formulas for trafo into GNO basis given')
         ! apply GNO trafo to transformation matrix
         call assign_me_list(me_special(6)%mel%label,
      &                     me_special(5)%mel%op%name,op_info)
-        call evaluate2(fspc(3),.false.,.false.,
+        call evaluate2(fspc(4),.false.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
         ! apply GNO trafo to projector
         call assign_me_list(me_special(5)%mel%label,
      &                     me_special(5)%mel%op%name,op_info)
-        call evaluate2(fspc(4),.false.,.false.,
+        call evaluate2(fspc(5),.false.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
       end if
 
       ! reorder to transformation matrix ...
       call reo_mel(trim(me_special(2)%mel%label),
-     &             trim(me_special(6)%mel%label),
+     &             trim(me_special(6)%mel%label),.false.,
      &             op_info,str_info,strmap_info,orb_info,
      &             13,.false.)  ! dirty: reo vtx. 1 --> 3
       ! ... and to adjoint of transformation matrix
       call reo_mel(trim(me_special(3)%mel%label),
-     &             trim(me_special(6)%mel%label),
+     &             trim(me_special(6)%mel%label),.false.,
      &             op_info,str_info,strmap_info,orb_info,
      &             13,.true.)   ! dirty: reo vtx. 1 --> 3
 
       ! reorder projector ...
       call reo_mel(trim(me_special(4)%mel%label),
-     &             trim(me_special(5)%mel%label),
+     &             trim(me_special(5)%mel%label),.false.,
      &             op_info,str_info,strmap_info,orb_info,
      &             13,.false.)  ! dirty: reo vtx. 1 --> 3
 
       ! update preconditioner if requested
       if (prcupdate) then
+        idx_jac = 7
+        if (gno.gt.0.and.project.eq.1) idx_jac = 8
         if (nspcfrm.lt.3) call quit(1,'update_metric',
      &        'No formula for Jacobian passed.')
-        if (nspecial.lt.7) call quit(1,'update_metric',
+        if (nspecial.lt.idx_jac) call quit(1,'update_metric',
      &        'Special list for Jacobian missing.')
 
         call assign_me_list(me_special(2)%mel%label,
      &                     me_special(2)%mel%op%name,op_info)
-        call assign_me_list(me_special(7)%mel%label,
-     &                     me_special(7)%mel%op%name,op_info)
+        call assign_me_list(me_special(idx_jac)%mel%label,
+     &                     me_special(idx_jac)%mel%op%name,op_info)
 
         call evaluate2(fspc(3),.true.,.false.,
      &              op_info,str_info,strmap_info,orb_info,xdum,.false.)
@@ -124,6 +165,8 @@
         ! first add inactive elements?
         call get_argument_value('method.MR','prc_type',
      &       ival=prc_type)
+        call get_argument_value('method.MR','prc_iter',
+     &       ival=prc_iter)
         call get_argument_value('method.MR','prc_min',
      &       xval=prc_min)
         call me_list_label(dia_label,'DIA',1,0,0,0,.false.)
@@ -137,14 +180,40 @@
         end if
 
         ! put diagonal of Jacobian to preconditioner
-        call dia_from_op(trim(me_dia%label),
-     &                   trim(me_special(7)%mel%label),
-     &                   prc_type.ge.3,.false.,
-     &                   op_info,str_info,orb_info)
+        if (prc_type.ge.3) then
+          call dia_from_op(trim(me_dia%label),
+     &                     trim(me_special(idx_jac)%mel%label),'extend',
+     &                     op_info,str_info,orb_info)
+        else
+          call dia_from_op(trim(me_dia%label),
+     &                     trim(me_special(idx_jac)%mel%label),'---',
+     &                     op_info,str_info,orb_info)
+        end if
 
         ! restrict elements to minimum value?
         call scale_copy_op(trim(dia_label),trim(dia_label),prc_min,1,
      &                     'prc_thresh',0,op_info,orb_info,str_info)
+
+        ! prepare Aoff for iterative improvement?
+        if (prc_iter.ge.1) then
+          call get_argument_value('method.MR','prc_impfac',
+     &         xval=prc_impfac)
+          ! change sign of A
+          call scale_copy_op(trim(me_special(idx_jac)%mel%label),
+     &                       trim(me_special(idx_jac)%mel%label),
+     &                       -prc_impfac,1,
+     &                       '---',0,op_info,orb_info,str_info)
+          ! zero the diagonal => Aoff
+          call dia_from_op(trim(me_dia%label), !will not be changed
+     &                     trim(me_special(idx_jac)%mel%label),
+     &                     'zero_dia',
+     &                     op_info,str_info,orb_info)
+          ! reorder to form of transformation matrix
+          call reo_mel(trim(me_special(idx_jac+1)%mel%label),
+     &                 trim(me_special(idx_jac)%mel%label),.true.,
+     &                 op_info,str_info,strmap_info,orb_info,
+     &                 13,.false.)  ! dirty: reo vtx. 1 --> 3
+        end if
       end if
 
       return

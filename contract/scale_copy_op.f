@@ -261,7 +261,7 @@ c            end do
           case default
             ! apply scaling factors (periodically)
             do idx = 1, idxnd_src-idxst_src+1
-              buffer(idx) = fac(ifac)*buffer(idx)
+              buffer(idx) = signsec(isec)*fac(ifac)*buffer(idx)
 c dbg
 c              if (buffer(idx).lt.-1d-14) then
 c                write(luout,*) 'changing sign for el.# ',idx

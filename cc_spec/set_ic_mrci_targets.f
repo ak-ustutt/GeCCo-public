@@ -928,8 +928,8 @@ c      end if
       call set_arg('EVAL_A_diag',EXTRACT_DIAG,'LIST_IN',1,tgt_info,
      &             val_label=(/'ME_A'/))
       if (prc_type.ge.3)
-     &  call set_arg('EVAL_A_diag',EXTRACT_DIAG,'EXTEND',1,tgt_info,
-     &               val_log=(/.true./))
+     &  call set_arg('EVAL_A_diag',EXTRACT_DIAG,'MODE',1,tgt_info,
+     &               val_str='extend')
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Preconditioner (b) :',0,'LIST')

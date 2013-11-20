@@ -38,7 +38,7 @@
      &     NEW = 0, OLD = 1, ANY = 2
 
       integer, parameter ::
-     &     maxfac = 20, max_occ = 250, max_nj = 20,
+     &     maxfac = 40, max_occ = 250, max_nj = 20,
      &     max_label = 200, maxterms = 50, max_pops = 100
       real(8) ::
      &     fac(maxfac), freq, xdum
@@ -587,6 +587,17 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       reo,op_info
      &       )
 *----------------------------------------------------------------------*
+      case(REORDER_FORMULA)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),ANY)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_form(form0_pnt,trim(label),OLD)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call form_reorder(form_pnt,form0_pnt,
+     &       title,op_info
+     &       )
+*----------------------------------------------------------------------*
       case(DERIVATIVE)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
@@ -1013,12 +1024,11 @@ c dbg
 *----------------------------------------------------------------------*
         call get_arg('LIST_RES',rule,tgt_info,val_label=label)
         call get_arg('LIST_IN',rule,tgt_info,val_label=label2)
-        call get_arg('EXTEND',rule,tgt_info,val_log=explicit)
-        call get_arg('EXTEND_ACT',rule,tgt_info,val_log=init)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
 
         if (form_test) return
 
-        call dia_from_op(label,label2,explicit,init,
+        call dia_from_op(label,label2,mode,
      &       op_info,str_info,orb_info)
 
 *----------------------------------------------------------------------*
@@ -1028,11 +1038,34 @@ c dbg
         call get_arg('LIST_IN',rule,tgt_info,val_label=label2)
         call get_arg('FROMTO',rule,tgt_info,val_int=idx)
         call get_arg('ADJOINT',rule,tgt_info,val_log=dagger)
+        call get_arg('SEARCH',rule,tgt_info,val_log=init)
 
         if (form_test) return
 
-        call reo_mel(label,label2,
+        call reo_mel(label,label2,init,
      &       op_info,str_info,strmap_info,orb_info,idx,dagger)
+
+*----------------------------------------------------------------------*
+      case(SPIN_PROJECT)
+*----------------------------------------------------------------------*
+        call get_arg('LIST',rule,tgt_info,val_label=label)
+        call get_arg('S2',rule,tgt_info,val_int=s2)
+
+        if (form_test) return
+
+        call spin_prj_list_drv(label,s2,
+     &       op_info,str_info,strmap_info,orb_info)
+
+*----------------------------------------------------------------------*
+      case(ORB_FLIP)
+*----------------------------------------------------------------------*
+
+        call get_arg('LIST',rule,tgt_info,val_label=label)
+
+        if (form_test) return
+
+        call get_mel(mel_pnt,label,OLD)
+        call orb_flip_mel(mel_pnt,str_info,orb_info)
 
 *----------------------------------------------------------------------*
 *     subsection EVALUATE
@@ -1074,13 +1107,14 @@ c          mode = 'dia-R12'
 *----------------------------------------------------------------------*
       case(INVERT)
 *----------------------------------------------------------------------*
-        call get_arg('LIST_INV',rule,tgt_info,val_label=label)
-        call get_arg('LIST',rule,tgt_info,
+        call get_arg('LIST_INV',rule,tgt_info,
      &               val_label_list=label_list,ndim=nop)
+        call get_arg('LIST',rule,tgt_info,
+     &               val_label_list=label_list(nop+1:),ndim=nop2)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
 
         if (form_test) return
-        call inv_op(label,nop,label_list,mode,
+        call inv_op(nop,label_list(1:),nop2,label_list(nop+1:),mode,
      &       op_info,orb_info,str_info,strmap_info)
 
 *----------------------------------------------------------------------*

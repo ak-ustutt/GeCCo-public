@@ -40,8 +40,7 @@
      &       idstsec(:)       ! first idx in section, dim=sum(nsec)
         real(8), pointer ::
      &       thrgrd(:),       ! dimension: nopt
-     &       signsec(:),      ! contraction sign of section, dim=sum(nsec)
-     &       signsec2(:)      ! switching sign of section, dim=sum(nsec)
+     &       signsec(:)       ! contraction sign of section, dim=sum(nsec)
       end type optimize_info
 
       integer, parameter ::

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine reo_blk_wmaps_c(xop_reo,xop_ori,
+      subroutine reo_blk_wmaps_c(fac,xop_reo,xop_ori,
      &     len_reo,len_ori,
      &     sign_reo,
      &     tra_opreo,tra_opori,
@@ -47,7 +47,7 @@
       ! buffer with originally ordered elements
       ! (single distribution, see below)
       real(8), intent(in) ::
-     &     xop_ori(*)
+     &     xop_ori(*), fac
       ! buffer with ALL distributions of current MS, IRREP
       real(8), intent(inout) ::
      &     xop_reo(*)
@@ -568,7 +568,7 @@ c dbgend
                 ! --> offset in xop_reo
                 if (ndis_opreo(gm_op_a,idxms_op_a).gt.1) then
                   idxdis =
-     &                 idx_msgmdst2(
+     &                 idx_msgmdst2(.true.,
      &                 iblk_opreo,idxms_op_a,gm_op_a,
      &                 cinfo_opreo_c,idxms_ip_dis_c,
      &                               gm_ip_dis_c,ncblk_opreo,
@@ -806,7 +806,7 @@ c                          print *,'max: ',len_reo,len_ori
 c                        end if
 c dbg
                         xop_reo(idx_opreo) = xop_reo(idx_opreo)
-     &                       + dble(isgnt)*xop_ori(idx_opori)
+     &                       + fac*dble(isgnt)*xop_ori(idx_opori)
 
                       end do i0_c
                     end do k_c

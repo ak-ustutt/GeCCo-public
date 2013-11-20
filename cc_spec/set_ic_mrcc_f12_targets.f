@@ -45,7 +45,7 @@
       logical ::
      &     skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, notrunc
+     &     oldref, solve, notrunc, restart
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -54,8 +54,16 @@
       character ::
      &     op_ht*3, f_ht*5, op_ht0to*6, f_ht0to*8, form_str*50,
      &     def_ht*10
+c dbg
+      character(20) :: Z2_appr
+c dbgend
       real(8) ::
      &     x_ansatz, prc_shift
+
+c dbg
+      Z2_appr(1:20) = ' '
+      call get_argument_value('method.R12','Z2_appr',str=Z2_appr)
+c dbgend
 
       if (iprlvl.gt.0) write(luout,*) 'setting icMRCC_F12 targets'
 
@@ -79,6 +87,8 @@ c     &     xval=prc_shift)
      &     ival=optref)
       call get_argument_value('calculate.solve.non_linear','update_prc',
      &     ival=update_prc)
+      call get_argument_value('calculate.solve.non_linear','restart',
+     &     lval=restart)
 c      call get_argument_value('calculate.solve.non_linear','preopt',
 c     &     lval=preopt)
 c      call get_argument_value('method.MR','project',
@@ -120,7 +130,7 @@ c      solve = .not.svdonly.and.(tfix.eq.0.or.maxit.gt.1)
       skip = (is_keyword_set('calculate.skip_E').gt.0)
       solve = .not.svdonly.and..not.skip
       if (h1bar) call quit(1,'set_ic_mrcc_f12_targets',
-     &                     'H1bar not available yet')
+     &                   'H1bar not yet available for F12 calculations')
       if (optref.ne.0.and.optref.ne.-3)
      &   call quit(1,'set_ic_mrcc_f12_targets','use optref=0 or -3')
       
@@ -320,16 +330,23 @@ c dbgend
      &     val_label=(/'F_MRCC_F12_LAG'/))
       if(notrunc) then
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',5,tgt_info,
-     &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',
-     &                 'VINT_R12','VINT_R12^+'/))
+     &     val_label=(/'BINT_R12  ','BhINT_R12 ','XINT_R12  ',
+     &                 'VINT_R12  ','VINT_R12^+'/))
       else
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',10,tgt_info,
-     &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',
-     &                 'VINT_R12','VINT_R12^+',
-     &                 'CINT_R12','CINT_R12^+',
-     &                 'Vring_formal','Vring_formal^+',
-     &                 'C1_formal'/))
+     &     val_label=(/'BINT_R12      ','BhINT_R12     ',
+     &                 'XINT_R12      ',
+     &                 'VINT_R12      ','VINT_R12^+    ',
+     &                 'CINT_R12      ','CINT_R12^+    ',
+     &                 'Vring_formal  ','Vring_formal^+',
+     &                 'C1_formal     '/))
       end if
+c dbg
+c      if(trim(Z2_appr).eq."J2K3") then
+c      call set_dependency('F_MRCC_F12_LAG','Z2-INT-CABS',tgt_info)
+c      call set_dependency('F_MRCC_F12_LAG','Z2INT_R12_EVAL',tgt_info)
+c      end if
+c dbg end
 
       if(notrunc) then
         call set_rule2('F_MRCC_F12_LAG',REPLACE,tgt_info)
@@ -874,6 +891,8 @@ c     &               val_log=(/.true./))
 c      case default
 c        call quit(1,'set_ic_mrcc_targets','unknown prc_type')
 c      end select
+      if (restart) ! project out redundant part (if sv_thr. changed)
+     &   call set_dependency('SOLVE_MRCC_F12','EVAL_Tproj',tgt_info)
       if (optref.ne.0) then
         call me_list_label(dia_label2,mel_dia,orb_info%lsym,
      &                     0,0,0,.false.)
@@ -1038,14 +1057,14 @@ cc dbg
         call set_rule('SOLVE_MRCC_F12',ttype_opme,PRINT_MEL,
      &       'ME_C0',1,0,
      &       parameters,2,tgt_info)
-c        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
-c     &       'FOPT_REF_S(S+1)',1,0,
-c     &       parameters,0,tgt_info)
-c        call form_parameters(-1,parameters,2,
-c     &       'Spin expectation value <C0| S^2 |C0> :',0,'SCAL F20.12')
-c        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
-c     &       'ME_S(S+1)',1,0,
-c     &       parameters,2,tgt_info)
+        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
+     &       'FOPT_REF_S(S+1)',1,0,
+     &       parameters,0,tgt_info)
+        call form_parameters(-1,parameters,2,
+     &       'Spin expectation value <C0| S^2 |C0> :',0,'SCAL F20.12')
+        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+     &       'ME_S(S+1)',1,0,
+     &       parameters,2,tgt_info)
       end if
 c      call set_dependency('SOLVE_MRCC','FOPT_T_S2',tgt_info)
 c      call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,

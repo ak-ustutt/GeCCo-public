@@ -37,6 +37,7 @@
      &     REPLACE*7                = 'REPLACE',
      &     SUM_HERMIT*13            = 'SUM_HERMITIAN',
      &     INVARIANT*9              = 'INVARIANT',
+     &     REORDER_FORMULA*15       = 'REORDER_FORMULA',
      &     DERIVATIVE*10            = 'DERIVATIVE',
      &     LEQ_SPLIT*9              = 'LEQ_SPLIT',
      &     OPTIMIZE*8               = 'OPTIMIZE',
@@ -79,4 +80,6 @@
      &     SET_MEL*7          = 'SET_MEL',
      &     EXTRACT_DIAG*12    = 'EXTRACT_DIAG',
      &     REORDER_MEL*11     = 'REORDER_MEL',
-     &     SCALE_COPY*10      = 'SCALE_COPY'
+     &     SPIN_PROJECT*12    = 'SPIN_PROJECT',
+     &     SCALE_COPY*10      = 'SCALE_COPY',
+     &     ORB_FLIP*8         = 'ORB_FLIP'

@@ -56,7 +56,7 @@
       end if
 
       call init_word_list(wlist)
-      call lex_line(wlist,dstring,0,' ,|',' ','"')
+      call lex_line(wlist,dstring,0,' ,;|',' ','"')
 
       if (ntest.ge.100) then
         write(luout,*) 'lex''ed string:'

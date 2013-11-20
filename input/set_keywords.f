@@ -200,10 +200,14 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/3/)) ! type of preconditioner
       call argument_add('prc_shift','method.MR',type=vtyp_rl8,
      &                  xdef=(/0d0/))
+      call argument_add('prc_impfac','method.MR',type=vtyp_rl8,
+     &                  xdef=(/1d0/))
+      call argument_add('prc_iter','method.MR',type=vtyp_int,
+     &                  idef=(/0/)) ! #iter for iterative improvement
       call argument_add('prc_min','method.MR',type=vtyp_rl8,
      &                  xdef=(/0.2d0/))
-      call argument_add('project','method.MR',type=vtyp_log,
-     &     ldef=(/.true./)) ! project out singles from doubles a.s.o.
+      call argument_add('project','method.MR',type=vtyp_int,
+     &     idef=(/1/)) ! project out singles from doubles a.s.o.
       call argument_add('svdonly','method.MR',type=vtyp_log,
      &                  ldef=(/.false./)) ! stop after first SVD
       call argument_add('mult','method.MR',type=vtyp_int,
@@ -214,8 +218,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/0/))  ! symmetry (0: read fr. interface)
       call argument_add('writeFock','method.MR',type=vtyp_log,
      &                  ldef=(/.false./))
-      call argument_add('spinproj','method.MR',type=vtyp_log,
-     &                  ldef=(/.false./)) ! enforce spin by projection
+      call argument_add('spinproj','method.MR',type=vtyp_int,
+     &                  idef=(/0/)) ! spin projection (1: C0,2: C0 & T)
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,
@@ -258,6 +262,11 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/-1/)) ! perturbation order of T1
       call argument_add('simp','method.MRCC',type=vtyp_int,
      &     idef=(/0/)) ! special simplifications for (T)
+
+      call keyword_add('excite',context='method.MRCC')
+      call argument_add('method','method.MRCC.excite',
+     &     type=vtyp_str,len=8,
+     &     cdef=(/'L','R',' ',' ',' ',' ',' ',' '/))
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
@@ -371,6 +380,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     type=vtyp_int,len=8,
      &     idef=(/1,0,0,0,0,0,0,0/))
       call argument_add('msc','calculate.excitation',
+     &     type=vtyp_int,len=1,idef=(/0/))
+      call argument_add('mult','calculate.excitation',
      &     type=vtyp_int,len=1,idef=(/0/))
       call keyword_add('normalize',context='calculate.excitation')
       call keyword_add('analyze',context='calculate.excitation')

@@ -77,11 +77,11 @@ c      else if (nincore.eq.1) then
 
         else
 
-          call da_diavec(ffscr,1,1,0d0,
-     &         ffgrd,1,1,1d0,
-     &         ffdia,1,1,xdamp,-1d0,
+          call da_diavec(ffscr,1,0d0,
+     &         ffgrd,1,1d0,
+     &         ffdia,1,xdamp,-1d0,
      &         nwfpar,xbuf1,xbuf2,lenbuf)
-          xnrm = sqrt(da_ddot(ffscr,1,1,ffscr,1,1,
+          xnrm = sqrt(da_ddot(ffscr,1,ffscr,1,
      &         nwfpar,xbuf1,xbuf1,lenbuf))
           
         end if

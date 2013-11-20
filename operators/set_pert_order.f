@@ -8,6 +8,7 @@
 
       implicit none
 
+      include 'stdunit.h'
       include 'def_operator.h'
 
       type(operator), intent(inout) ::
@@ -26,8 +27,12 @@ c        print *,'species = ',spec
         op%ifreq=freq_idx(1:iorder)  ! frequency indices
 c        print *,'ifreq = ',op%ifreq(1:iorder)
       else
-        if (op%n_occ_cls.ne.iorder) call quit(1,'set_pert_order',
-     &                          'occ. class expected as argument')
+        if (op%n_occ_cls.ne.iorder) then
+          write(luout,*) 'number of blocks: ',op%n_occ_cls
+          write(luout,*) 'your input:       ',iorder
+           call quit(1,'set_pert_order',
+     &                          'invalid argument value')
+        end if
         if (associated(op%blk_version)) deallocate(op%blk_version)
         allocate(op%blk_version(iorder))
         op%blk_version=freq_idx(1:iorder) ! op. block versions

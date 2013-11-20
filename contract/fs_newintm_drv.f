@@ -102,7 +102,7 @@
         me_new%casym = me_ma%casym
         me_new%mst   = itra*itra1*me_ma%mst  
         me_new%gamt  = me_ma%gamt 
-        me_new%s2    = me_ma%s2   
+c        me_new%s2    = me_ma%s2   
       else
         idx = idx_oplist2(fl_item%parent2,op_info)
         if (idx.lt.1)
@@ -121,12 +121,14 @@ cmh     &       call quit(1,'fs_newintm_drv',
 cmh     &       'MS handling is still not correct in general!!!!')
         me_new%mst = itra*(itra1*me_ma%mst + itra2*me_pa%mst)
         me_new%gamt = multd2h(me_ma%gamt,me_pa%gamt)
-        me_new%s2    = me_ma%s2
-        if (me_ma%s2.ne.0.or.me_pa%s2.ne.0)
-     &       call quit(1,'fs_newintm_drv',
-     &       'S2 handling is not implemented!!!!')
+c        me_new%s2    = me_ma%s2
+c        if (me_ma%s2.ne.0.or.me_pa%s2.ne.0)
+c     &       call quit(1,'fs_newintm_drv',
+c     &       'S2 handling is not implemented!!!!')
       end if
       me_new%diag_type = 0
+      ! for now: no control over S2 for intermediates
+      me_new%s2 = -1
 
       ! make sure that all graphs exist to address the ME-list
       call update_graphs(str_info,me_new,orb_info)

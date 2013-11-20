@@ -70,13 +70,13 @@ c dbgend
      &     orb_info
 
       logical ::
-     &     conv, restart, spinproj, traf
+     &     conv, restart, traf
       character(len_opname) ::
      &     label, dia_label
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
      &     idx, idxmel, ierr, nout, idx_en_xret,
-     &     ndx, idx_res_xret(nopt), jdx
+     &     ndx, idx_res_xret(nopt), jdx, spinproj
       real(8) ::
      &     energy, xresnrm(nopt), xdum, thr_suggest
       real(8), pointer ::
@@ -339,13 +339,13 @@ c     &       ff_trv,ff_h_trv,
      &       ival=ndx)
           if(ndx.le.0) ndx=idx
           call get_argument_value('method.MR','spinproj',
-     &       lval=spinproj)
+     &       ival=spinproj)
           call me_list_label(dia_label,'DIA',orb_info%lsym,
      &                       0,0,0,.false.)
           dia_label = trim(dia_label)//'C0'
           ! use weaker convergence threshold for micro-iterations
           thr_suggest = min(xresnrm(1)*opti_info%mic_ahead,1d-4)
-          if (spinproj) then
+          if (spinproj.gt.0) then
             call solve_evp('SPP',1,ndx,idx,
      &                 'ME_C0',trim(dia_label),'A_C0',
      &                 'C0','FOPT_OMG_C0',
@@ -481,7 +481,7 @@ c test
           call solve_leq('TRF',
      &                 1,1,'ME_DlT',label_prc(1),'H0_DlT','S_DlT',
      &                 'OMGprj',xdum,'FOPT_H0INV',
-     &                    (/'ME_Tout','ME_Ttr','ME_Dtr','ME_Dtrdag'/),4,
+     &            (/'ME_Tout  ','ME_Ttr   ','ME_Dtr   ','ME_Dtrdag'/),4,
      &                 'FOPT_Ttr_GEN',1,  thr_suggest,
      &                 op_info,form_info,str_info,strmap_info,orb_info)
           ! overwrite the gradient with preconditioned gradient

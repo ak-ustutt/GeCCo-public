@@ -33,9 +33,10 @@
       integer ::
      &     ndef, occ_def(ngastp,2,124),!60),
      &     isym, msc, ims, ip, ih, cminexc, 
-     &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, maxroot, cmaxv
+     &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, maxroot, cmaxv,
+     &     spinproj
       logical ::
-     &     oldref, l_exist, writeF, spinproj
+     &     oldref, l_exist, writeF
       character(len_target_name) ::
      &     dia_label, dia_label2, labels(20)
       character(len_command_par) ::
@@ -77,7 +78,7 @@
       call get_argument_value('method.MR','writeFock',
      &     lval=writeF)
       call get_argument_value('method.MR','spinproj',
-     &     lval=spinproj)
+     &     ival=spinproj)
       if (cmaxh.lt.0) cmaxh = cmaxexc
       if (cmaxp.lt.0) cmaxp = cmaxexc
       cmaxv = orb_info%norb_hpv(IVALE,1)*2
@@ -139,7 +140,7 @@
 
       ! clone: keep copy of unmodified coefficients C00
       call add_target3((/
-     &     'target C00(',
+     &     'target C00(                             ',
      &     '  CLONE_OPERATOR(label=C00,template=C0))'/),tgt_info)
  
       ! define product Jacobian times C0
@@ -210,13 +211,6 @@ c     &              1,1,parameters,1,tgt_info)
       call set_dependency('Sz','S+',tgt_info)
       call cloneop_parameters(-1,parameters,'S+',.false.)
       call set_rule('Sz',ttype_op,CLONE_OP,'Sz',1,1,
-     &              parameters,1,tgt_info)
-      ! Sz_dum
-      call add_target('Sz_dum',ttype_op,.false.,
-     &                tgt_info)
-      call set_dependency('Sz_dum','S+',tgt_info)
-      call cloneop_parameters(-1,parameters,'S+',.false.)
-      call set_rule('Sz_dum',ttype_op,CLONE_OP,'Sz_dum',1,1,
      &              parameters,1,tgt_info)
 
       ! define scalar spin expectation value
@@ -363,9 +357,8 @@ c     &                labels,2,1,parameters,2,tgt_info)
       call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &     val_log=(/.false./))
       if (ims.ne.0) then
-        ! (b) + Sz^2 (Sz_dum is used to circumvent automatic "BCH" factor)
+        ! (b) + Sz^2
         call set_dependency('F_REF_S(S+1)','Sz',tgt_info)
-        call set_dependency('F_REF_S(S+1)','Sz_dum',tgt_info)
         call set_rule2('F_REF_S(S+1)',EXPAND_OP_PRODUCT,tgt_info)
         call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'LABEL',1,
      &       tgt_info,val_label=(/'F_REF_S(S+1)'/))
@@ -373,18 +366,13 @@ c     &                labels,2,1,parameters,2,tgt_info)
      &       tgt_info,val_label=(/'S(S+1)'/))
         call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &       tgt_info,
-     &       val_label=(/'C0^+  ','Sz    ','Sz_dum','C0    '/))
+     &       val_label=(/'C0^+  ','Sz    ','Sz    ','C0    '/))
         call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'IDX_SV',4,
      &       tgt_info,val_int=(/2,3,4,5/))
         call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &       val_log=(/.false./))
-        call set_rule2('F_REF_S(S+1)',REPLACE,tgt_info)
-        call set_arg('F_REF_S(S+1)',REPLACE,'LABEL_RES',1,tgt_info,
-     &       val_label=(/'F_REF_S(S+1)'/))
-        call set_arg('F_REF_S(S+1)',REPLACE,'LABEL_IN',1,tgt_info,
-     &       val_label=(/'F_REF_S(S+1)'/))
-        call set_arg('F_REF_S(S+1)',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'Sz_dum','Sz    '/))
+        call set_arg('F_REF_S(S+1)',EXPAND_OP_PRODUCT,'FIX_VTX',1,
+     &       tgt_info,val_log=(/.true./)) !prevent "BCH factor"
       end if
 c dbg
 c      call set_rule2('F_REF_S(S+1)',PRINT_FORMULA,tgt_info)
@@ -397,7 +385,6 @@ c dbgend
       call set_dependency('F_REPL_H_S2','S+',tgt_info)
       call set_dependency('F_REPL_H_S2','S-',tgt_info)
       call set_dependency('F_REPL_H_S2','Sz',tgt_info)
-      call set_dependency('F_REPL_H_S2','Sz_dum',tgt_info)
       call set_dependency('F_REPL_H_S2','H',tgt_info)
       ! (a) 1/2*(S+S- + S-S+)
       call set_rule2('F_REPL_H_S2',EXPAND_OP_PRODUCT,tgt_info)
@@ -426,7 +413,7 @@ c dbgend
      &     val_rl8=(/0.5d0/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &     val_log=(/.false./))
-      ! (b) + Sz^2 (Sz_dum is used to circumvent automatic "BCH" factor)
+      ! (b) + Sz^2
       call set_rule2('F_REPL_H_S2',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &     val_label=(/'F_REPL_H_S2'/))
@@ -434,18 +421,13 @@ c dbgend
      &     val_label=(/'H'/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'OPERATORS',4,
      &     tgt_info,
-     &     val_label=(/'H     ','Sz    ','Sz_dum','H     '/))
+     &     val_label=(/'H     ','Sz    ','Sz    ','H     '/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/1,2,3,1/))
       call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &     val_log=(/.false./))
-      call set_rule2('F_REPL_H_S2',REPLACE,tgt_info)
-      call set_arg('F_REPL_H_S2',REPLACE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_REPL_H_S2'/))
-      call set_arg('F_REPL_H_S2',REPLACE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_REPL_H_S2'/))
-      call set_arg('F_REPL_H_S2',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'Sz_dum','Sz    '/))
+      call set_arg('F_REPL_H_S2',EXPAND_OP_PRODUCT,'FIX_VTX',1,tgt_info,
+     &     val_log=(/.true./))
 c dbg
 c      call set_rule2('F_REPL_H_S2',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_REPL_H_S2',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -510,9 +492,8 @@ c dbgend
       call set_arg('F_C0_sp',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &     val_log=(/.false./))
       if (ims.ne.0) then
-        ! (b) + Sz^2 (Sz_dum is used to circumvent automatic "BCH" factor)
+        ! (b) + Sz^2
         call set_dependency('F_C0_sp','Sz',tgt_info)
-        call set_dependency('F_C0_sp','Sz_dum',tgt_info)
         call set_rule2('F_C0_sp',EXPAND_OP_PRODUCT,tgt_info)
         call set_arg('F_C0_sp',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &       val_label=(/'F_C0_sp'/))
@@ -520,18 +501,13 @@ c dbgend
      &       val_label=(/'C0_sp'/))
         call set_arg('F_C0_sp',EXPAND_OP_PRODUCT,'OPERATORS',5,
      &       tgt_info,
-     &       val_label=(/'C0_sp ','Sz    ','Sz_dum','C0    ','C0_sp '/))
+     &       val_label=(/'C0_sp ','Sz    ','Sz    ','C0    ','C0_sp '/))
         call set_arg('F_C0_sp',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &       val_int=(/1,2,3,4,1/))
         call set_arg('F_C0_sp',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &       val_log=(/.false./))
-        call set_rule2('F_C0_sp',REPLACE,tgt_info)
-        call set_arg('F_C0_sp',REPLACE,'LABEL_RES',1,tgt_info,
-     &       val_label=(/'F_C0_sp'/))
-        call set_arg('F_C0_sp',REPLACE,'LABEL_IN',1,tgt_info,
-     &       val_label=(/'F_C0_sp'/))
-        call set_arg('F_C0_sp',REPLACE,'OP_LIST',2,tgt_info,
-     &       val_label=(/'Sz_dum','Sz    '/))
+        call set_arg('F_C0_sp',EXPAND_OP_PRODUCT,'FIX_VTX',1,tgt_info,
+     &       val_log=(/.true./))
       end if
 c dbg
 c      call set_rule2('F_C0_sp',PRINT_FORMULA,tgt_info)
@@ -737,17 +713,23 @@ c     &     parameters,2,tgt_info)
 c dbgend
 
       ! ME_FREF
-      call add_target('DEF_ME_FREF',ttype_opme,.false.,tgt_info)
+      call add_target2('DEF_ME_FREF',.false.,tgt_info)
       call set_dependency('DEF_ME_FREF','FREF',tgt_info)
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'ME_FREF'
-      labels(2) = 'FREF'
-      call me_list_parameters(-1,parameters,
-     &     0,0,1,
-     &     0,0,.false.)
-      call set_rule('DEF_ME_FREF',ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
+      call set_rule2('DEF_ME_FREF',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_FREF',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_FREF'/))
+      call set_arg('DEF_ME_FREF',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'FREF'/))
+      call set_arg('DEF_ME_FREF',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_FREF',DEF_ME_LIST,'2MS',1,tgt_info,
+     &     val_int=(/0/))
+      if (ims.eq.0)
+     &   call set_arg('DEF_ME_FREF',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &        val_int=(/1/))
+      if (spinproj.ge.2)
+     &   call set_arg('DEF_ME_FREF',DEF_ME_LIST,'S2',1,tgt_info,
+     &        val_int=(/0/))
 
       ! ME_S+
       call add_target2('DEF_ME_S+',.false.,tgt_info)
@@ -830,7 +812,7 @@ c dbgend
      &     0,0,0,.false.)
       dia_label2 = trim(dia_label)//'C0'
       call set_dependency('SOLVE_REF',trim(dia_label2),tgt_info)
-      if (spinproj) then
+      if (spinproj.gt.0) then
         call set_dependency('SOLVE_REF','DEF_ME_C0_sp',tgt_info)
         call set_dependency('SOLVE_REF','FOPT_C0_sp',tgt_info)
       end if
@@ -850,7 +832,7 @@ c dbgend
      &       val_label=(/'C0'/))
         call set_arg('SOLVE_REF',SOLVEEVP,'FORM',1,tgt_info,
      &       val_label=(/'FOPT_A_C0'/))
-        if (.not.spinproj) then
+        if (spinproj.eq.0) then
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='DIA')
         else
@@ -865,6 +847,15 @@ c dbgend
         inquire(file='ME_C0_list.da',exist=l_exist)
         if (.not.l_exist) call quit(1,'set_unc_mrci_targets',
      &           'File for CASSCF coefficients not found!')
+c dbg
+c        call set_rule2('SOLVE_REF',SET_MEL,tgt_info)
+c        call set_arg('SOLVE_REF',SET_MEL,'LIST',1,tgt_info,
+c     &       val_label=(/'ME_C0'/))
+c        call set_arg('SOLVE_REF',SET_MEL,'IDX_LIST',2,tgt_info,
+c     &       val_int=(/1,2/))
+c        call set_arg('SOLVE_REF',SET_MEL,'VAL_LIST',2,tgt_info,
+c     &       val_rl8=(/1d0,1d0/))
+c dbgend
       end if
       if (cmaxexc.eq.0) then
         call form_parameters(-1,parameters,2,

@@ -38,10 +38,10 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     msc, maxexc, ip, ih, iv,
      &     gno, idef, iexc, jexc,
-     &     version(60), ivers, icnt, prc_type
+     &     version(60), ivers, icnt, prc_type, spinproj, project
       logical ::
      &     sv_fix, l_exist,
-     &     l_icci, l_iccc, project, skip, Op_eqs, svdonly
+     &     l_icci, l_iccc, skip, Op_eqs, svdonly
       real(8) ::
      &     sv_thresh, prc_shift, tikhonov
       character(len_target_name) ::
@@ -89,19 +89,19 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
      &     xval=tikhonov)
 
       call get_argument_value('method.MR','project',
-     &     lval=project)
+     &     ival=project)
       call get_argument_value('method.MR','svdonly',
      &     lval=svdonly)
       call get_argument_value('method.MR','prc_type',
      &     ival=prc_type)
       call get_argument_value('method.MR','prc_shift',
      &     xval=prc_shift)
+      call get_argument_value('method.MR','spinproj',
+     &     ival=spinproj)
 
       if (.not.l_iccc.and.prc_type.ne.0.and.prc_type.ne.3.or.
      &    prc_type.gt.4.or.prc_type.ne.2.and.prc_shift.ne.0d0)
      &  call quit(1,'set_ic_mr_targets','Choose other preconditioner!')
-      if (gno.gt.0.and.project) call quit(1,'set_ic_mr_targets',
-     &          'No seq. orth. (project=T) yet for GNO')
 
       if (ntest.ge.100) then
         print *,'gno     = ',gno
@@ -122,7 +122,8 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
       if (l_iccc) then
         call get_argument_value('method.MRCC','Op_eqs',
      &       lval=Op_eqs)
-        project = project.or.Op_eqs ! no off-diagonal metric blocks
+        if (project.eq.0.and.Op_eqs) 
+     &     project=1 ! no off-diagonal metric blocks
       end if
 
 *----------------------------------------------------------------------*
@@ -233,7 +234,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
            do jexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
-            if (project.and.iexc.ne.jexc) cycle
+            if (project.eq.1.and.gno.eq.0.and.iexc.ne.jexc) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
@@ -263,7 +264,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
            do jexc = excrestr(ih,ip,2), excrestr(ih,ip,1),-1
-            if (project.and.iexc.ne.jexc) cycle
+            if (project.eq.1.and.gno.eq.0.and.iexc.ne.jexc) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
@@ -348,7 +349,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))
-     &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
+     &          .and..not.(l_icci.and.prc_type.ge.3)) cycle
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
             occ_def(IPART,1,ndef*2) = ip
@@ -384,7 +385,7 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))
-     &          .and..not.(l_icci.and.prc_type.eq.3)) cycle
+     &          .and..not.(l_icci.and.prc_type.ge.3)) cycle
             icnt = icnt + 1
             ! for cheap precond.: only valence part needed eventually
             if (prc_type.ge.3.and.version(icnt).ne.1) cycle
@@ -455,7 +456,6 @@ c dbgend
       call add_target2('F_NORM',.false.,tgt_info)
       call set_dependency('F_NORM','NORM',tgt_info)
       call set_dependency('F_NORM',op_exc,tgt_info)
-      call set_dependency('F_NORM','DENS',tgt_info)
       call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &     val_label=(/'F_NORM'/))
@@ -466,25 +466,30 @@ c dbgend
      &     val_label=(/op_deexc,op_exc/))
       call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',2,tgt_info,
      &     val_int=(/2,3/))
-      call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &     val_label=(/'F_NORM'/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &     val_label=(/'NORM'/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
-     &     tgt_info,
-     &     val_label=(/'DENS',op_deexc,op_exc,'DENS'/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
-     &     val_int=(/2,3,4,2/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
-     &     val_int=(/1,4/))
-      call set_arg('F_NORM',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &     val_log=(/.false./))
-      if (gno.eq.0)
-     & call set_arg('F_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
-     &     val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
+      if (orb_info%nactel.gt.0) then
+        call set_dependency('F_NORM','DENS',tgt_info)
+        call set_rule2('F_NORM',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_NORM'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'NORM'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &       tgt_info,
+     &       val_label=(/'DENS',op_deexc,op_exc,'DENS'/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &       val_int=(/2,3,4,2/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+     &       val_int=(/1/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+     &       val_int=(/1,4/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &       val_log=(/.false./))
+c        if (gno.eq.0)
+c       & call set_arg('F_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+c       &     val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
+        call set_arg('F_NORM',EXPAND_OP_PRODUCT,'BLK_MAX',4,tgt_info,
+     &       val_int=(/orb_info%nactel,-1,-1,orb_info%nactel/))
+      end if
       ! b) insert unit operators to allow for differentiation
       ! and for factoring out of hole densities
       call set_dependency('F_NORM','1v',tgt_info)
@@ -522,39 +527,41 @@ c dbgend
      &     val_label=(/'F_NORM'/))
       call set_arg('F_NORM',REPLACE,'OP_LIST',2,tgt_info,
      &     val_label=(/'1v','1 '/))
-      if (gno.eq.1) then
-        ! d) expand reduced densities in terms of cumulants
-        call set_dependency('F_NORM','F_DENS',tgt_info)
-        call set_rule2('F_NORM',EXPAND,tgt_info)
-        call set_arg('F_NORM',EXPAND,'LABEL_RES',1,tgt_info,
-     &       val_label=(/'F_NORM'/))
-        call set_arg('F_NORM',EXPAND,'LABEL_IN',1,tgt_info,
-     &       val_label=(/'F_NORM'/))
-        call set_arg('F_NORM',EXPAND,'INTERM',1,tgt_info,
-     &       val_label=(/'F_DENS'/))
-c        call set_rule2('F_NORM',PRINT_FORMULA,tgt_info)
-c        call set_arg('F_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
-c       &     val_label=(/'F_NORM'/))
-        ! e) select only terms allowed according to contraction rules
-        call set_rule2('F_NORM',SELECT_SPECIAL,tgt_info)
-        call set_arg('F_NORM',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
-     &       val_label=(/'F_NORM'/))
-        call set_arg('F_NORM',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
-     &       val_label=(/'F_NORM'/))
-        call set_arg('F_NORM',SELECT_SPECIAL,'OPERATORS',3,tgt_info,
-     &       val_label=(/op_ham,'C0','CUM'/)) !op_ham and C0 are dummies
-        call set_arg('F_NORM',SELECT_SPECIAL,'TYPE',1,tgt_info,
-     &       val_str='MRCC')
-c        ! f) factor out hole density
-c        call set_dependency('F_NORM','F_HOLE',tgt_info)
-c        call set_rule2('F_NORM',FACTOR_OUT,tgt_info)
-c        call set_arg('F_NORM',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+      ! the following is commented out since our new strategy is to
+      ! compute the metric in the standard NO and then transform to GNO
+c      if (gno.eq.1) then
+c        ! d) expand reduced densities in terms of cumulants
+c        call set_dependency('F_NORM','F_DENS',tgt_info)
+c        call set_rule2('F_NORM',EXPAND,tgt_info)
+c        call set_arg('F_NORM',EXPAND,'LABEL_RES',1,tgt_info,
 c     &       val_label=(/'F_NORM'/))
-c        call set_arg('F_NORM',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+c        call set_arg('F_NORM',EXPAND,'LABEL_IN',1,tgt_info,
 c     &       val_label=(/'F_NORM'/))
-c        call set_arg('F_NORM',FACTOR_OUT,'INTERM',1,tgt_info,
-c     &       val_label=(/'F_HOLE'/))
-      end if
+c        call set_arg('F_NORM',EXPAND,'INTERM',1,tgt_info,
+c     &       val_label=(/'F_DENS'/))
+cc        call set_rule2('F_NORM',PRINT_FORMULA,tgt_info)
+cc        call set_arg('F_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
+cc       &     val_label=(/'F_NORM'/))
+c        ! e) select only terms allowed according to contraction rules
+c        call set_rule2('F_NORM',SELECT_SPECIAL,tgt_info)
+c        call set_arg('F_NORM',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+c     &       val_label=(/'F_NORM'/))
+c        call set_arg('F_NORM',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+c     &       val_label=(/'F_NORM'/))
+c        call set_arg('F_NORM',SELECT_SPECIAL,'OPERATORS',3,tgt_info,
+c     &       val_label=(/op_ham,'C0','CUM'/)) !op_ham and C0 are dummies
+c        call set_arg('F_NORM',SELECT_SPECIAL,'TYPE',1,tgt_info,
+c     &       val_str='MRCC')
+cc        ! f) factor out hole density
+cc        call set_dependency('F_NORM','F_HOLE',tgt_info)
+cc        call set_rule2('F_NORM',FACTOR_OUT,tgt_info)
+cc        call set_arg('F_NORM',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+cc     &       val_label=(/'F_NORM'/))
+cc        call set_arg('F_NORM',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+cc     &       val_label=(/'F_NORM'/))
+cc        call set_arg('F_NORM',FACTOR_OUT,'INTERM',1,tgt_info,
+cc     &       val_label=(/'F_HOLE'/))
+c      end if
 c dbg
 c      call set_rule2('F_NORM',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -677,25 +684,24 @@ c dbgend
       call set_dependency('FOPT_D','DEF_ME_1',tgt_info)
       call set_dependency('FOPT_D','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_D','DEF_ME_D',tgt_info)
-      call set_dependency('FOPT_D','DEF_ME_DENS',tgt_info)
       if (l_iccc) call set_dependency('FOPT_D','DEF_ME_1scal',tgt_info)
       call set_rule2('FOPT_D',OPTIMIZE,tgt_info)
       call set_arg('FOPT_D',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_D'/))
-      if (gno.eq.0) then
+      if (orb_info%nactel.eq.0) then
+        call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &               val_label=(/'F_D'/))
+      else if (gno.eq.0) then
+        call set_dependency('FOPT_D','DEF_ME_DENS',tgt_info)
         call set_dependency('FOPT_D','F_DENS0',tgt_info)
         call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',2,tgt_info,
      &               val_label=(/'F_DENS0','F_D    '/))
       else if (gno.eq.1) then
-        call set_dependency('FOPT_D','F_CUM',tgt_info)
-c        call set_dependency('FOPT_D','F_HOLE',tgt_info)
-        call set_dependency('FOPT_D','DEF_ME_CUM',tgt_info)
-c        call set_dependency('FOPT_D','DEF_ME_HOLE',tgt_info)
+        call set_dependency('FOPT_D','DEF_ME_DENS',tgt_info)
         call set_dependency('FOPT_D','F_DENS0',tgt_info)
+        call set_dependency('FOPT_D','Y_GNO',tgt_info)
         call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',3,tgt_info,
-     &               val_label=(/'F_DENS0','F_CUM ','F_D   '/))
-c        call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',3,tgt_info,
-c     &               val_label=(/'F_HOLE','F_CUM ','F_D   '/))
+     &               val_label=(/'F_DENS0','F_Y_GNO','F_D    '/))
       end if
 
 *----------------------------------------------------------------------*
@@ -755,17 +761,25 @@ c     &               val_label=(/'F_HOLE','F_CUM ','F_D   '/))
      &              parameters,1,tgt_info)
 
       ! ME_D
-      call add_target('DEF_ME_D',ttype_opme,.false.,tgt_info)
+      call add_target2('DEF_ME_D',.false.,tgt_info)
       call set_dependency('DEF_ME_D','D',tgt_info)
-      labels(1:20)(1:len_target_name) = ' '
-      labels(1) = 'ME_D'
-      labels(2) = 'D'
-      call me_list_parameters(-1,parameters,
-     &     msc,0,1,
-     &     0,0,.false.)
-      call set_rule('DEF_ME_D',ttype_opme,DEF_ME_LIST,
-     &              labels,2,1,
-     &              parameters,1,tgt_info)
+      call set_rule2('DEF_ME_D',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_D',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_D'/))
+      call set_arg('DEF_ME_D',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'D'/))
+      call set_arg('DEF_ME_D',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_D',DEF_ME_LIST,'2MS',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg('DEF_ME_D',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &     val_int=(/msc/))
+      ! automatic enforcement of S2 only without GNO
+      ! In case of GNO, this is done manually, because cumulant-based 
+      ! overlap tensors have different spin symmetrization rules
+      if (spinproj.ge.2.and.gno.eq.0)
+     &   call set_arg('DEF_ME_D',DEF_ME_LIST,'S2',1,tgt_info,
+     &        val_int=(/0/))
 
       ! inverted ME_D
       call add_target('DEF_ME_Dinv',ttype_opme,svdonly,tgt_info)
@@ -791,8 +805,14 @@ c     &     labels,2,1,
 c     &     parameters,0,tgt_info)
 
       call set_rule2('DEF_ME_Dinv',INVERT,tgt_info)
-      call set_arg('DEF_ME_Dinv',INVERT,'LIST_INV',1,tgt_info,
-     &     val_label=(/'ME_D'/))
+      if (gno.eq.1.and.project.eq.1) then
+        call set_dependency('DEF_ME_Dinv','EVAL_GNOSO',tgt_info)
+        call set_arg('DEF_ME_Dinv',INVERT,'LIST_INV',2,tgt_info,
+     &       val_label=(/'ME_D    ','ME_GNOSO'/))
+      else
+        call set_arg('DEF_ME_Dinv',INVERT,'LIST_INV',1,tgt_info,
+     &       val_label=(/'ME_D'/))
+      end if
       if (prc_type.eq.2) then
         call set_dependency('DEF_ME_Dinv','DEF_ME_Dunit',tgt_info)
         call set_arg('DEF_ME_Dinv',INVERT,'LIST',2,tgt_info,
@@ -963,6 +983,56 @@ c dbgend
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+      ! List & form. needed for sequential orthogonalization within GNO
+      ! a) set up operator and list
+      call add_target2('DEF_ME_GNOSO',.false.,tgt_info)
+      call set_rule2('DEF_ME_GNOSO',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('DEF_ME_GNOSO',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &             val_label=(/'OP_GNOSO'/))
+      occ_def = 0
+      occ_def(IVALE,1:2,1:2) = 1
+      call set_arg('DEF_ME_GNOSO',DEF_OP_FROM_OCC,'BLOCKS',1,tgt_info,
+     &             val_int=(/2/))
+      call set_arg('DEF_ME_GNOSO',DEF_OP_FROM_OCC,'OCC',2,tgt_info,
+     &             val_occ=occ_def)
+      call set_rule2('DEF_ME_GNOSO',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_GNOSO',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'OP_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_GNOSO',DEF_ME_LIST,'2MS',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg('DEF_ME_GNOSO',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &     val_int=(/msc/))
+      ! b) formula: minus gamma_1 for both blocks
+      call set_dependency('DEF_ME_GNOSO','C0',tgt_info)
+      call set_rule2('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'OP_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'OP_GNOSO','C0^+    ','C0      ','OP_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/1,2,3,1/))
+      call set_arg('DEF_ME_GNOSO',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/-1d0/))
+c dbg
+c      call set_rule2('DEF_ME_GNOSO',PRINT_FORMULA,tgt_info)
+c      call set_arg('DEF_ME_GNOSO',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_GNOSO'/))
+c dbgend
+      ! c) optimize
+      call set_dependency('DEF_ME_GNOSO','DEF_ME_C0',tgt_info)
+      call set_rule2('DEF_ME_GNOSO',OPTIMIZE,tgt_info)
+      call set_arg('DEF_ME_GNOSO',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_GNOSO'/))
+      call set_arg('DEF_ME_GNOSO',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_GNOSO'/))
+
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*
@@ -974,6 +1044,23 @@ c dbgend
       call set_rule('EVAL_D',ttype_opme,EVAL,
      &     'FOPT_D',1,0,
      &     parameters,0,tgt_info)
+      if (gno.gt.0.and.l_iccc) then
+        ! perform spin projection? (not done automatically for GNO)
+        if (spinproj.ge.2) then
+          call set_rule2('EVAL_D',SPIN_PROJECT,tgt_info)
+          call set_arg('EVAL_D',SPIN_PROJECT,'LIST',1,tgt_info,
+     &                 val_label=(/'ME_D'/))
+          call set_arg('EVAL_D',SPIN_PROJECT,'S2',1,tgt_info,
+     &                 val_int=(/0/))
+        end if
+        ! transform to GNO basis
+        call set_dependency('EVAL_D','FOPT_D_GNO',tgt_info)
+        call set_rule2('EVAL_D',EVAL,tgt_info)
+        call set_arg('EVAL_D',EVAL,'FORM',1,tgt_info,
+     &               val_label=(/'FOPT_D_GNO'/))
+        call set_arg('EVAL_D',EVAL,'INIT',1,tgt_info,
+     &               val_log=(/.false./))
+      end if
 c      ! fix: set first element (zero occ) to 1 (had not been defined in F_D)
 c      labels(1:10)(1:len_target_name) = ' '
 c      labels(1) = 'ME_D'
@@ -986,6 +1073,37 @@ c     &     'Density matrix :',0,'LIST')
 c      call set_rule('EVAL_D',ttype_opme,PRINT_MEL,
 c     &     'ME_D',1,0,
 c     &     parameters,2,tgt_info)
+
+      ! eval list needed for sequential orthogonalization within GNO
+      ! a) evaluate
+      call add_target2('EVAL_GNOSO',.false.,tgt_info)
+      call set_dependency('EVAL_GNOSO','DEF_ME_GNOSO',tgt_info)
+      call set_rule2('EVAL_GNOSO',EVAL,tgt_info)
+      call set_arg('EVAL_GNOSO',EVAL,'FORM',1,tgt_info,
+     &             val_label=(/'FOPT_GNOSO'/))
+      ! b) substract unity from second block (gives minus hole density)
+      call set_rule2('EVAL_GNOSO',UNITY,tgt_info)
+      call set_arg('EVAL_GNOSO',UNITY,'LIST',1,tgt_info,
+     &             val_label=(/'ME_GNOSO'/))
+      call set_arg('EVAL_GNOSO',UNITY,'FAC',1,tgt_info,
+     &             val_rl8=(/-1d0/))
+      call set_arg('EVAL_GNOSO',UNITY,'MIN_BLK',1,tgt_info,
+     &             val_int=(/2/))
+      call set_arg('EVAL_GNOSO',UNITY,'MAX_BLK',1,tgt_info,
+     &             val_int=(/2/))
+      ! c) invert
+      call set_rule2('EVAL_GNOSO',INVERT,tgt_info)
+      call set_arg('EVAL_GNOSO',INVERT,'LIST_INV',1,tgt_info,
+     &             val_label=(/'ME_GNOSO'/))
+      call set_arg('EVAL_GNOSO',INVERT,'LIST',1,tgt_info,
+     &             val_label=(/'ME_GNOSO'/))
+      call set_arg('EVAL_GNOSO',INVERT,'MODE',1,tgt_info,
+     &             val_str='pseudoinv')
+c dbg
+c      call set_rule2('EVAL_GNOSO',PRINT_MEL,tgt_info)
+c      call set_arg('EVAL_GNOSO',PRINT_MEL,'LIST',1,tgt_info,
+c     &             val_label=(/'ME_GNOSO'/))
+c dbgend
 
       return
       end

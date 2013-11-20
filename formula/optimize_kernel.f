@@ -240,6 +240,10 @@ c dbg
             if (trim(fl_pnt_i%parent1).ne.trim(fl_pnt_mark1%parent1).or.
      &          trim(fl_pnt_i%parent2).ne.trim(fl_pnt_mark1%parent2))
      &         cycle inner_loop
+            ! transposition of parents must be the same
+            if (fl_pnt_i%tra1.neqv.fl_pnt_mark1%tra1.or.
+     &          fl_pnt_i%tra2.neqv.fl_pnt_mark1%tra2)
+     &         cycle inner_loop
             ! the occupation of the intermediates must match
             if (fl_pnt_i%interm%njoined.ne.fl_pnt_mark1%interm%njoined)
      &         cycle inner_loop
@@ -606,14 +610,19 @@ c dbg
               ! better choice
               fpl_marks2_pnt => fpl_marks_pnt
               do
-                if (idx_rpl.eq.1) 
-     &                label_op = fpl_marks2_pnt%item%bcontr%label_op1
-                if (idx_rpl.eq.2) 
-     &                label_op = fpl_marks2_pnt%item%bcontr%label_op2
+                if (idx_rpl.eq.1) then
+                  label_op = fpl_marks2_pnt%item%bcontr%label_op1
+                  tra_op = fpl_marks2_pnt%item%bcontr%tra_op1
+                else if (idx_rpl.eq.2) then
+                  label_op = fpl_marks2_pnt%item%bcontr%label_op2
+                  tra_op = fpl_marks2_pnt%item%bcontr%tra_op2
+                end if
                 ! a real operator? great! take it!
                 if (label_op(1:5).ne.'_STIN') then
                   fl_pnt_mark2%parent1 = label_op
                   fl_pnt_mark2%parent2 = '---'
+                  fl_pnt_mark2%tra1 = tra_op
+                  fl_pnt_mark2%tra2 = .false.
                   exit
                 else
 c dbg
@@ -631,6 +640,8 @@ c dbg
      &                fl_pnt_mark3%parent2(1:5).ne.'_STIN') then
                     fl_pnt_mark2%parent1 = fl_pnt_mark3%parent1 
                     fl_pnt_mark2%parent2 = fl_pnt_mark3%parent2 
+                    fl_pnt_mark2%tra1 = fl_pnt_mark3%tra1
+                    fl_pnt_mark2%tra2 = fl_pnt_mark3%tra2
                     exit
                   end if
                 end if
@@ -670,7 +681,7 @@ c dbg
             fl_pnt_mark2 => fl_pnt_mark2%next
             call store_def_intm(fl_pnt_mark2,
      &            label_new,occ,rst,nj,1,
-     &            label_op,'---',.false.,.false.,.false.,
+     &            label_op,'---',.false.,tra_op,.false.,
      &            orb_info)
 c dbg
             fl_pnt_watch => fl_pnt_mark2

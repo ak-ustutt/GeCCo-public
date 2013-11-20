@@ -286,6 +286,7 @@ c dbg
 
         ! resort OpSHORT
         if (op1shorter) then
+          ! OMP: make loop over L-string (EX1)
           call collect_block(xscr(idxopsscr),xop1,
      &         istr_cntc_bst,istr_cntc_bnd,nstr_cntc_tot,
      &         istr_cnta_bst,istr_cnta_bnd,nstr_cnta_tot,
@@ -305,6 +306,7 @@ c dbg
      &         ireo_cntc1,ireo_cnta1,
      &         ireo_ex1c1,ireo_ex1a1)
         else
+          ! OMP: cf. above
           call collect_block(xscr(idxopsscr),xop2,
      &         istr_cnta_bst,istr_cnta_bnd,nstr_cnta_tot, ! CA exchanged !
      &         istr_cntc_bst,istr_cntc_bnd,nstr_cntc_tot, ! CA exchanged !
@@ -340,6 +342,7 @@ c dbg
 c dbg
         call atim_cs(cpu2,sys2)
 c dbg
+        ! OMP: parallelize over this loop
         ! loop over blocks of EX_LONG
         do exl_batch = 1, n_exl_batch
 
@@ -468,6 +471,7 @@ c stat
               call atim_cs(cpu0,sys0)
 
               ! resort Op1Op2
+              ! OMP: must first collect lists, scatter to xop1op2 later
               call scatter_block(xop1op2,xscr(idxop1op2scr),
      &             istr_exsc_bst,istr_exsc_bnd,nstr_exsc_tot,
      &             istr_exsa_bst,istr_exsa_bnd,nstr_exsa_tot,
@@ -525,6 +529,7 @@ c stat
               call atim_cs(cpu0,sys0)
 
               ! resort Op1Op2
+              ! OMP: see above
               call scatter_block(xop1op2,xscr(idxop1op2scr),
      &             istr_exlc_bst,istr_exlc_bnd,nstr_exlc_tot,
      &             istr_exla_bst,istr_exla_bnd,nstr_exla_tot,
@@ -571,6 +576,8 @@ c dbg
 
 
         end do
+
+        ! OMP: final scattering to xop1op2: here
 c dbg
         call atim_cs(cpu,sys)
         cnt_test(7) = cnt_test(7)+cpu-cpu2

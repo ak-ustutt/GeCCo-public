@@ -11,6 +11,7 @@
       include 'ifc_input.h'
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
+      include 'opdim.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -25,7 +26,7 @@
       integer ::
      &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym, maxtop, maxcum
       logical ::
-     &     l_icci, l_iccc, use_met, fixed, use_f12
+     &     l_icci, l_iccc, use_met, fixed, use_f12,response
       integer, allocatable ::
      &     excrestr(:,:,:)
 
@@ -85,6 +86,12 @@
       else
         use_f12 = .false.
       end if
+      ! set response targets, if necessary
+      if (is_keyword_set('calculate.excitation').gt.0) then
+        response=.true.
+      else
+        response=.false.
+      endif
 
       ! first set targets for CASSCF or uncontracted CI wave function
       call set_unc_mrci_targets(tgt_info,orb_info,
@@ -120,6 +127,10 @@ c dbgend
      &               'maxh and maxp must not exceed maxexc')
       if (maxh.lt.0) maxh = maxexc
       if (maxp.lt.0) maxp = maxexc
+      ! additional restrictions from a small number of occupied
+      ! or virtual orbitals?
+      maxh = min(maxh,2*orb_info%nactt_hpv(IHOLE))
+      maxp = min(maxp,2*orb_info%nactt_hpv(IPART))
       allocate(excrestr(0:maxh,0:maxp,1:2))
       call get_exc_restr(excrestr,maxh,maxp,
      &                   orb_info%nactel,orb_info%nactorb)
@@ -135,7 +146,8 @@ c dbgend
      &                       excrestr,maxh,maxp,.not.use_f12)
       if (use_f12) call set_ic_mrcc_f12_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp)
-      deallocate(excrestr)
+      if (response) call set_ic_mrcc_response_targets(tgt_info,orb_info)
+       deallocate(excrestr)
 
       return
       end

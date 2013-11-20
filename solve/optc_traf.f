@@ -11,8 +11,8 @@
 *     me_in           : list of actual input-vector (record irec_in)
 *     xnrm            : norm of output-vector
 *     ftraf           : transformation formula
-*     me_traf(1)      : list (information only) of input vector in ftraf
-*     me_traf(2)      : list (information only) of output vector in ftraf
+*     me_traf(1)      : list (information only) of output vector in ftraf
+*     me_traf(2)      : list (information only) of input vector in ftraf
 *     me_traf(3,4)    : list of transformation matrices
 *     me_traf(5)      : projector
 *
@@ -32,7 +32,7 @@
       include 'def_formula_item.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character(len=9), parameter ::
      &     i_am = 'optc_traf'
 
@@ -63,17 +63,16 @@
 
 
       integer ::
-     &     idx, nsec, isec, stsec, ndsec, ioff,
+     &     idx, ioff,
      &     nblk, iblk, nj, iblkoff, jblk
       character(len_opname) ::
      &     op_in_name, op_out_name, op_trf_name,
-     &     op_in_mel, op_out_mel, op_trf_mel
+     &     op_in_mel, op_out_mel, op_trf_mel,
+     &     op_in_name2, op_out_name2
 
       integer, pointer ::
-     &     nwfpsec(:), idstsec(:), nsec_arr(:), occ(:,:,:)
+     &     occ(:,:,:)
 
-      real(8), pointer ::
-     &     signsec(:)
       real(8) ::
      &     xdum
 
@@ -99,11 +98,16 @@ c        call print_form_list(luout,ftraf,op_info)
       ! remember names of originally assigned operators
       op_in_name = trim(me_in%op%name)
       op_out_name = trim(me_out%op%name)
-      ! also remember the *present primary* list to which these 
-      ! operators were assigend (not necessarily the ME lists passed
-      ! here!)
-      op_in_mel  = trim(me_in%op%assoc_list)
-      op_out_mel = trim(me_out%op%assoc_list)
+c      ! also remember the *present primary* list to which these 
+c      ! operators were assigend (not necessarily the ME lists passed
+c      ! here!)
+c      op_in_mel  = trim(me_in%op%assoc_list)
+c      op_out_mel = trim(me_out%op%assoc_list)
+      ! also remember operator names and the lists assigned to them
+      op_in_name2 = trim(me_traf(2)%mel%op%name)
+      op_out_name2 = trim(me_traf(1)%mel%op%name)
+      op_in_mel = trim(me_traf(2)%mel%op%assoc_list)
+      op_out_mel = trim(me_traf(1)%mel%op%assoc_list)
       ! assign input list to input operator of the trafo-formula
       call assign_me_list(me_in%label,
      &                       me_traf(2)%mel%op%name,op_info)
@@ -140,18 +144,21 @@ c        call print_form_list(luout,ftraf,op_info)
       call evaluate2(ftraf,.true.,.true.,
      &         op_info,str_info,strmap_info,orb_info,xnrm,.true.)
 c dbg
-      print *,'after evaluate2: xnrm = ',xnrm
+c      print *,'after evaluate2: xnrm = ',xnrm
 c dbg
 
       ! restore law and order: switch back association of lists and operators
-      call assign_me_list(me_in%label,
+      ! only restore the broken assignments in an unilateral way,
+      ! as a bilateral re-assignment can mess up the previous assignments
+      ! of op_*_name and op_*_mel
+      call assign_op2me(me_in%label,
      &                       op_in_name,op_info)
-      call assign_me_list(op_in_mel,
-     &                       op_in_name,op_info)
-      call assign_me_list(me_out%label,
+      call assign_me2op(op_in_mel,
+     &                       op_in_name2,op_info)
+      call assign_op2me(me_out%label,
      &                       op_out_name,op_info)
-      call assign_me_list(op_out_mel,
-     &                       op_out_name,op_info)
+      call assign_me2op(op_out_mel,
+     &                       op_out_name2,op_info)
       if (ctype.eq.'b'.or.ctype.eq.'B') then
         call assign_me_list(me_traf(4)%mel%label,
      &                       op_trf_name,op_info)
