@@ -47,7 +47,7 @@
       logical ::
      &     skip, preopt, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, use_f12, restart
+     &     oldref, solve, use_f12, restart, prc_traf
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -143,6 +143,8 @@
      &     'maxiter',ival=maxit)
       call get_argument_value('method.MR','maxv',
      &     ival=maxv)
+      call get_argument_value('method.MR','prc_traf',
+     &     lval=prc_traf)
       skip = (is_keyword_set('calculate.skip_E').gt.0)
       if (maxv.lt.0) maxv = 2*maxexc
       trunc = ntrunc.ge.0
@@ -181,6 +183,9 @@
           write(luout,*) 'Using spin adapted reference function.'
         else if (spinproj.eq.2) then
           write(luout,*) 'Using full spin adaptation.'
+        else if (spinproj.eq.3) then
+          write(luout,*)
+     &         'Using full spin adaptation, including preconditioner.'
         end if
       end if
 
@@ -199,7 +204,7 @@
       if (t1ord.ge.0.and.tfix.eq.0)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'Manually setting T1ord only enabled yet for Tfix>0')
-      if (tfix.gt.0.and.gno.eq.1.or.project.eq.3) then
+      if (tfix.gt.0.and.(gno.eq.1.or.project.eq.3)) then
         ! new (T) implementation
         if (tfix.ne.2.or.ntrunc.ne.4.or.h1bar
      &      .or.t1ord.ne.2.or.simp.lt.1.or.maxcom.gt.2
@@ -218,9 +223,13 @@
       if (gno.gt.0.and.(update_prc.gt.0.or.tred.gt.0))
      &    call quit(1,'set_ic_mrcc_targets',
      &     'update_prc or tred!=0 not yet available for GNO')
-      if (prc_iter.gt.0.and.prc_type.ne.3)
+      if ((prc_iter.gt.0.or.prc_traf).and.prc_type.ne.3)
      &    call quit(1,'set_ic_mrcc_targets',
-     &     'prc_iter>0 only available for prc_type=3')
+     &     'prc_iter>0 or prc_traf only available for prc_type=3')
+      if (prc_traf.and.spinproj.lt.2.and.orb_info%imult.ne.1)
+     &    call warn('set_ic_mrcc_targets',
+     &     'prc_traf may mess up spinflip symmetry of metric! '//
+     &     'Use spinproj=2 or better spinproj=3.')
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -1885,6 +1894,17 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
        call set_arg('F_E(MRCC)tr',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &      val_str='MRCC2')
       end if
+      ! b) factor out spin-adapted RDMs if needed
+      if (spinproj.ge.3) then
+        call set_dependency('F_E(MRCC)tr','F_DENS0',tgt_info)
+        call set_rule2('F_E(MRCC)tr',FACTOR_OUT,tgt_info)
+        call set_arg('F_E(MRCC)tr',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_E(MRCC)tr'/))
+        call set_arg('F_E(MRCC)tr',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_E(MRCC)tr'/))
+        call set_arg('F_E(MRCC)tr',FACTOR_OUT,'INTERM',1,tgt_info,
+     &       val_label=(/'F_DENS0'/))
+      end if
       ! f) insert 1 (particle/hole space) for later differentiation
       if (prc_type.lt.3) then
         call set_dependency('F_E(MRCC)tr','1ph',tgt_info)
@@ -1958,6 +1978,7 @@ c dbgend
       call add_target2('F_Atr',.false.,tgt_info)
       call set_dependency('F_Atr','F_A_Ttr',tgt_info)
       call set_dependency('F_Atr','A',tgt_info)
+      if (spinproj.ge.3) call set_dependency('F_Atr','EVAL_D',tgt_info)
       call set_rule2('F_Atr',DERIVATIVE,tgt_info)
       call set_arg('F_Atr',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_Atr'/))
@@ -3092,6 +3113,20 @@ c dbgend
      &     val_log=(/.false./))
       call set_arg('F_T_S2',EXPAND_OP_PRODUCT,'FIX_VTX',1,tgt_info,
      &     val_log=(/.true./))
+      if (tfix.eq.2) then
+        ! only keep triples part
+        call set_rule2('F_T_S2',SELECT_SPECIAL,tgt_info)
+        call set_arg('F_T_S2',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &               val_label=(/'F_T_S2'/))
+        call set_arg('F_T_S2',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &               val_label=(/'F_T_S2'/))
+        call set_arg('F_T_S2',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &               val_str='rank')
+        call set_arg('F_T_S2',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &               val_str='3')
+        call set_arg('F_T_S2',SELECT_SPECIAL,'OPERATORS',1,tgt_info,
+     &               val_label=(/'T'/))
+      end if
 c dbg
 c      call set_rule2('F_T_S2',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_T_S2',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -3113,6 +3148,20 @@ c dbgend
      &     val_label=(/'C0^+','T^+ ','T   ','C0  '/))
       call set_arg('F_T_NORM',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/2,3,4,5/))
+      if (tfix.eq.2) then
+        ! only keep triples part
+        call set_rule2('F_T_NORM',SELECT_SPECIAL,tgt_info)
+        call set_arg('F_T_NORM',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
+     &               val_label=(/'F_T_NORM'/))
+        call set_arg('F_T_NORM',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
+     &               val_label=(/'F_T_NORM'/))
+        call set_arg('F_T_NORM',SELECT_SPECIAL,'TYPE',1,tgt_info,
+     &               val_str='rank')
+        call set_arg('F_T_NORM',SELECT_SPECIAL,'MODE',1,tgt_info,
+     &               val_str='3')
+        call set_arg('F_T_NORM',SELECT_SPECIAL,'OPERATORS',1,tgt_info,
+     &               val_label=(/'T'/))
+      end if
 c dbg
 c      call set_rule2('F_T_NORM',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_T_NORM',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -3836,11 +3885,13 @@ c dbgend
       call set_dependency('FOPT_Atr','DEF_ME_1',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_Dtr',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_C0',tgt_info)
-      call set_rule2('FOPT_Atr',ASSIGN_ME2OP,tgt_info)
-      call set_arg('FOPT_Atr',ASSIGN_ME2OP,'LIST',1,tgt_info,
-     &           val_label=(/'ME_Dtr'/))
-      call set_arg('FOPT_Atr',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
-     &           val_label=(/'Dtr'/))
+      if (spinproj.ge.3)
+     &   call set_dependency('FOPT_Atr','DEF_ME_DENS',tgt_info)
+c      call set_rule2('FOPT_Atr',ASSIGN_ME2OP,tgt_info)
+c      call set_arg('FOPT_Atr',ASSIGN_ME2OP,'LIST',1,tgt_info,
+c     &           val_label=(/'ME_Dtr'/))
+c      call set_arg('FOPT_Atr',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+c     &           val_label=(/'Dtr'/))
       call set_rule2('FOPT_Atr',OPTIMIZE,tgt_info)
       call set_arg('FOPT_Atr',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_Atr'/))
@@ -3863,11 +3914,11 @@ c dbgend
       call set_dependency('FOPT_A_Ttr','DEF_ME_1',tgt_info)
       call set_dependency('FOPT_A_Ttr','DEF_ME_Dtr',tgt_info)
       call set_dependency('FOPT_A_Ttr','DEF_ME_C0',tgt_info)
-      call set_rule2('FOPT_A_Ttr',ASSIGN_ME2OP,tgt_info)
-      call set_arg('FOPT_A_Ttr',ASSIGN_ME2OP,'LIST',1,tgt_info,
-     &           val_label=(/'ME_Dtr'/))
-      call set_arg('FOPT_A_Ttr',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
-     &           val_label=(/'Dtr'/))
+c      call set_rule2('FOPT_A_Ttr',ASSIGN_ME2OP,tgt_info)
+c      call set_arg('FOPT_A_Ttr',ASSIGN_ME2OP,'LIST',1,tgt_info,
+c     &           val_label=(/'ME_Dtr'/))
+c      call set_arg('FOPT_A_Ttr',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+c     &           val_label=(/'Dtr'/))
       call set_rule2('FOPT_A_Ttr',OPTIMIZE,tgt_info)
       call set_arg('FOPT_A_Ttr',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_A_Ttr'/))
@@ -4831,7 +4882,8 @@ c dbgend
 *----------------------------------------------------------------------*
 
       ! Evaluate diagonal elements of Jacobian
-      call add_target('EVAL_Atr',ttype_gen,.false.,tgt_info)
+      call add_target('EVAL_Atr',ttype_gen,svdonly.and.prc_traf,
+     &                tgt_info)
 c dbg hybrid preconditioner
 c      call set_dependency('EVAL_Atr','EVAL_A_Ttr',tgt_info)
 c dbgend
@@ -4847,6 +4899,43 @@ c      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
 c     &     'ME_A',1,0,
 c     &     parameters,2,tgt_info)
 c dbgend
+      ! symmetrize and diagonalize (if requested)
+      if (prc_traf) then
+        call set_dependency('EVAL_Atr','DEF_ME_Auni',tgt_info)
+        call set_rule2('EVAL_Atr',INVERT,tgt_info)
+        call set_arg('EVAL_Atr',INVERT,'LIST_INV',1,tgt_info,
+     &       val_label=(/'ME_A'/))
+        call set_arg('EVAL_Atr',INVERT,'LIST',2,tgt_info,
+     &       val_label=(/'ME_Auni','ME_Dinv'/))
+        call set_arg('EVAL_Atr',INVERT,'MODE',1,tgt_info,
+     &       val_str='invdiagmult')
+        ! reorder Dinv again to get Dtr (Dtrdag is done later anyways)
+        call set_rule2('EVAL_Atr',REORDER_MEL,tgt_info)
+        call set_arg('EVAL_Atr',REORDER_MEL,'LIST_RES',1,tgt_info,
+     &               val_label=(/'ME_Dtr'/))
+        call set_arg('EVAL_Atr',REORDER_MEL,'LIST_IN',1,tgt_info,
+     &               val_label=(/'ME_Dinv'/))
+        call set_arg('EVAL_Atr',REORDER_MEL,'FROMTO',1,tgt_info,
+     &               val_int=(/13/))
+      end if
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'new transformation matrix Dinv :',0,'LIST')
+c      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
+c     &     'ME_Dinv',1,0,
+c     &     parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'diagonalized Jacobian :',0,'LIST')
+c      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
+c     &     'ME_A',1,0,
+c     &     parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'new transformation matrix Dtr :',0,'LIST')
+c      call set_rule('EVAL_Atr',ttype_opme,PRINT_MEL,
+c     &     'ME_Dtr',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
+
       ! put diagonal elements to preconditioner
       call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
       dia_label = trim(dia_label)//'_T'
@@ -5131,7 +5220,7 @@ c dbgend
       end if
       call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_E',1,tgt_info,
      &     val_label=(/'ME_E(MR)'/))
-      if (optref.ne.0.and.update_prc.gt.0) then
+      if (optref.ne.0.and.(update_prc.gt.0.or.prc_traf)) then
         if (tred.eq.0) then
          if (prc_iter.ge.1) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',8,tgt_info,
@@ -5139,6 +5228,20 @@ c dbgend
      &                   'ME_Dproj  ',
      &                   'ME_D      ','ME_Dinv   ',
      &                   'ME_A      ','ME_Aoff   '/))
+         else if (prc_traf) then
+          if (gno.eq.1.and.project.eq.1) then
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',9,tgt_info,
+     &       val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                   'ME_Dproj  ',
+     &                   'ME_D      ','ME_Dinv   ','ME_GNOSO  ',
+     &                   'ME_A      ','ME_Auni   '/))
+          else
+          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',8,tgt_info,
+     &       val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
+     &                   'ME_Dproj  ',
+     &                   'ME_D      ','ME_Dinv   ',
+     &                   'ME_A      ','ME_Auni   '/))
+          end if
          else
           if (gno.eq.1.and.project.eq.1) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',8,tgt_info,
@@ -5217,7 +5320,7 @@ c dbgend
        end if
       end if
       if (optref.ne.0) then
-        if (update_prc.gt.0) then
+        if (update_prc.gt.0.or.prc_traf) then
           if (tred.eq.0) then
           call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',3,tgt_info,
      &         val_label=(/'FOPT_T  ','FOPT_D  ','FOPT_Atr'/))
@@ -5683,42 +5786,42 @@ c        call set_rule2('EVAL_PERT_CORR',PRINT_MEL,tgt_info)
 c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'LIST',1,tgt_info,
 c     &       val_label=(/'ME_T'/))
 c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'COMMENT',1,tgt_info,
-c     &       val_str='Final T amplitudes :')
+c     &       val_str='Final T amplitudes, norms for blocks:')
 c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'FORMAT',1,tgt_info,
-c     &       val_str='LIST')
+c     &       val_str='BLKS')
 c dbgend
 c dbg
-c      ! Calculate and print <C0|T^+ S^2 T|C0>/<C0|S^2|C0>
-c      call set_dependency('EVAL_PERT_CORR','FOPT_T_S2',tgt_info)
-c      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
-c     &     'ME_S(S+1)',1,0,
-c     &     parameters,0,tgt_info)
-c      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
-c     &     'FOPT_T_S2',1,0,
-c     &     parameters,0,tgt_info)
-c      call set_dependency('EVAL_PERT_CORR','FOPT_T_NORM',tgt_info)
-c      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
-c     &     'ME_NORM',1,0,
-c     &     parameters,0,tgt_info)
-c      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
-c     &     'FOPT_T_NORM',1,0,
-c     &     parameters,0,tgt_info)
-c      call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
-c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
-c     &             val_label=(/'ME_S(S+1)'/))
-c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
-c     &             val_label=(/'ME_NORM'/))
-c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'FAC',1,tgt_info,
-c     &             val_rl8=(/1d0/))
-c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'MODE',1,tgt_info,
-c     &             val_str='precond')
-c      call form_parameters(-1,parameters,2,
-c     &     'Spin expectation value '//
-c     &                      '<C0|PT^+ S^2 PT|C0>/<C0|PT^+ PT|C0> :',
-c     &     0,'SCAL F20.12')
-c      call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
-c     &     'ME_S(S+1)',1,0,
-c     &     parameters,2,tgt_info)
+      ! Calculate and print <C0|T^+ S^2 T|C0>/<C0|S^2|C0>
+      call set_dependency('EVAL_PERT_CORR','FOPT_T_S2',tgt_info)
+      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
+     &     'ME_S(S+1)',1,0,
+     &     parameters,0,tgt_info)
+      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &     'FOPT_T_S2',1,0,
+     &     parameters,0,tgt_info)
+      call set_dependency('EVAL_PERT_CORR','FOPT_T_NORM',tgt_info)
+      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
+     &     'ME_NORM',1,0,
+     &     parameters,0,tgt_info)
+      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &     'FOPT_T_NORM',1,0,
+     &     parameters,0,tgt_info)
+      call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
+      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &             val_label=(/'ME_S(S+1)'/))
+      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &             val_label=(/'ME_NORM'/))
+      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'FAC',1,tgt_info,
+     &             val_rl8=(/1d0/))
+      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'MODE',1,tgt_info,
+     &             val_str='precond')
+      call form_parameters(-1,parameters,2,
+     &     'Spin expectation value '//
+     &                      '<C0|PT^+ S^2 PT|C0>/<C0|PT^+ PT|C0> :',
+     &     0,'SCAL F20.12')
+      call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
+     &     'ME_S(S+1)',1,0,
+     &     parameters,2,tgt_info)
 c dbgend
 
 c dbg

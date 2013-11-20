@@ -32,7 +32,7 @@
       include 'def_formula_item.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
       character(len=9), parameter ::
      &     i_am = 'optc_traf'
 
@@ -140,12 +140,29 @@ c      op_out_mel = trim(me_out%op%assoc_list)
 
       call switch_mel_record(me_in,irec_in)
       call switch_mel_record(me_out,irec_out)
+
+      if (ntest.ge.1000) then
+        write(luout,*) 'list to be transformed:',trim(me_in%label)
+        call vec_from_da(me_in%fhand,1,xbuf1,nwfpar)
+        call wrt_mel_buf(luout,5,xbuf1,me_in,1,
+     &       me_in%op%n_occ_cls,
+     &       str_info,orb_info)
+      end if
+
       ! evaluate projected vector
       call evaluate2(ftraf,.true.,.true.,
      &         op_info,str_info,strmap_info,orb_info,xnrm,.true.)
 c dbg
 c      print *,'after evaluate2: xnrm = ',xnrm
 c dbg
+
+      if (ntest.ge.1000) then
+        write(luout,*) 'transformed list:',trim(me_out%label)
+        call vec_from_da(me_out%fhand,1,xbuf1,nwfpar)
+        call wrt_mel_buf(luout,5,xbuf1,me_out,1,
+     &       me_out%op%n_occ_cls,
+     &       str_info,orb_info)
+      end if
 
       ! restore law and order: switch back association of lists and operators
       ! only restore the broken assignments in an unilateral way,

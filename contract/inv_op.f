@@ -81,7 +81,7 @@
       if (nlist.eq.2) then
         me_u => op_info%mel_arr(idx_u)%mel
       else
-        me_u => me_inv ! dummy, just to avoid problems
+        me_u => me_inv
       end if
       if (ninp.eq.2) then
         me_spc => op_info%mel_arr(idx_spc)%mel
@@ -132,7 +132,8 @@
      &     call quit(1,'inv_op','in and out incompatible: njoined')
       nocc_cls = me_inp%op%n_occ_cls
       if(nocc_cls.ne.me_inv%op%n_occ_cls
-     &   .or.nlist.eq.2.and.nocc_cls.ne.me_u%op%n_occ_cls)
+     &   .or.nlist.eq.2.and.mode(1:7).ne.'invdiag'
+     &   .and.nocc_cls.ne.me_u%op%n_occ_cls)
      &     call quit(1,'inv_op','in and out incompatible: nocc_cls')
       
 
@@ -153,7 +154,7 @@
      &         opinv_temp,me_inv%op%dagger)) then
             call quit(1,'inv_op','in and out incompatible: occs.')
           endif  
-          if (nlist.eq.2) then
+          if (nlist.eq.2.and.mode(1:7).ne.'invdiag') then
             opinv_temp(1:ngastp,1:2) =
      &           me_u%op%ihpvca_occ(1:ngastp,1:2,join_off+idx)
             if (.not.iocc_equal(opinp_temp,me_inp%op%dagger,
@@ -170,20 +171,31 @@
       ! (or that any off-diagonal block is zero)
 
       ! Call the actual inversion routine.
-      if (mode(1:7).ne.'invsqrt') then
-        if (nlist.eq.2) call warn('inv_op','Unitary matrix unavailable')
-        if (mode(1:9).eq.'pseudoinv') then
-          call pseudoinv(me_inp,me_inv,nocc_cls,
-     &                   op_info,orb_info)
-        else
-          call invert(me_inp,me_inv,nocc_cls,
-     &         op_info,orb_info)
-        end if
-      else
+      if (mode(1:7).eq.'invsqrt') then
         write(luout,*) 'Calculating square root of inverse'
         call invsqrt(me_inp,me_inv,nocc_cls,mode(8:11).eq.'half',
-     &       nlist.eq.2,me_u,ninp.eq.2,me_spc,
+     &       nlist.eq.2,me_u,ninp.eq.2,me_spc,.false.,
      &       op_info,orb_info,str_info,strmap_info)
+      else if (mode(1:9).eq.'pseudoinv') then
+        if (nlist.eq.2) call warn('inv_op','Unitary matrix unavailable')
+        call pseudoinv(me_inp,me_inv,nocc_cls,
+     &                 op_info,orb_info)
+      else if (mode(1:7).eq.'invdiag') then
+        ! diagonalize matrix and get unitary matrix
+        call invsqrt(me_inp,me_inv,nocc_cls,.true.,
+     &       .false.,me_u,.false.,me_u,.true., ! dummies, special mode
+     &       op_info,orb_info,str_info,strmap_info)
+        if (mode(8:11).eq.'mult') then
+          if (nlist.ne.2)
+     &       call quit('inv_op','Provide list for unitary matrix!')
+          ! now multiply previous transformation list with
+          call mult_trafmats(me_u,me_inv,
+     &         op_info,orb_info,str_info)
+        end if
+      else
+        if (nlist.eq.2) call warn('inv_op','Unitary matrix unavailable')
+        call invert(me_inp,me_inv,nocc_cls,
+     &              op_info,orb_info)
       end if
 
       if(ntest.ge.1000)then
