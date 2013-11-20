@@ -59,11 +59,11 @@
       call quit(1,'split_contr2','call to obsolete routine')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'split_contr2 at work')
-        write(luout,*) 'contr:'
-        call prt_contr2(luout,contr,op_info)
-        write(luout,*) 'contr_spl:'
-        call prt_contr2(luout,contr_spl,op_info)
+        call write_title(lulog,wst_dbg_subr,'split_contr2 at work')
+        write(lulog,*) 'contr:'
+        call prt_contr2(lulog,contr,op_info)
+        write(lulog,*) 'contr_spl:'
+        call prt_contr2(lulog,contr_spl,op_info)
       end if
 
       ! prefactor
@@ -88,8 +88,8 @@
      &        'not prepared for non-unique svmap!')
 
       if (ntest.ge.100) then
-        write(luout,*) 'svmap:     ',svmap(1:nvtx)
-        write(luout,*) 'svmap_spl: ',svmap_spl(1:nvtx_spl)
+        write(lulog,*) 'svmap:     ',svmap(1:nvtx)
+        write(lulog,*) 'svmap_spl: ',svmap_spl(1:nvtx_spl)
       end if
 
       allocate(occ_vtx(ngastp,2,nvtx),topomap(nvtx*nvtx),
@@ -111,13 +111,13 @@
      &     contr_spl,occ_vtx_spl)
 
       if (ntest.ge.100) then
-        write(luout,*) 'vtxinf contr:'
-        write(luout,*) vtxinf
-        write(luout,*) 'topomap contr:'
+        write(lulog,*) 'vtxinf contr:'
+        write(lulog,*) vtxinf
+        write(lulog,*) 'topomap contr:'
         call iwrtma(topomap,nvtx,nvtx,nvtx,nvtx)
-        write(luout,*) 'vtxinf contr_spl:'
-        write(luout,*) vtxinf_spl
-        write(luout,*) 'topomap contr_spl:'
+        write(lulog,*) 'vtxinf contr_spl:'
+        write(lulog,*) vtxinf_spl
+        write(lulog,*) 'topomap contr_spl:'
         call iwrtma(topomap_spl,nvtx_spl,nvtx_spl,nvtx_spl,nvtx_spl)
       end if
 
@@ -126,22 +126,22 @@
      &                       vtxinf,    topomap,    nvtx)
 
       if (.not.success) then
-        write(luout,*) 'vtxinf contr:'
-        write(luout,*) vtxinf
-        write(luout,*) 'topomap contr:'
+        write(lulog,*) 'vtxinf contr:'
+        write(lulog,*) vtxinf
+        write(lulog,*) 'topomap contr:'
         call iwrtma(topomap,nvtx,nvtx,nvtx,nvtx)
-        write(luout,*) 'vtxinf contr_spl:'
-        write(luout,*) vtxinf_spl
-        write(luout,*) 'topomap contr_spl:'
+        write(lulog,*) 'vtxinf contr_spl:'
+        write(lulog,*) vtxinf_spl
+        write(lulog,*) 'topomap contr_spl:'
         call iwrtma(topomap_spl,nvtx_spl,nvtx_spl,nvtx_spl,nvtx_spl)
-        write(luout, *) 'vtxmap: ',vtxmap
+        write(lulog, *) 'vtxmap: ',vtxmap
         call quit(1,'split_contr2',
      &     'contractions do not match; check with contr_in_contr() '//
      &     'before call to split_contr2()')
       end if
 
       if (ntest.eq.100)
-     &     write(luout, *) 'vtxmap: ',vtxmap
+     &     write(lulog, *) 'vtxmap: ',vtxmap
 
       ivtx_spl = 0
       vtxmap2 = -1
@@ -153,7 +153,7 @@
       end do
 
       if (ntest.eq.100)
-     &     write(luout, *) 'mod. vtxmap: ',vtxmap2
+     &     write(lulog, *) 'mod. vtxmap: ',vtxmap2
 
       call splitmap(ivtx_new,nvtx_rem,
      &     vtxmap2,contr%svertex,vtxinf,topomap,nvtx)
@@ -164,9 +164,9 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'nvtx_rem: ',nvtx_rem
-        write(luout,*) 'ivtx_new (new): ',ivtx_new(1:nvtx)
-        write(luout,*) 'isupervtx_spl: ',isupervtx_spl(1:nvtx)
+        write(lulog,*) 'nvtx_rem: ',nvtx_rem
+        write(lulog,*) 'ivtx_new (new): ',ivtx_new(1:nvtx)
+        write(lulog,*) 'isupervtx_spl: ',isupervtx_spl(1:nvtx)
       end if
       
       ! loop over arcs of contr and get number of new arcs
@@ -295,8 +295,8 @@ c      end if
      &         vtxinf,vtxinf_spl,vtxmap)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final contr_rem:'
-        call prt_contr2(luout,contr_rem,op_info)
+        write(lulog,*) 'final contr_rem:'
+        call prt_contr2(lulog,contr_rem,op_info)
       end if
 
       return

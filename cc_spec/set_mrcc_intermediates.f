@@ -73,12 +73,12 @@
      &     cpu1, sys1, wall1, cpu10, sys10, wall10
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_mrcc_intermediates')
-        write(luout,*) 'setting: ',trim(label_int)
-        write(luout,*) 'type : ',trim(typ_str)
-        write(luout,*) 'input ops: '
+        call write_title(lulog,wst_dbg_subr,'set_mrcc_intermediates')
+        write(lulog,*) 'setting: ',trim(label_int)
+        write(lulog,*) 'type : ',trim(typ_str)
+        write(lulog,*) 'input ops: '
         do idx = 1, nop
-          write(luout,*) '"',trim(label_op(idx)),'"'
+          write(lulog,*) '"',trim(label_op(idx)),'"'
         end do
       end if
 
@@ -135,8 +135,8 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'definition of intermediate:'
-        call print_op_occ(luout,op_int)
+        write(lulog,*) 'definition of intermediate:'
+        call print_op_occ(lulog,op_int)
       end if
 
       tmax = op_t%n_occ_cls
@@ -235,10 +235,10 @@
                 end do
 
 c dbg
-c                write(luout,'(a,3i6)') 'iblk_int,nh,n:',
+c                write(lulog,'(a,3i6)') 'iblk_int,nh,n:',
 c     &                                  iblk_int,iblk_h,nn
-c                write(luout,'(a,12i4)') 'iblk_min: ',iblk_min
-c                write(luout,'(a,12i4)') 'iblk_max: ',iblk_max
+c                write(lulog,'(a,12i4)') 'iblk_min: ',iblk_min
+c                write(lulog,'(a,12i4)') 'iblk_max: ',iblk_max
 c dbgend
                 call atim_csw(cpu10,sys10,wall10)
                 icall = icall + 1
@@ -263,7 +263,7 @@ c dbgend
                 if (iterm.eq.0) icall0 = icall0 + 1
 c dbg
 c                print *,'# of generated terms: ',iterm
-c                call prtim(luout,'time in expand_op_product2 ',
+c                call prtim(lulog,'time in expand_op_product2 ',
 c       &                   cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 nsumcalls = nsumcalls + 1
@@ -271,7 +271,7 @@ c dbgend
                 call sum_terms(start_pnt3,op_info)
                 call atim_csw(cpu1,sys1,wall1)
 c dbg
-c              call prtim(luout,'time in sum_terms (2) ',
+c              call prtim(lulog,'time in sum_terms (2) ',
 c       &                 cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 next = next_perm(perm,nn)
@@ -288,7 +288,7 @@ c dbgend
                  call sum_terms(start_pnt2,op_info)
                  call atim_csw(cpu1,sys1,wall1)
 c dbg
-c                 call prtim(luout,'time in sum_terms ',
+c                 call prtim(lulog,'time in sum_terms ',
 c       &                    cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                end if
@@ -382,10 +382,10 @@ c dbgend
                 end do
 
 c dbg
-c                write(luout,'(a,3i6)') 'iblk_int,nh,n:',
+c                write(lulog,'(a,3i6)') 'iblk_int,nh,n:',
 c     &                                  iblk_int,iblk_h,nn
-c                write(luout,'(a,12i4)') 'iblk_min: ',iblk_min
-c                write(luout,'(a,12i4)') 'iblk_max: ',iblk_max
+c                write(lulog,'(a,12i4)') 'iblk_min: ',iblk_min
+c                write(lulog,'(a,12i4)') 'iblk_max: ',iblk_max
 c dbgend
                 call atim_csw(cpu10,sys10,wall10)
                 icall = icall + 1
@@ -410,7 +410,7 @@ c dbgend
                 if (iterm.eq.0) icall0 = icall0 + 1
 c dbg
 c                print *,'# of generated terms: ',iterm
-c                call prtim(luout,'time in expand_op_product2 ',
+c                call prtim(lulog,'time in expand_op_product2 ',
 c       &                   cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 nsumcalls = nsumcalls + 1
@@ -418,7 +418,7 @@ c dbgend
                 call sum_terms(start_pnt3,op_info)
                 call atim_csw(cpu1,sys1,wall1)
 c dbg
-c              call prtim(luout,'time in sum_terms (2) ',
+c              call prtim(lulog,'time in sum_terms (2) ',
 c       &                 cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 next = next_perm(perm,nn)
@@ -435,7 +435,7 @@ c dbgend
                  call sum_terms(start_pnt2,op_info)
                  call atim_csw(cpu1,sys1,wall1)
 c dbg
-c                 call prtim(luout,'time in sum_terms ',
+c                 call prtim(lulog,'time in sum_terms ',
 c       &                    cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                end if
@@ -745,7 +745,7 @@ c dbgend
           end if
 
         case default
-          write(luout,*) 'maxcum: ', max_n
+          write(lulog,*) 'maxcum: ', max_n
           call quit(1,'set_mrcc_intermediates','Not yet available')
         end select
 
@@ -762,8 +762,8 @@ c dbgend
       call write_form_list(form_out%fhand,flist_scr,form_out%comment)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final formula: ',trim(op_int%name)
-        call print_form_list(luout,flist_scr,op_info)
+        write(lulog,*) 'final formula: ',trim(op_int%name)
+        call print_form_list(lulog,flist_scr,op_info)
       end if
 
       call dealloc_formula_list(flist_scr)

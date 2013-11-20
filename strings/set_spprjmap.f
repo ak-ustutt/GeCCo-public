@@ -40,15 +40,15 @@
      &     buffer(:)
 
       if (ntest.ge.100) then
-        write(luout,*) '==================='
-        write(luout,*) 'this is set_spprjmap'
-        write(luout,*) '==================='
-        write(luout,*) 'idxspprj:   ',idxspprj
-        write(luout,*) 'ms_sc:      ',ms_sc
-        write(luout,*) 'irestr:     ',
+        write(lulog,*) '==================='
+        write(lulog,*) 'this is set_spprjmap'
+        write(lulog,*) '==================='
+        write(lulog,*) 'idxspprj:   ',idxspprj
+        write(lulog,*) 'ms_sc:      ',ms_sc
+        write(lulog,*) 'irestr:     ',
      &       irestr(1:2*orb_info%ngas_hpv(ityp))
-        write(luout,*) 'ityp, iocc: ',ityp, iocc
-        write(luout,*) 'init:       ',init
+        write(lulog,*) 'ityp, iocc: ',ityp, iocc
+        write(lulog,*) 'init:       ',init
       end if
 
       ifree = mem_setmark('set_spprjmap')
@@ -84,7 +84,7 @@ c      end do
       
       lenbuf = maxlenbuf
       if (ntest.ge.100) then
-        write(luout,*) 'allocating ',lenbuf,' integer words'
+        write(lulog,*) 'allocating ',lenbuf,' integer words'
       end if
       ifree = mem_alloc_int(buffer,lenbuf,'buffer')
 
@@ -130,12 +130,12 @@ c dbg
       strmap_info%idx_last = strmap_info%idx_last+lenbuf
 
       if (ntest.ge.150) then
-        write(luout,*) 'maxlen:',strmap_info%maxlen_blk_spprj(idxspprj)
-        write(luout,*) 'the MS offset array: '
-        write(luout,'(1x,10i6)')
+        write(lulog,*) 'maxlen:',strmap_info%maxlen_blk_spprj(idxspprj)
+        write(lulog,*) 'the MS offset array: '
+        write(lulog,'(1x,10i6)')
      &       strmap_info%offsets_spprj(idxspprj)%ms
-        write(luout,*) 'the MS/IRREP offset array: '
-        write(luout,'(1x,10i6)')
+        write(lulog,*) 'the MS/IRREP offset array: '
+        write(lulog,'(1x,10i6)')
      &       strmap_info%offsets_spprj(idxspprj)%msgm
       end if
 

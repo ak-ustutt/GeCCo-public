@@ -44,9 +44,9 @@
 
 
       if(ntest.ge.100)then
-        write(luout,*) '--------------------------'
-        write(luout,*) ' Shape of an intermediate '
-        write(luout,*) '--------------------------'
+        write(lulog,*) '--------------------------'
+        write(lulog,*) ' Shape of an intermediate '
+        write(lulog,*) '--------------------------'
       endif
 
       ! Define an operator based on the first and last vertices of the 
@@ -83,8 +83,8 @@
       enddo
 
       if(ntest.ge.100)then
-        write(luout,*)'Intermediate shape: '
-        call print_op_occ(luout,op_shape)
+        write(lulog,*)'Intermediate shape: '
+        call print_op_occ(lulog,op_shape)
       endif
 
       return

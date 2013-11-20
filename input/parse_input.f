@@ -142,12 +142,12 @@ c      end function
       if (present(latest)) forward = .not.latest
 
       if (ntest.ge.100) then
-        write(luout,*) '-----------'
-        write(luout,*) ' find_node'
-        write(luout,*) '-----------'
-        write(luout,*) ' context = "',trim(context),'"'
-        if (forward) write(luout,*) 'forward search'
-        if (.not.forward) write(luout,*) 'backward search'
+        write(lulog,*) '-----------'
+        write(lulog,*) ' find_node'
+        write(lulog,*) '-----------'
+        write(lulog,*) ' context = "',trim(context),'"'
+        if (forward) write(lulog,*) 'forward search'
+        if (.not.forward) write(lulog,*) 'backward search'
       end if
 
       node => null()
@@ -164,7 +164,7 @@ c      end function
         if (ipnd.lt.ipst) ipnd = len
 
         if (ntest.ge.100) then
-          write(luout,*) ' current subkeyword: "',context(ipst:ipnd),'"'
+          write(lulog,*) ' current subkeyword: "',context(ipst:ipnd),'"'
         end if
 
         if (forward) then
@@ -209,8 +209,8 @@ c      end function
       end do subk_loop
 
       if (ntest.ge.100) then
-        if (associated(node)) write(luout,*) 'success'
-        if (.not.associated(node)) write(luout,*) 'no success'
+        if (associated(node)) write(lulog,*) 'success'
+        if (.not.associated(node)) write(lulog,*) 'no success'
       end if
 
       return
@@ -239,11 +239,11 @@ c      end function
      &     current
 
       if (ntest.ge.100) then
-        write(luout,*) '-----------'
-        write(luout,*) ' next_node'
-        write(luout,*) '-----------'
-        write(luout,*) ' start = "',trim(cur_node%key),'"'
-        write(luout,*) ' search for "',trim(key),'"'
+        write(lulog,*) '-----------'
+        write(lulog,*) ' next_node'
+        write(lulog,*) '-----------'
+        write(lulog,*) ' start = "',trim(cur_node%key),'"'
+        write(lulog,*) ' search for "',trim(key),'"'
       end if
 
       nxt_node => null()
@@ -284,8 +284,8 @@ c      end function
       end do node_loop
         
       if (ntest.ge.100) then
-        if (associated(nxt_node)) write(luout,*) 'success'
-        if (.not.associated(nxt_node)) write(luout,*) 'no success'
+        if (associated(nxt_node)) write(lulog,*) 'success'
+        if (.not.associated(nxt_node)) write(lulog,*) 'no success'
       end if
 
       return
@@ -317,11 +317,11 @@ c      end function
      &     curarg
 
       if (ntest.ge.100) then
-        write(luout,*) '-----------'
-        write(luout,*) ' arg_node'
-        write(luout,*) '-----------'
-        write(luout,*) ' start = "',trim(cur_key%key),'"'
-        write(luout,*) ' search for "',trim(key),'"'
+        write(lulog,*) '-----------'
+        write(lulog,*) ' arg_node'
+        write(lulog,*) '-----------'
+        write(lulog,*) ' start = "',trim(cur_key%key),'"'
+        write(lulog,*) ' search for "',trim(key),'"'
       end if
 
       node => null()
@@ -353,8 +353,8 @@ c      end function
       end do node_loop
         
       if (ntest.ge.100) then
-        if (associated(node)) write(luout,*) 'success'
-        if (.not.associated(node)) write(luout,*) 'no success'
+        if (associated(node)) write(lulog,*) 'success'
+        if (.not.associated(node)) write(lulog,*) 'no success'
       end if
 
       return
@@ -788,10 +788,10 @@ c      end function
       end subroutine
 
 *----------------------------------------------------------------------*
-      subroutine keyword_list(luout,tree_root,
+      subroutine keyword_list(lulog,tree_root,
      &     context,n_descent,show_args)
 *----------------------------------------------------------------------*
-*     print keyword list to unit luout
+*     print keyword list to unit lulog
 *     if context given, start here
 *     if n_descent given, descent at most n_descent levels(default: all)
 *     if show_args given, show possible argument keys to keyword
@@ -800,7 +800,7 @@ c      end function
       implicit none
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
       type(keyword), pointer ::
      &     tree_root
       character, intent(in), optional ::
@@ -840,7 +840,7 @@ c      end function
         else
           write(fmtstr,'("(""I"",",i3,"x,a)")') 2*level+1
         end if
-        write(luout,fmtstr) trim(current%key)
+        write(lulog,fmtstr) trim(current%key)
         ! show arguments to keyword (if applicable)
         if (shw_arg.and.associated(current%arg_h)) then
           curarg => current%arg_h
@@ -848,16 +848,16 @@ c      end function
 
           arg_loop: do
             
-            write(luout,fmtstr) trim(curarg%key),
+            write(lulog,fmtstr) trim(curarg%key),
      &         curarg%val%type,curarg%val%len
             if (associated(curarg%val%ival))
-     &           write(luout,*) ' > ',curarg%val%ival
+     &           write(lulog,*) ' > ',curarg%val%ival
             if (associated(curarg%val%xval))
-     &           write(luout,*) ' > ',curarg%val%xval
+     &           write(lulog,*) ' > ',curarg%val%xval
             if (associated(curarg%val%cval))
-     &           write(luout,*) ' > ',curarg%val%cval
+     &           write(lulog,*) ' > ',curarg%val%cval
             if (associated(curarg%val%lval))
-     &           write(luout,*) ' > ',curarg%val%lval
+     &           write(lulog,*) ' > ',curarg%val%lval
 
             if (.not.associated(curarg%next)) exit arg_loop
             curarg => curarg%next
@@ -1172,7 +1172,7 @@ c        ipst = first_nonblank(line)
  100  continue
 
       if (iprlvl.ge.10)
-     &    call keyword_list(luout,keyword_history,show_args=.true.)
+     &    call keyword_list(lulog,keyword_history,show_args=.true.)
 
       if (ierr.gt.0)
      &     call quit(0,'parse_input','input errors detected, see above')
@@ -1253,11 +1253,11 @@ c        ipst = first_nonblank(line)
      &     ipos
       character ::
      &     fmtstr*80
-      write(luout,'(x,a)') trim(line)
+      write(lulog,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-      write(luout,fmtstr) 
+      write(lulog,fmtstr) 
       write(fmtstr,'("(x,a,",i3,"(a1,x))")') n_allowed_delim
-      write(luout,fmtstr) 'INPUT ERROR: unexpected delimiter, '//
+      write(lulog,fmtstr) 'INPUT ERROR: unexpected delimiter, '//
      &     'expected one of ',
      &     delimiter(allowed_delim(1:n_allowed_delim))
 
@@ -1276,10 +1276,10 @@ c        ipst = first_nonblank(line)
       character ::
      &     fmtstr*80
 
-      write(luout,'(x,a)') trim(line)
+      write(lulog,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-      write(luout,fmtstr) 
-      write(luout,'(x,a)') 'INPUT ERROR: unexpected end-of-line'
+      write(lulog,fmtstr) 
+      write(lulog,'(x,a)') 'INPUT ERROR: unexpected end-of-line'
       return
       end subroutine
 
@@ -1295,10 +1295,10 @@ c        ipst = first_nonblank(line)
       character ::
      &     fmtstr*80
 
-      write(luout,'(x,a)') trim(line)
+      write(lulog,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-      write(luout,fmtstr) 
-      write(luout,'(x,a)') 'INPUT ERROR: missing )'
+      write(lulog,fmtstr) 
+      write(lulog,'(x,a)') 'INPUT ERROR: missing )'
       return
       end subroutine
 
@@ -1314,10 +1314,10 @@ c        ipst = first_nonblank(line)
       character ::
      &     fmtstr*80
 
-      write(luout,'(x,a)') trim(line)
+      write(lulog,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-      write(luout,fmtstr) 
-      write(luout,'(x,a)') 'INPUT ERROR: missing ='
+      write(lulog,fmtstr) 
+      write(lulog,'(x,a)') 'INPUT ERROR: missing ='
       return
       end subroutine
 
@@ -1335,10 +1335,10 @@ c        ipst = first_nonblank(line)
       character ::
      &     fmtstr*80
 
-      write(luout,'(x,a)') trim(line)
+      write(lulog,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-      write(luout,fmtstr) 
-      write(luout,'(x,a)') 'INPUT ERROR: unexpected keyword '
+      write(lulog,fmtstr) 
+      write(lulog,'(x,a)') 'INPUT ERROR: unexpected keyword '
 
       return
       end subroutine

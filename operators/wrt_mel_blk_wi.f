@@ -1,8 +1,8 @@
 *----------------------------------------------------------------------*      
-      subroutine wrt_mel_blk_wi(luout,buffer,
+      subroutine wrt_mel_blk_wi(lulog,buffer,
      &     mel,iblk,igam,idxms,idxdis,nel,str_info,orb_info)
 *----------------------------------------------------------------------*      
-*     write ME-list block to unit luout with complete index for
+*     write ME-list block to unit lulog with complete index for
 *     each element
 *----------------------------------------------------------------------*      
 
@@ -27,7 +27,7 @@
       ! set < 0d0 if you want the full output
 
       integer, intent(in) ::
-     &     luout, iblk, igam, idxms, idxdis, nel
+     &     lulog, iblk, igam, idxms, idxdis, nel
       type(me_list), intent(in) ::
      &     mel
       real(8), intent(in) ::
@@ -176,7 +176,7 @@ c     &     nelc,nela,nelc,nela
           iadd = iadd+1
         end do
 
-        write(luout,fmtstr) idxstr+ioff,
+        write(lulog,fmtstr) idxstr+ioff,
      &       idorb(1:nel), spnstr, idspc(1:nel),
      &       buffer(idxstr)
 

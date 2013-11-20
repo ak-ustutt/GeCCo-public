@@ -45,10 +45,10 @@ c     &                      title,
      &     idx_oplist2, imltlist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'here speaks form_del_terms')
-        write(luout,*) ' f_input  = ',trim(f_input%label)
-        write(luout,*) ' f_output = ',trim(f_output%label)
+        write(lulog,*) ' f_input  = ',trim(f_input%label)
+        write(lulog,*) ' f_output = ',trim(f_output%label)
       end if
 
       same = trim(f_input%label).eq.trim(f_output%label)
@@ -76,7 +76,7 @@ c     &                      title,
           idx = idx+1
 c dbg          
 c          print  *,'present term ',idx
-c          call prt_contr2(luout,fl_pnt%contr,op_info)        
+c          call prt_contr2(lulog,fl_pnt%contr,op_info)        
 c dbg
 
           on_list = imltlist(idx,idxterms,nterms,1).gt.0
@@ -87,8 +87,8 @@ c dbg
 
           if (delete) then
             if (iprlvl.ge.10) then
-              write(luout,*) 'removing term # ',idx
-              call prt_contr2(luout,fl_pnt%contr,op_info)
+              write(lulog,*) 'removing term # ',idx
+              call prt_contr2(lulog,fl_pnt%contr,op_info)
             end if
             ! deallocate contents and re-link the list
             call delete_fl_node(fl_pnt)

@@ -45,7 +45,7 @@
       call update_op_arr(op_info)
 
       if (iprlvl.ge.20) then
-        write(luout,'(3x,4a)')
+        write(lulog,'(3x,4a)')
      &       'assigned list: ',trim(mel%label),' (file ',
      &       ') to operator: ',trim(op_info%op_arr(idx)%op%name)
       end if

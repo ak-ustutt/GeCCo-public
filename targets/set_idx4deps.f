@@ -30,7 +30,7 @@
             jtgt = idx_target(tgt%joined_with(idx),tgt_info)
             if (jtgt.lt.1) then
               ierr = ierr+1
-              write(luout,'(x,a," - ",a)')
+              write(lulog,'(x,a," - ",a)')
      &             trim(tgt%name),trim(tgt%joined_with(idx))
             end if
             tgt%idx_joined_with(idx) = jtgt
@@ -44,7 +44,7 @@
             jtgt = idx_target(tgt%depends_on(idx),tgt_info)
             if (jtgt.lt.1) then
               ierr = ierr+1
-              write(luout,'(x,a," : """,a,"""")')
+              write(lulog,'(x,a," : """,a,"""")')
      &             trim(tgt%name),trim(tgt%depends_on(idx))
             end if
             tgt%idx_depends_on(idx) = jtgt

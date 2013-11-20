@@ -65,7 +65,7 @@ c dbg
       call get_argument_value('method.R12','Z2_appr',str=Z2_appr)
 c dbgend
 
-      if (iprlvl.gt.0) write(luout,*) 'setting icMRCC_F12 targets'
+      if (iprlvl.gt.0) write(lulog,*) 'setting icMRCC_F12 targets'
 
       ! CAVEAT: should be adapted as soon as open-shell version
       !         is up and running

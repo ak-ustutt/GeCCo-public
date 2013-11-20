@@ -155,12 +155,12 @@ c dbg
       end do
 
       if (ntest.ge.1000) then
-        write(luout,*) 'length = ',idxmap
-        write(luout,*) 'set_spprjmap_kernel: the result of my work is'
+        write(lulog,*) 'length = ',idxmap
+        write(lulog,*) 'set_spprjmap_kernel: the result of my work is'
         nstr = idxmap/nmaps
         do istr = 1, nstr
           idx = (istr-1)*nmaps+1
-          write(luout,'(x,i5,"->",20i5)') istr,strmap(idx:idx-1+nmaps)
+          write(lulog,'(x,i5,"->",20i5)') istr,strmap(idx:idx-1+nmaps)
         end do
       end if
 

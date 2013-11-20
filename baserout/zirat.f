@@ -21,7 +21,7 @@
         ! is not important for us
         zirat = 2
       else
-        write(luout,*) 'Silly outcome in ZIRAT, d''you run on a C64?',
+        write(lulog,*) 'Silly outcome in ZIRAT, d''you run on a C64?',
      &       itest
         call quit(1,'zirat','silly result')
       end if

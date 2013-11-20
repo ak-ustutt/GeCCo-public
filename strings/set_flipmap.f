@@ -38,13 +38,13 @@
      &     buffer(:)
 
       if (ntest.ge.100) then
-        write(luout,*) '==================='
-        write(luout,*) 'this is set_flipmap'
-        write(luout,*) '==================='
-        write(luout,*) 'idxflip: ',idxflip
-        write(luout,*) 'irestr:  ',
+        write(lulog,*) '==================='
+        write(lulog,*) 'this is set_flipmap'
+        write(lulog,*) '==================='
+        write(lulog,*) 'idxflip: ',idxflip
+        write(lulog,*) 'irestr:  ',
      &       irestr(1:2*orb_info%nspin*orb_info%ngas)
-        write(luout,*) 'ityp, iocc: ',ityp, iocc
+        write(lulog,*) 'ityp, iocc: ',ityp, iocc
       end if
 
       ifree = mem_setmark('set_flipmap')
@@ -79,7 +79,7 @@ c      do ms = iocc, 0, -2
       
       lenbuf = maxlenbuf
       if (ntest.ge.100) then
-        write(luout,*) 'allocating ',lenbuf,' integer words'
+        write(lulog,*) 'allocating ',lenbuf,' integer words'
       end if
       ifree = mem_alloc_int(buffer,lenbuf,'buffer')
       strmap_info%maxlen_blk_flip(idxflip) = maxlen_blk
@@ -127,12 +127,12 @@ c dbg
       end do
 
       if (ntest.ge.150) then
-        write(luout,*) 'maxlen:',strmap_info%maxlen_blk_flip(idxflip)
-        write(luout,*) 'the MS offset array: '
-        write(luout,'(1x,10i6)')
+        write(lulog,*) 'maxlen:',strmap_info%maxlen_blk_flip(idxflip)
+        write(lulog,*) 'the MS offset array: '
+        write(lulog,'(1x,10i6)')
      &       strmap_info%offsets_flip(idxflip)%ms
-        write(luout,*) 'the MS/IRREP offset array: '
-        write(luout,'(1x,10i6)')
+        write(lulog,*) 'the MS/IRREP offset array: '
+        write(lulog,'(1x,10i6)')
      &       strmap_info%offsets_flip(idxflip)%msgm
       end if
 

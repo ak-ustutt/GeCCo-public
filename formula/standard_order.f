@@ -25,9 +25,9 @@
      &     ivtx, jvtx, ivtx_r, jvtx_r, idx, ihlp
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'enforcing standard_order')
-        write(luout,*) 'ranking: '
-        write(luout,'(1x,1i4)') rank(1:nvtx)
+        call write_title(lulog,wst_dbg_subr,'enforcing standard_order')
+        write(lulog,*) 'ranking: '
+        write(lulog,'(1x,1i4)') rank(1:nvtx)
       end if
 
       do ivtx = 1, nvtx
@@ -126,8 +126,8 @@ c dbg
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'best allowed ranking: '
-        write(luout,'(1x,1i4)') rank(vtx_reo(1:nvtx))
+        write(lulog,*) 'best allowed ranking: '
+        write(lulog,'(1x,1i4)') rank(vtx_reo(1:nvtx))
       end if
 
       return

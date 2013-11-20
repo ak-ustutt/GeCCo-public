@@ -56,10 +56,10 @@
       nsym = orb_info%nsym
 
       if (ntest.ge.100) then
-        write(luout,*) '========================='
-        write(luout,*) 'here comes h1_sym2str_reo'
-        write(luout,*) '========================='
-        write(luout,*) 'input matrix'
+        write(lulog,*) '========================='
+        write(lulog,*) 'here comes h1_sym2str_reo'
+        write(lulog,*) '========================='
+        write(lulog,*) 'input matrix'
         call wr_blkmat(h1sym,ntoobs,ntoobs,nsym,1)
       end if      
 
@@ -178,9 +178,9 @@
       end do occ_cls
 
       if (ntest.ge.100) then
-        write(luout,*) 'reordered operator:'
+        write(lulog,*) 'reordered operator:'
         ! caution: blocks 1-5 will not always work
-        call wrt_mel_buf(luout,5,h1str,hlist,1,iblknd,
+        call wrt_mel_buf(lulog,5,h1str,hlist,1,iblknd,
      &       str_info,orb_info)
       end if
 

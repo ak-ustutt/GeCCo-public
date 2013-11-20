@@ -21,14 +21,14 @@
      &     ispc, iel
 
       if (ntest.gt.0) then
-        write(luout,*) '------------------'
-        write(luout,*) 'Entered weight_ssg'
-        write(luout,*) '------------------'
+        write(lulog,*) '------------------'
+        write(lulog,*) 'Entered weight_ssg'
+        write(lulog,*) '------------------'
       end if
       if (ntest.ge.100) then
-        write(luout,*) 'restriction array:'
+        write(lulog,*) 'restriction array:'
         do ispc = 1, nspc
-          write(luout,'(x,i2,5x,2i4)') 
+          write(lulog,'(x,i2,5x,2i4)') 
      &          ispc,mnmxspc(1,ispc),mnmxspc(2,ispc)
         end do
       end if
@@ -69,13 +69,13 @@ c dbg end fix
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'Generated vertex weights:'
+        write(lulog,*) 'Generated vertex weights:'
         do ispc = 1, nspc
-          write(luout,'(2x,i2,5x,10i6)') ispc,iwssg(0:nelmax,ispc)
+          write(lulog,'(2x,i2,5x,10i6)') ispc,iwssg(0:nelmax,ispc)
         end do
-        write(luout,*) 'Generated arc weights:'
+        write(lulog,*) 'Generated arc weights:'
         do ispc = 1, nspc
-          write(luout,'(2x,i2,8x,10i6)') ispc,iyssg(1:nelmax,ispc)
+          write(lulog,'(2x,i2,8x,10i6)') ispc,iyssg(1:nelmax,ispc)
         end do
       end if
 

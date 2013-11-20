@@ -58,9 +58,9 @@
      &     vtx_type
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'expand_op_bch')
-        write(luout,*) 'max_n = ',max_n
+        write(lulog,*) 'max_n = ',max_n
       end if      
 
       form_pnt => form_res
@@ -76,7 +76,7 @@
       pure_dx = iop_typ_b.eq.vtxtyp_ph_dx
 
       if (ntest.ge.100)
-     &     write(luout,*) 'pure_ex, pure_dx: ', pure_ex, pure_dx
+     &     write(lulog,*) 'pure_ex, pure_dx: ', pure_ex, pure_dx
 
       allocate(connect(2,max_n),idx_op(max_n+2),
      &     iblk_min(max_n+2),iblk_max(max_n+2))
@@ -117,11 +117,11 @@
         end if
 
         if (ntest.ge.100) then
-          write(luout,*) 'n = ',n
-          write(luout,*) 'idx_op: ',idx_op(1:n+n_proj+1)
-          write(luout,*) 'iblk_min: ',iblk_min(1:n+n_proj+1)
-          write(luout,*) 'iblk_max: ',iblk_max(1:n+n_proj+1)
-          write(luout,*) 'connect: ',connect(1:2,1:n)
+          write(lulog,*) 'n = ',n
+          write(lulog,*) 'idx_op: ',idx_op(1:n+n_proj+1)
+          write(lulog,*) 'iblk_min: ',iblk_min(1:n+n_proj+1)
+          write(lulog,*) 'iblk_max: ',iblk_max(1:n+n_proj+1)
+          write(lulog,*) 'connect: ',connect(1:2,1:n)
         end if
 
         call expand_op_product(form_pnt,idx_res,

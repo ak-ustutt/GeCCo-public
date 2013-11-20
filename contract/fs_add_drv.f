@@ -74,8 +74,8 @@
       copy_only = fl_item%command.eq.command_cp_intm
 
       if (add_info%n_operands.ne.1.or.add_info%n_cnt.ne.0) then
-        write(luout,*) '[ADD]: something is wrong:'
-        call prt_bcontr(luout,add_info)
+        write(lulog,*) '[ADD]: something is wrong:'
+        call prt_bcontr(lulog,add_info)
         call quit(1,'fs_add_drv','something is wrong')
       end if
 
@@ -84,9 +84,9 @@
 
       idx_res = idx_oplist2(label_res,op_info)
       if (update.and.idx_res.ne.idx_tgt) then
-        write(luout,*) 'formula target: ',
+        write(lulog,*) 'formula target: ',
      &       trim(op_info%op_arr(idx_tgt)%op%name)
-        write(luout,*) '[ADD] result: ',trim(label_res)
+        write(lulog,*) '[ADD] result: ',trim(label_res)
         call quit(1,'fs_add_drv','inconsistency: target<>result')
       end if
       idx_op = idx_oplist2(label_op,op_info)

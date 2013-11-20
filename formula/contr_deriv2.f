@@ -63,14 +63,14 @@
       call quit(1,'contr_deriv2','call to obsolete routine')
 
       if (ntest.ge.100) then
-        write(luout,*) '====================='
-        write(luout,*) ' contr_deriv at work'
-        write(luout,*) '====================='
-        write(luout,*) ' Contraction on input:'
-        call prt_contr2(luout,contr,op_info)
-        write(luout,*) 'idxder = ',idxder
-        write(luout,*) 'idxmlt = ',idxmlt
-        write(luout,*) 'idxres = ',idxres
+        write(lulog,*) '====================='
+        write(lulog,*) ' contr_deriv at work'
+        write(lulog,*) '====================='
+        write(lulog,*) ' Contraction on input:'
+        call prt_contr2(lulog,contr,op_info)
+        write(lulog,*) 'idxder = ',idxder
+        write(lulog,*) 'idxmlt = ',idxmlt
+        write(lulog,*) 'idxres = ',idxres
       end if
 
       op_arr => op_info%op_arr
@@ -97,7 +97,7 @@
      &       op_arr(idxmlt)%op%ihpvca_occ(1,1,1),njoined_mlt)
       end if
       if (ipcr_0-ipcr_der+ipcr_mlt.ne.ipcr_res) then
-        write(luout,*) ipcr_0,' - ',ipcr_der,' + ',ipcr_mlt,
+        write(lulog,*) ipcr_0,' - ',ipcr_der,' + ',ipcr_mlt,
      &       ' != ',ipcr_res
         call quit(1,'contr_deriv2',
      &     'particle creation ranks do not match')
@@ -144,8 +144,8 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'initially: nder = ',nder
-        write(luout,*) 'ivtxder: ',ivtxder
+        write(lulog,*) 'initially: nder = ',nder
+        write(lulog,*) 'ivtxder: ',ivtxder
       end if
 
 
@@ -228,7 +228,7 @@ c dbg-QUICK FIX:::
             iocc(2,1,1) = iocc(2,1,1)-1
             ! print a nasty mark to remind us of this bad line:
             print *,'QUICK FIX active'
-c            call wrt_occ_n(luout,iocc,1)
+c            call wrt_occ_n(lulog,iocc,1)
           else if (ipcr_mlt.ne.0.or.ipcr_der.ne.0) then
             call quit(1,'contr_deriv',
      &           'QUICK FIX is not prepared for this')
@@ -339,7 +339,7 @@ c dbg-QUICK FIX2:::
           print *,'QUICK FIX2 active:'
           call get_unconnected4vertex(iocc2,ivtxder(ider),
      &         cur_conder%contr,op_info)
-c          call wrt_occ_n(luout,iocc2,1)
+c          call wrt_occ_n(lulog,iocc2,1)
           if (.not.iocc_bound('>=',iocc2,.false.,
      &                             (/0,0,0,0,0,0,0,0/),.false.)) ierr=66
           if (ierr.ne.0) print *,'skipping a contribution'
@@ -347,8 +347,8 @@ c          call wrt_occ_n(luout,iocc2,1)
 
         if (ierr.ne.0) then
           if (strict) then
-            write(luout,*) 'derivative gives njoined = ',-ierr-1
-            write(luout,*) 'expected:                  ',njoined_res
+            write(lulog,*) 'derivative gives njoined = ',-ierr-1
+            write(lulog,*) 'expected:                  ',njoined_res
             call quit(1,'contr_deriv2','incompatible result operator')
           end if
         else        
@@ -364,8 +364,8 @@ c     &         (cur_conder%contr%iblk_res-1)*njoined_res+1
 
           if (cur_conder%contr%iblk_res.le.0) then
             if (strict) then
-              write(luout,*) 'resulting occupation:'
-              call wrt_occ_n(luout,iocc,njoined_res)
+              write(lulog,*) 'resulting occupation:'
+              call wrt_occ_n(lulog,iocc,njoined_res)
               call quit(1,'contr_deriv',
      &           'result occupation not defined for operator '//
      &           trim(op_arr(idxres)%op%name))
@@ -394,11 +394,11 @@ c     &         (cur_conder%contr%iblk_res-1)*njoined_res+1
       nder = nder_actually
 
       if (ntest.ge.100) then
-        write(luout,*) 'Generated derivative terms: ',nder
+        write(lulog,*) 'Generated derivative terms: ',nder
         cur_conder => conder
         do ider = 1, nder
-          write(luout,*) 'term #',ider
-          call prt_contr2(luout,cur_conder%contr,op_info)
+          write(lulog,*) 'term #',ider
+          call prt_contr2(lulog,cur_conder%contr,op_info)
           call check_xarcs(cur_conder%contr,op_info)
           if (ider.lt.nder) cur_conder => cur_conder%next
         end do

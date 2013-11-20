@@ -73,18 +73,18 @@ c     &     reo_op1op2, reo_other
       if (abs(mode).ne.1.and.mode.ne.2)
      &     call quit(1,'get_reo_info2','invalid mode')
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'get_reo_info2')
-        write(luout,*) 'nreo = ',reo_info%nreo
-        write(luout,*) 'mode:  ',mode
+        call write_title(lulog,wst_dbg_subr,'get_reo_info2')
+        write(lulog,*) 'nreo = ',reo_info%nreo
+        write(lulog,*) 'mode:  ',mode
         if (abs(mode).eq.1) then
           reo => reo_info%reo
           do ireo = 1, reo_info%nreo
-            write(luout,*) 'set # ',ireo
-            write(luout,*) 'is_bc_result: ',reo(ireo)%is_bc_result
-            write(luout,*) 'shift_i0: ',reo(ireo)%shift_i0
-            write(luout,*) 'idxsuper:  ',reo(ireo)%idxsuper
-            write(luout,*) 'from/to:   ',reo(ireo)%from,reo(ireo)%to
-            call wrt_occ(luout,reo(ireo)%occ_shift)
+            write(lulog,*) 'set # ',ireo
+            write(lulog,*) 'is_bc_result: ',reo(ireo)%is_bc_result
+            write(lulog,*) 'shift_i0: ',reo(ireo)%shift_i0
+            write(lulog,*) 'idxsuper:  ',reo(ireo)%idxsuper
+            write(lulog,*) 'from/to:   ',reo(ireo)%from,reo(ireo)%to
+            call wrt_occ(lulog,reo(ireo)%occ_shift)
           end do
         end if
       end if
@@ -300,16 +300,16 @@ c          end if
         end do
 
         if (ntest.ge.100) then
-          write(luout,*) 'OP1OP2 tmp:'
-          call wrt_occ_n(luout,iocc_op1op2tmp,njoined_op1op2)
-          write(luout,*) 'OP1OP2:'
-          call wrt_occ_n(luout,iocc_op1op2,njoined_op1op2)
-          write(luout,*) 'REO:'
-          call wrt_occ_n(luout,reo_info%iocc_reo,nreo_op1op2)
-          write(luout,*) 'OPREO_0:'
-          call wrt_occ_n(luout,reo_info%iocc_opreo0,njoined_op1op2)
-          write(luout,*) 'is_op1op2:'
-          write(luout,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
+          write(lulog,*) 'OP1OP2 tmp:'
+          call wrt_occ_n(lulog,iocc_op1op2tmp,njoined_op1op2)
+          write(lulog,*) 'OP1OP2:'
+          call wrt_occ_n(lulog,iocc_op1op2,njoined_op1op2)
+          write(lulog,*) 'REO:'
+          call wrt_occ_n(lulog,reo_info%iocc_reo,nreo_op1op2)
+          write(lulog,*) 'OPREO_0:'
+          call wrt_occ_n(lulog,reo_info%iocc_opreo0,njoined_op1op2)
+          write(lulog,*) 'is_op1op2:'
+          write(lulog,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
         end if
 c patch
 c        print *,'redefining is_op1op2:'
@@ -317,10 +317,10 @@ c        print *,'redefining is_op1op2:'
         do ivtx = 1, max(reo_info%nvtx_contr,njoined_op1op2)
           if (svertex(ivtx).eq.idxsuper) is_op1op2(ivtx) = 1
         end do
-c        write(luout,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
-c        write(luout,'(1x,20i3)') reo_info%nca_vtx(1:reo_info%nvtx_contr)
-c        write(luout,*) ' idxsuper = ',idxsuper
-c        write(luout,'(1x,20i3)') svertex(1:reo_info%nvtx_contr)
+c        write(lulog,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
+c        write(lulog,'(1x,20i3)') reo_info%nca_vtx(1:reo_info%nvtx_contr)
+c        write(lulog,*) ' idxsuper = ',idxsuper
+c        write(lulog,'(1x,20i3)') svertex(1:reo_info%nvtx_contr)
 c patch
 
         reo_info%sign_reo = sign_reo(
@@ -421,19 +421,19 @@ c dbg
 c dbg
 c        print *,'OP1OP2TMP'
 c         do ij = 1, njoined_op1op2
-c            call wrt_occ_rstr(luout,ij,iocc_op1op2tmp(:,:,ij),
+c            call wrt_occ_rstr(lulog,ij,iocc_op1op2tmp(:,:,ij),
 c     &                                 irst_op1op2tmp(:,:,:,:,ij),
 c     &                                 ngas,orb_info%nspin)
 c          end do
 c        print *,'OP0'
 c         do ij = 1, njoined_op1op2
-c            call wrt_occ_rstr(luout,ij,reo_info%iocc_opreo0(:,:,ij),
+c            call wrt_occ_rstr(lulog,ij,reo_info%iocc_opreo0(:,:,ij),
 c     &                                    irst0(:,:,:,:,ij),
 c     &                                    ngas,orb_info%nspin)
 c          end do
 c        print *,'REO'
 c         do ij = 1, nreo_op1op2
-c            call wrt_occ_rstr(luout,ij,reo_info%iocc_reo(:,:,ij),
+c            call wrt_occ_rstr(lulog,ij,reo_info%iocc_reo(:,:,ij),
 c     &                                    irst_reo(:,:,:,:,ij),
 c     &                                    ngas,orb_info%nspin)
 c          end do

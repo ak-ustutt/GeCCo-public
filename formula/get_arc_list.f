@@ -33,7 +33,7 @@
      &     sv_arc(:,:), cnt_strength(:)
 
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'get_arc_list')
+     &     call write_title(lulog,wst_dbg_subr,'get_arc_list')
 
       weight(1:ngastp) = 0
       ihpvgas => orb_info%ihpvgas
@@ -45,7 +45,7 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'weights: ',weight(1:ngastp)
+        write(lulog,*) 'weights: ',weight(1:ngastp)
       end if
 
       narc => contr%narc
@@ -87,19 +87,19 @@ cmh     &      sum(arc(iarc)%occ_cnt(1:ngastp,1:2)).eq.0) cycle
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'len_list = ',len_list
-        write(luout,*) 'raw:'
+        write(lulog,*) 'len_list = ',len_list
+        write(lulog,*) 'raw:'
         do idx = 1, len_list
-          write(luout,'(4x,3i5)') idx,cnt_strength(idx),arc_list(idx)
+          write(lulog,'(4x,3i5)') idx,cnt_strength(idx),arc_list(idx)
         end do
       end if
 
       call idxsort(cnt_strength,arc_list,len_list,-1)
 
       if (ntest.ge.100) then
-        write(luout,*) 'sorted:'
+        write(lulog,*) 'sorted:'
         do idx = 1, len_list
-          write(luout,'(4x,3i5)') idx,cnt_strength(idx),arc_list(idx)
+          write(lulog,'(4x,3i5)') idx,cnt_strength(idx),arc_list(idx)
         end do
       end if
 

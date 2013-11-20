@@ -214,7 +214,7 @@ c dbg
      &     ddot
 
       if (ntest.gt.0) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'contr_op1op2_wmaps_c at work')
       end if
 
@@ -229,27 +229,27 @@ c dbg
       ffop1op2 => me_op1op2%fhand
 
       if (ntest.ge.10) then
-        write(luout,*) 'list1:   ',trim(me_op1%label),' transp:',tra_op1
-        write(luout,*) 'list2:   ',trim(me_op2%label),' transp:',tra_op2
-        write(luout,*) 'list12:  ',trim(me_op1op2%label),
+        write(lulog,*) 'list1:   ',trim(me_op1%label),' transp:',tra_op1
+        write(lulog,*) 'list2:   ',trim(me_op2%label),' transp:',tra_op2
+        write(lulog,*) 'list12:  ',trim(me_op1op2%label),
      &                                             ' transp:',tra_op1op2
-        write(luout,*) 'ffop1:   ',ffop1%name(1:len_trim(ffop1%name))
-        write(luout,*) 'ffop2:   ',ffop2%name(1:len_trim(ffop2%name))
-        write(luout,*) 'ffop1op2:',
+        write(lulog,*) 'ffop1:   ',ffop1%name(1:len_trim(ffop1%name))
+        write(lulog,*) 'ffop2:   ',ffop2%name(1:len_trim(ffop2%name))
+        write(lulog,*) 'ffop1op2:',
      &       ffop1op2%name(1:len_trim(ffop1op2%name))
-        write(luout,*) 'xfac = ',xfac
-        write(luout,*) 'casign = ',casign
+        write(lulog,*) 'xfac = ',xfac
+        write(lulog,*) 'casign = ',casign
         if (type_xret.ne.0)
-     &       write(luout,*) 'xret on entry = ',xret(1)
-        write(luout,*) 'op1: ',trim(op1%name),
+     &       write(lulog,*) 'xret on entry = ',xret(1)
+        write(lulog,*) 'op1: ',trim(op1%name),
      &       ' block ',iblkop1
-        write(luout,*) 'op2: ',trim(op2%name),
+        write(lulog,*) 'op2: ',trim(op2%name),
      &       ' block ',iblkop2
         if (iblkop1op2.gt.0) then
-          write(luout,*) 'op1op2: ',trim(op1op2%name),
+          write(lulog,*) 'op1op2: ',trim(op1op2%name),
      &       ' block ',iblkop1op2
         else
-          write(luout,*) 'op1op2: scalar'
+          write(lulog,*) 'op1op2: scalar'
         end if
       end if
 
@@ -260,10 +260,10 @@ c dbg
       if (reo_op1op2.and..not.associated(reo_info%map_reo1c))
      &     call quit(1,'contr_op1op2_wmaps_c',
      &     'reo_info is not consistent')
-      if (ntest.ge.10) write(luout,*) 'reo_op1op2: ',reo_op1op2
-      if (ntest.ge.10) write(luout,*) 'reo_sign: ',reo_info%sign_reo
+      if (ntest.ge.10) write(lulog,*) 'reo_op1op2: ',reo_op1op2
+      if (ntest.ge.10) write(lulog,*) 'reo_sign: ',reo_info%sign_reo
       if (ntest.ge.10 .and. reo_op1op2) then
-        write(luout,*) 'op1op2tmp: ',trim(op1op2tmp%name),
+        write(lulog,*) 'op1op2tmp: ',trim(op1op2tmp%name),
      &       ' block ',iblkop1op2tmp
       end if
 
@@ -428,11 +428,11 @@ c dbg
       fac_scal = 1d0
 
       if (multd2h(igamtop1,igamtop2).ne.igamtop1op2) then
-        write(luout,*) ' 1: gamma=',igamtop1,' op=',trim(op1%name),
+        write(lulog,*) ' 1: gamma=',igamtop1,' op=',trim(op1%name),
      &                                       ' list=',trim(me_op1%label)
-        write(luout,*) ' 2: gamma=',igamtop2,' op=',trim(op2%name),
+        write(lulog,*) ' 2: gamma=',igamtop2,' op=',trim(op2%name),
      &                                       ' list=',trim(me_op2%label)
-        write(luout,*)' R: gamma=',igamtop1op2,' op=',trim(op1op2%name),
+        write(lulog,*)' R: gamma=',igamtop1op2,' op=',trim(op1op2%name),
      &                                    ' list=',trim(me_op1op2%label)
         call quit(1,'contr_op1op2_wmaps_c','inconsistent symmetries')
       end if
@@ -441,18 +441,18 @@ c dbg
 c     &    me_op2%op%formal_blk(iblkop2).or.
 c     &    me_op1op2%op%formal_blk(iblkop1op2)) then
      &    me_op2%op%formal_blk(iblkop2)) then
-        write(luout,*) me_op1%op%formal_blk(iblkop1),
+        write(lulog,*) me_op1%op%formal_blk(iblkop1),
      &                 me_op2%op%formal_blk(iblkop2),
      &                 me_op1op2%op%formal_blk(iblkop1op2)
-        write(luout,*) 'op1: ',trim(op1%name),
+        write(lulog,*) 'op1: ',trim(op1%name),
      &       ' block ',iblkop1
-        write(luout,*) 'op2: ',trim(op2%name),
+        write(lulog,*) 'op2: ',trim(op2%name),
      &       ' block ',iblkop2
         if (iblkop1op2.gt.0) then
-          write(luout,*) 'op1op2: ',trim(op1op2%name),
+          write(lulog,*) 'op1op2: ',trim(op1op2%name),
      &       ' block ',iblkop1op2
         else
-          write(luout,*) 'op1op2: scalar'
+          write(lulog,*) 'op1op2: scalar'
         end if
 
         call quit(1,'contr_op1op2_wmaps_c','called for formal block')
@@ -473,11 +473,11 @@ c
 c      ! ... else we raise an error flag; check whether this is
 c      ! useful or not ....
 c      if (lenop1.le.0.or.lenop2.le.0.or.lenop1op2.le.0) then
-c        write(luout,*)
+c        write(lulog,*)
 c     &       trim(op1%name),' ',
 c     &       trim(op2%name),' ',
 c     &       trim(op1op2%name)
-c        write(luout,*) 'lenop1, lenop2, lenop1op2: ',
+c        write(lulog,*) 'lenop1, lenop2, lenop1op2: ',
 c     &                  lenop1, lenop2, lenop1op2
 c        call quit(1,'contr_op1op2_wmaps_c',
 c     &     'zero length for operator?')
@@ -532,7 +532,7 @@ c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
         end if
       end if
 
-      if (ntest.ge.100) write(luout,*) ' bufop1/2: ',bufop1,bufop2
+      if (ntest.ge.100) write(lulog,*) ' bufop1/2: ',bufop1,bufop2
 
       ! get result vector as well (as we update)
       ! refers to reordered op1op2
@@ -582,11 +582,11 @@ c          end if
             end if
           end if
         end if
-        if (ntest.ge.100) write(luout,*) ' bufop1op2: ',bufop1op2
+        if (ntest.ge.100) write(lulog,*) ' bufop1op2: ',bufop1op2
       else
         bufop1op2 = .true.
         xop1op2 => xret
-        if (ntest.ge.100) write(luout,*) ' result is scalar '
+        if (ntest.ge.100) write(lulog,*) ' result is scalar '
       end if
 
       if (me_op1op2tmp%diag_type.ne.0) then
@@ -626,55 +626,55 @@ c          end if
 
       if (ntest.ge.1000) then
         ! this will work if all blocks incore, only:
-        write(luout,*) 'operator 1 (',trim(op1%name),
+        write(lulog,*) 'operator 1 (',trim(op1%name),
      &                    ',list=',trim(me_op1%label),')'
         if (buftyp1.eq.0) then
-          write(luout,*) 'full list loaded:'
-          call wrt_mel_buf(luout,5,xop1,me_op1,iblkop1,iblkop1,
+          write(lulog,*) 'full list loaded:'
+          call wrt_mel_buf(lulog,5,xop1,me_op1,iblkop1,iblkop1,
      &                  str_info,orb_info)
         else
-          write(luout,*) 'buftyp1 = ',buftyp1
+          write(lulog,*) 'buftyp1 = ',buftyp1
           if (ntest.lt.10000) then
-            write(luout,*)
+            write(lulog,*)
      &         'complete list not available for printout'
           else
-            call wrt_mel_file(luout,5,me_op1,iblkop1,iblkop1,
+            call wrt_mel_file(lulog,5,me_op1,iblkop1,iblkop1,
      &           str_info,orb_info)
           end if
         end if
-        write(luout,*) 'operator 2 (',trim(op2%name),
+        write(lulog,*) 'operator 2 (',trim(op2%name),
      &                    ',list=',trim(me_op2%label),')'
         if (buftyp2.eq.0) then
-          write(luout,*) 'full list loaded:'
-          call wrt_mel_buf(luout,5,xop2,me_op2,iblkop2,iblkop2,
+          write(lulog,*) 'full list loaded:'
+          call wrt_mel_buf(lulog,5,xop2,me_op2,iblkop2,iblkop2,
      &                  str_info,orb_info)
         else
-          write(luout,*) 'buftyp2 = ',buftyp2
+          write(lulog,*) 'buftyp2 = ',buftyp2
           if (ntest.lt.10000) then
-            write(luout,*)
+            write(lulog,*)
      &         'complete list not available for printout'
           else
-            call wrt_mel_file(luout,5,me_op2,iblkop2,iblkop2,
+            call wrt_mel_file(lulog,5,me_op2,iblkop2,iblkop2,
      &           str_info,orb_info)
           end if
         end if
 
         if (iblkop1op2.gt.0) then
-          write(luout,*) 'operator 12 on entry (',trim(op1op2%name),
+          write(lulog,*) 'operator 12 on entry (',trim(op1op2%name),
      &                                ',list=',trim(me_op1op2%label),')'
 
           if (buftyp12.eq.0) then
-            write(luout,*) 'full list loaded:'
-            call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
+            write(lulog,*) 'full list loaded:'
+            call wrt_mel_buf(lulog,5,xop1op2,me_op1op2,
      &                    iblkop1op2,iblkop1op2,
      &                    str_info,orb_info)
           else
-            write(luout,*) 'buftyp12 = ',buftyp12
+            write(lulog,*) 'buftyp12 = ',buftyp12
             if (ntest.lt.10000) then
-              write(luout,*)
+              write(lulog,*)
      &         'complete list not available for printout'
             else
-              call wrt_mel_file(luout,5,me_op1op2,iblkop1op2,iblkop1op2,
+              call wrt_mel_file(lulog,5,me_op1op2,iblkop1op2,iblkop1op2,
      &           str_info,orb_info)
             end if
           end if
@@ -720,9 +720,9 @@ c dbg
       if (na_op1op2.ne.na_op1op2tmp)
      &     call quit(1,'contr_op1op2_wmaps_c','unexpected 1a')
       if (nc_op1op2.ne.nc_op1op2tmp) then
-        write(luout,*) 'OP1OP2 (C)   : ',nc_op1op2,
+        write(lulog,*) 'OP1OP2 (C)   : ',nc_op1op2,
      &       ' <- ',cinfo_op1op2c(1:ncblk_op1op2,1)
-        write(luout,*) 'OP1OP2TMP (C): ',nc_op1op2tmp,
+        write(lulog,*) 'OP1OP2TMP (C): ',nc_op1op2tmp,
      &       ' <- ',cinfo_op1op2tmpc(1:ncblk_op1op2tmp,1)
         call quit(1,'contr_op1op2_wmaps_c','unexpected 1b')
       end if
@@ -999,10 +999,10 @@ c     &            'msc_c,msc_a: ',msc_c,msc_a,' fac = ',fac_scal
 c dbg
 
           if (ntest.ge.100) then
-            write(luout,*) 'Current spin case:'
-            write(luout,*) ' OP1/OP2/INT (C) ->',ms12i_c(1:3)
-            write(luout,*) ' OP1/OP2/INT (A) ->',ms12i_a(1:3)
-            write(luout,*) ' CNT(C)/CNT(A)   ->',msc_c,msc_a
+            write(lulog,*) 'Current spin case:'
+            write(lulog,*) ' OP1/OP2/INT (C) ->',ms12i_c(1:3)
+            write(lulog,*) ' OP1/OP2/INT (A) ->',ms12i_a(1:3)
+            write(lulog,*) ' CNT(C)/CNT(A)   ->',msc_c,msc_a
           end if
 
           ! loop IRREP cases of (Op1(A),Op2(A),Interm)
@@ -1680,35 +1680,35 @@ c                    ifree = mem_alloc_int(map_ex2cnta,lenmap,'strmap_a')
 
                     ! make the contraction for this block
                     if (ntest.ge.100)
-     &                   write(luout,*) 'calling blk1blk2',
+     &                   write(lulog,*) 'calling blk1blk2',
      &                   lenop1,idxop1,
      &                   lenop2,idxop2,
      &                   lenop1op2,idxop1op2
 c                    if (ntest.ge.1000) then
-c                      write(luout,*) ' the maps:'
-c                      write(luout,*) ' X1X2(A): '
+c                      write(lulog,*) ' the maps:'
+c                      write(lulog,*) ' X1X2(A): '
 c                      call prt_strmap_c(map_ex1ex2a,
 c     &                     cinfo_ex2,cinfo_ex2,
 c     &                     cinfo_ex2(1,3),cinfo_ex2(1,3),
 c     &                     lstrex2(1,2),lstrex1(1,2),
 c     &                     nablk_ex2,nablk_ex1)
-c                      write(luout,*) ' X1X2(C): '
+c                      write(lulog,*) ' X1X2(C): '
 c                      call prt_strmap(map_ex1ex2c,
 c     &                     iocc_ext1(1,1),iocc_ext2(1,1),
 c     &                     lstrext1(1,1),lstrext2(1,1))
-c                      write(luout,*) ' X1C(A): '
+c                      write(lulog,*) ' X1C(A): '
 c                      call prt_strmap(map_ex1cnta,
 c     &                     iocc_cnt(1,2),iocc_ext1(1,2),
 c     &                     lstrcnt(1,2),lstrext1(1,2))
-c                      write(luout,*) ' X1C(C): '
+c                      write(lulog,*) ' X1C(C): '
 c                      call prt_strmap(map_ex1cntc,
 c     &                     iocc_cnt(1,1),iocc_ext1(1,1),
 c     &                     lstrcnt(1,1),lstrext1(1,1))
-c                      write(luout,*) ' X2C(A): '
+c                      write(lulog,*) ' X2C(A): '
 c                      call prt_strmap(map_ex2cnta,
 c     &                     iocc_cnt(1,1),iocc_ext2(1,2),
 c     &                     lstrcnt(1,1),lstrext2(1,2))
-c                      write(luout,*) ' X2C(C): '
+c                      write(lulog,*) ' X2C(C): '
 c                      call prt_strmap(map_ex2cntc,
 c     &                     iocc_cnt(1,2),iocc_ext2(1,1),
 c     &                     lstrcnt(1,2),lstrext2(1,1))
@@ -1792,7 +1792,7 @@ c dbg
      &                   )                     
                     end if
                     if (ntest.ge.100)
-     &                   write(luout,*) 'after blk1blk2'
+     &                   write(lulog,*) 'after blk1blk2'
 c dbg
 c                    call mem_check('after kernel')
 c dbg
@@ -1806,8 +1806,8 @@ c dbg
                   ! if necessary, reorder op1op2 block:
                   if (reo_op1op2.and.nonzero) then
 c dbg
-c          write(luout,*) 'input block '
-c          write(luout,'(x,5g15.8)')    xbf12tmp(1:lblk_op1op2tmp)
+c          write(lulog,*) 'input block '
+c          write(lulog,'(x,5g15.8)')    xbf12tmp(1:lblk_op1op2tmp)
 c dbg
 c          print *,'gamma c/a:',igam12i_c(3),igam12i_a(3)
 c          print *,'msdis_c :',msi_dis_c
@@ -1815,9 +1815,9 @@ c          print *,'msdis_a :',msi_dis_a
 c          print *,'gmdis_c :',gmi_dis_c
 c          print *,'gmdis_a :',gmi_dis_a
 c dbgend
-cc          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
+cc          call wrt_mel_buf(lulog,5,xop1op2,me_op1op2,
 cc     &         iblkop1op2,iblkop1op2,str_info,orb_info)
-c          call wrt_mel_buf(luout,5,xop1op2blk,me_op1op2tmp,
+c          call wrt_mel_buf(lulog,5,xop1op2blk,me_op1op2tmp,
 c     &         1,1,str_info,orb_info)
 c dbg
                     call atim_cs(cpu0,sys0)
@@ -1849,8 +1849,8 @@ c dbg
      &                   reo_info%map_reo2c,reo_info%map_reo2a,
      &                   nsym,str_info,strmap_info)
 c dbg
-c          write(luout,*) 'reordered operator (',trim(op1op2%name),')'
-c          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
+c          write(lulog,*) 'reordered operator (',trim(op1op2%name),')'
+c          call wrt_mel_buf(lulog,5,xop1op2,me_op1op2,
 c     &         iblkop1op2,iblkop1op2,str_info,orb_info)
 c dbg
                     call atim_cs(cpu,sys)
@@ -1925,7 +1925,7 @@ c      if (use_tr_here.and..not.update) then
         if (buftyp12.ne.0)
      &       call quit(1,'contr_op1op2_wmaps_c','use_tr + buftyp!=0?')
         if (abs(me_op1op2%absym).ne.1) then
-c          write(luout,*) 'assuming AL-BE symmetry = +1'
+c          write(lulog,*) 'assuming AL-BE symmetry = +1'
 c          fac_ab = +1
           call quit(1,'contr_op1op2_wmaps_c',
      &         'absym.ne.+/-1 for list: '//trim(me_op1op2%label))
@@ -1935,8 +1935,8 @@ c          fac_ab = +1
         if (ntest.ge.1000) then
           if (iblkop1op2.gt.0
      &           ) then
-           write(luout,*) 'operator 12 bef. sym (',trim(op1op2%name),')'
-            call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
+           write(lulog,*) 'operator 12 bef. sym (',trim(op1op2%name),')'
+            call wrt_mel_buf(lulog,5,xop1op2,me_op1op2,
      &             iblkop1op2,iblkop1op2,str_info,orb_info)
           end if
         end if
@@ -1950,8 +1950,8 @@ c      if (op1op2%name(1:3).eq.'_LT') then
       if (ntest.ge.1000) then
         if (iblkop1op2.gt.0
      &       ) then
-          write(luout,*) 'operator 12 on exit (',trim(op1op2%name),')'
-          call wrt_mel_buf(luout,5,xop1op2,me_op1op2,
+          write(lulog,*) 'operator 12 on exit (',trim(op1op2%name),')'
+          call wrt_mel_buf(lulog,5,xop1op2,me_op1op2,
      &         iblkop1op2,iblkop1op2,str_info,orb_info)
         end if
       end if
@@ -2002,7 +2002,7 @@ c      if (op1op2%name(1:3).eq.'_LT') then
 
       if (ntest.ge.100) then
         if (type_xret.ne.0)
-     &       write(luout,*) 'xret on exit = ',xret(1)
+     &       write(lulog,*) 'xret on exit = ',xret(1)
       end if
 
       return

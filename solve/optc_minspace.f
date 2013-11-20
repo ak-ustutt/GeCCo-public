@@ -55,18 +55,18 @@
       end do
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'optc_minspace')
-        write(luout,*) 'nred, nroot: ',nred,nroot
-        write(luout,*) 'vred on entry:'
+        call write_title(lulog,wst_dbg_subr,'optc_minspace')
+        write(lulog,*) 'nred, nroot: ',nred,nroot
+        write(lulog,*) 'vred on entry:'
         call wrtmat2(vred,nred,nroot,mxdim,nroot)
         if (nrhs.gt.0) then
-          write(luout,*) 'gred on entry:'
+          write(lulog,*) 'gred on entry:'
           call wrtmat2(gred,nred,nroot,mxdim,nroot)
         end if
-        write(luout,*) 'mred on entry:'
+        write(lulog,*) 'mred on entry:'
         call wrtmat2(mred,nred,nred,mxdim,nred)
         if (update_s) then
-          write(luout,*) 'sred on entry:'
+          write(lulog,*) 'sred on entry:'
           call wrtmat2(sred,nred,nred,mxdim,nred)
         end if
       end if
@@ -81,7 +81,7 @@
      &           0d0,smat,nroot)
 
       if (ntest.ge.100) then
-        write(luout,*) 'overlap matrix: '
+        write(lulog,*) 'overlap matrix: '
         call wrtmat2(smat,nroot,nroot,nroot,nroot)
       end if
 
@@ -96,7 +96,7 @@
      &           0d0,vorth,nred)
 
       if (ntest.ge.100) then
-        write(luout,*) 'orthogonalized vred: '
+        write(lulog,*) 'orthogonalized vred: '
         call wrtmat2(vorth,nred,nroot,nred,nroot)
       end if
 
@@ -107,8 +107,8 @@ c dbg
 c        print *,'iroot, norm: ',iroot,xnrm
 c dbg
         if (xnrm.lt.1d-4) then
-          write(luout,*) 'root, norm: ',iroot, xnrm
-          write(luout,*) 'looks like linear dependency ... oh no!'
+          write(lulog,*) 'root, norm: ',iroot, xnrm
+          write(lulog,*) 'looks like linear dependency ... oh no!'
           call quit(1,'optc_minspace',
      &         'linear dependency should not occur at this place!')
         end if
@@ -137,10 +137,10 @@ c dbg
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'new vred: '
+        write(lulog,*) 'new vred: '
         call wrtmat2(vred,nroot,nroot,mxdim,nroot)
         if (nrhs.gt.0) then
-          write(luout,*) 'new gred: '
+          write(lulog,*) 'new gred: '
           call wrtmat2(gred,nroot,nroot,mxdim,nroot)
         end if
       end if
@@ -156,7 +156,7 @@ c dbg
      &           0d0,mred,mxdim)
 
       if (ntest.ge.100) then
-        write(luout,*) 'new mred: '
+        write(lulog,*) 'new mred: '
         call wrtmat2(mred,nroot,nroot,mxdim,nroot)
       end if
 
@@ -172,7 +172,7 @@ c dbg
      &           0d0,sred,mxdim)
 
         if (ntest.ge.100) then
-          write(luout,*) 'new sred: '
+          write(lulog,*) 'new sred: '
           call wrtmat2(sred,nroot,nroot,mxdim,nroot)
         end if
 

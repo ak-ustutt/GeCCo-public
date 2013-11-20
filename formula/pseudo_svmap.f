@@ -35,7 +35,7 @@
      &     vtx(:), topo(:,:), xlines(:,:)
       
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'pseudo_svmap')
+     &     call write_title(lulog,wst_dbg_subr,'pseudo_svmap')
 
       nvtx = contr%nvtx
 
@@ -43,8 +43,8 @@
      &         xlines(nvtx,njoined_in))
       call pack_contr(svtx,vtx,topo,xlines,contr,njoined_in)
       if (ntest.ge.100) then
-        write(luout,*) 'no unique map! Approximate map using xlines:'
-        call prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx,njoined_in)
+        write(lulog,*) 'no unique map! Approximate map using xlines:'
+        call prt_contr_p(lulog,svtx,vtx,topo,xlines,nvtx,njoined_in)
       end if
       svmap = 0
       do ivtx = 1, nvtx
@@ -60,7 +60,7 @@
       deallocate(svtx,vtx,topo,xlines)
 
       if (ntest.ge.100)
-     &     write(luout,'(x,a,10i5)') 'svmap: ',svmap(1:nvtx)
+     &     write(lulog,'(x,a,10i5)') 'svmap: ',svmap(1:nvtx)
 
       return
       end

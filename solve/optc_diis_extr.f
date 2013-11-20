@@ -35,9 +35,9 @@
      &     cond, xcorsum
 
       if (ntest.gt.0) then
-        write(luout,*) '===================='
-        write(luout,*) ' DIIS extrapolation' 
-        write(luout,*) '===================='
+        write(lulog,*) '===================='
+        write(lulog,*) ' DIIS extrapolation' 
+        write(lulog,*) '===================='
       end if
 
       again = .true.
@@ -58,21 +58,21 @@
         xscr(iioff+ncdim+1) = 0d0
 
         if (ntest.ge.20) then
-          write(luout,*) 'Augmented matrix passed to dspco:'
+          write(lulog,*) 'Augmented matrix passed to dspco:'
           call prtrlt(xscr,ncdim+1)
         end if
         
 * solve DIIS problem to obtain new weights
         ! first factorize the DIIS matrix and get its condition number
         call dspco(xscr,ncdim+1,kpiv,cond,xvec)
-        if (ntest.ge.15) write(luout,*)'ncdim,condition number: ',
+        if (ntest.ge.15) write(lulog,*)'ncdim,condition number: ',
      &       ncdim,cond
         if (cond.eq.0d0) call quit(1,'optc_diis_extr',
      &       'condition number = 0. maxsub > # of parameters?')
         if (ntest.ge.30) then
-          write(luout,*) 'Factorized matrix from dspco:'
+          write(lulog,*) 'Factorized matrix from dspco:'
           call prtrlt(xscr,ncdim+1)
-          write(luout,*) 'Pivot array:'
+          write(lulog,*) 'Pivot array:'
           call iwrtma(kpiv,1,ncdim+1,1,ncdim+1)
         end if
 
@@ -81,9 +81,9 @@
         xvec(ncdim+1) = -1d0
         call dspsl(xscr,ncdim+1,kpiv,xvec)
         if (ntest.ge.10) then
-          write(luout,*) 'result of dspsl:'
-          write(luout,*) 'w:', xvec(1:ncdim)
-          write(luout,*) 'l:', xvec(ncdim+1)
+          write(lulog,*) 'result of dspsl:'
+          write(lulog,*) 'w:', xvec(1:ncdim)
+          write(lulog,*) 'l:', xvec(ncdim+1)
         end if
 
 * analyze solution and request deletion of vectors, if necessary
@@ -108,7 +108,7 @@ c        end if
       end if
         
       if (ntest.ge.10) then
-        write(luout,*) 'final result for extrapolation weights:'
+        write(lulog,*) 'final result for extrapolation weights:'
         call wrtmat2(xvec,1,ndim,1,ndim)
       end if
 

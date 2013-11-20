@@ -151,13 +151,13 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
 * be verbose?
       if (iprint.ge.5) then
         if (modestr(1:3).eq.'LEQ')
-     &       call write_title(luout,wst_section,'LEQ solver')
+     &       call write_title(lulog,wst_section,'LEQ solver')
         if (modestr(1:3).eq.'EVP')
-     &       call write_title(luout,wst_section,'EVP solver')
+     &       call write_title(lulog,wst_section,'EVP solver')
       end if
       if (ntest.ge.10) then
-        write(luout,*) 'entered leq_evp_control with:'
-        write(luout,*) ' iter: ', iter
+        write(lulog,*) 'entered leq_evp_control with:'
+        write(lulog,*) ' iter: ', iter
       end if
 
 * set iroute:
@@ -170,22 +170,22 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
 
       if (iprint.ge.5.or.iter.eq.0) then
         if (modestr(1:3).eq.'LEQ')
-     &       write(luout,*) 'Optimization algorithm:    ',
+     &       write(lulog,*) 'Optimization algorithm:    ',
      &       name_alg_leq(iroute)
         if (modestr(1:3).eq.'EVP')
-     &       write(luout,*) 'Optimization algorithm:    ',
+     &       write(lulog,*) 'Optimization algorithm:    ',
      &       name_alg_evp(iroute)
-        write(luout,'(x,a,i10)')
+        write(lulog,'(x,a,i10)')
      &                 'Max. number of iterations: ',opti_info%maxmacit
-        write(luout,'(x,a,e10.2)')
+        write(lulog,'(x,a,e10.2)')
      &                 'Threshold for residual:    ',opti_info%thrgrd(1)
-        write(luout,'(x,a,3i10)')
+        write(lulog,'(x,a,3i10)')
      &                 'Number of parameters:      ',
      &       opti_info%nwfpar(1:opti_info%nopt)
       end if
 
       if (ntest.ge.10) then
-        write(luout,*) 'our route is: ',iroute
+        write(lulog,*) 'our route is: ',iroute
       end if
 *======================================================================*
 *     unless this is the initial call:
@@ -264,7 +264,7 @@ c        end if
 *======================================================================*
       else 
         if (ntest.ge.10) then
-          write(luout,*) 'getting new vectors ...'
+          write(lulog,*) 'getting new vectors ...'
         end if
 
         if (modestr(1:3).eq.'LEQ') then
@@ -313,12 +313,12 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
 
       if (iprint.ge.5) then
         if (opti_info%norder.eq.1)
-     &       write(luout,*) 'after iteration ',iter
+     &       write(lulog,*) 'after iteration ',iter
         idx = 0
         do iopt = 1, opti_info%nopt
           do iroot = 1, opti_info%nroot
             idx = idx+1
-            write(luout,'(x,2(a,e10.3),a,l)')
+            write(lulog,'(x,2(a,e10.3),a,l)')
      &                      ' norm of residual:  ', xrsnrm(idx),
      &                           '   threshold:  ',
      &                                   opti_info%thrgrd(iopt),
@@ -329,7 +329,7 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
       end if
 
       if (lconv)
-     &       write(luout,'(x,a,i5,a)')
+     &       write(lulog,'(x,a,i5,a)')
      &         'CONVERGED IN ',iter,' ITERATIONS'
       if (lconv) conv = .true.
 
@@ -337,7 +337,7 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
 
       if (.not.lconv.and.
      &       (iter.gt.opti_info%maxmacit)) then
-        write(luout,*) 'NO CONVERGENCE OBTAINED'
+        write(lulog,*) 'NO CONVERGENCE OBTAINED'
         !iter = iter - 1
         lexit = .true.
       end if
@@ -393,14 +393,14 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
       end if
 
       if (ntest.ge.10) then
-        write(luout,*) 'at the end of optcont:'
-        write(luout,*) ' task = ',task
-        write(luout,*) ' iter:  ',iter
+        write(lulog,*) 'at the end of optcont:'
+        write(lulog,*) ' task = ',task
+        write(lulog,*) ' iter:  ',iter
       end if
 
       call atim_csw(cpu,sys,wall)
       if (iprint.ge.5)
-     &     call prtim(luout,'time in optimizer',
+     &     call prtim(lulog,'time in optimizer',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return
@@ -475,14 +475,14 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
      &     ifree = mem_alloc_real(xbuf3,len3,'buffer_3')
 
       if (iprint.ge.5) then
-        write(luout,*) ' allocated ',nbuf,' buffers'
-        write(luout,*) ' # incore vectors: ',nincore
-        write(luout,*) ' total size of buffers: ',len1+len2+len3
-        write(luout,*) ' remaining core memory: ',ifree
+        write(lulog,*) ' allocated ',nbuf,' buffers'
+        write(lulog,*) ' # incore vectors: ',nincore
+        write(lulog,*) ' total size of buffers: ',len1+len2+len3
+        write(lulog,*) ' remaining core memory: ',ifree
         if (nincore.le.1) then
           nbatch = nmax_per_vec/lenbuf
           if (nbatch*lenbuf.lt.nmax_per_vec) nbatch = nbatch+1
-          write(luout,*) ' out-of-core routines need ',nbatch,' cycles'
+          write(lulog,*) ' out-of-core routines need ',nbatch,' cycles'
         end if
       end if
 

@@ -111,7 +111,7 @@ c      include 'ifc_input.h'
      &     next_msgamdist2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'mixed preconditioner')
+        call write_title(lulog,wst_dbg_subr,'mixed preconditioner')
       end if
 
       if (nincore.ne.3)
@@ -193,16 +193,16 @@ c     &     'strange -- expected njoined==2')
         idx_grd = me_grd%off_op_occ(iblk)+1
         len_grd = me_grd%len_op_occ(iblk)
         if (ntest.ge.100) then
-          write(luout,*) 'iblk = ',iblk
-          write(luout,*) '(a) gradient vector before:'
-          write(luout,*) xbuf1(idx_grd:idx_grd+len_grd)
-          write(luout,*) 'using shift: ',w_shift
+          write(lulog,*) 'iblk = ',iblk
+          write(lulog,*) '(a) gradient vector before:'
+          write(lulog,*) xbuf1(idx_grd:idx_grd+len_grd)
+          write(lulog,*) 'using shift: ',w_shift
         end if
         call diavc(xbuf1(idx_grd),xbuf1(idx_grd),1d0,
      &             xbuf2(idx_grd),w_shift,len_grd)
         if (ntest.ge.100) then
-          write(luout,*) '(a) gradient vector afterwards:'
-          write(luout,*) xbuf1(idx_grd:idx_grd+len_grd)
+          write(lulog,*) '(a) gradient vector afterwards:'
+          write(lulog,*) xbuf1(idx_grd:idx_grd+len_grd)
         end if
       end do
 
@@ -213,10 +213,10 @@ c     &     'strange -- expected njoined==2')
         if (ntest.ge.100) then
           idx_grd = me_grd%off_op_occ(iblk)+1
           len_grd = me_grd%len_op_occ(iblk)
-          write(luout,*) 'iblk = ',iblk
-          write(luout,*) '(b) gradient vector before:'
-          write(luout,*) xbuf1(idx_grd+1:idx_grd+len_grd)
-          write(luout,*) 'using shift: ',w_shift
+          write(lulog,*) 'iblk = ',iblk
+          write(lulog,*) '(b) gradient vector before:'
+          write(lulog,*) xbuf1(idx_grd+1:idx_grd+len_grd)
+          write(lulog,*) 'using shift: ',w_shift
         end if
 
         iblk_off = (iblk-1)*njoined
@@ -232,15 +232,15 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
      &       me_grd%off_op_gmox(iblk)%d_gam_ms
 
         if (ntest.ge.100) then
-          write(luout,*) 'Now caring for GRD block: '
-          call wrt_occ_n(luout,occ_blk,njoined)
+          write(lulog,*) 'Now caring for GRD block: '
+          call wrt_occ_n(lulog,occ_blk,njoined)
         end if
 
         call get_num_subblk(ncsub,nasub,
      &       hpvx_occ(1,1,iblk_off+1),njoined)
 
         if (ntest.ge.100)
-     &       write(luout,*) 'ncsub, nasub: ',ncsub, nasub
+     &       write(lulog,*) 'ncsub, nasub: ',ncsub, nasub
 
         mode = 1
         nidx_p = 1
@@ -292,7 +292,7 @@ c     &       me_grd%len_op_gmox(iblk)%d_gam_ms
         end if
 
         if (ncsub.ne.1.and.ncsub.ne.2.and.nasub.ne.1) then
-          write(luout,*) 'ncsub, nasub: ',ncsub,nasub
+          write(lulog,*) 'ncsub, nasub: ',ncsub,nasub
           call quit(1,'optc_prc_mixed','this is not what I expected')
         end if
 
@@ -433,7 +433,7 @@ c          end if
             gamc = multd2h(gama,gamtotal)
 
             if (ntest.ge.100)
-     &           write(luout,*) 'current MS(A), MS(C), GAM(A), GAM(C):',
+     &           write(lulog,*) 'current MS(A), MS(C), GAM(A), GAM(C):',
      &                           msa, msc, gama, gamc
 
             idxdis = 0
@@ -644,8 +644,8 @@ c test -- special insert
         end if
 
         if (ntest.ge.100) then
-          write(luout,*) '(b) gradient vector afterwards:'
-          write(luout,*) xbuf1(idx_grd+1:idx_grd+len_grd)
+          write(lulog,*) '(b) gradient vector afterwards:'
+          write(lulog,*) xbuf1(idx_grd+1:idx_grd+len_grd)
         end if
 
       end do

@@ -129,10 +129,10 @@
       ifree = mem_setmark('solve_evp')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'entered solve_evp')
-        write(luout,*) 'nopt   = ',nopt
-        write(luout,*) 'nroots = ',nroots
-        write(luout,*) 'targ_root = ',targ_root
+        call write_title(lulog,wst_dbg_subr,'entered solve_evp')
+        write(lulog,*) 'nopt   = ',nopt
+        write(lulog,*) 'nroots = ',nroots
+        write(lulog,*) 'targ_root = ',targ_root
       end if
 
       idx = idx_formlist(label_form,form_info)
@@ -307,7 +307,7 @@
         ! open result vector file(s)
         ! if file already open, use as initial guess (if requested)!
         if (ffopt(iopt)%fhand%unit.gt.0.and.opti_info%resume) then
-          write(luout,'(a,i4,a)')
+          write(lulog,'(a,i4,a)')
      &          'Using last vector as initial guess (iopt =',iopt,')'
           init(iopt) = .false.
         end if
@@ -338,7 +338,7 @@
           call list_copy(me_opt(iopt)%mel,me_home(1)%mel,.false.)
 c dbg
 c          print *,'preparing for homing in later. Saved vector:'
-c          call wrt_mel_file(luout,5,
+c          call wrt_mel_file(lulog,5,
 c     &         me_home(1)%mel,
 c     &         1,me_trv(iopt)%mel%op%n_occ_cls,
 c     &         str_info,orb_info)
@@ -388,15 +388,15 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
 
         if (iter.gt.1) then
           xresmax = fndmnx(xresnrm,nroots*nopt,2)
-          write(luout,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
+          write(lulog,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
           if (iprlvl.gt.0) then
             do iroot = 1, nroots
               if (xeig(iroot,2).eq.0d0) then
-                write(luout,'(" E>",3x,f24.12,x,3g10.4)')
+                write(lulog,'(" E>",3x,f24.12,x,3g10.4)')
      &               xeig(iroot,1),(xresnrm(iroot+idx*nroots),
      &                              idx = 0, nopt-1)
               else
-                write(luout,
+                write(lulog,
      &               '(" E>",3x,f24.12,x,g10.4," (img=",g24.12,")")')
      &               xeig(iroot,1),xresnrm(iroot),xeig(iroot,2)
               end if
@@ -420,8 +420,8 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
               ! (if requested)
 c              if (me_trv(iopt)%mel%absym.ne.0)
 c dbg
-c        write(luout,*) 'current trial vector (before):'
-c        call wrt_mel_file(luout,5,
+c        write(lulog,*) 'current trial vector (before):'
+c        call wrt_mel_file(lulog,5,
 c     &       me_trv(iopt)%mel,
 c     &       1,me_trv(iopt)%mel%op%n_occ_cls,
 c     &       str_info,orb_info)
@@ -437,8 +437,8 @@ c dbgend
             end do
 
 c dbg
-c            write(luout,*) 'input for request: ',irequest
-c            call wrt_mel_file(luout,5,me_trv(1)%mel,
+c            write(lulog,*) 'input for request: ',irequest
+c            call wrt_mel_file(lulog,5,me_trv(1)%mel,
 c     &           1,me_trv(1)%mel%op%n_occ_cls,
 c     &           str_info,orb_info)
 c dbg
@@ -448,7 +448,7 @@ c dbg
 
             ! apply sign-fix (if needed)
             do iopt = 1, nopt
-c             write(luout,*) 'Fixing signs of residual+metric,iopt=',iopt
+c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
               ifree = mem_setmark('solve_evp.fix_sign')
               ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
      &                                         'xbuf1')
@@ -464,8 +464,8 @@ c             write(luout,*) 'Fixing signs of residual+metric,iopt=',iopt
               ifree = mem_flushmark()
             end do
 c dbg
-c            write(luout,*) 'output for request: ',irequest
-c            call wrt_mel_file(luout,5,me_mvp(1)%mel,
+c            write(lulog,*) 'output for request: ',irequest
+c            call wrt_mel_file(lulog,5,me_mvp(1)%mel,
 c     &           1,me_mvp(1)%mel%op%n_occ_cls,
 c     &           str_info,orb_info)
 c dbg
@@ -567,7 +567,7 @@ c dbgend
           end do
           ifree = mem_flushmark()
           if (idx.ne.targ_root) then
-            write(luout,'(a,i4,a,f8.4)') 
+            write(lulog,'(a,i4,a,f8.4)') 
      &            'Homing in on root ',idx,' with overlap ',xresmax
             ! Interchange this record and the current record
             ! and leave everything else unchanged (a bit dirty)
@@ -590,32 +590,32 @@ c dbgend
       end do
 
       ! print results
-      call write_title(luout,wst_title,
+      call write_title(lulog,wst_title,
      &     'Results for '//trim(label_opt(1)))
-      write(luout,'("E>>",66("="))')
-      write(luout,'("E>>",2x,'//
+      write(lulog,'("E>>",66("="))')
+      write(lulog,'("E>>",2x,'//
      &     '"root     eigenvalue (real)       eigenvalue (img.)'//
      &     '  |residual|")')
-      write(luout,'("E>>",66("-"))') 
+      write(lulog,'("E>>",66("-"))') 
       do iroot = 1, nroots
         if (xeig(iroot,2).eq.0d0) then
-          write(luout,'("E>>",2x,i3,x,f22.12,20x,"---",2x,x,g10.4)')
+          write(lulog,'("E>>",2x,i3,x,f22.12,20x,"---",2x,x,g10.4)')
      &         iroot,xeig(iroot,1),xresnrm(iroot)
         else
-          write(luout,
+          write(lulog,
      &         '("E>>",3x,i2,x,f22.12,x,g24.12,x,g10.4)')
      &         iroot,xeig(iroot,1:2),xresnrm(iroot)
         end if
 c dbg
 c         do iopt=1,nopt
 c           call switch_mel_record(me_opt(iopt)%mel,iroot)
-c           call wrt_mel_file(luout,5,me_opt(iopt)%mel,
+c           call wrt_mel_file(lulog,5,me_opt(iopt)%mel,
 c    &             1,me_opt(iopt)%mel%op%n_occ_cls,
 c    &             str_info,orb_info)
 c         enddo
 c dbg     
       end do
-      write(luout,'("E>>",66("="))') 
+      write(lulog,'("E>>",66("="))') 
 
       ! switch to target root if possible
 !      ! (we assume that nroots has been chosen for this reason,

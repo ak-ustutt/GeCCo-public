@@ -57,15 +57,15 @@
       nblk_cbar = op_cbar%n_occ_cls
 
       if (iprint.gt.0) then
-        write(luout,'(x,78("-"))')
-        write(luout,'(x,a)')
+        write(lulog,'(x,78("-"))')
+        write(lulog,'(x,a)')
      &  ' L    number  n-fold commutators'
-        write(luout,'(x,a)')
+        write(lulog,'(x,a)')
      &  'class  of      0   1       2           3                4'
-        write(luout,'(x,a)')
+        write(lulog,'(x,a)')
      &  '      terms        T   C  TT  TC  CC TTT TTC TCC CCC TTTT '//
      &       'TTTC TTCC TCCC CCCC'
-        write(luout,'(x,78("-"))')
+        write(lulog,'(x,78("-"))')
       end if
 
       ! loop over Tbar blocks (0 is the unit-projection)
@@ -86,11 +86,11 @@
         end do
 
         if (iprint.ge.10) then
-c          write(luout,'("??",x,"L",i2,3x,i6,x,15(i4))')
-          write(luout,'("??",x,"L",i1,x,i6,x,10(i4),5(i5))')
+c          write(lulog,'("??",x,"L",i2,3x,i6,x,15(i4))')
+          write(lulog,'("??",x,"L",i1,x,i6,x,10(i4),5(i5))')
      &       iblk,sum(n_commu(1:15)),n_commu(1:15)
         else if (iprint.gt.0) then
-          write(luout,'(3x,"L",i1,x,i6,x,10(i4),5(i5))')
+          write(lulog,'(3x,"L",i1,x,i6,x,10(i4),5(i5))')
      &       iblk,sum(n_commu(1:15)),n_commu(1:15)
         end if
         nterms = nterms + sum(n_commu(1:15))
@@ -111,11 +111,11 @@ c          write(luout,'("??",x,"L",i2,3x,i6,x,15(i4))')
         end do
 
         if (iprint.ge.10) then
-          write(luout,'("??",x,"C",i1,x,i6,x,10(i4),5(i5))')
-c          write(luout,'("??",x,"C",i2,3x,i6,x,15(i4))')
+          write(lulog,'("??",x,"C",i1,x,i6,x,10(i4),5(i5))')
+c          write(lulog,'("??",x,"C",i2,3x,i6,x,15(i4))')
      &       iblk+1,sum(n_commu(1:15)),n_commu(1:15)
         else if (iprint.gt.0) then
-          write(luout,'(3x,"C",i1,x,i6,x,10(i4),5(i5))')
+          write(lulog,'(3x,"C",i1,x,i6,x,10(i4),5(i5))')
      &       iblk+1,sum(n_commu(1:15)),n_commu(1:15)
         end if
         nterms = nterms + sum(n_commu(1:15))
@@ -123,7 +123,7 @@ c          write(luout,'("??",x,"C",i2,3x,i6,x,15(i4))')
       end do
 
       if (iprint.gt.0)
-     &     write(luout,'(x,78("-"))')
+     &     write(lulog,'(x,78("-"))')
 
       call relink_formula_list(form,fpl_reo)
 

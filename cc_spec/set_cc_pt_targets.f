@@ -55,9 +55,9 @@
       set_tpp = .false.
 
       if (iprlvl.gt.0.and..not.explicit)
-     &     write(luout,*) 'setting special targets for CCPT ...'
+     &     write(lulog,*) 'setting special targets for CCPT ...'
       if (iprlvl.gt.0.and.explicit)
-     &     write(luout,*) 'setting special targets for CCPT (R12) ...'
+     &     write(lulog,*) 'setting special targets for CCPT (R12) ...'
 
       call get_argument_value('method.CC','maxexc',ival=max_rank)
       min_rank_pt = max_rank+1

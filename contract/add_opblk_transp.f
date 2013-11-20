@@ -89,10 +89,10 @@
      &     ielprd, idx_msgmdst2, idx_str_blk3
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'add_opblk_transp')
-        write(luout,*) 'input list:  ',trim(me_in%label),
+        call write_title(lulog,wst_dbg_subr,'add_opblk_transp')
+        write(lulog,*) 'input list:  ',trim(me_in%label),
      &       ' op: ',trim(me_in%op%name)
-        write(luout,*) 'output list: ',trim(me_out%label),
+        write(lulog,*) 'output list: ',trim(me_out%label),
      &       ' op: ',trim(me_out%op%name)
       end if
 
@@ -121,12 +121,12 @@
      &                      op_out%ihpvca_occ(1,1,iblkoff+1),  tra_out,
      &                      njoined)) then
         if (njoined.ne.op_out%njoined) then
-          write(luout,*) njoined, op_out%njoined
+          write(lulog,*) njoined, op_out%njoined
         else
-          write(luout,*) 'IN, OUT: ',tra_in, tra_out
-          call wrt_occ_n(luout,op_in%ihpvca_occ(1,1,iblkoff_in+1),
+          write(lulog,*) 'IN, OUT: ',tra_in, tra_out
+          call wrt_occ_n(lulog,op_in%ihpvca_occ(1,1,iblkoff_in+1),
      &                                                          njoined)
-          call wrt_occ_n(luout,op_out%ihpvca_occ(1,1,iblkoff_in+1),
+          call wrt_occ_n(lulog,op_out%ihpvca_occ(1,1,iblkoff_in+1),
      &                                                          njoined)
         end if
         call quit(1,'add_opblk_transp',

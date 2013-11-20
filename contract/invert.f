@@ -83,7 +83,7 @@ c     &         loop(iocc_cls) = .true.
         call get_vec(ffinp,buffer_in,1,nbuff)
       else
         if(ntest.ge.100)
-     &       write(luout,*)'Invert: input not incore'
+     &       write(lulog,*)'Invert: input not incore'
         buffer_in => ffinp%buffer(1:)
       endif
 
@@ -96,7 +96,7 @@ c     &         loop(iocc_cls) = .true.
         buffer_out(1:nbuff) = 0d0
       else
         if(ntest.ge.100)
-     &       write(luout,*)'Symmetrise: output not incore'
+     &       write(lulog,*)'Symmetrise: output not incore'
         buffer_out => ffinv%buffer(1:)
       endif
 
@@ -109,8 +109,8 @@ c     &         loop(iocc_cls) = .true.
       out_loop: do idx_out = 1, 2
 
         if(idx_out.eq.2.and.min_eig.le.0d0)then
-          write(luout,'(a,f12.6)')'Negative eigenvalue: ',min_eig
-          write(luout,*) 'Matrix diagonal will be shifted.'
+          write(lulog,'(a,f12.6)')'Negative eigenvalue: ',min_eig
+          write(lulog,*) 'Matrix diagonal will be shifted.'
           shift = abs(min_eig)+0.5d0
         endif
         
@@ -155,7 +155,7 @@ c     &         loop(iocc_cls) = .true.
      &                   min_eig = eigen_val(idx)
                   enddo
                   if (ntest.ge.100)
-     &                 write(luout,*)'eigen_val: ',eigen_val
+     &                 write(lulog,*)'eigen_val: ',eigen_val
                     
                   deallocate(eigen_vec,eigen_val)
                 endif

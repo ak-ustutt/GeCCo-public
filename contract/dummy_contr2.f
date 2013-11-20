@@ -96,9 +96,9 @@
      &     zero_ivec
 
       if (ntest.ge.10) then
-        write(luout,*) '========================'
-        write(luout,*) ' here comes dummy_contr'
-        write(luout,*) '========================'
+        write(lulog,*) '========================'
+        write(lulog,*) ' here comes dummy_contr'
+        write(lulog,*) '========================'
       end if
 
       ! init
@@ -243,10 +243,10 @@
           if (abs(msex2_a).gt.nca(2,5))
      &         cycle msc_loop
           if (ntest.ge.100) then
-            write(luout,*) 'Current spin case:'
-            write(luout,*) ' OP1/OP2/INT (C) ->',ms12i_c(1:3)
-            write(luout,*) ' OP1/OP2/INT (A) ->',ms12i_a(1:3)
-            write(luout,*) ' CNT(C)/CNT(A)   ->',msc_c,msc_a
+            write(lulog,*) 'Current spin case:'
+            write(lulog,*) ' OP1/OP2/INT (C) ->',ms12i_c(1:3)
+            write(lulog,*) ' OP1/OP2/INT (A) ->',ms12i_a(1:3)
+            write(lulog,*) ' CNT(C)/CNT(A)   ->',msc_c,msc_a
           end if
 
           ! loop IRREP cases of (Op1(A),Op2(A),Interm)

@@ -39,9 +39,9 @@
      &     idx_oplist2
 
       if(ntest.ge.100)then
-        write(luout,*)'============================='
-        write(luout,*)' Deleting non-factored terms '
-        write(luout,*)'============================='
+        write(lulog,*)'============================='
+        write(lulog,*)' Deleting non-factored terms '
+        write(lulog,*)'============================='
       endif
 
       ! Associate the input operator names to their integer indices.
@@ -56,14 +56,14 @@
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
         case(command_add_contribution)
           ! The necessary contractions are in these parts of the formula.
           if(ntest.ge.1000)then
-            write(luout,*) '[ADD]'
-            call prt_contr2(luout,form_pnt%contr,op_info)
+            write(lulog,*) '[ADD]'
+            call prt_contr2(lulog,form_pnt%contr,op_info)
           endif
 
           nvtx = form_pnt%contr%nvtx
@@ -88,7 +88,7 @@
           endif
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'delete_non_fact','command undefined here')
         end select
 
@@ -99,8 +99,8 @@
       enddo
 
       if(ntest.ge.100)then
-        call write_title(luout,wst_title,'Non-redundant R12 Terms')
-        call print_form_list(luout,form,op_info)
+        call write_title(lulog,wst_title,'Non-redundant R12 Terms')
+        call print_form_list(lulog,form,op_info)
       endif
 
       return

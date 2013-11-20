@@ -1,12 +1,12 @@
 *----------------------------------------------------------------------*
-      subroutine write_title(luout,style,title)
+      subroutine write_title(lulog,style,title)
 *----------------------------------------------------------------------*
       implicit none
 
       include 'write_styles.h'
 
       integer, intent(in) ::
-     &     luout, style
+     &     lulog, style
       character, intent(in) ::
      &     title*(*)
       
@@ -44,15 +44,15 @@
 
       select case(style-mod(style,10))
       case(wst_noframe)
-        write(luout,fmttit) trim(title)
+        write(lulog,fmttit) trim(title)
       case(wst_uline_single,wst_uline_double)
-        write(luout,fmttit) trim(title)
-        write(luout,fmtline)
+        write(lulog,fmttit) trim(title)
+        write(lulog,fmtline)
       case(wst_lines_single,wst_lines_double,
      &     wst_around_single,wst_around_double)
-        write(luout,fmtline)
-        write(luout,fmttit) trim(title)
-        write(luout,fmtline)
+        write(lulog,fmtline)
+        write(lulog,fmttit) trim(title)
+        write(lulog,fmtline)
       end select
 
       return

@@ -99,12 +99,12 @@
      &     max_rank_op
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'import_2el_presort')
-        write(luout,*) 'incore = ',incore
+        call write_title(lulog,wst_dbg_subr,'import_2el_presort')
+        write(lulog,*) 'incore = ',incore
       end if
 
       if (incore.and.npass.ne.1)
-     &     call quit(luout,'import_2el_presort','npass>1 for incore?')
+     &     call quit(lulog,'import_2el_presort','npass>1 for incore?')
 
       ngam  = orb_info%nsym
       ntoob = orb_info%ntoob
@@ -379,11 +379,11 @@ c dbg
      &           idxval,idxspin,idxperm)
 
       if (ntest.ge.1000.and..not.incore) then
-        write(luout,'(x,76("="))') 
-        write(luout,*) 'dump of presort file:'
-        write(luout,'(x,76("-"))') 
+        write(lulog,'(x,76("="))') 
+        write(lulog,*) 'dump of presort file:'
+        write(lulog,'(x,76("-"))') 
         call list_file_chda(ffpre,ffchain)
-        write(luout,'(x,76("="))') 
+        write(lulog,'(x,76("="))') 
       end if
 
       return

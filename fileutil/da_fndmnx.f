@@ -39,15 +39,15 @@
      &     fndmnx
 
       if (minmax.lt.-2.or.minmax.eq.0.or.minmax.gt.2) then
-        write(luout,*) 'da_fndmnx: illegal value for minmax: ',minmax
+        write(lulog,*) 'da_fndmnx: illegal value for minmax: ',minmax
         call quit(1,'da_fndmnx','Illegal value for minmax')
       end if
 
       luvec = ffvec%unit
       lblk = ffvec%reclen
       if (lenbuf.lt.min(lenvec,lblk)) then
-        write(luout,*) 'Insufficient buffer size!'
-        write(luout,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
+        write(lulog,*) 'Insufficient buffer size!'
+        write(lulog,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
         call quit(1,'da_fndmnx','Insufficient buffer size!')
       end if
 
@@ -77,7 +77,7 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'nrecs,nrecbuf,nbatch: ',nrecs,nrecbuf,nbatch
+        write(lulog,*) 'nrecs,nrecbuf,nbatch: ',nrecs,nrecbuf,nbatch
       end if
       
       irecst = (idxvec-1)*nrecs+1
@@ -98,7 +98,7 @@
       da_fndmnx = res
 
       if (ntest.ge.100) then
-        write(luout,*) 'da_fndmnx needed ',nbatch,' batches'
+        write(lulog,*) 'da_fndmnx needed ',nbatch,' batches'
       end if
       
       return

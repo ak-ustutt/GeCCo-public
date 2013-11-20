@@ -57,12 +57,12 @@ c      include 'def_contraction_list.h'
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'form_expand_subexpr reports')
-        write(luout,*) ' f_input = ',trim(f_input%label)
-        write(luout,*) ' f_output = ',trim(f_output%label)
+        write(lulog,*) ' f_input = ',trim(f_input%label)
+        write(lulog,*) ' f_output = ',trim(f_output%label)
         do iintm = 1, nintm
-          write(luout,*) iintm,label_f_intm(iintm)
+          write(lulog,*) iintm,label_f_intm(iintm)
         end do
       end if
 
@@ -89,7 +89,7 @@ c      include 'def_contraction_list.h'
      &       'formula label not on list: '//trim(label_f_intm(iintm)))
         
         if (ntest.ge.100)
-     &       write(luout,*)
+     &       write(lulog,*)
      &       'now expanding: ',trim(label_f_intm(iintm)),
      &       ' transpose: ',transpose
 
@@ -110,7 +110,7 @@ c      include 'def_contraction_list.h'
         call sum_terms(flist,op_info)
 
         call atim_csw(cpu,sys,wall)
-        call prtim(luout,'expand',cpu-cpu0,sys-sys0,wall-wall0)
+        call prtim(lulog,'expand',cpu-cpu0,sys-sys0,wall-wall0)
 
         call dealloc_formula_list(fl_intm)
 
@@ -125,8 +125,8 @@ c      include 'def_contraction_list.h'
       call write_form_list(f_output%fhand,flist,title)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_around_double,'Expanded formula:')
-        call print_form_list(luout,flist,op_info)
+        call write_title(lulog,wst_around_double,'Expanded formula:')
+        call print_form_list(lulog,flist,op_info)
       end if
 
       call dealloc_formula_list(flist)

@@ -40,13 +40,13 @@
      &     ddot, da_ddot
 
       if (ntest.gt.0) then
-        write(luout,*) '==============================='
-        write(luout,*) ' welcome to optc_update_redsp2'
-        write(luout,*) '==============================='
+        write(lulog,*) '==============================='
+        write(lulog,*) ' welcome to optc_update_redsp2'
+        write(lulog,*) '==============================='
       end if
 
       if (ntest.ge.20) then
-        write(luout,*) 'subspace matrix on input:'
+        write(lulog,*) 'subspace matrix on input:'
         call wrtmat2(xmat,ndim1,ndim1,mxdim,mxdim)
       end if
 
@@ -59,7 +59,7 @@
           end do
         end do
         if (ntest.ge.20) then
-          write(luout,*) 'subspace matrix after shift:'
+          write(lulog,*) 'subspace matrix after shift:'
           call wrtmat2(xmat,ndim1,ndim1,mxdim,mxdim)
         end if
       end if
@@ -131,7 +131,7 @@ c      if (nincore.gt.1.and.nincore.lt.3) the
       end do
 
       if (ntest.ge.20) then
-        write(luout,*) 'updated subspace matrix:'
+        write(lulog,*) 'updated subspace matrix:'
         call wrtmat2(xmat,ndim1,ndim1,mxdim,mxdim)
       end if
 

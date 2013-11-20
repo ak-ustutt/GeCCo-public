@@ -1,22 +1,22 @@
-      subroutine list_file(luout,luin)
+      subroutine list_file(lulog,luin)
  
       implicit none
 
-      integer, intent(in) :: luout, luin
+      integer, intent(in) :: lulog, luin
 
       character(len=1024) :: line
 
-      write(luout,'(x,"+",77("-"),"+")')
+      write(lulog,'(x,"+",77("-"),"+")')
       rewind luin
       file_loop: do
         read(luin,'(a)',end=100,err=200) line
-        write(luout,*) trim(line)
+        write(lulog,*) trim(line)
       end do file_loop
 
-200   write(luout,*) 'Error while reading ... try to continue ...'
+200   write(lulog,*) 'Error while reading ... try to continue ...'
 100   continue
 
-      write(luout,'(x,"+",77("-"),"+")')
+      write(lulog,'(x,"+",77("-"),"+")')
 
       rewind luin
     

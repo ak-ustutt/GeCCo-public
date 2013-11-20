@@ -69,7 +69,7 @@
       history_pointer => current
 
       if (iprlvl.ge.10)
-     &   call keyword_list(luout,keyword_history)
+     &   call keyword_list(lulog,keyword_history)
 
       ! check input -- start version
       icnt = is_keyword_set('method')
@@ -78,7 +78,7 @@ c      if (icnt.le.0) then
 c        call quit(0,'process_input','no "method" block specified')
 c      end if
       call get_argument_value('general','print',ival=iprlvl)
-      write(luout,*) 'printlevel is set to ',iprlvl
+      write(lulog,*) 'printlevel is set to ',iprlvl
 
       ! set file block-length
       call get_argument_value('general','da_block',ival=lblk_da)

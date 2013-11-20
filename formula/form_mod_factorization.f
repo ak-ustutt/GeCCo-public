@@ -47,10 +47,10 @@ c     &                      title,
      &     idx_oplist2, imltlist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'here speaks form_mod_factorization')
-        write(luout,*) ' f_input  = ',trim(f_input%label)
-        write(luout,*) ' f_output = ',trim(f_output%label)
+        write(lulog,*) ' f_input  = ',trim(f_input%label)
+        write(lulog,*) ' f_output = ',trim(f_output%label)
       end if
 
       same = trim(f_input%label).eq.trim(f_output%label)
@@ -73,9 +73,9 @@ c     &                      title,
         if (jdx.gt.nterms) exit fl_loop
         if (nterms.lt.jdx+1 .or.
      &      nterms.lt.jdx+1+idxterms(jdx+1)) then
-          write(luout,*) 'idxterms:'
-          write(luout,'(x,5i4,x,5i4)') idxterms(1:nterms)
-          write(luout,*) 'present index: ',jdx
+          write(lulog,*) 'idxterms:'
+          write(lulog,'(x,5i4,x,5i4)') idxterms(1:nterms)
+          write(lulog,*) 'present index: ',jdx
           call quit(1,'form_mod_factorization',
      &         'not enough entries on idxterms')
         end if
@@ -89,7 +89,7 @@ c     &                      title,
           idx = idx+1
 c dbg          
           print  *,'present term ',idx
-          call prt_contr2(luout,fl_pnt%contr,op_info)        
+          call prt_contr2(lulog,fl_pnt%contr,op_info)        
 c dbg
 
           this_term = idxterms(jdx).eq.idx
@@ -108,7 +108,7 @@ c dbg
      &                        nfac)
 c dbg          
           print  *,'after resize ',idx
-          call prt_contr2(luout,fl_pnt%contr,op_info)        
+          call prt_contr2(lulog,fl_pnt%contr,op_info)        
 c dbg
             fl_pnt%contr%nfac = nfac
             if (nfac.gt.0) then
@@ -119,8 +119,8 @@ c dbg
             jdx = jdx+nfac+1
 
             if (iprlvl.ge.10) then
-              write(luout,*) 'modifying term # ',idx
-              call prt_contr2(luout,fl_pnt%contr,op_info)
+              write(lulog,*) 'modifying term # ',idx
+              call prt_contr2(lulog,fl_pnt%contr,op_info)
             end if
             
           end if

@@ -62,10 +62,10 @@
       call quit(1,'join_contr3','call to obsolete routine')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'This is join_contr')
-        write(luout,*) 'joining: AC, B'
-        call prt_contr2(luout,contr_ac,op_info)
-        call prt_contr2(luout,contr_b,op_info)
+        call write_title(lulog,wst_dbg_subr,'This is join_contr')
+        write(lulog,*) 'joining: AC, B'
+        call prt_contr2(lulog,contr_ac,op_info)
+        call prt_contr2(lulog,contr_b,op_info)
       end if
 
       nvtx_ac = contr_ac%nvtx
@@ -121,8 +121,8 @@
      &                   svmap,nvtx_b,njoined)
 
       if (ntest.ge.1000) then
-        write(luout,'(3x,a,10i5)') 'ivtx_old: ',ivtx_old(1:nvtx_abc)
-        write(luout,'(3x,a,10i5)') 'idx_proto:',idx_proto(1:nproto_ac)
+        write(lulog,'(3x,a,10i5)') 'ivtx_old: ',ivtx_old(1:nvtx_abc)
+        write(lulog,'(3x,a,10i5)') 'idx_proto:',idx_proto(1:nproto_ac)
       end if
 
       ! make some assumptions about the number of arcs in the 
@@ -132,9 +132,9 @@
      &     nvtx_abc*(nvtx_abc-1))
 
       if (ntest.ge.1000) then
-        write(luout,*) 'nvtx_ac, nvtx_b, nvtx_abc: ',
+        write(lulog,*) 'nvtx_ac, nvtx_b, nvtx_abc: ',
      &       nvtx_ac, nvtx_b, nvtx_abc
-        write(luout,*) 'narc_ac, narc_b, narc_abc: ',
+        write(lulog,*) 'narc_ac, narc_b, narc_abc: ',
      &       narc_ac, narc_b, narc_abc
       end if
 
@@ -167,8 +167,8 @@
       end do
 
       if (ntest.ge.1000) then
-        write(luout,*) 'ivtx_ac_reo:',ivtx_ac_reo(1:nvtx_ac)
-        write(luout,*) 'ivtx_b_reo: ',ivtx_b_reo(1:nvtx_b)
+        write(lulog,*) 'ivtx_ac_reo:',ivtx_ac_reo(1:nvtx_ac)
+        write(lulog,*) 'ivtx_b_reo: ',ivtx_b_reo(1:nvtx_b)
       end if
 
       ! set up correct super-vertex info
@@ -237,7 +237,7 @@ c            b_before_ac = .false.
       end do
 
       if (ntest.ge.1000) then
-        write(luout,*) 'connect_map:'
+        write(lulog,*) 'connect_map:'
         call iwrtma(connect_map,nvtx_b,nvtx_ac,nvtx_b,nvtx_ac)
       end if
 
@@ -266,11 +266,11 @@ c            b_before_ac = .false.
      &         iocc_xdn(2,contr_b%xarc(idx)%occ_cnt)
         end do
         if (ntest.ge.1000) then
-          write(luout,*) 'list_b: ',list_b(1:ncnt_b)
-          write(luout,*) 'EX:'
-          call wrt_occ_n(luout,occ_ex,ncnt_b)
-          write(luout,*) 'DX:'
-          call wrt_occ_n(luout,occ_dx,ncnt_b)
+          write(lulog,*) 'list_b: ',list_b(1:ncnt_b)
+          write(lulog,*) 'EX:'
+          call wrt_occ_n(lulog,occ_ex,ncnt_b)
+          write(lulog,*) 'DX:'
+          call wrt_occ_n(lulog,occ_dx,ncnt_b)
         end if
         ! loop over vertices inserted before present B nodes
         icnt_ac = 0
@@ -286,7 +286,7 @@ c dbg
      &          contr_ac%arc(iarc)%link(2).ne.ivtx2) cycle
 c dbg
             write(6,*) 'found arc # ',iarc
-c            wrt_occ_n(luout,contr_ac%arc(iarc)%occ_cnt,1)
+c            wrt_occ_n(lulog,contr_ac%arc(iarc)%occ_cnt,1)
 c dbg            
             icnt_ac = icnt_ac+1
             list_ac(icnt_ac) = ivtx1
@@ -295,10 +295,10 @@ c dbg
         end do
         ncnt_ac = icnt_ac
         if (ntest.ge.1000) then
-          write(luout,*) 'BEFORE'
-          write(luout,*) 'list_ac: ',list_ac(1:ncnt_ac)
-          write(luout,*) 'OCCs:'
-          call wrt_occ_n(luout,occ_ac,ncnt_ac)
+          write(lulog,*) 'BEFORE'
+          write(lulog,*) 'list_ac: ',list_ac(1:ncnt_ac)
+          write(lulog,*) 'OCCs:'
+          call wrt_occ_n(lulog,occ_ac,ncnt_ac)
         end if
         write(6,*) 'do something'
 
@@ -316,7 +316,7 @@ c dbg
      &          contr_ac%arc(iarc)%link(2).ne.ivtx2) cycle
 c dbg
             write(6,*) 'found arc # ',iarc
-c            wrt_occ_n(luout,contr_ac%arc(iarc)%occ_cnt,1)
+c            wrt_occ_n(lulog,contr_ac%arc(iarc)%occ_cnt,1)
 c dbg            
             icnt_ac = icnt_ac+1
             list_ac(icnt_ac) = ivtx2
@@ -325,10 +325,10 @@ c dbg
         end do
         ncnt_ac = icnt_ac
         if (ntest.ge.1000) then
-          write(luout,*) 'AFTER'
-          write(luout,*) 'list_ac: ',list_ac(1:ncnt_ac)
-          write(luout,*) 'OCCs:'
-          call wrt_occ_n(luout,occ_ac,ncnt_ac)
+          write(lulog,*) 'AFTER'
+          write(lulog,*) 'list_ac: ',list_ac(1:ncnt_ac)
+          write(lulog,*) 'OCCs:'
+          call wrt_occ_n(lulog,occ_ac,ncnt_ac)
         end if
         write(6,*) 'do something'
 
@@ -359,10 +359,10 @@ c          else
 c            problem = .true.
 c          end if
 c          if (problem) then
-c            write(luout,*) 'AC'
-c            call prt_contr2(luout,contr_ac,op_info)
-c            write(luout,*) 'B'
-c            call prt_contr2(luout,contr_b,op_info)
+c            write(lulog,*) 'AC'
+c            call prt_contr2(lulog,contr_ac,op_info)
+c            write(lulog,*) 'B'
+c            call prt_contr2(lulog,contr_b,op_info)
 c            call quit(1,'join_contr3','no unique recombination')
 c          end if
 c        end do
@@ -375,8 +375,8 @@ c      end do
       deallocate(svmap)
 
       if (ntest.ge.100) then
-        write(luout,*) 'generated contraction:'
-        call prt_contr2(luout,contr_abc,op_info)
+        write(lulog,*) 'generated contraction:'
+        call prt_contr2(lulog,contr_abc,op_info)
       end if
       
       return

@@ -168,7 +168,7 @@ c dbg
 
       end do
 
- 999  write(luout,*) 'read in finished'
+ 999  write(lulog,*) 'read in finished'
 
       return
  998  call quit(0,'read_mo_file_dalton_spc','error reading integrals')

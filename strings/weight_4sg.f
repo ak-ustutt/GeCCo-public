@@ -55,11 +55,11 @@
 *----------------------------------------------------------------------*
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'weight_4sg')
-        write(luout,'(x,a,4i4)')
+        call write_title(lulog,wst_dbg_subr,'weight_4sg')
+        write(lulog,'(x,a,4i4)')
      &       'norb, nel, maxms, ngam: ',norb, nel, maxms, ngam
-        write(luout,*) 'igamorb:'
-        write(luout,'(x,2(x,5i5))') igamorb(1:norb)
+        write(lulog,*) 'igamorb:'
+        write(lulog,'(x,2(x,5i5))') igamorb(1:norb)
       end if
 
       ! set everything to zero
@@ -198,30 +198,30 @@ c        end if
       end do ! iorb
 
       if (ntest.ge.100) then
-        write(luout,*) 'Vertex weight array:'
+        write(lulog,*) 'Vertex weight array:'
         do iorb = 1, norb
           do ims = -maxms, maxms
             do igam = 1, ngam
-              write(luout,'(x,i2,"-",i1,",",i2,12i5,/,6x,12i5)') 
+              write(lulog,'(x,i2,"-",i1,",",i2,12i5,/,6x,12i5)') 
      &             iorb,igam,
      &             ims,iw4sg(0:nel,ims,igam,iorb)
             end do
           end do
-          write(luout,'(/)')
+          write(lulog,'(/)')
         end do
 
-        write(luout,*) 'Arc weight array:'
+        write(lulog,*) 'Arc weight array:'
         do iorb = 1, norb
           do ims = -maxms, maxms
             do igam = 1, ngam
-              write(luout,
+              write(lulog,
      &              '(x,i2,"-",i1,",",i2,4("("i4,",",i4,",",i4")"),'//
      &              '/,6x,4("("i4,",",i4,",",i4")"))')
      &             iorb,igam,
      &             ims,iy4sg(1:3,0:nel,ims,igam,iorb)
             end do
           end do
-          write(luout,'(/)')
+          write(lulog,'(/)')
         end do
 
       end if

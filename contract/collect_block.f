@@ -58,13 +58,13 @@
      &     istr_lc(ncblk_op),  istr_la(nablk_op)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'collect_block')
-        write(luout,*) 'k: from ',kc_st0,ka_st0,' to ',
+        call write_title(lulog,wst_dbg_subr,'collect_block')
+        write(lulog,*) 'k: from ',kc_st0,ka_st0,' to ',
      &                            kc_nd0,ka_nd0,' len: ',kc_len,ka_len
-        write(luout,*) 'l: from ',lc_st0,la_st0,' to ',
+        write(lulog,*) 'l: from ',lc_st0,la_st0,' to ',
      &                            lc_nd0,la_nd0,' len: ',lc_len,la_len
-        write(luout,*) ' nstr_kc: ',nstr_kc(ncblk_op)
-        write(luout,*) ' nstr_ka: ',nstr_ka(nablk_op)
+        write(lulog,*) ' nstr_kc: ',nstr_kc(ncblk_op)
+        write(lulog,*) ' nstr_ka: ',nstr_ka(nablk_op)
 c dbg
 c        print *,'map_kl_c: ',map_kl_c(1:4)
 c        print *,'map_kl_a: ',map_kl_a(1:4)

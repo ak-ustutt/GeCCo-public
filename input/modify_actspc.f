@@ -28,13 +28,13 @@
       ngas  = orb_info%ngas
       nspin = orb_info%nspin
       if (iprint.ge.50) then
-        write(luout,*) '------------------'
+        write(lulog,*) '------------------'
         if (mode.eq.1) then
-          write(luout,*) ' modify_actspc: change inactive orbitals'
+          write(lulog,*) ' modify_actspc: change inactive orbitals'
         else
-          write(luout,*) ' modify_actspc: change active orbitals'
+          write(lulog,*) ' modify_actspc: change active orbitals'
         end if
-        write(luout,*) '------------------'
+        write(lulog,*) '------------------'
       end if
 
       if (len.ne.nsym)
@@ -51,7 +51,7 @@
 
       if (nactel.ge.0.and.nactel.ne.orb_info%nactel) then
         orb_info%nactel = nactel
-        if (iprint.ge.50) write(luout,'(x,a,i4)')
+        if (iprint.ge.50) write(lulog,'(x,a,i4)')
      &       'new number of active electrons: ',nactel
       end if
 
@@ -65,11 +65,11 @@
       orb_info%nactorb = sum(ishell(1:nsym))
 
       if (iprint.ge.50) then
-        write(luout,'(x,a,8i4)') 'inactive occupied orbitals: ',
+        write(lulog,'(x,a,8i4)') 'inactive occupied orbitals: ',
      &          orb_info%igassh(1:nsym,1)
-        write(luout,'(x,a,8i4)') 'CAS orbitals:               ',
+        write(lulog,'(x,a,8i4)') 'CAS orbitals:               ',
      &          orb_info%igassh(1:nsym,2)
-        write(luout,'(x,a,8i4)') 'inactive virtual orbitals:  ',
+        write(lulog,'(x,a,8i4)') 'inactive virtual orbitals:  ',
      &          orb_info%igassh(1:nsym,3)
       end if
 

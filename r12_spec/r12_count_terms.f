@@ -57,7 +57,7 @@
         nfound_top = 0
         nfound_c12 = 0
         if(ntest.gt.0)then
-          call prt_contr2(luout,cur_contr,op_info)
+          call prt_contr2(lulog,cur_contr,op_info)
         endif  
         
         do ivtx = 1, nvtx

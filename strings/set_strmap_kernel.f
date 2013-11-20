@@ -119,12 +119,12 @@ c dbg
       end do
 
       if (ntest.ge.1000) then
-        write(luout,*) 'set_strmap_kernel: the result of my work is'
+        write(lulog,*) 'set_strmap_kernel: the result of my work is'
         idxmap = 0
         do istr2 = 1, nstr2
           do istr1 = 1, nstr1
             idxmap = idxmap+1
-            write(luout,'(x,2i5,"->",i5)') istr1,istr2,strmap(idxmap)
+            write(lulog,'(x,2i5,"->",i5)') istr1,istr2,strmap(idxmap)
           end do
         end do
       end if

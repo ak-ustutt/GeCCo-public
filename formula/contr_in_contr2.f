@@ -45,11 +45,11 @@ c     &     iocc_equal
       call quit(1,'contr_in_contr2','call to obsolete routine')
 
       if (ntest.ge.100) then
-        write(luout,*) '--------------------------'
-        write(luout,*) 'output from contr_in_contr'
-        write(luout,*) '--------------------------'
-        write(luout,*) 'vertices A/B: ',contra%nvtx,contrb%nvtx
-        write(luout,*) 'arcs A/B:     ',contra%narc,contrb%narc
+        write(lulog,*) '--------------------------'
+        write(lulog,*) 'output from contr_in_contr'
+        write(lulog,*) '--------------------------'
+        write(lulog,*) 'vertices A/B: ',contra%nvtx,contrb%nvtx
+        write(lulog,*) 'arcs A/B:     ',contra%narc,contrb%narc
       end if
       
       ! pessimistic start
@@ -104,10 +104,10 @@ c      allocate(extended_check(nvtxb))
       end do
 
       if (ntest.ge.150) then
-        write(luout,*) 'after vertex compare: found = ',found
-        write(luout,*) ' ivtxa4ivtxb: ',ivtxa4ivtxb(1:nvtxb)
-        write(luout,*) ' idx_first, idx_last = ',idx_first, idx_last
-        write(luout,*) ' extended_check: ',extended_check
+        write(lulog,*) 'after vertex compare: found = ',found
+        write(lulog,*) ' ivtxa4ivtxb: ',ivtxa4ivtxb(1:nvtxb)
+        write(lulog,*) ' idx_first, idx_last = ',idx_first, idx_last
+        write(lulog,*) ' extended_check: ',extended_check
       end if
 
       ! not all vertices found: good-bye
@@ -152,7 +152,7 @@ c      allocate(extended_check(nvtxb))
       end do a_arcs
 
       if (ntest.ge.100) then
-        write(luout,*) 'after comparing arcs: ',contr_in_contr2
+        write(lulog,*) 'after comparing arcs: ',contr_in_contr2
       end if
 
       deallocate(assigned)
@@ -167,13 +167,13 @@ c      allocate(extended_check(nvtxb))
       if (extended_check) then
 
         if (ntest.ge.100)
-     &       write(luout,*) 'running extended check ...'
+     &       write(lulog,*) 'running extended check ...'
 
         if (ntest.ge.150) then
-          write(luout,*) 'A:'
-          call prt_contr2(luout,contra,op_info)
-          write(luout,*) 'B:'
-          call prt_contr2(luout,contrb,op_info)
+          write(lulog,*) 'A:'
+          call prt_contr2(lulog,contra,op_info)
+          write(lulog,*) 'B:'
+          call prt_contr2(lulog,contrb,op_info)
         end if
 
         ! set up an auxiliary array for connectivity
@@ -187,14 +187,14 @@ c      allocate(extended_check(nvtxb))
         end do
 
         if (ntest.ge.150) then
-          write(luout,*) 'the connectivity table'
+          write(lulog,*) 'the connectivity table'
           do idx = 1, nvtxb
-            write(luout,'(3x,10i5)') conn_tab(idx,1:nvtxb)
+            write(lulog,'(3x,10i5)') conn_tab(idx,1:nvtxb)
           end do
 
-          write(luout,*) 'before shifting (first,last=',
+          write(lulog,*) 'before shifting (first,last=',
      &         idx_first,idx_last,')'
-          write(luout,'(3x,10i5)') ivtxa4ivtxb(idx_first:idx_last)
+          write(lulog,'(3x,10i5)') ivtxa4ivtxb(idx_first:idx_last)
         end if
 
         ! check whether B vertices can be moved to the left
@@ -218,8 +218,8 @@ c      allocate(extended_check(nvtxb))
         end do b_loop1
 
         if (ntest.ge.150) then
-          write(luout,*) 'after shifing left'
-          write(luout,'(3x,10i5)') ivtxa4ivtxb(idx_first:idx_last)
+          write(lulog,*) 'after shifing left'
+          write(lulog,'(3x,10i5)') ivtxa4ivtxb(idx_first:idx_last)
         end if
 
         ! change critical vertices back to 0 for second round:
@@ -247,8 +247,8 @@ c      allocate(extended_check(nvtxb))
         end do b_loop2
 
         if (ntest.ge.150) then
-          write(luout,*) 'after shifing right'
-          write(luout,'(3x,10i5)') ivtxa4ivtxb(idx_first:idx_last)
+          write(lulog,*) 'after shifing right'
+          write(lulog,'(3x,10i5)') ivtxa4ivtxb(idx_first:idx_last)
         end if
 
         ! change critical vertices back to 0 and count
@@ -261,7 +261,7 @@ c      allocate(extended_check(nvtxb))
         end do
 
         if (ntest.ge.150) then
-          write(luout,*) 'ninter: ', ninter
+          write(lulog,*) 'ninter: ', ninter
         end if
 
         ! if all B operators can be moved outside, we are done
@@ -281,7 +281,7 @@ c      allocate(extended_check(nvtxb))
         njoined = opres%njoined
 
         if (ntest.ge.150) then
-          write(luout,*) 'njoined: ', njoined
+          write(lulog,*) 'njoined: ', njoined
         end if
 
         ! no way ...
@@ -297,8 +297,8 @@ c      allocate(extended_check(nvtxb))
      &       opres%ihpvca_occ(1:ngastp,1:2,ioff+1:ioff+njoined)
 
         if (ntest.ge.150) then
-          write(luout,*) 'occres: '
-          call wrt_occ_n(luout,occres,njoined)
+          write(lulog,*) 'occres: '
+          call wrt_occ_n(lulog,occres,njoined)
         end if
 
         ! loop over critical B vertices
@@ -349,8 +349,8 @@ c dbg
         end do
 
         if (ntest.ge.150) then
-          write(luout,*) 'cnt_b (ninter = ',ninter,')'
-          call wrt_occ_n(luout,cnt_b,ninter)
+          write(lulog,*) 'cnt_b (ninter = ',ninter,')'
+          call wrt_occ_n(lulog,cnt_b,ninter)
         end if
 
         ! in fact this test works only for njoined.eq.2
@@ -378,11 +378,11 @@ c dbg
      &                           occ_test,               .false.)
 
             if (ntest.ge.150) then
-              write(luout,*) 'idx, contr_in_contr: ',idx,contr_in_contr2
-              write(luout,*) 'cnt_b: '
-              call wrt_occ(luout,cnt_b(1,1,idx))
-              write(luout,*) 'occ_test: '
-              call wrt_occ(luout,occ_test)
+              write(lulog,*) 'idx, contr_in_contr: ',idx,contr_in_contr2
+              write(lulog,*) 'cnt_b: '
+              call wrt_occ(lulog,cnt_b(1,1,idx))
+              write(lulog,*) 'occ_test: '
+              call wrt_occ(lulog,occ_test)
             end if
             
           end do
@@ -394,7 +394,7 @@ c dbg
       end if
 
       if (ntest.ge.100)
-     &     write(luout,*) 'final: ',contr_in_contr2
+     &     write(lulog,*) 'final: ',contr_in_contr2
 
       deallocate(ivtxa4ivtxb)
 

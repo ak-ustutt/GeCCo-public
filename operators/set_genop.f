@@ -63,16 +63,16 @@
       iprint = max(iprlvl,ntest)
 
       if (iprint.ge.100) then
-        write(luout,*) '==================='
-        write(luout,*) ' set_genop at work'
-        write(luout,*) '==================='
-        write(luout,*) ' min_rank, max_rank: ',min_rank, max_rank
-        write(luout,*) ' ncadiff: ',ncadiff
-        write(luout,'(x,a,4(i2,x,i2,2x))')
+        write(lulog,*) '==================='
+        write(lulog,*) ' set_genop at work'
+        write(lulog,*) '==================='
+        write(lulog,*) ' min_rank, max_rank: ',min_rank, max_rank
+        write(lulog,*) ' ncadiff: ',ncadiff
+        write(lulog,'(x,a,4(i2,x,i2,2x))')
      &       ' hpvx_mnmx: ',hpvx_mnmx(1:2,1:ngastp,1)
-        write(luout,'(x,a,4(i2,x,i2,2x))')
+        write(lulog,'(x,a,4(i2,x,i2,2x))')
      &       '            ',hpvx_mnmx(1:2,1:ngastp,2)
-        call wrt_rstr(luout,irestr,orb_info%ngas)
+        call wrt_rstr(lulog,irestr,orb_info%ngas)
       end if
 
       if (len_trim(name).gt.len_opname)
@@ -80,10 +80,10 @@
 
       if (type.ne.optyp_operator.and.type.ne.optyp_density) then
         if (type.eq.optyp_intermediate) then
-          write(luout,*)
+          write(lulog,*)
      &         'use set_gen_intermediate to define intermediates'
         else
-          write(luout,*) 'type: ',type,' ?'
+          write(lulog,*) 'type: ',type,' ?'
         end if
         call quit(1,'set_genop','illegal type specification')
       end if
@@ -249,7 +249,7 @@ c very quick fix:
 
         if (ipass.eq.1) then
           if (iprlvl.ge.2)
-     &         write(luout,'(x,3a,i4)')
+     &         write(lulog,'(x,3a,i4)')
      &         'Number of occupation classes for ',
      &         trim(name),': ',op%n_occ_cls
         else if (iprlvl.ge.5) then
@@ -269,15 +269,15 @@ c very quick fix:
 c dbg
 c          print *,'formal:',op%formal_blk(1:op%n_occ_cls)
 c dbg        
-          call print_op_occ(luout,op)
+          call print_op_occ(lulog,op)
 c          do iocc = 1, op%n_occ_cls
-c            call wrt_occ_rstr(luout,iocc,
+c            call wrt_occ_rstr(lulog,iocc,
 c     &           op%ihpvca_occ(1,1,iocc),
 c     &           op%igasca_restr(1,1,1,1,1,iocc),ngas,nspin)
-cc            write(luout,'(/x,a,i4)') 'Occupation Nr. ',iocc
-cc            call wrt_occ(luout,op%ihpvca_occ(1,1,iocc))
-cc            write(luout,'(/4x,6(2x,i2,x))') hpvxprint(1:ngas)
-cc            call wrt_rstr(luout,op%igasca_restr(1,1,1,1,iocc),ngas)
+cc            write(lulog,'(/x,a,i4)') 'Occupation Nr. ',iocc
+cc            call wrt_occ(lulog,op%ihpvca_occ(1,1,iocc))
+cc            write(lulog,'(/4x,6(2x,i2,x))') hpvxprint(1:ngas)
+cc            call wrt_rstr(lulog,op%igasca_restr(1,1,1,1,iocc),ngas)
 c          end do
         end if
   

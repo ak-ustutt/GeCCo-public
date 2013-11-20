@@ -23,10 +23,10 @@
 
 
       if (ntest.gt.0) then
-        write(luout,*) '================'
-        write(luout,*) 'Entered next_ssd'
-        write(luout,*) '================'
-        write(luout,*) ' number of subspaces to be considered: ',nspc
+        write(lulog,*) '================'
+        write(lulog,*) 'Entered next_ssd'
+        write(lulog,*) '================'
+        write(lulog,*) ' number of subspaces to be considered: ',nspc
       end if
 
       ! quick return if no subspace distributions are possible
@@ -36,9 +36,9 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) ' initial subspace distribution:'
-        write(luout,*) '  nel = ',nel
-        write(luout,*) '  dis = (',idss(1:nel),')'
+        write(lulog,*) ' initial subspace distribution:'
+        write(lulog,*) '  nel = ',nel
+        write(lulog,*) '  dis = (',idss(1:nel),')'
       end if
 
       ! 1) try to get next distribution with same number of electrons
@@ -77,11 +77,11 @@
 
       if (ntest.ge.100) then
         if (found) then
-          write(luout,*) ' final subspace distribution:'
-          write(luout,*) '  nel = ',nel
-          write(luout,*) '  dis = (',idss(1:nel),')'
+          write(lulog,*) ' final subspace distribution:'
+          write(lulog,*) '  nel = ',nel
+          write(lulog,*) '  dis = (',idss(1:nel),')'
         else
-          write(luout,*) ' no further subspace distribution found' 
+          write(lulog,*) ' no further subspace distribution found' 
         end if
       end if
 

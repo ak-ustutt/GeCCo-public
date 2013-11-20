@@ -36,9 +36,9 @@
      &     i8list_cmp
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'topo_make_unique')
-        write(luout,*) 'topo on entry'
-        call prt_contr_p(luout,-1,vtx,topo,xlines,nvtx,nj)
+        call write_title(lulog,wst_dbg_subr,'topo_make_unique')
+        write(lulog,*) 'topo on entry'
+        call prt_contr_p(lulog,-1,vtx,topo,xlines,nvtx,nj)
       end if
 c test - symmetrize topo
 c      do idx = 1, nvtx
@@ -100,23 +100,23 @@ c dbg end fix
 c dbg
 c            print *,'sorting: sweep = ',sweep,' block = ',neqv_blocks,
 c     &           ' changed = ',changed
-c            call prt_contr_p(luout,-1,vtx,topo,xlines,nvtx,nj)
+c            call prt_contr_p(lulog,-1,vtx,topo,xlines,nvtx,nj)
 c dbg
           end if
         end do
         if (neqv_blocks.le.1.or..not.changed) exit
         if (sweep.eq.max_sweep) then
-          write(luout,*) 'max_sweep = ',max_sweep
-          write(luout,*) 'neqv_blocks: ',neqv_blocks
-          call prt_contr_p(luout,-1,vtx,topo,xlines,nvtx,nj)
+          write(lulog,*) 'max_sweep = ',max_sweep
+          write(lulog,*) 'neqv_blocks: ',neqv_blocks
+          call prt_contr_p(lulog,-1,vtx,topo,xlines,nvtx,nj)
           call quit(1,'topo_make_unique',
      &         'sort of topo matrix does not converge')
         end if
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'topo on exit'
-        call prt_contr_p(luout,-1,vtx,topo,xlines,nvtx,nj)
+        write(lulog,*) 'topo on exit'
+        call prt_contr_p(lulog,-1,vtx,topo,xlines,nvtx,nj)
       end if
 
       return

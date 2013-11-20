@@ -37,7 +37,7 @@
       end if
 
       if (iprint.ge.10) 
-     &      write(luout,*)
+     &      write(lulog,*)
      &           'Frequency associated with ',trim(mel%label),
      &           ': ',mel%frequency
 

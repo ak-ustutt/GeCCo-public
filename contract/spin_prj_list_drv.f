@@ -60,7 +60,7 @@
 
       call atim_csw(cpu,sys,wall)
 
-      call prtim(luout,'time for spin-projecting ME-list ',
+      call prtim(lulog,'time for spin-projecting ME-list ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 
       return

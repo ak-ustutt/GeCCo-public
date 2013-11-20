@@ -1,11 +1,11 @@
-      subroutine print_word_list(luout,wlist)
+      subroutine print_word_list(lulog,wlist)
 
       implicit none
 
       include 'def_word_list.h'
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
       type(word_list), intent(inout) ::
      &     wlist
 
@@ -18,7 +18,7 @@
 
       ! not active?
       if (.not.associated(wlist%head)) then
-        write(luout,*) 'word list is empty'
+        write(lulog,*) 'word list is empty'
         return
       end if
 
@@ -30,13 +30,13 @@
       do 
 
         if (.not.just_moved_up) then
-          write(luout,*) level,'"',trim(wl_pnt%word),
+          write(lulog,*) level,'"',trim(wl_pnt%word),
      &                   '", sep=',wl_pnt%sep
-          write(luout,'(9x,a,i4,a,i4)')               
+          write(lulog,'(9x,a,i4,a,i4)')               
      &                   ' line=',wl_pnt%line,
      &                   ' col=',wl_pnt%col
         else
-          write(luout,*) 'returned to level ',level
+          write(lulog,*) 'returned to level ',level
         end if
 
         ! level down?
@@ -56,7 +56,7 @@
       end do
 
       if (level/=0) then
-        write(luout,*) 'warning: level/=0 (level = ',level,')'
+        write(lulog,*) 'warning: level/=0 (level = ',level,')'
       end if
 
       end

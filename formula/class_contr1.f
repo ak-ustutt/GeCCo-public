@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine class_contr1(luout,contr,op_info,termnr)
+      subroutine class_contr1(lulog,contr,op_info,termnr)
 *----------------------------------------------------------------------*
 *     classify terms:
 *     1 : only one-electron operators except hamiltonian, no R12 ops
@@ -17,7 +17,7 @@
       include 'def_contraction.h'
 
       integer, intent(in) ::
-     &     luout, termnr
+     &     lulog, termnr
       type(contraction), intent(in) ::
      &     contr
       type(operator_info), intent(in) ::
@@ -140,7 +140,7 @@
       end if
 
       ! print class
-      write(luout,'(x,i8,x,i8)') termnr,class
+      write(lulog,'(x,i8,x,i8)') termnr,class
 
       return
       end

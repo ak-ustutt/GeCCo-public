@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine mem_print_vbuffer(luout,ffbuf)
+      subroutine mem_print_vbuffer(lulog,ffbuf)
 *----------------------------------------------------------------------*
 *     print info on virtual memory buffer (for debugging)
 *----------------------------------------------------------------------*
@@ -10,9 +10,9 @@ c      include 'def_filinf.h'
       type(filinf) ::
      &     ffbuf
       integer, intent(in) ::
-     &     luout
+     &     lulog
 
-      call print_vbuffer_int(luout,ffbuf%buf_id,.false.)
+      call print_vbuffer_int(lulog,ffbuf%buf_id,.false.)
 
       return
       end

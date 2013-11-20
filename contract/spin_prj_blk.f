@@ -92,7 +92,7 @@
      &                        -1,+1,+1,-1,+1,-1,-1,+1/)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'spin_prj_blk')
+        call write_title(lulog,wst_dbg_subr,'spin_prj_blk')
       end if
 
       ifree = mem_setmark('spin_prj_blk')
@@ -205,15 +205,15 @@
       msc = msa + mel%mst ! <- should be zero (checked above)
       
       if (ntest.ge.100) then
-        write(luout,*) 'occupation summary for block: ', iblk
-        write(luout,*) 'occ_csub   = ',occ_csub(1:ncblk)
-        write(luout,*) 'occ_asub   = ',occ_asub(1:nablk)
-        write(luout,*) 'hpvx_csub  = ',hpvx_csub(1:ncblk)
-        write(luout,*) 'hpvx_asub  = ',hpvx_asub(1:nablk)
-        write(luout,*) 'graph_csub = ',graph_csub(1:ncblk)
-        write(luout,*) 'graph_asub = ',graph_asub(1:nablk)
-        write(luout,*) 'ncoup      = ',ncoup
-        write(luout,*) 'nsplc      = ',nsplc
+        write(lulog,*) 'occupation summary for block: ', iblk
+        write(lulog,*) 'occ_csub   = ',occ_csub(1:ncblk)
+        write(lulog,*) 'occ_asub   = ',occ_asub(1:nablk)
+        write(lulog,*) 'hpvx_csub  = ',hpvx_csub(1:ncblk)
+        write(lulog,*) 'hpvx_asub  = ',hpvx_asub(1:nablk)
+        write(lulog,*) 'graph_csub = ',graph_csub(1:ncblk)
+        write(lulog,*) 'graph_asub = ',graph_asub(1:nablk)
+        write(lulog,*) 'ncoup      = ',ncoup
+        write(lulog,*) 'nsplc      = ',nsplc
       end if
 
       ! our target distributions
@@ -279,17 +279,17 @@ c        end if
         ok = .false.     
       end select
       if (.not.ok) then
-        write(luout,*) ' rank: ',msa_max
-        write(luout,*) ' ncblk, nablk: ',ncblk,nablk
-        write(luout,*) ' occ_csub = ',occ_csub(1:ncblk)
-        write(luout,*) ' occ_asub = ',occ_asub(1:ncblk)
+        write(lulog,*) ' rank: ',msa_max
+        write(lulog,*) ' ncblk, nablk: ',ncblk,nablk
+        write(lulog,*) ' occ_csub = ',occ_csub(1:ncblk)
+        write(lulog,*) ' occ_asub = ',occ_asub(1:ncblk)
         call quit(1,'spin_prj_blk','case not covered')
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'our target ms distribution: '
-        write(luout,*) ' C: ',msdis_c_tgt(1:ncblk)
-        write(luout,*) ' A: ',msdis_a_tgt(1:nablk)
+        write(lulog,*) 'our target ms distribution: '
+        write(lulog,*) ' C: ',msdis_c_tgt(1:ncblk)
+        write(lulog,*) ' A: ',msdis_a_tgt(1:nablk)
       end if
 
       idxmsa = msa2idxms4op(msa,mel%mst,msa_max,msc_max)
@@ -316,7 +316,7 @@ c dbg
         igamc = multd2h(igama,mel%gamt)
 
         if (ntest.ge.100)
-     &         write(luout,*) 'MS(A), GAMMA(A): ',msa,igama,' len = ',
+     &         write(lulog,*) 'MS(A), GAMMA(A): ',msa,igama,' len = ',
      &           mel%len_op_gmo(iblk)%gam_ms(igama,idxmsa)
 
         if (mel%len_op_gmo(iblk)%

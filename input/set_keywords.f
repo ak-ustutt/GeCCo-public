@@ -455,7 +455,7 @@ c     &     ldef=(/.true./))
       call set_experimental_keywords()
 
       if (iprint.ge.50)
-     &     call show_keywords(luout)
+     &     call show_keywords(lulog)
 
       return
       end

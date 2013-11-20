@@ -52,10 +52,10 @@
       call quit(1,'set_zint_contract','obsolete?')
 
       if(ntest.ge.100)then
-        write(luout,*)'Z-Intermediate Contraction'
-        write(luout,*)'Constituent operators: '
+        write(lulog,*)'Z-Intermediate Contraction'
+        write(lulog,*)'Constituent operators: '
         do idx = 1, nopsin
-          write(luout,*)trim(op_info%op_arr(idx_opsin(idx))%op%name)
+          write(lulog,*)trim(op_info%op_arr(idx_opsin(idx))%op%name)
         enddo
       endif
 
@@ -443,8 +443,8 @@
      &     .false.,op_info)
 
  200  if(ntest.ge.100)then
-        write(luout,*)'Final formula: Z-Int.'
-        call print_form_list(luout,flist,op_info)
+        write(lulog,*)'Final formula: Z-Int.'
+        call print_form_list(lulog,flist,op_info)
       endif
 
 c dbg

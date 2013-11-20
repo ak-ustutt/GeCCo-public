@@ -83,16 +83,16 @@
 
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,i_am)
-        write(luout,*)'me_in:  ',trim(me_in%label), ' record: ',irec_in
-        write(luout,*)'me_out: ',trim(me_out%label),' record: ',irec_out
-        write(luout,*)'type : ',ctype
-        write(luout,*)'n_me_traf: ',n_me_traf
+        call write_title(lulog,wst_dbg_subr,i_am)
+        write(lulog,*)'me_in:  ',trim(me_in%label), ' record: ',irec_in
+        write(lulog,*)'me_out: ',trim(me_out%label),' record: ',irec_out
+        write(lulog,*)'type : ',ctype
+        write(lulog,*)'n_me_traf: ',n_me_traf
         do idx = 1, n_me_traf
-          write(luout,*)'   ',trim(me_traf(idx)%mel%label)
+          write(lulog,*)'   ',trim(me_traf(idx)%mel%label)
         end do
-c        write(luout,*) 'formula:'
-c        call print_form_list(luout,ftraf,op_info)
+c        write(lulog,*) 'formula:'
+c        call print_form_list(lulog,ftraf,op_info)
       end if
 
       ! remember names of originally assigned operators
@@ -142,9 +142,9 @@ c      op_out_mel = trim(me_out%op%assoc_list)
       call switch_mel_record(me_out,irec_out)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'list to be transformed:',trim(me_in%label)
+        write(lulog,*) 'list to be transformed:',trim(me_in%label)
         call vec_from_da(me_in%fhand,1,xbuf1,nwfpar)
-        call wrt_mel_buf(luout,5,xbuf1,me_in,1,
+        call wrt_mel_buf(lulog,5,xbuf1,me_in,1,
      &       me_in%op%n_occ_cls,
      &       str_info,orb_info)
       end if
@@ -157,9 +157,9 @@ c      print *,'after evaluate2: xnrm = ',xnrm
 c dbg
 
       if (ntest.ge.1000) then
-        write(luout,*) 'transformed list:',trim(me_out%label)
+        write(lulog,*) 'transformed list:',trim(me_out%label)
         call vec_from_da(me_out%fhand,1,xbuf1,nwfpar)
-        call wrt_mel_buf(luout,5,xbuf1,me_out,1,
+        call wrt_mel_buf(lulog,5,xbuf1,me_out,1,
      &       me_out%op%n_occ_cls,
      &       str_info,orb_info)
       end if
@@ -189,7 +189,7 @@ c dbg
      &                       op_trf_name,op_info)
       end if
 
-      if (ntest.ge.100) write(luout,*) 'end of optc_traf'
+      if (ntest.ge.100) write(lulog,*) 'end of optc_traf'
 
       return
       end

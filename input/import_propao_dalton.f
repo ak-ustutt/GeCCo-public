@@ -79,14 +79,14 @@
 
       label2 = '        '
       label2 = trim(label)
-      luerror = luout
+      luerror = lulog
       call mollab(label2,luaoprop,luerror)
 
       ! read matrix in upper triangular form
       read (luaoprop) ao_full(1:nao_full)
 
       if (ntest.ge.100) then
-        write(luout,*) 'AO (original):'
+        write(lulog,*) 'AO (original):'
         call prtrlt(ao_full,orb_info%nbast+orb_info%nxbast)
       end if
 
@@ -99,7 +99,7 @@
      &     len_blk,orb_info%nsym,gamma,dble(psym))
 
       if (ntest.ge.100) then
-        write(luout,*) 'AO (blocked):'
+        write(lulog,*) 'AO (blocked):'
         call wr_blkmat2(ao_blk,len_blk,len_blk,
      &                     orb_info%nsym,gamma,0)
       end if
@@ -115,7 +115,7 @@
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.10) 
-     &     call prtim(luout,'time in property(ao) import',
+     &     call prtim(lulog,'time in property(ao) import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

@@ -43,7 +43,7 @@
       call update_op_arr(op_info)
 
       if (iprlvl.ge.20) then
-        write(luout,'(3x,4a)')
+        write(lulog,'(3x,4a)')
      &       'assigned operator: ',trim(mel%op%name),' to me-list:  ',
      &       trim(mel%label)
       end if

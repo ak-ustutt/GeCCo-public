@@ -138,12 +138,12 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
 
           ! read diagonal pre-conditioner
           if (ntest.ge.100) then
-            write(luout,*) 'current ME-list: ',
+            write(lulog,*) 'current ME-list: ',
      &            trim(me_dia(iopt)%mel%label)
           end if
           call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar(iopt))
           if (ntest.ge.100)
-     &        write(luout,*) 'xbuf2 norm = ',
+     &        write(lulog,*) 'xbuf2 norm = ',
      &                       dnrm2(nwfpar(iopt),xbuf2,1)
           do iroot = 1, nroot
             if (trafo) then
@@ -165,7 +165,7 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
             end if
             ! divide rhs's by preconditioner
             if (ntest.ge.100)
-     &           write(luout,*) 'xbuf1 norm = ',
+     &           write(lulog,*) 'xbuf1 norm = ',
      &                          dnrm2(nwfpar(iopt),xbuf1,1) 
 c            xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
 c            xrsnrm(iroot,iopt) = xnrm
@@ -178,7 +178,7 @@ c            xrsnrm(iroot,iopt) = xnrm
             call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,opti_info%shift,
      &                 nwfpar(iopt))
             if (ntest.ge.100)
-     &           write(luout,*) 'xbuf1 after division: ' //
+     &           write(lulog,*) 'xbuf1 after division: ' //
      &                          ' norm = ', dnrm2(nwfpar(iopt),xbuf1,1)
             if (trafo) then
               call vec_to_da(me_special(2)%mel%fhand,1,

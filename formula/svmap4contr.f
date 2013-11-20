@@ -38,14 +38,14 @@
       call quit(1,'svmap4contr','call to obsolete routine')
       
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'svmap4contr')
+     &     call write_title(lulog,wst_dbg_subr,'svmap4contr')
 
       nvtx = contr%nvtx
 
       if (ntest.ge.100) then
-        write(luout,*) 'occupations on input:'
-        call wrt_occ_n(luout,occ_vtx_in,abs(njoined_in))
-        call wrt_occ_n(luout,occ_vtx_in(1,1,abs(njoined_in)+1),nvtx)
+        write(lulog,*) 'occupations on input:'
+        call wrt_occ_n(lulog,occ_vtx_in,abs(njoined_in))
+        call wrt_occ_n(lulog,occ_vtx_in(1,1,abs(njoined_in)+1),nvtx)
       end if
 
       njoined = njoined_in
@@ -62,8 +62,8 @@
         occ_res(1:ngastp,1:2,1) = iocc_xdn(2,occ_vtx_in(1:ngastp,1:2,1))
         occ_res(1:ngastp,1:2,2) = iocc_xdn(1,occ_vtx_in(1:ngastp,1:2,1))
         if (ntest.ge.100) then
-          write(luout,*) 'converted result to:'
-          call wrt_occ_n(luout,occ_res,2)
+          write(lulog,*) 'converted result to:'
+          call wrt_occ_n(lulog,occ_res,2)
         end if
       end if
 
@@ -81,8 +81,8 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'remainder occupations:'
-        call wrt_occ_n(luout,occ_vtx,nvtx)
+        write(lulog,*) 'remainder occupations:'
+        call wrt_occ_n(lulog,occ_vtx,nvtx)
       end if
 
       ! loop over remainder an try to assign to components of super-vertex
@@ -93,12 +93,12 @@
           do isuper = 1, njoined+1
             ! a small trap:
             if (isuper.eq.njoined+1) then
-              write(luout,*) 'current contraction:'
-              call prt_contr3(luout,contr,occ_vtx_in(1,1,1+njoined_in))
-              write(luout,*) 'result, vertices, vertices reduced:'
-              call wrt_occ_n(luout,occ_vtx_in,njoined)
-              call wrt_occ_n(luout,occ_vtx_in(1,1,njoined+1),nvtx)
-              call wrt_occ_n(luout,occ_vtx,nvtx)
+              write(lulog,*) 'current contraction:'
+              call prt_contr3(lulog,contr,occ_vtx_in(1,1,1+njoined_in))
+              write(lulog,*) 'result, vertices, vertices reduced:'
+              call wrt_occ_n(lulog,occ_vtx_in,njoined)
+              call wrt_occ_n(lulog,occ_vtx_in(1,1,njoined+1),nvtx)
+              call wrt_occ_n(lulog,occ_vtx,nvtx)
               call quit(1,'svmap4contr','something is strange')
             end if
             if (iocc_zero(occ_res(1:ngastp,1:2,isuper))) cycle
@@ -119,7 +119,7 @@ c ??
       end do
 
       if (ntest.ge.100)
-     &     write(luout,'(x,a,10i5)') 'svmap: ',svmap(1:nvtx)
+     &     write(lulog,'(x,a,10i5)') 'svmap: ',svmap(1:nvtx)
 
       deallocate(occ_vtx,occ_res)
 

@@ -68,19 +68,19 @@ c     &     iocc_equal_n, iocc_equal,
       opout => mel_out%op
 
       if (ntest.ge.100) then
-        write(luout,*) '=========================='
-        write(luout,*) ' add_opblk messing around'
-        write(luout,*) '=========================='
-        write(luout,*) ' fac = ',fac
-        write(luout,*) ' mel_in: ',trim(mel_in%label)
-        write(luout,*) ' mel_out: ',trim(mel_out%label)
-        write(luout,*) ' ffin:  ',trim(ffin%name),
+        write(lulog,*) '=========================='
+        write(lulog,*) ' add_opblk messing around'
+        write(lulog,*) '=========================='
+        write(lulog,*) ' fac = ',fac
+        write(lulog,*) ' mel_in: ',trim(mel_in%label)
+        write(lulog,*) ' mel_out: ',trim(mel_out%label)
+        write(lulog,*) ' ffin:  ',trim(ffin%name),
      &                   ' rec: ',ffin%current_record
-        write(luout,*) ' ffout: ',trim(ffout%name),
+        write(lulog,*) ' ffout: ',trim(ffout%name),
      &                   ' rec: ',ffout%current_record
-        write(luout,*) ' opin: ',trim(opin%name),
+        write(lulog,*) ' opin: ',trim(opin%name),
      &       '  block: ',iblkin
-        write(luout,*) ' opout: ',trim(opout%name),
+        write(lulog,*) ' opout: ',trim(opout%name),
      &       '  block: ',iblkout
       end if
 
@@ -167,9 +167,9 @@ c     &     iocc_equal_n, iocc_equal,
       end if
 
       if (.not.ok) then
-        write(luout,*) 'dagger: ',opin%dagger,opout%dagger
-        call wrt_occ_n(luout,opin%ihpvca_occ(1,1,idx_in),njoined_in)
-        call wrt_occ_n(luout,opout%ihpvca_occ(1,1,idx_out),njoined_out)
+        write(lulog,*) 'dagger: ',opin%dagger,opout%dagger
+        call wrt_occ_n(lulog,opin%ihpvca_occ(1,1,idx_in),njoined_in)
+        call wrt_occ_n(lulog,opout%ihpvca_occ(1,1,idx_out),njoined_out)
         call quit(1,'add_opblk','occupations do not fit!')
       end if
 
@@ -178,9 +178,9 @@ c     &                     opin%dagger,
 c     &                     opout%igasca_restr(1,1,1,1,1,iblkout),
 c     &                     opout%dagger,
 c     &                     orb_info%ngas)) then
-c        write(luout,*) 'dagger: ',opin%dagger,opout%dagger
-c        call wrt_rstr(luout,opin%igasca_restr(1,1,1,1,1,iblkin))
-c        call wrt_rstr(luout,opout%igasca_restr(1,1,1,1,1,iblkout))
+c        write(lulog,*) 'dagger: ',opin%dagger,opout%dagger
+c        call wrt_rstr(lulog,opin%igasca_restr(1,1,1,1,1,iblkin))
+c        call wrt_rstr(lulog,opout%igasca_restr(1,1,1,1,1,iblkout))
 c        call quit(1,'add_opblk','occupations do not fit!')
 c        ! note: we must be able to handle this case in the future
 c      end if
@@ -193,12 +193,12 @@ c      end if
       len_op = mel_in%len_op_occ(iblkin)
       ! for the moment this must hold:
       if (len_op.ne.mel_out%len_op_occ(iblkout))then
-        write(luout,*)'len_op = ',len_op
-        write(luout,*)'mel len = ',mel_out%len_op_occ(iblkout)
-        call wrt_occ_n(luout,opin%ihpvca_occ(1,1,idx_in),njoined_in)
-        call wrt_occ_n(luout,opout%ihpvca_occ(1,1,idx_out),njoined_out)
-        write(luout,*)'formal? ',mel_in%op%formal_blk(iblkin)
-        write(luout,*)'formal? ',mel_out%op%formal_blk(iblkout)
+        write(lulog,*)'len_op = ',len_op
+        write(lulog,*)'mel len = ',mel_out%len_op_occ(iblkout)
+        call wrt_occ_n(lulog,opin%ihpvca_occ(1,1,idx_in),njoined_in)
+        call wrt_occ_n(lulog,opout%ihpvca_occ(1,1,idx_out),njoined_out)
+        write(lulog,*)'formal? ',mel_in%op%formal_blk(iblkin)
+        write(lulog,*)'formal? ',mel_out%op%formal_blk(iblkout)
         call quit(1,'add_opblk','unexpected error')      
       endif
 
@@ -218,8 +218,8 @@ c      end if
 
         nblkmax = ifree/lblk/2
         if (nblkmax.le.0) then
-          write(luout,*) 'free memory (words):  ',ifree
-          write(luout,*) 'block length (words): ',lblk,' * 2'
+          write(lulog,*) 'free memory (words):  ',ifree
+          write(lulog,*) 'block length (words): ',lblk,' * 2'
           call
      &       quit(1,'add_opblk','not even 1 record fits into memory?')
         end if

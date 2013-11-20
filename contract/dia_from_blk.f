@@ -93,7 +93,7 @@
      &     ielprd, idx_msgmdst2, idx_str_blk3
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'dia_from_blk')
+        call write_title(lulog,wst_dbg_subr,'dia_from_blk')
       end if
 
       opinp => meinp%op
@@ -215,10 +215,10 @@
           igamc = multd2h(igama,meout%gamt)
 
           if (ntest.ge.100)
-     &         write(luout,*) 'MS(A), GAMMA(A): ',msa,igama,' len = ',
+     &         write(lulog,*) 'MS(A), GAMMA(A): ',msa,igama,' len = ',
      &           meout%len_op_gmo(iblkout)%gam_ms(igama,idxmsa)
 c          if (ntest.ge.1000)
-c     &         write(luout,*) 'ms(A)2, gamma(A)2: ',msca,igamca,
+c     &         write(lulog,*) 'ms(A)2, gamma(A)2: ',msca,igamca,
 c     &           ' len2 = ',
 c     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
 
@@ -306,7 +306,7 @@ c     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
 
 
             if (ntest.ge.1000)
-     &         write(luout,*) 'dist: ',idxdis_1,' len = ',
+     &         write(lulog,*) 'dist: ',idxdis_1,' len = ',
      &             meout%len_op_gmox(iblkout)%
      &             d_gam_ms(idxdis_1,igama,idxmsa)
 
@@ -327,8 +327,8 @@ c     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
      &             d_gam_ms(idxdis_2,igamca,idxmsca) - ioffinp
 
             if (ntest.ge.1000) then
-              write(luout,*) 'idxdis_1,idxdis_2: ',idxdis_1,idxdis_2
-              write(luout,*) 'ioff_1,ioff_2:     ',ioff_1,ioff_2
+              write(lulog,*) 'idxdis_1,idxdis_2: ',idxdis_1,idxdis_2
+              write(lulog,*) 'ioff_1,ioff_2:     ',ioff_1,ioff_2
             end if
 
             call set_op_ldim_c(ldim_op_c,ldim_op_a,
@@ -339,12 +339,12 @@ c     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
      &           len_str2,ncablk2,ncablk2,.false.)
 
             if (ntest.ge.1000) then
-              write(luout,*) 'len_str(C):',len_str(1:ncblk)
-              write(luout,*) 'len_str(A):',len_str(ncblk+1:ncblk+nablk)
-              write(luout,*) 'ldim_op_c: ',ldim_op_c(1:ncblk)
-              write(luout,*) 'ldim_op_a: ',ldim_op_a(1:nablk)
-              write(luout,*) 'ldim_op_c2: ',ldim_op_c2(1:ncablk2)
-              write(luout,*) 'ldim_op_a2: ',ldim_op_a2(1:ncablk2)
+              write(lulog,*) 'len_str(C):',len_str(1:ncblk)
+              write(lulog,*) 'len_str(A):',len_str(ncblk+1:ncblk+nablk)
+              write(lulog,*) 'ldim_op_c: ',ldim_op_c(1:ncblk)
+              write(lulog,*) 'ldim_op_a: ',ldim_op_a(1:nablk)
+              write(lulog,*) 'ldim_op_c2: ',ldim_op_c2(1:ncablk2)
+              write(lulog,*) 'ldim_op_a2: ',ldim_op_a2(1:ncablk2)
             end if
 
             ! loop over output me-list elements

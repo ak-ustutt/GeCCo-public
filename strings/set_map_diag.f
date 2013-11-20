@@ -51,9 +51,9 @@
      &     next_string
 
       if (ntest.ge.100) then
-        write(luout,*) '=================='
-        write(luout,*) 'this is set_map_diag'
-        write(luout,*) '=================='
+        write(lulog,*) '=================='
+        write(lulog,*) 'this is set_map_diag'
+        write(lulog,*) '=================='
       end if
 
       ifree = mem_setmark('set_map_diag')
@@ -98,7 +98,7 @@
         istr = istr+1
         map(istr) = (idxorb(1)-1)*orb_info%ntoob+idxorb(2)
         if (ntest.ge.100)
-     &       write(luout,'(x,a,i4,x,2i4,x,i4)') 'istr, idxorb, map: ',
+     &       write(lulog,'(x,a,i4,x,2i4,x,i4)') 'istr, idxorb, map: ',
      &             istr,idxorb(1:2),map(istr)
 
       end do str_loop

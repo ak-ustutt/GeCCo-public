@@ -54,7 +54,7 @@
      &           (orb_info%nbast+orb_info%nxbast)/2
       ifree = mem_alloc_real(ao_full,nao_full,'ao_full')
 
-      luerror = luout
+      luerror = lulog
 
       ! open files
       call file_init(ffaoprop,aoproper,ftyp_sq_unf,0)

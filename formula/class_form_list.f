@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine class_form_list(luout,form_head,op_info,mode)
+      subroutine class_form_list(lulog,form_head,op_info,mode)
 *----------------------------------------------------------------------*
-*     print formula on linked list to unit luout
+*     print formula on linked list to unit lulog
 *----------------------------------------------------------------------*
       implicit none
 
@@ -11,7 +11,7 @@
       include 'def_formula_item.h'
 
       integer, intent(in) ::
-     &     luout, mode
+     &     lulog, mode
       type(formula_item), intent(in), target ::
      &     form_head
       type(operator_info), intent(in) ::
@@ -28,29 +28,29 @@
       do
         select case(form_ptr%command)
         case(command_end_of_formula)
-          write(luout,*) '[END]'
+          write(lulog,*) '[END]'
         case(command_set_target_init)
-c          write(luout,*) '[INIT TARGET]',form_ptr%target
-          write(luout,*) '   term #    class'
+c          write(lulog,*) '[INIT TARGET]',form_ptr%target
+          write(lulog,*) '   term #    class'
         case(command_set_target_update)
-          write(luout,*) '[SET TARGET]',form_ptr%target
+          write(lulog,*) '[SET TARGET]',form_ptr%target
         case(command_new_intermediate)
-          write(luout,*) '[NEW INTERMEDIATE]',form_ptr%target
+          write(lulog,*) '[NEW INTERMEDIATE]',form_ptr%target
         case(command_del_intermediate)
-          write(luout,*) '[DELETE INTERMEDIATE]',form_ptr%target
+          write(lulog,*) '[DELETE INTERMEDIATE]',form_ptr%target
         case(command_add_contribution)
           idx = idx+1
-c          write(luout,*) '[ADD]',form_ptr%target,'( term #',idx,')'
+c          write(lulog,*) '[ADD]',form_ptr%target,'( term #',idx,')'
           select case(mode)
           case(1)
-            call class_contr1(luout,form_ptr%contr,op_info,idx)
+            call class_contr1(lulog,form_ptr%contr,op_info,idx)
           case default
-            write(luout,*) 'unknown mode ',mode
+            write(lulog,*) 'unknown mode ',mode
           end select  
         case(command_symmetrise)
-          write(luout,*) '[SYMMETRISE TARGET]',form_ptr%target
+          write(lulog,*) '[SYMMETRISE TARGET]',form_ptr%target
         case default
-          write(luout,*) 'unknown command ',form_ptr%command,
+          write(lulog,*) 'unknown command ',form_ptr%command,
      &                   form_ptr%target
         end select
 

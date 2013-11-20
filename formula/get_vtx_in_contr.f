@@ -47,11 +47,11 @@
       end do
 
       if (ijoin.ne.njoined) then
-        write(luout,*) 'idxop:        ',idxop
-        write(luout,*) 'adjop:        ',adjop
-        write(luout,*) 'ijoin,njoined:', ijoin,njoined
+        write(lulog,*) 'idxop:        ',idxop
+        write(lulog,*) 'adjop:        ',adjop
+        write(lulog,*) 'ijoin,njoined:', ijoin,njoined
         do jvtx = 1, contr%nvtx
-          write(luout,*) jvtx,contr%vertex(jvtx)%idx_op,
+          write(lulog,*) jvtx,contr%vertex(jvtx)%idx_op,
      &                        contr%vertex(jvtx)%iblk_op
         end do
         call quit(1,'get_vtx_in_contr',

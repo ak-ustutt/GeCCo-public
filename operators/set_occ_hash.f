@@ -66,7 +66,7 @@
       end do 
         
       if (ntest.ge.100) then
-        write(luout,*) 'hash table:'
+        write(lulog,*) 'hash table:'
         call iwrtma(occ_hash,ngastp*(ngastp+1)/2,ngastp*(ngastp+1)/2,
      &                       ngastp*(ngastp+1)/2,ngastp*(ngastp+1)/2)
 

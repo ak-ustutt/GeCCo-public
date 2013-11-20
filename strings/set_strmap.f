@@ -42,21 +42,21 @@
      &     buffer(:)
 
       if (ntest.ge.100) then
-        write(luout,*) '=================='
-        write(luout,*) 'this is set_strmap'
-        write(luout,*) '=================='
-        write(luout,*) ' iocc1, iocc2, iocc12: ',
+        write(lulog,*) '=================='
+        write(lulog,*) 'this is set_strmap'
+        write(lulog,*) '=================='
+        write(lulog,*) ' iocc1, iocc2, iocc12: ',
      &                   iocc1, iocc2, iocc12
-        write(luout,*) ' ityp1, ityp2, ityp12: ',
+        write(lulog,*) ' ityp1, ityp2, ityp12: ',
      &                   ityp1, ityp2, ityp12
-        write(luout,*) ' restriction on 1:'
-        call wrt_srstr(luout,irestr1,orb_info%ngas_hpv(ityp1),
+        write(lulog,*) ' restriction on 1:'
+        call wrt_srstr(lulog,irestr1,orb_info%ngas_hpv(ityp1),
      &                 orb_info%nspin)
-        write(luout,*) ' restriction on 2:'
-        call wrt_srstr(luout,irestr2,orb_info%ngas_hpv(ityp2),
+        write(lulog,*) ' restriction on 2:'
+        call wrt_srstr(lulog,irestr2,orb_info%ngas_hpv(ityp2),
      &                 orb_info%nspin)
-        write(luout,*) ' restriction on 12:'
-        call wrt_srstr(luout,irestr12,orb_info%ngas_hpv(ityp12),
+        write(lulog,*) ' restriction on 12:'
+        call wrt_srstr(lulog,irestr12,orb_info%ngas_hpv(ityp12),
      &                 orb_info%nspin)
       end if
 
@@ -70,11 +70,11 @@
 
       ! consistency checks
       if (ityp1.ne.ityp2.or.ityp1.ne.ityp12.or.ityp2.ne.ityp12) then
-        write(luout,*) 'look at that: ',ityp1,ityp2,ityp12
+        write(lulog,*) 'look at that: ',ityp1,ityp2,ityp12
         call quit(1,'set_strmap','incompatible graph types')
       end if
       if (iocc1+iocc2.ne.iocc12) then
-        write(luout,*) 'look at that: ',iocc1,' +',iocc2,' !=',iocc12
+        write(lulog,*) 'look at that: ',iocc1,' +',iocc2,' !=',iocc12
         call quit(1,'set_strmap','incompatible graph occupations')
       end if
 
@@ -84,7 +84,7 @@
         if (ipass.eq.2) then
           lenbuf = idxbuf
           if (ntest.ge.100) then
-            write(luout,*) 'allocating ',lenbuf,' integer words'
+            write(lulog,*) 'allocating ',lenbuf,' integer words'
           end if
           ifree = mem_alloc_int(buffer,lenbuf,'buffer')
           strmap_info%maxlen_blk(idxgrgr) = maxlen_blk
@@ -130,20 +130,20 @@
       end do
 
       if (ntest.ge.150) then
-        write(luout,*) 'the ms offset array'
+        write(lulog,*) 'the ms offset array'
         call wrtimat2(strmap_info%offsets(idxgrgr)%msms,
      &       iocc2+1,iocc1+1,iocc2+1,iocc1+1)
-        write(luout,*) 'the IRREP offset arrays:'
+        write(lulog,*) 'the IRREP offset arrays:'
         do idxms2 = 1, iocc2+1
           do idxms1 = 1, iocc1+1
-            write(luout,*) 'ms = ',iocc2-(idxms2-1)*2,iocc1-(idxms1-1)*2
+            write(lulog,*) 'ms = ',iocc2-(idxms2-1)*2,iocc1-(idxms1-1)*2
             ioff_symtab = buffer((idxms2-1)*iocc1+idxms1) +
      &           (iocc1+1)*(iocc2+1)
             call wrtimat2(strmap_info%offsets(idxgrgr)%
      &           msmsgmgm(((idxms2-1)*(iocc1+1)+idxms1-1)*nsym*nsym+1),
      &           nsym,nsym,nsym,nsym)
             if (ntest.ge.1000) then
-              write(luout,*) 'the maps'
+              write(lulog,*) 'the maps'
               do igam2 = 1, nsym
                 nstr2 = graph2%lenstr_gm(igam2,idxms2)
                 do igam1 = 1, nsym
@@ -154,9 +154,9 @@
      &                 msmsgmgm(((idxms2-1)*(iocc1+1)
      &                 +idxms1-1)*nsym*nsym
      &                 +(igam2-1)*nsym+igam1)
-                  write(luout,*) 'size: ',nstr2,' x',nstr1
+                  write(lulog,*) 'size: ',nstr2,' x',nstr1
                   if (ntest.le.1000.and.nstr1*nstr2.gt.10000) then
-                    write(luout,*) 'too large for printing'
+                    write(lulog,*) 'too large for printing'
                     cycle
                   end if
                   call wrtimat2(buffer(idxmap+1),

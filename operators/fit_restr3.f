@@ -33,11 +33,11 @@
 
 c dbg
 c      print *,'OP'
-c      call wrt_occ_n(luout,iocc_op,njoined_op)
+c      call wrt_occ_n(lulog,iocc_op,njoined_op)
 c      print *,'EX'
-c      call wrt_occ_n(luout,iocc_ex,njoined_op)
+c      call wrt_occ_n(lulog,iocc_ex,njoined_op)
 c      print *,'CNT'
-c      call wrt_occ_n(luout,iocc_cnt,njoined_cnt)
+c      call wrt_occ_n(lulog,iocc_cnt,njoined_cnt)
 c dbg
       ! loop over merge map info
       idx_base = 1

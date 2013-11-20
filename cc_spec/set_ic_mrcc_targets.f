@@ -63,7 +63,7 @@
       real(8) ::
      &     x_ansatz, prc_shift, prc_min, prc_impfac
 
-      if (iprlvl.gt.0) write(luout,*) 'setting icMRCC targets'
+      if (iprlvl.gt.0) write(lulog,*) 'setting icMRCC targets'
 
       ! get some keywords
       call get_argument_value('method.MR','maxexc',
@@ -163,28 +163,28 @@
       if (orb_info%ims.ne.0) msc = 0
 
       if (ntest.ge.100) then
-        write(luout,*) 'maxcom_en    = ', maxcom_en
-        write(luout,*) 'maxcom_res   = ', maxcom
-        write(luout,*) 'G_level      = ', G_level
-        write(luout,*) 'preopt       = ', preopt
-        write(luout,*) 'Op_eqs       = ', Op_eqs
-        write(luout,*) 'H1bar        = ', h1bar
-        if (h1bar) write(luout,*) 'maxcom_h1bar = ', maxcom_h1bar
-        if (h1bar) write(luout,*) 'h1bar_maxp   = ', h1bar_maxp
-        write(luout,*) 'HTT          = ', htt
-        write(luout,*) 'maxtt        = ', maxtt
-        write(luout,*) 'x_ansatz     = ', x_ansatz
-        write(luout,*) 'Tred_mode    = ', tred
-        write(luout,*) 'trunc        = ', trunc
-        if (tfix.gt.0) write(luout,*) 'Tfix         = ', tfix
-        if (t1ord.ge.0) write(luout,*) 'T1ord        = ', t1ord
-        if (simp.ge.0) write(luout,*) 'simp         = ', simp
+        write(lulog,*) 'maxcom_en    = ', maxcom_en
+        write(lulog,*) 'maxcom_res   = ', maxcom
+        write(lulog,*) 'G_level      = ', G_level
+        write(lulog,*) 'preopt       = ', preopt
+        write(lulog,*) 'Op_eqs       = ', Op_eqs
+        write(lulog,*) 'H1bar        = ', h1bar
+        if (h1bar) write(lulog,*) 'maxcom_h1bar = ', maxcom_h1bar
+        if (h1bar) write(lulog,*) 'h1bar_maxp   = ', h1bar_maxp
+        write(lulog,*) 'HTT          = ', htt
+        write(lulog,*) 'maxtt        = ', maxtt
+        write(lulog,*) 'x_ansatz     = ', x_ansatz
+        write(lulog,*) 'Tred_mode    = ', tred
+        write(lulog,*) 'trunc        = ', trunc
+        if (tfix.gt.0) write(lulog,*) 'Tfix         = ', tfix
+        if (t1ord.ge.0) write(lulog,*) 'T1ord        = ', t1ord
+        if (simp.ge.0) write(lulog,*) 'simp         = ', simp
         if (spinproj.eq.1) then
-          write(luout,*) 'Using spin adapted reference function.'
+          write(lulog,*) 'Using spin adapted reference function.'
         else if (spinproj.eq.2) then
-          write(luout,*) 'Using full spin adaptation.'
+          write(lulog,*) 'Using full spin adaptation.'
         else if (spinproj.eq.3) then
-          write(luout,*)
+          write(lulog,*)
      &         'Using full spin adaptation, including preconditioner.'
         end if
       end if

@@ -39,9 +39,9 @@
 
       return
 
-c 100  write(luout,*) 'intlist not suited for packing:'
-c      write(luout,*) ' list = ',int_exp(1:nexp)
-c      write(luout,*) ' base = ',ibase
+c 100  write(lulog,*) 'intlist not suited for packing:'
+c      write(lulog,*) ' list = ',int_exp(1:nexp)
+c      write(lulog,*) ' base = ',ibase
 c      call quit(1,'int8_pack','intlist not suited for packing')
 
       end

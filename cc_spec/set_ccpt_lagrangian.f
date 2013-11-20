@@ -83,7 +83,7 @@
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'Setting up CCPT-Lagrangian')
       end if
 
@@ -203,8 +203,8 @@ c     &               idxr12,-1,idxc12,idxcpp12,
      &               r12op,r12fix,op_info)
 
 c        if (ntest.ge.1000) then
-          call write_title(luout,wst_title,'T + CR')
-          call print_form_list(luout,flist_t_r,op_info)
+          call write_title(lulog,wst_title,'T + CR')
+          call print_form_list(lulog,flist_t_r,op_info)
 c        end if
 
         ! Definition of the S(pt) = T(pt)+[R,T] operator.
@@ -238,8 +238,8 @@ c dbg
 
 
         if (ntest.ge.1000) then
-          call write_title(luout,wst_title,'T + CR (PT)')
-          call print_form_list(luout,flist_t_r_pt,op_info)
+          call write_title(lulog,wst_title,'T + CR (PT)')
+          call print_form_list(lulog,flist_t_r_pt,op_info)
         end if
 
 
@@ -329,8 +329,8 @@ c dbg
      &     .false.,op_info)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_title,'raw formula')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_title,'raw formula')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
       call form_op_replace(op_info%op_arr(idx_f_temp)%op%name,
@@ -343,19 +343,19 @@ c dbg
       if (ansatz.gt.0) then
         call expand_subexpr(flist_lag,flist_t_r,0,op_info)
         if (ntest.ge.1000) then
-          call write_title(luout,wst_title,'after R2 expansion')
-          call print_form_list(luout,flist_lag,op_info)
+          call write_title(lulog,wst_title,'after R2 expansion')
+          call print_form_list(lulog,flist_lag,op_info)
         end if
         call expand_subexpr(flist_lag,flist_t_r_pt,0,op_info)
         if (ntest.ge.1000) then
-          call write_title(luout,wst_title,'after R3 expansion')
-          call print_form_list(luout,flist_lag,op_info)
+          call write_title(lulog,wst_title,'after R3 expansion')
+          call print_form_list(lulog,flist_lag,op_info)
         end if
 
         call sum_terms(flist_lag,op_info)
         if (ntest.ge.1000) then
-          call write_title(luout,wst_title,'after summing terms')
-          call print_form_list(luout,flist_lag,op_info)
+          call write_title(lulog,wst_title,'after summing terms')
+          call print_form_list(lulog,flist_lag,op_info)
         end if
 
         call transpose_formula(flist_t_r,op_info)
@@ -363,19 +363,19 @@ c dbg
 
         call expand_subexpr(flist_lag,flist_t_r,0,op_info)
         if (ntest.ge.1000) then
-          call write_title(luout,wst_title,'after R2^+ expansion')
-          call print_form_list(luout,flist_lag,op_info)
+          call write_title(lulog,wst_title,'after R2^+ expansion')
+          call print_form_list(lulog,flist_lag,op_info)
         end if
         call expand_subexpr(flist_lag,flist_t_r_pt,0,op_info)
         if (ntest.ge.1000) then
-          call write_title(luout,wst_title,'after R3^+ expansion')
-          call print_form_list(luout,flist_lag,op_info)
+          call write_title(lulog,wst_title,'after R3^+ expansion')
+          call print_form_list(lulog,flist_lag,op_info)
         end if
 
         call sum_terms(flist_lag,op_info)
         if (ntest.ge.1000) then
-          call write_title(luout,wst_title,'after summing terms (2)')
-          call print_form_list(luout,flist_lag,op_info)
+          call write_title(lulog,wst_title,'after summing terms (2)')
+          call print_form_list(lulog,flist_lag,op_info)
         end if
 
         ! Produce truncated expansions.
@@ -414,8 +414,8 @@ c     &       op_info)
       end if
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_title,'Final formula')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_title,'Final formula')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
       ! assign comment
@@ -433,7 +433,7 @@ c     &       op_info)
       call del_operator(op_f_temp,op_info)
 
       call atim_csw(cpu,sys,wall)
-      write(luout,*) 'Number of generated terms: ',nterms
-      call prtim(luout,'CCPT Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
+      write(lulog,*) 'Number of generated terms: ',nterms
+      call prtim(lulog,'CCPT Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
       end

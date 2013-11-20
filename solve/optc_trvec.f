@@ -19,8 +19,8 @@
      &     ii
 
       if (ntest.ge.100) then
-        write(luout,*) 'modus: ',imet
-        write(luout,*) 'input vector: '
+        write(lulog,*) 'modus: ',imet
+        write(lulog,*) 'input vector: '
         call wrtmat2(xvec0,1,ndim+1,1,ndim+1)
       end if
 
@@ -39,7 +39,7 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'output vector: '
+        write(lulog,*) 'output vector: '
         call wrtmat2(xvec,1,ndim,1,ndim)
       end if
 

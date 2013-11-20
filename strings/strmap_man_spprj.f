@@ -47,9 +47,9 @@
      &     ifndmax
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'This is strmap_man_spprj')
-        write(luout,*) 'igraph: ',igraph
-        write(luout,*) 'msdis:  ',msdis
+        call write_title(lulog,wst_dbg_subr,'This is strmap_man_spprj')
+        write(lulog,*) 'igraph: ',igraph
+        write(lulog,*) 'msdis:  ',msdis
       end if
 
       maxbuffer = 0
@@ -71,7 +71,7 @@
         nmaps(idx) = 2**iocc-1
 
         if (ntest.ge.100) then
-          write(luout,*) 'need spin-projection map for: graph ',
+          write(lulog,*) 'need spin-projection map for: graph ',
      &                    igraph(idx), msdis(idx), iocc, nmaps(idx)
         end if
 
@@ -100,7 +100,7 @@
      &        call quit(1,'strmap_man_spprj','offsets not initialized?')
           if (strmap_info%offsets_spprj(idxgraph)%ms(idxms).gt.-1) then
             if (ntest.ge.100) then
-              write(luout,*) 'I have this map already ...'
+              write(lulog,*) 'I have this map already ...'
             end if
             maxbuffer = maxbuffer
      &             + strmap_info%maxlen_blk_spprj(idxgraph)
@@ -112,7 +112,7 @@
         end if
 
         if (ntest.ge.100) then
-          write(luout,*) 'I will generate this map ...'
+          write(lulog,*) 'I will generate this map ...'
         end if
 
         ! new occupation case or just new ms case?
@@ -149,7 +149,7 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
       end do blk_loop
 
       if (ntest.ge.100) then
-        write(luout,*) 'leaving strmap_man_spprj() ...'
+        write(lulog,*) 'leaving strmap_man_spprj() ...'
       end if
 
       return

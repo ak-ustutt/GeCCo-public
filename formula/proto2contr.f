@@ -40,9 +40,9 @@
      &     svmap(:)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'proto2contr')
-        write(luout,*) 'on input:'
-        call prt_contr3(luout,proto,occ_vtx)
+        call write_title(lulog,wst_dbg_subr,'proto2contr')
+        write(lulog,*) 'on input:'
+        call prt_contr3(lulog,proto,occ_vtx)
       end if
 
       nvtx_p = proto%nvtx
@@ -152,8 +152,8 @@
       contr%nxarc = ixarc
 
       if (ntest.ge.100) then
-        write(luout,*) 'on exit:'
-        call prt_contr2(luout,contr,op_info)
+        write(lulog,*) 'on exit:'
+        call prt_contr2(lulog,contr,op_info)
       end if
 
       return

@@ -79,10 +79,10 @@
       ffop => oplist%fhand
 
       if(ntest.ge.100)then
-        write(luout,*)'=================='
-        write(luout,*)'Import-r12-dalton '
-        write(luout,*)'=================='
-        write(luout,*)'Operator-list: ',trim(oplist%label)
+        write(lulog,*)'=================='
+        write(lulog,*)'Import-r12-dalton '
+        write(lulog,*)'=================='
+        write(lulog,*)'Operator-list: ',trim(oplist%label)
       endif
 
       ngam  = orb_info%nsym
@@ -188,7 +188,7 @@ c          mnmxspc(2,1:ngas) = 4
           end do
           if (ihpvgas(ngas,1).eq.IEXTR) mnmxspc(1:2,ngas) = 4
         case default
-          write(luout,*) 'naux_max = ',naux_max
+          write(lulog,*) 'naux_max = ',naux_max
           call quit(1,'import_2el_dalton','unsupported nauxmax')
         end select
       
@@ -201,12 +201,12 @@ c          mnmxspc(2,1:ngas) = 4
 
         nbuffer = nints(1)*ntypes
 c dbg
-        write(luout,*) 'size of buffer: ',nints(1),ntypes,nbuffer
+        write(lulog,*) 'size of buffer: ',nints(1),ntypes,nbuffer
 c dbg
         ifree = mem_setmark('DAimport')
 c FUSK FIX - we currently allow up to 3 times of ifree:
         if (nbuffer.gt.3*ifree) then
-          write(luout,*) nbuffer,ifree
+          write(lulog,*) nbuffer,ifree
           call quit(0,'DAimport buffer','definitely too large')
         end if
         !ifree = mem_alloc_real(buffer,nbuffer,'DAbuffer')
@@ -229,17 +229,17 @@ c
         call atim_cs(cpu,sys)
 
         if (iprlvl.ge.5) 
-     &       call prtim(luout,'time for reading integrals',
+     &       call prtim(lulog,'time for reading integrals',
      &       cpu-cpux,sys-sysx,-1d0)
      
 c dbg
 c        idx = 0
 c        do idx_int = 1, nints(1)
-cc          write(luout,*) 'idx_int = ',idx_int
+cc          write(lulog,*) 'idx_int = ',idx_int
 c          do idx_typ = 1, ntypes
 c            idx = idx+1
 cc            if (abs(buffer(idx)).gt.10d0)
-c                write(luout,*) idx, idx_int, idx_typ, buffer(idx)
+c                write(lulog,*) idx, idx_int, idx_typ, buffer(idx)
 c          end do
 c        end do
 c dbg
@@ -271,7 +271,7 @@ c dbg
         call atim_cs(cpu,sys)
 
         if (iprlvl.ge.5) 
-     &       call prtim(luout,'time for sorting integrals',
+     &       call prtim(lulog,'time for sorting integrals',
      &       cpu-cpux,sys-sysx,-1d0)
 
 c FUSK FIX
@@ -288,7 +288,7 @@ c
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.1) 
-     &     call prtim(luout,'time in 2int import',
+     &     call prtim(lulog,'time in 2int import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
 

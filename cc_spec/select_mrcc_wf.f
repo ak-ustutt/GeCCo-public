@@ -73,7 +73,7 @@
      &     next_perm
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'select_mrcc_wf')
+        call write_title(lulog,wst_dbg_subr,'select_mrcc_wf')
       endif
 
       ! get operator indices
@@ -98,9 +98,9 @@
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
         case(command_add_contribution)
 
           iterm = iterm + 1
@@ -194,8 +194,8 @@ c dbgend
             call pack_contr(svtx1,ivtx1,topo1,xlines1,contr,nj)
 c            if (x_ansatz.ne.0.5d0) call isort(testing,ntesting,1)
 c dbg
-c            write(luout,*) ' initial topology:'
-c            call prt_contr_p(luout,svtx1,ivtx1,topo1,xlines1,nvtx,nj)
+c            write(lulog,*) ' initial topology:'
+c            call prt_contr_p(lulog,svtx1,ivtx1,topo1,xlines1,nvtx,nj)
 c dbgend
             do ivtx = 1, nvtx
               ireo(ivtx) = ivtx
@@ -237,7 +237,7 @@ c dbgend
                         if (.not.next_perm(iperm,ntesting))
      &                     exit perm_loop
 c dbg
-c                        write(luout,'(x,a,14i4)') 'skip to perm:',iperm
+c                        write(lulog,'(x,a,14i4)') 'skip to perm:',iperm
 c dbgend
                         cycle perm_loop
                       end if
@@ -249,10 +249,10 @@ c dbgend
                 call reoi8mat(topo2,ireo,nvtx,nvtx,3) !both rows and cols
                 call reoi8mat(xlines2,ireo,nvtx,nj,1)
 c dbg
-c                write(luout,'(x,a,14i4)') 'reordering array: ',
+c                write(lulog,'(x,a,14i4)') 'reordering array: ',
 c     &                                    ireo(1:nvtx)
-c                write(luout,*) ' reordered topology:'
-c                call prt_contr_p(luout,svtx1,ivtx2,topo2,xlines2,nvtx,
+c                write(lulog,*) ' reordered topology:'
+c                call prt_contr_p(lulog,svtx1,ivtx2,topo2,xlines2,nvtx,
 c     &                           nj)
 c dbgend
               end if
@@ -325,7 +325,7 @@ c dbgend
               if (idx.gt.0) then
                 extra_fac(idx) = extra_fac(idx) + contr%fac
                 delete = .true.
-                write(luout,'(x,2(a,i12),a,e10.3)') 'added to term ',
+                write(lulog,'(x,2(a,i12),a,e10.3)') 'added to term ',
      &                 extra_term(idx),
      &                 ': term ',iterm,' with factor ',contr%fac
               else
@@ -347,7 +347,7 @@ c dbgend
                 itmp  => null()
                 r8tmp => null()
                 contr%fac = fac_tot
-                write(luout,'(x,a,i12,a,e10.3)') 'term ',iterm,
+                write(lulog,'(x,a,i12,a,e10.3)') 'term ',iterm,
      &              ': new virtual term with factor ',extra_fac(n_extra)
               end if
             end if
@@ -372,8 +372,8 @@ c              delete = (abs(contr%fac).lt.1d-12)
           if (delete) then
             ! Print the deleted contraction.
             if(ntest.ge.1000)then
-              write(luout,*) 'Deleted formula item:'
-              call prt_contr2(luout,form_pnt%contr,op_info)
+              write(lulog,*) 'Deleted formula item:'
+              call prt_contr2(lulog,form_pnt%contr,op_info)
             endif
 
             ! Delete the node.
@@ -382,7 +382,7 @@ c              delete = (abs(contr%fac).lt.1d-12)
           end if
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'select_mrcc_wf','command undefined here')
         end select
 
@@ -394,7 +394,7 @@ c              delete = (abs(contr%fac).lt.1d-12)
 
       do idx = 1, n_extra
         if (abs(extra_fac(idx)).gt.1d-12) then
-          write(luout,'(x,a,i12,a,e10.3)')
+          write(lulog,'(x,a,i12,a,e10.3)')
      &         'OH NO! Virtual term belonging to term ',
      &         extra_term(idx),' has a factor ',extra_fac(idx)
           call warn('select_mrcc_wf',

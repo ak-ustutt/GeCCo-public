@@ -44,9 +44,9 @@
      &     occ_is_diag_blk
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'transpose_contr')
-        write(luout,*) 'on input:'
-        call prt_contr2(luout,contr,op_info)
+        call write_title(lulog,wst_dbg_subr,'transpose_contr')
+        write(lulog,*) 'on input:'
+        call prt_contr2(lulog,contr,op_info)
       end if
 
       nvtx = contr%nvtx
@@ -157,7 +157,7 @@ c        arc(iarc)%occ_cnt = iocc_dagger(arc(iarc)%occ_cnt)
         xarc(iarc)%occ_cnt = iocc_dagger(xarc(iarc)%occ_cnt)
       end do
 c dbg
-c        call prt_contr2(luout,contr,op_info)
+c        call prt_contr2(lulog,contr,op_info)
 c dbg      
       allocate(occ_vtx(ngastp,2,nvtx),vtx_reo(nvtx),fix_vtx(nvtx))
       fix_vtx = .true. ! not important
@@ -167,8 +167,8 @@ c dbg
       deallocate(occ_vtx,vtx_reo,fix_vtx)
 
       if (ntest.ge.100) then
-        write(luout,*) 'on output:'
-        call prt_contr2(luout,contr,op_info)
+        write(lulog,*) 'on output:'
+        call prt_contr2(lulog,contr,op_info)
       end if
 
       return

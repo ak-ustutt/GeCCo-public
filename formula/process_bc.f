@@ -157,7 +157,7 @@
      &     scale_rank
 
       if (ntest.gt.0) then
-        call write_title(luout,wst_dbg_subr,'this is process_bc')
+        call write_title(lulog,wst_dbg_subr,'this is process_bc')
       end if
 
       op_arr => op_info%op_arr
@@ -242,22 +242,22 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'op 1:'
-        call wrt_occ_n(luout,iocc_op1,njoined_op(1))
-        write(luout,*) 'op 2:'
-        call wrt_occ_n(luout,iocc_op2,njoined_op(2))
-        write(luout,*) 'externals 1:'
-        call wrt_occ_n(luout,iocc_ex1,njoined_op(1))
-        write(luout,*) 'externals 2:'
-        call wrt_occ_n(luout,iocc_ex2,njoined_op(2))
-        write(luout,*) 'contraction:'
-        call wrt_occ_n(luout,iocc_cnt,njoined_cnt)
+        write(lulog,*) 'op 1:'
+        call wrt_occ_n(lulog,iocc_op1,njoined_op(1))
+        write(lulog,*) 'op 2:'
+        call wrt_occ_n(lulog,iocc_op2,njoined_op(2))
+        write(lulog,*) 'externals 1:'
+        call wrt_occ_n(lulog,iocc_ex1,njoined_op(1))
+        write(lulog,*) 'externals 2:'
+        call wrt_occ_n(lulog,iocc_ex2,njoined_op(2))
+        write(lulog,*) 'contraction:'
+        call wrt_occ_n(lulog,iocc_cnt,njoined_cnt)
         if (reo_op1op2) then
-          write(luout,*) 'intermediate/result bef. reo:'
-          call wrt_occ_n(luout,iocc_op1op2tmp,njoined_op1op2)
+          write(lulog,*) 'intermediate/result bef. reo:'
+          call wrt_occ_n(lulog,iocc_op1op2tmp,njoined_op1op2)
         end if
-        write(luout,*) 'intermediate/result:'
-        call wrt_occ_n(luout,iocc_op1op2,njoined_op1op2)
+        write(lulog,*) 'intermediate/result:'
+        call wrt_occ_n(lulog,iocc_op1op2,njoined_op1op2)
       end if
 
 cmh: allow even if no graph exists --> will be created later (get_reo_info)
@@ -303,10 +303,10 @@ c     &     str_info,orb_info)
         nv_cnt = sum(iocc_cnt(ivale,1:2,1:njoined_cnt))
 
         if (ntest.ge.50) then
-          write(luout,'(x,a,i2,a,i2,a)')
+          write(lulog,'(x,a,i2,a,i2,a)')
      &         'Contraction scales as  H^{',nh_op1op2+nh_cnt,
      &                                   '}P^{',np_op1op2+np_cnt,'}'
-          write(luout,'(x,a,i2,a,i2,a)')
+          write(lulog,'(x,a,i2,a,i2,a)')
      &             'Intermediate scales as H^{',nh_op1op2,
      &                                   '}P^{',np_op1op2,'}'
         end if
@@ -375,9 +375,9 @@ c     &        'operator with zero length?')
           cost(3) = max(cost(3),xmemblk)
 
           if (ntest.ge.10)
-     &        write(luout,'(x,a,3(g20.10,x))') '$$ cost: ',cost(1:3)
+     &        write(lulog,'(x,a,3(g20.10,x))') '$$ cost: ',cost(1:3)
           if (ntest.ge.10)
-     &        write(luout,'(x,a,2(2i4,2x))') '$$ scal: ',iscale(1:2,1:2)
+     &        write(lulog,'(x,a,2(2i4,2x))') '$$ scal: ',iscale(1:2,1:2)
         end if
       else if (mode.eq.'SET') then
 

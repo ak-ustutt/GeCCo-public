@@ -79,7 +79,7 @@
         call get_vec(ffinp,buffer_in,1,nbuff)
       else
         if(ntest.ge.100)
-     &       write(luout,*)'Invert: input not incore'
+     &       write(lulog,*)'Invert: input not incore'
         buffer_in => ffinp%buffer(1:)
       endif
 
@@ -92,7 +92,7 @@
         buffer_out(1:nbuff) = 0d0
       else
         if(ntest.ge.100)
-     &       write(luout,*)'Symmetrise: output not incore'
+     &       write(lulog,*)'Symmetrise: output not incore'
         buffer_out => ffinv%buffer(1:)
       endif
 
@@ -148,7 +148,7 @@ c dbgend
      &            = -scratch(1:len_gam_ms,1:len_gam_ms)
 
 c dbg
-c            write(luout,*) 'matrix:'
+c            write(lulog,*) 'matrix:'
 c            call wrtmat2(scratch,len_gam_ms,len_gam_ms,
 c     &                   len_gam_ms,len_gam_ms)
 c cbgend
@@ -158,9 +158,9 @@ c cbgend
             do idx = 2, len_gam_ms
               do jdx = 1,idx-1
                 if(abs(scratch(idx,jdx)-scratch(jdx,idx)).gt.1d-10)then
-                  write(luout,*) 'idx,jdx:',idx,jdx
-                  write(luout,*) 'scratch(idx,jdx): ',scratch(idx,jdx)
-                  write(luout,*) 'scratch(jdx,idx): ',scratch(jdx,idx)
+                  write(lulog,*) 'idx,jdx:',idx,jdx
+                  write(lulog,*) 'scratch(idx,jdx): ',scratch(idx,jdx)
+                  write(lulog,*) 'scratch(jdx,idx): ',scratch(jdx,idx)
                   call quit(1,'pseudoinv',
      &                 'currently only for symmetric matrix!')
                 end if
@@ -173,7 +173,7 @@ c cbgend
      &                  scratch,len_gam_ms,eigen_val,
      &                  dum1,1,dum2,1,wrk,lwrk,info)
             if (info.ne.0) then
-              write(luout,*) 'WARNING in invsqrt_mat: SVD in trouble'
+              write(lulog,*) 'WARNING in invsqrt_mat: SVD in trouble'
               call quit(1,'pseudoinv','cannot handle this matrix')
             end if
             ! ... compute (pseudo)eigenvalues to the -1/2, ...

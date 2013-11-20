@@ -43,9 +43,9 @@
      &     i8list_cmp, idxlist, idxcount
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'topo_make_unique2')
-        write(luout,*) 'topo on entry'
-        call prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx,nj)
+        call write_title(lulog,wst_dbg_subr,'topo_make_unique2')
+        write(lulog,*) 'topo on entry'
+        call prt_contr_p(lulog,svtx,vtx,topo,xlines,nvtx,nj)
       end if
 
       do idx = 1, nvtx
@@ -115,7 +115,7 @@ c            min_idx = jdx+1
       call reoi8mat(topo,ireo,nvtx,nvtx,3)
 c dbg
 c      print *,'before first sweep:'
-c      call prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx,nj)
+c      call prt_contr_p(lulog,svtx,vtx,topo,xlines,nvtx,nj)
 c dbg
 
       ! look for vertices with both equal entry on vtx and xlines
@@ -147,7 +147,7 @@ c dbg
 c dbg
 c            print *,'sorting: sweep = ',sweep,' block = ',neqv_blocks,
 c     &           ' changed = ',changed
-c            call prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx,nj)
+c            call prt_contr_p(lulog,svtx,vtx,topo,xlines,nvtx,nj)
 c dbg
             if (changed) then
               final_sweep = sweep + 1
@@ -162,17 +162,17 @@ c dbg
         if (final_block.eq.0) exit
 c        if (neqv_blocks.le.1.or..not.changed) exit
         if (sweep.eq.max_sweep) then
-          write(luout,*) 'max_sweep = ',max_sweep
-          write(luout,*) 'neqv_blocks: ',neqv_blocks
-          call prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx,nj)
+          write(lulog,*) 'max_sweep = ',max_sweep
+          write(lulog,*) 'neqv_blocks: ',neqv_blocks
+          call prt_contr_p(lulog,svtx,vtx,topo,xlines,nvtx,nj)
           call warn('topo_make_unique2',
      &         'sort of topo matrix does not converge')
         end if
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'topo on exit'
-        call prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx,nj)
+        write(lulog,*) 'topo on exit'
+        call prt_contr_p(lulog,svtx,vtx,topo,xlines,nvtx,nj)
       end if
 
       return

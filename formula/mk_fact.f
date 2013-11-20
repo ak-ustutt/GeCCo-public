@@ -30,13 +30,13 @@
      &     maxvtx, idxlist, int_pack, int_expand
       
       if (ntest.ge.100) then
-        write(luout,*) '================='
-        write(luout,*) ' mk_fact at work'
-        write(luout,*) '================='
-        write(luout,*) ' icntsq : ',icntsq(1:narc)
-        write(luout,*) ' graph described by: '
+        write(lulog,*) '================='
+        write(lulog,*) ' mk_fact at work'
+        write(lulog,*) '================='
+        write(lulog,*) ' icntsq : ',icntsq(1:narc)
+        write(lulog,*) ' graph described by: '
         do idx = 1, narc
-          write(luout,*)
+          write(lulog,*)
      &         '  ',iconn(1,idx),':',iconn(2,idx),'-',iconn(3,idx)
         end do
       end if
@@ -93,7 +93,7 @@ c dbg
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'resulting binary operation list:'
+        write(lulog,*) 'resulting binary operation list:'
         do idx = 1, nfact
           icnt = ifact(4,idx)
           jdx = 1
@@ -103,7 +103,7 @@ c dbg
             if (icnt.eq.0) exit
             jdx = jdx+1
           end do
-          write(luout,'(2x,i4,a,i4,a,i4,a,8i3)')
+          write(lulog,'(2x,i4,a,i4,a,i4,a,8i3)')
      &         ifact(1,idx),' * ',ifact(2,idx),
      &         ' -> ',ifact(3,idx),'  C:',iarceq(1,1:jdx)
         end do

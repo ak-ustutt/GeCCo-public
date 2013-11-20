@@ -6,7 +6,7 @@
       logical, intent(in) ::
      &     check
 
-      call memman_map(luout,check)
+      call memman_map(lulog,check)
 
       return
       end

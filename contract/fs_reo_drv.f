@@ -85,7 +85,7 @@
       
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'fs_reo_drv at work')
+        call write_title(lulog,wst_dbg_subr,'fs_reo_drv at work')
       end if
 
       ngas = orb_info%ngas
@@ -101,9 +101,9 @@
       idx_opout = idx_oplist2(reo_inf0%label_out,op_info)
 
       if (update.and.idx_opout.ne.idx_tgt) then
-        write(luout,*) 'formula target: ',
+        write(lulog,*) 'formula target: ',
      &       trim(op_info%op_arr(idx_tgt)%op%name)
-        write(luout,*) '[REO] result: ',trim(reo_inf0%label_out)
+        write(lulog,*) '[REO] result: ',trim(reo_inf0%label_out)
         call quit(1,'fs_reo_drv','inconsistency: target<>result')
       end if
 

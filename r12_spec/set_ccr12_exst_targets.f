@@ -41,7 +41,7 @@
       if (ncnt.eq.0) return
 
       if (iprlvl.gt.0)
-     &    write(luout,*) 'setting targets for CC-R12 excited states ...'
+     &    write(lulog,*) 'setting targets for CC-R12 excited states ...'
 
       call get_argument_value('method.R12','fixed',lval=r12fix)
       call get_argument_value('method.R12','r12op',ival=r12op)

@@ -43,7 +43,7 @@
      &     parameters(3)
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting targets for multiref. wave function'
+     &     write(lulog,*) 'setting targets for multiref. wave function'
 
       ims = orb_info%ims
       if (ims.eq.0.and.mod(orb_info%imult-1,4).eq.0) then
@@ -84,18 +84,18 @@
       cmaxv = orb_info%norb_hpv(IVALE,1)*2
 
       if (ntest.ge.100) then
-        write(luout,*) 'cminh   = ',cminh
-        write(luout,*) 'cmaxh   = ',cmaxh
-        write(luout,*) 'cminp   = ',cminp
-        write(luout,*) 'cmaxp   = ',cmaxp
-        write(luout,*) 'cmaxv   = ',cmaxv
-        if (cminexc.gt.0) write(luout,*) 'cminexc = ',cminexc
-        write(luout,*) 'cmaxexc = ',cmaxexc
-        write(luout,*) 'nactel  = ',orb_info%nactel
-        write(luout,*) 'ciroot  = ',ciroot
-        write(luout,*) 'maxroot  = ',maxroot
-        write(luout,*) 'oldref  = ',oldref
-        write(luout,*) 'spinproj= ',spinproj
+        write(lulog,*) 'cminh   = ',cminh
+        write(lulog,*) 'cmaxh   = ',cmaxh
+        write(lulog,*) 'cminp   = ',cminp
+        write(lulog,*) 'cmaxp   = ',cmaxp
+        write(lulog,*) 'cmaxv   = ',cmaxv
+        if (cminexc.gt.0) write(lulog,*) 'cminexc = ',cminexc
+        write(lulog,*) 'cmaxexc = ',cmaxexc
+        write(lulog,*) 'nactel  = ',orb_info%nactel
+        write(lulog,*) 'ciroot  = ',ciroot
+        write(lulog,*) 'maxroot  = ',maxroot
+        write(lulog,*) 'oldref  = ',oldref
+        write(lulog,*) 'spinproj= ',spinproj
       end if
 
 *----------------------------------------------------------------------*

@@ -33,17 +33,17 @@
      &     lexlstr
 
       if (ntest.gt.0) then
-        write(luout,*) '---------------'
-        write(luout,*) 'This is nextstr'
-        write(luout,*) '---------------'
+        write(lulog,*) '---------------'
+        write(lulog,*) 'This is nextstr'
+        write(lulog,*) '---------------'
       end if
       if (ntest.ge.50) then
-        write(luout,*) 'ON ENTRY:'
-        write(luout,*) ' nel = ',nel
-        write(luout,*) ' itms = ',itms
-        write(luout,*) ' idss = ',idss(1:nel)
-        write(luout,*) ' idorb = ',idorb(1:nel)
-        write(luout,*) ' idspn = ',idspn(1:nel)
+        write(lulog,*) 'ON ENTRY:'
+        write(lulog,*) ' nel = ',nel
+        write(lulog,*) ' itms = ',itms
+        write(lulog,*) ' idss = ',idss(1:nel)
+        write(lulog,*) ' idorb = ',idorb(1:nel)
+        write(lulog,*) ' idspn = ',idspn(1:nel)
       end if
 
       ipos = 1
@@ -86,14 +86,14 @@ c dbg fix by mh
 c dbg end fix
         if (ipos.lt.nel) idspnn = idspn(ipos+1)
         if (ntest.ge.100) then
-          write(luout,*) 'ipos,nalph,nbeta: ',ipos,nalph,nbeta
-          write(luout,*) 'iorbmax: ',iorbmax
+          write(lulog,*) 'ipos,nalph,nbeta: ',ipos,nalph,nbeta
+          write(lulog,*) 'iorbmax: ',iorbmax
         end if
 
         ! possibility a) alpha->beta
         if (idspnc.eq.+1.and.nbeta.gt.0) then
           if (ntest.ge.100) then
-            write(luout,*) 'case 1'
+            write(lulog,*) 'case 1'
           end if
           idspn(ipos)=-1
           ! Ms of substring
@@ -108,13 +108,13 @@ c          exit string_loop
           if (idspnc.eq.-1.and.nalph.gt.0) then
             ! ... and go to alpha
             if (ntest.ge.100) then
-              write(luout,*) 'case 2a'
+              write(lulog,*) 'case 2a'
             end if
             idspn(ipos)=+1
             ms_sub = ms_pos-1
           else
             if (ntest.ge.100) then
-              write(luout,*) 'case 2b'
+              write(lulog,*) 'case 2b'
             end if
             ms_sub = ms_pos-idspnc
           end if
@@ -124,7 +124,7 @@ c          exit string_loop
         else if (idorbc.lt.idorbn.and.idorbc.lt.iorbmax.and.
      &         idspnn.eq.-1.and.nalph.gt.0) then
           if (ntest.ge.100) then
-            write(luout,*) 'case 3'
+            write(lulog,*) 'case 3'
           end if
           idorb(ipos) = idorb(ipos)+1
           idspn(ipos)=2
@@ -134,14 +134,14 @@ c          exit string_loop
         else if (ipos.eq.nel) then
           ! no further increment possible
           if (ntest.ge.100) then
-            write(luout,*) 'case x'
+            write(lulog,*) 'case x'
           end if
           lnext = .false.
           exit string_loop
         else
           ! go to next ipos
           if (ntest.ge.100) then
-            write(luout,*) 'case n'
+            write(lulog,*) 'case n'
           end if
           ipos = ipos+1
           cycle string_loop
@@ -175,12 +175,12 @@ c          exit string_loop
       nextstr = lnext
 
       if (ntest.ge.50) then
-        write(luout,*) 'ON EXIT from nextstr:'
+        write(lulog,*) 'ON EXIT from nextstr:'
         if (lnext) then
-          write(luout,*) ' idorb = ',idorb(1:nel)
-          write(luout,*) ' idspn = ',idspn(1:nel)
+          write(lulog,*) ' idorb = ',idorb(1:nel)
+          write(lulog,*) ' idspn = ',idspn(1:nel)
         else
-          write(luout,*) ' no next string !'
+          write(lulog,*) ' no next string !'
         end if
       end if
 

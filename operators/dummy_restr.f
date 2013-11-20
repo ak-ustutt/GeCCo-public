@@ -36,9 +36,9 @@ c      call warn('dummy_restr','I should be obsolete soon ...!')
       iad_gas => orb_info%iad_gas
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,' here speaks dummy_restr')
-        write(luout,*) 'input occupation:'
-        call wrt_occ_n(luout,iocc_fit,njoined_fit)
+        call write_title(lulog,wst_dbg_subr,' here speaks dummy_restr')
+        write(lulog,*) 'input occupation:'
+        call wrt_occ_n(lulog,iocc_fit,njoined_fit)
       end if
 
       do ijoin = 1, njoined_fit
@@ -60,9 +60,9 @@ c      call warn('dummy_restr','I should be obsolete soon ...!')
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'output restriction: '
+        write(lulog,*) 'output restriction: '
         do ijoin = 1, njoined_fit
-          call wrt_rstr(luout,irestr_out(1,1,1,1,ijoin),ngas)
+          call wrt_rstr(lulog,irestr_out(1,1,1,1,ijoin),ngas)
         end do
       end if
 

@@ -91,7 +91,7 @@
         if (imult.eq.mult) cycle ! don't project out the one we want
         if (ab_sym.ne.0.and.mod(imult-mult,4).ne.0) cycle !every 4th
         if (ntest.ge.100)
-     &     write(luout,*) 'Project out component of multiplicity',imult
+     &     write(lulog,*) 'Project out component of multiplicity',imult
         kkp1 = dble(imult**2-1)/4d0
         fac1 = -kkp1/(ssp1-kkp1)
         fac2 = 1d0/(ssp1-kkp1)

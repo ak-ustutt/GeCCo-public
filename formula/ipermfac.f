@@ -62,13 +62,13 @@
       if (nn.gt.1) ipermfac = ipermfac*ifac(nn)
 
       if (ntest.ge.100) then
-        write(luout,*) '-------------------'
-        write(luout,*) ' ipermfac speaking'
-        write(luout,*) '-------------------'
-        write(luout,*) ' list:      ',ilist(1:len)
+        write(lulog,*) '-------------------'
+        write(lulog,*) ' ipermfac speaking'
+        write(lulog,*) '-------------------'
+        write(lulog,*) ' list:      ',ilist(1:len)
         if (.not.ordered) 
-     &       write(luout,*) ' list(reo): ',iscr(1:len)
-        write(luout,*) ' ipermfac = ',ipermfac
+     &       write(lulog,*) ' list(reo): ',iscr(1:len)
+        write(lulog,*) ' ipermfac = ',ipermfac
       end if 
 
       return

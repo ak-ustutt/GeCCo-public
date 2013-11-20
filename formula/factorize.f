@@ -48,7 +48,7 @@
 
       call atim_csw(cpu0,sys0,wall0)
 
-      call write_title(luout,wst_subsection,
+      call write_title(lulog,wst_subsection,
      &     'Formula factorization')
 
       allocate(iscale_stat(ngastp,2,max_stat),
@@ -65,7 +65,7 @@
         if (form_ptr%command.eq.command_add_contribution) then
           iterm = iterm + 1
           if (iprlvl.ge.10)
-     &         write(luout,*) 'factorizing term # ',iterm
+     &         write(lulog,*) 'factorizing term # ',iterm
           if (iterm.le.max_stat) then
             call form_fact2(form_ptr%contr,
      &         op_info,str_info,orb_info,
@@ -108,26 +108,26 @@
         xsum = xsum + time_stat(iterm)
       end do
 
-      call write_title(luout,wst_subsection,
+      call write_title(lulog,wst_subsection,
      &     'Summary')
       
-      write(luout,'(x,"Most expensive contractions: ")') 
+      write(lulog,'(x,"Most expensive contractions: ")') 
       do iterm = 1, min(5,nterms)
-        write(luout,'(x," term #",i5,'//
+        write(lulog,'(x," term #",i5,'//
      &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
      &            '" - flops: ",e10.3,"(",f6.1"%)")')
      &       ireo_t(iterm),iscale_stat(1:4,1,ireo_t(iterm)),
      &       time_stat(iterm),time_stat(iterm)/xsum*100d0
       end do
-      write(luout,'(x,"Formally most expensive contractions: ")') 
+      write(lulog,'(x,"Formally most expensive contractions: ")') 
       do iterm = 1, min(5,nterms)
-        write(luout,'(x," term #",i5,'//
+        write(lulog,'(x," term #",i5,'//
      &            '" - H^",i2," P^",i2," V^",i2," X^",i2)')
      &       ireo_s(iterm),iscale_stat(1:4,1,ireo_s(iterm))
       end do
-      write(luout,'(x,"Largest intermediates occur in: ")') 
+      write(lulog,'(x,"Largest intermediates occur in: ")') 
       do iterm = 1, min(5,nterms)
-        write(luout,'(x," term #",i5,'//
+        write(lulog,'(x," term #",i5,'//
      &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
      &            '" - Mb:    ",e10.3)')
      &       ireo_m(iterm),iscale_stat(1:4,2,ireo_m(iterm)),
@@ -161,7 +161,7 @@
 
       call atim_csw(cpu,sys,wall)
       if (iprlvl.ge.5) 
-     &     call prtim(luout,'factorization',
+     &     call prtim(lulog,'factorization',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

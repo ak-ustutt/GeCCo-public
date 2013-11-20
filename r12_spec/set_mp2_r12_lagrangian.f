@@ -74,9 +74,9 @@
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.ge.100) then
-        write(luout,*) '==================================='
-        write(luout,*) ' output from set_mp2_r12_lagrangian'
-        write(luout,*) '==================================='        
+        write(lulog,*) '==================================='
+        write(lulog,*) ' output from set_mp2_r12_lagrangian'
+        write(lulog,*) '==================================='        
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -97,12 +97,12 @@ c dbg
       ! get indices
 c      if (nlabels.ne.8.and..not.r12fix) then
 c      if(nlabels.ne.8.and..not.r12fix)then
-c        write(luout,*) 'nlabels = ',nlabels
+c        write(lulog,*) 'nlabels = ',nlabels
 c        call quit(1,'set_mp2_r12_lagrangian',
 c     &         'I expect exactly 8 labels')
 c      end if
 c      if (nlabels.ne.6.and.r12fix) then
-c        write(luout,*) 'nlabels = ',nlabels
+c        write(lulog,*) 'nlabels = ',nlabels
 c        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
 c     &     'I expect exactly 6 labels')
 c      end if
@@ -174,8 +174,8 @@ c      end if
      &     1d0,1,idxham,-1,-1,
      &     0,0,.false.,op_info)
       if (ntest.ge.1000) then
-        write(luout,*) 'H list:'
-        call print_form_list(luout,form_h,op_info)
+        write(lulog,*) 'H list:'
+        call print_form_list(lulog,form_h,op_info)
       end if
 
       ! Add the formal S=T2+CR2 operator.
@@ -221,8 +221,8 @@ c      end if
      &             r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'T2 + CR2')
-        call print_form_list(luout,form_t_cr,op_info)
+        call write_title(lulog,wst_title,'T2 + CR2')
+        call print_form_list(lulog,form_t_cr,op_info)
       end if
 
       ! Define Sbar for the projection.
@@ -241,8 +241,8 @@ c      sbar_pnt%dagger = .true.
      &             r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'T2BAR + CR2BAR')
-        call print_form_list(luout,form_tbar_cbarr,op_info)
+        call write_title(lulog,wst_title,'T2BAR + CR2BAR')
+        call print_form_list(lulog,form_tbar_cbarr,op_info)
       end if
 
       ! The actual formula.
@@ -258,8 +258,8 @@ c      sbar_pnt%dagger = .true.
      &     (/1,2/),1,.false.,op_info)
 
       if(ntest.ge.1000)then
-        call write_title(luout,wst_title,'raw formula 1')
-        call print_form_list(luout,form_lag,op_info)
+        call write_title(lulog,wst_title,'raw formula 1')
+        call print_form_list(lulog,form_lag,op_info)
       endif
 
       ! Advance.
@@ -272,28 +272,28 @@ c      sbar_pnt%dagger = .true.
      &     1d0,idx_sbar,idx_h_temp,1d0,idx_sop,1,-1,op_info)
 
       if(ntest.ge.1000)then
-        call write_title(luout,wst_title,'raw formula')
-        call print_form_list(luout,form_lag,op_info)
+        call write_title(lulog,wst_title,'raw formula')
+        call print_form_list(lulog,form_lag,op_info)
       endif
 
       ! Replace the formal elements of H, S and Sbar with actual
       ! Hamiltonian, T and CR terms.
       call expand_subexpr(form_lag,form_h,0,op_info)
       if(ntest.ge.1000)then
-        call write_title(luout,wst_title,'After H replacement.')
-        call print_form_list(luout,form_lag,op_info)
+        call write_title(lulog,wst_title,'After H replacement.')
+        call print_form_list(lulog,form_lag,op_info)
       endif
 
       call expand_subexpr(form_lag,form_t_cr,0,op_info)
       if(ntest.ge.1000)then
-        call write_title(luout,wst_title,'After S replacement.')
-        call print_form_list(luout,form_lag,op_info)
+        call write_title(lulog,wst_title,'After S replacement.')
+        call print_form_list(lulog,form_lag,op_info)
       endif
 
       call expand_subexpr(form_lag,form_tbar_cbarr,0,op_info)
       if(ntest.ge.1000)then
-        call write_title(luout,wst_title,'After S+ replacement.')
-        call print_form_list(luout,form_lag,op_info)
+        call write_title(lulog,wst_title,'After S+ replacement.')
+        call print_form_list(lulog,form_lag,op_info)
       endif
 
       ! for r12fix: replace T12 -> T
@@ -317,8 +317,8 @@ c      sbar_pnt%dagger = .true.
       end if
 
       if(ntest.ge.100)then
-        call write_title(luout,wst_title,'Final MP2-R12 formula')
-        call print_form_list(luout,form_lag,op_info)
+        call write_title(lulog,wst_title,'Final MP2-R12 formula')
+        call print_form_list(lulog,form_lag,op_info)
       endif
 
       ! Assign canonical name and comment.
@@ -329,8 +329,8 @@ c      sbar_pnt%dagger = .true.
       call write_form_list(form_mpr12%fhand,form_lag,title)
 
 c dbg
-c      write(luout,*)'TeX list: Lagrangian'
-c      call tex_form_list(luout,form_lag,op_info)
+c      write(lulog,*)'TeX list: Lagrangian'
+c      call tex_form_list(lulog,form_lag,op_info)
 c dbg
 
       ! Delete linked lists (!)
@@ -347,9 +347,9 @@ c dbg
 
       call atim_csw(cpu,sys,wall)
       if(ntest.ge.100) then
-        write(luout,*) 'Number of generated terms: ',nterms
+        write(lulog,*) 'Number of generated terms: ',nterms
       endif
-      call prtim(luout,'MP2-R12 Lagrangian',
+      call prtim(lulog,'MP2-R12 Lagrangian',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

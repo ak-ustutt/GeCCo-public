@@ -128,9 +128,9 @@
       ifree = mem_setmark('solve_leq')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'entered solve_leq')
-        write(luout,*) 'nopt   = ',nopt
-        write(luout,*) 'nroots = ',nroots
+        call write_title(lulog,wst_dbg_subr,'entered solve_leq')
+        write(lulog,*) 'nopt   = ',nopt
+        write(lulog,*) 'nroots = ',nroots
       end if
 
 c      if (nopt.gt.1)
@@ -372,9 +372,9 @@ c dbg
 
       if (ntest.ge.1000.and.nroots.eq.1) then
         do iopt = 1, nopt
-          write(luout,*) 'dump of '//trim(me_rhs(iopt)%mel%label)
-          write(luout,*) 'iopt = ',iopt
-          call wrt_mel_file(luout,5,
+          write(lulog,*) 'dump of '//trim(me_rhs(iopt)%mel%label)
+          write(lulog,*) 'iopt = ',iopt
+          call wrt_mel_file(lulog,5,
      &         me_rhs(iopt)%mel,
      &         1,me_rhs(iopt)%mel%op%n_occ_cls,
      &         str_info,orb_info)
@@ -402,12 +402,12 @@ c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
         do iopt = 1, nopt
           xresmax = fndmnx(xresnrm(1:nroots,iopt),nroots,2)
           if (conv) then
-            write(luout,'("L>> conv.",21x,x,g10.4)') xresmax
+            write(lulog,'("L>> conv.",21x,x,g10.4)') xresmax
           else if (iter.eq.1) then
-            write(luout,'("L>> |rhs|",21x,x,g10.4)') xresmax
+            write(lulog,'("L>> |rhs|",21x,x,g10.4)') xresmax
             xrhsnorm = xresmax
           else
-            write(luout,'("L>>",i3,24x,x,g10.4)')iter-1,xresmax
+            write(lulog,'("L>>",i3,24x,x,g10.4)')iter-1,xresmax
           end if
         end do
 c dbg
@@ -429,9 +429,9 @@ c dbg
 
             if (ntest.ge.1000) then
               do iopt = 1, nopt
-                write(luout,*) 'dump of '//trim(me_trv(iopt)%mel%label)
-                write(luout,*) 'iopt = ',iopt
-                call wrt_mel_file(luout,5,
+                write(lulog,*) 'dump of '//trim(me_trv(iopt)%mel%label)
+                write(lulog,*) 'iopt = ',iopt
+                call wrt_mel_file(lulog,5,
      &               me_trv(iopt)%mel,
      &               1,me_trv(iopt)%mel%op%n_occ_cls,
      &               str_info,orb_info)
@@ -447,7 +447,7 @@ c dbg
 
             ! apply sign-fix (if needed)
             do iopt = 1, nopt
-c             write(luout,*) 'Fixing signs of residual+metric,iopt=',iopt
+c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
               ifree = mem_setmark('solve_leq.fix_sign')
               ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
      &                                         'xbuf1')
@@ -465,9 +465,9 @@ c             write(luout,*) 'Fixing signs of residual+metric,iopt=',iopt
 
             if (ntest.ge.1000) then
               do iopt = 1, nopt
-                write(luout,*) 'dump of '//
+                write(lulog,*) 'dump of '//
      &               trim(me_mvp(iopt)%mel%label)
-                call wrt_mel_file(luout,5,
+                call wrt_mel_file(lulog,5,
      &               me_mvp(iopt)%mel,
      &               1,me_mvp(iopt)%mel%op%n_occ_cls,
      &               str_info,orb_info)
@@ -506,9 +506,9 @@ c             write(luout,*) 'Fixing signs of residual+metric,iopt=',iopt
 
       if (ntest.ge.1000) then
         do iopt = 1, nopt
-          write(luout,*) 'dump of final '//trim(me_opt(iopt)%mel%label)
-          write(luout,*) 'iopt = ',iopt
-          call wrt_mel_file(luout,5,
+          write(lulog,*) 'dump of final '//trim(me_opt(iopt)%mel%label)
+          write(lulog,*) 'iopt = ',iopt
+          call wrt_mel_file(lulog,5,
      &         me_opt(iopt)%mel,
      &         1,me_opt(iopt)%mel%op%n_occ_cls,
      &         str_info,orb_info)

@@ -23,16 +23,16 @@
      &     idxijp1, idxin
 
       if (ntest.gt.0) then
-        write(luout,*) '------------'
-        write(luout,*) ' optc_trmat'
-        write(luout,*) '------------'
-        write(luout,*) ' ndim, ndim0, ld0 : ',ndim, ndim0, ld0
-        write(luout,*) ' ndel : ',ndel 
+        write(lulog,*) '------------'
+        write(lulog,*) ' optc_trmat'
+        write(lulog,*) '------------'
+        write(lulog,*) ' ndim, ndim0, ld0 : ',ndim, ndim0, ld0
+        write(lulog,*) ' ndel : ',ndel 
       end if
 
       if (ntest.ge.10) then
-        write(luout,*) ' imet, isym: ',imet,isym
-        write(luout,*) ' xmat0: '
+        write(lulog,*) ' imet, isym: ',imet,isym
+        write(lulog,*) ' xmat0: '
         if (isym.eq.0) then
           call wrtmat2(xmat0,ndim0,ndim0,ld0,ld0)
         else
@@ -122,7 +122,7 @@
       end if
 
       if (ntest.ge.10) then
-        write(luout,*) ' final xmat: '
+        write(lulog,*) ' final xmat: '
         call wrtmat2(xmat,ndim,ndim,ndim,ndim)
       end if
 

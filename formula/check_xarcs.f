@@ -46,8 +46,8 @@ c     &     iocc_equal_n
 
       call occvtx4contr(0,occ_vtx,contr,op_info)
 
-      write(luout,*) 'checking xarcs for:'
-      call prt_contr3(luout,contr,occ_vtx(1,1,njoined_res+1))
+      write(lulog,*) 'checking xarcs for:'
+      call prt_contr3(lulog,contr,occ_vtx(1,1,njoined_res+1))
 
       ! check consistency of xarcs with result occupation
       occ_vtx2 = 0
@@ -62,9 +62,9 @@ c     &     iocc_equal_n
      &       xarc(iarc)%occ_cnt
       end do
 
-      write(luout,*) 'result: 1) from op_info, 2) from xarcs'
-      call wrt_occ_n(luout,occ_vtx ,njoined_res)
-      call wrt_occ_n(luout,occ_vtx2,njoined_res)
+      write(lulog,*) 'result: 1) from op_info, 2) from xarcs'
+      call wrt_occ_n(lulog,occ_vtx ,njoined_res)
+      call wrt_occ_n(lulog,occ_vtx2,njoined_res)
 
       if (.not.iocc_equal_n(occ_vtx,.false.,
      &                     occ_vtx2,.false.,njoined_res))
@@ -82,11 +82,11 @@ c     &     iocc_equal_n
      &       iocc_dagger(arc(iarc)%occ_cnt)
       end do
 
-      write(luout,*)
+      write(lulog,*)
      &     'vertex occupations after stripping contracted indices'
-      write(luout,*) '1) from contraction,  2) from xarcs'
-      call wrt_occ_n(luout,occ_vtx (1,1,njoined_res+1),nvtx)
-      call wrt_occ_n(luout,occ_vtx2(1,1,njoined_res+1),nvtx)
+      write(lulog,*) '1) from contraction,  2) from xarcs'
+      call wrt_occ_n(lulog,occ_vtx (1,1,njoined_res+1),nvtx)
+      call wrt_occ_n(lulog,occ_vtx2(1,1,njoined_res+1),nvtx)
 
       if (.not.iocc_equal_n(occ_vtx (1:ngastp,1:2,njoined_res+1),
      &                     .false.,occ_vtx2(1:ngastp,1:2,njoined_res+1),

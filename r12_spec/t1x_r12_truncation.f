@@ -62,8 +62,8 @@
      &     occ_is_diag_blk
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'t1x_trunction')
-        write(luout,*) 'mode = ',trim(mode)
+        call write_title(lulog,wst_dbg_subr,'t1x_trunction')
+        write(lulog,*) 'mode = ',trim(mode)
       endif
 
       ! experimental version for CC2 project
@@ -126,9 +126,9 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'PO(H) table:'
+        write(lulog,*) 'PO(H) table:'
         do iblk = 1, nblk_h
-          write(luout,*) iblk,po_h(iblk)
+          write(lulog,*) iblk,po_h(iblk)
         end do
       end if
 
@@ -138,9 +138,9 @@
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
         case(command_add_contribution)
 
           nvtx = form_pnt%contr%nvtx
@@ -184,11 +184,11 @@
           if (delete) then
             ! Print the deleted contraction.
             if (ntest.ge.1000) then
-              write(luout,*) 'ord_ham,nt1x,nl1x: ',ord_ham,nt1x,nl1x
-              write(luout,*) 'max_pert = ',max_pert
-              write(luout,*) 'max_t1x = ',max_t1x
-              write(luout,*)'Deleted formula item:'
-              call prt_contr2(luout,form_pnt%contr,op_info)
+              write(lulog,*) 'ord_ham,nt1x,nl1x: ',ord_ham,nt1x,nl1x
+              write(lulog,*) 'max_pert = ',max_pert
+              write(lulog,*) 'max_t1x = ',max_t1x
+              write(lulog,*)'Deleted formula item:'
+              call prt_contr2(lulog,form_pnt%contr,op_info)
             endif
 
             ! Delete the node.
@@ -197,7 +197,7 @@
           end if
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'t1x_truncation','command undefined here')
         end select
 

@@ -79,7 +79,7 @@ c     &     hop
       ffham => hlist%fhand
 
       if (orb_info%ntoob.gt.255) then
-        write(luout,*) 'number of orbitals: ',orb_info%ntoob
+        write(lulog,*) 'number of orbitals: ',orb_info%ntoob
         call quit(0,'import_h2_dalton',
      &       'not yet prepared for >255 orbitals')
       end if
@@ -117,8 +117,8 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
       
       nblkmax = ifree/ffham%reclen
       if (nblkmax.le.0) then
-        write(luout,*) 'free memory (words):  ',ifree
-        write(luout,*) 'block length (words): ',ffham%reclen
+        write(lulog,*) 'free memory (words):  ',ifree
+        write(lulog,*) 'block length (words): ',ffham%reclen
         call quit(1,'get_h2','not even 1 record fits into memory?')
       end if
 
@@ -132,8 +132,8 @@ cmh   determine number of first 2-el. block
 
       nbuff = min(len_op-hlist%off_op_occ(iblkst),nblk*ffham%reclen)
 
-      write(luout,*) 'number of incore-blocks in geth2: ',nblk
-      write(luout,'(x,a,f9.2,a)') 'size of buffer in geth2:   ',
+      write(lulog,*) 'number of incore-blocks in geth2: ',nblk
+      write(lulog,'(x,a,f9.2,a)') 'size of buffer in geth2:   ',
      &     dble(nbuff)/128d0/1024d0, 'Mb'
 
       ifree = mem_alloc_real(h2scr,nbuff,'h2sort_buff')
@@ -160,7 +160,7 @@ cmh   determine number of first 2-el. block
         h2scr(1:nbuff) = 0d0
         
         rewind lumo2
-        luerr = luout
+        luerr = lulog
         call mollab(motwolab,lumo2,luerr)
         do
           read(lumo2) xbuf(1:lbuf),ibuf(1:lbuf),len_
@@ -276,11 +276,11 @@ cmh   determine number of first 2-el. block
         
       end do ! pass over reordered integral file
 
-      write(luout,*) 'passes over integral file: ',ipass
-      write(luout,*) 
-      write(luout,*) '2-el. integrals on disk: ',int_disk
-      write(luout,*) '   thereof nonredundant: ',int_nonr
-      write(luout,*) '    integrals reordered: ',!int_ordr,
+      write(lulog,*) 'passes over integral file: ',ipass
+      write(lulog,*) 
+      write(lulog,*) '2-el. integrals on disk: ',int_disk
+      write(lulog,*) '   thereof nonredundant: ',int_nonr
+      write(lulog,*) '    integrals reordered: ',!int_ordr,
      &     hlist%len_op-hlist%off_op_occ(iblkst)
 
       if (closeit)
@@ -296,7 +296,7 @@ cmh   determine number of first 2-el. block
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.5) 
-     &     call prtim(luout,'time in 2int import',
+     &     call prtim(lulog,'time in 2int import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

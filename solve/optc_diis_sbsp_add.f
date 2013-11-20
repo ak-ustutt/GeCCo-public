@@ -101,8 +101,8 @@
       irecv = ioptc_get_sbsp_rec(inum,iord_vsbsp,ndim_vsbsp,mxdim_sbsp)
 
       if (ntest.ge.100) then
-        write(luout,*) 'added records: ',irecv, irecr
-        write(luout,*) 'nwfpar: ',nwfpar
+        write(lulog,*) 'added records: ',irecv, irecr
+        write(lulog,*) 'nwfpar: ',nwfpar
       end if
 
       if (nincore.ge.2) then
@@ -122,8 +122,8 @@ c dbg
         case(optinf_prc_file,optinf_prc_norm)
           call vec_from_da(ffgrd,1,xbuf1,nwfpar)
           if (ntest.ge.100) then
-            write(luout,*) 'gradient vector before:'
-            write(luout,*) xbuf1(1:nwfpar)
+            write(lulog,*) 'gradient vector before:'
+            write(lulog,*) xbuf1(1:nwfpar)
           end if
 
           call vec_from_da(ffdia,1,xbuf2,nwfpar)
@@ -135,8 +135,8 @@ c dbg
           call diavc(xbuf1,xbuf1,1d0,xbuf2,0d0,nwfpar)
 
           if (ntest.ge.100) then
-            write(luout,*) 'gradient vector afterwards:'
-            write(luout,*) xbuf1(1:nwfpar)
+            write(lulog,*) 'gradient vector afterwards:'
+            write(lulog,*) xbuf1(1:nwfpar)
           end if
           call vec_from_da(ffamp,ffamp%current_record,xbuf2,nwfpar)
         ! the preconditioning by solving a set of LEq's was done before,

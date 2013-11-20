@@ -40,10 +40,10 @@
       if (nvtx_new.eq.0) return
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'topo_remove_vtxs at work')
-        write(luout,*) 'on entry:'
-        call prt_contr_p(luout,svertex,vtx,topo,xlines,nvtx,nj)        
-        write(luout,*) 'vtx_list: ',vtx_list(1:nlist)
+        call write_title(lulog,wst_dbg_subr,'topo_remove_vtxs at work')
+        write(lulog,*) 'on entry:'
+        call prt_contr_p(lulog,svertex,vtx,topo,xlines,nvtx,nj)        
+        write(lulog,*) 'vtx_list: ',vtx_list(1:nlist)
       end if
 
       xlines_scr_u = 0
@@ -88,18 +88,18 @@
       end do the_loop
 
       if (dim_error.gt.0) then
-        write(luout,*) 'position = ',dim_error
+        write(lulog,*) 'position = ',dim_error
         call quit(1,'topo_remove_vtxs','dimension error (see above)')
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'xlines_scr_u:'
+        write(lulog,*) 'xlines_scr_u:'
         do idx = 1, nvtx_new
-          write(luout,'(1x,8i8.8)') xlines_scr_u(idx,1:nlist)
+          write(lulog,'(1x,8i8.8)') xlines_scr_u(idx,1:nlist)
         end do
-        write(luout,*) 'xlines_scr_l:'
+        write(lulog,*) 'xlines_scr_l:'
         do idx = 1, nvtx_new
-          write(luout,'(1x,8i8.8)') xlines_scr_l(idx,1:nlist)
+          write(lulog,'(1x,8i8.8)') xlines_scr_l(idx,1:nlist)
         end do
       end if
   
@@ -209,13 +209,13 @@ c dbgend
       end if
 
       if (dim_error.gt.0) then
-        write(luout,*) 'position = ',dim_error
+        write(lulog,*) 'position = ',dim_error
         call quit(1,'topo_remove_vtxs','dimension error (see above)')
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'finally:'
-        call prt_contr_p(luout,svertex_new,vtx_new,topo_new,
+        write(lulog,*) 'finally:'
+        call prt_contr_p(lulog,svertex_new,vtx_new,topo_new,
      &       xlines_new,nvtx_new,nj_new)        
       end if
 

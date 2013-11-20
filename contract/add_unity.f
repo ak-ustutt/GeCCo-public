@@ -80,15 +80,15 @@
       if (ssign.eq.0) ms_sym_sign = 1
 
       if (ntest.ge.100) then
-        write(luout,*) '=========================='
-        write(luout,*) ' add_unity messing around'
-        write(luout,*) '=========================='
-        write(luout,*) ' mode = ',ssign
-        write(luout,*) ' fac = ',fac
-        write(luout,*) ' list = ',trim(mel_out%label)
-        write(luout,*) ' ffout: ',trim(ffout%name),
+        write(lulog,*) '=========================='
+        write(lulog,*) ' add_unity messing around'
+        write(lulog,*) '=========================='
+        write(lulog,*) ' mode = ',ssign
+        write(lulog,*) ' fac = ',fac
+        write(lulog,*) ' list = ',trim(mel_out%label)
+        write(lulog,*) ' ffout: ',trim(ffout%name),
      &                   ' rec: ',ffout%current_record
-        write(luout,*) ' opout: ',opout%name(1:len_trim(opout%name)),
+        write(lulog,*) ' opout: ',opout%name(1:len_trim(opout%name)),
      &       '  block: ',iblkout
       end if
 
@@ -143,7 +143,7 @@
         ifree= mem_alloc_real(buffer_out,nbuff,'buffer_out')
       else
         if(ntest.ge.100)
-     &       write(luout,*)'Add_unity: Not incore'
+     &       write(lulog,*)'Add_unity: Not incore'
         buffer_out => ffout%buffer(ioff_blk+1:)
       endif
 
@@ -250,15 +250,15 @@ cmh        idxmsa = idxmsa+1
 
 c dbg
 c      print *,'ncblk,nablk:',ncblk,nablk
-c      write(luout,'(a,10i4)') 'len_str:',len_str(1:ncblk+nablk)
-c      write(luout,'(a,10i4)') 'graph_csub:',graph_csub(1:ncblk)
-c      write(luout,'(a,10i4)') 'idxmsdis_c:',idxmsdis_c(1:ncblk)
-c      write(luout,'(a,10i4)') 'gamdis_c:',gamdis_c(1:ncblk)
-c      write(luout,'(a,10i4)') 'hpvx_csub:',hpvx_csub(1:ncblk)
-c      write(luout,'(a,10i4)') 'graph_asub:',graph_asub(1:nablk)
-c      write(luout,'(a,10i4)') 'idxmsdis_a:',idxmsdis_a(1:nablk)
-c      write(luout,'(a,10i4)') 'gamdis_a:',gamdis_a(1:nablk)
-c      write(luout,'(a,10i4)') 'hpvx_asub:',hpvx_asub(1:nablk)
+c      write(lulog,'(a,10i4)') 'len_str:',len_str(1:ncblk+nablk)
+c      write(lulog,'(a,10i4)') 'graph_csub:',graph_csub(1:ncblk)
+c      write(lulog,'(a,10i4)') 'idxmsdis_c:',idxmsdis_c(1:ncblk)
+c      write(lulog,'(a,10i4)') 'gamdis_c:',gamdis_c(1:ncblk)
+c      write(lulog,'(a,10i4)') 'hpvx_csub:',hpvx_csub(1:ncblk)
+c      write(lulog,'(a,10i4)') 'graph_asub:',graph_asub(1:nablk)
+c      write(lulog,'(a,10i4)') 'idxmsdis_a:',idxmsdis_a(1:nablk)
+c      write(lulog,'(a,10i4)') 'gamdis_a:',gamdis_a(1:nablk)
+c      write(lulog,'(a,10i4)') 'hpvx_asub:',hpvx_asub(1:nablk)
 c dbgend
 
             lenc = ielprd(len_str,ncblk)
@@ -279,9 +279,9 @@ c dbgend
      &               totsign = xsign*0.5d0*dble(sum(msdis_c(1:ncblk)))
 
             if (ntest.ge.100) then
-              write(luout,*) 'msc,msa,igamc,igama: ',
+              write(lulog,*) 'msc,msa,igamc,igama: ',
      &             msc,msa,igamc,igama
-              write(luout,*) 'idxdis: ',idxdis_1
+              write(lulog,*) 'idxdis: ',idxdis_1
             end if
 
             ioff_1 = mel_out%off_op_gmox(iblkout)%

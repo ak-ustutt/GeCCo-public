@@ -67,7 +67,7 @@
       end do ij_loop
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_final_reo')
+        call write_title(lulog,wst_dbg_subr,'set_final_reo')
       end if
       xlines_pnt => xlines
       xlines_tmp_pnt => xlines_tmp
@@ -98,8 +98,8 @@
         if (ivtxij(ij).eq.0) nullij(ij) = 1
       end do
       if (ntest.ge.100) then
-        write(luout,'(a,5i2)') 'initial order: ',ivtxij(1:nj)
-c        write(luout,'(a,5i2)') 'null-vector  : ',nullij(1:nj)
+        write(lulog,'(a,5i2)') 'initial order: ',ivtxij(1:nj)
+c        write(lulog,'(a,5i2)') 'null-vector  : ',nullij(1:nj)
       end if
 
       ! get allowed assignments ivtx - ij 
@@ -225,20 +225,20 @@ c        write(luout,'(a,5i2)') 'null-vector  : ',nullij(1:nj)
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'xlines:'
+        write(lulog,*) 'xlines:'
         do ivtx = 1,nvtx
-          write(luout,'(6i10)') xlines_pnt(ivtx,1:nj)
+          write(lulog,'(6i10)') xlines_pnt(ivtx,1:nj)
         end do
-        write(luout,*) 'assign_ok:'
+        write(lulog,*) 'assign_ok:'
         do ivtx = 1, max(nvtx,nj)
-          write(luout,*) assign_ok(ivtx,1:nj)
+          write(lulog,*) assign_ok(ivtx,1:nj)
         end do
-        write(luout,'(a,6i2)') 'must_assign: ',must_assign
+        write(lulog,'(a,6i2)') 'must_assign: ',must_assign
         if (merge_ij.ne.0) then
-          write(luout,*) 'merge_ij: ',merge_ij
-          write(luout,*) 'merge_ok: ',merge_ok
+          write(lulog,*) 'merge_ij: ',merge_ij
+          write(lulog,*) 'merge_ok: ',merge_ok
         end if
-c        write(luout,'(a,6i2)') 'last_chance: ',last_chance(2:nvtx+1)
+c        write(lulog,'(a,6i2)') 'last_chance: ',last_chance(2:nvtx+1)
       end if
 
       ! check if possible reordering can exist
@@ -289,8 +289,8 @@ c              exit
       end if
 
       if (ntest.ge.100) then
-        write(luout,'(a,5i2)') 'aim at order: ',ivtxij(1:nj)
-        if (merge_ij.ne.0) write(luout,*) 'merge_vtx:',merge_vtx
+        write(lulog,'(a,5i2)') 'aim at order: ',ivtxij(1:nj)
+        if (merge_ij.ne.0) write(lulog,*) 'merge_vtx:',merge_vtx
       end if
 
       ! check if assignment has worked
@@ -335,13 +335,13 @@ c              exit
             reo_info%reo(idx)%occ_shift = occ_sh
             if (ntest.ge.100) then
               if (reo_info%reo(idx)%shift_i0) then
-                write(luout,'(a,i2,a,i2)') 'Reorder i0 from ',ivtx,
+                write(lulog,'(a,i2,a,i2)') 'Reorder i0 from ',ivtx,
      &                                     ' to ',ivtxij(ij)
               else
-                write(luout,'(a,i2,a,i2)') 'Reorder from ',ivtx,
+                write(lulog,'(a,i2,a,i2)') 'Reorder from ',ivtx,
      &                                     ' to ',ivtxij(ij)
               end if
-              call wrt_occ(luout,occ_sh)
+              call wrt_occ(lulog,occ_sh)
             end if
 
             ! xlines: sort corresponding to end result
@@ -372,9 +372,9 @@ c              exit
       do ij = 1, nj
         if (.not.(op1op2(ij).eq.0.and.ivtxij(ij).eq.0).and.
      &      xlines_pnt(ivtxij(ij),ij).ne.op1op2(ij)) then
-          write(luout,'(a,5i9.8)') 'xlines_pnt(i,i): ',
+          write(lulog,'(a,5i9.8)') 'xlines_pnt(i,i): ',
      &               (xlines_pnt(ivtxij(ivtx),ivtx), ivtx=1,nj)
-          write(luout,'(a,5i9.8)') 'op1op2(i)      : ',
+          write(lulog,'(a,5i9.8)') 'op1op2(i)      : ',
      &               op1op2(1:nj)
           call quit(1,'set_final_reo','should be final contraction')
         end if

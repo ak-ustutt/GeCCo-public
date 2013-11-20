@@ -58,7 +58,7 @@
       call file_open(ffsir)
 
       lusir = ffsir%unit
-      luerr = luout
+      luerr = lulog
       rewind lusir
       call mollab('SIR IPH ',lusir,luerr)
 
@@ -126,40 +126,40 @@
       endif  
 
       if (iprint.ge.50) then
-        write(luout,*) 'raw data from section "SIR IPH "'
-        write(luout,*) 'potnuc = ',potnuc
-        write(luout,*) 'emy    = ',emy
-        write(luout,*) 'eactiv = ',eactiv
-        write(luout,*) 'emcscf = ',emcscf
-        write(luout,*) 'istate = ',istate
-        write(luout,*) 'ispin  = ',ispin
-        write(luout,*) 'nactel = ',nactel
-        write(luout,*) 'lsym   = ',lsym
-        write(luout,*) 'nsym   = ',nsym        
-        write(luout,*) 'mctype = ',mctype
+        write(lulog,*) 'raw data from section "SIR IPH "'
+        write(lulog,*) 'potnuc = ',potnuc
+        write(lulog,*) 'emy    = ',emy
+        write(lulog,*) 'eactiv = ',eactiv
+        write(lulog,*) 'emcscf = ',emcscf
+        write(lulog,*) 'istate = ',istate
+        write(lulog,*) 'ispin  = ',ispin
+        write(lulog,*) 'nactel = ',nactel
+        write(lulog,*) 'lsym   = ',lsym
+        write(lulog,*) 'nsym   = ',nsym        
+        write(lulog,*) 'mctype = ',mctype
         
-        write(luout,'(x,a,8i4)') 'nrhf   = ',nrhf(1:8)
-        write(luout,'(x,a,8i4)') 'nfro   = ',nfro(1:8)
-        write(luout,'(x,a,8i4)') 'nish   = ',nish(1:8)
-        write(luout,'(x,a,8i4)') 'nash   = ',nash(1:8)
-        write(luout,'(x,a,8i4)') 'norb   = ',norb(1:8)
+        write(lulog,'(x,a,8i4)') 'nrhf   = ',nrhf(1:8)
+        write(lulog,'(x,a,8i4)') 'nfro   = ',nfro(1:8)
+        write(lulog,'(x,a,8i4)') 'nish   = ',nish(1:8)
+        write(lulog,'(x,a,8i4)') 'nash   = ',nash(1:8)
+        write(lulog,'(x,a,8i4)') 'norb   = ',norb(1:8)
         if(logaux)then
-          write(luout,'(x,a,8i4)') 'cabs   = ',linind(1:8)
+          write(lulog,'(x,a,8i4)') 'cabs   = ',linind(1:8)
         endif           
-        write(luout,'(x,a,8i4)') 'nbas   = ',nbas(1:8)
+        write(lulog,'(x,a,8i4)') 'nbas   = ',nbas(1:8)
         if(logaux)then
-          write(luout,'(x,a,8i4)') 'abas   = ',auxbas(1:8)
-          write(luout,'(x,a,8i4)') 'tbas   = ',totbas(1:8)
+          write(lulog,'(x,a,8i4)') 'abas   = ',auxbas(1:8)
+          write(lulog,'(x,a,8i4)') 'tbas   = ',totbas(1:8)
         endif  
-        write(luout,'(x,a,8i4)') 'nas1   = ',nas1(1:8)
-        write(luout,'(x,a,8i4)') 'nas2   = ',nas2(1:8)
-        write(luout,'(x,a,8i4)') 'nas3   = ',nas3(1:8)
+        write(lulog,'(x,a,8i4)') 'nas1   = ',nas1(1:8)
+        write(lulog,'(x,a,8i4)') 'nas2   = ',nas2(1:8)
+        write(lulog,'(x,a,8i4)') 'nas3   = ',nas3(1:8)
 
-        write(luout,'(x,a,2i8)') 'nnorbt,n2orbt: ',nnorbt,n2orbt
+        write(lulog,'(x,a,2i8)') 'nnorbt,n2orbt: ',nnorbt,n2orbt
 
-        write(luout,'(x,a)') 'sym_bound_orbs:'
-        write(luout,'(x,10i4)') orb_info%isym_bound_orbs
-        write(luout,'(x,a,i4)')  'n_freeze_rcmd: ',
+        write(lulog,'(x,a)') 'sym_bound_orbs:'
+        write(lulog,'(x,10i4)') orb_info%isym_bound_orbs
+        write(lulog,'(x,a,i4)')  'n_freeze_rcmd: ',
      &       orb_info%n_freeze_rcmd
       end if
 
@@ -186,11 +186,11 @@ c      if (n_frozen.gt.0) ngas = ngas+1
         ! high spin open shell case:
         if (.false..and.nactel.eq.n_act.and.ispin.eq.nactel+1) then
           ! we should check the symmetry here ...
-          write(luout,*) 'high-spin valence shell detected'
+          write(lulog,*) 'high-spin valence shell detected'
           ngas = ngas+1
           nspin = 2
         else
-          write(luout,*) 'valence shell is not high-spin ...'
+          write(lulog,*) 'valence shell is not high-spin ...'
 c let pass to enable CAS calculations
           ngas = ngas+1
 c          call quit(1,'read_env_dalton',
@@ -223,7 +223,7 @@ c     &     'not adapted to RAS orbital spaces')
       orb_info%nbas(1:nsym) = nbas(1:nsym)
       orb_info%ntoobs(1:nsym) = norb(1:nsym)
       if (n_frozen.gt.0)
-     &   write(luout,*) 'We will just ignore DALTON''s frozen orbitals'
+     &   write(lulog,*) 'We will just ignore DALTON''s frozen orbitals'
 c      if (n_frozen.gt.0) then
 c        ! not sure whether DALTON's frozen orbitals are what we want
 c        call quit(1,'read_env_dalton',

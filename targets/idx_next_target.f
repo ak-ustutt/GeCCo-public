@@ -29,14 +29,14 @@
         if (tgt%required) then
 
           if (ntest.ge.100) then
-            write(luout,*) 'next required target: ',trim(tgt%name)
+            write(lulog,*) 'next required target: ',trim(tgt%name)
           end if
 
           idx_next_target = next_target_rec(tgt,tgt_info)
 
           if (ntest.ge.100) then
             if (idx_next_target.gt.0) then
-              write(luout,*) 'need to make next: ',
+              write(lulog,*) 'need to make next: ',
      &             trim(tgt_info%array(idx_next_target)%tgt%name)
             end if
           end if
@@ -65,7 +65,7 @@
       ires = -1
 
       if (ntest.ge.1000) then
-        write(luout,*) icycle+1, level, 'checking dependecies of ',
+        write(lulog,*) icycle+1, level, 'checking dependecies of ',
      &       trim(tgt_in%name)
       end if
       
@@ -86,7 +86,7 @@
           idx = next_target_rec(tgt,tgt_info)
           if (idx.gt.0) then
             if (ntest.ge.1000) then
-              write(luout,*) 'need to remake: ',
+              write(lulog,*) 'need to remake: ',
      &             trim(tgt_info%array(idx)%tgt%name)
             end if
             ires = idx
@@ -99,7 +99,7 @@
           idx = tgt_in%idx_depends_on(idep)
           if (tgt_info%last_mod(idx).gt.tgt_in%last_mod) then
             if (ntest.ge.1000) then
-              write(luout,*) trim(tgt_info%array(idx)%tgt%name),
+              write(lulog,*) trim(tgt_info%array(idx)%tgt%name),
      &             ' is more recent: remake ',
      &             trim(tgt_in%name)
             end if
@@ -115,9 +115,9 @@ c        print *,'no more dependency: ',trim(tgt_in%name)
 c        print *,'last mod: ',tgt_in%last_mod
 c dbg
         if (ntest.ge.1000) then
-          write(luout,*) trim(tgt_in%name),': all depencies resolved'
+          write(lulog,*) trim(tgt_in%name),': all depencies resolved'
           if (tgt_in%last_mod.lt.0)
-     &         write(luout,*)
+     &         write(lulog,*)
      &         ' target is still untouched, so I will make it!'
         end if
         if (tgt_in%last_mod.lt.0)

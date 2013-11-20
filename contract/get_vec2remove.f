@@ -86,10 +86,10 @@
       nact = orb_info%nactel
 
       if (ntest.ge.100) then
-        write(luout,'(x,a)') '----------------------'
-        write(luout,'(x,a)') 'get_vec2remove at work'
-        write(luout,'(x,a)') '----------------------'
-        write(luout,*) 'input low-rank transformation matrix:'
+        write(lulog,'(x,a)') '----------------------'
+        write(lulog,'(x,a)') 'get_vec2remove at work'
+        write(lulog,'(x,a)') '----------------------'
+        write(lulog,*) 'input low-rank transformation matrix:'
         call wrtmat2(xmat,xdim,xdim,xdim,xdim)
       end if
 
@@ -173,7 +173,7 @@
             end do
           end do
           if (ntest.ge.100) then
-            write(luout,*) 'read-in matrix for premultiplication:'
+            write(lulog,*) 'read-in matrix for premultiplication:'
             call wrtmat2(invmat,xdim,xdim,xdim,xdim)
           end if
           ! premultiply the trafo matrix
@@ -184,7 +184,7 @@
         end if
         ifree = mem_flushmark()
         if (ntest.ge.100) then
-          write(luout,*) '(modified) transformation matrix:'
+          write(lulog,*) '(modified) transformation matrix:'
           call wrtmat2(xnew,xdim,xdim,xdim,xdim)
         end if
       end if
@@ -231,12 +231,12 @@ c dbgend
         end do
       end do
 c dbg
-c      call wrt_occ(luout,occ1)
-c      call wrt_occ(luout,occ2)
-c      call wrt_occ(luout,occ12)
-c      call wrt_occ(luout,idxg1)
-c      call wrt_occ(luout,idxg2)
-c      call wrt_occ(luout,idxg12)
+c      call wrt_occ(lulog,occ1)
+c      call wrt_occ(lulog,occ2)
+c      call wrt_occ(lulog,occ12)
+c      call wrt_occ(lulog,idxg1)
+c      call wrt_occ(lulog,idxg2)
+c      call wrt_occ(lulog,idxg12)
 c dbgend
 
       call condense_occ(occ_c1,occ_a1,
@@ -408,7 +408,7 @@ c dbgend
       ifree = mem_flushmark()
 
       if (ntest.ge.100) then
-        write(luout,*) 'output vectors (to be projected out):'
+        write(lulog,*) 'output vectors (to be projected out):'
         call wrtmat2(pvecs,pdim,xdim,pdim,xdim)
       end if
 

@@ -71,13 +71,13 @@
       call topo_make_unique2(ireo,vtx2,svtx2,topo2,xlines2,nvtx-1,nj+1)
 
       vtx_equiv = i8list_cmp(vtx1,vtx2,nvtx-1).eq.0
-      if (ntest.ge.100) write(luout,*) 'vtx_equiv > (1): ',vtx_equiv
+      if (ntest.ge.100) write(lulog,*) 'vtx_equiv > (1): ',vtx_equiv
       vtx_equiv = vtx_equiv.and.
      &            i8list_cmp(xlines1,xlines2,(nvtx-1)*(nj+1)).eq.0
-      if (ntest.ge.100) write(luout,*) 'vtx_equiv > (2): ',vtx_equiv
+      if (ntest.ge.100) write(lulog,*) 'vtx_equiv > (2): ',vtx_equiv
       vtx_equiv = vtx_equiv.and.
      &            i8list_cmp(topo1,topo2,(nvtx-1)*(nvtx-1)).eq.0
-      if (ntest.ge.100) write(luout,*) 'vtx_equiv > (3): ',vtx_equiv
+      if (ntest.ge.100) write(lulog,*) 'vtx_equiv > (3): ',vtx_equiv
 
       return
       end

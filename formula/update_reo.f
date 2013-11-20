@@ -27,11 +27,11 @@
      &     idxlist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'this is update_reo')
-        write(luout,'(x,a,10i5)') 'on input: ',ireo(1:nel)
-        write(luout,*) 'idx1, idx2: ', idx1, idx2
-        write(luout,*) 'idx_merge:  ',idx_merge
-        write(luout,*) 'imvleft:    ',imvleft(1:nmvleft)
+        call write_title(lulog,wst_dbg_subr,'this is update_reo')
+        write(lulog,'(x,a,10i5)') 'on input: ',ireo(1:nel)
+        write(lulog,*) 'idx1, idx2: ', idx1, idx2
+        write(lulog,*) 'idx_merge:  ',idx_merge
+        write(lulog,*) 'imvleft:    ',imvleft(1:nmvleft)
       end if
 
       if (idx2.le.idx1 .or. idx_merge.lt.idx1 .or. idx_merge.gt.idx2)
@@ -52,7 +52,7 @@ c        ireo2(idx) = ireo2(idx)-1
 c      end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'ireo2: ',ireo2(1:nel)
+        write(lulog,*) 'ireo2: ',ireo2(1:nel)
       end if
 
       ! apply to ireo
@@ -61,7 +61,7 @@ c      call perm_mult(ireo,ireo,ireo2,nel)
       call perm_mult(ireo,ireo,ireo2,nel)
 
       if (ntest.ge.100) then
-        write(luout,*) 'new ireo: ',ireo(1:nel)
+        write(lulog,*) 'new ireo: ',ireo(1:nel)
       end if
 
       ! ensure 1-increment:
@@ -79,7 +79,7 @@ c      call perm_mult(ireo,ireo,ireo2,nel)
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'mod. ireo: ',ireo(1:nel)
+        write(lulog,*) 'mod. ireo: ',ireo(1:nel)
       end if
 
       ! reset permutation vector ...
@@ -97,13 +97,13 @@ c      call perm_mult(ireo,ireo,ireo2,nel)
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'ireo2: ',ireo2(1:nel)
+        write(lulog,*) 'ireo2: ',ireo2(1:nel)
       end if
 
       call perm_mult(ireo,ireo,ireo2,nel)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final ireo: ',ireo(1:nel)
+        write(lulog,*) 'final ireo: ',ireo(1:nel)
       end if
 
       return

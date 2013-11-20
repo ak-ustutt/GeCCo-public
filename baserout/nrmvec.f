@@ -36,7 +36,7 @@
 
         if (eigvi(ivec).ne.0d0) then
           if (ivec+1.gt.ndim) then
-            write(luout,*) 'inconsistency in eigenvalue structure'
+            write(lulog,*) 'inconsistency in eigenvalue structure'
             call quit(1,'nrmvec','inconsistent eigenvalues')
           end if
 

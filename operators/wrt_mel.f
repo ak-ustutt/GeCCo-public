@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine wrt_mel(luout,level,incore,bufmel,mel,iblkst,iblknd,
+      subroutine wrt_mel(lulog,level,incore,bufmel,mel,iblkst,iblknd,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
 *     given: an operator definition (op) and a file handle
@@ -30,7 +30,7 @@
      &     maxprt = 100
 
       integer, intent(in) ::
-     &     luout, level, iblkst, iblknd
+     &     lulog, level, iblkst, iblknd
       logical, intent(in) ::
      &     incore
       real(8), intent(in), target ::
@@ -120,14 +120,14 @@
         end if
 
         if (level.ge.1) then
-          if (level.ge.2) write(luout,'("+",77("="),"+")')
-          write(luout,'(2x,a,i4,a,i12)') 'block no. ',iblk,' len = ',
+          if (level.ge.2) write(lulog,'("+",77("="),"+")')
+          write(lulog,'(2x,a,i4,a,i12)') 'block no. ',iblk,' len = ',
      &         mel%len_op_occ(iblk)
           if (level.ge.2)
-     &         call wrt_occ_n(luout,occ,njoined)
+     &         call wrt_occ_n(lulog,occ,njoined)
           if (level.ge.2.and.dagger)
-     &         write(luout,'("* stored in transposed form *")')
-          if (level.ge.2) write(luout,'("+",77("="),"+")')
+     &         write(lulog,'("* stored in transposed form *")')
+          if (level.ge.2) write(lulog,'("+",77("="),"+")')
         end if
 
         scalar = max(op%ica_occ(1,iblk),op%ica_occ(2,iblk)).eq.0
@@ -173,46 +173,46 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
             if (level.gt.0) then
               lenprt = lenblk
               if (level.lt.4) lenprt = min(maxprt,lenblk)
-              write(luout,'(2x,a,i3,a,i2,a,i12,a,g12.6)')
+              write(lulog,'(2x,a,i3,a,i2,a,i12,a,g12.6)')
      &           'Ms(A) = ',ms,'/2  IRREP(A) = ',igam,'  len = ',lenblk,
      &           '  norm = ',xnrm
-              if (level.ge.2) write(luout,'("+",77("-"),"+")')
+              if (level.ge.2) write(lulog,'("+",77("-"),"+")')
             end if
             if (level.ge.2) then
               ! print out distributions
               first = .true.
               ndis = mel%off_op_gmox(iblk)%ndis(igam,idxms)
               if (ndis.eq.0) then
-                write(luout,*) 'WARNING:'
-                write(luout,*)
+                write(lulog,*) 'WARNING:'
+                write(lulog,*)
      &               ' op_info indicates no distribution at all'
-                write(luout,*) ' skipping to next block'
+                write(lulog,*) ' skipping to next block'
                 idxoff_blk = idxoff_blk+lenblk
                 nwarn = nwarn+1
                 cycle
               end if
               if (ndis.eq.1) then
-                write(luout,*) 'block contains only single distribution'
+                write(lulog,*) 'block contains only single distribution'
                 if (level.ge.3) then
                   if (level.ge.5)
-     &                 write(luout,*) 'index of first element:',
+     &                 write(lulog,*) 'index of first element:',
      &                                 idxoff+idxoff_blk+1
-                  write(luout,'("+",77("."),"+")')
+                  write(lulog,'("+",77("."),"+")')
                   if (level.ge.5) then
                     if (scalar) then
-                      write(luout,'(2x,6f12.7)')
+                      write(lulog,'(2x,6f12.7)')
      &                   curblk(idxoff_blk+1)
                     else
-                      call wrt_mel_blk_wi(luout,curblk(idxoff_blk+1),
+                      call wrt_mel_blk_wi(lulog,curblk(idxoff_blk+1),
      &                   mel,iblk,igam,idxms,1,
      &                   nel,str_info,orb_info)
                     end if
                   else
-                    write(luout,'(2x,6f12.7)')
+                    write(lulog,'(2x,6f12.7)')
      &                   curblk(idxoff_blk+1:idxoff_blk+lenprt)
                   end if
                 end if
-                write(luout,'("+",77("-"),"+")')
+                write(lulog,'("+",77("-"),"+")')
                 idxoff_blk = idxoff_blk+lenblk
                 cycle
               end if
@@ -243,42 +243,42 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
                 lenprt = lenblk
                 if (level.lt.4) lenprt = min(maxprt/ndis,lenblk)
               
-                write(luout,'(2x,a,i12,a,g12.6)'),
+                write(lulog,'(2x,a,i12,a,g12.6)'),
      &             ' Ms-Dst     Gamma-Dst   len = ',lenblk,
      &             '  norm = ',xnrm
-                call wrt_occ_n(luout,scr,2*njoined)
+                call wrt_occ_n(lulog,scr,2*njoined)
 
                 if (level.ge.3) then
                   if (level.ge.5)
-     &                 write(luout,*) 'index of first element:',
+     &                 write(lulog,*) 'index of first element:',
      &                                 idxoff+idxoff_blk+1
-                  write(luout,'("+",77("."),"+")')
+                  write(lulog,'("+",77("."),"+")')
                   if (level.ge.5) then
-                    call wrt_mel_blk_wi(luout,curblk(idxoff_blk+1),
+                    call wrt_mel_blk_wi(lulog,curblk(idxoff_blk+1),
      &                   mel,iblk,igam,idxms,idx_dis,
      &                   nel,str_info,orb_info)
                   else
-                    write(luout,'(2x,6f12.7)')
+                    write(lulog,'(2x,6f12.7)')
      &                 curblk(idxoff_blk+1:idxoff_blk+lenprt)
                   end if
                 end if
                 idxoff_blk = idxoff_blk+lenblk
                 if (idx_dis.ne.ndis)
-     &               write(luout,'("+",77("."),"+")')
+     &               write(lulog,'("+",77("."),"+")')
               end do distr_loop
             end if
-            if (level.ge.2) write(luout,'("+",77("-"),"+")')
+            if (level.ge.2) write(lulog,'("+",77("-"),"+")')
           end do ! gam
-          write(luout,*) 'norm (MS-Block) = ',sqrt(xnrm_ms)
+          write(lulog,*) 'norm (MS-Block) = ',sqrt(xnrm_ms)
         end do ! ms
         idx_occ = idx_occ+njoined
       end do
 
-      write(luout,*) 'total norm = ',sqrt(xnrm_tot)
+      write(lulog,*) 'total norm = ',sqrt(xnrm_tot)
 
       if (nwarn.gt.0) then
-        write(luout,*) '!!! There were ',nwarn,' warnings !!!'
-        write(luout,*) 'look for "WARNING" in previous output!'
+        write(lulog,*) '!!! There were ',nwarn,' warnings !!!'
+        write(lulog,*) 'look for "WARNING" in previous output!'
       end if
 
       if (.not.incore.and.close_again) call file_close_keep(ffop)

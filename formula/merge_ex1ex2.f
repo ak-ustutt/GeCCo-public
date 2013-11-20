@@ -52,10 +52,10 @@
       call quit(1,'merge_ex1e2','obsolete routine')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'merge_ex1ex2')
-        write(luout,*) 'last_cntr:      ',last_cntr
-        write(luout,*) 'EX1EX2 on entry:'
-        call wrt_occ_n(luout,iocc_ex1ex2,njoined12)
+        call write_title(lulog,wst_dbg_subr,'merge_ex1ex2')
+        write(lulog,*) 'last_cntr:      ',last_cntr
+        write(lulog,*) 'EX1EX2 on entry:'
+        call wrt_occ_n(lulog,iocc_ex1ex2,njoined12)
 c dbg
 c        call prt_contr3(6,contr,occ_vtx(1,1,1+njoined_res))
 c dbg
@@ -164,7 +164,7 @@ c      idxop1op2 = 0
 c          if (idx_merge.le.0) cycle
 
             if (ntest.ge.150)
-     &           write(luout,*) 'vertices, indices, merge:',
+     &           write(lulog,*) 'vertices, indices, merge:',
      &           ivtx1,ivtx2,idx1,idx2,idx_merge.gt.0
 
             if (idx_merge.gt.0) then
@@ -186,8 +186,8 @@ c          if (idx_merge.le.0) cycle
               end do
 
               if (ntest.ge.150) then
-                write(luout,*) 'updated OP1OP2:'
-                call wrt_occ_n(luout,iocc_op1op2,njoined12)
+                write(lulog,*) 'updated OP1OP2:'
+                call wrt_occ_n(lulog,iocc_op1op2,njoined12)
               end if
 
             end if          
@@ -196,8 +196,8 @@ c          if (idx_merge.le.0) cycle
         end do
 
         if (ntest.ge.150) then
-          write(luout,*) 'raw OP1OP2:'
-          call wrt_occ_n(luout,iocc_op1op2,njoined12)
+          write(lulog,*) 'raw OP1OP2:'
+          call wrt_occ_n(lulog,iocc_op1op2,njoined12)
         end if
 
         njoined_op1op2 = 0
@@ -222,12 +222,12 @@ c          if (idx_merge.le.0) cycle
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'final OP1OP2:'
-        call wrt_occ_n(luout,iocc_op1op2,njoined_op1op2)
-        write(luout,*) 'merge map:'
+        write(lulog,*) 'final OP1OP2:'
+        call wrt_occ_n(lulog,iocc_op1op2,njoined_op1op2)
+        write(lulog,*) 'merge map:'
         do ivtx = 1, njoined_op1op2
           do ii = 1, 2
-            write(luout,'(4x,i4," <-",i4," :",10i4)')
+            write(lulog,'(4x,i4," <-",i4," :",10i4)')
      &           ivtx,ii,merge_map(1:ld_map,ii,ivtx)
           end do
         end do

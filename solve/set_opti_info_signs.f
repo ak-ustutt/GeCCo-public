@@ -227,12 +227,12 @@ c              signsec(nsect) = 1d0
       opti_info%signsec(1:nsect) = signsec(1:nsect)
 
 c dbg
-      write(luout,*) 'set_opti_info_signs:'
-      write(luout,*) '--------------------'
-      write(luout,'(a,10i8)') 'nsec: ', opti_info%nsec(1:nopt)
-      write(luout,'(a,30i8)') 'nwfpsec: ',opti_info%nwfpsec(1:nsect)
-      write(luout,'(a,30i8)') 'idstsec: ',opti_info%idstsec(1:nsect)
-      write(luout,'(a,30f8.1)') 'signsec : ',opti_info%signsec(1:nsect)
+      write(lulog,*) 'set_opti_info_signs:'
+      write(lulog,*) '--------------------'
+      write(lulog,'(a,10i8)') 'nsec: ', opti_info%nsec(1:nopt)
+      write(lulog,'(a,30i8)') 'nwfpsec: ',opti_info%nwfpsec(1:nsect)
+      write(lulog,'(a,30i8)') 'idstsec: ',opti_info%idstsec(1:nsect)
+      write(lulog,'(a,30f8.1)') 'signsec : ',opti_info%signsec(1:nsect)
 c dbgend
 
       return

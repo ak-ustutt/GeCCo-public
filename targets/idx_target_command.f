@@ -26,9 +26,9 @@
      &     icmd
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'this is idx_target_command')
-        write(luout,*) ' looking for: "',trim(command),'"'
+        write(lulog,*) ' looking for: "',trim(command),'"'
       end if
 
       idx_target_command = -1
@@ -50,7 +50,7 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'result: ',idx_target_command
+        write(lulog,*) 'result: ',idx_target_command
       end if
 
       return

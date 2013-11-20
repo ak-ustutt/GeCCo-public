@@ -48,7 +48,7 @@
      &     iblk_min(ndefop), iblk_max(ndefop), iblk_dis(ndefop)
 
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,
+     &     call write_title(lulog,wst_dbg_subr,
      &     'set_gen_intermediate speaking')
       
       nspin => orb_info%nspin
@@ -67,7 +67,7 @@
       njoined = ndefop
 
       if (ndefop.le.0) then
-        write(luout,*) 'ndefop: ', ndefop
+        write(lulog,*) 'ndefop: ', ndefop
         call quit(1,'set_gen_intermediate',
      &       'ndefop has no sensible value')
       end if
@@ -161,14 +161,14 @@ c      dagtotal = op%dagger
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'Intermediate: ',trim(op%name)
-        write(luout,*) 'generated ',op%n_occ_cls,' blocks'
+        write(lulog,*) 'Intermediate: ',trim(op%name)
+        write(lulog,*) 'generated ',op%n_occ_cls,' blocks'
         do iblk = 1, op%n_occ_cls
-          write(luout,'(/x,a,i4)') 'Occupation Nr. ',iblk
+          write(lulog,'(/x,a,i4)') 'Occupation Nr. ',iblk
           ioffblk = (iblk-1)*njoined
-          call wrt_occ_n(luout,op%ihpvca_occ(1,1,ioffblk+1),njoined)
+          call wrt_occ_n(lulog,op%ihpvca_occ(1,1,ioffblk+1),njoined)
           do ijoin = 1, njoined
-            call wrt_rstr(luout,
+            call wrt_rstr(lulog,
      &           op%igasca_restr(1,1,1,1,1,ioffblk+ijoin),ngas)
           end do
         end do

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine wrt_mel_buf(luout,level,bufmel,mel,iblkst,iblknd,
+      subroutine wrt_mel_buf(lulog,level,bufmel,mel,iblkst,iblknd,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for wrt_mel: operator elements on incore buffer
@@ -19,7 +19,7 @@
      &     maxprt = 100
 
       integer, intent(in) ::
-     &     luout, level, iblkst, iblknd
+     &     lulog, level, iblkst, iblknd
       real(8), intent(in) ::
      &     bufmel(*)
       type(me_list), intent(in) ::
@@ -32,14 +32,14 @@
       type(filinf) ::
      &     ffdum
 
-      call wrt_mel(luout,level,.true.,bufmel,mel,iblkst,iblknd,
+      call wrt_mel(lulog,level,.true.,bufmel,mel,iblkst,iblknd,
      &     str_info,orb_info)
 
       return
       end
 
 *----------------------------------------------------------------------*
-      subroutine wrt_mel_file(luout,level,mel,iblkst,iblknd,
+      subroutine wrt_mel_file(lulog,level,mel,iblkst,iblknd,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
 *     wrapper for wrt_mel: matrix-elements on file
@@ -59,7 +59,7 @@
      &     maxprt = 100
 
       integer, intent(in) ::
-     &     luout, level, iblkst, iblknd
+     &     lulog, level, iblkst, iblknd
       type(me_list), intent(in) ::
      &     mel
       type(strinf), intent(in) ::
@@ -70,7 +70,7 @@
       real(8) ::
      &     xdum
 
-      call wrt_mel(luout,level,.false.,xdum,mel,iblkst,iblknd,
+      call wrt_mel(lulog,level,.false.,xdum,mel,iblkst,iblknd,
      &     str_info,orb_info)
 
       return

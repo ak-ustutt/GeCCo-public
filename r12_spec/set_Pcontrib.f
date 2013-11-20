@@ -31,7 +31,7 @@
      &     idx_1, idx_2, idx_prj, njoined_intm
 
       if (iopa.gt.nop.or.iopb.gt.nop) then
-        write(luout,*) 'idx, nop: ',iopa,iopb,nop
+        write(lulog,*) 'idx, nop: ',iopa,iopb,nop
         call quit(1,'set_Pcontrib','not enough operators on input list')
       end if
 
@@ -89,8 +89,8 @@ c        end do
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'result for P contribution'
-        call print_form_list(luout,flist_pnt0,op_info)
+        write(lulog,*) 'result for P contribution'
+        call print_form_list(lulog,flist_pnt0,op_info)
       end if
 
       return

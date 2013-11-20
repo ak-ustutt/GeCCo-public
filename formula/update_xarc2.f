@@ -23,14 +23,14 @@
      &     del_list(:)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'update_xarc2')
-        write(luout,*) 'no. of external lines: ',contr%nxarc
-        write(luout,*) 'raw xarc list: (',nxarc_raw,')'
+        call write_title(lulog,wst_dbg_subr,'update_xarc2')
+        write(lulog,*) 'no. of external lines: ',contr%nxarc
+        write(lulog,*) 'raw xarc list: (',nxarc_raw,')'
         do ixarc = 1, nxarc_raw
-          write(luout,'(3x,i3,x,i3,3x,4i4)')
+          write(lulog,'(3x,i3,x,i3,3x,4i4)')
      &         xarcs_raw(ixarc)%link,
      &         xarcs_raw(ixarc)%occ_cnt(1:ngastp,1)
-          write(luout,'(3x,3x,x,3x,3x,4i4)')
+          write(lulog,'(3x,3x,x,3x,3x,4i4)')
      &         xarcs_raw(ixarc)%occ_cnt(1:ngastp,2)
         end do
       end if

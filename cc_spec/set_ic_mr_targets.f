@@ -53,7 +53,7 @@
       character*4 ::
      &     op_exc, op_deexc
 
-      if (iprlvl.gt.0) write(luout,*)
+      if (iprlvl.gt.0) write(lulog,*)
      &     'setting targets for internally contracted MR methods'
 
       ! get maximum excitation rank
@@ -76,7 +76,7 @@
       select case(gno)
       case(0)
       case(1)
-        write(luout,*) 'Using generalized normal order (GNO)'
+        write(lulog,*) 'Using generalized normal order (GNO)'
 c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
       case default
         call quit(1,'set_ic_mr_targets','unknown normal order')
@@ -122,12 +122,12 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
 
       if (sv_fix) then
         inquire(file='SINGVALS',exist=l_exist)
-        if (l_exist) write(luout,*)
+        if (l_exist) write(lulog,*)
      &     'Using existing SINGVALS file for singular value selection!'
       end if
       if (prc_traf.and.jac_fix) then
         inquire(file='SINGVALS2',exist=l_exist)
-        if (l_exist) write(luout,*)
+        if (l_exist) write(lulog,*)
      &     'Using existing SINGVALS2 file for singular value selection!'
       end if
 

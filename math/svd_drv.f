@@ -84,7 +84,7 @@ c dbgend
      &       dum1,1,dum2,1,
      &       wrk,lwrk,info)
         if (info.ne.0) then
-          write(luout,*) 'WARNING in svd_drv: SVD in trouble'
+          write(lulog,*) 'WARNING in svd_drv: SVD in trouble'
         end if
 
         ! copy singular values and eigenvector

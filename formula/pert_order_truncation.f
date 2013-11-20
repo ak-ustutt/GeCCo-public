@@ -39,7 +39,7 @@
      &     form_pnt, form_pnt_next
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'pert_order_trunction')
+        call write_title(lulog,wst_dbg_subr,'pert_order_trunction')
       endif
 
       form_pnt => flist
@@ -48,9 +48,9 @@
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
           form_pnt%target = idx_tgt
         case(command_add_contribution)
 
@@ -101,7 +101,7 @@
           end if
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'delete_non_fact','command undefined here')
         end select
 

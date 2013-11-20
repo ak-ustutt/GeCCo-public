@@ -10,9 +10,9 @@
      &     orb_info
 
       if (iprlvl.ge.1)
-     &     write(luout,*) 'Reading data from environment ....'
+     &     write(lulog,*) 'Reading data from environment ....'
       if (iprlvl.ge.2)
-     &     write(luout,*) 'Environment type: ',
+     &     write(lulog,*) 'Environment type: ',
      &     trim(env_type)
 
       select case(trim(env_type))

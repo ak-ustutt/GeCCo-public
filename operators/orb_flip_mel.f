@@ -141,10 +141,10 @@ c dbgend
             ! find distribution
             ndis = mel%off_op_gmox(iblk)%ndis(igam,idxms)
             if (ndis.eq.0) then
-              write(luout,*) 'WARNING:'
-              write(luout,*)
+              write(lulog,*) 'WARNING:'
+              write(lulog,*)
      &             ' op_info indicates no distribution at all'
-              write(luout,*) ' skipping to next block'
+              write(lulog,*) ' skipping to next block'
               idxoff_blk = idxoff_blk+lenblk
               nwarn = nwarn+1
               cycle
@@ -182,8 +182,8 @@ c dbgend
       end do
 
       if (nwarn.gt.0) then
-        write(luout,*) '!!! There were ',nwarn,' warnings !!!'
-        write(luout,*) 'look for "WARNING" in previous output!'
+        write(lulog,*) '!!! There were ',nwarn,' warnings !!!'
+        write(lulog,*) 'look for "WARNING" in previous output!'
       end if
 
       if (close_again) call file_close_keep(ffop)

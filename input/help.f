@@ -4,7 +4,7 @@
 
       include 'stdunit.h'
 
-      write(luout,'(3(x,a,/))')
+      write(lulog,'(3(x,a,/))')
      &'usage: gecco.x [options] input_file',
      &'   options:',
      &'    -h,--help: print this help screen (and exit)'

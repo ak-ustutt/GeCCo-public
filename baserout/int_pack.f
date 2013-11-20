@@ -24,9 +24,9 @@
 
       return
 
- 100  write(luout,*) 'intlist not suited for packing:'
-      write(luout,*) ' list = ',int_exp(1:nexp)
-      write(luout,*) ' base = ',ibase
+ 100  write(lulog,*) 'intlist not suited for packing:'
+      write(lulog,*) ' list = ',int_exp(1:nexp)
+      write(lulog,*) ' base = ',ibase
       call quit(1,'packint','intlist not suited for packing')
 
       end

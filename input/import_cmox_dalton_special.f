@@ -76,7 +76,7 @@ c      include 'opdim.h'
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'CMOX:'
+        write(lulog,*) 'CMOX:'
         call wr_blkmat(cmox,orb_info%nbas+orb_info%nxbas,
      &                     orb_info%cab_orb,
      &                     orb_info%nsym,0)
@@ -100,7 +100,7 @@ c      include 'opdim.h'
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.10) 
-     &     call prtim(luout,'time in cmox import',
+     &     call prtim(lulog,'time in cmox import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

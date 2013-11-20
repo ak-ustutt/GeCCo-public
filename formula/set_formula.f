@@ -65,9 +65,9 @@
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'Setting formula')
-        write(luout,*) ' form_str  = "',trim(form_str),'"'
+        write(lulog,*) ' form_str  = "',trim(form_str),'"'
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -83,7 +83,7 @@
       ipos = ipos+1
 
       if (ntest.ge.100)
-     &     write(luout,*) 'result label = "',trim(label),'"'
+     &     write(lulog,*) 'result label = "',trim(label),'"'
 
       idx_res = idx_oplist2(label,op_info)
       if (idx_res.le.0)
@@ -110,7 +110,7 @@
         ipos = jpos+1
 
         if (ntest.ge.100)
-     &       write(luout,*) 'next label = "',trim(label),'"'
+     &       write(lulog,*) 'next label = "',trim(label),'"'
 
         idx_op = idx_oplist2(label,op_info)
         if (idx_op.le.0)
@@ -137,13 +137,13 @@
      &     form%comment)
 
       if (max(ntest,iprlvl).ge.50) then
-        call write_title(luout,wst_around_double,'Generated formula:')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_around_double,'Generated formula:')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
       call dealloc_formula_list(flist_lag)
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'set formula',cpu-cpu0,sys-sys0,wall-wall0)
+      call prtim(lulog,'set formula',cpu-cpu0,sys-sys0,wall-wall0)
 
       end
