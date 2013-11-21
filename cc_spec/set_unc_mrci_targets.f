@@ -34,7 +34,7 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     isym, msc, ims, ip, ih, cminexc, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, maxroot, cmaxv,
-     &     spinproj
+     &     spinproj, guess
       logical ::
      &     oldref, l_exist, writeF
       character(len_target_name) ::
@@ -79,6 +79,8 @@
      &     lval=writeF)
       call get_argument_value('method.MR','spinproj',
      &     ival=spinproj)
+      call get_argument_value('method.MR','guess',
+     &     ival=guess)
       if (cmaxh.lt.0) cmaxh = cmaxexc
       if (cmaxp.lt.0) cmaxp = cmaxexc
       cmaxv = orb_info%norb_hpv(IVALE,1)*2
@@ -96,6 +98,15 @@
         write(lulog,*) 'maxroot  = ',maxroot
         write(lulog,*) 'oldref  = ',oldref
         write(lulog,*) 'spinproj= ',spinproj
+        if (guess.gt.0) write(lulog,*) 'guess   =',guess
+      end if
+
+      if (guess) then
+        inquire(file='ME_C0start_list.da',exist=l_exist)
+        if (.not.l_exist) call quit(1,'set_unc_mrci_targets',
+     &           'Initial guess: Did not find file ME_C0start_list.da!')
+        if (maxroot.gt.1) call quit(1,'set_unc_mrci_targets',
+     &           'option guess only available for ciroot=1/maxroot=1')
       end if
 
 *----------------------------------------------------------------------*
@@ -816,6 +827,8 @@ c dbgend
         call set_dependency('SOLVE_REF','DEF_ME_C0_sp',tgt_info)
         call set_dependency('SOLVE_REF','FOPT_C0_sp',tgt_info)
       end if
+      if (guess.gt.0)
+     &   call set_dependency('SOLVE_REF','C0guess',tgt_info)
       if (.not.oldref) then
         call set_rule2('SOLVE_REF',SOLVEEVP,tgt_info)
         call set_arg('SOLVE_REF',SOLVEEVP,'LIST_OPT',1,tgt_info,
@@ -920,6 +933,51 @@ c dbgend
      &     tgt_info,val_rl8=(/1d-2/))
       call set_arg('EVAL_REF_S(S+1)',PRINT_MEL,'EXPECTED',1,tgt_info,
      &     val_rl8=(/(dble(orb_info%imult**2)-1d0)/4d0/))
+
+      ! prepare initial guess from CAS-CI
+      call add_target2('C0guess',.false.,tgt_info)
+      call set_dependency('C0guess','DEF_ME_C0',tgt_info)
+      ! (a) define operator and ME list for old CAS-CI coefficients
+      occ_def = 0
+      occ_def(IVALE,1,1) = orb_info%nactel
+      call set_rule2('C0guess',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('C0guess',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/'C0start'/))
+      call set_arg('C0guess',DEF_OP_FROM_OCC,'BLOCKS',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('C0guess',DEF_OP_FROM_OCC,'OCC',1,tgt_info,
+     &     val_occ=occ_def(1:ngastp,1:2,1))
+      call set_rule2('C0guess',DEF_ME_LIST,tgt_info)
+      call set_arg('C0guess',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_C0start'/))
+      call set_arg('C0guess',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'C0start'/))
+      call set_arg('C0guess',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/ims/))
+      call set_arg('C0guess',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/orb_info%lsym/))
+      call set_arg('C0guess',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      call set_arg('C0guess',DEF_ME_LIST,'MIN_REC',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('C0guess',DEF_ME_LIST,'MAX_REC',1,tgt_info,
+     &             val_int=(/guess/))
+      call set_arg('C0guess',DEF_ME_LIST,'REC',1,tgt_info,
+     &             val_int=(/guess/))
+      ! (b) define, optimize and evaluate formula C0 = C0start
+      call set_rule2('C0guess',DEF_FORMULA,tgt_info)
+      call set_arg('C0guess',DEF_FORMULA,'LABEL',1,tgt_info,
+     &             val_label=(/'F_C0guess'/))
+      call set_arg('C0guess',DEF_FORMULA,'FORMULA',1,tgt_info,
+     &             val_str='C0=C0start')
+      call set_rule2('C0guess',OPTIMIZE,tgt_info)
+      call set_arg('C0guess',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_C0guess'/))
+      call set_arg('C0guess',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_C0guess'/))
+      call set_rule2('C0guess',EVAL,tgt_info)
+      call set_arg('C0guess',EVAL,'FORM',1,tgt_info,
+     &             val_label=(/'FOPT_C0guess'/))
 
       return
       end

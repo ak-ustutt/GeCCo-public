@@ -223,6 +223,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
                                     ! (1: C0,2: C0 & T, 3: C0 & T & A)
       call argument_add('prc_traf','method.MR',type=vtyp_log,
      &     ldef=(/.false./)) ! extra unitary trafo based on prec. matrix
+      call argument_add('guess','method.MR',type=vtyp_int,
+     &                  idef=(/0/)) ! if >0: use previous C0 as guess
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,

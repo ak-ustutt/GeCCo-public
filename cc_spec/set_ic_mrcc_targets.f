@@ -230,6 +230,11 @@
      &    call warn('set_ic_mrcc_targets',
      &     'prc_traf may mess up spinflip symmetry of metric! '//
      &     'Use spinproj=2 or better spinproj=3.')
+      if (restart) then
+        inquire(file='ME_T_list.da',exist=l_exist)
+        if (.not.l_exist) call quit(1,'set_ic_mrcc_targets',
+     &           'Restart: File for T amplitudes not found!')
+      end if
       
 *----------------------------------------------------------------------*
 *     Operators:
