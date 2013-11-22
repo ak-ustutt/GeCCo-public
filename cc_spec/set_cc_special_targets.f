@@ -6,10 +6,12 @@
       implicit none
 
       include 'stdunit.h'
+      include 'opdim.h'
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
 
       include 'ifc_input.h'
+      include 'ifc_targets.h'
 
       include 'par_opnames_gen.h'
       include 'par_formnames_gen.h'
@@ -180,19 +182,32 @@ c     &              parameters,1,tgt_info)
       call me_list_label(mel_dia1,mel_dia,1,0,0,0,.false.)
 
       ! solve GS equations
-      call add_target(solve_cc_gs,ttype_gen,.true.,tgt_info)
-      call set_dependency(solve_cc_gs,mel_dia1,tgt_info)
-      call set_dependency(solve_cc_gs,fopt_ccrs0,tgt_info)
-      call solve_parameters(-1,parameters,2, 1,1,'DIA')
-      labels(1:10)(1:len_target_name) = ' '
-      labels(1) = mel_top
-      labels(2) = mel_omg
-      labels(3) = mel_dia1
-      labels(4) = mel_ccen0
-      labels(5) = fopt_ccrs0
-      call set_rule(solve_cc_gs,ttype_opme,SOLVENLEQ,
-     &     labels,5,2,
-     &     parameters,2,tgt_info)
+C      call add_target(solve_cc_gs,ttype_gen,.true.,tgt_info)
+C      call set_dependency(solve_cc_gs,mel_dia1,tgt_info)
+C      call set_dependency(solve_cc_gs,fopt_ccrs0,tgt_info)
+C      call solve_parameters(-1,parameters,2, 1,1,'DIA')
+C      labels(1:10)(1:len_target_name) = ' '
+C      labels(1) = mel_top
+C      labels(2) = mel_omg
+C      labels(3) = mel_dia1
+C      labels(4) = mel_ccen0
+C      labels(5) = fopt_ccrs0
+C      call set_rule(solve_cc_gs,ttype_opme,SOLVENLEQ,
+C     &     labels,5,2,
+C     &     parameters,2,tgt_info)
+
+      call add_target3([character(len=80) ::
+     &  'target SOLVE-CC-GS(required',
+     &  '  depend ('//trim(mel_dia1)//',OMG_CC_OPT)',
+     &  '  PRINT(string="Definition of cluster operator:")',
+     &  '  PRINT_MEL_INFO(list=T0)',
+     &  '  PRINT(string="Now solving the CC equations ...")',
+     &  '  SOLVE_NLEQ(list_opt=T0,list_resid=O0,',
+     &  '             list_prc='//trim(mel_dia1)//',',
+     &  '             list_e="E0(CC)",form=OMG_CC_OPT,mode=DIA)',
+     &  '  PRINT_MEL(list="E0(CC)",comment="Final CC energy",',
+     &  '            format="SCAL F20.12")',
+     &  ')'],tgt_info)
 
       return
       end

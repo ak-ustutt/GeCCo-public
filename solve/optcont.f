@@ -279,7 +279,7 @@
         if (.not.lconv.and.
      &       (imacit.gt.opti_info%maxmacit.or.
      &       imicit_tot.gt.opti_info%maxmicit)) then
-          write(lulog,*) 'NO CONVERGENCE OBTAINED'
+           call warn('non-linear solver','NO CONVERGENCE OBTAINED')
 c          imacit = imacit - 1
 c          imicit_tot = imicit_tot - 1
           imicit = 0

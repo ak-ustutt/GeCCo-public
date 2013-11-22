@@ -77,6 +77,8 @@
      &     SET_FREQ*8         = 'SET_FREQ',
      &     PRINT_RES*9        = 'PRINT_RES',
      &     PRINT_MEL*9        = 'PRINT_MEL',
+     &     PRINT_MEL_INFO_*14 = 'PRINT_MEL_INFO',
+     &     PRINT_*5           = 'PRINT',
      &     SET_MEL*7          = 'SET_MEL',
      &     EXTRACT_DIAG*12    = 'EXTRACT_DIAG',
      &     REORDER_MEL*11     = 'REORDER_MEL',

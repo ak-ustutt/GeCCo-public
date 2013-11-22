@@ -54,17 +54,17 @@
           value = xnormop(mel)
         end if
 
-        write(lulog,'(x,a,'//trim(mode(5:))//')')
+        write(luout,'(x,a,'//trim(mode(5:))//')')
      &       trim(message),value
 
         ! check result (if requested)
         if (check.gt.0) then
           if (abs(value-expected).gt.check) then
-            write(lulog,'(x,a,'//trim(mode(5:))//')')
+            write(luout,'(x,a,'//trim(mode(5:))//')')
      &       'We had expected the result: ',expected
             call quit(1,'print_list','Not the result we want!')
           else if (abs(value-expected).gt.thresh_warn) then
-             write(lulog,'(x,a,'//trim(mode(5:))//')')
+             write(luout,'(x,a,'//trim(mode(5:))//')')
      &       'We had expected the result: ',expected
             call warn('print_list','Deviation from expected result.')
           end if
@@ -72,26 +72,26 @@
 
       case('LIST')
 
-        write(lulog,'(x,a)') trim(message)
+        write(luout,'(x,a)') trim(message)
 
-        call wrt_mel_file(lulog,5,
+        call wrt_mel_file(luout,5,
      &       mel,
      &       1,mel%op%n_occ_cls,
      &       str_info,orb_info)
 
       case('BLKS')
 
-        write(lulog,'(x,a)') trim(message)
+        write(luout,'(x,a)') trim(message)
 
-        call wrt_mel_file(lulog,1,
+        call wrt_mel_file(luout,1,
      &       mel,
      &       1,mel%op%n_occ_cls,
      &       str_info,orb_info)
 
       case default
 
-        write(lulog,'(x,a)') trim(message)
-        write(lulog,'(x,a,a)') 'Written to file named ',trim(mode)
+        write(luout,'(x,a)') trim(message)
+        write(luout,'(x,a,a)') 'Written to file named ',trim(mode)
 
         call file_init(ffout,trim(mode),ftyp_sq_frm,0)
         call file_open(ffout)
