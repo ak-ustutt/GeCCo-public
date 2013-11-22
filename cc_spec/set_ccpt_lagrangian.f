@@ -378,6 +378,10 @@ c dbg
           call print_form_list(lulog,flist_lag,op_info)
         end if
 
+        ! deallocate formulae
+        call dealloc_formula_list(flist_t_r)
+        call dealloc_formula_list(flist_t_r_pt)
+
         ! Produce truncated expansions.
 c        if (truncate)
 c     &     call r12_truncation(flist_lag,trunc_type,
@@ -427,8 +431,6 @@ c     &       op_info)
      &     form_lag%comment)
 
       call dealloc_formula_list(flist_lag)
-      call dealloc_formula_list(flist_t_r)
-      call dealloc_formula_list(flist_t_r_pt)
 
       call del_operator(op_f_temp,op_info)
 

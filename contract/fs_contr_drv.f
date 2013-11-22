@@ -100,6 +100,7 @@
 
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'fs_contr_drv at work')
+        write(lulog,*) 'update, add, reo: ',update, add, reo
       end if
 
       ngas = orb_info%ngas
@@ -213,9 +214,9 @@
 
       fact = bc_info%fact
 
+      call init_reo_info(reo_info)
       if (reo) then
         allocate(op_tmp,me_tmp)
-        call init_reo_info(reo_info)
         call interface_reo_info(reo_info,reo_inf0,
      &       str_info,orb_info)
         iocc_tmp => reo_inf0%occ_opin

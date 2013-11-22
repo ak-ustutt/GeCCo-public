@@ -64,9 +64,10 @@
      &         time_stat(max_stat),mem_stat(max_stat),
      &         scale_stat(max_stat))
 
-      iscale_stat = 0
-      time_stat   = 0d0
-      mem_stat    = 0d0
+      iscale_stat(1:ngastp,1:2,1:max_stat) = 0
+      time_stat(1:max_stat) = 0d0
+      mem_stat(1:max_stat)  = 0d0
+      scale_stat(1:max_stat)= 0d0
 
       if (iprlvl.ge.3) then
         binmx = (/4,4,0,0/) ! just initial, could also set all to 0
@@ -92,7 +93,8 @@
           if (.not.check_contr4zeroop(fl_ptr%contr,op_info)) then 
            call form_fact_new(fl_fact_ptr,fl_ptr%contr,
      &       op_info,str_info,orb_info,
-     &       iscale_stat(1,1,istat),time_stat(istat),mem_stat(istat),
+     &       iscale_stat(1:ngastp,1:2,istat),
+     &       time_stat(istat),mem_stat(istat),
      &       iitem)
            scale_stat(istat) = scale_rank(iscale_stat(1,1,istat))
 
@@ -172,7 +174,7 @@ c dbgend
 
       call write_title(lulog,wst_subsection,
      &     'Summary')
-      
+
       write(lulog,'(x,"Most expensive contractions: ")') 
       do iterm = 1, min(5,nterms)
         write(lulog,'(x," term #",i5,'//

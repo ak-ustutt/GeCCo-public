@@ -79,6 +79,7 @@
       
       ! scan through orbital energies and find bound orbital
       orb_info%n_bound_orbs = 0
+      orb_info%n_freeze_rcmd = 0
       do idx = 1, norbt
         if (orb_en(idx).lt.0d0)
      &       orb_info%n_bound_orbs = orb_info%n_bound_orbs+1 

@@ -261,7 +261,8 @@ c dbg
      &     call quit(1,'contr_op1op2_wmaps_c',
      &     'reo_info is not consistent')
       if (ntest.ge.10) write(lulog,*) 'reo_op1op2: ',reo_op1op2
-      if (ntest.ge.10) write(lulog,*) 'reo_sign: ',reo_info%sign_reo
+      if (ntest.ge.10.and.reo_op1op2) 
+     &            write(lulog,*) 'reo_sign: ',reo_info%sign_reo
       if (ntest.ge.10 .and. reo_op1op2) then
         write(lulog,*) 'op1op2tmp: ',trim(op1op2tmp%name),
      &       ' block ',iblkop1op2tmp

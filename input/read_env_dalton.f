@@ -87,16 +87,16 @@
         if (orb_en(idx).lt.thr_auto_freeze)
      &       orb_info%n_freeze_rcmd = orb_info%n_freeze_rcmd+1
 
-        if (ntest.ge.100) write(luout,'(x,i3,f20.10,2l)') 
+        if (ntest.ge.100) write(lulog,'(x,i3,f20.10,2l)') 
      &       idx,orb_en(idx),
      &       orb_en(idx).lt.0d0, orb_en(idx).lt.thr_auto_freeze
 
       end do
 
       if (ntest.ge.100)
-     &     write(luout,*) 'n_bound_orbs = ',orb_info%n_bound_orbs
+     &     write(lulog,*) 'n_bound_orbs = ',orb_info%n_bound_orbs
       if (ntest.ge.100)
-     &     write(luout,*) 'n_freeze_rcmd = ',orb_info%n_freeze_rcmd
+     &     write(lulog,*) 'n_freeze_rcmd = ',orb_info%n_freeze_rcmd
 
       allocate(orb_info%isym_bound_orbs(orb_info%n_bound_orbs),
      &     orb_en_sort(orb_info%n_bound_orbs))

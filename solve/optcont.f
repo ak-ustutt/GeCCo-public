@@ -168,8 +168,8 @@
         ifree = mem_setmark('optc_temp')
         call optc_mem(nincore,lenbuf,
      &       ifree,opti_info%nwfpar,opti_info%nopt,opti_info%max_incore)
+        call file_init(ffscr,'optscr.da',ftyp_da_unf,lblk_da)
         if (nincore.le.1) then
-          call file_init(ffscr,'optscr.da',ftyp_da_unf,lblk_da)
           call file_open(ffscr)
         end if
       end if
