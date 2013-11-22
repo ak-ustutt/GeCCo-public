@@ -43,9 +43,9 @@
       iprint = max(ntest,iprlvl)
 
       if (iprint.ge.100) then
-        write(luout,*) '************'
-        write(luout,*) ' set_orbinf'
-        write(luout,*) '************'
+        write(lulog,*) '************'
+        write(lulog,*) ' set_orbinf'
+        write(lulog,*) '************'
       end if
 
       ! for convenience
@@ -127,13 +127,13 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
       end do
 
       if (iprint.ge.100) then
-        write(luout,*) 'ihpvgas:   ',orb_info%ihpvgas(1:ngas,1)
+        write(lulog,*) 'ihpvgas:   ',orb_info%ihpvgas(1:ngas,1)
         if (orb_info%nspin.gt.1)
-     &       write(luout,*) '           ',orb_info%ihpvgas(1:ngas,2)
-        write(luout,*) 'ngas_hpv:  ',orb_info%ngas_hpv(1:ngastp)
-        write(luout,*) 'nactt_hpv: ',orb_info%nactt_hpv(1:ngastp)
-        write(luout,*) 'ioff_gas:  ',orb_info%ioff_gas(1:ngastp)
-        write(luout,*) 'idx_gas:   ',orb_info%idx_gas(1:ngastp)
+     &       write(lulog,*) '           ',orb_info%ihpvgas(1:ngas,2)
+        write(lulog,*) 'ngas_hpv:  ',orb_info%ngas_hpv(1:ngastp)
+        write(lulog,*) 'nactt_hpv: ',orb_info%nactt_hpv(1:ngastp)
+        write(lulog,*) 'ioff_gas:  ',orb_info%ioff_gas(1:ngastp)
+        write(lulog,*) 'idx_gas:   ',orb_info%idx_gas(1:ngastp)
       end if
 
       do igas = 1, ngas
@@ -191,14 +191,14 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
       end do
 
       if (iprint.ge.100) then
-        write(luout,*) 'gas_reo:',orb_info%gas_reo(1:ngas)
-        write(luout,*) 'igamorb:'
+        write(lulog,*) 'gas_reo:',orb_info%gas_reo(1:ngas)
+        write(lulog,*) 'igamorb:'
         call iwrtma(orb_info%igamorb,1,ntoob+caborb,1,ntoob+caborb)
-        write(luout,*) 'igasorb:'
+        write(lulog,*) 'igasorb:'
         call iwrtma(orb_info%igasorb,1,ntoob+caborb,1,ntoob+caborb)
-        write(luout,*) 'mostnd:'
+        write(lulog,*) 'mostnd:'
         do igas = 1, ngas
-          write(luout,'(2x,i4,2x,8(x,2i4))')
+          write(lulog,'(2x,i4,2x,8(x,2i4))')
      &         igas,orb_info%mostnd(1:2,1:nsym,igas)
         end do
       end if
@@ -270,9 +270,9 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
         end do
 
       if (iprint.ge.100) then
-        write(luout,*) 'ireost:'
+        write(lulog,*) 'ireost:'
         call iwrtma(orb_info%ireost,1,ntoob,1,ntoob+caborb)
-        write(luout,*) 'ireots:'
+        write(lulog,*) 'ireots:'
         call iwrtma(orb_info%ireots,1,ntoob,1,ntoob+caborb)
       end if
 
@@ -288,7 +288,7 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
       end if
 
       if (iprint.ge.100) then
-        write(luout,*) 'iad_gas:'
+        write(lulog,*) 'iad_gas:'
         call iwrtma(orb_info%iad_gas,ngas,1,ngas,1)
       end if
 

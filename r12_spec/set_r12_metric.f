@@ -84,10 +84,10 @@
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.eq.100) then
-        write(luout,*) '==============================='
-        write(luout,*) ' output from set_r12_metricrangian'
-        write(luout,*) '==============================='
-        write(luout,*) ' ansatz = ',ansatz
+        write(lulog,*) '==============================='
+        write(lulog,*) ' output from set_r12_metricrangian'
+        write(lulog,*) '==============================='
+        write(lulog,*) ' ansatz = ',ansatz
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -153,8 +153,8 @@
      &     r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'T + CR')
-        call print_form_list(luout,flist_t_cr,op_info)
+        call write_title(lulog,wst_title,'T + CR')
+        call print_form_list(lulog,flist_t_cr,op_info)
       end if
 
       ! Must also form SBAR.
@@ -165,8 +165,8 @@
      &     r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'TBAR + R CBAR')
-        call print_form_list(luout,flist_tbar_cbarr,op_info)
+        call write_title(lulog,wst_title,'TBAR + R CBAR')
+        call print_form_list(lulog,flist_tbar_cbarr,op_info)
       end if
 
       ! and now: the actual formula
@@ -192,16 +192,16 @@
       call expand_subexpr(flist_metric,flist_t_cr,0,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'after replacing S')
-        call print_form_list(luout,flist_metric,op_info)
+        call write_title(lulog,wst_title,'after replacing S')
+        call print_form_list(lulog,flist_metric,op_info)
       end if
 
       ! replace Sbar by Tbar + R^t CBAR
       call expand_subexpr(flist_metric,flist_tbar_cbarr,0,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'after replacing SBAR')
-        call print_form_list(luout,flist_metric,op_info)
+        call write_title(lulog,wst_title,'after replacing SBAR')
+        call print_form_list(lulog,flist_metric,op_info)
       end if
 
 c      ! delete redundant operator blocks (if more than one block version)
@@ -234,8 +234,8 @@ c      end if
       end if
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_title,'Final formula')
-        call print_form_list(luout,flist_metric,op_info)
+        call write_title(lulog,wst_title,'Final formula')
+        call print_form_list(lulog,flist_metric,op_info)
       end if
 
       ! assign comment
@@ -255,8 +255,8 @@ c      end if
       call del_operator(op_sop,op_info)
 
       call atim_csw(cpu,sys,wall)
-c      write(luout,*) 'Number of generated terms: ',nterms
-      call prtim(luout,'CC-R12 metric',cpu-cpu0,sys-sys0,wall-wall0)
+c      write(lulog,*) 'Number of generated terms: ',nterms
+      call prtim(lulog,'CC-R12 metric',cpu-cpu0,sys-sys0,wall-wall0)
 
 c dbg
 c      if (r12op.gt.0) stop 'testing'

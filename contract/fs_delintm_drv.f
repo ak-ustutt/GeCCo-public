@@ -31,9 +31,9 @@
      &     idx_oplist2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'fs_delintm_drv')
-        write(luout,'(2x,a)') trim(fl_item%interm%name)
-        call print_op_occ(luout,fl_item%interm)
+        call write_title(lulog,wst_dbg_subr,'fs_delintm_drv')
+        write(lulog,'(2x,a)') trim(fl_item%interm%name)
+        call print_op_occ(lulog,fl_item%interm)
       end if
 
       idx = idx_oplist2(trim(fl_item%label),op_info)

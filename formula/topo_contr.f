@@ -52,7 +52,7 @@
 
 c dbg
 c      print *,'on entry'
-c      call wrt_occ_n(luout,occ_vtx,contr%nvtx)
+c      call wrt_occ_n(lulog,occ_vtx,contr%nvtx)
 c dbg
 
       nvtx = contr%nvtx
@@ -136,13 +136,13 @@ cmhend
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'topo-map:'
+        write(lulog,*) 'topo-map:'
         call iwrtma(topomap,nvtx,nvtx,nvtx,nvtx)
-        write(luout,*) 'equiv-map:'
+        write(lulog,*) 'equiv-map:'
         call iwrtma(eqv_map,1,nvtx,1,nvtx)
-        write(luout,*) 'neqv:'
+        write(lulog,*) 'neqv:'
         call iwrtma(neqv,1,nvtx,1,nvtx)
-        write(luout,*) 'idx_eqv:'
+        write(lulog,*) 'idx_eqv:'
         call iwrtma(idx_eqv,nvtx,nvtx,nvtx,nvtx)
       end if
 
@@ -179,7 +179,7 @@ c dbg
       end do ivtx_loop
 
       if (ntest.ge.100) then
-        write(luout,*) '-> fac = ',ieqvfac
+        write(lulog,*) '-> fac = ',ieqvfac
       end if
 
 c      ! look for equivalent tupels of lines in the topo-map:
@@ -202,8 +202,8 @@ c        ieqvfac2 = ieqvfac2*ifac(nsame)
 c      end do
 c
 c      if (ntest.ge.100) then
-c        write(luout,*) '-> fac = ',ieqvfac2
-c        if (ieqvfac2.ne.ieqvfac) write(luout,*) 'they differ!'
+c        write(lulog,*) '-> fac = ',ieqvfac2
+c        if (ieqvfac2.ne.ieqvfac) write(lulog,*) 'they differ!'
 c      end if
 
       ! suggest a reordering array for operator sequence:
@@ -375,8 +375,8 @@ c dbg
      &     call quit(1,'topo_contr','restricted sort in problems')
 
       if (ntest.ge.100) then
-        write(luout,*) 'suggested reordering of operators'
-        write(luout,*) vtx_reo(1:nvtx)
+        write(lulog,*) 'suggested reordering of operators'
+        write(lulog,*) vtx_reo(1:nvtx)
       end if
 
       deallocate(topomap,eqv_map,scr,neqv,idx_eqv)

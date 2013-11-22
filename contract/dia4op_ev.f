@@ -101,7 +101,7 @@
       warning = .false.
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'this is dia4op_ev')
+        call write_title(lulog,wst_dbg_subr,'this is dia4op_ev')
       end if
 
       op => me_dia%op
@@ -133,7 +133,7 @@ c        if (imltlist(0,iocc(1:,1),ngastp,1).lt.3.or.
 c     &      imltlist(0,iocc(1:,2),ngastp,1).lt.3.or.
 c     &      iocc(ihole,1).gt.0 .or.
 c     &      iocc(ipart,2).gt.0 ) then
-c          call wrt_occ(luout,op%ihpvca_occ(1,1,iblk))
+c          call wrt_occ(lulog,op%ihpvca_occ(1,1,iblk))
 c          call quit(1,'dia4op_ev',
 c     &         'routine not tested for this kind of occupation')
 c        end if
@@ -143,13 +143,13 @@ c        end if
       ! we should of course use a better memory management
       ! when going to large calculations
       if (maxbuff.gt.ifree) then
-        write(luout,*) 'maxbuff, ifree: ',maxbuff,ifree
+        write(lulog,*) 'maxbuff, ifree: ',maxbuff,ifree
         call mem_map(.true.)
         call quit(1,'dia4op_ev','inadequate memory management')
       end if
 
       if (ntest.ge.100)
-     &     write(luout,*)'allocating result buffer of size: ',maxbuff
+     &     write(lulog,*)'allocating result buffer of size: ',maxbuff
         
       ifree = mem_alloc_real(buffer,maxbuff,'buffer')
       if (use2) then
@@ -177,8 +177,8 @@ c        end if
         idx_graph => me_dia%idx_graph(1:ngastp,1:2,iblk)
 
         if (ntest.ge.100) then
-          write(luout,*) 'current occupation class:'
-          call wrt_occ(luout,op%ihpvca_occ(1,1,iblk))
+          write(lulog,*) 'current occupation class:'
+          call wrt_occ(lulog,op%ihpvca_occ(1,1,iblk))
         end if
 
         ncidx = op%ica_occ(1,iblk)
@@ -226,7 +226,7 @@ c        end if
         end do
 
         if (ntest.ge.100)
-     &       write(luout,*) 'allocating xsum-buffer of size ',maxstrbuf
+     &       write(lulog,*) 'allocating xsum-buffer of size ',maxstrbuf
         ! buffer for orbital energy sums
         ifree = mem_alloc_real(xsum,maxstrbuf,'xsum')
 
@@ -273,11 +273,11 @@ c     &             d_gam_ms(idis,igama,idxms).eq.0)
 c     &             cycle distr_loop
               
               if (ntest.ge.100) then
-                write(luout,*) 'msc,msa,igamc,igama: ',
+                write(lulog,*) 'msc,msa,igamc,igama: ',
      &               msc,msa,igamc,igama
-                write(luout,*) 'current distribution (MS,GAMMA):'
-                call wrt_occ(luout,msdst)
-                call wrt_occ(luout,igamdst)
+                write(lulog,*) 'current distribution (MS,GAMMA):'
+                call wrt_occ(lulog,msdst)
+                call wrt_occ(lulog,igamdst)
               end if
 
               ! strings for HPV/CA
@@ -325,7 +325,7 @@ c dbg
                     istr = istr+1
 c dbg
 c          print *,'istr: ',istr
-c          write(luout,'(x,a,8i3)') 'idxorb / idxspn: ',
+c          write(lulog,'(x,a,8i3)') 'idxorb / idxspn: ',
 c     &       idxorb(1:nidx), idxspn(1:nidx)
 c dbgend
                     xsum(istr) = 0d0
@@ -386,7 +386,7 @@ c dbgend
                         xsum(istr) = xsum(istr) + xdia2(x2_off
      &                     + (idxorb(jdx)-1)*orb_info%ntoob+idxorb(idx))
 c dbg
-c                 write(luout,'(x,a,2i4,x,i4)') 'orb/idxms: ',
+c                 write(lulog,'(x,a,2i4,x,i4)') 'orb/idxms: ',
 c     &               idxorb(jdx),idxorb(idx),idxms2
 c                 print *,'added element ',x2_off
 c     &                     + (idxorb(jdx)-1)*orb_info%ntoob+idxorb(idx),
@@ -497,9 +497,9 @@ c dbg
                   if (iocc2(ihpv,ica).eq.0) cycle
                   iloop = iloop + 1
 c dbg
-c                  write(luout,'(a,6i4)') 'in loop:',
+c                  write(lulog,'(a,6i4)') 'in loop:',
 c     &                   iloop,jloop,ica,ihpv,jca,jhpv
-c                  write(luout,'(a,2i4)') 'len:',
+c                  write(lulog,'(a,2i4)') 'len:',
 c     &                   nstr(nloop+1-iloop),nstr(nloop+1-jloop)
 c dbgend
                   ! loop over all possible spin combinations ++/+-/-+/--
@@ -510,7 +510,7 @@ c dbgend
                     if (abs(msdst(ihpv,ica)-ims).gt.iocc2(ihpv,ica))
      &                   cycle
 c dbg
-c                    write(luout,'(a,2i4)') 'ims, jms: ',ims,jms
+c                    write(lulog,'(a,2i4)') 'ims, jms: ',ims,jms
 c dbgend
                     idxms2 = (2 - ims - jms)/2 + 1
                     x2_off = (idxms2 - 1) * orb_info%ntoob**2
@@ -543,13 +543,13 @@ c dbgend
      &                     + (min(ioff+iorb,joff+jorb)-1)*orb_info%ntoob
      &                     + max(ioff+iorb,joff+jorb))
 c dbg
-c                      write(luout,'(2i4,E19.10)')
+c                      write(lulog,'(2i4,E19.10)')
 c     &                  ioff+iorb,joff+jorb,val
-c                      write(luout,'(a,20i4)') 'list i: ',
+c                      write(lulog,'(a,20i4)') 'list i: ',
 c     &                  list(ioff+iorb,(ims+3)/2,
 c     &                  1:list(ioff+iorb,(ims+3)/2,0,
 c     &                  nloop+1-iloop),nloop+1-iloop)
-c                      write(luout,'(a,20i4)') 'list j: ',
+c                      write(lulog,'(a,20i4)') 'list j: ',
 c     &                  list(joff+jorb,(jms+3)/2,
 c     &                  1:list(joff+jorb,(jms+3)/2,0,
 c     &                  nloop+1-jloop),nloop+1-jloop)
@@ -612,12 +612,12 @@ c dbg
         end do
 
 c        if (smapre_num>0) then
-c          write(luout,'(1x,a,i4,a,i9,a,g9.2)') 
+c          write(lulog,'(1x,a,i4,a,i9,a,g9.2)') 
 c     &      'number of small preconditioner elements in block ',iblk,
 c     &      ': ', smapre_num, '; set to ',prc_thres
 c        end if
 c        if (negpre_num>0) then
-c          write(luout,'(1x,a,i9)') 
+c          write(lulog,'(1x,a,i9)') 
 c     &    '     thereof negative: ',negpre_num
 c          warning = .true.
 c        end if
@@ -651,7 +651,7 @@ c        end if
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.0)
-     &     call prtim(luout,'time in dia4op_ev ',
+     &     call prtim(lulog,'time in dia4op_ev ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 
       return

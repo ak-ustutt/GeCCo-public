@@ -42,9 +42,9 @@
      &     ddot, da_ddot
 
       if (ntest.ge.100) then
-        write(luout,*) '-------------------------'
-        write(luout,*) ' normalize_guess at work '
-        write(luout,*) '-------------------------'
+        write(lulog,*) '-------------------------'
+        write(lulog,*) ' normalize_guess at work '
+        write(lulog,*) '-------------------------'
       end if
 
       nwfpar(1:nopt) = opti_info%nwfpar(1:nopt)
@@ -66,7 +66,7 @@
       xnrm = sqrt(xnrm)
 
       if (ntest.ge.100)
-     &     write(luout,*) 'Normalizing root with norm ',xnrm
+     &     write(lulog,*) 'Normalizing root with norm ',xnrm
 
       call da_sccpvec(ff_v,irecv,
      &                ff_v,irecv,

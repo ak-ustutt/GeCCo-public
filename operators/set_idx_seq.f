@@ -36,10 +36,10 @@
      &     idx, idx_hpvx, ica, ijoin, hpvx
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_idx_seq')
-        write(luout,*) 'sep_ca = ',sep_ca
-        write(luout,*) 'input occupation:'
-        call wrt_occ_n(luout,iocc,njoined)
+        call write_title(lulog,wst_dbg_subr,'set_idx_seq')
+        write(lulog,*) 'sep_ca = ',sep_ca
+        write(lulog,*) 'input occupation:'
+        call wrt_occ_n(lulog,iocc,njoined)
       end if
 
       idxseq = 0
@@ -83,8 +83,8 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'generated array::'
-        call wrt_occ_n(luout,idxseq,njoined)
+        write(lulog,*) 'generated array::'
+        call wrt_occ_n(lulog,idxseq,njoined)
       end if
 
       return

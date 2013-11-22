@@ -35,13 +35,13 @@
         maxbuffer = max_mem/need
 
         if (ntest.ge.100) then
-          write(luout,*) 'current state:'          
-          write(luout,*) ' max_mem   = ',max_mem
-          write(luout,*) ' len_list  = ',len_list
-          write(luout,*) ' len_rec   = ',len_rec
-          write(luout,*) ' len_bin   = ',len_bin
-          write(luout,*) ' maxchain  = ',maxchain
-          write(luout,*) ' maxbuffer = ',maxbuffer
+          write(lulog,*) 'current state:'          
+          write(lulog,*) ' max_mem   = ',max_mem
+          write(lulog,*) ' len_list  = ',len_list
+          write(lulog,*) ' len_rec   = ',len_rec
+          write(lulog,*) ' len_bin   = ',len_bin
+          write(lulog,*) ' maxchain  = ',maxchain
+          write(lulog,*) ' maxbuffer = ',maxbuffer
         end if          
 
         if (maxbuffer.eq.0.and.maxchain.lt.9*len_rec) then
@@ -53,8 +53,8 @@
         nbin_per_pass = min(maxbuffer,nbin)
 
         if (ntest.ge.100) then
-          write(luout,*) ' npass         = ',npass
-          write(luout,*) ' nbin_per_pass = ',nbin_per_pass
+          write(lulog,*) ' npass         = ',npass
+          write(lulog,*) ' nbin_per_pass = ',nbin_per_pass
         end if          
 
         if (npass.eq.1.or.len_bin*2.gt.len_bin_max) exit
@@ -64,8 +64,8 @@
       end do
 
       if (error.eq.1) then
-        write(luout,*) 'max_mem = ',max_mem
-        write(luout,*) 'need    = ',need
+        write(lulog,*) 'max_mem = ',max_mem
+        write(lulog,*) 'need    = ',need
         call quit(1,'import_2el_set_batch',
      &       'unexpectedly small memory')
       end if

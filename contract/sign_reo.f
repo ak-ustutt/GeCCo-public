@@ -76,13 +76,13 @@
       end do ireo_loop
 
       if (error) then
-        write(luout,*) 'nreo = ',nreo
-        write(luout,*) 'nreo_i0 = ',nreo_i0
-        call wrt_occ_n(luout,occ_reo,nreo)
-        write(luout,*) 'from: ',from_to(1,1:nreo+nreo_i0)
-        write(luout,*) 'to:   ',from_to(2,1:nreo+nreo_i0)
+        write(lulog,*) 'nreo = ',nreo
+        write(lulog,*) 'nreo_i0 = ',nreo_i0
+        call wrt_occ_n(lulog,occ_reo,nreo)
+        write(lulog,*) 'from: ',from_to(1,1:nreo+nreo_i0)
+        write(lulog,*) 'to:   ',from_to(2,1:nreo+nreo_i0)
         if (ireo.gt.nreo) jreo = ireo
-        write(luout,'(x,a,4i4)') 'conflict for ireo, jreo, ihpv, ica:',
+        write(lulog,'(x,a,4i4)') 'conflict for ireo, jreo, ihpv, ica:',
      &       ireo, jreo, ihpv, ica
         call quit(1,'sign_reo','reo requires more than pairwise merge!')
       end if
@@ -96,7 +96,7 @@
       end do
 c dbg
 c      print *,'initial occ_k_from'
-c      call wrt_occ_n(luout,occ_k_from,njoined)
+c      call wrt_occ_n(lulog,occ_k_from,njoined)
 c dbg
 
       sign_reo = 1
@@ -107,7 +107,7 @@ c dbg
      &       occ_reo(1:ngastp,1:2,ireo)
 c dbg
 c        print *,'updated occ_k_from'
-c        call wrt_occ_n(luout,occ_k_from,njoined)
+c        call wrt_occ_n(lulog,occ_k_from,njoined)
 c dbg
 
         ! unchanged part of "from" vertex is fix part + moved part:
@@ -127,7 +127,7 @@ c dbg
           nencl = nencl + nca_vtx(ivtx)
         end do
 c dbg
-c        if (mod(nencl,2).ne.0) write(luout,*) 'ODD nencl appeared!'
+c        if (mod(nencl,2).ne.0) write(lulog,*) 'ODD nencl appeared!'
 c dbg
 
         ! correct order before shifting is ...
@@ -194,7 +194,7 @@ c dbg
      &       occ_reo(1:ngastp,1:2,ireo)
 c dbg
 c        print *,'updated occ_k_to'
-c        call wrt_occ_n(luout,occ_k_to,njoined)
+c        call wrt_occ_n(lulog,occ_k_to,njoined)
 c dbg
       end do
 c dbg
@@ -220,7 +220,7 @@ c dbg
 
 c dbg
 c        print *,'updated i0'
-c        call wrt_occ_n(luout,occ_i0,njoined)
+c        call wrt_occ_n(lulog,occ_i0,njoined)
 c dbg
 
         ! count number of CA-op's on passive vertices between reo-vertices:
@@ -231,7 +231,7 @@ c dbg
           nencl = nencl + nca_vtx(ivtx)
         end do
 c dbg
-c        if (mod(nencl,2).ne.0) write(luout,*) 'ODD nencl appeared!'
+c        if (mod(nencl,2).ne.0) write(lulog,*) 'ODD nencl appeared!'
 c dbg
 
         ! before shifting for "to" vertex: i0 part / moved part:
@@ -264,7 +264,7 @@ c dbg
 c dbg
 c        print *,'sign_reo after remerging "to" vertex   = ',sign_reo
 c        print *,'updated i0'
-c        call wrt_occ_n(luout,occ_i0,njoined)
+c        call wrt_occ_n(lulog,occ_i0,njoined)
 c dbg
       end do
 c dbg

@@ -39,8 +39,8 @@
 
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_integral_graph')
-        write(luout,*) 'nelmax: ',nelmax
+        call write_title(lulog,wst_dbg_subr,'set_integral_graph')
+        write(lulog,*) 'nelmax: ',nelmax
       end if
       
       if (mnmxspc_in(1,1).eq.-1) then
@@ -54,9 +54,9 @@
 
       if (ntest.ge.100) then
         if (mnmxspc_in(1,1).eq.-1)
-     &       write(luout,*) 'using standard restrictions'
+     &       write(lulog,*) 'using standard restrictions'
         do igas = 1, orb_info%ngas
-          write(luout,'(2x,i3,3x,2i3)') igas,mnmxspc(1:2,igas)
+          write(lulog,'(2x,i3,3x,2i3)') igas,mnmxspc(1:2,igas)
         end do
       end if
 
@@ -101,12 +101,12 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'generated vertex weights:'
+        write(lulog,*) 'generated vertex weights:'
         do iorb = 1, norb
-          write(luout,'(2x,i2,x,i2,5x,10i6)')
+          write(lulog,'(2x,i2,x,i2,5x,10i6)')
      &         iorb, 1, iw_int(0:nelmax,1,iorb)
           do igam = 2, ngam
-            write(luout,'(5x,i2,5x,10i6)')
+            write(lulog,'(5x,i2,5x,10i6)')
      &           igam, iw_int(0:nelmax,igam,iorb)
           end do
         end do
@@ -125,12 +125,12 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'generated arc weights:'
+        write(lulog,*) 'generated arc weights:'
         do iorb = 1, norb
-          write(luout,'(2x,i2,x,i2,5x,10i6)')
+          write(lulog,'(2x,i2,x,i2,5x,10i6)')
      &         iorb, 1, iy_int(1:nelmax,1,iorb)
           do igam = 2, ngam
-            write(luout,'(5x,i2,5x,10i6)')
+            write(lulog,'(5x,i2,5x,10i6)')
      &           igam, iy_int(1:nelmax,igam,iorb)
           end do
         end do

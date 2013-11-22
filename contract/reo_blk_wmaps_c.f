@@ -172,8 +172,8 @@ c      print *,'gm_op_c/a: ',gm_op_c,gm_op_a
 c dbg
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_dbg_subr,'reo_blk_wmaps_c')
-        write(luout,*) 'sign_reo = ',sign_reo
+        call write_title(lulog,wst_dbg_subr,'reo_blk_wmaps_c')
+        write(lulog,*) 'sign_reo = ',sign_reo
       end if
 
       graphs => str_info%g
@@ -259,57 +259,57 @@ c dbg
 
 
 c dbg                
-c                  write(luout,*) '            I   GMD C',
+c                  write(lulog,*) '            I   GMD C',
 c     &                 gm_i_dis_c(1:ncblk_opori)
-c                  write(luout,*) '            K   GMD C',
+c                  write(lulog,*) '            K   GMD C',
 c     &                 gm_k_dis_c(1:ncblk_k)
-c                  write(luout,*) '            I0  GMD C',
+c                  write(lulog,*) '            I0  GMD C',
 c     &                 gm_i0_dis_c(1:ncblk_i0)
-c                  write(luout,*) '            I   GMD A',
+c                  write(lulog,*) '            I   GMD A',
 c     &                 gm_i_dis_a(1:nablk_opori)
-c                  write(luout,*) '            K   GMD A',
+c                  write(lulog,*) '            K   GMD A',
 c     &                 gm_k_dis_a(1:nablk_k)
-c                  write(luout,*) '            I0  GMD A',
+c                  write(lulog,*) '            I0  GMD A',
 c     &                 gm_i0_dis_a(1:nablk_i0)
-c                  write(luout,*) '            I   MSD C',
+c                  write(lulog,*) '            I   MSD C',
 c     &                 ms_i_dis_c(1:ncblk_opori)
-c                  write(luout,*) '            K   MSD C',
+c                  write(lulog,*) '            K   MSD C',
 c     &                 ms_k_dis_c(1:ncblk_k)
-c                  write(luout,*) '            I0  MSD C',
+c                  write(lulog,*) '            I0  MSD C',
 c     &                 ms_i0_dis_c(1:ncblk_i0)
-c                  write(luout,*) '            I   MSD A',
+c                  write(lulog,*) '            I   MSD A',
 c     &                 ms_i_dis_a(1:nablk_opori)
-c                  write(luout,*) '            K   MSD A',
+c                  write(lulog,*) '            K   MSD A',
 c     &                 ms_k_dis_a(1:nablk_k)
-c                  write(luout,*) '            I0  MSD A',
+c                  write(lulog,*) '            I0  MSD A',
 c     &                 ms_i0_dis_a(1:nablk_i0)
-c                  write(luout,*) ' possible: ',possible
+c                  write(lulog,*) ' possible: ',possible
 c dbg
                 if (ntest.ge.1500) then
-                  write(luout,*) '               I  MS',ms_op_c,ms_op_a
-                  write(luout,*) '               MSD C',
+                  write(lulog,*) '               I  MS',ms_op_c,ms_op_a
+                  write(lulog,*) '               MSD C',
      &                 ms_i_dis_c(1:ncblk_opori)
-                  write(luout,*) '               MSD A',
+                  write(lulog,*) '               MSD A',
      &                 ms_i_dis_a(1:nablk_opori)
-                  write(luout,*) 'current block: I0 MS',ms_i0_c,ms_i0_a
-                  write(luout,*) '               IRREP',gm_i0_c,gm_i0_a
-                  write(luout,*) '               MSD C',
+                  write(lulog,*) 'current block: I0 MS',ms_i0_c,ms_i0_a
+                  write(lulog,*) '               IRREP',gm_i0_c,gm_i0_a
+                  write(lulog,*) '               MSD C',
      &                 ms_i0_dis_c(1:ncblk_i0)
-                  write(luout,*) '               MSD A',
+                  write(lulog,*) '               MSD A',
      &                 ms_i0_dis_a(1:nablk_i0)
-                  write(luout,*) '               GMD C',
+                  write(lulog,*) '               GMD C',
      &                 gm_i0_dis_c(1:ncblk_i0)
-                  write(luout,*) '               GMD A',
+                  write(lulog,*) '               GMD A',
      &                 gm_i0_dis_a(1:nablk_i0)
-                  write(luout,*) '               K MS ',ms_k_c,ms_k_a
-                  write(luout,*) '               IRREP',gm_k_c,gm_k_a
-                  write(luout,*) '               MSD C',
+                  write(lulog,*) '               K MS ',ms_k_c,ms_k_a
+                  write(lulog,*) '               IRREP',gm_k_c,gm_k_a
+                  write(lulog,*) '               MSD C',
      &                 ms_k_dis_c(1:ncblk_k)
-                  write(luout,*) '               MSD A',
+                  write(lulog,*) '               MSD A',
      &                 ms_k_dis_a(1:nablk_k)
-                  write(luout,*) '               GMD C',
+                  write(lulog,*) '               GMD C',
      &                 gm_k_dis_c(1:ncblk_k)
-                  write(luout,*) '               GMD A',
+                  write(lulog,*) '               GMD A',
      &                 gm_k_dis_a(1:nablk_k)
                 end if
 
@@ -342,9 +342,9 @@ c dbg
      &                             ms_i0_dis_a,gm_i0_dis_a,
      &                             map_info_to_reo_a)
 c dbg
-c                write(luout,*) '            I''  MSD C',
+c                write(lulog,*) '            I''  MSD C',
 c     &                 ms_ip_dis_c(1:ncblk_opreo)
-c                write(luout,*) '            I''  MSD A',
+c                write(lulog,*) '            I''  MSD A',
 c     &                 ms_ip_dis_a(1:nablk_opreo)
 c
 c dbg

@@ -110,13 +110,13 @@
       if (.false.) then
 
       if (ntest.ge.100) then
-        write(luout,*) '============================='
-        write(luout,*) ' Info from expand_op_product'
-        write(luout,*) '============================='
-        write(luout,*) ' idx_res = ',idx_res
-        write(luout,*) ' fac, nops, nconnect: ',fac,nops,nconnect
-        write(luout,*) ' idx_op: ',idx_op(1:nops)
-        write(luout,*) ' connect:',connect(1:2,1:nconnect)
+        write(lulog,*) '============================='
+        write(lulog,*) ' Info from expand_op_product'
+        write(lulog,*) '============================='
+        write(lulog,*) ' idx_res = ',idx_res
+        write(lulog,*) ' fac, nops, nconnect: ',fac,nops,nconnect
+        write(lulog,*) ' idx_op: ',idx_op(1:nops)
+        write(lulog,*) ' connect:',connect(1:2,1:nconnect)
       end if
 
       form_pnt => form_list
@@ -188,11 +188,11 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'iop_typ: ',iop_typ(1:nops)
-        write(luout,*) 'iblk_min:',iblk_min(1:nops)
-        write(luout,*) 'iblk_max:',iblk_max(1:nops)
-        write(luout,*) 'neqv:    ',neqv(1:nops)
-        write(luout,*) 'idx_eqv: '
+        write(lulog,*) 'iop_typ: ',iop_typ(1:nops)
+        write(lulog,*) 'iblk_min:',iblk_min(1:nops)
+        write(lulog,*) 'iblk_max:',iblk_max(1:nops)
+        write(lulog,*) 'neqv:    ',neqv(1:nops)
+        write(lulog,*) 'idx_eqv: '
         call iwrtma(idx_eqv,nops,nops,nops,nops)
       end if
 
@@ -215,7 +215,7 @@ c        iblk_op(1:nops) = 1
         do
 
           if (ntest.ge.100) then
-            write(luout,*) 'current dist: ',iblk_op(1:nops)
+            write(lulog,*) 'current dist: ',iblk_op(1:nops)
           end if
 
           ! check that equivalent commuting operators 
@@ -232,7 +232,7 @@ c        iblk_op(1:nops) = 1
           end do
 
           if (ntest.ge.100) then
-            write(luout,*) 'check1: ',ok
+            write(lulog,*) 'check1: ',ok
           end if
 
           if (ok)  then
@@ -257,11 +257,11 @@ c        iblk_op(1:nops) = 1
             ok = .not.iocc_nonzero(occ_test)
 
             if (ntest.ge.100) then
-              write(luout,*) 'occ_vtx:'
-              call wrt_occ_n(luout,occ_vtx,nops+1)
-              write(luout,*) 'test:'
-              call wrt_occ(luout,occ_test)
-              write(luout,*) 'check2: ',ok
+              write(lulog,*) 'occ_vtx:'
+              call wrt_occ_n(lulog,occ_vtx,nops+1)
+              write(lulog,*) 'test:'
+              call wrt_occ(lulog,occ_test)
+              write(lulog,*) 'check2: ',ok
             end if
 
           end if

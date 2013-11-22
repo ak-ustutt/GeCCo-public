@@ -104,10 +104,10 @@
      &     allowed_contr
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'get_bc_info3')
-        call prt_contr3(luout,contr_in,-1)
-        write(luout,*) 'info_vtx: '
-        write(luout,'(x,2i4)') info_vtx(1:2,1:contr_in%nvtx+njoined_res)
+        call write_title(lulog,wst_dbg_subr,'get_bc_info3')
+        call prt_contr3(lulog,contr_in,-1)
+        write(lulog,*) 'info_vtx: '
+        write(lulog,'(x,2i4)') info_vtx(1:2,1:contr_in%nvtx+njoined_res)
       end if
 
       ngas = orb_info%ngas
@@ -165,9 +165,9 @@ c        end if
         iblk_op(1) = (contr%vertex(ivtx1)%iblk_op-1)/njoined_op(1) + 1
         tra_op1   = contr%vertex(ivtx1)%dagger
       else
-        write(luout,*) 'ivtx1 = ',ivtx1
-        write(luout,*) 'nvtx = ',nvtx
-        call prt_contr3(luout,contr_in,-1)        
+        write(lulog,*) 'ivtx1 = ',ivtx1
+        write(lulog,*) 'nvtx = ',nvtx
+        call prt_contr3(lulog,contr_in,-1)        
         call quit(1,'get_bc_info','ivtx1>nvtx?')
       end if
 
@@ -183,9 +183,9 @@ c        end if
           iblk_op(2) = (contr%vertex(ivtx2)%iblk_op-1)/njoined_op(2) + 1
           tra_op2   = contr%vertex(ivtx2)%dagger
         else
-          write(luout,*) 'ivtx2 = ',ivtx2
-          write(luout,*) 'nvtx = ',nvtx
-          call prt_contr3(luout,contr_in,-1)        
+          write(lulog,*) 'ivtx2 = ',ivtx2
+          write(lulog,*) 'nvtx = ',nvtx
+          call prt_contr3(lulog,contr_in,-1)        
           call quit(1,'get_bc_info','ivtx2>nvtx?')
         end if
       else
@@ -299,9 +299,9 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
           if (.not.ok) call quit(1,'get_bc_info3',
      &        'final result should have unique svmap!')
 c dbg
-c        write(luout,*) 'op1op2 incl. restrictions (1):'
+c        write(lulog,*) 'op1op2 incl. restrictions (1):'
 c        do ivtx = 1, njoined_res
-c          call wrt_occ_rstr(luout,ivtx,iocc_op1op2(1,1,ivtx),
+c          call wrt_occ_rstr(lulog,ivtx,iocc_op1op2(1,1,ivtx),
 c     &          op_info%op_arr(idx)%op%igasca_restr(1,1,1,1,1,
 c     &            (iblk-1)*njoined_res+ivtx),
 c     &          orb_info%ngas,orb_info%nspin)
@@ -328,7 +328,7 @@ c dbgend
 c dbg
 c        print *,'fetching restr op1op2 from op_info!'
 c        do idx = 1, njoined_op1op2
-c          call wrt_occ_rstr(luout,idx,iocc_op1op2(1,1,idx),
+c          call wrt_occ_rstr(lulog,idx,iocc_op1op2(1,1,idx),
 c     &                                irestr_op1op2(1,1,1,1,idx),
 c     &          orb_info%ngas,orb_info%nspin)
 c        end do
@@ -351,16 +351,16 @@ c dbg
       ! (after last contraction):
       if (contr%narc.eq.len_list) then
 c        if (njoined_op1op2.ne.njoined_res) then
-c          write(luout,*) 'njoined_op1op2, njoined_res: ',
+c          write(lulog,*) 'njoined_op1op2, njoined_res: ',
 c     &                    njoined_op1op2, njoined_res
 c          call quit(1,'get_bc_info3','trap 1')
 c        end if
         if (mst_op1op2.ne.info_vtx(1,1))
      &       call quit(1,'get_bc_info3','trap 2')
         if (gamt_op1op2.ne.info_vtx(2,1)) then
-          write(luout,*)'Inconsistency: '
-          write(luout,*)'gamt_op(1:2): ',gamt_op(1:2),' -> ',gamt_op1op2
-          write(luout,*)'info_vtx(2,1): ',info_vtx(2,1)
+          write(lulog,*)'Inconsistency: '
+          write(lulog,*)'gamt_op(1:2): ',gamt_op(1:2),' -> ',gamt_op1op2
+          write(lulog,*)'info_vtx(2,1): ',info_vtx(2,1)
           call quit(1,'get_bc_info3','trap 3')
         end if
         tra_op1op2 = contr%dagger 
@@ -446,39 +446,39 @@ c        end if
       deallocate(contr)
 
       if (ntest.ge.100) then
-        write(luout,*) 'get_bc_info3 on exit:'
-        write(luout,*) 'idx_op/blk 1: ',idx_op(1), iblk_op(1)
-        write(luout,*) 'idx_op/blk 2: ',idx_op(2), iblk_op(2)
-        write(luout,*) 'transpose:    ',tra_op1, tra_op2, tra_op1op2
-        write(luout,*) 'MS:           ',mst_op(1), mst_op(2), mst_op1op2
-        write(luout,*) 'IRREP:        ',gamt_op(1), gamt_op(2),
+        write(lulog,*) 'get_bc_info3 on exit:'
+        write(lulog,*) 'idx_op/blk 1: ',idx_op(1), iblk_op(1)
+        write(lulog,*) 'idx_op/blk 2: ',idx_op(2), iblk_op(2)
+        write(lulog,*) 'transpose:    ',tra_op1, tra_op2, tra_op1op2
+        write(lulog,*) 'MS:           ',mst_op(1), mst_op(2), mst_op1op2
+        write(lulog,*) 'IRREP:        ',gamt_op(1), gamt_op(2),
      &                                                       gamt_op1op2
-        write(luout,*) 'sign: ',bc_sign
-        if (.not.self) write(luout,*) 'op1, op2, op1op2:'
-        if (     self) write(luout,*) 'op1, tr(op1):'
-        call wrt_occ_n(luout,iocc_op1,njoined_op(1))
-        call wrt_occ_n(luout,iocc_op2,njoined_op(2))
-        call wrt_occ_n(luout,iocc_op1op2,njoined_op1op2)
-        if (.not.self) write(luout,*) 'ex1, ex2, cnt:'
-        if (     self) write(luout,*) 'ex1, cnt:'
-        call wrt_occ_n(luout,iocc_ex1,njoined_op(1))
-        call wrt_occ_n(luout,iocc_ex2,njoined_op(2))
-        call wrt_occ_n(luout,iocc_cnt,njoined_cnt)
-        write(luout,*) 'op1 incl. restrictions:'
+        write(lulog,*) 'sign: ',bc_sign
+        if (.not.self) write(lulog,*) 'op1, op2, op1op2:'
+        if (     self) write(lulog,*) 'op1, tr(op1):'
+        call wrt_occ_n(lulog,iocc_op1,njoined_op(1))
+        call wrt_occ_n(lulog,iocc_op2,njoined_op(2))
+        call wrt_occ_n(lulog,iocc_op1op2,njoined_op1op2)
+        if (.not.self) write(lulog,*) 'ex1, ex2, cnt:'
+        if (     self) write(lulog,*) 'ex1, cnt:'
+        call wrt_occ_n(lulog,iocc_ex1,njoined_op(1))
+        call wrt_occ_n(lulog,iocc_ex2,njoined_op(2))
+        call wrt_occ_n(lulog,iocc_cnt,njoined_cnt)
+        write(lulog,*) 'op1 incl. restrictions:'
         do idx = 1, njoined_op(1)
-          call wrt_occ_rstr(luout,idx,iocc_op1(1,1,idx),
+          call wrt_occ_rstr(lulog,idx,iocc_op1(1,1,idx),
      &                                irestr_op1(1,1,1,1,idx),
      &          orb_info%ngas,orb_info%nspin)
         end do
-        write(luout,*) 'op2 incl. restrictions:'
+        write(lulog,*) 'op2 incl. restrictions:'
         do idx = 1, njoined_op(2)
-          call wrt_occ_rstr(luout,idx,iocc_op2(1,1,idx),
+          call wrt_occ_rstr(lulog,idx,iocc_op2(1,1,idx),
      &                                irestr_op2(1,1,1,1,idx),
      &          orb_info%ngas,orb_info%nspin)
         end do
-        write(luout,*) 'op1op2 incl. restrictions:'
+        write(lulog,*) 'op1op2 incl. restrictions:'
         do idx = 1, njoined_op1op2
-          call wrt_occ_rstr(luout,idx,iocc_op1op2(1,1,idx),
+          call wrt_occ_rstr(lulog,idx,iocc_op1op2(1,1,idx),
      &                                irestr_op1op2(1,1,1,1,idx),
      &          orb_info%ngas,orb_info%nspin)
         end do

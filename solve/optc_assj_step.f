@@ -45,10 +45,10 @@
      &     xscrv(ndim), xscrv2(ndim), xscrv3(ndim)
 
       if (ntest.ge.0) then
-        write(luout,*) '===================='
-        write(luout,*) ' ASSJ modul entered'
-        write(luout,*) '===================='
-        write(luout,*) ' ndim : ', ndim
+        write(lulog,*) '===================='
+        write(lulog,*) ' ASSJ modul entered'
+        write(lulog,*) '===================='
+        write(lulog,*) ' ndim : ', ndim
       end if
 
       converged = .false.
@@ -70,13 +70,13 @@
             call rg(ncdim,ncdim,xsmat,xscrv,xscrv2,irg,
      &           xdum,kpiv,xscrv3,ierr)
             if (ierr.ne.0) then
-              write(luout,*) 'error code from rg: ',ierr
+              write(lulog,*) 'error code from rg: ',ierr
               stop 'optc_assj_step'
             end if
             if (ntest.ge.20) then
-              write(luout,*) 'eigenvalues of metric:'
+              write(lulog,*) 'eigenvalues of metric:'
               do ii = 1, ncdim
-                write(luout,*) ii,xscrv(ii),
+                write(lulog,*) ii,xscrv(ii),
      &               xscrv2(ii)
               end do
             end if
@@ -110,13 +110,13 @@
           call rgg(ncdim,ncdim,xamat,xsmat,
      &         xscrv,xscrv2,xscrv3,irg,xdum,ierr)
           if (ierr.ne.0) then
-            write(luout,*) 'error code from rgg: ',ierr
+            write(lulog,*) 'error code from rgg: ',ierr
             stop 'optc_assj_step'
           end if
           if (ntest.ge.20) then
-            write(luout,*) 'eigenvalues of reduced approx. jacobian:'
+            write(lulog,*) 'eigenvalues of reduced approx. jacobian:'
             do ii = 1, ncdim
-              write(luout,*) ii,xscrv(ii)/xscrv3(ii),
+              write(lulog,*) ii,xscrv(ii)/xscrv3(ii),
      &                     xscrv2(ii)/xscrv3(ii)
             end do
           end if
@@ -144,13 +144,13 @@
 
         ! solve subspace problem
         call dgeco(xamat,ncdim,ncdim,kpiv,cond,xscrv)
-        if (ntest.ge.10) write(luout,*)'dimension ,condition number: ',
+        if (ntest.ge.10) write(lulog,*)'dimension ,condition number: ',
      &         ncdim,cond
 
         if (ntest.ge.50) then
-          write(luout,*) 'Factorized matrix from dgeco:'
+          write(lulog,*) 'Factorized matrix from dgeco:'
           call wrtmat2(xamat,ncdim,ncdim,ncdim,ncdim)
-          write(luout,*) 'Pivot array:'
+          write(lulog,*) 'Pivot array:'
           call iwrtma(kpiv,1,ncdim,1,ncdim)
         end if
 
@@ -163,7 +163,7 @@
         end if
 
         if (ntest.ge.20) then
-          write(luout,*) 'RHS:'
+          write(lulog,*) 'RHS:'
           call wrtmat2(xvec,ncdim,1,ncdim,1)
         end if
 
@@ -171,7 +171,7 @@
         call dgesl(xamat,ncdim,ncdim,kpiv,xvec,job)
 
         if (ntest.ge.20) then
-          write(luout,*) 'Resulting vector:'
+          write(lulog,*) 'Resulting vector:'
           call wrtmat2(xvec,ncdim,1,ncdim,1)
         end if
         
@@ -217,7 +217,7 @@
       end if
       
       if (ntest.ge.20) then
-        write(luout,*) 'Re-transformed vector (ndel = ',ndel,'):'
+        write(lulog,*) 'Re-transformed vector (ndel = ',ndel,'):'
         call wrtmat2(xvec,ndim,1,ndim,1)
       end if
 

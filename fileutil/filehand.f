@@ -32,26 +32,26 @@ c      lblk_da = 1024*1024/nrecfc
       end do
 
       if (iprint.gt.10) then
-        call fh_prstat(luout)
+        call fh_prstat(lulog)
       end if
 
       end
 
 *----------------------------------------------------------------------*
-      subroutine fh_prstat(luout)
+      subroutine fh_prstat(lulog)
 *----------------------------------------------------------------------*
       implicit none
       include "freeunits.h"
 
       integer, intent(in) ::
-     &     luout         ! output unit
+     &     lulog         ! output unit
 
       integer ::
      &     iunit
       character ::
      &     cstat*20
 
-      write(luout,'(2(/x,a))')
+      write(lulog,'(2(/x,a))')
      &       'Status of unit numbers',
      &       '======================'
       do iunit = 1, mxpunit
@@ -61,7 +61,7 @@ c      lblk_da = 1024*1024/nrecfc
         if (ifrunit(iunit).eq.-2) cstat = 'OCCUPIED ON INIT    '
         if (ifrunit(iunit).eq.1)  cstat = 'RESERVED BY IGETUN  '
         if (ifrunit(iunit).eq.-1) cstat = 'OCCUPIED AFTER INIT '
-        write(luout,'(x,i3,2x,a)') iunit, cstat
+        write(lulog,'(x,i3,2x,a)') iunit, cstat
       end do
 
       end
@@ -108,7 +108,7 @@ c      lblk_da = 1024*1024/nrecfc
         end if
       end do
 
-      write(luout,*) 'Fatal: run out of unit numbers in igetun'
+      write(lulog,*) 'Fatal: run out of unit numbers in igetun'
       call fh_prstat(6)
       call quit(1,'igetunit','run out of unit numbers')
 
@@ -144,26 +144,26 @@ c      lblk_da = 1024*1024/nrecfc
           end if
           if (len.le.0) then
             len = min(40,abs(len))
-            write(luout,*) ' illegal status line: "',cstat(1:len),'"'
+            write(lulog,*) ' illegal status line: "',cstat(1:len),'"'
             call quit(1,'relunit','illegal status line')
           end if
           close(iunit,status=cscr(1:len))
         end if
         ifrunit(iunit) = 0
       else
-        write(luout,*) 'relunit called for illegal unit ',
+        write(lulog,*) 'relunit called for illegal unit ',
      &       iunit, ifrunit(iunit)
         inquire(unit=iunit,opened=lopen,named=lnamed,name=filnam)
         if (lopen) then
-          write(luout,*) ' the file was open'
+          write(lulog,*) ' the file was open'
         else
-          write(luout,*) ' the file was not open'
+          write(lulog,*) ' the file was not open'
         end if
         if (lnamed) then
           len = len_trim(filnam)
-          write(luout,*) ' the file was named: "',filnam(1:len),'"'
+          write(lulog,*) ' the file was named: "',filnam(1:len),'"'
         else
-          write(luout,*) ' the file was not named'
+          write(lulog,*) ' the file was not named'
         end if
         call quit(1,'relunit','illegal unit')
       end if
@@ -326,31 +326,31 @@ c      lblk_da = 1024*1024/nrecfc
 
       inquire(unit=lu,named=lnamed,opened=lopen,name=str)
 
-      write(luout,'(/x,78("="))')
-      write(luout,*) ' Information on unit ',lu
+      write(lulog,'(/x,78("="))')
+      write(lulog,*) ' Information on unit ',lu
       if (lopen) then
-        write(luout,*) '  file is open'
+        write(lulog,*) '  file is open'
         if (lnamed) then
           len = len_trim(str)
-          write(luout,*) '  filename: ',str(1:len)
+          write(lulog,*) '  filename: ',str(1:len)
         else
-          write(luout,*) '  unnamed'
+          write(lulog,*) '  unnamed'
         end if
         inquire(unit=lu,form=str)
         len = len_trim(str)
-        write(luout,*) '  format: ',str(1:len)
+        write(lulog,*) '  format: ',str(1:len)
         inquire(unit=lu,access=str)
         len = len_trim(str)
-        write(luout,*) '  access: ',str(1:len)
+        write(lulog,*) '  access: ',str(1:len)
         if (str(1:len).eq.'DIRECT'.or.str(1:len).eq.'direct') then
           inquire(unit=lu,recl=lrec,nextrec=nrec)
-          write(luout,*) '  record-length: ',lrec
-          write(luout,*) '  next record  : ',nrec
+          write(lulog,*) '  record-length: ',lrec
+          write(lulog,*) '  next record  : ',nrec
         end if
       else
-        write(luout,*) ' file is not open'
+        write(lulog,*) ' file is not open'
       end if
-      write(luout,'(x,78("="))')
+      write(lulog,'(x,78("="))')
 
       end
 

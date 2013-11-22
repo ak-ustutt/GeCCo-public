@@ -81,7 +81,7 @@ c prelim
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'Setting up ECC-Lagrangian')
       end if
 
@@ -136,8 +136,8 @@ c prelim
       call reorder_formula(flist_hbar,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'Hbar:')
-        call print_form_list(luout,flist_hbar,op_info)
+        call write_title(lulog,wst_title,'Hbar:')
+        call print_form_list(lulog,flist_hbar,op_info)
       end if
 
       ! -----------------------------
@@ -146,17 +146,17 @@ c prelim
       call expand_op_bch(fl_pnt,4,idxlag,
      &     1d0,-1,idx_hb_temp,-1d0,idxtbar,-1,-1,op_info)
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'Initial Lagrangian:')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_title,'Initial Lagrangian:')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
       ! replace Hbar by e^-T H e^T
       call expand_subexpr(flist_lag,flist_hbar,0,op_info)
       call sum_terms(flist_lag,op_info)
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'Expanded Lagrangian:')
-        call print_form_list(luout,flist_lag,op_info)
-        call print_form_list_p(luout,flist_lag,op_info)
+        call write_title(lulog,wst_title,'Expanded Lagrangian:')
+        call print_form_list(lulog,flist_lag,op_info)
+        call print_form_list_p(lulog,flist_lag,op_info)
       end if
 
 
@@ -185,8 +185,8 @@ c quick'n'dirty:
       end if
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_title,'Final formula')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_title,'Final formula')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
       ! assign comment
@@ -203,8 +203,8 @@ c quick'n'dirty:
       call del_operator(op_hb_temp,op_info)
 
       call atim_csw(cpu,sys,wall)
-c      write(luout,*) 'Number of generated terms: ',nterms
-      call prtim(luout,'ECC Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
+c      write(lulog,*) 'Number of generated terms: ',nterms
+      call prtim(lulog,'ECC Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
 c dbg
       if (ntest.ge.100) stop

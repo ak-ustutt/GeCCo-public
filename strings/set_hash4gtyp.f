@@ -36,14 +36,14 @@
         ! "hash"-value of that graph
         igtyp = ngastp*(nocc-1) + ihpv
         if (igtyp.gt.max_igtyp) then
-          write(luout,*) 'dimension problem ',igtyp,max_igtyp
+          write(lulog,*) 'dimension problem ',igtyp,max_igtyp
           call quit(1,'set_hash4typ',
      &       'max_igtyp was not set correctly')
         end if
         ! set up hashing information
         str_info%gtab(1,igtyp) = str_info%gtab(1,igtyp)+1
         if (str_info%gtab(1,igtyp).gt.ld_gtab-1) then
-          write(luout,*) 'dimension problem',str_info%gtab(1,igtyp),
+          write(lulog,*) 'dimension problem',str_info%gtab(1,igtyp),
      &             ld_gtab-1
           call quit(1,'set_hash4typ',
      &       'parameter ld_gtab (def_strinf.h) is too small')

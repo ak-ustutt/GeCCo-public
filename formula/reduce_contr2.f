@@ -69,10 +69,10 @@
      &     idxlist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'reduce_contr2')
-        write(luout,*) 'contraction on entry:'
-        call prt_contr3(luout,contr,-1)
-        write(luout,*) 'idxnew_op1op2:  ',idxnew_op1op2
+        call write_title(lulog,wst_dbg_subr,'reduce_contr2')
+        write(lulog,*) 'contraction on entry:'
+        call prt_contr3(lulog,contr,-1)
+        write(lulog,*) 'idxnew_op1op2:  ',idxnew_op1op2
       end if
 
       nvtx = contr%nvtx
@@ -86,8 +86,8 @@
       call pack_contr(svertex,vtx,topo,xlines,contr,njoined_res)
 
       if (ntest.ge.100) then
-        write(luout,*) 'contraction in topo form:'
-        call prt_contr_p(luout,svertex,vtx,topo,xlines,nvtx,njoined_res)
+        write(lulog,*) 'contraction in topo form:'
+        call prt_contr_p(lulog,svertex,vtx,topo,xlines,nvtx,njoined_res)
       end if
 
       ! get list of contracted vertex pairs
@@ -100,11 +100,11 @@
      &     vtx_list,nlist)
 
       if (ntest.ge.100)
-     &     write(luout,*) 'cnt_sign = ',cnt_sign
+     &     write(lulog,*) 'cnt_sign = ',cnt_sign
 
       if (ntest.ge.1000) then
-        write(luout,*) 'after removing contracted arcs:'
-        call prt_contr_p(luout,svertex,vtx,topo,xlines,nvtx,njoined_res)
+        write(lulog,*) 'after removing contracted arcs:'
+        call prt_contr_p(lulog,svertex,vtx,topo,xlines,nvtx,njoined_res)
       end if
 
       ! augment with joined super vertices, if necessary, and
@@ -114,7 +114,7 @@
       call unique_list(vtx_list,nvtx_cnt) ! contains actual length on exit
       
       if (ntest.ge.1000)
-     &     write(luout,*) 'involved vtx: ',vtx_list(1:nvtx_cnt)
+     &     write(lulog,*) 'involved vtx: ',vtx_list(1:nvtx_cnt)
 
       ! move contracted vertices as close together as possible
       ! report reordering in ireo array
@@ -125,7 +125,7 @@
      &     nvtx,njoined_res,vtx_list,nvtx_cnt)
 
       if (ntest.ge.100)
-     &     write(luout,*) 'sh_sign = ',sh_sign
+     &     write(lulog,*) 'sh_sign = ',sh_sign
 
       do ivtx = 1, nvtx_cnt        
         idx = ireo0(vtx_list(ivtx)) 
@@ -133,18 +133,18 @@
       end do
 
       if (ntest.ge.1000)
-     &     write(luout,*) 'involved vtx(reo): ',vtx_list_reo(1:nvtx_cnt)
+     &     write(lulog,*) 'involved vtx(reo): ',vtx_list_reo(1:nvtx_cnt)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'after approaching contracted vertices'
-        call prt_contr_p(luout,svertex_reo,
+        write(lulog,*) 'after approaching contracted vertices'
+        call prt_contr_p(lulog,svertex_reo,
      &       vtx,topo,xlines,nvtx,njoined_res)
       end if
 
       ! resort list
       call unique_list(vtx_list_reo,nvtx_cnt)
       if (ntest.ge.1000)
-     &     write(luout,*) 'updated vtx(reo): ',vtx_list_reo(1:nvtx_cnt)
+     &     write(lulog,*) 'updated vtx(reo): ',vtx_list_reo(1:nvtx_cnt)
 
 c dbg
 c      print *,'isvtx1, isvtx2: ',isvtx1, isvtx2
@@ -163,13 +163,13 @@ c dbg
       call unique_list(vtx_list_new,nvtx_cnt)
 
       if (ntest.ge.100)
-     &     write(luout,*) 'merge_sign = ',merge_sign
+     &     write(lulog,*) 'merge_sign = ',merge_sign
 
       if (ntest.ge.1000) then
-        write(luout,*) 'nvtx, nvtx_new, nvtx_cnt, nvtx_op1op2: ',
+        write(lulog,*) 'nvtx, nvtx_new, nvtx_cnt, nvtx_op1op2: ',
      &       nvtx, nvtx_new, nvtx_cnt, nvtx_op1op2
-        write(luout,*) 'ireo2: ',ireo2(1:nvtx)
-        write(luout,*) 'final: ',vtx_list_new(1:nvtx_cnt)
+        write(lulog,*) 'ireo2: ',ireo2(1:nvtx)
+        write(lulog,*) 'final: ',vtx_list_new(1:nvtx_cnt)
       end if
 
       if (nvtx_op1op2.ne.nvtx_cnt)
@@ -195,8 +195,8 @@ c dbg
      &     vtx_list_new,nvtx_new,nvtx_op1op2)
 
       if (ntest.ge.100) then
-        write(luout,*) 'reduced term'
-        call prt_contr_p(luout,svertex_new,vtx_new,
+        write(lulog,*) 'reduced term'
+        call prt_contr_p(lulog,svertex_new,vtx_new,
      &       topo_new,xlines_new,nvtx_new,njoined_res)
       end if
 
@@ -249,20 +249,20 @@ cmh        contr_red is already initialized and possibly non-zero!
      &                  nvtx_new,njoined_res)
 
         if (ntest.ge.100) then
-          write(luout,*) 'reduced contraction on exit:'
-          call prt_contr3(luout,contr_red,-1)
+          write(lulog,*) 'reduced contraction on exit:'
+          call prt_contr3(lulog,contr_red,-1)
         end if
 
       else
         if (ntest.ge.100) then
-          write(luout,*) 'no reduced contraction requested'
+          write(lulog,*) 'no reduced contraction requested'
         end if
       end if
 
       new_sign = sh_sign*cnt_sign*merge_sign
 
       if (ntest.ge.100)
-     &     write(luout,*) 'new_sign = ',new_sign
+     &     write(lulog,*) 'new_sign = ',new_sign
 
       nvtx_red = nvtx_new
       ! new -> old reo; idx_old = ireo_vtx_no(idx_new)
@@ -276,9 +276,9 @@ cmh        contr_red is already initialized and possibly non-zero!
       end do
       ivtx_op1op2(1:nvtx_op1op2) = vtx_list_new(1:nvtx_op1op2)
       if (ntest.ge.100) then
-        write(luout,*) 'nvtx_red = ',nvtx_red
-        write(luout,*) 'ireo_vtx_no = ',ireo_vtx_no(1:nvtx_red)
-        write(luout,*) 'ireo_vtx_on = ',ireo_vtx_on(1:nvtx)
+        write(lulog,*) 'nvtx_red = ',nvtx_red
+        write(lulog,*) 'ireo_vtx_no = ',ireo_vtx_no(1:nvtx_red)
+        write(lulog,*) 'ireo_vtx_on = ',ireo_vtx_on(1:nvtx)
       end if
 
       deallocate(vtx, topo, xlines, scr, ireo2,

@@ -44,8 +44,8 @@
       end do
 
  99   if (trim(keyword_end).ne.'') then
-        write(luout,*) 'Error reading file '//trim(inp_file%name)
-        write(luout,*) 'File ended before keyword '//trim(keyword_end)
+        write(lulog,*) 'Error reading file '//trim(inp_file%name)
+        write(lulog,*) 'File ended before keyword '//trim(keyword_end)
      &                 //' was reached!' 
         call quit(0,'lex_file','File ended while scanning ...')
       end if
@@ -54,8 +54,8 @@
 
       return
 
- 101  write(luout,*) 'Error reading file '//trim(inp_file%name)
-      write(luout,*) 'File ended before keyword '//trim(keyword_start)  
+ 101  write(lulog,*) 'Error reading file '//trim(inp_file%name)
+      write(lulog,*) 'File ended before keyword '//trim(keyword_start)  
      &                 //' was found!'
         call quit(0,'lex_file','File ended while scanning ...')
 

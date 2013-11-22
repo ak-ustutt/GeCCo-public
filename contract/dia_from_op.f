@@ -110,16 +110,16 @@
      &     call file_open(ffinp)
 
       if (ntest.ge.100) then
-        write(luout,*) '============================'
-        write(luout,*) ' dia_from_op messing around'
-        write(luout,*) '============================'
-        write(luout,*) ' input list = ',trim(meinp%label)
-        write(luout,*) ' ffinp: ',trim(ffinp%name)
-        write(luout,*) ' opinp: ',opinp%name(1:len_trim(opinp%name))
-        write(luout,*) ' output list = ',trim(meout%label)
-        write(luout,*) ' ffout: ',trim(ffout%name)
-        write(luout,*) ' opout: ',opout%name(1:len_trim(opout%name))
-        write(luout,*) ' mode: ',trim(mode)
+        write(lulog,*) '============================'
+        write(lulog,*) ' dia_from_op messing around'
+        write(lulog,*) '============================'
+        write(lulog,*) ' input list = ',trim(meinp%label)
+        write(lulog,*) ' ffinp: ',trim(ffinp%name)
+        write(lulog,*) ' opinp: ',opinp%name(1:len_trim(opinp%name))
+        write(lulog,*) ' output list = ',trim(meout%label)
+        write(lulog,*) ' ffout: ',trim(ffout%name)
+        write(lulog,*) ' opout: ',opout%name(1:len_trim(opout%name))
+        write(lulog,*) ' mode: ',trim(mode)
       end if
 
       if (opout%njoined.ne.1.or.opinp%njoined.gt.3)
@@ -162,9 +162,9 @@
           call quit(1,'dia_from_op','not made for these operator types')
         end if
         if (ntest.ge.100) then
-          write(luout,'(a,i4)') 'diagonal of occupation class',i_occ_cls
-          call wrt_occ(luout,iocc_dia)
-          write(luout,*) 'split_sign: ',split_sign
+          write(lulog,'(a,i4)') 'diagonal of occupation class',i_occ_cls
+          call wrt_occ(lulog,iocc_dia)
+          write(lulog,*) 'split_sign: ',split_sign
         end if
 
         ! is there a matching output block?
@@ -180,7 +180,7 @@
 c           ad hoc: add scalar contrib. only to purely inactive blks
      &        (ext_act.or..not.(iocc_zero(iocc_dia).and.
      &              any(iocc_out(IVALE,1:2).ne.0)))) then
-            if (ntest.ge.100) write(luout,'(a,i2)')
+            if (ntest.ge.100) write(lulog,'(a,i2)')
      &           'found matching output block: # ',iblkout
 
             ! get the input, extract diagonal and write to output
@@ -219,7 +219,7 @@ c           ad hoc: add scalar contrib. only to purely inactive blks
 
       call atim_csw(cpu,sys,wall)
 
-      call prtim(luout,'time for extracting diagonal ',
+      call prtim(lulog,'time for extracting diagonal ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 
       return

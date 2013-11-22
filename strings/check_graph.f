@@ -103,12 +103,12 @@
             ! consistent??
             if (idx.ne.istr) then
               error = .true.
-              write(luout,*) 'ERROR for GRAPH/MS/GAMMA: ',igraph,ms,igam
-              write(luout,*) 'idorb:   ',idorb(1:iocc)
-              write(luout,*) 'idspn:   ',idspn(1:iocc)
-              write(luout,*) 'idgam:   ',idgam(1:iocc)
-              write(luout,*) 'idss:    ',idss (1:iocc)
-              write(luout,*) 'istr, idx = ',istr, idx
+              write(lulog,*) 'ERROR for GRAPH/MS/GAMMA: ',igraph,ms,igam
+              write(lulog,*) 'idorb:   ',idorb(1:iocc)
+              write(lulog,*) 'idspn:   ',idspn(1:iocc)
+              write(lulog,*) 'idgam:   ',idgam(1:iocc)
+              write(lulog,*) 'idss:    ',idss (1:iocc)
+              write(lulog,*) 'istr, idx = ',istr, idx
             end if
 
           end do

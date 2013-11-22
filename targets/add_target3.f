@@ -36,9 +36,9 @@ c      if (.not.present(string_arr)) return
       end do
 
       call init_word_list(blocked_list)
-      call parse_blocks(blocked_list,input_list,luout)
+      call parse_blocks(blocked_list,input_list,lulog)
 c dbg
-c      call print_word_list(luout,blocked_list)
+c      call print_word_list(lulog,blocked_list)
 c dbg
 
       call clean_word_list(input_list)

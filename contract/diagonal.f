@@ -87,7 +87,7 @@
      &       ioff_blk_in+len_blk_in)
       else
         if(ntest.ge.100)
-     &       write(luout,*)'Symmetrise: input not incore'
+     &       write(lulog,*)'Symmetrise: input not incore'
         buffer_in => ffin%buffer(ioff_blk_in+1:)
       endif
 
@@ -97,7 +97,7 @@
         buffer_out(1:nbuff) = 0d0
       else
         if(ntest.ge.100)
-     &       write(luout,*)'Symmetrise: output not incore'
+     &       write(lulog,*)'Symmetrise: output not incore'
         buffer_out => ffout%buffer(ioff_blk_out+1:)
       endif
 

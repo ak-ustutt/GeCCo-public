@@ -49,9 +49,9 @@ c     &     idxspn(max(ndim_c,ndim_a)),idxdss(max(ndim_c,ndim_a))
      &     next_string
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'optc_prc_special2_inner')
-        write(luout,*) 'beyond_A: ',beyond_A
-        write(luout,*) 'ndim_bx, ndim_c, ndim_a: ',
+        call write_title(lulog,wst_dbg_subr,'optc_prc_special2_inner')
+        write(lulog,*) 'beyond_A: ',beyond_A
+        write(lulog,*) 'ndim_bx, ndim_c, ndim_a: ',
      &                  ndim_bx, ndim_c, ndim_a
       end if
 

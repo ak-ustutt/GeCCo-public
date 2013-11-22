@@ -33,7 +33,7 @@
      &     occ_overlap_p
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'here speaks topo_rank_change')
       end if
 
@@ -57,8 +57,8 @@
         end do
         ovl = occ_overlap_p(occ_rem,occ(ij))
         if (ntest.ge.100) then
-          write(luout,*) 'sum(topo),new_op,ovl:'
-          write(luout,'(3(x,i8.8))') occ_rem,occ(ij),ovl
+          write(lulog,*) 'sum(topo),new_op,ovl:'
+          write(lulog,'(3(x,i8.8))') occ_rem,occ(ij),ovl
         end if
         allowed = ovl.eq.occ_rem
         if (.not.allowed) exit
@@ -66,15 +66,15 @@
         occ_rem = occ(ij)-occ_rem
 
         if (ntest.ge.100) then
-          write(luout,*) 'check OK!! now the xlines:'
+          write(lulog,*) 'check OK!! now the xlines:'
         end if
 
         ! get overlap of xlines (here we need to actually adapt for nj_res>1)
         do ij_res = 1, nj_res
           ovl = occ_overlap_p(xlines(ivtx,ij_res),occ_rem)
           if (ntest.ge.100) then
-            write(luout,*) 'xline,remainder,ovl'
-            write(luout,'(3(x,i8.8))') xlines(ivtx,ij_res),occ_rem,ovl
+            write(lulog,*) 'xline,remainder,ovl'
+            write(lulog,'(3(x,i8.8))') xlines(ivtx,ij_res),occ_rem,ovl
           end if
           xlines(ivtx,ij_res) = ovl
         end do
@@ -82,8 +82,8 @@
       end do nj_loop
 
       if (ntest.eq.100) then
-        write(luout,*) 'final xlines:'
-        write(luout,'(4(x,i8.8))') xlines(1:nvtx,1)
+        write(lulog,*) 'final xlines:'
+        write(lulog,'(4(x,i8.8))') xlines(1:nvtx,1)
       end if
 
       return

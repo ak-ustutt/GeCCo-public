@@ -53,8 +53,8 @@
      &     opblk_restr_cmp
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'form_op_replace')
-        write(luout,*) 'idx_opin, idx_opout: ',idx_opin, idx_opout
+        call write_title(lulog,wst_dbg_subr,'form_op_replace')
+        write(lulog,*) 'idx_opin, idx_opout: ',idx_opin, idx_opout
       end if
 
       idxin = idx_opin
@@ -84,13 +84,13 @@
         ! Navigate to the correct parts of the formula.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.100) write(luout,*) '[END]'
+          if(ntest.ge.100) write(lulog,*) '[END]'
         case(command_set_target_init)
           if(ntest.ge.100)
-     &         write(luout,*) '[INIT TARGET]',form_pnt%target
+     &         write(lulog,*) '[INIT TARGET]',form_pnt%target
         case(command_add_contribution)
           ! The necessary contractions are here.
-c          write(luout,*) '[ADD]'
+c          write(lulog,*) '[ADD]'
 
           change = .false.
           remove = .false.
@@ -117,7 +117,7 @@ c          write(luout,*) '[ADD]'
                 if (njoined.gt.1) then
                   isuper = form_pnt%contr%svertex(idx)
                   if (form_pnt%contr%joined(0,isuper).ne.njoined) then
-                    write(luout,*) 'njoined,joined(0):',
+                    write(lulog,*) 'njoined,joined(0):',
      &                   njoined,form_pnt%contr%joined(0,isuper)
                     call quit(1,'op_replace','inconsistency')
                   end if
@@ -154,9 +154,9 @@ c          write(luout,*) '[ADD]'
                 end if
 
                 if (idx_blk_out.le.0.and.strict) then
-                  write(luout,*) trim(opin_pnt%name),
+                  write(lulog,*) trim(opin_pnt%name),
      &                 ' block no. ', idx_form_blk
-                  call wrt_occ(luout,occ_temp)
+                  call wrt_occ(lulog,occ_temp)
                   call quit(1,'form_op_replace',
      &                 'There is no block of '//trim(opout_pnt%name)//
      &                 ' that corresponds to the present block of '//
@@ -250,15 +250,15 @@ cmh            deallocate(ivtx_reo,fix_vtx,occ_vtx)
             deallocate(ivtx_reo)
           
             if(ntest.ge.100.and.change)then
-              write(luout,*) 'Operator-replaced contraction'
-              call prt_contr2(luout,form_pnt%contr,op_info)
+              write(lulog,*) 'Operator-replaced contraction'
+              call prt_contr2(lulog,form_pnt%contr,op_info)
             endif
 
           end if ! .not.remove
 
         case default
           ! just ignore unknown commands
-c          write(luout,*) 'command = ',form_pnt%command
+c          write(lulog,*) 'command = ',form_pnt%command
 c          call quit(1,'form_op_replace','command undefined here')
         end select
 

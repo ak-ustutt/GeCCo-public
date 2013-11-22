@@ -52,7 +52,7 @@
      &     idx_oplist2, iblk_occ
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'select_mrcc_rem0res')
+        call write_title(lulog,wst_dbg_subr,'select_mrcc_rem0res')
       endif
 
       ! get operator indices
@@ -64,12 +64,12 @@
       error = nlabels.ne.3
       
       if (error) then
-        write(luout,*) 'Error for operator labels:'
+        write(lulog,*) 'Error for operator labels:'
         do ii = 1, nlabels
           if (idxop(ii).le.0) then
-            write(luout,'(a20," - ??")') trim(labels(ii))
+            write(lulog,'(a20," - ??")') trim(labels(ii))
           else
-            write(luout,'(a20," - OK")') trim(labels(ii))
+            write(lulog,'(a20," - OK")') trim(labels(ii))
           end if
         end do
         if (nlabels.ne.3)
@@ -91,9 +91,9 @@
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
         case(command_add_contribution)
 
           iterm = iterm + 1
@@ -138,9 +138,9 @@ c dbgend
           if (delete) then
             ! Print the deleted contraction.
             if(ntest.ge.1000)then
-              write(luout,*) 'Deleted formula item:'
-              write(luout,*) 'iterm:',iterm
-              call prt_contr2(luout,form_pnt%contr,op_info)
+              write(lulog,*) 'Deleted formula item:'
+              write(lulog,*) 'iterm:',iterm
+              call prt_contr2(lulog,form_pnt%contr,op_info)
             endif
 
             ! Delete the node.
@@ -149,7 +149,7 @@ c dbgend
           end if
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'select_mrcc_rem0res','command undefined here')
         end select
 

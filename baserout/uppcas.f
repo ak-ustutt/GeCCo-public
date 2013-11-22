@@ -40,7 +40,7 @@
      &     icha, i
 
       if (ntest.ge.100)
-     &     write(luout,*) 'uppcas: on entry "',trim(line),'"'
+     &     write(lulog,*) 'uppcas: on entry "',trim(line),'"'
 
       do icha = 1, len_trim(line)
         do i = 1,nchar
@@ -50,7 +50,7 @@
       end do
 
       if (ntest.ge.100)
-     &     write(luout,*) 'uppcas: on exit "',trim(line),'"'
+     &     write(lulog,*) 'uppcas: on exit "',trim(line),'"'
 *
       return
       end

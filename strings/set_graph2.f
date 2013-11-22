@@ -43,26 +43,26 @@
      &     allow_sbsp_dis, next_rvlex
 
       if (ntest.ge.100) then
-        write(luout,*) '====================='
-        write(luout,*) 'here speaks set_graph'
-        write(luout,*) '====================='
-        write(luout,*) ' ipass = ',ipass
-        write(luout,*) ' setting: '
-        write(luout,*) '   ihpv =', str_info%ispc_typ(igraph)
-        write(luout,*) '   occ  =', str_info%ispc_occ(igraph)
+        write(lulog,*) '====================='
+        write(lulog,*) 'here speaks set_graph'
+        write(lulog,*) '====================='
+        write(lulog,*) ' ipass = ',ipass
+        write(lulog,*) ' setting: '
+        write(lulog,*) '   ihpv =', str_info%ispc_typ(igraph)
+        write(lulog,*) '   occ  =', str_info%ispc_occ(igraph)
         ihpv = str_info%ispc_typ(igraph)
-        write(luout,*) '   restr = ', 
+        write(lulog,*) '   restr = ', 
      &              str_info%igas_restr(1:2,1:ngas_hpv(ihpv),1,1,igraph)
-        write(luout,*) '           ', 
+        write(lulog,*) '           ', 
      &              str_info%igas_restr(1:2,1:ngas_hpv(ihpv),2,1,igraph)
       end if
 
       iprint = max(ntest,iprlvl)
       
       if (iprint.ge.5.and.ipass.eq.2) then
-        write(luout,*) 'Number of strings'
-        write(luout,*) '-----------------'
-        write(luout,*) '  Graph space electr.  MS      length   '
+        write(lulog,*) 'Number of strings'
+        write(lulog,*) '-----------------'
+        write(lulog,*) '  Graph space electr.  MS      length   '
       end if
 
       if (ipass.eq.1) then
@@ -183,10 +183,10 @@ c dbg
 
             if (iprint.gt.5) then
               if (ims.eq.1) then
-                write(luout,'(4x,4(i3,3x),i12)') igraph, ihpv, nexc,
+                write(lulog,'(4x,4(i3,3x),i12)') igraph, ihpv, nexc,
      &               -nexc+(ims-1)*2, isum_tot
               else
-                write(luout,'(10x,3(i3,3x),i12)')        ihpv, nexc,
+                write(lulog,'(10x,3(i3,3x),i12)')        ihpv, nexc,
      &               -nexc+(ims-1)*2, isum_tot
               end if
             end if

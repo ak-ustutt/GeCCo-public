@@ -43,8 +43,8 @@
       nspin = orb_info%nspin
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'join_operator')
-        write(luout,*) 'joining ',trim(op1%name),' and ',trim(op2%name)
+        call write_title(lulog,wst_dbg_subr,'join_operator')
+        write(lulog,*) 'joining ',trim(op1%name),' and ',trim(op2%name)
       end if
 
       if (op1%type.ne.op2%type)
@@ -135,13 +135,13 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'generated ',op1%n_occ_cls,' blocks'
+        write(lulog,*) 'generated ',op1%n_occ_cls,' blocks'
         do iblk = 1, op1%n_occ_cls
-          write(luout,'(/x,a,i4)') 'Occupation Nr. ',iblk
+          write(lulog,'(/x,a,i4)') 'Occupation Nr. ',iblk
           ioffblk = (iblk-1)*njoined
-          call wrt_occ_n(luout,op1%ihpvca_occ(1,1,ioffblk+1),njoined)
+          call wrt_occ_n(lulog,op1%ihpvca_occ(1,1,ioffblk+1),njoined)
           do ijoin = 1, njoined
-            call wrt_rstr(luout,
+            call wrt_rstr(lulog,
      &           op1%igasca_restr(1,1,1,1,1,ioffblk+ijoin),ngas)
           end do
         end do

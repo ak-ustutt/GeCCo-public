@@ -40,12 +40,12 @@
           end if
         end do
         if (jarc.eq.0) then
-          write(luout,*) 'idx = ',idx
-          write(luout,*) 'no appropriate arc on contr_red for ',
+          write(lulog,*) 'idx = ',idx
+          write(lulog,*) 'no appropriate arc on contr_red for ',
      &         ivtx1,ivtx2
-          write(luout,*) 'ireo = ',ireo(1:contr%nvtx)
-          call prt_contr3(luout,contr,-1)
-          call prt_contr3(luout,contr_red,-1)
+          write(lulog,*) 'ireo = ',ireo(1:contr%nvtx)
+          call prt_contr3(lulog,contr,-1)
+          call prt_contr3(lulog,contr_red,-1)
           call quit(1,'reduce_fact_info','buggy?')
         end if
         contr_red%inffac(4:5,idx) = jarc

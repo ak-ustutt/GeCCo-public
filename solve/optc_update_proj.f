@@ -41,12 +41,12 @@
      &     ddot, da_ddot
 
       if (ntest.gt.0) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'welcome to optc_update_proj')
       end if
 
       if (ntest.ge.20) then
-        write(luout,*) 'subspace vectors on input:'
+        write(lulog,*) 'subspace vectors on input:'
         call wrtmat2(xvec,ndim,nvec,mxdim,nvec)
       end if
 
@@ -59,7 +59,7 @@
           end do
         end do
         if (ntest.ge.20) then
-          write(luout,*) 'subspace vector after shift:'
+          write(lulog,*) 'subspace vector after shift:'
           call wrtmat2(xvec,ndim,nvec,mxdim,nvec)
         end if
       end if
@@ -79,7 +79,7 @@
       end if
 
       if (ntest.ge.20) then
-        write(luout,*) 'updated subspace vector:'
+        write(lulog,*) 'updated subspace vector:'
         call wrtmat2(xvec,ndim,nvec,mxdim,nvec)
       end if
 

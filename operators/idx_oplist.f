@@ -24,10 +24,10 @@
      &     iop
 
       if (ntest.ge.100) then
-        write(luout,*) '------------------'
-        write(luout,*) 'this is idx_oplist'
-        write(luout,*) '------------------'
-        write(luout,*) ' looking for: "',trim(opname),'"'
+        write(lulog,*) '------------------'
+        write(lulog,*) 'this is idx_oplist'
+        write(lulog,*) '------------------'
+        write(lulog,*) ' looking for: "',trim(opname),'"'
       end if
 
       idx_oplist = -1
@@ -39,7 +39,7 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'result: ',idx_oplist
+        write(lulog,*) 'result: ',idx_oplist
       end if
 
       return

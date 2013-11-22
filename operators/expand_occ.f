@@ -32,11 +32,11 @@
 
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'expand_occ')
-        write(luout,'(3x,"C: occ  ",10i5)') occ_csub(1:nc) 
-        write(luout,'(3x,"   hpvx ",10i5)') hpvx_csub(1:nc) 
-        write(luout,'(3x,"A: occ  ",10i5)') occ_asub(1:na) 
-        write(luout,'(3x,"   hpvx ",10i5)') hpvx_asub(1:na) 
+        call write_title(lulog,wst_dbg_subr,'expand_occ')
+        write(lulog,'(3x,"C: occ  ",10i5)') occ_csub(1:nc) 
+        write(lulog,'(3x,"   hpvx ",10i5)') hpvx_csub(1:nc) 
+        write(lulog,'(3x,"A: occ  ",10i5)') occ_asub(1:na) 
+        write(lulog,'(3x,"   hpvx ",10i5)') hpvx_asub(1:na) 
       end if
 
       occ(1:ngastp,1:2,1:njoined) = 0
@@ -62,7 +62,7 @@
       end do
       
       if (ntest.ge.100) then
-        call wrt_occ_n(luout,occ,njoined)
+        call wrt_occ_n(lulog,occ,njoined)
       end if
 
       return

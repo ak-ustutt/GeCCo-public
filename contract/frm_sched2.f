@@ -93,9 +93,9 @@
       
       iprint = max(ntest,iprlvl)
       if (ntest.gt.0.or.iprint.ge.5) then
-        write(luout,*) '============================='
-        write(luout,*) '= Entered formula scheduler ='
-        write(luout,*) '============================='
+        write(lulog,*) '============================='
+        write(lulog,*) '= Entered formula scheduler ='
+        write(lulog,*) '============================='
       end if
 
       mel_arr => op_info%mel_arr
@@ -127,7 +127,7 @@
         call_sti_remover = .false.
 
         if (ntest.ge.100)
-     &       call print_form_item(luout,icmd_pfi,cur_form,op_info)
+     &       call print_form_item(lulog,icmd_pfi,cur_form,op_info)
 
         select case(cur_form%command)
         case(command_end_of_formula,command_set_target_init)
@@ -160,7 +160,7 @@
             end if
 
             call atim_csw(cpu,sys,wall)
-            call prtim(luout,'time for target '//trim(opres%name),
+            call prtim(lulog,'time for target '//trim(opres%name),
      &           cpu-cpu0,sys-sys0,wall-wall0)
 
           end if
@@ -189,10 +189,10 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
 
           idxme_res = op2list(idxopres)  ! list index of result
           if (iprint.ge.10.and.skip) then
-            write(luout,*) 'Skipping target: ',
+            write(lulog,*) 'Skipping target: ',
      &           trim(mel_arr(idxme_res)%mel%label)
           else if (iprint.ge.10) then
-            write(luout,*) 'New target: ',
+            write(lulog,*) 'New target: ',
      &           trim(mel_arr(idxme_res)%mel%label)
           end if
 
@@ -297,7 +297,7 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
      &       'command not valid in this version of frm_sched!: [CONTR]')
 
         case default
-          write(luout,*) 'command = ',cur_form%command
+          write(lulog,*) 'command = ',cur_form%command
           call quit(1,'frm_sched','command not defined/implemented')
         end select
 
@@ -309,13 +309,13 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
           ! we count only terms that actually update a target
           iterm = iterm + 1
           if (type_xret.eq.2.and.iprint.ge.3)
-     &         write(luout,'(1x,"term # ",i5,":",2(x,g19.10))')
+     &         write(lulog,'(1x,"term # ",i5,":",2(x,g19.10))')
      &         iterm, xret_blk(1)-xret_last, xret_blk(1)
           if (type_xret.eq.2) xret_last = xret_blk(1)
 
           if (ntest.ge.50) then
-            write(luout,*) 'xret after term ',iterm
-            write(luout,'(x,4f19.10)') xret_blk(1:nblk_res)
+            write(lulog,*) 'xret after term ',iterm
+            write(lulog,'(x,4f19.10)') xret_blk(1:nblk_res)
           end if
         end if
 
@@ -337,7 +337,7 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
       ifree = mem_flushmark()
 
       if (ntest.ge.100)
-     &     write(luout,*) 'returning from frm_sched2'
+     &     write(lulog,*) 'returning from frm_sched2'
 
       return
       end

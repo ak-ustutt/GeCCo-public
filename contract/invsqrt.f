@@ -1,5 +1,5 @@
       subroutine invsqrt(mel_inp,mel_inv,nocc_cls,half,
-     &     get_u,mel_u,pass_spc,mel_spc,
+     &     get_u,mel_u,pass_spc,mel_spc,lmodspc,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     Routine to calculate S^(-0.5) of density matrices.
@@ -9,6 +9,9 @@
 *     half = false: also does half transform and in addition
 *                   returns projector matrix U*1s*U^+ on input list
 *     get_u= true: return unitary matrix U on mel_u
+*     lmodspc=true: special mode: no sequential projections; symmetrize;
+*                   just diagonal blocks; no spin splitting for ms=0;
+*                   return diagonalized list on inp and unitary on inv
 *      
 *     works also for sums of density matrices of the structure:
 *       /0 0 0 0\
@@ -52,7 +55,7 @@
       integer, intent(in) ::
      &     nocc_cls
       logical, intent(in) ::
-     &     half, get_u, pass_spc
+     &     half, get_u, pass_spc, lmodspc
 
       integer, parameter ::
      &     maxrank = 5
@@ -138,13 +141,15 @@ c dbgend
       logical, external ::
      &     next_tupel_ca, occ_is_diag_blk
 
-      if (ntest.ge.100) write(luout,*) 'entered invsqrt'
+      if (ntest.ge.100) write(lulog,*) 'entered invsqrt'
 c dbg
 c      ipass = 0
 c dbgend
       call get_argument_value('method.MR','project',ival=project)
       call get_argument_value('method.MR','GNO',ival=gno)
-      sgrm = project.eq.1.and.gno.eq.0 ! only diagonal metric blocks
+      sgrm = project.eq.1.and.gno.eq.0.or.lmodspc ! only diagonal blocks
+      if (lmodspc.and.(get_u.or..not.half))
+     &   call quit(1,'invsqrt','lmodspc only with get_u=F, half=T')
 
       reg_tik = tikhonov.ne.0d0
       omega2 = tikhonov**2
@@ -198,7 +203,7 @@ c dbgend
         call get_vec(ffinp,buffer_in,1,nbuff)
       else
         if(ntest.ge.100)
-     &       write(luout,*)'Invert: input not incore'
+     &       write(lulog,*)'Invert: input not incore'
         buffer_in => ffinp%buffer(1:)
       endif
 
@@ -211,7 +216,7 @@ c dbgend
         buffer_out(1:nbuff) = 0d0
       else
         if(ntest.ge.100)
-     &       write(luout,*)'Invert: output not incore'
+     &       write(lulog,*)'Invert: output not incore'
         buffer_out => ffinv%buffer(1:)
       endif
 
@@ -224,7 +229,7 @@ c dbgend
         buffer_u(1:nbuff) = 0d0
       else if (get_u) then
         if(ntest.ge.100)
-     &       write(luout,*)'Invert: output (2) not incore'
+     &       write(lulog,*)'Invert: output (2) not incore'
         buffer_u => ffu%buffer(1:)
       endif
 
@@ -241,7 +246,12 @@ c dbgend
       iexc_cls = 0
       tocc_cls = 0
 
-      if (.not.half.and.max(iprlvl,ntest).ge.3) write(luout,*)
+      ! (assuming name 'T' for cluster op.
+      op_t => op_info%op_arr(idx_oplist2('T',op_info))%op
+      if (is_keyword_set('method.MRCI').gt.0)
+     &   op_t => op_info%op_arr(idx_oplist2('C',op_info))%op
+
+      if (.not.half.and.max(iprlvl,ntest).ge.3) write(lulog,*)
      &         'Input list will be overwritten by projector.'
 
       ! Loop over occupation class.
@@ -255,14 +265,18 @@ c dbgend
         iexc_cls = iexc_cls + 1
         ex2occ_cls(iexc_cls) = tocc_cls
 
-        if (ntest.ge.10) write(luout,*) 'current occ_cls: ',iocc_cls
+        if (ntest.ge.10) write(lulog,*) 'current occ_cls: ',iocc_cls
         ! only one element? easy!
         ! (also regularization is never needed in this case)
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
           icnt_cur = icnt_sv - icnt_sv0
           ioff = mel_inp%off_op_gmo(iocc_cls)%gam_ms(1,1)
           buffer_out(ioff+1) = buffer_in(ioff+1)
-          if (get_u) then
+          if (lmodspc) then
+            call mat_svd_traf(1,buffer_out(ioff+1),buffer_in(ioff+1),
+     &                       icnt_sv,icnt_sv0,xmax,xmin,
+     &                       bins(1,iexc_cls))
+          else if (get_u) then
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       half,buffer_u(ioff+1),get_u,
      &                       xdum,icnt_sv,icnt_sv0,xmax,xmin,
@@ -361,7 +375,7 @@ c dbgend
             end if
           end do
           if (transp.and.ntest.ge.100) then
-            write(luout,*) 'Using transposed scratch matrix!'
+            write(lulog,*) 'Using transposed scratch matrix!'
           end if
 
           ! Loop over Ms of annihilator string.
@@ -389,11 +403,11 @@ c dbgend
               if (ndim.eq.0) cycle igama_loop
 
               if (ntest.ge.10)
-     &           write(luout,'(a,3i8)') 'msa, gama, ndim:',msa,igama,
+     &           write(lulog,'(a,3i8)') 'msa, gama, ndim:',msa,igama,
      &           int(sqrt(dble(mel_inp%len_op_gmo(iocc_cls)%
      &                         gam_ms(igama,idxmsa))))
               if (ntest.ge.100)
-     &           write(luout,*) ' len = ',
+     &           write(lulog,*) ' len = ',
      &             mel_inp%len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa),
      &             ' ndis = ',ndis
 
@@ -405,7 +419,7 @@ c dbgend
 
               ! single distribution can simply be read in as simple matrix
               allocate(scratch(ndim,ndim),svs(ndim))
-              if (.not.half) then
+              if (.not.half.or.lmodspc) then
                 allocate(scratch2(ndim,ndim))
               else
                 scratch2 => xdummy
@@ -429,13 +443,13 @@ c dbgend
                 enddo
               end if
 
-              if (msc.eq.0) then
+              if (msc.eq.0.and..not.lmodspc) then
                 ! here a splitting into "singlet" and "triplet" blocks is needed:
 
 c dbg
-c                write(luout,*) 'flmap:'
+c                write(lulog,*) 'flmap:'
 c                do icol = 1, ndim
-c                  write(luout,'(i4,3i6)') icol,flipmap_c(icol)
+c                  write(lulog,'(i4,3i6)') icol,flipmap_c(icol)
 c                end do
 c dbgend
                 nsing = ndim
@@ -493,16 +507,22 @@ c dbgend
                 deallocate(sing,trip)
               else
 
+               if (lmodspc) then
+                call mat_svd_traf(ndim,scratch,scratch2,
+     &                           icnt_sv,icnt_sv0,xmax,xmin,
+     &                           bins(1,iexc_cls))
+               else
                 ! calculate S^(-0.5)
                 call invsqrt_mat(ndim,scratch,scratch2,
      &                           half,scratch3,get_u,svs,
      &                           icnt_sv,icnt_sv0,xmax,xmin,
      &                           bins(1,iexc_cls))
+               end if
 
               end if
 
               ! Tikhonov regularization?
-              if (reg_tik)
+              if (reg_tik.and..not.lmodspc)
      &           call regular_tikhonov(ndim,ndim,scratch,svs,omega2)
 
               ! write to output buffer
@@ -522,7 +542,7 @@ c dbgend
 
               deallocate(scratch,svs)
 
-              if (.not.half) then
+              if (.not.half.or.lmodspc) then
                 ! write projector to input buffer
                 if (transp) then
                   do idx = 1,ndim
@@ -774,14 +794,14 @@ c           ndim = 0
           end if
 
           if (ntest.ge.10)
-     &       write(luout,'(a,3i8)') 'ms1, igam, ndim:',ms1,igam,ndim
+     &       write(lulog,'(a,3i8)') 'ms1, igam, ndim:',ms1,igam,ndim
           if (ntest.ge.100)
-     &       write(luout,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
+     &       write(lulog,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
 
           allocate(scratch(ndim,ndim),flmap(ndim,3),svs(ndim))
           scratch = 0d0
           svs = 0d0
-          if (.not.half) then
+          if (.not.half.or.lmodspc) then
             allocate(scratch2(ndim,ndim))
             ! initialize: important for off-dia. blks for GNO/seq.orth.
             scratch2(1:ndim,1:ndim) = 0d0
@@ -1019,12 +1039,12 @@ c dbgend
                 end do
 
 c dbg
-c                write(luout,'(a,4i4)') 'ms  : ',msa1,msc1,msa2,msc2
-c                write(luout,'(a,4i4)') 'gam : ',gama1,gamc1,gama2,gamc2
-c                write(luout,'(a,2i4)') 'msa, igama: ',msa,igama
-c                write(luout,'(a,2i4)') 'dist, len: ',idxdis, lenca
-c                write(luout,'(a,1i4)') 'dist2: ',idxdis2
-c                write(luout,'(a,2i4)') 'off_line/col: ',off_line,off_col
+c                write(lulog,'(a,4i4)') 'ms  : ',msa1,msc1,msa2,msc2
+c                write(lulog,'(a,4i4)') 'gam : ',gama1,gamc1,gama2,gamc2
+c                write(lulog,'(a,2i4)') 'msa, igama: ',msa,igama
+c                write(lulog,'(a,2i4)') 'dist, len: ',idxdis, lenca
+c                write(lulog,'(a,1i4)') 'dist2: ',idxdis2
+c                write(lulog,'(a,2i4)') 'off_line/col: ',off_line,off_col
 c                print *,'len1: ',len_str(1)*len_str(3)
 c                print *,'flipmap_c: len=',len_str(1:ncblk2)
 c                print '(10i6)',flipmap_c(1:sum(len_str(1:ncblk2)))
@@ -1100,7 +1120,7 @@ c                          if (mod(idxcount(2,idspn,na2+nc2,1),4).ne.0)
      &                            -idxcount(2,idspn,na2+nc2,1),4).ne.0)
      &                          flmap(icol,3) = -1
 c dbg
-c                          write(luout,'(i8,x,4i4,x,4i4)')idx,idorb,idspn
+c                          write(lulog,'(i8,x,4i4,x,4i4)')idx,idorb,idspn
 c dbgend
                         end if
                       end do
@@ -1135,7 +1155,7 @@ c dbgend
           end do
 c dbg
 c            if (ntest.ge.100) then
-c              write(luout,*) 'initial overlap matrix:'
+c              write(lulog,*) 'initial overlap matrix:'
 c              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
 c            end if
 c dbgend
@@ -1157,7 +1177,7 @@ c dbgend
            ! build projector and apply to current block
            if (irank.ge.2) then
             if (ntest.ge.10)
-     &        write(luout,'(x,a,i8)') 'next rank:',irank
+     &        write(lulog,'(x,a,i8)') 'next rank:',irank
             select case(project)
             case (1,2)
              if (project.eq.1) then
@@ -1221,7 +1241,7 @@ c dbgend
                proj(idx,idx) = proj(idx,idx) + 1d0
              end do
              if (ntest.ge.100) then
-               write(luout,*) 'Projector for removing lower-rank exc.:'
+               write(lulog,*) 'Projector for removing lower-rank exc.:'
                call wrtmat2(proj,rdim,rdim,rdim,rdim)
              end if
              ! Apply projector to current metric block
@@ -1246,7 +1266,7 @@ c dbg
      &                    scratch(idxnd+1:ndim,idxst:idxnd),ndim-idxnd,
      &                    0d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim)
                if (ntest.ge.100) then
-                 write(luout,*) 'Projected off-diagonal block:'
+                 write(lulog,*) 'Projected off-diagonal block:'
                  call wrtmat2(scratch(idxst:idxnd,idxnd+1:ndim),
      &                        rdim,ndim-idxnd,rdim,ndim-idxnd)
                end if
@@ -1301,13 +1321,13 @@ c dbgend
            end if
 
           ! core step: singular value decomposition
-          if (ms1.eq.0.and.rdim.gt.1) then
+          if (ms1.eq.0.and.rdim.gt.1.and..not.lmodspc) then
             ! here a splitting into "singlet" and "triplet" blocks is needed:
 
 c dbg
-c            write(luout,*) 'flmap:'
+c            write(lulog,*) 'flmap:'
 c            do icol = idxst, idxnd
-c              write(luout,'(i4,2i6)') icol,flmap(icol,1:2)
+c              write(lulog,'(i4,2i6)') icol,flmap(icol,1:2)
 c            end do
 c dbgend
             do icol = idxst, idxnd
@@ -1316,9 +1336,9 @@ c dbgend
               flmap(icol,3) = flmap(icol,3)*idx
             end do
 c dbg
-c            write(luout,*) 'flmap:'
+c            write(lulog,*) 'flmap:'
 c            do icol = idxst, idxnd
-c              write(luout,'(i4,3i6)') icol,flmap(icol,1:3)
+c              write(lulog,'(i4,3i6)') icol,flmap(icol,1:3)
 c            end do
 c dbgend
             nsing = rdim
@@ -1380,6 +1400,11 @@ c dbgend
             end if
             deallocate(sing,trip)
 
+          else if (lmodspc) then
+            call mat_svd_traf(rdim,scratch(idxst:idxnd,idxst:idxnd),
+     &                       scratch2(idxst:idxnd,idxst:idxnd),
+     &                       icnt_sv,icnt_sv0,xmax,xmin,
+     &                       bins(1,iexc_cls))
           else if (.not.half.and.get_u) then
             ! calculate S^(-0.5)
             call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
@@ -1422,7 +1447,7 @@ c dbgend
      &                   0d0,scratch4,rdim)
               scratch(idxst:idxnd,idxst:idxnd) = scratch4
               if (ntest.ge.100) then
-                write(luout,*) 'Trafo matrix:'
+                write(lulog,*) 'Trafo matrix:'
                 call wrtmat2(scratch(idxst:idxnd,idxst:idxnd),
      &                       rdim,rdim,rdim,rdim)
               end if
@@ -1433,7 +1458,7 @@ c dbgend
      &                     0d0,scratch4,rdim)
                 scratch2(idxst:idxnd,idxst:idxnd) = scratch4
                 if (ntest.ge.100) then
-                  write(luout,*) 'Projector matrix:'
+                  write(lulog,*) 'Projector matrix:'
                   call wrtmat2(scratch2(idxst:idxnd,idxst:idxnd),
      &                         rdim,rdim,rdim,rdim)
                 end if
@@ -1474,12 +1499,12 @@ c     &        blk_redundant(iocc_cls+irank-1)
           end do
 
           ! Tikhonov regularization?
-          if (reg_tik)
+          if (reg_tik.and..not.lmodspc)
      &       call regular_tikhonov(ndim,ndim,scratch,svs,omega2)
 
 c dbg
 c            if (ntest.ge.100) then
-c              write(luout,*) 'final transformation matrix:'
+c              write(lulog,*) 'final transformation matrix:'
 c              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
 c            end if
 c dbgend
@@ -1515,7 +1540,7 @@ c dbgend
               ioff = mel_inp%off_op_gmox(jocc_cls)%
      &                 d_gam_ms(1,1,1)
               buffer_out(ioff+1) = scratch(off_line2+1,off_col2+1)
-              if (.not.half) ! copy projector to input buffer
+              if (.not.half.or.lmodspc) ! copy projector to input buffer
      &           buffer_in(ioff+1) = scratch2(off_line2+1,off_col2+1)
               if (get_u)
      &           buffer_u(ioff+1) = scratch3(off_line2+1,off_col2+1)
@@ -1643,7 +1668,7 @@ c dbgend
                         idx = ioff + idx_str_blk3(istr_csub,istr_asub,
      &                         ldim_opin_c,ldim_opin_a,ncblk2,nablk2)
                         buffer_out(idx) = scratch(iline,icol)
-                        if (.not.half) ! copy projector to input buffer
+                        if (.not.half.or.lmodspc) ! copy projector to input buffer
      &                     buffer_in(idx) = scratch2(iline,icol)
                         if (get_u)
      &                     buffer_u(idx) = scratch3(iline,icol)
@@ -1678,7 +1703,7 @@ c dbgend
           end do
 
           deallocate(scratch,flmap,svs)
-          if (.not.half) deallocate(scratch2)
+          if (.not.half.or.lmodspc) deallocate(scratch2)
           if (get_u) deallocate(scratch3)
 c dbg
 c          deallocate(matrix)
@@ -1708,48 +1733,67 @@ c dbgend
       enddo iocc_loop
       deallocate(blk_used)
 
-      ! (assuming name 'T' for cluster op.
-      op_t => op_info%op_arr(idx_oplist2('T',op_info))%op
-      if (is_keyword_set('method.MRCI').gt.0)
-     &   op_t => op_info%op_arr(idx_oplist2('C',op_info))%op
-
       if (ntest.ge.5) then
-        write(luout,'(x,77("="))')
-        write(luout,'(x,a)')
+        write(lulog,'(x,77("="))')
+        write(lulog,'(x,a)')
      &       'Singular value histogram (by excitation classes)'
-        write(luout,'(x,a,x,14i10)') 'n_h = ',
-     &       op_t%ihpvca_occ(IHOLE,2,ex2occ_cls(1:iexc_cls))
-        write(luout,'(x,a,x,14i10)') 'n_p = ',
-     &       op_t%ihpvca_occ(IPART,1,ex2occ_cls(1:iexc_cls))
-        write(luout,'(x,77("-"))')
-        write(luout,'(x,a,x,14i10)') ' 1E+00',bins(1,1:iexc_cls)
+        if (lmodspc) then
+          write(lulog,'(x,a,x,14i10)') 'class:', (idx,idx=1,iexc_cls)
+        else
+          write(lulog,'(x,a,x,14i10)') 'n_h = ',
+     &         op_t%ihpvca_occ(IHOLE,2,ex2occ_cls(1:iexc_cls))
+          write(lulog,'(x,a,x,14i10)') 'n_p = ',
+     &         op_t%ihpvca_occ(IPART,1,ex2occ_cls(1:iexc_cls))
+        end if
+        write(lulog,'(x,77("-"))')
+        write(lulog,'(x,a,x,14i10)') ' 1E+00',bins(1,1:iexc_cls)
+c        if (lmodspc) then
+c          do idx = 2, 8
+c            write(lulog,'(x,a,i2.2,x,14i10)') ' 1E-',idx-1,
+c     &                                        bins(idx,1:iexc_cls)
+c          end do
+c          write(lulog,'(x,a,x,14i10)') '     0',bins(9,1:iexc_cls)
+c          do idx = 10, 16
+c            write(lulog,'(x,a,i2.2,x,14i10)') '-1E-',17-idx,
+c     &                                        bins(idx,1:iexc_cls)
+c          end do
+c          write(lulog,'(x,a,x,14i10)') '-1E+00',bins(17,1:iexc_cls)
+c          write(lulog,'(x,77("="))')
+c          write(lulog,'(x,i8,a,i8,a)') icnt_sv-icnt_sv0,
+c     &          ' out of ',icnt_sv,' eigenvalues were included'
+c          write(lulog,'(x,a,E19.10)')
+c     &          'The  largest excluded eigenvalue is ',xmax
+c          write(lulog,'(x,a,E19.10)')
+c     &          'The smallest included eigenvalue is ',xmin
+c        else
         do idx = 2, 16
-          write(luout,'(x,a,i2.2,x,14i10)') ' 1E-',idx-1,
+          write(lulog,'(x,a,i2.2,x,14i10)') ' 1E-',idx-1,
      &                                      bins(idx,1:iexc_cls)
         end do
-        write(luout,'(x,a,x,14i10)') '     0',bins(17,1:iexc_cls)
-        write(luout,'(x,77("="))')
-        write(luout,'(x,i8,a,i8,a)') icnt_sv-icnt_sv0,
+        write(lulog,'(x,a,x,14i10)') '     0',bins(17,1:iexc_cls)
+        write(lulog,'(x,77("="))')
+        write(lulog,'(x,i8,a,i8,a)') icnt_sv-icnt_sv0,
      &        ' out of ',icnt_sv,' singular values were included'
-        write(luout,'(x,a,E19.10)') 
+        write(lulog,'(x,a,E19.10)')
      &        'The  largest excluded singular value is ',xmax
-        write(luout,'(x,a,E19.10)')
+        write(lulog,'(x,a,E19.10)')
      &        'The smallest included singular value is ',xmin
+c        end if
       end if
       deallocate(bins,ex2occ_cls)
  
       if (sgrm.and.any(blk_redundant(1:nocc_cls))) then
         ! Print out which blocks are redundant
-        write(luout,'(x,a)') 'There are redundant blocks in the metric:'
-c        write(luout,'(x,a)') 'There are redundant blocks in T:'
-        write(luout,'(x,a,26i3)') 'Block #  :',(idx,idx=1,nocc_cls)
-        write(luout,'(x,a,26(2x,L1))') 'Redundant?',
+        write(lulog,'(x,a)') 'There are redundant blocks:'
+c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
+        write(lulog,'(x,a,26i3)') 'Block #  :',(idx,idx=1,nocc_cls)
+        write(lulog,'(x,a,26(2x,L1))') 'Redundant?',
      &                               (blk_redundant(idx),idx=1,nocc_cls)
         call get_argument_value('method.MR','svdonly',lval=svdonly)
-        if (svdonly) then
+        if (svdonly.and..not.lmodspc) then
           ! Excplicitly print restrictions for input file
-          write(luout,*)
-          write(luout,'(x,a)') 'Copy the following into the input file:'
+          write(lulog,*)
+          write(lulog,'(x,a)') 'Copy the following into the input file:'
           ih = -1
           ip = -1
           iexc = 0
@@ -1781,17 +1825,17 @@ c        write(luout,'(x,a)') 'There are redundant blocks in T:'
             iexc = op_t%ica_occ(1,iocc_cls)
             if (blk_redundant(iocc_cls+nrank-2*irank).and.first) then
               first = .false.
-              write(luout,'(x,a,i1,a,i1,a,i1,a,i1,a,i1,a)')
+              write(lulog,'(x,a,i1,a,i1,a,i1,a,i1,a,i1,a)')
      &          'MR excrestr=(',ih,',',ih,',',ip,',',ip,',1,',iexc-1,')'
             else if (.not.blk_redundant(iocc_cls+nrank-2*irank).and.
      &               .not.first) then
-              write(luout,'(x,a,i4)') 'Watch out: Non-redundant block:',
+              write(lulog,'(x,a,i4)') 'Watch out: Non-redundant block:',
      &                                iocc_cls
               call warn('invsqrt',
      &                  'non-redundant block beyond redundant one?')
             end if
           end do
-          write(luout,*)
+          write(lulog,*)
         end if
       end if
       deallocate(blk_redundant)
@@ -1799,7 +1843,7 @@ c        write(luout,'(x,a)') 'There are redundant blocks in T:'
       if(.not.bufout)then
         call put_vec(ffinv,buffer_out,1,nbuff)
       endif  
-      if(.not.bufin.and..not.half)then
+      if(.not.bufin.and.(.not.half.or.lmodspc))then
         ! return projector matrix on input list
         call put_vec(ffinp,buffer_in,1,nbuff)
       endif

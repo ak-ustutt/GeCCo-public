@@ -62,7 +62,7 @@
       integer, external ::
      &     len_merge_map
       
-      if (ntest.ge.100) write(luout,*) 'storing binary contraction'
+      if (ntest.ge.100) write(lulog,*) 'storing binary contraction'
 
       ngas = orb_info%ngas
       nspin = orb_info%nspin

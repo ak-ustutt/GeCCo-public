@@ -53,10 +53,10 @@
 
 
       if (ntest.ge.10) then
-        call write_title(luout,wst_dbg_subr,'mod_op_for_ge_test')
-        write(luout,*) 'Rdef:  ',iRdef(1:norb)
-        write(luout,*) 'case:  ',icase
-        write(luout,*) 'icaseF:',icaseF
+        call write_title(lulog,wst_dbg_subr,'mod_op_for_ge_test')
+        write(lulog,*) 'Rdef:  ',iRdef(1:norb)
+        write(lulog,*) 'case:  ',icase
+        write(lulog,*) 'icaseF:',icaseF
       end if
 
       if (icase.lt.1.and.icase.gt.4)
@@ -77,14 +77,14 @@
      &     str_info,orb_info)
 
       if (ntest.ge.10.and.(.not.mel_target%op%formal)) then
-        write(luout,*)
-        write(luout,*) 'modified list: ',trim(mel_target%label)
+        write(lulog,*)
+        write(lulog,*) 'modified list: ',trim(mel_target%label)
         if (ntest.ge.10) ipri = 1
         if (ntest.ge.50) ipri = 2
         if (ntest.ge.100) ipri = 3
         if (ntest.ge.500) ipri = 4
         if (ntest.ge.1000) ipri = 5
-        call wrt_mel_file(luout,ipri,mel_target,
+        call wrt_mel_file(lulog,ipri,mel_target,
      &       1,mel_target%op%n_occ_cls,
      &       str_info,orb_info)
       end if

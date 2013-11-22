@@ -109,25 +109,25 @@
      &     vtx_type
 
       if (ntest.ge.100) then
-        write(luout,*) '============================='
-        write(luout,*) ' Info from expand_op_product'
-        write(luout,*) '============================='
-        write(luout,*) ' idx_res = ',idx_res
-        write(luout,*) ' fac: ',fac
-        write(luout,*) ' nvtx, nops, nconnect: ',nvtx,nops,nconnect
-        write(luout,*) ' idx_op_vtx: ',idx_op_vtx(1:nvtx)
-        write(luout,*) ' idx_sv_vtx: ',idx_sv_vtx(1:nvtx)
-        write(luout,*) ' connect:',connect(1:2,1:nconnect)
-        write(luout,*) ' avoid:',avoid(1:2,1:navoid)
-        write(luout,*) ' inproj: ', inproj(1:2,1:ninproj)
+        write(lulog,*) '============================='
+        write(lulog,*) ' Info from expand_op_product'
+        write(lulog,*) '============================='
+        write(lulog,*) ' idx_res = ',idx_res
+        write(lulog,*) ' fac: ',fac
+        write(lulog,*) ' nvtx, nops, nconnect: ',nvtx,nops,nconnect
+        write(lulog,*) ' idx_op_vtx: ',idx_op_vtx(1:nvtx)
+        write(lulog,*) ' idx_sv_vtx: ',idx_sv_vtx(1:nvtx)
+        write(lulog,*) ' connect:',connect(1:2,1:nconnect)
+        write(lulog,*) ' avoid:',avoid(1:2,1:navoid)
+        write(lulog,*) ' inproj: ', inproj(1:2,1:ninproj)
       end if
 
       if (idx_res.lt.0) then
-        write(luout,*)
+        write(lulog,*)
      &       'idx_res < 0 detected; if you meant to set up a formula'
-        write(luout,*)
+        write(lulog,*)
      &       'for the adjoint operator: set up the formula for the'
-        write(luout,*)
+        write(lulog,*)
      &       'actual operator and use transpose_formula()'
         call quit(1,'expand_op_product','incorrect usage')
       end if
@@ -230,8 +230,8 @@ c dbg*
       else
         nvtx_res = joined(0,num_res)
         if (nvtx_res.ne.2*op_res%njoined) then
-          write(luout,*) 'nvtx_res, njoined: ',nvtx_res,op_res%njoined
-          write(luout,*) 'nvtx_res must be 2 times njoined!'
+          write(lulog,*) 'nvtx_res, njoined: ',nvtx_res,op_res%njoined
+          write(lulog,*) 'nvtx_res must be 2 times njoined!'
           call quit(1,'expand_op_product','inconsistency')
         end if
         njoined_res = nvtx_res/2
@@ -322,11 +322,11 @@ c dbg*
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'iop_typ: ',iop_typ(1:nops)
-        write(luout,*) 'iblk_min:',iblk_min(1:nops)
-        write(luout,*) 'iblk_max:',iblk_max(1:nops)
-        write(luout,*) 'neqv:    ',neqv(1:nops)
-        write(luout,*) 'idx_eqv: '
+        write(lulog,*) 'iop_typ: ',iop_typ(1:nops)
+        write(lulog,*) 'iblk_min:',iblk_min(1:nops)
+        write(lulog,*) 'iblk_max:',iblk_max(1:nops)
+        write(lulog,*) 'neqv:    ',neqv(1:nops)
+        write(lulog,*) 'idx_eqv: '
         call iwrtma(idx_eqv,nops,nops,nops,nops)
       end if
 
@@ -371,7 +371,7 @@ c          proto%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
         do
 
           if (ntest.ge.100) then
-            write(luout,*) 'current dist: ',iblk_op(1:nops)
+            write(lulog,*) 'current dist: ',iblk_op(1:nops)
           end if
 
           ! check that equivalent commuting operators 
@@ -388,7 +388,7 @@ c          proto%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
           end do
 
           if (ntest.ge.100) then
-            write(luout,*) 'check1: ',ok
+            write(lulog,*) 'check1: ',ok
           end if
 
           if (ok)  then
@@ -414,9 +414,9 @@ c dbg*
 c              print *,'iop, ioff, n: ',iop, ioff, joined(0,iop)
 c              print *,'              ',joined(1:joined(0,iop),iop)
 c              print *,'proto'
-c              call prt_contr2(luout,proto,op_info)
-c              write(luout,*) 'occ_vtx test:'
-c              call wrt_occ_n(luout,occ_vtx,nvtx)
+c              call prt_contr2(lulog,proto,op_info)
+c              write(lulog,*) 'occ_vtx test:'
+c              call wrt_occ_n(lulog,occ_vtx,nvtx)
 c dbg*
               
             end do
@@ -440,11 +440,11 @@ c dbg*
 
 
             if (ntest.ge.100) then
-              write(luout,*) 'occ_vtx:'
-              call wrt_occ_n(luout,occ_vtx,nvtx)
-              write(luout,*) 'test:'
-              call wrt_occ(luout,occ_test)
-              write(luout,*) 'check2: ',ok
+              write(lulog,*) 'occ_vtx:'
+              call wrt_occ_n(lulog,occ_vtx,nvtx)
+              write(lulog,*) 'test:'
+              call wrt_occ(lulog,occ_test)
+              write(lulog,*) 'check2: ',ok
             end if
 
           end if
@@ -468,8 +468,8 @@ C??                proto%vertex(joined(ivtx,iop))%iblk_op = iblk_op(iop)
             end do
 
             if (ntest.ge.1000) then
-              write(luout,*) 'passing proto contraction:'
-              call prt_contr2(luout,proto,op_info)
+              write(lulog,*) 'passing proto contraction:'
+              call prt_contr2(lulog,proto,op_info)
             end if
 
             ! generate contractions
@@ -484,7 +484,7 @@ C??                proto%vertex(joined(ivtx,iop))%iblk_op = iblk_op(iop)
             end do
 
             if (ntest.ge.100)
-     &           write(luout,*) nterms,' new terms ...'
+     &           write(lulog,*) nterms,' new terms ...'
 
           end if
 

@@ -93,10 +93,10 @@
 
       if (iprlvl.ge.5) then
         if (nset.eq.1) then
-          write(luout,'(3x,"guess for root ",i3,": ",f12.6,i10)')
+          write(lulog,'(3x,"guess for root ",i3,": ",f12.6,i10)')
      &         iroot,valset(1),idxset(1)
         else
-          write(luout,'(3x,"guess for root ",i3,": ",2(f12.6,i10))')
+          write(lulog,'(3x,"guess for root ",i3,": ",2(f12.6,i10))')
      &         iroot,valset(1),idxset(1),valset(2),idxset(2)
         end if
       end if

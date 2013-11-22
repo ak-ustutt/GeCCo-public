@@ -44,7 +44,7 @@ c      integer, external ::
 c     &     idx_oplist2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'Hhat_truncation')
+        call write_title(lulog,wst_dbg_subr,'Hhat_truncation')
       endif
 
       form_pnt => flist
@@ -53,9 +53,9 @@ c     &     idx_oplist2
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
         case(command_add_contribution)
 
           nvtx = form_pnt%contr%nvtx
@@ -100,9 +100,9 @@ c     &     idx_oplist2
           if (delete) then
             ! Print the deleted contraction.
             if(ntest.ge.1000)then
-              write(luout,*) 'Deleted formula item:'
-              call prt_contr2(luout,form_pnt%contr,op_info)
-              write(luout,*) 'ntx,ord_ham: ',ntx,ord_ham
+              write(lulog,*) 'Deleted formula item:'
+              call prt_contr2(lulog,form_pnt%contr,op_info)
+              write(lulog,*) 'ntx,ord_ham: ',ntx,ord_ham
             endif
 
             ! Delete the node.
@@ -111,7 +111,7 @@ c     &     idx_oplist2
           end if
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'r12_hhat_truncation','command undefined here')
         end select
 

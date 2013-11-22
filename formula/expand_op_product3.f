@@ -127,26 +127,26 @@
      &     vtx_type
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,i_am)
-        write(luout,*) ' idx_res = ',idx_res
-        write(luout,*) ' fac: ',fac
-        write(luout,*) ' nvtx, nops, nconnect: ',nvtx,nops,nconnect
-        write(luout,*) ' idx_op_vtx: ',idx_op_vtx(1:nvtx)
-        write(luout,*) ' idx_sv_vtx: ',idx_sv_vtx(1:nvtx)
-        write(luout,*) ' connect:',connect(1:2,1:nconnect)
-        write(luout,*) ' avoid:',avoid(1:2,1:navoid)
-        write(luout,*) ' dscr:'
+        call write_title(lulog,wst_dbg_subr,i_am)
+        write(lulog,*) ' idx_res = ',idx_res
+        write(lulog,*) ' fac: ',fac
+        write(lulog,*) ' nvtx, nops, nconnect: ',nvtx,nops,nconnect
+        write(lulog,*) ' idx_op_vtx: ',idx_op_vtx(1:nvtx)
+        write(lulog,*) ' idx_sv_vtx: ',idx_sv_vtx(1:nvtx)
+        write(lulog,*) ' connect:',connect(1:2,1:nconnect)
+        write(lulog,*) ' avoid:',avoid(1:2,1:navoid)
+        write(lulog,*) ' dscr:'
         do idx = 1, ndescr
-          write(luout,*) ' : ', trim(descr(idx))
+          write(lulog,*) ' : ', trim(descr(idx))
         end do
       end if
 
       if (idx_res.lt.0) then
-        write(luout,*)
+        write(lulog,*)
      &       'idx_res < 0 detected; if you meant to set up a formula'
-        write(luout,*)
+        write(lulog,*)
      &       'for the adjoint operator: set up the formula for the'
-        write(luout,*)
+        write(lulog,*)
      &       'actual operator and use transpose_formula()'
         call quit(1,i_am,'incorrect usage')
       end if
@@ -287,7 +287,7 @@ c      ! currently, we expand primitive operators only
       else
         nvtx_res = joined(0,num_res)
         if (nvtx_res.ne.2*op_res%njoined) then
-          write(luout,*) 'nvtx_res, njoined: ',nvtx_res,op_res%njoined
+          write(lulog,*) 'nvtx_res, njoined: ',nvtx_res,op_res%njoined
           call quit(1,i_am,'inconsistency')
         end if
         njoined_res = nvtx_res/2
@@ -351,11 +351,11 @@ c      ! currently, we expand primitive operators only
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'iop_typ: ',iop_typ(1:nops)
-        write(luout,*) 'iblk_min:',iblk_min(1:nops)
-        write(luout,*) 'iblk_max:',iblk_max(1:nops)
-        write(luout,*) 'neqv:    ',neqv(1:nops)
-        write(luout,*) 'idx_eqv: '
+        write(lulog,*) 'iop_typ: ',iop_typ(1:nops)
+        write(lulog,*) 'iblk_min:',iblk_min(1:nops)
+        write(lulog,*) 'iblk_max:',iblk_max(1:nops)
+        write(lulog,*) 'neqv:    ',neqv(1:nops)
+        write(lulog,*) 'idx_eqv: '
         call iwrtma(idx_eqv,nops,nops,nops,nops)
       end if
 
@@ -401,7 +401,7 @@ c          proto0%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
         do
 
           if (ntest.ge.100) then
-            write(luout,*) 'current dist: ',iblk_op(1:nops)
+            write(lulog,*) 'current dist: ',iblk_op(1:nops)
           end if
 
           ! check that equivalent commuting operators 
@@ -418,7 +418,7 @@ c          proto0%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
           end do
 
           if (ntest.ge.100) then
-            write(luout,*) 'check1: ',ok
+            write(lulog,*) 'check1: ',ok
           end if
 
           if (ok)  then
@@ -496,13 +496,13 @@ c          proto0%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
                   call contr_add_arc(proto,vtx1,vtx2,
      &                               cntrq(:,:,cnt_comb(idx)))
                   if (ntest.ge.100) then
-                    write(luout,*) 'trying ',vtx1,vtx2
-                    call wrt_occ(luout,cntrq(:,:,cnt_comb(idx)))
+                    write(lulog,*) 'trying ',vtx1,vtx2
+                    call wrt_occ(lulog,cntrq(:,:,cnt_comb(idx)))
                   end if
                 end do
                 if (ntest.ge.100) then
-                  write(luout,*) 'current proto:'
-                  call prt_contr2(luout,proto,op_info)
+                  write(lulog,*) 'current proto:'
+                  call prt_contr2(lulog,proto,op_info)
                 end if
 
                 ! check that the current request can be satisfied
@@ -514,8 +514,8 @@ c          proto0%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
                   ok = ok.and.iocc_bound('>=',occ_test ,.false.,
      &                                        occ_temp,.false.)
                   if (ntest.ge.100) then
-                    write(luout,*) 'vtx # ',ivtx,'  ok: ',ok
-                    call wrt_occ(luout,occ_test)
+                    write(lulog,*) 'vtx # ',ivtx,'  ok: ',ok
+                    call wrt_occ(lulog,occ_test)
                   end if
                 end do
 
@@ -534,11 +534,11 @@ c          proto0%vertex(joined(ivtx,num_res))%iblk_op = iblk_res
 
 
               if (ntest.ge.100) then
-                write(luout,*) 'occ_vtx:'
-                call wrt_occ_n(luout,occ_vtx,nvtx)
-                write(luout,*) 'test:'
-                call wrt_occ(luout,occ_test)
-                write(luout,*) 'check2: ',ok
+                write(lulog,*) 'occ_vtx:'
+                call wrt_occ_n(lulog,occ_vtx,nvtx)
+                write(lulog,*) 'test:'
+                call wrt_occ(lulog,occ_test)
+                write(lulog,*) 'check2: ',ok
               end if
 
               if (ok) then
@@ -559,8 +559,8 @@ c                  end if
 c                end do
 
                 if (ntest.ge.1000) then
-                  write(luout,*) 'passing proto contraction:'
-                  call prt_contr2(luout,proto,op_info)
+                  write(lulog,*) 'passing proto contraction:'
+                  call prt_contr2(lulog,proto,op_info)
                 end if
 
                 ! generate contractions
@@ -575,7 +575,7 @@ c                end do
                 end do
 
                 if (ntest.ge.100)
-     &               write(luout,*) nterms,' new terms ...'
+     &               write(lulog,*) nterms,' new terms ...'
 
               end if
 

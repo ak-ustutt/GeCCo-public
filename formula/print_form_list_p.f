@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine print_form_list_p(luout,form_head,op_info)
+      subroutine print_form_list_p(lulog,form_head,op_info)
 *----------------------------------------------------------------------*
-*     print formula on linked list to unit luout
+*     print formula on linked list to unit lulog
 *     version that prints contractions in topo matrix form
 *----------------------------------------------------------------------*
       implicit none
@@ -12,7 +12,7 @@
       include 'def_formula_item.h'
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
       type(formula_item), intent(in), target ::
      &     form_head
       type(operator_info), intent(in) ::
@@ -34,29 +34,29 @@
       do
         select case(form_ptr%command)
         case(command_end_of_formula)
-          write(luout,*) '[END]'
+          write(lulog,*) '[END]'
         case(command_set_target_init)
-          write(luout,*) '[INIT TARGET]',form_ptr%target
+          write(lulog,*) '[INIT TARGET]',form_ptr%target
         case(command_set_target_update)
-          write(luout,*) '[SET TARGET]',form_ptr%target
+          write(lulog,*) '[SET TARGET]',form_ptr%target
         case(command_new_intermediate)
-          write(luout,*) '[NEW INTERMEDIATE]',form_ptr%target
+          write(lulog,*) '[NEW INTERMEDIATE]',form_ptr%target
         case(command_del_intermediate)
-          write(luout,*) '[DELETE INTERMEDIATE]',form_ptr%target
+          write(lulog,*) '[DELETE INTERMEDIATE]',form_ptr%target
         case(command_add_contribution)
           idx = idx+1
-          write(luout,*) '[ADD]',form_ptr%target,'( term #',idx,')'
-          write(luout,*) 'factor = ',form_ptr%contr%fac
+          write(lulog,*) '[ADD]',form_ptr%target,'( term #',idx,')'
+          write(lulog,*) 'factor = ',form_ptr%contr%fac
           nj = njres_contr(form_ptr%contr)
           nvtx = form_ptr%contr%nvtx
           allocate(vtx(nvtx),xlines(nvtx,nj),topo(nvtx,nvtx))
           call pack_contr(form_ptr%contr%svertex,
      &                    vtx,topo,xlines,form_ptr%contr,nj)
-          call prt_contr_p(luout,form_ptr%contr%svertex,
+          call prt_contr_p(lulog,form_ptr%contr%svertex,
      &         vtx,topo,xlines,nvtx,nj)
           deallocate(vtx,xlines,topo)
         case(command_symmetrise)
-          write(luout,*) '[SYMMETRISE TARGET]',form_ptr%target
+          write(lulog,*) '[SYMMETRISE TARGET]',form_ptr%target
         end select
 
         if (.not.associated(form_ptr%next)) exit

@@ -66,7 +66,7 @@
       call quit(1,'expand_term2','call to obsolete routine')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'Here speaks expand_term2')
+        call write_title(lulog,wst_dbg_subr,'Here speaks expand_term2')
       end if
 
       iop_intm  = fpl_intm%item%contr%idx_res

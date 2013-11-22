@@ -25,16 +25,16 @@
      &     iperm, ipos1, ipos2, ipos12, isp1sp2
 
       if (ntest.gt.0) then
-        write(luout,*) '--------------'
-        write(luout,*) 'this is ordstr'
-        write(luout,*) '--------------'
+        write(lulog,*) '--------------'
+        write(lulog,*) 'this is ordstr'
+        write(lulog,*) '--------------'
       end if
       if (ntest.ge.100) then
-        write(luout,*) 'input strings: '
-        write(luout,'(x,a,15i4)') ' 1 o: ',idorb1(1:n1)
-        write(luout,'(x,a,15i4)') '   s: ',idspn1(1:n1)
-        write(luout,'(x,a,15i4)') ' 2 o: ',idorb2(1:n2)
-        write(luout,'(x,a,15i4)') '   s: ',idspn2(1:n2)
+        write(lulog,*) 'input strings: '
+        write(lulog,'(x,a,15i4)') ' 1 o: ',idorb1(1:n1)
+        write(lulog,'(x,a,15i4)') '   s: ',idspn1(1:n1)
+        write(lulog,'(x,a,15i4)') ' 2 o: ',idorb2(1:n2)
+        write(lulog,'(x,a,15i4)') '   s: ',idspn2(1:n2)
       end if
 
       ! handle some special cases:
@@ -92,11 +92,11 @@
       iordstr = (-1)**iperm
 
       if (ntest.ge.100) then
-        write(luout,*) 'output value: ',iordstr
+        write(lulog,*) 'output value: ',iordstr
         if (iordstr.ne.0) then
-          write(luout,*) 'output string: '
-          write(luout,'(x,a,15i4)') ' > o: ',idorb12(1:n1+n2)
-          write(luout,'(x,a,15i4)') '   s: ',idspn12(1:n1+n2)
+          write(lulog,*) 'output string: '
+          write(lulog,'(x,a,15i4)') ' > o: ',idorb12(1:n1+n2)
+          write(lulog,'(x,a,15i4)') '   s: ',idspn12(1:n1+n2)
         end if
       end if
 

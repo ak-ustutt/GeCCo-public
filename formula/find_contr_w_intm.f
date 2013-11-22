@@ -60,9 +60,9 @@
       call quit(1,'find_contr_w_intm','call to obsolete routine')
 
       if (ntest.ge.100) then
-        write(luout,*) '==========================='
-        write(luout,*) ' entered find_contr_w_intm'
-        write(luout,*) '==========================='
+        write(lulog,*) '==========================='
+        write(lulog,*) ' entered find_contr_w_intm'
+        write(lulog,*) '==========================='
       end if
 
       call init_contr(contr_t0)
@@ -112,12 +112,12 @@ c dbg
 c        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
          call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
         if (ntest.ge.100) then
-          write(luout,*) 'considering contraction:'
-          call prt_contr2(luout,fl_tgt%contr,op_info)
-          write(luout,*) 'split into T0 '
-          call prt_contr2(luout,contr_t0,op_info)
-          write(luout,*) 'and I'
-          call prt_contr2(luout,contr_i,op_info)
+          write(lulog,*) 'considering contraction:'
+          call prt_contr2(lulog,fl_tgt%contr,op_info)
+          write(lulog,*) 'split into T0 '
+          call prt_contr2(lulog,contr_t0,op_info)
+          write(lulog,*) 'and I'
+          call prt_contr2(lulog,contr_i,op_info)
         end if
       end if
 
@@ -143,7 +143,7 @@ c        call split_contr(contr_t0,contr_i,fl_tgt%contr,op_info)
 c dbg
 c            print *,'iterm',iterm
 c            print *,'targeted'
-c            call prt_contr2(luout,contr_tgt(iterm),op_info)
+c            call prt_contr2(lulog,contr_tgt(iterm),op_info)
 c dbg
           endif    
           if (.not.associated(fpl_intm_pnt%next)) exit
@@ -175,7 +175,7 @@ c dbg
               iblk_current = fl_tgt_pnt%contr%iblk_res
               if (iblk_current.ne.iblk_tgt) cycle tgt_loop
             case default
-              write(luout,*) 'command = ',fl_tgt_pnt%command
+              write(lulog,*) 'command = ',fl_tgt_pnt%command
               call quit(1,'find_contr_w_intm',
      &             'not prepared for that command (see above)')
           end select
@@ -216,7 +216,7 @@ c dbg
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'at the end: ',success1,success2
+        write(lulog,*) 'at the end: ',success1,success2
       end if
 
       success = success1.and.success2
@@ -265,8 +265,8 @@ c dbg
         call dealloc_contr(contr_int)
 
         if (ntest.ge.100) then
-          write(luout,*) 'generated term:'
-          call prt_contr2(luout,contr_rpl,op_info)
+          write(lulog,*) 'generated term:'
+          call prt_contr2(lulog,contr_rpl,op_info)
         end if
 
       end if

@@ -37,9 +37,9 @@
      &     iterm, idxop_intm, iblk_intm
 
       if (ntest.ge.100) then
-        write(luout,*) '==============================='
-        write(luout,*) ' info from collect_contr2block'
-        write(luout,*) '==============================='
+        write(lulog,*) '==============================='
+        write(lulog,*) ' info from collect_contr2block'
+        write(lulog,*) '==============================='
       end if
 
       if (fl_intm%command.ne.command_add_contribution)
@@ -56,7 +56,7 @@ c      nullify(fpl_intm_c2blk%prev)
       iblk_intm  = fl_intm%contr%iblk_res
 
       if (ntest.ge.100) then
-        write(luout,*) 'idxop_intm, iblk_intm: ',idxop_intm, iblk_intm
+        write(lulog,*) 'idxop_intm, iblk_intm: ',idxop_intm, iblk_intm
       end if
 
       fl_pnt => fl_intm
@@ -69,8 +69,8 @@ c      nullify(fpl_intm_c2blk%prev)
      &       call quit(1,'collect_contr2block',
      &       'only [ADD],[INIT],[END] expected')
         if (fl_pnt%contr%idx_res.ne.idxop_intm) then
-          write(luout,*) 'scanning for operator ',idxop_intm
-          call prt_contr2(luout,fl_pnt%contr,op_info)
+          write(lulog,*) 'scanning for operator ',idxop_intm
+          call prt_contr2(lulog,fl_pnt%contr,op_info)
           call quit(1,'collect_contr2block',
      &       'suspicious change of operator index')
         end if
@@ -86,12 +86,12 @@ c      nullify(fpl_intm_c2blk%prev)
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'nterms = ',nterms
+        write(lulog,*) 'nterms = ',nterms
         fpl_c2blk_pnt => fpl_intm_c2blk
         iterm = 1
         do
-          write(luout,*) 'term #',iterm
-          call prt_contr2(luout,fpl_c2blk_pnt%item%contr,op_info)
+          write(lulog,*) 'term #',iterm
+          call prt_contr2(lulog,fpl_c2blk_pnt%item%contr,op_info)
           if (.not.associated(fpl_c2blk_pnt%next)) exit
           fpl_c2blk_pnt => fpl_c2blk_pnt%next
           iterm = iterm+1

@@ -37,14 +37,14 @@
 
 
       if (ntest.gt.0) then
-        write(luout,*) ' ==================== '
-        write(luout,*) '  LOGUMAT at work !!  '
-        write(luout,*) ' ==================== '
+        write(lulog,*) ' ==================== '
+        write(lulog,*) '  LOGUMAT at work !!  '
+        write(lulog,*) ' ==================== '
 
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) ' xmat on entry:'
+        write(lulog,*) ' xmat on entry:'
         call wrtmat2(xmat,ndim,ndim,ndim,ndim)
       end if
 
@@ -58,11 +58,11 @@
       call nrmvec(ndim,xscr1,eigi)
 
       if (ierr.ne.0) then
-        write(luout,*) 'error code from rg: ',ierr
+        write(lulog,*) 'error code from rg: ',ierr
         stop 'logumat (1)'
       end if
 
-      if (ntest.ge.10) write(luout,*) ' eigenvalues of matrix:'
+      if (ntest.ge.10) write(lulog,*) ' eigenvalues of matrix:'
 
 *----------------------------------------------------------------------*
 *     the eigenvalues are v = exp(a+ib) so the logarithm log(v) yields
@@ -72,7 +72,7 @@
 *     matrix D
 *----------------------------------------------------------------------*
       ierr = 0
-      if (ntest.ge.10) write(luout,'(x,a,g10.3)') 
+      if (ntest.ge.10) write(lulog,'(x,a,g10.3)') 
      &                      "threshold = ",1d4*epsilon(1d0)
       do ii = 1, ndim
         xmod = eigr(ii)*eigr(ii) + eigi(ii)*eigi(ii)
@@ -80,13 +80,13 @@
         ang1 = atan2(eigi(ii),eigr(ii))
 c        ang2 = acos(eigr(ii))*sign(1d0,eigi(ii))
         if (ntest.ge.10)
-     &       write(luout,'(i4,2(2x,e20.10),3(2x,f15.10),g10.3)')
+     &       write(lulog,'(i4,2(2x,e20.10),3(2x,f15.10),g10.3)')
      &       ii,eigr(ii),eigi(ii),xmod,ang1,ang2,xmod-1d0
         eigr(ii) = ang1
       end do
 
       if (ierr.gt.0) then
-        write(luout,*) 'error: detected eigenvalues with |v| != 1'
+        write(lulog,*) 'error: detected eigenvalues with |v| != 1'
         stop 'logumat (2)'
       end if
 
@@ -109,9 +109,9 @@ c        ang2 = acos(eigr(ii))*sign(1d0,eigi(ii))
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) ' eigenvectors (Re):'
+        write(lulog,*) ' eigenvectors (Re):'
         call wrtmat2(xscr1,ndim,ndim,ndim,ndim)
-        write(luout,*) ' eigenvectors (Im):'
+        write(lulog,*) ' eigenvectors (Im):'
         call wrtmat2(xscr1,ndim,ndim,ndim,ndim)
       end if
 
@@ -166,7 +166,7 @@ c     &            1d0,-1d0, 2 )
      &           0d0,xlogx,ndim)
 
       if (ntest.ge.100) then
-        write(luout,*) ' result on xlogx:'
+        write(lulog,*) ' result on xlogx:'
         call wrtmat2(xlogx,ndim,ndim,ndim,ndim)
       end if
 

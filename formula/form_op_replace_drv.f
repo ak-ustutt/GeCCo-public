@@ -55,12 +55,12 @@ c      include 'def_contraction_list.h'
      &     idx_oplist2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'form_op_rename reports')
-        write(luout,*) ' f_input  = ',trim(f_input%label)
-        write(luout,*) ' f_output = ',trim(f_output%label)
+        write(lulog,*) ' f_input  = ',trim(f_input%label)
+        write(lulog,*) ' f_output = ',trim(f_output%label)
         do irepl = 1, nreplace
-          write(luout,*) irepl,trim(label_replace(2*(irepl-1)+1)),' ',
+          write(lulog,*) irepl,trim(label_replace(2*(irepl-1)+1)),' ',
      &                         trim(label_replace(2*(irepl-1)+2))
         end do
       end if
@@ -105,7 +105,7 @@ c dbg end fix
      &    'operator label 2 not on list: '//trim(label_replace(irepl2)))
         
         if (ntest.ge.100)
-     &       write(luout,*)
+     &       write(lulog,*)
      &       'now replacing: ',
      &       label_replace(irepl1)(1:len1),
      &       ' transpose: ',transpose1,' by ',
@@ -128,8 +128,8 @@ c     &                  .false.,.false.,flist,op_info)
       call write_form_list(f_output%fhand,flist,title)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_around_double,'Modified formula:')
-        call print_form_list(luout,flist,op_info)
+        call write_title(lulog,wst_around_double,'Modified formula:')
+        call print_form_list(lulog,flist,op_info)
       end if
 
       call dealloc_formula_list(flist)

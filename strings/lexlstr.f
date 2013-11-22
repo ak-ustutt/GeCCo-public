@@ -32,15 +32,15 @@
 
 
       if (ntest.gt.0) then
-        write(luout,*) '---------------'
-        write(luout,*) 'This is lexlstr'
-        write(luout,*) '---------------'
+        write(lulog,*) '---------------'
+        write(lulog,*) 'This is lexlstr'
+        write(lulog,*) '---------------'
       end if
       if (ntest.ge.50) then
-        write(luout,*) 'ON ENTRY:'
-        write(luout,*) ' nel = ',nel
-        write(luout,*) ' itms = ',itms
-        write(luout,*) ' ioss = ',ioss(1:nspc)
+        write(lulog,*) 'ON ENTRY:'
+        write(lulog,*) ' nel = ',nel
+        write(lulog,*) ' itms = ',itms
+        write(lulog,*) ' ioss = ',ioss(1:nspc)
       end if
 
       succ = .true.
@@ -132,12 +132,12 @@ c        npair = npair-npair4ss
       lexlstr = succ
 
       if (ntest.ge.50) then
-        write(luout,*) 'ON EXIT from lexlstr:'
+        write(lulog,*) 'ON EXIT from lexlstr:'
         if (succ) then
-          write(luout,*) ' idorb = ',idorb(1:nel)
-          write(luout,*) ' idspn = ',idspn(1:nel)
+          write(lulog,*) ' idorb = ',idorb(1:nel)
+          write(lulog,*) ' idspn = ',idspn(1:nel)
         else
-          write(luout,*) ' no lexically lowest string possible!'
+          write(lulog,*) ' no lexically lowest string possible!'
         end if
       end if
       

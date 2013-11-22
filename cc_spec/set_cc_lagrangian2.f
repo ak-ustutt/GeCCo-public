@@ -68,12 +68,12 @@ c prelim
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'Setting up CC-Lagrangian')
-        write(luout,*) ' op_ham  = ',trim(label_opham)
-        write(luout,*) ' op_tbar = ',trim(label_optbar)
-        write(luout,*) ' op_t    = ',trim(label_opt)
-        write(luout,*) ' op_lcc  = ',trim(label_oplcc)
+        write(lulog,*) ' op_ham  = ',trim(label_opham)
+        write(lulog,*) ' op_tbar = ',trim(label_optbar)
+        write(lulog,*) ' op_t    = ',trim(label_opt)
+        write(lulog,*) ' op_lcc  = ',trim(label_oplcc)
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -143,14 +143,14 @@ c prelim
      &     .or.trim(trmode).ne.'no'
 c prelim
      &     ) then
-        call write_title(luout,wst_around_double,'Generated formula:')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_around_double,'Generated formula:')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
       call dealloc_formula_list(flist_lag)
 
       call atim_csw(cpu,sys,wall)
-      write(luout,*) 'Number of generated terms: ',nterms
-      call prtim(luout,'CC Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
+      write(lulog,*) 'Number of generated terms: ',nterms
+      call prtim(lulog,'CC Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
       end

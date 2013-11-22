@@ -34,8 +34,8 @@
      &     iflip
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'get_diag_tuple1')
-        call wrt_occ_n(luout,occ,njoined)
+        call write_title(lulog,wst_dbg_subr,'get_diag_tuple1')
+        call wrt_occ_n(lulog,occ,njoined)
       end if
 
       idx_c = 0
@@ -72,8 +72,8 @@
       end do
       
       if (ntest.ge.100) then
-        write(luout,'(3x,"idx: ",10i5)') idx(1:idx_dia) 
-        write(luout,'(3x,"c/a: ",10i5)') ca(1:idx_dia) 
+        write(lulog,'(3x,"idx: ",10i5)') idx(1:idx_dia) 
+        write(lulog,'(3x,"c/a: ",10i5)') ca(1:idx_dia) 
       end if
 
       return

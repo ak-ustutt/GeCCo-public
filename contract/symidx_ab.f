@@ -57,10 +57,10 @@
      &     list_in_bounds
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'symidx_ab')
-        write(luout,*) 'MEL:  ',trim(mel%label)
-        write(luout,*) 'idxlist(IN):'
-        write(luout,'(1x,5i6,x,5i6)') idxlist_in(1:nlist)
+        call write_title(lulog,wst_dbg_subr,'symidx_ab')
+        write(lulog,*) 'MEL:  ',trim(mel%label)
+        write(lulog,*) 'idxlist(IN):'
+        write(lulog,'(1x,5i6,x,5i6)') idxlist_in(1:nlist)
       end if
 
       idxlist_out(1:nlist) = 0
@@ -87,7 +87,7 @@
      &       cycle
 
         if (ntest.ge.100)
-     &       write(luout,*) 'iblk, ioff, lenblk: ',iblk, ioff, lenblk
+     &       write(lulog,*) 'iblk, ioff, lenblk: ',iblk, ioff, lenblk
 
         call symidx_ab_blk(idxlist_out,
      &                  idxlist_in, nlist,
@@ -97,8 +97,8 @@
       end do iocc_loop
 
       if (ntest.ge.100) then
-        write(luout,*) 'idxlist(OUT):'
-        write(luout,'(1x,5i6,x,5i6)') idxlist_out(1:nlist)
+        write(lulog,*) 'idxlist(OUT):'
+        write(lulog,'(1x,5i6,x,5i6)') idxlist_out(1:nlist)
       end if
 
       return

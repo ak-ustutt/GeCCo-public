@@ -39,11 +39,11 @@
      &     ival=sym)
       if (mult.gt.0.and.mult.ne.orb_info%imult) then
         orb_info%imult = mult
-        if (ntest.ge.100) write(luout,*) 'spin mult. = ', mult
+        if (ntest.ge.100) write(lulog,*) 'spin mult. = ', mult
       end if
       if (ms.le.orb_info%imult.and.ms.ne.orb_info%ims) then
         orb_info%ims = ms
-        if (ntest.ge.100) write(luout,*) '2Ms        = ', ms
+        if (ntest.ge.100) write(lulog,*) '2Ms        = ', ms
       end if
       ! Ms possible?
       if (orb_info%ims.lt.1-orb_info%imult
@@ -52,7 +52,7 @@
      &   call quit(1,'set_mr_targets','impossible Ms')
       if (sym.gt.0.and.sym.ne.orb_info%lsym) then
         orb_info%lsym = sym
-        if (ntest.ge.100) write(luout,*) 'symmetry   = ', sym
+        if (ntest.ge.100) write(lulog,*) 'symmetry   = ', sym
         if (sym.gt.orb_info%nsym) call quit(1,'set_mr_targets',
      &           'impossible symmetry')
       end if

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine print_op_occ(luout,op)
+      subroutine print_op_occ(lulog,op)
 *----------------------------------------------------------------------*
 *     print occupations of the operator op
 *----------------------------------------------------------------------*
@@ -9,7 +9,7 @@
       include 'def_operator.h'
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
       type(operator) ::
      &     op
 
@@ -19,8 +19,8 @@
       do idx = 1, op%n_occ_cls*op%njoined
         iblk = (idx-1)/op%njoined + 1
         if (op%formal_blk(iblk).and.mod(idx-1,op%njoined).eq.0)
-     &       write(luout,*) '--- formal: ---'
-        call wrt_occ_rstr(luout,iblk,
+     &       write(lulog,*) '--- formal: ---'
+        call wrt_occ_rstr(lulog,iblk,
      &       op%ihpvca_occ(1,1,idx),
      &       op%igasca_restr(1,1,1,1,1,idx),op%ngas,op%nspin)
       end do

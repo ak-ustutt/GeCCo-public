@@ -81,10 +81,10 @@
       ! also check op%blk_version when calling iblk_occ
 
       if (ntest.ge.10) then
-        write(luout,*) '----------------------'
-        write(luout,*) ' output from idx42str '
-        write(luout,*) '----------------------'
-        write(luout,*) 'mode = ',mode
+        write(lulog,*) '----------------------'
+        write(lulog,*) ' output from idx42str '
+        write(lulog,*) '----------------------'
+        write(lulog,*) 'mode = ',mode
       end if
 
       op => oplist%op
@@ -135,10 +135,10 @@
 
       if (igam_total.ne.1) then
 c dbg
-        write(luout,*) 'input <pr|qs>: ',idxprqs(1:4)
-        write(luout,*) '        Gamma  ',igam(1:4)
-        write(luout,*) '        Subsp  ',idss(1:4)
-        write(luout,*) '        Types  ',igtp(1:4)
+        write(lulog,*) 'input <pr|qs>: ',idxprqs(1:4)
+        write(lulog,*) '        Gamma  ',igam(1:4)
+        write(lulog,*) '        Subsp  ',idss(1:4)
+        write(lulog,*) '        Types  ',igtp(1:4)
 c dbg
         error = .true.
         return
@@ -172,9 +172,9 @@ c dbg
 
       if (mode.eq.0) then
         if (.not.take_ca.or..not.take_ac) then
-          write(luout,*) ' iocc: ',trim(op%name)
-          call wrt_occ(luout,iocc)
-          write(luout,*) iblk_ca, iblk_ac
+          write(lulog,*) ' iocc: ',trim(op%name)
+          call wrt_occ(lulog,iocc)
+          write(lulog,*) iblk_ca, iblk_ac
           call quit(1,'idx42str','something''s buggy!')
         end if 
       end if
@@ -218,22 +218,22 @@ c      endif
       endif
 
       if (ntest.ge.50) then
-        write(luout,*) 'input <pr|qs>: ',idxprqs(1:4)
-        write(luout,*) '        Gamma  ',igam(1:4)
-        write(luout,*) '        Subsp  ',idss(1:4)
-        write(luout,*) '        Types  ',igtp(1:4)
+        write(lulog,*) 'input <pr|qs>: ',idxprqs(1:4)
+        write(lulog,*) '        Gamma  ',igam(1:4)
+        write(lulog,*) '        Subsp  ',idss(1:4)
+        write(lulog,*) '        Types  ',igtp(1:4)
       end if
       if (ntest.ge.100) then
-        write(luout,*) ' igamt = ',igamt
-        write(luout,*) ' iocc:'
-        call wrt_occ(luout,iocc)
-        write(luout,*) ' igmd:'
-        call wrt_occ(luout,igmd)
-        write(luout,*) ' Blk(CA): ',iblk_ca
-        write(luout,*) ' Blk(AC): ',iblk_ac
-        write(luout,*) ' Flags: ',reo12,reo34,eqv12,eqv34
-        write(luout,*) ' ioff:'
-        call wrt_occ(luout,ioff)
+        write(lulog,*) ' igamt = ',igamt
+        write(lulog,*) ' iocc:'
+        call wrt_occ(lulog,iocc)
+        write(lulog,*) ' igmd:'
+        call wrt_occ(lulog,igmd)
+        write(lulog,*) ' Blk(CA): ',iblk_ca
+        write(lulog,*) ' Blk(AC): ',iblk_ac
+        write(lulog,*) ' Flags: ',reo12,reo34,eqv12,eqv34
+        write(lulog,*) ' ioff:'
+        call wrt_occ(lulog,ioff)
       end if
 
       nstr = 0
@@ -297,15 +297,15 @@ c      endif
         if (eqv34) idspn(3:4) = (/2,2/)
 
         if (ntest.ge.100) then
-          write(luout,*) ' idxcnt = ',idxcnt
-          write(luout,*) ' spins = ',idspn(1:4)
-          call wrt_occ(luout,msd)
+          write(lulog,*) ' idxcnt = ',idxcnt
+          write(lulog,*) ' spins = ',idspn(1:4)
+          call wrt_occ(lulog,msd)
         end if
         if (ntest.ge.100) then
-          write(luout,*) 'current psqr: ',idorb(1:4)
-          write(luout,*) '       Gamma  ',idgam(1:4)
-          write(luout,*) '       Subsp  ',idspc(1:4)
-          write(luout,*) '       spins  ',idspn(1:4)            
+          write(lulog,*) 'current psqr: ',idorb(1:4)
+          write(lulog,*) '       Gamma  ',idgam(1:4)
+          write(lulog,*) '       Subsp  ',idspc(1:4)
+          write(lulog,*) '       spins  ',idspn(1:4)            
         end if
 
         ! Identify the index of the string in question and also its 
@@ -336,11 +336,11 @@ c     &         call quit(1,'idx42str2','error for idstr_ac')
         end if
 
         if (ntest.ge.100) then
-          call wrt_occ(luout,iocc)
-          call wrt_occ(luout,msd)
-          call wrt_occ(luout,igmd)
-          write(luout,*) 'idstr_ca = ',idstr_ca
-          write(luout,*) 'idstr_ac = ',idstr_ac
+          call wrt_occ(lulog,iocc)
+          call wrt_occ(lulog,msd)
+          call wrt_occ(lulog,igmd)
+          write(lulog,*) 'idstr_ca = ',idstr_ca
+          write(lulog,*) 'idstr_ac = ',idstr_ac
         end if
 
         ! Locate offsets which were calculated earlier and store them
@@ -351,20 +351,20 @@ c     &         call quit(1,'idx42str2','error for idstr_ac')
           idxstr(nstr)   =
      &        oplist%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
           if (ntest.ge.100) then
-            write(luout,*) 'idxstr(offsets) = ',idxstr(nstr-1:nstr)
+            write(lulog,*) 'idxstr(offsets) = ',idxstr(nstr-1:nstr)
           end if
         else 
           if (take_ca) then
             idxstr(nstr) =
      &        oplist%off_op_gmox(iblk_ca)%d_gam_ms(idstr_ca,igamt,idxms)
             if (ntest.ge.100) then
-              write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
+              write(lulog,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
             end if
           else if (take_ac) then
             idxstr(nstr) =
      &        oplist%off_op_gmox(iblk_ac)%d_gam_ms(idstr_ac,igamt,idxms)
             if (ntest.ge.100) then
-              write(luout,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
+              write(lulog,*) 'idxstr(offsets) = ',idxstr(nstr:nstr)
             end if
           endif  
         end if
@@ -489,7 +489,7 @@ c dbg
           if (idxcnt.eq.3.and.(eqv12.or.eqv34))
      &         idxstr(nstr-1:nstr) = -idxstr(nstr-1:nstr)
           if (ntest.ge.100) then
-            write(luout,*) 'idxstr(final) = ',idxstr(nstr-1:nstr)
+            write(lulog,*) 'idxstr(final) = ',idxstr(nstr-1:nstr)
           end if
 
           ! prelim: check, whether actually the same address resulted
@@ -514,7 +514,7 @@ c dbg
           if (idxcnt.eq.3.and.(eqv12.or.eqv34))
      &         idxstr(nstr) = -idxstr(nstr)
           if (ntest.ge.100) then
-            write(luout,*) 'idxstr(final) = ',idxstr(nstr)
+            write(lulog,*) 'idxstr(final) = ',idxstr(nstr)
           end if
 
           ! prelim: check, whether the same address actually resulted
@@ -538,10 +538,10 @@ c dbg
      &     idxstr(1:nstr) = -idxstr(1:nstr)
 
       if (ntest.ge.50) then
-        write(luout,*) 'on output:'
-        write(luout,*) ' nstr = ',nstr
+        write(lulog,*) 'on output:'
+        write(lulog,*) ' nstr = ',nstr
         do jdx = 1, nstr
-          write(luout,*) '  idx: ',idxstr(jdx)
+          write(lulog,*) '  idx: ',idxstr(jdx)
         end do
       end if
 

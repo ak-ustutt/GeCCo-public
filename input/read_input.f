@@ -14,9 +14,9 @@ c work around for problem with interface file
       logical, external :: file_exists
 
       if (iprlvl.ge.1)
-     &     write(luout,*) 'Reading input file ....'
+     &     write(lulog,*) 'Reading input file ....'
       if (iprlvl.ge.2)
-     &     write(luout,*) 'Input file: ',
+     &     write(lulog,*) 'Input file: ',
      &     trim(ffinput%name)
 
       call set_keywords()
@@ -27,7 +27,7 @@ c work around for problem with interface file
 
       call file_open(ffinput)
 
-      call list_file(luout,ffinput%unit)
+      call list_file(lulog,ffinput%unit)
 
       call keyword_parse(ffinput%unit)
 

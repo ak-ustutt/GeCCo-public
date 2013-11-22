@@ -22,8 +22,8 @@
 
       if (fhand%current_record.lt.fhand%active_records(1).or.
      &    fhand%current_record.gt.fhand%active_records(2)) then
-        write(luout,*) 'file: ',trim(fhand%name)
-        write(luout,*) 'low, current, high: ',
+        write(lulog,*) 'file: ',trim(fhand%name)
+        write(lulog,*) 'low, current, high: ',
      &       fhand%active_records(1),
      &       fhand%current_record,
      &       fhand%active_records(2)

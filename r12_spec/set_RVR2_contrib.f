@@ -37,15 +37,15 @@
 
       if (irint.gt.nop.or.
      &    ivint.gt.nop) then
-        write(luout,*) 'idx: ',irint,ivint
-        write(luout,*) 'nop: ',nop
+        write(lulog,*) 'idx: ',irint,ivint
+        write(lulog,*) 'nop: ',nop
         call quit(1,'set_RVR2_contrib',
      &         'not enough operators on input list')
       end if
 
       if (idx_op(irint).le.0.or.
      &    idx_op(ivint).le.0) then
-        write(luout,*) 'idx: ',idx_op(irint),idx_op(ivint)
+        write(lulog,*) 'idx: ',idx_op(irint),idx_op(ivint)
         call quit(1,'set_RVR2_contrib',
      &         'operator(s) not on input list')
       end if
@@ -93,8 +93,8 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'R^+.V.R (2) contribution'
-        call print_form_list(luout,flist_pnt,op_info)
+        write(lulog,*) 'R^+.V.R (2) contribution'
+        call print_form_list(lulog,flist_pnt,op_info)
       end if
 
       return

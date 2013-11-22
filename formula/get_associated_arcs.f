@@ -36,7 +36,7 @@ c dbg end fix
      &     arc(:)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'get_associated_arcs')
+        call write_title(lulog,wst_dbg_subr,'get_associated_arcs')
       end if
 
       narc => contr%narc
@@ -79,8 +79,8 @@ c dbg
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'len_list = ',len_list
-        write(luout,*) 'arc_list = ',arc_list(1:len_list)
+        write(lulog,*) 'len_list = ',len_list
+        write(lulog,*) 'arc_list = ',arc_list(1:len_list)
       end if
 
       return

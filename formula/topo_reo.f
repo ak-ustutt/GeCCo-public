@@ -25,7 +25,7 @@
 
       do idx = 1, nvtx
         if (ireo(idx).lt.1.or.ireo(idx).gt.nvtx_new) then
-          write(luout,*) 'reo: ',ireo(1:nvtx)
+          write(lulog,*) 'reo: ',ireo(1:nvtx)
           call quit(1,'topo_reo','invalid reordering array')
         end if
       end do

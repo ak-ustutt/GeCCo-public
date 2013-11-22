@@ -51,39 +51,39 @@
       irestr_op1op2 = 0
  
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'special_restr')
-        write(luout,*) 'on input: 12'
+        call write_title(lulog,wst_dbg_subr,'special_restr')
+        write(lulog,*) 'on input: 12'
         do ivtx12 = 1, njoined_op1op2
-          call wrt_occ_rstr(luout,ivtx12,iocc_op1op2(:,:,ivtx12),
+          call wrt_occ_rstr(lulog,ivtx12,iocc_op1op2(:,:,ivtx12),
      &         irestr_op1op2(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
-        write(luout,*) ' 1'
+        write(lulog,*) ' 1'
         do ivtx12 = 1, njoined_op1
-          call wrt_occ_rstr(luout,ivtx12,iocc_op1(:,:,ivtx12),
+          call wrt_occ_rstr(lulog,ivtx12,iocc_op1(:,:,ivtx12),
      &         irestr_op1(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
-        write(luout,*) ' 1ex'
+        write(lulog,*) ' 1ex'
         do ivtx12 = 1, njoined_op1
-          call wrt_occ_rstr(luout,ivtx12,iocc_ex1(:,:,ivtx12),
+          call wrt_occ_rstr(lulog,ivtx12,iocc_ex1(:,:,ivtx12),
      &         irestr_ex1(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
-        write(luout,*) ' 2'
+        write(lulog,*) ' 2'
         do ivtx12 = 1, njoined_op2
-          call wrt_occ_rstr(luout,ivtx12,iocc_op2(:,:,ivtx12),
+          call wrt_occ_rstr(lulog,ivtx12,iocc_op2(:,:,ivtx12),
      &         irestr_op2(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
-        write(luout,*) ' 2ex'
+        write(lulog,*) ' 2ex'
         do ivtx12 = 1, njoined_op2
-          call wrt_occ_rstr(luout,ivtx12,iocc_ex2(:,:,ivtx12),
+          call wrt_occ_rstr(lulog,ivtx12,iocc_ex2(:,:,ivtx12),
      &         irestr_ex2(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do
-        write(luout,*) 'map:'
-        call print_mapinfo(luout,merge_op1op2,njoined_op1op2)
+        write(lulog,*) 'map:'
+        call print_mapinfo(lulog,merge_op1op2,njoined_op1op2)
       end if
 
 
@@ -133,9 +133,9 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'on output:'
+        write(lulog,*) 'on output:'
         do ivtx12 = 1, njoined_op1op2
-          call wrt_occ_rstr(luout,ivtx12,iocc_op1op2(:,:,ivtx12),
+          call wrt_occ_rstr(lulog,ivtx12,iocc_op1op2(:,:,ivtx12),
      &         irestr_op1op2(:,:,:,:,:,ivtx12),
      &         ngas,nspin)
         end do

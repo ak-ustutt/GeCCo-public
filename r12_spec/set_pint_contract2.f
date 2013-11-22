@@ -45,10 +45,10 @@
 
 
       if(ntest.ge.100)then
-        write(luout,*)'P-Intermediate Contraction'
-        write(luout,*)'Constituent operators: '
+        write(lulog,*)'P-Intermediate Contraction'
+        write(lulog,*)'Constituent operators: '
         do idx = 1, nopsin
-          write(luout,*)trim(op_info%op_arr(idx_opsin(idx))%op%name)
+          write(lulog,*)trim(op_info%op_arr(idx_opsin(idx))%op%name)
         enddo
       endif
 
@@ -218,8 +218,8 @@ c      idx_prj = 9
       end if
 
       if(ntest.ge.100)then
-        write(luout,*)'Final formula: P-Int.'
-        call print_form_list(luout,flist,op_info)
+        write(lulog,*)'Final formula: P-Int.'
+        call print_form_list(lulog,flist,op_info)
       endif
 
       return

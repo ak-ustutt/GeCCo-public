@@ -82,8 +82,8 @@
 
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'idx4so')
-        write(luout,*) 'n_so = ',n_so
+        call write_title(lulog,wst_dbg_subr,'idx4so')
+        write(lulog,*) 'n_so = ',n_so
       end if
 
       hpvxgas => orb_info%ihpvgas
@@ -144,8 +144,8 @@
         iss = ispin_raw(4)
 
         if (ntest.ge.150) then
-          write(luout,*) 'initial: ',ip,ir,iq,is
-          write(luout,*) '         ',ips,irs,iqs,iss
+          write(lulog,*) 'initial: ',ip,ir,iq,is
+          write(lulog,*) '         ',ips,irs,iqs,iss
         end if
 
         reopr = ip.gt.ir .or. (ip.eq.ir.and.ips.lt.irs)
@@ -180,7 +180,7 @@
         end if
 
         if (ntest.ge.100) then
-          write(luout,'(x,a,4i5,4x,4i3)') 'generated: ',
+          write(lulog,'(x,a,4i5,4x,4i3)') 'generated: ',
      &         ip,ir,iq,is,ips,irs,iqs,iss
         end if
 
@@ -287,9 +287,9 @@ c dbg
         end do
 
         if (ntest.ge.1000) then
-          write(luout,*) 'strseq = ',strseq(1:4)
-          write(luout,*) 'extracted strings:'
-          write(luout,
+          write(lulog,*) 'strseq = ',strseq(1:4)
+          write(lulog,*) 'extracted strings:'
+          write(lulog,
      &         '(5x,i4,",",i4," (t=",i4,")",i4,",",i4," (g=",i4,")")')
      &         string(1:3,1:2,1:nind)          
         end if
@@ -334,12 +334,12 @@ c     &           then
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'I need ',nstr,' strings!'
-        write(luout,
+        write(lulog,*) 'I need ',nstr,' strings!'
+        write(lulog,
      &         '(5x,i4,",",i4," (t=",i4,")",i4,",",i4," (g=",i4,")")')
      &         string_list(1:3,1:2,1:nstr)          
-        write(luout,*) 'idxraw:'
-        write(luout,'(5x,i2,i10,x,4i4)') idxraw(1:6,1:n_so)
+        write(lulog,*) 'idxraw:'
+        write(lulog,'(5x,i2,i10,x,4i4)') idxraw(1:6,1:n_so)
       end if
 
       ! set up a few pointers:
@@ -415,8 +415,8 @@ c dbg
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'obtained string-addresses (-1 = not allowed): '
-        write(luout,'(2x,2i8,2x,2i8,2x,2i8,2x,2i8,2x,2i8)')
+        write(lulog,*) 'obtained string-addresses (-1 = not allowed): '
+        write(lulog,'(2x,2i8,2x,2i8,2x,2i8,2x,2i8,2x,2i8)')
      &       idxlenstr(1:2,1:nstr)
       end if
 
@@ -438,8 +438,8 @@ c dbg
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'final indices:'
-        write(luout,'(x,i12)') idxlist(1:n_so)
+        write(lulog,*) 'final indices:'
+        write(lulog,'(x,i12)') idxlist(1:n_so)
       end if
 
       return

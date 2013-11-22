@@ -37,10 +37,10 @@
      &     buffer(:)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_list')
-        write(luout,*) 'nset = nset'
+        call write_title(lulog,wst_dbg_subr,'set_list')
+        write(lulog,*) 'nset = nset'
         do iset = 1, nset
-          write(luout,'(3x,i10,g20.12)') idxset(iset), valset(iset)
+          write(lulog,'(3x,i10,g20.12)') idxset(iset), valset(iset)
         end do
       end if
 
@@ -62,8 +62,8 @@
 
       nblkmax = ifree/ffop%reclen
       if (nblkmax.le.0) then
-        write(luout,*) 'free memory (words):  ',ifree
-        write(luout,*) 'block length (words): ',ffop%reclen
+        write(lulog,*) 'free memory (words):  ',ifree
+        write(lulog,*) 'block length (words): ',ffop%reclen
         call quit(1,'set_list','not even 1 record fits into memory?')
       end if
 

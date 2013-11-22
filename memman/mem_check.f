@@ -6,7 +6,7 @@
       character, intent(in) ::
      &     label*(*)
 
-      call memman_check(luout,label)
+      call memman_check(lulog,label)
 
       return
       end

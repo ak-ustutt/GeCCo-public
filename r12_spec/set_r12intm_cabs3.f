@@ -121,20 +121,20 @@
      &     idx_oplist2, idx_formlist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_r12_intm_cabs')
-        write(luout,*) 'setting: ',trim(labels(1))
-        write(luout,*) 'type = ',trim(int_type)
-        write(luout,*) 'ansatz = ',ansatz
-        write(luout,*) 'approx = "',approx(1:12),'"'
-        write(luout,*) 'nlabels = ',nlabels
+        call write_title(lulog,wst_dbg_subr,'set_r12_intm_cabs')
+        write(lulog,*) 'setting: ',trim(labels(1))
+        write(lulog,*) 'type = ',trim(int_type)
+        write(lulog,*) 'ansatz = ',ansatz
+        write(lulog,*) 'approx = "',approx(1:12),'"'
+        write(lulog,*) 'nlabels = ',nlabels
         do iop = 1, nlabels
-          write(luout,*) '       ',trim(labels(iop))          
+          write(lulog,*) '       ',trim(labels(iop))          
         end do
       end if
 
       symmetrise = approx(12:12).eq.'S'
 
-      if (ntest.ge.100) write(luout,*) 'symmetrise = ',symmetrise
+      if (ntest.ge.100) write(lulog,*) 'symmetrise = ',symmetrise
 
       nop = nlabels
 
@@ -142,7 +142,7 @@
       do iop = 1, nop
         ! ignore empty labels
         if (ntest.ge.100)
-     &       write(luout,*) 'checking label #',iop,
+     &       write(lulog,*) 'checking label #',iop,
      &       ': ',trim(labels(iop))
         if (trim(labels(iop)).eq.'-' .or.
      &      len_trim(labels(iop)).eq.0 ) cycle
@@ -153,7 +153,7 @@
       end do
 
       if (ntest.ge.100)
-     &     write(luout,*) 'idx_op: ',idx_op
+     &     write(lulog,*) 'idx_op: ',idx_op
       
       idx_intm = idx_op(1)
 
@@ -340,8 +340,8 @@ c          call set_zint_contract0old(flist,ansatz,
       call write_form_list(form_out%fhand,flist,form_out%comment)
 
       if (ntest.ge.100) then
-        write(luout,*) 'CABS final formula'
-        call print_form_list(luout,flist,op_info)
+        write(lulog,*) 'CABS final formula'
+        call print_form_list(lulog,flist,op_info)
       end if
 
       ! tidy up

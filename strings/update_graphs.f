@@ -51,8 +51,8 @@
      &     restr_cmp
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'update_graphs')
-        write(luout,*) ' unique graphs on input: ',str_info%ngraph
+        call write_title(lulog,wst_dbg_subr,'update_graphs')
+        write(lulog,*) ' unique graphs on input: ',str_info%ngraph
       end if
 
       nspin = orb_info%nspin
@@ -137,32 +137,32 @@ c dbg
       end do ! iocc_cls
 
       if (ntest.eq.100) then
-        write(luout,*) 'unique graphs on output: ', str_info%ngraph
+        write(lulog,*) 'unique graphs on output: ', str_info%ngraph
         len(1:ngastp) = 0
         do igas = 1, ngas
           len(ihpvgas(igas,1)) = len(ihpvgas(igas,1))+1
         end do
-        write(luout,*) '    #    typ occ'
-        write(luout,*) '                 restrictions'
+        write(lulog,*) '    #    typ occ'
+        write(lulog,*) '                 restrictions'
         do igraph = 1, str_info%ngraph
-          write(luout,'(2x,i3,2x,2i4)') igraph,
+          write(lulog,'(2x,i3,2x,2i4)') igraph,
      &         str_info%ispc_typ(igraph),
      &         str_info%ispc_occ(igraph)
-          write(luout,'(15x,10(2i3,x))') 
+          write(lulog,'(15x,10(2i3,x))') 
      &         str_info%igas_restr(1:2,
      &                  1:len(str_info%ispc_typ(igraph)),1,1,igraph)
           if (nspin.eq.2)
-     &         write(luout,'(15x,10(2i3,x))') 
+     &         write(lulog,'(15x,10(2i3,x))') 
      &         str_info%igas_restr(1:2,
      &                  1:len(str_info%ispc_typ(igraph)),1,2,igraph)
         end do
-        write(luout,*) 'operator->graph assignments:'
+        write(lulog,*) 'operator->graph assignments:'
         do iocc_cls = 1, op%n_occ_cls
           if(op%formal_blk(iocc_cls))cycle
           ioff = (iocc_cls-1)*njoined
-          write(luout,'(2x,i3,4x,5(4i3,2x))') iocc_cls,
+          write(lulog,'(2x,i3,4x,5(4i3,2x))') iocc_cls,
      &         mel%idx_graph(1:ngastp,1,ioff+1:ioff+njoined)
-          write(luout,'(5x,4x,5(4i3))') 
+          write(lulog,'(5x,4x,5(4i3))') 
      &         mel%idx_graph(1:ngastp,2,ioff+1:ioff+njoined)
         end do
       end if

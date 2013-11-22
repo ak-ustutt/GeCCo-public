@@ -90,21 +90,21 @@ c      else if (occ.eq.3.and.ncblk.eq.2.and.nablk.eq.2.and.
 c     &         occ_csub(1).eq.1.and.occ_asub(1).eq.2) then
 c        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
       else
-        write(luout,*) 'occ, ncblk, nablk = ',occ, ncblk, nablk
-        write(luout,*) 'occ_csub: ',occ_csub(1:ncblk)
-        write(luout,*) 'occ_asub: ',occ_asub(1:nablk)
+        write(lulog,*) 'occ, ncblk, nablk = ',occ, ncblk, nablk
+        write(lulog,*) 'occ_csub: ',occ_csub(1:ncblk)
+        write(lulog,*) 'occ_asub: ',occ_asub(1:nablk)
         call quit(1,'set_spinprj_info','case not covered')
       end if
 
       do isplc = 1, nsplc
 
         if (ntest.ge.100) then
-          write(luout,*) 'generated spin-case and maps: case = ',isplc
-          write(luout,*) 'msdiscmp_c = ',msdiscmp_c(1:ncblk,isplc)
-          write(luout,*) 'msdiscmp_a = ',msdiscmp_a(1:nablk,isplc)
-          write(luout,*) 'maps_c = ',maps_c(isplc,1:ncblk)
-          write(luout,*) 'maps_a = ',maps_a(isplc,1:nablk)
-          write(luout,'(a,10f10.6)') 'coupling coefficients: ',
+          write(lulog,*) 'generated spin-case and maps: case = ',isplc
+          write(lulog,*) 'msdiscmp_c = ',msdiscmp_c(1:ncblk,isplc)
+          write(lulog,*) 'msdiscmp_a = ',msdiscmp_a(1:nablk,isplc)
+          write(lulog,*) 'maps_c = ',maps_c(isplc,1:ncblk)
+          write(lulog,*) 'maps_a = ',maps_a(isplc,1:nablk)
+          write(lulog,'(a,10f10.6)') 'coupling coefficients: ',
      &                               coeff(isplc,1:ncoup)
         end if
 
@@ -145,10 +145,10 @@ c        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
      &           len_str,ncblk,nablk,.false.)
 
         if (ntest.ge.100) then
-          write(luout,*) 'offset = ',offsets(isplc)
-          write(luout,*) 'ldim_op_c',ldim_op_c(1:ncblk,isplc)
-          write(luout,*) 'ldim_op_a',ldim_op_a(1:nablk,isplc)
-          write(luout,*) 'gsign = ',gsign(isplc)
+          write(lulog,*) 'offset = ',offsets(isplc)
+          write(lulog,*) 'ldim_op_c',ldim_op_c(1:ncblk,isplc)
+          write(lulog,*) 'ldim_op_a',ldim_op_a(1:nablk,isplc)
+          write(lulog,*) 'gsign = ',gsign(isplc)
         end if
 
       end do

@@ -34,7 +34,7 @@
      &     'list is not assigned a file')
 
       if (iprlvl.ge.20) then
-        write(luout,'(3x,7a)')
+        write(lulog,'(3x,7a)')
      &       'detaching file: ',trim(ffop%name),' from list ',
      &       trim(mel%label),' (operator: ',trim(op%name),')'
       end if

@@ -57,11 +57,11 @@ c     &     new = .false.
 
       iprint = max(ntest,iprlvl)
 
-      call write_title(luout,wst_section,'Formula optimization')
+      call write_title(lulog,wst_section,'Formula optimization')
 
 c dbg
-      call print_op_info(luout,'op',op_info)
-      call print_op_info(luout,'mel',op_info)
+      call print_op_info(lulog,'op',op_info)
+      call print_op_info(lulog,'mel',op_info)
 c dbg
       ! initialize list
       allocate(fl_head)
@@ -77,7 +77,7 @@ c      nullify(fl_ptr%interm)
       ! read in formula files:
       ! ----------------------
       if (iprint.gt.0)
-     &     write(luout,'(x,a)') 'Reading in:'
+     &     write(lulog,'(x,a)') 'Reading in:'
 
       do icat = 1, nfcat
 c dbg
@@ -93,7 +93,7 @@ c dbg
      &       trim(flabels(icat)))
 
         if (iprint.gt.0)
-     &     write(luout,'(2x,"--",x,a)')
+     &     write(lulog,'(2x,"--",x,a)')
      &       trim(form_info%form_arr(idxform)%form%label)
 
         cur_ffile => form_info%form_arr(idxform)%form%fhand
@@ -114,7 +114,7 @@ c dbg
         call read_form_list(cur_ffile,fl_ptr,icat.eq.1)
 c dbg
 c        print *,'raw formula'
-c        call print_form_list(luout,form_ptr,op_info)
+c        call print_form_list(lulog,form_ptr,op_info)
 c dbg
 
         ! advance form_ptr to end of list
@@ -137,7 +137,7 @@ c dbg
       ! -----------------------------------------------------------
       do iint = 1, ninterm
         if (iprlvl.gt.0)
-     &       write(luout,'(2x,a)')
+     &       write(lulog,'(2x,a)')
      &       'I will factor out the intermediate: '//
      &       trim(finlabels(iint))//' ...'
         call factor_out(fl_head,finlabels(iint),
@@ -148,7 +148,7 @@ c dbg
       ! find optimal factorization for each term
       ! ----------------------------------------
       if (iprint.gt.0)
-     &     write(luout,'(2x,a)')
+     &     write(lulog,'(2x,a)')
      &       'Now looking for the optimal factorization of terms ...'
      
       if (irt_sched.eq.0) then ! old scheduler
@@ -172,8 +172,8 @@ c dbg
      &   call optimize(fl_opt,op_info,str_info,orb_info,f_opt%label)
 
       if (iprint.ge.10) then
-        call write_title(luout,wst_around_double,'Optimized formula:')
-        call print_form_list(luout,fl_opt,op_info)
+        call write_title(lulog,wst_around_double,'Optimized formula:')
+        call print_form_list(lulog,fl_opt,op_info)
       end if
       if (use_auto_opt.and.lustat.gt.0) then
         call write_title(lustat,wst_around_double,

@@ -24,7 +24,7 @@
       ifree = mem_gotomark(me_list_def)
 
       if (mel%op%n_occ_cls.le.0.or.mel%op%n_occ_cls.ge.1000) then
-        write(luout,*) 'n_occ_cls = ',mel%op%n_occ_cls
+        write(lulog,*) 'n_occ_cls = ',mel%op%n_occ_cls
         call quit(1,'dealloc_me_list',
      &              'suspicious number of blocks (bug?)')
       end if

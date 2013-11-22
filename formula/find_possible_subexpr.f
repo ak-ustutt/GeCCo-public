@@ -56,13 +56,13 @@
      &     contr_in_contr
 
       if (ntest.ge.100) then
-        write(luout,*) '================================='
-        write(luout,*) 'output from find_possible_subexpr'
-        write(luout,*) '================================='
+        write(lulog,*) '================================='
+        write(lulog,*) 'output from find_possible_subexpr'
+        write(lulog,*) '================================='
       end if
 
 c dbg
-c      call print_form_list(luout,fl_intm,op_info)
+c      call print_form_list(lulog,fl_intm,op_info)
 c dbg
 
       nposs = 0
@@ -90,7 +90,7 @@ c dbg
           fl_intm_stblk => fl_intm_pnt
         else if (fl_intm_pnt%command.eq.command_add_contribution) then
           if (iblk_intm.gt.fl_intm_pnt%contr%iblk_res) then
-            write(luout,*) 
+            write(lulog,*) 
      &         'FOR AN EASY FIX: SEE COMMENT IN FORM_FACTOR_OUT!'
             call quit(1,'find_possible_subexpr',
      &         'expected intermediate blocks in increasing sequence')
@@ -181,8 +181,8 @@ c dbg
         idx = 0
         do
           idx = idx+1
-          write(luout,*) 'possibility # ',idx
-          call prt_contr2(luout,fpl_intm_start_pnt%item%contr,
+          write(lulog,*) 'possibility # ',idx
+          call prt_contr2(lulog,fpl_intm_start_pnt%item%contr,
      &         op_info)
           if (.not.associated(fpl_intm_start_pnt%next)) exit
           fpl_intm_start_pnt => fpl_intm_start_pnt%next

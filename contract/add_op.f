@@ -55,13 +55,13 @@
       call atim_csw(cpu0,sys0,wall0)
 
       if(ntest.ge.100)then
-        write(luout,*) '===================='
-        write(luout,*) ' Add up operators   '
-        write(luout,*) '===================='
-        write(luout,*) 'Result: ',trim(label_res)
-        write(luout,*) 'The factors and summands: '
+        write(lulog,*) '===================='
+        write(lulog,*) ' Add up operators   '
+        write(lulog,*) '===================='
+        write(lulog,*) 'Result: ',trim(label_res)
+        write(lulog,*) 'The factors and summands: '
         do isum = 1, nsum
-          write(luout,'(3x,f12.6,x,a)') fac(isum),
+          write(lulog,'(3x,f12.6,x,a)') fac(isum),
      &         trim(label_sum(isum))
         end do
       endif
@@ -69,8 +69,8 @@
       idx_res = idx_mel_list(label_res,op_info)
 
       if (idx_res.lt.0) then
-        write(luout,*) '"',trim(label_res),'"'
-        write(luout,*) idx_res
+        write(lulog,*) '"',trim(label_res),'"'
+        write(lulog,*) idx_res
         call quit(1,'add_op','label not on list')
       end if
 
@@ -84,8 +84,8 @@
       do isum = 1, nsum
         idx_sum(isum) = idx_mel_list(label_sum(isum),op_info)
         if (idx_sum(isum).lt.0) then
-          write(luout,*) '"',trim(label_sum(isum)),'"'
-          write(luout,*) idx_sum
+          write(lulog,*) '"',trim(label_sum(isum)),'"'
+          write(lulog,*) idx_sum
           call quit(1,'add_op','label not on list')
         end if
         me_current => op_info%mel_arr(idx_sum(isum))%mel
@@ -127,7 +127,7 @@
 
           if (iblk_sum.lt.1) then
             if (replace) cycle
-            call wrt_occ_n(luout,occ,njoined)
+            call wrt_occ_n(lulog,occ,njoined)
             call quit(1,'add_op',
      &           'block not found: '//trim(me_current%op%name))
           end if
@@ -146,15 +146,15 @@
      &     call file_close_keep(me_res%fhand)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'dump of result list:'
-        call wrt_mel_file(luout,5,
+        write(lulog,*) 'dump of result list:'
+        call wrt_mel_file(lulog,5,
      &       me_res,
      &       1,me_res%op%n_occ_cls,
      &       str_info,orb_info)
       end if
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'time for adding',
+      call prtim(lulog,'time for adding',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

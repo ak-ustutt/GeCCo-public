@@ -35,9 +35,9 @@
       call quit(1,'test_formgen2','call to obsolete routine')
 
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding A operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding A operator'
+      write(lulog,*) '-------------------'
       call add_operator('A',op_info)
 
       iformal=3
@@ -46,9 +46,9 @@
       call set_xop(op,'A',.false.,0,0,1,0,0,
      &     2,2,0,0,iformal,orb_info)
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding B operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding B operator'
+      write(lulog,*) '-------------------'
       call add_operator('B',op_info)
 
       idxopb = op_info%nops
@@ -56,9 +56,9 @@
       call set_xop(op,'B',.false.,0,0,1,0,0,
      &     2,2,0,iformal,orb_info)
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding C operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding C operator'
+      write(lulog,*) '-------------------'
       call add_operator('C',op_info)
 
       idxopc = op_info%nops
@@ -66,9 +66,9 @@
       call set_xop(op,'C',.false.,0,0,1,0,0,
      &     2,2,0,iformal,orb_info)
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding R operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding R operator'
+      write(lulog,*) '-------------------'
       call add_operator('R',op_info)
 
       idxopr = op_info%nops
@@ -76,9 +76,9 @@
       call set_xop(op,'R',.false.,0,0,1,0,0,
      &     2,2,0,iformal,orb_info)
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding D operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding D operator'
+      write(lulog,*) '-------------------'
       call add_operator('D',op_info)
 
       idxopd = op_info%nops
@@ -91,9 +91,9 @@
       op%ihpvca_occ(1,1,1) = 2
       op%ihpvca_occ(1,2,1) = 2
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' generate B = A+DC'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' generate B = A+DC'
+      write(lulog,*) '-------------------'
       ! define: B = A + DC
       call init_formula(form_a_dc)
       fl_a_dc_pnt => form_a_dc
@@ -109,11 +109,11 @@
      &     1d0,2,(/idxopd,idxopc/),-1,-1,
      &     (/1,2/),1,.false.,op_info)
 
-      call print_form_list(luout,form_a_dc,op_info)
+      call print_form_list(lulog,form_a_dc,op_info)
 
-      write(luout,*) '-----------------------------'
-      write(luout,*) ' generate R = e^{-B} H e^{B}'
-      write(luout,*) '-----------------------------'
+      write(lulog,*) '-----------------------------'
+      write(lulog,*) ' generate R = e^{-B} H e^{B}'
+      write(lulog,*) '-----------------------------'
       ! generate: e^{-B} H e^{B}
       idxoph = idx_oplist2(op_ham,op_info)
       call init_formula(form_bhb)
@@ -124,24 +124,24 @@
       call expand_op_bch(fl_bhb_pnt,4,idxopr,
      &     1d0,-1,idxoph,1d0,idxopb,-1,-1,op_info)
 
-      call print_form_list(luout,form_bhb,op_info)
+      call print_form_list(lulog,form_bhb,op_info)
 
       ! replace B -> A + DC
-      write(luout,*) '------------------------------------'
-      write(luout,*) ' insert B: R = e^{-A-DC} H e^{B+DC}'
-      write(luout,*) '------------------------------------'
+      write(lulog,*) '------------------------------------'
+      write(lulog,*) ' insert B: R = e^{-A-DC} H e^{B+DC}'
+      write(lulog,*) '------------------------------------'
 
       call expand_subexpr(form_bhb,form_a_dc,0,op_info)
 
-      call print_form_list(luout,form_bhb,op_info)
+      call print_form_list(lulog,form_bhb,op_info)
 
-      write(luout,*) '------------------------------------'
-      write(luout,*) ' after summing terms: '
-      write(luout,*) '------------------------------------'
+      write(lulog,*) '------------------------------------'
+      write(lulog,*) ' after summing terms: '
+      write(lulog,*) '------------------------------------'
 
       call sum_terms(form_bhb,op_info)
 
-      call print_form_list(luout,form_bhb,op_info)
+      call print_form_list(lulog,form_bhb,op_info)
 
       call quit(1,'test_formgen','test exit')
 

@@ -70,8 +70,8 @@
       if (idx_inp.lt.0.or.idx_inv.lt.0
      &    .or.nlist.eq.2.and.idx_u.lt.0
      &    .or.ninp.eq.2.and.idx_spc.lt.0) then
-        write(luout,*) '"',label_inv,'" "',label_inp,'"'
-        write(luout,*) idx_inv, idx_inp, idx_u, idx_spc
+        write(lulog,*) '"',label_inv,'" "',label_inp,'"'
+        write(lulog,*) idx_inv, idx_inp, idx_u, idx_spc
         call quit(1,'inv_op','label not on list')
       end if
 
@@ -81,7 +81,7 @@
       if (nlist.eq.2) then
         me_u => op_info%mel_arr(idx_u)%mel
       else
-        me_u => me_inv ! dummy, just to avoid problems
+        me_u => me_inv
       end if
       if (ninp.eq.2) then
         me_spc => op_info%mel_arr(idx_spc)%mel
@@ -114,13 +114,13 @@
       if (open_close_spc) call file_open(me_spc%fhand)
 
       if(ntest.ge.100)then
-        write(luout,*) '===================='
-        write(luout,*) ' Operator inversion '
-        write(luout,*) '===================='
-        write(luout,*) 'To be inverted: ',trim(me_inp%label)
-        write(luout,*) 'The inverse: ',trim(me_inv%label)
-        if (nlist.eq.2) write(luout,*) 'Unitary mat.: ',trim(me_u%label)
-        if (ninp.eq.2) write(luout,*) 'Spec. mat.: ',trim(me_spc%label)
+        write(lulog,*) '===================='
+        write(lulog,*) ' Operator inversion '
+        write(lulog,*) '===================='
+        write(lulog,*) 'To be inverted: ',trim(me_inp%label)
+        write(lulog,*) 'The inverse: ',trim(me_inv%label)
+        if (nlist.eq.2) write(lulog,*) 'Unitary mat.: ',trim(me_u%label)
+        if (ninp.eq.2) write(lulog,*) 'Spec. mat.: ',trim(me_spc%label)
       endif
 
       ! Check that the two operators have the same shape.
@@ -132,7 +132,8 @@
      &     call quit(1,'inv_op','in and out incompatible: njoined')
       nocc_cls = me_inp%op%n_occ_cls
       if(nocc_cls.ne.me_inv%op%n_occ_cls
-     &   .or.nlist.eq.2.and.nocc_cls.ne.me_u%op%n_occ_cls)
+     &   .or.nlist.eq.2.and.mode(1:7).ne.'invdiag'
+     &   .and.nocc_cls.ne.me_u%op%n_occ_cls)
      &     call quit(1,'inv_op','in and out incompatible: nocc_cls')
       
 
@@ -153,7 +154,7 @@
      &         opinv_temp,me_inv%op%dagger)) then
             call quit(1,'inv_op','in and out incompatible: occs.')
           endif  
-          if (nlist.eq.2) then
+          if (nlist.eq.2.and.mode(1:7).ne.'invdiag') then
             opinv_temp(1:ngastp,1:2) =
      &           me_u%op%ihpvca_occ(1:ngastp,1:2,join_off+idx)
             if (.not.iocc_equal(opinp_temp,me_inp%op%dagger,
@@ -170,24 +171,35 @@
       ! (or that any off-diagonal block is zero)
 
       ! Call the actual inversion routine.
-      if (mode(1:7).ne.'invsqrt') then
+      if (mode(1:7).eq.'invsqrt') then
+        write(lulog,*) 'Calculating square root of inverse'
+        call invsqrt(me_inp,me_inv,nocc_cls,mode(8:11).eq.'half',
+     &       nlist.eq.2,me_u,ninp.eq.2,me_spc,.false.,
+     &       op_info,orb_info,str_info,strmap_info)
+      else if (mode(1:9).eq.'pseudoinv') then
         if (nlist.eq.2) call warn('inv_op','Unitary matrix unavailable')
-        if (mode(1:9).eq.'pseudoinv') then
-          call pseudoinv(me_inp,me_inv,nocc_cls,
-     &                   op_info,orb_info)
-        else
-          call invert(me_inp,me_inv,nocc_cls,
-     &         op_info,orb_info)
+        call pseudoinv(me_inp,me_inv,nocc_cls,
+     &                 op_info,orb_info)
+      else if (mode(1:7).eq.'invdiag') then
+        ! diagonalize matrix and get unitary matrix
+        call invsqrt(me_inp,me_inv,nocc_cls,.true.,
+     &       .false.,me_u,.false.,me_u,.true., ! dummies, special mode
+     &       op_info,orb_info,str_info,strmap_info)
+        if (mode(8:11).eq.'mult') then
+          if (nlist.ne.2)
+     &       call quit('inv_op','Provide list for unitary matrix!')
+          ! now multiply previous transformation list with
+          call mult_trafmats(me_u,me_inv,
+     &         op_info,orb_info,str_info)
         end if
       else
-        write(luout,*) 'Calculating square root of inverse'
-        call invsqrt(me_inp,me_inv,nocc_cls,mode(8:11).eq.'half',
-     &       nlist.eq.2,me_u,ninp.eq.2,me_spc,
-     &       op_info,orb_info,str_info,strmap_info)
+        if (nlist.eq.2) call warn('inv_op','Unitary matrix unavailable')
+        call invert(me_inp,me_inv,nocc_cls,
+     &              op_info,orb_info)
       end if
 
       if(ntest.ge.1000)then
-        call wrt_mel_file(luout,5,me_inv,1,
+        call wrt_mel_file(lulog,5,me_inv,1,
      &       me_inv%op%n_occ_cls,str_info,orb_info)
       endif
 
@@ -201,7 +213,7 @@
      &     call file_close_keep(me_inp%fhand)
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'time for inversion',
+      call prtim(lulog,'time for inversion',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

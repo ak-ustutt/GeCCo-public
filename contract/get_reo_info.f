@@ -67,15 +67,15 @@ c dbg
 c      if (reo_info%nreo.gt.0) print *,'nreo = ',reo_info%nreo
 c dbg
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'get_reo_info')
-        write(luout,*) 'nreo = ',reo_info%nreo
+        call write_title(lulog,wst_dbg_subr,'get_reo_info')
+        write(lulog,*) 'nreo = ',reo_info%nreo
         reo => reo_info%reo
         do ireo = 1, reo_info%nreo
-          write(luout,*) 'set # ',ireo
-          write(luout,*) 'is_bc_result: ',reo(ireo)%is_bc_result
-          write(luout,*) 'idxsuper:  ',reo(ireo)%idxsuper
-          write(luout,*) 'from/to:   ',reo(ireo)%from,reo(ireo)%to
-          call wrt_occ(luout,reo(ireo)%occ_shift)
+          write(lulog,*) 'set # ',ireo
+          write(lulog,*) 'is_bc_result: ',reo(ireo)%is_bc_result
+          write(lulog,*) 'idxsuper:  ',reo(ireo)%idxsuper
+          write(lulog,*) 'from/to:   ',reo(ireo)%from,reo(ireo)%to
+          call wrt_occ(lulog,reo(ireo)%occ_shift)
         end do
       end if
 
@@ -179,16 +179,16 @@ c      end if
         end do
 
         if (ntest.ge.100) then
-          write(luout,*) 'OP1OP2 tmp:'
-          call wrt_occ_n(luout,iocc_op1op2tmp,njoined_op1op2)
-          write(luout,*) 'OP1OP2:'
-          call wrt_occ_n(luout,iocc_op1op2,njoined_op1op2)
-          write(luout,*) 'REO:'
-          call wrt_occ_n(luout,reo_info%iocc_reo,nreo_op1op2)
-          write(luout,*) 'OPREO_0:'
-          call wrt_occ_n(luout,reo_info%iocc_opreo0,njoined_op1op2)
-          write(luout,*) 'is_op1op2:'
-          write(luout,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
+          write(lulog,*) 'OP1OP2 tmp:'
+          call wrt_occ_n(lulog,iocc_op1op2tmp,njoined_op1op2)
+          write(lulog,*) 'OP1OP2:'
+          call wrt_occ_n(lulog,iocc_op1op2,njoined_op1op2)
+          write(lulog,*) 'REO:'
+          call wrt_occ_n(lulog,reo_info%iocc_reo,nreo_op1op2)
+          write(lulog,*) 'OPREO_0:'
+          call wrt_occ_n(lulog,reo_info%iocc_opreo0,njoined_op1op2)
+          write(lulog,*) 'is_op1op2:'
+          write(lulog,'(1x,20i3)') is_op1op2(1:reo_info%nvtx_contr)
         end if
 
         reo_info%sign_reo = sign_reo(

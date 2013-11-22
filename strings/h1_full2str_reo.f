@@ -64,10 +64,10 @@
       allocate(iad_gasca(ngas,2))
 
       if (ntest.ge.100) then
-        write(luout,*) '========================='
-        write(luout,*) 'here comes h1_full2str_reo'
-        write(luout,*) '========================='
-        write(luout,*) 'input matrix'
+        write(lulog,*) '========================='
+        write(lulog,*) 'here comes h1_full2str_reo'
+        write(lulog,*) '========================='
+        write(lulog,*) 'input matrix'
         call prtrlt(h1tri,ntoob+ncaborb)
       end if      
 
@@ -81,8 +81,8 @@
         if (ntest.ge.100.and.
      &     max(hop%ica_occ(1,iblk),hop%ica_occ(2,iblk)).le.1)
      &                                                             then
-          write(luout,*) 'formal? ',hop%formal_blk(iblk)
-          call wrt_occ(luout,hop%ihpvca_occ(1,1,iblk))
+          write(lulog,*) 'formal? ',hop%formal_blk(iblk)
+          call wrt_occ(lulog,hop%ihpvca_occ(1,1,iblk))
         end if
 
         ! reference energy
@@ -214,8 +214,8 @@ c          idxstr = hlist%off_op_occ(iblk)+1
       end do occ_cls
 
       if (ntest.ge.100) then
-        write(luout,*) 'reordered operator:'
-        call wrt_mel_buf(luout,5,h1str,hlist,1,nblk,
+        write(lulog,*) 'reordered operator:'
+        call wrt_mel_buf(lulog,5,h1str,hlist,1,nblk,
      &       str_info,orb_info)
       end if
 

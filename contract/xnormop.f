@@ -80,8 +80,8 @@ c dbgend
 
       nblkmax = ifree/ffop%reclen
       if (nblkmax.le.0) then
-        write(luout,*) 'free memory (words):  ',ifree
-        write(luout,*) 'block length (words): ',ffop%reclen
+        write(lulog,*) 'free memory (words):  ',ifree
+        write(lulog,*) 'block length (words): ',ffop%reclen
         call quit(1,'xnormop','not even 1 record fits into memory?')
       end if
 

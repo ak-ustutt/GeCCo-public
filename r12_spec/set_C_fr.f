@@ -56,8 +56,8 @@
 
       if (iham.gt.nop.or.
      &    ir12.gt.nop) then
-          write(luout,*) 'idx: ',iham,ir12
-          write(luout,*) 'nop: ',nop
+          write(lulog,*) 'idx: ',iham,ir12
+          write(lulog,*) 'nop: ',nop
           call quit(1,'set_C_fr',
      &         'not enough operators on input list')
       end if
@@ -67,7 +67,7 @@
 
       if ((iham.gt.0.and.idx_op(iham).le.0).or.
      &    idx_op(ir12).le.0) then
-        write(luout,*) 'idx: ',idx_op(iham),idx_op(ir12)
+        write(lulog,*) 'idx: ',idx_op(iham),idx_op(ir12)
         call quit(1,'set_C_fr',
      &         'operator(s) not on input list')
       end if
@@ -147,7 +147,7 @@
      &       (/2,5,1,idx_prj/),1,
      &       .false.,op_info)
         else
-          write(luout,*) 'njoined(C) = ',njoined_c
+          write(lulog,*) 'njoined(C) = ',njoined_c
           call quit(1,'set_C_fr','I am quite confused ...')
         end if
 
@@ -157,9 +157,9 @@
      &                     flist_pnt,op_info)
 
         if (ntest.ge.100) then
-          write(luout,*) 'approx = ',trim(approx)
-          write(luout,*) 'C: F.R12 contribution:'
-          call print_form_list(luout,flist_pnt,op_info)
+          write(lulog,*) 'approx = ',trim(approx)
+          write(lulog,*) 'C: F.R12 contribution:'
+          call print_form_list(lulog,flist_pnt,op_info)
         end if
 
         call del_operator(op_scr_f,op_info)
@@ -173,15 +173,15 @@
 
       if (irbar.gt.nop.or.
      &    irtilde.gt.nop) then
-          write(luout,*) 'idx: ',irbar,irtilde
-          write(luout,*) 'nop: ',nop
+          write(lulog,*) 'idx: ',irbar,irtilde
+          write(lulog,*) 'nop: ',nop
           call quit(1,'set_C_fr',
      &         'not enough operators on input list')
       end if
 
       if (idx_op(irbar).le.0.or.
      &    idx_op(irtilde).le.0) then
-        write(luout,*) 'idx: ',idx_op(irbar),idx_op(irtilde)
+        write(lulog,*) 'idx: ',idx_op(irbar),idx_op(irtilde)
         call quit(1,'set_C_fr',
      &         'operator(s) not on input list')
       end if

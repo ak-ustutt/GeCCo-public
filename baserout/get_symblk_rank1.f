@@ -31,9 +31,9 @@
      &     fac
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'get_symblk_rank1')
-        write(luout,*) 'symmetry of block: ',sym
-        write(luout,*) 'input matrix:'
+        call write_title(lulog,wst_dbg_subr,'get_symblk_rank1')
+        write(lulog,*) 'symmetry of block: ',sym
+        write(lulog,*) 'input matrix:'
         call prtrlt(xfull,ndimt)
       end if
 
@@ -77,7 +77,7 @@ c dbg
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'output matrix:'
+        write(lulog,*) 'output matrix:'
         form = sym
         if (sym.eq.1) form=0
         call wr_blkmat(xblk,ndim,ndim,nsym,form)

@@ -51,8 +51,8 @@
       ffmo  => me_dens%fhand
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'btran_one')
-        write(luout,*) 'backtransform one-particle part of: ',
+        call write_title(lulog,wst_dbg_subr,'btran_one')
+        write(lulog,*) 'backtransform one-particle part of: ',
      &       trim(me_dens%label)
       end if
 
@@ -139,7 +139,7 @@
         iblkoff = (iblk-1)*njoined
 
         if (ntest.ge.100) then
-          call wrt_occ_n(luout,hpvx_occ(1,1,iblkoff+1),njoined)
+          call wrt_occ_n(lulog,hpvx_occ(1,1,iblkoff+1),njoined)
         end if
 
         ! get HPVX of C and A
@@ -175,7 +175,7 @@
      &         nbas,mostnd,iad_gas,hpvx_gas(1,ispin),ngas,nsym)
 
           if (ntest.ge.100) then
-            write(luout,*) 'XAO after block,idxms: ',iblk, idxms
+            write(lulog,*) 'XAO after block,idxms: ',iblk, idxms
             call wr_blkmat(xao,nbas,nbas,nsym,0)
           end if
 

@@ -24,8 +24,8 @@
       luvec  = ffvec%unit
       lblk = ffvec%reclen
       if (lenbuf.lt.min(lenvec,lblk)) then
-        write(luout,*) 'Insufficient buffer size!'
-        write(luout,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
+        write(lulog,*) 'Insufficient buffer size!'
+        write(lulog,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
         call quit(1,'da_listvec','Insufficient buffer size!')
       end if
 
@@ -102,7 +102,7 @@
 c        idxnd = idxst-1 + len
 
         xnrm = sqrt(ddot(len,vec(idxst),1,vec(idxst),1))
-        write(luout,'(x,"rec=",i10,2x,"norm=",g20.10)') irec,xnrm
+        write(lulog,'(x,"rec=",i10,2x,"norm=",g20.10)') irec,xnrm
         if (imod.gt.0) then
           call wrtmat2(vec(idxst),1,len,1,len)
         end if

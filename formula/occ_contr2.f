@@ -28,7 +28,7 @@
      &     xarc(:)
       
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'occ_contr2')
+     &     call write_title(lulog,wst_dbg_subr,'occ_contr2')
 
       nxarc = contr%nxarc
       xarc  => contr%xarc
@@ -47,10 +47,10 @@
 
       if (ntest.ge.100) then
         if (ierr.eq.0) then
-          write(luout,*) 'resulting occ:'
-          call wrt_occ_n(luout,occ,njoined)
+          write(lulog,*) 'resulting occ:'
+          call wrt_occ_n(lulog,occ,njoined)
         else
-          write(luout,*) 'error code: ',ierr
+          write(lulog,*) 'error code: ',ierr
         end if
       end if
 

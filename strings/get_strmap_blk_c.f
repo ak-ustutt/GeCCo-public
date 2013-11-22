@@ -53,7 +53,7 @@
       offsets => strmap_info%offsets
       offsets_fc => strmap_info%offsets_fc
       if (n1.lt.0.or.n2.lt.0.or.n12.lt.0) then
-        write(luout,*) 'n1, n2, n12: ',n1, n2, n12
+        write(lulog,*) 'n1, n2, n12: ',n1, n2, n12
         call quit(1,'get_strmap_blk_c',
      &     'n1, n2, or n12: check call list')
       end if
@@ -117,10 +117,10 @@ c dbg
 c        print *,'idx1/idx2:',idx1,idx2
 c dbg
         if (idx1.eq.0.and.idx2.eq.0) then
-          write(luout,*) 'n1,n2,n12: ',n1,n2,n12
-          write(luout,*) 'map_info:  ',map_info(1:2*(n1+n2)*n12)
-          write(luout,*) 'last index:',idx_minf
-          write(luout,*) 'last idx12:',idx12
+          write(lulog,*) 'n1,n2,n12: ',n1,n2,n12
+          write(lulog,*) 'map_info:  ',map_info(1:2*(n1+n2)*n12)
+          write(lulog,*) 'last index:',idx_minf
+          write(lulog,*) 'last idx12:',idx12
           call quit(1,'get_strmap_blk_c','buggy map_info?')
         end if
 

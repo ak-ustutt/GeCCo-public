@@ -66,7 +66,7 @@
      &     iocc_zero, iocc_equal
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'reo_mel_blk')
+        call write_title(lulog,wst_dbg_subr,'reo_mel_blk')
       end if
 
       opinp => meinp%op
@@ -172,7 +172,7 @@
       ! Ignore reordering sign (we just want to change the shape, sign
       ! changes shall be accounted separately in other steps if needed)
       if (reo_info%sign_reo.ne.1d0) then
-c        write(luout,*) 'setting sign_reo = +1 for block ',iblkout
+c        write(lulog,*) 'setting sign_reo = +1 for block ',iblkout
         reo_info%sign_reo = 1d0
       end if
 

@@ -47,15 +47,15 @@
      &     buffer(:)
 
       if (ntest.ge.100) then
-        write(luout,*) '==================='
-        write(luout,*) 'this is set_fcmap'
-        write(luout,*) '==================='
-        write(luout,*) 'idxfc: ',idxfc
-        write(luout,*) 'ityp1, iocc1: ',ityp1, iocc1
-        write(luout,*) 'irestr1:  ',
+        write(lulog,*) '==================='
+        write(lulog,*) 'this is set_fcmap'
+        write(lulog,*) '==================='
+        write(lulog,*) 'idxfc: ',idxfc
+        write(lulog,*) 'ityp1, iocc1: ',ityp1, iocc1
+        write(lulog,*) 'irestr1:  ',
      &       irestr1(1:2*orb_info%nspin*orb_info%ngas)
-        write(luout,*) 'ityp2, iocc2: ',ityp2, iocc2
-        write(luout,*) 'irestr2:  ',
+        write(lulog,*) 'ityp2, iocc2: ',ityp2, iocc2
+        write(lulog,*) 'irestr2:  ',
      &       irestr2(1:2*orb_info%nspin*orb_info%ngas)
       end if
 
@@ -91,7 +91,7 @@
       
       lenbuf = maxlenbuf
       if (ntest.ge.100) then
-        write(luout,*) 'allocating ',lenbuf,' integer words'
+        write(lulog,*) 'allocating ',lenbuf,' integer words'
       end if
       ifree = mem_alloc_int(buffer,lenbuf,'buffer')
       strmap_info%maxlen_blk_fc(idxfc) = maxlen_blk
@@ -139,12 +139,12 @@ c dbg
       end do
 
       if (ntest.ge.150) then
-        write(luout,*) 'maxlen:',strmap_info%maxlen_blk_fc(idxfc)
-        write(luout,*) 'the MS offset array: '
-        write(luout,'(1x,10i6)')
+        write(lulog,*) 'maxlen:',strmap_info%maxlen_blk_fc(idxfc)
+        write(lulog,*) 'the MS offset array: '
+        write(lulog,'(1x,10i6)')
      &       strmap_info%offsets_fc(idxfc)%ms
-        write(luout,*) 'the MS/IRREP offset array: '
-        write(luout,'(1x,10i6)')
+        write(lulog,*) 'the MS/IRREP offset array: '
+        write(lulog,'(1x,10i6)')
      &       strmap_info%offsets_fc(idxfc)%msgm
       end if
 

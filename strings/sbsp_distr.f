@@ -66,11 +66,11 @@
       end do dis_loop
 
       if (nsbsp_dis.eq.0) then
-        write(luout,*)
+        write(lulog,*)
      &       'ERROR in sbsp_distr: cannot create any distribution'
-        write(luout,*) ' nel   = ',nel
-        write(luout,*) ' nsbsp = ',nsbsp
-        write(luout,*) ' mnmxsbsp = ',mnmxsbsp(1:2,nsbsp)
+        write(lulog,*) ' nel   = ',nel
+        write(lulog,*) ' nsbsp = ',nsbsp
+        write(lulog,*) ' mnmxsbsp = ',mnmxsbsp(1:2,nsbsp)
         stop 'ERROR in sbsp_distr'
       end if
 

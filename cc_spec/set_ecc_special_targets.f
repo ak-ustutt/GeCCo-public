@@ -34,7 +34,7 @@
      &     parameters(2)
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting special targets for ECC ...'
+     &     write(lulog,*) 'setting special targets for ECC ...'
 
       msc = 1 ! presently assuming closed shell
 

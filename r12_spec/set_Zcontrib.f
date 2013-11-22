@@ -41,8 +41,8 @@
 
       if (irdag.gt.nop.or.
      &    irbreve.gt.nop) then
-        write(luout,*) 'idx: ',irdag,irbreve
-        write(luout,*) 'nop: ',nop
+        write(lulog,*) 'idx: ',irdag,irbreve
+        write(lulog,*) 'nop: ',nop
         call quit(1,'set_Zcontrib',
      &         'not enough operators on input list')
       end if
@@ -51,7 +51,7 @@
 
       if (idx_op(irdag).le.0.or.
      &    idx_op(irbreve).le.0) then
-        write(luout,*) 'idx: ',idx_op(irdag),idx_op(irbreve)
+        write(lulog,*) 'idx: ',idx_op(irdag),idx_op(irbreve)
         call quit(1,'set_Ycontrib',
      &         'operator(s) not on input list')
       end if
@@ -110,8 +110,8 @@ c        ! this gives the terms with ONLY the projector as contraction
       end if
       
       if (ntest.ge.100) then
-        write(luout,*) 'Z contribution'
-        call print_form_list(luout,flist_pnt,op_info)
+        write(lulog,*) 'Z contribution'
+        call print_form_list(lulog,flist_pnt,op_info)
       end if
 
       return

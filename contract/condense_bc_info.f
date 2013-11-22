@@ -109,15 +109,15 @@
      &       ihpvgas,ngas,nspin)
 
 c test
-C          write(luout,*) 'EX1 before'
+C          write(lulog,*) 'EX1 before'
 C          do ijoin = 1, njoined_op1
-C            call wrt_occ_rstr(luout,ijoin,iocc_ex1(:,:,ijoin),
+C            call wrt_occ_rstr(lulog,ijoin,iocc_ex1(:,:,ijoin),
 C     &                                    irst_ex1(:,:,:,:,ijoin),
 C     &                                    ngas,nspin)
 C          end do
-C          write(luout,*) 'EX2 before'
+C          write(lulog,*) 'EX2 before'
 C          do ijoin = 1, njoined_op2
-C            call wrt_occ_rstr(luout,ijoin,iocc_ex2(:,:,ijoin),
+C            call wrt_occ_rstr(lulog,ijoin,iocc_ex2(:,:,ijoin),
 C     &                                    irst_ex2(:,:,:,:,ijoin),
 C     &                                    ngas,nspin)
 C          end do
@@ -128,15 +128,15 @@ C          end do
      &       njoined_op1op2,njoined_op2,
      &       ihpvgas,ngas,nspin)
 
-C          write(luout,*) 'EX1 after'
+C          write(lulog,*) 'EX1 after'
 C          do ijoin = 1, njoined_op1
-C            call wrt_occ_rstr(luout,ijoin,iocc_ex1(:,:,ijoin),
+C            call wrt_occ_rstr(lulog,ijoin,iocc_ex1(:,:,ijoin),
 C     &                                    irst_ex1(:,:,:,:,ijoin),
 C     &                                    ngas,nspin)
 C          end do
-C          write(luout,*) 'EX2 after'
+C          write(lulog,*) 'EX2 after'
 C          do ijoin = 1, njoined_op2
-C            call wrt_occ_rstr(luout,ijoin,iocc_ex2(:,:,ijoin),
+C            call wrt_occ_rstr(lulog,ijoin,iocc_ex2(:,:,ijoin),
 C     &                                    irst_ex2(:,:,:,:,ijoin),
 C     &                                    ngas,nspin)
 C          end do
@@ -156,10 +156,10 @@ c patch
      &           irst_cnt_dagger(1,1,1,1,ijoin),.true.,
      &           ihpvgas,ngas,nspin)) then
                 do ii = 1, njoined_cnt
-                  call wrt_occ_rstr(luout,ii,iocc_cnt(:,:,ii),
+                  call wrt_occ_rstr(lulog,ii,iocc_cnt(:,:,ii),
      &                                     irst_cnt(:,:,:,:,ijoin),
      &                                     ngas,nspin)
-                  call wrt_occ_rstr(luout,ii,iocc_cnt_dagger(:,:,ii),
+                  call wrt_occ_rstr(lulog,ii,iocc_cnt_dagger(:,:,ii),
      &                                   irst_cnt_dagger(:,:,:,:,ijoin),
      &                                     ngas,nspin)
                 end do
@@ -173,47 +173,47 @@ c patch
 c end patch
           end do
           if (ntest.ge.100) then
-            write(luout,*) 'generated restrictions: CNT'
+            write(lulog,*) 'generated restrictions: CNT'
             do ijoin = 1, njoined_cnt
-              if (njoined_cnt.gt.1) write(luout,*) 'pair # ',ijoin
-              call wrt_rstr(luout,irst_cnt(1,1,1,1,ijoin),ngas)
-              call wrt_rstr(luout,irst_cnt_dagger(1,1,1,1,ijoin),ngas)
+              if (njoined_cnt.gt.1) write(lulog,*) 'pair # ',ijoin
+              call wrt_rstr(lulog,irst_cnt(1,1,1,1,ijoin),ngas)
+              call wrt_rstr(lulog,irst_cnt_dagger(1,1,1,1,ijoin),ngas)
             end do
-            write(luout,*) 'OP1 is'
+            write(lulog,*) 'OP1 is'
             do ijoin = 1, njoined_op1
-              call wrt_occ_rstr(luout,ijoin,iocc_op1(:,:,ijoin),
+              call wrt_occ_rstr(lulog,ijoin,iocc_op1(:,:,ijoin),
      &                                    irst_op1(:,:,:,:,ijoin),
      &                                    ngas,nspin)
             end do
-            write(luout,*) 'EX1 is'
+            write(lulog,*) 'EX1 is'
             do ijoin = 1, njoined_op1
-              call wrt_occ_rstr(luout,ijoin,iocc_ex1(:,:,ijoin),
+              call wrt_occ_rstr(lulog,ijoin,iocc_ex1(:,:,ijoin),
      &                                    irst_ex1(:,:,:,:,ijoin),
      &                                    ngas,nspin)
             end do
             if (.not.self) then
-              write(luout,*) 'OP2 is'
+              write(lulog,*) 'OP2 is'
               do ijoin = 1, njoined_op2
-                call wrt_occ_rstr(luout,ijoin,iocc_op2(:,:,ijoin),
+                call wrt_occ_rstr(lulog,ijoin,iocc_op2(:,:,ijoin),
      &                                    irst_op2(:,:,:,:,ijoin),
      &                                    ngas,nspin)
               end do
-              write(luout,*) 'EX2 is'
+              write(lulog,*) 'EX2 is'
               do ijoin = 1, njoined_op2
-                call wrt_occ_rstr(luout,ijoin,iocc_ex2(:,:,ijoin),
+                call wrt_occ_rstr(lulog,ijoin,iocc_ex2(:,:,ijoin),
      &                                    irst_ex2(:,:,:,:,ijoin),
      &                                    ngas,nspin)
               end do
             end if
-            write(luout,*) 'OP1OP2TMP is'
+            write(lulog,*) 'OP1OP2TMP is'
             do ijoin = 1, njoined_op1op2
-              call wrt_occ_rstr(luout,ijoin,iocc_op1op2tmp(:,:,ijoin),
+              call wrt_occ_rstr(lulog,ijoin,iocc_op1op2tmp(:,:,ijoin),
      &                                    irst_op1op2tmp(:,:,:,:,ijoin),
      &                                    ngas,nspin)
             end do
-            write(luout,*) 'OP1OP2 is'
+            write(lulog,*) 'OP1OP2 is'
             do ijoin = 1, njoined_op1op2
-              call wrt_occ_rstr(luout,ijoin,iocc_op1op2(:,:,ijoin),
+              call wrt_occ_rstr(lulog,ijoin,iocc_op1op2(:,:,ijoin),
      &                                    irst_op1op2(:,:,:,:,ijoin),
      &                                    ngas,nspin)
             end do

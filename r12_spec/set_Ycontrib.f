@@ -45,15 +45,15 @@
 
       if (irdag.gt.nop.or.
      &    irtilde.gt.nop) then
-        write(luout,*) 'idx: ',irdag,irtilde
-        write(luout,*) 'nop: ',nop
+        write(lulog,*) 'idx: ',irdag,irtilde
+        write(lulog,*) 'nop: ',nop
         call quit(1,'set_Ycontrib',
      &         'not enough operators on input list')
       end if
 
       if (idx_op(irdag).le.0.or.
      &    idx_op(irtilde).le.0) then
-        write(luout,*) 'idx: ',idx_op(irdag),idx_op(irtilde)
+        write(lulog,*) 'idx: ',idx_op(irdag),idx_op(irtilde)
         call quit(1,'set_Ycontrib',
      &         'operator(s) not on input list')
       end if
@@ -120,8 +120,8 @@ c        end do
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'Ytilde contribution'
-        call print_form_list(luout,flist_pnt0,op_info)
+        write(lulog,*) 'Ytilde contribution'
+        call print_form_list(lulog,flist_pnt0,op_info)
       end if
 
       return

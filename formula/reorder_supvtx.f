@@ -72,12 +72,12 @@ c dbg
 c      print *,'reorder_supvtx: on input nreo ',reo_info%nreo
 c dbg
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'reorder_supvtx')
-        write(luout,*) 'modify_contr: ',modify_contr
-        write(luout,*) 'set_reord_list: ',set_reord_list
-        write(luout,*) 'idxop12: ',idxop12
-        write(luout,*) 'contr on input:'
-        call prt_contr3(luout,contr,occ_vtx)
+        call write_title(lulog,wst_dbg_subr,'reorder_supvtx')
+        write(lulog,*) 'modify_contr: ',modify_contr
+        write(lulog,*) 'set_reord_list: ',set_reord_list
+        write(lulog,*) 'idxop12: ',idxop12
+        write(lulog,*) 'contr on input:'
+        call prt_contr3(lulog,contr,occ_vtx)
       end if
 
       if (orb_info%nspin.gt.1)
@@ -231,13 +231,13 @@ c                  call quit(1,'reorder_supvtx','not yet')
           end do
 c dbg
 c          print *,'CNT SHL:'
-c          call wrt_occ(luout,cnt_shl)
+c          call wrt_occ(lulog,cnt_shl)
 c          print *,'CNT SHR:'
-c          call wrt_occ(luout,cnt_shr)
+c          call wrt_occ(lulog,cnt_shr)
 c          print *,'OCC SHL:'
-c          call wrt_occ(luout,occ_shl)
+c          call wrt_occ(lulog,occ_shl)
 c          print *,'OCC SHR:'
-c          call wrt_occ(luout,occ_shr)
+c          call wrt_occ(lulog,occ_shr)
 c dbg
 
           ! update contractions
@@ -296,7 +296,7 @@ c dbg
               reo_generated(reo_info%nreo) = .true.
               idx = reo_info%nreo
               if (idx.gt.maxreo) then
-                write(luout,*) 'idx,maxreo: ',idx,maxreo
+                write(lulog,*) 'idx,maxreo: ',idx,maxreo
                 call quit(1,'reorder_supvtx','unexpected event')
               end if
               idxsuper = svertex(ivtx1)
@@ -328,7 +328,7 @@ c dbg
               reo_generated(reo_info%nreo) = .true.
               idx = reo_info%nreo
               if (idx.gt.maxreo) then
-                write(luout,*) 'idx,maxreo: ',idx,maxreo
+                write(lulog,*) 'idx,maxreo: ',idx,maxreo
                 call quit(1,'reorder_supvtx','unexpected event')
               end if
               idxsuper = svertex(ivtx1)
@@ -408,10 +408,10 @@ c dbg
       deallocate(reo_generated)
 
       if (ntest.ge.100) then
-        write(luout,*) 'contr at the end of reorder_supvtx: nreo = ',
+        write(lulog,*) 'contr at the end of reorder_supvtx: nreo = ',
      &       reo_info%nreo
-        if (.not.modify_contr) write(luout,*) 'should not have changed!'
-        call prt_contr3(luout,contr,occ_vtx)
+        if (.not.modify_contr) write(lulog,*) 'should not have changed!'
+        call prt_contr3(lulog,contr,occ_vtx)
       end if
 
       end

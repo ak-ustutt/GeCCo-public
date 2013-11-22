@@ -24,13 +24,13 @@
      &     idx, jdx, kdx, ivtx1, ivtx2, idxls, iinew
 
       if (ntest.ge.100) then
-        write(luout,*) '======================'
-        write(luout,*) ' reduce_graph at work'
-        write(luout,*) '======================'
-        write(luout,*) ' icnt, ivtxnew: ', icnt, ivtxnew
-        write(luout,*) ' graph described by: '
+        write(lulog,*) '======================'
+        write(lulog,*) ' reduce_graph at work'
+        write(lulog,*) '======================'
+        write(lulog,*) ' icnt, ivtxnew: ', icnt, ivtxnew
+        write(lulog,*) ' graph described by: '
         do idx = 1, narc
-          write(luout,*) '  ',ig(1,idx),':',ig(2,idx),'-',ig(3,idx)
+          write(lulog,*) '  ',ig(1,idx),':',ig(2,idx),'-',ig(3,idx)
         end do
       end if
 
@@ -89,14 +89,14 @@ c          ignew(3,jdx) = ivtxnew  ! set new index always on 2nd position
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) ' new graph described by: '
+        write(lulog,*) ' new graph described by: '
         do idx = 1, narc_new
-          write(luout,*) '  ',ignew(1,idx),':',
+          write(lulog,*) '  ',ignew(1,idx),':',
      &         ignew(2,idx),'-',ignew(3,idx)
         end do
-        write(luout,*) ' equivalent arcs:'
-        write(luout,'(x,a,20i4)') ' node   > ',iarceq(1,1:narc_total)
-        write(luout,'(x,a,20i4)') ' equiv. > ',iarceq(2,1:narc_total)
+        write(lulog,*) ' equivalent arcs:'
+        write(lulog,'(x,a,20i4)') ' node   > ',iarceq(1,1:narc_total)
+        write(lulog,'(x,a,20i4)') ' equiv. > ',iarceq(2,1:narc_total)
       end if
 
       return

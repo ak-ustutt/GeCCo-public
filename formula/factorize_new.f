@@ -57,7 +57,7 @@
 
       call atim_csw(cpu0,sys0,wall0)
 
-      call write_title(luout,wst_subsection,
+      call write_title(lulog,wst_subsection,
      &     'Formula factorization')
 
       allocate(iscale_stat(ngastp,2,max_stat),
@@ -82,7 +82,7 @@
         if (fl_ptr%command.eq.command_add_contribution) then
           iterm = iterm + 1
           if (iprlvl.ge.10)
-     &         write(luout,*) 'factorizing term # ',iterm
+     &         write(lulog,*) 'factorizing term # ',iterm
           if (lustat.gt.0)
      &         write(lustat,*) 'factorizing term # ',iterm
           if (iterm.eq.max_stat+1)
@@ -170,26 +170,26 @@ c dbgend
         xsum = xsum + time_stat(iterm)
       end do
 
-      call write_title(luout,wst_subsection,
+      call write_title(lulog,wst_subsection,
      &     'Summary')
       
-      write(luout,'(x,"Most expensive contractions: ")') 
+      write(lulog,'(x,"Most expensive contractions: ")') 
       do iterm = 1, min(5,nterms)
-        write(luout,'(x," term #",i5,'//
+        write(lulog,'(x," term #",i5,'//
      &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
      &            '" - flops: ",e10.3,"(",f6.1"%)")')
      &       ireo_t(iterm),iscale_stat(1:4,1,ireo_t(iterm)),
      &       time_stat(iterm),time_stat(iterm)/xsum*100d0
       end do
-      write(luout,'(x,"Formally most expensive contractions: ")') 
+      write(lulog,'(x,"Formally most expensive contractions: ")') 
       do iterm = 1, min(5,nterms)
-        write(luout,'(x," term #",i5,'//
+        write(lulog,'(x," term #",i5,'//
      &            '" - H^",i2," P^",i2," V^",i2," X^",i2)')
      &       ireo_s(iterm),iscale_stat(1:4,1,ireo_s(iterm))
       end do
-      write(luout,'(x,"Largest intermediates occur in: ")') 
+      write(lulog,'(x,"Largest intermediates occur in: ")') 
       do iterm = 1, min(5,nterms)
-        write(luout,'(x," term #",i5,'//
+        write(lulog,'(x," term #",i5,'//
      &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
      &            '" - Mb:    ",e10.3)')
      &       ireo_m(iterm),iscale_stat(1:4,2,ireo_m(iterm)),
@@ -220,15 +220,15 @@ c dbgend
 
       if (iprlvl.ge.3) then
         ! write binning statistics
-        write(luout,'(x,55("-"))')
-        write(luout,'(x,a)') 'Numbers of terms per formal scaling'
-        write(luout,'(x,55("-"))')
+        write(lulog,'(x,55("-"))')
+        write(lulog,'(x,a)') 'Numbers of terms per formal scaling'
+        write(lulog,'(x,55("-"))')
         do ibin4 = 1, binmx(4)+1
           do ibin2 = 1, binmx(2)+1
             do ibin1 = 1, binmx(1)+1
               do ibin3 = 1, binmx(3)+1
                 if (binning(ibin1,ibin2,ibin3,ibin4).eq.0) cycle
-                write(luout,'(x,"H^",i2," P^",i2," V^",i2," X^",i2,'//
+                write(lulog,'(x,"H^",i2," P^",i2," V^",i2," X^",i2,'//
      &              '" - number of terms: ",i16)')
      &              ibin1-1,ibin2-1,ibin3-1,ibin4-1,
      &              binning(ibin1,ibin2,ibin3,ibin4)
@@ -236,7 +236,7 @@ c dbgend
             end do
           end do
         end do
-        write(luout,'(x,55("-"))')
+        write(lulog,'(x,55("-"))')
         deallocate(binning)
       end if
 
@@ -245,7 +245,7 @@ c dbgend
 
       call atim_csw(cpu,sys,wall)
       if (iprlvl.ge.3) 
-     &     call prtim(luout,'factorization',
+     &     call prtim(lulog,'factorization',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

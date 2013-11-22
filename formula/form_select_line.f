@@ -53,16 +53,16 @@
      &     idx_oplist2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &                   'here speaks form_select_line')
-        write(luout,*) ' f_input  = ',trim(f_input%label)
-        write(luout,*) ' f_output = ',trim(f_output%label)
-        write(luout,*) ' op_res  = ',trim(label_opres)
+        write(lulog,*) ' f_input  = ',trim(f_input%label)
+        write(lulog,*) ' f_output = ',trim(f_output%label)
+        write(lulog,*) ' op_res  = ',trim(label_opres)
         do icmpnd = 1, ncmpnd
-          write(luout,*) 'compound # ',icmpnd
-          write(luout,*) ' op  = ',trim(label_op(icmpnd))
+          write(lulog,*) 'compound # ',icmpnd
+          write(lulog,*) ' op  = ',trim(label_op(icmpnd))
         end do
-        write(luout,*) 'mode_str, igastp: ',trim(mode_str),igastp
+        write(lulog,*) 'mode_str, igastp: ',trim(mode_str),igastp
       end if
 
       same = trim(f_input%label).eq.trim(f_output%label)
@@ -111,8 +111,8 @@ c dbg
       call write_form_list(f_output%fhand,flist,title)
 
 c dbg
-c      write(luout,*)'TeX list'
-c      call tex_form_list(luout,flist,op_info)
+c      write(lulog,*)'TeX list'
+c      call tex_form_list(lulog,flist,op_info)
 c dbg
 
       call dealloc_formula_list(flist)

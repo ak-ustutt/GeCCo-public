@@ -130,13 +130,13 @@ c dbg
       xlines2 => contr2%xlines
 
       cmp_contr = i8list_cmp(ivtx1,ivtx2,nvtx).eq.0
-      if (ntest.ge.100) write(luout,*) 'cmp_contr > (1): ',cmp_contr
+      if (ntest.ge.100) write(lulog,*) 'cmp_contr > (1): ',cmp_contr
       cmp_contr = cmp_contr.and.
      &            i8list_cmp(xlines1,xlines2,nvtx*nj).eq.0
-      if (ntest.ge.100) write(luout,*) 'cmp_contr > (2): ',cmp_contr
+      if (ntest.ge.100) write(lulog,*) 'cmp_contr > (2): ',cmp_contr
       cmp_contr = cmp_contr.and.
      &            i8list_cmp(topo1,topo2,nvtx*nvtx).eq.0
-      if (ntest.ge.100) write(luout,*) 'cmp_contr > (3): ',cmp_contr
+      if (ntest.ge.100) write(lulog,*) 'cmp_contr > (3): ',cmp_contr
 c dbg
 c      if (.not.cmp_contr.and.contr1%idx_res.eq.15) then
 c        print *,'topo1'

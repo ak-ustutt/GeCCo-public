@@ -47,9 +47,9 @@
      &     idx_formlist
 
       if(ntest.ge.100)then
-        write(luout,*) '--------------------'
-        write(luout,*) ' Formula truncation '
-        write(luout,*) '--------------------'
+        write(lulog,*) '--------------------'
+        write(lulog,*) ' Formula truncation '
+        write(lulog,*) '--------------------'
       endif
 
       if(type.eq.0)then

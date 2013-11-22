@@ -67,9 +67,9 @@ c      include 'ifc_operators.h'
       call quit(1,'set_r12intm_formal','call to obsolete routine')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_r12_intm_formal')
-        write(luout,*) 'setting: ',trim(label_op(1))
-        write(luout,*) 'type : ',trim(typ_str)
+        call write_title(lulog,wst_dbg_subr,'set_r12_intm_formal')
+        write(lulog,*) 'setting: ',trim(label_op(1))
+        write(lulog,*) 'type : ',trim(typ_str)
       end if
 
       if (nop.lt.2)
@@ -180,8 +180,8 @@ c      include 'ifc_operators.h'
      &     op_info)
 
       if (ntest.ge.100) then
-        write(luout,*) 'intermediate formula'
-        call print_form_list(luout,flist_scr,op_info)
+        write(lulog,*) 'intermediate formula'
+        call print_form_list(lulog,flist_scr,op_info)
       end if
 
       ! replace f and g by their actual operator
@@ -221,8 +221,8 @@ c      include 'ifc_operators.h'
       call write_form_list(form_out%fhand,flist_pnt,form_out%comment)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final formula'
-        call print_form_list(luout,flist_pnt,op_info)
+        write(lulog,*) 'final formula'
+        call print_form_list(lulog,flist_pnt,op_info)
       end if
 
       call dealloc_formula_list(flist_scr)

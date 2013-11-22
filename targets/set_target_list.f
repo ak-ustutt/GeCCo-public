@@ -65,7 +65,7 @@
       call set_idx4deps(tgt_info)
 
       if (iprlvl.ge.20) then
-        call print_target_list(luout,tgt_info)
+        call print_target_list(lulog,tgt_info)
       end if
       
       call file_init(fftgt,'target_list',ftyp_sq_frm,0)

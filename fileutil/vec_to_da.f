@@ -56,10 +56,10 @@
       end do
 
       if (ntest.eq.100) then
-        write(luout,*) 'wrote ',nrecs,' blocks'
-        write(luout,*) 'length of vector: ',len
+        write(lulog,*) 'wrote ',nrecs,' blocks'
+        write(lulog,*) 'length of vector: ',len
         xnrm = sqrt(ddot(len,vec,1,vec,1))
-        write(luout,*) 'norm of vector: ',xnrm
+        write(lulog,*) 'norm of vector: ',xnrm
       end if
 
       return

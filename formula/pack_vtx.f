@@ -23,15 +23,15 @@
      &                           idx8)
 
       if (iblk_op.gt.pb8*pb8) then
-        write(luout,*) 'pack_base    = ',pb8*pb8
-        write(luout,*) 'iblk_op = ',iblk_op
+        write(lulog,*) 'pack_base    = ',pb8*pb8
+        write(lulog,*) 'iblk_op = ',iblk_op
         call quit(1,'pack_vtx',
      &       'incredibly large iblk_op encountered')
       end if
 
       if (idx_op.gt.pb8**4) then
-        write(luout,*) 'pack_base    = ',pb8**4
-        write(luout,*) 'idx_op = ',idx_op
+        write(lulog,*) 'pack_base    = ',pb8**4
+        write(lulog,*) 'idx_op = ',idx_op
         call quit(1,'pack_vtx',
      &       'large number of operators. increase pack_base')
       end if

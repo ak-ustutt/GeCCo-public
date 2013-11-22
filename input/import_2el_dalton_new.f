@@ -75,10 +75,10 @@
       fflist => oplist%fhand
 
       if(ntest.ge.100)then
-        write(luout,*)'=================='
-        write(luout,*)'Import-r12-dalton '
-        write(luout,*)'=================='
-        write(luout,*)'Operator-list: ',trim(oplist%label)
+        write(lulog,*)'=================='
+        write(lulog,*)'Import-r12-dalton '
+        write(lulog,*)'=================='
+        write(lulog,*)'Operator-list: ',trim(oplist%label)
       endif
 
       ! translate mode and scaling into parameters
@@ -143,7 +143,7 @@ c        fac_ccaa = -1d0
         npass = 1
         len_rec = 32*1024 ! dummy
         if (iprlvl.gt.0) then
-          write(luout,'(x,a,g8.3,a)')
+          write(lulog,'(x,a,g8.3,a)')
      &         'in-core sort active -- allocating ',
      &         dble(lenbuffer)*8d0/(1024d0*1024d0),' Mb'
         end if
@@ -157,18 +157,18 @@ c        fac_ccaa = -1d0
      &       lenlist,max_mem,len_rec,
      &       len_bin_min,len_bin_max)
         if (iprlvl.gt.0) then
-          write(luout,*) 'out-of-core sort active'
-          write(luout,*) ' number of bins:            ',nbin
-          write(luout,*) ' size of bin:               ',len_bin
-          write(luout,*) ' passes over integral file: ',npass
-          write(luout,*) ' number of bins per pass:   ',nbin_per_pass
+          write(lulog,*) 'out-of-core sort active'
+          write(lulog,*) ' number of bins:            ',nbin
+          write(lulog,*) ' size of bin:               ',len_bin
+          write(lulog,*) ' passes over integral file: ',npass
+          write(lulog,*) ' number of bins per pass:   ',nbin_per_pass
         end if
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'current setting:'
-        write(luout,*) 'nl1cache (words) = ',nl1cache
-        write(luout,*) 'nl2cache (words) = ',nl2cache
+        write(lulog,*) 'current setting:'
+        write(lulog,*) 'nl1cache (words) = ',nl1cache
+        write(lulog,*) 'nl2cache (words) = ',nl2cache
       end if
 
       if (incore_sort) then
@@ -222,7 +222,7 @@ c        fac_ccaa = -1d0
       else
         call atim_csw(cpux,sysx,wallx)
         if (iprlvl.ge.5) 
-     &     call prtim(luout,'time in 2int pre-sort',
+     &     call prtim(lulog,'time in 2int pre-sort',
      &     cpux-cpu0,sysx-sys0,wallx-wall0)
         
         ! out-of-core: process presorted integrals
@@ -231,7 +231,7 @@ c        fac_ccaa = -1d0
         call atim_csw(cpu,sys,wall)
 
         if (iprlvl.ge.5) 
-     &     call prtim(luout,'time in 2int sort',
+     &     call prtim(lulog,'time in 2int sort',
      &     cpu-cpux,sys-sysx,wall-wallx)
 
         call file_close_delete(ffpre)
@@ -245,7 +245,7 @@ c        fac_ccaa = -1d0
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.1) 
-     &     call prtim(luout,'time in 2int import',
+     &     call prtim(lulog,'time in 2int import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
 

@@ -37,7 +37,7 @@
      &     arc(:)
 
       if (ntest.ge.100) then
-        call prt_contr2(luout,contr,op_info)
+        call prt_contr2(lulog,contr,op_info)
       end if
 
       ! get vertex occupation
@@ -51,8 +51,8 @@ c      dag = op_arr(idx_op)%op%dagger
       if (dag) iocc = iocc_dagger(iocc)
       
       if (ntest.ge.100) then
-        write(luout,*) 'initial'
-        call wrt_occ(luout,iocc)
+        write(lulog,*) 'initial'
+        call wrt_occ(lulog,iocc)
       end if
 
       ! loop over all arcs and remove contractions
@@ -66,14 +66,14 @@ c      dag = op_arr(idx_op)%op%dagger
           iocc = iocc - iocc_dagger(arc(iarc)%occ_cnt)
         end if
         if (ntest.ge.100) then
-          write(luout,*) 'after arc ',iarc
-          call wrt_occ(luout,iocc)
+          write(lulog,*) 'after arc ',iarc
+          call wrt_occ(lulog,iocc)
         end if
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'final'
-        call wrt_occ(luout,iocc)
+        write(lulog,*) 'final'
+        call wrt_occ(lulog,iocc)
       end if
 
       return

@@ -23,10 +23,10 @@
      &     iform
 
       if (ntest.ge.100) then
-        write(luout,*) '--------------------'
-        write(luout,*) 'this is idx_formlist'
-        write(luout,*) '--------------------'
-        write(luout,*) ' looking for: "',trim(formname),'"'
+        write(lulog,*) '--------------------'
+        write(lulog,*) 'this is idx_formlist'
+        write(lulog,*) '--------------------'
+        write(lulog,*) ' looking for: "',trim(formname),'"'
       end if
 
       idx_formlist = -1
@@ -39,7 +39,7 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'result: ',idx_formlist
+        write(lulog,*) 'result: ',idx_formlist
       end if
 
       return

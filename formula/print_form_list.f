@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine print_form_list(luout,form_head,op_info)
+      subroutine print_form_list(lulog,form_head,op_info)
 *----------------------------------------------------------------------*
-*     print formula on linked list to unit luout
+*     print formula on linked list to unit lulog
 *----------------------------------------------------------------------*
       implicit none
 
@@ -11,7 +11,7 @@
       include 'def_formula_item.h'
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
       type(formula_item), intent(in), target ::
      &     form_head
       type(operator_info), intent(in) ::
@@ -26,7 +26,7 @@
       idx = 0
       form_ptr => form_head
       do
-        call print_form_item(luout,idx,form_ptr,op_info)
+        call print_form_item(lulog,idx,form_ptr,op_info)
 
         if (.not.associated(form_ptr%next)) exit
         form_ptr => form_ptr%next

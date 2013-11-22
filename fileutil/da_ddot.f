@@ -36,14 +36,14 @@
       luvec2 = ffvec2%unit
       lblk = ffvec1%reclen
       if (lblk.ne.ffvec2%reclen) then
-        write(luout,*) 'Incompatible block-lengthes: ',
+        write(lulog,*) 'Incompatible block-lengthes: ',
      &       lblk,ffvec2%reclen
         call quit(1,'da_ddot','Incompatible block-lengthes')
       end if
 
       if (lenbuf.lt.min(lenvec,lblk)) then
-        write(luout,*) 'Insufficient buffer size!'
-        write(luout,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
+        write(lulog,*) 'Insufficient buffer size!'
+        write(lulog,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
         call quit(1,'da_ddot','Insufficient buffer size!')
       end if
 
@@ -73,7 +73,7 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'nrecs,nrecbuf,nbatch: ',nrecs,nrecbuf,nbatch
+        write(lulog,*) 'nrecs,nrecbuf,nbatch: ',nrecs,nrecbuf,nbatch
       end if
       
       irecst1 = (idxvec1-1)*nrecs+1
@@ -98,7 +98,7 @@
         end if
 
         if (ntest.ge.100) then
-          write(luout,'(x,a,4i5,e20.10)') 'batch/st1/st2/len/res: ',
+          write(lulog,'(x,a,4i5,e20.10)') 'batch/st1/st2/len/res: ',
      &         ibatch,irecst1,irecst2,lenbat,res
         end if
 
@@ -110,7 +110,7 @@
       da_ddot = res
 
       if (ntest.ge.100) then
-        write(luout,*) 'da_ddot needed ',nbatch,' batches'
+        write(lulog,*) 'da_ddot needed ',nbatch,' batches'
       end if
       
       return

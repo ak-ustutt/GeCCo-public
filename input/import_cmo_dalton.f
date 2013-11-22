@@ -68,7 +68,7 @@
         closeit = .false.
       end if
 
-      call mollab('TRCCINT ',lusir,luout)
+      call mollab('TRCCINT ',lusir,lulog)
 
       ! skip dimension record
       read(lusir)
@@ -80,7 +80,7 @@
       read (lusir) cmo(1:ncmo)
 
       if (ntest.ge.100) then
-        write(luout,*) 'CMO (original):'
+        write(lulog,*) 'CMO (original):'
         call wr_blkmat(cmo,orb_info%nbas,orb_info%ntoobs,
      &                     orb_info%nsym,0)
       end if
@@ -102,7 +102,7 @@
         ioff_reo = 1
         do igas = 1, orb_info%ngas
           igasr = orb_info%gas_reo(igas)
-          write(luout,*) 'orbital shell # ',
+          write(lulog,*) 'orbital shell # ',
      &         igas,orb_info%igassh(1:orb_info%nsym,igasr)
           call wr_blkmat(cmo_reo(ioff_reo),orb_info%nbas,
      &                                     orb_info%igassh(1,igasr),
@@ -125,7 +125,7 @@
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.10) 
-     &     call prtim(luout,'time in cmo import',
+     &     call prtim(lulog,'time in cmo import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

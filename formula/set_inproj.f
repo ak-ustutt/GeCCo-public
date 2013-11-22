@@ -42,13 +42,13 @@
      &     ielsum
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'here comes set_inproj')
-        write(luout,*) 'inproj: '
+        call write_title(lulog,wst_dbg_subr,'here comes set_inproj')
+        write(lulog,*) 'inproj: '
         do idx = 1, ninproj
-          write(luout,'(2x,i3," - ",i3," r=",i3," t=",i3)')
+          write(lulog,'(2x,i3," - ",i3," r=",i3," t=",i3)')
      &         inproj(1:4,idx)
         end do
-        call wrt_occ_n(luout,occ_vtx,proto%nvtx)
+        call wrt_occ_n(lulog,occ_vtx,proto%nvtx)
       end if
 
       ok = .true.
@@ -91,11 +91,11 @@ c dbg
         ovl = iocc_overlap(occ1,.false.,occ2,.true.)
 
 c dbg
-c        write(luout,*) 'occ1, occ2'
-c        call wrt_occ(luout,occ1)
-c        call wrt_occ(luout,occ2)
-c        write(luout,*) 'ovl'
-c        call wrt_occ(luout,ovl)
+c        write(lulog,*) 'occ1, occ2'
+c        call wrt_occ(lulog,occ1)
+c        call wrt_occ(lulog,occ2)
+c        write(lulog,*) 'ovl'
+c        call wrt_occ(lulog,ovl)
 c dbg
 
         ! not enough indices?
@@ -151,11 +151,11 @@ c presently:
         end if
 
         if (ntest.ge.100) then
-          write(luout,*) 'present ok: ',ok
+          write(lulog,*) 'present ok: ',ok
           if (ok) then
-            write(luout,*)
+            write(lulog,*)
      &       'I will establish the following connection of ',ivtx1,ivtx2
-            call wrt_occ(luout,occ_cnt)
+            call wrt_occ(lulog,occ_cnt)
           end if
         end if
         ! it is assumed that proto has enough space for us
@@ -190,7 +190,7 @@ c presently:
       end if
 
       if (ntest.ge.100)
-     &     write(luout,*) 'final OK: ',ok
+     &     write(lulog,*) 'final OK: ',ok
 
       return
       end

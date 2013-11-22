@@ -55,12 +55,12 @@ c      include 'def_contraction_list.h'
      &     idx_formlist, form_count
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'form_factor_out reports')
-        write(luout,*) ' f_input = ',trim(f_input%label)
-        write(luout,*) ' f_output = ',trim(f_output%label)
+        write(lulog,*) ' f_input = ',trim(f_input%label)
+        write(lulog,*) ' f_output = ',trim(f_output%label)
         do iintm = 1, nintm
-          write(luout,*) iintm,label_f_intm(iintm)
+          write(lulog,*) iintm,label_f_intm(iintm)
         end do
       end if
 
@@ -86,7 +86,7 @@ c      include 'def_contraction_list.h'
      &       'formula label not on list: '//trim(label_f_intm(iintm)))
         
         if (ntest.ge.100)
-     &       write(luout,*)
+     &       write(lulog,*)
      &       'now factorizing: ',trim(label_f_intm(iintm)),
      &       ' transpose: ',transpose
 
@@ -102,7 +102,7 @@ c dbg
 c        ! Can be used to bypass an error in find_possible_subexpr
 c        call reorder_formula(fl_intm,op_info)
 c        print *,'reordered intermediate'
-c        call print_form_list(luout,fl_intm,op_info)
+c        call print_form_list(lulog,fl_intm,op_info)
 c dbgend
 
         if (transpose)
@@ -112,14 +112,14 @@ c dbgend
         call factor_out_subexpr2(flist,fl_intm,nrpl,op_info)
         call atim_csw(cpu,sys,wall)
 
-        if (iprlvl.ge.2) write(luout,'(x,a40,": ",i6," replacements")')
+        if (iprlvl.ge.2) write(lulog,'(x,a40,": ",i6," replacements")')
      &                  trim(label_f_intm(iintm)),nrpl 
         if (iprlvl.ge.2) then
           len = form_count(flist)
-          write(luout,'(x,"formula reduced to ",i10," items")') len
+          write(lulog,'(x,"formula reduced to ",i10," items")') len
         end if
         if (iprlvl.ge.2)
-     &     call prtim(luout,'factoring out',
+     &     call prtim(lulog,'factoring out',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
         call dealloc_formula_list(fl_intm)
@@ -135,8 +135,8 @@ c dbgend
       call write_form_list(f_output%fhand,flist,title)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_around_double,'Factored formula:')
-        call print_form_list(luout,flist,op_info)
+        call write_title(lulog,wst_around_double,'Factored formula:')
+        call print_form_list(lulog,flist,op_info)
       end if
 
       call dealloc_formula_list(flist)
