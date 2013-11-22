@@ -23,8 +23,8 @@ c
 
       xmxdif = 0.0d0
       imxplc = 0
-      write(luout,*) ' comparison of two vectors '
-      write(luout,*) '      vector1      vector2        difference '
+      write(lulog,*) ' comparison of two vectors '
+      write(lulog,*) '      vector1      vector2        difference '
       do i = 1, ndim
         dif = vec1(i) - vec2 ( i )
         if( abs(dif ) .ge. xmxdif ) then
@@ -32,14 +32,14 @@ c
           imxplc = i
         end if
         if( abs ( dif ) .gt. thres ) then
-          write(luout,'(2x,i5,3e15.8)') i,vec1(i),vec2(i),dif
+          write(lulog,'(2x,i5,3e15.8)') i,vec1(i),vec2(i),dif
         end if
       end do
 c
       if( xmxdif .eq. 0.0d0 ) then
-        write(luout,*) ' the two vectors are identical '
+        write(lulog,*) ' the two vectors are identical '
       else
-        write(luout,*) ' size and last place of largest deviation ',
+        write(lulog,*) ' size and last place of largest deviation ',
      &  xmxdif,imxplc
       end if
 c

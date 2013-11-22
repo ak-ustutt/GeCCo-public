@@ -40,7 +40,7 @@
 c dbg
 c      print *,'get_grph4occ: '
 c          do ijoin = 1, njoined
-c            call wrt_occ_rstr(luout,ijoin,iocc(:,:,ijoin),
+c            call wrt_occ_rstr(lulog,ijoin,iocc(:,:,ijoin),
 c     &                                    irst(:,:,:,:,1,ijoin),
 c     &                                    ngas,nspin)
 c          end do

@@ -34,9 +34,9 @@
      &     n_lc, n_la, n_hc, n_ha, nnym_la, nnym_lc, sign0, nnym_hc
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_func,'sign_shift')
-        write(luout,*) 'from, to ',ivtx1,ivtx2
-        call wrt_occ(luout,occ_k)
+        call write_title(lulog,wst_dbg_func,'sign_shift')
+        write(lulog,*) 'from, to ',ivtx1,ivtx2
+        call wrt_occ(lulog,occ_k)
       end if
       
       ivtx_l = min(ivtx1,ivtx2)
@@ -115,13 +115,13 @@ cmh     &         +  nshift_a*(n_hc + n_ha +    nnym_la + nenclosed)  , 2)
      &       + nshift_a*(n_hc + n_ha + nnym_hc + nnym_la + nenclosed),2)
 
       if (ntest.ge.100) then
-        write(luout,*) 'nshift_c, nshift_a: ',nshift_c,nshift_a
-        write(luout,*) 'n_la, nnym_lc, nnym_la, nenclosed, n_hc: ',
+        write(lulog,*) 'nshift_c, nshift_a: ',nshift_c,nshift_a
+        write(lulog,*) 'n_la, nnym_lc, nnym_la, nenclosed, n_hc: ',
      &       n_la, nnym_lc, nnym_la, nenclosed, n_hc
-        write(luout,*) 'summed: ',n_la+nnym_lc+nnym_la+nenclosed+n_hc
-        write(luout,*) 'n_hc, n_ha, nnym_la, nenclosed:          ',
+        write(lulog,*) 'summed: ',n_la+nnym_lc+nnym_la+nenclosed+n_hc
+        write(lulog,*) 'n_hc, n_ha, nnym_la, nenclosed:          ',
      &       n_hc, n_ha, nnym_la, nenclosed
-        write(luout,*) 'summed: ',n_hc+n_ha+nnym_la+nenclosed
+        write(lulog,*) 'summed: ',n_hc+n_ha+nnym_la+nenclosed
       end if
 
       sign_shift = 1

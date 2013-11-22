@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine prt_contr3(luout,contr,occ_vtx_in)
+      subroutine prt_contr3(lulog,contr,occ_vtx_in)
 *----------------------------------------------------------------------*
-*     write info on contraction onto unit luout
+*     write info on contraction onto unit lulog
 *     alternative version if no op_info available
 *----------------------------------------------------------------------*
 
@@ -11,7 +11,7 @@
       include 'def_contraction.h'
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
       type(contraction), intent(in) ::
      &     contr
       integer, intent(in), target ::
@@ -32,67 +32,67 @@
         occ_vtx => occ_vtx_in
       end if
 
-      write(luout,*) '+++ contraction info +++'
+      write(lulog,*) '+++ contraction info +++'
       cdag = '  '
       if (contr%dagger) cdag = '^+'
       if (contr%idx_res.gt.0) then
-        write(luout,*) ' index and block of result: ',
+        write(lulog,*) ' index and block of result: ',
      &     contr%idx_res, cdag, contr%iblk_res
       else
-        write(luout,*) ' index and block of result: ',
+        write(lulog,*) ' index and block of result: ',
      &     contr%idx_res, cdag, contr%iblk_res
       end if
-      write(luout,*) ' factor: ',contr%fac
-      write(luout,'(x,a,3i5)')
+      write(lulog,*) ' factor: ',contr%fac
+      write(lulog,'(x,a,3i5)')
      &     ' number of prim.vertices/sup.vertices/arcs: ',
      &     contr%nvtx,contr%nsupvtx,contr%narc
       do idx = 1, contr%nvtx
         if (contr%vertex(idx)%idx_op.eq.0) then
-          write(luout,'(2x,"v",i2.2,x,"0")') contr%svertex(idx)
+          write(lulog,'(2x,"v",i2.2,x,"0")') contr%svertex(idx)
           cycle
         end if
         cdag = ' '
         if (contr%vertex(idx)%dagger) cdag = '+'
-        write(luout,'(x,"v",i2.2,x,i5,a,x,i4,2x,4i3)')
+        write(lulog,'(x,"v",i2.2,x,i5,a,x,i4,2x,4i3)')
      &       contr%svertex(idx),contr%vertex(idx)%idx_op,cdag,
      &       contr%vertex(idx)%iblk_op,
      &       occ_vtx(1:ngastp,1,idx)
-        write(luout,'(x,a,13x,4i3)')
+        write(lulog,'(x,a,13x,4i3)')
      &       '    ',
      &       occ_vtx(1:ngastp,2,idx)
       end do
       do idx = 1, contr%narc
         if (contr%arc(idx)%occ_cnt(1,1).lt.0) then
           ! prototype connection:
-          write(luout,'(x,a,x,2i4)')
+          write(lulog,'(x,a,x,2i4)')
      &       ' cp ',contr%arc(idx)%link(1),
      &       contr%arc(idx)%link(2)
         else
-          write(luout,'(x,a,x,2i4,2x,4i3)')
+          write(lulog,'(x,a,x,2i4,2x,4i3)')
      &       ' c  ',contr%arc(idx)%link(1),
      &       contr%arc(idx)%link(2),
      &       contr%arc(idx)%occ_cnt(1:ngastp,1)
-          write(luout,'(x,a,11x,4i3)')
+          write(lulog,'(x,a,11x,4i3)')
      &       '    ',contr%arc(idx)%occ_cnt(1:ngastp,2)
         end if
       end do
       do idx = 1, contr%nxarc
         if (contr%xarc(idx)%occ_cnt(1,1).lt.0) then
           ! prototype connection:
-          write(luout,'(x,a,x,2i4)')
+          write(lulog,'(x,a,x,2i4)')
      &       ' xp ',contr%xarc(idx)%link(1),
      &       contr%xarc(idx)%link(2)
         else
-          write(luout,'(x,a,x,2i4,5x,4i3)')
+          write(lulog,'(x,a,x,2i4,5x,4i3)')
      &       ' x  ',contr%xarc(idx)%link(1),
      &       contr%xarc(idx)%link(2),
      &       contr%xarc(idx)%occ_cnt(1:ngastp,1)
-          write(luout,'(x,a,14x,4i3)')
+          write(lulog,'(x,a,14x,4i3)')
      &       '    ',contr%xarc(idx)%occ_cnt(1:ngastp,2)
         end if
       end do
       do idx = 1, contr%nfac
-        write(luout,'(x,i5,"*",i5,"->",i5,"(",i5,")")')
+        write(lulog,'(x,i5,"*",i5,"->",i5,"(",i5,")")')
      &       contr%inffac(1:4,idx)
       end do
 

@@ -64,19 +64,19 @@
       opout => mel_out%op
 
       if (ntest.ge.100) then
-        write(luout,*) '============================'
-        write(luout,*) ' scale_opblk messing around'
-        write(luout,*) '============================'
-        write(luout,*) ' fac = ',fac
-        write(luout,*) ' mel_in: ',trim(mel_in%label)
-        write(luout,*) ' opout: ',trim(mel_out%label)
-        write(luout,*) ' ffin:  ',trim(ffin%name),
+        write(lulog,*) '============================'
+        write(lulog,*) ' scale_opblk messing around'
+        write(lulog,*) '============================'
+        write(lulog,*) ' fac = ',fac
+        write(lulog,*) ' mel_in: ',trim(mel_in%label)
+        write(lulog,*) ' opout: ',trim(mel_out%label)
+        write(lulog,*) ' ffin:  ',trim(ffin%name),
      &                   ' rec: ',ffin%current_record
-        write(luout,*) ' ffout: ',trim(ffout%name),
+        write(lulog,*) ' ffout: ',trim(ffout%name),
      &                   ' rec: ',ffout%current_record
-        write(luout,*) ' opin: ',trim(opin%name),
+        write(lulog,*) ' opin: ',trim(opin%name),
      &       '  block: ',iblkin
-        write(luout,*) ' opout: ',trim(opout%name),
+        write(lulog,*) ' opout: ',trim(opout%name),
      &       '  block: ',iblkout
       end if
 
@@ -112,9 +112,9 @@
       end if
 
       if (.not.ok) then
-        write(luout,*) 'dagger: ',opin%dagger,opout%dagger
-        call wrt_occ_n(luout,opin%ihpvca_occ(1,1,idx_in),njoined_in)
-        call wrt_occ_n(luout,opout%ihpvca_occ(1,1,idx_out),njoined_out)
+        write(lulog,*) 'dagger: ',opin%dagger,opout%dagger
+        call wrt_occ_n(lulog,opin%ihpvca_occ(1,1,idx_in),njoined_in)
+        call wrt_occ_n(lulog,opout%ihpvca_occ(1,1,idx_out),njoined_out)
         call quit(1,'scale_opblk','occupations do not fit!')
       end if
 
@@ -144,8 +144,8 @@
 
         nblkmax = ifree/lblk/2
         if (nblkmax.le.0) then
-          write(luout,*) 'free memory (words):  ',ifree
-          write(luout,*) 'block length (words): ',lblk,' * 2'
+          write(lulog,*) 'free memory (words):  ',ifree
+          write(lulog,*) 'block length (words): ',lblk,' * 2'
           call
      &       quit(1,'scale_opblk','not even 1 record fits into memory?')
         end if

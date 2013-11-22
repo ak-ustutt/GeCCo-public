@@ -30,9 +30,9 @@
      &     list_cmp
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,i_am)
-        write(luout,*) 'on entry:'
-        call print_occ_list(luout,olist)
+        call write_title(lulog,wst_dbg_subr,i_am)
+        write(lulog,*) 'on entry:'
+        call print_occ_list(lulog,olist)
       end if
 
       n_vtx_inf  = olist%n_vtx_inf
@@ -134,8 +134,8 @@
       if (.not.newpair) deallocate (occ_is_new)
 
       if (ntest.ge.100) then
-        write(luout,*) 'on exit:'
-        call print_occ_list(luout,olist)
+        write(lulog,*) 'on exit:'
+        call print_occ_list(lulog,olist)
       end if
 
       return

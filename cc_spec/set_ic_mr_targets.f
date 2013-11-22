@@ -53,7 +53,7 @@
       character*4 ::
      &     op_exc, op_deexc
 
-      if (iprlvl.gt.0) write(luout,*)
+      if (iprlvl.gt.0) write(lulog,*)
      &     'setting targets for internally contracted MR methods'
 
       ! get maximum excitation rank
@@ -76,7 +76,7 @@
       select case(gno)
       case(0)
       case(1)
-        write(luout,*) 'Using generalized normal order (GNO)'
+        write(lulog,*) 'Using generalized normal order (GNO)'
 c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
       case default
         call quit(1,'set_ic_mr_targets','unknown normal order')
@@ -122,12 +122,12 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
 
       if (sv_fix) then
         inquire(file='SINGVALS',exist=l_exist)
-        if (l_exist) write(luout,*)
+        if (l_exist) write(lulog,*)
      &     'Using existing SINGVALS file for singular value selection!'
       end if
       if (prc_traf.and.jac_fix) then
         inquire(file='SINGVALS2',exist=l_exist)
-        if (l_exist) write(luout,*)
+        if (l_exist) write(lulog,*)
      &     'Using existing SINGVALS2 file for singular value selection!'
       end if
 
@@ -309,6 +309,25 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
+          ! more excitations than in related class is problematic
+          ! in the derivation of off-diagonal metric blocks later on
+          if (ip.ge.1.and.ih.ge.1.and.
+     &        .not.(project.eq.1.and.gno.eq.0)) then
+            iexc = excrestr(ih-1,ip-1,2)-excrestr(ih-1,ip-1,1)
+            if (iexc.ge.0.and.
+     &          excrestr(ih,ip,2)-excrestr(ih,ip,1).gt.iexc) then
+              write(lulog,'(3(a,i1),a)') 'In the excitation class n_h=',
+     &          ih,',n_p=',ip,','
+              write(lulog,'(3(a,i1),a)')
+     &          'more excitations are defined than in the class n_h=',
+     &          ih-1,',n_p=',ip-1,'.'
+              write(lulog,'(6(a,i1),a)') 'Try to use MR excrestr=(',
+     &          ih,',',ih,',',ip,',',ip,',',excrestr(ih,ip,1),
+     &          ',',excrestr(ih,ip,1)+iexc,')'
+              call quit(1,'set_ic_mr_targets',
+     &                  'Check your excitation class restrictions!')
+            end if
+          end if
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.

@@ -167,7 +167,7 @@ c dbg
 c dbg
 
       if (ntest.gt.0) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'trace_op at work')
       end if
 
@@ -186,24 +186,24 @@ c dbg
       endif
  
       if (ntest.ge.10) then
-        write(luout,*) 'list(in):   ',trim(me_op%label),
+        write(lulog,*) 'list(in):   ',trim(me_op%label),
      &       ' transp:',tra_op
-        write(luout,*) 'list(out):  ',trim(me_trop%label),
+        write(lulog,*) 'list(out):  ',trim(me_trop%label),
      &       ' transp:',tra_trop
-        write(luout,*) 'ffop:   ',ffop%name(1:len_trim(ffop%name))
-        write(luout,*) 'fftrop:',
+        write(lulog,*) 'ffop:   ',ffop%name(1:len_trim(ffop%name))
+        write(lulog,*) 'fftrop:',
      &       fftrop%name(1:len_trim(fftrop%name))
-        write(luout,*) 'xfac = ',xfac
-        write(luout,*) 'casign = ',casign
+        write(lulog,*) 'xfac = ',xfac
+        write(lulog,*) 'casign = ',casign
         if (type_xret.ne.0)
-     &       write(luout,*) 'xret on entry = ',xret(1)
-        write(luout,*) 'op: ',trim(op%name),
+     &       write(lulog,*) 'xret on entry = ',xret(1)
+        write(lulog,*) 'op: ',trim(op%name),
      &       ' block ',iblkop
         if (iblktrop.gt.0) then
-          write(luout,*) 'trop: ',trim(trop%name),
+          write(lulog,*) 'trop: ',trim(trop%name),
      &       ' block ',iblktrop
         else
-          write(luout,*) 'trop: scalar'
+          write(lulog,*) 'trop: scalar'
         end if
       end if
 
@@ -214,9 +214,9 @@ c dbg
       if (reo_trop.and..not.associated(reo_info%map_reo1c))
      &     call quit(1,'contr_trop_wmaps_c',
      &     'reo_info is not consistent')
-      if (ntest.ge.10) write(luout,*) 'reo_trop: ',reo_trop
+      if (ntest.ge.10) write(lulog,*) 'reo_trop: ',reo_trop
       if (ntest.ge.10 .and. reo_trop) then
-        write(luout,*) 'troptmp: ',trim(troptmp%name),
+        write(lulog,*) 'troptmp: ',trim(troptmp%name),
      &       ' block ',iblktroptmp
       end if
 
@@ -284,10 +284,10 @@ c dbg
      &     call quit(1,'trace_op','inconsistent symmetries')
 
       if (lenop.le.0.or.lentrop.le.0) then
-        write(luout,*)
+        write(lulog,*)
      &       trim(op%name),' ',
      &       trim(trop%name)
-        write(luout,*) 'lenop, lentrop: ',
+        write(lulog,*) 'lenop, lentrop: ',
      &                  lenop, lentrop
 ctest        call warn('trace_op','zero length for operator?')
         return
@@ -311,7 +311,7 @@ ctest        call warn('trace_op','zero length for operator?')
      &                          idoffop+idxst_op-1+lenop)
       end if
 
-      if (ntest.ge.100) write(luout,*) ' bufop: ',bufop
+      if (ntest.ge.100) write(lulog,*) ' bufop: ',bufop
 
       ! get result vector as well (as we update)
       ! refers to reordered trop
@@ -335,24 +335,24 @@ ctest        call warn('trace_op','zero length for operator?')
             xtrop(1:lentrop) = 0d0
           end if
         end if
-        if (ntest.ge.100) write(luout,*) ' buftrop: ',buftrop
+        if (ntest.ge.100) write(lulog,*) ' buftrop: ',buftrop
       else
         buftrop = .true.
         xtrop => xret
-        if (ntest.ge.100) write(luout,*) ' result is scalar '
+        if (ntest.ge.100) write(lulog,*) ' result is scalar '
       end if
 
       if (ntest.ge.1000) then
         ! this will work if all blocks incore, only:
-        write(luout,*) 'operator(in) (',trim(op%name),
+        write(lulog,*) 'operator(in) (',trim(op%name),
      &                    ',list=',trim(me_op%label),')'
-        call wrt_mel_buf(luout,5,xop,me_op,iblkop,iblkop,
+        call wrt_mel_buf(lulog,5,xop,me_op,iblkop,iblkop,
      &                  str_info,orb_info)
         if (iblktrop.gt.0) then
-          write(luout,*) 'operator(out) on entry (',trim(trop%name),
+          write(lulog,*) 'operator(out) on entry (',trim(trop%name),
      &                                ',list=',trim(me_trop%label),')'
 
-          call wrt_mel_buf(luout,5,xtrop,me_trop,
+          call wrt_mel_buf(lulog,5,xtrop,me_trop,
      &                    iblktrop,iblktrop,
      &                    str_info,orb_info)
         end if
@@ -388,9 +388,9 @@ c dbg
       if (na_trop.ne.na_troptmp)
      &     call quit(1,'contr_trop_wmaps_c','unexpected 1a')
       if (nc_trop.ne.nc_troptmp) then
-        write(luout,*) 'TROP (C)   : ',nc_trop,
+        write(lulog,*) 'TROP (C)   : ',nc_trop,
      &       ' <- ',cinfo_tropc(1:ncblk_trop,1)
-        write(luout,*) 'TROPTMP (C): ',nc_troptmp,
+        write(lulog,*) 'TROPTMP (C): ',nc_troptmp,
      &       ' <- ',cinfo_troptmpc(1:ncblk_troptmp,1)
         call quit(1,'contr_trop_wmaps_c','unexpected 1b')
       end if
@@ -400,9 +400,9 @@ c dbg
 
 c dbg
 c      print *,'map(C):'
-c      call print_mapinfo(luout,map_info_c,ncblk_op)
+c      call print_mapinfo(lulog,map_info_c,ncblk_op)
 c      print *,'map(A):'
-c      call print_mapinfo(luout,map_info_a,nablk_op)
+c      call print_mapinfo(lulog,map_info_a,nablk_op)
 c dbg
       ! set up maps (if necessary)
       call strmap_man_c(1,lenmap,
@@ -771,8 +771,8 @@ c dbg
       if (ntest.ge.1000) then
         if (iblktrop.gt.0
      &       ) then
-          write(luout,*) 'operator(out) on exit (',trim(trop%name),')'
-          call wrt_mel_buf(luout,5,xtrop,me_trop,
+          write(lulog,*) 'operator(out) on exit (',trim(trop%name),')'
+          call wrt_mel_buf(lulog,5,xtrop,me_trop,
      &         iblktrop,iblktrop,str_info,orb_info)
         end if
       end if
@@ -813,7 +813,7 @@ c dbg
 
       if (ntest.ge.100) then
         if (type_xret.ne.0)
-     &       write(luout,*) 'xret on exit = ',xret(1)
+     &       write(lulog,*) 'xret on exit = ',xret(1)
       end if
 
       return

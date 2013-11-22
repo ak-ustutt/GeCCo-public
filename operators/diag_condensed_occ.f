@@ -26,8 +26,8 @@
      &     ijoin, ihpv_dx, ihpv, ica, idxc, idxa, idx1, idx2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'diag_condensed_occ')
-        call wrt_occ_n(luout,occ,njoined)
+        call write_title(lulog,wst_dbg_subr,'diag_condensed_occ')
+        call wrt_occ_n(lulog,occ,njoined)
       end if
 
       idxc = 0
@@ -70,10 +70,10 @@
       end do      
 
       if (ntest.ge.100) then
-        write(luout,'(3x,"IN:  C ",10i5)') in_csub(1:idx1) 
-        write(luout,'(3x,"     A ",10i5)') in_asub(1:idx2) 
-        write(luout,'(3x,"OUT: C ",10i5)') out_csub(1:idxc) 
-        write(luout,'(3x,"     A ",10i5)') out_asub(1:idxa) 
+        write(lulog,'(3x,"IN:  C ",10i5)') in_csub(1:idx1) 
+        write(lulog,'(3x,"     A ",10i5)') in_asub(1:idx2) 
+        write(lulog,'(3x,"OUT: C ",10i5)') out_csub(1:idxc) 
+        write(lulog,'(3x,"     A ",10i5)') out_asub(1:idxa) 
       end if
 
       return

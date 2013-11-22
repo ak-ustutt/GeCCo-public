@@ -39,11 +39,11 @@
 
 
       if (ntest.gt.0) then
-        write(luout,*) '-----------------------'
-        write(luout,*) ' info from next_string'
-        write(luout,*) '-----------------------'
-        write(luout,*) ' nidx = ',nidx
-        write(luout,*) ' ngas = ',ngas_cur
+        write(lulog,*) '-----------------------'
+        write(lulog,*) ' info from next_string'
+        write(lulog,*) '-----------------------'
+        write(lulog,*) ' nidx = ',nidx
+        write(lulog,*) ' ngas = ',ngas_cur
       end if
 
 c dbg
@@ -106,11 +106,11 @@ c dbg
 
         if (ntest.ge.100) then
           if (succ) then
-            write(luout,*) 'first string: ',idorb(1:nidx)
-            write(luout,*) '              ',idspn(1:nidx)
-            write(luout,*) '              ',idss(1:nidx)
+            write(lulog,*) 'first string: ',idorb(1:nidx)
+            write(lulog,*) '              ',idspn(1:nidx)
+            write(lulog,*) '              ',idss(1:nidx)
           else
-            write(luout,*) 'no string exists'
+            write(lulog,*) 'no string exists'
           end if
         end if
 
@@ -121,9 +121,9 @@ c dbg
         if (nidx.eq.0) return
 
         if (ntest.ge.100) then
-          write(luout,*) ' input string:',idorb(1:nidx)
-          write(luout,*) '              ',idspn(1:nidx)
-          write(luout,*) '              ',idss(1:nidx)
+          write(lulog,*) ' input string:',idorb(1:nidx)
+          write(lulog,*) '              ',idspn(1:nidx)
+          write(lulog,*) '              ',idss(1:nidx)
         end if
 
         dss_loop2: do
@@ -184,11 +184,11 @@ c dbg
 
         if (ntest.ge.100) then
           if (succ) then
-            write(luout,*) ' next string: ',idorb(1:nidx)
-            write(luout,*) '              ',idspn(1:nidx)
-            write(luout,*) '              ',idss(1:nidx)
+            write(lulog,*) ' next string: ',idorb(1:nidx)
+            write(lulog,*) '              ',idspn(1:nidx)
+            write(lulog,*) '              ',idss(1:nidx)
           else
-            write(luout,*) ' no further string exists'
+            write(lulog,*) ' no further string exists'
           end if
         end if
 

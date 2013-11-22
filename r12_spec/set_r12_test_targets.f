@@ -48,7 +48,7 @@
       if (is_keyword_set('calculate.check').eq.0) return
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting test targets for R12 ...'
+     &     write(lulog,*) 'setting test targets for R12 ...'
 
       msc = +1  ! assuming closed shell
 *----------------------------------------------------------------------*

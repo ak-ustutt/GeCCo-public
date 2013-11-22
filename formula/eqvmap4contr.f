@@ -38,7 +38,7 @@ c     &     fix_vtx(contr%nvtx)
      &     ifac
 
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'eqvmap4contr at work')
+     &     call write_title(lulog,wst_dbg_subr,'eqvmap4contr at work')
 
       nvtx = contr%nvtx
       ntup = 0
@@ -77,9 +77,9 @@ c dbg
       end do ivtx_loop
 
       if (ntest.ge.100) then
-        write(luout,*) 'ntup = ',ntup
-        write(luout,*) 'neqv_tup: ',neqv_tup(1:ntup)
-        write(luout,*) 'idx_tup:  ',idx_tup(1:ntup)
+        write(lulog,*) 'ntup = ',ntup
+        write(lulog,*) 'neqv_tup: ',neqv_tup(1:ntup)
+        write(lulog,*) 'idx_tup:  ',idx_tup(1:ntup)
       end if
 
       ieqvfac = 1
@@ -89,7 +89,7 @@ c dbg
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) '-> fac = ',ieqvfac
+        write(lulog,*) '-> fac = ',ieqvfac
       end if
 
       return

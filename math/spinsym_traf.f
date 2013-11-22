@@ -37,15 +37,15 @@
      &     call quit(1,'spinsym_traf','are you kidding me?')
 
       if (ntest.ge.100) then
-        write(luout,'(x,a)') '-------------------------------'
-        write(luout,'(x,a,i1,a)') 'spinsym_traf at work (mode = ',
+        write(lulog,'(x,a)') '-------------------------------'
+        write(lulog,'(x,a,i1,a)') 'spinsym_traf at work (mode = ',
      &                            mode,')'
-        write(luout,'(x,a)') '-------------------------------'
+        write(lulog,'(x,a)') '-------------------------------'
       end if
 
       if (mode.eq.1) then
         if (ntest.ge.100) then
-          write(luout,*) 'input matrix:'
+          write(lulog,*) 'input matrix:'
           call wrtmat2(mat,ndim,ndim,ndim,ndim)
         end if
         allocate(scr(ndim,ndim))
@@ -112,17 +112,17 @@
         end do
         deallocate(scr)
         if (ntest.ge.100) then
-          write(luout,*) 'output "singlet" block:'
+          write(lulog,*) 'output "singlet" block:'
           call wrtmat2(sing,nsing,nsing,nsing,nsing)
-          write(luout,*) 'output "triplet" block:'
+          write(lulog,*) 'output "triplet" block:'
           call wrtmat2(trip,ntrip,ntrip,ntrip,ntrip)
         end if
 
       else if (mode.eq.2) then
         if (ntest.ge.100) then
-          write(luout,*) 'input "singlet" block:'
+          write(lulog,*) 'input "singlet" block:'
           call wrtmat2(sing,nsing,nsing,nsing,nsing)
-          write(luout,*) 'input "triplet" block:'
+          write(lulog,*) 'input "triplet" block:'
           call wrtmat2(trip,ntrip,ntrip,ntrip,ntrip)
         end if
 
@@ -200,7 +200,7 @@ c        end do
 c dbgend
 
         if (ntest.ge.100) then
-          write(luout,*) 'output matrix:'
+          write(lulog,*) 'output matrix:'
           call wrtmat2(mat,ndim,ndim,ndim,ndim)
         end if
       end if

@@ -20,6 +20,7 @@
       include 'par_formnames_gen.h'
       include 'par_gen_targets.h'
       include 'par_actions.h'
+      include 'routes.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -63,7 +64,7 @@
       real(8) ::
      &     x_ansatz, prc_shift, prc_min, prc_impfac
 
-      if (iprlvl.gt.0) write(luout,*) 'setting icMRCC targets'
+      if (iprlvl.gt.0) write(lulog,*) 'setting icMRCC targets'
 
       ! get some keywords
       call get_argument_value('method.MR','maxexc',
@@ -163,28 +164,28 @@
       if (orb_info%ims.ne.0) msc = 0
 
       if (ntest.ge.100) then
-        write(luout,*) 'maxcom_en    = ', maxcom_en
-        write(luout,*) 'maxcom_res   = ', maxcom
-        write(luout,*) 'G_level      = ', G_level
-        write(luout,*) 'preopt       = ', preopt
-        write(luout,*) 'Op_eqs       = ', Op_eqs
-        write(luout,*) 'H1bar        = ', h1bar
-        if (h1bar) write(luout,*) 'maxcom_h1bar = ', maxcom_h1bar
-        if (h1bar) write(luout,*) 'h1bar_maxp   = ', h1bar_maxp
-        write(luout,*) 'HTT          = ', htt
-        write(luout,*) 'maxtt        = ', maxtt
-        write(luout,*) 'x_ansatz     = ', x_ansatz
-        write(luout,*) 'Tred_mode    = ', tred
-        write(luout,*) 'trunc        = ', trunc
-        if (tfix.gt.0) write(luout,*) 'Tfix         = ', tfix
-        if (t1ord.ge.0) write(luout,*) 'T1ord        = ', t1ord
-        if (simp.ge.0) write(luout,*) 'simp         = ', simp
+        write(lulog,*) 'maxcom_en    = ', maxcom_en
+        write(lulog,*) 'maxcom_res   = ', maxcom
+        write(lulog,*) 'G_level      = ', G_level
+        write(lulog,*) 'preopt       = ', preopt
+        write(lulog,*) 'Op_eqs       = ', Op_eqs
+        write(lulog,*) 'H1bar        = ', h1bar
+        if (h1bar) write(lulog,*) 'maxcom_h1bar = ', maxcom_h1bar
+        if (h1bar) write(lulog,*) 'h1bar_maxp   = ', h1bar_maxp
+        write(lulog,*) 'HTT          = ', htt
+        write(lulog,*) 'maxtt        = ', maxtt
+        write(lulog,*) 'x_ansatz     = ', x_ansatz
+        write(lulog,*) 'Tred_mode    = ', tred
+        write(lulog,*) 'trunc        = ', trunc
+        if (tfix.gt.0) write(lulog,*) 'Tfix         = ', tfix
+        if (t1ord.ge.0) write(lulog,*) 'T1ord        = ', t1ord
+        if (simp.ge.0) write(lulog,*) 'simp         = ', simp
         if (spinproj.eq.1) then
-          write(luout,*) 'Using spin adapted reference function.'
+          write(lulog,*) 'Using spin adapted reference function.'
         else if (spinproj.eq.2) then
-          write(luout,*) 'Using full spin adaptation.'
+          write(lulog,*) 'Using full spin adaptation.'
         else if (spinproj.eq.3) then
-          write(luout,*)
+          write(lulog,*)
      &         'Using full spin adaptation, including preconditioner.'
         end if
       end if
@@ -230,6 +231,15 @@
      &    call warn('set_ic_mrcc_targets',
      &     'prc_traf may mess up spinflip symmetry of metric! '//
      &     'Use spinproj=2 or better spinproj=3.')
+      if (restart) then
+        inquire(file='ME_T_list.da',exist=l_exist)
+        if (.not.l_exist) call quit(1,'set_ic_mrcc_targets',
+     &           'Restart: File for T amplitudes not found!')
+      ! if jac_thresh>0, projector won't be sufficient for restart
+      if (prc_traf.and.restart.and.jac_thresh.ge.0)
+     &    call quit(1,'set_ic_mrcc_targets',
+     &              'no restart for jac_thresh>0')
+      end if
       
 *----------------------------------------------------------------------*
 *     Operators:
@@ -1895,7 +1905,7 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
      &      val_str='MRCC2')
       end if
       ! b) factor out spin-adapted RDMs if needed
-      if (spinproj.ge.3) then
+      if (spinproj.ge.3.and.orb_info%nactel.gt.0) then
         call set_dependency('F_E(MRCC)tr','F_DENS0',tgt_info)
         call set_rule2('F_E(MRCC)tr',FACTOR_OUT,tgt_info)
         call set_arg('F_E(MRCC)tr',FACTOR_OUT,'LABEL_RES',1,tgt_info,
@@ -2406,7 +2416,7 @@ c     &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'OPERATORS',0,tgt_info,
-     &     val_label=(/''/))
+     &     val_label=(/' '/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='FORMAL')
       call set_arg('F_H1bar',SELECT_SPECIAL,'MODE',1,tgt_info,
@@ -2417,7 +2427,7 @@ c     &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'OPERATORS',0,tgt_info,
-     &     val_label=(/''/))
+     &     val_label=(/' '/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='FORMAL')
       call set_arg('F_H1bar',SELECT_SPECIAL,'MODE',1,tgt_info,
@@ -3885,7 +3895,7 @@ c dbgend
       call set_dependency('FOPT_Atr','DEF_ME_1',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_Dtr',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_C0',tgt_info)
-      if (spinproj.ge.3)
+      if (spinproj.ge.3.and.orb_info%nactel.gt.0)
      &   call set_dependency('FOPT_Atr','DEF_ME_DENS',tgt_info)
 c      call set_rule2('FOPT_Atr',ASSIGN_ME2OP,tgt_info)
 c      call set_arg('FOPT_Atr',ASSIGN_ME2OP,'LIST',1,tgt_info,
@@ -4410,10 +4420,6 @@ c dbgend
      &       val_str='dia-Fshift')
         call set_arg(trim(dia_label),PRECONDITIONER,'SHIFT',1,tgt_info,
      &       val_rl8=(/prc_shift/))
-c dbg -test-
-c        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
-c     &       val_rl8=(/0.2d0/))
-c dbg
       else if (prc_type.ge.0) then
         call set_rule2(trim(dia_label),PRECONDITIONER,tgt_info)
         call set_arg(trim(dia_label),PRECONDITIONER,'LIST_PRC',1,
@@ -4422,10 +4428,6 @@ c dbg
      &       tgt_info,val_label=(/'ME_FREF'/))
         call set_arg(trim(dia_label),PRECONDITIONER,'MODE',1,tgt_info,
      &       val_str='dia-F')
-c dbg -test-
-c        call set_arg(trim(dia_label),PRECONDITIONER,'THRES',1,tgt_info,
-c     &       val_rl8=(/0.2d0/))
-c dbg
       end if
 c dbg
 c      call form_parameters(-1,parameters,2,

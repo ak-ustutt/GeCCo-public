@@ -40,7 +40,7 @@
       if (ncnt.eq.0) return
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting targets for CC excited states ...'
+     &     write(lulog,*) 'setting targets for CC excited states ...'
 
 *----------------------------------------------------------------------*
 *     Operators:

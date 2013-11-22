@@ -87,7 +87,7 @@ c dbg
 
         xtrace = ddot(nblkd,xint_blk,1,dao,1)
 
-        write(luout,'(2x,">>> ",a," : ",g20.10)') trim(label),xtrace
+        write(lulog,'(2x,">>> ",a," : ",g20.10)') trim(label),xtrace
 
       end do
 

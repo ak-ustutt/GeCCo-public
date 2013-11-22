@@ -32,11 +32,11 @@
      &     maxblk_in_contr, ifndmax
 
       if (ntest.ge.100) then
-        write(luout,*) '--------------------------'
-        write(luout,*) 'output from contr_in_contr'
-        write(luout,*) '--------------------------'
-        write(luout,*) 'vertices A/B: ',contra%nvtx,contrb%nvtx
-        write(luout,*) 'arcs A/B:     ',contra%narc,contrb%narc
+        write(lulog,*) '--------------------------'
+        write(lulog,*) 'output from contr_in_contr'
+        write(lulog,*) '--------------------------'
+        write(lulog,*) 'vertices A/B: ',contra%nvtx,contrb%nvtx
+        write(lulog,*) 'arcs A/B:     ',contra%narc,contrb%narc
 c dbg
         call prt_contr2(6,contra,op_info)
         call prt_contr2(6,contrb,op_info)
@@ -91,8 +91,8 @@ c dbg
      &                       vtxinf_b,topomap_b,nvtx_b)
 
       if (ntest.ge.100) then
-        write(luout,*) 'result: ',contr_in_contr_old
-        write(luout,*) 'vtxmap: ',vtxmap
+        write(lulog,*) 'result: ',contr_in_contr_old
+        write(lulog,*) 'vtxmap: ',vtxmap
       end if
 
       deallocate(occ_vtx_a,occ_vtx_b,vtxinf_a,vtxinf_b,

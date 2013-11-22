@@ -70,8 +70,8 @@
      &      irbar.gt.nop.or.
      &      irsq.gt.nop.or.
      &      ihartree.gt.nop) then
-          write(luout,*) 'idx: ',irdag,irbar,irsq,ihartree
-          write(luout,*) 'nop: ',nop
+          write(lulog,*) 'idx: ',irdag,irbar,irsq,ihartree
+          write(lulog,*) 'nop: ',nop
           call quit(1,'set_Xcontrib',
      &         'not enough operators on input list')
         end if
@@ -89,7 +89,7 @@
         if (idx_op(irdag).le.0.or.
      &      idx_op(irbar).le.0.or.
      &      idx_op(irsq) .le.0) then
-          write(luout,*) 'idx: ',idx_op(irdag),idx_op(irbar),
+          write(lulog,*) 'idx: ',idx_op(irdag),idx_op(irbar),
      &         idx_op(irsq),idx_op(ihartree)
           call quit(1,'set_Xcontrib',
      &         'operator(s) not on input list')
@@ -211,8 +211,8 @@ c          end do
         end if
 
         if (ntest.ge.100) then
-          write(luout,*) 'Xbar contribution'
-          call print_form_list(luout,flist_pnt,op_info)
+          write(lulog,*) 'Xbar contribution'
+          call print_form_list(lulog,flist_pnt,op_info)
         end if
 
       end if
@@ -221,15 +221,15 @@ c          end do
 
         if (iham.gt.nop.or.
      &      ixmat.gt.nop) then
-          write(luout,*) 'idx: ',iham,ixmat
-          write(luout,*) 'nop: ',nop
+          write(lulog,*) 'idx: ',iham,ixmat
+          write(lulog,*) 'nop: ',nop
           call quit(1,'set_Xcontrib',
      &         'not enough operators on input list')
         end if
 
         if (idx_op(iham).le.0.or.
      &      idx_op(ixmat).le.0) then
-          write(luout,*) 'idx: ',idx_op(iham),idx_op(ixmat)
+          write(lulog,*) 'idx: ',idx_op(iham),idx_op(ixmat)
           call quit(1,'set_Xcontrib',
      &         'operator(s) not on input list')
         end if
@@ -269,8 +269,8 @@ c          end do
      &       .true.,flist_pnt,op_info)
 
         if (ntest.ge.100) then
-          write(luout,*) 'XF contribution:'
-          call print_form_list(luout,flist_pnt0,op_info)
+          write(lulog,*) 'XF contribution:'
+          call print_form_list(lulog,flist_pnt0,op_info)
         end if
 
         call del_operator(op_scr_f,op_info)

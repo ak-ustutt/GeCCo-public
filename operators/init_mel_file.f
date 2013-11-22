@@ -63,7 +63,7 @@ c     &     trim(mel%label))
 
       if (rec_lo.gt.0) then
         if (rec_lo.gt.fhand%current_record) then
-          write(luout,*) 'rec_lo, rec: ',rec_lo, rec
+          write(lulog,*) 'rec_lo, rec: ',rec_lo, rec
           call quit(1,'init_mel_file','record bounds inconsistent')
         end if
         fhand%active_records(1) = rec_lo
@@ -74,7 +74,7 @@ c     &     trim(mel%label))
 
       if (rec_hi.gt.0) then
         if (rec_hi.lt.fhand%current_record.or.rec_hi.lt.rec_lo) then
-          write(luout,*) 'rec_lo, rec, rec_hi: ',rec_lo, rec, rec_hi
+          write(lulog,*) 'rec_lo, rec, rec_hi: ',rec_lo, rec, rec_hi
           call quit(1,'init_mel_file','record bounds inconsistent')
         end if
         fhand%active_records(2) = rec_hi
@@ -125,10 +125,10 @@ C          end if
       end if
 
       if (iprlvl.ge.20) then
-        write(luout,'(3x,7a)')
+        write(lulog,'(3x,7a)')
      &       'assigned file: ',trim(fhand%name),' to list ',
      &       trim(mel%label),' (operator: ',trim(op%name),')'
-        write(luout,'(3x,a,i4,a,i4,a,i4,a)') 'record: ',
+        write(lulog,'(3x,a,i4,a,i4,a,i4,a)') 'record: ',
      &       fhand%current_record,
      &       ' (active: ',fhand%active_records(1),
      &       ' -- ',      fhand%active_records(2),

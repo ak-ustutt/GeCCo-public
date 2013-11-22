@@ -264,7 +264,7 @@
       do idx_arg = 1, nargs
         if (need_arg(idx_arg)) then
           arg_pnt => cmd_pnt%arg(idx_arg)
-          write(luout,*)'argument "',trim(arg_pnt%arg_label),'" not set'
+          write(lulog,*)'argument "',trim(arg_pnt%arg_label),'" not set'
           error = error_arg_not_set
         end if
       end do

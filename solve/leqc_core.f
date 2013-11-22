@@ -110,7 +110,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     dnrm2
 
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'leqc_core entered')
+     &     call write_title(lulog,wst_dbg_subr,'leqc_core entered')
 
       nopt = opti_info%nopt
       nroot = opti_info%nroot
@@ -230,13 +230,13 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
       ! condition number and pivot vector
       call dgeco(xmat1,nred,nred,ipiv,cond,xvec)
 
-      if (ntest.ge.10) write(luout,*)'dimension ,condition number: ',
+      if (ntest.ge.10) write(lulog,*)'dimension ,condition number: ',
      &         nred,cond
 
       if (ntest.ge.50) then
-        write(luout,*) 'Factorized matrix from dgeco:'
+        write(lulog,*) 'Factorized matrix from dgeco:'
         call wrtmat2(xmat1,nred,nred,nred,nred)
-        write(luout,*) 'Pivot array:'
+        write(lulog,*) 'Pivot array:'
         call iwrtma(ipiv,1,nred,1,nred)
       end if
 
@@ -252,7 +252,7 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
         call dgesl(xmat1,nred,nred,ipiv,xvec,job)
 
         if (ntest.ge.50) then
-          write(luout,*) 'subspace solution for root # ',iroot
+          write(lulog,*) 'subspace solution for root # ',iroot
           call wrtmat2(xvec,nred,1,nred,1)
         end if
 

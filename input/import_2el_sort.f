@@ -37,7 +37,7 @@
 
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'import_2el_sort')
+        call write_title(lulog,wst_dbg_subr,'import_2el_sort')
       end if
 
       ifree = mem_setmark('2el_sort')
@@ -72,8 +72,8 @@ c dbg
         read(lu_chain) idxbuf,lenchain,chain(1:lenchain)
 
         if (idxbuf.ne.ibatch) then
-          write(luout,*) 'idxbuf = ',idxbuf
-          write(luout,*) 'ibatch = ',ibatch
+          write(lulog,*) 'idxbuf = ',idxbuf
+          write(lulog,*) 'ibatch = ',ibatch
           call quit(1,'import_2el_sort','how that?')
         end if
 

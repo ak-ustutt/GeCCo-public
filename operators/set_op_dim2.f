@@ -98,12 +98,12 @@ c     &     msd(ngastp,2), igamd(ngastp,2)
       op => mel%op
 
       if (ntest.gt.5) then
-        call write_title(luout,wst_dbg_subr,'set_op_dim')
-        write(luout,*) ' ipass = ',ipass
-        write(luout,*) ' ME-list  = ',trim(mel%label)
-        write(luout,*) ' operator = ',trim(op%name)
-        write(luout,*) ' IRREP    = ',mel%gamt
-        write(luout,*) ' Ms       = ',mel%mst
+        call write_title(lulog,wst_dbg_subr,'set_op_dim')
+        write(lulog,*) ' ipass = ',ipass
+        write(lulog,*) ' ME-list  = ',trim(mel%label)
+        write(lulog,*) ' operator = ',trim(op%name)
+        write(lulog,*) ' IRREP    = ',mel%gamt
+        write(lulog,*) ' Ms       = ',mel%mst
       end if
 
       idxstr = 0
@@ -142,13 +142,13 @@ c dbg
       occ_cls: do iblk = 1, nblk
 
         if (ntest.ge.100.and.op%formal_blk(iblk))
-     &     write(luout,*) 'skipping formal block (#',iblk,')'
+     &     write(lulog,*) 'skipping formal block (#',iblk,')'
         if (op%formal_blk(iblk)) cycle
 
         iblkoff = (iblk-1)*njoined
         if (ntest.ge.150) then
-          write(luout,*) 'class: ',iblk
-          call wrt_occ_n(luout,hpvx_occ(1,1,iblkoff+1),njoined)
+          write(lulog,*) 'class: ',iblk
+          call wrt_occ_n(lulog,hpvx_occ(1,1,iblkoff+1),njoined)
         end if
         
         ! find the number sub-blocks for C and A
@@ -285,10 +285,10 @@ c dbg
 
 c dbg
 c              print *,'current dis:'
-c              write(luout,*) idxmsdis_c(1:ncsub)
-c              write(luout,*) gamdis_c(1:ncsub)
-c              write(luout,*) idxmsdis_a(1:nasub)
-c              write(luout,*) gamdis_a(1:nasub)
+c              write(lulog,*) idxmsdis_c(1:ncsub)
+c              write(lulog,*) gamdis_c(1:ncsub)
+c              write(lulog,*) idxmsdis_a(1:nasub)
+c              write(lulog,*) gamdis_a(1:nasub)
 c              print *,'graphs c:',graph_csub(1:ncsub)
 c              print *,'graphs a:',graph_asub(1:nasub)
 c              print *,'len_str: ',len_str(1:ncsub+nasub)
@@ -334,27 +334,27 @@ c dbg
               if (njoined.eq.1.and.ntest.ge.150.or.
      &             (ms_fix.and.ipass.eq.2)) then
                 if(.not.ms_fix)
-     &               write(luout,*) 'current MS and IRREP distr:'
+     &               write(lulog,*) 'current MS and IRREP distr:'
                 call expand_occ(msd,idx_graph(1,1,iblkoff+1),
      &                    ncsub,nasub,
      &                    msdis_c,msdis_a,
      &                    hpvx_csub,hpvx_asub,
      &                    njoined)
                 if(.not.ms_fix)
-     &               call wrt_occ_n(luout,msd,njoined)
+     &               call wrt_occ_n(lulog,msd,njoined)
                 call expand_occ(igamd,idx_graph(1,1,iblkoff+1),
      &                    ncsub,nasub,
      &                    gamdis_c,gamdis_a,
      &                    hpvx_csub,hpvx_asub,
      &                    njoined)
                 if(.not.ms_fix)
-     &               call wrt_occ_n(luout,igamd,njoined)
+     &               call wrt_occ_n(lulog,igamd,njoined)
                 if (njoined.eq.1) then
                   did = msgmdid(hpvx_occ(1,1,iblkoff+1),
      &                        msd,igamd,ngam)
-                  write(luout,*) 'DID old: ',did
+                  write(lulog,*) 'DID old: ',did
                 end if
-                write(luout,*) 'current idxdis = ',idxdis
+                write(lulog,*) 'current idxdis = ',idxdis
               end if
 c dbg
               if(ms_fix)then
@@ -386,11 +386,11 @@ c dbg
                 mel%off_op_gmox(iblk)%
      &               did(idxdis,igama,idxmsa) = did
                 if (ntest.ge.150) then
-                  write(luout,*) 'current did = ',did
-                  write(luout,*) idxmsdis_c(1:ncsub)
-                  write(luout,*) gamdis_c(1:ncsub)
-                  write(luout,*) idxmsdis_a(1:nasub)
-                  write(luout,*) gamdis_a(1:nasub)
+                  write(lulog,*) 'current did = ',did
+                  write(lulog,*) idxmsdis_c(1:ncsub)
+                  write(lulog,*) gamdis_c(1:ncsub)
+                  write(lulog,*) idxmsdis_a(1:nasub)
+                  write(lulog,*) gamdis_a(1:nasub)
                 end if
               end if 
 
@@ -406,7 +406,7 @@ c dbg
               end if
 
               if (ntest.ge.150) then
-                write(luout,*) 'current block length: ',len_blk
+                write(lulog,*) 'current block length: ',len_blk
               end if
               
             end do distr_loop
@@ -443,57 +443,57 @@ c dbg
 
       if (ntest.ge.100) then
         if (ipass.eq.1) then
-          write(luout,*) 'total number of operator elements: ',
+          write(lulog,*) 'total number of operator elements: ',
      &         mel%len_op
-          write(luout,*) 'length per occupation class:'
+          write(lulog,*) 'length per occupation class:'
           call iwrtma(mel%len_op_occ,nblk,1,nblk,1)
-          write(luout,*) 'offsets per occupation class:'
+          write(lulog,*) 'offsets per occupation class:'
           call iwrtma(mel%off_op_occ,nblk,1,nblk,1)
-          write(luout,*) 'info per occupation class, IRREP, MS:'
+          write(lulog,*) 'info per occupation class, IRREP, MS:'
           do iblk = 1, nblk
             if (op%formal_blk(iblk)) cycle
             nexc = min(ca_occ(1,iblk),
      &                 ca_occ(2,iblk))
-            write(luout,*) 'occ-class: ',iblk
-            write(luout,*) 'lengths:'
+            write(lulog,*) 'occ-class: ',iblk
+            write(lulog,*) 'lengths:'
             call iwrtma(mel%len_op_gmo(iblk)%gam_ms,
      &           ngam,nexc+1,ngam,nexc+1)
-            write(luout,*) 'offsets:'
+            write(lulog,*) 'offsets:'
             call iwrtma(mel%off_op_gmo(iblk)%gam_ms,
      &           ngam,nexc+1,ngam,nexc+1)
           end do
         else
-          write(luout,*) 'info per occupation class, DISTR, IRREP, MS:'
-          write(luout,*) 'offsets:'
+          write(lulog,*) 'info per occupation class, DISTR, IRREP, MS:'
+          write(lulog,*) 'offsets:'
           do iblk = 1, nblk
             if (op%formal_blk(iblk)) cycle
             nexc = min(ca_occ(1,iblk),
      &                 ca_occ(2,iblk))
-            write(luout,*) 'occ-class: ',iblk
+            write(lulog,*) 'occ-class: ',iblk
             iblkoff = (iblk-1)*njoined
-            call wrt_occ_n(luout,op%ihpvca_occ(1,1,iblkoff+1),njoined)
+            call wrt_occ_n(lulog,op%ihpvca_occ(1,1,iblkoff+1),njoined)
             do iexc = 1, nexc+1
               do igam = 1, ngam
                 if (mel%off_op_gmox(iblk)%ndis(igam,iexc).eq.0) cycle
-                write(luout,*) iexc,igam,' -> ',
+                write(lulog,*) iexc,igam,' -> ',
      &               mel%off_op_gmox(iblk)%
      &               d_gam_ms(1:mel%off_op_gmox(iblk)%
      &               ndis(igam,iexc),igam,iexc)
               end do
             end do            
           end do
-          write(luout,*) 'distribution IDs:'
+          write(lulog,*) 'distribution IDs:'
           do iblk = 1, nblk
             if (op%formal_blk(iblk)) cycle
             nexc = min(ca_occ(1,iblk),
      &                 ca_occ(2,iblk))
-            write(luout,*) 'occ-class: ',iblk
+            write(lulog,*) 'occ-class: ',iblk
             iblkoff = (iblk-1)*njoined
-            call wrt_occ_n(luout,op%ihpvca_occ(1,1,iblkoff+1),njoined)
+            call wrt_occ_n(lulog,op%ihpvca_occ(1,1,iblkoff+1),njoined)
             do iexc = 1, nexc+1
               do igam = 1, ngam
                 if (mel%off_op_gmox(iblk)%ndis(igam,iexc).eq.0) cycle
-                write(luout,*) iexc,igam,' -> ',
+                write(lulog,*) iexc,igam,' -> ',
      &               mel%off_op_gmox(iblk)%
      &               did(1:mel%off_op_gmox(iblk)%
      &               ndis(igam,iexc),igam,iexc)

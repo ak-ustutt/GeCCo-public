@@ -59,9 +59,9 @@
       call atim_csw(cpu0,sys0,wall0)
 
       if(ntest.ge.100)then
-        write(luout,*)'======================================='
-        write(luout,*)' Formation of diagonal of 2-e operator '
-        write(luout,*)'======================================='
+        write(lulog,*)'======================================='
+        write(lulog,*)' Formation of diagonal of 2-e operator '
+        write(lulog,*)'======================================='
       endif
 
       ifree = mem_setmark('diag_fill')
@@ -153,7 +153,7 @@ c dbg
       call file_close_keep(ffdia)
 
       if(ntest.ge.1000)then
-        call wrt_mel_file(luout,5,me_dia,1,
+        call wrt_mel_file(lulog,5,me_dia,1,
      &       nocc_cls,str_info,orb_info)
       endif
 
@@ -162,7 +162,7 @@ c dbg
       ifree = mem_flushmark()
 
       if (iprlvl.ge.5)
-     &     call prtim(luout,'time in diag_fill ',
+     &     call prtim(lulog,'time in diag_fill ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 
       return

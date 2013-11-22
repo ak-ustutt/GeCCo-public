@@ -165,13 +165,13 @@
       nullify(mem_curslice)
 
       if (iprlvl.gt.0)
-     &     write(luout,'(x,a,i12,a,f8.2,a)')
+     &     write(lulog,'(x,a,i12,a,f8.2,a)')
      &     'Memory set to ',mem_free_init,
      &     ' r8-words = (',dble(mem_free_init)/1024d0/128d0,' Mb)'
 
       irat = zirat()
       if (iprlvl.ge.2)
-     &     write(luout,*) 'real-word/integer-word ratio = ',irat
+     &     write(lulog,*) 'real-word/integer-word ratio = ',irat
 
       max_blk = 0
       max_mem = 0
@@ -296,23 +296,23 @@
       if (mem_free.lt.0) then
         over = -dble(mem_free)/dble(mem_total)
         if (over.gt.over_err) then
-          write(luout,'(x,a,e8.1,a)') 'ERROR: memory exceeded by ',
+          write(lulog,'(x,a,e8.1,a)') 'ERROR: memory exceeded by ',
      &         over*100d0,' %'
           ! print memory map here
-          write(luout,'(x,2a)') 'trying to allocate slice: ',
+          write(lulog,'(x,2a)') 'trying to allocate slice: ',
      &         trim(mem_curslice%name)
-          write(luout,'(x,a,i25)') 'size of requested slice:  ',mem_reg
-          write(luout,'(x,a,i25)') 'avaible free space:       ',
+          write(lulog,'(x,a,i25)') 'size of requested slice:  ',mem_reg
+          write(lulog,'(x,a,i25)') 'avaible free space:       ',
      &         mem_free+mem_reg
-          write(luout,'(x,a,i25)') 'memmax had been set to:   ',
+          write(lulog,'(x,a,i25)') 'memmax had been set to:   ',
      &         mem_total
-          call memman_map(luout,.true.)
+          call memman_map(lulog,.true.)
           call quit(0,'memman','memory exceeded')
         else if (over.gt.over_warn) then
           call warn('memman','memory exeeded')
-          write(luout,'(x,a,e8.1,a)') 'WARNING: memory exceeded by ',
+          write(lulog,'(x,a,e8.1,a)') 'WARNING: memory exceeded by ',
      &         over*100d0,' %'
-          write(luout,'(x,2a)') 'trying to allocate slice: ',
+          write(lulog,'(x,2a)') 'trying to allocate slice: ',
      &         trim(mem_curslice%name)
         end if
             
@@ -414,7 +414,7 @@
         do
           if (trim(slice%name).eq.trim(name)) exit
           if (.not.associated(slice%prev)) then
-            call memman_map(luout,.true.)
+            call memman_map(lulog,.true.)
             call quit(1,'memman_dealloc',
      &         'could not find a node named: "'//trim(name)//'"')
           end if
@@ -429,8 +429,8 @@ c      in_last_section = associated(cursection,mem_cursection)
 
       nalloc = slice%len
       if (nalloc.lt.0) then
-        call memman_map(luout,.true.)
-        write(luout,*) 'nalloc = ',nalloc,' ?'
+        call memman_map(lulog,.true.)
+        write(lulog,*) 'nalloc = ',nalloc,' ?'
         call quit(1,'memman_dealloc','fishy length')
       end if
 
@@ -445,7 +445,7 @@ c      in_last_section = associated(cursection,mem_cursection)
           if (.not.cmpiarr(ipad,slice%imem(1-npad:0),npad).or.
      &        .not.cmpiarr(ipad,slice%imem(nalloc+1:nalloc+npad),npad)) 
      &    then 
-            call memman_map(luout,.true.)
+            call memman_map(lulog,.true.)
             call quit(1,'memman','range error for '//trim(slice%name))
           end if
         end if
@@ -461,7 +461,7 @@ c      in_last_section = associated(cursection,mem_cursection)
           if (.not.cmpxarr(xpad,slice%xmem(1-npad:0),npad).or.
      &        .not.cmpxarr(xpad,slice%xmem(nalloc+1:nalloc+npad),npad)) 
      &    then
-            call memman_map(luout,.true.)
+            call memman_map(lulog,.true.)
             call quit(1,'memman','range error for '//trim(slice%name))
           end if
         end if
@@ -470,7 +470,7 @@ c      in_last_section = associated(cursection,mem_cursection)
       case(mtyp_reg)
         mem_reg = nalloc+2*npad
       case default
-        call memman_map(luout,.true.)
+        call memman_map(lulog,.true.)
         call quit(1,'mem_dealloc','illegal type')
       end select
 
@@ -725,7 +725,7 @@ c      in_last_section = associated(cursection,mem_cursection)
       return
       end subroutine
 *----------------------------------------------------------------------*
-      subroutine memman_map(luout,check)
+      subroutine memman_map(lulog,check)
 *----------------------------------------------------------------------*
 *     print a memory map
 *----------------------------------------------------------------------*
@@ -734,7 +734,7 @@ c      in_last_section = associated(cursection,mem_cursection)
       include 'ifc_baserout.h'
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
       logical,intent(in) ::
      &     check
 
@@ -752,12 +752,12 @@ c      in_last_section = associated(cursection,mem_cursection)
 
       cursec => mem_root
 
-      write(luout,'(/x,"+",76("-"),"+",/x,"|",33x,a,33x,"|",'//
+      write(lulog,'(/x,"+",76("-"),"+",/x,"|",33x,a,33x,"|",'//
      &     '/x,"+",76("-"),"+")') 'memory map'
       memsum = 0
       ierr = 0
       do
-        write(luout,'(3x,a)') trim(cursec%name) 
+        write(lulog,'(3x,a)') trim(cursec%name) 
         if (associated(cursec%head)) then
           curslc => cursec%head
           do
@@ -785,18 +785,18 @@ c      in_last_section = associated(cursection,mem_cursection)
             namscr = curslc%name
             if ((curslc%type.eq.1.or.curslc%type.eq.2).and.check) then
               if (patchk1.and.patchk2) then
-                write(luout,'(6x,a,x,i2,x,i10,x,i10,x,l,2x,l)')
+                write(lulog,'(6x,a,x,i2,x,i10,x,i10,x,l,2x,l)')
      &               namscr(1:mem_maxname),curslc%type,
      &               curslc%len,memsum,patchk1,patchk2
               else
-                write(luout,'(3x,"!",2x,a,x,i2,x,i10,'//
+                write(lulog,'(3x,"!",2x,a,x,i2,x,i10,'//
      &               'x,i10,x,l,2x,l,x,"!")')
      &               namscr(1:mem_maxname),curslc%type,
      &               curslc%len,memsum,patchk1,patchk2
                 ierr = ierr+1
              end if
             else
-              write(luout,'(6x,a,x,i2,x,i10,x,i10,x,"N/A")')
+              write(lulog,'(6x,a,x,i2,x,i10,x,i10,x,"N/A")')
      &               namscr(1:mem_maxname),curslc%type,
      &               curslc%len,memsum
             end if
@@ -812,14 +812,14 @@ c      in_last_section = associated(cursection,mem_cursection)
       end do
 
       if (ierr.gt.0)
-     &     write(luout,*) '!! range errors detected (see above) !!'
+     &     write(lulog,*) '!! range errors detected (see above) !!'
 c     &     call quit(1,'memman_map',
 c     &     'range errors detected (see above)')
 
       end subroutine
 
 *----------------------------------------------------------------------*
-      subroutine memman_check(luout,label)
+      subroutine memman_check(lulog,label)
 *----------------------------------------------------------------------*
 *     print a memory map
 *----------------------------------------------------------------------*
@@ -828,7 +828,7 @@ c     &     'range errors detected (see above)')
       include 'ifc_baserout.h'
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
       character, intent(in) ::
      &     label*(*)
 
@@ -878,30 +878,30 @@ c     &     'range errors detected (see above)')
       end do main_loop
 
       if (.not.ok) then
-        write(luout,*) 'Errors detected at check-point: ',trim(label)
-        call memman_map(luout,.true.)
+        write(lulog,*) 'Errors detected at check-point: ',trim(label)
+        call memman_map(lulog,.true.)
         call quit(1,'memman_check','Check failed!')
       end if
 
       end subroutine
 
-      subroutine memman_stat(luout)
+      subroutine memman_stat(lulog)
 
       implicit none
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
 
-      write(luout,'(x,"+",76("-"),"+")')
-      write(luout,'(3x,a,i10,a,f8.2,a)')
+      write(lulog,'(x,"+",76("-"),"+")')
+      write(lulog,'(3x,a,i10,a,f8.2,a)')
      &     'Maximum allocated memory: ',max_mem,
      &     ' real(8)-words (',dble(max_mem)/1024d0/128d0,' Mb)'
-      write(luout,'(3x,a,i10,a,f8.2,a)')
+      write(lulog,'(3x,a,i10,a,f8.2,a)')
      &     'Largest memory block:     ',max_blk,
      &     ' real(8)-words (',dble(max_blk)/1024d0/128d0,' Mb)'
-      write(luout,'(3x,a,a)')
+      write(lulog,'(3x,a,a)')
      &     'Name of largest block:    ',trim(name_max)
-      write(luout,'(x,"+",76("-"),"+")')
+      write(lulog,'(x,"+",76("-"),"+")')
 
       end subroutine
 
@@ -1274,12 +1274,12 @@ c      include 'def_membuffer.h'
      &     name_slot*8
 
       if (ntest.ge.100) then
-        write(luout,*) '-----------------'
-        write(luout,*) 'memman_new_buffer'
-        write(luout,*) '-----------------'
-        write(luout,*) ' ID buffer = ',id_buf
-        write(luout,*) ' ID slot   = ',id_slot
-        write(luout,*) ' length = ',length
+        write(lulog,*) '-----------------'
+        write(lulog,*) 'memman_new_buffer'
+        write(lulog,*) '-----------------'
+        write(lulog,*) ' ID buffer = ',id_buf
+        write(lulog,*) ' ID slot   = ',id_slot
+        write(lulog,*) ' length = ',length
       end if
 
       ! find correct buffer
@@ -1307,9 +1307,9 @@ c      include 'def_membuffer.h'
       end select
 
       if (ntest.ge.100) then
-        write(luout,*) ' length in 8b-words  = ',actual_len
-        write(luout,*) ' currently in use    = ',mem_buf_pnt%cur_buf_len
-        write(luout,*) ' currently available = ',
+        write(lulog,*) ' length in 8b-words  = ',actual_len
+        write(lulog,*) ' currently in use    = ',mem_buf_pnt%cur_buf_len
+        write(lulog,*) ' currently available = ',
      &       mem_buf_pnt%max_buf_len-mem_buf_pnt%cur_buf_len
       end if
 
@@ -1326,9 +1326,9 @@ c     &     call quit(1,'memman_new_mem_buf_pnt','ID is already in use!')
      &    mem_buf_pnt%max_buf_len.or.
      &    mem_buf_pnt%cur_buf_slots.eq.mem_buf_pnt%max_buf_slots) then
         if (ntest.ge.100) then
-          write(luout,*) 'looking for some buffers to free:'
-          write(luout,*) ' last10 array: '
-          write(luout,'(x,10i5)') mem_buf_pnt%last10(1:10)
+          write(lulog,*) 'looking for some buffers to free:'
+          write(lulog,*) ' last10 array: '
+          write(lulog,'(x,10i5)') mem_buf_pnt%last10(1:10)
         end if
         ! 1) look for buffers, not accessed the last 10 times
         n_usage_min = huge(n_usage_max)
@@ -1341,7 +1341,7 @@ c     &     call quit(1,'memman_new_mem_buf_pnt','ID is already in use!')
             n_usage_max = max(n_usage_max,abs(istat))
             if (imltlist(idx,last10,10,1).eq.0) then
               if (ntest.ge.100) then
-                write(luout,*) 'freeing slot: ',idx
+                write(lulog,*) 'freeing slot: ',idx
               end if
               curslice => mem_buf_pnt%slot(idx)%mem_slc
               free_slc = length.ne.curslice%len
@@ -1356,7 +1356,7 @@ c     &     call quit(1,'memman_new_mem_buf_pnt','ID is already in use!')
           end if
         end do
         if (ntest.ge.100) then
-          write(luout,*) 'free memory after 1st round: ',
+          write(lulog,*) 'free memory after 1st round: ',
      &         mem_buf_pnt%max_buf_len-mem_buf_pnt%cur_buf_len
         end if
         ! 2) remove mem_buf_pnts according to number of accesses
@@ -1371,7 +1371,7 @@ c     &     call quit(1,'memman_new_mem_buf_pnt','ID is already in use!')
               if (id_cur.gt.0.and.
      &            abs(istat).eq.i_usage) then
                 if (ntest.ge.100) then
-                  write(luout,*) 'freeing slot: ',idx
+                  write(lulog,*) 'freeing slot: ',idx
                 end if
                 curslice => mem_buf_pnt%slot(idx)%mem_slc
                 free_slc = length.ne.curslice%len
@@ -1386,7 +1386,7 @@ c     &     call quit(1,'memman_new_mem_buf_pnt','ID is already in use!')
             end do
           end do usage_loop
           if (ntest.ge.100) then
-            write(luout,*) 'free memory after 2nd round: ',
+            write(lulog,*) 'free memory after 2nd round: ',
      &           mem_buf_pnt%max_buf_len-mem_buf_pnt%cur_buf_len
           end if
         end if
@@ -1404,8 +1404,8 @@ c     &     call quit(1,'memman_new_mem_buf_pnt','ID is already in use!')
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'next free slot: ',idx_slot
-        write(luout,*) 'current buffer length: ',mem_buf_pnt%cur_buf_len
+        write(lulog,*) 'next free slot: ',idx_slot
+        write(lulog,*) 'current buffer length: ',mem_buf_pnt%cur_buf_len
       end if
 
       ! buffer usage:
@@ -1446,11 +1446,11 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
       end if
 
       if (ntest.ge.500) then
-        write(luout,*) 'current memory map'
-        call memman_map(luout,.true.)
+        write(lulog,*) 'current memory map'
+        call memman_map(lulog,.true.)
       end if
       if (ntest.ge.100) then
-        write(luout,*) 'buffer length on exit: ',mem_buf_pnt%cur_buf_len
+        write(lulog,*) 'buffer length on exit: ',mem_buf_pnt%cur_buf_len
       end if
 
       mem_buf_pnt%idx4id(id_slot)=idx_slot
@@ -1588,11 +1588,11 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
      &     curslice
 
       if (ntest.ge.100) then
-        write(luout,*) '-----------------'
-        write(luout,*) 'memman_idx_buffer'
-        write(luout,*) '-----------------'
-        write(luout,*) ' ID buffer: ',id_buf
-        write(luout,*) ' ID slot  : ',id_slot
+        write(lulog,*) '-----------------'
+        write(lulog,*) 'memman_idx_buffer'
+        write(lulog,*) '-----------------'
+        write(lulog,*) ' ID buffer: ',id_buf
+        write(lulog,*) ' ID slot  : ',id_slot
       end if
 
       ! find correct buffer
@@ -1606,12 +1606,12 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
       end if
 
       if (id_slot.gt.mem_buf_pnt%max_buf_slots) then
-        write(luout,*) ' ID buffer: ',id_buf
-        write(luout,*) ' ID slot  : ',id_slot
-        write(luout,*) ' ID slot(max): ',mem_buf_pnt%max_buf_slots
-        write(luout,*) ' modify set? ',present(modify)
-        call print_vbuffer_int(luout,id_buf,.true.)
-        call memman_map(luout,.true.)
+        write(lulog,*) ' ID buffer: ',id_buf
+        write(lulog,*) ' ID slot  : ',id_slot
+        write(lulog,*) ' ID slot(max): ',mem_buf_pnt%max_buf_slots
+        write(lulog,*) ' modify set? ',present(modify)
+        call print_vbuffer_int(lulog,id_buf,.true.)
+        call memman_map(lulog,.true.)
         call quit(1,'memman_idx_buffer',
      &     'requested slot is out of range')
       end if
@@ -1642,22 +1642,22 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
 
       if (ntest.ge.100) then
         if (idx_slot.le.0) then          
-          write(luout,*) 'nothing found'
+          write(lulog,*) 'nothing found'
         else
-          write(luout,*) 'idx_slot = ',idx_slot
+          write(lulog,*) 'idx_slot = ',idx_slot
         end if
-        write(luout,*) 'current last10 array:'
-        write(luout,'(x,10i5)') mem_buf_pnt%last10(1:10)
+        write(lulog,*) 'current last10 array:'
+        write(lulog,'(x,10i5)') mem_buf_pnt%last10(1:10)
       end if
 
       return
       end subroutine
 
-      subroutine print_vbuffer_int(luout,id_buf,short)
+      subroutine print_vbuffer_int(lulog,id_buf,short)
       implicit none
 
       integer, intent(in) ::
-     &     luout, id_buf
+     &     lulog, id_buf
       logical, intent(in) ::
      &     short
 
@@ -1676,22 +1676,22 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
         end do
       end if
 
-      write(luout,*) 'Info on buffer: ',trim(mem_buf_pnt%name)
+      write(lulog,*) 'Info on buffer: ',trim(mem_buf_pnt%name)
 
-      write(luout,*) 'in-core length (current/max): ',
+      write(lulog,*) 'in-core length (current/max): ',
      &     mem_buf_pnt%cur_buf_len,
      &     mem_buf_pnt%max_buf_len
 
-      write(luout,*) 'last10 array: ',mem_buf_pnt%last10(1:10)
-      write(luout,*) 'idx4id array: ',
+      write(lulog,*) 'last10 array: ',mem_buf_pnt%last10(1:10)
+      write(lulog,*) 'idx4id array: ',
      &     mem_buf_pnt%idx4id(1:mem_buf_pnt%max_buf_slots)
 
-      write(luout,*) 'contents in-core:'
+      write(lulog,*) 'contents in-core:'
       irecmax = 1
       maxlen = 1
       do idx = 1, mem_buf_pnt%max_buf_slots
-        write(luout,*) 'slot #',idx
-        write(luout,*) 'ID, status: ',
+        write(lulog,*) 'slot #',idx
+        write(lulog,*) 'ID, status: ',
      &       mem_buf_pnt%slot_info(idx*2-1),
      &       mem_buf_pnt%slot_info(idx*2)
         if (short) cycle
@@ -1704,16 +1704,16 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
         end if
       end do
 
-      write(luout,*) 'Contents on disc:'
+      write(lulog,*) 'Contents on disc:'
       unit = mem_buf_pnt%ffbuf%unit
       allocate(ibuf(maxlen))
       do idx = 1, irecmax
         read(unit,rec=idx,err=10) ibuf(1:maxlen)
-        write(luout,*) idx,'-> on disk'
+        write(lulog,*) idx,'-> on disk'
         if (short) cycle
         call wrtimat2(ibuf,1,maxlen,1,maxlen)
         cycle
- 10     write(luout,*) idx,'-> empty record'
+ 10     write(lulog,*) idx,'-> empty record'
       end do
       deallocate(ibuf)
 
@@ -1730,10 +1730,10 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
       character(len=*), intent(in) ::
      &     msg
 
-      write(luout,*) 'ERROR in memory manager: '
-      write(luout,*) 'status: ',stat,' location: ',trim(msg)
+      write(lulog,*) 'ERROR in memory manager: '
+      write(lulog,*) 'status: ',stat,' location: ',trim(msg)
 
-      call memman_map(luout,.false.)
+      call memman_map(lulog,.false.)
 
       call quit(0,'memman','error in memory manager')
 

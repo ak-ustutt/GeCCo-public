@@ -25,7 +25,7 @@
      &     form_pnt_after
 
       if (.not.associated(form_pnt%next)) then
-        write(luout,*) 'illegal position for insert! command = ',
+        write(lulog,*) 'illegal position for insert! command = ',
      &                  form_pnt%command
         call quit(1,'insert_formula_item','illegal position')
       end if

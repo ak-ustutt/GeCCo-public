@@ -12,7 +12,7 @@ C
       WRITE(6,*) '================'
       WRITE(6,*)
       DO 100 IBLK = 1, NBLK
-        WRITE(luout,'(A,I3)') ' Block ... ',IBLK
+        WRITE(lulog,'(A,I3)') ' Block ... ',IBLK
         IF(ISYM.EQ.0) THEN
           IF(IBLK .NE. 1 ) IBASE = IBASE + LROW(IBLK-1)*LCOL(IBLK-1)
           CALL WRTMAT2(A(IBASE),LROW(IBLK),LCOL(IBLK),

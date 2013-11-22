@@ -47,9 +47,9 @@
       call quit(1,'expand_subexpr2','call to obsolete routine')
 
       if (ntest.ge.100) then
-        write(luout,*) '================================'
-        write(luout,*) ' expand_subexpr2 messing around'
-        write(luout,*) '================================'
+        write(lulog,*) '================================'
+        write(lulog,*) ' expand_subexpr2 messing around'
+        write(lulog,*) '================================'
       end if
 
       if (fl_tgt%command.ne.command_set_target_init)
@@ -77,17 +77,17 @@
      &         call quit(1,'expand_subexpr2',
      &         'unexpected end of list (target)')
           if (ntest.ge.100) then
-            write(luout,'(70("="))')
-            write(luout,*) 'New operator target: ',idxop_tgt
-            write(luout,'(70("="))')
+            write(lulog,'(70("="))')
+            write(lulog,*) 'New operator target: ',idxop_tgt
+            write(lulog,'(70("="))')
           end if
           fl_tgt_current => fl_tgt_current%next
         end if
 
         iblk_tgt = fl_tgt_current%contr%iblk_res
         if (ntest.ge.100) then
-          write(luout,*) 'current term:'
-          call prt_contr2(luout,fl_tgt_current%contr,op_info)
+          write(lulog,*) 'current term:'
+          call prt_contr2(lulog,fl_tgt_current%contr,op_info)
         end if
 
         ! is intermediate vertex contained in terms?
@@ -95,8 +95,8 @@
         advance = .true.
 
         if (ntest.ge.100) then
-          write(luout,*) 'idxop_intm = ',idxop_intm
-          write(luout,*) 'ivtx       = ',ivtx
+          write(lulog,*) 'idxop_intm = ',idxop_intm
+          write(lulog,*) 'ivtx       = ',ivtx
         end if
 
         if (ivtx.gt.0) then
@@ -118,7 +118,7 @@
           end do
           
           if (.not.success) then
-            write(luout,*) 'undefined block: ',iblk_intm
+            write(lulog,*) 'undefined block: ',iblk_intm
             call quit(1,'expand_subexpr2','block not defined')
           end if
 
@@ -127,7 +127,7 @@
           call init_formula_plist(fpl_intm_c2blk)
 c dbg
 c          print *,'bef. calling collect_contr2block:'
-c          call print_form_list(luout,fl_intm_pnt,op_info)
+c          call print_form_list(lulog,fl_intm_pnt,op_info)
 c dbg
           call collect_contr2block(fpl_intm_c2blk,nterms,
      &                                       fl_intm_pnt,op_info)          
@@ -140,10 +140,10 @@ c dbg
           
           if (nterms.gt.0) then
             if (ntest.ge.100) then
-              write(luout,*) 'inserting ',nterms,' new terms'
+              write(lulog,*) 'inserting ',nterms,' new terms'
 c dbg
 c              print *,'new terms:'
-c              call print_form_list(luout,fl_expand,op_info)
+c              call print_form_list(lulog,fl_expand,op_info)
 c dbg
             end if
             ! and replace current term
@@ -157,7 +157,7 @@ c dbg
             fl_tgt_current => fl_expand
 c dbg
 c            print *,'current target formula'
-c            call print_form_list(luout,fl_tgt,op_info)
+c            call print_form_list(lulog,fl_tgt,op_info)
 c dbg
             ! we re-visit the generated terms (for multiple expansions)
             advance = .false.

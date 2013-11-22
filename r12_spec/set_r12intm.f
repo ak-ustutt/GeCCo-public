@@ -59,11 +59,11 @@ c      call get_argument_value('method','CC',lval=cclog)
       cclog = is_keyword_set('method.CC').gt.0
 
       if(ntest.ge.100)then
-        write(luout,*) '-------------'
-        write(luout,*) ' set_r12intm '
-        write(luout,*) '-------------'
-        write(luout,*) 'Intermediate: ',trim(name)
-c        if(r12fix) write(luout,*)'Fully contracted intermediate'
+        write(lulog,*) '-------------'
+        write(lulog,*) ' set_r12intm '
+        write(lulog,*) '-------------'
+        write(lulog,*) 'Intermediate: ',trim(name)
+c        if(r12fix) write(lulog,*)'Fully contracted intermediate'
       endif
 
 c      if(.not.r12fix)then
@@ -184,9 +184,9 @@ c        deallocate(opscr)
 c      endif
 
       if (ntest.ge.100) then
-        write(luout,*) 'generated: '
-        call print_op_occ(luout,op)
-        write(luout,*) 'formal: ',op%formal_blk(1:op%n_occ_cls)
+        write(lulog,*) 'generated: '
+        call print_op_occ(lulog,op)
+        write(lulog,*) 'formal: ',op%formal_blk(1:op%n_occ_cls)
       end if
 
       return

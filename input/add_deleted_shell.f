@@ -28,13 +28,13 @@
       ngas  = orb_info%ngas
       nspin = orb_info%nspin
       if (iprint.ge.50) then
-        write(luout,*) '-------------------'
-        write(luout,*) ' add_deleted_shell'
-        write(luout,*) '-------------------'
-        write(luout,*) ' shell to add: ',ishell(1:len)
-        write(luout,*) ' defined shells: '
+        write(lulog,*) '-------------------'
+        write(lulog,*) ' add_deleted_shell'
+        write(lulog,*) '-------------------'
+        write(lulog,*) ' shell to add: ',ishell(1:len)
+        write(lulog,*) ' defined shells: '
         do igas = 1, ngas
-          write(luout,'(x,i3,2x,8i4)') igas,orb_info%igassh(1:nsym,igas)
+          write(lulog,'(x,i3,2x,8i4)') igas,orb_info%igassh(1:nsym,igas)
         end do
       end if
 
@@ -51,8 +51,8 @@
         if (ishell(idx).gt.orb_info%igassh(idx,ngas)) ierr = ierr+1
       end do
       if (ierr.gt.0) then
-        write(luout,*) 'orbital to freeze     : ',ishell(1:len)
-        write(luout,*) ' current highest shell: ',
+        write(lulog,*) 'orbital to freeze     : ',ishell(1:len)
+        write(lulog,*) ' current highest shell: ',
      &                                   orb_info%igassh(1:len,ngas)
         call quit(0,'add_deleted_shell','inconsistency')
       end if
@@ -88,9 +88,9 @@
       orb_info%ihpvgas(ngas,1:nspin) = 2
 
       if (iprint.ge.50) then
-        write(luout,*) ' new shell definition: '
+        write(lulog,*) ' new shell definition: '
         do igas = 1, ngas
-          write(luout,'(x,i3,2x,8i4)') igas,orb_info%igassh(1:nsym,igas)
+          write(lulog,'(x,i3,2x,8i4)') igas,orb_info%igassh(1:nsym,igas)
         end do
       end if
 

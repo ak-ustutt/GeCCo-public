@@ -65,15 +65,15 @@
       ifree = mem_setmark('scale_copy_op')
 
       if(ntest.ge.100)then
-        write(luout,*) '===================='
-        write(luout,*) ' scale & copy       '
-        write(luout,*) '===================='
-        write(luout,*) 'Result: ',trim(label_res)
-        write(luout,*) 'Input:  ',trim(label_inp(1))
-        write(luout,*) 'mode:   ',trim(mode)
-        write(luout,*) 'The factors (applied periodically): '
+        write(lulog,*) '===================='
+        write(lulog,*) ' scale & copy       '
+        write(lulog,*) '===================='
+        write(lulog,*) 'Result: ',trim(label_res)
+        write(lulog,*) 'Input:  ',trim(label_inp(1))
+        write(lulog,*) 'mode:   ',trim(mode)
+        write(lulog,*) 'The factors (applied periodically): '
         do idx = 1, nfac
-          write(luout,'(3x,f12.6)') fac(idx)
+          write(lulog,'(3x,f12.6)') fac(idx)
         end do
       endif
 
@@ -87,13 +87,13 @@
       if (nspc.gt.0) idx_shape = idx_mel_list(label_inp(2),op_info)
 
       if (idx_res.lt.0) then
-        write(luout,*) '"',trim(label_res),'"'
-        write(luout,*) idx_res
+        write(lulog,*) '"',trim(label_res),'"'
+        write(lulog,*) idx_res
         call quit(1,'scale_copy_op','label not on list (1)')
       end if
       if (idx_inp.lt.0) then
-        write(luout,*) '"',trim(label_inp(1)),'"'
-        write(luout,*) idx_inp
+        write(lulog,*) '"',trim(label_inp(1)),'"'
+        write(lulog,*) idx_inp
         call quit(1,'scale_copy_op','label not on list (2)')
       end if
 
@@ -169,8 +169,8 @@ c     &       'copy means to have a second list...')
       if (trim(mode).eq.'mult'.or.trim(mode).eq.'precond')
      &      nblkmax = nblkmax/2
       if (nblkmax.le.0) then
-        write(luout,*) 'free memory (words):  ',ifree
-        write(luout,*) 'block length (words): ',ffop_src%reclen
+        write(lulog,*) 'free memory (words):  ',ifree
+        write(lulog,*) 'block length (words): ',ffop_src%reclen
         call quit(1,'scale_copy_op',
      &            'not even 1 record fits into memory?')
       end if
@@ -239,7 +239,7 @@ c            ! warn if any element is below the given number(s)
 c            do idx = 1, idxnd_src-idxst_src+1
 c              if (buffer(idx).lt.fac(ifac)) then
 c                warning = .true.
-c                write(luout,'(a,i14,a,f20.12,a,f20.12)')
+c                write(lulog,'(a,i14,a,f20.12,a,f20.12)')
 c     &               'Element',idx,' with value',buffer(idx),
 c     &               ' is below',fac(ifac)
 c              end if
@@ -264,7 +264,7 @@ c            end do
               buffer(idx) = signsec(isec)*fac(ifac)*buffer(idx)
 c dbg
 c              if (buffer(idx).lt.-1d-14) then
-c                write(luout,*) 'changing sign for el.# ',idx
+c                write(lulog,*) 'changing sign for el.# ',idx
 c                buffer(idx) = abs(buffer(idx))
 c              end if
 c dbgend
@@ -280,12 +280,12 @@ c dbgend
 
         if (trim(mode).eq.'prc_thresh') then
           if (smapre_num.gt.0) then
-            write(luout,'(1x,a,i9,a,g9.2)')
+            write(lulog,'(1x,a,i9,a,g9.2)')
      &           'number of small preconditioner elements: ',
      &           smapre_num, '; set to ',fac(1:nfac)
           end if
           if (negpre_num.gt.0) then
-            write(luout,'(1x,a,i9)')
+            write(lulog,'(1x,a,i9)')
      &           'number of negative preconditioner elements: ',
      &           negpre_num
             call warn('scale_copy_op',
@@ -313,13 +313,13 @@ c dbgend
      &     call file_close_keep(ffop_src)
 
       if (ntest.ge.10) then
-        write(luout,*) 'dump of scaled list:'
+        write(lulog,*) 'dump of scaled list:'
         if (ntest.ge.10) ipri = 1
         if (ntest.ge.50) ipri = 2
         if (ntest.ge.100) ipri = 3
         if (ntest.ge.500) ipri = 4
         if (ntest.ge.1000) ipri = 5
-        call wrt_mel_file(luout,ipri,me_res,
+        call wrt_mel_file(lulog,ipri,me_res,
      &       1,me_res%op%n_occ_cls,
      &       str_info,orb_info)
       end if
@@ -330,7 +330,7 @@ c dbgend
       ifree = mem_flushmark()
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'time for scaling',
+      call prtim(lulog,'time for scaling',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

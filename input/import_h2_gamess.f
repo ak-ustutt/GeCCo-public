@@ -129,8 +129,8 @@ c      ifree = mem_alloc_int(ibuf,nlabmx,'mo2_ibuff')
       
       nblkmax = ifree/ffham%reclen
       if (nblkmax.le.0) then
-        write(luout,*) 'free memory (words):  ',ifree
-        write(luout,*) 'block length (words): ',ffham%reclen
+        write(lulog,*) 'free memory (words):  ',ifree
+        write(lulog,*) 'block length (words): ',ffham%reclen
         call quit(1,'get_h2','not even 1 record fits into memory?')
       end if
 
@@ -144,8 +144,8 @@ cmh   determine number of first 2-el. block
 
       nbuff = min(len_op-hlist%off_op_occ(iblkst),nblk*ffham%reclen)
 
-      write(luout,*) 'number of incore-blocks in geth2: ',nblk
-      write(luout,'(x,a,f9.2,a)') 'size of buffer in geth2:   ',
+      write(lulog,*) 'number of incore-blocks in geth2: ',nblk
+      write(lulog,'(x,a,f9.2,a)') 'size of buffer in geth2:   ',
      &     dble(nbuff)/128d0/1024d0, 'Mb'
 
       ifree = mem_alloc_real(h2scr,nbuff,'h2sort_buff')
@@ -218,7 +218,7 @@ c dbgend
               is = iand(ilabel,imsk16)
             end if
 c dbg
-c            write(luout,'(a,4i3)') 'pqrs: ',ip,iq,ir,is
+c            write(lulog,'(a,4i3)') 'pqrs: ',ip,iq,ir,is
 c dbgend
             idxprqs(1) = ireost(ip)
             idxprqs(2) = ireost(ir)
@@ -315,11 +315,11 @@ c dbgend
         
       end do ! pass over reordered integral file
 
-      write(luout,*) 'passes over integral file: ',ipass
-      write(luout,*) 
-      write(luout,*) '2-el. integrals on disk: ',int_disk
-      write(luout,*) '   thereof nonredundant: ',int_nonr
-      write(luout,*) '    integrals reordered: ',!int_ordr,
+      write(lulog,*) 'passes over integral file: ',ipass
+      write(lulog,*) 
+      write(lulog,*) '2-el. integrals on disk: ',int_disk
+      write(lulog,*) '   thereof nonredundant: ',int_nonr
+      write(lulog,*) '    integrals reordered: ',!int_ordr,
      &     hlist%len_op-hlist%off_op_occ(iblkst)
 
       if (closeit)
@@ -335,7 +335,7 @@ c dbgend
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.5) 
-     &     call prtim(luout,'time in 2int import',
+     &     call prtim(lulog,'time in 2int import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

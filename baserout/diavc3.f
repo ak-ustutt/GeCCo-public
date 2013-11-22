@@ -40,9 +40,9 @@
       end do
 *
       if(ntest.ge.100) then
-        write(luout,*) 'diavc3 : vecin, diag,vecout '
+        write(lulog,*) 'diavc3 : vecin, diag,vecout '
         do i = 1, ndim
-          write(luout,'(3e15.8)') vecin(i),diag(i),vecout(i)
+          write(lulog,'(3e15.8)') vecin(i),diag(i),vecout(i)
         end do
       end if
 *

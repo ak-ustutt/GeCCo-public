@@ -50,9 +50,9 @@ c      include 'par_formnames_gen.h'
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.eq.100) then
-        write(luout,*) '======================'
-        write(luout,*) ' output from set_hbar'
-        write(luout,*) '======================'
+        write(lulog,*) '======================'
+        write(lulog,*) ' output from set_hbar'
+        write(lulog,*) '======================'
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -85,13 +85,13 @@ c      include 'par_formnames_gen.h'
       call write_form_list(formula_hbar%fhand,form_hbar,title)
 
       if (ntest.ge.100) then
-        write(luout,*) 'generated:'
-        call print_form_list(luout,form_hbar,op_info)
+        write(lulog,*) 'generated:'
+        call print_form_list(lulog,form_hbar,op_info)
       end if
 
       call dealloc_formula_list(form_hbar)
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'CC Hbar',cpu-cpu0,sys-sys0,wall-wall0)
+      call prtim(lulog,'CC Hbar',cpu-cpu0,sys-sys0,wall-wall0)
 
       end

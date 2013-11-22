@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine wrt_mel_to_file(luout,mel,iblkst,iblknd,
+      subroutine wrt_mel_to_file(lulog,mel,iblkst,iblknd,
      &     str_info,orb_info)
 *----------------------------------------------------------------------*
 *     given: an operator definition (op) and a file handle
@@ -24,7 +24,7 @@
      &     maxprt = 100
 
       integer, intent(in) ::
-     &     luout, iblkst, iblknd
+     &     lulog, iblkst, iblknd
       type(me_list), intent(in) ::
      &     mel
       type(strinf), intent(in) ::
@@ -144,20 +144,20 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
             first = .true.
             ndis = mel%off_op_gmox(iblk)%ndis(igam,idxms)
             if (ndis.eq.0) then
-              write(luout,*) 'WARNING:'
-              write(luout,*)
+              write(lulog,*) 'WARNING:'
+              write(lulog,*)
      &             ' op_info indicates no distribution at all'
-              write(luout,*) ' skipping to next block'
+              write(lulog,*) ' skipping to next block'
               idxoff_blk = idxoff_blk+lenblk
               nwarn = nwarn+1
               cycle
             end if
             if (ndis.eq.1) then
               if (scalar) then
-                write(luout,'(x,i10,17x,f24.14)') idxoff_blk+1,
+                write(lulog,'(x,i10,17x,f24.14)') idxoff_blk+1,
      &             curblk(idxoff_blk+1)
               else
-                call wrt_mel_blk_wi2(luout,curblk(idxoff_blk+1),
+                call wrt_mel_blk_wi2(lulog,curblk(idxoff_blk+1),
      &             mel,iblk,igam,idxms,1,
      &             nel,str_info,orb_info)
               end if
@@ -190,7 +190,7 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
      &                              curblk(idxoff_blk+1),1))
               lenprt = lenblk
             
-              call wrt_mel_blk_wi2(luout,curblk(idxoff_blk+1),
+              call wrt_mel_blk_wi2(lulog,curblk(idxoff_blk+1),
      &             mel,iblk,igam,idxms,idx_dis,
      &             nel,str_info,orb_info)
 
@@ -202,8 +202,8 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
       end do
 
       if (nwarn.gt.0) then
-        write(luout,*) '!!! There were ',nwarn,' warnings !!!'
-        write(luout,*) 'look for "WARNING" in previous output!'
+        write(lulog,*) '!!! There were ',nwarn,' warnings !!!'
+        write(lulog,*) 'look for "WARNING" in previous output!'
       end if
 
       if (close_again) call file_close_keep(ffop)

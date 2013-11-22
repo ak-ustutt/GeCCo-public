@@ -69,15 +69,15 @@ c      include 'def_filinf.h'
      &     rd_contr
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'form_deriv2 at work')
-        write(luout,*) ' f_input = ',trim(f_input%label)
-        write(luout,*) ' f_deriv = ',trim(f_deriv%label)
-        write(luout,*) ' op_res  = ',trim(label_opres)
+        write(lulog,*) ' f_input = ',trim(f_input%label)
+        write(lulog,*) ' f_deriv = ',trim(f_deriv%label)
+        write(lulog,*) ' op_res  = ',trim(label_opres)
         do icmpnd = 1, ncmpnd
-          write(luout,*) 'compound # ',icmpnd
-          write(luout,*) ' op_der  = ',trim(label_opder(icmpnd))
-          write(luout,*) ' op_mlt  = ',trim(label_opmlt(icmpnd))
+          write(lulog,*) 'compound # ',icmpnd
+          write(lulog,*) ' op_der  = ',trim(label_opder(icmpnd))
+          write(lulog,*) ' op_mlt  = ',trim(label_opmlt(icmpnd))
         end do
       end if
 
@@ -114,10 +114,10 @@ c      include 'def_filinf.h'
         end do
       end if
       if (idxres.lt.0) then
-        write(luout,*) 'idxder:', idxder
-        write(luout,*) 'idxmlt:', idxmlt
-        write(luout,*) 'idxres:', idxres
-        call print_op_info(luout,'ops',op_info)
+        write(lulog,*) 'idxder:', idxder
+        write(lulog,*) 'idxmlt:', idxmlt
+        write(lulog,*) 'idxres:', idxres
+        call print_op_info(lulog,'ops',op_info)
         call quit(1,'form_deriv2',
      &     'required operators are not yet defined')
       end if
@@ -172,7 +172,7 @@ cmh            deallocate(ivtx_reo,fix_vtx)
             call wrt_contr(luderiv,cur_conder%contr)
 
             if(ntest.ge.100)then
-              call prt_contr2(luout,cur_conder%contr,op_info)
+              call prt_contr2(lulog,cur_conder%contr,op_info)
             endif
 
             if (idx.lt.nder) cur_conder => cur_conder%next

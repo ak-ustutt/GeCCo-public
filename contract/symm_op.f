@@ -66,8 +66,8 @@
       idx_out = idx_mel_list(label_out,op_info)
 
       if (idx_in.lt.0.or.idx_out.lt.0) then
-        write(luout,*) '"',trim(label_in),'" "',trim(label_out),'"'
-        write(luout,*) idx_in, idx_out
+        write(lulog,*) '"',trim(label_in),'" "',trim(label_out),'"'
+        write(lulog,*) idx_in, idx_out
         call quit(1,'symm_op','label not on list')
       end if
 
@@ -100,16 +100,16 @@
      &     call quit(1,'symm_op','no. of occupation classes unequal')
 
       if (ntest.ge.100) then
-        write(luout,*) '=========================='
-        write(luout,*) ' operator symmetrisation: '
-        write(luout,*) '=========================='
-        write(luout,*) ' fac = ',fac
-        write(luout,*) ' ffin: ',trim(ffin%name),
+        write(lulog,*) '=========================='
+        write(lulog,*) ' operator symmetrisation: '
+        write(lulog,*) '=========================='
+        write(lulog,*) ' fac = ',fac
+        write(lulog,*) ' ffin: ',trim(ffin%name),
      &                   ' rec: ',ffin%current_record
-        write(luout,*) ' ffout: ',trim(ffout%name),
+        write(lulog,*) ' ffout: ',trim(ffout%name),
      &                   ' rec: ',ffout%current_record
-        write(luout,*) ' opinp: ',op_in%name(1:len_trim(op_in%name))
-        write(luout,*) ' opinv: ',op_out%name(1:len_trim(op_out%name))
+        write(lulog,*) ' opinp: ',op_in%name(1:len_trim(op_in%name))
+        write(lulog,*) ' opinv: ',op_out%name(1:len_trim(op_out%name))
       end if
 
       njoined = op_in%njoined
@@ -148,14 +148,14 @@
 
 
       if(ntest.ge.1000)then
-        write(luout,*)'Symmetrised operator: ',trim(op_out%name)
-        call wrt_mel_file(luout,5,me_out,1,
+        write(lulog,*)'Symmetrised operator: ',trim(op_out%name)
+        call wrt_mel_file(lulog,5,me_out,1,
      &       op_out%n_occ_cls,str_info,orb_info)
       endif
 
       call atim_csw(cpu,sys,wall)
 
-      call prtim(luout,'time for symmetrisation',
+      call prtim(lulog,'time for symmetrisation',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
 c dbg
@@ -166,8 +166,8 @@ c      call invert(ffout,op_out,ffout,op_out,1,
 c     &     op_info,orb_info)
 
 c      if(ntest.ge.1000)then
-c        write(luout,*)'Inverted matrix: '
-c        call wrt_op_file(luout,5,ffout,op_out,1,
+c        write(lulog,*)'Inverted matrix: '
+c        call wrt_op_file(lulog,5,ffout,op_out,1,
 c     &       op_out%n_occ_cls,str_info,orb_info)
 c      endif
       
@@ -185,8 +185,8 @@ c     &     orb_info)
       if (open_close_out) call file_close_keep(ffout)
 
 c      if(ntest.ge.1000)then
-c        write(luout,*)'Modified V+'
-c        call wrt_op_file(luout,5,ffv,opv,1,
+c        write(lulog,*)'Modified V+'
+c        call wrt_op_file(lulog,5,ffv,opv,1,
 c     &       opv%n_occ_cls,str_info,orb_info)
 c      endif
       

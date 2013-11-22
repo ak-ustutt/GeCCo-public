@@ -34,7 +34,7 @@
       time_res = op_info%mel_arr(idx)%mel%fhand%last_mod(irec)
 
       if (ntest.ge.100)
-     &     write(luout,*) 'me_list_uptodate: considering: ',
+     &     write(lulog,*) 'me_list_uptodate: considering: ',
      &     trim(op_info%mel_arr(idx)%mel%label),' time mark',time_res
 
       if (time_res.lt.0) then
@@ -51,7 +51,7 @@
         irec = op_info%mel_arr(jdx)%mel%fhand%current_record
 
         if (ntest.ge.100)
-     &     write(luout,*) ' comparing: ',
+     &     write(lulog,*) ' comparing: ',
      &     trim(op_info%mel_arr(jdx)%mel%label),' time mark',
      &       op_info%mel_arr(jdx)%mel%fhand%last_mod(irec)
 
@@ -66,7 +66,7 @@ c     &        trim(op_info%mel_arr(jdx)%mel%label))
         if (.not.uptodate) exit
       end do
 
-      if (ntest.ge.100) write(luout,*) ' -> uptodate: ',uptodate
+      if (ntest.ge.100) write(lulog,*) ' -> uptodate: ',uptodate
 
       me_list_uptodate = uptodate
 

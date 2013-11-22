@@ -45,10 +45,10 @@
 
 
       if (ntest.gt.0) then
-        write(luout,*) '----------------------'
-        write(luout,*) ' info from next_tupel'
-        write(luout,*) '----------------------'
-        write(luout,*) ' nidx = ',nidx
+        write(lulog,*) '----------------------'
+        write(lulog,*) ' info from next_tupel'
+        write(lulog,*) '----------------------'
+        write(lulog,*) ' nidx = ',nidx
       end if
 
       ! set offset array
@@ -126,11 +126,11 @@
 
         if (ntest.ge.100) then
           if (succ) then
-            write(luout,*) 'first string: ',idorb(1:nidx)
-            write(luout,*) '              ',idspn(1:nidx)
-            write(luout,*) '              ',idss(1:nidx)
+            write(lulog,*) 'first string: ',idorb(1:nidx)
+            write(lulog,*) '              ',idspn(1:nidx)
+            write(lulog,*) '              ',idss(1:nidx)
           else
-            write(luout,*) 'no string exists'
+            write(lulog,*) 'no string exists'
           end if
         end if
 
@@ -141,9 +141,9 @@
         if (nidx.eq.0) return
 
         if (ntest.ge.100) then
-          write(luout,*) ' input string:',idorb(1:nidx)
-          write(luout,*) '              ',idspn(1:nidx)
-          write(luout,*) '              ',idss(1:nidx)
+          write(lulog,*) ' input string:',idorb(1:nidx)
+          write(lulog,*) '              ',idspn(1:nidx)
+          write(lulog,*) '              ',idss(1:nidx)
         end if
 
         ihpv_loop2: do ihpvdx = 1, ngastp
@@ -225,11 +225,11 @@
 
         if (ntest.ge.100) then
           if (succ) then
-            write(luout,*) ' next string: ',idorb(1:nidx)
-            write(luout,*) '              ',idspn(1:nidx)
-            write(luout,*) '              ',idss(1:nidx)
+            write(lulog,*) ' next string: ',idorb(1:nidx)
+            write(lulog,*) '              ',idspn(1:nidx)
+            write(lulog,*) '              ',idss(1:nidx)
           else
-            write(luout,*) ' no further string exists'
+            write(lulog,*) ' no further string exists'
           end if
         end if
 

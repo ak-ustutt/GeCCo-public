@@ -48,9 +48,9 @@
      &     idx_oplist2, iblk_occ
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'form_op_replace')
-        write(luout,*) 'opin:  "',trim(opin),'"'
-        write(luout,*) 'opout: "',trim(opout),'"'
+        call write_title(lulog,wst_dbg_subr,'form_op_replace')
+        write(lulog,*) 'opin:  "',trim(opin),'"'
+        write(lulog,*) 'opout: "',trim(opout),'"'
       end if
 
 
@@ -58,8 +58,8 @@
       idxin = idx_oplist2(trim(opin),op_info)
       idxout = idx_oplist2(trim(opout),op_info)
       if (idxin.le.0.or.idxout.le.0) then
-        write(luout,*) 'opin:  "',trim(opin) ,'" -> ',idxin
-        write(luout,*) 'opout: "',trim(opout),'" -> ',idxout
+        write(lulog,*) 'opin:  "',trim(opin) ,'" -> ',idxin
+        write(lulog,*) 'opout: "',trim(opout),'" -> ',idxout
         call quit(1,'form_op_replace','error')
       end if
         
@@ -84,13 +84,13 @@
         ! Navigate to the correct parts of the formula.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.100) write(luout,*) '[END]'
+          if(ntest.ge.100) write(lulog,*) '[END]'
         case(command_set_target_init)
           if(ntest.ge.100)
-     &         write(luout,*) '[INIT TARGET]',form_pnt%target
+     &         write(lulog,*) '[INIT TARGET]',form_pnt%target
         case(command_add_contribution)
           ! The necessary contractions are here.
-c          write(luout,*) '[ADD]'
+c          write(lulog,*) '[ADD]'
 
           change = .false.
           remove = .false.
@@ -120,8 +120,8 @@ c          write(luout,*) '[ADD]'
      &                        opin_pnt%blk_version(idx_form_blk))
 
                 if (idx_blk_out.le.0.and.strict) then
-                  write(luout,*) trim(opin),' block no. ', idx_form_blk
-                  call wrt_occ(luout,occ_temp)
+                  write(lulog,*) trim(opin),' block no. ', idx_form_blk
+                  call wrt_occ(lulog,occ_temp)
                   call quit(1,'form_op_replace',
      &                 'There is no block of '//trim(opout)//
      &                 ' that corresponds to the present block of '//
@@ -212,14 +212,14 @@ c          write(luout,*) '[ADD]'
             deallocate(ivtx_reo,fix_vtx,occ_vtx)
           
             if(ntest.ge.100.and.change)then
-              write(luout,*) 'Operator-replaced contraction'
-              call prt_contr2(luout,form_pnt%contr,op_info)
+              write(lulog,*) 'Operator-replaced contraction'
+              call prt_contr2(lulog,form_pnt%contr,op_info)
             endif
 
           end if ! .not.remove
 
         case default
-          write(luout,*) 'command = ',form_pnt%command
+          write(lulog,*) 'command = ',form_pnt%command
           call quit(1,'form_op_replace','command undefined here')
         end select
 

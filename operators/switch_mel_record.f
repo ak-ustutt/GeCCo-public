@@ -24,13 +24,13 @@
 
       if (rec.lt.ffop%active_records(1).or.
      &    rec.gt.ffop%active_records(2)) then
-        write(luout,*) 'list, operator, file: ',
+        write(lulog,*) 'list, operator, file: ',
      &       trim(mel%label),
      &       trim(mel%op%name),
      &       trim(ffop%name)
-        write(luout,*) 'bounds:  ',
+        write(lulog,*) 'bounds:  ',
      &       ffop%active_records(1:2)
-        write(luout,*) 'request: ',rec
+        write(lulog,*) 'request: ',rec
         call quit(1,'switch_mel_record',
      &       'requested record out of bounds')
       end if

@@ -99,7 +99,8 @@
       
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'fs_contr_drv at work')
+        call write_title(lulog,wst_dbg_subr,'fs_contr_drv at work')
+        write(lulog,*) 'update, add, reo: ',update, add, reo
       end if
 
       ngas = orb_info%ngas
@@ -114,8 +115,8 @@
       n_cnt = bc_info%n_cnt
       
       if (bc_info%n_operands.gt.2.or.bc_info%n_cnt.eq.0) then
-        write(luout,*) '[CONTR]: something is wrong:'
-        call prt_bcontr(luout,bc_info)
+        write(lulog,*) '[CONTR]: something is wrong:'
+        call prt_bcontr(lulog,bc_info)
         call quit(1,'fs_contr_drv','something is wrong')
       end if
       self = bc_info%n_operands.eq.1
@@ -123,9 +124,9 @@
 
       idx_res = idx_oplist2(bc_info%label_res,op_info)
       if (update.and.idx_res.ne.idx_tgt) then
-        write(luout,*) 'formula target: ',
+        write(lulog,*) 'formula target: ',
      &       trim(op_info%op_arr(idx_tgt)%op%name)
-        write(luout,*) '[CONTR] result: ',trim(bc_info%label_res)
+        write(lulog,*) '[CONTR] result: ',trim(bc_info%label_res)
         call quit(1,'fs_contr_drv','inconsistency: target<>result')
       end if
 
@@ -213,9 +214,9 @@
 
       fact = bc_info%fact
 
+      call init_reo_info(reo_info)
       if (reo) then
         allocate(op_tmp,me_tmp)
-        call init_reo_info(reo_info)
         call interface_reo_info(reo_info,reo_inf0,
      &       str_info,orb_info)
         iocc_tmp => reo_inf0%occ_opin
@@ -225,7 +226,7 @@
         iocc_res => reo_inf0%occ_opout
         irst_res => reo_inf0%rst_opout
         if (reo_inf0%nj_out.ne.nj_res) then
-          write(luout,*) reo_inf0%nj_out,nj_res
+          write(lulog,*) reo_inf0%nj_out,nj_res
           call quit(1,'fs_contr_drv','reo_inf0%nj_out.ne.nj_res!')
         end if
         call set_ps_op(op_tmp,'_OP_TMP',
@@ -259,7 +260,7 @@
       if (ffop%unit.le.0) call file_open(ffop)
 
       if (ntest.ge.100)
-     &         write(luout,*) 'calling contraction kernel'
+     &         write(lulog,*) 'calling contraction kernel'
           ! do the contraction
       call contr_op1op2(fact,1d0,
      &       add,self,xret_pnt,type_xret_loc,
@@ -278,7 +279,7 @@
      &       reo_info,
      &       str_info,strmap_info,orb_info)
       if (ntest.ge.100)
-     &         write(luout,*) 'returned from contraction kernel'
+     &         write(lulog,*) 'returned from contraction kernel'
 
       if (self) deallocate(iocc_op2,irst_op2,iocc_ex2)
 

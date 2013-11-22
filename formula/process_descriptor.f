@@ -39,16 +39,16 @@
      &     advance_word_list_entry
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,i_am)
-        write(luout,*) 'string: "',trim(dstring),'"'
+        call write_title(lulog,wst_dbg_subr,i_am)
+        write(lulog,*) 'string: "',trim(dstring),'"'
       end if
 
       call init_word_list(wlist)
       call lex_line(wlist,dstring,0,' ,',' ','"')
 
       if (ntest.ge.100) then
-        write(luout,*) 'lex''ed string:'
-        call print_word_list(luout,wlist)
+        write(lulog,*) 'lex''ed string:'
+        call print_word_list(lulog,wlist)
       end if
 
       call reset_word_list_pointer(wlist)

@@ -101,7 +101,7 @@ c dbgend
       logical, external ::
      &     iocc_equal_n
 
-      if (ntest.ge.100) write(luout,*) 'entered mult_trafmats'
+      if (ntest.ge.100) write(lulog,*) 'entered mult_trafmats'
       call get_argument_value('method.MR','project',ival=project)
       call get_argument_value('method.MR','GNO',ival=gno)
       sgrm = project.eq.1.and.gno.eq.0 ! only diagonal blocks in mel_inp
@@ -142,7 +142,7 @@ c dbgend
         call get_vec(ffinp,buffer_in,1,nbuff_in)
       else
         if(ntest.ge.100)
-     &       write(luout,*)'mult_trafmats: input not incore'
+     &       write(lulog,*)'mult_trafmats: input not incore'
         buffer_in => ffinp%buffer(1:)
       endif
 
@@ -157,7 +157,7 @@ c dbgend
         call get_vec(ffinv,buffer_2,1,nbuff)
       else
         if(ntest.ge.100)
-     &       write(luout,*)'mult_trafmats: output not incore'
+     &       write(lulog,*)'mult_trafmats: output not incore'
         buffer_2 => ffinv%buffer(1:)
       endif
 
@@ -173,7 +173,7 @@ c dbgend
         iocc_inp => op_inp%ihpvca_occ(1:ngastp,1:2,
      &                       iblkoff+1:iblkoff+njoined)
 
-        if (ntest.ge.10) write(luout,*) 'current occ_cls: ',iocc_cls
+        if (ntest.ge.10) write(lulog,*) 'current occ_cls: ',iocc_cls
         ! only one element? easy!
         ! (also regularization is never needed in this case)
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
@@ -191,7 +191,7 @@ c dbgend
             if (iocc_cls2.eq.nocc_cls2)
      &         call quit(1,'mult_trafmats','1) No corresponding block!')
           end do
-          if (ntest.ge.10) write(luout,*)
+          if (ntest.ge.10) write(lulog,*)
      &       'corresponding block:',iocc_cls2
           ioff2 = mel_inv%off_op_gmo(iocc_cls2)%gam_ms(1,1)
           buffer_in(ioff+1) = buffer_in(ioff+1) * buffer_2(ioff2+1)
@@ -243,7 +243,7 @@ c dbgend
             end if
           end do
           if (transp.and.ntest.ge.100) then
-            write(luout,*) 'Using transposed scratch matrix!'
+            write(lulog,*) 'Using transposed scratch matrix!'
           end if
 
           ! find corresponding block
@@ -256,7 +256,7 @@ c dbgend
             if (iocc_cls2.eq.nocc_cls2)
      &         call quit(1,'mult_trafmats','2) No corresponding block!')
           end do
-          if (ntest.ge.10) write(luout,*)
+          if (ntest.ge.10) write(lulog,*)
      &       'corresponding block:',iocc_cls2
 
           ! Loop over Ms of annihilator string.
@@ -284,10 +284,10 @@ c dbgend
               if (ndim.eq.0) cycle igama_loop
 
               if (ntest.ge.10)
-     &           write(luout,'(a,3i8)') 'msa, gama, ndim:',msa,igama,
+     &           write(lulog,'(a,3i8)') 'msa, gama, ndim:',msa,igama,
      &           ndim
               if (ntest.ge.100)
-     &           write(luout,*) ' len = ',
+     &           write(lulog,*) ' len = ',
      &             mel_inp%len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa),
      &             ' ndis = ',ndis
 
@@ -313,9 +313,9 @@ c dbgend
               end if
 
               if (ntest.ge.100) then
-                write(luout,*) 'trafo matrix 1:'
+                write(lulog,*) 'trafo matrix 1:'
                 call wrtmat2(scratch3,ndim,ndim,ndim,ndim)
-                write(luout,*) 'trafo matrix 2:'
+                write(lulog,*) 'trafo matrix 2:'
                 call wrtmat2(scratch2,ndim,ndim,ndim,ndim)
               end if
 
@@ -328,7 +328,7 @@ c dbgend
               deallocate(scratch2,scratch3)
 
               if (ntest.ge.100) then
-                write(luout,*) 'product of trafo matrices:'
+                write(lulog,*) 'product of trafo matrices:'
                 call wrtmat2(scratch,ndim,ndim,ndim,ndim)
               end if
 
@@ -537,9 +537,9 @@ c dbgend
           end if
 
           if (ntest.ge.10)
-     &       write(luout,'(a,3i8)') 'ms1, igam, ndim:',ms1,igam,ndim
+     &       write(lulog,'(a,3i8)') 'ms1, igam, ndim:',ms1,igam,ndim
           if (ntest.ge.100)
-     &       write(luout,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
+     &       write(lulog,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
 
           allocate(scratch3(ndim,ndim),scratch2(ndim,ndim))
           scratch3 = 0d0
@@ -599,7 +599,7 @@ c dbgend
      &             call quit(1,'mult_trafmats',
      &                       '3) No corresponding block!')
               end do
-              if (ntest.ge.10) write(luout,*)
+              if (ntest.ge.10) write(lulog,*)
      &           'corresponding block:',iocc_cls2
             end if
 
@@ -729,11 +729,11 @@ c dbgend
      &                 d_gam_ms(idxdis,igama,idxmsa)
 
 c dbg
-c                write(luout,'(a,4i4)') 'ms  : ',msa1,msc1,msa2,msc2
-c                write(luout,'(a,4i4)') 'gam : ',gama1,gamc1,gama2,gamc2
-c                write(luout,'(a,2i4)') 'msa, igama: ',msa,igama
-c                write(luout,'(a,2i4)') 'dist, len: ',idxdis, lenca
-c                write(luout,'(a,2i4)') 'off_line/col: ',off_line,off_col
+c                write(lulog,'(a,4i4)') 'ms  : ',msa1,msc1,msa2,msc2
+c                write(lulog,'(a,4i4)') 'gam : ',gama1,gamc1,gama2,gamc2
+c                write(lulog,'(a,2i4)') 'msa, igama: ',msa,igama
+c                write(lulog,'(a,2i4)') 'dist, len: ',idxdis, lenca
+c                write(lulog,'(a,2i4)') 'off_line/col: ',off_line,off_col
 c                print *,'len1: ',len_str(1)*len_str(3)
 c dbgend
 
@@ -816,9 +816,9 @@ c dbgend
           ! |        |*|        | = |              |
           ! \ X12 X1 / \ 0   Z1 /   \ X12*Z2 X1*Z1 /
           if (ntest.ge.100) then
-            write(luout,*) 'trafo matrix 1:'
+            write(lulog,*) 'trafo matrix 1:'
             call wrtmat2(scratch3,ndim,ndim,ndim,ndim)
-            write(luout,*) 'trafo matrix 2:'
+            write(lulog,*) 'trafo matrix 2:'
             call wrtmat2(scratch2,ndim,ndim,ndim,ndim)
           end if
 
@@ -830,7 +830,7 @@ c dbgend
           deallocate(scratch2,scratch3)
 
           if (ntest.ge.100) then
-            write(luout,*) 'product of trafo matrices:'
+            write(lulog,*) 'product of trafo matrices:'
             call wrtmat2(scratch,ndim,ndim,ndim,ndim)
           end if
 

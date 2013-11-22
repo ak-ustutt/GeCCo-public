@@ -180,7 +180,7 @@ c              ioff = op%off_op_gmo(iblk)%gam_ms(igam,idxms)
             end if
 
 c dbg
-c              write(luout,'(2x,a,i3,a,i2,a,i12)')
+c              write(lulog,'(2x,a,i3,a,i2,a,i12)')
 c     &           'Ms(A) = ',ms,'/2  IRREP(A) = ',igam,'  len = ',lenblk
 c dbg
 

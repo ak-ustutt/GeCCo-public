@@ -56,7 +56,7 @@
       ifree = mem_setmark('evaluate2')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'entered evaluate2')
+        call write_title(lulog,wst_dbg_subr,'entered evaluate2')
       end if
 
       ! set dependency info for submitted formula list
@@ -70,19 +70,19 @@
      &            init,force,op_info,str_info,strmap_info,orb_info)
 
       if (iprlvl.ge.20) then
-        call write_title(luout,wst_title,
+        call write_title(lulog,wst_title,
      &       'norms/values of output operators')
         do iout = 1, nout
-          write(luout,'(">>>",1x,i4," --> ",g20.14)') iout, xret(iout)
+          write(lulog,'(">>>",1x,i4," --> ",g20.14)') iout, xret(iout)
         end do
       end if
 
       if (ntest.ge.1000) then
         do iout = 1, nout
           idx = depend%idxlist(iout)
-          write(luout,*) 'dump of result for ',
+          write(lulog,*) 'dump of result for ',
      &         trim(op_info%mel_arr(idx)%mel%label)
-          call wrt_mel_file(luout,5,
+          call wrt_mel_file(lulog,5,
      &       op_info%mel_arr(idx)%mel,
      &       1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
      &       str_info,orb_info)

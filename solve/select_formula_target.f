@@ -33,10 +33,10 @@
      &     idxlist, idx_mel_list
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'select_formula_target')
-        write(luout,*) 'label: ',trim(label)
-        write(luout,*) 'nselect on input:   ',nselect
-        write(luout,*) 'idxselect on input: ',idxselect(1:nselect)
+        call write_title(lulog,wst_dbg_subr,'select_formula_target')
+        write(lulog,*) 'label: ',trim(label)
+        write(lulog,*) 'nselect on input:   ',nselect
+        write(lulog,*) 'idxselect on input: ',idxselect(1:nselect)
       end if
 
       idxmel = idx_mel_list(label,op_info)
@@ -75,8 +75,8 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'nselect on output:   ',nselect
-        write(luout,*) 'idxselect on output: ',idxselect(1:nselect)
+        write(lulog,*) 'nselect on output:   ',nselect
+        write(lulog,*) 'idxselect on output: ',idxselect(1:nselect)
       end if
 
       return

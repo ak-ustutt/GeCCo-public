@@ -37,7 +37,7 @@
      &     wrk,lwrk,info)
 
       if (info.ne.0) then
-        write(luout,*) 'WARNING: SVD seems to be in trouble'
+        write(lulog,*) 'WARNING: SVD seems to be in trouble'
       end if
 
       do idx = 1, ndim

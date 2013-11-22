@@ -90,13 +90,13 @@
      &      opti_info%update_prc.gt.0.and.
      &      mod(imacit,max(opti_info%update_prc,1)).eq.0)
       else if (opti_info%optref.ne.0.and.iprlvl.ge.10) then
-        write(luout,*) ' Metric is already up to date!'
+        write(lulog,*) ' Metric is already up to date!'
       end if
 
 c dbg
 c      call vec_from_da(me_dia%fhand,1,xbuf1,nwfpar)
 c      print *,'Preconditioner:'
-c      call wrt_mel_buf(luout,5,xbuf1,me_dia,1,
+c      call wrt_mel_buf(lulog,5,xbuf1,me_dia,1,
 c     &     me_dia%op%n_occ_cls,
 c     &     str_info,orb_info)
 c dbgend
@@ -109,12 +109,12 @@ c dbgend
 
 c dbg
 c      call vec_from_da(me_grd%fhand,1,xbuf1,nwfpar)
-c        write(luout,*) 'untransformed gradient vector:'
-c        write(luout,*) xbuf1(1:nwfpar)
+c        write(lulog,*) 'untransformed gradient vector:'
+c        write(lulog,*) xbuf1(1:nwfpar)
 c dbg
 
       ! apply sign-fix
-c      write(luout,*) 'Fixing sign of residual for iopt =',iopt
+c      write(lulog,*) 'Fixing sign of residual for iopt =',iopt
       call optc_fix_signs2(me_grd%fhand,1,
      &                    opti_info,iopt,
      &                    nwfpar,xbuf1)
@@ -139,9 +139,9 @@ c      write(luout,*) 'Fixing sign of residual for iopt =',iopt
       call vec_from_da(ffdia,1,xbuf2,nwfpar)
 
       if (ntest.ge.100) then
-        write(luout,*) 'transformed gradient vector:'
-c        write(luout,*) xbuf1(1:nwfpar)
-        call wrt_mel_buf(luout,5,xbuf1,me_special(1)%mel,1,
+        write(lulog,*) 'transformed gradient vector:'
+c        write(lulog,*) xbuf1(1:nwfpar)
+        call wrt_mel_buf(lulog,5,xbuf1,me_special(1)%mel,1,
      &       me_special(1)%mel%op%n_occ_cls,
      &       str_info,orb_info)
       end if
@@ -153,7 +153,7 @@ c        write(luout,*) xbuf1(1:nwfpar)
       if (prc_iter.ge.1) then
         call assign_me_list(me_special(nspecial)%mel%label,
      &                      me_special(nspecial)%mel%op%name,op_info)
-        write(luout,'(a,i4,a)') 'Trying to improve preconditioner in',
+        write(lulog,'(a,i4,a)') 'Trying to improve preconditioner in',
      &                 prc_iter,' iteration(s)'
       end if
       call prc_iterimp_rec(prc_iter,prc_iter,prc_impfac,
@@ -163,9 +163,9 @@ c        write(luout,*) xbuf1(1:nwfpar)
      &                     orb_info,op_info,str_info,strmap_info)
 
       if (ntest.ge.100) then
-        write(luout,*) 'preconditioned gradient vector:'
-c        write(luout,*) xbuf1(1:nwfpar)
-        call wrt_mel_buf(luout,5,xbuf1,me_special(1)%mel,1,
+        write(lulog,*) 'preconditioned gradient vector:'
+c        write(lulog,*) xbuf1(1:nwfpar)
+        call wrt_mel_buf(lulog,5,xbuf1,me_special(1)%mel,1,
      &       me_special(1)%mel%op%n_occ_cls,
      &       str_info,orb_info)
       end if
@@ -200,9 +200,9 @@ c      call vec_to_da(ffamp,1,xbuf2,nwfpar)
 c dbgend
 
       if (ntest.ge.100) then
-        write(luout,*) 'gradient vector afterwards:'
-        write(luout,*) xbuf1(1:nwfpar)
-c      call wrt_mel_buf(luout,5,xbuf1,me_amp,1,
+        write(lulog,*) 'gradient vector afterwards:'
+        write(lulog,*) xbuf1(1:nwfpar)
+c      call wrt_mel_buf(lulog,5,xbuf1,me_amp,1,
 c     &     me_amp%op%n_occ_cls,
 c     &     str_info,orb_info)
       end if

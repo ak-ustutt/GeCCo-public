@@ -69,10 +69,10 @@
       ffop => oplist%fhand
 
       if(ntest.ge.100)then
-        write(luout,*)'=================='
-        write(luout,*)'Import-r12-dalton '
-        write(luout,*)'=================='
-        write(luout,*)'Operator-list: ',trim(oplist%label)
+        write(lulog,*)'=================='
+        write(lulog,*)'Import-r12-dalton '
+        write(lulog,*)'=================='
+        write(lulog,*)'Operator-list: ',trim(oplist%label)
       endif
 
       call atim_csw(cpu0,sys0,wall0)
@@ -162,8 +162,8 @@ c        read(unit=lu2in,fmt=1000,end=999,err=998)ip,iq,ir,is,int
 c dbg
 c        if(mode.eq.1)then
 c          if(ip.eq.3.and.iq.eq.1.and.ir.eq.2.and.is.eq.1)then
-c            write(luout,*)'testing'
-c            write(luout,*)int
+c            write(lulog,*)'testing'
+c            write(lulog,*)int
 c          endif
 c        endif
 c dbg
@@ -206,9 +206,9 @@ c     &         iad_gas(idss(3)).ne.2.or.iad_gas(idss(4)).ne.2) cycle
 c dbg
 c          if(mode.eq.1)then
 c            if(ip.eq.3.and.iq.eq.1.and.ir.eq.2.and.is.eq.1)then
-c              write(luout,*)'testing 2'
-c              write(luout,*)index(1:4)
-c              write(luout,*)int
+c              write(lulog,*)'testing 2'
+c              write(lulog,*)index(1:4)
+c              write(lulog,*)int
 c            endif
 c          endif
 c dbg
@@ -223,7 +223,7 @@ c dbg
 c          if(mode.eq.1)then
 c            if(index(1).eq.8.and.index(2).eq.2.and.index(3).eq.2
 c     &           .and.index(4).eq.2)then
-c              write(luout,*)'nstr = ',nstr,error
+c              write(lulog,*)'nstr = ',nstr,error
 c            endif
 c          endif
 c dbg
@@ -262,7 +262,7 @@ c dbg
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.5) 
-     &     call prtim(luout,'time in 2int import',
+     &     call prtim(lulog,'time in 2int import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

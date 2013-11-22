@@ -45,7 +45,7 @@
       do idx = 1, nlist
         do jdx = 1, idx-1
           if (vtx_list(jdx).ge.vtx_list(idx)) then
-            write(luout,*) '>',vtx_list(1:nlist)
+            write(lulog,*) '>',vtx_list(1:nlist)
             call quit(1,'topo_approach_vtxs',
      &           'a unique, ascending list was expected')
 
@@ -68,7 +68,7 @@ c dbg
       ! if vertices lie in between ...
 c dbg
 c        print *,'(1) ivtxr, ivtxrp1: ',ivtxr,ivtxrp1
-c        call prt_contr_p(luout,svertex,vtx,topo,
+c        call prt_contr_p(lulog,svertex,vtx,topo,
 c     &       xlines,nvtx,nj)
 c dbg
       if (ivtxrp1-ivtxr.gt.1) then
@@ -86,7 +86,7 @@ c dbg
       ivtxr = ireo(vtx_list(1))
 c dbg
 c        print *,'(2) ivtxr, ivtxrp1: ',ivtxr,ivtxrp1
-c        call prt_contr_p(luout,svertex,vtx,topo,
+c        call prt_contr_p(lulog,svertex,vtx,topo,
 c     &       xlines,nvtx,nj)
 c dbg
       ! if still someone stands between us: push that vertex 
@@ -103,7 +103,7 @@ c dbg
       end if
 c dbg
 c        print *,'(3)'
-c        call prt_contr_p(luout,svertex,vtx,topo,
+c        call prt_contr_p(lulog,svertex,vtx,topo,
 c     &       xlines,nvtx,nj)
 c dbg
 
@@ -114,7 +114,7 @@ c dbg
         ivtxrm1 = ireo(vtx_list(idx-1))
 c dbg
 c        print *,'(4) ivtxr, ivtxrp1, ivtxrm1 ',ivtxr,ivtxrp1,ivtxrm1
-c        call prt_contr_p(luout,svertex,vtx,topo,
+c        call prt_contr_p(lulog,svertex,vtx,topo,
 c     &       xlines,nvtx,nj)
 c dbg
         ! pushing up only, if upper vertex was separated anyway
@@ -131,7 +131,7 @@ c dbg
         ivtxr = ireo(vtx_list(idx)) ! update
 c dbg
 c        print *,'(5) ivtxr, ivtxrp1, ivtxrm1 ',ivtxr,ivtxrp1,ivtxrm1
-c        call prt_contr_p(luout,svertex,vtx,topo,
+c        call prt_contr_p(lulog,svertex,vtx,topo,
 c     &       xlines,nvtx,nj)
 c dbg
         ! else we try pushing down ...

@@ -53,15 +53,15 @@ c dbg
       iprint = max(ntest,iprlvl)
 
       if (ntest.ge.50) then
-        write(luout,*) '========================='
-        write(luout,*) ' Weight array generation'
-        write(luout,*) '========================='
-        write(luout,*)
-        write(luout,*) ' Number of particles/holes: ', nelmax
-        write(luout,*) ' Number of orbital spaces:  ', nspc
-        write(luout,*) ' Number of orbitals:        ', norb
+        write(lulog,*) '========================='
+        write(lulog,*) ' Weight array generation'
+        write(lulog,*) '========================='
+        write(lulog,*)
+        write(lulog,*) ' Number of particles/holes: ', nelmax
+        write(lulog,*) ' Number of orbital spaces:  ', nspc
+        write(lulog,*) ' Number of orbitals:        ', norb
       end if
-      if (ntest.gt.50) write(luout,*) ' pass = ',ipass
+      if (ntest.gt.50) write(lulog,*) ' pass = ',ipass
 
       msmax = nelmax
 
@@ -71,15 +71,15 @@ c dbg
       ndis = iwssg(nelmax,nspc)
 
       if (ndis.le.0) then
-        write(luout,*) 'found zero distributions (or less?)'
-        write(luout,*) ' number of electrons: ',nelmax
-        write(luout,*) ' check restriction array: '
-        write(luout,'(x,10(2i3,x))') mnmxspc(1:2,1:nspc)
+        write(lulog,*) 'found zero distributions (or less?)'
+        write(lulog,*) ' number of electrons: ',nelmax
+        write(lulog,*) ' check restriction array: '
+        write(lulog,'(x,10(2i3,x))') mnmxspc(1:2,1:nspc)
         call quit(1,'weight_gen','ndis.le.0')
       end if
 
       if (iprint.ge.50) then
-        write(luout,*) ' Number of subspace distributions: ', ndis
+        write(lulog,*) ' Number of subspace distributions: ', ndis
       end if
 
       ! index of first arc weight array
@@ -106,21 +106,21 @@ c dbg
         nelmax_spc = mnmxspc(2,ispc)
 
         if (ntest.ge.100) then
-          write(luout,*) '===================================='
-          write(luout,*) 'now in subspace: ',ispc
-          write(luout,*) ' #orbitals: ',norb_spc
-          write(luout,*) ' offset:    ',idx_spc
-          write(luout,*) ' max #elec.:',nelmax_spc
-          write(luout,*) '===================================='
+          write(lulog,*) '===================================='
+          write(lulog,*) 'now in subspace: ',ispc
+          write(lulog,*) ' #orbitals: ',norb_spc
+          write(lulog,*) ' offset:    ',idx_spc
+          write(lulog,*) ' max #elec.:',nelmax_spc
+          write(lulog,*) '===================================='
         end if
 c dbg
 c        if (ipass.eq.2) then
 c          print *,'>>>>>> watch at top of ispc-loop'
-c        write(luout,*) 'lengths per dis, IRREP, Ms'
+c        write(lulog,*) 'lengths per dis, IRREP, Ms'
 c        idxww=1
 c        do imss = 1, msmax+1
-c          write(luout,*) 'ms = ',-msmax+2*(imss-1)
-c          write(luout,*) ' row: distrib, col: IRREP'
+c          write(lulog,*) 'ms = ',-msmax+2*(imss-1)
+c          write(lulog,*) ' row: distrib, col: IRREP'
 c          call iwrtma(lenstr(idxww),ndis,ngam,ndis,ngam)
 c          idxww = idxww+ndis*ngam
 c        end do
@@ -145,7 +145,7 @@ c dbg
         ssd_loop: do
           nel_left = nelmax-nel_prev
           if (ntest.ge.100) 
-     &        write(luout,*) 'ssd_loop: nel_left = ',nel_left
+     &        write(lulog,*) 'ssd_loop: nel_left = ',nel_left
           if (nel_left.le.0) exit ssd_loop
 
           nel_psg = 0
@@ -177,12 +177,12 @@ c dbg
           end if
 
           if (ntest.ge.100) then
-            write(luout,*) '-------------------------------------------'
-            write(luout,*) 'current subspace, ssg: ',ispc, idx_csg
-            write(luout,*) 'previous ssg: ',idx_psg, nel_psg
-            write(luout,*) 'info on ssd: nel_prev = ',nel_prev
-            write(luout,*) '    idss: ',idss(1:nel_prev)
-            write(luout,*) '-------------------------------------------'
+            write(lulog,*) '-------------------------------------------'
+            write(lulog,*) 'current subspace, ssg: ',ispc, idx_csg
+            write(lulog,*) 'previous ssg: ',idx_psg, nel_psg
+            write(lulog,*) 'info on ssd: nel_prev = ',nel_prev
+            write(lulog,*) '    idss: ',idss(1:nel_prev)
+            write(lulog,*) '-------------------------------------------'
           end if
 
           ! set ientry (info from previous subspace graph)
@@ -201,7 +201,7 @@ c dbg
           end if
 
           if (ntest.ge.100.and.ipass.eq.2) then
-            write(luout,*) 'ientry set to:'
+            write(lulog,*) 'ientry set to:'
             call iwrtma(ientry,2*msmax+1,ngam,2*msmax+1,ngam)
           end if
 
@@ -225,8 +225,8 @@ c dbg
           len_info=len_info+1
 
           if (ntest.ge.100) then
-            write(luout,*) 'current y length: ',leny
-            write(luout,*) 'current w length: ',lenw
+            write(lulog,*) 'current y length: ',leny
+            write(lulog,*) 'current w length: ',lenw
           end if
 
           ! complete subspace distribution; get index
@@ -254,11 +254,11 @@ c dbg
 c dbg
 c           if (ipass.eq.2) then
 c          print *,'>>>>>> watch at bot of ssd_loop'
-c        write(luout,*) 'lengths per dis, IRREP, Ms'
+c        write(lulog,*) 'lengths per dis, IRREP, Ms'
 c        idxww=1
 c        do imss = 1, msmax+1
-c          write(luout,*) 'ms = ',-msmax+2*(imss-1)
-c          write(luout,*) ' row: distrib, col: IRREP'
+c          write(lulog,*) 'ms = ',-msmax+2*(imss-1)
+c          write(lulog,*) ' row: distrib, col: IRREP'
 c          call iwrtma(lenstr(idxww),ndis,ngam,ndis,ngam)
 c          idxww = idxww+ndis*ngam
 c        end do
@@ -274,17 +274,17 @@ c dbg
       end do
 
       if (iprint.ge.5.and.ipass.eq.1) then
-        write(luout,'(x,a,i10,a,f6.2,a)')
+        write(lulog,'(x,a,i10,a,f6.2,a)')
      &       'Memory for current weight array: ',len_y4sg_total,
      &       ' words (=',dble(len_y4sg_total)*8d0/(1024d0**2),' Mb)'
       end if
       if (ntest.ge.100) then
-        write(luout,*) 'len_y4sg_total = ',len_y4sg_total
-        write(luout,*) 'len_w4sg_max = ',len_w4sg_max
-        write(luout,*) 'len_info = ',len_info
-        write(luout,*) 'len_wexit = ',len_wexit
-        write(luout,*) 'ndis = ',ndis
-        write(luout,*) 'norb = ',norb
+        write(lulog,*) 'len_y4sg_total = ',len_y4sg_total
+        write(lulog,*) 'len_w4sg_max = ',len_w4sg_max
+        write(lulog,*) 'len_info = ',len_info
+        write(lulog,*) 'len_wexit = ',len_wexit
+        write(lulog,*) 'ndis = ',ndis
+        write(lulog,*) 'norb = ',norb
       end if
 
       ! exception: empty space
@@ -293,20 +293,20 @@ c dbg
       end if
 
       if (ipass.eq.2.and.(iprint.ge.20.or.ntest.ge.100)) then
-        write(luout,*) 'lengths per dis, IRREP, Ms'
+        write(lulog,*) 'lengths per dis, IRREP, Ms'
         idxw=1
         do ims = 1, msmax+1
-          write(luout,*) 'ms = ',-msmax+2*(ims-1)
-          write(luout,*) ' row: distrib, col: IRREP'
+          write(lulog,*) 'ms = ',-msmax+2*(ims-1)
+          write(lulog,*) ' row: distrib, col: IRREP'
           call iwrtma(lenstr(idxw),ndis,ngam,ndis,ngam)
           idxw = idxw+ndis*ngam
         end do
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) '==================='
-        write(luout,*) ' end of weight_gen'
-        write(luout,*) '==================='        
+        write(lulog,*) '==================='
+        write(lulog,*) ' end of weight_gen'
+        write(lulog,*) '==================='        
       end if
 
       end

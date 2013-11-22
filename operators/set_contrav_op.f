@@ -38,7 +38,7 @@
      &     hpvxgas(:,:), ngas, nspin
 
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,
+     &     call write_title(lulog,wst_dbg_subr,
      &     'set_contrav_op speaking')
       
       nspin => orb_info%nspin
@@ -76,7 +76,7 @@
       if (add_after ) njoined_contra = njoined_contra + 1
 
       if (ntest.ge.100)
-     &     write(luout,*) 'njoined_contra = ',njoined_contra
+     &     write(lulog,*) 'njoined_contra = ',njoined_contra
 
       op_contra%njoined = njoined_contra
 
@@ -162,13 +162,13 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'New intermediate: ',trim(op_contra%name)
-        write(luout,*) 'generated ',op_contra%n_occ_cls,' blocks'
+        write(lulog,*) 'New intermediate: ',trim(op_contra%name)
+        write(lulog,*) 'generated ',op_contra%n_occ_cls,' blocks'
         idx = 0
         do iblk = 1, op_contra%n_occ_cls
           do ijoin = 1, op_contra%njoined
             idx = idx+1
-            call wrt_occ_rstr(luout,iblk,
+            call wrt_occ_rstr(lulog,iblk,
      &           op_contra%ihpvca_occ(1,1,idx),
      &           op_contra%igasca_restr(1,1,1,1,1,idx),ngas,nspin)
           end do

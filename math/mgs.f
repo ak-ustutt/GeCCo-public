@@ -37,8 +37,8 @@
      &     ddot
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'mgs')
-        write(luout,*) 'overlap-matrix:'
+        call write_title(lulog,wst_dbg_subr,'mgs')
+        write(lulog,*) 'overlap-matrix:'
         call wrtmat2(smat,ndim,ndim,ndim,ndim)
       end if
 
@@ -72,14 +72,14 @@
           xmat(1:ndim,jj) = xmat(1:ndim,jj) - xsx*xmat(1:ndim,ii)
         end do
 c dbg
-c        write(luout,*) 'updated X-matrix:'
+c        write(lulog,*) 'updated X-matrix:'
 c        call wrtmat2(xmat,ndim,ndim,ndim,ndim)
 c dbg
 
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'trafo-matrix:'
+        write(lulog,*) 'trafo-matrix:'
         call wrtmat2(xmat,ndim,ndim,ndim,ndim)
       end if
 

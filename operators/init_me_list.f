@@ -36,7 +36,7 @@
      &     'no operator referenced by ME-list "'//trim(mel%label)//'"')
 
       if (mel%op%n_occ_cls.lt.0.or.mel%op%n_occ_cls.ge.1000) then
-        write(luout,*) 'n_occ_cls = ',mel%op%n_occ_cls
+        write(lulog,*) 'n_occ_cls = ',mel%op%n_occ_cls
         call quit(1,'init_me_list',
      &              'suspicious number of blocks (bug?)')
       end if
@@ -96,7 +96,7 @@ c          if (mel%op%formal_blk(iblk)) cycle
         end do
         ifree = mem_register(ncount,trim(mel%label)//'-2')
       case default
-        write(luout,*) 'ipass = ',ipass
+        write(lulog,*) 'ipass = ',ipass
         call quit(1,'init_me_list',
      &              'illegal ipass-flag')
       end select

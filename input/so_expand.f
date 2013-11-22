@@ -48,10 +48,10 @@
      &     dia_eq, diadia_eq
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'so_expand')
-        write(luout,*) 'nidx = ',nidx
-        write(luout,*) 'idxprqs:'
-        write(luout,'(5x,4i5)') idxprqs(1:4,1:nidx)
+        call write_title(lulog,wst_dbg_subr,'so_expand')
+        write(lulog,*) 'nidx = ',nidx
+        write(lulog,*) 'idxprqs:'
+        write(lulog,'(5x,4i5)') idxprqs(1:4,1:nidx)
       end if
 
       ncase = 0
@@ -67,7 +67,7 @@
       if (set_abx) ncase = ncase+2
       if (set_abx) idxcase(ncase-1:ncase) = (/5,6/)
 
-      if (ntest.ge.100) write(luout,*) 'idxcase: ',idxcase(1:ncase)
+      if (ntest.ge.100) write(lulog,*) 'idxcase: ',idxcase(1:ncase)
 
       iiso = 0
       do ii = 1, nidx
@@ -216,11 +216,11 @@
       n_so = iiso
 
       if (ntest.ge.100) then
-        write(luout,*) 'on exit: '
-        write(luout,*) 'n_so: ',n_so
-        write(luout,*) 'idxval idxspin idxperm'
+        write(lulog,*) 'on exit: '
+        write(lulog,*) 'n_so: ',n_so
+        write(lulog,*) 'idxval idxspin idxperm'
         do ii = 1, n_so
-          write(luout,'(x,3i10)') idxval(ii),idxspin(ii),idxperm(ii) 
+          write(lulog,'(x,3i10)') idxval(ii),idxspin(ii),idxperm(ii) 
         end do
       end if
 

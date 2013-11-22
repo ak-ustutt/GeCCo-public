@@ -28,8 +28,8 @@ c        print *,'species = ',spec
 c        print *,'ifreq = ',op%ifreq(1:iorder)
       else
         if (op%n_occ_cls.ne.iorder) then
-          write(luout,*) 'number of blocks: ',op%n_occ_cls
-          write(luout,*) 'your input:       ',iorder
+          write(lulog,*) 'number of blocks: ',op%n_occ_cls
+          write(lulog,*) 'your input:       ',iorder
            call quit(1,'set_pert_order',
      &                          'invalid argument value')
         end if

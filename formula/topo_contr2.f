@@ -51,7 +51,7 @@
      &     get_eqvfac
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'topo_contr2')
+        call write_title(lulog,wst_dbg_subr,'topo_contr2')
       end if
 
       nj = op_info%op_arr(contr%idx_res)%op%njoined
@@ -98,10 +98,10 @@
       deallocate(vtx,topo,xlines,svertex,neqv,idx_eqv,rank)
 
       if (ntest.ge.100) then
-        write(luout,*) 'returning:'
-        write(luout,*) 'ieqvfac = ',ieqvfac
-        write(luout,*) 'resort  = ',resort
-        write(luout,*) 'vtx_reo : ',vtx_reo(1:nvtx)
+        write(lulog,*) 'returning:'
+        write(lulog,*) 'ieqvfac = ',ieqvfac
+        write(lulog,*) 'resort  = ',resort
+        write(lulog,*) 'vtx_reo : ',vtx_reo(1:nvtx)
       end if
 
       return

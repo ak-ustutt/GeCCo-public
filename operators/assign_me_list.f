@@ -44,10 +44,10 @@
       call update_op_arr(op_info)
 
       if (iprlvl.ge.20) then
-        write(luout,'(3x,7a)')
+        write(lulog,'(3x,7a)')
      &       're-assigned list: ',trim(mel%label),' (file ',
      &       trim(mel%fhand%name),') to operator: ',trim(mel%op%name)
-        write(luout,'(3x,a,i4,a,i4,a,i4,a)') 'record: ',
+        write(lulog,'(3x,a,i4,a,i4,a,i4,a)') 'record: ',
      &       mel%fhand%current_record,
      &       ' (active: ',mel%fhand%active_records(1),
      &       ' -- ',      mel%fhand%active_records(2),

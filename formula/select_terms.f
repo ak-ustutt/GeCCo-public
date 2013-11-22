@@ -49,16 +49,16 @@
      &     form_pnt, form_pnt_next
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'select_terms')
-        write(luout,*) 'ninclude: ',ninclude
-        write(luout,*) 'op:  ',idxop_incl(1:ninclude)
-        write(luout,*) 'blk: ',iblk_incl(1:ninclude)
-        write(luout,*) 'ninclude_or: ',ninclude_or
-        write(luout,*) 'op:  ',idxop_incl_or(1:ninclude_or)
-        write(luout,*) 'blk: ',iblk_incl_or(1:ninclude_or)
-        write(luout,*) 'nexclude: ',nexclude
-        write(luout,*) 'op:  ',idxop_excl(1:nexclude)
-        write(luout,*) 'blk: ',iblk_excl(1:nexclude)
+        call write_title(lulog,wst_dbg_subr,'select_terms')
+        write(lulog,*) 'ninclude: ',ninclude
+        write(lulog,*) 'op:  ',idxop_incl(1:ninclude)
+        write(lulog,*) 'blk: ',iblk_incl(1:ninclude)
+        write(lulog,*) 'ninclude_or: ',ninclude_or
+        write(lulog,*) 'op:  ',idxop_incl_or(1:ninclude_or)
+        write(lulog,*) 'blk: ',iblk_incl_or(1:ninclude_or)
+        write(lulog,*) 'nexclude: ',nexclude
+        write(lulog,*) 'op:  ',idxop_excl(1:nexclude)
+        write(lulog,*) 'blk: ',iblk_excl(1:nexclude)
       endif
 
       form_pnt => flist
@@ -67,15 +67,15 @@
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
           form_pnt%target = idxop_res
         case(command_add_contribution)
 
           if (ntest.ge.1000) then
-            write(luout,*) 'current item:'
-            call prt_contr2(luout,form_pnt%contr,op_info)
+            write(lulog,*) 'current item:'
+            call prt_contr2(lulog,form_pnt%contr,op_info)
           end if
 
           nvtx = form_pnt%contr%nvtx
@@ -95,7 +95,7 @@
           end do
 
           if (ntest.ge.1000)
-     &         write(luout,*) 'after exclude: delete=',delete
+     &         write(lulog,*) 'after exclude: delete=',delete
 
           do idx = 1, ninclude
             if (delete) exit
@@ -112,7 +112,7 @@
           end do
 
           if (ntest.ge.1000)
-     &         write(luout,*) 'after include: delete=',delete
+     &         write(lulog,*) 'after include: delete=',delete
 
           found = ninclude_or.eq.0
           do ivtx = 1, nvtx
@@ -130,12 +130,12 @@
           delete = delete.or..not.found
 
           if (ntest.ge.1000)
-     &         write(luout,*) 'after include_or: delete=',delete
+     &         write(lulog,*) 'after include_or: delete=',delete
 
           if (delete) then
             ! Print the deleted contraction.
             if(ntest.ge.1000)then
-              write(luout,*)'Deleted formula item'
+              write(lulog,*)'Deleted formula item'
             endif
 
             ! Delete the node.
@@ -148,7 +148,7 @@
           end if
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'delete_non_fact','command undefined here')
         end select
 

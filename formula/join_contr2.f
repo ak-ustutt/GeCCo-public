@@ -58,10 +58,10 @@
       call quit(1,'join_contr2','call to obsolete routine')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'This is join_contr 2')
-        write(luout,*) 'joining: AC, B'
-        call prt_contr2(luout,contr_ac,op_info)
-        call prt_contr2(luout,contr_b,op_info)
+        call write_title(lulog,wst_dbg_subr,'This is join_contr 2')
+        write(lulog,*) 'joining: AC, B'
+        call prt_contr2(lulog,contr_ac,op_info)
+        call prt_contr2(lulog,contr_b,op_info)
       end if
 
       nvtx_ac = contr_ac%nvtx
@@ -111,9 +111,9 @@ c      print *,'nsuper, nproto_ac: ',nsuper,nproto_ac
 c dbg
 
       if (nsuper.ne.nproto_ac) then
-        write(luout,*) 'join_contr2: joining: AC, B'
-        call prt_contr2(luout,contr_ac,op_info)
-        call prt_contr2(luout,contr_b,op_info)
+        write(lulog,*) 'join_contr2: joining: AC, B'
+        call prt_contr2(lulog,contr_ac,op_info)
+        call prt_contr2(lulog,contr_b,op_info)
         call quit(1,'join_contr2','incompatible contractions !')
       end if
 
@@ -127,7 +127,7 @@ c dbg
      &                   svmap,nvtx_b,njoined)
 
       if (ntest.ge.1000) then
-        write(luout,'(3x,a,10i5)') 'ivtx_old: ',ivtx_old(1:nvtx_abc)
+        write(lulog,'(3x,a,10i5)') 'ivtx_old: ',ivtx_old(1:nvtx_abc)
       end if
 
       ! make some assumptions about the number of arcs in the 
@@ -137,9 +137,9 @@ c dbg
      &     nvtx_abc*(nvtx_abc-1))
 
       if (ntest.ge.1000) then
-        write(luout,*) 'nvtx_ac, nvtx_b, nvtx_abc: ',
+        write(lulog,*) 'nvtx_ac, nvtx_b, nvtx_abc: ',
      &       nvtx_ac, nvtx_b, nvtx_abc
-        write(luout,*) 'narc_ac, narc_b, narc_abc: ',
+        write(lulog,*) 'narc_ac, narc_b, narc_abc: ',
      &       narc_ac, narc_b, narc_abc
       end if
 
@@ -263,8 +263,8 @@ c dbg
       contr_abc%nfac = 0
 
       if (ntest.ge.1000) then
-        write(luout,*) 'generated proto-contraction:'
-        call prt_contr2(luout,contr_abc,op_info)
+        write(lulog,*) 'generated proto-contraction:'
+        call prt_contr2(lulog,contr_abc,op_info)
       end if
 
       ! make a "wrap" formula list for gen_contr output:
@@ -282,18 +282,18 @@ c      call gen_contr2(wrap,contr_abc,fix_vtx,occ_vtx,op_info)
 
       ! none at all?
       if (wrap%command.eq.command_end_of_formula) then
-        write(luout,*) 'proto-contraction:'
-        call prt_contr2(luout,contr_abc,op_info)
+        write(lulog,*) 'proto-contraction:'
+        call prt_contr2(lulog,contr_abc,op_info)
         call quit(1,'join_contr2',
      &       'no possible connection found')
       end if
 
       ! more than one?
       if (wrap%next%command.ne.command_end_of_formula) then
-        write(luout,*) 'proto-contraction:'
-        call prt_contr2(luout,contr_abc,op_info)
-        write(luout,*) 'generated terms:'
-        call print_form_list(luout,wrap,op_info)
+        write(lulog,*) 'proto-contraction:'
+        call prt_contr2(lulog,contr_abc,op_info)
+        write(lulog,*) 'generated terms:'
+        call print_form_list(lulog,wrap,op_info)
         call quit(1,'join_contr2',
      &       'version 2beta allows only unique recombinations!')
       end if
@@ -309,8 +309,8 @@ c      call gen_contr2(wrap,contr_abc,fix_vtx,occ_vtx,op_info)
       deallocate(svmap)
 
       if (ntest.ge.100) then
-        write(luout,*) 'generated contraction:'
-        call prt_contr2(luout,contr_abc,op_info)
+        write(lulog,*) 'generated contraction:'
+        call prt_contr2(lulog,contr_abc,op_info)
       end if
       
       return

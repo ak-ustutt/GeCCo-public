@@ -35,14 +35,14 @@
      &     orb_info
 
       ! a few settings
-      luout = 6      ! output unit
+      lulog = 6      ! output unit
 
 c      iprlvl = 3     ! print level
       iprlvl = 10    ! print level
 
       call hostname(host)
       call datum(date)
-      write(luout,'(x,"run starts at ",a,"   host: ",a)')
+      write(lulog,'(x,"run starts at ",a,"   host: ",a)')
      &     trim(date),trim(host)
       
       ! give information about compilation date etc.
@@ -122,7 +122,7 @@ c      iprlvl = 3     ! print level
 
       if (nwarn.gt.0) then
         call file_close_keep(ffwarn)
-        write(luout,'(1x,a,i4,a)')
+        write(lulog,'(1x,a,i4,a)')
      &     'There were ',nwarn,' warnings, see file '//trim(ffwarn%name)
       else
         call file_close_delete(ffwarn)
@@ -131,11 +131,11 @@ c      iprlvl = 3     ! print level
       if (lustat.gt.0) call file_close_keep(ffstat)
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'total time in GeCCo run',
+      call prtim(lulog,'total time in GeCCo run',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
  2308 call datum(date)
-      write(luout,'(x,"run ends at ",a,"   host: ",a)')
+      write(lulog,'(x,"run ends at ",a,"   host: ",a)')
      &     trim(date),trim(host)
 
       stop '+++ GeCCo run finished +++'

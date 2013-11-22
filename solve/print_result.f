@@ -160,12 +160,12 @@
       ! print response function
       line(1:79) = '>============================================='//
      &             '===============================<'
-      write(luout,*)
-      write(luout,*) line(1:79)
+      write(lulog,*)
+      write(lulog,*) line(1:79)
       if (order.eq.1) then
-        write(luout,*) part2(1:last2)//part4(1:last4)
+        write(lulog,*) part2(1:last2)//part4(1:last4)
       else if (order.ge.2) then
-        write(luout,*) part2(1:last2)//part3(1:last3)//part4(1:last4)
+        write(lulog,*) part2(1:last2)//part3(1:last3)//part4(1:last4)
       end if
 
       ! try to recognize property and print as such
@@ -197,7 +197,7 @@
      &                   read(1,*) phrase(1:25)
               read(1,*) phrase, nucmom
               got_nucmom = .true.
-              write(luout,'(" adding nuclear dipole moment <<",a1,
+              write(lulog,'(" adding nuclear dipole moment <<",a1,
      &                       "nuc>> = ",f18.12)')
      &                       pop(cmp(ifreq(1))%pop_idx)%comp, nucmom
               exit
@@ -223,7 +223,7 @@
 
       select case(property)
       case('ener')
-        write(luout,*) 'Energy'//part4(1:last4)
+        write(lulog,*) 'Energy'//part4(1:last4)
       case('elec')
       if (order.eq.1) then
         if (got_nucmom) then
@@ -233,7 +233,7 @@
           last1 = 27
           part1(1:last1) = 'Dipole moment (electronic) '
         end if
-        write(luout,*) part1(1:last1)//part5(1:last5)//part4(1:last4)
+        write(lulog,*) part1(1:last1)//part5(1:last5)//part4(1:last4)
       else if (order.eq.2) then
         last1 = 15
         part1(1:last1) = 'Polarizability '
@@ -252,14 +252,14 @@
         write(part1(1:1),'(i1)') order-2
       end if
       if (order.ge.2) then
-        write(luout,*) part1(1:last1)//part5(1:last5)//part3(1:last3)//
+        write(lulog,*) part1(1:last1)//part5(1:last5)//part3(1:last3)//
      &                 part4(1:last4)
       end if
       end select
           
 
-      write(luout,*) line(1:79)
-      write(luout,*)
+      write(lulog,*) line(1:79)
+      write(lulog,*)
 
       return
       end

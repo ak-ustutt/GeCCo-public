@@ -110,13 +110,13 @@ c dbgend
       ifree = mem_setmark('solve_nleq')
 
       if (iprlvl.ge.5) then
-        write(luout,*) 'formula: ',trim(label_form)
+        write(lulog,*) 'formula: ',trim(label_form)
         if (nopt.gt.1)
-     &       write(luout,*) 'solving for ',nopt,
+     &       write(lulog,*) 'solving for ',nopt,
      &       ' operators simultaneously'
-        write(luout,*)   'solving for: ',trim(label_opt(1))
+        write(lulog,*)   'solving for: ',trim(label_opt(1))
         do iopt = 2, nopt
-          write(luout,*) '             ',trim(label_opt(iopt))
+          write(lulog,*) '             ',trim(label_opt(iopt))
         end do
       end if
 
@@ -203,7 +203,7 @@ c dbgend
         ! open result vector file(s)
 cmh     if file already open, use as initial guess!
         if (ffopt(iopt)%fhand%unit.gt.0) then
-          write(luout,'(x,a,i1,a)')
+          write(lulog,'(x,a,i1,a)')
      &         'Using existing amplitudes as initial guess for vector ',
      &         iopt,'!'
         else
@@ -217,7 +217,7 @@ cmh     if file already open, use as initial guess!
      &         'No amplitude file found for restart! Setting to zero.')
           end if
           if (restart) then
-            write(luout,'(x,a,i1,a)')
+            write(lulog,'(x,a,i1,a)')
      &         'Using old amplitude file for vector ',iopt,'!'
           else
             call zeroop(me_opt(iopt)%mel)
@@ -311,19 +311,19 @@ c     &       ff_trv,ff_h_trv,
      &       orb_info,op_info,str_info,strmap_info)
 
         if (nopt.eq.1.and.imacit.gt.1)
-     &     write(luout,'(">>>",i3,f24.12,x,g10.4)')
+     &     write(lulog,'(">>>",i3,f24.12,x,g10.4)')
      &     imacit-1,energy,xresnrm(1)
         if (nopt.eq.2.and.imacit.gt.1)
-     &     write(luout,'(">>>",i3,f24.12,2(x,g10.4))')
+     &     write(lulog,'(">>>",i3,f24.12,2(x,g10.4))')
      &     imacit-1,energy,xresnrm(1:2)
         if (nopt.eq.3.and.imacit.gt.1)
-     &     write(luout,'(">>>",i3,f24.12,3(x,g10.4))')
+     &     write(lulog,'(">>>",i3,f24.12,3(x,g10.4))')
      &     imacit-1,energy,xresnrm(1:3)
         if (.not.conv.and.task.ge.8) then
-          write(luout,'(">>> NOT CONVERGED! <<<")')
+          write(lulog,'(">>> NOT CONVERGED! <<<")')
           exit opt_loop
         else if (task.ge.8) then
-          write(luout,'(">>> final energy:",f24.12," <<<")')
+          write(lulog,'(">>> final energy:",f24.12," <<<")')
      &     energy
            exit opt_loop
         end if
@@ -361,7 +361,7 @@ c     &       ff_trv,ff_h_trv,
 c dbg
 c          idx = idx_mel_list('ME_C0',op_info)
 c          print *,'current C0 vector: '
-c          call wrt_mel_file(luout,1000,op_info%mel_arr(idx)%mel,
+c          call wrt_mel_file(lulog,1000,op_info%mel_arr(idx)%mel,
 c     &       1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
 c     &       str_info,orb_info)
 c dbgend
@@ -371,7 +371,7 @@ c dbg
 c        if (opti_info%typ_prc(1).eq.optinf_prc_traf
 c     &      .and.nopt.ge.2) then
 c          print *,'current C0 vector: '
-c          call wrt_mel_file(luout,1000,me_opt(2)%mel,
+c          call wrt_mel_file(lulog,1000,me_opt(2)%mel,
 c     &       1,me_opt(2)%mel%op%n_occ_cls,
 c     &       str_info,orb_info)
 c        end if
@@ -379,9 +379,9 @@ c dbgend
 
         if (ntest.ge.1000) then
           do iopt = 1, nopt
-            write(luout,*) 'dump of '//trim(me_opt(iopt)%mel%label)
-            write(luout,*) 'iopt = ',iopt
-            call wrt_mel_file(luout,5,
+            write(lulog,*) 'dump of '//trim(me_opt(iopt)%mel%label)
+            write(lulog,*) 'iopt = ',iopt
+            call wrt_mel_file(lulog,5,
      &           me_opt(iopt)%mel,
      &           1,me_opt(iopt)%mel%op%n_occ_cls,
      &           str_info,orb_info)
@@ -428,9 +428,9 @@ c dbg
 
           if (ntest.ge.1000) then
             do iopt = 1, nopt
-              write(luout,*) 'dump of residual '//
+              write(lulog,*) 'dump of residual '//
      &             trim(me_grd(iopt)%mel%label)
-              call wrt_mel_file(luout,5,
+              call wrt_mel_file(lulog,5,
      &           me_grd(iopt)%mel,
      &           1,me_grd(iopt)%mel%op%n_occ_cls,
      &           str_info,orb_info)
@@ -457,7 +457,7 @@ c test
 
         ! report untransformed residual
         if (traf) 
-     &   write(luout,'(x,"norm of untransformed residual ",3(x,g10.4))')
+     &   write(lulog,'(x,"norm of untransformed residual ",3(x,g10.4))')
      &   xresnrm(1:opti_info%nopt)
 
         ! another quick and dirty call to the linear solver
@@ -500,8 +500,8 @@ c test
         ! open result vector file(s)
 c dbg - for R12:
 c        if (iopt.eq.2) then
-c          write(luout,*) ' iopt = ',iopt
-c          call wrt_mel_file(luout,1000,me_opt(iopt)%mel,
+c          write(lulog,*) ' iopt = ',iopt
+c          call wrt_mel_file(lulog,1000,me_opt(iopt)%mel,
 c     &       1,me_opt(iopt)%mel%op%n_occ_cls,
 c     &       str_info,orb_info)        
 c        end if

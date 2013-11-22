@@ -55,10 +55,10 @@
       nblk_tbar = op_tbar%n_occ_cls
 
       if (iprint.gt.0) then
-        write(luout,'(2x,42("-"))')
-        write(luout,'(3x,a)') '  L    number of   n-fold commutators'
-        write(luout,'(3x,a)') 'class    terms    0    1    2    3    4'
-        write(luout,'(2x,42("-"))')
+        write(lulog,'(2x,42("-"))')
+        write(lulog,'(3x,a)') '  L    number of   n-fold commutators'
+        write(lulog,'(3x,a)') 'class    terms    0    1    2    3    4'
+        write(lulog,'(2x,42("-"))')
       end if
 
       ! loop over Tbar blocks (0 is the unit-projection)
@@ -78,10 +78,10 @@
         end do
 
         if (iprint.ge.10) then
-          write(luout,'(2x,"??",i4,3x,i6,x,5(x,i4))')
+          write(lulog,'(2x,"??",i4,3x,i6,x,5(x,i4))')
      &       iblk,sum(n_commu(0:4)),n_commu(0:4)
         else if (iprint.gt.0) then
-          write(luout,'(4x,i4,3x,i6,x,5(x,i4))')
+          write(lulog,'(4x,i4,3x,i6,x,5(x,i4))')
      &       iblk,sum(n_commu(0:4)),n_commu(0:4)
         end if
         nterms = nterms + sum(n_commu(0:4))
@@ -89,7 +89,7 @@
       end do
 
       if (iprint.gt.0)
-     &     write(luout,'(2x,42("-"))')
+     &     write(lulog,'(2x,42("-"))')
 
       call relink_formula_list(form,fpl_reo)
 

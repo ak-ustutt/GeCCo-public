@@ -87,10 +87,10 @@
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.eq.100) then
-        write(luout,*) '==============================='
-        write(luout,*) ' output from set_r12_lagrangian'
-        write(luout,*) '==============================='
-        write(luout,*) ' ansatz = ',ansatz
+        write(lulog,*) '==============================='
+        write(lulog,*) ' output from set_r12_lagrangian'
+        write(lulog,*) '==============================='
+        write(lulog,*) ' ansatz = ',ansatz
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -121,12 +121,12 @@ c      r12fix = r12fix .or. extend.gt.0
 
       ! get indices
 c      if (nlabels.ne.8.and..not.r12fix) then
-c        write(luout,*) 'nlabels = ',nlabels
+c        write(lulog,*) 'nlabels = ',nlabels
 c        call quit(1,'set_r12_lagrangian',
 c     &     'I expect exactly 8 labels')
 c      end if
 c      if (nlabels.lt.6.and.r12fix) then
-c        write(luout,*) 'nlabels = ',nlabels
+c        write(lulog,*) 'nlabels = ',nlabels
 c        call quit(1,'set_mp2_r12_lagrangian fixed amp.',
 c     &     'I expect > 6 labels')c
 c      end if
@@ -189,8 +189,8 @@ c      sbar_pnt%dagger = .true.
      &     r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'T + CR')
-        call print_form_list(luout,flist_t_cr,op_info)
+        call write_title(lulog,wst_title,'T + CR')
+        call print_form_list(lulog,flist_t_cr,op_info)
       end if
 
       ! Must also form SBAR.
@@ -201,8 +201,8 @@ c      sbar_pnt%dagger = .true.
      &     r12op,r12fix,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'TBAR + R CBAR')
-        call print_form_list(luout,flist_tbar_cbarr,op_info)
+        call write_title(lulog,wst_title,'TBAR + R CBAR')
+        call print_form_list(lulog,flist_tbar_cbarr,op_info)
       end if
 
       ! and now: the actual formula
@@ -234,8 +234,8 @@ c      sbar_pnt%dagger = .true.
      &     idx_sbar,idxham,idx_sop,op_info)
 
       if (ntest.ge.500) then
-        call write_title(luout,wst_title,'raw formula 1')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_title,'raw formula 1')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
       ! second round:
@@ -245,8 +245,8 @@ c      sbar_pnt%dagger = .true.
      &       idxham,idx_sbar,idx_sop,op_info)
 
       if (ntest.ge.500) then
-        call write_title(luout,wst_title,'raw formula 2')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_title,'raw formula 2')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
       ! replace S by T+CR
@@ -256,16 +256,16 @@ c      sbar_pnt%dagger = .true.
       call sum_terms(flist_lag,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'after replacing S')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_title,'after replacing S')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
       ! replace Sbar by Tbar + R^t CBAR
       call expand_subexpr(flist_lag,flist_tbar_cbarr,0,op_info)
 
       if (ntest.ge.1000) then
-        call write_title(luout,wst_title,'after replacing S')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_title,'after replacing S')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
 c      ! delete redundant operator blocks (if more than one block version)
@@ -325,8 +325,8 @@ cc     &     flist_lag,op_info)
       endif
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_title,'Final formula')
-        call print_form_list(luout,flist_lag,op_info)
+        call write_title(lulog,wst_title,'Final formula')
+        call print_form_list(lulog,flist_lag,op_info)
       end if
 
       ! assign comment
@@ -346,8 +346,8 @@ cc     &     flist_lag,op_info)
       call del_operator(op_sop,op_info)
 
       call atim_csw(cpu,sys,wall)
-      write(luout,*) 'Number of generated terms: ',nterms
-      call prtim(luout,'CC-R12 Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
+      write(lulog,*) 'Number of generated terms: ',nterms
+      call prtim(lulog,'CC-R12 Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
       return
       end

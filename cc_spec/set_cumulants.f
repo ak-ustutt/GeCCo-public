@@ -68,9 +68,9 @@
       off = 0 ! set to 1 if first occ. cls. of idx1, idxd is scalar
 
       if (ntest.eq.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'output from set_cumulants')
-        write(luout,*) ' mode = ',trim(mode)
+        write(lulog,*) ' mode = ',trim(mode)
       end if
 
       cum = mode(1:8).eq.'CUMULANT'
@@ -242,8 +242,8 @@ c dbgend
       end do
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_title,'Final formula')
-        call print_form_list(luout,flist,op_info)
+        call write_title(lulog,wst_title,'Final formula')
+        call print_form_list(lulog,flist,op_info)
       end if
 
       ! assign comment
@@ -257,7 +257,7 @@ c dbgend
       call dealloc_formula_list(flist)
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'set_cumulants',cpu-cpu0,sys-sys0,wall-wall0)
+      call prtim(lulog,'set_cumulants',cpu-cpu0,sys-sys0,wall-wall0)
 
       return
       end

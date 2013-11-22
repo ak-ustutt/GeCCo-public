@@ -53,7 +53,7 @@
      &      'generalized normal order requires MR wave function')
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 
+     &     write(lulog,*) 
      &     'setting targets for generalized normal ordering...'
 
       ! CAVEAT: should be adapted as soon as open-shell version
@@ -110,9 +110,9 @@
       if (spinproj.ge.3) ioff = ioff + 1 ! higher RDMs for linear Jacobian
 
       if (ntest.ge.100) then
-        write(luout,*) 'maxcum       = ',maxcum
+        write(lulog,*) 'maxcum       = ',maxcum
         if (maxtop.gt.0)
-     &     write(luout,*) 'cum_appr_mode= ',cum_appr_mode
+     &     write(lulog,*) 'cum_appr_mode= ',cum_appr_mode
       end if
 
 *----------------------------------------------------------------------*

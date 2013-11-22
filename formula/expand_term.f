@@ -71,9 +71,9 @@
       if (force) call quit(1,'expand_term','obsolete "force" feature?')
 
       if (ntest.ge.100) then
-        write(luout,*) '========================='
-        write(luout,*) ' Here speaks expand_term'
-        write(luout,*) '========================='
+        write(lulog,*) '========================='
+        write(lulog,*) ' Here speaks expand_term'
+        write(lulog,*) '========================='
       end if
 
       iop_intm  = fpl_intm%item%contr%idx_res
@@ -286,8 +286,8 @@ c     &      cycle
         proto%narc = narc
 
         if (ntest.ge.100) then
-          write(luout,*) 'generated proto-contraction:'
-          call prt_contr2(luout,proto,op_info)
+          write(lulog,*) 'generated proto-contraction:'
+          call prt_contr2(lulog,proto,op_info)
         end if
         
         ! a bit of bureaucracy ...
@@ -337,7 +337,7 @@ c     &      cycle
             proto%arc(narc)%link(2)=nvtx+1
             proto%arc(narc)%occ_cnt=occ_temp
             proto%narc=narc
-            call prt_contr2(luout,proto,op_info)
+            call prt_contr2(lulog,proto,op_info)
           endif
         endif
 
@@ -350,7 +350,7 @@ c     &      cycle
           fl_expand_pnt => fl_expand_pnt%next
         end do
         if (ntest.ge.100) then
-          write(luout,*) 'currently ',nterms,' terms'
+          write(lulog,*) 'currently ',nterms,' terms'
         end if
         deallocate(occ_vtx,fix_vtx,ol_map)
 

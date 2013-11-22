@@ -37,7 +37,7 @@
       call quit(1,'set_cc_general_targets','is obsolete ...')
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting general targets for CC ...'
+     &     write(lulog,*) 'setting general targets for CC ...'
 
 *----------------------------------------------------------------------*
 *     Operators:

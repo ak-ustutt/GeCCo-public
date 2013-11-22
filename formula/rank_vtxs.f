@@ -37,8 +37,8 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'ranking of vertices:'
-        write(luout,'(1x,10i4)') rank(1:nvtx)
+        write(lulog,*) 'ranking of vertices:'
+        write(lulog,'(1x,10i4)') rank(1:nvtx)
       end if
 
       return

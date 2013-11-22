@@ -36,18 +36,18 @@
      &     irecst1, irecst2, irecstr, lenbat, ibatch
 
       if (ntest.ne.0) then
-        write(luout,*) '---------------------'
-        write(luout,*) ' info from da_vecsum'
-        write(luout,*) '---------------------'
+        write(lulog,*) '---------------------'
+        write(lulog,*) ' info from da_vecsum'
+        write(lulog,*) '---------------------'
       end if
       if (ntest.ge.10) then
-        write(luout,*) 'ffvecr, idxvecr:  ',trim(ffvecr%name), idxvecr
-        write(luout,*) 'ffvec1, idxvec1:  ',trim(ffvec1%name), idxvec1
-        write(luout,*) 'ffvec2, idxvec2:  ',trim(ffvec2%name), idxvec2
-        write(luout,*) 'xfac1, xfac2: ',xfac1,xfac2
+        write(lulog,*) 'ffvecr, idxvecr:  ',trim(ffvecr%name), idxvecr
+        write(lulog,*) 'ffvec1, idxvec1:  ',trim(ffvec1%name), idxvec1
+        write(lulog,*) 'ffvec2, idxvec2:  ',trim(ffvec2%name), idxvec2
+        write(lulog,*) 'xfac1, xfac2: ',xfac1,xfac2
       end if
       if (ntest.ge.100) then
-        write(luout,*) 'lenvec,lblk,lenbuf: ',lenvec,lenbuf
+        write(lulog,*) 'lenvec,lblk,lenbuf: ',lenvec,lenbuf
       end if
 
       luvecr = ffvecr%unit
@@ -56,14 +56,14 @@
       lblk = ffvecr%reclen
       if (lblk.ne.ffvec1%reclen.or.
      &    lblk.ne.ffvec2%reclen) then
-        write(luout,*) 'Incompatible block-lengthes: ',
+        write(lulog,*) 'Incompatible block-lengthes: ',
      &       lblk,ffvec1%reclen,ffvec2%reclen
         call quit(1,'da_vecsum','Incompatible block-lengthes')
       end if
 
       if (lenbuf.lt.min(lenvec,lblk)) then
-        write(luout,*) 'Insufficient buffer size!'
-        write(luout,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
+        write(lulog,*) 'Insufficient buffer size!'
+        write(lulog,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
         call quit(1,'da_vecsum','Insufficient buffer size!')
       end if
 
@@ -126,7 +126,7 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'vecsum needed ',nbatch,' batches'
+        write(lulog,*) 'vecsum needed ',nbatch,' batches'
       end if
       
       return

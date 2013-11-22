@@ -70,8 +70,8 @@
       ! hard restart
       inquire(file=trim(mel_target%fhand%name),exist=list_exists)
       if (list_exists.and.hard_restart) then
-        write(luout,*) 'found: ',trim(mel_target%fhand%name)
-        write(luout,*) 'trying a hard restart ... watch out!'
+        write(lulog,*) 'found: ',trim(mel_target%fhand%name)
+        write(lulog,*) 'trying a hard restart ... watch out!'
         return
       end if
 
@@ -262,8 +262,8 @@ c     &                                str_info,orb_info)
       end select
 
       if (ntest.ge.10.and.(.not.mel_target%op%formal)) then
-        write(luout,*)
-        write(luout,*) 'imported list: ',trim(mel_target%label)
+        write(lulog,*)
+        write(lulog,*) 'imported list: ',trim(mel_target%label)
         if (ntest.ge.10) ipri = 1
         if (ntest.ge.50) ipri = 2
         if (ntest.ge.100) ipri = 3
@@ -272,7 +272,7 @@ c     &                                str_info,orb_info)
 c dbg
 c        if (trim(list_type).eq.'FF_INT') ipri = 5
 c dbg
-        call wrt_mel_file(luout,ipri,mel_target,
+        call wrt_mel_file(lulog,ipri,mel_target,
      &       1,mel_target%op%n_occ_cls,
      &       str_info,orb_info)
 c dbg

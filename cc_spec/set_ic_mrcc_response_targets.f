@@ -45,7 +45,7 @@
       if (ncnt.eq.0) return
 
       if (iprlvl.gt.0)
-     &    write(luout,*) 'setting targets for icMRCC excited states ...'
+     &    write(lulog,*) 'setting targets for icMRCC excited states ...'
 
       ! S2, MS and MS combi of reference state
       s2_0  = orb_info%imult
@@ -59,9 +59,9 @@
         msc_0 = 0
       end if
  
-      write(luout,*) 'IRREP, S2, MS of reference state: ',isym_0, s2_0, 
+      write(lulog,*) 'IRREP, S2, MS of reference state: ',isym_0, s2_0, 
      &               ms_0
-      write(luout,*) '  factor for spin-combinations: ',msc_0
+      write(lulog,*) '  factor for spin-combinations: ',msc_0
 
 
         call get_argument_value('method.MRCC.excite','method',
@@ -70,10 +70,10 @@
         print*, trim(method)
         select case(trim(method))
         case('LR')
-          write(luout,*) 'doing ic_mrcc response in LR framework'
+          write(lulog,*) 'doing ic_mrcc response in LR framework'
           lr_opt = 1
         case('EOM')
-          write(luout,*) 'doing ic_mrcc response in EOM framework'
+          write(lulog,*) 'doing ic_mrcc response in EOM framework'
           lr_opt = 2
         case default
           call quit(0,'set_ic_mrcc_response_target',
@@ -331,8 +331,8 @@ C     &      ')'/),tgt_info)
           if (ms_r.eq.0.and.s2_r.eq.3) msc_r = -1
 
 c dbg
-          write(luout,*) 'isym, msc    ',isym, msc
-          write(luout,*) 'isym_r, msc_r',isym_r, msc_r
+          write(lulog,*) 'isym, msc    ',isym, msc
+          write(lulog,*) 'isym_r, msc_r',isym_r, msc_r
 c dbg
           ! we will label most objects with isym and msc
           ! only the setup of the response lists needs the actual msc_r, isym_r

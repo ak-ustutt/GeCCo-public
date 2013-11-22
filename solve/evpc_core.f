@@ -113,7 +113,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
      &     dnrm2, ddot
 
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'evpc_core entered')
+     &     call write_title(lulog,wst_dbg_subr,'evpc_core entered')
 
       zero_vec(1:opti_stat%ndim_vsbsp) = .false.
       nopt = opti_info%nopt
@@ -232,13 +232,13 @@ c dbg
       end do
 
       if (ntest.ge.50) then
-        write(luout,*) 'Eigenvalues in subspace:'
+        write(lulog,*) 'Eigenvalues in subspace:'
         do idx = 1, nred
-          write(luout,'(2x,i4,x,g20.12,x,g20.12)')
+          write(lulog,'(2x,i4,x,g20.12,x,g20.12)')
      &         idx, eigr(idx), eigi(idx)
         end do
         if (ntest.ge.100) then
-          write(luout,*) 'eigenvectors:'
+          write(lulog,*) 'eigenvectors:'
           call wrtmat2(vred,nred,nred,mxsub,mxsub)
         end if
       end if

@@ -44,7 +44,7 @@
 
       if (iopa.gt.nop.or.iopb.gt.nop.or.
      &    iop0.gt.nop.or.ioph.gt.nop) then
-        write(luout,*) 'idx, nop: ',iop0,iopa,iopb,ioph,nop
+        write(lulog,*) 'idx, nop: ',iop0,iopa,iopb,ioph,nop
         call quit(1,'set_Bhole','not enough operators on input list')
       end if
 
@@ -132,8 +132,8 @@
       call form_op_replace(opf_pnt%name,op_pnt%name,.false.,
      &                     flist_pnt0,op_info)
       if (ntest.ge.100) then
-        write(luout,*) 'result for Bhole'
-        call print_form_list(luout,flist_pnt0,op_info)
+        write(lulog,*) 'result for Bhole'
+        call print_form_list(lulog,flist_pnt0,op_info)
       end if
 
       ! get rid of scratch operator

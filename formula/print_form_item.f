@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine print_form_item(luout,idx,fl_item,op_info)
+      subroutine print_form_item(lulog,idx,fl_item,op_info)
 *----------------------------------------------------------------------*
-*     print formula item to unit luout
+*     print formula item to unit lulog
 *----------------------------------------------------------------------*
       implicit none
 
@@ -11,7 +11,7 @@
       include 'def_formula_item.h'
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
       integer, intent(inout) ::
      &     idx
       type(formula_item), intent(in), target ::
@@ -21,71 +21,71 @@
 
       select case(fl_item%command)
       case(command_end_of_formula)
-        write(luout,*) '[END]'
+        write(lulog,*) '[END]'
       case(command_set_target_init)
-        write(luout,*) '[INIT TARGET]',fl_item%target
+        write(lulog,*) '[INIT TARGET]',fl_item%target
       case(command_set_target_update)
-        write(luout,*) '[SET TARGET]',fl_item%target
+        write(lulog,*) '[SET TARGET]',fl_item%target
       case(command_new_intermediate)
-        write(luout,*) '[NEW INTERMEDIATE]',fl_item%target
-        write(luout,'(2x,a)') trim(fl_item%interm%name)
-        write(luout,'(2x,"attribute parentage: ",a," ",a)')
+        write(lulog,*) '[NEW INTERMEDIATE]',fl_item%target
+        write(lulog,'(2x,a)') trim(fl_item%interm%name)
+        write(lulog,'(2x,"attribute parentage: ",a," ",a)')
      &                        trim(fl_item%parent1),
      &                        trim(fl_item%parent2)
-        write(luout,'(2x,"incore: ",i2)') fl_item%incore
-        call print_op_occ(luout,fl_item%interm)
+        write(lulog,'(2x,"incore: ",i2)') fl_item%incore
+        call print_op_occ(lulog,fl_item%interm)
       case(command_del_intermediate)
-        write(luout,*) '[DELETE INTERMEDIATE]',fl_item%target
-        write(luout,'(2x,a)') trim(fl_item%label)
+        write(lulog,*) '[DELETE INTERMEDIATE]',fl_item%target
+        write(lulog,'(2x,a)') trim(fl_item%label)
       case(command_add_contribution)
         idx = idx+1
-        write(luout,*) '[CONTR]',fl_item%target,'( term #',idx,')'
-        call prt_contr2(luout,fl_item%contr,op_info)
+        write(lulog,*) '[CONTR]',fl_item%target,'( term #',idx,')'
+        call prt_contr2(lulog,fl_item%contr,op_info)
       case(command_add_intm)
         idx = idx+1
-        write(luout,*) '[ADD]',
+        write(lulog,*) '[ADD]',
      &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(luout,fl_item%bcontr)
+        call prt_bcontr(lulog,fl_item%bcontr)
       case(command_cp_intm)
         idx = idx+1
-        write(luout,*) '[COPY]',
+        write(lulog,*) '[COPY]',
      &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(luout,fl_item%bcontr)
+        call prt_bcontr(lulog,fl_item%bcontr)
       case(command_add_bc)
         idx = idx+1
-        write(luout,*) '[CONTRACT][ADD]',
+        write(lulog,*) '[CONTRACT][ADD]',
      &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(luout,fl_item%bcontr)
+        call prt_bcontr(lulog,fl_item%bcontr)
       case(command_add_bc_reo)
         idx = idx+1
-        write(luout,*) '[CONTRACT][REORDER][ADD]',
+        write(lulog,*) '[CONTRACT][REORDER][ADD]',
      &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(luout,fl_item%bcontr)
-        call prt_reorder(luout,fl_item%reo)
+        call prt_bcontr(lulog,fl_item%bcontr)
+        call prt_reorder(lulog,fl_item%reo)
       case(command_bc)
         idx = idx+1
-        write(luout,*) '[CONTRACT]',
+        write(lulog,*) '[CONTRACT]',
      &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(luout,fl_item%bcontr)
+        call prt_bcontr(lulog,fl_item%bcontr)
       case(command_bc_reo)
         idx = idx+1
-        write(luout,*) '[CONTRACT][REORDER]',
+        write(lulog,*) '[CONTRACT][REORDER]',
      &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(luout,fl_item%bcontr)
-        call prt_reorder(luout,fl_item%reo)
+        call prt_bcontr(lulog,fl_item%bcontr)
+        call prt_reorder(lulog,fl_item%reo)
       case(command_reorder)
-        write(luout,*) '[REORDER]',fl_item%target
-        call prt_reorder(luout,fl_item%reo)
+        write(lulog,*) '[REORDER]',fl_item%target
+        call prt_reorder(lulog,fl_item%reo)
       case(command_add_reo)
         idx = idx+1
-        write(luout,*) '[REORDER][ADD]',
+        write(lulog,*) '[REORDER][ADD]',
      &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(luout,fl_item%bcontr)
-        call prt_reorder(luout,fl_item%reo)
+        call prt_bcontr(lulog,fl_item%bcontr)
+        call prt_reorder(lulog,fl_item%reo)
       case(command_symmetrise)
-        write(luout,*) '[SYMMETRISE]',fl_item%target
+        write(lulog,*) '[SYMMETRISE]',fl_item%target
       case default
-        write(luout,*) 'unknown command ',fl_item%command,
+        write(lulog,*) 'unknown command ',fl_item%command,
      &       fl_item%target
       end select
       

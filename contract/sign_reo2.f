@@ -45,10 +45,10 @@
       end do
 
       if (error) then
-        write(luout,*) 'nreo = ',nreo
-        call wrt_occ_n(luout,occ_reo,nreo)
-        write(luout,*) 'from: ',from_to(1,1:nreo)
-        write(luout,*) 'to:   ',from_to(2,1:nreo)
+        write(lulog,*) 'nreo = ',nreo
+        call wrt_occ_n(lulog,occ_reo,nreo)
+        write(lulog,*) 'from: ',from_to(1,1:nreo)
+        write(lulog,*) 'to:   ',from_to(2,1:nreo)
 c        call quit(1,'sign_reo','reo from or to same vertex occurred!')
         sign_reo2 = 0
       end if
@@ -61,7 +61,7 @@ c        call quit(1,'sign_reo','reo from or to same vertex occurred!')
       end do
 c dbg
 c      print *,'initial occ_k_from'
-c      call wrt_occ_n(luout,occ_k_from,njoined)
+c      call wrt_occ_n(lulog,occ_k_from,njoined)
 c dbg
 
       sign_reo2 = 1
@@ -72,7 +72,7 @@ c dbg
      &       occ_reo(1:ngastp,1:2,ireo)
 c dbg
 c        print *,'updated occ_k_from'
-c        call wrt_occ_n(luout,occ_k_from,njoined)
+c        call wrt_occ_n(lulog,occ_k_from,njoined)
 c dbg
         ! count number of CA-op's on passive vertices between reo-vertices:
         nencl = 0
@@ -82,7 +82,7 @@ c dbg
           nencl = nencl + nca_vtx(ivtx)
         end do
 c dbg
-        if (mod(nencl,2).ne.0) write(luout,*) 'ODD nencl appeared!'
+        if (mod(nencl,2).ne.0) write(lulog,*) 'ODD nencl appeared!'
 c dbg
 
         sign_reo2 = sign_reo2*sign_shift(
@@ -108,7 +108,7 @@ c dbg
      &       occ_reo(1:ngastp,1:2,ireo)
 c dbg
 c        print *,'updated occ_k_to'
-c        call wrt_occ_n(luout,occ_k_to,njoined)
+c        call wrt_occ_n(lulog,occ_k_to,njoined)
 c dbg
 
       end do

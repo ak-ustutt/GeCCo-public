@@ -38,14 +38,14 @@
       do isym = 1, nsym
 
         if (ntest.ge.100)
-     &       write(luout,*) 'isym: ',isym
+     &       write(lulog,*) 'isym: ',isym
 
         if (nbas(isym).eq.0) cycle
 
         do igas = 1, ngas
 
           if (ntest.ge.100)
-     &       write(luout,*) 'igas,hpvx_gas(igas): ',igas,hpvx_gas(igas)
+     &       write(lulog,*) 'igas,hpvx_gas(igas): ',igas,hpvx_gas(igas)
 
           if (hpvx_gas(igas).ne.1) cycle
 
@@ -53,15 +53,15 @@
           norb = mostnd(2,isym,igas)-mostnd(1,isym,igas)+1
 
           if (ntest.ge.100)
-     &         write(luout,*) 'norb,nbas(isym),ntao: ',
+     &         write(lulog,*) 'norb,nbas(isym),ntao: ',
      &             norb,nbas(isym),nbas(isym)+nxbas(isym)
 
           if (norb.gt.0) then
 
             if (ntest.ge.100)
-     &            write(luout,*) 'xao(ixao) = ',xao(ixao)
+     &            write(lulog,*) 'xao(ixao) = ',xao(ixao)
             if (ntest.ge.100)
-     &            write(luout,*) 'cmo(icmoc) = ',cmo(icmoc)
+     &            write(lulog,*) 'cmo(icmoc) = ',cmo(icmoc)
 
             call dgemm('n','n',nbas(isym),norb,nbas(isym),
      &                1d0,xao(ixao),nbas(isym)+nxbas(isym),
@@ -69,12 +69,12 @@
      &                0d0,xhlf,nbas(isym))
 
             if (ntest.ge.100)
-     &            write(luout,*) 'xhlf(1) = ',xhlf(1)
+     &            write(lulog,*) 'xhlf(1) = ',xhlf(1)
 
             xref = xref + 2*ddot(nbas(isym)*norb,xhlf(1),1,cmo(icmoc),1)
 
             if (ntest.ge.100)
-     &            write(luout,*) 'xref = ',xref
+     &            write(lulog,*) 'xref = ',xref
 
           end if
         end do
@@ -82,7 +82,7 @@
       end do
 
       if (ntest.ge.100)
-     &          write(luout,*) 'total xref = ',xref
+     &          write(lulog,*) 'total xref = ',xref
 
       return
       end

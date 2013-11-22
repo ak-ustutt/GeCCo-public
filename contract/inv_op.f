@@ -58,6 +58,16 @@
 
       call atim_csw(cpu0,sys0,wall0)
 
+      if (ntest.ge.100) then
+        write(lulog,*) '===================='
+        write(lulog,*) ' Operator inversion '
+        write(lulog,*) '===================='
+        write(lulog,*) 'To be inverted: ',trim(label_inp(1))
+        write(lulog,*) 'The inverse: ',trim(label_inv(1))
+        if (nlist.eq.2)write(lulog,*)'Unitary mat.: ',trim(label_inv(2))
+        if (ninp.eq.2) write(lulog,*) 'Spec. mat.: ',trim(label_inp(2))
+      end if
+
       idx_inp = idx_mel_list(label_inp(1),op_info)
       idx_inv = idx_mel_list(label_inv(1),op_info)
       if (ninp.gt.2.or.nlist.gt.2)
@@ -70,8 +80,8 @@
       if (idx_inp.lt.0.or.idx_inv.lt.0
      &    .or.nlist.eq.2.and.idx_u.lt.0
      &    .or.ninp.eq.2.and.idx_spc.lt.0) then
-        write(luout,*) '"',label_inv,'" "',label_inp,'"'
-        write(luout,*) idx_inv, idx_inp, idx_u, idx_spc
+        write(lulog,*) '"',label_inv,'" "',label_inp,'"'
+        write(lulog,*) idx_inv, idx_inp, idx_u, idx_spc
         call quit(1,'inv_op','label not on list')
       end if
 
@@ -102,6 +112,7 @@
       open_close_inv = me_inv%fhand%unit.le.0
       open_close_inp = me_inp%fhand%unit.le.0
       open_close_u = .false.
+      open_close_spc = .false.
       if (nlist.eq.2) open_close_u = me_u%fhand%unit.le.0
       if (ninp.eq.2) open_close_spc = me_spc%fhand%unit.le.0
       if(open_close_inv)then
@@ -112,16 +123,6 @@
       endif
       if (open_close_u) call file_open(me_u%fhand)
       if (open_close_spc) call file_open(me_spc%fhand)
-
-      if(ntest.ge.100)then
-        write(luout,*) '===================='
-        write(luout,*) ' Operator inversion '
-        write(luout,*) '===================='
-        write(luout,*) 'To be inverted: ',trim(me_inp%label)
-        write(luout,*) 'The inverse: ',trim(me_inv%label)
-        if (nlist.eq.2) write(luout,*) 'Unitary mat.: ',trim(me_u%label)
-        if (ninp.eq.2) write(luout,*) 'Spec. mat.: ',trim(me_spc%label)
-      endif
 
       ! Check that the two operators have the same shape.
       ! not necessarily: in principle, the inverse is the 
@@ -172,7 +173,7 @@
 
       ! Call the actual inversion routine.
       if (mode(1:7).eq.'invsqrt') then
-        write(luout,*) 'Calculating square root of inverse'
+        write(lulog,*) 'Calculating square root of inverse'
         call invsqrt(me_inp,me_inv,nocc_cls,mode(8:11).eq.'half',
      &       nlist.eq.2,me_u,ninp.eq.2,me_spc,.false.,
      &       op_info,orb_info,str_info,strmap_info)
@@ -199,7 +200,7 @@
       end if
 
       if(ntest.ge.1000)then
-        call wrt_mel_file(luout,5,me_inv,1,
+        call wrt_mel_file(lulog,5,me_inv,1,
      &       me_inv%op%n_occ_cls,str_info,orb_info)
       endif
 
@@ -213,7 +214,7 @@
      &     call file_close_keep(me_inp%fhand)
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'time for inversion',
+      call prtim(lulog,'time for inversion',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

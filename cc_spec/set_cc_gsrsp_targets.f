@@ -34,7 +34,7 @@
      &     parameters(2)
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting targets for CC properties ...'
+     &     write(lulog,*) 'setting targets for CC properties ...'
 
       msc = 1  ! assuming closed shell
 *----------------------------------------------------------------------*

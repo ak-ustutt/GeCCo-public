@@ -58,12 +58,12 @@
       call quit(1,'inter_full_contr','still in use?')
 
       if(ntest.ge.100)then
-        write(luout,*) '==========================='
-        write(luout,*) 'Info from inter_full_contr'
-        write(luout,*) '==========================='
-        write(luout,*) 'idx_res = ',idx_res
-        write(luout,*) 'fac, nops: ',fac, nops
-        write(luout,*) 'idx_op: ',idx_op(1:nops)
+        write(lulog,*) '==========================='
+        write(lulog,*) 'Info from inter_full_contr'
+        write(lulog,*) '==========================='
+        write(lulog,*) 'idx_res = ',idx_res
+        write(lulog,*) 'fac, nops: ',fac, nops
+        write(lulog,*) 'idx_op: ',idx_op(1:nops)
       endif
 
       form_pnt => form_list
@@ -172,7 +172,7 @@ c        enddo
         enddo
 
 c        if(ntest.ge.100)then
-c          call prt_contr2(luout,proto,op_info)
+c          call prt_contr2(lulog,proto,op_info)
 c        endif
 
         ! Save the contraction to the formula.
@@ -191,7 +191,7 @@ c        endif
       enddo
       
       if(ntest.ge.100)then
-        call print_form_list(luout,form_list,op_info)
+        call print_form_list(lulog,form_list,op_info)
       endif
 
       call dealloc_contr(proto)

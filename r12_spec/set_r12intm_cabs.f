@@ -104,15 +104,15 @@
       call quit(1,'set_r12intm_cabs','obsolete routine')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_r12_intm_cabs')
-        write(luout,*) 'setting: ',trim(labels(1))
-        write(luout,*) 'ansatz = ',ansatz
-        write(luout,*) 'approx = "',approx(1:12),'"'
+        call write_title(lulog,wst_dbg_subr,'set_r12_intm_cabs')
+        write(lulog,*) 'setting: ',trim(labels(1))
+        write(lulog,*) 'ansatz = ',ansatz
+        write(lulog,*) 'approx = "',approx(1:12),'"'
       end if
 
       symmetrise = approx(12:12).eq.'S'
 
-      if (ntest.ge.100) write(luout,*) 'symmetrise = ',symmetrise
+      if (ntest.ge.100) write(lulog,*) 'symmetrise = ',symmetrise
 
       if (nlabels.lt.4)
      &     call quit(1,'set_r12intm_cabs',
@@ -228,8 +228,8 @@ c     &             2,2,2,.true.,orb_info)
       deallocate(linked)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'result from expand_op_product'
-        call print_form_list(luout,flist_adb,op_info)
+        write(lulog,*) 'result from expand_op_product'
+        call print_form_list(lulog,flist_adb,op_info)
       end if
 
       ! replace a and b by the actual operators
@@ -246,8 +246,8 @@ c     &             2,2,2,.true.,orb_info)
       call expand_subexpr(flist_adb,flist_b,0,op_info)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'after replacement'
-        call print_form_list(luout,flist_adb,op_info)
+        write(lulog,*) 'after replacement'
+        call print_form_list(lulog,flist_adb,op_info)
       end if
 
       call init_formula(flist_a_b)
@@ -257,8 +257,8 @@ c     &             2,2,2,.true.,orb_info)
      &     1,idx_dum,0,idx_intm,op_info)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'raw formula'
-        call print_form_list(luout,flist_a_b,op_info)
+        write(lulog,*) 'raw formula'
+        call print_form_list(lulog,flist_a_b,op_info)
       end if
       
       ! tidy up
@@ -341,8 +341,8 @@ c     &             2,2,2,.true.,orb_info)
      &       (/1,4,1,2,2,3,3,4/),4,.false.,op_info)
 
         if (ntest.ge.1000) then
-          write(luout,*) 'Xu D F Xl formula:'
-          call print_form_list(luout,flist_adb,op_info)
+          write(lulog,*) 'Xu D F Xl formula:'
+          call print_form_list(lulog,flist_adb,op_info)
         end if
 
         ! now, we have to replace Xu/Xl -> X and F -> H
@@ -363,16 +363,16 @@ c     &             2,2,2,.true.,orb_info)
         call dealloc_formula_list(flist_xdx)
 
         if (ntest.ge.1000) then
-          write(luout,*) 'Xu .. Xl formula:'
-          call print_form_list(luout,flist,op_info)
+          write(lulog,*) 'Xu .. Xl formula:'
+          call print_form_list(lulog,flist,op_info)
         end if
 
         call factor_out_subexpr(flist_adb,flist,op_info)
         call dealloc_formula_list(flist)
 
         if (ntest.ge.1000) then
-          write(luout,*) 'XF contribution after replacing XlXu:'
-          call print_form_list(luout,flist_adb,op_info)
+          write(lulog,*) 'XF contribution after replacing XlXu:'
+          call print_form_list(lulog,flist_adb,op_info)
         end if
 
         ! and the F -> H replacement:
@@ -383,8 +383,8 @@ c     &             2,2,2,.true.,orb_info)
         call dealloc_formula_list(flist)
 
         if (ntest.ge.1000) then
-          write(luout,*) 'XF contribution after replacing F->H:'
-          call print_form_list(luout,flist_adb,op_info)
+          write(lulog,*) 'XF contribution after replacing F->H:'
+          call print_form_list(lulog,flist_adb,op_info)
         end if
 
         ! remove dummy index, append thereby to flist_a_b
@@ -420,8 +420,8 @@ c     &             2,2,2,.true.,orb_info)
       call write_form_list(form_out%fhand,flist_a_b,form_out%comment)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final formula'
-        call print_form_list(luout,flist_a_b,op_info)
+        write(lulog,*) 'final formula'
+        call print_form_list(lulog,flist_a_b,op_info)
       end if
 
       ! tidy up

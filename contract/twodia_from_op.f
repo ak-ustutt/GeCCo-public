@@ -137,9 +137,9 @@ c      nblk = 0
         endif
 
         if (ntest.ge.100) then
-          write(luout,*) 'operator(in) (',trim(op%name),
+          write(lulog,*) 'operator(in) (',trim(op%name),
      &         ',list=',trim(mel%label),')'
-          call wrt_mel_buf(luout,5,buffer,mel,iocc_cls,iocc_cls,
+          call wrt_mel_buf(lulog,5,buffer,mel,iocc_cls,iocc_cls,
      &                  str_info,orb_info)
         end if
           
@@ -280,12 +280,12 @@ c dbg
       enddo
 
       if (ntest.ge.100) then
-c        write(luout,*) 'blocks: ',nblk
-c        write(luout,*) 'offsets:',offsets(1:nblk)
-        write(luout,*) 'diagonal:'
+c        write(lulog,*) 'blocks: ',nblk
+c        write(lulog,*) 'offsets:',offsets(1:nblk)
+        write(lulog,*) 'diagonal:'
         do idxms = 1, 3
           x2_off = (idxms-1)*ntoob**2
-          write(luout,*) 'idxms = ',idxms
+          write(lulog,*) 'idxms = ',idxms
           call wrtmat2(x2dia(x2_off+1),ntoob,ntoob,ntoob,ntoob)
         end do
       end if

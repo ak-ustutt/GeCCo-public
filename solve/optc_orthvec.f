@@ -53,8 +53,8 @@
      &     ddot, da_ddot
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'optc_orthvec')
-        write(luout,*) 'ndim, nnew, nopt: ',ndim_sbsp, nnew, nopt
+        call write_title(lulog,wst_dbg_subr,'optc_orthvec')
+        write(lulog,*) 'ndim, nnew, nopt: ',ndim_sbsp, nnew, nopt
       end if
 
       ! look for zero-vectors (in initial iteration); they should
@@ -66,7 +66,7 @@
           previous_zero = .true.
         else
           if (previous_zero) then
-            write(luout,*) 'zero_vec: ',zero_vec(1:ndim_sbsp)
+            write(lulog,*) 'zero_vec: ',zero_vec(1:ndim_sbsp)
             call quit(1,'optc_orthvec',
      &           'zero vectors should reside at the end of the'//
      &           ' initial subspace')
@@ -82,7 +82,7 @@
      &     scr(2*(nold+nnew)))
 
       if (ntest.ge.100)
-     &     write(luout,*) 'nold, nnew: ',nold, nnew
+     &     write(lulog,*) 'nold, nnew: ',nold, nnew
 
       smat(1:nold+nnew,1:nold+nnew) = 0d0
       do iold = 1, nold
@@ -320,7 +320,7 @@ c            smat(nold+jnew,nold+inew) = smat(nold+inew,nold+jnew)
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'the overlap matrix after iopt = ',iopt
+        write(lulog,*) 'the overlap matrix after iopt = ',iopt
         call wrtmat2(smat,nold+nnew,nold+nnew,nold+nnew,nold+nnew)
       end if
 
@@ -340,7 +340,7 @@ c dbg
       call mgs(xmat,smat,nold+nnew,scr)
 
       if (ntest.ge.100) then
-        write(luout,*) 'the reorth. matrix: '
+        write(lulog,*) 'the reorth. matrix: '
         call wrtmat2(xmat,nold+nnew,nold+nnew,nold+nnew,nold+nnew)
       end if
 
@@ -383,7 +383,7 @@ c        print *,'idx = ',idx,'   irec = ',irec
 c dbg
         
         if (ntest.ge.100)
-     &       write(luout,*) 'next new record: ',irec
+     &       write(lulog,*) 'next new record: ',irec
 
         ! add contributions from new space
         call optc_expand_vec(xmat(nold+1,nold+inew),nnew,xdum,.false.,

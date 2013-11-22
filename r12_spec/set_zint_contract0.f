@@ -55,13 +55,13 @@
 
 
       if(ntest.ge.100)then
-        write(luout,*)'Z-Intermediate Contraction'
-        write(luout,*)'Constituent operators: '
+        write(lulog,*)'Z-Intermediate Contraction'
+        write(lulog,*)'Constituent operators: '
         do idx = 1, nopsin
-          write(luout,*)trim(op_info%op_arr(idx_opsin(idx))%op%name)
+          write(lulog,*)trim(op_info%op_arr(idx_opsin(idx))%op%name)
         enddo
-        write(luout,*) 'max EXTR in J: ',max_ext_in_J
-        write(luout,*) 'max EXTR in K: ',max_ext_in_K
+        write(lulog,*) 'max EXTR in J: ',max_ext_in_J
+        write(lulog,*) 'max EXTR in K: ',max_ext_in_K
       endif
 
       ! Get indices of input operators.
@@ -105,8 +105,8 @@ c 999  print *,'and jumped'
 c dbg
 
       if (ntest.ge.100) then
-        write(luout,*)'formula before summing: Z-Int.'
-        call print_form_list(luout,flist,op_info)
+        write(lulog,*)'formula before summing: Z-Int.'
+        call print_form_list(lulog,flist,op_info)
       end if
 
       ! we have set the fjf terms in by straight-forward
@@ -115,8 +115,8 @@ c dbg
       call sum_terms(flist,op_info)
 
       if (ntest.ge.100) then
-        write(luout,*)'Final formula: Z-Int.'
-        call print_form_list(luout,flist,op_info)
+        write(lulog,*)'Final formula: Z-Int.'
+        call print_form_list(lulog,flist,op_info)
 c dbg
 c        if (ntest.ge.500) stop 'testing'
 c dbg

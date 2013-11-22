@@ -105,20 +105,20 @@
       ito = fromto-ifrom*10
 
       if (ntest.ge.100) then
-        write(luout,*) '============================'
-        write(luout,*) ' reo_mel messing around'
-        write(luout,*) '============================'
-        write(luout,*) ' input list = ',trim(meinp%label)
-        write(luout,*) ' ffinp: ',trim(ffinp%name)
-        write(luout,*) ' opinp: ',opinp%name(1:len_trim(opinp%name))
-        write(luout,*) ' adj. : ',dag
-        write(luout,*) ' output list = ',trim(meout%label)
-        write(luout,*) ' ffout: ',trim(ffout%name)
-        write(luout,*) ' opout: ',opout%name(1:len_trim(opout%name))
-        write(luout,*) ' reorder from ',ifrom,' to ',ito
+        write(lulog,*) '============================'
+        write(lulog,*) ' reo_mel messing around'
+        write(lulog,*) '============================'
+        write(lulog,*) ' input list = ',trim(meinp%label)
+        write(lulog,*) ' ffinp: ',trim(ffinp%name)
+        write(lulog,*) ' opinp: ',opinp%name(1:len_trim(opinp%name))
+        write(lulog,*) ' adj. : ',dag
+        write(lulog,*) ' output list = ',trim(meout%label)
+        write(lulog,*) ' ffout: ',trim(ffout%name)
+        write(lulog,*) ' opout: ',opout%name(1:len_trim(opout%name))
+        write(lulog,*) ' reorder from ',ifrom,' to ',ito
       end if
 
-      if (dag.and.max(iprlvl,ntest).ge.3) write(luout,*)
+      if (dag.and.max(iprlvl,ntest).ge.3) write(lulog,*)
      &         'Input list will be overwritten by its adjoint.'
 
       njinp = opinp%njoined
@@ -229,7 +229,7 @@
      &           'input and output blocks should have same length')
         ioffout = meout%off_op_occ(j_occ_cls)
         if (reorder) then
-          if (ntest.ge.100) write(luout,*) 'reorder block no',i_occ_cls
+          if (ntest.ge.100) write(lulog,*) 'reorder block no',i_occ_cls
           call reo_mel_blk(meinp,meout,i_occ_cls,j_occ_cls,
      &                     str_info,strmap_info,orb_info,ifrom,ito,
      &                      idxinp)
@@ -252,7 +252,7 @@
      &           'input and output blocks should have same length')
         ioffout = meout%off_op_occ(j_occ_cls)
         if (reorder) then
-          if (ntest.ge.100) write(luout,*) 'reorder block no',i_occ_cls
+          if (ntest.ge.100) write(lulog,*) 'reorder block no',i_occ_cls
           call reo_mel_blk(meinp,meout,i_occ_cls,j_occ_cls,
      &                     str_info,strmap_info,orb_info,ifrom,ito,
      &                      idxinp)
@@ -277,7 +277,7 @@
 
       call atim_csw(cpu,sys,wall)
 
-      call prtim(luout,'time for reordering ME-list ',
+      call prtim(lulog,'time for reordering ME-list ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 
       return

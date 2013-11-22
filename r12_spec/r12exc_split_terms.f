@@ -53,7 +53,7 @@
      &     rank_occ
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'select_terms')
+        call write_title(lulog,wst_dbg_subr,'select_terms')
       endif
 
       form_pnt => flist
@@ -62,15 +62,15 @@
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
           form_pnt%target = idxop_res
         case(command_add_contribution)
 
           if (ntest.ge.1000) then
-            write(luout,*) 'current item:'
-            call prt_contr2(luout,form_pnt%contr,op_info)
+            write(lulog,*) 'current item:'
+            call prt_contr2(lulog,form_pnt%contr,op_info)
           end if
 
           nvtx = form_pnt%contr%nvtx
@@ -172,15 +172,15 @@ c     &         (nother.eq.0.or.(nother.eq.1.and.has_vhh))
           is_typ3 = .not.is_typ1.and..not.is_typ2
 
           if (ntest.ge.1000) then
-            write(luout,*) 'rank_lx, rank_rx, nt_gt_2, nham:',
+            write(lulog,*) 'rank_lx, rank_rx, nt_gt_2, nham:',
      &                      rank_lx, rank_rx, nt_gt_2, nham
-            write(luout,*) 'nr12,nr12ph,nr12phdg,np_other:',
+            write(lulog,*) 'nr12,nr12ph,nr12phdg,np_other:',
      &                      nr12,nr12ph,nr12phdg,np_other
-            write(luout,*) 'nother,has_vhh:',
+            write(lulog,*) 'nother,has_vhh:',
      &                      nother,has_vhh
-            write(luout,*) '-> is_r1l1,has_corr: ',
+            write(lulog,*) '-> is_r1l1,has_corr: ',
      &                         is_r1l1,has_corr  
-            write(luout,*) '-> is_typ1, is_typ2, is_typ3: ',
+            write(lulog,*) '-> is_typ1, is_typ2, is_typ3: ',
      &                         is_typ1, is_typ2, is_typ3
           end if
 
@@ -196,7 +196,7 @@ c     &         (nother.eq.0.or.(nother.eq.1.and.has_vhh))
           if (delete) then
             ! Print the deleted contraction.
             if(ntest.ge.1000)then
-              write(luout,*)'---- Deleted formula item ----'
+              write(lulog,*)'---- Deleted formula item ----'
             endif
 
             ! Delete the node.
@@ -209,7 +209,7 @@ c     &         (nother.eq.0.or.(nother.eq.1.and.has_vhh))
           end if
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'delete_non_fact','command undefined here')
         end select
 

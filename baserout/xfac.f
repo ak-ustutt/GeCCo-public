@@ -14,7 +14,7 @@
 
       if( n .lt. 0 ) then
         xfac = 0d0
-        write(luout,*)
+        write(lulog,*)
      &       ' warning faculty of negative number set to zero '
       else
 c

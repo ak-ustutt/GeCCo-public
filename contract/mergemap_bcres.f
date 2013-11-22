@@ -100,23 +100,23 @@ c dbg
       end do
 
       if (error1) then
-        write(luout,*) 'svertex: ',svertex
-        write(luout,*) 'isvtx1,isvtx2: ',isvtx1,isvtx2
-        write(luout,*) 'reo: ',ireo
-        write(luout,*) 'vtx_list_final: ',vtx_list_final(1:nvtx_final)
-        write(luout,*) 'not found: ivtx_final = ',ivtx_final
+        write(lulog,*) 'svertex: ',svertex
+        write(lulog,*) 'isvtx1,isvtx2: ',isvtx1,isvtx2
+        write(lulog,*) 'reo: ',ireo
+        write(lulog,*) 'vtx_list_final: ',vtx_list_final(1:nvtx_final)
+        write(lulog,*) 'not found: ivtx_final = ',ivtx_final
         call quit(1,'mergemap_bcres','something is buggy!')
       end if
       if (error2) then
-        write(luout,*) 'ld_map = ',ld_map
+        write(lulog,*) 'ld_map = ',ld_map
         call quit(1,'mergemap_bcres','ld_map too small?')
       end if
 c dbg
-c      write(luout,*) 'ld_map: ',ld_map
-c      write(luout,*) 'mergemap: '
+c      write(lulog,*) 'ld_map: ',ld_map
+c      write(lulog,*) 'mergemap: '
 c      do idx = 1, nvtx_final
 c        do jdx = 1, 2
-c          write(luout,'(x,i4,i4,":",10i4)') 
+c          write(lulog,'(x,i4,i4,":",10i4)') 
 c     &               idx,jdx,mergemap(1:ld_map,jdx,idx)
 c        end do
 c      end do

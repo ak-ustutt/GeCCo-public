@@ -65,11 +65,11 @@
       ok = .true.
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'split_contr3 at work')
-        write(luout,*) 'contr:'
-        call prt_contr2(luout,contr,op_info)
-        write(luout,*) 'contr_spl:'
-        call prt_contr2(luout,contr_spl,op_info)
+        call write_title(lulog,wst_dbg_subr,'split_contr3 at work')
+        write(lulog,*) 'contr:'
+        call prt_contr2(lulog,contr,op_info)
+        write(lulog,*) 'contr_spl:'
+        call prt_contr2(lulog,contr_spl,op_info)
       end if
 
       ! prefactor
@@ -120,9 +120,9 @@
       end do
 
       if (.not.success) then
-        call prt_contr_p(luout,svertex,vtx,topo,
+        call prt_contr_p(lulog,svertex,vtx,topo,
      &       xlines,nvtx,nj)
-        call prt_contr_p(luout,svertex_spl,vtx_spl,topo_spl,
+        call prt_contr_p(lulog,svertex_spl,vtx_spl,topo_spl,
      &       xlines_spl,nvtx_spl,nj_spl)
         call quit(1,'split_contr3',
      &     'contractions do not match; check with contr_in_contr() '//
@@ -146,7 +146,7 @@
       call unique_list(list,lenlist)
 
       if (ntest.eq.100)
-     &     write(luout, *) 'vtxmap: ',vtxmap
+     &     write(lulog, *) 'vtxmap: ',vtxmap
 
       ivtx_spl = 0
       isupervtx_spl(1:nvtx) = 0
@@ -254,7 +254,7 @@ c dbg
       end if
 c dbg
 c      print *,'after approach:'
-c      call prt_contr_p(luout,svertex,vtx,topo,
+c      call prt_contr_p(lulog,svertex,vtx,topo,
 c     &       xlines,nvtx,nj)
 c dbg
 c      do ivtx = 1, nvtx
@@ -270,7 +270,7 @@ c     &                     topo,xlines,nvtx,nj,
 c     &                     list_reo,lenlist)
 
 c dbg
-c      call prt_contr_p(luout,svertex_spl,vtx_spl,topo_spl,
+c      call prt_contr_p(lulog,svertex_spl,vtx_spl,topo_spl,
 c     &       xlines_spl,nvtx_spl,nj_spl)
 c dbg
 
@@ -279,13 +279,13 @@ c dbg
       if (nvtx_spl.eq.1) isupervtx_spl(1) = 1
 
 c      if (ntest.eq.100)
-c     &     write(luout, *) 'vtxmap (new): ',vtxmap
+c     &     write(lulog, *) 'vtxmap (new): ',vtxmap
       if (ntest.eq.100)
-     &     write(luout, *) 'ireo: ',ireo
+     &     write(lulog, *) 'ireo: ',ireo
       if (ntest.eq.100)
-     &     write(luout, *) 'ireo2: ',ireo2
+     &     write(lulog, *) 'ireo2: ',ireo2
       if (ntest.eq.100)
-     &     write(luout, *) 'isupervtx_spl: ',isupervtx_spl
+     &     write(lulog, *) 'isupervtx_spl: ',isupervtx_spl
 
       ! use reo and vtxmap to build ivtx_new
       ! use xlines_spl to set isuper_spl 
@@ -313,7 +313,7 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
 
       nvtx_rem = ivtx_rem
       if (ntest.eq.100)
-     &     write(luout, *) 'ivtx_new: ',ivtx_new
+     &     write(lulog, *) 'ivtx_new: ',ivtx_new
 
       ! a bit awkward correction of ivtx_new:
       ! since in topo_approach_vtxs, the interm. vertices are shifted
@@ -335,11 +335,11 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
       deallocate(ivtx_tmp)
      
       if (ntest.ge.100) then
-        write(luout,*) 'nvtx_rem: ',nvtx_rem
-        write(luout,*) 'ivtx_new (new): ',ivtx_new(1:nvtx)
-        write(luout,*) 'isupervtx_spl: ',isupervtx_spl(1:nvtx)
-        write(luout,*) 'isuper_tgt: ',isuper_tgt(1:nvtx)
-        write(luout,*) 'split_vtxs: ',split_vtxs
+        write(lulog,*) 'nvtx_rem: ',nvtx_rem
+        write(lulog,*) 'ivtx_new (new): ',ivtx_new(1:nvtx)
+        write(lulog,*) 'isupervtx_spl: ',isupervtx_spl(1:nvtx)
+        write(lulog,*) 'isuper_tgt: ',isuper_tgt(1:nvtx)
+        write(lulog,*) 'split_vtxs: ',split_vtxs
       end if
       
       ! loop over arcs of contr and get number of new arcs
@@ -503,8 +503,8 @@ c     &     write(luout, *) 'vtxmap (new): ',vtxmap
      &       isuper_tgt)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final contr_rem:'
-        call prt_contr2(luout,contr_rem,op_info)
+        write(lulog,*) 'final contr_rem:'
+        call prt_contr2(lulog,contr_rem,op_info)
       end if
 
       return

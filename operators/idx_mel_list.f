@@ -22,10 +22,10 @@
      &     imel
 
       if (ntest.ge.100) then
-        write(luout,*) '--------------------'
-        write(luout,*) 'this is idx_mel_list'
-        write(luout,*) '--------------------'
-        write(luout,*) ' looking for: "',trim(mel_label),'"'
+        write(lulog,*) '--------------------'
+        write(lulog,*) 'this is idx_mel_list'
+        write(lulog,*) '--------------------'
+        write(lulog,*) ' looking for: "',trim(mel_label),'"'
       end if
 
       idx_mel_list = -1
@@ -38,7 +38,7 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'result: ',idx_mel_list
+        write(lulog,*) 'result: ',idx_mel_list
       end if
 
       return

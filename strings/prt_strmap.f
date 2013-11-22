@@ -14,7 +14,7 @@
       integer ::
      &     imap, idx, igastp, hpvx
 
-      write(luout,'(x,a,4i4,a,4i4,a)')
+      write(lulog,'(x,a,4i4,a,4i4,a)')
      &               'maps for: (',iocc1(1:ngastp),' )(',
      &                             iocc2(1:ngastp),' )'
       imap = 0
@@ -23,7 +23,7 @@
         hpvx = hpvxseq(igastp)
         if (iocc1(hpvx)+iocc2(hpvx).eq.0) cycle
         imap = imap+1
-        write(luout,*) 'map #',imap
+        write(lulog,*) 'map #',imap
         call wrtimat2(strmap(idx),nstr1(hpvx),nstr2(hpvx),
      &                            nstr1(hpvx),nstr2(hpvx))
         idx = idx + nstr1(hpvx)*nstr2(hpvx)

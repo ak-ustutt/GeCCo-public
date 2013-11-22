@@ -53,13 +53,13 @@ c      include 'def_contraction_list.h'
      &     idx_oplist2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'here speaks form_indep')
-        write(luout,*) ' f_input  = ',trim(f_input%label)
-        write(luout,*) ' f_output = ',trim(f_output%label)
-        write(luout,*) ' op_res  = ',trim(label_opres)
+        call write_title(lulog,wst_dbg_subr,'here speaks form_indep')
+        write(lulog,*) ' f_input  = ',trim(f_input%label)
+        write(lulog,*) ' f_output = ',trim(f_output%label)
+        write(lulog,*) ' op_res  = ',trim(label_opres)
         do icmpnd = 1, ncmpnd
-          write(luout,*) 'compound # ',icmpnd
-          write(luout,*) ' op  = ',trim(label_op(icmpnd))
+          write(lulog,*) 'compound # ',icmpnd
+          write(lulog,*) ' op  = ',trim(label_op(icmpnd))
         end do
       end if
 
@@ -128,7 +128,7 @@ c      include 'def_contraction_list.h'
             nterms = nterms+1
             contr%idx_res = idxres ! not completely OK
             if (ntest.ge.100) then
-              call prt_contr2(luout,contr,op_info)
+              call prt_contr2(lulog,contr,op_info)
             end if
           else
             ! deallocate contents and re-link the list
@@ -160,7 +160,7 @@ c      include 'def_contraction_list.h'
       call dealloc_formula_list(flist)
 
       if (ntest.ge.10) then
-        write(luout,*) 'generated terms: ',nterms
+        write(lulog,*) 'generated terms: ',nterms
       end if
       
       return

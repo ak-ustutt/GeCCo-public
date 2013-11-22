@@ -41,9 +41,9 @@
      &     cur_contr
 
       if (ntest.ge.100) then
-        write(luout,*) '=============================='
-        write(luout,*) ' info from collect_terms_w_op'
-        write(luout,*) '=============================='
+        write(lulog,*) '=============================='
+        write(lulog,*) ' info from collect_terms_w_op'
+        write(lulog,*) '=============================='
       end if
 
       fl_pnt => form

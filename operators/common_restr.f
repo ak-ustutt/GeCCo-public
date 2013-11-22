@@ -29,10 +29,10 @@
      &     is_proper_restr_for_hpvx, zero_ivec
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_func,i_am)
-        write(luout,*) 'on entry:'
-        call wrt_rstr(luout,rst1,ngas)
-        call wrt_rstr(luout,rst2,ngas)
+        call write_title(lulog,wst_dbg_func,i_am)
+        write(lulog,*) 'on entry:'
+        call wrt_rstr(lulog,rst1,ngas)
+        call wrt_rstr(lulog,rst2,ngas)
       end if
 
       if (nspin.gt.1) call quit(1,i_am,'nspin.gt.1 -> adapt me fully')
@@ -64,8 +64,8 @@
      &                                  IEXTR,hpvxgas(:,ispin),ngas)
 
           if (ntest.ge.100) then
-            write(luout,*) 'present ',ispin,ica
-            call wrt_rstr(luout,rst_res,ngas)
+            write(lulog,*) 'present ',ispin,ica
+            call wrt_rstr(lulog,rst_res,ngas)
           end if
 
           ok = ok.and.is_proper_restr_for_hpvx(rst_res(:,:,ica,1,ispin),
@@ -90,8 +90,8 @@
       common_restr = ok
 
       if (ntest.ge.100) then
-        write(luout,*) 'on exit: ok = ',ok
-        call wrt_rstr(luout,rst_res,ngas)
+        write(lulog,*) 'on exit: ok = ',ok
+        call wrt_rstr(lulog,rst_res,ngas)
       end if
 
       end

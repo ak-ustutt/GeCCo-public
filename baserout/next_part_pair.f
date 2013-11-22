@@ -34,19 +34,19 @@
      &     next_part_number
 
       if (ntest.ge.100) then
-        write(luout,*) '=========================='
-        write(luout,*) ' this is next_part_pair'
-        write(luout,*) '=========================='
-        write(luout,*) '  inum = /',inum(1),char(92)
-        write(luout,*) '        ',char(92),inum(2),'/'
-        write(luout,*) '  nsum,inummin,inummax: ',
+        write(lulog,*) '=========================='
+        write(lulog,*) ' this is next_part_pair'
+        write(lulog,*) '=========================='
+        write(lulog,*) '  inum = /',inum(1),char(92)
+        write(lulog,*) '        ',char(92),inum(2),'/'
+        write(lulog,*) '  nsum,inummin,inummax: ',
      &                nsum,inummin,inummax
         if (init) then
-          write(luout,*) 'initiating ...'
+          write(lulog,*) 'initiating ...'
         else
-          write(luout,*) 'partitioning on entry: '
-          write(luout,'(2x,">",10i4)') ipart(1,1:nsum)
-          write(luout,'(2x,">",10i4)') ipart(2,1:nsum)
+          write(lulog,*) 'partitioning on entry: '
+          write(lulog,'(2x,">",10i4)') ipart(1,1:nsum)
+          write(lulog,'(2x,">",10i4)') ipart(2,1:nsum)
         end if
       end if
 
@@ -85,11 +85,11 @@
 
       if (ntest.ge.100) then
         if (succ) then
-          write(luout,*) '  created partitioning: '
-          write(luout,'(2x,">",10i4)') ipart(1,1:nsum)
-          write(luout,'(2x,">",10i4)') ipart(2,1:nsum)
+          write(lulog,*) '  created partitioning: '
+          write(lulog,'(2x,">",10i4)') ipart(1,1:nsum)
+          write(lulog,'(2x,">",10i4)') ipart(2,1:nsum)
         else
-          write(luout,*) ' no (further) partitioning possible'
+          write(lulog,*) ' no (further) partitioning possible'
         end if
       end if
 

@@ -68,7 +68,7 @@
      &     maxblk_in_contr, ifndmax, int_pack
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'this is topomap4contr')
+        call write_title(lulog,wst_dbg_subr,'this is topomap4contr')
       end if
       
       if (mode.ne.1.and.mode.ne.2.and.mode.ne.3)
@@ -167,13 +167,13 @@ c      maxop  = maxop_in_contr(contr)
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'topo-map:'
+        write(lulog,*) 'topo-map:'
         call iwrtma(topomap,nvtx,nvtx,nvtx,nvtx)
-        write(luout,*) 'equiv-map:'
+        write(lulog,*) 'equiv-map:'
         call iwrtma(eqv_map,1,nvtx,1,nvtx)
-        write(luout,*) 'neqv:'
+        write(lulog,*) 'neqv:'
         call iwrtma(neqv,1,nvtx,1,nvtx)
-        write(luout,*) 'idx_eqv:'
+        write(lulog,*) 'idx_eqv:'
         call iwrtma(idx_eqv,nvtx,nvtx,nvtx,nvtx)
       end if
 

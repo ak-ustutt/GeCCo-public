@@ -103,8 +103,8 @@ c     &       absym,casym,gamma,s2,ms,ms_fix,
           call add_unity(1d0,1,mel_pnt,idx,orb_info,str_info)
         end do
 c dbg
-c        write(luout,*)'writing unity'
-c        call wrt_mel_file(luout,5,mel_pnt,1,1,
+c        write(lulog,*)'writing unity'
+c        call wrt_mel_file(lulog,5,mel_pnt,1,1,
 c     &       str_info,orb_info)
 c dbg
 

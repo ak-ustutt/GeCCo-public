@@ -37,7 +37,7 @@
       logical, intent(in) ::
      &     tra_new, tra1, tra2
 
-      if (ntest.ge.100) write(luout,*) 'storing def of intermediate'
+      if (ntest.ge.100) write(lulog,*) 'storing def of intermediate'
 
       fl_item%interm%n_occ_cls = nblk
       fl_item%interm%njoined = nj

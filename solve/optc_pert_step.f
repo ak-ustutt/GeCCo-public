@@ -38,9 +38,9 @@
      &     ddot, da_ddot, fndmnx, da_fndmnx
 
       if (ntest.gt.0) then
-        write(luout,*) '============================'
-        write(luout,*) ' hi, this is optc_pert_step'
-        write(luout,*) '============================'
+        write(lulog,*) '============================'
+        write(lulog,*) ' hi, this is optc_pert_step'
+        write(lulog,*) '============================'
       end if
 
       if (nincore.ge.2) then

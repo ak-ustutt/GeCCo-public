@@ -88,8 +88,8 @@
      &     int_pack, ifac
      
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'form_fact_new at work!')
-        call prt_contr2(luout,contr,op_info)
+        call write_title(lulog,wst_dbg_subr,'form_fact_new at work!')
+        call prt_contr2(lulog,contr,op_info)
       end if
 c dbg
 c      call check_xarcs(contr,op_info)
@@ -128,8 +128,8 @@ c dbg
           call pack_contr(svertex,vtx,topo,
      &                    xlines(1:nvtx_full,1:njoined),contr,njoined)
 c dbg
-c          write(luout,*) 'checking for necessary reordering:'
-c          call prt_contr_p(luout,svertex,vtx,topo,
+c          write(lulog,*) 'checking for necessary reordering:'
+c          call prt_contr_p(lulog,svertex,vtx,topo,
 c     &            xlines(1:nvtx_full,1:njoined),nvtx_full,njoined)
 c dbgend
           op_res_p = 0
@@ -238,6 +238,7 @@ cmh      if (nvtx_full.ne.njoined) call check_disconnected(contr)
       nlevel = 1
       icount = 0
       ncost_eval = 0
+      iscale = 0
 
       idx_intm = 0
 
@@ -253,22 +254,22 @@ c dbg
      &     contr,occ_vtx,irestr_vtx,info_vtx)
 
       if (iprlvl.ge.10) then
-        write(luout,*) '# of dummy contractions: ',ncost_eval
+        write(lulog,*) '# of dummy contractions: ',ncost_eval
       end if
 
       if (.not.found) then
-        call prt_contr3(luout,contr,-1)
-        call prt_contr2(luout,contr,op_info)
+        call prt_contr3(lulog,contr,-1)
+        call prt_contr2(lulog,contr,op_info)
         call quit(1,'form_fact_new','Did not find any factorization!')
       end if
 
       if (ntest.ge.10) then
-        write(luout,*) 'optimal factorization: '
-        write(luout,'(x,a,g15.10)') 'flops: ',costmin(1)
-        write(luout,'(x,a,2g15.10)') 'mem:   ',costmin(2:3)
-        write(luout,'(x,a,"H^",i2," P^",i2,"V^",i2,"X^",i2)')
+        write(lulog,*) 'optimal factorization: '
+        write(lulog,'(x,a,g15.10)') 'flops: ',costmin(1)
+        write(lulog,'(x,a,2g15.10)') 'mem:   ',costmin(2:3)
+        write(lulog,'(x,a,"H^",i2," P^",i2,"V^",i2,"X^",i2)')
      &       'contraction scaling:  ',iscalemin(1:4,1)
-        write(luout,'(x,a,"H^",i2," P^",i2,"V^",i2,"X^",i2)')
+        write(lulog,'(x,a,"H^",i2," P^",i2,"V^",i2,"X^",i2)')
      &       'intermediate scaling: ',iscalemin(1:4,2)
       end if
 
@@ -281,8 +282,8 @@ c dbg
 
 c dbg
 c      print *,'now SETting'
-c        call prt_contr2(luout,contr,op_info)
-c        call wrt_occ_n(luout,occ_vtx,nvtx_full+njoined)
+c        call prt_contr2(lulog,contr,op_info)
+c        call wrt_occ_n(lulog,occ_vtx,nvtx_full+njoined)
 c dbg
       ! call kernel again for optimal sequence --> set fl_fact now
       call form_fact_rec_new('SET',.true.,nlevel,ifact_best,fl_fact,
@@ -294,12 +295,12 @@ c dbg
 
       call atim_csw(cpu,sys,wall)
       if (iprlvl.ge.5)
-     &    call prtim(luout,'time in form_fact_new',
+     &    call prtim(lulog,'time in form_fact_new',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       if (ntest.ge.100) then
-        write(luout,*) 'generated formula'
-        call print_form_list(luout,fl_fact,op_info)
+        write(lulog,*) 'generated formula'
+        call print_form_list(lulog,fl_fact,op_info)
       end if
 
       return
@@ -359,19 +360,19 @@ c dbg
       if (orb_info%nsym.eq.0)
      &     call quit(1,'form_fact_new2_r1','buggy nsym !')
       if (ntest.ge.1000) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'form_fact_rec_new rursively at work')
-        write(luout,*) 'nlevel = ',nlevel
-        write(luout,*) 'current cost: ',cost_in(1:3)
+        write(lulog,*) 'nlevel = ',nlevel
+        write(lulog,*) 'current cost: ',cost_in(1:3)
         if (nlevel.gt.1) then
-          write(luout,*) 'current ifact: '
-          write(luout,'(x,i5,"*",i5,"->",i5,"(",i5,")")')
+          write(lulog,*) 'current ifact: '
+          write(lulog,'(x,i5,"*",i5,"->",i5,"(",i5,")")')
      &         ifact(1:4,1:nlevel-1)
         end if
-        write(luout,*) 'result: njoined = ',njoined
-        call wrt_occ_n(luout,occ_vtx,njoined)
-        write(luout,*) 'current (reduced) contraction:'
-        call prt_contr3(luout,contr,occ_vtx(1,1,njoined+1))
+        write(lulog,*) 'result: njoined = ',njoined
+        call wrt_occ_n(lulog,occ_vtx,njoined)
+        write(lulog,*) 'current (reduced) contraction:'
+        call prt_contr3(lulog,contr,occ_vtx(1,1,njoined+1))
       end if
 
       fl_pnt => fl_in
@@ -407,7 +408,7 @@ c dbg
 
         icount = icount+1
         if (ntest.ge.1000) then
-          write(luout,*) ' next arc, narc, icount: ',iarc,narc,icount
+          write(lulog,*) ' next arc, narc, icount: ',iarc,narc,icount
         end if
 
         ! reset
@@ -432,13 +433,13 @@ c dbg
         end do
 
         if (ntest.ge.1000) then
-          write(luout,'(x,a,l1)')
+          write(lulog,'(x,a,l1)')
      &         'possible: ',possible
           if (possible) then
-            write(luout,'(x,a,3f20.2)') 'cost:    ',cost
-            write(luout,'(x,a,3f20.2)') 'costmin: ',costmin
+            write(lulog,'(x,a,3f20.2)') 'cost:    ',cost
+            write(lulog,'(x,a,3f20.2)') 'costmin: ',costmin
             if (cost(1).ge.costmin(1))
-     &           write(luout,*) 'too expensive !'
+     &           write(lulog,*) 'too expensive !'
           end if
         end if
 
@@ -472,8 +473,8 @@ c dbg
      &                              irestr_vtx_red,info_vtx_red)
 
           if (ntest.ge.1000) then
-            write(luout,*) 'back in level ',nlevel
-            write(luout,*) ' current arc: ',iarc,narc
+            write(lulog,*) 'back in level ',nlevel
+            write(lulog,*) ' current arc: ',iarc,narc
           end if
 
           ! reset intermediate counter
@@ -492,10 +493,10 @@ c dbg
           nlevel_best = nlevel
 
           if (ntest.ge.1000) then
-            write(luout,*) 'currently best factorization:'
-            write(luout,'(x,i5,"*",i5,"->",i5,"(",i5,")")')
+            write(lulog,*) 'currently best factorization:'
+            write(lulog,'(x,i5,"*",i5,"->",i5,"(",i5,")")')
      &           ifact_best(1:4,1:nlevel_best)
-            write(luout,*) 'current costmin:',costmin
+            write(lulog,*) 'current costmin:',costmin
           end if
 
         end if
@@ -503,7 +504,7 @@ c dbg
       end do
 
       if (ntest.ge.1000) then
-        write(luout,*) 'returning from level ',nlevel
+        write(lulog,*) 'returning from level ',nlevel
       end if
 
       if (new) call dealloc_contr(contr_red)

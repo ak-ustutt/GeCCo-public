@@ -47,8 +47,8 @@
      &     idxlist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'this is sign_bc')
-        write(luout,*) 'maps:'
+        call write_title(lulog,wst_dbg_subr,'this is sign_bc')
+        write(lulog,*) 'maps:'
         call iwrtma(merge_ex1cnt,ld_m1c,2*njoined_op1,
      &                           ld_m1c,2*njoined_op1)
         call iwrtma(merge_ex2cnt,ld_m2c,2*njoined_op2,
@@ -86,10 +86,10 @@ c dbg
       if (iop1op2.ne.njoined_op1+njoined_op2) stop 'what is this?'
 c dbg
       if (ntest.ge.100) then
-        write(luout,*) 'Contractions:'
-        call wrt_occ_n(luout,iocc_cnt,njoined_cnt)
-        write(luout,*) 'Vertices in original order'
-        call wrt_occ_n(luout,iocc_prim,nvtx)
+        write(lulog,*) 'Contractions:'
+        call wrt_occ_n(lulog,iocc_cnt,njoined_cnt)
+        write(lulog,*) 'Vertices in original order'
+        call wrt_occ_n(lulog,iocc_prim,nvtx)
       end if
 
       ! 
@@ -114,7 +114,7 @@ c dbg
             exit
           end if
         end do
-        if (ntest.ge.100) write(luout,*) 'CNT #',icnt,': ',ivtx1,ivtx2
+        if (ntest.ge.100) write(lulog,*) 'CNT #',icnt,': ',ivtx1,ivtx2
 c dbg
         if (ivtx1*ivtx2.eq.0) stop 'sbc: oha!'
 c dbg
@@ -158,9 +158,9 @@ c dbg
         icasign = mod(icasign + ncntc*(nencl+nrem),2)
 
         if (ntest.ge.100) then
-          write(luout,*) 'ncntc,ncnta,nencl,nrem: ',
+          write(lulog,*) 'ncntc,ncnta,nencl,nrem: ',
      &         ncntc,ncnta,nencl,nrem
-          write(luout,*) 'updated CA sign:   ',icasign
+          write(lulog,*) 'updated CA sign:   ',icasign
         end if
 
         do ica = 1, 2
@@ -180,9 +180,9 @@ c dbg
         end do
 
         if (ntest.ge.100) then
-          write(luout,*) 'updated HPVX sign: ',ihpvxsign
-          write(luout,*) 'updated vertices:'
-          call wrt_occ_n(luout,iocc_prim,nvtx)
+          write(lulog,*) 'updated HPVX sign: ',ihpvxsign
+          write(lulog,*) 'updated vertices:'
+          call wrt_occ_n(lulog,iocc_prim,nvtx)
         end if
 
       end do
@@ -215,7 +215,7 @@ c        ivtx1 = idx_ex1ex2(1,ivtx1raw)
 
 c            if (ivtx1.eq.ivtx2) cycle
 
-            if (ntest.ge.100) write(luout,*) 'merging: ',ivtx1,ivtx2
+            if (ntest.ge.100) write(lulog,*) 'merging: ',ivtx1,ivtx2
             
             ! same story as above: in case of supervertices,
             ! ivtx1>ivtx2 may happen so we do the following
@@ -254,10 +254,10 @@ c new
      &                             +nex1a*(nex2c+nex2a+nencl), 2)
             end if
             if (ntest.ge.100) then
-              write(luout,'(1x,a,8i3)')
+              write(lulog,'(1x,a,8i3)')
      &             'nencl,nex1a,nex1c,nex2a,nex2c: ',
      &              nencl,nex1a,nex1c,nex2a,nex2c
-              write(luout,*) 'updated CA sign:   ',icasign
+              write(lulog,*) 'updated CA sign:   ',icasign
             end if
 
             ! hpvx transpositions:
@@ -299,9 +299,9 @@ c     &            +iocc_prim(hpvx,2,ivtx2m)*iocc_prim(hpvx2,2,ivtx1m),2)
             iocc_prim(1:ngastp,1:2,ivtx2) = 0
 
             if (ntest.ge.100) then
-              write(luout,*) 'updated HPVX sign: ',ihpvxsign
-              write(luout,*) 'updated vertices:'
-              call wrt_occ_n(luout,iocc_prim,nvtx)
+              write(lulog,*) 'updated HPVX sign: ',ihpvxsign
+              write(lulog,*) 'updated vertices:'
+              call wrt_occ_n(lulog,iocc_prim,nvtx)
             end if
           end do
         end do
@@ -311,9 +311,9 @@ c     &            +iocc_prim(hpvx,2,ivtx2m)*iocc_prim(hpvx2,2,ivtx1m),2)
       if (mod(icasign+ihpvxsign,2).eq.1) bc_sign = -1d0
 
       if (ntest.ge.100) then
-        write(luout,*) 'Final CA-sign:   ',(-1d0)**(dble(icasign))
-        write(luout,*) 'Final HPVX-sign: ',(-1d0)**(dble(ihpvxsign))
-        write(luout,*) 'Final total BC:  ',bc_sign
+        write(lulog,*) 'Final CA-sign:   ',(-1d0)**(dble(icasign))
+        write(lulog,*) 'Final HPVX-sign: ',(-1d0)**(dble(ihpvxsign))
+        write(lulog,*) 'Final total BC:  ',bc_sign
       end if
 
       end

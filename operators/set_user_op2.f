@@ -54,9 +54,9 @@ c     &     freeze(2)
       iprint = max(iprlvl,ntest)
 
       if (iprint.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_user_op')
-        call wrt_occ_n(luout,occ_def,nblk*njoined)
-        call wrt_rstr(luout,irestr,orb_info%ngas)
+        call write_title(lulog,wst_dbg_subr,'set_user_op')
+        call wrt_occ_n(lulog,occ_def,nblk*njoined)
+        call wrt_rstr(lulog,irestr,orb_info%ngas)
       end if
 
       if (len_trim(name).gt.len_opname)
@@ -64,10 +64,10 @@ c     &     freeze(2)
 
       if (type.ne.optyp_operator.and.type.ne.optyp_density) then
         if (type.eq.optyp_intermediate) then
-          write(luout,*)
+          write(lulog,*)
      &         'use set_gen_intermediate to define intermediates'
         else
-          write(luout,*) 'type: ',type,' ?'
+          write(lulog,*) 'type: ',type,' ?'
         end if
         call quit(1,'set_user_op','illegal type specification')
       end if
@@ -194,13 +194,13 @@ C                call quit(1,'set_user_op2','ever accessed this part?')
       end do
 
       if (iprint.ge.2)
-     &       write(luout,'(x,3a,i4)')
+     &       write(lulog,'(x,3a,i4)')
      &       'Number of occupation classes for ',
      &       trim(name),': ',op%n_occ_cls
 
       if (iprint.ge.5) then
-        write(luout,*) 'According to your wishes, I set the following:'
-        call print_op_occ(luout,op)
+        write(lulog,*) 'According to your wishes, I set the following:'
+        call print_op_occ(lulog,op)
       end if
       
       return

@@ -41,7 +41,7 @@
      &     iRsys(:)
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting general targets ...'
+     &     write(lulog,*) 'setting general targets ...'
 
       call get_argument_value('method.R12','trunc',ival=trunc_type)
       truncate = trunc_type.ge.0

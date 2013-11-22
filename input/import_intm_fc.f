@@ -71,8 +71,8 @@
       igas_restr => str_info%igas_restr
 
       if(ntest.ge.100)then
-        write(luout,*) 'Frozen-core import of F12-intermediates'
-        write(luout,*) 'Intermediate = ',trim(op%name)
+        write(lulog,*) 'Frozen-core import of F12-intermediates'
+        write(lulog,*) 'Intermediate = ',trim(op%name)
       endif
 
       ! Find maximum length needed for reorder buffer.
@@ -199,7 +199,7 @@ c     &     call quit(1,'import_intm_fc','wrong nindex')
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.5) 
-     &     call prtim(luout,'time in intermediate import',
+     &     call prtim(lulog,'time in intermediate import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return
@@ -231,7 +231,7 @@ c        print *,'idxstr = ',lenblk
 c        if(lenblk.eq.0) exit
 c
 c        do idx = 1,lenblk
-c          write(luout,*)indices(1:nindex,idx),spins(1:nindex,idx),
+c          write(lulog,*)indices(1:nindex,idx),spins(1:nindex,idx),
 c     &         val(idx)
 c        enddo
 c      enddo

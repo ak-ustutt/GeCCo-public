@@ -31,7 +31,7 @@
      &     xarc(:)
       
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'svmap4contr2')
+     &     call write_title(lulog,wst_dbg_subr,'svmap4contr2')
 
       nvtx = contr%nvtx
       nxarc = contr%nxarc
@@ -46,7 +46,7 @@
             if (svmap(ivtx).gt.0.and.isvtx.ne.svmap(ivtx)) then
               unique = .false.
               exit
-cmh              call prt_contr3(luout,contr,-1)
+cmh              call prt_contr3(lulog,contr,-1)
 cmh              call quit(1,'svmap4contr2',
 cmh     &                       'inconsistent xarc detected!')
             end if
@@ -56,7 +56,7 @@ cmh     &                       'inconsistent xarc detected!')
       end do
 
       if (ntest.ge.100)
-     &     write(luout,'(x,a,10i5)') 'svmap: ',svmap(1:nvtx)
+     &     write(lulog,'(x,a,10i5)') 'svmap: ',svmap(1:nvtx)
 
       return
       end

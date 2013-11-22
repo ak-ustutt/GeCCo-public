@@ -93,7 +93,7 @@ c dbg
 
         tgt => tgt_info%array(idx)%tgt
 
-        write(luout,*)
+        write(lulog,*)
      &       'My next target: ',trim(tgt_info%array(idx)%tgt%name)
 
 c        if (tgt%n_rules.eq.0)
@@ -103,7 +103,7 @@ c     &       call quit(1,'do_calc','no rules for target?')
         do jdx = 1, tgt%n_rules
 
           rule => tgt%rules(jdx)
-          write(luout,*)
+          write(lulog,*)
      &       'Rule: ',trim(rule%command)
 
           if (.not.rule%new) then 
@@ -144,7 +144,7 @@ c          end do
 
       end do
 
-      write(luout,*) '... all targets processed!'
+      write(lulog,*) '... all targets processed!'
      
       ! still a few deallocs missing .... !!      
       call clean_strmap(strmap_info)

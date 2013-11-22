@@ -56,7 +56,7 @@
       ! divide by denominator
       do idx = 1, ndim
         if (xvec(idx).lt.thrsh) then
-          write(luout,*) 'idx, xvec: ',idx,xvec(idx)
+          write(lulog,*) 'idx, xvec: ',idx,xvec(idx)
           call quit(1,'eigen_asym_met',
      &         'negative, or extremely small denominator detected')
         end if

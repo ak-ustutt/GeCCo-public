@@ -28,13 +28,13 @@
      &     iocc_sum(ngastp)
       
       if (ntest.ge.100) then
-        write(luout,*) '======================='
-        write(luout,*) ' here speaks fit_restr'
-        write(luout,*) '======================='
-        write(luout,*) 'input restriction: '
-        call wrt_rstr(luout,irestr_raw,ngas)
-        write(luout,*) 'input occupation:'
-        call wrt_occ(luout,iocc_fit)
+        write(lulog,*) '======================='
+        write(lulog,*) ' here speaks fit_restr'
+        write(lulog,*) '======================='
+        write(lulog,*) 'input restriction: '
+        call wrt_rstr(lulog,irestr_raw,ngas)
+        write(lulog,*) 'input occupation:'
+        call wrt_occ(lulog,iocc_fit)
       end if
 
       do imask = 1, 2
@@ -55,8 +55,8 @@ c            iocc_sum(ityp) = iocc_sum(ityp)+iocc_fit(ityp,ica)
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'output restriction: '
-        call wrt_rstr(luout,irestr_out,ngas)
+        write(lulog,*) 'output restriction: '
+        call wrt_rstr(lulog,irestr_out,ngas)
       end if
 
       return

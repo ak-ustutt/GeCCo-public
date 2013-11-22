@@ -61,7 +61,7 @@ c dbg
 c dbg
 c        print *,'maxex = ',maxex
 c        print *,'raw restr: '
-c        call wrt_rstr(luout,irestr_res,ngas)
+c        call wrt_rstr(lulog,irestr_res,ngas)
 c dbg
 
       do ica = 1, 2
@@ -90,8 +90,8 @@ c            irestr_res(1,igas,ica,1) = 0
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'restriction used for intermediates:'
-        call wrt_rstr(luout,irestr_res,ngas)
+        write(lulog,*) 'restriction used for intermediates:'
+        call wrt_rstr(lulog,irestr_res,ngas)
       end if
 
       return

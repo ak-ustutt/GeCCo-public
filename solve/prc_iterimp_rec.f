@@ -67,7 +67,7 @@
      &     xdum, prc_impfac
 
       if (ntest.ge.100)
-     &   write(luout,'(a,i4)') 'prc_iterimp entered on level ',ilevel
+     &   write(lulog,'(a,i4)') 'prc_iterimp entered on level ',ilevel
 
       nopt = opti_info%nopt
       irec_cur = me_v%fhand%current_record
@@ -75,7 +75,7 @@
       if (ilevel.le.0) then
 
         if (ntest.ge.100)
-     &     write(luout,*) 'Application of (A^-1)^(0)'
+     &     write(lulog,*) 'Application of (A^-1)^(0)'
 
         ! Just perform ordinary preconditioning step
         call diavc(xbuf1,xbuf1,1d0,xbuf2,0d0,opti_info%nwfpar(iopt))
@@ -115,7 +115,7 @@
       end if
 
       if (ntest.ge.100)
-     &   write(luout,'(a,i2.2,a,i2.2,a)')
+     &   write(lulog,'(a,i2.2,a,i2.2,a)')
      &   'Computing [1-A^(0)*(A^-1)^(',ilevel,
      &   ')-Aoff*(A^-1)^(',ilevel-1,')]*|v>'
  
@@ -141,7 +141,7 @@
      &               xdum,.false.)
 
       if (ntest.ge.100)
-     &   write(luout,'(a,i2.2,a)')
+     &   write(lulog,'(a,i2.2,a)')
      &   'Now applying (A^-1)^(',ilevel-1,') again from the left'
 
       ! call kernel a second time
@@ -153,7 +153,7 @@
      &                     orb_info,op_info,str_info,strmap_info)
 
       if (ntest.ge.100)
-     &   write(luout,'(a,i4)') 'prc_iterimp exits level      ',ilevel
+     &   write(lulog,'(a,i4)') 'prc_iterimp exits level      ',ilevel
 
       return
       end

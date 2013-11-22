@@ -23,11 +23,11 @@
      &     ifac
 
       if (ntest.ge.100) then
-        write(luout,*) '----------------'
-        write(luout,*) ' ieqfac speaks:'
-        write(luout,*) '----------------'
-        write(luout,*) ' itlist    : ',itlist(1:nel)
-        write(luout,*) ' icidxlist : ',icidxlist(1:nel)
+        write(lulog,*) '----------------'
+        write(lulog,*) ' ieqfac speaks:'
+        write(lulog,*) '----------------'
+        write(lulog,*) ' itlist    : ',itlist(1:nel)
+        write(lulog,*) ' icidxlist : ',icidxlist(1:nel)
       end if
 
       itlast = itlist(1)
@@ -53,7 +53,7 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) ' result: ',ieqfac
+        write(lulog,*) ' result: ',ieqfac
       end if
 
       return

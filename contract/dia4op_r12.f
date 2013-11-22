@@ -90,7 +90,7 @@
       ifree = mem_setmark('dia4op_r12')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'this is dia4op_r12')
+        call write_title(lulog,wst_dbg_subr,'this is dia4op_r12')
       end if
 
       op => me_dia%op
@@ -117,7 +117,7 @@ c        if (imltlist(0,iocc(1,1),ngastp,1).lt.3.or.
 c     &      imltlist(0,iocc(1,2),ngastp,1).lt.3.or.
 c     &      iocc(ihole,1).gt.0 .or.
 c     &      iocc(ipart,2).gt.0 ) then
-c          call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
+c          call wrt_occ(lulog,op%ihpvca_occ(1,1,iocc_cls))
 c          call quit(1,'dia4op',
 c     &         'routine not tested for this kind of occupation')
 c        end if
@@ -130,7 +130,7 @@ c        end if
      &     call quit(1,'dia4op_r12','inadequate memory management')
 
       if (ntest.ge.100)
-     &     write(luout,*)'allocating result buffer of size: ',maxbuff
+     &     write(lulog,*)'allocating result buffer of size: ',maxbuff
         
       ifree = mem_alloc_real(buffer,maxbuff,'buffer')
       ! loop over operator elements
@@ -145,8 +145,8 @@ c        idxbuf = 0
         idx_graph => me_dia%idx_graph(1:ngastp,1:2,iocc_cls)
 
         if (ntest.ge.100) then
-          write(luout,*) 'current occupation class:'
-          call wrt_occ(luout,op%ihpvca_occ(1,1,iocc_cls))
+          write(lulog,*) 'current occupation class:'
+          call wrt_occ(lulog,op%ihpvca_occ(1,1,iocc_cls))
         end if
 
         ncidx = op%ica_occ(1,iocc_cls)
@@ -193,7 +193,7 @@ c        idxbuf = 0
         end do
 
         if (ntest.ge.100)
-     &       write(luout,*) 'allocating xsum-buffer of size ',maxstrbuf
+     &       write(lulog,*) 'allocating xsum-buffer of size ',maxstrbuf
         ! buffer for orbital energy sums
         ifree = mem_alloc_real(xsum,maxstrbuf,'xsum')
         ifree = mem_alloc_real(xmet,maxstrbuf,'xmet')
@@ -230,11 +230,11 @@ c        idxbuf = 0
      &             cycle distr_loop
               
               if (ntest.ge.100) then
-                write(luout,*) 'msc,msa,igamc,igama: ',
+                write(lulog,*) 'msc,msa,igamc,igama: ',
      &               msc,msa,igamc,igama
-                write(luout,*) 'current distribution (MS,GAMMA):'
-                call wrt_occ(luout,msdst)
-                call wrt_occ(luout,igamdst)
+                write(lulog,*) 'current distribution (MS,GAMMA):'
+                call wrt_occ(lulog,msdst)
+                call wrt_occ(lulog,igamdst)
               end if
 
               ! strings for HPV/CA
@@ -358,7 +358,7 @@ c dbg
               if (nloop.ne.3)then
 c     &             call quit(1,'dia4op_r12',
 c     &           'My assumptions are not fulfilled')
-                write(luout,*) 'Warning: R12 N-tuples Cycle 1'
+                write(lulog,*) 'Warning: R12 N-tuples Cycle 1'
                 cycle
               endif
 
@@ -366,7 +366,7 @@ c     &           'My assumptions are not fulfilled')
               if (loop_h.eq.-1.or.loop_bx.eq.-1.or.loop_p.eq.-1)then
 c     &             call quit(1,'dia4op_r12',
 c     &               'Something is wrong (2)!')
-                write(luout,*) 'Warning: R12 N-tuples Cycle 2'
+                write(lulog,*) 'Warning: R12 N-tuples Cycle 2'
                 cycle
               endif
 
@@ -403,10 +403,10 @@ c dbg
         ilen = me_dia%len_op_occ(iocc_cls)
         minel = fndmnx(buffer,ilen,-1)
         if (minel.lt.0d0) then
-          write(luout,*)
+          write(lulog,*)
      &         'Negative lowest element of diagonal for block ',
      &         iocc_cls,' : ',minel
-          write(luout,*)
+          write(lulog,*)
      &         'I shift by ',+0.5d0-minel          
           buffer(1:ilen) = buffer(1:ilen)+0.5d0-minel
         end if
@@ -427,7 +427,7 @@ c dbg
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.5)
-     &     call prtim(luout,'time in dia4op_r12 ',
+     &     call prtim(lulog,'time in dia4op_r12 ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 
       return

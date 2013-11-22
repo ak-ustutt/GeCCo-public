@@ -73,14 +73,14 @@
       
 
       if (ntest.ge.100) then
-        write(luout,*) '====================='
-        write(luout,*) ' contr_deriv3 at work'
-        write(luout,*) '====================='
-        write(luout,*) ' Contraction on input:'
-        call prt_contr2(luout,contr,op_info)
-        write(luout,*) 'idxder = ',idxder
-        write(luout,*) 'idxmlt = ',idxmlt
-        write(luout,*) 'idxres = ',idxres
+        write(lulog,*) '====================='
+        write(lulog,*) ' contr_deriv3 at work'
+        write(lulog,*) '====================='
+        write(lulog,*) ' Contraction on input:'
+        call prt_contr2(lulog,contr,op_info)
+        write(lulog,*) 'idxder = ',idxder
+        write(lulog,*) 'idxmlt = ',idxmlt
+        write(lulog,*) 'idxres = ',idxres
       end if
 
       op_arr => op_info%op_arr
@@ -111,14 +111,14 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,'(1x,a10,2i4)')
+        write(lulog,'(1x,a10,2i4)')
      &       trim(op_res0%name),njoined_0,ipcr_0
-        write(luout,'(1x,a10,2i4)')
+        write(lulog,'(1x,a10,2i4)')
      &       trim(op_der%name),njoined_der,ipcr_der
         if (idxmlt.gt.0)
-     &    write(luout,'(1x,a10,2i4)')
+     &    write(lulog,'(1x,a10,2i4)')
      &       trim(op_mlt%name),njoined_mlt,ipcr_mlt
-        write(luout,'(1x,a10,2i4)')
+        write(lulog,'(1x,a10,2i4)')
      &       trim(op_res%name),njoined_res,ipcr_res
       end if
 
@@ -132,7 +132,7 @@
      &     'operator (njoined)')
 
       if (ipcr_0-ipcr_der+ipcr_mlt.ne.ipcr_res) then
-        write(luout,*) ipcr_0,' - ',ipcr_der,' + ',ipcr_mlt,
+        write(lulog,*) ipcr_0,' - ',ipcr_der,' + ',ipcr_mlt,
      &       ' != ',ipcr_res
         call quit(1,'contr_deriv3',
      &     'particle creation ranks do not match')
@@ -145,8 +145,8 @@
       call pack_contr(svertex,vtx,topo,xlines,contr,njoined_0)
 
       if (ntest.ge.100) then
-        write(luout,*) 'contraction in topo form:'
-        call prt_contr_p(luout,svertex,vtx,topo,xlines,nvtx,njoined_0)
+        write(lulog,*) 'contraction in topo form:'
+        call prt_contr_p(lulog,svertex,vtx,topo,xlines,nvtx,njoined_0)
       end if
 
       call set_eqv_map(neqv,idx_eqv,
@@ -198,11 +198,11 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'initially: nderiv = ',nderiv
+        write(lulog,*) 'initially: nderiv = ',nderiv
         if (nderiv.gt.0) then
-          write(luout,*) 'ivtxder: ',ivtxder
-          write(luout,*) 'iblkder: ',iblkder
-          write(luout,*) 'norder:  ',norder
+          write(lulog,*) 'ivtxder: ',ivtxder
+          write(lulog,*) 'iblkder: ',iblkder
+          write(lulog,*) 'norder:  ',norder
         end if
       end if
 
@@ -276,8 +276,8 @@
           end if
 
           if (ntest.ge.100) then
-            write(luout,*) 'modified contraction:'
-            call prt_contr_p(luout,svertex_new,vtx_new,topo_new,
+            write(lulog,*) 'modified contraction:'
+            call prt_contr_p(lulog,svertex_new,vtx_new,topo_new,
      &           xlines_new,nvtx_new,njoined_res)
           end if
 
@@ -291,10 +291,10 @@
      &                       njoined_der+1))
 
           if (ntest.ge.100) then
-            write(luout,*) 'result occupation'
-            write(luout,'(1x,8i8.8)') occ_res_p
-            call wrt_occ_n(luout,occ_res,njoined_res)
-            write(luout,*) '-> iblkres = ',iblkres
+            write(lulog,*) 'result occupation'
+            write(lulog,'(1x,8i8.8)') occ_res_p
+            call wrt_occ_n(lulog,occ_res,njoined_res)
+            write(lulog,*) '-> iblkres = ',iblkres
           end if
 
 
@@ -344,11 +344,11 @@
       nderiv = nder_actually
 
       if (ntest.ge.100) then
-        write(luout,*) 'Generated derivative terms: ',nderiv
+        write(lulog,*) 'Generated derivative terms: ',nderiv
         cur_conder => conder
         do ideriv = 1, nderiv
-          write(luout,*) 'term #',ideriv
-          call prt_contr2(luout,cur_conder%contr,op_info)
+          write(lulog,*) 'term #',ideriv
+          call prt_contr2(lulog,cur_conder%contr,op_info)
           call check_xarcs(cur_conder%contr,op_info)
           if (ideriv.lt.nderiv) cur_conder => cur_conder%next
         end do

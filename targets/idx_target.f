@@ -22,8 +22,8 @@
      &     itgt
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'this is idx_target')
-        write(luout,*) ' looking for: "',trim(tgtname),'"'
+        call write_title(lulog,wst_dbg_subr,'this is idx_target')
+        write(lulog,*) ' looking for: "',trim(tgtname),'"'
       end if
 
       idx_target = -1
@@ -35,7 +35,7 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'result: ',idx_target
+        write(lulog,*) 'result: ',idx_target
       end if
 
       return

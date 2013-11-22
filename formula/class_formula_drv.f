@@ -36,9 +36,9 @@ c      include 'def_contraction_list.h'
      &     flist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'class_formula_drv')
-        write(luout,*) ' f_input  = ',trim(f_input%label)
+        write(lulog,*) ' f_input  = ',trim(f_input%label)
       end if
 
       if (name_output.ne.'stdout') then
@@ -46,7 +46,7 @@ c      include 'def_contraction_list.h'
         call file_open(ffprint)
         luprint = ffprint%unit
       else
-        luprint = luout
+        luprint = lulog
       end if
 
       ! read in input formula

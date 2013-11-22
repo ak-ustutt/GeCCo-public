@@ -56,9 +56,9 @@
      &     idxlist
 
       if (ntest.ge.100) then
-        write(luout,*) '==================================='
-        write(luout,*) ' factor_out_subexpr messing around'
-        write(luout,*) '==================================='
+        write(lulog,*) '==================================='
+        write(lulog,*) ' factor_out_subexpr messing around'
+        write(lulog,*) '==================================='
       end if
 
       nrpl = 0   
@@ -88,9 +88,9 @@ c dbgend
      &         call quit(1,'factor_out_subexpr',
      &         'unexpected end of list (target)')
           if (ntest.ge.100) then
-            write(luout,'(70("="))')
-            write(luout,*) 'New operator target: ',idxop_tgt
-            write(luout,'(70("="))')
+            write(lulog,'(70("="))')
+            write(lulog,*) 'New operator target: ',idxop_tgt
+            write(lulog,'(70("="))')
           end if
           ! for a save exit (although this normally should not happen):
           if (.not.associated(fl_tgt_current%next)) exit tgt_loop
@@ -107,8 +107,8 @@ c dbgend
 
         iblk_tgt = fl_tgt_current%contr%iblk_res
         if (ntest.ge.100) then
-          write(luout,*) 'current term:'
-          call prt_contr2(luout,fl_tgt_current%contr,op_info)
+          write(lulog,*) 'current term:'
+          call prt_contr2(lulog,fl_tgt_current%contr,op_info)
         end if
 
         ! ------------------------------------------------------------
@@ -123,7 +123,7 @@ c dbgend
      &       fl_tgt_current,fl_intm,op_info)
 
         if (ntest.ge.100) then
-          write(luout,*) '# of possible replacements: ',nposs
+          write(lulog,*) '# of possible replacements: ',nposs
         end if
 
         ! anything found?
@@ -144,9 +144,9 @@ c dbgend
             iposs_blk(iblk_int) = iposs_blk(iblk_int) + 1
 
             if (ntest.ge.100) then
-              write(luout,'(x,2(a,i4))') 'poss. # ',iposs_blk(iblk_int),
+              write(lulog,'(x,2(a,i4))') 'poss. # ',iposs_blk(iblk_int),
      &           ' of block ',iblk_int,' (starts with:)'
-              call prt_contr2(luout,fl_intm_pnt%contr,op_info)
+              call prt_contr2(lulog,fl_intm_pnt%contr,op_info)
             end if
 
             ! collect all contributions with same result block index
@@ -169,13 +169,13 @@ c dbgend
      &         op_info)
 
             if (ntest.ge.100.and..not.success) then
-              write(luout,*) 'NO SUCCESS'
+              write(lulog,*) 'NO SUCCESS'
             end if
 
             if (success) then
               if (ntest.ge.100) then
-                write(luout,*) 'SUCCESS'
-                write(luout,*) 'now modifying formula list'
+                write(lulog,*) 'SUCCESS'
+                write(lulog,*) 'now modifying formula list'
               end if
               nrpl = nrpl + 1  ! increment counter
               ! replace first node with new intermediate and delete

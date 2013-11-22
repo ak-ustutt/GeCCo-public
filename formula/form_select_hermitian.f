@@ -42,11 +42,11 @@
      &     idx_oplist2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'here speaks form_select_hermitian')
-        write(luout,*) ' f_input  = ',trim(f_input%label)
-        write(luout,*) ' f_output = ',trim(f_output%label)
-        write(luout,*) ' op_res  = ',trim(label_opres)
+        write(lulog,*) ' f_input  = ',trim(f_input%label)
+        write(lulog,*) ' f_output = ',trim(f_output%label)
+        write(lulog,*) ' op_res  = ',trim(label_opres)
       end if
 
       same = trim(f_input%label).eq.trim(f_output%label)

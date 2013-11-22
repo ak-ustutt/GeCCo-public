@@ -59,10 +59,10 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,'(x,a)') '--------------------'
-        write(luout,'(x,a)') 'mat_svd_traf at work'
-        write(luout,'(x,a)') '--------------------'
-        write(luout,*) 'input matrix:'
+        write(lulog,'(x,a)') '--------------------'
+        write(lulog,'(x,a)') 'mat_svd_traf at work'
+        write(lulog,'(x,a)') '--------------------'
+        write(lulog,*) 'input matrix:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
       end if
 
@@ -91,7 +91,7 @@ c     &                    (mat(idx2,idx) + mat2(idx2,idx))
 c        end do
 c      end do
 c      if (ntest.ge.100) then
-c        write(luout,*) 'symmetrized matrix:'
+c        write(lulog,*) 'symmetrized matrix:'
 c        call wrtmat2(mat2,ndim,ndim,ndim,ndim)
 c      end if
 c
@@ -103,9 +103,9 @@ c        call warn('mat_svd_traf','Some problem in rs.f')
 c      end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'unitary matrix V:'
+        write(lulog,*) 'unitary matrix V:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
-        write(luout,*) 'singular values:'
+        write(lulog,*) 'singular values:'
       end if
 
       ! exclude eigenvalues below threshold or as given by SINGVALS2
@@ -142,13 +142,13 @@ c          if (idx2.eq.9) bins(idx2) = bins(idx2) + 1
           mat(1:ndim,idx) = 0d0
           singval(idx) = 0d0
         end if
-        if (ntest.ge.10) write(luout,'(x,a,i8,x,f24.12,3x,L1)') 'ev #',
+        if (ntest.ge.10) write(lulog,'(x,a,i8,x,f24.12,3x,L1)') 'ev #',
      &                 icnt_sv,cur_sv,sv_above
         if (jac_fix.and..not.read_file) write(luinp,*) icnt_sv, sv_above
       end do
 
       if (ntest.ge.100) then
-        write(luout,'(a,f5.2,a)') 'truncated matrix V:'
+        write(lulog,'(a,f5.2,a)') 'truncated matrix V:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
       end if
 
@@ -169,7 +169,7 @@ c      end do
      &            0d0,mat2,ndim)
 
       if (ntest.ge.100) then
-        write(luout,'(a,f5.2,a)') 'transformed matrix:'
+        write(lulog,'(a,f5.2,a)') 'transformed matrix:'
         call wrtmat2(mat2,ndim,ndim,ndim,ndim)
       end if
 

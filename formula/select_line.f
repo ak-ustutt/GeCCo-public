@@ -133,7 +133,7 @@
       end do fl_loop
 
       if (ntest.ge.10) then
-        write(luout,*) 'generated terms: ',nterms
+        write(lulog,*) 'generated terms: ',nterms
       end if
 
       return

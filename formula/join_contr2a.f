@@ -75,10 +75,10 @@
       base = pack_base
 
       if (ntest.ge.50) then
-        call write_title(luout,wst_dbg_subr,'This is join_contr 2a')
-        write(luout,*) 'joining: AC, B'
-        call prt_contr2(luout,contr_ac,op_info)
-        call prt_contr2(luout,contr_b,op_info)
+        call write_title(lulog,wst_dbg_subr,'This is join_contr 2a')
+        write(lulog,*) 'joining: AC, B'
+        call prt_contr2(lulog,contr_ac,op_info)
+        call prt_contr2(lulog,contr_b,op_info)
       end if
 
       nvtx_ac = contr_ac%nvtx
@@ -178,19 +178,19 @@ c        end do
 c      end if
 
       if (nsuper.ne.nproto_ac.and.nsuper_non0.gt.nproto_ac) then
-        write(luout,*) 'join_contr2a: joining: AC, B'
-        call prt_contr2(luout,contr_ac,op_info)
-        call prt_contr2(luout,contr_b,op_info)
-        write(luout,*) 'nsuper, nproto_ac: ',nsuper, nproto_ac
-        write(luout,*) 'nsuper_non0: ',nsuper_non0
-        write(luout,*) 'svmap: ',svmap
-        write(luout,*) 'mode:  ',mode
+        write(lulog,*) 'join_contr2a: joining: AC, B'
+        call prt_contr2(lulog,contr_ac,op_info)
+        call prt_contr2(lulog,contr_b,op_info)
+        write(lulog,*) 'nsuper, nproto_ac: ',nsuper, nproto_ac
+        write(lulog,*) 'nsuper_non0: ',nsuper_non0
+        write(lulog,*) 'svmap: ',svmap
+        write(lulog,*) 'mode:  ',mode
         call quit(1,'join_contr2a','incompatible contractions !')
       end if
 
-      if (ntest.ge.50) write(luout,*) 'nsuper, nsuper_non0: ',
+      if (ntest.ge.50) write(lulog,*) 'nsuper, nsuper_non0: ',
      &                                 nsuper, nsuper_non0
-      if (ntest.ge.50) write(luout,*) 'svmap: ',
+      if (ntest.ge.50) write(lulog,*) 'svmap: ',
      &                                 svmap
 
       nvtx_abc = nvtx_ac-nproto_ac+nvtx_b
@@ -203,7 +203,7 @@ c      end if
      &                   svmap,nvtx_b,njoined)
 
       if (ntest.ge.1000) then
-        write(luout,'(3x,a,10i5)') 'ivtx_old: ',ivtx_old(1:nvtx_abc)
+        write(lulog,'(3x,a,10i5)') 'ivtx_old: ',ivtx_old(1:nvtx_abc)
       end if
 
       ! make some assumptions about the number of arcs in the 
@@ -213,9 +213,9 @@ c      end if
      &     +2*nvtx_ac,(nvtx_abc+2)*(nvtx_abc+1))
 
       if (ntest.ge.1000) then
-        write(luout,*) 'nvtx_ac, nvtx_b, nvtx_abc: ',
+        write(lulog,*) 'nvtx_ac, nvtx_b, nvtx_abc: ',
      &       nvtx_ac, nvtx_b, nvtx_abc
-        write(luout,*) 'narc_ac, narc_b, narc_abc: ',
+        write(lulog,*) 'narc_ac, narc_b, narc_abc: ',
      &       narc_ac, narc_b, narc_abc
       end if
 
@@ -339,8 +339,8 @@ c      end if
      &           xlines(nvtx_b,njoined))
         call pack_contr(svtx,vtx,topo,xlines,contr_b,njoined)
         if (ntest.ge.100) then
-          write(luout,*) 'no unique svmap! Using xlines instead:'
-          call prt_contr_p(luout,svtx,vtx,topo,xlines,nvtx_b,njoined)
+          write(lulog,*) 'no unique svmap! Using xlines instead:'
+          call prt_contr_p(lulog,svtx,vtx,topo,xlines,nvtx_b,njoined)
         end if
       end if
       ! add the external arcs from A and C
@@ -434,8 +434,8 @@ c      end if
       if (.not.unique) then
         if (.not.all(xlines.eq.0)) then
           ! it seems, something did not work ...
-          write(luout,*) 'what I generated so far seems inconsistent:'
-          call prt_contr2(luout,contr_abc,op_info)
+          write(lulog,*) 'what I generated so far seems inconsistent:'
+          call prt_contr2(lulog,contr_abc,op_info)
           call quit(1,'join_contr2a','trap!')
         end if
         deallocate(svtx,vtx,topo,xlines)
@@ -466,8 +466,8 @@ c      end if
       contr_abc%nfac = 0
 
       if (ntest.ge.1000) then
-        write(luout,*) 'generated proto-contraction:'
-        call prt_contr2(luout,contr_abc,op_info)
+        write(lulog,*) 'generated proto-contraction:'
+        call prt_contr2(lulog,contr_abc,op_info)
       end if
 
       ! set fix_vtx and occ_vtx arrays
@@ -524,12 +524,12 @@ c      end if
 
       ! none at all? or more than one for mode=0?
       if (nterms.eq.0.or.mode.eq.0.and.nterms.gt.1) then
-        write(luout,*) 'proto-contraction:'
-        call prt_contr2(luout,contr_abc,op_info)
+        write(lulog,*) 'proto-contraction:'
+        call prt_contr2(lulog,contr_abc,op_info)
         if (nterms.eq.0) call quit(1,'join_contr2a',
      &       'no possible connection found')
-        write(luout,*) 'generated terms:'
-        call print_form_list(luout,fl_abc,op_info)
+        write(lulog,*) 'generated terms:'
+        call print_form_list(lulog,fl_abc,op_info)
         call quit(1,'join_contr2a',
      &       'mode=0 allows only unique recombinations!')
       end if
@@ -544,8 +544,8 @@ c      end if
       deallocate(svmap)
 
       if (ntest.ge.50) then
-        write(luout,*) 'generated contraction(s):'
-        call print_form_list(luout,fl_abc,op_info)
+        write(lulog,*) 'generated contraction(s):'
+        call print_form_list(lulog,fl_abc,op_info)
       end if
       
       return
