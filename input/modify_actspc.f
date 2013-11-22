@@ -41,9 +41,33 @@
      &     call quit(0,'modify_actspc',
      &     'definition inconsistent with symmetry')
 
-      if (orb_info%ihpvgas(2,1).ne.3)
+      if (orb_info%ihpvgas(2,1).ne.3) then
+        if (orb_info%ihpvgas(2,1).eq.1)
      &     call quit(0,'modify_actspc',
      &     '2nd GAS must be valence. define frozen shells afterwards.')
+
+        ! no active shell yet: add an empty one!
+        allocate(igassh_sv(nsym,ngas),iad_gas_sv(ngas),
+     &       ihpvgas_sv(ngas,nspin))
+        igassh_sv(1:nsym,1:ngas) = orb_info%igassh(1:nsym,1:ngas)
+        iad_gas_sv(1:ngas) = orb_info%iad_gas(1:ngas)
+        ihpvgas_sv(1:ngas,1:nspin) = orb_info%ihpvgas(1:ngas,1:nspin)
+        deallocate(orb_info%igassh,orb_info%iad_gas,orb_info%ihpvgas)
+        orb_info%ngas = orb_info%ngas+1
+        ngas = ngas+1
+        allocate(orb_info%igassh(nsym,ngas),orb_info%iad_gas(ngas),
+     &       orb_info%ihpvgas(ngas,nspin))
+        orb_info%igassh(1:nsym,1) = igassh_sv(1:nsym,1)
+        orb_info%igassh(1:nsym,2) = 0
+        orb_info%igassh(1:nsym,3:ngas) = igassh_sv(1:nsym,2:ngas-1)
+        orb_info%iad_gas(1) = iad_gas_sv(1)
+        orb_info%iad_gas(2) = 2
+        orb_info%iad_gas(3:ngas) = iad_gas_sv(2:ngas-1)
+        orb_info%ihpvgas(1,1:nspin) = ihpvgas_sv(1,1:nspin)
+        orb_info%ihpvgas(2,1:nspin) = 3
+        orb_info%ihpvgas(3:ngas,1:nspin) = ihpvgas_sv(2:ngas-1,1:nspin)
+        deallocate(igassh_sv,iad_gas_sv,ihpvgas_sv)
+      end if
 
       if (mode.ne.1.and.mode.ne.2)
      &     call quit(0,'modify_actspc',

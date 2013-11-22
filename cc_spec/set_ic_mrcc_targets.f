@@ -20,6 +20,7 @@
       include 'par_formnames_gen.h'
       include 'par_gen_targets.h'
       include 'par_actions.h'
+      include 'routes.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -234,6 +235,10 @@
         inquire(file='ME_T_list.da',exist=l_exist)
         if (.not.l_exist) call quit(1,'set_ic_mrcc_targets',
      &           'Restart: File for T amplitudes not found!')
+      ! if jac_thresh>0, projector won't be sufficient for restart
+      if (prc_traf.and.restart.and.jac_thresh.ge.0)
+     &    call quit(1,'set_ic_mrcc_targets',
+     &              'no restart for jac_thresh>0')
       end if
       
 *----------------------------------------------------------------------*
@@ -1900,7 +1905,7 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
      &      val_str='MRCC2')
       end if
       ! b) factor out spin-adapted RDMs if needed
-      if (spinproj.ge.3) then
+      if (spinproj.ge.3.and.orb_info%nactel.gt.0) then
         call set_dependency('F_E(MRCC)tr','F_DENS0',tgt_info)
         call set_rule2('F_E(MRCC)tr',FACTOR_OUT,tgt_info)
         call set_arg('F_E(MRCC)tr',FACTOR_OUT,'LABEL_RES',1,tgt_info,
@@ -3890,7 +3895,7 @@ c dbgend
       call set_dependency('FOPT_Atr','DEF_ME_1',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_Dtr',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_C0',tgt_info)
-      if (spinproj.ge.3)
+      if (spinproj.ge.3.and.orb_info%nactel.gt.0)
      &   call set_dependency('FOPT_Atr','DEF_ME_DENS',tgt_info)
 c      call set_rule2('FOPT_Atr',ASSIGN_ME2OP,tgt_info)
 c      call set_arg('FOPT_Atr',ASSIGN_ME2OP,'LIST',1,tgt_info,

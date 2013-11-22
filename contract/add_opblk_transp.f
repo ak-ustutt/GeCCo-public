@@ -51,6 +51,7 @@
      &     nocc_cls, njoined,
      &     ifree, nblk, nbuff, idxmsa, idxmsc, idxdis,
      &     idxdis_in, ioff_out, ioff_in, ioff0_out, ioff0_in,
+     &     idoffin, idoffout,
      &     msa, msc, igama, igamc, idxa, idxc, ngam, lena, lenc,
      &     iblkoff, iblkoff_in, ncblk, nablk, msc_max, msa_max,
      &     istr, idx_in, idx_out, icmp
@@ -157,9 +158,11 @@ c     &               'buffered files are not yet debugged')
       ! Allocations made to full block length
       if(.not.bufin)then
         nbuff = me_in%len_op_occ(iblk_in)
+        idoffin  = ffin%length_of_record*(ffin%current_record-1)
 
         ifree = mem_alloc_real(buffer_in,nbuff,'buffer_in')
-        call get_vec(ffin,buffer_in,ioff0_in+1,ioff0_in+nbuff)
+        call get_vec(ffin,buffer_in,idoffin+ioff0_in+1,
+     &               idoffin+ioff0_in+nbuff)
 
       else
         buffer_in => ffin%buffer(ioff0_in+1:)
@@ -167,9 +170,11 @@ c     &               'buffered files are not yet debugged')
 
       if(.not.bufout.or.same)then
         nbuff = me_out%len_op_occ(iblk_out)
+        idoffout = ffout%length_of_record*(ffout%current_record-1)
         ifree= mem_alloc_real(buffer_out,nbuff,'buffer_out')
         if (.not.reset)
-     &    call get_vec(ffout,buffer_out,ioff0_out+1,ioff0_out+nbuff)
+     &    call get_vec(ffout,buffer_out,idoffout+ioff0_out+1,
+     &                 idoffout+ioff0_out+nbuff)
       else
         buffer_out => ffout%buffer(ioff0_out+1:)
       endif
@@ -325,7 +330,8 @@ c     &               'buffered files are not yet debugged')
       end if
 
       if(.not.bufout)then
-        call put_vec(ffout,buffer_out,ioff0_out+1,ioff0_out+nbuff)
+        call put_vec(ffout,buffer_out,idoffout+ioff0_out+1,
+     &               idoffout+ioff0_out+nbuff)
       endif  
 
       if (open_close_in ) call file_close_keep(ffin)
