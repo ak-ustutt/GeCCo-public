@@ -23,7 +23,7 @@
      &     orb_info
       type(operator_info), intent(in) ::
      &     op_info
-      type(me_list), intent(in) ::
+      type(me_list), intent(inout) ::
      &     mel_inp, mel_inv
       integer, intent(in) ::
      &     nocc_cls

@@ -388,9 +388,9 @@
 *----------------------------------------------------------------------*
       call add_command_proto(MODIFY_FACTORIZATION,tgt_info)
       call set_arg('_PROTO_',MODIFY_FACTORIZATION,'LABEL_RES',0,
-     &     tgt_info,val_label=(/''/),req=.true.)
+     &     tgt_info,val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',MODIFY_FACTORIZATION,'LABEL_IN',0,
-     &     tgt_info,val_label=(/''/),req=.true.)
+     &     tgt_info,val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',MODIFY_FACTORIZATION,'MODIFY',0,
      &     tgt_info,val_int=(/-1/),req=.true.)
 *----------------------------------------------------------------------*
@@ -719,6 +719,6 @@
 *----------------------------------------------------------------------*
       call add_command_proto(ORB_FLIP,tgt_info)
       call set_arg('_PROTO_',ORB_FLIP,'LIST',0,tgt_info,
-     &     val_label=(/''/),req=.true.)
+     &     val_label=(/' '/),req=.true.)
 
       end
