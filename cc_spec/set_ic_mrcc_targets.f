@@ -3498,7 +3498,7 @@ c dbgend
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
      &             val_rl8=(/0.5d0/))
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &             val_log=(/.false./))
+     &             val_log=(/orb_info%norb_hpv(IEXTR,1).ne.0/))
       call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &             val_label=(/'MRCC_PT_LAG'/))

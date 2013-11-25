@@ -45,7 +45,7 @@
       logical ::
      &     skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, notrunc, restart
+     &     oldref, solve, notrunc, restart, prc_traf
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -105,6 +105,8 @@ c      if (h1bar_maxp.lt.0.and.maxexc.le.2) h1bar_maxp = 2
 c      if (h1bar_maxp.lt.0.and.maxexc.gt.2) h1bar_maxp = 3
       call get_argument_value('method.MRCC','H1bar',
      &     lval=h1bar)
+      call get_argument_value('method.MR','prc_traf',
+     &     lval=prc_traf)
 c      call get_argument_value('method.MRCC','x_ansatz',
 c     &     xval=x_ansatz)
 c      call get_argument_value('method.MRCC','trunc_order',
@@ -947,13 +949,21 @@ c      else
 c      end if
       call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'LIST_E',1,tgt_info,
      &     val_label=(/'ME_E(MR)'/))
-      if (optref.ne.0.and.update_prc.gt.0) then
+      if (optref.ne.0.and.(update_prc.gt.0.or.prc_traf)) then
 c        if (tred.eq.0) then
+       if (prc_traf) then
+        call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'LIST_SPC',8,tgt_info,
+     &     val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
+     &                 'ME_Dproj ',
+     &                 'ME_D     ','ME_Dinv  ',
+     &                 'ME_A     ','ME_Auni  '/))
+       else
         call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'LIST_SPC',7,tgt_info,
      &     val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
      &                 'ME_Dproj ',
      &                 'ME_D     ','ME_Dinv  ',
      &                 'ME_A     '/))
+       end if
 c        else if (ex_t3red) then
 c        call set_dependency('SOLVE_MRCC','FOPT_T(2)red',tgt_info)
 c        call set_dependency('SOLVE_MRCC','FOPT_T(3)red',tgt_info)
@@ -981,7 +991,7 @@ cc      if (optref.ne.0) then
      &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag '/))
       end if
       if (optref.ne.0) then
-        if (update_prc.gt.0) then
+        if (update_prc.gt.0.or.prc_traf) then
 c          if (tred.eq.0) then
           call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'FORM_SPC',3,tgt_info,
      &         val_label=(/'FOPT_T  ','FOPT_D  ','FOPT_Atr'/))
