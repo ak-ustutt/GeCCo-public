@@ -2416,7 +2416,7 @@ c     &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'OPERATORS',0,tgt_info,
-     &     val_label=(/''/))
+     &     val_label=(/' '/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='FORMAL')
       call set_arg('F_H1bar',SELECT_SPECIAL,'MODE',1,tgt_info,
@@ -2427,7 +2427,7 @@ c     &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'LABEL_IN',1,tgt_info,
      &     val_label=(/'F_H1bar'/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'OPERATORS',0,tgt_info,
-     &     val_label=(/''/))
+     &     val_label=(/' '/))
       call set_arg('F_H1bar',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='FORMAL')
       call set_arg('F_H1bar',SELECT_SPECIAL,'MODE',1,tgt_info,

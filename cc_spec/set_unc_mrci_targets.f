@@ -101,7 +101,7 @@
         if (guess.gt.0) write(lulog,*) 'guess   =',guess
       end if
 
-      if (guess) then
+      if (guess.gt.0) then
         inquire(file='ME_C0start_list.da',exist=l_exist)
         if (.not.l_exist) call quit(1,'set_unc_mrci_targets',
      &           'Initial guess: Did not find file ME_C0start_list.da!')
